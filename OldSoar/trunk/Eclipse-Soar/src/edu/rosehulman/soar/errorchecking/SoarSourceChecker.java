@@ -11,8 +11,10 @@ import edu.umich.visualsoar.parser.*;
 
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.resources.*;
+import org.eclipse.ui.texteditor.*;
 
 import java.io.*;
+import java.util.*;
 
 
 /**
@@ -31,7 +33,6 @@ public class SoarSourceChecker {
 			// Now see if it passes muster with the datamap
 			DataMapChecker.matches(file, parser.VisualSoarFile());
 			
-			
 		} catch (CoreException e) {
 			e.printStackTrace();
 			
@@ -40,20 +41,31 @@ public class SoarSourceChecker {
 			//System.out.println("parsing error!");
 			
 			try {
-				IMarker err = file.createMarker(IMarker.PROBLEM);
-				err.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+				HashMap attr = new HashMap();
+				MarkerUtilities.setLineNumber(attr, e.currentToken.endLine);
+				attr.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_ERROR));
 				
-				err.setAttribute(IMarker.LINE_NUMBER, e.currentToken.endLine);
 				
 				String msg = e.getMessage();
-				
-				//System.out.println(msg);
 				
 				if (msg.indexOf("\n") != -1) {
 					msg = msg.substring(0, msg.indexOf("\n")-1);
 				}
+				MarkerUtilities.setMessage(attr, msg);
 				
-				err.setAttribute(IMarker.MESSAGE, msg);
+				MarkerUtilities.createMarker(file, attr, IMarker.PROBLEM);
+				
+				/*IMarker err = file.createMarker(IMarker.PROBLEM);
+				err.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+				
+				err.setAttribute(IMarker.LINE_NUMBER, e.currentToken.endLine);
+				String msg = e.getMessage();
+				
+				if (msg.indexOf("\n") != -1) {
+					msg = msg.substring(0, msg.indexOf("\n")-1);
+				}
+				System.out.println(msg);
+				err.setAttribute(IMarker.MESSAGE, msg);*/
 				
 			} catch (CoreException e2) {
 				e2.printStackTrace();

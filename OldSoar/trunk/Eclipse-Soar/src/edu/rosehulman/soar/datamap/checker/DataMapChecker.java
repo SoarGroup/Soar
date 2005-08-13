@@ -13,6 +13,7 @@ import edu.umich.visualsoar.parser.*;
 
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.resources.*;
+import org.eclipse.ui.texteditor.MarkerUtilities;
 
 import java.io.*;
 import java.util.*;
@@ -83,12 +84,12 @@ public class DataMapChecker {
 			
 			source.deleteMarkers(DataMapChecker.PROBLEM_MARKER, false, 0);
 			
-			Enumeration enum = productions.elements();
+			Enumeration en = productions.elements();
 				
-			while (enum.hasMoreElements()) {
+			while (en.hasMoreElements()) {
 				ArrayList names = new ArrayList();
 				
-				SoarProduction sp = (SoarProduction) enum.nextElement();
+				SoarProduction sp = (SoarProduction) en.nextElement();
 				
 				TriplesExtractor te = new TriplesExtractor(sp);
 				
@@ -115,17 +116,14 @@ public class DataMapChecker {
 						if (nodes.size() == 0) {
 							// It doesn't exist! The horror!
 							
-							IMarker prob = 
-								source.createMarker(DataMapChecker.PROBLEM_MARKER);
+							HashMap attr = new HashMap();
+							MarkerUtilities.setLineNumber(attr, currentTriple.getLine());
+							attr.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_WARNING));
+							String msg = makeName(names) + " does not exist in the datamap.";
+							MarkerUtilities.setMessage(attr, msg);
 							
-							prob.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-							prob.setAttribute(IMarker.LINE_NUMBER, currentTriple.getLine());
-							
-							//Make our message
-							String msg = makeName(names) 
-								+ " does not exist in the datamap.";
-							
-							prob.setAttribute(IMarker.MESSAGE, msg);
+							//MarkerUtilities.createMarker(source, attr, IMarker.PROBLEM);
+							MarkerUtilities.createMarker(source, attr, DataMapChecker.PROBLEM_MARKER);
 							
 						} else {
 							// Sure, maybe it exists. But does that satisfy you?
@@ -140,18 +138,17 @@ public class DataMapChecker {
 							
 							if (!satisfied) { // your money back!
 								// Invalid value assignment
-								IMarker prob = 
-									source.createMarker(DataMapChecker.PROBLEM_MARKER);
-							
-								prob.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-								prob.setAttribute(IMarker.LINE_NUMBER, currentTriple.getLine());
-							
-								//Make our message
+								HashMap attr = new HashMap();
+								MarkerUtilities.setLineNumber(attr, currentTriple.getLine());
+								attr.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_WARNING));
 								String msg = makeName(names) 
 									+ " does not accept a value of "
 									+ currentTriple.getValue().getString();
-							
-								prob.setAttribute(IMarker.MESSAGE, msg);
+								MarkerUtilities.setMessage(attr, msg);
+								
+								//MarkerUtilities.createMarker(source, attr, IMarker.PROBLEM);
+								MarkerUtilities.createMarker(source, attr, DataMapChecker.PROBLEM_MARKER);
+								
 							}
 							
 						} // else

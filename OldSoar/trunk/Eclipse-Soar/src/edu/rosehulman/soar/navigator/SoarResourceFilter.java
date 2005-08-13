@@ -48,6 +48,8 @@ public class SoarResourceFilter extends ResourcePatternFilter {
 				return false;
 			} else if (fileName.equals(sourcingName)) {
 				return false;
+			} else if (fileName.endsWith(".xdm")) {
+				return false;
 			}
 		}
 		

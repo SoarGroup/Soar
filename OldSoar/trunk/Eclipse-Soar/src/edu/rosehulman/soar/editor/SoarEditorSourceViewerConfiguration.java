@@ -37,7 +37,6 @@ public class SoarEditorSourceViewerConfiguration
 		_editor = editor;
 		
 		
-		
 		ContentAssistant ca = new ContentAssistant();
 		ca.setContentAssistProcessor(new SoarContentAssistProcessor(_editor), 
 			IDocument.DEFAULT_CONTENT_TYPE);

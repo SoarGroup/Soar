@@ -37,7 +37,7 @@ public class CopyItem extends Action {
 
 		setText("Copy");
 		setImageDescriptor(PlatformUI.getWorkbench().
-			getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_COPY_HOVER));
+			getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_COPY));
 		
 		if (_target.getParent() == null) {
 			setEnabled(false);

@@ -95,7 +95,7 @@ public class DataMapEditor extends EditorPart {
 			setSite(site);
 			setInput(input);
 			
-			setTitle(_fileInput.getName());
+			setPartName(_fileInput.getName());
 			
 		} catch (Exception e) {
 			throw new PartInitException(e.getMessage());

@@ -10,8 +10,8 @@ package edu.rosehulman.soar.editor;
 
 import org.eclipse.ui.part.*;
 import org.eclipse.ui.views.contentoutline.*;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.eclipse.ui.texteditor.DefaultRangeIndicator;
+import org.eclipse.ui.texteditor.*;
+import org.eclipse.ui.editors.text.*;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.rules.*;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -27,7 +27,7 @@ import edu.rosehulman.soar.errorchecking.*;
  * @author lutezp
  * @author Tim Jasko
  */
-public class SoarEditor extends AbstractTextEditor
+public class SoarEditor extends TextEditor
 {
 	private SoarContentOutlinePage _outlinePage;
 	
@@ -141,6 +141,7 @@ public class SoarEditor extends AbstractTextEditor
 	
 	
 	public void gotoLine(int line) {
+		System.out.println("Line:" + line);
 		IDocument doc = this.getSourceViewer().getDocument();
 		try {
 			this.selectAndReveal( doc.getLineOffset(line), doc.getLineLength(line) );

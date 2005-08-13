@@ -37,7 +37,7 @@ public class DeleteItem extends Action {
 
 		setText("Delete Attribute...");
 		setImageDescriptor(PlatformUI.getWorkbench().
-			getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE_HOVER));
+			getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
 	}
 	
 	public void run() {

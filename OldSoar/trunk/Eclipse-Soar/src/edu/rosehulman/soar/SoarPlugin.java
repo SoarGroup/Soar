@@ -41,6 +41,39 @@ public class SoarPlugin extends AbstractUIPlugin
 	/**
 	 * The constructor.
 	 */
+	public SoarPlugin()
+	{
+		super();
+		
+		_plugin = this;
+		
+		try 
+		{
+			_resourceBundle = 
+				ResourceBundle.getBundle(
+					"edu.rosehulman.soar.editor.SoarPluginResources");
+		} 
+		catch (MissingResourceException e)
+		{
+			_resourceBundle = null;
+		}
+
+		_colorProvider = new ColorProvider();
+		
+		
+		//Make us a clipboard
+		
+		_datamapClipboard = new DataMapClipboard();
+		
+		//Set up a listener for resource changes.
+		IResourceChangeListener listener = new SoarChangeListener();
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(listener,
+			IResourceChangeEvent.PRE_BUILD);
+	}
+	
+	/**
+	 * The other constructor.
+	 */
 	public SoarPlugin(IPluginDescriptor descriptor)
 	{
 		super(descriptor);
@@ -68,7 +101,7 @@ public class SoarPlugin extends AbstractUIPlugin
 		//Set up a listener for resource changes.
 		IResourceChangeListener listener = new SoarChangeListener();
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(listener,
-			IResourceChangeEvent.PRE_AUTO_BUILD);
+			IResourceChangeEvent.PRE_BUILD);
 	}
 
 

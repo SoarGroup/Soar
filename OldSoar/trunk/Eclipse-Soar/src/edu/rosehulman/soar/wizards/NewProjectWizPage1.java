@@ -26,7 +26,7 @@ import org.eclipse.core.resources.*;
 
 public class NewProjectWizPage1 extends WizardPage {
 	private Text fileText;
-	private ISelection selection;
+	//private ISelection selection;
 
 	/**
 	 * Constructor.
@@ -36,7 +36,7 @@ public class NewProjectWizPage1 extends WizardPage {
 		super("wizardPage");
 		setTitle("New Soar Project");
 		setDescription("This wizard creates a new Soar project");
-		this.selection = selection;
+		//this.selection = selection;
 	}
 
 	public void createControl(Composite parent) {

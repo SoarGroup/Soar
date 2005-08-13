@@ -37,7 +37,7 @@ public class CreateLink extends Action {
 
 		setText("Paste Link");
 		setImageDescriptor(PlatformUI.getWorkbench().
-			getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD_HOVER));
+			getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
 
 		if (_target.getParent() == null
 			|| SoarPlugin.getDataMapClipboard().getBufferStatus() != DataMapClipboard.COPIED ) {

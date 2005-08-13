@@ -6,7 +6,6 @@
 package edu.rosehulman.soar.editor;
 
 import org.eclipse.jface.text.*;
-import java.util.regex.*;
 
 /**
  * Auto-indents soar code.
@@ -81,7 +80,7 @@ public class SoarAutoIndentStrategy implements IAutoIndentStrategy {
 			//various checkpoints
 			String prevCodeLine = cropComments(getPrevCodeLine(doc, comm.offset));
 			if (prevCodeLine == "") return;	//this is the first line; we have nothing to do
-			char prevLastChar = prevCodeLine.charAt(prevCodeLine.length() - 1); //?the last char of the last code line	
+			//char prevLastChar = prevCodeLine.charAt(prevCodeLine.length() - 1); //?the last char of the last code line	
 			
 			if (localdebug) {
 				System.out.println("-------------------------------------");
@@ -126,13 +125,13 @@ public class SoarAutoIndentStrategy implements IAutoIndentStrategy {
 			if (preEdit.indexOf('{') != -1) preEditHasLeftPointy = true;
 			boolean postEditHasSP = false;
 			boolean postEditHasArrow = false;
-			boolean postEditHasRightParens = false;
-			boolean postEditHasRightPointy = false;
+			//boolean postEditHasRightParens = false;
+			//boolean postEditHasRightPointy = false;
 			boolean postEditHasLeftPointy = false;
 			if (postEdit.indexOf("sp") != -1) postEditHasSP = true;
 			if (postEdit.indexOf("-->") != -1) postEditHasArrow = true;
-			if (postEdit.indexOf(')') != -1) postEditHasRightParens = true;
-			if (postEdit.indexOf('}') != -1) postEditHasRightPointy = true;
+			//if (postEdit.indexOf(')') != -1) postEditHasRightParens = true;
+			//if (postEdit.indexOf('}') != -1) postEditHasRightPointy = true;
 			if (postEdit.indexOf('{') != -1) postEditHasLeftPointy = true;
 			
 			int preEditCaretPos = preEdit.indexOf("^");

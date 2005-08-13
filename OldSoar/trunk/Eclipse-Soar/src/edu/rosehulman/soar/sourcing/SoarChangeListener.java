@@ -17,7 +17,7 @@ import org.eclipse.core.resources.*;
  */
 public class SoarChangeListener implements IResourceChangeListener {
 	public void resourceChanged(IResourceChangeEvent event) {
-		if (event.getType() == IResourceChangeEvent.PRE_AUTO_BUILD) {
+		if (event.getType() == IResourceChangeEvent.PRE_BUILD) {
 			try {
 				
 				event.getDelta().accept(new SoarDeltaVisitor());

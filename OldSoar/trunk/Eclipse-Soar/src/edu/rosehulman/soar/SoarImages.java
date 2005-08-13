@@ -8,6 +8,7 @@ package edu.rosehulman.soar;
 
 import edu.rosehulman.soar.datamap.items.*;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.*;
 import org.eclipse.swt.graphics.Image;
 
@@ -60,7 +61,7 @@ public class SoarImages {
 	 */
 	private static ImageDescriptor loadImageDescriptor(String name) {
 		try {
-			 URL installURL = SoarPlugin.getDefault().getDescriptor().getInstallURL();
+			 URL installURL = Platform.getBundle("edu.rosehulman.soar").getEntry("/");
 			 URL url = new URL(installURL, "icons/" + name);
 			 return ImageDescriptor.createFromURL(url);
 		} catch (MalformedURLException e) {

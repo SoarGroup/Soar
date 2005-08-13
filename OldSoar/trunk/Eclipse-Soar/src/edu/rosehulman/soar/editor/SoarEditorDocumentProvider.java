@@ -8,7 +8,7 @@ package edu.rosehulman.soar.editor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentPartitioner;
-import org.eclipse.jface.text.rules.DefaultPartitioner;
+import org.eclipse.jface.text.rules.*;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 
 import edu.rosehulman.soar.editor.soar.SoarPartitionScanner;
@@ -55,9 +55,9 @@ public class SoarEditorDocumentProvider extends FileDocumentProvider
 	 * Creates a partitioner for Soar files.
 	 * @return A partitioner designed to partition Soar files
 	 */
-	private DefaultPartitioner createSoarPartitioner()
+	private FastPartitioner createSoarPartitioner()
 	{
-		return new DefaultPartitioner(getSoarPartitionScanner(), TYPES);
+		return new FastPartitioner(getSoarPartitionScanner(), TYPES);
 	}
 
 	/**

@@ -38,7 +38,7 @@ public class CutItem extends Action {
 
 		setText("Cut");
 		setImageDescriptor(PlatformUI.getWorkbench().
-			getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_CUT_HOVER));
+			getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_CUT));
 
 		if (_target.getParent() == null) {
 			setEnabled(false);

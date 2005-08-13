@@ -7,7 +7,6 @@
 package edu.rosehulman.soar.wizards;
 
 
-import edu.rosehulman.soar.*;
 import edu.rosehulman.soar.datamap.*;
 
 import java.io.*;
@@ -68,8 +67,11 @@ public class Utility {
 		
 		// Get the path to our template file
 		try {
+			
 			filePath = Platform.resolve(
-			  SoarPlugin.getDefault().getDescriptor().getInstallURL()).getFile()
+			  //SoarPlugin.getDefault().getDescriptor().getInstallURL()
+					Platform.getBundle("edu.rosehulman.soar").getEntry("/")
+			  ).getFile()
 			  + "templates/" + templateFile;
 		} catch (IOException e) {
 			filePath = "";

@@ -37,7 +37,7 @@ public class PasteItem extends Action {
 
 		setText("Paste");
 		setImageDescriptor(PlatformUI.getWorkbench().
-			getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_PASTE_HOVER));
+			getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_PASTE));
 
 		if ( SoarPlugin.getDataMapClipboard().isEmpty() 
 			|| ! (target instanceof DMIdentifier) ) {

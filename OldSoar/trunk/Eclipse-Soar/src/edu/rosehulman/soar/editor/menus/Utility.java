@@ -14,7 +14,6 @@ import java.util.TimeZone;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.resources.*;
 
-import edu.rosehulman.soar.SoarPlugin;
 
 /**
  * Provides handy shared functions for the Soar source editor menu items.
@@ -58,7 +57,9 @@ public class Utility {
 		// Get the path to our template file
 		try {
 			filePath = Platform.resolve(
-			  SoarPlugin.getDefault().getDescriptor().getInstallURL()).getFile()
+					//SoarPlugin.getDefault().getDescriptor().getInstallURL()
+					Platform.getBundle("edu.rosehulman.soar").getEntry("/")
+			  ).getFile()
 			  + "templates/" + templateFile;
 		} catch (IOException e) {
 			filePath = "";

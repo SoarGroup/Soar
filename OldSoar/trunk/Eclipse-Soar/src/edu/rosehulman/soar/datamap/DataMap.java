@@ -445,9 +445,9 @@ public class DataMap {
 			
 			//Load the enumerations
 			for (int i=0; i<enums.getLength(); i++) {
-				Element enum = (Element) enums.item(i);
+				Element en = (Element) enums.item(i);
 				
-				temp.getEnums().add(enum.getAttribute("value"));
+				temp.getEnums().add(en.getAttribute("value"));
 			} // for i
 			
 			ret = temp;
