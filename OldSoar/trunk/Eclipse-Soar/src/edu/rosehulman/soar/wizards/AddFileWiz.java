@@ -7,6 +7,7 @@
 
 package edu.rosehulman.soar.wizards;
 
+import edu.rosehulman.soar.*;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.*;
 import org.eclipse.ui.INewWizard;
@@ -122,7 +123,7 @@ public class AddFileWiz extends Wizard implements INewWizard {
 			} // else
 			
 			
-			Utility.markResource(file, "file");
+			FileMarker.markResource(file, "file");
 			
 			Utility.associateID(file, Utility.getAssociatedID(container) );
 			

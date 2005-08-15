@@ -7,6 +7,7 @@
 
 package edu.rosehulman.soar.wizards;
 
+import edu.rosehulman.soar.*;
 import edu.rosehulman.soar.datamap.*;
 import edu.rosehulman.soar.datamap.items.*;
 
@@ -122,7 +123,7 @@ public class AddSuboperatorWiz extends Wizard implements INewWizard {
 				file.create(stream, true, monitor);
 			} // else
 			
-			Utility.markResource(file, "operator");
+			FileMarker.markResource(file, "operator");
 			
 			stream.close();
 		} catch (IOException e) {

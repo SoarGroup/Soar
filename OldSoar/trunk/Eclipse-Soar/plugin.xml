@@ -2,7 +2,7 @@
 <?eclipse version="3.0"?>
 <plugin>
 
-    	<!-- Soar Perspective -->
+    <!-- Soar Perspective -->
 	<extension
 		point="org.eclipse.ui.perspectives">
 		<perspective
@@ -90,6 +90,22 @@
 			class="edu.rosehulman.soar.navigator.SoarNavigator" />
 	</extension>
 
+	<!-- Decorators -->
+	
+	<extension point="org.eclipse.ui.decorators"> 
+		<decorator
+			id="edu.rosehulman.soar.navigator.SoarLightweightDecorator" 
+			label="Soar file types" 
+			state="true" 
+			class="edu.rosehulman.soar.navigator.SoarLightweightDecorator" 
+			lightweight="true" 
+			location="TOP_LEFT">
+			<enablement>
+				<objectClass name="org.eclipse.core.resources.IResource"/> 
+			</enablement> 
+		</decorator>
+	</extension>
+	  
 
    <!-- DataMap plugin -->
 

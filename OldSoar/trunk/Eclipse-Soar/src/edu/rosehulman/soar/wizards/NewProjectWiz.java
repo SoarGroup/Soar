@@ -13,8 +13,7 @@ package edu.rosehulman.soar.wizards;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.ui.INewWizard;
-import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.operation.*;
 import java.lang.reflect.InvocationTargetException;
@@ -23,6 +22,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 
+import edu.rosehulman.soar.*;
 import edu.rosehulman.soar.datamap.*;
 import edu.rosehulman.soar.natures.*;
 import edu.rosehulman.soar.sourcing.*;
@@ -36,6 +36,7 @@ import edu.rosehulman.soar.sourcing.*;
 public class NewProjectWiz extends Wizard implements INewWizard {
 	private NewProjectWizPage1 page;
 	private ISelection selection;
+	private IWorkbench workbench;
 
 	/**
 	 * Constructor for NewFileWiz.
@@ -73,14 +74,21 @@ public class NewProjectWiz extends Wizard implements INewWizard {
 		};
 		try {
 			getContainer().run(true, false, op);
+			workbench.showPerspective(
+				"edu.rosehulman.soar.perspective.SoarPerspectiveFactory",
+				workbench.getWorkbenchWindows()[0]);
 		} catch (InterruptedException e) {
 			return false;
 		} catch (InvocationTargetException e) {
 			Throwable realException = e.getTargetException();
 			MessageDialog.openError(getShell(), "Error", realException.getMessage());
 			return false;
+		} catch (WorkbenchException e) {
+			MessageDialog.openError(getShell(), "Error", e.getMessage());
+			return false;
 		}
 		return true;
+		
 	}
 	
 	/**
@@ -130,13 +138,13 @@ public class NewProjectWiz extends Wizard implements INewWizard {
 		if (!folderAll.exists()) {
 			folderAll.create(true, true, monitor);
 		} // if
-		Utility.markResource(folderAll, "file");
+		FileMarker.markResource(folderAll, "file");
 		
 		IFolder folderElaborations = newProject.getFolder("elaborations");
 		if (!folderElaborations.exists()) {
 			folderElaborations.create(true, true, monitor);
 		} // if
-		Utility.markResource(folderElaborations, "file");
+		FileMarker.markResource(folderElaborations, "file");
 		
 		IFile file_firstload = newProject.getFile("_firstload.soar");
 		if (!file_firstload.exists()) {
@@ -144,7 +152,7 @@ public class NewProjectWiz extends Wizard implements INewWizard {
 			  Utility.getFileTemplate(file_firstload, "_firstload.soar"),
 			  true, monitor);
 		} // if
-		Utility.markResource(file_firstload, "file");
+		FileMarker.markResource(file_firstload, "file");
 		
 		IFile filedatamap = newProject.getFile("datamap.xdm");
 		if (!filedatamap.exists()) {
@@ -162,7 +170,7 @@ public class NewProjectWiz extends Wizard implements INewWizard {
 			  Utility.getFileTemplate(file_all, "_all.soar"),
 			  true, monitor);
 		} // if
-		Utility.markResource(file_all, "file");
+		FileMarker.markResource(file_all, "file");
 		
 		IFile filetopstate = folderElaborations.getFile("top-state.soar");
 		if (!filetopstate.exists()) {
@@ -170,7 +178,7 @@ public class NewProjectWiz extends Wizard implements INewWizard {
 			  Utility.getFileTemplate(filetopstate, "top-state.soar"),
 			  true, monitor);
 		} // if
-		Utility.markResource(filetopstate, "file");
+		FileMarker.markResource(filetopstate, "file");
 		
 		SourcingFile.createSourcingFile(newProject, monitor);
 		
@@ -195,6 +203,7 @@ public class NewProjectWiz extends Wizard implements INewWizard {
 	 * we can initialize from it.
 	 */
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
+		this.workbench = workbench;
 		this.selection = selection;
 	}
 }

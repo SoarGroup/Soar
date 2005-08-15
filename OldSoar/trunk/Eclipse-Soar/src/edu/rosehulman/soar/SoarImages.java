@@ -23,6 +23,9 @@ import java.net.*;
 public class SoarImages {
 	public static final String IMAGE_SP = "IMAGE_SP";
 	public static final String IMAGE_SOAR = "IMAGE_SOAR";
+	public static final String OPERATOR = "FILE_OPERATOR";
+	public static final String FILE = "FILE_FILE";
+	public static final String IMPASSE = "FILE_IMPASSE";
 	
 	//Those that are contained in ItemImages.
 	public static final String DMITEM_ENUM = ItemImages.ITEM_ENUM;
@@ -37,6 +40,9 @@ public class SoarImages {
 	
 		imageReg.put(SoarImages.IMAGE_SP, loadImageDescriptor("sp.gif"));
 		imageReg.put(SoarImages.IMAGE_SOAR, loadImageDescriptor("soar.gif"));
+		imageReg.put(SoarImages.OPERATOR, loadImageDescriptor("Operator.gif"));
+		imageReg.put(SoarImages.FILE, loadImageDescriptor("File.gif"));
+		imageReg.put(SoarImages.IMPASSE, loadImageDescriptor("Impasse.gif"));
 		
 	}
 

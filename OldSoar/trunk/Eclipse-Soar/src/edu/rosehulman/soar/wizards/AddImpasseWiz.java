@@ -7,19 +7,18 @@
 
 package edu.rosehulman.soar.wizards;
 
-import org.eclipse.jface.viewers.IStructuredSelection;
+import edu.rosehulman.soar.*;
+
+import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.wizard.*;
-import org.eclipse.ui.INewWizard;
-import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.operation.*;
-import java.lang.reflect.InvocationTargetException;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.CoreException;
+
+import java.lang.reflect.InvocationTargetException;
 import java.io.*;
-import org.eclipse.ui.*;
 //for 3.0 compatibility
 import org.eclipse.ui.ide.*;
 
@@ -118,7 +117,7 @@ public class AddImpasseWiz extends Wizard implements INewWizard {
 				file.create(stream, true, monitor);
 			} // else
 			
-			Utility.markResource(file, "impasse");
+			FileMarker.markResource(file, "impasse");
 			
 			Utility.associateID(file, Utility.getAssociatedID(container) );
 			

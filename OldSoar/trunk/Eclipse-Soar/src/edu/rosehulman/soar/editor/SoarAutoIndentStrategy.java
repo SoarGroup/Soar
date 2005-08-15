@@ -25,9 +25,9 @@ import org.eclipse.jface.text.*;
  * @author Paul Oppenheim
  * 
  */
-public class SoarAutoIndentStrategy implements IAutoIndentStrategy {
+public class SoarAutoIndentStrategy implements IAutoEditStrategy {
 	public void customizeDocumentCommand(IDocument doc, DocumentCommand comm) {
-		boolean localdebug = false;
+		boolean localdebug = true;
 		if (localdebug) System.out.println("*************************************");
 		try {
 			//see what the previous line is,

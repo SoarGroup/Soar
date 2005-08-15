@@ -7,6 +7,7 @@
 package edu.rosehulman.soar.wizards;
 
 
+import edu.rosehulman.soar.*;
 import edu.rosehulman.soar.datamap.*;
 
 import java.io.*;
@@ -26,8 +27,6 @@ import org.eclipse.core.resources.*;
  */
 public class Utility {
 	
-	public static final QualifiedName SOAR_TYPE
-		= new QualifiedName("edu.rosehulman.soar", "SoarType");
 	
 
 	/**
@@ -113,38 +112,7 @@ public class Utility {
 	} // InputStream getFileTemplate(String fileName, String projectName)
 	
 	
-	/**
-	 * Gets the type of soar resource this is.
-	 * @param res
-	 * @return "file" "operator" or "impasse"
-	 */
-	public static String getSoarType(IResource res) {
-		try {
-			return res.getPersistentProperty(SOAR_TYPE);
-		} catch (CoreException e) {
-			return "";
-		}
-	}
 	
-	/**
-	 * Marks the resource as belonging to Soar.
-	 *  Mark is the type of soar resource, ie: file, operator, impasse.
-	 * @param res The resource to mark.
-	 * @param mark What to mark this resource as ("file", "operator", "impasse").
-	 */
-	public static void markResource(IResource res, String mark) {
-		
-		try {
-			/*IMarker marker = res.createMarker(
-				"edu.rosehulman.soar.natures.SoarFile");
-				
-			marker.setAttribute("type", "file"); */
-			
-			res.setPersistentProperty(SOAR_TYPE, mark);
-		} catch (CoreException e) {
-			e.printStackTrace();
-		} // catch 
-	}
 	
 	
 	public static void associateID(IResource res, int id) {
@@ -245,7 +213,7 @@ public class Utility {
 		
 						newFolder.create(true, true, monitor);
 						
-						markResource(newFolder, getSoarType(res));
+						FileMarker.markResource(newFolder, FileMarker.getSoarType(res));
 						associateID(newFolder, getAssociatedID(res));
 						
 					} // if
@@ -269,41 +237,12 @@ public class Utility {
 							elabFile.create(stream, true, monitor);
 						} // else
 					
-						Utility.markResource (elabFile, "file");
+						FileMarker.markResource (elabFile, "file");
 					
 						stream.close();
 					} catch (Exception e) {
 						e.printStackTrace();
 					} // catch
-					
-					
-					
-					//Puts a datamap in the new folder.
-					/*try {
-						IFile dmFile = newFolder.getFile("datamap.xdm");
-						
-						InputStream stream =
-							Utility.getFileTemplate(elabFile, "datamap.xdm");
-						
-						if (! dmFile.exists()) {
-							dmFile.create(stream, true, monitor);
-						} // if
-						
-						stream.close();
-						
-						DataMap dm = new DataMap(dmFile, false);
-						
-						dm.generateDefault(newFolder);
-						dm.saveXML(monitor);
-						
-						
-					} catch (Exception e) {
-						e.printStackTrace();
-					} // catch */
-					
-					//Adds this guy to the parent's datamap
-
-					
 					
 					return newFolder;
 				} else {

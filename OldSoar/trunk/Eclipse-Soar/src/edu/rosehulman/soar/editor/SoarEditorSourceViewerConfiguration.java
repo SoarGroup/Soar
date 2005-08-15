@@ -136,10 +136,14 @@ public class SoarEditorSourceViewerConfiguration
 		return _contentAssistant;
 	}
 	
+	public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
+		return new IAutoEditStrategy[] {new SoarAutoIndentStrategy() };
+	}
 	
-	public IAutoIndentStrategy getAutoIndentStrategy(
+	
+	/*public IAutoIndentStrategy getAutoIndentStrategy(
 		ISourceViewer sourceViewer, String contentType) {
 		
 		return new SoarAutoIndentStrategy();
-	}
+	}*/
 }

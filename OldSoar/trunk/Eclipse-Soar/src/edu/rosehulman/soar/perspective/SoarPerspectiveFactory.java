@@ -34,7 +34,7 @@ public class SoarPerspectiveFactory implements IPerspectiveFactory {
 		//bottomLeft.addView(IPageLayout.ID_PROP_SHEET);
 
 		// Bottom right: Task List view
-		layout.addView(IPageLayout.ID_TASK_LIST, IPageLayout.BOTTOM, 0.75f, editorArea);
+		layout.addView(IPageLayout.ID_PROBLEM_VIEW, IPageLayout.BOTTOM, 0.75f, editorArea);
 
 	}
 
