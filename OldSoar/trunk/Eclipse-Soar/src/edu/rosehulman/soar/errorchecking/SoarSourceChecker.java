@@ -7,6 +7,7 @@ package edu.rosehulman.soar.errorchecking;
 
 
 import edu.rosehulman.soar.datamap.checker.*; 
+import edu.rosehulman.soar.navigator.SoarErrorDecorator;
 import edu.umich.visualsoar.parser.*;
 
 import org.eclipse.core.runtime.*;
@@ -55,17 +56,6 @@ public class SoarSourceChecker {
 				
 				MarkerUtilities.createMarker(file, attr, IMarker.PROBLEM);
 				
-				/*IMarker err = file.createMarker(IMarker.PROBLEM);
-				err.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-				
-				err.setAttribute(IMarker.LINE_NUMBER, e.currentToken.endLine);
-				String msg = e.getMessage();
-				
-				if (msg.indexOf("\n") != -1) {
-					msg = msg.substring(0, msg.indexOf("\n")-1);
-				}
-				System.out.println(msg);
-				err.setAttribute(IMarker.MESSAGE, msg);*/
 				
 			} catch (CoreException e2) {
 				e2.printStackTrace();
@@ -73,6 +63,11 @@ public class SoarSourceChecker {
 				
 		} // catch
 		
+		SoarErrorDecorator dec = SoarErrorDecorator.getErrorDecorator();
+		if (dec != null) {
+			dec.refresh(file);
+		}
+		
 	}
-
+	
 } // class

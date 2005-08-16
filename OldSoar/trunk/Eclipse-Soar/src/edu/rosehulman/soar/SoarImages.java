@@ -16,7 +16,7 @@ import java.net.*;
 
 
 /**
- * 
+ * Provides access to images shared across the plugin.
  * 
  * @author Tim Jasko &lt;tj9582@yahoo.com&gt;
  */
@@ -26,6 +26,9 @@ public class SoarImages {
 	public static final String OPERATOR = "FILE_OPERATOR";
 	public static final String FILE = "FILE_FILE";
 	public static final String IMPASSE = "FILE_IMPASSE";
+	
+	public static final String WARNING = "WARNING";
+	public static final String ERROR = "ERROR";
 	
 	//Those that are contained in ItemImages.
 	public static final String DMITEM_ENUM = ItemImages.ITEM_ENUM;
@@ -43,6 +46,8 @@ public class SoarImages {
 		imageReg.put(SoarImages.OPERATOR, loadImageDescriptor("Operator.gif"));
 		imageReg.put(SoarImages.FILE, loadImageDescriptor("File.gif"));
 		imageReg.put(SoarImages.IMPASSE, loadImageDescriptor("Impasse.gif"));
+		imageReg.put(SoarImages.ERROR, loadImageDescriptor("error.gif"));
+		imageReg.put(SoarImages.WARNING, loadImageDescriptor("warning.gif"));
 		
 	}
 

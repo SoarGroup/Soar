@@ -4,6 +4,11 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.QualifiedName;
 
+/**
+ * Marks up soar files, enabling us to tell if they are a file, operator, or impasse.
+ * 
+ * @author Tim Jasko
+ */
 public class FileMarker {
 
 	public static final QualifiedName SOAR_TYPE
@@ -12,7 +17,7 @@ public class FileMarker {
 	/**
 	 * Gets the type of soar resource this is.
 	 * @param res
-	 * @return "file" "operator" or "impasse"
+	 * @return "file" "operator" or "impasse". Or maybe ""
 	 */
 	public static String getSoarType(IResource res) {
 		try {

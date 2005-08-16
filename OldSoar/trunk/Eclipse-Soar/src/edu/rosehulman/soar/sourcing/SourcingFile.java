@@ -12,7 +12,7 @@ import java.io.*;
 import java.util.*;
 
 /**
- * 
+ * Creates the sourcing file that tells soar what files to include.
  * 
  * @author Tim Jasko &lt;tj9582@yahoo.com&gt;
  */

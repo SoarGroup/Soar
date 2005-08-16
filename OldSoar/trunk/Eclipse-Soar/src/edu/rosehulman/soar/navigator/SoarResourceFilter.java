@@ -14,7 +14,8 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 
 /**
- * 
+ * Hides things from the SoarNavigator.
+ *  "Things" includes non-Soar projects, sourcing files, and the datamap file.
  * 
  * @author Tim Jasko &lt;tj9582@yahoo.com&gt;
  */

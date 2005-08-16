@@ -14,12 +14,15 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.ide.*;
 
 /**
- * 
+ * Displays the contents of Soar projects.
  * 
  * @author Tim Jasko &lt;tj9582@yahoo.com&gt;
  */
 public class SoarNavigator extends ResourceNavigator {
 	
+	public SoarNavigator() {
+		super();
+	}
 	protected void initFilters(TreeViewer viewer) {
 		viewer.addFilter(new SoarResourceFilter());	
 	}
@@ -43,6 +46,7 @@ public class SoarNavigator extends ResourceNavigator {
 			
 			IFile operatorSource = parent.getFile(new Path(fileName));
 			
+			// If the folder has a file associated with it, open that file.
 			if (operatorSource.exists()) {
 				IWorkbenchPage page =
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -52,6 +56,7 @@ public class SoarNavigator extends ResourceNavigator {
 					IDE.openEditor(page, operatorSource);
 				} catch (PartInitException e) {
 				}
+				return;
 			}
 			
 		}

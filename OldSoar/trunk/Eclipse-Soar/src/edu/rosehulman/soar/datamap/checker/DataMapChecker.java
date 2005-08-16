@@ -158,8 +158,10 @@ public class DataMapChecker {
 					} // else
 				} // while
 					
-					
-			}
+				
+			} // while
+			
+			
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}

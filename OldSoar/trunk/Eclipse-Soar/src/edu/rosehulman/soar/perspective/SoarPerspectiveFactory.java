@@ -10,7 +10,7 @@ import edu.rosehulman.soar.*;
 import org.eclipse.ui.*;
 
 /**
- * 
+ * Creates the Soar perspective, with all of our pretty views.
  * 
  * @author Tim Jasko &lt;tj9582@yahoo.com&gt;
  */

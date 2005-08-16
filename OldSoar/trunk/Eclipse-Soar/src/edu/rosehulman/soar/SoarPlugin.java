@@ -1,5 +1,7 @@
 /**
  * The Soar Editor Plug-in is part of the Project Awesome Soar Eclipse Suite.
+ * You need this to make everything else go, but it really doesn't do all that
+ *  much itself.
  * @file SoarEditorPlugin.java
  * @date December 11, 2003
  */
@@ -24,18 +26,15 @@ public class SoarPlugin extends AbstractUIPlugin
 	
 	public static final String ID_NAVIGATOR = "edu.rosehulman.soar.navigator.SoarNavigator";
 	
-	
 	// The shared instance.
 	private static SoarPlugin _plugin;
 	
 	// Resource bundle.
 	private ResourceBundle _resourceBundle;
-	
 	private ColorProvider _colorProvider;
-	
 	private static DataMapClipboard _datamapClipboard;
-	
 	private static Map _dataMapRegistry = new HashMap(1);
+	
 	
 	
 	/**
@@ -167,7 +166,6 @@ public class SoarPlugin extends AbstractUIPlugin
 	{
 		return _colorProvider;
 	}
-	
 	
 	/**
 	 * Returns the DataMapClipboard.
