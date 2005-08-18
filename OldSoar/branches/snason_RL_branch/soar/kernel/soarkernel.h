@@ -1388,6 +1388,7 @@ typedef struct preference_struct {
 
     int total_preferences_for_candidate;
     double sum_of_probability;
+	double recent_changes;
 
     /* END: REW: 2003-01-08 */
 #endif
@@ -1511,6 +1512,11 @@ typedef struct RL_record_struct{
 } RL_record;
 
 extern void reset_RL(void);
+
+typedef struct update_record_struct{
+	unsigned long cycle;
+	double value;
+} update_record;
 
 
 
@@ -1836,8 +1842,10 @@ typedef struct production_struct {
     int OPERAND_which_assert_list;      /* RCHONG: 10.11 */
 	int times_updated;                      /* SAN - only for RL_PRODUCTION_TYPE */
     double update;                      /* SAN - only for RL_PRODUCTION_TYPE */
-	// double decay_normalization;             /* SAN - only for RL_PRODUCTION_TYPE */
-	// double avg_value;						/* SAN - only for RL_PRODUCTION_TYPE */
+	double decay_normalization;             /* SAN - only for RL_PRODUCTION_TYPE */
+	double decay_update;
+	double decay_abs_update;
+	double avg_update;						/* SAN - only for RL_PRODUCTION_TYPE */
 	// double value_list[15];   
     // int value_position;
 	double mean;
@@ -1845,6 +1853,10 @@ typedef struct production_struct {
 	double max;
 	double min;
 	int updates_since_record;
+	list *update_history;                     /* SAN - only for RL_PRODUCTION_TYPE */
+	unsigned long cycle_last_updated;
+	double previous_reward;
+	double previous_next_state;
 	// double avg_avg;
 	// double var;
 	// double avg_var;

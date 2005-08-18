@@ -1595,14 +1595,20 @@ production *make_production(byte type,
 	p->max = 0;
 	p->min = 0;
 	p->updates_since_record = 0;
+	p->avg_update = 0;
 	// p->avg_avg = 0;
 	// p->var = 0;
 	// p->avg_var = 0;
-	// p->decay_normalization = 0;
+	p->decay_normalization = 0;
+	p->decay_abs_update = 0;
+	p->decay_update = 0;
 	// p->increasing = 0;
 	// p->conv_mean = FALSE;
 	 p->conv_value = TRUE;
 	p->child_productions = NIL;
+	p->update_history = NIL;
+	p->cycle_last_updated = current_agent(d_cycle_count);
+	p->previous_next_state = 0;
 	p->promoted = FALSE;
     p->reference_count = 1;
     insert_at_head_of_dll(current_agent(all_productions_of_type)[type], p, next, prev);
@@ -1648,6 +1654,8 @@ void deallocate_production(production * prod)
 void excise_production(production * prod, bool print_sharp_sign)
 {
 
+	cons *update_ptr;
+
 #ifndef TRACE_CONTEXT_DECISIONS_ONLY
     if (prod->trace_firings)
         remove_pwatch(prod);
@@ -1682,6 +1690,10 @@ void excise_production(production * prod, bool print_sharp_sign)
 		}
 	}
 
+	
+	for (update_ptr = prod->update_history ; update_ptr ; update_ptr = update_ptr->rest){
+		free((update_record *) update_ptr->first);
+	}
     prod->name->sc.production = NIL;
     production_remove_ref(prod);
 }

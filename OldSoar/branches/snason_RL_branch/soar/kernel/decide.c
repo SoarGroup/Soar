@@ -67,7 +67,7 @@ preference *probabilistically_select(slot *s, preference *candidates);
 preference *explore_exploit_select(slot *s, preference *candidates);
  
 // SAN
-extern void learn_RL_productions(int, float);
+extern void learn_RL_productions(int, double, /*temp parameters*/ slot *, preference *);
 extern float tabulate_reward_value();
 extern void record_for_RL();
 extern void push_record();
@@ -3406,8 +3406,10 @@ preference *explore_exploit_select(slot *s, preference *candidates){
 
 	   if (current_agent(sysparams)[TRACE_INDIFFERENT_SYSPARAM]){
 		   for (cand = candidates ; cand != NIL ; cand = cand->next_candidate) {
-			   print_with_symbols("\n Candidate %y:  ", cand->value);
-			   print("%f \n", cand->sum_of_probability);
+			  // print_with_symbols("\n Candidate %y:  ", cand->value);
+			   print("\n Candidate ");
+			   print_object_trace(cand->value);
+			   print(": %f\n", cand->sum_of_probability);
 		   }
 		  
 		}  
@@ -3424,7 +3426,7 @@ preference *explore_exploit_select(slot *s, preference *candidates){
 		   for (rec = current_agent(records) ; rec->level > s->id->id.level; rec = rec->next);
 	  // rec->next_Q = top_value;
 
-		learn_RL_productions(s->id->id.level, top_value);
+		learn_RL_productions(s->id->id.level, top_value, s, candidates);
 	   }
 
 	   top_cand = candidates;
@@ -3612,6 +3614,7 @@ preference *probabilistically_select(slot *s, preference *candidates)
 	   cand->sum_of_probability -= min_value;
 	   if (current_agent(sysparams)[TRACE_INDIFFERENT_SYSPARAM]){
 				print_with_symbols("\n Candidate %y:  ", cand->value);
+				print_object_trace(cand->value);
 //		           print("Value (Sum) = %f", exp(cand->sum_of_probability / current_agent(Temp)));
 			}  
      // Sum the total probabilities

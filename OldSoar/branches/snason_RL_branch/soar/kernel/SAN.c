@@ -6,7 +6,7 @@ Symbol *equality_test_for_symbol_in_test(test t);
 condition *make_simple_condition(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym);
 action *make_simple_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym);
 production *build_RL_production(condition *top_cond, condition *bottom_cond, not *nots, preference *pref);
-void learn_RL_productions(int level, float);
+void learn_RL_productions(int level, double, /*temp parameters*/ slot *, preference *);
 void record_for_RL();
 void variablize_condition_list(condition * cond);
 void variablize_nots_and_insert_into_conditions(not * nots, condition * conds);
@@ -27,6 +27,8 @@ list *SAN_extract_list_elements(list **header, void *item);
 
 // The following three functions manage the stack of RL_records.
 // Each level in the stack corresponds to a level in Soar's subgoaling hierarchy.
+
+/* push_record is called in create_new_context, when Soar creates a substate. It creates a RL_record corresponding to the substate. */
 void push_record(RL_record **r, Symbol *level_sym){
 	RL_record *new_record;
 
@@ -46,7 +48,8 @@ void push_record(RL_record **r, Symbol *level_sym){
 		*r = new_record;
 	}
 }
-
+/* pop_record cleans up memory used in an RL_record. When an impasse is resolved and substates destroyed, the RL values for those states are updated and the RL_records destroyed.
+Also called during reset_RL. */
 void pop_record(RL_record **r){
 	RL_record *new_record;
 	stored_instantiation *temp;
@@ -66,7 +69,7 @@ void pop_record(RL_record **r){
 	*r = new_record->next;
 	free(new_record);
 }
-
+/* Called during an init_soar. */
 void reset_RL(){
 	int i;
 
@@ -94,7 +97,7 @@ void reset_RL(){
 	// current_agent(next_Q) = 0.0;
 }
 
-
+/* Utility function. */
 void copy_nots(not * top_not, not ** dest_not)
 {
     not *new;
@@ -112,7 +115,7 @@ void copy_nots(not * top_not, not ** dest_not)
     }
 }
 
-
+/* Computes the TD update for Q-learning. Takes as input the current reward, max Q at the next step, and the previous estimate of the Q-value. */ 
 float compute_temp_diff(RL_record* r, float best_op_value){
 	float Q;
 
@@ -136,20 +139,32 @@ float compute_temp_diff(RL_record* r, float best_op_value){
 	return Q;
 
 }
-
+/* Called at the beginning of the decision phase. Also called immediately before "halting" to find rewards associated with the end of an episodic task.
+Finds numeric rewards one and two levels under the reward link and adds them together. */
 float tabulate_reward_value(){
 	float reward = 0.0;
-	slot *s;
-	wme *w;
+	slot *s, *s2;
+	wme *w, *w2;
 
 	s = current_agent(reward_header)->id.slots;
 	if (s){
 		for ( ; s ; s = s->next){
 			for (w = s->wmes ; w ; w = w->next){
-				if (w->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
+				if (w->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE){
 					reward = reward + w->value->fc.value;
-				else if (w->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+				} else if (w->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE){
 					reward = reward + w->value->ic.value;
+				} else if (w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE){
+					for (s2 = w->value->id.slots ; s2 ; s2 = s2->next){
+						for (w2 = s2->wmes ; w2 ; w2 = w2->next){
+							if (w2->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE){
+								reward = reward + w2->value->fc.value;
+							} else if (w2->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE){
+								reward = reward + w2->value->ic.value;
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -538,18 +553,23 @@ production *specify_production(stored_instantiation *ist){
 
 
 // Update the value on RL productions from last cycle
-void learn_RL_productions(int level, float best_op_value){
+void learn_RL_productions(int level, double best_op_value, /* temp parameters */ slot *s, preference *candidates){
 	RL_record *record;
-	production *prod;
+	production *prod, *temp_prod;
 	instantiation *inst;
 	stored_instantiation *stored_inst;
 	float update, temp, old_avg, old_avg_avg, old_var, old_avg_var;
 	cons *c;
 	float increment;
-	preference *pref;
+	preference *pref, *cand;
 	int num_prods;
 	wme *w;
 	condition *cond;
+	update_record *u;
+	int N;
+	double sum;
+	cons *d;
+	bool specialize, max_cand_not_changed;
 
 	record = current_agent(records);
 
@@ -562,22 +582,97 @@ void learn_RL_productions(int level, float best_op_value){
 
 		update = compute_temp_diff(record, best_op_value);
  
-
 		if (fabs(update) > 0.1*fabs(record->previous_Q)) {
-			for (stored_inst = record->stored_instantiations ; stored_inst ; stored_inst = stored_inst->next){
-				if (stored_inst->prod->promoted && (stored_inst->prod->updates_since_record > 5)){
-					prod = specify_production(stored_inst);
-					if (prod){
-						print_with_symbols("Specialize %y to %y\n", stored_inst->prod->name, prod->name);
-						push(prod, record->pointer_list);
-						push(prod, stored_inst->prod->child_productions);
-						stored_inst->prod->max = rhs_value_to_symbol(stored_inst->prod->action_list->referent)->fc.value;
-						stored_inst->prod->min = stored_inst->prod->max;
-						stored_inst->prod->updates_since_record = 0;
+		// if (fabs(update) < 0){		
+		c = record->pointer_list;
+			while(c){
+
+				specialize = TRUE;
+				prod = (production *) c->first;
+				c = c->rest;
+		//		prod->type = RL_PRODUCTION_TYPE;
+
+				if (!prod) continue;
+
+				N = prod->cycle_last_updated;
+				print_with_symbols("\n%y: ", prod->name);
+
+		/* Are all max_cand such that Value(max_cand) - changes in value Max cand < rule's old target?
+			If no, does Value(max_cand) - changes in value Max cand = rule's old target for some max_cand?
+				If no, specialize.
+				If yes, don't specialize.
+			If yes, if there a candidate such that Value(cand) - changes in value of cand = rule's old target?
+				If no, specialize.
+				If yes, don't specialize.
+	   */
+				max_cand_not_changed = TRUE;
+				for (cand = candidates ; cand ; cand=cand->next_candidate){
+						print_with_symbols("(%y) ", cand->value);
+				   		sum = 0;
+						for (pref=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref!=NIL; pref=pref->next){
+							if (cand->value == pref->value){
+								temp_prod = pref->inst->prod;
+								for (d=temp_prod->update_history ; d ; d=d->rest){
+									if (((update_record *) d->first)->cycle > N){
+										sum += ((update_record *) d->first)->value;
+									} else break;
+								}
+							}
+						}
+						print("%f ", sum+prod->previous_next_state);
+						cand->recent_changes = sum;
+						if (cand->sum_of_probability == best_op_value){
+							double diff = cand->sum_of_probability - cand->recent_changes - prod->previous_next_state;
+							double standard = fabs(cand->sum_of_probability - cand->recent_changes) + fabs(prod->previous_next_state);
+							if (diff >= -(standard*0.0000001))
+								max_cand_not_changed = FALSE;
+						}
+				}
+				if (max_cand_not_changed){
+					for (cand = candidates ; cand ; cand=cand->next_candidate){
+						double diff = fabs(cand->sum_of_probability - cand->recent_changes - prod->previous_next_state);
+						double standard = fabs(cand->sum_of_probability - cand->recent_changes) + fabs(prod->previous_next_state);
+						if (diff <= standard*0.0000001)
+							specialize = FALSE;
+					}
+				} else {
+					for (cand = candidates ; cand ; cand=cand->next_candidate){
+						double diff = fabs(cand->sum_of_probability - cand->recent_changes - prod->previous_next_state);
+						double standard = fabs(cand->sum_of_probability - cand->recent_changes) + fabs(prod->previous_next_state);
+						if ((cand->sum_of_probability == best_op_value) && (diff <= standard*0.0000001))
+							specialize = FALSE;
 					}
 				}
-			}
-		}
+		
+	
+				/*print("%f ", sum+prod->previous_next_state);
+					if (fabs(sum+prod->previous_next_state - cand->sum_of_probability) < 0.0001){
+						if (fabs(cand->sum_of_probability - best_op_value) < 0.0001 || (cand->sum_of_probability - sum >= best_op_value)){
+						specialize = FALSE;
+						break;
+					}
+				} */
+				
+				if (specialize){
+					for (stored_inst = record->stored_instantiations ; stored_inst ; stored_inst = stored_inst->next){
+						if ((stored_inst->prod == prod) && stored_inst->prod->promoted){
+								temp_prod = specify_production(stored_inst);
+								if (temp_prod){
+									print_with_symbols("Specialize %y to %y\n", stored_inst->prod->name, temp_prod->name);
+									push(temp_prod, record->pointer_list);
+									push(temp_prod, stored_inst->prod->child_productions);
+									stored_inst->prod->max = rhs_value_to_symbol(stored_inst->prod->action_list->referent)->fc.value;
+									stored_inst->prod->min = stored_inst->prod->max;
+									stored_inst->prod->updates_since_record = 0;
+								} // if(temp_prod)
+						} // if ((stored_inst->prod == prod) && stored_inst->prod->promoted)
+					} // for
+				} // if (specialize)
+			} // while
+		} // if (fabs(update) > 0.1*fabs(record->previous_Q))
+		
+	
+			
 		while(record->stored_instantiations){
 			stored_inst = record->stored_instantiations;
 			record->stored_instantiations = record->stored_instantiations->next;
@@ -652,7 +747,7 @@ void learn_RL_productions(int level, float best_op_value){
 	//			prod->type = RL_PRODUCTION_TYPE;
 
 				if (!prod) continue;
-
+				
 				temp = rhs_value_to_symbol(prod->action_list->referent)->fc.value;
 				temp += increment;
 
@@ -692,9 +787,9 @@ void learn_RL_productions(int level, float best_op_value){
 				} */
 
 				prod->update = update;
-				// old_avg = prod->avg_update;
+				old_avg = prod->avg_update;
  				// old_avg = prod->avg_value;
-				// prod->avg_update = ((prod->times_updated - 1)*old_avg + abs(update)) / prod->times_updated;
+				prod->avg_update = ((prod->times_updated - 1)*old_avg + update) / prod->times_updated;
 				// prod->avg_value = ((prod->times_updated - 1)*old_avg + temp) / prod->times_updated;
 
 
@@ -714,8 +809,9 @@ void learn_RL_productions(int level, float best_op_value){
 				prod->decay_abs_update = ((prod->times_updated - 1)*old_abs + fabs(update)) / prod->times_updated;
 				if (fabs(old_abs - prod->decay_abs_update) < 0.1 && fabs(prod->decay_abs_update) < 0.1) { prod->conv_value = TRUE;
 				} else { prod->conv_value = FALSE; }*/
-				// prod->decay_abs_update = fabs(update) + prod->decay_abs_update*current_agent(gamma);
-				// prod->decay_normalization = 1 + prod->decay_normalization*current_agent(gamma);
+				prod->decay_update = update + prod->decay_update*0.9;
+				prod->decay_abs_update = fabs(update) + prod->decay_abs_update*0.9;
+				prod->decay_normalization = 1 + prod->decay_normalization*0.9;
 				// prod->decay_abs_update = ((prod->times_updated - 1)*prod->decay_abs_update + fabs(update)) / prod->times_updated;
 				// prod->increasing = (prod->decay_abs_update > temp ? 1 : 0);
 				// prod->decay_abs_update = fabs(update);
@@ -727,10 +823,11 @@ void learn_RL_productions(int level, float best_op_value){
 
 
 				print_with_symbols("\n%y  ", prod->name);
- 				print("Cycle %d ", current_agent(d_cycle_count));
-				print("Update %f\n", update);
-	    		//print_with_symbols("value %y ", rhs_value_to_symbol(prod->action_list->referent));
-				//print("Mean %f ", prod->mean);
+ 				// print("Cycle %d ", current_agent(d_cycle_count));
+				print("Update %f ", update);
+	    		print("Prediction %f ", record->previous_Q);
+				print_with_symbols("value %y ", rhs_value_to_symbol(prod->action_list->referent));
+				// print("Average update %f ", prod->avg_update);
 				//print("Std dev %f ", prod->std_dev);
 				//print("firings %d\n", prod->times_updated);
  				// print("Variance in value %f ", prod->var);
@@ -739,13 +836,35 @@ void learn_RL_productions(int level, float best_op_value){
 				// print("Difference %f\n", current_agent(prev_diff));
 				// print("Average update %f ", current_agent(updates_mean));
 				// print("Update stddev %f\n", current_agent(updates_stddev));
-//				print("Decayed average %f ", (prod->decay_abs_update / prod->decay_normalization));
+				// print("Decayed avg %f ", (prod->decay_update / prod->decay_normalization));
+				// print("Decayed abs average %f\n", (prod->decay_abs_update / prod->decay_normalization));
 				// print("Average value %f ", prod->avg_value);
 				// print("Var in average value %f ", prod->avg_var);
 				// print("firings %d\n", prod->times_updated);
 
 			//	prod->times_applied++;
 			}
+			c = record->pointer_list;
+
+			while(c){
+
+
+				prod = (production *) c->first;
+				c = c->rest;
+	//			prod->type = RL_PRODUCTION_TYPE;
+
+				if (!prod) continue;
+			
+				u = (update_record *) malloc(sizeof(update_record));
+				u->cycle = current_agent(d_cycle_count);
+				u->value = increment;
+				push(u, prod->update_history);
+
+				prod->cycle_last_updated = current_agent(d_cycle_count);
+				prod->previous_next_state = best_op_value;
+			}
+
+
 		}
 
  			symbol_remove_ref(record->op);
@@ -1086,7 +1205,8 @@ void RL_update_symbolically_chosen(slot *s, preference *candidates){
 			print("Operator value is %f\n", temp_Q);
 			print("%s\n", (current_agent(new_exploit) ? "Exploit" : "Explore"));
          	rec->next_Q = temp_Q;
-			learn_RL_productions(goal_level, temp_Q);
+			candidates->sum_of_probability = temp_Q;
+			learn_RL_productions(goal_level, temp_Q, s, candidates);
 			// current_agent(prev_exploit) = current_agent(new_exploit);
 			// current_agent(prev_diff) = current_agent(new_diff);
 

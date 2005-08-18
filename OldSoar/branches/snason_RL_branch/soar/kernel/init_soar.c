@@ -64,7 +64,7 @@ soar_global_callback_array soar_global_callbacks;
 unsigned long soar_global_callback_error;
 
 /* SAN */
-extern void learn_RL_productions(int, float);
+extern void learn_RL_productions(int, double, /* temp parameters */ slot *, preference *);
 extern float tabulate_reward_value();
 
 
@@ -1119,7 +1119,7 @@ void do_one_top_level_phase (void) {
 			  record->next_Q = 0;
 
 		
-   learn_RL_productions(0,0);
+   learn_RL_productions(0,0, NIL, NIL);
 	 }
 
     soar_invoke_callbacks(soar_agent, 
