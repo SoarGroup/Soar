@@ -41,9 +41,11 @@ public class SoarEditorSourceViewerConfiguration
 		ca.setContentAssistProcessor(new SoarContentAssistProcessor(_editor), 
 			IDocument.DEFAULT_CONTENT_TYPE);
 		
+		ca.setContentAssistProcessor(new SoarDocContentAssistProcessor(),
+				SoarPartitionScanner.SOAR_COMMENT);
+		
 		ca.enableAutoActivation(true);
 		ca.setAutoActivationDelay(200);
-		
 		ca.setProposalPopupOrientation(ContentAssistant.CONTEXT_INFO_BELOW);
 		ca.setContextInformationPopupOrientation(ContentAssistant.CONTEXT_INFO_BELOW);
 		
@@ -110,6 +112,7 @@ public class SoarEditorSourceViewerConfiguration
 		dr = new DefaultDamagerRepairer(
 				new SingleTokenScanner(
 					new TextAttribute(provider.getColor(ColorProvider.COMMENT))));
+		dr = new DefaultDamagerRepairer(new SoarCommentScanner());
 		reconciler.setDamager(dr, SoarPartitionScanner.SOAR_COMMENT);
 		reconciler.setRepairer(dr, SoarPartitionScanner.SOAR_COMMENT);
 

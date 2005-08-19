@@ -30,6 +30,8 @@ public class SoarImages {
 	public static final String WARNING = "WARNING";
 	public static final String ERROR = "ERROR";
 	
+	public static final String SOAR_DOC = "SOAR_DOC";
+	
 	//Those that are contained in ItemImages.
 	public static final String DMITEM_ENUM = ItemImages.ITEM_ENUM;
 	public static final String DMITEM_FLOAT = ItemImages.ITEM_FLOAT; 
@@ -46,8 +48,11 @@ public class SoarImages {
 		imageReg.put(SoarImages.OPERATOR, loadImageDescriptor("Operator.gif"));
 		imageReg.put(SoarImages.FILE, loadImageDescriptor("File.gif"));
 		imageReg.put(SoarImages.IMPASSE, loadImageDescriptor("Impasse.gif"));
+		
 		imageReg.put(SoarImages.ERROR, loadImageDescriptor("error.gif"));
 		imageReg.put(SoarImages.WARNING, loadImageDescriptor("warning.gif"));
+		
+		imageReg.put(SoarImages.SOAR_DOC, loadImageDescriptor("javadoc.gif"));
 		
 	}
 

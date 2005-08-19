@@ -22,11 +22,14 @@ public class SoarWordDetector implements IWordDetector, ISoarSyntax
 	 */
 	public boolean isWordStart(char c)
 	{
-		for(int i = 0; i < RESERVED_WORDS.length; i++)
-		{
-			if( (((String) RESERVED_WORDS[i]).charAt(0) == c) ||
-				 (((String) SPECIAL_CHARACTERS[i]).charAt(0) == c))
-			{
+		for(int i = 0; i < RESERVED_WORDS.length; i++) {
+			if ( ((String) RESERVED_WORDS[i]).charAt(0) == c) {
+				return true;
+			}
+		}
+		
+		for(int i = 0; i < SPECIAL_CHARACTERS.length; i++) {
+			if ( (((String) SPECIAL_CHARACTERS[i]).charAt(0) == c)) {
 				return true;
 			}
 		}
@@ -39,11 +42,15 @@ public class SoarWordDetector implements IWordDetector, ISoarSyntax
 	 */
 	public boolean isWordPart(char c)
 	{
-		for(int i = 0; i < RESERVED_WORDS.length; i++)
-		{
-			if( (((String) RESERVED_WORDS[i]).indexOf(c) != -1) ||
-				 (((String)SPECIAL_CHARACTERS[i]).indexOf(c) != -1) )
+		for (int i = 0; i < RESERVED_WORDS.length; i++) {
+			if (((String) RESERVED_WORDS[i]).indexOf(c) != -1)
 			{
+				return true;
+			}
+		}
+		
+		for (int i = 0; i < SPECIAL_CHARACTERS.length; i++) {
+			if (((String)SPECIAL_CHARACTERS[i]).indexOf(c) != -1)  {
 				return true;
 			}
 		}

@@ -32,6 +32,17 @@ public class SoarRulesScanner extends RuleBasedScanner {
 		temp = new EndOfLineRule("#", comment);
 		rules.add(temp);
 		
+		//SoarDoc
+		IToken soarDoc =
+			new Token(new TextAttribute(cp.getColor(ColorProvider.KEYWORD),
+				cp.getColor(ColorProvider.BACKGROUND), SWT.BOLD));
+		
+		temp = new WordRule(new SoarWordDetector());
+		for (int i=0; i<ISoarSyntax.SOAR_DOC.length; ++i) {
+			((WordRule)temp).addWord(ISoarSyntax.SOAR_DOC[i], soarDoc);
+		}
+		rules.add(temp);
+		
 		
 		// String
 		IToken str = 

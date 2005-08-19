@@ -16,6 +16,7 @@ import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.ITokenScanner;
 import org.eclipse.jface.text.rules.Token;
+import org.eclipse.swt.SWT;
 
 
 import edu.umich.visualsoar.parser.ASCII_CharStream;
@@ -224,9 +225,9 @@ public class SoarCodeScanner implements ITokenScanner
 
 		_keyword = new Token(
 			new TextAttribute(
-				_provider.getColor(ColorProvider.KEYWORD)));
-				//_provider.getColor(ColorProvider.BACKGROUND),
-				//SWT.BOLD));
+				_provider.getColor(ColorProvider.KEYWORD),
+				_provider.getColor(ColorProvider.BACKGROUND),
+				SWT.BOLD));
 
 		_variable = new Token(
 			new TextAttribute(

@@ -540,19 +540,6 @@ public class DataMap {
 			temp.setChildren(_root.getChildren());
 			
 			ret = temp;
-		
-		//*****************************************
-		//               Link - shouldn't exist anymore
-		} else if (type.equals("Link")) {
-			DMLink temp = new DMLink();
-			
-			IPath filePath = new Path(node.getAttribute("path"));
-			
-			IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(filePath);
-		
-			temp.setFile(file);
-		
-			ret = temp;
 			
 		//*****************************************
 		//               Pointer
@@ -807,23 +794,13 @@ public class DataMap {
 		DMEnumeration name = new DMEnumeration("name");
 		name.getEnums().add(folder.getName());
 		root.addChild(name);
+
 		
-		
-		//Link in to the parent datamap
-		IContainer parentFolder = folder.getParent();
-		IResource parentDM = parentFolder.findMember("datamap.xdm");
-		
-		if (parentDM instanceof IFile) {
-			DMLink superstate = new DMLink("superstate");
-			superstate.setFile( (IFile) parentDM );
 			
-			root.addChild(superstate);
-		} else {
-			DMEnumeration superstate = new DMEnumeration("superstate");
-			superstate.getEnums().add("nil");
-			
-			root.addChild(superstate);
-		} // else
+		DMEnumeration superstate = new DMEnumeration("superstate");
+		superstate.getEnums().add("nil");
+		
+		root.addChild(superstate);
 		
 		
 		DMIdentifier top = new DMTopState("top-state");

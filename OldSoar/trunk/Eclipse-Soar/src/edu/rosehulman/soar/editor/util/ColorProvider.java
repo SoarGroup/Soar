@@ -26,6 +26,7 @@ public class ColorProvider
 	public static final RGB BACKGROUND = new RGB(255, 255, 255);
 
 	public static final RGB COMMENT = new RGB(0, 127, 85);
+	public static final RGB SOAR_DOC = new RGB(0, 127, 150);
 	
 	public static final RGB ATTRIBUTE = new RGB(255, 128, 0);
 	public static final RGB VARIABLE = new RGB(0, 128, 255);

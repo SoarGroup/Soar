@@ -27,14 +27,14 @@ import org.eclipse.jface.text.*;
  */
 public class SoarAutoIndentStrategy implements IAutoEditStrategy {
 	public void customizeDocumentCommand(IDocument doc, DocumentCommand comm) {
-		boolean localdebug = false;
+		boolean localdebug = true;
 		if (localdebug) System.out.println("*************************************");
 		try {
 			//see what the previous line is,
 			//do indents accordingly.
 			
 			//TODO: make this get called for commented areas of code
-			//Does not get called when editing comments right now (due to doc partitions)
+			// Does not get called when editing comments right now (due to doc partitions)
 			//@see SoarPartitionScanner
 			if (localdebug) {
 				System.out.println("comm.text:                     '" + comm.text + "'");
@@ -78,9 +78,11 @@ public class SoarAutoIndentStrategy implements IAutoEditStrategy {
 			String currLine = preEdit + theEdit + postEdit;
 			
 			//various checkpoints
-			String prevCodeLine = cropComments(getPrevCodeLine(doc, comm.offset));
+			String prevCodeLine = getPrevCodeLine(doc, comm.offset);
 			if (prevCodeLine == "") return;	//this is the first line; we have nothing to do
-			//char prevLastChar = prevCodeLine.charAt(prevCodeLine.length() - 1); //?the last char of the last code line	
+			String prevDocText = doc.get(0, comm.offset);						//?the whole doc, beginning to offset
+			char prevLastChar = prevCodeLine.charAt(prevCodeLine.length() - 1);	//?the last char of the last code line
+			//String temp = currLine.substring(0, insertion) + comm.text;			//should == the whole line up to the edit
 			
 			if (localdebug) {
 				System.out.println("-------------------------------------");
@@ -90,159 +92,7 @@ public class SoarAutoIndentStrategy implements IAutoEditStrategy {
 				System.out.println("currLine:                     '" + currLine + "'");
 			}
 			
-			//useful booleans, done only once, cached too
-			/*
-			boolean currLineHasSP = false;
-			boolean currLineHasArrow = false;
-			boolean currLineHasRightParens = false;
-			boolean currLineHasRightPointy = false;
-			boolean currLineHasLeftPointy = false;
-			if (currLine.indexOf("sp") != -1) currLineHasSP = true;
-			if (currLine.indexOf("-->") != -1) currLineHasArrow = true;
-			if (currLine.indexOf(')') != -1) currLineHasRightParens = true;
-			if (currLine.indexOf('}') != -1) currLineHasRightPointy = true;
-			if (currLine.indexOf('{') != -1) currLineHasLeftPointy = true;
-			*/
-			boolean prevLineHasSP = false;
-			boolean prevLineHasArrow = false;
-			boolean prevLineHasRightParens = false;
-			boolean prevLineHasRightPointy = false;
-			boolean prevLineHasLeftPointy = false;
-			if (prevCodeLine.indexOf("sp") != -1) prevLineHasSP = true;
-			if (prevCodeLine.indexOf("-->") != -1) prevLineHasArrow = true;
-			if (prevCodeLine.indexOf(')') != -1) prevLineHasRightParens = true;
-			if (prevCodeLine.indexOf('}') != -1) prevLineHasRightPointy = true;
-			if (prevCodeLine.indexOf('{') != -1) prevLineHasLeftPointy = true;
-			boolean preEditHasSP = false;
-			boolean preEditHasArrow = false;
-			boolean preEditHasRightParens = false;
-			boolean preEditHasRightPointy = false;
-			boolean preEditHasLeftPointy = false;
-			if (preEdit.indexOf("sp") != -1) preEditHasSP = true;
-			if (preEdit.indexOf("-->") != -1) preEditHasArrow = true;
-			if (preEdit.indexOf(')') != -1) preEditHasRightParens = true;
-			if (preEdit.indexOf('}') != -1) preEditHasRightPointy = true;
-			if (preEdit.indexOf('{') != -1) preEditHasLeftPointy = true;
-			boolean postEditHasSP = false;
-			boolean postEditHasArrow = false;
-			//boolean postEditHasRightParens = false;
-			//boolean postEditHasRightPointy = false;
-			boolean postEditHasLeftPointy = false;
-			if (postEdit.indexOf("sp") != -1) postEditHasSP = true;
-			if (postEdit.indexOf("-->") != -1) postEditHasArrow = true;
-			//if (postEdit.indexOf(')') != -1) postEditHasRightParens = true;
-			//if (postEdit.indexOf('}') != -1) postEditHasRightPointy = true;
-			if (postEdit.indexOf('{') != -1) postEditHasLeftPointy = true;
-			
-			int preEditCaretPos = preEdit.indexOf("^");
-			int prevLineCaretPos = prevCodeLine.indexOf("^");
-			
-			//------------------------------------------------------------
-			//isNewLine
-			//------------------------------------------------------------
-			if (isNewline) {
-				/**
-				 * If newline is typed, might need to add spaces.
-				 * Newlines are the last character of the current line, but might be inserted mid-line.
-				 */
-				if (
-						//cases for exclusion, this line, no indenting in any case
-						postEditHasSP ||				//+sp
-						postEditHasLeftPointy	 ||		//+{
-						postEditHasArrow ||			//+-->
-						//postEditHasRightPointy ||		//+}
-						( (postEdit.length() > 0) && (postEdit.charAt(0) == '}') ) ||
-						preEditHasRightPointy			//}+
-				){
-					if (localdebug) System.out.println("                      ... \\n plain");
-				}
-				else if (
-						//3 spaces
-						//cases for inclusion 
-						preEditHasSP ||				//sp+
-						preEditHasLeftPointy ||		//{+
-						preEditHasArrow ||			//-->+
-						preEditHasRightParens ||		//)+
-						(
-								//look at prev code line if current code line is worthless
-								(cropComments(preEdit).trim().length() == 0) &&	//____#bla bla___
-								!(
-										//cases for exclusion (on prev line, postEdit taken care of above
-										prevLineHasRightPointy
-								) &&
-								(
-										//cases for inclusion
-										prevLineHasSP ||
-										prevLineHasLeftPointy ||
-										prevLineHasArrow ||
-										prevLineHasRightParens
-								) 
-						)
-				){
-					//next line should have 3 spaces
-					if (localdebug) System.out.println("                      ... added 3 spaces to \\n");
-					comm.text += "   ";
-				}
-				else if (
-						//preEditCaretPos spaces, thus current line
-						(preEditCaretPos != -1) &&
-						!(
-								//cases for exclusion
-								preEditHasRightParens
-						)
-				){
-					//next line should have caretPos spaces
-					String spaces = "";
-					int i = 0;
-					for ( ; i<preEditCaretPos; i++) spaces += " ";
-					comm.text += spaces;
-					if (localdebug) System.out.println("                ... added "+i+" spaces to \\n");
-				}
-				else if (
-						(prevLineCaretPos != -1) &&
-						!(
-								//cases for exclusion
-								prevLineHasRightParens
-						)
-				){
-					//next line should have caretPos spaces
-					String spaces = "";
-					int i = 0;
-					for ( ; i<prevLineCaretPos; i++) spaces += " ";
-					comm.text += spaces;
-					if (localdebug) System.out.println("                ... added "+i+" spaces to \\n");
-				}
-				return;
-			}
-			
-			//------------------------------------------------------------
-			//isTab
-			//------------------------------------------------------------
-			
-			if (isTab)
-			{
-				//don't insert tab, just re-adjust the current line
-				//based on the previous line.
-				if (
-						//((!currLineHasRightPointy) && (currLineHasSP || currLineHasArrow || currLineHasRightParens)) &&
-						(startingSpaces(currLine) != 0)
-				)
-				{
-					//Should have zero whitespace at the beginning, change it.
-					//REMEMBER: change the text command, not the document.
-					if (localdebug) System.out.println("      ... needs to be 0 spaces.");
-				}
-			}
-			
-			/*
-			//various checkpoints
-			String prevCodeLine = getPrevCodeLine(doc, comm.offset);
-			if (prevCodeLine == "") return;	//this is the first line; we have nothing to do
-			String prevDocText = doc.get(0, comm.offset);						//?the whole doc, beginning to offset
-			char prevLastChar = prevCodeLine.charAt(prevCodeLine.length() - 1);	//?the last char of the last code line
-			String temp = currLine.substring(0, insertion) + comm.text;			//should == the whole line up to the edit
-			
-			if ((insertion + comm.length) < currLine.length()) {
+			/*if ((insertion + comm.length) < currLine.length()) {
 				//old incorrect: assumes there is no selection length in the command
 				//temp += currLine.substring(insertion);
 				//new thinking: takes the selection length into account
@@ -254,7 +104,7 @@ public class SoarAutoIndentStrategy implements IAutoEditStrategy {
 					//so, don't need to append anything at least
 				}
 			}
-			currLine = temp;
+			currLine = temp;*/
 			String newCurrLine = trimLeading(currLine);
 			
 			System.out.println("-------------------------------------");
@@ -404,7 +254,7 @@ public class SoarAutoIndentStrategy implements IAutoEditStrategy {
 				comm.offset += comm.text.length();
 				comm.text = "";
 			}
-			*/
+			
 		}
 		catch (BadLocationException e) {
 			System.out.println("BadLocationException");
@@ -719,7 +569,8 @@ public class SoarAutoIndentStrategy implements IAutoEditStrategy {
 	
 	/**
 	 * Returns the previous line of code, ignoring blank or comment lines.
-	 * (PAUL: why would it ignore blank or comment lines?)
+	 *  It ignores blank/comment lines because these do not affect how we indent
+	 *  future lines of code.
 	 * 
 	 * @param doc The document containing the code.
 	 * @param current The current offset (<i>not</i> the current line of code).

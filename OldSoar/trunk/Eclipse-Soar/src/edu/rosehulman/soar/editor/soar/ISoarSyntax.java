@@ -23,5 +23,28 @@ public interface ISoarSyntax
 			"<",
 			">",
 			"=",
+			"@"
 		};
+	
+	public static final String[] SOAR_DOC = {
+		"brief",
+		"created",
+		"desc",
+		"devnote",
+		"end-no-soardoc",
+		"file",
+		"group",
+		"ingroup",
+		"kernel",
+		"mainpage",
+		"modified",
+		"operator",
+		"production",
+		"problem-space",
+		"project",
+		"ref",
+		"start-no-soardoc",
+		"todo",
+		"type"
+	};
 }
