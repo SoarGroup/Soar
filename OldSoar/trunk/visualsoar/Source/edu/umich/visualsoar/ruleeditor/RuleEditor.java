@@ -2175,10 +2175,10 @@ public class RuleEditor extends CustomInternalFrame
                     if(o instanceof EnumerationVertex) 
                     {
                         EnumerationVertex ev = (EnumerationVertex)o;
-                        Iterator enum = ev.getEnumeration();
-                        while(enum.hasNext()) 
+                        Iterator iter = ev.getEnumeration();
+                        while(iter.hasNext()) 
                         {
-                            String enumString = (String)enum.next();
+                            String enumString = (String)iter.next();
                             if(enumString.startsWith(userType)) 
                             {
                                 completeMatches.add(enumString);

@@ -35,7 +35,7 @@ import java.util.*;
  * This is the main project window of VisualSoar
  * @author Brad Jones
  */
-public class MainFrame extends JFrame 
+public class MainFrame extends JFrame implements Kernel.UntypedEventInterface
 {
 /////////////////////////////////////////
 // Static Members
@@ -1584,7 +1584,7 @@ public class MainFrame extends JFrame
 		}	
 	}
 
-	public void editProductionHandler(int eventID, Object userData, Kernel kernel, Object callbackData)
+	public void untypedEventHandler(int eventID, Object userData, Kernel kernel, Object callbackData)
 	{
 		if (eventID == smlUntypedEventId.smlEVENT_EDIT_PRODUCTION.swigValue())
 		{
@@ -1631,7 +1631,7 @@ public class MainFrame extends JFrame
 			// Select the first agent if there is any as our current agent
 			m_ActiveAgent = m_Kernel.GetAgentByIndex(0).GetAgentName() ;
 		}
-		m_EditProductionCallback = m_Kernel.RegisterForUntypedEvent(smlUntypedEventId.smlEVENT_EDIT_PRODUCTION, this, "editProductionHandler", null) ;
+		m_EditProductionCallback = m_Kernel.RegisterForUntypedEvent(smlUntypedEventId.smlEVENT_EDIT_PRODUCTION, this, null) ;
 		
 		soarRuntimeTermAction.setEnabled(true);
 		soarRuntimeInitAction.setEnabled(false);

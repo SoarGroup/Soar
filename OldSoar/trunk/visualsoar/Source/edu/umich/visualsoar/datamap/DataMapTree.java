@@ -563,12 +563,12 @@ public class DataMapTree extends JTree implements ClipboardOwner
         if (theDialog.wasApproved()) 
         {
             String attribute = theDialog.getText();
-            Vector enum = theDialog.getVector();
+            Vector enumVal = theDialog.getVector();
 
             TreePath thePath = getSelectionPath();
             FakeTreeNode fake = ((FakeTreeNode)thePath.getLastPathComponent());
             SoarVertex v0 = fake.getEnumeratingVertex();
-            SoarVertex v1 = swmm.createNewEnumeration(enum);
+            SoarVertex v1 = swmm.createNewEnumeration(enumVal);
             swmm.addTriple(v0,attribute,v1);
             if (fake.getChildCount() != 0) 
             {
