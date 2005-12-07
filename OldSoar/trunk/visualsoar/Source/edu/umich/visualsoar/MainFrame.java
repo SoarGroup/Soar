@@ -12,7 +12,7 @@ import edu.umich.visualsoar.parser.TokenMgrError;
 // 3P
 import sml.Agent;
 import sml.Kernel;
-import sml.smlUntypedEventId;
+import sml.smlStringEventId;
 import threepenny.*;
 
 import java.awt.*;
@@ -35,7 +35,7 @@ import java.util.*;
  * This is the main project window of VisualSoar
  * @author Brad Jones
  */
-public class MainFrame extends JFrame implements Kernel.UntypedEventInterface
+public class MainFrame extends JFrame implements Kernel.StringEventInterface
 {
 /////////////////////////////////////////
 // Static Members
@@ -1584,11 +1584,11 @@ public class MainFrame extends JFrame implements Kernel.UntypedEventInterface
 		}	
 	}
 
-	public void untypedEventHandler(int eventID, Object userData, Kernel kernel, Object callbackData)
+	public void stringEventHandler(int eventID, Object userData, Kernel kernel, String callbackData)
 	{
-		if (eventID == smlUntypedEventId.smlEVENT_EDIT_PRODUCTION.swigValue())
+		if (eventID == smlStringEventId.smlEVENT_EDIT_PRODUCTION.swigValue())
 		{
-			String prod = (String)callbackData ;
+			String prod = callbackData ;
 	
 			if (prod != null)
 				EditProductionByName(prod) ;
@@ -1631,7 +1631,7 @@ public class MainFrame extends JFrame implements Kernel.UntypedEventInterface
 			// Select the first agent if there is any as our current agent
 			m_ActiveAgent = m_Kernel.GetAgentByIndex(0).GetAgentName() ;
 		}
-		m_EditProductionCallback = m_Kernel.RegisterForUntypedEvent(smlUntypedEventId.smlEVENT_EDIT_PRODUCTION, this, null) ;
+		m_EditProductionCallback = m_Kernel.RegisterForStringEvent(smlStringEventId.smlEVENT_EDIT_PRODUCTION, this, null) ;
 		
 		soarRuntimeTermAction.setEnabled(true);
 		soarRuntimeInitAction.setEnabled(false);
