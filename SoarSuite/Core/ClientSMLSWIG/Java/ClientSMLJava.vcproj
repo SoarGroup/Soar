@@ -23,33 +23,39 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(JAVA_INCLUDE)&quot;;&quot;$(JAVA_INCLUDE)\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
 				PreprocessorDefinitions="WIN32;_DEBUG"
-				MinimalRebuild="FALSE"
-				BasicRuntimeChecks="0"
+				StringPooling="TRUE"
+				MinimalRebuild="TRUE"
+				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
+				EnableFunctionLevelLinking="TRUE"
 				AssemblerListingLocation="$(IntDir)/"
 				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="3"
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="TRUE"
+				DebugInformationFormat="4"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\..\soar-library\Java_sml_ClientInterface.dll"
-				LinkIncremental="1"
+				OutputFile="..\..\..\SoarLibrary\bin\Java_sml_ClientInterface.dll"
+				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
 				AssemblyDebug="1"
-				ImportLibrary="$(OutDir)\$(ProjectName).lib"/>
+				SubSystem="2"
+				ImportLibrary="$(OutDir)\$(ProjectName).lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Create sml.jar at release point"
 				CommandLine="echo on
-xcopy build\*.java ..\..\..\soar-library\sml\* /Y /I /Q
-&quot;%JAVA_BIN%/javac&quot; ..\..\..\soar-library\sml\*.java
-&quot;%JAVA_BIN%/jar&quot; cf ..\..\..\soar-library\sml.jar -C ..\..\..\soar-library sml
-rmdir ..\..\..\soar-library\sml /S /Q
+cd ..\..\..
+xcopy Core\ClientSMLSWIG\Java\build\*.java SoarLibrary\bin\sml\* /Y /I /Q
+&quot;%JAVA_BIN%/javac&quot; SoarLibrary\bin\sml\*.java
+&quot;%JAVA_BIN%/jar&quot; cf SoarLibrary\bin\sml.jar -C SoarLibrary\bin sml
+rmdir SoarLibrary\bin\sml /S /Q
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -85,34 +91,46 @@ cd ..
 			WholeProgramOptimization="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="3"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="2"
+				OmitFramePointers="TRUE"
 				AdditionalIncludeDirectories="&quot;$(JAVA_INCLUDE)&quot;;&quot;$(JAVA_INCLUDE)\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
 				PreprocessorDefinitions="WIN32;NDEBUG"
+				StringPooling="TRUE"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="TRUE"
 				AssemblerListingLocation="$(IntDir)/"
 				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="3"
+				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\..\soar-library\Java_sml_ClientInterface.dll"
+				OutputFile="..\..\..\SoarLibrary\bin\Java_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
-				ImportLibrary="$(OutDir)\$(ProjectName).lib"/>
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				ImportLibrary="$(OutDir)\$(ProjectName).lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Create sml.jar at release point"
 				CommandLine="echo on
-xcopy build\*.java ..\..\..\soar-library\sml\* /Y /I /Q
-&quot;%JAVA_BIN%/javac&quot; ..\..\..\soar-library\sml\*.java
-&quot;%JAVA_BIN%/jar&quot; cf ..\..\..\soar-library\sml.jar -C ..\..\..\soar-library sml
-rmdir ..\..\..\soar-library\sml /S /Q
+cd ..\..\..
+xcopy Core\ClientSMLSWIG\Java\build\*.java SoarLibrary\bin\sml\* /Y /I /Q
+&quot;%JAVA_BIN%/javac&quot; SoarLibrary\bin\sml\*.java
+&quot;%JAVA_BIN%/jar&quot; cf SoarLibrary\bin\sml.jar -C SoarLibrary\bin sml
+rmdir SoarLibrary\bin\sml /S /Q
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"
