@@ -1,0 +1,45 @@
+                                Internal-symbols
+
+                                      Name
+
+   internal-symbols - Print information about the Soar symbol table.
+
+                                    Synopsis
+
+ internal-symbols
+
+                                    Options
+
+   No options.
+
+                                  Description
+
+   The internal-symbols command prints information about the Soar symbol
+   table. Such information is typically only useful for users attempting to
+   debug Soar by locating memory leaks or examining I/O structure.
+
+                                    Example
+
+  soar> internal-symbols
+  --- Symbolic Constants: ---
+  operator
+  accept
+  evaluate-object
+  problem-space
+  sqrt
+  interrupt
+  mod
+  goal
+  io
+  (...additional symbols deleted for brevity...)
+  --- Integer Constants: ---
+  --- Floating-Point Constants: ---
+  --- Identifiers: ---
+  --- Variables: ---
+  <o>
+  <sso>
+  <to>
+  <ss>
+  <ts>
+  <so>
+  <sss>

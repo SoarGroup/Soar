@@ -1,0 +1,55 @@
+                                    Rete-net
+
+                                      Name
+
+   rete-net - Save the current Rete net, or restore a previous one.
+
+                                    Synopsis
+
+ rete-net -s|l filename
+
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |                         |Save the Rete net in the named file. Cannot be|
+   |-s, --save               |saved when there are justifications present.  |
+   |                         |Use excise -j                                 |
+   |-------------------------+----------------------------------------------|
+   |                         |Load the named file into the Rete network.    |
+   |-l, -r, --load, --restore|working memory and production memory must both|
+   |                         |be empty. Use excise -a                       |
+   |-------------------------+----------------------------------------------|
+   |filename                 |The name of the file to save or load.         |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   The rete-net command saves the current Rete net to a file or restores a
+   Rete net previously saved. The Rete net is Soar's internal representation
+   of production and working memory; the conditions of productions are
+   reordered and common substructures are shared across different
+   productions. This command provides a fast method of saving and loading
+   productions since a special format is used and no parsing is necessary.
+   Rete-net files are portable across platforms that support Soar.
+
+   Normally users wish to save only production memory. Note that
+   justifications cannot be present when saving the Rete net. Issuing an
+   init-soar before saving a Rete net will remove all justifications and
+   working memory elements.
+   If the filename contains a suffix of ".Z", then the file is compressed
+   automatically when it is saved and uncompressed when it is loaded.
+   Compressed files may not be portable to another platform if that platform
+   does not support the same uncompress utility.
+
+                                Default Aliases
+
+   +--------------+
+   |Alias|Maps to |
+   |-----+--------|
+   |rn   |rete-net|
+   +--------------+
+
+                                    See Also
+
+   excise init-soar

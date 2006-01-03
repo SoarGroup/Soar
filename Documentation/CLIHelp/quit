@@ -1,0 +1,26 @@
+                                      Quit
+
+                                      Name
+
+   quit - Close log file, terminate Soar, and return user to the operating
+   system.
+
+                                    Synopsis
+
+ quit
+
+                                    Options
+
+   No options.
+
+                                  Description
+
+   This command stops the run, quits the log and closes Soar.
+
+                                Default Aliases
+
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   |exit |quit   |
+   +-------------+
