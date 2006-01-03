@@ -3,6 +3,7 @@
 
 <cdtproject id="org.eclipse.cdt.make.core.make">
 <extension point="org.eclipse.cdt.core.BinaryParser" id="org.eclipse.cdt.core.ELF"/>
+<extension point="org.eclipse.cdt.core.CIndexer" id="org.eclipse.cdt.core.domsourceindexer"/>
 <data>
 <item id="org.eclipse.cdt.core.pathentry">
 <pathentry kind="src" path=""/>
@@ -22,6 +23,19 @@
 <useDefaultCommand>true</useDefaultCommand>
 </target>
 </buildTargets>
+</item>
+<item id="scannerConfiguration">
+<autodiscovery enabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile" problemReportingEnabled="true"/>
+<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
+<buildOutputProvider>
+<openAction enabled="false" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="specsFile">
+<runAction useDefault="true" command="gcc" arguments="-E -P -v -dD ${plugin_state_location}/${specs_file}"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
 </item>
 </data>
 </cdtproject>
