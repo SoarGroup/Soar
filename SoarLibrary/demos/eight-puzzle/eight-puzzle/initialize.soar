@@ -1,0 +1,70 @@
+### INITIAL STATE AND DESIRED STATE
+###
+
+ ## Define the initial state and the desired state:
+ ## each state is a set of bindings#
+ ## each binding points to a cell and a tile#
+ ## each cell points to its neighboring cells.
+
+sp {eight-puzzle*propose*initialize
+   (state <s> ^name eight-puzzle
+             -^blank-cell)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize)}
+
+## To modify the initial state, you must move the tiles
+##  that are part of the bindings. The same tile
+## must not be in two cells and every cell must have different
+## tiles.
+## The blank-cell attribute on the state must have
+## the cell that has the block (tile <t0>) in it.
+
+sp {eight*create*state*initial-and-desired-states
+   (state <s> ^operator.name initialize
+              ^desired <d>)
+-->
+   (<s> ^blank-cell <c23>
+        ^tile-cell nil
+        ^binding <bb0> <bb1> <bb2> <bb3> <bb4>
+                 <bb5> <bb6> <bb7> <bb8>)
+   (<bb0> ^cell <c11> ^tile <t2>)
+   (<bb1> ^cell <c12> ^tile <t1>)
+   (<bb2> ^cell <c13> ^tile <t7>)
+   (<bb3> ^cell <c21> ^tile <t8>)
+   (<bb4> ^cell <c22> ^tile <t6>)
+   (<bb5> ^cell <c23> ^tile <t0>)
+   (<bb6> ^cell <c31> ^tile <t3>)
+   (<bb7> ^cell <c32> ^tile <t4>)
+   (<bb8> ^cell <c33> ^tile <t5>)
+   (<c11> ^name c11 ^cell <c12> ^cell <c21>)
+   (<c12> ^name c12 ^cell <c11> ^cell <c13> ^cell <c22>)
+   (<c13> ^name c13 ^cell <c12> ^cell <c23>)
+   (<c21> ^name c21 ^cell <c11> ^cell <c31> ^cell <c22>)
+   (<c22> ^name c22 ^cell <c21> ^cell <c12>
+          ^cell <c23> ^cell <c32>)
+   (<c23> ^name c23 ^cell <c22> ^cell <c33> ^cell <c13>)
+   (<c31> ^name c31 ^cell <c32> ^cell <c21>)
+   (<c32> ^name c32 ^cell <c31> ^cell <c22> ^cell <c33>)
+   (<c33> ^name c33 ^cell <c32> ^cell <c23>)
+   (<t0> ^name 0)
+   (<t1> ^name 1)
+   (<t2> ^name 2)
+   (<t3> ^name 3)
+   (<t4> ^name 4)
+   (<t5> ^name 5)
+   (<t6> ^name 6)
+   (<t7> ^name 7)
+   (<t8> ^name 8)
+   (<d> ^better higher
+        ^binding <d0> <d1> <d2> <d3> <d4> <d5>
+                 <d6> <d7> <d8>)
+   (<d1> ^cell <c11> ^tile <t1>)
+   (<d2> ^cell <c12> ^tile <t8>)
+   (<d3> ^cell <c13> ^tile <t7>)
+   (<d8> ^cell <c21> ^tile <t2>)
+   (<d0> ^cell <c22> ^tile <t0>)
+   (<d4> ^cell <c23> ^tile <t6>)
+   (<d7> ^cell <c31> ^tile <t3>)
+   (<d6> ^cell <c32> ^tile <t4>)
+   (<d5> ^cell <c33> ^tile <t5>)}
