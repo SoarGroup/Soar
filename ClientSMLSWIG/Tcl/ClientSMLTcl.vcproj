@@ -21,34 +21,40 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				GlobalOptimizations="FALSE"
+				InlineFunctionExpansion="0"
+				OmitFramePointers="FALSE"
 				AdditionalIncludeDirectories="&quot;$(TCL_INCLUDE)&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
 				PreprocessorDefinitions="WIN32;_DEBUG"
-				MinimalRebuild="FALSE"
-				BasicRuntimeChecks="0"
+				StringPooling="TRUE"
+				MinimalRebuild="TRUE"
+				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
+				EnableFunctionLevelLinking="TRUE"
 				AssemblerListingLocation="$(IntDir)/"
 				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="3"
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="TRUE"
+				DebugInformationFormat="4"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="tcl84.lib"
-				OutputFile="$(OutDir)\Tcl_sml_ClientInterface.dll"
-				LinkIncremental="1"
+				OutputFile="..\..\..\SoarLibrary\bin\Tcl_sml_ClientInterface.dll"
+				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(TCL_LIB)&quot;"
 				GenerateDebugInformation="TRUE"
 				AssemblyDebug="1"
-				ImportLibrary="$(OutDir)/$(ProjectName).lib"/>
+				SubSystem="2"
+				ImportLibrary="$(OutDir)/$(ProjectName).lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy to release point, make Tcl package"
-				CommandLine="cd build
-copy Tcl_sml_ClientInterface.dll ..\..\..\..\soar-library /Y
-cd ..\..\..\..\soar-library
+				Description="Make Tcl package"
+				CommandLine="cd ..\..\..\SoarLibrary\bin
 &quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl
 mkdir Tcl_sml_ClientInterface
 move /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
@@ -81,33 +87,42 @@ move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
 			WholeProgramOptimization="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="3"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="2"
+				OmitFramePointers="TRUE"
 				AdditionalIncludeDirectories="&quot;$(TCL_INCLUDE)&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
 				PreprocessorDefinitions="WIN32;NDEBUG"
+				StringPooling="TRUE"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="TRUE"
 				AssemblerListingLocation="$(IntDir)/"
 				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="3"
+				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="tcl84.lib"
-				OutputFile="$(OutDir)\Tcl_sml_ClientInterface.dll"
+				OutputFile="..\..\..\SoarLibrary\bin\Tcl_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(TCL_LIB)&quot;"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
-				ImportLibrary="$(OutDir)/$(ProjectName).lib"/>
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				ImportLibrary="$(OutDir)/$(ProjectName).lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy to release point, make Tcl package"
-				CommandLine="cd build
-copy Tcl_sml_ClientInterface.dll ..\..\..\..\soar-library /Y
-cd ..\..\..\..\soar-library
+				Description="Make Tcl package"
+				CommandLine="cd ..\..\..\SoarLibrary\bin
 &quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl
 mkdir Tcl_sml_ClientInterface
 move /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
