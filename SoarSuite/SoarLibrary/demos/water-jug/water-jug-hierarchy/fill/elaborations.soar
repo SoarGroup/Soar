@@ -1,0 +1,10 @@
+sp {elaborate*state*name
+   (state <s> ^superstate.operator.name <name>)
+-->
+   (<s> ^name <name>)}
+
+sp {fill*elaborate*jug
+   (state <s> ^superstate.operator.fill-jug <j>)
+-->
+   (<s> ^jug <j>)}
+ 

@@ -1,0 +1,42 @@
+sp {Impasse__Operator_Tie*propose*create-preferences
+   (state <s> ^name Impasse__Operator_Tie)
+   # Negated conjunction that tests that there is no evaluation that does not have a value - all have values
+  -{(<s> ^evaluation <x>)
+   -(<x> ^value)}
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name create-preferences)
+}
+
+sp {apply*create-preferences*best
+   (state <s> ^operator <op>
+              ^evaluation <x>
+              ^superstate <ss>)
+   (<op> ^name create-preferences)
+   (<x> ^super-operator <so>
+        ^value best)
+-->
+   (<ss> ^operator <so> >, =)
+}
+
+sp {apply*create-preferences*worst
+   (state <s> ^operator <op>
+              ^evaluation <x>
+              ^superstate <ss>)
+   (<op> ^name create-preferences)
+   (<x> ^super-operator <so>
+        ^value worst)
+-->
+   (<ss> ^operator <so> <, =)
+}
+
+sp {apply*create-preferences*equal
+   (state <s> ^operator <op>
+              ^evaluation <x>
+              ^superstate <ss>)
+   (<op> ^name create-preferences)
+   (<x> ^super-operator <so>
+        ^value equal)
+-->
+   (<ss> ^operator <so> =)
+}

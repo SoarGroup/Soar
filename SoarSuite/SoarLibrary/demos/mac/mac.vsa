@@ -1,0 +1,14 @@
+VERSION 4
+\mac\mac.dm
+0	ROOT mac mac 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR goal-test goal-test.soar 5
+5	3	FOPERATOR monitor monitor.soar 6
+6	3	FOPERATOR search-control search-control.soar 7
+7	3	FOPERATOR top-state top-state.soar 8
+8	0	FOPERATOR _readme _readme.soar 9
+9	0	OPERATOR initialize-mac initialize-mac.soar 10
+10	0	OPERATOR move-boat move-boat.soar 11
+END
