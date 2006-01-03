@@ -1,0 +1,109 @@
+\subsection{\soarb{print}}
+\label{print}
+\index{print}
+Print items in working memory or production memory. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+print [-fFin] production_name
+print -[a|c|D|j|u][fFin]
+print [-i] [-d <depth>] \emph{identifier}
+|\emph{timetag}
+|\emph{pattern}
+print -s[oS]
+\end{verbatim}
+\subsubsection*{Options}
+\subsection*{Printing items in production memory}
+\begin{tabular}{|l|l|}
+\hline 
+ -a, --all  & print the names of all productions currently loaded  \\
+ \hline 
+ -c, --chunks  & print the names of all chunks currently loaded  \\
+ \hline 
+ -D, --defaults  & print the names of all default productions currently loaded  \\
+ \hline 
+ -f, --full  & When printing productions, print the whole production. This is the default when printing a named production.  \\
+ \hline 
+ -F, --filename  & also prints the name of the file that contains the production.  \\
+ \hline 
+ -i, --internal  & items should be printed in their internal form. For productions, this means leaving conditions in their reordered (rete net) form.  \\
+ \hline 
+ -j, --justifications  & print the names of all justifications currently loaded.  \\
+ \hline 
+ -n, --name  & When printing productions, print only the name and not the whole production. This is the default when printing any category of productions, as opposed to a named production.  \\
+ \hline 
+ -u, --user  & print the names of all user productions currently loaded  \\
+ \hline 
+production\_name & print the production named production-name \\
+ \hline 
+\end{tabular}
+\subsection*{Printing items in working memory}
+\begin{tabular}{|l|l|}
+\hline 
+ -d, --depth \emph{n}
+ & This option overrides the default printing depth (see the default-wme-depth command for more detail).  \\
+ \hline 
+ -i, --internal  & items should be printed in their internal form. For working memory, this means printing the individual elements with their timetags, rather than the objects.  \\
+ \hline 
+\emph{identifier}
+ & print the object \emph{identifier}
+. \emph{identifier}
+ must be a valid Soar symbol such as \textbf{S1 }
+ \hline 
+\emph{pattern}
+ & print the object whose working memory elements matching the given pattern. See Description for more information on printing objects matching a specific pattern.  \\
+ \hline 
+\emph{timetag}
+ & print the object in working memory with the given \emph{timetag}
+ \hline 
+\end{tabular}
+\subsection*{Printing the current subgoal stack}
+\begin{tabular}{|l|l|}
+\hline 
+ -s, --stack  & Specifies that the Soar goal stack should be printed. By default this includes both states and operators.  \\
+ \hline 
+ -o, --operators  & When printing the stack, print only \textbf{operators}
+.  \\
+ \hline 
+ -S, --states  & When printing the stack, print only \textbf{states}
+.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{print}
+ command is used to print items from production memory or working memory. It can take several kinds of arguments. When printing items from working memory, the Soar objects are printed unless the --internal flag is used, in which case the wmes themselves are printed. \begin{verbatim}
+(\emph{identifier}
+ ^\emph{attribute value}
+ [+])
+\end{verbatim}
+ The pattern is surrounded by parentheses. The \emph{identifier}
+, \emph{attribute}
+, and \emph{value}
+ must be valid Soar symbols or the wildcard symbol * which matches all occurences. The optional \textbf{+}
+ symbol restricts pattern matches to acceptable preferences. 
+\subsubsection*{Examples}
+ Print the working memory elements (and their timetags) which have the identifier s1 as object and v2 as value: \begin{verbatim}
+print --internal (s1 ^* v2)
+\end{verbatim}
+ Print the Soar stack which includes states and operators: \begin{verbatim}
+print --stack
+\end{verbatim}
+ Print the named production in its RETE form: \begin{verbatim}
+print -if prodname
+\end{verbatim}
+ Print the names of all user productions currently loaded: \begin{verbatim}
+print -u
+\end{verbatim}
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ p  & print  \\
+ \hline 
+ pc  & print --chunks  \\
+ \hline 
+ wmes  & print -i  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[default-wme-depth]{default-wme-depth} \hyperref[predefined-aliases]{predefined-aliases} 

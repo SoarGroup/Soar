@@ -1,0 +1,92 @@
+                                     Learn
+
+                                      Name
+
+   learn - Set the parameters for chunking, SoaraEUR(TM)s learning mechanism.
+
+                                    Synopsis
+
+ learn [-l]
+ learn -[d|E|o]
+ learn -e [ab]
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |-e, --enable, --on  |Turn chunking on. Can be modified by -a or -b.     |
+   |--------------------+---------------------------------------------------|
+   |-d, --disable, --off|Turn all chunking off. (default)                   |
+   |--------------------+---------------------------------------------------|
+   |-E, --except        |Learning is on, except as specified by RHS         |
+   |                    |dont-learn actions.                                |
+   |--------------------+---------------------------------------------------|
+   |-o, --only          |Chunking is on only as specified by RHS force-learn|
+   |                    |actions.                                           |
+   |--------------------+---------------------------------------------------|
+   |-l, --list          |Prints listings of dont-learn and force-learn      |
+   |                    |states.                                            |
+   |--------------------+---------------------------------------------------|
+   |-a, --all-levels    |Build chunks whenever a subgoal returns a result.  |
+   |                    |Learning must be --enabled.                        |
+   |--------------------+---------------------------------------------------|
+   |                    |Build chunks only for subgoals that have not yet   |
+   |-b, --bottom-up     |had any subgoals with chunks built. Learning must  |
+   |                    |be --enabled.                                      |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   The learn command controls the parameters for chunking (Soar's learning
+   mechanism). With no arguments, this command prints out the current
+   learning environment status. If arguments are provided, they will alter
+   the learning environment as described in the options and arguments table.
+   The watch command can be used to provide various levels of detail when
+   productions are learned. Learning is disabled by default.
+
+   With the --on flag, chunking is on all the time. With the --except flag,
+   chunking is on, but Soar will not create chunks for states that have had
+   RHS dont-learn actions executed in them. With the --only flag, chunking is
+   off, but Soar will create chunks for only those states that have had RHS
+   force-learn actions executed in them. With the --off flag, chunking is off
+   all the time.
+
+   The --only flag and its companion force-learn RHS action allow Soar
+   developers to turn learning on in a particular problem space, so that they
+   can focus on debugging the learning problems in that particular problem
+   space without having to address the problems elsewhere in their programs
+   at the same time. Similarly, the --except flag and its companion
+   dont-learn RHS action allow developers to temporarily turn learning off
+   for debugging purposes. These facilities are provided as debugging tools,
+   and do not correspond to any theory of learning in Soar.
+
+   The --all-levels and --bottom-up flags are orthogonal to the --on,
+   --except, --only, and --off flags, and so, may be used in combination with
+   them. With bottom-up learning, chunks are learned only in states in which
+   no subgoal has yet generated a chunk. In this mode, chunks are learned
+   only for the "bottom" of the subgoal hierarchy and not the intermediate
+   levels. With experience, the subgoals at the bottom will be replaced by
+   the chunks, allowing higher level subgoals to be chunked.
+
+   Learning can be turned on or off at any point during a run.
+
+                                    Examples
+
+   To enable learning only at the lowest subgoal level:
+
+ learn -e b
+
+   To see all the force-learn and dont-learn states registered by RHS actions
+
+ learn -l
+
+                                Default Aliases
+
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   |l    |learn  |
+   +-------------+
+
+                                    See Also
+
+   watch, explain-backtraces, save-backtraces

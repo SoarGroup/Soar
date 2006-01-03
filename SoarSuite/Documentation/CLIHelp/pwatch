@@ -1,0 +1,55 @@
+                                     Pwatch
+
+                                      Name
+
+   pwatch - Trace firings and retractions of specific productions.
+
+                                    Synopsis
+
+ pwatch [-d|e] [production name]
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |                    |Turn production watching off for the specified     |
+   |-d, --disable, --off|production. If no production is specified, turn    |
+   |                    |production watching off for all productions.       |
+   |--------------------+---------------------------------------------------|
+   |                    |Turn production watching on for the specified      |
+   |                    |production. The use of this flag is optional, so   |
+   |-e, --enable, --on  |this is pwatch's default behavior. If no production|
+   |                    |is specified, all productions currently being      |
+   |                    |watched are listed.                                |
+   |--------------------+---------------------------------------------------|
+   |production name     |The name of the production to watch.               |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   The pwatch command enables and disables the tracing of the firings and
+   retractions of individual productions. This is a companion command to
+   watch, which cannot specify individual productions by name.
+
+   With no arguments, pwatch lists the productions currently being traced.
+   With one production-name argument, pwatch enables tracing the production;
+   --enable can be explicitly stated, but it is the default action.
+
+   If --disable is specified followed by a production-name, tracing is turned
+   off for the production. When no production-name is specified, pwatch
+   --enable lists all productions currently being traced, and pwatch
+   --disable disables tracing of all productions.
+
+   Note that pwatch now only takes one production per command. Use multiple
+   times to watch multiple functions.
+
+                                Default Aliases
+
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   |pw   |pwatch |
+   +-------------+
+
+                                    See Also
+
+   watch

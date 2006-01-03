@@ -1,0 +1,39 @@
+                                   Gds-print
+
+                                      Name
+
+   gds-print - Print the WMEs in the goal dependency set for each goal.
+
+                                    Synopsis
+
+ gds-print
+
+                                    Options
+
+   No options.
+
+                                  Description
+
+   The Goal Dependency Set (GDS) is described in an appendix of the Soar
+   manual. This command is a debugging command for examining the GDS for each
+   goal in the stack. First it steps through all the working memory elements
+   in the rete, looking for any that are included in any goal dependency set,
+   and prints each one. Then it also lists each goal in the stack and prints
+   the wmes in the goal dependency set for that particular goal. This command
+   is useful when trying to determine why subgoals are disappearing
+   unexpectedly: often something has changed in the goal dependency set,
+   causing a subgoal to be regenerated prior to producing a result.
+
+                                    Warnings
+
+   gds-print is horribly inefficient and should not generally be used except
+   when something is going wrong and you need to examine the Goal Dependency
+   Set.
+
+                                Default Aliases
+
+   +-------------------+
+   |Alias    |Maps to  |
+   |---------+---------|
+   |gds_print|gds-print|
+   +-------------------+

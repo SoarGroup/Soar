@@ -1,0 +1,30 @@
+\subsection{\soarb{remove-wme}}
+\label{remove-wme}
+\index{remove-wme}
+Manually remove an element from working memory. 
+ Complete
+\subsubsection*{Synopsis}
+\begin{verbatim}
+remove-wme \emph{timetag}
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ timetag  & A positive integer matching the timetag of an existing working memory element.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The remove-wme command removes the working memory element with the given timetag. This command is provided primarily for use in Soar input functions; although there is no programming enforcement, remove-wme should only be called from registered input functions to delete working memory elements on Soar's input link. 
+ Beware of weird side effects, including system crashes. 
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ rw  & remove-wme  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[add-wme]{add-wme} \subsubsection*{Warnings}
+ remove-wme should never be called from the RHS: if you try to match a wme on the LHS of a production, and then remove the matched wme on the RHS, Soar will crash. 
+ If used other than by input and output functions interfaced with Soar, this command may have weird side effects (possibly even including system crashes). Removing input wmes or context/impasse wmes may have unexpected side effects. You've been warned. 

@@ -1,0 +1,20 @@
+\subsection{\soarb{source}}
+\label{source}
+\index{source}
+Load and evaluate the contents of a file. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+source filename
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+filename & The file of Soar productions and commands to load.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ Load and evaluate the contents of a file. The \emph{filename}
+ can be a relative path or a fully qualified path. \textbf{source}
+ will generate an implicit push to the new directory, execute the command, and then pop back to the current working directory from which the command was issued. 
+\subsubsection*{See Also}
+\hyperref[cd]{cd} \hyperref[dirs]{dirs} \hyperref[home]{home} \hyperref[ls]{ls} \hyperref[pushd]{pushd} \hyperref[popd]{popd} \hyperref[topd]{topd} 
