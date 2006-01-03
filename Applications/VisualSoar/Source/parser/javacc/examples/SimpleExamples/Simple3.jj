@@ -1,0 +1,40 @@
+PARSER_BEGIN(Simple3)
+
+public class Simple3 {
+
+  public static void main(String args[]) throws ParseException {
+    Simple3 parser = new Simple3(System.in);
+    parser.Input();
+  }
+
+}
+
+PARSER_END(Simple3)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+  <LBRACE: "{">
+| <RBRACE: "}">
+}
+
+void Input() :
+{ int count; }
+{
+  count=MatchedBraces() <EOF>
+  { System.out.println("The levels of nesting is " + count); }
+}
+
+int MatchedBraces() :
+{ int nested_count=0; }
+{
+  <LBRACE> [ nested_count=MatchedBraces() ] <RBRACE>
+  { return ++nested_count; }
+}

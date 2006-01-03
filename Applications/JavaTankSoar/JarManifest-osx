@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Main-Class: edu.umich.tanksoar.TanksoarJ
+Class-Path: swt-osx.jar sml.jar
+

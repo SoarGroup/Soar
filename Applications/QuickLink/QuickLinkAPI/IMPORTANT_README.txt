@@ -1,0 +1,3 @@
+This project is NOT FINISHED and has NOT BEEN TESTED.
+
+The goal of this project is to provide an API for QuickLink for the case that a GUI (or something else) were to be built for it.  The classes needed for interfacing with QuickLink are QLInterface, QLMemory and QLDirtyWork.  These files do compile but are yet to be tested.  If you are interested in interfacing with QuickLink, contact Taylor Lafrinere (lafritay@umich.edu) and I will make this project a much higher proirity.  Thank you.

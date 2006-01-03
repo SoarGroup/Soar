@@ -1,0 +1,32 @@
+sp {fire-on-command*propose*Turn
+   (state <s> ^io <io>
+             -^sentence-num <num>)
+   (<io> ^input-link.text-input.sentence <sent>
+         ^output-link <ol>)
+   (<sent> ^word { << left right >> <dir> }
+           ^sentence-num <num>)
+   -(<ol> ^text-output.sentence.sentence-num <num>)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name Turn
+         ^direction <dir>
+         ^sentence-num <num>
+         ^actions.rotate.direction <dir>)
+}
+
+sp {apply*Turn
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name Turn
+         ^sentence-num <num>
+         ^direction <dir>)
+-->
+   (<s> ^sentence-num <num>)
+   (<ol> ^text-output <to>)
+   (<to> ^sentence <sen>)
+   (<sen> ^sentence-num <num>
+          ^word turned
+          ^next-word <nw1>)
+   (<nw1> ^word <dir>)
+}
+
