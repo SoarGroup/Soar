@@ -1,0 +1,78 @@
+############################################################################
+# From Chapter 10 of Soar 8 Tutorial
+# 
+# These are the final versions of the rules for the jump and move operator.
+
+sp {initialize*state*directions
+   (state <ss> ^type state)
+   -->
+   (<ss> ^directions <n> <e> <s> <w>)
+   (<n> ^value north ^opposite south)
+   (<e> ^value east  ^opposite west)
+   (<s> ^value south ^opposite north)
+   (<w> ^value west  ^opposite east)}
+
+sp {init*elaborate*name-content-value
+   (state <s> ^type state)
+   -->
+   (<s> ^name-content-value <c1> <c2> <c3> <c4> <c5>    
+                       <c6> <c7> <c8>)
+   (<c1> ^name move ^content empty ^value 0)
+   (<c2> ^name move ^content eater ^value 0)
+   (<c3> ^name move ^content normalfood ^value 5)
+   (<c4> ^name move ^content bonusfood ^value 10)
+   (<c5> ^name jump ^content empty ^value -5)
+   (<c6> ^name jump ^content eater ^value -5)
+   (<c7> ^name jump ^content normalfood ^value 0)
+   (<c8> ^name jump ^content bonusfood ^value 5)}
+
+sp {propose*move
+   (state <s> ^io.input-link.my-location.<dir>.content { <content> <> wall })
+-->
+   (<s> ^operator <o> +, =)
+   (<o> ^name move
+        ^content <content>
+        ^actions.move.direction <dir>)} 
+
+sp {propose*jump
+   (state <s> ^io.input-link.my-location.<dir>.<dir>.content { <content> <> wall })
+-->
+   (<s> ^operator <o> +, =)
+   (<o> ^name jump
+        ^content <content>
+         ^actions.jump.direction <dir>)}
+
+sp {elaborate*operator*value
+   (state <s> ^operator <o> +
+              ^name-content-value <ccv>)
+   (<o>   ^name <name> ^content <content>)
+   (<ccv> ^name <name> ^content <content> ^value <value>)
+   -->
+   (<o> ^value <value>)}
+
+sp {select*compare*best*value
+   (state <s> ^operator <o1> +
+              ^operator <o2> +)
+   (<o1> ^value <v>)
+   (<o2> ^value < <v>)
+-->
+   (<s> ^operator <o1> > <o2>)}
+
+
+## General operator application rules
+
+sp {apply*operator*create-action-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^actions <act>)
+   (<act> ^<att> <value>)
+-->
+   (<ol> ^<att> <value>)}
+
+sp {apply*operator*remove-command
+   (state <s> ^operator.actions
+              ^io.output-link <ol>)
+   (<ol> ^<att> <value>)
+   (<value> ^status complete)
+-->
+   (<ol> ^<att> <value> -)}

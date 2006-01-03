@@ -1,0 +1,25 @@
+sp {UrCsimple*propose*random
+   (state <s> ^name UrCsimple
+              ^last-stage do-nothing
+              ^moves <move>)
+   (<move> ^<action> <info>)
+   (<info> ^<dir> <act>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name random
+         ^<action> <info>)
+   (<info> ^<dir> <act>)
+}
+
+sp {apply*random
+   (state <s> ^operator <op>
+              ^io.output-link <out>)
+   (<op> ^name random
+         ^<action> <info>)
+   (<info> ^<dir> <act>)
+-->
+   (<s> ^last-stage do-nothing -
+        ^last-stage random)
+   (<out> ^<action> <info>)
+   (<info> ^<dir> <act>)
+}

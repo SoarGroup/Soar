@@ -1,0 +1,3 @@
+pushd homing
+source homing_source.soar
+popd

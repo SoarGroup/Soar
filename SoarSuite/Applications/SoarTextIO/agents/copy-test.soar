@@ -1,0 +1,3 @@
+pushd copy-test
+source copy-test_source.soar
+popd

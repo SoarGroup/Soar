@@ -1,0 +1,7 @@
+sp {$super-operator$*elaborate*substate
+   (state <s> ^name $super-operator$
+              ^superstate.operator <so>)
+   (<so> ^name $super-operator$)
+   -->
+   (<s>)
+}

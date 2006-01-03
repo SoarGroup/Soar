@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleExecutable</key>
+	<string>JavaApplicationStub</string>
+	<key>CFBundleGetInfoString</key>
+	<string>Tanksoar, Copyright University of Michigan 2005.</string>
+	<key>CFBundleIconFile</key>
+	<string>soar.icns</string>
+	<key>CFBundleIdentifier</key>
+	<string>edu.umich.soar.tanksoar</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Tanksoar</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>3.0</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>3.0</string>
+	<key>Java</key>
+	<dict>
+		<key>StartOnMainThread</key>
+                <true/>
+		<key>ClassPath</key>
+		<string>/Applications/Soar-8.6.2/soar-library/swt-osx.jar:/Applications/Soar-8.6.2/soar-library/sml.jar:$JAVAROOT/tanksoar.jar</string>
+		<key>JVMVersion</key>
+		<string>1.4*</string>
+		<key>MainClass</key>
+		<string>edu.umich.tanksoar.TanksoarJ</string>
+		<key>VMOptions</key>
+		<string>-Xmx512m -Djava.library.path=/Applications/Soar-8.6.2/lib:/Applications/Soar-8.6.2/soar-library -Dorg.eclipse.swt.internal.carbon.smallFonts</string>
+		<key>WorkingDirectory</key>
+		<string>/Applications/Soar-8.6.2/soar-library</string>
+	</dict>
+	<key>LSEnvironment</key>
+	<dict>
+		<key>DYLD_LIBRARY_PATH</key>
+		<string>/Applications/Soar-8.6.2/lib</string>
+		<key>LD_LIBRARY_PATH</key>
+		<string>/Applications/Soar-8.6.2/lib</string>
+	</dict>
+</dict>
+</plist>

@@ -1,0 +1,80 @@
+README
+
+This directory contains the source for a mostly complete HTML 3.2 parser. It
+is based upon the "-//W3C//DTD HTML 3.2 Draft 19960821//EN" DTD. Unlike most
+browsers, this parser is rather finicky about the input. Although correct HTML
+3.2 should get through it without causing an error, it is by no means a
+validating parser. For that I suggest you use James Clark's SP SGML parser at
+<http://www.jclark.com/sp/index.htm>. Certain things are not implemented
+properly: I encourage you to take this parser as a starting point and improve
+it. Limitations I'm aware of are:
+    o no inclusion or exclusion exceptions. I've tried to fake it in a couple
+      of places. You may run into problems that require further hackery
+      though.
+    o incorrect handling of character data. Mostly it works OK, but you'll see
+      extra record end characters (newlines).
+    o no entity handling. This would be a good place for someone to start
+      improving the parser. Use lexical actions to substitute the correct
+      characters for things like &amp; etc.
+    o doesn't ignore unknown tags.
+    o doesn't parse attribute values. It doesn't check the values that are
+      provide for attributes, although it isn't difficult to add this to the
+      grammar for certain kinds of attribute(hint, hint).
+
+Building and running the HTML parser
+
+The parser is written using JJTree to create a simple representation of the
+HTML input. To build the parser you have to:
+     1. run JJTree on the source
+     2. run JavaCC on the grammar file that JJTree generates
+     3. compile the Java code in the usual way
+     4. run the parser on some input
+
+Here's how a build looks on my system:
+
+adl% jjtree html-3.2.jjt
+Java Compiler Compiler Version 0.7pre5 (Tree Builder Version 0.3pre3)
+Copyright (c) 1996, 1997 Sun Microsystems Inc.
+(type "jjtree" with no arguments for help)
+Reading from file html-3.2.jjt . . .
+File "Node.java" does not exist.  Will create one.
+File "SimpleNode.java" does not exist.  Will create one.
+Annotated grammar generated successfully in html-3.2.jj
+
+adl% javacc html-3.2.jj
+Java Compiler Compiler Version 0.7pre5 (Parser Generator)
+Copyright (c) 1996, 1997 Sun Microsystems Inc.
+(type "javacc" with no arguments for help)
+Reading from file html-3.2.jj . . .
+File "ParseError.java" does not exist.  Will create one.
+File "TokenMgrError.java" does not exist.  Will create one.
+File "ParseException.java" does not exist.  Will create one.
+File "Token.java" does not exist.  Will create one.
+File "ASCII_CharStream.java" does not exist.  Will create one.
+Parser generated successfully.
+
+adl% javac html32.java
+
+adl% java html32 <README.html
+Reading from standard input...
+html
+ head
+  title
+   PCDATA: README
+ body
+  h1
+   PCDATA: README
+  p
+   PCDATA: This directory contains the source for a mostly complete HTML
+      3.2 parser.  It is based upon the "-//W3C//DTD HTML 3.2 Draft
+      19960821//EN" DTD.  Unlike most browsers, this parser is rather
+      finicky about the input.  In addition, certain things are not
+      implemented properly.  I encourage you to take this parser as a
+      starting point and improve it.  Limitations I'm aware of are:
+...
+
+Notes
+
+This parser uses JJTree Simple mode. It also uses a couple of specialized node
+classes for representing PCDATA and attributes. It should all seem pretty
+obvious once you take a look.

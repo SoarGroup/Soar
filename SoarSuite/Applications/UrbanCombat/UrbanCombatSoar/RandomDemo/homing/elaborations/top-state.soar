@@ -1,0 +1,47 @@
+sp {elaborate*top-state*top-state
+   (state <s> ^superstate nil)
+-->
+   (<s> ^top-state <s>)
+}
+
+sp {elaborate*target*heading
+   (state <s> ^target-info.location.x <tx>
+              ^target-info.location.y <ty>
+              ^io.input-link.location.x <lx>
+              ^io.input-link.location.y <ly>)
+-->
+   (<s> ^heading-info.target-heading (compute-heading <ly> <lx> <ty> <tx>))
+}
+
+sp {elaborate*heading*diffs
+   (state <s> ^heading-info.target-heading <th>
+              ^io.input-link.angles.yaw <h>
+              ^heading-info.diffs <d>)
+-->
+   (<d> ^diff (- (+ 180 <th>) (+ 180 <h>)))
+   (<d> ^modulo-diff (- (- (+ 180 <h>) (+ 180 <th>)) 360))
+}
+
+sp {elaborate*check*diff
+   (state <s> ^heading-info.diffs.diff {<= 45 >= -45})
+-->
+   (<s> ^operator-state.below-threshold true)
+}
+
+sp {elaborate*check*modulo-diff
+   (state <s> ^heading-info.diffs.modulo-diff {<= 45 >= -45})
+-->
+   (<s> ^operator-state.below-threshold true)
+}
+              
+sp {elaborate*go-right
+   (state <s> ^heading-info.diffs.diff <= 0)
+-->
+   (<s> ^operator-state.should-turn right)
+}
+
+sp {elaborate*go-left
+   (state <s> ^heading-info.diffs.diff > 0)
+-->
+   (<s> ^operator-state.should-turn left)
+}

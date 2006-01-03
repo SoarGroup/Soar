@@ -1,0 +1,12 @@
+source _firstload.soar
+pushd all
+source all_source.soar
+popd
+pushd elaborations
+source elaborations_source.soar
+popd
+source fire-on-command.soar
+source I-Dont-Know.soar
+source init-map.soar
+source move.soar
+source Turn.soar

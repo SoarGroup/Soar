@@ -1,0 +1,33 @@
+Eaters and Tanksoar (formerly JavaEnvironments) building guide under Eclipse
+Alex Roper <calmofthestorm@gmail.com>
+
+This file explains how to download and build all necessary modules to run JavaTanksoar, JavaEaters, or both using Eclipse.
+If you just want to build the projects, consider using the batch file method instead as it is much quicker and easier.
+
+First, you must check out all the necessary modules to make soar-library, as detailed elsewhere.
+
+Download Eclipse from the internet, and unzip. Once you have chosen a workspace, click "File->New->Project...". Select 
+"Checkout project from CVS" under the CVS heading:
+	Host: winter.eecs.umich.edu
+	Repository path: /cvsroot/soar
+	Connection type: extssh
+
+
+Enter the proper credentials and other information, and select "use an existing module" then "JavaBaseEnvironment" as well as JavaTanksoar and/or JavaEaters.
+(be sure to select "checkout into workspace as projects" when that dialog comes up.
+
+Next you must import the sml and swt jars from your soar-library folder. (Tip: you can click and drag from your window manager)
+Right click on the JavaBaseEnvironment project, select "Import...". Select "File system" and then
+browse to your soar-library folder and select sml.jar and the appropriate swt jar for your operating system. When done, click "finish". 
+
+Note that execution will fail unless you also place the libraries SoarKernelSML, ElementXML, and Java_sml_ClientInterface in the project
+directory (either with Eclipse import or just moving it there). You'll also need an SWT library (they're in soar-library).
+
+To execute, choose "Run->Run..." and double click on "Java Application". For Project select either JavaEaters or JavaTanksoar,
+and for main class select either TanksoarJ or Eaters. Then click run. (Tip: CTRL+F11 is run last launched run, and F11 is debug
+last run)
+
+Note that if you use my directions you must reimport libraries after rebuilding.
+
+Note that if you modify the files outside Eclipse you must sync Eclipse with the filesystem (IE select each project in the explorer
+and hit F5)

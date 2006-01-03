@@ -1,0 +1,45 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSML", "..\..\ClientSML\ClientSML.vcproj", "{3EDBED11-A1B3-4E00-8B6E-652523D482F0}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConnectionSML", "..\..\ConnectionSML\ConnectionSML.vcproj", "{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ElementXML", "..\..\ElementXML\ElementXML.vcproj", "{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "towersSML", "towersSML.vcproj", "{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{3EDBED11-A1B3-4E00-8B6E-652523D482F0}.Debug.ActiveCfg = Debug|Win32
+		{3EDBED11-A1B3-4E00-8B6E-652523D482F0}.Debug.Build.0 = Debug|Win32
+		{3EDBED11-A1B3-4E00-8B6E-652523D482F0}.Release.ActiveCfg = Release|Win32
+		{3EDBED11-A1B3-4E00-8B6E-652523D482F0}.Release.Build.0 = Release|Win32
+		{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}.Debug.ActiveCfg = Debug|Win32
+		{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}.Debug.Build.0 = Debug|Win32
+		{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}.Release.ActiveCfg = Release|Win32
+		{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}.Release.Build.0 = Release|Win32
+		{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}.Debug.ActiveCfg = Debug|Win32
+		{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}.Debug.Build.0 = Debug|Win32
+		{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}.Release.ActiveCfg = Release|Win32
+		{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}.Release.Build.0 = Release|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Debug.ActiveCfg = Debug|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Debug.Build.0 = Debug|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release.ActiveCfg = Release|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

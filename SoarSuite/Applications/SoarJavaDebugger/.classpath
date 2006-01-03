@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path=""/>
+	<classpathentry sourcepath="JRE_SRC" kind="var" path="JRE_LIB">
+		<attributes>
+			<attribute value="http://java.sun.com/j2se/1.4.2/docs/api" name="javadoc_location"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="E:/SoarMich/soar-library/sml.jar"/>
+	<classpathentry kind="lib" path="E:/SoarMich/soar-library/swt-windows.jar"/>
+	<classpathentry kind="output" path=""/>
+</classpath>

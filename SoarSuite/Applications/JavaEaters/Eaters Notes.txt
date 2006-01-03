@@ -1,0 +1,74 @@
+Notes on Eaters-Soar interfacing
+Alex Roper
+July 25, 2005
+
+This brief file describes in varying detail the changes I made to John Duchi's Eaters simulation
+in order to make it work with soar.
+
+First, I cleaned up a lot of threading issues. Now, there is one main thread (the one that begins execution),
+and extra threads are spun as necessary. Certain interface functions cause a thread to be spun, in particular
+the Run button to run Soar. SML will run in a seperate thread from the main one because SML calls to
+RunSoarForever are blocking.
+
+I also caused buttons to be greyed when they may not be clicked (eg, you cannot stop if you're not running,
+you cannot run if there are no agents)
+
+Human eaters: I took a fair amount of leeway in designing the Soar implementation of this because there were
+no human eaters in the Tcl implementation. John had programmed the interface into this Java version, however.
+You CANNOT RUN OR STEP THE SIMULATION WITHOUT ANY SOAR EATERS. I can't imagine anyone wanting to play Eaters
+single player and it would be surprisingly difficult to implement so I didn't bother. You also cannot run
+with human eaters in the game, it will automatically step after all human controlled eaters have moved. Each
+time it is your turn, make a move on the human eater window(s). After you have made a choice for an eater,
+its window will grey so you cannot make another move. Once all human eaters have moved, the simulation will
+advance a turn. (One note: there is no defined order for eaters to move, although it will be the same each
+turn. Even if your eater doesn't move as soon as you give it a command, it will move before the next turn is
+processed, the interface simply caches your move selection and feeds it to the sim when asked for it.)
+
+Seater files: See ropera.seater and complex.seater for examples. Seater files allow you to choose the startup
+location and color of an eater in addition to its .soar file. If an invalid (has wall, already eater, or out
+of bounds) location is specified, the Eater is assigned a random position. The same goes for color, if you
+choose a color that only you can see (more specifically, one not in the sim) or one that is already in use,
+the sim will generate a random color. Pass the --warn-seater option on the commandline
+to generate warnings when these random replaces occur or --error-seater to exit the sim with fatal error
+if they occur. You can also specify more than one location and/or color in the hopes that one of them will
+be valid. The one chosen for the sim will be the LAST VALID option. See complex.seater for a needlessly
+complex but quite thorough and well-commented example.
+
+I also had color prepended to the agent name, which wasn't in the original specification but can aid
+command-line operation when using seater files.
+
+I removed the -e commandline options; it's obsolete with .seater files.
+The -c option is commented out; the only time you wouldn't have a control panel is if you're running with
+--windows off.
+
+New commandline options:
+-c				Clear log before writing (default is to append, such as for running a series of sims)
+-r 				Run as soon as loaded. Will also quit automatically if windows are off.
+-l <file>		Log events to file
+--warn-seater	Log any times seater files must be overridden
+--error-seater	Exit fatally if seater must be overriden
+-v <#>			Set log verbosity (no effect without -l flag).
+	0: Log final scores
+	1: Also log eaters' collisions
+	2: Also log eat bonus food
+	3: Also log eat normal food
+	4: Also log jumps
+	5: Also log moves
+	
+I also added spelled-out versions to make the command line more human-readable.
+
+--run			-r
+--log			-l
+--verbosity		-v
+--board			-b
+--map			-m
+--windows		-w
+--agent			-a
+--clear-log		-c
+
+Known Issues:
+ * Attempting to exit while Soar is running gives a popup "You must stop the simulation first". The logical behavior would be to stop the sim
+   then quit, but due to threading issues this is fairly complex.
+ * You can't run Eaters with only human agents (There's always Halo if you're bored, geez)
+ * In the log, you will see eaten messages from eaters before all of them have been created. This is because
+   they eat the food in their square of creation as soon as they are created.

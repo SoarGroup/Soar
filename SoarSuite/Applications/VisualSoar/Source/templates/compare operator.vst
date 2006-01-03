@@ -1,0 +1,9 @@
+sp {$super-operator$*compare*$operator$
+   (state <s> ^name $super-operator$
+              ^operator <o1> +
+                        <o2> +)
+   (<o1> ^name $operator$)
+   (<o2> ^name)
+   -->
+   (<s> ^operator <o1> > <o2>)
+}
