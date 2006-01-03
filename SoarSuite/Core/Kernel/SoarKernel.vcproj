@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="SoarKernelSource"
+	Name="SoarKernel"
 	ProjectGUID="{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}"
 	RootNamespace="SoarKernelSource"
 	SccProjectName=""
