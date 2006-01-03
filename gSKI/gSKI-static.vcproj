@@ -16,7 +16,7 @@
 			OutputDirectory="build"
 			IntermediateDirectory="$(OutDir)/Debug-static"
 			ConfigurationType="4"
-			UseOfMFC="1"
+			UseOfMFC="0"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
@@ -27,9 +27,11 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;GSKI;NO_MEGA_UNIT_TESTS;GSKI_DEBUG_RELEASE_IMPL"
 				GeneratePreprocessedFile="0"
 				KeepComments="FALSE"
+				StringPooling="TRUE"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
+				EnableFunctionLevelLinking="TRUE"
 				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"
@@ -76,8 +78,9 @@
 			WholeProgramOptimization="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="1"
+				Optimization="3"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="2"
 				OmitFramePointers="TRUE"
 				AdditionalIncludeDirectories="include;&quot;lib_src\pcre-4.5&quot;;..\Kernel\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;GSKI;NO_MEGA_UNIT_TESTS"
@@ -91,7 +94,7 @@
 				ObjectFile="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="FALSE"
+				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>

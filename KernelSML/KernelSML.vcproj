@@ -22,9 +22,11 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\gSKI\include;..\ClientSML\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG"
+				StringPooling="TRUE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
+				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="0"
 				AssemblerListingLocation="$(IntDir)/"
 				ObjectFile="$(IntDir)/"
@@ -74,15 +76,21 @@
 			WholeProgramOptimization="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="3"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="2"
+				OmitFramePointers="TRUE"
 				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\gSKI\include;..\ClientSML\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS"
+				StringPooling="TRUE"
 				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="0"
 				AssemblerListingLocation="$(IntDir)/"
 				ObjectFile="$(IntDir)/"
 				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="4"
-				Detect64BitPortabilityProblems="FALSE"
+				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
