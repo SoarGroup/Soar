@@ -1,8 +1,4 @@
 Microsoft Visual Studio Solution File, Format Version 8.00
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarKernelSource", "Core\Kernel\SoarKernelSource.vcproj", "{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gSKI-static", "Core\gSKI\gSKI-static.vcproj", "{0F4205EE-35EA-4421-8F74-513603FF003F}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
@@ -51,6 +47,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "towersSML", "Applications\T
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarKernel", "Core\Kernel\SoarKernel.vcproj", "{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Ansi Release = Ansi Release
@@ -58,12 +58,6 @@ Global
 		Release = Release
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Ansi Release.ActiveCfg = Release|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Ansi Release.Build.0 = Release|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug.ActiveCfg = Debug|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug.Build.0 = Debug|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release.ActiveCfg = Release|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release.Build.0 = Release|Win32
 		{0F4205EE-35EA-4421-8F74-513603FF003F}.Ansi Release.ActiveCfg = Release|Win32
 		{0F4205EE-35EA-4421-8F74-513603FF003F}.Ansi Release.Build.0 = Release|Win32
 		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug.ActiveCfg = Debug|Win32
@@ -136,6 +130,12 @@ Global
 		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Debug.Build.0 = Debug|Win32
 		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release.ActiveCfg = Release|Win32
 		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release.Build.0 = Release|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Ansi Release.ActiveCfg = Release|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Ansi Release.Build.0 = Release|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug.ActiveCfg = Debug|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug.Build.0 = Debug|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release.ActiveCfg = Release|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
