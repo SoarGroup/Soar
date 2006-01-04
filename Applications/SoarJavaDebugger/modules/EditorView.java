@@ -17,16 +17,12 @@ import helpers.FormDataHelper;
 import manager.Pane;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 
 import sml.Agent;
@@ -228,7 +224,7 @@ public class EditorView extends AbstractView
 		m_CommandCombo.addKeyListener(new KeyAdapter() { public void keyPressed(KeyEvent e) { comboKeyPressed(e) ; } }) ;
 		
 		// Decide how many rows to show in the combo list
-		m_CommandCombo.setVisibleItemCount(this.m_CommandHistory.kMaxHistorySize > 10 ? 10 : this.m_CommandHistory.kMaxHistorySize) ;
+		m_CommandCombo.setVisibleItemCount(CommandHistory.kMaxHistorySize > 10 ? 10 : CommandHistory.kMaxHistorySize) ;
 
 		// Create the control that will display output from the commands
 		createDisplayControl(m_Container) ;
@@ -261,7 +257,7 @@ public class EditorView extends AbstractView
 
 	protected void textKeyPressed(KeyEvent e)
 	{
-		Text text = (Text)e.getSource() ;
+		//Text text = (Text)e.getSource() ;
 		
 		if (e.character == '\r' && (e.stateMask & SWT.CONTROL) > 0)
 		{

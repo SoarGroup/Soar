@@ -16,11 +16,9 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.graphics.* ;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.*;
 
 import sml.Agent;
 
-import general.Debug;
 import general.JavaElementXML;
 import helpers.FormDataHelper;
 
@@ -386,7 +384,7 @@ public class MainWindow
 
   		// Reset the default text font (once all windows have been created)
 		// as part of "the default layout".
-  		m_Frame.setTextFont(m_Frame.kDefaultFontData) ;  		
+  		m_Frame.setTextFont(MainFrame.kDefaultFontData) ;  		
   	}
   	
   	/********************************************************************************************
@@ -560,7 +558,7 @@ public class MainWindow
 		{
 			// Look up the logical type of window this is (we store this when the window is created).
 			// This helps with debugging.
-			String type = (String)controls[i].getData(kWindowType) ;
+			// String type = (String)controls[i].getData(kWindowType) ;
 			// System.out.println("Saving " + type) ;
 			
 			// When we reach a pane we're at a leaf in the layout logic and need
@@ -673,7 +671,7 @@ public class MainWindow
 	protected void loadSwtFromXML(MainFrame frame, Document doc, Composite parent, JavaElementXML element) throws Exception
 	{
 		String tag = element.getTagName() ;
-		String className = element.getAttributeThrows(JavaElementXML.kClassAttribute) ;
+		//String className = element.getAttributeThrows(JavaElementXML.kClassAttribute) ;
 		int style = element.getAttributeIntThrows("style") ;
 
 		// We could rebuild a generic SWT object from the class using reflection, but it's actually simpler (so far) to just

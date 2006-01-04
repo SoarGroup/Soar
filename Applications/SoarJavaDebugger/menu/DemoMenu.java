@@ -14,12 +14,6 @@ package menu;
 import java.io.File;
 
 import org.eclipse.swt.widgets.*;
-import org.eclipse.swt.widgets.Dialog;
-import org.eclipse.swt.*;
-
-import sml.Agent;
-import sml.AnalyzeXML;
-import sml.Kernel;
 import sml.sml_Names;
 
 import debugger.MainFrame;
@@ -131,7 +125,6 @@ public class DemoMenu
 		String initSoar = m_Document.getSoarCommands().getInitSoarCommand() ;
 		m_Frame.executeCommandPrimeView(initSoar, true) ;
 		
-		boolean done = false ;
 		File filePath = null ;
 
 		String libraryPath = getLibraryLocation() ;

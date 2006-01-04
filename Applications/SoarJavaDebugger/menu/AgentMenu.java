@@ -15,7 +15,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 
 import sml.Agent;
-import sml.Kernel;
 
 import debugger.MainFrame;
 import dialogs.SelectAgentDialog;

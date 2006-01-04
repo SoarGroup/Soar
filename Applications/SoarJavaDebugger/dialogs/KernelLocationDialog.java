@@ -23,9 +23,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.events.*;
 
-import sml.Kernel;
 import debugger.MainFrame;
-import dialogs.RemoteDialog.RemoteInfo;
 
 /************************************************************************
  * 
@@ -73,7 +71,6 @@ public class KernelLocationDialog extends BaseDialog
 		super(frame.getWindow(), title, true) ;
 
 		m_Frame = frame ;
-		int margin = 10 ;
 
 		getOpenArea().setLayout(new FormLayout()) ;
 

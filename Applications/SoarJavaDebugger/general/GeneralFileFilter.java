@@ -44,8 +44,6 @@ package general;
 import java.io.File;
 import java.util.Hashtable;
 import java.util.Enumeration;
-import javax.swing.*;
-import javax.swing.filechooser.*;
 
 /**
  * A convenience implementation of GeneralFileFilter that filters out

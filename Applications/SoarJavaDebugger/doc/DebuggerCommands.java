@@ -64,13 +64,13 @@ public class DebuggerCommands
 	{
 		String expanded = m_Document.getExpandedCommandLine(command) ;
 
-		if (kClear.equalsIgnoreCase(command))
+		if (kClear.equalsIgnoreCase(expanded))
 		{
 			view.clearDisplay() ;
 			return null ;
 		}
 		
-		if (kQuit.equalsIgnoreCase(command) || kExit.equalsIgnoreCase(command))
+		if (kQuit.equalsIgnoreCase(expanded) || kExit.equalsIgnoreCase(expanded))
 		{
 			m_Frame.close() ;
 		}

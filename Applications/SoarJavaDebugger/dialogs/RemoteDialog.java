@@ -14,8 +14,6 @@ package dialogs;
 import helpers.FormDataHelper;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.*;
 
@@ -85,7 +83,6 @@ public class RemoteDialog extends BaseDialog
 		super(frame.getWindow(), title, true) ;
 
 		m_Frame = frame ;
-		int margin = 10 ;
 
 		//getOpenArea().setLayout(new FormLayout()) ;
 

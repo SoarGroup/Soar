@@ -15,15 +15,11 @@ import doc.events.*;
 import sml.* ;
 import debugger.* ;
 import general.AppProperties;
-import manager.* ;
 import modules.*;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.*;
 
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 
 /********************************************************************************************
 * 
@@ -131,7 +127,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 			e.printStackTrace();
 		}
 		
-		if (this.kDocInOwnThread)
+		if (Document.kDocInOwnThread)
 		{
 			m_DocumentThread = new DocumentThread(this) ;
 			m_DocumentThread.start() ;
@@ -319,12 +315,13 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		// Added this just for testing
 //		int jSystemStartCallback = m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, "systemEventHandler", this) ;
 
-		int jAgentCreatedCallback = m_Kernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_AFTER_AGENT_CREATED, this, this) ;
-		int jAgentDestroyedCallback = m_Kernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_DESTROYED, this, this) ;
+		m_Kernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_AFTER_AGENT_CREATED, this, this) ;
+		m_Kernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_DESTROYED, this, this) ;
 		
 		// Register for an event that happens once each time agents are run a step to give me a chance to check for interruptions
 		// and pump the UI thread along a bit.
-		int jInterruptCallback = m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_INTERRUPT_CHECK, this, this) ;
+		m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_INTERRUPT_CHECK, this, this) ;
+		
 		m_Kernel.SetInterruptCheckRate(50) ;
 	}
 	
@@ -347,7 +344,6 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 
 		MainFrame frame = getFirstFrame() ;
 		String kernelSML = "SoarKernelSML" ;
-		String libPath = null ;
 
 		if (frame != null)
 		{
@@ -358,10 +354,6 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 			{
 				// Adopt this as the DLL to load
 				kernelSML = path ;
-				
-				// Extract the path to the DLL and use that as the set-library-location path
-				File filePath = new File(path) ;
-				libPath = filePath.getParent() ;
 			}
 		}
 		
@@ -428,7 +420,8 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 	{
 		m_Kernel.DestroyAgent(agent) ;
 	}
-	
+
+	/*
 	private void forceShutdown()
 	{
 		// If the user tries to shutdown while Soar is running locally we have a problem.
@@ -455,8 +448,9 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 					System.exit(0) ;
 				}
 			}
-		}		
+		}
 	}
+	*/
 	
 	/********************************************************************************************
 	 * 
@@ -842,7 +836,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		if (agent == null)
 			return "Error: Agent is missing.  Need to create one before executing commands" ;
 
-		if (this.kDocInOwnThread)
+		if (Document.kDocInOwnThread)
 		{
 			// If Soar commands run in their own thread we issue the command and then pump the UI thread for messages
 			// while waiting for a response.  We do this so that folks calling here can see this as a synchronous call

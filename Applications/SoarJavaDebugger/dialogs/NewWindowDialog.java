@@ -19,8 +19,6 @@ import org.eclipse.swt.layout.*;
 
 import debugger.MainFrame;
 import doc.* ;
-import general.* ;
-import helpers.FormDataHelper;
 
 /********************************************************************************************
 * 
@@ -84,8 +82,6 @@ public class NewWindowDialog extends BaseDialog
 		{
 			moduleNames[i] = ((Module)modules.get(i)).getName() ;
 		}
-
-		int margin = 10 ;
 
 		//getOpenArea().setLayout(new FormLayout()) ;
 

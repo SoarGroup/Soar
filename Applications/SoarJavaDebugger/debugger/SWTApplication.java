@@ -14,15 +14,6 @@ package debugger;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.*;
-import org.eclipse.swt.custom.*;
-import org.eclipse.swt.dnd.*;
-import org.eclipse.swt.events.*;
-import org.eclipse.swt.program.*;
-import org.eclipse.swt.graphics.*;
-
-import helpers.FormDataHelper;
-
-import java.io.* ;
 
 import sml.Agent;
 import sml.Kernel;
@@ -77,6 +68,7 @@ public class SWTApplication
 		display.dispose ();
 	}
 	
+	/*
 	private void clearClipboard()
 	{
 	 	Clipboard clipboard = new Clipboard(display);
@@ -85,6 +77,7 @@ public class SWTApplication
 		clipboard.setContents(new Object[]{textData}, new Transfer[]{textTransfer});
 		clipboard.dispose();		
 	}	
+	*/
 	
 	// Returns true if a given option appears in the list
 	// (Use this for simple flags like -remote)

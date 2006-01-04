@@ -25,7 +25,6 @@ import dialogs.SwtInputDialog;
 import doc.*;
 import doc.events.*;
 import modules.*;
-import helpers.*;
 
 import sml.*;
 
@@ -141,10 +140,9 @@ public class MainFrame
 
 	private SoarChangeListener m_SoarChangeListener = null;
 
-	private boolean m_Shown = false;
 	private boolean m_bClosing = false;
 
-	private java.awt.print.PageFormat m_PageFormat = new java.awt.print.PageFormat();
+	//private java.awt.print.PageFormat m_PageFormat = new java.awt.print.PageFormat();
 
 	/**
 	 * We'll keep a list of colors here that we wish to use elsewhere. When the
@@ -679,7 +677,7 @@ public class MainFrame
 		m_LayoutMenu = LayoutMenu.createMenu(this, getDocument(), "&Layout");
 		m_AgentMenu = AgentMenu.createMenu(this, getDocument(), "&Agents");
 		m_KernelMenu = KernelMenu.createMenu(this, getDocument(), "&Kernel");
-
+		
 		getShell().setMenuBar(m_MenuBar);
 
 		boolean loaded = loadUserLayoutFile() ;

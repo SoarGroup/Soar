@@ -15,12 +15,10 @@ import general.JavaElementXML;
 import manager.MainWindow;
 import manager.Pane;
 import modules.AbstractView;
-import modules.TextTraceView;
 import debugger.MainFrame;
 import dialogs.NewWindowDialog;
 
 import org.eclipse.swt.*;
-import org.eclipse.swt.widgets.*;
 
 import sml.Kernel;
 
@@ -280,7 +278,7 @@ public class ScriptCommands
 		
 		// Find the XML element for the pane we're modifying
 		JavaElementXML existingPane = pane.getElementXML() ;
-		JavaElementXML parentXML = existingPane.getParent() ;
+		//JavaElementXML parentXML = existingPane.getParent() ;
 
 		// Force the pane to be a multi-view
 		existingPane.addAttribute(Pane.kAttributeSingleView, "false") ;

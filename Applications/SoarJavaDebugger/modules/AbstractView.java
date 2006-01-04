@@ -11,9 +11,6 @@
 ********************************************************************************************/
 package modules;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 
 import general.JavaElementXML;
 import manager.MainWindow;
@@ -21,7 +18,6 @@ import manager.Pane;
 
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.swt.layout.*;
 import org.eclipse.swt.graphics.* ;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -30,7 +26,6 @@ import org.eclipse.swt.events.*;
 import doc.* ;
 import doc.events.*;
 import debugger.* ;
-import dialogs.PropertiesDialog;
 
 import sml.Agent;
 

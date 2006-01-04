@@ -11,7 +11,6 @@
 ********************************************************************************************/
 package general;
 
-import general.* ;
 import java.io.*;
 
 import org.eclipse.swt.*;

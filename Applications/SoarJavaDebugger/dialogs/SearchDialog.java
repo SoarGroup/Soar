@@ -11,19 +11,14 @@
 ********************************************************************************************/
 package dialogs;
 
-import helpers.FormDataHelper;
-
 import modules.AbstractView;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
-import sml.Kernel;
 import debugger.MainFrame;
-import dialogs.RemoteDialog.RemoteInfo;
 
 /************************************************************************
  * 
