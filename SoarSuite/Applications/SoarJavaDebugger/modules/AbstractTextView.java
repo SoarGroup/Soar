@@ -11,13 +11,10 @@
 ********************************************************************************************/
 package modules;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.PrintWriter;
 
 import general.JavaElementXML;
 
-import manager.Pane;
 import menu.ParseSelectedText;
 
 import org.eclipse.swt.SWT;
@@ -28,9 +25,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.custom.*;
 
 import sml.Agent;
-
-import debugger.MainFrame;
-import doc.Document;
 
 /************************************************************************
  * 
@@ -167,7 +161,7 @@ public abstract class AbstractTextView extends AbstractComboView
 		try
 		{
 			Point mouse = m_Text.toControl(mouseX, mouseY) ;
-			int offset = m_Text.getOffsetAtLocation(mouse) ;
+			m_Text.getOffsetAtLocation(mouse) ;
 		}
 		catch (IllegalArgumentException ex)
 		{

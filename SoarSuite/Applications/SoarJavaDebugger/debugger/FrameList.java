@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import doc.Module;
-
 /********************************************************************************************
 * 
 * Used to store a list of all frame windows in the debugger.  (A frame window has a menu bar and

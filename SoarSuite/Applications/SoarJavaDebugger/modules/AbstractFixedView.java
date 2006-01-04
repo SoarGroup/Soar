@@ -20,7 +20,6 @@ import org.eclipse.swt.widgets.Menu;
 
 import sml.Agent;
 import debugger.MainFrame;
-import doc.Document;
 
 /************************************************************************
  * 

@@ -10,7 +10,6 @@
 package debugger;
 
 import java.io.*;
-import doc.Document;
 
 public class Application {
 	

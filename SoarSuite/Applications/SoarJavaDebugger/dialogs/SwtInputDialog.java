@@ -16,7 +16,6 @@ import helpers.FormDataHelper;
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.*;
-import org.eclipse.swt.graphics.* ;
 import org.eclipse.swt.events.*;
 
 /*****************************************************************************************
@@ -99,7 +98,7 @@ public class SwtInputDialog extends BaseDialog
 		promptLabel.setLayoutData(FormDataHelper.anchorTopLeft(margin)) ;
 		
 		// The field where the user types their response
-		Text entryField = new Text(getOpenArea(), multiLine ? SWT.MULTI : SWT.NULL) ;
+		Text entryField = new Text(getOpenArea(), m_MultiLine ? SWT.MULTI : SWT.NULL) ;
 		entryField.setText(initialValue) ;
 		entryField.setFocus() ;
 		

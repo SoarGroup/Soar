@@ -17,7 +17,6 @@ import doc.* ;
 
 import org.eclipse.swt.widgets.Menu;
 
-import sml.AnalyzeXML;
 import sml.ClientAnalyzedXML;
 import sml.sml_Names;
 

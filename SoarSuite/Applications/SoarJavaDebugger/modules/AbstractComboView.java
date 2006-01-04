@@ -18,9 +18,6 @@ import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.graphics.* ;
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
 
 import sml.Agent;
@@ -32,7 +29,6 @@ import sml.smlSystemEventId;
 
 import debugger.* ;
 import doc.* ;
-import doc.events.*;
 import general.* ;
 import helpers.*;
 
@@ -277,7 +273,7 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 		m_CommandCombo.addModifyListener(new ModifyListener() { public void modifyText(ModifyEvent e) { comboTextModified(e) ; } } ) ;
 		
 		// Decide how many rows to show in the combo list
-		m_CommandCombo.setVisibleItemCount(this.m_CommandHistory.kMaxHistorySize > 10 ? 10 : this.m_CommandHistory.kMaxHistorySize) ;
+		m_CommandCombo.setVisibleItemCount(CommandHistory.kMaxHistorySize > 10 ? 10 : CommandHistory.kMaxHistorySize) ;
 
 		// Listen for when this window is disposed and unregister for anything we registered for
 		m_Container.addDisposeListener(new DisposeListener() { public void widgetDisposed(DisposeEvent e) { removeListeners() ; } } ) ;

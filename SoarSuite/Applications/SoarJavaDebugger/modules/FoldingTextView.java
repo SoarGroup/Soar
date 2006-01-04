@@ -21,7 +21,6 @@ import manager.Pane;
 import menu.ParseSelectedText;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.*;

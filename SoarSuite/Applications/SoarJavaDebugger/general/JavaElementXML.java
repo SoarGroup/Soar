@@ -1167,7 +1167,7 @@ public class JavaElementXML
 		
 		while (!endTag)
 		{
-			if (lex.Have(lex.kQuotedString))
+			if (lex.Have(LexXML.kQuotedString))
 			{
 				// Quoted strings are used to contain content values
 				String contents = lex.getCurrentTokenValue() ;
@@ -1205,7 +1205,7 @@ public class JavaElementXML
 		}
 		
 		// Once we reach the end marker "</" we just need to finish up the stream.
-		tagName = lex.MustBe(lex.kIdentifier) ;
+		tagName = lex.MustBe(LexXML.kIdentifier) ;
 		
 		if (!tagName.equals(element.getTagName()))
 			throw new Exception("The closing tag for " + element.getTagName() + " doesn't match the opening tag") ;

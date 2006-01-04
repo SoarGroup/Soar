@@ -11,12 +11,10 @@
 ********************************************************************************************/
 package menu;
 
-import general.* ;
 import debugger.* ;
 import doc.Document;
 
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.graphics.FontData ;
 
 /********************************************************************************************
 * 

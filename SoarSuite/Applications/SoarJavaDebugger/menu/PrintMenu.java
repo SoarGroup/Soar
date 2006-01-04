@@ -11,7 +11,6 @@
 ********************************************************************************************/
 package menu;
 
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Menu;
 
 import debugger.MainFrame;

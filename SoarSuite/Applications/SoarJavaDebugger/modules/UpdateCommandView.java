@@ -11,10 +11,6 @@
 ********************************************************************************************/
 package modules;
 
-import org.eclipse.swt.graphics.Color;
-
-import dialogs.PropertiesDialog;
-
 /************************************************************************
  * 
 * This version of the BaseCommandView updates at the end of each run

@@ -11,24 +11,20 @@
 ********************************************************************************************/
 package modules;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import general.JavaElementXML;
 import manager.Pane;
-import modules.ButtonView.ButtonInfo;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 
 import sml.Agent;
 import sml.Kernel;
 import sml.smlAgentEventId;
 import sml.smlPhase;
-import sml.smlRunEventId;
 import sml.smlSystemEventId;
 import sml.sml_Names;
 import debugger.MainFrame;

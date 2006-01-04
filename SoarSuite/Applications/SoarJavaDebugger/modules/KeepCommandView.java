@@ -11,14 +11,6 @@
 ********************************************************************************************/
 package modules;
 
-import java.util.ArrayList;
-
-import org.eclipse.swt.graphics.Color;
-
-import debugger.MainFrame;
-import dialogs.PropertiesDialog;
-import doc.* ;
-
 /********************************************************************************************
 * 
 * This version of the BaseCommandView does not erase the output window after each command,

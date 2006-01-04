@@ -186,7 +186,6 @@ public class ChooseFontDialog extends JPanel
 		m_AllFontDisplays = new FontDisplay[allFonts.length] ;
 		
 		// Fill in the list of all fonts in the system
-		int fixedCount = 0 ;
 		for (int i = 0 ; i < allFonts.length ; i++)
 		{
 			FontDisplay d = new FontDisplay(allFonts[i]) ;
@@ -288,7 +287,8 @@ public class ChooseFontDialog extends JPanel
 		
 		// We have to make the panel visible before we select the font name in the list
 		// or we can't make sure the font name is visible.
-		this.show(true) ;
+		this.setVisible(true) ;
+		//this.show(true) ;
 		
 		setSelectionFromFont(m_Font) ;
 	}

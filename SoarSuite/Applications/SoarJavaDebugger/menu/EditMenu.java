@@ -11,14 +11,11 @@
 ********************************************************************************************/
 package menu;
 
-import general.* ;
 import debugger.* ;
 import dialogs.SearchDialog;
 import doc.Document;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.graphics.FontData ;
 
@@ -103,7 +100,7 @@ public class EditMenu
 
 	private void useDefaultFont(ActionEvent e)
 	{
-  		m_Frame.setTextFont(m_Frame.kDefaultFontData) ;  		
+  		m_Frame.setTextFont(MainFrame.kDefaultFontData) ;  		
 	}
 
 	private void chooseFontPerformed(ActionEvent e)
