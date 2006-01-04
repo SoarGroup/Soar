@@ -100,9 +100,9 @@ set runCallbackId [$agent RegisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED Pha
 set structuredCallbackId [$agent RegisterForXMLEvent $smlEVENT_XML_TRACE_OUTPUT StructuredTraceCallback ""]
 
 #load the TOH productions
-set result [$agent LoadProductions demos/towers-of-hanoi/towers-of-hanoi.soar]
+set result [$agent LoadProductions ../demos/towers-of-hanoi/towers-of-hanoi.soar]
 #loads a function to test the user-defined RHS function stuff
-set result [$agent LoadProductions tests/TOHtest.soar]
+set result [$agent LoadProductions ../tests/TOHtest.soar]
 
 $agent RunSelf 2 $sml_ELABORATION
 
