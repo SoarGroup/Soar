@@ -5,9 +5,9 @@ del /S /Q *.class
 
 :compile
 @echo ----------=========Compiling=========----------
-javac.exe -classpath .;..\soar-library\swt-windows.jar;..\soar-library\sml.jar -sourcepath . debugger\Application.java
+javac.exe -classpath .;..\..\SoarLibrary\swt-windows.jar;..\..\SoarLibrary\sml.jar -sourcepath . debugger\Application.java
 @echo ----------=========Jarring...=========-----------
-jar.exe cfm ..\soar-library\SoarJavaDebugger.jar JarManifest-windows .
+jar.exe cfm ..\..\SoarLibrary\SoarJavaDebugger.jar JarManifest-windows .
 
 @echo.
 @echo.
