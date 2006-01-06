@@ -234,6 +234,19 @@ namespace gSKI
 	 this->AddClientRhsFunction(&m_CmdRhs) ;
 
      m_pPerfMon = new AgentPerformanceMonitor(this);
+
+	 
+	 // These need to be registered in gSKI RunListener because 
+	 // the gSKI event handler has to increment counters on these events.
+	 this->AddRunListener(gSKIEVENT_AFTER_ELABORATION_CYCLE, this) ;
+	 this->AddRunListener(gSKIEVENT_AFTER_INPUT_PHASE, this) ;
+	 this->AddRunListener(gSKIEVENT_AFTER_PROPOSE_PHASE, this) ;
+	 this->AddRunListener(gSKIEVENT_AFTER_DECISION_PHASE, this) ;
+	 this->AddRunListener(gSKIEVENT_AFTER_APPLY_PHASE, this) ;
+	 this->AddRunListener(gSKIEVENT_AFTER_OUTPUT_PHASE, this) ;
+	 this->AddRunListener(gSKIEVENT_AFTER_PREFERENCE_PHASE, this) ;  // Soar-7 mode only
+	 this->AddRunListener(gSKIEVENT_AFTER_WM_PHASE, this) ;          // Soar-7 mode only     
+	 
    }
 
    /*
@@ -248,6 +261,17 @@ namespace gSKI
     */
    Agent::~Agent()
    {
+
+	   //remove the RunListeners we created for the counters
+	   this->RemoveRunListener(gSKIEVENT_AFTER_ELABORATION_CYCLE, this) ;
+	   this->RemoveRunListener(gSKIEVENT_AFTER_INPUT_PHASE, this) ;
+	   this->RemoveRunListener(gSKIEVENT_AFTER_PROPOSE_PHASE, this) ;
+	   this->RemoveRunListener(gSKIEVENT_AFTER_DECISION_PHASE, this) ;
+	   this->RemoveRunListener(gSKIEVENT_AFTER_APPLY_PHASE, this) ;
+	   this->RemoveRunListener(gSKIEVENT_AFTER_OUTPUT_PHASE, this) ;
+	   this->RemoveRunListener(gSKIEVENT_AFTER_PREFERENCE_PHASE, this) ;  // Soar-7 mode only
+	   this->RemoveRunListener(gSKIEVENT_AFTER_WM_PHASE, this) ;          // Soar-7 mode only
+
       delete m_pPerfMon;
 
       // Cleaning up the input and output links and the working memory
@@ -473,7 +497,7 @@ namespace gSKI
       m_interruptFlags = stopLoc;
 
 	  // BUGBUG -- DJP: Temp code to add this agent as a run listener
-	  this->AddRunListener(gSKIEVENT_AFTER_APPLY_PHASE, this) ;
+	//KJC  this->AddRunListener(gSKIEVENT_AFTER_APPLY_PHASE, this) ;
 
       // If  we implement suspend, it goes in the run method, not
       //  here.
