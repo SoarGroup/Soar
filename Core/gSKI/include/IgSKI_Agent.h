@@ -265,6 +265,7 @@ namespace gSKI {
       virtual bool Interrupt(egSKIStopLocation    stopLoc, 
                              egSKIStopType        stopType,
                              Error*               err   = 0) = 0;
+	  virtual unsigned long GetInterruptFlags (Error* err = 0) = 0;
 
       /** 
        * @brief Clears any interrupts currently set for this agent

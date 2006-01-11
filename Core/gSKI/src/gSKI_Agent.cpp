@@ -489,16 +489,27 @@ namespace gSKI
       // We are in the stuff we can implement
       ClearError(err);
 
-      // If the agent is not running, we can interrupt now
-      if(m_runState == gSKI_RUNSTATE_STOPPED)
-         m_runState = gSKI_RUNSTATE_INTERRUPTED;
-
       // Tell the agent where to stop
       m_interruptFlags = stopLoc;
 
-	  // BUGBUG -- DJP: Temp code to add this agent as a run listener
-	//KJC  this->AddRunListener(gSKIEVENT_AFTER_APPLY_PHASE, this) ;
-
+	  // If the request for interrupt is gSKI_STOP_AFTER_DECISION_CYCLE, then it 
+	  // will be caught in the RunScheduler::CompletedRunType() and/or IsAgentFinished().
+	  // We don't want to interrupt agents until the appropriate time if the request is  
+	  // gSKI_STOP_AFTER_DECISION_CYCLE.
+	  
+      // These are immediate requests for interrupt, such as from RHS or application
+	  if ((gSKI_STOP_AFTER_SMALLEST_STEP == stopLoc) || (gSKI_STOP_AFTER_PHASE == stopLoc)) {
+		  m_agent->stop_soar = TRUE;
+		  // If the agent is not running, we should set the runState flag now so agent won't run
+		  if (m_runState == gSKI_RUNSTATE_STOPPED)
+		  {
+			  m_runState = gSKI_RUNSTATE_INTERRUPTED;
+		  }
+		  // Running agents must test stopLoc & stop_soar in Step method to see if interrupted.
+		  // Because we set m_agent->stop_soar == TRUE above, any running agents should return to
+		  // gSKI at the end of the current phase, even if interleaving by larger steps.  KJC
+	  }
+ 
       // If  we implement suspend, it goes in the run method, not
       //  here.
       m_suspendOnInterrupt = (stopType == gSKI_STOP_BY_SUSPENDING)? true: false;
@@ -539,6 +550,12 @@ namespace gSKI
             m_runState = gSKI_RUNSTATE_STOPPED;
          }
       }
+   }
+
+   unsigned long Agent::GetInterruptFlags(Error* err)
+   {
+      ClearError(err);
+      return m_interruptFlags;
    }
 
    /*
@@ -1787,10 +1804,10 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 	   unsigned long*  startCount        = getReleventCounter(stepSize);
 	   const unsigned long  END_COUNT    = (startCount)? ((*startCount) + count): 0;
   
+   	   bool interrupted  = (m_runState == gSKI_RUNSTATE_INTERRUPTED)? true: false;
+
 	   MegaAssert((count >= 0), "Cannot step for fewer than one count.");
-   
-	   bool interrupted  = (m_runState == gSKI_RUNSTATE_INTERRUPTED)? true: false;
-  
+
 	   if (! interrupted) {
 		   MegaAssert(!m_agent->system_halted, "System should not be halted here!");
 		   // Notify that agent is about to execute. (NOT the start of a run, just a step)
@@ -1810,14 +1827,28 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 		   }
 	   }
 
-	   // KJC:  I need to check that this test is the right one to make
-       if(m_interruptFlags & gSKI_STOP_AFTER_DECISION_CYCLE) 
+       if ((m_interruptFlags & gSKI_STOP_AFTER_SMALLEST_STEP) || 
+		   (m_interruptFlags & gSKI_STOP_AFTER_PHASE))
 	   {
 		   interrupted = true;
-		   // Notify of the interrupt
+	   }
+  
+	   // KJC: If a gSKI_STOP_AFTER_DECISION_CYCLE has been requested, need to
+	   // check that agent phase is at the proper stopping point before interrupting.
+       if ((m_interruptFlags & gSKI_STOP_AFTER_DECISION_CYCLE) && 
+		   (m_agent->current_phase == m_kernel->GetStopPoint()))
+	   {
+		   interrupted = true;
+	   }
+
+	   		   
+	   if (interrupted) 
+	   {
+	       // Notify of the interrupt
            RunNotifier nfAfterInt(this, m_lastPhase);
            m_runListeners.Notify(gSKIEVENT_AFTER_INTERRUPT, nfAfterInt);
 	   }
+
      
 	   egSKIRunResult retVal;
   
@@ -1833,7 +1864,8 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 		   if(interrupted)
 		   {
 			   m_runState = gSKI_RUNSTATE_INTERRUPTED;
-			   retVal     = gSKI_RUN_COMPLETED_AND_INTERRUPTED;
+			   //retVal     = gSKI_RUN_COMPLETED_AND_INTERRUPTED; //we always finish an interleave count
+			   retVal     = gSKI_RUN_INTERRUPTED;
 		   }
 		   else
 		   {

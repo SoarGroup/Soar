@@ -273,6 +273,8 @@ namespace gSKI
                      egSKIStopType        stopType,
                      Error*               err   = 0);
 
+	  unsigned long GetInterruptFlags (Error* err = 0);
+
       /** 
        * @brief Clears any interrupts currently set for this agent
        *
@@ -1375,6 +1377,7 @@ namespace gSKI
        */
       unsigned long* getReleventCounter(egSKIRunType runType);
       unsigned long* getReleventCounter(egSKIInterleaveType stepType);
+
       /** 
        * @brief Initializes the run counters and interrupt flags
        */
