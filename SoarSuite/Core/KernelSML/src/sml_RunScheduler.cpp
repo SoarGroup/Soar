@@ -460,19 +460,16 @@ void RunScheduler::CheckStopBeforePhase(egSKIRunType runStepSize)
 	// Just before this point, (in scheduler while loop) we've checked and fired the
 	// OutputComplete and OutputGenerated events, so it should be fine to step 
 	// an agent by phases until it gets to StopBefore, and then step the other
-	// agents in turn.  UNLESS:
-	//                    we were interrupted. 
-	//                    the StopBeforePt has moved since the last Run cmd
-	//                    user issued a "Run 0" command
-	// Then we'd need to cross the 
-	// Output-Input Boundary together and generate events...  For now, if interrupted,
-	// or error or halted, we won't do anything here, since we'd like interrupts to 
-	// happen at the right place during execution.
+	// agents in turn.   
+	//                    
+	// If an interrupt was requested, it will be detected inside StepInClientThread 
+	// and the appropriate events will be generated.  The runResult will come back as
+	// INTERRUPTED, and the while loops will exit so that the run stops.
 	//
 	// Support for "Run 0" is somewhat complicated, since we might very well 
 	// cross the I/O boundary.  So we'll try stepping til OUTPUT done, then generate
 	// Update events, then step again til StopBeforePt is reached.  Note:  when we support
-	// StopBeforeUpdate, we'll need to explicitly check for that before generating events.
+	// StopBeforeUpdateWorld, we'll need to explicitly check for that before generating events.
 
 	if (( runStepSize == gSKI_RUN_DECISION_CYCLE) || ( runStepSize == gSKI_RUN_FOREVER))
 	{
@@ -625,7 +622,7 @@ void RunScheduler::TerminateUpdateWorldEvents(bool removeListeners)
             gSKI_RUN_EXECUTING,
             gSKI_RUN_INTERRUPTED,
             gSKI_RUN_COMPLETED,
-            gSKI_RUN_COMPLETED_AND_INTERRUPTED // not useful.  step() doesn't return
+            gSKI_RUN_COMPLETED_AND_INTERRUPTED // not useful.  step() doesn't return it.
 
 *********************************************************************/
 egSKIRunResult RunScheduler::GetOverallRunResult()
@@ -766,12 +763,8 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize,
 		// Assume it is finished until proven otherwise
 		runFinished = true ;
 
-		//update relevant counters
-		//pAgent->MaxNilOutputCyclesReached = false;
-
 		//initialize stepList = copy of agentRunList
 		InitializeStepList();
-
 
 		// while not all agents have complete one RunType (agents still on stepList)
 		while (AgentsStillStepping())
@@ -861,7 +854,7 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize,
 	// Clean up anything stored for update world events
 	TerminateUpdateWorldEvents(true) ;
 
-	// BUGBUG Not sure how to quantify the results of running <n> agents in a single value
+	// Not sure how to quantify the results of running <n> agents in a single value
 	// You can query each agent for its GetResultOfRun() to know more.
 
 	overallResult = GetOverallRunResult();
