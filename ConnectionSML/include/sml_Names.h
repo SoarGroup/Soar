@@ -383,6 +383,7 @@ public:
 	static char const* const kCommand_GetConnections ;
 	static char const* const kCommand_SetConnectionInfo ;
 	static char const* const kCommand_GetAllInput ;
+	static char const* const kCommand_GetAllOutput ;
 	static char const* const kCommand_GetRunState ;
 	static char const* const kCommand_IsProductionLoaded	;
 	static char const* const kCommand_SendClientMessage	;

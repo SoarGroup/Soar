@@ -138,9 +138,9 @@ namespace gSKI
    {
       ClearError(error);
       
-      MegaAssert(false, "NOT IMPLEMENTED YET!");
-
-      rootObject = 0;
+      OutputWMObject* obj;
+      m_memory.GetOutputRootObject(&obj);
+      *rootObject = obj;
    }
 
    /*

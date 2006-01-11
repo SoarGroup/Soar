@@ -291,7 +291,7 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 			else
 			{
 				// See if this is the output-link itself (we want to keep a handle to that specially)
-				if (IsStringEqualIgnoreCase(pAttribute, sml_Names::kOutputLinkName))
+				if (!m_OutputLink && IsStringEqualIgnoreCase(pAttribute, sml_Names::kOutputLinkName))
 				{
 					m_OutputLink = new Identifier(GetAgent(), pValue, timeTag) ;
 				} else
@@ -553,6 +553,52 @@ bool WorkingMemory::SynchronizeInputLink()
 
 #ifdef _DEBUG
 	response.DeleteString(pStr) ;
+#endif
+
+	// Returns false if had any errors
+	return ok ;
+}
+
+/*************************************************************
+* @brief This method is used to update this client's representation
+*		 of the output link to match what is currently on the agent's
+*		 output link.
+*		 Calling this method recreates the entire output link tree on the
+*		 client side, invalidating any existing pointers.
+*
+*		 NOTE: Calling this method shouldn't generally be necessary as the output link
+*		 structures in the client are usually automatically kept in synch with the agent.
+*		 It's here in case a client connects to an existing kernel and agent
+*		 and wants to get up to date on the current state of the output link.
+*************************************************************/
+bool WorkingMemory::SynchronizeOutputLink()
+{
+	// Not supported for direct connections
+	if (GetConnection()->IsDirectConnection())
+		return false ;
+
+	AnalyzeXML incoming ;
+	ElementXML response ;
+
+	// Call to the kernel to get the current state of the input link
+	bool ok = GetConnection()->SendAgentCommand(&incoming, sml_Names::kCommand_GetAllOutput, GetAgentName()) ;
+	
+	if (!ok)
+		return false ;
+
+#ifdef _DEBUG
+	char* pStr = incoming.GenerateXMLString(true) ;
+#endif
+
+	// Erase the existing output link and create a new representation from scratch
+	delete m_OutputLink ;
+	m_OutputLink = NULL ;
+
+	// Process the new list of output -- as if it had just occurred in the agent (when in fact we're just synching with it)
+	ok = ReceivedOutput(&incoming, &response) ;
+
+#ifdef _DEBUG
+	incoming.DeleteString(pStr) ;
 #endif
 
 	// Returns false if had any errors

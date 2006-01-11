@@ -229,11 +229,6 @@ void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::IAgent
 		command.AddChild(pTag) ;
 
 		// Delete the entry from the time tag map
-		// The returned value points to the next item in the list
-
-		// voigtjr: this is not legal in gcc (nor defined in the sgi stl standard)
-		//iter = m_TimeTags.erase(iter) ;
-		// So replacing with this:
 		m_TimeTags.erase(iter++);
 	}
 
