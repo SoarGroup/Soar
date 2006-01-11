@@ -892,6 +892,48 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 		return false ;
 	}
 
+	// Test the ability to resynch the output link -- this should throw away our current output link representation
+	// and explicitly rebuild it to match what the agent currently has.
+	bool synchOutput = pAgent->SynchronizeOutputLink() ;
+
+	// This isn't supported for direct connections, so we need to check it did something first.
+	if (synchOutput)
+	{
+		cout << "Synched output link  -- should be the same as before" << endl ;
+		printWMEs(pAgent->GetOutputLink()) ;
+
+		// Find the move command again--just to make sure it came back after the synch
+		Identifier* pMove = (Identifier*)pAgent->GetOutputLink()->FindByAttribute("move", 0) ;
+
+		// We add an "alternative" to check that we handle shared WMEs correctly.
+		// Look it up here.
+		Identifier* pAlt = (Identifier*)pAgent->GetOutputLink()->FindByAttribute("alternative", 0) ;
+
+		if (!pAlt)
+		{
+			cout << "Failed to find the alternative move after synch output link" << endl ;
+			return false ;
+		}
+
+		// Should also be able to get the command through the "GetCommands" route which tests
+		// whether we've flagged the right wmes as "just added" or not.
+		int numberCommands = pAgent->GetNumberCommands() ;
+
+		// Get the first two commands (move and alternate)
+		Identifier* pCommand1 = pAgent->GetCommand(0) ;
+		Identifier* pCommand2 = pAgent->GetCommand(1) ;
+
+		if (numberCommands == 2 && (strcmp(pCommand1->GetCommandName(), "move") == 0 || (strcmp(pCommand2->GetCommandName(), "move") == 0)))
+		{
+			cout << "Found move command after synch" << endl ;
+		}
+		else
+		{
+			cout << "*** ERROR: Failed to find the move command after synch" << endl ;
+			return false ;
+		}
+	}
+
 	// The move command should be deleted in response to the
 	// the status complete getting added
 	trace = pAgent->RunSelf(2) ;
