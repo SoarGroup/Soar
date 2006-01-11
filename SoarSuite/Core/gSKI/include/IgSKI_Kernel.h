@@ -498,8 +498,18 @@ namespace gSKI {
 	  *  through the run cycle where n is this rate.
 	  *  Currently a step is a phase.
 	  */
-	  virtual int GetInterruptCheckRate() const	= 0 ;
+	  virtual int  GetInterruptCheckRate() const	= 0 ;
 	  virtual void SetInterruptCheckRate(int newRate) = 0 ;
+	  
+	  /**
+      *  @brief Set the stopping point for agents when a STOP_AFTER_DECISION_CYCLE occurs
+      *
+      *  If the RunType is Decision or Run_Forever, then check for the requested
+	  *  stopBeforePhase, otherwise stop after the OutputPhase.
+	  */
+	  virtual unsigned long GetStopPoint() = 0 ;
+	  virtual void SetStopPoint(egSKIRunType runStepSize, egSKIPhaseType m_StopBeforePhase) = 0;
+
 
 	  /**
 	  * @brief Notify listeners to start or stop the entire system (the simulation)

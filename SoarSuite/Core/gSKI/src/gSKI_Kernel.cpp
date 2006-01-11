@@ -47,6 +47,7 @@ namespace gSKI
    {
       m_soarKernel   = create_kernel();
 	  m_InterruptCheckRate = 10 ;
+	  m_stopPoint    = gSKI_INPUT_PHASE;
       init_soar( m_soarKernel );
       m_instanceInfo = new InstanceInfo("test1", "test2", gSKI_IN_PROCESS, gSKI_SINGLE_THREAD);
       m_agentMgr     = new AgentManager(this);
@@ -477,8 +478,16 @@ namespace gSKI
     return &evilBackDoor;
   }
 
-  int Kernel::GetInterruptCheckRate() const			{ return m_InterruptCheckRate ; }
+  int  Kernel::GetInterruptCheckRate() const			{ return m_InterruptCheckRate ; }
   void Kernel::SetInterruptCheckRate(int newRate)	{ if (newRate >= 1) m_InterruptCheckRate = newRate ; }
 
-
+  unsigned long Kernel::GetStopPoint()                 {return m_stopPoint ; }
+  void Kernel::SetStopPoint(egSKIRunType runStepSize, egSKIPhaseType m_StopBeforePhase)
+  {
+	  if ((gSKI_RUN_DECISION_CYCLE == runStepSize) || (gSKI_RUN_FOREVER == runStepSize)) {
+		  m_stopPoint = m_StopBeforePhase ;
+	  } else  {
+		  m_stopPoint = gSKI_INPUT_PHASE ;
+	  }
+  }
 }
