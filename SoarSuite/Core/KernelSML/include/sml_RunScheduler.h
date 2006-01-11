@@ -134,6 +134,7 @@ protected:
 	unsigned long	GetStepCounter(gSKI::IAgent* pAgent, egSKIRunType runStepSize) ; //for old scheduler...
     unsigned long   GetStepCounter(gSKI::IAgent* pAgent, egSKIInterleaveType stepSize) ;
 	unsigned long	GetRunCounter(gSKI::IAgent* pAgent, egSKIRunType runStepSize) ;
+    egSKIRunResult  RunScheduler::GetOverallRunResult() ;
 	void			HandleEvent(egSKIRunEventId eventID, gSKI::IAgent* pAgent, egSKIPhaseType phase) ;
 	bool			HaveAllGeneratedOutput() ;
 	void            InitializeRunCounters(egSKIRunType runStepSize, egSKIInterleaveType stepSize) ;
