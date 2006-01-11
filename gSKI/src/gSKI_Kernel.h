@@ -465,6 +465,15 @@ namespace gSKI
 		void SetInterruptCheckRate(int newRate) ;
 
 		/**
+		*  @brief Set the stopping point for agents when a STOP_AFTER_DECISION_CYCLE occurs
+		*
+		*  If the RunType is Decision or Run_Forever, then check for the requested
+		*  stopBeforePhase, otherwise stop after the OutputPhase.
+		*/
+		unsigned long GetStopPoint() ;
+		void SetStopPoint(egSKIRunType runStepSize, egSKIPhaseType m_StopBeforePhase) ;
+		
+		/**
 		* @brief Notify listeners to start or stop the entire system (the simulation)
 		**/
 		void FireSystemStart() ;
@@ -597,6 +606,8 @@ namespace gSKI
 
 		 /** Controls how frequently the gSKIEVENT_INTERRUPT_CHECK event fires, measured in phases.  Must be >= 1 */
 		 int						 m_InterruptCheckRate ;
+		 egSKIPhaseType              m_stopPoint ;
+
 
 	  private:
          EvilBackDoor::ITgDWorkArounds* getWorkaroundObject();
