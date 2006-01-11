@@ -266,6 +266,17 @@ bool RunScheduler::IsAgentFinished(gSKI::IAgent* pAgent, AgentSML* pAgentSML, eg
 
 	bool finished = difference >= count && runStepSize != gSKI_RUN_FOREVER ;
 
+						   
+	// if a gSKI_STOP_AFTER_DECISION_CYCLE is requested,  then
+	// agents that are running by Decisions should get marked as finished.
+	// They will generate interrupt in CheckStopBeforePhase
+					   
+	if ( ((gSKI_RUN_DECISION_CYCLE == runStepSize) || (gSKI_RUN_FOREVER == runStepSize)) &&
+		  (pAgent->GetInterruptFlags() & gSKI_STOP_AFTER_DECISION_CYCLE) )					  
+	{
+		finished = true;					 
+	}
+
 	// The code that runs an agent to its appropriate StopBeforePhase only runs
 	// after all agents Finish the run.  See CheckStopBeforePhase.   KJC 12/05
 
@@ -449,11 +460,21 @@ void RunScheduler::CheckStopBeforePhase(egSKIRunType runStepSize)
 	// Just before this point, (in scheduler while loop) we've checked and fired the
 	// OutputComplete and OutputGenerated events, so it should be fine to step 
 	// an agent by phases until it gets to StopBefore, and then step the other
-	// agents in turn.  UNLESS we were interrupted.  Then we'd need to cross the 
+	// agents in turn.  UNLESS:
+	//                    we were interrupted. 
+	//                    the StopBeforePt has moved since the last Run cmd
+	//                    user issued a "Run 0" command
+	// Then we'd need to cross the 
 	// Output-Input Boundary together and generate events...  For now, if interrupted,
-	// or error or halted, we won't do anything here.
+	// or error or halted, we won't do anything here, since we'd like interrupts to 
+	// happen at the right place during execution.
+	//
+	// Support for "Run 0" is somewhat complicated, since we might very well 
+	// cross the I/O boundary.  So we'll try stepping til OUTPUT done, then generate
+	// Update events, then step again til StopBeforePt is reached.  Note:  when we support
+	// StopBeforeUpdate, we'll need to explicitly check for that before generating events.
 
-	if (( runStepSize == gSKI_RUN_DECISION_CYCLE)/**&& (m_StopBeforePhase != gSKI_INPUT_PHASE)**/)
+	if (( runStepSize == gSKI_RUN_DECISION_CYCLE) || ( runStepSize == gSKI_RUN_FOREVER))
 	{
 		for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)	
 		{	
@@ -466,14 +487,43 @@ void RunScheduler::CheckStopBeforePhase(egSKIRunType runStepSize)
 			{
 				runResult = pAgent->StepInClientThread(gSKI_INTERLEAVE_PHASE, 1) ;
 				phase = pAgent->GetCurrentPhase() ;
-		// When issuing a  "run 0" agents will cross the output-to-input boundary at 
-		// different times now since we move all agents.  Should loop all agents by single
-		// phase each time to force crossing boundary all together, but logic is messier and
-		// have to generate kernel-level events!
-				 // don't cross Output-Input boundary here just to get to StopBefore phase for "Run 0"
+			 // don't cross Output-Input boundary here just to get to StopBefore phase for "Run 0"
 				if (gSKI_INPUT_PHASE == phase) break; 
-			}					
+			}						
+			pAgentSML->SetResultOfRun(runResult) ;
+
 			// Notify listeners that this agent is finished running
+			/* pAgent->FireRunEndsEvent() ; */   // not if supporting run0 over O/I boundary
+
+		}
+		// If agents haven't reached the StopBeforePhase, then agents finished output
+		// and we need to possibly generate the UpdateWorld events before stepping any further.
+		// If not all agents finished output, then nothing will fire.
+		TestForFiringOutputCompletedEvent();
+		TestForFiringGeneratedOutputEvent();
+ 			
+		// This second While loop is only needed if we allow agents to cross the
+		// output-update-input boundary on a "run 0" command.  If we don't allow that
+		// then all that is left to do is generate the RunEndsEvents. (and we shouldn't
+		// even do the update events above.  The FireRunEnds event can go in the 
+		// first FOR loop.
+		for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)	
+		{	
+			AgentSML* pAgentSML = iter->second ;		
+			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;			
+			egSKIPhaseType phase = pAgent->GetCurrentPhase() ;
+			egSKIRunResult runResult = pAgentSML->GetResultOfLastRun() ;
+			while ((phase != m_StopBeforePhase) && (gSKI_RUN_COMPLETED == runResult))
+			{
+				runResult = pAgent->StepInClientThread(gSKI_INTERLEAVE_PHASE, 1) ;
+				phase = pAgent->GetCurrentPhase() ;
+			    // We should never get to this point again, so we need to generate ERROR 
+		        assert(gSKI_INPUT_PHASE != phase);
+			}		
+					
+			pAgentSML->SetResultOfRun(runResult) ;
+
+		// Notify listeners that this agent is finished running
 			pAgent->FireRunEndsEvent() ;
 		}
 	}
@@ -570,6 +620,27 @@ void RunScheduler::TerminateUpdateWorldEvents(bool removeListeners)
 	}
 }
 /********************************************************************
+* @brief	Return most severe RunResult of
+            gSKI_RUN_ERROR,
+            gSKI_RUN_EXECUTING,
+            gSKI_RUN_INTERRUPTED,
+            gSKI_RUN_COMPLETED,
+            gSKI_RUN_COMPLETED_AND_INTERRUPTED // not useful.  step() doesn't return
+
+*********************************************************************/
+egSKIRunResult RunScheduler::GetOverallRunResult()
+{
+	egSKIRunResult overallResult = gSKI_RUN_COMPLETED;
+
+	for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
+	{
+		AgentSML* pAgentSML = iter->second ;
+		egSKIRunResult result = pAgentSML->GetResultOfLastRun();
+		if (result < overallResult) overallResult = result;
+	}
+	return overallResult ;
+}
+/********************************************************************
 * @brief	Checks each agent to see if it has finished running.
 *			Returns true if all agents are done.
 *			Does not remove anyone from the run list.
@@ -635,6 +706,9 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize,
 
  	gSKI::IKernel* pKernel = m_pKernelSML->GetKernel() ;
 
+	// Depending on RunType, set the stop location for gSKI_STOP_AFTER_DECISION_CYCLE interrupts
+	pKernel->SetStopPoint(runStepSize, m_StopBeforePhase);
+
 	// Fire one event to indicate the entire system is starting
 	pKernel->FireSystemStart() ;
 
@@ -653,7 +727,12 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize,
 	bool runFinished = false ;
 	long stepCount   = 0 ;
 //	long runCount    = 0 ;
-	egSKIRunResult overallResult = gSKI_RUN_COMPLETED ;
+	egSKIRunResult overallResult = gSKI_RUN_COMPLETED ;	
+	for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)		
+	{		
+		AgentSML* pAgentSML = iter->second ;
+		pAgentSML->SetResultOfRun(gSKI_RUN_COMPLETED) ;
+	}
 
 	pKernel->GetAgentManager()->ClearAllInterrupts();
 
@@ -732,7 +811,9 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize,
 					   runFinished = false; 
 				   }
 
-		//         if agent finished count runTypes, remove from RunList, else runFinished = false;	
+				   // if agent finished count runTypes, remove from RunList, else runFinished = false;	
+				   // can also return true if a gSKI_STOP_AFTER_DECISION_CYCLE interrupt occurred 
+				   // or is pending on agents with RunType DECISION or FOREVER.
 				   bool agentFinishedRun = IsAgentFinished(pAgent, pAgentSML, runStepSize, count) ;
 	
 				   // Have to test the run state to find out if we are still ok to keep running
@@ -747,7 +828,7 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize,
 					pAgentSML->SetResultOfRun(runResult) ;
 					// If we know we won't have to step to StopBefore phase
 					// notify listeners that this agent is finished running
-					if (runStepSize != gSKI_RUN_DECISION_CYCLE /** || m_StopBeforePhase == gSKI_INPUT_PHASE**/)
+					if ((runStepSize != gSKI_RUN_DECISION_CYCLE) && (runStepSize != gSKI_RUN_FOREVER))
 						pAgent->FireRunEndsEvent() ;
 				}
 				else
@@ -762,29 +843,14 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize,
 		// any kernel-level events that are satisfied
 		//  KJC Is this where we might want to add a "phase" for StopBeforePhase?   
 		//  We'd need to use m_AllGeneratedOutputEventFired
-/**
-		if (AreAllOutputPhasesComplete())
-		{
-			// If so fire the after_all_output_phases event
-			m_pKernelSML->FireUpdateListenerEvent(gSKIEVENT_AFTER_ALL_OUTPUT_PHASES, m_RunFlags) ;
-
-			// Then clear the completed output flags so we can repeat the process.
-			for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
-			{
-				AgentSML* pAgentSML = iter->second ;
-				pAgentSML->SetCompletedOutputPhase(false) ;
-			}
-		}  **/
 	    TestForFiringOutputCompletedEvent();
 		TestForFiringGeneratedOutputEvent();
 
 
 	}  // END of While (!runFinished)
 
+	// kernel events might fire in next method...
 	CheckStopBeforePhase(runStepSize);  // agents will have done FireRunEndsEvent() here or above.
-
-	// do we need to check for kernel-level events again after stepping to StopBeforePhase ??
- 	// we could check for generating outputComplete and outputGenerated events.
 
 	// Fire one event to indicate the entire system should stop.
 	pKernel->FireSystemStop() ;
@@ -795,8 +861,11 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize,
 	// Clean up anything stored for update world events
 	TerminateUpdateWorldEvents(true) ;
 
-	// Not sure how to quantify the results of running <n> agents in a single value
+	// BUGBUG Not sure how to quantify the results of running <n> agents in a single value
 	// You can query each agent for its GetResultOfRun() to know more.
+
+	overallResult = GetOverallRunResult();
+
 	return overallResult ;
 }
 
