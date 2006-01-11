@@ -1479,3 +1479,20 @@ bool Agent::SynchronizeInputLink()
 {
 	return GetWM()->SynchronizeInputLink() ;
 }
+
+/*************************************************************
+* @brief This method is used to update this client's representation
+*		 of the output link to match what is currently on the agent's
+*		 output link.
+*		 Calling this method recreates the entire output link tree on the
+*		 client side, invalidating any existing pointers.
+*
+*		 NOTE: Calling this method shouldn't generally be necessary as the output link
+*		 structures in the client are usually automatically kept in synch with the agent.
+*		 It's here in case a client connects to an existing kernel and agent
+*		 and wants to get up to date on the current state of the output link.
+*************************************************************/
+bool Agent::SynchronizeOutputLink()
+{
+	return GetWM()->SynchronizeOutputLink() ;
+}
