@@ -1,0 +1,3428 @@
+% ----------------------------------------------------------------------------
+\typeout{--------------- The Soar User INTERFACE -----------------------------}
+\chapter{The Soar User Interface}
+\label{INTERFACE}
+\index{interface}
+%\index{user interface}
+%\index{function definitions}
+
+\nocomment{for each command, use the 'funsum' command with a brief
+	description. This writes to the manual.glo file which can be edited
+	into the funtion summary and index (see that file for more
+	instructions). This is a bit tedious, but the reason I've set it up
+	this way is that the command set is in flux right now -- this lessens
+	the chance that a command will be inadvertently omitted from the
+	function summary (or that a defunct command will be inadvertently
+	included). 
+	}
+
+\nocomment{\begin{figure}[h]
+\psfig{figure=dilbert-living.ps,height=2.2in} \vspace{12pt}
+\end{figure}
+}
+% ----------------------------------------------------------------------------
+
+
+This chapter describes the set of user interface commands for Soar. All commands and examples are presented as 
+if they are being entered at the Soar command prompt.
+
+This chapter is organized into 7 sections:
+\begin{enumerate}
+\item Basic Commands for Running Soar
+\item Examining Memory
+\item Configuring Trace Information and Debugging
+\item Configuring Soar's Run-Time Parameters
+\item File System I/O Commands
+\item Soar I/O commands
+\item Miscellaneous Commands
+\end{enumerate}
+
+Each section begins with a summary description of the commands covered
+in that section, including the role of the command and its importance
+to the user.  Commands are then described fully, in alphabetical order.
+
+Throughout this chapter, each function description includes a specification of
+its syntax and an example of its use. 
+
+For a concise overview of the Soar interface functions, see the Function
+Summary and Index on page \pageref{func-sum}. This index is intended to be a
+quick reference into the commands described in this chapter.
+
+\subsubsection*{Notation}
+
+\nocomment{check for all commands that I've got the notation current}
+
+The notation used to denote the syntax for each user-interface command follows
+some general conventions:\vspace{-12pt}
+\begin{itemize}
+\item The command name itself is given in a \soarb{bold} font.\vspace{-8pt}
+\item Optional command arguments are enclosed within square brackets,
+	\soar{[} and \soar{]}.\vspace{-8pt}
+\item A vertical bar, \soar{|}, separates alternatives.\vspace{-8pt}
+\item Curly braces, \soar{\{\}}, are used to group arguments when at least
+one argument from the set is required.
+\item The commandline prompt that is printed by Soar, is normally
+the agent name, followed by '\soar{>}'.  In the examples in this manual, 
+we use ``\soar{soar>}''.
+\item Comments in the examples are preceded by
+a '\soar{\#}', and in-line comments are preceded by '\soar{;\#}'.
+\end{itemize}
+
+For many commands, there is some flexibility in the order in which the
+arguments may be given. (See the online help for each command for more
+information.)  We have not incorporated this flexible ordering into the syntax
+specified for each command because doing so complicates the specification of
+the command.  When the order of arguments will affect the output
+produced by a command, the reader will be alerted.
+
+% ----------------------------------------------------------------------------
+\section{Basic Commands for Running Soar}
+\label{BASIC}
+
+This section describes the commands used to start, run and stop a Soar 
+program; to invoke on-line help information; and to create and 
+delete Soar productions.  The specific commands described in this
+section are:
+
+\paragraph{Summary}
+\begin{quote}
+\begin{description}
+%\item[d] - Run the Soar program for one decision cycle.
+%\item[e] - Run the Soar program for one elaboration cycle.
+\item[excise] - Delete Soar productions from production memory.
+%\item[exit] - Terminate Soar and return to the operating system.
+\item[help] - Provide formatted, on-line information about Soar commands.
+\item[init-soar] - Reinitialize Soar so a program can be rerun from scratch.
+\item[quit] - Close log file, terminate Soar, and return user to the operating system.
+\item[run] - Begin Soar's execution cycle.
+\item[sp] - Create a production and add it to production memory.
+\item[stop-soar] - Interrupt a running Soar program.
+\end{description}
+\end{quote}
+These commands are all frequently used anytime Soar is run.
+
+% ----------------------------------------------------------------------------
+\subsection{\soarb{excise}}
+\label{excise}
+\index{excise}
+Delete Soar productions from production memory. 
+\subsubsection*{Synopsis}
+  \begin{verbatim}
+excise production_name [production_name ...]
+excise -[acdtu]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+ -a, --all  & Remove all productions from memory and perform an init-soar command  \\
+ \hline 
+ -c, --chunks  & Remove all chunks (learned productions) and justifications from memory  \\
+ \hline 
+ -d, --default  & Remove all default productions (:default) from memory  \\
+ \hline 
+ -t, --task  & Remove chunks, justifications, and user productions from memory  \\
+ \hline 
+ -u, --user  & Remove all user productions (but not chunks or default rules) from memory  \\
+ \hline 
+production\_name & Remove the specific production with this name.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ This command removes productions from Soar's memory. The command must be called with either a specific production name or with a flag that indicates a particular group of productions to be removed. Using the flag \textbf{-a}
+ or \textbf{--all}
+ also causes an init-soar. 
+\subsubsection*{Examples}
+ This command removes the production my*first*production and all chunks: \begin{verbatim}
+excise my*first*production --chunks
+\end{verbatim}
+ This removes all productions and does an init-soar: \begin{verbatim}
+excise --all
+\end{verbatim}
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ ex  & excise  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[init-soar]{init-soar} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{help}}
+\label{help}
+\index{help}
+Provide formatted usage information about Soar commands. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+help [command_name]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ command\_name  & Print usage syntax for the command.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ This command prints formatted help for the given command name. 
+\subsubsection*{Examples}
+ To see the syntax for the \emph{excise}
+ command: \begin{verbatim}
+help excise
+\end{verbatim}
+ To see what commands help is available for: \begin{verbatim}
+help
+\end{verbatim}
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ ?  & help  \\
+ \hline 
+ h & help \\
+ \hline
+ man  & help  \\
+ \hline 
+\end{tabular}
+% ----------------------------------------------------------------------------
+\subsection{\soarb{init-soar}}
+\label{init-soar}
+\index{init-soar}
+Empties working memory and resets run-time statistics. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+init-soar
+\end{verbatim}
+\subsubsection*{Options}
+ No options. 
+\subsubsection*{Description}
+ The \textbf{init-soar}
+ command initializes Soar. It removes all elements from working memory, wiping out the goal stack, and resets all runtime statistics. The firing counts for all productions are reset to zero. The \textbf{init-soar}
+ command allows a Soar program that has been halted to be reset and start its execution from the beginning. 
+ \textbf{init-soar}
+ does not remove any productions from production memory; to do this, use the \textbf{excise}
+ command. Note however, that all justifications will be removed because they will no longer be supported. 
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ init  & init-soar  \\
+ \hline
+ is & init-soar \\
+ \hline
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[excise]{excise} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{quit}}
+\label{quit}
+\index{quit}
+Close log file, terminate Soar, and return user to the operating system. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+quit
+\end{verbatim}
+\subsubsection*{Options}
+ No options. 
+\subsubsection*{Description}
+ This command stops the run, quits the log and closes Soar. 
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ exit  & quit  \\
+ \hline 
+\end{tabular}
+% ----------------------------------------------------------------------------
+\subsection{\soarb{run}}
+\label{run}
+\index{run}
+Begin Soar's execution cycle. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+run [count]
+run -[d|e|p|o][fs][un] [count]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+ -d, --decision  & Run Soar for count decision cycles.  \\
+ \hline 
+ -e, --elaboration  & Run Soar for count elaboration cycles.  \\
+ \hline 
+ -f, --forever  & Run until halted by problem-solving completion or until stopped by an interrupt.  \\
+ \hline 
+ -o, --output  & Run Soar until the nth time output is generated by the agent. Limited by the value of max-nil-output-cycles.  \\
+ \hline 
+ -p, --phase  & Run Soar by phases. A phase is either an input phase, proposal phase, decision phase, apply phase, or output phase.  \\
+ \hline 
+ -s, --self  & If other agents exist within the kernel, do not run them at this time.  \\
+ \hline
+ -u, --update & Sets a flag in the update event callback requesting that an environment updates. This is the default if --self is not specified. \\
+ \hline
+ -n, --noupdate & Sets  a flag in the update event callback requesting that an environment does not update. This is the default if --self is specified. \\
+ \hline
+ count  & A single integer which specifies the number of cycles to run Soar.  \\
+ \hline 
+\end{tabular}
+
+\paragraph*{Deprecated Options}
+ These may be reimplemented in the future. 
+ 
+\begin{tabular}{|l|l|}
+\hline 
+ --operator  & Run Soar until the nth time an operator is selected.  \\
+ \hline 
+ --state  & Run Soar until the nth time a state is selected.  \\
+ \hline 
+\end{tabular}
+
+\subsubsection*{Description}
+ The \textbf{run}
+ command starts the Soar execution cycle or continues any execution that was temporarily stopped. The default behavior of \textbf{run}
+, with no arguments, is to cause Soar to execute until it is halted or interrupted by an action of a production, or until an external interrupt is issued by the user. The \textbf{run}
+ command can also specify that Soar should run only for a specific number of Soar cycles or phases (which may also be prematurely stopped by a production action or a control-C). This is helpful for debugging sessions, where users may want to pay careful attention to the specific productions that are firing and retracting. 
+ The \textbf{run}
+ command takes two optional arguments: an integer, \emph{count}
+, which specifies how many units to run; and a \emph{units}
+ flag indicating what steps or increments to use. If \emph{count}
+ is specified, but no \emph{units}
+ are specified, then Soar is run by decision cycles. If \emph{units}
+ are specified, but \emph{count}
+ is unpecified, then \emph{count}
+ defaults to '1'. 
+ If there are multiple Soar agents that exist in the same Soar process, then issuing a \textbf{run}
+ command in any agent will cause all agents to run with the same set of parameters, unless the flag \textbf{--self}
+ is specified, in which case only that agent will execute. 
+ 
+ If an environment is registered for the kernel's update event, then when the event is triggered, the environment will get 
+ information about how the "run" was executed. If a "run" was executed with the \textbf{--update} option, then the event sends a flag
+ requesting that the environnment actually update itself. If a "run" was executed with the \textbf{--noupdate} option, then the event
+ sends a flag requesting that the environment not update itself. The \textbf{--update} option is the default when run is specified without the 
+ \textbf{--self} option is not specified. If the \textbf{--self} option is specified, then the \textbf{--noupdate} option is on by default. It is up to
+ the environment to check for these flags and honor them.
+ 
+ Some use cases include:
+ 
+ \begin{tabular}{|l|l|}
+ \hline 
+ run --self & runs one agent but not the environment \\
+ \hline
+ run --self --update & runs one agent and the environment \\
+ \hline
+ run & runs all agents and the environment \\
+ \hline
+ run --noupdate & runs all agents but not the environment \\
+ \hline
+ \end{tabular}
+\paragraph*{Note}
+ If Soar has been stopped due to a \textbf{halt}
+ action, an \textbf{init-soar}
+ command must be issued before Soar can be restarted with the \textbf{run}
+ command. 
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ d  & run -d 1  \\
+ \hline 
+ e  & run -e 1  \\
+ \hline 
+ step  & run 1  \\
+ \hline 
+\end{tabular}
+% ----------------------------------------------------------------------------
+\subsection{\soarb{sp}}
+\label{sp}
+\index{sp}
+Define a Soar production. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+sp {production_body}
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ production\_body  & A Soar production.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{sp}
+ command creates a new production and loads it into production memory. \emph{production\_body}
+ is a single argument parsed by the Soar kernel, so it should be enclosed in curly braces to avoid being parsed by other scripting languages that might be in the same proces.
+ The overall syntax of a rule is as follows: \begin{verbatim}
+  name 
+      ["documentation-string"] 
+      [FLAG*]
+      LHS
+      -->
+      RHS
+\end{verbatim}
+ The first element of a rule is its name. Conventions for names are given in Section \ref{SYNTAX-pm}.
+ If given, the documentation-string must be enclosed in double quotes. Optional flags define the type of rule and the form of support its right-hand side assertions will receive.
+ The specific flags are listed in a separate section below. The LHS defines the left-hand side of the production and specifies the conditions under which the rule can be fired.
+ Its syntax is given in detail in a subsequent section. The --$>$ symbol serves to separate the LHS and RHS portions.
+ The RHS defines the right-hand side of the production and specifies the assertions to be made and the actions to be performed when the rule fires.
+ The syntax of the allowable right-hand side actions are given in a later section. Section \ref{SYNTAX-pm} gives an elaborate discussion of the design and coding of productions.
+  
+ If the name of the new production is the same as an existing one, the old production will be overwritten (excised). 
+ 
+ \textbf{RULE FLAGS}
+\\ 
+ The optional FLAGs are given below. Note that these switches are preceeded by a colon instead of a dash -- this is a Soar parser convention. \begin{verbatim}
+:o-support      specifies that all the RHS actions are to be given
+                o-support when the production fires 
+:no-support     specifies that all the RHS actions are only to be given
+                i-support when the production fires 
+:default        specifies that this production is a default production 
+                (this matters for excise -task and watch task) 
+:chunk          specifies that this production is a chunk 
+                (this matters for learn trace)
+\end{verbatim}
+ Multiple flags may be used, but not both of \textbf{o-support}
+ and \textbf{no-support}
+. 
+ Although you could force your productions to provide O-support or I-support by using these commands --- regardless of the structure of the conditions and actions of the production --- this is not proper coding style. The \textbf{o-support}
+ and \textbf{no-support}
+ flags are included to help with debugging, but should not be used in a standard Soar program. 
+\subsubsection*{Examples}
+\begin{verbatim}
+sp {blocks*create-problem-space   
+     "This creates the top-level space"
+     (state <s1> ^superstate nil)
+     -->
+     (<s1> ^name solve-blocks-world ^problem-space <p1>)
+     (<p1> ^name blocks-world)
+}
+\end{verbatim}
+\subsubsection*{See Also}
+\hyperref[excise]{excise} \hyperref[learn]{learn} \hyperref[watch]{watch} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{stop-soar}}
+\label{stop-soar}
+\index{stop-soar}
+Pause Soar. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+stop-soar [-s] [reason string]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+ -s, --self  & Stop only the soar agent where the command is issued. All other agents continue running as previously specified.  \\
+ \hline 
+ reason\_string  & An optional string which will be printed when Soar is stopped, to indicate why it was stopped. If left blank, no message will be printed when Soar is stopped.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{stop-soar}
+ command stops any running Soar agents. It sets a flag in the Soar kernel so that Soar will stop running at a ``safe'' point and return control to the user. This command is usually not issued at the command line prompt - a more common use of this command would be, for instance, as a side-effect of pressing a button on a Graphical User Interface (GUI). 
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ interrupt  & stop-soar  \\
+ \hline
+ ss & stop-soar \\
+ \hline
+  stop  & stop-soar  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[run]{run} \subsubsection*{Warnings}
+ If the graphical interface doesn't periodically do an ``update'' of flush the pending I/O, then it may not be possible to interrupt a Soar agent from the command line. 
+% ----------------------------------------------------------------------------
+\section{Examining Memory}
+\label{MEMORY}
+
+This section describes the commands used to inspect production memory,
+working memory, and preference memory; to see what productions will 
+match and fire in the next Propose or Apply phase;  and to examine the 
+goal dependency set.  These commands are particularly useful when
+running or debugging Soar, as they let users see what Soar is ``thinking.''
+The specific commands described in this section are:
+
+\paragraph{Summary}
+\begin{quote}
+\begin{description}
+\item[default-wme-depth] - Set the level of detail used to print WME's.
+\item[gds-print] - Print the WMEs in the goal dependency set for each goal.
+\item[internal-symbols] - Print information about the Soar symbol table.
+\item[matches] - Print information about the match set and partial matches.
+\item[memories] - Print memory usage for production matches.
+\item[preferences] - Examine items in preference memory.
+\item[print] - Print items in working memory or production memory.
+\item[production-find] - Find productions that contain a given pattern.
+%\item[wmes] - An alias for the print command; prints items in working memory.
+\end{description}
+\end{quote}
+
+Of these commands, \textbf{print} is the most often used (and the most
+complex) followed by \textbf{matches} and \textbf{memories}.  \textbf{preferences}
+is used to examine which candidate operators have been proposed.
+\textbf{production-find} is especially useful when the number of
+productions loaded is high.  \textbf{gds-print}
+is useful for examining the goal dependecy set when subgoals seem to
+be disappearing unexpectedly.  \textbf{default-wme-depth} is related to the \textbf{print} command.
+\textbf{internal-symbols} is not often used but is helpful when debugging Soar extensions or
+trying to locate memory leaks.
+% -----------------------------------------------------------------------------
+\subsection{\soarb{default-wme-depth}}
+\label{default-wme-depth}
+\index{default-wme-depth}
+Set the level of detail used to print WMEs. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+default-wme-depth [depth]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ depth  & A non-negative integer.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{default-wme-depth}
+ command reflects the default depth used when working memory elements are printed (using the \textbf{print}
+ command or \textbf{wmes}
+ alias). The default value is 1. When the command is issued with no arguments, \textbf{default-wme-depth}
+ returns the current value of the default depth. When followed by an integer value, \textbf{default-wme-depth}
+ sets the default depth to the specified value. This default depth can be overridden on any particular call to the \textbf{print}
+ or \textbf{wmes}
+ command by explicitly using the \textbf{--depth}
+ flag, e.g.,\textbf{print --depth 10 \emph{args}
+}
+. 
+ By default, the \textbf{print}
+ command prints \emph{objects}
+ in working memory, not just the individual working memory element. To limit the output to individual working memory elements, the \textbf{--internal}
+ flag must also be specified in the \textbf{print}
+ command. Thus when the print depth is \textbf{0}
+, by default Soar prints the entire object, which is the same behavior as when the print depth is \textbf{1}
+. But if \textbf{--internal}
+ is also specified, then a depth of \textbf{0}
+ prints just the individual WME, while a depth of \textbf{1}
+ prints all WMEs which share that same identifier. This is true when printing timetags, identifiers or WME patterns. 
+ When the depth is greater than \textbf{1}
+, the identifier links from the specified WME's will be followed, so that additional substructure is printed. For example, a depth of \textbf{2}
+ means that the object specified by the identifier, wme-pattern, or timetag will be printed, along with all other objects whose identifiers appear as values of the first object. This may result in multiple copies of the same object being printed out. If \textbf{--internal}
+ is also specified, then individuals WMEs and their timetags will be printed instead of the full objects. 
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ set-default-depth  & default-wme-depth  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[print]{print} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{gds-print}}
+\label{gds-print}
+\index{gds-print}
+Print the WMEs in the goal dependency set for each goal. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+gds-print
+\end{verbatim}
+\subsubsection*{Options}
+ No options. 
+\subsubsection*{Description}
+ The Goal Dependency Set (GDS) is described in Appendix \ref{GDS}. This command is a debugging command for examining the GDS for each goal in the stack. First it steps through all the working memory elements in the rete, looking for any that are included in \emph{any}
+ goal dependency set, and prints each one. Then it also lists each goal in the stack and prints the wmes in the goal dependency set for that particular goal. This command is useful when trying to determine why subgoals are disappearing unexpectedly: often something has changed in the goal dependency set, causing a subgoal to be regenerated prior to producing a result. 
+\subsubsection*{Warnings}
+ \textbf{gds-print} is horribly inefficient and should not generally be used except when something is going wrong and you need to examine the Goal Dependency Set. 
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ gds\_print  & gds-print  \\
+ \hline 
+\end{tabular}
+% ----------------------------------------------------------------------------
+\subsection{\soarb{internal-symbols}}
+\label{internal-symbols}
+\index{internal-symbols}
+Print information about the Soar symbol table. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+internal-symbols
+\end{verbatim}
+\subsubsection*{Options}
+ No options. 
+\subsubsection*{Description}
+ The \textbf{internal-symbols}
+ command prints information about the Soar symbol table. Such information is typically only useful for users attempting to debug Soar by locating memory leaks or examining I/O structure. 
+\subsubsection*{Example}
+\begin{verbatim}
+ soar> internal-symbols
+ --- Symbolic Constants: ---
+ operator
+ accept
+ evaluate-object
+ problem-space
+ sqrt
+ interrupt
+ mod
+ goal
+ io
+ (...additional symbols deleted for brevity...)
+ --- Integer Constants: ---
+ --- Floating-Point Constants: ---
+ --- Identifiers: ---
+ --- Variables: ---  
+ <o>
+ <sso>
+ <to>
+ <ss>
+ <ts>
+ <so>
+ <sss>
+\end{verbatim}
+% ----------------------------------------------------------------------------
+\subsection{\soarb{matches}}
+\label{matches}
+\index{matches}
+Prints information about partial matches and the match set. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+matches [-nc0t1w2] production_name
+matches -[a|r] [-nc0t1w2]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|p{10cm}|}
+\hline 
+production\_name & Print partial match information for the named production.  \\
+ \hline 
+ -0, -n, --names, -c, --count  & For the match set, print only the names of the productions that are about to fire or retract (the default). If printing partial matches for a production, just list the partial match counts.  \\
+ \hline 
+ -1, -t, --timetags  & Also print the timetags of the wmes at the first failing condition  \\
+ \hline 
+ -2, -w, --wmes  & Also print the full wmes, not just the timetags, at the first failing condition.  \\
+ \hline 
+ -a, --assertions  & List only productions about to fire.  \\
+ \hline 
+ -r, --retractions  & List only productions about to retract.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The matches command prints a list of productions that have instantiations in the match set, i.e., those productions that will retract or fire in the next Propose or Apply phase. It also will print partial match information for a single, named production. 
+\subsection*{Printing the match set}
+ When printing the match set (i.e., no production name is specified), the default action prints only the names of the productions which are about to fire or retract. If there are multiple instantiations of a production, the total number of instantiations of that production is printed after the production name, unless \textbf{--timetags}
+ or \textbf{--wmes}
+ are specified, in which case each instantiation is printed on a separate line. 
+ When printing the match set, the \textbf{--assertions}
+ and \textbf{--retractions}
+ arguments may be specified to restrict the output to print only the assertions or retractions. 
+\subsection*{Printing partial matches for productions}
+ In addition to printing the current match set, the \textbf{matches}
+ command can be used to print information about partial matches for a named production. In this case, the conditions of the production are listed, each preceded by the number of currently active matches for that condition. If a condition is negated, it is preceded by a minus sign \textbf{-}
+. The pointer \textbf{$>$$>$$>$$>$}
+ before a condition indicates that this is the first condition that failed to match. 
+ When printing partial matches, the default action is to print only the counts of the number of WME's that match, and is a handy tool for determining which condition failed to match for a production that you thought should have fired. At levels \textbf{1}
+ and \textbf{2}
+ (or \textbf{--timetags}
+ and \textbf{--wmes}
+ arguments) the \textbf{matches}
+ command displays the WME's immediately after the first condition that failed to match --- temporarily interrupting the printing of the production conditions themselves. 
+\subsection*{Notes}
+ When printing partial match information, some of the matches displayed by this command may have already fired, depending on when in the execution cycle this command is called. To check for the matches that are about to fire, use the \textbf{matches}
+ command without a named production. 
+ In Soar 8, the execution cycle (decision cycle) is input, propose, decide, apply output; it no longer stops for user input after the decision phase when running by decision cycles (\textbf{run -d 1}
+). If a user wishes to print the match set immediately after the decision phase and before the apply phase, then the user must run Soar by \emph{phases}
+ (\textbf{run -p 1}
+). 
+\subsubsection*{Examples}
+ This example prints the productions which are about to fire and the wmes that match the productions on their left-hand sides: \begin{verbatim}
+matches --assertions --wmes
+\end{verbatim}
+ This example prints the wme timetags for a single production. \begin{verbatim}
+matches -t my*first*production
+\end{verbatim}
+% ----------------------------------------------------------------------------
+\subsection{\soarb{memories}}
+\label{memories}
+\index{memories}
+Print memory usage for partial matches. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+memories [-cdju] [n]
+memories production_name 
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+ -c, --chunks  & Print memory usage of chunks.  \\
+ \hline 
+ -d, --default  & Print memory usage of default productions.  \\
+ \hline 
+ -j, --justifications  & Print memory usage of justifications.  \\
+ \hline 
+ -u, --user  & Print memory usage of user-defined productions.  \\
+ \hline 
+production\_name & Print memory usage for a specific production.  \\
+ \hline 
+\emph{n}
+ & Number of productions to print, sorted by those that use the most memory.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{memories}
+ command prints out the internal memory usage for full and partial matches of production instantiations, with the productions using the most memory printed first. With no arguments, the memories command prints memory usage for all productions. If a production\_name is specified, memory usage will be printed only for that production. If a positive integer \emph{n}
+ is given, only \emph{n}
+ productions will be printed: the \emph{n}
+ productions that use the most memory. Output may be restricted to print memory usage for particular types of productions using the command options. 
+ Memory usage is recorded according to the tokens that are allocated in the rete network for the given production(s). This number is a function of the number of elements in working memory that match each production. Therefore, this command will not provide useful information at the beginning of a Soar run (when working memory is empty) and should be called in the middle (or at the end) of a Soar run. 
+ 
+ The \textbf{memories}
+ command is used to find the productions that are using the most memory and, therefore, may be taking the longest time to match (this is only a heuristic). By identifying these productions, you may be able to rewrite your program so that it will run more quickly. Note that memory usage is just a heuristic measure of the match time: A production might not use much memory relative to others but may still be time-consuming to match, and excising a production that uses a large number of tokens may not speed up your program, because the Rete matcher shares common structure among different productions. 
+ As a rule of thumb, numbers less than 100 mean that the production is using a small amount of memory, numbers above 1000 mean that the production is using a large amount of memory, and numbers above 10,000 mean that the production is using a \emph{very}
+ large amount of memory. 
+\subsubsection*{See Also}
+\hyperref[matches]{matches} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{preferences}}
+\label{preferences}
+\index{preferences}
+Examine details about the preferences that support the specified \emph{id}
+ and \emph{attribute}
+\subsubsection*{Synopsis}
+\begin{verbatim}
+preferences [-0123nNtw] [id] [[^]attribute]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+ -0, -n, --none  & Print just the preferences themselves  \\
+ \hline 
+ -1, -N, --names  & Print the preferences and the names of the productions that generated them  \\
+ \hline 
+ -2, -t, --timetags  & Print the information for the --names option above plus the timetags of the wmes matched by the indicated productions  \\
+ \hline 
+ -3, -w, --wmes  & Print the information for the --timetags option above plus the entire wme.  \\
+ \hline 
+id & Must be an existing Soar object identifier.  \\
+ \hline 
+attribute & Must be an existing \emph{\^{}attribute}
+ of the specified identifier.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{preferences}
+ command prints all the preferences for the given object id and attribute. If \emph{id}
+ and \emph{attribute}
+ are not specified, they default to the current state and the current operator. The '\^{}' is optional when specifying the attribute. The optional arguments indicates the level of detail to print about each preference. 
+ This command is useful for examining which candidate operators have been proposed and what relationships, if any, exist among them. If a preference has O-support, the string, ``:O'' will also be printed. 
+\subsection*{Note}
+ For the time being, \textbf{numeric-indifferent}
+ preferences are listed under the heading ``binary indifferents:''. 
+\subsubsection*{Examples}
+ This example prints the preferences on (S1 \^{}operator) and the production names which created the preferences: \begin{verbatim}
+soar> preferences S1 operator --names
+Preferences for S1 ^operator:
+acceptables:
+ O2 (fill) +
+   From waterjug*propose*fill
+ O3 (fill) +
+   From waterjug*propose*fill
+unary indifferents:
+ O2 (fill) =
+   From waterjug*propose*fill
+ O3 (fill) =
+   From waterjug*propose*fill
+\end{verbatim}
+ If the current state is S1, then the above syntax is equivalent to: \begin{verbatim}
+ preferences -n
+\end{verbatim}
+ This example shows the support for the WMEs with the \^{}jug attribute: \begin{verbatim}
+soar> preferences s1 jug
+Preferences for S1 ^jug:
+acceptables:
+ I5  + :O 
+ J1  + :O 
+\end{verbatim}
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ pr  & preferences  \\
+ \hline 
+\end{tabular}
+% ----------------------------------------------------------------------------
+\subsection{\soarb{print}}
+\label{print}
+\index{print}
+Print items in working memory or production memory. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+print [-fFin] production_name
+print -[a|c|D|j|u][fFin]
+print [-i] [-d <depth>] identifier | timetag | pattern
+print -s[oS]
+\end{verbatim}
+\subsubsection*{Options}
+\subsection*{Printing items in production memory}
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+ -a, --all  & print the names of all productions currently loaded  \\
+ \hline 
+ -c, --chunks  & print the names of all chunks currently loaded  \\
+ \hline 
+ -D, --defaults  & print the names of all default productions currently loaded  \\
+ \hline 
+ -f, --full  & When printing productions, print the whole production. This is the default when printing a named production.  \\
+ \hline 
+ -F, --filename  & also prints the name of the file that contains the production.  \\
+ \hline 
+ -i, --internal  & items should be printed in their internal form. For productions, this means leaving conditions in their reordered (rete net) form.  \\
+ \hline 
+ -j, --justifications  & print the names of all justifications currently loaded.  \\
+ \hline 
+ -n, --name  & When printing productions, print only the name and not the whole production. This is the default when printing any category of productions, as opposed to a named production.  \\
+ \hline 
+ -u, --user  & print the names of all user productions currently loaded  \\
+ \hline 
+production\_name & print the production named production-name \\
+ \hline 
+\end{tabular}
+\subsection*{Printing items in working memory}
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+ -d, --depth \emph{n}
+ & This option overrides the default printing depth (see the default-wme-depth command for more detail).  \\
+ \hline 
+ -i, --internal  & items should be printed in their internal form. For working memory, this means printing the individual elements with their timetags, rather than the objects.  \\
+ \hline 
+\emph{identifier}
+ & print the object \emph{identifier}
+. \emph{identifier}
+ must be a valid Soar symbol such as \textbf{S1 } \\
+ \hline 
+\emph{pattern}
+ & print the object whose working memory elements matching the given pattern. See Description for more information on printing objects matching a specific pattern.  \\
+ \hline 
+\emph{timetag}
+ & print the object in working memory with the given \emph{timetag} \\
+ \hline 
+\end{tabular}
+\subsection*{Printing the current subgoal stack}
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+ -s, --stack  & Specifies that the Soar goal stack should be printed. By default this includes both states and operators.  \\
+ \hline 
+ -o, --operators  & When printing the stack, print only \textbf{operators}
+.  \\
+ \hline 
+ -S, --states  & When printing the stack, print only \textbf{states}
+.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{print}
+ command is used to print items from production memory or working memory. It can take several kinds of arguments. When printing items from working memory, the Soar objects are printed unless the --internal flag is used, in which case the wmes themselves are printed. 
+ \begin{verbatim}
+(identifier ^attribute value [+])
+\end{verbatim}
+ The pattern is surrounded by parentheses. The \emph{identifier}
+, \emph{attribute}
+, and \emph{value}
+ must be valid Soar symbols or the wildcard symbol * which matches all occurences. The optional \textbf{+}
+ symbol restricts pattern matches to acceptable preferences. 
+\subsubsection*{Examples}
+ Print the working memory elements (and their timetags) which have the identifier s1 as object and v2 as value: \begin{verbatim}
+print --internal (s1 ^* v2)
+\end{verbatim}
+ Print the Soar stack which includes states and operators: \begin{verbatim}
+print --stack
+\end{verbatim}
+ Print the named production in its RETE form: \begin{verbatim}
+print -if prodname
+\end{verbatim}
+ Print the names of all user productions currently loaded: \begin{verbatim}
+print -u
+\end{verbatim}
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ p  & print  \\
+ \hline 
+ pc & print --chunks \\
+ \hline
+ wmes  & print -i  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[default-wme-depth]{default-wme-depth} \hyperref[predefined-aliases]{predefined-aliases} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{production-find}}
+\label{production-find}
+\index{production-find}
+\subsubsection*{Synopsis}
+\begin{verbatim}
+production-find [-lrs[n|c]] pattern
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+ -c, --chunks  & Look \emph{only}
+ for chunks that match the pattern.  \\
+ \hline 
+ -l, --lhs  & Match pattern only against the conditions (left-hand side) of productions (default).  \\
+ \hline 
+ -n, --nochunks  &\emph{Disregard}
+ chunks when looking for the pattern.  \\
+ \hline 
+ -r, --rhs  & Match pattern against the actions (right-hand side) of productions.  \\
+ \hline 
+ -s, --show-bindings  & Show the bindings associated with a wildcard pattern.  \\
+ \hline 
+ pattern  & Any pattern that can appear in productions.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The production-find command is used to find productions in production memory that include conditions or actions that match a given \emph{pattern}
+. The pattern given specifies one or more condition elements on the left hand side of productions (or negated conditions), or one or more actions on the right-hand side of productions. Any pattern that can appear in productions can be used in this command. In addition, the asterisk symbol, *, can be used as a wildcard for an attribute or value. It is important to note that the whole pattern, including the parenthesis, must be enclosed in curly braces for it to be parsed properly. 
+ The variable names used in a call to production-find do not have to match the variable names used in the productions being retrieved. 
+ The production-find command can also be restricted to apply to only certain types of productions, or to look only at the conditions or only at the actions of productions by using the flags. 
+\subsubsection*{Examples}
+ Find productions that test that some object \emph{gumby}
+ has an attribute \emph{alive}
+ with value \emph{t}
+. In addition, limit the rules to only those that test an operator named \emph{foo}
+: \begin{verbatim}
+production-find {(<state> ^gumby <gv> ^operator.name foo)(<gv> ^alive t)} 
+\end{verbatim}
+ Note that in the above command, $<$state$>$ does not have to match the exact variable name used in the production. \\ 
+ Find productions that propose the operator \emph{foo}
+: \begin{verbatim}
+production-find -rhs {(<x> ^operator <op> +)(<op> ^name foo)}
+\end{verbatim}
+ Find chunks that test the attribute \^{}pokey: \begin{verbatim}
+production-find -chunks {(<x> ^pokey *)}
+\end{verbatim}
+\subsubsection*{See Also}
+\hyperref[sp]{sp} 
+% ----------------------------------------------------------------------------
+
+% ****************************************************************************
+% ----------------------------------------------------------------------------
+\section{Configuring Trace Information and Debugging}
+\label{DEBUG}
+
+This section describes the commands used primarily for debugging or
+to configure the trace output printed by Soar as it runs.  Users may:
+specify the content of the runtime trace output; ask that
+they be alerted when specific productions fire and retract; 
+or request details on Soar's performance.
+
+The specific commands described in this section are:
+
+
+\paragraph{Summary}
+\begin{quote}
+\begin{description}
+\item[chunk-name-format] - Specify format of the name to use for new chunks.
+\item[firing-counts] - Print the number of times productions have fired.
+%\item[format-watch] - Change the trace output that's printed as Soar runs.
+%\item[interrupt] - Add \& remove pre-firing interrupts on specific productions.
+%\item[monitor] - Manage attachment of Tcl scripts to Soar events.
+\item[pwatch] - Trace firings and retractions of specific productions.
+\item[stats] - Print information on Soar's runtime statistics.
+\item[warnings] - Toggle whether or not warnings are printed.
+\item[watch] - Control the information printed as Soar runs.
+\item[watch-wmes] - Trace WMEs matching specific patterns.
+\end{description}
+\end{quote}
+
+Of these commands, \textbf{watch} is the most often used (and the most 
+complex). \textbf{pwatch} is related to \textbf{watch}, but applies only 
+to specific, named productions. \textbf{firing-counts} and \textbf{stats} 
+are useful for understanding how much work Soar is doing. \textbf{chunk-name-format} is less-frequently
+used, but allows for detailed control of Soar's output.
+
+% ----------------------------------------------------------------------------
+\subsection{\soarb{chunk-name-format}}
+\label{chunk-name-format}
+\index{chunk-name-format}
+Specify format of the name to use for new chunks. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+chunk-name-format [-sl] -p [<prefix>]
+chunk-name-format [-sl] -c [<count>]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+ -s, --short  & Use the short format for naming chunks  \\
+ \hline 
+ -l, --long  & Use the long format for naming chunks (default)  \\
+ \hline 
+ -p, --prefix [$<$prefix$>$]  & If $<$prefix$>$ is given, use $<$prefix$>$ as the prefix for naming chunks. Otherwise, return the current \emph{prefix}
+. (defaults to "\textbf{chunk}")  \\
+ \hline 
+ -c, --count [$<$count$>$]  & If $<$count$>$ is given, set the chunk counter for naming chunks to $<$count$>$. Otherwise, return the current value of the chunk counter.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The short format for naming newly-created chunks is: 
+ \emph{prefixChunknum}.
+ The long (default) format for naming chunks is: 
+ \emph{prefix-Chunknum}*d\emph{dc}*\emph{impassetype}*\emph{dcChunknum} where: 
+ \emph{prefix}
+ is a user-definable prefix string; \emph{prefix}
+ defaults to "\textbf{chunk}" when unspecified by the user. It may not contain the character *. 
+ \emph{Chunknum}
+ is $<$count$>$ for the first chunk created, $<$count$>$+1 for the second chunk created, etc. 
+ \emph{dc}
+ is the number of the decision cycle in which the chunk was formed, 
+ \emph{impassetype}
+ is one of \textbf{[tie | conflict | cfailure | snochange | opnochange]}
+, 
+ \emph{dcChunknum}
+ is the number of the chunk within that specific decision cycle. 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{firing-counts}}
+\label{firing-counts}
+\index{firing-counts}
+Print the number of times each production has fired. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+firing-counts [n]
+firing-counts production_names
+\end{verbatim}
+\subsubsection*{Options}
+ If given, an option can take one of two forms -- an integer or a list of production names: 
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+\emph{n}
+ & List the top \emph{n}
+ productions. If \emph{n}
+ is 0, only the productions which haven't fired are listed  \\
+ \hline 
+ production\_name  & For each production in production\_names, print how many times the production has fired  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{firing-counts}
+ command prints the number of times each production has fired; production names are given from most requently fired to least frequently fired. With no arguments, it lists all productions. If an integer argument, \textbf{n}
+, is given, only the top \emph{n}
+ productions are listed. If \textbf{n}
+ is zero (0), only the productions that haven't fired at all are listed. If one or more production names are given as arguments, only firing counts for these productions are printed. 
+ Note that firing counts are reset by a call to \textbf{init-soar}
+. 
+\subsubsection*{Examples}
+ This example prints the 10 productions which have fired the most times along with their firing counts: \begin{verbatim}
+firing-counts 10
+\end{verbatim}
+ This example prints the firing counts of productions my*first*production and my*second*production: \begin{verbatim}
+firing-counts my*first*production my*second*production
+\end{verbatim}
+\subsubsection*{Warnings}
+ Firing-counts are reset to zero after an init-soar. \\ 
+ NB: This command is slow, because the sorting takes time O(n*log n) 
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ fc  & firing-counts  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[init-soar]{init-soar} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{pwatch}}
+\label{pwatch}
+\index{pwatch}
+Trace firings and retractions of specific productions. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+pwatch [-d|e] [production name]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+ -d, --disable, --off  & Turn production watching off for the specified production. If no production is specified, turn production watching off for all productions.  \\
+ \hline 
+ -e, --enable, --on  & Turn production watching on for the specified production. The use of this flag is optional, so this is pwatch's default behavior. If no production is specified, all productions currently being watched are listed.  \\
+ \hline 
+production name & The name of the production to watch.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{pwatch}
+ command enables and disables the tracing of the firings and retractions of individual productions. This is a companion command to \textbf{watch}
+, which cannot specify individual productions by name. 
+ With no arguments, \textbf{pwatch}
+ lists the productions currently being traced. With one production-name argument, \textbf{pwatch}
+ enables tracing the production; \textbf{--enable}
+ can be explicitly stated, but it is the default action. 
+ If \textbf{--disable}
+ is specified followed by a production-name, tracing is turned off for the production. When no production-name is specified, \textbf{pwatch --enable}
+ lists all productions currently being traced, and \textbf{pwatch --disable}
+ disables tracing of all productions. 
+ Note that \textbf{pwatch}
+ now only takes one production per command. Use multiple times to watch multiple functions. 
+ \subsubsection*{Default Aliases}
+ \begin{tabular}{|l|l|}
+ \hline 
+  Alias  & Maps to  \\
+  \hline 
+  pw  & pwatch  \\
+  \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[watch]{watch} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{stats}}
+\label{stats}
+\index{stats}
+Print information on Soar's runtime statistics. 
+\subsubsection*{Synopsis}
+\paragraph*{Structured Output}
+\begin{verbatim}
+stats
+\end{verbatim}
+\paragraph*{Raw Output}
+\begin{verbatim}
+stats [-s|-m|-r]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ -m, --memory  & report usage for Soar's memory pools  \\
+ \hline 
+ -r, --rete  & report statistics about the rete structure  \\
+ \hline 
+ -s, --system  & report the system (agent) statistics. This is the default if no args are specified.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+This command prints Soar internal statistics. The argument indicates the component of interest.
+
+With the \textbf{--system} flag, the \textbf{stats} command lists a summary of run statistics, including the following: 
+\begin{quote}
+\begin{description}
+\item[Version] --- The Soar version number, hostname, and date of the run.
+\item[Number of productions] --- The total number of productions loaded in the
+        system, including all chunks built during problem solving and all
+        default productions.
+\item[Timing Information] --- Might be quite detailed depending on the
+flags set at compile time.  
+\item[Decision Cycles] ---  The total number of decision cycles in the
+	run and the average time-per-decision-cycle in milliseconds.
+	\index{decision!cycles}
+\item[Elaboration cycles] --- The total number of elaboration
+	cycles that were executed during the run, the everage number of 
+elaboration cycles per decision cycle,  and the average 
+time-per-elaboration-cycle in milliseconds.  This is not the total number of
+production firings, as productions can fire in parallel.
+	\index{elaboration!cycles}
+\item[Production Firings] --- The total number of productions that were fired. 
+\item[Working Memory Changes] --- This is the total number of changes to
+	working memory. This includes all additions and deletions from working memory.  Also prints the average match time.
+\item[Working Memory Size] --- This gives the current, mean and maximum number 
+	of working memory elements.
+	\index{working memory!size}
+\end{description}
+\end{quote}
+The optional \textbf{stats} argument \textbf{--memory} provides information about memory usage and Soar's memory pools, which are used to allocate space for the various data structures used in Soar.
+
+The optional \textbf{stats} argument \textbf{--rete} provides information about node usage in the Rete net, the large data structure used for efficient matching in Soar.
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ st  & stats  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[timers]{timers} 
+
+\subsubsection*{A Note on Timers}
+The current implementation of Soar uses a number of timers to provide time-based statistics for use in the stats command calculations. These timers are:
+\begin{verbatim}
+ total CPU time
+ total kernel time
+ phase kernel time (per phase)
+ phase callbacks time (per phase)
+ input function time
+ output function time
+\end{verbatim}
+Total CPU time is calculated from the time a decision cycle (or number of decision cycles) is initiated until stopped. Kernel time is the time spent in core Soar functions. 
+In this case, kernel time is defined as the all functions other than the execution of callbacks and the input and output functions. The total kernel timer is only stopped for these functions.
+The phase timers (for the kernel and callbacks) track the execution time for individual phases of the decision cycle (i.e., input phase, preference phase, working memory phase, output phase, 
+and decision phase). Because there is overhead associated with turning these timers on and off, the actual kernel time will always be greater than the derived kernel time (i.e., the sum of all the phase
+kernel timers). Similarly, the total CPU time will always be greater than the derived total (the sum of the other timers) because the overhead of turning these timers on and off is included in the total 
+CPU time. In general, the times reported by the single timers should always be greater than than the corresponding derived time. Additionally, as execution time increases, the difference between these 
+two values will also increase. For those concerned about the performance cost of the timers, all the run time timing calculations can be compiled out of the code by defining NO\_TIMING\_STUFF (in soarkernel.h)
+before compilation. 
+
+% ----------------------------------------------------------------------------
+\subsection{\soarb{warnings}}
+\label{warnings}
+\index{warnings}
+\subsubsection*{Synopsis}
+\begin{verbatim}
+warnings -[e|d]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ -e, --enable, --on  & Default. Print all warning messages from the kernel.  \\
+ \hline 
+ -d, --disable, --off  & Disable all, except most critical, warning messages.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ Enables and disables the printing of warning messages. If an argument is specified, then the warnings are set to that state. If no argument is given, then the current warnings status is printed. At startup, warnings are initially enabled. If warnings are disabled using this command, then some warnings may still be printed, since some are considered too important to ignore. 
+ The warnings that are printed apply to the syntax of the productions, to notify the user when they are not in the correct syntax. When a lefthand side error is discovered (such as conditions that are not linked to a common state or impasse object), the production is generally loaded into production memory anyway, although this production may never match or may seriously slow down the matching process. In this case, a warning would be printed only if \textbf{warnings}
+ were \textbf{--on}
+. Righthand side errors, such as preferences that are not linked to the state, usually result in the production not being loaded, and a warning regardless of the \textbf{warnings}
+ setting. 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{watch}}
+\label{watch}
+\index{watch}
+Control the run-time tracing of Soar. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+watch
+watch [--level] [0|1|2|3|4|5]
+watch -N
+watch -[dpPwrDujcbi] [<remove>] -[n|t|f]
+watch --learning [<print|noprint|fullprint>]
+\end{verbatim}
+\subsubsection*{Options}
+ When appropriate, a specific option may be turned off using the \textbf{remove}
+ argument. This argument has a numeric alias; you can use \textbf{0}
+ for \textbf{remove}
+. A mix of formats is acceptable, even in the same command line. 
+\subsubsection*{Basic Watch Settings}
+
+\begin{tabular}{|l|p{4cm}|p{8cm}|}
+\hline 
+\emph{Option Flag}
+ &\emph{Argument to Option}
+ &\emph{Description} \\
+ \hline 
+ -l, --level  & 0 to 5 (see \textbf{Watch Levels}
+ below)  & This flag is optional but recommended. Set a specific watch level using an integer 0 to 5, this is an inclusive operation  \\
+ \hline 
+ -N, --none  & No argument  & Turns off all printing about Soar's internals, equivalent to --level 0  \\
+ \hline 
+ -d, --decisions  & remove (optional)  & Controls whether state and operator decisions are printed as they are made  \\
+ \hline 
+ -p, --phases  & remove (optional)  & Controls whether decisions cycle phase names are printed as Soar executes  \\
+ \hline 
+ -P, --productions  & remove (optional)  & Controls whether the names of productions are printed as they fire and retract, equivalent to -Dujc  \\
+ \hline 
+ -w, --wmes  & remove (optional)  & Controls the printing of working memory elements that are added and deleted as productions are fired and retracted  \\
+ \hline 
+ -r, --preferences  & remove (optional)  & Controls whether the preferences generated by the traced productions are printed when those productions fire or retract  \\
+ \hline 
+\end{tabular}
+\subsubsection*{ Watch Levels }
+
+ Use of the \textbf{--level} (\textbf{-l}) flag is optional but recommended. 
+ 
+\begin{tabular}{|l|l|}
+\hline 
+ 0  & watch nothing; equivalent to -N  \\
+ \hline 
+ 1  & watch decisions; equivalent to -d  \\
+ \hline 
+ 2  & watch phases and decisions; equivalent to -dp  \\
+ \hline 
+ 3  & watch productions, phases, and decisions; equivalent to -dpP  \\
+ \hline 
+ 4  & watch wmes, productions, phases, and decisions; equivalent to -dpPw  \\
+ \hline 
+ 5  & watch preferences, wmes, productions, phases, and decisions; equivalent to -dpPwr  \\
+ \hline 
+\end{tabular}
+
+ It is important to note that watch level 0 turns off ALL watch options, including backtracing, indifferent selection and learning. However, the other watch levels do not change these settings. That is, if any of these settings is changed from its default, it will retain its new setting until it is either explicitly changed again or the watch level is set to 0. 
+\subsubsection*{Watching Productions}
+ By default, the names of the productions are printed as each production fires and retracts (at \textbf{watch}
+ levels \textbf{3}
+ and higher). However, it may be more helpful to watch only a specific \emph{type}
+ of production. The tracing of firings and retractions of productions can be limited to only certain types by the use of the following flags: 
+ 
+\begin{tabular}{|l|l|p{8cm}|}
+\hline 
+\emph{Option Flag}
+ &\emph{Argument to Option}
+ &\emph{Description} \\
+ \hline 
+ -D, --default  & remove (optional)  & Control only default-productions as they fire and retract  \\
+ \hline 
+ -u, --user  & remove (optional)  & Control only user-productions as they fire and retract  \\
+ \hline 
+ -c, --chunks  & remove (optional)  & Control only chunks as they fire and retract  \\
+ \hline 
+ -j, --justifications  & remove (optional)  & Control only justifications as they fire and retract  \\
+ \hline 
+\end{tabular}
+
+\textbf{Note:}
+ The pwatch command is used to watch individual productions specified by name rather than watch a type of productions, such as \textbf{--user}.
+ 
+ Additionally, when watching productions, users may set the level of detail to be displayed for WMEs that are added or retracted as productions fire and retract. Note that detailed information about WMEs will be printed only for productions that are being watched. 
+
+\begin{tabular}{|l|l|p{8cm}|}
+\hline 
+\emph{Option Flag}
+ &\emph{Argument to Option}
+ &\emph{Description} \\
+ \hline 
+ -n, --nowmes  & No argument  & When watching productions, do not print any information about matching wmes  \\
+ \hline 
+ -t, --timetags  & No argument  & When watching productions, print only the timetags for matching wmes  \\
+ \hline 
+ -f, --fullwmes  & No argument  & When watching productions, print the full matching wmes  \\
+ \hline 
+\end{tabular}
+
+\subsubsection*{Watching Learning}
+
+\begin{tabular}{|l|p{5cm}|p{8cm}|}
+\hline 
+\emph{Option Flag}
+ &\emph{Argument to Option}
+ &\emph{Description} \\
+ \hline 
+ -L, --learning  & noprint, print, or fullprint (see table below)  & Controls the printing of chunks/justifications as they are created  \\
+ \hline 
+\end{tabular}
+
+ As Soar is running, it may create justifications and chunks which are added to production memory. The \textbf{watch}
+ command allows users to monitor when chunks and justifications are created by specifying one of the following arguments to the \textbf{watch --learning}
+ command: 
+ 
+\begin{tabular}{|l|l|p{8cm}|}
+\hline 
+\emph{Argument}
+ &\emph{Alias}
+ &\emph{Effect} \\
+ \hline 
+ noprint  & 0  & Print nothing about new chunks or justifications (default)  \\
+ \hline 
+ print  & 1  & Print the names of new chunks and justifications when created  \\
+ \hline 
+ fullprint  & 2  & Print entire chunks and justifications when created  \\
+ \hline 
+\end{tabular}
+
+\subsubsection*{Watching other Functions}
+
+\begin{tabular}{|l|l|p{7cm}|}
+\hline 
+\emph{Option Flag}
+ &\emph{Argument to Option}
+ &\emph{Description} \\
+ \hline 
+ -b, --backtracing  & remove (optional)  & Controls the printing of backtracing information when a chunk or justification is created  \\
+ \hline 
+ -i, --indifferent-selection  & remove (optional)  & Controls the printing of the scores for tied operators in random indifferent selection mode  \\
+ \hline 
+\end{tabular}
+
+\subsubsection*{Description}
+ The \textbf{watch}
+ command controls the amount of information that is printed out as Soar runs. The basic functionality of this command is to trace various \emph{levels}
+ of information about Soar's internal workings. The higher the \emph{level}
+, the more information is printed as Soar runs. At the lowest setting, \textbf{0 | --none}
+, nothing is printed. The levels are cumulative, so that each successive level prints the information from the previous level as well as some additional information. The default setting for the \textbf{watch \emph{level}
+}
+ is \textbf{1}
+, (or \textbf{--decisions}
+). 
+ Each level can be indicated with either a number or a series of flags as follows: \begin{verbatim}
+0 or --none
+1 or --decisions
+2 or --decisions --phases
+3 or --decisions --phases --productions
+4 or --decisions --phases --productions --wmes
+5 or --decisions --phases --productions --wmes --preferences
+\end{verbatim}
+ The numerical arguments \emph{inclusively}
+ turn on all levels up to the number specified. To use numerical arguments to turn off a level, specify a number which is less than the level to be turned off. For instance, to turn off watching of productions, specify ``watch --level 2'' (or 1 or 0). Numerical arguments are provided for shorthand convenience. For more detailed control over the watch settings, the named arguments should be used. 
+ With no arguments, this command prints information about the current \textbf{watch}
+ status, i.e., the values of each parameter. 
+ For the named arguments, including the named argument turns on only that setting. To turn off a specific setting, follow the named argument with \emph{remove}
+ or \emph{0}
+. 
+ The named argument \textbf{--productions}
+ is shorthand for the four arguments \textbf{--default}
+, \textbf{--user}
+, \textbf{--justifications}
+, and \textbf{--chunks}
+. 
+\subsubsection*{Examples}
+ The most common uses of watch are by using the numeric arguments which indicate watch levels. To turn off all printing of Soar internals, do any one of the following (not all possibilities listed): \begin{verbatim}
+watch --level 0
+watch -l 0
+watch -N
+\end{verbatim}
+ Although the \textbf{--level}
+ flag is optional, its use is recommended: \begin{verbatim}
+watch --level 5 (... OK)
+watch 5         (... OK, but try to avoid)
+\end{verbatim}
+ Be careful of where the level is on the command line, for example, if you want level 2 and preferences: \begin{verbatim}
+watch -r -l 2 (... Incorrect: 
+        -r flag ignored, level 2 parsed after it and overrides the setting)
+watch -r 2    (... Syntax error:
+        0 or remove expected as optional argument to -r)
+watch -r -l 2 (... Incorrect:
+        -r flag ignored, level 2 parsed after it and overrides the setting)
+watch 2 -r    (... OK, but try to avoid)
+watch -l 2 -r (... OK)
+\end{verbatim}
+ To turn on printing of decisions, phases and productions, do any one of the following (not all possibilities listed): \begin{verbatim}
+watch --level 3
+watch -l 3
+watch --decisions --phases --productions
+watch -d -p -P
+\end{verbatim}
+ Individual options can be changed as well. To turn on printing of decisions and wmes, but not phases and productions, do any one of the following (not all possibilities listed): \begin{verbatim}
+watch --level 1 --wmes
+watch -l 1 -w
+watch --decisions --wmes
+watch -d --wmes
+watch -w --decisions
+watch -w -d
+\end{verbatim}
+ To turn on printing of decisions, productions and wmes, and turns phases off, do any one of the following (not all possibilities listed): \begin{verbatim}
+watch --level 4 --phases remove
+watch -l 4 -p remove
+watch -l 4 -p 0
+watch -d -P -w -p remove
+\end{verbatim}
+ To watch the firing and retraction of decisions and \emph{only}
+ user productions, do any one of the following (not all possibilities listed): \begin{verbatim}
+watch -l 1 -u
+watch -d -u
+\end{verbatim}
+ To watch decisions, phases and all productions \emph{except}
+ user productions and justifications, and to see full wmes, do any one of the following (not all possibilities listed): \begin{verbatim}
+watch --decisions --phases --productions --user remove --justifications \\
+                                  remove --fullwmes
+watch -d -p -P -f -u remove -j 0 
+watch -f -l 3 -u 0 -j 0
+\end{verbatim}
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ w  & watch  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[pwatch]{pwatch} \hyperref[print]{print} \hyperref[run]{run} \hyperref[watch-wmes]{watch-wmes} 
+% -----------------------------------------------------------------------------------------
+\subsection{\soarb{watch-wmes}}
+\label{watch-wmes}
+\index{watch-wmes}
+ \subsubsection*{Synopsis}
+\begin{verbatim}
+watch-wmes -[a|r]  -t <type>  pattern
+watch-wmes -[l|R] [-t <type>]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+ -a, --add-filter  & Add a filter to print wmes that meet the type and pattern criteria.  \\
+ \hline 
+ -r, --remove-filter  & Delete filters for printing wmes that match the type and pattern criteria.  \\
+ \hline 
+ -l, --list-filter  & List the filters of this type currently in use. Does not use the pattern argument.  \\
+ \hline 
+ -R, --reset-filter  & Delete all filters of this type. Does not use pattern arg.  \\
+ \hline 
+ -t, --type  & Follow with a type of wme filter, see below.  \\
+ \hline 
+\end{tabular}
+\paragraph*{Pattern}
+ The pattern is an id-attribute-value triplet: \begin{verbatim}
+  id attribute value
+\end{verbatim}
+ Note that \textbf{*}
+ can be used in place of the id, attribute or value as a wildcard that maches any string. Note that braces are not used anymore. 
+\paragraph*{Types}
+ When using the -t flag, it must be followed by one of the following: 
+ 
+\begin{tabular}{|l|l|}
+\hline 
+ adds  & Print info when a wme is \emph{added}
+.  \\
+ \hline 
+ removes  & Print info when a wme is \emph{retracted}
+.  \\
+ \hline 
+ both  & Print info when a wme is added \emph{or}
+ retracted.  \\
+ \hline 
+\end{tabular}
+ 
+ When issuing a \textbf{-R}
+ or \textbf{-l}
+, the \textbf{-t}
+ flag is optional. Its absence is equivalent to \textbf{-t both}
+ . 
+\subsubsection*{Description}
+ This commands allows users to improve state tracing by issuing filter-options that are applied when watching wmes. Users can selectively define which \emph{object-attribute-value}
+ triplets are monitored and whether they are monitored for addition, removal or both, as they go in and out of working memory. 
+ \textbf{Note:}
+ The functionality of \textbf{watch-wmes}
+ resided in the \textbf{watch}
+ command prior to Soar 8.6. 
+\subsubsection*{Examples}
+ Users can \textbf{watch}
+ an \emph{attribute}
+ of a particular object (as long as that object already exists):  \begin{verbatim}
+soar> watch-wmes --add-filter -t both D1 speed *
+\end{verbatim}
+ or print WMEs that retract in a specific state (provided the \textbf{state}
+ already exists):  \begin{verbatim}
+soar> watch-wmes --add-filter -t removes S3 * *
+\end{verbatim}
+  or watch any relationship between objects:  \begin{verbatim}
+soar> watch-wmes --add-filter -t both * ontop *
+\end{verbatim}
+%*****************************************************************************
+% ----------------------------------------------------------------------------
+\section{Configuring Soar's Runtime Parameters}
+\label{RUNTIME}
+
+This section describes the commands that control Soar's Runtime Parameters.
+Many of these commands provide options that simplify or restrict 
+runtime behavior to enable easier and more localized debugging.
+Others allow users to select alternative algorithms or methodologies.
+Users can configure Soar's learning mechanism; examine the
+backtracing information that supports chunks and justifications;
+provide hints that could improve the efficiency of the Rete matcher;
+limit runaway chunking and production firing;
+choose an alternative algorithm for determining whether a working memory
+element receives O-support;  and 
+configure options for selecting between mutually indifferent operators.
+
+The specific commands described in this section are:
+
+\paragraph{Summary}
+\begin{quote}
+\begin{description}
+\item[attribute-preferences-mode] In Soar7 mode, controls handling of preferences for non-context slots.
+\item[explain-backtraces] - Print information about chunk and justification backtraces.
+\item[indifferent-selection] - Controls how indifferent selections are made.
+\item[learn] - Set the parameters for chunking, Soar's learning mechanism.
+\item[max-chunks] - Limit the number of chunks created during a decision cycle.
+\item[max-elaborations] - Limit the maximum number of elaboration cycles.
+\item[max-nil-output-cycles]
+\item[multi-attributes] - Declare multi-attributes so as to increase Rete matching efficiency.
+\item[numeric-indifferent-mode] - Select method for combining numeric preferences.
+\item[o-support-mode] - Choose experimental variations of o-support.
+\item[save-backtraces] - Save trace information to explain chunks and justifications.
+\item[soar8] - Toggle between Soar 8 methodology and Soar 7 methodology.
+\item[timers] - Toggle on or off the internal timers used to profile Soar.
+\item[waitsnc] - Generate a wait state rather than a state-no-change impasse.
+\end{description}
+\end{quote}
+
+% ----------------------------------------------------------------------------
+\subsection{\soarb{attribute-preferences-mode}}
+\label{attribute-preferences-mode}
+\index{attribute-preferences-mode}
+For Soar 7, this command sets and prints the attributes preferences mode to control 
+the handling of preferences (other than acceptable and reject preferences) for non-context slots.
+\subsubsection*{Synopsis}
+\begin{verbatim}
+attribute-preferences-mode [0|1|2]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|p{14cm}|}
+\hline
+0 & Handle preferences the normal (Soar 6) way. \\
+\hline
+1 & Handle preferences the normal (Soar 6) way, but print a warning message whenever a preference other than + or - is created for a noncontext slot. \\
+\hline
+2 & When a preference other than + or - created for a non-context slot, print an error message and ignore (discard) that preference. For non-context slots,
+the set of values installed in working memory is always equal to the set of acceptable values minus the set of rejected values. \\
+\hline
+\end{tabular}
+\subsubsection*{Description}
+For Soar 7, this command sets and prints the attributes preferences mode to control the handling of preferences (other than acceptable and reject preferences)
+for non-context slots. The command issued with no arguments, returns the current mode.
+This command is obsolete for Soar 8. In Soar 8, the code automatically operates as if attribute-preferences-mode = 2.
+% ----------------------------------------------------------------------------
+\subsection{\soarb{explain-backtraces}}
+\label{explain-backtraces}
+\index{explain-backtraces}
+Print information about chunk and justification backtraces. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+explain-backtraces -f prod_name
+explain-backtraces [-c <n>] prod_name
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ (no args)  & List all productions that can be ``explained''  \\
+ \hline 
+ prod\_name  & List all conditions and grounds for the chunk or justification.  \\
+ \hline 
+ -c, --condition  & Explain why condition number \emph{n}
+ is in the chunk or justification.  \\
+ \hline 
+ -f, --full  & Print the full backtrace for the named production  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ This command provides some interpretation of backtraces generated during chunking. 
+ The two most useful variants are: \begin{verbatim}
+explain-backtraces prodname 
+explain-backtraces -c n prodname
+\end{verbatim}
+ The first variant prints a numbered list of all the conditions for the named chunk or justification, and the ground which resulted in inclusion in the chunk/justification. A \emph{ground}
+ is a working memory element (WME) which was tested in the supergoal. Just knowing which WME was tested may be enough to explain why the chunk/justification exists. If not, the second variant, \textbf{explain-backtraces -c n prodname}
+, where \emph{n}
+ is the condition of interest, can be used to obtain a list of the productions which fired to obtain this condition in the chunk/justification (and the crucial WMEs tested along the way). 
+ \textbf{save-backtraces}
+ mode must be on when a chunk or justification is created or no explanation will be available. Calling \textbf{explain-backtraces}
+ with no argument prints a list of all chunks and justifications for which backtracing information is available. 
+\subsubsection*{Examples}
+ Examining the chunk \textbf{chunk-65*d13*tie*2}
+ generated in a water-jug task:  \begin{verbatim}
+soar> explain-backtraces chunk-65*d13*tie*2
+ (sp chunk-65*d13*tie*2
+  (state <s2> ^name water-jug ^jug <n4> ^jug <n3>)
+  (state <s1> ^name water-jug ^desired <d1> ^operator <o1> + ^jug <n1>
+        ^jug <n2>)
+  (<s2> ^desired <d1>)
+  (<o1> ^name pour ^into <n1> ^jug <n2>)
+  (<n1> ^volume 3 ^contents 0)
+  (<s1> ^problem-space <p1>)
+  (<p1> ^name water-jug)
+  (<n4> ^volume 3 ^contents 3)
+  (<n3> ^volume 5 ^contents 0)
+  (<n2> ^volume 5 ^contents 3)
+-->
+  (<s3> ^operator <o1> -))
+ 1 :  (state <s2> ^name water-jug)     Ground : (S3 ^name water-jug)
+ 2 :  (state <s1> ^name water-jug)     Ground : (S5 ^name water-jug)
+ 3 :  (<s1> ^desired <d1>)             Ground : (S5 ^desired D1)
+ 4 :  (<s2> ^desired <d1>)             Ground : (S3 ^desired D1)
+ 5 :  (<s1> ^operator <o1> +)          Ground : (S5 ^operator O18 +)
+ 6 :  (<o1> ^name pour)                Ground : (O18 ^name pour)
+ 7 :  (<o1> ^into <n1>)                Ground : (O18 ^into N3)
+ 8 :  (<n1> ^volume 3)                 Ground : (N3 ^volume 3)
+ 9 :  (<n1> ^contents 0)               Ground : (N3 ^contents 0)
+10 :  (<s1> ^jug <n1>)                 Ground : (S5 ^jug N3)
+11 :  (<s1> ^problem-space <p1>)       Ground : (S5 ^problem-space P3)
+12 :  (<p1> ^name water-jug)           Ground : (P3 ^name water-jug)
+13 :  (<s2> ^jug <n4>)                 Ground : (S3 ^jug N1)
+14 :  (<n4> ^volume 3)                 Ground : (N1 ^volume 3)
+15 :  (<n4> ^contents 3)               Ground : (N1 ^contents 3)
+16 :  (<s2> ^jug <n3>)                 Ground : (S3 ^jug N2)
+17 :  (<n3> ^volume 5)                 Ground : (N2 ^volume 5)
+18 :  (<n3> ^contents 0)               Ground : (N2 ^contents 0)
+19 :  (<s1> ^jug <n2>)                 Ground : (S5 ^jug N4)
+20 :  (<n2> ^volume 5)                 Ground : (N4 ^volume 5)
+21 :  (<n2> ^contents 3)               Ground : (N4 ^contents 3)
+22 :  (<o1> ^jug <n2>)                 Ground : (O18 ^jug N4)
+\end{verbatim}
+ Further examining condition 21:  \begin{verbatim}
+soar> explain-backtraces -c 21 chunk-65*d13*tie*2
+Explanation of why condition  (N4 ^contents 3) was included in
+              chunk-65*d13*tie*2
+Production chunk-64*d13*opnochange*1 matched
+    (N4 ^contents 3) which caused
+production selection*select*failure-evaluation-becomes-reject-preference 
+   to match   (E3 ^symbolic-value failure) which caused
+A result to be generated.
+\end{verbatim}
+ \subsubsection*{Default Aliases}
+ \begin{tabular}{|l|l|}
+ \hline 
+  Alias  & Maps to  \\
+  \hline 
+  eb  & explain-backtraces  \\
+  \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[save-backtraces]{save-backtraces} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{indifferent-selection}}
+\label{indifferent-selection}
+\index{indifferent-selection}
+Controls indifferent preference arbitration. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+indifferent-selection [-aflr]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ -a, --ask  & Ask the user to choose. \textbf{Not implemented.} \\
+ \hline 
+ -f, --first  & Select the first indifferent object from Soar's internal list.  \\
+ \hline 
+ -l, --last  & Select the last indifferent object from Soar's internal list.  \\
+ \hline 
+ -r, --random  & Select randomly (default).  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{indifferent-selection}
+ command allows the user to set which option should be used to select between operator proposals that are mutally indifferent in preference memory. 
+ The default option is \textbf{--random}
+ which chooses an operator at random from the set of mutually indifferent proposals, with the selection biased by any existing numeric preferences. For repeatable results, the user may choose the \textbf{--first}
+ or \textbf{--last}
+ option. ``First'' refers to the list of operator augmentations internal to Soar; the ordering of the augmentations is arbitrary but deterministic, so that if you run Soar repeatedly, \textbf{--first}
+ will always make the same decision. Similarly, \textbf{--last}
+ chooses the last of the tied objects from the internal list. For complete control over the decision process, the \textbf{--ask}
+ option prompts the user to select the next operator from a list of the tied operators. 
+ If no argument is provided, \textbf{indifferent-selection}
+ will display the current setting. 
+  \subsubsection*{Default Aliases}
+  \begin{tabular}{|l|l|}
+  \hline 
+   Alias  & Maps to  \\
+   \hline 
+   inds  & indifferent-selection \\
+   \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[numeric-indifference-mode]{numeric-indifference-mode} 
+%-------------------------------------------------------------------------
+\subsection{\soarb{learn}}
+\label{learn}
+\index{learn}
+Set the parameters for chunking, Soar's learning mechanism. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+learn [-l]
+learn -[d|E|o]
+learn -e [ab]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+ -e, --enable, --on  & Turn chunking on. Can be modified by -a or -b.  \\
+ \hline 
+ -d, --disable, --off  & Turn all chunking off. (default)  \\
+ \hline 
+ -E, --except  & Learning is on, except as specified by RHS \textbf{dont-learn}
+ actions.  \\
+ \hline 
+ -o, --only  & Chunking is on only as specified by RHS \textbf{force-learn}
+ actions.  \\
+ \hline 
+ -l, --list  & Prints listings of dont-learn and force-learn states.  \\
+ \hline 
+ -a, --all-levels  & Build chunks whenever a subgoal returns a result. Learning must be --enabled.  \\
+ \hline 
+ -b, --bottom-up  & Build chunks only for subgoals that have not yet had any subgoals with chunks built. Learning must be --enabled.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The learn command controls the parameters for chunking (Soar's learning mechanism). With no arguments, this command prints out the current learning environment status. If arguments are provided, they will alter the learning environment as described in the options and arguments table. The watch command can be used to provide various levels of detail when productions are learned. Learning is \textbf{disabled}
+ by default. 
+ With the \textbf{--on}
+ flag, chunking is on all the time. With the \textbf{--except}
+ flag, chunking is on, but Soar will not create chunks for states that have had RHS \textbf{dont-learn}
+ actions executed in them. With the \textbf{--only}
+ flag, chunking is off, but Soar will create chunks for only those states that have had RHS \textbf{force-learn}
+ actions executed in them. With the \textbf{--off}
+ flag, chunking is off all the time. 
+ The \textbf{--only}
+ flag and its companion \textbf{force-learn}
+ RHS action allow Soar developers to turn learning on in a particular problem space, so that they can focus on debugging the learning problems in that particular problem space without having to address the problems elsewhere in their programs at the same time. Similarly, the \textbf{--except}
+ flag and its companion \textbf{dont-learn}
+ RHS action allow developers to temporarily turn learning off for debugging purposes. These facilities are provided as debugging tools, and do not correspond to any theory of learning in Soar. 
+ 
+ The \textbf{--all-levels}
+ and \textbf{--bottom-up}
+ flags are orthogonal to the \textbf{--on}
+, \textbf{--except}
+, \textbf{--only}
+, and \textbf{--off}
+ flags, and so, may be used in combination with them. With bottom-up learning, chunks are learned only in states in which no subgoal has yet generated a chunk. In this mode, chunks are learned only for the ``bottom'' of the subgoal hierarchy and not the intermediate levels. With experience, the subgoals at the bottom will be replaced by the chunks, allowing higher level subgoals to be chunked. 
+ Learning can be turned on or off at any point during a run. 
+\subsubsection*{Examples}
+ To enable learning only at the lowest subgoal level: \begin{verbatim}
+learn -e b 
+\end{verbatim}
+ To see all the \textbf{force-learn}
+ and \textbf{dont-learn}
+ states registered by RHS actions \begin{verbatim}
+learn -l
+\end{verbatim}
+ \subsubsection*{Default Aliases}
+ \begin{tabular}{|l|l|}
+ \hline 
+  Alias  & Maps to  \\
+  \hline 
+  l  & learn  \\
+  \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[watch]{watch} \hyperref[explain-backtraces]{explain-backtraces} \hyperref[save-backtraces]{save-backtraces} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{max-chunks}}
+\label{max-chunks}
+\index{max-chunks}
+Limit the number of chunks created during a decision cycle. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+max-chunks [n]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ n  & Maximum number of chunks allowed during a decision cycle.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{max-chunks}
+ command is used to limit the maximum number of chunks that may be created during a decision cycle. The initial value of this variable is 50; allowable settings are any integer greater than 0. 
+ The chunking process will end after \textbf{max-chunks}
+ chunks have been created, \emph{even if there are more results that have not been backtraced through to create chunks}
+, and Soar will proceed to the next phase. A warning message is printed to notify the user that the limit has been reached. 
+ This limit is included in Soar to prevent getting stuck in an infinite loop during the chunking process. This could conceivably happen because newly-built chunks may match immediately and are fired immediately when this happens; this can in turn lead to additional chunks being formed, etc. If you see this warning, something is seriously wrong; Soar is unable to guarantee consistency of its internal structures. You should not continue execution of the Soar program in this situation; stop and determine whether your program needs to build more chunks or whether you've discovered a bug (in your program or in Soar itself). 
+% ----------------------------------------------------------------------------
+ \subsection{\soarb{max-elaborations}}
+ \label{max-elaborations}
+ \index{max-elaborations}
+ Limit the maximum number of elaboration cycles in a given phase. Print a warning message if the limit is reached during a run. 
+ \subsubsection*{Synopsis}
+ \begin{verbatim}
+ max-elaborations [n]
+ \end{verbatim}
+ \subsubsection*{Options}
+ \begin{tabular}{|l|l|}
+ \hline 
+ \emph{n}
+  & Maximum allowed elaboration cycles, must be a positive integer.  \\
+  \hline 
+ \end{tabular}
+ \subsubsection*{Description}
+  This command sets and prints the maximum number of elaboration cycles allowed. If \emph{n}
+  is given, it must be a positive integer and is used to reset the number of allowed elaboration cycles. The default value is 100. \textbf{max-elaborations}
+  with no arguments prints the current value. 
+  \textbf{max-elaborations}
+  controls the maximum number of elaborations allowed in a single decision cycle. The elaboration phase will end after \emph{max-elaboration}
+  cycles have completed, even if there are more productions eligible to fire or retract; and Soar will proceed to the next phase after a warning message is printed to notify the user. This limits the total number of cycles of parallel production firing but does not limit the total number of productions that can fire during elaboration. 
+  This limit is included in Soar to prevent getting stuck in infinite loops (such as a production that repeatedly fires in one elaboration cycle and retracts in the next); if you see the warning message, it may be a signal that you have a bug your code. However some Soar programs are designed to require a large number of elaboration cycles, so rather than a bug, you may need to increase the value of \emph{max-elaborations}
+ . 
+  In Soar8, \emph{max-elaborations}
+  is checked during both the Propose Phase and the Apply Phase. If Soar8 runs more than the max-elaborations limit in either of these phases, Soar8 proceeds to the next phase (either Decision or Output) even if quiescence has not been reached. 
+ \subsubsection*{Examples}
+  The command issued with no arguments, returns the max elaborations allowed: \begin{verbatim}
+ max-elaborations 
+ \end{verbatim}
+  to set the maximum number of elaborations in one phase to 50: \begin{verbatim}
+ max-elaborations 50
+ \end{verbatim}
+% ----------------------------------------------------------------------------
+\subsection{\soarb{max-nil-output-cycles}}
+\label{max-nil-output-cycles}
+\index{max-nil-output-cycles}
+Limit the maximum number of decision cycles that are executed without producing output when run is invoked with run-til-output args. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+max-nil-output-cycles [n]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+\emph{n}
+ & Maximum number of consecutive output cycles allowed without producing output. Must be a positive integer.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ This command sets and prints the maximum number of nil output cycles (output cycles that put nothing on the output link) allowed when running using run-til-output (run --output). If \emph{n}
+ is not given, this command prints the current number of nil-output-cycles allowed. If \emph{n}
+ is given, it must be a positive integer and is used to reset the maximum number of allowed nil output cycles. \\ 
+\\ 
+\textbf{max-nil-output-cycles}
+ controls the maximum number of output cycles that generate no output allowed when a \textbf{run --out}
+ command is issued. After this limit has been reached, Soar stops. The default initial setting of \emph{n}
+ is 15. 
+\subsubsection*{Examples}
+ The command issued with no arguments, returns the max empty output cycles allowed: \begin{verbatim}
+max-nil-output-cycles 
+\end{verbatim}
+ to set the maximum number of empty output cycles in one phase to 25: \begin{verbatim}
+max-nil-output-cycles 25 
+\end{verbatim}
+\subsubsection*{See Also}
+\hyperref[run]{run} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{multi-attributes}}
+\label{multi-attributes}
+\index{multi-attributes}
+Declare a symbol to be multi-attributed. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+multi-attributes [symbol [n]] 
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+symbol & Any Soar attribute.  \\
+ \hline 
+\emph{n}
+ & Integer $>$ 1, estimate of degree of simultaneous values for attribute.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ This command declares the given symbol to be an attribute which can take on multiple values. The optional \emph{n}
+ is an integer ($>$1) indicating an upper limit on the number of expected values that will appear for an attribute. If \emph{n}
+ is not specified, the value 10 is used for each declared multi-attribute. More informed values will tend to result in greater efficiency. This command is used only to provide hints to the production condition reorderer so it can produce better condition orderings. Better orderings enable the rete network to run faster. This command has no effect on the actual contents of working memory and most users needn't use this at all. 
+ Note that multi-attributes declarations must be made before productions are loaded into soar or this command will have no effect. 
+\subsubsection*{Examples}
+ Declare the symbol ``thing'' to be an attribute likely to take more than 1 but no more than 4 values: \begin{verbatim}
+ multi-attributes thing 4 
+\end{verbatim}
+% ----------------------------------------------------------------------------
+\subsection{\soarb{numeric-indifferent-mode}}
+\label{numeric-indifferent-mode}
+\index{numeric-indifferent-mode}
+Select method for combining numeric preferences. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+numeric-indifferent-mode [-as]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ -a, --avg, --average  & Use average mode (default).  \\
+ \hline 
+ -s, --sum  & Use sum mode.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The numeric-indifferent-mode command is used to select the method for combining numeric preferences. This command is only meaningful in indifferent-selection --random  mode. 
+ The default procedure is \textbf{--avg}
+ (average) which assigns a final value to an operator according to the rule: \begin{itemize}
+\item  If the operator has at least one numeric preference, assign it the value that is the average of all of its numeric preferences. 
+\item  If the operator has no numeric preferences (but has been included in the indifferent selection through some combination of non-numeric preferences), assign it the value 50. 
+\end{itemize}
+ The intended range of numeric-preference values for \textbf{--avg}
+ mode is 0-100. 
+ The other combination option \textbf{--sum}
+ assigns a final value according to the rule: \begin{itemize}
+\item  Add together any numeric preferences for the operator (defaulting to 0 if there are none). 
+\item  Assign the operator the value e\^{}\{PreferenceSum / AgentTemperature\}, where AgentTemperature is a compile-time constant currently set at 25.0. 
+\end{itemize}
+ Any real-numbered preference may be used in \textbf{--sum}
+ mode. 
+ Once a value has been computed for each operator, the next operator is selected probabilistically, with each candidate operator's chance weighted by its computed value. 
+ % --------------------------------------------------------------------------------------------------
+\subsection{\soarb{o-support-mode}}
+\label{o-support-mode}
+\index{o-support-mode}
+Choose experimental variations of o-support. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+o-support-mode [0|1|2|3|4]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|p{14cm}|}
+\hline 
+ 0  & Mode 0 is the base mode. O-support is calculated based on the structure of working memory that is tested and modified. Testing an operator or operator acceptable preference results in state or operator augmentations being o-supported. The support computation is very complex (see soar manual).  \\
+ \hline 
+ 1  & Not available through gSKI.  \\
+ \hline 
+ 2  & Mode 2 is the same as mode 0 except that all support is calculated the production structure, not from working memory structure. Augmentations of operators are still o-supported.  \\
+ \hline 
+ 3  & Mode 3 is the same as mode 2 except that operator elaborations (adding attributes to operators) now get i-support even though you have to test the operator to elaborate an operator.  \\
+ \hline 
+ 4  & Mode 4 is the default.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{o-support-mode}
+ command is used to control the way that o-support is determined for preferences. Only o-support modes 3 \& 4 can be considered current to Soar8, and o-support mode 4 should be considered an improved version of mode 3. The default o-support mode is mode 4. 
+ In o-support modes 3 \& 4, support is given production by production; that is, all preferences generated by the RHS of a single instantiated production will have the same support. The difference between the two modes is in how they handle productions with both operator and non-operator augmentations on the RHS. For more information on o-support calculations, see the relevant appendix in the Soar manual. 
+ Running o-support-mode with no arguments prints out the current o-support-mode. 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{save-backtraces}}
+\label{save-backtraces}
+\index{save-backtraces}
+Save trace information to explain chunks and justifications. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+save-backtraces [-ed]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ -e, --enable, --on  & Turn explain sysparam on.  \\
+ \hline 
+ -d, --disable, --off  & Turn explain sysparam off.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{save-backtraces}
+ variable is a toggle that controls whether or not backtracing information (from chunks and justifications) is saved. 
+ When \textbf{save-backtraces}
+ is set to \textbf{off}
+, backtracing information is not saved and explanations of the chunks and justifications that are formed can not be retrieved. When \textbf{save-backtraces}
+ is set to \textbf{on}
+, backtracing information can be retrieved by using the explain-backtraces command. Saving backtracing information may slow down the execution of your Soar program, but it can be a very useful tool in understanding how chunks are formed. 
+\subsubsection*{See Also}
+\hyperref[explain-backtraces]{explain-backtraces} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{soar8}}
+\label{soar8}
+\index{soar8}
+Toggle between Soar 8 methodology and Soar 7 methodology. 
+ \subsubsection*{Synopsis}
+\begin{verbatim}
+soar8 [-ed]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ -e, --enable, --on  & Use Soar 8 methodology. (Default)  \\
+ \hline 
+ -d, --disable, --off  & Use Soar 7 methodology.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The soar8 command allows users to revert to Soar 7 methodology in order to run older Soar programs. Both production memory and working memory must be empty to toggle between Soar 7 and Soar 8 mode. The soar8 command with no arguments returns the current mode, the default is Soar 8. Users can toggle between modes ONLY when production memory and working memory are both empty. This means that users must either change the mode at startup before any productions are loaded, or must first issue ``excise -all'' (which does an ``init-soar'' as well) before changing modes. Note that there are differences in the preference mechanism and in operator termination (among other things) between Soar 8 and Soar 7. Users should read the Soar 8.2 Release Notes for more details. 
+\subsubsection*{Warnings}
+ Production memory and working memory must be empty to switch between modes. 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{timers}}
+\label{timers}
+\index{timers}
+Toggle on or off the internal timers used to profile Soar. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+timers [-ed]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ -d, --disable, --off  & Disable all timers.  \\
+ \hline 
+ -e, --enable, --on  & Enable timers as compiled.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ This command is used to control the timers that collect internal profiling information while Soar is running. With no arguments, this command prints out the current timer status. Timers are ENABLED by default. The default compilation flags for soar enable the basic timers and disable the detailed timers. The \textbf{timers}
+ command can only enable or disable timers that have already been enabled with compiler directives. See the stats command for more info on the Soar timing system. 
+\subsubsection*{See Also}
+\hyperref[stats]{stats} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{waitsnc}}
+\label{waitsnc}
+\index{waitsnc}
+\subsubsection*{Synopsis}
+\begin{verbatim}
+wait -[e|d]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ -e, --enable, --on  & Turns a state-no-change into a \emph{wait}
+ state.  \\
+ \hline 
+ -d, --disable, --off  & Default. A state-no-change generates an impasse.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ In some systems, espcially those that model expert (fully chunked) knowledge, a state-no-change may represent a \emph{wait state}
+ rather than an impasse. The waitsnc command allows the user to switch to a mode where a state-no-change that would normally generate an impasse (and subgoaling), instead generates a \emph{wait}
+ state. At a \emph{wait}
+ state, the decision cycle will repeat (and the decision cycle count is incremented) but no state-no-change impasse (and therefore no substate) will be generated. 
+ When issued with no arguments, waitsnc returns its current setting. 
+% ***************************************************************************
+% ----------------------------------------------------------------------------
+\section{File System I/O Commands}
+\label{FILE-IO}
+
+This section describes commands which interact in one way or another
+with operating system input and output, or file I/O.  Users can
+save/retrieve information to/from files, redirect the information
+printed by Soar as it runs, and save and load the binary representation
+of productions.
+The specific commands described in this section are:
+
+\paragraph{Summary}
+\begin{quote}
+\begin{description}
+%\item[command-to-file] - Evaluate a command and print its results to a file.
+%\item[\emph{directory functions}] - \soar{chdir, cd, dirs, popd, pushd, pwd, topd}
+%\item[\emph{directory functions}] - \soar{cd, dirs, popd, pushd, pwd}
+\item[cd] - Change directory.
+\item[dirs] - List the directory stack.
+\item[echo] -  Print a string to the current output device.
+\item[log] - Record all user-interface input and output to a file.
+\item[ls] - List the contents of the current working directory.
+\item[popd] - Pop the current working directory off the stack and change to the next directory on the stack.
+\item[pushd] - Push a directory onto the directory stack, changing to it.
+\item[pwd] - Print the current working directory.
+\item[rete-net] - Save the current Rete net, or restore a previous one.
+\item[set-library-location] - Set the top level directory containing demos/help/etc.
+%\item[output-strings-destination] - Redirect the Soar output stream.
+\item[source] - Load and evaluate the contents of a file.
+\end{description}
+\end{quote}
+
+The \textbf{source} command is used for nearly every Soar program.  The
+directory functions are important to understand so that users can
+navigate directories/folders to load/save the files of interest.  
+Soar applications that include a graphical interface or other
+simulation environment will often require the use of \textbf{echo}  .
+
+
+% ----------------------------------------------------------------------------
+\subsection{\soarb{cd}}
+\label{cd}
+\index{cd}
+Change directory. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+cd [directory]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ directory  & The directory to change to, can be relative or full path.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ Change the current working directory. If run with no arguments, returns to the directory that the command line interface was started in, often referred to as the \emph{home}
+ directory. 
+\subsubsection*{Examples}
+ To move to the relative directory named ../home/soar/agents \begin{verbatim}
+cd ../home/soar/agents
+\end{verbatim}
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ chdir  & cd  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[dirs]{dirs} \hyperref[home]{home} \hyperref[ls]{ls} \hyperref[pushd]{pushd} \hyperref[popd]{popd} \hyperref[source]{source} \hyperref[topd]{topd} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{dirs}}
+\label{dirs}
+\index{dirs}
+List the directory stack 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+dirs
+\end{verbatim}
+\subsubsection*{Options}
+ No options. 
+\subsubsection*{Description}
+ This command lists the directory stack. Agents can move through a directory structure by pushing and popping directory names. The \textbf{dirs}
+ command returns the stack. 
+ The command \textbf{pushd}
+ places a new ``agent current directory'' on top of the directory stack and cd's to it. The command \textbf{popd}
+ removes the directory at the top of the directory stack and cd's to the previous directory which now appears at the top of the stack. 
+\subsubsection*{See Also}
+\hyperref[cd]{cd} \hyperref[home]{home} \hyperref[ls]{ls} \hyperref[pushd]{pushd} \hyperref[popd]{popd} \hyperref[source]{source} \hyperref[topd]{topd} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{echo}}
+\label{echo}
+\index{echo}
+Print a string to the current output device. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+echo string
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ string  & The string to print.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ This command echos the args to the current output stream. This is normally stdout but can be set to a variety of channels. If an arg is -nonewline then no newline is printed at the end of the printed strings. Otherwise a newline is printed after printing all the given args. Echo is the easiest way to add user comments or identification strings in a log file. 
+\subsubsection*{Examples}
+ This example will add these comments to the screen and any open log file. \begin{verbatim}
+echo This is the first run with disks = 12
+\end{verbatim}
+\subsubsection*{See Also}
+\hyperref[log]{log} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{log}}
+ \label{log}
+ \index{log}
+ Record all user-interface input and output to a file. 
+ \subsubsection*{Synopsis}
+ \begin{verbatim}
+ log [-Ae] filename
+ log -a  string
+ log [cdoq]
+ \end{verbatim}
+ \subsubsection*{Options}
+ \begin{tabular}{|l|p{10cm}|}
+ \hline 
+  filename  & Open filename and begin logging.  \\
+  \hline 
+  -c, --close, -o, --off, -d, --disable  & Stop logging, close the file.  \\
+  \hline 
+  -a, --add string  & Add the given string to the open log file.  \\
+  \hline 
+  -q, --query  & Returns \emph{open}
+  if logging is active or \emph{closed}
+  if logging is not active.  \\
+  \hline 
+  -A, --append, -e, --existing  & Opens existing log file named filename and logging is added at the end of the file.  \\
+  \hline 
+ \end{tabular}
+ \subsubsection*{Description}
+  The \textbf{log}
+  command allows users to save all user-interface input and output to a file. When Soar is logging to a file, everything typed by the user and everything printed by Soar is written to the file (in addition to the screen). 
+  Invoke \textbf{log}
+  with no arguments (or with \textbf{-q}
+ ) to query the current logging status. Pass a filename to start logging to that file (relative to the command line interface's home directory (see the home command)). Use the \textbf{close}
+  option to stop logging. 
+ \subsubsection*{Examples}
+  To initiate logging and place the record in foo.log: \begin{verbatim}
+ log foo.log
+ \end{verbatim}
+  To append log data to an existing foo.log file: \begin{verbatim}
+ log -A foo.log
+ \end{verbatim}
+  To terminate logging and close the open log file: \begin{verbatim}
+ log -c
+ \end{verbatim}
+ \subsubsection*{Known Issues}
+ Does not log everything when structured output is selected. 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{ls}}
+\label{ls}
+\index{ls}
+List the contents of the current working directory. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+ls
+\end{verbatim}
+\subsubsection*{Options}
+ No options. 
+\subsubsection*{Description}
+ List the contents of the working directory. 
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ dir  & ls  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[cd]{cd} \hyperref[dirs]{dirs} \hyperref[home]{home} \hyperref[pushd]{pushd} \hyperref[popd]{popd} \hyperref[source]{source} \hyperref[topd]{topd} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{popd}}
+\label{popd}
+\index{popd}
+Pop the current working directory off the stack and change to the next directory on the stack. Can be relative pathname or fully specified path. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+popd
+\end{verbatim}
+\subsubsection*{Options}
+ No options. 
+\subsubsection*{Description}
+ This command pops a directory off of the directory stack and cd's to it. See the dirs command for an explanation of the directory stack. 
+\subsubsection*{See Also}
+\hyperref[cd]{cd} \hyperref[dirs]{dirs} \hyperref[home]{home} \hyperref[ls]{ls} \hyperref[pushd]{pushd} \hyperref[source]{source} \hyperref[topd]{topd} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{pushd}}
+\label{pushd}
+\index{pushd}
+Push a directory onto the directory stack, changing to it. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+pushd directory
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ directory  & Directory to change to, saving the current directory on to the stack.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ Maintain a stack of working directories and push the directory on to the stack. Can be relative path name or fully specified. 
+\subsubsection*{See Also}
+\hyperref[cd]{cd} \hyperref[dirs]{dirs} \hyperref[home]{home} \hyperref[ls]{ls} \hyperref[popd]{popd} \hyperref[source]{source} \hyperref[topd]{topd} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{pwd}}
+\label{pwd}
+\index{pwd}
+Print the current working directory. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+pwd
+\end{verbatim}
+\subsubsection*{Options}
+ No options. 
+\subsubsection*{Description}
+ Prints the current working directory of Soar. 
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ topd  & pwd  \\
+ \hline 
+ \end{tabular}
+% ----------------------------------------------------------------------------
+\subsection{\soarb{rete-net}}
+\label{rete-net}
+\index{rete-net}
+Save the current Rete net, or restore a previous one. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+rete-net -s|l filename
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+ -s, --save  & Save the Rete net in the named file. Cannot be saved when there are justifications present. Use excise -j \\
+ \hline 
+ -l, -r, --load, --restore  & Load the named file into the Rete network. working memory and production memory must both be empty. Use excise -a \\
+ \hline 
+filename & The name of the file to save or load.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{rete-net} command saves the current Rete net to a file or restores a Rete net previously saved. The Rete net is Soar's internal representation of production and working memory; the conditions of productions are reordered and common substructures are shared across different productions. This command provides a fast method of saving and loading productions since a special format is used and no parsing is necessary. Rete-net files are portable across platforms that support Soar. 
+ Normally users wish to save only production memory. Note that \emph{justifications}
+ cannot be present when saving the Rete net. Issuing an init-soar before saving a Rete net will remove all justifications and working memory elements. \\ 
+ If the filename contains a suffix of ``.Z'', then the file is compressed automatically when it is saved and uncompressed when it is loaded. Compressed files may not be portable to another platform if that platform does not support the same uncompress utility. 
+ \subsubsection*{Default Aliases}
+  \begin{tabular}{|l|l|}
+  \hline 
+   Alias  & Maps to  \\
+   \hline 
+   rn  & rete-net  \\
+   \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[excise]{excise} \hyperref[init-soar]{init-soar} 
+% ----------------------------------------------------------------------------
+ 
+\subsection{\soarb{set-library-location}}
+\label{set-library-location}
+\index{set-library-location}
+Set the top level directory containing demos/help/etc.\\ 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+set-library-location [directory] 
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ directory  & The new desired library location.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ Invoke with no arguments to query what the current library location is. The library location should contain at least the help/ subdirectory and the command-names file for help to work. 
+\subsubsection*{See Also}
+\hyperref[help]{help} 
+% ----------------------------------------------------------------------------
+
+\subsection{\soarb{source}}
+\label{source}
+\index{source}
+Load and evaluate the contents of a file. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+source filename
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+filename & The file of Soar productions and commands to load.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ Load and evaluate the contents of a file. The \emph{filename}
+ can be a relative path or a fully qualified path. \textbf{source}
+ will generate an implicit push to the new directory, execute the command, and then pop back to the current working directory from which the command was issued. 
+\subsubsection*{See Also}
+\hyperref[cd]{cd} \hyperref[dirs]{dirs} \hyperref[home]{home} \hyperref[ls]{ls} \hyperref[pushd]{pushd} \hyperref[popd]{popd} \hyperref[topd]{topd}
+% ----------------------------------------------------------------------------
+
+% ***************************************************************************
+% ----------------------------------------------------------------------------
+\section{Soar I/O Commands}
+\label{SOAR-IO}
+
+This section describes the commands used to manage Soar's Input/Output
+(I/O) system, which provides a mechanism for allowing Soar to interact 
+with external systems, such as a computer game environment or a robot.  
+Soar I/O functions make calls to \textbf{add-wme} and \textbf{remove-wme}
+to add and remove elements to the \textbf{io} structure of Soar's working
+memory. 
+ 
+
+The specific commands described in this section are:
+
+\paragraph{Summary}
+\begin{quote}
+\begin{description}
+\item[add-wme] - Manually add an element to working memory.
+%\item[io] - Register or cancel routines for managing Soar's input and 
+            output links.
+\item[remove-wme] - Manually remove an element from working memory.
+\end{description}
+\end{quote}
+
+These commands are used only when Soar needs to interact with an
+external environment.
+
+
+% ----------------------------------------------------------------------------
+\subsection{\soarb{add-wme}}
+\label{add-wme}
+\index{add-wme}
+Manually add an element to working memory. 
+\subsubsection*{Synopsis}
+  \begin{verbatim}
+add-wme id [^]attribute value [+]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ id  & Must be an existing identifier.  \\
+ \hline 
+ \^{}  & Leading \^{} on attribute is optional.  \\
+ \hline 
+ attribute  & Attribute can be any Soar symbol. Use * to have Soar create a new identifier.  \\
+ \hline 
+ value  & Value can be any soar symbol. Use * to have Soar create a new identifier.  \\
+ \hline 
+ +  & If the optional preference is specified, its value must be + (acceptable).  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ Manually add an element to working memory. \textbf{add-wme}
+ is often used by an input function to update Soar's information about the state of the external world. 
+ \textbf{add-wme}
+ adds a new wme with the given id, attribute, value and optional preference. The given id must be an existing identifier. The attribute and value fields can be any Soar symbol. If * is given in the attribute or value field, Soar creates a new identifier (symbol) for that field. If the preference is given, it can only have the value + to indicate that an acceptable preference should be created for this wme. 
+ Note that because the id must already exist in working memory, the WME that you are adding will be attached (directly or indirectly) to the top-level state. As with other WME's, any WME added via a call to \textbf{add-wme}
+ will automatically be removed from working memory once it is no longer attached to the top-level state. 
+\subsubsection*{Examples}
+ This example adds the attribute/value pair ``message-status received'' to the identifier (symbol) S1: \begin{verbatim}
+ add-wme S1 ^message-status received
+\end{verbatim}
+ This example adds an attribute/value pair with an acceptable preference to the identifier (symbol) Z2. The attribute is ``message'' and the value is a unique identifier generated by Soar. Note that since the \^{} is optional, it has been left off in this case. \begin{verbatim}
+ add-wme Z2 message * + 
+\end{verbatim}
+\subsubsection*{Default Aliases}
+ \begin{tabular}{|l|l|}
+ \hline 
+  Alias  & Maps to  \\
+  \hline 
+  aw  & add-wme  \\
+  \hline 
+\end{tabular}
+\subsubsection*{Warnings}
+ Be careful how you use this command. It may have weird side effects (possibly even including system crashes). For example, the chunker can't backtrace through wmes created via \textbf{add-wme}
+, nor will such wmes ever be removed thru Soar's garbage collection. Manually removing context/impasse wmes may have unexpected side effects. 
+\subsubsection*{See Also}
+\hyperref[remove-wme]{remove-wme} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{remove-wme}}
+\label{remove-wme}
+\index{remove-wme}
+Manually remove an element from working memory. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+remove-wme timetag
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ timetag  & A positive integer matching the timetag of an existing working memory element.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{remove-wme} command removes the working memory element with the given timetag. This command is provided primarily for use in Soar input functions; although there is no programming enforcement, remove-wme should only be called from registered input functions to delete working memory elements on Soar's input link. 
+ Beware of weird side effects, including system crashes. 
+ \subsubsection*{Default Aliases}
+  \begin{tabular}{|l|l|}
+  \hline 
+   Alias  & Maps to  \\
+   \hline 
+   rw  & remove-wme  \\
+   \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[add-wme]{add-wme} \subsubsection*{Warnings}
+ \textbf{remove-wme} should never be called from the RHS: if you try to match a wme on the LHS of a production, and then remove the matched wme on the RHS, Soar will crash. 
+ If used other than by input and output functions interfaced with Soar, this command may have weird side effects (possibly even including system crashes). Removing input wmes or context/impasse wmes may have unexpected side effects. You've been warned. 
+% ***************************************************************************
+% ----------------------------------------------------------------------------
+\section{Miscellaneous}
+\label{MISC}
+
+
+\comment{this section still needs to be rewritten...}
+
+\nocomment{This section describes the commands used to inspect production memory,
+working memory, and preference memory; to see what productions will 
+match and fire in the next Propose or Apply phase;  and to examine the 
+goal dependency set.  These commands are particularly useful when
+running or debugging Soar, as they let users see what Soar is ``thinking.''}
+The specific commands described in this section are:
+
+
+
+\paragraph{Summary}
+\begin{quote}
+\begin{description}
+\item[alias] - Define command aliases.
+%\item  Default Rules
+%\item  Predefined Aliases 
+%\item  The soar.tcl file
+\item[soarnews] - Prints information about the current release.
+%\item  Soar Variables
+%\item  unalias
+\item[time] - Uses a default system clock timer to record the wall time required while executing a command.
+\item[version] - Returns version number of Soar kernel.
+\end{description}
+\end{quote}
+% ----------------------------------------------------------------------------
+\subsection{\soarb{alias}}
+\label{alias}
+\index{alias}
+Define a new alias, or command, using existing commands and arguments.\\ 
+\subsubsection*{Synopsis}
+  \begin{verbatim}
+alias name [cmd <args>]
+alias -d name
+alias
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|p{12cm}|}
+\hline 
+ -d, --disable, --off  & Remove the named alias.  \\
+ \hline 
+ name  & The name of the alias, i.e. the new command.  \\
+ \hline 
+ cmd  & An existing command that will be invoked when the alias is entered on the commandline.  \\
+ \hline 
+ args  & Valid arguments to the cmd (optional \& optional number).  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ This command defines new aliases by creating Soar procedures with the given name. The new procedure can then take an arbitrary number of arguments which are post-pended to the given definition and then that entire string is executed as a command. The definition must be a single command, multiple commands are not allowed. The \textbf{alias}
+ procedure checks to see if the name already exists, and does not destroy existing procedures or aliases by the same name. Existing aliases can be removed by using the \textbf{-d}
+ flag. With no arguments, \textbf{alias}
+ returns the list of defined aliases. With only the name given, \textbf{alias}
+ returns the current definition. 
+\subsubsection*{Examples}
+ The alias \emph{wmes}
+ is defined as: \begin{verbatim}
+alias wmes print -i
+\end{verbatim}
+ If the user executes a command such as: \begin{verbatim}
+wmes {(* ^superstate nil)}
+\end{verbatim}
+ it is as if the user had typed this command: \begin{verbatim}
+print -i {(* ^superstate nil)}
+\end{verbatim}
+ To check what a specific alias is defined as, you would type \begin{verbatim}
+alias wmes
+\end{verbatim}
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ a & alias \\
+ \hline
+ un & alias -d \\
+ \hline
+ unalias  & alias -d  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[unalias]{unalias} 
+% ----------------------------------------------------------------------------
+\subsection{\soarb{soarnews}}
+\label{soarnews}
+\index{soarnews}
+Prints information about the current release. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+soarnews
+\end{verbatim}
+\subsubsection*{Default Aliases}
+  \begin{tabular}{|l|l|}
+  \hline 
+   Alias  & Maps to  \\
+   \hline 
+   sn  & soarnews  \\
+   \hline 
+\end{tabular}
+% ----------------------------------------------------------------------------
+\subsection{\soarb{time}}
+\label{time}
+\index{time}
+Use a default system clock timer to record the wall time required while executing a command. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+time command [arguments]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ command  & The command to execute.  \\
+ \hline 
+ arguments  & Optional command arguments.  \\
+ \hline 
+\end{tabular}
+%------------------------------------------------------------------------------
+\subsection{\soarb{version}}
+\label{version}
+\index{version}
+\subsubsection*{Synopsis}
+\begin{verbatim}
+ version
+\end{verbatim}
+\subsubsection*{Options}
+ No options 
+\subsubsection*{Description}
+ This command gives version information about the current Soar kernel. It returns the version number itself, which can then be stored by the agent or the application. 
+%----------------------------------------------------------------------------------
+
+
+% ****************************************************************************
+% ----------------------------------------------------------------------------
+% ****************************************************************************
+% ****************************************************************************
+% ****************************************************************************
+
+\nocomment{
+
+\subsection{Starting Soar}
+\funsum{soar}{Starts Soar.}
+\label{soar}
+\index{soar}
+
+To start Soar, you'll first have to find out where the Soar program is kept at
+your site. Then \soar{cd} to the appropriate directory and type \soar{soar},
+or specify the full pathname from your current directory.
+
+\paragraph{Example}
+\begin{verbatim}
+unix% cd ~soar/soar-current
+unix% soar
+7.0.3. TCL TK
+
+Bugs and questions should be sent to soar-bugs@cs.cmu.edu
+The current bug-list may be obtained by sending mail to
+soarhack@cs.cmu.edu with the Subject: line "bug list".
+
+This software is in the public domain, and is made available AS IS.
+Carnegie Mellon University, The University of Michigan, and
+The University of Southern California/Information Sciences Institute
+make no warranties about the software or its performance, implied
+or otherwise.
+
+Type "help" for information on various topics.
+Type "quit" to exit.  Use ctrl-c to stop a Soar run.
+Type "soarnews" for news.
+Type "version" for complete version information.
+
+soar> 
+\end{verbatim} 
+
+The Soar prompt (\soar{soar>}) indicates that you are running Soar and may
+issue the commands documented in this chapter. 
+
+\subsubsection*{Notes}
+
+If you have problems starting Soar, it may be that your environment variables
+are not set; see Section \ref{INTERFACE-tcl} for suggestions.
+
+There are several optional arguments that can be given to the \soar{soar}
+command, such as to start up multiple agents or to control windows. These are
+considered advanced usage, and described in the \emph{Soar Advanced
+Applications Manual}.
+
+\comment{Karen: ``or set the path to look for startup files''
+
+	K says to read help soartk -path option for better info}
+
+% ----------------------------------------------------------------------------
+\subsection{Files automatically loaded at startup}
+\label{INTERFACE-files}
+
+\comment{I have a note from Karen that 2 and 3 are switched for 7.0.3, but
+  	that .soarrc will come before soar.soar for 7.1. Check}
+
+\comment{smooth out a bit so that it's also appropriate for multiple agents} 
+
+There are three files that may be loaded when Soar is first started up, if
+they exist:\vspace{-12pt}
+\begin{enumerate}
+\item The \soar{\$soar\_library/soar.tcl} file, for your local Soar
+	installation.\vspace{-6pt}
+\item A \soar{.soarrc} file, in your home directory.\vspace{-6pt}
+\item A \soar{soar.soar} file either in the current directory, or in your home
+	directory. (Soar will check the current directory first, and load the
+	first \soar{soar.soar} file it finds.)
+\end{enumerate}
+
+The files will be loaded in the order listed.\footnote{There are also some Tcl
+and Tk files that are sourced at startup, but these are system files that
+individual users cannot change.}
+
+Note that the \soar{soar.soar} file is more generally
+\soarit{name}\soar{.soar}, as described below.
+
+
+\subsubsection*{The \soarb{\$soar\_library/soar.tcl} file}
+
+The \soar{\$soar\_library/soar.tcl} file is loaded for all users at a local
+site, and can be reconfigured by the local Soar administrator. This file is used
+to load local aliases; it also contains the Tcl code that implements many of
+the user-interface functions. It is also the appropriate place for
+platform-dependent code.
+
+Individual Soar users have no control over this file.
+
+
+\subsubsection*{The \soarb{.soarrc} file}
+
+	\betacomment{I'm not sure what \$HOME means for non-Unix users.}
+
+Soar will check for a \soar{.soarrc} file in your home directory (as defined
+in your \soar{\$HOME} variable), and load the file if it exists. This works
+the same as if you had typed ``\soar{source .soarrc}'' at the prompt.
+
+The \soarb{.soarrc} file is used to load personal aliases and Tcl code that
+the user wants to use for all Soar applications. When multiple agents and
+interpreters are used, they will all \soar{source} this file.
+
+\comment{Note from K: currently loaded only once at startup. On the list to be
+	fixed for 7.1
+
+	I'm not sure what she means -- that it doesn't or didn't work for
+	multiple agents in 7.0.4?}
+
+
+\subsubsection*{The \soarb{soar.soar} file}
+
+Soar will check for a \soar{soar.soar} file first in the current directory,
+and then in your home directory (as defined in your \soar{\$HOME} variable),
+and load the first \soar{soar.soar} file it finds. This is executed 
+as if you had typed ``\soar{source soar.soar}'' at the Soar prompt.
+
+	\comment{Once again, I'm not sure how \$HOME is resolved on non-Unix
+	platforms.}
+
+The \soar{soar.soar} file will typically contain other \soar{source} commands
+(see Section \ref{source} below). For example, this file might be used to
+automatically load in a set of individual alias definitions (see the
+\soar{alias} command in Section \ref{alias}), to automatically load the
+default rules (see Section \ref{default}), or even to automatically load in
+the productions for a task.
+
+When running multiple agents and interpreters, it is important to know that
+the \soar{soar.soar} initialization file is generically
+\soar{$<$agent-name$>$.soar}, which will be different for each agent. For
+single-agent soar, the default agent is called \soar{soar}. The use of
+multiple agents and interpreters is described in Chapter \ref{ADVANCED}, and
+more thoroughly in the \textit{Soar Advanced Applications Manual}.
+
+
+% ----------------------------------------------------------------------------
+\subsection{Comments and Caveats about Tcl}
+\label{INTERFACE-tcl}
+
+The addition of Tcl to Soar provides additional functionality to the Soar
+interface, but also imposes some restrictions on syntax. This section
+describes some of the features and potential problems you may encounter.
+
+
+\subsubsection*{Environment variables}
+
+There are several environment variables that must be set in your operating
+system for Soar to run. Many sites will have scripts installed so that the
+Soar user need not set these variables explicitly. However, if you have
+problems starting up Soar, you may wish to check these as a first course of
+action. See the file \soar{SOAR\_INSTALLATION\_SETTINGS} (in the directory in
+which Soar was built), which should contain a listing of the environment
+variables and their correct settings.
+
+\comment{Again, it's not clear what the equivalent is for non-Unix
+	installations.} 
+
+If you cannot locate this file, consult the person who installed Soar at your
+site, or send mail to \soar{soar-bugs@cs.cmu.edu} to ask for help.
+
+\subsubsection*{The Tcl interpreter}
+
+All commands entered at the Soar prompt pass through the Tcl interpreter. This
+has several implications for Soar users:\vspace{-12pt}
+\begin{enumerate}
+\item Commands entered at the Soar prompt may be Soar commands, Tcl commands,
+	or operating system commands (the latter are specific to the machine
+	you're running on). Soar attempts to execute a command first as a Soar
+	command, second as a Tcl command, and third as an operating system
+	command; in the rare case of commands that have the same name, the
+	first system that can execute the command will do so.\vspace{-6pt}
+
+\item Since Tcl is case sensitive, Soar is also case sensitive. This means, 
+	for example, that ``red'', ``RED'', and ``Red'' are three different
+	symbols to Soar. The one exception to case-sensitivity in Soar is
+	identifiers; internally, these begin with an uppercase letter, but you
+	may type identifiers with a lowercase letter also, and Soar will
+	resolve the identifier correctly.\vspace{-6pt}
+
+\item Tcl has a command-completion facility, which allows the user to type a
+	partial command name in lieu of the full command name when the
+	substring typed is long enough to distinguish it from other commands.
+
+        This facility is often helpful, but may be confusing to some users: If
+	the substring typed is not long enough to distinguish it from other
+	commands, a listing of all the commands that may have been intended is
+	printed. This listing will contain Tcl commands that may be unfamiliar
+	to most Soar users.\vspace{-6pt}
+
+\item Tcl allows variations in syntax for any command that uses
+	curly braces to delimit arguments, and requires this variation for
+	some specific uses. Most Soar users can proceed in ignorance of this
+	variation, but it is mentioned here for completeness.
+
+	The Soar commands affected by this variation are \soar{sp}, \soar{production-find},
+	\soar{print}, \soar{wmes}, \soar{alias}, \soar{echo}, and
+	\soar{command-to-file}; when these commands include Tcl variables,
+	they must use double quotes as delimiters, rather than the curly
+	braces.
+
+	Using double quotes tells the Tcl interpreter to parse the string
+	within the delimiters and resolve the variable reference immmediately.
+	When curly braces are used, Tcl does not parse the enclosed string and
+	the variable reference is not resolved; the string is passed on to the
+	command for execution. Usually, the latter is not the desired
+	behavior when Tcl variables are used, though in some cases, it may be
+	desirable.
+
+	The upshot of this is that in almost any command that uses curly
+	braces as delimiters, double quotes may safely be substituted for the
+	curly braces. However, it is not as safe to switch from double quotes
+	to curly braces.
+\end{enumerate}
+
+\subsubsection*{Tcl error messages}
+
+One unfortunate consequence of commands passing through the Tcl interpreter is
+that Tcl does not print all of its error messages to the screen. In rare
+instances, you'll be able to find an error message only by inspecting the Tcl
+variable \soar{errorInfo}. To do this, you must use the Tcl command \soar{set}
+(which both displays and sets the values of variables):
+
+\begin{verbatim}
+soar> help-me
+invalid command name "help-me"
+soar> set errorInfo
+invalid command name "help-me"
+    while executing
+"help-me"
+soar> 
+\end{verbatim}
+
+Should you need to check this variable, be sure to note that the letter
+\soar{I} is capitalized in \soar{errorInfo}, and that it is the only
+capitalized letter in the variable name. 
+
+The \soar{errorInfo} variable saves only the most recent error message; there
+is no way to recover previous error messages. Note that if you make a
+typographical error when you enter ``\soar{set errorInfo}'', your new last
+error will be the typo, and you won't know what the problem was. (It may make
+sense to \soar{alias} ``set errorInfo'' to something easier to type
+accurately.)
+
+
+% ----------------------------------------------------------------------------
+\subsection{Conventions for entering commands}
+
+Input to Soar is usually typed in at the Soar prompt, e.g.:
+\begin{verbatim}
+soar> print s1
+\end{verbatim}
+
+Multiple commands can be given on the same line as long as they are separated
+by semicolons, e.g.:
+
+\begin{verbatim}
+soar> run 3 d; print s1
+\end{verbatim}
+
+Multiple commands on the same line will be called in the order listed on the
+line, with each being executed to completion before the next is executed. For
+example, if one of the commands starts executing Soar productions, the
+following commands will not be executed until Soar halts.
+
+
+While Soar is executing productions (often called \emph{running}), it can be
+interrupted by typing the break character, which is usually \soar{control-C}.
+This will cause Soar to stop at the end of the current elaboration cycle and
+return to a Soar prompt. (This only works while Soar is running, and not while
+it's loading productions or waiting for you to type input to a RHS
+\soar{accept} action or to the \soar{indifferent-selection} prompt.)
+
+\nocomment{no textio anymore, so that last bit needs to be changed...does it
+	still apply to user-select? (did it ever?) are there any other
+	situations that it might apply to?}
+
+
+Commands may also be placed in a file (see the \soar{source} command); if a
+graphical user interface (GUI) is in use, commands may be executed via menus
+or buttons. (Writing your own GUI for Soar is an advanced topic, covered in
+the \emph{Soar Advanced Applications Manual}.)
+
+Commands that refer to the attributes of WME's often use a carat symbol
+(\soar{\carat}) to denote the attribute; this symbol is optional in most
+commands, but is required \soar{sp}, \soar{print}, \soar{production-find}, and
+the built-in alias \soar{wmes}.
+
+	\nocomment{It seems that print/wmes is also affected, though I don't
+	think it's supposed to be. And production-find.
+
+	KJC: yes, soar does the parsing and expects ^ to identify the
+	attribute, just like in sp.}
+
+Several commands have flags that can be specified by using either numeric or
+named arguments. This applies to commands in which the amount of information
+printed depends on the arguments: The numeric arguments are provided for users
+who prefer to think in terms of the amount of information printed, and the
+named arguments are provided for users who prefer a mnemonic means of
+remembering which flag to use. The commands that allow for either numeric or
+named arguments are \soar{watch}, \soar{preferences}, and \soar{matches}.
+
+% ----------------------------------------------------------------------------
+\section{Beginners: Basic Commands}
+
+The commands in this section will tell you how to load productions into Soar,
+how to run a Soar program, how to quit, and how to get online help.
+
+% ----------------------------------------------------------------------------
+\section{Beginners: Additional Commands}
+
+The commands in this section will tell you how to control the amount of output
+produced during a run, how to turn learning on and off, how to define
+productions, and how to control Soar's default behavior when there are
+multiple objects with indifferent preferences.
+
+% ----------------------------------------------------------------------------
+
+% ----------------------------------------------------------------------------
+\section{Beginners: Inspecting and Debugging}
+\label{INTERFACE-beg-inspect}
+
+The commands in this section will help you inspect production memory, working
+memory, and preference memory to understand how Soar is working or to debug a
+program that isn't working correctly.
+
+% ----------------------------------------------------------------------------
+% ----------------------------------------------------------------------------
+% ----------------------------------------------------------------------------
+\section{Beginners: Starting a New Task}
+
+The commands in this section allow to you start a new task without quitting
+and restarting Soar.
+
+% ----------------------------------------------------------------------------
+\section{Beginners: Interacting with the file system}
+
+There are a number of commands available via Soar that allow to you change and
+display the current directory for loading files into Soar. These are not
+strictly ``Soar commands'' per se; some of them are available because Soar
+will pass non-Soar commands to the operating system for execution (as
+described in Section \ref{INTERFACE-tcl}).
+
+The commands in this section are described only briefly because they are
+really operating system commands. They are mentioned here primarily to let you
+know that this functionality is available in Soar.
+
+\paragraph{Notes}
+
+These commands may not work or may work differently on non-Unix machines.
+
+\nocomment{I'm uncertain about how any of these commands work on non-Unix
+	platforms} 
+
+% ----------------------------------------------------------------------------
+\section{Beginners: Miscellaneous}
+
+The commands in this section cover a few miscellaneous features not yet
+described. 
+
+% ----------------------------------------------------------------------------
+\section{Intermediate: Running and Tracing}
+
+The commands in this section (and following sections) are more advanced than
+those previously described; not all users will need this information. Included
+in this section are commands for running Soar and tracing what happens as Soar
+runs; this includes more advanced descriptions of commands that have already
+been presented (\soar{run}, \soar{watch}, and \soar{learn}).
+
+% ----------------------------------------------------------------------------
+\subsection{\soarb{run \soar{ [n] [unit]  }}}
+\funsum{run}{More arguments for running Soar.}
+\label{run2}
+\index{run}
+
+
+Without arguments, \soar{run} causes Soar to 
+
+\paragraph{Examples}
+\begin{verbatim}
+run 5 o   --> run for 3 operator selections
+run       --> run until halted by a control-C or a production action
+\end{verbatim}
+
+\paragraph{Notes}
+
+The run command is more complex when multiple agents and interpreters are in
+use. By default, the command applies to all agents and interpreters, a
+\soar{-self} flag is used to denote the current agent. Non-agent interpreters
+may use the \soar{d}, \soar{e}, and \soar{p} arguments, but not \soar{s} or
+\soar{o}. The use of multiple agents and interpreters is documented in the
+\textit{Soar Advanced Applications Manual}.
+
+\comment{I suspect \soar{s} and \soar{o} have not been well defined yet for
+	use with multiple agents and interpreters. I.e., should they run until
+	the current agent reaches the next state (or operator), and keep all
+	agents in step in terms of decision cycles? Or should they allow all
+	agents to advance to the next state (or operator), and allow the
+	decision cycle count to be different for different agents? If the
+	latter, how far do non-agent interpreters get to run?
+
+	I think the former is more likely to be in effect.
+	}
+
+
+% ----------------------------------------------------------------------------
+\section{Intermediate: Inspecting and Debugging}
+
+The commands in this section will help you inspect production memory, working
+memory, and preference memory to understand how Soar is working or to debug a
+program that isn't working correctly. The \soar{print} and \soar{matches}
+commands were previously described in Section \ref{INTERFACE-beg-inspect}; in
+this section, these commands are explained in more depth.
+
+% ----------------------------------------------------------------------------
+\subsection{\soarb{p}}
+\funsum{p}{Alias for the print command.}
+\label{p}
+\index{p}
+
+The \soar{p} alias is a shorthand for the \soar{print} command and works
+exactly the same way as the \soar{print} command.
+
+\paragraph{Example}
+\begin{verbatim}
+soar> p s1
+(S1 ^io I1 ^ontop O3 ^ontop O2 ^ontop O1 ^operator O4 + ^operator O6
+       ^operator O5 + ^operator O6 + ^operator O7 + ^operator O8 +
+       ^operator O9 + ^problem-space blocks ^superstate nil ^thing T1
+       ^thing B1 ^thing B3 ^thing B2 ^type state)
+soar> p -stack
+      : ==>S: S1 
+      :    O: O6 (move-block)
+\end{verbatim}
+
+% ----------------------------------------------------------------------------
+\subsection{\soarb{ps}}
+\funsum{ps}{Alias for the print command; prints the current subgoal stack.}
+\label{ps}
+\index{ps}
+
+The \soar{ps} alias is a shorthand for the \soar{print -stack} command. It
+prints the current subgoal stack.
+
+% ----------------------------------------------------------------------------
+\subsection{\soarb{pf}}
+\funsum{pf}{Alias for the production-find command; finds productions that
+	match a given pattern.}
+\label{pf}
+\index{pf}
+
+The \soar{pf} alias is a shorthand for the \soar{prodution-find} command. It
+finds productions in production memory that match a specified pattern.
+
+% ----------------------------------------------------------------------------
+
+% ----------------------------------------------------------------------------
+% ----------------------------------------------------------------------------
+\section{Intermediate: Miscellaneous}
+
+The commands in this section cover a few miscellaneous features not yet
+described. 
+
+% ----------------------------------------------------------------------------
+\section{Advanced: Running and Tracing}
+
+The commands in this section (and following sections) are more advanced than
+those previously described; only advanced Soar users will need this
+information. Included in this section are commands for explaining the
+formation of specific chunks and justifications, controlling the output
+from the watch command, and getting online help on Tcl commands.
+
+% ----------------------------------------------------------------------------
+\section{Advanced: Evaluating and increasing efficiency}
+
+The commands in this section are provided to evaluate the efficiency of a Soar
+program and of Soar itself and also to increase the efficiency of a Soar
+program by providing more information about the program to Soar.
+
+% ----------------------------------------------------------------------------
+\section{Advanced: Debugging Soar}
+
+% ----------------------------------------------------------------------------
+\section{Advanced: Experimental variations in Soar}
+
+There are two Soar variable that represent experimental changes to the Soar
+architecture. These variables are provided so that users may try out these
+proposed changes to Soar and evaluate how they help or hinder the development
+of their program.
+
+These variables are set and displayed using the Tcl \soar{set} command.
+
+	\nocomment{note that both of these commands should be variables with
+	the new scheme.
+
+	True in 7.0.3, but not in earlier versions.}
+
+
+% ----------------------------------------------------------------------------
+\subsection{\soarb{attribute\_preferences\_mode} \soar{ [ 0 | 1 | 2 ] }}
+\funsum{attribute\_preferences\_mode}{Experimental variation to attribute preferences.}
+\label{attribute-preferences-mode}
+\index{attribute\_preferences\_mode}
+
+The \soar{attribute\_preferences\_mode} variable is used to control the way
+that preferences are evaluated for non-operator augmentations (these are
+called ``attribute preferences'', as opposed to ``operator preferences'').
+
+The \soar{attribute\_preferences\_mode} variable must be one of three values:
+
+\begin{tabular}{| l | l | } \hline
+value    & effect  \\ \hline
+\soar{0} & Attribute preferences work as described in this manual \\ \hline
+\soar{1} & Attribute preferences work as described in this manual, \emph{but} \\
+	 &  a message is printed whenever the alternative scheme would have \\
+	 &  made a difference in the Soar program. \\ \hline
+\soar{2} & The only preferences allowed for attribute preferences are \\ 
+	 &  \soar{acceptable} and \soar{reject}. If other preferences are created \\
+	 &  for non-operator augmentations, an error message is printed and the \\
+         &  preference is ignored. \\ \hline
+\end{tabular} \vspace{10pt}
+
+When \soar{attribute\_preferences\_mode} is set to \soar{2}, the evaluation of
+non-operator preferences is greatly simplified. Any working memory element
+with an acceptable preference will be created as long as there is not also a
+reject preference for the same working memory element. (This means that
+multi-attributes will be created when there are multiple acceptable values for
+the same attribute.)
+
+
+% ----------------------------------------------------------------------------
+% ----------------------------------------------------------------------------
+% ----------------------------------------------------------------------------
+\section{Advanced: Running Multiple Agents and Interpreters}
+\label{INTERFACE-advanced-multiple}
+
+When running Soar with multiple agents (as described in Chapter
+\ref{ADVANCED}), there are some additional commands that may be used. Also, 
+the full set of Soar user interface commands may be used, but care must be
+taken by the user to distinguish commands that apply to the current agent as
+opposed to commands that apply to all agents.
+
+\comment{have to update all of these lists:}
+
+The following commands are independent of agents:
+
+\soar{help, soarnews, version, exit, quit} \vspace{12pt}
+
+
+The following commands by default apply only to the currently selected agent:
+
+\begin{verbatim}
+add-wme, alias, attribute-preferences-mode, default-wme-depth, echo, 
+excise, explain, firing-counts, init-soar, input-period, learn, 
+matches, max-chunks, max-elaborations, memories, monitor, ms, 
+multi-attributes, o-support-mode, output-strings-destination, pf, pgs, 
+preferences, print, print-alias, print-all-symbols, print-stats, pwatch, 
+remove-wme, rete-net, sp, spr, stats, trace-format, unalias, user-select,
+warnings, watch, wmes
+\end{verbatim} \vspace{12pt}
+
+
+The following commands apply by default to all agents, and their use with
+multiple agents will be described in this section:
+
+\soar{run, send, command-to-interpreters}  \vspace{12pt}
+
+\comment{command-to-interpreters.... changed to send-to-interpreters?
+
+	KJC: yes.}
+
+
+The following commands are used only with multiple agents, and will be
+described in this section:
+
+\begin{verbatim}
+create-interpreter, destroy-interpreter, eval-in-interpreters,
+init-interpreter, list-interpreters, schedule-interpreter,
+select-interpreter
+\end{verbatim} \vspace{12pt}
+
+
+Not sure what to do with these yet:
+
+\soar{command-to-file, dirs, log, send, stop-soar, tksoar}  \vspace{12pt}
+
+
+\comment{Most commands can't be issued to non-agent interpreters,
+	e.g. preferences, wmes, etc., but I'm not sure what happens if you
+	try
+
+	KJC: tcl error: command not found (or something like that)} 
+
+
+% ----------------------------------------------------------------------------
+\subsection{\soarb{run} \soar{[-self]}}
+\funsum{run}{Another run.}
+\label{run3}
+\index{run}
+
+\comment{have to fix other descriptions of run, plus function summary, to
+	mention this section.}
+
+The basic \soar{run} command is described on page \pageref{run}; more advanced
+usage is described on page \pageref{run2}.
+
+When multiple agents are in use, this command works roughly the same way that
+it does when a single agent is in use; the only difference is that by default
+it applies to \textit{all} agents and interpreters. To run one agent or
+interpreter at a time (for debugging), you may use the \soar{-self} argument,
+which will restrict the \soar{run} command to apply to the current agent only.
+
+% ----------------------------------------------------------------------------
+\subsection{\soarb{send} \soar{[-self]}}
+\funsum{send}{send....}
+\label{send}
+\index{send}
+
+\comment{This command is still being hashed out; and I'm still not clear on
+	the concept anyway.
+
+	I think the idea is that by default, you might send a command to
+	multiple agents, but that you could also specify a subset.
+
+	KJC: see 7.0.3+ man page.
+
+	KJC: implements the Tk 'send' command for non-tk interps --- sends
+	command to one interp only.
+	}
+
+% ----------------------------------------------------------------------------
+\section{Advanced: Additional Arguments When Starting Soar}
+\funsum{soar}{Starts Soar.}
+\label{INTERFACE-advanced-soar}
+\label{soar2}
+\index{soar}
+
+When Soar is first started (e.g., by typing ``\soar{soar}'' at the Unix
+prompt), there are a number of additional arguments that may be included.
+
+These options enable the user to start Soar with a specific configuration, for
+example, to have three agent interpreters and one Tk non-agent interpreter, or
+to use a directory other than the current directory for scanning for startup
+files for the agents.
+
+The following options are available:
+
+\begin{tabular}{| l | l | } \hline
+argument  & effect  \\ \hline
+\soar{-help}  & List the available options.\\ \hline
+
+\soar{-agent name} & Create an agent interpreter with the specified name.\\ 
+\soar{-tclsh name} & Create a non-agent Tcl interpreter with the specified name.\\ 
+\soar{-wish name}  & Create a non-agent Tk intepreter with the specified name.\\ \hline
+
+\soar{-noTk} & Turn off Tk for all interpreters specified after this argument. \\
+\soar{-file filename}  & Read commands from the named file. \\ 
+\soar{-path pathname}  & Scan the named path when defining intepreters. \\
+\soar{-verbose} & Print detailed information about option processing. \\
+\soar{-useIPC} & enable IPC for all intepreters. \\ \hline
+\end{tabular} \vspace{10pt}
+
+Arguments that apply only to wish-based (Tk) shells:
+
+\begin{tabular}{| l | l | } \hline
+argument  & effect  \\ \hline
+\soar{-display displayname}  & Display all windows on the named display. \\
+\soar{-sync} & Use synchronous mode for the display server. \\
+\soar{-geometry geometry} & Initial geometry for window. \\ \hline
+\end{tabular} \vspace{10pt}
+
+
+\comment{I don't believe these are documented anywhere. Not online (more than
+	something similar to the above table), and not in the advanced manual.
+	}
+
+\paragraph{Notes}
+
+You may provide multiple names for interpreters and multiple paths to search.
+
+You may not provide multiple file names.
+
+Optional arguments, not predefined, are passed on to Tcl and can be used to
+pass information to user-defined Tcl procedures.
+
+
+	\nocomment{
+
+		Can you source multiple files when you start up Soar? No. But
+		couldn't you source a file that in turn sourced other files?
+
+		FROM KARL: Yes, it sources the file.  No, this argument is not
+		designed to initialize multiple interpreters -- that's what
+		the *.soar files are for.  Following the normal Tcl usage,
+		this argument is used to startup an *application* from a Tcl
+		script (like the -f demos..gui.tcl does) and suppress the
+		normal prompt.  This enables a GUI-controlled application to
+		be started so that the command line is hidden from the user.
+	}
+
+\nocomment{Give args here for starting non-agent interpreters.
+
+	WISH = windowing shell; tk + tcl; TCLSH = tcl shell
+
+	arguments that apply only to wish-based shells: 
+		display, geometry, sync 
+
+	noTk is weird in that it applies to everything that follows it on the
+		line, and not everything on the line. I'm also not sure why
+		it's needed. The only thing I can think of is if you wanted to
+		create some agents that had Tk and others that didn't (because
+		we already have WISH and TCLSH to distinguish the non-agent
+		interpreters that have Tk from those that don't)
+
+	also note that optional arguments, not predefined, are passed on to
+		Tcl and can be used to pass info to user-defined tcl procedures
+	}
+
+\nocomment{CLARE: I don't understand -notk option. Is this around so that some
+	agents would have Tk and others wouldn't? (It would seem to apply only
+	to agents, and not interpreters, since interpreters are started with
+	or without Tk, depending on whether -WISH or -TCLSH is specified. But
+	I want to make sure I understand.)
+
+	KARL: This is present mainly to turn off Tk when desired (say when
+	you're using Soar via a dialup line and no X).  While the argument
+	processing checks to see if DISPLAY is set and a connection can be
+	made, its possible that users have these vars set even when they don't
+	want to use X.  This forces the matter.  Since it applies to all
+	interpreters mentioned after it on the command line, it can also be
+	used to turn off Tk in some of the interpreters.  -noTk applies to all
+	types of interpreters, not just agent ones.  So a sequence like
+
+	-noTk -wish foo -agent bar 
+
+	results in a tclsh interpreter (which is a wish shell minus the Tk
+	part) and an agent shell with no Tk.  This makes it easy to switch in
+	and out of Tk and to test non-GUI portions of programs.  Its also
+	possible that users might add other kinds of interpreters (say one
+	with Tcl-DP in it) and the -noTk switch can apply to other
+	interpreters as well.
+	}
+
+
+% ----------------------------------------------------------------------------
+\section{Advanced: Tcl and Tk Functionality}
+\label{INTERFACE-advanced-tcl}
+
+
+% ----------------------------------------------------------------------------
+\section{Advanced: Input and output concerns}
+\label{INTERFACE-advanced-io}
+
+The commands in this section describe commands that control input and output
+functionality in Soar: where text is printed (from commands or the Soar trace
+itself), how often input is accepted, and manually changing working memory
+(bypassing the preference process). 
+
+
+% ----------------------------------------------------------------------------
+\subsection{\soarb{input-period} \soar{[n]}}
+\funsum{input-period}{Set the time interval for receiving new input.}
+\label{input-period}
+\index{input-period}
+
+\nocomment{does this command still exist? I think we may have legislated it to
+	1. NOPE; still exists.} 
+
+\comment{KJC says that this should be a variable, and I agree}
+
+The \soar{input-period} command sets and displays the input period, which is
+the number of Soar elaboration cycles or decision cycles that are allowed to
+pass before the next input cycle. By default, an input cycle happens before
+each elaboration cycle, which corresponds to an \soar{input-period} setting of
+\soar{0}. A setting of \soar{1} tells Soar to accept input only at the
+beginning of each \emph{decision} cycle.
+
+Without any arguments, \soar{input-period} prints the current setting. The
+optional argument, \soar{n}, must be a non-negative integer. Positive values
+of \soar{n} set the number of decision cycles that pass before Soar accepts
+new input; an \soar{n} value of 0 sets Soar to accept new input each
+elaboration cycle.
+
+This command is useful for Soar applications that interact with a very dynamic
+world. In these situations, input may be coming so fast that Soar never has an
+opportunity to reach quiescence because there is always new input available.
+Often in these cases, the new input does not reflect a situation that must be
+responded to immediately, but rather, an environment that is continually
+changing. 
+
+\comment{[typical settings are 0 and 1, I assume; higher than 1 seems weird.]}
+
+\paragraph{Note}
+
+This command will likely be changing to a variable name \soar{input\_period}
+in future releases of Soar. Soar variables are set and displayed using the Tcl
+\soar{set} command, as described in Section \ref{INTERFACE-int-variables}.
+
+\paragraph{Example}
+\begin{verbatim}
+soar> input-period 1
+\end{verbatim}
+
+% ----------------------------------------------------------------------------
+% ----------------------------------------------------------------------------
+}
