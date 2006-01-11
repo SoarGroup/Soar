@@ -1,0 +1,53 @@
+Manual things I changed-
+
+Removed "Soar and Tcl" chapter, added blockscode and Tcl-I/O appendices
+and updated most references to non-existing or newly existing sections
+
+Intro-
+Updated. Mostly. The part about having a bibliography is a lie.
+
+
+Architecture-
+p. 14, I rewrote the blocks code to use an elaboration to compute 'clear', and described it here.
+p. 22, updated for numeric-indifferent preferences, also removed reference to 'parallel' preference,
+p. 33, there was a paragraph explaining aggressive operator no-change detection, which I removed
+
+Syntax-
+p. 42 , section 3.3.3, I mentioned :interrupt here, this was a little difficult to place - also mentioned on
+		p. 62, probably should be mentioned on p. 94
+p. 60 , added numeric-indifferent to table
+p. 61 , section 3.3.6.5 , didn't change to reflect numeric-indifferent preferences
+p. 62 , I described the :interrupt functionality here.  
+p. 74 , rewrote the last paragraph in section 3.5.2.
+        section 3.5.3, I commented out the second sentence in the second paragraph which said
+        
+        %This is a generally a good idea when using input, since the input
+	%function may change the information on the link before the Soar program has
+	%finished using it.
+	
+	since the production doesn't seem to handle this problem.
+     
+Learning-
+I haven't touched this chapter
+
+Soar and Tcl-
+Removed this chapter
+
+Interface-
+I haven't checked that all old commands work as described, though I checked some.
+p. 131, I added a watch command which is mentioned here, and described in section 5.3.8.5
+p. 138, added numeric-indifferent-mode command
+p. 141, section 5.4.2, I rewrote this description because this command changed
+p. 142, section 5.4.3, "numeric-indifferent-mode" command, I decided to explain the details of the 	probabilistic selection here
+p. 156, added several references to Appendix D, which has an example of Tcl & I/O functions
+p. 158, hmm, I made this page look funny, need to fix
+        
+Appendix A-
+I rewrote to use elaborations to compute 'clear'
+I removed parallel & reconsider preferences
+
+Appendix B & C - i think you can see for yourself.
+
+Appendix D - I wrote this appendix. I hope the Tcl code is right, I tested it a bit, but was running out of time and patience. I also hope it is presented in a helpful way.
+
+

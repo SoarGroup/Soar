@@ -1,0 +1,478 @@
+% ----------------------------------------------------------------------------
+\typeout{--------------- appendix: GDS ------------------}
+\chapter[A Goal Dependency Set Primer]{
+A Goal Dependency Set Primer\footnote{A preliminary draft by Robert Wray, contact at \texttt{wrayre@acm.org}.
+}}
+
+\label{GDS}
+\index{GDS}
+
+
+% a list of hyphenation points for re-occuring words in the document
+\hyphenation{con-temp-or-an-e-ous}
+\hyphenation{OP-ER-AND}
+\hyphenation{Mich-i-gan}
+
+%\pagestyle{myheadings}
+%\markboth{GDS Primer}{DRAFT: Not for Quotation or Distribution}
+
+%\input{macros}
+
+
+      
+
+% use optional labels to link authors explicitly to addresses:
+% \author[label1,label2]{}
+% \address[label1]{}
+% \address[label2]{}
+%\author{Robert Wray  \\  Soar Technology \\ 3600 Green Road Suite 600 \\ Ann Arbor, MI 48105 \\ (734)327-8000 \\ \texttt{wrayre@acm.org}  
+%        }
+
+
+%\maketitle                        %%%% To set Title and Author names.
+%\thispagestyle{empty}
+
+%%%% Replace with your Abstract.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This document briefly describes the Goal Dependency Set (GDS), which
+was introduced with Soar~8.  There are three sections: a brief
+discussion of the motivation for the GDS, a discussion of the
+consequences of the GDS from a behavior developer/modeler's point of
+view, and some details on the kernel implementation of the GDS, for
+anyone working at the architecture level.  This document is by no
+means complete, but introduces the GDS in Soar-specific terms.
+
+\section*{Why the GDS was needed}
+
+As a symbol system, Soar attempts to approximate the knowledge level
+but will necessarily always fall short \cite{Newell90:UTC}.  We can
+informally think of the way in which Soar falls short of the knowledge
+level as its peculiar ``psychology.''  Those interested in using Soar
+to model human psychology would like Soar's ``psychology'' to
+approximate human psychology.  Those using Soar to create agent
+systems would like to make Soar's processing approximate the knowledge
+level as closely as possible.  However, Soar~7 had a number of
+symbol-level ``quirks'' that appeared inconsistent with human
+psychology and that made building large-scale, knowledge-based systems
+in Soar more difficult than necessary.  Bob Wray's thesis (1998)
+\nocite{Wray98:Ensuring} addressed many of these symbol-level problems
+in Soar, among them logical inconsistency in symbol manipulations,
+non-contemporaneous constraints in chunks \cite{Wray96:Compilation},
+race conditions in rule firings and in the decision process, and
+contention between original task knowledge and learned knowledge
+\cite{Wray01:Resolving}.
+
+The Goal Dependency Set implements a solution to logical
+inconsistencies between persistent (o-supported) working memory
+elements (WMEs) in a substate and its ``context''.  The context
+consists of all the WMEs in any superstates above the local
+goal/state\footnote{This report will use ``state,'' not ``goal.''  At
+the kernel level, states are still called ``goals'' and ``goal'' is often
+still used to refer to states.    As a result, a
+confusion in terminology results, with ``\textbf{Goal} Dependency Set'' a 
+specific example, even though ``goals'' have not been
+an explicit, behavior-level Soar construct since Soar~6}.  In Soar, any
+action (application) of an operator receives an o-support preference.
+This preference makes the resulting WME persistent: it will remain in
+memory until explicitly removed (or until its local state is removed),
+regardless of whether it continues to be justified.
+
+Persistent WMEs are pervasive in Soar, because operators are the main
+unit of problem solving.  Persistence is necessary for taking any
+non-monotonic step in a problem space.  However, persistent WMEs also
+are dependent on WMEs in the superstate context.  The problem in
+Soar~7, especially when trying to create large-scale systems like
+TacAir-Soar \cite{Jones99:Automated}, is that the knowledge developer
+must always think about which dependencies can be ``ignored'' and
+which need to result in a reconsideration of the persistent WME.  For
+example, imagine an exploration robot that makes a persistent decision
+to travel to some distant destination based, in part, on its power
+reserves.  Now suppose that the agent notices that its power reserves
+have failed.  If this change is not communicated to the state where
+the travel decision was made, the agent will continue to act as if its
+full power reserves were still available.
+
+Of course, for this specific example, the knowledge designer can
+encode some knowledge to react to this inconsistency.  The fundamental
+problem is that the knowledge designer has to consider \emph{all}
+possible interactions between all o-supported WMEs and all contexts.
+Soar systems often use the architecture's impasse mechanism to realize
+a form of decomposition.  These potential interactions mean that the
+knowledge developer cannot focus on individual problem spaces when
+creating knowledge, which makes knowledge development more difficult.
+Further, in all but the simplest systems, the knowledge designer will
+miss some potential interactions.  The result is agents are that were
+unnecessarily brittle, failing in difficult-to-understand,
+difficult-to-duplicate ways.  
+
+The GDS also solves the the problem of non-contemporaneous constraints
+in chunks.  A non-contemporaneous constraint refers to two or more
+conditions that never co-occur simultaneously.  An example might be a
+driving robot that learned a rule that attempted to match ``red
+light'' and ``green light'' simultaneously. Obviously, for functioning
+traffic lights, this rule would never fire.  By ensuring that local
+persistent elements are always consistent with the higher-level
+context, non-contemporaneous constraints in chunks are
+\emph{guaranteed} not to happen.
+
+
+The GDS captures context dependencies during processing, meaning the
+architecture will identify and respond to inconsistencies
+automatically.  The knowledge designer then does not have to consider
+potential inconsistencies between local, o-supported WMEs and the
+context.  The following sections describe further how the GDS works
+and how to use the GDS in behavior systems, as well as how the GDS is
+implemented in the Soar kernel.
+
+
+\section*{Behavior-level view of the Goal Dependency Set}
+
+This section discusses what the GDS does, and how that impacts
+production knowledge design and implementation.
+
+\subsection*{Operation of the Goal Dependency Set}
+
+
+\begin{figure}
+\insertfigure{simple-ncc}{3in}
+\caption{Simplified Representation of the context dependencies (above the line), local os-upported WMEs (below the line), and the generation of a result.  In Soar~7, this situation led to non-contemporaneous constraints in the chunk that generates {\bf 3}.}
+\label{'ncc'}
+\end{figure}
+
+Whenever a feature is created (added to working memory) in the Soar~7
+architecture, that feature will persist for some time.  The
+persistence of features may differ with respect to how long the
+features remain in memory, and more importantly, what circumstances
+cause the feature to be removed.  The Soar~7 architecture utilizes
+three primary types of persistence: i-support, o-support, and
+c-support.
+
+The weakest persistence is instantiation support.  An i-supported
+feature exists in memory only as long as the production which lead to
+the feature's creation remains instantiated.  Thus, the WME depends
+upon this production instantiation (and, more specifically, the
+features the instantiation tests).  When one of the conditions in the
+production instantiation no longer matches, the instantiation is
+retracted, resulting in the loss of the acceptable preference for the
+WME.\footnote{Importantly, in a technical sense, the WME is only
+retracted when it loses instantiation support, not when the creating
+production is retracting.  For example, a WME could receive i-support
+from several different instantiations and the retraction of one would
+not lead to the retraction of the WME.  However, the the following
+generally discusses direct dependency unmediated by preferences,
+ignoring this complication for clarity.}  I-support is illustrated in
+Figure~\ref{'ncc'}. A copy of {\bf A} in the subgoal, {\bf A$_s$}, is
+retracted automatically when {\bf A} changes to {\bf A'}.  The
+substate WME persists only as long as it remains justified by {\bf A}.
+This justification is called ``instantiation support'' (I-support) in
+Soar (and should not be confused with result \emph{justifications}.)
+
+In the broadest sense, we can say that some feature $<$b$>$ is
+``dependent'' upon another element $<$a$>$ if $<$a$>$ was used in the
+creation of $<$b$>$, i.e., if $<$a$>$ was tested in the production
+instantiation that created $<$b$>$.  Further, a dependent change with
+respect to feature $<$b$>$ is a change to any of its instantiating
+features.  In Figure~\ref{'ncc'}, the change from {\bf A} to {\bf A'}
+is a dependent change for feature {\bf 1} because {\bf A} was used to
+create {\bf 1}.
+
+In Soar 7, some features are insensitive to dependent changes.  These
+features are often referred to as ``persistent WMEs'' because, unlike
+i-supported WMEs, they remain in memory until explicitly removed.
+There are two different types of this stronger persistence: o-support
+and c-support.  
+
+Any feature created by the action of an operator
+receives ``operator support.''  An o-supported feature remains in
+memory until explicitly rejected (or until the superstructure to which
+it is attached is removed).  Removal is architecturally
+independent of the WME's instantiating conditions.
+
+Context-support affects the persistence of an operator itself, rather
+than its effects.  Once a unique operator has been chosen by the
+decision procedure, the choice persists until explicitly re-decided
+(via a reconsider preference).  C-support ensures that the WME for a
+selected operator remains available even if the production that
+proposed the operator is no longer instantiated.  Soar~8 eliminates
+c-support, so that operators now persist only as long as they receive
+instantiation support.  This change was integral to the overall
+solution Soar~8 provides, but is distinct from the GDS.
+
+The GDS provides a solution to the first problem.  When {\bf A}
+changes, the persistent WME {\bf 1} may be no longer consistent with
+its context (e.g., {\bf A'}).  The specific solution is inspired by
+the chunking algorithm.  In Soar~8, whenever an o-supported WME is
+created in the local state, the superstate dependencies of that new
+feature are determined and added to the {\em goal dependency set}
+(GDS) of that state. Conceptually speaking, whenever a working memory
+change occurs, the dependency sets for every state in the context
+hierarchy are compared to working memory changes.\footnote{The
+implementation is slightly different, trading additional memory
+overhead to avoid scanning all the goal dependency sets after each WM
+change.  See the next section.  }  If a removed element is found in a
+GDS, the state is removed from memory (along with all existing
+substructure). The dependency set includes only dependencies for
+o-supported features.  For example, in Figure~\ref{'gds'}, at time
+$t_0$, because only i-supported features have been created in the
+subgoal, the dependency set is empty.
+
+\begin{figure}
+\insertfigure{gomor-o-support}{3in}
+\caption{The Dependency Set in Soar~8.}
+\label{'gds'}
+\end{figure}
+
+
+Three types of features can be tested in the creation of an
+o-supported feature.  Each requires a slightly different type of
+update to the dependency set.
+\begin{description}
+\item [Elements in the superstate:] WMEs in the superstate are added
+directly to the goal's dependency set.  In Figure~\ref{'gds'}, the
+persistent subgoal item {\bf 3} is dependent upon {\bf A} and {\bf
+D}. These superstate WMEs are added to the subgoal's dependency set when
+{\bf 3} is added to working memory at time $t_1$.  It does not matter
+that {\bf A} is i-supported and {\bf D} o-supported.\footnote{In addition,
+superstate WMEs can also include context slot preferences, which 
+are represented in the architecture as working memory elements.}
+\item [Local I-Supported Features:] Local i-supported features are not
+added to the goal dependency set.  Instead, the superstate WMEs that
+led to the creation of the i-supported feature are determined and
+added to the GDS.  In the example, when {\bf 4} is created, {\bf A},
+{\bf B} and {\bf C} must be added to the dependency set because they
+are the superstate features that led to {\bf 1}, which in turn led to
+{\bf 2} and finally {\bf 4}.  However, because item {\bf A} was
+previously added to the dependency set at $t_1$, it is unnecessary to
+add it again.
+\item [Local O-Supported Features:] The dependencies of a local
+o-supported feature have already been added to the state's GDS.  Thus,
+tests of local o-supported WMEs do not require additions to the
+dependency set.  In Figure~\ref{'gds'}, the creation of element {\bf
+5} does not change the dependency set because it is dependent only
+upon persistent items {\bf 3} and {\bf 4}, whose features had been
+previously added to the GDS.
+\end{description}
+
+In Soar~8, any change to the current dependency set will cause
+the retraction of all subgoal structure.  Thus, any time after time
+$t_1$, either the {\bf D} to {\bf D'} or {\bf A} to {\bf A'}
+transition would cause the removal of the entire subgoal. The {\bf E}
+to {\bf E'} transition causes no retraction because {\bf E} is not in
+the goal's dependency set.
+
+\subsection*{The role of the GDS in agent design}
+
+The GDS places some design time constraints on operator implementation.
+These constraints are:
+\begin{itemize}
+\item Operator actions that are used to remember a previous state/situation should be asserted in the top state
+\item All operator elaborations should be i-supported
+\item Any operator with local actions should be designed to be re-entrant
+\end{itemize}
+This section describes these issues.
+
+Soar says any operator effect is o-supported, regardless of whether
+that assertion is entailed by the current situation, or whether it
+reflects an assumption about it.  The GDS adds additional (needed)
+constraint.  Because any context dependencies for subgoal, o-supported
+assertions will be added to the GDS, the developer must decide if an
+o-supported element should be represented in a substate or the top
+state.
+
+This decision is straightforward if the functional role of the
+persistent element is considered.  Four important capabilities that
+require persistence are:
+\begin{enumerate}
+
+\item \textbf{Reasoning hypothetically:} ~ Some assertions may need to
+reflect hypothetical states.  Such assertions are ``assumptions''
+because a hypothetical inference cannot always be grounded in the
+current context.  In other problem solvers with truth maintenance,
+only assumptions are persistent.
+
+\item \textbf{Reasoning non-monotonically:} ~
+Sometimes the result of an inference changes one of the assertions on
+which the inference is dependent.  As an example, consider the task of
+counting.  Each newly counted item replaces the old value of the
+count. 
+
+\item \textbf{Remembering:} ~
+Agents oftentimes need to remember an external situation or stimulus,
+even when that perception is no longer available.  
+
+\item \textbf{Avoiding Expensive Computations:} ~ In some situations,
+an agent may have the information needed to assert some belief in a
+new world state but the expense of performing the computation
+necessary for the assertion, given what is already known, makes the
+computation avoidable.  For example, in dynamic, complex domains,
+determining when to make an expensive calculation is often formulated
+as an explicit agent task \cite{Jones99:Automated}.
+\end{enumerate}
+
+When remembering or avoiding an expensive computation, the
+agent/designer is making a commitment to retain something even though
+it might not be supported in the current context.  In Soar~8, these
+WMEs should be asserted in the top state.  \emph{For many Soar systems,
+especially those focused on execution in a dynamic environment, 
+most o-supported elements will need to be stored on the top state.} 
+
+For any kind of local, non-monotonic reasoning about the context
+(counting, projection planning), features should be stored locally.
+When a dependent context change occurs, the GDS interrupts the
+processing by removing the state.  While this may seem like a severe
+over-reaction, formal and empirical analysis have suggested that this
+solution is less computationally expensive than attempting to identify
+the specific dependent assumption \cite{Wray03:Ensuring}.
+
+
+\subsection*{Operator Elaborations}
+
+Operator elaborations (i.e., placing some information on an operator
+WME) should be i-supported when using Soar~8, since this information
+is, by definition, temporary/not persistent (because it's located on
+the non-persistent operator).  However, the kernel itself hasn't kept
+up with this change.  Prior to Soar~8.5, Soar's o-support modes
+computed operator elaborations as o-supported, resulting in the
+context conditions being added to the GDS.  This often leads to
+unwanted/unnecessary retractions.  If you are using a version prior to
+Soar~8, you should declare any operator elaborations i-supported (i.e.,
+using :i-support).
+
+
+
+
+\section*{Kernel-level view of the Goal Dependency Set}
+
+
+The actual implementation of the GDS in the Soar kernel is slightly
+more complex than the conceptual description of the previous section
+(but not significantly so).  
+
+Elements are added the GDS via elaborate\_gds(), a procedure in
+decide.c that mimics the chunking backtrace function.  The algorithm
+is shown in Figure~\ref{tab:dhj:proc}.  When an o-supported preference
+is asserted, elaborate\_gds() is called.  Conditions in a production
+instantiation that are located in a higher context can be added
+directly to the GDS (1).  For local conditions, elaborate\_gds() first
+checks whether the tested WME is o-supported, or if it has been
+previously been back traced through (2). If either of these are true,
+the WME can be ignored because it's dependencies have been added to
+the GDS previously.  If not, elaborate\_gds() is called recursively,
+to find the context dependencies for the local, contributing WME,~$c$
+(3).
+
+\begin{figure}[h]
+%\rule{\textwidth}{.5mm}
+\framebox[\textwidth]{
+\begin{minipage}{\textwidth}
+\begin{tabbing}
+xxx\=xxx\=xxx\=xxx\=xxx\=xxxxxxxxxxxxxxxxxxxx\= \kill
+
+\textbf{PROC} $create\_new\_assertion(\ldots)$ \\
+\> Whenever a new o-supported element is asserted, the GDS is updated \\ 
+\> to include any new context dependencies.  \\
+\> $\ldots$\\
+\> $A_{inst} \leftarrow $ instantiation that asserted acceptable preference for A  \\
+\> \textbf{IF} A is an o-supported WME\\
+%\>\>$A_{goal_{GDS}}$ : = $append(A\rightarrow goal\rightarrow GDS$ \\
+%\>\>$G \leftarrow A_{goal} \quad$ 
+\>\>G is the goal/state in which A is asserted \\
+\>\>$G_{GDS} \leftarrow append(G_{GDS}, elaborate\_GDS(A)) $ \\
+
+\>$\ldots$\\
+\textbf{END} \\
+
+\\
+\textbf{PROC} $elaborate\_GDS(assertion\, A)$ \\
+\> $S \leftarrow \{ NIL \} $ \\
+        \>\textbf{FOR} Each assertion  $c$ in $A_{inst}$, the instantiation supporting A \\
+$\bigcirc \! \! \! \! 1$      
+          \>\>     \textbf{IF} $\left\{ GoalLevel(c) \quad\mbox{closer to top state than}\quad GoalLevel(A) \right\}$ \\
+
+           \>\>\>\>              $append(c,S)\quad$ (append context dependency to GDS) \\
+\\
+$\bigcirc \! \! \! \! 2$
+             \>\>   \textbf{ELSEIF} \{ \>\>\> $GoalLevel(c) \quad$ same as $GoalLevel(A)  \quad\mbox{AND}\quad $ \\
+              \>\>\> \> \>    $c$ is NOT an o-supported WME $\quad\mbox{AND}\quad $ \\
+\>\>\> \> \>  $c$ has not previously been inspected \} \\
+$\bigcirc \! \! \! \! 3$               \>\>\>\>          $S \leftarrow append(S,elaborate\_GDS(c))$ \\
+\>\>\>\>\>(compute GDS dependencies for $c$ and add to goal's GDS) \\
+$\bigcirc \! \! \! \! 4$               \>\>\>\>          $c_{inspected} \leftarrow true \quad $ \\
+\>\>\>\>\>($c$'s context dependencies have been added to the GDS;  \\
+\>\>\>\>\>~~ no need to consider it again for this GDS)
+
+
+\\
+\> return S, the list of new dependencies in the GDS \\ 
+\textbf{END} \\
+
+
+%         \>\>\textbf{END(IF)} \\
+%\>\textbf{END(FOR)} \\
+%\textbf{END(PROC)} \\
+
+\\
+\textbf{PROC} $GoalLevel(assertion \quad A)$ \\
+\> Return the goal level associated with assertion A
+
+\end{tabbing}
+\end{minipage}
+}
+%\rule{\textwidth}{.5mm}
+\caption{The algorithm for determining members of the GDS.}
+\label{tab:dhj:proc}
+\end{figure}
+
+
+When WME changes occur, each goal/state must be checked to determine
+if the WME appeared on that goal's GDS. Because WME changes occur in
+nearly every Soar elaboration cycle, we chose to extend the WME data
+structure to avoid this scanning.  Figure~\ref{wme} illustrates the
+relationship.  Each GDS consists of a pointer to its goal and a
+pointer to a WME DLL list.  The gds\_next and gds\_prev pointers on
+WME define the GDS WMEs for a particular GDS and the GDS pointer
+provides a link back from each GDS WME to the GDS data structure.
+
+When a WME is removed, the GDS pointer can be checked to determine
+immediately if the goal should be removed.  No scanning is necessary.
+
+
+\begin{figure}
+INSERT DIAGRAM HERE
+%\insertfigure{NEED DIAGRAM}{3in}
+\caption{The GDS and WME data structures}.
+\label{wme}
+\end{figure}
+
+\subsection*{Other implementation issues}
+
+\begin{itemize}
+
+\item Allocating memory for the GDS \\ The GDS memory is created for
+each goal when the goal is created.  The GDS is deallocated when the
+goal is removed.  A NIL WME pointer for the GDS indicates a goal has
+no WMEs in its GDS.
+
+\item Updating a WME GDS pointer \\ A WME should appear in only the
+GDS of the highest goal for which it is dependent.  If a WME is
+determined to already be in a GDS lower than the current goal, its GDS
+pointer is updated to the higher goal, it is removed from the gds\_WME
+DLL of the lower goal, and added to the higher one.  If there are no
+other WMEs on the gds\_WME DLL of the lower goal, its WME pointer is
+set to NIL (the GDS itself is retained, because we don't want to have
+to reallocate memory for the GDS if we need to add to it later.)
+
+
+
+\end{itemize}
+
+
+
+%\bibliography{general,personal,soar}
+%\bibliographystyle{acm}
+ 
+
+
+

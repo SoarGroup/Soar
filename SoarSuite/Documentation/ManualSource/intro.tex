@@ -1,0 +1,203 @@
+% ----------------------------------------------------------------------------
+\typeout{--------------- INTROduction ---------------------------------------}
+\chapter{Introduction}
+\label{INTRO}
+
+Soar has been developed to be an architecture for constructing general
+intelligent systems. It has been in use since 1983, and has evolved through
+many different versions. This manual documents the most current of these:
+Soar, version 8.5.
+
+Our goals for Soar include that it is to be an architecture that can: \vspace{-12pt}
+
+\begin{itemize} 
+\item be used to build systems that work on the full range of tasks expected
+	of an \linebreak intelligent agent, from highly routine to extremely difficult,
+	open-ended problems;\vspace{-6pt}
+\item represent and use appropriate forms of knowledge, such as procedural,
+	declarative, episodic, and possibly iconic;\vspace{-6pt}
+\item employ the full range of problem solving methods;\vspace{-6pt}
+\item interact with the outside world; and\vspace{-6pt}
+\item learn about all aspects of the tasks and its performance on them.
+\end{itemize} 
+
+In other words, our intention is for Soar to support all the capabilities
+required of a general intelligent agent. Below are the major principles that
+are the cornerstones of Soar's design:  \vspace{-12pt}
+
+\begin{enumerate} 
+\item The number of distinct architectural mechanisms should be minimized.
+        In Soar there is a single representation of permanent knowledge
+        (productions), a single representation of temporary knowledge (objects
+        with attributes and values), a single mechanism for generating goals
+        (automatic subgoaling), and a single learning mechanism (chunking).\vspace{-6pt}
+
+\item All decisions are made through the combination of relevant knowledge at
+        run-time.  In Soar, every decision is based on the current
+        interpretation of sensory data and any relevant knowledge retrieved
+        from permanent memory.  Decisions are never precompiled into
+        uninterruptible sequences.
+\end{enumerate}
+
+
+% ----------------------------------------------------------------------------
+% ----------------------------------------------------------------------------
+\section{Using this Manual}
+
+\nocomment{check that this describes the final form of the manual}
+
+We expect that novice Soar users will read the manual in the order it is
+presented: 
+
+\begin{description}
+\item[Chapter \ref{ARCH} and Chapter \ref{SYNTAX}] describe Soar from
+different perspectives: \textbf{Chapter \ref{ARCH}} describes the Soar
+architecture, but avoids issues of syntax, while \textbf{Chapter \ref{SYNTAX}}
+describes the syntax of Soar, including the specific conditions and actions
+allowed in Soar productions.
+
+\item[Chapter \ref{CHUNKING}] describes chunking, Soar's learning
+mechanism.  Not all users will make use of chunking, but it is important to
+know that this capability exists.
+
+\item[Chapter \ref{INTERFACE}] describes the Soar user interface --- how the
+user interacts with Soar. The chapter is a catalog of user-interface commands,
+grouped by functionality. For quick reference, an alphabetical listing of commands
+is also provided on the back cover of the manual.
+\end{description}
+
+Advanced users will refer most often to Chapter \ref{INTERFACE}, flipping back
+to Chapters \ref{ARCH} and \ref{SYNTAX} to answer specific questions.
+
+There are several appendices included with this manual: 
+\begin{description}
+
+%\item[Appendix \ref{GLOSSARY}] is a glossary of terminology used in this manual.
+
+\item[Appendix \ref{BLOCKSCODE}] contains an example Soar program for a simple
+version of the blocks world. This blocks-world program is used as an example
+throughout the manual.
+
+%\item[Appendix \ref{USING}] is an overview of example programs currently available
+%(provided with the Soar distribution) with explanations of how to run them,
+%and pointers to other help sources available for novices.
+
+%\item[Appendix \ref{DEFAULT}] describes Soar's default knowledge, which can be used
+%(or not) with any Soar task.
+
+\item[Appendix \ref{GRAMMARS}] provides a grammar for Soar productions.
+
+\item[Appendix \ref{SUPPORT}] describes the determination of o-support.
+
+\item[Appendix \ref{PREFERENCES}] provides a detailed explanation of the preference
+resolution process.
+
+%\item[Appendix \ref{Tcl-I/O}] gives an example of Soar I/O functions, written in Tcl.
+
+\item[Appendix \ref{GDS}] provides an explanation of the Goal Dependency Set. 
+\end{description}
+
+\subsubsection*{Additional Back Matter}
+
+The appendices are followed by an index; the last
+pages of this manual contain a summary and index of the user-interface
+functions for quick reference.
+
+
+\subsubsection*{Not Described in This Manual}
+
+Some of the more advanced features of Soar are not described in this
+manual, such as how to interface with a simulator, or how to create Soar
+applications using multiple interacting agents.  A discussion of
+these topics is provided in a separate document, the \textit{SML Quick Start Guide}.
+
+For novice Soar users, try \textit{The Soar 8 Tutorial}, which guides the reader 
+through several example tasks and exercises.
+
+See Section \ref{CONTACT} for information about obtaining Soar documentation.
+
+% ----------------------------------------------------------------------------
+%\section{Other Soar Documentation}
+%\label{DOCUMENTATION}
+%
+%In addition to this manual, there are three other documents that you may want
+%to obtain for more information about different aspects of Soar:
+%
+%\begin{description}
+%\item[The Soar 8 Tutorial] is written for novice Soar users, and guides the
+%	reader through several example tasks and exercises.
+%\item[The Soar Advanced Applications Manual] is written for advanced Soar
+%	users. This guide describes how to add input and output routines to
+%	Soar programs, how to run multiple Soar ``agents'' from a single Soar
+%	image, and how to extend Soar by adding your own user-interface
+%	functions, simulators, or graphical user interfaces.
+%\item[Soar Design Dogma] gives advice and examples about good Soar programming style. 
+%        It may be helpful to both the novice and mid-level Soar user. 
+%\end{description}
+% ----------------------------------------------------------------------------
+\section{Contacting the Soar Group}
+\label{CONTACT}
+
+\subsection*{Resources on the Internet}
+
+The primary website for Soar is:
+
+\hspace{2em}\soar{http://sitemaker.umich.edu/soar}.
+
+Look here for the latest downloads, documentation, and Soar-related announcements, as well
+as links to information about specific Soar research projects and researchers and a FAQ
+(list of frequently asked questions) about Soar.
+
+For questions about Soar, you may write to the Soar e-mail list at:
+
+\hspace{2em}\soar{soar-group@lists.sourceforge.net}.
+
+If you would like to be on this list yourself, visit:
+
+\hspace{2em}\soar{http://lists.sourceforge.net/lists/listinfo/soar-group}.
+
+To report Soar bugs, to check whether a bug has been reported, or to check the status
+of a previously reported bug, visit:
+
+\hspace{2em}\soar{https://winter.eecs.umich.edu/soar-bugzilla/}.
+
+
+ 
+
+%The online FAQ will usually contain the most current information on Soar. It
+%is available at: 
+
+%\soar{http://acs.ist.psu.edu/soar-faq/soar-faq.html}
+
+
+\subsection*{For Those Without Internet Access}
+
+If you cannot reach us on the internet, please write to us at the following 
+address:
+
+\begin{flushleft}
+\hspace{2em}The Soar Group \\
+\hspace{2em}Artificial Intelligence Laboratory \\
+\hspace{2em}University of Michigan\\
+\hspace{2em}1101 Beal Ave.\\
+\hspace{2em}Ann Arbor, MI 48109-2110 \\
+\hspace{2em}USA 
+\end{flushleft}
+
+% ----------------------------------------------------------------------------
+% ----------------------------------------------------------------------------
+\section{A Note on Different Platforms and Operating Systems}
+\label{INTRO-platforms}
+\index{Unix}
+\index{Linux}
+\index{Macintosh}
+\index{Personal Computer}
+\index{Windows}
+\index{Operating System}
+
+Soar runs on a wide variety of computers, including Unix (and Linux) machines,
+Macintoshes, and PCs running the Windows (95, 98, NT) operating system.
+
+This manual documents Soar generally, although all references to files
+and directories use Unix format rather than Macintosh or Windows folders.
+

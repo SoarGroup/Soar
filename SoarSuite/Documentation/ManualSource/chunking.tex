@@ -1,0 +1,500 @@
+% ----------------------------------------------------------------------------
+\typeout{--------------- learning (CHUNKING) --------------------------------}
+\chapter{Learning}
+\label{CHUNKING}
+\index{chunking}
+\index{learning}
+\index{result}
+\index{subgoal}
+
+\nocomment{
+
+	This chapter really needs a general explanation of learning in
+	Soar before it dives into WHEN chunks are and are not formed,
+	and HOW ... cf. Chpater 2-level discussions
+
+	I'd like to add two figures to this chapter: \\
+	1. an illustration of the backtracing process \\
+	2. an illustration of how learning fits into the decision cycle.
+
+	Also, I'm pretty sure this chapter hasn't changed much since
+	justifications were added to Soar. It would be nice to connect
+	justifications to chunks.
+	}
+
+
+\nocomment{
+	\begin{figure}
+	%\insertfigure{learn}{7.75in}
+	\insertcaption{Will somehow be an illustration of learning in
+		the decision cycle.} 
+	\label{fig:learn}
+	\end{figure}
+	}
+
+Chunking is Soar's learning mechanism, the sole learning mechanism in Soar.
+Chunking creates productions, called \emph{chunks}, that summarize the
+processing required to produce the results of subgoals. When a chunk is built,
+it is added to production memory, where it will be matched in similar
+situations, avoiding the need for the subgoal. Chunks are created only when
+results are formed in subgoals; since most Soar programs are continuously
+subgoaling and returning results to higher-level states, chunks are typically
+created continuously as Soar runs.
+
+This chapter begins with a discussion of when chunks are built (Section
+\ref{CHUNKING-creation} below), followed by a detailed discussion of
+how Soar determines a chunk's conditions and actions (Section
+\ref{CHUNKING-determining}). Sections \ref{CHUNKING-variablizing} through
+\ref{CHUNKING-ordering} examine the construction of chunks in further
+detail. Section \ref{CHUNKING-inhibition} explains how and why chunks are
+prevented from matching with the WME's that led to their creation. Section
+\ref{CHUNKING-problems} reviews the problem of overgeneral chunks.
+
+
+% ----------------------------------------------------------------------------
+\section{Chunk Creation}
+\label{CHUNKING-creation}
+\index{chunking!creation}
+
+Several factors govern when chunks are built. Soar chunks the results of every
+subgoal, \emph{unless} one of the following conditions is true:
+\index{chunking!when active}
+
+\index{learn}
+\begin{enumerate}
+\item Learning is \soar{off}. (See Section \ref{learn} on page \pageref{learn}
+	for details of \soar{learn} used to turn learning off.) 
+
+	Learning can be set to \soar{on} or \soar{off}.
+	When \soar{learn} is \soar{on} chunks are built.  
+	When \soar{learn} is \soar{off}, chunks are not built. 
+
+\item Learning is set to \soar{bottom-up} and a chunk has already 
+	been built for a subgoal of the state that generated the results. 
+	(See Section \ref{learn} on page \pageref{learn} for details of 
+	\soar{learn} used to set learning to bottom-up.) 
+
+	With bottom-up learning, chunks are learned only in states in which no
+	subgoal has yet generated a chunk. In this mode, chunks are learned
+	only for the ``bottom'' of the subgoal hierarchy and not the
+	intermediate levels. With experience, the subgoals at the bottom will
+	be replaced by the chunks, allowing higher level subgoals to be
+	chunked.\footnote{For some tasks, bottom-up chunking facilitates
+	modelling power-law speedups, although its long-term theoretical
+	status is problematic.}
+	\index{bottom-up chunking}
+	\index{chunking!bottom-up}
+	
+	\nocomment{this would be the appropriate place in the manual to discuss
+		the rationale behind the existence of bottom-up chunking. I
+		don't believe it's explained anywhere. 
+		}
+
+\item The chunk duplicates a production or chunk already in production memory.
+	In some rare cases, a duplicate production will not be detected because the
+	order of the conditions or actions is not the same as an existing production.  
+	\index{chunking!duplicate chunks}
+
+\item The augmentation, \soar{\carat quiescence t}, of the substate that
+	produced the result is backtraced through.
+
+	This mechanism is motivated by the \emph{chunking from exhaustion}
+	problem, where the results of a subgoal are dependent on the
+	exhaustion of alternatives (see Section \ref{CHUNKING-problems} on page
+	\pageref{CHUNKING-problems}). If this substate augmentation is
+	encountered when determining the conditions of a chunk, then no chunk
+	will be built for the currently considered action. This is recursive, 
+	so that if an un-chunked result is relevant to a second result, no 
+	chunk will be built for the second result. This does not prevent the
+	creation of a chunk that would include \soar{\carat quiescence t} as a
+	condition.  
+	\index{quiescence t (augmentation)} \index{exhaustion}
+      
+\item Learning has been temporarily turned off via a call to the
+	\soar{dont-learn} production action (described on page
+	\pageref{SYNTAX-pm-actions-learning} in Section 
+	\ref{SYNTAX-pm-actions-learning}).
+
+	This capability is provided for debugging and system development, and
+	it is not part of the theory of Soar.
+\end{enumerate}
+
+If a result is to be chunked, Soar builds the chunk \emph{as soon as the
+result is created}, rather than waiting until subgoal termination.
+\index{result}
+\index{subgoal!result}
+
+	\nocomment{CBC: As soon as it's identified as a result, I assume.
+		E.g., for the case where a ``result'' is created
+		first, and not linked to the superstate until later.
+	
+		BobD: it doesn't become a result until it's linked.}
+
+% ----------------------------------------------------------------------------
+\section{Determining Conditions and Actions}
+\label{CHUNKING-determining}
+
+Chunking is an experience-based learning mechanism that summarizes  as 
+productions the problem solving that occurs within a state. In order to 
+maintain a
+history of the processing to be used for chunking, Soar builds a 
+\emph{trace} of the productions that fire in the subgoals. This section
+describes how the relevant actions are determined, how information is 
+stored in a trace, and finally, how the trace and the actions together 
+determine the conditions for the chunk.
+
+In order for the chunk to apply at the appropriate time, its conditions must
+test exactly those working memory elements that were necessary to produce the
+results of the subgoal. 
+Soar computes a chunk's conditions based on the
+productions that fire in the subgoal, beginning with the results of
+the subgoal,
+and then \emph{backtracing} through the productions that created 
+each result.  It recursively backtraces through the working memory
+elements that matched the conditions of the productions, finding the
+actions that led to the WME's creation, etc., until conditions are
+found that test elements that are linked to a superstate.
+\index{backtracing}
+
+\index{working memory!trace}
+\index{trace!memory}
+
+\nocomment{  This is what is used to say...
+Soar computes a chunk's conditions based on the productions that 
+fire in the subgoal. Chunking begins with the results of the subgoal,
+and then \emph{backtraces} through the productions that created the preference
+for each result. It then recursively backtraces through the working memory
+elements that matched the conditions of the productions, finding the
+acceptable preferences that led to their creation, etc., until conditions are
+found that test elements that are linked to a superstate.}
+
+% ----------------------------------------------------------------------------
+\subsection{Determining a chunk's actions}
+\index{result}
+\index{subgoal result}
+\index{chunking!determining actions}
+
+A chunk's actions are built from the results of a subgoal.  A \emph{result} is
+any working memory element created in the substate that is linked to a 
+superstate.  A working memory element
+is linked if its identifier is either the value of a superstate
+WME, or the value of an augmentation  for an object that is linked to a
+superstate.
+
+\index{linked!chunk action}
+\index{chunking!actions}
+
+The results produced by a single production firing are the basis for creating
+the actions of a chunk. A new result can lead to other results by linking a
+superstate to a WME in the substate. This WME may in turn link
+other WMEs in the substate to the superstate, making them results.
+Therefore, the creation of a single WME that is linked to a superstate
+can lead to the creation of a large number of results. All of the newly
+created results become the basis of the chunk's actions.
+
+% ----------------------------------------------------------------------------
+\subsection{Tracing the creation and reference of working memory elements} 
+
+Soar automatically maintains information on the creation of each 
+working memory element in every state.  When a production fires, a
+trace of the production is saved with the appropriate state. A \emph{trace} is
+a list of the working memory elements matched by the production's conditions,
+together with the actions created by the production.  The appropriate state
+is the most recently created state (i.e., the state \emph{lowest} in the
+subgoal hierarchy) that occurs in the production's matched working memory
+elements.
+\index{trace!memory}
+
+Recall that when a subgoal is created, the \carat item augmentation lists all
+values that lead to the impasse.
+Chunking is complicated by the fact that the \soar{\carat item} augmentation
+of the substate is created by the architecture and not by productions.
+Backtracing cannot determine the cause of these substate augmentations in the
+same way as other working memory elements. To overcome this, Soar maps these
+augmentations onto the acceptable preferences for the operators in the 
+\soar{\carat item} augmentations.
+
+
+\subsubsection*{Negated conditions}
+\index{negated conditions}
+\index{chunking!negated conditions}
+
+Negated conditions are included in a trace in the following way: when a
+production fires, its negated conditions are fully instantiated with its
+variables' appropriate values. This instantiation is based on the working
+memory elements that matched the production's positive conditions. If the
+variable is not used in any positive conditions, such as in a conjunctive
+negation, a dummy variable is used that will later become a variable in a
+chunk.
+
+If the identifier used to instantiate a negated condition's identifier field
+is linked to the superstate, then the instantiated negated condition is
+added to the trace as a negated condition. In all other cases, the negated
+condition is ignored because the system cannot determine why a working memory
+element \emph{was not} produced in the subgoal and thus allowed the production
+to fire. Ignoring these negations of conditions internal to the subgoal may
+lead to overgeneralization in chunking (see Section \ref{CHUNKING-problems} on
+page \pageref{CHUNKING-problems}). 
+\index{overgeneral chunk}
+     
+% ----------------------------------------------------------------------------
+\subsection{Determining a chunk's conditions}
+\index{chunking!determining conditions}
+
+The conditions of a chunk are determined by a dependency analysis of
+production traces --- a process called \emph{backtracing}.  For each
+instantiated production that creates a subgoal result, backtracing examines
+the production trace to determine which working memory elements were matched.
+If a matched working memory element is linked to a superstate, it is included
+in the chunk's conditions. If it is not linked to a superstate, then
+backtracing recursively examines the trace of the production that created the
+working memory element. Thus, backtracing begins with a subgoal result, traces
+backwards through all working memory elements that were used to produce that
+result, and collects all of the working memory elements that are linked to a
+superstate. This method ignores when the working memory elements were created,
+thus allowing the conditions of one chunk to test the results of a chunk
+learned earlier in the subgoal. The user can observe the backtracing process
+by setting setting backtracing on, using the watch command: \soar{watch
+backtracing -on} (see Section \ref{watch} on page \pageref{watch}). 
+This prints out a trace of the conditions as they are collected.
+\index{backtracing}
+\index{chunking!conditions}
+
+\index{desirability preference} 
+Certain productions do not participate in backtracing. If a production creates
+only a \soar{reject} preference or a desirability preference (\soar{better},
+\soar{worse}, \soar{indifferent}, or \soar{parallel}), then neither the
+preference nor the objects that led to its creation will be included in the
+chunk. (The exception to this is that if the desirability or \soar{reject}
+preference is a {\em result} of a subgoal, it will be in the chunk's actions.)
+Desirability and reject preferences should be used only as search control for
+choosing between legal alternatives and should not be used to guarantee the
+correctness of the problem solving. The argument is that such preferences
+should affect only the \emph{efficiency} and not the \emph{correctness} of
+problem solving, and therefore are not necessary to produce the results.
+Necessity preferences (\soar{require} or \soar{prohibit}) should be used to
+enforce the correctness of problem solving; the productions that create these
+preferences will be included in backtracing.
+\index{preference!require}
+\index{preference!prohibit}
+\index{require preference}
+\index{prohibit preference}
+
+Given that results can be created at any point during a subgoal, it is
+possible for one result to be relevant to another result. Whether or not the 
+first result is included in the chunk for the second result depends on the
+links that were used to match the first result in the subgoal. If the elements
+are linked to the superstate, they are included as conditions. If the
+elements are not linked to the superstate, then the result is traced through.
+In some cases, there may be more than one set of links, so it is possible for
+a result to be both backtraced through, and included as a condition.
+
+
+% ----------------------------------------------------------------------------
+\section{Variablizing Identifiers}
+\label{CHUNKING-variablizing}
+\index{identifier!variablization of}
+\index{chunking!variablization}
+\index{variablization}
+
+Chunks are constructed by examining the traces, which include working memory
+elements and operator preferences. To achieve any useful generality in chunks,
+identifiers of actual objects must be replaced by variables when the chunk is
+created; otherwise chunks will only ever fire when the exact same objects
+are matched.  However, a constant value is never variablized; the actual 
+value always appears directly in the chunk.
+
+When a chunk is built, all occurrences of the same identifier are replaced
+with the same variable. This can lead to an overspecific chunk, when two
+variables are forced to be the same in the chunk, even though distinct
+variables in the original productions just happened to match the same
+identifier.
+
+A chunk's conditions are also constrained by any not-equal (\soar{<>}) tests
+for pairs of indentifiers used in the conditions of productions that are
+included in the chunk. These tests are saved in the production traces and then
+added in to the chunk.
+\index{chunking!conditions}
+
+% ----------------------------------------------------------------------------
+\section{Ordering Conditions}
+\label{CHUNKING-ordering}
+\index{matcher}
+\index{ordering chunk conditions}
+
+	\nocomment{I think we need an actual section (earlier in the
+		manual), describing the rete matcher and the
+		reordering of conditions (which also happens 
+		internally for user-defined productions). Then this
+		section would mention that it's the same reordering process.}
+
+Since the efficiency of the Rete matcher  \cite{Forg81} depends
+heavily upon the order of a production's conditions, the chunking mechanism
+attempts to write the chunk's conditions in the most favorable order. At each
+stage, the condition-ordering algorithm tries to determine which eligible
+condition, if placed next, will lead to the fewest number of partial
+instantiations when the chunk is matched. A condition that matches an object
+with a multi-valued attribute will lead to multiple partial instantiations, so
+it is generally more efficient to place these conditions later in the
+ordering.
+\index{chunking!ordering conditions}
+\index{multi-valued attribute}
+
+This is the same process that internally reorders the conditions in
+user-defined productions, as mentioned briefly in Section \ref{ARCH-pm-structure}. 
+
+
+% ----------------------------------------------------------------------------
+\section{Inhibition of Chunks}
+\label{CHUNKING-inhibition}
+\index{chunking!refractory inhibition}
+\index{refractory inhibition of chunks}
+
+When a chunk is built, it may be able to match immediately with the same
+working memory elements that participated in its creation. If the production's
+actions include preferences for new operators, the production would immediately
+fire and create a preference for a new operator, which duplicates the 
+operator preference
+that was the original result of the subgoal. To prevent this,
+\emph{inhibition} is used. This means that each production that is built 
+during chunking is considered to have already fired with the instantiation of
+the exact set of working memory elements used to create it. This does not
+prevent a newly learned chunk from matching other working memory elements
+that are present and firing with those values.
+
+	\nocomment{any insights to why its called ``refractory''?}
+
+% ----------------------------------------------------------------------------
+\section{Problems that May Arise with Chunking}
+\label{CHUNKING-problems}
+\index{chunking!overgeneral}
+\index{chunking!incorrect chunks}
+\index{incorrect chunks}
+\index{overgeneral chunk}
+
+\nocomment{Moved from chapter 2: If there are no variables in justifications, I
+	don't quite understand how overgeneralization can occur. \\
+        RD: can still be overgeneral due to lack of conditions, e.g.,
+	chunking from exhaustion (from testing a negative condition in the
+	subgoal) \\
+	JEL: it's from losing the local negations}
+
+\nocomment{BobD: there are more problems with chunking than this. See last two
+	slides from ``guts of chunking'', 11th soar workshop (and talk to Bob
+	and/or John for an explanation
+	}
+
+One of the weaknesses of Soar is that chunking can create overgeneral productions
+that apply in inappropriate situations, or overspecific productions that will
+never fire. These problems arise when chunking cannot accurately summarize the
+processing that led to the creation of a result. Below is a description of
+three known problems in chunking.
+
+\subsection{Using search control to determine correctness}
+\index{desirability preference}
+
+Overgeneral chunks can be created if a result of problem solving in a subgoal
+is dependent on search-control knowledge. Recall that desirability
+preferences, such as \soar{better}, \soar{best}, and \soar{worst}, are not
+included in the traces of problem solving used in chunking (Section
+\ref{CHUNKING-determining} on page \pageref{CHUNKING-determining}). In theory,
+these preferences do not affect the validity of search. In practice, however,
+a Soar program can be written so that search control \emph{does} affect the
+correctness of search. Here are two examples:\vspace{-12pt}
+
+\begin{enumerate} 
+\item Some of the tests for correctness of a result are included in
+	productions that prefer operators that will produce correct results.
+  	The system will work correctly only when those productions are loaded.\vspace{-8pt}
+\item An operator is given a worst preference, indicating that it
+  	should be used only when all other options have been exhausted.
+  	Because of the semantics of worst, this operator will be selected
+  	after all other operators; however, if this operator then produces a
+  	result that is dependent on the operator occurring after all others,
+  	this fact will not be captured in the conditions of the chunk.
+\end{enumerate}
+\index{necessity preference} 
+\index{preference!require} \index{preference!prohibit}
+\index{require preference} \index{prohibit preference}
+
+In both of these cases, part of the test for producing a result is {\em
+implicit} in search control productions. This move allows the explicit state
+test to be simpler because any state to which the test is applied is
+guaranteed to satisfy some of the requirements for success. However, chunks
+created in such a problem space will be overgeneral because the implicit parts
+of the state test do not appear as conditions. 
+
+\textbf{Solution:} To avoid this problem, necessity preferences
+(\soar{require} and \soar{prohibit}) should be used whenever a control
+decision is being made that also incorporates goal-attainment knowledge.  The
+necessity preferences are included in the backtrace by chunking, thereby
+avoiding overgenerality.
+
+\subsection{Testing for local negated conditions}
+
+Overgeneral chunks can be created when negated conditions test for the absence
+of a working memory element that, if it existed, would be local to the
+substate.  Chunking has no mechanism for determining \textit{why} a given
+working memory element does not exist, and thus a condition that occurred in a
+production in the subgoal is not included in the chunk. For example, if a
+production tests for the absence of a local flag, and that flag is copied down
+to the substate from a superstate, then the chunk should include a test that
+the flag in the superstate does not exist. 
+Unfortunately, it is computationally expensive to determine why a given
+working memory element does not exist. Chunking only includes negated tests if
+they test for the absence of superstate working memory elements. 
+
+\textbf{Solution:} To avoid using negated conditions for local data, the local
+data can be made a result by attaching it to the superstate. This increases
+the number of chunks learned, but a negated condition for the superstate can
+be used that leads to correct chunks.
+\index{negated!conditions}
+\index{chunking!negated conditions}
+
+\subsection{Testing for the substate}
+
+Overgeneral chunks can be created if a result of a subgoal is dependent on the
+creation of an impasse within the substate. For example, processing in a
+subgoal may consist of exhaustively applying all the operators in the problem
+space. If so, then a convenient way to recognize that all operators have
+applied and processing is complete is to wait for a state no-change impasse to
+occur. When the impasse occurs, a production can test for the resulting
+substate and create a result for the original subgoal. This form of state test
+builds overgeneral chunks because no pre-existing structure is relevant to the
+result that terminates the subgoal. The result is dependent only on the
+existence of the substate within a substate.
+\index{quiescence t (augmentation)}
+\index{exhaustion}
+
+\textbf{Solution:} The current solution to this problem is to allow the
+problem solving to signal the architecture that the test for a substate is
+being made.  The signal used by Soar is a test for the \soar{\carat quiescence
+t} augmentation of the subgoal.  The chunking mechanism recognizes this test
+and does not build a chunk when it is found in a backtrace of a subgoal.  The
+history of this test is maintained, so that if the result of the substate is
+then used to produce further results for a superstate, no higher chunks will
+be built.  However, if the result is used as search control (it is a
+desirability preference), then it does not prevent the creation of chunks
+because the original result is not included in the backtrace.  If the
+\soar{\carat quiescence t} being tested is connected to a superstate, it will
+not inhibit chunking and it will be included in the conditions of the chunk.
+
+
+
+\nocomment{
+	\subsection{Overuse of predicates}
+
+	Moved from chapter 2:
+
+	All of the predicate tests are lost in the chunk, and only the
+	exact value is included. If the predicate is explicitly
+	represented as a relation between two objects in working
+	memory, chunking will capture that abstract relationship 
+	and create a much more general chunk.
+
+	(also needs clarification about the use of predicates in the
+	blocks world task, where we have to say  that the block that's
+	being moved is not the same as the block that's 
+        being moved to)
+
+	}
