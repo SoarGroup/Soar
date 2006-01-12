@@ -1,6 +1,6 @@
 ###########################################
 # Author: Jonathan Voigt, voigtjr@gmail.com
-# Date: 2004
+# Date: 2006
 ###########################################
 noinst_LTLIBRARIES = libgSKI.la
 
@@ -50,7 +50,7 @@ gSKI_Wme.cpp\
 gSKI_WorkingMemory.cpp\
 gSKI_WorkingMemoryView.cpp
 
-INCLUDES = -I.. -I../include -I ../../SoarKernel/include
+INCLUDES = -I../../.. -I../include -I ../../Kernel/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)
 

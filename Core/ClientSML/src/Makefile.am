@@ -1,6 +1,6 @@
 ###########################################
 # Author: Jonathan Voigt, voigtjr@gmail.com
-# Date: 2004
+# Date: 2006
 ###########################################
 noinst_LTLIBRARIES = libClientSML.la
 
@@ -22,10 +22,10 @@ sml_ObjectMap.cpp\
 sml_OutputDeltaList.cpp
 
 INCLUDES = \
--I../..\
+-I../../..\
 -I../include\
 -I../../ElementXML/include\
 -I../../ConnectionSML/include\
--I../../../gSKI/include
+-I../../gSKI/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)

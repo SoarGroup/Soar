@@ -1,6 +1,6 @@
 ###########################################
 # Author: Jonathan Voigt, voigtjr@gmail.com
-# Date: 2005
+# Date: 2006
 ###########################################
 
 AC_PREREQ(2.57)
@@ -81,6 +81,7 @@ AC_CHECK_TYPES([ptrdiff_t])
 # Checks for library functions.
 AC_CHECK_LIB(pthread, pthread_create)
 AC_CHECK_LIB(dl, dlopen)
+AC_CHECK_LIB(m, sqrt)
 AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_MEMCMP
 AC_FUNC_MALLOC
