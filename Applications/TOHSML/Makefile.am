@@ -1,20 +1,17 @@
 ###########################################
 # Author: Jonathan Voigt, voigtjr@gmail.com
-# Date: 2004
+# Date: 2006
 ###########################################
-BASEDIR_PREFIX = ../../
+BASEDIR_PREFIX = ../..
 
-bin_PROGRAMS = towersSML
+bin_PROGRAMS = TOHSML
 
-towersSML_SOURCES = \
-TowersOfHanoi.cpp \
-smlTowers.cpp \
-smlTowersSoarAgent.cpp
+TOHSML_SOURCES = TowersOfHanoi.cpp smlTowers.cpp smlTowersSoarAgent.cpp
 
-towersSML_LDADD = \
-$(BASEDIR_PREFIX)KernelSML/src/libSoarKernelSML.la \
-$(BASEDIR_PREFIX)ElementXML/src/libElementXML.la 
+TOHSML_LDADD = \
+$(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \
+$(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la 
 
-INCLUDES = -I$(BASEDIR_PREFIX)ClientSML/include 
+INCLUDES = -I$(BASEDIR_PREFIX)/Core/ClientSML/include 
 
 CXXFLAGS = $(SOAR_CXXFLAGS)

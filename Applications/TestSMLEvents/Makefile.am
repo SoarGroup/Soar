@@ -4,11 +4,11 @@
 ###########################################
 BASEDIR_PREFIX = ../..
 
-bin_PROGRAMS = TestSoarPerformance
+bin_PROGRAMS = TestSMLEvents
 
-TestSoarPerformance_SOURCES= TestSoarPerformance.cpp
+TestSMLEvents_SOURCES = TestSMLEvents.cpp
 
-TestSoarPerformance_LDADD = \
+TestSMLEvents_LDADD = \
 $(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \
 $(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
 
@@ -16,7 +16,6 @@ INCLUDES = \
 -I$(BASEDIR_PREFIX)/Core/ClientSML/include \
 -I$(BASEDIR_PREFIX)/Core/ElementXML/include \
 -I$(BASEDIR_PREFIX)/Core/ConnectionSML/include \
--I$(BASEDIR_PREFIX)/Core/gSKI/include \
--I$(BASEDIR_PREFIX)/Core/CLI/include
+-I$(BASEDIR_PREFIX)/Core/KernelSML/include 
 
-AM_CXXFLAGS = $(SOAR_CXXFLAGS)
+CXXFLAGS = $(SOAR_CXXFLAGS)

@@ -183,7 +183,7 @@ void MyStringEventHandler(smlStringEventId id, void* pUserData, Kernel* pKernel,
 }
 
 
-void main() {
+int main() {
 
 	// When we have a memory leak, set this variable to
 	// the allocation number (e.g. 122) and then we'll break
@@ -262,6 +262,7 @@ void main() {
 	_CrtDumpMemoryLeaks();
 #endif // _MSC_VER
 	
+	return 0;
 }
 
 DataList* CreateEventTestData() {

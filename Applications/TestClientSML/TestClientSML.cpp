@@ -146,7 +146,7 @@ bool SimpleRunListener(int decisions)
 	//pKernel->SetTraceCommunications(true) ;
 
 	sml::Agent* pAgent = pKernel->CreateAgent("runagent") ;
-	std::string path = std::string(pKernel->GetLibraryLocation()) + "../tests/testrun.soar" ;
+	std::string path = std::string(pKernel->GetLibraryLocation()) + "../Tests/testrun.soar" ;
 	bool ok = pAgent->LoadProductions(path.c_str()) ;
 
 	if (!ok)
@@ -1144,7 +1144,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 			}
 
 			std::string path = pKernel->GetLibraryLocation() ;
-			path += "/../tests/testsml.soar" ;
+			path += "/../Tests/testsml.soar" ;
 
 			// Listen to the echo of the load
 			int echoCallback = pAgent->RegisterForPrintEvent(smlEVENT_ECHO, &MyEchoEventHandler, NULL) ;

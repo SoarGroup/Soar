@@ -1,21 +1,21 @@
 ###########################################
 # Author: Jonathan Voigt, voigtjr@gmail.com
-# Date: 2004
+# Date: 2006
 ###########################################
-BASEDIR_PREFIX = ../../
+BASEDIR_PREFIX = ../..
 
 bin_PROGRAMS = TestClientSML
 
 TestClientSML_SOURCES = TestClientSML.cpp
 
 TestClientSML_LDADD = \
-$(BASEDIR_PREFIX)KernelSML/src/libSoarKernelSML.la \
-$(BASEDIR_PREFIX)ElementXML/src/libElementXML.la
+$(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \
+$(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
 
 INCLUDES = \
--I$(BASEDIR_PREFIX)ClientSML/include \
--I$(BASEDIR_PREFIX)ConnectionSML/include \
--I$(BASEDIR_PREFIX)ElementXML/include \
--I$(BASEDIR_PREFIX)KernelSML/include
+-I$(BASEDIR_PREFIX)/Core/ClientSML/include \
+-I$(BASEDIR_PREFIX)/Core/ConnectionSML/include \
+-I$(BASEDIR_PREFIX)/Core/ElementXML/include \
+-I$(BASEDIR_PREFIX)/Core/KernelSML/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)
