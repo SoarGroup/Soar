@@ -128,7 +128,7 @@ public class DemoMenu
 		File filePath = null ;
 
 		String libraryPath = getLibraryLocation() ;
-		File demoPath = new File(libraryPath, "demos") ;
+		File demoPath = new File(libraryPath, "Demos") ;
 		filePath = new File(demoPath, filename.getPath()) ;
 		
 		String commandLine = m_Document.getSoarCommands().getSourceCommand(filePath.getPath()) ;
