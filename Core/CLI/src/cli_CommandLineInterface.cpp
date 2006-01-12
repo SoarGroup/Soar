@@ -448,7 +448,7 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 
 	// Show help if requested
 	if (helpFlag) {
-		std::string helpFile = m_LibraryDirectory + "/help/" + argv[0];
+		std::string helpFile = m_LibraryDirectory + "../CLIHelp/" + argv[0];
 		return GetHelpString(helpFile);
 	}
 
