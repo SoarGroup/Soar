@@ -39,7 +39,7 @@ public abstract class DirectedGraph extends Graph {
 			++inDegree[edge.V1().getValue()];
 		}
 
-		Queue queue = new QueueAsLinkedList();
+		edu.umich.visualsoar.util.Queue queue = new QueueAsLinkedList();
 		for(int v = 0; v < numberOfVertices; ++v)
 			if (inDegree[v] == 0)
 				queue.enqueue(selectVertex(v));
@@ -68,7 +68,7 @@ public abstract class DirectedGraph extends Graph {
     for(int i = 1; i < numberOfVertices; i++)
       visitedVertices[i] = false;
     visitedVertices[0] = true;
-    Queue queue = new QueueAsLinkedList();
+    edu.umich.visualsoar.util.Queue queue = new QueueAsLinkedList();
     List foundVertices = new LinkedList();
     queue.enqueue(selectVertex(0));
 
@@ -104,7 +104,7 @@ public abstract class DirectedGraph extends Graph {
     for(int i = 1; i < numberOfVertices; i++)
       visitedVertices[i] = false;
     visitedVertices[0] = true;
-    Queue queue = new QueueAsLinkedList();
+    edu.umich.visualsoar.util.Queue queue = new QueueAsLinkedList();
     queue.enqueue(selectVertex(0));
 
     while(!queue.isEmpty()) {

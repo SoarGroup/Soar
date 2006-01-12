@@ -395,7 +395,7 @@ public class NamedEdge extends Edge
         // make sure this is the output-link
         if(!getName().equals("output-link"))
         return false;
-        Queue queue = new QueueAsLinkedList();
+        edu.umich.visualsoar.util.Queue queue = new QueueAsLinkedList();
         int numberOfVertices = swmm.getNumberOfVertices();
         boolean[] visitedVertices = new boolean[numberOfVertices];
         for(int i = 0; i < numberOfVertices; i++)
@@ -436,7 +436,7 @@ public class NamedEdge extends Edge
         // make sure this is the output-link
         if(!getName().equals("input-link"))
         return false;
-        Queue queue = new QueueAsLinkedList();
+        edu.umich.visualsoar.util.Queue queue = new QueueAsLinkedList();
         int numberOfVertices = swmm.getNumberOfVertices();
         boolean[] visitedVertices = new boolean[numberOfVertices];
         for(int i = 0; i < numberOfVertices; i++)
