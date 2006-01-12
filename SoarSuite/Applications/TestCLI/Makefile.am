@@ -1,6 +1,6 @@
 ###########################################
 # Author: Jonathan Voigt, voigtjr@gmail.com
-# Date: 2004
+# Date: 2006
 ###########################################
 BASEDIR_PREFIX = ../..
 

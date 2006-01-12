@@ -412,4 +412,8 @@ AC_OUTPUT([
 	Core/KernelSML/src/Makefile
 	Applications/Makefile
 	Applications/TestCLI/Makefile
+	Applications/TestClientSML/Makefile
+	Applications/TOHSML/Makefile
+	Applications/TestSoarPerformance/Makefile
+	Applications/TestSMLEvents/Makefile
 	])
