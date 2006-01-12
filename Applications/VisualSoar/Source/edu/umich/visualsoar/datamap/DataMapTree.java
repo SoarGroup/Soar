@@ -1142,7 +1142,7 @@ public void validateEntry()
      */
 public void validateAll() 
 {
-    Queue queue = new QueueAsLinkedList();
+	edu.umich.visualsoar.util.Queue queue = new QueueAsLinkedList();
     int numberOfVertices = swmm.getNumberOfVertices();
     boolean[] visitedVertices = new boolean[numberOfVertices];
     for(int i = 0; i < numberOfVertices; i++)
@@ -1182,7 +1182,7 @@ public void validateAll()
      */
 public void validateDataMap() 
 {
-    Queue queue = new QueueAsLinkedList();
+	edu.umich.visualsoar.util.Queue queue = new QueueAsLinkedList();
     int numberOfVertices = swmm.getNumberOfVertices();
     boolean[] visitedVertices = new boolean[numberOfVertices];
     for(int i = 0; i < numberOfVertices; i++)
@@ -1224,7 +1224,7 @@ public void validateDataMap()
      */
 public void removeInvalid() 
 {
-    Queue queue = new QueueAsLinkedList();
+	edu.umich.visualsoar.util.Queue queue = new QueueAsLinkedList();
     int numberOfVertices = swmm.getNumberOfVertices();
     boolean[] visitedVertices = new boolean[numberOfVertices];
     for(int i = 0; i < numberOfVertices; i++)
@@ -1279,7 +1279,7 @@ public Vector searchTestDataMap(SoarIdentifierVertex in_siv, String dataMapName)
 {
     Vector errors = new Vector();
     SoarIdentifierVertex siv = in_siv;
-    Queue queue = new QueueAsLinkedList();
+    edu.umich.visualsoar.util.Queue queue = new QueueAsLinkedList();
     int numberOfVertices = swmm.getNumberOfVertices();
     boolean[] visitedVertices = new boolean[numberOfVertices];
     for(int i = 0; i < numberOfVertices; i++)
@@ -1334,7 +1334,7 @@ public Vector searchCreateDataMap(SoarIdentifierVertex in_siv, String dataMapNam
 {
     Vector errors = new Vector();
     SoarIdentifierVertex siv = in_siv;
-    Queue queue = new QueueAsLinkedList();
+    edu.umich.visualsoar.util.Queue queue = new QueueAsLinkedList();
     int numberOfVertices = swmm.getNumberOfVertices();
     boolean[] visitedVertices = new boolean[numberOfVertices];
     for(int i = 0; i < numberOfVertices; i++)
@@ -1389,7 +1389,7 @@ public Vector searchTestNoCreateDataMap(SoarIdentifierVertex in_siv, String data
 {
     Vector errors = new Vector();
     SoarIdentifierVertex siv = in_siv;
-    Queue queue = new QueueAsLinkedList();
+    edu.umich.visualsoar.util.Queue queue = new QueueAsLinkedList();
     int numberOfVertices = swmm.getNumberOfVertices();
     boolean[] visitedVertices = new boolean[numberOfVertices];
     for(int i = 0; i < numberOfVertices; i++)
@@ -1445,7 +1445,7 @@ public Vector searchCreateNoTestDataMap(SoarIdentifierVertex in_siv, String data
 {
     Vector errors = new Vector();
     SoarIdentifierVertex siv = in_siv;
-    Queue queue = new QueueAsLinkedList();
+    edu.umich.visualsoar.util.Queue queue = new QueueAsLinkedList();
     int numberOfVertices = swmm.getNumberOfVertices();
     boolean[] visitedVertices = new boolean[numberOfVertices];
     for(int i = 0; i < numberOfVertices; i++)
@@ -1500,7 +1500,7 @@ public Vector searchNoTestNoCreateDataMap(SoarIdentifierVertex in_siv, String da
 {
     Vector errors = new Vector();
     SoarIdentifierVertex siv = in_siv;
-    Queue queue = new QueueAsLinkedList();
+    edu.umich.visualsoar.util.Queue queue = new QueueAsLinkedList();
     int numberOfVertices = swmm.getNumberOfVertices();
     boolean[] visitedVertices = new boolean[numberOfVertices];
     for(int i = 0; i < numberOfVertices; i++)
@@ -1568,7 +1568,7 @@ public FakeTreeNode findEdge(String desiredEdge, Boolean options[])
  */
 public FakeTreeNode selectEdge(NamedEdge desiredEdge) 
 {
-    Queue queue = new QueueAsLinkedList();
+	edu.umich.visualsoar.util.Queue queue = new QueueAsLinkedList();
     FakeTreeNode foundftn = null;
     int numberOfVertices = swmm.getNumberOfVertices();
     boolean[] visitedVertices = new boolean[numberOfVertices];
@@ -1637,7 +1637,7 @@ public FakeTreeNode selectEdge(NamedEdge desiredEdge)
  */
 public void displayGeneratedNodes()
 {
-    Queue queue = new QueueAsLinkedList();
+	edu.umich.visualsoar.util.Queue queue = new QueueAsLinkedList();
     FakeTreeNode foundftn = null;
     int numberOfVertices = swmm.getNumberOfVertices();
     boolean[] visitedVertices = new boolean[numberOfVertices];

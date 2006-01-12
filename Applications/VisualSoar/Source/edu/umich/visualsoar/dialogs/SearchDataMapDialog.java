@@ -38,7 +38,7 @@ public class SearchDataMapDialog extends JDialog {
   private String lastSearch = "";
 
   // Search variables
-  private Queue queue;
+  private edu.umich.visualsoar.util.Queue queue;
   private boolean[] visitedVertices;
   private int numberOfVertices;
 

@@ -111,7 +111,7 @@ public class TriplesExtractor {
 			return;
 		}
 		List sorted = new LinkedList();
-		Queue variables = new QueueAsLinkedList();
+		edu.umich.visualsoar.util.Queue variables = new QueueAsLinkedList();
 		variables.enqueue(d_stateVariables.iterator().next());
 		while(!variables.isEmpty()) {
 			String currentVar = (String)variables.dequeue();
