@@ -1,6 +1,6 @@
 ###########################################
 # Author: Jonathan Voigt, voigtjr@gmail.com
-# Date: 2004
+# Date: 2006
 ###########################################
 noinst_LTLIBRARIES = libSoarKernel.la
 
@@ -33,6 +33,6 @@ trace.cpp\
 utilities.cpp\
 wmem.cpp
 
-INCLUDES = -I.. -I../include
+INCLUDES = -I../../.. -I../include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)

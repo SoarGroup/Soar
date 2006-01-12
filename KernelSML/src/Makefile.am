@@ -1,13 +1,13 @@
 ###########################################
 # Author: Jonathan Voigt, voigtjr@gmail.com
-# Date: 2004
+# Date: 2006
 ###########################################
 lib_LTLIBRARIES = libSoarKernelSML.la 
 
 libSoarKernelSML_la_LIBADD = \
-../../../SoarKernel/src/libSoarKernel.la\
-../../../gSKI/src/libgSKI.la\
-../../CommandLineInterface/src/libCommandLineInterface.la\
+../../Kernel/src/libSoarKernel.la\
+../../gSKI/src/libgSKI.la\
+../../CLI/src/libCommandLineInterface.la\
 ../../ClientSML/src/libClientSML.la
 
 libSoarKernelSML_la_SOURCES = \
@@ -33,13 +33,12 @@ sml_UpdateListener.cpp\
 sml_XMLListener.cpp
 
 INCLUDES = \
--I../.. \
+-I../../.. \
 -I../include \
 -I../../ClientSML/include \
 -I../../ElementXML/include \
 -I../../ConnectionSML/include \
--I../../../gSKI/include \
--I../../../TgDI/include \
--I../../CommandLineInterface/include
+-I../../gSKI/include \
+-I../../CLI/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)

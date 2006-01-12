@@ -1,8 +1,8 @@
 ###########################################
 # Author: Jonathan Voigt, voigtjr@gmail.com
-# Date: 2004
+# Date: 2006
 ###########################################
-BASEDIR_PREFIX=../../
+BASEDIR_PREFIX=../../..
 
 EXTRA_DIST = Tcl_sml_ClientInterface.i
 
@@ -15,8 +15,8 @@ endif
 libTcl_sml_ClientInterface_la_SOURCES = Tcl_sml_ClientInterface_wrap.cpp 
 
 libTcl_sml_ClientInterface_la_LIBADD = \
-$(BASEDIR_PREFIX)KernelSML/src/libSoarKernelSML.la \
-$(BASEDIR_PREFIX)ElementXML/src/libElementXML.la
+$(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \
+$(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
 
 INCLUDES   = -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include
 
@@ -35,7 +35,7 @@ clean:
 
 install-data-hook:
 if SWIGTCL
-	$(TCLSH) ../../../soar-library/makeTclSMLPackage.tcl
+	$(TCLSH) $(BASEDIR_PREFIX)/SoarLibrary/bin/makeTclSMLPackage.tcl
 	rm -rf $(LIBDIR)/Tcl_sml_ClientInterface
 	mkdir $(LIBDIR)/Tcl_sml_ClientInterface
 	mv .libs/pkgIndex.tcl $(LIBDIR)/Tcl_sml_ClientInterface

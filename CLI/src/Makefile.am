@@ -1,6 +1,6 @@
 ###########################################
 # Author: Jonathan Voigt, voigtjr@gmail.com
-# Date: 2004
+# Date: 2006
 ###########################################
 noinst_LTLIBRARIES = libCommandLineInterface.la
 
@@ -69,12 +69,12 @@ cli_watch.cpp\
 cli_watchwmes.cpp
 
 INCLUDES = \
--I../../../gSKI/include\
+-I../../..\
+-I../include\
+-I../../gSKI/include\
 -I../../ElementXML/include\
 -I../../ConnectionSML/include\
 -I../../ClientSML/include\
--I../../KernelSML/include\
--I../include\
--I../..
+-I../../KernelSML/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)
