@@ -1,9 +1,9 @@
 ###########################################
 # Author: Jonathan Voigt, voigtjr@gmail.com
-# Date: 2004
+# Date: 2006
 ###########################################
-BASEDIR_PREFIX=../../
-SOAR_LIBRARY=$(BASEDIR_PREFIX)../soar-library
+BASEDIR_PREFIX=../../..
+SOAR_LIBRARY=$(BASEDIR_PREFIX)/SoarLibrary
 EXTRA_DIST = Java_sml_ClientInterface.i
 
 if SWIGJAVA
@@ -13,8 +13,8 @@ lib_LTLIBRARIES =
 endif
 
 libJava_sml_ClientInterface_la_LIBADD = \
-$(BASEDIR_PREFIX)KernelSML/src/libSoarKernelSML.la \
-$(BASEDIR_PREFIX)ElementXML/src/libElementXML.la 
+$(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \
+$(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la 
 
 libJava_sml_ClientInterface_la_SOURCES = Java_sml_ClientInterface_wrap.cpp 
 
@@ -34,9 +34,9 @@ SWIGOPT    = -java -Wall -package sml $(INCLUDES) -outdir build
 Java_sml_ClientInterface_wrap.cpp: Java_sml_ClientInterface.i
 	$(SWIG) $(SWIGOPT) -o $@ $<
 	$(JAVAC) build/*.java
-	cp -pRP build $(SOAR_LIBRARY)/sml
-	$(JAR) cf $(SOAR_LIBRARY)/sml.jar -C $(SOAR_LIBRARY) sml
-	rm -rf $(SOAR_LIBRARY)/sml
+	cp -pRP build $(SOAR_LIBRARY)/bin/sml
+	$(JAR) cf $(SOAR_LIBRARY)/bin/sml.jar -C $(SOAR_LIBRARY)/bin sml
+	rm -rf $(SOAR_LIBRARY)/bin/sml
 
 clean:
 	rm -f Java_sml_ClientInterface_wrap.cpp

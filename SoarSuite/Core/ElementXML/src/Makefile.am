@@ -1,6 +1,6 @@
 ###########################################
 # Author: Jonathan Voigt, voigtjr@gmail.com
-# Date: 2004
+# Date: 2006
 ###########################################
 lib_LTLIBRARIES = libElementXML.la
 
@@ -14,6 +14,6 @@ sml_ParseXML.cpp\
 sml_ParseXMLFile.cpp\
 sml_ParseXMLString.cpp
 
-INCLUDES = -I../.. -I../include
+INCLUDES = -I../../.. -I../include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)

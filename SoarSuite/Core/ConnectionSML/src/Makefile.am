@@ -1,6 +1,6 @@
 ###########################################
 # Author: Jonathan Voigt, voigtjr@gmail.com
-# Date: 2004
+# Date: 2006
 ###########################################
 noinst_LTLIBRARIES = libConnectionSML.la
 
@@ -37,6 +37,6 @@ thread_Lock.cpp\
 thread_OSspecific.cpp\
 thread_Thread.cpp
 
-INCLUDES = -I../.. -I../include -I../../ElementXML/include -I../../ClientSML/include
+INCLUDES = -I../../.. -I../include -I../../ElementXML/include -I../../ClientSML/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)
