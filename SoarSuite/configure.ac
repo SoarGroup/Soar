@@ -410,4 +410,6 @@ AC_OUTPUT([
 	Core/ClientSMLSWIG/Tcl/Makefile
 	Core/KernelSML/Makefile
 	Core/KernelSML/src/Makefile
+	Applications/Makefile
+	Applications/TestCLI/Makefile
 	])
