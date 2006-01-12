@@ -2,4 +2,4 @@
 # Author: Jonathan Voigt, voigtjr@gmail.com
 # Date: 2006
 ###########################################
-SUBDIRS = Core Applications
+SUBDIRS = TestCLI

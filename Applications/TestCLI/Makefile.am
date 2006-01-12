@@ -2,21 +2,21 @@
 # Author: Jonathan Voigt, voigtjr@gmail.com
 # Date: 2004
 ###########################################
-BASEDIR_PREFIX = ../../
+BASEDIR_PREFIX = ../..
 
-bin_PROGRAMS = TestCommandLineInterface
+bin_PROGRAMS = TestCLI
 
-TestCommandLineInterface_SOURCES= cli_Test.cpp
+TestCLI_SOURCES = cli_Test.cpp
 
-TestCommandLineInterface_LDADD = \
-$(BASEDIR_PREFIX)KernelSML/src/libSoarKernelSML.la \
-$(BASEDIR_PREFIX)ElementXML/src/libElementXML.la
+TestCLI_LDADD = \
+$(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \
+$(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
 
 INCLUDES = \
--I$(BASEDIR_PREFIX)ClientSML/include \
--I$(BASEDIR_PREFIX)ElementXML/include \
--I$(BASEDIR_PREFIX)ConnectionSML/include \
--I$(BASEDIR_PREFIX)../gSKI/include \
--I$(BASEDIR_PREFIX)CommandLineInterface/include
+-I$(BASEDIR_PREFIX)/Core/ClientSML/include \
+-I$(BASEDIR_PREFIX)/Core/ElementXML/include \
+-I$(BASEDIR_PREFIX)/Core/ConnectionSML/include \
+-I$(BASEDIR_PREFIX)/Core/gSKI/include \
+-I$(BASEDIR_PREFIX)/Core/CLI/include
 
-AM_CXXFLAGS = $(CUSTOM_CXXFLAGS)
+CXXFLAGS = $(SOAR_CXXFLAGS)
