@@ -37,6 +37,8 @@
 #include "print.h"      // for symboltostring
 #include "gSKI_AgentPerformanceMonitor.h"
 #include "gSKI_MultiAttribute.h"
+#include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
+
 
 //#include "MegaUnitTest.h"
 //DEF_EXPOSE(gSKI_Agent);
@@ -446,7 +448,7 @@ namespace gSKI
       if(m_runState != gSKI_RUNSTATE_STOPPED)
       {
          if(m_runState == gSKI_RUNSTATE_HALTED)
-            SetError(err, gSKIERR_AGENT_HALTED);
+            SetError(err, gSKIERR_AGENT_HALTED);  // nothing ever tests for this...
          else
             SetError(err, gSKIERR_AGENT_RUNNING);
 
@@ -573,8 +575,20 @@ namespace gSKI
       // If we are not running, set the run state to halted
       // If we are running, the run method will set the
       //   state to halted.
-      if(m_runState != gSKI_RUNSTATE_RUNNING)
-         m_runState = gSKI_RUNSTATE_HALTED;
+	  if(m_runState != gSKI_RUNSTATE_RUNNING) 
+	  {
+		  m_runState = gSKI_RUNSTATE_HALTED;
+
+		  // fix for BUG 514  01-12-06
+		  PrintNotifier nfHalted(this, "This Agent halted.");
+		  m_printListeners.Notify(gSKIEVENT_PRINT, nfHalted);
+		  XMLNotifier xn1(this, kFunctionBeginTag, kTagMessage, 0) ;
+		  m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn1);
+		  XMLNotifier xn2(this, kFunctionAddAttribute, kTypeString, "This Agent halted.") ;
+		  m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn2);
+		  XMLNotifier xn3(this, kFunctionEndTag, kTagMessage, 0) ;
+		  m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn3);
+	  }
    }
 
    /*
@@ -1847,6 +1861,17 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 	       // Notify of the interrupt
            RunNotifier nfAfterInt(this, m_lastPhase);
            m_runListeners.Notify(gSKIEVENT_AFTER_INTERRUPT, nfAfterInt);
+ 
+		   /* This is probably redundant with the event above, which clients can listen for... */
+		   PrintNotifier nfIntr(this, "Interrupt received.");
+		   m_printListeners.Notify(gSKIEVENT_PRINT, nfIntr);
+		   XMLNotifier xn1(this, kFunctionBeginTag, kTagMessage, 0) ;
+		   m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn1);
+		   XMLNotifier xn2(this, kFunctionAddAttribute, kTypeString, "Interrupt received.") ;
+		   m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn2);
+		   XMLNotifier xn3(this, kFunctionEndTag, kTagMessage, 0) ;
+		   m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn3);
+		   /* */
 	   }
 
      
@@ -1858,6 +1883,16 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 		   // If we halted, we completed and our state is halted
 		   m_runState    = gSKI_RUNSTATE_HALTED;
 		   retVal        = gSKI_RUN_COMPLETED;
+
+		   // fix for BUG 514  01-12-06
+		   PrintNotifier nfHalted(this, "This Agent halted.");
+		   m_printListeners.Notify(gSKIEVENT_PRINT, nfHalted);
+		   XMLNotifier xn1(this, kFunctionBeginTag, kTagMessage, 0) ;
+		   m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn1);
+		   XMLNotifier xn2(this, kFunctionAddAttribute, kTypeString, "This Agent halted.") ;
+		   m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn2);
+		   XMLNotifier xn3(this, kFunctionEndTag, kTagMessage, 0) ;
+		   m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn3);
 	   }
 	   else if(maxStepsReached(startCount, END_COUNT)) 
 	   {
@@ -1965,7 +2000,17 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
          {
            // Notify of the interrupt
            RunNotifier nfAfterInt(this, m_lastPhase);
-           m_runListeners.Notify(gSKIEVENT_AFTER_INTERRUPT, nfAfterInt);
+           m_runListeners.Notify(gSKIEVENT_AFTER_INTERRUPT, nfAfterInt);		
+		   /* This is probably redundant with the event above, which clients can listen for... */
+		   PrintNotifier nfIntr(this, "Interrupt received.");
+		   m_printListeners.Notify(gSKIEVENT_PRINT, nfIntr);
+		   XMLNotifier xn1(this, kFunctionBeginTag, kTagMessage, 0) ;
+		   m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn1);
+		   XMLNotifier xn2(this, kFunctionAddAttribute, kTypeString, "Interrupt received.") ;
+		   m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn2);
+		   XMLNotifier xn3(this, kFunctionEndTag, kTagMessage, 0) ;
+		   m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn3);
+		   /* */
 
 #ifdef _WIN32
 #pragma warning (disable : 4390)
