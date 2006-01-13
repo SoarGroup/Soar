@@ -1178,12 +1178,12 @@ char const* Kernel::RunAllAgentsForever()
 *
 * We don't generally want Soar to just run until it generates
 * output without any limit as an error in the AI logic might cause
-* it to never return control to the environment.
-*
-* @param maxDecisions	If Soar runs for this many decisions without generating output, stop.
-*						15 was used in SGIO.
+* it to never return control to the environment, so there is a maximum
+* decision count (currently 15) and if an agent fails to produce output
+* before then that agent will stop running.  (This value can be changed with the
+* max-nil-output-cycles command).
 *************************************************************/
-char const* Kernel::RunAllTilOutput(unsigned long maxDecisions)
+char const* Kernel::RunAllTilOutput()
 {
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())

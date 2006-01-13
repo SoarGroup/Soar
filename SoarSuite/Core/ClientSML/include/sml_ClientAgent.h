@@ -603,12 +603,12 @@ public:
 	*
 	* We don't generally want Soar to just run until it generates
 	* output without any limit as an error in the AI logic might cause
-	* it to never return control to the environment.
-	*
-	* @param maxDecisions	If Soar runs for this many decisions without generating output, stop.
-	*						15 was used in SGIO.
+	* it to never return control to the environment, so there is a maximum
+	* decision count (currently 15) and if the agent fails to produce output
+	* before then this command returns.  (This value can be changed with the
+	* max-nil-output-cycles command).
 	*************************************************************/
-	char const* RunSelfTilOutput(unsigned long maxDecisions = 15) ;
+	char const* RunSelfTilOutput() ;
 
 	/*************************************************************
 	* @brief Resend the complete input link to the kernel

@@ -786,7 +786,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 
 	// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
 	// We'll use RunAll just to test it out.  Could use RunSelf and get same result (presumably)
-	trace = pKernel->RunAllTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
+	trace = pKernel->RunAllTilOutput() ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
 
 	// We should stop quickly (after a decision or two)
 	if (myCount > 10)
@@ -817,7 +817,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	if (doInitSoars)
 	{
 		pAgent->InitSoar() ;
-		trace = pAgent->RunSelfTilOutput(20) ;
+		trace = pAgent->RunSelfTilOutput() ;
 	}
 
 	bool ioOK = false ;

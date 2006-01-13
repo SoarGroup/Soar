@@ -81,7 +81,7 @@ void SoarAgent::MakeMove()
 		pAgent->ExecuteCommandLine("watch 1") ;
 	}
 
-	std::string output = pAgent->RunSelfTilOutput(15);
+	std::string output = pAgent->RunSelfTilOutput();
 
 	if (collectDebugInfo)
 		pAgent->UnregisterForPrintEvent(callbackp) ;
