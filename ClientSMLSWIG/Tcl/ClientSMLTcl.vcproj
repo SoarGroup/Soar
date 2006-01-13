@@ -34,7 +34,7 @@
 				AssemblerListingLocation="$(IntDir)/"
 				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="TRUE"
+				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="4"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
@@ -100,7 +100,7 @@ move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
 				AssemblerListingLocation="$(IntDir)/"
 				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="TRUE"
+				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
@@ -193,6 +193,7 @@ echo SWIG: %SWIG%
 echo on
 $(SWIG)\swig.exe -Wall -c++ -tcl -pkgversion 8.6.2  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;
 "
+					AdditionalDependencies="$(TargetDir)\ClientSML.dll;$(TargetDir)\ElementXML.dll;$(TargetDir)\ConnectionSML.dll"
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
 			<FileConfiguration
