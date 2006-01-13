@@ -76,8 +76,8 @@ egSKIInterleaveType RunScheduler::DefaultInterleaveStepSize(egSKIRunType runStep
 		//return gSKI_INTERLEAVE_PHASE;
 		return gSKI_INTERLEAVE_DECISION_CYCLE;
 	case gSKI_RUN_UNTIL_OUTPUT:
-		//return gSKI_INTERLEAVE_PHASE;
-		//return gSKI_INTERLEAVE_DECISION_CYCLE;
+		//return gSKI_INTERLEAVE_PHASE;  --- NOT TESTED
+		//return gSKI_INTERLEAVE_DECISION_CYCLE;  --- NOT TESTED
 		return gSKI_INTERLEAVE_OUTPUT;
 	default:
 		return gSKI_INTERLEAVE_PHASE;
@@ -107,10 +107,11 @@ bool RunScheduler::VerifyStepSizeForRunType(egSKIRunType runStepSize, egSKIInter
 			   gSKI_INTERLEAVE_DECISION_CYCLE == interleave) ;
 		return true;
 	case gSKI_RUN_UNTIL_OUTPUT:
-		assert(gSKI_INTERLEAVE_PHASE == interleave || 
-			   gSKI_INTERLEAVE_ELABORATION_PHASE == interleave || 
-			   gSKI_INTERLEAVE_DECISION_CYCLE == interleave ||
-			   gSKI_INTERLEAVE_OUTPUT == interleave) ;
+		assert(gSKI_INTERLEAVE_OUTPUT == interleave) ;
+	//	assert(gSKI_INTERLEAVE_PHASE == interleave || 
+	//		   gSKI_INTERLEAVE_ELABORATION_PHASE == interleave || 
+	//		   gSKI_INTERLEAVE_DECISION_CYCLE == interleave ||
+	//		   gSKI_INTERLEAVE_OUTPUT == interleave) ;
 
 	default:
 		return false;
