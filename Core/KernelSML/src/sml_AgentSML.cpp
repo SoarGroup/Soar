@@ -175,6 +175,15 @@ void AgentSML::RegisterForBeforeAgentDestroyedEvent()
 	m_pKernelSML->GetKernel()->GetAgentManager()->AddAgentListener(gSKIEVENT_BEFORE_AGENT_DESTROYED, m_pBeforeDestroyedListener) ;
 }
 
+void AgentSML::ScheduleAgentToRun(bool state) 
+{ 
+	if (m_pIAgent->GetRunState() != gSKI_RUNSTATE_HALTED) 
+	{
+		m_ScheduledToRun = state ; 
+		m_WasOnRunList = state; 
+	}
+}
+
 /*************************************************************
 * @brief	When set, this flag will cause Soar to break when
 *			output is next generated during a run.

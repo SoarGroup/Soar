@@ -117,6 +117,11 @@ public:
 	*************************************************************/	
 	bool IsRunning() ;
 
+	/*************************************************************
+	* @brief	Returns true if at least any scheduled agent halted during run.
+	*************************************************************/	
+	bool AnAgentHaltedDuringRun() ;
+
 	/*********************************************************************
 	* @brief	Defines which phase we stop before when running by decision.
 	*			E.g. Pass input phase to stop just after generating output and before receiving input.
