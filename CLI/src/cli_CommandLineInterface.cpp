@@ -88,6 +88,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Constants::kCLISoarNews]				= &cli::CommandLineInterface::ParseSoarNews;
 	m_CommandMap[Constants::kCLISource]					= &cli::CommandLineInterface::ParseSource;
 	m_CommandMap[Constants::kCLISP]						= &cli::CommandLineInterface::ParseSP;
+	m_CommandMap[Constants::kCLISRand]					= &cli::CommandLineInterface::ParseSRand;
 	m_CommandMap[Constants::kCLIStats]					= &cli::CommandLineInterface::ParseStats;
 	m_CommandMap[Constants::kCLISetStopPhase]			= &cli::CommandLineInterface::ParseSetStopPhase;
 	m_CommandMap[Constants::kCLIStopSoar]				= &cli::CommandLineInterface::ParseStopSoar;
@@ -131,6 +132,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Constants::kCLISoar8]						= true ;
 	m_EchoMap[Constants::kCLISource]					= true ;
 	m_EchoMap[Constants::kCLISP]						= true ;
+	m_EchoMap[Constants::kCLISRand]						= true ;
 	m_EchoMap[Constants::kCLISetStopPhase]				= true ;
 	m_EchoMap[Constants::kCLIStopSoar]					= true ;
 	m_EchoMap[Constants::kCLITimers]					= true ;

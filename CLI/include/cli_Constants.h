@@ -63,6 +63,7 @@ namespace cli {
 		static char const* kCLISoarNews;
 		static char const* kCLISource;
 		static char const* kCLISP;
+		static char const* kCLISRand;
 		static char const* kCLIStats;
 		static char const* kCLISetStopPhase;
 		static char const* kCLIStopSoar;

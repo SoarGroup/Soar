@@ -238,6 +238,14 @@ public:
 	EXPORT bool DoEcho(sml::Connection* pConnection, sml::ElementXML* pResponse, const std::vector<std::string>& argv, bool echoNewline);
 
 	/*************************************************************
+	* @brief edit-production command
+	* @param pConnection Pointer to connection
+	* @param pResponse Pointer to XML response
+	* @param productionName Production to edit
+	*************************************************************/
+	EXPORT bool DoEditProduction(sml::Connection* pConnection, sml::ElementXML* pResponse, std::string productionName);
+
+	/*************************************************************
 	* @brief excise command
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
@@ -584,11 +592,12 @@ public:
 	EXPORT bool DoSP(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, const std::string& production);
 
 	/*************************************************************
-	* @brief start-system command
+	* @brief srand command
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
+	* @param seed Number to seed the random number generator with
 	*************************************************************/
-	EXPORT bool DoEditProduction(sml::Connection* pConnection, sml::ElementXML* pResponse, std::string productionName);
+	EXPORT bool DoSRand(sml::Connection* pConnection, sml::ElementXML* pResponse, unsigned long int& seed);
 
 	/*************************************************************
 	* @brief stats command
@@ -721,6 +730,7 @@ protected:
 	bool ParseDirs(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseEcho(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseEchoCommands(gSKI::IAgent* pAgent, std::vector<std::string>& argv) ;
+	bool ParseEditProduction(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseExcise(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseExplainBacktraces(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseFiringCounts(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -758,7 +768,7 @@ protected:
 	bool ParseSoarNews(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseSource(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseSP(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseEditProduction(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	bool ParseSRand(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseStats(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseSetStopPhase(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -781,6 +791,7 @@ protected:
 	bool DoDirs();
 	bool DoEcho(const std::vector<std::string>& argv, bool echoNewline);
 	bool DoEchoCommands(bool onlyGetValue, bool echoCommands) ;
+	bool DoEditProduction(std::string productionName);
 	bool DoExcise(gSKI::IAgent* pAgent, const ExciseBitset& options, const std::string* pProduction = 0);
 	bool DoExplainBacktraces(gSKI::IAgent* pAgent, const std::string* pProduction = 0, const int condition = 0);
 	bool DoFiringCounts(gSKI::IAgent* pAgent, const int numberToList = -1, const std::string* pProduction = 0);
@@ -818,7 +829,7 @@ protected:
 	bool DoSoarNews();
 	bool DoSource(gSKI::IAgent* pAgent, std::string filename);
 	bool DoSP(gSKI::IAgent* pAgent, const std::string& production);
-	bool DoEditProduction(std::string productionName);
+	bool DoSRand(unsigned long int& seed);
 	bool DoStats(gSKI::IAgent* pAgent, const StatsBitset& options);
 	bool DoSetStopPhase(bool setPhase, bool before, egSKIPhaseType phase);
 	bool DoStopSoar(gSKI::IAgent* pAgent, bool self, const std::string* reasonForStopping = 0);
