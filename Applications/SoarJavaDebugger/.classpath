@@ -7,6 +7,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="/SoarLibrary/bin/sml.jar"/>
-	<classpathentry kind="lib" path="/SoarLibrary/bin/swt-windows.jar"/>
+	<classpathentry kind="lib" path="/SoarLibrary/bin/swt.jar"/>
 	<classpathentry kind="output" path=""/>
 </classpath>
