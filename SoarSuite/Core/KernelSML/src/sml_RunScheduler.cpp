@@ -633,10 +633,32 @@ egSKIRunResult RunScheduler::GetOverallRunResult()
 	{
 		AgentSML* pAgentSML = iter->second ;
 		egSKIRunResult result = pAgentSML->GetResultOfLastRun();
-		if (result < overallResult) overallResult = result;
+	//	if (result < overallResult) overallResult = result;
+		if (result == gSKI_RUN_INTERRUPTED) overallResult = gSKI_RUN_INTERRUPTED;
 	}
 	return overallResult ;
 }
+
+/********************************************************************
+* @brief	Checks to see if any-agents on the runlist were halted.
+*			Returns true if any agent has runstate == halted.
+*			Does not remove anyone from the run list.
+*********************************************************************/
+bool RunScheduler::AnAgentHaltedDuringRun()
+{
+	for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
+	{
+		AgentSML* pAgentSML = iter->second ;
+		if (pAgentSML->WasAgentOnRunList() )
+		{
+			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
+			if (pAgent->GetRunState() == gSKI_RUNSTATE_HALTED) return true;
+		}
+	}
+	return false;
+}
+
+
 /********************************************************************
 * @brief	Checks each agent to see if it has finished running.
 *			Returns true if all agents are done.
@@ -792,6 +814,9 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize,
 					gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;			
 					egSKIRunResult runResult = pAgent->StepInClientThread(interleaveStepSize, 1, pError) ;
 					// ?? pAgentSML->IncrementLocalStepCounter();
+
+					// halted and running agents will return an error from StepInClientThread
+					// 
 
 					// if agent finished one runType, incr counter and remove from stepList				
 					if (pAgentSML->CompletedRunType(GetRunCounter(pAgent,runStepSize)) /* || pAgent->MaxNilOutputCyclesReached */ )

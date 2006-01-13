@@ -201,6 +201,7 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
         return SetError(CLIError::kRunFailed);
 	}
 
+
 	char buf[kMinBufferSize];
 	switch (runResult) {
 		case gSKI_RUN_EXECUTING:
@@ -224,7 +225,19 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 
 		case gSKI_RUN_COMPLETED:
             // Do not print anything
+			// might be helpful if we checked agents to see if any halted...
+			// retval is gSKI_RUN_COMPLETED, but agent m_RunState == gSKI_RUNSTATE_HALTED
+			// should only check the agents pAgentSML->WasOnRunList()
+			if (pScheduler->AnAgentHaltedDuringRun())
+			{
+				if (m_RawOutput) {
+					m_Result << "\nAn agent halted during the run.";
+				} else {                    
+					AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, "\nAn agent halted during the run.");		
+			    }
+			}
 			break;
+
 		default:
 			return SetError(CLIError::kgSKIError);
 	}

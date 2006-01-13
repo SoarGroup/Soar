@@ -192,7 +192,7 @@ public:
 	/*************************************************************
 	* @brief	Used to select which agents run on the next run command.
 	*************************************************************/
-	void ScheduleAgentToRun(bool state) { m_ScheduledToRun = state ; m_WasOnRunList = state; }
+	void ScheduleAgentToRun(bool state) ;
 	void RemoveAgentFromRunList()       { m_ScheduledToRun = false ;}
 	bool IsAgentScheduledToRun()		{ return m_ScheduledToRun ; }
 	void PutAgentOnStepList(bool state) { m_OnStepList = state; }
@@ -209,9 +209,7 @@ public:
 	void ResetLocalRunCounters()                    { m_localRunCount = 0 ; m_localStepCount = 0 ; }
 	void IncrementLocalRunCounter()                 { m_localRunCount++ ; }
 	void IncrementLocalStepCounter()                { m_localStepCount++ ; }
-	bool CompletedRunType(unsigned long count)      { return (count > (m_InitialRunCount + m_localRunCount)) ;
-		                                              //return false;
-	                                                }
+	bool CompletedRunType(unsigned long count)      { return (count > (m_InitialRunCount + m_localRunCount)) ; }
 	void SetCompletedOutputPhase(bool state)		{ m_CompletedOutputPhase = state ; }
 	bool HasCompletedOutputPhase()					{ return m_CompletedOutputPhase ; }
 
