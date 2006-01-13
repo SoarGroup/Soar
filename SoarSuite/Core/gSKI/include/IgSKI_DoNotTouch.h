@@ -151,6 +151,8 @@ namespace gSKI
 
 		virtual unsigned long GetChunkCount(IAgent* pIAgent) = 0;
 		virtual void SetChunkCount(IAgent* pIAgent, unsigned long count) = 0;
+
+		virtual void SeedRandomNumberGenerator(unsigned long int seed) = 0;
 	  };
    }
 }

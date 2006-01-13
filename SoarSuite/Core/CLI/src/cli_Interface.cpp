@@ -63,6 +63,12 @@ EXPORT bool CommandLineInterface::DoEcho(sml::Connection* pConnection, sml::Elem
 	return ret;
 }
 
+EXPORT bool CommandLineInterface::DoEditProduction(sml::Connection* pConnection, sml::ElementXML* pResponse, std::string productionName) {
+	bool ret = DoEditProduction(productionName);
+	GetLastResultSML(pConnection, pResponse);
+	return ret;
+}
+
 EXPORT bool CommandLineInterface::DoExcise(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, const ExciseBitset& options, const std::string* pProduction) {
 	bool ret = DoExcise(pAgent, options, pProduction);
 	GetLastResultSML(pConnection, pResponse);
@@ -279,8 +285,8 @@ EXPORT bool CommandLineInterface::DoSP(sml::Connection* pConnection, sml::Elemen
 	return ret;
 }
 
-EXPORT bool CommandLineInterface::DoEditProduction(sml::Connection* pConnection, sml::ElementXML* pResponse, std::string productionName) {
-	bool ret = DoEditProduction(productionName);
+EXPORT bool CommandLineInterface::DoSRand(sml::Connection* pConnection, sml::ElementXML* pResponse, unsigned long int& seed) {
+	bool ret = DoSRand(seed);
 	GetLastResultSML(pConnection, pResponse);
 	return ret;
 }

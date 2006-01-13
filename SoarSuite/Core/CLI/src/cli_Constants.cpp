@@ -64,6 +64,7 @@ char const* Constants::kCLISoar8					= "soar8";
 char const* Constants::kCLISoarNews					= "soarnews";
 char const* Constants::kCLISource					= "source";
 char const* Constants::kCLISP						= "sp";
+char const* Constants::kCLISRand					= "srand";
 char const* Constants::kCLIStats					= "stats";
 char const* Constants::kCLISetStopPhase				= "set-stop-phase";
 char const* Constants::kCLIStopSoar					= "stop-soar";
