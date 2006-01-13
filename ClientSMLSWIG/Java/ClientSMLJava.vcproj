@@ -34,10 +34,11 @@
 				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="4"/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCCustomBuildTool"
+				AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\..\SoarLibrary\bin\Java_sml_ClientInterface.dll"
+				OutputFile="$(SolutionDir)\SoarLibrary\bin\Java_sml_ClientInterface.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
@@ -107,10 +108,11 @@ cd ..
 				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="3"/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCCustomBuildTool"
+				AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\..\SoarLibrary\bin\Java_sml_ClientInterface.dll"
+				OutputFile="$(SolutionDir)\SoarLibrary\bin\Java_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
@@ -211,6 +213,7 @@ echo SWIG: %SWIG%
 echo on
 $(SWIG)\swig.exe -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;
 "
+					AdditionalDependencies=""
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
 			<FileConfiguration
