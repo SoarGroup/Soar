@@ -887,7 +887,7 @@ TankSoarLogger.log("Kernel should have cleaned the real agent here...");
   public void RunTilOutput()
   {
     TankSoarLogger.log(agent.GetAgentName() + " running self til output.");
-    agent.RunSelfTilOutput(15);//This causes a Soar kernel event to be fired, which moves flow
+    agent.RunSelfTilOutput();//This causes a Soar kernel event to be fired, which moves flow
     //of control elsewhere....
   }
     

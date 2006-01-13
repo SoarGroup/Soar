@@ -2283,7 +2283,7 @@ public class TankSoarJControl extends SimulationControl implements
 		// with the runall inbetween, to handle weird cases
 		updateAllTanks();
 		TankSoarLogger.log("RunAllTanks called...");
-		kernel.RunAllTilOutput(15);
+		kernel.RunAllTilOutput();
 		singleStep();
 		/*
 		 * for(Iterator tankItr = myAgents.listIterator();tankItr.hasNext();) {
