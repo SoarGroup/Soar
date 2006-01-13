@@ -37,11 +37,12 @@
 				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="4"/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCCustomBuildTool"
+				AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="tcl84.lib"
-				OutputFile="..\..\..\SoarLibrary\bin\Tcl_sml_ClientInterface.dll"
+				OutputFile="$(SolutionDir)\SoarLibrary\bin\Tcl_sml_ClientInterface.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(TCL_LIB)&quot;"
 				GenerateDebugInformation="TRUE"
@@ -103,11 +104,12 @@ move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
 				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="3"/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCCustomBuildTool"
+				AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="tcl84.lib"
-				OutputFile="..\..\..\SoarLibrary\bin\Tcl_sml_ClientInterface.dll"
+				OutputFile="$(SolutionDir)\SoarLibrary\bin\Tcl_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(TCL_LIB)&quot;"
 				GenerateDebugInformation="TRUE"
@@ -193,7 +195,7 @@ echo SWIG: %SWIG%
 echo on
 $(SWIG)\swig.exe -Wall -c++ -tcl -pkgversion 8.6.2  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;
 "
-					AdditionalDependencies="$(TargetDir)\ClientSML.dll;$(TargetDir)\ElementXML.dll;$(TargetDir)\ConnectionSML.dll"
+					AdditionalDependencies=""
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
 			<FileConfiguration

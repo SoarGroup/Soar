@@ -4,6 +4,7 @@
 	Version="7.10"
 	Name="ConnectionSML"
 	ProjectGUID="{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
+	RootNamespace="ConnectionSML"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -36,7 +37,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\$(ProjectName).lib"/>
+				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -84,7 +85,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\$(ProjectName).lib"
+				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 				IgnoreAllDefaultLibraries="TRUE"
 				IgnoreDefaultLibraryNames=""/>
 			<Tool

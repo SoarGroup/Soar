@@ -4,6 +4,7 @@
 	Version="7.10"
 	Name="ClientSML"
 	ProjectGUID="{3EDBED11-A1B3-4E00-8B6E-652523D482F0}"
+	RootNamespace="ClientSML"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -37,7 +38,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\$(ProjectName).lib"/>
+				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -86,7 +87,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\$(ProjectName).lib"/>
+				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
