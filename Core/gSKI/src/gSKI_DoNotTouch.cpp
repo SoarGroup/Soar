@@ -30,6 +30,7 @@
 #include "rhsfun.h"
 #include "decide.h"
 #include "explain.h"
+#include "soar_rand.h"
 
 //#include "../../SoarIO/ConnectionSML/include/sock_Debug.h"
 
@@ -2445,6 +2446,11 @@ namespace gSKI
 			agent* pSoarAgent = pAgent->GetSoarAgent();
 
 			pSoarAgent->chunk_count = count;
+		}
+
+		void TgDWorkArounds::SeedRandomNumberGenerator(unsigned long int seed)
+		{
+			SoarRand.seed(seed);
 		}
 	}// class
 }// namespace
