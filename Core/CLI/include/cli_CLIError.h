@@ -92,11 +92,11 @@ namespace cli {
             kRunFailed                          = 77,
 			kNoPreferences						= 78,
 			kAmbiguousCommand					= 79,
-			kAmbiguousOption					= 80, // FIXME: add to wiki
-			kProductionMemoryNotEmpty			= 81, // FIXME: add to wiki
-			kSoar7Command						= 82, // FIXME: add to wiki
-			kInvalidBackslashEscapeCharacter	= 83, // FIXME: add to wiki
-			kInitSoarFailed						= 84, // FIXME: add to wiki
+			kAmbiguousOption					= 80, 
+			kProductionMemoryNotEmpty			= 81, 
+			kSoar7Command						= 82, 
+			kInvalidBackslashEscapeCharacter	= 83, 
+			kInitSoarFailed						= 84, 
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -174,10 +174,10 @@ namespace cli {
                 case kRunFailed:                        return "Run failed.";
                 case kNoPreferences:                    return "No preferences found.";
 				case kAmbiguousCommand:					return "Received command is ambiguous, try adding more letters.";
-				case kAmbiguousOption:					return "Ambiguous option."; // FIXME: add to wiki
-				case kProductionMemoryNotEmpty:			return "Can't change modes unless production memory is empty."; // FIXME: add to wiki
-				case kSoar7Command:						return "Command valid in Soar 7 mode only."; // FIXME: add to wiki
-				case kInvalidBackslashEscapeCharacter:	return "Invalid backslash escape character, see documentation."; // FIXME: add to wiki
+				case kAmbiguousOption:					return "Ambiguous option.";
+				case kProductionMemoryNotEmpty:			return "Can't change modes unless production memory is empty."; 
+				case kSoar7Command:						return "Command valid in Soar 7 mode only.";
+				case kInvalidBackslashEscapeCharacter:	return "Invalid backslash escape character, see documentation.";
 				case kInitSoarFailed:					return "Agent could not be reinitialized.  Probably due to an internal memory leak." ;
 				default:								return "Unknown error code.";
 			}
