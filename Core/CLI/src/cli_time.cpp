@@ -20,7 +20,7 @@
 
 #include <time.h>
 
-#include "cli_Constants.h"
+#include "cli_Commands.h"
 
 #include "sml_Names.h"
 #include "sml_StringOps.h"

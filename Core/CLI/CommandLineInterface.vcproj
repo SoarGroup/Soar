@@ -136,7 +136,7 @@
 				RelativePath=".\src\cli_CommandLineInterface.cpp">
 			</File>
 			<File
-				RelativePath=".\src\cli_Constants.cpp">
+				RelativePath=".\src\cli_Commands.cpp">
 			</File>
 			<Filter
 				Name="Commands"
@@ -337,7 +337,7 @@
 				RelativePath=".\include\cli_CommandLineInterface.h">
 			</File>
 			<File
-				RelativePath=".\include\cli_Constants.h">
+				RelativePath=".\include\cli_Commands.h">
 			</File>
 		</Filter>
 		<Filter
