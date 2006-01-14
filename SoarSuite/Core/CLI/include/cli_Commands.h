@@ -1,21 +1,18 @@
 /////////////////////////////////////////////////////////////////
-// Constants class file.
+// Commands file.
 //
 // Author: Jonathan Voigt, voigtjr@gmail.com
-// Date  : 2004
+// Date  : 2006
 //
-// This class wraps the string constants for each command in the
-// command line interface.
+// This structure contains string constants for the CLI commands.
 //
 /////////////////////////////////////////////////////////////////
 
-#ifndef CLI_CONSTANTS_H
-#define CLI_CONSTANTS_H
+#ifndef CLI_COMMANDS_H
+#define CLI_COMMANDS_H
 
 namespace cli {
-	// A class containing the constants used by CommandLineInterface
-	class Constants {
-	public:
+	struct Commands {
 		static char const* kCLIAddWME;
 		static char const* kCLIAlias;
 		static char const* kCLIAttributePreferencesMode;
@@ -75,7 +72,7 @@ namespace cli {
 		static char const* kCLIWarnings;
 		static char const* kCLIWatch;
 		static char const* kCLIWatchWMEs;
-	}; // class
+	}; // struct
 } // namespace cli
 
-#endif // CLI_CONSTANTS_H
+#endif // CLI_COMMANDS_H
