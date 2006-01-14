@@ -12,7 +12,7 @@
 
 #include "cli_CommandLineInterface.h"
 
-#include "cli_Constants.h"
+#include "cli_Commands.h"
 
 #include "IgSKI_Agent.h"
 

@@ -16,7 +16,7 @@
 
 #include <assert.h>
 
-#include "cli_Constants.h"
+#include "cli_Commands.h"
 #include "cli_CommandData.h"
 
 #include "sml_Names.h"
