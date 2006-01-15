@@ -1196,7 +1196,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 	
 	    /* RPM 12/05 replacing calls to rand() with calls to SoarRand; see bug 595 */
         //chosen_num = rand() % (num_candidates-3); // generates an integer in [0,num_candidates-3)
-	    chosen_num = SoarRand.randInt(num_candidates-4); // generates an integer in [0,num_candidates-4]
+	    chosen_num = SoarRandInt(num_candidates-4); // generates an integer in [0,num_candidates-4]
 
 	cand = candidates;
 	while (chosen_num) { cand=cand->next_candidate; chosen_num--; }

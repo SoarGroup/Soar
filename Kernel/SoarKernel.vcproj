@@ -467,6 +467,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\soar_rand.cpp">
+			</File>
+			<File
 				RelativePath=".\src\symtab.cpp">
 				<FileConfiguration
 					Name="Release|Win32">

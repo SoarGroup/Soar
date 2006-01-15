@@ -75,8 +75,8 @@
 // It would be nice to CC: rjwagner@writeme.com and Cokus@math.washington.edu
 // when you write.
 
-#ifndef MERSENNETWISTER_H
-#define MERSENNETWISTER_H
+#ifndef SOAR_RAND_H
+#define SOAR_RAND_H
 
 // Not thread safe (unless auto-initialization is avoided and each thread has
 // its own MTRand object)
@@ -401,9 +401,26 @@ inline std::istream& operator>>( std::istream& is, MTRand& mtrand )
 	return is;
 }
 
-static MTRand SoarRand;
+// real number in [0,1]
+double SoarRand();
 
-#endif  // MERSENNETWISTER_H
+// real number in [0,n]
+double SoarRand(const double& max);
+
+// integer in [0,2^32-1]
+unsigned long SoarRandInt();
+
+// integer in [0,n] for n < 2^32
+unsigned long SoarRandInt(const unsigned long& max);
+
+// automatically seed with a value based on the time or /dev/urandom
+void SoarSeedRNG();
+
+// seed with a provided value
+void SoarSeedRNG(const unsigned long seed);
+
+
+#endif  // SOAR_RAND_H
 
 // Change log:
 //
