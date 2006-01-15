@@ -2450,7 +2450,7 @@ namespace gSKI
 
 		void TgDWorkArounds::SeedRandomNumberGenerator(unsigned long int seed)
 		{
-			SoarRand.seed(seed);
+			SoarSeedRNG(seed);
 		}
 	}// class
 }// namespace
