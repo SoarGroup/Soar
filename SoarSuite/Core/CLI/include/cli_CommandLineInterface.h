@@ -603,9 +603,10 @@ protected:
 
 	/*************************************************************
 	* @brief srand command
-	* @param seed Number to seed the random number generator with
+	* @param pSeed Number to seed the random number generator with, pass
+	*		 null to seed randomly.
 	*************************************************************/
-	bool DoSRand(unsigned long int& seed);
+	bool DoSRand(unsigned long int* pSeed = 0);
 
 	/*************************************************************
 	* @brief stats command
