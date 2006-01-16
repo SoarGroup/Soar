@@ -2448,9 +2448,13 @@ namespace gSKI
 			pSoarAgent->chunk_count = count;
 		}
 
-		void TgDWorkArounds::SeedRandomNumberGenerator(unsigned long int seed)
+		void TgDWorkArounds::SeedRandomNumberGenerator(unsigned long int* pSeed)
 		{
-			SoarSeedRNG(seed);
+			if (pSeed) {
+				SoarSeedRNG(*pSeed);
+				return;
+			}
+			SoarSeedRNG();
 		}
 	}// class
 }// namespace

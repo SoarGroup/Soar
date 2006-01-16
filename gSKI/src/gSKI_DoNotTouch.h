@@ -107,7 +107,7 @@ namespace gSKI
 		 unsigned long GetChunkCount(IAgent* pIAgent);
 		 void SetChunkCount(IAgent* pIAgent, unsigned long count);
 
-		 void SeedRandomNumberGenerator(unsigned long int seed);
+		 void SeedRandomNumberGenerator(unsigned long int* pSeed);
 	  };
    }
 }

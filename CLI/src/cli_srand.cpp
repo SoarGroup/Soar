@@ -23,20 +23,20 @@ bool CommandLineInterface::ParseSRand(gSKI::IAgent* pAgent, std::vector<std::str
 
 	unused(pAgent);
 
-	if (argv.size() < 2) return SetError(CLIError::kTooFewArgs);
+	if (argv.size() < 2) return DoSRand();
+
 	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
 
 	unsigned long int seed = 0;
 	sscanf(argv[1].c_str(), "%lu", &seed);
-
-	return DoSRand(seed);
+	return DoSRand(&seed);
 }
 
-bool CommandLineInterface::DoSRand(unsigned long int& seed) {
+bool CommandLineInterface::DoSRand(unsigned long int* pSeed) {
 
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
-	pKernelHack->SeedRandomNumberGenerator(seed);
 
+	pKernelHack->SeedRandomNumberGenerator(pSeed);
 	return true;
 }
 
