@@ -1,7 +1,0 @@
-#!/bin/csh
-pushd kernel
-make distclean
-popd
-pushd interface
-make distclean
-popd
