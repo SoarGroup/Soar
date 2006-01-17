@@ -820,7 +820,7 @@ namespace gSKI
 		===============================
 		*/
 
-		int read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Symbol * * attr)
+		bool read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Symbol * * attr)
 		{
 			Symbol *attr_tmp;
 			slot *s;
@@ -917,7 +917,7 @@ namespace gSKI
 		*
 		===============================
 		*/
-		int read_id_or_context_var_from_string (agent* agnt, char * the_lexeme,
+		bool read_id_or_context_var_from_string (agent* agnt, char * the_lexeme,
 			Symbol * * result_id) 
 		{
 			Symbol *id;
@@ -1059,111 +1059,95 @@ namespace gSKI
 				"worse" 
 		};
 
-		bool TgDWorkArounds::Preferences(IAgent*     thisAgent,
-			int         argc,
-			char*       argv[])
+		int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool print_prod, wme_trace_type wtt)
 		{
-			Agent* internalAgent = (Agent*)(thisAgent);
-			MegaAssert(internalAgent != 0, "Bad agent pointer passed to set_sysparams.");
 
-			agent* agnt = internalAgent->GetSoarAgent();
-
-			/* kjh (CUSP-B7) begin */
-			//static char * too_many_args = "Too many arguments.\nUsage: preferences [id] [attribute] [detail]";
-			//static char * wrong_args = "Usage: preferences [id] [attribute] [detail]";
-
-			Symbol *id, *id_tmp, *attr, *attr_tmp;
-			bool print_productions;
-			wme_trace_type wtt;
+			Symbol *id, *attr;
 			slot *s;
 			preference *p;
 			int i;
 
-			/* Establish argument defaults: */
-			id                = internalAgent->GetSoarAgent()->bottom_goal;
-			id_tmp            = NIL;
-			attr              = internalAgent->GetSoarAgent()->operator_symbol;
-			attr_tmp          = NIL;
-			print_productions = FALSE;
-			wtt               = NONE_WME_TRACE;
+			if (!read_id_or_context_var_from_string(soarAgent, szId, &id)) {
+				print(soarAgent, "Could not find the id '%s'\n", szId);
+				return -1;
+			}
+			if (!read_attribute_from_string(soarAgent, id, szAttr, &attr)) {
+				print(soarAgent, "Could not find the id,attribute pair: %s ^%s\n", szId, szAttr);
+				return -2;
+			}
 
-			switch (argc) 
-			{
-			case 1:
-				/* No arguments; defaults suffice. */
-				break;
-			case 2:
-				/* One argument; replace one of the defaults: */
-				if (  (read_id_or_context_var_from_string(agnt, argv[1], &id_tmp) == false)
-					&& (read_attribute_from_string(agnt, id, argv[1], &attr_tmp)   == false)
-					&& (read_pref_detail_from_string(argv[1], &print_productions, &wtt) == false))  
-				{             
-					return false;
-				}
-				break;
-			case 3:
-				/* Two arguments; replace two of the defaults: */
-				if (read_id_or_context_var_from_string(agnt, argv[1], &id_tmp) == false) 
-				{
-					id_tmp = id;
-					if (read_attribute_from_string(agnt, id,argv[1], &attr_tmp) == false) 
-					{
-						return false;
+			s = find_slot(id, attr);
+			if (!s) {
+				print(soarAgent, "There are no preferences for %s ^%s.", szId, szAttr);
+				return -3;
+			}
+
+			print_with_symbols(soarAgent, "Preferences for %y ^%y:\n", id, attr);
+
+			for (i = 0; i < NUM_PREFERENCE_TYPES; i++) {
+				if (s->preferences[i]) {
+					print(soarAgent, "\n%ss:\n", preference_name[i]);
+					for (p = s->preferences[i]; p; p = p->next) {
+						print_preference_and_source(soarAgent, p, print_prod, wtt);
 					}
 				}
-				if (  (read_attribute_from_string(agnt, id_tmp, argv[2], &attr_tmp)           == false)
-					&& (read_pref_detail_from_string(argv[2], &print_productions, &wtt)  == false))  
-				{             
-					return false;
+			}
+
+			return 0;
+		}
+
+		bool TgDWorkArounds::Preferences(IAgent* thisAgent, int detail, const char* idString, const char* attrString)
+		{
+			static const int PREFERENCES_BUFFER_SIZE = 128;
+
+			Agent* internalAgent = (Agent*)(thisAgent);
+			MegaAssert(internalAgent != 0, "Bad agent pointer passed to Preferences.");
+			agent* soarAgent = internalAgent->GetSoarAgent();
+
+			char id[PREFERENCES_BUFFER_SIZE];
+			char attr[PREFERENCES_BUFFER_SIZE];
+
+			// Establish defaults
+			symbol_to_string(soarAgent, soarAgent->bottom_goal, TRUE, id, PREFERENCES_BUFFER_SIZE);
+			symbol_to_string(soarAgent, soarAgent->operator_symbol, TRUE, attr, PREFERENCES_BUFFER_SIZE);
+
+			// Override defaults
+			if (idString) {
+				strncpy(id, idString, PREFERENCES_BUFFER_SIZE);
+
+				// Notice: attrString ignored if no idString passed
+				if (attrString) {
+					strncpy(attr, attrString, PREFERENCES_BUFFER_SIZE);
 				}
-				break;
-			case 4:
-				/* Three arguments; replace (all) three of the defaults: */
-				if (  (read_id_or_context_var_from_string(agnt, argv[1], &id_tmp)      == false)
-					|| (read_attribute_from_string(agnt, id_tmp, argv[2], &attr_tmp)    == false)
-					|| (read_pref_detail_from_string(argv[3], &print_productions, &wtt) == false))  
-				{             
-					return false;
-				}
-			} // end switch
-
-
-			if (id_tmp != NIL)
-			{
-				id = id_tmp;
 			}
 
-			if (attr_tmp != NIL)
-			{
-				attr = attr_tmp;
+			bool print_productions = false;
+			wme_trace_type wtt = NONE_WME_TRACE;
+
+			switch (detail) {
+				case 0:
+					print_productions = false;
+					wtt = NONE_WME_TRACE;
+					break;
+				case 1:
+					print_productions = true;
+					wtt = NONE_WME_TRACE;
+					break;
+				case 2:
+					print_productions = true;
+					wtt = TIMETAG_WME_TRACE;
+					break;
+				case 3:
+					print_productions = true;
+					wtt = FULL_WME_TRACE;
+					break;
+				default:
+					MegaAssert(false, "Illegal detail level");
 			}
 
-			if (id == NIL)
-			{
-				return(true);
-			}
-
-			s = find_slot (id, attr);
-			if (!s)
-			{
-				//            sprintf(interp->result,
-				//               "There are no preferences for %s ^%s.",
-				//               argv[1], argv[2]);
+			if (soar_ecPrintPreferences(soarAgent, id, attr, print_productions, wtt)) {
+				print(soarAgent, "An Error occured trying to print the prefs.");
 				return false;
-			}
-
-			print_with_symbols (internalAgent->GetSoarAgent(), "Preferences for %y ^%y:\n", id, attr);
-
-			for (i = 0; i < NUM_PREFERENCE_TYPES; i++)
-			{
-				if (s->preferences[i])
-				{
-					print (internalAgent->GetSoarAgent(), "\n%ss:\n", pref_names[i]); 
-					for (p = s->preferences[i]; p; p = p->next)
-					{
-						print_preference_and_source (internalAgent->GetSoarAgent(), p, print_productions, wtt);
-					}
-				}
 			}
 			return true;
 		}
