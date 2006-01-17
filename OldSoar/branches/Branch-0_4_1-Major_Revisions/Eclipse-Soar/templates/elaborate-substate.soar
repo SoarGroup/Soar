@@ -1,7 +1,0 @@
-sp {${parentDir}*elaborate*substate
-   (state <s> ^name ${parentDir}
-              ^superstate.operator <so>)
-   (<so> ^name ${parentDir})
--->
-   (<s>)
-}
