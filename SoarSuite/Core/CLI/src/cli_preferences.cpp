@@ -75,58 +75,17 @@ bool CommandLineInterface::ParsePreferences(gSKI::IAgent* pAgent, std::vector<st
 }
 
 bool CommandLineInterface::DoPreferences(gSKI::IAgent* pAgent, const ePreferencesDetail detail, const std::string* pId, const std::string* pAttribute) {
-
 	if (!RequireAgent(pAgent)) return false;
-
-	// This whole implementation is a big hack.
-
-	// First, define some constants
-	const char* _preferences = "preferences";
-	const char* _0 = "0";
-	const char* _1 = "1";
-	const char* _2 = "2";
-	const char* _3 = "3";
-
-	// Next, start arranging the argv
-	char* argv[5];
-	int argc = 0;
-	argv[argc++] = const_cast<char*>(_preferences);
-
-	// Include the ID and Attribute as needed
-	if (pId) argv[argc++] = const_cast<char*>(pId->c_str());
-	if (pAttribute) argv[argc++] = const_cast<char*>(pAttribute->c_str());
-
-	// Include the detail level
-	switch (detail) {
-		default:
-		case 0:
-			argv[argc++] = const_cast<char*>(_0);
-			break;
-		case 1:
-			argv[argc++] = const_cast<char*>(_1);
-			break;
-		case 2:
-			argv[argc++] = const_cast<char*>(_2);
-			break;
-		case 3:
-			argv[argc++] = const_cast<char*>(_3);
-			break;
-	}
-
-	// Set the final arg to 0
-	argv[argc] = 0;
 
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll need it
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
-	// Fire the hack off
 	AddListenerAndDisableCallbacks(pAgent);
-	bool ret = pKernelHack->Preferences(pAgent, argc, argv);
+	bool ret = pKernelHack->Preferences(pAgent, static_cast<int>(detail), pId ? pId->c_str() : 0, pAttribute ? pAttribute->c_str() : 0);
 	RemoveListenerAndEnableCallbacks(pAgent);
-
-	if (!ret) return SetError(CLIError::kNoPreferences);
 
 	// put the result into a message(string) arg tag
 	if (!m_RawOutput) ResultToArgTag();
-	return true;
+	if (!ret) return SetError(CLIError::kPreferencesError);
+	return ret;
 }
