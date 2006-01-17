@@ -1,8 +1,0 @@
-Building Soar 8.4
-
-VC++ Projects to Build
-1) kernel
-2) SoarInterface
-	-located in the tcl-interface directory
-	-outputs libsoar8.4.dll and copies it to the library directory
-	-can delete the libsoar8.4.dll in the tcl-interface directory (only need the library copy)

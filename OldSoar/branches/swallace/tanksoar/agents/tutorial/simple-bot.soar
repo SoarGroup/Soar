@@ -1,3 +1,0 @@
-pushd simple-bot
-source simple-bot_source.soar
-popd
