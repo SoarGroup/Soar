@@ -103,9 +103,7 @@ namespace gSKI
         /**
          * @brief 
          */
-        virtual bool Preferences(IAgent*     thisAgent,
-                                 int         argc,
-                                 char*       argv[])=0;
+        virtual bool Preferences(IAgent* thisAgent, int detail, const char* idString, const char* attrString)=0;
 
         /**
          * @brief 

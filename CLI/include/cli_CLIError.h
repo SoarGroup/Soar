@@ -90,13 +90,14 @@ namespace cli {
 			kNewlineBeforePipe					= 75,
             kAlreadyRunning                     = 76,
             kRunFailed                          = 77,
-			kNoPreferences						= 78,
+			kNoPreferences						= 78, // FIXME: remove
 			kAmbiguousCommand					= 79,
 			kAmbiguousOption					= 80, 
 			kProductionMemoryNotEmpty			= 81, 
 			kSoar7Command						= 82, 
 			kInvalidBackslashEscapeCharacter	= 83, 
 			kInitSoarFailed						= 84, 
+			kPreferencesError					= 85, // FIXME: document in wiki
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -179,6 +180,7 @@ namespace cli {
 				case kSoar7Command:						return "Command valid in Soar 7 mode only.";
 				case kInvalidBackslashEscapeCharacter:	return "Invalid backslash escape character, see documentation.";
 				case kInitSoarFailed:					return "Agent could not be reinitialized.  Probably due to an internal memory leak." ;
+				case kPreferencesError:					return "Preferences command failed." ;
 				default:								return "Unknown error code.";
 			}
 		}
