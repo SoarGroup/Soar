@@ -1,9 +1,0 @@
-This directory contains a subdirectory:
-
-RobsHTML:
-	This directory contains a (mostly) complete grammar for
-	standard HTML 3.2 developed by Rob Duncan.  See the README
-	file in this directory for more details.
-
-Kimbo Mundy has also developed an HTML grammar that can be obtained
-from http://www.tiac.net/users/kimbo/jack/HTML.jack.
