@@ -1,4 +1,0 @@
-source disk-relations.soar
-source goal-test.soar
-source monitor.soar
-source top-state.soar
