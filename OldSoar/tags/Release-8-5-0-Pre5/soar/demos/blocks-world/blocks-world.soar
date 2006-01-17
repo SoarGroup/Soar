@@ -1,3 +1,0 @@
-pushd blocks-world
-source blocks-world_source.soar
-popd

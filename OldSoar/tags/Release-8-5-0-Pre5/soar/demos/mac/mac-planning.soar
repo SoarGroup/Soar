@@ -1,3 +1,0 @@
-pushd mac-planning
-source mac-planning_source.soar
-popd
