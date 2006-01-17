@@ -1,6 +1,0 @@
-sp {waterjug*elaborate*empty
-   (state <s> ^jug <j>)
-   (<j> ^contents <c>
-        ^volume <v>)
--->
-   (<j> ^empty (- <v> <c>))}
