@@ -3,17 +3,17 @@ SOARLIB="../soar-library"
 
 if [[ `uname -s` == "Darwin" ]]
 then
-  if ! javac -classpath .:${SOARLIB}/swt-osx.jar:${SOARLIB}/sml.jar:${SOARLIB}/JavaBaseEnvironment.jar -sourcepath src src/edu/umich/tanksoar/TanksoarJ.java; then
+  if ! javac -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar:${SOARLIB}/JavaBaseEnvironment.jar -sourcepath src src/edu/umich/tanksoar/TanksoarJ.java; then
     echo "Build failed."
     exit 1;
   fi
-  jar cfm ${SOARLIB}/tanksoar.jar JarManifest-osx -C src .
+  jar cfm ${SOARLIB}/tanksoar.jar JarManifest -C src .
 else
-  if ! javac -classpath .:${SOARLIB}/swt-motif.jar:${SOARLIB}/sml.jar:${SOARLIB}/JavaBaseEnvironment.jar -sourcepath src src/edu/umich/tanksoar/TanksoarJ.java; then
+  if ! javac -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar:${SOARLIB}/JavaBaseEnvironment.jar -sourcepath src src/edu/umich/tanksoar/TanksoarJ.java; then
     echo "Build failed."
     exit 1;
   fi
-  jar cfm ${SOARLIB}/tanksoar.jar JarManifest-motif -C src .
+  jar cfm ${SOARLIB}/tanksoar.jar JarManifest -C src .
 fi
 
 if [[ `uname -s` == "Darwin" ]]

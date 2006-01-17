@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: edu.umich.eaters.Eaters
-Class-Path: swt-osx.jar sml.jar
-
