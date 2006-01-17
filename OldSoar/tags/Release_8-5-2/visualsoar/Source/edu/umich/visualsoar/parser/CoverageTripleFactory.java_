@@ -1,7 +1,0 @@
-package edu.umich.visualsoar.parser;
-
-public class CoverageTripleFactory implements TripleFactory {
-	public Triple createTriple(Pair variable,Pair attribute,Pair value,boolean hasState,boolean isChecking) {
-		return new CoverageTriple(variable,attribute,value,hasState,isChecking);	
-	}
-}
