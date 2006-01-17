@@ -1,6 +1,0 @@
-pushd waterjug-experiment
-source basic.soar
-# source RL-states.soar
-# source shortpath.soar
-source RL-general.soar
-popd
