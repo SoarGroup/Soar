@@ -556,6 +556,7 @@ namespace gSKI {
          @param err Receives error information if non-null
       */
       virtual void SetMaxNilOutputCycles(int maxNils, Error* err = 0) = 0;
+	  virtual void ResetNilOutputCounter(Error* err = 0) = 0;  // resets the gSKI local counter
 
       /**
        * @brief An accessor method for querying the current "Wait on state
