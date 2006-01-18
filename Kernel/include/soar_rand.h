@@ -78,6 +78,12 @@
 #ifndef SOAR_RAND_H
 #define SOAR_RAND_H
 
+#ifdef _MSC_VER
+#pragma warning( push ) // save current warning settings
+#pragma warning( disable : 4146 4800 ) // the code that causes these warnings in this file is safe
+#endif
+
+
 // Not thread safe (unless auto-initialization is avoided and each thread has
 // its own MTRand object)
 
@@ -419,6 +425,9 @@ void SoarSeedRNG();
 // seed with a provided value
 void SoarSeedRNG(const unsigned long seed);
 
+#ifdef _MSC_VER
+#pragma warning( pop ) // return warning settings to what they were
+#endif
 
 #endif  // SOAR_RAND_H
 
