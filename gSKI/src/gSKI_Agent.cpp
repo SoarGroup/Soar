@@ -298,6 +298,7 @@ namespace gSKI
       m_elaborationCount  = 0;
       m_decisionCount     = 0;  // should be m_agent->d_cycle_count.  Can we delete this var?
       m_outputCount       = 0;
+	  m_nilOutputCycles   = 0;
 
       // This tells run that we are starting a new cycle
       m_lastPhase         = gSKI_OUTPUT_PHASE; /* okay eventhough not correct for Soar 7 */
@@ -1031,6 +1032,12 @@ namespace gSKI
       ClearError(err);
       m_phaseCount = 0;
    }
+   void Agent::ResetNilOutputCounter(Error* err)
+   {
+	  ClearError(err);
+	  m_nilOutputCycles = 0;
+   }
+
    /*
    =============================
    This is a local gSKI counter, not from Kernel.  m_elaborationCount
@@ -1072,6 +1079,7 @@ namespace gSKI
    {
       ClearError(err);
       m_outputCount = 0;
+	  m_nilOutputCycles = 0;
    }
 
 /********************************************************************
@@ -1096,7 +1104,9 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 		// do nothing.  gSKI gets d_cycles from SoarKernel
 		return;
 	case gSKI_INTERLEAVE_OUTPUT:
-		 m_outputCount++;
+		 m_outputCount++;				
+		 m_nilOutputCycles = 0;
+
 	default:
 		return;
 	}
@@ -1592,10 +1602,15 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 		{	
 			a->IncrementgSKIStepCounter(gSKI_INTERLEAVE_ELABORATION_PHASE);
 		}
-		if ((gSKIEVENT_AFTER_OUTPUT_PHASE == eventId) && 
-			(a->m_agent->output_link_changed || a->m_agent->stop_soar))
-		{   // ONLY if output generated or exceeded MAX_NIL_OUTPUT_CYCLES
-			a->IncrementgSKIStepCounter(gSKI_INTERLEAVE_OUTPUT);
+		if (gSKIEVENT_AFTER_OUTPUT_PHASE == eventId) {
+			// increments m_outputCount for output-generation so
+			// can step by phases or decisions as well as output.
+			if ( (a->m_agent->output_link_changed) ||
+			     ( (++(a->m_nilOutputCycles)) >= (unsigned long) a->GetMaxNilOutputCycles()) )
+			{
+				a->IncrementgSKIStepCounter(gSKI_INTERLEAVE_OUTPUT);
+				// m_nilOutputCycles gets reset whenever StepCtr is incremented for output
+			}
 		}
 	}
     if (gSKIEVENT_AFTER_ELABORATION_CYCLE == eventId) 
@@ -1835,8 +1850,8 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 		   case  gSKI_INTERLEAVE_PHASE:             run_for_n_phases(m_agent, count);             break;
 		   case  gSKI_INTERLEAVE_DECISION_CYCLE:    run_for_n_decision_cycles(m_agent, count);    break;
 		   case  gSKI_INTERLEAVE_OUTPUT:            run_for_n_modifications_of_output(m_agent, count); 
-			                                        if (m_agent->stop_soar) 
-														this->IncrementgSKIStepCounter(gSKI_INTERLEAVE_OUTPUT);
+//			                                        if (m_agent->stop_soar) 
+//														this->IncrementgSKIStepCounter(gSKI_INTERLEAVE_OUTPUT);
 													break;
 		   }
 	   }
@@ -1849,6 +1864,9 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
   
 	   // KJC: If a gSKI_STOP_AFTER_DECISION_CYCLE has been requested, need to
 	   // check that agent phase is at the proper stopping point before interrupting.
+	   // If not at the right phase, but interrupt was requested, then the SML scheduler
+	   // method IsAgentFinished will return true and CheckStopBeforePhase will
+	   // step the agent by phases until this test is satisfied.
        if ((m_interruptFlags & gSKI_STOP_AFTER_DECISION_CYCLE) && 
 		   (m_agent->current_phase == m_kernel->GetStopPoint()))
 	   {
