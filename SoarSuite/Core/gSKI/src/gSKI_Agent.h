@@ -704,6 +704,7 @@ namespace gSKI
        */
       unsigned long GetNumOutputsExecuted(Error* err = 0);
       void          ResetNumOutputsExecuted(Error* err = 0);
+	  void          ResetNilOutputCounter(Error* err = 0);
 
       virtual IAgentPerformanceMonitor* GetPerformanceMonitor(Error* err = 0)
       { 
@@ -1438,11 +1439,12 @@ namespace gSKI
 
       /** Statistic that can be used for debugging or scheduling */
       //{
-      unsigned long         m_smallestStepCount;     
-      unsigned long         m_phaseCount;
-      unsigned long         m_elaborationCount;
-      unsigned long         m_decisionCount;
-      unsigned long         m_outputCount;
+      unsigned long         m_smallestStepCount ;     
+      unsigned long         m_phaseCount ;
+      unsigned long         m_elaborationCount ;
+      unsigned long         m_decisionCount ;
+      unsigned long         m_outputCount ;
+	  unsigned long			m_nilOutputCycles ;
       //}
 
       IAgentPerformanceMonitor* m_pPerfMon;

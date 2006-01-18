@@ -73,11 +73,11 @@ egSKIInterleaveType RunScheduler::DefaultInterleaveStepSize(egSKIRunType runStep
 	case gSKI_RUN_ELABORATION_CYCLE:
 		return gSKI_INTERLEAVE_ELABORATION_PHASE;
 	case gSKI_RUN_DECISION_CYCLE:
-		//return gSKI_INTERLEAVE_PHASE;
+		//return gSKI_INTERLEAVE_PHASE;		 // tested ok in SoarJavaDebugger 01/18/06
 		return gSKI_INTERLEAVE_DECISION_CYCLE;
 	case gSKI_RUN_UNTIL_OUTPUT:
-		//return gSKI_INTERLEAVE_PHASE;  --- NOT TESTED
-		//return gSKI_INTERLEAVE_DECISION_CYCLE;  --- NOT TESTED
+		//return gSKI_INTERLEAVE_PHASE;      // tested ok in SoarJavaDebugger 01/18/06
+		//return gSKI_INTERLEAVE_DECISION_CYCLE;  // tested ok in SoarJavaDebugger 01/18/06
 		return gSKI_INTERLEAVE_OUTPUT;
 	default:
 		return gSKI_INTERLEAVE_PHASE;
@@ -107,11 +107,11 @@ bool RunScheduler::VerifyStepSizeForRunType(egSKIRunType runStepSize, egSKIInter
 			   gSKI_INTERLEAVE_DECISION_CYCLE == interleave) ;
 		return true;
 	case gSKI_RUN_UNTIL_OUTPUT:
-		assert(gSKI_INTERLEAVE_OUTPUT == interleave) ;
-	//	assert(gSKI_INTERLEAVE_PHASE == interleave || 
-	//		   gSKI_INTERLEAVE_ELABORATION_PHASE == interleave || 
-	//		   gSKI_INTERLEAVE_DECISION_CYCLE == interleave ||
-	//		   gSKI_INTERLEAVE_OUTPUT == interleave) ;
+	//	assert(gSKI_INTERLEAVE_OUTPUT == interleave) ;
+		assert(gSKI_INTERLEAVE_PHASE == interleave || 
+			   gSKI_INTERLEAVE_ELABORATION_PHASE == interleave || 
+			   gSKI_INTERLEAVE_DECISION_CYCLE == interleave ||
+			   gSKI_INTERLEAVE_OUTPUT == interleave) ;
 
 	default:
 		return false;
@@ -372,6 +372,7 @@ void RunScheduler::InitializeRunCounters(egSKIRunType runStepSize, egSKIInterlea
 		if (pAgentSML->IsAgentScheduledToRun())
 		{
  			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
+			pAgent->ResetNilOutputCounter();
 			unsigned long count = GetRunCounter(pAgent, runStepSize) ;
 			pAgentSML->SetInitialRunCount(count) ;
 			//pAgentSML->SetInitialStepCount(0) ;
@@ -477,22 +478,24 @@ void RunScheduler::CheckStopBeforePhase(egSKIRunType runStepSize)
 		for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)	
 		{	
 			AgentSML* pAgentSML = iter->second ;		
-			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;			
-			egSKIPhaseType phase = pAgent->GetCurrentPhase() ;
-			egSKIRunResult runResult = pAgentSML->GetResultOfLastRun() ;
-
-			while ((phase != m_StopBeforePhase) && (gSKI_RUN_COMPLETED == runResult))
+			if (pAgentSML->WasAgentOnRunList()) 
 			{
-				runResult = pAgent->StepInClientThread(gSKI_INTERLEAVE_PHASE, 1) ;
-				phase = pAgent->GetCurrentPhase() ;
-			 // don't cross Output-Input boundary here just to get to StopBefore phase for "Run 0"
-				if (gSKI_INPUT_PHASE == phase) break; 
-			}						
-			pAgentSML->SetResultOfRun(runResult) ;
+				gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;			
+				egSKIPhaseType phase = pAgent->GetCurrentPhase() ;
+				egSKIRunResult runResult = pAgentSML->GetResultOfLastRun() ;
 
-			// Notify listeners that this agent is finished running
-			/* pAgent->FireRunEndsEvent() ; */   // not if supporting run0 over O/I boundary
+				while ((phase != m_StopBeforePhase) && (gSKI_RUN_COMPLETED == runResult))
+				{
+					runResult = pAgent->StepInClientThread(gSKI_INTERLEAVE_PHASE, 1) ;
+					phase = pAgent->GetCurrentPhase() ;
+					// don't cross Output-Input boundary here just to get to StopBefore phase for "Run 0"
+					if (gSKI_INPUT_PHASE == phase) break; 
+				}						
+				pAgentSML->SetResultOfRun(runResult) ;
 
+				// Notify listeners that this agent is finished running
+				/* pAgent->FireRunEndsEvent() ; */   // not if supporting run0 over O/I boundary
+			}
 		}
 		// If agents haven't reached the StopBeforePhase, then agents finished output
 		// and we need to possibly generate the UpdateWorld events before stepping any further.
@@ -507,22 +510,25 @@ void RunScheduler::CheckStopBeforePhase(egSKIRunType runStepSize)
 		// first FOR loop.
 		for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)	
 		{	
-			AgentSML* pAgentSML = iter->second ;		
-			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;			
-			egSKIPhaseType phase = pAgent->GetCurrentPhase() ;
-			egSKIRunResult runResult = pAgentSML->GetResultOfLastRun() ;
-			while ((phase != m_StopBeforePhase) && (gSKI_RUN_COMPLETED == runResult))
+			AgentSML* pAgentSML = iter->second ;				
+			if (pAgentSML->WasAgentOnRunList()) 
 			{
-				runResult = pAgent->StepInClientThread(gSKI_INTERLEAVE_PHASE, 1) ;
-				phase = pAgent->GetCurrentPhase() ;
-			    // We should never get to this point again, so we need to generate ERROR 
-		        assert(gSKI_INPUT_PHASE != phase);
-			}		
-					
-			pAgentSML->SetResultOfRun(runResult) ;
+				gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;			
+				egSKIPhaseType phase = pAgent->GetCurrentPhase() ;
+				egSKIRunResult runResult = pAgentSML->GetResultOfLastRun() ;
+				while ((phase != m_StopBeforePhase) && (gSKI_RUN_COMPLETED == runResult))
+				{
+					runResult = pAgent->StepInClientThread(gSKI_INTERLEAVE_PHASE, 1) ;
+					phase = pAgent->GetCurrentPhase() ;
+					// We should never get to this point again, so we need to generate ERROR 
+					assert(gSKI_INPUT_PHASE != phase);
+				}		
 
-		// Notify listeners that this agent is finished running
-			pAgent->FireRunEndsEvent() ;
+				pAgentSML->SetResultOfRun(runResult) ;
+
+				// Notify listeners that this agent is finished running
+				pAgent->FireRunEndsEvent() ;
+			}
 		}
 	}
 }
@@ -751,7 +757,7 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize,
 	for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)		
 	{		
 		AgentSML* pAgentSML = iter->second ;
-		pAgentSML->SetResultOfRun(gSKI_RUN_COMPLETED) ;
+		if (pAgentSML->IsAgentScheduledToRun()) pAgentSML->SetResultOfRun(gSKI_RUN_COMPLETED) ;
 	}
 
 	pKernel->GetAgentManager()->ClearAllInterrupts();
