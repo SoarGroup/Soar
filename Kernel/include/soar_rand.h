@@ -80,7 +80,7 @@
 
 #ifdef _MSC_VER
 #pragma warning( push ) // save current warning settings
-#pragma warning( disable : 4146 4800 ) // the code that causes these warnings in this file is safe
+#pragma warning( disable : 4146 ) // the code that causes these warnings in this file is safe
 #endif
 
 
@@ -156,7 +156,7 @@ protected:
 	uint32 mixBits( const uint32& u, const uint32& v ) const
 		{ return hiBit(u) | loBits(v); }
 	uint32 twist( const uint32& m, const uint32& s0, const uint32& s1 ) const
-		{ return m ^ (mixBits(s0,s1)>>1) ^ (-loBit(s1) & 0x9908b0dfUL); }
+		{ return m ^ (mixBits(s0,s1)>>1) ^ (-loBit(s1) & 0x9908b0dfUL); } // RPM 1/06 this line causes Visual Studio warning C4146, but is actually safe
 	static uint32 hash( time_t t, clock_t c );
 };
 
@@ -297,7 +297,8 @@ inline void MTRand::seed()
 		register int i = N;
 		register bool success = true;
 		while( success && i-- )
-			success = fread( s++, sizeof(uint32), 1, urandom );
+			//success = fread( s++, sizeof(uint32), 1, urandom );
+			success = (fread( s++, sizeof(uint32), 1, urandom ) == 0); // RPM 1/06 modified to eliminate Visual Studio warning C4800
 		fclose(urandom);
 		if( success ) { seed( bigSeed, N );  return; }
 	}
