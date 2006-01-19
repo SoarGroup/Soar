@@ -1,8 +1,8 @@
 @REM *** MAKE SURE CHANGES TO THIS FILE ARE REFLECTED IN THE .SH FILE
 
-set SOARLIB=..\..\..\soar-library
+set SOARLIB=..\..\SoarLibrary\bin
 
 javac.exe -classpath %SOARLIB%\sml.jar Application.java
-jar cvfm %SOARLIB%\TestJavaSML.jar JarManifest .
+jar cfm %SOARLIB%\TestJavaSML.jar JarManifest .
 
 IF NOT "%1"=="--nopause" pause
