@@ -55,6 +55,7 @@ void GroupManager::adjustGroups() {
 
 void GroupManager::updateStats() {
   vector <SoarGameGroup*> changedGroups = ORTSIO.getChangedGroups();
+  groupPropertyList changedProperties; 
   SoarGameGroup* grp;
   
   for (unsigned int i=0; i < newGroups.size(); i++) { 
@@ -64,8 +65,8 @@ void GroupManager::updateStats() {
   }
   for (unsigned int i=0; i < changedGroups.size(); i++) {
     grp = changedGroups.at(i);
-    grp->updateStats();
-    SoarIO->refreshGroup(grp);
+    changedProperties = grp->updateStats();
+    SoarIO->refreshGroup(grp, changedProperties);
   }
 
   return;
