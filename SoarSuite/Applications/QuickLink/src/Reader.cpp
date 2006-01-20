@@ -149,7 +149,7 @@ Reader::ReadMe(istream* in)
 			QL->Icycle = false;
 			QL->readFromCmd = false;
 			QL->enterOutputStage = true;
-			QL->pAgent->RunSelfTilOutput(15);
+			QL->pAgent->RunSelfTilOutput();
 			QL->shouldPrintWM = false;
 			if(in != &cin)
 				QL->printWM_runp = true;
@@ -176,7 +176,7 @@ Reader::ReadMe(istream* in)
 		QL->StuffToSave = true;
 		QL->SC.resize(0);   //clears output storage
 		QL->Icycle = false;  //gets out of outer loop
-		QL->pAgent->RunSelfTilOutput(15);
+		QL->pAgent->RunSelfTilOutput();
 		QL->enterOutputStage = true;
 		if(in == &cin)
 			toReturn = "PAUSE";
