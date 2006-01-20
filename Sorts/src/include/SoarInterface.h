@@ -1,17 +1,39 @@
 #ifndef soarinterface_h
 #define soarinterface_h
+
+#include<utils>
+#include<list>
+#include<map>
+#include<hash_map>
+
+#include "sml_Client.h"
+
+using namespace std;
+
 typedef list<pair<string, int> > groupPropertyList;
+
+typedef struct {
+  int groupId;
+  Identifier* WMEptr;
+  // change this later into hash_map<string, IntElement*> and write a hash
+  // function for strings
+  map<string, IntElement*> properties;
+} SoarIOGroupRep;
 
 class SoarInterface{
   public:
     SoarInterface();
     ~SoarInterface();
     vector <SoarAction*> getNewActions();
-    bool addGroup(SoarGameGroup* group);
-    bool removeGroup(SoarGameGroup* group);
-    bool refreshGroup(SoarGameGroup* group, groupPropertyList& gpl);
+    void addGroup(SoarGameGroup* group);
+    void removeGroup(SoarGameGroup* group);
+    void refreshGroup(SoarGameGroup* group, groupPropertyList& gpl);
+    
   private:
-    // ??
+    int groupIdCounter;
+    sml::Agent *agent;
+    sml::Identifier *inputLink;
+    hash_map<SoarGameGroup*, SoarIOGroupRep> soarGroups;
 };
 
 
