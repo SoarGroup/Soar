@@ -27,9 +27,6 @@ bool CommandLineInterface::DoInitSoar(gSKI::IAgent* pAgent) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
-	// Simply call reinitialize
-	pAgent->Halt();
-
 	// Save the current result
 	std::string oldResult = m_Result.str();
 
