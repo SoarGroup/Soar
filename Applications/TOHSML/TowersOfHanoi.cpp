@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <time.h>
 
 #if HAVE_STRINGS_H
 #include <strings.h>
@@ -141,6 +142,9 @@ int main(int argc, char* argv[])
 		if(doPrinting)
 			hanoi.Print();
 
+		clock_t start_time, end_time;
+
+		start_time = clock();
 		while(!hanoi.AtGoalState())
 		{
 			hanoi.Run();
@@ -151,13 +155,16 @@ int main(int argc, char* argv[])
 
 		hanoi.EndGameAction();
 
+		end_time = clock();
+		double time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+
 		// DJP: Not sure how we can tell if this has really worked or not.
 		// It looks like we'll be stuck in an infinite loop looking for the goal state
 		// if something goes wrong, so I think if we get here it's a success.
 		ReportResult(remoteConnection ? "towers-sml-remote" : "towers-sml", true) ;
 
 		//time = timer.Elapsed() ;
-		//cout << "Time after initialization to complete: " << time << endl ;
+		cout << "Time after initialization to complete (seconds): " << time << endl ;
 		//time = total.Elapsed() ;
 		//cout << "Total run time: " << time << endl ;
 	}
