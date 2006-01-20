@@ -8,10 +8,11 @@ class SoarGameGroup {
     SoarGameGroup(SoarGameObject* unit);
     void addUnit(SoarGameObject* unit);
     bool removeUnit(SoarGameObject* unit);
-    void updateStats();
+    groupPropertyList updateStats();
     bool assignAction(Action);
   private:
     set <SoarGameObject*> members;
     // int capabilities; // get from unit capabilities
+    vector <int> statistics; 
 };
 #endif
