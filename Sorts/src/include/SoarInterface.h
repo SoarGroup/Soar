@@ -1,5 +1,6 @@
 #ifndef soarinterface_h
 #define soarinterface_h
+typedef list<pair<string, int> > groupPropertyList;
 
 class SoarInterface{
   public:
@@ -8,7 +9,7 @@ class SoarInterface{
     vector <SoarAction*> getNewActions();
     bool addGroup(SoarGameGroup* group);
     bool removeGroup(SoarGameGroup* group);
-    bool refreshGroup(SoarGameGroup* group);
+    bool refreshGroup(SoarGameGroup* group, groupPropertyList& gpl);
   private:
     // ??
 };
