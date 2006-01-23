@@ -13,6 +13,8 @@ class SoarGameGroup {
     groupPropertyList updateStats();
     bool assignAction(Action);
     void getUnits(list<SoarGameObject*> unitList);
+    void mergeTo(SoarGameGroup* target);
+    bool stale;
   private:
     set <SoarGameObject*> members;
     // int capabilities; // get from unit capabilities

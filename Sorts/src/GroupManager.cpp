@@ -1,5 +1,22 @@
 #include "GroupManager.h"
 
+/* TODO:
+
+recent changes:
+-ORTSIO now directly removes dead objects from groups,
+  regrouper (or update stats?) must prune empty groups
+
+-ORTSIO makes the new groups too, and calls a GroupMgr function to add them to the list
+
+-GameObj*'s have ptrs to the groups, and set the stale bit (need a group touch function) when changes occur
+  So the updateStats func iterates thru all groups and updates the stale ones
+
+-adjustGroups must take data from the attn module:
+  determine on/off link based on map region
+  determine sticky radius based on zoom level
+*/
+
+
 void GroupManager::updateWorld() {
   createNewGroups();
   adjustGroups();
@@ -24,7 +41,7 @@ bool GroupManager::assignActions() {
 }
 
 void GroupManager::createNewGroups() {
-  vector <SoarGameObject*> newObjs = ORTSIO.getAppearedObjects();
+  vector <SoarGameObject*> newObjs = ORTSIO.getNewObjects();
 
   for (unsigned int i=0; i<newObjs.size(); i++) {
     SoarGameGroup* grp = new SoarGameGroup(newObjs.at(i));
@@ -71,3 +88,4 @@ void GroupManager::updateStats() {
 
   return;
 }
+
