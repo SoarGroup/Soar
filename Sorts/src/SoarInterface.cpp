@@ -134,6 +134,8 @@ void SoarInterface::getNewActions(list<SoarAction*> newActions) {
   pthread_mutex_unlock(actionQueueMutex);
 }
 
+/* This is slow. In the future make some kind of hashtable
+ */
 SoarActionType actionTypeLookup(const char* actionName) {
   if      (!strcmp(actionName, "move"))      return SA_MOVE;
   else if (!strcmp(actionName, "mine"))      return SA_MINE;
