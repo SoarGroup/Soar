@@ -3,6 +3,7 @@
 
 #include <list>
 #include <set>
+#include "constants.h"
 
 class SoarGameGroup {
   public:
@@ -15,6 +16,6 @@ class SoarGameGroup {
   private:
     set <SoarGameObject*> members;
     // int capabilities; // get from unit capabilities
-    vector <int> statistics; 
+    double[GP_NUM_STATS] statistics; 
 };
 #endif
