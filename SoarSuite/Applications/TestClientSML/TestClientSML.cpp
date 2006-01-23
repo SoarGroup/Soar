@@ -835,6 +835,16 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 		// Now update the output link with "status complete"
 		Identifier* pMove = (Identifier*)pAgent->GetOutputLink()->FindByAttribute("move", 0) ;
 
+		// Try to find an attribute that's missing to make sure we get null back
+		Identifier* pMissing = (Identifier*)pAgent->GetOutputLink()->FindByAttribute("not-there",0) ;
+		Identifier* pMissingInput = (Identifier*)pAgent->GetInputLink()->FindByAttribute("not-there",0) ;
+
+		if (pMissing || pMissingInput)
+		{
+			cout << "Looked for an attribute that shouldn't be there and yet got something back" << endl ;
+			return false ;
+		}
+
 		// We add an "alternative" to check that we handle shared WMEs correctly.
 		// Look it up here.
 		Identifier* pAlt = (Identifier*)pAgent->GetOutputLink()->FindByAttribute("alternative", 0) ;
