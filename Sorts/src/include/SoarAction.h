@@ -1,18 +1,19 @@
 #ifndef soaraction_h
 #define soaraction_h
-#include <vector>
+#include <list>
 
 class SoarGameGroup;
 
-enum Action {
-  MINE,
-  MOVE
+enum SoarActionType {
+  SA_NO_SUCH_ACTION,
+  SA_MINE,
+  SA_MOVE
 };
 
 struct SoarAction {
-  Action action;
-  vector <SoarGameGroup*> groups;
-  vector <int> params;
+  SoarActionType type;
+  list<SoarGameGroup*> groups;
+  list<int> params;
 };
 
 #endif

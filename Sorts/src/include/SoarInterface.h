@@ -5,6 +5,7 @@
 #include<list>
 #include<map>
 #include<hash_map>
+#include<pthread.h>
 
 #include "sml_Client.h"
 
@@ -14,6 +15,7 @@ typedef list<pair<string, int> > groupPropertyList;
 
 typedef struct {
   int groupId;
+  bool added;
   Identifier* WMEptr;
   // change this later into hash_map<string, IntElement*> and write a hash
   // function for strings
@@ -22,9 +24,9 @@ typedef struct {
 
 class SoarInterface{
   public:
-    SoarInterface();
+    SoarInterface(pthread_mutex_t* _actionQueueMutex);
     ~SoarInterface();
-    vector <SoarAction*> getNewActions();
+    void getNewActions(list<SoarAction*> &actions);
     void addGroup(SoarGameGroup* group);
     void removeGroup(SoarGameGroup* group);
     void refreshGroup(SoarGameGroup* group, groupPropertyList& gpl);
@@ -33,7 +35,18 @@ class SoarInterface{
     int groupIdCounter;
     sml::Agent *agent;
     sml::Identifier *inputLink;
-    hash_map<SoarGameGroup*, SoarIOGroupRep> soarGroups;
+
+    pthread_mutex_t* actionQueueMutex;
+
+    // these are the maps that keep track of input link - middleware objects
+    
+    hash_map<SoarGameGroup*, SoarIOGroupRep> mwToSoarGroups;
+    hash_map<int, SoarGameGroup*>            gIdToMwGroups;
+    
+    hash_map<sml::Identifier*, SoarAction>  soarActions;
+    // a list of actions that are currently unprocessed
+    // there is a race condition on accessing this list
+    list<SoarAction*> actionQueue;
 };
 
 

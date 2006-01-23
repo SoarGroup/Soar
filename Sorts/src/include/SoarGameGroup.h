@@ -1,6 +1,7 @@
 #ifndef SoarGameGroup_h
 #define SoarGameGroup_h
 
+#include <list>
 #include <set>
 
 class SoarGameGroup {
@@ -10,6 +11,7 @@ class SoarGameGroup {
     bool removeUnit(SoarGameObject* unit);
     groupPropertyList updateStats();
     bool assignAction(Action);
+    void getUnits(list<SoarGameObject*> unitList);
   private:
     set <SoarGameObject*> members;
     // int capabilities; // get from unit capabilities
