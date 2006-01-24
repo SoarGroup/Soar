@@ -7,8 +7,7 @@ noinst_LTLIBRARIES = libCommandLineInterface.la
 libCommandLineInterface_la_SOURCES = \
 cli_Aliases.cpp\
 cli_CommandLineInterface.cpp\
-cli_Constants.cpp\
-cli_Interface.cpp\
+cli_Commands.cpp\
 cli_addwme.cpp\
 cli_alias.cpp\
 cli_attributepreferencesmode.cpp\
@@ -57,6 +56,7 @@ cli_soar8.cpp\
 cli_soarnews.cpp\
 cli_source.cpp\
 cli_sp.cpp\
+cli_srand.cpp\
 cli_stats.cpp\
 cli_stopsoar.cpp\
 cli_time.cpp\

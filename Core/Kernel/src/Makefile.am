@@ -27,6 +27,7 @@ reorder.cpp\
 rete.cpp\
 rhsfun.cpp\
 rhsfun_math.cpp\
+soar_rand.cpp\
 symtab.cpp\
 tempmem.cpp\
 trace.cpp\
