@@ -462,7 +462,7 @@ Symbol * highest_active_goal_apply(agent* thisAgent) {
 
    for (goal=thisAgent->top_goal; goal; goal=goal->id.lower_goal) {
 
-#ifdef DEBUG_DETERMINE_LEVEL_PHASE      
+#if 0 //DEBUG_DETERMINE_LEVEL_PHASE      
      /* Debugging only */
      print(thisAgent, "In highest_active_goal_apply :\n");
      if (goal->id.ms_i_assertions) print_assertion(goal->id.ms_i_assertions);
@@ -831,30 +831,35 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
    printf("\n(Propose) Determining the highest active level in the stack....\n"); 
    #endif
    
-   #ifdef BUGZILLA_BUG_304
-    /* We are only checking for i_assertions, not o_assertions, since we don't
-       want operators to fire in the proposal phase
-     */
-    if (!(thisAgent->ms_retractions || thisAgent->ms_i_assertions)) { 
-    #else
-    if (minor_quiescence_at_goal(thisAgent, thisAgent->bottom_goal)) {
-    #endif
+   // KJC 01.24.06  Changed logic for testing for IE prods.  Was incorrectly 
+   // checking only the bottom goal.  Need to check at all levels.  A previous
+   // code change required #define, but it was never defined.
 
-	  /* This is minor quiescence */
-      #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-      printf("\n Propose Phase Quiescence has been reached...going to decision\n");
-      #endif
-      
-      /* Force a consistency check over the entire stack (by checking at
-      the bottom goal). */
-      goal_stack_consistent_through_goal(thisAgent, thisAgent->bottom_goal);
-      
-      /* Decision phase is always next */
-      thisAgent->current_phase = DECISION_PHASE;
-      return;
-   }
+   /* We are only checking for i_assertions, not o_assertions, since we don't
+    *  want operators to fire in the proposal phase
+    */
+    if (!(thisAgent->ms_retractions || thisAgent->ms_i_assertions)) 
+	{     
+		if (minor_quiescence_at_goal(thisAgent, thisAgent->bottom_goal)) 
+		{
+ 
+			/* This is minor quiescence */
+#ifdef DEBUG_DETERMINE_LEVEL_PHASE
+			printf("\n Propose Phase Quiescence has been reached...going to decision\n");
+#endif
+			
+			/* Force a consistency check over the entire stack (by checking at
+			the bottom goal). */
+			goal_stack_consistent_through_goal(thisAgent, thisAgent->bottom_goal);
+
+			/* Decision phase is always next */
+
+			thisAgent->current_phase = DECISION_PHASE;
+			return;
+		}
+	}
    
-   /* Not Quiescence */
+   /* Not Quiescence, there are elaborations ready to fire at some level. */
    
    /* Check for Max ELABORATIONS EXCEEDED */
    
