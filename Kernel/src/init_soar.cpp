@@ -1195,6 +1195,7 @@ void do_one_top_level_phase (agent* thisAgent)
  	  }
 	  /* reset elaboration counter */
       thisAgent->e_cycles_this_d_cycle = 0;
+      thisAgent->pe_cycles_this_d_cycle = 0;
 
 	  /* REW: begin 09.15.96 */
 	  if (thisAgent->operand2_mode == TRUE) 
