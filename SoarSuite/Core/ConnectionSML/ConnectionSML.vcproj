@@ -37,7 +37,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"/>
+				OutputFile="..\..\SoarLibrary\lib\$(ProjectName).lib"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -85,7 +85,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				OutputFile="..\..\SoarLibrary\lib\$(ProjectName).lib"
 				IgnoreAllDefaultLibraries="TRUE"
 				IgnoreDefaultLibraryNames=""/>
 			<Tool
