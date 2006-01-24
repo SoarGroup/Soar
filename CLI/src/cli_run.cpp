@@ -221,6 +221,14 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 			} else {
 				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
 			}
+			if (pScheduler->AnAgentHaltedDuringRun())
+			{
+				if (m_RawOutput) {
+					m_Result << "\nAn agent halted during the run.";
+				} else {                    
+					AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, "\nAn agent halted during the run.");		
+			    }
+			}
 			break;
 
 		case gSKI_RUN_COMPLETED:
