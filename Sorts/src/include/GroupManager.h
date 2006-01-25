@@ -9,10 +9,12 @@ class GroupManager {
 
     void updateWorld();
     bool assignActions();
+
+    SoarGameGroup* addGroup(SoarGameObject* object);
+    // used by ORTSInterface when it sees a new object- create a group for it
   
   private:
-    void createNewGroups();
-    void adjustGroups();
+    void reGroup();
     void updateStats();
 
     SoarInterface* SoarIO;

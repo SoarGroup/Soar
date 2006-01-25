@@ -14,10 +14,12 @@ class SoarGameGroup {
     bool assignAction(Action);
     void getUnits(list<SoarGameObject*> unitList);
     void mergeTo(SoarGameGroup* target);
-    bool stale;
+    bool getStale();
+    void setStale(bool val);
   private:
     set <SoarGameObject*> members;
     // int capabilities; // get from unit capabilities
     double[GP_NUM_STATS] statistics; 
+    bool stale;
 };
 #endif
