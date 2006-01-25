@@ -183,6 +183,7 @@ enum ni_mode {
 
 
 #define SOAR_WMEM_ACTIVATION    // compile switch
+#define EPISODIC_MEMORY         // compile switch
     
     
 /* --------------------------- */

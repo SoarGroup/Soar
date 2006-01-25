@@ -517,6 +517,46 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
     
 #endif //SOAR_WMEM_ACTIVATION
 
+#ifdef EPISODIC_MEMORY
+    struct timeval epmem_start_time;
+    struct timeval epmem_total_time;
+
+    struct timeval epmem_record_start_time;
+    struct timeval epmem_record_total_time;
+
+    struct timeval epmem_retrieve_start_time;
+    struct timeval epmem_retrieve_total_time;
+
+    struct timeval epmem_clearmem_start_time;
+    struct timeval epmem_clearmem_total_time;
+
+    struct timeval epmem_updatewmetree_start_time;
+    struct timeval epmem_updatewmetree_total_time;
+
+    struct timeval epmem_getaugs_start_time;
+    struct timeval epmem_getaugs_total_time;
+
+    struct timeval epmem_match_start_time;
+    struct timeval epmem_match_total_time;
+
+    struct timeval epmem_findchild_start_time;
+    struct timeval epmem_findchild_total_time;
+    
+    struct timeval epmem_addnode_start_time;
+    struct timeval epmem_addnode_total_time;
+    
+    struct timeval epmem_installmem_start_time;
+    struct timeval epmem_installmem_total_time;
+
+    struct timeval epmem_misc1_start_time;
+    struct timeval epmem_misc1_total_time;
+
+    struct timeval epmem_misc2_start_time;
+    struct timeval epmem_misc2_total_time;
+
+    
+#endif //EPISODIC_MEMORY
+
   
   /* ----------------------- Chunker stuff -------------------------- */
   

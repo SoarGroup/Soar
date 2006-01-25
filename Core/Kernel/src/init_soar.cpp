@@ -47,6 +47,7 @@
 #include "kernel_struct.h"
 #include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
 #include "gski_event_system_functions.h" // support for triggering XML events
+#include "epmem.h"
 
 /* JC ADDED: Used for gski callbacks */
 #include "gski_event_system_functions.h"
@@ -1117,6 +1118,9 @@ void do_one_top_level_phase (agent* thisAgent)
      }
 #endif /*SOAR_WMEM_ACTIVATION*/
 
+#ifdef EPISODIC_MEMORY
+     epmem_update(thisAgent);
+#endif /* EPISODIC_MEMORY */
       
  	  soar_invoke_callbacks(thisAgent, thisAgent, 
 			 AFTER_OUTPUT_PHASE_CALLBACK,
@@ -1679,6 +1683,11 @@ void init_agent_memory(agent* thisAgent)
                  make_sym_constant(thisAgent, "output-link"),
                  thisAgent->io_header_output);
 
+#ifdef EPISODIC_MEMORY
+    //Create the ^epmem buffer
+    epmem_create_buffer(thisAgent, thisAgent->top_state);
+#endif //EPISODIC_MEMORY
+  
   do_buffered_wm_and_ownership_changes(thisAgent);
 
   // This is an important part of the state of the agent for io purposes
