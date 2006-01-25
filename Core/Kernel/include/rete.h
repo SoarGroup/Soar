@@ -131,4 +131,35 @@ extern Bool load_rete_net (Kernel* thisKernel, agent* thisAgent, FILE *source_fi
 }
 #endif
 
+/* ----------------------------------------------------------------------
+
+                 Structures and Declarations:  Tokens
+
+---------------------------------------------------------------------- */
+
+typedef struct token_struct {
+  /* --- Note: "parent" is NIL on negative node negrm (local join result) 
+     tokens, non-NIL on all other tokens including CN and CN_P stuff.
+     I put "parent" at offset 0 in the structure, so that upward scans
+     are fast (saves doing an extra integer addition in the inner loop) --- */
+  struct token_struct *parent;
+  union token_a_union {
+    struct token_in_hash_table_data_struct {
+      struct token_struct *next_in_bucket, *prev_in_bucket; /*hash bucket dll*/
+      Symbol *referent; /* referent of the hash test (thing we hashed on) */
+    } ht;
+    struct token_from_right_memory_of_negative_or_cn_node_struct {
+      struct token_struct *next_negrm, *prev_negrm;/*other local join results*/
+      struct token_struct *left_token; /* token this is local join result for*/
+    } neg;
+  } a;
+  rete_node *node;
+  wme *w;
+  struct token_struct *first_child;  /* first of dll of children */
+  struct token_struct *next_sibling, *prev_sibling; /* for dll of children */
+  struct token_struct *next_of_node, *prev_of_node; /* dll of tokens at node */
+  struct token_struct *next_from_wme, *prev_from_wme; /* tree-based remove */
+  struct token_struct *negrm_tokens; /* join results: for Neg, CN nodes only */
+} token;
+
 #endif

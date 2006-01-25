@@ -88,6 +88,10 @@ void init_soar_agent(Kernel* thisKernel, agent* thisAgent) {
   init_tracing (thisAgent);
   init_explain(thisAgent);  /* AGR 564 */
 
+#ifdef SOAR_WMEM_ACTIVATION
+    decay_init(thisAgent);
+#endif
+  
 #ifdef REAL_TIME_BEHAVIOR
   /* RMJ */
   init_real_time(thisAgent);

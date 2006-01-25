@@ -27,6 +27,8 @@
 #ifndef GSYSPARAM_H
 #define GSYSPARAM_H
 
+#define SOAR_WMEM_ACTIVATION
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -155,8 +157,25 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* rmarinie 11/04 */
 #define TIMERS_ENABLED                           33
 
+#ifdef SOAR_WMEM_ACTIVATION
+
+#define WME_DECAY_SYSPARAM                       34
+#define WME_DECAY_EXPONENT_SYSPARAM              35
+#define WME_DECAY_WME_CRITERIA_SYSPARAM          36
+#define WME_DECAY_ALLOW_FORGETTING_SYSPARAM      37
+#define WME_DECAY_I_SUPPORT_MODE_SYSPARAM        38
+#define WME_DECAY_PERSISTENT_ACTIVATION_SYSPARAM 39
+#define WME_DECAY_PRECISION_SYSPARAM             40
+#define WME_DECAY_LOGGING_SYSPARAM               41
+
+#define HIGHEST_SYSPARAM_NUMBER                  41
+
+#else
+    
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
 #define HIGHEST_SYSPARAM_NUMBER                  33
+
+#endif
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()

@@ -188,6 +188,7 @@ protected:
 	bool ParseAttributePreferencesMode(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseCD(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+    bool ParseDecay(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseDefaultWMEDepth(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseDirs(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseEcho(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -286,6 +287,12 @@ protected:
 	*        null for query
 	*************************************************************/
 	bool DoChunkNameFormat(gSKI::IAgent* pAgent, const bool* pLongFormat = 0, const int* pCount = 0, const std::string* pPrefix = 0);
+
+	/*************************************************************
+	* @brief decay command
+	* @param pAgent The pointer to the gSKI agent interface
+	*************************************************************/
+	bool DoDecay(gSKI::IAgent* pAgent, enum eDecayOptions setting, long arg);
 
 	/*************************************************************
 	* @brief default-wme-depth command
@@ -731,10 +738,20 @@ protected:
 	bool CheckOptargRemoveOrZero();
 	bool ProcessWatchLevelSettings(const int level, WatchBitset& options, WatchBitset& settings, int& wmeSetting, int& learnSetting);
 
+	/************************************************************* 	 
+	* @brief Prints the current WM activation settings
+	*************************************************************/ 	 
+    void PrintCurrentDecaySettings(gSKI::IAgent* pAgent);
+
 	/*************************************************************
 	* @brief 
 	*************************************************************/
 	bool IsInteger(const std::string& s);
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool IsFloat(const std::string& s);
 
 	/*************************************************************
 	* @brief 

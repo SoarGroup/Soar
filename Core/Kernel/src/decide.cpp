@@ -2131,6 +2131,13 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
             }  /* end if thisAgent->OPERAND2_MODE ... */
                /* REW: end   09.15.96 */
    
+#ifdef SOAR_WMEM_ACTIVATION
+    if ((thisAgent->sysparams)[WME_DECAY_SYSPARAM])
+    {
+        decay_update_new_wme(thisAgent, w, s->num_changes);
+    }
+#endif //SOAR_WMEM_ACTIVATION
+    
             add_wme_to_wm (thisAgent, w);
          }
       }

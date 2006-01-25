@@ -21,6 +21,7 @@ char const* Commands::kCLIAlias						= "alias";
 char const* Commands::kCLIAttributePreferencesMode	= "attribute-preferences-mode";			
 char const* Commands::kCLICD						= "cd";			
 char const* Commands::kCLIChunkNameFormat			= "chunk-name-format";			
+char const* Commands::kCLIDecay                     = "decay";
 char const* Commands::kCLIDefaultWMEDepth			= "default-wme-depth";
 char const* Commands::kCLIDirs						= "dirs";
 char const* Commands::kCLIEcho						= "echo";

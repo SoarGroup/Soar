@@ -313,6 +313,10 @@ typedef struct slot_struct {
   dl_cons *acceptable_preference_changed; /* for context slots: either zero,
                                              or points to dl_cons if the slot
                                              has changed + or ! pref's */
+#ifdef SOAR_WMEM_ACTIVATION
+    int num_changes;
+#endif
+
 } slot;
 
 /* -------------------------------------------------------------------
