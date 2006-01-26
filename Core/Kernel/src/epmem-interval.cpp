@@ -25,6 +25,11 @@
  *  3.  Allow user to configure the global variables on the command line
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif // HAVE_CONFIG_H
+#include "portability.h"
+
 #include <limits.h>
 #include "epmem.h"
 #include "agent.h"

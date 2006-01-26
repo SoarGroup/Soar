@@ -25,20 +25,21 @@
  *  3.  Allow user to configure the global variables on the command line
  */
 
-#include <limits.h>
-#include "soarkernel.h"
-#include "epmem.h"
-#include "agent.h"
-#include "prefmem.h"
-#include "print.h"
-#include "io.h"
-#include "activate.h"
-#include "utilities.h"
-#include "gski_event_system_functions.h"
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif // HAVE_CONFIG_H
+#include "portability.h"
+
+#include "kernel.h"
 
 #ifdef EPISODIC_MEMORY
 
-//defined in symtab.c
+#include "agent.h"
+#include "print.h"
+#include "prefmem.h"
+#include "io.h"
+
+//defined in symtab.cpp but not in symtab.h
 extern unsigned long compress(unsigned long h, short num_bits);
 extern unsigned long hash_string(const char *s);
 
@@ -266,6 +267,12 @@ arraylist *g_header_stack;
 */
 #define IS_LEAF_WME(w) ((w)->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE)
 
+
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 /* ===================================================================
    compare_ptr
@@ -728,6 +735,76 @@ int wme_has_value(wme *w, char *attr_name, char *value_name)
     return TRUE;
 
 }//wme_has_value
+
+/* ===================================================================
+   get_augs_of_id()
+
+   This routine works just like the one defined in utilities.h.
+   Except this one does not use C++ templates because I think they
+   stink and I refuse to use them.  Please don't argue with me about
+   it.
+   
+   Created (sort of): 25 Jan 2006
+   =================================================================== */
+wme **get_augs_of_id(agent* thisAgent, Symbol * id, tc_number tc, int *num_attr)
+{
+   slot *s;
+   wme *w;
+
+
+   wme **list;                 /* array of WME pointers, AGR 652 */
+   int attr;                   /* attribute index, AGR 652 */
+   int n;
+
+
+/* AGR 652  The plan is to go through the list of WMEs and find out how
+  many there are.  Then we malloc an array of that many pointers.
+  Then we go through the list again and copy all the pointers to that array.
+  Then we qsort the array and print it out.  94.12.13 */
+
+
+   if (id->common.symbol_type != IDENTIFIER_SYMBOL_TYPE)
+       return NULL;
+   if (id->id.tc_num == tc)
+       return NULL;
+   id->id.tc_num = tc;
+
+
+   /* --- first, count all direct augmentations of this id --- */
+   n = 0;
+   for (w = id->id.impasse_wmes; w != NIL; w = w->next)
+       n++;
+   for (w = id->id.input_wmes; w != NIL; w = w->next)
+       n++;
+   for (s = id->id.slots; s != NIL; s = s->next) {
+       for (w = s->wmes; w != NIL; w = w->next)
+           n++;
+       for (w = s->acceptable_preference_wmes; w != NIL; w = w->next)
+           n++;
+   }
+
+
+   /* --- next, construct the array of wme pointers and sort them --- */
+   list = static_cast<wme**>(allocate_memory(thisAgent, n * sizeof(wme *), MISCELLANEOUS_MEM_USAGE));
+   attr = 0;
+   for (w = id->id.impasse_wmes; w != NIL; w = w->next)
+       list[attr++] = w;
+   for (w = id->id.input_wmes; w != NIL; w = w->next)
+       list[attr++] = w;
+   for (s = id->id.slots; s != NIL; s = s->next) {
+       for (w = s->wmes; w != NIL; w = w->next)
+           list[attr++] = w;
+       for (w = s->acceptable_preference_wmes; w != NIL; w = w->next)
+           list[attr++] = w;
+   }
+
+
+   *num_attr = n;
+   return list;
+
+
+}
+
 
 /* ===================================================================
    get_aug_of_id()
@@ -3177,7 +3254,6 @@ void epmem_print_query_usage_wmetree(agent *thisAgent)
 }//epmem_print_query_usage_wmetree
 
 
-
 /* ===================================================================
    epmem_update() 
 
@@ -3274,6 +3350,8 @@ void epmem_update(agent *thisAgent)
     
 }//epmem_update
 
+    
+    
 /* ===================================================================
    epmem_create_buffer()
 
@@ -3335,8 +3413,11 @@ void init_epmem(agent *thisAgent)
 
 
 
+#ifdef __cplusplus
+}//extern "C"
+#endif
 
-#endif /* AMN end */
+#endif /* #ifdef EPISODIC_MEMORY */
 
 /* ===================================================================
    =================================================================== */
