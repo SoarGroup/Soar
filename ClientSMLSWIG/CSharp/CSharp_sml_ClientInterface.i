@@ -63,6 +63,12 @@
 // The simple test is manually deleting the library from Explorer.  If that fails, close the solution and re-open it in VS
 // which will break the lock.
 %typemap(cscode) sml::Agent %{
+	//////////////////////////////////////////////////////////////////////////////////
+	//
+	// RunEvent
+	//
+	//////////////////////////////////////////////////////////////////////////////////
+	// C++ equivalent:
 	// typedef void (*RunEventHandler)(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phase);
 	public delegate void RunEventCallback(smlRunEventId eventID, IntPtr callbackData, IntPtr agent, smlPhase phase);
 
@@ -87,14 +93,39 @@
 	{
 		return CSharp_Agent_UnregisterForRunEvent(swigCPtr, jarg2) ;
 	}
-%}
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	//
+	// ProductionEvent
+	//
+	//////////////////////////////////////////////////////////////////////////////////
+	// C++ equivalent:
+	// typedef void (*ProductionEventHandler)(smlProductionEventId id, void* pUserData, Agent* pAgent, char const* pProdName, char const* pInstantiation);
+	public delegate void ProductionEventCallback(smlProductionEventId eventID, IntPtr callbackData, IntPtr agent, String prodName, String instantiation);
 
-/*
-%typemap(cscode) sml::smlPINVOKE %{
 	[DllImport("CSharp_sml_ClientInterface")]
-	public static extern void MyFunction(sml.Kernel.MyCallback callback);
+	public static extern int CSharp_Agent_RegisterForProductionEvent(HandleRef jarg1, int eventID, IntPtr jagent, ProductionEventCallback callback, IntPtr callbackData);
+
+	public int RegisterForProductionEvent(smlProductionEventId eventID, ProductionEventCallback jarg2, Object callbackData)
+	{
+		// This call ensures the garbage collector won't delete the object until we call free on the handle.
+		// It's also an approved way to pass a pointer to unsafe (C++) code and get it back.
+		// Also, somewhat remarkably, we can pass null to GCHandle.Alloc() and get back a valid object, so no need to special case that.
+		GCHandle agentHandle = GCHandle.Alloc(this) ;
+		GCHandle callbackDataHandle = GCHandle.Alloc(callbackData) ;
+		
+		return CSharp_Agent_RegisterForProductionEvent(swigCPtr, (int)eventID, (IntPtr)agentHandle, jarg2, (IntPtr)callbackDataHandle) ;
+	}
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern bool CSharp_Agent_UnregisterForProductionEvent(HandleRef jarg1, int callbackID);
+
+	public bool UnregisterForProductionEvent(int jarg2)
+	{
+		return CSharp_Agent_UnregisterForProductionEvent(swigCPtr, jarg2) ;
+	}
+
 %}
-*/
 
 // include stuff common to all languages (i.e. Java, Tcl, C#)
 %include "../sml_ClientInterface.i"
