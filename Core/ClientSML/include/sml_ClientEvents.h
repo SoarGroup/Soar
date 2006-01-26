@@ -18,7 +18,7 @@
 //     must not intersect with any of the values in smlRunEventId (e.g.)
 //     This is generally achieved by making the first value of one enum
 //     equal the last value of the previous enum + 1.
-//     (e.g. smlEVENT_BEFORE_SMALLEST_STEP = smlEVENT_AFTER_RHS_FUNCTION_EXECUTED + 1)
+//     (e.g. smlEVENT_BEFORE_SMALLEST_STEP = smlEVENT_LAST_SYSTEM_EVENT + 1)
 //
 // Second, if you change the list of events in an enum, make sure that the
 //    related test function (e.g. IsSystemEventID()) is still valid.

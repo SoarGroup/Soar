@@ -5,46 +5,12 @@
 // Date  : October 2005
 //
 // Some handcoded methods to support registering callbacks for
-// events through CSharp.
+// events through CSharp.  This is the part of the Soar/SML interface
+// that SWIG can't auto generate.
 //
-/*
-SWIGEXPORT void SWIGSTDCALL CSharp_Kernel_SetTraceCommunications(void * jarg1, unsigned int jarg2) {
-    sml::Kernel *arg1 = (sml::Kernel *) 0 ;
-    bool arg2 ;
-    
-    arg1 = (sml::Kernel *)jarg1; 
-    arg2 = jarg2 ? true : false; 
-    (arg1)->SetTraceCommunications(arg2);
-    
-}
-*/
-
-	/*
-	typedef void (__stdcall *PFN_MYCALLBACK)();
-	int __stdcall MyFunction(PFN_ MYCALLBACK callback);
-
-	public delegate void MyCallback();
-	[DllImport("MYDLL.DLL")]
-	public static extern void MyFunction(MyCallback callback);
-	*/
-
-//typedef void (__stdcall *MyTestCallback)() ;
-/*
-SWIGEXPORT void SWIGSTDCALL CSharp_Kernel_RegisterTestMethod(void * jarg1, unsigned int jarg2) {
-    sml::Kernel *arg1 = (sml::Kernel *) 0 ;
-	MyTestCallback pFunction = (MyTestCallback)jarg2 ;
-    
-    arg1 = (sml::Kernel *)jarg1; 
-    
-	// Make the callback right now as a test
-	pFunction() ;
-}
-*/
 
 typedef int	agentPtr ;
 typedef int	CallbackDataPtr ;
-
-typedef void (__stdcall *RunEventCallback)(int eventID, CallbackDataPtr callbackData, agentPtr jagent, int phase) ;
 
 /* Callback for deleting GCHandle objects from within C#, so we don't leak them. */
 typedef void (SWIGSTDCALL* CSharpHandleHelperCallback)(unsigned int);
@@ -84,6 +50,18 @@ static CSharpCallbackData* CreateCSharpCallbackData(agentPtr jagent, int eventID
 	return new CSharpCallbackData(jagent, eventID, (void *)callbackFunction, callbackData) ;
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+//
+// RunEvent
+//
+//////////////////////////////////////////////////////////////////////////////////
+
+// The callback we want to support
+// typedef void (*RunEventHandler)(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phase);
+
+// The C# callback equivalent that we'll eventually call
+typedef void (__stdcall *RunEventCallback)(int eventID, CallbackDataPtr callbackData, agentPtr jagent, int phase) ;
+
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
 static void RunEventHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase)
@@ -117,7 +95,6 @@ SWIGEXPORT int SWIGSTDCALL CSharp_Agent_RegisterForRunEvent(void * jarg1, int ja
 	return (int)pData ;
 }
 
-
 SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForRunEvent(void* jarg1, int jarg2)
 {
     // jarg1 is the C++ Agent object
@@ -128,6 +105,76 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForRunEvent(void* jarg1, int 
 
 	// Unregister our handler.
 	bool result = arg1->UnregisterForRunEvent(pData->m_CallbackID) ;
+
+	// Free the GCHandles created when the callback was registered
+	SWIG_csharp_deletehandle_callback(pData->m_Agent) ;
+	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
+
+	// Release the callback data
+	delete pData ;
+
+	return result ;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//
+// ProductionEvent
+//
+//////////////////////////////////////////////////////////////////////////////////
+
+// The callback we want to support
+// typedef void (*ProductionEventHandler)(smlProductionEventId id, void* pUserData, Agent* pAgent, char const* pProdName, char const* pInstantion) ;
+
+// The C# callback equivalent that we'll eventually call
+typedef void (__stdcall *ProductionEventCallback)(int eventID, CallbackDataPtr callbackData, agentPtr jagent, char* prodName, char* instantiation) ;
+
+// This is the C++ handler which will be called by clientSML when the event fires.
+// Then from here we need to call back to C# to pass back the message.
+static void ProductionEventHandler(sml::smlProductionEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation)
+{
+	// The user data is the class we declared above, where we store the Java data to use in the callback.
+	CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
+
+	ProductionEventCallback callback = (ProductionEventCallback)pData->m_CallbackFunction ;
+
+	// Create a C# string which we can return
+	char* csharpProdName = SWIG_csharp_string_callback(pProdName); 
+	char* csharpInstantiation = SWIG_csharp_string_callback(pInstantiation) ;
+
+	// Now try to call back to CSharp
+	callback(pData->m_EventID, pData->m_CallbackData, pData->m_Agent, csharpProdName, csharpInstantiation) ;
+}
+
+SWIGEXPORT int SWIGSTDCALL CSharp_Agent_RegisterForProductionEvent(void * jarg1, int jarg2, agentPtr jagent, unsigned int jarg3, CallbackDataPtr jdata)
+{
+    // jarg1 is the C++ Agent object
+	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
+
+	// jarg2 is the event ID we're registering for
+	sml::smlProductionEventId arg2 = (sml::smlProductionEventId)jarg2;
+
+	// jarg3 is the callback function
+
+	// Create the information we'll need to make a Java call back later
+	CSharpCallbackData* pData = CreateCSharpCallbackData(jagent, jarg2, jarg3, jdata) ;
+	
+	// Register our handler.  When this is called we'll call back to the client method.
+	pData->m_CallbackID = arg1->RegisterForProductionEvent(arg2, &ProductionEventHandler, pData) ;
+
+	// Pass the callback info back to the client.  We need to do this so we can delete this later when the method is unregistered
+	return (int)pData ;
+}
+
+SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForProductionEvent(void* jarg1, int jarg2)
+{
+    // jarg1 is the C++ Agent object
+	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
+
+	// jarg2 is the callback data from the registration call
+	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
+
+	// Unregister our handler.
+	bool result = arg1->UnregisterForProductionEvent(pData->m_CallbackID) ;
 
 	// Free the GCHandles created when the callback was registered
 	SWIG_csharp_deletehandle_callback(pData->m_Agent) ;
