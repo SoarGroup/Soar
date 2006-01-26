@@ -4,6 +4,14 @@
 #include <list>
 #include <set>
 #include "constants.h"
+#include "SoarGameObject.h"
+//#include "SoarInterface.h"
+
+using namespace std;
+// inside SoarInterface.h too
+typedef list<pair<string, int> > groupPropertyList;
+
+//class SoarGameObject{}; // TEMPORARY
 
 class SoarGameGroup {
   public:
@@ -11,15 +19,16 @@ class SoarGameGroup {
     void addUnit(SoarGameObject* unit);
     bool removeUnit(SoarGameObject* unit);
     groupPropertyList updateStats();
-    bool assignAction(Action);
-    void getUnits(list<SoarGameObject*> unitList);
+//    bool assignAction(SoarAction);
+  // need to rethink SoarAction
+  void getUnits(list<SoarGameObject*> unitList);
     void mergeTo(SoarGameGroup* target);
     bool getStale();
     void setStale(bool val);
   private:
     set <SoarGameObject*> members;
     // int capabilities; // get from unit capabilities
-    double[GP_NUM_STATS] statistics; 
+    double statistics[GP_NUM_STATS]; 
     bool stale;
 };
 #endif

@@ -1,25 +1,26 @@
-#include "SoarGameGroup.h"
+#include "include/SoarGameGroup.h"
 #include <assert.h>
 #include <vector>
 
 SoarGameGroup::SoarGameGroup(SoarGameObject* unit) {
   members.clear();
-  members.push_back(unit);
+  members.insert(unit);
   // capabilities = unit->capabilities;
   stale = true;
 }
 
-SoarGameGroup::addUnit(SoarGameObject* unit) {
+void SoarGameGroup::addUnit(SoarGameObject* unit) {
   //capabilities &= unit->capabilities;
-  assert(not members.find(unit));
+  //assert(not members.find(unit));
   members.insert(unit);
   stale = true;
 }
 
-SoarGameGroup::removeUnit(SoarGameObject* unit) {
-  assert(members.find(unit));
+bool SoarGameGroup::removeUnit(SoarGameObject* unit) {
+  //assert(members.find(unit));
   members.erase(unit);
   stale = true;
+  return true;
 }
 
 groupPropertyList SoarGameGroup::updateStats() {
@@ -39,9 +40,9 @@ groupPropertyList SoarGameGroup::updateStats() {
   while (currentObject != members.end()) {
     // be careful is some numbers are very big for each object and the double could overflow
     
-    health += *currentObject.getHealth();
-    x += *currentObject.getX();
-    y += *currentObject.getY();
+  //  health += *currentObject.getHealth();
+  //  x += *currentObject.getX();
+  //  y += *currentObject.getY();
   
     currentObject++;
   }
@@ -57,15 +58,15 @@ groupPropertyList SoarGameGroup::updateStats() {
 
   pair<string, int> wme;
   wme.first = "health";
-  wme.second = health;
+  wme.second = (int)health;
   propList.push_back(wme);
 
   // how do we want to represent positon?
   wme.first = "x_position";
-  wme.second = x;
+  wme.second = (int)x;
   propList.push_back(wme);
   wme.first = "y_position";
-  wme.second = y;
+  wme.second = (int)y;
   propList.push_back(wme);
 
   stale = false;
