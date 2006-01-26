@@ -1,5 +1,4 @@
-#include"stdafx.h"
-#include"GameObject.h"
+#include"include/SoarGameObject.h"
 
 SoarGameObject::SoarGameObject()
 {

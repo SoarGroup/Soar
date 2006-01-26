@@ -1,4 +1,8 @@
+#ifndef _FSM_H_
+#define _FSM_H_
 #include"FSM.h"
+#endif
+
 #include<stack>
 
 //How do I transition from one FSM to another?

@@ -4,8 +4,8 @@
 
 class FSM{
  public:
-	FSM();
-	virtual ~FSM()=0;
+	FSM(){}
+	virtual ~FSM(){}
 
 	virtual bool update()=0;
 
