@@ -61,5 +61,6 @@ void SoarGameObject::issueCommand(std::string cmd)
 
 void SoarGameObject::update()
 {
- memory.top()->update();
+ if(!memory.empty())
+  memory.top()->update();
 }
