@@ -59,6 +59,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLTcl", "Core\Client
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLCSharp", "Core\ClientSMLSWIG\CSharp\ClientSMLCSharp.vcproj", "{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCSharpSML", "Applications\TestCSharpSML\TestCSharpSML.csproj", "{29277D02-A002-439F-B3E7-C89C16A21818}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -291,6 +299,30 @@ Global
 		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (gSKI DLL).ActiveCfg = Release|Win32
 		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (gSKI DLL).Build.0 = Release|Win32
 		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (no SWIG).ActiveCfg = Release|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Debug.ActiveCfg = Debug|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Debug.Build.0 = Debug|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Debug (Core).ActiveCfg = Debug|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Debug (gSKI DLL).Build.0 = Debug|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Release.ActiveCfg = Release|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Release.Build.0 = Release|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Release (Core).ActiveCfg = Release|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Release (gSKI DLL).ActiveCfg = Release|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Release (gSKI DLL).Build.0 = Release|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Release (no SWIG).ActiveCfg = Release|Win32
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug.ActiveCfg = Debug|.NET
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug.Build.0 = Debug|.NET
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug (Core).ActiveCfg = Debug|.NET
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug (gSKI DLL).ActiveCfg = Debug|.NET
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug (gSKI DLL).Build.0 = Debug|.NET
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug (no SWIG).ActiveCfg = Debug|.NET
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Release.ActiveCfg = Release|.NET
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Release.Build.0 = Release|.NET
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Release (Core).ActiveCfg = Release|.NET
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Release (gSKI DLL).ActiveCfg = Release|.NET
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Release (gSKI DLL).Build.0 = Release|.NET
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Release (no SWIG).ActiveCfg = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

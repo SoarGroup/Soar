@@ -36,7 +36,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="FALSE"
-				OutputFile="..\..\..\soar-library\CSharp_sml_ClientInterface.dll"
+				OutputFile="$(SolutionDir)\SoarLibrary\bin\CSharp_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"
 				AssemblyDebug="1"
@@ -47,8 +47,8 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				CommandLine="csc /target:library /out:build\smlCSharp.dll build\*.cs
-xcopy build\*.dll ..\..\..\soar-library /Y /I /Q
-xcopy build\*.cs ..\..\examples\TestCSharpSML /Y /I /Q
+xcopy build\*.dll $(SolutionDir)\SoarLibrary\bin /Y /I /Q
+rem xcopy build\*.cs ..\..\examples\TestCSharpSML /Y /I /Q
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -94,7 +94,7 @@ cd ..
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\..\soar-library\CSharp_sml_ClientInterface.dll"
+				OutputFile="$(SolutionDir)\SoarLibrary\bin\CSharp_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"
 				ImportLibrary="$(OutDir)\$(ProjectName).lib"/>
@@ -103,8 +103,9 @@ cd ..
 			<Tool
 				Name="VCPostBuildEventTool"
 				CommandLine="csc /target:library /out:build\smlCSharp.dll build\*.cs
-xcopy build\*.dll ..\..\..\soar-library /Y /I /Q
-xcopy build\*.cs ..\..\examples\TestCSharpSML /Y /I /Q"/>
+xcopy build\*.dll $(SolutionDir)\SoarLibrary\bin /Y /I /Q
+rem xcopy build\*.cs ..\..\examples\TestCSharpSML /Y /I /Q
+"/>
 			<Tool
 				Name="VCPreBuildEventTool"
 				CommandLine="echo on
