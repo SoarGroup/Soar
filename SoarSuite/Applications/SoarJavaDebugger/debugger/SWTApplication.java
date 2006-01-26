@@ -106,15 +106,21 @@ public class SWTApplication
 	}
 
 	// Command line options:
-	// -remote => use a remote connection (with default ip and port values)
-	// -ip xxx => use this IP value (implies remote connection)
+	// -remote   => use a remote connection (with default ip and port values)
+	// -ip xxx   => use this IP value (implies remote connection)
 	// -port ppp => use this port (implies remote connection)
-	// -agent <name> => select this agent as initial agent (for use with remote connection)
 	// Without any remote options we start a local kernel
 	//
-	// -maximize => start with maximized window
-	// -width <width> -height <height> => start with this window size
-	// -x <x> -y <y> => start with this window position
+	// -agent <name> => on a remote connection select this agent as initial agent
+	// -agent <name> => on a local connection use this as the name of the initial agent
+	//
+	// -source "<path>" => load this file of productions on launch (only valid for local kernel)
+	// -listen ppp      => use this port to listen for remote connections (only valid for a local kernel)
+	//
+	// -maximize        => start with maximized window
+	// -width <width>   => start with this window width
+	// -height <height> => start with this window height
+	// -x <x> -y <y>    => start with this window position
 	// (Providing width/height/x/y => not a maximized window)
 	public void startApp(String[] args) throws Exception
 	{
@@ -126,6 +132,8 @@ public class SWTApplication
 		String ip 	= getOptionValue(args, "-ip") ;
 		String port = getOptionValue(args, "-port") ;
 		String agentName = getOptionValue(args, "-agent") ;
+		String source = getOptionValue(args, "-source") ;
+		String listen = getOptionValue(args, "-listen") ;
 		
 		boolean maximize = hasOption(args, "-maximize") ;
 
@@ -145,6 +153,20 @@ public class SWTApplication
 			catch (NumberFormatException e)
 			{
 				errorMsg = "Passed invalid port value " + port ;
+				System.out.println(errorMsg) ;
+			}
+		}
+		
+		int listenPort = Kernel.GetDefaultPort() ;
+		if (listen != null)
+		{
+			try
+			{
+				listenPort = Integer.parseInt(listen) ;
+			}
+			catch (NumberFormatException e)
+			{
+				errorMsg = "Passed invalid listen value " + listen ;
 				System.out.println(errorMsg) ;
 			}
 		}
@@ -195,8 +217,8 @@ public class SWTApplication
 		// (saves some special case logic in the frame)
 		if (!remote)
 		{
-			Agent agent = m_Document.startLocalKernel(Kernel.GetDefaultPort()) ;
-			frame.setAgentFocus(agent) ;	
+			Agent agent = m_Document.startLocalKernel(listenPort, agentName, source) ;
+			frame.setAgentFocus(agent) ;
 		}
 		else
 		{

@@ -88,7 +88,7 @@ public class KernelMenu
 	private void startKernelPerformed(ActionEvent e)
 	{
 		// Start a kernel and create a first agent
-		Agent agent = m_Document.startLocalKernel(Kernel.GetDefaultPort()) ;
+		Agent agent = m_Document.startLocalKernel() ;
 		
 		// Attach this to the frame
 		m_Frame.setAgentFocus(agent) ;
