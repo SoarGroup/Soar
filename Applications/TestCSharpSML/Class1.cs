@@ -1,3 +1,15 @@
+//////////////////////////////////////////////////////////////////////////
+//
+//	Sample C# Soar application
+//
+//  Douglas Pearson,  Jan 2006.
+//
+// In order to build a Soar C# application, the application needs a reference to smlCSharp.
+// To add that reference, right click on the references folder (in solution view),
+// select "add reference...", then "browse..." to locate the smlCSharp.dll located in SoarLibrary.
+//
+//////////////////////////////////////////////////////////////////////////
+
 using System;
 using System.Runtime.InteropServices;
 
