@@ -17,7 +17,7 @@
                 DelaySign = "false"
                 OutputType = "Exe"
                 PreBuildEvent = ""
-                PostBuildEvent = "copy tests\testcsharpsml.soar . /Y"
+                PostBuildEvent = ""
                 RootNamespace = "TestCSharpSML"
                 RunPostBuildEvent = "OnBuildSuccess"
                 StartupObject = ""
@@ -36,7 +36,7 @@
                     NoStdLib = "false"
                     NoWarn = ""
                     Optimize = "false"
-                    OutputPath = "..\..\..\soar-library\"
+                    OutputPath = "..\..\SoarLibrary\bin\"
                     RegisterForComInterop = "false"
                     RemoveIntegerChecks = "false"
                     TreatWarningsAsErrors = "false"
@@ -56,7 +56,7 @@
                     NoStdLib = "false"
                     NoWarn = ""
                     Optimize = "true"
-                    OutputPath = "..\..\..\soar-library\"
+                    OutputPath = "..\..\SoarLibrary\bin\"
                     RegisterForComInterop = "false"
                     RemoveIntegerChecks = "false"
                     TreatWarningsAsErrors = "false"
@@ -67,7 +67,7 @@
                 <Reference
                     Name = "smlCSharp"
                     AssemblyName = "smlCSharp"
-                    HintPath = "..\..\..\soar-library\smlCSharp.dll"
+                    HintPath = "..\..\SoarLibrary\bin\smlCSharp.dll"
                 />
             </References>
         </Build>
