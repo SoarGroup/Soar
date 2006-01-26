@@ -324,6 +324,19 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		
 		m_Kernel.SetInterruptCheckRate(50) ;
 	}
+
+	/********************************************************************************************
+	 * 
+	 * Start an instance of Soar running in the debugger and create a first agent.
+	 * This version uses all default settings.
+	 * You can also call the version below directly which offers more control.
+	 * 
+	 * @return Returns the newly created agent.
+	********************************************************************************************/
+	public Agent startLocalKernel()
+	{
+		return startLocalKernel(Kernel.GetDefaultPort(), null, null) ;
+	}
 	
 	/********************************************************************************************
 	 * 
@@ -331,9 +344,11 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 	 * 
 	 * @param portToListenOn	This port can be used by other external clients to send commands to
 	 * 							the kernel running inside this debugger.  (Probably rare to do this).
+	 * @param agentName			Can pass null to get default name.
+	 * @param sourcePath		Path to file of productions to source on agent creation (can be null)
 	 * @return Returns the newly created agent.
 	********************************************************************************************/
-	public Agent startLocalKernel(int portToListenOn)
+	public Agent startLocalKernel(int portToListenOn, String agentName, String sourcePath)
 	{
 		if (m_Kernel != null)
 		{
@@ -391,12 +406,70 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		// Let the rest of the world know that the debugger is up and ready now (but agent level events not ready yet)
 		m_Kernel.SetConnectionInfo(kConnectionName, sml_Names.getKStatusReady(), sml_Names.getKStatusNotReady()) ;
 		
+		// Choose a name for the agent
+		if (agentName == null)
+			agentName = "soar1" ;
+
+		if (sourcePath != null)
+		{
+			delayedCommand(agentName, frame, getSoarCommands().getSourceCommand(sourcePath)) ;
+		}
+
 		// Start with an agent...without this a kernel's not much use.
-		Agent agent = createAgentNoNewWindow("soar1") ;
-		
+		Agent agent = createAgentNoNewWindow(agentName) ;
+
 		return agent ;
 	}
 
+	/********************************************************************************************
+	 * 
+	 * There are times when we'd like to execute a command but do so after the agent has been created
+	 * AND the window to show its output has been created.
+	 * 
+	 * Waiting for both of these to occur requires listening for the right event and placing a request
+	 * into the command queue in the right way.  This method shows how to do that.
+	 * 
+	 * @param agentName
+	 * @param frame
+	 * @param sourcePath
+	********************************************************************************************/
+	protected void delayedCommand(final String agentName, final MainFrame frame, final String command)
+	{
+		// Step one is to listen for the "agent added" event.
+		// This is fired internally by the debugger once the Soar agent has been created and the SWT window exists
+		// (but has yet to be displayed).
+		this.addSoarChangeListener(new SoarChangeListener() {
+			
+			// We'd like to remove this listener after it has executed once
+			// but that turns out to be tricky because this event may fire on different threads
+			// so instead we use a flag to ensure it only executes one time.
+			boolean m_Executed = false ;
+			public void soarAgentListChanged(SoarAgentEvent e)
+			{
+				if (m_Executed)
+					return ;
+				
+				final Agent agent = e.getAgent() ;
+				if (e.isAgentAdded() && agent.GetAgentName().equals(agentName))
+				{
+					// When the agent we're listening for is created, add the command
+					// to the command queue, but do it on the SWT UI thread so that it
+					// completes after the window has been fully displayed.
+					// Without this the command will execute fine--but probably before the window is up
+					// so the user won't see the command or its output (but the agent would still execute the command).
+					m_Executed = true ;
+					Display display = frame.getDisplay() ;
+					display.asyncExec(new Runnable() { public void run()
+					{
+						frame.executeCommandPrimeView(command, true) ;
+					}}) ;
+				}
+			}
+
+			public void soarConnectionChanged(SoarConnectionEvent e) { } 
+		} );		
+	}
+	
 	public Agent createAgent(String agentName)
 	{
 		Agent agent = m_Kernel.CreateAgent(agentName) ;

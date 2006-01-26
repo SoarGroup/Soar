@@ -11,6 +11,8 @@
 ********************************************************************************************/
 package doc.events;
 
+import java.util.Iterator;
+
 import sml.Agent;
 
 /********************************************************************************************
@@ -47,11 +49,11 @@ public class SoarChangeGenerator
 	public synchronized void fireAgentListChanged(Object source, int type, Agent agent)
 	{
 		SoarAgentEvent event = new SoarAgentEvent(source, type, agent) ;
-		java.util.Iterator listeners = m_Listeners.iterator();
-		while( listeners.hasNext() )
+		
+		for (Iterator listener = m_Listeners.iterator() ; listener.hasNext() ;)
 		{
-			SoarChangeListener listener = ( (SoarChangeListener) listeners.next() ) ;			
-			listener.soarAgentListChanged( event );
+			SoarChangeListener current = (SoarChangeListener)listener.next() ;
+			current.soarAgentListChanged(event) ;
 		}
 	}
 
