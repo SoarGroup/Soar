@@ -416,4 +416,10 @@ AC_OUTPUT([
 	Applications/TOHSML/Makefile
 	Applications/TestSoarPerformance/Makefile
 	Applications/TestSMLEvents/Makefile
+	Applications/JavaBaseEnvironment/Makefile
+	Applications/JavaEaters/Makefile
+	Applications/JavaMissionaries/Makefile
+	Applications/JavaTOH/Makefile
+	Applications/JavaTankSoar/Makefile
+	Applications/SoarJavaDebugger/Makefile
 	])
