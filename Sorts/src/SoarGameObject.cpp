@@ -1,4 +1,5 @@
 #include"include/SoarGameObject.h"
+#include<iostream>
 
 SoarGameObject::SoarGameObject()
 {
@@ -31,7 +32,7 @@ void SoarGameObject::removeBehavior(std::string name)
  FSM *tmp;
 
  for(it = behaviors.begin(); it != behaviors.end(); it++)
-  if((*it)->name.compare(name))
+  if((*it)->name.compare(0,name.length(),name))
   {
    tmp = (*it);
    behaviors.erase(it);
@@ -50,12 +51,12 @@ void SoarGameObject::issueCommand(std::string cmd)
   memory.pop();
  
  for(it = behaviors.begin(); it != behaviors.end(); it++)
-  if((*it)->name.compare(cmd)) 
+  if((*it)->name == cmd) 
   {
    memory.push((*it));
    return;
   }
-  
+  std::cout<<"No match for command"<<std::endl;
 }
 
 
