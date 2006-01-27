@@ -1,5 +1,5 @@
 #!/bin/sh
-SOARLIB="../soar-library"
+SOARLIB="../../SoarLibrary/bin"
 
 if [[ `uname -s` == "Darwin" ]]
 then
