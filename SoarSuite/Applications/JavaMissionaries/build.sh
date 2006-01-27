@@ -1,20 +1,20 @@
 #!/bin/sh
-SOARLIB="../soar-library"
+SOARLIB="../../SoarLibrary/bin"
 
 if [[ `uname -s` == "Darwin" ]]
 then
-  if ! javac -classpath .:${SOARLIB}/swt-osx.jar:${SOARLIB}/sml.jar -sourcepath src src/edu/umich/mac/MissionariesAndCannibals.java; then
+  if ! javac -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar -sourcepath src src/edu/umich/mac/MissionariesAndCannibals.java; then
     echo "Build failed."
     exit 1;
   fi
-  jar cfm ${SOARLIB}/mac.jar JarManifest-osx -C src .
 else
-  if ! javac -classpath .:${SOARLIB}/swt-motif.jar:${SOARLIB}/sml.jar -sourcepath src src/edu/umich/mac/MissionariesAndCannibals.java; then
+  if ! javac -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar -sourcepath src src/edu/umich/mac/MissionariesAndCannibals.java; then
     echo "Build failed."
     exit 1;
   fi
-  jar cfm ${SOARLIB}/mac.jar JarManifest-motif -C src .
 fi
+
+jar cfm ${SOARLIB}/mac.jar JarManifest -C src .
 
 if ! test -d ${SOARLIB}/mac; then
   mkdir ${SOARLIB}/mac;
