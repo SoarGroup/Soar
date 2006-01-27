@@ -5,4 +5,8 @@
 SUBDIRS = Core Applications
 
 java:
+if SWIGJAVA
 	cd Applications && $(MAKE) java
+else
+endif
+
