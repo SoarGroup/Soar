@@ -11,13 +11,23 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit) {
 
 void SoarGameGroup::addUnit(SoarGameObject* unit) {
   //capabilities &= unit->capabilities;
+
+  /* Sam: You can't use the line below, because find returns
+   *      an iterator. Instead you have to use what I've changed
+   *      it to.
+   *
+   *      - Joseph
+   */
   //assert(not members.find(unit));
+  assert(members.find(unit) == members.end());
   members.insert(unit);
   stale = true;
 }
 
 bool SoarGameGroup::removeUnit(SoarGameObject* unit) {
   //assert(members.find(unit));
+  assert(members.find(unit) != members.end());
+
   members.erase(unit);
   stale = true;
   return true;
