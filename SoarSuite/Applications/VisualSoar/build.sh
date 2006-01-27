@@ -1,6 +1,5 @@
 #!/bin/sh
-# Builds the debugger
-SOARLIB="../soar-library"
+SOARLIB="../../SoarLibrary/bin"
 
 for file in `find . -name "*.class"`
 do
