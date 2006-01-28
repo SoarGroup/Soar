@@ -7,6 +7,8 @@
 
 //How do I transition from one FSM to another?
 
+class SoarGameGroup;
+
 class SoarGameObject{
  public:
 	SoarGameObject();
@@ -17,6 +19,9 @@ class SoarGameObject{
 
 	void issueCommand(std::string name);
 	void update();
+
+  // I assume this can be public?
+  SoarGameGroup* group;
 
  private:
 	std::list<FSM *> behaviors;

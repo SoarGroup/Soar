@@ -10,9 +10,13 @@ class GroupManager {
     void updateWorld();
     bool assignActions();
 
-    SoarGameGroup* addGroup(SoarGameObject* object);
+    SoarGameGroup* addGroup(const SoarGameObject* object);
     // used by ORTSInterface when it sees a new object- create a group for it
-  
+    
+    // removes the object from the group it's in. If this results in an empty 
+    // group, delete the group too.
+    void removeFromGroup(const SoarGameObject* object);
+    
   private:
     void reGroup();
     void updateStats();
