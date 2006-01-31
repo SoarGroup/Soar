@@ -2251,7 +2251,14 @@ public class TankSoarJControl extends SimulationControl implements
 		}
 
 		TankSoarLogger.log(":" + tcount);
-	}
+
+		//EPISODIC_MEMORY: Added by :AMN: to control experiments
+		if (tcount >= 5000)
+		{
+		    JOptionPane.showMessageDialog(null, "Max turns reached.", "Eaters", JOptionPane.ERROR_MESSAGE);
+		    kernel.StopAllAgents();
+		}
+    }
 
 	public void soarStartEvent(int eventID, Object data, Kernel kernel) {
 		if (commandLine.andyMode) {

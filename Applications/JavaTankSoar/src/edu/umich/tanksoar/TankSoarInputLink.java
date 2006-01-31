@@ -738,7 +738,9 @@ public class TankSoarInputLink
 
   //Makeshift enums for I/O links
   public static final int MAX_HEALTH    = 1000;
-  public static final int MAX_ENERGY    = 1000;
+//%%%  public static final int MAX_ENERGY    = 1000;
+    //EPISODIC_MEMORY:  removed energy as consideration
+  public static final int MAX_ENERGY    = 1000000;
   public static final int MIN_HEALTH    = 0;
   public static final int MIN_DISTANCE  = 0;
   public static final int MAX_COORD     = 14;
@@ -749,7 +751,9 @@ public class TankSoarInputLink
   public final int ENERGYINCREASE_INT    = 200;
   public final int HEALTHINCREASE_INT    = 150;
   public static final int MAPDIM_INT     = 16;
-  public final int MAXENERGY_INT         = 1000;
+//%%%  public final int MAXENERGY_INT         = 1000;
+    //EPISODIC_MEMORY:  removed energy as consideration
+  public final int MAXENERGY_INT         = 1000000;
   public final int MAXHEALTH_INT         = 1000;
   public final int MAXRADAR_INT          = 14;
   public final int MISSILEINCREASE_INT   = 7;

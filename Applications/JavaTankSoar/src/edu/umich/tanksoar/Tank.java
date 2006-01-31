@@ -96,8 +96,12 @@ public class Tank implements SoarAgent
 	/** The initial and maximum health a <code>Tank</code> can have. */
 	public static final int MaxHealth = 1000;
 	/** The initial and maximum energy a <code>Tank</code> can have. */
-	public static final int MaxEnergy = 1000;
-	/** The initial radar-setting, that is, the distance to which the <code>Tank</code>'s
+//%%%	public static final int MaxEnergy = 1000;
+
+    // EPISODIC_MEMORY: made energy considerations moot for epmem experiments
+	public static final int MaxEnergy = 1000000;
+
+	/** the initial radar-setting, that is, the distance to which the <code>Tank</code>'s
 	 * radar sees. */
 	public static final int InitRadarSet = 1;
   /** The width of the radar "cone" */
@@ -464,7 +468,31 @@ TankSoarLogger.log("Kernel should have cleaned the real agent here...");
 	public int getDirection(){
 		return(myDirection);
 	}
-	
+
+//EPISODIC_MEMORY:  function used for logging
+	/**
+	 * Gives caller the direction this <code>Tank</code> is facing as a string.
+	 * @return The direction this <code>Tank</code> is facing, either
+	 * <code>Tank.NORTH</code>, <code>Tank.EAST</code>, <code>Tank.SOUTH</code>,
+	 * or <code>Tank.WEST</code>.
+	 */
+	public String getDirectionString(){
+		
+		switch(myDirection)
+		{
+			case Tank.NORTH:
+				return "north";
+			case Tank.SOUTH:
+				return "south";
+			case Tank.EAST:
+				return "east";
+			case Tank.WEST:
+				return "west";
+		}
+		return "none";
+	}
+//end EPISODIC_MEMORY
+
 	/**
 	 * Sets the direction of this <code>Tank</code>.
 	 * @param directionToSet The direction desired for the <code>Tank</code> to be facing.
@@ -789,6 +817,71 @@ TankSoarLogger.log("Kernel should have cleaned the real agent here...");
       radarSetting = decision.radar_power.setting;
       fireRadarChangedNotification();
     }
+
+    //EPISODIC_MEMORY: This added by :AMN: for data gathering
+    if (rotatedLastTurn)
+    {
+    	boolean correctSetting = true;
+    	Location loc = myLocation;
+    	int rDist = 0; //NOTE: getRadarDistance() isn't accurate
+    	int rSet = getRadarSetting();
+    	String radarView = ">";
+    	
+    	for(int i = 0; i < 15; i++)
+		{
+			loc = loc.getAdjacent(myDirection);
+			
+			if (myTC.getLocationContents(loc) instanceof TSWall)
+			{
+				radarView += "#";
+				break;
+			}
+			else
+			{
+				rDist++;
+				radarView += Integer.toString(rDist % 10);
+			}
+			
+		}//for
+		radarView += "<";
+		
+    	
+    	//If the setting and distance aren't equal than the tank used too
+    	//much radar power
+    	if (rDist != rSet)
+    	{
+    		correctSetting = false;
+    	}
+    	
+    	TankSoarLogger.log("position="
+    			+ Integer.toString(myLocation.getX())
+    			+ "," 
+    			+ Integer.toString(myLocation.getY())
+    			+ " direction="
+    			+ getDirectionString()
+    			+ " radar view= "
+    			+ radarView
+    			);
+    	if (!correctSetting)
+    	{
+    		TankSoarLogger.log("Incorrect radar setting was used: setting=" 
+    							+ Integer.toString(getRadarSetting())
+    							+ " distance="
+    							+ Integer.toString(getRadarDistance()));
+    	}
+    	else
+    	{
+    		TankSoarLogger.log("Correct radar setting was used: setting=" 
+					+ Integer.toString(getRadarSetting()));
+    	}
+    	TankSoarLogger.log("Energy Remaining=" + Integer.toString(getEnergy()));
+
+    	
+    }//if
+    
+    //End of :AMN:
+    
+    
     lastDecision = decision;
     return(decision);
   }
