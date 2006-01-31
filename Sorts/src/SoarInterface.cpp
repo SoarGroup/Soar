@@ -141,3 +141,8 @@ SoarActionType actionTypeLookup(const char* actionName) {
   else if (!strcmp(actionName, "mine"))      return SA_MINE;
   else                                       return SA_NO_SUCH_ACTION;
 }
+
+
+void SoarInterface::updatePlayerGold(int amount) {
+  agent->Update(playerGoldWME, amount);
+}
