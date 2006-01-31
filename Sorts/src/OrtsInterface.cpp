@@ -2,7 +2,7 @@
 #include "OrtsInterface.h"
 
 OrtsInterface::addAppearedObject() {
-
+  assert(false);
 }
 
 OrtsInterface::addCreatedObject(const GameObj* gameObj) {

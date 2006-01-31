@@ -22,7 +22,7 @@ typedef struct {
   map<string, IntElement*> properties;
 } SoarIOGroupRep;
 
-class SoarInterface{
+class SoarInterface {
   public:
     SoarInterface(pthread_mutex_t* _actionQueueMutex);
     ~SoarInterface();
@@ -41,21 +41,33 @@ class SoarInterface{
 
     // SML pointers
     sml::Agent *agent;
+
+    // input link stuff
     sml::Identifier *inputLink;
     sml::Identifier *playerIdentifier;
     sml::IntElement *playerGoldWME;
-
-    pthread_mutex_t* actionQueueMutex;
+    sml::Identifier *mapIdentifier;
 
     // these are the maps that keep track of input link <-> middleware objects
     hash_map<SoarGameGroup*, SoarIOGroupRep> mwToSoarGroups;
     hash_map<int, SoarGameGroup*>            gIdToMwGroups;
-    
+   
+    // keep track of actions on the input link and middleware
     hash_map<sml::Identifier*, SoarAction>  soarActions;
 
-    // a list of actions that are currently unprocessed
+
+    // lists of actions that are currently unprocessed
     // there is a race condition on accessing this list
     list<SoarAction*> actionQueue;
+    // need to add two more, once we get the SoarAction class modified
+
+    // ... and the associated mutexes that protect them
+    pthread_mutex_t* objectActionQueueMutex;
+    pthread_mutex_t* attentionActionQueueMutex;
+    pthread_mutex_t* groupActionQueueMutex;
+
+    void initSoarInputLink();
+
 };
 
 

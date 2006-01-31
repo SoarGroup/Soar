@@ -146,3 +146,20 @@ SoarActionType actionTypeLookup(const char* actionName) {
 void SoarInterface::updatePlayerGold(int amount) {
   agent->Update(playerGoldWME, amount);
 }
+
+/*
+ * inputLink ----> me ----> gold
+ *             |       l--> units
+ *             |
+ *             l-> p1 ----> ...
+ *             l-> p2 ----> ...
+ *             |
+ *             l-> map ---> ...
+ */
+void SoarInterface::initSoarInputLink() {
+  playerIdentifier = agent->CreateIdWME(inputLink, "me");
+  mapIdentifier = agent->CreateIdWME(inputLink, "map");
+
+  agent->CreateIntWME(playerIdentifier, "gold");
+  agent->CreateIdWME(playerIdentifier, "units");
+}
