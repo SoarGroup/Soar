@@ -200,8 +200,9 @@ Bool remove_input_wme (agent* thisAgent, wme *w) {
    for (temp=w->id->id.input_wmes; temp!=NIL; temp=temp->next)
       if (temp==w) break;
    if (!temp) {
-      print (thisAgent, "Error: an input routine called remove_input_wme on a wme that\n");
-      print (thisAgent, "isn't one of the input wmes currently in working memory.\n");
+       //%%%REMOVED for EPISODIC_MEMORY
+//        print (thisAgent, "Error: an input routine called remove_input_wme on a wme that\n");
+//        print (thisAgent, "isn't one of the input wmes currently in working memory.\n");
       return FALSE;
    }
    /* Note: for efficiency, it might be better to use a hash table for the
