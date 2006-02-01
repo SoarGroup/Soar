@@ -326,6 +326,7 @@ namespace gSKI {
        * @todo Specify what a pattern is exactly.
        *
        * @param pattern The Pattern we are matching against.
+	   *				DJP: This seems to actually be limited to the name of a single production, rather than being a pattern.
 	   * @param includeConditions	If true, the productions include all gSKI condition objects.
 	   *			This process involves copying the underlying list of conditions in kernel production, so
 	   *			you should only do this if you're going to work with the conditions (which is not common).
