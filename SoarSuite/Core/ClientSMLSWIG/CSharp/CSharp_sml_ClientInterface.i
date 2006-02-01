@@ -55,6 +55,37 @@
 	}
 
 	static protected HandleHelper staticHandleHelper = new HandleHelper();
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	//
+	// AgentEvent
+	//
+	//////////////////////////////////////////////////////////////////////////////////
+	// C++ equivalent:
+	// typedef void (*AgentEventHandler)(smlAgentEventId id, void* pUserData, Agent* pAgent);
+	public delegate void AgentEventCallback(smlAgentEventId eventID, IntPtr callbackData, IntPtr kernel, String agentName);
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern int CSharp_Kernel_RegisterForAgentEvent(HandleRef jarg1, int eventID, IntPtr jkernel, AgentEventCallback callback, IntPtr callbackData);
+
+	public int RegisterForAgentEvent(smlAgentEventId eventID, AgentEventCallback jarg2, Object callbackData)
+	{
+		// This call ensures the garbage collector won't delete the object until we call free on the handle.
+		// It's also an approved way to pass a pointer to unsafe (C++) code and get it back.
+		// Also, somewhat remarkably, we can pass null to GCHandle.Alloc() and get back a valid object, so no need to special case that.
+		GCHandle kernelHandle = GCHandle.Alloc(this) ;
+		GCHandle callbackDataHandle = GCHandle.Alloc(callbackData) ;
+		
+		return CSharp_Kernel_RegisterForAgentEvent(swigCPtr, (int)eventID, (IntPtr)kernelHandle, jarg2, (IntPtr)callbackDataHandle) ;
+	}
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern bool CSharp_Kernel_UnregisterForAgentEvent(HandleRef jarg1, int callbackID);
+
+	public bool UnregisterForAgentEvent(int jarg2)
+	{
+		return CSharp_Kernel_UnregisterForAgentEvent(swigCPtr, jarg2) ;
+	}
 %}
 
 // DJP: NOTE!  When changing this code make sure the library smlCSharp.dll is getting
