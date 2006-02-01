@@ -171,16 +171,13 @@
 #include"gsysparam.h"
 #endif
 
- #include "kernel.h"
+#include "kernel.h"
 #include "agent.h"
 #include "explain.h"
 #include "rete.h"
-//  #include "gdatastructs.h"
 #include "decide.h"
-//  #include "production.h"
 #include "prefmem.h"
 #include "print.h"
-//  #include "gski_event_system_functions.h"
 #include "activate.h"
 
 #ifdef SOAR_WMEM_ACTIVATION
