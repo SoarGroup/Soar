@@ -11,6 +11,7 @@
 
 typedef int	agentPtr ;
 typedef int	CallbackDataPtr ;
+typedef int kernelPtr ;
 
 /* Callback for deleting GCHandle objects from within C#, so we don't leak them. */
 typedef void (SWIGSTDCALL* CSharpHandleHelperCallback)(unsigned int);
@@ -26,14 +27,16 @@ class CSharpCallbackData
 public:
 	int				m_EventID ;
 	agentPtr		m_Agent ;
+	kernelPtr		m_Kernel ;
 	void*			m_CallbackFunction ;
 	CallbackDataPtr	m_CallbackData ;
 	int				m_CallbackID ;
 
 public:
-	CSharpCallbackData(agentPtr jagent, int eventID, void* callbackFunction, unsigned int callbackData)
+	CSharpCallbackData(agentPtr jagent, kernelPtr jkernel, int eventID, void* callbackFunction, unsigned int callbackData)
 	{
 		m_Agent = jagent ;
+		m_Kernel = jkernel ;
 		m_EventID = eventID ;
 		m_CallbackFunction = callbackFunction ;
 		m_CallbackData = callbackData ;
@@ -45,9 +48,14 @@ public:
 	}
 } ;
 
-static CSharpCallbackData* CreateCSharpCallbackData(agentPtr jagent, int eventID, unsigned int callbackFunction, CallbackDataPtr callbackData)
+static CSharpCallbackData* CreateCSharpCallbackDataAgent(agentPtr jagent, int eventID, unsigned int callbackFunction, CallbackDataPtr callbackData)
 {
-	return new CSharpCallbackData(jagent, eventID, (void *)callbackFunction, callbackData) ;
+	return new CSharpCallbackData(jagent, NULL, eventID, (void *)callbackFunction, callbackData) ;
+}
+
+static CSharpCallbackData* CreateCSharpCallbackDataKernel(kernelPtr jkernel, int eventID, unsigned int callbackFunction, CallbackDataPtr callbackData)
+{
+	return new CSharpCallbackData(NULL, jkernel, eventID, (void *)callbackFunction, callbackData) ;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -86,7 +94,7 @@ SWIGEXPORT int SWIGSTDCALL CSharp_Agent_RegisterForRunEvent(void * jarg1, int ja
 	// jarg3 is the callback function
 
 	// Create the information we'll need to make a Java call back later
-	CSharpCallbackData* pData = CreateCSharpCallbackData(jagent, jarg2, jarg3, jdata) ;
+	CSharpCallbackData* pData = CreateCSharpCallbackDataAgent(jagent, jarg2, jarg3, jdata) ;
 	
 	// Register our handler.  When this is called we'll call back to the client method.
 	pData->m_CallbackID = arg1->RegisterForRunEvent(arg2, &RunEventHandler, pData) ;
@@ -156,7 +164,7 @@ SWIGEXPORT int SWIGSTDCALL CSharp_Agent_RegisterForProductionEvent(void * jarg1,
 	// jarg3 is the callback function
 
 	// Create the information we'll need to make a Java call back later
-	CSharpCallbackData* pData = CreateCSharpCallbackData(jagent, jarg2, jarg3, jdata) ;
+	CSharpCallbackData* pData = CreateCSharpCallbackDataAgent(jagent, jarg2, jarg3, jdata) ;
 	
 	// Register our handler.  When this is called we'll call back to the client method.
 	pData->m_CallbackID = arg1->RegisterForProductionEvent(arg2, &ProductionEventHandler, pData) ;
@@ -178,6 +186,76 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForProductionEvent(void* jarg
 
 	// Free the GCHandles created when the callback was registered
 	SWIG_csharp_deletehandle_callback(pData->m_Agent) ;
+	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
+
+	// Release the callback data
+	delete pData ;
+
+	return result ;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//
+// AgentEvent
+//
+//////////////////////////////////////////////////////////////////////////////////
+
+// The callback we want to support
+// Handler for Agent events (such as creation/destruction etc.).
+//typedef void (*AgentEventHandler)(smlAgentEventId id, void* pUserData, Agent* pAgent) ;
+
+// The C# callback equivalent that we'll eventually call (we pass back the name of the agent so we don't have to locate the C# Agent object)
+typedef void (__stdcall *AgentEventCallback)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, char* agentName) ;
+
+// This is the C++ handler which will be called by clientSML when the event fires.
+// Then from here we need to call back to C# to pass back the message.
+static void AgentEventHandler(sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent)
+{
+	// The user data is the class we declared above, where we store the Java data to use in the callback.
+	CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
+
+	AgentEventCallback callback = (AgentEventCallback)pData->m_CallbackFunction ;
+
+	// Create a C# string which we can return
+	char* csharpAgentName = SWIG_csharp_string_callback(pAgent->GetAgentName()); 
+
+	// Now try to call back to CSharp
+	callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, csharpAgentName) ;
+}
+
+SWIGEXPORT int SWIGSTDCALL CSharp_Kernel_RegisterForAgentEvent(void * jarg1, int jarg2, kernelPtr jkernel, unsigned int jarg3, CallbackDataPtr jdata)
+{
+    // jarg1 is the C++ Kernel object
+	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
+
+	// jarg2 is the event ID we're registering for
+	sml::smlAgentEventId arg2 = (sml::smlAgentEventId)jarg2;
+
+	// jarg3 is the callback function
+
+	// Create the information we'll need to make a Java call back later
+	CSharpCallbackData* pData = CreateCSharpCallbackDataKernel(jkernel, jarg2, jarg3, jdata) ;
+	
+	// Register our handler.  When this is called we'll call back to the client method.
+	pData->m_CallbackID = arg1->RegisterForAgentEvent(arg2, &AgentEventHandler, pData) ;
+
+	// Pass the callback info back to the client.  We need to do this so we can delete this later when the method is unregistered
+	return (int)pData ;
+}
+
+SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForAgentEvent(void* jarg1, int jarg2)
+{
+    // jarg1 is the C++ Agent object
+	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
+
+	// jarg2 is the callback data from the registration call
+	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
+
+	// Unregister our handler.
+	bool result = arg1->UnregisterForAgentEvent(pData->m_CallbackID) ;
+
+	// Free the GCHandles created when the callback was registered
+	SWIG_csharp_deletehandle_callback(pData->m_Kernel) ;
 	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
 
 	// Release the callback data

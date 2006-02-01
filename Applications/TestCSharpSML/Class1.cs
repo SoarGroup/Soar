@@ -47,6 +47,25 @@ namespace TestCSharpSML
 			System.Console.Out.WriteLine(eventID + " agent " + name + " production " + productionName + " instantiation " + instantiation + " with user data " + userData) ;
 		}
 
+		static void MyAgentEventCallback(sml.smlAgentEventId eventID, IntPtr callbackData, IntPtr kernelPtr, String agentName)
+		{
+			// Retrieve the original object reference from the GCHandle which is used to pass the value safely to and from C++ (unsafe/unmanaged) code.
+			sml.Kernel kernel = (sml.Kernel)((GCHandle)kernelPtr).Target ;
+
+			// Retrieve arbitrary data from callback data object (note data here can be null, but the wrapper object callbackData won't be so this call is safe)
+			// This field's usage is up to the user and passed in during registation call and passed back here.  Can be used to provide context.
+			Object userData = (Object)((GCHandle)callbackData).Target ;
+
+			// This callback returns the name of the agent as a string, to avoid having SWIG have to lookup the C# agent object
+			// and pass that back.  We do something similar in Java for the same reasons.
+			sml.Agent agent = kernel.GetAgent(agentName) ;
+			
+			if (agent == null)
+				throw new Exception("Error looking up agent in callback") ;
+
+			System.Console.Out.WriteLine(eventID + " agent " + agentName + " with user data " + userData) ;
+		}
+
 		/// <summary>
 		/// The main entry point for the application.
 		/// </summary>
@@ -133,13 +152,21 @@ namespace TestCSharpSML
 			String myTestData = "my data" ;
 			sml.Agent.RunEventCallback runCall = new sml.Agent.RunEventCallback(MyRunEventCallback) ;			
 			sml.Agent.ProductionEventCallback prodCall = new sml.Agent.ProductionEventCallback(MyProductionEventCallback) ;			
+			sml.Kernel.AgentEventCallback agentCall = new sml.Kernel.AgentEventCallback(MyAgentEventCallback) ;			
+
 			int runCallbackID	= agent.RegisterForRunEvent(sml.smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, runCall, myTestData) ;
 			int prodCallbackID	= agent.RegisterForProductionEvent(sml.smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, prodCall, myTestData) ;
+			int agentCallbackID	= kernel.RegisterForAgentEvent(sml.smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, agentCall, myTestData) ;
 
+			// Trigger some run and production events
 			agent.RunSelf(3) ;
+
+			// Trigger an agent event
+			agent.InitSoar() ;
 
 			ok = agent.UnregisterForRunEvent(runCallbackID) ;
 			ok = ok && agent.UnregisterForProductionEvent(prodCallbackID) ;
+			ok = ok && kernel.UnregisterForAgentEvent(agentCallbackID) ;
 
 			if (!ok)
 			{
