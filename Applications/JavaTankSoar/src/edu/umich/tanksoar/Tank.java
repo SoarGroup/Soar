@@ -874,8 +874,7 @@ TankSoarLogger.log("Kernel should have cleaned the real agent here...");
     		TankSoarLogger.log("Correct radar setting was used: setting=" 
 					+ Integer.toString(getRadarSetting()));
     	}
-    	TankSoarLogger.log("Energy Remaining=" + Integer.toString(getEnergy()));
-
+    	
     	
     }//if
     

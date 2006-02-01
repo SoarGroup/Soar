@@ -827,7 +827,7 @@ public class TankSoarJControl extends SimulationControl implements
 	 * 
 	 */
 	public void updateAllTanks() {
-		TankSoarLogger.log("TankSoarJControl::updateAllTanks called....");
+		//TankSoarLogger.log("TankSoarJControl::updateAllTanks called....");
 		for (ListIterator iter = myAgents.listIterator(); iter.hasNext();) {
 			Tank curr = ((Tank) iter.next());
 			curr.getWorldState();
@@ -874,7 +874,7 @@ public class TankSoarJControl extends SimulationControl implements
 	 * flying and <code>Tank</code> collisions. {@inheritDoc}
 	 */
 	public void singleStep() {
-		TankSoarLogger.log("TankSoarJControl::singleStep called....");
+		//TankSoarLogger.log("TankSoarJControl::singleStep called....");
 		singleStep = true;
 
 		if (simShouldStop()) {
@@ -886,7 +886,7 @@ public class TankSoarJControl extends SimulationControl implements
 
 		// now all decisions have been made, and should be waiting on the output
 		// link
-		TankSoarLogger.log("TankSoarJControl: Make decision here....");
+		//TankSoarLogger.log("TankSoarJControl: Make decision here....");
 
 		for (Iterator iter = myAgents.listIterator(); iter.hasNext();) {
 			Tank curr = ((Tank) iter.next());
@@ -899,7 +899,7 @@ public class TankSoarJControl extends SimulationControl implements
 		// evaluate all of the decisions that were just made - that is, enact
 		// whatever
 		// decision was made. Cause the tank to move, fire, whatever.
-		TankSoarLogger.log("TankSoarJControl: Evaluate decision here...");
+		//TankSoarLogger.log("TankSoarJControl: Evaluate decision here...");
 		for (Iterator iter = myAgents.listIterator(); iter.hasNext();) {
 			try {
 				SoarAgent curAgent = (SoarAgent) iter.next();
@@ -2289,7 +2289,7 @@ public class TankSoarJControl extends SimulationControl implements
 		// FIXME: Singlestep should be two fxns, one for input one for output
 		// with the runall inbetween, to handle weird cases
 		updateAllTanks();
-		TankSoarLogger.log("RunAllTanks called...");
+		//TankSoarLogger.log("RunAllTanks called...");
 		kernel.RunAllTilOutput();
 		singleStep();
 		/*
