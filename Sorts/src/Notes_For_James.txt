@@ -1,0 +1,2 @@
+The SoarGameObjects need setGroup() and getGroup() added.
+-sw 2/2/06

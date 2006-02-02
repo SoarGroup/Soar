@@ -3,22 +3,16 @@
 #include <vector>
 
 SoarGameGroup::SoarGameGroup(SoarGameObject* unit) {
-  members.clear();
   members.insert(unit);
   // capabilities = unit->capabilities;
+  unit->setGroup(this);
   stale = true;
 }
 
 void SoarGameGroup::addUnit(SoarGameObject* unit) {
   //capabilities &= unit->capabilities;
 
-  /* Sam: You can't use the line below, because find returns
-   *      an iterator. Instead you have to use what I've changed
-   *      it to.
-   *
-   *      - Joseph
-   */
-  //assert(not members.find(unit));
+  
   assert(members.find(unit) == members.end());
   members.insert(unit);
   stale = true;

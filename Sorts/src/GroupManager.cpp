@@ -2,7 +2,6 @@
 
 /* TODO:
 
-recent changes:
 -ORTSIO now directly removes dead objects from groups,
   regrouper (or update stats?) must prune empty groups
 
@@ -18,9 +17,8 @@ recent changes:
 
 
 void GroupManager::updateWorld() {
-  createNewGroups();
   adjustGroups();
-  updateStats();
+  epdateStats();
 
   return;
 }
@@ -40,32 +38,20 @@ bool GroupManager::assignActions() {
   return success;
 }
 
-void GroupManager::createNewGroups() {
-  vector <SoarGameObject*> newObjs = ORTSIO.getNewObjects();
-
-  for (unsigned int i=0; i<newObjs.size(); i++) {
-    SoarGameGroup* grp = new SoarGameGroup(newObjs.at(i));
-
-    newGroups.push_back(grp);
-  }
-
-  return;
-}
-
 void GroupManager::adjustGroups() {
-  // do stuff here!
-  // otherwise, all groups are singletons
 
-  // lump the new groups w/ each other or with existing groups
+  // for now, all groups of 1
+  // new groups are in the NIF list, just move to IF list
 
-  for (unsigned int i=0; i<newGroups.size(); i++) { 
+  vector<SoarGameGroup*>::iterator NIFIter = groupsNotInFocus.begin();
+  while (NIFIter != groupsNotInFocus.end()) { 
     // do smart stuff here
 
     // if it is actually a new group..
-    groupsInFocus.push_back(newGroups.at(i));
-    SoarIO->addGroup(newGroups.at(i));
-
-    // else remove it from the newGroups list, so the stats don't get updated
+    groupsInFocus.push_back(*NIFIter);
+    SoarIO->addGroup(*NIFIter);
+    groupsNotInFocus.erase(NIFIter);
+    NIFIter++;
   }
   return;
 }
@@ -88,4 +74,7 @@ void GroupManager::updateStats() {
 
   return;
 }
-
+void addGroup(const SoarGameObject* object) {
+  groupsNotInFocus.push_back(new SoarGameGroup(object));
+  return;
+}

@@ -10,7 +10,10 @@ OrtsInterface::addCreatedObject(const GameObj* gameObj) {
   assert(objectMap.find(gameObj) == objectMap.end());
 
   SoarGameObject* newObj = new SoarGameObject();
-  newObj->group = groupManager.addGroup(newObj);
+  
+  // GroupManager takes care of setting the object->group pointers
+  groupManager.addGroup(newObj);
+  
   // more initializations of the object?
 
   objectMap[gameObj] = newObj;
@@ -20,7 +23,9 @@ OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   // make sure the game object exists
   assert(objectmap.find(gameObj) != objectMap.end());
 
-  groupManager.removeFromGroup(objectMap[gameObj]);
+  SoarGameObject* sObject = objectMap[gameObj];
+  sObject->getGroup()->removeUnit(sObject);
+  
   delete objectMap[gameObj];
   objectMap.erase(gameObj);
 }
