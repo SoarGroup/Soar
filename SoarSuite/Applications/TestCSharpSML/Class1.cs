@@ -66,6 +66,18 @@ namespace TestCSharpSML
 			System.Console.Out.WriteLine(eventID + " agent " + agentName + " with user data " + userData) ;
 		}
 
+		static void MyPrintEventCallback(sml.smlPrintEventId eventID, IntPtr callbackData, IntPtr agentPtr, String message)
+		{
+			// Retrieve the original object reference from the GCHandle which is used to pass the value safely to and from C++ (unsafe/unmanaged) code.
+			sml.Agent agent = (sml.Agent)((GCHandle)agentPtr).Target ;
+
+			// Retrieve arbitrary data from callback data object (note data here can be null, but the wrapper object callbackData won't be so this call is safe)
+			// This field's usage is up to the user and passed in during registation call and passed back here.  Can be used to provide context.
+			Object userData = (Object)((GCHandle)callbackData).Target ;
+
+			System.Console.Out.WriteLine(eventID + " agent " + agent.GetAgentName() + " message " + message + " with user data " + userData) ;
+		}
+
 		/// <summary>
 		/// The main entry point for the application.
 		/// </summary>
@@ -152,10 +164,12 @@ namespace TestCSharpSML
 			String myTestData = "my data" ;
 			sml.Agent.RunEventCallback runCall = new sml.Agent.RunEventCallback(MyRunEventCallback) ;			
 			sml.Agent.ProductionEventCallback prodCall = new sml.Agent.ProductionEventCallback(MyProductionEventCallback) ;			
+			sml.Agent.PrintEventCallback printCall = new sml.Agent.PrintEventCallback(MyPrintEventCallback) ;			
 			sml.Kernel.AgentEventCallback agentCall = new sml.Kernel.AgentEventCallback(MyAgentEventCallback) ;			
 
 			int runCallbackID	= agent.RegisterForRunEvent(sml.smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, runCall, myTestData) ;
 			int prodCallbackID	= agent.RegisterForProductionEvent(sml.smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, prodCall, myTestData) ;
+			int printCallbackID	= agent.RegisterForPrintEvent(sml.smlPrintEventId.smlEVENT_PRINT, printCall, myTestData) ;
 			int agentCallbackID	= kernel.RegisterForAgentEvent(sml.smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, agentCall, myTestData) ;
 
 			// Trigger some run and production events
@@ -166,6 +180,7 @@ namespace TestCSharpSML
 
 			ok = agent.UnregisterForRunEvent(runCallbackID) ;
 			ok = ok && agent.UnregisterForProductionEvent(prodCallbackID) ;
+			ok = ok && agent.UnregisterForPrintEvent(printCallbackID) ;
 			ok = ok && kernel.UnregisterForAgentEvent(agentCallbackID) ;
 
 			if (!ok)

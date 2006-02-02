@@ -837,6 +837,10 @@ public:
 	*
 	* This points to the location where the kernelSML library was loaded
 	* (unless it has been changed since the load).
+	*
+	* The latest folder structure has "SoarLibrary"
+	* with a "bin" subfolder that contains the actual kernel DLL that we load.
+	* This function returns the parent "SoarLibrary" folder.
 	*************************************************************/
 	std::string GetLibraryLocation() ;
 

@@ -196,6 +196,76 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForProductionEvent(void* jarg
 
 //////////////////////////////////////////////////////////////////////////////////
 //
+// PrintEvent
+//
+//////////////////////////////////////////////////////////////////////////////////
+
+// The callback we want to support
+// Handler for Print events.
+//typedef void (*PrintEventHandler)(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMessage) ;
+
+// The C# callback equivalent that we'll eventually call
+typedef void (__stdcall *PrintEventCallback)(int eventID, CallbackDataPtr callbackData, agentPtr jagent, char* pMessage) ;
+
+// This is the C++ handler which will be called by clientSML when the event fires.
+// Then from here we need to call back to C# to pass back the message.
+static void PrintEventHandler(sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage)
+{
+	// The user data is the class we declared above, where we store the Java data to use in the callback.
+	CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
+
+	PrintEventCallback callback = (PrintEventCallback)pData->m_CallbackFunction ;
+
+	// Create a C# string which we can return
+	char* csharpMessage = SWIG_csharp_string_callback(pMessage); 
+
+	// Now try to call back to CSharp
+	callback(pData->m_EventID, pData->m_CallbackData, pData->m_Agent, csharpMessage) ;
+}
+
+SWIGEXPORT int SWIGSTDCALL CSharp_Agent_RegisterForPrintEvent(void * jarg1, int jarg2, agentPtr jagent, unsigned int jarg3, CallbackDataPtr jdata)
+{
+    // jarg1 is the C++ Agent object
+	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
+
+	// jarg2 is the event ID we're registering for
+	sml::smlPrintEventId arg2 = (sml::smlPrintEventId)jarg2;
+
+	// jarg3 is the callback function
+
+	// Create the information we'll need to make a Java call back later
+	CSharpCallbackData* pData = CreateCSharpCallbackDataAgent(jagent, jarg2, jarg3, jdata) ;
+	
+	// Register our handler.  When this is called we'll call back to the client method.
+	pData->m_CallbackID = arg1->RegisterForPrintEvent(arg2, &PrintEventHandler, pData) ;
+
+	// Pass the callback info back to the client.  We need to do this so we can delete this later when the method is unregistered
+	return (int)pData ;
+}
+
+SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForPrintEvent(void* jarg1, int jarg2)
+{
+    // jarg1 is the C++ Agent object
+	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
+
+	// jarg2 is the callback data from the registration call
+	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
+
+	// Unregister our handler.
+	bool result = arg1->UnregisterForPrintEvent(pData->m_CallbackID) ;
+
+	// Free the GCHandles created when the callback was registered
+	SWIG_csharp_deletehandle_callback(pData->m_Agent) ;
+	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
+
+	// Release the callback data
+	delete pData ;
+
+	return result ;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//
 // AgentEvent
 //
 //////////////////////////////////////////////////////////////////////////////////
