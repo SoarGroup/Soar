@@ -54,6 +54,10 @@ void SLEEP(long secs, long msecs)
 #endif // HAVE_STRCASECMP
 #endif // HAVE_STRINGS_H
 
+#ifdef _MSC_VER
+#define stricmp _stricmp
+#endif
+
 using namespace sml ;
 
 using std::cout;

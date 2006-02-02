@@ -45,6 +45,10 @@ bool UpdateListener::RemoveListener(egSKIUpdateEventId eventID, Connection* pCon
 // Called when a "RunEvent" occurs in the kernel
 void UpdateListener::HandleEvent(egSKIUpdateEventId eventID, int runFlags)
 {
+	// BADBAD: voigtjr VS2005 workaround
+	if (!HasEvents(eventID)) 
+		return;
+
 	ConnectionListIter connectionIter = GetBegin(eventID) ;
 
 	// Nobody is listenening for this event.  That's an error as we should unregister from the kernel in that case.

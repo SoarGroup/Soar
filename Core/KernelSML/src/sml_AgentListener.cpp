@@ -62,6 +62,10 @@ bool AgentListener::RemoveListener(egSKIAgentEventId eventID, Connection* pConne
 // Called when an "AgentEvent" occurs in the kernel
 void AgentListener::HandleEvent(egSKIAgentEventId eventID, gSKI::IAgent* agentPtr)
 {
+	// BADBAD: voigtjr VS2005 workaround
+	if (!EventManager<egSKIAgentEventId>::HasEvents(eventID)) 
+		return;
+
 	ConnectionListIter connectionIter = EventManager<egSKIAgentEventId>::GetBegin(eventID) ;
 
 	// Nobody is listenening for this event.  That's an error as we should unregister from the kernel in that case.

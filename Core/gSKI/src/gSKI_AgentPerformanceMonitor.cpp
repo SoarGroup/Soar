@@ -24,9 +24,9 @@ using namespace gSKI;
 // a hack so I don't have to rewrite all the current_agent code below...
 #define current_agent(x) a->x
 
-// For some reason the SoarTech version of the kernel doesn't seem to have sys_sleep...
 #ifdef WIN32 
-#define sys_sleep( seconds )    _sleep( seconds )
+// Sleep on windows is in milliseconds, hence the multiplication by 1000
+#define sys_sleep( seconds )    Sleep( seconds * 1000 )
 #else /* WIN32 */
 #include <unistd.h>
 #define sys_sleep( seconds )    sleep( seconds )
@@ -450,7 +450,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 
     /* MVP 6-8-94 */
     char hostname[MAX_LEXEME_LENGTH + 1];
-    long current_time;
+    time_t current_time;
 
 #if !defined (THINK_C) && !defined (__SC__) && !defined(MACINTOSH) && !defined(WIN32) && !defined(_WINDOWS)
     if (gethostname(hostname, MAX_LEXEME_LENGTH)) {
@@ -463,7 +463,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     }
 #endif
 
-    current_time = (long)time(NULL);
+    current_time = time(NULL);
 
 /* REW: begin 28.07.96 */
 /* See note in soarkernel.h for a description of the timers */
@@ -641,13 +641,13 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 	char buf[128];
 
     //print(a, "Soar %s on %s at %s\n", soar_version_string, hostname, ctime((const time_t *) &current_time));
-	safeSprintf(buf, 127, "Soar %s on %s at %s\n", soar_version_string, hostname, ctime((const time_t *) &current_time));
+	safeSprintf(buf, 127, "Soar %s on %s at %s\n", soar_version_string, hostname, ctime(&current_time));
 	m_result += buf;
 
     //print(a, "%lu productions (%lu default, %lu user, %lu chunks)\n",
     //      current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE] +
     //      current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE] +
-    //      current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE],
+    //      current_agent(num_productions_of_type)[CHUNK_PRODUCTIN_TYPE],
     //      current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE],
     //      current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE],
     //      current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE]);

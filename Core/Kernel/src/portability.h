@@ -134,11 +134,14 @@ typedef void assert;
  * Part 3: Visual Studio section
  */
 
-
 #include <windows.h>
 #include <direct.h>
 #include <time.h>
 #include <assert.h>
+
+// Visual Studio 2005 requires these:
+#define getcwd _getcwd
+#define chdir _chdir
 
 #endif // not HAVE_CONFIG_H
 /*
