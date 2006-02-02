@@ -124,6 +124,10 @@ void XMLListener::FlushOutput(egSKIXMLEventId eventID)
 	if (xmlTrace->IsEmpty())
 		return ;
 
+	// BADBAD: voigtjr VS2005 workaround
+	if (!HasEvents(eventID)) 
+		return;
+
 	ConnectionListIter connectionIter = GetBegin(eventID);
 
 	// Nobody is listenening for this event.  That's an error as we should unregister from the kernel in that case.
@@ -168,6 +172,11 @@ void XMLListener::FlushOutput(egSKIXMLEventId eventID)
 void XMLListener::FireInputReceivedEvent(ElementXML const* pCommands)
 {
 	egSKIXMLEventId eventID = gSKIEVENT_XML_INPUT_RECEIVED ;
+
+	// BADBAD: voigtjr VS2005 workaround
+	if (!HasEvents(eventID)) 
+		return;
+
 	ConnectionListIter connectionIter = GetBegin(eventID);
 
 	// Nobody is listenening for this event.

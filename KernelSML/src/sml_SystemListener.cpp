@@ -99,6 +99,11 @@ void SystemListener::HandleEvent(egSKISystemEventId eventID, gSKI::IKernel* kern
 			return ;
 	}
 
+	// BADBAD: voigtjr VS2005 workaround
+	if (!EventManager<egSKISystemEventId>::HasEvents(eventID)) {
+		return;
+	}
+
 	ConnectionListIter connectionIter = EventManager<egSKISystemEventId>::GetBegin(eventID) ;
 
 	// Nobody is listenening for this event.  That's an error as we should unregister from the kernel in that case.

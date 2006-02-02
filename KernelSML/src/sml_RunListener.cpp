@@ -68,6 +68,10 @@ bool RunListener::RemoveListener(egSKIRunEventId eventID, Connection* pConnectio
 // Called when a "RunEvent" occurs in the kernel
 void RunListener::HandleEvent(egSKIRunEventId eventID, gSKI::IAgent* agentPtr, egSKIPhaseType phase)
 {
+	// BADBAD: voigtjr VS2005 workaround
+	if (!HasEvents(eventID)) 
+		return;
+
 	ConnectionListIter connectionIter = GetBegin(eventID) ;
 
 	// Nobody is listenening for this event.  That's an error as we should unregister from the kernel in that case.

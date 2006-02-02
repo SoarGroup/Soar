@@ -66,6 +66,10 @@ void ProductionListener::HandleEvent(egSKIProductionEventId eventID, gSKI::IAgen
 	// This class isn't implemented in gSKI yet.
 	unused(match) ;
 
+	// BADBAD: voigtjr VS2005 workaround
+	if (!HasEvents(eventID)) 
+		return;
+
 	ConnectionListIter connectionIter = GetBegin(eventID) ;
 
 	// Nobody is listenening for this event.  That's an error as we should unregister from the kernel in that case.

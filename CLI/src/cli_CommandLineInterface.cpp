@@ -15,6 +15,7 @@
 #ifdef WIN32
 #include <direct.h>
 #include <Windows.h>
+#define getcwd _getcwd
 #endif // WIN32
 
 #include <assert.h>
