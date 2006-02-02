@@ -156,6 +156,37 @@
 		return CSharp_Agent_UnregisterForProductionEvent(swigCPtr, jarg2) ;
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////
+	//
+	// PrintEvent
+	//
+	//////////////////////////////////////////////////////////////////////////////////
+	// C++ equivalent:
+	// typedef void (*PrintEventHandler)(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMessage) ;
+	public delegate void PrintEventCallback(smlPrintEventId eventID, IntPtr callbackData, IntPtr agent, String message);
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern int CSharp_Agent_RegisterForPrintEvent(HandleRef jarg1, int eventID, IntPtr jagent, PrintEventCallback callback, IntPtr callbackData);
+
+	public int RegisterForPrintEvent(smlPrintEventId eventID, PrintEventCallback jarg2, Object callbackData)
+	{
+		// This call ensures the garbage collector won't delete the object until we call free on the handle.
+		// It's also an approved way to pass a pointer to unsafe (C++) code and get it back.
+		// Also, somewhat remarkably, we can pass null to GCHandle.Alloc() and get back a valid object, so no need to special case that.
+		GCHandle agentHandle = GCHandle.Alloc(this) ;
+		GCHandle callbackDataHandle = GCHandle.Alloc(callbackData) ;
+		
+		return CSharp_Agent_RegisterForPrintEvent(swigCPtr, (int)eventID, (IntPtr)agentHandle, jarg2, (IntPtr)callbackDataHandle) ;
+	}
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern bool CSharp_Agent_UnregisterForPrintEvent(HandleRef jarg1, int callbackID);
+
+	public bool UnregisterForPrintEvent(int jarg2)
+	{
+		return CSharp_Agent_UnregisterForPrintEvent(swigCPtr, jarg2) ;
+	}
+
 %}
 
 // include stuff common to all languages (i.e. Java, Tcl, C#)
