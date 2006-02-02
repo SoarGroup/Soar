@@ -18,6 +18,7 @@ using namespace cli;
 
 #ifdef WIN32
 #include <direct.h>
+#define chdir _chdir
 #endif // WIN32
 
 bool CommandLineInterface::ParseCD(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {

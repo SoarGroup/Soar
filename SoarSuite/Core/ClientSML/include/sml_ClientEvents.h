@@ -342,6 +342,14 @@ public:
 	int				m_CallbackID ;	// A unique identifier for this callback (used to unregister)
 
 public:
+	
+	EventHandlerPlusData()
+	{
+		m_EventID = 0;
+		m_UserData = 0;
+		m_CallbackID = 0;
+	}
+
 	EventHandlerPlusData(int eventID, void* pData, int callbackID)
 	{
 		m_EventID    = eventID ;

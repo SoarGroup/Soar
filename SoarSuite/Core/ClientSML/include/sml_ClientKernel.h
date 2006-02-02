@@ -44,6 +44,8 @@ class SystemEventHandlerPlusData : public EventHandlerPlusData
 public:
 	SystemEventHandler  m_Handler ;
 
+	SystemEventHandlerPlusData() {}
+
 	SystemEventHandlerPlusData(int eventID, SystemEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
 		m_Handler = handler ;
@@ -54,6 +56,8 @@ class UpdateEventHandlerPlusData : public EventHandlerPlusData
 {
 public:
 	UpdateEventHandler  m_Handler ;
+
+	UpdateEventHandlerPlusData() {}
 
 	UpdateEventHandlerPlusData(int eventID, UpdateEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
@@ -66,6 +70,8 @@ class StringEventHandlerPlusData : public EventHandlerPlusData
 public:
 	StringEventHandler  m_Handler ;
 
+	StringEventHandlerPlusData() {}
+
 	StringEventHandlerPlusData(int eventID, StringEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
 		m_Handler = handler ;
@@ -76,6 +82,8 @@ class AgentEventHandlerPlusData : public EventHandlerPlusData
 {
 public:
 	AgentEventHandler m_Handler ;
+
+	AgentEventHandlerPlusData() {}
 
 	AgentEventHandlerPlusData(int eventID, AgentEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
@@ -88,6 +96,8 @@ class RhsEventHandlerPlusData : public EventHandlerPlusData
 public:
 	RhsEventHandler	m_Handler ;
 	std::string		m_FunctionName ;
+
+	RhsEventHandlerPlusData() {}
 
 	RhsEventHandlerPlusData(int eventID, char const* pFunctionName, RhsEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{

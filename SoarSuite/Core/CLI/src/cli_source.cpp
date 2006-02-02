@@ -399,6 +399,7 @@ void CommandLineInterface::HandleSourceError(int errorLine, const std::string& f
 
 // Production callback events go here
 void CommandLineInterface::HandleEvent(egSKIProductionEventId eventId, gSKI::IAgent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match) {
+	unused(eventId);
 	unused(match);
 	unused(agentPtr);
 

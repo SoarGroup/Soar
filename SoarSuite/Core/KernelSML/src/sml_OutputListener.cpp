@@ -129,6 +129,10 @@ void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::IAgent
 		m_StopOnOutput = false ;
 	}
 
+	// BADBAD: voigtjr VS2005 workaround
+	if (!HasEvents(gSKIEVENT_OUTPUT_PHASE_CALLBACK)) 
+		return;
+
 	ConnectionListIter connectionIter = GetBegin(gSKIEVENT_OUTPUT_PHASE_CALLBACK) ;
 
 	// Check if nobody is listening to this event and if so we're done.

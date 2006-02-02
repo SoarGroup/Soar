@@ -34,6 +34,8 @@ class RunEventHandlerPlusData : public EventHandlerPlusData
 {
 public:
 	RunEventHandler m_Handler ;
+	
+	RunEventHandlerPlusData() {}
 
 	RunEventHandlerPlusData(int eventID, RunEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
@@ -45,6 +47,8 @@ class ProductionEventHandlerPlusData : public EventHandlerPlusData
 {
 public:
 	ProductionEventHandler m_Handler ;
+
+	ProductionEventHandlerPlusData() {}
 
 	ProductionEventHandlerPlusData(int eventID, ProductionEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
@@ -58,6 +62,11 @@ public:
 	PrintEventHandler m_Handler ;
 	bool m_IgnoreOwnEchos ;
 
+	PrintEventHandlerPlusData() 
+	{
+		m_IgnoreOwnEchos = true;
+	}
+
 	PrintEventHandlerPlusData(int eventID, PrintEventHandler handler, void* userData, bool ignoreOwnEchos, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
 		m_Handler = handler ;
@@ -70,6 +79,8 @@ class XMLEventHandlerPlusData : public EventHandlerPlusData
 public:
 	XMLEventHandler m_Handler ;
 
+	XMLEventHandlerPlusData() {}
+
 	XMLEventHandlerPlusData(int eventID, XMLEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
 		m_Handler = handler ;
@@ -81,6 +92,8 @@ class OutputEventHandlerPlusData : public EventHandlerPlusData
 public:
 	OutputEventHandler	m_Handler ;
 	std::string			m_AttributeName ;
+
+	OutputEventHandlerPlusData() {}
 
 	OutputEventHandlerPlusData(int eventID, char const* pAttributeName, OutputEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
@@ -95,6 +108,8 @@ class OutputNotificationHandlerPlusData : public EventHandlerPlusData
 {
 public:
 	OutputNotificationHandler	m_Handler ;
+
+	OutputNotificationHandlerPlusData() {}
 
 	OutputNotificationHandlerPlusData(int eventID, OutputNotificationHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{

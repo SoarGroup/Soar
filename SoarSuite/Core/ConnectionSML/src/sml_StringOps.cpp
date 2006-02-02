@@ -26,6 +26,7 @@
 
 #ifdef _MSC_VER
 #define snprintf _snprintf 
+#define stricmp _stricmp
 #endif // _MSC_VER
 
 /*************************************************************
