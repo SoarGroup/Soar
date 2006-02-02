@@ -77,7 +77,7 @@ proc CheckForEvents {k} {
 	after 50 PollForEvents $k
 }
 
-#create an embedded kernel running in a new thread (so we don't have to poll for messages)
+#create an embedded kernel running in a the current thread (running in a new thread isn't supported in Tcl because of Tcl threading issues))
 set kernel [Kernel_CreateKernelInCurrentThread SoarKernelSML]
 
 #start event loop (apparently not necessary in this example, presumably because there's no GUI, but illustrative)
