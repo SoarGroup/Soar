@@ -580,7 +580,7 @@ bool WorkingMemory::SynchronizeOutputLink()
 	AnalyzeXML incoming ;
 	ElementXML response ;
 
-	// Call to the kernel to get the current state of the input link
+	// Call to the kernel to get the current state of the output link
 	bool ok = GetConnection()->SendAgentCommand(&incoming, sml_Names::kCommand_GetAllOutput, GetAgentName()) ;
 	
 	if (!ok)
