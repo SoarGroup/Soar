@@ -12,3 +12,4 @@ java:
 	cd JavaTOH && $(MAKE) java
 	cd JavaTankSoar && $(MAKE) java
 	cd SoarJavaDebugger && $(MAKE) java
+	cd TestJavaSML && $(MAKE) java

@@ -422,4 +422,5 @@ AC_OUTPUT([
 	Applications/JavaTOH/Makefile
 	Applications/JavaTankSoar/Makefile
 	Applications/SoarJavaDebugger/Makefile
+	Applications/TestJavaSML/Makefile
 	])
