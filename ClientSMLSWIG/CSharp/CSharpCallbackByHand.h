@@ -21,12 +21,20 @@ SWIGEXPORT void SWIGSTDCALL CSharp_Kernel_RegisterHandleHelper(CSharpHandleHelpe
   SWIG_csharp_deletehandle_callback = callback;
 }
 
-/* Callback for allocating new C# objects that we need to create (to pass back as parameters) */
+/* Callback for allocating new C# WMElement objects that we need to create (to pass back as parameters) */
 typedef unsigned int (SWIGSTDCALL* CSharpAllocateWMElementCallback)(unsigned int);
 static CSharpAllocateWMElementCallback SWIG_csharp_allocateWMElement_callback = NULL;
 
 SWIGEXPORT void SWIGSTDCALL CSharp_Kernel_RegisterAllocateWMElementHelper(CSharpAllocateWMElementCallback callback) {
   SWIG_csharp_allocateWMElement_callback = callback;
+}
+
+/* Callback for allocating new C# ClientXML objects that we need to create (to pass back as parameters) */
+typedef unsigned int (SWIGSTDCALL* CSharpAllocateClientXMLCallback)(unsigned int);
+static CSharpAllocateClientXMLCallback SWIG_csharp_allocateClientXML_callback = NULL;
+
+SWIGEXPORT void SWIGSTDCALL CSharp_Kernel_RegisterAllocateClientXMLHelper(CSharpAllocateClientXMLCallback callback) {
+  SWIG_csharp_allocateClientXML_callback = callback;
 }
 
 class CSharpCallbackData
@@ -269,6 +277,84 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_RemoveOutputHandler(void* jarg1, int ja
 
 	// Unregister our handler.
 	bool result = arg1->RemoveOutputHandler(pData->m_CallbackID) ;
+
+	// Free the GCHandles created when the callback was registered
+	SWIG_csharp_deletehandle_callback(pData->m_Agent) ;
+	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
+
+	// Release the callback data
+	delete pData ;
+
+	return result ;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//
+// XMLEvent
+//
+//////////////////////////////////////////////////////////////////////////////////
+
+// Handler for XML events.  The data for the event is passed back in pXML.
+// NOTE: To keep a copy of the ClientXML* you are passed use ClientXML* pMyXML = new ClientXML(pXML) to create
+// a copy of the object.  This is very efficient and just adds a reference to the underlying XML message object.
+// You need to delete ClientXML objects you create and you should not delete the pXML object you are passed.
+// typedef void (*XMLEventHandler)(smlXMLEventId id, void* pUserData, Agent* pAgent, ClientXML* pXML) ;
+
+// The C# callback equivalent that we'll eventually call
+typedef void (__stdcall *XMLEventCallback)(int eventID, CallbackDataPtr callbackData, agentPtr jagent, unsigned int pXML) ;
+
+// This is the C++ handler which will be called by clientSML when the event fires.
+// Then from here we need to call back to C# to pass back the message.
+static void XMLEventHandler(sml::smlXMLEventId id, void* pUserData, sml::Agent* pAgent, sml::ClientXML* pXML)
+{
+	// The user data is the class we declared above, where we store the Java data to use in the callback.
+	CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
+
+	XMLEventCallback callback = (XMLEventCallback)pData->m_CallbackFunction ;
+
+	// Create a C# object that wraps the C++ one, without taking ownership of it
+	// (This is done by calling to the C# constructor for the SWIG object)
+	unsigned int csharpXML = SWIG_csharp_allocateClientXML_callback((unsigned int)pXML) ;
+
+	// Now try to call back to CSharp
+	callback(id, pData->m_CallbackData, pData->m_Agent, csharpXML) ;
+
+	// After the callback has completed, I think we need to release the GCHandle that wrapped the C# object
+	// (This wrapping and deleting may be unnecessary, but it makes me feel more comfortable while passing objects
+	// between C# and C++).
+	SWIG_csharp_deletehandle_callback(csharpXML) ;
+}
+
+SWIGEXPORT int SWIGSTDCALL CSharp_Agent_RegisterForXMLEvent(void * jarg1, int jarg2, agentPtr jagent, unsigned int jarg3, CallbackDataPtr jdata)
+{
+    // jarg1 is the C++ Agent object
+	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
+
+	// jarg2 is the event ID we're registering for
+	sml::smlXMLEventId arg2 = (sml::smlXMLEventId)jarg2;
+
+	// jarg3 is the callback function
+
+	// Create the information we'll need to make a Java call back later
+	CSharpCallbackData* pData = CreateCSharpCallbackDataAgent(jagent, jarg2, jarg3, jdata) ;
+	
+	// Register our handler.  When this is called we'll call back to the client method.
+	pData->m_CallbackID = arg1->RegisterForXMLEvent(arg2, &XMLEventHandler, pData) ;
+
+	// Pass the callback info back to the client.  We need to do this so we can delete this later when the method is unregistered
+	return (int)pData ;
+}
+
+SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForXMLEvent(void* jarg1, int jarg2)
+{
+    // jarg1 is the C++ Agent object
+	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
+
+	// jarg2 is the callback data from the registration call
+	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
+
+	// Unregister our handler.
+	bool result = arg1->UnregisterForXMLEvent(pData->m_CallbackID) ;
 
 	// Free the GCHandles created when the callback was registered
 	SWIG_csharp_deletehandle_callback(pData->m_Agent) ;

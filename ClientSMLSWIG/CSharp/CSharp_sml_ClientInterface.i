@@ -36,6 +36,7 @@
 	// we need to call it from C# and hence the need for this class.
 	protected class HandleHelper {
 
+		// This chunk of code allows us to call "DeleteHandle" from within C++.
 		public delegate void HandleDeletingDelegate(IntPtr intHandle);
 		static HandleDeletingDelegate staticHandleDelegate = new HandleDeletingDelegate(DeleteHandle);
 
@@ -50,6 +51,7 @@
 			handle.Free() ;
 		}
 
+		// This chunk of code allows us to call "AllocateWMElement" from within C++
 		public delegate IntPtr AllocateWMElementDelegate(IntPtr intHandle);
 		static AllocateWMElementDelegate staticAllocateWMElementDelegate = new AllocateWMElementDelegate(AllocateWMElement);
 
@@ -69,10 +71,34 @@
 			return (IntPtr)handle ;
 		}
 
-		// This registration method will be called as soon as the parent class (Kernel) is loaded.
+		// This chunk of code allows us to call "AllocateClientXML" from within C++
+		public delegate IntPtr AllocateClientXMLDelegate(IntPtr intHandle);
+		static AllocateClientXMLDelegate staticAllocateClientXMLDelegate = new AllocateClientXMLDelegate(AllocateClientXML);
+
+		[DllImport("CSharp_sml_ClientInterface")]
+		public static extern void CSharp_Kernel_RegisterAllocateClientXMLHelper(AllocateClientXMLDelegate theDelegate);
+
+		static IntPtr AllocateClientXML(IntPtr intCPtr)
+		{
+			// Creates a new C# object to wrap the C++ one, without taking ownership of the underlying object
+			// (as we don't own the C++ object either when we call here).
+			// To keep this the user would need to copy it.
+			ClientXML xml = new ClientXML(intCPtr, false) ;
+			
+			GCHandle handle = GCHandle.Alloc(xml) ;
+			System.Console.Out.WriteLine("Created ClientXML handle" + handle) ;
+			
+			return (IntPtr)handle ;
+		}
+
+		// This registration method will be called as soon as the parent class (Kernel) is loaded
+		// and passes the delegates (callbacks) down to the C++ code by calling the registration methods
+		// (which are in C++).  It's complicated stuff, but all we're actually doing is passing a pointer
+		// to the 3 C# methods we want to call down to the C++ code.
 		static HandleHelper() {
 			CSharp_Kernel_RegisterHandleHelper(staticHandleDelegate);
 			CSharp_Kernel_RegisterAllocateWMElementHelper(staticAllocateWMElementDelegate);
+			CSharp_Kernel_RegisterAllocateClientXMLHelper(staticAllocateClientXMLDelegate);
 		}
 	}
 
@@ -306,6 +332,40 @@
 	public bool RemoveOutputHandler(int jarg2)
 	{
 		return CSharp_Agent_RemoveOutputHandler(swigCPtr, jarg2) ;
+	}
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	//
+	// XMLEvent
+	//
+	//////////////////////////////////////////////////////////////////////////////////
+	// Handler for XML events.  The data for the event is passed back in pXML.
+	// NOTE: To keep a copy of the ClientXML* you are passed use ClientXML* pMyXML = new ClientXML(pXML) to create
+	// a copy of the object.  This is very efficient and just adds a reference to the underlying XML message object.
+	// You need to delete ClientXML objects you create and you should not delete the pXML object you are passed.
+	// typedef void (*XMLEventHandler)(smlXMLEventId id, void* pUserData, Agent* pAgent, ClientXML* pXML) ;
+	public delegate void XMLEventCallback(smlXMLEventId eventID, IntPtr callbackData, IntPtr agent, IntPtr pXML);
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern int CSharp_Agent_RegisterForXMLEvent(HandleRef jarg1, int eventID, IntPtr jagent, XMLEventCallback callback, IntPtr callbackData);
+
+	public int RegisterForXMLEvent(smlXMLEventId eventID, XMLEventCallback jarg2, Object callbackData)
+	{
+		// This call ensures the garbage collector won't delete the object until we call free on the handle.
+		// It's also an approved way to pass a pointer to unsafe (C++) code and get it back.
+		// Also, somewhat remarkably, we can pass null to GCHandle.Alloc() and get back a valid object, so no need to special case that.
+		GCHandle agentHandle = GCHandle.Alloc(this) ;
+		GCHandle callbackDataHandle = GCHandle.Alloc(callbackData) ;
+		
+		return CSharp_Agent_RegisterForXMLEvent(swigCPtr, (int)eventID, (IntPtr)agentHandle, jarg2, (IntPtr)callbackDataHandle) ;
+	}
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern bool CSharp_Agent_UnregisterForXMLEvent(HandleRef jarg1, int callbackID);
+
+	public bool UnregisterForXMLEvent(int jarg2)
+	{
+		return CSharp_Agent_UnregisterForXMLEvent(swigCPtr, jarg2) ;
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////////
