@@ -40,8 +40,10 @@ public:
 	//Runs the program
 
 	void Run2();
+	void PurgeAllVectors();
 
 	sml::Agent* pAgent;
+	sml::Identifier* pInputLink;
 
 private:
 
@@ -111,7 +113,7 @@ private:
 
 	sml::Kernel* pKernel;
 
-	sml::Identifier* pInputLink;
+	
 	sml::Identifier* advHold;
 
 	float Fvalue;
@@ -223,7 +225,7 @@ private:
 
 	string CallParser(istream* in);
 
-	void PurgeAllVectors();
+	
 
 	void CreateNewKernel();
 

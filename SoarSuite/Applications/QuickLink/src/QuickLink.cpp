@@ -58,6 +58,7 @@ QuickLink::OSFinder()
 
 
 void MyStartSystemEventHandler(sml::smlSystemEventId id, void* pUserData, sml::Kernel* pKernel);
+void MyAgentEventHandler(sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent);
 
 QuickLink::QuickLink(int argc, char* argv[])
 {
@@ -94,6 +95,7 @@ QuickLink::QuickLink(int argc, char* argv[])
 	resetProcStat = false, readFromCmd = true, enterOutputStage = false, printWM_runp = false;
 
 	pKernel->RegisterForSystemEvent( sml::smlEVENT_SYSTEM_START , MyStartSystemEventHandler , this );
+	pKernel->RegisterForAgentEvent( sml::smlEVENT_AFTER_AGENT_REINITIALIZED, MyAgentEventHandler, this);
 }
 
 void
@@ -204,6 +206,14 @@ MyStartSystemEventHandler(sml::smlSystemEventId id, void* pUserData, sml::Kernel
 {
 	QuickLink* QL = (QuickLink*)pUserData;
 	QL->pAgent->Commit();
+}
+
+void 
+MyAgentEventHandler(sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent)
+{
+	QuickLink* QL = (QuickLink*)pUserData;
+	QL->pInputLink = pAgent->GetInputLink();
+	QL->PurgeAllVectors();
 }
 
 
