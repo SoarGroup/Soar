@@ -96,3 +96,14 @@ void SoarGameGroup::mergeTo(SoarGameGroup* target) {
 
   return;
 }
+
+
+void SoarGameObject::setGroup(SoarGameGroup* g)
+{
+ group = g;
+}
+
+SoarGameGroup SoarGameObject::setGroup()
+{
+ return group;
+}

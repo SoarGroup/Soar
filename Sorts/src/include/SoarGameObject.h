@@ -20,10 +20,15 @@ class SoarGameObject{
 	void issueCommand(std::string name);
 	void update();
 
+	void setGroup(SoarGameGroup *);
+	SoarGameGroup *getGroup();
+
   // I assume this can be public?
-  SoarGameGroup* group;
 
  private:
 	std::list<FSM *> behaviors;
 	std::stack<FSM *> memory;
+
+  	SoarGameGroup* group;
+
 };
