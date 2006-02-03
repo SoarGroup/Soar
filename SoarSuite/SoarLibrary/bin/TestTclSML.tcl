@@ -74,7 +74,7 @@ proc UpdateEventCallback {id userData kernel runFlags} {
 # ensuring that they get executed on the client side
 proc CheckForEvents {k} {
 	$k CheckForIncomingCommands
-	after 50 PollForEvents $k
+	after 50 CheckForEvents $k
 }
 
 #create an embedded kernel running in a the current thread (running in a new thread isn't supported in Tcl because of Tcl threading issues))
