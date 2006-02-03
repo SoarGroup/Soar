@@ -108,7 +108,20 @@ void GroupManager::updateStats() {
   return;
 }
 
-void addGroup(const SoarGameObject* object) {
+void GroupManager::addGroup(const SoarGameObject* object) {
   groupsNotInFocus.push_back(new SoarGameGroup(object));
   return;
+}
+
+GroupManager::~GroupManager() {
+  groupIter = groupsNotInFocus.begin();
+  while (groupIter != groupsNotInFocus.end()) {
+    delete (*groupIter);
+    groupIter++;
+  }
+  groupIter = groupsInFocus.begin();
+  while (groupIter != groupsInFocus.end()) {
+    delete (*groupIter);
+    groupIter++;
+  }
 }

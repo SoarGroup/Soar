@@ -109,3 +109,11 @@ void OrtsInterface::updateSoarPlayerInfo() {
   // only know get gold for now
   soarInterface->updatePlayerGold(playerGameObj->get_int("gold"));
 }
+
+OrtsInterface::~OrtsInterface() {
+  objectMapIter it = objectMap.begin();
+  while (it != objectMap.end()) {
+    delete (*it);
+    it++;
+  }
+}
