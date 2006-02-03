@@ -232,6 +232,40 @@
 	{
 		return CSharp_Kernel_RemoveRhsFunction(swigCPtr, jarg2) ;
 	}	
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//
+	// ClientMessageEvent
+	//
+	//////////////////////////////////////////////////////////////////////////////////
+	// C++ equivalent:
+	// Handler for a generic "client message".  The content is determined by the client sending this data.
+	// The message is sent as a simple string and the response is also a string.  The string can contain data that is intended to be parsed,
+	// such as a simple series of integers up to a complete XML message.
+	// typedef std::string (*ClientMessageHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pClientName, char const* pMessage) ;
+	public delegate String ClientMessageCallback(smlRhsEventId eventID, IntPtr callbackData, IntPtr kernel, String agentName, String clientName, String message);
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern int CSharp_Kernel_RegisterForClientMessageEvent(HandleRef jarg1, String clientName, IntPtr jkernel, ClientMessageCallback callback, IntPtr callbackData);
+
+	public int RegisterForClientMessageEvent(String clientName, ClientMessageCallback jarg2, Object callbackData)
+	{
+		// This call ensures the garbage collector won't delete the object until we call free on the handle.
+		// It's also an approved way to pass a pointer to unsafe (C++) code and get it back.
+		// Also, somewhat remarkably, we can pass null to GCHandle.Alloc() and get back a valid object, so no need to special case that.
+		GCHandle kernelHandle = GCHandle.Alloc(this) ;
+		GCHandle callbackDataHandle = GCHandle.Alloc(callbackData) ;
+		
+		return CSharp_Kernel_RegisterForClientMessageEvent(swigCPtr, clientName, (IntPtr)kernelHandle, jarg2, (IntPtr)callbackDataHandle) ;
+	}
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern bool CSharp_Kernel_UnregisterForClientMessageEvent(HandleRef jarg1, int callbackID);
+
+	public bool UnregisterForClientMessageEvent(int jarg2)
+	{
+		return CSharp_Kernel_UnregisterForClientMessageEvent(swigCPtr, jarg2) ;
+	}	
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	//

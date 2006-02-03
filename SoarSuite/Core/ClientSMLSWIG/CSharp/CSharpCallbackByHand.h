@@ -708,7 +708,7 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForStringEvent(void* jarg1, 
 
 //////////////////////////////////////////////////////////////////////////////////
 //
-// RhsEvent
+// RhsEvent and ClientMessageHandler
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -718,8 +718,14 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForStringEvent(void* jarg1, 
 // The return value is a string which allows the RHS function to create a symbol: e.g. ^att (exec plus 2 2) producting ^att 4
 // typedef std::string (*RhsEventHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) ;
 
+// Handler for a generic "client message".  The content is determined by the client sending this data.
+// The message is sent as a simple string and the response is also a string.  The string can contain data that is intended to be parsed,
+// such as a simple series of integers up to a complete XML message.
+//typedef std::string (*ClientMessageHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pClientName, char const* pMessage) ;
+
 // The C# callback equivalent that we'll eventually call (we pass back the name of the agent so we don't have to locate the C# Agent object)
-typedef char const* (__stdcall *RhsFunction)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, char const* agentName, char const*pFunctionName, char const* pArgument) ;
+typedef char const* (__stdcall *RhsFunction)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, char const* agentName, char const* pFunctionName, char const* pArgument) ;
+typedef char const* (__stdcall *ClientMessageCallback)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, char const* agentName, char const* pClientName, char const* pMessage) ;
 
 // This is a bit ugly.  We compile this header with extern "C" around it so that the public methods can be
 // exposed in a DLL with C naming (not C++ mangled names).  However, RhsEventHandler (below) returns a std::string
@@ -745,6 +751,24 @@ static std::string RhsEventHandler(sml::smlRhsEventId id, void* pUserData, sml::
 
 	// Now try to call back to CSharp
 	return callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, csharpAgentName, csharpFunctionName, csharpArgument) ;
+}
+
+// This is the C++ handler which will be called by clientSML when the event fires.
+// Then from here we need to call back to C# to pass back the message.
+static std::string ClientEventHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pClientName, char const* pMessage)
+{
+	// The user data is the class we declared above, where we store the Java data to use in the callback.
+	CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
+
+	ClientMessageCallback callback = (ClientMessageCallback)pData->m_CallbackFunction ;
+
+	// Create a C# string which we can return
+	char* csharpAgentName	= SWIG_csharp_string_callback(pAgent->GetAgentName()); 
+	char* csharpClientName	= SWIG_csharp_string_callback(pClientName); 
+	char* csharpMessage		= SWIG_csharp_string_callback(pMessage); 
+
+	// Now try to call back to CSharp
+	return callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, csharpAgentName, csharpClientName, csharpMessage) ;
 }
 
 // This is a bit ugly.  We compile this header with extern "C" around it so that the public methods can be
@@ -785,6 +809,47 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_RemoveRhsFunction(void* jarg1, int jar
 
 	// Unregister our handler.
 	bool result = arg1->RemoveRhsFunction(pData->m_CallbackID) ;
+
+	// Free the GCHandles created when the callback was registered
+	SWIG_csharp_deletehandle_callback(pData->m_Kernel) ;
+	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
+
+	// Release the callback data
+	delete pData ;
+
+	return result ;
+}
+
+SWIGEXPORT int SWIGSTDCALL CSharp_Kernel_RegisterForClientMessageEvent(void * jarg1, char const* pClientName, kernelPtr jkernel, unsigned int jarg3, CallbackDataPtr jdata)
+{
+    // jarg1 is the C++ Kernel object
+	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
+
+	// jarg2 is the event ID we're registering for
+	// sml::smlRhsEventId arg2 = (sml::smlRhsEventId)jarg2;
+
+	// jarg3 is the callback function
+
+	// Create the information we'll need to make a Java call back later
+	CSharpCallbackData* pData = CreateCSharpCallbackDataKernel(jkernel, 0, jarg3, jdata) ;
+	
+	// Register our handler.  When this is called we'll call back to the client method.
+	pData->m_CallbackID = arg1->RegisterForClientMessageEvent(pClientName, &ClientEventHandler, pData) ;
+
+	// Pass the callback info back to the client.  We need to do this so we can delete this later when the method is unregistered
+	return (int)pData ;
+}
+
+SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForClientMessageEvent(void* jarg1, int jarg2)
+{
+    // jarg1 is the C++ Agent object
+	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
+
+	// jarg2 is the callback data from the registration call
+	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
+
+	// Unregister our handler.
+	bool result = arg1->UnregisterForClientMessageEvent(pData->m_CallbackID) ;
 
 	// Free the GCHandles created when the callback was registered
 	SWIG_csharp_deletehandle_callback(pData->m_Kernel) ;
