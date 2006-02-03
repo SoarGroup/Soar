@@ -5,6 +5,7 @@
 #include <set>
 #include "constants.h"
 #include "SoarGameObject.h"
+#include "SoarAction.h"
 //#include "SoarInterface.h"
 
 using namespace std;
@@ -22,9 +23,6 @@ class SoarGameGroup {
     bool assignAction(SoarActionType type, list<int> params);
     bool isEmpty();
   
-  //void getUnits(list<SoarGameObject*> unitList);
-    // who added this?
-    
     void mergeTo(SoarGameGroup* target);
     bool getStale();
     void setStale(bool val);

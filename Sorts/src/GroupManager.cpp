@@ -1,4 +1,6 @@
-#include "GroupManager.h"
+#include "include/GroupManager.h"
+#include <iostream>
+using namespace std;
 
 /*
   GroupManager.cpp
@@ -30,15 +32,15 @@ bool GroupManager::assignActions() {
   // through the SoarIO, look for any new actions, and assign them to groups
     
   list <SoarAction*> newActions = SoarIO->getNewActions();
-  list <SoarAction*>::iterator actionIter = newActions.front();
-  
+  list <SoarAction*>::iterator actionIter = newActions.begin();
+ 
   list <SoarGameGroup*>::iterator groupIter;
   bool success = true;
   
   while (actionIter != newActions.end()){
-    groupIter = actionIter->groups.front();
-    while (groupIter != actionIter->groups.end()) {
-      success &= groupIter->assignAction(actionIter->type, actionIter->params);
+    groupIter = (**actionIter).groups.begin();
+    while (groupIter != (**actionIter).groups.end()) {
+      success &= (*groupIter)->assignAction((**actionIter).type, (**actionIter).params);
       groupIter++;
     }
     actionIter++;
@@ -56,7 +58,6 @@ void GroupManager::reGroup() {
   while (NIFIter != groupsNotInFocus.end()) { 
     // do smart stuff here
 
-    // if it is actually a new group..
     groupsInFocus.push_back(*NIFIter);
     SoarIO->addGroup(*NIFIter);
     groupsNotInFocus.erase(NIFIter);
@@ -67,7 +68,6 @@ void GroupManager::reGroup() {
 
 void GroupManager::updateStats() {
   groupPropertyList changedProperties; 
-  SoarGameGroup* grp;
  
   list<SoarGameGroup*>::iterator groupIter;
 
@@ -82,7 +82,7 @@ void GroupManager::updateStats() {
       }
       else {
         changedProperties = (*groupIter)->updateStats();
-        SoarIO->refreshGroup(grp, changedProperties);
+        SoarIO->refreshGroup((*groupIter), changedProperties);
       }
     }
     groupIter++;
@@ -108,13 +108,13 @@ void GroupManager::updateStats() {
   return;
 }
 
-void GroupManager::addGroup(const SoarGameObject* object) {
+void GroupManager::addGroup(SoarGameObject* object) {
   groupsNotInFocus.push_back(new SoarGameGroup(object));
   return;
 }
 
 GroupManager::~GroupManager() {
-  groupIter = groupsNotInFocus.begin();
+  list<SoarGameGroup*>::iterator groupIter = groupsNotInFocus.begin();
   while (groupIter != groupsNotInFocus.end()) {
     delete (*groupIter);
     groupIter++;

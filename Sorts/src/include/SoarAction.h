@@ -2,6 +2,7 @@
 #define soaraction_h
 #include <list>
 
+using namespace std;
 class SoarGameGroup;
 
 enum SoarActionType {

@@ -103,11 +103,15 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params){
   set<SoarGameObject*>::iterator currentObject = members.begin();
   
   while (currentObject != members.end()) {
-    result &= (*currentObject)->issueCommand(type, params);
+    //result &= (*currentObject)->issueCommand(type, params);
     currentObject++;
   }
 }
 
 bool SoarGameGroup::isEmpty() {
   return (members.size() == 0);
+}
+
+bool SoarGameGroup::getStale() {
+  return stale;
 }
