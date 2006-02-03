@@ -97,4 +97,17 @@ void SoarGameGroup::mergeTo(SoarGameGroup* target) {
   return;
 }
 
+bool SoarGameGroup::assignAction(SoarActionType type, list<int> params){ 
+  bool result = true;
+  
+  set<SoarGameObject*>::iterator currentObject = members.begin();
+  
+  while (currentObject != members.end()) {
+    result &= (*currentObject)->issueCommand(type, params);
+    currentObject++;
+  }
+}
 
+bool SoarGameGroup::isEmpty() {
+  return (members.size() == 0);
+}

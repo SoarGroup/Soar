@@ -19,9 +19,12 @@ class SoarGameGroup {
     void addUnit(SoarGameObject* unit);
     bool removeUnit(SoarGameObject* unit);
     groupPropertyList updateStats();
-//    bool assignAction(SoarAction);
-  // need to rethink SoarAction
-  void getUnits(list<SoarGameObject*> unitList);
+    bool assignAction(SoarActionType type, list<int> params);
+    bool isEmpty();
+  
+  //void getUnits(list<SoarGameObject*> unitList);
+    // who added this?
+    
     void mergeTo(SoarGameGroup* target);
     bool getStale();
     void setStale(bool val);

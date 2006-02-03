@@ -1,24 +1,27 @@
 #include "GroupManager.h"
 
-/* TODO:
-
--ORTSIO now directly removes dead objects from groups,
-  regrouper (or update stats?) must prune empty groups
-
--ORTSIO makes the new groups too, and calls a GroupMgr function to add them to the list
-
--GameObj*'s have ptrs to the groups, and set the stale bit (need a group touch function) when changes occur
-  So the updateStats func iterates thru all groups and updates the stale ones
-
--adjustGroups must take data from the attn module:
-  determine on/off link based on map region
-  determine sticky radius based on zoom level
+/*
+  GroupManager.cpp
+  SORTS project
+  Sam Wintermute, 2006
 */
 
-
 void GroupManager::updateWorld() {
-  adjustGroups();
-  epdateStats();
+  
+  reGroup();
+  updateStats();
+
+  /*
+    This might not be the optimal way to update-
+    if objects move groups don't know until updateStats,
+    and they don't change until reGroup the next cycle.
+
+    Ideally, we could do this:
+    updateStats_1() update things that affect grouping (don't send to soar)
+    reGroup() based on the newly updated info
+    updateStats_2() update new groups and send to Soar
+
+  */
 
   return;
 }
@@ -26,24 +29,30 @@ void GroupManager::updateWorld() {
 bool GroupManager::assignActions() {
   // through the SoarIO, look for any new actions, and assign them to groups
     
-  vector <SoarAction*> newActions = SoarIO->getNewActions();
-  Action a;
+  list <SoarAction*> newActions = SoarIO->getNewActions();
+  list <SoarAction*>::iterator actionIter = newActions.front();
+  
+  list <SoarGameGroup*>::iterator groupIter;
   bool success = true;
   
-  for (unsigned int i=0; i<newActions.size(); i++) {
-    a = newActions.at(i);
-    success &= a.group->assignAction(a.action);
+  while (actionIter != newActions.end()){
+    groupIter = actionIter->groups.front();
+    while (groupIter != actionIter->groups.end()) {
+      success &= groupIter->assignAction(actionIter->type, actionIter->params);
+      groupIter++;
+    }
+    actionIter++;
   }
 
   return success;
 }
 
-void GroupManager::adjustGroups() {
+void GroupManager::reGroup() {
 
   // for now, all groups of 1
   // new groups are in the NIF list, just move to IF list
 
-  vector<SoarGameGroup*>::iterator NIFIter = groupsNotInFocus.begin();
+  list<SoarGameGroup*>::iterator NIFIter = groupsNotInFocus.begin();
   while (NIFIter != groupsNotInFocus.end()) { 
     // do smart stuff here
 
@@ -57,23 +66,48 @@ void GroupManager::adjustGroups() {
 }
 
 void GroupManager::updateStats() {
-  vector <SoarGameGroup*> changedGroups = ORTSIO.getChangedGroups();
   groupPropertyList changedProperties; 
   SoarGameGroup* grp;
-  
-  for (unsigned int i=0; i < newGroups.size(); i++) { 
-    grp = newGroups.at(i);
-    grp->updateStats();
-    SoarIO->refreshGroup(grp);
+ 
+  list<SoarGameGroup*>::iterator groupIter;
+
+  // look at each group in focus, if it changed, update Soar
+  groupIter = groupsInFocus.begin();
+  while (groupIter != groupsInFocus.end()) {
+    if ((*groupIter)->getStale()) {
+      if ((*groupIter)->isEmpty()) {
+        SoarIO->removeGroup(*groupIter);
+        delete (*groupIter);
+        groupsInFocus.erase(groupIter);
+      }
+      else {
+        changedProperties = (*groupIter)->updateStats();
+        SoarIO->refreshGroup(grp, changedProperties);
+      }
+    }
+    groupIter++;
   }
-  for (unsigned int i=0; i < changedGroups.size(); i++) {
-    grp = changedGroups.at(i);
-    changedProperties = grp->updateStats();
-    SoarIO->refreshGroup(grp, changedProperties);
+
+  // same for out of focus, but don't update Soar
+  // if they moved into focus, reGroup will get it next cycle
+  groupIter = groupsNotInFocus.begin();
+  while (groupIter != groupsNotInFocus.end()) {
+    if ((*groupIter)->getStale()) {
+      if ((*groupIter)->isEmpty()) {
+        SoarIO->removeGroup(*groupIter);
+        delete (*groupIter);
+        groupsInFocus.erase(groupIter);
+      }
+      else {
+        (*groupIter)->updateStats();
+      }
+    }
+    groupIter++;
   }
 
   return;
 }
+
 void addGroup(const SoarGameObject* object) {
   groupsNotInFocus.push_back(new SoarGameGroup(object));
   return;

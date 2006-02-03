@@ -20,9 +20,8 @@ class GroupManager {
     SoarInterface* SoarIO;
     ORTSInterface* ORTSIO;
     
-    vector <SoarGameGroup*> groupsInFocus;
-    vector <SoarGameGroup*> groupsNotInFocus;
-    vector <SoarGameGroup*> newGroups;
+    list <SoarGameGroup*> groupsInFocus;
+    list <SoarGameGroup*> groupsNotInFocus;
 }
 
 #endif // GroupManager_h
