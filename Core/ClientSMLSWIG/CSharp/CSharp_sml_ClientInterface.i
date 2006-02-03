@@ -47,7 +47,7 @@
 		{
 			GCHandle handle = (GCHandle)intHandle ;
 			
-			System.Console.Out.WriteLine("Freeing handle" + handle) ;
+			//System.Console.Out.WriteLine("Freeing handle" + handle) ;
 			handle.Free() ;
 		}
 
@@ -66,7 +66,7 @@
 			WMElement wmElement = new WMElement(intCPtr, false) ;
 			
 			GCHandle handle = GCHandle.Alloc(wmElement) ;
-			System.Console.Out.WriteLine("Created WMElement handle" + handle) ;
+			//System.Console.Out.WriteLine("Created WMElement handle" + handle) ;
 			
 			return (IntPtr)handle ;
 		}
@@ -86,7 +86,7 @@
 			ClientXML xml = new ClientXML(intCPtr, false) ;
 			
 			GCHandle handle = GCHandle.Alloc(xml) ;
-			System.Console.Out.WriteLine("Created ClientXML handle" + handle) ;
+			//System.Console.Out.WriteLine("Created ClientXML handle" + handle) ;
 			
 			return (IntPtr)handle ;
 		}
