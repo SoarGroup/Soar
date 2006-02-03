@@ -140,6 +140,38 @@
 	{
 		return CSharp_Kernel_UnregisterForUpdateEvent(swigCPtr, jarg2) ;
 	}
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//
+	// StringEvent
+	//
+	//////////////////////////////////////////////////////////////////////////////////
+	// C++ equivalent:
+	// Handler for Update events.
+	// typedef void (*StringEventHandler)(smlStringEventId id, void* pUserData, Kernel* pKernel, char const* pString) ;
+	public delegate void StringEventCallback(smlStringEventId eventID, IntPtr callbackData, IntPtr kernel, String str);
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern int CSharp_Kernel_RegisterForStringEvent(HandleRef jarg1, int eventID, IntPtr jkernel, StringEventCallback callback, IntPtr callbackData);
+
+	public int RegisterForStringEvent(smlStringEventId eventID, StringEventCallback jarg2, Object callbackData)
+	{
+		// This call ensures the garbage collector won't delete the object until we call free on the handle.
+		// It's also an approved way to pass a pointer to unsafe (C++) code and get it back.
+		// Also, somewhat remarkably, we can pass null to GCHandle.Alloc() and get back a valid object, so no need to special case that.
+		GCHandle kernelHandle = GCHandle.Alloc(this) ;
+		GCHandle callbackDataHandle = GCHandle.Alloc(callbackData) ;
+		
+		return CSharp_Kernel_RegisterForStringEvent(swigCPtr, (int)eventID, (IntPtr)kernelHandle, jarg2, (IntPtr)callbackDataHandle) ;
+	}
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern bool CSharp_Kernel_UnregisterForStringEvent(HandleRef jarg1, int callbackID);
+
+	public bool UnregisterForStringEvent(int jarg2)
+	{
+		return CSharp_Kernel_UnregisterForStringEvent(swigCPtr, jarg2) ;
+	}
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	//
