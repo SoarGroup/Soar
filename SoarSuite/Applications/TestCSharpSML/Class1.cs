@@ -108,7 +108,25 @@ namespace TestCSharpSML
 			String att = wme.GetAttribute() ;
 			String val = wme.GetValueAsString() ;
 
-			System.Console.Out.WriteLine("Output received" + " agent " + agent.GetAgentName() + " output wme " + id + " ^" + att + " " + val) ;
+			System.Console.Out.WriteLine("Output received under ^move attribute for agent " + agent.GetAgentName() + " output wme " + id + " ^" + att + " " + val) ;
+		}
+
+		static void MyOutputNotificationCallback(IntPtr callbackData, IntPtr agentPtr)
+		{
+			// Retrieve the original object reference from the GCHandle which is used to pass the value safely to and from C++ (unsafe/unmanaged) code.
+			sml.Agent agent = (sml.Agent)((GCHandle)agentPtr).Target ;
+
+			// Retrieve arbitrary data from callback data object (note data here can be null, but the wrapper object callbackData won't be so this call is safe)
+			// This field's usage is up to the user and passed in during registation call and passed back here.  Can be used to provide context.
+			Object userData = (Object)((GCHandle)callbackData).Target ;
+
+			System.Console.Out.WriteLine("Agent " + agent.GetAgentName() + " has just received some output") ;
+
+			for (int i = 0 ; i < agent.GetNumberOutputLinkChanges() ; i++)
+			{
+				sml.WMElement wme = agent.GetOutputLinkChange(i) ;
+				System.Console.Out.WriteLine("Output wme was " + wme.GetIdentifier().GetIdentifierSymbol() + " ^" + wme.GetAttribute() + " " + wme.GetValueAsString()) ;
+			}
 		}
 
 		/// <summary>
@@ -199,6 +217,7 @@ namespace TestCSharpSML
 			sml.Agent.ProductionEventCallback prodCall = new sml.Agent.ProductionEventCallback(MyProductionEventCallback) ;			
 			sml.Agent.PrintEventCallback printCall = new sml.Agent.PrintEventCallback(MyPrintEventCallback) ;			
 			sml.Agent.OutputEventCallback outputCall = new sml.Agent.OutputEventCallback(MyOutputEventCallback) ;
+			sml.Agent.OutputNotificationCallback noteCall = new sml.Agent.OutputNotificationCallback(MyOutputNotificationCallback) ;
 			sml.Kernel.AgentEventCallback agentCall = new sml.Kernel.AgentEventCallback(MyAgentEventCallback) ;			
 			sml.Kernel.SystemEventCallback systemCall = new sml.Kernel.SystemEventCallback(MySystemEventCallback) ;	
 
@@ -206,6 +225,7 @@ namespace TestCSharpSML
 			int prodCallbackID	= agent.RegisterForProductionEvent(sml.smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, prodCall, myTestData) ;
 			int printCallbackID	= agent.RegisterForPrintEvent(sml.smlPrintEventId.smlEVENT_PRINT, printCall, myTestData) ;
 			int outputCallbackID= agent.AddOutputHandler("move", outputCall, myTestData) ;
+			int noteCallbackID  = agent.RegisterForOutputNotification(noteCall, myTestData) ;
 			int agentCallbackID	= kernel.RegisterForAgentEvent(sml.smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, agentCall, myTestData) ;
 			int systemCallbackID= kernel.RegisterForSystemEvent(sml.smlSystemEventId.smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED, systemCall, myTestData) ;
 
@@ -219,6 +239,7 @@ namespace TestCSharpSML
 			ok = ok && agent.UnregisterForProductionEvent(prodCallbackID) ;
 			ok = ok && agent.UnregisterForPrintEvent(printCallbackID) ;
 			ok = ok && agent.RemoveOutputHandler(outputCallbackID) ;
+			ok = ok && agent.UnregisterForOutputNotification(noteCallbackID) ;
 			ok = ok && kernel.UnregisterForAgentEvent(agentCallbackID) ;
 			ok = ok && kernel.UnregisterForSystemEvent(systemCallbackID) ;
 
