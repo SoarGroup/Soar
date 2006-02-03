@@ -19,12 +19,14 @@
 %ignore sml::Agent::UnregisterForProductionEvent(int);
 %ignore sml::Agent::UnregisterForPrintEvent(int);
 %ignore sml::Agent::UnregisterForXMLEvent(int);
+%ignore sml::Agent::UnregisterForOutputNotification(int);
 %ignore sml::Agent::RemoveOutputHandler(int);
 %ignore sml::Kernel::UnregisterForSystemEvent(int);
 %ignore sml::Kernel::UnregisterForUpdateEvent(int);
-%ignore sml::Kernel::UnregisterForUntypedEvent(int);
+%ignore sml::Kernel::UnregisterForStringEvent(int);
 %ignore sml::Kernel::UnregisterForAgentEvent(int);
 %ignore sml::Kernel::RemoveRhsFunction(int);
+%ignore sml::Kernel::UnregisterForClientMessageEvent(int);
 
 %typemap(cscode) sml::Kernel %{
 	// This class exists to expose the "DeleteHandle" method to the SWIG C++ code, so that we can call back to it to
@@ -174,6 +176,39 @@
 	public bool UnregisterForRunEvent(int jarg2)
 	{
 		return CSharp_Agent_UnregisterForRunEvent(swigCPtr, jarg2) ;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//
+	// OutputNotification
+	//
+	//////////////////////////////////////////////////////////////////////////////////
+	// C++ equivalent:
+	// This is a simpler notification event -- it just tells you that some output was received for this agent.
+	// You then call to the other client side methods to determine what has changed.
+	// typedef void (*OutputNotificationHandler)(void* pUserData, Agent* pAgent) ;
+	public delegate void OutputNotificationCallback(IntPtr callbackData, IntPtr agent);
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern int CSharp_Agent_RegisterForOutputNotification(HandleRef jarg1, IntPtr jagent, OutputNotificationCallback callback, IntPtr callbackData);
+
+	public int RegisterForOutputNotification(OutputNotificationCallback jarg2, Object callbackData)
+	{
+		// This call ensures the garbage collector won't delete the object until we call free on the handle.
+		// It's also an approved way to pass a pointer to unsafe (C++) code and get it back.
+		// Also, somewhat remarkably, we can pass null to GCHandle.Alloc() and get back a valid object, so no need to special case that.
+		GCHandle agentHandle = GCHandle.Alloc(this) ;
+		GCHandle callbackDataHandle = GCHandle.Alloc(callbackData) ;
+		
+		return CSharp_Agent_RegisterForOutputNotification(swigCPtr, (IntPtr)agentHandle, jarg2, (IntPtr)callbackDataHandle) ;
+	}
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern bool CSharp_Agent_UnregisterForOutputNotification(HandleRef jarg1, int callbackID);
+
+	public bool UnregisterForOutputNotification(int jarg2)
+	{
+		return CSharp_Agent_UnregisterForOutputNotification(swigCPtr, jarg2) ;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////
