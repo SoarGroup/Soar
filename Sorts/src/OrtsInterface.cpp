@@ -1,6 +1,12 @@
 #include <assert.h>
 #include "OrtsInterface.h"
 
+OrtsInterface::OrtsInterface(GameStateModule* _gsm,
+                             SoarInterface*   _soarInterface)
+: gsm(_gsm), soarInterface(_soarInterface)
+{
+}
+
 OrtsInterface::addAppearedObject() {
   assert(false);
 }

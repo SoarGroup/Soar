@@ -28,7 +28,7 @@ typedef hash_map<SoarGameObject*, GameObj*>::iterator revObjectMapIter;
  */
 class OrtsInterface : public EventHandler {
 public:
-  OrtsInterface();
+  OrtsInterface(GameStateModule* _gsm, SoarInterface *_soarInterface);
   ~OrtsInterface();
 
 private:

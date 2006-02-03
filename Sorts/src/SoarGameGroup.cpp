@@ -14,7 +14,7 @@ void SoarGameGroup::addUnit(SoarGameObject* unit) {
 
   
   assert(members.find(unit) == members.end());
-  members.insert(unit);
+  members.insert(unit); 
   stale = true;
 }
 

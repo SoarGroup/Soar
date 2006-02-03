@@ -8,9 +8,18 @@ using namespace sml;
 // lookup table that translates string names to action codes
 SoarActionType actionTypeLookup(const char* actionName);
 
-SoarInterface::SoarInterface(pthread_mutex_t* _actionQueueMutex) 
-: actionQueueMutex(_actionQueueMutex)
+SoarInterface::SoarInterface(Agent*           _agent,
+                             pthread_mutex_t* _objectActionQueueMutex,
+                             pthread_mutex_t* _attentionActionQueueMutex,
+                             pthread_mutex_t* _groupActionQueueMutex
+                            )
+: objectActionQueueMutex(_objectActionQueueMutex),
+  attentionActionQueueMutex(_attentionQueueMutex),
+  groupActionQueueMutex(_groupActionQueueMutex),
+  agent(_agent)
 {
+  inputLink = agent->GetInputLink();
+  initSoarInputLink();
   groupIdCounter = 0;
 }
 
@@ -72,7 +81,7 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyList& gpl) {
 
 // called in soar event handler to take everything off the output
 // link and put onto the action queue each time soar generates output
-void SoarInterface::getNewActions(list<SoarAction*> &actions) {
+void SoarInterface::getNewActions() {
   int numberCommands = agent->GetNumberCommands() ;
   for (int i = 0 ; i < numberCommands ; i++) {
     Identifier* cmdPtr = agent->GetCommand(i) ;
