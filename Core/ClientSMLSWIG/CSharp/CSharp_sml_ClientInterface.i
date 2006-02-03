@@ -201,6 +201,40 @@
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	//
+	// RhsEvent
+	//
+	//////////////////////////////////////////////////////////////////////////////////
+	// C++ equivalent:
+	// Handler for RHS (right hand side) function firings
+	// pFunctionName and pArgument define the RHS function being called (the client may parse pArgument to extract other values)
+	// The return value is a string which allows the RHS function to create a symbol: e.g. ^att (exec plus 2 2) producting ^att 4
+	// typedef std::string (*RhsEventHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) ;
+	public delegate String RhsFunction(smlRhsEventId eventID, IntPtr callbackData, IntPtr kernel, String agentName, String functionName, String argument);
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern int CSharp_Kernel_AddRhsFunction(HandleRef jarg1, String functionName, IntPtr jkernel, RhsFunction callback, IntPtr callbackData);
+
+	public int AddRhsFunction(String functionName, RhsFunction jarg2, Object callbackData)
+	{
+		// This call ensures the garbage collector won't delete the object until we call free on the handle.
+		// It's also an approved way to pass a pointer to unsafe (C++) code and get it back.
+		// Also, somewhat remarkably, we can pass null to GCHandle.Alloc() and get back a valid object, so no need to special case that.
+		GCHandle kernelHandle = GCHandle.Alloc(this) ;
+		GCHandle callbackDataHandle = GCHandle.Alloc(callbackData) ;
+		
+		return CSharp_Kernel_AddRhsFunction(swigCPtr, functionName, (IntPtr)kernelHandle, jarg2, (IntPtr)callbackDataHandle) ;
+	}
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern bool CSharp_Kernel_RemoveRhsFunction(HandleRef jarg1, int callbackID);
+
+	public bool RemoveRhsFunction(int jarg2)
+	{
+		return CSharp_Kernel_RemoveRhsFunction(swigCPtr, jarg2) ;
+	}	
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	//
 	// AgentEvent
 	//
 	//////////////////////////////////////////////////////////////////////////////////
