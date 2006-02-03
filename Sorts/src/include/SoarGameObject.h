@@ -4,6 +4,7 @@
 #endif
 
 #include<stack>
+#include<vector>
 
 //How do I transition from one FSM to another?
 
@@ -20,7 +21,7 @@ class SoarGameObject{
 	void issueCommand(std::string name);
 	void update();
 
-	void setGroup(SoarGameGroup *);
+	void setGroup(SoarGameGroup *g);
 	SoarGameGroup *getGroup();
 
   // I assume this can be public?

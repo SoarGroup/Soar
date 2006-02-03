@@ -65,3 +65,14 @@ void SoarGameObject::update()
  if(!memory.empty())
   memory.top()->update();
 }
+
+
+void SoarGameObject::setGroup(SoarGameGroup *g)
+{
+ group = g;
+}
+
+SoarGameGroup *SoarGameObject::getGroup(void)
+{
+ return group;
+}
