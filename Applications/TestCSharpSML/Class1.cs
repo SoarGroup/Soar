@@ -78,6 +78,18 @@ namespace TestCSharpSML
 			System.Console.Out.WriteLine(eventID + " kernel " + kernel + " with user data " + userData) ;
 		}
 
+		static void MyUpdateEventCallback(sml.smlUpdateEventId eventID, IntPtr callbackData, IntPtr kernelPtr, smlRunFlags runFlags)
+		{
+			// Retrieve the original object reference from the GCHandle which is used to pass the value safely to and from C++ (unsafe/unmanaged) code.
+			sml.Kernel kernel = (sml.Kernel)((GCHandle)kernelPtr).Target ;
+
+			// Retrieve arbitrary data from callback data object (note data here can be null, but the wrapper object callbackData won't be so this call is safe)
+			// This field's usage is up to the user and passed in during registation call and passed back here.  Can be used to provide context.
+			Object userData = (Object)((GCHandle)callbackData).Target ;
+
+			System.Console.Out.WriteLine(eventID + " kernel " + kernel + " run flags " + runFlags + " with user data " + userData) ;
+		}
+
 		static void MyPrintEventCallback(sml.smlPrintEventId eventID, IntPtr callbackData, IntPtr agentPtr, String message)
 		{
 			// Retrieve the original object reference from the GCHandle which is used to pass the value safely to and from C++ (unsafe/unmanaged) code.
@@ -135,6 +147,9 @@ namespace TestCSharpSML
 		[STAThread]
 		static void Main(string[] args)
 		{
+			//System.Console.Out.WriteLine("Press return to start") ;
+			//System.Console.In.ReadLine() ;
+
 			Class1 test = new Class1() ;
 
 			bool result = false ;
@@ -220,6 +235,7 @@ namespace TestCSharpSML
 			sml.Agent.OutputNotificationCallback noteCall = new sml.Agent.OutputNotificationCallback(MyOutputNotificationCallback) ;
 			sml.Kernel.AgentEventCallback agentCall = new sml.Kernel.AgentEventCallback(MyAgentEventCallback) ;			
 			sml.Kernel.SystemEventCallback systemCall = new sml.Kernel.SystemEventCallback(MySystemEventCallback) ;	
+			sml.Kernel.UpdateEventCallback updateCall = new sml.Kernel.UpdateEventCallback(MyUpdateEventCallback) ;	
 
 			int runCallbackID	= agent.RegisterForRunEvent(sml.smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, runCall, myTestData) ;
 			int prodCallbackID	= agent.RegisterForProductionEvent(sml.smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, prodCall, myTestData) ;
@@ -228,9 +244,12 @@ namespace TestCSharpSML
 			int noteCallbackID  = agent.RegisterForOutputNotification(noteCall, myTestData) ;
 			int agentCallbackID	= kernel.RegisterForAgentEvent(sml.smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, agentCall, myTestData) ;
 			int systemCallbackID= kernel.RegisterForSystemEvent(sml.smlSystemEventId.smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED, systemCall, myTestData) ;
+			int updateCallbackID= kernel.RegisterForUpdateEvent(sml.smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, updateCall, myTestData) ;
 
-			// Trigger some run and production events
+			// Running the agent will trigger most of the events we're listening for so
+			// we can check that they're working correctly.
 			agent.RunSelf(3) ;
+			//kernel.RunAllAgents(3) ;
 
 			// Trigger an agent event
 			agent.InitSoar() ;
@@ -242,6 +261,7 @@ namespace TestCSharpSML
 			ok = ok && agent.UnregisterForOutputNotification(noteCallbackID) ;
 			ok = ok && kernel.UnregisterForAgentEvent(agentCallbackID) ;
 			ok = ok && kernel.UnregisterForSystemEvent(systemCallbackID) ;
+			ok = ok && kernel.UnregisterForUpdateEvent(updateCallbackID) ;
 
 			if (!ok)
 			{

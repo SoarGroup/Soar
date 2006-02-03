@@ -4,16 +4,16 @@
 %csconst(1); // strongly recommended by SWIG manual section 19.3.5.1
 // the previous line causes problems for some enum values, so we have to set them manually here
 // the problem only affects those enums whose values are "calculated" based on other values
-%csconstvalue("smlSystemEventId.smlEVENT_AFTER_RHS_FUNCTION_EXECUTED + 1") smlEVENT_BEFORE_SMALLEST_STEP;
-%csconstvalue("smlProductionEventId.smlEVENT_BEFORE_PRODUCTION_RETRACTED + 1") smlEVENT_AFTER_AGENT_CREATED;
-%csconstvalue("smlPrintEventId.smlEVENT_PRINT + 1") smlEVENT_RHS_USER_FUNCTION;
-%csconstvalue("smlRhsEventId.smlEVENT_RHS_USER_FUNCTION + 1") smlEVENT_XML_TRACE_OUTPUT;
-%csconstvalue("smlXMLEventId.smlEVENT_XML_INPUT_RECEIVED + 1") smlEVENT_AFTER_ALL_OUTPUT_PHASES;
-%csconstvalue("smlUpdateEventId.smlEVENT_AFTER_ALL_GENERATED_OUTPUT + 1") smlEVENT_EDIT_PRODUCTION;
-%csconstvalue("smlStringEventId.smlEVENT_EDIT_PRODUCTION + 1") smlEVENT_LAST;
-%csconstvalue("smlWorkingMemoryEventId.smlEVENT_OUTPUT_PHASE_CALLBACK + 1") smlEVENT_LOG_ERROR;
-%csconstvalue("smlRunEventId.smlEVENT_AFTER_RUNNING + 1") smlEVENT_AFTER_PRODUCTION_ADDED;
-%csconstvalue("smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED + 1") smlEVENT_OUTPUT_PHASE_CALLBACK;
+%csconstvalue("smlSystemEventId.smlEVENT_LAST_SYSTEM_EVENT + 1") smlEVENT_BEFORE_SMALLEST_STEP;
+%csconstvalue("smlProductionEventId.smlEVENT_LAST_PRODUCTION_EVENT + 1") smlEVENT_AFTER_AGENT_CREATED;
+%csconstvalue("smlPrintEventId.smlEVENT_LAST_PRINT_EVENT + 1") smlEVENT_RHS_USER_FUNCTION;
+%csconstvalue("smlRhsEventId.smlEVENT_LAST_RHS_EVENT + 1") smlEVENT_XML_TRACE_OUTPUT;
+%csconstvalue("smlXMLEventId.smlEVENT_LAST_XML_EVENT + 1") smlEVENT_AFTER_ALL_OUTPUT_PHASES;
+%csconstvalue("smlUpdateEventId.smlEVENT_LAST_UPDATE_EVENT + 1") smlEVENT_EDIT_PRODUCTION;
+%csconstvalue("smlStringEventId.smlEVENT_LAST_STRING_EVENT + 1") smlEVENT_LAST;
+%csconstvalue("smlWorkingMemoryEventId.smlEVENT_LAST_WM_EVENT + 1") smlEVENT_LOG_ERROR;
+%csconstvalue("smlRunEventId.smlEVENT_LAST_RUN_EVENT + 1") smlEVENT_AFTER_PRODUCTION_ADDED;
+%csconstvalue("smlAgentEventId.smlEVENT_LAST_AGENT_EVENT + 1") smlEVENT_OUTPUT_PHASE_CALLBACK;
 
 %ignore sml::Agent::UnregisterForRunEvent(int);
 %ignore sml::Agent::UnregisterForProductionEvent(int);
@@ -107,6 +107,38 @@
 	public bool UnregisterForSystemEvent(int jarg2)
 	{
 		return CSharp_Kernel_UnregisterForSystemEvent(swigCPtr, jarg2) ;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//
+	// UpdateEvent
+	//
+	//////////////////////////////////////////////////////////////////////////////////
+	// C++ equivalent:
+	// Handler for Update events.
+	// typedef void (*UpdateEventHandler)(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlRunFlags runFlags) ;
+	public delegate void UpdateEventCallback(smlUpdateEventId eventID, IntPtr callbackData, IntPtr kernel, smlRunFlags runFlags);
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern int CSharp_Kernel_RegisterForUpdateEvent(HandleRef jarg1, int eventID, IntPtr jkernel, UpdateEventCallback callback, IntPtr callbackData);
+
+	public int RegisterForUpdateEvent(smlUpdateEventId eventID, UpdateEventCallback jarg2, Object callbackData)
+	{
+		// This call ensures the garbage collector won't delete the object until we call free on the handle.
+		// It's also an approved way to pass a pointer to unsafe (C++) code and get it back.
+		// Also, somewhat remarkably, we can pass null to GCHandle.Alloc() and get back a valid object, so no need to special case that.
+		GCHandle kernelHandle = GCHandle.Alloc(this) ;
+		GCHandle callbackDataHandle = GCHandle.Alloc(callbackData) ;
+		
+		return CSharp_Kernel_RegisterForUpdateEvent(swigCPtr, (int)eventID, (IntPtr)kernelHandle, jarg2, (IntPtr)callbackDataHandle) ;
+	}
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern bool CSharp_Kernel_UnregisterForUpdateEvent(HandleRef jarg1, int callbackID);
+
+	public bool UnregisterForUpdateEvent(int jarg2)
+	{
+		return CSharp_Kernel_UnregisterForUpdateEvent(swigCPtr, jarg2) ;
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////////
