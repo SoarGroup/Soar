@@ -48,9 +48,29 @@
 			handle.Free() ;
 		}
 
+		public delegate IntPtr AllocateWMElementDelegate(IntPtr intHandle);
+		static AllocateWMElementDelegate staticAllocateWMElementDelegate = new AllocateWMElementDelegate(AllocateWMElement);
+
+		[DllImport("CSharp_sml_ClientInterface")]
+		public static extern void CSharp_Kernel_RegisterAllocateWMElementHelper(AllocateWMElementDelegate theDelegate);
+
+		static IntPtr AllocateWMElement(IntPtr intCPtr)
+		{
+			// Creates a new C# object to wrap the C++ one, without taking ownership of the underlying object
+			// (as we don't own the C++ object either when we call here).
+			// To keep this the user would need to copy it.
+			WMElement wmElement = new WMElement(intCPtr, false) ;
+			
+			GCHandle handle = GCHandle.Alloc(wmElement) ;
+			System.Console.Out.WriteLine("Created WMElement handle" + handle) ;
+			
+			return (IntPtr)handle ;
+		}
+
 		// This registration method will be called as soon as the parent class (Kernel) is loaded.
 		static HandleHelper() {
 			CSharp_Kernel_RegisterHandleHelper(staticHandleDelegate);
+			CSharp_Kernel_RegisterAllocateWMElementHelper(staticAllocateWMElementDelegate);
 		}
 	}
 
@@ -154,6 +174,39 @@
 	public bool UnregisterForRunEvent(int jarg2)
 	{
 		return CSharp_Agent_UnregisterForRunEvent(swigCPtr, jarg2) ;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//
+	// OutputEvent
+	//
+	//////////////////////////////////////////////////////////////////////////////////
+	// C++ equivalent:
+	// You register a specific attribute name (e.g. "move") and when this attribute appears on the output link (^io.output-link.move M3)
+	// you are passed the working memory element ((I3 ^move M3) in this case) in the callback.  This mimics gSKI's output producer model.
+	//typedef void (*OutputEventHandler)(void* pUserData, Agent* pAgent, char const* pCommandName, WMElement* pOutputWme) ;
+	public delegate void OutputEventCallback(IntPtr callbackData, IntPtr agent, String commandName, IntPtr outputWME);
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern int CSharp_Agent_AddOutputHandler(HandleRef jarg1, IntPtr jagent, String attributeName, OutputEventCallback callback, IntPtr callbackData);
+
+	public int AddOutputHandler(String attributeName, OutputEventCallback jarg2, Object callbackData)
+	{
+		// This call ensures the garbage collector won't delete the object until we call free on the handle.
+		// It's also an approved way to pass a pointer to unsafe (C++) code and get it back.
+		// Also, somewhat remarkably, we can pass null to GCHandle.Alloc() and get back a valid object, so no need to special case that.
+		GCHandle agentHandle = GCHandle.Alloc(this) ;
+		GCHandle callbackDataHandle = GCHandle.Alloc(callbackData) ;
+		
+		return CSharp_Agent_AddOutputHandler(swigCPtr, (IntPtr)agentHandle, attributeName, jarg2, (IntPtr)callbackDataHandle) ;
+	}
+
+	[DllImport("CSharp_sml_ClientInterface")]
+	public static extern bool CSharp_Agent_RemoveOutputHandler(HandleRef jarg1, int callbackID);
+
+	public bool RemoveOutputHandler(int jarg2)
+	{
+		return CSharp_Agent_RemoveOutputHandler(swigCPtr, jarg2) ;
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////////
