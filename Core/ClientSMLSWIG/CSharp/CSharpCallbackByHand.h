@@ -134,6 +134,74 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForRunEvent(void* jarg1, int 
 
 //////////////////////////////////////////////////////////////////////////////////
 //
+// OutputNotification
+//
+//////////////////////////////////////////////////////////////////////////////////
+
+// The callback we want to support
+// This is a simpler notification event -- it just tells you that some output was received for this agent.
+// You then call to the other client side methods to determine what has changed.
+// typedef void (*OutputNotificationHandler)(void* pUserData, Agent* pAgent) ;
+
+// The C# callback equivalent that we'll eventually call
+typedef void (__stdcall *OutputNotificationCallback)(CallbackDataPtr callbackData, agentPtr jagent) ;
+
+// This is the C++ handler which will be called by clientSML when the event fires.
+// Then from here we need to call back to C# to pass back the message.
+static void OutputNotificationHandler(void* pUserData, sml::Agent* pAgent)
+{
+	// The user data is the class we declared above, where we store the Java data to use in the callback.
+	CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
+
+	OutputNotificationCallback callback = (OutputNotificationCallback)pData->m_CallbackFunction ;
+
+	// Now try to call back to CSharp
+	callback(pData->m_CallbackData, pData->m_Agent) ;
+}
+
+SWIGEXPORT int SWIGSTDCALL CSharp_Agent_RegisterForOutputNotification(void * jarg1, agentPtr jagent, unsigned int jarg3, CallbackDataPtr jdata)
+{
+    // jarg1 is the C++ Agent object
+	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
+
+	// jarg2 is the event ID we're registering for
+	// sml::smlOutputNotificationId arg2 = (sml::smlOutputNotificationId)jarg2;
+
+	// jarg3 is the callback function
+
+	// Create the information we'll need to make a Java call back later
+	CSharpCallbackData* pData = CreateCSharpCallbackDataAgent(jagent, 0, jarg3, jdata) ;
+	
+	// Register our handler.  When this is called we'll call back to the client method.
+	pData->m_CallbackID = arg1->RegisterForOutputNotification(&OutputNotificationHandler, pData) ;
+
+	// Pass the callback info back to the client.  We need to do this so we can delete this later when the method is unregistered
+	return (int)pData ;
+}
+
+SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForOutputNotification(void* jarg1, int jarg2)
+{
+    // jarg1 is the C++ Agent object
+	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
+
+	// jarg2 is the callback data from the registration call
+	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
+
+	// Unregister our handler.
+	bool result = arg1->UnregisterForOutputNotification(pData->m_CallbackID) ;
+
+	// Free the GCHandles created when the callback was registered
+	SWIG_csharp_deletehandle_callback(pData->m_Agent) ;
+	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
+
+	// Release the callback data
+	delete pData ;
+
+	return result ;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//
 // OutputEvent
 //
 //////////////////////////////////////////////////////////////////////////////////
