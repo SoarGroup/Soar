@@ -308,7 +308,7 @@ typedef void (*OutputNotificationHandler)(void* pUserData, Agent* pAgent) ;
 typedef void (*UpdateEventHandler)(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlRunFlags runFlags) ;
 
 // Handler for string based events.
-typedef void (*StringEventHandler)(smlStringEventId id, void* pUserData, Kernel* pKernel, char const* pData) ;
+typedef void (*StringEventHandler)(smlStringEventId id, void* pUserData, Kernel* pKernel, char const* pString) ;
 
 // Handler for XML events.  The data for the event is passed back in pXML.
 // NOTE: To keep a copy of the ClientXML* you are passed use ClientXML* pMyXML = new ClientXML(pXML) to create
