@@ -47,6 +47,27 @@ namespace TestCSharpSML
 			System.Console.Out.WriteLine(eventID + " agent " + name + " production " + productionName + " instantiation " + instantiation + " with user data " + userData) ;
 		}
 
+		static void MyXMLEventCallback(sml.smlXMLEventId eventID, IntPtr callbackData, IntPtr agentPtr, IntPtr pXML)
+		{
+			// Retrieve the original object reference from the GCHandle which is used to pass the value safely to and from C++ (unsafe/unmanaged) code.
+			sml.Agent agent = (sml.Agent)((GCHandle)agentPtr).Target ;
+
+			// Retrieve arbitrary data from callback data object (note data here can be null, but the wrapper object callbackData won't be so this call is safe)
+			// This field's usage is up to the user and passed in during registation call and passed back here.  Can be used to provide context.
+			Object userData = (Object)((GCHandle)callbackData).Target ;
+
+			// Retrieve the xml object.  We don't own this object, so to keep it we'd need to copy it (or its contents).
+			// This way when C# deallocated the object the underlying C++ object isn't deleted either (which is correct as the corresponding C++ code
+			// doesn't pass ownership in the equivalent callback either).
+			sml.ClientXML xml = (sml.ClientXML)((GCHandle)pXML).Target ;
+
+			// Convert the XML to string form so we can look at it.
+			String xmlString = xml.GenerateXMLString(true) ;
+
+			String name = agent.GetAgentName() ;
+			System.Console.Out.WriteLine(eventID + " agent " + name + " xml " + xmlString) ;
+		}
+
 		static void MyAgentEventCallback(sml.smlAgentEventId eventID, IntPtr callbackData, IntPtr kernelPtr, String agentName)
 		{
 			// Retrieve the original object reference from the GCHandle which is used to pass the value safely to and from C++ (unsafe/unmanaged) code.
@@ -244,8 +265,9 @@ namespace TestCSharpSML
 			sml.Agent.ProductionEventCallback prodCall = new sml.Agent.ProductionEventCallback(MyProductionEventCallback) ;			
 			sml.Agent.PrintEventCallback printCall = new sml.Agent.PrintEventCallback(MyPrintEventCallback) ;			
 			sml.Agent.OutputEventCallback outputCall = new sml.Agent.OutputEventCallback(MyOutputEventCallback) ;
+			sml.Agent.XMLEventCallback xmlCall		 = new sml.Agent.XMLEventCallback(MyXMLEventCallback) ;
 			sml.Agent.OutputNotificationCallback noteCall = new sml.Agent.OutputNotificationCallback(MyOutputNotificationCallback) ;
-			sml.Kernel.AgentEventCallback agentCall = new sml.Kernel.AgentEventCallback(MyAgentEventCallback) ;			
+			sml.Kernel.AgentEventCallback agentCall = new sml.Kernel.AgentEventCallback(MyAgentEventCallback) ;
 			sml.Kernel.SystemEventCallback systemCall = new sml.Kernel.SystemEventCallback(MySystemEventCallback) ;	
 			sml.Kernel.UpdateEventCallback updateCall = new sml.Kernel.UpdateEventCallback(MyUpdateEventCallback) ;
 			sml.Kernel.StringEventCallback strCall    = new sml.Kernel.StringEventCallback(MyStringEventCallback) ;
@@ -255,6 +277,7 @@ namespace TestCSharpSML
 			int printCallbackID	= agent.RegisterForPrintEvent(sml.smlPrintEventId.smlEVENT_PRINT, printCall, myTestData) ;
 			int outputCallbackID= agent.AddOutputHandler("move", outputCall, myTestData) ;
 			int noteCallbackID  = agent.RegisterForOutputNotification(noteCall, myTestData) ;
+			int xmlCallbackID   = agent.RegisterForXMLEvent(sml.smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT, xmlCall, myTestData) ;
 			int agentCallbackID	= kernel.RegisterForAgentEvent(sml.smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, agentCall, myTestData) ;
 			int systemCallbackID= kernel.RegisterForSystemEvent(sml.smlSystemEventId.smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED, systemCall, myTestData) ;
 			int updateCallbackID= kernel.RegisterForUpdateEvent(sml.smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, updateCall, myTestData) ;
@@ -273,6 +296,7 @@ namespace TestCSharpSML
 			ok = ok && agent.UnregisterForPrintEvent(printCallbackID) ;
 			ok = ok && agent.RemoveOutputHandler(outputCallbackID) ;
 			ok = ok && agent.UnregisterForOutputNotification(noteCallbackID) ;
+			ok = ok && agent.UnregisterForXMLEvent(xmlCallbackID) ;
 			ok = ok && kernel.UnregisterForAgentEvent(agentCallbackID) ;
 			ok = ok && kernel.UnregisterForSystemEvent(systemCallbackID) ;
 			ok = ok && kernel.UnregisterForUpdateEvent(updateCallbackID) ;
