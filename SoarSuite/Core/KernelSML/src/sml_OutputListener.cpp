@@ -99,36 +99,6 @@ void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::IAgent
 	if (wmelist->GetNumElements() == 0)
 		return ;
 
-	// We have to watch for one special case.  When the output-link is created, if that's the only output we
-	// don't want to stop (or you always stop on the first decision in a run-til-output).
-	// First make sure we are only passed one value, otherwise we did get real output.
-	bool isJustOutputLink = wmelist->GetNumElements() == 1 ;
-	if (isJustOutputLink)
-	{
-		// Get the first wme
-		gSKI::IWme* pWME = wmelist->GetVal();
-
-		// Look up the type of value this is
-		egSKISymbolType type = pWME->GetValue()->GetType() ;
-
-		// Get the attribute name
-		std::string att = pWME->GetAttribute()->GetString() ;
-
-		// Check whether we're adding the output link
-		// BADBAD: It would be nice to be able to do this without hard-coding the output-link's attribute here.
-		isJustOutputLink = (type == gSKI_OBJECT && strcmp(att.c_str(), sml_Names::kOutputLinkName) == 0) ;
-	}
-
-	if (m_StopOnOutput && !isJustOutputLink)
-	{
-		// If we've been asked to interrupt Soar when we receive output, then do so now.
-		// I'm not really clear on the correct parameters for stopping Soar here and what impact the choices will have.
-		agentPtr->Interrupt(gSKI_STOP_AFTER_DECISION_CYCLE, gSKI_STOP_BY_RETURNING) ;
-
-		// Clear the flag, so we don't keep trying to stop.  The caller can reset it before the next run if they wish.
-		m_StopOnOutput = false ;
-	}
-
 	// BADBAD: voigtjr VS2005 workaround
 	if (!HasEvents(gSKIEVENT_OUTPUT_PHASE_CALLBACK)) 
 		return;
@@ -243,9 +213,18 @@ void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::IAgent
 
 	egSKIWorkingMemoryEventId eventID = gSKIEVENT_OUTPUT_PHASE_CALLBACK ;
 
+#ifdef _DEBUG
+	// Convert the XML to a string so we can look at it in the debugger
+	char *pStr = pMsg->GenerateXMLString(true) ;
+#endif
+
 	// Send the message out
 	AnalyzeXML response ;
 	SendEvent(pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
+
+#ifdef _DEBUG
+	pMsg->DeleteString(pStr) ;
+#endif
 
 	// Clean up
 	delete pMsg ;

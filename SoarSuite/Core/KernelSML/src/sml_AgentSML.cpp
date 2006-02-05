@@ -185,20 +185,6 @@ void AgentSML::ScheduleAgentToRun(bool state)
 }
 
 /*************************************************************
-* @brief	When set, this flag will cause Soar to break when
-*			output is next generated during a run.
-*************************************************************/
-bool AgentSML::SetStopOnOutput(bool state)
-{
-	if (!m_pOutputListener)
-		return false ;
-
-	m_pOutputListener->SetStopOnOutput(state) ;
-
-	return true ;
-}
-
-/*************************************************************
 * @brief	Converts an id from a client side value to a kernel side value.
 *			We need to be able to do this because the client is adding a collection
 *			of wmes at once, so it makes up the ids for those objects.

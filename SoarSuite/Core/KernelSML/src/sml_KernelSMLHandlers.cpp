@@ -127,7 +127,6 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_LoadProductions]	= &sml::KernelSML::HandleLoadProductions ;
 	m_CommandMap[sml_Names::kCommand_GetInputLink]		= &sml::KernelSML::HandleGetInputLink ;
 	m_CommandMap[sml_Names::kCommand_Input]				= &sml::KernelSML::HandleInput ;
-	m_CommandMap[sml_Names::kCommand_StopOnOutput]		= &sml::KernelSML::HandleStopOnOutput ;
 	m_CommandMap[sml_Names::kCommand_CommandLine]		= &sml::KernelSML::HandleCommandLine ;
 	m_CommandMap[sml_Names::kCommand_ExpandCommandLine]	= &sml::KernelSML::HandleExpandCommandLine ;
 	m_CommandMap[sml_Names::kCommand_CheckForIncomingCommands] = &sml::KernelSML::HandleCheckForIncomingCommands ;
@@ -628,21 +627,6 @@ bool KernelSML::HandleSetInterruptCheckRate(gSKI::IAgent* pAgent, char const* pC
 	GetKernel()->SetInterruptCheckRate(newRate) ;
 
 	return true ;
-}
-
-// Set a flag so Soar will break when it next generates output.  This allows us to
-// run for "n decisions" OR "until output" which we can't do with raw gSKI calls.
-bool KernelSML::HandleStopOnOutput(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
-{
-	unused(pCommandName) ; unused(pResponse) ; unused(pConnection) ; unused(pError) ;
-
-	// Get the parameters
-	bool state = pIncoming->GetArgBool(sml_Names::kParamValue, true) ;
-
-	// Make the call.
-	bool ok = GetAgentSML(pAgent)->SetStopOnOutput(state) ;
-
-	return ok ;
 }
 
 // Fire a particular event at the request of the client.
