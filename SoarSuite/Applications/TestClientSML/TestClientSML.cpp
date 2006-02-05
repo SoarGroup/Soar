@@ -150,7 +150,7 @@ bool SimpleRunListener(int decisions)
 	//pKernel->SetTraceCommunications(true) ;
 
 	sml::Agent* pAgent = pKernel->CreateAgent("runagent") ;
-	std::string path = std::string(pKernel->GetLibraryLocation()) + "../Tests/testrun.soar" ;
+	std::string path = std::string(pKernel->GetLibraryLocation()) + "/../Tests/testrun.soar" ;
 	bool ok = pAgent->LoadProductions(path.c_str()) ;
 
 	if (!ok)
@@ -274,6 +274,84 @@ bool SimpleListener(int life)
 
 	return true ;
 }
+
+// Creates an agent that copies values from input link to output link
+// so we can test that this is OK.
+bool SimpleCopyAgent()
+{
+	// Create the kernel instance
+	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
+
+	if (pKernel->HadError())
+	{
+		cout << pKernel->GetLastErrorDescription() << endl ;
+		return false ;
+	}
+
+	sml::Agent* pAgent = pKernel->CreateAgent("copyagent") ;
+	std::string path = std::string(pKernel->GetLibraryLocation()) + "/../Tests/testcopy.soar" ;
+	bool ok = pAgent->LoadProductions(path.c_str()) ;
+
+	if (!ok)
+		return false ;
+
+/* Input structure for the test
+(S1 ^io I1)
+  (I1 ^input-link I3)
+    (I3 ^sentence S2)
+      (S2 ^newest yes ^num-words 3 ^sentence-num 1 ^word W1 ^word W2 ^word W3)
+        (W1 ^num-word 1 ^word the)
+        (W2 ^num-word 2 ^word cat)
+        (W3 ^num-word 3 ^word in)
+*/
+
+	Identifier* pSentence = pAgent->CreateIdWME(pAgent->GetInputLink(), "sentence") ;
+	pAgent->CreateStringWME(pSentence, "newest", "yes") ;
+	pAgent->CreateIntWME(pSentence, "num-words", 3) ;
+	Identifier* pWord1 = pAgent->CreateIdWME(pSentence, "word") ;
+	Identifier* pWord2 = pAgent->CreateIdWME(pSentence, "word") ;
+	Identifier* pWord3 = pAgent->CreateIdWME(pSentence, "word") ;
+	pAgent->CreateIntWME(pWord1, "num-word", 1) ;
+	pAgent->CreateIntWME(pWord2, "num-word", 2) ;
+	pAgent->CreateIntWME(pWord3, "num-word", 3) ;
+	pAgent->CreateStringWME(pWord1, "word", "the") ;
+	pAgent->CreateStringWME(pWord2, "word", "cat") ;
+	pAgent->CreateStringWME(pWord3, "word", "in") ;
+	pAgent->Commit() ;
+
+	// Register for the trace output
+	std::string trace ;	// We'll pass this into the handler and build up the output in it
+	int callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
+
+	// Set to true for more detail on this
+	pKernel->SetTraceCommunications(false) ;
+
+	std::string result = pAgent->RunSelf(3) ;
+	cout << result << endl ;
+	cout << trace << endl ;
+
+	std::string state = pAgent->ExecuteCommandLine("print --depth 5 s1") ;
+	cout << state << endl ;
+
+	int changes = pAgent->GetNumberOutputLinkChanges() ;
+
+	for (int i = 0 ; i < changes ; i++)
+	{
+		WMElement* pOutputWme = pAgent->GetOutputLinkChange(i) ;
+		cout << pOutputWme->GetIdentifier()->GetIdentifierSymbol() << " ^ " << pOutputWme->GetAttribute() << " " << pOutputWme->GetValueAsString() << endl ;
+	}
+
+	// We had a bug where some of these wmes would get dropped (the orphaned wme scheme didn't handle multiple levels)
+	// so check now that we got the correct number of changes.
+	if (changes != 12)
+		return false ;
+
+	pKernel->Shutdown() ;
+	delete pKernel ;
+
+	return true ;
+}
+
 
 void MyRunSelfRemovingHandler(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phase)
 {
@@ -1434,6 +1512,7 @@ int main(int argc, char* argv[])
 	bool timeTest  = false ;
 	bool runlistener = false ;
 	bool remoteConnect = false ;
+	bool copyTest  = false ;
 	int  life      = 3000 ;	// Default is to live for 3000 seconds (5 mins) as a listener
 	int  decisions = 20000 ;
 
@@ -1456,6 +1535,8 @@ int main(int argc, char* argv[])
 		{
 			if (!stricmp(argv[i], "-nostop"))
 				stopAtEnd = false ;
+			if (!stricmp(argv[i], "-copy"))
+				copyTest = true ;
 			if (!stricmp(argv[i], "-remote"))
 				remote = true ;
 			if (!stricmp(argv[i], "-listener"))
@@ -1493,6 +1574,8 @@ int main(int argc, char* argv[])
 		SimpleListener(life) ;
 	else if (runlistener)
 		SimpleRunListener(decisions) ;
+	else if (copyTest)
+		success = SimpleCopyAgent() ;
 	else if (remoteConnect)
 		SimpleRemoteConnect() ;
 	else if (timeTest)
