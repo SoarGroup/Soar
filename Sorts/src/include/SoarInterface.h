@@ -1,13 +1,16 @@
 #ifndef soarinterface_h
 #define soarinterface_h
 
-#include<utils>
+#include<utility>
 #include<list>
 #include<map>
-#include<hash_map>
+#include<hash_map.h>
 #include<pthread.h>
 
 #include "sml_Client.h"
+
+#include "SoarAction.h"
+#include "SoarGameGroup.h"
 
 using namespace std;
 
@@ -16,10 +19,10 @@ typedef list<pair<string, int> > groupPropertyList;
 typedef struct {
   int groupId;
   bool added;
-  Identifier* WMEptr;
+  sml::Identifier* WMEptr;
   // change this later into hash_map<string, IntElement*> and write a hash
   // function for strings
-  map<string, IntElement*> properties;
+  map<string, sml::IntElement*> properties;
 } SoarIOGroupRep;
 
 class SoarInterface {

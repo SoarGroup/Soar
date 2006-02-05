@@ -1,7 +1,7 @@
 #ifndef GroupManager_h
 #define GroupManager_h
 
-#include "FakeSoarInterface.h"
+#include "SoarInterface.h"
 
 class GroupManager {
   public:

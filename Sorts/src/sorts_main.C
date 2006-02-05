@@ -7,12 +7,12 @@
 #include "SoarInterface.h"
 #include "OrtsInterface.h"
 
-using namespace std; 
+using namespace std;
 
-void SoarUpdateEventHandler(smlUpdateEventId id, 
+void SoarUpdateEventHandler(sml::smlUpdateEventId id, 
                             void *pUserData,
-                            Kernel *pKernel,
-                            smlRunFlags runFlags)
+                            sml::Kernel *pKernel,
+                            sml::smlRunFlags runFlags)
 {
   SoarInterface* soarInterface = (SoarInterface*) pUserData;
   soarInterface->getNewActions();

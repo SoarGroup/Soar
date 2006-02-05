@@ -52,7 +52,7 @@ private:
   void removeVanishedObject(const GameObj* gameObj);
 
   // event handler functions
-  void handle_event(const Event& e);
+  bool handle_event(const Event& e);
   void updateSoarGameObjects(const GameChanges& changes);
   void updateSoarPlayerInfo();
 };
