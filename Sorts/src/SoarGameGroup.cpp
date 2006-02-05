@@ -1,12 +1,14 @@
 #include "include/SoarGameGroup.h"
 #include <assert.h>
 #include <vector>
+#include <iostream>
 
 SoarGameGroup::SoarGameGroup(SoarGameObject* unit) {
   members.insert(unit);
   // capabilities = unit->capabilities;
   unit->setGroup(this);
   stale = true;
+  staleInSoar = true;
   type = 0;
 }
 
@@ -49,7 +51,9 @@ void SoarGameGroup::updateStats(bool saveProps) {
   //  health += *currentObject.getHealth();
   //  x += *currentObject.getX();
   //  y += *currentObject.getY();
-  
+ 
+    x += (*currentObject)->x;
+    y += (*currentObject)->y;
     currentObject++;
   }
   
@@ -77,9 +81,8 @@ void SoarGameGroup::updateStats(bool saveProps) {
     propList.push_back(wme);
     
     staleInSoar = true;
+    stale = false;
   }
-  
-  stale = false;
   return;
 }
 

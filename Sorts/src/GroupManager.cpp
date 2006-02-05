@@ -52,6 +52,8 @@ void GroupManager::reGroup() {
   //      if objs are close and obj2 not flagged, flag obj2 and bring to same group
   //      if objs are close and obj2 flagged, merge obj1's group -> obj2's group 
 
+  
+
   return;
 }
 

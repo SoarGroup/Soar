@@ -4,7 +4,7 @@
 #include <list>
 #include <set>
 #include "constants.h"
-#include "SoarGameObject.h"
+#include "FakeSoarGameObject.h"
 #include "SoarAction.h"
 //#include "SoarInterface.h"
 
