@@ -39,16 +39,11 @@ protected:
 	// This allows us to only send changes over.
 	OutputTimeTagMap m_TimeTags ;
 
-	// We need the ability to break Soar when output is generated.
-	// gSKI can do this, but we can't say "run until output OR 10 decisions" which is what we really need.
-	bool	m_StopOnOutput ;
-
 public:
 	OutputListener(KernelSML* pKernelSML, gSKI::IAgent* pAgent)
 	{
 		m_KernelSML = pKernelSML ;
 		m_Agent		= pAgent ;
-		m_StopOnOutput = false; // default to not stopping on output
 	}
 
 	virtual ~OutputListener()
@@ -73,8 +68,6 @@ public:
 
 	// Agent event listener (called when soar is re-initialized)
 	virtual void HandleEvent(egSKIAgentEventId eventId, gSKI::IAgent* agentPtr) ;
-
-	void SetStopOnOutput(bool state) { m_StopOnOutput = state ; }
 } ;
 
 }

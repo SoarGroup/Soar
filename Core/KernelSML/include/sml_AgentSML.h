@@ -131,8 +131,6 @@ public:
 
 	void SetInputProducer(gSKI::IInputProducer* pInputProducer)	{ m_pInputProducer = pInputProducer ; }
 
-	bool SetStopOnOutput(bool state) ;
-
 	void SetSuppressRunEndsEvent(bool state) { m_SuppressRunEndsEvent = state ; }
 	bool GetSuppressRunEndsEvent()			 { return m_SuppressRunEndsEvent ; }
 
