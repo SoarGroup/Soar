@@ -7,6 +7,7 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit) {
   // capabilities = unit->capabilities;
   unit->setGroup(this);
   stale = true;
+  type = 0;
 }
 
 void SoarGameGroup::addUnit(SoarGameObject* unit) {
@@ -27,9 +28,10 @@ bool SoarGameGroup::removeUnit(SoarGameObject* unit) {
   return true;
 }
 
-groupPropertyList SoarGameGroup::updateStats() {
-  groupPropertyList propList;
-  // string / int pairs to send to Soar
+void SoarGameGroup::updateStats(bool saveProps) {
+  if (saveProps) {
+    propList.clear();
+  }
   
   set<SoarGameObject*>::iterator currentObject = members.begin();
   
@@ -60,21 +62,25 @@ groupPropertyList SoarGameGroup::updateStats() {
   statistics[GP_Y_POS] = y;
   statistics[GP_HEALTH] = health;
 
-  pair<string, int> wme;
-  wme.first = "health";
-  wme.second = (int)health;
-  propList.push_back(wme);
+  if (saveProps) {
+    pair<string, int> wme;
+    wme.first = "health";
+    wme.second = (int)health;
+    propList.push_back(wme);
 
-  // how do we want to represent positon?
-  wme.first = "x_position";
-  wme.second = (int)x;
-  propList.push_back(wme);
-  wme.first = "y_position";
-  wme.second = (int)y;
-  propList.push_back(wme);
-
+    // how do we want to represent positon?
+    wme.first = "x_position";
+    wme.second = (int)x;
+    propList.push_back(wme);
+    wme.first = "y_position";
+    wme.second = (int)y;
+    propList.push_back(wme);
+    
+    staleInSoar = true;
+  }
+  
   stale = false;
-  return propList;
+  return;
 }
 
 void SoarGameGroup::mergeTo(SoarGameGroup* target) {
@@ -114,4 +120,25 @@ bool SoarGameGroup::isEmpty() {
 
 bool SoarGameGroup::getStale() {
   return stale;
+}
+
+groupPropertyList SoarGameGroup::getProps() {
+  return propList;
+}
+
+void SoarGameGroup::setType(int inType) {
+  type = inType;
+  return;
+}
+
+int SoarGameGroup::getType() {
+  return type;
+}
+
+bool SoarGameGroup::getStaleInSoar() {
+  return staleInSoar;
+}
+
+void SoarGameGroup::setStaleInSoar(bool val) {
+  staleInSoar = val;
 }

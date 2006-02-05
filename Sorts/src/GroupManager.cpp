@@ -6,24 +6,15 @@ using namespace std;
   GroupManager.cpp
   SORTS project
   Sam Wintermute, 2006
+
 */
 
 void GroupManager::updateWorld() {
   
+  refreshGroups(false);
   reGroup();
-  updateStats();
-
-  /*
-    This might not be the optimal way to update-
-    if objects move groups don't know until updateStats,
-    and they don't change until reGroup the next cycle.
-
-    Ideally, we could do this:
-    updateStats_1() update things that affect grouping (don't send to soar)
-    reGroup() based on the newly updated info
-    updateStats_2() update new groups and send to Soar
-
-  */
+  refreshGroups(true);
+  adjustAttention();
 
   return;
 }
@@ -50,28 +41,31 @@ bool GroupManager::assignActions() {
 }
 
 void GroupManager::reGroup() {
+  // iterate through staleGroupTypes set
+  //  find all the groups of each type
+  //  add the members to a big list, centers first
+  //  keep a struct for each object:
+  //    ptr to the obj, flag for if it has been assigned a group, ptr to group
+  //  go through each obj1 in the list
+  //    if not a group-center and not flagged, rm from old group and make a new group
+  //    check each object (obj2) below in list:
+  //      if objs are close and obj2 not flagged, flag obj2 and bring to same group
+  //      if objs are close and obj2 flagged, merge obj1's group -> obj2's group 
 
-  // for now, all groups of 1
-  // new groups are in the NIF list, just move to IF list
-
-  list<SoarGameGroup*>::iterator NIFIter = groupsNotInFocus.begin();
-  while (NIFIter != groupsNotInFocus.end()) { 
-    // do smart stuff here
-
-    groupsInFocus.push_back(*NIFIter);
-    SoarIO->addGroup(*NIFIter);
-    groupsNotInFocus.erase(NIFIter);
-    NIFIter++;
-  }
   return;
 }
 
-void GroupManager::updateStats() {
-  groupPropertyList changedProperties; 
+void GroupManager::refreshGroups(bool final) {
+  // iterate through all the groups, if they are stale,
+  // refresh them (re-calc stats)
+  // pass the final flag to updateStats,
+  // it will save a list of WMEs for Soar if the flag is set
+ 
+  // also, if not final, add the group type of stale groups to
+  // the staleGroupTypes set, so reGroup will run on them
  
   list<SoarGameGroup*>::iterator groupIter;
 
-  // look at each group in focus, if it changed, update Soar
   groupIter = groupsInFocus.begin();
   while (groupIter != groupsInFocus.end()) {
     if ((*groupIter)->getStale()) {
@@ -81,15 +75,13 @@ void GroupManager::updateStats() {
         groupsInFocus.erase(groupIter);
       }
       else {
-        changedProperties = (*groupIter)->updateStats();
-        SoarIO->refreshGroup((*groupIter), changedProperties);
+        (*groupIter)->updateStats(final);
+        staleGroupTypes.insert((*groupIter)->getType());
       }
     }
     groupIter++;
   }
 
-  // same for out of focus, but don't update Soar
-  // if they moved into focus, reGroup will get it next cycle
   groupIter = groupsNotInFocus.begin();
   while (groupIter != groupsNotInFocus.end()) {
     if ((*groupIter)->getStale()) {
@@ -99,7 +91,8 @@ void GroupManager::updateStats() {
         groupsInFocus.erase(groupIter);
       }
       else {
-        (*groupIter)->updateStats();
+        (*groupIter)->updateStats(final);
+        staleGroupTypes.insert((*groupIter)->getType());
       }
     }
     groupIter++;
@@ -110,6 +103,30 @@ void GroupManager::updateStats() {
 
 void GroupManager::addGroup(SoarGameObject* object) {
   groupsNotInFocus.push_back(new SoarGameGroup(object));
+  return;
+}
+
+void GroupManager::adjustAttention() {
+  // iterate through all staleInSoar groups, if in attn. range,
+  // send params to Soar
+  
+  list<SoarGameGroup*>::iterator groupIter = groupsNotInFocus.begin();
+  while (groupIter != groupsNotInFocus.end()) {
+    // for now, move everything into focus
+    groupsInFocus.push_back(*groupIter);
+    SoarIO->addGroup(*groupIter);
+    groupsNotInFocus.erase(groupIter);
+    groupIter++;
+  }
+
+  groupIter = groupsInFocus.begin();
+  while (groupIter != groupsInFocus.end()) {
+    if ((*groupIter)->getStaleInSoar()) {
+      SoarIO->refreshGroup((*groupIter), (*groupIter)->getProps());
+      (*groupIter)->setStaleInSoar(false);
+    }
+    groupIter++;
+  }
   return;
 }
 

@@ -16,9 +16,12 @@ class GroupManager {
     
   private:
     void reGroup();
-    void updateStats();
+    void refreshGroups(bool);
+    void adjustAttention();
 
     SoarInterface* SoarIO;
+
+    set <int> staleGroupTypes;
     
     list <SoarGameGroup*> groupsInFocus;
     list <SoarGameGroup*> groupsNotInFocus;
