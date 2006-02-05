@@ -1,0 +1,26 @@
+sp {elaborate*top-state*name
+	(state <s> ^io <io>)
+	-->
+	(<s> ^name copy-test)
+}	
+
+sp {copy-test*propose*copy
+   (state <s> ^name copy-test
+              ^io <io>)
+   (<io> ^input-link.sentence <sc>
+        -^output-link <sc>)
+   (<sc> ^newest yes)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name copy
+         ^tocopy <sc>)
+}
+
+sp {apply*copy
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name copy
+         ^tocopy <sc>)
+-->
+   (<ol> ^text-output <sc>)
+}
