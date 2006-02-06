@@ -43,6 +43,7 @@ bool GroupManager::assignActions() {
 }
 
 void GroupManager::reGroup() {
+#ifdef DEBUG_GROUPS
   // iterate through staleGroupTypes set
   //  find all the groups of each type
   //  add the members to a big list, centers first
@@ -228,7 +229,7 @@ void GroupManager::reGroup() {
     
     toMergeIter++;
   }
-  
+#endif
   return;
 }
 
