@@ -86,13 +86,13 @@ public class EaterControl extends SimulationControl implements
 	
 	public void generatePaths() {
 		// Set up map, agent paths
-		mapPath = System.getProperty("user.dir") 
-		+ System.getProperty("file.separator") + ".." 
-		+ System.getProperty("file.separator") + "JavaEaters" 
-		+ System.getProperty("file.separator");
-		agentPath = mapPath;
-		mapPath += "maps";
-		agentPath += "agents";		
+		String basePath = kernel.GetLibraryLocation() + System.getProperty("file.separator")
+		+ ".." + System.getProperty("file.separator") 
+		+ "Environments" + System.getProperty("file.separator") 
+		+ "JavaEaters" + System.getProperty("file.separator");
+		
+		agentPath = basePath + "agents";
+		mapPath   = basePath + "maps";
 	}
 	
 	public Agent getAgentByColor(String color)
