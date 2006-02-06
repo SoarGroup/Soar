@@ -1,7 +1,11 @@
 #ifndef GroupManager_h
 #define GroupManager_h
 
+#ifdef DEBUG_GROUPS
 #include "FakeSoarInterface.h"
+#else
+#include "SoarInterface.h"
+#endif
 
 class GroupManager {
   public:
@@ -25,6 +29,13 @@ class GroupManager {
     
     list <SoarGameGroup*> groupsInFocus;
     list <SoarGameGroup*> groupsNotInFocus;
+};
+
+struct objectGroupingStruct {
+  SoarGameObject* object;
+  SoarGameGroup* group;
+  bool assigned;
+  double x,y;
 };
 
 #endif // GroupManager_h

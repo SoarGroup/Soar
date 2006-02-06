@@ -1,4 +1,5 @@
 #include "include/SoarGameGroup.h"
+#include "include/general.h"
 #include <assert.h>
 #include <vector>
 #include <iostream>
@@ -10,6 +11,7 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit) {
   stale = true;
   staleInSoar = true;
   type = 0;
+  centerMember = unit;
 }
 
 void SoarGameGroup::addUnit(SoarGameObject* unit) {
@@ -25,6 +27,12 @@ bool SoarGameGroup::removeUnit(SoarGameObject* unit) {
   //assert(members.find(unit));
   assert(members.find(unit) != members.end());
 
+  if (centerMember == unit) {
+    // make sure center is a valid unit
+    // it should be refreshed before use, though
+    centerMember = *(members.begin());
+  }
+  
   members.erase(unit);
   stale = true;
   return true;
@@ -51,9 +59,10 @@ void SoarGameGroup::updateStats(bool saveProps) {
   //  health += *currentObject.getHealth();
   //  x += *currentObject.getX();
   //  y += *currentObject.getY();
- 
+#ifdef DEBUG_GROUPS 
     x += (*currentObject)->x;
     y += (*currentObject)->y;
+#endif
     currentObject++;
   }
   
@@ -69,20 +78,40 @@ void SoarGameGroup::updateStats(bool saveProps) {
   if (saveProps) {
     pair<string, int> wme;
     wme.first = "health";
-    wme.second = (int)health;
+    wme.second = (int)(100*health);
     propList.push_back(wme);
 
     // how do we want to represent positon?
     wme.first = "x_position";
-    wme.second = (int)x;
+    wme.second = (int)(100*x);
     propList.push_back(wme);
     wme.first = "y_position";
-    wme.second = (int)y;
+    wme.second = (int)(100*y);
+    propList.push_back(wme);
+    wme.first = "num_members";
+    wme.second = (int)size;
     propList.push_back(wme);
     
     staleInSoar = true;
     stale = false;
   }
+  
+  // center member calculation- is there a way to do a running calc above?
+  double shortestDistance 
+        = squaredDistance(x, y, centerMember->x, centerMember->y);
+
+  double currentDistance;
+  currentObject = members.begin();
+  while (currentObject != members.end()) {
+    currentDistance = squaredDistance(x, y, 
+                      (*currentObject)->x, (*currentObject)->y);
+    if (currentDistance < shortestDistance) {
+      shortestDistance = currentDistance;
+      centerMember = *currentObject;
+    }
+    currentObject++;
+  }
+  
   return;
 }
 
@@ -118,7 +147,7 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params){
 }
 
 bool SoarGameGroup::isEmpty() {
-  return (members.size() == 0);
+  return (members.empty());
 }
 
 bool SoarGameGroup::getStale() {
@@ -144,4 +173,24 @@ bool SoarGameGroup::getStaleInSoar() {
 
 void SoarGameGroup::setStaleInSoar(bool val) {
   staleInSoar = val;
+}
+
+list<SoarGameObject*> SoarGameGroup::getMembers() {
+  list<SoarGameObject*> lst; 
+  set<SoarGameObject*>::iterator memberIter=members.begin();
+
+  while (memberIter != members.end()) {
+    lst.push_back(*memberIter);
+    memberIter++;
+  }
+
+  return lst;
+}
+
+SoarGameObject* SoarGameGroup::getCenterMember() {
+  return centerMember;
+}
+
+int SoarGameGroup::getSize() {
+  return members.size();
 }

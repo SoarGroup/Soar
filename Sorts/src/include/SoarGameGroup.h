@@ -4,9 +4,13 @@
 #include <list>
 #include <set>
 #include "constants.h"
-#include "FakeSoarGameObject.h"
 #include "SoarAction.h"
-//#include "SoarInterface.h"
+
+#ifdef DEBUG_GROUPS
+#include "FakeSoarGameObject.h"
+#else
+#include "SoarGameObject.h"
+#endif
 
 using namespace std;
 // inside SoarInterface.h too
@@ -22,6 +26,8 @@ class SoarGameGroup {
     void updateStats(bool saveProps);
     bool assignAction(SoarActionType type, list<int> params);
     bool isEmpty();
+
+    list<SoarGameObject*> getMembers(); 
   
     void mergeTo(SoarGameGroup* target);
     bool getStale();
@@ -31,6 +37,8 @@ class SoarGameGroup {
     groupPropertyList getProps();
     void setType(int inType);
     int getType();
+    int getSize();
+    SoarGameObject* getCenterMember();
   private:
     set <SoarGameObject*> members;
     // int capabilities; // get from unit capabilities
