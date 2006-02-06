@@ -42,6 +42,8 @@ Agent::Agent(Kernel* pKernel, char const* pName)
 	m_WorkingMemory.SetAgent(this) ;
 	m_CallbackIDCounter = 0 ;
 	m_XMLCallback = -1 ;
+
+	ClearError() ;
 }
 
 Agent::~Agent()
