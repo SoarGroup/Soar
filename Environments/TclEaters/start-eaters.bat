@@ -1,3 +1,3 @@
 cd ..\..\SoarLibrary\bin
-start wish ..\..\Applications\TclApplications\eaters\init-eaters.tcl
-cd ..\..\Applications\TclApplications
+start wish ..\..\Environments\TclEaters\Eaters\init-eaters.tcl
+cd ..\..\Environments\TclEaters
