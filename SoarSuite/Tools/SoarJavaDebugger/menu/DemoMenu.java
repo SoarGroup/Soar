@@ -167,10 +167,6 @@ public class DemoMenu
 			location = location.substring(1, location.length() - 1) ;
 		}
 		
-		// TEMP fix.  With the SVN change library location is currently returning soar-library/bin rather than soar-library
-		// so stepping up one level for now.  This should be unnecessary once the library location is changed.
-		location = location + "/.." ;
-
 		// We do explicit clean up so we can check for memory leaks when debugger exits.
 		// (See executeCommandXMLcomment for more).
 		response.delete() ;

@@ -124,7 +124,7 @@ namespace cli {
 				case kKernelRequired:					return "A kernel is required for this command.";
 				case kAliasNotFound:					return "Alias not found.";
 				case kAliasExists:						return "Alias exists, remove to overwrite.";
-				case kNoHelpFile:						return "Could not find help files.  Check the library location using the 'set-library-location' command.  The library location should be set to the folder containing the help/ subfolder.";
+				case kNoHelpFile:						return "Could not find help files.  Check the library location using the 'set-library-location' command.  The library location should be set to SoarLibrary.";
 				case kIntegerExpected:					return "Integer argument expected.";
 				case kIntegerMustBePositive:			return "Integer argument must be positive.";
 				case kIntegerMustBeNonNegative:			return "Integer argument must be non-negative.";
