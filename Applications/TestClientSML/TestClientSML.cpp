@@ -114,6 +114,40 @@ void SimpleRemoteConnection()
 	delete pKernel ;
 }
 
+bool SimpleRemoteSynchTest()
+{
+	sml::Kernel* pKernel = sml::Kernel::CreateRemoteConnection(true, NULL) ;
+	bool result = true ;
+
+	if (pKernel)
+	{
+		int nAgents = pKernel->GetNumberAgents() ;
+
+		for (int i = 0 ; i < nAgents ; i++)
+		{
+			Agent* pAgent = pKernel->GetAgentByIndex(i) ;
+			cout << "Found agent: " << pAgent->GetAgentName() << endl ;
+
+			bool synch = pAgent->SynchronizeInputLink() ;
+			if (synch)
+			{
+				printWMEs(pAgent->GetInputLink()) ;
+			}
+			else
+			{
+				result = false ;
+			}
+		}
+
+		SLEEP(1,0) ;
+	}
+
+	pKernel->Shutdown() ;
+	delete pKernel ;
+
+	return result ;
+}
+
 std::string ListenerRhsFunctionHandler(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument)
 {
 	// Return the argument we are passed plus some of our text
@@ -1513,6 +1547,7 @@ int main(int argc, char* argv[])
 	bool runlistener = false ;
 	bool remoteConnect = false ;
 	bool copyTest  = false ;
+	bool synchTest = false ;
 	int  life      = 3000 ;	// Default is to live for 3000 seconds (5 mins) as a listener
 	int  decisions = 20000 ;
 
@@ -1537,6 +1572,8 @@ int main(int argc, char* argv[])
 				stopAtEnd = false ;
 			if (!stricmp(argv[i], "-copy"))
 				copyTest = true ;
+			if (!stricmp(argv[i], "-synch"))
+				synchTest = true ;
 			if (!stricmp(argv[i], "-remote"))
 				remote = true ;
 			if (!stricmp(argv[i], "-listener"))
@@ -1578,6 +1615,8 @@ int main(int argc, char* argv[])
 		success = SimpleCopyAgent() ;
 	else if (remoteConnect)
 		SimpleRemoteConnect() ;
+	else if (synchTest)
+		success = SimpleRemoteSynchTest() ;
 	else if (timeTest)
 		FullTimeTest() ;
 	else
