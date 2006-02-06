@@ -79,8 +79,8 @@ public class EaterControl extends SimulationControl implements
 	 * Creates a new instance of EaterControl, generating a random map to be used.
 	 */
 	public EaterControl() {
-		generatePaths();
 		initSoar();
+		generatePaths();
 		genMap();
 	}
 	
