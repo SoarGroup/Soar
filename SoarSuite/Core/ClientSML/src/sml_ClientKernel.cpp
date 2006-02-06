@@ -52,6 +52,8 @@ Kernel::Kernel(Connection* pConnection)
 	m_ConnectionInfoChanged = false ;
 	m_bIgnoreOutput = false ;
 
+	ClearError() ;
+
 	if (pConnection)
 	{
 		m_pEventThread = new EventThread(pConnection) ;
