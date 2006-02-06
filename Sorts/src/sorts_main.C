@@ -1,4 +1,6 @@
 #include<iostream>
+#include<stdio.h>
+#include<stdlib.h>
 #include<pthread.h>
 
 #include "sml_Client.h"
@@ -15,7 +17,7 @@ void SoarUpdateEventHandler(sml::smlUpdateEventId id,
                             sml::smlRunFlags runFlags)
 {
   SoarInterface* soarInterface = (SoarInterface*) pUserData;
-  soarInterface->getNewActions();
+  soarInterface->getNewSoarOutput();
 }
 
 int main(int argc, char *argv[]) {
@@ -59,17 +61,21 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  SoarInterface soarInterface( pAgent
-                               objectActionMutex,
-                               attentionActionMutex,
-                               groupActionMutex );
+  SoarInterface soarInterface( pAgent,
+                               &objectActionMutex,
+                               &attentionActionMutex,
+                               &groupActionMutex );
 
   // register for all events
-  pAgent->RegisterForPrintEvent(smlEVENT_PRINT, printOutput, 0);
-  pKernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &soarInterface);
+  //pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, printOutput, 0);
+  pKernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &soarInterface);
   //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START, SoarSystemEventHandler, &state);
   //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_STOP, SoarSystemEventHandler, &state);
   
+
+  // instantiate the group manager
+  GroupManager gm(&soarInterface);
+
   /*********************************
    * Set up the connection to ORTS *
    *********************************/
@@ -78,7 +84,8 @@ int main(int argc, char *argv[]) {
   GameStateModule::Options gsmo;
   GameStateModule gsm(gsmo);
 
-  OrtsInterface ortsInterface(&gsm, &soarInterface);
+
+  OrtsInterface ortsInterface(&gsm, &soarInterface, &gm);
   gsm.add_handler(&ortsInterface);
 
   // connect to ORTS server

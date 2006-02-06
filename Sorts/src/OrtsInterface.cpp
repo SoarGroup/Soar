@@ -1,39 +1,49 @@
 #include <assert.h>
+
 #include "OrtsInterface.h"
 
+#include "GameObj.H"
+#include "GameStateModule.H"
+
 OrtsInterface::OrtsInterface(GameStateModule* _gsm,
-                             SoarInterface*   _soarInterface)
-: gsm(_gsm), soarInterface(_soarInterface)
+                             SoarInterface*   _soarInterface,
+                             GroupManager*    _groupManager)
+: gsm(_gsm), soarInterface(_soarInterface), groupManager(_groupManager)
 {
 }
 
-OrtsInterface::addAppearedObject() {
+void OrtsInterface::addAppearedObject(const GameObj* gameObj) {
   assert(false);
 }
 
-OrtsInterface::addCreatedObject(const GameObj* gameObj) {
+void OrtsInterface::addCreatedObject(const GameObj* gameObj) {
   // make sure the game object does not exist in the middleware
   assert(objectMap.find(gameObj) == objectMap.end());
 
   SoarGameObject* newObj = new SoarGameObject();
   
   // GroupManager takes care of setting the object->group pointers
-  groupManager.addGroup(newObj);
+  groupManager->addGroup(newObj);
   
   // more initializations of the object?
 
   objectMap[gameObj] = newObj;
 }
 
-OrtsInterface::removeDeadObject(const GameObj* gameObj) {
+void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   // make sure the game object exists
-  assert(objectmap.find(gameObj) != objectMap.end());
+  assert(objectMap.find(gameObj) != objectMap.end());
 
   SoarGameObject* sObject = objectMap[gameObj];
   sObject->getGroup()->removeUnit(sObject);
   
   delete objectMap[gameObj];
   objectMap.erase(gameObj);
+}
+  
+void OrtsInterface::removeVanishedObject(const GameObj* gameObj) {
+  // just remove like a dead object for now, but change it later
+  removeDeadObject(gameObj);
 }
 
 bool OrtsInterface::handle_event(const Event& e) {
@@ -46,12 +56,16 @@ bool OrtsInterface::handle_event(const Event& e) {
       /* I'm assuming here that those update calls from above have already
        * updated the soar input link correctly, so commit everything
        */
-      agent->Commit();
+      soarInterface->commitInputLinkChanges();
     }
+    return true;
+  }
+  else {
+    return false;
   }
 }
 
-void OrtsInterface::updateSoarGameObjects(const GameChanges& changes) {
+void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
   // add new objects
   FORALL(changed.new_objs, obj) {
     GameObj* gob = (*obj)->get_GameObj();
@@ -119,7 +133,7 @@ void OrtsInterface::updateSoarPlayerInfo() {
 OrtsInterface::~OrtsInterface() {
   objectMapIter it = objectMap.begin();
   while (it != objectMap.end()) {
-    delete (*it);
+    delete (*it).second;
     it++;
   }
 }

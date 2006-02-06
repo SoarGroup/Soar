@@ -1,3 +1,6 @@
+#ifndef FSM_H_
+#define FSM_H_
+
 #include<map>
 #include<string>
 #include<list>
@@ -13,3 +16,5 @@ class FSM{
  //private:
 	std::string name;
 };
+
+#endif

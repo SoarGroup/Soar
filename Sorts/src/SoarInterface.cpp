@@ -1,22 +1,23 @@
+#include<iostream>
 #include <assert.h>
 #include <pthread.h>
 
 #include "SoarInterface.h"
 
-using namespace sml;
+using namespace std;
 
 // lookup table that translates string names to action codes
 SoarActionType actionTypeLookup(const char* actionName);
 
-SoarInterface::SoarInterface(Agent*           _agent,
+SoarInterface::SoarInterface(sml::Agent*      _agent,
                              pthread_mutex_t* _objectActionQueueMutex,
                              pthread_mutex_t* _attentionActionQueueMutex,
                              pthread_mutex_t* _groupActionQueueMutex
                             )
-: objectActionQueueMutex(_objectActionQueueMutex),
-  attentionActionQueueMutex(_attentionQueueMutex),
-  groupActionQueueMutex(_groupActionQueueMutex),
-  agent(_agent)
+: agent(_agent),
+  objectActionQueueMutex(_objectActionQueueMutex),
+  attentionActionQueueMutex(_attentionActionQueueMutex),
+  groupActionQueueMutex(_groupActionQueueMutex)
 {
   inputLink = agent->GetInputLink();
   initSoarInputLink();
@@ -81,18 +82,18 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyList& gpl) {
 
 // called in soar event handler to take everything off the output
 // link and put onto the action queue each time soar generates output
-void SoarInterface::getNewActions() {
+void SoarInterface::getNewSoarOutput() {
   int numberCommands = agent->GetNumberCommands() ;
   for (int i = 0 ; i < numberCommands ; i++) {
-    Identifier* cmdPtr = agent->GetCommand(i) ;
+    sml::Identifier* cmdPtr = agent->GetCommand(i) ;
 
     // check if this command has already been encountered
     if (soarActions.find(cmdPtr) == soarActions.end()) {
       continue;
     }
 
-    std::string name = cmdPtr->GetCommandName() ;
-    std::cout << "command name: " << name << std::endl;
+    string name = cmdPtr->GetCommandName() ;
+    cout << "command name: " << name << endl;
     SoarActionType type = actionTypeLookup(name.c_str());
     assert(type != SA_NO_SUCH_ACTION);
     
@@ -126,21 +127,21 @@ void SoarInterface::getNewActions() {
     }
 
     // add the new action to the action queue. Have to lock on mutex here
-    pthread_mutex_lock(actionQueueMutex);
-    actionQueue.push_back(&newAction);
-    pthread_mutex_unlock(actionQueueMutex);
+    pthread_mutex_lock(objectActionQueueMutex);
+    objectActionQueue.push_back(&newAction);
+    pthread_mutex_unlock(objectActionQueueMutex);
 
   } // for over commands
 }
 
 // called by middleware to get queued Soar actions
 void SoarInterface::getNewActions(list<SoarAction*> newActions) {
-  pthread_mutex_lock(actionQueueMutex);
-  for(list<SoarAction*>::iterator i = actionQueue.begin(); i != actionQueue.end(); i++) {
+  pthread_mutex_lock(objectActionQueueMutex);
+  for(list<SoarAction*>::iterator i = objectActionQueue.begin(); i != objectActionQueue.end(); i++) {
     newActions.push_back(*i);
-    actionQueue.erase(i);
+    objectActionQueue.erase(i);
   }
-  pthread_mutex_unlock(actionQueueMutex);
+  pthread_mutex_unlock(objectActionQueueMutex);
 }
 
 /* This is slow. In the future make some kind of hashtable
@@ -169,6 +170,11 @@ void SoarInterface::initSoarInputLink() {
   playerIdentifier = agent->CreateIdWME(inputLink, "me");
   mapIdentifier = agent->CreateIdWME(inputLink, "map");
 
-  agent->CreateIntWME(playerIdentifier, "gold");
+  agent->CreateIntWME(playerIdentifier, "gold", 0);
   agent->CreateIdWME(playerIdentifier, "units");
+}
+
+
+void SoarInterface::commitInputLinkChanges() {
+  agent->Commit();
 }

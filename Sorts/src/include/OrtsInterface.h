@@ -5,7 +5,7 @@
 
 // our includes
 #include "SoarInterface.h"
-#include "SoarGameObj.h"
+#include "SoarGameObject.h"
 #include "GroupManager.h"
 
 // sml includes
@@ -20,27 +20,28 @@
 
 using namespace std;
 
-typedef hash_map<GameObj*, SoarGameObject*>::iterator objectMapIter;
-typedef hash_map<SoarGameObject*, GameObj*>::iterator revObjectMapIter;
+typedef map<const GameObj*, SoarGameObject*>::iterator objectMapIter;
+typedef map<SoarGameObject*, const GameObj*>::iterator revObjectMapIter;
 
 /* The class that does most of the interfacing with ORTS, as well as
  * handle events from it
  */
 class OrtsInterface : public EventHandler {
 public:
-  OrtsInterface(GameStateModule* _gsm, SoarInterface *_soarInterface);
+  OrtsInterface(GameStateModule* _gsm, SoarInterface* _soarInterface, GroupManager* _groupManager);
   ~OrtsInterface();
 
 private:
-  GroupManager& groupManager;
+  GroupManager* groupManager;
   
   // pointers to all the orts stuff
   GameStateModule* gsm;
   GameObj *playerGameObj;
 
   // keep track of all game objects
-  hash_map<GameObj*, SoarGameObject*> objectMap;
-  hash_map<SoarGameObject*, GameObj*> revObjectMap;
+  /* In the future, change these to hash maps */
+  map<const GameObj*, SoarGameObject*> objectMap;
+  map<SoarGameObject*, const GameObj*> revObjectMap;
 
   // pointer to our stuff
   SoarInterface* soarInterface;

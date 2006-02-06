@@ -1,35 +1,38 @@
-#ifndef _FSM_H_
-#define _FSM_H_
-#include"FSM.h"
-#endif
+#ifndef SoarGameObject_H
+#define SoarGameObject_H
 
 #include<stack>
 #include<vector>
+
+#include "FSM.h"
 
 //How do I transition from one FSM to another?
 
 class SoarGameGroup;
 
 class SoarGameObject{
- public:
-	SoarGameObject();
-	~SoarGameObject();
+  public:
+    SoarGameObject();
+    ~SoarGameObject();
 
-	void registerBehavior(FSM *);
-	void removeBehavior(std::string cmd);
+    void registerBehavior(FSM *);
+    void removeBehavior(std::string cmd);
 
-	void issueCommand(std::string name);
-	void update();
+    void issueCommand(std::string name);
+    void update();
 
-	void setGroup(SoarGameGroup *g);
-	SoarGameGroup *getGroup();
+    void setGroup(SoarGameGroup *g);
+    SoarGameGroup *getGroup();
 
-  // I assume this can be public?
+    // I assume this can be public?
 
- private:
-	std::list<FSM *> behaviors;
-	std::stack<FSM *> memory;
+  private:
+    std::list<FSM *> behaviors;
+    std::stack<FSM *> memory;
 
-  	SoarGameGroup* group;
+      SoarGameGroup* group;
 
 };
+
+
+#endif
