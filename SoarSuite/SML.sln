@@ -39,31 +39,31 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLCSharp", "Core\Cli
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestClientSML", "Environments\TestClientSML\TestClientSML.vcproj", "{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCommandLineInterface", "Tools\TestCLI\TestCommandLineInterface.vcproj", "{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCommandLineInterface", "Environments\TestCLI\TestCommandLineInterface.vcproj", "{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestClientSML", "Tools\TestClientSML\TestClientSML.vcproj", "{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestConnectionSML", "Environments\TestConnectionSML\TestConnectionSML.vcproj", "{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestConnectionSML", "Tools\TestConnectionSML\TestConnectionSML.vcproj", "{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCSharpSML", "Environments\TestCSharpSML\TestCSharpSML.csproj", "{29277D02-A002-439F-B3E7-C89C16A21818}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCSharpSML", "Tools\TestCSharpSML\TestCSharpSML.csproj", "{29277D02-A002-439F-B3E7-C89C16A21818}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestSMLEvents", "Environments\TestSMLEvents\TestSMLEvents.vcproj", "{8EF61FF7-214E-4955-9DBF-CCD164815E9C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestSMLEvents", "Tools\TestSMLEvents\TestSMLEvents.vcproj", "{8EF61FF7-214E-4955-9DBF-CCD164815E9C}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestSoarPerformance", "Environments\TestSoarPerformance\TestSoarPerformance.vcproj", "{31E16893-F132-4371-A451-7BC936385453}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestSoarPerformance", "Tools\TestSoarPerformance\TestSoarPerformance.vcproj", "{31E16893-F132-4371-A451-7BC936385453}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "towersSML", "Environments\TOHSML\towersSML.vcproj", "{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "towersSML", "Tools\TOHSML\towersSML.vcproj", "{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -227,20 +227,6 @@ Global
 		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Release (gSKI DLL).ActiveCfg = Release|Win32
 		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Release (gSKI DLL).Build.0 = Release|Win32
 		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Release (no SWIG).ActiveCfg = Release|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.ActiveCfg = Debug|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.Build.0 = Debug|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (Core).ActiveCfg = Debug|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (gSKI DLL).Build.0 = Debug|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (no SWIG).ActiveCfg = Debug|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (no SWIG).Build.0 = Debug|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.ActiveCfg = Release|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.Build.0 = Release|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (Core).ActiveCfg = Release|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (gSKI DLL).ActiveCfg = Release|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (gSKI DLL).Build.0 = Release|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (no SWIG).ActiveCfg = Release|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (no SWIG).Build.0 = Release|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Debug.ActiveCfg = Debug|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Debug.Build.0 = Debug|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Debug (Core).ActiveCfg = Debug|Win32
@@ -255,6 +241,20 @@ Global
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Release (gSKI DLL).Build.0 = Release|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Release (no SWIG).ActiveCfg = Release|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Release (no SWIG).Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.Build.0 = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (Core).ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (gSKI DLL).Build.0 = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (no SWIG).Build.0 = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (Core).ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (gSKI DLL).ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (gSKI DLL).Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (no SWIG).ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (no SWIG).Build.0 = Release|Win32
 		{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}.Debug.ActiveCfg = Debug|Win32
 		{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}.Debug.Build.0 = Debug|Win32
 		{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}.Debug (Core).ActiveCfg = Debug|Win32
