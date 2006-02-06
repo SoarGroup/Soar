@@ -35,10 +35,11 @@ bool CommandLineInterface::ParseCD(gSKI::IAgent* pAgent, std::vector<std::string
 
 bool CommandLineInterface::DoCD(const std::string* pDirectory) {
 
-	// if directory 0, return to original (home) directory
+	// if directory 0, return SoarLibrary/bin
 	if (!pDirectory) {
-		if (chdir(m_LibraryDirectory.c_str())) {
-			SetErrorDetail("Error changing to " + m_LibraryDirectory);
+		std::string binDir = m_LibraryDirectory + "/bin";
+		if (chdir(binDir.c_str())) {
+			SetErrorDetail("Error changing to " + binDir);
 			return SetError(CLIError::kchdirFail);
 		}
 		return true;

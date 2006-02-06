@@ -142,9 +142,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIWatch]						= true ;
 	m_EchoMap[Commands::kCLIWatchWMEs]					= true ;
 
-	// Set library directory to sane default value
-	GetCurrentWorkingDirectory(m_LibraryDirectory);
-
 	// Initialize other members
 	m_pKernel = 0;
 	m_SourceError = false;
@@ -451,7 +448,7 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 
 	// Show help if requested
 	if (helpFlag) {
-		std::string helpFile = m_LibraryDirectory + "../CLIHelp/" + argv[0];
+		std::string helpFile = m_LibraryDirectory + "/CLIHelp/" + argv[0];
 		return GetHelpString(helpFile);
 	}
 
@@ -577,15 +574,29 @@ EXPORT void CommandLineInterface::SetKernel(gSKI::IKernel* pKernel, gSKI::Versio
 	m_KernelVersion = kernelVersion;
 	m_pKernelSML = pKernelSML;
 
-	// Now that we have the kernel, set the home directory to the location of SoarKernelSML
+	// Now that we have the kernel, set the home directory to the location of SoarKernelSML's parent directory,
+	// SoarLibrary
 #ifdef WIN32
 	char dllpath[256];
 	GetModuleFileName(static_cast<HMODULE>(m_pKernelSML->GetModuleHandle()), dllpath, 256);
+
+	// This sets it to the path + the dll
 	m_LibraryDirectory = dllpath;
+
+	// This chops off the dll part to get just the path (...SoarLibrary/bin)
 	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("\\"));
+
+	// This takes the parent directory to get ...SoarLibrary
+	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("\\"));
+
 #else // WIN32
+	// Hopefully ...SoarLibrary/bin
 	GetCurrentWorkingDirectory(m_LibraryDirectory);
-#endif
+
+	// This takes the parent directory to get ...SoarLibrary
+	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));
+
+#endif // WIN32
 }
 
 bool CommandLineInterface::GetCurrentWorkingDirectory(string& directory) {
