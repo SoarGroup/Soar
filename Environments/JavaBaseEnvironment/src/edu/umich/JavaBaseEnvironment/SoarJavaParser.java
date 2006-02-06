@@ -207,7 +207,7 @@ public class SoarJavaParser {
 		System.out
 				.println("\t-m [path] Sets map file specified by path to be loaded when run.");
 		System.out
-				.println("\t*.soar Any argument ending in .soar or .seater the simulation will attempt to load as an agent");
+				.println("\t*.soar Any argument ending in .soar (or .seater in Eaters, .stank in TankSoar) will attempt to load as an agent");
 		System.out.println("\t-? Prints help");
 		System.out.println("\t-help Prints help");
 	}
