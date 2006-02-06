@@ -184,7 +184,7 @@ bool SimpleRunListener(int decisions)
 	//pKernel->SetTraceCommunications(true) ;
 
 	sml::Agent* pAgent = pKernel->CreateAgent("runagent") ;
-	std::string path = std::string(pKernel->GetLibraryLocation()) + "/../Tests/testrun.soar" ;
+	std::string path = std::string(pKernel->GetLibraryLocation()) + "/Tests/testrun.soar" ;
 	bool ok = pAgent->LoadProductions(path.c_str()) ;
 
 	if (!ok)
@@ -323,7 +323,7 @@ bool SimpleCopyAgent()
 	}
 
 	sml::Agent* pAgent = pKernel->CreateAgent("copyagent") ;
-	std::string path = std::string(pKernel->GetLibraryLocation()) + "/../Tests/testcopy.soar" ;
+	std::string path = std::string(pKernel->GetLibraryLocation()) + "/Tests/testcopy.soar" ;
 	bool ok = pAgent->LoadProductions(path.c_str()) ;
 
 	if (!ok)
@@ -1270,7 +1270,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 			}
 
 			std::string path = pKernel->GetLibraryLocation() ;
-			path += "/../Tests/testsml.soar" ;
+			path += "/Tests/testsml.soar" ;
 
 			// Listen to the echo of the load
 			int echoCallback = pAgent->RegisterForPrintEvent(smlEVENT_ECHO, &MyEchoEventHandler, NULL) ;
@@ -1426,7 +1426,7 @@ bool TimeTest(bool embedded, bool useClientThread, bool fullyOptimized)
 
 		std::string path = pKernel->GetLibraryLocation() ;
         //path += "../demos/towers-of-hanoi/towers-of-hanoi.soar" ;
-		path += "../demos/water-jug/water-jug-look-ahead.soar" ;
+		path += "/Demos/water-jug/water-jug-look-ahead.soar" ;
 
 		bool load = pAgent->LoadProductions(path.c_str()) ;
 
