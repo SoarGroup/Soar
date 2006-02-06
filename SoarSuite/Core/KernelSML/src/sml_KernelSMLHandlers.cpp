@@ -943,7 +943,7 @@ static char const* GetValueType(egSKISymbolType type)
 	}
 }
 
-static bool AddWmeChildrenToXML(gSKI::IWMObject* pRoot, ElementXML* pTagResult)
+static bool AddWmeChildrenToXML(gSKI::IWMObject* pRoot, ElementXML* pTagResult, std::list<IWMObject*> *pTraversedList)
 {
 	if (!pRoot || !pTagResult)
 		return false ;
@@ -953,6 +953,18 @@ static bool AddWmeChildrenToXML(gSKI::IWMObject* pRoot, ElementXML* pTagResult)
 	while (iter->IsValid())
 	{
 		gSKI::IWme* pWME = iter->GetVal() ;
+
+		// In some cases, wmes either haven't been added yet or have already been removed from the kernel
+		// but still exist in gSKI.  In both cases, we can't (naturally) get a correct time tag for the wme
+		// so I think we should skip these wmes.  That's clearly correct if the wme has been removed, but I'm
+		// less sure if it's in the process of getting added.
+		if (pWME->HasBeenRemoved())
+		{
+			pWME->Release() ;
+			iter->Next() ;
+
+			continue ;
+		}
 
 		TagWme* pTagWme = new TagWme() ;
 
@@ -975,7 +987,14 @@ static bool AddWmeChildrenToXML(gSKI::IWMObject* pRoot, ElementXML* pTagResult)
 		if (pWME->GetValue()->GetType() == gSKI_OBJECT)
 		{
 			gSKI::IWMObject* pChild = pWME->GetValue()->GetObject() ;
-			AddWmeChildrenToXML(pChild, pTagResult) ;
+
+			// Check that we haven't already added this identifier before
+			// (there can be cycles).
+			if (std::find(pTraversedList->begin(), pTraversedList->end(), pChild) == pTraversedList->end())
+			{
+				pTraversedList->push_back(pChild) ;
+				AddWmeChildrenToXML(pChild, pTagResult, pTraversedList) ;
+			}
 		}
 
 		pWME->Release() ;
@@ -999,8 +1018,12 @@ bool KernelSML::HandleGetAllInput(gSKI::IAgent* pAgent, char const* pCommandName
 	gSKI::IWMObject* pRootObject = NULL ;
 	pAgent->GetInputLink()->GetRootObject(&pRootObject, pError) ;
 
+	// We need to keep track of which identifiers we've already added
+	// because this is a graph, so we may cycle back.
+	std::list<IWMObject*> traversedList ;
+
 	// Add this wme's children to XML
-	AddWmeChildrenToXML(pRootObject, pTagResult) ;
+	AddWmeChildrenToXML(pRootObject, pTagResult, &traversedList) ;
 
 	// Add the result tag to the response
 	pResponse->AddChild(pTagResult) ;
@@ -1038,8 +1061,12 @@ bool KernelSML::HandleGetAllOutput(gSKI::IAgent* pAgent, char const* pCommandNam
 	// Add this wme into the result
 	pTagResult->AddChild(pTagWme) ;
 
+	// We need to keep track of which identifiers we've already added
+	// because this is a graph, so we may cycle back.
+	std::list<IWMObject*> traversedList ;
+
 	// Add this wme's children to XML
-	AddWmeChildrenToXML(pRootObject, pTagResult) ;
+	AddWmeChildrenToXML(pRootObject, pTagResult, &traversedList) ;
 
 	// Add the message to the response
 	pResponse->AddChild(pTagResult) ;

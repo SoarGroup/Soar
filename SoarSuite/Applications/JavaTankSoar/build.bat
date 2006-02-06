@@ -1,3 +1,5 @@
+REM This batch assumes you have built JavaBaseEnvironments first.
+
 del /s /Q *.class
 
 javac -classpath ..\..\SoarLibrary\bin\swt.jar;..\..\SoarLibrary\bin\sml.jar;..\..\SoarLibrary\bin\JavaBaseEnvironment.jar -sourcepath src src\edu\umich\tanksoar\TanksoarJ.java
