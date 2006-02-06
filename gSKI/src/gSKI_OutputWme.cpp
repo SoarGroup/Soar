@@ -165,7 +165,7 @@ namespace gSKI
    bool OutputWme::HasBeenRemoved(Error* err) const
    {
       ClearError(err);
-      MegaAssert(false, "NOT IMPLEMENTED YET!");
+      //MegaAssert(false, "NOT IMPLEMENTED YET!");
       return false;
    }
 
