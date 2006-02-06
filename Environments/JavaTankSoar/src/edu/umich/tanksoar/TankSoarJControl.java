@@ -575,43 +575,27 @@ public class TankSoarJControl extends SimulationControl implements
 
 	/**
 	 * <p>
-	 * Constructs a new map for the simulation. It is not random, per-say, but
-	 * it is a gigantic spiral whose spiralness may be broken by a
-	 * <code>HealthSquare</code> or an <code>EnergySquare</code>.
+	 * Lists files in maps directory and randomly loads one.
 	 * {@inheritDoc}
 	 */
 	public void newRandomMap() {
-		myWinner = null;
-		stopSimulation();
-		myMap = new Object[MapWidth][MapHeight];
-		initializeBoundaries();
-		TSWall obs = new TSWall();
-		healthCreated = energyCreated = false;
-		for (int x = 2; x < MapWidth - 2; x++) {
-			myMap[x][2] = obs;
-			myMap[x][MapWidth - 3] = obs;
-		}
-		for (int y = 2; y < MapHeight - 2; y++) {
-			myMap[2][y] = obs;
-		}
-		for (int y = 2; y < MapHeight - 4; y++) {
-			myMap[MapWidth - 3][y] = obs;
-		}
-		for (int x = 4; x < MapWidth - 2; x++) {
-			myMap[x][MapHeight - 5] = obs;
-		}
-		for (int y = MapHeight - 5; y > 3; --y) {
-			myMap[4][y] = obs;
-		}
-		for (int x = 4; x < MapWidth - 4; x++) {
-			myMap[x][4] = obs;
-		}
-		for (int y = 4; y < MapHeight - 6; y++) {
-			myMap[MapWidth - 5][y] = obs;
-		}
-		fillGrasses();
-		placeAllTanks();
-		fireNewMapNotification(null);
+		
+		// list tmap files
+		File mapDir = new File(mapPath);
+		File[] files = mapDir.listFiles();
+
+		// pick one
+		Random random = new Random();
+		File newMap = null;
+		do {
+			int index = random.nextInt(files.length);
+			if (files[index].isFile()) {
+				newMap = files[index];
+			}
+		} while (newMap == null);
+		
+		// load it
+		loadMap(newMap);
 	}
 
 	/**
