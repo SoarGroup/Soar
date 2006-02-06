@@ -833,11 +833,10 @@ void CommandLineInterface::MoveBack(std::vector<std::string>& argv, int what, in
 		return;
 	}
 
-	std::vector<std::string>::iterator dest = argv.begin();
 	std::vector<std::string>::iterator target = argv.begin();
-
-	dest += howFar;
 	target += what;
+
+	std::vector<std::string>::iterator dest = target - howFar;
 
 	argv.insert(dest, *target);
 
