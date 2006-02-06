@@ -104,13 +104,13 @@ public class TankSoarJControl extends SimulationControl implements
 		addSimulationControlListener(this);
 		
 		// Set up map, agent paths
-		mapPath = System.getProperty("user.dir") 
-		+ System.getProperty("file.separator") + ".." 
-		+ System.getProperty("file.separator") + "JavaTanksoar" 
-		+ System.getProperty("file.separator");
-		agentPath = mapPath;
-		mapPath += "maps";
-		agentPath += "agents";
+		String basePath = kernel.GetLibraryLocation() + System.getProperty("file.separator")
+		+ ".." + System.getProperty("file.separator") 
+		+ "Environments" + System.getProperty("file.separator") 
+		+ "JavaTanksoar" + System.getProperty("file.separator");
+		
+		agentPath = basePath + "agents";
+		mapPath   = basePath + "maps";
 
 		File f = new File(mapPath, "default.tmap");
 		loadMap(f);
