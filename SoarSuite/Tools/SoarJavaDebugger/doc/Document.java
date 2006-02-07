@@ -365,10 +365,11 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 			// Look up the name of the DLL to use if the user has set it (via a dialog)
 			String path = frame.getAppStringProperty("Kernel.Location") ;
 
-			if (path != null)
+			if (path != null && path.length() > 0)
 			{
 				// Adopt this as the DLL to load
 				kernelSML = path ;
+				System.out.println("Loading Soar from user specified location: " + kernelSML) ;
 			}
 		}
 		
@@ -396,7 +397,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		}
 
 		m_DocumentThread.setConnected(true) ;
-
+		
 		// Let our listeners know about the new kernel
 		fireSoarConnectionChanged() ;
 		
@@ -405,6 +406,14 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		
 		// Let the rest of the world know that the debugger is up and ready now (but agent level events not ready yet)
 		m_Kernel.SetConnectionInfo(kConnectionName, sml_Names.getKStatusReady(), sml_Names.getKStatusNotReady()) ;
+		
+		// Set the library location if the user has defined this explicitly
+		String libraryPath = frame.getAppStringProperty("Kernel.Library.Location") ;
+		if (libraryPath != null && libraryPath.length() > 0)
+		{
+			System.out.println("Setting Soar library from user specified location: " + libraryPath) ;
+			m_Kernel.ExecuteCommandLine(getSoarCommands().setLibraryLocationCommand(libraryPath), null, false) ;
+		}
 		
 		// Choose a name for the agent
 		if (agentName == null)
@@ -417,7 +426,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 
 		// Start with an agent...without this a kernel's not much use.
 		Agent agent = createAgentNoNewWindow(agentName) ;
-
+		
 		return agent ;
 	}
 
