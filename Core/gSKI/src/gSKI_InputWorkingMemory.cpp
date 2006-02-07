@@ -802,6 +802,25 @@ namespace gSKI
    {
       ClearError(error);
 
+	  // DJP: Adding a check that the gSKI input link object still
+	  // corresponds to the kernel's input link object.  This should always be true
+	  // unless the kernel experiences a memory leak on an init-soar.  I'm not really sure it's wise
+	  // to patch things up in that case, but we'll try it and see.
+	  if (m_rootInputObject)
+	  {
+		  Symbol* isym = GetSoarAgent()->io_header_input ;
+		  if (m_rootInputObject->GetSoarSymbol() != isym)
+		  {
+				// The input link symbols don't match between gSKI and the kernel.
+				fprintf(stderr, "gSKI and the kernel disagree now about the input link symbol--signs of a serious problem\n") ;
+
+				// Delete the current gSKI object and create a new one based on the new input link id.
+				// This could still be a problem if anyone is retaining a link to the old m_rootInputObject but in fairness that's rare.
+				m_rootInputObject->Release() ;
+				m_rootInputObject = 0 ;
+		  }
+	  }
+
       if ( m_rootInputObject == 0 ) {
          // Create the working memory object from the raw soar symbol
          MegaAssert( m_agent != 0, "Raw agent pointer can not be null!");

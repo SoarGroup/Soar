@@ -386,6 +386,41 @@ bool SimpleCopyAgent()
 	return true ;
 }
 
+// Creates an agent that loads a rete net and then works with it a little.
+bool SimpleReteNetLoader()
+{
+	// Create the kernel instance
+	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
+
+	if (pKernel->HadError())
+	{
+		cout << pKernel->GetLastErrorDescription() << endl ;
+		return false ;
+	}
+
+	sml::Agent* pAgent = pKernel->CreateAgent("reteagent") ;
+	std::string path = std::string(pKernel->GetLibraryLocation()) + "/Tests/test.soarx" ;
+	std::string command = std::string("rete-net -l ") + path ;
+	std::string result = pAgent->ExecuteCommandLine(command.c_str()) ;
+
+	if (!pAgent->GetLastCommandLineResult())
+	{
+		cout << pAgent->GetLastErrorDescription() << endl ;
+		return false ;
+	}
+
+	// Make us match the current input link values
+	bool synchUp = pAgent->SynchronizeInputLink() ;
+
+	// Get the latest id from the input link
+	Identifier* pID = pAgent->GetInputLink() ;
+	cout << "Input link id is " << pID->GetValueAsString() << endl ;
+
+	pKernel->Shutdown() ;
+	delete pKernel ;
+
+	return true ;
+}
 
 void MyRunSelfRemovingHandler(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phase)
 {
@@ -1548,6 +1583,7 @@ int main(int argc, char* argv[])
 	bool remoteConnect = false ;
 	bool copyTest  = false ;
 	bool synchTest = false ;
+	bool reteTest  = false ;
 	int  life      = 3000 ;	// Default is to live for 3000 seconds (5 mins) as a listener
 	int  decisions = 20000 ;
 
@@ -1564,6 +1600,8 @@ int main(int argc, char* argv[])
 	// -runlistener <decisions> : As above but runs for specified number of decisions.
 	// -remoteconnect : Connects to a running kernel (e.g. -runlistener above), grabs some output and then disconnects.
 	// -time : run a time trial on some functionality
+	// Also -copyTest, -reteTest and others to test specific calls and bugs.  I don't expect those to be used much but keeping them here
+	// so it's quicker to investigate similar problems in the future.
 	if (argc > 1)
 	{
 		for (int i = 1 ; i < argc ; i++)
@@ -1572,6 +1610,8 @@ int main(int argc, char* argv[])
 				stopAtEnd = false ;
 			if (!stricmp(argv[i], "-copy"))
 				copyTest = true ;
+			if (!stricmp(argv[i], "-retetest"))
+				reteTest = true ;
 			if (!stricmp(argv[i], "-synch"))
 				synchTest = true ;
 			if (!stricmp(argv[i], "-remote"))
@@ -1613,6 +1653,8 @@ int main(int argc, char* argv[])
 		SimpleRunListener(decisions) ;
 	else if (copyTest)
 		success = SimpleCopyAgent() ;
+	else if (reteTest)
+		success = SimpleReteNetLoader() ;
 	else if (remoteConnect)
 		SimpleRemoteConnect() ;
 	else if (synchTest)
