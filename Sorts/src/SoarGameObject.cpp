@@ -1,8 +1,7 @@
 #include"SoarGameObject.h"
 #include<iostream>
 
-SoarGameObject::SoarGameObject(GameObj* _gameObj)
-: gameObj(_gameObj)
+SoarGameObject::SoarGameObject()
 {
 
 }
@@ -44,7 +43,7 @@ void SoarGameObject::removeBehavior(std::string name)
 }
 
 
-void SoarGameObject::issueCommand(std::string cmd)
+void SoarGameObject::issueCommand(std::string cmd, Vector<sint4> prms)
 {
  std::list<FSM*>::iterator it;
 
@@ -55,6 +54,7 @@ void SoarGameObject::issueCommand(std::string cmd)
  for(it = behaviors.begin(); it != behaviors.end(); it++)
   if((*it)->name == cmd) 
   {
+   (*it)->setParams(prms);
    memory.push((*it));
    return;
   }

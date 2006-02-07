@@ -41,11 +41,11 @@ bool MoveFSM::update()
 
 
 //Might be worth it to push this up to FSM.h and template it for sint4 and objects
-void MoveFSM::setParams(std::vector<signed long> p)
-{
+//void MoveFSM::setParams(std::vector<signed long> p)
+//{
  //Push the movement params onto the FSM params
  //There should be 3 -> (x, y, speed)
 
- for(int i=0; i<static_cast<int>(p.size()); i++)
-  params.push_back(p[i]);
-}
+// for(int i=0; i<static_cast<int>(p.size()); i++)
+//  params.push_back(p[i]);
+//}
