@@ -1,4 +1,4 @@
-#include"include/SoarGameObject.h"
+#include"SoarGameObject.h"
 #include<iostream>
 
 SoarGameObject::SoarGameObject()
@@ -23,6 +23,7 @@ SoarGameObject::~SoarGameObject()
 
 void SoarGameObject::registerBehavior(FSM *b)
 {
+ b->setGameObject(gob);
  behaviors.push_back(b);
 }
 
@@ -63,7 +64,8 @@ void SoarGameObject::issueCommand(std::string cmd)
 void SoarGameObject::update()
 {
  if(!memory.empty())
-  memory.top()->update();
+  if(!memory.top()->update())
+   memory.pop();
 }
 
 

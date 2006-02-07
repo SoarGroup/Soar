@@ -6,6 +6,12 @@
 #include<list>
 #include<vector>
 
+#include "Global.H"
+#include "Game.H"
+#include "ServerObjData.H"
+#include "Options.H"
+
+
 class FSM{
  public:
 	FSM(){}
@@ -15,6 +21,7 @@ class FSM{
 
  //private:
 	std::string name;
+	//const GameObj *gob;
 };
 
 #endif

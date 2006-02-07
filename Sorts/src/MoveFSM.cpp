@@ -1,36 +1,51 @@
-#include"include/MoveFSM.h"
+#include"MoveFSM.h"
 
 
 MoveFSM::MoveFSM()
 {
  state = IDLE;
+ name = "Move";
+ gob = NULL;
 }
 
 MoveFSM::~MoveFSM()
 {
-
+ gob = NULL;
 }
 
 
 bool MoveFSM::update()
 {
  switch(state){
+
 	case IDLE:
 	 //Start moving
+	 gob->set_action("move",params);
 	 break;
+
 	case MOVING:
+	 const ServerObjData &sod = gob->sod;
+
 	 //Check to see if you arrived
-		//If you arrived, then pop the FSM
+	 if(*sod.x == params[1] && *sod.y == params[2])
+	 {
+	  //If you arrived, then pop the FSM
+	  state = IDLE;
+	  return false;
+	 }
 	 break;
+
 	}
  return true;
 }
 
+
+//Might be worth it to push this up to FSM.h and template it for sint4 and objects
 void MoveFSM::setParams(std::vector<signed long> p)
 {
  //Push the movement params onto the FSM params
  //There should be 3 -> (x, y, speed)
 
- for(int i=0; i<p.size(); i++)
+ for(int i=0; i<static_cast<int>(p.size()); i++)
   params.push_back(p[i]);
 }
