@@ -10,11 +10,11 @@ class MoveFSM: public FSM{
 	~MoveFSM();
 
 	bool update();
-	void setParams(std::vector<signed long>);
+//	void setParams(std::vector<signed long>);
 
  private:
 	enum{IDLE,MOVING};
 
 	int state;
-	std::vector<signed long> params;
+
 };
