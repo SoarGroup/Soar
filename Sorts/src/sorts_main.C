@@ -124,6 +124,8 @@ int main(int argc, char *argv[]) {
   pthread_create(&soarThread, NULL, RunSoar, (void*) pKernel);
   cout << "Soar is running" << endl;
 
+  sleep(100);
+
   // this drives the orts interrupt, which drives the middleware
   pthread_t ortsThread;
   pthread_create(&ortsThread, NULL, RunOrts, (void*) &gsm);

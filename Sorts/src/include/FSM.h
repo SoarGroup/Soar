@@ -1,3 +1,6 @@
+#ifndef FSM_H
+#define FSM_H
+
 #include<map>
 #include<string>
 #include<list>
@@ -28,3 +31,5 @@ class FSM{
 	GameObj *gob;
 	Vector<sint4> params;
 };
+
+#endif

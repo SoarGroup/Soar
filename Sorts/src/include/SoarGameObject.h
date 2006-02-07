@@ -1,7 +1,7 @@
-#ifndef _FSM_H_
-#define _FSM_H_
+#ifndef SoarGameObject_H
+#define SoarGameObject_H
+
 #include"FSM.h"
-#endif
 
 #include<stack>
 #include<vector>
@@ -24,11 +24,13 @@ class SoarGameObject{
 	void setGroup(SoarGameGroup *g);
 	SoarGameGroup *getGroup();
 
+	GameObj *gob;
  private:
 	std::list<FSM *> behaviors;
 	std::stack<FSM *> memory;
 
-	GameObj *gob;
   	SoarGameGroup* group;
 
 };
+
+#endif
