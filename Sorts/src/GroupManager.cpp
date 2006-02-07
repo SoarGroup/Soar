@@ -24,7 +24,7 @@ bool GroupManager::assignActions() {
   // through the SoarIO, look for any new actions, and assign them to groups
     
   list <SoarAction*> newActions;
-  newActions = SoarIO->getNewActions();
+  SoarIO->getNewActions(newActions);
   list <SoarAction*>::iterator actionIter = newActions.begin();
  
   list <SoarGameGroup*>::iterator groupIter;

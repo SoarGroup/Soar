@@ -59,10 +59,10 @@ void SoarGameGroup::updateStats(bool saveProps) {
   //  health += *currentObject.getHealth();
   //  x += *currentObject.getX();
   //  y += *currentObject.getY();
-#ifdef DEBUG_GROUPS 
-    x += (*currentObject)->x;
-    y += (*currentObject)->y;
-#endif
+//#ifdef DEBUG_GROUPS 
+    x += *(*currentObject)->gameObj->sod.x;
+    y += *(*currentObject)->gameObj->sod.y;
+//#endif
     currentObject++;
   }
   
@@ -98,13 +98,13 @@ void SoarGameGroup::updateStats(bool saveProps) {
   
   // center member calculation- is there a way to do a running calc above?
   double shortestDistance 
-        = squaredDistance(x, y, centerMember->x, centerMember->y);
+        = squaredDistance(x, y, *centerMember->gameObj->sod.x, *centerMember->gameObj->sod.y);
 
   double currentDistance;
   currentObject = members.begin();
   while (currentObject != members.end()) {
     currentDistance = squaredDistance(x, y, 
-                      (*currentObject)->x, (*currentObject)->y);
+                      *(*currentObject)->gameObj->sod.x, *(*currentObject)->gameObj->sod.y);
     if (currentDistance < shortestDistance) {
       shortestDistance = currentDistance;
       centerMember = *currentObject;

@@ -48,7 +48,7 @@ private:
 
   // consistency functions
   void addAppearedObject(const GameObj* gameObj);
-  void addCreatedObject(const GameObj* gameObj);
+  void addCreatedObject(GameObj* gameObj);
   void removeDeadObject(const GameObj* gameObj);
   void removeVanishedObject(const GameObj* gameObj);
 

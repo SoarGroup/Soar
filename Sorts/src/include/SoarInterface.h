@@ -53,12 +53,12 @@ class SoarInterface {
 
     ~SoarInterface();
 
-    void getNewActions(list<SoarAction*> newActions);
+    void getNewActions(list<SoarAction*>& newActions);
 
     // grouping commands for Group Manager to call
     void addGroup(SoarGameGroup* group);
     void removeGroup(SoarGameGroup* group);
-    void refreshGroup(SoarGameGroup* group, groupPropertyList& gpl);
+    void refreshGroup(SoarGameGroup* group, groupPropertyList gpl);
 
     // commit all changes to Soar Input link
     void commitInputLinkChanges();
@@ -81,7 +81,9 @@ class SoarInterface {
 
     // input link stuff
     sml::Identifier* inputLink;
-    sml::Identifier* playerIdentifier;
+    sml::Identifier* playerId;
+    sml::Identifier* playerGroupsId;
+
     sml::IntElement* playerGoldWME;
     sml::Identifier* mapIdentifier;
 

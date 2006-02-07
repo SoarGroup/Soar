@@ -54,7 +54,7 @@ void SoarInterface::removeGroup(SoarGameGroup* group) {
   gIdToMwGroups.erase(g.groupId);
 }
 
-void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyList& gpl) {
+void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyList gpl) {
   // make sure the group exists
   assert(mwToSoarGroups.find(group) != mwToSoarGroups.end());
   
@@ -63,7 +63,7 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyList& gpl) {
   if (!g.added) {
     // add the group to the soar input link if it hasn't been already
     g.added = true;
-    g.WMEptr = agent->CreateIdWME(inputLink, "group");
+    g.WMEptr = agent->CreateIdWME(playerGroupsId, "group");
     for(groupPropertyList::iterator i = gpl.begin(); i != gpl.end(); i++) {
       for(groupPropertyList::iterator i = gpl.begin(); i != gpl.end(); i++) {
         // create a new WME object for the property
@@ -84,6 +84,11 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyList& gpl) {
 // link and put onto the action queue each time soar generates output
 void SoarInterface::getNewSoarOutput() {
   int numberCommands = agent->GetNumberCommands() ;
+  
+  // try to lock the object action queue over the entire loop for now
+  // might have to change later
+  pthread_mutex_lock(objectActionQueueMutex);
+
   for (int i = 0 ; i < numberCommands ; i++) {
     sml::Identifier* cmdPtr = agent->GetCommand(i) ;
 
@@ -126,16 +131,15 @@ void SoarInterface::getNewSoarOutput() {
       newAction.params.push_back(atoi(paramValue));
     }
 
-    // add the new action to the action queue. Have to lock on mutex here
-    pthread_mutex_lock(objectActionQueueMutex);
+    // add the new action to the action queue
     objectActionQueue.push_back(&newAction);
-    pthread_mutex_unlock(objectActionQueueMutex);
-
   } // for over commands
+
+  pthread_mutex_unlock(objectActionQueueMutex);
 }
 
 // called by middleware to get queued Soar actions
-void SoarInterface::getNewActions(list<SoarAction*> newActions) {
+void SoarInterface::getNewActions(list<SoarAction*>& newActions) {
   pthread_mutex_lock(objectActionQueueMutex);
   for(list<SoarAction*>::iterator i = objectActionQueue.begin(); i != objectActionQueue.end(); i++) {
     newActions.push_back(*i);
@@ -159,19 +163,21 @@ void SoarInterface::updatePlayerGold(int amount) {
 
 /*
  * inputLink ----> me ----> gold
- *             |       l--> units
+ *             |       \--> groups
  *             |
- *             l-> p1 ----> ...
- *             l-> p2 ----> ...
+ *             \-> p1 ----> ...
+ *             \-> p2 ----> ...
  *             |
- *             l-> map ---> ...
+ *             \-> map ---> ...
  */
 void SoarInterface::initSoarInputLink() {
-  playerIdentifier = agent->CreateIdWME(inputLink, "me");
+  playerId= agent->CreateIdWME(inputLink, "me");
   mapIdentifier = agent->CreateIdWME(inputLink, "map");
 
-  agent->CreateIntWME(playerIdentifier, "gold", 0);
-  agent->CreateIdWME(playerIdentifier, "units");
+  playerGoldWME = agent->CreateIntWME(playerId, "gold", 0);
+  playerGroupsId = agent->CreateIdWME(playerId, "groups");
+
+  agent->Commit();
 }
 
 

@@ -11,13 +11,40 @@
 
 using namespace std;
 
-void SoarUpdateEventHandler(sml::smlUpdateEventId id, 
-                            void *pUserData,
-                            sml::Kernel *pKernel,
-                            sml::smlRunFlags runFlags)
+void printOutput(sml::smlPrintEventId id,
+                 void*                pUserData,
+                 sml::Agent*          pAgent,
+                 const char*          pMessage)
 {
+  //cout << "[SOAR] " << pMessage << endl;
+}
+
+void SoarUpdateEventHandler(sml::smlUpdateEventId id, 
+                            void*                 pUserData,
+                            sml::Kernel*          pKernel,
+                            sml::smlRunFlags      runFlags)
+{
+  /*
+  cout << "Soar Event triggered" << endl;
   SoarInterface* soarInterface = (SoarInterface*) pUserData;
   soarInterface->getNewSoarOutput();
+  cout << "Soar Event processing finished" << endl;
+  */
+}
+
+// the function that is executed by a separate thread to
+// run the Soar agent
+void* RunSoar(void* ptr) {
+  ((sml::Kernel*) ptr)->RunAllAgentsForever();
+}
+
+void* RunOrts(void* ptr) {
+  GameStateModule* gsm = (GameStateModule*) ptr;
+  while(1) {
+    if (!gsm->recv_view()) {
+      SDL_Delay(1);
+    }
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -67,8 +94,8 @@ int main(int argc, char *argv[]) {
                                &groupActionMutex );
 
   // register for all events
-  //pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, printOutput, 0);
-  pKernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &soarInterface);
+//  pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, printOutput, 0);
+//  pKernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &soarInterface);
   //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START, SoarSystemEventHandler, &state);
   //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_STOP, SoarSystemEventHandler, &state);
   
@@ -92,12 +119,20 @@ int main(int argc, char *argv[]) {
   if (!gsm.connect()) exit(10);
   cout << "connected" << endl;
 
-  // start Soar
-  pKernel->RunAllAgentsForever();
+  // start Soar in a different thread
+  pthread_t soarThread;
+  pthread_create(&soarThread, NULL, RunSoar, (void*) pKernel);
   cout << "Soar is running" << endl;
 
   // this drives the orts interrupt, which drives the middleware
-  while(!gsm.recv_view()) {
-    SDL_Delay(1);
-  }
+  pthread_t ortsThread;
+  pthread_create(&ortsThread, NULL, RunOrts, (void*) &gsm);
+  cout << "ORTS client is running" << endl;
+
+  pthread_join(soarThread, NULL);
+  pthread_join(ortsThread, NULL);
+
+  cout << "!!!! Everything is finished !!!!" << endl;
+
+  return 0;
 }

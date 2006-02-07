@@ -1,7 +1,8 @@
 #include"SoarGameObject.h"
 #include<iostream>
 
-SoarGameObject::SoarGameObject()
+SoarGameObject::SoarGameObject(GameObj* _gameObj)
+: gameObj(_gameObj)
 {
 
 }

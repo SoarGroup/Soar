@@ -16,11 +16,11 @@ void OrtsInterface::addAppearedObject(const GameObj* gameObj) {
   assert(false);
 }
 
-void OrtsInterface::addCreatedObject(const GameObj* gameObj) {
+void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   // make sure the game object does not exist in the middleware
   assert(objectMap.find(gameObj) == objectMap.end());
 
-  SoarGameObject* newObj = new SoarGameObject();
+  SoarGameObject* newObj = new SoarGameObject(gameObj);
   
   // GroupManager takes care of setting the object->group pointers
   groupManager->addGroup(newObj);
@@ -49,9 +49,11 @@ void OrtsInterface::removeVanishedObject(const GameObj* gameObj) {
 bool OrtsInterface::handle_event(const Event& e) {
   if (e.get_who() == GameStateModule::FROM) {
     if (e.get_what() == GameStateModule::VIEW_MSG) {
+      cout << "INTERRUPT!" << endl;
       const GameChanges& changes = gsm->get_changes();
 
       updateSoarGameObjects(changes);
+      groupManager->updateWorld();
 
       /* I'm assuming here that those update calls from above have already
        * updated the soar input link correctly, so commit everything
@@ -75,7 +77,8 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
        * should drop the distinction altogether, or do some extra bookkeeping
        * here
        */
-      addAppearedObject(gob);
+      //addAppearedObject(gob);
+      addCreatedObject(gob);
     }
   }
 
