@@ -294,6 +294,7 @@ NamedEventDataList* CreateSystemEventData() {
 	namedEventData->name = "system";
 	
 	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_SHUTDOWN, "smlEVENT_BEFORE_SHUTDOWN"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_CONNECTION, "smlEVENT_AFTER_CONNECTION"));
 	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_CONNECTION_LOST, "smlEVENT_AFTER_CONNECTION_LOST"));
 	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_RESTART, "smlEVENT_BEFORE_RESTART"));
 	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_RESTART, "smlEVENT_AFTER_RESTART"));
