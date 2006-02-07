@@ -115,6 +115,7 @@ public class SWTApplication
 	// -agent <name> => on a local connection use this as the name of the initial agent
 	//
 	// -source "<path>" => load this file of productions on launch (only valid for local kernel)
+	// -quitonfinish	=> when combined with source causes the debugger to exit after sourcing that one file
 	// -listen ppp      => use this port to listen for remote connections (only valid for a local kernel)
 	//
 	// -maximize        => start with maximized window
@@ -133,7 +134,12 @@ public class SWTApplication
 		String port = getOptionValue(args, "-port") ;
 		String agentName = getOptionValue(args, "-agent") ;
 		String source = getOptionValue(args, "-source") ;
+		boolean quitOnFinish = hasOption(args, "-quitonfinish") ;
 		String listen = getOptionValue(args, "-listen") ;
+		
+		// quitOnFinish is only valid if sourcing a file
+		if (source == null)
+			quitOnFinish = false ;
 		
 		boolean maximize = hasOption(args, "-maximize") ;
 
@@ -217,7 +223,7 @@ public class SWTApplication
 		// (saves some special case logic in the frame)
 		if (!remote)
 		{
-			Agent agent = m_Document.startLocalKernel(listenPort, agentName, source) ;
+			Agent agent = m_Document.startLocalKernel(listenPort, agentName, source, quitOnFinish) ;
 			frame.setAgentFocus(agent) ;
 		}
 		else
