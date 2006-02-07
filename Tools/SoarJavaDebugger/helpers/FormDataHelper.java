@@ -112,6 +112,15 @@ public class FormDataHelper
 		return data ;
 	}
 
+	static public FormData anchorTop(org.eclipse.swt.widgets.Composite object)
+	{
+		FormData form = new FormData() ;
+		form.top = new FormAttachment(object) ;
+		form.left = new FormAttachment(0) ;
+		form.right = new FormAttachment(100) ;
+		return form ;
+	}
+	
 	// Anchor to the top-left of the form
 	static public FormData anchorTopLeft(int offset)
 	{

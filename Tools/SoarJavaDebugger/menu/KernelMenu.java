@@ -79,10 +79,10 @@ public class KernelMenu
 		m_RemoteDisconnect.setEnabled(m_Document.isConnected() && m_Document.isRemote()) ;
 	}
 
-	public String setKernelLocation()
+	public void setKernelLocation()
 	{
-		String path = KernelLocationDialog.showDialog(m_Frame, "Set the path to the Soar kernel") ;
-		return path ;
+		// This dialog set the "Kernel.Location" app property, which is then read when we load a new kernel.
+		KernelLocationDialog.showDialog(m_Frame, "Set the path to the Soar kernel") ;
 	}
 	
 	private void startKernelPerformed(ActionEvent e)
