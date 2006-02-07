@@ -335,7 +335,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 	********************************************************************************************/
 	public Agent startLocalKernel()
 	{
-		return startLocalKernel(Kernel.GetDefaultPort(), null, null) ;
+		return startLocalKernel(Kernel.GetDefaultPort(), null, null, false) ;
 	}
 	
 	/********************************************************************************************
@@ -346,9 +346,10 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 	 * 							the kernel running inside this debugger.  (Probably rare to do this).
 	 * @param agentName			Can pass null to get default name.
 	 * @param sourcePath		Path to file of productions to source on agent creation (can be null)
+	 * @param quitOnFinish		If true and have a sourcePath, quit the debugger after executing the source (used for automated tests/batch runs)
 	 * @return Returns the newly created agent.
 	********************************************************************************************/
-	public Agent startLocalKernel(int portToListenOn, String agentName, String sourcePath)
+	public Agent startLocalKernel(int portToListenOn, String agentName, String sourcePath, boolean quitOnFinish)
 	{
 		if (m_Kernel != null)
 		{
@@ -421,7 +422,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 
 		if (sourcePath != null)
 		{
-			delayedCommand(agentName, frame, getSoarCommands().getSourceCommand(sourcePath)) ;
+			delayedCommand(agentName, frame, getSoarCommands().getSourceCommand(sourcePath), quitOnFinish) ;
 		}
 
 		// Start with an agent...without this a kernel's not much use.
@@ -441,8 +442,9 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 	 * @param agentName
 	 * @param frame
 	 * @param sourcePath
+	 * @param quitOnFinish	If true, quit the debugger after executing this command.
 	********************************************************************************************/
-	protected void delayedCommand(final String agentName, final MainFrame frame, final String command)
+	protected void delayedCommand(final String agentName, final MainFrame frame, final String command, final boolean quitOnFinish)
 	{
 		// Step one is to listen for the "agent added" event.
 		// This is fired internally by the debugger once the Soar agent has been created and the SWT window exists
@@ -471,6 +473,11 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 					display.asyncExec(new Runnable() { public void run()
 					{
 						frame.executeCommandPrimeView(command, true) ;
+						
+						// This generally only makes sense if we're sourcing a file that includes a "run" command
+						// (i.e. to actually do useful work)
+						if (quitOnFinish)
+							frame.executeCommandPrimeView("quit", true) ;
 					}}) ;
 				}
 			}
