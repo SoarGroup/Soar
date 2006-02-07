@@ -31,6 +31,7 @@
    typedef enum {
       // Kernel events
       gSKIEVENT_BEFORE_SHUTDOWN            = 1,
+	  gSKIEVENT_AFTER_CONNECTION,
       gSKIEVENT_AFTER_CONNECTION_LOST,
       gSKIEVENT_BEFORE_RESTART,
       gSKIEVENT_AFTER_RESTART,
