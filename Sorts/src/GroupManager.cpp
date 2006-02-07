@@ -13,7 +13,7 @@ using namespace std;
 void GroupManager::updateWorld() {
   
   refreshGroups(false);
- // reGroup();
+  reGroup();
   refreshGroups(true);
   adjustAttention();
 
@@ -87,13 +87,13 @@ void GroupManager::reGroup() {
         centerObject = (*groupIter)->getCenterMember();
     
         // centers are stored in a separate list
-        objectData.object = centerObject;
-        objectData.x = centerObject->x;
-        objectData.y = centerObject->y;
+      //  objectData.object = centerObject;
+      //  objectData.x = centerObject->x;
+      //  objectData.y = centerObject->y;
         
-        centerGroupingList.push_back(objectData);
+     //   centerGroupingList.push_back(objectData);
         
-        groupMembers = (*groupIter)->getMembers();
+    /*    groupMembers = (*groupIter)->getMembers();
         objectIter = groupMembers.begin();
         while (objectIter != groupMembers.end()) {
           if ((*objectIter) != centerObject){
@@ -104,12 +104,13 @@ void GroupManager::reGroup() {
             groupingList.push_back(objectData);
           }
           objectIter++;
-        }
+        }*/
       }
       // else it was a group of a different type
       
       // switch over from in-focus to not- we don't care about the
       // distinction here
+      groupIter++;
       if (groupIter == groupsInFocus.end()) {
         groupIter = groupsNotInFocus.begin();
       }
@@ -179,7 +180,7 @@ void GroupManager::reGroup() {
   
   list<pair<SoarGameGroup*, SoarGameGroup*> >::iterator toMergeIter;
   list<pair<SoarGameGroup*, SoarGameGroup*> >::iterator toMergeIter2;
-
+/*
   // if two groups merge, we need to ensure that the subsumed group
   // does not have any outstanding merges
   toMergeIter = toMergeList.begin();
@@ -229,6 +230,7 @@ void GroupManager::reGroup() {
     
     toMergeIter++;
   }
+  */
 #endif
   return;
 }

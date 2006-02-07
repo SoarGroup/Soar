@@ -1,0 +1,928 @@
+// SoarMap.function
+// this is just the relevant function to make Soar maps
+// it is included at the end of MapTool.C
+// The include effectively copy-and-pastes this function into that file.
+
+// command in vim to turn on highlighting: setf c
+
+void MapTool::generate_soar_map(stringstream &world, string map_settings_file)
+{
+  opt.get();
+
+  Random rand;
+  sint4 seed = opt.seed;
+  
+  sint4 gtiles_x = 20;
+  sint4 gtiles_y = 20;
+  int mineral_cluster_count = 3;
+  int tree_cluster_count = 0;
+  Vector<string> units;
+  units.push_back("worker");
+  bool observer = true;
+  bool units_cleared = false;
+  bool hilly = false;
+  bool water = false;
+  bool home_bases = true;
+
+  cout << "loading Soar map settings: " << map_settings_file << endl;
+
+  ifstream settings_file(map_settings_file.c_str());
+  if (!settings_file.is_open()) {
+    cout << "WARNING: file not found, cannot load settings, using defaults" << endl;
+  }
+  
+  // parse settings file
+  string line;
+  while (settings_file.good()) {
+    line = "";
+    getline(settings_file, line);
+    if (line.substr(0,1) == "#") {
+      //cout << "comment ignored: " << line << endl;
+    }
+    else if (line == "map-dims") {
+      settings_file >> gtiles_x;
+      settings_file >> gtiles_y;
+      cout << "using map dimensions x,y: " << gtiles_x << " " << gtiles_y << endl;
+    }
+    else if (line == "mineral-cluster-count") {
+      settings_file >> mineral_cluster_count;
+      cout << "mineral cluster count: " << mineral_cluster_count << endl;
+    }
+    else if (line == "tree-cluster-count") {
+      settings_file >> tree_cluster_count;
+      cout << "tree cluster count: " << mineral_cluster_count << endl;
+    }
+    else if (line == "random-seed") {
+      settings_file >> seed;
+      cout << "using random seed: " << seed << endl;
+    }
+    else if (line == "observer") {
+      settings_file >> observer;
+      if (observer) {
+        cout << "last player will be observer" << endl;
+      }
+      else {
+        cout << "no observer" << endl;
+      }
+    }
+    else if (line == "hills") {
+      settings_file >> hilly;
+      if (hilly) {
+        cout << "map will have hills" << endl;
+      }
+      else {
+        cout << "no hills" << endl;
+      }
+    }
+    else if (line == "water") {
+      settings_file >> water;
+      if (water) {
+        cout << "map will have water" << endl;
+      }
+      else {
+        cout << "no water" << endl;
+      }
+    }
+    else if (line == "home-bases") {
+      settings_file >> home_bases;
+      if (home_bases) {
+        cout << "players will have home bases" << endl;
+      }
+      else {
+        cout << "no home bases" << endl;
+      }
+    }
+    else if (line == "give-unit") {
+      string temp;
+      settings_file >> temp;
+      if (units_cleared == false) {
+        // remove default unit
+        units.clear();
+        units_cleared = true;
+      }
+      units.push_back(temp);
+      cout << "giving non-observer players a unit: " << temp << endl;
+    }
+    else if (line == "") {
+      //cout << "blank line ignored!" << endl;
+    }
+    else {
+      cout << "WARNING: unrecognized map config line: " << line << endl;
+    }
+  }
+
+
+  // note: if loading a map, -nplayers values must match
+  sint4 num_players = opt.nplayers;
+  rand.srand(seed);
+  
+  sint4 tiles_x, tiles_y;
+  sint4 z_sight = 0;
+
+  bool rotate = opt.rot;
+
+  // if the world is rotated 45 degrees, impose somewhat artificial 45
+  // degree bariers to define the playing area.  The area of
+  // the playing field is the same as it would have been, but the
+  // world is still an axis aligned rectangle, so the actual world may
+  // be much larger
+
+  /*
+    +-----+
+    |  /\ |
+    | /  \|
+    |/   /|
+    |\  / |
+    | \/  |
+    +-----+
+  */
+
+  // tiles_x is the actual width of the tile array stored
+  // gtiles_x is the width of the playfield and is constant under rotation
+
+  if (rotate) {
+    gtiles_x = sint4(gtiles_x * 0.70710678); // side lengths are now fractions of 45 degree lines
+    gtiles_y = sint4(gtiles_y * 0.70710678);
+    tiles_x = gtiles_x + gtiles_y;
+    tiles_y = gtiles_x + gtiles_y;
+  } else {
+    tiles_x = gtiles_x;
+    tiles_y = gtiles_y;
+  }
+
+  world << num_players << endl;
+  world << gtiles_x << endl;
+  world << gtiles_y << endl;
+  world << z_sight << endl;
+  if (rotate) world << 1 << endl;
+  else        world << 0 << endl;
+
+  sint4 tile_n = tiles_x * tiles_y;
+
+  Map<Tile> map_data;
+  map_data.allocate(tiles_x, tiles_y);
+
+  sint4 h_x = tiles_x + 1;
+  sint4 h_y = tiles_y + 1;  
+  sint4 h_n = h_x * h_y;
+
+  Vector<sint2> height(h_n); // height field (index is not a tile index!)
+  Vector<sint2> bad(tile_n); // do not put stuff on tile if true, works on tiles!
+
+  // first heights heights represent layers (will be multiplied by GameConst::HEIGHT_MULT later
+
+  real8 fplat = opt.fplat;
+  bool plug_holes = opt.holes;
+  sint4 clump = opt.clump;
+  bool smooth = opt.smooth;
+
+  if (smooth) plug_holes = false; // smooth > plug_holes
+  
+  if (hilly) { // enable for varying the map height
+    if (clump < 1) clump = 1;
+
+    if (clump <= 1) {
+      FORS (i, sint4(tile_n * fplat)) {
+        sint4 r;
+        do { r = rand.rand_uint4() % h_n; } while (height[r] == 1);
+        height[r] = 1;
+      }
+    } 
+    else {
+      FORS (i, sint4(tile_n * fplat)) {
+        sint4 r;
+        do { r = rand.rand_uint4() % h_n; } while (height[r] >= 3);
+      
+        sint4 next_to = 0;
+        sint4 out_of = 4;
+      
+        sint4 x = r % h_x;
+        sint4 y = r / h_x;
+    
+        if (x == 0 || x == h_x-1) out_of--;
+        if (y == 0 || y == h_y-1) out_of--;
+      
+        sint4 h = height[r];
+
+        if (x > 0     && height[r-1]   == h+1) next_to++;
+        if (x < h_x-1 && height[r+1]   == h+1) next_to++;
+        if (y > 0     && height[r-h_x] == h+1) next_to++;
+        if (y < h_y-1 && height[r+h_x] == h+1) next_to++;
+
+        const sint4 offset = 4;
+
+        if (out_of == next_to) {
+          if (rand.rand_uint4() % 3) height[r] += 1;
+          else if (h <= 1) height[r] += 2;
+          continue;
+        }
+        if (next_to * 2 >= out_of) {
+          next_to += offset;
+          out_of += offset;
+        }
+        if (next_to > 0) {
+          if ((sint4)(rand.rand_uint4() % out_of) < next_to) {
+            height[r] += 1;
+            continue;
+          }
+        }
+        if (rand.rand_uint4() % clump < 1) {
+          height[r]++; // = 1;
+          continue;
+        }
+        --i;
+      }
+    }
+
+    if (plug_holes) {
+      FORS (i, h_n) {
+        sint4 r = i;
+
+        sint4 next_to = 0;
+        sint4 out_of = 4;
+
+        sint4 rx = r % h_x;
+        sint4 ry = r / h_x;
+
+        sint4 h = height[r];
+      
+        if (rx == 0 || rx == h_x-1) out_of--;
+        if (ry == 0 || ry == h_y-1) out_of--;
+
+        if (rx > 0     && height[r-1]   > h) next_to++;
+        if (rx < h_x-1 && height[r+1]   > h) next_to++;
+        if (ry > 0     && height[r-h_x] > h) next_to++;
+        if (ry < h_y-1 && height[r+h_x] > h) next_to++;
+
+        if (out_of == next_to) {// && height[r] == 0) {
+          //	cout << i << " " << next_to << " " << out_of << " plug" << endl;
+          height[r]++;// = 1;
+        }
+      }
+    }
+
+    // the world is now a height field with no ramps
+    // flatten the corner and add demo buildings
+
+    if (tiles_x > 40 && tiles_y > 60) {
+      FORU (i, 40) {
+        FORU (j, 60) {
+          height[i + j*h_x] = 0;
+        }
+      }
+    }
+
+    // smooth plateaus:
+    //  continue filling tiles iff it has three or four filled HV neighbors
+
+    bool changed = smooth;
+
+    while (changed) {
+
+      changed = false;
+      
+      sint4 dx[] = { 1,  0, -1, 0 };
+      sint4 dy[] = { 0, -1,  0, 1 };
+
+      FORS (i, h_n) {
+        sint4 h = height[i];
+
+        sint4 ix = i % h_x;
+        sint4 iy = i / h_x;
+
+        sint4 next_to = 0;
+        
+        FORS (j, 4) {
+          sint4 jx = ix + dx[j];
+          sint4 jy = iy + dy[j];	  
+          if (jx < 0 || jx >= h_x || jy < 0 || jy >= h_y) next_to++;
+          else if (height[jy*h_x + jx] > h) next_to++;
+        }
+        
+        if (next_to >= 3) { height[i]++; changed = true; }
+      }
+    }
+  } // end height adjustments
+
+  FORS (i, h_n) height[i] *= GameConst::HEIGHT_MULT;
+
+  // from here on: heights are multiples of GameConst::HEIGHT_MULT
+  // or at half-heights (ramps)
+  FORS (i, h_n) {
+
+    sint4 x = i % h_x;
+    sint4 y = i / h_x;
+
+    if (x == h_x-1 || y == h_y-1) continue;
+
+    //    cout << height[i] << " ";
+    
+    sint4 h[4];
+    
+    h[0] = height[i];
+    h[1] = height[i+1];
+    h[2] = height[i+h_x+1];
+    h[3] = height[i+h_x];
+
+    Tile &tile = map_data.get_tile(x, y);
+
+    tile.set_topo(h[0], h[1], h[2], h[3], Tile::NO_SPLIT);
+    tile.set_type(GROUND);
+
+    assert(x >= 0 && x < tiles_x);	
+    assert(y >= 0 && y < tiles_y);
+    
+    // equal heights -> regular ground tile
+    
+    if (h[0] == h[1] && h[0] == h[2] && h[0] == h[3]) {
+
+      tile.set_topo(h[0], h[1], h[2], h[3], Tile::NO_SPLIT);
+      tile.set_type(GROUND);
+      continue;
+    }
+
+    // enable this for ridges, etc. -sw
+    if (true) { 
+      // 3 equal heights -> split
+      //  - make equal height GROUND triangle and the other CLIFF or
+      //  - create ridge
+      if (true) {
+        if ((h[0] == h[1] && h[1] == h[2]) ||
+            (h[0] == h[1] && h[1] == h[3]) ||
+            (h[0] == h[2] && h[2] == h[3]) ||
+            (h[1] == h[2] && h[2] == h[3])) {
+
+          sint4 i;
+          FOR (i, 4) {
+            if (h[i] != h[(i+1)&3] && h[i] != h[(i+2)&3]) break;
+          }
+
+          if (1 || (rand.rand_uint4() & 8)) {
+
+            // equal height triangle
+            
+            if (i == 0 || i == 2) {  // |/|
+              tile.set_topo(h[0], h[1], h[2], h[3], Tile::BT_SPLIT);
+            } else { // |\|
+              tile.set_topo(h[0], h[1], h[2], h[3], Tile::TB_SPLIT);
+            }
+              
+            if (i == 0 || i == 3) tile.set_type(CLIFF, GROUND); // west CLIFF
+            else                  tile.set_type(GROUND, CLIFF); // east CLIFF
+
+          } 
+          else {
+            // ridge
+
+            if (i == 0 || i == 2) {  // |\|
+              tile.set_topo(h[0], h[1], h[2], h[3], Tile::TB_SPLIT);
+            } 
+            else { // |/|
+              tile.set_topo(h[0], h[1], h[2], h[3], Tile::BT_SPLIT);
+            }
+
+            tile.set_type(CLIFF, CLIFF);
+          }
+          assert(x >= 0 && x < tiles_x);	
+          assert(y >= 0 && y < tiles_y);
+          bad[y*tiles_x+x] = 1;
+          continue;
+        }
+      }
+
+      
+      // 2 and 2 equal heights -> full CLIFF tile
+      
+      if (true) {
+        sint4 i;
+        FOR (i, 4) {
+          if (h[i] == h[(i+1) & 3] && h[(i+2) & 3] == h[(i+3) & 3]) break;
+        }
+        
+        if (i < 4) {
+          tile.set_topo(h[0], h[1], h[2], h[3], Tile::NO_SPLIT);
+          // small chance of ramp
+          if (rand.rand_uint4() % 100 < 15) tile.set_type(GROUND);
+          else                              tile.set_type(CLIFF);
+
+          assert(x >= 0 && x < tiles_x);	
+          assert(y >= 0 && y < tiles_y);
+          bad[y*tiles_x+x] = 1;
+          continue;
+        }
+      }
+
+      // otherwise: random CLIFF/CLIFF split
+
+      if (true) {
+        tile.set_type(CLIFF, CLIFF);
+    
+        if (rand.rand_uint4() & 8) {
+          tile.set_topo(h[0], h[1], h[2], h[3], Tile::BT_SPLIT);
+        } 
+        else {
+          tile.set_topo(h[0], h[1], h[2], h[3], Tile::TB_SPLIT);
+        }
+
+        assert(x >= 0 && x < tiles_x);	
+        assert(y >= 0 && y < tiles_y);
+        bad[y*tiles_x+x] = 1;
+      }
+    } // end disabled block for ridges
+
+  }
+
+  if (rotate) {
+    FORS (i, tile_n) {
+      sint4 x = i % tiles_x;
+      sint4 y = i / tiles_x;
+
+      if ((x + y < gtiles_y-1) ||
+          (tiles_x - x + tiles_y - y < gtiles_y+1) ||
+          (tiles_x - x + y < gtiles_x) ||
+          (x + tiles_y - y < gtiles_x)) {
+        map_data(x,y).set_type(Tile::UNKNOWN);
+      }
+    }
+  }
+
+  FORS (i, tile_n) {
+    sint4 x = i % tiles_x;
+    sint4 y = i / tiles_x;
+
+    Tile &t = map_data.get_tile(i);
+    Tile::Type tw, te;
+    Tile::Split split;
+    t.get_type(tw, te);
+    sint4 h0, h1, h2, h3;
+    t.get_topo(h0, h1, h2, h3, split);
+
+    if (split == Tile::NO_SPLIT && tw != CLIFF && (h0 != h3 || h0 != h1)) {
+      // ramp
+
+      if (h0 != h3) {
+        // | ramp
+
+        if (x > 0) {  // extend left
+          Tile &t = map_data.get_tile(x-1, y);
+          t.get_type(tw, te);
+          t.get_topo(h0, h1, h2, h3, split);
+
+          if (rand.rand_uint4() % 100 < 50 && te == CLIFF) {
+            if (split) t.set_type(tw, GROUND);
+            else       t.set_type(GROUND, GROUND);
+          }
+        }
+        
+        if (x < tiles_x-1) {  // extend right
+          Tile &t = map_data.get_tile(x+1, y);
+          t.get_type(tw, te);
+          t.get_topo(h0, h1, h2, h3, split);
+
+          if (rand.rand_uint4() % 100 < 50 && tw == CLIFF) {
+            if (split) t.set_type(GROUND, te);
+            else       t.set_type(GROUND, GROUND);
+          }
+        }
+
+      } 
+      else {
+
+        // - ramp
+
+        if (y > 0) {  // extend up
+          Tile &t = map_data.get_tile(x, y-1);
+          t.get_type(tw, te);
+          t.get_topo(h0, h1, h2, h3, split);
+
+          if (rand.rand_uint4() % 100 < 50 &&
+              ((!split && tw == CLIFF) ||                    // | |
+              (split == Tile::TB_SPLIT && tw == CLIFF) ||   // |\|
+              (split == Tile::BT_SPLIT && te == CLIFF))) {  // |/|
+
+            if   (!split)                     t.set_type(GROUND, GROUND);
+            else if (split == Tile::TB_SPLIT) t.set_type(GROUND, te);
+            else                              t.set_type(tw, GROUND);
+          }
+        }
+        
+        if (y < tiles_y-1) {  // extend down
+          Tile &t = map_data.get_tile(x, y+1);
+          t.get_type(tw, te);
+          t.get_topo(h0, h1, h2, h3, split);
+
+          if (rand.rand_uint4() % 100 < 50 &&
+              ((!split && tw == CLIFF) ||                    // | |
+              (split == Tile::TB_SPLIT && te == CLIFF) ||   // |\|
+              (split == Tile::BT_SPLIT && tw == CLIFF))) {  // |/|
+
+            if   (!split   )                  t.set_type(GROUND, GROUND);
+            else if (split == Tile::TB_SPLIT) t.set_type(tw, GROUND);
+            else                              t.set_type(GROUND, te);
+          }
+        }
+      }
+    }
+  }
+  
+  if (water) {
+
+    // create lakes
+    FORS (i, 20) {
+      const sint4 D = 5;
+      sint4 x, y;
+      Tile::Type tw, te;
+      do {
+        x = rand.rand_uint4() % (tiles_x-D);
+        y = rand.rand_uint4() % (tiles_y-D);
+        map_data(x,y).get_type(tw, te);
+      } 
+      while (!map_data(x,y).is_flat() || map_data(x,y).get_min_h() != 0 || tw == Tile::UNKNOWN);
+
+      FORS (dx, D) {
+        FORS (dy, D) {
+          if (!map_data(x+dx, y+dy).is_flat()) break;
+          if (map_data(x+dx, y+dy).get_min_h() != map_data(x,y).get_min_h()) break;
+          map_data(x+dx, y+dy).set_type(WATER);
+        }
+      }
+    }
+
+    // smooth corners
+    for (sint4 y = 1; y < tiles_y-2; y++) {
+      for (sint4 x = 1; x < tiles_x-2; x++) {
+        
+        Tile::Type a, b;
+        map_data(x,y).get_type(a, b);
+
+        if (a == b && b == WATER) {
+          // sint4 h[4];
+          // Tile::Split split;
+
+          if (map_data(x, y-1).get_typeS() != WATER &&
+              map_data(x-1, y).get_typeE() != WATER &&
+              map_data(x, y+1).get_typeN() == WATER &&
+              map_data(x+1, y).get_typeW() == WATER)
+          {
+              map_data(x,y).set_type(GROUND, WATER, Tile::BT_SPLIT);
+          }
+          if (map_data(x, y+1).get_typeN() != WATER &&
+              map_data(x+1, y).get_typeW() != WATER &&
+              map_data(x, y-1).get_typeS() == WATER &&
+              map_data(x-1, y).get_typeE() == WATER)
+          {
+              map_data(x,y).set_type(WATER, GROUND, Tile::BT_SPLIT);
+          }
+          if (map_data(x, y+1).get_typeN() != WATER &&
+              map_data(x-1, y).get_typeE() != WATER &&
+              map_data(x, y-1).get_typeS() == WATER &&
+              map_data(x+1, y).get_typeW() == WATER)
+          {
+              map_data(x,y).set_type(GROUND, WATER, Tile::TB_SPLIT);
+          }
+          if (map_data(x, y-1).get_typeS() != WATER &&
+              map_data(x+1, y).get_typeW() != WATER &&
+              map_data(x, y+1).get_typeN() == WATER &&
+              map_data(x-1, y).get_typeE() == WATER)
+          {
+              map_data(x,y).set_type(WATER, GROUND, Tile::TB_SPLIT);
+          }
+        }
+      }
+    }
+  }
+
+  world << "<TILES>" << endl;
+  map_data.write(world);
+  world << "</TILES>" << endl;
+
+  // mark the tiles on the boundary, stop object creation there
+
+  if (rotate) {
+
+    FORS (i, tile_n) {
+      sint4 x = i % tiles_x;
+      sint4 y = i / tiles_x;
+
+      if ((x + y <= gtiles_y-1) ||
+          (tiles_x - x + tiles_y - y <= gtiles_y+1) ||
+          (tiles_x - x + y <= gtiles_x) ||
+          (x + tiles_y - y <= gtiles_x))
+      { bad[i] = 1; continue; }
+    }
+  }
+
+  string fname = opt.bp_file;
+  fname = sanitize_path(fname);
+  parse_map_include(world, fname);
+
+  world << "<OBJECTS>\n";
+
+  sint4 tile_points = GameConst::TILE_POINTS;  // fixme: should depend on game instance
+
+
+#if 0
+not valid code here anymore, but these are the units:
+    Vector<string> units;
+    units.push_back("bunker");
+    units.push_back("barracks");
+    units.push_back("mechBay");
+    units.push_back("airBase");
+    units.push_back("airTower");
+    units.push_back("extractor");
+    units.push_back("academy");
+    units.push_back("supplyCache");
+    units.push_back("comsat");
+    units.push_back("engineering");
+    units.push_back("factory_shop");
+    units.push_back("theoretical_lab");
+    units.push_back("phys_ext");
+    units.push_back("inf_ext");
+    units.push_back("armory");
+    units.push_back("nukeSilo");
+    units.push_back("turret");
+    units.push_back("controlCenter");
+
+    units.push_back("marine");
+    units.push_back("spy");
+    units.push_back("medic");
+    units.push_back("toaster");
+    units.push_back("mech");
+    units.push_back("hoverbike");
+    units.push_back("tank");
+
+    units.push_back("flyingLab");
+    units.push_back("dropship");
+    units.push_back("striker");
+
+
+    units.push_back("xenopsyl_nest");
+    units.push_back("wyrmhole");
+    units.push_back("mutator");
+    units.push_back("reservoir");
+    units.push_back("hive");
+    units.push_back("nursery");
+    units.push_back("mound");
+    units.push_back("tor");
+    units.push_back("citadel");
+
+    units.push_back("vector");
+    units.push_back("invicor");
+    units.push_back("crenator");
+    units.push_back("chalcix");
+    units.push_back("xenopsyl");
+    units.push_back("hercantus");
+
+    units.push_back("hylecoete");
+    units.push_back("acherops");
+    units.push_back("myrmec");
+#endif
+#if 0
+  // create a mineral patch close to the control center
+  if (tiles_x > 40 && tiles_y > 60) {
+    sint4 x0,y0;
+    x0 = 24;
+    y0 = 24;
+
+    FORS (j, 10) {
+      sint4 x = x0 - 2 + rand.rand_uint4() % 5;
+      sint4 y = y0 - 2 + rand.rand_uint4() % 5;
+      if (x < 1 || x >= tiles_x-1) continue;
+      if (y < 1 || y >= tiles_y-1) continue;
+
+      FORU (u, 3) {
+        FORU (v, 3) {
+          bad[(x-1+u) + tiles_x*(y-1+v)] = 2;
+        }
+      }
+
+      world << "mineral" << endl;
+      world << "<INT_ATTR>" << endl;
+      world << "owner " << num_players << endl;
+      world << "x " << x * tile_points - 6 + rand.rand_uint4() % 13 << endl;
+      world << "y " << y * tile_points - 6 + rand.rand_uint4() % 13 << endl;
+      world << "</INT_ATTR>" << endl;
+    }
+
+    FORU (i, 16) {
+      FORU (j, 16) {
+        bad[i + tiles_x*j] = 32; // freespace
+      }
+    }
+  }
+#endif
+
+
+  // create random clusters of minerals
+
+#if 1
+
+  FORS (i, mineral_cluster_count) {
+    sint4 x0, y0;
+    sint4 t = rand.rand_uint4() % tile_n;
+    x0 = t % tiles_x;
+    y0 = t / tiles_y;
+    if (bad[t] & ~2) { --i; continue; }
+
+    int fail_count = 0;
+    FORS (j, 10) {
+      if (fail_count >= 100) {
+        break;
+      }
+      sint4 x = x0 - 1 + rand.rand_uint4() % 3;
+      sint4 y = y0 - 1 + rand.rand_uint4() % 3;
+      if (x < 1 || x >= tiles_x-1) {
+        fail_count++;
+        j--;
+        continue;
+      }
+      if (y < 1 || y >= tiles_y-1) {
+        fail_count++;
+        j--;
+        continue;
+      }
+      bool can_use = true;
+      FORU (u, 3) {
+        FORU (v, 3) {
+          if (bad[(x-1+u) + tiles_x*(y-1+v)] & ~2) can_use = false;
+        }
+      }
+
+      if (!can_use) {
+        fail_count++;
+        j--;
+        continue;
+      }
+
+      FORU (u, 3) {
+        FORU (v, 3) {
+          bad[(x-1+u) + tiles_x*(y-1+v)] = 2;
+        }
+      }
+
+      world << "mineral" << endl;
+      world << "<INT_ATTR>" << endl;
+      world << "owner " << num_players << endl;
+      world << "x " << x * tile_points - 6 + rand.rand_uint4() % 13 << endl;
+      world << "y " << y * tile_points - 6 + rand.rand_uint4() % 13 << endl;
+      world << "</INT_ATTR>" << endl;
+    }
+  }
+#endif
+
+  // create random geysers
+#if 0
+  FORS (i, 10) {
+    sint4 x0, y0;
+    sint4 t = rand.rand_uint4() % tile_n;
+    x0 = t % tiles_x;
+    y0 = t / tiles_y;
+    if (bad[t] & ~4) continue;
+
+    FORS (j, 10) {
+      sint4 x = x0 - 2 + rand.rand_uint4() % 5;
+      sint4 y = y0 - 2 + rand.rand_uint4() % 5;
+      if (x < 1 || x >= tiles_x-1) continue;
+      if (y < 1 || y >= tiles_y-1) continue;
+      bool can_use = true;
+      FORU (u, 3) {
+        FORU (v, 3) {
+          if (bad[(x-1+u) + tiles_x*(y-1+v)]) can_use = false;
+        }
+      }
+      if (!can_use) continue;
+      FORU (u, 3) {
+        FORU (v, 3) {
+          bad[(x-1+u) + tiles_x*(y-1+v)] = 4;
+        }
+      }
+      world << "geyser" << endl;
+      world << "<INT_ATTR>" << endl;
+      world << "owner " << num_players << endl;
+      world << "x " << x * tile_points - 6 + rand.rand_uint4() % 13 << endl;
+      world << "y " << y * tile_points - 6 + rand.rand_uint4() % 13 << endl;
+      world << "</INT_ATTR>" << endl;
+    }
+  }
+#endif
+
+  // place units for all but the last player
+  if (observer == false) {
+    num_players++;
+  }
+  if (home_bases) { 
+    FORU (p, num_players-1) {
+      sint4 x0, y0;
+      sint4 t = rand.rand_uint4() % tile_n;
+      x0 = t % tiles_x;
+      y0 = t / tiles_y;
+      if (bad[t]) { --p; continue; }
+      int fail_count = 0;
+      FORS (i, units.size()) {
+        if (fail_count >= 100) {
+          sint4 r;
+          do { r = rand.rand_uint4() % tile_n; } while (bad[r]);
+          bad[r] = 1;
+          place_unit(world, units.at(i), p, r % tiles_x, r / tiles_x);
+          break;
+        }
+        sint4 x = x0 - 2 + rand.rand_uint4() % 5;
+        sint4 y = y0 - 2 + rand.rand_uint4() % 5;
+        if (x < 1 || x >= tiles_x-1) {
+          fail_count++;
+          i--;
+          continue;
+        }
+        if (y < 1 || y >= tiles_y-1) {
+          fail_count++;
+          i--;
+          continue;
+        }
+        if (bad[x + tiles_x*y]) {
+          i--;
+          continue;
+        }
+       
+        bad[x + tiles_x*y] = 1;
+        place_unit(world, units.at(i), p, x, y);
+      }
+    }
+  }
+  else {
+    // no base clustering
+    FORU (p, num_players-1) {
+      FORS (i, units.size()) {
+        sint4 r;
+        do { r = rand.rand_uint4() % tile_n; } while (bad[r]);
+        bad[r] = 1;
+        place_unit(world, units.at(i), p, r % tiles_x, r / tiles_x);
+      }
+    }
+  }
+  
+  if (observer) {
+    // make the last player an observer- used for monitoring the game
+    place_unit(world, "flyingLab", num_players-1, (int)(tiles_x/4), (int)(tiles_y/4));
+    place_unit(world, "flyingLab", num_players-1, (int)(3*(tiles_x/4.0)), (int)(tiles_y/4));
+    place_unit(world, "flyingLab", num_players-1, (int)(tiles_x/4), (int)(3*(tiles_y/4.0)));
+    place_unit(world, "flyingLab", num_players-1, (int)(3*(tiles_x/4.0)), (int)(3*(tiles_y/4.0)));
+  }
+
+  // create random clusters of trees
+  sint4 trees_per_cluster = 10;
+
+  FORS (i, tree_cluster_count) {
+    sint4 x0,y0;
+    sint4 t = rand.rand_uint4() % tile_n;
+    x0 = t % tiles_x;
+    y0 = t / tiles_y;
+    if (bad[t] & ~(1 | 8)) { --i; continue; }
+    
+    int fail_count = 0;
+
+    FORS (j, trees_per_cluster) {
+      if (fail_count >= 100) {
+        break;
+      }
+      sint4 x = x0 - 1 + rand.rand_uint4() % 3;
+      sint4 y = y0 - 1 + rand.rand_uint4() % 3;
+      if (x < 1 || x >= tiles_x-1) {
+        fail_count++;
+        j--;
+        continue;
+      }
+      if (y < 1 || y >= tiles_y-1) {
+        fail_count++;
+        j--;
+        continue;
+      }
+      bool can_use = true;
+
+      FORU (u, 3) {
+        FORU (v, 3) {
+          if (bad[(x-1+u) + tiles_x*(y-1+v)] & ~(1 | 8)) can_use = false;
+        }
+      }
+      if (!can_use) {
+        fail_count++;
+        j--;
+        continue;
+      }
+
+      FORU (u, 3) {
+        FORU (v, 3) {
+          bad[(x-1+u) + tiles_x*(y-1+v)] = 8;
+        }
+      }
+      world << "tree" << endl;
+      world << "<INT_ATTR>" << endl;
+      world << "owner " << num_players << endl;
+      world << "x " << x * tile_points - 6 + rand.rand_uint4() % 13 << endl;
+      world << "y " << y * tile_points - 6 + rand.rand_uint4() % 13 << endl;
+      world << "</INT_ATTR>" << endl;
+    }
+  }
+  
+  world << "</OBJECTS>\n";
+}
+
