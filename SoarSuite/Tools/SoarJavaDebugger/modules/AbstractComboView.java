@@ -708,7 +708,7 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 		
 		if (m_StopCallback == -1)
 		{
-			// Update on stop and on init-soar
+			// Update on stop, init-soar or when we make a new connection
 			m_StopCallback	= agent.GetKernel().RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, this, this) ;
 			m_InitCallback  = agent.GetKernel().RegisterForAgentEvent(smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED, this, this) ;
 		}
@@ -735,6 +735,10 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 		}
 		
 		registerForViewAgentEvents(agent) ;
+		
+		// If this is a new remote connection, update windows marked for auto updating.
+		if (m_UpdateOnStop && m_Document.isConnected() && m_Document.isRemote())
+			updateNow() ;
 	}
 	
 	/** Agent gone, so clear any callback references we have (we can't unregister because agent object already destroyed) */
@@ -760,7 +764,7 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 
 		if (m_InitCallback != -1)
 			ok = agent.GetKernel().UnregisterForAgentEvent(m_InitCallback) && ok ;
-		
+				
 		if (m_PrintCallback != -1)
 			ok = agent.UnregisterForPrintEvent(m_PrintCallback) && ok ;
 		

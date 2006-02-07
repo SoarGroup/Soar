@@ -251,6 +251,9 @@ char const* KernelSML::ConvertEventToString(int id)
 void KernelSML::AddConnection(Connection* pConnection)
 {
 	m_pConnectionManager->AddConnection(pConnection) ;
+
+	// Notify listeners that we have a new connection.
+	m_SystemListener.HandleEvent(gSKIEVENT_AFTER_CONNECTION, GetKernel()) ;
 }
 
 /*************************************************************
