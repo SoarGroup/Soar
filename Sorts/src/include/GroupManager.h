@@ -35,7 +35,7 @@ struct objectGroupingStruct {
   SoarGameObject* object;
   SoarGameGroup* group;
   bool assigned;
-  double x,y;
+  int x,y;
 };
 
 #endif // GroupManager_h

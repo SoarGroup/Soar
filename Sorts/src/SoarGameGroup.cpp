@@ -12,6 +12,12 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit) {
   staleInSoar = true;
   type = 0;
   centerMember = unit;
+#ifndef DEBUG_GROUPS  
+  typeName = unit->gameObj->bp_name();
+#else
+  typeName = "unknown";
+#endif
+
 }
 
 void SoarGameGroup::addUnit(SoarGameObject* unit) {
@@ -20,6 +26,7 @@ void SoarGameGroup::addUnit(SoarGameObject* unit) {
   
   assert(members.find(unit) == members.end());
   members.insert(unit); 
+  unit->setGroup(this);
   stale = true;
 }
 
@@ -57,12 +64,13 @@ void SoarGameGroup::updateStats(bool saveProps) {
     // be careful is some numbers are very big for each object and the double could overflow
     
   //  health += *currentObject.getHealth();
-  //  x += *currentObject.getX();
-  //  y += *currentObject.getY();
-//#ifdef DEBUG_GROUPS 
-    x += *(*currentObject)->gob->sod.x;
-    y += *(*currentObject)->gob->sod.y;
-//#endif
+#ifdef DEBUG_GROUPS 
+    x += (*currentObject)->x;
+    y += (*currentObject)->y;
+#else
+    x += *(*currentObject)->gameObj->sod.x;
+    y += *(*currentObject)->gameObj->sod.y;
+#endif
     currentObject++;
   }
   
@@ -92,19 +100,36 @@ void SoarGameGroup::updateStats(bool saveProps) {
     wme.second = (int)size;
     propList.push_back(wme);
     
+    wme.first = "type";
+    wme.second = 0;
+    if (typeName == "worker") {
+      wme.second = 1;
+    }
+    propList.push_back(wme);
+    
     staleInSoar = true;
     stale = false;
   }
   
   // center member calculation- is there a way to do a running calc above?
+  #ifdef DEBUG_GROUPS
   double shortestDistance 
-        = squaredDistance(x, y, *centerMember->gob->sod.x, *centerMember->gob->sod.y);
+        = squaredDistance(x, y, centerMember->x, centerMember->y);
+  #else
+  double shortestDistance 
+        = squaredDistance(x, y, *centerMember->gameObj->sod.x, *centerMember->gameObj->sod.y);
+  #endif
 
   double currentDistance;
   currentObject = members.begin();
   while (currentObject != members.end()) {
+    #ifdef DEBUG_GROUPS
     currentDistance = squaredDistance(x, y, 
-                      *(*currentObject)->gob->sod.x, *(*currentObject)->gob->sod.y);
+                      (*currentObject)->x, (*currentObject)->y);
+    #else
+    currentDistance = squaredDistance(x, y, 
+                      *(*currentObject)->gameObj->sod.x, *(*currentObject)->gameObj->sod.y);
+    #endif
     if (currentDistance < shortestDistance) {
       shortestDistance = currentDistance;
       centerMember = *currentObject;
@@ -120,6 +145,10 @@ void SoarGameGroup::mergeTo(SoarGameGroup* target) {
 
   // the group should be destructed after this is called.
 
+  if (target == this) {
+    cout << "WARNING: merge of group to self requested. Ignoring." << endl;
+    return;
+  }
   
   set<SoarGameObject*>::iterator currentObject = members.begin();
   
@@ -137,13 +166,22 @@ void SoarGameGroup::mergeTo(SoarGameGroup* target) {
 
 bool SoarGameGroup::assignAction(SoarActionType type, list<int> params){ 
   bool result = true;
+
+  list<int>::iterator listIt = params.begin();
+  
+  Vector<sint4> tempVec;
+  tempVec.push_back(*listIt);
+  listIt++;
+  tempVec.push_back(*listIt);
+  tempVec.push_back(3);
   
   set<SoarGameObject*>::iterator currentObject = members.begin();
   
   while (currentObject != members.end()) {
-    //result &= (*currentObject)->issueCommand(type, params);
+    result &= (*currentObject)->issueCommand("Move", tempVec);
     currentObject++;
   }
+  return result;
 }
 
 bool SoarGameGroup::isEmpty() {

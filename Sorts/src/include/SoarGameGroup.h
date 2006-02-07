@@ -3,6 +3,7 @@
 
 #include <list>
 #include <set>
+#include <string>
 #include "constants.h"
 #include "SoarAction.h"
 
@@ -53,6 +54,7 @@ class SoarGameGroup {
     // needs a refresh-- either refresh it or remove it from Soar ASAP
 
     int type;
+    string typeName;
     
     SoarGameObject* centerMember;
 };

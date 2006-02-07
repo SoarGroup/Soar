@@ -24,7 +24,7 @@ bool GroupManager::assignActions() {
   // through the SoarIO, look for any new actions, and assign them to groups
     
   list <SoarAction*> newActions;
-  SoarIO->getNewActions(newActions);
+  newActions = SoarIO->getNewActions();
   list <SoarAction*>::iterator actionIter = newActions.begin();
  
   list <SoarGameGroup*>::iterator groupIter;
@@ -56,7 +56,7 @@ void GroupManager::reGroup() {
   //      if objs are close and obj2 flagged, merge obj1's group -> obj2's group 
 
   // this should really come from the attention code
-  double groupingDistanceSquared = 100;
+  double groupingDistanceSquared = 10000;
   
   set<int>::iterator typeIter = staleGroupTypes.begin();
   objectGroupingStruct objectData;
@@ -77,6 +77,9 @@ void GroupManager::reGroup() {
   while (typeIter != staleGroupTypes.end()) {
     groupingList.clear();
     groupIter = groupsInFocus.begin();
+    if (groupIter == groupsInFocus.end()) {
+      groupIter = groupsNotInFocus.begin();
+    }
     while (groupIter != groupsNotInFocus.end()){
       // not a typo- loop will jump between lists
       if ((*groupIter)->getType() == *typeIter) {
@@ -87,13 +90,12 @@ void GroupManager::reGroup() {
         centerObject = (*groupIter)->getCenterMember();
     
         // centers are stored in a separate list
-      //  objectData.object = centerObject;
-      //  objectData.x = centerObject->x;
-      //  objectData.y = centerObject->y;
+        objectData.object = centerObject;
+        objectData.x = centerObject->x;
+        objectData.y = centerObject->y;
         
-     //   centerGroupingList.push_back(objectData);
-        
-    /*    groupMembers = (*groupIter)->getMembers();
+        centerGroupingList.push_back(objectData);
+        groupMembers = (*groupIter)->getMembers();
         objectIter = groupMembers.begin();
         while (objectIter != groupMembers.end()) {
           if ((*objectIter) != centerObject){
@@ -104,7 +106,7 @@ void GroupManager::reGroup() {
             groupingList.push_back(objectData);
           }
           objectIter++;
-        }*/
+        }
       }
       // else it was a group of a different type
       
@@ -120,11 +122,15 @@ void GroupManager::reGroup() {
     
     // now follow the grouping procedure as outlined above
     bool obj1IsACenter = true;
-    
     list<objectGroupingStruct>::iterator obj1StructIter, obj2StructIter;
     objectGroupingStruct obj1Struct;
     
     obj1StructIter = centerGroupingList.begin();
+    if (obj1StructIter == centerGroupingList.end()) {
+      // this really should not happen
+      obj1StructIter = groupingList.begin();
+      obj1IsACenter = false;
+    }
     while (obj1StructIter != groupingList.end()) {
       obj1Struct = *obj1StructIter;
       
@@ -159,8 +165,15 @@ void GroupManager::reGroup() {
           else {
             // obj2 has not been assigned. Assign it to obj1's group.
             (*obj2StructIter).assigned = true;
+            (*obj2StructIter).group->removeUnit((*obj2StructIter).object);
             (*obj2StructIter).group = obj1Struct.group;
+            (*obj2StructIter).group->addUnit((*obj2StructIter).object);
+            
           }
+          //cout << "grouped!" << endl;
+        }
+        else {
+          //cout << "not grouped!" << endl;
         }
         obj2StructIter++; 
         if (obj2StructIter == centerGroupingList.end()) {
@@ -168,6 +181,7 @@ void GroupManager::reGroup() {
         }
       }
       // jump the iterator between the two lists
+      obj1StructIter++;
       if (obj1StructIter == centerGroupingList.end()) {
         obj1StructIter = groupingList.begin();
         obj1IsACenter = false;
@@ -180,7 +194,7 @@ void GroupManager::reGroup() {
   
   list<pair<SoarGameGroup*, SoarGameGroup*> >::iterator toMergeIter;
   list<pair<SoarGameGroup*, SoarGameGroup*> >::iterator toMergeIter2;
-/*
+
   // if two groups merge, we need to ensure that the subsumed group
   // does not have any outstanding merges
   toMergeIter = toMergeList.begin();
@@ -230,7 +244,7 @@ void GroupManager::reGroup() {
     
     toMergeIter++;
   }
-  */
+  
 #endif
   return;
 }
