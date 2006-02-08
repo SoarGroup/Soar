@@ -3,7 +3,7 @@
 
 IdleFSM::IdleFSM()
 {
- name = "Idle";
+ name = SA_IDLE;
 }
 
 IdleFSM::~IdleFSM()

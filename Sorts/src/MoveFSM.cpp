@@ -4,7 +4,7 @@
 MoveFSM::MoveFSM()
 {
  state = IDLE;
- name = "Move";
+ name = SA_MOVE;
  gob = NULL;
 }
 
