@@ -30,7 +30,7 @@ class FSM{
 	virtual void setParams(std::vector<sint4>);
 
  //private:
-	SoarActionType name;
+	string name;
 	GameObj *gob;
 	Vector<sint4> params;
 };
