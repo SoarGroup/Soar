@@ -45,6 +45,7 @@ void display_input_link(istringstream& command);
 void spawn_debugger(istringstream& command);
 void connect_remotely(istringstream& command);
 void create_local_kernel(istringstream& command);
+void catch_init_call(istringstream& command);
 
 // helper functions
 void create_identifier(const string& id, const string& att, string value);
@@ -155,6 +156,7 @@ void load_command_map(command_map_t& command_map)
 	command_map["DEBUG"] = spawn_debugger;
 	command_map["REMOTE"] = connect_remotely;
 	command_map["LOCAL"] = create_local_kernel;
+	command_map["INIT"] = catch_init_call;
 }
 
 // command map functions
@@ -363,6 +365,13 @@ void create_local_kernel(istringstream& command)
 	QL_Interface::instance().create_new_kernel();
 	QL_Interface::instance().setup_input_link("IL");
 	acquiring_new_connection = false;
+}
+
+// we must do this to avoid an assertion
+void catch_init_call(istringstream& command)
+{
+	QL_Interface::instance().commit();
+	QL_Interface::instance().soar_command_line("init");
 }
 
 
