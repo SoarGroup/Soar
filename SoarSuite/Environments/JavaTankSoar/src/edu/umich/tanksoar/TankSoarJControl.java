@@ -1314,7 +1314,7 @@ public class TankSoarJControl extends SimulationControl implements
 					if (t != null) {
 						t.setKernel(kernel);
 						t.attachSoarCode(infile);
-						spawnDebugger(t.getName());
+						spawnDebugger(kernel.GetLibraryLocation(), t.getName());
 					} else {
 						TankSoarLogger
 								.log("\t't' was null after createTank call!");
@@ -1333,7 +1333,7 @@ public class TankSoarJControl extends SimulationControl implements
 				if (newTank != null) {
 					newTank.setKernel(kernel);
 					newTank.attachSoarCode(infile);
-					spawnDebugger(newTank.getName());
+					spawnDebugger(kernel.GetLibraryLocation(), newTank.getName());
 				}
 				return newTank;
 			}
@@ -1347,26 +1347,6 @@ public class TankSoarJControl extends SimulationControl implements
 		return (null);
 	}
 
-	/* Create only one debugger, the rest will be created by the debugger */
-	private static boolean debuggerCreated = false;
-	protected void spawnDebugger(String agentName) {
-		// Spawn debugger once
-		if (debuggerCreated == false) {
-			Runtime r = java.lang.Runtime.getRuntime();
-			try {
-				r.exec("java -jar " + kernel.GetLibraryLocation() 
-					+ System.getProperty("file.separator") + "bin"
-					+ System.getProperty("file.separator") + "SoarJavaDebugger.jar -remote -agent "
-					+ agentName);
-			} catch (java.io.IOException e) {
-				JOptionPane.showMessageDialog(null, "IOException spawning debugger", "Eaters",
-		                JOptionPane.ERROR_MESSAGE);
-				System.exit(-1);			
-			}
-			debuggerCreated = true;
-		}		
-	}
-		
 	/**
 	 * Creates a <code>Tank</code> using the specified *.stank file, which can
 	 * deterimine the <code>Tank</code>'s <code>location</code>,
