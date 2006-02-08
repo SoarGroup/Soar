@@ -425,7 +425,9 @@ public class EaterControl extends SimulationControl implements
 								"Eaters", JOptionPane.ERROR_MESSAGE);
 						System.exit(-1);
 					}
-					spawnDebugger(kernel.GetLibraryLocation(), t.getName());
+					if (!commandLine.noDebuggerSpawn) {
+						spawnDebugger(kernel.GetLibraryLocation(), t.getName());
+					}
 					return (t);
 				}//try
 				catch (NullPointerException e) {
@@ -441,7 +443,9 @@ public class EaterControl extends SimulationControl implements
 			} else if (name.toLowerCase().endsWith(".seater")) {
 
 				Eater t = createEater(infile);
-				spawnDebugger(kernel.GetLibraryLocation(), t.getName());
+				if (!commandLine.noDebuggerSpawn) {
+					spawnDebugger(kernel.GetLibraryLocation(), t.getName());
+				}
 				return t;
 			}
 		} catch (NullPointerException e) {
