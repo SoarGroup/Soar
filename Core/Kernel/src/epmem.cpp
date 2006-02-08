@@ -737,7 +737,7 @@ int wme_has_value(wme *w, char *attr_name, char *value_name)
 }//wme_has_value
 
 /* ===================================================================
-   get_augs_of_id()
+   epmem_get_augs_of_id()
 
    This routine works just like the one defined in utilities.h.
    Except this one does not use C++ templates because I think they
@@ -746,7 +746,7 @@ int wme_has_value(wme *w, char *attr_name, char *value_name)
    
    Created (sort of): 25 Jan 2006
    =================================================================== */
-wme **get_augs_of_id(agent* thisAgent, Symbol * id, tc_number tc, int *num_attr)
+wme **epmem_get_augs_of_id(agent* thisAgent, Symbol * id, tc_number tc, int *num_attr)
 {
    slot *s;
    wme *w;
@@ -824,7 +824,7 @@ wme *get_aug_of_id(agent *thisAgent, Symbol *sym, char *attr_name, char *value_n
     wme *ret_wme = NULL;
     
     tc = sym->id.tc_num + 1;
-    wmes = get_augs_of_id(thisAgent, sym, tc, &len);
+    wmes = epmem_get_augs_of_id(thisAgent, sym, tc, &len);
     sym->id.tc_num = tc - 1;
     if (wmes == NULL) return NULL;
 
@@ -873,7 +873,7 @@ void retrieve_all_child_wmes(agent *thisAgent,
         pos++;
         
         start_timer(thisAgent, &(thisAgent->epmem_getaugs_start_time));
-        wmes = get_augs_of_id(thisAgent,  sym, tc, &len );
+        wmes = epmem_get_augs_of_id(thisAgent,  sym, tc, &len );
         stop_timer(thisAgent, &(thisAgent->epmem_getaugs_start_time), &(thisAgent->epmem_getaugs_total_time));
 
         if (wmes != NULL)
@@ -994,10 +994,10 @@ preference *make_fake_preference_for_epmem_wme(agent *thisAgent, epmem_header *h
     {
         wme *cue_wme = (wme *)get_arraylist_entry(thisAgent, query, i);
 
-        //%%%DEBUGGING
-        print(thisAgent, "\n Condition #%d: ", i);
-        print_with_symbols(thisAgent, "(%y %y %y)",
-                           cue_wme->id, cue_wme->attr, cue_wme->value);
+//          //%%%DEBUGGING
+//          print(thisAgent, "\n Condition #%d: ", i);
+//          print_with_symbols(thisAgent, "(%y %y %y)",
+//                             cue_wme->id, cue_wme->attr, cue_wme->value);
         
         //Construct the condition
         allocate_with_pool(thisAgent, &(thisAgent->condition_pool), &cond);
@@ -1606,7 +1606,7 @@ Symbol *update_wmetree(agent *thisAgent,
     while(pos <= epmem->size)
     {
         start_timer(thisAgent, &(thisAgent->epmem_getaugs_start_time));
-        wmes = get_augs_of_id(thisAgent,  sym, tc, &len );
+        wmes = epmem_get_augs_of_id(thisAgent,  sym, tc, &len );
         stop_timer(thisAgent, &(thisAgent->epmem_getaugs_start_time), &(thisAgent->epmem_getaugs_total_time));
 
         if (wmes != NULL)
@@ -1799,7 +1799,9 @@ void record_epmem(agent *thisAgent)
 
 //      //%%%DEBUGGING
 //      print(thisAgent, "\nRECORDED MEMORY %d:\n", g_memories->size - 1);
-//      print_memory_graphically(((episodic_memory *)get_arraylist_entry(thisAgent, g_memories,g_memories->size - 1))->content);
+//      print_memory(thisAgent,
+//                   ((episodic_memory *)get_arraylist_entry(thisAgent, g_memories,g_memories->size - 1))->content,
+//                   &g_wmetree, 0, 5);
     
 }//record_epmem
 
@@ -2411,16 +2413,239 @@ episodic_memory *find_best_match(agent *thisAgent, arraylist *cue)
 
     stop_timer(thisAgent, &(thisAgent->epmem_match_start_time), &(thisAgent->epmem_match_total_time));
 
-    //%%%DEBUGGING
+//      //%%%DEBUGGING
 //      stop_timer(thisAgent, &(thisAgent->epmem_retrieve_start_time), &(thisAgent->epmem_retrieve_total_time));
 //      stop_timer(thisAgent, &(thisAgent->epmem_start_time), &(thisAgent->epmem_total_time));
-//      print(thisAgent, "\nmemories searched:\t%d\t%d\n",
-//            g_memories->size, comp_count);
+//      print(thisAgent, "\nmemories searched:\t%d of %d\n", comp_count, g_memories->size);
+//      print(thisAgent, "\nbest match score=%d\n", best_score);
 //      start_timer(thisAgent, &(thisAgent->epmem_start_time));
 //      start_timer(thisAgent, &(thisAgent->epmem_retrieve_start_time));
 
     return best_mem;
 }//find_best_match
+
+
+/* ===================================================================
+   get_radar_tank_data            *DOMAIN SPECIFIC*
+
+   Retrievs the x,y position and direction from an arraylist
+
+   Created:  10 Nov 2005
+   =================================================================== */
+typedef struct radar_tank_data_struct
+{
+    int x;
+    int y;
+    char direction[16];
+} radar_tank_data;
+
+void get_radar_tank_data(arraylist *al, radar_tank_data *rtd)
+{
+    int i;
+    wmetree *input_link = NULL;
+    
+    rtd->x = -1;
+    rtd->y = -1;
+    strcpy(rtd->direction, "unknown");
+
+    for(i = 0; i < al->size; i++)
+    {
+        actwme *aw = (actwme *)al->array[i]; //%%%HACK: should call get_arraylist_entry instead
+        char *attr = aw->node->attr;
+
+        if ( (strlen(attr) == 10) && (strcmp(attr, "input-link") == 0) )
+        {
+            input_link = aw->node;
+        }
+        else if ( (strlen(attr) == 1) && (aw->node->parent == input_link) && (strcmp(attr, "x") == 0) )
+        {
+            rtd->x = aw->node->val.intval;
+        }
+        else if ( (strlen(attr) == 1) && (aw->node->parent == input_link) && (strcmp(attr, "y") == 0) )
+        {
+            rtd->y = aw->node->val.intval;
+        }
+        else if ( (strlen(attr) == 9) && (aw->node->parent == input_link) && (strcmp(attr, "direction") == 0) )
+        {
+            strcpy(rtd->direction, aw->node->val.strval);
+        }
+    }
+}//get_radar_tank_data
+
+
+/* ===================================================================
+   is_radar_tank_match            *DOMAIN SPECIFIC*
+
+   Determines whether the given memory matches the given cue within
+   the context of the TankSoar radar tank.  (Used for debugging.)
+
+   Created:  10 Nov 2005
+   =================================================================== */
+int is_radar_tank_match(arraylist *cue, arraylist *mem)
+{
+    radar_tank_data cue_rtd;
+    radar_tank_data mem_rtd;
+
+    get_radar_tank_data(cue, &cue_rtd);
+    get_radar_tank_data(mem, &mem_rtd);
+
+    if ( (cue_rtd.x != -1)
+         && (cue_rtd.y != -1)
+         && (cue_rtd.direction[0] != 'u')
+         && (cue_rtd.x == mem_rtd.x)
+         && (cue_rtd.y == mem_rtd.y)
+         && (strcmp(cue_rtd.direction, mem_rtd.direction) == 0) )
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+    
+}//is_radar_tank_match
+
+/* ===================================================================
+   find_best_match_TANKSOAR        *DOMAIN SPECIFIC*
+
+   Same as find_best_match but prints lots of debugging info.
+
+   Caveat:  This function assumes you're running tanksoar!!
+
+   Created:  10 November 2005
+   =================================================================== */
+episodic_memory *find_best_match_TANKSOAR(agent *thisAgent, arraylist *cue)
+{
+    int best_score = 0;
+    episodic_memory *best_mem = NULL;
+    int i;
+    int j;
+    int comp_count = 0;         // number of epmems that were examined
+
+    //%%%DEBUGGING
+    print(thisAgent, "\nRECEIVED THIS CUE", best_score);
+    print_memory(thisAgent, cue, &g_wmetree, 2, 3);
+    
+    start_timer(thisAgent, &(thisAgent->epmem_match_start_time));
+
+    //If there aren't enough memories to examine just return
+    //the first one
+    if (g_memories->size <= memory_match_wait)
+    {
+        return 0;
+    }
+
+    //Give this match a unique id
+    g_last_ret_id++;
+
+    //Every memory gets a match score boost if it contains a memory
+    //that's in the cue.  So we need to loop over the assoc_memories
+    //list for each wmetree node in the cue
+    for(i = 0; i < cue->size; i++)
+    {
+        //pull an entry out of the cue
+        actwme *aw_cue = (actwme *)get_arraylist_entry(thisAgent, cue,i);
+
+        // if the entry has associated epmems then note that this node
+        // was used in the match
+        if (aw_cue->node->assoc_memories->size > 0)
+        {
+            aw_cue->node->query_count++;
+        }
+
+        //%%%DEBUGGING
+        print(thisAgent, "\n\tMatches for cue entry %s: ",
+              aw_cue->node->attr);
+
+        //Loop over the associated epmems
+        for(j = 0; j < aw_cue->node->assoc_memories->size; j++)
+        {
+            //get the next associated epmem
+            episodic_memory *epmem =
+                (episodic_memory *)get_arraylist_entry(thisAgent, aw_cue->node->assoc_memories,j);
+
+            //Find the entry in that epmem that matches the cue entry
+            actwme *aw_mem = epmem_find_actwme_entry(thisAgent, epmem->content, aw_cue->node);
+
+            if (aw_mem != NULL)
+            {
+                //%%%DEBUGGING
+                print(thisAgent, "%d, ", epmem->index);
+                
+                if (epmem->last_usage != g_last_ret_id)
+                {
+                    //Reinit the match score from last time
+                    epmem->last_usage = g_last_ret_id;
+                    epmem->match_score = aw_mem->activation;
+                    comp_count++;
+                }
+                else
+                {
+                    //Increment the match score
+                    epmem->match_score += aw_mem->activation;
+                }
+            }
+
+            if (epmem->match_score > best_score)
+            {
+                //%%%DEBUGGING
+                if (best_mem != NULL)
+                {
+                    print(thisAgent,
+                          "\nRejected the following memory (#%d) with match score %d:",
+                          best_mem->index,
+                          best_score);
+                    print_memory(thisAgent, best_mem->content, &g_wmetree, 2, 3,
+                                 "io input-link x y direction");
+                }
+                
+                best_score = epmem->match_score;
+                best_mem = epmem;
+            }
+            //%%%DEBUGGING
+            else if (is_radar_tank_match(cue, epmem->content))
+            {
+                print(thisAgent,
+                      "\nRejected matching memory (#%d) with match score %d:",
+                      epmem->index, epmem->match_score);
+                print_memory(thisAgent, epmem->content, &g_wmetree, 2, 3,
+                             "io input-link x y direction");
+                
+            }
+        }//for
+    }//for
+
+    stop_timer(thisAgent, &(thisAgent->epmem_match_start_time), &(thisAgent->epmem_match_total_time));
+
+    //%%%DEBUGGING
+    stop_timer(thisAgent, &(thisAgent->epmem_retrieve_start_time), &(thisAgent->epmem_retrieve_total_time));
+    stop_timer(thisAgent, &(thisAgent->epmem_start_time), &(thisAgent->epmem_total_time));
+    print(thisAgent, "\nmemories searched:\t%d of %d\n", comp_count, g_memories->size);
+    print(thisAgent, "\nbest match score=%d\n", best_score);
+    start_timer(thisAgent, &(thisAgent->epmem_start_time));
+    start_timer(thisAgent, &(thisAgent->epmem_retrieve_start_time));
+
+    //%%%DEBUGGING
+    if (best_mem != NULL)
+    {
+        if (is_radar_tank_match(cue, best_mem->content))
+        {
+            print(thisAgent,
+                  "\nSelected CORRECT memory (#%d) with match score %d:",
+                  best_mem->index, best_score);
+        }
+        else
+        {
+            print(thisAgent,
+                  "\nSelected INCORRECT memory (#%d) with match score %d:",
+                  best_mem->index, best_score);
+        }             
+        print_memory(thisAgent, best_mem->content, &g_wmetree, 2, 3,
+                     "io input-link x y direction");
+    }
+
+    
+    return best_mem;
+}//find_best_match_TANKSOAR
+
 
 /* ===================================================================
    install_epmem_in_wm
@@ -2631,7 +2856,7 @@ void increment_retrieval_count(agent *thisAgent, epmem_header *h, long inc_amt)
     //%%%If I use get_aug_of_id() to do this part the agents slows 
     //%%%way down.  WHY??
     tc = h->epmem->id.tc_num + 1;
-    wmes = get_augs_of_id(thisAgent,  h->epmem, tc, &len );
+    wmes = epmem_get_augs_of_id(thisAgent,  h->epmem, tc, &len );
     h->epmem->id.tc_num = tc - 1; // %%%Why is this necessary?
     
     if (wmes == NULL) return;
@@ -2739,7 +2964,7 @@ Symbol *find_superstate(agent *thisAgent, Symbol *sym)
     Symbol *ss = NULL;
 
     start_timer(thisAgent, &(thisAgent->epmem_getaugs_start_time));
-    wmes = get_augs_of_id(thisAgent,  sym, tc, &len );
+    wmes = epmem_get_augs_of_id(thisAgent,  sym, tc, &len );
     stop_timer(thisAgent, &(thisAgent->epmem_getaugs_start_time), &(thisAgent->epmem_getaugs_total_time));
 
     if (wmes != NULL)
