@@ -140,3 +140,15 @@ OrtsInterface::~OrtsInterface() {
     it++;
   }
 }
+
+sint4 OrtsInterface::getID(SoarGameObject* obj) {
+  // this is needed at least for the mineral-gather command
+  // translate the SGO into the parameter for set_action
+
+  // as seen in libs/ai/low/src/GatherAI.C:
+  // gsm.get_game().get_cplayer_info().get_id(gd.res)
+  // where gd.res is a GameObj*
+  // this ID is then put as the only parameter to a "gather" command
+  
+  return gsm->get_game().get_cplayer_info().get_id(obj->gob);
+}

@@ -13,7 +13,7 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit) {
   type = 0;
   centerMember = unit;
 #ifndef DEBUG_GROUPS  
-  typeName = unit->gameObj->bp_name();
+  typeName = unit->gob->bp_name();
 #else
   typeName = "unknown";
 #endif
@@ -68,8 +68,8 @@ void SoarGameGroup::updateStats(bool saveProps) {
     x += (*currentObject)->x;
     y += (*currentObject)->y;
 #else
-    x += *(*currentObject)->gameObj->sod.x;
-    y += *(*currentObject)->gameObj->sod.y;
+    x += *(*currentObject)->gob->sod.x;
+    y += *(*currentObject)->gob->sod.y;
 #endif
     currentObject++;
   }
@@ -117,7 +117,7 @@ void SoarGameGroup::updateStats(bool saveProps) {
         = squaredDistance(x, y, centerMember->x, centerMember->y);
   #else
   double shortestDistance 
-        = squaredDistance(x, y, *centerMember->gameObj->sod.x, *centerMember->gameObj->sod.y);
+        = squaredDistance(x, y, *centerMember->gob->sod.x, *centerMember->gob->sod.y);
   #endif
 
   double currentDistance;
@@ -128,7 +128,7 @@ void SoarGameGroup::updateStats(bool saveProps) {
                       (*currentObject)->x, (*currentObject)->y);
     #else
     currentDistance = squaredDistance(x, y, 
-                      *(*currentObject)->gameObj->sod.x, *(*currentObject)->gameObj->sod.y);
+                      *(*currentObject)->gob->sod.x, *(*currentObject)->gob->sod.y);
     #endif
     if (currentDistance < shortestDistance) {
       shortestDistance = currentDistance;
@@ -183,12 +183,18 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
     ORTSCommand = "Move";
   }
   else if (type == SA_MINE) {
-    
-  
+    // get the id of the resource
+    //sint4 mineralID = ORTSIO->getID(target);
+    ORTSCommand = "Mine";
+  }
+  else {
+    ORTSCommand = "Invalid";
+  }
+
   set<SoarGameObject*>::iterator currentObject = members.begin();
   
   while (currentObject != members.end()) {
-    result &= (*currentObject)->issueCommand("Move", tempVec);
+    (*currentObject)->issueCommand("Move", tempVec);
     currentObject++;
   }
   return result;

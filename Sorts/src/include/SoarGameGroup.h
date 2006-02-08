@@ -26,7 +26,7 @@ class SoarGameGroup {
     bool removeUnit(SoarGameObject* unit);
     void updateStats(bool saveProps);
     bool assignAction(SoarActionType type, list<int> params,
-                      SoarGameGroup* target);
+                      SoarGameObject* target);
     bool isEmpty();
 
     list<SoarGameObject*> getMembers(); 

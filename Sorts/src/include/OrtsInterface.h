@@ -43,6 +43,9 @@ private:
   map<const GameObj*, SoarGameObject*> objectMap;
   map<SoarGameObject*, const GameObj*> revObjectMap;
 
+  // wrappers for middleware querying ORTS
+  sint4 getID(SoarGameObject* obj);
+
   // pointer to our stuff
   SoarInterface* soarInterface;
 
