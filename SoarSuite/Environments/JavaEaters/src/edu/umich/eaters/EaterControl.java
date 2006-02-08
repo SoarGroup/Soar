@@ -41,7 +41,7 @@ public class EaterControl extends SimulationControl implements
 	private static final double BetterProbability = .65;
 	private boolean simShouldExit = false;
 	private static final int BonusFoodColumns = 3;
-
+	
 	private int foodCount = 0;
 
 	private boolean loadedFromFile = false;
@@ -416,14 +416,16 @@ public class EaterControl extends SimulationControl implements
 					Eater t = createEater(colorName);
 					if (t != null) {
 						t.setKernel(kernel);
-						t.attachSoarCode(infile);
+						t.attachSoarCode(infile);					
 						fireAgentCreatedNotification(t);
+
 					} else {
 						JOptionPane.showMessageDialog(null,
 								"Fatal Error: Created Eater was null.",
 								"Eaters", JOptionPane.ERROR_MESSAGE);
 						System.exit(-1);
 					}
+					spawnDebugger(t.getName());
 					return (t);
 				}//try
 				catch (NullPointerException e) {
@@ -439,6 +441,7 @@ public class EaterControl extends SimulationControl implements
 			} else if (name.toLowerCase().endsWith(".seater")) {
 
 				Eater t = createEater(infile);
+				spawnDebugger(t.getName());
 				return t;
 			}
 		} catch (NullPointerException e) {
@@ -452,6 +455,26 @@ public class EaterControl extends SimulationControl implements
 		return (null);
 	}
 
+	/* Create only one debugger, the rest will be created by the debugger */
+	private static boolean debuggerCreated = false;
+	protected void spawnDebugger(String agentName) {
+		// Spawn debugger once
+		if (debuggerCreated == false) {
+			Runtime r = java.lang.Runtime.getRuntime();
+			try {
+				r.exec("java -jar " + kernel.GetLibraryLocation() 
+					+ System.getProperty("file.separator") + "bin"
+					+ System.getProperty("file.separator") + "SoarJavaDebugger.jar -remote -agent "
+					+ agentName);
+			} catch (java.io.IOException e) {
+				JOptionPane.showMessageDialog(null, "IOException spawning debugger", "Eaters",
+		                JOptionPane.ERROR_MESSAGE);
+				System.exit(-1);			
+			}
+			debuggerCreated = true;
+		}		
+	}
+		
 	/**
 	 * {@inheritDoc}
 	 * Determines what actions this EaterControl needs to take based on a given Eater's decision.
