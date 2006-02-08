@@ -1185,15 +1185,19 @@ void do_one_top_level_phase (agent* thisAgent)
       #endif
 
       /* d_cycle_count moved to input phase for Soar 8 new decision cycle */
-      if (thisAgent->operand2_mode == FALSE) 
+      if (thisAgent->operand2_mode == FALSE)
+      {
          thisAgent->d_cycle_count++;
 
 #ifdef SOAR_WMEM_ACTIVATION
-      if ((thisAgent->sysparams)[WME_DECAY_SYSPARAM])
-      {
-          decay_move_and_remove_wmes(thisAgent);
-      }
+         //IMPORTANT:  This code needs to be inside the if-statement
+         //            above [if (thisAgent->operand2_mode == FALSE)]
+         if ((thisAgent->sysparams)[WME_DECAY_SYSPARAM])
+         {
+             decay_move_and_remove_wmes(thisAgent);
+         }
 #endif
+      }
       
       /* AGR REW1 begin */
 	  if (!thisAgent->input_period) 
