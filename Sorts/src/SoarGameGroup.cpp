@@ -164,16 +164,26 @@ void SoarGameGroup::mergeTo(SoarGameGroup* target) {
   return;
 }
 
-bool SoarGameGroup::assignAction(SoarActionType type, list<int> params){ 
+bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
+                                 SoarGameObject* target) { 
   bool result = true;
 
-  list<int>::iterator listIt = params.begin();
-  
+  list<int>::iterator listIt = params.begin();  
   Vector<sint4> tempVec;
+  string ORTSCommand;
+  
   tempVec.push_back(*listIt);
   listIt++;
   tempVec.push_back(*listIt);
-  tempVec.push_back(3);
+  
+  if (type == SA_MOVE) {
+    // the third param is speed, always use 3 (the max)
+    tempVec.push_back(3);
+    // SoarGameObject should really take the SA_MOVE directly
+    ORTSCommand = "Move";
+  }
+  else if (type == SA_MINE) {
+    
   
   set<SoarGameObject*>::iterator currentObject = members.begin();
   
