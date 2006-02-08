@@ -1,18 +1,18 @@
 #echo off
 cd Environments\JavaBaseEnvironment
-call build.bat
+call build.bat --nopause
 cd ..\JavaEaters
-call build.bat
+call build.bat --nopause
 cd ..\JavaMissionaries
-call build.bat
+call build.bat --nopause
 cd ..\JavaTankSoar
-call build.bat
+call build.bat --nopause
 cd ..\JavaTOH
-call build.bat
+call build.bat --nopause
 cd ..\..\Tools\SoarJavaDebugger
-call build.bat
+call build.bat --nopause
 cd ..\TestJavaSML
-call build.bat
+call build.bat --nopause
 cd ..\VisualSoar
-call build.bat
+call build.bat --nopause
 cd ..\..
