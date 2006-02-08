@@ -1314,7 +1314,9 @@ public class TankSoarJControl extends SimulationControl implements
 					if (t != null) {
 						t.setKernel(kernel);
 						t.attachSoarCode(infile);
-						spawnDebugger(kernel.GetLibraryLocation(), t.getName());
+						if (!commandLine.noDebuggerSpawn) {
+							spawnDebugger(kernel.GetLibraryLocation(), t.getName());
+						}
 					} else {
 						TankSoarLogger
 								.log("\t't' was null after createTank call!");
@@ -1333,7 +1335,9 @@ public class TankSoarJControl extends SimulationControl implements
 				if (newTank != null) {
 					newTank.setKernel(kernel);
 					newTank.attachSoarCode(infile);
-					spawnDebugger(kernel.GetLibraryLocation(), newTank.getName());
+					if (!commandLine.noDebuggerSpawn) {
+						spawnDebugger(kernel.GetLibraryLocation(), newTank.getName());
+					}
 				}
 				return newTank;
 			}
