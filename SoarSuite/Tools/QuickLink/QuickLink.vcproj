@@ -3,8 +3,8 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="QuickLink"
-	ProjectGUID="{6EE44B02-0AB5-4B51-97F6-2B98C187237B}"
-	RootNamespace="Quick2"
+	ProjectGUID="{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}"
+	RootNamespace="QuickLink"
 	Keyword="ManagedCProj">
 	<Platforms>
 		<Platform
@@ -13,15 +13,15 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build"
-			IntermediateDirectory="$(OutDir)\Debug"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="2"
 			ManagedExtensions="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\Core\ClientSML\include; include"
+				AdditionalIncludeDirectories="include; ../../Core/ClientSML/include"
 				PreprocessorDefinitions="WIN32;_DEBUG"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="0"
@@ -32,7 +32,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\SoarLibrary\bin\$(ProjectName).exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
 				AssemblyDebug="1"/>
@@ -66,7 +66,6 @@
 			ManagedExtensions="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\Core\ClientSML\include; include"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
@@ -76,7 +75,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\SoarLibrary\bin\$(ProjectName).exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"/>
 			<Tool
@@ -118,10 +117,40 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\src\QuickLink.cpp">
+				RelativePath=".\src\Input_Console.cpp">
 			</File>
 			<File
-				RelativePath=".\src\Reader.cpp">
+				RelativePath=".\src\Input_Controller.cpp">
+			</File>
+			<File
+				RelativePath=".\src\Input_File.cpp">
+			</File>
+			<File
+				RelativePath=".\src\QL_Controller.cpp">
+			</File>
+			<File
+				RelativePath=".\src\QL_Interface.cpp">
+			</File>
+			<File
+				RelativePath=".\src\Utilities.cpp">
+			</File>
+			<File
+				RelativePath=".\src\View_Console.cpp">
+			</File>
+			<File
+				RelativePath=".\src\WME_Float.cpp">
+			</File>
+			<File
+				RelativePath=".\src\WME_Id.cpp">
+			</File>
+			<File
+				RelativePath=".\src\WME_Int.cpp">
+			</File>
+			<File
+				RelativePath=".\src\WME_String.cpp">
+			</File>
+			<File
+				RelativePath=".\src\WME_Type.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -129,10 +158,46 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
-				RelativePath=".\include\QuickLink.h">
+				RelativePath=".\include\Input_Console.h">
 			</File>
 			<File
-				RelativePath=".\include\Reader.h">
+				RelativePath=".\include\Input_Controller.h">
+			</File>
+			<File
+				RelativePath=".\include\Input_File.h">
+			</File>
+			<File
+				RelativePath=".\include\Input_Type.h">
+			</File>
+			<File
+				RelativePath=".\include\QL_Interface.h">
+			</File>
+			<File
+				RelativePath=".\include\Smart_Pointer.h">
+			</File>
+			<File
+				RelativePath=".\include\Utilities.h">
+			</File>
+			<File
+				RelativePath=".\include\View_Console.h">
+			</File>
+			<File
+				RelativePath=".\include\View_Type.h">
+			</File>
+			<File
+				RelativePath=".\include\WME_Float.h">
+			</File>
+			<File
+				RelativePath=".\include\WME_Id.h">
+			</File>
+			<File
+				RelativePath=".\include\WME_Int.h">
+			</File>
+			<File
+				RelativePath=".\include\WME_String.h">
+			</File>
+			<File
+				RelativePath=".\include\WME_Type.h">
 			</File>
 		</Filter>
 		<Filter

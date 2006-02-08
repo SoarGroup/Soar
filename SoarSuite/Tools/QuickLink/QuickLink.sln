@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 8.00
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuickLink", "QuickLink.vcproj", "{6EE44B02-0AB5-4B51-97F6-2B98C187237B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuickLink", "QuickLink.vcproj", "{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -21,10 +21,10 @@ Global
 		Release = Release
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
-		{6EE44B02-0AB5-4B51-97F6-2B98C187237B}.Debug.ActiveCfg = Debug|Win32
-		{6EE44B02-0AB5-4B51-97F6-2B98C187237B}.Debug.Build.0 = Debug|Win32
-		{6EE44B02-0AB5-4B51-97F6-2B98C187237B}.Release.ActiveCfg = Release|Win32
-		{6EE44B02-0AB5-4B51-97F6-2B98C187237B}.Release.Build.0 = Release|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Debug.ActiveCfg = Debug|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Debug.Build.0 = Debug|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Release.ActiveCfg = Release|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Release.Build.0 = Release|Win32
 		{3EDBED11-A1B3-4E00-8B6E-652523D482F0}.Debug.ActiveCfg = Debug|Win32
 		{3EDBED11-A1B3-4E00-8B6E-652523D482F0}.Debug.Build.0 = Debug|Win32
 		{3EDBED11-A1B3-4E00-8B6E-652523D482F0}.Release.ActiveCfg = Release|Win32
