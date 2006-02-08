@@ -7,6 +7,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import javax.swing.JOptionPane;
+
 import sml.Agent;
 
 /**
@@ -641,5 +643,25 @@ public abstract class SimulationControl {
 
 	public boolean isQuittable() {
 		return true;
+	}
+	
+	/* Create only one debugger, the rest will be created by the debugger */
+	private static boolean debuggerCreated = false;
+	protected void spawnDebugger(String libraryLocation, String agentName) {
+		// Spawn debugger once
+		if (debuggerCreated == false) {
+			Runtime r = java.lang.Runtime.getRuntime();
+			try {
+				r.exec("java -jar " + libraryLocation 
+					+ System.getProperty("file.separator") + "bin"
+					+ System.getProperty("file.separator") + "SoarJavaDebugger.jar -remote -agent "
+					+ agentName);
+			} catch (java.io.IOException e) {
+				JOptionPane.showMessageDialog(null, "IOException spawning debugger", "Eaters",
+		                JOptionPane.ERROR_MESSAGE);
+				System.exit(-1);			
+			}
+			debuggerCreated = true;
+		}		
 	}
 }
