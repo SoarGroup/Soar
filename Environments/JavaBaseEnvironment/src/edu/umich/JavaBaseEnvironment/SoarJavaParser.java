@@ -51,6 +51,11 @@ public class SoarJavaParser {
 		public boolean allWindowsOff;
 
 		/**
+		 * True if should not spawn debugger
+		 */
+		public boolean noDebuggerSpawn;
+
+		/**
 		 * True if help should be printed out for how to run the simulation.
 		 */
 		public boolean needHelp;
@@ -182,6 +187,13 @@ public class SoarJavaParser {
 						ac.allWindowsOff = true;
 					}
 				}
+			} else if (args[i].equalsIgnoreCase("-d")) {
+				if (args.length > (i + 1)) {
+					++i;
+					if (args[i].equalsIgnoreCase("off")) {
+						ac.noDebuggerSpawn = true;
+					}
+				}
 			}
 		}
 		if (ac.allWindowsOff) {
@@ -197,17 +209,13 @@ public class SoarJavaParser {
 	public static void printHelp() {
 		System.out.println("Java-Soar Help");
 		System.out.println("Command line arguments:");
-		System.out
-				.println("\t-b [on/off] Sets the visible board to be on or off.");
-		System.out
-				.println("\t-a [on/off] Sets agent windows to be on or off (viewing one specific agent).");
-		System.out
-				.println("\t-w [on/off] Sets all the windows to be off if off."
-						+ "\n\t\tIf on, allows windows to be open (In this case, overridden by –b, –c, and –a)");
-		System.out
-				.println("\t-m [path] Sets map file specified by path to be loaded when run.");
-		System.out
-				.println("\t*.soar Any argument ending in .soar (or .seater in Eaters, .stank in TankSoar) will attempt to load as an agent");
+		System.out.println("\t-b [on/off] Sets the visible board to be on or off.");
+		System.out.println("\t-a [on/off] Sets agent windows to be on or off (viewing one specific agent).");
+		System.out.println("\t-d [on/off] Sets debugger spawning on/off, default is on.");
+		System.out.println("\t-w [on/off] Sets all the windows to be off if off.");
+		System.out.println("\t\tIf on, allows windows to be open (In this case, overridden by –b, –c, -d, and –a)");
+		System.out.println("\t-m [path] Sets map file specified by path to be loaded when run.");
+		System.out.println("\t*.soar Any argument ending in .soar (or .seater in Eaters, .stank in TankSoar) will attempt to load as an agent");
 		System.out.println("\t-? Prints help");
 		System.out.println("\t-help Prints help");
 	}
