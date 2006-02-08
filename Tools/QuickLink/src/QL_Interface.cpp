@@ -13,12 +13,15 @@
 #endif
 
 using std::string; using std::make_pair; using std::cerr; using std::endl;
-using sml::Kernel; using sml::Identifier;
+using sml::Kernel; using sml::Identifier; using sml::Agent;
 using std::for_each; using std::mem_fun; using std::bind2nd;
 using std::ofstream;
 using sml::smlSystemEventId; using sml::smlEVENT_SYSTEM_START;
+using sml::smlAgentEventId; using sml::smlEVENT_AFTER_AGENT_REINITIALIZED;
+using sml::smlEVENT_BEFORE_AGENT_REINITIALIZED;
 
 void MyStartSystemEventHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel);
+void MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent);
 
 QL_Interface& QL_Interface::instance()
 {
@@ -60,7 +63,11 @@ void QL_Interface::create_new_kernel(int port)
 	if(m_pKernel->HadError())
 		throw Error(m_pKernel->GetLastErrorDescription());
 
+
 	m_pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START, MyStartSystemEventHandler, this );
+	m_pKernel->RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, MyAgentEventHandler, this);
+	m_pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENT_REINITIALIZED, MyAgentEventHandler, this);
+
 }
 
 // establish a remote connection
@@ -97,6 +104,12 @@ bool QL_Interface::specify_agent(const string& name)
 	//Make sure agent was successfully created
 	if (!m_pAgent)
 		return false;
+
+
+	m_pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START, MyStartSystemEventHandler, this );
+	m_pKernel->RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, MyAgentEventHandler, this);
+	m_pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENT_REINITIALIZED, MyAgentEventHandler, this);
+
 	return true;
 }
 
@@ -110,7 +123,6 @@ void QL_Interface::setup_input_link(const string& name)
 	m_id_container.insert(make_pair(name, WME_Id::create("" , "" , name , m_pAgent)));
 	m_input_link_name = name;
 
-	//build_input_link();
 
 	update_views();
 }
@@ -206,6 +218,16 @@ void QL_Interface::attach_view(View_Type* new_view)
 }
 
 // general functions
+
+void QL_Interface::respond_to_init_soar()
+{
+	// first clear up all of the input-link elements
+	m_id_container.clear();
+
+	// call synch input-link in case a new identifier is used for the input-link
+	m_pAgent->SynchronizeInputLink();
+	setup_input_link(m_input_link_name);
+}
 
 void QL_Interface::soar_command_line(const string& command)
 {
@@ -316,6 +338,14 @@ void QL_Interface::spawn_debugger()
 void MyStartSystemEventHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel)
 {
 	QL_Interface::instance().commit();
+}
+
+void MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
+{
+	if(smlEVENT_AFTER_AGENT_REINITIALIZED == id)
+		QL_Interface::instance().respond_to_init_soar();
+	else if(smlEVENT_BEFORE_AGENT_REINITIALIZED == id)
+		QL_Interface::instance().commit();  // this has to be done, otherwise an assertion will fail
 }
 
 // member functions

@@ -70,11 +70,6 @@ public:
 	void QL_Shutdown()
 	{ prepare_for_new_connection(); }
 
-	// get access to the agent pointer so you can register for events
-	// TODO: encapsulate this somehow
-	sml::Agent* get_agent_ptr()
-	{ return m_pKernel->GetAgent(m_pAgent->GetAgentName()); }
-
 	/*************************************************************
 	* @brief This returns the name of the agent
 	*************************************************************/
@@ -95,10 +90,6 @@ public:
 	*					changes (adds, deletes, etc.) need to be made to it.
 	*************************************************************/
 	void add_identifier(const std::string& parent_id, const std::string& attribute, const std::string& id_name);
-	
-	// this function takes a pre-made smart_pointer to an identifier.  This should only be called
-	// from the WME_Id class
-	void add_created_identifier(Smart_Pointer<WME_Id> identifier);
 
 	/*************************************************************
 	* @brief This function deletes an identifier to the input-link in the form 
@@ -242,6 +233,22 @@ public:
 	*************************************************************/
 	void run_til_output() 
 	{ m_pAgent->RunSelfTilOutput(); }
+
+	//////////////////////////////////////////////////////////////////////////
+	// People interfacing with QL should not need to use these functions usually
+	//////////////////////////////////////////////////////////////////////////
+
+	// this is called internally by the agent reinitialized event
+	void respond_to_init_soar();
+
+	// this function takes a pre-made smart_pointer to an identifier.  This should only be called
+	// from the WME_Id class
+	void add_created_identifier(Smart_Pointer<WME_Id> identifier);
+
+	// get access to the agent pointer so you can register for events
+	// TODO: encapsulate this somehow
+	sml::Agent* get_agent_ptr()
+	{ return m_pKernel->GetAgent(m_pAgent->GetAgentName()); }
 
 private:
 
