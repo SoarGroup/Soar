@@ -67,6 +67,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "towersSML", "Tools\TOHSML\t
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LoggerWinC", "Tools\LoggerWinC\LoggerWinC.vcproj", "{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -323,6 +327,22 @@ Global
 		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release (gSKI DLL).Build.0 = Release|Win32
 		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release (no SWIG).ActiveCfg = Release|Win32
 		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release (no SWIG).Build.0 = Release|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug.ActiveCfg = Debug|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug.Build.0 = Debug|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug (Core).ActiveCfg = Debug|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug (Core).Build.0 = Debug|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug (gSKI DLL).Build.0 = Debug|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug (no SWIG).Build.0 = Debug|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Release.ActiveCfg = Release|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Release.Build.0 = Release|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Release (Core).ActiveCfg = Release|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Release (Core).Build.0 = Release|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Release (gSKI DLL).ActiveCfg = Release|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Release (gSKI DLL).Build.0 = Release|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Release (no SWIG).ActiveCfg = Release|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Release (no SWIG).Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
