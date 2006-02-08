@@ -172,9 +172,9 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
   Vector<sint4> tempVec;
   string ORTSCommand;
   
-  tempVec.push_back(*listIt);
+  tempVec.push_back((*listIt)/100);
   listIt++;
-  tempVec.push_back(*listIt);
+  tempVec.push_back((*listIt)/100);
   
   if (type == SA_MOVE) {
     // the third param is speed, always use 3 (the max)
