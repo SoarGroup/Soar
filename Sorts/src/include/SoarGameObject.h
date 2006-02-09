@@ -16,7 +16,7 @@ class SoarGameObject{
 	~SoarGameObject();
 
 	void registerBehavior(FSM *);
-	void removeBehavior(std::string cmd);
+	void removeBehavior(SoarActionType);
 
 	void issueCommand(SoarActionType name, Vector<sint4> p);
 	void update();
