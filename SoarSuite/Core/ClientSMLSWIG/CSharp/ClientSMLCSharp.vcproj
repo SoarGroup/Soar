@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				CommandLine="csc /target:library /out:build\smlCSharp.dll build\*.cs
-xcopy build\*.dll $(SolutionDir)\SoarLibrary\bin /Y /I /Q
+xcopy build\*.dll &quot;$(SolutionDir)\SoarLibrary\bin&quot; /Y /I /Q
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -102,7 +102,7 @@ cd ..
 			<Tool
 				Name="VCPostBuildEventTool"
 				CommandLine="csc /target:library /out:build\smlCSharp.dll build\*.cs
-xcopy build\*.dll $(SolutionDir)\SoarLibrary\bin /Y /I /Q
+xcopy build\*.dll &quot;$(SolutionDir)\SoarLibrary\bin&quot; /Y /I /Q
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"
