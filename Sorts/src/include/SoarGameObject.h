@@ -18,17 +18,20 @@ class SoarGameObject{
 	void registerBehavior(FSM *);
 	void removeBehavior(std::string cmd);
 
-	void issueCommand(std::string name, Vector<sint4> p);
+	void issueCommand(SoarAction name, Vector<sint4> p);
 	void update();
 
 	void setGroup(SoarGameGroup *g);
 	SoarGameGroup *getGroup();
+	SoarAction getState();
+
 
 	GameObj *gob;
  private:
 	std::list<FSM *> behaviors;
 	std::stack<FSM *> memory;
 
+	SoarAction state;
   	SoarGameGroup* group;
 
 };

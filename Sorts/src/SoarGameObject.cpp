@@ -27,13 +27,13 @@ void SoarGameObject::registerBehavior(FSM *b)
  behaviors.push_back(b);
 }
 
-void SoarGameObject::removeBehavior(std::string name)
+void SoarGameObject::removeBehavior(SoarAction name)
 {
  std::list<FSM*>::iterator it;
  FSM *tmp;
 
  for(it = behaviors.begin(); it != behaviors.end(); it++)
-  if((*it)->name.compare(0,name.length(),name))
+  if((*it)->name == name)
   {
    tmp = (*it);
    behaviors.erase(it);
@@ -43,7 +43,7 @@ void SoarGameObject::removeBehavior(std::string name)
 }
 
 
-void SoarGameObject::issueCommand(std::string cmd, Vector<sint4> prms)
+void SoarGameObject::issueCommand(SoarAction cmd, Vector<sint4> prms)
 {
  std::list<FSM*>::iterator it;
 
@@ -78,4 +78,9 @@ void SoarGameObject::setGroup(SoarGameGroup *g)
 SoarGameGroup *SoarGameObject::getGroup(void)
 {
  return group;
+}
+
+SoarAction SoarGameObject::getState()
+{
+ return state;
 }
