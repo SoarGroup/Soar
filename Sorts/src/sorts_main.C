@@ -87,8 +87,9 @@ int main(int argc, char *argv[]) {
   }
 
   // Load some productions
-  pAgent->LoadProductions(argv[1]) ;
-
+  if (argv[1] != NULL) {
+    pAgent->LoadProductions(argv[1]) ;
+  }
   if (pAgent->HadError()) {
     cout << pAgent->GetLastErrorDescription() << endl ;
     return 1;

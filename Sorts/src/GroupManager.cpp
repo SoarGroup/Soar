@@ -29,18 +29,18 @@ bool GroupManager::assignActions() {
  
   list <SoarGameGroup*>::iterator groupIter;
   bool success = true;
+  SoarGameObject* targetObj;
   
   while (actionIter != newActions.end()){
-    /* The way you're using the list of groups here, the action is just
-     * assigned to each group. But I thought the point of specifying
-     * multiple groups in an action was so that you can say "group 1
-     * go attack group 2," not "I want groups 1 and 2 to both attack."
-     */
-
-    groupIter = (**actionIter).groups.begin();
-    while (groupIter != (**actionIter).groups.end()) {
-      success &= (*groupIter)->assignAction((**actionIter).type, (**actionIter).params, (*groupIter)->getCenterMember());
-      groupIter++;
+    if ((**actionIter).source != NULL) {
+      if ((**actionIter).target != NULL) { 
+        targetObj = (**actionIter).target->getNextMember();
+      }
+      else {
+        targetObj = NULL;
+      }
+      success &= (**actionIter).source->assignAction(
+            (**actionIter).type, (**actionIter).params, targetObj);
     }
     actionIter++;
   }

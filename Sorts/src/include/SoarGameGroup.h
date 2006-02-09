@@ -41,6 +41,7 @@ class SoarGameGroup {
     int getType();
     int getSize();
     SoarGameObject* getCenterMember();
+    SoarGameObject* getNextMember();
   private:
     set <SoarGameObject*> members;
     // int capabilities; // get from unit capabilities
@@ -58,5 +59,6 @@ class SoarGameGroup {
     string typeName;
     
     SoarGameObject* centerMember;
+    SoarGameObject* currentMember; // for getNextMember functionality
 };
 #endif

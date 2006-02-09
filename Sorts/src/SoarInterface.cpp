@@ -109,7 +109,7 @@ void SoarInterface::getNewSoarOutput() {
     newAction.type = type;
     
     // append all the group parameters
-    int groupCounter = 0;
+    /*int groupCounter = 0;
     while(true) {
       string groupParam = "group";
       groupParam += ('0' + groupCounter++);
@@ -120,7 +120,32 @@ void SoarInterface::getNewSoarOutput() {
       int groupId = atoi(paramValue);
       assert(gIdToMwGroups.find(groupId) != gIdToMwGroups.end());
       newAction.groups.push_back(gIdToMwGroups[groupId]);
+    }*/
+    
+    /* There's really no need for a list of groups, all actions should
+       be group to group, or group with int parameters.
+    */
+    string groupParam = "source_group";
+    const char* paramValue = cmdPtr->GetParameterValue(groupParam.c_str());
+    if (paramValue == NULL) {
+      newAction.source = NULL;
     }
+    else {
+      int groupId = atoi(paramValue);
+      assert(gIdToMwGroups.find(groupId) != gIdToMwGroups.end());
+      newAction.source = gIdToMwGroups[groupId];
+    }
+    groupParam = "target_group";
+    paramValue = cmdPtr->GetParameterValue(groupParam.c_str());
+    if (paramValue == NULL) {
+      newAction.target = NULL;
+    }
+    else {
+      int groupId = atoi(paramValue);
+      assert(gIdToMwGroups.find(groupId) != gIdToMwGroups.end());
+      newAction.target = gIdToMwGroups[groupId];
+    }
+    
 
     // append all the integer parameters
     int paramCounter = 0;

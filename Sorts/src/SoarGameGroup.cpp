@@ -12,6 +12,7 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit) {
   staleInSoar = true;
   type = 0;
   centerMember = unit;
+  currentMember = unit;
 #ifndef DEBUG_GROUPS  
   typeName = unit->gob->bp_name();
 #else
@@ -38,6 +39,12 @@ bool SoarGameGroup::removeUnit(SoarGameObject* unit) {
     // make sure center is a valid unit
     // it should be refreshed before use, though
     centerMember = *(members.begin());
+  }
+  if (currentMember == unit) {
+    getNextMember();
+    // throw out the result
+    // currentMember may still be invalid (empty group)
+    // be sure to refresh before using!
   }
   
   members.erase(unit);
@@ -249,4 +256,16 @@ SoarGameObject* SoarGameGroup::getCenterMember() {
 
 int SoarGameGroup::getSize() {
   return members.size();
+}
+SoarGameObject* SoarGameGroup::getNextMember() {
+  set<SoarGameObject*>::iterator objIt;
+  objIt = members.find(currentMember);
+  assert(objIt != members.end());
+  
+  objIt++;
+  if (objIt == members.end()) {
+    objIt = members.begin();
+  }
+  currentMember = *objIt;
+  return currentMember;
 }
