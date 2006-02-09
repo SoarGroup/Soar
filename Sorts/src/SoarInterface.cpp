@@ -44,7 +44,14 @@ void SoarInterface::addGroup(SoarGameGroup* group) {
 
 void SoarInterface::removeGroup(SoarGameGroup* group) {
   // make sure the group exists
-  assert(mwToSoarGroups.find(group) != mwToSoarGroups.end());
+  //assert(mwToSoarGroups.find(group) != mwToSoarGroups.end());
+  
+  // false removes can come in (fairly frequently)
+  // if a group is merged into another the same cycle it appears, a false remove
+  // is generated
+  if (mwToSoarGroups.find(group) == mwToSoarGroups.end()) {
+    return;
+  }
   
   SoarIOGroupRep &g = mwToSoarGroups[group];
   if (g.groupId >= 0) {
@@ -67,18 +74,24 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyList gpl) {
 
     // label the group with its id
     agent->CreateIntWME(g.WMEptr, "id", g.groupId);
+    cout << "WME (r): group" << endl;
+    cout << "WME: \tid " << g.groupId << endl;
 
     // add properties
     for(groupPropertyList::iterator i = gpl.begin(); i != gpl.end(); i++) {
       // create a new WME object for the property
       g.properties[(*i).first] = agent->CreateIntWME(g.WMEptr, (*i).first.c_str(), (*i).second);
+      cout << "WME: \t" << (*i).first << " " << (*i).second << endl;
     }
   }
   else {
     // group already added, just update values.
     // Note that I'm assuming no new values are introduced
+    cout << "WME: updated group" << endl;
+    cout << "WME: \tid " << g.groupId << endl;
     for(groupPropertyList::iterator i = gpl.begin(); i != gpl.end(); i++) {
       agent->Update(g.properties[(*i).first], (*i).second);
+      cout << "WME: \t" << (*i).first << " " << (*i).second << endl;
     }
   }
 }
@@ -171,6 +184,7 @@ void SoarInterface::getNewActions(list<SoarAction*>& newActions) {
   pthread_mutex_lock(objectActionQueueMutex);
   for(list<SoarAction*>::iterator i = objectActionQueue.begin(); i != objectActionQueue.end(); i++) {
     newActions.push_back(*i);
+    cout << "adding action.." << endl;
     objectActionQueue.erase(i);
   }
   pthread_mutex_unlock(objectActionQueueMutex);

@@ -65,7 +65,7 @@ void SoarGameGroup::updateStats(bool saveProps) {
   double size = members.size();
 
   // this is not a huge problem (just a redundant update), but should not happen
-  assert(stale == true);
+//  assert(stale == true);
   
   while (currentObject != members.end()) {
     // be careful is some numbers are very big for each object and the double could overflow
@@ -236,6 +236,9 @@ bool SoarGameGroup::getStaleInSoar() {
 
 void SoarGameGroup::setStaleInSoar(bool val) {
   staleInSoar = val;
+}
+void SoarGameGroup::setStale() {
+  stale = true;
 }
 
 list<SoarGameObject*> SoarGameGroup::getMembers() {

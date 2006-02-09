@@ -1,9 +1,12 @@
 #include"SoarGameObject.h"
+#include"SoarGameGroup.h"
 #include<iostream>
 
 SoarGameObject::SoarGameObject(GameObj *g)
 {
  gob = g;
+ FSM* temp = (FSM*)(new MoveFSM());
+ registerBehavior(temp);
 }
 
 SoarGameObject::~SoarGameObject()
@@ -57,6 +60,7 @@ void SoarGameObject::issueCommand(SoarActionType cmd, Vector<sint4> prms)
    (*it)->setParams(prms);
    memory.push((*it));
    state = cmd;
+   cout << "ACTION" << endl;
    return;
   }
   std::cout<<"No match for command"<<std::endl;
@@ -65,6 +69,7 @@ void SoarGameObject::issueCommand(SoarActionType cmd, Vector<sint4> prms)
 
 void SoarGameObject::update()
 {
+  group->setStale();
  if(!memory.empty())
   if(!memory.top()->update())
   {

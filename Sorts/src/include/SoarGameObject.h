@@ -2,6 +2,7 @@
 #define SoarGameObject_H
 
 #include"FSM.h"
+#include "MoveFSM.h"
 
 #include<stack>
 #include<vector>

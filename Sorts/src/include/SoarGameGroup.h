@@ -33,6 +33,7 @@ class SoarGameGroup {
   
     void mergeTo(SoarGameGroup* target);
     bool getStale();
+    void setStale();
     void setStale(bool val);
     bool getStaleInSoar();
     void setStaleInSoar(bool val);

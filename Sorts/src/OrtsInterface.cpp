@@ -10,6 +10,7 @@ OrtsInterface::OrtsInterface(GameStateModule* _gsm,
                              GroupManager*    _groupManager)
 : gsm(_gsm), soarInterface(_soarInterface), groupManager(_groupManager)
 {
+  counter = 0;
 }
 
 void OrtsInterface::addAppearedObject(const GameObj* gameObj) {
@@ -49,7 +50,7 @@ void OrtsInterface::removeVanishedObject(const GameObj* gameObj) {
 bool OrtsInterface::handle_event(const Event& e) {
   if (e.get_who() == GameStateModule::FROM) {
     if (e.get_what() == GameStateModule::VIEW_MSG) {
-      cout << "INTERRUPT!" << endl;
+      cout << "INTERRUPT!" << counter++ << endl;
 
       groupManager->assignActions();
 
@@ -60,7 +61,9 @@ bool OrtsInterface::handle_event(const Event& e) {
       /* I'm assuming here that those update calls from above have already
        * updated the soar input link correctly, so commit everything
        */
+      cout << "begin commit" << endl;
       soarInterface->commitInputLinkChanges();
+      cout << "end commit" << endl;
     }
     return true;
   }
@@ -93,6 +96,7 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
       /* we should have a SoarGameObject for this GameObj, if not, we're in
        * trouble
        */
+       cout << "updating an object: " << (int) gob << endl;
       assert(objectMap.find(gob) != objectMap.end());
 
       // just call update to let it know there were changes

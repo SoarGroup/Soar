@@ -11,11 +11,12 @@ using namespace std;
 */
 
 void GroupManager::updateWorld() {
-  
+  cout << "begin uw" << endl;  
   refreshGroups(false);
   reGroup();
   refreshGroups(true);
   adjustAttention();
+  cout << "end uw" << endl;
 
   return;
 }
@@ -31,7 +32,9 @@ bool GroupManager::assignActions() {
   bool success = true;
   SoarGameObject* targetObj;
   
+  cout << "Assigning actions." << endl;
   while (actionIter != newActions.end()){
+    cout << "popping" << endl;
     if ((**actionIter).source != NULL) {
       if ((**actionIter).target != NULL) { 
         targetObj = (**actionIter).target->getNextMember();
@@ -97,8 +100,8 @@ void GroupManager::reGroup() {
     
         // centers are stored in a separate list
         objectData.object = centerObject;
-        objectData.x = centerObject->x;
-        objectData.y = centerObject->y;
+        objectData.x = *centerObject->gob->sod.x;
+        objectData.y = *centerObject->gob->sod.y;
         
         centerGroupingList.push_back(objectData);
         groupMembers = (*groupIter)->getMembers();
@@ -107,8 +110,8 @@ void GroupManager::reGroup() {
           if ((*objectIter) != centerObject){
             // don't add the center object to this list
             objectData.object = *objectIter;
-            objectData.x = (*objectIter)->x;
-            objectData.y = (*objectIter)->y;
+            objectData.x = *(*objectIter)->gob->sod.x;
+            objectData.y = *(*objectIter)->gob->sod.y;
             groupingList.push_back(objectData);
           }
           objectIter++;
@@ -264,6 +267,7 @@ void GroupManager::refreshGroups(bool final) {
   // also, if not final, add the group type of stale groups to
   // the staleGroupTypes set, so reGroup will run on them
  
+ cout << "begin ref" << endl;
   list<SoarGameGroup*>::iterator groupIter;
 
   groupIter = groupsInFocus.begin();
@@ -297,7 +301,7 @@ void GroupManager::refreshGroups(bool final) {
     }
     groupIter++;
   }
-
+  cout << "end ref" << endl;
   return;
 }
 

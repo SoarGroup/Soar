@@ -59,6 +59,8 @@ private:
   bool handle_event(const Event& e);
   void updateSoarGameObjects(const GameChanges& changes);
   void updateSoarPlayerInfo();
+  
+  int counter;
 };
 
 #endif
