@@ -18,12 +18,12 @@ class SoarGameObject{
 	void registerBehavior(FSM *);
 	void removeBehavior(std::string cmd);
 
-	void issueCommand(SoarAction name, Vector<sint4> p);
+	void issueCommand(SoarActionType name, Vector<sint4> p);
 	void update();
 
 	void setGroup(SoarGameGroup *g);
 	SoarGameGroup *getGroup();
-	SoarAction getState();
+	SoarActionType getState();
 
 
 	GameObj *gob;
