@@ -53,6 +53,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestConnectionSML", "Tools\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCSharpSML", "Tools\TestCSharpSML\TestCSharpSML.csproj", "{29277D02-A002-439F-B3E7-C89C16A21818}"
 	ProjectSection(ProjectDependencies) = postProject
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF} = {ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestSMLEvents", "Tools\TestSMLEvents\TestSMLEvents.vcproj", "{8EF61FF7-214E-4955-9DBF-CCD164815E9C}"
