@@ -31,7 +31,7 @@ class SoarGameObject{
 	std::list<FSM *> behaviors;
 	std::stack<FSM *> memory;
 
-	SoarAction state;
+	SoarActionType state;
   	SoarGameGroup* group;
 
 };

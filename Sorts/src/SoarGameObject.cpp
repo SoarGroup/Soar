@@ -27,7 +27,7 @@ void SoarGameObject::registerBehavior(FSM *b)
  behaviors.push_back(b);
 }
 
-void SoarGameObject::removeBehavior(SoarAction name)
+void SoarGameObject::removeBehavior(SoarActionType name)
 {
  std::list<FSM*>::iterator it;
  FSM *tmp;
@@ -43,7 +43,7 @@ void SoarGameObject::removeBehavior(SoarAction name)
 }
 
 
-void SoarGameObject::issueCommand(SoarAction cmd, Vector<sint4> prms)
+void SoarGameObject::issueCommand(SoarActionType cmd, Vector<sint4> prms)
 {
  std::list<FSM*>::iterator it;
 
@@ -56,6 +56,7 @@ void SoarGameObject::issueCommand(SoarAction cmd, Vector<sint4> prms)
   {
    (*it)->setParams(prms);
    memory.push((*it));
+   state = cmd;
    return;
   }
   std::cout<<"No match for command"<<std::endl;
@@ -66,7 +67,13 @@ void SoarGameObject::update()
 {
  if(!memory.empty())
   if(!memory.top()->update())
+  {
    memory.pop();
+   if(!memory.empty())
+    state = memory.top()->name;
+   else
+    state = SA_IDLE;
+  }
 }
 
 
@@ -80,7 +87,7 @@ SoarGameGroup *SoarGameObject::getGroup(void)
  return group;
 }
 
-SoarAction SoarGameObject::getState()
+SoarActionType SoarGameObject::getState()
 {
  return state;
 }
