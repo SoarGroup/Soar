@@ -1,5 +1,6 @@
 #include"MoveFSM.h"
-
+#include<iostream>
+using namespace std;
 
 MoveFSM::MoveFSM()
 {
@@ -21,6 +22,7 @@ bool MoveFSM::update()
 	case IDLE:
 	 //Start moving
 	 gob->set_action("move",params);
+   cout << "MOVING!" << endl;
 	 break;
 
 	case MOVING:

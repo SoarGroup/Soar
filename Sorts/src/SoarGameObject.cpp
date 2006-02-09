@@ -61,6 +61,7 @@ void SoarGameObject::issueCommand(SoarActionType cmd, Vector<sint4> prms)
    memory.push((*it));
    state = cmd;
    cout << "ACTION" << endl;
+   update();
    return;
   }
   std::cout<<"No match for command"<<std::endl;
