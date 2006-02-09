@@ -41,6 +41,9 @@ static Kernel* gKernel = 0 ;
 // If you need to log things that don't appear in the trace, you can register
 // for other events (like production firings) and log extra information.
 //
+// If you don't want to process the trace but just capture it consider
+// listening for the smlEVENT_PRINT event instead which sends the trace just as strings.
+//
 /////////////////////////////////////////////////////////////////
 void MyXMLEventHandler(smlXMLEventId id, void* pUserData, Agent* pAgent, ClientXML* pXML)
 {
