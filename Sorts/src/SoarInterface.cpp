@@ -64,11 +64,14 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyList gpl) {
     // add the group to the soar input link if it hasn't been already
     g.added = true;
     g.WMEptr = agent->CreateIdWME(playerGroupsId, "group");
+
+    // label the group with its id
+    agent->CreateIntWME(g.WMEptr, "id", g.groupId);
+
+    // add properties
     for(groupPropertyList::iterator i = gpl.begin(); i != gpl.end(); i++) {
-      for(groupPropertyList::iterator i = gpl.begin(); i != gpl.end(); i++) {
-        // create a new WME object for the property
-        g.properties[(*i).first] = agent->CreateIntWME(g.WMEptr, (*i).first.c_str(), (*i).second);
-      }
+      // create a new WME object for the property
+      g.properties[(*i).first] = agent->CreateIntWME(g.WMEptr, (*i).first.c_str(), (*i).second);
     }
   }
   else {
@@ -93,7 +96,7 @@ void SoarInterface::getNewSoarOutput() {
     sml::Identifier* cmdPtr = agent->GetCommand(i) ;
 
     // check if this command has already been encountered
-    if (soarActions.find(cmdPtr) == soarActions.end()) {
+    if (soarActions.find(cmdPtr) != soarActions.end()) {
       continue;
     }
 

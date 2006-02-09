@@ -64,13 +64,9 @@ void SoarGameGroup::updateStats(bool saveProps) {
     // be careful is some numbers are very big for each object and the double could overflow
     
   //  health += *currentObject.getHealth();
-#ifdef DEBUG_GROUPS 
-    x += (*currentObject)->x;
-    y += (*currentObject)->y;
-#else
+    //health += (*currentObject)->gob->get_int("health");
     x += *(*currentObject)->gob->sod.x;
     y += *(*currentObject)->gob->sod.y;
-#endif
     currentObject++;
   }
   
@@ -86,15 +82,15 @@ void SoarGameGroup::updateStats(bool saveProps) {
   if (saveProps) {
     pair<string, int> wme;
     wme.first = "health";
-    wme.second = (int)(100*health);
+    wme.second = (int)(health);
     propList.push_back(wme);
 
-    // how do we want to represent positon?
+    // how do we want to represent position?
     wme.first = "x_position";
-    wme.second = (int)(100*x);
+    wme.second = (int)(x);
     propList.push_back(wme);
     wme.first = "y_position";
-    wme.second = (int)(100*y);
+    wme.second = (int)(y);
     propList.push_back(wme);
     wme.first = "num_members";
     wme.second = (int)size;
@@ -168,13 +164,19 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
                                  SoarGameObject* target) { 
   bool result = true;
 
+  cout << "##################" << endl;
+  for(list<int>::iterator i = params.begin(); i != params.end(); i++) {
+    cout << *i << " ";
+  }
+  cout << endl;
+
   list<int>::iterator listIt = params.begin();  
   Vector<sint4> tempVec;
   string ORTSCommand;
   
-  tempVec.push_back((*listIt)/100);
+  tempVec.push_back(*listIt);
   listIt++;
-  tempVec.push_back((*listIt)/100);
+  tempVec.push_back(*listIt);
   
   if (type == SA_MOVE) {
     // the third param is speed, always use 3 (the max)

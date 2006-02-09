@@ -50,8 +50,10 @@ bool OrtsInterface::handle_event(const Event& e) {
   if (e.get_who() == GameStateModule::FROM) {
     if (e.get_what() == GameStateModule::VIEW_MSG) {
       cout << "INTERRUPT!" << endl;
-      const GameChanges& changes = gsm->get_changes();
 
+      groupManager->assignActions();
+
+      const GameChanges& changes = gsm->get_changes();
       updateSoarGameObjects(changes);
       groupManager->updateWorld();
 
