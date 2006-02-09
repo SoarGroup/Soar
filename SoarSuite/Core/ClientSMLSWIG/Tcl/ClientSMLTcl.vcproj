@@ -193,7 +193,7 @@ echo TCL_LIB: %TCL_LIB%
 echo TCL_BIN: %TCL_BIN%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -c++ -tcl -pkgversion 8.6.2  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;
+&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 8.6.2  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;
 "
 					AdditionalDependencies=""
 					Outputs="$(InputName)_wrap.cxx"/>
@@ -208,7 +208,7 @@ echo TCL_LIB: %TCL_LIB%
 echo TCL_BIN: %TCL_BIN%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -c++ -tcl -pkgversion 8.6.2  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;
+&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 8.6.2  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;
 "
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
