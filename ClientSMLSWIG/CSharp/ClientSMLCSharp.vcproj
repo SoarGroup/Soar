@@ -172,7 +172,7 @@ cd ..
 					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -c++ -namespace sml -dllimport CSharp_sml_ClientInterface -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -csharp -outdir build &quot;$(InputPath)&quot;
+&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -namespace sml -dllimport CSharp_sml_ClientInterface -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -csharp -outdir build &quot;$(InputPath)&quot;
 "
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
@@ -183,7 +183,7 @@ $(SWIG)\swig.exe -Wall -c++ -namespace sml -dllimport CSharp_sml_ClientInterface
 					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -c++ -namespace sml -dllimport CSharp_sml_ClientInterface -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -csharp -outdir build &quot;$(InputPath)&quot;
+&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -namespace sml -dllimport CSharp_sml_ClientInterface -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -csharp -outdir build &quot;$(InputPath)&quot;
 "
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
