@@ -69,6 +69,13 @@ void MyXMLEventHandler(smlXMLEventId id, void* pUserData, Agent* pAgent, ClientX
 	if (!ok)
 		return ;
 
+	// To figure out the format of the XML you can either look at the ClientTraceXML class
+	// (which has methods grouped appropriately) or you can look at the XML output directly.
+	// It's designed to be readable, so looking at a few packets you should quickly get the hang
+	// of what's going on and what attributes are available to be read.
+	// Here are a couple of examples.
+
+	// Check if this is a new state
 	if (pTraceXML->IsTagState())
 	{
 		std::string count = pTraceXML->GetDecisionCycleCount() ;
@@ -79,6 +86,7 @@ void MyXMLEventHandler(smlXMLEventId id, void* pUserData, Agent* pAgent, ClientX
 		fprintf(gOutputFile, "New state at decision %s was %s (%s %s)\n", count.c_str(), stateID.c_str(), impasseObject.c_str(), impasseType.c_str()) ;
 	}
 
+	// Check if this is a new operator
 	if (pTraceXML->IsTagOperator())
 	{
 		std::string count = pTraceXML->GetDecisionCycleCount() ;
