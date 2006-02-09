@@ -179,7 +179,7 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
 
   list<int>::iterator listIt = params.begin();  
   Vector<sint4> tempVec;
-  string ORTSCommand;
+//  string ORTSCommand;
   
   tempVec.push_back(*listIt);
   listIt++;
@@ -189,21 +189,21 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
     // the third param is speed, always use 3 (the max)
     tempVec.push_back(3);
     // SoarGameObject should really take the SA_MOVE directly
-    ORTSCommand = "Move";
+  //  ORTSCommand = "Move";
   }
   else if (type == SA_MINE) {
     // get the id of the resource
     //sint4 mineralID = ORTSIO->getID(target);
-    ORTSCommand = "Mine";
+  //  ORTSCommand = "Mine";
   }
   else {
-    ORTSCommand = "Invalid";
+  //  ORTSCommand = "Invalid";
   }
 
   set<SoarGameObject*>::iterator currentObject = members.begin();
   
   while (currentObject != members.end()) {
-    (*currentObject)->issueCommand("Move", tempVec);
+    (*currentObject)->issueCommand(type, tempVec);
     currentObject++;
   }
   return result;
