@@ -13,6 +13,7 @@
 #include <cassert>
 #include <vector>
 #include <fstream>
+#include <iterator>
 
 using std::map; using std::string; using std::list;
 using std::endl; using std::cout; using std::copy;
