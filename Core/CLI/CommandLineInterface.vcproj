@@ -157,6 +157,9 @@
 					RelativePath=".\src\cli_chunknameformat.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_clog.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_defaultwmedepth.cpp">
 				</File>
 				<File
@@ -200,9 +203,6 @@
 				</File>
 				<File
 					RelativePath=".\src\cli_learn.cpp">
-				</File>
-				<File
-					RelativePath=".\src\cli_log.cpp">
 				</File>
 				<File
 					RelativePath=".\src\cli_ls.cpp">
