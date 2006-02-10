@@ -5,7 +5,7 @@
 
 AC_PREREQ(2.57)
 AC_INIT([SoarSuite], [8.6.2], [soar-group@lists.sourceforge.net])
-AC_CONFIG_SRCDIR([Core/Kernel/include/soarkernel.h])
+AC_CONFIG_SRCDIR([Core/SoarKernel/include/soarkernel.h])
 AM_INIT_AUTOMAKE([foreign])
 AC_REVISION($Revision$)
 AC_CONFIG_HEADERS([config.h])
@@ -393,8 +393,8 @@ fi
 AC_OUTPUT([
 	Makefile
 	Core/Makefile
-	Core/Kernel/Makefile
-	Core/Kernel/src/Makefile
+	Core/SoarKernel/Makefile
+	Core/SoarKernel/src/Makefile
 	Core/gSKI/Makefile
 	Core/gSKI/src/Makefile
 	Core/ConnectionSML/Makefile

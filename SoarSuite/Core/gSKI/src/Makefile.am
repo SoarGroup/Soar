@@ -50,7 +50,7 @@ gSKI_Wme.cpp\
 gSKI_WorkingMemory.cpp\
 gSKI_WorkingMemoryView.cpp
 
-INCLUDES = -I../../.. -I../include -I ../../Kernel/include
+INCLUDES = -I../../.. -I../include -I ../../SoarKernel/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)
 
