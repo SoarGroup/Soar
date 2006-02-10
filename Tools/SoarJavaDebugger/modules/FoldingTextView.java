@@ -589,6 +589,7 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 				continue ;
 
 			m_FoldingText.appendSubText(lines[i] + kLineSeparator, m_ExpandTracePersistent || m_ExpandTrace, type) ;
+			m_Logger.log(lines[i], false, true) ;
 		}
 	}
 	
@@ -628,6 +629,7 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 				continue ;
 
 			m_FoldingText.appendText(lines[i] + kLineSeparator, type) ;
+			m_Logger.log(lines[i], false, true) ;
 		}
 	}
 	

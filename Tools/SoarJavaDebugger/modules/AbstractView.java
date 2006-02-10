@@ -13,6 +13,7 @@ package modules;
 
 
 import general.JavaElementXML;
+import helpers.Logger;
 import manager.MainWindow;
 import manager.Pane;
 
@@ -52,6 +53,9 @@ public abstract class AbstractView implements AgentFocusListener
 	/** The window which will contain all others within this view */
 	protected Composite		m_Container ;
 	
+	/** A class to help with logging, should this window wish to offer that **/
+	protected Logger		m_Logger = new Logger() ;
+	
 	/** The line separator Soar uses and that we therefore use. */
 	public static final String kLineSeparator = "\n" ;
 	
@@ -83,17 +87,9 @@ public abstract class AbstractView implements AgentFocusListener
 	
 	/** The SWT window that contains everything within this module */
 	public Composite getWindow()	{ return m_Container ; }
-	
-	protected void initContainer(MainFrame frame, Document doc, Pane parentPane)
-	{
-		setValues(frame, doc, parentPane) ;
-		Composite parent = parentPane.getWindow() ;
-		
-		// The container lets us control the layout of the controls
-		// within this window
-		m_Container	   = new Composite(parent, SWT.NULL) ;
-		m_Container.setData(MainWindow.kWindowType, MainWindow.kTypeModule) ;
-	}
+
+	/** The logger helper class */
+	public Logger getLogger() { return m_Logger ; }
 	
 	/********************************************************************************************
 	 * 
@@ -107,7 +103,7 @@ public abstract class AbstractView implements AgentFocusListener
 	{
 		return m_Frame.getAgentFocus() ;
 	}
-
+	
 	/********************************************************************************************
 	* 
 	* This "base name" is used to generate a unique name for the window.
@@ -312,6 +308,9 @@ public abstract class AbstractView implements AgentFocusListener
 		
 		// We want to know when the frame focuses on particular agents
 		m_Frame.addAgentFocusListener(this) ;
+		
+		// Initialize the logger (in case we wish to use it)
+		m_Logger.setView(this) ;
 	}
 	
 	/** Generates a unique name for this window */
@@ -389,6 +388,14 @@ public abstract class AbstractView implements AgentFocusListener
 	*************************************************************************/	
 	public boolean offerClearDisplay() { return true ; }
 
+	/************************************************************************
+	* 
+	* Override and return false if it doesn't make sense to log the contexts of this
+	* type of view and so we shouldn't offer it to the user in the context menu.
+	* 
+	*************************************************************************/	
+	public boolean offerLogging() { return true ; }
+
 	public void fillWindowMenu(Menu menu, boolean asSubMenu, boolean includeCopyPaste)
 	{
 		if (asSubMenu)
@@ -412,6 +419,14 @@ public abstract class AbstractView implements AgentFocusListener
 		
 		addItem(menu, "Properties ...", "properties " + m_Frame.getName() + " " + this.getName()) ;
 
+		if (offerLogging())
+		{
+			if (!m_Logger.isLogging())
+				addItem(menu, "Log this window...", "log dialog " + m_Frame.getName() + " " + this.getName()) ;
+			else
+				addItem(menu, "Stop logging to " + m_Logger.getFilename(), "log stop " + m_Frame.getName() + " " + this.getName()) ;
+		}
+		
 		if (offerClearDisplay())
 			addItem(menu, "Clear window", "clear " + m_Frame.getName() + " " + this.getName()) ;
 

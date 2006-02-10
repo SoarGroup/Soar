@@ -38,8 +38,6 @@ public abstract class AbstractTextView extends AbstractComboView
 	// This isn't supported in a platform independent way by the vanilla Text control.  But be aware the StyledText control
 	// is about 10 times slower to update than a simple Text view, so we're not using it for trace output.
 	private StyledText m_Text ;
-	//private boolean m_Logging;
-	private PrintWriter m_LogWriter;
 
 	// The constructor must take no arguments so it can be called
 	// from the loading code and the new window dialog
@@ -310,7 +308,7 @@ public abstract class AbstractTextView extends AbstractComboView
 			return ;
 		
 		m_Text.append(text) ;
-		if (m_LogWriter != null) m_LogWriter.print(text);
+		m_Logger.log(text, true, false) ;
 
 		// If we're clearing the window after each command we should
 		// leave it at the top.  Otherwise, scroll it.

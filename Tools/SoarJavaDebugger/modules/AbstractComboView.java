@@ -464,6 +464,7 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 		}
 
 		element.addChildElement(this.m_CommandHistory.ConvertToXML("History")) ;
+		element.addChildElement(this.m_Logger.convertToXML("Logger")) ;
 		
 		return element ;
 	}
@@ -494,6 +495,10 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 		if (history != null)
 			this.m_CommandHistory.LoadFromXML(doc, history) ;
 		
+		JavaElementXML log = element.findChildByName("Logger") ;
+		if (log != null)
+			this.m_Logger.loadFromXML(doc, log) ;
+
 		// Register that this module's name is in use
 		frame.registerViewName(m_Name, this) ;
 		
@@ -662,24 +667,7 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 	{
 		return m_CurrentCommand ;
 	}
-	
-	/*
-	private String getCommandText()
-	{
-		if (!Document.kDocInOwnThread)
-			return m_CommandCombo.getText() ;
-
-		// We need to call m_CommandCombo.getText() from the UI thread
-		// so we have to go through this little dance
-		GetTextRunnable op = new GetTextRunnable() ;
 		
-		if (!Display.getDefault().isDisposed())
-			Display.getDefault().syncExec(op) ;
-
-        return op.getResult() ;
-	}
-	*/
-	
 	public void printEventHandler(int eventID, Object data, Agent agent, String message)
 	{		
 		if (getDisplayControl().isDisposed())

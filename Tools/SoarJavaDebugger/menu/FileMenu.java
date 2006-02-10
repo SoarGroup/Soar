@@ -36,10 +36,10 @@ public class FileMenu
 	private AbstractAction m_ChangeDirectory = new AbstractAction("&Change current folder...") { public void actionPerformed(ActionEvent e) { changeDirectory() ; } } ;
 	private AbstractAction m_LoadRete = new AbstractAction("&Load production memory (rete)...") { public void actionPerformed(ActionEvent e) { loadRete(e) ; } } ;
 	private AbstractAction m_SaveRete = new AbstractAction("Save production memory (&rete)...") { public void actionPerformed(ActionEvent e) { saveRete(e) ; } } ;
-	private AbstractAction m_LogNewFile 	 = new AbstractAction("Log output to &new file...") { public void actionPerformed(ActionEvent e) { logNewFile(e) ; } } ;
-	private AbstractAction m_LogExistingFile = new AbstractAction("&Append log output to existing file...") { public void actionPerformed(ActionEvent e) { logAppendFile(e) ; } } ;
-	private AbstractAction m_LogClose = new AbstractAction("Turn &off logging") { public void actionPerformed(ActionEvent e) { logClose(e) ; } } ;
-	private AbstractAction m_LogStatus = new AbstractAction("Logging &status")   { public void actionPerformed(ActionEvent e) { logStatus(e) ; } } ;
+	private AbstractAction m_LogNewFile 	 = new AbstractAction("Log &output to file...") { public void actionPerformed(ActionEvent e) { logNewFile(e) ; } } ;
+	//private AbstractAction m_LogExistingFile = new AbstractAction("&Append log output to existing file...") { public void actionPerformed(ActionEvent e) { logAppendFile(e) ; } } ;
+	//private AbstractAction m_LogClose = new AbstractAction("Turn &off logging") { public void actionPerformed(ActionEvent e) { logClose(e) ; } } ;
+	//private AbstractAction m_LogStatus = new AbstractAction("Logging &status")   { public void actionPerformed(ActionEvent e) { logStatus(e) ; } } ;
 	private AbstractAction m_Load 	 = new AbstractAction("Load &window layout...") { public void actionPerformed(ActionEvent e) { loadPerformed(e) ; } } ;
 	private AbstractAction m_Save  	 = new AbstractAction("Save w&indow layout...") { public void actionPerformed(ActionEvent e) { savePerformed(e) ; } } ;
 	private AbstractAction m_Exit 	 = new AbstractAction("E&xit") 			{ public void actionPerformed(ActionEvent e) { exitPerformed(e) ; } } ;
@@ -67,9 +67,9 @@ public class FileMenu
 		menu.add(m_SaveRete) ;
 		menu.addSeparator() ;
 		menu.add(m_LogNewFile) ;
-		menu.add(m_LogExistingFile) ;
-		menu.add(m_LogClose) ;
-		menu.add(m_LogStatus) ;
+		//menu.add(m_LogExistingFile) ;
+		//menu.add(m_LogClose) ;
+		//menu.add(m_LogStatus) ;
 		menu.addSeparator() ;
 		menu.add(m_Load) ;
 		menu.add(m_Save) ;
@@ -172,6 +172,8 @@ public class FileMenu
 	/** Log to a new file */
 	private void logNewFile(ActionEvent e)
 	{
+		m_Frame.ShowMessageBox("Log to file", "To log output from a window to a file, right click on the window and select 'Log this window...' from the context menu") ;
+		/*
 		String filename = SaveLoad.SaveFileDialog(m_Frame.getWindow(), new String[] { "*.txt" }, new String[] { "Log file (*.txt)" } , m_Frame.getAppProperties(), "LogSave", "LogLoad") ;
 		
 		if (filename != null)
@@ -179,6 +181,7 @@ public class FileMenu
 			String sourceLine = m_Document.getSoarCommands().getLogNewCommand(filename) ;
 			m_Frame.executeCommandPrimeView(sourceLine, true) ;
 		}
+		*/
 	}
 
 	/** Append log to an existing file */
