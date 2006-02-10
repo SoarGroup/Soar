@@ -2,8 +2,8 @@
 # Author: Jonathan Voigt, voigtjr@gmail.com
 # Date: 2006
 ###########################################
-SUBDIRS = TOHSML TestCLI TestClientSML TestConnectionSML TestSMLEvents TestSoarPerformance
-# Need to add: QuickLink SoarTextIO
+SUBDIRS = TOHSML TestCLI TestClientSML TestConnectionSML TestSMLEvents TestSoarPerformance QuickLink
+
 java:
 	cd LoggerJava && $(MAKE) $(MAKEOPTS) java
 	cd SoarJavaDebugger && $(MAKE) $(MAKEOPTS) java

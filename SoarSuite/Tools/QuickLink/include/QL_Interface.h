@@ -315,3 +315,4 @@ void QL_Interface::update_value_wme(const std::string& identifier, const std::st
 }
 
 #endif
+

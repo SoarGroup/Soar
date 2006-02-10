@@ -296,7 +296,7 @@ void QL_Interface::spawn_debugger()
 	pid_t pid = fork();
 
 	if (pid < 0)
-		return false;
+		throw Error("fork failed");
 	else if (pid == 0)
 	{
 		/*char* pStr = ;
@@ -304,11 +304,11 @@ void QL_Interface::spawn_debugger()
 		if (chdir(pStr) < 0)
 		assert(false && "chdir to SOAR_LIBRARY did not work");*/
 		system("java -jar SoarJavaDebugger.jar -remote");
-		pKernel->CheckForIncomingCommands();
+		m_pKernel->CheckForIncomingCommands();
 		exit(1); // this forked process dies
 	}
 	else
-		return true; // parent process continues as normal
+		return;// parent process continues as normal
 
 #endif
 
@@ -321,7 +321,11 @@ void QL_Interface::spawn_debugger()
 
 	while(1)
 	{
+#ifdef _WIN32 || _WIN64
 		Sleep(100);
+#else
+		sleep(1);
+#endif
 		m_pKernel->GetAllConnectionInfo();
 		char const * status = m_pKernel->GetAgentStatus(java_debugger);
 		update_views(".");
@@ -375,3 +379,4 @@ void QL_Interface::update_views(string info)
 {
 	for_each(views.begin(), views.end(), bind2nd(mem_fun(&View_Type::update_info), info));
 }
+
