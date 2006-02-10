@@ -47,6 +47,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIAttributePreferencesMode]	= &cli::CommandLineInterface::ParseAttributePreferencesMode;
 	m_CommandMap[Commands::kCLICD]							= &cli::CommandLineInterface::ParseCD;
 	m_CommandMap[Commands::kCLIChunkNameFormat]				= &cli::CommandLineInterface::ParseChunkNameFormat;
+	m_CommandMap[Commands::kCLICLog]						= &cli::CommandLineInterface::ParseCLog;
 	m_CommandMap[Commands::kCLIDefaultWMEDepth]				= &cli::CommandLineInterface::ParseDefaultWMEDepth;
 	m_CommandMap[Commands::kCLIDirs]						= &cli::CommandLineInterface::ParseDirs;
 	m_CommandMap[Commands::kCLIEcho]						= &cli::CommandLineInterface::ParseEcho;
@@ -62,7 +63,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIInputPeriod]					= &cli::CommandLineInterface::ParseInputPeriod;
 	m_CommandMap[Commands::kCLIInternalSymbols]				= &cli::CommandLineInterface::ParseInternalSymbols;
 	m_CommandMap[Commands::kCLILearn]						= &cli::CommandLineInterface::ParseLearn;
-	m_CommandMap[Commands::kCLILog]							= &cli::CommandLineInterface::ParseLog;
 	m_CommandMap[Commands::kCLILS]							= &cli::CommandLineInterface::ParseLS;
 	m_CommandMap[Commands::kCLIMatches]						= &cli::CommandLineInterface::ParseMatches;
 	m_CommandMap[Commands::kCLIMaxChunks]					= &cli::CommandLineInterface::ParseMaxChunks;
@@ -108,6 +108,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIAttributePreferencesMode]	= true ;
 	m_EchoMap[Commands::kCLICD]							= true ;
 	m_EchoMap[Commands::kCLIChunkNameFormat]			= true ;
+	m_EchoMap[Commands::kCLICLog]						= true ;
 	m_EchoMap[Commands::kCLIDefaultWMEDepth]			= true ;
 	m_EchoMap[Commands::kCLIEcho]						= true ;
 	m_EchoMap[Commands::kCLIEchoCommands]				= true ;
@@ -116,7 +117,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIInitSoar]					= true ;
 	m_EchoMap[Commands::kCLIInputPeriod]				= true ;
 	m_EchoMap[Commands::kCLILearn]						= true ;
-	m_EchoMap[Commands::kCLILog]						= true ;
 	m_EchoMap[Commands::kCLIMaxChunks]					= true ;
 	m_EchoMap[Commands::kCLIMaxElaborations]			= true ;
 	m_EchoMap[Commands::kCLIMaxNilOutputCycles]			= true ;

@@ -188,6 +188,7 @@ protected:
 	bool ParseAttributePreferencesMode(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseCD(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	bool ParseCLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseDefaultWMEDepth(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseDirs(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseEcho(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -203,7 +204,6 @@ protected:
 	bool ParseInputPeriod(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseInternalSymbols(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseLearn(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseLS(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseMatches(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseMaxChunks(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -286,6 +286,15 @@ protected:
 	*        null for query
 	*************************************************************/
 	bool DoChunkNameFormat(gSKI::IAgent* pAgent, const bool* pLongFormat = 0, const int* pCount = 0, const std::string* pPrefix = 0);
+
+	/*************************************************************
+	* @brief clog command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param mode The mode for the log command, see cli_CommandData.h
+	* @param pFilename The log filename, pass 0 (null) if not applicable to mode
+	* @param pToAdd The string to add to the log, pass 0 (null) if not applicable to mode
+	*************************************************************/
+	bool DoCLog(gSKI::IAgent* pAgent, const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0);
 
 	/*************************************************************
 	* @brief default-wme-depth command
@@ -396,15 +405,6 @@ protected:
 	*        see cli_CommandData.h
 	*************************************************************/
 	bool DoLearn(gSKI::IAgent* pAgent, const LearnBitset& options);
-
-	/*************************************************************
-	* @brief log command
-	* @param pAgent The pointer to the gSKI agent interface
-	* @param mode The mode for the log command, see cli_CommandData.h
-	* @param pFilename The log filename, pass 0 (null) if not applicable to mode
-	* @param pToAdd The string to add to the log, pass 0 (null) if not applicable to mode
-	*************************************************************/
-	bool DoLog(gSKI::IAgent* pAgent, const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0);
 
 	/*************************************************************
 	* @brief ls command
