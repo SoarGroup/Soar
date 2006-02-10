@@ -4,6 +4,7 @@
 #include "WME_Id.h"
 #include "QL_Interface.h"
 #include "sml_Client.h"
+#include "Input_Controller.h"
 
 #include <list>
 #include <iostream>
@@ -110,6 +111,10 @@ void View_Console::display_output(Kernel* pKernel)
 	}
 
 	printOutput();
+	
+	if(Input_Controller::instance().should_print_prompt)
+		cout << endl << endl << "> ";
+	Input_Controller::instance().should_print_prompt = true;
 }
 
 void View_Console::printOutput()

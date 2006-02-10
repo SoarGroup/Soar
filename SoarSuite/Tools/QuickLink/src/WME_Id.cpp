@@ -40,6 +40,11 @@ WME_Id::WME_Id(const string& in_id_name, const string& in_attribute, Identifier*
 	QL_Interface::instance().add_created_identifier(this);
 }
 
+WME_Id::~WME_Id()
+{
+	Agent* pAgent = QL_Interface::instance().get_agent_ptr();
+	destroy_sml_object(pAgent);
+}
 Smart_Pointer<WME_Id> WME_Id::create(const string& in_parent, const string& in_attribute, const string& in_value, Agent* pAgent, Identifier* in_id)
 {
 	Smart_Pointer<WME_Id> ptr = new WME_Id(in_parent, in_attribute, in_value, pAgent, in_id);
@@ -168,7 +173,7 @@ void WME_Id::remove_wme_child(const string& att, const string& value, Agent* pAg
 void WME_Id::remove_all_children(Agent* pAgent)
 {
 	// go through and have all of the children delete their sml objects
-	for_each(m_all_children.begin(), m_all_children.end(), bind2nd(mem_fun(&WME_Type::destroy_sml_object), pAgent));
+	//for_each(m_all_children.begin(), m_all_children.end(), bind2nd(mem_fun(&WME_Type::destroy_sml_object), pAgent));
 	// clear each of the containers
 	m_all_children.clear();
 	m_float_children.clear();

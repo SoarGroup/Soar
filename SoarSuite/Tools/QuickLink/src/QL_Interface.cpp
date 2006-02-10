@@ -221,7 +221,6 @@ void QL_Interface::attach_view(View_Type* new_view)
 
 void QL_Interface::respond_to_init_soar()
 {
-	// first clear up all of the input-link elements
 	m_id_container.clear();
 
 	// call synch input-link in case a new identifier is used for the input-link
@@ -269,7 +268,7 @@ void QL_Interface::spawn_debugger()
 #if defined _WIN32 || _WIN64
 
 	// spawn the debugger asynchronously
-	int ret = _spawnlp(_P_NOWAIT, "javaw.exe", "javaw.exe", "-jar", "SoarJavaDebugger.jar", "-remote", NULL);
+	int ret = _spawnlp(_P_NOWAIT, "javaw.exe", "javaw.exe", "-jar", "../../SoarLibrary/bin/SoarJavaDebugger.jar", "-remote", NULL);
 	if(ret == -1) {
 		switch (errno) {
 				case E2BIG:
@@ -344,8 +343,8 @@ void MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 {
 	if(smlEVENT_AFTER_AGENT_REINITIALIZED == id)
 		QL_Interface::instance().respond_to_init_soar();
-	else if(smlEVENT_BEFORE_AGENT_REINITIALIZED == id)
-		QL_Interface::instance().commit();  // this has to be done, otherwise an assertion will fail
+	/*else if(smlEVENT_BEFORE_AGENT_REINITIALIZED == id)
+		QL_Interface::instance().commit();  // this has to be done, otherwise an assertion will fail*/
 }
 
 // member functions
