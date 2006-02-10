@@ -1,4 +1,4 @@
-#echo off
+@echo off
 cd Environments\JavaBaseEnvironment
 call build.bat --nopause
 cd ..\JavaEaters
