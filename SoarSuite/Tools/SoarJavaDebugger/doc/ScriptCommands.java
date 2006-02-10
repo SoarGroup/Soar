@@ -51,6 +51,10 @@ public class ScriptCommands
 		
 		String[] tokens = command.split(" ") ;
 		
+		System.out.println("Received script command: ") ;
+		for (int i = 0 ; i < tokens.length ; i++)
+			System.out.println(i + ". " + tokens[i] + " ") ;
+		
 		if (tokens.length == 0)
 			return null ;
 		
