@@ -51,11 +51,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestConnectionSML", "Tools\
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCSharpSML", "Tools\TestCSharpSML\TestCSharpSML.csproj", "{29277D02-A002-439F-B3E7-C89C16A21818}"
-	ProjectSection(ProjectDependencies) = postProject
-		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF} = {ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestSMLEvents", "Tools\TestSMLEvents\TestSMLEvents.vcproj", "{8EF61FF7-214E-4955-9DBF-CCD164815E9C}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
@@ -274,18 +269,6 @@ Global
 		{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}.Release (gSKI DLL).Build.0 = Release|Win32
 		{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}.Release (no SWIG).ActiveCfg = Release|Win32
 		{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}.Release (no SWIG).Build.0 = Release|Win32
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug.ActiveCfg = Debug|.NET
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug.Build.0 = Debug|.NET
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug (Core).ActiveCfg = Debug|.NET
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug (gSKI DLL).ActiveCfg = Debug|.NET
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug (gSKI DLL).Build.0 = Debug|.NET
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug (no SWIG).ActiveCfg = Debug|.NET
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Release.ActiveCfg = Release|.NET
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Release.Build.0 = Release|.NET
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Release (Core).ActiveCfg = Release|.NET
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Release (gSKI DLL).ActiveCfg = Release|.NET
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Release (gSKI DLL).Build.0 = Release|.NET
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Release (no SWIG).ActiveCfg = Release|.NET
 		{8EF61FF7-214E-4955-9DBF-CCD164815E9C}.Debug.ActiveCfg = Debug|Win32
 		{8EF61FF7-214E-4955-9DBF-CCD164815E9C}.Debug.Build.0 = Debug|Win32
 		{8EF61FF7-214E-4955-9DBF-CCD164815E9C}.Debug (Core).ActiveCfg = Debug|Win32
