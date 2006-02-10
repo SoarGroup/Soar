@@ -690,7 +690,8 @@ protected:
 		if (m_PrintEventToResult) {
 			CommandLineInterface::m_Result << msg;
 		}
-		if (m_pLogFile) (*m_pLogFile) << msg;
+		// m_Result gets logged in GetLastResultSML
+		//if (m_pLogFile) (*m_pLogFile) << msg;
 	}
 
 	// Production callback events go here
