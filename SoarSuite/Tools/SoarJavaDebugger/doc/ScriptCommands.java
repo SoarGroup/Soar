@@ -12,6 +12,7 @@
 package doc;
 
 import general.JavaElementXML;
+import helpers.Logger;
 import manager.MainWindow;
 import manager.Pane;
 import modules.AbstractView;
@@ -41,7 +42,104 @@ public class ScriptCommands
 		m_Frame = frame ;
 		m_Document = doc ;
 	}
+
+	// Return value is currently null, but we'll allow for it to return values in the future.
+	public Object executeCommand(String command, boolean echoCommand)
+	{
+		if (command == null)
+			return null ;
 		
+		String[] tokens = command.split(" ") ;
+		
+		if (tokens.length == 0)
+			return null ;
+		
+		String first = tokens[0] ;
+
+		// Load a demo: "demo <folder-relative-to-m_DemoPath> <demo.soar>"
+		if (first.equals("demo"))
+		{
+			m_Frame.loadDemo(new java.io.File(tokens[1], tokens[2]), echoCommand) ;
+			return null ;
+		}
+		
+		if (first.equals("loadsource"))
+		{
+			m_Frame.loadSource() ;
+			return null ;
+		}
+		
+		if (first.equals("askcd"))
+		{
+			m_Frame.getFileMenu().changeDirectory() ;
+			return null ;
+		}
+		
+		if (first.equals("removeview"))
+		{
+			return executeRemoveView(tokens) ;
+		}
+		
+		if (first.equals("replaceview"))
+		{
+			return executeReplaceView(tokens) ;
+		}
+
+		if (first.equals("addview"))
+		{
+			return executeAddView(tokens) ;
+		}
+		
+		if (first.equals("addtab"))
+		{
+			return executeAddTab(tokens) ;
+		}
+		
+		if (first.equals("renameview"))
+		{
+			return executeRenameView(tokens) ;
+		}
+		
+		if (first.equals("clear"))
+		{
+			return executeClearView(tokens) ;
+		}
+		
+		if (first.equals("movetabs"))
+		{
+			return executeMoveTabs(tokens) ;
+		}
+		
+		if (first.equals("remote"))
+		{
+			return executeRemoteConnect(tokens) ;
+		}
+		
+		if (first.equals("copy") || first.equals("paste"))
+		{
+			return executeCopyPaste(tokens) ;
+		}
+
+		if (first.equals("log"))
+		{
+			return executeLog(tokens) ;
+		}
+		
+		// properties <frame> <view>
+		if (first.equals("properties"))
+		{
+			String frameName = tokens[1] ;
+			String viewName  = tokens[2] ;
+
+			MainFrame frame = m_Document.getFrameByName(frameName) ;
+			AbstractView view = frame.getView(viewName) ;
+			
+			view.showProperties() ;
+		}
+		
+		return null ;
+	}
+	
 	// Remove an existing view: clear <framename> <viewname>
 	protected Object executeClearView(String[] tokens)
 	{
@@ -101,7 +199,32 @@ public class ScriptCommands
 		
 		return Boolean.TRUE ;
 	}
-	
+
+	// log [start | append | stop | dialog] <framename> <viewname>
+	protected Object executeLog(String[] tokens)
+	{
+		String action    = tokens[1] ;
+		String frameName = tokens[2] ;
+		String viewName  = tokens[3] ;
+					
+		// To the user we are adding a view, but internally we're adding a pane
+		// and then that pane will contain the view
+		MainFrame frame = m_Document.getFrameByName(frameName) ;
+		AbstractView view = frame.getView(viewName) ;
+		Logger logger = view.getLogger() ;
+		
+		if (action.equalsIgnoreCase("start"))
+			logger.startLogging(false) ;
+		else if (action.equalsIgnoreCase("append"))
+			logger.startLogging(true) ;
+		else if (action.equalsIgnoreCase("dialog"))
+			logger.showDialog() ;
+		else if (action.equalsIgnoreCase("stop"))
+			logger.stopLogging() ;
+		
+		return Boolean.TRUE ;
+	}
+
 	// Add a new view: addview <framename> <viewname> Right|Left|Top|Bottom
 	protected Object executeAddView(String[] tokens)
 	{
@@ -622,97 +745,5 @@ public class ScriptCommands
 		}
 				
 		return newCommand.toString() ;
-	}
-	
-	// Return value is currently null, but we'll allow for it to return values in the future.
-	public Object executeCommand(String command, boolean echoCommand)
-	{
-		if (command == null)
-			return null ;
-		
-		String[] tokens = command.split(" ") ;
-		
-		if (tokens.length == 0)
-			return null ;
-		
-		String first = tokens[0] ;
-
-		// Load a demo: "demo <folder-relative-to-m_DemoPath> <demo.soar>"
-		if (first.equals("demo"))
-		{
-			m_Frame.loadDemo(new java.io.File(tokens[1], tokens[2]), echoCommand) ;
-			return null ;
-		}
-		
-		if (first.equals("loadsource"))
-		{
-			m_Frame.loadSource() ;
-			return null ;
-		}
-		
-		if (first.equals("askcd"))
-		{
-			m_Frame.getFileMenu().changeDirectory() ;
-			return null ;
-		}
-		
-		if (first.equals("removeview"))
-		{
-			return executeRemoveView(tokens) ;
-		}
-		
-		if (first.equals("replaceview"))
-		{
-			return executeReplaceView(tokens) ;
-		}
-
-		if (first.equals("addview"))
-		{
-			return executeAddView(tokens) ;
-		}
-		
-		if (first.equals("addtab"))
-		{
-			return executeAddTab(tokens) ;
-		}
-		
-		if (first.equals("renameview"))
-		{
-			return executeRenameView(tokens) ;
-		}
-		
-		if (first.equals("clear"))
-		{
-			return executeClearView(tokens) ;
-		}
-		
-		if (first.equals("movetabs"))
-		{
-			return executeMoveTabs(tokens) ;
-		}
-		
-		if (first.equals("remote"))
-		{
-			return executeRemoteConnect(tokens) ;
-		}
-		
-		if (first.equals("copy") || first.equals("paste"))
-		{
-			return executeCopyPaste(tokens) ;
-		}
-
-		// properties <frame> <view>
-		if (first.equals("properties"))
-		{
-			String frameName = tokens[1] ;
-			String viewName  = tokens[2] ;
-
-			MainFrame frame = m_Document.getFrameByName(frameName) ;
-			AbstractView view = frame.getView(viewName) ;
-			
-			view.showProperties() ;
-		}
-		
-		return null ;
-	}
+	}	
 }

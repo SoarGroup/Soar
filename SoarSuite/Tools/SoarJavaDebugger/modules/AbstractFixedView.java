@@ -100,7 +100,15 @@ public abstract class AbstractFixedView extends AbstractView
 	* 
 	*************************************************************************/	
 	public boolean offerClearDisplay() { return false ; }	
-	
+
+	/************************************************************************
+	* 
+	* Override and return false if it doesn't make sense to log the contexts of this
+	* type of view and so we shouldn't offer it to the user in the context menu.
+	* 
+	*************************************************************************/	
+	public boolean offerLogging() { return false ; }
+
 	public String executeAgentCommand(String command, boolean echoCommand)
 	{
 		// Send the command to Soar but there's no where to display the output

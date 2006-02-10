@@ -283,6 +283,9 @@ public class ParseSelectedText
 	{
 		String curr = m_Tokens[kCurrToken] ;
 
+		if (curr == null)
+			return null ;
+		
 		// Strip bars if they are present (e.g. |print-NAME-production| => print-NAME-production)
 		// One could argue that the kernel should handle this but currently it fails to do so, so we'll handle it here.
 		if (curr.length() > 2 && curr.charAt(0) == '|' && curr.charAt(curr.length()-1) == '|')

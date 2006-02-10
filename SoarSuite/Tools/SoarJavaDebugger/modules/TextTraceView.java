@@ -39,15 +39,12 @@ import dialogs.PropertiesDialog;
 public class TextTraceView extends AbstractComboView
 {
 	private Text m_Text ;
-	private boolean m_Logging;
-	private PrintWriter m_LogWriter;
 
 	public TextTraceView()
 	{
 		m_StopCallback = -1 ;
 		m_PrintCallback = -1 ;
 		m_DecisionCallback = -1 ;
-		m_Logging = false;
 		
 		m_ClearEachCommand = false ;
 		m_UpdateOnStop = false ;
@@ -297,7 +294,7 @@ public class TextTraceView extends AbstractComboView
 	protected void appendText(final String text)
 	{
 		m_Text.append(text) ;
-		if (m_LogWriter != null) m_LogWriter.print(text);
+		m_Logger.log(text, true, false) ;
 	}
 	
 	public Color getBackgroundColor()
