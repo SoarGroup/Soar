@@ -417,6 +417,7 @@ AC_OUTPUT([
 	Environments/JavaTOH/Makefile
 	Environments/JavaTankSoar/Makefile
 	Tools/Makefile
+	Tools/LoggerJava/Makefile
 	Tools/QuickLink/Makefile
 	Tools/QuickLink/src/Makefile
 	Tools/SoarJavaDebugger/Makefile
