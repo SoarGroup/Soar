@@ -45,6 +45,8 @@ public:
 	// reports whether or not the IC is shutting down
 	bool is_shutting_down();
 
+	bool should_print_prompt;
+
 private:
 
 	// things need to be kept private for singleton implementation

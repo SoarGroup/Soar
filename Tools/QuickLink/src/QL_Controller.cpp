@@ -93,6 +93,7 @@ int main()
 				command_line.str(input.force_command_line_input());
 			else // get the command and check to see if it is a valid command
 				command_line.str(input.get_command());
+			Input_Controller::instance().should_print_prompt = false;
 			// save the string into the process memory
 			process_memory.push_back(command_line.str());
 			string command;
@@ -113,6 +114,7 @@ int main()
 				ql_interface.soar_command_line(command_line.str());
 				command_map.erase(command);
 			}
+			Input_Controller::instance().should_print_prompt = true;
 
 		}
 		catch (Error& error)

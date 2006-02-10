@@ -13,7 +13,7 @@ Input_Controller& Input_Controller::instance()
 	return IC;
 }
 
-Input_Controller::Input_Controller() : shutting_down(false)
+Input_Controller::Input_Controller() : shutting_down(false), should_print_prompt(true)
 {
 	// the last element in the input stack should always be the console input
 	input_stack.push_front(Input_Console::create());

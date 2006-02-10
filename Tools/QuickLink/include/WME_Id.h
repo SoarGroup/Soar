@@ -77,7 +77,7 @@ public:
 	void save_yourself(std::ofstream* outfile);
 
 
-	~WME_Id() {}
+	~WME_Id();
 
 private:
 
