@@ -18,6 +18,9 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit) {
 #else
   typeName = "unknown";
 #endif
+  if (typeName == "worker") {
+    type = 1;
+  }
 
 }
 
@@ -72,8 +75,13 @@ void SoarGameGroup::updateStats(bool saveProps) {
     
   //  health += *currentObject.getHealth();
     //health += (*currentObject)->gob->get_int("health");
+    #ifdef DEBUG_GROUPS
+    x += (*currentObject)->x;
+    y += (*currentObject)->y;
+    #else
     x += *(*currentObject)->gob->sod.x;
     y += *(*currentObject)->gob->sod.y;
+    #endif
     currentObject++;
   }
   
@@ -169,6 +177,7 @@ void SoarGameGroup::mergeTo(SoarGameGroup* target) {
 
 bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
                                  SoarGameObject* target) { 
+  #ifndef DEBUG_GROUPS
   bool result = true;
 
   cout << "##################" << endl;
@@ -207,6 +216,7 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
     currentObject++;
   }
   return result;
+  #endif
 }
 
 bool SoarGameGroup::isEmpty() {

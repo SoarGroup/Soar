@@ -11,12 +11,12 @@ using namespace std;
 */
 
 void GroupManager::updateWorld() {
-  cout << "begin uw" << endl;  
+  //cout << "begin uw" << endl;  
   refreshGroups(false);
   reGroup();
   refreshGroups(true);
   adjustAttention();
-  cout << "end uw" << endl;
+  //cout << "end uw" << endl;
 
   return;
 }
@@ -34,7 +34,7 @@ bool GroupManager::assignActions() {
   
   cout << "Assigning actions." << endl;
   while (actionIter != newActions.end()){
-    cout << "popping" << endl;
+    //cout << "popping" << endl;
     if ((**actionIter).source != NULL) {
       if ((**actionIter).target != NULL) { 
         targetObj = (**actionIter).target->getNextMember();
@@ -52,7 +52,7 @@ bool GroupManager::assignActions() {
 }
 
 void GroupManager::reGroup() {
-#ifdef DEBUG_GROUPS
+//#ifdef DEBUG_GROUPS
   // iterate through staleGroupTypes set
   //  find all the groups of each type
   //  add the members to a big list, centers first
@@ -84,7 +84,9 @@ void GroupManager::reGroup() {
   SoarGameObject* centerObject;
 
   while (typeIter != staleGroupTypes.end()) {
+    //cout << "doing type " << *typeIter << endl;
     groupingList.clear();
+    centerGroupingList.clear();
     groupIter = groupsInFocus.begin();
     if (groupIter == groupsInFocus.end()) {
       groupIter = groupsNotInFocus.begin();
@@ -92,6 +94,7 @@ void GroupManager::reGroup() {
     while (groupIter != groupsNotInFocus.end()){
       // not a typo- loop will jump between lists
       if ((*groupIter)->getType() == *typeIter) {
+        //cout << "group " << (int) (*groupIter) << " is type " << (*groupIter)->getType() << endl;
         // group is of the type we are re-grouping
         
         objectData.group = *groupIter;
@@ -100,8 +103,13 @@ void GroupManager::reGroup() {
     
         // centers are stored in a separate list
         objectData.object = centerObject;
+        #ifdef DEBUG_GROUPS
+        objectData.x = centerObject->x;
+        objectData.y = centerObject->y;
+        #else
         objectData.x = *centerObject->gob->sod.x;
         objectData.y = *centerObject->gob->sod.y;
+        #endif
         
         centerGroupingList.push_back(objectData);
         groupMembers = (*groupIter)->getMembers();
@@ -110,8 +118,13 @@ void GroupManager::reGroup() {
           if ((*objectIter) != centerObject){
             // don't add the center object to this list
             objectData.object = *objectIter;
+            #ifdef DEBUG_GROUPS
+            objectData.x = (*objectIter)->x;
+            objectData.x = (*objectIter)->y;
+            #else
             objectData.x = *(*objectIter)->gob->sod.x;
             objectData.y = *(*objectIter)->gob->sod.y;
+            #endif
             groupingList.push_back(objectData);
           }
           objectIter++;
@@ -173,6 +186,8 @@ void GroupManager::reGroup() {
           }
           else {
             // obj2 has not been assigned. Assign it to obj1's group.
+            //cout << "obj from group " << (int) (*obj2StructIter).group <<
+                    //" joining " << (int) obj1Struct.group << endl;
             (*obj2StructIter).assigned = true;
             (*obj2StructIter).group->removeUnit((*obj2StructIter).object);
             (*obj2StructIter).group = obj1Struct.group;
@@ -208,6 +223,7 @@ void GroupManager::reGroup() {
   // does not have any outstanding merges
   toMergeIter = toMergeList.begin();
   while (toMergeIter != toMergeList.end()) {
+    //cout << "groups " << (int)  (*toMergeIter).first << " and " << (int) (*toMergeIter).second << " will merge\n";
     if ((*toMergeIter).first == (*toMergeIter).second) {
       // do nothing- the groups were already merged
     }
@@ -253,8 +269,9 @@ void GroupManager::reGroup() {
     
     toMergeIter++;
   }
-  
-#endif
+ 
+  staleGroupTypes.clear();
+//#endif
   return;
 }
 
@@ -267,7 +284,7 @@ void GroupManager::refreshGroups(bool final) {
   // also, if not final, add the group type of stale groups to
   // the staleGroupTypes set, so reGroup will run on them
  
- cout << "begin ref" << endl;
+ //cout << "begin ref" << endl;
   list<SoarGameGroup*>::iterator groupIter;
 
   groupIter = groupsInFocus.begin();
@@ -301,7 +318,7 @@ void GroupManager::refreshGroups(bool final) {
     }
     groupIter++;
   }
-  cout << "end ref" << endl;
+  //cout << "end ref" << endl;
   return;
 }
 

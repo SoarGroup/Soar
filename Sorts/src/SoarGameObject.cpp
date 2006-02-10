@@ -70,6 +70,7 @@ void SoarGameObject::issueCommand(SoarActionType cmd, Vector<sint4> prms)
 
 void SoarGameObject::update()
 {
+  //cout << "updated object" << endl;
   group->setStale();
  if(!memory.empty())
   if(!memory.top()->update())
