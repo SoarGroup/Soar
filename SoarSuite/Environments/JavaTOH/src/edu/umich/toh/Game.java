@@ -16,9 +16,6 @@ import java.util.ListIterator;
 import sml.Agent;
 import sml.Identifier;
 import sml.Kernel;
-import sml.smlAgentEventId;
-import sml.smlRunEventId;
-import sml.smlRunFlags;
 import sml.smlSystemEventId;
 
 
@@ -32,7 +29,7 @@ import sml.smlSystemEventId;
  * @author Trevor McCulloch, University of Michigan
  * @version 1.1
  */
-public class Game implements Runnable, Agent.RunEventInterface, Kernel.UpdateEventInterface {
+public class Game implements Runnable, Kernel.UpdateEventInterface {
     /**
      * Constructor that creates a <code>Game</code> with the default configuration
      * of 3 towers and 11 disks.
@@ -75,7 +72,8 @@ public class Game implements Runnable, Agent.RunEventInterface, Kernel.UpdateEve
         }
 
         // Register for the event we'll use to update the world
-        registerForUpdateWorldEvent() ;
+        // We update the environment when this event fires.  This allows us to either run the environment directly or from a debugger and get correct behavior
+        int updateCallback = kernel.RegisterForUpdateEvent(sml.smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null) ;
 
         this.diskCount = diskCount;
         
@@ -123,8 +121,8 @@ public class Game implements Runnable, Agent.RunEventInterface, Kernel.UpdateEve
 	            throw new IllegalStateException("Parameter(s) missing for Command "
 	                    + MOVE_DISK);
 	        }
-	        int srcPeg = command.GetParameterValue("source-peg").charAt(0) - 'A';
-	        int dstPeg = command.GetParameterValue("destination-peg").charAt(0) - 'A';
+	        int srcPeg = command.GetParameterValue(SOURCE_PEG).charAt(0) - 'A';
+	        int dstPeg = command.GetParameterValue(DESTINATION_PEG).charAt(0) - 'A';
 	        
 	        // Change the state of the world and generate new input
 	        moveDisk(srcPeg, dstPeg);
@@ -148,39 +146,6 @@ public class Game implements Runnable, Agent.RunEventInterface, Kernel.UpdateEve
     
     /** This method is called when the "after_all_output_phases" event fires, at which point we update the world */
 	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags)
-	{
-		try
-		{
-			// We have a problem at the moment with calling Stop() from arbitrary threads
-			// so for now we'll make sure to call it within an event callback.
-			if (m_StopNow)
-			{
-		    	m_StopNow = false ;	    	
-		    	kernel.StopAllAgents() ;
-			}
-	
-			/* Example of flags we may be passed.  In other situations
-			 * we might choose not to update the world in some of these situations
-			 * (e.g. for run --self unless also had --update).
-			if ((runFlags & smlRunFlags.sml_RUN_SELF.swigValue()) != 0)
-				System.out.println("Called with run --self") ;
-			if ((runFlags & smlRunFlags.sml_RUN_ALL.swigValue()) != 0)
-				System.out.println("Called with run") ;
-			if ((runFlags & smlRunFlags.sml_UPDATE_WORLD.swigValue()) != 0)
-				System.out.println("Called with run --update") ;
-			if ((runFlags & smlRunFlags.sml_DONT_UPDATE_WORLD.swigValue()) != 0)
-				System.out.println("Called with run --noupdate") ;
-			*/
-			
-			updateWorld() ;
-		}
-		catch (Throwable t)
-		{
-			System.out.println("Caught a throwable event" + t.toString()) ;			
-		}
-	}
-
-	public void runEventHandler(int eventID, Object data, Agent agent, int phase)
 	{
 		try
 		{
@@ -345,13 +310,6 @@ public class Game implements Runnable, Agent.RunEventInterface, Kernel.UpdateEve
 			int startCallback = kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, listener, null) ;
 			int stopCallback  = kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, listener, null) ;
     	}
-    }
-    
-    /** We update the environment when this event fires.  This allows us to either run the environment directly or from a debugger and get correct behavior */
-    public void registerForUpdateWorldEvent()
-    {
-    	int updateCallback = kernel.RegisterForUpdateEvent(sml.smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null) ;
-    	int eventCallback = agent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, this, null) ;
     }
 
     public void detachSoar() {
