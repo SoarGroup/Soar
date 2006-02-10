@@ -2,9 +2,11 @@ add-wme
 alias
 cd
 chunk-name-format
+clog
 default-wme-depth
 dirs
 echo
+echo-commands
 edit-production
 excise
 explain-backtraces
@@ -13,9 +15,9 @@ gds-print
 help
 indifferent-selection
 init-soar
+input-period
 internal-symbols
 learn
-log
 ls
 matches
 max-chunks
@@ -38,10 +40,12 @@ rete-net
 run
 save-backtraces
 set-library-location
+set-stop-phase
 soar8
 soarnews
 source
 sp
+srand
 stats
 stop-soar
 time

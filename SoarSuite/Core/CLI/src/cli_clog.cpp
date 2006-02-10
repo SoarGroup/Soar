@@ -26,7 +26,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseCLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'a', "add",		0},
 		{'A', "append",		0},
@@ -85,7 +85,7 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 					toAdd += ' ';
 					++iter;
 				}
-				return DoLog(pAgent, mode, 0, &toAdd);
+				return DoCLog(pAgent, mode, 0, &toAdd);
 			}
 
 		case LOG_NEW:
@@ -94,7 +94,7 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 				SetErrorDetail("Filename or nothing expected, enclose filename in quotes if there are spaces in the path.");
 				return SetError(CLIError::kTooManyArgs);
 			}
-			if (m_NonOptionArguments == 1) return DoLog(pAgent, mode, &argv[1]);
+			if (m_NonOptionArguments == 1) return DoCLog(pAgent, mode, &argv[1]);
 			break; // no args case handled below
 
 		case LOG_NEWAPPEND:
@@ -108,7 +108,7 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 				SetErrorDetail("Please provide a filename.");
 				return SetError(CLIError::kTooFewArgs);
 			}
-			return DoLog(pAgent, mode, &argv[1]);
+			return DoCLog(pAgent, mode, &argv[1]);
 
 		case LOG_CLOSE:
 		case LOG_QUERY:
@@ -124,10 +124,10 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 	}
 
 	// the no args case
-	return DoLog(pAgent, mode);
+	return DoCLog(pAgent, mode);
 }
 
-bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, const eLogMode mode, const std::string* pFilename, const std::string* pToAdd) {
+bool CommandLineInterface::DoCLog(gSKI::IAgent* pAgent, const eLogMode mode, const std::string* pFilename, const std::string* pToAdd) {
 	if (!RequireAgent(pAgent)) return false;
 
 	std::ios_base::openmode openmode = std::ios_base::out;
