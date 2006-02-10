@@ -36,8 +36,6 @@ public class LoggingDialog extends BaseDialog
 	
 	public static LoggingDialog showDialog(MainFrame frame, String title, AbstractView view)
 	{
-		System.out.println("Called to showDialog() for LoggingDialog") ;
-		
 		// Create the dialog window
 		Composite parent = frame.getWindow() ;
 		LoggingDialog dialog = new LoggingDialog(frame, title, view) ;
@@ -48,8 +46,6 @@ public class LoggingDialog extends BaseDialog
 		dialog.open() ;
 		
 		dialog.pumpMessages() ;
-
-		System.out.println("ShowDialog() complete for LoggingDialog") ;
 
 		return dialog ;
 	}
