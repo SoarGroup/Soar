@@ -39,7 +39,7 @@ public class LoggingDialog extends BaseDialog
 		// Create the dialog window
 		Composite parent = frame.getWindow() ;
 		LoggingDialog dialog = new LoggingDialog(frame, title, view) ;
-				
+
 		//dialog.getDialog().setSize(550, 180) ;
 		dialog.getDialog().pack() ;
 		dialog.centerDialog(parent) ;
@@ -76,7 +76,7 @@ public class LoggingDialog extends BaseDialog
 		GridData data = new GridData(GridData.FILL_HORIZONTAL);
 		data.horizontalSpan = 2;
 		m_FilenameText.setLayoutData(data);
-		m_FilenameText.setText(logger.getFilename()) ;
+		m_FilenameText.setText(logger.getFilePath()) ;
 		m_FilenameText.selectAll() ;
 		
 		// Browse for a filename
@@ -128,7 +128,7 @@ public class LoggingDialog extends BaseDialog
 			boolean append = this.m_Append.getSelection() ;
 			boolean flush = this.m_FlushAfterWrite.getSelection() ;
 			
-			m_View.getLogger().setFilename(filename) ;
+			m_View.getLogger().setFilePath(filename) ;
 			m_View.getLogger().setAppend(append) ;
 			m_View.getLogger().setFlush(flush) ;
 			
