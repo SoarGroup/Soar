@@ -5,7 +5,7 @@
 lib_LTLIBRARIES = libSoarKernelSML.la 
 
 libSoarKernelSML_la_LIBADD = \
-../../Kernel/src/libSoarKernel.la\
+../../SoarKernel/src/libSoarKernel.la\
 ../../gSKI/src/libgSKI.la\
 ../../CLI/src/libCommandLineInterface.la\
 ../../ClientSML/src/libClientSML.la
