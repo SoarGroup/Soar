@@ -8,8 +8,8 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit) {
   members.insert(unit);
   // capabilities = unit->capabilities;
   unit->setGroup(this);
-  stale = true;
-  staleInSoar = true;
+  setStale();
+  staleInSoar= true;
   type = 0;
   centerMember = unit;
   currentMember = unit;
@@ -31,7 +31,8 @@ void SoarGameGroup::addUnit(SoarGameObject* unit) {
   assert(members.find(unit) == members.end());
   members.insert(unit); 
   unit->setGroup(this);
-  stale = true;
+  //cout << " au! " << endl;
+  setStale();
 }
 
 bool SoarGameGroup::removeUnit(SoarGameObject* unit) {
@@ -51,7 +52,8 @@ bool SoarGameGroup::removeUnit(SoarGameObject* unit) {
   }
   
   members.erase(unit);
-  stale = true;
+  //cout << " ru! " << endl;
+  setStale();
   return true;
 }
 
@@ -120,6 +122,7 @@ void SoarGameGroup::updateStats(bool saveProps) {
     
     staleInSoar = true;
     stale = false;
+    //cout << "cleared stale" << endl;
   }
   
   // center member calculation- is there a way to do a running calc above?
@@ -170,7 +173,8 @@ void SoarGameGroup::mergeTo(SoarGameGroup* target) {
 
   members.clear();
   statistics[GP_NUM_MEMBERS] = 0;
-  stale = true;
+
+  setStale();
 
   return;
 }
@@ -248,6 +252,7 @@ void SoarGameGroup::setStaleInSoar(bool val) {
   staleInSoar = val;
 }
 void SoarGameGroup::setStale() {
+  //cout << "stale: set so" << endl;
   stale = true;
 }
 

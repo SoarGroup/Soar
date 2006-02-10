@@ -297,7 +297,9 @@ void GroupManager::refreshGroups(bool final) {
       }
       else {
         (*groupIter)->updateStats(final);
-        staleGroupTypes.insert((*groupIter)->getType());
+        if (final == false) {
+          staleGroupTypes.insert((*groupIter)->getType());
+        }
       }
     }
     groupIter++;
@@ -313,7 +315,9 @@ void GroupManager::refreshGroups(bool final) {
       }
       else {
         (*groupIter)->updateStats(final);
-        staleGroupTypes.insert((*groupIter)->getType());
+        if (final == false) {
+          staleGroupTypes.insert((*groupIter)->getType());
+        }
       }
     }
     groupIter++;
