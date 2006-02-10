@@ -424,7 +424,7 @@ public abstract class AbstractView implements AgentFocusListener
 			if (!m_Logger.isLogging())
 				addItem(menu, "Log this window...", "log dialog " + m_Frame.getName() + " " + this.getName()) ;
 			else
-				addItem(menu, "Stop logging to " + m_Logger.getFilename(), "log stop " + m_Frame.getName() + " " + this.getName()) ;
+				addItem(menu, "Stop logging to " + m_Logger.getFilePath(), "log stop " + m_Frame.getName() + " " + this.getName()) ;
 		}
 		
 		if (offerClearDisplay())
