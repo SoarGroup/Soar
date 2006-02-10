@@ -13,6 +13,7 @@ cli_alias.cpp\
 cli_attributepreferencesmode.cpp\
 cli_cd.cpp\
 cli_chunknameformat.cpp\
+cli_clog.cpp\
 cli_defaultwmedepth.cpp\
 cli_dirs.cpp\
 cli_echo.cpp\
@@ -28,7 +29,6 @@ cli_initsoar.cpp\
 cli_inputperiod.cpp\
 cli_internalsymbols.cpp\
 cli_learn.cpp\
-cli_log.cpp\
 cli_ls.cpp\
 cli_matches.cpp\
 cli_maxchunks.cpp\
