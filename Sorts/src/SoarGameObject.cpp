@@ -2,22 +2,29 @@
 #include"SoarGameGroup.h"
 #include<iostream>
 #include<assert.h>
+#include<string>
 
 #include "MoveFSM.h"
 #include "MineFSM.h"
 
-void registerWorkerBehaviors(SoarGameObject* sgo) {
-  FSM* moveBehavior = new MoveFSM();
-  FSM* mineBehavior = new MineFSM();
-  sgo->registerBehavior(moveBehavior);
-  sgo->registerBehavior(mineBehavior);
+void SoarGameObject::identifyBehaviors() {
+  string name = gob->bp_name();
+  if (friendly && name == "worker") {
+    FSM* moveBehavior = new MoveFSM();
+    FSM* mineBehavior = new MineFSM();
+    registerBehavior(moveBehavior);
+    registerBehavior(mineBehavior);
+    cout << "FRIENDLY WORKER" << endl;
+  }
 }
 
-SoarGameObject::SoarGameObject(GameObj *g)
+SoarGameObject::SoarGameObject(GameObj *g, int in_owner, bool in_friendly)
 : gob(g)
 {
-  FSM* temp = (FSM*)(new MoveFSM());
-  registerBehavior(temp);
+  owner = in_owner;
+  friendly = in_friendly;
+  //cout << "owner: " << owner << " friend? " << friendly << endl;
+  identifyBehaviors();
 }
 
 SoarGameObject::~SoarGameObject()

@@ -11,6 +11,7 @@ OrtsInterface::OrtsInterface(GameStateModule* _gsm,
 : gsm(_gsm), soarInterface(_soarInterface), groupManager(_groupManager)
 {
   counter = 0;
+  myPid = -1; // this must be set after we connect to the server
 }
 
 void OrtsInterface::addAppearedObject(const GameObj* gameObj) {
@@ -20,9 +21,11 @@ void OrtsInterface::addAppearedObject(const GameObj* gameObj) {
 void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   // make sure the game object does not exist in the middleware
   assert(objectMap.find(gameObj) == objectMap.end());
-
-  SoarGameObject* newObj = new SoarGameObject(gameObj);
   
+  int owner = *gameObj->sod.owner;
+  bool friendly = (myPid == owner);
+  SoarGameObject* newObj = new SoarGameObject(gameObj, owner, friendly);
+ 
   // GroupManager takes care of setting the object->group pointers
   groupManager->addGroup(newObj);
   
@@ -162,4 +165,7 @@ sint4 OrtsInterface::getID(SoarGameObject* obj) {
   // this ID is then put as the only parameter to a "gather" command
   
   return gsm->get_game().get_cplayer_info().get_id(obj->gob);
+}
+void OrtsInterface::setMyPid(int pid) {
+  myPid = pid;
 }

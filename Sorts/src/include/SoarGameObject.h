@@ -15,8 +15,10 @@ class SoarGameGroup;
 
 class SoarGameObject{
  public:
-	SoarGameObject(GameObj *);
+	SoarGameObject(GameObj *, int, bool);
 	~SoarGameObject();
+
+  void identifyBehaviors();
 
 	void registerBehavior(FSM *);
 	void removeBehavior(SoarActionType);
@@ -35,8 +37,9 @@ class SoarGameObject{
 	stack<FSM *> memory;
 
 	SoarActionType state;
-  	SoarGameGroup* group;
-
+  SoarGameGroup* group;
+  bool friendly;
+  int owner;
 };
 
 #endif

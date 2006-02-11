@@ -155,7 +155,8 @@ int main(int argc, char *argv[]) {
   if (!gsm.connect()) exit(10);
   cout << "connected" << endl;
 
-  // can't do this in the constructor, have to wait until connected to server
+  // can't do these in the constructor, have to wait until connected to server
+  ortsInterface.setMyPid(gsm.get_game().get_client_player());
   soarInterface.initSoarInputLink();
 
   // start Soar in a different thread

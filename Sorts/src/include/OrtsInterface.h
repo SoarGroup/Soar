@@ -30,6 +30,7 @@ class OrtsInterface : public EventHandler {
 public:
   OrtsInterface(GameStateModule* _gsm, SoarInterface* _soarInterface, GroupManager* _groupManager);
   ~OrtsInterface();
+  void setMyPid(int pid);
 
 private:
   GroupManager* groupManager;
@@ -61,6 +62,9 @@ private:
   void updateSoarPlayerInfo();
   
   int counter;
+  
+  // player id of Soar
+  int myPid;
 };
 
 #endif
