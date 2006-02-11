@@ -21,6 +21,7 @@ bool MoveFSM::update()
 
 	case IDLE:
 	 //Start moving
+   cout << "<<<<<< SETTING MOVE ACTION >>>>>>" << endl;
 	 gob->set_action("move",params);
    cout << "MOVING!" << endl;
 	 break;

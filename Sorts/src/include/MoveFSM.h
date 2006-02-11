@@ -1,8 +1,7 @@
-#ifndef _FSM_H_
-#define _FSM_H_
-#include "FSM.h"
-#endif
+#ifndef MoveFSM_H
+#define MoveFSM_H
 
+#include "FSM.h"
 
 class MoveFSM: public FSM{
  public:
@@ -18,3 +17,5 @@ class MoveFSM: public FSM{
 	int state;
 
 };
+
+#endif

@@ -6,6 +6,8 @@
 #include<map>
 #include<pthread.h>
 
+#include "GameStateModule.H"
+
 #include "sml_Client.h"
 
 #include "SoarAction.h"
@@ -24,6 +26,11 @@ typedef struct {
   map<string, sml::IntElement*> properties;
 } SoarIOGroupRep;
 
+typedef struct {
+  sml::Identifier* id;
+  sml::Identifier* groupsId;
+  // some other things in the future
+} OtherPlayerRep;
 
 /* 
 The GroupManager will have a pointer to this structure, and can call
@@ -46,6 +53,7 @@ that group is refreshed! Initially, the stats will not be set.
 class SoarInterface {
   public:
     SoarInterface(sml::Agent*           _agent,
+                  GameStateModule*      _gsm,
                   pthread_mutex_t* _objectActionQueueMutex,
                   pthread_mutex_t* _attentionActionQueueMutex,
                   pthread_mutex_t* _groupActionQueueMutex
@@ -71,10 +79,13 @@ class SoarInterface {
      */
     void getNewSoarOutput();
 
+    void initSoarInputLink();
+
   private:
 
-    // should probably move this over to the GroupManager at some point
     int groupIdCounter;
+
+    GameStateModule* gsm;
 
     // SML pointers
     sml::Agent *agent;
@@ -86,6 +97,8 @@ class SoarInterface {
 
     sml::IntElement* playerGoldWME;
     sml::Identifier* mapIdentifier;
+
+    map<int, OtherPlayerRep> otherPlayers;
 
     // these are the maps that keep track of input link <-> middleware objects
     /* Change these later to hash maps */
@@ -105,9 +118,6 @@ class SoarInterface {
     pthread_mutex_t* objectActionQueueMutex;
     pthread_mutex_t* attentionActionQueueMutex;
     pthread_mutex_t* groupActionQueueMutex;
-
-    void initSoarInputLink();
-
 };
 
 #endif

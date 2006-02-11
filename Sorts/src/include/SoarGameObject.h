@@ -5,7 +5,9 @@
 #include "MoveFSM.h"
 
 #include<stack>
-#include<vector>
+#include<map>
+
+using namespace std;
 
 //How do I transition from one FSM to another?
 
@@ -29,8 +31,8 @@ class SoarGameObject{
 
 	GameObj *gob;
  private:
-	std::list<FSM *> behaviors;
-	std::stack<FSM *> memory;
+	map<SoarActionType, FSM *> behaviors;
+	stack<FSM *> memory;
 
 	SoarActionType state;
   	SoarGameGroup* group;

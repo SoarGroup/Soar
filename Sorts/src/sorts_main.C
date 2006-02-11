@@ -25,8 +25,13 @@ void SoarUpdateEventHandler(sml::smlUpdateEventId id,
                             sml::smlRunFlags      runFlags)
 {
 //  cout << "Soar Event triggered" << endl;
+  sml::Agent *agent = pKernel->GetAgent("orts_agent");
   SoarInterface* soarInterface = (SoarInterface*) pUserData;
   soarInterface->getNewSoarOutput();
+
+  cout << "### COMMIT ABOUT TO BE CALLED ###" << endl;
+  agent->Commit();
+  cout << "### COMMIT FINISHED ###" << endl;
 //  cout << "Soar Event processing finished" << endl;
 }
 
@@ -55,6 +60,22 @@ void* RunOrts(void* ptr) {
 
 int main(int argc, char *argv[]) {
 
+  int port = 7777;
+  string host = "127.0.0.1";
+  char* productions = NULL;
+  for(int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "-port") == 0) {
+      port = atoi(argv[i+1]);
+    }
+    else if (strcmp(argv[i], "-host") == 0) {
+      host = argv[i+1];
+    }
+    else if (strcmp(argv[i], "-productions") == 0) {
+      productions = argv[i+1];
+    }
+  }
+  
+
   /************************************
    * Create mutexes for action queues *
    ************************************/
@@ -76,7 +97,7 @@ int main(int argc, char *argv[]) {
 
   // Create a Soar agent named test
   // NOTE: We don't delete the agent pointer.  It's owned by the kernel
-  sml::Agent* pAgent = pKernel->CreateAgent("test") ;
+  sml::Agent* pAgent = pKernel->CreateAgent("orts_agent") ;
 
   // Check that nothing went wrong
   // NOTE: No agent gets created if thereâs a problem, so we have to check foor
@@ -87,15 +108,31 @@ int main(int argc, char *argv[]) {
   }
 
   // Load some productions
-  if (argv[1] != NULL) {
-    pAgent->LoadProductions(argv[1]) ;
+  if (productions != NULL) {
+    pAgent->LoadProductions(productions) ;
   }
+  else {
+    cout << "Specify some productions to load!" << endl;
+    exit(1);
+  }
+
   if (pAgent->HadError()) {
     cout << pAgent->GetLastErrorDescription() << endl ;
     return 1;
   }
 
+  /*********************************
+   * Set up the connection to ORTS *
+   *********************************/
+  GameStateModule::Options::add();
+
+  GameStateModule::Options gsmo;
+  gsmo.port = port;
+  gsmo.host = host;
+  GameStateModule gsm(gsmo);
+
   SoarInterface soarInterface( pAgent,
+                               &gsm,
                                &objectActionMutex,
                                &attentionActionMutex,
                                &groupActionMutex );
@@ -110,14 +147,6 @@ int main(int argc, char *argv[]) {
   // instantiate the group manager
   GroupManager gm(&soarInterface);
 
-  /*********************************
-   * Set up the connection to ORTS *
-   *********************************/
-  GameStateModule::Options::add();
-
-  GameStateModule::Options gsmo;
-  GameStateModule gsm(gsmo);
-
 
   OrtsInterface ortsInterface(&gsm, &soarInterface, &gm);
   gsm.add_handler(&ortsInterface);
@@ -125,6 +154,9 @@ int main(int argc, char *argv[]) {
   // connect to ORTS server
   if (!gsm.connect()) exit(10);
   cout << "connected" << endl;
+
+  // can't do this in the constructor, have to wait until connected to server
+  soarInterface.initSoarInputLink();
 
   // start Soar in a different thread
   pthread_attr_t soarThreadAttribs;

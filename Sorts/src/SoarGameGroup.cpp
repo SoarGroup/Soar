@@ -22,13 +22,16 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit) {
     type = 1;
   }
 
+  owner = unit->gob->get_int("owner");
 }
 
 void SoarGameGroup::addUnit(SoarGameObject* unit) {
   //capabilities &= unit->capabilities;
 
-  
   assert(members.find(unit) == members.end());
+  // don't group units from different teams together
+  assert(unit->gob->get_int("owner") == owner);
+
   members.insert(unit); 
   unit->setGroup(this);
   //cout << " au! " << endl;
@@ -286,4 +289,8 @@ SoarGameObject* SoarGameGroup::getNextMember() {
   }
   currentMember = *objIt;
   return currentMember;
+}
+
+int SoarGameGroup::getOwner() {
+  return owner;
 }

@@ -3,6 +3,9 @@
 #include <pthread.h>
 
 #include "SoarInterface.h"
+#include "Utils.h"
+
+#include "Game.H"
 
 using namespace std;
 
@@ -10,17 +13,18 @@ using namespace std;
 SoarActionType actionTypeLookup(const char* actionName);
 
 SoarInterface::SoarInterface(sml::Agent*      _agent,
+                             GameStateModule* _gsm,
                              pthread_mutex_t* _objectActionQueueMutex,
                              pthread_mutex_t* _attentionActionQueueMutex,
                              pthread_mutex_t* _groupActionQueueMutex
                             )
 : agent(_agent),
+  gsm(_gsm),
   objectActionQueueMutex(_objectActionQueueMutex),
   attentionActionQueueMutex(_attentionActionQueueMutex),
   groupActionQueueMutex(_groupActionQueueMutex)
 {
   inputLink = agent->GetInputLink();
-  initSoarInputLink();
   groupIdCounter = 0;
 }
 
@@ -70,7 +74,13 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyList gpl) {
   if (!g.added) {
     // add the group to the soar input link if it hasn't been already
     g.added = true;
-    g.WMEptr = agent->CreateIdWME(playerGroupsId, "group");
+
+    if (group->getOwner() == gsm->get_game().get_client_player()) {
+      g.WMEptr = agent->CreateIdWME(playerGroupsId, "group");
+    }
+    else {
+      g.WMEptr = agent->CreateIdWME(otherPlayers[group->getOwner()].groupsId, "group");
+    }
 
     // label the group with its id
     agent->CreateIntWME(g.WMEptr, "id", g.groupId);
@@ -207,7 +217,8 @@ void SoarInterface::updatePlayerGold(int amount) {
  * inputLink ----> me ----> gold
  *             |       \--> groups
  *             |
- *             \-> p1 ----> ...
+ *             \-> p1 ---->groups ---->
+ *             |                    \->
  *             \-> p2 ----> ...
  *             |
  *             \-> map ---> ...
@@ -219,10 +230,19 @@ void SoarInterface::initSoarInputLink() {
   playerGoldWME = agent->CreateIntWME(playerId, "gold", 0);
   playerGroupsId = agent->CreateIdWME(playerId, "groups");
 
+  for(int p = 0; p < gsm->get_game().get_player_num(); p++) {
+    if (p != gsm->get_game().get_client_player()) {
+      otherPlayers[p].id = agent->CreateIdWME(inputLink, catStrInt("p", p).c_str());
+      otherPlayers[p].groupsId = agent->CreateIdWME(otherPlayers[p].id, "groups");
+    }
+  }
+
   agent->Commit();
 }
 
 
 void SoarInterface::commitInputLinkChanges() {
-  agent->Commit();
+//  cout << "### COMMIT ABOUT TO BE CALLED ###" << endl;
+//  agent->Commit();
+//  cout << "### COMMIT FINISHED ###" << endl;
 }

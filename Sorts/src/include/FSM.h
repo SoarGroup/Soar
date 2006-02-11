@@ -6,14 +6,7 @@
 #include<list>
 #include<vector>
 
-
-#include "GameStateModule.H"
-#include "GfxModule.H"
-#include "Game.H"
-#include "GameChanges.H"
-#include "GameTile.H"
-#include "ServerObjData.H"
-#include "Options.H"
+#include "GameObj.H"
 
 #include "SoarAction.h"
 

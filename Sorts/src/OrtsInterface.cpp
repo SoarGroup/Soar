@@ -56,6 +56,11 @@ bool OrtsInterface::handle_event(const Event& e) {
 
       const GameChanges& changes = gsm->get_changes();
       updateSoarGameObjects(changes);
+
+      // since the FSM's have been updated, we should send the actions here
+      gsm->send_actions();
+
+      // what was this for again?
       groupManager->updateWorld();
 
       /* I'm assuming here that those update calls from above have already

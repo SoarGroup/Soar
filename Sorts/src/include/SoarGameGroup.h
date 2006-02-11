@@ -43,6 +43,10 @@ class SoarGameGroup {
     int getSize();
     SoarGameObject* getCenterMember();
     SoarGameObject* getNextMember();
+
+    // get the player number that owns this group
+    int getOwner();
+
   private:
     set <SoarGameObject*> members;
     // int capabilities; // get from unit capabilities
@@ -61,5 +65,7 @@ class SoarGameGroup {
     
     SoarGameObject* centerMember;
     SoarGameObject* currentMember; // for getNextMember functionality
+
+    int owner;
 };
 #endif

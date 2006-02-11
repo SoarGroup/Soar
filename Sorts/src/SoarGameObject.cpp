@@ -1,70 +1,72 @@
 #include"SoarGameObject.h"
 #include"SoarGameGroup.h"
 #include<iostream>
+#include<assert.h>
+
+#include "MoveFSM.h"
+#include "MineFSM.h"
+
+void registerWorkerBehaviors(SoarGameObject* sgo) {
+  FSM* moveBehavior = new MoveFSM();
+  FSM* mineBehavior = new MineFSM();
+  sgo->registerBehavior(moveBehavior);
+  sgo->registerBehavior(mineBehavior);
+}
 
 SoarGameObject::SoarGameObject(GameObj *g)
+: gob(g)
 {
- gob = g;
- FSM* temp = (FSM*)(new MoveFSM());
- registerBehavior(temp);
+  FSM* temp = (FSM*)(new MoveFSM());
+  registerBehavior(temp);
 }
 
 SoarGameObject::~SoarGameObject()
 {
- FSM* tmp;
+  while(!memory.empty()) {
+    memory.pop();
+  }
 
- while(!memory.empty())
-  memory.pop();
-
- while(!behaviors.empty())
- {
-  tmp = behaviors.front();
-  behaviors.pop_front();
-  delete tmp;
- }
+  for(map<SoarActionType, FSM*>::iterator i = behaviors.begin(); 
+      i != behaviors.end(); i++) 
+  {
+    delete i->second;
+  }
 }
 
 void SoarGameObject::registerBehavior(FSM *b)
 {
- b->setGameObject(gob);
- behaviors.push_back(b);
+  assert (behaviors.find(b->name) == behaviors.end());
+  b->setGameObject(gob);
+  behaviors[b->name] = b;
 }
 
 void SoarGameObject::removeBehavior(SoarActionType name)
 {
- std::list<FSM*>::iterator it;
- FSM *tmp;
-
- for(it = behaviors.begin(); it != behaviors.end(); it++)
-  if((*it)->name == name)
-  {
-   tmp = (*it);
-   behaviors.erase(it);
-   delete tmp;
-   break;
+  map<SoarActionType, FSM*>::iterator i = behaviors.find(name);
+  if (i != behaviors.end()) {
+    delete i->second;
+    behaviors.erase(i);
   }
 }
 
 
 void SoarGameObject::issueCommand(SoarActionType cmd, Vector<sint4> prms)
 {
- std::list<FSM*>::iterator it;
+  //Whether we really want this is up for analysis
+  while(!memory.empty())
+    memory.pop();
 
- //Whether we really want this is up for analysis
- while(!memory.empty())
-  memory.pop();
- 
- for(it = behaviors.begin(); it != behaviors.end(); it++)
-  if((*it)->name == cmd) 
-  {
-   (*it)->setParams(prms);
-   memory.push((*it));
-   state = cmd;
-   cout << "ACTION" << endl;
-   update();
-   return;
+  map<SoarActionType, FSM*>::iterator i = behaviors.find(cmd);
+  if (i == behaviors.end()) {
+    cout << "No match for command" << endl;
+    return;
   }
-  std::cout<<"No match for command"<<std::endl;
+
+  i->second->setParams(prms);
+  memory.push(i->second);
+  state = cmd;
+  cout << "ACTION" << endl;
+  update();
 }
 
 
