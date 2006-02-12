@@ -65,7 +65,7 @@ void SoarInterface::removeGroup(SoarGameGroup* group) {
   gIdToMwGroups.erase(g.groupId);
 }
 
-void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyList gpl) {
+void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyStruct gps) {
   // make sure the group exists
   assert(mwToSoarGroups.find(group) != mwToSoarGroups.end());
   
@@ -88,9 +88,14 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyList gpl) {
     cout << "WME: \tid " << g.groupId << endl;
 
     // add properties
-    for(groupPropertyList::iterator i = gpl.begin(); i != gpl.end(); i++) {
+    for(list<pair<string,int> >::iterator i = gps.stringIntPairs.begin(); i != gps.stringIntPairs.end(); i++) {
       // create a new WME object for the property
-      g.properties[(*i).first] = agent->CreateIntWME(g.WMEptr, (*i).first.c_str(), (*i).second);
+      g.intProperties[(*i).first] = agent->CreateIntWME(g.WMEptr, (*i).first.c_str(), (*i).second);
+      cout << "WME: \t" << (*i).first << " " << (*i).second << endl;
+    }
+    for(list<pair<string,string> >::iterator i = gps.stringStringPairs.begin(); i != gps.stringStringPairs.end(); i++) {
+      // create a new WME object for the property
+      g.stringProperties[(*i).first] = agent->CreateStringWME(g.WMEptr, (*i).first.c_str(), (*i).second.c_str());
       cout << "WME: \t" << (*i).first << " " << (*i).second << endl;
     }
   }
@@ -99,9 +104,13 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyList gpl) {
     // Note that I'm assuming no new values are introduced
     cout << "WME: updated group" << endl;
     cout << "WME: \tid " << g.groupId << endl;
-    for(groupPropertyList::iterator i = gpl.begin(); i != gpl.end(); i++) {
-      agent->Update(g.properties[(*i).first], (*i).second);
+    for(list<pair<string, int> >::iterator i = gps.stringIntPairs.begin(); i != gps.stringIntPairs.end(); i++) {
+      agent->Update(g.intProperties[(*i).first], (*i).second);
       cout << "WME: \t" << (*i).first << " " << (*i).second << endl;
+    }
+    for(list<pair<string, string> >::iterator j = gps.stringStringPairs.begin(); j != gps.stringStringPairs.end(); j++) {
+      agent->Update(g.stringProperties[(*j).first], (*j).second.c_str());
+      cout << "WME: \t" << (*j).first << " " << (*j).second << endl;
     }
   }
 }

@@ -16,6 +16,10 @@
 using namespace std;
 // inside SoarInterface.h too
 typedef list<pair<string, int> > groupPropertyList;
+struct groupPropertyStruct {
+  list<pair<string, int> > stringIntPairs;
+  list<pair<string, string> > stringStringPairs;
+};
 
 //class SoarGameObject{}; // TEMPORARY
 
@@ -37,7 +41,7 @@ class SoarGameGroup {
     void setStale(bool val);
     bool getStaleInSoar();
     void setStaleInSoar(bool val);
-    groupPropertyList getProps();
+    groupPropertyStruct getSoarData();
     void setType(int inType);
     int getType();
     int getSize();
@@ -51,7 +55,7 @@ class SoarGameGroup {
     set <SoarGameObject*> members;
     // int capabilities; // get from unit capabilities
     double statistics[GP_NUM_STATS]; 
-    groupPropertyList propList;
+    groupPropertyStruct soarData;
     bool stale;
     bool staleInSoar;
     // stale means the internal statistics haven't been updated-

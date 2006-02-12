@@ -15,7 +15,7 @@
 
 using namespace std;
 
-typedef list<pair<string, int> > groupPropertyList;
+//typedef list<pair<string, int> > groupPropertyList;
 
 typedef struct {
   int groupId;
@@ -23,7 +23,8 @@ typedef struct {
   sml::Identifier* WMEptr;
   // change this later into hash_map<string, IntElement*> and write a hash
   // function for strings
-  map<string, sml::IntElement*> properties;
+  map<string, sml::IntElement*> intProperties;
+  map<string, sml::StringElement*> stringProperties;
 } SoarIOGroupRep;
 
 typedef struct {
@@ -66,7 +67,7 @@ class SoarInterface {
     // grouping commands for Group Manager to call
     void addGroup(SoarGameGroup* group);
     void removeGroup(SoarGameGroup* group);
-    void refreshGroup(SoarGameGroup* group, groupPropertyList gpl);
+    void refreshGroup(SoarGameGroup* group, groupPropertyStruct gps);
 
     // commit all changes to Soar Input link
     void commitInputLinkChanges();

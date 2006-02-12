@@ -62,7 +62,8 @@ bool SoarGameGroup::removeUnit(SoarGameObject* unit) {
 
 void SoarGameGroup::updateStats(bool saveProps) {
   if (saveProps) {
-    propList.clear();
+    soarData.stringIntPairs.clear();
+    soarData.stringStringPairs.clear();
   }
   
   set<SoarGameObject*>::iterator currentObject = members.begin();
@@ -100,28 +101,29 @@ void SoarGameGroup::updateStats(bool saveProps) {
   statistics[GP_HEALTH] = health;
 
   if (saveProps) {
-    pair<string, int> wme;
-    wme.first = "health";
-    wme.second = (int)(health);
-    propList.push_back(wme);
+    pair<string, int> stringIntWme;
+    pair<string, string> stringStringWme;
+    stringIntWme.first = "health";
+    stringIntWme.second = (int)(health);
+    soarData.stringIntPairs.push_back(stringIntWme);
 
     // how do we want to represent position?
-    wme.first = "x_position";
-    wme.second = (int)(x);
-    propList.push_back(wme);
-    wme.first = "y_position";
-    wme.second = (int)(y);
-    propList.push_back(wme);
-    wme.first = "num_members";
-    wme.second = (int)size;
-    propList.push_back(wme);
+    stringIntWme.first = "x_position";
+    stringIntWme.second = (int)(x);
+    soarData.stringIntPairs.push_back(stringIntWme);
+
+    stringIntWme.first = "y_position";
+    stringIntWme.second = (int)(y);
+    soarData.stringIntPairs.push_back(stringIntWme);
+
+    stringIntWme.first = "num_members";
+    stringIntWme.second = (int)size;
+    soarData.stringIntPairs.push_back(stringIntWme);
+
     
-    wme.first = "type";
-    wme.second = 0;
-    if (typeName == "worker") {
-      wme.second = 1;
-    }
-    propList.push_back(wme);
+    stringStringWme.first = "type";
+    stringStringWme.second = typeName;
+    soarData.stringStringPairs.push_back(stringStringWme);
     
     staleInSoar = true;
     stale = false;
@@ -234,8 +236,8 @@ bool SoarGameGroup::getStale() {
   return stale;
 }
 
-groupPropertyList SoarGameGroup::getProps() {
-  return propList;
+groupPropertyStruct SoarGameGroup::getSoarData() {
+  return soarData;
 }
 
 void SoarGameGroup::setType(int inType) {

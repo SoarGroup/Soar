@@ -347,7 +347,7 @@ void GroupManager::adjustAttention() {
   groupIter = groupsInFocus.begin();
   while (groupIter != groupsInFocus.end()) {
     if ((*groupIter)->getStaleInSoar()) {
-      SoarIO->refreshGroup((*groupIter), (*groupIter)->getProps());
+      SoarIO->refreshGroup((*groupIter), (*groupIter)->getSoarData());
       (*groupIter)->setStaleInSoar(false);
     }
     groupIter++;
