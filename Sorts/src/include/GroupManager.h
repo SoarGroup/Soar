@@ -25,7 +25,7 @@ class GroupManager {
 
     SoarInterface* SoarIO;
 
-    set <int> staleGroupTypes;
+    set <pair<string, int> > staleGroupCategories;
     
     list <SoarGameGroup*> groupsInFocus;
     list <SoarGameGroup*> groupsNotInFocus;

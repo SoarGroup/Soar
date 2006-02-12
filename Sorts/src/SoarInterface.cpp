@@ -75,7 +75,7 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyStruct gps) 
     // add the group to the soar input link if it hasn't been already
     g.added = true;
 
-    if (group->getOwner() == gsm->get_game().get_client_player()) {
+    if (group->getFriendly()) {
       g.WMEptr = agent->CreateIdWME(playerGroupsId, "group");
     }
     else {

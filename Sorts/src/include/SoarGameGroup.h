@@ -42,15 +42,15 @@ class SoarGameGroup {
     bool getStaleInSoar();
     void setStaleInSoar(bool val);
     groupPropertyStruct getSoarData();
-    void setType(int inType);
-    int getType();
+    //void setType(int inType);
+    pair<string, int> getCategory();
     int getSize();
     SoarGameObject* getCenterMember();
     SoarGameObject* getNextMember();
 
     // get the player number that owns this group
     int getOwner();
-
+    bool getFriendly();
   private:
     set <SoarGameObject*> members;
     // int capabilities; // get from unit capabilities
@@ -71,5 +71,6 @@ class SoarGameGroup {
     SoarGameObject* currentMember; // for getNextMember functionality
 
     int owner;
+    bool friendly;
 };
 #endif

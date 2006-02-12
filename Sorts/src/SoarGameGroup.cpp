@@ -10,7 +10,7 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit) {
   unit->setGroup(this);
   setStale();
   staleInSoar= true;
-  type = 0;
+  //type = 0;
   centerMember = unit;
   currentMember = unit;
 #ifndef DEBUG_GROUPS  
@@ -18,11 +18,8 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit) {
 #else
   typeName = "unknown";
 #endif
-  if (typeName == "worker") {
-    type = 1;
-  }
-
-  owner = unit->gob->get_int("owner");
+  owner = unit->getOwner();
+  friendly = unit->getFriendly();
 }
 
 void SoarGameGroup::addUnit(SoarGameObject* unit) {
@@ -240,14 +237,14 @@ groupPropertyStruct SoarGameGroup::getSoarData() {
   return soarData;
 }
 
-void SoarGameGroup::setType(int inType) {
+/*void SoarGameGroup::setType(int inType) {
   type = inType;
   return;
 }
 
 int SoarGameGroup::getType() {
   return type;
-}
+}*/
 
 bool SoarGameGroup::getStaleInSoar() {
   return staleInSoar;
@@ -295,4 +292,16 @@ SoarGameObject* SoarGameGroup::getNextMember() {
 
 int SoarGameGroup::getOwner() {
   return owner;
+}
+
+bool SoarGameGroup::getFriendly() {
+  return friendly;
+}
+
+pair<string, int> SoarGameGroup::getCategory() {
+  pair<string, int> cat;
+  cat.first = typeName;
+  cat.second = owner;
+
+  return cat;
 }

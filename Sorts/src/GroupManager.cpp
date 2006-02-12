@@ -53,7 +53,7 @@ bool GroupManager::assignActions() {
 
 void GroupManager::reGroup() {
 //#ifdef DEBUG_GROUPS
-  // iterate through staleGroupTypes set
+  // iterate through staleGroupCategories set
   //  find all the groups of each type
   //  add the members to a big list, centers first
   //  keep a struct for each object:
@@ -67,7 +67,7 @@ void GroupManager::reGroup() {
   // this should really come from the attention code
   double groupingDistanceSquared = 10000;
   
-  set<int>::iterator typeIter = staleGroupTypes.begin();
+  set<pair<string, int> >::iterator catIter = staleGroupCategories.begin();
   objectGroupingStruct objectData;
   list<SoarGameObject*> groupMembers;
   list<SoarGameGroup*>::iterator groupIter;
@@ -83,8 +83,8 @@ void GroupManager::reGroup() {
   
   SoarGameObject* centerObject;
 
-  while (typeIter != staleGroupTypes.end()) {
-    //cout << "doing type " << *typeIter << endl;
+  while (catIter != staleGroupCategories.end()) {
+    //cout << "doing type " << *catIter << endl;
     groupingList.clear();
     centerGroupingList.clear();
     groupIter = groupsInFocus.begin();
@@ -93,7 +93,7 @@ void GroupManager::reGroup() {
     }
     while (groupIter != groupsNotInFocus.end()){
       // not a typo- loop will jump between lists
-      if ((*groupIter)->getType() == *typeIter) {
+      if ((*groupIter)->getCategory() == *catIter) {
         //cout << "group " << (int) (*groupIter) << " is type " << (*groupIter)->getType() << endl;
         // group is of the type we are re-grouping
         
@@ -211,7 +211,7 @@ void GroupManager::reGroup() {
         obj1IsACenter = false;
       }
     }
-    typeIter++;
+    catIter++;
   } // end iterating through all the types that need re-grouping
   
   // do merges- always merge the smaller group to the bigger group
@@ -270,7 +270,7 @@ void GroupManager::reGroup() {
     toMergeIter++;
   }
  
-  staleGroupTypes.clear();
+  staleGroupCategories.clear();
 //#endif
   return;
 }
@@ -282,7 +282,7 @@ void GroupManager::refreshGroups(bool final) {
   // it will save a list of WMEs for Soar if the flag is set
  
   // also, if not final, add the group type of stale groups to
-  // the staleGroupTypes set, so reGroup will run on them
+  // the staleGroupCategories set, so reGroup will run on them
  
  //cout << "begin ref" << endl;
   list<SoarGameGroup*>::iterator groupIter;
@@ -298,7 +298,7 @@ void GroupManager::refreshGroups(bool final) {
       else {
         (*groupIter)->updateStats(final);
         if (final == false) {
-          staleGroupTypes.insert((*groupIter)->getType());
+          staleGroupCategories.insert((*groupIter)->getCategory());
         }
       }
     }
@@ -316,7 +316,7 @@ void GroupManager::refreshGroups(bool final) {
       else {
         (*groupIter)->updateStats(final);
         if (final == false) {
-          staleGroupTypes.insert((*groupIter)->getType());
+          staleGroupCategories.insert((*groupIter)->getCategory());
         }
       }
     }

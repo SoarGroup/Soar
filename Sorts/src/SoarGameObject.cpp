@@ -107,3 +107,11 @@ SoarActionType SoarGameObject::getState()
 {
  return state;
 }
+
+int SoarGameObject::getOwner() {
+  return owner;
+}
+
+bool SoarGameObject::getFriendly() {
+  return friendly;
+}

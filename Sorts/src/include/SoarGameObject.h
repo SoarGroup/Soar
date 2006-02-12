@@ -30,6 +30,8 @@ class SoarGameObject{
 	SoarGameGroup *getGroup();
 	SoarActionType getState();
 
+  int getOwner();
+  bool getFriendly();
 
 	GameObj *gob;
  private:
