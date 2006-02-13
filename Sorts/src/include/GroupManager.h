@@ -17,6 +17,7 @@ class GroupManager {
 
     void addGroup(SoarGameObject* object);
     // used by ORTSInterface when it sees a new object- create a group for it
+    void setORTSIO(OrtsInterface* oio);
     
   private:
     void reGroup();
@@ -29,6 +30,7 @@ class GroupManager {
     
     list <SoarGameGroup*> groupsInFocus;
     list <SoarGameGroup*> groupsNotInFocus;
+    ORTSInterface ORTSIO;
 };
 
 struct objectGroupingStruct {

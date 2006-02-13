@@ -1,10 +1,12 @@
 #include "include/SoarGameGroup.h"
 #include "include/general.h"
+#include "include/ORTSInterface.h"
 #include <assert.h>
 #include <vector>
 #include <iostream>
 
-SoarGameGroup::SoarGameGroup(SoarGameObject* unit) {
+SoarGameGroup::SoarGameGroup(SoarGameObject* unit, ORTSInterface* in_ORTSIO) {
+  ORTSIO = in_ORTSIO;
   members.insert(unit);
   // capabilities = unit->capabilities;
   unit->setGroup(this);
@@ -182,7 +184,7 @@ void SoarGameGroup::mergeTo(SoarGameGroup* target) {
 }
 
 bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
-                                 SoarGameObject* target) { 
+                                 list<SoarGameObject*> targets) { 
   #ifndef DEBUG_GROUPS
   bool result = true;
 
@@ -192,27 +194,33 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
   }
   cout << endl;
 
-  list<int>::iterator listIt = params.begin();  
+  list<int>::iterator intIt = params.begin();  
+  list<int>::iterator objectIt = targets.begin();  
   Vector<sint4> tempVec;
-//  string ORTSCommand;
   
-  tempVec.push_back(*listIt);
-  listIt++;
-  tempVec.push_back(*listIt);
   
   if (type == SA_MOVE) {
     // the third param is speed, always use 3 (the max)
+    assert(params.size() == 2);
+    tempVec.push_back(*intIt);
+    intIt++;
+    tempVec.push_back(*intIt);
     tempVec.push_back(3);
-    // SoarGameObject should really take the SA_MOVE directly
-  //  ORTSCommand = "Move";
   }
   else if (type == SA_MINE) {
-    // get the id of the resource
-    //sint4 mineralID = ORTSIO->getID(target);
-  //  ORTSCommand = "Mine";
+    // get the id of the mineral patch and command center
+    // order: x, y, ID, x, y, ID
+    assert(targets.size() == 2);
+    tempVec.push_back(*(*objectIt)->gob->sod.x);
+    tempVec.push_back(*(*objectIt)->gob->sod.y);
+    tempVec.push_back(ORTSIO->getID(*objectIt));
+    objectIt++;
+    tempVec.push_back(*(*objectIt)->gob->sod.x);
+    tempVec.push_back(*(*objectIt)->gob->sod.y);
+    tempVec.push_back(ORTSIO->getID(*objectIt));
   }
   else {
-  //  ORTSCommand = "Invalid";
+    assert(false);  
   }
 
   set<SoarGameObject*>::iterator currentObject = members.begin();

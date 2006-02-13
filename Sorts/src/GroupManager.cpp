@@ -30,21 +30,25 @@ bool GroupManager::assignActions() {
  
   list <SoarGameGroup*>::iterator groupIter;
   bool success = true;
-  SoarGameObject* targetObj;
+  list<SoarGameObject*> targetObjs;
+  SoarGameObject* sourceObj;
   
   cout << "Assigning actions." << endl;
   while (actionIter != newActions.end()){
     //cout << "popping" << endl;
-    if ((**actionIter).source != NULL) {
-      if ((**actionIter).target != NULL) { 
-        targetObj = (**actionIter).target->getNextMember();
-      }
-      else {
-        targetObj = NULL;
-      }
-      success &= (**actionIter).source->assignAction(
-            (**actionIter).type, (**actionIter).params, targetObj);
+    list<SoarGameGroup*>::iterator groupIter = (**actionIter).groups.begin();
+    assert(groupIter != groups.end());
+    
+    sourceObj = *groupIter;
+    groupIter++;
+    
+    while (groupIter != groups.end()) {
+      targetObjs.push_back((*groupIter)->getNextMember());
     }
+    
+    success &= sourceObj->assignAction(
+            (**actionIter).type, (**actionIter).params, targetObjs);
+    
     actionIter++;
   }
 
@@ -327,7 +331,7 @@ void GroupManager::refreshGroups(bool final) {
 }
 
 void GroupManager::addGroup(SoarGameObject* object) {
-  groupsNotInFocus.push_back(new SoarGameGroup(object));
+  groupsNotInFocus.push_back(new SoarGameGroup(object, ORTSIO));
   return;
 }
 
@@ -367,3 +371,7 @@ GroupManager::~GroupManager() {
     groupIter++;
   }
 }
+void GroupManager::setORTSIO(OrtsInterface* oio) {
+  ORTSIO = oio;
+}
+
