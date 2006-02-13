@@ -5,15 +5,15 @@
 #include<string>
 
 #include "MoveFSM.h"
-#include "MineFSM.h"
+//#include "MineFSM.h"
 
 void SoarGameObject::identifyBehaviors() {
   string name = gob->bp_name();
   if (friendly && name == "worker") {
     FSM* moveBehavior = new MoveFSM();
-    FSM* mineBehavior = new MineFSM();
+ //   FSM* mineBehavior = new MineFSM();
     registerBehavior(moveBehavior);
-    registerBehavior(mineBehavior);
+ //   registerBehavior(mineBehavior);
     cout << "FRIENDLY WORKER" << endl;
   }
 }

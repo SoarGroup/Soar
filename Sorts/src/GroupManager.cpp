@@ -65,7 +65,7 @@ void GroupManager::reGroup() {
   //      if objs are close and obj2 flagged, merge obj1's group -> obj2's group 
 
   // this should really come from the attention code
-  double groupingDistanceSquared = 10000;
+  double groupingDistanceSquared = 1000;
   
   set<pair<string, int> >::iterator catIter = staleGroupCategories.begin();
   objectGroupingStruct objectData;
