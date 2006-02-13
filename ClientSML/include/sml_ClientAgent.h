@@ -331,8 +331,11 @@ public:
 	* @brief Schedules a WME from deletion from the input link and removes
 	*		 it from the client's model of working memory.
 	*
+	*		 If this is an identifier then all of its children will be
+	*		 deleted too (assuming it's the only parent -- i.e. part of a tree not a full graph).
+	*
 	*		 The caller should not access this WME after calling
-	*		 DestroyWME().
+	*		 DestroyWME() or any of its children if this is an identifier.
 	*		 The WME is not removed from the input link until
 	*		 the client calls "Commit"
 	*************************************************************/
