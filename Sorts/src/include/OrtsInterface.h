@@ -33,7 +33,6 @@ public:
   void setMyPid(int pid);
 
 private:
-  GroupManager* groupManager;
   
   // pointers to all the orts stuff
   GameStateModule* gsm;
@@ -49,6 +48,8 @@ private:
 
   // pointer to our stuff
   SoarInterface* soarInterface;
+
+  GroupManager* groupManager;
 
   // consistency functions
   void addAppearedObject(const GameObj* gameObj);

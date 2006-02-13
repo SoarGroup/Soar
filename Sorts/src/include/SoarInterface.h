@@ -86,8 +86,6 @@ class SoarInterface {
 
     int groupIdCounter;
 
-    GameStateModule* gsm;
-
     // SML pointers
     sml::Agent *agent;
 
@@ -98,6 +96,8 @@ class SoarInterface {
 
     sml::IntElement* playerGoldWME;
     sml::Identifier* mapIdentifier;
+
+    GameStateModule* gsm;
 
     map<int, OtherPlayerRep> otherPlayers;
 

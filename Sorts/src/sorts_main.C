@@ -43,6 +43,9 @@ void* RunSoar(void* ptr) {
    */
   sleep(1);
   ((sml::Kernel*) ptr)->RunAllAgentsForever();
+
+  // just to keep the compiler from warning
+  return NULL;
 }
 
 void* RunOrts(void* ptr) {

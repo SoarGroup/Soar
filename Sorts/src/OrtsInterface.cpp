@@ -8,7 +8,7 @@
 OrtsInterface::OrtsInterface(GameStateModule* _gsm,
                              SoarInterface*   _soarInterface,
                              GroupManager*    _groupManager)
-: gsm(_gsm), soarInterface(_soarInterface), groupManager(_groupManager)
+: gsm(_gsm), soarInterface(_soarInterface), groupManager(_groupManager) 
 {
   counter = 0;
   myPid = -1; // this must be set after we connect to the server
