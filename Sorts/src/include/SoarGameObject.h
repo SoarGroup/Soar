@@ -18,11 +18,12 @@ class SoarGameObject{
 	SoarGameObject(GameObj *, int, bool);
 	~SoarGameObject();
 
-  void identifyBehaviors();
+	void identifyBehaviors();
 
 	void registerBehavior(FSM *);
 	void removeBehavior(SoarActionType);
 
+	//template<class T>
 	void issueCommand(SoarActionType name, Vector<sint4> p);
 	void update();
 
@@ -30,18 +31,19 @@ class SoarGameObject{
 	SoarGameGroup *getGroup();
 	SoarActionType getState();
 
-  int getOwner();
-  bool getFriendly();
+  	int getOwner();
+  	bool getFriendly();
 
-	GameObj *gob;
- private:
+   	GameObj *gob;
+
+  private:
 	map<SoarActionType, FSM *> behaviors;
 	stack<FSM *> memory;
 
 	SoarActionType state;
-  SoarGameGroup* group;
-  bool friendly;
-  int owner;
+	SoarGameGroup* group;
+	bool friendly;
+	int owner;
 };
 
 #endif

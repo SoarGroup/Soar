@@ -11,9 +11,9 @@ void SoarGameObject::identifyBehaviors() {
   string name = gob->bp_name();
   if (friendly && name == "worker") {
     FSM* moveBehavior = new MoveFSM();
- //   FSM* mineBehavior = new MineFSM();
+//    FSM* mineBehavior = new MineFSM();
     registerBehavior(moveBehavior);
- //   registerBehavior(mineBehavior);
+//    registerBehavior(mineBehavior);
     cout << "FRIENDLY WORKER" << endl;
   }
 }
@@ -47,6 +47,7 @@ void SoarGameObject::registerBehavior(FSM *b)
   behaviors[b->name] = b;
 }
 
+
 void SoarGameObject::removeBehavior(SoarActionType name)
 {
   map<SoarActionType, FSM*>::iterator i = behaviors.find(name);
@@ -57,6 +58,7 @@ void SoarGameObject::removeBehavior(SoarActionType name)
 }
 
 
+//template<class T>
 void SoarGameObject::issueCommand(SoarActionType cmd, Vector<sint4> prms)
 {
   //Whether we really want this is up for analysis
