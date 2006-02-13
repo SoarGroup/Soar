@@ -143,7 +143,7 @@ void SoarInterface::getNewSoarOutput() {
     // append all the group parameters
     int groupCounter = 0;
     while(true) {
-      const char* paramValue = cmdPtr->GetParameterValue(catStrInt("group", groupCounter++));
+      const char* paramValue = cmdPtr->GetParameterValue(catStrInt("group", groupCounter++).c_str());
       if (paramValue == NULL) {
         break;
       }
@@ -185,7 +185,7 @@ void SoarInterface::getNewSoarOutput() {
     // append all the integer parameters
     int paramCounter = 0;
     while (true) {
-      const char* paramValue = cmdPtr->GetParameterValue(catStrInt("param", paramCounter++));
+      const char* paramValue = cmdPtr->GetParameterValue(catStrInt("param", paramCounter++).c_str());
       if (paramValue == NULL) {
         break;
       }
