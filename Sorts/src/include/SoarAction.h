@@ -14,9 +14,9 @@ enum SoarActionType {
 
 struct SoarAction {
   SoarActionType type;
- // list<SoarGameGroup*> groups;
-  SoarGameGroup* source;
-  SoarGameGroup* target;
+  list<SoarGameGroup*> groups;
+//  SoarGameGroup* source;
+//  SoarGameGroup* target;
   list<int> params;
 };
 
