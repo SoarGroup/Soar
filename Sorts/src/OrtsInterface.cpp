@@ -22,9 +22,8 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   // make sure the game object does not exist in the middleware
   assert(objectMap.find(gameObj) == objectMap.end());
   
-  int owner = *gameObj->sod.owner;
-  bool friendly = (myPid == owner);
-  SoarGameObject* newObj = new SoarGameObject(gameObj, owner, friendly);
+  bool friendly = (myPid == *gameObj->sod.owner);
+  SoarGameObject* newObj = new SoarGameObject(gameObj, friendly);
  
   // GroupManager takes care of setting the object->group pointers
   groupManager->addGroup(newObj);

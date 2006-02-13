@@ -3,7 +3,7 @@
 #include <pthread.h>
 
 #include "SoarInterface.h"
-#include "Utils.h"
+#include "general.h"
 
 #include "Game.H"
 
@@ -141,22 +141,24 @@ void SoarInterface::getNewSoarOutput() {
     newAction.type = type;
     
     // append all the group parameters
-    /*int groupCounter = 0;
+    int groupCounter = 0;
     while(true) {
-      string groupParam = "group";
-      groupParam += ('0' + groupCounter++);
-      const char* paramValue = cmdPtr->GetParameterValue(groupParam.c_str());
+      const char* paramValue = cmdPtr->GetParameterValue(catStrInt("group", groupCounter++));
       if (paramValue == NULL) {
         break;
       }
       int groupId = atoi(paramValue);
       assert(gIdToMwGroups.find(groupId) != gIdToMwGroups.end());
       newAction.groups.push_back(gIdToMwGroups[groupId]);
-    }*/
+    }
     
     /* There's really no need for a list of groups, all actions should
        be group to group, or group with int parameters.
     */
+    /* Update: We're going back to group lists, for stuff like
+     * "I want this worker to harvest this mineral and deposit to this base"
+     */
+    /*
     string groupParam = "source_group";
     const char* paramValue = cmdPtr->GetParameterValue(groupParam.c_str());
     if (paramValue == NULL) {
@@ -177,14 +179,13 @@ void SoarInterface::getNewSoarOutput() {
       assert(gIdToMwGroups.find(groupId) != gIdToMwGroups.end());
       newAction.target = gIdToMwGroups[groupId];
     }
+    */
     
 
     // append all the integer parameters
     int paramCounter = 0;
     while (true) {
-      string intParam = "param";
-      intParam += ('0' + paramCounter++);
-      const char* paramValue = cmdPtr->GetParameterValue(intParam.c_str());
+      const char* paramValue = cmdPtr->GetParameterValue(catStrInt("param", paramCounter++));
       if (paramValue == NULL) {
         break;
       }

@@ -18,12 +18,9 @@ void SoarGameObject::identifyBehaviors() {
   }
 }
 
-SoarGameObject::SoarGameObject(GameObj *g, int in_owner, bool in_friendly)
-: gob(g)
+SoarGameObject::SoarGameObject(GameObj *g, bool _friendly)
+: gob(g), friendly(_friendly)
 {
-  owner = in_owner;
-  friendly = in_friendly;
-  //cout << "owner: " << owner << " friend? " << friendly << endl;
   identifyBehaviors();
 }
 
@@ -111,7 +108,7 @@ SoarActionType SoarGameObject::getState()
 }
 
 int SoarGameObject::getOwner() {
-  return owner;
+  return *gob->sod.owner;
 }
 
 bool SoarGameObject::getFriendly() {

@@ -15,7 +15,7 @@ class SoarGameGroup;
 
 class SoarGameObject{
  public:
-	SoarGameObject(GameObj *, int, bool);
+	SoarGameObject(GameObj*, bool);
 	~SoarGameObject();
 
 	void identifyBehaviors();

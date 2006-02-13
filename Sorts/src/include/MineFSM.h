@@ -2,6 +2,7 @@
 #define MineFSM_H
 
 #include "FSM.h"
+#include "general.h"
 
 #include "PlayerInfo.H"
 #include "Game.H"
@@ -9,7 +10,6 @@
 
 class MineFSM : public FSM {
 public:
-  //MineFSM(GameStateModule* _gsm) {}
   MineFSM() {}
 
   bool update() {
@@ -36,7 +36,6 @@ public:
         break;
 
       case MOVING_TO_MINE:
-
         if (squaredDistance(*gob->sod.x, *gob->sod.y, mine_x, mine_y) < 4) {
           // close to mine. The 4 is from the blueprint files
           gob->set_action("mine", mineParams);
@@ -49,7 +48,6 @@ public:
         break;
 
       case MOVING_TO_BASE:
-
         if (squaredDistance(*gob->sod.x, *gob->sod.y, base_x, base_y) < 4) {
           // close to base. The 4 is from the blueprint files
           gob->set_action("return_resources", depositParams);
@@ -63,6 +61,23 @@ public:
     } // switch (state)
 
     return true;
+  }
+
+  /* the order of the parameters will be:
+   *
+   * mine id, mine x, mine y, base id, base x, base y
+   */
+
+  void setParams(vector<signed long> p) {
+    FSM::setParams(p);
+
+    // set up the parameter vectors for later use
+    moveToMineParams.push_back(p[0]);
+    moveToMineParams.push_back(p[1]);
+    mineParams.push_back(p[2]);
+    moveToBaseParams.push_back(p[3]);
+    moveToBaseParams.push_back(p[4]);
+    depositParams.push_back(p[5]);
   }
 
 private:

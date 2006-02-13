@@ -150,8 +150,8 @@ int main(int argc, char *argv[]) {
   // instantiate the group manager
   GroupManager gm(&soarInterface);
 
-
   OrtsInterface ortsInterface(&gsm, &soarInterface, &gm);
+  gm->setORTSIO(&ortsInterface);
   gsm.add_handler(&ortsInterface);
 
   // connect to ORTS server
