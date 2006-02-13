@@ -36,12 +36,12 @@ public:
         break;
 
       case MOVING_TO_MINE:
-/*
-        if (euclideanSq(*gob->sod.x, *gob->sod.y, mine_x, mine_y) < 4) {
+
+        if (squaredDistance(*gob->sod.x, *gob->sod.y, mine_x, mine_y) < 4) {
           // close to mine. The 4 is from the blueprint files
           gob->set_action("mine", mineParams);
           state = MINING;
-*/
+
         }
         else {
           gob->set_action("move", moveToMineParams);
@@ -49,12 +49,12 @@ public:
         break;
 
       case MOVING_TO_BASE:
-/*
-        if (euclideanSq(*gob->sod.x, *gob->sod.y, base_x, base_y) < 4) {
+
+        if (squaredDistance(*gob->sod.x, *gob->sod.y, base_x, base_y) < 4) {
           // close to base. The 4 is from the blueprint files
           gob->set_action("return_resources", depositParams);
           state = MOVING_TO_MINE;
-*/
+
         }
         else {
           gob->set_action("move", moveToBaseParams);

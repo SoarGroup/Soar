@@ -6,9 +6,10 @@
 #include<list>
 #include<vector>
 
+#include "general.h"
 #include "GameObj.H"
-
 #include "SoarAction.h"
+
 
 
 class FSM{
