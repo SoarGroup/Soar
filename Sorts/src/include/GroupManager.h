@@ -6,6 +6,7 @@
 #else
 #include "SoarInterface.h"
 #endif
+#include "OrtsInterface.h"
 
 class GroupManager {
   public:
@@ -30,7 +31,7 @@ class GroupManager {
     
     list <SoarGameGroup*> groupsInFocus;
     list <SoarGameGroup*> groupsNotInFocus;
-    ORTSInterface ORTSIO;
+    OrtsInterface ORTSIO;
 };
 
 struct objectGroupingStruct {

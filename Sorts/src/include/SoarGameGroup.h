@@ -6,7 +6,7 @@
 #include <string>
 #include "constants.h"
 #include "SoarAction.h"
-#include "ORTSInterface.h"
+#include "OrtsInterface.h"
 
 #ifdef DEBUG_GROUPS
 #include "FakeSoarGameObject.h"
@@ -26,7 +26,7 @@ struct groupPropertyStruct {
 
 class SoarGameGroup {
   public:
-    SoarGameGroup(SoarGameObject* unit, ORTSInterface* in_ORTSIO);
+    SoarGameGroup(SoarGameObject* unit, OrtsInterface* in_ORTSIO);
     void addUnit(SoarGameObject* unit);
     bool removeUnit(SoarGameObject* unit);
     void updateStats(bool saveProps);
@@ -73,6 +73,6 @@ class SoarGameGroup {
 
     int owner;
     bool friendly;
-    ORTSInterface ORTSIO;
+    OrtsInterface ORTSIO;
 };
 #endif
