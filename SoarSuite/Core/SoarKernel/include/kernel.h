@@ -106,7 +106,7 @@ typedef union symbol_union Symbol;
 
 /* Comment out the following line to avoid the overhead of keeping statistics
    on memory pool usage */
-#define MEMORY_POOL_STATS
+//#define MEMORY_POOL_STATS
 
 /* Uncomment the following line to eliminate all timing statistics.
    The "stats" command will have much shorter output as well. */
