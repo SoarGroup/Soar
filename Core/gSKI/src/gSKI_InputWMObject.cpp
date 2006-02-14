@@ -104,6 +104,8 @@ namespace gSKI
       MegaAssert(m_manager != 0, "Manager for InputWMObject cannot be null!");
 
       symbol_remove_ref(m_manager->GetSoarAgent(),	m_sym);
+	  ///  NO!  This should be release_io_symbol to encapsulate the ref handling.  KJC
+	  ///release_io_symbol((m_manager->GetSoarAgent(),	m_sym);
 
       if(m_gsym)
       {
