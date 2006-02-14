@@ -858,7 +858,7 @@ namespace gSKI
      ===============================
      ===============================
    */
-  void InputWorkingMemory::Update()
+  void InputWorkingMemory::Update(bool forceAdds, bool forceRemoves)
   {
     // Iterating over the InputWMObjects and updating them recursively
     // by starting with the root input object
@@ -873,7 +873,7 @@ namespace gSKI
       m_rootInputObject->Release();
     }
 
-    m_rootInputObject->Update(processedObjects);
+    m_rootInputObject->Update(processedObjects, forceAdds, forceRemoves);
     
   }
 

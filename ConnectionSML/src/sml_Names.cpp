@@ -400,6 +400,9 @@ char const* const sml_Names::kCommand_GetAllOutput			= "get_all_output" ;
 char const* const sml_Names::kCommand_GetRunState			= "get_run_state" ;
 char const* const sml_Names::kCommand_IsProductionLoaded	= "is_production_loaded" ;
 char const* const sml_Names::kCommand_SendClientMessage		= "send_client_message" ;
+char const* const sml_Names::kCommand_WasAgentOnRunList		= "on_run_list" ;
+char const* const sml_Names::kCommand_GetResultOfLastRun	= "last_run_result" ;
+
 
 // command line interface
 char const* const sml_Names::kCommand_CommandLine		 = "cmdline" ;
