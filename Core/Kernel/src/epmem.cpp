@@ -935,9 +935,9 @@ preference *make_fake_preference_for_epmem_wme(agent *thisAgent, epmem_header *h
     condition *prev_cond = NULL;
     int i;
 
-    //%%%DEBUGGING
-    print_with_symbols(thisAgent, "\nBuilding fake preference for WME: (%y ^%y %y)",
-                       w->id, w->attr, w->value);
+//      //%%%DEBUGGING
+//      print_with_symbols(thisAgent, "\nBuilding fake preference for WME: (%y ^%y %y)",
+//                         w->id, w->attr, w->value);
     
     /*
      * make the fake preference
