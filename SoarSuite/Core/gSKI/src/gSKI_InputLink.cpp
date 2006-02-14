@@ -270,6 +270,7 @@ namespace gSKI
   
   void InputLink::FinalUpdate()
   {
+	  Reinitialize();
     // Perform necessary update functions
     //std::cout << "\nFinal input link update cycle!\n";
   }
