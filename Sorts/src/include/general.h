@@ -1,11 +1,26 @@
 #ifndef general_h
 #define general_h
 
-inline std::string catStrInt(const char* str, int x);
+#include<list>
+#include<utility>
+#include<iostream>
 
-inline std::string int2str(int x);
+#include "sml_Client.h"
 
-inline const char* getCommandParameter(sml::Identifier* c, const char *name);
+using namespace std;
+
+// I had to move this here because of forward declaration crazyness
+typedef list<pair<string, int> > groupPropertyList;
+struct groupPropertyStruct {
+  list<pair<string, int> > stringIntPairs;
+  list<pair<string, string> > stringStringPairs;
+};
+
+string catStrInt(const char* str, int x);
+
+string int2str(int x);
+
+const char* getCommandParameter(sml::Identifier* c, const char *name);
 
 double squaredDistance(double x1, double y1, double x2, double y2);
 

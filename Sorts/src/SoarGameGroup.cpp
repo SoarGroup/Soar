@@ -1,12 +1,13 @@
 #include "include/SoarGameGroup.h"
 #include "include/general.h"
-#include "include/ORTSInterface.h"
+#include "include/OrtsInterface.h"
 #include <assert.h>
 #include <vector>
 #include <iostream>
 
-SoarGameGroup::SoarGameGroup(SoarGameObject* unit, ORTSInterface* in_ORTSIO) {
-  ORTSIO = in_ORTSIO;
+SoarGameGroup::SoarGameGroup(SoarGameObject* unit, OrtsInterface* _ORTSIO)
+: ORTSIO(_ORTSIO)
+{
   members.insert(unit);
   // capabilities = unit->capabilities;
   unit->setGroup(this);
@@ -195,7 +196,7 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
   cout << endl;
 
   list<int>::iterator intIt = params.begin();  
-  list<int>::iterator objectIt = targets.begin();  
+  list<SoarGameObject*>::iterator objectIt = targets.begin();  
   Vector<sint4> tempVec;
   
   

@@ -3,6 +3,7 @@
 #include <pthread.h>
 
 #include "SoarInterface.h"
+#include "SoarGameGroup.h"
 #include "general.h"
 
 #include "Game.H"
@@ -181,7 +182,6 @@ void SoarInterface::getNewSoarOutput() {
     }
     */
     
-
     // append all the integer parameters
     int paramCounter = 0;
     while (true) {
@@ -194,6 +194,8 @@ void SoarInterface::getNewSoarOutput() {
 
     // add the new action to the action queue
     objectActionQueue.push_back(&newAction);
+
+    cmdPtr->AddStatusComplete();
   } // for over commands
 
   pthread_mutex_unlock(objectActionQueueMutex);

@@ -11,7 +11,9 @@
 #include "sml_Client.h"
 
 #include "SoarAction.h"
-#include "SoarGameGroup.h"
+#include "general.h"
+
+class SoarGameGroup;
 
 using namespace std;
 

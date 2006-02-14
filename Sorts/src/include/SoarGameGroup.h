@@ -7,6 +7,7 @@
 #include "constants.h"
 #include "SoarAction.h"
 #include "OrtsInterface.h"
+#include "general.h"
 
 #ifdef DEBUG_GROUPS
 #include "FakeSoarGameObject.h"
@@ -15,12 +16,6 @@
 #endif
 
 using namespace std;
-// inside SoarInterface.h too
-typedef list<pair<string, int> > groupPropertyList;
-struct groupPropertyStruct {
-  list<pair<string, int> > stringIntPairs;
-  list<pair<string, string> > stringStringPairs;
-};
 
 //class SoarGameObject{}; // TEMPORARY
 
@@ -73,6 +68,6 @@ class SoarGameGroup {
 
     int owner;
     bool friendly;
-    OrtsInterface ORTSIO;
+    OrtsInterface* ORTSIO;
 };
 #endif

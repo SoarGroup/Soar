@@ -151,7 +151,7 @@ int main(int argc, char *argv[]) {
   GroupManager gm(&soarInterface);
 
   OrtsInterface ortsInterface(&gsm, &soarInterface, &gm);
-  gm->setORTSIO(&ortsInterface);
+  gm.setORTSIO(&ortsInterface);
   gsm.add_handler(&ortsInterface);
 
   // connect to ORTS server

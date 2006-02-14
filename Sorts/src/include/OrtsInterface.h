@@ -28,12 +28,16 @@ typedef map<SoarGameObject*, const GameObj*>::iterator revObjectMapIter;
  */
 class OrtsInterface : public EventHandler {
 public:
-  OrtsInterface(GameStateModule* _gsm, SoarInterface* _soarInterface, GroupManager* _groupManager);
+  OrtsInterface(GameStateModule* _gsm, 
+                SoarInterface*   _soarInterface, 
+                GroupManager*    _groupManager);
   ~OrtsInterface();
   void setMyPid(int pid);
 
+  // wrappers for middleware querying ORTS
+  sint4 getID(SoarGameObject* obj);
+
 private:
-  
   // pointers to all the orts stuff
   GameStateModule* gsm;
   GameObj *playerGameObj;
@@ -42,9 +46,6 @@ private:
   /* In the future, change these to hash maps */
   map<const GameObj*, SoarGameObject*> objectMap;
   map<SoarGameObject*, const GameObj*> revObjectMap;
-
-  // wrappers for middleware querying ORTS
-  sint4 getID(SoarGameObject* obj);
 
   // pointer to our stuff
   SoarInterface* soarInterface;

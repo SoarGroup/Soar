@@ -1,6 +1,9 @@
 #include "include/GroupManager.h"
 #include "include/general.h"
 #include <iostream>
+
+#include "SoarGameGroup.h"
+
 using namespace std;
 
 /*
@@ -31,22 +34,23 @@ bool GroupManager::assignActions() {
   list <SoarGameGroup*>::iterator groupIter;
   bool success = true;
   list<SoarGameObject*> targetObjs;
-  SoarGameObject* sourceObj;
+  SoarGameGroup* sourceGroup;
   
   cout << "Assigning actions." << endl;
   while (actionIter != newActions.end()){
     //cout << "popping" << endl;
-    list<SoarGameGroup*>::iterator groupIter = (**actionIter).groups.begin();
+    list<SoarGameGroup*>& groups = (**actionIter).groups;
+    list<SoarGameGroup*>::iterator groupIter = groups.begin();
     assert(groupIter != groups.end());
     
-    sourceObj = *groupIter;
+    sourceGroup = *groupIter;
     groupIter++;
     
     while (groupIter != groups.end()) {
       targetObjs.push_back((*groupIter)->getNextMember());
     }
     
-    success &= sourceObj->assignAction(
+    success &= sourceGroup->assignAction(
             (**actionIter).type, (**actionIter).params, targetObjs);
     
     actionIter++;

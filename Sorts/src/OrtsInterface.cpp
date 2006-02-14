@@ -1,6 +1,7 @@
 #include <assert.h>
 
 #include "OrtsInterface.h"
+#include "SoarGameGroup.h"
 
 #include "GameObj.H"
 #include "GameStateModule.H"
