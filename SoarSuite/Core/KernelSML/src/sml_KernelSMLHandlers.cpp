@@ -146,6 +146,8 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_GetRunState]		= &sml::KernelSML::HandleGetRunState ;
 	m_CommandMap[sml_Names::kCommand_IsProductionLoaded]= &sml::KernelSML::HandleIsProductionLoaded ;
 	m_CommandMap[sml_Names::kCommand_SendClientMessage] = &sml::KernelSML::HandleSendClientMessage ;
+	m_CommandMap[sml_Names::kCommand_WasAgentOnRunList] = &sml::KernelSML::HandleWasAgentOnRunList ;
+	m_CommandMap[sml_Names::kCommand_GetResultOfLastRun]= &sml::KernelSML::HandleGetResultOfLastRun ;
 }
 
 /*************************************************************
@@ -524,6 +526,24 @@ bool KernelSML::HandleGetRunState(gSKI::IAgent* pAgent, char const* pCommandName
 	std::string bufferStdString = buffer.str();
 	const char* bufferCString = bufferStdString.c_str();
 	return this->ReturnResult(pConnection, pResponse, bufferCString) ;
+}
+
+// Return information about the current runtime state of the agent (e.g. phase, decision cycle count etc.)
+bool KernelSML::HandleWasAgentOnRunList(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pCommandName) ; unused(pIncoming) ; unused(pError) ;
+
+	bool wasRun = GetAgentSML(pAgent)->WasAgentOnRunList() ;
+	return this->ReturnBoolResult(pConnection, pResponse, wasRun) ;
+}
+
+// Return information about the current runtime state of the agent (e.g. phase, decision cycle count etc.)
+bool KernelSML::HandleGetResultOfLastRun(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pCommandName) ; unused(pIncoming) ; unused(pError) ;
+
+	egSKIRunResult runResult = GetAgentSML(pAgent)->GetResultOfLastRun() ;
+	return this->ReturnIntResult(pConnection, pResponse, runResult) ;
 }
 
 // Returns true if the production name is currently loaded
@@ -906,6 +926,13 @@ bool KernelSML::RemoveInputWME(gSKI::IAgent* pAgent, char const* pTimeTag, gSKI:
 	{
 		// Get the kernel-side identifier
 		std::string id = pWME->GetValue()->GetString() ;
+
+		// Look up the wmobject for this id
+		//IWMObject* pObject = NULL ;
+		//pInputWM->GetObjectById(id.c_str(), &pObject, pError) ;
+
+		//assert(!pError || !gSKI::isError(*pError)) ;
+		//pInputWM->RemoveObject(pObject) ;
 
 		// Remove it from the id mapping table
 		pAgentSML->RemoveID(id.c_str()) ;

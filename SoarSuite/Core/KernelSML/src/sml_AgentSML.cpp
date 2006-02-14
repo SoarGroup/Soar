@@ -26,6 +26,8 @@
 #include "IgSKI_Symbol.h"
 #include "IgSKI_AgentManager.h"
 #include "IgSKI_Kernel.h"
+#include "IgSKI_InputLink.h"
+#include "IgSKI_WorkingMemory.h"
 
 #include <assert.h>
 
@@ -83,7 +85,8 @@ AgentSML::~AgentSML()
 void AgentSML::Clear()
 {
 	// Release any WME objects we still own.
-	ReleaseAllWmes() ;
+	// (Don't flush removes in this case as we're shutting down rather than just doing an init-soar).
+	ReleaseAllWmes(false) ;
 
 	m_ProductionListener.Clear();
 	m_RunListener.Clear();
@@ -92,8 +95,20 @@ void AgentSML::Clear()
 	m_XMLListener.Clear() ;
 }
 
-void AgentSML::ReleaseAllWmes()
+// Release all of the WMEs that we currently have references to
+// It's a little less severe than clear() which releases everything we own, not just wmes.
+// If flushPendingRemoves is true, make sure gSKI removes all wmes from Soar's working memory
+// that have been marked for removal but are still waiting for the next input phase to actually
+// be removed (this should generally be correct so we'll default to true for it).
+void AgentSML::ReleaseAllWmes(bool flushPendingRemoves)
 {
+	if (flushPendingRemoves)
+	{
+		bool forceAdds = false ;	// It doesn't matter if we do these or not as we're about to release everything.  Seems best to not start things up.
+		bool forceRemoves = true ;	// SML may have deleted a wme but gSKI has yet to act on this.  As SML has removed its object we have no way to free the gSKI object w/o doing this update.
+		this->GetIAgent()->GetInputLink()->GetInputLinkMemory()->Update(forceAdds, forceRemoves) ;
+	}
+
 	// Release any WME objects we still own.
 	for (TimeTagMapIter mapIter = m_TimeTagMap.begin() ; mapIter != m_TimeTagMap.end() ; mapIter++)
 	{

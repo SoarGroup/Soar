@@ -274,6 +274,14 @@ typedef enum
 	sml_DONT_UPDATE_WORLD	=  1 << 3,	// User explicitly requested world to not update
 } smlRunFlags ;
 
+typedef enum {
+    sml_RUN_ERROR,
+    sml_RUN_EXECUTING,
+    sml_RUN_INTERRUPTED,
+    sml_RUN_COMPLETED,
+    sml_RUN_COMPLETED_AND_INTERRUPTED	// Stop was requested but run completed before agent was interrupted.
+} smlRunResult;
+
 // These typedefs all define types of functions.
 // For example: typedef void (*X)(type1 arg1, type2 arg2) means we're defining function "X" to take (type1 arg1, type2 arg2) and return void.
 // To provide such a handler define a function with this type and pass its address in to the registration function for the event.

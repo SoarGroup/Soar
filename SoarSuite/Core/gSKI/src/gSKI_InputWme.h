@@ -210,7 +210,7 @@ namespace gSKI {
      // TODO: Comment these two functions
      void SetOwningObject(InputWMObject *);
      bool AttributeEquals(const std::string& attr) const;
-     void Update();
+	 void Update(bool forceAdds, bool forceRemoves);
      void Remove();
 
   private:
