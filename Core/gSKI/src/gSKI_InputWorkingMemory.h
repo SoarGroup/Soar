@@ -729,7 +729,7 @@ namespace gSKI {
       /**
        * @brief Handles updating the input working memory
        */
-      void Update();
+      virtual void Update(bool forceAdds, bool forceRemoves);
 
       /**
        * @brief Handles releasing the underlying wme's and symbols

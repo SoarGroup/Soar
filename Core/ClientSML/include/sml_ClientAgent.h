@@ -585,12 +585,25 @@ public:
 	char const* RunSelfForever() ;
 
 	/*************************************************************
+	* @brief Returns true if this agent was part of the last set
+	*		 of agents that was run.
+	*************************************************************/
+	bool WasAgentOnRunList() ;
+
+	/*************************************************************
+	* @brief Returns whether the last run for this agent was
+	*		 interrupted (by a stop call) or completed normally.
+	*************************************************************/
+	smlRunResult GetResultOfLastRun() ;
+
+	/*************************************************************
 	* @brief Interrupt the currently running Soar agent.
 	*
 	* Call this after calling "Run" in order to stop a Soar agent.
 	* The usual way to do this is to register for an event (e.g. AFTER_DECISION_CYCLE)
 	* and in that event handler decide if the user wishes to stop soar.
-	* If so, call to this method inside that handler.
+	* If so, call to this method inside that handler (this ensures you're calling on the same
+	* thread that Soar is running on so you don't get blocked).
 	*
 	* The request to Stop may not be honored immediately.
 	* Soar will stop at the next point it is considered safe to do so.

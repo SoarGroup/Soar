@@ -1255,6 +1255,8 @@ char const* Agent::InitSoar()
 * The usual way to do this is to register for an event (e.g. AFTER_DECISION_CYCLE)
 * and in that event handler decide if the user wishes to stop soar.
 * If so, call to this method inside that handler.
+* If so, call to this method inside that handler (this ensures you're calling on the same
+* thread that Soar is running on so you don't get blocked).
 *
 * The request to Stop may not be honored immediately.
 * Soar will stop at the next point it is considered safe to do so.
@@ -1311,6 +1313,41 @@ char const* Agent::RunSelfForever()
 	// Execute the run command.
 	char const* pResult = ExecuteCommandLine(cmd.c_str()) ;
 	return pResult ;
+}
+
+/*************************************************************
+* @brief Returns true if this agent was part of the last set
+*		 of agents that was run.
+*************************************************************/
+bool Agent::WasAgentOnRunList()
+{
+	AnalyzeXML response ;
+
+	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_WasAgentOnRunList, GetAgentName()) ;
+
+	if (!ok)
+		return false ;
+
+	bool wasRun = response.GetResultBool(false) ;
+	return wasRun ;
+}
+
+/*************************************************************
+* @brief Returns whether the last run for this agent was
+*		 interrupted (by a stop call) or completed normally.
+*************************************************************/
+smlRunResult Agent::GetResultOfLastRun()
+{
+	AnalyzeXML response ;
+
+	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetResultOfLastRun, GetAgentName()) ;
+
+	if (!ok)
+		return sml_RUN_ERROR ;
+
+	smlRunResult result = (smlRunResult)response.GetResultInt((int)sml_RUN_ERROR) ;
+
+	return result ;
 }
 
 /*************************************************************

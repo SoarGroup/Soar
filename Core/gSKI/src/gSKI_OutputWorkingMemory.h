@@ -705,6 +705,11 @@ namespace gSKI {
 									IWorkingMemoryListener* listener, 
 									Error*                  err = 0) ;
 
+	  /**
+       * @brief Handles updating working memory.  Not implemented for output link yet.
+       */
+	  virtual void Update(bool forceAdds, bool forceRemoves) { }
+
    private:
       /**
        * @brief Used to retrieve an input wme given an id, attribute and value triplet

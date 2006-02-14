@@ -675,6 +675,13 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 
 	// Some simple tests
 	StringElement* pWME = pAgent->CreateStringWME(pInputLink, "my-att", "my-value") ;
+
+	// This is to test a bug where an identifier isn't fully removed from working memory (you can still print it) after it is destroyed.
+	Identifier* pIDRemoveTest = pAgent->CreateIdWME(pInputLink, "foo") ;
+	pAgent->CreateFloatWME(pIDRemoveTest, "bar", 1.23) ;
+
+	std::string idValue = pIDRemoveTest->GetValueAsString() ;
+
 	unused(pWME);
 	Identifier* pID = pAgent->CreateIdWME(pInputLink, "plane") ;
 
@@ -683,6 +690,14 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	unused(pWMEtest) ;
 
 	bool ok = pAgent->Commit() ;
+	pAgent->RunSelf(1) ;
+
+	pAgent->DestroyWME(pIDRemoveTest) ;
+	pAgent->Commit() ;
+
+	//pAgent->RunSelf(1) ;
+	std::string wmes1 = pAgent->ExecuteCommandLine("print i2 --depth 3") ;
+	std::string wmes2 = pAgent->ExecuteCommandLine("print F1") ;	// BUGBUG: This wme remains in memory even after we add the "RunSelf" at which point it should be gone.
 
 	if (!InitSoarAgent(pAgent, doInitSoars))
 		return false ;
@@ -827,6 +842,20 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	if (outputPhases != 4)
 	{
 		cout << "Error receiving AFTER_ALL_OUTPUT_PHASES events" << endl ;
+		return false ;
+	}
+
+	bool wasRun = pAgent->WasAgentOnRunList() ;
+	if (!wasRun)
+	{
+		cout << "Error determining if this agent was run" << endl ;
+		return false ;
+	}
+
+	smlRunResult runResult = pAgent->GetResultOfLastRun() ;
+	if (runResult != sml_RUN_COMPLETED)
+	{
+		cout << "Error getting result of the last run" << endl ;
 		return false ;
 	}
 
@@ -1514,8 +1543,10 @@ bool FullTimeTest()
 
 bool FullEmbeddedTest()
 {
+	bool ok = true ;
+
 	// Simple embedded, direct init-soar
-	bool ok = TestSML(true, true, true, true) ;
+	ok = ok && TestSML(true, true, true, true) ;
 
 	// Embeddded using direct calls
 	ok = ok && TestSML(true, true, true, false) ;
