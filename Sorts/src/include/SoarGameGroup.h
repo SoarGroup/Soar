@@ -46,7 +46,8 @@ class SoarGameGroup {
 
     // get the player number that owns this group
     int getOwner();
-    bool getFriendly();
+    bool isWorld();
+    bool isFriendly();
   private:
     set <SoarGameObject*> members;
     // int capabilities; // get from unit capabilities
@@ -68,6 +69,7 @@ class SoarGameGroup {
 
     int owner;
     bool friendly;
+    bool world;
     OrtsInterface* ORTSIO;
 };
 #endif

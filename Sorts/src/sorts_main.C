@@ -24,15 +24,10 @@ void SoarUpdateEventHandler(sml::smlUpdateEventId id,
                             sml::Kernel*          pKernel,
                             sml::smlRunFlags      runFlags)
 {
-//  cout << "Soar Event triggered" << endl;
   sml::Agent *agent = pKernel->GetAgent("orts_agent");
   SoarInterface* soarInterface = (SoarInterface*) pUserData;
   soarInterface->getNewSoarOutput();
-
-  cout << "### COMMIT ABOUT TO BE CALLED ###" << endl;
   agent->Commit();
-  cout << "### COMMIT FINISHED ###" << endl;
-//  cout << "Soar Event processing finished" << endl;
 }
 
 // the function that is executed by a separate thread to
@@ -141,7 +136,7 @@ int main(int argc, char *argv[]) {
                                &groupActionMutex );
 
   // register for all events
-  pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, printOutput, 0);
+//  pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, printOutput, 0);
   pKernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &soarInterface);
   //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START, SoarSystemEventHandler, &state);
   //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_STOP, SoarSystemEventHandler, &state);

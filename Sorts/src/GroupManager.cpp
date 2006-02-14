@@ -47,7 +47,9 @@ bool GroupManager::assignActions() {
     groupIter++;
     
     while (groupIter != groups.end()) {
+      // are we assuming only one member per group here?
       targetObjs.push_back((*groupIter)->getNextMember());
+      groupIter++;
     }
     
     success &= sourceGroup->assignAction(

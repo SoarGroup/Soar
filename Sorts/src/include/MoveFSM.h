@@ -9,7 +9,7 @@ class MoveFSM: public FSM{
 	~MoveFSM();
 
 	bool update();
-//	void setParams(std::vector<signed long>);
+	void init(std::vector<signed long>);
 
  private:
 	enum{IDLE,MOVING};

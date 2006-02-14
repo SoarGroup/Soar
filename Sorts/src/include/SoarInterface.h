@@ -96,6 +96,9 @@ class SoarInterface {
     sml::Identifier* playerId;
     sml::Identifier* playerGroupsId;
 
+    sml::Identifier* worldId;
+    sml::Identifier* worldGroupsId;
+
     sml::IntElement* playerGoldWME;
     sml::Identifier* mapIdentifier;
 
@@ -110,7 +113,6 @@ class SoarInterface {
    
     // keep track of actions on the input link and middleware
     map<sml::Identifier*, SoarAction>  soarActions;
-
 
     // lists of actions that are currently unprocessed
     // there is a race condition on accessing this list

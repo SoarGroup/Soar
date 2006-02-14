@@ -15,7 +15,7 @@ class SoarGameGroup;
 
 class SoarGameObject{
  public:
-	SoarGameObject(GameObj*, bool);
+	SoarGameObject(GameObj* _gob, bool _friendly, bool _world);
 	~SoarGameObject();
 
 	void identifyBehaviors();
@@ -31,10 +31,11 @@ class SoarGameObject{
 	SoarGameGroup *getGroup();
 	SoarActionType getState();
 
-  	int getOwner();
-  	bool getFriendly();
+  int  getOwner()     { return *gob->sod.owner; }
+ 	bool isFriendly()   { return friendly; }
+  bool isWorld()      { return world; }
 
-   	GameObj *gob;
+  GameObj *gob;
 
   private:
 	map<SoarActionType, FSM *> behaviors;
@@ -43,7 +44,7 @@ class SoarGameObject{
 	SoarActionType state;
 	SoarGameGroup* group;
 	bool friendly;
-	int owner;
+  bool world;
 };
 
 #endif

@@ -18,8 +18,8 @@ void SoarGameObject::identifyBehaviors() {
   }
 }
 
-SoarGameObject::SoarGameObject(GameObj *g, bool _friendly)
-: gob(g), friendly(_friendly)
+SoarGameObject::SoarGameObject(GameObj *g, bool _friendly, bool _world)
+: gob(g), friendly(_friendly), world(_world)
 {
   identifyBehaviors();
 }
@@ -63,31 +63,28 @@ void SoarGameObject::issueCommand(SoarActionType cmd, Vector<sint4> prms)
     memory.pop();
 
   map<SoarActionType, FSM*>::iterator i = behaviors.find(cmd);
-  if (i == behaviors.end()) {
-    cout << "No match for command" << endl;
-    return;
-  }
+  assert(i != behaviors.end());
 
-  i->second->setParams(prms);
+  i->second->init(prms);
   memory.push(i->second);
   state = cmd;
-  cout << "ACTION" << endl;
   update();
 }
 
 
 void SoarGameObject::update()
 {
-  //cout << "updated object" << endl;
   group->setStale();
- if(!memory.empty())
-  if(!memory.top()->update())
+  if(!memory.empty())
   {
-   memory.pop();
-   if(!memory.empty())
-    state = memory.top()->name;
-   else
-    state = SA_IDLE;
+    if(!memory.top()->update())
+    {
+      memory.pop();
+      if(!memory.empty())
+        state = memory.top()->name;
+      else
+        state = SA_IDLE;
+    }
   }
 }
 
@@ -107,10 +104,3 @@ SoarActionType SoarGameObject::getState()
  return state;
 }
 
-int SoarGameObject::getOwner() {
-  return *gob->sod.owner;
-}
-
-bool SoarGameObject::getFriendly() {
-  return friendly;
-}

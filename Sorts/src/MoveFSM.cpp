@@ -1,19 +1,16 @@
 #include"MoveFSM.h"
 #include<iostream>
+
 using namespace std;
 
 MoveFSM::MoveFSM()
 {
- state = IDLE;
  name = SA_MOVE;
  gob = NULL;
 }
 
 MoveFSM::~MoveFSM()
-{
- gob = NULL;
-}
-
+{ }
 
 bool MoveFSM::update()
 {
@@ -21,9 +18,7 @@ bool MoveFSM::update()
 
 	case IDLE:
 	 //Start moving
-   cout << "<<<<<< SETTING MOVE ACTION >>>>>>" << endl;
 	 gob->set_action("move",params);
-   cout << "MOVING!" << endl;
 	 break;
 
 	case MOVING:
@@ -33,7 +28,6 @@ bool MoveFSM::update()
 	 if(*sod.x == params[1] && *sod.y == params[2])
 	 {
 	  //If you arrived, then pop the FSM
-	  state = IDLE;
 	  return false;
 	 }
 	 break;
@@ -42,7 +36,10 @@ bool MoveFSM::update()
  return true;
 }
 
-
+void MoveFSM::init(vector<signed long> p) {
+  FSM::init(p);
+  state = IDLE;
+}
 //Might be worth it to push this up to FSM.h and template it for sint4 and objects
 //void MoveFSM::setParams(std::vector<signed long> p)
 //{

@@ -21,7 +21,7 @@ class FSM{
 
 	virtual void setGameObject(GameObj *g){gob = g;}
 	virtual GameObj *getGameObject(){return gob;}
-	virtual void setParams(std::vector<sint4>);
+	virtual void init(std::vector<sint4>);
 
  //private:
 	SoarActionType name;

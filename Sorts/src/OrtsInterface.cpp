@@ -22,9 +22,10 @@ void OrtsInterface::addAppearedObject(const GameObj* gameObj) {
 void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   // make sure the game object does not exist in the middleware
   assert(objectMap.find(gameObj) == objectMap.end());
-  
+ 
   bool friendly = (myPid == *gameObj->sod.owner);
-  SoarGameObject* newObj = new SoarGameObject(gameObj, friendly);
+  bool world    = (gsm->get_game().get_player_num() == *gameObj->sod.owner);
+  SoarGameObject* newObj = new SoarGameObject(gameObj, friendly, world);
  
   // GroupManager takes care of setting the object->group pointers
   groupManager->addGroup(newObj);
@@ -53,7 +54,6 @@ void OrtsInterface::removeVanishedObject(const GameObj* gameObj) {
 bool OrtsInterface::handle_event(const Event& e) {
   if (e.get_who() == GameStateModule::FROM) {
     if (e.get_what() == GameStateModule::VIEW_MSG) {
-      cout << "INTERRUPT!" << counter++ << endl;
 
       groupManager->assignActions();
 
@@ -69,9 +69,7 @@ bool OrtsInterface::handle_event(const Event& e) {
       /* I'm assuming here that those update calls from above have already
        * updated the soar input link correctly, so commit everything
        */
-      cout << "begin commit" << endl;
       soarInterface->commitInputLinkChanges();
-      cout << "end commit" << endl;
     }
     return true;
   }

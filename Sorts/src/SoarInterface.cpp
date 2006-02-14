@@ -76,8 +76,11 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyStruct gps) 
     // add the group to the soar input link if it hasn't been already
     g.added = true;
 
-    if (group->getFriendly()) {
+    if (group->isFriendly()) {
       g.WMEptr = agent->CreateIdWME(playerGroupsId, "group");
+    }
+    else if (group->isWorld() ) {
+      g.WMEptr = agent->CreateIdWME(worldGroupsId, "group");
     }
     else {
       g.WMEptr = agent->CreateIdWME(otherPlayers[group->getOwner()].groupsId, "group");
@@ -85,33 +88,25 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyStruct gps) 
 
     // label the group with its id
     agent->CreateIntWME(g.WMEptr, "id", g.groupId);
-    cout << "WME (r): group" << endl;
-    cout << "WME: \tid " << g.groupId << endl;
 
     // add properties
     for(list<pair<string,int> >::iterator i = gps.stringIntPairs.begin(); i != gps.stringIntPairs.end(); i++) {
       // create a new WME object for the property
       g.intProperties[(*i).first] = agent->CreateIntWME(g.WMEptr, (*i).first.c_str(), (*i).second);
-      cout << "WME: \t" << (*i).first << " " << (*i).second << endl;
     }
     for(list<pair<string,string> >::iterator i = gps.stringStringPairs.begin(); i != gps.stringStringPairs.end(); i++) {
       // create a new WME object for the property
       g.stringProperties[(*i).first] = agent->CreateStringWME(g.WMEptr, (*i).first.c_str(), (*i).second.c_str());
-      cout << "WME: \t" << (*i).first << " " << (*i).second << endl;
     }
   }
   else {
     // group already added, just update values.
     // Note that I'm assuming no new values are introduced
-    cout << "WME: updated group" << endl;
-    cout << "WME: \tid " << g.groupId << endl;
     for(list<pair<string, int> >::iterator i = gps.stringIntPairs.begin(); i != gps.stringIntPairs.end(); i++) {
       agent->Update(g.intProperties[(*i).first], (*i).second);
-      cout << "WME: \t" << (*i).first << " " << (*i).second << endl;
     }
     for(list<pair<string, string> >::iterator j = gps.stringStringPairs.begin(); j != gps.stringStringPairs.end(); j++) {
       agent->Update(g.stringProperties[(*j).first], (*j).second.c_str());
-      cout << "WME: \t" << (*j).first << " " << (*j).second << endl;
     }
   }
 }
@@ -137,7 +132,7 @@ void SoarInterface::getNewSoarOutput() {
     cout << "command name: " << name << endl;
     SoarActionType type = actionTypeLookup(name.c_str());
     assert(type != SA_NO_SUCH_ACTION);
-    
+
     SoarAction& newAction = soarActions[cmdPtr];
     newAction.type = type;
     
@@ -204,9 +199,11 @@ void SoarInterface::getNewSoarOutput() {
 // called by middleware to get queued Soar actions
 void SoarInterface::getNewActions(list<SoarAction*>& newActions) {
   pthread_mutex_lock(objectActionQueueMutex);
-  for(list<SoarAction*>::iterator i = objectActionQueue.begin(); i != objectActionQueue.end(); i++) {
+  for(list<SoarAction*>::iterator i = objectActionQueue.begin(); 
+                                  i != objectActionQueue.end(); 
+                                  i++)
+  {
     newActions.push_back(*i);
-    cout << "adding action.." << endl;
     objectActionQueue.erase(i);
   }
   pthread_mutex_unlock(objectActionQueueMutex);
@@ -241,6 +238,9 @@ void SoarInterface::initSoarInputLink() {
 
   playerGoldWME = agent->CreateIntWME(playerId, "gold", 0);
   playerGroupsId = agent->CreateIdWME(playerId, "groups");
+
+  worldId = agent->CreateIdWME(inputLink, "world");
+  worldGroupsId = agent->CreateIdWME(worldId, "groups");
 
   for(int p = 0; p < gsm->get_game().get_player_num(); p++) {
     if (p != gsm->get_game().get_client_player()) {

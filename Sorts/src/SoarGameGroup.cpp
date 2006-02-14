@@ -16,13 +16,14 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit, OrtsInterface* _ORTSIO)
   //type = 0;
   centerMember = unit;
   currentMember = unit;
-#ifndef DEBUG_GROUPS  
+#ifndef DEBUG_GROUPS
   typeName = unit->gob->bp_name();
 #else
   typeName = "unknown";
 #endif
   owner = unit->getOwner();
-  friendly = unit->getFriendly();
+  friendly = unit->isFriendly();
+  world = unit->isWorld();
 }
 
 void SoarGameGroup::addUnit(SoarGameObject* unit) {
@@ -71,6 +72,7 @@ void SoarGameGroup::updateStats(bool saveProps) {
   double health = 0;
   double x = 0;
   double y = 0;
+  double speed = 0;
   double size = members.size();
 
   // this is not a huge problem (just a redundant update), but should not happen
@@ -80,7 +82,8 @@ void SoarGameGroup::updateStats(bool saveProps) {
     // be careful is some numbers are very big for each object and the double could overflow
     
   //  health += *currentObject.getHealth();
-    //health += (*currentObject)->gob->get_int("health");
+    health += (*currentObject)->gob->get_int("hp");
+    speed += *(*currentObject)->gob->sod.speed;
     #ifdef DEBUG_GROUPS
     x += (*currentObject)->x;
     y += (*currentObject)->y;
@@ -92,6 +95,7 @@ void SoarGameGroup::updateStats(bool saveProps) {
   }
   
   health /= size;
+  speed /= size;
   x /= size;
   y /= size;
 
@@ -99,20 +103,26 @@ void SoarGameGroup::updateStats(bool saveProps) {
   statistics[GP_X_POS] = x;
   statistics[GP_Y_POS] = y;
   statistics[GP_HEALTH] = health;
+  statistics[GP_SPEED] = speed;
 
   if (saveProps) {
     pair<string, int> stringIntWme;
     pair<string, string> stringStringWme;
+
     stringIntWme.first = "health";
     stringIntWme.second = (int)(health);
     soarData.stringIntPairs.push_back(stringIntWme);
 
+    stringIntWme.first = "speed";
+    stringIntWme.second = (int)(speed);
+    soarData.stringIntPairs.push_back(stringIntWme);
+
     // how do we want to represent position?
-    stringIntWme.first = "x_position";
+    stringIntWme.first = "x-pos";
     stringIntWme.second = (int)(x);
     soarData.stringIntPairs.push_back(stringIntWme);
 
-    stringIntWme.first = "y_position";
+    stringIntWme.first = "y-pos";
     stringIntWme.second = (int)(y);
     soarData.stringIntPairs.push_back(stringIntWme);
 
@@ -303,8 +313,12 @@ int SoarGameGroup::getOwner() {
   return owner;
 }
 
-bool SoarGameGroup::getFriendly() {
+bool SoarGameGroup::isFriendly() {
   return friendly;
+}
+
+bool SoarGameGroup::isWorld() {
+  return world;
 }
 
 pair<string, int> SoarGameGroup::getCategory() {
