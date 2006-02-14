@@ -1,0 +1,8 @@
+sp {buffered-epmem*elaborate*unevaluated-moves
+   (state <s> ^name buffered-epmem
+              ^operator <op> +)
+   (<op> ^name move
+        -^evaluation)
+-->
+   (<s> ^unevaluated-moves true)
+}

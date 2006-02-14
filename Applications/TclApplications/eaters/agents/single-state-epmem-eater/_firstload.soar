@@ -1,0 +1,9 @@
+learn --off
+
+log /temp/foo.log
+
+decay --off
+decay --wme-criteria architectural
+decay --i-support-mode no-create
+decay --forget off
+decay --on

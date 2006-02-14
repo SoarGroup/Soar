@@ -1,0 +1,15 @@
+##This production should be uncommented if epmem is disabled.  The
+##eater will behave as if all retrievals are failures.
+#
+#sp {elaborate*epmem-disabled*no-retrieval
+#   (state <s> ^epmem <epmem>)
+#   (<epmem> ^retrieved <ret>)
+#-->
+#   (<epmem> ^retrieval-count 0)
+#   (<ret> ^no-retrieval true)
+#}
+#
+#
+#
+#
+#

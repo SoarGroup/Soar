@@ -1,0 +1,43 @@
+############################################################################
+# From Chapter 1 of Soar 8 Tutorial
+# 
+# These are the final versions of the rules for the generalized move operator
+# 
+# Propose*move:
+# If there is normalfood, bonusfood, eater, or empty in an adjacent cell, 
+#    propose move in the direction of that cell
+#    and indicate that this operator can be selected randomly.
+sp {propose*move
+   (state <s> ^io.input-link.my-location.<dir>.content { <content> <> wall })
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name move
+        ^direction <dir>
+        ^content <content>)}
+
+# Apply*move
+# If the move operator for a direction is selected,
+#    generate an output command to move in that direction.
+
+sp {apply*move
+   (state <s> ^io.output-link <ol>
+              ^operator <o>)
+   (<o> ^name move
+        ^direction <dir>)
+-->
+   (<ol> ^move.direction <dir>)
+}
+
+# Apply*move*remove-move:
+# If the move operator is selected,
+#    and there is a completed move command on the output link,
+#    then remove that command.
+
+sp {apply*move*remove-move
+   (state <s> ^io.output-link <ol>
+              ^operator.name move)
+   (<ol> ^move <direction>)
+   (<direction> ^status complete)
+-->
+   (<ol> ^move <direction> -)}
+

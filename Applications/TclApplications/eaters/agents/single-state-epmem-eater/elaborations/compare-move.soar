@@ -1,0 +1,38 @@
+#These are the operator compare productions for move operators.
+#They are placed here instead of in the operator file because
+#the code for that file is from the Eaters Tutorial and I
+#want to keep it pristine.
+sp {elaborations*compare*compare-move
+   (state <s> ^name buffered-epmem
+              ^unevaluated-moves true
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name <> move)
+   (<op2> ^name move)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+sp {buffered-epmem*compare*move*unequal
+   (state <s> ^name buffered-epmem
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name move
+          ^evaluation <eval>)
+   (<op2> ^name move
+          ^evaluation < <eval>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+sp {buffered-epmem*compare*move*equal
+   (state <s> ^name buffered-epmem
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name move
+          ^evaluation <eval>)
+   (<op2> ^name move
+          ^evaluation <eval>)
+-->
+   (<s> ^operator <op1> = <op2>)
+}

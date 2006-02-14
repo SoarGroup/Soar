@@ -1,0 +1,11 @@
+source _all.soar
+source compare-move.soar
+source curr-evaluation.soar
+source disable-epmem.soar
+source Impasse__Operator_Tie.soar
+pushd Impasse__Operator_Tie
+source Impasse__Operator_Tie_source.soar
+popd
+source monitor.soar
+source top-state.soar
+source unevaluated-moves.soar

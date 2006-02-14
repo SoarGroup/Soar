@@ -1,0 +1,104 @@
+
+#IF the result state of a move has been recalled
+#AND the operator in the query has not been evaluated
+#PROPOSE evaluating that result state and putting the result on the operator
+sp {buffered-epmem*propose*evaluate-move
+   (state <s> ^name buffered-epmem
+              ^curr-evaluation <ce>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name evaluate-move
+         ^curr-evaluation <ce>)
+}
+
+#IF there is a query on the ^epmem link
+#AND there is no current evaluation
+#AND we've retrieved the next memory
+#PROPOSE evaluation the move with a default value
+sp {buffered-epmem*propose*evaluate-move*next-mem-inconclusive
+   (state <s> ^name buffered-epmem
+              ^epmem <epmem>
+              ^default-evaluation <def-eval>
+             -^curr-evaluation)
+   (<epmem> ^query.io.output-link.move.direction <dir>
+            ^retrieval-count)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name evaluate-move
+         ^curr-evaluation <ce>)
+   (<ce> ^direction <dir>
+         ^evaluation <def-eval>)
+}
+
+#IF there is a query on the ^epmem link
+#AND there was no retrieval
+#PROPOSE evaluating the move with a default value
+sp {buffered-epmem*propose*evaluate-move*no-retrieval
+   (state <s> ^name buffered-epmem
+              ^epmem <epmem>
+              ^default-evaluation <def-eval>)
+   (<epmem> ^query.io.output-link.move.direction <dir>
+            ^retrieved.no-retrieval true)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name evaluate-move
+         ^curr-evaluation <ce>)
+   (<ce> ^direction <dir>
+         ^evaluation <def-eval>)
+}
+
+
+#Evaluating an existing result recall is more important than moving or other recalls
+sp {buffered-epmem*compare*evaluate-move
+   (state <s> ^name buffered-epmem
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name evaluate-move)
+   (<op2> ^name recall-move)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+#APPLY:  Calculate the change in score before and after the recalled moved
+sp {apply*evaluate-move
+   (state <s> ^operator <op>
+              ^operator <move-op> +)
+   (<op> ^name evaluate-move
+         ^curr-evaluation <ce>)
+   (<ce> ^direction <dir>
+         ^evaluation <val>)
+   (<move-op> ^name move
+              ^direction <dir>
+              ^content <content>)
+-->
+   (<move-op> ^evaluation <val>)
+   (write (crlf) |Evaluating move | <dir> | to | <content> | with value | <val> |.|)
+}
+
+#APPLY:  Remove the prev score
+sp {apply*evaluate-move*remove-prev-score
+   (state <s> ^operator.name evaluate-move
+              ^prev-retrieved-score <prev-score>)
+-->
+   (<s> ^prev-retrieved-score <prev-score> -)
+}
+
+#APPLY:  Remove the ^command next
+sp {apply*evaluate-move*remove-command-next
+   (state <s> ^operator.name evaluate-move
+              ^epmem.query <query>)
+   (<query> ^command next)
+-->
+   (<query> ^command next -)
+}
+
+
+#APPLY:  Remove the original query
+sp {apply*evaluate-move*remove-orig-query
+   (state <s> ^operator <op>
+              ^epmem.query <query>)
+   (<op> ^name evaluate-move)
+   (<query> ^<attr> <val>)
+-->
+   (<query> ^<attr> <val> -)
+}

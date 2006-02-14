@@ -1,0 +1,36 @@
+#IF a particular move has been proposed but not evaluated
+#PROPOSE recalling a memory of applying that operator in a similar state
+sp {buffered-epmem*propose*recall-move
+   (state <s> ^name buffered-epmem
+              ^io.input-link.my-location.<dir>.content { <content> <> wall }
+             -^epmem.query.io <q-io>)
+   (<s> ^operator <move-op> +)
+   (<move-op> ^name move
+              ^content <content>
+              ^direction <dir>
+             -^evaluation)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name recall-move
+         ^direction <dir>
+         ^content <content>)
+}
+
+
+##APPLY: Fill in the query link in order to trigger retrieval
+sp {apply*recall-move
+   (state <s> ^operator <op>
+              ^io.input-link <il>
+              ^epmem.query <query>)
+   (<op> ^name recall-move
+         ^direction <dir>
+         ^content <content>)
+-->
+   (<query> ^name buffered-epmem
+            ^io <io>)
+   (<io> ^input-link <il>
+         ^output-link <ol>)
+   (<ol> ^move.direction <dir>)
+#   (write (crlf) |Attempting to recall move | <dir> | to | <content>)
+}
+

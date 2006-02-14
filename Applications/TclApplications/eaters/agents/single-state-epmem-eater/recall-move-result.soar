@@ -1,0 +1,48 @@
+
+#IF a query has been made to the episodic memory
+#AND the next state is unknown
+#PROPOSE retrieving the next state
+sp {buffered-epmem*propose*recall-move-result
+   (state <s> ^name buffered-epmem
+              ^epmem.query <query>)
+   (<query> ^io <any>
+           -^command next)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name recall-move-result)
+}
+
+#It's better to complete the evaluation process
+#before moving or recalling a new move operator
+#or performing an operator evaluation.
+sp {buffered-epmem*compare*recall-move-result
+   (state <s> ^name buffered-epmem
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name recall-move-result)
+   (<op2> ^name << evaluate-move recall-move >>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+#APPLY:  Tell the EpMem to recall the result state
+sp {apply*recall-move-result*next-state
+   (state <s> ^operator <op>
+              ^epmem.query <query>)
+   (<op> ^name recall-move-result)
+-->
+   (<query> ^command next)  #<-- For some reason this WME is getting clobbered
+#   (write (crlf) |Attempting to retrieve next memory.|)
+}
+
+#APPLY:  Save the score in the current retrieved state
+sp {apply*recall-move-result*save-score
+   (state <s> ^operator <op>
+              ^epmem.retrieved.io.input-link.eater.score <score>)
+   (<op> ^name recall-move-result)
+-->
+   (<s> ^prev-retrieved-score <score>)
+}
+
+
+

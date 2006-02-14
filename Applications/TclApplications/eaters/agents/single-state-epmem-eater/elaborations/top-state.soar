@@ -1,0 +1,12 @@
+sp {elaborate*top-state*name
+	(state <s> ^superstate nil)
+-->
+	(<s> ^name buffered-epmem)
+}
+
+sp {elaborate*top-state*top-state
+	(state <s> ^name buffered-epmem)
+-->
+	(<s> ^top-state <s>)
+}
+

@@ -1,0 +1,3 @@
+pushd single-state-epmem-eater
+source single-state-epmem-eater_source.soar
+popd

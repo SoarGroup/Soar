@@ -1,0 +1,12 @@
+source _firstload.soar
+pushd all
+source all_source.soar
+popd
+pushd elaborations
+source elaborations_source.soar
+popd
+source _NOTES.soar
+source evaluate-move.soar
+source move.soar
+source recall-move.soar
+source recall-move-result.soar

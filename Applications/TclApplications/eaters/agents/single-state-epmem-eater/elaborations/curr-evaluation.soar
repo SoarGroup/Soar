@@ -1,0 +1,26 @@
+
+#This is the default evaluation for any operator
+#For a curious operator set this above 10
+#For an eploitative operator set this at 1
+#For a completely uncurious eater set this at 0
+sp {elaborate*state*default-evaluation
+   (state <s> ^name buffered-epmem)
+-->
+   (<s> ^default-evaluation 100)
+}
+
+#Calculate the current evaluation for the move being
+#recalled.
+sp {elaborate*state*curr-evaluation
+   (state <s> ^name buffered-epmem
+              ^epmem <ep>
+              ^prev-retrieved-score <prev-score>)
+   (<ep> ^query.io.output-link.move.direction <dir>
+         ^retrieved.io.input-link.eater.score <score>)
+-->
+   (<s> ^curr-evaluation <ce>)
+   (<ce> ^direction <dir>
+         ^evaluation (- <score> <prev-score>))
+}
+
+

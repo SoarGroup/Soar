@@ -1,0 +1,11 @@
+##This production selects a random action if the 
+##agent falls into an impasse
+#sp {Impasse__Operator_Tie*compare*elaborations
+#   (state <s> ^impasse tie
+#              ^superstate <ss>)
+#   (<ss> ^operator <op1> +)
+#   (<op1> ^name move)
+#-->
+#   (<ss> ^operator <op1> =)
+#}
+#
