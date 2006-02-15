@@ -17,6 +17,7 @@
 %newobject sml::ClientXML::GenerateXMLString(bool) const ;
 %newobject sml::ElementXML::GenerateXMLString(bool) const ;
 %newobject sml::AnalyzeXML::GenerateXMLString(bool) const ;
+%newobject sml::ClientAnalyzedXML::GenerateXMLString(bool) const ;
 
 // This parsing method returns a new ElementXML object that should be destroyed later
 %newobject sml::ElementXML::ParseXMLFromString;
@@ -88,5 +89,12 @@
 }
 
 %include "sml_AnalyzeXML.h"
+
+// This function also creates a new object, but we need to tell SWIG how to delete it
+// We have to put the typemap in the middle like this so it overrides the previous one,
+// but only after the previous one has been used in the previous %include
+%typemap(newfree) char* GenerateXMLString {
+    sml::ClientAnalyzedXML::DeleteString($1);
+}
 %include "sml_ClientAnalyzedXML.h"
 %include "sml_ClientTraceXML.h"
