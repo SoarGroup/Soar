@@ -60,7 +60,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="build"
-			IntermediateDirectory="$(OutDir)\Debug"
+			IntermediateDirectory="$(OutDir)\Release"
 			ConfigurationType="1"
 			CharacterSet="2"
 			ManagedExtensions="TRUE">

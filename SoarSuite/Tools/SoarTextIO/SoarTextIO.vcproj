@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\SoarIO\ClientSML\include; ..\SoarTextIO\include"
+				AdditionalIncludeDirectories="..\..\Core\ClientSML\include; include"
 				PreprocessorDefinitions="WIN32;_DEBUG"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="0"
@@ -32,7 +32,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\soar-library\$(ProjectName).exe"
+				OutputFile="..\..\SoarLibrary\bin\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
 				AssemblyDebug="1"/>
@@ -59,13 +59,14 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="build"
+			IntermediateDirectory="$(OutDir)\Release"
 			ConfigurationType="1"
 			CharacterSet="2"
 			ManagedExtensions="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="..\..\Core\ClientSML\include; include"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
@@ -75,7 +76,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\$(ProjectName).exe"
+				OutputFile="..\..\SoarLibrary\bin\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"/>
 			<Tool
