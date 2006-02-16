@@ -17,7 +17,7 @@ class FSM{
 	FSM();
 	virtual ~FSM();
 
-	virtual bool update()=0;
+	virtual int update()=0;
 
 	virtual void setGameObject(GameObj *g){gob = g;}
 	virtual GameObj *getGameObject(){return gob;}
@@ -28,5 +28,10 @@ class FSM{
 	GameObj *gob;
 	Vector<sint4> params;
 };
+
+
+#define FSM_RUNNING 0
+#define FSM_SUCCESS 1
+#define FSM_FAILURE 2
 
 #endif

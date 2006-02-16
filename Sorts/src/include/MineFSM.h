@@ -14,7 +14,7 @@ public:
     name = SA_MINE;
   }
 
-  bool update() {
+  int update() {
     cout << "WORKER HAS: " << gob->get_int("minerals") << " MINERALS " << endl;
 
     // TO DO: check if the mineral patch is out. If it is, return false
@@ -70,7 +70,7 @@ public:
         break;
     } // switch (state)
 
-    return true;
+    return FSM_RUNNING;
   }
 
   /* the order of the parameters will be:

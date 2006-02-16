@@ -12,28 +12,48 @@ MoveFSM::MoveFSM()
 MoveFSM::~MoveFSM()
 { }
 
-bool MoveFSM::update()
+int MoveFSM::update()
 {
  switch(state){
 
 	case IDLE:
 	 //Start moving
 	 gob->set_action("move",params);
-	 break;
+	 state = WARMUP;
+   runTime = 0;
+   break;
 
+  case WARMUP:
+    // this constant needs to be set more intelligently
+    // it may actually depend on our refresh frequency
+    if (runTime < 10) {
+      runTime++;
+    }
+    else {
+      state = MOVING;
+    }
+    break;
 	case MOVING:
 	 const ServerObjData &sod = gob->sod;
 
-	 //Check to see if you arrived
-	 if(*sod.x == params[1] && *sod.y == params[2])
-	 {
-	  //If you arrived, then pop the FSM
-	  return false;
-	 }
+	 // if speed drops to 0 after some warmup period,
+   // and we are not there, failure
+   if (*sod.speed == 0) {
+     // this should be +/- some amount 
+     // to account for multiple objects at the same location 
+     if((abs(*sod.x - params[1]) < 10) 
+         and abs(*sod.y - params[2]) < 10) {
+       //If you arrived, then pop the FSM
+       return FSM_SUCCESS;
+     }
+     else {
+       return FSM_FAILURE;
+     }
+   }
 	 break;
 
 	}
- return true;
+ return FSM_RUNNING;
 }
 
 void MoveFSM::init(vector<signed long> p) {

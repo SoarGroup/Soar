@@ -13,7 +13,6 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit, OrtsInterface* _ORTSIO)
   unit->setGroup(this);
   setStale();
   staleInSoar= true;
-  //type = 0;
   centerMember = unit;
   currentMember = unit;
 #ifndef DEBUG_GROUPS
@@ -24,6 +23,9 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit, OrtsInterface* _ORTSIO)
   owner = unit->getOwner();
   friendly = unit->isFriendly();
   world = unit->isWorld();
+  sticky = false;
+  commandStatus = GRP_STATUS_IDLE;
+  currentCommand = "none";
 }
 
 void SoarGameGroup::addUnit(SoarGameObject* unit) {
@@ -62,72 +64,85 @@ bool SoarGameGroup::removeUnit(SoarGameObject* unit) {
 }
 
 void SoarGameGroup::updateStats(bool saveProps) {
+  int x = 0;
+  int y = 0;
+  set<SoarGameObject*>::iterator currentObject;
   if (saveProps) {
     soarData.stringIntPairs.clear();
     soarData.stringStringPairs.clear();
-  }
   
-  set<SoarGameObject*>::iterator currentObject = members.begin();
-  
-  double health = 0;
-  double x = 0;
-  double y = 0;
-  double speed = 0;
-  double size = members.size();
+    currentObject = members.begin();
 
-  // this is not a huge problem (just a redundant update), but should not happen
-//  assert(stale == true);
-  
-  while (currentObject != members.end()) {
-    // be careful is some numbers are very big for each object and the double could overflow
+    int health = 0;
+    int speed = 0;
+    int size = members.size();
+    bool running = false;
+    bool success = false;
+    bool failure = false;
+    bool idle = false;
+    int objStatus;
+
+    // this is not a huge problem (just a redundant update), but should not happen
+  //  assert(stale == true);
     
-  //  health += *currentObject.getHealth();
-    health += (*currentObject)->gob->get_int("hp");
-    speed += *(*currentObject)->gob->sod.speed;
-    #ifdef DEBUG_GROUPS
-    x += (*currentObject)->x;
-    y += (*currentObject)->y;
-    #else
-    x += *(*currentObject)->gob->sod.x;
-    y += *(*currentObject)->gob->sod.y;
-    #endif
-    currentObject++;
-  }
-  
-  health /= size;
-  speed /= size;
-  x /= size;
-  y /= size;
+    while (currentObject != members.end()) {
+      // be careful is some numbers are very big for each object and the double could overflow
+      
+    //  health += *currentObject.getHealth();
+      health += (*currentObject)->gob->get_int("hp");
+      speed += *(*currentObject)->gob->sod.speed;
+      #ifdef DEBUG_GROUPS
+      x += (*currentObject)->x;
+      y += (*currentObject)->y;
+      #else
+      x += *(*currentObject)->gob->sod.x;
+      y += *(*currentObject)->gob->sod.y;
+      #endif
 
-  statistics[GP_NUM_MEMBERS] = size;
-  statistics[GP_X_POS] = x;
-  statistics[GP_Y_POS] = y;
-  statistics[GP_HEALTH] = health;
-  statistics[GP_SPEED] = speed;
+      objStatus = (*currentObject)->getStatus();
+      if (objStatus == OBJ_RUNNING) {
+        running = true;
+      }
+      else if (objStatus == OBJ_SUCCESS) {
+        success = true;
+      }
+      else if (objStatus == OBJ_FAILURE) {
+        failure = true;
+      }
+      else if (objStatus == OBJ_IDLE) {
+        idle = true;
+      }
+       
+      currentObject++;
+    }
+    
+    health /= size;
+    speed /= size;
+    x /= size;
+    y /= size;
 
-  if (saveProps) {
     pair<string, int> stringIntWme;
     pair<string, string> stringStringWme;
 
     stringIntWme.first = "health";
-    stringIntWme.second = (int)(health);
+    stringIntWme.second = health;
     soarData.stringIntPairs.push_back(stringIntWme);
 
     stringIntWme.first = "speed";
-    stringIntWme.second = (int)(speed);
+    stringIntWme.second = speed;
     soarData.stringIntPairs.push_back(stringIntWme);
 
     // how do we want to represent position?
     stringIntWme.first = "x-pos";
-    stringIntWme.second = (int)(x);
+    stringIntWme.second = x;
     soarData.stringIntPairs.push_back(stringIntWme);
 
     stringIntWme.first = "y-pos";
-    stringIntWme.second = (int)(y);
+    stringIntWme.second = y;
     soarData.stringIntPairs.push_back(stringIntWme);
 
     stringIntWme.first = "num_members";
-    stringIntWme.second = (int)size;
+    stringIntWme.second = size;
     soarData.stringIntPairs.push_back(stringIntWme);
 
     
@@ -135,9 +150,44 @@ void SoarGameGroup::updateStats(bool saveProps) {
     stringStringWme.second = typeName;
     soarData.stringStringPairs.push_back(stringStringWme);
     
+
+    // command info:
+    // show last command, and as many status attributes as are applicable
+    // if a group has one member succeed, fail, or still running, that 
+    // status is there
+    
+    if (idle and friendly) {
+      stringStringWme.first = "command_status";
+      stringStringWme.second = "idle";
+      soarData.stringStringPairs.push_back(stringStringWme);
+    }
+
+    if (friendly) {
+      stringStringWme.first = "command";
+      stringStringWme.second = currentCommand;
+      soarData.stringStringPairs.push_back(stringStringWme);
+    }
+
+    if (running) {
+      stringStringWme.first = "command_status";
+      stringStringWme.second = "running";
+      soarData.stringStringPairs.push_back(stringStringWme);
+    } 
+    if (success) {
+      stringStringWme.first = "command_status";
+      stringStringWme.second = "done_success";
+      soarData.stringStringPairs.push_back(stringStringWme);
+    } 
+    if (failure) {
+      stringStringWme.first = "command_status";
+      stringStringWme.second = "done_failure";
+      soarData.stringStringPairs.push_back(stringStringWme);
+    } 
+    
     staleInSoar = true;
     stale = false;
-    //cout << "cleared stale" << endl;
+   
+    
   }
   
   // center member calculation- is there a way to do a running calc above?
@@ -187,7 +237,6 @@ void SoarGameGroup::mergeTo(SoarGameGroup* target) {
   }
 
   members.clear();
-  statistics[GP_NUM_MEMBERS] = 0;
 
   setStale();
 
@@ -195,7 +244,7 @@ void SoarGameGroup::mergeTo(SoarGameGroup* target) {
 }
 
 bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
-                                 list<SoarGameObject*> targets) { 
+                                 list<SoarGameGroup*> targets) { 
   #ifndef DEBUG_GROUPS
   bool result = true;
 
@@ -205,41 +254,66 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
   }
   cout << endl;
 
-  list<int>::iterator intIt = params.begin();  
-  list<SoarGameObject*>::iterator objectIt = targets.begin();  
-  Vector<sint4> tempVec;
-  
-  
-  if (type == SA_MOVE) {
-    // the third param is speed, always use 3 (the max)
-    assert(params.size() == 2);
-    tempVec.push_back(*intIt);
-    intIt++;
-    tempVec.push_back(*intIt);
-    tempVec.push_back(3);
-  }
-  else if (type == SA_MINE) {
-    // get the id of the mineral patch and command center
-    // order: x, y, ID, x, y, ID
-    assert(targets.size() == 2);
-    tempVec.push_back(*(*objectIt)->gob->sod.x);
-    tempVec.push_back(*(*objectIt)->gob->sod.y);
-    tempVec.push_back(ORTSIO->getID(*objectIt));
-    objectIt++;
-    tempVec.push_back(*(*objectIt)->gob->sod.x);
-    tempVec.push_back(*(*objectIt)->gob->sod.y);
-    tempVec.push_back(ORTSIO->getID(*objectIt));
-  }
-  else {
-    assert(false);  
-  }
-
   set<SoarGameObject*>::iterator currentObject = members.begin();
   
+  SoarGameObject* targetObj;
+  list<int>::iterator intIt;  
+  list<SoarGameGroup*>::iterator targetGroupIt;  
+  Vector<sint4> tempVec;
+  
   while (currentObject != members.end()) {
+    intIt = params.begin();  
+    targetGroupIt = targets.begin();  
+    tempVec.clear();
+    
+    if (type == SA_MOVE) {
+      // the third param is speed, always use 3 (the max)
+      assert(params.size() == 2);
+      tempVec.push_back(*intIt);
+      intIt++;
+      tempVec.push_back(*intIt);
+      tempVec.push_back(3);
+
+      currentCommand = "move";
+      sticky = true;
+      // this group is stuck together from now on,
+      // until Soar issues an unstick action
+    }
+    else if (type == SA_MINE) {
+      // get the id of the mineral patch and command center
+      // order: x, y, ID, x, y, ID
+      assert(targets.size() == 2);
+      
+      targetObj = (*targetGroupIt)->getNextMember();
+      tempVec.push_back(*targetObj->gob->sod.x);
+      tempVec.push_back(*targetObj->gob->sod.y);
+      
+      // add in the ID of the next member of the first group
+      tempVec.push_back(ORTSIO->getID(targetObj));
+      targetGroupIt++;
+      targetObj = (*targetGroupIt)->getNextMember();
+      tempVec.push_back(*targetObj->gob->sod.x);
+      tempVec.push_back(*targetObj->gob->sod.y);
+      // add in the ID of the next member of the second group
+      tempVec.push_back(ORTSIO->getID(targetObj));
+
+      currentCommand = "mine";
+      sticky = true;
+      // this group is stuck together from now on,
+      // until Soar issues an unstick action
+    }
+    else if (type == SA_UNSTICK) {
+      sticky = false;
+    }
+    else {
+      assert(false);  
+    }
+    
     (*currentObject)->issueCommand(type, tempVec);
     currentObject++;
   }
+  
+  
   return result;
   #endif
 }
@@ -327,4 +401,12 @@ pair<string, int> SoarGameGroup::getCategory() {
   cat.second = owner;
 
   return cat;
+}
+
+bool SoarGameGroup::getSticky() {
+  return sticky;
+}
+
+void SoarGameGroup::setSticky(bool in) {
+  sticky = in;
 }

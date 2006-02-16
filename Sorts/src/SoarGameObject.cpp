@@ -21,6 +21,7 @@ void SoarGameObject::identifyBehaviors() {
 SoarGameObject::SoarGameObject(GameObj *g, bool _friendly, bool _world)
 : gob(g), friendly(_friendly), world(_world)
 {
+  status = OBJ_IDLE;
   identifyBehaviors();
 }
 
@@ -67,23 +68,33 @@ void SoarGameObject::issueCommand(SoarActionType cmd, Vector<sint4> prms)
 
   i->second->init(prms);
   memory.push(i->second);
-  state = cmd;
   update();
+  //currentCommand = cmd;
 }
 
 
 void SoarGameObject::update()
 {
+  int fsmStatus;
   group->setStale();
   if(!memory.empty())
   {
-    if(!memory.top()->update())
+    fsmStatus = memory.top()->update();
+    if(fsmStatus != FSM_RUNNING)
     {
       memory.pop();
-      if(!memory.empty())
-        state = memory.top()->name;
-      else
-        state = SA_IDLE;
+    //  if(memory.empty())
+        //currentCommand = SA_IDLE;
+    }
+
+    if (fsmStatus == FSM_SUCCESS) {
+      status = OBJ_SUCCESS;
+    }
+    else if (fsmStatus == FSM_FAILURE) {
+      status = OBJ_FAILURE;
+    }
+    else {
+      status = OBJ_RUNNING;
     }
   }
 }
@@ -99,8 +110,13 @@ SoarGameGroup *SoarGameObject::getGroup(void)
  return group;
 }
 
-SoarActionType SoarGameObject::getState()
+/*SoarActionType SoarGameObject::getCurrentCommand()
 {
- return state;
+ return currentCommand;
+}*/
+
+int SoarGameObject::getStatus()
+{
+  return status;
 }
 

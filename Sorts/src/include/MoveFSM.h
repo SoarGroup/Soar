@@ -8,13 +8,14 @@ class MoveFSM: public FSM{
 	MoveFSM();
 	~MoveFSM();
 
-	bool update();
+	int update();
 	void init(std::vector<signed long>);
 
  private:
-	enum{IDLE,MOVING};
+	enum{IDLE,WARMUP,MOVING};
 
 	int state;
+  int runTime;
 
 };
 

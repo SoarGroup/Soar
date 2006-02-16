@@ -15,8 +15,12 @@ using namespace std;
 
 void GroupManager::updateWorld() {
   //cout << "begin uw" << endl;  
+ 
+  // the first refresh will pick up any action changes, prune empty groups,
+  // and re-calculate the center member
   refreshGroups(false);
   reGroup();
+  // second refresh does the above, but also gathers stats to send to Soar
   refreshGroups(true);
   adjustAttention();
   //cout << "end uw" << endl;
@@ -33,7 +37,7 @@ bool GroupManager::assignActions() {
  
   list <SoarGameGroup*>::iterator groupIter;
   bool success = true;
-  list<SoarGameObject*> targetObjs;
+  list<SoarGameGroup*> targetGroups;
   SoarGameGroup* sourceGroup;
   
   cout << "Assigning actions." << endl;
@@ -48,12 +52,12 @@ bool GroupManager::assignActions() {
     
     while (groupIter != groups.end()) {
       // are we assuming only one member per group here?
-      targetObjs.push_back((*groupIter)->getNextMember());
+      targetGroups.push_back(*groupIter);
       groupIter++;
     }
     
     success &= sourceGroup->assignAction(
-            (**actionIter).type, (**actionIter).params, targetObjs);
+            (**actionIter).type, (**actionIter).params, targetGroups);
     
     actionIter++;
   }
@@ -103,7 +107,8 @@ void GroupManager::reGroup() {
     }
     while (groupIter != groupsNotInFocus.end()){
       // not a typo- loop will jump between lists
-      if ((*groupIter)->getCategory() == *catIter) {
+      if (not (*groupIter)->getSticky() and
+              (*groupIter)->getCategory() == *catIter) {
         //cout << "group " << (int) (*groupIter) << " is type " << (*groupIter)->getType() << endl;
         // group is of the type we are re-grouping
         

@@ -8,6 +8,6 @@ class IdleFSM: public FSM{
 	IdleFSM();
 	~IdleFSM();
 
-	bool update();
+	int update();
 
 };

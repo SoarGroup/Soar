@@ -29,7 +29,7 @@ class SoarGameObject{
 
 	void setGroup(SoarGameGroup *g);
 	SoarGameGroup *getGroup();
-	SoarActionType getState();
+	int getStatus();
 
   int  getOwner()     { return *gob->sod.owner; }
  	bool isFriendly()   { return friendly; }
@@ -41,10 +41,17 @@ class SoarGameObject{
 	map<SoarActionType, FSM *> behaviors;
 	stack<FSM *> memory;
 
-	SoarActionType state;
+  SoarActionType currentCommand;
 	SoarGameGroup* group;
 	bool friendly;
   bool world;
+
+  int status;
 };
+
+#define OBJ_IDLE 0
+#define OBJ_RUNNING 1
+#define OBJ_SUCCESS 2
+#define OBJ_FAILURE 3
 
 #endif

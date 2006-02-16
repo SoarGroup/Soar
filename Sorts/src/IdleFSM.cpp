@@ -11,8 +11,8 @@ IdleFSM::~IdleFSM()
  
 }
 
-bool IdleFSM::update()
+int IdleFSM::update()
 {
  std::cout<<"Idle"<<std::endl;
- return true;
+ return FSM_RUNNING;
 }
