@@ -418,13 +418,4 @@ implements PaintListener, GameListener, ControlListener {
         
         reinitBuf = false;
     }
-    
-    /*
-    protected void finalize() throws Throwable {
-        bufGC.dispose();
-        bufImg.dispose();
-        
-        super.finalize();
-    }
-    */
 }
