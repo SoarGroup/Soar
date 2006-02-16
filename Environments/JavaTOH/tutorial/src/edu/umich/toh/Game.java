@@ -208,6 +208,4 @@ public class Game implements Runnable {
     private int diskCount;                     // total number of disks
     private List towers = new ArrayList();     // towers, from left to right
     private List listeners = new LinkedList(); // GameListeners
-    
-    private boolean m_StopNow ;
 }
