@@ -249,7 +249,7 @@ public class Game implements Runnable, Kernel.UpdateEventInterface {
         agent.Commit();
         
         // should allow us to run again.
-        agent.InitSoar(); // causes near-infinite recusion in Kernel!
+        agent.InitSoar();
     }
     
     /**
