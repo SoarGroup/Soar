@@ -12,6 +12,7 @@ class MineFSM : public FSM {
 public:
   MineFSM() {
     name = SA_MINE;
+    firstMine = true;
   }
 
   int update() {
@@ -33,20 +34,33 @@ public:
 
       case MINING:
         cout << "MINING" << endl;
-        if (gob->get_int("minerals") > 1) {
-          // finished mining
-          state = MOVING_TO_BASE;
+
+        if (firstMine) {
+          cout << "SENT MINE COMMAND" << endl;
+          gob->component("pickaxe")->set_action("mine", mineParams);
+          firstMine = false;
         }
         else {
-          gob->set_action("mine", mineParams);
+          if (gob->component("pickaxe")->get_int("active") == 0 &&
+              gob->get_int("is_mobile") == 1) 
+          {
+            // finished mining
+            cout << "FINISHED MINING" << endl;
+            state = MOVING_TO_BASE;
+            firstMine = true; // for the next time
+
+            // have to help it along here, or else it's not going to change
+            // next cycle
+            gob->set_action("move", moveToBaseParams);
+          }
         }
-        // otherwise don't change anything
+        
         break;
 
       case MOVING_TO_MINE:
         cout << "MOVING TO MINE: " << squaredDistance(*gob->sod.x, *gob->sod.y, mine_x, mine_y) << endl; 
-        if (squaredDistance(*gob->sod.x, *gob->sod.y, mine_x, mine_y) < 95) {
-          // close to mine. The 95 is a guess
+        if (squaredDistance(*gob->sod.x, *gob->sod.y, mine_x, mine_y) < 100) {
+          // close to mine. The 100 is a guess
           gob->set_action("mine", mineParams);
           state = MINING;
 
@@ -58,11 +72,10 @@ public:
 
       case MOVING_TO_BASE:
         cout << "MOVING TO BASE" << squaredDistance(*gob->sod.x, *gob->sod.y, base_x, base_y) << endl; 
-        if (squaredDistance(*gob->sod.x, *gob->sod.y, base_x, base_y) < 95) {
-          // close to base. The 95 is a guess
+        if (squaredDistance(*gob->sod.x, *gob->sod.y, base_x, base_y) < 2300) {
+          // close to base. The 2300 is a guess
           gob->set_action("return_resources", depositParams);
           state = MOVING_TO_MINE;
-
         }
         else {
           gob->set_action("move", moveToBaseParams);
@@ -105,6 +118,8 @@ private:
 
   int mine_id, mine_x, mine_y;
   int base_id, base_x, base_y;
+
+  bool firstMine;
 
   Vector<sint4> mineParams, moveToMineParams, depositParams, moveToBaseParams;
 };

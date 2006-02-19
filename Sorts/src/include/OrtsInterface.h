@@ -17,6 +17,7 @@
 #include "GameStateModule.H"
 #include "GameChanges.H"
 #include "GameObj.H"
+#include "SoarInterface.h"
 
 using namespace std;
 

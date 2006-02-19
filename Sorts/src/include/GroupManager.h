@@ -6,13 +6,13 @@
 #ifdef DEBUG_GROUPS
 #include "FakeSoarInterface.h"
 #else
-#include "SoarInterface.h"
+class SoarInterface;
 #endif
 class OrtsInterface;
 
 class GroupManager {
   public:
-    GroupManager(SoarInterface* si) : SoarIO(si) { };
+    GroupManager(SoarInterface* si) : SoarIO(si) { }
     ~GroupManager();
 
     void updateWorld();

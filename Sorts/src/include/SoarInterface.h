@@ -10,6 +10,7 @@
 
 #include "sml_Client.h"
 
+#include "MapRegion.h"
 #include "SoarAction.h"
 #include "general.h"
 
@@ -27,13 +28,20 @@ typedef struct {
   // function for strings
   map<string, sml::IntElement*> intProperties;
   map<string, sml::StringElement*> stringProperties;
-} SoarIOGroupRep;
+} InputLinkGroupRep;
+
+typedef struct {
+  int regionId;
+  sml::Identifier* idWME;
+  sml::IntElement* xminWME, xmaxWME, yminWME, ymaxWME; // bounding box
+  sml::IntElement* sizeWME;
+} InputLinkMapRegionRep;
 
 typedef struct {
   sml::Identifier* id;
   sml::Identifier* groupsId;
   // some other things in the future
-} OtherPlayerRep;
+} InputLinkOtherPlayerRep;
 
 /* 
 The GroupManager will have a pointer to this structure, and can call
@@ -55,8 +63,8 @@ that group is refreshed! Initially, the stats will not be set.
 
 class SoarInterface {
   public:
-    SoarInterface(sml::Agent*           _agent,
-                  GameStateModule*      _gsm,
+    SoarInterface(sml::Agent*      _agent,
+                  GameStateModule* _gsm,
                   pthread_mutex_t* _objectActionQueueMutex,
                   pthread_mutex_t* _attentionActionQueueMutex,
                   pthread_mutex_t* _groupActionQueueMutex
@@ -70,6 +78,11 @@ class SoarInterface {
     void addGroup(SoarGameGroup* group);
     void removeGroup(SoarGameGroup* group);
     void refreshGroup(SoarGameGroup* group, groupPropertyStruct gps);
+
+    // map commands
+    void addMapRegion(MapRegion* r);
+    void removeMapRegion(MapRegion* r);
+    void refreshMapRegion(MapRegion* r);
 
     // commit all changes to Soar Input link
     void commitInputLinkChanges();
@@ -86,40 +99,67 @@ class SoarInterface {
 
   private:
 
-    int groupIdCounter;
+
+    GameStateModule* gsm;
 
     // SML pointers
     sml::Agent *agent;
 
-    // input link stuff
     sml::Identifier* inputLink;
     sml::Identifier* playerId;
-    sml::Identifier* playerGroupsId;
-
-    sml::Identifier* worldId;
-    sml::Identifier* worldGroupsId;
-
     sml::IntElement* playerGoldWME;
-    sml::Identifier* mapIdentifier;
+    
+    sml::Identifier* worldId;
 
-    GameStateModule* gsm;
+    map<int, InputLinkOtherPlayerRep> otherPlayers;
 
-    map<int, OtherPlayerRep> otherPlayers;
+  /**************************************************
+   *                                                *
+   * Member variables for group management          *
+   *                                                *
+   **************************************************/
+
+    // SoarInterface numbers each group based on its own convention
+    int groupIdCounter;
+
+    // pointers to group structures on the input link
+    sml::Identifier* playerGroupsId;
+    sml::Identifier* worldGroupsId;
 
     // these are the maps that keep track of input link <-> middleware objects
     /* Change these later to hash maps */
-    map<SoarGameGroup*, SoarIOGroupRep> mwToSoarGroups;
-    map<int, SoarGameGroup*>            gIdToMwGroups;
+    map<SoarGameGroup*, InputLinkGroupRep> groupTable;
+    map<int, SoarGameGroup*>               groupIdLookup;
    
-    // keep track of actions on the input link and middleware
-    map<sml::Identifier*, SoarAction>  soarActions;
+  
+  /**************************************************
+   *                                                *
+   * Member variables for map maintanence           *
+   *                                                *
+   **************************************************/
 
-    // lists of actions that are currently unprocessed
-    // there is a race condition on accessing this list
+    // also number map regions independently of MapManager
+    int mapRegionIdCounter;
+
+    sml::Identifier* mapIdWME;
+
+    map<MapRegion*, InputLinkMapRegionRep> mapRegionTable;
+    map<int, MapRegion*>                   mapRegionIdLookup;
+
+
+  /**************************************************
+   *                                                *
+   * Member variables for actions                   *
+   *                                                *
+   **************************************************/
+
+     // keep track of actions on the input link and middleware
+    map<sml::Identifier*, SoarAction>  soarActions;
+   
     list<SoarAction*> objectActionQueue;
     // need to add two more, once we get the SoarAction class modified
 
-    // ... and the associated mutexes that protect them
+    // associated mutexes that protect them
     pthread_mutex_t* objectActionQueueMutex;
     pthread_mutex_t* attentionActionQueueMutex;
     pthread_mutex_t* groupActionQueueMutex;

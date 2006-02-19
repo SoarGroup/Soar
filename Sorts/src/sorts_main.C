@@ -153,6 +153,7 @@ int main(int argc, char *argv[]) {
   if (!gsm.connect()) exit(10);
   cout << "connected" << endl;
 
+  cout << "TILE_POINTS IS: " << gsm.get_game().get_tile_points() << endl;
   // can't do these in the constructor, have to wait until connected to server
   ortsInterface.setMyPid(gsm.get_game().get_client_player());
   soarInterface.initSoarInputLink();

@@ -7,11 +7,13 @@
 #include "SoarAction.h"
 #include "OrtsInterface.h"
 #include "general.h"
+#include "MapRegion.h"
+#include "Rectangle.h"
 
 #ifdef DEBUG_GROUPS
 #include "FakeSoarGameObject.h"
 #else
-#include "SoarGameObject.h"
+class SoarInterface;
 #endif
 
 using namespace std;
@@ -48,8 +50,11 @@ class SoarGameGroup {
     bool isWorld();
     bool isFriendly();
 
+    Rectangle getBoundingBox();
+
     bool getSticky();
     void setSticky(bool in);
+    
   private:
     set <SoarGameObject*> members;
     groupPropertyStruct soarData;
@@ -70,6 +75,12 @@ class SoarGameGroup {
     bool friendly;
     bool world;
     OrtsInterface* ORTSIO;
+
+    // bounding box
+    Rectangle bbox;
+
+    list<MapRegion*> regionsOccupied;
+
     // sticky if grouped by Soar-
     // issuing a command makes it auto-sticky until command ends & Soar acks
     bool sticky;

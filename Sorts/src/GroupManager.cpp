@@ -40,7 +40,6 @@ bool GroupManager::assignActions() {
   list<SoarGameGroup*> targetGroups;
   SoarGameGroup* sourceGroup;
   
-  cout << "Assigning actions." << endl;
   while (actionIter != newActions.end()){
     //cout << "popping" << endl;
     list<SoarGameGroup*>& groups = (**actionIter).groups;

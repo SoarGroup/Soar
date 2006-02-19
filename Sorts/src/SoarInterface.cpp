@@ -37,40 +37,40 @@ SoarInterface::~SoarInterface() {
  */
 void SoarInterface::addGroup(SoarGameGroup* group) {
   // make sure the group does not exist already
-  assert(mwToSoarGroups.find(group) == mwToSoarGroups.end());
+  assert(groupTable.find(group) == groupTable.end());
   
-  SoarIOGroupRep newGroup;
+  InputLinkGroupRep newGroup;
   newGroup.groupId = groupIdCounter++;
   newGroup.added = false;
   
-  mwToSoarGroups[group] = newGroup;
-  gIdToMwGroups[newGroup.groupId] = group;
+  groupTable[group] = newGroup;
+  groupIdLookup[newGroup.groupId] = group;
 }
 
 void SoarInterface::removeGroup(SoarGameGroup* group) {
   // make sure the group exists
-  //assert(mwToSoarGroups.find(group) != mwToSoarGroups.end());
+  //assert(groupTable.find(group) != groupTable.end());
   
   // false removes can come in (fairly frequently)
   // if a group is merged into another the same cycle it appears, a false remove
   // is generated
-  if (mwToSoarGroups.find(group) == mwToSoarGroups.end()) {
+  if (groupTable.find(group) == groupTable.end()) {
     return;
   }
   
-  SoarIOGroupRep &g = mwToSoarGroups[group];
+  InputLinkGroupRep &g = groupTable[group];
   if (g.groupId >= 0) {
     agent->DestroyWME(g.WMEptr);
   }
-  mwToSoarGroups.erase(group);
-  gIdToMwGroups.erase(g.groupId);
+  groupTable.erase(group);
+  groupIdLookup.erase(g.groupId);
 }
 
 void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyStruct gps) {
   // make sure the group exists
-  assert(mwToSoarGroups.find(group) != mwToSoarGroups.end());
+  assert(groupTable.find(group) != groupTable.end());
   
-  SoarIOGroupRep &g = mwToSoarGroups[group];
+  InputLinkGroupRep &g = groupTable[group];
   
   if (!g.added) {
     // add the group to the soar input link if it hasn't been already
@@ -111,6 +111,45 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyStruct gps) 
   }
 }
 
+void SoarInterface::addMapRegion(MapRegion *r) {
+  assert(mapRegionTable.find(r) == mapRegionTable.end());
+
+  InputLinkMapRegionRep rep;
+  rep.regionId = mapRegionIdCounter++;
+  rep.idWME = agent->CreateIdWME(mapIdWME, "region");
+  Rectangle box = r->getBoundingBox();
+  rep.xminWME = agent->CreateIntWME(rep.idWME, "xmin", box.xmin);
+  rep.xmaxWME = agent->CreateIntWME(rep.idWME, "xmax", box.xmax);
+  rep.yminWME = agent->CreateIntWME(rep.idWME, "ymin", box.ymin);
+  rep.ymaxWME = agent->CreateIntWME(rep.idWME, "ymax", box.ymax);
+
+  rep.sizeWME = agent->CreateIntWME(rep.idWME, "size", r->size());
+
+  mapRegionTable[r] = rep;
+  mapRegionIdLookup[rep.regionId] = r;
+}
+
+void SoarInterface::removeMapRegion(MapRegion *r) {
+  assert(mapRegionTable.find(r) != mapRegionTable.end());
+  
+  InputLinkMapRegionRep& rep = mapRegionTable[r];
+  agent->DestroyWME(rep.idWME);
+  mapRegionIdLookup.erase(rep.regionId);
+  mapRegionTable.erase(r);
+}
+
+void SoarInterface::updateMapRegion(MapRegion *r) {
+  assert(mapRegionTable.find(r) == mapRegionTable.end());
+  
+  InputLinkMapRegionRep& rep = mapRegionTable[r];
+  Rectangle box = r->getBoundingBox();
+  agent->Update(rep.xminWME, box.xmin);
+  agent->Update(rep.xmaxWME, box.xmax);
+  agent->Update(rep.yminWME, box.ymin);
+  agent->Update(rep.ymaxWME, box.ymax);
+  agent->Update(rep.sizeWME, r->size());
+}
+
 // called in soar event handler to take everything off the output
 // link and put onto the action queue each time soar generates output
 void SoarInterface::getNewSoarOutput() {
@@ -144,8 +183,8 @@ void SoarInterface::getNewSoarOutput() {
         break;
       }
       int groupId = atoi(paramValue);
-      assert(gIdToMwGroups.find(groupId) != gIdToMwGroups.end());
-      newAction.groups.push_back(gIdToMwGroups[groupId]);
+      assert(groupIdLookup.find(groupId) != groupIdLookup.end());
+      newAction.groups.push_back(groupIdLookup[groupId]);
     }
     
     /* There's really no need for a list of groups, all actions should
@@ -162,8 +201,8 @@ void SoarInterface::getNewSoarOutput() {
     }
     else {
       int groupId = atoi(paramValue);
-      assert(gIdToMwGroups.find(groupId) != gIdToMwGroups.end());
-      newAction.source = gIdToMwGroups[groupId];
+      assert(groupIdLookup.find(groupId) != groupIdLookup.end());
+      newAction.source = groupIdLookup[groupId];
     }
     groupParam = "target_group";
     paramValue = cmdPtr->GetParameterValue(groupParam.c_str());
@@ -172,8 +211,8 @@ void SoarInterface::getNewSoarOutput() {
     }
     else {
       int groupId = atoi(paramValue);
-      assert(gIdToMwGroups.find(groupId) != gIdToMwGroups.end());
-      newAction.target = gIdToMwGroups[groupId];
+      assert(groupIdLookup.find(groupId) != groupIdLookup.end());
+      newAction.target = groupIdLookup[groupId];
     }
     */
     
@@ -258,3 +297,4 @@ void SoarInterface::commitInputLinkChanges() {
 //  agent->Commit();
 //  cout << "### COMMIT FINISHED ###" << endl;
 }
+

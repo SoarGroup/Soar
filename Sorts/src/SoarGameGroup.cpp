@@ -23,6 +23,9 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit, OrtsInterface* _ORTSIO)
   owner = unit->getOwner();
   friendly = unit->isFriendly();
   world = unit->isWorld();
+
+  bbox.collapse(*gob->sod.x, *gob->sod.y);
+
   sticky = false;
   commandStatus = GRP_STATUS_IDLE;
   currentCommand = "none";
@@ -121,6 +124,14 @@ void SoarGameGroup::updateStats(bool saveProps) {
     x /= size;
     y /= size;
 
+    // recalculate bounding box
+    bbox.collapse(x, y);
+    for(set<SoarGameObject*>::iterator i = members.begin(); 
+                                       i != members.end(); i++)
+    {
+      bbox.accomodate(*(*i)->sod.x, *(*i)->sod.y);
+    }
+
     pair<string, int> stringIntWme;
     pair<string, string> stringStringWme;
 
@@ -139,6 +150,22 @@ void SoarGameGroup::updateStats(bool saveProps) {
 
     stringIntWme.first = "y-pos";
     stringIntWme.second = y;
+    soarData.stringIntPairs.push_back(stringIntWme);
+
+    stringIntWme.first = "x-min";
+    stringIntWme.second = bbox.xmin;
+    soarData.stringIntPairs.push_back(stringIntWme);
+
+    stringIntWme.first = "x-max";
+    stringIntWme.second = bbox.xmax;
+    soarData.stringIntPairs.push_back(stringIntWme);
+
+    stringIntWme.first = "y-min";
+    stringIntWme.second = bbox.ymin;
+    soarData.stringIntPairs.push_back(stringIntWme);
+
+    stringIntWme.first = "y-max";
+    stringIntWme.second = bbox.ymax;
     soarData.stringIntPairs.push_back(stringIntWme);
 
     stringIntWme.first = "num_members";
@@ -401,6 +428,10 @@ pair<string, int> SoarGameGroup::getCategory() {
   cat.second = owner;
 
   return cat;
+}
+
+Rectangle SoarGameGroup::getBoundingBox() {
+  return bbox;
 }
 
 bool SoarGameGroup::getSticky() {
