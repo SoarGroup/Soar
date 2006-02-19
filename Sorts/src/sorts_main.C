@@ -129,8 +129,8 @@ int main(int argc, char *argv[]) {
   gsmo.host = host;
   GameStateModule gsm(gsmo);
 
-  SoarInterface soarInterface( pAgent,
-                               &gsm,
+  SoarInterface soarInterface( &gsm,
+                               pAgent,
                                &objectActionMutex,
                                &attentionActionMutex,
                                &groupActionMutex );

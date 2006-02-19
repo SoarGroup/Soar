@@ -13,14 +13,14 @@ using namespace std;
 // lookup table that translates string names to action codes
 SoarActionType actionTypeLookup(const char* actionName);
 
-SoarInterface::SoarInterface(sml::Agent*      _agent,
-                             GameStateModule* _gsm,
+SoarInterface::SoarInterface(GameStateModule* _gsm,
+                             sml::Agent*      _agent,
                              pthread_mutex_t* _objectActionQueueMutex,
                              pthread_mutex_t* _attentionActionQueueMutex,
                              pthread_mutex_t* _groupActionQueueMutex
                             )
-: agent(_agent),
-  gsm(_gsm),
+: gsm(_gsm),
+  agent(_agent),
   objectActionQueueMutex(_objectActionQueueMutex),
   attentionActionQueueMutex(_attentionActionQueueMutex),
   groupActionQueueMutex(_groupActionQueueMutex)
@@ -138,7 +138,7 @@ void SoarInterface::removeMapRegion(MapRegion *r) {
   mapRegionTable.erase(r);
 }
 
-void SoarInterface::updateMapRegion(MapRegion *r) {
+void SoarInterface::refreshMapRegion(MapRegion *r) {
   assert(mapRegionTable.find(r) == mapRegionTable.end());
   
   InputLinkMapRegionRep& rep = mapRegionTable[r];
@@ -273,7 +273,7 @@ void SoarInterface::updatePlayerGold(int amount) {
  */
 void SoarInterface::initSoarInputLink() {
   playerId= agent->CreateIdWME(inputLink, "me");
-  mapIdentifier = agent->CreateIdWME(inputLink, "map");
+  mapIdWME = agent->CreateIdWME(inputLink, "map");
 
   playerGoldWME = agent->CreateIntWME(playerId, "gold", 0);
   playerGroupsId = agent->CreateIdWME(playerId, "groups");

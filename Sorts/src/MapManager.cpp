@@ -1,6 +1,9 @@
 #include "MapManager.h"
 
+#include "SoarGameGroup.h"
 #include "Rectangle.h"
+
+using namespace std;
 
 void MapManager::getRegionsOccupied(SoarGameGroup* group, list<MapRegion*>& regions) {
   Rectangle groupBBox = group->getBoundingBox();
@@ -12,7 +15,7 @@ void MapManager::getRegionsOccupied(SoarGameGroup* group, list<MapRegion*>& regi
 }
 
 MapRegion* MapManager::getRegionUnder(int x, int y) {
-  int tileIndex = map.xy2ind(x % tile_points, y % tile_points);
+  int tileIndex = map.xy2ind(x % tilePoints, y % tilePoints);
   if (tileMembership.find(tileIndex) == tileMembership.end()) {
     return NULL;
   }
@@ -31,20 +34,20 @@ void MapManager::addBoundaries(Vector<ScriptObj*> boundaries) {
   for(Vector<ScriptObj*>::iterator i = boundaries.begin(); i != boundaries.end(); i++) 
   {
     GameObj* gob = (GameObj*) *i;
-    int tileMinX = *gob->sod.x1 % tile_points;
-    int tileMinY = *gob->sod.y1 % tile_points;
-    int tileMaxX = *gob->sod.x2 % tile_points;
-    int tileMaxY = *gob->sod.y2 % tile_points;
+    int tileMinX = *gob->sod.x1 % tilePoints;
+    int tileMinY = *gob->sod.y1 % tilePoints;
+    int tileMaxX = *gob->sod.x2 % tilePoints;
+    int tileMaxY = *gob->sod.y2 % tilePoints;
 
     set<MapRegion*> processedRegions;
     for(int x = tileMinX; x < tileMaxX; x++) {
       for(int y = tileMinY; y < tileMaxY; y++) {
         int tileIndex = map.xy2ind(x, y);
-        map<int, MapRegion*>::iterator i = tileMembership.find(tileIndex);
-        if (i != tileMmebership.end() && 
-            processedRegions.find(*i) == processedRegions.end()) 
+        std::map<int, MapRegion*>::iterator i = tileMembership.find(tileIndex);
+        if (i != tileMembership.end() && 
+            processedRegions.find((*i).second) == processedRegions.end()) 
         {
-          (*i)->addBoundary(gob);
+          (*i).second->addBoundary(gob);
         }
       }
     }

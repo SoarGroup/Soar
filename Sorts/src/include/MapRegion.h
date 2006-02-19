@@ -5,6 +5,7 @@
 
 #include "GameTile.H"
 #include "Map.H"
+#include "GameObj.H"
 
 #include "Rectangle.h"
 
@@ -25,7 +26,7 @@ public:
   int size();
 
   void addTile(int tile);
-  void addBoundary(const Rectangle& b);
+  void addBoundary(GameObj* gob);
 
   void groupEnter(SoarGameGroup* g);
   void groupExit(SoarGameGroup* g);

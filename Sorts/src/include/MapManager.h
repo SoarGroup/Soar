@@ -3,8 +3,15 @@
 
 #include<set>
 
+#include "Map.H"
+#include "ScriptObj.H"
+#include "GameTile.H"
 #include "Global.H"
 #include "Vector.H"
+
+#include "MapTileGrouper.h"
+
+using namespace std;
 
 class MapManager {
 public:
@@ -32,7 +39,7 @@ private:
   MapTileGrouper& tileGrouper;
 
   list<MapRegion*> regions;
-  map<int, MapRegion*> tileMembership;
+  std::map<int, MapRegion*> tileMembership;
 };
 
 #endif

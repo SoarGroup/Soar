@@ -24,7 +24,7 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit, OrtsInterface* _ORTSIO)
   friendly = unit->isFriendly();
   world = unit->isWorld();
 
-  bbox.collapse(*gob->sod.x, *gob->sod.y);
+  bbox.collapse(*unit->gob->sod.x, *unit->gob->sod.y);
 
   sticky = false;
   commandStatus = GRP_STATUS_IDLE;
@@ -129,7 +129,7 @@ void SoarGameGroup::updateStats(bool saveProps) {
     for(set<SoarGameObject*>::iterator i = members.begin(); 
                                        i != members.end(); i++)
     {
-      bbox.accomodate(*(*i)->sod.x, *(*i)->sod.y);
+      bbox.accomodate(*(*i)->gob->sod.x, *(*i)->gob->sod.y);
     }
 
     pair<string, int> stringIntWme;

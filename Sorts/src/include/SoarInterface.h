@@ -33,7 +33,10 @@ typedef struct {
 typedef struct {
   int regionId;
   sml::Identifier* idWME;
-  sml::IntElement* xminWME, xmaxWME, yminWME, ymaxWME; // bounding box
+  sml::IntElement* xminWME;
+  sml::IntElement* xmaxWME; 
+  sml::IntElement* yminWME; 
+  sml::IntElement* ymaxWME; // bounding box
   sml::IntElement* sizeWME;
 } InputLinkMapRegionRep;
 
@@ -63,8 +66,8 @@ that group is refreshed! Initially, the stats will not be set.
 
 class SoarInterface {
   public:
-    SoarInterface(sml::Agent*      _agent,
-                  GameStateModule* _gsm,
+    SoarInterface(GameStateModule* _gsm,
+                  sml::Agent*      _agent,
                   pthread_mutex_t* _objectActionQueueMutex,
                   pthread_mutex_t* _attentionActionQueueMutex,
                   pthread_mutex_t* _groupActionQueueMutex

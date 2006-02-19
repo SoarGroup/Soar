@@ -5,9 +5,11 @@
 #include "Map.H"
 #include "GameTile.H"
 
+#include "SoarGameGroup.h"
+
 // every region must have at least one tile in it
 MapRegion::MapRegion(const Map<GameTile>& _map, int _tile_points, int tile)
-: map(_map), tile_points(_tile_points);
+: map(_map), tile_points(_tile_points)
 {
   tiles.insert(tile);
   int ind_x = map.ind2x(tile);
@@ -56,7 +58,7 @@ bool MapRegion::isFriendly() {
                                     i != groupsHere.end();
                                     i++)
   {
-    if (!(*i).isFriendly()) {
+    if (!(*i)->isFriendly()) {
       return false;
     }
   }
@@ -72,7 +74,7 @@ bool MapRegion::intersects(const Rectangle& r) {
   for(set<int>::iterator i = tiles.begin(); i != tiles.end(); i++) {
     int xmin = map.ind2x(*i) * tile_points;
     int ymin = map.ind2y(*i) * tile_points;
-    tile_rect.set(xmin, xmin + tile_points, ymin, ymin_tile_points);
+    tile_rect.set(xmin, xmin + tile_points, ymin, ymin + tile_points);
     if (tile_rect.intersects(r)) {
       return true;
     }
@@ -88,14 +90,16 @@ void MapRegion::addTile(int tile) {
   recalcPointBBox();
 }
 
-void MapRegion::addBoundary(const Rectangle& b) {
-  boundaries.push_back(b);
+void MapRegion::addBoundary(GameObj* gob) {
+  Rectangle r;
+  r.set(*gob->sod.x1, *gob->sod.x2, *gob->sod.y1, *gob->sod.y2);
+  boundaries.push_back(r);
 }
 
 void MapRegion::recalcPointBBox() {
   pointBBox.xmin = indexBBox.xmin * tile_points;
   pointBBox.ymin = indexBBox.ymin * tile_points;
   // + 1 to include lower right corner
-  pointBBox.xmax = (indexBBox.xmax + 1) * tile_points 
-  pointBBox.ymax = (indexBBox.ymax + 1) * tile_points 
+  pointBBox.xmax = (indexBBox.xmax + 1) * tile_points;
+  pointBBox.ymax = (indexBBox.ymax + 1) * tile_points;
 }

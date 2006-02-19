@@ -13,10 +13,13 @@ using namespace std;
 
 class GridMapTileGrouper : public MapTileGrouper {
 public:
+
   GridMapTileGrouper(const Map<GameTile>& _map, 
                      int                  _tile_points,
                      int                  _gridSizeX,
                      int                  _gridSizeY);
+
+  ~GridMapTileGrouper();
 
   MapRegion* groupTile(int tile);
 
@@ -25,7 +28,7 @@ private:
   const Map<GameTile>& map;
   int tile_points;
 
-  map<int, MapRegion*> currRegions;
+  std::map<int, MapRegion*> currRegions;
   int gridSizeX, gridSizeY;
 };
 
