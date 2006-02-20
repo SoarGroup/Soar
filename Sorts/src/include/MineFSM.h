@@ -15,7 +15,7 @@ public:
     firstMine = true;
   }
 
-  int update() {
+  int update(bool& updateRequiredNextCycle) {
     cout << "WORKER HAS: " << gob->get_int("minerals") << " MINERALS " << endl;
 
     // TO DO: check if the mineral patch is out. If it is, return false

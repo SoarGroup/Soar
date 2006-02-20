@@ -10,14 +10,12 @@
 #include "GameObj.H"
 #include "SoarAction.h"
 
-
-
 class FSM{
  public:
 	FSM();
 	virtual ~FSM();
 
-	virtual int update()=0;
+	virtual int update(bool& updateRequiredNextCycle)=0;
 
 	virtual void setGameObject(GameObj *g){gob = g;}
 	virtual GameObj *getGameObject(){return gob;}

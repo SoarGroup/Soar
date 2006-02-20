@@ -11,7 +11,7 @@ IdleFSM::~IdleFSM()
  
 }
 
-int IdleFSM::update()
+int IdleFSM::update(bool& updateRequiredNextCycle)
 {
  std::cout<<"Idle"<<std::endl;
  return FSM_RUNNING;

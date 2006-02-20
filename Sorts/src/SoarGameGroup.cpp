@@ -337,6 +337,11 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
     }
     
     (*currentObject)->issueCommand(type, tempVec);
+    if ((*currentObject)->getUpdateRequired()) {
+      // issueCommand fires an update(), so we need to check
+      // if that update caused a required next-cycle update
+      ORTSIO->updateNextCycle(*currentObject);
+    }
     currentObject++;
   }
   

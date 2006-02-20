@@ -37,6 +37,10 @@ public:
 
   // wrappers for middleware querying ORTS
   sint4 getID(SoarGameObject* obj);
+  
+  // used when a middleware-spawned update (such as right after a 
+  // command is issued) causes a required next-cycle update
+  void updateNextCycle(SoarGameObject* sgo);
 
 private:
   // pointers to all the orts stuff
@@ -68,6 +72,10 @@ private:
   
   // player id of Soar
   int myPid;
+
+  // list of SGO's that need to be updated next cycle,
+  // regardless of if they change in the world or not
+  set <SoarGameObject*> requiredUpdates;
 };
 
 #endif

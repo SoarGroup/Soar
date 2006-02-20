@@ -12,13 +12,14 @@ MoveFSM::MoveFSM()
 MoveFSM::~MoveFSM()
 { }
 
-int MoveFSM::update()
+int MoveFSM::update(bool& requireUpdateNextCycle)
 {
  switch(state){
 
 	case IDLE:
 	 //Start moving
 	 gob->set_action("move",params);
+   requireUpdateNextCycle = true;
 	 state = WARMUP;
    runTime = 0;
    break;
@@ -26,6 +27,10 @@ int MoveFSM::update()
   case WARMUP:
     // this constant needs to be set more intelligently
     // it may actually depend on our refresh frequency
+    
+    // require an update, since we aren't moving and won't
+    // get refreshed by the world
+    requireUpdateNextCycle = true;
     if (runTime < 10) {
       runTime++;
     }

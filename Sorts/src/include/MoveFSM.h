@@ -8,7 +8,7 @@ class MoveFSM: public FSM{
 	MoveFSM();
 	~MoveFSM();
 
-	int update();
+	int update(bool&);
 	void init(std::vector<signed long>);
 
  private:

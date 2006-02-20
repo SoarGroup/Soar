@@ -80,6 +80,8 @@ bool OrtsInterface::handle_event(const Event& e) {
 }
 
 void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
+  set <SoarGameObject*> requiredNextCycle;
+  
   // add new objects
   FORALL(changed.new_objs, obj) {
     GameObj* gob = (*obj)->get_GameObj();
@@ -96,6 +98,7 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
 
   FORALL(changed.changed_objs, obj) {
     GameObj* gob = (*obj)->get_GameObj();
+    SoarGameObject* sgo;
     if (gob == 0) {
       continue;
     }
@@ -107,7 +110,15 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
       assert(objectMap.find(gob) != objectMap.end());
 
       // just call update to let it know there were changes
-      objectMap[gob]->update();
+      sgo = objectMap[gob];
+      sgo->update();
+      // if it is marked update-required for this cycle,
+      // make sure it isn't double-updated
+      requiredUpdates.erase(sgo);
+      if (sgo->getUpdateRequired()) {
+        // this object must be updated next cycle
+        requiredNextCycle.insert(sgo);
+      }
     }
     else if (gob == playerGameObj) {
       updateSoarPlayerInfo();
@@ -122,8 +133,13 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
        * trouble
        */
       assert(objectMap.find(gob) != objectMap.end());
-
+      requiredUpdates.erase(objectMap[gob]);
       removeVanishedObject(gob);
+
+      assert(requiredNextCycle.erase(objectMap[gob]) == 0);
+      // if this assertion fails, just add requiredNextCycle.erase(sgo);
+      // it just means my assumptions were wrong, and the same object
+      // can appear as changed and vanished
     }
   }
   
@@ -135,10 +151,26 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
        * trouble
        */
       assert(objectMap.find(gob) != objectMap.end());
-
+      requiredUpdates.erase(objectMap[gob]);
       removeDeadObject(gob);
+      assert(requiredNextCycle.erase(objectMap[gob]) == 0);
+      // see assertion note above
     }
   }
+
+  // issue required updates
+  // removeVanished/Dead objects should have removed anything that
+  // just disappeared from this list
+  for (set<SoarGameObject*>::iterator it = requiredUpdates.begin();
+      it != requiredUpdates.end();
+      it++) {
+    (*it)->update();
+    if ((*it)->getUpdateRequired()) {
+      requiredNextCycle.insert(*it);
+    }
+  }
+
+  requiredUpdates = requiredNextCycle;
 }
 
 void OrtsInterface::updateSoarPlayerInfo() {
@@ -167,4 +199,8 @@ sint4 OrtsInterface::getID(SoarGameObject* obj) {
 }
 void OrtsInterface::setMyPid(int pid) {
   myPid = pid;
+}
+
+void OrtsInterface::updateNextCycle(SoarGameObject* sgo) {
+  requiredUpdates.insert(sgo);
 }

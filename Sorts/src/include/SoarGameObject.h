@@ -34,6 +34,8 @@ class SoarGameObject{
   int  getOwner()     { return *gob->sod.owner; }
  	bool isFriendly()   { return friendly; }
   bool isWorld()      { return world; }
+  bool getUpdateRequired() { return updateRequired; }
+  //void setUpdateRequired() { updateRequired = true; }
 
   GameObj *gob;
 
@@ -45,6 +47,12 @@ class SoarGameObject{
 	SoarGameGroup* group;
 	bool friendly;
   bool world;
+
+  // this is true if the object must be updated next cycle,
+  // whether it changed in the world or not
+  // cleared every cycle (set it in the FSM),
+  // also kept in a queue in the OrtsInterface
+  bool updateRequired;
 
   int status;
 };

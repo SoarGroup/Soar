@@ -77,9 +77,14 @@ void SoarGameObject::update()
 {
   int fsmStatus;
   group->setStale();
+
+  // FSM will set this back to true if needed
+  updateRequired = false;
   if(!memory.empty())
   {
-    fsmStatus = memory.top()->update();
+    // updateRequired is pass-by-reference
+    // FSM will set to true if it needs to be updated next cycle
+    fsmStatus = memory.top()->update(updateRequired);
     if(fsmStatus != FSM_RUNNING)
     {
       memory.pop();
