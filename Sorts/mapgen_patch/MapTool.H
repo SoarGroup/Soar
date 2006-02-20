@@ -4,7 +4,7 @@
 /** @file MapTool.H
     Builds game maps.
 
-    $Id: MapTool.H,v 1.25 2006/02/03 20:50:46 orts_mburo Exp $
+    $Id: MapTool.H,v 1.26 2006/02/09 17:22:30 orts_mburo Exp $
     $Source: /home/cvs/orts3/libs/serverclient/src/MapTool.H,v $
 */
 
@@ -97,7 +97,7 @@ public:
   static void generate_marine_map(std::stringstream &world);
 
   static void init_map_data(MapData &md);
-  static void generate_game_tiles(MapData &md, std::stringstream& world);
+  static void generate_game_tiles(MapData &md, std::stringstream& world, bool bad_init);
   static void generate_game1_map(std::stringstream &world);
   static void generate_game2_map(std::stringstream &world);
   static void generate_game3_map(std::stringstream &world);
