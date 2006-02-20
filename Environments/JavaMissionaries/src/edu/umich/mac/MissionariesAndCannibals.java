@@ -226,8 +226,6 @@ implements Runnable, PaintListener, MacEnvironmentListener {
     }
     
     private void resetPressed() {
-        if (me.isRunning())
-            me.stopSystem();
         me.reset();
         
         updateButtons(false);
