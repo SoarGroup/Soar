@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
 import sml.Kernel;
+import sml.smlSystemEventId;
 
 
 /**
@@ -122,14 +123,14 @@ implements PaintListener, GameListener, ControlListener {
     
 	public void systemEventHandler(int eventID, Object data, Kernel kernel)
 	{
-		if (eventID == sml.smlSystemEventId.smlEVENT_SYSTEM_START.swigValue())
+		if (eventID == smlSystemEventId.smlEVENT_SYSTEM_START.swigValue())
 		{
 			// The callback comes in on Soar's thread and we have to update the buttons
 			// on the UI thread, so switch threads.
 			dpy.asyncExec(new Runnable() { public void run() { updateButtons(true) ; } } ) ;
 		}
 
-		if (eventID == sml.smlSystemEventId.smlEVENT_SYSTEM_STOP.swigValue())
+		if (eventID == smlSystemEventId.smlEVENT_SYSTEM_STOP.swigValue())
 		{
 			// The callback comes in on Soar's thread and we have to update the buttons
 			// on the UI thread, so switch threads.
