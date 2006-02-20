@@ -12,7 +12,6 @@ class MineFSM : public FSM {
 public:
   MineFSM() {
     name = SA_MINE;
-    firstMine = true;
   }
 
   int update(bool& updateRequiredNextCycle) {
@@ -24,64 +23,83 @@ public:
       case IDLE:
         // figure out what to do first
         cout << "IDLE" << endl;
+        runTime = 0;
         if (gob->get_int("minerals") > 1) {
-          state = MOVING_TO_BASE;
+          state = MOVING_TO_BASE_WARMUP;
+          gob->set_action("move", moveToBaseParams);
         }
         else {
-          state = MOVING_TO_MINE;
+          state = MOVING_TO_MINE_WARMUP;
+          gob->set_action("move", moveToMineParams);
         }
         break;
 
       case MINING:
         cout << "MINING" << endl;
 
-        if (firstMine) {
-          cout << "SENT MINE COMMAND" << endl;
-          gob->component("pickaxe")->set_action("mine", mineParams);
-          firstMine = false;
-        }
-        else {
-          if (gob->component("pickaxe")->get_int("active") == 0 &&
-              gob->get_int("is_mobile") == 1) 
-          {
-            // finished mining
-            cout << "FINISHED MINING" << endl;
-            state = MOVING_TO_BASE;
-            firstMine = true; // for the next time
+        if (gob->component("pickaxe")->get_int("active") == 0 &&
+            gob->get_int("is_mobile") == 1) 
+        {
+          // finished mining
+          cout << "FINISHED MINING" << endl;
+          state = MOVING_TO_BASE_WARMUP;
+          runTime = 0;
 
-            // have to help it along here, or else it's not going to change
-            // next cycle
-            gob->set_action("move", moveToBaseParams);
-          }
+          // have to help it along here, or else it's not going to change
+          // next cycle
+          gob->set_action("move", moveToBaseParams);
         }
         
         break;
 
-      case MOVING_TO_MINE:
-        cout << "MOVING TO MINE: " << squaredDistance(*gob->sod.x, *gob->sod.y, mine_x, mine_y) << endl; 
-        if (squaredDistance(*gob->sod.x, *gob->sod.y, mine_x, mine_y) < 100) {
-          // close to mine. The 100 is a guess
-          gob->set_action("mine", mineParams);
-          state = MINING;
-
+      case MOVING_TO_MINE_WARMUP:
+        if (runTime < 30) {
+          runTime++;
         }
         else {
-          gob->set_action("move", moveToMineParams);
+          state = MOVING_TO_MINE;
+        }
+        break;
+      case MOVING_TO_MINE:
+        cout << "MOVING TO MINE: " << squaredDistance(*gob->sod.x, *gob->sod.y, mine_x, mine_y) << endl; 
+        //if (squaredDistance(*gob->sod.x, *gob->sod.y, mine_x, mine_y) < 100) {
+        if (*gob->sod.speed == 0) {
+          cout << "SENT MINE COMMAND" << endl;
+          tempMineParams = mineParams;
+          cout << tempMineParams.size() << endl;
+          gob->component("pickaxe")->set_action("mine", tempMineParams);
+          cout << tempMineParams.at(0) << endl;
+          state = MINING;
+        }
+        break;
+      
+      case MOVING_TO_BASE_WARMUP:
+        if (runTime < 30) {
+          runTime++;
+        }
+        else {
+          state = MOVING_TO_BASE;
         }
         break;
 
       case MOVING_TO_BASE:
         cout << "MOVING TO BASE" << squaredDistance(*gob->sod.x, *gob->sod.y, base_x, base_y) << endl; 
-        if (squaredDistance(*gob->sod.x, *gob->sod.y, base_x, base_y) < 2300) {
-          // close to base. The 2300 is a guess
+        //if (squaredDistance(*gob->sod.x, *gob->sod.y, base_x, base_y) < 2300) {
+        if (*gob->sod.speed == 0) {
           gob->set_action("return_resources", depositParams);
-          state = MOVING_TO_MINE;
-        }
-        else {
-          gob->set_action("move", moveToBaseParams);
+          state = SEND_MOVE_TO_MINE_COMMAND;
+          runTime = 0;
         }
         break;
+        case SEND_MOVE_TO_MINE_COMMAND:
+          // need an extra state here, since the action on the 
+          // return is used up by return_resources
+          gob->set_action("move", moveToMineParams);
+          state = MOVING_TO_MINE_WARMUP;
+        break;
     } // switch (state)
+    
+    updateRequiredNextCycle = true;
 
     return FSM_RUNNING;
   }
@@ -113,15 +131,18 @@ public:
   }
 
 private:
-  enum MineState { IDLE, MINING, MOVING_TO_MINE, MOVING_TO_BASE };
+  enum MineState { IDLE, MINING, MOVING_TO_MINE, MOVING_TO_BASE,
+                   MOVING_TO_MINE_WARMUP, MOVING_TO_BASE_WARMUP,
+                   SEND_MOVE_TO_MINE_COMMAND};
   MineState state;
 
   int mine_id, mine_x, mine_y;
   int base_id, base_x, base_y;
 
-  bool firstMine;
+  int runTime;
 
   Vector<sint4> mineParams, moveToMineParams, depositParams, moveToBaseParams;
+  Vector<sint4> tempMineParams;
 };
 
 #endif

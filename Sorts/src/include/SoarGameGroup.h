@@ -88,6 +88,8 @@ class SoarGameGroup {
     // info on the last command executed- what is it, and is it done?
     string currentCommand;
     int commandStatus;
+
+    bool canMine;
 };
 
 #define GRP_STATUS_RUNNING 0

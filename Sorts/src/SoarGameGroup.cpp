@@ -29,6 +29,12 @@ SoarGameGroup::SoarGameGroup(SoarGameObject* unit, OrtsInterface* _ORTSIO)
   sticky = false;
   commandStatus = GRP_STATUS_IDLE;
   currentCommand = "none";
+  if (typeName == "worker") {
+    canMine = true;
+  }
+  else {
+    canMine = false;
+  }
 }
 
 void SoarGameGroup::addUnit(SoarGameObject* unit) {
@@ -78,6 +84,7 @@ void SoarGameGroup::updateStats(bool saveProps) {
     int health = 0;
     int speed = 0;
     int size = members.size();
+    int minerals = 0;
     bool running = false;
     bool success = false;
     bool failure = false;
@@ -90,7 +97,9 @@ void SoarGameGroup::updateStats(bool saveProps) {
     while (currentObject != members.end()) {
       // be careful is some numbers are very big for each object and the double could overflow
       
-    //  health += *currentObject.getHealth();
+      if (canMine) {
+        minerals += (*currentObject)->gob->get_int("minerals");
+      }
       health += (*currentObject)->gob->get_int("hp");
       speed += *(*currentObject)->gob->sod.speed;
       #ifdef DEBUG_GROUPS
@@ -209,6 +218,12 @@ void SoarGameGroup::updateStats(bool saveProps) {
       stringStringWme.second = "done_failure";
       soarData.stringStringPairs.push_back(stringStringWme);
     } 
+
+    if (canMine) {
+      stringIntWme.first = "minerals";
+      stringIntWme.second = minerals;
+      soarData.stringIntPairs.push_back(stringIntWme);
+    }
     
     staleInSoar = true;
     stale = false;
