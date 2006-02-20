@@ -71,6 +71,8 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyStruct gps) 
   assert(groupTable.find(group) != groupTable.end());
   
   InputLinkGroupRep &g = groupTable[group];
+ 
+  cout << "REF GRP\n";
   
   if (!g.added) {
     // add the group to the soar input link if it hasn't been already
@@ -93,20 +95,29 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyStruct gps) 
     for(list<pair<string,int> >::iterator i = gps.stringIntPairs.begin(); i != gps.stringIntPairs.end(); i++) {
       // create a new WME object for the property
       g.intProperties[(*i).first] = agent->CreateIntWME(g.WMEptr, (*i).first.c_str(), (*i).second);
+      cout << "\tadd: " << (*i).first << " " << (*i).second << endl;
     }
     for(list<pair<string,string> >::iterator i = gps.stringStringPairs.begin(); i != gps.stringStringPairs.end(); i++) {
       // create a new WME object for the property
       g.stringProperties[(*i).first] = agent->CreateStringWME(g.WMEptr, (*i).first.c_str(), (*i).second.c_str());
+      cout << "\tadd: " << (*i).first << " " << (*i).second << endl;
     }
   }
   else {
     // group already added, just update values.
     // Note that I'm assuming no new values are introduced
+    // (added assertions to check this.. -sw)
     for(list<pair<string, int> >::iterator i = gps.stringIntPairs.begin(); i != gps.stringIntPairs.end(); i++) {
+      assert(g.intProperties.find((*i).first) 
+             != g.intProperties.end());
       agent->Update(g.intProperties[(*i).first], (*i).second);
+      cout << "\tupd: " << (*i).first << " " << (*i).second << endl;
     }
     for(list<pair<string, string> >::iterator j = gps.stringStringPairs.begin(); j != gps.stringStringPairs.end(); j++) {
+      assert(g.stringProperties.find((*j).first) 
+             != g.stringProperties.end());
       agent->Update(g.stringProperties[(*j).first], (*j).second.c_str());
+      cout << "\tupd: " << (*j).first << " " << (*j).second << endl;
     }
   }
 }

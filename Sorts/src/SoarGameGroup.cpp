@@ -45,14 +45,8 @@ void SoarGameGroup::addUnit(SoarGameObject* unit) {
 }
 
 bool SoarGameGroup::removeUnit(SoarGameObject* unit) {
-  //assert(members.find(unit));
   assert(members.find(unit) != members.end());
 
-  if (centerMember == unit) {
-    // make sure center is a valid unit
-    // it should be refreshed before use, though
-    centerMember = *(members.begin());
-  }
   if (currentMember == unit) {
     getNextMember();
     // throw out the result
@@ -61,8 +55,13 @@ bool SoarGameGroup::removeUnit(SoarGameObject* unit) {
   }
   
   members.erase(unit);
-  //cout << " ru! " << endl;
   setStale();
+  
+  if (centerMember == unit) {
+    // make sure center is a valid unit
+    // it should be refreshed before use, though
+    centerMember = *(members.begin());
+  }
   return true;
 }
 
