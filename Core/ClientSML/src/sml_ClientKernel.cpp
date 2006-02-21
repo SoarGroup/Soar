@@ -1128,7 +1128,17 @@ char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepS
 	ostr << numberSteps ;
 
 	// Create the command line for the run command
-	std::string step = (stepSize == sml_DECISION) ? "-d" : (stepSize == sml_PHASE) ? "-p" : "-e" ;
+	std::string step ;
+	
+	switch (stepSize)
+	{
+		case sml_DECISION:		step = "-d" ; break ;
+		case sml_PHASE:			step = "-p" ; break ;
+		case sml_ELABORATION:	step = "-e" ; break ;
+		case sml_UNTIL_OUTPUT:	step = "-o" ; break ;
+		default: return "Unrecognized step size parameter passed to RunAllAgents" ;
+	}
+
 	std::string cmd = "run " + step + " " + ostr.str() ;
 
 	// The command line currently requires an agent in order
