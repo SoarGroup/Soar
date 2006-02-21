@@ -1289,7 +1289,18 @@ char const* Agent::RunSelf(unsigned long numberSteps, smlRunStepSize stepSize)
 	ostr << numberSteps ;
 
 	// Create the command line for the run command
-	std::string step = (stepSize == sml_DECISION) ? "-d" : (stepSize == sml_PHASE) ? "-p" : "-e" ;
+	// Create the command line for the run command
+	std::string step ;
+	
+	switch (stepSize)
+	{
+		case sml_DECISION:		step = "-d" ; break ;
+		case sml_PHASE:			step = "-p" ; break ;
+		case sml_ELABORATION:	step = "-e" ; break ;
+		case sml_UNTIL_OUTPUT:	step = "-o" ; break ;
+		default: return "Unrecognized step size parameter passed to RunSelf" ;
+	}
+
 	std::string cmd = "run --self " + step + " " + ostr.str() ;
 
 	// Execute the run command.
