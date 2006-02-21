@@ -341,7 +341,7 @@ void GroupManager::refreshGroups(bool final) {
 }
 
 void GroupManager::addGroup(SoarGameObject* object) {
-  groupsNotInFocus.push_back(new SoarGameGroup(object, ORTSIO));
+  groupsNotInFocus.push_back(new SoarGameGroup(object, ORTSIO, mapManager));
   return;
 }
 

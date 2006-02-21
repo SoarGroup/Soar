@@ -7,6 +7,7 @@
 #include "SoarInterface.h"
 #include "SoarGameObject.h"
 #include "GroupManager.h"
+#include "MapManager.h"
 
 // sml includes
 #include "sml_Client.h"
@@ -17,7 +18,6 @@
 #include "GameStateModule.H"
 #include "GameChanges.H"
 #include "GameObj.H"
-#include "SoarInterface.h"
 
 using namespace std;
 
@@ -29,10 +29,13 @@ typedef map<SoarGameObject*, const GameObj*>::iterator revObjectMapIter;
  */
 class OrtsInterface : public EventHandler {
 public:
-  OrtsInterface(GameStateModule* _gsm, 
-                SoarInterface*   _soarInterface, 
-                GroupManager*    _groupManager);
+  OrtsInterface( GameStateModule* _gsm, 
+                 SoarInterface*   _soarInterface, 
+                 GroupManager*    _groupManager,
+                 MapManager*      _mapManager );
+
   ~OrtsInterface();
+
   void setMyPid(int pid);
 
   // wrappers for middleware querying ORTS
@@ -54,8 +57,8 @@ private:
 
   // pointer to our stuff
   SoarInterface* soarInterface;
-
-  GroupManager* groupManager;
+  GroupManager*  groupManager;
+  MapManager*    mapManager;
 
   // consistency functions
   void addAppearedObject(const GameObj* gameObj);
@@ -66,6 +69,7 @@ private:
   // event handler functions
   bool handle_event(const Event& e);
   void updateSoarGameObjects(const GameChanges& changes);
+  void updateMap(const GameChanges& changes);
   void updateSoarPlayerInfo();
   
   int counter;

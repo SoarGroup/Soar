@@ -8,6 +8,7 @@
 #include "OrtsInterface.h"
 #include "general.h"
 #include "MapRegion.h"
+#include "MapManager.h"
 #include "Rectangle.h"
 
 #ifdef DEBUG_GROUPS
@@ -22,7 +23,10 @@ using namespace std;
 
 class SoarGameGroup {
   public:
-    SoarGameGroup(SoarGameObject* unit, OrtsInterface* in_ORTSIO);
+    SoarGameGroup( SoarGameObject* unit, 
+                   OrtsInterface*  _ORTSIO,
+                   MapManager*     _mapManager );
+
     void addUnit(SoarGameObject* unit);
     bool removeUnit(SoarGameObject* unit);
     void updateStats(bool saveProps);
@@ -79,6 +83,7 @@ class SoarGameGroup {
     // bounding box
     Rectangle bbox;
 
+    MapManager* mapManager;
     list<MapRegion*> regionsOccupied;
 
     // sticky if grouped by Soar-

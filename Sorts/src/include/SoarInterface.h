@@ -28,10 +28,11 @@ typedef struct {
   // function for strings
   map<string, sml::IntElement*> intProperties;
   map<string, sml::StringElement*> stringProperties;
+  // a list of integers for the IDs of the regions its in
+  list<sml::IntElement*> regionWMEs;
 } InputLinkGroupRep;
 
 typedef struct {
-  int regionId;
   sml::Identifier* idWME;
   sml::IntElement* xminWME;
   sml::IntElement* xmaxWME; 
@@ -81,11 +82,13 @@ class SoarInterface {
     void addGroup(SoarGameGroup* group);
     void removeGroup(SoarGameGroup* group);
     void refreshGroup(SoarGameGroup* group, groupPropertyStruct gps);
+    int  groupId(SoarGameGroup* group);
 
     // map commands
     void addMapRegion(MapRegion* r);
     void removeMapRegion(MapRegion* r);
     void refreshMapRegion(MapRegion* r);
+    int  mapRegionId(MapRegion* r);
 
     // commit all changes to Soar Input link
     void commitInputLinkChanges();
@@ -140,12 +143,7 @@ class SoarInterface {
    * Member variables for map maintanence           *
    *                                                *
    **************************************************/
-
-    // also number map regions independently of MapManager
-    int mapRegionIdCounter;
-
     sml::Identifier* mapIdWME;
-
     map<MapRegion*, InputLinkMapRegionRep> mapRegionTable;
     map<int, MapRegion*>                   mapRegionIdLookup;
 

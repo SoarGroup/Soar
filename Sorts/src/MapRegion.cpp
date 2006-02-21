@@ -7,10 +7,13 @@
 
 #include "SoarGameGroup.h"
 
+int MapRegion::idCounter = 0;
+
 // every region must have at least one tile in it
 MapRegion::MapRegion(const Map<GameTile>& _map, int _tile_points, int tile)
 : map(_map), tile_points(_tile_points)
 {
+  id = idCounter++;
   tiles.insert(tile);
   int ind_x = map.ind2x(tile);
   int ind_y = map.ind2y(tile);
@@ -102,4 +105,8 @@ void MapRegion::recalcPointBBox() {
   // + 1 to include lower right corner
   pointBBox.xmax = (indexBBox.xmax + 1) * tile_points;
   pointBBox.ymax = (indexBBox.ymax + 1) * tile_points;
+}
+
+int MapRegion::getId() { 
+  return id;
 }

@@ -85,48 +85,90 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyStruct gps) 
       g.WMEptr = agent->CreateIdWME(worldGroupsId, "group");
     }
     else {
-      g.WMEptr = agent->CreateIdWME(otherPlayers[group->getOwner()].groupsId, "group");
+      g.WMEptr = agent->CreateIdWME( otherPlayers[group->getOwner()].groupsId, 
+                                     "group" );
     }
 
     // label the group with its id
     agent->CreateIntWME(g.WMEptr, "id", g.groupId);
 
     // add properties
-    for(list<pair<string,int> >::iterator i = gps.stringIntPairs.begin(); i != gps.stringIntPairs.end(); i++) {
+    for(list<pair<string,int> >::iterator 
+        i  = gps.stringIntPairs.begin(); 
+        i != gps.stringIntPairs.end(); 
+        i++) 
+    {
       // create a new WME object for the property
-      g.intProperties[(*i).first] = agent->CreateIntWME(g.WMEptr, (*i).first.c_str(), (*i).second);
+      g.intProperties[(*i).first] = 
+        agent->CreateIntWME(g.WMEptr, (*i).first.c_str(), (*i).second);
       cout << "\tadd: " << (*i).first << " " << (*i).second << endl;
     }
-    for(list<pair<string,string> >::iterator i = gps.stringStringPairs.begin(); i != gps.stringStringPairs.end(); i++) {
+    for(list<pair<string,string> >::iterator 
+        i = gps.stringStringPairs.begin(); 
+        i != gps.stringStringPairs.end(); 
+        i++) 
+    {
       // create a new WME object for the property
-      g.stringProperties[(*i).first] = agent->CreateStringWME(g.WMEptr, (*i).first.c_str(), (*i).second.c_str());
+      g.stringProperties[(*i).first] = 
+        agent->CreateStringWME( g.WMEptr, 
+                                (*i).first.c_str(), 
+                                (*i).second.c_str() );
       cout << "\tadd: " << (*i).first << " " << (*i).second << endl;
     }
   }
   else {
     // group already added, just update values.
     // Note that I'm assuming no new values are introduced
-    // (added assertions to check this.. -sw)
-    for(list<pair<string, int> >::iterator i = gps.stringIntPairs.begin(); i != gps.stringIntPairs.end(); i++) {
+    for(list<pair<string, int> >::iterator
+        i = gps.stringIntPairs.begin(); 
+        i != gps.stringIntPairs.end(); 
+        i++)
+    {
+      // (added assertions to check this.. -sw)
       assert(g.intProperties.find((*i).first) 
              != g.intProperties.end());
       agent->Update(g.intProperties[(*i).first], (*i).second);
       cout << "\tupd: " << (*i).first << " " << (*i).second << endl;
     }
-    for(list<pair<string, string> >::iterator j = gps.stringStringPairs.begin(); j != gps.stringStringPairs.end(); j++) {
+    for(list<pair<string, string> >::iterator 
+        j = gps.stringStringPairs.begin();
+        j != gps.stringStringPairs.end(); 
+        j++) 
+    {
       assert(g.stringProperties.find((*j).first) 
              != g.stringProperties.end());
       agent->Update(g.stringProperties[(*j).first], (*j).second.c_str());
       cout << "\tupd: " << (*j).first << " " << (*j).second << endl;
     }
   }
+
+  // in any case, remove all the region ids and put in new ones
+  for(list<sml::IntElement*>::iterator
+      i  = g.regionWMEs.begin();
+      i != g.regionWMEs.end();
+      i++)
+  {
+    agent->DestroyWME(*i);
+  }
+  g.regionWMEs.clear();
+  for(list<int>::iterator 
+      i  = gps.regionsOccupied.begin();
+      i != gps.regionsOccupied.end();
+      i++)
+  {
+    g.regionWMEs.push_back(agent->CreateIntWME(g.WMEptr, "in-region", *i));
+  }
+}
+
+int SoarInterface::groupId(SoarGameGroup* group) {
+  assert(groupTable.find(group) != groupTable.end());
+  return groupTable[group].groupId;
 }
 
 void SoarInterface::addMapRegion(MapRegion *r) {
   assert(mapRegionTable.find(r) == mapRegionTable.end());
 
   InputLinkMapRegionRep rep;
-  rep.regionId = mapRegionIdCounter++;
   rep.idWME = agent->CreateIdWME(mapIdWME, "region");
   Rectangle box = r->getBoundingBox();
   rep.xminWME = agent->CreateIntWME(rep.idWME, "xmin", box.xmin);
@@ -137,7 +179,7 @@ void SoarInterface::addMapRegion(MapRegion *r) {
   rep.sizeWME = agent->CreateIntWME(rep.idWME, "size", r->size());
 
   mapRegionTable[r] = rep;
-  mapRegionIdLookup[rep.regionId] = r;
+  mapRegionIdLookup[r->getId()] = r;
 }
 
 void SoarInterface::removeMapRegion(MapRegion *r) {
@@ -145,7 +187,7 @@ void SoarInterface::removeMapRegion(MapRegion *r) {
   
   InputLinkMapRegionRep& rep = mapRegionTable[r];
   agent->DestroyWME(rep.idWME);
-  mapRegionIdLookup.erase(rep.regionId);
+  mapRegionIdLookup.erase(r->getId());
   mapRegionTable.erase(r);
 }
 
@@ -160,6 +202,7 @@ void SoarInterface::refreshMapRegion(MapRegion *r) {
   agent->Update(rep.ymaxWME, box.ymax);
   agent->Update(rep.sizeWME, r->size());
 }
+
 
 // called in soar event handler to take everything off the output
 // link and put onto the action queue each time soar generates output

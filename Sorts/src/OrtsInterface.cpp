@@ -6,10 +6,14 @@
 #include "GameObj.H"
 #include "GameStateModule.H"
 
-OrtsInterface::OrtsInterface(GameStateModule* _gsm,
-                             SoarInterface*   _soarInterface,
-                             GroupManager*    _groupManager)
-: gsm(_gsm), soarInterface(_soarInterface), groupManager(_groupManager) 
+OrtsInterface::OrtsInterface( GameStateModule* _gsm,
+                              SoarInterface*   _soarInterface,
+                              GroupManager*    _groupManager,
+                              MapManager*      _mapManager )
+: gsm(_gsm), 
+  soarInterface(_soarInterface), 
+  groupManager(_groupManager),
+  mapManager(_mapManager)
 {
   counter = 0;
   myPid = -1; // this must be set after we connect to the server
@@ -58,6 +62,7 @@ bool OrtsInterface::handle_event(const Event& e) {
       groupManager->assignActions();
 
       const GameChanges& changes = gsm->get_changes();
+      updateMap(changes);
       updateSoarGameObjects(changes);
 
       // since the FSM's have been updated, we should send the actions here
@@ -171,6 +176,11 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
   }
 
   requiredUpdates = requiredNextCycle;
+}
+
+void OrtsInterface::updateMap(const GameChanges& changed) {
+  mapManager->addExploredTiles(changed.new_tile_indexes);
+  mapManager->addBoundaries(changed.new_boundaries);
 }
 
 void OrtsInterface::updateSoarPlayerInfo() {

@@ -2,6 +2,7 @@
 #define GroupManager_h
 
 #include "SoarGameObject.h"
+#include "MapManager.h"
 
 #ifdef DEBUG_GROUPS
 #include "FakeSoarInterface.h"
@@ -12,7 +13,10 @@ class OrtsInterface;
 
 class GroupManager {
   public:
-    GroupManager(SoarInterface* si) : SoarIO(si) { }
+    GroupManager(SoarInterface* si, MapManager* _mapManager) 
+    : SoarIO(si), mapManager(_mapManager) 
+    { }
+
     ~GroupManager();
 
     void updateWorld();
@@ -34,6 +38,8 @@ class GroupManager {
     list <SoarGameGroup*> groupsInFocus;
     list <SoarGameGroup*> groupsNotInFocus;
     OrtsInterface* ORTSIO;
+
+    MapManager *mapManager;
 };
 
 struct objectGroupingStruct {

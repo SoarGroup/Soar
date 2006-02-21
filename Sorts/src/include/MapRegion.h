@@ -35,10 +35,15 @@ public:
   bool isOccupied();
   bool isFriendly();
 
+  int getId();
+
 private:
+  // counter that increments region ids
+  static int idCounter;
+
+  int id;
 
   const Map<GameTile>& map; 
-
   int tile_points;
 
   // bounding boxes

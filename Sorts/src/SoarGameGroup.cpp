@@ -5,8 +5,10 @@
 #include <vector>
 #include <iostream>
 
-SoarGameGroup::SoarGameGroup(SoarGameObject* unit, OrtsInterface* _ORTSIO)
-: ORTSIO(_ORTSIO)
+SoarGameGroup::SoarGameGroup( SoarGameObject* unit, 
+                              OrtsInterface*  _ORTSIO,
+                              MapManager*     _mapManager )
+: ORTSIO(_ORTSIO), mapManager(_mapManager)
 {
   members.insert(unit);
   // capabilities = unit->capabilities;
@@ -78,7 +80,8 @@ void SoarGameGroup::updateStats(bool saveProps) {
   if (saveProps) {
     soarData.stringIntPairs.clear();
     soarData.stringStringPairs.clear();
-  
+    soarData.regionsOccupied.clear();
+
     currentObject = members.begin();
 
     int health = 0;
@@ -184,8 +187,34 @@ void SoarGameGroup::updateStats(bool saveProps) {
     stringStringWme.first = "type";
     stringStringWme.second = typeName;
     soarData.stringStringPairs.push_back(stringStringWme);
-    
 
+    /**************************************************
+     *                                                *
+     * Update the regions the group occupies          *
+     *                                                *
+     **************************************************/
+
+    // for now, just leave all regions first and then recompute
+    // which ones it enters, even if this may mean exiting and
+    // entering the same region redundently
+    for(list<MapRegion*>::iterator i  = regionsOccupied.begin();
+                                   i != regionsOccupied.end();
+                                   i++)
+    {
+      cout << "&&& Group has exited from region " << (*i)->getId() << endl;
+      (*i)->groupExit(this);
+    }
+    regionsOccupied.clear();
+    mapManager->getRegionsOccupied(this, regionsOccupied);
+    for(list<MapRegion*>::iterator i  = regionsOccupied.begin();
+                                   i != regionsOccupied.end();
+                                   i++)
+    {
+      cout << "&&& Group has entered region " << (*i)->getId() << endl;
+      (*i)->groupEnter(this);
+      soarData.regionsOccupied.push_back((*i)->getId());
+    }
+   
     // command info:
     // show last command, and as many status attributes as are applicable
     // if a group has one member succeed, fail, or still running, that 
@@ -228,7 +257,6 @@ void SoarGameGroup::updateStats(bool saveProps) {
     staleInSoar = true;
     stale = false;
    
-    
   }
   
   // center member calculation- is there a way to do a running calc above?

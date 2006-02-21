@@ -14,6 +14,7 @@ typedef list<pair<string, int> > groupPropertyList;
 struct groupPropertyStruct {
   list<pair<string, int> > stringIntPairs;
   list<pair<string, string> > stringStringPairs;
+  list<int> regionsOccupied;
 };
 
 string catStrInt(const char* str, int x);

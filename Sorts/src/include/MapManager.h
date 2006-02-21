@@ -15,7 +15,9 @@ using namespace std;
 
 class MapManager {
 public:
-  MapManager(const Map<GameTile>& _map, int _tilePoints, MapTileGrouper& _tileGrouper);
+  MapManager( const Map<GameTile>& _gameMap, 
+              int                  _tilePoints, 
+              MapTileGrouper&      _tileGrouper);
 
   // these will be automatically associated with regions
   // the association is dependent on the policy we use
@@ -34,12 +36,12 @@ public:
   void getRegionsOccupied(SoarGameGroup* group, list<MapRegion*> &regions);
   
 private:
-  Map<GameTile>& map;
+  const Map<GameTile>& gameMap;
   int tilePoints;
   MapTileGrouper& tileGrouper;
 
   list<MapRegion*> regions;
-  std::map<int, MapRegion*> tileMembership;
+  map<int, MapRegion*> tileMembership;
 };
 
 #endif
