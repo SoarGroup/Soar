@@ -484,6 +484,16 @@ void RunScheduler::CheckStopBeforePhase(egSKIRunType runStepSize)
 				egSKIPhaseType phase = pAgent->GetCurrentPhase() ;
 				egSKIRunResult runResult = pAgentSML->GetResultOfLastRun() ;
 
+				// as in Bug 648, it's possible that a client has requested STOP_AFTER_DECISION
+				// while the agent was stopped at the m_StopBeforePhase, yet the agent run logic has
+				// dropped thru to this point without generating the interrupt yet.
+				if ((m_StopBeforePhase == phase) && (pAgent->GetRunState() == gSKI_RUNSTATE_STOPPED) &&
+					(pAgent->GetInterruptFlags() & gSKI_STOP_AFTER_DECISION_CYCLE))
+				{
+					pAgent->SetRunState(gSKI_RUNSTATE_INTERRUPTED);
+					runResult = pAgent->StepInClientThread(gSKI_INTERLEAVE_PHASE, 1) ; // force interrupt
+				}					
+
 				while ((phase != m_StopBeforePhase) && (gSKI_RUN_COMPLETED == runResult))
 				{
 					runResult = pAgent->StepInClientThread(gSKI_INTERLEAVE_PHASE, 1) ;
