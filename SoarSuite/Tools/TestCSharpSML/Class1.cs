@@ -358,11 +358,8 @@ namespace TestCSharpSML
 				return false ;
 			}
 
-			// Send notifications that kernel is about to be deleted
+			// Close down the kernel (or for a remote connection disconnect from the kernel w/o closing it down).
 			kernel.Shutdown() ;
-
-			// C# delete the kernel explicitly
-			kernel.Dispose() ;
 
 			return ok ;
 		}
