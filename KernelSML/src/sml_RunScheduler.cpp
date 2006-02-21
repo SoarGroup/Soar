@@ -576,8 +576,9 @@ void RunScheduler::TestForFiringGeneratedOutputEvent()
 {
 	// If the event has already been fired (for this step of the run) nothing to do.
 	// This could happen if the last agent generates output and then stops running.
-	if (m_AllGeneratedOutputEventFired)
-		return ;
+	// This is commented out to work around bug 651
+	//if (m_AllGeneratedOutputEventFired)
+	//	return ;
 
 	// See if this was the last agent to generate output
 	if (HaveAllGeneratedOutput())
