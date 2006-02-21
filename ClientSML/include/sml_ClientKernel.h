@@ -429,13 +429,17 @@ public:
 	/*************************************************************
 	* @brief   Run Soar for the specified number of decisions
 	*
+	* @param numberSteps	The number of decisions (or steps) to run the agent
+	* @param stepSize		The size of step we're running (e.g. phases, decisions, outputs)
+	* @param interleaveStepSize	 How much to run each agent before running the next agent.
+	*
 	* This command will run all agents.
 	*
 	* @returns The result of executing the run command.
 	*		   The output from during the run is sent to a different callback.
 	*************************************************************/
-	char const* RunAllAgents(unsigned long numberSteps, smlRunStepSize stepSize = sml_DECISION) ;
-	char const* RunAllAgentsForever() ;
+	char const* RunAllAgents(unsigned long numberSteps, smlRunStepSize stepSize = sml_DECISION, smlInterleaveStepSize interleaveStepSize = sml_INTERLEAVE_PHASE) ;
+	char const* RunAllAgentsForever(smlInterleaveStepSize interleaveStepSize = sml_INTERLEAVE_PHASE) ;
 
 	/*************************************************************
 	* @brief   Run Soar until either output is generated or
@@ -454,7 +458,7 @@ public:
 	* before then that agent will stop running.  (This value can be changed with the
 	* max-nil-output-cycles command).
 	*************************************************************/
-	char const* RunAllTilOutput() ;
+	char const* RunAllTilOutput(smlInterleaveStepSize interleaveStepSize = sml_INTERLEAVE_PHASE) ;
 
 	/*************************************************************
 	* @brief Interrupt the currently running Soar agent.

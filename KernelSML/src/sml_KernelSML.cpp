@@ -778,32 +778,47 @@ EXPORT Direct_WMObject_Handle sml_DirectGetRoot(char const* pAgentName, bool inp
 	return (Direct_WMObject_Handle)pRoot ;
 }
 
+static egSKIRunType ConvertSMLRunType(int size)
+{
+	switch ((smlRunStepSize)size)
+	{
+	case sml_ELABORATION: return gSKI_RUN_ELABORATION_CYCLE ;
+	case sml_PHASE:       return gSKI_RUN_PHASE ;
+	case sml_DECISION:    return gSKI_RUN_DECISION_CYCLE ;
+	case sml_UNTIL_OUTPUT:return gSKI_RUN_UNTIL_OUTPUT ;
+	default:			  assert(0) ; return gSKI_RUN_DECISION_CYCLE ;
+	}
+}
+
+static egSKIInterleaveType ConvertSMLInterleaveType(int size)
+{
+	switch ((smlInterleaveStepSize)size)
+	{
+	case sml_INTERLEAVE_ELABORATION: return gSKI_INTERLEAVE_ELABORATION_PHASE ;
+	case sml_INTERLEAVE_PHASE:       return gSKI_INTERLEAVE_PHASE ;
+	case sml_INTERLEAVE_DECISION:    return gSKI_INTERLEAVE_DECISION_CYCLE ;
+	case sml_INTERLEAVE_UNTIL_OUTPUT:return gSKI_INTERLEAVE_OUTPUT ;
+	default:			  assert(0) ; return gSKI_INTERLEAVE_PHASE ;
+	}
+}
+
 // A fully direct run would be a call straight to gSKI but supporting that is too dangerous
 // due to the extra events and control logic surrounding the SML RunScheduler.
 // So we compromise with a call directly to that scheduler, boosting performance over the standard "run" path
 // which goes through the command line processor.
-EXPORT void sml_DirectRun(char const* pAgentName, bool forever, int stepSize, int count)
+EXPORT void sml_DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSize, int count)
 {
-	// Decide on the type of run.
-	egSKIRunType runType ;
-	if (forever)
-		runType = gSKI_RUN_FOREVER ;
-	else
-	{
-		switch ((smlRunStepSize)stepSize)
-		{
-		case sml_PHASE:       runType = gSKI_RUN_PHASE ; break ;
-		case sml_ELABORATION: runType = gSKI_RUN_ELABORATION_CYCLE ; break ;
-		case sml_DECISION:    runType = gSKI_RUN_DECISION_CYCLE ; break ;
-		case sml_UNTIL_OUTPUT:runType = gSKI_RUN_UNTIL_OUTPUT ; break ;
-		default: assert(0) ; return ;
-		}
-	}
-
 	KernelSML* pKernelSML = KernelSML::GetKernelSML() ;
 
 	RunScheduler* pScheduler = pKernelSML->GetRunScheduler() ;
 	smlRunFlags runFlags = sml_NONE ;
+
+	// Decide on the type of run.
+	egSKIRunType runType = (forever) ? gSKI_RUN_FOREVER : ConvertSMLRunType(stepSize) ;
+
+	// Decide how large of a step to run each agent before switching to the next agent
+	egSKIInterleaveType interleaveStepSize = ConvertSMLInterleaveType(interleaveSize) ;
+	pScheduler->VerifyStepSizeForRunType( runType, interleaveStepSize) ;
 
 	if (pAgentName)
 	{
@@ -827,39 +842,11 @@ EXPORT void sml_DirectRun(char const* pAgentName, bool forever, int stepSize, in
 		pScheduler->ScheduleAllAgentsToRun(true) ;
 	}
 
-	// Decide how large of a step to run each agent before switching to the next agent
-	// By default, we run one phase per agent but this isn't always appropriate.
-	egSKIRunType interleaveStepSize = gSKI_RUN_PHASE ;
-
-	egSKIInterleaveType interleave  = pScheduler->DefaultInterleaveStepSize(runType) ;
-
-	switch (runType)
-	{
-		// If the entire system is running by elaboration cycles, then we need to run each agent by elaboration cycles (they're usually
-		// smaller than a phase).
-		case gSKI_RUN_ELABORATION_CYCLE: interleaveStepSize = gSKI_RUN_ELABORATION_CYCLE ; break ;
-
-		// If we're running the system to output we want to run each agent until it generates output.  This can be many decisions.
-		// The reason is actually to do with stopping the agent after n decisions (default 15) if no output occurs.
-		// DJP -- We need to rethink this design so using phase interleaving until we do.
-		// case gSKI_RUN_UNTIL_OUTPUT: interleaveStepSize = gSKI_RUN_UNTIL_OUTPUT ; break ;
-
-		default: interleaveStepSize = gSKI_RUN_PHASE ; break ;
-	}
-
-	pScheduler->VerifyStepSizeForRunType( runType, interleave) ;
-
 	// If we're running by decision cycle synchronize up the agents to the same phase before we start
 	bool synchronizeAtStart = (runType == gSKI_RUN_DECISION_CYCLE) ;
 
 	// Do the run
-
-#ifdef USE_OLD_SCHEDULER
 	egSKIRunResult runResult = pScheduler->RunScheduledAgents(runType, count, runFlags, interleaveStepSize, synchronizeAtStart, NULL) ;
-#endif
-#ifdef USE_NEW_SCHEDULER
-	egSKIRunResult runResult = pScheduler->RunScheduledAgents(runType, count, runFlags, interleave, synchronizeAtStart, NULL) ;
-#endif
 
 	unused(runResult) ;
 
