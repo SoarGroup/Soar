@@ -1113,12 +1113,12 @@ void Kernel::CommitAll()
 * @returns The result of executing the run command.
 *		   The output from during the run is sent to a different callback.
 *************************************************************/
-char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepSize)
+char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepSize, smlInterleaveStepSize interleaveStepSize)
 {
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(NULL, false, stepSize, (int)numberSteps) ;
+			((EmbeddedConnection*)GetConnection())->DirectRun(NULL, false, stepSize, interleaveStepSize, (int)numberSteps) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -1153,12 +1153,12 @@ char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepS
 	return pResult ;
 }
 
-char const* Kernel::RunAllAgentsForever()
+char const* Kernel::RunAllAgentsForever(smlInterleaveStepSize interleaveStepSize)
 {
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(NULL, true, sml_DECISION, 1) ;
+			((EmbeddedConnection*)GetConnection())->DirectRun(NULL, true, sml_DECISION, interleaveStepSize, 1) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -1194,12 +1194,12 @@ char const* Kernel::RunAllAgentsForever()
 * before then that agent will stop running.  (This value can be changed with the
 * max-nil-output-cycles command).
 *************************************************************/
-char const* Kernel::RunAllTilOutput()
+char const* Kernel::RunAllTilOutput(smlInterleaveStepSize interleaveStepSize)
 {
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(NULL, false, sml_UNTIL_OUTPUT, 1) ;
+			((EmbeddedConnection*)GetConnection())->DirectRun(NULL, false, sml_UNTIL_OUTPUT, interleaveStepSize, 1) ;
 			return "DirectRun completed" ;
 		}
 #endif
