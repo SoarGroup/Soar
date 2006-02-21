@@ -28,6 +28,9 @@
 %ignore sml::Kernel::RemoveRhsFunction(int);
 %ignore sml::Kernel::UnregisterForClientMessageEvent(int);
 
+// We replace the SWIG generated shutdown with our own version which will call the SWIG generated one.
+%rename(ShutdownInternal) sml::Kernel::Shutdown();
+
 %typemap(cscode) sml::Kernel %{
 	// This class exists to expose the "DeleteHandle" method to the SWIG C++ code, so that we can call back to it to
 	// delete a GCHandle.  This code is called to free any GCHandles which were allocated in registering for a callback.
@@ -297,6 +300,15 @@
 	{
 		return CSharp_Kernel_UnregisterForAgentEvent(swigCPtr, jarg2) ;
 	}
+	
+	// In C# we want to explicitly delete the C++ kernel object after calling shutdown so that the user
+	// doesn't have to call ".Dispose()" on their C# object (or wait for the garbage collector to do it which may never run--leading to
+	// reports of memory leaks on shutdown).  In C++ users expect to have to delete their kernel pointer but not in C#.
+	public void Shutdown() {
+		ShutdownInternal();
+		Dispose() ;
+	}
+
 %}
 
 // DJP: NOTE!  When changing this code make sure the library smlCSharp.dll is getting
