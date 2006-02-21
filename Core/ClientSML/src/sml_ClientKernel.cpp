@@ -298,7 +298,6 @@ Agent* Kernel::IsXMLTraceEvent(ElementXML* pIncomingMsg)
 		// (must have been flushed after the agent was destroyed).
 		// Returning null is probably as good as we do here so
 		// always return pAgent (even if it's null).
-		assert(pAgent) ;
 		return pAgent ;
 	}
 
