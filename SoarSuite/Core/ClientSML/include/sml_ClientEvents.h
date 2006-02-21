@@ -267,6 +267,14 @@ typedef enum
 
 typedef enum
 {
+	sml_INTERLEAVE_ELABORATION,
+	sml_INTERLEAVE_PHASE,
+	sml_INTERLEAVE_DECISION,
+	sml_INTERLEAVE_UNTIL_OUTPUT,
+} smlInterleaveStepSize ;
+
+typedef enum
+{
 	sml_NONE				=  0,		// No special flags set
 	sml_RUN_SELF			=  1 << 0,	// User included --self flag when running agent
 	sml_RUN_ALL				=  1 << 1,	// User ran all agents
