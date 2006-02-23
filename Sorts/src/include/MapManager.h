@@ -10,6 +10,7 @@
 #include "Vector.H"
 
 #include "MapTileGrouper.h"
+class SoarInterface;
 
 using namespace std;
 
@@ -17,7 +18,8 @@ class MapManager {
 public:
   MapManager( const Map<GameTile>& _gameMap, 
               int                  _tilePoints, 
-              MapTileGrouper&      _tileGrouper);
+              MapTileGrouper&      _tileGrouper,
+              SoarInterface*       _soarInterface);
 
   // these will be automatically associated with regions
   // the association is dependent on the policy we use
@@ -36,11 +38,13 @@ public:
   void getRegionsOccupied(SoarGameGroup* group, list<MapRegion*> &regions);
   
 private:
+  SoarInterface* soarInterface;
+
   const Map<GameTile>& gameMap;
   int tilePoints;
   MapTileGrouper& tileGrouper;
 
-  list<MapRegion*> regions;
+  set<MapRegion*> regions;
   map<int, MapRegion*> tileMembership;
 };
 

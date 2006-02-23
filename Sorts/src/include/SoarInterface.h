@@ -33,7 +33,8 @@ typedef struct {
 } InputLinkGroupRep;
 
 typedef struct {
-  sml::Identifier* idWME;
+  sml::Identifier* identifierWME;
+  sml::IntElement* idWME;
   sml::IntElement* xminWME;
   sml::IntElement* xmaxWME; 
   sml::IntElement* yminWME; 

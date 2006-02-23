@@ -89,6 +89,7 @@ void MapRegion::addTile(int tile) {
   int ind_x = map.ind2x(tile);
   int ind_y = map.ind2y(tile);
 
+  tiles.insert(tile);
   indexBBox.accomodate(ind_x, ind_y);
   recalcPointBBox();
 }

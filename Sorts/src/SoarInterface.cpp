@@ -169,14 +169,15 @@ void SoarInterface::addMapRegion(MapRegion *r) {
   assert(mapRegionTable.find(r) == mapRegionTable.end());
 
   InputLinkMapRegionRep rep;
-  rep.idWME = agent->CreateIdWME(mapIdWME, "region");
+  rep.identifierWME = agent->CreateIdWME(mapIdWME, "region");
   Rectangle box = r->getBoundingBox();
-  rep.xminWME = agent->CreateIntWME(rep.idWME, "xmin", box.xmin);
-  rep.xmaxWME = agent->CreateIntWME(rep.idWME, "xmax", box.xmax);
-  rep.yminWME = agent->CreateIntWME(rep.idWME, "ymin", box.ymin);
-  rep.ymaxWME = agent->CreateIntWME(rep.idWME, "ymax", box.ymax);
+  rep.idWME   = agent->CreateIntWME(rep.identifierWME, "id", r->getId());
+  rep.xminWME = agent->CreateIntWME(rep.identifierWME, "xmin", box.xmin);
+  rep.xmaxWME = agent->CreateIntWME(rep.identifierWME, "xmax", box.xmax);
+  rep.yminWME = agent->CreateIntWME(rep.identifierWME, "ymin", box.ymin);
+  rep.ymaxWME = agent->CreateIntWME(rep.identifierWME, "ymax", box.ymax);
 
-  rep.sizeWME = agent->CreateIntWME(rep.idWME, "size", r->size());
+  rep.sizeWME = agent->CreateIntWME(rep.identifierWME, "size", r->size());
 
   mapRegionTable[r] = rep;
   mapRegionIdLookup[r->getId()] = r;
@@ -186,16 +187,17 @@ void SoarInterface::removeMapRegion(MapRegion *r) {
   assert(mapRegionTable.find(r) != mapRegionTable.end());
   
   InputLinkMapRegionRep& rep = mapRegionTable[r];
-  agent->DestroyWME(rep.idWME);
+  agent->DestroyWME(rep.identifierWME);
   mapRegionIdLookup.erase(r->getId());
   mapRegionTable.erase(r);
 }
 
 void SoarInterface::refreshMapRegion(MapRegion *r) {
-  assert(mapRegionTable.find(r) == mapRegionTable.end());
+  assert(mapRegionTable.find(r) != mapRegionTable.end());
   
   InputLinkMapRegionRep& rep = mapRegionTable[r];
   Rectangle box = r->getBoundingBox();
+  agent->Update(rep.idWME, r->getId());
   agent->Update(rep.xminWME, box.xmin);
   agent->Update(rep.xmaxWME, box.xmax);
   agent->Update(rep.yminWME, box.ymin);

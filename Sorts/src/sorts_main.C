@@ -155,7 +155,8 @@ int main(int argc, char *argv[]) {
 
   // map manager, using the grid tile grouping method
   GridMapTileGrouper tileGrouper(game.get_map(), game.get_tile_points(), gridSizeX, gridSizeY);
-  MapManager mapManager(game.get_map(), game.get_tile_points(), tileGrouper);
+  MapManager mapManager
+    ( game.get_map(), game.get_tile_points(), tileGrouper, &soarInterface );
 
   // instantiate the group manager
   GroupManager gm(&soarInterface, &mapManager);
