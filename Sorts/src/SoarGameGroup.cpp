@@ -358,13 +358,13 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
       tempVec.push_back(*targetObj->gob->sod.y);
       
       // add in the ID of the next member of the first group
-      tempVec.push_back(ORTSIO->getID(targetObj));
+      tempVec.push_back(targetObj->getID());
       targetGroupIt++;
       targetObj = (*targetGroupIt)->getNextMember();
       tempVec.push_back(*targetObj->gob->sod.x);
       tempVec.push_back(*targetObj->gob->sod.y);
       // add in the ID of the next member of the second group
-      tempVec.push_back(ORTSIO->getID(targetObj));
+      tempVec.push_back(targetObj->getID());
 
       currentCommand = "mine";
       sticky = true;
@@ -379,11 +379,13 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
     }
     
     (*currentObject)->issueCommand(type, tempVec);
+    /* moving this inside the SGO..
     if ((*currentObject)->getUpdateRequired()) {
       // issueCommand fires an update(), so we need to check
       // if that update caused a required next-cycle update
       ORTSIO->updateNextCycle(*currentObject);
     }
+    */
     currentObject++;
   }
   

@@ -29,14 +29,18 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
  
   bool friendly = (myPid == *gameObj->sod.owner);
   bool world    = (gsm->get_game().get_player_num() == *gameObj->sod.owner);
-  SoarGameObject* newObj = new SoarGameObject(gameObj, friendly, world);
+  int id = gsm->get_game().get_cplayer_info().get_id(gameObj);
+  
+  SoarGameObject* newObj = new SoarGameObject(this, gameObj, friendly, world, id);
  
   // GroupManager takes care of setting the object->group pointers
   groupManager->addGroup(newObj);
   
-  // more initializations of the object?
 
   objectMap[gameObj] = newObj;
+  
+  assert(liveIDs.find(id) == liveIDs.end());
+  liveIDs.insert(id);
 }
 
 void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
@@ -44,10 +48,12 @@ void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   assert(objectMap.find(gameObj) != objectMap.end());
 
   SoarGameObject* sObject = objectMap[gameObj];
+  int id = sObject->getID();
   sObject->getGroup()->removeUnit(sObject);
   
   delete objectMap[gameObj];
   objectMap.erase(gameObj);
+  liveIDs.erase(id);
 }
   
 void OrtsInterface::removeVanishedObject(const GameObj* gameObj) {
@@ -85,7 +91,12 @@ bool OrtsInterface::handle_event(const Event& e) {
 }
 
 void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
-  set <SoarGameObject*> requiredNextCycle;
+  // an update can cause an object to insert itself back in the required
+  // queue, so copy it out and clear it so we don't update each object 
+  // more than once
+  
+  set <SoarGameObject*> requiredThisCycle = requiredUpdatesNextCycle;
+  requiredUpdatesNextCycle.clear();
   
   // add new objects
   FORALL(changed.new_objs, obj) {
@@ -119,11 +130,7 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
       sgo->update();
       // if it is marked update-required for this cycle,
       // make sure it isn't double-updated
-      requiredUpdates.erase(sgo);
-      if (sgo->getUpdateRequired()) {
-        // this object must be updated next cycle
-        requiredNextCycle.insert(sgo);
-      }
+      requiredThisCycle.erase(sgo);
     }
     else if (gob == playerGameObj) {
       updateSoarPlayerInfo();
@@ -138,13 +145,10 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
        * trouble
        */
       assert(objectMap.find(gob) != objectMap.end());
-      requiredUpdates.erase(objectMap[gob]);
+      requiredUpdatesNextCycle.erase(objectMap[gob]);
+      requiredThisCycle.erase(objectMap[gob]);
       removeVanishedObject(gob);
 
-      assert(requiredNextCycle.erase(objectMap[gob]) == 0);
-      // if this assertion fails, just add requiredNextCycle.erase(sgo);
-      // it just means my assumptions were wrong, and the same object
-      // can appear as changed and vanished
     }
   }
   
@@ -156,26 +160,19 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
        * trouble
        */
       assert(objectMap.find(gob) != objectMap.end());
-      requiredUpdates.erase(objectMap[gob]);
+      requiredUpdatesNextCycle.erase(objectMap[gob]);
+      requiredThisCycle.erase(objectMap[gob]);
       removeDeadObject(gob);
-      assert(requiredNextCycle.erase(objectMap[gob]) == 0);
-      // see assertion note above
     }
   }
 
-  // issue required updates
-  // removeVanished/Dead objects should have removed anything that
-  // just disappeared from this list
-  for (set<SoarGameObject*>::iterator it = requiredUpdates.begin();
-      it != requiredUpdates.end();
+  // issue required updates that didn't happen due to a change
+  for (set<SoarGameObject*>::iterator it = requiredThisCycle.begin();
+      it != requiredThisCycle.end();
       it++) {
     (*it)->update();
-    if ((*it)->getUpdateRequired()) {
-      requiredNextCycle.insert(*it);
-    }
   }
-
-  requiredUpdates = requiredNextCycle;
+  
 }
 
 void OrtsInterface::updateMap(const GameChanges& changed) {
@@ -196,21 +193,14 @@ OrtsInterface::~OrtsInterface() {
   }
 }
 
-sint4 OrtsInterface::getID(SoarGameObject* obj) {
-  // this is needed at least for the mineral-gather command
-  // translate the SGO into the parameter for set_action
-
-  // as seen in libs/ai/low/src/GatherAI.C:
-  // gsm.get_game().get_cplayer_info().get_id(gd.res)
-  // where gd.res is a GameObj*
-  // this ID is then put as the only parameter to a "gather" command
-  
-  return gsm->get_game().get_cplayer_info().get_id(obj->gob);
-}
 void OrtsInterface::setMyPid(int pid) {
   myPid = pid;
 }
 
 void OrtsInterface::updateNextCycle(SoarGameObject* sgo) {
-  requiredUpdates.insert(sgo);
+  requiredUpdatesNextCycle.insert(sgo);
+}
+
+bool OrtsInterface::isAlive(int id) {
+  return (liveIDs.find(id) != liveIDs.end());
 }

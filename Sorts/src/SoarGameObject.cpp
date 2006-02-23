@@ -18,8 +18,8 @@ void SoarGameObject::identifyBehaviors() {
   }
 }
 
-SoarGameObject::SoarGameObject(GameObj *g, bool _friendly, bool _world)
-: gob(g), friendly(_friendly), world(_world)
+SoarGameObject::SoarGameObject(OrtsInterface* _ORTSIO, GameObj *g, bool _friendly, bool _world, int _id)
+: ORTSIO(_ORTSIO), gob(g), friendly(_friendly), world(_world), id(_id)
 {
   status = OBJ_IDLE;
   identifyBehaviors();
@@ -69,7 +69,6 @@ void SoarGameObject::issueCommand(SoarActionType cmd, Vector<sint4> prms)
   i->second->init(prms);
   memory.push(i->second);
   update();
-  //currentCommand = cmd;
 }
 
 
@@ -79,7 +78,7 @@ void SoarGameObject::update()
   group->setStale();
 
   // FSM will set this back to true if needed
-  updateRequired = false;
+  bool updateRequired = false;
   if(!memory.empty())
   {
     // updateRequired is pass-by-reference
@@ -101,6 +100,9 @@ void SoarGameObject::update()
     else {
       status = OBJ_RUNNING;
     }
+  }
+  if (updateRequired) {
+    ORTSIO->updateNextCycle(this);
   }
 }
 

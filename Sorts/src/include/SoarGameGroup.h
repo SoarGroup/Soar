@@ -81,7 +81,7 @@ class SoarGameGroup {
     OrtsInterface* ORTSIO;
 
     // bounding box
-    Rectangle bbox;
+   Rectangle bbox;
 
     MapManager* mapManager;
     list<MapRegion*> regionsOccupied;
