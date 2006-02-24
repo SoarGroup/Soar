@@ -1,7 +1,7 @@
 #include"include/IdleFSM.h"
 #include<iostream>
 
-IdleFSM::IdleFSM()
+void IdleFSM::setName()
 {
  name = SA_IDLE;
 }
@@ -9,6 +9,11 @@ IdleFSM::IdleFSM()
 IdleFSM::~IdleFSM()
 {
  
+}
+IdleFSM::IdleFSM(OrtsInterface* oio, GameObj* go) {
+  ORTSIO = oio;
+  gob = go;
+  setName();
 }
 
 int IdleFSM::update(bool& updateRequiredNextCycle)

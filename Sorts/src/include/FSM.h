@@ -6,25 +6,31 @@
 #include<list>
 #include<vector>
 
+//#include "OrtsInterface.h"
 #include "general.h"
 #include "GameObj.H"
 #include "SoarAction.h"
 
+class OrtsInterface;
+
 class FSM{
  public:
-	FSM();
+	FSM(OrtsInterface* _ORTSIO, GameObj* _gob);
+  virtual void setName();
 	virtual ~FSM();
 
 	virtual int update(bool& updateRequiredNextCycle)=0;
 
-	virtual void setGameObject(GameObj *g){gob = g;}
+//	virtual void setGameObject(GameObj *g){gob = g;}
 	virtual GameObj *getGameObject(){return gob;}
 	virtual void init(std::vector<sint4>);
+  virtual SoarActionType getName();
 
- //private:
+protected:
 	SoarActionType name;
 	GameObj *gob;
 	Vector<sint4> params;
+  OrtsInterface* ORTSIO;
 };
 
 

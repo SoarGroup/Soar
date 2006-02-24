@@ -3,10 +3,16 @@
 
 using namespace std;
 
-MoveFSM::MoveFSM()
+void MoveFSM::setName()
 {
  name = SA_MOVE;
- gob = NULL;
+ //gob = NULL;
+}
+
+MoveFSM::MoveFSM(OrtsInterface* oio, GameObj* go) {
+  ORTSIO = oio;
+  gob = go;
+  setName();
 }
 
 MoveFSM::~MoveFSM()

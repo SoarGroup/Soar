@@ -47,8 +47,10 @@ void MapManager::getRegionsOccupied
 MapRegion* MapManager::getRegionUnder(int x, int y) {
   int tileIndex = gameMap.xy2ind(x / tilePoints, y / tilePoints);
   if (tileMembership.find(tileIndex) == tileMembership.end()) {
-    return NULL;
+    return (*tileMembership.begin()).second;
+    //return NULL;
   }
+  // should fix this so it doesn't search twice..
   return (*tileMembership.find(tileIndex)).second;
 }
 

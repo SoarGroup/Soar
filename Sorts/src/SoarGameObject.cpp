@@ -10,8 +10,8 @@
 void SoarGameObject::identifyBehaviors() {
   string name = gob->bp_name();
   if (friendly && name == "worker") {
-    FSM* moveBehavior = new MoveFSM();
-    FSM* mineBehavior = new MineFSM();
+    FSM* moveBehavior = new MoveFSM(ORTSIO, gob);
+    FSM* mineBehavior = new MineFSM(ORTSIO, gob);
     registerBehavior(moveBehavior);
     registerBehavior(mineBehavior);
     cout << "FRIENDLY WORKER" << endl;
@@ -40,9 +40,9 @@ SoarGameObject::~SoarGameObject()
 
 void SoarGameObject::registerBehavior(FSM *b)
 {
-  assert (behaviors.find(b->name) == behaviors.end());
-  b->setGameObject(gob);
-  behaviors[b->name] = b;
+  assert (behaviors.find(b->getName()) == behaviors.end());
+  //b->setGameObject(gob);
+  behaviors[b->getName()] = b;
 }
 
 

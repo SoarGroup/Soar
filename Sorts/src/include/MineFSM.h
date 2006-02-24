@@ -4,13 +4,18 @@
 #include "FSM.h"
 #include "general.h"
 
-#include "PlayerInfo.H"
-#include "Game.H"
-#include "GameStateModule.H"
+//#include "PlayerInfo.H"
+//#include "Game.H"
+//#include "GameStateModule.H"
 
 class MineFSM : public FSM {
 public:
-  MineFSM() {
+  MineFSM(OrtsInterface* oio, GameObj* go) {
+    ORTSIO = oio;
+    gob = go;
+    setName();
+  }
+  void setName() {
     name = SA_MINE;
   }
 
@@ -64,6 +69,10 @@ public:
         cout << "MOVING TO MINE: " << squaredDistance(*gob->sod.x, *gob->sod.y, mine_x, mine_y) << endl; 
         //if (squaredDistance(*gob->sod.x, *gob->sod.y, mine_x, mine_y) < 100) {
         if (*gob->sod.speed == 0) {
+          if (not ORTSIO->isAlive(mine_id)) {
+            cout << "minerals gone!" << endl;
+            return false;
+          }
           cout << "SENT MINE COMMAND" << endl;
           tempMineParams = mineParams;
           cout << tempMineParams.size() << endl;

@@ -5,8 +5,9 @@
 
 class IdleFSM: public FSM{
  public:
-	IdleFSM();
+	IdleFSM(OrtsInterface*, GameObj*);
 	~IdleFSM();
+  void setName();
 
 	int update(bool&);
 
