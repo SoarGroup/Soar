@@ -1,3 +1,25 @@
 The SoarGameObjects need setGroup() and getGroup() added.
 -sw 2/2/06
 	- *** Done ***
+
+Pahtfinding:
+- Pathfinding is always done with A*
+	- A* can be slow
+	- Doing A* on tiles can be extremely slow
+	- Region-based approach is much better
+		- Nodes of the graph are regions.
+		- Traversal through regions is done in a straight line.
+		- Once you are in target region, you can go directly to your spot	
+		- A problem is the inclusion of dynamic elements
+			- Requires good definition of regions.
+			- This could be done with A* on tiles (much more restricted set)
+	- Interface
+		- list<Tile *> pathfind(Tile *, Tile *);
+		- list<Tile *> pathfind(int x1, int y1, int x2, int y2);
+
+	- Iterations
+		- Implement tile A* (useful for small maps)
+		- Test
+		- Implement region A* (useful for large maps)
+		- Test
+		
