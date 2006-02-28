@@ -12,10 +12,11 @@
 #include "SoarAction.h"
 
 class OrtsInterface;
+class GroupManager;
 
 class FSM{
  public:
-	FSM(OrtsInterface* _ORTSIO, GameObj* _gob);
+	FSM(OrtsInterface*, GroupManager*, GameObj*);
 	virtual ~FSM();
 
 	virtual int update(bool& updateRequiredNextCycle)=0;
@@ -29,6 +30,7 @@ protected:
 	GameObj *gob;
 	Vector<sint4> params;
   OrtsInterface* ORTSIO;
+  GroupManager* groupMan;
 };
 
 

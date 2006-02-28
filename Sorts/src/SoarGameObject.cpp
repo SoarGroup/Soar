@@ -10,16 +10,18 @@
 void SoarGameObject::identifyBehaviors() {
   string name = gob->bp_name();
   if (friendly && name == "worker") {
-    FSM* moveBehavior = new MoveFSM(ORTSIO, gob);
-    FSM* mineBehavior = new MineFSM(ORTSIO, gob);
+    FSM* moveBehavior = new MoveFSM(ORTSIO, groupMan, gob);
+    FSM* mineBehavior = new MineFSM(ORTSIO, groupMan, gob);
     registerBehavior(moveBehavior);
     registerBehavior(mineBehavior);
     cout << "FRIENDLY WORKER" << endl;
   }
 }
 
-SoarGameObject::SoarGameObject(OrtsInterface* _ORTSIO, GameObj *g, bool _friendly, bool _world, int _id)
-: ORTSIO(_ORTSIO), gob(g), friendly(_friendly), world(_world), id(_id)
+SoarGameObject::SoarGameObject(OrtsInterface* _ORTSIO, GroupManager* _groupMan,
+                              GameObj *g, bool _friendly, bool _world, int _id)
+: ORTSIO(_ORTSIO), groupMan(_groupMan), gob(g), 
+  friendly(_friendly), world(_world), id(_id)
 {
   status = OBJ_IDLE;
   identifyBehaviors();

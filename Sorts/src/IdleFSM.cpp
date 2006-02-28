@@ -1,7 +1,8 @@
 #include"include/IdleFSM.h"
 #include<iostream>
 
-IdleFSM::IdleFSM(OrtsInterface* o, GameObj* g) : FSM(o,g) {
+IdleFSM::IdleFSM(OrtsInterface* oi, GroupManager* gm, GameObj* go) 
+          : FSM(oi,gm,go) {
   name = SA_IDLE;
 }
 

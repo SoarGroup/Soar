@@ -1,10 +1,11 @@
 #include "include/FSM.h"
 //#include "include/OrtsInterface.h"
 
-FSM::FSM(OrtsInterface* _ORTSIO, GameObj* _gob)
+FSM::FSM(OrtsInterface* _ORTSIO, GroupManager* _groupMan, GameObj* _gob)
 {
   ORTSIO = _ORTSIO;
   gob = _gob;
+  groupMan = _groupMan;
 }
 
 FSM::~FSM()

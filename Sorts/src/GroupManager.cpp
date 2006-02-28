@@ -385,3 +385,8 @@ void GroupManager::setORTSIO(OrtsInterface* oio) {
   ORTSIO = oio;
 }
 
+
+SoarGameGroup* GroupManager::getGroupNear(string type, int x, int y) {
+  cout << " ggn! " << endl;
+  return (SoarGameGroup*) NULL;
+}

@@ -24,7 +24,10 @@ class GroupManager {
 
     void addGroup(SoarGameObject* object);
     // used by ORTSInterface when it sees a new object- create a group for it
+    
     void setORTSIO(OrtsInterface* oio);
+
+    SoarGameGroup* getGroupNear(string type, int x, int y);
     
   private:
     void reGroup();

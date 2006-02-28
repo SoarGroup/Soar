@@ -8,7 +8,7 @@
 
 class MineFSM : public FSM {
 public:
-	MineFSM(OrtsInterface* o, GameObj* g);
+	MineFSM(OrtsInterface*, GroupManager*, GameObj*);
 
   int update(bool& updateRequiredNextCycle);
   void init(vector<signed long> p);

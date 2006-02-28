@@ -3,9 +3,9 @@
 
 #include "FSM.h"
 
-class MoveFSM: public FSM{
+class MoveFSM: public FSM {
  public:
-	MoveFSM(OrtsInterface* o, GameObj* g);
+	MoveFSM(OrtsInterface*, GroupManager*,  GameObj*);
 
 	int update(bool&);
 	void init(std::vector<signed long>);

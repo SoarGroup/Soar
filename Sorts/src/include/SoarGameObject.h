@@ -9,14 +9,15 @@
 
 using namespace std;
 
-//How do I transition from one FSM to another?
 
 class SoarGameGroup;
 class OrtsInterface;
+class GroupManager;
 
 class SoarGameObject{
  public:
-	SoarGameObject(OrtsInterface* _ORTSIO, GameObj* _gob, 
+	SoarGameObject(OrtsInterface* _ORTSIO, GroupManager* _groupMan,
+                 GameObj* _gob, 
                  bool _friendly, bool _world, int _id);
 	~SoarGameObject();
 
@@ -47,6 +48,7 @@ class SoarGameObject{
 
   SoarActionType currentCommand;
 	SoarGameGroup* group;
+  GroupManager* groupMan;
 	bool friendly;
   bool world;
   int id;

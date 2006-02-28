@@ -55,7 +55,12 @@ class SoarGameGroup {
     bool isFriendly();
 
     Rectangle getBoundingBox();
+    void getCenterLoc(int& x, int& y);
 
+    // return a point (locX, locY) on the bounding box of the group
+    // (or something similar) that is close to x, y
+    void getLocNear(int x, int y, int& locX, int &locY);
+    
     bool getSticky();
     void setSticky(bool in);
     
@@ -81,7 +86,9 @@ class SoarGameGroup {
     OrtsInterface* ORTSIO;
 
     // bounding box
-   Rectangle bbox;
+    Rectangle bbox;
+
+    int centerX, centerY;
 
     MapManager* mapManager;
     list<MapRegion*> regionsOccupied;

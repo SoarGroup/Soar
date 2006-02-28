@@ -1,14 +1,13 @@
 #include "include/MineFSM.h"
 #include "general.h"
 
-MineFSM::MineFSM(OrtsInterface* o, GameObj* g) : FSM(o,g) {
+MineFSM::MineFSM(OrtsInterface* oi, GroupManager* gm, GameObj* go) 
+         : FSM(oi,gm,go) {
   name = SA_MINE;
 }
 
 int MineFSM::update(bool& updateRequiredNextCycle) {
   cout << "WORKER HAS: " << gob->get_int("minerals") << " MINERALS " << endl;
-
-  // TO DO: check if the mineral patch is out. If it is, return false
 
   switch (state) {
     case IDLE:
@@ -74,6 +73,7 @@ int MineFSM::update(bool& updateRequiredNextCycle) {
       }
       else {
         state = MOVING_TO_BASE;
+        groupMan->getGroupNear("foo", 1, 2);
       }
       break;
 

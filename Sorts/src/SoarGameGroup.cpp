@@ -37,6 +37,9 @@ SoarGameGroup::SoarGameGroup( SoarGameObject* unit,
   else {
     canMine = false;
   }
+
+  centerX = 0;
+  centerY = 0;
 }
 
 void SoarGameGroup::addUnit(SoarGameObject* unit) {
@@ -134,6 +137,9 @@ void SoarGameGroup::updateStats(bool saveProps) {
     speed /= size;
     x /= size;
     y /= size;
+
+    centerX = x;
+    centerY = y;
 
     // recalculate bounding box
     bbox.collapse(x, y);
@@ -314,84 +320,96 @@ void SoarGameGroup::mergeTo(SoarGameGroup* target) {
 
 bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
                                  list<SoarGameGroup*> targets) { 
-  #ifndef DEBUG_GROUPS
   bool result = true;
 
-  cout << "##################" << endl;
+ /* cout << "##################" << endl;
   for(list<int>::iterator i = params.begin(); i != params.end(); i++) {
     cout << *i << " ";
   }
   cout << endl;
-
-  set<SoarGameObject*>::iterator currentObject = members.begin();
+*/
+  set<SoarGameObject*>::iterator currentObject;
   
-  SoarGameObject* targetObj;
   list<int>::iterator intIt;  
   list<SoarGameGroup*>::iterator targetGroupIt;  
   Vector<sint4> tempVec;
   
-  while (currentObject != members.end()) {
+    
+  if (type == SA_MOVE) {
+    // the third param is speed, always use 3 (the max)
+    assert(params.size() == 2);
     intIt = params.begin();  
-    targetGroupIt = targets.begin();  
-    tempVec.clear();
-    
-    if (type == SA_MOVE) {
-      // the third param is speed, always use 3 (the max)
-      assert(params.size() == 2);
-      tempVec.push_back(*intIt);
-      intIt++;
-      tempVec.push_back(*intIt);
-      tempVec.push_back(3);
+    tempVec.push_back(*intIt);
+    intIt++;
+    tempVec.push_back(*intIt);
+    tempVec.push_back(3);
 
-      currentCommand = "move";
-      sticky = true;
-      // this group is stuck together from now on,
-      // until Soar issues an unstick action
-    }
-    else if (type == SA_MINE) {
-      // get the id of the mineral patch and command center
-      // order: x, y, ID, x, y, ID
-      assert(targets.size() == 2);
-      
-      targetObj = (*targetGroupIt)->getNextMember();
-      tempVec.push_back(*targetObj->gob->sod.x);
-      tempVec.push_back(*targetObj->gob->sod.y);
-      
-      // add in the ID of the next member of the first group
-      tempVec.push_back(targetObj->getID());
-      targetGroupIt++;
-      targetObj = (*targetGroupIt)->getNextMember();
-      tempVec.push_back(*targetObj->gob->sod.x);
-      tempVec.push_back(*targetObj->gob->sod.y);
-      // add in the ID of the next member of the second group
-      tempVec.push_back(targetObj->getID());
+    currentCommand = "move";
+    sticky = true;
+    // this group is stuck together from now on,
+    // until Soar issues an unstick action
+    for (currentObject = members.begin();
+         currentObject != members.end();
+         currentObject++) {
+      (*currentObject)->issueCommand(type, tempVec);
+    } 
+  }
+  else if (type == SA_MINE) {
+    // targets are the mineral patch and command center
+    // in that order
 
-      currentCommand = "mine";
-      sticky = true;
-      // this group is stuck together from now on,
-      // until Soar issues an unstick action
-    }
-    else if (type == SA_UNSTICK) {
-      sticky = false;
-    }
-    else {
-      assert(false);  
-    }
+    // FSM parameters:
+    // x,y of mineral-patch edge relative to command-center
+    // x,y of command-center edge relative to mineral-patch
+    assert(targets.size() == 2);
+    targetGroupIt = targets.begin();
+    SoarGameGroup* mpGroup;
+    SoarGameGroup* ccGroup;
+    mpGroup = *targetGroupIt;
+    targetGroupIt++;
+    ccGroup = *targetGroupIt;
+   
+    // get the centers of the mineral patch and command center
+    int mpX, mpY;
+    mpGroup->getCenterLoc(mpX, mpY);
     
-    (*currentObject)->issueCommand(type, tempVec);
-    /* moving this inside the SGO..
-    if ((*currentObject)->getUpdateRequired()) {
-      // issueCommand fires an update(), so we need to check
-      // if that update caused a required next-cycle update
-      ORTSIO->updateNextCycle(*currentObject);
-    }
-    */
-    currentObject++;
+    int ccX, ccY;
+    ccGroup->getCenterLoc(ccX, ccY);
+    
+    int mpEdgeX, mpEdgeY;
+    int ccEdgeX, ccEdgeY;
+    
+    // get the location on the edge of the mineral patch the worker
+    // should walk to
+    mpGroup->getLocNear(ccX, ccY, mpEdgeX, mpEdgeY);
+    // likewise for the edge of the command center
+    ccGroup->getLocNear(mpX, mpY, ccEdgeX, ccEdgeY);
+
+    // fill in FSM parameters
+    tempVec.push_back(mpEdgeX);
+    tempVec.push_back(mpEdgeY);
+    tempVec.push_back(ccEdgeX);
+    tempVec.push_back(ccEdgeY);
+
+    currentCommand = "mine";
+    sticky = true;
+    // this group is stuck together from now on,
+    // until Soar issues an unstick action
+    
+    for (currentObject = members.begin();
+         currentObject != members.end();
+         currentObject++) {
+      (*currentObject)->issueCommand(type, tempVec);
+    } 
+  }
+  else if (type == SA_UNSTICK) {
+    sticky = false;
+  }
+  else {
+    assert(false);  
   }
   
-  
   return result;
-  #endif
 }
 
 bool SoarGameGroup::isEmpty() {
@@ -405,15 +423,6 @@ bool SoarGameGroup::getStale() {
 groupPropertyStruct SoarGameGroup::getSoarData() {
   return soarData;
 }
-
-/*void SoarGameGroup::setType(int inType) {
-  type = inType;
-  return;
-}
-
-int SoarGameGroup::getType() {
-  return type;
-}*/
 
 bool SoarGameGroup::getStaleInSoar() {
   return staleInSoar;
@@ -489,4 +498,13 @@ bool SoarGameGroup::getSticky() {
 
 void SoarGameGroup::setSticky(bool in) {
   sticky = in;
+}
+void SoarGameGroup::getCenterLoc(int& x, int& y) {
+  x = centerX;
+  y = centerY;
+}
+
+void SoarGameGroup::getLocNear(int x, int y, int& locX, int &locY) {
+  locX = 0;
+  locY = 0;
 }

@@ -3,7 +3,8 @@
 
 using namespace std;
 
-MoveFSM::MoveFSM(OrtsInterface* o, GameObj* g) : FSM(o,g) {
+MoveFSM::MoveFSM(OrtsInterface* oi, GroupManager* gm, GameObj* go) 
+            : FSM(oi,gm,go) {
   name = SA_MOVE;
 }
 
