@@ -10,11 +10,7 @@
 
 class MineFSM : public FSM {
 public:
-  MineFSM(OrtsInterface* oio, GameObj* go) {
-    ORTSIO = oio;
-    gob = go;
-    setName();
-  }
+	MineFSM(OrtsInterface* o, GameObj* g) : FSM(o,g) {}
   void setName() {
     name = SA_MINE;
   }

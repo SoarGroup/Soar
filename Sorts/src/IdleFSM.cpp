@@ -10,11 +10,14 @@ IdleFSM::~IdleFSM()
 {
  
 }
-IdleFSM::IdleFSM(OrtsInterface* oio, GameObj* go) {
-  ORTSIO = oio;
-  gob = go;
-  setName();
-}
+/*IdleFSM::IdleFSM(OrtsInterface* oio, GameObj* go) {
+ // ORTSIO = oio;
+ // gob = go;
+ // setName();
+}*/
+
+/*IdleFSM::IdleFSM() {
+}*/
 
 int IdleFSM::update(bool& updateRequiredNextCycle)
 {

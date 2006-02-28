@@ -41,6 +41,7 @@ SoarGameObject::~SoarGameObject()
 void SoarGameObject::registerBehavior(FSM *b)
 {
   assert (behaviors.find(b->getName()) == behaviors.end());
+  b->setName();
   //b->setGameObject(gob);
   behaviors[b->getName()] = b;
 }

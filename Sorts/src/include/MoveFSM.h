@@ -5,7 +5,8 @@
 
 class MoveFSM: public FSM{
  public:
-  MoveFSM(OrtsInterface*, GameObj*);
+  //MoveFSM(OrtsInterface*, GameObj*);
+	MoveFSM(OrtsInterface* o, GameObj* g) : FSM(o,g) {}
 	void setName();
 	~MoveFSM();
 

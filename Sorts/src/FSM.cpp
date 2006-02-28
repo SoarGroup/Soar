@@ -5,7 +5,7 @@ FSM::FSM(OrtsInterface* _ORTSIO, GameObj* _gob)
 {
   ORTSIO = _ORTSIO;
   gob = _gob;
-  setName();
+//  setName();
 }
 
 FSM::~FSM()
@@ -20,4 +20,9 @@ void FSM::init(std::vector<signed long> p) {
 
 SoarActionType FSM::getName() {
   return name;
+}
+
+void FSM::setName() {
+  // this should always be overridden.
+  assert(false);
 }

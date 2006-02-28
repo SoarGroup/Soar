@@ -9,11 +9,12 @@ void MoveFSM::setName()
  //gob = NULL;
 }
 
-MoveFSM::MoveFSM(OrtsInterface* oio, GameObj* go) {
+/*MoveFSM::MoveFSM(OrtsInterface* oio, GameObj* go) {
   ORTSIO = oio;
   gob = go;
   setName();
-}
+}*/
+
 
 MoveFSM::~MoveFSM()
 { }

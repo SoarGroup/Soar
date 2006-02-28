@@ -16,6 +16,7 @@ class OrtsInterface;
 class FSM{
  public:
 	FSM(OrtsInterface* _ORTSIO, GameObj* _gob);
+	//FSM();
   virtual void setName();
 	virtual ~FSM();
 
