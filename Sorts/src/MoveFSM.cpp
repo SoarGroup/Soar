@@ -3,21 +3,9 @@
 
 using namespace std;
 
-void MoveFSM::setName()
-{
- name = SA_MOVE;
- //gob = NULL;
+MoveFSM::MoveFSM(OrtsInterface* o, GameObj* g) : FSM(o,g) {
+  name = SA_MOVE;
 }
-
-/*MoveFSM::MoveFSM(OrtsInterface* oio, GameObj* go) {
-  ORTSIO = oio;
-  gob = go;
-  setName();
-}*/
-
-
-MoveFSM::~MoveFSM()
-{ }
 
 int MoveFSM::update(bool& requireUpdateNextCycle)
 {

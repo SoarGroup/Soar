@@ -16,13 +16,10 @@ class OrtsInterface;
 class FSM{
  public:
 	FSM(OrtsInterface* _ORTSIO, GameObj* _gob);
-	//FSM();
-  virtual void setName();
 	virtual ~FSM();
 
 	virtual int update(bool& updateRequiredNextCycle)=0;
 
-//	virtual void setGameObject(GameObj *g){gob = g;}
 	virtual GameObj *getGameObject(){return gob;}
 	virtual void init(std::vector<sint4>);
   virtual SoarActionType getName();
