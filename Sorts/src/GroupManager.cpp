@@ -386,7 +386,43 @@ void GroupManager::setORTSIO(OrtsInterface* oio) {
 }
 
 
-SoarGameGroup* GroupManager::getGroupNear(string type, int x, int y) {
-  cout << " ggn! " << endl;
-  return (SoarGameGroup*) NULL;
+SoarGameGroup* GroupManager::getGroupNear(string type, int owner, int x, int y) {
+  // this should eventually use the mapmanager,
+  // for now just search through all known groups
+
+  // return NULL if no groups of that type are known
+  
+  pair<string, int> targetCategory;
+  targetCategory.first = type;
+  targetCategory.second = owner;
+  
+  int currentX, currentY;
+  double currentDistance;
+  double closestDistance = 99999999;
+  SoarGameGroup* closestGroup = (SoarGameGroup*) NULL;
+  
+  list<SoarGameGroup*>::iterator groupIter = groupsInFocus.begin();
+  // jump iterator between lists
+
+  if (groupIter == groupsInFocus.end()) {
+    // this probably won't happen (nothing in focus)
+    groupIter = groupsNotInFocus.begin();
+  }
+  while (groupIter != groupsNotInFocus.end()) {
+    if ((*groupIter)->getCategory() == targetCategory) {
+      (*groupIter)->getCenterLoc(currentX, currentY);
+      currentDistance = squaredDistance(x, y, currentX, currentY);
+      if (currentDistance < closestDistance) {
+        closestDistance = currentDistance;
+        closestGroup = *groupIter;
+      }
+    }
+    
+    groupIter++;
+    if (groupIter == groupsInFocus.end()) {
+      groupIter = groupsNotInFocus.begin();
+    }
+  }
+  
+  return closestGroup;
 }

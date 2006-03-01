@@ -13,18 +13,22 @@ public:
   int update(bool& updateRequiredNextCycle);
   void init(vector<signed long> p);
 private:
-  enum MineState { IDLE, MINING, MOVING_TO_MINE, MOVING_TO_BASE,
-                   MOVING_TO_MINE_WARMUP, MOVING_TO_BASE_WARMUP,
+  enum MineState { IDLE, MINING, MOVING_TO_MINE_ZONE, MOVING_TO_BASE_ZONE,
+                   MOVING_TO_MINE_ZONE_WARMUP, MOVING_TO_BASE_ZONE_WARMUP,
+                   MOVING_TO_MINERAL, MOVING_TO_BASE,
                    SEND_MOVE_TO_MINE_COMMAND};
   MineState state;
 
-  int mine_id, mine_x, mine_y;
-  int base_id, base_x, base_y;
+  int mine_x, mine_y;
+  int base_x, base_y;
+
+  int target_x, target_y, target_id;
 
   int runTime;
+  int worldId, myId;
 
-  Vector<sint4> mineParams, moveToMineParams, depositParams, moveToBaseParams;
-  Vector<sint4> tempMineParams;
+  Vector<sint4> moveToMineZoneParams, moveToBaseZoneParams;
+  Vector<sint4> tempParams;
 };
 
 #endif

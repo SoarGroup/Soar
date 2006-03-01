@@ -355,7 +355,7 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
     } 
   }
   else if (type == SA_MINE) {
-    // targets are the mineral patch and command center
+    // targets are the mineral patch x, y, and command center
     // in that order
 
     // FSM parameters:
@@ -505,6 +505,47 @@ void SoarGameGroup::getCenterLoc(int& x, int& y) {
 }
 
 void SoarGameGroup::getLocNear(int x, int y, int& locX, int &locY) {
-  locX = 0;
-  locY = 0;
+  // return a location on the bounding box of this group,
+  // close to the given point (x,y)
+  
+  // if point is inside bounding box, just return it
+  
+  if (x < bbox.xmin) {
+    locX = bbox.xmin;
+    if (y < bbox.ymin) {
+      locY = bbox.ymin;
+    }
+    else if (y > bbox.ymax) {
+      locY = bbox.ymax;
+    }
+    else {
+      locY = y;
+    }
+  }
+  else if (x > bbox.xmax) {
+    locX = bbox.xmax;
+    if (y < bbox.ymin) {
+      locY = bbox.ymin;
+    }
+    else if (y > bbox.ymax) {
+      locY = bbox.ymax;
+    }
+    else {
+      locY = y;
+    }
+  }
+  else {
+    locX = x;
+    if (y < bbox.ymin) {
+      locY = bbox.ymin;
+    }
+    else if (y > bbox.ymax) {
+      locY = bbox.ymax;
+    }
+    else {
+      locY = y;
+    }
+  }
+
+  return;
 }

@@ -1,5 +1,11 @@
 #include "include/MineFSM.h"
+#include "include/SoarGameGroup.h"
 #include "general.h"
+
+#define WARMUP_TIME 5
+
+// this is squared
+#define DISTANCE_EPSILON 25
 
 MineFSM::MineFSM(OrtsInterface* oi, GroupManager* gm, GameObj* go) 
          : FSM(oi,gm,go) {
@@ -7,122 +13,208 @@ MineFSM::MineFSM(OrtsInterface* oi, GroupManager* gm, GameObj* go)
 }
 
 int MineFSM::update(bool& updateRequiredNextCycle) {
-  cout << "WORKER HAS: " << gob->get_int("minerals") << " MINERALS " << endl;
-
+  SoarGameGroup* sgg;
+  
   switch (state) {
     case IDLE:
-      // figure out what to do first
-      cout << "IDLE" << endl;
       runTime = 0;
+      cout << "MINEFSM: start!\n";
       if (gob->get_int("minerals") > 1) {
-        state = MOVING_TO_BASE_WARMUP;
-        gob->set_action("move", moveToBaseParams);
+        state = MOVING_TO_BASE_ZONE_WARMUP;
+        gob->set_action("move", moveToBaseZoneParams);
       }
       else {
-        state = MOVING_TO_MINE_WARMUP;
-        gob->set_action("move", moveToMineParams);
+        state = MOVING_TO_MINE_ZONE_WARMUP;
+        gob->set_action("move", moveToMineZoneParams);
       }
       break;
+    case MOVING_TO_MINE_ZONE_WARMUP:
+      if (runTime < WARMUP_TIME) {
+        runTime++;
+      }
+      else {
+        runTime = 0;
+        state = MOVING_TO_MINE_ZONE;
+      }
+      break;
+    case MOVING_TO_MINE_ZONE:
+      // once we get in range, look for a mineral
+      cout << "MINEFSM: mmz\n";
+      if ((squaredDistance(*gob->sod.x, *gob->sod.y, mine_x, mine_y) 
+          < DISTANCE_EPSILON) or *gob->sod.speed == 0) { 
+        sgg = groupMan->getGroupNear("mineral", worldId, 
+                                     *gob->sod.x, *gob->sod.y);
+        if (sgg != NULL) {
+          // there is a mineral patch nearby, head right to a mineral
+          SoarGameObject* mineral = sgg->getNextMember();
+          target_x = *mineral->gob->sod.x;
+          target_y = *mineral->gob->sod.y;
+          target_id = mineral->getID();
 
+          tempParams.clear();
+          tempParams.push_back(target_x);
+          tempParams.push_back(target_y);
+          gob->set_action("move", tempParams);
+          state = MOVING_TO_MINERAL; // do we need a warmup? 
+                                     // we should still be in motion
+          cout << "MINEFSM: moving to mineral\n";
+        }  
+        else if (*gob->sod.speed == 0) {
+          // move ended, no mineral found, fail.
+          return FSM_FAILURE;
+        }
+      } 
+      // else keep moving
+      break;
+          
+    case MOVING_TO_MINERAL:
+      if (not ORTSIO->isAlive(target_id)) {
+        // minerals gone!
+        cout << "MINEFSM: minerals disappeared! looking for more" << endl;
+        state = MOVING_TO_MINE_ZONE_WARMUP;
+        gob->set_action("move", moveToMineZoneParams);
+      }
+      else if (*gob->sod.speed == 0) {
+        // need to find out if we can mine while in motion
+        tempParams.clear();
+        tempParams.push_back(target_id);
+        if (gob->component("pickaxe")->set_action("mine", tempParams)) {
+          cout << "MINEFSM: mining commencing!\n";
+          state = MINING;
+        }
+        else {
+          cout << "Mine command failed. Trying again next time." << endl;
+          // if we see this a lot, maybe we need a warmup in here
+          // (or just disable the message and let it keep trying)
+        }
+      }
+      /*else { 
+        tempParams.clear();
+        tempParams.push_back(target_id);
+        if (gob->component("pickaxe")->set_action("mine", tempParams)) {
+          cout << "MINEFSM: mining commencing!\n";
+          state = MINING;
+          if (*gob->sod.speed == 0) {
+            cout << "MINEFSM: MINING BEFORE STOPPED!!" << endl;
+          }
+        }
+      }
+      break;*/
     case MINING:
-      cout << "MINING" << endl;
-
       if (gob->component("pickaxe")->get_int("active") == 0 &&
           gob->get_int("is_mobile") == 1) 
       {
         // finished mining
-        cout << "FINISHED MINING" << endl;
-        state = MOVING_TO_BASE_WARMUP;
-        runTime = 0;
+        cout << "MINEFSM: FINISHED MINING" << endl;
+        state = MOVING_TO_BASE_ZONE_WARMUP;
 
-        // have to help it along here, or else it's not going to change
-        // next cycle
-        gob->set_action("move", moveToBaseParams);
+        gob->set_action("move", moveToBaseZoneParams);
       }
       
       break;
-
-    case MOVING_TO_MINE_WARMUP:
-      if (runTime < 30) {
+    case MOVING_TO_BASE_ZONE_WARMUP: 
+      if (runTime < WARMUP_TIME) {
         runTime++;
       }
       else {
-        state = MOVING_TO_MINE;
-      }
-      break;
-    case MOVING_TO_MINE:
-      cout << "MOVING TO MINE: " << squaredDistance(*gob->sod.x, *gob->sod.y, mine_x, mine_y) << endl; 
-      //if (squaredDistance(*gob->sod.x, *gob->sod.y, mine_x, mine_y) < 100) {
-      if (*gob->sod.speed == 0) {
-        if (not ORTSIO->isAlive(mine_id)) {
-          cout << "minerals gone!" << endl;
-          return false;
-        }
-        cout << "SENT MINE COMMAND" << endl;
-        tempMineParams = mineParams;
-        cout << tempMineParams.size() << endl;
-        gob->component("pickaxe")->set_action("mine", tempMineParams);
-        cout << tempMineParams.at(0) << endl;
-        state = MINING;
-      }
-      break;
-    
-    case MOVING_TO_BASE_WARMUP:
-      if (runTime < 30) {
-        runTime++;
-      }
-      else {
-        state = MOVING_TO_BASE;
-        groupMan->getGroupNear("foo", 1, 2);
-      }
-      break;
-
-    case MOVING_TO_BASE:
-      cout << "MOVING TO BASE" << squaredDistance(*gob->sod.x, *gob->sod.y, base_x, base_y) << endl; 
-      //if (squaredDistance(*gob->sod.x, *gob->sod.y, base_x, base_y) < 2300) {
-      if (*gob->sod.speed == 0) {
-        gob->set_action("return_resources", depositParams);
-        state = SEND_MOVE_TO_MINE_COMMAND;
         runTime = 0;
+        state = MOVING_TO_BASE_ZONE;
       }
       break;
-      case SEND_MOVE_TO_MINE_COMMAND:
-        // need an extra state here, since the action on the 
-        // return is used up by return_resources
-        gob->set_action("move", moveToMineParams);
-        state = MOVING_TO_MINE_WARMUP;
+    case MOVING_TO_BASE_ZONE:
+      // once we get in range, look for a command center
+      if ((squaredDistance(*gob->sod.x, *gob->sod.y, base_x, base_y) 
+          < DISTANCE_EPSILON) or *gob->sod.speed == 0) { 
+        sgg = groupMan->getGroupNear("commandCenter", myId, 
+                                     *gob->sod.x, *gob->sod.y);
+        if (sgg != NULL) {
+          // there is a mineral patch nearby, head right to a mineral
+          SoarGameObject* base = sgg->getNextMember();
+          target_x = *base->gob->sod.x;
+          target_y = *base->gob->sod.y;
+          target_id = base->getID();
+
+          tempParams.clear();
+          tempParams.push_back(target_x);
+          tempParams.push_back(target_y);
+          gob->set_action("move", tempParams);
+          state = MOVING_TO_BASE; // do we need a warmup? 
+                                     // we should still be in motion
+        }  
+        else if (*gob->sod.speed == 0) {
+          // move ended, no mineral found, fail.
+          return FSM_FAILURE;
+        }
+      } 
+      // else keep moving
+      break;
+          
+    case MOVING_TO_BASE:
+      if (not ORTSIO->isAlive(target_id)) {
+        // base gone!
+        cout << "MINEFSM: base disappeared! looking for more" << endl;
+        state = MOVING_TO_BASE_ZONE_WARMUP;
+        gob->set_action("move", moveToBaseZoneParams);
+      }/*
+      else if (*gob->sod.speed == 0) {
+        // need to find out if we can mine while in motion
+        tempParams.clear();
+        tempParams.push_back(target_id);
+        if (gob->set_action("return_resources", tempParams)) {
+          state = SEND_MOVE_TO_MINE_COMMAND;
+          runTime = 0;
+        }
+        else {
+          cout << "Return command failed. Trying again next cycle." << endl;
+          runTime++;
+          if (runTime > WARMUP_TIME) {
+            return FSM_FAILURE;  
+          }
+        }
+      }*/
+      else { 
+        tempParams.clear();
+        tempParams.push_back(target_id);
+        if (gob->set_action("return_resources", tempParams)) {
+          state = SEND_MOVE_TO_MINE_COMMAND;
+          if (*gob->sod.speed == 0) {
+            cout << "MINEFSM: DROPOFF BEFORE STOPPED!!" << endl;
+          }
+        }
+      }
+      break;
+    case SEND_MOVE_TO_MINE_COMMAND:
+      // need an extra state here, since the action on the 
+      // return is used up by return_resources
+      gob->set_action("move", moveToMineZoneParams);
+      state = MOVING_TO_MINE_ZONE_WARMUP;
       break;
   } // switch (state)
-  
-  updateRequiredNextCycle = true;
 
+  updateRequiredNextCycle = true;
   return FSM_RUNNING;
 }
-
-/* the order of the parameters will be:
-  *
-  * mine id, mine x, mine y, base id, base x, base y
-  */
-
+          
 void MineFSM::init(vector<signed long> p) {
   FSM::init(p);
 
   state = IDLE;
 
+  assert (p.size() == 4);
+  
   mine_x  = p[0];
   mine_y  = p[1];
-  mine_id = p[2];
-  base_x  = p[3];
-  base_y  = p[4];
-  base_id = p[5];
+  base_x  = p[2];
+  base_y  = p[3];
 
   // set up the parameter vectors for later use
-  moveToMineParams.push_back(mine_x);
-  moveToMineParams.push_back(mine_y);
-  mineParams.push_back(mine_id);
-  moveToBaseParams.push_back(base_x);
-  moveToBaseParams.push_back(base_y);
-  depositParams.push_back(base_id);
+  moveToMineZoneParams.push_back(mine_x);
+  moveToMineZoneParams.push_back(mine_y);
+  moveToBaseZoneParams.push_back(base_x);
+  moveToBaseZoneParams.push_back(base_y);
+
+  worldId = ORTSIO->getWorldId();
+  myId = ORTSIO->getMyId();
 }
 /*
 private:

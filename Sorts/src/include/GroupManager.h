@@ -27,7 +27,7 @@ class GroupManager {
     
     void setORTSIO(OrtsInterface* oio);
 
-    SoarGameGroup* getGroupNear(string type, int x, int y);
+    SoarGameGroup* getGroupNear(string type, int owner, int x, int y);
     
   private:
     void reGroup();

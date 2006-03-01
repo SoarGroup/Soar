@@ -44,6 +44,9 @@ public:
   // return true if the object with that ID is visible and alive
   bool isAlive(int id);
 
+  int getWorldId();
+  int getMyId();
+
 private:
   // pointers to all the orts stuff
   GameStateModule* gsm;

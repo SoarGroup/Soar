@@ -205,3 +205,12 @@ void OrtsInterface::updateNextCycle(SoarGameObject* sgo) {
 bool OrtsInterface::isAlive(int id) {
   return (liveIDs.find(id) != liveIDs.end());
 }
+
+int OrtsInterface::getWorldId() {
+  // could also be called getNumPlayers..
+  return gsm->get_game().get_player_num();
+}
+
+int OrtsInterface::getMyId() {
+  return myPid;
+}
