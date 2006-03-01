@@ -1,0 +1,3 @@
+pushd radar-epmem-bot
+source radar-epmem-bot_source.soar
+popd
