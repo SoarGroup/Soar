@@ -1,0 +1,20 @@
+VERSION 4
+\an-epmem-eater\an-epmem-eater.dm
+0	ROOT an-epmem-eater an-epmem-eater 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	2	FOPERATOR _selection _selection.soar 4
+4	0	FOLDER elaborations elaborations 5
+5	4	FOPERATOR _all _all.soar 6
+6	4	FOPERATOR default-evaluation default-evaluation.soar 7
+7	4	FOPERATOR desired desired.soar 8
+8	4	FOPERATOR top-state top-state.soar 9
+9	0	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 22 10
+10	9	FOPERATOR elaborations elaborations.soar 11
+11	9	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 27 12
+12	11	FOPERATOR elaborations elaborations.soar 13
+13	11	OPERATOR evaluate-move evaluate-move.soar 14
+14	11	OPERATOR recall-move recall-move.soar 15
+15	11	OPERATOR recall-move-result recall-move-result.soar 16
+16	0	OPERATOR move move.soar 17
+END

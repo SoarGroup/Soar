@@ -1,0 +1,22 @@
+VERSION 4
+\two-state-epmem-eater\two-state-epmem-eater.dm
+0	ROOT two-state-epmem-eater two-state-epmem-eater 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR curr-evaluation curr-evaluation.soar 7
+6	3	FOPERATOR disable-epmem disable-epmem.soar 8
+7	3	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 40 9
+8	7	FOPERATOR elaborations elaborations.soar 10
+9	3	FOPERATOR monitor monitor.soar 11
+10	3	FOPERATOR top-state top-state.soar 12
+11	3	FOPERATOR unevaluated-moves unevaluated-moves.soar 13
+12	0	FOPERATOR _NOTES _NOTES.soar 14
+13	0	HLOPERATOR play-eaters play-eaters.soar play-eaters 48 19
+14	13	FOPERATOR elaborations elaborations.soar 20
+15	13	OPERATOR evaluate-move evaluate-move.soar 21
+16	13	OPERATOR move move.soar 22
+17	13	OPERATOR recall-move recall-move.soar 23
+18	13	OPERATOR recall-move-result recall-move-result.soar 24
+END

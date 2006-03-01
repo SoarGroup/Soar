@@ -1,0 +1,18 @@
+VERSION 4
+\leonard\leonard.dm
+0	ROOT leonard leonard 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR compare-move compare-move.soar 6
+6	3	FOPERATOR curr-evaluation curr-evaluation.soar 7
+7	3	FOPERATOR monitor monitor.soar 8
+8	3	FOPERATOR top-state top-state.soar 9
+9	3	FOPERATOR unevaluated-moves unevaluated-moves.soar 10
+10	0	FOPERATOR _NOTES _NOTES.soar 11
+11	0	OPERATOR evaluate-move evaluate-move.soar 12
+12	0	OPERATOR move move.soar 13
+13	0	OPERATOR recall-move recall-move.soar 14
+14	0	OPERATOR recall-move-result recall-move-result.soar 15
+END

@@ -1,0 +1,3 @@
+pushd leonard
+source leonard_source.soar
+popd
