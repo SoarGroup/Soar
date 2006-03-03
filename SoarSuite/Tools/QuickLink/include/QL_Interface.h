@@ -216,12 +216,6 @@ public:
 	void save_input_link(const std::string& filename);
 
 	/*************************************************************
-	* @brief Commit the changes you have made to the input-link by adds, updates and deletes
-	*************************************************************/
-	void commit()
-	{ m_pAgent->Commit(); }
-
-	/*************************************************************
 	* @brief This will spawn the JavaDebugger
 	*************************************************************/
 	void spawn_debugger();
@@ -249,6 +243,9 @@ public:
 	// TODO: encapsulate this somehow
 	sml::Agent* get_agent_ptr()
 	{ return m_pKernel->GetAgent(m_pAgent->GetAgentName()); }
+
+	void remove_identifier(const std::string& name)
+	{ m_id_container.erase(name); }
 
 private:
 
@@ -286,6 +283,12 @@ private:
 	void update_views();
 	void update_views(std::string info);
 
+	/*************************************************************
+	* @brief Commit the changes you have made to the input-link by adds, updates and deletes
+	*************************************************************/
+	void commit()
+	{ m_pAgent->Commit(); }
+
 };
 
 template <typename T>
@@ -302,6 +305,7 @@ void QL_Interface::delete_value_wme(const std::string& identifier, const std::st
 	Smart_Pointer<WME_Id> parent = get_identifier(identifier);
 	parent->remove_wme_child(attribute, value, m_pAgent);
 
+	commit();
 	update_views();
 }
 
@@ -311,6 +315,7 @@ void QL_Interface::update_value_wme(const std::string& identifier, const std::st
 	Smart_Pointer<WME_Id> parent = get_identifier(identifier);
 	parent->update_wme_child(attribute, old_value, new_value,  m_pAgent);
 
+	commit();
 	update_views();
 }
 
