@@ -5,6 +5,7 @@
 #include "WME_Int.h"
 #include "WME_Float.h"
 #include "WME_String.h"
+#include "WME_Shared.h"
 #include "Smart_Pointer.h"
 #include "sml_Client.h"
 #include "Utilities.h"
@@ -55,6 +56,7 @@ public:
 	void add_child(Smart_Pointer<WME_Float> in_child);
 	void add_child(Smart_Pointer<WME_String> in_child);
 	void add_child(Smart_Pointer<WME_Id> in_child);
+	void add_child(Smart_Pointer<WME_Shared> in_child);
 
 	// return true if given child exists
 	bool has_child(std::string attribute, std::string value);
@@ -99,6 +101,10 @@ private:
 
 	typedef std::map<std::string, Smart_Pointer<WME_Id> > id_children_t;
 	id_children_t m_id_children;
+
+	typedef std::map<std::string, Smart_Pointer<WME_Shared> > shared_children_t;
+	shared_children_t m_shared_children;
+
 
 	// member functions
 	void build_children();

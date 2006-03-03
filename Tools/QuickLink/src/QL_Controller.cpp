@@ -15,6 +15,22 @@
 #include <fstream>
 #include <iterator>
 
+/* this is for VS's memory checking functionality */
+#define MEM_LEAK_DEBUG
+#ifdef MEM_LEAK_DEBUG
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
+#ifdef _MSC_VER
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#endif // _MSC_VER
+#endif MEM_LEAK_DEBUG
+
+/* end mem check */
+
 using std::map; using std::string; using std::list;
 using std::endl; using std::cout; using std::copy;
 using std::istringstream; using std::vector; using std::ofstream;
@@ -71,59 +87,86 @@ bool acquiring_new_connection = false;
 
 int main()
 {
-	command_map_t command_map;
-	load_command_map(command_map);
-
-	
-	Input_Controller& input = Input_Controller::instance();
-	QL_Interface& ql_interface = QL_Interface::instance();
-
-	ql_interface.create_new_kernel();
-	ql_interface.attach_view(View_Console::create());
-	ql_interface.setup_input_link("IL");
-	
-
-	while(true)  // do not leave command loop unless a break is encountered
+#ifdef MEM_LEAK_DEBUG
+	// When we have a memory leak, set this variable to
+	// the allocation number (e.g. 122) and then we'll break
+	// when that allocation occurs.
+	//_crtBreakAlloc = 112;
+	// we put everything in its own scope so memory leak detection can be done
 	{
-		try
+#endif MEM_LEAK_DEBUG
+		command_map_t command_map;
+		load_command_map(command_map);
+
+		
+		Input_Controller& input = Input_Controller::instance();
+		QL_Interface& ql_interface = QL_Interface::instance();
+
+		ql_interface.create_new_kernel();
+		ql_interface.attach_view(View_Console::create());
+		ql_interface.setup_input_link("IL");
+		
+
+		while(true)  // do not leave command loop unless a break is encountered
 		{
-			istringstream command_line;
-			if(process_paused)
-				command_line.str(input.force_command_line_input());
-			else // get the command and check to see if it is a valid command
-				command_line.str(input.get_command());
-			Input_Controller::instance().should_print_prompt = false;
-			// save the string into the process memory
-			process_memory.push_back(command_line.str());
-			string command;
-			command_line >> command; // get the command from the string
-			command = string_upper(command);
-
-			if(command == "QUIT" || command == "EXIT")
-				break;
-			if(acquiring_new_connection && command != "REMOTE" && command != "LOCAL")
-				throw Error("Please use \"remote\" or \"local\" to create a new connection before proceeding");
-
-			command_fp_t ptr = command_map[command]; // get the function that corresponds to the command string
-
-			if(ptr)  // if there is a valid function, call it
-				ptr(command_line);
-			else
+			try
 			{
-				ql_interface.soar_command_line(command_line.str());
-				command_map.erase(command);
+				istringstream command_line;
+				if(process_paused)
+					command_line.str(input.force_command_line_input());
+				else // get the command and check to see if it is a valid command
+					command_line.str(input.get_command());
+				Input_Controller::instance().should_print_prompt = false;
+				// save the string into the process memory
+				process_memory.push_back(command_line.str());
+				string command;
+				command_line >> command; // get the command from the string
+				command = string_upper(command);
+
+				if(command == "QUIT" || command == "EXIT")
+					break;
+				if(acquiring_new_connection && command != "REMOTE" && command != "LOCAL")
+					throw Error("Please use \"remote\" or \"local\" to create a new connection before proceeding");
+
+				command_fp_t ptr = command_map[command]; // get the function that corresponds to the command string
+
+				if(ptr)  // if there is a valid function, call it
+					ptr(command_line);
+				else
+				{
+					ql_interface.soar_command_line(command_line.str());
+					command_map.erase(command);
+				}
+				Input_Controller::instance().should_print_prompt = true;
+
 			}
-			Input_Controller::instance().should_print_prompt = true;
+			catch (Error& error)
+			{
+				cout << error.msg << endl;
+			}
+		}
 
-		}
-		catch (Error& error)
-		{
-			cout << error.msg << endl;
-		}
+		process_memory.clear();
+		input.IC_Shutdown();
+		ql_interface.QL_Shutdown();
 	}
+#ifdef MEM_LEAK_DEBUG
+#ifdef _MSC_VER
+	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
+	printf("\nIf no leaks appear here, but some appear in the output\nwindow in the debugger, they have been leaked from a DLL.\nWhich is reporting when it's unloaded.\n\n") ;
 
-	input.IC_Shutdown();
-	ql_interface.QL_Shutdown();
+	// Set the memory checking output to go to Visual Studio's debug window (so we have a copy to keep)
+	// and to stdout so we can see it immediately.
+	_CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG );
+	_CrtSetReportFile( _CRT_WARN, _CRTDBG_FILE_STDOUT );
+
+	// Now check for memory leaks.
+	// This will only detect leaks in objects that we allocate within this executable and static libs.
+	// If we allocate something in a DLL then this call won't see it because it works by overriding the
+	// local implementation of malloc.
+	_CrtDumpMemoryLeaks();
+#endif // _MSC_VER
+#endif MEM_LEAK_DEBUG
 }
 
 void load_command_map(command_map_t& command_map)
@@ -194,6 +237,7 @@ void delete_object(istringstream& command)
 	// there are 3 things left in the stream command: identifier, attribute and value
 	string id, att, value;
 
+	// this returns true if it is an id
 	if(setup_id_att_value(command, id, att, value, c_delete_usage_error)) 
 		QL_Interface::instance().delete_identifier(id, att, value);
 	else
@@ -386,11 +430,10 @@ void create_local_kernel(istringstream& command)
 void create_identifier(const string& id, const string& att, string value)
 {
 	QL_Interface& inst = QL_Interface::instance();
-	if(inst.id_exists(value))
-		throw Error("The identifier name " + value + " already exists.");
-
-	// otherwise, create it
-	inst.add_identifier(id, att, value);
+	if(inst.id_exists(value)) // this should be a shared id
+		inst.add_shared_id(id, att, value);
+	else // otherwise, create it
+		inst.add_identifier(id, att, value);
 }
 
 // check to see if the wme exists, if it doesn't, add it

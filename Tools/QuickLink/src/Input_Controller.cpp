@@ -21,6 +21,7 @@ Input_Controller::Input_Controller() : shutting_down(false), should_print_prompt
 
 void Input_Controller::generate_new_input(INPUT_TYPE_T e_input, string filename)
 {
+	// based on the input type, create a new input source and put it on the stack
 	switch(e_input) 
 	{
 		case INPUT_FILE_T :

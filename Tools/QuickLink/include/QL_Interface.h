@@ -67,8 +67,7 @@ public:
 	/*************************************************************
 	* @brief Call this function before exiting the program
 	*************************************************************/
-	void QL_Shutdown()
-	{ prepare_for_new_connection(); }
+	void QL_Shutdown();
 
 	/*************************************************************
 	* @brief This returns the name of the agent
@@ -90,6 +89,17 @@ public:
 	*					changes (adds, deletes, etc.) need to be made to it.
 	*************************************************************/
 	void add_identifier(const std::string& parent_id, const std::string& attribute, const std::string& id_name);
+
+	/*************************************************************
+	* @brief This function creates a loop or a 'shared id' between to identifiers
+	*
+	* @param loop_start  This is the case-insensitive QL-unique identifier of an id that already exists
+						that will be the "start" of the loop
+	* @param attribute  This is the attribute value of the shared id
+	* @param loop_end	This is the case-insensitive QL-unique identifier of an id that already exists
+						and is different from parent_id where the loop should be created "to"
+	*************************************************************/
+	void add_shared_id(const std::string& loop_start, const std::string& attribute, const std::string& loop_end);
 
 	/*************************************************************
 	* @brief This function deletes an identifier to the input-link in the form 
