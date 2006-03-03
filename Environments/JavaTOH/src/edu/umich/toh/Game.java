@@ -316,7 +316,6 @@ public class Game implements Runnable, Kernel.UpdateEventInterface {
     public void detachSoar() {
     	kernel.DestroyAgent(agent);
     	kernel.Shutdown();
-        kernel.delete();
     	System.out.println("All done") ;
     }
     
