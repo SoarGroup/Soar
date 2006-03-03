@@ -74,7 +74,8 @@ public class JavaElementXML
 		public static final int kSymbol       = 1 ;
 		public static final int kIdentifier   = 2 ;
 		public static final int kQuotedString = 3 ;
-		public static final int kEOF		  = 4 ;
+		public static final int kComment 	  = 4 ;
+		public static final int kEOF		  = 5 ;
 
 		/************************************************************************
 		* 
@@ -109,6 +110,7 @@ public class JavaElementXML
 		protected String		 m_CurrentLine = null ;
 		protected int			 m_Pos = 0 ;
 		protected Token			 m_CurrentToken = null ;
+		protected String		 m_LastComment  = null ;
 	
 		/************************************************************************
 		* 
@@ -136,9 +138,14 @@ public class JavaElementXML
 		
 			m_Pos = 0 ;
 			
+			m_LastComment = null ;
+			
 			// Read the first token
 			GetNextToken() ;
 		}
+		
+		protected void setLastComment(String comment) 	{ m_LastComment = comment ; }
+		public String getLastComment()					{ return m_LastComment ; } 
 		
 		/************************************************************************
 		* 
@@ -215,6 +222,11 @@ public class JavaElementXML
 				    ch == kHeaderChar  || ch == kEqualsChar) ;
 		}
 		
+		protected boolean IsCommentStart(char ch)
+		{
+			return (ch == kCommentStartChar) ;
+		}
+				
 		/************************************************************************
 		* 
 		* Returns true if this is the quote character (")
@@ -268,6 +280,32 @@ public class JavaElementXML
 				
 				// Consume the symbol.
 				GetNextChar() ;
+				
+				// If this is the beginning of a comment <! then handle it differently from a regular symbol
+				if (IsCommentStart(getCurrentChar()))
+				{
+					StringBuffer buffer = new StringBuffer() ;
+
+					// Consume the ! and the two leading dashes (BADBAD, I guess we should check that they are leading -- and report a better error if they're not)
+					GetNextChar() ;
+					GetNextChar() ;
+					GetNextChar() ;
+					
+					// Keep consuming until we find --> to end the quote.
+					boolean done = false ;
+					while (!IsEOF() && !done)
+					{
+						char last = getCurrentChar() ;
+						buffer.append(last) ;
+						GetNextChar() ;
+
+						// Check if we've reached -->
+						done = (last == kCloseTagChar && buffer.length() > 3 && buffer.substring(buffer.length() - kCommentEndString.length()).equals(kCommentEndString)) ;
+					}
+
+					// Store the comment (the part lying between <!-- and -->
+					SetCurrentToken(buffer.substring(0, buffer.length()-3), kComment) ;
+ 				}
 				
 				return ;
 			}
@@ -446,6 +484,9 @@ public class JavaElementXML
 	protected static final String	kHeaderString 	= "?" ;
 	protected static final char 	kEqualsChar 	= '=' ;
 	protected static final String	kEqualsString	= "=" ;
+	protected static final char		kCommentStartChar = '!' ;
+	protected static final String	kCommentStartString	= "<!--" ;
+	protected static final String	kCommentEndString	= "-->" ;
 	protected static final String   kLineSeparator = "\n" ;	// For Soar it's better for us to agree on using \n for newlines
 	protected static final String   kSystemLineSeparator = System.getProperty("line.separator") ;
 
@@ -457,6 +498,9 @@ public class JavaElementXML
 	
 	/** The tag for this item */
 	protected String	m_TagName = null ;
+	
+	/** The comment for this item which will be added to the XML in front of this tag */
+	protected String	m_Comment = null ;
 	
 	/** The content, lies between the tag start and end [tag]"content"[/tag].  Always quoted in file. */
 	protected String	m_Contents = null ;
@@ -907,6 +951,27 @@ public class JavaElementXML
 	
 	/************************************************************************
 	* 
+	* A comment can be placed in front of this tag in the XML output.
+	* It takes the form:
+	* <!--Comment String-->
+	* <tag>...</tag>
+	* 
+	* This doesn't allow completely general commenting but should be sufficient for
+	* most uses and allows us to hide comments completely from a parser.
+	* 
+	*************************************************************************/
+	public void setComment(String comment)
+	{
+		m_Comment = comment ;
+	}
+	
+	public String getComment()
+	{
+		return m_Comment ;
+	}
+	
+	/************************************************************************
+	* 
 	* Add an attribute and value pair.
 	* The value is always stored as a string.
 	* 
@@ -1142,6 +1207,13 @@ public class JavaElementXML
 		// Create the object we'll be returning
 		JavaElementXML element = new JavaElementXML(tagName) ;
 		
+		// Attach the comment (if any)
+		if (lex.getLastComment() != null)
+		{
+			element.setComment(convertFromEscapes(lex.getLastComment())) ;
+			lex.setLastComment(null) ;
+		}
+		
 		// Read all of the attributes (if there are any)
 		while (lex.Have(LexXML.kIdentifier))
 		{
@@ -1174,6 +1246,15 @@ public class JavaElementXML
 				contents = convertFromEscapes(contents) ;
 				
 				element.addContents(contents) ;
+				lex.GetNextToken() ;
+				continue ;
+			}
+			
+			if (lex.Have(LexXML.kComment))
+			{
+				// We'll only allow comments before other XML elements.  That allows us to "hide" the comment within the existing ElementXML
+				// structure and allow the ultimate parser of the XML ignore comments completely.
+				lex.setLastComment(lex.getCurrentTokenValue()) ;
 				lex.GetNextToken() ;
 				continue ;
 			}
@@ -1239,6 +1320,15 @@ public class JavaElementXML
 		// This is really the root of a tree of nodes.
 		while (element == null)
 		{
+			if (lex.Have(LexXML.kComment))
+			{
+				// We'll only allow comments before other XML elements.  That allows us to "hide" the comment within the existing ElementXML
+				// structure and allow the ultimate parser of the XML ignore comments completely.
+				lex.setLastComment(lex.getCurrentTokenValue()) ;
+				lex.GetNextToken() ;
+				continue ;
+			}
+
 			if (lex.Have(kOpenTagString))
 				element = ParseElement(lex) ;
 			else
@@ -1273,6 +1363,16 @@ public class JavaElementXML
 		for (int i = 0 ; i < indent ; i++)
 		{
 			buffer.append("  ") ;
+		}
+
+		// Add a comment line if a comment has been specified.
+		if (m_Comment != null)
+		{
+			output.write(buffer.toString()) ;
+			output.write(kCommentStartString) ;
+			output.write(convertToEscapes(m_Comment)) ;
+			output.write(kCommentEndString) ;			
+			output.newLine() ;
 		}
 		
 		// Add the tag itself "<tag"
