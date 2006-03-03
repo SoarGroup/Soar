@@ -346,6 +346,14 @@ AgentSML* KernelSML::GetAgentSML(gSKI::IAgent* pAgent)
 }
 
 /*************************************************************
+* @brief	Returns the number of agents.
+*************************************************************/	
+int	KernelSML::GetNumberAgents()
+{
+	return (int)m_AgentMap.size() ;
+}
+
+/*************************************************************
 * @brief	Remove any event listeners for this connection.
 *************************************************************/	
 void KernelSML::RemoveAllListeners(Connection* pConnection)

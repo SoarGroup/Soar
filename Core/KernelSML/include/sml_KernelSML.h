@@ -355,6 +355,11 @@ public:
 	AgentSML*	GetAgentSML(gSKI::IAgent* pAgent) ;
 
 	/*************************************************************
+	* @brief	Returns the number of agents.
+	*************************************************************/	
+	int			GetNumberAgents() ;
+
+	/*************************************************************
 	* @brief	Delete the agent sml object for this agent.
 	*			This object stores the data SML uses when working
 	*			with the underlying gSKI agent.
