@@ -276,7 +276,6 @@ public class MacEnvironment implements Runnable, Kernel.SystemEventInterface, Ke
      */
     public void detachSoar() {
 	kernel.Shutdown();
-        kernel.delete();
     }
     
     public void systemEventHandler(int eventID, Object data, Kernel kernel)
