@@ -106,7 +106,16 @@ void SoarGameGroup::updateStats(bool saveProps) {
       if (canMine) {
         minerals += (*currentObject)->gob->get_int("minerals");
       }
-      health += (*currentObject)->gob->get_int("hp");
+      
+      // not everything has health
+      // if no hp, just set it to 0
+      // get_int asserts if not valid, this is what it calls internally
+      if ((*currentObject)->gob->get_int_ptr("hp") != 0) {
+        health += (*currentObject)->gob->get_int("hp");
+      }
+      else {
+        health += 0;
+      }
       speed += *(*currentObject)->gob->sod.speed;
       #ifdef DEBUG_GROUPS
       x += (*currentObject)->x;
@@ -509,26 +518,29 @@ void SoarGameGroup::getLocNear(int x, int y, int& locX, int &locY) {
   // close to the given point (x,y)
   
   // if point is inside bounding box, just return it
-  
+
+  // better way to do this?
+  int adjust = rand() % 15;
+
   if (x < bbox.xmin) {
-    locX = bbox.xmin;
+    locX = bbox.xmin - adjust;
     if (y < bbox.ymin) {
-      locY = bbox.ymin;
+      locY = bbox.ymin - adjust;
     }
     else if (y > bbox.ymax) {
-      locY = bbox.ymax;
+      locY = bbox.ymax + adjust;
     }
     else {
       locY = y;
     }
   }
   else if (x > bbox.xmax) {
-    locX = bbox.xmax;
+    locX = bbox.xmax + adjust;
     if (y < bbox.ymin) {
-      locY = bbox.ymin;
+      locY = bbox.ymin - adjust;
     }
     else if (y > bbox.ymax) {
-      locY = bbox.ymax;
+      locY = bbox.ymax + adjust;
     }
     else {
       locY = y;
@@ -537,10 +549,10 @@ void SoarGameGroup::getLocNear(int x, int y, int& locX, int &locY) {
   else {
     locX = x;
     if (y < bbox.ymin) {
-      locY = bbox.ymin;
+      locY = bbox.ymin - adjust;
     }
     else if (y > bbox.ymax) {
-      locY = bbox.ymax;
+      locY = bbox.ymax + adjust;
     }
     else {
       locY = y;

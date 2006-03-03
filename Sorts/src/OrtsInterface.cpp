@@ -214,3 +214,9 @@ int OrtsInterface::getWorldId() {
 int OrtsInterface::getMyId() {
   return myPid;
 }
+
+double OrtsInterface::getOrtsDistance(GameObj* go1, GameObj* go2) {
+  // return the distance between two objects as determined by ORTS
+  // use sparingly (does this go over the network?)
+  return (double) gsm->get_game().distance(*go1, *go2);
+}

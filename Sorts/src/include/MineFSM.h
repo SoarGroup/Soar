@@ -29,6 +29,9 @@ private:
 
   Vector<sint4> moveToMineZoneParams, moveToBaseZoneParams;
   Vector<sint4> tempParams;
+  
+  SoarGameObject* mineralObj;
+  SoarGameObject* baseObj;
 };
 
 #endif

@@ -41,9 +41,9 @@ bool GroupManager::assignActions() {
   SoarGameGroup* sourceGroup;
   
   while (actionIter != newActions.end()){
-    //cout << "popping" << endl;
+    targetGroups.clear();
     list<SoarGameGroup*>& groups = (**actionIter).groups;
-    list<SoarGameGroup*>::iterator groupIter = groups.begin();
+    groupIter = groups.begin();
     assert(groupIter != groups.end());
     
     sourceGroup = *groupIter;
@@ -392,6 +392,7 @@ SoarGameGroup* GroupManager::getGroupNear(string type, int owner, int x, int y) 
 
   // return NULL if no groups of that type are known
   
+  //cout << "search for " << type << " owned by " << owner << endl;
   pair<string, int> targetCategory;
   targetCategory.first = type;
   targetCategory.second = owner;
@@ -417,6 +418,10 @@ SoarGameGroup* GroupManager::getGroupNear(string type, int owner, int x, int y) 
         closestGroup = *groupIter;
       }
     }
+    /*else {
+      pair <string, int> pr = (*groupIter)->getCategory();      
+      cout << " not " << pr.first << " owned by " << pr.second << endl;
+    }*/
     
     groupIter++;
     if (groupIter == groupsInFocus.end()) {
