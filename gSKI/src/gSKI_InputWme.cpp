@@ -172,6 +172,11 @@ namespace gSKI
 
   void InputWme::Update(bool forceAdds, bool forceRemoves)
   {
+#ifdef _DEBUG
+	// Comment this in to get a description of which wme this is
+	// std::string update = "updating " + std::string(m_owningobject->GetId()->GetString()) + std::string(" ^") + std::string(m_attribute->GetString()) + std::string(" ") + std::string(m_value->GetString()) ;
+#endif
+
      // Adding the WME directly to working memory if were in the input or output phase
      egSKIPhaseType curphase = m_manager->GetAgent()->GetCurrentPhase();
 	 
