@@ -285,6 +285,8 @@ void AgentSML::RecordTimeTag(char const* pTimeTag, gSKI::IWme* pWME)
 	// so I'm including this assert.  However, it's possible this assumption is wrong (in particular after an init-soar?)
 	// so I'm only including it in debug builds and if the assert fails, check the context and make sure that this re-use
 	// in indeed a mistake.
+	// If you fail to call commit() after creating a new input wme and then issue an init-soar this assert may fire.
+	// If so, the fix is to call commit().
 	assert (m_TimeTagMap.find(pTimeTag) == m_TimeTagMap.end()) ;
 #endif
 
