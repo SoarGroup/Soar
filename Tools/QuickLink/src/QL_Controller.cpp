@@ -35,7 +35,6 @@ void clear_input_link(istringstream& command);
 void save_input_link(istringstream& command);
 void load_input_file(istringstream& command);
 void run_til_output(istringstream& command);
-void commit(istringstream& command);
 void save_process(istringstream& command);
 void clear_process_mem(istringstream& command);
 void pause_process(istringstream& command);
@@ -46,7 +45,6 @@ void display_input_link(istringstream& command);
 void spawn_debugger(istringstream& command);
 void connect_remotely(istringstream& command);
 void create_local_kernel(istringstream& command);
-void catch_init_call(istringstream& command);
 
 // helper functions
 void create_identifier(const string& id, const string& att, string value);
@@ -143,7 +141,6 @@ void load_command_map(command_map_t& command_map)
 	command_map["L"] = load_input_file;
 	command_map["GO"] = run_til_output;
 	command_map["G"] = run_til_output;
-	command_map["COMMIT"] = commit;
 	command_map["SAVEP"] = save_process;
 	command_map["SP"] = save_process;
 	command_map["CLEARP"] = clear_process_mem;
@@ -159,7 +156,6 @@ void load_command_map(command_map_t& command_map)
 	command_map["DEBUG"] = spawn_debugger;
 	command_map["REMOTE"] = connect_remotely;
 	command_map["LOCAL"] = create_local_kernel;
-	command_map["INIT"] = catch_init_call;
 }
 
 // command map functions
@@ -228,7 +224,22 @@ void update_object(istringstream& command)
 	if(!(command >> new_value))
 		throw Error(c_change_usage_error);
 
-	change_value_wme(id, att, old_value, new_value);
+	value_type type = decipher_type(old_value);
+	switch(type) {
+			case e_STRING :
+				change_value_wme(id, att, old_value, new_value);
+				break;
+			case e_INT :
+				change_value_wme(id, att, atoi(old_value.c_str()), atoi(new_value.c_str()));
+				break;
+			case e_FLOAT :
+				change_value_wme(id, att, atof(old_value.c_str()), atof(new_value.c_str()));
+				break;
+			default :
+				assert(false && "Bad value_type in delete_object");
+	}
+
+	
 }
 
 // clear the input-link
@@ -261,12 +272,6 @@ void load_input_file(istringstream& command)
 void run_til_output(istringstream& command)
 {
 	QL_Interface::instance().run_til_output();
-}
-
-// commit the changes we have made to the input-link
-void commit(istringstream& command)
-{
-	QL_Interface::instance().commit();
 }
 
 // save the current process memory to a file
@@ -369,14 +374,6 @@ void create_local_kernel(istringstream& command)
 	QL_Interface::instance().setup_input_link("IL");
 	acquiring_new_connection = false;
 }
-
-// we must do this to avoid an assertion
-void catch_init_call(istringstream& command)
-{
-	QL_Interface::instance().commit();
-	QL_Interface::instance().soar_command_line("init");
-}
-
 
 
 

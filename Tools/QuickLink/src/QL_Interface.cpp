@@ -10,6 +10,7 @@
 #if defined _WIN32 || _WIN64
 #include <process.h>
 #include <windows.h>
+#include <direct.h>
 #endif
 
 using std::string; using std::make_pair; using std::cerr; using std::endl;
@@ -20,7 +21,6 @@ using sml::smlSystemEventId; using sml::smlEVENT_SYSTEM_START;
 using sml::smlAgentEventId; using sml::smlEVENT_AFTER_AGENT_REINITIALIZED;
 using sml::smlEVENT_BEFORE_AGENT_REINITIALIZED;
 
-void MyStartSystemEventHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel);
 void MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent);
 
 QL_Interface& QL_Interface::instance()
@@ -64,7 +64,6 @@ void QL_Interface::create_new_kernel(int port)
 		throw Error(m_pKernel->GetLastErrorDescription());
 
 
-	m_pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START, MyStartSystemEventHandler, this );
 	m_pKernel->RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, MyAgentEventHandler, this);
 	m_pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENT_REINITIALIZED, MyAgentEventHandler, this);
 
@@ -105,8 +104,6 @@ bool QL_Interface::specify_agent(const string& name)
 	if (!m_pAgent)
 		return false;
 
-
-	m_pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START, MyStartSystemEventHandler, this );
 	m_pKernel->RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, MyAgentEventHandler, this);
 	m_pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENT_REINITIALIZED, MyAgentEventHandler, this);
 
@@ -141,6 +138,8 @@ void QL_Interface::add_identifier(const string& parent_id, const string& attribu
 	m_id_container.insert(make_pair(id_name, new_item));
 	parent->add_child(new_item);
 
+	commit();
+
 	update_views();
 }
 
@@ -148,6 +147,7 @@ void QL_Interface::add_identifier(const string& parent_id, const string& attribu
 void QL_Interface::add_created_identifier(Smart_Pointer<WME_Id> identifier)
 {
 	m_id_container.insert(make_pair(identifier->get_value(), identifier));
+	commit();
 }
 
 // check to see if a given identifier exists
@@ -171,6 +171,8 @@ void QL_Interface::delete_identifier(const string& parent_id, const string& attr
 	// remove the id from the id container
 	m_id_container.erase(id_name);
 
+	commit();
+
 	update_views();
 }
 
@@ -185,6 +187,7 @@ void QL_Interface::add_value_wme(const string& identifier, const string& attribu
 	Smart_Pointer<WME_Id> parent = get_identifier(identifier);
 	parent->add_child(WME_String::create(identifier, attribute, value, m_pAgent, parent->get_id_object()));
 
+	commit();
 	update_views();
 }
 
@@ -196,6 +199,7 @@ void QL_Interface::add_value_wme(const string& identifier, const string& attribu
 	Smart_Pointer<WME_Id> parent = get_identifier(identifier);
 	parent->add_child(WME_Int::create(identifier, attribute, value, m_pAgent, parent->get_id_object()));
 
+	commit();
 	update_views();
 }
 
@@ -207,6 +211,7 @@ void QL_Interface::add_value_wme(const string& identifier, const string& attribu
 	Smart_Pointer<WME_Id> parent = get_identifier(identifier);
 	parent->add_child(WME_Float::create(identifier, attribute, value, m_pAgent, parent->get_id_object()));
 
+	commit();
 	update_views();
 }
 
@@ -232,6 +237,7 @@ void QL_Interface::soar_command_line(const string& command)
 {
 	string info = m_pKernel->ExecuteCommandLine(command.c_str(), m_pAgent->GetAgentName());
 
+	commit();
 	update_views("\n" + info + "\n");
 }
 
@@ -243,6 +249,7 @@ void QL_Interface::clear_input_link()
 	m_id_container.clear();
 	m_id_container[m_input_link_name] = il;
 
+	commit();
 	update_views();
 }
 
@@ -268,7 +275,8 @@ void QL_Interface::spawn_debugger()
 #if defined _WIN32 || _WIN64
 
 	// spawn the debugger asynchronously
-	int ret = _spawnlp(_P_NOWAIT, "javaw.exe", "javaw.exe", "-jar", "../../SoarLibrary/bin/SoarJavaDebugger.jar", "-remote", NULL);
+	assert(_chdir("../../SoarLibrary/bin/") == 0);
+	int ret = _spawnlp(_P_NOWAIT, "javaw.exe", "javaw.exe", "-jar", "SoarJavaDebugger.jar", "-remote", NULL);
 	if(ret == -1) {
 		switch (errno) {
 				case E2BIG:
@@ -290,6 +298,7 @@ void QL_Interface::spawn_debugger()
 					throw Error(string_make(ret));
 		}
 	}
+	assert(_chdir("../../Tools/QuickLink/") == 0);
 
 #else
 
@@ -338,17 +347,10 @@ void QL_Interface::spawn_debugger()
 
 // event handlers
 
-void MyStartSystemEventHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel)
-{
-	QL_Interface::instance().commit();
-}
-
 void MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 {
 	if(smlEVENT_AFTER_AGENT_REINITIALIZED == id)
 		QL_Interface::instance().respond_to_init_soar();
-	/*else if(smlEVENT_BEFORE_AGENT_REINITIALIZED == id)
-		QL_Interface::instance().commit();  // this has to be done, otherwise an assertion will fail*/
 }
 
 // member functions
