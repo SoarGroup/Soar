@@ -494,6 +494,7 @@ public class MainWindow
 	{
 		// Convert to XML but without storing all of the current text in the trace etc.
 		JavaElementXML root = convertToXML(false) ;
+		root.setComment("Debugger layout file") ;
 
 		try
 		{
@@ -517,7 +518,7 @@ public class MainWindow
 	{
 		String tagName = "sash" ;
 		JavaElementXML element = new JavaElementXML(tagName) ;
-		
+				
 		// Record the class and style of this composite so we can rebuild it later
 		element.addAttribute(JavaElementXML.kClassAttribute, SashForm.class.toString()) ;
 		
