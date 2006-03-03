@@ -14,6 +14,7 @@ Smart_Pointer<Input_Type> Input_Console::create()
 
 string Input_Console::get_command()
 {
+	// get the command from cin
 	string command;
 	cout << endl << "> ";
 	getline(cin, command);

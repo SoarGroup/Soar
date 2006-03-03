@@ -56,7 +56,7 @@ void QL_Interface::create_new_kernel(int port)
 		kernel_destroyed = true;
 		throw Error(error);
 	}
-	kernel_destroyed = false;
+	kernel_destroyed = false; // this variable is needed so that we can tell when swtiches fail and we don't delete things twice
 
 	m_pAgent = m_pKernel->CreateAgent("QuickLink");
 
@@ -143,6 +143,7 @@ void QL_Interface::add_identifier(const string& parent_id, const string& attribu
 	update_views();
 }
 
+
 // add an identifier that has already been created
 void QL_Interface::add_created_identifier(Smart_Pointer<WME_Id> identifier)
 {
@@ -191,6 +192,24 @@ void QL_Interface::add_value_wme(const string& identifier, const string& attribu
 	update_views();
 }
 
+// creates a shared id
+void QL_Interface::add_shared_id(const string& loop_start, const string& attribute, const string& loop_end)
+{
+	if(!m_pAgent)
+		throw Error("You must create or connect to a kernel first");
+
+	// get both id's
+	Smart_Pointer<WME_Id> start_ptr = get_identifier(loop_start);
+	Smart_Pointer<WME_Id> end_ptr = get_identifier(loop_end);
+
+	// create the shared id
+	start_ptr->add_child(WME_Shared::create(loop_start, attribute, loop_end, m_pAgent, start_ptr->get_id_object(), end_ptr->get_id_object()));
+
+	commit();
+	update_views();
+}
+
+
 void QL_Interface::add_value_wme(const string& identifier, const string& attribute, int value)
 {
 	if(!m_pAgent)
@@ -223,6 +242,12 @@ void QL_Interface::attach_view(View_Type* new_view)
 }
 
 // general functions
+
+void QL_Interface::QL_Shutdown()
+{
+	views.clear();
+	prepare_for_new_connection();
+}
 
 void QL_Interface::respond_to_init_soar()
 {

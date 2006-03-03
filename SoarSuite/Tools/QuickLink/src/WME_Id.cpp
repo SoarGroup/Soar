@@ -41,8 +41,7 @@ WME_Id::WME_Id(const string& in_id_name, const string& in_attribute, Identifier*
 }
 
 WME_Id::~WME_Id()
-{
-	
+{	
 	Agent* pAgent = QL_Interface::instance().get_agent_ptr();
 	remove_all_children(pAgent);
 	destroy_sml_object(pAgent);
@@ -92,6 +91,14 @@ void WME_Id::add_child(Smart_Pointer<WME_Id> in_child)
 	m_all_children.insert(in_child);
 }
 
+void WME_Id::add_child(Smart_Pointer<WME_Shared> in_child)
+{
+	// key will consist of attribute name followed by value name so that fast identity lookups
+	// can be done
+	m_shared_children.insert(make_pair(make_key(in_child->get_attribute(), in_child->get_value()) , in_child));
+	m_all_children.insert(in_child);
+}
+
 // check to see if child exists
 bool WME_Id::has_child(string attribute, double value)
 {
@@ -136,10 +143,13 @@ void WME_Id::remove_id_child(const string& att, const string& value, Agent* pAge
 {
 	string key = make_key(att, value);
 	Smart_Pointer<WME_Id> child = m_id_children[key];
-	assert(child.get_raw_ptr());
+	if(!child.get_raw_ptr()) // this is a shared id
+	{
+		m_shared_children.erase(key);
+		m_all_children.erase(child);
+	}
 	m_id_children.erase(key);
 	m_all_children.erase(child);
-//	child->destroy_sml_object(pAgent);
 }
 
 void WME_Id::remove_wme_child(const string& att, double value, Agent* pAgent)
@@ -179,6 +189,7 @@ void WME_Id::remove_all_children(Agent* pAgent)
 	m_float_children.clear();
 	m_string_children.clear();
 	m_int_children.clear();
+	m_shared_children.clear();
 	for(id_children_t::iterator it = m_id_children.begin(); it != m_id_children.end(); it++)
 	{
 		QL_Interface::instance().remove_identifier((*it).second->get_value());
