@@ -1,3 +1,9 @@
+/* QL_Controller.cpp
+*
+* This file represents the command line interface to QL.  This is the model for how to
+* interface with QL_Interface.
+*
+*/
 
 #include "Utilities.h"
 #include "QL_Interface.h"
@@ -16,7 +22,7 @@
 #include <iterator>
 
 /* this is for VS's memory checking functionality */
-#define MEM_LEAK_DEBUG
+//#define MEM_LEAK_DEBUG // uncomment this for functionality
 #ifdef MEM_LEAK_DEBUG
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -95,13 +101,20 @@ int main()
 	// we put everything in its own scope so memory leak detection can be done
 	{
 #endif MEM_LEAK_DEBUG
+		
+		// create and load the command map
 		command_map_t command_map;
 		load_command_map(command_map);
 
-		
+		// create instances of the input controller and ql interface		
 		Input_Controller& input = Input_Controller::instance();
 		QL_Interface& ql_interface = QL_Interface::instance();
 
+		// the following three things should always be done in the specified order
+		// 1. ALWAYS create the kernel
+		// 2. (optional) attach all views
+		// 3. ALWAYS setup the input link, the parameter string is the name the client (this)
+		//    will refer to the input link as
 		ql_interface.create_new_kernel();
 		ql_interface.attach_view(View_Console::create());
 		ql_interface.setup_input_link("IL");
@@ -125,6 +138,8 @@ int main()
 
 				if(command == "QUIT" || command == "EXIT")
 					break;
+				// this will be true when a command to create a new kernel or connect to a remote one has
+				// failed, and we cannot continue until a connection has been established
 				if(acquiring_new_connection && command != "REMOTE" && command != "LOCAL")
 					throw Error("Please use \"remote\" or \"local\" to create a new connection before proceeding");
 
@@ -132,11 +147,12 @@ int main()
 
 				if(ptr)  // if there is a valid function, call it
 					ptr(command_line);
-				else
+				else // not valid
 				{
-					ql_interface.soar_command_line(command_line.str());
-					command_map.erase(command);
+					ql_interface.soar_command_line(command_line.str()); // try to execute it on the CLI
+					command_map.erase(command); // erase the command from the command map, this must be done
 				}
+				
 				Input_Controller::instance().should_print_prompt = true;
 
 			}
@@ -240,7 +256,7 @@ void delete_object(istringstream& command)
 	// this returns true if it is an id
 	if(setup_id_att_value(command, id, att, value, c_delete_usage_error)) 
 		QL_Interface::instance().delete_identifier(id, att, value);
-	else
+	else // some type of value wme
 	{
 		value_type type = decipher_type(value);
 		switch(type) {
@@ -264,6 +280,7 @@ void update_object(istringstream& command)
 {
 	string id, att, old_value, new_value;
 
+	// we can ignore the return type here because a ID cannot be updated
 	setup_id_att_value(command, id, att, old_value, c_change_usage_error);
 	if(!(command >> new_value))
 		throw Error(c_change_usage_error);
@@ -309,6 +326,8 @@ void load_input_file(istringstream& command)
 	if(!(command >> filename))
 		throw Error(c_load_usage_error);
 
+	// notify input controller to create a new input file object and make it
+	// the current source
 	Input_Controller::instance().generate_new_input(INPUT_FILE_T, filename);
 }
 
@@ -324,7 +343,7 @@ void save_process(istringstream& command)
 	process_memory.pop_back(); // we do not want this command to end up in the process mem file
 
 	string filename;
-	if(!(command >> filename))
+	if(!(command >> filename)) // check to make sure filename is present
 		throw Error(c_savep_usage_error);
 	ofstream outfile(filename.c_str());
 	if(!outfile)
@@ -387,8 +406,10 @@ void spawn_debugger(istringstream& command)
 // make a remote connection
 void connect_remotely(istringstream& command)
 {
-	acquiring_new_connection = true;
+	acquiring_new_connection = true; // set this true so we can detect what state we are in
+									 // if an error is thrown within this code
 	
+	// establish remote connection returns a string of the possible agents
 	string agents = QL_Interface::instance().establish_remote_connection();
 	string agent_name;
 
@@ -405,6 +426,7 @@ void connect_remotely(istringstream& command)
 		getline(cin, junk);
 	}
 
+	// always setup the input-link after establishing a remote connection
 	QL_Interface::instance().setup_input_link("IL");
 
 	acquiring_new_connection = false;
@@ -442,6 +464,7 @@ void create_value_wme(string id, string att, T value)
 {
 	QL_Interface& inst = QL_Interface::instance();
 
+	// make sure the wme doesn't already exist
 	if(inst.wme_exists(id, att, value))
 		throw Error("The WME " + id + " ^" + att + " " + string_make(value) + " already exists");
 

@@ -18,19 +18,21 @@ using std::cout; using std::for_each;
 using std::bind2nd; using std::mem_fun;
 using std::ofstream; using std::endl;
 
+// actually creates the sml object
 WME_Id::WME_Id(const string& in_parent, const string& in_attribute, const string& in_value, Agent* pAgent, Identifier* in_id)
 : WME_Type(in_parent, in_attribute), m_value(in_value)
 {
 	if(in_id)	
 		m_object = pAgent->CreateIdWME(in_id, in_attribute.c_str());
-	else
+	else // this is the input-link
 	{
 		pAgent->SynchronizeInputLink();
 		m_object = pAgent->GetInputLink();
-		build_children();
+		build_children(); // build any children already existing
 	}
 }
 
+// sml object is already created
 WME_Id::WME_Id(const string& in_id_name, const string& in_attribute, Identifier* in_object)
 : WME_Type(in_id_name, in_attribute)
 {
@@ -40,18 +42,22 @@ WME_Id::WME_Id(const string& in_id_name, const string& in_attribute, Identifier*
 	QL_Interface::instance().add_created_identifier(this);
 }
 
+// clean up
 WME_Id::~WME_Id()
 {	
 	Agent* pAgent = QL_Interface::instance().get_agent_ptr();
 	remove_all_children(pAgent);
 	destroy_sml_object(pAgent);
 }
+
+// creates sml object
 Smart_Pointer<WME_Id> WME_Id::create(const string& in_parent, const string& in_attribute, const string& in_value, Agent* pAgent, Identifier* in_id)
 {
 	Smart_Pointer<WME_Id> ptr = new WME_Id(in_parent, in_attribute, in_value, pAgent, in_id);
 	return ptr;
 }
 
+// sml object already created
 Smart_Pointer<WME_Id> WME_Id::create_from_sml_object(const string& in_id_name, Identifier* object)
 {
 	Smart_Pointer<WME_Id> ptr = new WME_Id(in_id_name, object->GetAttribute(), object);

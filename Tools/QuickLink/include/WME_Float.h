@@ -1,3 +1,8 @@
+/* WME_Float.h
+*
+* This inherits from WME_Type and represents a float object in QL
+*
+*/
 
 #ifndef WME_FLOAT
 #define WME_FLOAT
