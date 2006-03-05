@@ -1,3 +1,9 @@
+/* QL_Interface.h
+*
+* This is the main library of QuickLink.  Interface with this if you would like to 
+* write your own QL application.
+*
+*/
 
 #ifndef QL_INTERFACE
 #define QL_INTERFACE

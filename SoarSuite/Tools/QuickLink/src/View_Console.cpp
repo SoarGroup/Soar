@@ -15,6 +15,7 @@ using sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES;
 
 void MyUpdateEventHandler(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlRunFlags runFlags);
 
+// named constructor
 Smart_Pointer<View_Console> View_Console::create()
 {
 	Smart_Pointer<View_Console> ptr = new View_Console();
@@ -25,7 +26,7 @@ View_Console::View_Console()
 : View_Type()
 {}
 
-
+// structure used to maintain pairs of the current id and its proper indentation length
 struct ptr_indent {
 	ptr_indent(id_container_t::const_iterator in_id, string in_indent)
 		: id(in_id), indent(in_indent)
@@ -38,7 +39,8 @@ struct ptr_indent {
 void View_Console::update(const id_container_t wme_ids)
 {
 	typedef list<ptr_indent> id_queue_t;
-	id_queue_t id_queue;
+	id_queue_t id_queue; // queue of id's to be printed
+	// push back the input link
 	id_queue.push_back(ptr_indent(wme_ids.find(c_input_link_name), ""));
 
 	cout << endl << "***** Current Input-Link Structure *****" << endl << endl;
@@ -49,12 +51,14 @@ void View_Console::update(const id_container_t wme_ids)
 		id_queue_t::iterator top = id_queue.begin();
 		cout << top->indent << "(" << top->id->first;
 		
+		// get the identifer's children
 		Smart_Pointer<WME_Id> top_ptr = top->id->second;
 		all_children_t children = top_ptr->notify_of_children();
 
 		for(all_children_t::iterator it = children.begin(); it != children.end(); it++)
 		{
-			if((*it)->print_object())
+			// print all children, 
+			if((*it)->print_object()) // returns true if it has children to print
 			{
 				string val = (*it)->get_value();
 				Smart_Pointer<WME_Id> id = (*(wme_ids.find(val))).second;
@@ -69,19 +73,20 @@ void View_Console::update(const id_container_t wme_ids)
 	}
 }
 
+// this is called if a string needs to be printed to console
 void View_Console::update_info(string info)
 {
 	cout << info;
 }
 
+// on initialization, register for update event
 void View_Console::initialize()
 {
 	Agent* pAgent = QL_Interface::instance().get_agent_ptr();
 	pAgent->GetKernel()->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, MyUpdateEventHandler, this);
 }
 
-
-
+// display the output
 void MyUpdateEventHandler(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlRunFlags runFlags)
 {
 	View_Console* vc = (View_Console*)pUserData;
@@ -96,6 +101,8 @@ void View_Console::display_output(Kernel* pKernel)
 
 	string agent_name = QL_Interface::instance().get_agent_name();
 	int numberCommands = pKernel->GetAgent(agent_name.c_str())->GetNumberOutputLinkChanges() ;
+
+	// go through all changes and capture the information
 	for(int i = 0; i < numberCommands; i++)
 	{
 		if(pKernel->GetAgent(agent_name.c_str())->IsOutputLinkChangeAdd(i))

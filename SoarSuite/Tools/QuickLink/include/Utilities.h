@@ -1,3 +1,9 @@
+/* Utilities.h
+*
+* These are non-program specific utilities needed for this project
+*
+*/
+
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
