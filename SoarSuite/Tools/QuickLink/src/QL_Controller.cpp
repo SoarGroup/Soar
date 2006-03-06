@@ -165,8 +165,9 @@ int main()
 		process_memory.clear();
 		input.IC_Shutdown();
 		ql_interface.QL_Shutdown();
-	}
 #ifdef MEM_LEAK_DEBUG
+	}
+
 #ifdef _MSC_VER
 	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
 	printf("\nIf no leaks appear here, but some appear in the output\nwindow in the debugger, they have been leaked from a DLL.\nWhich is reporting when it's unloaded.\n\n") ;

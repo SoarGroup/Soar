@@ -147,6 +147,9 @@
 				RelativePath=".\src\WME_Int.cpp">
 			</File>
 			<File
+				RelativePath=".\src\WME_Shared.cpp">
+			</File>
+			<File
 				RelativePath=".\src\WME_String.cpp">
 			</File>
 			<File
