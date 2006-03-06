@@ -112,7 +112,13 @@ bool RunScheduler::VerifyStepSizeForRunType(egSKIRunType runStepSize, egSKIInter
 			   gSKI_INTERLEAVE_ELABORATION_PHASE == interleave || 
 			   gSKI_INTERLEAVE_DECISION_CYCLE == interleave ||
 			   gSKI_INTERLEAVE_OUTPUT == interleave) ;
-
+	case gSKI_RUN_FOREVER:
+		// can interleave by any egSKIInterleaveType
+		assert(gSKI_INTERLEAVE_PHASE == interleave || 
+			   gSKI_INTERLEAVE_ELABORATION_PHASE == interleave || 
+			   gSKI_INTERLEAVE_DECISION_CYCLE == interleave ||
+			   gSKI_INTERLEAVE_OUTPUT == interleave) ;
+		return true;
 	default:
 		return false;
 	}
@@ -483,6 +489,7 @@ void RunScheduler::CheckStopBeforePhase(egSKIRunType runStepSize)
 				gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;			
 				egSKIPhaseType phase = pAgent->GetCurrentPhase() ;
 				egSKIRunResult runResult = pAgentSML->GetResultOfLastRun() ;
+				if (! pAgent->GetOperand2Mode()) continue;  // we don't support for agents in Soar7 mode...
 
 				// as in Bug 648, it's possible that a client has requested STOP_AFTER_DECISION
 				// while the agent was stopped at the m_StopBeforePhase, yet the agent run logic has
@@ -526,6 +533,8 @@ void RunScheduler::CheckStopBeforePhase(egSKIRunType runStepSize)
 				gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;			
 				egSKIPhaseType phase = pAgent->GetCurrentPhase() ;
 				egSKIRunResult runResult = pAgentSML->GetResultOfLastRun() ;
+				if (! pAgent->GetOperand2Mode()) continue;  // we don't support for agents in Soar7 mode...
+ 
 				while ((phase != m_StopBeforePhase) && (gSKI_RUN_COMPLETED == runResult))
 				{
 					runResult = pAgent->StepInClientThread(gSKI_INTERLEAVE_PHASE, 1) ;
