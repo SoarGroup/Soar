@@ -48,6 +48,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLICD]							= &cli::CommandLineInterface::ParseCD;
 	m_CommandMap[Commands::kCLIChunkNameFormat]				= &cli::CommandLineInterface::ParseChunkNameFormat;
 	m_CommandMap[Commands::kCLICLog]						= &cli::CommandLineInterface::ParseCLog;
+	m_CommandMap[Commands::kCLICommandToFile]				= &cli::CommandLineInterface::ParseCommandToFile;
 	m_CommandMap[Commands::kCLIDefaultWMEDepth]				= &cli::CommandLineInterface::ParseDefaultWMEDepth;
 	m_CommandMap[Commands::kCLIDirs]						= &cli::CommandLineInterface::ParseDirs;
 	m_CommandMap[Commands::kCLIEcho]						= &cli::CommandLineInterface::ParseEcho;
@@ -109,6 +110,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLICD]							= true ;
 	m_EchoMap[Commands::kCLIChunkNameFormat]			= true ;
 	m_EchoMap[Commands::kCLICLog]						= true ;
+	m_EchoMap[Commands::kCLICommandToFile]				= true ;
 	m_EchoMap[Commands::kCLIDefaultWMEDepth]			= true ;
 	m_EchoMap[Commands::kCLIEcho]						= true ;
 	m_EchoMap[Commands::kCLIEchoCommands]				= true ;
@@ -155,6 +157,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_PrintEventToResult = false;
 	m_EchoResult = false ;
 	m_pAgentSML = 0 ;
+	m_CloseLogAfterOutput = false;
 }
 
 EXPORT CommandLineInterface::~CommandLineInterface() {
@@ -216,6 +219,12 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	DoCommandInternal(pAgent, pCommandLine);
 
 	GetLastResultSML(pConnection, pResponse);
+
+	// Close log if asked to
+	if (m_CloseLogAfterOutput) {
+		m_CloseLogAfterOutput = false;
+		DoCLog(pAgent, LOG_CLOSE);
+	}
 
 	// Always returns true to indicate that we've generated any needed error message already
 	return true;

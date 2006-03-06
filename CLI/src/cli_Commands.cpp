@@ -22,6 +22,7 @@ char const* Commands::kCLIAttributePreferencesMode	= "attribute-preferences-mode
 char const* Commands::kCLICD						= "cd";			
 char const* Commands::kCLIChunkNameFormat			= "chunk-name-format";			
 char const* Commands::kCLICLog						= "clog";
+char const* Commands::kCLICommandToFile				= "command-to-file";
 char const* Commands::kCLIDefaultWMEDepth			= "default-wme-depth";
 char const* Commands::kCLIDirs						= "dirs";
 char const* Commands::kCLIEcho						= "echo";
