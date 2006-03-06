@@ -167,7 +167,7 @@ public class Application
 		
 		String cwd = agent.ExecuteCommandLine("pwd") ;
 		String path = pKernel.GetLibraryLocation() ;
-		path += "/../Tests/testjavasml.soar" ;
+		path += "/Tests/testjavasml.soar" ;
 		
 		// Load some productions
 		boolean load = agent.LoadProductions(path) ;
