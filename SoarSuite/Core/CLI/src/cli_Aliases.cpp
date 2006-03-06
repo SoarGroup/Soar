@@ -50,6 +50,13 @@ Aliases::Aliases() {
 		substitution.push_back(string("cd"));
 		NewAlias(substitution, commandToSubstitute);
 	}
+	// command-to-file ctf
+	{
+		string commandToSubstitute("ctf");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("command-to-file"));
+		NewAlias(substitution, commandToSubstitute);
+	}
 	// default-wme-depth set-default-depth
 	{
 		string commandToSubstitute("set-default-depth");

@@ -189,6 +189,7 @@ protected:
 	bool ParseCD(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseCLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	bool ParseCommandToFile(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseDefaultWMEDepth(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseDirs(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseEcho(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -833,6 +834,7 @@ protected:
 	bool				m_PrintEventToResult;	// True when print events should append message to result
 	bool				m_EchoResult;			// If true, copy result of command to echo event stream
 	EchoMap				m_EchoMap;				// If command appears in this map, always echo it.
+	bool				m_CloseLogAfterOutput;	// Used in command-to-file command ParseCommandToFile, closes log after output
 
 	Aliases				m_Aliases;				// Alias management object
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
