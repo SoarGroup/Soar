@@ -19,7 +19,7 @@ class FSM{
 	FSM(OrtsInterface*, GroupManager*, GameObj*);
 	virtual ~FSM();
 
-	virtual int update(bool& updateRequiredNextCycle)=0;
+	virtual int update()=0;
 
 	virtual GameObj *getGameObject(){return gob;}
 	virtual void init(std::vector<sint4>);

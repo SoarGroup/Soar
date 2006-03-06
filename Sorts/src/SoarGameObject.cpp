@@ -24,6 +24,7 @@ SoarGameObject::SoarGameObject(OrtsInterface* _ORTSIO, GroupManager* _groupMan,
   friendly(_friendly), world(_world), id(_id)
 {
   status = OBJ_IDLE;
+  frameOfLastUpdate = -1;
   identifyBehaviors();
 }
 
@@ -77,14 +78,17 @@ void SoarGameObject::update()
 {
   int fsmStatus;
   group->setStale();
-
-  // FSM will set this back to true if needed
-  bool updateRequired = false;
+  
+  int currentFrame = ORTSIO->getFrameID();
+  if (currentFrame == frameOfLastUpdate) {
+    cout << "ignoring repeated update.\n";
+    return;
+  }
+  frameOfLastUpdate = currentFrame;
+  
   if(!memory.empty())
   {
-    // updateRequired is pass-by-reference
-    // FSM will set to true if it needs to be updated next cycle
-    fsmStatus = memory.top()->update(updateRequired);
+    fsmStatus = memory.top()->update();
     if(fsmStatus != FSM_RUNNING)
     {
       memory.pop();
@@ -101,8 +105,6 @@ void SoarGameObject::update()
     else {
       status = OBJ_RUNNING;
     }
-  }
-  if (updateRequired) {
     ORTSIO->updateNextCycle(this);
   }
 }

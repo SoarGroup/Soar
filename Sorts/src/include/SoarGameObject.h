@@ -53,6 +53,8 @@ class SoarGameObject{
   bool world;
   int id;
 
+  int frameOfLastUpdate;
+
   int status;
 };
 

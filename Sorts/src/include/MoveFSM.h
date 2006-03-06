@@ -7,7 +7,7 @@ class MoveFSM: public FSM {
  public:
 	MoveFSM(OrtsInterface*, GroupManager*,  GameObj*);
 
-	int update(bool&);
+	int update();
 	void init(std::vector<signed long>);
 
  private:

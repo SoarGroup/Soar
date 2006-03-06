@@ -8,36 +8,20 @@ MoveFSM::MoveFSM(OrtsInterface* oi, GroupManager* gm, GameObj* go)
   name = SA_MOVE;
 }
 
-int MoveFSM::update(bool& requireUpdateNextCycle)
+int MoveFSM::update()
 {
  switch(state){
 
 	case IDLE:
 	 //Start moving
 	 gob->set_action("move",params);
-   requireUpdateNextCycle = true;
-	 state = WARMUP;
-   runTime = 0;
+	 state = MOVING;
    break;
 
-  case WARMUP:
-    // this constant needs to be set more intelligently
-    // it may actually depend on our refresh frequency
-    
-    // require an update, since we aren't moving and won't
-    // get refreshed by the world
-    requireUpdateNextCycle = true;
-    if (runTime < 10) {
-      runTime++;
-    }
-    else {
-      state = MOVING;
-    }
-    break;
 	case MOVING:
 	 const ServerObjData &sod = gob->sod;
 
-	 // if speed drops to 0 after some warmup period,
+	 // if speed drops to 0
    // and we are not there, failure
    if (*sod.speed == 0) {
      // this should be +/- some amount 

@@ -220,3 +220,7 @@ double OrtsInterface::getOrtsDistance(GameObj* go1, GameObj* go2) {
   // use sparingly (does this go over the network?)
   return (double) gsm->get_game().distance(*go1, *go2);
 }
+
+int OrtsInterface::getFrameID() {
+  return gsm->get_game().get_action_frame();
+}

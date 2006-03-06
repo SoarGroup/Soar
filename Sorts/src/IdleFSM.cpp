@@ -6,8 +6,8 @@ IdleFSM::IdleFSM(OrtsInterface* oi, GroupManager* gm, GameObj* go)
   name = SA_IDLE;
 }
 
-int IdleFSM::update(bool& updateRequiredNextCycle)
+int IdleFSM::update()
 {
- std::cout<<"Idle"<<std::endl;
+ //std::cout<<"Idle"<<std::endl;
  return FSM_RUNNING;
 }

@@ -41,8 +41,11 @@ int MapRegion::size() {
 }
 
 void MapRegion::groupEnter(SoarGameGroup* g) {
-  assert(groupsHere.find(g) == groupsHere.end());
-
+  //assert(groupsHere.find(g) == groupsHere.end());
+  // FIXME
+  if (groupsHere.find(g) != groupsHere.end()) {
+    return;
+  }
   groupsHere.insert(g);
 }
 

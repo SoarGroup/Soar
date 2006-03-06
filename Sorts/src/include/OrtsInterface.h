@@ -47,6 +47,7 @@ public:
   int getWorldId();
   int getMyId();
   double getOrtsDistance(GameObj* go1, GameObj* go2);
+  int getFrameID();
 private:
   // pointers to all the orts stuff
   GameStateModule* gsm;
