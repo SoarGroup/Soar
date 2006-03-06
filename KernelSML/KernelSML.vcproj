@@ -176,9 +176,6 @@
 				RelativePath=".\src\sml_ListenerThread.cpp">
 			</File>
 			<File
-				RelativePath=".\src\sml_OldRunScheduler.cpp">
-			</File>
-			<File
 				RelativePath=".\src\sml_OutputListener.cpp">
 			</File>
 			<File
@@ -257,9 +254,6 @@
 			</File>
 			<File
 				RelativePath="..\ConnectionSML\include\sml_Names.h">
-			</File>
-			<File
-				RelativePath=".\include\sml_OldRunScheduler.h">
 			</File>
 			<File
 				RelativePath=".\include\sml_OutputListener.h">
