@@ -206,6 +206,7 @@ typedef struct episodic_memory_struct
  *  query        - The symbol that ^query has as an attribute
  *  retrieved    - The symbol that ^retrieved has as an attribute
  *  curr_memory  - Pointer to the memory currently in the ^retrieved link
+ *  confidence   - How "certain" the system feels about the most recent retrieval
  *
  */
 typedef struct epmem_header_struct
@@ -220,6 +221,7 @@ typedef struct epmem_header_struct
     Symbol *retrieved;
     wme *retrieved_wme;
     episodic_memory *curr_memory;
+    int confidence;
 } epmem_header;
 
 
@@ -1070,6 +1072,7 @@ epmem_header *make_epmem_header(agent *thisAgent, Symbol *s)
     h->index = -42; //A bogus value to help with debugging
     h->state = s;
     h->curr_memory = NULL;
+    h->confidence = 0;
 
     //Find the superstate wme
     h->ss_wme = get_aug_of_id(thisAgent, s, "superstate", NULL);
@@ -2428,7 +2431,7 @@ episodic_memory *find_best_match(agent *thisAgent, arraylist *cue)
 /* ===================================================================
    get_radar_tank_data            *DOMAIN SPECIFIC*
 
-   Retrievs the x,y position and direction from an arraylist
+   Retrieves the x,y position, direction and radar-setting from an arraylist
 
    Created:  10 Nov 2005
    =================================================================== */
@@ -2437,6 +2440,7 @@ typedef struct radar_tank_data_struct
     int x;
     int y;
     char direction[16];
+    int radar_setting;
 } radar_tank_data;
 
 void get_radar_tank_data(arraylist *al, radar_tank_data *rtd)
@@ -2447,6 +2451,7 @@ void get_radar_tank_data(arraylist *al, radar_tank_data *rtd)
     rtd->x = -1;
     rtd->y = -1;
     strcpy(rtd->direction, "unknown");
+    rtd->radar_setting = -1;
 
     for(i = 0; i < al->size; i++)
     {
@@ -2468,6 +2473,10 @@ void get_radar_tank_data(arraylist *al, radar_tank_data *rtd)
         else if ( (strlen(attr) == 9) && (aw->node->parent == input_link) && (strcmp(attr, "direction") == 0) )
         {
             strcpy(rtd->direction, aw->node->val.strval);
+        }
+        else if ( (strlen(attr) == 13) && (aw->node->parent == input_link) && (strcmp(attr, "radar-setting") == 0) )
+        {
+            rtd->radar_setting = aw->node->val.intval;
         }
     }
 }//get_radar_tank_data
@@ -2494,7 +2503,9 @@ int is_radar_tank_match(arraylist *cue, arraylist *mem)
          && (cue_rtd.direction[0] != 'u')
          && (cue_rtd.x == mem_rtd.x)
          && (cue_rtd.y == mem_rtd.y)
-         && (strcmp(cue_rtd.direction, mem_rtd.direction) == 0) )
+         && (strcmp(cue_rtd.direction, mem_rtd.direction) == 0)
+         && ( (cue_rtd.radar_setting == mem_rtd.radar_setting)
+              || (mem_rtd.radar_setting == -1)))
     {
         return TRUE;
     }
@@ -2642,6 +2653,17 @@ episodic_memory *find_best_match_TANKSOAR(agent *thisAgent, arraylist *cue)
                      "io input-link x y direction");
     }
 
+    //%%%Currently hard coded for tanksoar
+    //Disable chunking if we are not confident in the result
+    if (best_score < 280)
+    {
+        thisAgent->sysparams[LEARNING_ON_SYSPARAM] = FALSE;
+    }
+    else
+    {
+        thisAgent->sysparams[LEARNING_ON_SYSPARAM] = TRUE;
+    }
+    
     
     return best_mem;
 }//find_best_match_TANKSOAR
