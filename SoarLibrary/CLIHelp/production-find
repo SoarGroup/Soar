@@ -53,18 +53,25 @@
    with value t. In addition, limit the rules to only those that test an
    operator named foo:
 
- production-find {(<state> ^gumby <gv> ^operator.name foo)(<gv> ^alive t)}
+ production-find (<state> ^gumby <gv> ^operator.name foo)(<gv> ^alive t)
 
    Note that in the above command, <state> does not have to match the exact
    variable name used in the production.
 
    Find productions that propose the operator foo:
 
- production-find -rhs {(<x> ^operator <op> +)(<op> ^name foo)}
+ production-find --rhs (<x> ^operator <op> +)(<op> ^name foo)
 
    Find chunks that test the attribute ^pokey:
 
- production-find -chunks {(<x> ^pokey *)}
+ production-find --chunks (<x> ^pokey *)
+
+   Examples using the water-jugs demo:
+
+ source demos/water-jug/water-jug.soar
+ production-find (<s> ^name *)(<j> ^volume *)
+ production-find (<s> ^name *)(<j> ^volume 3)
+ production-find --rhs (<j> ^* <volume>)
 
                                     See Also
 

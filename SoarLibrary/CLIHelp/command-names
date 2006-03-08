@@ -1,8 +1,10 @@
 add-wme
 alias
+attribute-preferences-mode
 cd
 chunk-name-format
 clog
+command-to-file
 default-wme-depth
 dirs
 echo

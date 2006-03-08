@@ -50,6 +50,7 @@
                                     Warnings
 
    Firing-counts are reset to zero after an init-soar.
+
    NB: This command is slow, because the sorting takes time O(n*log n)
 
                                 Default Aliases

@@ -6,13 +6,19 @@
 
                                     Synopsis
 
- source filename
+ source -[adv] filename
 
                                     Options
 
-   +-----------------------------------------------------------+
-   |filename|The file of Soar productions and commands to load.|
-   +-----------------------------------------------------------+
+   +----------------------------------------------------------------+
+   |filename     |The file of Soar productions and commands to load.|
+   |-------------+--------------------------------------------------|
+   |-a, --all    |Enable a summary for each file sourced            |
+   |-------------+--------------------------------------------------|
+   |-d, --disable|Disable all summaries                             |
+   |-------------+--------------------------------------------------|
+   |-v, --verbose|Print excised production names                    |
+   +----------------------------------------------------------------+
 
                                   Description
 
@@ -20,6 +26,65 @@
    path or a fully qualified path. source will generate an implicit push to
    the new directory, execute the command, and then pop back to the current
    working directory from which the command was issued.
+
+   After the source completes, the number of productions sourced and excised
+   is printed:
+
+ agent> source demos/mac/mac.soar
+ ******************
+ Total: 18 productions sourced.
+ Source finished.
+ agent> source demos/mac/mac.soar
+ #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+ Total: 18 productions sourced. 18 productions excised.
+ Source finished.
+
+   This can be disabled by using the -d flag:
+
+ agent> source demos/mac/mac.soar -d
+ ******************
+ Source finished.
+ agent> source demos/mac/mac.soar -d
+ #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+ Source finished.
+
+   A list of excised productions is available using the -v flag:
+
+ agent> source demos/mac/mac.soar -v
+ #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+ Total: 18 productions sourced. 18 productions excised.
+ Excised productions:
+         mac*detect*state*success
+         mac*evaluate*state*failure*more*cannibals
+         monitor*move-boat
+         monitor*state*left
+ ...
+
+   A separate summary for each file sourced can be enabled using the -a flag:
+
+ agent> source demos/mac/mac.soar -a
+ _firstload.soar: 0 productions sourced.
+ all_source.soar: 0 productions sourced.
+ **
+ goal-test.soar: 2 productions sourced.
+ ***
+ monitor.soar: 3 productions sourced.
+ ****
+ search-control.soar: 4 productions sourced.
+ top-state.soar: 0 productions sourced.
+ elaborations_source.soar: 0 productions sourced.
+ _readme.soar: 0 productions sourced.
+ **
+ initialize-mac.soar: 2 productions sourced.
+ *******
+ move-boat.soar: 7 productions sourced.
+ mac_source.soar: 0 productions sourced.
+ mac.soar: 0 productions sourced.
+ Total: 18 productions sourced.
+ Source finished.
+
+   Combining the -a and -v flag adds excised production names to the output
+   for each file.
 
                                     See Also
 

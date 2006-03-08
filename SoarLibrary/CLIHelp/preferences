@@ -7,7 +7,7 @@
 
                                     Synopsis
 
- preferences [-0123nNtw] [id] [[^]attribute]
+ preferences [-0123nNtw] [[id] [[^]attribute]]
 
                                     Options
 
@@ -76,13 +76,5 @@ Note
  acceptables:
   I5  + :O
   J1  + :O
-
-                                Default Aliases
-
-   +-----------------+
-   |Alias|Maps to    |
-   |-----+-----------|
-   |pr   |preferences|
-   +-----------------+
 
                                     See Also
