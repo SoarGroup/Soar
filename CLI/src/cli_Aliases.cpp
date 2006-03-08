@@ -300,6 +300,16 @@ Aliases::Aliases() {
 		substitution.push_back(string("-i"));
 		NewAlias(substitution, commandToSubstitute);
 	}
+	// print -v -d 100 varprint
+	{
+		string commandToSubstitute("varprint");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("print"));
+		substitution.push_back(string("-v"));
+		substitution.push_back(string("-d"));
+		substitution.push_back(string("100"));
+		NewAlias(substitution, commandToSubstitute);
+	}
 }
 
 bool Aliases::IsAlias(const std::string& command) {

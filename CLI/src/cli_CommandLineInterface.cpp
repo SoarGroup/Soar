@@ -34,6 +34,8 @@
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
 
+#include "pcreposix.h"
+
 using namespace cli;
 using namespace sml;
 
@@ -158,6 +160,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoResult = false ;
 	m_pAgentSML = 0 ;
 	m_CloseLogAfterOutput = false;
+	m_VarPrint = false;
 }
 
 EXPORT CommandLineInterface::~CommandLineInterface() {
@@ -947,4 +950,31 @@ bool CommandLineInterface::Trim(std::string& line) {
 	return true;
 }
 
+void CommandLineInterface::HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const char* msg) {
+	if (m_PrintEventToResult) {
+		if (m_VarPrint) {
+			// Transform if varprint, see print command
+			std::string message(msg);
+
+			regex_t comp;
+			regcomp(&comp, "[A-Z][0-9]+", REG_EXTENDED);
+
+			regmatch_t match;
+			ZeroMemory(&match, sizeof(regmatch_t));
+
+			while (regexec(&comp, message.substr(match.rm_eo, message.size() - match.rm_eo).c_str(), 1, &match, 0) == 0) {
+				message.insert(match.rm_so, "<");
+				message.insert(match.rm_eo + 1, ">");
+				match.rm_eo += 2;
+			}  
+
+			regfree(&comp);
+
+			// Simply append to message result
+			CommandLineInterface::m_Result << message;
+		} else {
+			CommandLineInterface::m_Result << msg;
+		}
+	}
+}
 

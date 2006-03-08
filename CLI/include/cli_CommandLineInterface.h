@@ -686,14 +686,7 @@ protected:
 	bool DoWatchWMEs(gSKI::IAgent* pAgent, const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
 
 	// Print callback events go here
-	virtual void HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const char* msg) {
-		// Simply append to message result
-		if (m_PrintEventToResult) {
-			CommandLineInterface::m_Result << msg;
-		}
-		// m_Result gets logged in GetLastResultSML
-		//if (m_pLogFile) (*m_pLogFile) << msg;
-	}
+	virtual void HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const char* msg);
 
 	// Production callback events go here
 	virtual void HandleEvent(egSKIProductionEventId eventId, gSKI::IAgent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match);
@@ -835,6 +828,7 @@ protected:
 	bool				m_EchoResult;			// If true, copy result of command to echo event stream
 	EchoMap				m_EchoMap;				// If command appears in this map, always echo it.
 	bool				m_CloseLogAfterOutput;	// Used in command-to-file command ParseCommandToFile, closes log after output
+	bool				m_VarPrint;				// Used in print command to put <>'s around identifiers.
 
 	Aliases				m_Aliases;				// Alias management object
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
