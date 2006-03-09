@@ -2,6 +2,7 @@
 #include "QL_Interface.h"
 #include "Utilities.h"
 #include "WME_Id.h"
+#include "WME_Shared.h"
 
 #include <string>
 #include <functional>
