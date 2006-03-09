@@ -309,6 +309,54 @@ bool SimpleListener(int life)
 	return true ;
 }
 
+// Listener created to explore a particular ref counting bug
+bool RefCountTest()
+{
+	// Create the kernel instance
+	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
+
+	if (pKernel->HadError())
+	{
+		cout << pKernel->GetLastErrorDescription() << endl ;
+		return false ;
+	}
+
+	sml::Agent* pAgent = pKernel->CreateAgent("listen") ;
+
+	// Comment this in if you need to debug the messages going back and forth.
+	//pKernel->SetTraceCommunications(true) ;
+
+	long pauseSecs = 0;
+	long pauseMsecs = 100 ;
+	long pauseMsecsTotal = pauseSecs*1000+pauseMsecs;
+
+	// How often we check to see if the list of connections has changed.
+	//int checkConnections = 500 / pauseMsecsTotal ;
+	//int counter = checkConnections ;
+	cout << "Press i <return> to do an init-soar" << endl ;
+	cout << "Press x <return> to exit" << endl ;
+
+	bool done = false ;
+	while (!done)
+	{
+		char buffer[100] ;
+		gets(buffer) ;
+
+		if (buffer[0] == 'i')
+		{
+			std::string result = pAgent->InitSoar() ;
+			cout << "Init soar result was: " << result << endl ;
+		}
+		else if (buffer[0] == 'x')
+			done = true ;
+	}
+
+	pKernel->Shutdown() ;
+	delete pKernel ;
+
+	return true ;
+}
+
 // Creates an agent that copies values from input link to output link
 // so we can test that this is OK.
 bool SimpleCopyAgent()
@@ -1615,6 +1663,7 @@ int main(int argc, char* argv[])
 	bool copyTest  = false ;
 	bool synchTest = false ;
 	bool reteTest  = false ;
+	bool refCountTest = false ;
 	int  life      = 3000 ;	// Default is to live for 3000 seconds (5 mins) as a listener
 	int  decisions = 20000 ;
 
@@ -1631,7 +1680,7 @@ int main(int argc, char* argv[])
 	// -runlistener <decisions> : As above but runs for specified number of decisions.
 	// -remoteconnect : Connects to a running kernel (e.g. -runlistener above), grabs some output and then disconnects.
 	// -time : run a time trial on some functionality
-	// Also -copyTest, -reteTest and others to test specific calls and bugs.  I don't expect those to be used much but keeping them here
+	// Also -copyTest, -reteTest, -refCountTest and others to test specific calls and bugs.  I don't expect those to be used much but keeping them here
 	// so it's quicker to investigate similar problems in the future.
 	if (argc > 1)
 	{
@@ -1649,6 +1698,8 @@ int main(int argc, char* argv[])
 				remote = true ;
 			if (!stricmp(argv[i], "-listener"))
 				listener = true ;
+			if (!stricmp(argv[i], "-refcounttest"))
+				refCountTest = true ;
 			if (!stricmp(argv[i], "-runlistener"))
 			{
 				runlistener = true ;
@@ -1680,6 +1731,8 @@ int main(int argc, char* argv[])
 	// (so run one instance as a listener and then a second as a -remote test).
 	if (listener)
 		SimpleListener(life) ;
+	else if (refCountTest)
+		RefCountTest() ;
 	else if (runlistener)
 		SimpleRunListener(decisions) ;
 	else if (copyTest)
