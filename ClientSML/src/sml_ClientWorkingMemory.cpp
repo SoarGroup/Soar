@@ -1053,6 +1053,14 @@ long WorkingMemory::GenerateTimeTag()
 }
 
 /*************************************************************
+* @brief Returns true if wmes have been added and not yet committed.
+*************************************************************/
+bool WorkingMemory::IsCommitRequired()
+{
+	return (m_DeltaList.GetSize() != 0) ;
+}
+
+/*************************************************************
 * @brief Send the most recent list of changes to working memory
 *		 over to the kernel.
 *************************************************************/

@@ -1237,6 +1237,9 @@ bool Agent::Commit()
 *************************************************************/
 char const* Agent::InitSoar()
 {
+	// Must commit everything before doing an init-soar.
+	assert(!GetWM()->IsCommitRequired()) ;
+
 	std::string cmd = "init-soar" ;
 
 	// Execute the command.
