@@ -960,7 +960,7 @@ void CommandLineInterface::HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const c
 			regcomp(&comp, "[A-Z][0-9]+", REG_EXTENDED);
 
 			regmatch_t match;
-			ZeroMemory(&match, sizeof(regmatch_t));
+			memset(&match, 0, sizeof(regmatch_t));
 
 			while (regexec(&comp, message.substr(match.rm_eo, message.size() - match.rm_eo).c_str(), 1, &match, 0) == 0) {
 				message.insert(match.rm_so, "<");
