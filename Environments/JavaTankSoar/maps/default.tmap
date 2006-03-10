@@ -1,3 +1,55 @@
+<tanksoar-world>
+  <cells world-width="16" world-height="16">
+    <row>
+      <cell type="wall"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"> </cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"> </cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"> </cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"> </cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"> </cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"> </cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="wall"> </cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"> </cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"> </cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"> </cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"> </cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell>
+    </row>
+  </cells>
+</tanksoar-world>
 0
 ################
 #..............#

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<tanksoar>
+  <simulation debuggers="true" default-map="default.tmap" runs="0"></simulation>
+  <agents>
+    <agent name="red" productions="tutorial/mapping-bot.soar" color="red"></agent>
+    <agent name="blue" productions="tutorial/mapping-bot.soar" color="blue"></agent>
+    <agent name="green" productions="tutorial/mapping-bot.soar" color="green"></agent>
+    <agent name="yellow" productions="tutorial/mapping-bot.soar" color="yellow"></agent>
+    <agent name="black" productions="tutorial/simple-sound-bot.soar" color="black"></agent>
+    <agent name="white" productions="tutorial/simple-sound-bot.soar" color="white"></agent>
+    <agent name="orange" productions="tutorial/simple-sound-bot.soar" color="orange"></agent>
+    <agent name="purple" productions="tutorial/simple-sound-bot.soar" color="purple"></agent>
+  </agents>
+</tanksoar>

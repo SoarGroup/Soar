@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
-Main-Class: edu.umich.eaters.Eaters
+Main-Class: eaters.Eaters
 Class-Path: swt.jar sml.jar JavaBaseEnvironment.jar
 
