@@ -2605,7 +2605,7 @@ episodic_memory *find_best_match_TANKSOAR(agent *thisAgent, arraylist *cue)
                           best_mem->index,
                           best_score);
                     print_memory(thisAgent, best_mem->content, &g_wmetree, 2, 3,
-                                 "io input-link x y direction");
+                                 "io input-link x y direction radar-setting");
                 }
                 
                 best_score = epmem->match_score;
@@ -2618,7 +2618,7 @@ episodic_memory *find_best_match_TANKSOAR(agent *thisAgent, arraylist *cue)
                       "\nRejected matching memory (#%d) with match score %d:",
                       epmem->index, epmem->match_score);
                 print_memory(thisAgent, epmem->content, &g_wmetree, 2, 3,
-                             "io input-link x y direction");
+                             "io input-link x y direction radar-setting");
                 
             }
         }//for
@@ -2650,19 +2650,30 @@ episodic_memory *find_best_match_TANKSOAR(agent *thisAgent, arraylist *cue)
                   best_mem->index, best_score);
         }             
         print_memory(thisAgent, best_mem->content, &g_wmetree, 2, 3,
-                     "io input-link x y direction");
+                     "io input-link x y direction radar-setting radar-distance");
     }
 
+//      //%%%HARDCODE:  Only chunk over exact match
+//      if (is_radar_tank_match(cue, best_mem->content))
+//      {
+//          thisAgent->sysparams[LEARNING_ON_SYSPARAM] = TRUE;
+//      }
+//      else
+//      {
+//          thisAgent->sysparams[LEARNING_ON_SYSPARAM] = FALSE;
+//      }
+    
+    
     //%%%Currently hard coded for tanksoar
     //Disable chunking if we are not confident in the result
-    if (best_score < 280)
-    {
-        thisAgent->sysparams[LEARNING_ON_SYSPARAM] = FALSE;
-    }
-    else
-    {
-        thisAgent->sysparams[LEARNING_ON_SYSPARAM] = TRUE;
-    }
+//      if (best_score < 280)
+//      {
+//          thisAgent->sysparams[LEARNING_ON_SYSPARAM] = FALSE;
+//      }
+//      else
+//      {
+//          thisAgent->sysparams[LEARNING_ON_SYSPARAM] = TRUE;
+//      }
     
     
     return best_mem;
