@@ -16,6 +16,9 @@
 #include <direct.h>
 #include <Windows.h>
 #define getcwd _getcwd
+#include "pcreposix.h"
+#else //WIN32
+#include <regex.h>
 #endif // WIN32
 
 #include <assert.h>
@@ -34,7 +37,6 @@
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
 
-#include "pcreposix.h"
 
 using namespace cli;
 using namespace sml;
