@@ -1,7 +1,7 @@
-del /s /Q *.class
+mkdir bin
+del /s /Q bin\*.class
+javac -d bin -classpath ..\..\SoarLibrary\bin\swt.jar;..\..\SoarLibrary\bin\sml.jar -sourcepath source source\utilities\*.java source\simulation\*.java source\simulation\visuals\*.java
 
-javac -classpath ..\..\SoarLibrary\bin\swt.jar;..\..\SoarLibrary\bin\sml.jar -sourcepath src src\edu\umich\JavaBaseEnvironment\*.java
-
-jar cf ..\..\SoarLibrary\bin\javabaseenvironment.jar -C src .
+jar cf ..\..\SoarLibrary\bin\JavaBaseEnvironment.jar -C bin .
 
 IF NOT "%1"=="--nopause" pause

@@ -1,9 +1,9 @@
-REM This batch assumes you have built JavaBaseEnvironments first.
+mkdir bin
+javac -d bin -classpath ..\..\SoarLibrary\bin\swt.jar;..\..\SoarLibrary\bin\sml.jar;..\..\SoarLibrary\bin\JavaBaseEnvironment.jar -sourcepath source source\eaters\TankSoar.java
+xcopy /y source\* bin
+mkdir bin\images
+xcopy /y /s source\images\* bin\images
 
-del /s /Q *.class
-
-javac -classpath ..\..\SoarLibrary\bin\swt.jar;..\..\SoarLibrary\bin\sml.jar;..\..\SoarLibrary\bin\JavaBaseEnvironment.jar -sourcepath src src\edu\umich\tanksoar\TanksoarJ.java
-
-jar cfm ..\..\SoarLibrary\bin\tanksoar.jar JarManifest -C src .
+jar cfm ..\..\SoarLibrary\bin\JavaTankSoar.jar JarManifest -C bin .
 
 IF NOT "%1"=="--nopause" pause

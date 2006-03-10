@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<eaters>
+  <simulation debuggers="true" default-map="random-walls.emap" runs="0"></simulation>
+  <agents>
+    <agent name="red" productions="tutorial/advanced-move.soar" color="red"></agent>
+    <agent name="blue" productions="tutorial/advanced-move.soar" color="blue"></agent>
+    <agent name="green" productions="tutorial/advanced-move.soar" color="green"></agent>
+    <agent name="yellow" productions="tutorial/advanced-move.soar" color="yellow"></agent>
+    <agent name="black" productions="tutorial/jump-and-move.soar" color="black"></agent>
+    <agent name="white" productions="tutorial/jump-and-move.soar" color="white"></agent>
+    <agent name="orange" productions="tutorial/jump-and-move.soar" color="orange"></agent>
+    <agent name="purple" productions="tutorial/jump-and-move.soar" color="purple"></agent>
+  </agents>
+</eaters>
