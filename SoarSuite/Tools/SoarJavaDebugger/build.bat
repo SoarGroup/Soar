@@ -1,5 +1,5 @@
 @REM Builds the debugger
-@if NOT EXIST *.class goto compile
+@REM @if NOT EXIST *.class goto compile
 echo ------========Deleting old class files========---------
 del /S /Q *.class 
 
