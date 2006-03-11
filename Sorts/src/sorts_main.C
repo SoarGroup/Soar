@@ -30,9 +30,13 @@ void SoarUpdateEventHandler(sml::smlUpdateEventId id,
   SoarInterface* soarInterface = (SoarInterface*) pUserData;
   soarInterface->getNewSoarOutput();
 
-  soarInterface->lockSoarMutex();
-  agent->Commit();
-  soarInterface->unlockSoarMutex();
+  if (soarInterface->getStale()) {
+    soarInterface->lockSoarMutex();
+    cout << " commit ";
+    agent->Commit();
+    soarInterface->unlockSoarMutex();
+    soarInterface->setStale(false);
+  }
 }
 
 // the function that is executed by a separate thread to

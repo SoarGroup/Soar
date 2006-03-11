@@ -74,7 +74,7 @@ bool OrtsInterface::handle_event(const Event& e) {
 
       // since the FSM's have been updated, we should send the actions here
       gsm->send_actions();
-      cout << "send_actions" << endl;
+      //cout << "send_actions" << endl;
 
       // what was this for again?
       groupManager->updateWorld();

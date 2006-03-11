@@ -520,15 +520,16 @@ void SoarGameGroup::getLocNear(int x, int y, int& locX, int &locY) {
   // if point is inside bounding box, just return it
 
   // better way to do this?
-  int adjust = rand() % 15;
+  int adjust = rand() % 50;
+  int adjust2 = rand() % 50;
 
   if (x < bbox.xmin) {
     locX = bbox.xmin - adjust;
     if (y < bbox.ymin) {
-      locY = bbox.ymin - adjust;
+      locY = bbox.ymin - adjust2;
     }
     else if (y > bbox.ymax) {
-      locY = bbox.ymax + adjust;
+      locY = bbox.ymax + adjust2;
     }
     else {
       locY = y;
@@ -537,10 +538,10 @@ void SoarGameGroup::getLocNear(int x, int y, int& locX, int &locY) {
   else if (x > bbox.xmax) {
     locX = bbox.xmax + adjust;
     if (y < bbox.ymin) {
-      locY = bbox.ymin - adjust;
+      locY = bbox.ymin - adjust2;
     }
     else if (y > bbox.ymax) {
-      locY = bbox.ymax + adjust;
+      locY = bbox.ymax + adjust2;
     }
     else {
       locY = y;

@@ -29,6 +29,7 @@ SoarInterface::SoarInterface(GameStateModule* _gsm,
 {
   inputLink = agent->GetInputLink();
   groupIdCounter = 0;
+  stale = true;
 }
 
 SoarInterface::~SoarInterface() {
@@ -70,6 +71,7 @@ void SoarInterface::removeGroup(SoarGameGroup* group) {
 
 void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyStruct gps) {
   lockSoarMutex();
+  stale = true;
   
   // make sure the group exists
   assert(groupTable.find(group) != groupTable.end());
@@ -200,6 +202,7 @@ void SoarInterface::removeMapRegion(MapRegion *r) {
 
 void SoarInterface::refreshMapRegion(MapRegion *r) {
   lockSoarMutex();
+  stale = true;
   
   assert(mapRegionTable.find(r) != mapRegionTable.end());
   
@@ -325,6 +328,7 @@ SoarActionType actionTypeLookup(const char* actionName) {
 
 void SoarInterface::updatePlayerGold(int amount) {
   lockSoarMutex();
+  stale = true;
   agent->Update(playerGoldWME, amount);
   unlockSoarMutex();
 }
@@ -367,9 +371,19 @@ void SoarInterface::commitInputLinkChanges() {
 }
 
 void SoarInterface::lockSoarMutex() { 
+  cout << "lock req" << endl;
   pthread_mutex_lock(soarMutex);
+  cout << "lock got" << endl;
 }
 
 void SoarInterface::unlockSoarMutex() { 
   pthread_mutex_unlock(soarMutex);
+}
+
+bool SoarInterface::getStale() {
+  return stale;
+}
+
+void SoarInterface::setStale(bool _st) {
+  stale = _st;
 }
