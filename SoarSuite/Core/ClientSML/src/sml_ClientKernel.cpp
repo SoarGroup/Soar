@@ -1106,6 +1106,23 @@ void Kernel::CommitAll()
 }
 
 /*************************************************************
+* @brief Returns true if at least one agent has uncommitted changes.
+*************************************************************/
+bool Kernel::IsCommitRequired()
+{
+	int numberAgents = GetNumberAgents() ;
+
+	for (int i = 0 ; i < numberAgents ; i++)
+	{
+		Agent* pAgent = GetAgentByIndex(i) ;
+		if (pAgent->GetWM()->IsCommitRequired())
+			return true ;
+	}
+
+	return false ;
+}
+
+/*************************************************************
 * @brief   Run Soar for the specified number of decisions
 *
 * This command will currently run all agents.
@@ -1115,6 +1132,12 @@ void Kernel::CommitAll()
 *************************************************************/
 char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepSize, smlInterleaveStepSize interleaveStepSize)
 {
+	if (IsCommitRequired())
+	{
+		assert(false) ;
+		return "Need to commit changes before calling a run method" ;
+	}
+
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
@@ -1155,6 +1178,12 @@ char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepS
 
 char const* Kernel::RunAllAgentsForever(smlInterleaveStepSize interleaveStepSize)
 {
+	if (IsCommitRequired())
+	{
+		assert(false) ;
+		return "Need to commit changes before calling a run method" ;
+	}
+
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
@@ -1196,6 +1225,12 @@ char const* Kernel::RunAllAgentsForever(smlInterleaveStepSize interleaveStepSize
 *************************************************************/
 char const* Kernel::RunAllTilOutput(smlInterleaveStepSize interleaveStepSize)
 {
+	if (IsCommitRequired())
+	{
+		assert(false) ;
+		return "Need to commit changes before calling a run method" ;
+	}
+
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{

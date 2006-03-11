@@ -874,6 +874,11 @@ public:
 	*************************************************************/
 	void CommitAll() ;
 
+	/*************************************************************
+	* @brief Returns true if at least one agent has uncommitted changes.
+	*************************************************************/
+	bool IsCommitRequired() ;
+
 protected:
 	/*************************************************************
 	* @brief This function is called when we receive a "call" SML

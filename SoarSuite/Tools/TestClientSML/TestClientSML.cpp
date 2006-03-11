@@ -1,3 +1,16 @@
+/////////////////////////////////////////////////////////////////
+// TestClientSML
+//
+// Author: Douglas Pearson, www.threepenny.net
+// Date  : August 2004
+//
+// Test app to work out many of the elements of the ClientSML interface.
+// This is a grab back of tests to really stress as much as we can.
+// It can also be used as a reference for how to use a particular feature
+// if it's not clear from the header file documentation.
+//
+/////////////////////////////////////////////////////////////////
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif // HAVE_CONFIG_H

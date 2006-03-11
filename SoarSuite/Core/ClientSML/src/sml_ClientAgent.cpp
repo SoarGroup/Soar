@@ -1230,6 +1230,14 @@ bool Agent::Commit()
 }
 
 /*************************************************************
+* @brief Returns true if this agent has uncommitted changes.
+*************************************************************/
+bool Agent::IsCommitRequired()
+{
+	return GetWM()->IsCommitRequired() ;
+}
+
+/*************************************************************
 * @brief Reinitialize this Soar agent.
 *		 This will also cause the output link structures stored
 *		 here to be erased and the current input link to be sent over
@@ -1279,6 +1287,12 @@ char const*	Agent::StopSelf()
 *************************************************************/
 char const* Agent::RunSelf(unsigned long numberSteps, smlRunStepSize stepSize)
 {
+	if (IsCommitRequired())
+	{
+		assert(false) ;
+		return "Need to commit changes before calling a run method" ;
+	}	
+
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
@@ -1313,6 +1327,12 @@ char const* Agent::RunSelf(unsigned long numberSteps, smlRunStepSize stepSize)
 
 char const* Agent::RunSelfForever()
 {
+	if (IsCommitRequired())
+	{
+		assert(false) ;
+		return "Need to commit changes before calling a run method" ;
+	}
+
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
@@ -1402,6 +1422,12 @@ bool Agent::SetStopSelfOnOutput(bool state)
 *************************************************************/
 char const* Agent::RunSelfTilOutput()
 {
+	if (IsCommitRequired())
+	{
+		assert(false) ;
+		return "Need to commit changes before calling a run method" ;
+	}
+
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
