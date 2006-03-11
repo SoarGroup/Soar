@@ -576,6 +576,11 @@ public:
 	bool Commit() ;
 
 	/*************************************************************
+	* @brief Returns true if this agent has uncommitted changes.
+	*************************************************************/
+	bool IsCommitRequired() ;
+
+	/*************************************************************
 	* @brief   Run one Soar agent for the specified number of decisions
 	*
 	* @returns The result of executing the run command.
