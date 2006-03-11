@@ -46,28 +46,11 @@ void OutputListener::RegisterForKernelSMLEvents()
 {
 	// Listen for output callback events so we can send this output over to the clients
 	m_Agent->GetOutputLink()->GetOutputMemory()->AddWorkingMemoryListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, this) ;
-
-	// Only register for the first agent added
-	if (m_KernelSML->GetNumberAgents() == 0)
-	{
-		// Listen for "before" init-soar events (we need to know when these happen so we can release all WMEs on the input link, otherwise gSKI will fail to re-init the kernel correctly.)
-		m_KernelSML->GetKernel()->GetAgentManager()->AddAgentListener(gSKIEVENT_BEFORE_AGENT_REINITIALIZED, this, false) ;
-
-		// Listen for "after" init-soar events (we need to know when these happen so we can resend the output link over to the client)
-		m_KernelSML->GetKernel()->GetAgentManager()->AddAgentListener(gSKIEVENT_AFTER_AGENT_REINITIALIZED, this, false) ;
-	}
 }
 
 void OutputListener::UnRegisterForKernelSMLEvents()
 {
 	m_Agent->GetOutputLink()->GetOutputMemory()->RemoveWorkingMemoryListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, this) ;
-
-	// Only unregister for the last agent
-	if (m_KernelSML->GetNumberAgents() == 1)
-	{
-		m_KernelSML->GetKernel()->GetAgentManager()->RemoveAgentListener(gSKIEVENT_BEFORE_AGENT_REINITIALIZED, this, false) ;
-		m_KernelSML->GetKernel()->GetAgentManager()->RemoveAgentListener(gSKIEVENT_AFTER_AGENT_REINITIALIZED, this, false) ;
-	}
 }
 
 // Returns true if this is the first connection listening for this event
