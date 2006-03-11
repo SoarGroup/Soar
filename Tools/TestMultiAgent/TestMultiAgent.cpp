@@ -131,12 +131,12 @@ void MyUpdateEventHandler(smlUpdateEventId id, void* pUserData, sml::Kernel* pKe
 	{
 		sml::Agent* pAgent = pKernel->GetAgentByIndex(agent) ;
 
+		char const* pIOString = pAgent->ExecuteCommandLine("print --depth 4 i1") ;
+		cout << pIOString << endl ;
+
 		// Make sure we can get the output link (had a bug where this wouldn't always work)
 		sml::Identifier* pOutputLink = pAgent->GetOutputLink() ;
 		assert(pOutputLink) ;
-
-		char const* pIOString = pAgent->ExecuteCommandLine("print --depth 4 i1") ;
-		cout << pIOString << endl ;
 
 		// Read in the commands
 		int numberCommands = pAgent->GetNumberCommands() ;
