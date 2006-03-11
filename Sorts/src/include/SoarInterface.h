@@ -72,7 +72,8 @@ class SoarInterface {
                   sml::Agent*      _agent,
                   pthread_mutex_t* _objectActionQueueMutex,
                   pthread_mutex_t* _attentionActionQueueMutex,
-                  pthread_mutex_t* _groupActionQueueMutex
+                  pthread_mutex_t* _groupActionQueueMutex,
+                  pthread_mutex_t* _soarMutex
                  );
 
     ~SoarInterface();
@@ -103,6 +104,9 @@ class SoarInterface {
     void getNewSoarOutput();
 
     void initSoarInputLink();
+
+    void lockSoarMutex();
+    void unlockSoarMutex();
 
   private:
 
@@ -165,6 +169,7 @@ class SoarInterface {
     pthread_mutex_t* objectActionQueueMutex;
     pthread_mutex_t* attentionActionQueueMutex;
     pthread_mutex_t* groupActionQueueMutex;
+    pthread_mutex_t* soarMutex;
 };
 
 #endif

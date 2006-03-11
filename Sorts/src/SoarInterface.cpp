@@ -17,13 +17,15 @@ SoarInterface::SoarInterface(GameStateModule* _gsm,
                              sml::Agent*      _agent,
                              pthread_mutex_t* _objectActionQueueMutex,
                              pthread_mutex_t* _attentionActionQueueMutex,
-                             pthread_mutex_t* _groupActionQueueMutex
+                             pthread_mutex_t* _groupActionQueueMutex,
+                             pthread_mutex_t* _soarMutex
                             )
 : gsm(_gsm),
   agent(_agent),
   objectActionQueueMutex(_objectActionQueueMutex),
   attentionActionQueueMutex(_attentionActionQueueMutex),
-  groupActionQueueMutex(_groupActionQueueMutex)
+  groupActionQueueMutex(_groupActionQueueMutex),
+  soarMutex(_soarMutex)
 {
   inputLink = agent->GetInputLink();
   groupIdCounter = 0;
@@ -67,6 +69,8 @@ void SoarInterface::removeGroup(SoarGameGroup* group) {
 }
 
 void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyStruct gps) {
+  lockSoarMutex();
+  
   // make sure the group exists
   assert(groupTable.find(group) != groupTable.end());
   
@@ -158,6 +162,8 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyStruct gps) 
   {
     g.regionWMEs.push_back(agent->CreateIntWME(g.WMEptr, "in-region", *i));
   }
+
+  unlockSoarMutex();
 }
 
 int SoarInterface::groupId(SoarGameGroup* group) {
@@ -193,6 +199,8 @@ void SoarInterface::removeMapRegion(MapRegion *r) {
 }
 
 void SoarInterface::refreshMapRegion(MapRegion *r) {
+  lockSoarMutex();
+  
   assert(mapRegionTable.find(r) != mapRegionTable.end());
   
   InputLinkMapRegionRep& rep = mapRegionTable[r];
@@ -203,6 +211,8 @@ void SoarInterface::refreshMapRegion(MapRegion *r) {
   agent->Update(rep.yminWME, box.ymin);
   agent->Update(rep.ymaxWME, box.ymax);
   agent->Update(rep.sizeWME, r->size());
+
+  unlockSoarMutex();
 }
 
 
@@ -314,7 +324,9 @@ SoarActionType actionTypeLookup(const char* actionName) {
 
 
 void SoarInterface::updatePlayerGold(int amount) {
+  lockSoarMutex();
   agent->Update(playerGoldWME, amount);
+  unlockSoarMutex();
 }
 
 /*
@@ -354,3 +366,10 @@ void SoarInterface::commitInputLinkChanges() {
 //  cout << "### COMMIT FINISHED ###" << endl;
 }
 
+void SoarInterface::lockSoarMutex() { 
+  pthread_mutex_lock(soarMutex);
+}
+
+void SoarInterface::unlockSoarMutex() { 
+  pthread_mutex_unlock(soarMutex);
+}

@@ -48,7 +48,9 @@ int MineFSM::update() {
         }  
         else if (*gob->sod.speed == 0) {
           // move ended, no mineral found, fail.
-          return FSM_FAILURE;
+          //return FSM_FAILURE;
+          gob->set_action("move", moveToMineZoneParams);
+       
         }
       } 
       // else keep moving
@@ -135,7 +137,8 @@ int MineFSM::update() {
         else if (*gob->sod.speed == 0) {
           // move ended, no base found, fail.
           cout << "MINEFSM: at the zone, no base.\n";
-          return FSM_FAILURE;
+          //return FSM_FAILURE;
+          gob->set_action("move", moveToBaseZoneParams);
         }
       } 
       // else keep moving

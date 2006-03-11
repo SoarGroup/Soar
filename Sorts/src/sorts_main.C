@@ -29,7 +29,10 @@ void SoarUpdateEventHandler(sml::smlUpdateEventId id,
   sml::Agent *agent = pKernel->GetAgent("orts_agent");
   SoarInterface* soarInterface = (SoarInterface*) pUserData;
   soarInterface->getNewSoarOutput();
+
+  soarInterface->lockSoarMutex();
   agent->Commit();
+  soarInterface->unlockSoarMutex();
 }
 
 // the function that is executed by a separate thread to
@@ -39,7 +42,7 @@ void* RunSoar(void* ptr) {
    * grab the CPU and never let it go
    */
   sleep(1);
-  ((sml::Kernel*) ptr)->RunAllAgentsForever();
+  ((sml::Kernel*) ptr)->RunAllAgentsForever(sml::sml_INTERLEAVE_DECISION);
 
   // just to keep the compiler from warning
   return NULL;
@@ -82,6 +85,8 @@ int main(int argc, char *argv[]) {
   pthread_mutex_t objectActionMutex = PTHREAD_MUTEX_INITIALIZER;
   pthread_mutex_t attentionActionMutex = PTHREAD_MUTEX_INITIALIZER;
   pthread_mutex_t groupActionMutex = PTHREAD_MUTEX_INITIALIZER;
+  
+  pthread_mutex_t soarMutex = PTHREAD_MUTEX_INITIALIZER;
 
   /*******************
    * Init sml client *
@@ -135,7 +140,8 @@ int main(int argc, char *argv[]) {
                                pAgent,
                                &objectActionMutex,
                                &attentionActionMutex,
-                               &groupActionMutex );
+                               &groupActionMutex,
+                               &soarMutex);
 
   // register for all events
 //  pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, printOutput, 0);
