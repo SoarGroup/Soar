@@ -48,7 +48,8 @@ MapRegion* GridMapTileGrouper::groupTile(int tile) {
   else {
     MapRegion *r = (*currRegions.find(gridIndex)).second;
     r->addTile(tile);
-    cout << "APPENDED TO REGION " << (*r).getBoundingBox() << std::endl;
+    cout << "APPENDED TO REGION " << r->getId() << ": " 
+         << r->getBoundingBox() << std::endl;
     return r;
   }
 }

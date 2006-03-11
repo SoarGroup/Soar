@@ -130,3 +130,11 @@ int SoarGameObject::getStatus()
   return status;
 }
 
+Rectangle SoarGameObject::getBoundingBox() {
+  Rectangle r;
+  r.xmin = *gob->sod.x - *gob->sod.radius;
+  r.xmax = *gob->sod.x + *gob->sod.radius;
+  r.ymin = *gob->sod.y - *gob->sod.radius;
+  r.ymax = *gob->sod.y + *gob->sod.radius;
+  return r;
+}

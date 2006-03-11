@@ -76,6 +76,17 @@ bool SoarGameGroup::removeUnit(SoarGameObject* unit) {
   return true;
 }
 
+void SoarGameGroup::updateBoundingBox() {
+  bbox = (*members.begin())->getBoundingBox();
+  for(set<SoarGameObject*>::iterator 
+      i  = members.begin(); 
+      i != members.end(); 
+      i++)
+  {
+    bbox.accomodate((*i)->getBoundingBox());
+  }
+}
+
 void SoarGameGroup::updateStats(bool saveProps) {
   int x = 0;
   int y = 0;
@@ -150,13 +161,7 @@ void SoarGameGroup::updateStats(bool saveProps) {
     centerX = x;
     centerY = y;
 
-    // recalculate bounding box
-    bbox.collapse(x, y);
-    for(set<SoarGameObject*>::iterator i = members.begin(); 
-                                       i != members.end(); i++)
-    {
-      bbox.accomodate(*(*i)->gob->sod.x, *(*i)->gob->sod.y);
-    }
+    updateBoundingBox();
 
     pair<string, int> stringIntWme;
     pair<string, string> stringStringWme;
@@ -212,18 +217,30 @@ void SoarGameGroup::updateStats(bool saveProps) {
     // for now, just leave all regions first and then recompute
     // which ones it enters, even if this may mean exiting and
     // entering the same region redundently
-    for(list<MapRegion*>::iterator i  = regionsOccupied.begin();
-                                   i != regionsOccupied.end();
-                                   i++)
+    for( list<MapRegion*>::iterator 
+         i  = regionsOccupied.begin();
+         i != regionsOccupied.end();
+         i++ )
     {
       cout << "&&& Group has exited from region " << (*i)->getId() << endl;
       (*i)->groupExit(this);
     }
     regionsOccupied.clear();
     mapManager->getRegionsOccupied(this, regionsOccupied);
-    for(list<MapRegion*>::iterator i  = regionsOccupied.begin();
-                                   i != regionsOccupied.end();
-                                   i++)
+
+    //
+    for( list<MapRegion*>::iterator 
+         i  = regionsOccupied.begin();
+         i != regionsOccupied.end();
+         i++ )
+    {
+      cout << "&&& Region " << (*i)->getId() << endl;
+    }
+    //
+    for( list<MapRegion*>::iterator 
+         i  = regionsOccupied.begin();
+         i != regionsOccupied.end();
+         i++ )
     {
       cout << "&&& Group has entered region " << (*i)->getId() << endl;
       (*i)->groupEnter(this);
@@ -498,6 +515,18 @@ pair<string, int> SoarGameGroup::getCategory() {
 }
 
 Rectangle SoarGameGroup::getBoundingBox() {
+  // checking if everything is in the bounding box, because I'm not sure
+  // if the bounding box is getting updated often enough
+  for(set<SoarGameObject*>::iterator
+      i  = members.begin();
+      i != members.end();
+      i++)
+  {
+    int x = *(*i)->gob->sod.x;
+    int y = *(*i)->gob->sod.y;
+    assert(bbox.xmin <= x && x <= bbox.xmax &&
+           bbox.ymin <= y && y <= bbox.ymax);
+  }
   return bbox;
 }
 

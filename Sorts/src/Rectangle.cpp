@@ -7,7 +7,11 @@ Rectangle::Rectangle() : xmin(0), xmax(0), ymin(0), ymax(0) {}
 
 Rectangle::Rectangle(int _xmin, int _xmax, int _ymin, int _ymax)
 : xmin(_xmin), xmax(_xmax), ymin(_ymin), ymax(_ymax)
-{}
+{ }
+
+Rectangle::Rectangle(const Rectangle& other) 
+: xmin(other.xmin), xmax(other.xmax), ymin(other.ymin), ymax(other.ymax)
+{ }
 
 void Rectangle::set(int _xmin, int _xmax, int _ymin, int _ymax) {
   xmin = _xmin; xmax = _xmax;
@@ -32,6 +36,13 @@ void Rectangle::accomodate(int x, int y) {
   else if (y > ymax) {
     ymax = y;
   }
+}
+
+void Rectangle::accomodate(const Rectangle& other) {
+  if (other.xmin < xmin) { xmin = other.xmin; }
+  if (other.xmax > xmax) { xmax = other.xmax; }
+  if (other.ymin < ymin) { ymin = other.ymin; }
+  if (other.ymax > ymax) { ymax = other.ymax; }
 }
 
 bool Rectangle::intersects(const Rectangle& other) {
@@ -66,6 +77,14 @@ bool Rectangle::contains(const Rectangle& r) {
 
 int Rectangle::area() {
   return (xmax - xmin) * (ymax - ymin);
+}
+
+Rectangle& Rectangle::operator=(const Rectangle& rhs) {
+  xmin = rhs.xmin;
+  xmax = rhs.xmax;
+  ymin = rhs.ymin;
+  ymax = rhs.ymax;
+  return *this;
 }
 
 ostream& operator<<(ostream& os, const Rectangle& r) {

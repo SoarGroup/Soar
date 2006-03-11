@@ -24,34 +24,26 @@ void MapManager::getRegionsOccupied
   list<MapRegion*>& regionsOccupied ) 
 {
   Rectangle groupBBox = group->getBoundingBox();
-  if (groupBBox.area() == 0) {
-    // group with single unit
-    MapRegion* r = getRegionUnder(groupBBox.xmin, groupBBox.ymin);
-    // there had better be a region under a group you can see
-    assert(r != NULL);
-    regionsOccupied.push_back(r);
-  }
-  else {
-    for(set<MapRegion*>::iterator 
-        i  = regions.begin(); 
-        i != regions.end(); 
-        i++) 
-    {
-      if((*i)->intersects(groupBBox)) {
-        regionsOccupied.push_back(*i);
-      }
+  for(set<MapRegion*>::iterator 
+      i  = regions.begin(); 
+      i != regions.end(); 
+      i++) 
+  {
+    if((*i)->intersects(groupBBox)) {
+      regionsOccupied.push_back(*i);
     }
   }
+  // there had better be at least one region under a group you can see
+  assert(regionsOccupied.size() > 0);
 }
 
 MapRegion* MapManager::getRegionUnder(int x, int y) {
   int tileIndex = gameMap.xy2ind(x / tilePoints, y / tilePoints);
-  if (tileMembership.find(tileIndex) == tileMembership.end()) {
-    return (*tileMembership.begin()).second;
-    //return NULL;
+  map<int, MapRegion*>::iterator tilePos = tileMembership.find(tileIndex);
+  if (tilePos == tileMembership.end()) {
+    return NULL; 
   }
-  // should fix this so it doesn't search twice..
-  return (*tileMembership.find(tileIndex)).second;
+  return tilePos->second;
 }
 
 void MapManager::addExploredTiles(Vector<sint4> newTiles) {
@@ -62,6 +54,7 @@ void MapManager::addExploredTiles(Vector<sint4> newTiles) {
     MapRegion* assignedRegion = tileGrouper.groupTile(*i);
     tileMembership[*i] = assignedRegion;
 
+    // update Soar input link
     if (regions.find(assignedRegion) == regions.end()) {
       regions.insert(tileMembership[*i]);
       soarInterface->addMapRegion(assignedRegion);

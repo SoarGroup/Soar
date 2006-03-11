@@ -3,6 +3,7 @@
 
 #include"FSM.h"
 #include "MoveFSM.h"
+#include "Rectangle.h"
 
 #include<stack>
 #include<map>
@@ -39,9 +40,11 @@ class SoarGameObject{
   bool isWorld()      { return world; }
   int getID()         { return id; }
 
+  Rectangle getBoundingBox();
+
   GameObj *gob;
 
-  private:
+private:
   OrtsInterface* ORTSIO;
 	map<SoarActionType, FSM *> behaviors;
 	stack<FSM *> memory;

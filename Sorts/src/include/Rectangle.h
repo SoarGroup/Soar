@@ -9,16 +9,19 @@ class Rectangle {
 public:
   Rectangle();
   Rectangle(int _xmin, int _xmax, int _ymin, int _ymax);
+  Rectangle(const Rectangle& other);
 
   void set(int _xmin, int _xmax, int _ymin, int _ymax);
   void collapse(int x, int y);
   void accomodate(int x, int y);
+  void accomodate(const Rectangle& other);
 
   bool intersects(const Rectangle& other);
   bool contains(int x, int y);
   bool contains(const Rectangle& r);
   int  area();
 
+  Rectangle& operator=(const Rectangle& rhs);
   friend ostream& operator<<(ostream& os, const Rectangle& r);
 
   int xmin, xmax, ymin, ymax;

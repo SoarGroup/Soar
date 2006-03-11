@@ -87,6 +87,7 @@ class SoarGameGroup {
 
     // bounding box
     Rectangle bbox;
+    void updateBoundingBox();
 
     int centerX, centerY;
 

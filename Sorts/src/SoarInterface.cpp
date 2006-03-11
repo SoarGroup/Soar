@@ -366,7 +366,7 @@ void SoarInterface::initSoarInputLink() {
 
 void SoarInterface::commitInputLinkChanges() {
 //  cout << "### COMMIT ABOUT TO BE CALLED ###" << endl;
-//  agent->Commit();
+  //agent->Commit();
 //  cout << "### COMMIT FINISHED ###" << endl;
 }
 

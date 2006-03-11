@@ -41,8 +41,7 @@ int MapRegion::size() {
 }
 
 void MapRegion::groupEnter(SoarGameGroup* g) {
-  //assert(groupsHere.find(g) == groupsHere.end());
-  // FIXME
+  assert(groupsHere.find(g) == groupsHere.end());
   if (groupsHere.find(g) != groupsHere.end()) {
     return;
   }
@@ -60,9 +59,10 @@ bool MapRegion::isOccupied() {
 }
 
 bool MapRegion::isFriendly() {
-  for(set<SoarGameGroup*>::iterator i  = groupsHere.begin();
-                                    i != groupsHere.end();
-                                    i++)
+  for( set<SoarGameGroup*>::iterator 
+       i  = groupsHere.begin();
+       i != groupsHere.end();
+       i++ )
   {
     if (!(*i)->isFriendly()) {
       return false;
