@@ -130,13 +130,8 @@ void SoarGameGroup::updateStats(bool saveProps) {
         health += 0;
       }
       speed += *(*currentObject)->gob->sod.speed;
-      #ifdef DEBUG_GROUPS
-      x += (*currentObject)->x;
-      y += (*currentObject)->y;
-      #else
       x += *(*currentObject)->gob->sod.x;
       y += *(*currentObject)->gob->sod.y;
-      #endif
 
       objStatus = (*currentObject)->getStatus();
       if (objStatus == OBJ_RUNNING) {
@@ -291,24 +286,14 @@ void SoarGameGroup::updateStats(bool saveProps) {
   }
   
   // center member calculation- is there a way to do a running calc above?
-  #ifdef DEBUG_GROUPS
-  double shortestDistance 
-        = squaredDistance(x, y, centerMember->x, centerMember->y);
-  #else
   double shortestDistance 
         = squaredDistance(x, y, *centerMember->gob->sod.x, *centerMember->gob->sod.y);
-  #endif
 
   double currentDistance;
   currentObject = members.begin();
   while (currentObject != members.end()) {
-    #ifdef DEBUG_GROUPS
-    currentDistance = squaredDistance(x, y, 
-                      (*currentObject)->x, (*currentObject)->y);
-    #else
     currentDistance = squaredDistance(x, y, 
                       *(*currentObject)->gob->sod.x, *(*currentObject)->gob->sod.y);
-    #endif
     if (currentDistance < shortestDistance) {
       shortestDistance = currentDistance;
       centerMember = *currentObject;
