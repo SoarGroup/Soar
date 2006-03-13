@@ -1,0 +1,113 @@
+!define APPNAME "Soar Suite"
+!define APPNAMEANDVERSION "nameandversion"
+!define INSTALLDIR "installdir"
+!define OUTFILE "outfile"
+
+Name "${APPNAMEANDVERSION}"
+InstallDir "$PROGRAMFILES\INSTALLDIR"
+InstallDirRegKey HKLM "Software\${APPNAME}" ""
+OutFile "OUTFILE"
+
+!include "MUI.nsh"
+
+Icon "Resources\Icons\soar.ico"
+UninstallIcon "Resources\Icons\un-soar.ico"
+!define MUI_ICON "Resources\Icons\soar.ico"
+!define MUI_UNICON "Resources\Icons\un-soar.ico"
+!define MUI_ABORTWARNING
+!define MUI_COMPONENTSPAGE_SMALLDESC
+!define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_NOSTRETCH
+!define MUI_HEADERIMAGE_BITMAP "Resources\Icons\soarinstaller.bmp"
+
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE "COPYING"
+!insertmacro MUI_PAGE_COMPONENTS
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+
+!define MUI_FINISHPAGE_LINK "Visit the Soar home page for news and updates!"
+!define MUI_FINISHPAGE_LINK_LOCATION "http://sitemaker.umich.edu/soar"
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "View Release Notes"
+!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\Documentation\Announce.txt"
+
+!insertmacro MUI_PAGE_FINISH
+
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+
+!insertmacro MUI_LANGUAGE "English"
+!insertmacro MUI_RESERVEFILE_LANGDLL
+
+Section "Core Soar Components" Section1
+
+	SectionIn RO
+	SetOverwrite ifnewer
+
+	SetDetailsPrint textonly
+	DetailPrint "Installing core Soar components..."
+	SetDetailsPrint listonly
+
+	corefiles
+	
+	coreshortcuts
+
+SectionEnd
+
+Section "Source" Section2
+
+	SetOverwrite ifnewer
+
+	SetDetailsPrint textonly
+	DetailPrint "Installing source..."
+	SetDetailsPrint listonly
+	
+	sourcefiles
+	sourceshortcuts
+
+SectionEnd
+
+Section -FinishSection
+
+	SetDetailsPrint textonly
+	DetailPrint "Finishing installation..."
+	SetDetailsPrint listonly
+
+	WriteRegStr HKLM "Software\Soar\${APPNAMEANDVERSION}" "" "$INSTDIR"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAMEANDVERSION}" "DisplayName" "${APPNAMEANDVERSION}"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAMEANDVERSION}" "DisplayIcon" "$INSTDIR\Resources\Icons\soar.ico"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAMEANDVERSION}" "UninstallString" "$INSTDIR\uninstall.exe"
+	WriteUninstaller "$INSTDIR\Uninstall ${APPNAMEANDVERSION}.exe"
+
+SectionEnd
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+	!insertmacro MUI_DESCRIPTION_TEXT ${Section1} "Files needed to run Soar, Soar documentation, VisualSoar and external environments."
+	!insertmacro MUI_DESCRIPTION_TEXT ${Section2} "Source code for all Soar components."
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+Section Uninstall
+
+	SetDetailsPrint textonly
+	DetailPrint "Deleting files..."
+	SetDetailsPrint listonly
+
+	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAMEANDVERSION}"
+	DeleteRegKey HKLM "SOFTWARE\${APPNAME}"
+
+	Delete "$INSTDIR\uninstall.exe"
+
+	Delete "$INSTDIR\SoarLibrary\bin\testjavasml-success.txt"
+	Delete "$INSTDIR\SoarLibrary\bin\testclientsml-success.txt"
+	Delete "$INSTDIR\SoarLibrary\bin\towers-sml-success.txt"
+	Delete "$INSTDIR\SoarLibrary\bin\default-layout.xml"
+	Delete "$INSTDIR\SoarLibrary\bin\javaw.exe.manifest"
+	Delete "$INSTDIR\SoarLibrary\bin\default-layout.dlf"
+	Delete "$INSTDIR\SoarLibrary\bin\default-text.dlf"
+	Delete "$INSTDIR\SoarLibrary\bin\VSPreferences.txt"
+
+	uninstallfiles
+	
+	uninstalldirs
+	
+SectionEnd
