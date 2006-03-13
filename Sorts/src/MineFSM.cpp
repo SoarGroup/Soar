@@ -45,11 +45,14 @@ int MineFSM::update() {
           gob->set_action("move", tempParams);
           state = MOVING_TO_MINERAL; 
           cout << "MINEFSM: moving to mineral\n";
+          
+          if (*gob->sod.speed == 0) {
+            return FSM_STUCK;
+          }
         }  
         else if (*gob->sod.speed == 0) {
           // move ended, no mineral found, fail.
-          //return FSM_FAILURE;
-          gob->set_action("move", moveToMineZoneParams);
+          return FSM_FAILURE;
        
         }
       } 
@@ -133,12 +136,14 @@ int MineFSM::update() {
           tempParams.push_back(baseY);
           gob->set_action("move", tempParams);
           state = MOVING_TO_BASE;  
+          if (*gob->sod.speed == 0) {
+            return FSM_STUCK;
+          }
         }  
         else if (*gob->sod.speed == 0) {
           // move ended, no base found, fail.
           cout << "MINEFSM: at the zone, no base.\n";
-          //return FSM_FAILURE;
-          gob->set_action("move", moveToBaseZoneParams);
+          return FSM_FAILURE;
         }
       } 
       // else keep moving

@@ -322,6 +322,7 @@ void SoarInterface::getNewActions(list<SoarAction*>& newActions) {
 SoarActionType actionTypeLookup(const char* actionName) {
   if      (!strcmp(actionName, "move"))      return SA_MOVE;
   else if (!strcmp(actionName, "mine"))      return SA_MINE;
+  else if (!strcmp(actionName, "unstick"))   return SA_UNSTICK;
   else                                       return SA_NO_SUCH_ACTION;
 }
 

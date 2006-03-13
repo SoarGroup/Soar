@@ -71,5 +71,6 @@ private:
 #define OBJ_RUNNING 1
 #define OBJ_SUCCESS 2
 #define OBJ_FAILURE 3
+#define OBJ_STUCK 4
 
 #endif

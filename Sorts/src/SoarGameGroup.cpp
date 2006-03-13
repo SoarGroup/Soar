@@ -102,10 +102,12 @@ void SoarGameGroup::updateStats(bool saveProps) {
     int speed = 0;
     int size = members.size();
     int minerals = 0;
-    bool running = false;
-    bool success = false;
-    bool failure = false;
-    bool idle = false;
+    int running = 0;
+    int success = 0;
+    int failure = 0;
+    int idle = 0;
+    int stuck = 0;
+    
     int objStatus;
 
     // this is not a huge problem (just a redundant update), but should not happen
@@ -138,16 +140,19 @@ void SoarGameGroup::updateStats(bool saveProps) {
 
       objStatus = (*currentObject)->getStatus();
       if (objStatus == OBJ_RUNNING) {
-        running = true;
+        running++;
       }
       else if (objStatus == OBJ_SUCCESS) {
-        success = true;
+        success++;
       }
       else if (objStatus == OBJ_FAILURE) {
-        failure = true;
+        failure++;
       }
       else if (objStatus == OBJ_IDLE) {
-        idle = true;
+        idle++;
+      }
+      else if (objStatus == OBJ_STUCK) {
+        stuck++;
       }
        
       currentObject++;
@@ -251,35 +256,29 @@ void SoarGameGroup::updateStats(bool saveProps) {
     // show last command, and as many status attributes as are applicable
     // if a group has one member succeed, fail, or still running, that 
     // status is there
-    
-    if (idle and friendly) {
-      stringStringWme.first = "command_status";
-      stringStringWme.second = "idle";
-      soarData.stringStringPairs.push_back(stringStringWme);
-    }
 
     if (friendly) {
       stringStringWme.first = "command";
       stringStringWme.second = currentCommand;
       soarData.stringStringPairs.push_back(stringStringWme);
+
+      stringIntWme.first = "command_running";
+      stringIntWme.second = running;
+      soarData.stringIntPairs.push_back(stringIntWme);
+
+      stringIntWme.first = "command_success";
+      stringIntWme.second = success;
+      soarData.stringIntPairs.push_back(stringIntWme);
+      
+      stringIntWme.first = "command_failure";
+      stringIntWme.second = failure;
+      soarData.stringIntPairs.push_back(stringIntWme);
+      
+      stringIntWme.first = "command_stuck";
+      stringIntWme.second = stuck;
+      soarData.stringIntPairs.push_back(stringIntWme);
+      
     }
-
-    if (running) {
-      stringStringWme.first = "command_status";
-      stringStringWme.second = "running";
-      soarData.stringStringPairs.push_back(stringStringWme);
-    } 
-    if (success) {
-      stringStringWme.first = "command_status";
-      stringStringWme.second = "done_success";
-      soarData.stringStringPairs.push_back(stringStringWme);
-    } 
-    if (failure) {
-      stringStringWme.first = "command_status";
-      stringStringWme.second = "done_failure";
-      soarData.stringStringPairs.push_back(stringStringWme);
-    } 
-
     if (canMine) {
       stringIntWme.first = "minerals";
       stringIntWme.second = minerals;

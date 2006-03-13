@@ -94,8 +94,11 @@ void SoarGameObject::update()
   if(!memory.empty())
   {
     fsmStatus = memory.top()->update();
-    if(fsmStatus != FSM_RUNNING)
-    {
+    // if we get a done status, remove the action
+    // stuck result means that the FSM is hung up, but may continue
+    // if things get out of the way (don't give up on it)
+    if((fsmStatus != FSM_RUNNING) 
+       && (fsmStatus != FSM_STUCK)) {
       memory.pop();
     //  if(memory.empty())
         //currentCommand = SA_IDLE;
@@ -106,6 +109,9 @@ void SoarGameObject::update()
     }
     else if (fsmStatus == FSM_FAILURE) {
       status = OBJ_FAILURE;
+    }
+    else if (fsmStatus == FSM_STUCK) {
+      status = OBJ_STUCK;
     }
     else {
       status = OBJ_RUNNING;

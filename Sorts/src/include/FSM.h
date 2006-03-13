@@ -37,5 +37,6 @@ protected:
 #define FSM_RUNNING 0
 #define FSM_SUCCESS 1
 #define FSM_FAILURE 2
+#define FSM_STUCK 3
 
 #endif

@@ -30,6 +30,8 @@ void GroupManager::updateWorld() {
 
 bool GroupManager::assignActions() {
   // through the SoarIO, look for any new actions, and assign them to groups
+  // actions have a list of params and a list of groups,
+  // the first group (must exist) is the group the action will be applied to
     
   list <SoarAction*> newActions;
   SoarIO->getNewActions(newActions);
@@ -50,7 +52,6 @@ bool GroupManager::assignActions() {
     groupIter++;
     
     while (groupIter != groups.end()) {
-      // are we assuming only one member per group here?
       targetGroups.push_back(*groupIter);
       groupIter++;
     }
