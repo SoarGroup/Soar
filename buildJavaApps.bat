@@ -6,7 +6,7 @@ call build.bat --nopause
 cd ..\JavaMissionaries
 call build.bat --nopause
 cd ..\JavaTankSoar
-call build.bat --nopause
+rem call build.bat --nopause
 cd ..\JavaTOH
 call build.bat --nopause
 cd ..\..\Tools\LoggerJava

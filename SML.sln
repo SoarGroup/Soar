@@ -71,6 +71,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestMultiAgent", "Tools\Tes
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuickLink", "Tools\QuickLink\QuickLink.vcproj", "{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarTextIO", "Tools\SoarTextIO\SoarTextIO.vcproj", "{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -318,7 +326,6 @@ Global
 		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug.ActiveCfg = Debug|Win32
 		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug.Build.0 = Debug|Win32
 		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug (Core).ActiveCfg = Debug|Win32
-		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug (Core).Build.0 = Debug|Win32
 		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
 		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug (gSKI DLL).Build.0 = Debug|Win32
 		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug (no SWIG).ActiveCfg = Debug|Win32
@@ -334,7 +341,6 @@ Global
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.ActiveCfg = Debug|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.Build.0 = Debug|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (Core).ActiveCfg = Debug|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (Core).Build.0 = Debug|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (gSKI DLL).Build.0 = Debug|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (no SWIG).ActiveCfg = Debug|Win32
@@ -342,11 +348,38 @@ Global
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.ActiveCfg = Release|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.Build.0 = Release|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (Core).ActiveCfg = Release|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (Core).Build.0 = Release|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (gSKI DLL).ActiveCfg = Release|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (gSKI DLL).Build.0 = Release|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (no SWIG).ActiveCfg = Release|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (no SWIG).Build.0 = Release|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Debug.ActiveCfg = Debug|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Debug.Build.0 = Debug|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Debug (Core).ActiveCfg = Debug|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Debug (gSKI DLL).Build.0 = Debug|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Debug (no SWIG).Build.0 = Debug|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Release.ActiveCfg = Release|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Release.Build.0 = Release|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Release (Core).ActiveCfg = Release|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Release (gSKI DLL).ActiveCfg = Release|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Release (gSKI DLL).Build.0 = Release|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Release (no SWIG).ActiveCfg = Release|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Release (no SWIG).Build.0 = Release|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Debug.ActiveCfg = Debug|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Debug.Build.0 = Debug|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Debug (Core).ActiveCfg = Debug|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Debug (gSKI DLL).Build.0 = Debug|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Debug (no SWIG).Build.0 = Debug|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release.ActiveCfg = Release|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release.Build.0 = Release|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release (Core).ActiveCfg = Release|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release (gSKI DLL).ActiveCfg = Release|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release (gSKI DLL).Build.0 = Release|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release (no SWIG).ActiveCfg = Release|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release (no SWIG).Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
