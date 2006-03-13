@@ -17,9 +17,14 @@ class GroupManager;
 
 class SoarGameObject{
  public:
-	SoarGameObject(OrtsInterface* _ORTSIO, GroupManager* _groupMan,
-                 GameObj* _gob, 
-                 bool _friendly, bool _world, int _id);
+	SoarGameObject ( 
+    GameObj*       _gob, 
+    OrtsInterface* _ORTSIO, 
+    GroupManager*  _groupMan,
+    bool           _friendly, 
+    bool           _world, 
+    int            _id );
+
 	~SoarGameObject();
 
 	void identifyBehaviors();
@@ -59,6 +64,7 @@ private:
   int frameOfLastUpdate;
 
   int status;
+
 };
 
 #define OBJ_IDLE 0

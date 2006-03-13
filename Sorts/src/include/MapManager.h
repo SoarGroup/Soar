@@ -38,11 +38,11 @@ public:
   void getRegionsOccupied(SoarGameGroup* group, list<MapRegion*> &regions);
   
 private:
-  SoarInterface* soarInterface;
-
   const Map<GameTile>& gameMap;
   int tilePoints;
   MapTileGrouper& tileGrouper;
+
+  SoarInterface* soarInterface;
 
   set<MapRegion*> regions;
   map<int, MapRegion*> tileMembership;

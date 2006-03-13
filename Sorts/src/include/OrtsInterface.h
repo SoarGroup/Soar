@@ -1,8 +1,6 @@
 #ifndef orts_interface
 #define orts_interface
 
-#include<hash_map.h>
-
 // our includes
 #include "SoarInterface.h"
 #include "SoarGameObject.h"

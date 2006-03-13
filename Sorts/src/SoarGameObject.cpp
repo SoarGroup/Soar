@@ -18,9 +18,14 @@ void SoarGameObject::identifyBehaviors() {
   }
 }
 
-SoarGameObject::SoarGameObject(OrtsInterface* _ORTSIO, GroupManager* _groupMan,
-                              GameObj *g, bool _friendly, bool _world, int _id)
-: ORTSIO(_ORTSIO), groupMan(_groupMan), gob(g), 
+SoarGameObject::SoarGameObject(
+  GameObj        *g, 
+  OrtsInterface* _ORTSIO, 
+  GroupManager*  _groupMan,
+  bool           _friendly, 
+  bool           _world, 
+  int            _id )
+: gob(g), ORTSIO(_ORTSIO), groupMan(_groupMan), 
   friendly(_friendly), world(_world), id(_id)
 {
   status = OBJ_IDLE;

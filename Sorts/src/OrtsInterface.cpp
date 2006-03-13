@@ -31,8 +31,8 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   bool world    = (gsm->get_game().get_player_num() == *gameObj->sod.owner);
   int id = gsm->get_game().get_cplayer_info().get_id(gameObj);
   
-  SoarGameObject* newObj = new SoarGameObject(this, groupManager,
-                                              gameObj, friendly, world, id);
+  SoarGameObject* newObj = new SoarGameObject(gameObj, this, groupManager,
+                                              friendly, world, id);
  
   // GroupManager takes care of setting the object->group pointers
   groupManager->addGroup(newObj);
