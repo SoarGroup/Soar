@@ -58,7 +58,7 @@
 				CommandLine="cd ..\..\..\SoarLibrary\bin
 &quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl
 mkdir Tcl_sml_ClientInterface
-xcopy /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
+move /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
 move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
 "/>
 			<Tool
@@ -127,7 +127,7 @@ move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
 				CommandLine="cd ..\..\..\SoarLibrary\bin
 &quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl
 mkdir Tcl_sml_ClientInterface
-xcopy /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
+move /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
 move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
 "/>
 			<Tool
