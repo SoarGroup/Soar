@@ -47,12 +47,14 @@ my $namedashes = $nameandversion;
 $namedashes =~ tr/ /-/;
 my $core = "../$namedashes-core";
 my $source = "../$namedashes-source";
+my $msprogramsname = $nameandversion;
+$msprogramsname =~ s/Suite //;
 
 # Parse command line options
 my $build = 1;
 my $checkout = 1;
 my $nsionly = 0;
-my @files;
+my @todelete;
 
 foreach (@ARGV) {
 	if ($_ eq "-nobuild") {
@@ -98,9 +100,8 @@ sub checkout_step {
 	system "svn export $soarurl $source";
 	
 	print "Step 3: Remove globs from source that are not to be distributed with the release...\n";
-	@files = (File::Find::Rule->directory()->name(@remove)->in($source), File::Find::Rule->file()->name(@remove)->in($source));
 
-	foreach (@files) {
+	foreach (File::Find::Rule->directory()->name(@remove)->in($source), File::Find::Rule->file()->name(@remove)->in($source)) {
 		print "Removing from source: $_\n";
 		unlink $_ or die "Unable to remove $_: $!";
 	}
@@ -109,8 +110,7 @@ sub checkout_step {
 sub copy_step {
 	print "Step 4: Copy globs from working tree to core...\n";
 	rmtree($core, 1);
-	@files = (File::Find::Rule->directory()->name(@copyglobs)->in("."), File::Find::Rule->file()->name(@copyglobs)->in("."));
-	foreach(@files) {
+	foreach (File::Find::Rule->directory()->name(@copyglobs)->in("."), File::Find::Rule->file()->name(@copyglobs)->in(".")) {
 		# This creates destination if it doesn't exist.
 		print "Copying to core: $_\n";
 		rcopy($_, "$core/$_");
@@ -119,8 +119,7 @@ sub copy_step {
 
 sub move_step {
 	print "Step 5: Move globs from source tree to core...\n";
-	@files = (File::Find::Rule->directory()->name(@moveglobs)->in($source), File::Find::Rule->file()->name(@moveglobs)->in($source));
-	foreach(@files) {
+	foreach(File::Find::Rule->directory()->name(@moveglobs)->in($source), File::Find::Rule->file()->name(@moveglobs)->in($source)) {
 		# This creates destination if it doesn't exist.
 		print "Moving from source to core: $_\n";
 		rcopy($_, "$core/$_");
@@ -133,33 +132,40 @@ sub nsi_step {
 	while(<NSIINPUT>) {
 		if (/(.*)nameandversion(.*)/) {
 			print $1 . $nameandversion . $2 . "\n";
-		} else if (/(.*)installdir(.*)/) {
-			print $1 . "Soar\\" . $namedashes . $2 . "\n";
-		} else if (/(.*)outfile(.*)/) {
+		} elsif (/(.*)installdir(.*)/) {
+			print $1 . "Soar/" . $namedashes . $2 . "\n";
+		} elsif (/(.*)outfile(.*)/) {
 			print $1 . $namedashes . ".exe" . $2 . "\n";
-		} else if (/(.*)corefiles(.*)/) {
-			# SetOutPath "$INSTDIR\"
-			# File "SourceFile"
-			# and so on
-			my $ignore = new Sys::Pushd $core;
-			my $windowscore = $core;
-			$windowscore =~ tr/\//\\/;
-			foreach (File::Find::Rule->directory->in(".")) {
-				my $windowsdir = $_;
-				$windowsdir =~ tr/\//\\/;
-				
-				print "\n\tSetOutPath \"\$INSTDIR\\$windowsdir\"\n";
-				
-				foreach (File::Find::Rule->file->in("$core/$_")) {
-					my $windowsfile = $_;
-					$windowsfile =~ tr/\//\\/;
-					print "\tFile \"$windowsfile\"" . "\n";
-				}
+		} elsif (/(.*)msprogramsname(.*)/) {
+			print $1 . $msprogramsname . $2 . "\n";
+		} elsif (/(.*)corefiles(.*)/) {
+			&do_files ($core);
+		} elsif (/(.*)sourcefiles(.*)/) {
+			&do_files ($source);
+		} elsif (/\s*CreateShortCut\s*\"(.+?)\"/) {
+			push(@todelete, $1);
+		} elsif (/(.*)deletefiles(.*)/) {
+			# Delete "Filename"
+			foreach (@todelete) {
+				print "\tDelete \"$_\"\n";
 			}
-			exit(0);
 		} else {
-			print $_ . "\n";		
+			print $_;		
 		}
 	}
 }
 
+sub do_files {
+	foreach (File::Find::Rule->directory->in($_[0])) {
+		my $currentdir = $_;
+		/$_[0](.*)/;
+		my $outputdir = $1;
+		print "\n\tSetOutPath \"\$INSTDIR$outputdir\"\n";
+				
+		foreach (File::Find::Rule->file->maxdepth(1)->in("$currentdir")) {
+			print "\tFile \"$_\"" . "\n";
+			/.*\/(.*)$/;
+			push (@todelete, "\$INSTDIR$outputdir" . '/' . $1);
+		}
+	}
+}
