@@ -5,7 +5,7 @@
 !define OUTFILE "outfile"
 
 Name "${APPNAMEANDVERSION}"
-InstallDir "$PROGRAMFILES/INSTALLDIR"
+InstallDir "$PROGRAMFILES/${INSTALLDIR}"
 InstallDirRegKey HKLM "Software/${APPNAME}" ""
 OutFile "${OUTFILE}"
 
@@ -61,8 +61,8 @@ Section "Core Soar Components" Section1
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Soar Debugger (Java).lnk" "$INSTDIR/SoarLibrary/bin/SoarJavaDebugger.jar" "" "$INSTDIR/Resources/Icons/soar.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Towers of Hanoi (Java).lnk" "$INSTDIR/SoarLibrary/bin/toh.jar" "" "$INSTDIR/Resources/Icons/toh.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Missionaries and Cannibals (Java).lnk" "$INSTDIR/SoarLibrary/bin/mac.jar" "" "$INSTDIR/Resources/Icons/mac.ico"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Announcement.lnk" "$INSTDIR/Announce.txt"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/License.lnk" "$INSTDIR/COPYING"
+	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Announcement.lnk" "$INSTDIR/Documentation/Announce.txt"
+	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/License.lnk" "$INSTDIR/License.txt"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Uninstall.lnk" "$INSTDIR/Uninstall ${APPNAMEANDVERSION}.exe" "" "$INSTDIR/Resources/Icons/un-soar.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start VisualSoar (Java).lnk" "$INSTDIR/SoarLibrary/bin/VisualSoar.jar" "" "$INSTDIR/Resources/Icons/vs.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Eaters (Java).lnk" "$INSTDIR/SoarLibrary/bin/JavaEaters.jar" "" "$INSTDIR/Resources/Icons/eaters.ico"
@@ -164,6 +164,8 @@ Section Uninstall
 	Delete "$INSTDIR/SoarLibrary/bin/javaw.exe.manifest"
 	Delete "$INSTDIR/SoarLibrary/bin/default-layout.dlf"
 	Delete "$INSTDIR/SoarLibrary/bin/default-text.dlf"
+	Delete "$INSTDIR/SoarLibrary/bin/EaterLog.txt"
+	Delete "$INSTDIR/SoarLibrary/bin/eaters-default-settings.xml"
 	Delete "$INSTDIR/SoarLibrary/bin/VSPreferences.txt"
 
 	deletefiles
