@@ -19,22 +19,19 @@ MapManager::MapManager
 { }
 
 
-void MapManager::getRegionsOccupied
-( SoarGameGroup* group, 
+void MapManager::getRegionsIntersecting
+( const Rectangle& r, 
   list<MapRegion*>& regionsOccupied ) 
 {
-  Rectangle groupBBox = group->getBoundingBox();
   for(set<MapRegion*>::iterator 
       i  = regions.begin(); 
       i != regions.end(); 
       i++) 
   {
-    if((*i)->intersects(groupBBox)) {
+    if((*i)->intersects(r)) {
       regionsOccupied.push_back(*i);
     }
   }
-  // there had better be at least one region under a group you can see
-  assert(regionsOccupied.size() > 0);
 }
 
 MapRegion* MapManager::getRegionUnder(int x, int y) {

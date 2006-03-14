@@ -29,14 +29,13 @@ public:
 
   // querying functions
   MapRegion* getRegionUnder(int x, int y);
+  void getRegionsIntersecting(const Rectangle& r, list<MapRegion*>& regions);
 
   // attention shifting functions
   // these will modify the Soar input link (via SoarInterface)
   void focus(int region);
   void defocus();
 
-  void getRegionsOccupied(SoarGameGroup* group, list<MapRegion*> &regions);
-  
 private:
   const Map<GameTile>& gameMap;
   int tilePoints;

@@ -27,6 +27,8 @@ class SoarGameGroup {
                    OrtsInterface*  _ORTSIO,
                    MapManager*     _mapManager );
 
+    ~SoarGameGroup();
+
     void addUnit(SoarGameObject* unit);
     bool removeUnit(SoarGameObject* unit);
     void updateStats(bool saveProps);
@@ -63,7 +65,11 @@ class SoarGameGroup {
     
     bool getSticky();
     void setSticky(bool in);
-    
+
+  private: // functions
+    void updateBoundingBox();
+    void updateRegionsOccupied();
+
   private:
     set <SoarGameObject*> members;
     groupPropertyStruct soarData;
@@ -85,9 +91,8 @@ class SoarGameGroup {
     bool world;
     OrtsInterface* ORTSIO;
 
-    // bounding box
+    // bounding box of group dimensions
     Rectangle bbox;
-    void updateBoundingBox();
 
     int centerX, centerY;
 

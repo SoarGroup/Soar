@@ -42,6 +42,16 @@ SoarGameGroup::SoarGameGroup( SoarGameObject* unit,
   centerY = 0;
 }
 
+SoarGameGroup::~SoarGameGroup() {
+  for(list<MapRegion*>::iterator
+      i  = regionsOccupied.begin();
+      i != regionsOccupied.end();
+      i++)
+  {
+    (*i)->groupExit(this);
+  }
+}
+
 void SoarGameGroup::addUnit(SoarGameObject* unit) {
   //capabilities &= unit->capabilities;
 
@@ -151,7 +161,7 @@ void SoarGameGroup::updateStats(bool saveProps) {
       }
        
       currentObject++;
-    }
+    } // while (currentObject != members.end())
     
     health /= size;
     speed /= size;
@@ -162,6 +172,7 @@ void SoarGameGroup::updateStats(bool saveProps) {
     centerY = y;
 
     updateBoundingBox();
+    updateRegionsOccupied();
 
     pair<string, int> stringIntWme;
     pair<string, string> stringStringWme;
@@ -208,45 +219,6 @@ void SoarGameGroup::updateStats(bool saveProps) {
     stringStringWme.second = typeName;
     soarData.stringStringPairs.push_back(stringStringWme);
 
-    /**************************************************
-     *                                                *
-     * Update the regions the group occupies          *
-     *                                                *
-     **************************************************/
-
-    // for now, just leave all regions first and then recompute
-    // which ones it enters, even if this may mean exiting and
-    // entering the same region redundently
-    for( list<MapRegion*>::iterator 
-         i  = regionsOccupied.begin();
-         i != regionsOccupied.end();
-         i++ )
-    {
-      cout << "&&& Group has exited from region " << (*i)->getId() << endl;
-      (*i)->groupExit(this);
-    }
-    regionsOccupied.clear();
-    mapManager->getRegionsOccupied(this, regionsOccupied);
-
-    //
-    for( list<MapRegion*>::iterator 
-         i  = regionsOccupied.begin();
-         i != regionsOccupied.end();
-         i++ )
-    {
-      cout << "&&& Region " << (*i)->getId() << endl;
-    }
-    //
-    for( list<MapRegion*>::iterator 
-         i  = regionsOccupied.begin();
-         i != regionsOccupied.end();
-         i++ )
-    {
-      cout << "&&& Group has entered region " << (*i)->getId() << endl;
-      (*i)->groupEnter(this);
-      soarData.regionsOccupied.push_back((*i)->getId());
-    }
-   
     // command info:
     // show last command, and as many status attributes as are applicable
     // if a group has one member succeed, fail, or still running, that 
@@ -283,7 +255,7 @@ void SoarGameGroup::updateStats(bool saveProps) {
     staleInSoar = true;
     stale = false;
    
-  }
+  } // if(saveProps)
   
   // center member calculation- is there a way to do a running calc above?
   double shortestDistance 
@@ -300,8 +272,51 @@ void SoarGameGroup::updateStats(bool saveProps) {
     }
     currentObject++;
   }
-  
-  return;
+}
+
+/**************************************************
+ *                                                *
+ * Update the regions the group occupies          *
+ *                                                *
+ **************************************************/
+void SoarGameGroup::updateRegionsOccupied() {
+  // for now, just leave all regions first and then recompute
+  // which ones it enters, even if this may mean exiting and
+  // entering the same region redundently
+  for( list<MapRegion*>::iterator 
+       i  = regionsOccupied.begin();
+       i != regionsOccupied.end();
+       i++ )
+  {
+    cout << "&&& Group " << (int) this << " has exited from region " << (*i)->getId() << endl;
+    (*i)->groupExit(this);
+  }
+  regionsOccupied.clear();
+  mapManager->getRegionsIntersecting(getBoundingBox(), regionsOccupied);
+
+  for( list<MapRegion*>::iterator
+       i  = regionsOccupied.begin();
+       i != regionsOccupied.end();
+       i++ )
+  {
+    list<MapRegion*>::iterator j = i;
+    j++;
+    for( ; j != regionsOccupied.end(); j++) {
+      if (*i == *j) {
+        assert(false);
+      }
+    }
+  }
+
+  for( list<MapRegion*>::iterator 
+       i  = regionsOccupied.begin();
+       i != regionsOccupied.end();
+       i++ )
+  {
+    cout << "&&& Group " << (int) this << " has entered region " << (*i)->getId() << endl;
+    (*i)->groupEnter(this);
+    soarData.regionsOccupied.push_back((*i)->getId());
+  }
 }
 
 void SoarGameGroup::mergeTo(SoarGameGroup* target) {

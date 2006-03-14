@@ -37,6 +37,9 @@ public:
 
   int getId();
 
+private: // functions
+  void recalcPointBBox();
+
 private:
   // counter that increments region ids
   static int idCounter;
@@ -57,7 +60,6 @@ private:
 
   list<Rectangle> boundaries;
 
-  void recalcPointBBox();
 };
 
 #endif

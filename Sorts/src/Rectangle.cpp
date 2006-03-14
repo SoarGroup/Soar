@@ -48,20 +48,14 @@ void Rectangle::accomodate(const Rectangle& other) {
 bool Rectangle::intersects(const Rectangle& other) {
   bool x_intersect = false;
   // check the x dimension
-  if (xmin < other.xmin) {
-    if (xmax > other.xmin) x_intersect = true;
-  }
-  else {
-    if (other.xmax > xmin) x_intersect = true;
+  if (xmin <= other.xmax) {
+    if (xmax >= other.xmin) x_intersect = true;
   }
 
   if (x_intersect) {
     // check the y dimension
-    if (ymin < other.ymin) {
-      if (ymax > other.ymin) return true;
-    }
-    else {
-      if (other.ymax > ymin) return true;
+    if (ymin <= other.ymax) {
+      if (ymax >= other.ymin) return true;
     }
   }
   return false;
