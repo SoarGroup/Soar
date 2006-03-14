@@ -17,7 +17,6 @@ use File::Find::Rule;
 use File::Copy::Recursive qw/rcopy rmove/;
 use File::Copy;
 use File::Path;
-use Sys::Pushd;
 
 ##################
 # Variables
@@ -37,10 +36,13 @@ my @copyglobs = qw(*.dll *.exe *.jar *.lib Tcl_sml_ClientInterface);
 
 # Globs to MOVE from Source component to Core component
 # SOURCE --move-to-> CORE
-my @moveglobs = qw//;
+my @moveglobs = qw/COPYING INSTALL Documentation Resources SoarLibrary/;
 
 # Nullsoft installer script input file
 my $nsiinput = "8.6.2.nsi.in";
+
+# Nullsoft installer script output file
+my $nsioutput = "Soar-Suite-8.6.2.nsi";
 ##################
 
 my $namedashes = $nameandversion;
@@ -109,8 +111,9 @@ sub checkout_step {
 }
 
 sub copy_step {
-	print "Step 4: Copy globs from working tree to core...\n";
+	print "Step 4: Remove old core tree...\n";
 	rmtree($core, 1);
+	print "Step 5: Copy globs from working tree to core...\n";
 	foreach (File::Find::Rule->directory()->name(@copyglobs)->in("."), File::Find::Rule->file()->name(@copyglobs)->in(".")) {
 		# This creates destination if it doesn't exist.
 		print "Copying to core: $_\n";
@@ -119,48 +122,70 @@ sub copy_step {
 }
 
 sub move_step {
-	print "Step 5: Move globs from source tree to core...\n";
+	print "Step 6: Move globs from source tree to core...\n";
 	foreach(File::Find::Rule->directory()->name(@moveglobs)->in($source), File::Find::Rule->file()->name(@moveglobs)->in($source)) {
 		# This creates destination if it doesn't exist.
 		print "Moving from source to core: $_\n";
-		rcopy($_, "$core/$_");
+		/$source(.*)/;
+		my $outputdir = $1;
+		rcopy($_, "$core/$outputdir");
 	}
 }
 
 sub nsi_step {
+	print "Step 7: Generate NSI installer script...\n";
 	open(NSIINPUT, $nsiinput) or die "Couldn't open nsi input file: $!";
+	open(NSIOUTPUT, ">$nsioutput") or die "Couldn't open nsi output file: $!";
 
 	while(<NSIINPUT>) {
 		if (/(.*)nameandversion(.*)/) {
-			print $1 . $nameandversion . $2 . "\n";
+			print NSIOUTPUT $1 . $nameandversion . $2 . "\n";
 		} elsif (/(.*)installdir(.*)/) {
-			print $1 . "Soar/" . $namedashes . $2 . "\n";
+			print NSIOUTPUT $1 . "Soar/" . $namedashes . $2 . "\n";
 		} elsif (/(.*)outfile(.*)/) {
-			print $1 . $namedashes . ".exe" . $2 . "\n";
+			print NSIOUTPUT $1 . $namedashes . ".exe" . $2 . "\n";
 		} elsif (/(.*)msprogramsname(.*)/) {
-			print $1 . $msprogramsname . $2 . "\n";
+			print NSIOUTPUT $1 . $msprogramsname . $2 . "\n";
 		} elsif (/(.*)corefiles(.*)/) {
 			&do_files ($core);
 		} elsif (/(.*)sourcefiles(.*)/) {
 			&do_files ($source);
 		} elsif (/\s*CreateShortCut\s*\"(.+?)\"/) {
 			push(@filestodelete, $1);
+			print NSIOUTPUT $_;		
 		} elsif (/\s*CreateDirectory\s*\"(.+?)\"/) {
 			push(@dirstodelete, $1);
+			print NSIOUTPUT $_;		
 		} elsif (/(.*)deletefiles(.*)/) {
 			# Delete "Filename"
 			foreach (@filestodelete) {
-				print "\tDelete \"$_\"\n";
+				print NSIOUTPUT "\tDelete \"$_\"\n";
 			}
 		} elsif (/(.*)deletedirs(.*)/) {
 			# RMDir "Dirname"
 			for (my $i = @dirstodelete - 1; $i >= 0; --$i) {
-				print "\tRMDir \"@dirstodelete[$i]\"\n";
+				print NSIOUTPUT "\tRMDir \"@dirstodelete[$i]\"\n";
 			}
 		} else {
-			print $_;		
+			print NSIOUTPUT $_;		
 		}
 	}
+	close (NSIINPUT);
+	close (NSIOUTPUT);
+
+	print "Step 8: Convert forward slashes to backslashes...\n";
+	open (NSIINPUT, $nsioutput);
+	my @nsiinput = <NSIINPUT>;
+	close (NSIINPUT);
+	open (NSIOUTPUT, ">$nsioutput");
+	foreach (@nsiinput) {
+		my $output = $_;
+		if ($_ !~ /http:\/\//) {
+			$output =~ tr/\//\\/;
+		}
+		print NSIOUTPUT $output;
+	}
+	close (NSIOUTPUT);
 }
 
 sub do_files {
@@ -168,11 +193,11 @@ sub do_files {
 		my $currentdir = $_;
 		/$_[0](.*)/;
 		my $outputdir = $1;
-		print "\n\tSetOutPath \"\$INSTDIR$outputdir\"\n";
+		print NSIOUTPUT "\n\tSetOutPath \"\$INSTDIR$outputdir\"\n";
 		push (@dirstodelete, "\$INSTDIR$outputdir");
 				
 		foreach (File::Find::Rule->file->maxdepth(1)->in("$currentdir")) {
-			print "\tFile \"$_\"" . "\n";
+			print NSIOUTPUT "\tFile \"$_\"" . "\n";
 			/.*\/(.*)$/;
 			push (@filestodelete, "\$INSTDIR$outputdir" . '/' . $1);
 		}
