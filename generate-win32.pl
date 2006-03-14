@@ -28,11 +28,11 @@ my $soarurl = "https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite";
 my $nameandversion = "Soar Suite 8.6.2-r3";
 
 # File globs to completely remove from the tree (not distributed at all)
-my @remove = qw/.cvsignore *.so *.so.2 *.jnilib java_swt make-mac-app.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4/;
+my @remove = qw/.cvsignore *.so *.so.2 *.jnilib java_swt make-mac-app.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource *.tex/;
 
 # Globs to copy from working copy to Core component
 # WORKING --copy-to-> CORE
-my @copyglobs = qw(*.dll *.exe *.jar *.lib Tcl_sml_ClientInterface);
+my @copyglobs = qw(*.pdf *.dll *.exe *.jar ClientSML.lib ElementXML.lib ConnectionSML.lib Tcl_sml_ClientInterface mac towers-of-hanoi-SML.soar);
 
 # Globs to MOVE from Source component to Core component
 # SOURCE --move-to-> CORE
@@ -43,6 +43,9 @@ my $nsiinput = "8.6.2.nsi.in";
 
 # Nullsoft installer script output file
 my $nsioutput = "Soar-Suite-8.6.2.nsi";
+
+# Location of NSIS executable (makensis.exe)
+my $makensis = "/cygdrive/c/Program\\ Files\\ \\(x86\\)/NSIS/makensis.exe";
 ##################
 
 my $namedashes = $nameandversion;
@@ -62,11 +65,9 @@ my @filestodelete;
 foreach (@ARGV) {
 	if ($_ eq "-nobuild") {
 		$build = 0;
-	}
-	if ($_ eq "-nocheckout") {
+	} elsif ($_ eq "-nocheckout") {
 		$checkout = 0;
-	}
-	if ($_ eq "-nsionly") {
+	} elsif ($_ eq "-nsionly") {
 		$nsionly = 1;
 	}
 }
@@ -104,9 +105,14 @@ sub checkout_step {
 	
 	print "Step 3: Remove globs from source that are not to be distributed with the release...\n";
 
-	foreach (File::Find::Rule->directory()->name(@remove)->in($source), File::Find::Rule->file()->name(@remove)->in($source)) {
+	foreach (File::Find::Rule->file()->name(@remove)->in($source)) {
 		print "Removing from source: $_\n";
 		unlink $_ or die "Unable to remove $_: $!";
+	}
+
+	foreach (File::Find::Rule->directory()->name(@remove)->in($source)) {
+		print "Removing from source: $_\n";
+		rmtree($_) or die "Unable to remove $_: $!";
 	}
 }
 
@@ -114,7 +120,7 @@ sub copy_step {
 	print "Step 4: Remove old core tree...\n";
 	rmtree($core, 1);
 	print "Step 5: Copy globs from working tree to core...\n";
-	foreach (File::Find::Rule->directory()->name(@copyglobs)->in("."), File::Find::Rule->file()->name(@copyglobs)->in(".")) {
+	foreach (File::Find::Rule->directory()->name(@copyglobs)->in("."), File::Find::Rule->file()->name(@copyglobs)->mindepth(2)->in(".")) {
 		# This creates destination if it doesn't exist.
 		print "Copying to core: $_\n";
 		rcopy($_, "$core/$_");
@@ -130,6 +136,10 @@ sub move_step {
 		my $outputdir = $1;
 		rcopy($_, "$core/$outputdir");
 	}
+	
+	print "Step 6.1: Rename INSTALL and COPYING...\n";
+	rmove("$core/INSTALL", "$core/Install.txt");
+	rmove("$core/COPYING", "$core/License.txt");
 }
 
 sub nsi_step {
@@ -186,6 +196,9 @@ sub nsi_step {
 		print NSIOUTPUT $output;
 	}
 	close (NSIOUTPUT);
+
+	print "Step 9: Create installer...\n";
+	system "$makensis $nsioutput";
 }
 
 sub do_files {
