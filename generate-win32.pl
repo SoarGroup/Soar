@@ -54,7 +54,8 @@ $msprogramsname =~ s/Suite //;
 my $build = 1;
 my $checkout = 1;
 my $nsionly = 0;
-my @todelete;
+my @dirstodelete;
+my @filestodelete;
 
 foreach (@ARGV) {
 	if ($_ eq "-nobuild") {
@@ -143,11 +144,18 @@ sub nsi_step {
 		} elsif (/(.*)sourcefiles(.*)/) {
 			&do_files ($source);
 		} elsif (/\s*CreateShortCut\s*\"(.+?)\"/) {
-			push(@todelete, $1);
+			push(@filestodelete, $1);
+		} elsif (/\s*CreateDirectory\s*\"(.+?)\"/) {
+			push(@dirstodelete, $1);
 		} elsif (/(.*)deletefiles(.*)/) {
 			# Delete "Filename"
-			foreach (@todelete) {
+			foreach (@filestodelete) {
 				print "\tDelete \"$_\"\n";
+			}
+		} elsif (/(.*)deletedirs(.*)/) {
+			# RMDir "Dirname"
+			for (my $i = @dirstodelete - 1; $i >= 0; --$i) {
+				print "\tRMDir \"@dirstodelete[$i]\"\n";
 			}
 		} else {
 			print $_;		
@@ -161,11 +169,12 @@ sub do_files {
 		/$_[0](.*)/;
 		my $outputdir = $1;
 		print "\n\tSetOutPath \"\$INSTDIR$outputdir\"\n";
+		push (@dirstodelete, "\$INSTDIR$outputdir");
 				
 		foreach (File::Find::Rule->file->maxdepth(1)->in("$currentdir")) {
 			print "\tFile \"$_\"" . "\n";
 			/.*\/(.*)$/;
-			push (@todelete, "\$INSTDIR$outputdir" . '/' . $1);
+			push (@filestodelete, "\$INSTDIR$outputdir" . '/' . $1);
 		}
 	}
 }
