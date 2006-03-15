@@ -18,7 +18,7 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 	final TankSoarSimulationButtons m_SimButtons;
 	final MapButtons m_MapButtons;
 	final TankSoarVisualWorld m_VisualWorld;
-//	final AgentDisplay m_AgentDisplay;
+	final AgentDisplay m_AgentDisplay;
 	final Group m_WorldGroup;
 	
 	public TankSoarWindowManager(TankSoarSimulation simulation) {
@@ -45,7 +45,7 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 				if (tank == null) {
 					return;
 				}
-//				m_AgentDisplay.selectEntity(tank);
+				m_AgentDisplay.selectEntity(tank);
 			}
 		});
 
@@ -63,30 +63,30 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 		group2.setLayout(new FillLayout());
 		m_MapButtons = new MapButtons(group2, m_Simulation, TankSoarSimulation.kMapFilter);
 
-//		m_AgentDisplay = new AgentDisplay(m_Shell, m_Simulation);
-//		gd = new GridData();
-//		m_AgentDisplay.setLayoutData(gd);
+		m_AgentDisplay = new AgentDisplay(m_Shell, m_Simulation);
+		gd = new GridData();
+		m_AgentDisplay.setLayoutData(gd);
 		
 		VisualWorld.remapEntityColors(m_Simulation.getWorldManager().getEntities());
 		m_VisualWorld.generateBackground();
 
-//		m_Simulation.addSimulationListener(this);
+		m_Simulation.addSimulationListener(this);
 
 		m_Shell.setText("Java TankSoar");
 		m_Shell.setSize(m_Shell.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		
 		m_Shell.addShellListener(new ShellAdapter() {
 			public void shellDeactivated(ShellEvent e) {
-//				m_AgentDisplay.worldChangeEvent();			
+				m_AgentDisplay.worldChangeEvent();			
 				m_VisualWorld.redraw();			
 			}
 			public void shellActivated(ShellEvent e) {
-//				m_AgentDisplay.worldChangeEvent();			
+				m_AgentDisplay.worldChangeEvent();			
 				m_VisualWorld.setRepaint();
 				m_VisualWorld.redraw();			
 			}
 			public void shellDeiconified(ShellEvent e) {
-//				m_AgentDisplay.worldChangeEvent();			
+				m_AgentDisplay.worldChangeEvent();			
 				m_VisualWorld.setRepaint();
 				m_VisualWorld.redraw();			
 			}
@@ -94,12 +94,12 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 		
 		m_Shell.addControlListener(new ControlAdapter() {
 			public void controlMoved(ControlEvent e) {
-//				m_AgentDisplay.worldChangeEvent();			
+				m_AgentDisplay.worldChangeEvent();			
 				m_VisualWorld.setRepaint();
 				m_VisualWorld.redraw();			
 			}
 			public void controlResized(ControlEvent e) {
-//				m_AgentDisplay.worldChangeEvent();			
+				m_AgentDisplay.worldChangeEvent();			
 				m_VisualWorld.setRepaint();
 				m_VisualWorld.redraw();			
 			}
@@ -132,16 +132,16 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 	void dispatchEvent(int type) {
 		switch (type) {
 		case SimulationListener.kStartEvent:
-//			m_SimButtons.updateButtons();
+			m_SimButtons.updateButtons();
 			m_MapButtons.updateButtons();
-//			m_AgentDisplay.updateButtons();
+			m_AgentDisplay.updateButtons();
 			return;
 			
 		case SimulationListener.kStopEvent:
 			m_VisualWorld.redraw();
-//			m_SimButtons.updateButtons();
+			m_SimButtons.updateButtons();
 			m_MapButtons.updateButtons();
-//			m_AgentDisplay.updateButtons();
+			m_AgentDisplay.updateButtons();
 			return;
 			
 		case SimulationListener.kErrorMessageEvent:
@@ -153,8 +153,7 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 			
 		case SimulationListener.kUpdateEvent:
 			m_VisualWorld.redraw();
-//			updateFoodAndScoreCount();
-//			m_AgentDisplay.worldChangeEvent();
+			m_AgentDisplay.worldChangeEvent();
 			return;
 			
 		case SimulationListener.kResetEvent:
@@ -162,26 +161,24 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 			m_VisualWorld.generateBackground();
 			m_VisualWorld.setRepaint();
 			m_VisualWorld.redraw();
-//			updateFoodAndScoreCount();
-//			m_SimButtons.updateButtons();
-//			m_AgentDisplay.worldChangeEvent();
+			m_SimButtons.updateButtons();
+			m_AgentDisplay.worldChangeEvent();
 			return;
 			
 		case SimulationListener.kAgentCreatedEvent:
 			m_VisualWorld.setRepaint();
 			m_VisualWorld.redraw();
 			VisualWorld.remapEntityColors(m_Simulation.getWorldManager().getEntities());
-//			updateFoodAndScoreCount();
-//			m_SimButtons.updateButtons();
-//			m_AgentDisplay.agentEvent();
+			m_SimButtons.updateButtons();
+			m_AgentDisplay.agentEvent();
 			return;
 			
 		case SimulationListener.kAgentDestroyedEvent:
 			m_VisualWorld.setRepaint();
 			m_VisualWorld.redraw();
 			VisualWorld.remapEntityColors(m_Simulation.getWorldManager().getEntities());
-//			m_SimButtons.updateButtons();
-//			m_AgentDisplay.agentEvent();
+			m_SimButtons.updateButtons();
+			m_AgentDisplay.agentEvent();
 			return;
 			
 		default:

@@ -129,7 +129,8 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 				
 				// Check for interesting foreground, otherwise draw background
 				if (cell.isTank()) {
-					gc.drawImage(kTanks[m_Random.nextInt(kTanks.length)], x*m_CellSize, y*m_CellSize);
+					Tank tank = cell.getTank();
+					gc.drawImage(kTanks[tank.getFacingInt()], x*m_CellSize, y*m_CellSize);
 				} else {
 					gc.drawImage(m_Background[x][y], x*m_CellSize, y*m_CellSize);
 				}
