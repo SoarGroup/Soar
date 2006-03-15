@@ -118,6 +118,39 @@ char const* sml_GetTagName(ElementXML_Handle hXML)
 
 ////////////////////////////////////////////////////////////////
 //
+// Comment functions (<!-- .... --> marks the bounds of a comment)
+//
+////////////////////////////////////////////////////////////////
+
+/*************************************************************
+* @brief Associate a comment with this XML element.
+*		 The comment is written in front of the element when stored/parsed.
+*
+* This type of commenting isn't completely general.  You can't have multiple
+* comment blocks before an XML element, nor can you have trailing comment blocks
+* where there is no XML element following the comment.  However, both of these are
+* unusual situations and would require a significantly more complex API to support
+* so it seems unnecessary.
+*
+* @param Comment	The comment string.
+*************************************************************/
+bool sml_SetComment(ElementXML_Handle hXML, char const* pComment)
+{
+	return GetElementFromHandle(hXML)->SetComment(pComment) ;
+}
+
+/*************************************************************
+* @brief Returns the comment for this element.
+*
+* @returns The comment string for this element (or NULL if there is none)
+*************************************************************/
+char const* sml_GetComment(ElementXML_Handle hXML)
+{
+	return GetElementFromHandle(hXML)->GetComment() ;
+}
+
+////////////////////////////////////////////////////////////////
+//
 // Child element functions.
 //
 // These allow a single ElementXML object to represent a complete

@@ -196,6 +196,33 @@ public:
 
 	////////////////////////////////////////////////////////////////
 	//
+	// Comment functions (<!-- .... --> marks the bounds of a comment)
+	//
+	////////////////////////////////////////////////////////////////
+
+	/*************************************************************
+	* @brief Associate a comment with this XML element.
+	*		 The comment is written in front of the element when stored/parsed.
+	*
+	* This type of commenting isn't completely general.  You can't have multiple
+	* comment blocks before an XML element, nor can you have trailing comment blocks
+	* where there is no XML element following the comment.  However, both of these are
+	* unusual situations and would require a significantly more complex API to support
+	* so it seems unnecessary.
+	*
+	* @param Comment	The comment string.
+	*************************************************************/
+	bool SetComment(char const* pComment) ;
+
+	/*************************************************************
+	* @brief Returns the comment for this element.
+	*
+	* @returns The comment string for this element (or NULL if there is none)
+	*************************************************************/
+	char const* GetComment() const ;
+
+	////////////////////////////////////////////////////////////////
+	//
 	// Child element functions.
 	//
 	// These allow a single ElementXML object to represent a complete
