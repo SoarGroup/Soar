@@ -4,3 +4,4 @@
 ###########################################
 AM_MAKEFLAGS = -j1
 SUBDIRS = Java Tcl
+EXTRA_DIST = sml_ClientInterface.i
