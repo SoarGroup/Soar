@@ -206,7 +206,6 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 		
 		Tank tank = new Tank(agent, productions, color, location);
-		// Put eater on map, ignore food
 		getCell(location).setTank(tank);
 
 		if (m_Tanks == null) {

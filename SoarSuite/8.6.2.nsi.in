@@ -63,10 +63,20 @@ Section "Core Soar Components" Section1
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Missionaries and Cannibals (Java).lnk" "$INSTDIR/SoarLibrary/bin/mac.jar" "" "$INSTDIR/Resources/Icons/mac.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Announcement.lnk" "$INSTDIR/Documentation/Announce.txt"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/License.lnk" "$INSTDIR/License.txt"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Uninstall.lnk" "$INSTDIR/Uninstall ${APPNAMEANDVERSION}.exe" "" "$INSTDIR/Resources/Icons/un-soar.ico"
+	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Uninstall ${APPNAMEANDVERSION}.lnk" "$INSTDIR/Uninstall ${APPNAMEANDVERSION}.exe" "" "$INSTDIR/Resources/Icons/un-soar.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start VisualSoar (Java).lnk" "$INSTDIR/SoarLibrary/bin/VisualSoar.jar" "" "$INSTDIR/Resources/Icons/vs.ico"
+	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start TankSoar (Java).lnk" "$INSTDIR/SoarLibrary/bin/JavaTankSoar.jar" "" "$INSTDIR/Resources/Icons/tanksoar.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Eaters (Java).lnk" "$INSTDIR/SoarLibrary/bin/JavaEaters.jar" "" "$INSTDIR/Resources/Icons/eaters.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start QuickLink.lnk" "$INSTDIR/SoarLibrary/bin/QuickLink.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start SoarTextIO.lnk" "$INSTDIR/SoarLibrary/bin/SoarTextIO.jar" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$INSTDIR/TestClientSML.lnk" "$INSTDIR/SoarLibrary/bin/TestClientSML.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$INSTDIR/TestCommandLineInterface.lnk" "$INSTDIR/SoarLibrary/bin/TestCommandLineInterface.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$INSTDIR/TestConnectionSML.lnk" "$INSTDIR/SoarLibrary/bin/TestConnectionSML.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$INSTDIR/TestMultiAgent.lnk" "$INSTDIR/SoarLibrary/bin/TestMultiAgent.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$INSTDIR/TestSMLEvents.lnk" "$INSTDIR/SoarLibrary/bin/TestSMLEvents.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$INSTDIR/TestSoarPerformance.lnk" "$INSTDIR/SoarLibrary/bin/TestSoarPerformance.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$INSTDIR/towersSML.lnk" "$INSTDIR/SoarLibrary/bin/towersSML.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$INSTDIR/TestJavaSML.lnk" "$INSTDIR/SoarLibrary/bin/TestJavaSML.jar" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	
 	SetOutPath "$INSTDIR/Documentation/"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Tutorial/Soar Tutorial Part 1.lnk" "$INSTDIR/Documentation/Soar Tutorial Part 1.pdf"
@@ -167,6 +177,7 @@ Section Uninstall
 	Delete "$INSTDIR/SoarLibrary/bin/EaterLog.txt"
 	Delete "$INSTDIR/SoarLibrary/bin/eaters-default-settings.xml"
 	Delete "$INSTDIR/SoarLibrary/bin/VSPreferences.txt"
+	RMDir /r "$INSTDIR/Environments/JavaMissionaries/src"
 
 	deletefiles
 	
