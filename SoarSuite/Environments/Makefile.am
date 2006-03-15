@@ -3,6 +3,7 @@
 # Date: 2006
 ###########################################
 SUBDIRS = 
+EXTRA_DIST = JavaBaseEnvironment JavaEaters JavaMissionaries JavaTOH JavaTankSoar TclEaters
 
 java:
 	cd JavaBaseEnvironment && $(MAKE) $(MAKEOPTS) java

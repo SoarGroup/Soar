@@ -1,21 +1,17 @@
 #!/bin/sh
 SOARLIB="../../SoarLibrary/bin"
 
-if [[ `uname -s` == "Darwin" ]]
-then
-  if ! javac -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar:${SOARLIB}/JavaBaseEnvironment.jar -sourcepath src src/edu/umich/eaters/Eaters.java; then
-    echo "Build failed."
-    exit 1;
-  fi
-  jar cfm ${SOARLIB}/eaters.jar JarManifest -C src .
-else
-  if ! javac -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar:${SOARLIB}/JavaBaseEnvironment.jar -sourcepath src src/edu/umich/eaters/Eaters.java; then
-    echo "Build failed."
-    exit 1;
-  fi
-  jar cfm ${SOARLIB}/eaters.jar JarManifest -C src .
-fi
+mkdir bin
+rm bin/*.class
 
+if ! javac -d bin -classpath ${SOARLIB}/swt.jar:${SOARLIB}/sml.jar:${SOARLIB}/JavaBaseEnvironment.jar -sourcepath source source/eaters/Eaters.java ; then
+	echo "Build failed."
+	exit 1;
+fi
+cp source/* bin
+jar cfm ${SOARLIB}/JavaEaters.jar JarManifest -C bin .
+
+# This next block is out of date.
 if [[ `uname -s` == "Darwin" ]]
 then
     echo "on Mac OS X, building application package for JavaEaters..."

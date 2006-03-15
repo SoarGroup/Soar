@@ -6,7 +6,7 @@ BASEDIR_PREFIX = ../..
 
 bin_PROGRAMS = TestCLI
 
-TestCLI_SOURCES = cli_Test.cpp
+TestCLI_SOURCES = cli_Test.cpp cli_Test.h
 
 TestCLI_LDADD = \
 $(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \

@@ -6,7 +6,10 @@ BASEDIR_PREFIX = ../..
 
 bin_PROGRAMS = TOHSML
 
-TOHSML_SOURCES = TowersOfHanoi.cpp smlTowers.cpp smlTowersSoarAgent.cpp
+TOHSML_SOURCES = TowersOfHanoi.cpp smlTowers.cpp smlTowersSoarAgent.cpp\
+Towers.h\
+smlTowers.h\
+smlTowersSoarAgent.h
 
 TOHSML_LDADD = \
 $(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \

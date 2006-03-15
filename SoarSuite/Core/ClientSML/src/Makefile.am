@@ -19,7 +19,26 @@ sml_ClientXML.cpp\
 sml_ClientAnalyzedXML.cpp\
 sml_DeltaList.cpp\
 sml_ObjectMap.cpp\
-sml_OutputDeltaList.cpp
+sml_OutputDeltaList.cpp\
+../include/sml_Client.h\
+../include/sml_ClientAgent.h\
+../include/sml_ClientAnalyzedXML.h\
+../include/sml_ClientDirect.h\
+../include/sml_ClientErrors.h\
+../include/sml_ClientEvents.h\
+../include/sml_ClientFloatElement.h\
+../include/sml_ClientIdentifier.h\
+../include/sml_ClientIntElement.h\
+../include/sml_ClientKernel.h\
+../include/sml_ClientStringElement.h\
+../include/sml_ClientTraceXML.h\
+../include/sml_ClientWMElement.h\
+../include/sml_ClientWorkingMemory.h\
+../include/sml_ClientXML.h\
+../include/sml_DeltaList.h\
+../include/sml_ListMap.h\
+../include/sml_ObjectMap.h\
+../include/sml_OutputDeltaList.h
 
 INCLUDES = \
 -I../../..\

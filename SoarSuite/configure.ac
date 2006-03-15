@@ -6,7 +6,7 @@
 AC_PREREQ(2.57)
 AC_INIT([SoarSuite], [8.6.2], [soar-group@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([Core/SoarKernel/include/soarkernel.h])
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([foreign tar-ustar])
 AC_REVISION($Revision$)
 AC_CONFIG_HEADERS([config.h])
 AC_PREFIX_DEFAULT([/usr/local/soar])
@@ -421,8 +421,6 @@ AC_OUTPUT([
 	Tools/QuickLink/Makefile
 	Tools/QuickLink/src/Makefile
 	Tools/SoarJavaDebugger/Makefile
-	Tools/SoarTextIO/Makefile
-	Tools/SoarTextIO/src/Makefile
 	Tools/TOHSML/Makefile
 	Tools/TestCLI/Makefile
 	Tools/TestClientSML/Makefile
