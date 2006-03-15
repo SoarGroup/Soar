@@ -55,6 +55,9 @@ static char const* kEquals		  = "=" ;
 static char const* kSpace		  = " " ;
 static char const* kQuote		  = "\"" ;
 
+static char const* kCommentStartString	= "<!--" ;
+static char const* kCommentEndString	= "-->" ;
+
 static char const* kEncodeHex = "bin_encoding=\"hex\"" ;
 
 static const int kLenLT   = strlen(kLT) ;
@@ -76,6 +79,9 @@ static const int kLenSpace		   = strlen(kSpace) ;
 static const int kLenQuote		   = strlen(kQuote) ;
 
 static const int kLenEncodeHex	   = strlen(kEncodeHex) ;
+
+static const int kLenCommentStartString = strlen(kCommentStartString) ;
+static const int kLenCommentEndString = strlen(kCommentEndString) ;
 
 inline static char const* ConvertSpecial(char base)
 {
@@ -255,6 +261,7 @@ ElementXMLImpl::ElementXMLImpl(void)
 
 	m_TagName = NULL ;
 	m_CharacterData = NULL ;
+	m_Comment = NULL ;
 	m_ErrorCode = 0 ;
 	m_pParent = NULL ;
 
@@ -277,6 +284,9 @@ static inline void StaticReleaseRef(ElementXMLImpl* pXML)
 *************************************************************/
 ElementXMLImpl::~ElementXMLImpl(void)
 {
+	// Delete the comment
+	DeleteString(m_Comment) ;
+
 	// Delete the character data
 	DeleteString(m_CharacterData) ;
 
@@ -337,6 +347,9 @@ ElementXMLImpl* ElementXMLImpl::MakeCopy() const
 
 	// Start with a null parent and override this later
 	pCopy->m_pParent		  = NULL ;
+
+	// Copy the comment
+	pCopy->SetComment(m_Comment) ;
 
 	// Copy the tag name
 	pCopy->SetTagName(m_TagName) ;
@@ -700,6 +713,34 @@ const char* ElementXMLImpl::GetAttribute(const char* attName) const
 	return iter->second ;
 }
 
+/*************************************************************
+* @brief Associate a comment with this XML element.
+*		 The comment is written in front of the element when stored/parsed.
+*
+* This type of commenting isn't completely general.  You can't have multiple
+* comment blocks before an XML element, nor can you have trailing comment blocks
+* where there is no XML element following the comment.  However, both of these are
+* unusual situations and would require a significantly more complex API to support
+* so it seems unnecessary.
+*
+* @param Comment	The comment string.
+*************************************************************/
+bool ElementXMLImpl::SetComment(const char* comment)
+{
+	m_Comment = CopyString(comment) ;
+	return true ;
+}
+
+/*************************************************************
+* @brief Returns the comment for this element.
+*
+* @returns The comment string for this element (or NULL if there is none)
+*************************************************************/
+char const* ElementXMLImpl::GetComment()
+{
+	return m_Comment;
+}
+
 ////////////////////////////////////////////////////////////////
 //
 // Character data functions (e.g the character data in <name>Albert Einstein</name> is "Albert Einstein")
@@ -888,6 +929,12 @@ int ElementXMLImpl::DetermineXMLStringLength(bool includeChildren) const
 {
 	int len = 0 ;
 
+	// The comment
+	if (m_Comment)
+	{
+		len += kLenCommentStartString + strlen(m_Comment) + kLenCommentEndString ;
+	}
+
 	// The start tag
 	if (m_TagName)
 	{
@@ -968,6 +1015,14 @@ char* ElementXMLImpl::GenerateXMLString(char* pStart, int maxLength, bool includ
 	// see the string being formed.
 	// pStr will walk down the available memory.
 	char* pStr = pStart ;
+
+	// Add the comment
+	if (m_Comment)
+	{
+		pStr = AddString(pStr, kCommentStartString) ;
+		pStr = AddString(pStr, m_Comment) ;
+		pStr = AddString(pStr, kCommentEndString) ;
+	}
 
 	pStr = AddString(pStr, kStartTagOpen) ;
 	

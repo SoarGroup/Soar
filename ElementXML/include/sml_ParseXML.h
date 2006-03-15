@@ -44,8 +44,8 @@ class ElementXMLImpl ;
 class ParseXML
 {
 protected:
-	enum TokenType { kSymbol, kIdentifier, kQuotedString, kCharData, kEOF } ;
-	enum { kOpenTagChar = '<', kCloseTagChar = '>', kEndMarkerChar = '/', kEqualsChar = '=', kHeaderChar = '?', kEscapeChar = '&' } ;
+	enum TokenType { kSymbol, kIdentifier, kQuotedString, kComment, kCharData, kEOF } ;
+	enum { kOpenTagChar = '<', kCloseTagChar = '>', kEndMarkerChar = '/', kEqualsChar = '=', kHeaderChar = '?', kEscapeChar = '&', kCommentStartChar = '!' } ;
 
 protected:
 	// Used to report an error.  We only report the first one we find and then we abort the parse.
@@ -56,6 +56,9 @@ protected:
 	ParseString m_TokenValue ;
 	TokenType	m_TokenType ;
 	bool		m_InCharData ;	// True when reading character data
+
+	// The last comment parsed.
+	ParseString	m_LastComment ;
 
 	// Set to true when we go to read the next line after the last line in the file.
 	// (So it's not true when we're reading the last, incomplete line).
@@ -72,6 +75,9 @@ protected:
 	void		SetCurrentToken(ParseString val, TokenType type) { m_TokenValue = val ; m_TokenType = type ; }
 	void		SetCurrentToken(char val, TokenType type)		 { m_TokenValue = val ; m_TokenType = type ; }
 	void		SetInCharData(bool state)		{ m_InCharData = state ; }
+	void		SetLastComment(ParseString comment) { m_LastComment = comment ; }
+	bool		HasLastComment()	{ return m_LastComment.size() > 0 ; }
+	char const* GetLastComment()	{ return m_LastComment.c_str() ; }
 
 	void		RecordError(std::string pStr)	{ if (!m_Error)
 													{ m_ErrorMsg = pStr ; m_Error = true ; } }
@@ -117,6 +123,16 @@ protected:
 	{
 		return (ch == kOpenTagChar || ch == kCloseTagChar ||
 				ch == kHeaderChar || ch == kEqualsChar) ;
+	}
+
+	/************************************************************************
+	* 
+	* Returns true if this is the start of a comment block <!
+	* 
+	*************************************************************************/
+	bool IsCommentStart(char ch)
+	{
+		return (ch == kCommentStartChar) ;
 	}
 
 	/************************************************************************

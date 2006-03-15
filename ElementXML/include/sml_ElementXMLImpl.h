@@ -106,6 +106,7 @@ protected:
 	xmlString		m_CharacterData ;	// The character data (e.g. in <name>Albert Einstein</name> the char data is "Albert Einstein")
 	xmlAttributeMap	m_AttributeMap ;	// Mapping from attribute-name to attribute-value (e.g. in <name first="Albert"> first is an attribute with value "Albert")
 	xmlList			m_Children ;		// List of children of this element
+	xmlString		m_Comment ;			// Used to attach a comment to this object.  It will appear ahead of the element when stored/retrieved.
 	volatile int	m_RefCount ;		// Reference count.  Set to 1 on initialization.  When reaches 0 the object is deleted.
 	bool			m_DataIsBinary ;	// If true, then the character data is treated as a binary buffer (can contain embedded nulls) and the binary length is needed
 	int				m_BinaryDataLength ;// Gives the length of the character data buffer, when it's being treated as a binary buffer.  (only valid if m_IsDataBinary is true).
@@ -304,6 +305,27 @@ public:
 	* @returns The value of the named attribute (or null if this attribute doesn't exist).
 	*************************************************************/
 	const char* GetAttribute(const char* attName) const ;
+
+    /*************************************************************
+    * @brief Associate a comment with this XML element.
+	*		 The comment is written in front of the element when stored/parsed.
+	*
+	* This type of commenting isn't completely general.  You can't have multiple
+	* comment blocks before an XML element, nor can you have trailing comment blocks
+	* where there is no XML element following the comment.  However, both of these are
+	* unusual situations and would require a significantly more complex API to support
+	* so it seems unnecessary.
+	*
+	* @param Comment	The comment string.
+	*************************************************************/
+	bool SetComment(const char* comment) ;
+
+    /*************************************************************
+    * @brief Returns the comment for this element.
+	*
+	* @returns The comment string for this element (or NULL if there is none)
+	*************************************************************/
+	char const* GetComment() ;
 
 	////////////////////////////////////////////////////////////////
 	//
