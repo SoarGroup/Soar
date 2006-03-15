@@ -4,7 +4,7 @@
 ###########################################
 BASEDIR_PREFIX=../../..
 SOAR_LIBRARY=$(BASEDIR_PREFIX)/SoarLibrary
-EXTRA_DIST = Java_sml_ClientInterface.i
+EXTRA_DIST = Java_sml_ClientInterface.i JavaCallbackByHand.h
 
 if SWIGJAVA
 lib_LTLIBRARIES = libJava_sml_ClientInterface.la
@@ -32,6 +32,7 @@ CLEANFILES = build/*.java build/*.class Java_sml_ClientInterface_wrap.cpp
 SWIGOPT    = -java -Wall -package sml $(INCLUDES) -outdir build
 
 Java_sml_ClientInterface_wrap.cpp: Java_sml_ClientInterface.i
+	mkdir build
 	$(SWIG) $(SWIGOPT) -o $@ $<
 	$(JAVAC) build/*.java
 	cp -pRP build $(SOAR_LIBRARY)/bin/sml
