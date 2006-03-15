@@ -91,6 +91,7 @@ public:
 		pXML->AddAttribute("att1", "val1") ;
 		pXML->AddAttribute("att2", "val2") ;
 		pXML->SetCharacterData("This is a string of data") ;
+		pXML->SetComment("This is a comment") ;
 
 		bool ok = true ;
 
@@ -101,6 +102,7 @@ public:
 		ok = ok && CheckStringEq(pXML->GetTagName(), "test1", "tag name") ;
 		ok = ok && CheckStringEq(pXML->GetCharacterData(), "This is a string of data", "char data") ;
 		ok = ok && Check(pXML->GetUseCData() == false, "CData") ;
+		ok = ok && CheckStringEq(pXML->GetComment(), "This is a comment", "comment") ;
 
 		delete pXML ;
 
@@ -214,6 +216,7 @@ public:
 		pOrigXML->AddAttribute("att1", "val1") ;
 		pOrigXML->AddAttribute("att2", "val2") ;
 		pOrigXML->SetCharacterData("This is a string of data") ;
+		pOrigXML->SetComment("This is a comment that contains <>") ;
 
 		bool ok = true ;
 
@@ -229,6 +232,7 @@ public:
 		ok = ok && CheckStringEq(pXML->GetTagName(), "test1", "tag name") ;
 		ok = ok && CheckStringEq(pXML->GetCharacterData(), "This is a string of data", "char data") ;
 		ok = ok && Check(pXML->GetUseCData() == false, "CData") ;
+		ok = ok && CheckStringEq(pXML->GetComment(), "This is a comment that contains <>", "comment") ;
 
 		ElementXML::DeleteString(pStr) ;
 		delete pXML ;
