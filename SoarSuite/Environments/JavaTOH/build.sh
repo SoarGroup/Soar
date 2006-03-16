@@ -16,6 +16,8 @@ else
   jar cfm ${SOARLIB}/toh.jar JarManifest -C src .
 fi
 
+cp towers-of-hanoi-SML.soar ${SOARLIB}
+
 if [[ `uname -s` == "Darwin" ]]
 then
     echo "on Mac OS X, building application package for JavaTOH..."
