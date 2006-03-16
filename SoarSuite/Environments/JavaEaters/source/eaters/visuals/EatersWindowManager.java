@@ -162,6 +162,7 @@ public class EatersWindowManager extends WindowManager implements SimulationList
 			return;
 			
 		case SimulationListener.kStopEvent:
+			m_VisualWorld.setRepaint();
 			m_VisualWorld.redraw();
 			m_SimButtons.updateButtons();
 			m_MapButtons.updateButtons();
