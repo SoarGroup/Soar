@@ -16,8 +16,8 @@
 #set tcl_pkgPath {} 
 
 set soar_library [file join [pwd]]
-set tsi_library  [file join [pwd] .. .. Applications TclApplications tsi]
-set eaters_dir   [file join $tsi_library .. eaters]
+set tsi_library  [file join [pwd] .. .. Tools TSI]
+set eaters_dir   [file join [pwd] .. .. Environments TclEaters Eaters]
 set agents_dir   [file join $eaters_dir agents]
 
 lappend auto_path ~/sandbox/lib
