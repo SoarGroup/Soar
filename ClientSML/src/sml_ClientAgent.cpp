@@ -903,10 +903,14 @@ void Agent::ReceivedXMLTraceEvent(smlXMLEventId id, ElementXML* pIncoming, Eleme
 		return ;
 
 	// Go through the list of event handlers calling each in turn
-	for (XMLEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
+	for (XMLEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ;)
 	{
 		XMLEventHandlerPlusData handlerPlus = *iter ;
 		XMLEventHandler handler = handlerPlus.m_Handler ;
+
+		// Advance to the next handler before we make the callback, in case
+		// the callback deletes the current handler from the list, invalidating the iterator.
+		iter++ ;
 
 		void* pUserData = handlerPlus.m_UserData ;
 
