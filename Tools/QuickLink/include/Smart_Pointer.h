@@ -97,7 +97,7 @@ public:
 	T* operator-> () const {return ptr;}
 	// these operators make converting to the pointer type less necessary
 	// conversion to bool to allow test for pointer non-zero
-	operator bool() const {return ptr;}
+	operator bool() const {return ptr != 0;}
 	// Smart_Pointers are equal if internal pointers are equal
 	bool operator== (const Smart_Pointer<T>& rhs) const {return ptr == rhs.ptr;}
 	// Smart_Pointers < if internal pointers are <
