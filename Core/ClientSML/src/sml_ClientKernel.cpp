@@ -313,6 +313,10 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
 	// Create a reply
 	ElementXML* pResponse = pConnection->CreateSMLResponse(pIncomingMsg) ;
 
+	// Make sure the connection hasn't been closed along the way
+	if (pConnection->IsClosed())
+		return pResponse ;
+
 	// Special case.  We want to intercept XML trace messages and pass them directly to the handler
 	// without analyzing them.  This is just to boost performance for these messages as speed is critical here
 	// as they're used for trace output.
