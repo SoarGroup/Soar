@@ -80,7 +80,11 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 					} else {
 						m_Background[x][y] = kTrees[m_Random.nextInt(kTrees.length)];
 					}
-				} else if (cell.isEmpty()) {
+				} else if (cell.isOpen()) {
+					m_Background[x][y] = kGrass[m_Random.nextInt(kGrass.length)];
+				} else if (cell.isEnergyRecharger()) {
+					m_Background[x][y] = kGrass[m_Random.nextInt(kGrass.length)];
+				} else if (cell.isHealthRecharger()) {
 					m_Background[x][y] = kGrass[m_Random.nextInt(kGrass.length)];
 				} else {
 					m_Logger.log("Unknown cell at " + x + "," + y);
@@ -94,7 +98,7 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 		x /= m_CellSize;
 		y /= m_CellSize;
 		TankSoarWorld.TankSoarCell cell = m_World.getCell(x, y);
-		if (cell.isTank()) {
+		if (cell.containsTank()) {
 			return cell.getTank();
 		}
 		return null;
@@ -130,7 +134,7 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 				
 				
 				// Check for interesting foreground, otherwise draw background
-				if (cell.isTank()) {
+				if (cell.containsTank()) {
 					Tank tank = cell.getTank();
 					Image tankImage = (Image)kTanks.get(new Integer(tank.getFacingInt()));
 					if (tankImage == null) {

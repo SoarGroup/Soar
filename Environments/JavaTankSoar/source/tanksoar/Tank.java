@@ -35,13 +35,11 @@ public class Tank  extends WorldEntity {
 	private final static String kResurrectID = "resurrect";
 	private final static String kRotateID = "rotate";
 	private final static String kRWavesID = "rwaves";
-	private final static String kSettingID = "setting";
-	private final static String kShields = "shields";
+	private final static String kShieldsID = "shields";
 	private final static String kShieldStatusID = "shield-status";
 	private final static String kSmellID = "smell";
 	private final static String kSoundID = "sound";
 	private final static String kSwitchID = "switch";
-	private final static String kWeaponID = "missile";
 	private final static String kXID = "x";
 	private final static String kYID = "y";
 	
@@ -50,7 +48,6 @@ public class Tank  extends WorldEntity {
 	private final static String kLeftID = "left";
 	private final static String kRightID = "right";
 	private final static String kSilentID = "silent";
-	private final static String kMissileID = "missile";
 	private final static String kPositionID = "position";
 
 	public final static String kEast = "east";
@@ -67,39 +64,24 @@ public class Tank  extends WorldEntity {
 	private final static String kNone = "none";
 	
 	private final static String kCenter = "center";
-	private final static String kLeft = "left";
-	private final static String kRight = "right";
 	
 	
 	public class MoveInfo {
 		boolean move;
 		String moveDirection;
 		
-		boolean rotate;
-		String rotateDirection;
-		
 		boolean fire;
-		
-		boolean radar;
-		boolean radarSetting;
-		
-		boolean radarPower;
-		int radarPowerSetting;
-		
-		boolean shields;
-		boolean shieldsSetting;
 		
 		public MoveInfo() {
 			reset();
 		}
 		
 		public void reset() {
-			move = rotate = fire = radar = radarPower = shields = false;
+			move = fire = false;
 		}
 	}
 	
-	private MoveInfo m_LastMove = new MoveInfo();
-	
+	private Identifier m_InputLink;
 	private StringElement m_BlockedBackwardWME;
 	private StringElement m_BlockedForwardWME;
 	private StringElement m_BlockedLeftWME;
@@ -127,6 +109,7 @@ public class Tank  extends WorldEntity {
 	private StringElement m_RWavesLeftWME;
 	private StringElement m_RWavesRightWME;
 	private StringElement m_ShieldStatusWME;
+	private Identifier m_SmellWME;
 	private StringElement m_SmellColorWME;
 	private IntElement m_SmellDistanceWME;
 	private StringElement m_SmellDistanceStringWME;
@@ -137,123 +120,152 @@ public class Tank  extends WorldEntity {
 	private final static int kInitialEnergy = 1000;
 	private final static int kInitialHealth = 1000;
 	private final static int kInitialMissiles = 15;
-	
-	private int m_Missiles = kInitialMissiles;
-	private int m_Health = kInitialHealth;
-	private int m_Energy = kInitialEnergy;
-	private int m_RadarDistance = 0;
-	private int m_RadarSetting = 0;
-	private boolean m_RadarStatus = false;
-	private boolean m_Resurrect = false;
-	private boolean m_Shields = false;
-	
-	static private int worldCount = 0;
+
 	static private Random random = new Random();
+
+	// Call reset() to initialize these:
+	private int m_Missiles;
+	private int m_Health;
+	private int m_Energy;
+	private int m_RadarDistance;
+	private int m_RadarSetting;
+	private boolean m_RadarStatus;
+	private boolean m_Resurrect;
+	private boolean m_Shields;
+	private MoveInfo m_LastMove;
+	static private int worldCount;
 	
 	public Tank(Agent agent, String productions, String color, Point location) {
 		super(agent, productions, color, location);
+		reset();
 		
-		Identifier inputLink = m_Agent.GetInputLink();
+		m_InputLink = m_Agent.GetInputLink();
 		
-		Identifier blocked = m_Agent.CreateIdWME(inputLink, kBlockedID);
+		Identifier blocked = m_Agent.CreateIdWME(m_InputLink, kBlockedID);
 		m_BlockedBackwardWME = m_Agent.CreateStringWME(blocked, kBackwardID, kNo);
 		m_BlockedForwardWME = m_Agent.CreateStringWME(blocked, kForwardID, kNo);
 		m_BlockedLeftWME = m_Agent.CreateStringWME(blocked, kLeftID, kNo);
 		m_BlockedRightWME = m_Agent.CreateStringWME(blocked, kRightID, kNo);
 		
-		m_ClockWME = m_Agent.CreateIntWME(inputLink, kClockID, worldCount);
+		m_ClockWME = m_Agent.CreateIntWME(m_InputLink, kClockID, worldCount);
 		
-		// TODO: initial direction setting? using north
-		m_Facing = WorldEntity.kNorth;
-		setFacingInt();
-		m_DirectionWME = m_Agent.CreateStringWME(inputLink, kDirectionID, kNorth); 
+		m_DirectionWME = m_Agent.CreateStringWME(m_InputLink, kDirectionID, getFacing()); 
 		
-		m_EnergyWME = m_Agent.CreateIntWME(inputLink, kEnergyID, kInitialEnergy);
-		m_EnergyRechargerWME = m_Agent.CreateStringWME(inputLink, kEnergyRechargerID, kNo);
-		m_HealthWME = m_Agent.CreateIntWME(inputLink, kHealthID, kInitialHealth);
-		m_HealthRechargerWME = m_Agent.CreateStringWME(inputLink, kHealthRechargerID, kNo);
+		m_EnergyWME = m_Agent.CreateIntWME(m_InputLink, kEnergyID, kInitialEnergy);
+		m_EnergyRechargerWME = m_Agent.CreateStringWME(m_InputLink, kEnergyRechargerID, kNo);
+		m_HealthWME = m_Agent.CreateIntWME(m_InputLink, kHealthID, kInitialHealth);
+		m_HealthRechargerWME = m_Agent.CreateStringWME(m_InputLink, kHealthRechargerID, kNo);
 		
-		Identifier incoming = m_Agent.CreateIdWME(inputLink, kIncomingID);
+		Identifier incoming = m_Agent.CreateIdWME(m_InputLink, kIncomingID);
 		m_IncomingBackwardWME = m_Agent.CreateStringWME(incoming, kBackwardID, kNo);
 		m_IncomingForwardWME = m_Agent.CreateStringWME(incoming, kForwardID, kNo);
 		m_IncomingLeftWME = m_Agent.CreateStringWME(incoming, kLeftID, kNo);
 		m_IncomingRightWME = m_Agent.CreateStringWME(incoming, kRightID, kNo);
 		
-		m_MissilesWME = m_Agent.CreateIntWME(inputLink, kMissilesID, kInitialMissiles);
-		m_MyColorWME = m_Agent.CreateStringWME(inputLink, kMyColorID, color);
+		m_MissilesWME = m_Agent.CreateIntWME(m_InputLink, kMissilesID, kInitialMissiles);
+		m_MyColorWME = m_Agent.CreateStringWME(m_InputLink, kMyColorID, color);
 		
-		m_RadarWME = m_Agent.CreateIdWME(inputLink, kRadarID);
-		// Radar substructure depends on situation
+		// Radar structure depends on situation
 		
-		m_RadarDistanceWME = m_Agent.CreateIntWME(inputLink, kRadarDistanceID, m_RadarDistance);
-		m_RadarSettingWME = m_Agent.CreateIntWME(inputLink, kRadarSettingID, m_RadarSetting);
-		m_RadarStatusWME = m_Agent.CreateStringWME(inputLink, kRadarStatusID, kOff);
-		m_RandomWME = m_Agent.CreateFloatWME(inputLink, kRandomID, 0);
-		m_ResurrectWME = m_Agent.CreateStringWME(inputLink, kResurrectID, kNo);
+		m_RadarDistanceWME = m_Agent.CreateIntWME(m_InputLink, kRadarDistanceID, m_RadarDistance);
+		m_RadarSettingWME = m_Agent.CreateIntWME(m_InputLink, kRadarSettingID, m_RadarSetting);
+		m_RadarStatusWME = m_Agent.CreateStringWME(m_InputLink, kRadarStatusID, kOff);
+		m_RandomWME = m_Agent.CreateFloatWME(m_InputLink, kRandomID, 0);
+		m_ResurrectWME = m_Agent.CreateStringWME(m_InputLink, kResurrectID, kNo);
 		
-		Identifier rwaves = m_Agent.CreateIdWME(inputLink, kRWavesID);
+		Identifier rwaves = m_Agent.CreateIdWME(m_InputLink, kRWavesID);
 		m_RWavesBackwardWME = m_Agent.CreateStringWME(rwaves, kBackwardID, kNo);
 		m_RWavesForwardWME = m_Agent.CreateStringWME(rwaves, kForwardID, kNo);
 		m_RWavesLeftWME = m_Agent.CreateStringWME(rwaves, kLeftID, kNo);
 		m_RWavesRightWME = m_Agent.CreateStringWME(rwaves, kRightID, kNo);
 		
-		m_ShieldStatusWME = m_Agent.CreateStringWME(inputLink, kShieldStatusID, kOff);
+		m_ShieldStatusWME = m_Agent.CreateStringWME(m_InputLink, kShieldStatusID, kOff);
 		
-		Identifier smell = m_Agent.CreateIdWME(inputLink, kSmellID);
-		m_SmellColorWME = m_Agent.CreateStringWME(smell, kColorID, kNone);
-		m_SmellDistanceWME = m_Agent.CreateIntWME(smell, kDistanceID, 0);
-		m_SmellDistanceStringWME = m_Agent.CreateStringWME(smell, kDistanceID, kNone);
+		m_SmellWME = m_Agent.CreateIdWME(m_InputLink, kSmellID);
+		m_SmellColorWME = m_Agent.CreateStringWME(m_SmellWME, kColorID, kNone);
+		m_SmellDistanceWME = null;
+		m_SmellDistanceStringWME = m_Agent.CreateStringWME(m_SmellWME, kDistanceID, kNone);
 
-		m_SoundWME = m_Agent.CreateStringWME(inputLink, kSoundID, kSilentID);
-		m_xWME = m_Agent.CreateIntWME(inputLink, kXID, location.x);
-		m_yWME = m_Agent.CreateIntWME(inputLink, kYID, location.y);
+		m_SoundWME = m_Agent.CreateStringWME(m_InputLink, kSoundID, kSilentID);
+		m_xWME = m_Agent.CreateIntWME(m_InputLink, kXID, getLocation().x);
+		m_yWME = m_Agent.CreateIntWME(m_InputLink, kYID, getLocation().y);
 						
 		m_Agent.Commit();		
 	}
 	
-	public void updateInput(TankSoarWorld world) {
-		// assign directions depending on facing
-		int forward = 0, backward = 0, left = 0, right = 0, xIncrement = 0, yIncrement = 0;
+	public class RelativeDirections {
+		public int forward;
+		public int backward;
+		public int left;
+		public int right;
+		public int xIncrement = 0;
+		public int yIncrement = 0;
+		public String forwardString;
+		public String backwardString;
+		public String leftString;
+		public String rightString;
 		
-		switch (getFacingInt()) {
-			case WorldEntity.kNorthInt:
-				forward = kNorthInt;
-				backward = kSouthInt;
-				left = kWestInt;
-				right = kEastInt;
-				yIncrement = -1;
-				break;
-			case WorldEntity.kEastInt:
-				forward = kEastInt;
-				backward = kWestInt;
-				left = kNorthInt;
-				right = kSouthInt;
-				xIncrement = 1;
-				break;
-			case WorldEntity.kSouthInt:
-				forward = kSouthInt;
-				backward = kNorthInt;
-				left = kEastInt;
-				right = kWestInt;
-				yIncrement = 1;
-				break;
-			case WorldEntity.kWestInt:
-				forward = kWestInt;
-				backward = kEastInt;
-				left = kSouthInt;
-				right = kNorthInt;
-				xIncrement = -1;
-				break;
+		public RelativeDirections(int facing) {
+				switch (facing) {
+				case WorldEntity.kNorthInt:
+					forward = kNorthInt;
+					backward = kSouthInt;
+					left = kWestInt;
+					right = kEastInt;
+					forwardString = kNorth;
+					backwardString = kSouth;
+					leftString = kWest;
+					rightString = kEast;
+					yIncrement = -1;
+					break;
+				case WorldEntity.kEastInt:
+					forward = kEastInt;
+					backward = kWestInt;
+					left = kNorthInt;
+					right = kSouthInt;
+					forwardString = kEast;
+					backwardString = kWest;
+					leftString = kNorth;
+					rightString = kSouth;
+					xIncrement = 1;
+					break;
+				case WorldEntity.kSouthInt:
+					forward = kSouthInt;
+					backward = kNorthInt;
+					left = kEastInt;
+					right = kWestInt;
+					forwardString = kSouth;
+					backwardString = kNorth;
+					leftString = kEast;
+					rightString = kWest;
+					yIncrement = 1;
+					break;
+				case WorldEntity.kWestInt:
+					forward = kWestInt;
+					backward = kEastInt;
+					left = kSouthInt;
+					right = kNorthInt;
+					forwardString = kWest;
+					backwardString = kEast;
+					leftString = kSouth;
+					rightString = kNorth;
+					xIncrement = -1;
+					break;
+			}
 		}
+	}
+	
+	public void updateInput(TankSoarWorld world) {
+		RelativeDirections rd = new RelativeDirections(getFacingInt());
 		
 		// Get current cell
 		TankSoarWorld.TankSoarCell cell = world.getCell(getLocation());
 		
 		int blocked = world.getBlockedByLocation(getLocation());
-		m_Agent.Update(m_BlockedForwardWME, ((blocked & forward) > 0) ? kYes : kNo);
-		m_Agent.Update(m_BlockedBackwardWME, ((blocked & backward) > 0) ? kYes : kNo);
-		m_Agent.Update(m_BlockedLeftWME, ((blocked & left) > 0) ? kYes : kNo);
-		m_Agent.Update(m_BlockedRightWME, ((blocked & right) > 0) ? kYes : kNo);
+		m_Agent.Update(m_BlockedForwardWME, ((blocked & rd.forward) > 0) ? kYes : kNo);
+		m_Agent.Update(m_BlockedBackwardWME, ((blocked & rd.backward) > 0) ? kYes : kNo);
+		m_Agent.Update(m_BlockedLeftWME, ((blocked & rd.left) > 0) ? kYes : kNo);
+		m_Agent.Update(m_BlockedRightWME, ((blocked & rd.right) > 0) ? kYes : kNo);
 		
 		m_Agent.Update(m_ClockWME, worldCount);
 		
@@ -266,58 +278,69 @@ public class Tank  extends WorldEntity {
 		m_Agent.Update(m_HealthRechargerWME, cell.isHealthRecharger() ? kYes : kNo);
 		
 		int incoming = world.getIncomingByLocation(getLocation());
-		m_Agent.Update(m_IncomingForwardWME, ((incoming & forward) > 0) ? kYes : kNo);
-		m_Agent.Update(m_IncomingBackwardWME, ((incoming & backward) > 0) ? kYes : kNo);
-		m_Agent.Update(m_IncomingLeftWME, ((incoming & left) > 0) ? kYes : kNo);
-		m_Agent.Update(m_IncomingRightWME, ((incoming & right) > 0) ? kYes : kNo);
+		m_Agent.Update(m_IncomingForwardWME, ((incoming & rd.forward) > 0) ? kYes : kNo);
+		m_Agent.Update(m_IncomingBackwardWME, ((incoming & rd.backward) > 0) ? kYes : kNo);
+		m_Agent.Update(m_IncomingLeftWME, ((incoming & rd.left) > 0) ? kYes : kNo);
+		m_Agent.Update(m_IncomingRightWME, ((incoming & rd.right) > 0) ? kYes : kNo);
 		
 		m_Agent.Update(m_MissilesWME, m_Missiles);
 
 		m_Agent.Update(m_MyColorWME, getColor());		
 		
 		if (m_RadarStatus) {
-			Point location = getLocation();
+			if (m_RadarWME == null) {
+				m_RadarWME = m_Agent.CreateIdWME(m_InputLink, kRadarID);
+			}
+			Point location = new Point(getLocation().x, getLocation().y);
+			
 			String cellID;
 			Identifier cellWME;
 			for (int i = 0; i <= m_RadarSetting; ++i) {
 				// TODO: these three should be in a loop but I am lazy right now.
 				
 				// Center
-				cellID = getCellID(world.getCell(location));
-				cellWME = m_Agent.CreateIdWME(m_RadarWME, cellID);
-
-				m_Agent.CreateIntWME(cellWME, kDistanceID, i);
-				m_Agent.CreateStringWME(cellWME, kPositionID, kCenter);
-				
-				if (cellID == kTankID) {
-					m_Agent.CreateStringWME(cellWME, kColorID, world.getCell(location).getTank().getColor());
+				if (i > 0) {
+					cellID = getCellID(world.getCell(location));
+					cellWME = m_Agent.CreateIdWME(m_RadarWME, cellID);
+	
+					m_Agent.CreateIntWME(cellWME, kDistanceID, i);
+					m_Agent.CreateStringWME(cellWME, kPositionID, kCenter);
+					
+					if (cellID == kTankID) {
+						m_Agent.CreateStringWME(cellWME, kColorID, world.getCell(location).getTank().getColor());
+					}
 				}
 				
 				// Left
-				cellID = getCellID(world.getCell(location, left));
+				cellID = getCellID(world.getCell(location, rd.left));
 				cellWME = m_Agent.CreateIdWME(m_RadarWME, cellID);
 
 				m_Agent.CreateIntWME(cellWME, kDistanceID, i);
-				m_Agent.CreateStringWME(cellWME, kPositionID, kLeft);
+				m_Agent.CreateStringWME(cellWME, kPositionID, kLeftID);
 				
 				if (cellID == kTankID) {
-					m_Agent.CreateStringWME(cellWME, kColorID, world.getCell(location, left).getTank().getColor());
+					m_Agent.CreateStringWME(cellWME, kColorID, world.getCell(location, rd.left).getTank().getColor());
 				}
 
 				// Right
-				cellID = getCellID(world.getCell(location, right));
+				cellID = getCellID(world.getCell(location, rd.right));
 				cellWME = m_Agent.CreateIdWME(m_RadarWME, cellID);
 
 				m_Agent.CreateIntWME(cellWME, kDistanceID, i);
-				m_Agent.CreateStringWME(cellWME, kPositionID, kRight);
+				m_Agent.CreateStringWME(cellWME, kPositionID, kRightID);
 				
 				if (cellID == kTankID) {
-					m_Agent.CreateStringWME(cellWME, kColorID, world.getCell(location, right).getTank().getColor());
+					m_Agent.CreateStringWME(cellWME, kColorID, world.getCell(location, rd.right).getTank().getColor());
 				}
 
 				// Update for next distance
-				location.x += xIncrement;
-				location.y += yIncrement;
+				location.x += rd.xIncrement;
+				location.y += rd.yIncrement;
+			}
+		} else {
+			if (m_RadarWME != null) {
+				m_Agent.DestroyWME(m_RadarWME);
+				m_RadarWME = null;
 			}
 		}
 		
@@ -330,30 +353,46 @@ public class Tank  extends WorldEntity {
 		m_Agent.Update(m_ResurrectWME, m_Resurrect ? kYes : kNo);
 		
 		int rwaves = world.getRWavesByLocation(getLocation());
-		m_Agent.Update(m_RWavesForwardWME, ((rwaves & forward) > 0) ? kYes : kNo);
-		m_Agent.Update(m_RWavesBackwardWME, ((rwaves & backward) > 0) ? kYes : kNo);
-		m_Agent.Update(m_RWavesLeftWME, ((rwaves & left) > 0) ? kYes : kNo);
-		m_Agent.Update(m_RWavesRightWME, ((rwaves & right) > 0) ? kYes : kNo);
+		m_Agent.Update(m_RWavesForwardWME, ((rwaves & rd.forward) > 0) ? kYes : kNo);
+		m_Agent.Update(m_RWavesBackwardWME, ((rwaves & rd.backward) > 0) ? kYes : kNo);
+		m_Agent.Update(m_RWavesLeftWME, ((rwaves & rd.left) > 0) ? kYes : kNo);
+		m_Agent.Update(m_RWavesRightWME, ((rwaves & rd.right) > 0) ? kYes : kNo);
 
 		m_Agent.Update(m_ShieldStatusWME, m_Shields ? kOn : kOff);
 		
 		Tank closestTank = world.getStinkyTankNearLocation(getLocation());
 		if (closestTank != null) {
-			m_Agent.Update(m_SmellColorWME, closestTank.getColor());
-			m_Agent.Update(m_SmellDistanceWME, getManhattanDistanceTo(closestTank));
+			if (m_SmellDistanceWME != null) {
+				m_Agent.Update(m_SmellColorWME, closestTank.getColor());
+				m_Agent.Update(m_SmellDistanceWME, getManhattanDistanceTo(closestTank));
+			} else {
+				m_SmellDistanceWME = m_Agent.CreateIntWME(m_SmellWME, kDistanceID, 0);			
+			}
+			if (m_SmellDistanceStringWME != null) {
+				m_Agent.DestroyWME(m_SmellDistanceStringWME);
+				m_SmellDistanceStringWME = null;
+			}
 		} else {
-			m_Agent.Update(m_SmellColorWME, kNone);
-			m_Agent.Update(m_SmellDistanceStringWME, kNone);
+			if (m_SmellDistanceStringWME != null) {
+				m_Agent.Update(m_SmellColorWME, kNone);
+				m_Agent.Update(m_SmellDistanceStringWME, kNone);
+			} else {
+				m_SmellDistanceStringWME = m_Agent.CreateStringWME(m_SmellWME, kDistanceID, kNone);
+			}
+			if (m_SmellDistanceWME != null) {
+				m_Agent.DestroyWME(m_SmellDistanceWME);
+				m_SmellDistanceWME = null;
+			}
 		}
 	
 		int sound = world.getSoundByLocation(getLocation());
-		if (sound == forward) {
+		if (sound == rd.forward) {
 			m_Agent.Update(m_SoundWME, kForwardID);
-		} else if (sound == backward) {
+		} else if (sound == rd.backward) {
 			m_Agent.Update(m_SoundWME, kBackwardID);
-		} else if (sound == left) {
+		} else if (sound == rd.left) {
 			m_Agent.Update(m_SoundWME, kLeftID);
-		} else if (sound == right) {
+		} else if (sound == rd.right) {
 			m_Agent.Update(m_SoundWME, kRightID);
 		} else {
 			if (sound > 0) {
@@ -369,6 +408,65 @@ public class Tank  extends WorldEntity {
 	}
 	
 	public MoveInfo getMove() {
+		m_LastMove.reset();
+		
+		if (m_Agent.GetNumberCommands() == 0) {
+			m_Logger.log(getName() + " issued no command.");
+			return null;
+		}
+		
+		boolean moved = false;
+		boolean rotated = false;
+
+		RelativeDirections rd = new RelativeDirections(getFacingInt());		
+		
+		for (int i = 0; i < m_Agent.GetNumberCommands(); ++i) {
+		
+			Identifier commandId = m_Agent.GetCommand(i);
+			String commandName = commandId.GetAttribute();
+
+			// TODO: make sure commands can happen simultaneously
+			if (commandName.equalsIgnoreCase(kMoveID)) {
+				if (rotated) {
+					m_Logger.log("Tried to move and rotate at the same time.");
+				}
+				moved = true;
+				
+				m_LastMove.move = true;
+				
+				if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kForwardID)) {
+					m_LastMove.moveDirection = rd.forwardString;
+				} else if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kBackwardID)) {
+					m_LastMove.moveDirection = rd.backwardString;
+				} else if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kLeftID)) {
+					m_LastMove.moveDirection = rd.leftString;
+				} else if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kRightID)) {
+					m_LastMove.moveDirection = rd.rightString;
+				} 
+				
+				
+			} else if (commandName.equalsIgnoreCase(kFireID)) {
+				m_LastMove.fire = true;
+				// Weapon ignored
+			} else if (commandName.equalsIgnoreCase(kRadarID)) {
+				m_RadarStatus = commandId.GetParameterValue(kSwitchID).equalsIgnoreCase(kOn) ? true : false;
+			} else if (commandName.equalsIgnoreCase(kRadarPowerID)) {
+				//m_RadarSetting = Integer.decode(commandId.GetParameterValue(kRadarPowerID)).intValue();
+			} else if (commandName.equalsIgnoreCase(kShieldsID)) {
+				m_Shields = commandId.GetParameterValue(kSwitchID).equalsIgnoreCase(kOn) ? true : false;
+			} else if (commandName.equalsIgnoreCase(kRotateID)) {
+				if (moved) {
+					m_Logger.log("Tried to move and rotate at the same time.");
+				}
+				rotated = true;
+				rotate(commandId.GetParameterValue(kDirectionID));
+			} else {
+				m_Logger.log("Unknown command: " + commandName);
+				continue;
+			}
+			commandId.AddStatusComplete();
+		}
+
 		return m_LastMove;
 	}
 	
@@ -384,16 +482,22 @@ public class Tank  extends WorldEntity {
 		return m_Energy;
 	}
 	
-	public void resetMissiles() {
+	public void reset() {
 		m_Missiles = kInitialMissiles;
-	}
-	
-	public void resetHealth() {
 		m_Health = kInitialHealth;
-	}
-	
-	public void resetEnergy() {
 		m_Energy = kInitialEnergy;
+		
+		// TODO: initial direction setting? using north
+		m_Facing = WorldEntity.kNorth;
+		setFacingInt();
+		
+		m_RadarDistance = 0;
+		m_RadarSetting = 0;
+		m_RadarStatus = false;
+		m_Resurrect = false;
+		m_Shields = false;
+		m_LastMove = new MoveInfo();
+		worldCount = 0;
 	}
 	
 	static public void setWorldCount(int worldCount) {
@@ -417,12 +521,23 @@ public class Tank  extends WorldEntity {
 		if (cell.isHealthRecharger()) {
 			return kHealthID;
 		}
-		if (cell.isMissiles()) {
+		if (cell.containsMissilePack()) {
 			return kMissilesID;
 		}
-		if (cell.isTank()) {
+		if (cell.containsTank()) {
 			return kTankID;
 		}
 		return kOpenID;
+	}
+	
+	private void rotate(String direction) {
+		RelativeDirections rd = new RelativeDirections(getFacingInt());
+		
+		if (direction.equalsIgnoreCase(kLeftID)) {
+			m_Facing = rd.leftString;
+		} else if (direction.equalsIgnoreCase(kRightID)) {
+			m_Facing = rd.rightString;
+		}
+		setFacingInt();
 	}
 }
