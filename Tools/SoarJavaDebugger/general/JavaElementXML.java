@@ -1539,10 +1539,10 @@ public class JavaElementXML
 			Class childClass = Class.forName(className) ;
 		
 			// Get the creation method
-			java.lang.reflect.Method method = childClass.getMethod("createInstance", null) ;
+			java.lang.reflect.Method method = childClass.getMethod("createInstance", (Class[])null) ;
 		
 			// Create an instance of the class (since the method is static both params are null here)
-			Object obj = method.invoke(null, null) ;
+			Object obj = method.invoke(null, (Object[])null) ;
 			
 			// Return the newly created object
 			return obj ;
