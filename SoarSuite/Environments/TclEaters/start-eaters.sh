@@ -1,4 +1,4 @@
 #!/bin/sh
 
-cd ../soar-library
-wish ../tclenvironments/eaters/init-eaters.tcl
+cd ../../SoarLibrary/bin
+wish ../../Environments/TclEaters/Eaters/init-eaters.tcl
