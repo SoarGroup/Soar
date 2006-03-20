@@ -6,7 +6,6 @@ import org.eclipse.swt.graphics.*;
 
 import simulation.*;
 import sml.*;
-import utilities.*;
 
 public class Tank  extends WorldEntity {
 	
@@ -130,6 +129,7 @@ public class Tank  extends WorldEntity {
 	private StringElement m_ShieldStatusWME;
 	private StringElement m_SmellColorWME;
 	private IntElement m_SmellDistanceWME;
+	private StringElement m_SmellDistanceStringWME;
 	private StringElement m_SoundWME;
 	private IntElement m_xWME;
 	private IntElement m_yWME;
@@ -163,8 +163,11 @@ public class Tank  extends WorldEntity {
 		
 		m_ClockWME = m_Agent.CreateIntWME(inputLink, kClockID, worldCount);
 		
-		// TODO: initial direction setting?
+		// TODO: initial direction setting? using north
+		m_Facing = WorldEntity.kNorth;
+		setFacingInt();
 		m_DirectionWME = m_Agent.CreateStringWME(inputLink, kDirectionID, kNorth); 
+		
 		m_EnergyWME = m_Agent.CreateIntWME(inputLink, kEnergyID, kInitialEnergy);
 		m_EnergyRechargerWME = m_Agent.CreateStringWME(inputLink, kEnergyRechargerID, kNo);
 		m_HealthWME = m_Agent.CreateIntWME(inputLink, kHealthID, kInitialHealth);
@@ -199,6 +202,7 @@ public class Tank  extends WorldEntity {
 		Identifier smell = m_Agent.CreateIdWME(inputLink, kSmellID);
 		m_SmellColorWME = m_Agent.CreateStringWME(smell, kColorID, kNone);
 		m_SmellDistanceWME = m_Agent.CreateIntWME(smell, kDistanceID, 0);
+		m_SmellDistanceStringWME = m_Agent.CreateStringWME(smell, kDistanceID, kNone);
 
 		m_SoundWME = m_Agent.CreateStringWME(inputLink, kSoundID, kSilentID);
 		m_xWME = m_Agent.CreateIntWME(inputLink, kXID, location.x);
@@ -339,7 +343,7 @@ public class Tank  extends WorldEntity {
 			m_Agent.Update(m_SmellDistanceWME, getManhattanDistanceTo(closestTank));
 		} else {
 			m_Agent.Update(m_SmellColorWME, kNone);
-			m_Agent.Update(m_SmellDistanceWME, 0);
+			m_Agent.Update(m_SmellDistanceStringWME, kNone);
 		}
 	
 		int sound = world.getSoundByLocation(getLocation());
@@ -362,9 +366,6 @@ public class Tank  extends WorldEntity {
 		m_Agent.Update(m_yWME, getLocation().y);
 
 		m_Agent.Commit();
-	}
-	
-	private void createRadarWME(TankSoarWorld world, Point location, int distance, String directionString) {
 	}
 	
 	public MoveInfo getMove() {
@@ -400,8 +401,10 @@ public class Tank  extends WorldEntity {
 	}
 	
 	private int getManhattanDistanceTo(Tank tank) {
-		// TODO:
-		return 0;
+		Point mine = getLocation();
+		Point other = tank.getLocation();
+		
+		return Math.abs(mine.x - other.x) + Math.abs(mine.y - other.y);
 	}
 	
 	private String getCellID(TankSoarWorld.TankSoarCell cell) {
