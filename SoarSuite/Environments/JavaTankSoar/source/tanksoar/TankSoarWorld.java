@@ -18,56 +18,69 @@ public class TankSoarWorld extends World implements WorldManager {
 	
 	private static final String kTypeWall = "wall";
 	private static final String kTypeEmpty = "empty";
-	private static final String kTypeTank = "tank";
+	private static final String kTypeEnergyRecharger = "energy";
+	private static final String kTypeHealthRecharger = "health";
 	
+	// background
 	private static final int kWallInt = 0;
-	private static final int kEmptyInt = 1;
-	private static final int kTankInt = 2;
+	private static final int kOpenInt = 1;
+	private static final int kEnergyInt = 2;
+	private static final int kHealthInt = 3;
 	
+	// contents
+	private static final int kNothingInt = 0;
+	private static final int kTankInt = 1;
+	private static final int kMissilePackInt = 2;
+	private static final int kMissileInt = 3; // TODO: I'm starting to think these should be handled separately
+
 	private static final int kWallPenalty = -100;
-	private static final int kWinningPoints = -100;
+	private static final int kWinningPoints = 50;
 
 	public class TankSoarCell extends Cell {
 		private Tank m_Tank;
+		private int m_Contents = 0;
 		
 		public TankSoarCell(String name) throws Exception {
 			if (name.equalsIgnoreCase(kTypeWall)) {
 				m_Type = kWallInt;
 				return;
 			} else if (name.equalsIgnoreCase(kTypeEmpty)) {
-				m_Type = kEmptyInt;			
+				m_Type = kOpenInt;			
+				return;
+			} else if (name.equalsIgnoreCase(kTypeEnergyRecharger)) {
+				m_Type = kEnergyInt;			
+				return;
+			} else if (name.equalsIgnoreCase(kTypeHealthRecharger)) {
+				m_Type = kHealthInt;			
 				return;
 			} else {	
 				throw new Exception("Invalid type name: " + name);
 			}
 		}
 
-		public boolean removeTank() {
-			if (m_Type != kTankInt) {
-				return false;
-			}
-			m_Modified = true;
-			m_Type = kEmptyInt;
-			m_Tank = null;
-			return true;
-		}
-		
 		public boolean isWall() {
 			return m_Type == kWallInt;
 		}
 		
-		public boolean isEmpty() {
-			return m_Type == kEmptyInt;
+		public boolean isOpen() {
+			return m_Type == kOpenInt;
 		}
 		
-		public boolean isTank() {
-			return m_Type == kTankInt;
+		public boolean isEnergyRecharger() {
+			return m_Type == kEnergyInt;
+		}
+		
+		public boolean isHealthRecharger() {
+			return m_Type == kHealthInt;
+		}
+		
+		public boolean containsTank() {
+			return m_Contents == kTankInt;
 		}
 		
 		public void setTank(Tank tank) {
 			m_Modified = true;
-			// TODO: remove missiles ?
-			m_Type = kTankInt;
+			m_Contents = kTankInt;
 			m_Tank = tank;
 		}
 		
@@ -75,19 +88,18 @@ public class TankSoarWorld extends World implements WorldManager {
 			return m_Tank;
 		}
 		
-		public boolean isEnergyRecharger() {
-			// TODO
-			return false;
+		public boolean removeTank() {
+			if (m_Contents != kTankInt) {
+				return false;
+			}
+			m_Modified = true;
+			m_Contents = kNothingInt;
+			m_Tank = null;
+			return true;
 		}
 		
-		public boolean isHealthRecharger() {
-			// TODO
-			return false;
-		}
-		
-		public boolean isMissiles() {
-			// TODO
-			return false;
+		public boolean containsMissilePack() {
+			return m_Contents == kMissilePackInt;
 		}
 	}
 	
@@ -180,9 +192,7 @@ public class TankSoarWorld extends World implements WorldManager {
 			// Put tank on map
 			getCell(location).setTank(m_Tanks[i]);
 			m_Tanks[i].setPoints(0);
-			m_Tanks[i].resetMissiles();
-			m_Tanks[i].resetHealth();
-			m_Tanks[i].resetEnergy();
+			m_Tanks[i].reset();
 			m_Tanks[i].initSoar();
 		}
 		updateTankInput();
@@ -192,7 +202,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		// set random starting location
 		Random random = new Random();
 		Point location = new Point(random.nextInt(m_WorldWidth), random.nextInt(m_WorldHeight));
-		while (getCell(location).isWall() || getCell(location).isTank()) {
+		while (getCell(location).isWall() || getCell(location).containsTank()) {
 			location.x = random.nextInt(m_WorldWidth);
 			location.y = random.nextInt(m_WorldHeight);				
 		}
@@ -343,6 +353,7 @@ public class TankSoarWorld extends World implements WorldManager {
 				Point newLocation;
 				if (move.moveDirection.equalsIgnoreCase(Tank.kNorth)) {
 					newLocation = new Point(oldLocation.x, oldLocation.y - 1);
+					
 				} else if (move.moveDirection.equalsIgnoreCase(Tank.kEast)) {
 					newLocation = new Point(oldLocation.x + 1, oldLocation.y);
 					
@@ -365,6 +376,10 @@ public class TankSoarWorld extends World implements WorldManager {
 				} else {
 					m_Tanks[i].adjustPoints(kWallPenalty);
 				}
+			}
+
+			if (move.fire) {
+				// TODO
 			}
 		}
 	}
@@ -502,6 +517,6 @@ public class TankSoarWorld extends World implements WorldManager {
 	
 	public Tank getStinkyTankNearLocation(Point location) {
 		// TODO:
-		return getCell(location).getTank();
+		return null;
 	}
 }
