@@ -190,4 +190,16 @@ public class Tank  extends WorldEntity {
 	public MoveInfo getMove() {
 		return m_LastMove;
 	}
+	
+	public int getMissiles() {
+		return 14;
+	}
+	
+	public int getHealth() {
+		return 1000;
+	}
+	
+	public int getEnergy() {
+		return 1000;
+	}
 }
