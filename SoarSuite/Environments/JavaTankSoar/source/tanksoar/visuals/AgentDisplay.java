@@ -16,6 +16,9 @@ public class AgentDisplay extends Composite {
 	static final int kTableHeight = 120;
 	static final int kNameWidth = 75;
 	static final int kScoreWidth = 40;
+	static final int kMissilesWidth = 48;
+	static final int kHealthWidth = 45;
+	static final int kEnergyWidth = 46;
 	
 	Group m_Group;
 	Logger m_Logger = Logger.logger;
@@ -23,7 +26,7 @@ public class AgentDisplay extends Composite {
 	Table m_AgentTable;
 	WorldEntity m_SelectedEntity;
 	TableItem[] m_Items;
-	WorldEntity[] m_Entities;
+	Tank[] m_Tanks;
 	Composite m_AgentButtons;
 	Button m_NewAgentButton;
 	Button m_CloneAgentButton;
@@ -68,8 +71,8 @@ public class AgentDisplay extends Composite {
 				// TODO: this probably isn't the most efficient way of doing this, but this is not a bottleneck point
 				for (int i = 0; i < TankSoarWindowManager.kColors.length; ++i) {
 					boolean notTaken = true;
-					for (int j = 0; j < m_Entities.length; ++j) {
-						if (m_Entities[j].getColor().equalsIgnoreCase(TankSoarWindowManager.kColors[i])) {
+					for (int j = 0; j < m_Tanks.length; ++j) {
+						if (m_Tanks[j].getColor().equalsIgnoreCase(TankSoarWindowManager.kColors[i])) {
 							notTaken = false;
 							break;
 						}
@@ -114,18 +117,27 @@ public class AgentDisplay extends Composite {
 		m_AgentTable.setLayoutData(gd);
 		TableColumn tc1 = new TableColumn(m_AgentTable, SWT.CENTER);
 		TableColumn tc2 = new TableColumn(m_AgentTable, SWT.CENTER);
+		TableColumn tc3 = new TableColumn(m_AgentTable, SWT.CENTER);
+		TableColumn tc4 = new TableColumn(m_AgentTable, SWT.CENTER);
+		TableColumn tc5 = new TableColumn(m_AgentTable, SWT.CENTER);
 		tc1.setText("Name");
 		tc1.setWidth(kNameWidth);
 		tc2.setText("Score");
 		tc2.setWidth(kScoreWidth);
+		tc3.setText("Missiles");
+		tc3.setWidth(kMissilesWidth);
+		tc4.setText("Health");
+		tc4.setWidth(kHealthWidth);
+		tc5.setText("Energy");
+		tc5.setWidth(kEnergyWidth);
 		m_AgentTable.setHeaderVisible(true);
 		m_AgentTable.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				if (m_Entities == null) {
+				if (m_Tanks == null) {
 					return;
 				}
-				for (int i = 0; i < m_Entities.length; ++i) {
-					selectEntity(m_Entities[m_AgentTable.getSelectionIndex()]);
+				for (int i = 0; i < m_Tanks.length; ++i) {
+					selectEntity(m_Tanks[m_AgentTable.getSelectionIndex()]);
 				}
 				updateButtons();
 			}
@@ -137,8 +149,8 @@ public class AgentDisplay extends Composite {
 	
 	void selectEntity(WorldEntity entity) {
 		m_SelectedEntity = entity;
-		for (int i = 0; i < m_Entities.length; ++i) {
-			if (m_SelectedEntity == m_Entities[i]) {
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			if (m_SelectedEntity == m_Tanks[i]) {
 				m_AgentTable.setSelection(i);
 				break;
 			}
@@ -156,24 +168,27 @@ public class AgentDisplay extends Composite {
 		
 		if (m_Items != null) {
 			for (int i = 0; i < m_Items.length; ++i) {
-				m_Items[i].setText(1, Integer.toString(m_Entities[i].getPoints()));
+				m_Items[i].setText(1, Integer.toString(m_Tanks[i].getPoints()));
+				m_Items[i].setText(2, Integer.toString(m_Tanks[i].getMissiles()));
+				m_Items[i].setText(3, Integer.toString(m_Tanks[i].getHealth()));
+				m_Items[i].setText(4, Integer.toString(m_Tanks[i].getEnergy()));
 			}
 		}
 	}
 	
 	void updateEaterList() {
-		m_Entities = m_Simulation.getTankSoarWorld().getTanks();
+		m_Tanks = m_Simulation.getTankSoarWorld().getTanks();
 		m_AgentTable.removeAll();
 		boolean foundSelected = false;
 		
-		if (m_Entities == null) {
+		if (m_Tanks == null) {
 			m_Items = null;
 		} else {
-			m_Items = new TableItem[m_Entities.length];
-			for (int i = 0; i < m_Entities.length; ++i) {
+			m_Items = new TableItem[m_Tanks.length];
+			for (int i = 0; i < m_Tanks.length; ++i) {
 				m_Items[i] = new TableItem(m_AgentTable, SWT.NONE);
-				m_Items[i].setText(new String[] {m_Entities[i].getName(), Integer.toString(m_Entities[i].getPoints())});
-				if (m_SelectedEntity == m_Entities[i]) {
+				m_Items[i].setText(new String[] {m_Tanks[i].getName(), Integer.toString(m_Tanks[i].getPoints())});
+				if (m_SelectedEntity == m_Tanks[i]) {
 					foundSelected = true;
 					m_AgentTable.setSelection(i);
 				}
@@ -190,8 +205,8 @@ public class AgentDisplay extends Composite {
 		boolean running = m_Simulation.isRunning();
 		boolean agentsFull = false;
 		boolean noAgents = false;
-		if (m_Entities != null) {
-			agentsFull = (m_Entities.length == TankSoarSimulation.kMaxTanks);
+		if (m_Tanks != null) {
+			agentsFull = (m_Tanks.length == TankSoarSimulation.kMaxTanks);
 		} else {
 			noAgents = true;
 		}
