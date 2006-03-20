@@ -52,7 +52,8 @@ public class Tank  extends WorldEntity {
 	private final static String kRightID = "right";
 	private final static String kSilentID = "silent";
 	private final static String kMissileID = "missile";
-	
+	private final static String kPositionID = "position";
+
 	public final static String kEast = "east";
 	public final static String kNorth = "north";
 	public final static String kSouth = "south";
@@ -63,6 +64,13 @@ public class Tank  extends WorldEntity {
 	
 	private final static String kOff = "off";
 	private final static String kOn = "on";
+	
+	private final static String kNone = "none";
+	
+	private final static String kCenter = "center";
+	private final static String kLeft = "left";
+	private final static String kRight = "right";
+	
 	
 	public class MoveInfo {
 		boolean move;
@@ -120,7 +128,8 @@ public class Tank  extends WorldEntity {
 	private StringElement m_RWavesLeftWME;
 	private StringElement m_RWavesRightWME;
 	private StringElement m_ShieldStatusWME;
-	private Identifier m_SmellWME;
+	private StringElement m_SmellColorWME;
+	private IntElement m_SmellDistanceWME;
 	private StringElement m_SoundWME;
 	private IntElement m_xWME;
 	private IntElement m_yWME;
@@ -171,7 +180,7 @@ public class Tank  extends WorldEntity {
 		m_MyColorWME = m_Agent.CreateStringWME(inputLink, kMyColorID, color);
 		
 		m_RadarWME = m_Agent.CreateIdWME(inputLink, kRadarID);
-		// TODO: Substructure depends on situation
+		// Radar substructure depends on situation
 		
 		m_RadarDistanceWME = m_Agent.CreateIntWME(inputLink, kRadarDistanceID, m_RadarDistance);
 		m_RadarSettingWME = m_Agent.CreateIntWME(inputLink, kRadarSettingID, m_RadarSetting);
@@ -187,8 +196,9 @@ public class Tank  extends WorldEntity {
 		
 		m_ShieldStatusWME = m_Agent.CreateStringWME(inputLink, kShieldStatusID, kOff);
 		
-		m_SmellWME = m_Agent.CreateIdWME(inputLink, kSmellID);
-		// TODO: Substructure depends on situation
+		Identifier smell = m_Agent.CreateIdWME(inputLink, kSmellID);
+		m_SmellColorWME = m_Agent.CreateStringWME(smell, kColorID, kNone);
+		m_SmellDistanceWME = m_Agent.CreateIntWME(smell, kDistanceID, 0);
 
 		m_SoundWME = m_Agent.CreateStringWME(inputLink, kSoundID, kSilentID);
 		m_xWME = m_Agent.CreateIntWME(inputLink, kXID, location.x);
@@ -199,64 +209,113 @@ public class Tank  extends WorldEntity {
 	
 	public void updateInput(TankSoarWorld world) {
 		// assign directions depending on facing
-		int forward = 0, backward = 0, left = 0, right = 0;
+		int forward = 0, backward = 0, left = 0, right = 0, xIncrement = 0, yIncrement = 0;
 		
 		switch (getFacingInt()) {
-		case WorldEntity.kNorthInt:
-			forward = kNorthInt;
-			backward = kSouthInt;
-			left = kWestInt;
-			right = kEastInt;
-			break;
-		case WorldEntity.kEastInt:
-			forward = kEastInt;
-			backward = kWestInt;
-			left = kNorthInt;
-			right = kSouthInt;
-			break;
-		case WorldEntity.kSouthInt:
-			forward = kSouthInt;
-			backward = kNorthInt;
-			left = kEastInt;
-			right = kWestInt;
-			break;
-		case WorldEntity.kWestInt:
-			forward = kWestInt;
-			backward = kEastInt;
-			left = kSouthInt;
-			right = kNorthInt;
-			break;
+			case WorldEntity.kNorthInt:
+				forward = kNorthInt;
+				backward = kSouthInt;
+				left = kWestInt;
+				right = kEastInt;
+				yIncrement = -1;
+				break;
+			case WorldEntity.kEastInt:
+				forward = kEastInt;
+				backward = kWestInt;
+				left = kNorthInt;
+				right = kSouthInt;
+				xIncrement = 1;
+				break;
+			case WorldEntity.kSouthInt:
+				forward = kSouthInt;
+				backward = kNorthInt;
+				left = kEastInt;
+				right = kWestInt;
+				yIncrement = 1;
+				break;
+			case WorldEntity.kWestInt:
+				forward = kWestInt;
+				backward = kEastInt;
+				left = kSouthInt;
+				right = kNorthInt;
+				xIncrement = -1;
+				break;
 		}
 		
 		// Get current cell
-		TankSoarWorld.TankSoarCell m_Cell = world.getCell(getLocation());
+		TankSoarWorld.TankSoarCell cell = world.getCell(getLocation());
 		
-		m_Agent.Update(m_BlockedForwardWME, ((world.getBlockedByLocation(getLocation()) & forward) > 0) ? kYes : kNo);
-		m_Agent.Update(m_BlockedBackwardWME, ((world.getBlockedByLocation(getLocation()) & backward) > 0) ? kYes : kNo);
-		m_Agent.Update(m_BlockedLeftWME, ((world.getBlockedByLocation(getLocation()) & left) > 0) ? kYes : kNo);
-		m_Agent.Update(m_BlockedRightWME, ((world.getBlockedByLocation(getLocation()) & right) > 0) ? kYes : kNo);
+		int blocked = world.getBlockedByLocation(getLocation());
+		m_Agent.Update(m_BlockedForwardWME, ((blocked & forward) > 0) ? kYes : kNo);
+		m_Agent.Update(m_BlockedBackwardWME, ((blocked & backward) > 0) ? kYes : kNo);
+		m_Agent.Update(m_BlockedLeftWME, ((blocked & left) > 0) ? kYes : kNo);
+		m_Agent.Update(m_BlockedRightWME, ((blocked & right) > 0) ? kYes : kNo);
 		
 		m_Agent.Update(m_ClockWME, worldCount);
 		
 		m_Agent.Update(m_DirectionWME, getFacing());
 		
 		m_Agent.Update(m_EnergyWME, m_Energy);
-		m_Agent.Update(m_EnergyRechargerWME, m_Cell.isEnergyRecharger() ? kYes : kNo);
+		m_Agent.Update(m_EnergyRechargerWME, cell.isEnergyRecharger() ? kYes : kNo);
 		
 		m_Agent.Update(m_HealthWME, m_Health);
-		m_Agent.Update(m_HealthRechargerWME, m_Cell.isHealthRecharger() ? kYes : kNo);
+		m_Agent.Update(m_HealthRechargerWME, cell.isHealthRecharger() ? kYes : kNo);
 		
-		m_Agent.Update(m_IncomingForwardWME, ((world.getIncomingByLocation(getLocation()) & forward) > 0) ? kYes : kNo);
-		m_Agent.Update(m_IncomingBackwardWME, ((world.getIncomingByLocation(getLocation()) & backward) > 0) ? kYes : kNo);
-		m_Agent.Update(m_IncomingLeftWME, ((world.getIncomingByLocation(getLocation()) & left) > 0) ? kYes : kNo);
-		m_Agent.Update(m_IncomingRightWME, ((world.getIncomingByLocation(getLocation()) & right) > 0) ? kYes : kNo);
+		int incoming = world.getIncomingByLocation(getLocation());
+		m_Agent.Update(m_IncomingForwardWME, ((incoming & forward) > 0) ? kYes : kNo);
+		m_Agent.Update(m_IncomingBackwardWME, ((incoming & backward) > 0) ? kYes : kNo);
+		m_Agent.Update(m_IncomingLeftWME, ((incoming & left) > 0) ? kYes : kNo);
+		m_Agent.Update(m_IncomingRightWME, ((incoming & right) > 0) ? kYes : kNo);
 		
 		m_Agent.Update(m_MissilesWME, m_Missiles);
+
+		m_Agent.Update(m_MyColorWME, getColor());		
 		
-		// Color never changes, skipping.
-		// TODO: does the color need to be refreshed each frame?
-		
-		// TODO: radar
+		if (m_RadarStatus) {
+			Point location = getLocation();
+			String cellID;
+			Identifier cellWME;
+			for (int i = 0; i <= m_RadarSetting; ++i) {
+				// TODO: these three should be in a loop but I am lazy right now.
+				
+				// Center
+				cellID = getCellID(world.getCell(location));
+				cellWME = m_Agent.CreateIdWME(m_RadarWME, cellID);
+
+				m_Agent.CreateIntWME(cellWME, kDistanceID, i);
+				m_Agent.CreateStringWME(cellWME, kPositionID, kCenter);
+				
+				if (cellID == kTankID) {
+					m_Agent.CreateStringWME(cellWME, kColorID, world.getCell(location).getTank().getColor());
+				}
+				
+				// Left
+				cellID = getCellID(world.getCell(location, left));
+				cellWME = m_Agent.CreateIdWME(m_RadarWME, cellID);
+
+				m_Agent.CreateIntWME(cellWME, kDistanceID, i);
+				m_Agent.CreateStringWME(cellWME, kPositionID, kLeft);
+				
+				if (cellID == kTankID) {
+					m_Agent.CreateStringWME(cellWME, kColorID, world.getCell(location, left).getTank().getColor());
+				}
+
+				// Right
+				cellID = getCellID(world.getCell(location, right));
+				cellWME = m_Agent.CreateIdWME(m_RadarWME, cellID);
+
+				m_Agent.CreateIntWME(cellWME, kDistanceID, i);
+				m_Agent.CreateStringWME(cellWME, kPositionID, kRight);
+				
+				if (cellID == kTankID) {
+					m_Agent.CreateStringWME(cellWME, kColorID, world.getCell(location, right).getTank().getColor());
+				}
+
+				// Update for next distance
+				location.x += xIncrement;
+				location.y += yIncrement;
+			}
+		}
 		
 		m_Agent.Update(m_RadarDistanceWME, m_RadarDistance);
 		m_Agent.Update(m_RadarSettingWME, m_RadarSetting);
@@ -266,18 +325,46 @@ public class Tank  extends WorldEntity {
 		
 		m_Agent.Update(m_ResurrectWME, m_Resurrect ? kYes : kNo);
 		
-		// TODO: radar waves
+		int rwaves = world.getRWavesByLocation(getLocation());
+		m_Agent.Update(m_RWavesForwardWME, ((rwaves & forward) > 0) ? kYes : kNo);
+		m_Agent.Update(m_RWavesBackwardWME, ((rwaves & backward) > 0) ? kYes : kNo);
+		m_Agent.Update(m_RWavesLeftWME, ((rwaves & left) > 0) ? kYes : kNo);
+		m_Agent.Update(m_RWavesRightWME, ((rwaves & right) > 0) ? kYes : kNo);
 
 		m_Agent.Update(m_ShieldStatusWME, m_Shields ? kOn : kOff);
 		
-		// TODO: smell
-		
-		// TODO: sound
+		Tank closestTank = world.getStinkyTankNearLocation(getLocation());
+		if (closestTank != null) {
+			m_Agent.Update(m_SmellColorWME, closestTank.getColor());
+			m_Agent.Update(m_SmellDistanceWME, getManhattanDistanceTo(closestTank));
+		} else {
+			m_Agent.Update(m_SmellColorWME, kNone);
+			m_Agent.Update(m_SmellDistanceWME, 0);
+		}
+	
+		int sound = world.getSoundByLocation(getLocation());
+		if (sound == forward) {
+			m_Agent.Update(m_SoundWME, kForwardID);
+		} else if (sound == backward) {
+			m_Agent.Update(m_SoundWME, kBackwardID);
+		} else if (sound == left) {
+			m_Agent.Update(m_SoundWME, kLeftID);
+		} else if (sound == right) {
+			m_Agent.Update(m_SoundWME, kRightID);
+		} else {
+			if (sound > 0) {
+				m_Logger.log("Warning: sound reported as more than one direction.");
+			}
+			m_Agent.Update(m_SoundWME, kSilentID);
+		}
 		
 		m_Agent.Update(m_xWME, getLocation().x);
 		m_Agent.Update(m_yWME, getLocation().y);
 
 		m_Agent.Commit();
+	}
+	
+	private void createRadarWME(TankSoarWorld world, Point location, int distance, String directionString) {
 	}
 	
 	public MoveInfo getMove() {
@@ -310,5 +397,29 @@ public class Tank  extends WorldEntity {
 	
 	static public void setWorldCount(int worldCount) {
 		Tank.worldCount = worldCount;
+	}
+	
+	private int getManhattanDistanceTo(Tank tank) {
+		// TODO:
+		return 0;
+	}
+	
+	private String getCellID(TankSoarWorld.TankSoarCell cell) {
+		if (cell.isWall()) {
+			return kObstacleID;
+		}
+		if (cell.isEnergyRecharger()) {
+			return kEnergyID;
+		}
+		if (cell.isHealthRecharger()) {
+			return kHealthID;
+		}
+		if (cell.isMissiles()) {
+			return kMissilesID;
+		}
+		if (cell.isTank()) {
+			return kTankID;
+		}
+		return kOpenID;
 	}
 }

@@ -84,6 +84,11 @@ public class TankSoarWorld extends World implements WorldManager {
 			// TODO
 			return false;
 		}
+		
+		public boolean isMissiles() {
+			// TODO
+			return false;
+		}
 	}
 	
 	private TankSoarSimulation m_Simulation;
@@ -483,5 +488,20 @@ public class TankSoarWorld extends World implements WorldManager {
 	public int getIncomingByLocation(Point location) {
 		// TODO:
 		return 0;
+	}
+	
+	public int getRWavesByLocation(Point location) {
+		// TODO:
+		return 0;
+	}
+
+	public int getSoundByLocation(Point location) {
+		// TODO:
+		return 0;
+	}
+	
+	public Tank getStinkyTankNearLocation(Point location) {
+		// TODO:
+		return getCell(location).getTank();
 	}
 }
