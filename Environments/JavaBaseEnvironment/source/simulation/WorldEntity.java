@@ -11,10 +11,10 @@ public class WorldEntity {
 	public final static String kSouth = "south";
 	public final static String kWest = "west";
 	
-	public final static int kNorthInt = 0;
-	public final static int kEastInt = 1;
-	public final static int kSouthInt = 2;
-	public final static int kWestInt = 3;
+	public final static int kNorthInt = 1;
+	public final static int kEastInt = 2;
+	public final static int kSouthInt = 4;
+	public final static int kWestInt = 8;
 	
 	protected Logger m_Logger = Logger.logger;
 	protected Agent m_Agent;	
