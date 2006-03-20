@@ -11,7 +11,7 @@ import simulation.visuals.*;
 import tanksoar.*;
 
 public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
-	static Image[] kTanks = new Image[4];
+	static HashMap kTanks = new HashMap(4);
 	static Image[] kRocks = new Image[3];
 	static Image[] kTrees = new Image[3];
 	static Image[] kGrass = new Image[3];
@@ -43,10 +43,11 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 	}
 	
 	private void loadImages(Display display) {
-		kTanks[WorldEntity.kSouthInt] = new Image(display, TankSoar.class.getResourceAsStream("/images/tank_down.gif"));
-		kTanks[WorldEntity.kNorthInt] = new Image(display, TankSoar.class.getResourceAsStream("/images/tank_up.gif"));
-		kTanks[WorldEntity.kEastInt] = new Image(display, TankSoar.class.getResourceAsStream("/images/tank_right.gif"));
-		kTanks[WorldEntity.kWestInt] = new Image(display, TankSoar.class.getResourceAsStream("/images/tank_left.gif"));
+		kTanks.put(new Integer(WorldEntity.kSouthInt), new Image(display, TankSoar.class.getResourceAsStream("/images/tank_down.gif")));
+		kTanks.put(new Integer(WorldEntity.kNorthInt), new Image(display, TankSoar.class.getResourceAsStream("/images/tank_up.gif")));
+		kTanks.put(new Integer(WorldEntity.kEastInt), new Image(display, TankSoar.class.getResourceAsStream("/images/tank_right.gif")));
+		kTanks.put(new Integer(WorldEntity.kWestInt), new Image(display, TankSoar.class.getResourceAsStream("/images/tank_left.gif")));
+		
 		kRecharger = new Image(display, TankSoar.class.getResourceAsStream("/images/battery.gif"));
 		kHealth = new Image(display, TankSoar.class.getResourceAsStream("/images/health.gif"));
 		kMissiles = new Image(display, TankSoar.class.getResourceAsStream("/images/missile.gif"));
@@ -131,7 +132,11 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 				// Check for interesting foreground, otherwise draw background
 				if (cell.isTank()) {
 					Tank tank = cell.getTank();
-					gc.drawImage(kTanks[tank.getFacingInt()], x*m_CellSize, y*m_CellSize);
+					Image tankImage = (Image)kTanks.get(new Integer(tank.getFacingInt()));
+					if (tankImage == null) {
+						tankImage = kWTF;
+					}
+					gc.drawImage(tankImage, x*m_CellSize, y*m_CellSize);
 					gc.setBackground((Color)m_EntityColors.get(tank));
 					gc.fillOval(m_CellSize*x + m_CellSize/2 - kDotSize/2, m_CellSize*y + m_CellSize/2 - kDotSize/2, kDotSize, kDotSize);
 					gc.setBackground(WindowManager.widget_background);
