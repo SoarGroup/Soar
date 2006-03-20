@@ -23,6 +23,7 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 	static Image kRedRecharge;
 	static Image kBlueRecharge;
 	static Image kExplosion;
+	static final int kDotSize = 7;
 	
 	private TankSoarSimulation m_Simulation;
 	private TankSoarWorld m_World;
@@ -131,6 +132,10 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 				if (cell.isTank()) {
 					Tank tank = cell.getTank();
 					gc.drawImage(kTanks[tank.getFacingInt()], x*m_CellSize, y*m_CellSize);
+					gc.setBackground((Color)m_EntityColors.get(tank));
+					gc.fillOval(m_CellSize*x + m_CellSize/2 - kDotSize/2, m_CellSize*y + m_CellSize/2 - kDotSize/2, kDotSize, kDotSize);
+					gc.setBackground(WindowManager.widget_background);
+					
 				} else {
 					gc.drawImage(m_Background[x][y], x*m_CellSize, y*m_CellSize);
 				}
