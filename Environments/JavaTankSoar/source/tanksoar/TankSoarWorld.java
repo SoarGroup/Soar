@@ -74,6 +74,16 @@ public class TankSoarWorld extends World implements WorldManager {
 		public Tank getTank() {
 			return m_Tank;
 		}
+		
+		public boolean isEnergyRecharger() {
+			// TODO
+			return false;
+		}
+		
+		public boolean isHealthRecharger() {
+			// TODO
+			return false;
+		}
 	}
 	
 	private TankSoarSimulation m_Simulation;
@@ -165,6 +175,9 @@ public class TankSoarWorld extends World implements WorldManager {
 			// Put tank on map
 			getCell(location).setTank(m_Tanks[i]);
 			m_Tanks[i].setPoints(0);
+			m_Tanks[i].resetMissiles();
+			m_Tanks[i].resetHealth();
+			m_Tanks[i].resetEnergy();
 			m_Tanks[i].initSoar();
 		}
 		updateTankInput();
@@ -194,6 +207,26 @@ public class TankSoarWorld extends World implements WorldManager {
 	
 	public TankSoarCell getCell(int x, int y) {
 		return m_World[y][x];
+	}
+	
+	public TankSoarCell getCell(int x, int y, int direction) {
+		switch (direction) {
+		case WorldEntity.kNorthInt:
+			return m_World[y-1][x];
+		case WorldEntity.kEastInt:
+			return m_World[y][x+1];
+		case WorldEntity.kSouthInt:
+			return m_World[y+1][x];
+		case WorldEntity.kWestInt:
+			return m_World[y][x-1];
+		default:
+			break;
+		}
+		return m_World[y][x];
+	}
+	
+	public TankSoarCell getCell(Point location, int direction) {
+		return getCell(location.x, location.y, direction);
 	}
 	
 	void createTank(Agent agent, String productions, String color) {
@@ -254,6 +287,9 @@ public class TankSoarWorld extends World implements WorldManager {
 		return m_PrintedStats;
 	}
 	public void update() {
+		// Update world count
+		Tank.setWorldCount(m_Simulation.getWorldCount());
+		
 		// reset modified flags, skipping edges
 		for (int y = 1; y < m_World.length - 1; ++y) {
 			for (int x = 1; x < m_World[y].length - 1; ++x) {
@@ -393,18 +429,9 @@ public class TankSoarWorld extends World implements WorldManager {
 			
 			m_Logger.log("Processing collision group " + group + " with " + collidees.length + " collidees.");
 			
-			// Redistribute wealth
-			int cash = 0;			
-			for (int i = 0; i < collidees.length; ++i) {
-				cash += collidees[i].getPoints();
-			}			
-			cash /= collidees.length;
-			m_Logger.log("Cash to each: " + cash);
-			for (int i = 0; i < collidees.length; ++i) {
-				collidees[i].setPoints(cash);
-			}
-			
-			// Remove from former location (only one of these for all eaters)
+			// TODO: Deal with collision penalties
+
+			// Remove from former location (only one of these for all tanks)
 			getCell(collidees[0].getLocation()).removeTank();
 
 			// Find new locations, update map
@@ -432,5 +459,29 @@ public class TankSoarWorld extends World implements WorldManager {
 		while (m_Tanks != null) {
 			m_Simulation.destroyTank(m_Tanks[0]);
 		}
+	}
+	
+	public int getBlockedByLocation(Point location) {
+		int blocked = 0;
+		
+		if (getCell(location, WorldEntity.kNorthInt).isWall()) {
+			blocked |= WorldEntity.kNorthInt;
+		}
+		if (getCell(location, WorldEntity.kEastInt).isWall()) {
+			blocked |= WorldEntity.kEastInt;
+		}
+		if (getCell(location, WorldEntity.kSouthInt).isWall()) {
+			blocked |= WorldEntity.kSouthInt;
+		}
+		if (getCell(location, WorldEntity.kWestInt).isWall()) {
+			blocked |= WorldEntity.kWestInt;
+		}
+		
+		return blocked;
+	}
+
+	public int getIncomingByLocation(Point location) {
+		// TODO:
+		return 0;
 	}
 }

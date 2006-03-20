@@ -1,5 +1,7 @@
 package tanksoar;
 
+import java.util.*;
+
 import org.eclipse.swt.graphics.*;
 
 import simulation.*;
@@ -91,10 +93,6 @@ public class Tank  extends WorldEntity {
 	
 	private MoveInfo m_LastMove = new MoveInfo();
 	
-	private final static int kInitialEnergy = 1000;
-	private final static int kInitialHealth = 1000;
-	private final static int kInitialMissiles = 15;
-	
 	private StringElement m_BlockedBackwardWME;
 	private StringElement m_BlockedForwardWME;
 	private StringElement m_BlockedLeftWME;
@@ -127,6 +125,22 @@ public class Tank  extends WorldEntity {
 	private IntElement m_xWME;
 	private IntElement m_yWME;
 	
+	private final static int kInitialEnergy = 1000;
+	private final static int kInitialHealth = 1000;
+	private final static int kInitialMissiles = 15;
+	
+	private int m_Missiles = kInitialMissiles;
+	private int m_Health = kInitialHealth;
+	private int m_Energy = kInitialEnergy;
+	private int m_RadarDistance = 0;
+	private int m_RadarSetting = 0;
+	private boolean m_RadarStatus = false;
+	private boolean m_Resurrect = false;
+	private boolean m_Shields = false;
+	
+	static private int worldCount = 0;
+	static private Random random = new Random();
+	
 	public Tank(Agent agent, String productions, String color, Point location) {
 		super(agent, productions, color, location);
 		
@@ -138,8 +152,8 @@ public class Tank  extends WorldEntity {
 		m_BlockedLeftWME = m_Agent.CreateStringWME(blocked, kLeftID, kNo);
 		m_BlockedRightWME = m_Agent.CreateStringWME(blocked, kRightID, kNo);
 		
-		// TODO: initial clock setting depends on world count
-		m_ClockWME = m_Agent.CreateIntWME(inputLink, kClockID, 1);
+		m_ClockWME = m_Agent.CreateIntWME(inputLink, kClockID, worldCount);
+		
 		// TODO: initial direction setting?
 		m_DirectionWME = m_Agent.CreateStringWME(inputLink, kDirectionID, kNorth); 
 		m_EnergyWME = m_Agent.CreateIntWME(inputLink, kEnergyID, kInitialEnergy);
@@ -159,8 +173,8 @@ public class Tank  extends WorldEntity {
 		m_RadarWME = m_Agent.CreateIdWME(inputLink, kRadarID);
 		// TODO: Substructure depends on situation
 		
-		m_RadarDistanceWME = m_Agent.CreateIntWME(inputLink, kRadarDistanceID, 0);
-		m_RadarSettingWME = m_Agent.CreateIntWME(inputLink, kRadarSettingID, 0);
+		m_RadarDistanceWME = m_Agent.CreateIntWME(inputLink, kRadarDistanceID, m_RadarDistance);
+		m_RadarSettingWME = m_Agent.CreateIntWME(inputLink, kRadarSettingID, m_RadarSetting);
 		m_RadarStatusWME = m_Agent.CreateStringWME(inputLink, kRadarStatusID, kOff);
 		m_RandomWME = m_Agent.CreateFloatWME(inputLink, kRandomID, 0);
 		m_ResurrectWME = m_Agent.CreateStringWME(inputLink, kResurrectID, kNo);
@@ -184,7 +198,86 @@ public class Tank  extends WorldEntity {
 	}
 	
 	public void updateInput(TankSoarWorld world) {
+		// assign directions depending on facing
+		int forward = 0, backward = 0, left = 0, right = 0;
 		
+		switch (getFacingInt()) {
+		case WorldEntity.kNorthInt:
+			forward = kNorthInt;
+			backward = kSouthInt;
+			left = kWestInt;
+			right = kEastInt;
+			break;
+		case WorldEntity.kEastInt:
+			forward = kEastInt;
+			backward = kWestInt;
+			left = kNorthInt;
+			right = kSouthInt;
+			break;
+		case WorldEntity.kSouthInt:
+			forward = kSouthInt;
+			backward = kNorthInt;
+			left = kEastInt;
+			right = kWestInt;
+			break;
+		case WorldEntity.kWestInt:
+			forward = kWestInt;
+			backward = kEastInt;
+			left = kSouthInt;
+			right = kNorthInt;
+			break;
+		}
+		
+		// Get current cell
+		TankSoarWorld.TankSoarCell m_Cell = world.getCell(getLocation());
+		
+		m_Agent.Update(m_BlockedForwardWME, ((world.getBlockedByLocation(getLocation()) & forward) > 0) ? kYes : kNo);
+		m_Agent.Update(m_BlockedBackwardWME, ((world.getBlockedByLocation(getLocation()) & backward) > 0) ? kYes : kNo);
+		m_Agent.Update(m_BlockedLeftWME, ((world.getBlockedByLocation(getLocation()) & left) > 0) ? kYes : kNo);
+		m_Agent.Update(m_BlockedRightWME, ((world.getBlockedByLocation(getLocation()) & right) > 0) ? kYes : kNo);
+		
+		m_Agent.Update(m_ClockWME, worldCount);
+		
+		m_Agent.Update(m_DirectionWME, getFacing());
+		
+		m_Agent.Update(m_EnergyWME, m_Energy);
+		m_Agent.Update(m_EnergyRechargerWME, m_Cell.isEnergyRecharger() ? kYes : kNo);
+		
+		m_Agent.Update(m_HealthWME, m_Health);
+		m_Agent.Update(m_HealthRechargerWME, m_Cell.isHealthRecharger() ? kYes : kNo);
+		
+		m_Agent.Update(m_IncomingForwardWME, ((world.getIncomingByLocation(getLocation()) & forward) > 0) ? kYes : kNo);
+		m_Agent.Update(m_IncomingBackwardWME, ((world.getIncomingByLocation(getLocation()) & backward) > 0) ? kYes : kNo);
+		m_Agent.Update(m_IncomingLeftWME, ((world.getIncomingByLocation(getLocation()) & left) > 0) ? kYes : kNo);
+		m_Agent.Update(m_IncomingRightWME, ((world.getIncomingByLocation(getLocation()) & right) > 0) ? kYes : kNo);
+		
+		m_Agent.Update(m_MissilesWME, m_Missiles);
+		
+		// Color never changes, skipping.
+		// TODO: does the color need to be refreshed each frame?
+		
+		// TODO: radar
+		
+		m_Agent.Update(m_RadarDistanceWME, m_RadarDistance);
+		m_Agent.Update(m_RadarSettingWME, m_RadarSetting);
+		m_Agent.Update(m_RadarStatusWME, m_RadarStatus ? kOn : kOff);
+
+		m_Agent.Update(m_RandomWME, random.nextFloat());
+		
+		m_Agent.Update(m_ResurrectWME, m_Resurrect ? kYes : kNo);
+		
+		// TODO: radar waves
+
+		m_Agent.Update(m_ShieldStatusWME, m_Shields ? kOn : kOff);
+		
+		// TODO: smell
+		
+		// TODO: sound
+		
+		m_Agent.Update(m_xWME, getLocation().x);
+		m_Agent.Update(m_yWME, getLocation().y);
+
+		m_Agent.Commit();
 	}
 	
 	public MoveInfo getMove() {
@@ -192,14 +285,30 @@ public class Tank  extends WorldEntity {
 	}
 	
 	public int getMissiles() {
-		return 14;
+		return m_Missiles;
 	}
 	
 	public int getHealth() {
-		return 1000;
+		return m_Health;
 	}
 	
 	public int getEnergy() {
-		return 1000;
+		return m_Energy;
+	}
+	
+	public void resetMissiles() {
+		m_Missiles = kInitialMissiles;
+	}
+	
+	public void resetHealth() {
+		m_Health = kInitialHealth;
+	}
+	
+	public void resetEnergy() {
+		m_Energy = kInitialEnergy;
+	}
+	
+	static public void setWorldCount(int worldCount) {
+		Tank.worldCount = worldCount;
 	}
 }
