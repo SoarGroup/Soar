@@ -12,7 +12,7 @@
 #include <string>
 
 using std::make_pair; 
-using std::string;
+using std::string; using std::cerr;
 using sml::Identifier; using sml::Agent; using sml::WMElement;
 using std::cout; using std::for_each;
 using std::bind2nd; using std::mem_fun;
@@ -45,9 +45,16 @@ WME_Id::WME_Id(const string& in_id_name, const string& in_attribute, Identifier*
 // clean up
 WME_Id::~WME_Id()
 {	
-	Agent* pAgent = QL_Interface::instance().get_agent_ptr();
+	Agent* pAgent = QL_Interface::instance().get_agent_ptr();	
 	remove_all_children(pAgent);
 	destroy_sml_object(pAgent);
+	
+}
+
+void WME_Id::destroy_sml_object(Agent* pAgent)
+{ 
+	if(get_value() != QL_Interface::instance().get_ilink_name()) // we don't want to call destroy wme on the input link object
+		pAgent->DestroyWME(m_object); 
 }
 
 // creates sml object
@@ -198,7 +205,9 @@ void WME_Id::remove_all_children(Agent* pAgent)
 	m_shared_children.clear();
 	for(id_children_t::iterator it = m_id_children.begin(); it != m_id_children.end(); it++)
 	{
-		QL_Interface::instance().remove_identifier((*it).second->get_value());
+		Smart_Pointer<WME_Id> id = (*it).second;
+		id->remove_all_children(pAgent);
+		QL_Interface::instance().remove_identifier(id->get_value());
 	}
 	m_id_children.clear();
 }

@@ -263,11 +263,19 @@ void QL_Interface::QL_Shutdown()
 
 void QL_Interface::respond_to_init_soar()
 {
+	Smart_Pointer<WME_Id> il = m_id_container[m_input_link_name];
+	il->remove_all_children(m_pAgent);
 	m_id_container.clear();
 
 	// call synch input-link in case a new identifier is used for the input-link
 	m_pAgent->SynchronizeInputLink();
 	setup_input_link(m_input_link_name); // generates all existing wmes
+}
+
+void QL_Interface::remove_identifier(const string& name)
+{ 
+	//Smart_Pointer<WME_Id> test = m_id_container[name];
+	m_id_container.erase(name); 
 }
 
 void QL_Interface::soar_command_line(const string& command)
@@ -394,7 +402,11 @@ void MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 // clean up all connection variables
 void QL_Interface::prepare_for_new_connection()
 {
+	Smart_Pointer<WME_Id> il = m_id_container[m_input_link_name];
+	if(il)
+		il->remove_all_children(m_pAgent);
 	m_id_container.clear();
+	il = 0; // this must happen here otherwise the input-link will not go away properly
 
 	if(!kernel_destroyed)
 	{

@@ -260,8 +260,12 @@ public:
 	sml::Agent* get_agent_ptr()
 	{ return m_pKernel->GetAgent(m_pAgent->GetAgentName()); }
 
-	void remove_identifier(const std::string& name)
-	{ m_id_container.erase(name); }
+	void remove_identifier(const std::string& name);
+
+	// get the input-link name
+	std::string get_ilink_name()
+	{ return m_input_link_name; }
+	
 
 private:
 
