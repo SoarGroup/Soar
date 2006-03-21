@@ -36,6 +36,7 @@ public class Tank  extends WorldEntity {
 	private final static String kRotateID = "rotate";
 	private final static String kRWavesID = "rwaves";
 	private final static String kShieldsID = "shields";
+	private final static String kSettingID = "setting";
 	private final static String kShieldStatusID = "shield-status";
 	private final static String kSmellID = "smell";
 	private final static String kSoundID = "sound";
@@ -150,7 +151,7 @@ public class Tank  extends WorldEntity {
 			int actualDistance = 0;
 			for (int i = 0; i <= powerSetting; ++i) {
 				actualDistance = i;
-				if (scanCells(forceUpdate, i, world, location, rd) == false) {
+				if (scanCells(forceUpdate, i, world, location, rd) == true) {
 					// Blocked
 					break;
 				}
@@ -225,14 +226,17 @@ public class Tank  extends WorldEntity {
 				}
 				
 				if (update) {
-					m_Agent.DestroyWME(cellIDs[position][distance]);
-					tankColors[position][distance] = null;
+					if (cellIDs[position][distance] != null) {
+						m_Agent.DestroyWME(cellIDs[position][distance]);
+						tankColors[position][distance] = null;
+					}
 					cellIDs[position][distance] = m_Agent.CreateIdWME(m_RadarWME, id);
 					
 					m_Agent.CreateIntWME(cellIDs[position][distance], kDistanceID, distance);
 					m_Agent.CreateStringWME(cellIDs[position][distance], kPositionID, positionID);
 					
-					if (tankColor != null) {
+					if (id.equalsIgnoreCase(kTankID)) {
+						tankColor = world.getCell(location, rd.left).getTank().getColor();
 						tankColors[position][distance] = m_Agent.CreateStringWME(cellIDs[position][distance], kColorID, tankColor);
 					}		
 
@@ -587,7 +591,7 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kRadarPowerID)) {
 				
-				String powerValue = commandId.GetParameterValue(kRadarPowerID);
+				String powerValue = commandId.GetParameterValue(kSettingID);
 				if (powerValue != null) {
 					try {
 						m_LastMove.radarPowerSetting = Integer.decode(powerValue).intValue();
@@ -646,7 +650,7 @@ public class Tank  extends WorldEntity {
 		m_Health = kInitialHealth;
 		m_Energy = kInitialEnergy;
 		
-		m_Radar.setRadarPower(0);
+		m_Radar.setRadarPower(1);
 		m_Radar.radarSwitch(false);
 		m_Agent.Update(m_ResurrectWME, kYes);
 		
@@ -672,6 +676,7 @@ public class Tank  extends WorldEntity {
 		
 		m_ReceivedMissiles = false;
 		m_Agent.Update(m_MissilesWME, m_Missiles);
+		m_Agent.Commit();
 	}
 	
 	static public void setWorldCount(int worldCount) {
