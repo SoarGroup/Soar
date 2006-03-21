@@ -48,8 +48,8 @@ public:
 	virtual bool print_object();
 
 	// get rid of the actual underlying object
-	virtual void destroy_sml_object(sml::Agent* pAgent)
-	{ pAgent->DestroyWME(m_object); }
+	virtual void destroy_sml_object(sml::Agent* pAgent);
+	
 
 	// add child
 	void add_child(Smart_Pointer<WME_Int> in_child);
