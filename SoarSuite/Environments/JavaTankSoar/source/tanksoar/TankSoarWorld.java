@@ -192,7 +192,7 @@ public class TankSoarWorld extends World implements WorldManager {
 			// Put tank on map
 			getCell(location).setTank(m_Tanks[i]);
 			m_Tanks[i].setPoints(0);
-			m_Tanks[i].reset();
+			m_Tanks[i].reset(this);
 			m_Tanks[i].initSoar();
 		}
 		updateTankInput();
@@ -253,7 +253,7 @@ public class TankSoarWorld extends World implements WorldManager {
 			location = findStartingLocation();
 		}
 		
-		Tank tank = new Tank(agent, productions, color, location);
+		Tank tank = new Tank(agent, productions, color, location, this);
 		getCell(location).setTank(tank);
 
 		if (m_Tanks == null) {
@@ -301,6 +301,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	public boolean getVictoryCondition() {
 		return m_PrintedStats;
 	}
+	
 	public void update() {
 		// Update world count
 		Tank.setWorldCount(m_Simulation.getWorldCount());
