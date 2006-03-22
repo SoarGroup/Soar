@@ -19,8 +19,8 @@ using sml::Kernel; using sml::Identifier; using sml::Agent;
 using std::for_each; using std::mem_fun; using std::bind2nd;
 using std::ofstream;
 using sml::smlSystemEventId; using sml::smlEVENT_SYSTEM_START;
-using sml::smlAgentEventId; using sml::smlEVENT_AFTER_AGENT_REINITIALIZED;
-using sml::smlEVENT_BEFORE_AGENT_REINITIALIZED;
+using sml::smlAgentEventId; using sml::smlEVENT_BEFORE_AGENT_REINITIALIZED;
+using sml::smlEVENT_AFTER_AGENT_REINITIALIZED;
 
 void MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent);
 
@@ -67,8 +67,8 @@ void QL_Interface::create_new_kernel(int port)
 
 
 	// TODO: These should be in a initialization function
-	m_pKernel->RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, MyAgentEventHandler, this);
 	m_pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENT_REINITIALIZED, MyAgentEventHandler, this);
+	m_pKernel->RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, MyAgentEventHandler, this);
 
 }
 
@@ -109,8 +109,8 @@ bool QL_Interface::specify_agent(const string& name)
 		return false;
 
 	// initialization function
-	m_pKernel->RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, MyAgentEventHandler, this);
 	m_pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENT_REINITIALIZED, MyAgentEventHandler, this);
+	m_pKernel->RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, MyAgentEventHandler, this);
 
 	return true;
 }
@@ -261,13 +261,19 @@ void QL_Interface::QL_Shutdown()
 	prepare_for_new_connection();
 }
 
-void QL_Interface::respond_to_init_soar()
+void QL_Interface::respond_to_init_soar_before()
 {
 	Smart_Pointer<WME_Id> il = m_id_container[m_input_link_name];
 	il->remove_all_children(m_pAgent);
 	m_id_container.clear();
 
 	// call synch input-link in case a new identifier is used for the input-link
+//	m_pAgent->SynchronizeInputLink();
+//	setup_input_link(m_input_link_name); // generates all existing wmes
+}
+
+void QL_Interface::respond_to_init_soar_after()
+{
 	m_pAgent->SynchronizeInputLink();
 	setup_input_link(m_input_link_name); // generates all existing wmes
 }
@@ -393,8 +399,10 @@ void QL_Interface::spawn_debugger()
 
 void MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 {
-	if(smlEVENT_AFTER_AGENT_REINITIALIZED == id)
-		QL_Interface::instance().respond_to_init_soar();
+	if(smlEVENT_BEFORE_AGENT_REINITIALIZED == id)
+		QL_Interface::instance().respond_to_init_soar_before();
+	else if(smlEVENT_AFTER_AGENT_REINITIALIZED == id)
+		QL_Interface::instance().respond_to_init_soar_after();
 }
 
 // member functions
