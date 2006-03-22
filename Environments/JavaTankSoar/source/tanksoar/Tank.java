@@ -84,9 +84,7 @@ public class Tank  extends WorldEntity {
 		private IntElement m_RadarSettingWME;
 
 		private Identifier m_RadarWME;
-		
-		private boolean m_JustTurnedOn = false;
-		
+				
 		public Radar() {
 			m_RadarStatusWME = m_Agent.CreateStringWME(m_InputLink, kRadarStatusID, kOff);
 			m_RadarDistanceWME = m_Agent.CreateIntWME(m_InputLink, kRadarDistanceID, 1);
@@ -101,7 +99,6 @@ public class Tank  extends WorldEntity {
 					if (m_RadarWME == null) {
 						m_RadarWME = m_Agent.CreateIdWME(m_InputLink, kRadarID);
 					}
-					m_JustTurnedOn = true;
 				}
 			} else {
 				if (m_RadarStatusWME.GetValue().equalsIgnoreCase(kOn)) {
@@ -132,18 +129,14 @@ public class Tank  extends WorldEntity {
 				// Radar is off
 				return;
 			}
-			
-			// Force an update if we moved or rotated
-			boolean forceUpdate = m_LastMove.move || m_LastMove.rotate || m_JustTurnedOn;
-			m_JustTurnedOn = false;
-			
+						
 			Point location = new Point(getLocation().x, getLocation().y);
 			
 			int powerSetting = m_RadarSettingWME.GetValue();
 			int actualDistance = 0;
 			for (int i = 0; i <= powerSetting; ++i) {
 				actualDistance = i;
-				if (scanCells(forceUpdate, i, world, location, rd) == true) {
+				if (scanCells(i, world, location, rd) == true) {
 					// Blocked
 					break;
 				}
@@ -158,85 +151,63 @@ public class Tank  extends WorldEntity {
 			}
 		}
 		
-		private boolean scanCells(boolean update, int distance, TankSoarWorld world, Point location, RelativeDirections rd) {
-			boolean blocked = false;
+		private boolean scanCells(int distance, TankSoarWorld world, Point location, RelativeDirections rd) {
+			for (int i = 0; i < kRadarWidth; ++i) {
+				if (cellIDs[i][distance] != null) {
+					m_Agent.DestroyWME(cellIDs[i][distance]);
+					cellIDs[i][distance] = null;
+				}
+				tankColors[i][distance] = null;
+			}
 			
-			for (int position = 0; position < kRadarWidth; ++position) {
+			for (int i = 0; i < kRadarWidth; ++i) {
+				// Scan center then left then right
+				int position = 0;
+				String positionID = null;
+				int relativeDirection = 0;
+				
+				switch (i) {
+				case 0:
+					position = kRadarCenter;
+					positionID = kCenterID;
+					relativeDirection = 0;
+					break;
+				default:
+				case 1:
+					position = kRadarLeft;
+					positionID = kLeftID;
+					relativeDirection = rd.left;
+					break;
+				case 2:
+					position = kRadarRight;
+					positionID = kRightID;
+					relativeDirection = rd.right;
+					break;
+				}
 				
 				if ((position == kRadarCenter) && (distance == 0)) {
 					// skip self
 					continue;
 				}
-				
-				String positionID = null;
-				int relativeDirection = 0;
-				
-				switch (position) {
-				case kRadarLeft:
-					positionID = kLeftID;
-					relativeDirection = rd.left;
-					break;
-				default:
-				case kRadarCenter:
-					positionID = kCenterID;
-					relativeDirection = 0;
-					break;
-				case kRadarRight:
-					positionID = kRightID;
-					relativeDirection = rd.right;
-					break;
-				}
 	
-				String id = getCellID(world.getCell(location, relativeDirection));
+				TankSoarWorld.TankSoarCell cell = world.getCell(location, relativeDirection);
+				Tank tank = cell.getTank();
+				String id = getCellID(cell);
 				
-				// if the update isn't forced
-				if (!update) {
-					// do we have an old id?
-					String oldId = null;
-					if (cellIDs[position][distance] == null) {
-						update = true;
-					} else {
-						// flag an update if the ids don't match
-						oldId = cellIDs[position][distance].GetAttribute();
-						if (!id.equalsIgnoreCase(oldId)) {
-							update = true;
-						} else {
-							// The IDs do match but if it is a tank id...
-							if (id.equalsIgnoreCase(kTankID)) {
-								
-								// it may be a different tank, compare colors
-								String tankColor = world.getCell(location, rd.left).getTank().getColor();
-								if (!tankColor.equalsIgnoreCase(tankColors[position][distance].GetValue())) {
-									// colors are different!
-									update = true;
-								}
-							}
-						}
-					}
-				}
+				cellIDs[position][distance] = m_Agent.CreateIdWME(m_RadarWME, id);
 				
-				if (update) {
-					if (cellIDs[position][distance] != null) {
-						m_Agent.DestroyWME(cellIDs[position][distance]);
-						tankColors[position][distance] = null;
-					}
-					cellIDs[position][distance] = m_Agent.CreateIdWME(m_RadarWME, id);
-					
-					m_Agent.CreateIntWME(cellIDs[position][distance], kDistanceID, distance);
-					m_Agent.CreateStringWME(cellIDs[position][distance], kPositionID, positionID);
-					
-					if (id.equalsIgnoreCase(kTankID)) {
-						String tankColor = world.getCell(location, rd.left).getTank().getColor();
-						tankColors[position][distance] = m_Agent.CreateStringWME(cellIDs[position][distance], kColorID, tankColor);
-					}		
+				m_Agent.CreateIntWME(cellIDs[position][distance], kDistanceID, distance);
+				m_Agent.CreateStringWME(cellIDs[position][distance], kPositionID, positionID);
+				
+				if (id.equalsIgnoreCase(kTankID)) {
+					tankColors[position][distance] = m_Agent.CreateStringWME(cellIDs[position][distance], kColorID, tank.getColor());
+				}		
 
-					if ((position == kRadarCenter) && world.getCell(location, relativeDirection).isWall()) {
-						blocked = true;
-					}
+				if ((position == kRadarCenter) && cell.isWall()) {
+					return true;
 				}
 			}
-			
-			return blocked;
+			return false;
 		}
 		
 		public String getRadarID(int x, int y) {

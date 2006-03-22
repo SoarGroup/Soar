@@ -42,7 +42,7 @@ public class TankSoarAgentWorld extends VisualWorld implements PaintListener {
 		kMiniMissiles = new Image(display, TankSoar.class.getResourceAsStream("/images/missile_small.gif"));
 		kMiniEnergy = new Image(display, TankSoar.class.getResourceAsStream("/images/battery_small.gif"));
 		kMiniHealth = new Image(display, TankSoar.class.getResourceAsStream("/images/health_small.gif"));
-		kMiniTank = new Image(display, TankSoar.class.getResourceAsStream("/images/battrecharge.gif"));
+		kMiniTank = new Image(display, TankSoar.class.getResourceAsStream("/images/tank_small.gif"));
 	}
 	
 	public void update(Tank tank) {
@@ -51,6 +51,11 @@ public class TankSoarAgentWorld extends VisualWorld implements PaintListener {
 
 		for(int x = 0; x < Tank.kRadarWidth; ++x){
 			for(int y = 0; y < Tank.kRadarHeight; ++y){
+				if (x == 1 && y == 0) {
+					m_Radar[x][y] = kMiniTank;
+					continue;
+				}
+				
 				String id = radar.getRadarID(x, y);
 				if (id == null) {
 					m_Radar[x][y] = kMiniWTF;
