@@ -11,19 +11,20 @@ import simulation.visuals.*;
 import tanksoar.*;
 
 public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
-	static HashMap kTanks = new HashMap(4);
-	static Image[] kRocks = new Image[3];
-	static Image[] kTrees = new Image[3];
-	static Image[] kGrass = new Image[3];
-	static Image kRecharger;
-	static Image kHealth;
-	static Image kMissiles;
-	static Image kMissile;
-	static Image kWTF;
-	static Image kRedRecharge;
-	static Image kBlueRecharge;
-	static Image kExplosion;
-	static final int kDotSize = 7;
+	private static HashMap kTanks = new HashMap(4);
+	private static Image[] kRocks = new Image[3];
+	private static Image[] kTrees = new Image[3];
+	private static Image[] kGrass = new Image[3];
+	private static Image kRecharger;
+	private static Image kHealth;
+	private static Image kMissiles;
+	private static Image kMissile;
+	private static Image kWTF;
+	private static Image kRedRecharge;
+	private static Image kBlueRecharge;
+	private static Image kExplosion;
+	private static final int kDotSize = 7;
+	private static final int kCellSize = 32;
 	
 	private TankSoarSimulation m_Simulation;
 	private TankSoarWorld m_World;
@@ -31,8 +32,8 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 	private Random m_Random;
 	private Image[][] m_Background;
 	
-	public TankSoarVisualWorld(Composite parent, int style, TankSoarSimulation simulation, int cellSize) {
-		super(parent, style, simulation, cellSize);
+	public TankSoarVisualWorld(Composite parent, int style, TankSoarSimulation simulation) {
+		super(parent, style, simulation, kCellSize);
 		
 		m_Simulation = simulation;
 		m_World = m_Simulation.getTankSoarWorld();

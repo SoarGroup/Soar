@@ -32,6 +32,7 @@ public class AgentDisplay extends Composite {
 	Button m_CloneAgentButton;
 	Button m_DestroyAgentButton;
 	Button m_SpawnDebuggersButton;
+	TankSoarAgentWorld m_AgentWorld;
 
 	public AgentDisplay(final Composite parent, TankSoarSimulation simulation) {
 		super(parent, SWT.NONE);
@@ -44,7 +45,6 @@ public class AgentDisplay extends Composite {
 		GridLayout gl = new GridLayout();
 		gl.numColumns = 2;
 		m_Group.setLayout(gl);
-		
 		
 		GridData gd;
 
@@ -142,8 +142,14 @@ public class AgentDisplay extends Composite {
 				updateButtons();
 			}
 		});
+		
+		m_AgentWorld = new TankSoarAgentWorld(m_Group, SWT.BORDER, m_Simulation);
+		gd = new GridData();
+		gd.heightHint = m_AgentWorld.getHeight();
+		gd.widthHint = m_AgentWorld.getWidth();		
+		m_AgentWorld.setLayoutData(gd);
 
-		updateEaterList();
+		updateTankList();
 		updateButtons();		
 	}
 	
@@ -155,15 +161,20 @@ public class AgentDisplay extends Composite {
 				break;
 			}
 		}
+		m_AgentWorld.update(m_Tanks[m_AgentTable.getSelectionIndex()]);
+		m_AgentWorld.enable();
+		m_AgentWorld.redraw();
 	}
 	
 	void agentEvent() {
-		updateEaterList();
+		updateTankList();
 		updateButtons();
 	}
 
 	void worldChangeEvent() {
 		if (m_SelectedEntity != null) {
+			m_AgentWorld.update(m_Tanks[m_AgentTable.getSelectionIndex()]);
+			m_AgentWorld.redraw();
 		}
 		
 		if (m_Items != null) {
@@ -176,7 +187,7 @@ public class AgentDisplay extends Composite {
 		}
 	}
 	
-	void updateEaterList() {
+	void updateTankList() {
 		m_Tanks = m_Simulation.getTankSoarWorld().getTanks();
 		m_AgentTable.removeAll();
 		boolean foundSelected = false;
@@ -198,6 +209,8 @@ public class AgentDisplay extends Composite {
 		if (!foundSelected) {
 			m_SelectedEntity = null;			
 			m_AgentTable.deselectAll();
+			m_AgentWorld.disable();
+			m_AgentWorld.redraw();
 		}
 	}
 	

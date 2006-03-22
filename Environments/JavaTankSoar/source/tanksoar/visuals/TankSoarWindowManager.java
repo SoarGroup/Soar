@@ -10,7 +10,6 @@ import simulation.*;
 import simulation.visuals.*;
 
 public class TankSoarWindowManager extends WindowManager implements SimulationListener {
-	public static final int kMainMapCellSize = 32;
 	public static final String kFoodRemaining = "Food remaining: ";
 	public static final String kScoreRemaining = "Points remaining: ";
 
@@ -32,7 +31,7 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 		
 		m_WorldGroup = new Group(m_Shell, SWT.NONE);
 		m_WorldGroup.setLayout(new FillLayout());
-		m_VisualWorld = new TankSoarVisualWorld(m_WorldGroup, SWT.NONE, m_Simulation, kMainMapCellSize);
+		m_VisualWorld = new TankSoarVisualWorld(m_WorldGroup, SWT.NONE, m_Simulation);
 		updateWorldGroup();
 		gd = new GridData();
 		gd.widthHint = m_VisualWorld.getWidth();
