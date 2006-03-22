@@ -127,9 +127,6 @@ public class AgentDisplay extends Composite {
 				}
 				for (int i = 0; i < m_Entities.length; ++i) {
 					selectEntity(m_Entities[m_AgentTable.getSelectionIndex()]);
-					m_AgentWorld.setAgentLocation(m_SelectedEntity.getLocation());
-					m_AgentWorld.enable();
-					m_AgentWorld.redraw();
 				}
 				updateButtons();
 			}
