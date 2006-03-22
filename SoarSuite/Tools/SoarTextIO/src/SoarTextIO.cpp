@@ -37,8 +37,8 @@ SoarTextIO::SoarTextIO()
 	init_soar = false;
 	RemoteConnect();
 	cout << endl;	
-	
-	
+
+
 }
 
 SoarTextIO::~SoarTextIO()
@@ -58,8 +58,8 @@ SoarTextIO::init()
 	pInputLink = pAgent->GetInputLink();
 	pOutputLink = pAgent->GetOutputLink();
 	//}
-	
-	
+
+
 
 	loadPlease = false;
 	subtractOne = false;
@@ -73,10 +73,10 @@ SoarTextIO::init()
 	ShouldPrintNow = false;
 	PrintNothing = false;
 	getnextline = false;
-	
+
 	if(!init_soar)
 	{
-		
+
 		WhenReady();
 		callBackId = pKernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES,MyUpdateEventHandler,this);
 		callBackId = pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START,MyStartSystemEventHandler, this );
@@ -89,7 +89,7 @@ SoarTextIO::init()
 	}
 
 	init_soar = false;
-	
+
 }
 
 
@@ -113,7 +113,7 @@ SoarTextIO::run()
 			ResetConnect();
 		}
 		WriteCycle(&cin);
-		
+
 	}
 }
 
@@ -133,7 +133,7 @@ SoarTextIO::RunForever( void* info )
 		STIO->pKernel->RunAllAgentsForever();
 	}
 	STIO->m_StopNow = false;
-	
+
 }
 
 
@@ -150,7 +150,7 @@ MyUpdateEventHandler(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlR
 	if(STIO->pAgent->GetNumberOutputLinkChanges()!=0)
 	{
 		STIO->RespondCycle();
-		
+
 	}	
 	STIO->pAgent->Commit();
 }
@@ -181,9 +181,9 @@ MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 			STIO->LastSent.resize(0);
 		}
 	}
-//	if(STIO->pTextInput != NULL)
-//		STIO->pAgent->DestroyWME(STIO->pTextInput);
-//	STIO->init_soar = true;
+	//	if(STIO->pTextInput != NULL)
+	//		STIO->pAgent->DestroyWME(STIO->pTextInput);
+	//	STIO->init_soar = true;
 }
 
 void enact_init_soar(sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent)
@@ -202,13 +202,13 @@ SoarTextIO::WriteCycle(istream* getFrom)
 	wordNum = 0;
 	NextWord.resize(0);
 	bool printRead = false;
-		
+
 
 	word = "", forMem = "";
 	checker = "";
 	while(!printNow) { Sleep(1); }
 	if(*getFrom == cin)
-        cout << endl << endl << endl << endl << "> ";
+		cout << endl << endl << endl << endl << "> ";
 	if(ShouldPrintNow)
 	{
 		cout << "READ FROM FILE: ";
@@ -221,7 +221,7 @@ SoarTextIO::WriteCycle(istream* getFrom)
 	else
 		printRead = true; 
 
-	
+
 	CarryOutCommand(getFrom);
 }
 
@@ -334,7 +334,8 @@ SoarTextIO::CarryOutCommand(istream* getFrom)
 			pAgent->CreateStringWME(NextWord[NextWord.size()-2],"next","nil");
 		}
 		sentenceNum++;		
-	}		
+	}	
+	pAgent->Commit();
 }
 
 bool
@@ -381,7 +382,7 @@ SoarTextIO::RespondCycle()
 				top_level = trip.val;
 			if(trip.att == "get" && trip.val == "next-line")
 				getnextline = true;
-			
+
 			trip.printed = false;
 			storeO.push_back(trip);
 			//cout << "(" << storeO[i].name << "   " << storeO[i].att << "   " << storeO[i].val << ")" << endl;
@@ -486,10 +487,10 @@ SoarTextIO::PrintOutput()
 		cout << "                                                                              " << endl ;
 
 		cout << GetRelevant( holder );
-		
+
 		printNow = true;
 	}
-	
+
 }
 
 string
@@ -501,7 +502,7 @@ SoarTextIO::FindNextParent(string name)
 			return storeO[k].val;
 	}
 	return "error";
-	
+
 }
 
 void
@@ -516,26 +517,28 @@ SoarTextIO::createSentId()
 	sentStore.push_back(pTextInput);
 	NextWord.push_back(pTextInput);
 	LastSent.push_back(pTextInput);
+	pAgent->Commit();
 }
 
 void
 SoarTextIO::CreateWord()
 {
-	
+
 	//Create word			
 	sml::StringElement* tmp4 = pAgent->CreateStringWME(NextWord[NextWord.size()-1],"value",word.c_str());
 	dontlose.push_back(tmp4);
-	
+
 	//Create next-word identifier
 	sml::Identifier* tmp = pAgent->CreateIdWME(NextWord[NextWord.size()-1], "next");
 	sentStore.push_back(tmp);
 	NextWord.push_back(tmp);
+	pAgent->Commit();
 }
 
 void
 SoarTextIO::saveMem()  
 {
-//	locFinder();
+	//	locFinder();
 	cin >> loc;
 	ofstream outFile;
 	outFile.open(loc.c_str());
@@ -555,14 +558,14 @@ SoarTextIO::saveMem()
 		//outFile << "&&&&" ; //used as delimeter for file
 		cout << "***YOUR FILE HAS BEEN SAVED***";
 		outFile.close();
-	//	WhenReady();
+		//	WhenReady();
 	}	
 }
 
 void
 SoarTextIO::loadMem()
 {
-	
+
 	cin >> loc;
 	inFile.close();
 	inFile.clear();
@@ -639,7 +642,7 @@ SoarTextIO::RemoteConnect()
 	}
 	init();
 
-	
+
 }
 
 void
@@ -726,7 +729,7 @@ void
 SoarTextIO::WhenReady()
 {
 	cout << endl << "Please make sure your productions are loaded before giving Soar input.";
-/*	string hold;
+	/*	string hold;
 	while(!_kbhit()){ Sleep(10); };
 	Sleep(10);
 	cin >> hold;*/
