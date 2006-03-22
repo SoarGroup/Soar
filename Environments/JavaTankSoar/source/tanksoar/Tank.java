@@ -596,6 +596,11 @@ public class Tank  extends WorldEntity {
 			m_Agent.Update(m_EnergyWME, m_EnergyWME.GetValue() - radarPowerSetting);
 		}
 		
+		// Missiles
+		if (m_LastMove.fire) {
+			m_Agent.Update(m_MissilesWME, m_MissilesWME.GetValue() - 1);
+		}
+		
 		// TODO: Resurrect
 
 		m_Agent.Update(m_ClockWME, worldCount);
@@ -754,5 +759,9 @@ public class Tank  extends WorldEntity {
 	
 	public Radar getRadar() {
 		return m_Radar;
+	}
+	
+	public boolean firedMissile() {
+		return m_LastMove.fire;
 	}
 }
