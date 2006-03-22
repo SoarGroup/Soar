@@ -212,7 +212,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	
 	private void updateTankInput() {
 		for (int i = 0; i < m_Tanks.length; ++i) {
-			m_Tanks[i].updateInput(this);
+			m_Tanks[i].update(this);
 		}
 	}
 	
@@ -344,54 +344,48 @@ public class TankSoarWorld extends World implements WorldManager {
 	
 	private void moveTanks() {
 		for (int i = 0; i < m_Tanks.length; ++i) {
-			Tank.MoveInfo move = m_Tanks[i].getMove();
+			Integer move = m_Tanks[i].getMove();
 			if (move == null) {
 				continue;
 			}
 			
-			if (move.move) {
-				Point oldLocation = m_Tanks[i].getLocation();
-				Point newLocation;
-				if (move.moveDirection.equalsIgnoreCase(Tank.kNorth)) {
-					newLocation = new Point(oldLocation.x, oldLocation.y - 1);
-					
-				} else if (move.moveDirection.equalsIgnoreCase(Tank.kEast)) {
-					newLocation = new Point(oldLocation.x + 1, oldLocation.y);
-					
-				} else if (move.moveDirection.equalsIgnoreCase(Tank.kSouth)) {
-					newLocation = new Point(oldLocation.x, oldLocation.y + 1);
-					
-				} else if (move.moveDirection.equalsIgnoreCase(Tank.kWest)) {
-					newLocation = new Point(oldLocation.x - 1, oldLocation.y);
-					
-				} else {
-					m_Logger.log("Invalid move direction: " + move.moveDirection);
-					return;
-				}
+			Point oldLocation = m_Tanks[i].getLocation();
+			Point newLocation;
+			if (move.intValue() == WorldEntity.kNorthInt) {
+				newLocation = new Point(oldLocation.x, oldLocation.y - 1);
 				
-				if (isInBounds(newLocation) && !getCell(newLocation).isWall()) {
-					if (!getCell(oldLocation).removeTank()) {
-						m_Logger.log("Warning: moving tank " + m_Tanks[i].getName() + " not at old location " + oldLocation);
-					}
-					m_Tanks[i].setLocation(newLocation);
-				} else {
-					m_Tanks[i].adjustPoints(kWallPenalty);
-				}
+			} else if (move.intValue() == WorldEntity.kEastInt) {
+				newLocation = new Point(oldLocation.x + 1, oldLocation.y);
+				
+			} else if (move.intValue() == WorldEntity.kSouthInt) {
+				newLocation = new Point(oldLocation.x, oldLocation.y + 1);
+				
+			} else if (move.intValue() == WorldEntity.kWestInt) {
+				newLocation = new Point(oldLocation.x - 1, oldLocation.y);
+				
+			} else {
+				m_Logger.log("Invalid move direction: " + move);
+				return;
 			}
-
-			if (move.fire) {
-				// TODO
+			
+			if (isInBounds(newLocation) && !getCell(newLocation).isWall()) {
+				if (!getCell(oldLocation).removeTank()) {
+					m_Logger.log("Warning: moving tank " + m_Tanks[i].getName() + " not at old location " + oldLocation);
+				}
+				m_Tanks[i].setLocation(newLocation);
+			} else {
+				m_Tanks[i].adjustPoints(kWallPenalty);
 			}
 		}
 	}
-	
 	private void updateMap() {
+		// TODO: FIRE MISSILES!
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			// TODO: Grab missiles
 			getCell(m_Tanks[i].getLocation()).setTank(m_Tanks[i]);
 		}
 	}
-	
+
 	private void handleCollisions() {
 		// generate collision groups
 		ArrayList currentCollision = null;

@@ -68,6 +68,8 @@ public class Tank  extends WorldEntity {
 	public final static int kRadarWidth = 3;
 	public final static int kRadarHeight = 14;
 	
+	private final static int kSheildEnergyUsage = 20;
+	
 	public class Radar {
 		//0[left  0][left  1][left  2]
 		//1[tank  0][center1][center2]-->facing
@@ -128,25 +130,25 @@ public class Tank  extends WorldEntity {
 			}
 		}
 		
-		public int getEnergyUsage() {
+		public int getPowerSetting() {
 			return m_RadarSettingWME.GetValue();
 		}
 		
-		public void scan(TankSoarWorld world, RelativeDirections rd) {
+		public void scan(TankSoarWorld world) {
 			Point location = new Point(getLocation().x, getLocation().y);
 			
 			int powerSetting = m_RadarSettingWME.GetValue();
 			int actualDistance = 0;
 			for (int i = 0; i <= powerSetting; ++i) {
 				actualDistance = i;
-				if (scanCells(i, world, location, rd) == true) {
+				if (scanCells(i, world, location) == true) {
 					// Blocked
 					break;
 				}
 
 				// Update for next distance
-				location.x += rd.xIncrement;
-				location.y += rd.yIncrement;
+				location.x += m_RD.xIncrement;
+				location.y += m_RD.yIncrement;
 			}
 			
 			if (m_RadarDistanceWME.GetValue() != actualDistance) {
@@ -154,7 +156,7 @@ public class Tank  extends WorldEntity {
 			}
 		}
 		
-		private boolean scanCells(int distance, TankSoarWorld world, Point location, RelativeDirections rd) {
+		private boolean scanCells(int distance, TankSoarWorld world, Point location) {
 			for (int i = 0; i < kRadarWidth; ++i) {
 				if (cellIDs[i][distance] != null) {
 					m_Agent.DestroyWME(cellIDs[i][distance]);
@@ -179,12 +181,12 @@ public class Tank  extends WorldEntity {
 				case 1:
 					position = kRadarLeft;
 					positionID = kLeftID;
-					relativeDirection = rd.left;
+					relativeDirection = m_RD.left;
 					break;
 				case 2:
 					position = kRadarRight;
 					positionID = kRightID;
-					relativeDirection = rd.right;
+					relativeDirection = m_RD.right;
 					break;
 				}
 				
@@ -223,7 +225,7 @@ public class Tank  extends WorldEntity {
 	
 	public class MoveInfo {
 		boolean move;
-		String moveDirection;
+		int moveDirection;
 		
 		boolean rotate;
 		String rotateDirection;
@@ -285,6 +287,8 @@ public class Tank  extends WorldEntity {
 
 	static private Random random = new Random();
 	private Radar m_Radar;
+	
+	private RelativeDirections m_RD;
 
 	// Call reset() to initialize these:
 	private MoveInfo m_LastMove;
@@ -300,7 +304,9 @@ public class Tank  extends WorldEntity {
 		// TODO: reset facing in reset() ?
 		m_Facing = WorldEntity.kNorth;
 		setFacingInt();
-		
+		m_RD = new RelativeDirections();	
+		m_RD.calculate();
+	
 		m_LastMove = new MoveInfo();
 		
 		m_InputLink = m_Agent.GetInputLink();
@@ -389,7 +395,7 @@ public class Tank  extends WorldEntity {
 		worldCount = 0;			// set world count
 		
 		m_Agent.Commit();
-		updateInput(world);		// update the rest of input
+		update(world);		// update the rest of input
 	}
 	
 	public class RelativeDirections {
@@ -397,80 +403,124 @@ public class Tank  extends WorldEntity {
 		public int backward;
 		public int left;
 		public int right;
-		public int xIncrement = 0;
-		public int yIncrement = 0;
-		public String forwardString;
-		public String backwardString;
-		public String leftString;
-		public String rightString;
+		public int xIncrement;
+		public int yIncrement;
 		
-		public RelativeDirections(int facing) {
-				switch (facing) {
-				case WorldEntity.kNorthInt:
+		public void calculate() {
+				switch (getFacingInt()) {
+				case kNorthInt:
 					forward = kNorthInt;
 					backward = kSouthInt;
 					left = kWestInt;
 					right = kEastInt;
-					forwardString = kNorth;
-					backwardString = kSouth;
-					leftString = kWest;
-					rightString = kEast;
+					xIncrement = 0;
 					yIncrement = -1;
 					break;
-				case WorldEntity.kEastInt:
+				case kEastInt:
 					forward = kEastInt;
 					backward = kWestInt;
 					left = kNorthInt;
 					right = kSouthInt;
-					forwardString = kEast;
-					backwardString = kWest;
-					leftString = kNorth;
-					rightString = kSouth;
 					xIncrement = 1;
+					yIncrement = 0;
 					break;
-				case WorldEntity.kSouthInt:
+				case kSouthInt:
 					forward = kSouthInt;
 					backward = kNorthInt;
 					left = kEastInt;
 					right = kWestInt;
-					forwardString = kSouth;
-					backwardString = kNorth;
-					leftString = kEast;
-					rightString = kWest;
+					xIncrement = 0;
 					yIncrement = 1;
 					break;
-				case WorldEntity.kWestInt:
+				case kWestInt:
 					forward = kWestInt;
 					backward = kEastInt;
 					left = kSouthInt;
 					right = kNorthInt;
-					forwardString = kWest;
-					backwardString = kEast;
-					leftString = kSouth;
-					rightString = kNorth;
 					xIncrement = -1;
+					yIncrement = 0;
 					break;
 			}
 		}
 	}
 	
-	public void updateInput(TankSoarWorld world) {
-		RelativeDirections rd = new RelativeDirections(getFacingInt());
+	public Integer getMove() {
+		m_LastMove.reset();
 		
-		// Get current cell
-		TankSoarWorld.TankSoarCell cell = world.getCell(getLocation());
+		if (m_Agent.GetNumberCommands() == 0) {
+			m_Logger.log(getName() + " issued no command.");
+			return null;
+		}
+		
+		for (int i = 0; i < m_Agent.GetNumberCommands(); ++i) {
+		
+			Identifier commandId = m_Agent.GetCommand(i);
+			String commandName = commandId.GetAttribute();
 
-		m_Agent.Update(m_ClockWME, worldCount);
+			if (commandName.equalsIgnoreCase(kMoveID)) {
+				m_LastMove.move = true;
+				
+				if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kForwardID)) {
+					m_LastMove.moveDirection = m_RD.forward;
+				} else if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kBackwardID)) {
+					m_LastMove.moveDirection = m_RD.backward;
+				} else if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kLeftID)) {
+					m_LastMove.moveDirection = m_RD.left;
+				} else if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kRightID)) {
+					m_LastMove.moveDirection = m_RD.right;
+				} 
+				
+			} else if (commandName.equalsIgnoreCase(kFireID)) {
+		 		if (m_MissilesWME.GetValue() > 0) {
+		 			m_LastMove.fire = true;
+		 		} else {
+					m_Logger.log(getName() + ": Attempted to fire missle with no missiles.");
+				}
+				// Weapon ignored
+				
+			} else if (commandName.equalsIgnoreCase(kRadarID)) {
+				m_LastMove.radar = true;
+				m_LastMove.radarSwitch = commandId.GetParameterValue(kSwitchID).equalsIgnoreCase(kOn) ? true : false;  
+				
+			} else if (commandName.equalsIgnoreCase(kRadarPowerID)) {
+				String powerValue = commandId.GetParameterValue(kSettingID);
+				if (powerValue != null) {
+					try {
+						m_LastMove.radarPowerSetting = Integer.decode(powerValue).intValue();
+					} catch (NumberFormatException e) {
+						m_Logger.log(getName() + ": Unable to parse radar power setting " + powerValue + ": " + e.getMessage());
+					}
+					m_LastMove.radarPower = true;
+				} else {
+					m_Logger.log(getName() + ": Radar power setting is null.");
+				}
+				
+			} else if (commandName.equalsIgnoreCase(kShieldsID)) {
+				m_LastMove.shields = true;
+				m_LastMove.shieldsSetting = commandId.GetParameterValue(kSwitchID).equalsIgnoreCase(kOn) ? true : false; 
+				
+			} else if (commandName.equalsIgnoreCase(kRotateID)) {
+				m_LastMove.rotate = true;
+				m_LastMove.rotateDirection = commandId.GetParameterValue(kDirectionID);
+				
+			} else {
+				m_Logger.log(getName() + ": Unknown command: " + commandName);
+				continue;
+			}
+			commandId.AddStatusComplete();
+		}
+		return m_LastMove.move ? new Integer(m_LastMove.moveDirection) : null;
+	}
 	
-		if (m_LastMove.move || m_LastMove.rotate) {		
-			int blocked = world.getBlockedByLocation(getLocation());
-			m_Agent.Update(m_BlockedForwardWME, ((blocked & rd.forward) > 0) ? kYes : kNo);
-			m_Agent.Update(m_BlockedBackwardWME, ((blocked & rd.backward) > 0) ? kYes : kNo);
-			m_Agent.Update(m_BlockedLeftWME, ((blocked & rd.left) > 0) ? kYes : kNo);
-			m_Agent.Update(m_BlockedRightWME, ((blocked & rd.right) > 0) ? kYes : kNo);
-
-			m_Agent.Update(m_DirectionWME, getFacing());			
-
+	public void update(TankSoarWorld world) {		
+		// fire input updated at read time.
+		
+		// Movement
+		if (m_LastMove.move) {
+			// If we moved, we can't rotate
+			m_LastMove.rotate = false;
+			
+			TankSoarWorld.TankSoarCell cell = world.getCell(getLocation());
 			m_Agent.Update(m_EnergyRechargerWME, cell.isEnergyRecharger() ? kYes : kNo);
 			m_Agent.Update(m_HealthRechargerWME, cell.isHealthRecharger() ? kYes : kNo);
 			
@@ -478,37 +528,111 @@ public class Tank  extends WorldEntity {
 			m_Agent.Update(m_yWME, getLocation().y);
 		}
 		
+		// Rotation
+		if (m_LastMove.rotate) {
+			rotate(m_LastMove.rotateDirection);
+			m_Agent.Update(m_DirectionWME, getFacing());
+		}
+		
+		// Handle shields.
+		boolean currentShieldStatus = m_ShieldStatusWME.GetValue().equalsIgnoreCase(kOn);
+		boolean desiredShieldStatus = m_LastMove.shields && m_LastMove.shieldsSetting;
+		boolean enoughPowerForShields = m_EnergyWME.GetValue() >= kSheildEnergyUsage;
+		// If the agent wants to turn the shield on
+		if (!currentShieldStatus && desiredShieldStatus) {
+			// Turn the shield on if there is enough power.
+			if (enoughPowerForShields) {
+				currentShieldStatus = true;
+				m_Agent.Update(m_ShieldStatusWME, kOn);
+			}
+		}
+		// If the agent wants the shield off or there isn't enough power
+		if ((currentShieldStatus && !desiredShieldStatus) || !enoughPowerForShields) {
+			// Turn the shield off.
+			currentShieldStatus = false;
+			m_Agent.Update(m_ShieldStatusWME, kOff);
+		}
+		// Consume shield energy.
+		if (currentShieldStatus) {
+			m_Agent.Update(m_EnergyWME, m_EnergyWME.GetValue() - kSheildEnergyUsage);
+		}
+	
+		// Handle radar.
+		// Figure out radar power usage.  This is bound by the amount of available energy or the maximum of 14.
+		int radarPowerSetting = (m_EnergyWME.GetValue() >= Tank.kRadarHeight) ? Tank.kRadarHeight : m_EnergyWME.GetValue();
+		// Lower this number if the user wants to
+		if (m_LastMove.radarPower && (m_LastMove.radarPowerSetting < radarPowerSetting)) {
+			radarPowerSetting = m_LastMove.radarPowerSetting;
+		} else {
+			// Or, lower this number using the old radar setting:
+			if (m_Radar.getPowerSetting() < radarPowerSetting) {
+				radarPowerSetting = m_Radar.getPowerSetting();
+			}
+		}
+		// If the power setting changed, set it.
+		if (m_Radar.getPowerSetting() != radarPowerSetting) {
+			// Although, turn 0 into 1 first because power setting 0 isn't legal.
+			m_Radar.setRadarPower(radarPowerSetting == 0 ? 1 : radarPowerSetting);
+		}
+		boolean currentRadarStatus = m_Radar.isOn();
+		boolean desiredRadarStatus = m_LastMove.radar && m_LastMove.radarSwitch;
+		// If the agent wants to turn the radar on
+		if (!currentRadarStatus && desiredRadarStatus) {
+			// Turn the radar on and scan if there is power.
+			if (radarPowerSetting > 0) {
+				currentRadarStatus = true;
+				m_Radar.radarSwitch(true);
+				m_Radar.scan(world);
+			}
+		}
+		// If the agent wants to turn the radar off or there isn't enough power
+		if ((currentRadarStatus && !desiredRadarStatus) || (radarPowerSetting == 0)) {
+			// Turn the radar off.
+			currentRadarStatus = false;
+			m_Radar.radarSwitch(false);
+		}
+		// Consume radar energy.
+		if (currentRadarStatus) {
+			m_Agent.Update(m_EnergyWME, m_EnergyWME.GetValue() - radarPowerSetting);
+		}
+		
+		// TODO: Resurrect
+
+		m_Agent.Update(m_ClockWME, worldCount);
+
+		// Blocked
+		if (m_LastMove.move || m_LastMove.rotate) {		
+			int blocked = world.getBlockedByLocation(getLocation());
+			m_Agent.Update(m_BlockedForwardWME, ((blocked & m_RD.forward) > 0) ? kYes : kNo);
+			m_Agent.Update(m_BlockedBackwardWME, ((blocked & m_RD.backward) > 0) ? kYes : kNo);
+			m_Agent.Update(m_BlockedLeftWME, ((blocked & m_RD.left) > 0) ? kYes : kNo);
+			m_Agent.Update(m_BlockedRightWME, ((blocked & m_RD.right) > 0) ? kYes : kNo);
+		}
+
+		// Incoming
 		int incoming = world.getIncomingByLocation(getLocation());
 		if (incoming != m_LastIncoming) {
 			m_LastIncoming = incoming;
-			m_Agent.Update(m_IncomingForwardWME, ((incoming & rd.forward) > 0) ? kYes : kNo);
-			m_Agent.Update(m_IncomingBackwardWME, ((incoming & rd.backward) > 0) ? kYes : kNo);
-			m_Agent.Update(m_IncomingLeftWME, ((incoming & rd.left) > 0) ? kYes : kNo);
-			m_Agent.Update(m_IncomingRightWME, ((incoming & rd.right) > 0) ? kYes : kNo);
+			m_Agent.Update(m_IncomingForwardWME, ((incoming & m_RD.forward) > 0) ? kYes : kNo);
+			m_Agent.Update(m_IncomingBackwardWME, ((incoming & m_RD.backward) > 0) ? kYes : kNo);
+			m_Agent.Update(m_IncomingLeftWME, ((incoming & m_RD.left) > 0) ? kYes : kNo);
+			m_Agent.Update(m_IncomingRightWME, ((incoming & m_RD.right) > 0) ? kYes : kNo);
 		}
 		
-		if (m_Radar.isOn()) {
-			int currentEnergy = m_EnergyWME.GetValue();
-			int remainingEnergy = currentEnergy - m_Radar.getEnergyUsage();
-			if (remainingEnergy < 0) {
-				m_Radar.setRadarPower(m_Radar.getEnergyUsage() + remainingEnergy);
-				remainingEnergy = 0;
-			}
-			m_Agent.Update(m_EnergyWME, remainingEnergy);
-			m_Radar.scan(world, rd);
-		}
-		
+		// Random
 		m_Agent.Update(m_RandomWME, random.nextFloat());
 				
+		// RWaves
 		int rwaves = world.getRWavesByLocation(getLocation());
 		if (rwaves != m_LastRWaves) {
 			m_LastRWaves = rwaves;
-			m_Agent.Update(m_RWavesForwardWME, ((rwaves & rd.forward) > 0) ? kYes : kNo);
-			m_Agent.Update(m_RWavesBackwardWME, ((rwaves & rd.backward) > 0) ? kYes : kNo);
-			m_Agent.Update(m_RWavesLeftWME, ((rwaves & rd.left) > 0) ? kYes : kNo);
-			m_Agent.Update(m_RWavesRightWME, ((rwaves & rd.right) > 0) ? kYes : kNo);
+			m_Agent.Update(m_RWavesForwardWME, ((rwaves & m_RD.forward) > 0) ? kYes : kNo);
+			m_Agent.Update(m_RWavesBackwardWME, ((rwaves & m_RD.backward) > 0) ? kYes : kNo);
+			m_Agent.Update(m_RWavesLeftWME, ((rwaves & m_RD.left) > 0) ? kYes : kNo);
+			m_Agent.Update(m_RWavesRightWME, ((rwaves & m_RD.right) > 0) ? kYes : kNo);
 		}
 		
+		// Stinky tanks
 		Tank closestTank = world.getStinkyTankNearLocation(getLocation());
 		if (closestTank != null) {
 			if (m_SmellDistanceWME == null) {
@@ -531,16 +655,17 @@ public class Tank  extends WorldEntity {
 			}
 		}
 	
+		// Sound
 		int sound = world.getSoundByLocation(getLocation());
 		if (sound != m_LastSound) {
 			m_LastSound = sound;
-			if (sound == rd.forward) {
+			if (sound == m_RD.forward) {
 				m_Agent.Update(m_SoundWME, kForwardID);
-			} else if (sound == rd.backward) {
+			} else if (sound == m_RD.backward) {
 				m_Agent.Update(m_SoundWME, kBackwardID);
-			} else if (sound == rd.left) {
+			} else if (sound == m_RD.left) {
 				m_Agent.Update(m_SoundWME, kLeftID);
-			} else if (sound == rd.right) {
+			} else if (sound == m_RD.right) {
 				m_Agent.Update(m_SoundWME, kRightID);
 			} else {
 				if (sound > 0) {
@@ -551,103 +676,6 @@ public class Tank  extends WorldEntity {
 		}
 		
 		m_Agent.Commit();
-	}
-	
-	public MoveInfo getMove() {
-		m_LastMove.reset();
-		
-		if (m_ResurrectWME.GetValue().equalsIgnoreCase(kYes)) {
-			m_Agent.Update(m_ResurrectWME, kNo);
-		}
-		
-		if (m_EnergyWME.GetValue() <= 0) {
-			m_Radar.radarSwitch(false);
-		}
-		
-		if (m_Agent.GetNumberCommands() == 0) {
-			m_Logger.log(getName() + " issued no command.");
-			return null;
-		}
-		
-		RelativeDirections rd = new RelativeDirections(getFacingInt());		
-		
-		for (int i = 0; i < m_Agent.GetNumberCommands(); ++i) {
-		
-			Identifier commandId = m_Agent.GetCommand(i);
-			String commandName = commandId.GetAttribute();
-
-			// TODO: make sure commands can happen simultaneously
-			if (commandName.equalsIgnoreCase(kMoveID)) {
-				if (m_LastMove.rotate) {
-					m_Logger.log("Tried to move and rotate at the same time.");
-				}
-				m_LastMove.move = true;
-				
-				if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kForwardID)) {
-					m_LastMove.moveDirection = rd.forwardString;
-				} else if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kBackwardID)) {
-					m_LastMove.moveDirection = rd.backwardString;
-				} else if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kLeftID)) {
-					m_LastMove.moveDirection = rd.leftString;
-				} else if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kRightID)) {
-					m_LastMove.moveDirection = rd.rightString;
-				} 
-				
-				
-			} else if (commandName.equalsIgnoreCase(kFireID)) {
-				m_LastMove.fire = true;
-				// Weapon ignored
-				
-			} else if (commandName.equalsIgnoreCase(kRadarID)) {
-				if (m_EnergyWME.GetValue() <= 0) {
-					m_Logger.log(getName() + ": Attempted to use radar with zero energy.");
-				} else {
-					m_LastMove.radar = true;
-					m_LastMove.radarSwitch = commandId.GetParameterValue(kSwitchID).equalsIgnoreCase(kOn) ? true : false;  
-					
-					m_Radar.radarSwitch(m_LastMove.radarSwitch);
-				}
-				
-			} else if (commandName.equalsIgnoreCase(kRadarPowerID)) {
-				if (m_EnergyWME.GetValue() <= 0) {
-					m_Logger.log(getName() + ": Attempted to use radar with zero energy.");
-				} else {
-					String powerValue = commandId.GetParameterValue(kSettingID);
-					if (powerValue != null) {
-						try {
-							m_LastMove.radarPowerSetting = Integer.decode(powerValue).intValue();
-						} catch (NumberFormatException e) {
-							m_Logger.log(getName() + ": Unable to parse radar power setting " + powerValue + ": " + e.getMessage());
-						}
-						m_Radar.setRadarPower(m_LastMove.radarPowerSetting);
-						m_LastMove.radarPower = true;
-					} else {
-						m_Logger.log(getName() + ": Radar power setting is null.");
-					}
-				}
-				
-			} else if (commandName.equalsIgnoreCase(kShieldsID)) {
-				m_LastMove.shields = true;
-				m_LastMove.shieldsSetting = commandId.GetParameterValue(kSwitchID).equalsIgnoreCase(kOn) ? true : false; 
-				
-				m_Agent.Update(m_ShieldStatusWME,commandId.GetParameterValue(kSwitchID));
-				
-			} else if (commandName.equalsIgnoreCase(kRotateID)) {
-				if (m_LastMove.move) {
-					m_Logger.log(getName() + ": Tried to move and rotate at the same time.");
-				}
-				m_LastMove.rotate = true;
-				m_LastMove.rotateDirection = commandId.GetParameterValue(kDirectionID);
-				
-				rotate(commandId.GetParameterValue(kDirectionID));
-			} else {
-				m_Logger.log(getName() + ": Unknown command: " + commandName);
-				continue;
-			}
-			commandId.AddStatusComplete();
-		}
-
-		return m_LastMove;
 	}
 	
 	public void addMissiles(int numberToAdd) {
@@ -696,15 +724,32 @@ public class Tank  extends WorldEntity {
 		return kOpenID;
 	}
 	
-	private void rotate(String direction) {
-		RelativeDirections rd = new RelativeDirections(getFacingInt());
+	private void rotate(String direction) {		
+		int facing = 0;
 		
 		if (direction.equalsIgnoreCase(kLeftID)) {
-			m_Facing = rd.leftString;
+			facing = m_RD.left;
 		} else if (direction.equalsIgnoreCase(kRightID)) {
-			m_Facing = rd.rightString;
+			facing = m_RD.right;
 		}
+		
+		switch (facing) {
+		case kNorthInt:
+			m_Facing = kNorth;
+			break;
+		case kSouthInt:
+			m_Facing = kSouth;
+			break;
+		case kEastInt:
+			m_Facing = kEast;
+			break;
+		case kWestInt:
+			m_Facing = kWest;
+			break;
+		}
+		
 		setFacingInt();
+		m_RD.calculate();
 	}
 	
 	public Radar getRadar() {
