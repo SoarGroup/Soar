@@ -249,7 +249,8 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 
 	// this is called internally by the agent reinitialized event
-	void respond_to_init_soar();
+	void respond_to_init_soar_before();
+	void respond_to_init_soar_after();
 
 	// this function takes a pre-made smart_pointer to an identifier.  This should only be called
 	// from the WME_Id class
