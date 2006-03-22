@@ -118,18 +118,21 @@ public class Tank  extends WorldEntity {
 			}
 		}
 		
+		public boolean isOn() {
+			return m_RadarStatusWME.GetValue().equalsIgnoreCase(kOn);
+		}
+		
 		public void setRadarPower(int setting) {
 			if (setting != m_RadarSettingWME.GetValue()) {
 				m_Agent.Update(m_RadarSettingWME, setting);
 			}
 		}
 		
+		public int getEnergyUsage() {
+			return m_RadarSettingWME.GetValue();
+		}
+		
 		public void scan(TankSoarWorld world, RelativeDirections rd) {
-			if (m_RadarStatusWME.GetValue().equalsIgnoreCase(kOff)) {
-				// Radar is off
-				return;
-			}
-						
 			Point location = new Point(getLocation().x, getLocation().y);
 			
 			int powerSetting = m_RadarSettingWME.GetValue();
@@ -484,7 +487,16 @@ public class Tank  extends WorldEntity {
 			m_Agent.Update(m_IncomingRightWME, ((incoming & rd.right) > 0) ? kYes : kNo);
 		}
 		
-		m_Radar.scan(world, rd);
+		if (m_Radar.isOn()) {
+			int currentEnergy = m_EnergyWME.GetValue();
+			int remainingEnergy = currentEnergy - m_Radar.getEnergyUsage();
+			if (remainingEnergy < 0) {
+				m_Radar.setRadarPower(m_Radar.getEnergyUsage() + remainingEnergy);
+				remainingEnergy = 0;
+			}
+			m_Agent.Update(m_EnergyWME, remainingEnergy);
+			m_Radar.scan(world, rd);
+		}
 		
 		m_Agent.Update(m_RandomWME, random.nextFloat());
 				
@@ -548,6 +560,10 @@ public class Tank  extends WorldEntity {
 			m_Agent.Update(m_ResurrectWME, kNo);
 		}
 		
+		if (m_EnergyWME.GetValue() <= 0) {
+			m_Radar.radarSwitch(false);
+		}
+		
 		if (m_Agent.GetNumberCommands() == 0) {
 			m_Logger.log(getName() + " issued no command.");
 			return null;
@@ -583,24 +599,31 @@ public class Tank  extends WorldEntity {
 				// Weapon ignored
 				
 			} else if (commandName.equalsIgnoreCase(kRadarID)) {
-				m_LastMove.radar = true;
-				m_LastMove.radarSwitch = commandId.GetParameterValue(kSwitchID).equalsIgnoreCase(kOn) ? true : false;  
-				
-				m_Radar.radarSwitch(m_LastMove.radarSwitch);
+				if (m_EnergyWME.GetValue() <= 0) {
+					m_Logger.log(getName() + ": Attempted to use radar with zero energy.");
+				} else {
+					m_LastMove.radar = true;
+					m_LastMove.radarSwitch = commandId.GetParameterValue(kSwitchID).equalsIgnoreCase(kOn) ? true : false;  
+					
+					m_Radar.radarSwitch(m_LastMove.radarSwitch);
+				}
 				
 			} else if (commandName.equalsIgnoreCase(kRadarPowerID)) {
-				
-				String powerValue = commandId.GetParameterValue(kSettingID);
-				if (powerValue != null) {
-					try {
-						m_LastMove.radarPowerSetting = Integer.decode(powerValue).intValue();
-					} catch (NumberFormatException e) {
-						m_Logger.log("Unable to parse radar power setting " + powerValue + ": " + e.getMessage());
-					}
-					m_Radar.setRadarPower(m_LastMove.radarPowerSetting);
-					m_LastMove.radarPower = true;
+				if (m_EnergyWME.GetValue() <= 0) {
+					m_Logger.log(getName() + ": Attempted to use radar with zero energy.");
 				} else {
-					m_Logger.log("Radar power setting is null.");
+					String powerValue = commandId.GetParameterValue(kSettingID);
+					if (powerValue != null) {
+						try {
+							m_LastMove.radarPowerSetting = Integer.decode(powerValue).intValue();
+						} catch (NumberFormatException e) {
+							m_Logger.log(getName() + ": Unable to parse radar power setting " + powerValue + ": " + e.getMessage());
+						}
+						m_Radar.setRadarPower(m_LastMove.radarPowerSetting);
+						m_LastMove.radarPower = true;
+					} else {
+						m_Logger.log(getName() + ": Radar power setting is null.");
+					}
 				}
 				
 			} else if (commandName.equalsIgnoreCase(kShieldsID)) {
@@ -611,14 +634,14 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kRotateID)) {
 				if (m_LastMove.move) {
-					m_Logger.log("Tried to move and rotate at the same time.");
+					m_Logger.log(getName() + ": Tried to move and rotate at the same time.");
 				}
 				m_LastMove.rotate = true;
 				m_LastMove.rotateDirection = commandId.GetParameterValue(kDirectionID);
 				
 				rotate(commandId.GetParameterValue(kDirectionID));
 			} else {
-				m_Logger.log("Unknown command: " + commandName);
+				m_Logger.log(getName() + ": Unknown command: " + commandName);
 				continue;
 			}
 			commandId.AddStatusComplete();
