@@ -379,11 +379,12 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 	}
 	private void updateMap() {
-		// TODO: FIRE MISSILES!
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			// TODO: Grab missiles
 			getCell(m_Tanks[i].getLocation()).setTank(m_Tanks[i]);
 		}
+		
+		// TODO: Fire missiles
 	}
 
 	private void handleCollisions() {
