@@ -14,18 +14,18 @@ public class Tank  extends WorldEntity {
 	private final static String kColorID = "color";
 	private final static String kDirectionID = "direction";
 	private final static String kDistanceID = "distance";
-	private final static String kEnergyID = "energy";
+	public final static String kEnergyID = "energy";
 	private final static String kEnergyRechargerID = "energyrecharger";
 	private final static String kFireID = "fire";
-	private final static String kHealthID = "health";
+	public final static String kHealthID = "health";
 	private final static String kHealthRechargerID = "healthrecharger";
 	private final static String kIncomingID = "incoming";
-	private final static String kMissilesID = "missiles";
+	public final static String kMissilesID = "missiles";
 	private final static String kMoveID = "move";
 	private final static String kMyColorID = "my-color";
-	private final static String kObstacleID = "obstacle";
-	private final static String kOpenID = "open";
-	private final static String kTankID = "tank";
+	public final static String kObstacleID = "obstacle";
+	public final static String kOpenID = "open";
+	public final static String kTankID = "tank";
 	private final static String kRadarID = "radar";
 	private final static String kRadarDistanceID = "radar-distance";
 	private final static String kRadarPowerID = "radar-power";
@@ -65,6 +65,8 @@ public class Tank  extends WorldEntity {
 	
 	private final static String kNone = "none";
 	
+	public final static int kRadarWidth = 3;
+	public final static int kRadarHeight = 14;
 	
 	public class Radar {
 		//0[left  0][left  1][left  2]
@@ -74,8 +76,8 @@ public class Tank  extends WorldEntity {
 		private static final int kRadarCenter = 1;
 		private static final int kRadarRight = 2;
 		
-		private Identifier[][] cellIDs = new Identifier[3][14];
-		private StringElement[][] tankColors = new StringElement[3][14];
+		private Identifier[][] cellIDs = new Identifier[kRadarWidth][kRadarHeight];
+		private StringElement[][] tankColors = new StringElement[kRadarWidth][kRadarHeight];
 		
 		private StringElement m_RadarStatusWME;
 		private IntElement m_RadarDistanceWME;
@@ -159,7 +161,7 @@ public class Tank  extends WorldEntity {
 		private boolean scanCells(boolean update, int distance, TankSoarWorld world, Point location, RelativeDirections rd) {
 			boolean blocked = false;
 			
-			for (int position = 0; position < 3; ++position) {
+			for (int position = 0; position < kRadarWidth; ++position) {
 				
 				if ((position == kRadarCenter) && (distance == 0)) {
 					// skip self
@@ -195,7 +197,7 @@ public class Tank  extends WorldEntity {
 						update = true;
 					} else {
 						// flag an update if the ids don't match
-						oldId = cellIDs[position][distance].GetIdentifierName();
+						oldId = cellIDs[position][distance].GetAttribute();
 						if (!id.equalsIgnoreCase(oldId)) {
 							update = true;
 						} else {
@@ -235,6 +237,13 @@ public class Tank  extends WorldEntity {
 			}
 			
 			return blocked;
+		}
+		
+		public String getRadarID(int x, int y) {
+			if (cellIDs[x][y] == null) {
+				return null;
+			}
+			return cellIDs[x][y].GetAttribute();
 		}
 	}
 	
@@ -504,7 +513,7 @@ public class Tank  extends WorldEntity {
 			m_Agent.Update(m_IncomingRightWME, ((incoming & rd.right) > 0) ? kYes : kNo);
 		}
 		
-		//m_Radar.scan(world, rd);
+		m_Radar.scan(world, rd);
 		
 		m_Agent.Update(m_RandomWME, random.nextFloat());
 				
@@ -702,5 +711,9 @@ public class Tank  extends WorldEntity {
 			m_Facing = rd.rightString;
 		}
 		setFacingInt();
+	}
+	
+	public Radar getRadar() {
+		return m_Radar;
 	}
 }
