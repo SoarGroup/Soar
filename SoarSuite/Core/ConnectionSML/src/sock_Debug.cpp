@@ -172,6 +172,7 @@ void PrintDebugSimple(char const* pStr)
 
 	fprintf(stderr, pStr) ;
 	fprintf(stderr, "\n") ;
+	fflush(stderr) ;
 //	OutputDebugString(pStr) ;
 //	OutputDebugString("\n") ;
 }
