@@ -84,9 +84,9 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 				} else if (cell.isOpen()) {
 					m_Background[x][y] = kGrass[m_Random.nextInt(kGrass.length)];
 				} else if (cell.isEnergyRecharger()) {
-					m_Background[x][y] = kGrass[m_Random.nextInt(kGrass.length)];
+					m_Background[x][y] = kRecharger;
 				} else if (cell.isHealthRecharger()) {
-					m_Background[x][y] = kGrass[m_Random.nextInt(kGrass.length)];
+					m_Background[x][y] = kHealth;
 				} else {
 					m_Logger.log("Unknown cell at " + x + "," + y);
 					m_Background[x][y] = kWTF;
@@ -145,6 +145,9 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 					gc.setBackground((Color)m_EntityColors.get(tank));
 					gc.fillOval(m_CellSize*x + m_CellSize/2 - kDotSize/2, m_CellSize*y + m_CellSize/2 - kDotSize/2, kDotSize, kDotSize);
 					gc.setBackground(WindowManager.widget_background);
+					
+				} else if (cell.containsMissilePack()) {
+					gc.drawImage(kMissiles, x*m_CellSize, y*m_CellSize);
 					
 				} else {
 					gc.drawImage(m_Background[x][y], x*m_CellSize, y*m_CellSize);

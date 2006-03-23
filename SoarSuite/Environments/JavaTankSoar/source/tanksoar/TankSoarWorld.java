@@ -35,6 +35,13 @@ public class TankSoarWorld extends World implements WorldManager {
 
 	private static final int kWallPenalty = -100;
 	private static final int kWinningPoints = 50;
+	
+	private static final int kMaxMissilePacks = 3;
+	private static final double kMisslePackRespawn = 0.05;
+	private static final int kMissilePackSize = 7;
+	int m_NumMissilePacks = 0;
+	
+	Random m_Random = new Random();
 
 	public class TankSoarCell extends Cell {
 		private Tank m_Tank;
@@ -78,8 +85,17 @@ public class TankSoarWorld extends World implements WorldManager {
 			return m_Contents == kTankInt;
 		}
 		
+		public boolean hasContents() {
+			return m_Contents != kNothingInt;
+		}
+		
 		public void setTank(Tank tank) {
 			m_Modified = true;
+			if (m_Contents == kMissilePackInt) {
+				tank.addMissiles(kMissilePackSize);
+				--m_NumMissilePacks;
+			}
+			
 			m_Contents = kTankInt;
 			m_Tank = tank;
 		}
@@ -101,6 +117,21 @@ public class TankSoarWorld extends World implements WorldManager {
 		public boolean containsMissilePack() {
 			return m_Contents == kMissilePackInt;
 		}
+		
+		void setHealth() {
+			m_Modified = true;
+			m_Type = kHealthInt;
+		}
+		
+		void setEnergy() {
+			m_Modified = true;
+			m_Type = kEnergyInt;
+		}
+		
+		void setMissilePack() {
+			m_Modified = true;
+			m_Contents = kMissilePackInt;
+		}
 	}
 	
 	private TankSoarSimulation m_Simulation;
@@ -115,6 +146,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	
 	public boolean load(String mapFile) {
 		m_PrintedStats = false;
+		m_NumMissilePacks = 0;
 		
 		try {
 			// Open file
@@ -143,10 +175,30 @@ public class TankSoarWorld extends World implements WorldManager {
 			return false;
 		}
 		
+		// Place rechargers
+		Point p = findStartingLocation();
+		getCell(p).setHealth();
+		do {
+			p = findStartingLocation();
+		} while (getCell(p).isHealthRecharger());
+		getCell(p).setEnergy();
+		
+		while (m_NumMissilePacks < kMaxMissilePacks) {
+			spawnMissilePack();
+		}
 		resetTanks();
 		
 		m_Logger.log(mapFile + " loaded.");
 		return true;
+	}
+	
+	private void spawnMissilePack() {
+		TankSoarCell cell;
+		do {
+			cell = getCell(findStartingLocation());
+		} while (cell.hasContents() || !cell.isOpen());
+		cell.setMissilePack();
+		++m_NumMissilePacks;
 	}
 	
 	private void generateWorldFromXML(JavaElementXML cells) throws Exception {
@@ -200,17 +252,19 @@ public class TankSoarWorld extends World implements WorldManager {
 
 	private Point findStartingLocation() {
 		// set random starting location
-		Random random = new Random();
-		Point location = new Point(random.nextInt(m_WorldWidth), random.nextInt(m_WorldHeight));
+		Point location = new Point(m_Random.nextInt(m_WorldWidth), m_Random.nextInt(m_WorldHeight));
 		while (getCell(location).isWall() || getCell(location).containsTank()) {
-			location.x = random.nextInt(m_WorldWidth);
-			location.y = random.nextInt(m_WorldHeight);				
+			location.x = m_Random.nextInt(m_WorldWidth);
+			location.y = m_Random.nextInt(m_WorldHeight);				
 		}
 		
 		return location;
 	}
 	
 	private void updateTankInput() {
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			m_Tanks[i].clearRWaves();
+		}
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			m_Tanks[i].update(this);
 		}
@@ -385,6 +439,13 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 		
 		// TODO: Fire missiles
+		
+		// Spawn missile packs
+		if (m_NumMissilePacks < kMaxMissilePacks) {
+			if (m_Random.nextFloat() < kMisslePackRespawn) {
+				spawnMissilePack();
+			}
+		}
 	}
 
 	private void handleCollisions() {
@@ -501,11 +562,6 @@ public class TankSoarWorld extends World implements WorldManager {
 		return 0;
 	}
 	
-	public int getRWavesByLocation(Point location) {
-		// TODO:
-		return 0;
-	}
-
 	public int getSoundByLocation(Point location) {
 		// TODO:
 		return 0;

@@ -205,6 +205,7 @@ public class Tank  extends WorldEntity {
 				m_Agent.CreateStringWME(cellIDs[position][distance], kPositionID, positionID);
 				
 				if (id.equalsIgnoreCase(kTankID)) {
+					tank.setRWaves(m_RD.backward);
 					tankColors[position][distance] = m_Agent.CreateStringWME(cellIDs[position][distance], kColorID, tank.getColor());
 				}		
 
@@ -294,7 +295,7 @@ public class Tank  extends WorldEntity {
 	private MoveInfo m_LastMove;
 	static private int worldCount = 0;
 	private int m_LastIncoming;
-	private int m_LastRWaves;
+	private int m_RWaves;
 	private int m_LastSound;
 	
 	public Tank(Agent agent, String productions, String color, Point location, TankSoarWorld world) {
@@ -379,7 +380,7 @@ public class Tank  extends WorldEntity {
 		m_LastMove.move = true;	// force blocked, facing, recharger, x, y update
 		
 		m_LastIncoming = -1;	// force incoming update
-		m_LastRWaves = -1;		// force rwaves update
+		m_RWaves = 0;		// force rwaves update
 		m_LastSound = -1;		// force sound update
 		
 		// force smell update
@@ -514,13 +515,14 @@ public class Tank  extends WorldEntity {
 	
 	public void update(TankSoarWorld world) {		
 		// fire input updated at read time.
+
+		TankSoarWorld.TankSoarCell cell = world.getCell(getLocation());
 		
 		// Movement
 		if (m_LastMove.move) {
 			// If we moved, we can't rotate
 			m_LastMove.rotate = false;
 			
-			TankSoarWorld.TankSoarCell cell = world.getCell(getLocation());
 			m_Agent.Update(m_EnergyRechargerWME, cell.isEnergyRecharger() ? kYes : kNo);
 			m_Agent.Update(m_HealthRechargerWME, cell.isHealthRecharger() ? kYes : kNo);
 			
@@ -532,6 +534,18 @@ public class Tank  extends WorldEntity {
 		if (m_LastMove.rotate) {
 			rotate(m_LastMove.rotateDirection);
 			m_Agent.Update(m_DirectionWME, getFacing());
+		}
+		
+		// Chargers
+		if (cell.isEnergyRecharger()) {
+			int newEnergy = m_EnergyWME.GetValue() + 250;
+			newEnergy = newEnergy > kInitialEnergy ? kInitialEnergy : newEnergy;
+			m_Agent.Update(m_EnergyWME, newEnergy);
+		}
+		if (cell.isHealthRecharger()) {
+			int newHealth = m_HealthWME.GetValue() + 250;
+			newHealth = newHealth > kInitialHealth ? kInitialHealth : newHealth;
+			m_Agent.Update(m_HealthWME, newHealth);
 		}
 		
 		// Handle shields.
@@ -628,13 +642,41 @@ public class Tank  extends WorldEntity {
 		m_Agent.Update(m_RandomWME, random.nextFloat());
 				
 		// RWaves
-		int rwaves = world.getRWavesByLocation(getLocation());
-		if (rwaves != m_LastRWaves) {
-			m_LastRWaves = rwaves;
-			m_Agent.Update(m_RWavesForwardWME, ((rwaves & m_RD.forward) > 0) ? kYes : kNo);
-			m_Agent.Update(m_RWavesBackwardWME, ((rwaves & m_RD.backward) > 0) ? kYes : kNo);
-			m_Agent.Update(m_RWavesLeftWME, ((rwaves & m_RD.left) > 0) ? kYes : kNo);
-			m_Agent.Update(m_RWavesRightWME, ((rwaves & m_RD.right) > 0) ? kYes : kNo);
+		if ((m_RWaves & m_RD.forward) > 0) {
+			if (m_RWavesForwardWME.GetValue().equalsIgnoreCase(kNo)) {
+				m_Agent.Update(m_RWavesForwardWME, kYes);
+			}
+		} else {
+			if (m_RWavesForwardWME.GetValue().equalsIgnoreCase(kYes)) {
+				m_Agent.Update(m_RWavesForwardWME, kNo);
+			}
+		}
+		if ((m_RWaves & m_RD.backward) > 0) {
+			if (m_RWavesBackwardWME.GetValue().equalsIgnoreCase(kNo)) {
+				m_Agent.Update(m_RWavesBackwardWME, kYes);
+			}
+		} else {
+			if (m_RWavesBackwardWME.GetValue().equalsIgnoreCase(kYes)) {
+				m_Agent.Update(m_RWavesBackwardWME, kNo);
+			}
+		}
+		if ((m_RWaves & m_RD.left) > 0) {
+			if (m_RWavesLeftWME.GetValue().equalsIgnoreCase(kNo)) {
+				m_Agent.Update(m_RWavesLeftWME, kYes);
+			}
+		} else {
+			if (m_RWavesLeftWME.GetValue().equalsIgnoreCase(kYes)) {
+				m_Agent.Update(m_RWavesLeftWME, kNo);
+			}
+		}
+		if ((m_RWaves & m_RD.right) > 0) {
+			if (m_RWavesRightWME.GetValue().equalsIgnoreCase(kNo)) {
+				m_Agent.Update(m_RWavesRightWME, kYes);
+			}
+		} else {
+			if (m_RWavesRightWME.GetValue().equalsIgnoreCase(kYes)) {
+				m_Agent.Update(m_RWavesRightWME, kNo);
+			}
 		}
 		
 		// Stinky tanks
@@ -763,5 +805,13 @@ public class Tank  extends WorldEntity {
 	
 	public boolean firedMissile() {
 		return m_LastMove.fire;
+	}
+	
+	public void clearRWaves() {
+		m_RWaves = 0;
+	}
+	
+	void setRWaves(int fromDirection) {
+		m_RWaves |= fromDirection;
 	}
 }
