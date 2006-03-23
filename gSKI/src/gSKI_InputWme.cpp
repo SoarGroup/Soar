@@ -198,14 +198,21 @@ namespace gSKI
 		 }
 
 		 // Removing any wme's scheduled for removal
-		 if ( doRemoves && m_removeWme && m_rawwme != 0 ) 
+		 if ( doRemoves && m_removeWme)
 		 {
-			 std::string att = m_attribute->GetString() ;
-			 std::string val = m_value->GetString() ;
+			 if (m_rawwme != 0 ) 
+			 {
+				std::string att = m_attribute->GetString() ;
+				std::string val = m_value->GetString() ;
 
-			 Bool retvalue =  remove_input_wme(m_manager->GetSoarAgent(), m_rawwme);
-			 MegaAssert( retvalue, "Trouble removing an input wme!");
-			 m_rawwme = 0;
+				Bool retvalue =  remove_input_wme(m_manager->GetSoarAgent(), m_rawwme);
+				MegaAssert( retvalue, "Trouble removing an input wme!");
+				m_rawwme = 0;
+			 }
+
+			 // We need to handle the case where the gSKI wme was created and deleted before the kernel wme
+			 // was ever created (Soar wasn't run).  So we'll release the gSKI object where the kernel object
+			 // exists or not.
 
 			 // Detaching this object from the other input objects
 			 MegaAssert( m_owningobject != 0, "Invalid owning object for InputWme." );
