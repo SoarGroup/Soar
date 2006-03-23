@@ -142,6 +142,8 @@ public class MacEnvironment implements Runnable, Kernel.SystemEventInterface, Ke
         rightBank.setCounts(0, 0, 0);
         fireBoatMoved(rightBank, missionaries, cannibals, boat);
         
+	agent.Commit(); // need to commit WME changes before init-soar
+	
         agent.InitSoar();
     }
     
