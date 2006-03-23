@@ -106,33 +106,38 @@ public class Game implements Runnable, Kernel.UpdateEventInterface {
     public void updateWorld()
     {
         // See if any commands were generated on the output link
-    	// (In general we might want to update the world when the agent
-    	// takes no action in which case some code would be outside this if statement
-    	// but for this environment that's not necessary).
-        if (agent.Commands())
+    	  // (In general we might want to update the world when the agent
+    	  // takes no action in which case some code would be outside this if statement
+    	  // but for this environment that's not necessary).
+        if(agent.Commands())
         {
-	        // perform the command on the output link        
-	        Identifier command = agent.GetCommand(0);
-	        if (!command.GetCommandName().equals(MOVE_DISK)) {
-	            throw new IllegalStateException("Unknown Command: "
-	                    + command.GetCommandName());
-	        }
-	        if (command.GetParameterValue(SOURCE_PEG) == null ||
-	                command.GetParameterValue(DESTINATION_PEG) == null) {
-	            throw new IllegalStateException("Parameter(s) missing for Command "
-	                    + MOVE_DISK);
-	        }
-	        int srcPeg = command.GetParameterValue(SOURCE_PEG).charAt(0) - 'A';
-	        int dstPeg = command.GetParameterValue(DESTINATION_PEG).charAt(0) - 'A';
+		// For this application there will only ever be one command on the output-link
+		// but for illustration this loop shows how we would get all of the commands if
+		// there were more than one
+	      for(int n=0; n<agent.GetNumberCommands(); n++) { 
+	          // perform the command on the output link        
+	          Identifier command = agent.GetCommand(n);
+	          if (!command.GetCommandName().equals(MOVE_DISK)) {
+	              throw new IllegalStateException("Unknown Command: "
+	                      + command.GetCommandName());
+	          }
+	          if (command.GetParameterValue(SOURCE_PEG) == null ||
+	                  command.GetParameterValue(DESTINATION_PEG) == null) {
+	              throw new IllegalStateException("Parameter(s) missing for Command "
+	                      + MOVE_DISK);
+	          }
+	          int srcPeg = command.GetParameterValue(SOURCE_PEG).charAt(0) - 'A';
+	          int dstPeg = command.GetParameterValue(DESTINATION_PEG).charAt(0) - 'A';
 	        
-	        // Change the state of the world and generate new input
-	        moveDisk(srcPeg, dstPeg);
+	          // Change the state of the world and generate new input
+	          moveDisk(srcPeg, dstPeg);
 	        
-	        // Tell the agent that this command has executed in the environment.
-	        command.AddStatusComplete();
+	          // Tell the agent that this command has executed in the environment.
+	          command.AddStatusComplete();
+		}
 
-	        // Send the new input link changes to the agent
-	        agent.Commit();
+	      // Send the new input link changes to the agent
+	      agent.Commit();
         
 	    	// "agent.GetCommand(n)" is based on watching for changes to the output link
 	    	// so before we do a run we clear the last set of changes.
