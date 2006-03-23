@@ -1456,6 +1456,12 @@ char const* Agent::RunSelfTilOutput()
 *************************************************************/
 void Agent::Refresh()
 {
+	// If this asserts fails, we had some changes to working memory that were
+	// not committed and then an init-soar came in.  This is a programming error
+	// as all working memory changes should be committed before other user-input (e.g. init-soar)
+	// can be called.
+	assert(!IsCommitRequired()) ;
+
 	GetWM()->Refresh() ;
 }
 
