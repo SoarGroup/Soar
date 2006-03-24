@@ -172,8 +172,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	   			Missile missile = (Missile)iter.next();
 	   			m_RD.calculate(missile.m_Direction);
 	   			MapPoint location = missile.m_CurrentLocation;
-	   			location.x += m_RD.xIncrement;
-	   			location.y += m_RD.yIncrement;
+	   			location.travel(m_RD.forward);
 	   			
 	   			if (getCell(location).isWall()) {
 	   				iter.remove();
@@ -187,7 +186,8 @@ public class TankSoarWorld extends World implements WorldManager {
 
 	   	public void fireMissile(MapPoint originatingLocation, int direction) {
    			m_RD.calculate(direction);
-   			MapPoint location = new MapPoint(originatingLocation.x + m_RD.xIncrement, originatingLocation.y + m_RD.yIncrement);
+   			MapPoint location = new MapPoint(originatingLocation);
+   			location.travel(m_RD.forward);
 	   		m_Flying.addLast(new Missile(location, direction));
 	   	}
 	   	
