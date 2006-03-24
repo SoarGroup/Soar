@@ -52,7 +52,7 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 		kRecharger = new Image(display, TankSoar.class.getResourceAsStream("/images/battery.gif"));
 		kHealth = new Image(display, TankSoar.class.getResourceAsStream("/images/health.gif"));
 		kMissiles = new Image(display, TankSoar.class.getResourceAsStream("/images/missile.gif"));
-		kMissile = new Image(display, TankSoar.class.getResourceAsStream("/images/fire4.gif"));
+		kMissile = new Image(display, TankSoar.class.getResourceAsStream("/images/fire2.gif"));
 		kWTF = new Image(display, TankSoar.class.getResourceAsStream("/images/wtf.gif"));
 		kRedRecharge = new Image(display, TankSoar.class.getResourceAsStream("/images/recharge.gif"));
 		kBlueRecharge = new Image(display, TankSoar.class.getResourceAsStream("/images/battrecharge.gif"));
@@ -133,7 +133,6 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 					continue;
 				}
 				
-				
 				// Check for interesting foreground, otherwise draw background
 				if (cell.containsTank()) {
 					Tank tank = cell.getTank();
@@ -151,6 +150,14 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 					
 				} else {
 					gc.drawImage(m_Background[x][y], x*m_CellSize, y*m_CellSize);
+				}
+				
+				// Draw flying missiles regardless
+				Point[] missiles = m_World.getMissileLocations();
+				if (missiles != null) {
+					for (int i = 0; i < missiles.length; ++i) {
+						gc.drawImage(kMissile, (missiles[i].x * m_CellSize) + 9, (missiles[i].y * m_CellSize) + 9);
+					}
 				}
 			}
 		}

@@ -5,6 +5,7 @@ import java.util.*;
 import org.eclipse.swt.graphics.*;
 
 import simulation.*;
+import utilities.*;
 import sml.*;
 
 public class Tank  extends WorldEntity {
@@ -69,6 +70,8 @@ public class Tank  extends WorldEntity {
 	public final static int kRadarHeight = 14;
 	
 	private final static int kSheildEnergyUsage = 20;
+	private final static int kMissileHealthDamage = 400;
+	private final static int kMissileEnergyDamage = 250;
 	
 	public class Radar {
 		//0[left  0][left  1][left  2]
@@ -290,23 +293,27 @@ public class Tank  extends WorldEntity {
 	private Radar m_Radar;
 	
 	private RelativeDirections m_RD;
+	static private int worldCount = 0;
 
 	// Call reset() to initialize these:
 	private MoveInfo m_LastMove;
-	static private int worldCount = 0;
+	private int m_Resurrect = -1;
 	private int m_LastIncoming;
 	private int m_RWaves;
 	private int m_LastSound;
+	private boolean m_Hit;
 	
-	public Tank(Agent agent, String productions, String color, Point location, TankSoarWorld world) {
+	public Tank(Agent agent, String productions, String color, Point location, String facing, TankSoarWorld world) {
 		super(agent, productions, color, location);
 		
-		// TODO: initial direction setting? using north
 		// TODO: reset facing in reset() ?
-		m_Facing = WorldEntity.kNorth;
+		if (facing == null) {
+			facing = WorldEntity.kNorth;
+		}
+		m_Facing = facing;
 		setFacingInt();
 		m_RD = new RelativeDirections();	
-		m_RD.calculate();
+		m_RD.calculate(getFacingInt());
 	
 		m_LastMove = new MoveInfo();
 		
@@ -383,6 +390,8 @@ public class Tank  extends WorldEntity {
 		m_RWaves = 0;		// force rwaves update
 		m_LastSound = -1;		// force sound update
 		
+		m_Hit = false;
+		
 		// force smell update
 		if (m_SmellDistanceWME != null) {
 			m_Agent.DestroyWME(m_SmellDistanceWME);
@@ -392,57 +401,9 @@ public class Tank  extends WorldEntity {
 			m_Agent.DestroyWME(m_SmellDistanceStringWME);
 			m_SmellDistanceStringWME = null;
 		}
-		
-		worldCount = 0;			// set world count
-		
+				
 		m_Agent.Commit();
 		update(world);		// update the rest of input
-	}
-	
-	public class RelativeDirections {
-		public int forward;
-		public int backward;
-		public int left;
-		public int right;
-		public int xIncrement;
-		public int yIncrement;
-		
-		public void calculate() {
-				switch (getFacingInt()) {
-				case kNorthInt:
-					forward = kNorthInt;
-					backward = kSouthInt;
-					left = kWestInt;
-					right = kEastInt;
-					xIncrement = 0;
-					yIncrement = -1;
-					break;
-				case kEastInt:
-					forward = kEastInt;
-					backward = kWestInt;
-					left = kNorthInt;
-					right = kSouthInt;
-					xIncrement = 1;
-					yIncrement = 0;
-					break;
-				case kSouthInt:
-					forward = kSouthInt;
-					backward = kNorthInt;
-					left = kEastInt;
-					right = kWestInt;
-					xIncrement = 0;
-					yIncrement = 1;
-					break;
-				case kWestInt:
-					forward = kWestInt;
-					backward = kEastInt;
-					left = kSouthInt;
-					right = kNorthInt;
-					xIncrement = -1;
-					yIncrement = 0;
-					break;
-			}
-		}
 	}
 	
 	public Integer getMove() {
@@ -515,7 +476,7 @@ public class Tank  extends WorldEntity {
 	
 	public void update(TankSoarWorld world) {		
 		// fire input updated at read time.
-
+		
 		TankSoarWorld.TankSoarCell cell = world.getCell(getLocation());
 		
 		// Movement
@@ -536,20 +497,52 @@ public class Tank  extends WorldEntity {
 			m_Agent.Update(m_DirectionWME, getFacing());
 		}
 		
+		// Missile damage
+		boolean currentShieldStatus = m_ShieldStatusWME.GetValue().equalsIgnoreCase(kOn);
+		if (m_Hit) {
+			int currentHealth = m_HealthWME.GetValue();
+			int currentEnergy = m_EnergyWME.GetValue();
+			if (currentShieldStatus) {
+				currentEnergy -= kMissileEnergyDamage;
+				if (currentEnergy < 0) {
+					currentEnergy = 0;
+				}
+				m_Agent.Update(m_EnergyWME, currentEnergy);
+			} else {
+				currentHealth -= kMissileHealthDamage;
+				if (currentHealth < 0) {
+					currentHealth = 0;
+				}
+				m_Agent.Update(m_HealthWME, currentHealth);
+			}
+		}
+		
 		// Chargers
 		if (cell.isEnergyRecharger()) {
-			int newEnergy = m_EnergyWME.GetValue() + 250;
-			newEnergy = newEnergy > kInitialEnergy ? kInitialEnergy : newEnergy;
-			m_Agent.Update(m_EnergyWME, newEnergy);
+			// Check for missile hit
+			if (m_Hit) {
+				// Instant death
+				m_Agent.Update(m_HealthWME, 0);
+			} else {
+				int newEnergy = m_EnergyWME.GetValue() + 250;
+				newEnergy = newEnergy > kInitialEnergy ? kInitialEnergy : newEnergy;
+				m_Agent.Update(m_EnergyWME, newEnergy);
+			}
 		}
 		if (cell.isHealthRecharger()) {
-			int newHealth = m_HealthWME.GetValue() + 250;
-			newHealth = newHealth > kInitialHealth ? kInitialHealth : newHealth;
-			m_Agent.Update(m_HealthWME, newHealth);
+			// Check for missile hit
+			if (m_Hit) {
+				// Instant death
+				m_Agent.Update(m_HealthWME, 0);
+			} else {
+				int newHealth = m_HealthWME.GetValue() + 250;
+				newHealth = newHealth > kInitialHealth ? kInitialHealth : newHealth;
+				m_Agent.Update(m_HealthWME, newHealth);
+			}
 		}
 		
 		// Handle shields.
-		boolean currentShieldStatus = m_ShieldStatusWME.GetValue().equalsIgnoreCase(kOn);
+		currentShieldStatus = m_ShieldStatusWME.GetValue().equalsIgnoreCase(kOn);
 		boolean desiredShieldStatus = m_LastMove.shields && m_LastMove.shieldsSetting;
 		boolean enoughPowerForShields = m_EnergyWME.GetValue() >= kSheildEnergyUsage;
 		// If the agent wants to turn the shield on
@@ -615,8 +608,16 @@ public class Tank  extends WorldEntity {
 			m_Agent.Update(m_MissilesWME, m_MissilesWME.GetValue() - 1);
 		}
 		
-		// TODO: Resurrect
-
+		// Resurrect
+		if (m_ResurrectWME.GetValue().equalsIgnoreCase(kYes)) {
+			if (m_Resurrect <= 0) {
+				m_Resurrect = worldCount;
+			} else {
+				m_Agent.Update(m_ResurrectWME, kNo);
+				m_Resurrect = -1;
+			}
+		}
+		
 		m_Agent.Update(m_ClockWME, worldCount);
 
 		// Blocked
@@ -680,17 +681,19 @@ public class Tank  extends WorldEntity {
 		}
 		
 		// Stinky tanks
-		Tank closestTank = world.getStinkyTankNearLocation(getLocation());
+		Tank closestTank = world.getStinkyTankNear(this);
 		if (closestTank != null) {
+			// TODO: should check color, distance and not blink if they don't change
 			if (m_SmellDistanceWME == null) {
-				// TODO: should check color, distance and not blink if they don't change
-				m_SmellDistanceWME = m_Agent.CreateIntWME(m_SmellWME, kDistanceID, getManhattanDistanceTo(closestTank));			
-				m_Agent.Update(m_SmellColorWME, closestTank.getColor());
+				m_SmellDistanceWME = m_Agent.CreateIntWME(m_SmellWME, kDistanceID, world.getManhattanDistance(this, closestTank));
 				if (m_SmellDistanceStringWME != null) {
 					m_Agent.DestroyWME(m_SmellDistanceStringWME);
 					m_SmellDistanceStringWME = null;
 				}
+			} else {
+				m_Agent.Update(m_SmellDistanceWME, world.getManhattanDistance(this, closestTank));
 			}
+			m_Agent.Update(m_SmellColorWME, closestTank.getColor());
 		} else {
 			if (m_SmellDistanceStringWME == null) {
 				m_SmellDistanceStringWME = m_Agent.CreateStringWME(m_SmellWME, kDistanceID, kNone);
@@ -703,7 +706,7 @@ public class Tank  extends WorldEntity {
 		}
 	
 		// Sound
-		int sound = world.getSoundByLocation(getLocation());
+		int sound = 0;//world.getLoudTank(this);
 		if (sound != m_LastSound) {
 			m_LastSound = sound;
 			if (sound == m_RD.forward) {
@@ -737,19 +740,20 @@ public class Tank  extends WorldEntity {
 		return m_HealthWME.GetValue();
 	}
 	
+	public void hit() {
+		m_Hit = true;
+	}
+	
 	public int getEnergy() {
 		return m_EnergyWME.GetValue();
 	}
 	
-	static public void setWorldCount(int worldCount) {
-		Tank.worldCount = worldCount;
+	public boolean recentlyMoved() {
+		return m_LastMove.move;
 	}
 	
-	private int getManhattanDistanceTo(Tank tank) {
-		Point mine = getLocation();
-		Point other = tank.getLocation();
-		
-		return Math.abs(mine.x - other.x) + Math.abs(mine.y - other.y);
+	static public void setWorldCount(int worldCount) {
+		Tank.worldCount = worldCount;
 	}
 	
 	private String getCellID(TankSoarWorld.TankSoarCell cell) {
@@ -796,7 +800,7 @@ public class Tank  extends WorldEntity {
 		}
 		
 		setFacingInt();
-		m_RD.calculate();
+		m_RD.calculate(getFacingInt());
 	}
 	
 	public Radar getRadar() {
