@@ -49,4 +49,8 @@ public class MapPoint {
 		}		
 		return 0;
 	}
+	
+	public int getManhattanDistanceTo(MapPoint point) {		
+		return Math.abs(this.x - point.x) + Math.abs(this.y - point.y);
+	}
 }
