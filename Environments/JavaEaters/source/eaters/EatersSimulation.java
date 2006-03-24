@@ -1,5 +1,7 @@
 package eaters;
 
+import org.eclipse.swt.graphics.Point;
+
 import simulation.*;
 import sml.*;
 import utilities.*;
@@ -99,7 +101,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		// add initial eaters
 		if (initialNames != null) {
 			for (int i = 0; i < initialNames.length; ++i) {
-				createEntity(initialNames[i], getAgentPath() + initialProductions[i], initialColors[i]);
+				createEntity(initialNames[i], getAgentPath() + initialProductions[i], initialColors[i], null, null);
 			}
 		}
 		
@@ -109,7 +111,11 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		}
 	}
 	
-    public void createEntity(String name, String productions, String color) {
+    public void createEntity(String name, String productions, String color, Point location, String facing) {
+    	if (location != null || facing != null) {
+    		m_Logger.log("Location or facing given but ignored!");
+    	}
+    	
     	if (name == null || productions == null) {
     		fireErrorMessage("Failed to create agent, name, productions or color null.");
     		return;
