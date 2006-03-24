@@ -153,11 +153,11 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 		
 	   	public class Missile {
-	   		private Point m_CurrentLocation;
+	   		private MapPoint m_CurrentLocation;
 	   		private int m_FlightPhase; // 0, 1 == affects current location, 2 == affects current location + 1
 	   		private int m_Direction;
 	   		
-	   		public Missile(Point location, int direction) {
+	   		public Missile(MapPoint location, int direction) {
 	   			m_CurrentLocation = location;
 	   			m_Direction = direction;
 	   			m_FlightPhase = 0;
@@ -173,7 +173,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	   		while (iter.hasNext()) {
 	   			Missile missile = (Missile)iter.next();
 	   			m_RD.calculate(missile.m_Direction);
-	   			Point location = missile.m_CurrentLocation;
+	   			MapPoint location = missile.m_CurrentLocation;
 	   			location.x += m_RD.xIncrement;
 	   			location.y += m_RD.yIncrement;
 	   			
@@ -187,13 +187,13 @@ public class TankSoarWorld extends World implements WorldManager {
 	   		}
 	   	}
 
-	   	public void fireMissile(Point originatingLocation, int direction) {
+	   	public void fireMissile(MapPoint originatingLocation, int direction) {
    			m_RD.calculate(direction);
-   			Point location = new Point(originatingLocation.x + m_RD.xIncrement, originatingLocation.y + m_RD.yIncrement);
+   			MapPoint location = new MapPoint(originatingLocation.x + m_RD.xIncrement, originatingLocation.y + m_RD.yIncrement);
 	   		m_Flying.addLast(new Missile(location, direction));
 	   	}
 	   	
-	   	public int checkIncoming(Point location) {
+	   	public int checkIncoming(MapPoint location) {
 	   		int incoming = 0;
 	   		ListIterator iter = m_Flying.listIterator();
 	   		while (iter.hasNext()) {
@@ -234,7 +234,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	   		return incoming;
 	   	}
 	   	
-	   	public boolean checkHit(Point location) {
+	   	public boolean checkHit(MapPoint location) {
 	   		boolean hit = false;
 	   		ListIterator iter = m_Flying.listIterator();
 	   		while (iter.hasNext()) {
@@ -247,11 +247,11 @@ public class TankSoarWorld extends World implements WorldManager {
 	   		return hit;
 	   	}
 	   	
-	   	public Point[] getLocations() {
+	   	public MapPoint[] getLocations() {
 	   		if (m_Flying.size() == 0) {
 	   			return null;
 	   		}
-	   		Point[] locations = new Point[m_Flying.size()];
+	   		MapPoint[] locations = new MapPoint[m_Flying.size()];
 	   		Missile[] missiles = (Missile[])m_Flying.toArray(new Missile[0]);
 	   		for (int i = 0; i < locations.length; ++i) {
 	   			locations[i] = missiles[i].m_CurrentLocation;
@@ -262,7 +262,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	
 	private Missiles m_Missiles = new Missiles();
 	
-	public Point[] getMissileLocations() {
+	public MapPoint[] getMissileLocations() {
 		return m_Missiles.getLocations();
 	}
 	
@@ -369,7 +369,7 @@ public class TankSoarWorld extends World implements WorldManager {
 			return;
 		}
 		for (int i = 0; i < m_Tanks.length; ++i) {
-			Point location = m_Tanks[i].getInitialLocation();
+			MapPoint location = m_Tanks[i].getInitialLocation();
 			if (location != null && getCell(location).isWall()) {
 				m_Logger.log("Initial location " + location + " is blocked, going random.");
 				location = null;
@@ -387,9 +387,9 @@ public class TankSoarWorld extends World implements WorldManager {
 		updateTankInput();
 	}
 
-	private Point findStartingLocation() {
+	private MapPoint findStartingLocation() {
 		// set random starting location
-		Point location = new Point(m_Random.nextInt(m_WorldWidth), m_Random.nextInt(m_WorldHeight));
+		MapPoint location = new MapPoint(m_Random.nextInt(m_WorldWidth), m_Random.nextInt(m_WorldHeight));
 		while (!getCell(location).isOpen() || getCell(location).hasContents()) {
 			location.x = m_Random.nextInt(m_WorldWidth);
 			location.y = m_Random.nextInt(m_WorldHeight);				
@@ -410,7 +410,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		// Reset and ressurect dead tanks
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].getHealth() <= 0) {
-				Point location = findStartingLocation();
+				MapPoint location = findStartingLocation();
 				m_Tanks[i].setLocation(location);
 				// Put tank on map
 				getCell(location).setTank(m_Tanks[i]);
@@ -419,7 +419,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		}		
 	}
 	
-	public TankSoarCell getCell(Point location) {
+	public TankSoarCell getCell(MapPoint location) {
 		return m_World[location.y][location.x];
 	}
 	
@@ -443,7 +443,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		return m_World[y][x];
 	}
 	
-	public TankSoarCell getCell(Point location, int direction) {
+	public TankSoarCell getCell(MapPoint location, int direction) {
 		return getCell(location.x, location.y, direction);
 	}
 	
@@ -451,11 +451,11 @@ public class TankSoarWorld extends World implements WorldManager {
 		createTank(agent, productions, color, null, null);
 	}
 
-	void createTank(Agent agent, String productions, String color, Point location) {
+	void createTank(Agent agent, String productions, String color, MapPoint location) {
 		createTank(agent, productions, color, location, null);
 	}
 
-	void createTank(Agent agent, String productions, String color, Point location, String facing) {
+	void createTank(Agent agent, String productions, String color, MapPoint location, String facing) {
 		if (getCell(location).isWall()) {
 			m_Logger.log("Initial location " + location + " is blocked, going random.");
 			location = null;
@@ -561,19 +561,19 @@ public class TankSoarWorld extends World implements WorldManager {
 				continue;
 			}
 			
-			Point oldLocation = m_Tanks[i].getLocation();
-			Point newLocation;
+			MapPoint oldLocation = m_Tanks[i].getLocation();
+			MapPoint newLocation;
 			if (move.intValue() == WorldEntity.kNorthInt) {
-				newLocation = new Point(oldLocation.x, oldLocation.y - 1);
+				newLocation = new MapPoint(oldLocation.x, oldLocation.y - 1);
 				
 			} else if (move.intValue() == WorldEntity.kEastInt) {
-				newLocation = new Point(oldLocation.x + 1, oldLocation.y);
+				newLocation = new MapPoint(oldLocation.x + 1, oldLocation.y);
 				
 			} else if (move.intValue() == WorldEntity.kSouthInt) {
-				newLocation = new Point(oldLocation.x, oldLocation.y + 1);
+				newLocation = new MapPoint(oldLocation.x, oldLocation.y + 1);
 				
 			} else if (move.intValue() == WorldEntity.kWestInt) {
-				newLocation = new Point(oldLocation.x - 1, oldLocation.y);
+				newLocation = new MapPoint(oldLocation.x - 1, oldLocation.y);
 				
 			} else {
 				m_Logger.log("Invalid move direction: " + move);
@@ -614,7 +614,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 		
 		// Mark modified cells
-		Point[] missileLocations = m_Missiles.getLocations();
+		MapPoint[] missileLocations = m_Missiles.getLocations();
 		if (missileLocations != null) {
 			for (int i = 0; i < missileLocations.length; ++i) {
 				getCell(missileLocations[i]).setModified();
@@ -719,7 +719,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 	}
 	
-	public int getBlockedByLocation(Point location) {
+	public int getBlockedByLocation(MapPoint location) {
 		int blocked = 0;
 		
 		if (getCell(location, WorldEntity.kNorthInt).isWall()) {
@@ -738,7 +738,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		return blocked;
 	}
 
-	public int getIncomingByLocation(Point location) {
+	public int getIncomingByLocation(MapPoint location) {
 		return m_Missiles.checkIncoming(location);
 	}
 	
@@ -753,8 +753,8 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 	
 	public int getManhattanDistance(Tank t1, Tank t2) {
-		Point p1 = t1.getLocation();
-		Point p2 = t2.getLocation();
+		MapPoint p1 = t1.getLocation();
+		MapPoint p2 = t2.getLocation();
 		
 		return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y);
 	}

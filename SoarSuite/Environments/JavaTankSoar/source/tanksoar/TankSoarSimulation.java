@@ -1,7 +1,5 @@
 package tanksoar;
 
-import org.eclipse.swt.graphics.Point;
-
 import simulation.*;
 import sml.*;
 import utilities.*;
@@ -36,7 +34,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		String [] initialNames = null;
 		String [] initialProductions = null;
 		String [] initialColors = null;
-		Point [] initialLocations = null;
+		MapPoint [] initialLocations = null;
 		String [] initialFacing = null;
 	
 		// Load settings file
@@ -68,7 +66,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 					initialNames = new String[child.getNumberChildren()];
 					initialProductions = new String[child.getNumberChildren()];
 					initialColors = new String[child.getNumberChildren()];
-					initialLocations = new Point[child.getNumberChildren()];
+					initialLocations = new MapPoint[child.getNumberChildren()];
 					initialFacing = new String[child.getNumberChildren()];
 					
 					for (int j = 0; j < initialNames.length; ++j) {
@@ -85,7 +83,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 						}
 						
 						initialColors[j] = agent.getAttribute(kParamColor);
-						initialLocations[j] = new Point(agent.getAttributeIntDefault(kParamX, -1), agent.getAttributeIntDefault(kParamY, -1));
+						initialLocations[j] = new MapPoint(agent.getAttributeIntDefault(kParamX, -1), agent.getAttributeIntDefault(kParamY, -1));
 						initialFacing[j] = agent.getAttribute(kParamFacing);
 						
 					}
@@ -122,7 +120,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		}
 	}
 	
-    public void createEntity(String name, String productions, String color, Point location, String facing) {
+    public void createEntity(String name, String productions, String color, MapPoint location, String facing) {
     	if (name == null || productions == null) {
     		fireErrorMessage("Failed to create agent, name, productions or color null.");
     		return;
