@@ -57,11 +57,10 @@
 				Description="Make Tcl package"
 				CommandLine="cd ..\..\..\SoarLibrary\bin\
 set PATH=%PATH%;$(TargetDir)..
-&quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl"/>
+&quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl
+"/>
 			<Tool
-				Name="VCPreBuildEventTool"
-				CommandLine="cd ..\..\..\SoarLibrary\bin
-IF NOT EXIST Tcl_sml_ClientInterface mkdir Tcl_sml_ClientInterface"/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
@@ -125,11 +124,10 @@ IF NOT EXIST Tcl_sml_ClientInterface mkdir Tcl_sml_ClientInterface"/>
 				Description="Make Tcl package"
 				CommandLine="cd ..\..\..\SoarLibrary\bin\
 set PATH=%PATH%;$(TargetDir)..
-&quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl"/>
+&quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl
+"/>
 			<Tool
-				Name="VCPreBuildEventTool"
-				CommandLine="cd ..\..\..\SoarLibrary\bin
-IF NOT EXIST Tcl_sml_ClientInterface mkdir Tcl_sml_ClientInterface"/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
