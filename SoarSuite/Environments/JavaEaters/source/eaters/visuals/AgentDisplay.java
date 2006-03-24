@@ -82,7 +82,7 @@ public class AgentDisplay extends Composite {
 				}
 				
 				// Risking null exception here, but that should not be possible ;)
-				m_Simulation.createEntity(color, m_SelectedEntity.getProductions(), color);
+				m_Simulation.createEntity(color, m_SelectedEntity.getProductions(), color, null, null);
 			}
 		});
 		
