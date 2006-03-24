@@ -22,6 +22,7 @@ public class EatersWindowManager extends WindowManager implements SimulationList
 	final EatersVisualWorld m_VisualWorld;
 	final AgentDisplay m_AgentDisplay;
 	final Group m_WorldGroup;
+	Runnable m_Timer ;
 	
 	public EatersWindowManager(EatersSimulation simulation) {
 		m_Simulation = simulation;
@@ -167,6 +168,22 @@ public class EatersWindowManager extends WindowManager implements SimulationList
 			m_SimButtons.updateButtons();
 			m_MapButtons.updateButtons();
 			m_AgentDisplay.updateButtons();
+			
+			// DJP: This is a workaround for a display problem where the screen sometimes
+			// fails to repaint at the end of a run (leaving multiple eaters on screen when
+			// there shouldn't be).  This workaround triggers a second repaint
+			// a little later.  Obviously, if we solve the underlying draw issue this can
+			// come out, but it should be pretty harmless.
+			m_Timer = new Runnable()
+			{
+				public void run()
+				{
+					m_VisualWorld.setRepaint() ;
+					m_VisualWorld.redraw() ;
+				}
+			} ;
+			m_Shell.getDisplay().timerExec(200, m_Timer) ;
+
 			return;
 			
 		case SimulationListener.kErrorMessageEvent:
