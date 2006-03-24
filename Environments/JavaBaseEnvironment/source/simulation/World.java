@@ -1,7 +1,5 @@
 package simulation;
 
-import org.eclipse.swt.graphics.*;
-
 import utilities.*;
 
 public class World {
