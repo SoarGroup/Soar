@@ -1,7 +1,5 @@
 package eaters;
 
-import org.eclipse.swt.graphics.Point;
-
 import simulation.*;
 import sml.*;
 import utilities.*;
@@ -111,7 +109,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		}
 	}
 	
-    public void createEntity(String name, String productions, String color, Point location, String facing) {
+    public void createEntity(String name, String productions, String color, MapPoint location, String facing) {
     	if (location != null || facing != null) {
     		m_Logger.log("Location or facing given but ignored!");
     	}

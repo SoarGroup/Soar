@@ -1,9 +1,8 @@
 package eaters;
 
-import org.eclipse.swt.graphics.*;
-
 import simulation.*;
 import sml.*;
+import utilities.*;
 
 public class Eater extends WorldEntity {
 	public final static int kEaterVision = 2;
@@ -37,7 +36,7 @@ public class Eater extends WorldEntity {
 		boolean iterated = false;
 	}
 	
-	public Eater(Agent agent, String productions, String color, Point location) {
+	public Eater(Agent agent, String productions, String color, MapPoint location) {
 		super(agent, productions, color, location);
 
 		Identifier eater = m_Agent.CreateIdWME(m_Agent.GetInputLink(), kEaterID);
