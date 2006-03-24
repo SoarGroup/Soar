@@ -59,6 +59,9 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 	/** When true, we expand the tree as it's created -- but this one is not persistent between debugger sessions */
 	protected boolean m_ExpandTrace = false ;
 	
+	/** When true, keep debugger and Soar locked together so the debugger's UI doesn't get behind Soar.  Tying the processes together usually makes Soar run a lot slower, but sometimes that will be useful */
+	protected boolean m_LockToSoar = false ;
+	
 	/** The last root (top level item) added to the tree.  We add new sub items under this */
 	protected TreeItem m_LastRoot ;
 	
@@ -956,9 +959,15 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 		// We need to create a new copy of the XML we were passed because we're
 		// going to use an asynch call, which won't execute until after this function has
 		// completed and xml goes out of scope.  Why use the asynch method rather than syncExec()?
-		// For a watch 5 trace using asynch here lets things run up to 5 times faster(!)
+		// Using asynch here lets things run up to 20 times faster(!)
+		// March 2006 update: We've now allowed this to become a synch call, specifically because
+		// Linux needs these two to stay in step and some users might not want the UI to get ahead.
 		ClientXML pKeep = new ClientXML(xml) ;
-        Display.getDefault().asyncExec(new RunWrapper(this, agent, pKeep)) ;
+		
+		if (m_LockToSoar)
+	        Display.getDefault().syncExec(new RunWrapper(this, agent, pKeep)) ;
+		else
+			Display.getDefault().asyncExec(new RunWrapper(this, agent, pKeep)) ;
 	}
 
 	/********************************************************************************************
@@ -1007,12 +1016,13 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 	********************************************************************************************/
 	public void showProperties()
 	{
-		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3] ;
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[4] ;
 
 		// Providing a range for indent so we can be sure we don't get back a negative value
 		properties[0] = new PropertiesDialog.IntProperty("Indent per subgoal", m_IndentSize, 0, 10) ;
 		properties[1] = new PropertiesDialog.BooleanProperty("Expand trace as it is created", m_ExpandTracePersistent) ;
 		properties[2] = new PropertiesDialog.BooleanProperty("Capture data to support filtering", m_FoldingText.isFilteringEnabled()) ;
+		properties[3] = new PropertiesDialog.BooleanProperty("Keep Soar locked to the speed of the debugger (makes Soar a lot slower)", m_LockToSoar) ;
 
 		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
 
@@ -1021,6 +1031,7 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 			m_IndentSize = ((PropertiesDialog.IntProperty)properties[0]).getValue() ;
 			m_ExpandTracePersistent = ((PropertiesDialog.BooleanProperty)properties[1]).getValue() ;
 			m_FoldingText.setFilteringEnabled(((PropertiesDialog.BooleanProperty)properties[2]).getValue()) ;
+			m_LockToSoar = ((PropertiesDialog.BooleanProperty)properties[3]).getValue() ;
 			
 			// Make the button match the persistent property
 			m_ExpandTrace = m_ExpandTracePersistent ;
@@ -1041,6 +1052,7 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 		JavaElementXML element = super.convertToXML(tagName, storeContent) ;
 		element.addAttribute("indent", Integer.toString(m_IndentSize)) ;
 		element.addAttribute("auto-expand", Boolean.toString(m_ExpandTracePersistent)) ;
+		element.addAttribute("lock-to-soar", Boolean.toString(m_LockToSoar)) ;
 
 		if (m_FoldingText != null)
 		{
@@ -1065,6 +1077,7 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 	{
 		m_IndentSize = element.getAttributeIntThrows("indent") ;
 		m_ExpandTracePersistent = element.getAttributeBooleanDefault("auto-expand", false) ;
+		m_LockToSoar = element.getAttributeBooleanDefault("lock-to-soar", false) ;
 
 		boolean filtering = element.getAttributeBooleanDefault("filtering", true) ;
 		long filter = element.getAttributeLongDefault("filter", 0) ;
