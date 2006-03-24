@@ -69,6 +69,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 					initialProductions = new String[child.getNumberChildren()];
 					initialColors = new String[child.getNumberChildren()];
 					initialLocations = new Point[child.getNumberChildren()];
+					initialFacing = new String[child.getNumberChildren()];
 					
 					for (int j = 0; j < initialNames.length; ++j) {
 						JavaElementXML agent = child.getChild(j);
