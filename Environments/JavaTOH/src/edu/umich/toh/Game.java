@@ -62,6 +62,8 @@ public class Game implements Runnable, Kernel.UpdateEventInterface {
         	System.out.println("Error creating kernel: " + kernel.GetLastErrorDescription()) ;
             System.exit(1);
         }
+
+	kernel.SetAutoCommit(false);
         
         m_StopNow = false ;
         
