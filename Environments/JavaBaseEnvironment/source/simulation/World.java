@@ -17,7 +17,7 @@ public class World {
 		return this.m_WorldHeight;
 	}
 	
-	protected boolean isInBounds(Point location) {
+	protected boolean isInBounds(MapPoint location) {
 		return isInBounds(location.x, location.y);
 	}
 
