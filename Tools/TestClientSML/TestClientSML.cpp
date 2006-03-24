@@ -1298,7 +1298,7 @@ void MyEchoEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char
 		cout << " ----> Received an echo event with contents: " << pMsg << endl ;    
 }
 
-bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simpleInitSoar)
+bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simpleInitSoar, bool autoCommit)
 {
 	cout << "TestClientSML app starting..." << endl << endl;
 
@@ -1320,6 +1320,10 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 			cout << pKernel->GetLastErrorDescription() << endl ;
 			return false ;
 		}
+
+		// Controls whether auto commit is on or off
+		// (do we need to call commit ourselves or not)
+		pKernel->SetAutoCommit(autoCommit) ;
 
 		// Set this to true to give us lots of extra debug information on remote clients
 		// (useful in a test app like this).
@@ -1593,12 +1597,6 @@ bool FullTimeTest()
 	// Embeddded using direct calls
 	bool ok = TimeTest(true, true, true) ;
 
-	// Embedded not using direct calls
-//	ok = ok && TestSML(true, true, false) ;
-
-	// Embedded running on thread inside kernel
-//	ok = ok && TestSML(true, false, false) ;
-
 	return ok ;
 }
 
@@ -1607,16 +1605,19 @@ bool FullEmbeddedTest()
 	bool ok = true ;
 
 	// Simple embedded, direct init-soar
-	ok = ok && TestSML(true, true, true, true) ;
+	ok = ok && TestSML(true, true, true, true, true) ;
 
 	// Embeddded using direct calls
-	ok = ok && TestSML(true, true, true, false) ;
+	ok = ok && TestSML(true, true, true, false, true) ;
 
 	// Embedded not using direct calls
-	ok = ok && TestSML(true, true, false, false) ;
+	ok = ok && TestSML(true, true, false, false, true) ;
 
-	// Embedded running on thread inside kernel
-	ok = ok && TestSML(true, false, false, false) ;
+	// Embedded running on thread inside kernel using auto commit
+	ok = ok && TestSML(true, false, false, false, true) ;
+
+	// Embedded running on thread inside kernel w/o using auto commit
+	ok = ok && TestSML(true, false, false, false, false) ;
 
 	return ok ;
 }
@@ -1625,7 +1626,11 @@ bool RemoteTest()
 {
 	// Remote connection.
 	// (For this to work need to run a listener--usually TestCommandLineInterface to receive the commands).
-	bool ok = TestSML(false, false, false, false) ;
+	bool ok = TestSML(false, false, false, false, true) ;
+
+	// Same test but with auto commit turned off (so need manual commit calls)
+	ok = ok && TestSML(false, false, false, false, false) ;
+
 	return ok ;
 }
 

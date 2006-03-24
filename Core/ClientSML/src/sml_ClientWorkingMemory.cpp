@@ -703,6 +703,10 @@ StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pA
 	// Add it to our list of changes that need to be sent to Soar.
 	m_DeltaList.AddWME(pWME) ;
 
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
+
 	return pWME ;
 }
 
@@ -733,6 +737,10 @@ IntElement* WorkingMemory::CreateIntWME(Identifier* parent, char const* pAttribu
 	// Add it to our list of changes that need to be sent to Soar.
 	m_DeltaList.AddWME(pWME) ;
 
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
+
 	return pWME ;
 }
 
@@ -762,6 +770,10 @@ FloatElement* WorkingMemory::CreateFloatWME(Identifier* parent, char const* pAtt
 
 	// Add it to our list of changes that need to be sent to Soar.
 	m_DeltaList.AddWME(pWME) ;
+
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
 
 	return pWME ;
 }
@@ -806,6 +818,10 @@ void WorkingMemory::UpdateString(StringElement* pWME, char const* pValue)
 
 	// Add it to the list of changes that need to be sent to Soar.
 	m_DeltaList.UpdateWME(removeTimeTag, pWME) ;
+
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
 }
 
 void WorkingMemory::UpdateInt(IntElement* pWME, int value)
@@ -843,6 +859,10 @@ void WorkingMemory::UpdateInt(IntElement* pWME, int value)
 
 	// Add it to the list of changes that need to be sent to Soar.
 	m_DeltaList.UpdateWME(removeTimeTag, pWME) ;
+
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
 }
 
 void WorkingMemory::UpdateFloat(FloatElement* pWME, double value)
@@ -880,6 +900,10 @@ void WorkingMemory::UpdateFloat(FloatElement* pWME, double value)
 
 	// Add it to the list of changes that need to be sent to Soar.
 	m_DeltaList.UpdateWME(removeTimeTag, pWME) ;
+
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
 }
 
 /*************************************************************
@@ -953,6 +977,10 @@ Identifier* WorkingMemory::CreateIdWME(Identifier* parent, char const* pAttribut
 	// Add it to our list of changes that need to be sent to Soar.
 	m_DeltaList.AddWME(pWME) ;
 
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
+
 	return pWME ;
 }
 
@@ -989,6 +1017,10 @@ Identifier*	WorkingMemory::CreateSharedIdWME(Identifier* parent, char const* pAt
 
 	// Add it to our list of changes that need to be sent to Soar.
 	m_DeltaList.AddWME(pWME) ;
+
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
 
 	return pWME ;
 }
@@ -1037,6 +1069,10 @@ bool WorkingMemory::DestroyWME(WMElement* pWME)
 	// Now we can delete it
 	delete pWME ;
 
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
+
 	return true ;
 }
 
@@ -1058,6 +1094,16 @@ long WorkingMemory::GenerateTimeTag()
 bool WorkingMemory::IsCommitRequired()
 {
 	return (m_DeltaList.GetSize() != 0) ;
+}
+
+/*************************************************************
+* @brief Returns true if changes to i/o links should be
+*		 committed (sent to kernelSML) immediately when they
+*		 occur, so the client doesn't need to remember to call commit.
+*************************************************************/
+bool WorkingMemory::IsAutoCommitEnabled()
+{
+	return m_Agent->IsAutoCommitEnabled() ;
 }
 
 /*************************************************************

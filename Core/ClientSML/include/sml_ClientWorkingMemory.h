@@ -118,6 +118,7 @@ public:
 
 	bool			IsCommitRequired() ;
 	bool			Commit() ;
+	bool			IsAutoCommitEnabled() ;
 };
 
 }//closes namespace

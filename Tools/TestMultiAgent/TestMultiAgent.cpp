@@ -203,6 +203,9 @@ bool TestMulti(int numberAgents)
 		return false ;
 	}
 
+	// We'll require commits, just so we're testing that path
+	pKernel->SetAutoCommit(false) ;
+
 	// Comment this in if you need to debug the messages going back and forth.
 	//pKernel->SetTraceCommunications(true) ;
 

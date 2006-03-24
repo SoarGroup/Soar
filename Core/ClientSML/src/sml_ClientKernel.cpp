@@ -52,6 +52,10 @@ Kernel::Kernel(Connection* pConnection)
 	m_ConnectionInfoChanged = false ;
 	m_bIgnoreOutput = false ;
 
+	// We're turning on auto commit by default, so clients are a bit slower but easier to write.
+	// Power users are free to turn it off and use explicit commit calls.
+	m_bAutoCommit   = true ;
+
 	ClearError() ;
 
 	if (pConnection)
