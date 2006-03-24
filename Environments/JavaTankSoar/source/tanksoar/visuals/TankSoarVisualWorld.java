@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.*;
 import simulation.*;
 import simulation.visuals.*;
 import tanksoar.*;
+import utilities.*;
 
 public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 	private static HashMap kTanks = new HashMap(4);
@@ -28,7 +29,7 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 	
 	private TankSoarSimulation m_Simulation;
 	private TankSoarWorld m_World;
-	private Point m_AgentLocation;
+	private MapPoint m_AgentLocation;
 	private Random m_Random;
 	private Image[][] m_Background;
 	
@@ -153,7 +154,7 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 				}
 				
 				// Draw flying missiles regardless
-				Point[] missiles = m_World.getMissileLocations();
+				MapPoint[] missiles = m_World.getMissileLocations();
 				if (missiles != null) {
 					for (int i = 0; i < missiles.length; ++i) {
 						gc.drawImage(kMissile, (missiles[i].x * m_CellSize) + 9, (missiles[i].y * m_CellSize) + 9);

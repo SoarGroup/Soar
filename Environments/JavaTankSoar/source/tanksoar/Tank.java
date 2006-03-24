@@ -138,7 +138,7 @@ public class Tank  extends WorldEntity {
 		}
 		
 		public void scan(TankSoarWorld world) {
-			Point location = new Point(getLocation().x, getLocation().y);
+			MapPoint location = new MapPoint(getLocation().x, getLocation().y);
 			
 			int powerSetting = m_RadarSettingWME.GetValue();
 			int actualDistance = 0;
@@ -159,7 +159,7 @@ public class Tank  extends WorldEntity {
 			}
 		}
 		
-		private boolean scanCells(int distance, TankSoarWorld world, Point location) {
+		private boolean scanCells(int distance, TankSoarWorld world, MapPoint location) {
 			for (int i = 0; i < kRadarWidth; ++i) {
 				if (cellIDs[i][distance] != null) {
 					m_Agent.DestroyWME(cellIDs[i][distance]);
@@ -296,7 +296,7 @@ public class Tank  extends WorldEntity {
 	static private int worldCount = 0;
 	
 	private String m_InitialFacing;
-	private Point m_InitialLocation;
+	private MapPoint m_InitialLocation;
 
 	// Call reset() to initialize these:
 	private MoveInfo m_LastMove;
@@ -306,7 +306,7 @@ public class Tank  extends WorldEntity {
 	private int m_LastSound;
 	private boolean m_Hit;
 	
-	public Tank(Agent agent, String productions, String color, Point location, String facing, TankSoarWorld world) {
+	public Tank(Agent agent, String productions, String color, MapPoint location, String facing, TankSoarWorld world) {
 		super(agent, productions, color, location);
 		
 		if (facing == null) {			
@@ -376,7 +376,7 @@ public class Tank  extends WorldEntity {
 		reset(world);
 	}
 	
-	public Point getInitialLocation() {
+	public MapPoint getInitialLocation() {
 		return m_InitialLocation;
 	}
 	
