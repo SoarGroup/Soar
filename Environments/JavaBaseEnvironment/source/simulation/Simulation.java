@@ -43,6 +43,9 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 			fireErrorMessage("Error creating kernel: " + m_Kernel.GetLastErrorDescription());
 			System.exit(1);
 		}
+		
+		// We want the most performance
+		m_Kernel.SetAutoCommit(false);
 
 		// Register for events
 		m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, null);

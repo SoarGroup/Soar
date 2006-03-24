@@ -128,7 +128,7 @@ public class CreateAgentDialog extends Dialog {
 		m_CreateEater.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				m_CreateEater.setEnabled(false);
-				m_Simulation.createEntity(m_Name.getText(), m_Productions, m_Color.getText());
+				m_Simulation.createEntity(m_Name.getText(), m_Productions, m_Color.getText(), null, null);
 				dialog.dispose();
 			}
 		});
