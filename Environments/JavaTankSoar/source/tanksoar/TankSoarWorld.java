@@ -2,8 +2,6 @@ package tanksoar;
 
 import java.util.*;
 
-import org.eclipse.swt.graphics.*;
-
 import simulation.*;
 import sml.*;
 import utilities.*;

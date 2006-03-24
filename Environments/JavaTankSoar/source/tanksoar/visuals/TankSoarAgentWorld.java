@@ -1,15 +1,10 @@
 package tanksoar.visuals;
 
-import java.util.*;
-
-import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 
 import tanksoar.*;
-import utilities.*;
-import simulation.*;
 import simulation.visuals.*;
 
 public class TankSoarAgentWorld extends VisualWorld implements PaintListener {
@@ -23,14 +18,11 @@ public class TankSoarAgentWorld extends VisualWorld implements PaintListener {
 	private static Image kMiniTank;
 	
 	private static final int kCellSize = 20;
-	private TankSoarSimulation m_Simulation;
 	private Image[][] m_Radar = new Image[Tank.kRadarWidth][Tank.kRadarHeight];
 
 	public TankSoarAgentWorld(Composite parent, int style, TankSoarSimulation simulation) {
 		super(parent, style, simulation, kCellSize);
 		
-		m_Simulation = simulation;
-
 		loadImages(parent.getDisplay());
 		addPaintListener(this);		
 	}
