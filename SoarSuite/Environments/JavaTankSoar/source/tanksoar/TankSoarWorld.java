@@ -101,6 +101,10 @@ public class TankSoarWorld extends World implements WorldManager {
 			m_Tank = tank;
 		}
 		
+		void setModified() {
+			m_Modified = true;
+		}
+		
 		public Tank getTank() {
 			return m_Tank;
 		}
@@ -142,7 +146,11 @@ public class TankSoarWorld extends World implements WorldManager {
 	private ArrayList m_Collisions;
 
 	public class Missiles {
-		LinkedList m_Flying = new LinkedList();
+		LinkedList m_Flying;
+		
+		public Missiles() {
+			reset();
+		}
 		
 	   	public class Missile {
 	   		private Point m_CurrentLocation;
@@ -154,6 +162,10 @@ public class TankSoarWorld extends World implements WorldManager {
 	   			m_Direction = direction;
 	   			m_FlightPhase = 0;
 	   		}
+	   	}
+	   	
+	   	public void reset() {
+			m_Flying = new LinkedList();
 	   	}
 	   	
 	   	public void moveMissiles() {
@@ -303,6 +315,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		while (m_NumMissilePacks < kMaxMissilePacks) {
 			spawnMissilePack();
 		}
+		m_Missiles.reset();
 		resetTanks();
 		
 		m_Logger.log(mapFile + " loaded.");
@@ -356,7 +369,14 @@ public class TankSoarWorld extends World implements WorldManager {
 			return;
 		}
 		for (int i = 0; i < m_Tanks.length; ++i) {
-			Point location = findStartingLocation();
+			Point location = m_Tanks[i].getInitialLocation();
+			if (location != null && getCell(location).isWall()) {
+				m_Logger.log("Initial location " + location + " is blocked, going random.");
+				location = null;
+			}
+			if (location == null) {
+				location = findStartingLocation();
+			}
 			m_Tanks[i].setLocation(location);
 			// Put tank on map
 			getCell(location).setTank(m_Tanks[i]);
@@ -590,6 +610,14 @@ public class TankSoarWorld extends World implements WorldManager {
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Missiles.checkHit(m_Tanks[i].getLocation())) {
 				m_Tanks[i].hit();
+			}
+		}
+		
+		// Mark modified cells
+		Point[] missileLocations = m_Missiles.getLocations();
+		if (missileLocations != null) {
+			for (int i = 0; i < missileLocations.length; ++i) {
+				getCell(missileLocations[i]).setModified();
 			}
 		}
 		

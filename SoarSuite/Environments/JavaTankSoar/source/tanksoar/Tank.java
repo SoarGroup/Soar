@@ -294,6 +294,9 @@ public class Tank  extends WorldEntity {
 	
 	private RelativeDirections m_RD;
 	static private int worldCount = 0;
+	
+	private String m_InitialFacing;
+	private Point m_InitialLocation;
 
 	// Call reset() to initialize these:
 	private MoveInfo m_LastMove;
@@ -306,12 +309,15 @@ public class Tank  extends WorldEntity {
 	public Tank(Agent agent, String productions, String color, Point location, String facing, TankSoarWorld world) {
 		super(agent, productions, color, location);
 		
-		// TODO: reset facing in reset() ?
-		if (facing == null) {
+		if (facing == null) {			
 			facing = WorldEntity.kNorth;
 		}
+		m_InitialFacing = facing;
 		m_Facing = facing;
 		setFacingInt();
+		
+		m_InitialLocation = location;
+		
 		m_RD = new RelativeDirections();	
 		m_RD.calculate(getFacingInt());
 	
@@ -370,6 +376,10 @@ public class Tank  extends WorldEntity {
 		reset(world);
 	}
 	
+	public Point getInitialLocation() {
+		return m_InitialLocation;
+	}
+	
 	public void reset(TankSoarWorld world) {
 		
 		// Restore initial values to state
@@ -385,6 +395,9 @@ public class Tank  extends WorldEntity {
 
 		m_LastMove.reset();	
 		m_LastMove.move = true;	// force blocked, facing, recharger, x, y update
+		
+		m_Facing = m_InitialFacing;
+		setFacingInt();
 		
 		m_LastIncoming = -1;	// force incoming update
 		m_RWaves = 0;		// force rwaves update
