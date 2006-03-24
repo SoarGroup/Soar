@@ -845,11 +845,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 	
 	// Pump messages continuously until the window is closed
 	public void pumpMessagesTillClosed(org.eclipse.swt.widgets.Display display)
-	{
-		//Set the main debugger thread at a slightly higher priority to prevent it from falling behind the Soar thread
-		//(for reference, priorities range from 1 to 10, and normal is 5)
-		//Thread.currentThread().setPriority(6);
-		
+	{	
 		m_Display = display ;
 		
 		if (getNumberFrames() == 0)
