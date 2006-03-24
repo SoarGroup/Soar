@@ -200,6 +200,10 @@ protected:
 	// If true, don't register to get output link events
 	bool m_bIgnoreOutput ;
 
+	// If true, commit all changes to working memory immediately after they occur
+	// (that is send them over to kernelSML immediately, rather than collecting them up for a single commit)
+	bool m_bAutoCommit ;
+
 	// This thread is used to check for incoming events when the client goes to sleep
 	// It ensures the client stays "alive" and is optional (there are other ways for clients to keep themselves
 	// responsive).
@@ -291,6 +295,7 @@ public:
 	* @param Optimized		If this is a current thread connection, we can short-circuit parts of the messaging system for sending input and
 	*						running Soar.  If this flag is true we use those short cuts.  If you're trying to debug the SML libraries
 	*						you may wish to disable this option (so everything goes through the standard paths).  Not available if running in a new thread.
+	*						Also if you're looking for maximum performance be sure to read about the "auto commit" options below.
 	* @param port			The port number the kernel should use to receive remote connections.  The default port for SML is 12121 (picked at random).
 	*						Passing 0 means no listening port will be created (so it will be impossible to make remote connections to the kernel).
 	*
@@ -322,6 +327,22 @@ public:
 	* @brief Returns the default port we use for remote connections.
 	*************************************************************/
 	static int GetDefaultPort() { return kDefaultSMLPort ; }
+
+	/*************************************************************
+	* @brief If auto commit is set to false then after making any changes
+	*		 to working memory elements (adds, updates, deletes) the client
+	*		 must call "commit" to send those changes over to Soar.
+	*		 This mode boosts performance because only a single packet
+	*		 is sent containing all of the wme changes.
+	*
+	*		 If auto commit is set to true then after any change to
+	*		 working memory, commit is called automatically and the
+	*		 change is sent immediately over to the kernel.
+	*		 This makes the developer's life easier (no need to remember
+	*		 to call commit) at the cost of some performance.
+	*************************************************************/
+	void SetAutoCommit(bool state)	{ m_bAutoCommit = state ; }
+	bool IsAutoCommitEnabled()		{ return m_bAutoCommit ; }
 
 	/*************************************************************
 	* @brief Preparation for deleting the kernel.
