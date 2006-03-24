@@ -148,8 +148,7 @@ public class Tank  extends WorldEntity {
 				}
 
 				// Update for next distance
-				location.x += m_RD.xIncrement;
-				location.y += m_RD.yIncrement;
+				location.travel(m_RD.forward);
 			}
 			
 			if (m_RadarDistanceWME.GetValue() != actualDistance) {
