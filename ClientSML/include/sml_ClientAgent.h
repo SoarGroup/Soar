@@ -226,6 +226,13 @@ protected:
 	void ReceivedOutputEvent(WMElement* pWmeAdded) ;
 	bool IsRegisteredForOutputEvent() ;
 
+	/*************************************************************
+	* @brief Returns true if changes to i/o links should be
+	*		 committed (sent to kernelSML) immediately when they
+	*		 occur, so the client doesn't need to remember to call commit.
+	*************************************************************/
+	bool IsAutoCommitEnabled() ;
+
 public:
 	/*************************************************************
 	* @brief Returns this agent's name.
@@ -285,8 +292,9 @@ public:
 	*		 The agent retains ownership of this object.
 	*		 The returned object is valid until the caller
 	*		 deletes the parent identifier.
-	*		 The WME is not added to Soar's input link until the
-	*		 client calls "Commit".
+	*		 If "auto commimt" is turned off in ClientKernel,
+	*		 the WME is not added to Soar's input link until the
+	*		 client calls "Commit" 
 	*************************************************************/
 	StringElement* CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue);
 
@@ -320,7 +328,8 @@ public:
 
 	/*************************************************************
 	* @brief Update the value of an existing WME.
-	*		 The value is not actually sent to the kernel
+	*		 If "auto commimt" is turned off in ClientKernel,
+	*		 the value is not actually sent to the kernel
 	*		 until "Commit" is called.
 	*************************************************************/
 	void	Update(StringElement* pWME, char const* pValue) ;
@@ -336,7 +345,8 @@ public:
 	*
 	*		 The caller should not access this WME after calling
 	*		 DestroyWME() or any of its children if this is an identifier.
-	*		 The WME is not removed from the input link until
+	*		 If "auto commimt" is turned off in ClientKernel,
+	*		 the WME is not removed from the input link until
 	*		 the client calls "Commit"
 	*************************************************************/
 	bool	DestroyWME(WMElement* pWME) ;

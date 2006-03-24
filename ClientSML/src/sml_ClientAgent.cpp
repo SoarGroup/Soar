@@ -1242,6 +1242,16 @@ bool Agent::IsCommitRequired()
 }
 
 /*************************************************************
+* @brief Returns true if changes to i/o links should be
+*		 committed (sent to kernelSML) immediately when they
+*		 occur, so the client doesn't need to remember to call commit.
+*************************************************************/
+bool Agent::IsAutoCommitEnabled()
+{
+	return m_Kernel->IsAutoCommitEnabled() ;
+}
+
+/*************************************************************
 * @brief Reinitialize this Soar agent.
 *		 This will also cause the output link structures stored
 *		 here to be erased and the current input link to be sent over
