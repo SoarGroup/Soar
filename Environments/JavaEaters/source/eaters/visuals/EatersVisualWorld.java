@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.*;
 import eaters.*;
 import simulation.*;
 import simulation.visuals.*;
+import utilities.*;
 
 public class EatersVisualWorld extends VisualWorld implements PaintListener {
 	static HashMap m_FoodColors;
@@ -26,7 +27,7 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 	
 	EatersSimulation m_Simulation;
 	EatersWorld m_World;
-	Point m_AgentLocation;
+	MapPoint m_AgentLocation;
 	
 	public EatersVisualWorld(Composite parent, int style, EatersSimulation simulation, int cellSize) {
 		super(parent, style, simulation, cellSize);
@@ -45,7 +46,7 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 		return m_CellSize * ((Eater.kEaterVision * 2) + 1);
 	}
 	
-	public void setAgentLocation(Point location) {
+	public void setAgentLocation(MapPoint location) {
 		m_AgentLocation = location;
 	}
 	
@@ -180,11 +181,11 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 		int yBase = m_CellSize*y;
 		int halfCell = m_CellSize/2;
 		
-		Point center = new Point(xBase + halfCell, yBase + halfCell);
-		Point north = new Point(center.x, yBase);
-		Point east = new Point(xBase + m_CellSize, center.y);
-		Point south = new Point(center.x, yBase + m_CellSize);
-		Point west = new Point(xBase, center.y);
+		MapPoint center = new MapPoint(xBase + halfCell, yBase + halfCell);
+		MapPoint north = new MapPoint(center.x, yBase);
+		MapPoint east = new MapPoint(xBase + m_CellSize, center.y);
+		MapPoint south = new MapPoint(center.x, yBase + m_CellSize);
+		MapPoint west = new MapPoint(xBase, center.y);
 		
 		gc.fillPolygon(new int[] {center.x, center.y, north.x, north.y, center.x + offCenter, center.y});
 		gc.fillPolygon(new int[] {center.x, center.y, east.x,  east.y,  center.x, center.y + offCenter});

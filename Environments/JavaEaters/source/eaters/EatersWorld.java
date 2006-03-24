@@ -432,7 +432,7 @@ public class EatersWorld extends World implements WorldManager {
 			return;
 		}
 		for (int i = 0; i < m_Eaters.length; ++i) {
-			Point location = findStartingLocation();
+			MapPoint location = findStartingLocation();
 			m_Eaters[i].setLocation(location);
 			// Put eater on map, ignore food
 			getCell(location).setEater(m_Eaters[i]);
@@ -446,7 +446,7 @@ public class EatersWorld extends World implements WorldManager {
 		createEater(agent, productions, color, null);
 	}
 
-	void createEater(Agent agent, String productions, String color, Point location) {
+	void createEater(Agent agent, String productions, String color, MapPoint location) {
 		if (location == null) {
 			location = findStartingLocation();
 		}
@@ -517,10 +517,10 @@ public class EatersWorld extends World implements WorldManager {
 		}
 	}
 
-	private Point findStartingLocation() {
+	private MapPoint findStartingLocation() {
 		// set random starting location
 		Random random = new Random();
-		Point location = new Point(random.nextInt(m_WorldWidth), random.nextInt(m_WorldHeight));
+		MapPoint location = new MapPoint(random.nextInt(m_WorldWidth), random.nextInt(m_WorldHeight));
 		while (getCell(location).isWall() || getCell(location).isEater()) {
 			location.x = random.nextInt(m_WorldWidth);
 			location.y = random.nextInt(m_WorldHeight);				
@@ -536,19 +536,19 @@ public class EatersWorld extends World implements WorldManager {
 				continue;
 			}
 
-			Point oldLocation = m_Eaters[i].getLocation();
-			Point newLocation;
+			MapPoint oldLocation = m_Eaters[i].getLocation();
+			MapPoint newLocation;
 			int distance = move.jump ? 2 : 1;
 			if (move.direction.equalsIgnoreCase(Eater.kNorth)) {
-				newLocation = new Point(oldLocation.x, oldLocation.y - distance);
+				newLocation = new MapPoint(oldLocation.x, oldLocation.y - distance);
 			} else if (move.direction.equalsIgnoreCase(Eater.kEast)) {
-				newLocation = new Point(oldLocation.x + distance, oldLocation.y);
+				newLocation = new MapPoint(oldLocation.x + distance, oldLocation.y);
 				
 			} else if (move.direction.equalsIgnoreCase(Eater.kSouth)) {
-				newLocation = new Point(oldLocation.x, oldLocation.y + distance);
+				newLocation = new MapPoint(oldLocation.x, oldLocation.y + distance);
 				
 			} else if (move.direction.equalsIgnoreCase(Eater.kWest)) {
-				newLocation = new Point(oldLocation.x - distance, oldLocation.y);
+				newLocation = new MapPoint(oldLocation.x - distance, oldLocation.y);
 				
 			} else {
 				m_Logger.log("Invalid move direction: " + move.direction);
@@ -569,7 +569,7 @@ public class EatersWorld extends World implements WorldManager {
 		}
 	}
 	
-	public EatersCell getCell(Point location) {
+	public EatersCell getCell(MapPoint location) {
 		return m_World[location.y][location.x];
 	}
 	
