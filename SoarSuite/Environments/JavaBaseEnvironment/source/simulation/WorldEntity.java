@@ -24,12 +24,12 @@ public class WorldEntity {
 	
 	private String m_Name;
 	private int m_Points = 0;
-	private Point m_Location;
+	private MapPoint m_Location;
 	private String m_ColorString;
 	private String m_Productions;
 	private boolean m_Colliding = false;
 	
-	public WorldEntity(Agent agent, String productions, String color, Point location) {
+	public WorldEntity(Agent agent, String productions, String color, MapPoint location) {
 		m_Agent = agent;
 		m_Location = location;
 		m_ColorString = color;
@@ -75,14 +75,14 @@ public class WorldEntity {
 		m_Agent.InitSoar();
 	}
 	
-	public Point getLocation() {
+	public MapPoint getLocation() {
 		return m_Location;
 	}
 	
 	public void adjustPoints(int delta) {
 		m_Points += delta;
 	}
-	public void setLocation(Point location) {
+	public void setLocation(MapPoint location) {
 		m_Location = location;
 	}
 	
