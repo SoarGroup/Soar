@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="tcl84.lib"
-				OutputFile="..\..\..\SoarLibrary\bin\Tcl_sml_ClientInterface.dll"
+				OutputFile="..\..\..\SoarLibrary\bin\Tcl_sml_ClientInterface\Tcl_sml_ClientInterface.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(TCL_LIB)&quot;"
 				GenerateDebugInformation="TRUE"
@@ -55,14 +55,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Make Tcl package"
-				CommandLine="cd ..\..\..\SoarLibrary\bin
-&quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl
-mkdir Tcl_sml_ClientInterface
-move /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
-move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
-"/>
+				CommandLine="cd ..\..\..\SoarLibrary\bin\
+set PATH=%PATH%;$(TargetDir)..
+&quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl"/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCPreBuildEventTool"
+				CommandLine="cd ..\..\..\SoarLibrary\bin
+IF NOT EXIST Tcl_sml_ClientInterface mkdir Tcl_sml_ClientInterface"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
@@ -109,7 +108,7 @@ move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="tcl84.lib"
-				OutputFile="..\..\..\SoarLibrary\bin\Tcl_sml_ClientInterface.dll"
+				OutputFile="..\..\..\SoarLibrary\bin\Tcl_sml_ClientInterface\Tcl_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(TCL_LIB)&quot;"
 				GenerateDebugInformation="TRUE"
@@ -124,14 +123,13 @@ move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Make Tcl package"
-				CommandLine="cd ..\..\..\SoarLibrary\bin
-&quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl
-mkdir Tcl_sml_ClientInterface
-move /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
-move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
-"/>
+				CommandLine="cd ..\..\..\SoarLibrary\bin\
+set PATH=%PATH%;$(TargetDir)..
+&quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl"/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCPreBuildEventTool"
+				CommandLine="cd ..\..\..\SoarLibrary\bin
+IF NOT EXIST Tcl_sml_ClientInterface mkdir Tcl_sml_ClientInterface"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool

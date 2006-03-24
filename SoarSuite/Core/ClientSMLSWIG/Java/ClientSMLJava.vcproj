@@ -61,11 +61,6 @@ rmdir SoarLibrary\bin\sml /S /Q
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Remove previous Java files"
-				CommandLine="echo on
-cd build
-del *.java
-cd ..
-"
 				ExcludedFromBuild="TRUE"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
@@ -136,12 +131,7 @@ rmdir SoarLibrary\bin\sml /S /Q
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"
-				Description="Remove previous Java files"
-				CommandLine="echo on
-cd build
-del *.java
-cd ..
-"/>
+				Description="Remove previous Java files"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
@@ -210,9 +200,12 @@ cd ..
 echo JAVA_INCLUDE: %JAVA_INCLUDE%
 echo JAVA_BIN: %JAVA_BIN%
 echo SWIG: %SWIG%
+echo Clean up old java files
 echo on
-&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;
-"
+cd build
+del *.java
+cd ..
+&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;"
 					AdditionalDependencies=""
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
@@ -225,9 +218,12 @@ echo on
 echo JAVA_INCLUDE: %JAVA_INCLUDE%
 echo JAVA_BIN: %JAVA_BIN%
 echo SWIG: %SWIG%
+echo Clean up old java files
 echo on
-&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;
-"
+cd build
+del *.java
+cd ..
+&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;"
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
 		</File>
