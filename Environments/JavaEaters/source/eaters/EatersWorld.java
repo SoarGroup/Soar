@@ -1,7 +1,6 @@
 package eaters;
 
 import java.util.*;
-import org.eclipse.swt.graphics.*;
 
 import simulation.*;
 import sml.*;
