@@ -750,13 +750,6 @@ public class TankSoarWorld extends World implements WorldManager {
 		return relativeDirection;
 	}
 	
-	public int getManhattanDistance(Tank t1, Tank t2) {
-		MapPoint p1 = t1.getLocation();
-		MapPoint p2 = t2.getLocation();
-		
-		return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y);
-	}
-
 	public Tank getStinkyTankNear(Tank tank) {
 		if ((m_Tanks == null) || (m_Tanks.length <= 1)) {
 			return null;
@@ -770,7 +763,7 @@ public class TankSoarWorld extends World implements WorldManager {
 				continue;
 			}
 			
-			int distance = getManhattanDistance(tank, m_Tanks[i]);
+			int distance = tank.getLocation().getManhattanDistanceTo(m_Tanks[i].getLocation());
 			if (distance <= closestDistance) {
 				closestDistance = distance;
 				if (closestTank != null) {

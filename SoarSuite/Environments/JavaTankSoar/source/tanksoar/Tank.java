@@ -695,13 +695,13 @@ public class Tank  extends WorldEntity {
 		if (closestTank != null) {
 			// TODO: should check color, distance and not blink if they don't change
 			if (m_SmellDistanceWME == null) {
-				m_SmellDistanceWME = m_Agent.CreateIntWME(m_SmellWME, kDistanceID, world.getManhattanDistance(this, closestTank));
+				m_SmellDistanceWME = m_Agent.CreateIntWME(m_SmellWME, kDistanceID, getLocation().getManhattanDistanceTo(closestTank.getLocation()));
 				if (m_SmellDistanceStringWME != null) {
 					m_Agent.DestroyWME(m_SmellDistanceStringWME);
 					m_SmellDistanceStringWME = null;
 				}
 			} else {
-				m_Agent.Update(m_SmellDistanceWME, world.getManhattanDistance(this, closestTank));
+				m_Agent.Update(m_SmellDistanceWME, getLocation().getManhattanDistanceTo(closestTank.getLocation()));
 			}
 			m_Agent.Update(m_SmellColorWME, closestTank.getColor());
 		} else {
