@@ -16,12 +16,20 @@
 #include "SoarTextIO.h"
 #include "stdlib.h"
 #include <iostream>
-#include <process.h>
 #include <stdlib.h>
-#include <windows.h>
-#include <conio.h>
 #include <string>
 #include <cctype>
+
+#ifdef _WINDOWS
+#include <process.h>
+#include <windows.h>
+#include <conio.h>
+#else
+#include <time.h>
+#include <ncurses.h>
+#include <pthread.h>
+#endif //_windows
+
 
 using namespace sml;
 
@@ -32,11 +40,19 @@ void MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent) ;
 void enact_init_soar(sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent);
 int callBackId;
 
+#ifndef _WINDOWS
+void* RunForever( void* info);
+#endif
+
 SoarTextIO::SoarTextIO()
 {
 	init_soar = false;
 	RemoteConnect();
 	cout << endl;	
+#ifndef _WINDOWS
+	initscr(); // set up curses
+	scrollok(stdscr, true);
+#endif
 
 
 }
@@ -45,6 +61,9 @@ SoarTextIO::~SoarTextIO()
 {
 	pKernel->Shutdown();
 	delete pKernel;
+#ifndef _WINDOWS
+	endwin();
+#endif
 }
 
 void
@@ -120,9 +139,13 @@ SoarTextIO::run()
 void
 SoarTextIO::runner()
 {
+#ifdef _WINDOWS
 	_beginthread( RunForever, 0, this); //thread for the RunForever() command
+#else
+	pthread_create(&newThread, NULL, RunForever, this);
+#endif
 }
-
+#ifdef _WINDOWS
 void
 SoarTextIO::RunForever( void* info )
 {
@@ -133,8 +156,23 @@ SoarTextIO::RunForever( void* info )
 		STIO->pKernel->RunAllAgentsForever();
 	}
 	STIO->m_StopNow = false;
-
+	
 }
+#else
+void *
+RunForever( void* info )
+{
+	SoarTextIO* STIO = (SoarTextIO*)info;
+	if(!STIO->pKernel->IsSoarRunning())
+	{
+		STIO->m_IsRunning = true;
+		STIO->pKernel->RunAllAgentsForever();
+	}
+	STIO->m_StopNow = false;
+	
+	pthread_exit(NULL);
+}
+#endif
 
 
 void
@@ -206,7 +244,11 @@ SoarTextIO::WriteCycle(istream* getFrom)
 
 	word = "", forMem = "";
 	checker = "";
+#ifdef _WINDOWS
 	while(!printNow) { Sleep(1); }
+#else 
+	while(!printNow) { usleep(1); }
+#endif // _WINDOWS
 	if(*getFrom == cin)
 		cout << endl << endl << endl << endl << "> ";
 	if(ShouldPrintNow)
@@ -266,8 +308,8 @@ SoarTextIO::CarryOutCommand(istream* getFrom)
 			if(!created)
 			{
 				createSentId();	
-				int temp = sentStore.size();
-				sml::IntElement* tmp2 = pAgent->CreateIntWME(sentStore[0],"text-input-number", sentenceNum);
+				//int temp = sentStore.size();
+				pAgent->CreateIntWME(sentStore[0],"text-input-number", sentenceNum);
 				sml::Identifier* tmp3 = pAgent->CreateIdWME(NextWord[0], "next");
 				NextWord.push_back(tmp3);
 				sentStore.push_back(tmp3);
@@ -313,7 +355,7 @@ SoarTextIO::CarryOutCommand(istream* getFrom)
 		if(forMem != "")
 			memory.push_back(forMem.substr(0, forMem.size() - 1));
 		if(sentStore.size() >0)
-			sml::IntElement* tmp3 = pAgent->CreateIntWME(sentStore[0], "length", wordNum); //add counter for num words
+			pAgent->CreateIntWME(sentStore[0], "length", wordNum); //add counter for num words
 	}
 	char garbage;
 	if(checker != "--CMDLIN")
@@ -466,21 +508,37 @@ SoarTextIO::PrintOutput()
 	if(toPrint.size()>0)
 	{
 		printNow = false;
+		char buffer[1000];
+#ifdef _WINDOWS
 		CONSOLE_SCREEN_BUFFER_INFO info;
 		HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 		if(!GetConsoleScreenBufferInfo( hStdout , &info ))
 			cout << "GetInfo failed: " << GetLastError() << endl;
 		COORD place;
 		place.X = 0;
-		place.Y = (info.dwCursorPosition.Y - 3);
-		SetConsoleCursorPosition(hStdout,place);
+		place.Y = (info.dwCursorPosition.Y - 3); // get the current y position and move it up 3 lines
+		SetConsoleCursorPosition(hStdout,place); // set the cursor up 3 lines
 		cout << ": ";
 		cout << toPrint << endl << endl;
-		char buffer[100];
+		
 		place.X = 0;
 		place.Y = info.dwCursorPosition.Y;
 		DWORD dummy;
-		ReadConsoleOutputCharacter( hStdout , buffer , 100 , place , &dummy );
+		ReadConsoleOutputCharacter( hStdout , buffer /* holds what is read */ , 100 , place /* place to start reading */, &dummy );
+#else
+		int init_row = 0, init_col = 0;
+		// get the start position
+		getyx(stdscr, init_row, init_col);
+		// move the cursor 3 lines up
+		move(init_row - 3, init_col); 
+		cout << ": ";
+		cout << toPrint << endl << endl;
+
+		// go back to where we started
+		move(init_row, init_col);
+		getstr(buffer);
+		
+#endif // _WINDOWS
 		string holder = buffer;
 		cout << "                                                                              " << endl ;
 		cout << "                                                                              " << endl ;
@@ -653,62 +711,70 @@ SoarTextIO::KillKernel()
 }
 
 void
-SoarTextIO::spawnRunner()
-{
-	// spawn the debugger asynchronously
-	int ret = _spawnlp(_P_DETACH, "Runner.exe", "Runner.exe" , NULL);
-	if(ret == -1) {
-		switch (errno) {
-			case E2BIG:
-				cout << "arg list too long";
-				break;
-			case EINVAL:
-				cout << "illegal mode";
-				break;
-			case ENOENT:
-				cout << "file/path not found";
-				break;
-			case ENOEXEC:
-				cout << "specified file not an executable";
-				break;
-			case ENOMEM:
-				cout << "not enough memory";
-				break;
-			default:
-				cout << ret;
-		}
-	}
-	Sleep(3500);
-}
-
-void
 SoarTextIO::spawnDebugger()
 {
+#if defined _WINDOWS
+
 	// spawn the debugger asynchronously
+	
+	_chdir("../../SoarLibrary/bin/");
 	int ret = _spawnlp(_P_NOWAIT, "javaw.exe", "javaw.exe", "-jar", "SoarJavaDebugger.jar", "-remote", NULL);
 	if(ret == -1) {
 		switch (errno) {
-			case E2BIG:
-				cout << "arg list too long";
-				break;
-			case EINVAL:
-				cout << "illegal mode";
-				break;
-			case ENOENT:
-				cout << "file/path not found";
-				break;
-			case ENOEXEC:
-				cout << "specified file not an executable";
-				break;
-			case ENOMEM:
-				cout << "not enough memory";
-				break;
-			default:
-				cout << ret;
+				case E2BIG:
+					cout << "arg list too long" << endl;
+					break;
+				case EINVAL:
+					cout << "illegal mode" << endl;
+					break;
+				case ENOENT:
+					cout << "file/path not found" << endl;
+					break;
+				case ENOEXEC:
+					tcout << "specified file not an executable" << endl;
+					break;
+				case ENOMEM:
+					cout << "not enough memory" << endl;
+					break;
+				default:
+					cout << string_make(ret) << endl;
 		}
 	}
-	Sleep(3500);
+	_chdir("../../Tools/QuickLink/");
 
+#else // linux spawnning
+
+	pid_t pid = fork();
+
+	if (pid < 0)
+		cout << "fork failed" << endl;
+	else if (pid == 0)
+	{
+		system("java -jar SoarJavaDebugger.jar -remote");
+		pKernel->CheckForIncomingCommands();
+		exit(1); // this forked process dies
+	}
+	else
+		return;// parent process continues as normal
+
+#endif
+	// wait until we are notified that the debugger is spawned
+	pKernel->GetAllConnectionInfo();
+	char const * java_debugger = "java-debugger";
+	char const * ready = "ready";
+
+
+	while(1)
+	{
+#ifdef _WINDOWS
+		Sleep(100);
+#else
+		sleep(1);
+#endif
+		pKernel->GetAllConnectionInfo();
+		char const * status = pKernel->GetAgentStatus(java_debugger);
+		if(status && !strcmp(status,ready)) break;
+	}
 }
 
 void

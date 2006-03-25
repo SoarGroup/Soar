@@ -16,7 +16,7 @@
 #ifndef SOARTEXTIO_H
 #define SOARTEXTIO_H
 
-#include "sml_client.h"
+#include "sml_Client.h"
 #include "sml_ClientWMElement.h"
 #include <vector>
 #include <fstream>
@@ -46,7 +46,11 @@ public:
 	vector<sml::Identifier*> LastSent;
 
 	bool waitForOutput, m_StopNow, printNow, m_IsRunning, initiateRem, initiateRes, init_soar;
+#ifdef _WINDOWS
 	static void RunForever( void* info );
+#else
+	pthread_t newThread;
+#endif
 	void runner();
 
 	void init();
