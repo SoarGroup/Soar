@@ -31,4 +31,4 @@ INCLUDES = \
 -I../include \
 -I$(BASEDIR_PREFIX)/Core/ClientSML/include
 
-CXXFLAGS = $(SOAR_CXXFLAGS)
+CXXFLAGS = $(SOAR_CXXFLAGS) -W -pedantic

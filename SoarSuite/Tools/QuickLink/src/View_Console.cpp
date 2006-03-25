@@ -87,7 +87,7 @@ void View_Console::initialize()
 }
 
 // display the output
-void MyUpdateEventHandler(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlRunFlags runFlags)
+void MyUpdateEventHandler(smlUpdateEventId, void* pUserData, Kernel* pKernel, smlRunFlags)
 {
 	View_Console* vc = (View_Console*)pUserData;
 	vc->display_output(pKernel);

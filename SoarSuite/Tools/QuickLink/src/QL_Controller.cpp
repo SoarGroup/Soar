@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <crtdbg.h>
 #endif // _MSC_VER
-#endif MEM_LEAK_DEBUG
+#endif //MEM_LEAK_DEBUG
 
 /* end mem check */
 
@@ -100,7 +100,7 @@ int main()
 	//_crtBreakAlloc = 112;
 	// we put everything in its own scope so memory leak detection can be done
 	{
-#endif MEM_LEAK_DEBUG
+#endif //MEM_LEAK_DEBUG
 		
 		// create and load the command map
 		command_map_t command_map;
@@ -183,7 +183,7 @@ int main()
 	// local implementation of malloc.
 	_CrtDumpMemoryLeaks();
 #endif // _MSC_VER
-#endif MEM_LEAK_DEBUG
+#endif //MEM_LEAK_DEBUG
 }
 
 void load_command_map(command_map_t& command_map)
@@ -305,7 +305,7 @@ void update_object(istringstream& command)
 }
 
 // clear the input-link
-void clear_input_link(istringstream& command)
+void clear_input_link(istringstream&)
 {
 	QL_Interface::instance().clear_input_link();
 }
@@ -333,7 +333,7 @@ void load_input_file(istringstream& command)
 }
 
 // have soar run til output is generated
-void run_til_output(istringstream& command)
+void run_til_output(istringstream&)
 {
 	QL_Interface::instance().run_til_output();
 }
@@ -355,13 +355,13 @@ void save_process(istringstream& command)
 }
 
 // clear the current process memory
-void clear_process_mem(istringstream& command)
+void clear_process_mem(istringstream&)
 {
 	process_memory.clear();
 }
 
 // allow keyboard input in the middle of a process
-void pause_process(istringstream& command)
+void pause_process(istringstream&)
 {
 	// check to make sure it is okay to pause
 	if(Input_Controller::instance().okay_to_pause())
@@ -374,38 +374,38 @@ void pause_process(istringstream& command)
 	}
 }
 
-void continue_process(istringstream& command)
+void continue_process(istringstream&)
 {
 	process_paused = false;  // this will cause input to come from the correct source
 	QL_Interface::instance().turn_off_updates(); // views will not be updated
 }
 
 // print the last generated output
-void print_last_output(istringstream& command)
+void print_last_output(istringstream&)
 {
 	QL_Interface::instance().print_last_output();
 }
 
 // kill the current input-type
-void end_current_input_type(istringstream& command)
+void end_current_input_type(istringstream&)
 {
 	Input_Controller::instance().kill_current_input_source();
 }
 
 // show the current input-link
-void display_input_link(istringstream& command)
+void display_input_link(istringstream&)
 {
 	QL_Interface::instance().update_views_now();
 }
 
 // spawn the debugger
-void spawn_debugger(istringstream& command)
+void spawn_debugger(istringstream&)
 {
 	QL_Interface::instance().spawn_debugger();
 }
 
 // make a remote connection
-void connect_remotely(istringstream& command)
+void connect_remotely(istringstream&)
 {
 	acquiring_new_connection = true; // set this true so we can detect what state we are in
 									 // if an error is thrown within this code
@@ -434,7 +434,7 @@ void connect_remotely(istringstream& command)
 }
 
 // make a local kernel
-void create_local_kernel(istringstream& command)
+void create_local_kernel(istringstream&)
 {
 	acquiring_new_connection = true;
 	QL_Interface::instance().create_new_kernel();
