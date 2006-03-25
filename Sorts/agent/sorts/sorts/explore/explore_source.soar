@@ -1,0 +1,6 @@
+source elaborations.soar
+source designate-explorer.soar
+pushd designate-explorer
+source designate-explorer_source.soar
+popd
+source move-to-region.soar

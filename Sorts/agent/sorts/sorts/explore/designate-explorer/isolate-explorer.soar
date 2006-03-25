@@ -1,0 +1,23 @@
+# single out a unit suitable for exploration from a group of idle workers
+
+sp {designate-explorer*propose*isolate-explorer
+   (state <s> ^name designate-explorer
+              ^me.groups.group <g>)
+   (<g> ^id <gid>
+        ^type worker
+        ^num-members > 1
+        ^command none)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name isolate-explorer
+        ^group-to-split <gid>)}
+
+sp {designate-explorer*apply*isolate-worker
+   (state <s> ^name designate-explorer
+              ^io.output-link <out>
+              ^operator <o>)
+   (<o> ^name isolate-explorer
+        ^group-to-split <gid>)
+-->
+   (<out> ^grouping-command <gc>)
+   (<gc> ^command split-one)}

@@ -1,0 +1,15 @@
+sp {propose*initialize-sorts
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-sorts)
+}
+
+sp {apply*initialize-sorts
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-sorts)
+-->
+   (<s> ^name sorts)
+}
+

@@ -1,0 +1,18 @@
+VERSION 4
+\sorts\sorts.dm
+0	ROOT sorts sorts 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	2	OPERATOR group-memory group-memory.soar 4
+4	0	FOLDER elaborations elaborations 5
+5	4	FOPERATOR _all _all.soar 6
+6	4	FOPERATOR top-state top-state.soar 7
+7	0	HLOPERATOR explore explore.soar explore 14 8
+8	7	FOPERATOR elaborations elaborations.soar 9
+9	7	HLOPERATOR designate-explorer designate-explorer.soar designate-explorer 21 10
+10	9	FOPERATOR elaborations elaborations.soar 11
+11	9	OPERATOR choose-explorer choose-explorer.soar 12
+12	9	OPERATOR isolate-explorer isolate-explorer.soar 13
+13	7	OPERATOR move-to-region move-to-region.soar 14
+14	0	OPERATOR initialize-sorts initialize-sorts.soar 15
+END

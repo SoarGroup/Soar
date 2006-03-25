@@ -1,0 +1,7 @@
+sp {propose*explore
+   (state <s> ^name sorts)
+#  something about weights here
+-->
+   (<s> ^operator <o>)
+   (<o> ^name explore)
+}

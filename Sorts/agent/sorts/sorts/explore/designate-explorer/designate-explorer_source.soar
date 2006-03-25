@@ -1,0 +1,3 @@
+source elaborations.soar
+source choose-explorer.soar
+source isolate-explorer.soar
