@@ -43,3 +43,4 @@ void remove_first_char(std::string& str)
 {
 	str = str.substr(1, str.length()-1);
 }
+

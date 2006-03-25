@@ -152,7 +152,7 @@ bool WME_Id::has_child(string attribute, string value)
 }
 
 // remove functions
-void WME_Id::remove_id_child(const string& att, const string& value, Agent* pAgent)
+void WME_Id::remove_id_child(const string& att, const string& value, Agent*)
 {
 	string key = make_key(att, value);
 	Smart_Pointer<WME_Id> child = m_id_children[key];
@@ -295,3 +295,5 @@ void WME_Id::build_children()
 		}
 	}
 }
+
+

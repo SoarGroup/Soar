@@ -29,3 +29,4 @@ private:
 	sml::Identifier* m_object;
 };
 #endif
+

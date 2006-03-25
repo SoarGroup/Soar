@@ -380,7 +380,7 @@ void QL_Interface::spawn_debugger()
 
 	while(1)
 	{
-#ifdef _WIN32 || _WIN64
+#ifdef _WINDOWS
 		Sleep(100);
 #else
 		sleep(1);
@@ -397,7 +397,7 @@ void QL_Interface::spawn_debugger()
 
 // event handlers
 
-void MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
+void MyAgentEventHandler(smlAgentEventId id, void*, Agent*)
 {
 	if(smlEVENT_BEFORE_AGENT_REINITIALIZED == id)
 		QL_Interface::instance().respond_to_init_soar_before();

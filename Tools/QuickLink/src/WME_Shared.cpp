@@ -23,7 +23,7 @@ WME_Shared::WME_Shared(const string& in_id_name, const string& in_attribute, Ide
 
 WME_Shared::~WME_Shared()
 {
-	Agent* pAgent = QL_Interface::instance().get_agent_ptr();
+	//Agent* pAgent = QL_Interface::instance().get_agent_ptr();
 	//destroy_sml_object(pAgent);
 }
 
@@ -39,7 +39,7 @@ Smart_Pointer<WME_Shared> WME_Shared::create_from_sml_object(const string& in_id
 	return ptr;
 }
 
-void WME_Shared::destroy_sml_object(Agent* pAgent)
+void WME_Shared::destroy_sml_object(Agent*)
 {
 //	pAgent->DestroyWME(m_object);
 }
