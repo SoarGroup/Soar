@@ -254,7 +254,7 @@ typedef enum {
     sml_APPLY_PHASE,
     sml_OUTPUT_PHASE,
 	sml_PREFERENCE_PHASE,	// Soar 7 mode only
-	sml_WM_PHASE,			// Soar 7 mode only
+	sml_WM_PHASE			// Soar 7 mode only
 } smlPhase;
 
 typedef enum
@@ -262,7 +262,7 @@ typedef enum
 	sml_ELABORATION,
 	sml_PHASE,
 	sml_DECISION,
-	sml_UNTIL_OUTPUT,
+	sml_UNTIL_OUTPUT
 } smlRunStepSize ;
 
 typedef enum
@@ -270,7 +270,7 @@ typedef enum
 	sml_INTERLEAVE_ELABORATION,
 	sml_INTERLEAVE_PHASE,
 	sml_INTERLEAVE_DECISION,
-	sml_INTERLEAVE_UNTIL_OUTPUT,
+	sml_INTERLEAVE_UNTIL_OUTPUT
 } smlInterleaveStepSize ;
 
 typedef enum
@@ -279,7 +279,7 @@ typedef enum
 	sml_RUN_SELF			=  1 << 0,	// User included --self flag when running agent
 	sml_RUN_ALL				=  1 << 1,	// User ran all agents
 	sml_UPDATE_WORLD		=  1 << 2,	// User explicitly requested world to update
-	sml_DONT_UPDATE_WORLD	=  1 << 3,	// User explicitly requested world to not update
+	sml_DONT_UPDATE_WORLD	=  1 << 3	// User explicitly requested world to not update
 } smlRunFlags ;
 
 typedef enum {
