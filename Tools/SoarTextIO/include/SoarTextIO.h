@@ -20,8 +20,13 @@
 #include "sml_ClientWMElement.h"
 #include <vector>
 #include <fstream>
+#include <sstream>
 
 using namespace std;
+
+struct WMEpointer {
+	sml::WMElement* holder;
+};
 
 class SoarTextIO 
 {
@@ -34,19 +39,21 @@ public:
 	void RespondCycle();
 	//gets output from agent
 
+	void make_buffered_changes();
+
 	//******SML VARIABLES******
 	sml::Kernel* pKernel;
 	sml::Agent* pAgent;
-	sml::Identifier* pInputLink;
+	WMEpointer pInputLink;
 	sml::Identifier* pOutputLink;
-	sml::Identifier* pTextInput;
+	WMEpointer pTextInput;
 	sml::Identifier* pTextOutput;
 	sml::StringElement* pLastNewest;
-	vector<sml::WMElement*> dontlose;
-	vector<sml::Identifier*> LastSent;
+	vector<WMEpointer*> dontlose;
+	vector<WMEpointer*> LastSent;
 
 	bool waitForOutput, m_StopNow, printNow, m_IsRunning, initiateRem, initiateRes, init_soar;
-#ifdef _WINDOWS
+#ifdef _WIN32
 	static void RunForever( void* info );
 #else
 	pthread_t newThread;
@@ -61,7 +68,7 @@ public:
 private:
 
 	//******SENTENCE STORAGE******
-	vector<sml::Identifier*> sentStore;  //holds identifiers
+	vector<WMEpointer*> sentStore;  //holds identifiers
 
 	vector<string> memory;
 
@@ -83,9 +90,74 @@ private:
 
 	vector<triple> storeO;
 
-	vector<sml::Identifier*> NextWord;
+	vector<WMEpointer*> NextWord;
+
 	
 
+	//******Buffering******
+	enum buf_command { DESTROY , CREATE , UPDATE };
+	enum buf_type { INTEGER , STRING , FLOAT , ID };
+	struct buffered_change_t {
+		buffered_change_t(buf_command in_command, WMEpointer* in_dest, WMEpointer* in_parent, string in_att,
+			string in_value, buf_type in_type)
+			: command(in_command), destination(in_dest), parent(in_parent), attribute(in_att),
+			value(in_value), type(in_type)
+		{}
+
+		void make_change(sml::Agent* pAgent)
+		{
+			switch (command) {
+				case DESTROY : {
+					pAgent->DestroyWME(destination->holder);
+					break;
+				}
+				case CREATE : {
+					switch (type) {
+						case INTEGER : {
+							if(destination)
+								destination->holder = pAgent->CreateIntWME(parent->holder->ConvertToIdentifier(), attribute.c_str(), atoi(value.c_str()));
+							else
+								pAgent->CreateIntWME(parent->holder->ConvertToIdentifier(), attribute.c_str(), atoi(value.c_str()));
+							break;
+						}
+						case STRING : {
+							if(destination)
+								destination->holder = pAgent->CreateStringWME(parent->holder->ConvertToIdentifier(), attribute.c_str(), value.c_str());
+							else
+								pAgent->CreateStringWME(parent->holder->ConvertToIdentifier(), attribute.c_str(), value.c_str());
+							break;
+						}
+						case FLOAT : {
+							if(destination)
+								destination->holder = pAgent->CreateFloatWME(parent->holder->ConvertToIdentifier(), attribute.c_str(), atof(value.c_str()));
+							else
+								pAgent->CreateFloatWME(parent->holder->ConvertToIdentifier(), attribute.c_str(), atof(value.c_str()));
+							break;
+						}
+						case ID : {
+							if(destination)
+								destination->holder = pAgent->CreateIdWME(parent->holder->ConvertToIdentifier(), attribute.c_str());
+							else
+								pAgent->CreateIdWME(parent->holder->ConvertToIdentifier(), attribute.c_str());
+							break;
+						}					
+					}
+					break;
+				}
+			}
+		}
+
+		buf_command command;
+		WMEpointer* destination;
+		WMEpointer* parent;
+		string attribute;
+		string value;
+		buf_type type;
+
+		
+	};
+	
+	list<buffered_change_t> changes;
 		
 	//******FUNCTIONAL VARIABLES******
 	int sentenceNum;
@@ -154,6 +226,14 @@ private:
 	void CarryOutCommand(istream* getFrom);
 
 	void GetNextLine();
+
+	template <typename T>
+	std::string string_make(T value)
+	{
+		std::ostringstream ss;
+		ss << value;
+		return ss.str();
+	}
 
 	
 };
