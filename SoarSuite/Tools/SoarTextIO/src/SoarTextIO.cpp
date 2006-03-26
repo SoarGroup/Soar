@@ -20,15 +20,17 @@
 #include <string>
 #include <cctype>
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 #include <process.h>
 #include <windows.h>
 #include <conio.h>
+#include <direct.h>
 #else
 #include <time.h>
 #include <ncurses.h>
 #include <pthread.h>
-#endif //_windows
+
+#endif //_WIN32
 
 
 using namespace sml;
@@ -40,7 +42,7 @@ void MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent) ;
 void enact_init_soar(sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent);
 int callBackId;
 
-#ifndef _WINDOWS
+#ifndef _WIN32
 void* RunForever( void* info);
 #endif
 
@@ -49,7 +51,7 @@ SoarTextIO::SoarTextIO()
 	init_soar = false;
 	RemoteConnect();
 	cout << endl;	
-#ifndef _WINDOWS
+#ifndef _WIN32
 	initscr(); // set up curses
 	scrollok(stdscr, true);
 #endif
@@ -61,7 +63,7 @@ SoarTextIO::~SoarTextIO()
 {
 	pKernel->Shutdown();
 	delete pKernel;
-#ifndef _WINDOWS
+#ifndef _WIN32
 	endwin();
 #endif
 }
@@ -74,7 +76,7 @@ SoarTextIO::init()
 	wordNum = 0;
 	//if(!init_soar)
 	//{
-	pInputLink = pAgent->GetInputLink();
+	pInputLink.holder = pAgent->GetInputLink();
 	pOutputLink = pAgent->GetOutputLink();
 	//}
 
@@ -109,6 +111,8 @@ SoarTextIO::init()
 
 	init_soar = false;
 
+	//pKernel->SetAutoCommit(false);
+
 }
 
 
@@ -139,13 +143,13 @@ SoarTextIO::run()
 void
 SoarTextIO::runner()
 {
-#ifdef _WINDOWS
+#ifdef _WIN32
 	_beginthread( RunForever, 0, this); //thread for the RunForever() command
 #else
 	pthread_create(&newThread, NULL, RunForever, this);
 #endif
 }
-#ifdef _WINDOWS
+#ifdef _WIN32
 void
 SoarTextIO::RunForever( void* info )
 {
@@ -179,6 +183,7 @@ void
 MyUpdateEventHandler(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlRunFlags runFlags)
 {
 	SoarTextIO* STIO = (SoarTextIO*)pUserData;
+	STIO->make_buffered_changes();
 	if(STIO->m_StopNow == true)
 	{
 		pKernel->StopAllAgents();
@@ -190,7 +195,7 @@ MyUpdateEventHandler(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlR
 		STIO->RespondCycle();
 
 	}	
-	STIO->pAgent->Commit();
+	//STIO->pAgent->Commit();
 }
 
 void
@@ -215,7 +220,7 @@ MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 		SoarTextIO* STIO = (SoarTextIO*)pUserData;
 		if(STIO->LastSent.size() > 0)
 		{
-			STIO->pAgent->DestroyWME(STIO->LastSent[0]);
+			STIO->pAgent->DestroyWME(STIO->LastSent[0]->holder);
 			STIO->LastSent.resize(0);
 		}
 	}
@@ -235,6 +240,16 @@ void enact_init_soar(sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgen
 }
 
 void
+SoarTextIO::make_buffered_changes()
+{
+	while(!changes.empty())
+	{
+		changes.front().make_change(pAgent);
+		changes.pop_front();
+	}
+}
+
+void
 SoarTextIO::WriteCycle(istream* getFrom)
 {
 	wordNum = 0;
@@ -244,11 +259,11 @@ SoarTextIO::WriteCycle(istream* getFrom)
 
 	word = "", forMem = "";
 	checker = "";
-#ifdef _WINDOWS
+#ifdef _WIN32
 	while(!printNow) { Sleep(1); }
 #else 
 	while(!printNow) { usleep(1); }
-#endif // _WINDOWS
+#endif // _WIN32
 	if(*getFrom == cin)
 		cout << endl << endl << endl << endl << "> ";
 	if(ShouldPrintNow)
@@ -309,8 +324,11 @@ SoarTextIO::CarryOutCommand(istream* getFrom)
 			{
 				createSentId();	
 				//int temp = sentStore.size();
-				pAgent->CreateIntWME(sentStore[0],"text-input-number", sentenceNum);
-				sml::Identifier* tmp3 = pAgent->CreateIdWME(NextWord[0], "next");
+				//pAgent->CreateIntWME(sentStore[0],"text-input-number", sentenceNum);
+				changes.push_back(buffered_change_t(CREATE, NULL, sentStore[0], "text-input-number", string_make(sentenceNum), INTEGER));
+				//sml::Identifier* tmp3 = NULL; // = pAgent->CreateIdWME(NextWord[0], "next");
+				WMEpointer* tmp3 = new WMEpointer();
+				changes.push_back(buffered_change_t(CREATE, tmp3, NextWord[0], "next", "", ID));
 				NextWord.push_back(tmp3);
 				sentStore.push_back(tmp3);
 
@@ -355,7 +373,10 @@ SoarTextIO::CarryOutCommand(istream* getFrom)
 		if(forMem != "")
 			memory.push_back(forMem.substr(0, forMem.size() - 1));
 		if(sentStore.size() >0)
-			pAgent->CreateIntWME(sentStore[0], "length", wordNum); //add counter for num words
+		{
+			//pAgent->CreateIntWME(sentStore[0], "length", wordNum); //add counter for num words
+			changes.push_back(buffered_change_t(CREATE, NULL, sentStore[0], "length", string_make(wordNum), INTEGER));
+		}
 	}
 	char garbage;
 	if(checker != "--CMDLIN")
@@ -372,12 +393,14 @@ SoarTextIO::CarryOutCommand(istream* getFrom)
 	{
 		if(NextWord.size() > 0)
 		{
-			pAgent->DestroyWME(NextWord[NextWord.size()-1]); //gets rid of null-pointing next-word identifier
-			pAgent->CreateStringWME(NextWord[NextWord.size()-2],"next","nil");
+			//pAgent->DestroyWME(NextWord[NextWord.size()-1]); //gets rid of null-pointing next-word identifier
+			changes.push_back(buffered_change_t(DESTROY, NextWord[NextWord.size()-1], NULL, "", "", STRING));
+			//pAgent->CreateStringWME(NextWord[NextWord.size()-2],"next","nil");
+			changes.push_back(buffered_change_t(CREATE, NULL, NextWord[NextWord.size()-2], "next", "nil", STRING));
 		}
 		sentenceNum++;		
 	}	
-	pAgent->Commit();
+	//pAgent->Commit();
 }
 
 bool
@@ -509,7 +532,7 @@ SoarTextIO::PrintOutput()
 	{
 		printNow = false;
 		char buffer[1000];
-#ifdef _WINDOWS
+#ifdef _WIN32
 		CONSOLE_SCREEN_BUFFER_INFO info;
 		HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 		if(!GetConsoleScreenBufferInfo( hStdout , &info ))
@@ -538,7 +561,7 @@ SoarTextIO::PrintOutput()
 		move(init_row, init_col);
 		getstr(buffer);
 		
-#endif // _WINDOWS
+#endif // _WIN32
 		string holder = buffer;
 		cout << "                                                                              " << endl ;
 		cout << "                                                                              " << endl ;
@@ -568,14 +591,16 @@ SoarTextIO::createSentId()
 {
 	if(LastSent.size() > 0)
 	{
-		pAgent->DestroyWME(LastSent[0]);
+		//pAgent->DestroyWME(LastSent[0]);
+		changes.push_back(buffered_change_t(DESTROY, LastSent[0], NULL, "", "", STRING));
 		LastSent.resize(0);
 	}
-	pTextInput = pAgent->CreateIdWME(pInputLink,"text");
-	sentStore.push_back(pTextInput);
-	NextWord.push_back(pTextInput);
-	LastSent.push_back(pTextInput);
-	pAgent->Commit();
+	//pTextInput = pAgent->CreateIdWME(pInputLink,"text");
+	changes.push_back(buffered_change_t(CREATE, &pTextInput, &pInputLink, "text", "", ID));
+	sentStore.push_back(&pTextInput);
+	NextWord.push_back(&pTextInput);
+	LastSent.push_back(&pTextInput);
+	//pAgent->Commit();
 }
 
 void
@@ -583,14 +608,18 @@ SoarTextIO::CreateWord()
 {
 
 	//Create word			
-	sml::StringElement* tmp4 = pAgent->CreateStringWME(NextWord[NextWord.size()-1],"value",word.c_str());
+	//sml::StringElement* tmp4 = NULL;// = pAgent->CreateStringWME(NextWord[NextWord.size()-1],"value",word.c_str());
+	WMEpointer* tmp4 = new WMEpointer();
+	changes.push_back(buffered_change_t(CREATE, tmp4, NextWord[NextWord.size()-1], "value", word, STRING));
 	dontlose.push_back(tmp4);
 
 	//Create next-word identifier
-	sml::Identifier* tmp = pAgent->CreateIdWME(NextWord[NextWord.size()-1], "next");
+	//sml::Identifier* tmp = NULL; // = pAgent->CreateIdWME(NextWord[NextWord.size()-1], "next");
+	WMEpointer* tmp = new WMEpointer();
+	changes.push_back(buffered_change_t(CREATE, tmp, NextWord[NextWord.size()-1], "next", "", ID));
 	sentStore.push_back(tmp);
 	NextWord.push_back(tmp);
-	pAgent->Commit();
+	//pAgent->Commit();
 }
 
 void
@@ -713,7 +742,7 @@ SoarTextIO::KillKernel()
 void
 SoarTextIO::spawnDebugger()
 {
-#if defined _WINDOWS
+#if defined _WIN32
 
 	// spawn the debugger asynchronously
 	
@@ -731,13 +760,13 @@ SoarTextIO::spawnDebugger()
 					cout << "file/path not found" << endl;
 					break;
 				case ENOEXEC:
-					tcout << "specified file not an executable" << endl;
+					cout << "specified file not an executable" << endl;
 					break;
 				case ENOMEM:
 					cout << "not enough memory" << endl;
 					break;
 				default:
-					cout << string_make(ret) << endl;
+					cout << ret << endl;
 		}
 	}
 	_chdir("../../Tools/QuickLink/");
@@ -766,7 +795,7 @@ SoarTextIO::spawnDebugger()
 
 	while(1)
 	{
-#ifdef _WINDOWS
+#ifdef _WIN32
 		Sleep(100);
 #else
 		sleep(1);
