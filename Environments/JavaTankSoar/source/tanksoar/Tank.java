@@ -716,7 +716,7 @@ public class Tank  extends WorldEntity {
 		}
 	
 		// Sound
-		int sound = 0;//world.getLoudTank(this);
+		int sound = world.getSoundNear(this);
 		if (sound != m_LastSound) {
 			m_LastSound = sound;
 			if (sound == m_RD.forward) {
