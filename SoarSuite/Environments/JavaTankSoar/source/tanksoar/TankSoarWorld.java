@@ -41,10 +41,15 @@ public class TankSoarWorld extends World implements WorldManager {
 	Random m_Random = new Random();
 	RelativeDirections m_RD = new RelativeDirections();
 	int m_MaxManhattanDistance;
+	private static final int kMaxSmellDistance = 7;
 
 	public class TankSoarCell extends Cell {
 		private Tank m_Tank;
 		private int m_Contents = 0;
+		
+		// used in path searching
+		private boolean m_Explored = false;
+		private MapPoint m_Parent = null;
 		
 		public TankSoarCell(String name) throws Exception {
 			if (name.equalsIgnoreCase(kTypeWall)) {
@@ -64,6 +69,22 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 		}
 
+		boolean isExplored() {
+			return m_Explored;
+		}
+		
+		void setExplored(boolean setting) {
+			m_Explored = setting;
+		}
+		
+		MapPoint getParent() {
+			return m_Parent;
+		}
+		
+		void setParent(MapPoint parent) {
+			m_Parent = parent;
+		}
+		
 		public boolean isWall() {
 			return m_Type == kWallInt;
 		}
@@ -745,8 +766,83 @@ public class TankSoarWorld extends World implements WorldManager {
 			return 0;
 		}
 		
-		int relativeDirection = 0;
+		// if the closest tank is greater than 7 away, there is no
+		// possibility of hearing anything
+		if (getStinkyTankNear(tank).getLocation().getManhattanDistanceTo(tank.getLocation()) > kMaxSmellDistance) {
+			return 0;
+		}
+		
+		// Set all cells unexplored.
+		for(int row = 0; row < m_WorldHeight; ++row) {
+			// String rowString = new String();
+			for (int col = 0; col < m_WorldWidth; ++col) {
+				m_World[row][col].setExplored(false);
+				m_World[row][col].setParent(null);
+			}
+		}
+		
+		LinkedList searchList = new LinkedList();
+		searchList.addLast(tank.getLocation());
+		m_Logger.log("Starting search at " + tank.getLocation());
+		int relativeDirection = -1;
+		
+		while (searchList.size() > 0) {
+			MapPoint location = (MapPoint)searchList.getFirst();
+			searchList.removeFirst();
+			TankSoarCell cell = getCell(location);
+			cell.setExplored(true);
 
+			// Explore cell.
+			for (int i = 0; i < 4; ++i) {
+				int direction = 1 << i;
+				MapPoint newLocation = new MapPoint(location, direction);
+				
+				if (!isInBounds(newLocation)) {
+					continue;
+				}
+				
+				TankSoarCell newCell = getCell(newLocation);
+				if (newCell.isExplored()) {
+					continue;
+				}
+				newCell.setExplored(true);
+				
+				if (newCell.isWall()) {
+					continue;
+				}
+							
+				if (newCell.containsTank() && newCell.getTank().recentlyMoved()) {
+					
+					m_Logger.log("Found recently moved tank at " + newLocation);	
+					
+					while(getCell(location).getParent() != null) {
+						newLocation = location;
+						location = getCell(location).getParent();
+					}
+					m_Logger.log("First cell on path is " + newLocation);	
+					relativeDirection = location.directionTo(newLocation);
+					break;
+				}
+				
+				if (relativeDirection != -1) {
+					break;
+				}
+				
+				//m_Logger.log("Adding " + newLocation + " with parent " + location);				
+				newCell.setParent(location);
+				searchList.addLast(newLocation);
+			}
+			
+			if (relativeDirection != -1) {
+				break;
+			}
+		}
+		
+		m_Logger.log("Finished search.");
+		
+		if (relativeDirection == -1) {
+			relativeDirection = 0;
+		}
 		return relativeDirection;
 	}
 	
