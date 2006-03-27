@@ -380,7 +380,7 @@ void QL_Interface::spawn_debugger()
 
 	while(1)
 	{
-#ifdef _WINDOWS
+#ifdef _WIN32 || _WIN64
 		Sleep(100);
 #else
 		sleep(1);
