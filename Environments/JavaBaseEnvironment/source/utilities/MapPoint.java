@@ -21,9 +21,34 @@ public class MapPoint {
 		this.y = p.y;
 	}
 	
+	public MapPoint(MapPoint p, int direction) {
+		this.x = p.x;
+		this.y = p.y;
+		this.travel(direction);
+	}
+	
+	public String toString() {
+		return "(" + x + "," + y + ")";
+	}
+	
 	public void travel(int direction) {
 		x += getXIncrement(direction);
 		y += getYIncrement(direction);
+	}
+	
+	public int directionTo(MapPoint p) {
+		int direction = 0;
+		if (p.x < x) {
+			direction |= WorldEntity.kWestInt;
+		} else if (p.x > x) {
+			direction |= WorldEntity.kEastInt;
+		}
+		if (p.y < y) {
+			direction |= WorldEntity.kNorthInt;
+		} else if (p.y > y) {
+			direction |= WorldEntity.kSouthInt;
+		}
+		return direction;
 	}
 	
 	public static int getXIncrement(int direction) {
