@@ -295,13 +295,16 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 		layoutControls() ;
 		
 		// Explicitly request it to adopt preferred size to make Linux happy
-		getDisplayControl().pack(true) ;
-		m_Container.pack(true) ;
-		m_Container.layout() ;
-		m_Container.getParent().pack(true) ;
-		m_Container.getParent().layout() ;
-		parent.pack(true) ;
-		parent.layout() ;
+		// This is a bit too aggressive to do while we're still building the entire layout
+		Control control = getDisplayControl() ;
+		while (control != null)
+		{
+			control.pack(true) ;
+			Composite parentControl = control.getParent() ;
+			if (parentControl != null)
+				parentControl.layout(true, true) ;
+			control = parentControl ;
+		}
 	}
 	
 	// If the user presses TAB in the display control (text window) set the focus to the combo box directly

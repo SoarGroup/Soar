@@ -277,7 +277,7 @@ public class Pane
 			
 			// Trying to make Linux happy
 			view.getWindow().pack(true) ;
-			view.getWindow().layout() ;
+			view.getWindow().layout(true, true) ;
 		}
 
 		// If we specified a particular window to be selected (visible) then
