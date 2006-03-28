@@ -173,6 +173,7 @@ public class EditorView extends AbstractView
 	protected void createDisplayControl(Composite parent)
 	{
 		m_Text = new Text(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.WRAP) ;
+		m_Text.pack() ;
 		
 		// Listen for Ctrl-Return to load the production immediately
 		m_Text.addKeyListener(new KeyAdapter() { public void keyPressed(KeyEvent e) { textKeyPressed(e) ; } } ) ;
