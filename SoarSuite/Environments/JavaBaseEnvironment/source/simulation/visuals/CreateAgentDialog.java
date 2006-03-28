@@ -15,7 +15,7 @@ public class CreateAgentDialog extends Dialog {
 	Label m_ProductionsLabel;
 	Text m_Name;
 	Combo m_Color;
-	Button m_CreateEater;
+	Button m_CreateEntity;
 	
 	public CreateAgentDialog(Shell parent, SimulationManager simulation) {
 		super(parent);
@@ -123,11 +123,11 @@ public class CreateAgentDialog extends Dialog {
 		gd.horizontalSpan = 3;
 		okCancel.setLayoutData(gd);
 		okCancel.setLayout(new FillLayout());
-		m_CreateEater = new Button(okCancel, SWT.PUSH);
-		m_CreateEater.setText("Create Agent");
-		m_CreateEater.addSelectionListener(new SelectionAdapter() {
+		m_CreateEntity = new Button(okCancel, SWT.PUSH);
+		m_CreateEntity.setText("Create Agent");
+		m_CreateEntity.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				m_CreateEater.setEnabled(false);
+				m_CreateEntity.setEnabled(false);
 				m_Simulation.createEntity(m_Name.getText(), m_Productions, m_Color.getText(), null, null);
 				dialog.dispose();
 			}
@@ -170,6 +170,6 @@ public class CreateAgentDialog extends Dialog {
 			}
 		}
 		
-		m_CreateEater.setEnabled(productions && name);
+		m_CreateEntity.setEnabled(productions && name);
 	}
 }
