@@ -2387,9 +2387,11 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
 		// then the interrupt is generated and system_halted is set to FALSE so the user can recover.
 		print(thisAgent, "\nGoal stack depth exceeded %d on a no-change impasse.\n",thisAgent->sysparams[MAX_GOAL_DEPTH]);
 		print(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
+		GenerateWarningXML(thisAgent, "\nGoal stack depth exceeded on a no-change impasse.\n");
+		GenerateWarningXML(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
 		thisAgent->stop_soar = TRUE;
 		thisAgent->system_halted = TRUE;
-		thisAgent->reason_for_stopping = "Max Goal depth exceeded.";
+		thisAgent->reason_for_stopping = "Max Goal Depth exceeded.";
 	}
   } 
   else 
