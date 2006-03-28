@@ -290,7 +290,7 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 			getCell(location).setTank(m_Tanks[i]);
 			m_Tanks[i].setPoints(0);
-			m_Tanks[i].reset(this);
+			m_Tanks[i].reset();
 			m_Tanks[i].initSoar();
 		}
 		updateTankInput();
@@ -308,10 +308,6 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 	
 	private void updateTankInput() {
-		// Clear radio wave input
-		for (int i = 0; i < m_Tanks.length; ++i) {
-			m_Tanks[i].clearRWaves();
-		}
 		// Update tanks
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			m_Tanks[i].update(this);
@@ -326,7 +322,7 @@ public class TankSoarWorld extends World implements WorldManager {
 					--m_NumMissilePacks;
 				}
 				getCell(location).setTank(m_Tanks[i]);
-				m_Tanks[i].reset(this);
+				m_Tanks[i].reset();
 			}
 		}		
 	}
@@ -368,7 +364,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 
 	void createTank(Agent agent, String productions, String color, MapPoint location, String facing) {
-		if (getCell(location).isBlocked()) {
+		if ((location != null) && getCell(location).isBlocked()) {
 			m_Logger.log("Initial location " + location + " is blocked, going random.");
 			location = null;
 		}
@@ -429,10 +425,11 @@ public class TankSoarWorld extends World implements WorldManager {
 		return m_PrintedStats;
 	}
 	
+	public int getWorldCount() {
+		return m_Simulation.getWorldCount();
+	}
+	
 	public void update() {
-		// Update world count
-		Tank.setWorldCount(m_Simulation.getWorldCount());
-		
 		// reset modified flags, skipping edges
 		for (int y = 1; y < m_World.length - 1; ++y) {
 			for (int x = 1; x < m_World[y].length - 1; ++x) {
