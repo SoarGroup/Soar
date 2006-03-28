@@ -274,10 +274,6 @@ public class Pane
 			view.loadFromXML(frame, doc, this, child) ;
 			
 			this.addView(view) ;
-			
-			// Trying to make Linux happy
-			view.getWindow().pack(true) ;
-			view.getWindow().layout(true, true) ;
 		}
 
 		// If we specified a particular window to be selected (visible) then
