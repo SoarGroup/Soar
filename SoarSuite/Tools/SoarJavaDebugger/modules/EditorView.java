@@ -149,8 +149,12 @@ public class EditorView extends AbstractView
 			layoutComboBar(m_ComboAtTop) ;
 		}
 		
+		// Lots of attempts to make sure the size is computed correctly
+		m_Container.pack(true) ;
 		m_Container.layout() ;
+		m_ComboContainer.pack(true) ;
 		m_ComboContainer.layout() ;
+		m_Container.getParent().pack(true) ;
 		m_Container.getParent().layout() ;
 		
 		// Create a context menu for m_Text.
