@@ -151,6 +151,7 @@ public class EditorView extends AbstractView
 		
 		m_Container.layout() ;
 		m_ComboContainer.layout() ;
+		m_Container.getParent().layout() ;
 		
 		// Create a context menu for m_Text.
 		// It will be filled in via a call to fillInContextMenu when the menu is popped up
