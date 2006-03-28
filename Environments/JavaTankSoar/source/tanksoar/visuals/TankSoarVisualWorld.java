@@ -74,7 +74,7 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 		m_Background = new Image[m_World.getWidth()][m_World.getHeight()];
 		for(int x = 0; x < m_World.getWidth(); ++x){
 			for(int y = 0; y < m_World.getHeight(); ++y){
-				TankSoarWorld.TankSoarCell cell = m_World.getCell(x, y);
+				TankSoarCell cell = m_World.getCell(x, y);
 				if (cell.isWall()) {
 					if ((x == 0) || (x == m_World.getWidth() - 1) || (y == 0) || (y == m_World.getHeight() - 1)) {
 						// Rocks on outer edge
@@ -99,7 +99,7 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 	Tank getTankAtPixel(int x, int y) {
 		x /= m_CellSize;
 		y /= m_CellSize;
-		TankSoarWorld.TankSoarCell cell = m_World.getCell(x, y);
+		TankSoarCell cell = m_World.getCell(x, y);
 		if (cell.containsTank()) {
 			return cell.getTank();
 		}
@@ -129,7 +129,7 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 		// Draw world
 		for(int x = 0; x < m_World.getWidth(); ++x){
 			for(int y = 0; y < m_World.getHeight(); ++y){
-				TankSoarWorld.TankSoarCell cell = m_World.getCell(x, y);
+				TankSoarCell cell = m_World.getCell(x, y);
 				if (!cell.isModified() && m_Painted) {
 					continue;
 				}

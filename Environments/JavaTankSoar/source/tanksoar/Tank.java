@@ -70,6 +70,7 @@ public class Tank  extends WorldEntity {
 	private final static int kSheildEnergyUsage = 20;
 	private final static int kMissileHealthDamage = 400;
 	private final static int kMissileEnergyDamage = 250;
+	private final static int kCollisionHealthDamage = 100;
 	
 	public class Radar {
 		//0[left  0][left  1][left  2]
@@ -195,7 +196,7 @@ public class Tank  extends WorldEntity {
 					continue;
 				}
 	
-				TankSoarWorld.TankSoarCell cell = world.getCell(location, relativeDirection);
+				TankSoarCell cell = world.getCell(location, relativeDirection);
 				Tank tank = cell.getTank();
 				String id = getCellID(cell);
 				
@@ -209,7 +210,7 @@ public class Tank  extends WorldEntity {
 					tankColors[position][distance] = m_Agent.CreateStringWME(cellIDs[position][distance], kColorID, tank.getColor());
 				}		
 
-				if ((position == kRadarCenter) && cell.isWall()) {
+				if ((position == kRadarCenter) && cell.isBlocked()) {
 					return true;
 				}
 			}
@@ -302,6 +303,8 @@ public class Tank  extends WorldEntity {
 	private int m_RWaves;
 	private int m_LastSound;
 	private boolean m_Hit;
+	private boolean m_Collision;
+	
 	
 	public Tank(Agent agent, String productions, String color, MapPoint location, String facing, TankSoarWorld world) {
 		super(agent, productions, color, location);
@@ -401,6 +404,7 @@ public class Tank  extends WorldEntity {
 		m_LastSound = -1;		// force sound update
 		
 		m_Hit = false;
+		m_Collision = false;
 		
 		// force smell update
 		if (m_SmellDistanceWME != null) {
@@ -487,7 +491,7 @@ public class Tank  extends WorldEntity {
 	public void update(TankSoarWorld world) {		
 		// fire input updated at read time.
 		
-		TankSoarWorld.TankSoarCell cell = world.getCell(getLocation());
+		TankSoarCell cell = world.getCell(getLocation());
 		
 		// Movement
 		if (m_LastMove.move) {
@@ -527,6 +531,18 @@ public class Tank  extends WorldEntity {
 			}
 		}
 		
+		// Collision damage
+		if (m_Collision) {
+			int currentHealth = m_HealthWME.GetValue();
+			currentHealth -= kCollisionHealthDamage;
+			if (currentHealth < 0) {
+				currentHealth = 0;
+			}
+			m_Agent.Update(m_HealthWME, currentHealth);
+		}
+
+		m_Collision = false;
+
 		// Chargers
 		if (cell.isEnergyRecharger()) {
 			// Check for missile hit
@@ -550,6 +566,8 @@ public class Tank  extends WorldEntity {
 				m_Agent.Update(m_HealthWME, newHealth);
 			}
 		}
+		
+		m_Hit = false;
 		
 		// Handle shields.
 		currentShieldStatus = m_ShieldStatusWME.GetValue().equalsIgnoreCase(kOn);
@@ -754,6 +772,10 @@ public class Tank  extends WorldEntity {
 		m_Hit = true;
 	}
 	
+	public void collide() {
+		m_Collision = true;
+	}
+	
 	public int getEnergy() {
 		return m_EnergyWME.GetValue();
 	}
@@ -762,11 +784,15 @@ public class Tank  extends WorldEntity {
 		return m_LastMove.move;
 	}
 	
+	public int lastMoveDirection() {
+		return m_LastMove.moveDirection;
+	}
+	
 	static public void setWorldCount(int worldCount) {
 		Tank.worldCount = worldCount;
 	}
 	
-	private String getCellID(TankSoarWorld.TankSoarCell cell) {
+	private String getCellID(TankSoarCell cell) {
 		if (cell.isWall()) {
 			return kObstacleID;
 		}
