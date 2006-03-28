@@ -302,6 +302,15 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { m_FoldingText.setExclusionFilter(TraceType.kAllExceptTopLevel, true) ; updateButtonState() ; } } ) ;
 
 		updateButtonState() ;
+		
+		// Explicitly request it to adopt preferred size to make Linux happy
+		m_FoldingText.getWindow().pack(true) ;
+		m_Container.pack(true) ;
+		m_Container.layout() ;
+		m_Container.getParent().pack(true) ;
+		m_Container.getParent().layout() ;
+		parent.pack(true) ;
+		parent.layout() ;
 	}
 	
 	protected void changeFilter(Widget widget, long type)
