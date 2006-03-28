@@ -14,150 +14,24 @@ public class TankSoarWorld extends World implements WorldManager {
 	private static final String kParamWorldHeight = "world-height";
 	private static final String kParamType = "type";
 	
-	private static final String kTypeWall = "wall";
-	private static final String kTypeEmpty = "empty";
-	private static final String kTypeEnergyRecharger = "energy";
-	private static final String kTypeHealthRecharger = "health";
+	static final String kTypeWall = "wall";
+	static final String kTypeEmpty = "empty";
+	static final String kTypeEnergyRecharger = "energy";
+	static final String kTypeHealthRecharger = "health";
 	
-	// background
-	private static final int kWallInt = 0;
-	private static final int kOpenInt = 1;
-	private static final int kEnergyInt = 2;
-	private static final int kHealthInt = 3;
-	
-	// contents
-	private static final int kNothingInt = 0;
-	private static final int kTankInt = 1;
-	private static final int kMissilePackInt = 2;
-
 	private static final int kWallPenalty = -100;
 	private static final int kWinningPoints = 50;
 	
 	private static final int kMaxMissilePacks = 3;
 	private static final double kMisslePackRespawn = 0.05;
-	private static final int kMissilePackSize = 7;
-	int m_NumMissilePacks = 0;
+	static final int kMissilePackSize = 7;
+	private int m_NumMissilePacks = 0;
 	
 	Random m_Random = new Random();
 	RelativeDirections m_RD = new RelativeDirections();
 	int m_MaxManhattanDistance;
 	private static final int kMaxSmellDistance = 7;
 
-	public class TankSoarCell extends Cell {
-		private Tank m_Tank;
-		private int m_Contents = 0;
-		
-		// used in path searching
-		private boolean m_Explored = false;
-		private MapPoint m_Parent = null;
-		
-		public TankSoarCell(String name) throws Exception {
-			if (name.equalsIgnoreCase(kTypeWall)) {
-				m_Type = kWallInt;
-				return;
-			} else if (name.equalsIgnoreCase(kTypeEmpty)) {
-				m_Type = kOpenInt;			
-				return;
-			} else if (name.equalsIgnoreCase(kTypeEnergyRecharger)) {
-				m_Type = kEnergyInt;			
-				return;
-			} else if (name.equalsIgnoreCase(kTypeHealthRecharger)) {
-				m_Type = kHealthInt;			
-				return;
-			} else {	
-				throw new Exception("Invalid type name: " + name);
-			}
-		}
-
-		boolean isExplored() {
-			return m_Explored;
-		}
-		
-		void setExplored(boolean setting) {
-			m_Explored = setting;
-		}
-		
-		MapPoint getParent() {
-			return m_Parent;
-		}
-		
-		void setParent(MapPoint parent) {
-			m_Parent = parent;
-		}
-		
-		public boolean isWall() {
-			return m_Type == kWallInt;
-		}
-		
-		public boolean isOpen() {
-			return m_Type == kOpenInt;
-		}
-		
-		public boolean isEnergyRecharger() {
-			return m_Type == kEnergyInt;
-		}
-		
-		public boolean isHealthRecharger() {
-			return m_Type == kHealthInt;
-		}
-		
-		public boolean containsTank() {
-			return m_Contents == kTankInt;
-		}
-		
-		public boolean hasContents() {
-			return m_Contents != kNothingInt;
-		}
-		
-		public void setTank(Tank tank) {
-			m_Modified = true;
-			if (m_Contents == kMissilePackInt) {
-				tank.addMissiles(kMissilePackSize);
-				--m_NumMissilePacks;
-			}
-			
-			m_Contents = kTankInt;
-			m_Tank = tank;
-		}
-		
-		void setModified() {
-			m_Modified = true;
-		}
-		
-		public Tank getTank() {
-			return m_Tank;
-		}
-		
-		public boolean removeTank() {
-			if (m_Contents != kTankInt) {
-				return false;
-			}
-			m_Modified = true;
-			m_Contents = kNothingInt;
-			m_Tank = null;
-			return true;
-		}
-		
-		public boolean containsMissilePack() {
-			return m_Contents == kMissilePackInt;
-		}
-		
-		void setHealth() {
-			m_Modified = true;
-			m_Type = kHealthInt;
-		}
-		
-		void setEnergy() {
-			m_Modified = true;
-			m_Type = kEnergyInt;
-		}
-		
-		void setMissilePack() {
-			m_Modified = true;
-			m_Contents = kMissilePackInt;
-		}
-	}
-	
 	private TankSoarSimulation m_Simulation;
 	private TankSoarCell[][] m_World;
 	private boolean m_PrintedStats;
@@ -188,6 +62,14 @@ public class TankSoarWorld extends World implements WorldManager {
 	   	}
 	   	
 	   	public void moveMissiles() {
+			// Mark old cells as modified
+			MapPoint[] missileLocations = m_Missiles.getLocations();
+			if (missileLocations != null) {
+				for (int i = 0; i < missileLocations.length; ++i) {
+					getCell(missileLocations[i]).setModified();
+				}
+			}
+			
 	   		ListIterator iter = m_Flying.listIterator();
 	   		while (iter.hasNext()) {
 	   			Missile missile = (Missile)iter.next();
@@ -350,6 +232,11 @@ public class TankSoarWorld extends World implements WorldManager {
 		++m_NumMissilePacks;
 	}
 	
+	void pickUpMissiles(Tank tank) {
+		tank.addMissiles(TankSoarWorld.kMissilePackSize);
+		--m_NumMissilePacks;
+	}
+	
 	private void generateWorldFromXML(JavaElementXML cells) throws Exception {
 		for(int row = 0; row < m_WorldHeight; ++row) {
 			//String rowString = new String();
@@ -389,7 +276,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			MapPoint location = m_Tanks[i].getInitialLocation();
-			if (location != null && getCell(location).isWall()) {
+			if (location != null && getCell(location).isBlocked()) {
 				m_Logger.log("Initial location " + location + " is blocked, going random.");
 				location = null;
 			}
@@ -398,6 +285,9 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 			m_Tanks[i].setLocation(location);
 			// Put tank on map
+			if (getCell(location).containsMissilePack()) {
+				--m_NumMissilePacks;
+			}
 			getCell(location).setTank(m_Tanks[i]);
 			m_Tanks[i].setPoints(0);
 			m_Tanks[i].reset(this);
@@ -432,6 +322,9 @@ public class TankSoarWorld extends World implements WorldManager {
 				MapPoint location = findStartingLocation();
 				m_Tanks[i].setLocation(location);
 				// Put tank on map
+				if (getCell(location).containsMissilePack()) {
+					--m_NumMissilePacks;
+				}
 				getCell(location).setTank(m_Tanks[i]);
 				m_Tanks[i].reset(this);
 			}
@@ -475,7 +368,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 
 	void createTank(Agent agent, String productions, String color, MapPoint location, String facing) {
-		if (getCell(location).isWall()) {
+		if (getCell(location).isBlocked()) {
 			m_Logger.log("Initial location " + location + " is blocked, going random.");
 			location = null;
 		}
@@ -485,6 +378,9 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 		
 		Tank tank = new Tank(agent, productions, color, location, facing, this);
+		if (getCell(location).containsMissilePack()) {
+			--m_NumMissilePacks;
+		}
 		getCell(location).setTank(tank);
 
 		if (m_Tanks == null) {
@@ -599,7 +495,7 @@ public class TankSoarWorld extends World implements WorldManager {
 				return;
 			}
 			
-			if (isInBounds(newLocation) && !getCell(newLocation).isWall()) {
+			if (isInBounds(newLocation) && !getCell(newLocation).isBlocked()) {
 				if (!getCell(oldLocation).removeTank()) {
 					m_Logger.log("Warning: moving tank " + m_Tanks[i].getName() + " not at old location " + oldLocation);
 				}
@@ -609,9 +505,13 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 		}
 	}
+	
 	private void updateMap() {
 		// Move tanks
 		for (int i = 0; i < m_Tanks.length; ++i) {
+			if (getCell(m_Tanks[i].getLocation()).containsMissilePack()) {
+				pickUpMissiles(m_Tanks[i]);
+			}
 			getCell(m_Tanks[i].getLocation()).setTank(m_Tanks[i]);
 		}
 		
@@ -632,14 +532,6 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 		}
 		
-		// Mark modified cells
-		MapPoint[] missileLocations = m_Missiles.getLocations();
-		if (missileLocations != null) {
-			for (int i = 0; i < missileLocations.length; ++i) {
-				getCell(missileLocations[i]).setModified();
-			}
-		}
-		
 		// Spawn missile packs
 		if (m_NumMissilePacks < kMaxMissilePacks) {
 			if (m_Random.nextFloat() < kMisslePackRespawn) {
@@ -654,7 +546,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			for (int j = i+1; j < m_Tanks.length; ++j) {
-				// only check eaters who aren't already colliding
+				// only check tanks who aren't already colliding
 				if (m_Tanks[i].isColliding()) {
 					continue;
 				}
@@ -706,16 +598,19 @@ public class TankSoarWorld extends World implements WorldManager {
 			
 			m_Logger.log("Processing collision group " + group + " with " + collidees.length + " collidees.");
 			
-			// TODO: Deal with collision penalties
-
-			// Remove from former location (only one of these for all tanks)
-			getCell(collidees[0].getLocation()).removeTank();
-
-			// Find new locations, update map
+			// Move back to old locations, update map
 			for (int i = 0; i < collidees.length; ++i) {
-				collidees[i].setLocation(findStartingLocation());
-				// TODO: missiles
-				getCell(collidees[i].getLocation()).setTank(collidees[i]);
+				collidees[i].collide();
+				m_RD.calculate(collidees[i].lastMoveDirection());
+				MapPoint p = collidees[i].getLocation();
+				p.travel(m_RD.backward);
+				collidees[i].setLocation(p);
+
+				if (getCell(p).containsMissilePack()) {
+					--m_NumMissilePacks;
+				}
+
+				getCell(p).setTank(collidees[i]);
 			}
 		}
 		
@@ -741,16 +636,16 @@ public class TankSoarWorld extends World implements WorldManager {
 	public int getBlockedByLocation(MapPoint location) {
 		int blocked = 0;
 		
-		if (getCell(location, WorldEntity.kNorthInt).isWall()) {
+		if (getCell(location, WorldEntity.kNorthInt).isBlocked()) {
 			blocked |= WorldEntity.kNorthInt;
 		}
-		if (getCell(location, WorldEntity.kEastInt).isWall()) {
+		if (getCell(location, WorldEntity.kEastInt).isBlocked()) {
 			blocked |= WorldEntity.kEastInt;
 		}
-		if (getCell(location, WorldEntity.kSouthInt).isWall()) {
+		if (getCell(location, WorldEntity.kSouthInt).isBlocked()) {
 			blocked |= WorldEntity.kSouthInt;
 		}
-		if (getCell(location, WorldEntity.kWestInt).isWall()) {
+		if (getCell(location, WorldEntity.kWestInt).isBlocked()) {
 			blocked |= WorldEntity.kWestInt;
 		}
 		
