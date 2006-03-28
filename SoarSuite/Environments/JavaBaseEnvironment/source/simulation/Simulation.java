@@ -231,7 +231,9 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	}
 	
 	public void stepSimulation() {
-        m_Kernel.RunAllAgents(1);
+		// TODO: fix this when the interface is updated
+		m_Kernel.ExecuteCommandLine("run -o 1", "red");
+        //m_Kernel.RunAllAgents(1);
 	}
 	
 	public void stopSimulation() {

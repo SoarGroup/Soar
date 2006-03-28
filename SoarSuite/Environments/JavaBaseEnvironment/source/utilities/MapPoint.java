@@ -36,6 +36,10 @@ public class MapPoint {
 		y += getYIncrement(direction);
 	}
 	
+	public boolean equals(MapPoint p) {
+		return (x == p.x) && (y == p.y);
+	}
+	
 	public int directionTo(MapPoint p) {
 		int direction = 0;
 		if (p.x < x) {
