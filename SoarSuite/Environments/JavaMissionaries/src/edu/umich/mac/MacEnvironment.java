@@ -59,7 +59,7 @@ public class MacEnvironment implements Runnable, Kernel.SystemEventInterface, Ke
         }
         
         agent = kernel.CreateAgent("MAC");
-        boolean load = agent.LoadProductions("mac/mac.soar");
+        boolean load = agent.LoadProductions("mac.soar");
         if (!load || agent.HadError()) {
             throw new IllegalStateException("Error loading productions: "
                     + agent.GetLastErrorDescription());
