@@ -554,13 +554,6 @@ public class FoldingText
 		m_IconBar	= new Canvas(m_Container, SWT.DOUBLE_BUFFERED) ;
 		m_Text      = new Text(m_Container, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY) ;
 		
-		// Explicitly request it to adopt preferred size to make Linux happy
-		m_Text.pack() ;
-		m_Container.pack(true) ;
-		m_Container.layout() ;
-		m_Container.getParent().pack(true) ;
-		m_Container.getParent().layout() ;
-
 		m_DrawingDisabled = false ;
 		
 		GridLayout layout = new GridLayout() ;
@@ -612,6 +605,13 @@ public class FoldingText
 		periodicRepaint(500) ;
 		
 		m_LastTopIndex = m_Text.getTopIndex() ;
+
+		// Explicitly request it to adopt preferred size to make Linux happy
+		m_Text.pack() ;
+		m_Container.pack(true) ;
+		m_Container.layout() ;
+		m_Container.getParent().pack(true) ;
+		m_Container.getParent().layout() ;
 	}
 	
 	private void periodicRepaint(final int delayMillis)
