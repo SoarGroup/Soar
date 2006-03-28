@@ -556,8 +556,11 @@ public class FoldingText
 		
 		// Explicitly request it to adopt preferred size to make Linux happy
 		m_Text.pack() ;
+		m_Container.pack(true) ;
 		m_Container.layout() ;
-		
+		m_Container.getParent().pack(true) ;
+		m_Container.getParent().layout() ;
+
 		m_DrawingDisabled = false ;
 		
 		GridLayout layout = new GridLayout() ;
