@@ -39,8 +39,6 @@ public class TankSoarAgentWorld extends VisualWorld implements PaintListener {
 	
 	public void update(Tank tank) {
 		// update radar using tank
-		Tank.Radar radar = tank.getRadar();
-
 		for(int x = 0; x < Tank.kRadarWidth; ++x){
 			for(int y = 0; y < Tank.kRadarHeight; ++y){
 				if (x == 1 && y == 0) {
@@ -48,26 +46,26 @@ public class TankSoarAgentWorld extends VisualWorld implements PaintListener {
 					continue;
 				}
 				
-				String id = radar.getRadarID(x, y);
+				String id = tank.getRadarID(x, y);
 				if (id == null) {
 					m_Radar[x][y] = kMiniWTF;
 					           
-				} else if (id.equalsIgnoreCase(Tank.kObstacleID)) {
+				} else if (id.equalsIgnoreCase(InputLinkManager.kObstacleID)) {
 					m_Radar[x][y] = kMiniObstacle;
 					
-				} else if (id.equalsIgnoreCase(Tank.kOpenID)) {
+				} else if (id.equalsIgnoreCase(InputLinkManager.kOpenID)) {
 					m_Radar[x][y] = kMiniOpen;
 					
-				} else if (id.equalsIgnoreCase(Tank.kMissilesID)) {
+				} else if (id.equalsIgnoreCase(InputLinkManager.kMissilesID)) {
 					m_Radar[x][y] = kMiniMissiles;
 					
-				} else if (id.equalsIgnoreCase(Tank.kEnergyID)) {
+				} else if (id.equalsIgnoreCase(InputLinkManager.kEnergyID)) {
 					m_Radar[x][y] = kMiniEnergy;
 					
-				} else if (id.equalsIgnoreCase(Tank.kHealthID)) {
+				} else if (id.equalsIgnoreCase(InputLinkManager.kHealthID)) {
 					m_Radar[x][y] = kMiniHealth;
 					
-				} else if (id.equalsIgnoreCase(Tank.kTankID)) {
+				} else if (id.equalsIgnoreCase(InputLinkManager.kTankID)) {
 					m_Radar[x][y] = kMiniTank;
 				}
 			}

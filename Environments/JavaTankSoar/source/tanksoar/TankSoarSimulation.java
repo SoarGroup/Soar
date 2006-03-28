@@ -126,8 +126,10 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
     		return;
     	}
     	
-    	if ((location.x == -1) || (location.y == -1)) {
-    		location = null;
+    	if (location != null) {
+    		if ((location.x == -1) || (location.y == -1)) {
+    			location = null;
+    		}
     	}
     	
 		Agent agent = createAgent(name, productions);
