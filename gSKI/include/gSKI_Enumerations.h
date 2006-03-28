@@ -520,7 +520,7 @@
    *      output link before transfering to the next agent.
    */
    typedef enum {
-      gSKI_INTERLEAVE_SMALLEST_STEP,
+      gSKI_INTERLEAVE_SMALLEST_STEP,        // not used for scheduler, but tested by CLI to set default  
 	  gSKI_INTERLEAVE_ELABORATION_PHASE,
       gSKI_INTERLEAVE_PHASE,
       gSKI_INTERLEAVE_DECISION_CYCLE,
