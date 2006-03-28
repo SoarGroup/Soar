@@ -605,14 +605,6 @@ public class FoldingText
 		periodicRepaint(500) ;
 		
 		m_LastTopIndex = m_Text.getTopIndex() ;
-
-		// Explicitly request it to adopt preferred size to make Linux happy
-		m_Text.pack(true) ;
-		m_IconBar.pack(true) ;
-		m_Container.pack(true) ;
-		m_Container.layout() ;
-		m_Container.getParent().pack(true) ;
-		m_Container.getParent().layout() ;
 	}
 	
 	private void periodicRepaint(final int delayMillis)
