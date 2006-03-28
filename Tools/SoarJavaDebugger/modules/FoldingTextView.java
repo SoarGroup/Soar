@@ -302,7 +302,13 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { m_FoldingText.setExclusionFilter(TraceType.kAllExceptTopLevel, true) ; updateButtonState() ; } } ) ;
 
 		updateButtonState() ;
-	}
+
+		// Attempted patches for Linux
+		int delayMillis = 5000 ;
+		parent.getDisplay().timerExec(delayMillis, new Runnable() { public void run() { System.out.println("Relaying out windows") ; m_FoldingText.getTextWindow().pack() ; m_FoldingText.getWindow().layout(true, true) ; } } ) ;
+
+		parent.getDisplay().timerExec(delayMillis*2, new Runnable() { public void run() { System.out.println("Relaying out windows 2") ; m_FoldingText.getTextWindow().pack() ; m_FoldingText.getWindow().getParent().getParent().layout(true, true) ; } } ) ;
+}
 	
 	protected void changeFilter(Widget widget, long type)
 	{
