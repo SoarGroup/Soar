@@ -293,6 +293,15 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 		getDisplayControl().addListener(SWT.Traverse, m_Tab) ;
 				
 		layoutControls() ;
+		
+		// Explicitly request it to adopt preferred size to make Linux happy
+		getDisplayControl().pack(true) ;
+		m_Container.pack(true) ;
+		m_Container.layout() ;
+		m_Container.getParent().pack(true) ;
+		m_Container.getParent().layout() ;
+		parent.pack(true) ;
+		parent.layout() ;
 	}
 	
 	// If the user presses TAB in the display control (text window) set the focus to the combo box directly
