@@ -600,6 +600,26 @@ public:
 	char const* RunSelfForever() ;
 
 	/*************************************************************
+	* @brief   Run Soar until either output is generated or
+	*		   the maximum number of decisions is reached.
+	*
+	* This function also calls "ClearOutputLinkChanges" so methods
+	* like "IsJustAdded" will refer to the changes that occur as a result of
+	* this run.
+	*
+	* This function also calls "Commit" to make sure any pending input
+	* link changes have been sent to Soar.
+	*
+	* We don't generally want Soar to just run until it generates
+	* output without any limit as an error in the AI logic might cause
+	* it to never return control to the environment, so there is a maximum
+	* decision count (currently 15) and if the agent fails to produce output
+	* before then this command returns.  (This value can be changed with the
+	* max-nil-output-cycles command).
+	*************************************************************/
+	char const* RunSelfTilOutput() ;
+
+	/*************************************************************
 	* @brief Returns true if this agent was part of the last set
 	*		 of agents that was run.
 	*************************************************************/
@@ -625,36 +645,6 @@ public:
 	*
 	*************************************************************/
 	char const*	StopSelf() ;
-
-	/*************************************************************
-	* @brief   Controls whether Soar will break when it next generates
-	*		   output while running.
-	*
-	*		   Now deprecated.  Use RunSelfTilOutput instead.
-	*
-	* @param state	If true, causes Soar to break on output.  If false, Soar will not break.
-	*************************************************************/
-	// bool SetStopSelfOnOutput(bool state) ;
-
-	/*************************************************************
-	* @brief   Run Soar until either output is generated or
-	*		   the maximum number of decisions is reached.
-	*
-	* This function also calls "ClearOutputLinkChanges" so methods
-	* like "IsJustAdded" will refer to the changes that occur as a result of
-	* this run.
-	*
-	* This function also calls "Commit" to make sure any pending input
-	* link changes have been sent to Soar.
-	*
-	* We don't generally want Soar to just run until it generates
-	* output without any limit as an error in the AI logic might cause
-	* it to never return control to the environment, so there is a maximum
-	* decision count (currently 15) and if the agent fails to produce output
-	* before then this command returns.  (This value can be changed with the
-	* max-nil-output-cycles command).
-	*************************************************************/
-	char const* RunSelfTilOutput() ;
 
 	/*************************************************************
 	* @brief Resend the complete input link to the kernel
