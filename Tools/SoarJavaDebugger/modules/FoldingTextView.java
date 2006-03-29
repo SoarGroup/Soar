@@ -314,7 +314,7 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 					// This is to fix a problem on Linux Motif version of SWT where the window fails to resize until manually adjusted.
 					// The reason to listen for paint is that we want to wait until the control is actually on screen before doing this resize.
 					// Then we submit a request to layout the window a little while later (maybe we could do it immediately, I'm not sure)
-					int delayMillis = 500 ;
+					int delayMillis = 2000 ;
 					m_FoldingText.getWindow().getDisplay().timerExec(delayMillis, new Runnable() { public void run() { System.out.println("Relaying out windows") ; m_FoldingText.getTextWindow().pack() ; m_FoldingText.getWindow().layout(true, true) ; } } ) ;
 					
 					// Remove this listener, so we're only painted once
