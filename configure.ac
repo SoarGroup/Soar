@@ -420,6 +420,8 @@ AC_OUTPUT([
 	Tools/LoggerJava/Makefile
 	Tools/QuickLink/Makefile
 	Tools/QuickLink/src/Makefile
+	Tools/SoarTextIO/Makefile
+	Tools/SoarTextIO/src/Makefile
 	Tools/SoarJavaDebugger/Makefile
 	Tools/TOHSML/Makefile
 	Tools/TestCLI/Makefile
