@@ -4,6 +4,6 @@ xcopy /y source\* bin
 mkdir bin\images
 xcopy /y /s source\images\* bin\images
 
-jar cfm ..\..\SoarLibrary\bin\JavaTankSoar.jar JarManifest -C bin .
+jar cfm JavaTankSoar.jar JarManifest -C bin .
 
 IF NOT "%1"=="--nopause" pause
