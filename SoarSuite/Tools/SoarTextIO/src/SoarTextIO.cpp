@@ -27,7 +27,7 @@
 #include <direct.h>
 #else
 #include <time.h>
-#include <ncurses.h>
+//#include <ncurses.h>
 #include <pthread.h>
 
 #endif //_WIN32
@@ -52,8 +52,8 @@ SoarTextIO::SoarTextIO()
 	RemoteConnect();
 	cout << endl;	
 #ifndef _WIN32
-	initscr(); // set up curses
-	scrollok(stdscr, true);
+//	initscr(); // set up curses
+//	scrollok(stdscr, true);
 #endif
 
 
@@ -64,7 +64,7 @@ SoarTextIO::~SoarTextIO()
 	pKernel->Shutdown();
 	delete pKernel;
 #ifndef _WIN32
-	endwin();
+//	endwin();
 #endif
 }
 
@@ -265,7 +265,10 @@ SoarTextIO::WriteCycle(istream* getFrom)
 	while(!printNow) { usleep(1); }
 #endif // _WIN32
 	if(*getFrom == cin)
-		cout << endl << endl << endl << endl << "> ";
+	{
+		cout << endl << endl << endl << endl << endl << "> ";
+		print_position = 5;
+	}
 	if(ShouldPrintNow)
 	{
 		cout << "READ FROM FILE: ";
@@ -484,6 +487,7 @@ SoarTextIO::GetNextLine()
 	else
 		CloseFile();
 	cout << endl << endl << endl << endl << endl << "> ";
+	print_position = 5;
 	if(forMem != "")
 	{
 		cout << "READ FROM FILE: ";
@@ -531,8 +535,9 @@ SoarTextIO::PrintOutput()
 	if(toPrint.size()>0)
 	{
 		printNow = false;
-		char buffer[1000];
+		
 #ifdef _WIN32
+		char buffer[1000];
 		CONSOLE_SCREEN_BUFFER_INFO info;
 		HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 		if(!GetConsoleScreenBufferInfo( hStdout , &info ))
@@ -548,26 +553,49 @@ SoarTextIO::PrintOutput()
 		place.Y = info.dwCursorPosition.Y;
 		DWORD dummy;
 		ReadConsoleOutputCharacter( hStdout , buffer /* holds what is read */ , 100 , place /* place to start reading */, &dummy );
-#else
-		int init_row = 0, init_col = 0;
-		// get the start position
-		getyx(stdscr, init_row, init_col);
-		// move the cursor 3 lines up
-		move(init_row - 3, init_col); 
-		cout << ": ";
-		cout << toPrint << endl << endl;
 
-		// go back to where we started
-		move(init_row, init_col);
-		getstr(buffer);
-		
-#endif // _WIN32
 		string holder = buffer;
 		cout << "                                                                              " << endl ;
 		cout << "                                                                              " << endl ;
 		cout << "                                                                              " << endl ;
 
 		cout << GetRelevant( holder );
+#else
+		system("tput sc"); // save the cursor position
+		if(print_position == 5)
+			system("tput cuu 5"); // move the cursor 3 lines up
+		else if(print_position == 4)
+			system("tput cuu 4"); // move the cursor up 2 lines
+		else if(print_position == 3) // move the cursor up one line
+			system("tput cuu 3");
+		else if(print_position == 2)
+			system("tput cuu 2");
+		else if(print_position == 1)
+			system("tput cuu 1");
+		
+		system("tput hpa 0"); // move the cursor to the start of the row
+		if(print_position == 0) // now we have to erase stuff in our way
+		{
+			system("tput el"); // clear to the end of the line
+			system("tput hpa 0"); // move the cursor back to the start
+		}
+
+		cout << ": ";
+		cout << toPrint << endl;
+
+		if(print_position != 0)
+		{
+			system("tput rc"); // return the cursor to its saved situation
+			print_position--;
+		}
+		else
+		{
+			cout << endl << endl << endl << endl << endl << "> ";
+			cout.flush();
+			print_position = 5;
+		}
+#endif // _WIN32
+		
 
 		printNow = true;
 	}
