@@ -13,6 +13,9 @@ package menu;
 
 import org.eclipse.swt.widgets.Menu;
 
+import sml.ClientAnalyzedXML;
+import sml.sml_Names;
+
 import debugger.MainFrame;
 import doc.Document;
 
@@ -21,7 +24,7 @@ import doc.Document;
  * The debug level (watch) menu
  * 
  ************************************************************************/
-public class DebugLevelMenu
+public class DebugLevelMenu implements MenuUpdater
 {
 	private BaseMenu  m_Menu ;
 
@@ -67,9 +70,45 @@ public class DebugLevelMenu
 		return menu ;
 	}
 	
+	public void updateItems()
+	{
+		// Update the state of the watch items to match the current values within the agent
+		sml.ClientAnalyzedXML response = new ClientAnalyzedXML() ;
+		boolean ok = m_Frame.executeCommandXML("watch", response) ;
+		
+		if (ok)
+		{
+			//System.out.println(response.GenerateXMLString(true)) ;
+			m_WatchDecisions.setChecked(response.GetArgBool(sml_Names.getKParamWatchDecisions(), true), false) ;
+			m_WatchPhases.setChecked(response.GetArgBool(sml_Names.getKParamWatchPhases(), false), false) ;
+
+			m_WatchUserProductions.setChecked(response.GetArgBool(sml_Names.getKParamWatchProductionUser(), false), false) ;
+			m_WatchChunks.setChecked(response.GetArgBool(sml_Names.getKParamWatchProductionChunks(), false), false) ;
+			m_WatchJustifications.setChecked(response.GetArgBool(sml_Names.getKParamWatchProductionJustifications(), false), false) ;
+
+			m_WatchAllProductions.setChecked(m_WatchUserProductions.isChecked() && m_WatchChunks.isChecked() && m_WatchJustifications.isChecked(), false) ;
+			m_WatchNoProductions.setChecked(!m_WatchUserProductions.isChecked() && !m_WatchChunks.isChecked() && !m_WatchJustifications.isChecked(), false) ;
+			
+			m_WatchPreferences.setChecked(response.GetArgBool(sml_Names.getKParamWatchPreferences(), false), false) ;
+			m_WatchWmes.setChecked(response.GetArgBool(sml_Names.getKParamWatchWorkingMemoryChanges(), false), false) ;
+
+			int wmeDetail = response.GetArgInt(sml_Names.getKParamWatchWMEDetail(), 0) ;
+			m_WmesNone.setChecked(wmeDetail == 0, false) ;
+			m_WmesTimeTags.setChecked(wmeDetail == 1, false) ;
+			m_WmesFull.setChecked(wmeDetail == 2, false) ;
+			
+			int learnDetail = response.GetArgInt(sml_Names.getKParamWatchLearning(), 0) ;
+			m_WatchLearnPrint.setChecked(learnDetail > 0, false) ;
+			
+			m_WatchBacktracing.setChecked(response.GetArgBool(sml_Names.getKParamWatchBacktracing(), false), false) ;
+		}
+		
+		response.delete() ;
+	}
+	
 	private BaseMenu makeMenu(Menu parent, String title)
 	{
-		BaseMenu menu = new BaseMenu(parent, title) ;
+		BaseMenu menu = new BaseMenu(parent, title, this) ;
 		
 		menu.add(m_WatchStatus) ;
 		menu.addSeparator() ;

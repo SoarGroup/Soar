@@ -31,7 +31,7 @@ public class BaseMenu
 	private Menu m_Menu ;
 	private MenuItem m_Header ;
 
-	public BaseMenu(Menu bar, String title)
+	public BaseMenu(Menu bar, String title, final MenuUpdater updater)
 	{
 		m_Header = new MenuItem(bar, SWT.CASCADE) ;
 		m_Header.setText(title) ;
@@ -39,12 +39,14 @@ public class BaseMenu
 		m_Menu = new Menu(bar.getShell(), SWT.DROP_DOWN) ;
 		m_Header.setMenu(m_Menu) ;
 				
-		// This uses the rather less flexible Swing style model to enable/disable items.
-		// We should probably move that logic into the action objects as a method and have
-		// each report whether it should be enabled or not based on the current state of the system.
-		// For that we need a piece of code to call which returns true/false for each menu item's enable state.
 		m_Header.addArmListener(new ArmListener() {
 			public void widgetArmed(ArmEvent e) {
+				
+				// Give the menu a chance to change the state of the action objects.
+				// We could extend this to be done on each action object in turn as well.
+				if (updater != null)
+					updater.updateItems() ;
+				
 				for (int i = 0 ; i < m_Menu.getItemCount() ; i++)
 				{
 					MenuItem item = m_Menu.getItem(i) ;
@@ -55,6 +57,11 @@ public class BaseMenu
 				}
 			}
 		} );
+	}
+
+	public BaseMenu(Menu bar, String title)
+	{
+		this(bar, title, null) ;
 	}
 	
 	public Menu getMenu() { return m_Menu ; }
