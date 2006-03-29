@@ -267,7 +267,9 @@ SoarTextIO::WriteCycle(istream* getFrom)
 	if(*getFrom == cin)
 	{
 		cout << endl << endl << endl << endl << endl << "> ";
+#ifndef _WIN32 
 		print_position = 5;
+#endif
 	}
 	if(ShouldPrintNow)
 	{
@@ -487,7 +489,10 @@ SoarTextIO::GetNextLine()
 	else
 		CloseFile();
 	cout << endl << endl << endl << endl << endl << "> ";
+#ifndef _WIN32
 	print_position = 5;
+#endif
+	
 	if(forMem != "")
 	{
 		cout << "READ FROM FILE: ";
