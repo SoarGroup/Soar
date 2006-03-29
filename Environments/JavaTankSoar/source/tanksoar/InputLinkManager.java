@@ -109,8 +109,8 @@ public class InputLinkManager {
 
 	private Logger m_Logger = Logger.logger;
 	
-	private Identifier[][] cellIDs = new Identifier[Tank.kRadarWidth][Tank.kRadarHeight];
-	private StringElement[][] tankColors = new StringElement[Tank.kRadarWidth][Tank.kRadarHeight];
+	private Identifier[][] radarCellIDs = new Identifier[Tank.kRadarWidth][Tank.kRadarHeight];
+	private StringElement[][] radarColors = new StringElement[Tank.kRadarWidth][Tank.kRadarHeight];
 	
 	private Agent m_Agent;
 	private Tank m_Tank;
@@ -153,12 +153,12 @@ public class InputLinkManager {
 		m_Agent.DestroyWME(m_yWME);
 		m_Agent.Commit();
 
-		clearRadar(false);
+		clearRadar();
 
 		m_Reset = true;
 	}
 	
-	public void update() {
+	void update() {
 		MapPoint location = m_Tank.getLocation();
 		TankSoarCell cell = m_World.getCell(location);
 		
@@ -227,11 +227,19 @@ public class InputLinkManager {
 			m_BlockedBackwardWME = m_Agent.CreateStringWME(m_BlockedWME, kBackwardID, blockedBackward);
 			m_BlockedLeftWME = m_Agent.CreateStringWME(m_BlockedWME, kLeftID, blockedLeft);
 			m_BlockedRightWME = m_Agent.CreateStringWME(m_BlockedWME, kRightID, blockedRight);				
-		} else {		
-			m_Agent.Update(m_BlockedForwardWME, blockedForward);
-			m_Agent.Update(m_BlockedBackwardWME, blockedBackward);
-			m_Agent.Update(m_BlockedLeftWME, blockedLeft);
-			m_Agent.Update(m_BlockedRightWME, blockedRight);
+		} else {
+			if (m_Tank.recentlyMoved() || !m_BlockedForwardWME.GetValue().equalsIgnoreCase(blockedForward)) {
+				m_Agent.Update(m_BlockedForwardWME, blockedForward);
+			}
+			if (m_Tank.recentlyMoved() || !m_BlockedBackwardWME.GetValue().equalsIgnoreCase(blockedBackward)) {
+				m_Agent.Update(m_BlockedBackwardWME, blockedBackward);
+			}
+			if (m_Tank.recentlyMoved() || !m_BlockedLeftWME.GetValue().equalsIgnoreCase(blockedLeft)) {
+				m_Agent.Update(m_BlockedLeftWME, blockedLeft);
+			}
+			if (m_Tank.recentlyMoved() || !m_BlockedRightWME.GetValue().equalsIgnoreCase(blockedRight)) {
+				m_Agent.Update(m_BlockedRightWME, blockedRight);
+			}
 		}
 		
 		int incoming = m_World.getIncomingByLocation(location);
@@ -242,10 +250,10 @@ public class InputLinkManager {
 		
 		if (m_Reset) {
 			m_IncomingWME = m_Agent.CreateIdWME(m_InputLink, kIncomingID);
-			m_IncomingBackwardWME = m_Agent.CreateStringWME(m_IncomingWME, kBackwardID, kNo);
-			m_IncomingForwardWME = m_Agent.CreateStringWME(m_IncomingWME, kForwardID, kNo);
-			m_IncomingLeftWME = m_Agent.CreateStringWME(m_IncomingWME, kLeftID, kNo);
-			m_IncomingRightWME = m_Agent.CreateStringWME(m_IncomingWME, kRightID, kNo);
+			m_IncomingBackwardWME = m_Agent.CreateStringWME(m_IncomingWME, kBackwardID, incomingForward);
+			m_IncomingForwardWME = m_Agent.CreateStringWME(m_IncomingWME, kForwardID, incomingBackward);
+			m_IncomingLeftWME = m_Agent.CreateStringWME(m_IncomingWME, kLeftID, incomingLeft);
+			m_IncomingRightWME = m_Agent.CreateStringWME(m_IncomingWME, kRightID, incomingRight);
 			
 		} else {
 			if (!m_IncomingForwardWME.GetValue().equalsIgnoreCase(incomingForward)) {
@@ -290,11 +298,6 @@ public class InputLinkManager {
 		// Smell
 		Tank closestTank = m_World.getStinkyTankNear(m_Tank);
 		String closestTankColor = (closestTank == null) ? kNone : closestTank.getColor();
-		if (closestTank == null) {
-			m_Logger.log(m_Tank.getColor() + ": no close tank.");
-		} else {
-			m_Logger.log(m_Tank.getColor() + ": closest tank: " + closestTank.getColor() + " at " + location.getManhattanDistanceTo(closestTank.getLocation()));
-		}
 		int distance = (closestTank == null) ? 0 : location.getManhattanDistanceTo(closestTank.getLocation());
 		if (m_Reset) {
 			m_SmellWME = m_Agent.CreateIdWME(m_InputLink, kSmellID);
@@ -388,7 +391,7 @@ public class InputLinkManager {
 				if (m_RadarWME != null) {
 					m_Agent.DestroyWME(m_RadarWME);
 					m_RadarWME = null;
-					clearRadar(false);
+					clearRadar();
 				}
 			}
 		}
@@ -409,12 +412,24 @@ public class InputLinkManager {
 			}
 		}
 		
+		// Random
+		float random = m_Random.nextFloat();
+		if (m_Reset) {
+			m_RandomWME = m_Agent.CreateFloatWME(m_InputLink, kRandomID, random);
+		} else {
+			m_Agent.Update(m_RandomWME, random);
+		}
+		
+	}
+	
+	void updateRWaves() {
 		// RWaves
 		int rwaves = m_Tank.getRWaves();
 		String rwavesForward = (rwaves & m_Tank.forward()) > 0 ? kYes : kNo;
 		String rwavesBackward = (rwaves & m_Tank.backward()) > 0 ? kYes : kNo;;
 		String rwavesLeft = (rwaves & m_Tank.left()) > 0 ? kYes : kNo;
 		String rwavesRight = (rwaves & m_Tank.right()) > 0 ? kYes : kNo;
+		
 		if (m_Reset) {
 			m_RWavesWME = m_Agent.CreateIdWME(m_InputLink, kRWavesID);
 			m_RWavesForwardWME = m_Agent.CreateStringWME(m_RWavesWME, kForwardID, rwavesBackward);
@@ -437,37 +452,22 @@ public class InputLinkManager {
 			
 		}	
 		
-		// Random
-		float random = m_Random.nextFloat();
-		if (m_Reset) {
-			m_RandomWME = m_Agent.CreateFloatWME(m_InputLink, kRandomID, random);
-		} else {
-			m_Agent.Update(m_RandomWME, random);
-		}
-		
 		m_Reset = false;
 		m_Agent.Commit();
 	}
 
-	private void clearRadar(boolean destroyWMEs) {
+	private void clearRadar() {
 		for (int i = 0; i < Tank.kRadarWidth; ++i) {
 			for (int j = 0; j < Tank.kRadarHeight; ++j) {
-				if (cellIDs[i][j] != null) {
-					if (destroyWMEs) {
-						m_Agent.DestroyWME(cellIDs[i][j]);
-					}
-					cellIDs[i][j] = null;
-				}
-				tankColors[i][j] = null;
+				radarCellIDs[i][j] = null;
+				radarColors[i][j] = null;
 			}
 		}
 	}
 	
 	private int scan(int setting) {
 		
-		// TODO: should only blink things that change!!!
-		clearRadar(true);
-		
+		// TODO: should only blink things that change!!!		
 		MapPoint location = new MapPoint(m_Tank.getLocation());
 		
 		int distance = 0;
@@ -518,15 +518,38 @@ public class InputLinkManager {
 			TankSoarCell cell = m_World.getCell(location, relativeDirection);
 			Tank tank = cell.getTank();
 			String id = getCellID(cell);
-			
-			cellIDs[position][distance] = m_Agent.CreateIdWME(m_RadarWME, id);
-			
-			m_Agent.CreateIntWME(cellIDs[position][distance], kDistanceID, distance);
-			m_Agent.CreateStringWME(cellIDs[position][distance], kPositionID, positionID);
+			boolean tankID = id.equalsIgnoreCase(kTankID);
+			if (tankID && tank == null) {
+				m_Logger.log("This should never happen.");
+			}
+
+			if (radarCellIDs[position][distance] == null) {
+				radarCellIDs[position][distance] = m_Agent.CreateIdWME(m_RadarWME, id);
+				m_Agent.CreateIntWME(radarCellIDs[position][distance], kDistanceID, distance);
+				m_Agent.CreateStringWME(radarCellIDs[position][distance], kPositionID, positionID);
+				if (tankID) {
+					tank.setRWaves(m_Tank.backward());
+					radarColors[position][distance] = m_Agent.CreateStringWME(radarCellIDs[position][distance], kColorID, tank.getColor());
+				}
+			} else {
+				boolean idChanged = !radarCellIDs[position][distance].GetAttribute().equalsIgnoreCase(id);
+				boolean tankColorChanged = tankID && (radarColors[position][distance] != null) && (!radarColors[position][distance].GetValue().equalsIgnoreCase(tank.getColor()));
+				
+				if (m_Tank.recentlyMoved() || idChanged || tankColorChanged) {
+					m_Agent.DestroyWME(radarCellIDs[position][distance]);
+					radarCellIDs[position][distance] = m_Agent.CreateIdWME(m_RadarWME, id);
+					m_Agent.CreateIntWME(radarCellIDs[position][distance], kDistanceID, distance);
+					m_Agent.CreateStringWME(radarCellIDs[position][distance], kPositionID, positionID);
+					if (tankID) {
+						tank.setRWaves(m_Tank.backward());
+						radarColors[position][distance] = m_Agent.CreateStringWME(radarCellIDs[position][distance], kColorID, tank.getColor());
+					}		
+				}
+			}
 			
 			if (id.equalsIgnoreCase(kTankID)) {
 				tank.setRWaves(m_Tank.backward());
-				tankColors[position][distance] = m_Agent.CreateStringWME(cellIDs[position][distance], kColorID, tank.getColor());
+				radarColors[position][distance] = m_Agent.CreateStringWME(radarCellIDs[position][distance], kColorID, tank.getColor());
 			}		
 
 			if ((position == kRadarCenter) && cell.isBlocked()) {
@@ -556,10 +579,10 @@ public class InputLinkManager {
 	}
 	
 	public String getRadarID(int x, int y) {
-		if (cellIDs[x][y] == null) {
+		if (radarCellIDs[x][y] == null) {
 			return null;
 		}
-		return cellIDs[x][y].GetAttribute();
+		return radarCellIDs[x][y].GetAttribute();
 	}
 }
 
