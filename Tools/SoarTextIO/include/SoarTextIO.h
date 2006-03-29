@@ -57,6 +57,7 @@ public:
 	static void RunForever( void* info );
 #else
 	pthread_t newThread;
+	int print_position;
 #endif
 	void runner();
 
