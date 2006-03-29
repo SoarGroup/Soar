@@ -32,6 +32,7 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 	private MapPoint m_AgentLocation;
 	private Random m_Random;
 	private Image[][] m_Background;
+	RelativeDirections m_RD = new RelativeDirections();
 	
 	public TankSoarVisualWorld(Composite parent, int style, TankSoarSimulation simulation) {
 		super(parent, style, simulation, kCellSize);
@@ -134,34 +135,99 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 					continue;
 				}
 				
-				// Check for interesting foreground, otherwise draw background
-				if (cell.containsTank()) {
-					Tank tank = cell.getTank();
-					Image tankImage = (Image)kTanks.get(new Integer(tank.getFacingInt()));
-					if (tankImage == null) {
-						tankImage = kWTF;
-					}
-					gc.drawImage(tankImage, x*m_CellSize, y*m_CellSize);
-					gc.setBackground((Color)m_EntityColors.get(tank));
-					gc.fillOval(m_CellSize*x + m_CellSize/2 - kDotSize/2, m_CellSize*y + m_CellSize/2 - kDotSize/2, kDotSize, kDotSize);
-					gc.setBackground(WindowManager.widget_background);
+				gc.drawImage(m_Background[x][y], x*m_CellSize, y*m_CellSize);
+				if (cell.isExplosion()) {
+					gc.drawImage(kExplosion, x*m_CellSize, y*m_CellSize);
 					
+				} else if (cell.containsTank()) {
+					if (cell.isEnergyRecharger()) {
+						gc.drawImage(kBlueRecharge, x*m_CellSize, y*m_CellSize);
+						
+					} else if (cell.isHealthRecharger()) {
+						gc.drawImage(kRedRecharge, x*m_CellSize, y*m_CellSize);
+						
+					} else {
+						Tank tank = cell.getTank();
+						Image tankImage = (Image)kTanks.get(new Integer(tank.getFacingInt()));
+						if (tankImage == null) {
+							tankImage = kWTF;
+						}
+						gc.drawImage(tankImage, x*m_CellSize, y*m_CellSize);
+						gc.setBackground((Color)m_EntityColors.get(tank));
+						gc.fillOval(m_CellSize*x + m_CellSize/2 - kDotSize/2, m_CellSize*y + m_CellSize/2 - kDotSize/2, kDotSize, kDotSize);
+												
+						if (tank.getShieldStatus()) {
+							
+					        gc.setForeground((Color)m_EntityColors.get(tank));
+							gc.setLineWidth(3);
+							gc.drawOval(m_CellSize*x+2, m_CellSize*y+2, m_CellSize-5, m_CellSize-5);
+					        gc.setForeground(WindowManager.black);
+							gc.setLineWidth(1);
+						}
+						
+						gc.setBackground(WindowManager.widget_background);
+					}
+						
 				} else if (cell.containsMissilePack()) {
 					gc.drawImage(kMissiles, x*m_CellSize, y*m_CellSize);
 					
-				} else {
-					gc.drawImage(m_Background[x][y], x*m_CellSize, y*m_CellSize);
 				}
 				
 				// Draw flying missiles regardless
-				MapPoint[] missiles = m_World.getMissileLocations();
+				Missile[] missiles = m_World.getMissiles();
 				if (missiles != null) {
 					for (int i = 0; i < missiles.length; ++i) {
-						gc.drawImage(kMissile, (missiles[i].x * m_CellSize) + 9, (missiles[i].y * m_CellSize) + 9);
+						gc.drawImage(kMissile, (missiles[i].getCurrentLocation().x * m_CellSize) + 9, (missiles[i].getCurrentLocation().y * m_CellSize) + 9);
+					}
+				}
+				
+				// Draw radar trails
+				Tank[] tanks = m_World.getTanks();
+				if (tanks != null) {
+					for (int i = 0; i < tanks.length; ++i) {
+						if (tanks[i].getRadarStatus()) {
+							int setting = tanks[i].getRadarDistance();
+							m_RD.calculate(tanks[i].getFacingInt());
+							MapPoint point = new MapPoint(tanks[i].getLocation());
+							point.travel(m_RD.forward);
+							point.travel(m_RD.left);
+							setting -= 1;
+							//gc.setLineWidth(2);
+							int width = 0;
+							int height = 0;
+							int start = 0;
+							switch (m_RD.forward) {
+							case WorldEntity.kNorthInt:
+								width = m_CellSize*3;
+								height = m_CellSize;
+								start = 0;
+								break;
+							case WorldEntity.kSouthInt:
+								width = m_CellSize*3;
+								height = m_CellSize;
+								start = 180;
+								break;
+							case WorldEntity.kEastInt:
+								width = m_CellSize;
+								height = m_CellSize*3;
+								start = -90;
+								break;
+							case WorldEntity.kWestInt:
+								width = m_CellSize;
+								height = m_CellSize*3;
+								start = 90;
+								break;
+							}
+							for (int j = 0; j < setting; ++j) {
+								//gc.drawArc(point.x*m_CellSize,point.y*m_CellSize,width,height, -90,180);
+								point.travel(m_RD.forward);
+							}
+						}
 					}
 				}
 			}
 		}
+		
 		m_Painted = true;
 	}
 }

@@ -395,6 +395,7 @@ public class InputLinkManager {
 		
 		int radarSetting = m_Tank.getRadarSetting();
 		int radarDistance = m_Tank.getRadarStatus() ? scan(radarSetting) : 0;
+		m_Tank.setRadarDistance(radarDistance);
 		
 		if (m_Reset) {
 			m_RadarDistanceWME = m_Agent.CreateIntWME(m_InputLink, kRadarDistanceID, radarDistance);
