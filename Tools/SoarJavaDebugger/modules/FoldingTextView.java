@@ -1095,20 +1095,18 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 	*************************************************************************/
 	public void loadFromXML(MainFrame frame, doc.Document doc, Pane parent, general.JavaElementXML element) throws Exception
 	{
-		m_IndentSize = element.getAttributeIntThrows("indent") ;
-		m_ExpandTracePersistent = element.getAttributeBooleanDefault("auto-expand", false) ;
-		m_LockToSoar = element.getAttributeBooleanDefault("lock-to-soar", false) ;
-
 		// On Linux the SWT implementations are so slow Soar can get far to far ahead
 		// of the debugger to the point where it's essentially impossible to stop soar
 		// because it's 1000's of decisions ahead of the debugger.
 		// So until the Linux SWT performance improves, we'll turn on lock-to-soar by
 		// default on Linux and do this at the start of each session.
-		// (If we want to allow the user to turn this off persistently we could just
-		//  make it the default in the loading code above but that seems like a bad idea
-		//  given that we don't think this is a valid configuration on Linux)
-		if (OSName.isNotWindowsAndNotMac())
-			m_LockToSoar = true ;
+		boolean lockDefault = false ;
+		if (!OSName.isWindows())
+			lockDefault = true ;
+
+		m_IndentSize = element.getAttributeIntThrows("indent") ;
+		m_ExpandTracePersistent = element.getAttributeBooleanDefault("auto-expand", false) ;		
+		m_LockToSoar = element.getAttributeBooleanDefault("lock-to-soar", lockDefault) ;
 		
 		boolean filtering = element.getAttributeBooleanDefault("filtering", true) ;
 		long filter = element.getAttributeLongDefault("filter", 0) ;
