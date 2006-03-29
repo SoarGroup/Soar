@@ -220,7 +220,7 @@ MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 		SoarTextIO* STIO = (SoarTextIO*)pUserData;
 		if(STIO->LastSent.size() > 0)
 		{
-			STIO->pAgent->DestroyWME(STIO->LastSent[0]->holder);
+			//STIO->pAgent->DestroyWME(STIO->LastSent[0]->holder);
 			STIO->LastSent.resize(0);
 		}
 	}
