@@ -168,7 +168,9 @@ public class Tank  extends WorldEntity {
 					m_LastMove.moveDirection = m_RD.left;
 				} else if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kRightID)) {
 					m_LastMove.moveDirection = m_RD.right;
-				} 
+				} else {
+					m_Logger.log("Assert");
+				}
 				
 			} else if (commandName.equalsIgnoreCase(kFireID)) {
 		 		if (m_Missiles > 0) {
@@ -214,6 +216,8 @@ public class Tank  extends WorldEntity {
 			}
 			commandId.AddStatusComplete();
 		}
+		
+    	m_Agent.ClearOutputLinkChanges();	
 		
 		// Do not allow a move if we rotated.
 		if (m_LastMove.rotate) {
@@ -345,6 +349,10 @@ public class Tank  extends WorldEntity {
 		}
 	
 		m_ILM.update();
+	}
+	
+	void update2() {
+		m_ILM.updateRWaves();		
 	}
 	
 	int forward() {

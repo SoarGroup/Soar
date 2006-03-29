@@ -292,6 +292,10 @@ public class TankSoarWorld extends World implements WorldManager {
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			m_Tanks[i].update(this);
 		}
+		// Second phase needed for rwaves
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			m_Tanks[i].update2();
+		}
 		// Reset and ressurect dead tanks
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].getHealth() <= 0) {
