@@ -303,13 +303,26 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { m_FoldingText.setExclusionFilter(TraceType.kAllExceptTopLevel, true) ; updateButtonState() ; } } ) ;
 
 		updateButtonState() ;
-
-		// Attempted patches for Linux
-		int delayMillis = 5000 ;
-		parent.getDisplay().timerExec(delayMillis, new Runnable() { public void run() { System.out.println("Relaying out windows") ; m_FoldingText.getTextWindow().pack() ; m_FoldingText.getWindow().layout(true, true) ; } } ) ;
-
-		parent.getDisplay().timerExec(delayMillis*2, new Runnable() { public void run() { System.out.println("Relaying out windows 2") ; m_FoldingText.getTextWindow().pack() ; m_FoldingText.getWindow().getParent().getParent().layout(true, true) ; } } ) ;
-}
+		
+		// Patch for Linux
+		if (!OSName.isNotWindowsAndNotMac())
+		{
+			m_FoldingText.getTextWindow().addPaintListener(new PaintListener() {
+				public void paintControl(PaintEvent e)
+				{
+					// First time we are asked to paint, trigger a relaying out of the window.
+					// This is to fix a problem on Linux Motif version of SWT where the window fails to resize until manually adjusted.
+					// The reason to listen for paint is that we want to wait until the control is actually on screen before doing this resize.
+					// Then we submit a request to layout the window a little while later (maybe we could do it immediately, I'm not sure)
+					int delayMillis = 500 ;
+					m_FoldingText.getWindow().getDisplay().timerExec(delayMillis, new Runnable() { public void run() { System.out.println("Relaying out windows") ; m_FoldingText.getTextWindow().pack() ; m_FoldingText.getWindow().layout(true, true) ; } } ) ;
+					
+					// Remove this listener, so we're only painted once
+					m_FoldingText.getTextWindow().removePaintListener(this) ;
+				}
+			}) ;
+		}
+	}
 	
 	protected void changeFilter(Widget widget, long type)
 	{
