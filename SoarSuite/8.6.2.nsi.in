@@ -68,7 +68,7 @@ Section "Core Soar Components" Section1
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start TankSoar (Java).lnk" "$INSTDIR/SoarLibrary/bin/JavaTankSoar.jar" "" "$INSTDIR/Resources/Icons/tanksoar.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Eaters (Java).lnk" "$INSTDIR/SoarLibrary/bin/JavaEaters.jar" "" "$INSTDIR/Resources/Icons/eaters.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start QuickLink.lnk" "$INSTDIR/SoarLibrary/bin/QuickLink.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start SoarTextIO.lnk" "$INSTDIR/SoarLibrary/bin/SoarTextIO.jar" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start SoarTextIO.lnk" "$INSTDIR/SoarLibrary/bin/SoarTextIO.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestClientSML.lnk" "$INSTDIR/SoarLibrary/bin/TestClientSML.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestCommandLineInterface.lnk" "$INSTDIR/SoarLibrary/bin/TestCommandLineInterface.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestConnectionSML.lnk" "$INSTDIR/SoarLibrary/bin/TestConnectionSML.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
