@@ -1,7 +1,5 @@
 package tanksoar;
 
-import java.util.*;
-
 import simulation.*;
 import utilities.*;
 import sml.*;
@@ -71,7 +69,7 @@ public class Tank  extends WorldEntity {
 	private InputLinkManager m_ILM;
 	private MoveInfo m_LastMove;
 	private int m_RWaves;
-	private boolean m_Hit;
+	private Tank m_HitByTank;
 	private boolean m_Collision;
 	private int m_Missiles;
 	private boolean m_ShieldStatus;
@@ -79,6 +77,7 @@ public class Tank  extends WorldEntity {
 	private int m_Energy;
 	private int m_RadarPower;
 	private boolean m_RadarSwitch;
+	private int m_RadarDistance;
 	
 	public Tank(Agent agent, String productions, String color, MapPoint location, String facing, TankSoarWorld world) {
 		super(agent, productions, color, location);
@@ -104,6 +103,7 @@ public class Tank  extends WorldEntity {
 	
 	public void reset() {
 		m_RadarPower = 0;
+		m_RadarDistance = 0;
 		m_RadarSwitch = false;
 		m_RWaves = 0;
 		m_Missiles = kInitialMissiles;
@@ -117,7 +117,7 @@ public class Tank  extends WorldEntity {
 		setFacingInt();
 		m_RD.calculate(getFacingInt());
 		
-		m_Hit = false;
+		m_HitByTank = null;
 		m_Collision = false;
 		
 		m_ILM.clear();
@@ -133,6 +133,14 @@ public class Tank  extends WorldEntity {
 			return 1;
 		}
 		return m_RadarPower;
+	}
+	
+	void setRadarDistance(int distance) {
+		m_RadarDistance = distance;
+	}
+	
+	public int getRadarDistance() {
+		return m_RadarDistance;
 	}
 	
 	public Integer getMove() {
@@ -195,11 +203,24 @@ public class Tank  extends WorldEntity {
 				m_LastMove.rotate = true;
 				m_LastMove.rotateDirection = commandId.GetParameterValue(kDirectionID);
 				
+				// Rotation must be handled pronto and never fails.
+				if (m_LastMove.rotate) {
+					rotate(m_LastMove.rotateDirection);
+				}
+				
 			} else {
 				m_Logger.log(getName() + ": Unknown command: " + commandName);
 				continue;
 			}
 			commandId.AddStatusComplete();
+		}
+		
+		// Do not allow a move if we rotated.
+		if (m_LastMove.rotate) {
+			if (m_LastMove.move) {
+				m_Logger.log("Tried to move with a rotation, rotating only.");
+				m_LastMove.move = false;
+			}
 		}
 		return m_LastMove.move ? new Integer(m_LastMove.moveDirection) : null;
 	}
@@ -209,19 +230,8 @@ public class Tank  extends WorldEntity {
 		
 		TankSoarCell cell = world.getCell(getLocation());
 		
-		// Movement
-		if (m_LastMove.move) {
-			// If we moved, we can't rotate
-			m_LastMove.rotate = false;
-		}
-		
-		// Rotation
-		if (m_LastMove.rotate) {
-			rotate(m_LastMove.rotateDirection);
-		}
-		
 		// Missile damage
-		if (m_Hit) {
+		if (m_HitByTank != null) {
 			if (m_ShieldStatus) {
 				m_Energy -= kMissileEnergyDamage;
 				if (m_Energy < 0) {
@@ -246,28 +256,37 @@ public class Tank  extends WorldEntity {
 		m_Collision = false;
 
 		// Chargers
-		if (cell.isEnergyRecharger()) {
-			// Check for missile hit
-			if (m_Hit) {
-				// Instant death
-				m_Health = 0;
-			} else {
-				m_Energy += 250;
-				m_Energy = m_Energy > kInitialEnergy ? kInitialEnergy : m_Energy;
+		if (m_Health > 0) {
+			if (cell.isEnergyRecharger()) {
+				// Check for missile hit
+				if (m_HitByTank != null) {
+					// Instant death
+					m_Health = 0;
+				} else {
+					m_Energy += 250;
+					m_Energy = m_Energy > kInitialEnergy ? kInitialEnergy : m_Energy;
+				}
 			}
-		}
-		if (cell.isHealthRecharger()) {
-			// Check for missile hit
-			if (m_Hit) {
-				// Instant death
-				m_Health = 0;
-			} else {
-				m_Health += 250;
-				m_Health = m_Health > kInitialHealth ? kInitialHealth : m_Health;
+			if (cell.isHealthRecharger()) {
+				// Check for missile hit
+				if (m_HitByTank != null) {
+					// Instant death
+					m_Health = 0;
+				} else {
+					m_Health += 250;
+					m_Health = m_Health > kInitialHealth ? kInitialHealth : m_Health;
+				}
 			}
 		}
 		
-		m_Hit = false;
+		if (m_Health <= 0) {
+			adjustPoints(TankSoarWorld.kKillPenalty);
+			if (m_HitByTank != null) {
+				m_HitByTank.adjustPoints(TankSoarWorld.kKillAward);
+			}
+		}
+		
+		m_HitByTank = null;
 		
 		// Handle shields.
 		boolean desiredShieldStatus = m_LastMove.shields ? m_LastMove.shieldsSetting : m_ShieldStatus;
@@ -356,8 +375,8 @@ public class Tank  extends WorldEntity {
 		return m_Health;
 	}
 	
-	public void hit() {
-		m_Hit = true;
+	public void hitBy(Tank hitByTank) {
+		m_HitByTank = hitByTank;
 	}
 	
 	public void collide() {

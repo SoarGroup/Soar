@@ -22,6 +22,8 @@ public class TankSoarCell extends Cell {
 	private boolean m_Explored = false;
 	private MapPoint m_Parent = null;
 	
+	private boolean m_Explosion = false;
+	
 	public TankSoarCell(String name) throws Exception {
 		if (name.equalsIgnoreCase(TankSoarWorld.kTypeWall)) {
 			m_Type = kWallInt;
@@ -125,6 +127,20 @@ public class TankSoarCell extends Cell {
 	void setMissilePack() {
 		m_Modified = true;
 		m_Contents = kMissilePackInt;
+	}
+	
+	void setExplosion() {
+		m_Modified = true;
+		m_Explosion = true;
+	}
+	
+	public boolean isExplosion() {
+		return m_Explosion;
+	}
+
+	public void clearModified() {
+		m_Explosion = false;
+		super.clearModified();
 	}
 }
 

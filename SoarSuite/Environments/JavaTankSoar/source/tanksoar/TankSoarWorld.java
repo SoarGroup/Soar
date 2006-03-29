@@ -19,7 +19,10 @@ public class TankSoarWorld extends World implements WorldManager {
 	static final String kTypeEnergyRecharger = "energy";
 	static final String kTypeHealthRecharger = "health";
 	
-	private static final int kWallPenalty = -100;
+	static final int kKillAward = 3;
+	static final int kKillPenalty = -2;
+	private static final int kMissileHitAward = 2;
+	private static final int kMissileHitPenalty = -1;
 	private static final int kWinningPoints = 50;
 	
 	private static final int kMaxMissilePacks = 3;
@@ -45,36 +48,17 @@ public class TankSoarWorld extends World implements WorldManager {
 			reset();
 		}
 		
-	   	public class Missile {
-	   		private MapPoint m_CurrentLocation;
-	   		private int m_FlightPhase; // 0, 1 == affects current location, 2 == affects current location + 1
-	   		private int m_Direction;
-	   		
-	   		public Missile(MapPoint location, int direction) {
-	   			m_CurrentLocation = location;
-	   			m_Direction = direction;
-	   			m_FlightPhase = 0;
-	   		}
-	   	}
-	   	
 	   	public void reset() {
 			m_Flying = new LinkedList();
 	   	}
 	   	
 	   	public void moveMissiles() {
-			// Mark old cells as modified
-			MapPoint[] missileLocations = m_Missiles.getLocations();
-			if (missileLocations != null) {
-				for (int i = 0; i < missileLocations.length; ++i) {
-					getCell(missileLocations[i]).setModified();
-				}
-			}
-			
 	   		ListIterator iter = m_Flying.listIterator();
 	   		while (iter.hasNext()) {
 	   			Missile missile = (Missile)iter.next();
-	   			m_RD.calculate(missile.m_Direction);
-	   			MapPoint location = missile.m_CurrentLocation;
+	   			getCell(missile.getCurrentLocation()).setModified();
+	   			m_RD.calculate(missile.getDirection());
+	   			MapPoint location = missile.getCurrentLocation();
 	   			location.travel(m_RD.forward);
 	   			
 	   			if (getCell(location).isWall()) {
@@ -82,16 +66,17 @@ public class TankSoarWorld extends World implements WorldManager {
 	   				continue;
 	   			}
 	   			
-	   			++missile.m_FlightPhase;
-	   			missile.m_FlightPhase %= 3;
+	   			missile.incrementFlightPhase();
 	   		}
 	   	}
 
-	   	public void fireMissile(MapPoint originatingLocation, int direction) {
-   			m_RD.calculate(direction);
-   			MapPoint location = new MapPoint(originatingLocation);
+	   	public void fireMissile(Tank owner) {
+   			m_RD.calculate(owner.getFacingInt());
+   			MapPoint location = new MapPoint(owner.getLocation());
    			location.travel(m_RD.forward);
-	   		m_Flying.addLast(new Missile(location, direction));
+   			if (!getCell(location).isWall()) {
+   				m_Flying.addLast(new Missile(location, owner.getFacingInt(), owner));
+   			}
 	   	}
 	   	
 	   	public int checkIncoming(MapPoint location) {
@@ -99,33 +84,33 @@ public class TankSoarWorld extends World implements WorldManager {
 	   		ListIterator iter = m_Flying.listIterator();
 	   		while (iter.hasNext()) {
 	   			Missile missile = (Missile)iter.next();
-	   			if (missile.m_CurrentLocation.x == location.x) {
+	   			if (missile.getCurrentLocation().x == location.x) {
 	   				// We're in the same row
-	   				if (missile.m_CurrentLocation.y < location.y) {
+	   				if (missile.getCurrentLocation().y < location.y) {
 	   					// The missile is above us
-	   					if (missile.m_Direction == WorldEntity.kSouthInt) {
+	   					if (missile.getDirection() == WorldEntity.kSouthInt) {
 	   						// and travelling toward us
 	   						incoming |= WorldEntity.kNorthInt;
 	   					}
 	   				} else {
 	   					// The missile is below us
-	   					if (missile.m_Direction == WorldEntity.kNorthInt) {
+	   					if (missile.getDirection() == WorldEntity.kNorthInt) {
 	   						// and travelling toward us
 	   						incoming |= WorldEntity.kSouthInt;
 	   					}
 	   				}
 	   			}
-	   			if (missile.m_CurrentLocation.y == location.y) {
+	   			if (missile.getCurrentLocation().y == location.y) {
 	   				// We're in the same column
-	   				if (missile.m_CurrentLocation.x < location.x) {
+	   				if (missile.getCurrentLocation().x < location.x) {
 	   					// The missile is to our left
-	   					if (missile.m_Direction == WorldEntity.kEastInt) {
+	   					if (missile.getDirection() == WorldEntity.kEastInt) {
 	   						// and travelling toward us
 	   						incoming |= WorldEntity.kWestInt;
 	   					}
 	   				} else {
 	   					// The missile is to our right
-	   					if (missile.m_Direction == WorldEntity.kWestInt) {
+	   					if (missile.getDirection() == WorldEntity.kWestInt) {
 	   						// and travelling toward us
 	   						incoming |= WorldEntity.kEastInt;
 	   					}
@@ -135,36 +120,31 @@ public class TankSoarWorld extends World implements WorldManager {
 	   		return incoming;
 	   	}
 	   	
-	   	public boolean checkHit(MapPoint location) {
-	   		boolean hit = false;
+	   	public Tank checkHit(MapPoint location) {
 	   		ListIterator iter = m_Flying.listIterator();
 	   		while (iter.hasNext()) {
 	   			Missile missile = (Missile)iter.next();
-	   			if (location.equals(missile.m_CurrentLocation)) {
-	   				hit = true;
+	   			if (location.equals(missile.getCurrentLocation())) {
+	   				Tank owner = missile.getOwner();
 	   				iter.remove();
+	   				return owner;
 	   			}
 	   		}
-	   		return hit;
+	   		return null;
 	   	}
 	   	
-	   	public MapPoint[] getLocations() {
+	   	public Missile[] getMissiles() {
 	   		if (m_Flying.size() == 0) {
 	   			return null;
 	   		}
-	   		MapPoint[] locations = new MapPoint[m_Flying.size()];
-	   		Missile[] missiles = (Missile[])m_Flying.toArray(new Missile[0]);
-	   		for (int i = 0; i < locations.length; ++i) {
-	   			locations[i] = missiles[i].m_CurrentLocation;
-	   		}
-	   		return locations;
+	   		return (Missile[])m_Flying.toArray(new Missile[0]);
 	   	}
 	}
 	
 	private Missiles m_Missiles = new Missiles();
 	
-	public MapPoint[] getMissileLocations() {
-		return m_Missiles.getLocations();
+	public Missile[] getMissiles() {
+		return m_Missiles.getMissiles();
 	}
 	
    	public TankSoarWorld(TankSoarSimulation simulation) {
@@ -315,6 +295,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		// Reset and ressurect dead tanks
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].getHealth() <= 0) {
+				getCell(m_Tanks[i].getLocation()).removeTank();
 				MapPoint location = findStartingLocation();
 				m_Tanks[i].setLocation(location);
 				// Put tank on map
@@ -498,7 +479,7 @@ public class TankSoarWorld extends World implements WorldManager {
 				}
 				m_Tanks[i].setLocation(newLocation);
 			} else {
-				m_Tanks[i].adjustPoints(kWallPenalty);
+				m_Tanks[i].collide();
 			}
 		}
 	}
@@ -518,14 +499,20 @@ public class TankSoarWorld extends World implements WorldManager {
 		// Fire new missiles
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].firedMissile()) {
-				m_Missiles.fireMissile(m_Tanks[i].getLocation(), m_Tanks[i].getFacingInt());
+				m_Missiles.fireMissile(m_Tanks[i]);
 			}
 		}
 		
 		// Check for missile collisions
 		for (int i = 0; i < m_Tanks.length; ++i) {
-			if (m_Missiles.checkHit(m_Tanks[i].getLocation())) {
-				m_Tanks[i].hit();
+			Tank owner = m_Missiles.checkHit(m_Tanks[i].getLocation());
+			if (owner != null) {
+				if (!m_Tanks[i].getShieldStatus()) {
+					getCell(m_Tanks[i].getLocation()).setExplosion();
+					owner.adjustPoints(kMissileHitAward);
+					m_Tanks[i].adjustPoints(kMissileHitPenalty);
+				}
+				m_Tanks[i].hitBy(owner);
 			}
 		}
 		
