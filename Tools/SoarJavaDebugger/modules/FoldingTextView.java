@@ -130,11 +130,11 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 		// Don't want to be doing this by accident and not realize it.
 		if (m_FoldingText.isFilteringEnabled() && m_FoldingText.getExclusionFilter() != 0)
 		{
-			m_FilterLabel.setForeground(getMainFrame().getDisplay().getSystemColor(SWT.COLOR_BLUE)) ;			
+			m_FilterLabel.setForeground(getMainFrame().getDisplay().getSystemColor(SWT.COLOR_RED)) ;			
 		}
 		else
 		{
-			m_FilterLabel.setForeground(getMainFrame().getDisplay().getSystemColor(SWT.COLOR_GRAY)) ;
+			m_FilterLabel.setForeground(getMainFrame().getDisplay().getSystemColor(SWT.COLOR_BLUE)) ;
 		}
 	}
 	
