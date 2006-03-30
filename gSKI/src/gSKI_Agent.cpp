@@ -1906,7 +1906,7 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 	   {
 		   // if the agent halted because it is in an infinite loop of no-change impasses
 		   // interrupt the agents and allow the user to try to recover.
-		   if (m_agent->d_cycle_count >=  m_agent->sysparams[MAX_GOAL_DEPTH])
+		   if ((long)m_agent->d_cycle_count >=  m_agent->sysparams[MAX_GOAL_DEPTH])
 		   {// the agent halted because it seems to be in an infinite loop, so throw interrupt
                AgentManager* am = (AgentManager*)(m_kernel->GetAgentManager());
 			   am->InterruptAll(gSKI_STOP_AFTER_PHASE);
