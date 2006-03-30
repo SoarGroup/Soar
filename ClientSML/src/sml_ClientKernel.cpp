@@ -1184,7 +1184,18 @@ char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepS
 		default: return "Unrecognized step size parameter passed to RunAllAgents" ;
 	}
 
-	std::string cmd = "run " + step + " " + ostr.str() ;
+	std::string interleave ;
+
+	switch (interleaveStepSize)
+	{
+		case sml_INTERLEAVE_ELABORATION:	interleave = "-i e" ; break ;
+		case sml_INTERLEAVE_PHASE:			interleave = "-i p" ; break ;
+		case sml_INTERLEAVE_DECISION:		interleave = "-i d" ; break ;
+		case sml_INTERLEAVE_UNTIL_OUTPUT:	interleave = "-i o" ; break ;
+		default: return "Unrecognized interleave size parameter passed to RunAllAgents" ;
+	}
+
+	std::string cmd = "run " + step + " " + interleave + " " + ostr.str() ;
 
 	// The command line currently requires an agent in order
 	// to execute a run command, so we provide one (which one should make no difference).
@@ -1214,7 +1225,18 @@ char const* Kernel::RunAllAgentsForever(smlInterleaveStepSize interleaveStepSize
 		}
 #endif
 
-	std::string cmd = "run" ;
+	std::string interleave ;
+
+	switch (interleaveStepSize)
+	{
+		case sml_INTERLEAVE_ELABORATION:	interleave = "-i e" ; break ;
+		case sml_INTERLEAVE_PHASE:			interleave = "-i p" ; break ;
+		case sml_INTERLEAVE_DECISION:		interleave = "-i d" ; break ;
+		case sml_INTERLEAVE_UNTIL_OUTPUT:	interleave = "-i o" ; break ;
+		default: return "Unrecognized interleave size parameter passed to RunAllAgents" ;
+	}
+
+	std::string cmd = "run " + interleave ;
 
 	// The command line currently requires an agent in order
 	// to execute a run command, so we provide one (which one should make no difference).
@@ -1261,11 +1283,22 @@ char const* Kernel::RunAllTilOutput(smlInterleaveStepSize interleaveStepSize)
 		}
 #endif
 
+	std::string interleave ;
+
+	switch (interleaveStepSize)
+	{
+		case sml_INTERLEAVE_ELABORATION:	interleave = "-i e" ; break ;
+		case sml_INTERLEAVE_PHASE:			interleave = "-i p" ; break ;
+		case sml_INTERLEAVE_DECISION:		interleave = "-i d" ; break ;
+		case sml_INTERLEAVE_UNTIL_OUTPUT:	interleave = "-i o" ; break ;
+		default: return "Unrecognized interleave size parameter passed to RunAllAgents" ;
+	}
+
 	// Run all agents until each has generated output.  Each agent will stop at the point
 	// it has generated output, so they may run for different numbers of decisions.
 	// For now, maxDecisions is being ignored.  We should make this a separate call
 	// to set this parameter.
-	std::string cmd = "run --output" ;
+	std::string cmd = "run --output " + interleave ;
 
 	// The command line currently requires an agent in order
 	// to execute a run command, so we provide one (which one should make no difference).
