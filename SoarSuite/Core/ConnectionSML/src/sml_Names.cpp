@@ -152,6 +152,10 @@ char const* const sml_Names::kTagWarning		= "warning" ;
 char const* const sml_Names::kTagLearning	= "learning" ;
 // Tag learning has attribute kTypeString
 
+// filter support
+char const* const sml_Names::kFilterName		= "_sml::filter" ;	// This name goes into the RHS function name space, so want it to be unlikely to be used by clients
+char const* const sml_Names::kParamNoFiltering	= "nofilter" ;
+
 //production printing
 char const* const sml_Names::kTagConditions                 	= "conditions" ;
 char const* const sml_Names::kTagConjunctive_Negation_Condition	= "conjunctive-negation-condition" ;

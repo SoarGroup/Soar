@@ -1225,6 +1225,7 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 	// Get the parameters
 	char const* pLine = pIncoming->GetArgString(sml_Names::kParamLine) ;
 	bool echoResults  = pIncoming->GetArgBool(sml_Names::kParamEcho, false) ;
+	bool noFiltering  = pIncoming->GetArgBool(sml_Names::kParamNoFiltering, false) ;
 
 	// If the user chooses to enable this feature, certain commands are always echoed back.
 	// This is primarily to support two users connected to and debugging the same kernel at once.
@@ -1258,9 +1259,28 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 			pAgentSML->FireEchoEvent(pConnection, pLine) ;
 	}
 
+	// Send this command line through anyone registered filters.
+	// If there are no filters (or this command requested not to be filtered), this copies the original line into the filtered line unchanged.
+	std::string filteredLine ;
+
+	if (!noFiltering)
+	{
+		this->SendFilterMessage(pAgent, pLine, &filteredLine) ;
+
+		// If a filter consumed the entire command, there's no more work for us to do.
+		// Doing this after the echo step, so the original command is still echo'd to the user.
+		if (filteredLine.empty())
+			return true ;
+	}
+	else
+	{
+		// Filtering is off for this call, so just use the original command line
+		filteredLine = pLine ;
+	}
+
 	// Make the call.
 	m_CommandLineInterface.SetRawOutput(rawOutput);
-	bool result = m_CommandLineInterface.DoCommand(pConnection, pAgent, pLine, echoResults, pResponse) ;
+	bool result = m_CommandLineInterface.DoCommand(pConnection, pAgent, filteredLine.c_str(), echoResults, pResponse) ;
 
 	if (kDebugCommandLine)
 		PrintDebugFormat("Completed %s", pLine) ;

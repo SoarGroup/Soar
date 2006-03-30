@@ -179,6 +179,7 @@
  	 // the handler is executing the function and returning a value, not just being notified
  	 // that something has happened.
  	 gSKIEVENT_RHS_USER_FUNCTION = gSKIEVENT_LAST_PRINT_EVENT + 1,
+	 gSKIEVENT_FILTER,
 	 gSKIEVENT_CLIENT_MESSAGE,
 	 gSKIEVENT_LAST_RHS_EVENT = gSKIEVENT_CLIENT_MESSAGE,
     } egSKIRhsEventId;

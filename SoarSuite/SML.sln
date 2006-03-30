@@ -79,6 +79,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarTextIO", "Tools\SoarTex
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FilterC", "Tools\FilterC\FilterC.vcproj", "{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -380,6 +384,22 @@ Global
 		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release (gSKI DLL).Build.0 = Release|Win32
 		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release (no SWIG).ActiveCfg = Release|Win32
 		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release (no SWIG).Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.Build.0 = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (Core).ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (Core).Build.0 = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (gSKI DLL).Build.0 = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (no SWIG).Build.0 = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (Core).ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (Core).Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (gSKI DLL).ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (gSKI DLL).Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (no SWIG).ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (no SWIG).Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

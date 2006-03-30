@@ -153,6 +153,7 @@ typedef enum {
 	// the handler is executing the function and returning a value, not just being notified
 	// that something has happened.
 	smlEVENT_RHS_USER_FUNCTION = smlEVENT_LAST_PRINT_EVENT + 1,
+	smlEVENT_FILTER,				// This event can be used to filter (modify) command lines before they are processed by the kernel
 	smlEVENT_CLIENT_MESSAGE,		// A generic message from one client to another (not really involving Soar/kernel directly)
 	smlEVENT_LAST_RHS_EVENT = smlEVENT_CLIENT_MESSAGE
 } smlRhsEventId ;

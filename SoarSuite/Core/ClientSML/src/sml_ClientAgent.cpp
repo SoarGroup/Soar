@@ -1513,11 +1513,12 @@ int Agent::GetDecisionCycleCounter()
 *
 * @param pCommandLine Command line string to process.
 * @param echoResults  If true the results are also echoed through the smlEVENT_ECHO event, so they can appear in a debugger (or other listener)
+* @param noFilter	  If true this command line by-passes any external filters that have been registered (this is not common) and is executed immediately.
 * @returns The string form of output from the command.
 *************************************************************/
-char const* Agent::ExecuteCommandLine(char const* pCommandLine, bool echoResults)
+char const* Agent::ExecuteCommandLine(char const* pCommandLine, bool echoResults, bool noFilter)
 {
-	return GetKernel()->ExecuteCommandLine(pCommandLine, GetAgentName(), echoResults) ;
+	return GetKernel()->ExecuteCommandLine(pCommandLine, GetAgentName(), echoResults, noFilter) ;
 }
 
 /*************************************************************

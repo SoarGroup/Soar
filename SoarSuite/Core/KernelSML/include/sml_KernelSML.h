@@ -269,6 +269,13 @@ public:
 	std::string SendClientMessage(gSKI::IAgent* pAgent, char const* pMessageType, char const* pMessage) ;
 
 	/*************************************************************
+	* @brief	Send this command line out to all clients that have
+	*			registered a filter.  The result is the processed
+	*			version of the command line.
+	*************************************************************/
+	void KernelSML::SendFilterMessage(gSKI::IAgent* pAgent, char const* pCommandLine, std::string* pResult) ;
+
+	/*************************************************************
 	* @brief Convert from a string version of an event to the int (enum) version.
 	*		 Returns smlEVENT_INVALID_EVENT (== 0) if the string is not recognized.
 	*************************************************************/

@@ -51,6 +51,7 @@ Kernel::Kernel(Connection* pConnection)
 	m_bShutdown		= false ;
 	m_ConnectionInfoChanged = false ;
 	m_bIgnoreOutput = false ;
+	m_FilteringEnabled = true ;
 
 	// We're turning on auto commit by default, so clients are a bit slower but easier to write.
 	// Power users are free to turn it off and use explicit commit calls.
@@ -1038,14 +1039,26 @@ bool Kernel::DestroyAgent(Agent* pAgent)
 }
 
 /*************************************************************
+* @brief If filtering is disabled, that means all commands
+*		 sent from this client will not be filtered (sent to
+*		 external processes that have registered a filter).
+*		 The default is that filtering is enabled.
+*************************************************************/
+void Kernel::EnableFiltering(bool state)
+{
+	m_FilteringEnabled = state ;
+}
+
+/*************************************************************
 * @brief Process a command line command
 *
 * @param pCommandLine Command line string to process.
 * @param pAgentName   Agent name to apply the command line to (can be NULL)
 * @param echoResults  If true the results are also echoed through the smlEVENT_ECHO event, so they can appear in a debugger (or other listener)
+* @param noFilter	  If true this command line by-passes any external filters that have been registered (this is not common) and is executed immediately.
 * @returns The string form of output from the command.
 *************************************************************/
-char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAgentName, bool echoResults)
+char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAgentName, bool echoResults, bool noFilter)
 {
 	AnalyzeXML response;
 	bool wantRawOutput = true ;
@@ -1055,6 +1068,7 @@ char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAg
 		sml_Names::kCommand_CommandLine, pAgentName,
 		sml_Names::kParamLine, pCommandLine,
 		sml_Names::kParamEcho, echoResults ? sml_Names::kTrue : sml_Names::kFalse,
+		sml_Names::kParamNoFiltering, m_FilteringEnabled && noFilter ? sml_Names::kTrue : sml_Names::kFalse,
 		wantRawOutput);
 
 	if (m_CommandLineSucceeded)
