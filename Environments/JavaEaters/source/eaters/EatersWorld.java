@@ -16,8 +16,7 @@ public class EatersWorld extends World implements WorldManager {
 	private static final String kParamColor = "color";
 
 	private static final String kTagCells = "cells";
-	private static final String kParamWorldWidth = "world-width";
-	private static final String kParamWorldHeight = "world-height";
+	private static final String kParamWorldSize = "world-size";
 	private static final String kParamRandomWalls = "random-walls";
 	private static final String kParamRandomFood = "random-food";
 	private static final String kParamType = "type";
@@ -264,14 +263,13 @@ public class EatersWorld extends World implements WorldManager {
 			JavaElementXML cells = root.findChildByNameThrows(kTagCells);
 			
 			// Get dimentions
-			m_WorldWidth = cells.getAttributeIntThrows(kParamWorldWidth);
-			m_WorldHeight = cells.getAttributeIntThrows(kParamWorldHeight);
+			m_WorldSize = cells.getAttributeIntThrows(kParamWorldSize);
 			
 			boolean randomWalls = cells.getAttributeBooleanDefault(kParamRandomWalls, false);
 			boolean randomFood = cells.getAttributeBooleanDefault(kParamRandomFood, false);
 						
 			// Create map array
-			m_World = new EatersCell[m_WorldHeight][m_WorldWidth];
+			m_World = new EatersCell[m_WorldSize][m_WorldSize];
 			
 			// Reset food
 			m_FoodCount = 0;
@@ -305,9 +303,9 @@ public class EatersWorld extends World implements WorldManager {
 	}
 	
 	private void generateWallsFromXML(JavaElementXML cells) throws Exception {
-		for(int row = 0; row < m_WorldHeight; ++row) {
+		for(int row = 0; row < m_WorldSize; ++row) {
 			//String rowString = new String();
-			for (int col = 0; col < m_WorldWidth; ++col) {
+			for (int col = 0; col < m_WorldSize; ++col) {
 				try {
 					m_World[row][col] = new EatersCell(cells.getChild(row).getChild(col).getAttributeThrows(kParamType));
 					if (!m_World[row][col].isWall()) {
@@ -325,20 +323,20 @@ public class EatersWorld extends World implements WorldManager {
 	
 	private void generateRandomWalls() throws Exception {
 		// Generate perimiter wall
-		for (int row = 0; row < m_WorldWidth; ++row) {
+		for (int row = 0; row < m_WorldSize; ++row) {
 			m_World[row][0] = new EatersCell(kTypeWall);
-			m_World[row][m_WorldHeight - 1] = new EatersCell(kTypeWall);
+			m_World[row][m_WorldSize - 1] = new EatersCell(kTypeWall);
 		}
-		for (int col = 1; col < m_WorldHeight - 1; ++col) {
+		for (int col = 1; col < m_WorldSize - 1; ++col) {
 			m_World[0][col] = new EatersCell(kTypeWall);
-			m_World[m_WorldWidth - 1][col] = new EatersCell(kTypeWall);
+			m_World[m_WorldSize - 1][col] = new EatersCell(kTypeWall);
 		}
 		
 		Random random = new Random();
 		
 		double probability = kLowProbability;
-		for (int row = 2; row < m_WorldWidth - 2; ++row) {
-			for (int col = 2; col < m_WorldHeight - 2; ++col) {
+		for (int row = 2; row < m_WorldSize - 2; ++row) {
+			for (int col = 2; col < m_WorldSize - 2; ++col) {
 				if (noWallsOnCorners(row, col)) {
 					if (wallOnAnySide(row, col)) {
 						probability = kHigherProbability;					
@@ -399,9 +397,9 @@ public class EatersWorld extends World implements WorldManager {
 	}
 	
 	private void generateFoodFromXML(JavaElementXML cells) throws Exception {
-		for(int row = 0; row < m_WorldHeight; ++row) {
+		for(int row = 0; row < m_WorldSize; ++row) {
 			//String rowString = new String();
-			for (int col = 0; col < m_WorldWidth; ++col) {
+			for (int col = 0; col < m_WorldSize; ++col) {
 				if (m_World[row][col] == null) {						
 					try {
 						m_World[row][col] = new EatersCell(cells.getChild(row).getChild(col).getAttributeThrows(kParamType));
@@ -417,8 +415,8 @@ public class EatersWorld extends World implements WorldManager {
 	
 	private void generateRandomFood() {
 		Random random = new Random();
-		for (int row = 1; row < m_WorldWidth - 1; ++row) {
-			for (int col = 1; col < m_WorldHeight - 1; ++col) {
+		for (int row = 1; row < m_WorldSize - 1; ++row) {
+			for (int col = 1; col < m_WorldSize - 1; ++col) {
 				if (m_World[row][col] == null) {
 					m_World[row][col] = new EatersCell(random.nextInt(m_Food.length));
 				}
@@ -542,10 +540,10 @@ public class EatersWorld extends World implements WorldManager {
 	private MapPoint findStartingLocation() {
 		// set random starting location
 		Random random = new Random();
-		MapPoint location = new MapPoint(random.nextInt(m_WorldWidth), random.nextInt(m_WorldHeight));
+		MapPoint location = new MapPoint(random.nextInt(m_WorldSize), random.nextInt(m_WorldSize));
 		while (getCell(location).isWall() || getCell(location).isEater()) {
-			location.x = random.nextInt(m_WorldWidth);
-			location.y = random.nextInt(m_WorldHeight);				
+			location.x = random.nextInt(m_WorldSize);
+			location.y = random.nextInt(m_WorldSize);				
 		}
 		
 		return location;

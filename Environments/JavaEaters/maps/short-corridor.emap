@@ -6,7 +6,7 @@
     <food-type name="bonusfood" value="10" shape="square" color="red">
     </food-type>
   </food>
-  <cells world-width="5" world-height="5" random-walls="false" random-food="false">
+  <cells world-size="5" random-walls="false" random-food="false">
     <row>
       <cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell>
     </row>

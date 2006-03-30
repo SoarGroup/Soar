@@ -82,7 +82,7 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 		
 		// Draw world
 		int fill1, fill2, xDraw, yDraw;
-		for(int x = 0; x < m_World.getWidth(); ++x){
+		for(int x = 0; x < m_World.getSize(); ++x){
 			if (m_AgentLocation != null) {
 				if ((x < m_AgentLocation.x - Eater.kEaterVision) || (x > m_AgentLocation.x + Eater.kEaterVision)) {
 					continue;
@@ -92,7 +92,7 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 				xDraw = x;
 			}
 			
-			for(int y = 0; y < m_World.getHeight(); ++y){
+			for(int y = 0; y < m_World.getSize(); ++y){
 				if (m_AgentLocation != null) {
 					if ((y < m_AgentLocation.y - Eater.kEaterVision) || (y > m_AgentLocation.y + Eater.kEaterVision)) {
 						continue;
