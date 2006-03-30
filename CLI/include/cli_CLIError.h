@@ -98,6 +98,7 @@ namespace cli {
 			kInvalidBackslashEscapeCharacter	= 83, 
 			kInitSoarFailed						= 84, 
 			kPreferencesError					= 85, // FIXME: document in wiki
+			kInvalidRunInterleaveSetting		= 86,
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -181,6 +182,7 @@ namespace cli {
 				case kInvalidBackslashEscapeCharacter:	return "Invalid backslash escape character, see documentation.";
 				case kInitSoarFailed:					return "Agent could not be reinitialized.  Probably due to an internal memory leak." ;
 				case kPreferencesError:					return "Preferences command failed." ;
+				case kInvalidRunInterleaveSetting:		return "Invalid setting for run interleave option." ;
 				default:								return "Unknown error code.";
 			}
 		}

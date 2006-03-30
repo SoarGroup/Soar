@@ -93,32 +93,26 @@ bool RunScheduler::VerifyStepSizeForRunType(egSKIRunType runStepSize, egSKIInter
 	switch(runStepSize)
 	{
 	case gSKI_RUN_SMALLEST_STEP:  // deprecated
-		assert (runStepSize == gSKI_RUN_SMALLEST_STEP);
-		return true;
+		return (runStepSize == gSKI_RUN_SMALLEST_STEP);
 	case gSKI_RUN_PHASE:
- 		assert( gSKI_INTERLEAVE_PHASE == interleave ) ;
-		return true;
-	case gSKI_RUN_ELABORATION_CYCLE: 
-		assert( gSKI_INTERLEAVE_ELABORATION_PHASE == interleave ) ;
-		return true;
+		return ( gSKI_INTERLEAVE_PHASE == interleave ) ;
+	case gSKI_RUN_ELABORATION_CYCLE:
+		return ( gSKI_INTERLEAVE_ELABORATION_PHASE == interleave ) ;
 	case gSKI_RUN_DECISION_CYCLE:
-		assert(gSKI_INTERLEAVE_PHASE == interleave || 
+		return (gSKI_INTERLEAVE_PHASE == interleave || 
 			   gSKI_INTERLEAVE_ELABORATION_PHASE == interleave || 
 			   gSKI_INTERLEAVE_DECISION_CYCLE == interleave) ;
-		return true;
 	case gSKI_RUN_UNTIL_OUTPUT:
-	//	assert(gSKI_INTERLEAVE_OUTPUT == interleave) ;
-		assert(gSKI_INTERLEAVE_PHASE == interleave || 
+		return (gSKI_INTERLEAVE_PHASE == interleave || 
 			   gSKI_INTERLEAVE_ELABORATION_PHASE == interleave || 
 			   gSKI_INTERLEAVE_DECISION_CYCLE == interleave ||
 			   gSKI_INTERLEAVE_OUTPUT == interleave) ;
 	case gSKI_RUN_FOREVER:
 		// can interleave by any egSKIInterleaveType
-		assert(gSKI_INTERLEAVE_PHASE == interleave || 
+		return (gSKI_INTERLEAVE_PHASE == interleave || 
 			   gSKI_INTERLEAVE_ELABORATION_PHASE == interleave || 
 			   gSKI_INTERLEAVE_DECISION_CYCLE == interleave ||
 			   gSKI_INTERLEAVE_OUTPUT == interleave) ;
-		return true;
 	default:
 		return false;
 	}
