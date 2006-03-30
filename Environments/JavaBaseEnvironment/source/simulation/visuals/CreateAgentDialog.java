@@ -16,6 +16,7 @@ public class CreateAgentDialog extends Dialog {
 	Text m_Name;
 	Combo m_Color;
 	Button m_CreateEntity;
+	static boolean m_SetFilterPath = true;
 	
 	public CreateAgentDialog(Shell parent, SimulationManager simulation) {
 		super(parent);
@@ -55,7 +56,10 @@ public class CreateAgentDialog extends Dialog {
 			public void widgetSelected(SelectionEvent e) {
 				FileDialog fd = new FileDialog(dialog, SWT.OPEN);
 				fd.setText("Open");
-				fd.setFilterPath(m_Simulation.getAgentPath());
+				if (m_SetFilterPath) {
+					m_SetFilterPath = false;
+					fd.setFilterPath(m_Simulation.getAgentPath());
+				}
 				fd.setFilterExtensions(new String[] {"*.soar", "*.*"});
 				// TODO: these next commented out lines are going to cause a bug to reappear
 				VisualWorld.internalRepaint = true;
