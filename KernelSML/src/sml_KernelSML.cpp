@@ -227,6 +227,31 @@ std::string KernelSML::SendClientMessage(gSKI::IAgent* pAgent, char const* pMess
 }
 
 /*************************************************************
+* @brief	Send this command line out to all clients that have
+*			registered a filter.  The result is the processed
+*			version of the command line.
+*************************************************************/
+void KernelSML::SendFilterMessage(gSKI::IAgent* pAgent, char const* pCommandLine, std::string* pResult)
+{
+	char response[10000] ;
+	response[0] = 0 ;
+
+	bool ok = m_RhsListener.HandleFilterEvent(gSKIEVENT_FILTER, pAgent, pCommandLine, sizeof(response), response) ;
+
+	if (!ok)
+	{
+		// Nobody was listening, so just return the original command line
+		*pResult = pCommandLine ;
+	}
+	else
+	{
+		// Somebody filtered this command, so return the results of that filtering
+		// (this can be "")
+		*pResult = response ;
+	}
+}
+
+/*************************************************************
 * @brief Convert from a string version of an event to the int (enum) version.
 *		 Returns smlEVENT_INVALID_EVENT (== 0) if the string is not recognized.
 *************************************************************/

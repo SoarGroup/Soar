@@ -101,6 +101,7 @@ Events::Events()
 
 	// Rhs user function fired
 	RegisterEvent(smlEVENT_RHS_USER_FUNCTION, "rhs-user-function") ;
+	RegisterEvent(smlEVENT_FILTER, "filter") ;
 	RegisterEvent(smlEVENT_CLIENT_MESSAGE, "client-message") ;
 }
 

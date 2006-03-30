@@ -113,6 +113,110 @@ void RhsListener::RemoveAllListeners(Connection* pConnection)
 	}
 }
 
+bool RhsListener::HandleFilterEvent(egSKIRhsEventId eventID, gSKI::IAgent* pAgent, char const* pArgument,
+						    int maxLengthReturnValue, char* pReturnValue)
+{
+	// Currently only supporting one event here, but that could change in time.
+	assert(eventID == gSKIEVENT_FILTER) ;
+
+	// Filters are handled as a RHS function call internally, using a special reserved name.
+	char const* pFunctionName = sml_Names::kFilterName ;
+
+	// Get the list of connections (clients) who have registered to implement this right hand side (RHS) function.
+	ConnectionList* pList = GetRhsListeners(pFunctionName) ;
+
+	bool result = false ;
+
+	// If nobody is listening we're done (not a bug as we register for all rhs functions and only forward specific ones that the client has registered)
+	if (!pList)
+		return result ;
+
+	ConnectionListIter connectionIter = pList->begin() ;
+
+	// We need the first connection for when we're building the message.  Perhaps this is a sign that
+	// we shouldn't have rolled these methods into Connection.
+	Connection* pConnection = *connectionIter ;
+
+	// Convert eventID to a string
+	char const* event = m_pKernelSML->ConvertEventToString(eventID) ;
+
+	// Also convert the length to a string
+	char length[kMinBufferSize] ;
+	Int2String(maxLengthReturnValue, length, sizeof(length)) ;
+
+	// Copy the initial command line into the return buffer and send that over.
+	// This will be sequentially replaced by each filter in turn and whatever
+	// is left in here at the end is the result of the filtering.
+	// This allows multiple filters to act on the data, each modifying it as it goes.
+	// A side effect of this is that the order the filters work on the data is significant.
+	// Anyone in the chain can set the string to be the empty string, which brings the
+	// whole process to a halt (they have eaten the command line at that point).
+	strncpy(pReturnValue, pArgument, maxLengthReturnValue) ;
+	pReturnValue[maxLengthReturnValue-1] = 0 ;	// Make sure it's NULL terminated
+
+	bool stop = false ;
+
+	while (connectionIter != pList->end() && !stop)
+	{
+		// Build the SML message we're doing to send.
+		// Pass the agent in the "name" parameter not the "agent" parameter as this is a kernel
+		// level event, not an agent level one (because you need to register with the kernel to get "agent created").
+		ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
+		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamName, pAgent->GetName()) ;
+		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
+		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamFunction, sml_Names::kFilterName) ;
+		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamValue, pReturnValue) ;	// We send the current command line over
+		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamLength, length) ;
+
+#ifdef _DEBUG
+		// Generate a text form of the XML so we can look at it in the debugger.
+		char* pStr = pMsg->GenerateXMLString(true) ;
+#endif
+
+		AnalyzeXML response ;
+
+		pConnection = *connectionIter ;
+
+		bool ok = pConnection->SendMessageGetResponse(&response, pMsg) ;
+
+		if (ok)
+		{
+			char const* pResult = response.GetResultString() ;
+
+			if (pResult != NULL)
+			{
+				// If the listener returns a result then take that
+				// value and return it in "pReturnValue" to the caller.
+				// If the client returns a longer string than the caller allowed we just truncate it.
+				// (In practice this shouldn't be a problem--just need to make sure nobody crashes on a super long return string).
+				strncpy(pReturnValue, pResult, maxLengthReturnValue) ;
+				pReturnValue[maxLengthReturnValue-1] = 0 ;	// Make sure it's NULL terminated
+				result = true ;
+			}
+			else
+			{
+				// If one of the filters returns an empty string, stop the process at that point
+				// because the command has been "eaten".  Make the result the empty string.
+				pReturnValue[0] = 0 ;
+				result = true ;
+				stop = true ;
+			}
+		}
+
+		connectionIter++ ;
+
+	#ifdef _DEBUG
+		// Release the string form we generated for the debugger
+		pMsg->DeleteString(pStr) ;
+	#endif
+
+		// Clean up
+		delete pMsg ;
+	}
+
+	return result ;
+}
+
 // Handler for RHS (right hand side) function firings
 // pFunctionName and pArgument define the RHS function being called (the client may parse pArgument to extract other values)
 // pResultValue is a string allocated by the caller than is of size maxLengthReturnValue that should be filled in with the return value.
