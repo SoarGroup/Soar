@@ -158,7 +158,12 @@
 	    // this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 	    Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pAgent, SWIGTYPE_p_sml__Agent,0));
-	    Tcl_AppendStringsToObj(script, " ", pFunctionName, " \"", pArgument, "\"", NULL);
+	    
+	    // the argument could have embedded quotes, so we need to escape them
+	    std::string argument = pArgument;
+	    EscapeQuotes(&argument);
+	    
+	    Tcl_AppendStringsToObj(script, " ", pFunctionName, " \"", argument.c_str(), "\"", NULL);
 	    // since we're returning a value, we need to clear out any old values
 		Tcl_ResetResult(tud->interp);
 		// since this script will never be executed again, we use TCL_EVAL_DIRECT, which skips the compilation step
@@ -179,6 +184,8 @@
 	    // this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 	    Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pAgent, SWIGTYPE_p_sml__Agent,0));
+	    
+	    // the message could have embedded quotes, so we need to escape them
 	    std::string message = pMessage;
 	    EscapeQuotes(&message);
 	    
@@ -265,8 +272,13 @@
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		// this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
+		
+		// the message could have embedded quotes, so we need to escape them
+	    std::string message = pMessage;
+	    EscapeQuotes(&message);
+	    
 		// wrap the message in quotes in case it has spaces
-		Tcl_AppendStringsToObj(script, " \"", pMessage, "\"", NULL);
+		Tcl_AppendStringsToObj(script, " \"", message.c_str(), "\"", NULL);
 		// since this script will never be executed again, we use TCL_EVAL_DIRECT, which skips the compilation step
 		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
 		
@@ -353,7 +365,12 @@
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		// this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
-		Tcl_AppendStringsToObj(script, " \"", pData, "\"", NULL);
+		
+		// the message could have embedded quotes, so we need to escape them
+	    std::string data = pData;
+	    EscapeQuotes(&data);
+	    
+		Tcl_AppendStringsToObj(script, " \"", data.c_str(), "\"", NULL);
 		// since this script will never be executed again, we use TCL_EVAL_DIRECT, which skips the compilation step
 		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
 		
@@ -371,7 +388,12 @@
 	    tud->script = Tcl_NewObj();
 	    Tcl_AppendStringsToObj(tud->script, proc, " ", NULL);
 	    Tcl_AppendObjToObj(tud->script, Tcl_NewLongObj(id));
-	    Tcl_AppendStringsToObj(tud->script, " \"", userData, "\" ", NULL);
+	    
+	    // the user data could have embedded quotes, so we need to escape them
+	    std::string ud = userData;
+	    EscapeQuotes(&ud);
+	    
+	    Tcl_AppendStringsToObj(tud->script, " \"", ud.c_str(), "\" ", NULL);
 	    
 	    return tud;
 	}
@@ -384,7 +406,12 @@
 	    // put all of the arguments together so we can just execute this as a single script later
 	    // put spaces between the arguments and wrap the userdata in quotes (in case it has spaces)
 	    tud->script = Tcl_NewObj();
-	    Tcl_AppendStringsToObj(tud->script, proc, " \"", userData, "\"", NULL);
+	    
+	    // the user data could have embedded quotes, so we need to escape them
+	    std::string ud = userData;
+	    EscapeQuotes(&ud);
+	    
+	    Tcl_AppendStringsToObj(tud->script, proc, " \"", ud.c_str(), "\"", NULL);
 	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Agent,0));
 	    
 	    return tud;
@@ -412,7 +439,12 @@
 	    // put all of the arguments together so we can just execute this as a single script later
 	    // put spaces between the arguments and wrap the userdata in quotes (in case it has spaces)
 	    tud->script = Tcl_NewObj();
-	    Tcl_AppendStringsToObj(tud->script, proc, " \"", userData, "\" ", NULL);
+	    
+	    // the user data could have embedded quotes, so we need to escape them
+	    std::string ud = userData;
+	    EscapeQuotes(&ud);
+	    
+	    Tcl_AppendStringsToObj(tud->script, proc, " \"", ud.c_str(), "\" ", NULL);
 	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Agent,0));
 	    Tcl_AppendStringsToObj(tud->script, " ", commandName, " ", NULL);
 	    
