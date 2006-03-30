@@ -54,11 +54,11 @@ public class VisualWorld extends Canvas {
 	}
 	
 	public int getWidth() {
-		return m_CellSize * m_Simulation.getWorld().getWidth();
+		return m_CellSize * m_Simulation.getWorld().getSize();
 	}
 	
 	public int getHeight() {
-		return m_CellSize * m_Simulation.getWorld().getHeight();
+		return m_CellSize * m_Simulation.getWorld().getSize();
 	}
 	
 }
