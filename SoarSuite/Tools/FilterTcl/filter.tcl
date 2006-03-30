@@ -10,6 +10,7 @@ proc MyFilter {id userData agent filterName commandLine} {
 proc createFilter {} {
     global smlEVENT_AFTER_AGENT_CREATED smlEVENT_BEFORE_AGENT_REINITIALIZED 
     global _kernel
+    global sml_Names_kFilterName
     
 	# Then create a kernel
 	#set _kernel [Kernel_CreateKernelInCurrentThread SoarKernelSML 0]
@@ -24,14 +25,14 @@ proc createFilter {} {
 	}
 
 	puts "Created kernel\n"
-	
+
 	# Practice callbacks by registering for agent creation event
 	set agentCallbackId0 [$_kernel RegisterForAgentEvent $smlEVENT_AFTER_AGENT_CREATED AgentCreatedCallback ""]
 	
 	
 	# int clientFilter = pKernel->RegisterForClientMessageEvent(sml_Names::kFilterName, &MyFilter, 0) ;
 	# Don't know how to access sml_Names::kFilterName in Tcl, so I'm using the string instead
-	set filterCallbackId0 [$_kernel RegisterForClientMessageEvent "_sml::filter" MyFilter ""]
+	set filterCallbackId0 [$_kernel RegisterForClientMessageEvent $sml_Names_kFilterName MyFilter ""]
 }
 
 # Start by loading the tcl interface library
