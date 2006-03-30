@@ -685,6 +685,17 @@ std::string MyClientMessageHandler(smlRhsEventId id, void* pUserData, Agent* pAg
 	return res ;
 }
 
+// This is a very dumb filter--it adds "--depth 2" to all commands passed to it.
+std::string MyFilterHandler(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pMessageType, char const* pCommandLine)
+{
+	cout << "Received command line " << pCommandLine << endl ;
+
+	std::string res = pCommandLine ;
+	res += " --depth 2" ;
+
+	return res ;
+}
+
 bool InitSoarAgent(Agent* pAgent, bool doInitSoars)
 {
 	if (doInitSoars)
@@ -722,6 +733,19 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	}
 
 	pKernel->UnregisterForClientMessageEvent(clientCallback) ;
+
+	// Record a filter
+	int clientFilter = pKernel->RegisterForClientMessageEvent(sml_Names::kFilterName, &MyFilterHandler, 0) ;
+
+	// Our filter adds "--depth 2" to all commands
+	// so this should give us the result of "print s1 --depth 2"
+	std::string command = pAgent->ExecuteCommandLine("print s1") ;
+
+	cout << command << endl ;
+
+	// This is important -- if we don't unregister all subsequent commands will
+	// come to our filter and promptly fail!
+	pKernel->UnregisterForClientMessageEvent(clientFilter) ;
 
 	Identifier* pInputLink = pAgent->GetInputLink() ;
 	if (!pInputLink)

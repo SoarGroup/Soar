@@ -670,9 +670,10 @@ public:
 	*
 	* @param pCommandLine Command line string to process.
 	* @param echoResults  If true the results are also echoed through the smlEVENT_ECHO event, so they can appear in a debugger (or other listener)
+	* @param noFilter	  If true this command line by-passes any external filters that have been registered (this is not common) and is executed immediately.
 	* @returns The string form of output from the command.
 	*************************************************************/
-	char const* ExecuteCommandLine(char const* pCommandLine, bool echoResults = false) ;
+	char const* ExecuteCommandLine(char const* pCommandLine, bool echoResults = false, bool noFilter = false) ;
 
 	/*************************************************************
 	* @brief Execute a command line command and return the result

@@ -151,6 +151,10 @@ public:
 	static char const* const kTagLearning;
 	// Tag learning has attribute kTypeString
 
+	// filter support
+	static char const* const sml_Names::kFilterName ;
+	static char const* const sml_Names::kParamNoFiltering ;
+
     //production printing
     static char const* const kTagConditions;
     static char const* const kTagConjunctive_Negation_Condition;

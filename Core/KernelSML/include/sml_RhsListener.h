@@ -84,6 +84,10 @@ public:
 	// Returns the list of connections listening for this RHS function to fire
 	ConnectionList* GetRhsListeners(char const* pFunctionName) ;
 
+	// Called for a filter event
+	bool HandleFilterEvent(egSKIRhsEventId eventID, gSKI::IAgent* pAgent, char const* pArgument,
+						    int maxLengthReturnValue, char* pReturnValue) ;
+
 	// Called when a "RhsEvent" occurs in the kernel
 	virtual bool HandleEvent(egSKIRhsEventId eventId, gSKI::IAgent* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
 						     int maxLengthReturnValue, char* pReturnValue) ;

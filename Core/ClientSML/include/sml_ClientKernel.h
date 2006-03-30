@@ -170,6 +170,9 @@ protected:
 	typedef std::list<ConnectionInfo*>::iterator ConnectionListIter ;
 	bool				m_ConnectionInfoChanged ;
 
+	// When true, commands are sent to external filters (if they are registered) for filtering before execution.
+	bool				m_FilteringEnabled ;
+
 	// Which handler functions to call when an event comes in
 	SystemEventMap		m_SystemEventMap ;
 	AgentEventMap		m_AgentEventMap ;
@@ -426,14 +429,26 @@ public:
 	bool	IsAgentValid(Agent* pAgent) ;
 
 	/*************************************************************
+	* @brief If filtering is disabled, that means all commands
+	*		 sent from this client will not be filtered (sent to
+	*		 external processes that have registered a filter).
+	*		 The default is that filtering is enabled.
+	*
+	*		 Disabling filtering overrides the noFilter setting that
+	*		 is available on a command by command basis.
+	*************************************************************/
+	void	EnableFiltering(bool state) ;
+
+	/*************************************************************
 	* @brief Process a command line command
 	*
 	* @param pCommandLine Command line string to process.
 	* @param pAgentName   Agent name to apply the command line to (can be NULL)
 	* @param echoResults  If true the results are also echoed through the smlEVENT_ECHO event, so they can appear in a debugger (or other listener)
+	* @param noFilter	  If true this command line by-passes any external filters that have been registered (this is not common) and is executed immediately.
 	* @returns The string form of output from the command.
 	*************************************************************/
-	char const* ExecuteCommandLine(char const* pCommandLine, char const* pAgentName, bool echoResults = false) ;
+	char const* ExecuteCommandLine(char const* pCommandLine, char const* pAgentName, bool echoResults = false, bool noFilter = false) ;
 
 	/*************************************************************
 	* @brief Execute a command line command and return the result
