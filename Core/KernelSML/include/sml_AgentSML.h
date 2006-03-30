@@ -110,7 +110,7 @@ public:
 
 	// Release any objects or other data we are keeping.  We do this just
 	// prior to deleting AgentSML, but before the underlying gSKI agent has been deleted
-	void Clear() ;
+	void Clear(bool deletingThisAgent) ;
 
 	void RegisterForBeforeAgentDestroyedEvent() ;
 
