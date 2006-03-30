@@ -100,19 +100,33 @@ public class Eater extends WorldEntity {
 	}
 	
 	public void updateInput(EatersWorld world) {
+		boolean moved = (m_xWME.GetValue() != getLocation().x) || (m_yWME.GetValue() != getLocation().y);
+		
 		int xView, yView;
 		for (int x = 0; x < m_Cells.length; ++x) {
 			xView = x - Eater.kEaterVision + getLocation().x;
 			for (int y = 0; y < m_Cells[x].length; ++y) {
 				yView = y - Eater.kEaterVision + getLocation().y;
 				String content = world.getContentNameByLocation(xView, yView);
-				m_Agent.Update(m_Cells[x][y].content, content);
+				if (moved || !m_Cells[x][y].content.GetValue().equalsIgnoreCase(content)) {
+					m_Agent.Update(m_Cells[x][y].content, content);
+				}
 			}
 		}
-		m_Agent.Update(m_DirectionWME, m_Facing);
-		m_Agent.Update(m_xWME, getLocation().x);
-		m_Agent.Update(m_yWME, getLocation().y);
-		m_Agent.Update(m_ScoreWME, getPoints());
+
+		if (m_ScoreWME.GetValue() != getPoints()) {
+			m_Agent.Update(m_ScoreWME, getPoints());
+		}
+		
+		if (!m_DirectionWME.GetValue().equalsIgnoreCase(m_Facing)) {
+			m_Agent.Update(m_DirectionWME, m_Facing);
+		}
+
+		if (moved) {
+			m_Agent.Update(m_xWME, getLocation().x);
+			m_Agent.Update(m_yWME, getLocation().y);
+		}
+		
 		m_Agent.Commit();
 	}
 	
@@ -131,11 +145,10 @@ public class Eater extends WorldEntity {
 			m_Logger.log(getName() + " issued more than one command, using first.");
 		}
 
-		MoveInfo move = new MoveInfo();
-		
 		Identifier commandId = m_Agent.GetCommand(0);
 		String commandName = commandId.GetAttribute();
 
+		MoveInfo move = new MoveInfo();
 		if (commandName.equalsIgnoreCase(kMoveID)) {
 			move.jump = false;
 		} else if (commandName.equalsIgnoreCase(kJumpID)) {
@@ -150,6 +163,7 @@ public class Eater extends WorldEntity {
 			m_Facing = move.direction;
 			setFacingInt();
 			commandId.AddStatusComplete();
+			m_Agent.ClearOutputLinkChanges();
 			return move;
 		}
 		
