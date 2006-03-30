@@ -108,7 +108,7 @@ set result [$agent LoadProductions ../demos/towers-of-hanoi/towers-of-hanoi.soar
 #loads a function to test the user-defined RHS function stuff
 set result [$agent LoadProductions ../tests/TOHtest.soar]
 
-$kernel SendClientMessage $agent "TestMessage" "This is a message"
+$kernel SendClientMessage $agent "TestMessage" "This is a \"quoted\"\" message"
 $kernel UnregisterForClientMessageEvent $messageCallbackId
 
 $agent RunSelf 2 $sml_ELABORATION
