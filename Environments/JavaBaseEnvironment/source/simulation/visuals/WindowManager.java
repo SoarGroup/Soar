@@ -9,7 +9,7 @@ import utilities.Logger;
 
 public class WindowManager {
 	public static final String kMapPrefix = "Map: ";
-	public static final String kColors[] = { "red", "blue", "purple", "yellow", "orange", "black", "green", "white" };
+	public static final String kColors[] = { "red", "blue", "purple", "yellow", "orange", "black", "green" };
 	
 	public static Color white;
 	public static Color blue;
