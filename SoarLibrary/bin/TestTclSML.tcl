@@ -70,6 +70,10 @@ proc UpdateEventCallback {id userData kernel runFlags} {
 	puts "update event fired with flags $runFlags"
 }
 
+proc UserMessageCallback {id userData agent clientName message} {
+	puts "Agent $agent received usermessage event for clientName '$clientName' with message '$message'"
+}
+
 #this event loop periodically checks for new events from the kernel
 # ensuring that they get executed on the client side
 proc CheckForEvents {k} {
@@ -89,7 +93,7 @@ set agentCallbackId2 [$kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DESTR
 set systemCallbackId [$kernel RegisterForSystemEvent $smlEVENT_BEFORE_SHUTDOWN SystemShutdownCallback ""]
 set rhsCallbackId [$kernel AddRhsFunction RhsFunctionTest ""]
 set updateCallbackId [$kernel RegisterForUpdateEvent $smlEVENT_AFTER_ALL_OUTPUT_PHASES UpdateEventCallback ""]
-
+set messageCallbackId [$kernel RegisterForClientMessageEvent "TestMessage" UserMessageCallback ""]
 #create an agent named Soar1
 set agent [$kernel CreateAgent Soar1]
 
@@ -103,6 +107,9 @@ set structuredCallbackId [$agent RegisterForXMLEvent $smlEVENT_XML_TRACE_OUTPUT 
 set result [$agent LoadProductions ../demos/towers-of-hanoi/towers-of-hanoi.soar]
 #loads a function to test the user-defined RHS function stuff
 set result [$agent LoadProductions ../tests/TOHtest.soar]
+
+$kernel SendClientMessage $agent "TestMessage" "This is a message"
+$kernel UnregisterForClientMessageEvent $messageCallbackId
 
 $agent RunSelf 2 $sml_ELABORATION
 

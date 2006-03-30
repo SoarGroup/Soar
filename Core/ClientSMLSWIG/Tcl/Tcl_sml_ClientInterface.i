@@ -467,13 +467,15 @@
 	    return self->RegisterForAgentEvent(id, TclAgentEventCallback, (void*)tud, addToBack);
     };
     
+    // Note that we're not exposing both the function name and callback as separate parameters, because it doesn't make much sense
+    // to have different names in Tcl (and they are both strings -- in C++ they're not the same type; hence the separation there)
     int AddRhsFunction(Tcl_Interp* interp, char const* pRhsFunctionName, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclUserData(sml::smlEVENT_RHS_USER_FUNCTION, pRhsFunctionName, userData, interp);
 	    return self->AddRhsFunction(pRhsFunctionName, TclRhsEventCallback, (void*)tud, addToBack);
     };
     
-    int RegisterForClientMessageEvent(Tcl_Interp* interp, char const* pMessageType, char const* pRhsFunctionName, char* userData, bool addToBack = true) {
-	    TclUserData* tud = CreateTclUserData(sml::smlEVENT_RHS_USER_FUNCTION, pMessageType, userData, interp);
-	    return self->RegisterForClientMessageEvent(pMessageType, TclClientMessageEventCallback, (void*)tud, addToBack);
+    int RegisterForClientMessageEvent(Tcl_Interp* interp, char const* pClientName, char const* pMessageHandler, char* userData, bool addToBack = true) {
+	    TclUserData* tud = CreateTclUserData(sml::smlEVENT_RHS_USER_FUNCTION, pMessageHandler, userData, interp);
+	    return self->RegisterForClientMessageEvent(pClientName, TclClientMessageEventCallback, (void*)tud, addToBack);
     };
 }
