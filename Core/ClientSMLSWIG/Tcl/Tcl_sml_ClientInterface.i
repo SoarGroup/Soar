@@ -131,7 +131,15 @@
 		Tcl_DoOneEvent(TCL_DONT_WAIT) ;
 
 		return TCL_OK;
-	} 
+	}
+	
+	void EscapeQuotes(std::string* s) {
+	    int pos = s->find_first_of("\"");
+	    while(pos != std::basic_string<char*>::npos) {
+	        s->insert(pos, "\\");
+	        pos = s->find_first_of("\"", pos+2);
+	    }
+	}
 	
 	void TclOutputNotificationEventCallback(void* pUserData, sml::Agent* pAgent)
 	{
@@ -171,7 +179,10 @@
 	    // this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 	    Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pAgent, SWIGTYPE_p_sml__Agent,0));
-	    Tcl_AppendStringsToObj(script, " ", pClientName, " \"", pMessage, "\"", NULL);
+	    std::string message = pMessage;
+	    EscapeQuotes(&message);
+	    
+	    Tcl_AppendStringsToObj(script, " ", pClientName, " \"", message.c_str(), "\"", NULL);
 	    // since we're returning a value, we need to clear out any old values
 		Tcl_ResetResult(tud->interp);
 		// since this script will never be executed again, we use TCL_EVAL_DIRECT, which skips the compilation step
