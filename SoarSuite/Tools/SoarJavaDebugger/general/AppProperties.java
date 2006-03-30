@@ -121,6 +121,9 @@ public class AppProperties extends java.util.Properties
 		}
 		catch (FileNotFoundException e)
 		{
+			// Record the current version.
+			this.setProperty(kVersion, version) ;
+
 			// File doesn't exist.  No properties to load, so we're done.
 			return false ;
 		}
