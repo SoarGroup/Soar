@@ -72,12 +72,12 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 	}
 	
 	void generateBackground() {
-		m_Background = new Image[m_World.getWidth()][m_World.getHeight()];
-		for(int x = 0; x < m_World.getWidth(); ++x){
-			for(int y = 0; y < m_World.getHeight(); ++y){
+		m_Background = new Image[m_World.getSize()][m_World.getSize()];
+		for(int x = 0; x < m_World.getSize(); ++x){
+			for(int y = 0; y < m_World.getSize(); ++y){
 				TankSoarCell cell = m_World.getCell(x, y);
 				if (cell.isWall()) {
-					if ((x == 0) || (x == m_World.getWidth() - 1) || (y == 0) || (y == m_World.getHeight() - 1)) {
+					if ((x == 0) || (x == m_World.getSize() - 1) || (y == 0) || (y == m_World.getSize() - 1)) {
 						// Rocks on outer edge
 						m_Background[x][y] = kRocks[m_Random.nextInt(kRocks.length)];
 					} else {
@@ -128,8 +128,8 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 		}
 		
 		// Draw world
-		for(int x = 0; x < m_World.getWidth(); ++x){
-			for(int y = 0; y < m_World.getHeight(); ++y){
+		for(int x = 0; x < m_World.getSize(); ++x){
+			for(int y = 0; y < m_World.getSize(); ++y){
 				TankSoarCell cell = m_World.getCell(x, y);
 				if (!cell.isModified() && m_Painted) {
 					continue;
