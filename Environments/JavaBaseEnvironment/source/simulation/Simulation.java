@@ -21,6 +21,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	private int m_WorldCount = 0;
 	private int m_Runs = 0;
 	private Thread m_RunThread;
+	private boolean m_Running = false;
 	private String m_LastErrorMessage = "No error.";
 	private String m_BasePath;
 	private WorldManager m_WorldManager;
@@ -244,7 +245,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	}
 	
 	public boolean isRunning() {
-		return (m_RunThread != null);
+		return m_Running;
 	}
 
 	public void resetSimulation(boolean fallBackToDefault) {
@@ -299,10 +300,12 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
   		if (eventID == smlSystemEventId.smlEVENT_SYSTEM_START.swigValue()) {
   			// Start simulation
   			m_Logger.log("Start event received from kernel.");
+  			m_Running = true;
   			fireSimulationEvent(SimulationListener.kStartEvent);
   		} else if (eventID == smlSystemEventId.smlEVENT_SYSTEM_STOP.swigValue()) {
   			// Stop simulation
   			m_Logger.log("Stop event received from kernel.");
+  			m_Running = false;
   			if (m_Runs == 0) {
   				m_RunThread = null;
   			}
