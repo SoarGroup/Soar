@@ -324,7 +324,7 @@ public:
 	* @returns A new kernel object which is used to communicate with the kernel
 	*		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 	*************************************************************/
-	static Kernel* CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, int port = kDefaultSMLPort, bool ignoreOutput = false) ;
+	static Kernel* CreateRemoteConnection(bool sharedFileSystem = true, char const* pIPaddress = 0, int port = kDefaultSMLPort, bool ignoreOutput = false) ;
 
 	/*************************************************************
 	* @brief Returns the default port we use for remote connections.
