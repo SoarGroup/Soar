@@ -17,12 +17,15 @@ public class Eater extends WorldEntity {
 	public final static String kContentID = "content";
 	public final static String kMoveID = "move";
 	public final static String kJumpID = "jump";
+	public final static String kDontEatID = "dont-eat";
+	public final static String kTrue = "true";
 
 	private StringElement m_DirectionWME;
 	private IntElement m_ScoreWME;
 	private IntElement m_xWME;
 	private IntElement m_yWME;
 	private SoarCell[][] m_Cells = new SoarCell[(kEaterVision * 2 ) + 1][(kEaterVision * 2 ) + 1];
+	private boolean m_Hungry = true;
 	
 	class SoarCell {
 		Identifier me;
@@ -99,6 +102,10 @@ public class Eater extends WorldEntity {
 		}	
 	}
 	
+	public boolean isHungry() {
+		return m_Hungry;
+	}
+	
 	public void updateInput(EatersWorld world) {
 		boolean moved = (m_xWME.GetValue() != getLocation().x) || (m_yWME.GetValue() != getLocation().y);
 		
@@ -156,6 +163,13 @@ public class Eater extends WorldEntity {
 		} else {
 			m_Logger.log("Unknown command: " + commandName);
 			return null;
+		}
+		
+		String donteat = commandId.GetParameterValue(kDontEatID);
+		if (donteat == null) {
+			m_Hungry = true;
+		} else {
+			m_Hungry = donteat.equalsIgnoreCase(kTrue) ? false : true;
 		}
 		
 		move.direction = commandId.GetParameterValue(kDirectionID);
