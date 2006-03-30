@@ -16,7 +16,7 @@ public class CreateAgentDialog extends Dialog {
 	Text m_Name;
 	Combo m_Color;
 	Button m_CreateEntity;
-	static boolean m_SetFilterPath = true;
+	static String lastProductions = null;
 	
 	public CreateAgentDialog(Shell parent, SimulationManager simulation) {
 		super(parent);
@@ -45,7 +45,12 @@ public class CreateAgentDialog extends Dialog {
 		gd.grabExcessHorizontalSpace = true;
 		gd.widthHint = 150;
 		m_ProductionsLabel.setLayoutData(gd);
-		m_ProductionsLabel.setText("<choose productions>");
+		if (lastProductions == null) {
+			m_ProductionsLabel.setText("<choose productions>");
+		} else {
+			m_Productions = lastProductions;
+			m_ProductionsLabel.setText(lastProductions.substring(lastProductions.lastIndexOf(System.getProperty("file.separator")) + 1));
+		}
 
 		final Button productionsBrowse = new Button(dialog, SWT.PUSH);
 		gd = new GridData();
@@ -56,9 +61,10 @@ public class CreateAgentDialog extends Dialog {
 			public void widgetSelected(SelectionEvent e) {
 				FileDialog fd = new FileDialog(dialog, SWT.OPEN);
 				fd.setText("Open");
-				if (m_SetFilterPath) {
-					m_SetFilterPath = false;
+				if (lastProductions == null) {
 					fd.setFilterPath(m_Simulation.getAgentPath());
+				} else {
+					fd.setFileName(lastProductions);
 				}
 				fd.setFilterExtensions(new String[] {"*.soar", "*.*"});
 				// TODO: these next commented out lines are going to cause a bug to reappear
@@ -67,6 +73,7 @@ public class CreateAgentDialog extends Dialog {
 				VisualWorld.internalRepaint = false;
 				if (productions != null) {
 					m_Productions = productions;
+					lastProductions = productions;
 					m_ProductionsLabel.setText(m_Productions.substring(m_Productions.lastIndexOf(System.getProperty("file.separator")) + 1));
 				}
 				updateButtons();
