@@ -106,16 +106,15 @@ public class EatersWorld extends World implements WorldManager {
 				m_Type = kEmptyInt;			
 				return;
 			} else {	
-				for (int i = 0; i < m_Food.length; ++i) {
-					if (m_Food[i].getName().equalsIgnoreCase(name)) {
-						m_Type = i + kReservedIDs;
-						++m_FoodCount;
-						m_ScoreCount += m_Food[i].getValue();
-						return;
-					}
+				int index = getFoodIndexByName(name);
+				if (index == -1) {
+					throw new Exception("Invalid type name: " + name);
 				}
+				m_Type = index + kReservedIDs;
+				++m_FoodCount;
+				m_ScoreCount += m_Food[index].getValue();
+				return;
 			}
-			throw new Exception("Invalid type name: " + name);
 		}
 		
 		public boolean isWall() {
@@ -142,6 +141,21 @@ public class EatersWorld extends World implements WorldManager {
 			m_Type = kEmptyInt;
 			m_Eater = null;
 			return true;
+		}
+		
+		public Food setFood(Food newFood) {
+			Food oldFood = null;
+			if (isFood()) {
+				oldFood = removeFood();
+			}
+			m_Type = getFoodIndexByName(newFood.getName()) + kReservedIDs;
+			if (m_Type == -1) {
+				m_Type = kEmptyInt;
+			} else {
+				++m_FoodCount;
+				m_ScoreCount += newFood.getValue();
+			}
+			return oldFood;
 		}
 		
 		public Food setEater(Eater eater) {
@@ -193,6 +207,15 @@ public class EatersWorld extends World implements WorldManager {
 		}
 	}
 
+	private int getFoodIndexByName(String name) {
+		for (int i = 0; i < m_Food.length; ++i) {
+			if (m_Food[i].getName().equalsIgnoreCase(name)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
 	private EatersCell[][] m_World;
 	private Food[] m_Food;
 	private int m_FoodCount;
@@ -580,7 +603,11 @@ public class EatersWorld extends World implements WorldManager {
 		for (int i = 0; i < m_Eaters.length; ++i) {
 			Food f = getCell(m_Eaters[i].getLocation()).setEater(m_Eaters[i]);
 			if (f != null) {
-				m_Eaters[i].adjustPoints(f.getValue());
+				if (m_Eaters[i].isHungry()) {
+					m_Eaters[i].adjustPoints(f.getValue());
+				} else {
+					getCell(m_Eaters[i].getLocation()).setFood(f);
+				}
 			}
 		}
 	}
