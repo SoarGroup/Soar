@@ -69,7 +69,7 @@ AgentSML::AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) : /*m_AgentListe
 AgentSML::~AgentSML()
 {
 	// Release any objects we still own
-	Clear() ;
+	Clear(true) ;
 
 	// If we have an output listener object, delete it now.
 	// NOTE: At this point we're assuming AgentSML objects live as long as the underlying gSKI IAgent object.
@@ -82,11 +82,12 @@ AgentSML::~AgentSML()
 
 // Release any objects or other data we are keeping.  We do this just
 // prior to deleting AgentSML, but before the underlying gSKI agent has been deleted
-void AgentSML::Clear()
+// 'deletingThisAgent' should only be true when we're actually in the destructor.
+void AgentSML::Clear(bool deletingThisAgent)
 {
 	// Release any WME objects we still own.
 	// (Don't flush removes in this case as we're shutting down rather than just doing an init-soar).
-	ReleaseAllWmes(false) ;
+	ReleaseAllWmes(!deletingThisAgent) ;
 
 	m_ProductionListener.Clear();
 	m_RunListener.Clear();
@@ -161,7 +162,7 @@ public:
 
 		// Release any wmes or other objects we're keeping
 		AgentSML* pAgentSML = pKernelSML->GetAgentSML(pAgent) ;
-		pAgentSML->Clear() ;
+		pAgentSML->Clear(false) ;
 
 		// Remove the listeners that KernelSML uses for this agent.
 		// This is important.  Otherwise if we create a new agent using the same kernel object
