@@ -25,7 +25,6 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	private String m_LastErrorMessage = "No error.";
 	private String m_BasePath;
 	private WorldManager m_WorldManager;
-	private boolean m_DebuggerSpawned = false;
 	private ArrayList m_SimulationListeners = new ArrayList();
 	private ArrayList m_AddSimulationListeners = new ArrayList();
 	private ArrayList m_RemoveSimulationListeners = new ArrayList();
@@ -143,9 +142,6 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	protected void destroyAgent(Agent agent) {
 		m_Kernel.DestroyAgent(agent);
 		agent.delete();
-		if (m_WorldManager.noAgents()) {
-			m_DebuggerSpawned = false;
-		}
     }
         
 	public void setSpawnDebuggers(boolean mode) {
@@ -158,7 +154,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	
 	public void spawnDebugger(String agentName) {
 		if (!m_Debuggers) return;
-		if (m_DebuggerSpawned) return;
+		if (debuggerConnected()) return;
 		
 		// Figure out whether to use java or javaw
 		String os = System.getProperty("os.name");
@@ -184,9 +180,6 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 			shutdown();
 			System.exit(1);
 		}
-		
-		m_Logger.log("Spawned debugger for " + agentName);
-		m_DebuggerSpawned = true;
 	}
 	
 	private boolean waitForDebugger() {
@@ -208,6 +201,19 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 			try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
 		}
 		return ready;
+	}
+	
+	private boolean debuggerConnected() {
+		boolean connected = false;
+		m_Kernel.GetAllConnectionInfo();
+		for (int i = 0; i < m_Kernel.GetNumberConnections(); ++i) {
+			ConnectionInfo info =  m_Kernel.GetConnectionInfo(i);
+			if (info.GetName().equalsIgnoreCase("java-debugger")) {
+				connected = true;
+				break;
+			}
+		}
+		return connected;
 	}
 	
 	public void shutdown() {
