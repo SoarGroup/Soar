@@ -10,8 +10,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	private static final String kTagTankSoarWorld = "tanksoar-world";
 
 	private static final String kTagCells = "cells";
-	private static final String kParamWorldWidth = "world-width";
-	private static final String kParamWorldHeight = "world-height";
+	private static final String kParamWorldSize = "world-size";
 	private static final String kParamType = "type";
 	
 	static final String kTypeWall = "wall";
@@ -168,18 +167,17 @@ public class TankSoarWorld extends World implements WorldManager {
 			JavaElementXML cells = root.findChildByNameThrows(kTagCells);
 			
 			// Get dimentions
-			m_WorldWidth = cells.getAttributeIntThrows(kParamWorldWidth);
-			m_WorldHeight = cells.getAttributeIntThrows(kParamWorldHeight);
+			m_WorldSize = cells.getAttributeIntThrows(kParamWorldSize);
 			
 			// Figure out maximum manhattan distance:
 			// Maximum manhattan distance to another tank:
 			// (Map width x 2) - 2
 			// but we can subtract 2 from the width because of the outer wall:
 			// ((Map width - 2) x 2) - 2
-			m_MaxManhattanDistance = ((m_WorldWidth - 2) * 2) - 2;
+			m_MaxManhattanDistance = ((m_WorldSize - 2) * 2) - 2;
 			
 			// Create map array
-			m_World = new TankSoarCell[m_WorldHeight][m_WorldWidth];
+			m_World = new TankSoarCell[m_WorldSize][m_WorldSize];
 			
 			// generate world
 			generateWorldFromXML(cells);
@@ -218,9 +216,9 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 	
 	private void generateWorldFromXML(JavaElementXML cells) throws Exception {
-		for(int row = 0; row < m_WorldHeight; ++row) {
+		for(int row = 0; row < m_WorldSize; ++row) {
 			//String rowString = new String();
-			for (int col = 0; col < m_WorldWidth; ++col) {
+			for (int col = 0; col < m_WorldSize; ++col) {
 				try {
 					m_World[row][col] = new TankSoarCell(cells.getChild(row).getChild(col).getAttributeThrows(kParamType));
 					//rowString += m_World[row][col];
@@ -278,10 +276,10 @@ public class TankSoarWorld extends World implements WorldManager {
 
 	private MapPoint findStartingLocation() {
 		// set random starting location
-		MapPoint location = new MapPoint(m_Random.nextInt(m_WorldWidth), m_Random.nextInt(m_WorldHeight));
+		MapPoint location = new MapPoint(m_Random.nextInt(m_WorldSize), m_Random.nextInt(m_WorldSize));
 		while (!getCell(location).isOpen() || getCell(location).hasContents()) {
-			location.x = m_Random.nextInt(m_WorldWidth);
-			location.y = m_Random.nextInt(m_WorldHeight);				
+			location.x = m_Random.nextInt(m_WorldSize);
+			location.y = m_Random.nextInt(m_WorldSize);				
 		}
 		
 		return location;
@@ -656,9 +654,9 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 		
 		// Set all cells unexplored.
-		for(int row = 0; row < m_WorldHeight; ++row) {
+		for(int row = 0; row < m_WorldSize; ++row) {
 			// String rowString = new String();
-			for (int col = 0; col < m_WorldWidth; ++col) {
+			for (int col = 0; col < m_WorldSize; ++col) {
 				m_World[row][col].setExplored(false);
 				m_World[row][col].setParent(null);
 			}
