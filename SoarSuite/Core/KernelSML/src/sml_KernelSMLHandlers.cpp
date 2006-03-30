@@ -515,8 +515,8 @@ bool KernelSML::HandleGetRunState(gSKI::IAgent* pAgent, char const* pCommandName
 	}
 	else if (strcmp(pValue, sml_Names::kParamDecision) == 0)
 	{
-		// Report the current decision cycle counter (the counter reports one more than the user expects)
-		buffer << (pAgent->GetNumDecisionCyclesExecuted(pError)-1);
+		// Report the current decision cycle counter
+		buffer << pAgent->GetNumDecisionCyclesExecuted(pError);
 	}
 	else
 	{
