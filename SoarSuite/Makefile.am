@@ -6,8 +6,15 @@ SUBDIRS = Core Tools Environments
 
 java:
 if SWIGJAVA
-	cd Tools && $(MAKE) $(MAKEOPTS) java
-	cd Environments && $(MAKE) $(MAKEOPTS) java
+	pushd Tools/LoggerJava; ./build.sh; popd;
+	pushd Tools/SoarJavaDebugger; ./build.sh; popd;
+	pushd Tools/TestJavaSML; ./build.sh; popd;
+	pushd Tools/VisualSoar; ./build.sh; popd;
+	pushd Environments/JavaBaseEnvironment; ./build.sh; popd;
+	pushd Environments/JavaEaters; ./build.sh; popd;
+	pushd Environments/JavaMissionaries; ./build.sh; popd;
+	pushd Environments/JavaTOH; ./build.sh; popd;
+	pushd Environments/JavaTankSoar; ./build.sh; popd;
 else
 endif
 

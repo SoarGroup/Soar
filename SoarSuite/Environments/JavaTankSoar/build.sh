@@ -11,6 +11,6 @@ fi
 cp -f source/* bin
 mkdir bin/images
 cp -f source/images/* bin/images
-jar cfm ${SOARLIB}/JavaTankSoar.jar JarManifest -C bin .
+jar cfm JavaTankSoar.jar JarManifest -C bin .
 
 # Mac stuff deleted, see JavaEaters/build.sh

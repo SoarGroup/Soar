@@ -9,7 +9,7 @@ if ! javac -d bin -classpath ${SOARLIB}/swt.jar:${SOARLIB}/sml.jar:${SOARLIB}/Ja
 	exit 1;
 fi
 cp source/* bin
-jar cfm ${SOARLIB}/JavaEaters.jar JarManifest -C bin .
+jar cfm JavaEaters.jar JarManifest -C bin .
 
 # This next block is out of date.
 if [[ `uname -s` == "Darwin" ]]
