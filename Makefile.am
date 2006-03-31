@@ -24,3 +24,15 @@ dist-hook:
 	rm `find $(distdir) -name *.jar`
 	wget http://winter.eecs.umich.edu/jars/motif/swt.jar
 	mv swt.jar $(distdir)/SoarLibrary/bin
+
+install-data-am:
+	$(INSTALL) SoarLibrary/bin/libswt-atk-gtk-3139.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-awt-gtk-3139.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-cairo-gtk-3139.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-carbon-3139.jnilib $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-gnome-gtk-3139.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-gtk-3139.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-mozilla-gtk-3139.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-pi-carbon-3139.jnilib $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-pi-gtk-3139.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-webkit-carbon-3139.jnilib $(libdir)
