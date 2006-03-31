@@ -7,16 +7,14 @@ then
     echo "Build failed."
     exit 1;
   fi
-  jar cfm ${SOARLIB}/toh.jar JarManifest -C src .
+  jar cfm toh.jar JarManifest -C src .
 else
   if ! javac -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar -sourcepath src src/edu/umich/toh/TowersOfHanoi.java; then
     echo "Build failed."
     exit 1;
   fi
-  jar cfm ${SOARLIB}/toh.jar JarManifest -C src .
+  jar cfm toh.jar JarManifest -C src .
 fi
-
-cp towers-of-hanoi-SML.soar ${SOARLIB}
 
 if [[ `uname -s` == "Darwin" ]]
 then

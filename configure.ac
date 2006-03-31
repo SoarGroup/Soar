@@ -411,24 +411,15 @@ AC_OUTPUT([
 	Core/KernelSML/Makefile
 	Core/KernelSML/src/Makefile
 	Environments/Makefile
-	Environments/JavaBaseEnvironment/Makefile
-	Environments/JavaEaters/Makefile
-	Environments/JavaMissionaries/Makefile
-	Environments/JavaTOH/Makefile
-	Environments/JavaTankSoar/Makefile
 	Tools/Makefile
-	Tools/LoggerJava/Makefile
 	Tools/QuickLink/Makefile
 	Tools/QuickLink/src/Makefile
 	Tools/SoarTextIO/Makefile
 	Tools/SoarTextIO/src/Makefile
-	Tools/SoarJavaDebugger/Makefile
 	Tools/TOHSML/Makefile
 	Tools/TestCLI/Makefile
 	Tools/TestClientSML/Makefile
 	Tools/TestConnectionSML/Makefile
-	Tools/TestJavaSML/Makefile
 	Tools/TestSMLEvents/Makefile
 	Tools/TestSoarPerformance/Makefile
-	Tools/VisualSoar/Makefile
 	])

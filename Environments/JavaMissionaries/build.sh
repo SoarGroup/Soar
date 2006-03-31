@@ -14,7 +14,7 @@ else
   fi
 fi
 
-jar cfm ${SOARLIB}/mac.jar JarManifest -C src .
+jar cfm mac.jar JarManifest -C src .
 
 if ! test -d ${SOARLIB}/mac; then
   mkdir ${SOARLIB}/mac;
