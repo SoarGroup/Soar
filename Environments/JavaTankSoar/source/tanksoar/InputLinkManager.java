@@ -466,8 +466,6 @@ public class InputLinkManager {
 	}
 	
 	private int scan(int setting) {
-		
-		// TODO: should only blink things that change!!!		
 		MapPoint location = new MapPoint(m_Tank.getLocation());
 		
 		int distance = 0;
@@ -532,10 +530,7 @@ public class InputLinkManager {
 					radarColors[position][distance] = m_Agent.CreateStringWME(radarCellIDs[position][distance], kColorID, tank.getColor());
 				}
 			} else {
-				boolean idChanged = !radarCellIDs[position][distance].GetAttribute().equalsIgnoreCase(id);
-				boolean tankColorChanged = tankID && (radarColors[position][distance] != null) && (!radarColors[position][distance].GetValue().equalsIgnoreCase(tank.getColor()));
-				
-				if (m_Tank.recentlyMoved() || idChanged || tankColorChanged) {
+				if (m_Tank.recentlyMoved() || cell.isModified()) {
 					m_Agent.DestroyWME(radarCellIDs[position][distance]);
 					radarCellIDs[position][distance] = m_Agent.CreateIdWME(m_RadarWME, id);
 					m_Agent.CreateIntWME(radarCellIDs[position][distance], kDistanceID, distance);
@@ -547,11 +542,6 @@ public class InputLinkManager {
 				}
 			}
 			
-			if (id.equalsIgnoreCase(kTankID)) {
-				tank.setRWaves(m_Tank.backward());
-				radarColors[position][distance] = m_Agent.CreateStringWME(radarCellIDs[position][distance], kColorID, tank.getColor());
-			}		
-
 			if ((position == kRadarCenter) && cell.isBlocked()) {
 				return true;
 			}
