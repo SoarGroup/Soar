@@ -107,6 +107,9 @@ public class Eater extends WorldEntity {
 	}
 	
 	public void updateInput(EatersWorld world) {
+		// Anything you want to log about each eater each frame can go here:
+		//m_Logger.log(getName() + " at " + getLocation() + " score " + getPoints());
+		
 		boolean moved = (m_xWME.GetValue() != getLocation().x) || (m_yWME.GetValue() != getLocation().y);
 		
 		int xView, yView;
