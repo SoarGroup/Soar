@@ -4,7 +4,9 @@ proc AgentCreatedCallback {id userData agent} {
 
 # This is a lazy function which will either return the interpreter
 # already associated with this agent or create a new one for this agent
-proc getInterpreter {agentName} {
+proc getInterpreter {agentName _agent} {
+	global _kernel
+
 	# See if we already have an interpreter for this agent
 	#puts "Looking for interpreter for $agentName"
 
@@ -18,7 +20,16 @@ proc getInterpreter {agentName} {
 	
 	puts "No interpreter matched so creating one"
 	set interpreter [interp create $agentName]
-
+	
+	#these lines don't seem to be required, and if they are you can probably put them in FilterTcl/commands.tcl 
+	#$interpreter eval [list lappend auto_path .]
+	#$interpreter eval [list package require tcl_sml_clientinterface]
+	
+	$interpreter eval [list set _kernel $_kernel]
+	$interpreter eval [list set _agentName $agentName]
+   	$interpreter alias soar_kernel $_kernel
+	$interpreter alias soar_agent $_agent
+	
 	# We need to source the overloaded commands into the child interpreter
 	# so they'll be correctly in scope within that interpreter.
 	# Also, right now we're executing inside SoarLibrary\bin so we need
@@ -29,8 +40,9 @@ proc getInterpreter {agentName} {
 }
 
 proc MyFilter {id userData agent filterName commandLine} {
+	global _kernel
 	set name [$agent GetAgentName]
-	set interpreter [getInterpreter $name]
+	set interpreter [getInterpreter $name $agent]
 
 	puts "$name Command line $commandLine"
 
@@ -39,8 +51,9 @@ proc MyFilter {id userData agent filterName commandLine} {
 	# That evaluates the command within the child interpreter for this agent
 	# The catch around that places whether this call succeeds or fails into "error"
 	# and the result of the command's execution (or an error message) into result.
-	set error [catch {$interpreter eval $commandLine} result]	
-
+	set error [catch {$interpreter eval $commandLine} result]
+	#set error [catch {$_kernel ExecuteCommandLine "$commandLine" $name} result]
+	#set error [catch {$agent ExecuteCommandLine "$commandLine"} result ]
 	puts "Error is $error and Result is $result"
 
 	return ""
@@ -51,7 +64,7 @@ proc parentExecCommand { command args } {
 }
 
 proc createFilter {} {
-    global smlEVENT_AFTER_AGENT_CREATED smlEVENT_BEFORE_AGENT_REINITIALIZED 
+    global smlEVENT_AFTER_AGENT_CREATED smlEVENT_BEFORE_AGENT_REINITIALIZED smlEVENT_PRINT
     global _kernel
     global sml_Names_kFilterName
     
@@ -76,6 +89,7 @@ proc createFilter {} {
 	
 	# Execute a couple of simulated commands, so it's easier to see errors and problems
 	set agent [$_kernel GetAgent soar1]
+	
 	set res1 [MyFilter 123 "" $agent $sml_Names_kFilterName "print s3"]
 	set res2 [MyFilter 123 "" $agent $sml_Names_kFilterName "print s4"]
 	set res3 [MyFilter 123 "" $agent $sml_Names_kFilterName "puts hello"]
