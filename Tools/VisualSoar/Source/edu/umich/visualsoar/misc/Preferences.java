@@ -27,7 +27,8 @@ public class Preferences
 
     public static String getVisualSoarFolder()
     {
-    	File folder = new File(System.getProperty("user.dir") + File.separator + ".." + File.separator + "visualsoar") ;
+    	// SoarLibrary/bin/../../Tools/VisualSoar
+    	File folder = new File(System.getProperty("user.dir") + File.separator + ".." + File.separator + ".." + File.separator + "Tools" + File.separator + "VisualSoar") ;
     	return folder.toString() ;
     }
     
