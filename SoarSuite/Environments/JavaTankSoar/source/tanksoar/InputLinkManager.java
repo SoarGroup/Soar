@@ -545,6 +545,7 @@ public class InputLinkManager {
 			if ((position == kRadarCenter) && cell.isBlocked()) {
 				return true;
 			}
+			cell.setModified();
 		}
 		return false;
 	}
