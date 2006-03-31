@@ -230,8 +230,9 @@ std::string KernelSML::SendClientMessage(gSKI::IAgent* pAgent, char const* pMess
 * @brief	Send this command line out to all clients that have
 *			registered a filter.  The result is the processed
 *			version of the command line.
+*			Returns true if at least one filter was registered.
 *************************************************************/
-void KernelSML::SendFilterMessage(gSKI::IAgent* pAgent, char const* pCommandLine, std::string* pResult)
+bool KernelSML::SendFilterMessage(gSKI::IAgent* pAgent, char const* pCommandLine, std::string* pResult)
 {
 	char response[10000] ;
 	response[0] = 0 ;
@@ -242,12 +243,14 @@ void KernelSML::SendFilterMessage(gSKI::IAgent* pAgent, char const* pCommandLine
 	{
 		// Nobody was listening, so just return the original command line
 		*pResult = pCommandLine ;
+		return false ;
 	}
 	else
 	{
 		// Somebody filtered this command, so return the results of that filtering
 		// (this can be "")
 		*pResult = response ;
+		return true ;
 	}
 }
 
