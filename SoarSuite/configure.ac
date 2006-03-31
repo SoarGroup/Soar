@@ -24,7 +24,7 @@ AC_PROG_MAKE_SET
 
 # Tcl and Java switches for SWIG
 AC_ARG_ENABLE(tcl,
-     [  --enable-tcl        Turn on tcl support (needs swig >= 1.3.24 and Tcl 8.4)],
+     [  --enable-tcl        Turn on tcl support (needs swig >= 1.3.24 but not 1.3.28 and Tcl 8.4)],
      [case "${enableval}" in
 	yes) tcl=true ;;
 	no)  tcl=false ;;
