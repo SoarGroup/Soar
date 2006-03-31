@@ -625,7 +625,18 @@ public class EatersWorld extends World implements WorldManager {
 					m_World[y][x].setCollision(false);
 				}
 			}
-		}			
+		}		
+		
+		if (m_Simulation.reachedMaxUpdates()) {
+			m_Logger.log("Reached maximum updates, stopping.");
+			m_Simulation.stopSimulation();
+			m_PrintedStats = true;
+			m_Logger.log("All of the food is gone.");
+			for (int i = 0; i < m_Eaters.length; ++i) {
+				m_Logger.log(m_Eaters[i].getName() + ": " + m_Eaters[i].getPoints());
+			}
+			return;
+		}
 		
 		if (getFoodCount() <= 0) {
 			if (!m_PrintedStats) {
