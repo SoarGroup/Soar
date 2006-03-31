@@ -20,6 +20,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	private boolean m_StopSoar = false;
 	private int m_WorldCount = 0;
 	private int m_Runs = 0;
+	private int m_MaxUpdates = 0;
 	private Thread m_RunThread;
 	private boolean m_Running = false;
 	private String m_LastErrorMessage = "No error.";
@@ -81,6 +82,10 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
   		return m_WorldCount;
   	}
   	
+  	public boolean reachedMaxUpdates() {
+  		return m_MaxUpdates >= 0 ? (m_WorldCount >= m_MaxUpdates): false;
+  	}
+  	
 	public void setCurrentMap(String map) {
 		m_CurrentMap = map;
 	}
@@ -132,6 +137,13 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 			runs = -1;
 		}
 		m_Runs = runs;
+	}
+	
+	public void setMaxUpdates(int updates) {
+		if (updates <= 0) {
+			updates = -1;
+		}
+		m_MaxUpdates = updates;
 	}
 	
 	public void changeMap(String map) {
