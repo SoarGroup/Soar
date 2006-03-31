@@ -1249,15 +1249,12 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 
 	if (kDebugCommandLine)
 		PrintDebugFormat("Executing %s", pLine) ;
+	
+	AgentSML* pAgentSML = this->GetAgentSML(pAgent) ;
 
 	// If we're echoing the results, also echo the command we're executing
-	if (echoResults)
-	{
-		AgentSML* pAgentSML = this->GetAgentSML(pAgent) ;
-
-		if (pAgentSML)
-			pAgentSML->FireEchoEvent(pConnection, pLine) ;
-	}
+	if (echoResults && pAgentSML)
+		pAgentSML->FireEchoEvent(pConnection, pLine) ;
 
 	// Send this command line through anyone registered filters.
 	// If there are no filters (or this command requested not to be filtered), this copies the original line into the filtered line unchanged.
@@ -1265,12 +1262,22 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 
 	if (!noFiltering)
 	{
-		this->SendFilterMessage(pAgent, pLine, &filteredLine) ;
+		// DJP: I think we need to move to more structure here, passing a simple XML string that
+		// contains: command-line, error-message, output to print (error message could be a special case of this)
+		// This could be extended to support more things later then.  I don't think a simple string is enough.
+		// As long as we create this XML and pass it over, it's still very easy for a dumb filter to pass back
+		// what it was sent and we'll just extract the contents.
+		bool filtered = this->SendFilterMessage(pAgent, pLine, &filteredLine) ;
 
 		// If a filter consumed the entire command, there's no more work for us to do.
 		// Doing this after the echo step, so the original command is still echo'd to the user.
 		if (filteredLine.empty())
 			return true ;
+
+		// If we filtered this line, echo the results of the filtering
+		// (this might be overkill, but let's start with this while I'm debugging)
+		//if (filtered && echoResults && pAgentSML)
+		//	pAgentSML->FireEchoEvent(pConnection, filteredLine.c_str()) ;
 	}
 	else
 	{

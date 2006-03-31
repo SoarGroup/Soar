@@ -7,6 +7,7 @@ proc AgentCreatedCallback {id userData agent} {
 proc getInterpreter {agentName} {
 	# See if we already have an interpreter for this agent
 	#puts "Looking for interpreter for $agentName"
+	global interpreter
 
 	foreach i [interp slaves] {
 		#puts "Have interpreter $i"
@@ -18,12 +19,14 @@ proc getInterpreter {agentName} {
 	
 	puts "No interpreter matched so creating one"
 	set interpreter [interp create $agentName]
-	return $interpreter
-}
 
-proc print {arg} {
-	puts "Called internal print"
-	puts $arg
+	# We need to source the overloaded commands into the child interpreter
+	# so they'll be correctly in scope within that interpreter.
+	# Also, right now we're executing inside SoarLibrary\bin so we need
+	# play this game to find the file to load.
+	$interpreter eval source ../../Tools/FilterTcl/commands.tcl
+	
+	return $interpreter
 }
 
 proc MyFilter {id userData agent filterName commandLine} {
@@ -31,42 +34,14 @@ proc MyFilter {id userData agent filterName commandLine} {
 	set interpreter [getInterpreter $name]
 
 	puts "$name Command line $commandLine"
-	
-	# Break the command into its separate pieces
-	# (not sure if this will handle embedded quotes correctly)
-	set args [split $commandLine " "]
-	
-	# Extract the first one which is the underlying command
-	set first [lindex $args 0]
-	puts "First command is $first"
 
-	set numberArgs [llength $args]
-	set otherArgs [lrange $args 1 $numberArgs]
-	puts "Other args are $otherArgs"
-	
-	set combinedArgs [join $otherArgs]	
-	puts "Combined args are $combinedArgs"
+	# It seems if we get an error here that almost seems to "throw an exception"
+	# and we leave execution immediately and report the failure back to Soar directly.
+	# What we want is to catch that error and control the response.
+	set result [$interpreter eval $commandLine]	
 
-#	set command "{"	
-#	append command [join $args]
-#	append command "}"
-
-	# Maybe re-assembling the pieces will strip the surrounding quotes
-	set command [join $args]
-
-	puts "Command is $command"	
-	set result [$interpreter eval $command]	
 	puts "Result is $result"
-
-	# This approach works for passing in "print s1" and calls to our
-	# tcl print method.  But it fails for other tcl commands like "set x y"	
-#	if { $numberArgs > 1 } {
-#		set result [$interpreter eval [$first $otherArgs]]
-#	} else {
-#		puts "Executing single command $first"
-#		set result [$interpreter eval [$first]]
-#	}
-	
+		
 	# For the moment, always return "print s1" as the result of the filter
 	return "print s1"
 }
@@ -97,11 +72,12 @@ proc createFilter {} {
 	
 	# Execute a couple of simulated commands, so it's easier to see errors and problems
 	set agent [$_kernel GetAgent soar1]
+	set res1 [MyFilter 123 "" $agent $sml_Names_kFilterName "print s3"]
+	set res2 [MyFilter 123 "" $agent $sml_Names_kFilterName "print s4"]
 	set res3 [MyFilter 123 "" $agent $sml_Names_kFilterName "puts hello"]
 	set res4 [MyFilter 123 "" $agent $sml_Names_kFilterName "pwd"]
 	set res5 [MyFilter 123 "" $agent $sml_Names_kFilterName "set test hello"]
-#	set res1 [MyFilter 123 "" $agent $sml_Names_kFilterName "print s3"]
-#	set res2 [MyFilter 123 "" $agent $sml_Names_kFilterName "print s4"]
+	set res6 [MyFilter 123 "" $agent $sml_Names_kFilterName "puts \$test"]
 }
 
 # Start by loading the tcl interface library
