@@ -7,7 +7,6 @@ proc AgentCreatedCallback {id userData agent} {
 proc getInterpreter {agentName} {
 	# See if we already have an interpreter for this agent
 	#puts "Looking for interpreter for $agentName"
-	global interpreter
 
 	foreach i [interp slaves] {
 		#puts "Have interpreter $i"
@@ -25,7 +24,7 @@ proc getInterpreter {agentName} {
 	# Also, right now we're executing inside SoarLibrary\bin so we need
 	# play this game to find the file to load.
 	$interpreter eval source ../../Tools/FilterTcl/commands.tcl
-	
+			
 	return $interpreter
 }
 
@@ -35,15 +34,20 @@ proc MyFilter {id userData agent filterName commandLine} {
 
 	puts "$name Command line $commandLine"
 
-	# It seems if we get an error here that almost seems to "throw an exception"
-	# and we leave execution immediately and report the failure back to Soar directly.
-	# What we want is to catch that error and control the response.
-	set result [$interpreter eval $commandLine]	
+	# This is a complicated line where all the action happens.
+	# At the core is "$interpreter eval $commandLine"
+	# That evaluates the command within the child interpreter for this agent
+	# The catch around that places whether this call succeeds or fails into "error"
+	# and the result of the command's execution (or an error message) into result.
+	set error [catch {$interpreter eval $commandLine} result]	
 
-	puts "Result is $result"
-		
-	# For the moment, always return "print s1" as the result of the filter
-	return "print s1"
+	puts "Error is $error and Result is $result"
+
+	return ""
+}
+
+proc parentExecCommand { command args } {
+	$_kernel ExecuteCommandLine $command $args
 }
 
 proc createFilter {} {
