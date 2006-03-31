@@ -133,12 +133,14 @@
 		return TCL_OK;
 	}
 	
-	void EscapeQuotes(std::string* s) {
-	    int pos = s->find_first_of("\"");
+	// Embedded $, [ and " are replaced with \$ \[ and \" to stop them being evaluated by
+	// Tcl on the way through the callback.
+	void EscapeSpecial(std::string* s) {
+	    int pos = s->find_first_of("[$\"");
 	    while(pos != std::basic_string<char*>::npos) {
 	        s->insert(pos, "\\");
-	        pos = s->find_first_of("\"", pos+2);
-	    }
+	        pos = s->find_first_of("[$\"", pos+2);
+	    }	    
 	}
 	
 	void TclOutputNotificationEventCallback(void* pUserData, sml::Agent* pAgent)
@@ -161,7 +163,7 @@
 	    
 	    // the argument could have embedded quotes, so we need to escape them
 	    std::string argument = pArgument;
-	    EscapeQuotes(&argument);
+	    EscapeSpecial(&argument);
 	    
 	    Tcl_AppendStringsToObj(script, " ", pFunctionName, " \"", argument.c_str(), "\"", NULL);
 	    // since we're returning a value, we need to clear out any old values
@@ -187,7 +189,7 @@
 	    
 	    // the message could have embedded quotes, so we need to escape them
 	    std::string message = pMessage;
-	    EscapeQuotes(&message);
+	    EscapeSpecial(&message);
 	    
 	    Tcl_AppendStringsToObj(script, " ", pClientName, " \"", message.c_str(), "\"", NULL);
 	    // since we're returning a value, we need to clear out any old values
@@ -275,7 +277,7 @@
 		
 		// the message could have embedded quotes, so we need to escape them
 	    std::string message = pMessage;
-	    EscapeQuotes(&message);
+	    EscapeSpecial(&message);
 	    
 		// wrap the message in quotes in case it has spaces
 		Tcl_AppendStringsToObj(script, " \"", message.c_str(), "\"", NULL);
@@ -368,7 +370,7 @@
 		
 		// the message could have embedded quotes, so we need to escape them
 	    std::string data = pData;
-	    EscapeQuotes(&data);
+	    EscapeSpecial(&data);
 	    
 		Tcl_AppendStringsToObj(script, " \"", data.c_str(), "\"", NULL);
 		// since this script will never be executed again, we use TCL_EVAL_DIRECT, which skips the compilation step
@@ -391,7 +393,7 @@
 	    
 	    // the user data could have embedded quotes, so we need to escape them
 	    std::string ud = userData;
-	    EscapeQuotes(&ud);
+	    EscapeSpecial(&ud);
 	    
 	    Tcl_AppendStringsToObj(tud->script, " \"", ud.c_str(), "\" ", NULL);
 	    
@@ -409,7 +411,7 @@
 	    
 	    // the user data could have embedded quotes, so we need to escape them
 	    std::string ud = userData;
-	    EscapeQuotes(&ud);
+	    EscapeSpecial(&ud);
 	    
 	    Tcl_AppendStringsToObj(tud->script, proc, " \"", ud.c_str(), "\"", NULL);
 	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Agent,0));
@@ -442,7 +444,7 @@
 	    
 	    // the user data could have embedded quotes, so we need to escape them
 	    std::string ud = userData;
-	    EscapeQuotes(&ud);
+	    EscapeSpecial(&ud);
 	    
 	    Tcl_AppendStringsToObj(tud->script, proc, " \"", ud.c_str(), "\" ", NULL);
 	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Agent,0));
