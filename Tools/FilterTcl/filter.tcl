@@ -2,8 +2,55 @@ proc AgentCreatedCallback {id userData agent} {
 	puts "Agent_callback:: [$agent GetAgentName] created"
 }
 
+# This is a lazy function which will either return the interpreter
+# already associated with this agent or create a new one for this agent
+proc getInterpreter {agentName} {
+	# See if we already have an interpreter for this agent
+	puts "Looking for interpreter for $agentName"
+
+	foreach i [interp slaves] {
+		puts "Have interpreter $i"
+		if [string equal $i $agentName] {
+			puts "Found match for $i"
+			return $i
+		}
+	}
+	
+	puts "No interpreter matched so creating one"
+	set interpreter [interp create $agentName]
+	return $interpreter
+}
+
+proc print {arg} {
+	puts "Called internal print"
+	puts $arg
+}
+
 proc MyFilter {id userData agent filterName commandLine} {
-	puts "Command line $commandLine"
+	set name [$agent GetAgentName]
+	set interpreter [getInterpreter $name]
+
+	puts "$name Command line $commandLine"
+	
+	# Break the command into its separate pieces
+	# (not sure if this will handle embedded quotes correctly)
+	set args [split $commandLine " "]
+	
+	# Extract the first one which is the underlying command
+	set first [lindex $args 0]
+	puts "First command is $first"
+
+	set numberArgs [llength $args]
+	set otherArgs [lrange $args 1 $numberArgs]
+	puts "Other args are $otherArgs"
+	
+	set combinedArgs [join $otherArgs]	
+	puts "Combined args are $combinedArgs"
+	
+	#set result [$interpreter eval [$args]]
+	set result [$interpreter eval [$first $otherArgs]]
+	
+	# For the moment, always return "print s1" as the result of the filter
 	return "print s1"
 }
 
@@ -15,8 +62,7 @@ proc createFilter {} {
 	# Then create a kernel
 	#set _kernel [Kernel_CreateKernelInCurrentThread SoarKernelSML 0]
 
-	# I don't know how to pass a null string in Tcl, so have to pass the IP address which indicates "this machine"
-	set _kernel [Kernel_CreateRemoteConnection true 127.0.0.1]
+	set _kernel [Kernel_CreateRemoteConnection]
 
 	if {[$_kernel HadError]} {
 		puts "Error creating kernel: "
@@ -29,20 +75,21 @@ proc createFilter {} {
 	# Practice callbacks by registering for agent creation event
 	set agentCallbackId0 [$_kernel RegisterForAgentEvent $smlEVENT_AFTER_AGENT_CREATED AgentCreatedCallback ""]
 	
-	
-	# int clientFilter = pKernel->RegisterForClientMessageEvent(sml_Names::kFilterName, &MyFilter, 0) ;
-	# Don't know how to access sml_Names::kFilterName in Tcl, so I'm using the string instead
+	# Register the filter callback
 	set filterCallbackId0 [$_kernel RegisterForClientMessageEvent $sml_Names_kFilterName MyFilter ""]
+	
+	# Execute a couple of simulated commands, so it's easier to see errors and problems
+	set agent [$_kernel GetAgent soar1]
+	set res1 [MyFilter 123 "" $agent $sml_Names_kFilterName "print s3"]
+	set res2 [MyFilter 123 "" $agent $sml_Names_kFilterName "print s4"]
+	set res3 [MyFilter 123 "" $agent $sml_Names_kFilterName "puts hello world"]
+#	set res4 [MyFilter 123 "" $agent $sml_Names_kFilterName "set test hello"]
 }
 
 # Start by loading the tcl interface library
 # It seems this has to happen outside of the proc or I get a failure
 set soar_library [file join [pwd]]
-set tcl_library [file join [pwd] Tcl_sml_ClientInterface]
 lappend auto_path  $soar_library
-
-puts "path is $auto_path"
-puts $tcl_library
 
 package require tcl_sml_clientinterface
 
