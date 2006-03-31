@@ -189,8 +189,6 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 							int setting = tanks[i].getRadarDistance();
 							m_RD.calculate(tanks[i].getFacingInt());
 							MapPoint point = new MapPoint(tanks[i].getLocation());
-							point.travel(m_RD.forward);
-							point.travel(m_RD.left);
 							setting -= 1;
 							//gc.setLineWidth(2);
 							int width = 0;
@@ -201,25 +199,33 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 								width = m_CellSize*3;
 								height = m_CellSize;
 								start = 0;
+								point.travel(m_RD.forward);
+								point.travel(m_RD.left);
 								break;
 							case WorldEntity.kSouthInt:
 								width = m_CellSize*3;
 								height = m_CellSize;
 								start = 180;
+								point.travel(m_RD.forward);
+								point.travel(m_RD.right);
 								break;
 							case WorldEntity.kEastInt:
 								width = m_CellSize;
 								height = m_CellSize*3;
 								start = -90;
+								point.travel(m_RD.forward);
+								point.travel(m_RD.left);
 								break;
 							case WorldEntity.kWestInt:
 								width = m_CellSize;
 								height = m_CellSize*3;
 								start = 90;
+								point.travel(m_RD.forward);
+								point.travel(m_RD.right);
 								break;
 							}
 							for (int j = 0; j < setting; ++j) {
-								//gc.drawArc(point.x*m_CellSize,point.y*m_CellSize,width,height, -90,180);
+								gc.drawArc(point.x*m_CellSize,point.y*m_CellSize,width,height, start,180);
 								point.travel(m_RD.forward);
 							}
 						}
