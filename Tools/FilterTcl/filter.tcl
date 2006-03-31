@@ -6,12 +6,12 @@ proc AgentCreatedCallback {id userData agent} {
 # already associated with this agent or create a new one for this agent
 proc getInterpreter {agentName} {
 	# See if we already have an interpreter for this agent
-	puts "Looking for interpreter for $agentName"
+	#puts "Looking for interpreter for $agentName"
 
 	foreach i [interp slaves] {
-		puts "Have interpreter $i"
+		#puts "Have interpreter $i"
 		if [string equal $i $agentName] {
-			puts "Found match for $i"
+			#puts "Found match for $i"
 			return $i
 		}
 	}
@@ -46,9 +46,26 @@ proc MyFilter {id userData agent filterName commandLine} {
 	
 	set combinedArgs [join $otherArgs]	
 	puts "Combined args are $combinedArgs"
-	
-	#set result [$interpreter eval [$args]]
-	set result [$interpreter eval [$first $otherArgs]]
+
+#	set command "{"	
+#	append command [join $args]
+#	append command "}"
+
+	# Maybe re-assembling the pieces will strip the surrounding quotes
+	set command [join $args]
+
+	puts "Command is $command"	
+	set result [$interpreter eval $command]	
+	puts "Result is $result"
+
+	# This approach works for passing in "print s1" and calls to our
+	# tcl print method.  But it fails for other tcl commands like "set x y"	
+#	if { $numberArgs > 1 } {
+#		set result [$interpreter eval [$first $otherArgs]]
+#	} else {
+#		puts "Executing single command $first"
+#		set result [$interpreter eval [$first]]
+#	}
 	
 	# For the moment, always return "print s1" as the result of the filter
 	return "print s1"
@@ -80,10 +97,11 @@ proc createFilter {} {
 	
 	# Execute a couple of simulated commands, so it's easier to see errors and problems
 	set agent [$_kernel GetAgent soar1]
-	set res1 [MyFilter 123 "" $agent $sml_Names_kFilterName "print s3"]
-	set res2 [MyFilter 123 "" $agent $sml_Names_kFilterName "print s4"]
-	set res3 [MyFilter 123 "" $agent $sml_Names_kFilterName "puts hello world"]
-#	set res4 [MyFilter 123 "" $agent $sml_Names_kFilterName "set test hello"]
+	set res3 [MyFilter 123 "" $agent $sml_Names_kFilterName "puts hello"]
+	set res4 [MyFilter 123 "" $agent $sml_Names_kFilterName "pwd"]
+	set res5 [MyFilter 123 "" $agent $sml_Names_kFilterName "set test hello"]
+#	set res1 [MyFilter 123 "" $agent $sml_Names_kFilterName "print s3"]
+#	set res2 [MyFilter 123 "" $agent $sml_Names_kFilterName "print s4"]
 }
 
 # Start by loading the tcl interface library
