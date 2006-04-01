@@ -91,15 +91,9 @@ void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::IAgent
 	if (wmelist->GetNumElements() == 0)
 		return ;
 
-	// BADBAD: voigtjr VS2005 workaround
-	if (!HasEvents(gSKIEVENT_OUTPUT_PHASE_CALLBACK)) 
-		return;
-
-	ConnectionListIter connectionIter = GetBegin(gSKIEVENT_OUTPUT_PHASE_CALLBACK) ;
-
-	// Check if nobody is listening to this event and if so we're done.
-	// We can't unregister it from the kernel, or "stop on output" would stop working.
-	if (connectionIter == GetEnd(gSKIEVENT_OUTPUT_PHASE_CALLBACK))
+	// Get the first listener for this event (or return if there are none)
+	ConnectionListIter connectionIter ;
+	if (!EventManager<egSKIWorkingMemoryEventId>::GetBegin(eventId, &connectionIter))
 		return ;
 
 	// We need the first connection for when we're building the message.  Perhaps this is a sign that
