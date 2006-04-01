@@ -169,6 +169,16 @@ public:
 	void FireEchoEvent(Connection* pConnection, char const* pMessage) { m_PrintListener.HandleEvent(gSKIEVENT_ECHO, m_pIAgent, pMessage) ; m_PrintListener.FlushOutput(pConnection, gSKIEVENT_ECHO) ; }
 
 	/*************************************************************
+	* @brief	This is the same as the regular FireEchoEvent, except
+	*			it broadcasts to all listeners, even the originator of the command
+	*			because the self field is not set in this case.
+	*
+	*			We shouldn't use this extensively and may choose to
+	*			remove this and replace it with a different event later.
+	*************************************************************/
+	void FireEchoEventIncludingSelf(char const* pMessage) { m_PrintListener.HandleEvent(gSKIEVENT_ECHO, m_pIAgent, pMessage) ; m_PrintListener.FlushOutput(NULL, gSKIEVENT_ECHO) ; }
+
+	/*************************************************************
 	* @brief	Converts an id from a client side value to a kernel side value.
 	*			We need to be able to do this because the client is adding a collection
 	*			of wmes at once, so it makes up the ids for those objects.

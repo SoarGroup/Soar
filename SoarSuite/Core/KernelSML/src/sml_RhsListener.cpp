@@ -128,7 +128,7 @@ bool RhsListener::HandleFilterEvent(egSKIRhsEventId eventID, gSKI::IAgent* pAgen
 	bool result = false ;
 
 	// If nobody is listening we're done (not a bug as we register for all rhs functions and only forward specific ones that the client has registered)
-	if (!pList)
+	if (!pList || pList->size() == 0)
 		return result ;
 
 	ConnectionListIter connectionIter = pList->begin() ;
@@ -237,7 +237,7 @@ bool RhsListener::HandleEvent(egSKIRhsEventId eventID, gSKI::IAgent* pAgent, boo
 	ConnectionList* pList = GetRhsListeners(pFunctionName) ;
 
 	// If nobody is listening we're done (not a bug as we register for all rhs functions and only forward specific ones that the client has registered)
-	if (!pList)
+	if (!pList || pList->size() == 0)
 		return result ;
 
 	ConnectionListIter connectionIter = pList->begin() ;
