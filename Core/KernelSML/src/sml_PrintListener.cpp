@@ -92,14 +92,9 @@ void PrintListener::FlushOutput(Connection* pSourceConnection, egSKIPrintEventId
 	if (!m_BufferedPrintOutput[buffer].size())
 		return ;
 
-	// BADBAD: voigtjr VS2005 workaround
-	if (!HasEvents(eventID)) 
-		return;
-
-	ConnectionListIter connectionIter = GetBegin(eventID);
-
-	// Nobody is listenening for this event.  That's an error as we should unregister from the kernel in that case.
-	if (connectionIter == GetEnd(eventID))
+	// Get the first listener for this event (or return if there are none)
+	ConnectionListIter connectionIter ;
+	if (!EventManager<egSKIPrintEventId>::GetBegin(eventID, &connectionIter))
 		return ;
 
 	// We need the first connection for when we're building the message.  Perhaps this is a sign that

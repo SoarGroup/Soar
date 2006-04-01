@@ -158,30 +158,25 @@ public:
 		return GetListeners(eventID) ? true : false;
 	}
 
-	virtual ConnectionListIter	GetBegin(EventType eventID)
+	virtual bool GetBegin(EventType eventID, ConnectionListIter* pBegin)
 	{
 		ConnectionList* pList = GetListeners(eventID) ;
 
-		// If nobody is listening return NULL.
-		// Key is that this must match the value returned by GetEnd()
-		// in the same situation.
+		// If nobody is listening return false.
+		if (!pList || pList->size() == 0)
+			return false ;
 
-		// voigtjr VS2005 workaround
-		//if (!pList)
-		//	return NULL ;
-		assert(pList);
-
-		return pList->begin() ;
+		*pBegin = pList->begin() ;
+		return true ;
 	}
 
 	virtual ConnectionListIter  GetEnd(EventType eventID)
 	{
 		ConnectionList* pList = GetListeners(eventID) ;
 
-		// voigtjr VS2005 workaround
-		//if (!pList)
-		//	return NULL ;
-		assert(pList);
+		// Should call GetBegin() first to check that there is a list and
+		// only then call GetEnd().  This is a bit clumsy.
+		assert(pList && pList->size() != 0) ;
 
 		return pList->end() ;
 	}

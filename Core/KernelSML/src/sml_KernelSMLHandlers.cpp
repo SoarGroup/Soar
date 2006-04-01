@@ -1276,8 +1276,8 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 
 		// If we filtered this line, echo the results of the filtering
 		// (this might be overkill, but let's start with this while I'm debugging)
-		//if (filtered && echoResults && pAgentSML)
-		//	pAgentSML->FireEchoEvent(pConnection, filteredLine.c_str()) ;
+		if (filtered && pAgentSML)
+			pAgentSML->FireEchoEventIncludingSelf(filteredLine.c_str()) ;
 	}
 	else
 	{
