@@ -23,7 +23,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
-				PreprocessorDefinitions="WIN32;_DEBUG"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="1"
@@ -83,7 +83,7 @@ cd ..
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
-				PreprocessorDefinitions="WIN32;NDEBUG"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
 				AssemblerListingLocation="$(IntDir)/"
