@@ -22,7 +22,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(JAVA_INCLUDE)&quot;;&quot;$(JAVA_INCLUDE)\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
-				PreprocessorDefinitions="WIN32;_DEBUG"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="TRUE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -92,7 +92,7 @@ rmdir SoarLibrary\bin\sml /S /Q
 				InlineFunctionExpansion="2"
 				OmitFramePointers="TRUE"
 				AdditionalIncludeDirectories="&quot;$(JAVA_INCLUDE)&quot;;&quot;$(JAVA_INCLUDE)\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
-				PreprocessorDefinitions="WIN32;NDEBUG"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="TRUE"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
@@ -205,7 +205,8 @@ echo on
 cd build
 del *.java
 cd ..
-&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;"
+&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;
+"
 					AdditionalDependencies=""
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
@@ -223,7 +224,8 @@ echo on
 cd build
 del *.java
 cd ..
-&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;"
+&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;
+"
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
 		</File>
