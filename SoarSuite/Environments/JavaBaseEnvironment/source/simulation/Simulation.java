@@ -250,9 +250,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	}
 	
 	public void stepSimulation() {
-		// TODO: fix this when the interface is updated
-		m_Kernel.ExecuteCommandLine("run -o 1", "red");
-        //m_Kernel.RunAllAgents(1);
+		m_Kernel.RunAllTilOutput();
 	}
 	
 	public void stopSimulation() {
@@ -309,6 +307,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
   			m_StopSoar = false;
   			m_Kernel.StopAllAgents();
   		}
+  		//m_Logger.log("Update number " + m_WorldCount);
   		m_WorldManager.update();
 		++m_WorldCount;
 		fireSimulationEvent(SimulationListener.kUpdateEvent);
