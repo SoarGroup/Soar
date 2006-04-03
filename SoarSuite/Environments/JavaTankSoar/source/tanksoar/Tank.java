@@ -217,7 +217,10 @@ public class Tank  extends WorldEntity {
 			commandId.AddStatusComplete();
 		}
 		
-    	m_Agent.ClearOutputLinkChanges();	
+    	m_Agent.ClearOutputLinkChanges();
+    	
+    	// TODO is this necessary?
+		m_Agent.Commit();
 		
 		// Do not allow a move if we rotated.
 		if (m_LastMove.rotate) {
