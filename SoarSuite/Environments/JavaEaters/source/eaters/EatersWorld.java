@@ -21,14 +21,9 @@ public class EatersWorld extends World implements WorldManager {
 	private static final String kParamRandomFood = "random-food";
 	private static final String kParamType = "type";
 	
-	static final String kTypeWall = "wall";
-	static final String kTypeEmpty = "empty";
-	static final String kTypeEater = "eater";
-	
-	private static final int kWallInt = 0;
-	private static final int kEmptyInt = 1;
-	private static final int kEaterInt = 2;
-	private static final int kReservedIDs = 3;
+	static final String kWallID = "wall";
+	static final String kEmptyID = "empty";
+	static final String kEaterID = "eater";
 	
 	private static final int kWallPenalty = -5;
 	private static final int kJumpPenalty = -5;
@@ -89,6 +84,12 @@ public class EatersWorld extends World implements WorldManager {
 	}
 	
 	public class EatersCell extends Cell {
+
+		private static final int kWallInt = 0;
+		private static final int kEmptyInt = 1;
+		private static final int kEaterInt = 2;
+		private static final int kReservedIDs = 3;		
+		
 		private Eater m_Eater;
 		
 		public EatersCell(int foodIndex) {
@@ -98,10 +99,10 @@ public class EatersWorld extends World implements WorldManager {
 		}
 
 		public EatersCell(String name) throws Exception {
-			if (name.equalsIgnoreCase(kTypeWall)) {
+			if (name.equalsIgnoreCase(kWallID)) {
 				m_Type = kWallInt;
 				return;
-			} else if (name.equalsIgnoreCase(kTypeEmpty)) {
+			} else if (name.equalsIgnoreCase(kEmptyID)) {
 				m_Type = kEmptyInt;			
 				return;
 			} else {	
@@ -125,7 +126,7 @@ public class EatersWorld extends World implements WorldManager {
 		}
 		
 		public boolean isEater() {
-			return m_Type == kEaterInt;
+			return (m_Type == kEaterInt) || (m_Eater != null);
 		}
 		
 		public boolean isFood() {
@@ -133,11 +134,13 @@ public class EatersWorld extends World implements WorldManager {
 		}
 		
 		public boolean removeEater() {
-			if (m_Type != kEaterInt) {
+			if (!isEater()) {
 				return false;
 			}
 			m_Modified = true;
-			m_Type = kEmptyInt;
+			if (m_Type == kEaterInt) {
+				m_Type = kEmptyInt;
+			}
 			m_Eater = null;
 			return true;
 		}
@@ -175,11 +178,11 @@ public class EatersWorld extends World implements WorldManager {
 		public String getName() {
 			switch (m_Type) {
 			case kWallInt:
-				return kTypeWall;
+				return kWallID;
 			case kEmptyInt:
-				return kTypeEmpty;
+				return kEmptyID;
 			case kEaterInt:
-				return kTypeEater;
+				return kEaterID;
 			default:
 				break;
 			}
@@ -197,7 +200,11 @@ public class EatersWorld extends World implements WorldManager {
 			if (isFood()) {
 				m_Modified = true;
 				Food f = getFood();
-				m_Type = kEmptyInt;
+				if (m_Eater == null) {
+					m_Type = kEmptyInt;
+				} else {
+					m_Type = kEaterInt;
+				}
 				--m_FoodCount;
 				m_ScoreCount -= f.getValue();
 				return f;
@@ -324,12 +331,12 @@ public class EatersWorld extends World implements WorldManager {
 	private void generateRandomWalls() throws Exception {
 		// Generate perimiter wall
 		for (int row = 0; row < m_WorldSize; ++row) {
-			m_World[row][0] = new EatersCell(kTypeWall);
-			m_World[row][m_WorldSize - 1] = new EatersCell(kTypeWall);
+			m_World[row][0] = new EatersCell(kWallID);
+			m_World[row][m_WorldSize - 1] = new EatersCell(kWallID);
 		}
 		for (int col = 1; col < m_WorldSize - 1; ++col) {
-			m_World[0][col] = new EatersCell(kTypeWall);
-			m_World[m_WorldSize - 1][col] = new EatersCell(kTypeWall);
+			m_World[0][col] = new EatersCell(kWallID);
+			m_World[m_WorldSize - 1][col] = new EatersCell(kWallID);
 		}
 		
 		Random random = new Random();
@@ -342,7 +349,7 @@ public class EatersWorld extends World implements WorldManager {
 						probability = kHigherProbability;					
 					}
 					if (random.nextDouble() < probability) {
-						m_World[row][col] = new EatersCell(kTypeWall);
+						m_World[row][col] = new EatersCell(kWallID);
 					}
 					probability = kLowProbability;
 				}
@@ -444,7 +451,7 @@ public class EatersWorld extends World implements WorldManager {
 		if (this.isInBounds(x,y)) {
 			return getCell(x,y).getName();
 		}
-		return kTypeEmpty;
+		return kEmptyID;
 	}
 	
 	void resetEaters() {

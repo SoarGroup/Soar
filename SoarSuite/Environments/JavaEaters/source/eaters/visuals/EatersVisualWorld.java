@@ -144,6 +144,9 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 				
 					EatersWorld.Food food = cell.getFood();
 					
+				    gc.setBackground(WindowManager.widget_background);
+				    gc.fillRectangle(m_CellSize*xDraw, m_CellSize*yDraw, m_CellSize, m_CellSize);
+				    
 					gc.setBackground((Color)m_FoodColors.get(food));
 					
 					// TODO: this is a lot of string compares, should be integer switch
