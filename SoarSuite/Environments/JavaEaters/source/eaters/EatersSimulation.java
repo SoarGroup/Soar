@@ -108,6 +108,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		// if in quiet mode, run!
 		if (quiet) {
 	    	startSimulation(false);
+	    	shutdown();
 		}
 	}
 	

@@ -454,6 +454,7 @@ public class EatersWorld extends World implements WorldManager {
 		for (int i = 0; i < m_Eaters.length; ++i) {
 			MapPoint location = findStartingLocation();
 			m_Eaters[i].setLocation(location);
+			m_Eaters[i].setMoved();
 			// Put eater on map, ignore food
 			getCell(location).setEater(m_Eaters[i]);
 			m_Eaters[i].setPoints(0);
