@@ -745,8 +745,8 @@ void do_one_top_level_phase (agent* thisAgent)
    *      print_lowest_slot_in_context_stack (thisAgent);
    *    }
    *  thisAgent->current_phase = INPUT_PHASE;
-   *  if (thisAgent->operand2_mode) 
-   *    thisAgent->d_cycle_count++;
+   *  //if (thisAgent->operand2_mode)   // changing 8.6.2 to count decisions at decision_phase
+   *  //  thisAgent->d_cycle_count++;   // so incrementing there instead
    * }
    */
 
@@ -1109,7 +1109,7 @@ void do_one_top_level_phase (agent* thisAgent)
 		  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
               print_phase (thisAgent, "\n--- END Output Phase ---\n",1);
     	  thisAgent->current_phase = INPUT_PHASE;
-          thisAgent->d_cycle_count++;	  
+          // thisAgent->d_cycle_count++;	  // moved to decision phase for 8.6.2
 	  break;
 	  }     /* REW: end 09.15.96 */
 
@@ -1153,9 +1153,7 @@ void do_one_top_level_phase (agent* thisAgent)
 	  start_timer (thisAgent, &thisAgent->start_phase_tv);
       #endif
 
-      /* d_cycle_count moved to input phase for Soar 8 new decision cycle */
-      if (thisAgent->operand2_mode == FALSE) 
-         thisAgent->d_cycle_count++;
+	  thisAgent->d_cycle_count++;  //in 8.6.2: incremented here for soar7 and soar8 modes
 
       /* AGR REW1 begin */
 	  if (!thisAgent->input_period) 
@@ -1425,8 +1423,8 @@ void run_for_n_decision_cycles (agent* thisAgent, long n) {
   thisAgent->reason_for_stopping = "";
   d_cycles_at_start = thisAgent->d_cycle_count;
   /* need next line or runs only the input phase for "d 1" after init-soar */
-  if ( thisAgent->operand2_mode && (d_cycles_at_start == 0) )
-    d_cycles_at_start++;
+ // if ( thisAgent->operand2_mode && (d_cycles_at_start == 0) )
+ //  d_cycles_at_start++;
   while (!thisAgent->stop_soar) {
     if (n==(long)(thisAgent->d_cycle_count-d_cycles_at_start)) break;
     do_one_top_level_phase(thisAgent);
@@ -1628,8 +1626,9 @@ void init_agent_memory(agent* thisAgent)
       print_lowest_slot_in_context_stack (thisAgent);
     }
   thisAgent->current_phase = INPUT_PHASE;
-  if (thisAgent->operand2_mode) 
-    thisAgent->d_cycle_count++;
+  /* if (thisAgent->operand2_mode)  thisAgent->d_cycle_count++;
+		//for 8.6.2, d_cycle_count now incremented at start of decision phase
+   */
 
   /* The following code was taken from the do_input_cycle function of io.cpp */
   // Creating the io_header and adding the top state io header wme
