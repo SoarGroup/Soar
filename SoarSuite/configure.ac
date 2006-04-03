@@ -36,7 +36,7 @@ if test "$tcl" = "true"
 then
   AC_PROG_SWIG(1.3.24)
   SWIG_ENABLE_CXX
-  AC_CHECK_HEADER([tcl.h],,[AC_MSG_ERROR([*** Cannot find required header!  See previous line.])])
+  AC_CHECK_HEADER([tcl.h],,[AC_MSG_ERROR([*** Cannot find required header!  See previous line. Debian users: please see the following URL for a workaround: https://winter.eecs.umich.edu/soar-bugzilla/show_bug.cgi?id=543])])
   AC_PATH_PROG(TCLSH,tclsh,[AC_MSG_ERROR([*** Cannot find required program!  See previous line.])])
 fi
 
