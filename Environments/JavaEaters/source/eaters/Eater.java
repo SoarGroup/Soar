@@ -26,6 +26,7 @@ public class Eater extends WorldEntity {
 	private IntElement m_yWME;
 	private SoarCell[][] m_Cells = new SoarCell[(kEaterVision * 2 ) + 1][(kEaterVision * 2 ) + 1];
 	private boolean m_Hungry = true;
+	private boolean m_Moved = true;
 	
 	class SoarCell {
 		Identifier me;
@@ -110,15 +111,14 @@ public class Eater extends WorldEntity {
 		// Anything you want to log about each eater each frame can go here:
 		//m_Logger.log(getName() + " at " + getLocation() + " score " + getPoints());
 		
-		boolean moved = (m_xWME.GetValue() != getLocation().x) || (m_yWME.GetValue() != getLocation().y);
-		
+
 		int xView, yView;
 		for (int x = 0; x < m_Cells.length; ++x) {
 			xView = x - Eater.kEaterVision + getLocation().x;
 			for (int y = 0; y < m_Cells[x].length; ++y) {
 				yView = y - Eater.kEaterVision + getLocation().y;
 				String content = world.getContentNameByLocation(xView, yView);
-				if (moved || !m_Cells[x][y].content.GetValue().equalsIgnoreCase(content)) {
+				if (m_Moved || !m_Cells[x][y].content.GetValue().equalsIgnoreCase(content)) {
 					m_Agent.Update(m_Cells[x][y].content, content);
 				}
 			}
@@ -132,12 +132,14 @@ public class Eater extends WorldEntity {
 			m_Agent.Update(m_DirectionWME, m_Facing);
 		}
 
-		if (moved) {
+		if (m_Moved) {
 			m_Agent.Update(m_xWME, getLocation().x);
 			m_Agent.Update(m_yWME, getLocation().y);
 		}
 		
 		m_Agent.Commit();
+
+		m_Moved = false;
 	}
 	
 	public class MoveInfo {
@@ -167,6 +169,7 @@ public class Eater extends WorldEntity {
 			m_Logger.log("Unknown command: " + commandName);
 			return null;
 		}
+		m_Moved = true;
 		
 		String donteat = commandId.GetParameterValue(kDontEatID);
 		if (donteat == null) {
@@ -181,11 +184,16 @@ public class Eater extends WorldEntity {
 			setFacingInt();
 			commandId.AddStatusComplete();
 			m_Agent.ClearOutputLinkChanges();
+			m_Agent.Commit();
 			return move;
 		}
 		
 		m_Logger.log("Improperly formatted command: " + kMoveID);
 		return null;
+	}
+	
+	void setMoved() {
+		m_Moved = true;
 	}
 }
 
