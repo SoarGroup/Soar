@@ -414,8 +414,8 @@ public class TankSoarWorld extends World implements WorldManager {
 	
 	public void update() {
 		// reset modified flags, skipping edges
-		for (int y = 1; y < m_World.length - 1; ++y) {
-			for (int x = 1; x < m_World[y].length - 1; ++x) {
+		for (int y = 0; y < m_World.length; ++y) {
+			for (int x = 0; x < m_World[y].length; ++x) {
 				m_World[y][x].clearModified();
 				if (m_World[y][x].checkCollision()) {
 					m_World[y][x].setCollision(false);
