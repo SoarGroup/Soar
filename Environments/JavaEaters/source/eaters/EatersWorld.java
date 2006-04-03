@@ -94,8 +94,10 @@ public class EatersWorld extends World implements WorldManager {
 		
 		public EatersCell(int foodIndex) {
 			m_Type = foodIndex + kReservedIDs;
-			++m_FoodCount;
 			m_ScoreCount += m_Food[foodIndex].getValue();
+			if (m_Food[foodIndex].getValue() > 0) {
+				++m_FoodCount;
+			}
 		}
 
 		public EatersCell(String name) throws Exception {
@@ -111,8 +113,10 @@ public class EatersWorld extends World implements WorldManager {
 					throw new Exception("Invalid type name: " + name);
 				}
 				m_Type = index + kReservedIDs;
-				++m_FoodCount;
 				m_ScoreCount += m_Food[index].getValue();
+				if (m_Food[index].getValue() > 0) {
+					++m_FoodCount;					
+				}
 				return;
 			}
 		}
@@ -154,8 +158,10 @@ public class EatersWorld extends World implements WorldManager {
 			if (m_Type == -1) {
 				m_Type = kEmptyInt;
 			} else {
-				++m_FoodCount;
 				m_ScoreCount += newFood.getValue();
+				if (newFood.getValue() > 0) {
+					++m_FoodCount;					
+				}
 			}
 			return oldFood;
 		}
@@ -205,8 +211,10 @@ public class EatersWorld extends World implements WorldManager {
 				} else {
 					m_Type = kEaterInt;
 				}
-				--m_FoodCount;
 				m_ScoreCount -= f.getValue();
+				if (f.getValue() > 0) {
+					--m_FoodCount;
+				}
 				return f;
 			}
 			return null;
