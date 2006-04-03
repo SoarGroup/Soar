@@ -10,6 +10,7 @@ public class EatersWorld extends World implements WorldManager {
 	private static final String kTagEatersWorld = "eaters-world";
 
 	private static final String kTagFood = "food";
+	private static final String kParamDecay = "decay";
 	private static final String kParamName = "name";
 	private static final String kParamValue = "value";
 	private static final String kParamShape = "shape";
@@ -30,6 +31,8 @@ public class EatersWorld extends World implements WorldManager {
 
 	private static final double kLowProbability = .15;
 	private static final double kHigherProbability = .65;
+	
+	private boolean m_Decay = false;
 	
 	public class Food {
 		public static final String kRound = "round";
@@ -80,6 +83,34 @@ public class EatersWorld extends World implements WorldManager {
 				return kSquare;
 			}
 			return null;
+		}
+	}
+	
+	private void decayFood() {
+		// This function is called if decay=true (in map file) and if so, after
+		// each world update.
+		// Example food decay function:
+		// Remove one from the value of each type of food after each update.
+		for (int i = 0; i < m_Food.length; ++i) {
+			--m_Food[i].m_Value;
+		}
+		
+		// If you change the value of a food type, you MUST recalculate the remaining
+		// food and remaining score member variables!  The following code does this for
+		// the entire map:
+		this.m_ScoreCount = 0;
+		this.m_FoodCount = 0;
+		for (int y = 0; y < m_World.length; ++y) {
+			for (int x = 0; x < m_World[y].length; ++x) {
+				EatersCell cell = m_World[y][x];
+				if (cell.isFood()) {
+					Food f = m_World[y][x].getFood();
+					m_ScoreCount += f.getValue();
+					if (f.getValue() > 0) {
+						++m_FoodCount;
+					}
+				}
+			}
 		}
 	}
 	
@@ -258,7 +289,7 @@ public class EatersWorld extends World implements WorldManager {
 			
 			// Read food types from file
 			JavaElementXML food = root.findChildByNameThrows(kTagFood);
-				
+			m_Decay = food.getAttributeBooleanDefault(kParamDecay, false);
 			m_Food = new Food[food.getNumberChildren()];
 			for (int i = 0; i < m_Food.length; ++i) {
 				JavaElementXML foodType = food.getChild(i);
@@ -676,6 +707,10 @@ public class EatersWorld extends World implements WorldManager {
 		updateMapAndEatFood();
 		handleCollisions();	
 		updateEaterInput();
+		
+		if (m_Decay) {
+			decayFood();
+		}
 	}
 		
 	private void handleCollisions() {
