@@ -10,6 +10,7 @@
 #include "OrtsInterface.h"
 #include "MapManager.h"
 #include "GridMapTileGrouper.h"
+#include "FeatureMapManager.h"
 
 using namespace std;
 
@@ -163,13 +164,16 @@ int main(int argc, char *argv[]) {
   int gridSizeY = m.get_height() / 2;
 
 
+  cout <<"calling..\n";
   // map manager, using the grid tile grouping method
   GridMapTileGrouper tileGrouper(game.get_map(), game.get_tile_points(), gridSizeX, gridSizeY);
   MapManager mapManager
     ( game.get_map(), game.get_tile_points(), tileGrouper, &soarInterface );
+ 
+  FeatureMapManager featureMapManager;
 
   // instantiate the group manager
-  GroupManager gm(&soarInterface, &mapManager);
+  GroupManager gm(&soarInterface, &mapManager, &featureMapManager);
 
   OrtsInterface ortsInterface(&gsm, &soarInterface, &gm, &mapManager);
   gm.setORTSIO(&ortsInterface);

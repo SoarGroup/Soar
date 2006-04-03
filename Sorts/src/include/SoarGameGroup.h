@@ -5,17 +5,15 @@
 #include <set>
 #include <string>
 #include "SoarAction.h"
-#include "OrtsInterface.h"
+//#include "OrtsInterface.h"
 #include "general.h"
 #include "MapRegion.h"
 #include "MapManager.h"
 #include "Rectangle.h"
 
-#ifdef DEBUG_GROUPS
-#include "FakeSoarGameObject.h"
-#else
 class SoarInterface;
-#endif
+class OrtsInterface;
+class SoarGameObject;
 
 using namespace std;
 
@@ -23,7 +21,8 @@ using namespace std;
 
 class SoarGameGroup {
   public:
-    SoarGameGroup( SoarGameObject* unit, 
+    SoarGameGroup( SoarGameObject* unit,
+                   bool _mixedType,
                    OrtsInterface*  _ORTSIO,
                    MapManager*     _mapManager );
 
@@ -55,6 +54,14 @@ class SoarGameGroup {
     int getOwner();
     bool isWorld();
     bool isFriendly();
+
+    bool isMinerals();
+    bool isAirUnits();
+    bool isLandUnits();
+    bool isMoving();
+
+    void setFMSector(int);
+    int getFMSector();
 
     Rectangle getBoundingBox();
     void getCenterLoc(int& x, int& y);
@@ -89,6 +96,10 @@ class SoarGameGroup {
     int owner;
     bool friendly;
     bool world;
+    bool minerals;
+    bool airUnits;
+    bool landUnits;
+    bool moving;
     OrtsInterface* ORTSIO;
 
     // bounding box of group dimensions
@@ -108,6 +119,11 @@ class SoarGameGroup {
     int commandStatus;
 
     bool canMine;
+    
+    int fmSector;
+
+    // true if there is more than one type of unit in the group
+    bool mixedType;
 };
 
 #define GRP_STATUS_RUNNING 0

@@ -10,7 +10,7 @@ enum SoarActionType {
   SA_NO_SUCH_ACTION,
   SA_MINE,
   SA_MOVE,
-  SA_UNSTICK
+  SA_FREE
 };
 
 struct SoarAction {

@@ -13,8 +13,13 @@ using namespace std;
 
 */
 
-void GroupManager::updateWorld() {
-  //cout << "begin uw" << endl;  
+GroupManager::GroupManager(SoarInterface* si, MapManager* _mapManager,
+                           FeatureMapManager* fmm) 
+    : SoarIO(si), mapManager(_mapManager), featureMaps(fmm) {
+  featureMaps->changeViewWindow(230,230,230);
+}
+void GroupManager::updateVision() {
+  cout << "begin uw" << endl;  
  
   // the first refresh will pick up any action changes, prune empty groups,
   // and re-calculate the center member
@@ -23,7 +28,8 @@ void GroupManager::updateWorld() {
   // second refresh does the above, but also gathers stats to send to Soar
   refreshGroups(true);
   adjustAttention();
-  //cout << "end uw" << endl;
+  featureMaps->getMaps();
+  cout << "end uw" << endl;
 
   return;
 }
@@ -46,7 +52,9 @@ bool GroupManager::assignActions() {
     targetGroups.clear();
     list<SoarGameGroup*>& groups = (**actionIter).groups;
     groupIter = groups.begin();
+    
     assert(groupIter != groups.end());
+    // the first group is the group the action is applied to, it must exist
     
     sourceGroup = *groupIter;
     groupIter++;
@@ -66,7 +74,6 @@ bool GroupManager::assignActions() {
 }
 
 void GroupManager::reGroup() {
-//#ifdef DEBUG_GROUPS
   // iterate through staleGroupCategories set
   //  find all the groups of each type
   //  add the members to a big list, centers first
@@ -118,13 +125,8 @@ void GroupManager::reGroup() {
     
         // centers are stored in a separate list
         objectData.object = centerObject;
-        #ifdef DEBUG_GROUPS
-        objectData.x = centerObject->x;
-        objectData.y = centerObject->y;
-        #else
         objectData.x = *centerObject->gob->sod.x;
         objectData.y = *centerObject->gob->sod.y;
-        #endif
         
         centerGroupingList.push_back(objectData);
         groupMembers = (*groupIter)->getMembers();
@@ -133,13 +135,9 @@ void GroupManager::reGroup() {
           if ((*objectIter) != centerObject){
             // don't add the center object to this list
             objectData.object = *objectIter;
-            #ifdef DEBUG_GROUPS
-            objectData.x = (*objectIter)->x;
-            objectData.x = (*objectIter)->y;
-            #else
+            
             objectData.x = *(*objectIter)->gob->sod.x;
             objectData.y = *(*objectIter)->gob->sod.y;
-            #endif
             groupingList.push_back(objectData);
           }
           objectIter++;
@@ -286,7 +284,6 @@ void GroupManager::reGroup() {
   }
  
   staleGroupCategories.clear();
-//#endif
   return;
 }
 
@@ -307,8 +304,10 @@ void GroupManager::refreshGroups(bool final) {
     if ((*groupIter)->getStale()) {
       if ((*groupIter)->isEmpty()) {
         SoarIO->removeGroup(*groupIter);
+        featureMaps->removeGroup(*groupIter);
         delete (*groupIter);
         groupsInFocus.erase(groupIter);
+        //removeGroup(*groupIter);
       }
       else {
         (*groupIter)->updateStats(final);
@@ -324,9 +323,11 @@ void GroupManager::refreshGroups(bool final) {
   while (groupIter != groupsNotInFocus.end()) {
     if ((*groupIter)->getStale()) {
       if ((*groupIter)->isEmpty()) {
+        featureMaps->removeGroup(*groupIter);
         SoarIO->removeGroup(*groupIter);
         delete (*groupIter);
         groupsInFocus.erase(groupIter);
+        //removeGroup(*groupIter);
       }
       else {
         (*groupIter)->updateStats(final);
@@ -342,10 +343,19 @@ void GroupManager::refreshGroups(bool final) {
 }
 
 void GroupManager::addGroup(SoarGameObject* object) {
-  groupsNotInFocus.push_back(new SoarGameGroup(object, ORTSIO, mapManager));
+  groupsNotInFocus.push_back(new SoarGameGroup(object, false, ORTSIO, mapManager));
+  featureMaps->addGroup(object->getGroup());
   return;
 }
-
+/*
+void GroupManager::removeGroup(SoarGameGroup* group) {
+  SoarIO->removeGroup(group);
+  groupsInFocus.erase(group);
+  groupsNotInFocus.erase(group);
+  featureMaps->removeGroup(group);
+  delete group;
+}
+*/
 void GroupManager::adjustAttention() {
   // iterate through all staleInSoar groups, if in attn. range,
   // send params to Soar
@@ -362,6 +372,8 @@ void GroupManager::adjustAttention() {
   groupIter = groupsInFocus.begin();
   while (groupIter != groupsInFocus.end()) {
     if ((*groupIter)->getStaleInSoar()) {
+      featureMaps->refreshGroup(*groupIter);
+      // if group moves out of focus, remember to refresh it in the fms!
       SoarIO->refreshGroup((*groupIter), (*groupIter)->getSoarData());
       (*groupIter)->setStaleInSoar(false);
     }
@@ -432,3 +444,4 @@ SoarGameGroup* GroupManager::getGroupNear(string type, int owner, int x, int y) 
   
   return closestGroup;
 }
+

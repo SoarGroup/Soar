@@ -1,11 +1,13 @@
 #include "include/SoarGameGroup.h"
 #include "include/general.h"
 #include "include/OrtsInterface.h"
+#include "Object.H"
 #include <assert.h>
 #include <vector>
 #include <iostream>
 
 SoarGameGroup::SoarGameGroup( SoarGameObject* unit, 
+                              bool _mixedType,
                               OrtsInterface*  _ORTSIO,
                               MapManager*     _mapManager )
 : ORTSIO(_ORTSIO), mapManager(_mapManager)
@@ -17,14 +19,23 @@ SoarGameGroup::SoarGameGroup( SoarGameObject* unit,
   staleInSoar= true;
   centerMember = unit;
   currentMember = unit;
-#ifndef DEBUG_GROUPS
   typeName = unit->gob->bp_name();
-#else
-  typeName = "unknown";
-#endif
   owner = unit->getOwner();
   friendly = unit->isFriendly();
   world = unit->isWorld();
+  mixedType = _mixedType;
+
+  fmSector = -1;
+
+  if (not mixedType) {
+    minerals = (typeName == "mineral");
+    airUnits = (*(unit->gob->sod.zcat) == 3);
+    landUnits = (*(unit->gob->sod.zcat) == 2);
+    // I am assuming one but not both of these applies
+    // zcat can also be on_water, under_water and on_surface
+    // if that comes up, fix this!
+    //assert((airUnits or landUnits) and not (airUnits and landUnits));
+  }
 
   bbox.collapse(*unit->gob->sod.x, *unit->gob->sod.y);
 
@@ -61,7 +72,6 @@ void SoarGameGroup::addUnit(SoarGameObject* unit) {
 
   members.insert(unit); 
   unit->setGroup(this);
-  //cout << " au! " << endl;
   setStale();
 }
 
@@ -111,12 +121,14 @@ void SoarGameGroup::updateStats(bool saveProps) {
     int health = 0;
     int speed = 0;
     int size = members.size();
-    int minerals = 0;
+    int mineralCount = 0;
     int running = 0;
     int success = 0;
     int failure = 0;
     int idle = 0;
     int stuck = 0;
+      
+    moving = false;
     
     int objStatus;
 
@@ -126,8 +138,9 @@ void SoarGameGroup::updateStats(bool saveProps) {
     while (currentObject != members.end()) {
       // be careful is some numbers are very big for each object and the double could overflow
       
+      
       if (canMine) {
-        minerals += (*currentObject)->gob->get_int("minerals");
+        mineralCount += (*currentObject)->gob->get_int("minerals");
       }
       
       // not everything has health
@@ -248,12 +261,16 @@ void SoarGameGroup::updateStats(bool saveProps) {
     }
     if (canMine) {
       stringIntWme.first = "minerals";
-      stringIntWme.second = minerals;
+      stringIntWme.second = mineralCount;
       soarData.stringIntPairs.push_back(stringIntWme);
     }
     
     staleInSoar = true;
     stale = false;
+
+    if (speed > 0) {
+      moving = true;
+    }
    
   } // if(saveProps)
   
@@ -262,6 +279,7 @@ void SoarGameGroup::updateStats(bool saveProps) {
         = squaredDistance(x, y, *centerMember->gob->sod.x, *centerMember->gob->sod.y);
 
   double currentDistance;
+  
   currentObject = members.begin();
   while (currentObject != members.end()) {
     currentDistance = squaredDistance(x, y, 
@@ -270,6 +288,7 @@ void SoarGameGroup::updateStats(bool saveProps) {
       shortestDistance = currentDistance;
       centerMember = *currentObject;
     }
+    
     currentObject++;
   }
 }
@@ -427,8 +446,9 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
       (*currentObject)->issueCommand(type, tempVec);
     } 
   }
-  else if (type == SA_UNSTICK) {
+  else if (type == SA_FREE) {
     sticky = false;
+    cout << "UNSTUCK!\n";
   }
   else {
     assert(false);  
@@ -503,6 +523,20 @@ bool SoarGameGroup::isFriendly() {
 
 bool SoarGameGroup::isWorld() {
   return world;
+}
+
+bool SoarGameGroup::isMinerals() {
+  return minerals;
+}
+bool SoarGameGroup::isAirUnits() {
+  return airUnits;
+}
+bool SoarGameGroup::isLandUnits() {
+  return landUnits;
+}
+
+bool SoarGameGroup::isMoving() {
+  return moving;
 }
 
 pair<string, int> SoarGameGroup::getCategory() {
@@ -590,3 +624,12 @@ void SoarGameGroup::getLocNear(int x, int y, int& locX, int &locY) {
 
   return;
 }
+
+void SoarGameGroup::setFMSector(int num) {
+  fmSector = num;
+}
+
+int SoarGameGroup::getFMSector() {
+  return fmSector;
+}
+

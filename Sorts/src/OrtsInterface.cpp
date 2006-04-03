@@ -77,7 +77,7 @@ bool OrtsInterface::handle_event(const Event& e) {
       //cout << "send_actions" << endl;
 
       // what was this for again?
-      groupManager->updateWorld();
+      groupManager->updateVision();
 
       /* I'm assuming here that those update calls from above have already
        * updated the soar input link correctly, so commit everything

@@ -3,23 +3,21 @@
 
 #include "SoarGameObject.h"
 #include "MapManager.h"
+#include "FeatureMapManager.h"
+//#include "FeatureMap.h"
+#include "SoarInterface.h"
 
-#ifdef DEBUG_GROUPS
-#include "FakeSoarInterface.h"
-#else
-class SoarInterface;
-#endif
+//class SoarInterface;
 class OrtsInterface;
+class FeatureMapManager;
 
 class GroupManager {
   public:
-    GroupManager(SoarInterface* si, MapManager* _mapManager) 
-    : SoarIO(si), mapManager(_mapManager) 
-    { }
-
+    GroupManager(SoarInterface* si, MapManager* _mapManager,
+                 FeatureMapManager* fmm);
     ~GroupManager();
 
-    void updateWorld();
+    void updateVision();
     bool assignActions();
 
     void addGroup(SoarGameObject* object);
@@ -34,6 +32,8 @@ class GroupManager {
     void refreshGroups(bool);
     void adjustAttention();
 
+    //void removeGroup(SoarGameGroup*);
+
     SoarInterface* SoarIO;
 
     set <pair<string, int> > staleGroupCategories;
@@ -43,6 +43,7 @@ class GroupManager {
     OrtsInterface* ORTSIO;
 
     MapManager *mapManager;
+    FeatureMapManager *featureMaps;
 };
 
 struct objectGroupingStruct {
