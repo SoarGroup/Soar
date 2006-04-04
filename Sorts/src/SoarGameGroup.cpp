@@ -28,10 +28,8 @@ SoarGameGroup::SoarGameGroup( SoarGameObject* unit,
 
   if (not mixedType) {
     minerals = (typeName == "mineral");
-    airUnits = (*(unit->gob->sod.zcat) == 3);
-    landUnits = (*(unit->gob->sod.zcat) == 2);
-    // (fixme)
-    //assert((airUnits or landUnits) and not (airUnits and landUnits));
+    airUnits = (*(unit->gob->sod.zcat) == 1);
+    landUnits = (*(unit->gob->sod.zcat) == 3);
   }
 
   bbox.collapse(*unit->gob->sod.x, *unit->gob->sod.y);
@@ -105,182 +103,180 @@ void SoarGameGroup::updateBoundingBox() {
   }
 }
 
-void SoarGameGroup::updateStats(bool saveProps) {
+void SoarGameGroup::generateData() {
   int x = 0;
   int y = 0;
   set<SoarGameObject*>::iterator currentObject;
-  if (saveProps) {
-    soarData.stringIntPairs.clear();
-    soarData.stringStringPairs.clear();
-    soarData.regionsOccupied.clear();
+  
+  soarData.stringIntPairs.clear();
+  soarData.stringStringPairs.clear();
+  soarData.regionsOccupied.clear();
 
-    currentObject = members.begin();
+  currentObject = members.begin();
 
-    int health = 0;
-    int speed = 0;
-    int size = members.size();
-    int mineralCount = 0;
-    int running = 0;
-    int success = 0;
-    int failure = 0;
-    int idle = 0;
-    int stuck = 0;
-      
-    moving = false;
+  int health = 0;
+  int speed = 0;
+  int size = members.size();
+  int mineralCount = 0;
+  int running = 0;
+  int success = 0;
+  int failure = 0;
+  int idle = 0;
+  int stuck = 0;
     
-    int objStatus;
+  moving = false;
+  
+  int objStatus;
 
-    // this is not a huge problem (just a redundant update), but should not happen
-  //  assert(stale == true);
+  while (currentObject != members.end()) {
     
-    while (currentObject != members.end()) {
-      // be careful is some numbers are very big for each object and the double could overflow
-      
-      
-      if (canMine) {
-        mineralCount += (*currentObject)->gob->get_int("minerals");
-      }
-      
-      // not everything has health
-      // if no hp, just set it to 0
-      // get_int asserts if not valid, this is what it calls internally
-      if ((*currentObject)->gob->get_int_ptr("hp") != 0) {
-        health += (*currentObject)->gob->get_int("hp");
-      }
-      else {
-        health += 0;
-      }
-      speed += *(*currentObject)->gob->sod.speed;
-      x += *(*currentObject)->gob->sod.x;
-      y += *(*currentObject)->gob->sod.y;
-
-      objStatus = (*currentObject)->getStatus();
-      if (objStatus == OBJ_RUNNING) {
-        running++;
-      }
-      else if (objStatus == OBJ_SUCCESS) {
-        success++;
-      }
-      else if (objStatus == OBJ_FAILURE) {
-        failure++;
-      }
-      else if (objStatus == OBJ_IDLE) {
-        idle++;
-      }
-      else if (objStatus == OBJ_STUCK) {
-        stuck++;
-      }
-       
-      currentObject++;
-    } // while (currentObject != members.end())
+    if (canMine) {
+      mineralCount += (*currentObject)->gob->get_int("minerals");
+    }
     
-    health /= size;
-    speed /= size;
-    x /= size;
-    y /= size;
+    // not everything has health
+    // if no hp, just set it to 0
+    // get_int asserts if not valid, this is what it calls internally
+    if ((*currentObject)->gob->get_int_ptr("hp") != 0) {
+      health += (*currentObject)->gob->get_int("hp");
+    }
+    else {
+      health += 0;
+    }
+    speed += *(*currentObject)->gob->sod.speed;
+    x += *(*currentObject)->gob->sod.x;
+    y += *(*currentObject)->gob->sod.y;
 
-    centerX = x;
-    centerY = y;
+    objStatus = (*currentObject)->getStatus();
+    if (objStatus == OBJ_RUNNING) {
+      running++;
+    }
+    else if (objStatus == OBJ_SUCCESS) {
+      success++;
+    }
+    else if (objStatus == OBJ_FAILURE) {
+      failure++;
+    }
+    else if (objStatus == OBJ_IDLE) {
+      idle++;
+    }
+    else if (objStatus == OBJ_STUCK) {
+      stuck++;
+    }
+      
+    currentObject++;
+  } // while (currentObject != members.end())
+  
+  health /= size;
+  speed /= size;
+  x /= size;
+  y /= size;
 
-    updateBoundingBox();
-    updateRegionsOccupied();
+  centerX = x;
+  centerY = y;
 
-    pair<string, int> stringIntWme;
-    pair<string, string> stringStringWme;
+  updateBoundingBox();
+  updateRegionsOccupied();
 
-    stringIntWme.first = "health";
-    stringIntWme.second = health;
-    soarData.stringIntPairs.push_back(stringIntWme);
+  pair<string, int> stringIntWme;
+  pair<string, string> stringStringWme;
 
-    stringIntWme.first = "speed";
-    stringIntWme.second = speed;
-    soarData.stringIntPairs.push_back(stringIntWme);
+  stringIntWme.first = "health";
+  stringIntWme.second = health;
+  soarData.stringIntPairs.push_back(stringIntWme);
 
-    // how do we want to represent position?
-    stringIntWme.first = "x-pos";
-    stringIntWme.second = x;
-    soarData.stringIntPairs.push_back(stringIntWme);
+  stringIntWme.first = "speed";
+  stringIntWme.second = speed;
+  soarData.stringIntPairs.push_back(stringIntWme);
 
-    stringIntWme.first = "y-pos";
-    stringIntWme.second = y;
-    soarData.stringIntPairs.push_back(stringIntWme);
+  // how do we want to represent position?
+  stringIntWme.first = "x-pos";
+  stringIntWme.second = x;
+  soarData.stringIntPairs.push_back(stringIntWme);
 
-    stringIntWme.first = "x-min";
-    stringIntWme.second = bbox.xmin;
-    soarData.stringIntPairs.push_back(stringIntWme);
+  stringIntWme.first = "y-pos";
+  stringIntWme.second = y;
+  soarData.stringIntPairs.push_back(stringIntWme);
 
-    stringIntWme.first = "x-max";
-    stringIntWme.second = bbox.xmax;
-    soarData.stringIntPairs.push_back(stringIntWme);
+  stringIntWme.first = "x-min";
+  stringIntWme.second = bbox.xmin;
+  soarData.stringIntPairs.push_back(stringIntWme);
 
-    stringIntWme.first = "y-min";
-    stringIntWme.second = bbox.ymin;
-    soarData.stringIntPairs.push_back(stringIntWme);
+  stringIntWme.first = "x-max";
+  stringIntWme.second = bbox.xmax;
+  soarData.stringIntPairs.push_back(stringIntWme);
 
-    stringIntWme.first = "y-max";
-    stringIntWme.second = bbox.ymax;
-    soarData.stringIntPairs.push_back(stringIntWme);
+  stringIntWme.first = "y-min";
+  stringIntWme.second = bbox.ymin;
+  soarData.stringIntPairs.push_back(stringIntWme);
 
-    stringIntWme.first = "num_members";
-    stringIntWme.second = size;
-    soarData.stringIntPairs.push_back(stringIntWme);
+  stringIntWme.first = "y-max";
+  stringIntWme.second = bbox.ymax;
+  soarData.stringIntPairs.push_back(stringIntWme);
 
-    
-    stringStringWme.first = "type";
-    stringStringWme.second = typeName;
+  stringIntWme.first = "num_members";
+  stringIntWme.second = size;
+  soarData.stringIntPairs.push_back(stringIntWme);
+
+  
+  stringStringWme.first = "type";
+  stringStringWme.second = typeName;
+  soarData.stringStringPairs.push_back(stringStringWme);
+
+  // command info:
+  // show last command, and as many status attributes as are applicable
+  // if a group has one member succeed, fail, or still running, that 
+  // status is there
+
+  if (friendly) {
+    stringStringWme.first = "command";
+    stringStringWme.second = currentCommand;
     soarData.stringStringPairs.push_back(stringStringWme);
 
-    // command info:
-    // show last command, and as many status attributes as are applicable
-    // if a group has one member succeed, fail, or still running, that 
-    // status is there
+    stringIntWme.first = "command_running";
+    stringIntWme.second = running;
+    soarData.stringIntPairs.push_back(stringIntWme);
 
-    if (friendly) {
-      stringStringWme.first = "command";
-      stringStringWme.second = currentCommand;
-      soarData.stringStringPairs.push_back(stringStringWme);
-
-      stringIntWme.first = "command_running";
-      stringIntWme.second = running;
-      soarData.stringIntPairs.push_back(stringIntWme);
-
-      stringIntWme.first = "command_success";
-      stringIntWme.second = success;
-      soarData.stringIntPairs.push_back(stringIntWme);
-      
-      stringIntWme.first = "command_failure";
-      stringIntWme.second = failure;
-      soarData.stringIntPairs.push_back(stringIntWme);
-      
-      stringIntWme.first = "command_stuck";
-      stringIntWme.second = stuck;
-      soarData.stringIntPairs.push_back(stringIntWme);
-      
-    }
-    if (canMine) {
-      stringIntWme.first = "minerals";
-      stringIntWme.second = mineralCount;
-      soarData.stringIntPairs.push_back(stringIntWme);
-    }
+    stringIntWme.first = "command_success";
+    stringIntWme.second = success;
+    soarData.stringIntPairs.push_back(stringIntWme);
     
-    staleInSoar = true;
-    stale = false;
-
-    if (speed > 0) {
-      moving = true;
-    }
-   
-  } // if(saveProps)
+    stringIntWme.first = "command_failure";
+    stringIntWme.second = failure;
+    soarData.stringIntPairs.push_back(stringIntWme);
+    
+    stringIntWme.first = "command_stuck";
+    stringIntWme.second = stuck;
+    soarData.stringIntPairs.push_back(stringIntWme);
+    
+  }
+  if (canMine) {
+    stringIntWme.first = "minerals";
+    stringIntWme.second = mineralCount;
+    soarData.stringIntPairs.push_back(stringIntWme);
+  }
   
-  // center member calculation- is there a way to do a running calc above?
+  staleInSoar = true;
+  stale = false;
+
+  if (speed > 0) {
+    moving = true;
+  }
+   
+  return;
+}
+
+void SoarGameGroup::updateCenterMember() {
   double shortestDistance 
-        = squaredDistance(x, y, *centerMember->gob->sod.x, *centerMember->gob->sod.y);
+        = squaredDistance(centerX, centerY, 
+          *centerMember->gob->sod.x, *centerMember->gob->sod.y);
 
   double currentDistance;
   
+  set<SoarGameObject*>::iterator currentObject;
   currentObject = members.begin();
   while (currentObject != members.end()) {
-    currentDistance = squaredDistance(x, y, 
+    currentDistance = squaredDistance(centerX, centerY, 
                       *(*currentObject)->gob->sod.x, *(*currentObject)->gob->sod.y);
     if (currentDistance < shortestDistance) {
       shortestDistance = currentDistance;
@@ -289,6 +285,8 @@ void SoarGameGroup::updateStats(bool saveProps) {
     
     currentObject++;
   }
+
+  return;
 }
 
 /**************************************************
@@ -305,7 +303,7 @@ void SoarGameGroup::updateRegionsOccupied() {
        i != regionsOccupied.end();
        i++ )
   {
-    cout << "&&& Group " << (int) this << " has exited from region " << (*i)->getId() << endl;
+ //   cout << "&&& Group " << (int) this << " has exited from region " << (*i)->getId() << endl;
     (*i)->groupExit(this);
   }
   regionsOccupied.clear();
@@ -330,7 +328,7 @@ void SoarGameGroup::updateRegionsOccupied() {
        i != regionsOccupied.end();
        i++ )
   {
-    cout << "&&& Group " << (int) this << " has entered region " << (*i)->getId() << endl;
+ //   cout << "&&& Group " << (int) this << " has entered region " << (*i)->getId() << endl;
     (*i)->groupEnter(this);
     soarData.regionsOccupied.push_back((*i)->getId());
   }

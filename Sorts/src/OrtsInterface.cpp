@@ -123,7 +123,7 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
       /* we should have a SoarGameObject for this GameObj, if not, we're in
        * trouble
        */
-       cout << "updating an object: " << (int) gob << endl;
+      //cout << "updating an object: " << (int) gob << endl;
       assert(objectMap.find(gob) != objectMap.end());
 
       // just call update to let it know there were changes

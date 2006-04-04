@@ -19,18 +19,12 @@ GroupManager::GroupManager(SoarInterface* si, MapManager* _mapManager,
   featureMaps->changeViewWindow(230,230,460);
 }
 void GroupManager::updateVision() {
-  cout << "begin uw" << endl;  
- 
-  // the first refresh will pick up any action changes, prune empty groups,
-  // and re-calculate the center member
-  refreshGroups(false);
+  prepareForReGroup();
   reGroup();
-  // second refresh does the above, but also gathers stats to send to Soar
-  refreshGroups(true);
+  generateGroupData();
   adjustAttention();
   featureMaps->getMaps();
-  cout << "end uw" << endl;
-
+  
   return;
 }
 
@@ -320,33 +314,21 @@ void GroupManager::reGroup() {
   return;
 }
 
-void GroupManager::refreshGroups(bool final) {
+void GroupManager::generateGroupData() {
   // iterate through all the groups, if they are stale,
   // refresh them (re-calc stats)
-  // pass the final flag to updateStats,
-  // it will save a list of WMEs for Soar if the flag is set
  
-  // also, if not final, add the group type of stale groups to
-  // the staleGroupCategories set, so reGroup will run on them
- 
- //cout << "begin ref" << endl;
   list<SoarGameGroup*>::iterator groupIter;
 
   groupIter = groupsInFocus.begin();
   while (groupIter != groupsInFocus.end()) {
     if ((*groupIter)->getStale()) {
       if ((*groupIter)->isEmpty()) {
-        SoarIO->removeGroup(*groupIter);
-        featureMaps->removeGroup(*groupIter);
-        delete (*groupIter);
         groupsInFocus.erase(groupIter);
-        //removeGroup(*groupIter);
+        removeGroup(*groupIter);
       }
       else {
-        (*groupIter)->updateStats(final);
-        if (final == false) {
-          staleGroupCategories.insert((*groupIter)->getCategory());
-        }
+        (*groupIter)->generateData();
       }
     }
     groupIter++;
@@ -356,17 +338,54 @@ void GroupManager::refreshGroups(bool final) {
   while (groupIter != groupsNotInFocus.end()) {
     if ((*groupIter)->getStale()) {
       if ((*groupIter)->isEmpty()) {
-        featureMaps->removeGroup(*groupIter);
-        SoarIO->removeGroup(*groupIter);
-        delete (*groupIter);
         groupsInFocus.erase(groupIter);
-        //removeGroup(*groupIter);
+        removeGroup(*groupIter);
       }
       else {
-        (*groupIter)->updateStats(final);
-        if (final == false) {
-          staleGroupCategories.insert((*groupIter)->getCategory());
-        }
+        (*groupIter)->generateData();
+      }
+    }
+    groupIter++;
+  }
+  return;
+}
+
+void GroupManager::prepareForReGroup() {
+  // iterate through all the groups, if they are stale,
+  // recalculate the center member
+ 
+  // prune empty groups
+
+  // add the group type of stale groups to
+  // the staleGroupCategories set, so reGroup will run on them
+ 
+  list<SoarGameGroup*>::iterator groupIter;
+
+  groupIter = groupsInFocus.begin();
+  while (groupIter != groupsInFocus.end()) {
+    if ((*groupIter)->getStale()) {
+      if ((*groupIter)->isEmpty()) {
+        groupsInFocus.erase(groupIter);
+        removeGroup(*groupIter);
+      }
+      else {
+        (*groupIter)->updateCenterMember();
+        staleGroupCategories.insert((*groupIter)->getCategory());
+      }
+    }
+    groupIter++;
+  }
+
+  groupIter = groupsNotInFocus.begin();
+  while (groupIter != groupsNotInFocus.end()) {
+    if ((*groupIter)->getStale()) {
+      if ((*groupIter)->isEmpty()) {
+        groupsInFocus.erase(groupIter);
+        removeGroup(*groupIter);
+      }
+      else {
+        (*groupIter)->updateCenterMember();
+        staleGroupCategories.insert((*groupIter)->getCategory());
       }
     }
     groupIter++;
@@ -380,15 +399,13 @@ void GroupManager::addGroup(SoarGameObject* object) {
   //featureMaps->addGroup(object->getGroup());
   return;
 }
-/*
+
 void GroupManager::removeGroup(SoarGameGroup* group) {
   SoarIO->removeGroup(group);
-  groupsInFocus.erase(group);
-  groupsNotInFocus.erase(group);
   featureMaps->removeGroup(group);
   delete group;
 }
-*/
+
 void GroupManager::adjustAttention() {
   // iterate through all staleInSoar groups, if in attn. range,
   // send params to Soar

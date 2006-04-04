@@ -31,7 +31,7 @@ class SoarGameGroup {
 
     void addUnit(SoarGameObject* unit);
     bool removeUnit(SoarGameObject* unit);
-    void updateStats(bool saveProps);
+    void generateData();
     bool assignAction(SoarActionType type, list<int> params,
                       list<SoarGameGroup*> targets);
     bool isEmpty();
@@ -50,6 +50,7 @@ class SoarGameGroup {
     int getSize();
     SoarGameObject* getCenterMember();
     SoarGameObject* getNextMember();
+    void updateCenterMember();
 
     // get the player number that owns this group
     int getOwner();

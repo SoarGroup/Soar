@@ -28,11 +28,12 @@ class GroupManager {
     SoarGameGroup* getGroupNear(string type, int owner, int x, int y);
     
   private:
+    void prepareForReGroup();
     void reGroup();
-    void refreshGroups(bool);
+    void generateGroupData();
     void adjustAttention();
 
-    //void removeGroup(SoarGameGroup*);
+    void removeGroup(SoarGameGroup*);
 
     SoarInterface* SoarIO;
 

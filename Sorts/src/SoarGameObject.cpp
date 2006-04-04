@@ -14,7 +14,6 @@ void SoarGameObject::identifyBehaviors() {
     FSM* mineBehavior = new MineFSM(ORTSIO, groupMan, gob);
     registerBehavior(moveBehavior);
     registerBehavior(mineBehavior);
-    cout << "FRIENDLY WORKER" << endl;
   }
 }
 

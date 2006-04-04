@@ -41,15 +41,15 @@ MapRegion* GridMapTileGrouper::groupTile(int tile) {
     MapRegion* newRegion = new MapRegion(gameMap, tile_points, tile);
     currRegions[gridIndex] = newRegion;
 
-    cout << "NEW REGION " << (*newRegion).getBoundingBox() << " CREATED" << endl;
+   // cout << "NEW REGION " << (*newRegion).getBoundingBox() << " CREATED" << endl;
 
     return newRegion;
   }
   else {
     MapRegion *r = (*currRegions.find(gridIndex)).second;
     r->addTile(tile);
-    cout << "APPENDED TO REGION " << r->getId() << ": " 
-         << r->getBoundingBox() << std::endl;
+   // cout << "APPENDED TO REGION " << r->getId() << ": " 
+   //      << r->getBoundingBox() << std::endl;
     return r;
   }
 }

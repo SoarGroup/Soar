@@ -79,8 +79,6 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyStruct gps) 
   
   InputLinkGroupRep &g = groupTable[group];
  
-  cout << "REF GRP\n";
-  
   if (!g.added) {
     // add the group to the soar input link if it hasn't been already
     g.added = true;
@@ -375,9 +373,7 @@ void SoarInterface::commitInputLinkChanges() {
 }
 
 void SoarInterface::lockSoarMutex() { 
-  cout << "lock req" << endl;
   pthread_mutex_lock(soarMutex);
-  cout << "lock got" << endl;
 }
 
 void SoarInterface::unlockSoarMutex() { 

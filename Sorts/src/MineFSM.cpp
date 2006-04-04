@@ -14,7 +14,7 @@ int MineFSM::update() {
 
   switch (state) {
     case IDLE:
-      cout << "MINEFSM: start!\n";
+      //cout << "MINEFSM: start!\n";
       if (gob->get_int("minerals") > 1) {
         state = MOVING_TO_BASE_ZONE;
         gob->set_action("move", moveToBaseZoneParams);
@@ -26,7 +26,7 @@ int MineFSM::update() {
       break;
     case MOVING_TO_MINE_ZONE:
       // once we get in range, look for a mineral
-      cout << "MINEFSM: mmz\n";
+      //cout << "MINEFSM: mmz\n";
       if ((squaredDistance(*gob->sod.x, *gob->sod.y, mineZoneX, mineZoneY) 
           < DISTANCE_EPSILON) 
           or (*gob->sod.speed == 0)) { 
@@ -44,7 +44,7 @@ int MineFSM::update() {
           tempParams.push_back(mineralY);
           gob->set_action("move", tempParams);
           state = MOVING_TO_MINERAL; 
-          cout << "MINEFSM: moving to mineral\n";
+          //cout << "MINEFSM: moving to mineral\n";
           
           if (*gob->sod.speed == 0) {
             return FSM_STUCK;
@@ -62,28 +62,28 @@ int MineFSM::update() {
     case MOVING_TO_MINERAL:
       if (not ORTSIO->isAlive(mineralId)) {
         // minerals gone!
-        cout << "MINEFSM: minerals disappeared! looking for more" << endl;
+        //cout << "MINEFSM: minerals disappeared! looking for more" << endl;
         state = MOVING_TO_MINE_ZONE;
         gob->set_action("move", moveToMineZoneParams);
       }
       else if (ORTSIO->getOrtsDistance(mineralObj->gob, gob) <= 2) {
         // 2 is  defined in tool blueprint file for the distance needed to mine
         if (*gob->sod.speed > 0) {
-          cout << "MINEFSM: at the mineral, but speed > 0.\n";
+          //cout << "MINEFSM: at the mineral, but speed > 0.\n";
         }
         else {
           tempParams.clear();
           tempParams.push_back(mineralId);
           gob->component("pickaxe")->set_action("mine", tempParams); 
-          cout << "MINEFSM: mining commencing!\n";
+          //cout << "MINEFSM: mining commencing!\n";
           state = MINING;
         }
       }
       else if (*gob->sod.speed > 0) {
-        cout << "MINEFSM: in motion to mineral.\n";
+        //cout << "MINEFSM: in motion to mineral.\n";
       }
       else {
-        cout << "MINEFSM: can't get to the mineral I chose. Trying again.\n";
+        //cout << "MINEFSM: can't get to the mineral I chose. Trying again.\n";
         gob->set_action("move", moveToMineZoneParams);
         state = MOVING_TO_MINE_ZONE;
       } 
@@ -94,12 +94,12 @@ int MineFSM::update() {
       {
         // finished mining
         if (gob->get_int("minerals") == 0) {
-          cout << "MINEFSM: Mining failed for some reason! Trying again..\n";
+          //cout << "MINEFSM: Mining failed for some reason! Trying again..\n";
           state = MOVING_TO_MINE_ZONE;
           gob->set_action("move", moveToMineZoneParams);
         }
         else {
-          cout << "MINEFSM: mining finished successfully" << endl;
+          //cout << "MINEFSM: mining finished successfully" << endl;
           if (baseId != -1) {
             // go right to the base
             tempParams.clear();
@@ -115,7 +115,7 @@ int MineFSM::update() {
         }
       }
       else {
-        cout << "MINEFSM: still mining..\n";
+        //cout << "MINEFSM: still mining..\n";
       } 
       break;
     case MOVING_TO_BASE_ZONE:
@@ -142,7 +142,7 @@ int MineFSM::update() {
         }  
         else if (*gob->sod.speed == 0) {
           // move ended, no base found, fail.
-          cout << "MINEFSM: at the zone, no base.\n";
+          //cout << "MINEFSM: at the zone, no base.\n";
           return FSM_FAILURE;
         }
       } 
@@ -152,7 +152,7 @@ int MineFSM::update() {
     case MOVING_TO_BASE:
       if (not ORTSIO->isAlive(baseId)) {
         // base gone!
-        cout << "MINEFSM: base disappeared! looking for more" << endl;
+        //cout << "MINEFSM: base disappeared! looking for more" << endl;
         state = MOVING_TO_BASE_ZONE;
         gob->set_action("move", moveToBaseZoneParams);
       }
@@ -164,7 +164,7 @@ int MineFSM::update() {
         gob->set_action("return_resources", tempParams);
         state = SEND_MOVE_TO_MINE_COMMAND;
         
-        cout << "MINEFSM: resources returned!\n";
+        //cout << "MINEFSM: resources returned!\n";
       }
       break;
     case SEND_MOVE_TO_MINE_COMMAND:
@@ -177,7 +177,7 @@ int MineFSM::update() {
         tempParams.push_back(mineralY);
         gob->set_action("move", tempParams);
         state = MOVING_TO_MINERAL; 
-        cout << "MINEFSM: moving to mineral\n";
+        //cout << "MINEFSM: moving to mineral\n";
       }
       else {
         gob->set_action("move", moveToMineZoneParams);
