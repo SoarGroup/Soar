@@ -149,13 +149,15 @@ public class TankSoarWorld extends World implements WorldManager {
 	   		return incoming;
 	   	}
 	   	
-	   	public Tank checkHit(MapPoint location) {
+	   	public Tank checkHit(MapPoint location, boolean remove) {
 	   		ListIterator iter = m_Flying.listIterator();
 	   		while (iter.hasNext()) {
 	   			Missile missile = (Missile)iter.next();
 	   			if (location.equals(missile.getCurrentLocation())) {
 	   				Tank owner = missile.getOwner();
-	   				iter.remove();
+	   				if (remove) {
+	   					iter.remove();
+	   				}
 	   				return owner;
 	   			}
 	   			if (missile.getFlightPhase() == 2) {
@@ -163,7 +165,9 @@ public class TankSoarWorld extends World implements WorldManager {
 		   			missileLoc.travel(missile.getDirection());
 		   			if (location.equals(missileLoc)) {
 		   				Tank owner = missile.getOwner();
-		   				iter.remove();
+		   				if (remove) {
+		   					iter.remove();
+		   				}
 		   				return owner;
 		   			}
 	   			}
@@ -317,7 +321,11 @@ public class TankSoarWorld extends World implements WorldManager {
 	private MapPoint findStartingLocation() {
 		// set random starting location
 		MapPoint location = new MapPoint(m_Random.nextInt(m_WorldSize), m_Random.nextInt(m_WorldSize));
-		while (getCell(location).isBlocked() || getCell(location).isEnergyRecharger() || getCell(location).isHealthRecharger() || getCell(location).hasContents()) {
+		while (getCell(location).isBlocked() 
+				|| getCell(location).isEnergyRecharger() 
+				|| getCell(location).isHealthRecharger() 
+				|| getCell(location).hasContents() 
+				|| (m_Missiles.checkHit(location, false) != null)) {
 			location.x = m_Random.nextInt(m_WorldSize);
 			location.y = m_Random.nextInt(m_WorldSize);				
 		}
@@ -586,7 +594,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		
 		// Check for missile collisions
 		for (int i = 0; i < m_Tanks.length; ++i) {
-			Tank owner = m_Missiles.checkHit(m_Tanks[i].getLocation());
+			Tank owner = m_Missiles.checkHit(m_Tanks[i].getLocation(), true);
 			if (owner != null) {
 				if (!m_Tanks[i].getShieldStatus()) {
 					getCell(m_Tanks[i].getLocation()).setExplosion();
