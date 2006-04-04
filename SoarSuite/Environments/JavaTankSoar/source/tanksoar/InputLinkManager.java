@@ -473,6 +473,7 @@ public class InputLinkManager {
 			distance = i;
 			if (scanCells(i, location) == true) {
 				// Blocked
+				clearCells(i, location);
 				break;
 			}
 
@@ -548,6 +549,24 @@ public class InputLinkManager {
 			cell.setRadarTouch();
 		}
 		return false;
+	}
+	
+	private void clearCells(int initialDistance, MapPoint location) {
+		for (int j = initialDistance; j < Tank.kRadarHeight; ++j) {
+			for (int i = 0; i < Tank.kRadarWidth; ++i) {
+				if ((i == 1) && (j == initialDistance)) {
+					// skip first center
+					continue;
+				}
+	
+				if (radarCellIDs[i][j] == null) {
+					continue;
+				} 
+				m_Agent.DestroyWME(radarCellIDs[i][j]);
+				radarCellIDs[i][j] = null;
+				radarColors[i][j] = null;
+			}
+		}
 	}
 	
 	private String getCellID(TankSoarCell cell) {
