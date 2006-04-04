@@ -299,6 +299,7 @@ public class InputLinkManager {
 		Tank closestTank = m_World.getStinkyTankNear(m_Tank);
 		String closestTankColor = (closestTank == null) ? kNone : closestTank.getColor();
 		int distance = (closestTank == null) ? 0 : location.getManhattanDistanceTo(closestTank.getLocation());
+		m_Tank.setSmellDistance(distance);
 		if (m_Reset) {
 			m_SmellWME = m_Agent.CreateIdWME(m_InputLink, kSmellID);
 			m_SmellColorWME = m_Agent.CreateStringWME(m_SmellWME, kColorID, closestTankColor);
