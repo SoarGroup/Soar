@@ -401,6 +401,10 @@ public class Tank  extends WorldEntity {
 		return m_ShieldStatus;
 	}
 	
+	public boolean recentlyMovedOrRotated() {
+		return m_LastMove.move || m_LastMove.rotate;
+	}
+	
 	public boolean recentlyMoved() {
 		return m_LastMove.move;
 	}
