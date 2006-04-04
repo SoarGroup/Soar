@@ -277,7 +277,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	private MapPoint findStartingLocation() {
 		// set random starting location
 		MapPoint location = new MapPoint(m_Random.nextInt(m_WorldSize), m_Random.nextInt(m_WorldSize));
-		while (!getCell(location).isOpen() || getCell(location).hasContents()) {
+		while (getCell(location).isBlocked() || getCell(location).isEnergyRecharger() || getCell(location).isHealthRecharger() || getCell(location).hasContents()) {
 			location.x = m_Random.nextInt(m_WorldSize);
 			location.y = m_Random.nextInt(m_WorldSize);				
 		}
@@ -360,9 +360,6 @@ public class TankSoarWorld extends World implements WorldManager {
 		
 		tank.setLocation(location);
 		
-		if (getCell(location).containsMissilePack()) {
-			--m_NumMissilePacks;
-		}
 		getCell(location).setTank(tank);
 
 		if (m_Tanks == null) {
