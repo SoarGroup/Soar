@@ -64,6 +64,9 @@ void RunScheduler::ScheduleAllAgentsToRun(bool state)
 *********************************************************************/
 egSKIInterleaveType RunScheduler::DefaultInterleaveStepSize(egSKIRunType runStepSize)
 {
+	//for 8.6.2, when moved d_cycle_count++ to Decision, can't interleave multi-agents
+	//by decision, because they won't cross output-input together and I/O breaks.
+
 	switch(runStepSize)
 	{
 	case gSKI_RUN_SMALLEST_STEP:  // deprecated
@@ -73,11 +76,11 @@ egSKIInterleaveType RunScheduler::DefaultInterleaveStepSize(egSKIRunType runStep
 	case gSKI_RUN_ELABORATION_CYCLE:
 		return gSKI_INTERLEAVE_ELABORATION_PHASE;
 	case gSKI_RUN_DECISION_CYCLE:
-		//return gSKI_INTERLEAVE_PHASE;		 // tested ok in SoarJavaDebugger 01/18/06
-		return gSKI_INTERLEAVE_DECISION_CYCLE;
+		return gSKI_INTERLEAVE_PHASE;		 // tested ok in SoarJavaDebugger 01/18/06
+		//breaks I/O in 8.6.2  //return gSKI_INTERLEAVE_DECISION_CYCLE;  
 	case gSKI_RUN_UNTIL_OUTPUT:
 		//return gSKI_INTERLEAVE_PHASE;      // tested ok in SoarJavaDebugger 01/18/06
-		//return gSKI_INTERLEAVE_DECISION_CYCLE;  // tested ok in SoarJavaDebugger 01/18/06
+		//breaks I/O in 8.6.2 //return gSKI_INTERLEAVE_DECISION_CYCLE;  // tested ok in SoarJavaDebugger 01/18/06
 		return gSKI_INTERLEAVE_OUTPUT;
 	default:
 		return gSKI_INTERLEAVE_PHASE;
@@ -89,7 +92,10 @@ egSKIInterleaveType RunScheduler::DefaultInterleaveStepSize(egSKIRunType runStep
 *
 *********************************************************************/
 bool RunScheduler::VerifyStepSizeForRunType(egSKIRunType runStepSize, egSKIInterleaveType interleave)
-{
+{  
+	//for 8.6.2, when moved d_cycle_count++ to Decision, can't interleave multi-agents
+	//by decision, because they won't cross output-input together and I/O breaks.
+
 	switch(runStepSize)
 	{
 	case gSKI_RUN_SMALLEST_STEP:  // deprecated
@@ -100,18 +106,18 @@ bool RunScheduler::VerifyStepSizeForRunType(egSKIRunType runStepSize, egSKIInter
 		return ( gSKI_INTERLEAVE_ELABORATION_PHASE == interleave ) ;
 	case gSKI_RUN_DECISION_CYCLE:
 		return (gSKI_INTERLEAVE_PHASE == interleave || 
-			   gSKI_INTERLEAVE_ELABORATION_PHASE == interleave || 
-			   gSKI_INTERLEAVE_DECISION_CYCLE == interleave) ;
+			    gSKI_INTERLEAVE_ELABORATION_PHASE == interleave ) ;
+			    //breaks I/O in 8.6.2//  || gSKI_INTERLEAVE_DECISION_CYCLE == interleave) ;
 	case gSKI_RUN_UNTIL_OUTPUT:
 		return (gSKI_INTERLEAVE_PHASE == interleave || 
 			   gSKI_INTERLEAVE_ELABORATION_PHASE == interleave || 
-			   gSKI_INTERLEAVE_DECISION_CYCLE == interleave ||
+			   //breaks I/O in 8.6.2  gSKI_INTERLEAVE_DECISION_CYCLE == interleave ||
 			   gSKI_INTERLEAVE_OUTPUT == interleave) ;
 	case gSKI_RUN_FOREVER:
 		// can interleave by any egSKIInterleaveType
 		return (gSKI_INTERLEAVE_PHASE == interleave || 
 			   gSKI_INTERLEAVE_ELABORATION_PHASE == interleave || 
-			   gSKI_INTERLEAVE_DECISION_CYCLE == interleave ||
+			   //breaks I/O in 8.6.2  gSKI_INTERLEAVE_DECISION_CYCLE == interleave ||
 			   gSKI_INTERLEAVE_OUTPUT == interleave) ;
 	default:
 		return false;
