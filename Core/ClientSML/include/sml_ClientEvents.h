@@ -380,6 +380,6 @@ public:
 	int		getCallbackID() { return m_CallbackID ; }
 } ;
 
-} ;	// End of namespace
+} 	// End of namespace
 
 #endif	// Header
