@@ -190,6 +190,7 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 							m_RD.calculate(tanks[i].getFacingInt());
 							MapPoint point = new MapPoint(tanks[i].getLocation());
 							setting -= 1;
+					        gc.setForeground(WindowManager.white);
 							//gc.setLineWidth(2);
 							int width = 0;
 							int height = 0;
@@ -225,11 +226,12 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 								break;
 							}
 							for (int j = 0; j < setting; ++j) {
-								gc.drawArc(point.x*m_CellSize,point.y*m_CellSize,width,height, start,180);
+								gc.drawArc(point.x*m_CellSize,point.y*m_CellSize,width - 2,height - 2, start,180);
 								point.travel(m_RD.forward);
 							}
 						}
 					}
+			        gc.setForeground(WindowManager.black);
 				}
 			}
 		}
