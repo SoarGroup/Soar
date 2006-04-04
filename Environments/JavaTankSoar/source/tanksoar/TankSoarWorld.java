@@ -39,6 +39,31 @@ public class TankSoarWorld extends World implements WorldManager {
 	private boolean m_PrintedStats;
 	private Tank[] m_Tanks;
 	private ArrayList m_Collisions;
+	
+	class CrossCheck {
+		public CrossCheck(Tank tank, int direction) {
+			t1 = tank;
+			t1_t2 = direction;
+			t2 = getCell(tank.getLocation(), direction).getTank();
+			m_RD.calculate(direction);
+			t2_t1 = m_RD.backward;
+			
+			for (int i = 0; i < m_Tanks.length; ++i) {
+				if (t1 == m_Tanks[i]) {
+					t1Index = i;
+				} else if (t2 == m_Tanks[i]) {
+					t2Index = i;
+				}
+			}
+		}
+		Tank t1;
+		int t1Index;
+		int t1_t2;
+		int t2_t1;
+		Tank t2;
+		int t2Index;
+	}
+	private LinkedList m_PossibleCrossCollisions = new LinkedList();
 
 	public class Missiles {
 		LinkedList m_Flying;
@@ -153,6 +178,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	public boolean load(String mapFile) {
 		m_PrintedStats = false;
 		m_NumMissilePacks = 0;
+		m_PossibleCrossCollisions.clear();
 		
 		try {
 			// Open file
@@ -450,40 +476,79 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 	
 	private void moveTanks() {
+		MapPoint[] newLocations = new MapPoint[m_Tanks.length];
+		boolean[] collisions = new boolean[m_Tanks.length];
+		
 		for (int i = 0; i < m_Tanks.length; ++i) {
+			collisions[i] = false;
 			Integer move = m_Tanks[i].getMove();
 			if (move == null) {
 				continue;
 			}
 			
-			MapPoint oldLocation = m_Tanks[i].getLocation();
-			MapPoint newLocation;
-			if (move.intValue() == WorldEntity.kNorthInt) {
-				newLocation = new MapPoint(oldLocation.x, oldLocation.y - 1);
-				
-			} else if (move.intValue() == WorldEntity.kEastInt) {
-				newLocation = new MapPoint(oldLocation.x + 1, oldLocation.y);
-				
-			} else if (move.intValue() == WorldEntity.kSouthInt) {
-				newLocation = new MapPoint(oldLocation.x, oldLocation.y + 1);
-				
-			} else if (move.intValue() == WorldEntity.kWestInt) {
-				newLocation = new MapPoint(oldLocation.x - 1, oldLocation.y);
-				
-			} else {
-				m_Logger.log("Invalid move direction: " + move);
-				return;
+			newLocations[i] = new MapPoint(m_Tanks[i].getLocation(), move.intValue());
+		}
+		
+		// First: check for tanks that want to move through each other
+		// (Cross check)
+		// TODO: this algorithm is horrible.
+   		ListIterator iter = m_PossibleCrossCollisions.listIterator();
+   		while (iter.hasNext()) {
+   			CrossCheck c = (CrossCheck)iter.next();
+   			if (c.t1.recentlyMoved() && c.t2.recentlyMoved()) {
+	   			if((c.t1.lastMoveDirection() == c.t1_t2) && (c.t2.lastMoveDirection() == c.t2_t1)) {
+	   				// Bingo
+	   				collisions[c.t1Index] = true;
+	   				collisions[c.t2Index] = true;
+	   			}
+   			}
+   		}
+   		m_PossibleCrossCollisions.clear();
+   		
+		// Next: check for tanks moving to blocked squares
+		// (Meet check)
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			if (newLocations[i] == null) {
+				continue;
+			}
+			// If we're already colliding, continue
+			if (collisions[i]) {
+				continue;
+			}
+
+			// If we are moving in bounds and not moving to a blocked space
+			// make sure we're not moving into another tank that is moving
+			if (isInBounds(newLocations[i]) && !getCell(newLocations[i]).isBlocked()) {
+				for (int j = i + 1; j < m_Tanks.length; ++j) {
+					if (newLocations[j] == null) {
+						continue;
+					}
+					if (newLocations[j].equals(newLocations[i])) {
+						collisions[i] = true;
+						collisions[j] = true;
+						break;
+					}
+				}
+				continue;
+			}
+			collisions[i] = true;
+		}  		
+   		
+		// Next: apply collisions, move tanks
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			if (collisions[i]) {
+				m_Tanks[i].collide();
+				continue;
 			}
 			
-			if (isInBounds(newLocation) && !getCell(newLocation).isBlocked()) {
-				if (!getCell(oldLocation).removeTank()) {
-					m_Logger.log("Warning: moving tank " + m_Tanks[i].getName() + " not at old location " + oldLocation);
-				}
-				m_Tanks[i].setLocation(newLocation);
-			} else {
-				m_Tanks[i].collide();
+			if (newLocations[i] == null) {
+				continue;
 			}
-		}
+			if (!getCell(m_Tanks[i].getLocation()).removeTank()) {
+				m_Logger.log("Warning: moving tank " + m_Tanks[i].getName() + " not at old location " + m_Tanks[i].getLocation());
+			}
+			m_Tanks[i].setLocation(newLocations[i]);
+		}  		
 	}
 	
 	private void updateMap() {
@@ -619,19 +684,32 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 	}
 	
-	public int getBlockedByLocation(MapPoint location) {
+	public int getBlockedByLocation(Tank tank) {
 		int blocked = 0;
+		MapPoint location = tank.getLocation();
 		
 		if (getCell(location, WorldEntity.kNorthInt).isBlocked()) {
+			if (getCell(location, WorldEntity.kNorthInt).containsTank()) {
+				m_PossibleCrossCollisions.add(new CrossCheck(tank, WorldEntity.kNorthInt));
+			}
 			blocked |= WorldEntity.kNorthInt;
 		}
 		if (getCell(location, WorldEntity.kEastInt).isBlocked()) {
+			if (getCell(location, WorldEntity.kEastInt).containsTank()) {
+				m_PossibleCrossCollisions.add(new CrossCheck(tank, WorldEntity.kEastInt));
+			}
 			blocked |= WorldEntity.kEastInt;
 		}
 		if (getCell(location, WorldEntity.kSouthInt).isBlocked()) {
+			if (getCell(location, WorldEntity.kSouthInt).containsTank()) {
+				m_PossibleCrossCollisions.add(new CrossCheck(tank, WorldEntity.kSouthInt));
+			}
 			blocked |= WorldEntity.kSouthInt;
 		}
 		if (getCell(location, WorldEntity.kWestInt).isBlocked()) {
+			if (getCell(location, WorldEntity.kWestInt).containsTank()) {
+				m_PossibleCrossCollisions.add(new CrossCheck(tank, WorldEntity.kWestInt));
+			}
 			blocked |= WorldEntity.kWestInt;
 		}
 		

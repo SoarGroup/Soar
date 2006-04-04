@@ -214,7 +214,7 @@ public class InputLinkManager {
 			}
 		}
 				
-		int blocked = m_World.getBlockedByLocation(location);
+		int blocked = m_World.getBlockedByLocation(m_Tank);
 		
 		String blockedForward = ((blocked & m_Tank.forward()) > 0) ? kYes : kNo;
 		String blockedBackward = ((blocked & m_Tank.backward()) > 0) ? kYes : kNo;

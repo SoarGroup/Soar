@@ -1,5 +1,7 @@
 package tanksoar;
 
+import java.util.LinkedList;
+
 import simulation.*;
 import utilities.*;
 import sml.*;
@@ -109,7 +111,7 @@ public class Tank  extends WorldEntity {
 		m_ShieldStatus = false;
 		m_Health = kInitialHealth;
 		m_Energy = kInitialEnergy;
-		
+				
 		m_LastMove.reset();	
 		
 		m_Facing = m_InitialFacing;
