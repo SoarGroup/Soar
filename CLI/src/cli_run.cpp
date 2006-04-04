@@ -104,9 +104,7 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 }
 
 eRunInterleaveMode CommandLineInterface::ParseRunInterleaveOptarg() {
-	if (m_OptionArgument == "d") {
-		return RUN_INTERLEAVE_DECISION;
-	} else if (m_OptionArgument == "e") {
+	if (m_OptionArgument == "e") {
 		return RUN_INTERLEAVE_ELABORATION;
 	} else if (m_OptionArgument == "o") {
 		return RUN_INTERLEAVE_OUTPUT;
@@ -139,11 +137,21 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 
 	} else if (options.test(RUN_OUTPUT)) {
 		runType = gSKI_RUN_UNTIL_OUTPUT;
-
-	} else if (options.test(RUN_FOREVER)) {
+	}  
+	if (options.test(RUN_FOREVER)) {
 		runType = gSKI_RUN_FOREVER;	
 	}
 
+	// if -f (run_forever) && -e | -d | -p | -o, then use the other
+	// args to set the interleave for running forever.
+	egSKIInterleaveType interleave = gSKI_INTERLEAVE_SMALLEST_STEP; // need to set a default based on RunType
+	if (options.test(RUN_FOREVER)) {
+		if (options.test(RUN_ELABORATION)) interleave = gSKI_INTERLEAVE_ELABORATION_PHASE;
+		if (options.test(RUN_PHASE))    interleave = gSKI_INTERLEAVE_PHASE;
+        if (options.test(RUN_DECISION)) interleave = gSKI_INTERLEAVE_PHASE;
+		if (options.test(RUN_OUTPUT))   interleave = gSKI_INTERLEAVE_OUTPUT;
+	}
+ 
 	if (count == -1)
 	{
 		count = 1 ;
@@ -184,8 +192,7 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 	// By default, we run one phase per agent but this isn't always appropriate.
 	egSKIRunType interleaveStepSize = gSKI_RUN_PHASE ;
 #ifdef USE_NEW_SCHEDULER
-	egSKIInterleaveType interleave;
-
+ 
 	switch(interleaveIn) {
 		case RUN_INTERLEAVE_DEFAULT:
 		default:
@@ -193,9 +200,6 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 			break;
 		case RUN_INTERLEAVE_ELABORATION:
 			interleave = gSKI_INTERLEAVE_ELABORATION_PHASE;
-			break;
-		case RUN_INTERLEAVE_DECISION:
-			interleave = gSKI_INTERLEAVE_DECISION_CYCLE;
 			break;
 		case RUN_INTERLEAVE_PHASE:
 			interleave = gSKI_INTERLEAVE_PHASE;
@@ -207,6 +211,7 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 
 #endif
 
+	//interleaveStepSize is left over from the old SML scheduler and should be removed.
 	switch (runType)
 	{
 		// If the entire system is running by elaboration cycles, then we need to run each agent by elaboration cycles (they're usually
