@@ -692,7 +692,7 @@ public class TankSoarWorld extends World implements WorldManager {
 					continue;
 				}
 							
-				if (newCell.containsTank() && newCell.getTank().recentlyMoved()) {
+				if (newCell.containsTank() && newCell.getTank().recentlyMovedOrRotated()) {
 					
 					m_Logger.log("Found recently moved tank at " + newLocation);	
 					

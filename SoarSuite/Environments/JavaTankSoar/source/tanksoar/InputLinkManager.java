@@ -228,16 +228,16 @@ public class InputLinkManager {
 			m_BlockedLeftWME = m_Agent.CreateStringWME(m_BlockedWME, kLeftID, blockedLeft);
 			m_BlockedRightWME = m_Agent.CreateStringWME(m_BlockedWME, kRightID, blockedRight);				
 		} else {
-			if (m_Tank.recentlyMoved() || !m_BlockedForwardWME.GetValue().equalsIgnoreCase(blockedForward)) {
+			if (m_Tank.recentlyMovedOrRotated() || !m_BlockedForwardWME.GetValue().equalsIgnoreCase(blockedForward)) {
 				m_Agent.Update(m_BlockedForwardWME, blockedForward);
 			}
-			if (m_Tank.recentlyMoved() || !m_BlockedBackwardWME.GetValue().equalsIgnoreCase(blockedBackward)) {
+			if (m_Tank.recentlyMovedOrRotated() || !m_BlockedBackwardWME.GetValue().equalsIgnoreCase(blockedBackward)) {
 				m_Agent.Update(m_BlockedBackwardWME, blockedBackward);
 			}
-			if (m_Tank.recentlyMoved() || !m_BlockedLeftWME.GetValue().equalsIgnoreCase(blockedLeft)) {
+			if (m_Tank.recentlyMovedOrRotated() || !m_BlockedLeftWME.GetValue().equalsIgnoreCase(blockedLeft)) {
 				m_Agent.Update(m_BlockedLeftWME, blockedLeft);
 			}
-			if (m_Tank.recentlyMoved() || !m_BlockedRightWME.GetValue().equalsIgnoreCase(blockedRight)) {
+			if (m_Tank.recentlyMovedOrRotated() || !m_BlockedRightWME.GetValue().equalsIgnoreCase(blockedRight)) {
 				m_Agent.Update(m_BlockedRightWME, blockedRight);
 			}
 		}
@@ -531,7 +531,7 @@ public class InputLinkManager {
 					radarColors[position][distance] = m_Agent.CreateStringWME(radarCellIDs[position][distance], kColorID, tank.getColor());
 				}
 			} else {
-				if (m_Tank.recentlyMoved() || cell.isModified()) {
+				if (m_Tank.recentlyMovedOrRotated() || cell.isModified()) {
 					m_Agent.DestroyWME(radarCellIDs[position][distance]);
 					radarCellIDs[position][distance] = m_Agent.CreateIdWME(m_RadarWME, id);
 					m_Agent.CreateIntWME(radarCellIDs[position][distance], kDistanceID, distance);
