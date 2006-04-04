@@ -23,7 +23,8 @@ public class TankSoarCell extends Cell {
 	private MapPoint m_Parent = null;
 	
 	private boolean m_Explosion = false;
-	
+	protected boolean m_RadarTouch = false;
+
 	public TankSoarCell(String name) throws Exception {
 		if (name.equalsIgnoreCase(TankSoarWorld.kTypeWall)) {
 			m_Type = kWallInt;
@@ -96,6 +97,10 @@ public class TankSoarCell extends Cell {
 		m_Modified = true;
 	}
 	
+	void setRadarTouch() {
+		m_RadarTouch = true;
+	}
+	
 	public Tank getTank() {
 		return m_Tank;
 	}
@@ -140,7 +145,12 @@ public class TankSoarCell extends Cell {
 
 	public void clearModified() {
 		m_Explosion = false;
-		super.clearModified();
+		if (m_RadarTouch) {
+			setModified();
+			m_RadarTouch = false;
+		} else {
+			super.clearModified();
+		}
 	}
 }
 
