@@ -31,5 +31,9 @@ public class Missile {
 		++m_FlightPhase;
 		m_FlightPhase %= 3;
 	}
+	
+	public int getFlightPhase() {
+		return m_FlightPhase;
+	}
 }
 

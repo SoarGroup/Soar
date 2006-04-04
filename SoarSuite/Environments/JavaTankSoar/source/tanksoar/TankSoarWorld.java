@@ -80,10 +80,15 @@ public class TankSoarWorld extends World implements WorldManager {
 	   		ListIterator iter = m_Flying.listIterator();
 	   		while (iter.hasNext()) {
 	   			Missile missile = (Missile)iter.next();
-	   			getCell(missile.getCurrentLocation()).setModified();
-	   			m_RD.calculate(missile.getDirection());
 	   			MapPoint location = missile.getCurrentLocation();
+	   			m_RD.calculate(missile.getDirection());
+	   			getCell(location).setModified();
 	   			location.travel(m_RD.forward);
+	   			if (missile.getFlightPhase() == 2) {
+	   				// travel again
+		   			getCell(location).setModified();
+		   			location.travel(m_RD.forward);
+	   			}
 	   			
 	   			if (getCell(location).isWall()) {
 	   				iter.remove();
@@ -152,6 +157,15 @@ public class TankSoarWorld extends World implements WorldManager {
 	   				Tank owner = missile.getOwner();
 	   				iter.remove();
 	   				return owner;
+	   			}
+	   			if (missile.getFlightPhase() == 2) {
+		   			MapPoint missileLoc = new MapPoint(missile.getCurrentLocation());
+		   			missileLoc.travel(missile.getDirection());
+		   			if (location.equals(missileLoc)) {
+		   				Tank owner = missile.getOwner();
+		   				iter.remove();
+		   				return owner;
+		   			}
 	   			}
 	   		}
 	   		return null;
