@@ -57,7 +57,6 @@ public class AgentDisplay extends Composite {
 		gl = new GridLayout();
 		gl.numColumns = 2;
 		leftComposite.setLayout(gl);
-		
 
 		Composite agentButtons;
 		agentButtons = new Composite(leftComposite, SWT.NONE);
@@ -158,37 +157,64 @@ public class AgentDisplay extends Composite {
 		});
 		
 		Label blocked = new Label(leftComposite, SWT.BORDER);
+		gd = new GridData();
+		gd.grabExcessHorizontalSpace = true;
+		gd.horizontalAlignment = GridData.CENTER;
+		gd.heightHint = 50;
+		gd.widthHint = 50;
+		blocked.setLayoutData(gd);
 		blocked.setText("blocked");
 
 		Label rwaves = new Label(leftComposite, SWT.BORDER);
+		gd = new GridData();
+		gd.grabExcessHorizontalSpace = true;
+		gd.horizontalAlignment = GridData.CENTER;
+		gd.heightHint = 50;
+		gd.widthHint = 50;
+		rwaves.setLayoutData(gd);
 		rwaves.setText("rwaves");
 
 		Label sound = new Label(leftComposite, SWT.BORDER);
+		gd = new GridData();
+		gd.grabExcessHorizontalSpace = true;
+		gd.horizontalAlignment = GridData.CENTER;
+		gd.heightHint = 50;
+		gd.widthHint = 50;
+		sound.setLayoutData(gd);
 		sound.setText("sound");
 
 		Label incoming = new Label(leftComposite, SWT.BORDER);
+		gd = new GridData();
+		gd.grabExcessHorizontalSpace = true;
+		gd.horizontalAlignment = GridData.CENTER;
+		gd.heightHint = 50;
+		gd.widthHint = 50;
+		incoming.setLayoutData(gd);
 		incoming.setText("incoming");
 		
-		m_Smell = new ProgressBar(leftComposite, SWT.HORIZONTAL);
+		Group smellGroup = new Group(leftComposite, SWT.NONE);
+		smellGroup.setText("Smell");
+		smellGroup.setLayout(new FillLayout());
 		gd = new GridData();
 		gd.horizontalSpan = 2;
-		m_Smell.setLayoutData(gd);
+		smellGroup.setLayoutData(gd);
+		m_Smell = new ProgressBar(smellGroup, SWT.HORIZONTAL);
 		m_Smell.setMinimum(0);
 		m_Smell.setMaximum(m_Simulation.getTankSoarWorld().getMaxManhattanDistance());
 
-		Composite rightComposite = new Composite(outerGroup, SWT.NONE);
-		
+		Group rightGroup = new Group(outerGroup, SWT.NONE);
+		rightGroup.setText("Radar");
 		gl = new GridLayout();
 		gl.numColumns = 2;
-		rightComposite.setLayout(gl);
+		rightGroup.setLayout(gl);
 		
-		m_AgentWorld = new TankSoarAgentWorld(rightComposite, SWT.BORDER, m_Simulation);
+		m_AgentWorld = new TankSoarAgentWorld(rightGroup, SWT.BORDER, m_Simulation);
 		gd = new GridData();
 		gd.heightHint = m_AgentWorld.getHeight();
 		gd.widthHint = m_AgentWorld.getWidth();		
 		m_AgentWorld.setLayoutData(gd);
 
-		m_Radar = new ProgressBar(rightComposite, SWT.VERTICAL);
+		m_Radar = new ProgressBar(rightGroup, SWT.VERTICAL);
 		gd = new GridData();
 		gd.heightHint = m_AgentWorld.getHeight();
 		m_Radar.setLayoutData(gd);
@@ -209,7 +235,9 @@ public class AgentDisplay extends Composite {
 		}
 		m_AgentWorld.update(m_Tanks[m_AgentTable.getSelectionIndex()]);
 		m_Radar.setSelection(m_Tanks[m_AgentTable.getSelectionIndex()].getRadarSetting());
+		m_Radar.setToolTipText(Integer.toString(m_Radar.getSelection()));
 		m_Smell.setSelection(m_Tanks[m_AgentTable.getSelectionIndex()].getSmellDistance());
+		m_Smell.setToolTipText(Integer.toString(m_Smell.getSelection()));
 		m_AgentWorld.enable();
 		m_AgentWorld.redraw();
 	}
@@ -223,7 +251,9 @@ public class AgentDisplay extends Composite {
 		if (m_SelectedEntity != null) {
 			m_AgentWorld.update(m_Tanks[m_AgentTable.getSelectionIndex()]);
 			m_Radar.setSelection(m_Tanks[m_AgentTable.getSelectionIndex()].getRadarSetting());
+			m_Radar.setToolTipText(Integer.toString(m_Radar.getSelection()));
 			m_Smell.setSelection(m_Tanks[m_AgentTable.getSelectionIndex()].getSmellDistance());
+			m_Smell.setToolTipText(Integer.toString(m_Smell.getSelection()));
 			m_AgentWorld.redraw();
 		}
 		
@@ -248,7 +278,11 @@ public class AgentDisplay extends Composite {
 			m_Items = new TableItem[m_Tanks.length];
 			for (int i = 0; i < m_Tanks.length; ++i) {
 				m_Items[i] = new TableItem(m_AgentTable, SWT.NONE);
-				m_Items[i].setText(new String[] {m_Tanks[i].getName(), Integer.toString(m_Tanks[i].getPoints())});
+				m_Items[i].setText(0, m_Tanks[i].getName());
+				m_Items[i].setText(1, Integer.toString(m_Tanks[i].getPoints()));
+				m_Items[i].setText(2, Integer.toString(m_Tanks[i].getMissiles()));
+				m_Items[i].setText(3, Integer.toString(m_Tanks[i].getHealth()));
+				m_Items[i].setText(4, Integer.toString(m_Tanks[i].getEnergy()));
 				if (m_SelectedEntity == m_Tanks[i]) {
 					foundSelected = true;
 					m_AgentTable.setSelection(i);
@@ -258,6 +292,10 @@ public class AgentDisplay extends Composite {
 		
 		if (!foundSelected) {
 			m_SelectedEntity = null;			
+			m_Radar.setSelection(0);
+			m_Radar.setToolTipText("0");
+			m_Smell.setSelection(0);
+			m_Smell.setToolTipText("0");
 			m_AgentTable.deselectAll();
 			m_AgentWorld.disable();
 			m_AgentWorld.redraw();
