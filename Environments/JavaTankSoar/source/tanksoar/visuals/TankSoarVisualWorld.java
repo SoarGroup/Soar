@@ -177,7 +177,42 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 				Missile[] missiles = m_World.getMissiles();
 				if (missiles != null) {
 					for (int i = 0; i < missiles.length; ++i) {
-						gc.drawImage(kMissile, (missiles[i].getCurrentLocation().x * m_CellSize) + 9, (missiles[i].getCurrentLocation().y * m_CellSize) + 9);
+						m_RD.calculate(missiles[i].getDirection());
+						boolean plus = false;
+						int dir = 0;
+						switch (missiles[i].getFlightPhase()) {
+						case 0:
+							dir = m_RD.backward;
+							break;
+						case 1:
+							dir = m_RD.forward;
+							break;
+						case 2:
+							dir = m_RD.forward;
+							plus = true;
+							break;
+						}
+						int mX = 0;
+						int mY = 0;
+						switch (dir) {
+						case WorldEntity.kNorthInt:
+							mX = 10;
+							mY = plus ? -6 : 5;
+							break;
+						case WorldEntity.kEastInt:
+							mX = plus ? 26 : 15;
+							mY = 10;
+							break;
+						case WorldEntity.kSouthInt:
+							mX = 10;
+							mY = plus ? 26 : 15;
+							break;
+						case WorldEntity.kWestInt:
+							mX = plus ? -6 : 5;
+							mY = 10;
+							break;
+						}
+						gc.drawImage(kMissile, (missiles[i].getCurrentLocation().x * m_CellSize) + mX, (missiles[i].getCurrentLocation().y * m_CellSize) + mY);
 					}
 				}
 				
