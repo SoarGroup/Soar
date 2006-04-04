@@ -6,9 +6,9 @@
 AC_PREREQ(2.57)
 AC_INIT([SoarSuite], [8.6.2-r2], [soar-group@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([Core/SoarKernel/include/soarkernel.h])
-AM_INIT_AUTOMAKE([foreign tar-ustar])
+AM_INIT_AUTOMAKE([foreign])
 AC_REVISION($Revision$)
-AC_CONFIG_HEADERS([config.h])
+AM_CONFIG_HEADER([config.h])
 AC_PREFIX_DEFAULT([/usr/local/soar])
 AC_LIBTOOL_DLOPEN
 
