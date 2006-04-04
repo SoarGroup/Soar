@@ -80,6 +80,7 @@ public class Tank  extends WorldEntity {
 	private int m_RadarPower;
 	private boolean m_RadarSwitch;
 	private int m_RadarDistance;
+	private int m_SmellDistance;
 	
 	public Tank(Agent agent, String productions, String color, MapPoint location, String facing, TankSoarWorld world) {
 		super(agent, productions, color, location);
@@ -105,6 +106,7 @@ public class Tank  extends WorldEntity {
 	public void reset() {
 		m_RadarPower = 0;
 		m_RadarDistance = 0;
+		m_SmellDistance = 0;
 		m_RadarSwitch = false;
 		m_RWaves = 0;
 		m_Missiles = kInitialMissiles;
@@ -129,10 +131,6 @@ public class Tank  extends WorldEntity {
 	}
 	
 	public int getRadarSetting() {
-		// Even though 0 is useful for us, it isn't a legal setting.
-		if (m_RadarPower == 0) {
-			return 1;
-		}
 		return m_RadarPower;
 	}
 	
@@ -140,8 +138,16 @@ public class Tank  extends WorldEntity {
 		m_RadarDistance = distance;
 	}
 	
+	void setSmellDistance(int distance) {
+		m_SmellDistance = distance;
+	}
+	
 	public int getRadarDistance() {
 		return m_RadarDistance;
+	}
+	
+	public int getSmellDistance() {
+		return m_SmellDistance;
 	}
 	
 	public Integer getMove() {

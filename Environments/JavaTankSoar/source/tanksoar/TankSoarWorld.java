@@ -846,4 +846,8 @@ public class TankSoarWorld extends World implements WorldManager {
 		
 		return closestTank;
 	}
+	
+	public int getMaxManhattanDistance() {
+		return m_MaxManhattanDistance;
+	}
 }
