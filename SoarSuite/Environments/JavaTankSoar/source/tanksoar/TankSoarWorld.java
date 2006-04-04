@@ -352,11 +352,14 @@ public class TankSoarWorld extends World implements WorldManager {
 			location = null;
 		}
 		
+		Tank tank = new Tank(agent, productions, color, location, facing, this);
+
 		if (location == null) {
 			location = findStartingLocation();
 		}
 		
-		Tank tank = new Tank(agent, productions, color, location, facing, this);
+		tank.setLocation(location);
+		
 		if (getCell(location).containsMissilePack()) {
 			--m_NumMissilePacks;
 		}
