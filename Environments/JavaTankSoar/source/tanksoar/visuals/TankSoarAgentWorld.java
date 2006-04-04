@@ -16,9 +16,11 @@ public class TankSoarAgentWorld extends VisualWorld implements PaintListener {
 	private static Image kMiniEnergy;
 	private static Image kMiniHealth;
 	private static Image kMiniTank;
+	private static final int kDotSize = 7;
 	
 	private static final int kCellSize = 20;
 	private Image[][] m_Radar = new Image[Tank.kRadarWidth][Tank.kRadarHeight];
+	private Color m_Color;
 
 	public TankSoarAgentWorld(Composite parent, int style, TankSoarSimulation simulation) {
 		super(parent, style, simulation, kCellSize);
@@ -38,6 +40,8 @@ public class TankSoarAgentWorld extends VisualWorld implements PaintListener {
 	}
 	
 	public void update(Tank tank) {
+		m_Color = (Color)m_EntityColors.get(tank);
+		
 		// update radar using tank
 		for(int x = 0; x < Tank.kRadarWidth; ++x){
 			for(int y = 0; y < Tank.kRadarHeight; ++y){
@@ -94,6 +98,12 @@ public class TankSoarAgentWorld extends VisualWorld implements PaintListener {
 		for(int x = 0; x < Tank.kRadarWidth; ++x){
 			for(int y = 0; y < Tank.kRadarHeight; ++y){
 				gc.drawImage(m_Radar[x][y], x*m_CellSize, (Tank.kRadarHeight - y - 1)*m_CellSize);
+				
+				if ((x == 1) && (y == 0)) {
+					gc.setBackground(m_Color);
+					gc.fillOval(m_CellSize*x + m_CellSize/2 - kDotSize/2, m_CellSize*(Tank.kRadarHeight - y - 1) + m_CellSize/2 - kDotSize/2, kDotSize, kDotSize);
+					gc.setBackground(WindowManager.widget_background);
+				}
 			}
 		}
 		m_Painted = true;
