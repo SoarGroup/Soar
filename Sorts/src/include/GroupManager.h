@@ -50,6 +50,7 @@ struct objectGroupingStruct {
   SoarGameObject* object;
   SoarGameGroup* group;
   bool assigned;
+  bool oldGroup;
   int x,y;
 };
 

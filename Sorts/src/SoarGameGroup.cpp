@@ -13,7 +13,6 @@ SoarGameGroup::SoarGameGroup( SoarGameObject* unit,
 : ORTSIO(_ORTSIO), mapManager(_mapManager)
 {
   members.insert(unit);
-  // capabilities = unit->capabilities;
   unit->setGroup(this);
   setStale();
   staleInSoar= true;
@@ -31,9 +30,7 @@ SoarGameGroup::SoarGameGroup( SoarGameObject* unit,
     minerals = (typeName == "mineral");
     airUnits = (*(unit->gob->sod.zcat) == 3);
     landUnits = (*(unit->gob->sod.zcat) == 2);
-    // I am assuming one but not both of these applies
-    // zcat can also be on_water, under_water and on_surface
-    // if that comes up, fix this!
+    // (fixme)
     //assert((airUnits or landUnits) and not (airUnits and landUnits));
   }
 
@@ -51,6 +48,7 @@ SoarGameGroup::SoarGameGroup( SoarGameObject* unit,
 
   centerX = 0;
   centerY = 0;
+  ///cout << "XXX created: " << (int) this << endl;
 }
 
 SoarGameGroup::~SoarGameGroup() {
@@ -61,10 +59,10 @@ SoarGameGroup::~SoarGameGroup() {
   {
     (*i)->groupExit(this);
   }
+  //cout << "XXX destroyed: " << (int) this << endl;
 }
 
 void SoarGameGroup::addUnit(SoarGameObject* unit) {
-  //capabilities &= unit->capabilities;
 
   assert(members.find(unit) == members.end());
   // don't group units from different teams together
@@ -633,3 +631,11 @@ int SoarGameGroup::getFMSector() {
   return fmSector;
 }
 
+void SoarGameGroup::setFMaps(list <FeatureMap*> _fMaps) {
+  fMaps = _fMaps;
+  return;
+}
+
+list <FeatureMap*> SoarGameGroup::getFMaps() {
+  return fMaps;
+}

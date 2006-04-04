@@ -14,6 +14,7 @@
 class SoarInterface;
 class OrtsInterface;
 class SoarGameObject;
+class FeatureMap;
 
 using namespace std;
 
@@ -62,6 +63,9 @@ class SoarGameGroup {
 
     void setFMSector(int);
     int getFMSector();
+
+    void setFMaps(list <FeatureMap*>);
+    list <FeatureMap*> getFMaps();
 
     Rectangle getBoundingBox();
     void getCenterLoc(int& x, int& y);
@@ -120,10 +124,13 @@ class SoarGameGroup {
 
     bool canMine;
     
-    int fmSector;
-
     // true if there is more than one type of unit in the group
     bool mixedType;
+    
+    // feature map support-
+    // the group needs to remember what feature maps it is in, and the sector
+    int fmSector;
+    list <FeatureMap*> fMaps;
 };
 
 #define GRP_STATUS_RUNNING 0

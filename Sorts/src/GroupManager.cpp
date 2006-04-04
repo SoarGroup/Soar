@@ -16,7 +16,7 @@ using namespace std;
 GroupManager::GroupManager(SoarInterface* si, MapManager* _mapManager,
                            FeatureMapManager* fmm) 
     : SoarIO(si), mapManager(_mapManager), featureMaps(fmm) {
-  featureMaps->changeViewWindow(230,230,230);
+  featureMaps->changeViewWindow(230,230,460);
 }
 void GroupManager::updateVision() {
   cout << "begin uw" << endl;  
@@ -83,7 +83,10 @@ void GroupManager::reGroup() {
   //    if not a group-center and not flagged, rm from old group and make a new group
   //    check each object (obj2) below in list:
   //      if objs are close and obj2 not flagged, flag obj2 and bring to same group
-  //      if objs are close and obj2 flagged, merge obj1's group -> obj2's group 
+  //      if objs are close and obj2 flagged, check oldGroup flag
+  //        merge groups, preferring to keep groups w/ oldgroup flag
+  //        if neither is set, choice is arbitrary
+  //        if both are set, prefer the larger group
 
   // this should really come from the attention code
   double groupingDistanceSquared = 1000;
@@ -127,8 +130,10 @@ void GroupManager::reGroup() {
         objectData.object = centerObject;
         objectData.x = *centerObject->gob->sod.x;
         objectData.y = *centerObject->gob->sod.y;
+        objectData.oldGroup = true;
         
         centerGroupingList.push_back(objectData);
+        objectData.oldGroup = false;
         groupMembers = (*groupIter)->getMembers();
         objectIter = groupMembers.begin();
         while (objectIter != groupMembers.end()) {
@@ -176,6 +181,7 @@ void GroupManager::reGroup() {
         addGroup(obj1Struct.object);
         obj1Struct.group = obj1Struct.object->getGroup();
         obj1Struct.assigned = true;
+        //cout << "XXX making new group " << (int) obj1Struct.group << endl; 
       }
      
       // iterate through all lower objects to see if they should join the group
@@ -190,21 +196,47 @@ void GroupManager::reGroup() {
                             (*obj2StructIter).x, (*obj2StructIter).y)
             <= groupingDistanceSquared) {
           if ((*obj2StructIter).assigned) {
-            // obj2 already has been grouped- obj1's group 
-            // should join that group
+            // obj2 already has been grouped- groups should merge
             pair<SoarGameGroup*, SoarGameGroup*> groups;
-            groups.first = obj1Struct.group;
-            groups.second = (*obj2StructIter).group;
+
+            if (obj1Struct.oldGroup and not (*obj2StructIter).oldGroup) {
+              // obj1's group isn't new, and 2's is, keep 1's group
+              groups.second = obj1Struct.group;
+              groups.first = (*obj2StructIter).group;
+            }
+            else if (not obj1Struct.oldGroup and (*obj2StructIter).oldGroup) {
+              // vice versa
+              groups.first = obj1Struct.group;
+              groups.second = (*obj2StructIter).group;
+            }
+            else if (not obj1Struct.oldGroup and not (*obj2StructIter).oldGroup) {
+              // arbitrary
+              groups.first = obj1Struct.group;
+              groups.second = (*obj2StructIter).group;
+            }
+            else {
+              // both old- keep the bigger
+              if (obj1Struct.group->getSize() > (*obj2StructIter).group->getSize()) {
+                groups.second = obj1Struct.group;
+                groups.first = (*obj2StructIter).group;
+              }
+              else {
+                groups.first = obj1Struct.group;
+                groups.second = (*obj2StructIter).group;
+              }
+            }
             toMergeList.push_back(groups);
+            //cout << "XXX will merge " << (int) groups.first << " -> " << (int) groups.second << endl;
           }
           else {
             // obj2 has not been assigned. Assign it to obj1's group.
-            //cout << "obj from group " << (int) (*obj2StructIter).group <<
-                    //" joining " << (int) obj1Struct.group << endl;
+            //cout << "XXX obj from group " << (int) (*obj2StructIter).group <<
+            //        " joining " << (int) obj1Struct.group << endl;
             (*obj2StructIter).assigned = true;
             (*obj2StructIter).group->removeUnit((*obj2StructIter).object);
             (*obj2StructIter).group = obj1Struct.group;
             (*obj2StructIter).group->addUnit((*obj2StructIter).object);
+            (*obj2StructIter).oldGroup = obj1Struct.oldGroup;
             
           }
           //cout << "grouped!" << endl;
@@ -227,7 +259,7 @@ void GroupManager::reGroup() {
     catIter++;
   } // end iterating through all the types that need re-grouping
   
-  // do merges- always merge the smaller group to the bigger group
+  // do merges- always merge the first group to the second
   
   list<pair<SoarGameGroup*, SoarGameGroup*> >::iterator toMergeIter;
   list<pair<SoarGameGroup*, SoarGameGroup*> >::iterator toMergeIter2;
@@ -240,8 +272,8 @@ void GroupManager::reGroup() {
     if ((*toMergeIter).first == (*toMergeIter).second) {
       // do nothing- the groups were already merged
     }
-    else if ((*toMergeIter).first->getSize() >
-        (*toMergeIter).second->getSize() ) {
+    /*else { // if ((*toMergeIter).first->getSize() >
+        //(*toMergeIter).second->getSize() ) {
       // merge second into first
       
       toMergeIter2 = toMergeIter;
@@ -259,7 +291,7 @@ void GroupManager::reGroup() {
       }
 
       (*toMergeIter).second->mergeTo((*toMergeIter).first);
-    }
+    }*/
     else {
       // merge first into second
       
@@ -271,7 +303,7 @@ void GroupManager::reGroup() {
         if ((*toMergeIter2).first == (*toMergeIter).first) {
           (*toMergeIter2).first = (*toMergeIter).second;
         }
-        else if ((*toMergeIter2).second == (*toMergeIter).first) {
+        if ((*toMergeIter2).second == (*toMergeIter).first) {
           (*toMergeIter2).second = (*toMergeIter).second;
         }
         toMergeIter2++;
@@ -284,6 +316,7 @@ void GroupManager::reGroup() {
   }
  
   staleGroupCategories.clear();
+  //cout << "XXX regroup done" << endl;
   return;
 }
 
@@ -344,7 +377,7 @@ void GroupManager::refreshGroups(bool final) {
 
 void GroupManager::addGroup(SoarGameObject* object) {
   groupsNotInFocus.push_back(new SoarGameGroup(object, false, ORTSIO, mapManager));
-  featureMaps->addGroup(object->getGroup());
+  //featureMaps->addGroup(object->getGroup());
   return;
 }
 /*

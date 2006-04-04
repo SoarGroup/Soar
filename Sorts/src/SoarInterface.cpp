@@ -63,6 +63,7 @@ void SoarInterface::removeGroup(SoarGameGroup* group) {
   
   InputLinkGroupRep &g = groupTable[group];
   if (g.groupId >= 0) {
+    cout << "XXX remove id " << g.groupId << " ptr " << (int)group << endl;
     agent->DestroyWME(g.WMEptr);
   }
   groupTable.erase(group);
@@ -97,6 +98,7 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyStruct gps) 
 
     // label the group with its id
     agent->CreateIntWME(g.WMEptr, "id", g.groupId);
+    cout << "XXX adding id " << g.groupId << " ptr " << (int) group << endl;
 
     // add properties
     for(list<pair<string,int> >::iterator 
@@ -123,6 +125,7 @@ void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyStruct gps) 
     }
   }
   else {
+    cout << "XXX updating id " << g.groupId << endl;
     // group already added, just update values.
     // Note that I'm assuming no new values are introduced
     for(list<pair<string, int> >::iterator
