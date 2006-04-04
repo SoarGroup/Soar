@@ -14,7 +14,7 @@ public class Tank  extends WorldEntity {
 	private final static String kFireID = "fire";
 	private final static String kRadarID = "radar";
 	private final static String kSwitchID = "switch";
-	private final static String kOff = "off";
+	//private final static String kOff = "off";
 	private final static String kOn = "on";
 	private final static String kRadarPowerID = "radar-power";
 	private final static String kSettingID = "setting";
@@ -89,7 +89,6 @@ public class Tank  extends WorldEntity {
 		}
 		m_InitialFacing = facing;		
 		m_InitialLocation = location;
-		
 	
 		m_LastMove = new MoveInfo();
 		m_ILM = new InputLinkManager(m_World, this);
