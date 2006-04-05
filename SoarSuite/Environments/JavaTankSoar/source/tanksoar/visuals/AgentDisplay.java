@@ -193,7 +193,7 @@ public class AgentDisplay extends Composite {
 		incoming.setText("incoming");
 		
 		Group smellGroup = new Group(leftComposite, SWT.NONE);
-		smellGroup.setText("Smell");
+		smellGroup.setText("Smell distance");
 		smellGroup.setLayout(new FillLayout());
 		gd = new GridData();
 		gd.horizontalSpan = 2;
@@ -248,6 +248,7 @@ public class AgentDisplay extends Composite {
 	}
 
 	void worldChangeEvent() {
+		m_Smell.setMaximum(m_Simulation.getTankSoarWorld().getMaxManhattanDistance());
 		if (m_SelectedEntity != null) {
 			m_AgentWorld.update(m_Tanks[m_AgentTable.getSelectionIndex()]);
 			m_Radar.setSelection(m_Tanks[m_AgentTable.getSelectionIndex()].getRadarSetting());
@@ -255,6 +256,11 @@ public class AgentDisplay extends Composite {
 			m_Smell.setSelection(m_Tanks[m_AgentTable.getSelectionIndex()].getSmellDistance());
 			m_Smell.setToolTipText(Integer.toString(m_Smell.getSelection()));
 			m_AgentWorld.redraw();
+		} else {
+			m_Radar.setSelection(0);
+			m_Radar.setToolTipText("0");
+			m_Smell.setSelection(0);
+			m_Smell.setToolTipText("0");
 		}
 		
 		if (m_Items != null) {

@@ -82,17 +82,22 @@ public class TankSoarWorld extends World implements WorldManager {
 	   			Missile missile = (Missile)iter.next();
 	   			MapPoint location = missile.getCurrentLocation();
 	   			m_RD.calculate(missile.getDirection());
+
 	   			getCell(location).setModified();
 	   			location.travel(m_RD.forward);
+	   			if (getCell(location).isWall()) {
+	   				iter.remove();
+	   				continue;
+	   			}
+	   			
 	   			if (missile.getFlightPhase() == 2) {
 	   				// travel again
 		   			getCell(location).setModified();
 		   			location.travel(m_RD.forward);
-	   			}
-	   			
-	   			if (getCell(location).isWall()) {
-	   				iter.remove();
-	   				continue;
+		   			if (getCell(location).isWall()) {
+		   				iter.remove();
+		   				continue;
+		   			}
 	   			}
 	   			
 	   			missile.incrementFlightPhase();
