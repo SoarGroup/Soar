@@ -32,5 +32,7 @@ VERSION 4
 29	26	HLOPERATOR turn turn.soar turn 114 30
 30	29	FOPERATOR elaborations elaborations.soar 31
 31	29	FOPERATOR set-radar-power set-radar-power.soar 32
-32	29	OPERATOR retrieve-epmem retrieve-epmem.soar 33
+32	29	HLOPERATOR retrieve-epmem retrieve-epmem.soar retrieve-epmem 123 33
+33	32	FOPERATOR elaborations elaborations.soar 34
+34	32	FOPERATOR debug debug.soar 35
 END
