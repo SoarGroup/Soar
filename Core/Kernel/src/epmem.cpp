@@ -63,6 +63,8 @@ extern unsigned long hash_string(const char *s);
    ubiquitous_max       - There must be at least this many episodic memories
                           before any node can be considered ubiquitous
    fraction_to_trim     - fraction of a new memory to trim before recording it
+   epmem_save_freq      - the episodic memory is saved every N cycles.  This
+                          specifies N.
                           
    %%%TODO:  Made these values command line configurable
 
@@ -75,6 +77,7 @@ extern unsigned long hash_string(const char *s);
 #define ubiquitous_threshold 1.0
 #define ubiquitous_max 25
 #define fraction_to_trim 0.0
+#define epmem_save_freq 1000
 
 /*======================================================================
  * Data structures
@@ -141,6 +144,7 @@ typedef struct arraylist_struct
 typedef struct wmetree_struct
 {
     struct wmetree_struct *next; // used by the hash table
+    int id;
     char *attr;
     union
     {
@@ -238,6 +242,7 @@ typedef struct epmem_header_struct
    g_wmetree              - The head of a giant wmetree used to represent all
                             the states that that agent has seen so far.  This is,
                             in effect, the episodic store of the agent.
+   g_wmetree_size         - The number of nodes in g_wmetree
    g_memories             - This is an array of all the memories that the
                             agent has.  Each memory is an index into g_wmetree
    g_last_tag             - The timetag of the last command on the output-link
@@ -248,6 +253,10 @@ typedef struct epmem_header_struct
    g_header_stack         - A stack of epmem_header structs used to mirror the
                             current state stack in WM and keep track of the
                             ^epmem link attached to each one.
+   g_save_filename        - set this to a string containing a legit filename
+                            and the code will save episodic memories
+   g_load_filename        - set this to a string containing a legit filename
+                            and the code will load episodic memories
    
 */
 
@@ -255,11 +264,14 @@ typedef struct epmem_header_struct
 wme **g_current_active_wmes;
 wme **g_previous_active_wmes;
 wmetree g_wmetree;
+int g_wmetree_size;
 arraylist *g_memories;
 unsigned long g_last_tag = 0;
 long g_last_ret_id = 0;
 long g_num_queries = 0;
 arraylist *g_header_stack;
+char *g_save_filename=NULL; //"c:\\temp\\epmems_save.txt";
+char *g_load_filename="c:\\temp\\epmems_load.txt";
 
 
 /* EpMem macros
@@ -429,6 +441,9 @@ arraylist *make_arraylist(agent *thisAgent, int init_cap)
    destroy_arraylist
 
    Deallocates a given arraylist.
+
+   CAVEAT:  The caller is responsible for any memory pointed to by
+            the entries in the arraylist.
    
    Created: 19 Jan 2004
    =================================================================== */
@@ -577,6 +592,7 @@ void set_arraylist_entry(agent *thisAgent, arraylist *al, int index, void *newva
     if (index < 0) return;
     if (index >= al->size)
     {
+        al->size = index+1;
         grow_arraylist(thisAgent, al, index + 1);
     }
 
@@ -589,7 +605,7 @@ void set_arraylist_entry(agent *thisAgent, arraylist *al, int index, void *newva
 
    Creates a new wmetree node based upon a given wme.  If no WME is
    given (w == NULL) then an empty node is allocated.  The caller is
-   responsible for setting the parent pointer.
+   responsible for setting the parent pointer and the id.
    
    Created: 09 Jan 2004
    =================================================================== */
@@ -599,6 +615,7 @@ wmetree *make_wmetree_node(agent *thisAgent, wme *w)
 
     node = (wmetree *)allocate_memory(thisAgent, sizeof(wmetree), MISCELLANEOUS_MEM_USAGE);
     node->next = NULL;
+    node->id = -1;
     node->attr = NULL;
     node->val.intval = 0;
     node->val_type = IDENTIFIER_SYMBOL_TYPE;
@@ -650,12 +667,21 @@ wmetree *make_wmetree_node(agent *thisAgent, wme *w)
 
    Deallocate an entire wmetree.
 
-   Created 10 Nov 2002
+   CAVEAT:  All children of this node are also deleted!
+   CAVEAT:  Caller should make sure that no retreived memories are in WM which
+            are associated with this node or any of its children.
+   CAVEAT:  asssoc_memories is dealloated but the epmems it points
+            to are not.  The other arraylists are cleaned up.
+
+   Created: 10 Nov 2002
+   Updated: 31 Mar 2006 (cleanup for associated arraylists)
    =================================================================== */
 void dw_helper(agent *thisAgent, wmetree *tree)
 {
     unsigned long hash_value;
-    wmetree *child;
+    wmetree *child, *next_child;
+    int i;
+    wme *w;
 
     if (tree->attr != NULL)
     {
@@ -677,14 +703,32 @@ void dw_helper(agent *thisAgent, wmetree *tree)
     for (hash_value = 0; hash_value < tree->children->size; hash_value++)
     {
         child = (wmetree *) (*(tree->children->buckets + hash_value));
-        for (; child != NIL; child = child->next)
+        while(child != NULL)
         {
+            next_child = child->next;
+            remove_from_hash_table(thisAgent, tree->children, child);
             dw_helper(thisAgent, child);
             free_memory(thisAgent, child, MISCELLANEOUS_MEM_USAGE);
-        }
-    }
+            child = next_child;
+        }//while
+    }//for
 
     free_memory(thisAgent, tree->children, HASH_TABLE_MEM_USAGE);
+
+    //Cleanup the arraylists
+
+    //Sanity check
+    for(i = 0; i < tree->assoc_wmes->size; i++)
+    {
+        w = (wme *)get_arraylist_entry(thisAgent, tree->assoc_wmes, i);
+        if (w != NULL)
+        {
+            print(thisAgent, "ERROR!:  Removing wmetree node that still has associated WMEs.");
+        }
+    }
+    destroy_arraylist(thisAgent, tree->assoc_wmes);
+    destroy_arraylist(thisAgent, tree->assoc_memories);
+    
 }//dw_helper
 
 void destroy_wmetree(agent *thisAgent, wmetree *tree)
@@ -1623,6 +1667,7 @@ Symbol *update_wmetree(agent *thisAgent,
                 if (childnode == NULL)
                 {
                     childnode = make_wmetree_node(thisAgent, wmes[i]);
+                    childnode->id = g_wmetree_size++;
                     childnode->parent = node;
                     childnode->depth = node->depth + 1;
                     add_to_hash_table(thisAgent, node->children, childnode);
@@ -1732,7 +1777,8 @@ void record_epmem(agent *thisAgent)
     episodic_memory *new_epmem;
 
     //Allocate and initialize the new memory
-    new_epmem = (episodic_memory *)allocate_memory(thisAgent, sizeof(episodic_memory),
+    new_epmem = (episodic_memory *)allocate_memory(thisAgent,
+                                                   sizeof(episodic_memory),
                                                    MISCELLANEOUS_MEM_USAGE);
     new_epmem->last_usage = -1;
     new_epmem->match_score = 0;
@@ -2136,7 +2182,7 @@ void epmem_clear_curr_mem(agent *thisAgent, epmem_header *h)
     wme *w;
 
     //Check for "no-retrieval" wme
-    if (get_arraylist_entry(thisAgent, g_wmetree.assoc_wmes,h->index) != NULL)
+   if (get_arraylist_entry(thisAgent, g_wmetree.assoc_wmes,h->index) != NULL)
     {
         w = (wme *)get_arraylist_entry(thisAgent, g_wmetree.assoc_wmes,h->index);
 
@@ -2148,8 +2194,8 @@ void epmem_clear_curr_mem(agent *thisAgent, epmem_header *h)
         return;
     }
 
-    //Check for trivial case
-    if (h->curr_memory == NULL)
+    //Check for degenerate cases
+    if ( (h->curr_memory == NULL) || (h->curr_memory->content == NULL) )
     {
         return;
     }
@@ -2567,7 +2613,7 @@ episodic_memory *find_best_match_TANKSOAR(agent *thisAgent, arraylist *cue)
               aw_cue->node->attr);
 
         //Loop over the associated epmems
-        for(j = 0; j < aw_cue->node->assoc_memories->size; j++)
+        for(j = 1; j < aw_cue->node->assoc_memories->size; j++)
         {
             //get the next associated epmem
             episodic_memory *epmem =
@@ -2809,7 +2855,7 @@ arraylist *respond_to_query(agent *thisAgent, epmem_header *h)
     g_num_queries++;
 
     //Match query to current memories list
-    h->curr_memory = find_best_match(thisAgent, al_query);
+    h->curr_memory = find_best_match_TANKSOAR(thisAgent, al_query);
 
     //Cleanup
     destroy_arraylist(thisAgent, al_query);
@@ -3511,6 +3557,606 @@ void epmem_print_query_usage_wmetree(agent *thisAgent)
     
 }//epmem_print_query_usage_wmetree
 
+/* ===================================================================
+   epmem_save_wmetree_to_file()             *RECURSIVE*
+
+   This routine saves the contents of a given wmetree to a given file.  It
+   returns the total number of nodes that were written.
+   f - file to write to
+   node - root of tree to write
+   parent_id - numerical index of the parent
+   index - number of nodes written so far
+
+   Created: 23 Mar 2006
+   =================================================================== */
+int epmem_save_wmetree_to_file(agent *thisAgent,
+                               FILE *f,
+                               wmetree *node,
+                               int parent_index,
+                               int total)
+{
+    int i;
+    unsigned long hash_value;
+    wmetree *child;
+
+    if (node->attr == NULL)
+    {
+        fputs("ROOT\n", f);
+    }
+    else
+    {
+        fprintf(f, "%i ", node->id);
+        
+        fputs(node->attr, f);
+        fputs(" ", f);
+    
+        switch(node->val_type)
+        {
+            case SYM_CONSTANT_SYMBOL_TYPE:
+                fprintf(f, "s %s ", node->val.strval);
+                break;
+            case INT_CONSTANT_SYMBOL_TYPE:
+                fprintf(f, "i %i ", node->val.intval);
+                break;
+            case FLOAT_CONSTANT_SYMBOL_TYPE:
+                fprintf(f, "f %f ", node->val.floatval);
+                break;
+            default:
+                fprintf(f, "n <id> ");
+                break;
+        }//switch
+
+        fprintf(f, "%i ", parent_index);
+    
+        fprintf(f, "%i ", node->depth);
+
+        fputs("[ ", f);
+        if (node->assoc_memories != NULL)
+        {
+            for(i = 1; i < node->assoc_memories->size; i++)
+            {
+                episodic_memory *epmem =
+                    (episodic_memory *)get_arraylist_entry(thisAgent, node->assoc_memories,i);
+                fprintf(f, "%i ", epmem->index);
+            }
+        }
+        fputs("] ", f);
+
+        fprintf(f, "%i %i\n", node->query_count, node->ubiquitous);
+
+    }//else
+
+    
+    total ++;
+    
+    //Recurse into children
+    for (hash_value = 0; hash_value < node->children->size; hash_value++)
+    {
+        child = (wmetree *) (*(node->children->buckets + hash_value));
+        for (; child != NIL; child = child->next)
+        {
+            total = epmem_save_wmetree_to_file(thisAgent,
+                                               f,
+                                               child,
+                                               node->id,
+                                               total);
+        }
+    }
+
+    if (node->attr == NULL)
+    {
+        fputs("END OF NODE LIST\n", f);
+    }
+    
+    return total;
+    
+    
+}//epmem_save_wmetree_to_file
+
+/* ===================================================================
+   epmem_save_epmems_to_file()
+
+   This routine saves all all entries in a given arraylist of
+   episodic_memory structs (usually g_memories).
+   
+   f - file to write to
+   node - root of tree to write
+   parent_id - numerical index of the parent
+   index - number of nodes written so far
+
+   Created: 28 Mar 2006
+   =================================================================== */
+int epmem_save_epmems_to_file(agent *thisAgent,
+                               FILE *f,
+                               arraylist *memlist)
+{
+    int i,j;
+    int total = 0;
+
+    fputs("BEGIN MEM LIST\n", f);
+
+    for(i = 0; i < memlist->size; i++)
+    {
+        episodic_memory *epmem =
+            (episodic_memory *)get_arraylist_entry(thisAgent, g_memories, i);
+        
+        //Write index
+        fprintf(f, "%i ", i);
+
+        //Note:  There's no need to save last_usage and match_score
+
+        //Write beginning of actwme list
+        fputs("[ ", f);
+
+        //Print the id and activation of each actwme
+        for(j = 0; j < epmem->content->size; j++)
+        {
+            actwme *aw = (actwme *)get_arraylist_entry(thisAgent,
+                                                           epmem->content,
+                                                           j);
+            fprintf(f, "%i ", aw->node->id);
+            fprintf(f, "%i ", aw->activation);
+        }//for
+
+        //Write end of actwme list
+        fputs("] \n", f);
+
+        total++;
+        
+    }//for
+
+    fputs("END MEM LIST\n", f);
+
+    return total;
+}//epmem_save_epmems_to_file
+
+/* ===================================================================
+   epmem_save_episodic_memory_to_file() 
+
+   This routine writes the agent's currently saved episodes to a file
+   so that they can be reloaded.
+
+   Created: 23 Mar 2006
+   =================================================================== */
+void epmem_save_episodic_memory_to_file(agent *thisAgent)
+{
+    FILE *f;
+
+    if (g_save_filename == NULL) return;
+    
+    f = fopen(g_save_filename, "w");
+    if (f == NULL)
+    {
+        print(thisAgent, "\nERROR:  could not save episodes to file: ");
+        print(thisAgent, g_save_filename);
+        return;
+    }//if
+
+    epmem_save_wmetree_to_file(thisAgent, f, &g_wmetree, 0, 0);
+    epmem_save_epmems_to_file(thisAgent, f, g_memories);
+
+    fclose(f);
+    
+}//epmem_save_episodic_memory_to_file
+
+
+/* ===================================================================
+   epmem_clear_all_memories
+
+   This routine causes the agent to forget all its episodic memories.
+
+   Created: 31 Mar 2006
+   =================================================================== */
+void epmem_clear_all_memories(agent *thisAgent)
+{
+    int i,j;
+    episodic_memory *epmem;
+    unsigned long hash_value;
+    wmetree *child, *next_child;
+    wme *w;
+    
+    /*
+     * Step 1: Remove all currently retreived epmems from WM
+     */
+    for(i = 0; i < g_header_stack->size; i++)
+    {
+        epmem_header *h = (epmem_header *)get_arraylist_entry(thisAgent, g_header_stack, i);
+        epmem_clear_curr_mem(thisAgent, h);
+    }
+    
+    /*
+     * Step 2: Remove all episodic memories
+     */
+    for(i = 0; i < g_memories->size; i++)
+    {
+        epmem = (episodic_memory *)get_arraylist_entry(thisAgent, g_memories, i);
+
+        //Clean up the actwme list (but not the associated wmetree nodes)
+        for(j = 0; j < epmem->content->size; j++)
+        {
+            actwme *aw = (actwme *)get_arraylist_entry(thisAgent,
+                                                       epmem->content,
+                                                       j);
+            free_memory(thisAgent, aw, MISCELLANEOUS_MEM_USAGE);
+        }//for
+
+        destroy_arraylist(thisAgent, epmem->content);
+        free_memory(thisAgent, epmem, MISCELLANEOUS_MEM_USAGE);
+        set_arraylist_entry(thisAgent, g_memories, i, NULL);
+    }//for
+    g_memories->size = 0;
+    
+    /*
+     * Step 3: Remove all nodes from the wmetree
+     */
+    for (hash_value = 0; hash_value < g_wmetree.children->size; hash_value++)
+    {
+        child = (wmetree *) (*(g_wmetree.children->buckets + hash_value));
+        while (child != NULL)
+        {
+            next_child = child->next;
+            remove_from_hash_table(thisAgent, g_wmetree.children, child);
+            destroy_wmetree(thisAgent, child);
+            child = next_child;
+        }//while
+    }//for
+
+    //Sanity check for lost retrieved memories
+    for(i = 0; i < g_wmetree.assoc_wmes->size; i++)
+    {
+        w = (wme *)get_arraylist_entry(thisAgent, g_wmetree.assoc_wmes, i);
+        if (w != NULL)
+        {
+            print(thisAgent, "ERROR!:  ROOT  wmetree node still has associated WMEs.");
+        }
+    }//for
+
+    //Remove and recreate the children (probably overkill)
+    free_memory(thisAgent, g_wmetree.children->buckets, HASH_TABLE_MEM_USAGE);
+    free_memory (thisAgent, g_wmetree.children, HASH_TABLE_MEM_USAGE);
+    g_wmetree.children = make_hash_table(thisAgent, 0, hash_wmetree);;
+
+
+    //Remove and recreate the assoc_wmes list (probably overkill)
+    destroy_arraylist(thisAgent, g_wmetree.assoc_wmes);
+    g_wmetree.assoc_wmes = make_arraylist(thisAgent, 20);
+    g_wmetree_size = 0;
+    
+    
+    
+}//epmem_clear_all_memories
+
+
+/* ===================================================================
+   epmem_load_wmetree_from_file() 
+
+   This routine loads the contents of a given wmetree from a given file.
+   It returns an arraylist of all the nodes that were loaded.
+   f - file to load from
+   node - root of tree to add the nodes too
+
+   NOTE: This function assumes the given wmetree node has already been
+         allocated and initialized (including the assoc_wmes,
+         assoc_memories and children lists).
+
+   CAVEAT:  The caller is responsible for deallocating the returned
+            arraylist.
+
+   Created: 23 Mar 2006
+   =================================================================== */
+#define EPMEM_BUFLEN 41728
+arraylist *epmem_load_wmetree_from_file(agent *thisAgent,
+                                        FILE *f,
+                                        wmetree *root_node,
+                                        int parent_index)
+{
+    char buf[EPMEM_BUFLEN];
+    char *str = NULL;
+    char *str2 = NULL;
+    int mem_id;
+    int parent_id;
+    arraylist *nodelist;
+    wmetree *parent_node;
+    wmetree *node;
+
+    //Check for the appropriate file format for the first node
+    fgets(buf, EPMEM_BUFLEN, f);
+    if (strcmp(buf, "ROOT\n") != 0)
+    {
+        print(thisAgent, "ERROR: File improperly formatted.  \"ROOT\" node not found. Episodes not loaded.");
+        return NULL;
+    }
+
+    //Allocate and init  nodelist
+    nodelist = make_arraylist(thisAgent, 100);
+
+    //Set the first entry to the root node
+    set_arraylist_entry(thisAgent, nodelist, 0, &g_wmetree);
+    
+    //Init node pointer to the root
+    node = root_node;
+
+    //Each iteraton of this loop reads one node from the file
+    while (!feof(f))
+    {
+        //Read the next node from the file
+        fgets(buf, EPMEM_BUFLEN, f);
+        if (strlen(buf) == 0) break;
+        if (strcmp(buf, "END OF NODE LIST\n") == 0) break;
+
+        //Allocate and initialize a wmetree node for the next entry
+        node = make_wmetree_node(thisAgent, NULL);
+        append_entry_to_arraylist(thisAgent, node->assoc_memories, NULL); // dummy entry
+
+        //Read node->id and insert myself into the nodelist
+        str = strtok(buf, " ");
+        node->id = atoi(str);
+        set_arraylist_entry(thisAgent, nodelist, node->id, node);
+
+        //Read node->attr
+        str = strtok(NULL, " ");
+        node->attr = (char *)allocate_memory(thisAgent,
+                                             strlen(str)+1,
+                                             MISCELLANEOUS_MEM_USAGE);
+        strcpy(node->attr, str);
+
+        //Read node->val_type
+        str = strtok(NULL, " ");
+        switch(str[0])
+        {
+            case 's':
+                node->val_type = SYM_CONSTANT_SYMBOL_TYPE;
+                str = strtok(NULL, " ");
+                node->val.strval = (char *)allocate_memory(thisAgent,
+                                                           strlen(str)+1,
+                                                           MISCELLANEOUS_MEM_USAGE);
+                strcpy(node->val.strval, str);
+                break;
+            case 'i':
+                node->val_type = INT_CONSTANT_SYMBOL_TYPE;
+                str = strtok(NULL, " ");
+                node->val.intval = atoi(str);
+                break;
+            case 'f':
+                node->val_type = FLOAT_CONSTANT_SYMBOL_TYPE;
+                str = strtok(NULL, " ");
+                node->val.floatval = (float)atof(str);
+                break;
+            case 'n':
+            default: 
+                node->val_type = IDENTIFIER_SYMBOL_TYPE;
+                str = strtok(NULL, " ");
+                if (strcmp(str, "<id>") != 0)
+                {
+                    print(thisAgent, "ERROR: File improperly formatted.  Expected \"<id>\" but found %s. Episodes not loaded.", str);
+                    //%%%Clean up already loaded data here
+                    destroy_arraylist(thisAgent, nodelist);
+                    return NULL;
+                }
+                break;
+        }
+
+        //Read parent index add this node to the parent
+        str = strtok(NULL, " ");
+        parent_id = atoi(str);
+        parent_node = (wmetree *)get_arraylist_entry(thisAgent,
+                                                      nodelist,
+                                                      parent_id);
+        if (parent_node == NULL)
+        {
+            print(thisAgent, "ERROR: File improperly formatted.  Child node references nonexistant parent. Episode load aborted.", str);
+            //%%%Clean up already loaded data here
+            destroy_arraylist(thisAgent, nodelist);
+            return NULL;
+        }
+        add_to_hash_table(thisAgent, parent_node->children, node);
+        node->parent = parent_node;
+        g_wmetree_size++;
+
+        //Read depth
+        str = strtok(NULL, " ");
+        node->depth = atoi(str);
+
+        //Sanity check
+        str = strtok(NULL, " ");
+        if (str[0] != '[')
+        {
+            print(thisAgent, "ERROR: File improperly formatted.  Expected '[' but found %s. Episode load aborted.", str);
+            //%%%Clean up already loaded data here
+            destroy_arraylist(thisAgent, nodelist);
+            return NULL;
+        }
+
+        //Read the associated memory ids
+        str = strtok(NULL, " ");
+        mem_id = atoi(str);
+        while(str[0] != ']')
+        {
+            episodic_memory *epmem =
+                (episodic_memory *)get_arraylist_entry(thisAgent,
+                                                       g_memories,
+                                                       mem_id);
+            if (epmem == NULL)
+            {
+                //Allocate and init a structure for this to-be-read epmem
+                epmem = (episodic_memory *)allocate_memory(thisAgent,
+                                                           sizeof(episodic_memory),
+                                                           MISCELLANEOUS_MEM_USAGE);
+                epmem->content = NULL;
+                epmem->last_usage = -1;
+                epmem->match_score = 0;
+                epmem->index = mem_id;
+
+                //Add the structure to the global memories list
+                set_arraylist_entry(thisAgent, g_memories, mem_id, (void *)epmem);
+            }//if
+
+            //Add the structure to the assoc_memories list
+            append_entry_to_arraylist(thisAgent, node->assoc_memories, (void *)epmem);
+
+            str = strtok(NULL, " ");
+            mem_id = atoi(str);
+        }//while
+        
+        //Read node->query_count
+        str = strtok(NULL, " ");
+        node->query_count = atoi(str);
+
+        //Read node->ubiquitous
+        str = strtok(NULL, " ");
+        node->ubiquitous = atoi(str);
+
+
+    }//while
+
+    return nodelist;
+    
+}//epmem_load_wmetree_from_file
+
+/* ===================================================================
+   epmem_load_epmems_from_file()
+
+   This routine loads a list of episodic_memory structs (and their
+   associated actwme lists) from a file.
+
+   NOTE:  The g_memories list is assumed to already contain init'd
+          entries for all of these epmems (which is a side effect of
+          epmem_load_wmetree_from_file() above).
+   
+   f - file to write to
+   nodelist - an arraylist list wmetree* that the loaded memories
+              will index into (created by epmem_load_wmetree_from_file())
+
+   Created: 28 Mar 2006
+   =================================================================== */
+int epmem_load_epmems_from_file(agent *thisAgent,
+                               FILE *f,
+                               arraylist *nodelist)
+{
+    char buf[EPMEM_BUFLEN];
+    char *str = NULL;
+    int my_index;
+    episodic_memory *epmem;
+    int total = 0;
+
+    //Check for the appropriate file format for the first node
+    fgets(buf, EPMEM_BUFLEN, f);
+    if (strcmp(buf, "BEGIN MEM LIST\n") != 0)
+    {
+        print(thisAgent, "ERROR: File improperly formatted.  \"BEGIN MEM LIST\" not found. Memories not loaded.");
+        return 0;
+    }
+
+    //Each iteraton of this loop reads one node from the file
+    while (!feof(f))
+    {
+        //Read the next node from the file
+        fgets(buf, EPMEM_BUFLEN, f);
+        if (strlen(buf) == 0) break;
+        if (strcmp(buf, "END MEM LIST\n") == 0) break;
+
+        //Read the index and find the appropriate epmem
+        str = strtok(buf, " ");
+        my_index = atoi(str);
+        epmem = (episodic_memory *)get_arraylist_entry(thisAgent,
+                                                       g_memories,
+                                                       my_index);
+        if (epmem == NULL)
+        {
+            print(thisAgent, "ERROR: File improperly formatted.  Illegal index loaded. Memories not loaded.");
+            return 0;
+        }
+        if (epmem->content != NULL)
+        {
+            print(thisAgent, "ERROR: File improperly formatted.  Duplicate index found.  Memory skipped.");
+            continue;
+        }
+
+        //Sanity check
+        str = strtok(NULL, " ");
+        if (str[0] != '[')
+        {
+            print(thisAgent, "ERROR: File improperly formatted.  Expected '[' but found %s. Epmems load aborted.", str);
+            //%%%Clean up already loaded data here
+            return 0;
+        }
+
+        //Allocate the content list
+        epmem->content = make_arraylist(thisAgent, 20);
+
+        //Load the actwmes
+        str = strtok(NULL, " ");
+        while(str[0] != ']')
+        {
+            int node_id;
+            int activation;
+            wmetree *node;
+
+            //Read and find the wmetree node
+            node_id = atoi(str);
+            if (node_id >= nodelist->size)
+            {
+                print(thisAgent, "ERROR: File improperly formatted.  Illegal node index loaded. Epmems load aborted.", str);
+                //%%%Clean up already loaded data here
+                return 0;
+            }
+            node = (wmetree *)get_arraylist_entry(thisAgent, nodelist, node_id);
+
+            //Read the activation
+            str = strtok(NULL, " ");
+            activation = atoi(str);
+
+            //Create and add the actwme
+            add_node_to_memory(thisAgent, epmem->content, node, activation);
+
+            //Init for next iteration
+            str = strtok(NULL, " ");
+
+        }//while
+
+        total++;
+    }//while
+
+    return total;
+}//epmem_load_epmems_from_file
+
+
+/* ===================================================================
+   epmem_load_episodic_memory_from_file() 
+
+   This routine loads memories from a file.
+
+   CAVEAT:  All existing memories (if any) are deleted.
+
+   Created: 23 Mar 2006
+   =================================================================== */
+void epmem_load_episodic_memory_from_file(agent *thisAgent)
+{
+    FILE *f;
+    arraylist *nodelist;
+
+    if (g_load_filename == NULL) return;
+
+    //Check for a good file
+    f = fopen(g_load_filename, "r");
+    if (f == NULL)
+    {
+        print(thisAgent, "\nERROR:  could not load episodes from file: ");
+        print(thisAgent, g_load_filename);
+        return;
+    }//if
+
+    //Remove all memories that are currently stored
+    epmem_clear_all_memories(thisAgent);
+
+    //Load the new memories
+    nodelist = epmem_load_wmetree_from_file(thisAgent, f, &g_wmetree, 0);
+    epmem_load_epmems_from_file(thisAgent, f, nodelist);
+    
+    fclose(f);
+    
+}//epmem_load_episodic_memory_from_file
+
 
 /* ===================================================================
    epmem_update() 
@@ -3584,6 +4230,12 @@ void epmem_update(agent *thisAgent)
 //          }
         
     }//for
+
+    //Save the current epmem store at regular intervals
+    if ((count % epmem_save_freq == 0) && (g_save_filename != NULL))
+    {
+        epmem_save_episodic_memory_to_file(thisAgent);
+    }
     
     stop_timer(thisAgent, &(thisAgent->epmem_retrieve_start_time), &(thisAgent->epmem_retrieve_total_time));
     stop_timer(thisAgent, &(thisAgent->epmem_start_time), &(thisAgent->epmem_total_time));
@@ -3656,16 +4308,24 @@ void init_epmem(agent *thisAgent)
     g_wmetree.parent = NULL;
     g_wmetree.depth = 0;
     g_wmetree.assoc_wmes = make_arraylist(thisAgent, 20);
+    g_wmetree_size = 1;
 
     //Initialize the memories array
     g_memories = make_arraylist(thisAgent, 512);
 
     //Initialize the g_header_stack array
     g_header_stack = make_arraylist(thisAgent, 20);
-    
-    
+
+    //Load pre-set episodic memories
+    if (g_load_filename != NULL)
+    {
+        epmem_load_episodic_memory_from_file(thisAgent);
+    }
+   
     //Reset the timers
     epmem_reset_cpu_usage_timers(thisAgent);
+
+
     
 }/*init_epmem*/
 
