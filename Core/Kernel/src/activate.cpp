@@ -424,7 +424,7 @@ void decay_deinit(agent *thisAgent)
    function provides a nice compromise.
 
    If the given WME does not have a decay element, this function
-   returns a value of -1 for its activation level.
+   returns DECAY_INT_NO_ACTIVATION.
 
    Created:  09 March 2004
    ========================================================================= */
@@ -435,7 +435,7 @@ int decay_activation_level(agent *thisAgent, wme *w)
 
     if (!w->has_decay_element)
     {
-        return -1;
+        return DECAY_INT_NO_ACTIVATION;
     }
 
     wme_pos = w->decay_element->time_spot->position;
@@ -451,6 +451,43 @@ int decay_activation_level(agent *thisAgent, wme *w)
     }
     
 }//decay_activation_level
+
+/* ============================================================================
+   decay_activation
+
+   This function is provided for external use.  Given a WME, this it
+   calculates an EXACT activation level of that WME as an
+   floating point number.  The higher the number the more activated the WME is.
+
+   If the given WME does not have a decay element, this function
+   returns DECAY_FLOAT_NO_ACTIVATION.
+
+   Created:  10 March 2006
+   ========================================================================= */
+float decay_activation(agent *thisAgent, wme *w)
+{
+    float sum = 0.0;
+    int i;
+    
+    if (!w->has_decay_element)
+    {
+        return DECAY_FLOAT_NO_ACTIVATION;
+    }
+
+    //Calculate and print the activation level
+    for (i = 0; i <= (w->decay_element->history_count - 1); i++)
+    {
+        int n = w->decay_element->time_spot->time - w->decay_element->boost_history[i] + 1;
+        if (n < DECAY_POWER_ARRAY_SIZE)
+        {
+            sum += (thisAgent->decay_power_array)[n];
+        }
+    }
+
+    return sum;
+    
+}//decay_activation
+
 
 /* ============================================================================
    decay_reference_wme()       *RECURSIVE*
