@@ -27,7 +27,6 @@ public class WorldEntity {
 	private MapPoint m_Location;
 	private String m_ColorString;
 	private String m_Productions;
-	private boolean m_Colliding = false;
 	
 	public WorldEntity(Agent agent, String productions, String color, MapPoint location) {
 		m_Agent = agent;
@@ -37,14 +36,6 @@ public class WorldEntity {
 
 		m_Name = m_Agent.GetAgentName();
 		m_Logger.log("Created agent: " + m_Name);
-	}
-	
-	public boolean isColliding() {
-		return m_Colliding;
-	}
-	
-	public void setColliding(boolean colliding) {
-		m_Colliding = colliding;
 	}
 	
 	public String getProductions() {
