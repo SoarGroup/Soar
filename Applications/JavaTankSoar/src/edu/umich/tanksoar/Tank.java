@@ -826,24 +826,26 @@ TankSoarLogger.log("Kernel should have cleaned the real agent here...");
     	int rDist = 0; //NOTE: getRadarDistance() isn't accurate
     	int rSet = getRadarSetting();
     	String radarView = ">";
-    	
+
+    	//DEBUGGING: Fill the radarView string with an image
+    	//           of what's on the radar
     	for(int i = 0; i < 15; i++)
 		{
 			loc = loc.getAdjacent(myDirection);
 			
 			if (myTC.getLocationContents(loc) instanceof TSWall)
 			{
-				radarView += "#";
+//%%%REMOVED FOR SPEED				radarView += "#";
 				break;
 			}
 			else
 			{
 				rDist++;
-				radarView += Integer.toString(rDist % 10);
+//%%%REMOVED FOR SPEED				radarView += Integer.toString(rDist % 10);
 			}
 			
 		}//for
-		radarView += "<";
+//    	%%%REMOVED FOR SPEED		radarView += "<";
 		
     	
     	//If the setting and distance aren't equal than the tank used too
@@ -853,15 +855,16 @@ TankSoarLogger.log("Kernel should have cleaned the real agent here...");
     		correctSetting = false;
     	}
     	
-    	TankSoarLogger.log("position="
-    			+ Integer.toString(myLocation.getX())
-    			+ "," 
-    			+ Integer.toString(myLocation.getY())
-    			+ " direction="
-    			+ getDirectionString()
-    			+ " radar view= "
-    			+ radarView
-    			);
+//Print the tank's current info
+//    	TankSoarLogger.log("position="
+//    			+ Integer.toString(myLocation.getX())
+//    			+ "," 
+//    			+ Integer.toString(myLocation.getY())
+//    			+ " direction="
+//    			+ getDirectionString()
+//    			+ " radar view= "
+//    			+ radarView
+//    			);
     	if (!correctSetting)
     	{
     		TankSoarLogger.log("Incorrect radar setting was used: setting=" 
