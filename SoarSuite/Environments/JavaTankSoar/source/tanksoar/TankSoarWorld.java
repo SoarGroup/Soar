@@ -86,6 +86,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	   			getCell(location).setModified();
 	   			location.travel(m_RD.forward);
 	   			if (getCell(location).isWall()) {
+		   			getCell(location).setModified();
 	   				iter.remove();
 	   				continue;
 	   			}
@@ -95,6 +96,8 @@ public class TankSoarWorld extends World implements WorldManager {
 		   			getCell(location).setModified();
 		   			location.travel(m_RD.forward);
 		   			if (getCell(location).isWall()) {
+		   				// TODO: figure out why this code is never called
+			   			getCell(location).setModified();
 		   				iter.remove();
 		   				continue;
 		   			}
