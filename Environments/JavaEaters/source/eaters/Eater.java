@@ -27,7 +27,8 @@ public class Eater extends WorldEntity {
 	private SoarCell[][] m_Cells = new SoarCell[(kEaterVision * 2 ) + 1][(kEaterVision * 2 ) + 1];
 	private boolean m_Hungry = true;
 	private boolean m_Moved = true;
-	
+	private boolean m_Colliding = false;
+
 	class SoarCell {
 		Identifier me;
 		StringElement content;
@@ -195,6 +196,15 @@ public class Eater extends WorldEntity {
 	void setMoved() {
 		m_Moved = true;
 	}
+
+	public boolean isColliding() {
+		return m_Colliding;
+	}
+	
+	public void setColliding(boolean colliding) {
+		m_Colliding = colliding;
+	}
+	
 }
 
 
