@@ -23,7 +23,7 @@ void GroupManager::updateVision() {
   reGroup();
   generateGroupData();
   adjustAttention();
-  featureMaps->getMaps();
+  //featureMaps->updateSoar();
   
   return;
 }
@@ -322,7 +322,7 @@ void GroupManager::generateGroupData() {
 
   groupIter = groupsInFocus.begin();
   while (groupIter != groupsInFocus.end()) {
-    if ((*groupIter)->getStale()) {
+    if ((*groupIter)->getHasStaleMembers()) {
       if ((*groupIter)->isEmpty()) {
         groupsInFocus.erase(groupIter);
         removeGroup(*groupIter);
@@ -336,7 +336,7 @@ void GroupManager::generateGroupData() {
 
   groupIter = groupsNotInFocus.begin();
   while (groupIter != groupsNotInFocus.end()) {
-    if ((*groupIter)->getStale()) {
+    if ((*groupIter)->getHasStaleMembers()) {
       if ((*groupIter)->isEmpty()) {
         groupsInFocus.erase(groupIter);
         removeGroup(*groupIter);
@@ -363,7 +363,7 @@ void GroupManager::prepareForReGroup() {
 
   groupIter = groupsInFocus.begin();
   while (groupIter != groupsInFocus.end()) {
-    if ((*groupIter)->getStale()) {
+    if ((*groupIter)->getHasStaleMembers()) {
       if ((*groupIter)->isEmpty()) {
         groupsInFocus.erase(groupIter);
         removeGroup(*groupIter);
@@ -378,7 +378,7 @@ void GroupManager::prepareForReGroup() {
 
   groupIter = groupsNotInFocus.begin();
   while (groupIter != groupsNotInFocus.end()) {
-    if ((*groupIter)->getStale()) {
+    if ((*groupIter)->getHasStaleMembers()) {
       if ((*groupIter)->isEmpty()) {
         groupsInFocus.erase(groupIter);
         removeGroup(*groupIter);
@@ -406,8 +406,10 @@ void GroupManager::removeGroup(SoarGameGroup* group) {
   delete group;
 }
 
+//void GroupManager::updateFeatureMaps() {
+
 void GroupManager::adjustAttention() {
-  // iterate through all staleInSoar groups, if in attn. range,
+  // iterate through all staleProperties groups, if in attn. range,
   // send params to Soar
   
   list<SoarGameGroup*>::iterator groupIter = groupsNotInFocus.begin();
@@ -421,11 +423,11 @@ void GroupManager::adjustAttention() {
 
   groupIter = groupsInFocus.begin();
   while (groupIter != groupsInFocus.end()) {
-    if ((*groupIter)->getStaleInSoar()) {
+    if ((*groupIter)->getHasStaleProperties()) {
       featureMaps->refreshGroup(*groupIter);
       // if group moves out of focus, remember to refresh it in the fms!
-      SoarIO->refreshGroup((*groupIter), (*groupIter)->getSoarData());
-      (*groupIter)->setStaleInSoar(false);
+      SoarIO->refreshGroup(*groupIter);
+      (*groupIter)->setHasStaleProperties(false);
     }
     groupIter++;
   }

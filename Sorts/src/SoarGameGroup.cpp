@@ -14,8 +14,8 @@ SoarGameGroup::SoarGameGroup( SoarGameObject* unit,
 {
   members.insert(unit);
   unit->setGroup(this);
-  setStale();
-  staleInSoar= true;
+  setHasStaleMembers();
+  hasStaleProperties= true;
   centerMember = unit;
   currentMember = unit;
   typeName = unit->gob->bp_name();
@@ -68,7 +68,7 @@ void SoarGameGroup::addUnit(SoarGameObject* unit) {
 
   members.insert(unit); 
   unit->setGroup(this);
-  setStale();
+  setHasStaleMembers();
 }
 
 bool SoarGameGroup::removeUnit(SoarGameObject* unit) {
@@ -82,7 +82,7 @@ bool SoarGameGroup::removeUnit(SoarGameObject* unit) {
   }
   
   members.erase(unit);
-  setStale();
+  setHasStaleMembers();
   
   if (centerMember == unit) {
     // make sure center is a valid unit
@@ -256,8 +256,8 @@ void SoarGameGroup::generateData() {
     soarData.stringIntPairs.push_back(stringIntWme);
   }
   
-  staleInSoar = true;
-  stale = false;
+  hasStaleProperties = true;
+  hasStaleMembers = false;
 
   if (speed > 0) {
     moving = true;
@@ -353,7 +353,7 @@ void SoarGameGroup::mergeTo(SoarGameGroup* target) {
 
   members.clear();
 
-  setStale();
+  setHasStaleMembers();
 
   return;
 }
@@ -457,24 +457,24 @@ bool SoarGameGroup::isEmpty() {
   return (members.empty());
 }
 
-bool SoarGameGroup::getStale() {
-  return stale;
+bool SoarGameGroup::getHasStaleMembers() {
+  return hasStaleMembers;
+}
+void SoarGameGroup::setHasStaleMembers() {
+  //cout << "stale: set so" << endl;
+  hasStaleMembers = true;
 }
 
 groupPropertyStruct SoarGameGroup::getSoarData() {
   return soarData;
 }
 
-bool SoarGameGroup::getStaleInSoar() {
-  return staleInSoar;
+bool SoarGameGroup::getHasStaleProperties() {
+  return hasStaleProperties;
 }
 
-void SoarGameGroup::setStaleInSoar(bool val) {
-  staleInSoar = val;
-}
-void SoarGameGroup::setStale() {
-  //cout << "stale: set so" << endl;
-  stale = true;
+void SoarGameGroup::setHasStaleProperties(bool val) {
+  hasStaleProperties = val;
 }
 
 list<SoarGameObject*> SoarGameGroup::getMembers() {

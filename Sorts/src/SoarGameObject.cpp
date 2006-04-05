@@ -81,7 +81,7 @@ void SoarGameObject::issueCommand(SoarActionType cmd, Vector<sint4> prms)
 void SoarGameObject::update()
 {
   int fsmStatus;
-  group->setStale();
+  group->setHasStaleMembers();
   
   int currentFrame = ORTSIO->getFrameID();
   if (currentFrame == frameOfLastUpdate) {

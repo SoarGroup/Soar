@@ -83,7 +83,7 @@ class SoarInterface {
     // grouping commands for Group Manager to call
     void addGroup(SoarGameGroup* group);
     void removeGroup(SoarGameGroup* group);
-    void refreshGroup(SoarGameGroup* group, groupPropertyStruct gps);
+    void refreshGroup(SoarGameGroup* group);
     int  groupId(SoarGameGroup* group);
 
     // map commands

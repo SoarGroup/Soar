@@ -70,9 +70,11 @@ void SoarInterface::removeGroup(SoarGameGroup* group) {
   groupIdLookup.erase(g.groupId);
 }
 
-void SoarInterface::refreshGroup(SoarGameGroup* group, groupPropertyStruct gps) {
+void SoarInterface::refreshGroup(SoarGameGroup* group) {
   lockSoarMutex();
   stale = true;
+
+  groupPropertyStruct gps = group->getSoarData();
   
   // make sure the group exists
   assert(groupTable.find(group) != groupTable.end());
@@ -218,7 +220,52 @@ void SoarInterface::refreshMapRegion(MapRegion *r) {
 
   unlockSoarMutex();
 }
+/*
+void SoarInterface::addFeatureMap(FeatureMap *m) {
+  assert(featureMapTable.find(m) == featureMapTable.end());
 
+  InputLinkFeatureMapRep rep;
+  rep.identifierWME = agent->CreateIdWME(mapIdWME, "region");
+  Rectangle box = r->getBoundingBox();
+  rep.idWME   = agent->CreateIntWME(rep.identifierWME, "id", r->getId());
+  rep.xminWME = agent->CreateIntWME(rep.identifierWME, "xmin", box.xmin);
+  rep.xmaxWME = agent->CreateIntWME(rep.identifierWME, "xmax", box.xmax);
+  rep.yminWME = agent->CreateIntWME(rep.identifierWME, "ymin", box.ymin);
+  rep.ymaxWME = agent->CreateIntWME(rep.identifierWME, "ymax", box.ymax);
+
+  rep.sizeWME = agent->CreateIntWME(rep.identifierWME, "size", r->size());
+
+  featureMapTable[r] = rep;
+  featureMapIdLookup[r->getId()] = r;
+}
+
+void SoarInterface::removeFeatureMap(FeatureMap *r) {
+  assert(featureMapTable.find(r) != featureMapTable.end());
+  
+  InputLinkFeatureMapRep& rep = featureMapTable[r];
+  agent->DestroyWME(rep.identifierWME);
+  featureMapIdLookup.erase(r->getId());
+  featureMapTable.erase(r);
+}
+
+void SoarInterface::refreshFeatureMap(FeatureMap *r) {
+  lockSoarMutex();
+  stale = true;
+  
+  assert(featureMapTable.find(r) != featureMapTable.end());
+  
+  InputLinkFeatureMapRep& rep = featureMapTable[r];
+  Rectangle box = r->getBoundingBox();
+  agent->Update(rep.idWME, r->getId());
+  agent->Update(rep.xminWME, box.xmin);
+  agent->Update(rep.xmaxWME, box.xmax);
+  agent->Update(rep.yminWME, box.ymin);
+  agent->Update(rep.ymaxWME, box.ymax);
+  agent->Update(rep.sizeWME, r->size());
+
+  unlockSoarMutex();
+}
+*/
 
 // called in soar event handler to take everything off the output
 // link and put onto the action queue each time soar generates output

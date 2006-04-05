@@ -39,11 +39,11 @@ class SoarGameGroup {
     list<SoarGameObject*> getMembers(); 
   
     void mergeTo(SoarGameGroup* target);
-    bool getStale();
-    void setStale();
-    void setStale(bool val);
-    bool getStaleInSoar();
-    void setStaleInSoar(bool val);
+    bool getHasStaleMembers();
+    void setHasStaleMembers();
+    void setHasStaleMembers(bool val);
+    bool getHasStaleProperties();
+    void setHasStaleProperties(bool val);
     groupPropertyStruct getSoarData();
     //void setType(int inType);
     pair<string, int> getCategory();
@@ -85,12 +85,12 @@ class SoarGameGroup {
   private:
     set <SoarGameObject*> members;
     groupPropertyStruct soarData;
-    bool stale;
-    bool staleInSoar;
-    // stale means the internal statistics haven't been updated-
+    bool hasStaleMembers;
+    bool hasStaleProperties;
+    // staleMembers means the internal statistics haven't been updated-
     // something moved, or new members were added.
 
-    // staleInSoar means that internal statistics are correct, but Soar
+    // staleProperties means that internal statistics are correct, but Soar
     // needs a refresh-- either refresh it or remove it from Soar ASAP
 
     string typeName;
