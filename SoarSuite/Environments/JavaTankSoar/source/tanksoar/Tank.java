@@ -399,6 +399,7 @@ public class Tank  extends WorldEntity {
 	
 	public void collide() {
 		m_Collision = true;
+		m_LastMove.move = false;
 	}
 	
 	public int getEnergy() {
