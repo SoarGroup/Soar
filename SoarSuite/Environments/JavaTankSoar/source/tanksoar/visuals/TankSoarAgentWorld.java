@@ -20,7 +20,7 @@ public class TankSoarAgentWorld extends VisualWorld implements PaintListener {
 	
 	private static final int kCellSize = 20;
 	private Image[][] m_Radar = new Image[Tank.kRadarWidth][Tank.kRadarHeight];
-	private Color m_Color;
+	private Color[][] m_Color = new Color[Tank.kRadarWidth][Tank.kRadarHeight];
 
 	public TankSoarAgentWorld(Composite parent, int style, TankSoarSimulation simulation) {
 		super(parent, style, simulation, kCellSize);
@@ -40,37 +40,33 @@ public class TankSoarAgentWorld extends VisualWorld implements PaintListener {
 	}
 	
 	public void update(Tank tank) {
-		m_Color = (Color)m_EntityColors.get(tank);
-		
 		// update radar using tank
+		TankSoarCell[][] radarCells = tank.getRadarCells();
 		for(int x = 0; x < Tank.kRadarWidth; ++x){
 			for(int y = 0; y < Tank.kRadarHeight; ++y){
-				if (x == 1 && y == 0) {
-					m_Radar[x][y] = kMiniTank;
-					continue;
-				}
-				
-				String id = tank.getRadarID(x, y);
-				if (id == null) {
+				m_Color[x][y] = null;
+				TankSoarCell cell = radarCells[x][y];
+				if (cell == null) {
 					m_Radar[x][y] = kMiniWTF;
 					           
-				} else if (id.equalsIgnoreCase(InputLinkManager.kObstacleID)) {
-					m_Radar[x][y] = kMiniObstacle;
-					
-				} else if (id.equalsIgnoreCase(InputLinkManager.kOpenID)) {
-					m_Radar[x][y] = kMiniOpen;
-					
-				} else if (id.equalsIgnoreCase(InputLinkManager.kMissilesID)) {
+				} else if (cell.containsTank()) {
+					m_Radar[x][y] = kMiniTank;
+					m_Color[x][y] = (Color)m_EntityColors.get(cell.getTank());
+
+				} else if (cell.containsMissilePack()) {
 					m_Radar[x][y] = kMiniMissiles;
 					
-				} else if (id.equalsIgnoreCase(InputLinkManager.kEnergyID)) {
+				} else if (cell.isWall()) {
+					m_Radar[x][y] = kMiniObstacle;
+					
+				} else if (cell.isOpen()) {
+					m_Radar[x][y] = kMiniOpen;
+					
+				} else if (cell.isEnergyRecharger()) {
 					m_Radar[x][y] = kMiniEnergy;
 					
-				} else if (id.equalsIgnoreCase(InputLinkManager.kHealthID)) {
-					m_Radar[x][y] = kMiniHealth;
-					
-				} else if (id.equalsIgnoreCase(InputLinkManager.kTankID)) {
-					m_Radar[x][y] = kMiniTank;
+				} else if (cell.isHealthRecharger()) {
+					m_Radar[x][y] = kMiniHealth;					
 				}
 			}
 		}
@@ -98,9 +94,8 @@ public class TankSoarAgentWorld extends VisualWorld implements PaintListener {
 		for(int x = 0; x < Tank.kRadarWidth; ++x){
 			for(int y = 0; y < Tank.kRadarHeight; ++y){
 				gc.drawImage(m_Radar[x][y], x*m_CellSize, (Tank.kRadarHeight - y - 1)*m_CellSize);
-				
-				if ((x == 1) && (y == 0)) {
-					gc.setBackground(m_Color);
+				if (m_Color[x][y] != null) {
+					gc.setBackground(m_Color[x][y]);
 					gc.fillOval(m_CellSize*x + m_CellSize/2 - kDotSize/2, m_CellSize*(Tank.kRadarHeight - y - 1) + m_CellSize/2 - kDotSize/2, kDotSize, kDotSize);
 					gc.setBackground(WindowManager.widget_background);
 				}

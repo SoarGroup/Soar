@@ -1,7 +1,5 @@
 package tanksoar;
 
-import java.util.LinkedList;
-
 import simulation.*;
 import utilities.*;
 import sml.*;
@@ -22,6 +20,8 @@ public class Tank  extends WorldEntity {
 	private final static String kSettingID = "setting";
 	private final static String kShieldsID = "shields";
 	private final static String kRotateID = "rotate";
+
+	private TankSoarCell[][] radarCells = new TankSoarCell[kRadarWidth][kRadarHeight];
 
 	public class MoveInfo {
 		boolean move;
@@ -71,8 +71,6 @@ public class Tank  extends WorldEntity {
 	private InputLinkManager m_ILM;
 	private MoveInfo m_LastMove;
 	private int m_RWaves;
-	private Tank m_HitByTank;
-	private boolean m_Collision;
 	private int m_Missiles;
 	private boolean m_ShieldStatus;
 	private int m_Health;
@@ -81,7 +79,7 @@ public class Tank  extends WorldEntity {
 	private boolean m_RadarSwitch;
 	private int m_RadarDistance;
 	private int m_SmellDistance;
-	
+
 	public Tank(Agent agent, String productions, String color, MapPoint location, String facing, TankSoarWorld world) {
 		super(agent, productions, color, location);
 		
@@ -120,8 +118,7 @@ public class Tank  extends WorldEntity {
 		setFacingInt();
 		m_RD.calculate(getFacingInt());
 		
-		m_HitByTank = null;
-		m_Collision = false;
+		clearRadar();
 		
 		m_ILM.clear();
 	}
@@ -134,12 +131,13 @@ public class Tank  extends WorldEntity {
 		return m_RadarPower;
 	}
 	
-	void setRadarDistance(int distance) {
-		m_RadarDistance = distance;
-	}
-	
+	// TODO: possibly move calculation in to this class
 	void setSmellDistance(int distance) {
 		m_SmellDistance = distance;
+	}
+	
+	public TankSoarCell[][] getRadarCells() {
+		return radarCells;
 	}
 	
 	public int getRadarDistance() {
@@ -148,6 +146,120 @@ public class Tank  extends WorldEntity {
 	
 	public int getSmellDistance() {
 		return m_SmellDistance;
+	}
+	
+	public void readOutputLink() {
+		m_LastMove.reset();
+		
+		int numberOfCommands = m_Agent.GetNumberCommands();
+		if (numberOfCommands == 0) {
+			m_Logger.log(getName() + " issued no command.");
+			return;
+		}
+		
+		for (int i = 0; i < numberOfCommands; ++i) {
+			Identifier commandId = m_Agent.GetCommand(i);
+			String commandName = commandId.GetAttribute();
+
+			if (commandName.equalsIgnoreCase(kMoveID)) {
+				
+				String moveDirection = commandId.GetParameterValue(kDirectionID);
+				if (moveDirection == null) {
+					m_Logger.log(getName() + ": null move direction.");
+					continue;
+				}
+				
+				if (moveDirection.equalsIgnoreCase(kForwardID)) {
+					m_LastMove.moveDirection = m_RD.forward;
+				} else if (moveDirection.equalsIgnoreCase(kBackwardID)) {
+					m_LastMove.moveDirection = m_RD.backward;
+				} else if (moveDirection.equalsIgnoreCase(kLeftID)) {
+					m_LastMove.moveDirection = m_RD.left;
+				} else if (moveDirection.equalsIgnoreCase(kRightID)) {
+					m_LastMove.moveDirection = m_RD.right;
+				} else {
+					m_Logger.log(getName() + ": illegal move direction: " + moveDirection);
+					continue;
+				}
+				m_LastMove.move = true;
+				
+			} else if (commandName.equalsIgnoreCase(kFireID)) {
+		 		if (m_Missiles > 0) {
+		 			m_LastMove.fire = true;
+		 		} else {
+					m_Logger.log(getName() + ": Attempted to fire missle with no missiles.");
+					continue;
+				}
+				// Weapon ignored
+				
+			} else if (commandName.equalsIgnoreCase(kRadarID)) {
+				
+				String radarSwitch = commandId.GetParameterValue(kSwitchID);
+				if (radarSwitch == null) {
+					m_Logger.log(getName() + ": null radar switch.");
+					continue;
+				}
+				m_LastMove.radar = true;
+				m_LastMove.radarSwitch = radarSwitch.equalsIgnoreCase(kOn) ? true : false;  
+				
+			} else if (commandName.equalsIgnoreCase(kRadarPowerID)) {
+				
+				String powerValue = commandId.GetParameterValue(kSettingID);
+				if (powerValue == null) {
+					m_Logger.log(getName() + ": null radar power value.");
+					continue;
+				}
+				
+				try {
+					m_LastMove.radarPowerSetting = Integer.decode(powerValue).intValue();
+				} catch (NumberFormatException e) {
+					m_Logger.log(getName() + ": Unable to parse radar power setting " + powerValue + ": " + e.getMessage());
+					continue;
+				}
+				m_LastMove.radarPower = true;
+				
+			} else if (commandName.equalsIgnoreCase(kShieldsID)) {
+				
+				String shieldsSetting = commandId.GetParameterValue(kSwitchID);
+				if (shieldsSetting == null) {
+					m_Logger.log(getName() + ": null shields setting.");
+					continue;
+				}
+				m_LastMove.shields = true;
+				m_LastMove.shieldsSetting = shieldsSetting.equalsIgnoreCase(kOn) ? true : false; 
+				
+			} else if (commandName.equalsIgnoreCase(kRotateID)) {
+				
+				m_LastMove.rotateDirection = commandId.GetParameterValue(kDirectionID);
+				if (m_LastMove.rotateDirection == null) {
+					m_Logger.log(getName() + ": null rotation direction.");
+					continue;
+				}
+				
+				m_LastMove.rotate = true;
+				
+				// Rotation must be handled pronto and never fails.
+				if (m_LastMove.rotate) {
+					rotate(m_LastMove.rotateDirection);
+				}
+				
+			} else {
+				m_Logger.log(getName() + ": Unknown command: " + commandName);
+				continue;
+			}
+			commandId.AddStatusComplete();
+		}
+		
+    	m_Agent.ClearOutputLinkChanges();
+		m_Agent.Commit();
+		
+		// Do not allow a move if we rotated.
+		if (m_LastMove.rotate) {
+			if (m_LastMove.move) {
+				m_Logger.log("Tried to move with a rotation, rotating only.");
+				m_LastMove.move = false;
+			}
+		}
 	}
 	
 	public Integer getMove() {
@@ -225,8 +337,6 @@ public class Tank  extends WorldEntity {
 		}
 		
     	m_Agent.ClearOutputLinkChanges();
-    	
-    	// TODO is this necessary?
 		m_Agent.Commit();
 		
 		// Do not allow a move if we rotated.
@@ -239,68 +349,20 @@ public class Tank  extends WorldEntity {
 		return m_LastMove.move ? new Integer(m_LastMove.moveDirection) : null;
 	}
 	
-	public void update(TankSoarWorld world) {		
-		// fire input updated at read time.
-		
+	public void updateSensors(TankSoarWorld world) {		
 		TankSoarCell cell = world.getCell(getLocation());
 		
-		// Missile damage
-		if (m_HitByTank != null) {
-			if (m_ShieldStatus) {
-				m_Energy -= kMissileEnergyDamage;
-				if (m_Energy < 0) {
-					m_Energy = 0;
-				}
-			} else {
-				m_Health -= kMissileHealthDamage;
-				if (m_Health < 0) {
-					m_Health = 0;
-				}
-			}
-		}
-		
-		// Collision damage
-		if (m_Collision) {
-			m_Health -= kCollisionHealthDamage;
-			if (m_Health < 0) {
-				m_Health = 0;
-			}
-		}
-
-		m_Collision = false;
-
 		// Chargers
 		if (m_Health > 0) {
 			if (cell.isEnergyRecharger()) {
-				// Check for missile hit
-				if (m_HitByTank != null) {
-					// Instant death
-					m_Health = 0;
-				} else {
-					m_Energy += 250;
-					m_Energy = m_Energy > kInitialEnergy ? kInitialEnergy : m_Energy;
-				}
+				m_Energy += 250;
+				m_Energy = m_Energy > kInitialEnergy ? kInitialEnergy : m_Energy;
 			}
 			if (cell.isHealthRecharger()) {
-				// Check for missile hit
-				if (m_HitByTank != null) {
-					// Instant death
-					m_Health = 0;
-				} else {
-					m_Health += 250;
-					m_Health = m_Health > kInitialHealth ? kInitialHealth : m_Health;
-				}
+				m_Health += 250;
+				m_Health = m_Health > kInitialHealth ? kInitialHealth : m_Health;
 			}
 		}
-		
-		if (m_Health <= 0) {
-			adjustPoints(TankSoarWorld.kKillPenalty);
-			if (m_HitByTank != null) {
-				m_HitByTank.adjustPoints(TankSoarWorld.kKillAward);
-			}
-		}
-		
-		m_HitByTank = null;
 		
 		// Handle shields.
 		boolean desiredShieldStatus = m_LastMove.shields ? m_LastMove.shieldsSetting : m_ShieldStatus;
@@ -351,6 +413,10 @@ public class Tank  extends WorldEntity {
 		// Consume radar energy.
 		if (m_RadarSwitch) {
 			m_Energy -= m_RadarPower;
+			m_RadarDistance = scan(m_RadarPower);
+		} else {
+			clearRadar();
+			m_RadarDistance = 0;
 		}
 		
 		// Missiles
@@ -358,11 +424,89 @@ public class Tank  extends WorldEntity {
 			m_Missiles -= 1;
 		}
 	
-		m_ILM.update();
 	}
 	
-	void update2() {
-		m_ILM.updateRWaves();		
+	private void clearRadar() {
+		for (int i = 0; i < kRadarWidth; ++i) {
+			for (int j = 0; j < kRadarHeight; ++j) {
+				radarCells[i][j] = null;
+			}
+		}
+	}
+	
+	private int scan(int setting) {
+		MapPoint location = new MapPoint(getLocation());
+		
+		int distance = 0;
+		for (int i = 0; i <= setting; ++i) {
+			distance = i;
+			if (scanCells(i, location) == true) {
+				// Blocked
+				clearCells(i, location);
+				break;
+			}
+
+			// Update for next distance
+			location.travel(forward());
+		}
+		return distance;
+	}
+	
+	static final int kRadarLeft = 0;
+	static final int kRadarCenter = 1;
+	static final int kRadarRight = 2;
+	
+	private boolean scanCells(int distance, MapPoint location) {
+		for (int i = 0; i < Tank.kRadarWidth; ++i) {
+			// Scan center then left then right
+			int position = 0;
+			int relativeDirection = 0;
+			
+			switch (i) {
+			case 0:
+				position = kRadarCenter;
+				relativeDirection = 0;
+				break;
+			default:
+			case 1:
+				position = kRadarLeft;
+				relativeDirection = left();
+				break;
+			case 2:
+				position = kRadarRight;
+				relativeDirection = right();
+				break;
+			}
+			
+			radarCells[position][distance] = m_World.getCell(location, relativeDirection);
+			if (radarCells[position][distance].containsTank()) {
+				radarCells[position][distance].getTank().setRWaves(backward());
+			}
+
+			if ((position == kRadarCenter) && radarCells[position][distance].isBlocked()) {
+				if ((position != kRadarCenter) || (distance != 0)) {
+					return true;
+				}
+			}
+			radarCells[position][distance].setRadarTouch();
+		}
+		return false;
+	}
+	
+	private void clearCells(int initialDistance, MapPoint location) {
+		for (int j = initialDistance; j < Tank.kRadarHeight; ++j) {
+			for (int i = 0; i < Tank.kRadarWidth; ++i) {
+				if ((i == 1) && (j == initialDistance)) {
+					// skip first center
+					continue;
+				}
+				radarCells[i][j] = null;
+			}
+		}
+	}
+	
+	public void writeInputLink() {
+		m_ILM.write();
 	}
 	
 	int forward() {
@@ -393,15 +537,46 @@ public class Tank  extends WorldEntity {
 		return m_Health;
 	}
 	
-	public void hitBy(Tank hitByTank) {
-		m_HitByTank = hitByTank;
+	public void hitBy(Tank attacker, TankSoarCell currentCell) {
+		// Missile damage
+		if (m_ShieldStatus) {
+			m_Energy -= kMissileEnergyDamage;
+			if (m_Energy < 0) {
+				m_Energy = 0;
+			}
+		} else {
+			m_Health -= kMissileHealthDamage;
+			if (m_Health < 0) {
+				m_Health = 0;
+			}
+		}
+
+		// Chargers
+		if (m_Health > 0) {
+			if (currentCell.isEnergyRecharger()) {
+				// Instant death
+				m_Health = 0;
+			}
+			if (currentCell.isHealthRecharger()) {
+				// Instant death
+				m_Health = 0;
+			}
+		}
+		
+		if (m_Health <= 0) {
+			adjustPoints(TankSoarWorld.kKillPenalty);
+			attacker.adjustPoints(TankSoarWorld.kKillAward);
+		}
 	}
 	
 	public void collide() {
-		m_Collision = true;
+		// Collision damage
+		m_Health -= kCollisionHealthDamage;
+		if (m_Health < 0) {
+			m_Health = 0;
+		}
 		m_LastMove.move = false;
 	}
-	
 	public int getEnergy() {
 		return m_Energy;
 	}
@@ -450,10 +625,6 @@ public class Tank  extends WorldEntity {
 		m_RD.calculate(getFacingInt());
 	}
 	
-	public String getRadarID(int x, int y) {
-		return m_ILM.getRadarID(x, y);
-	}
-	
 	public boolean firedMissile() {
 		return m_LastMove.fire;
 	}
@@ -465,4 +636,5 @@ public class Tank  extends WorldEntity {
 	void setRWaves(int fromDirection) {
 		m_RWaves |= fromDirection;
 	}
+	
 }
