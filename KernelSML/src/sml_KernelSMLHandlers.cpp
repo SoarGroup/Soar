@@ -27,6 +27,7 @@
 #include "sml_TagResult.h"
 #include "sml_TagName.h"
 #include "sml_TagWme.h"
+#include "sml_TagFilter.h"
 #include "sml_TagCommand.h"
 #include "sml_ClientEvents.h"
 #include "sml_Events.h"
@@ -515,8 +516,15 @@ bool KernelSML::HandleGetRunState(gSKI::IAgent* pAgent, char const* pCommandName
 	}
 	else if (strcmp(pValue, sml_Names::kParamDecision) == 0)
 	{
-		// Report the current decision cycle counter
-		buffer << pAgent->GetNumDecisionCyclesExecuted(pError);
+		// Report the current decision number of decisions that have been executed
+		// This is currently a little tricky to determine as the agent records the
+		// number of decision cycles (output phases) executed.
+		int decisionCycles = pAgent->GetNumDecisionCyclesExecuted(pError);
+
+		if (pAgent->GetCurrentPhase(pError) == gSKI_APPLY_PHASE || pAgent->GetCurrentPhase(pError) == gSKI_OUTPUT_PHASE)
+			decisionCycles++ ;
+
+		buffer << (decisionCycles-1) ;
 	}
 	else
 	{
@@ -1258,39 +1266,74 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 
 	// Send this command line through anyone registered filters.
 	// If there are no filters (or this command requested not to be filtered), this copies the original line into the filtered line unchanged.
-	std::string filteredLine ;
+	char const* pFilteredLine   = pLine ;
+	bool filteredError = false ;
+	ElementXML* pFilteredXML = NULL ;
 
-	if (!noFiltering)
+	if (!noFiltering && HasFilterRegistered())
 	{
-		// DJP: I think we need to move to more structure here, passing a simple XML string that
-		// contains: command-line, error-message, output to print (error message could be a special case of this)
-		// This could be extended to support more things later then.  I don't think a simple string is enough.
-		// As long as we create this XML and pass it over, it's still very easy for a dumb filter to pass back
-		// what it was sent and we'll just extract the contents.
-		bool filtered = this->SendFilterMessage(pAgent, pLine, &filteredLine) ;
+		// We'll send the command over as an XML packet, so there's some structure to work with.
+		// The current structure is:
+		// <filter command="command" output="generated output" error="true | false"></filter>
+		// Each filter is passed this string and can modify it as they go.
+		// All attributes are optional although either command or output & error should exist.
+		// It's possible, although unlikely that all 3 could exist at once (i.e. another command to execute, yet still have output already)
+		TagFilter filterXML ;
+		filterXML.SetCommand(pLine) ;
+
+		char* pXMLString = filterXML.GenerateXMLString(true) ;
+
+		std::string filteredXML ;
+		bool filtered = this->SendFilterMessage(pAgent, pXMLString, &filteredXML) ;
+
+		// Clean up the XML message
+		filterXML.DeleteString(pXMLString) ;
 
 		// If a filter consumed the entire command, there's no more work for us to do.
-		// Doing this after the echo step, so the original command is still echo'd to the user.
-		if (filteredLine.empty())
+		if (filteredXML.empty())
 			return true ;
 
-		// If we filtered this line, echo the results of the filtering
-		// (this might be overkill, but let's start with this while I'm debugging)
-		if (filtered && pAgentSML)
-			pAgentSML->FireEchoEventIncludingSelf(filteredLine.c_str()) ;
-	}
-	else
-	{
-		// Filtering is off for this call, so just use the original command line
-		filteredLine = pLine ;
+		if (filtered)
+		{
+			pFilteredXML = ElementXML::ParseXMLFromString(filteredXML.c_str()) ;
+			if (!pFilteredXML)
+			{
+				// Error parsing the XML that the filter returned
+				return false ;
+			}
+
+			// Get the results of the filtering
+			pFilteredLine    = pFilteredXML->GetAttribute(sml_Names::kFilterCommand) ;
+			char const* pFilteredOutput  = pFilteredXML->GetAttribute(sml_Names::kFilterOutput) ;
+			char const* pErr = pFilteredXML->GetAttribute(sml_Names::kFilterError) ;
+			filteredError    = (pErr && stricmp(pErr, "true") == 0) ;
+
+			// See if the filter consumed the command.  If so, we just need to return the output.
+			if (!pFilteredLine || strlen(pFilteredLine) == 0)
+			{
+				// We may have no output defined and that's not an error so cover that case
+				if (pFilteredOutput == NULL)
+					pFilteredOutput = "" ;
+
+				bool res = this->ReturnResult(pConnection, pResponse, pFilteredOutput) ;
+
+				// Can only clean this up after we're finished using it or pFilteredLine will become invalid
+				delete pFilteredXML ;
+
+				return res ;
+			}
+		}
 	}
 
 	// Make the call.
 	m_CommandLineInterface.SetRawOutput(rawOutput);
-	bool result = m_CommandLineInterface.DoCommand(pConnection, pAgent, filteredLine.c_str(), echoResults, pResponse) ;
+	bool result = m_CommandLineInterface.DoCommand(pConnection, pAgent, pFilteredLine, echoResults, pResponse) ;
 
 	if (kDebugCommandLine)
 		PrintDebugFormat("Completed %s", pLine) ;
+
+	// Can only clean this up after we're finished using it or pFilteredLine will become invalid
+	delete pFilteredXML ;
 
 	return result ;
 }

@@ -273,7 +273,12 @@ public:
 	*			registered a filter.  The result is the processed
 	*			version of the command line.
 	*************************************************************/
-	bool KernelSML::SendFilterMessage(gSKI::IAgent* pAgent, char const* pCommandLine, std::string* pResult) ;
+	bool SendFilterMessage(gSKI::IAgent* pAgent, char const* pCommandLine, std::string* pResult) ;
+
+	/*************************************************************
+	* @brief	Returns true if at least one filter is registered.
+	*************************************************************/
+	bool KernelSML::HasFilterRegistered() ;
 
 	/*************************************************************
 	* @brief Convert from a string version of an event to the int (enum) version.

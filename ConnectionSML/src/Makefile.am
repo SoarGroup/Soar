@@ -25,6 +25,7 @@ sml_TagError.cpp\
 sml_TagName.cpp\
 sml_TagResult.cpp\
 sml_TagWme.cpp\
+sml_TagFilter.cpp\
 sock_ClientSocket.cpp\
 sock_Debug.cpp\
 sock_ListenerSocket.cpp\
@@ -62,6 +63,7 @@ sock_Utils.h\
 ../include/sml_TagName.h\
 ../include/sml_TagResult.h\
 ../include/sml_TagWme.h\
+../include/sml_TagFilter.h\
 ../include/sml_XMLTrace.h\
 ../include/sock_ClientSocket.h\
 ../include/sock_Debug.h\
