@@ -533,6 +533,8 @@ public class TankSoarWorld extends World implements WorldManager {
 					pickUpMissiles(m_Tanks[i]);
 				}
 				getCell(m_Tanks[i].getLocation()).setTank(m_Tanks[i]);
+			} else if (m_Tanks[i].recentlyRotated()) {
+				getCell(m_Tanks[i].getLocation()).setModified();
 			}
 		}
 		
