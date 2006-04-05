@@ -255,6 +255,16 @@ bool KernelSML::SendFilterMessage(gSKI::IAgent* pAgent, char const* pCommandLine
 }
 
 /*************************************************************
+* @brief	Returns true if at least one filter is registered.
+*************************************************************/
+bool KernelSML::HasFilterRegistered()
+{
+	ConnectionList* pListeners = m_RhsListener.GetRhsListeners(sml_Names::kFilterName) ;
+
+	return (pListeners && pListeners->size() > 0) ;
+}
+
+/*************************************************************
 * @brief Convert from a string version of an event to the int (enum) version.
 *		 Returns smlEVENT_INVALID_EVENT (== 0) if the string is not recognized.
 *************************************************************/

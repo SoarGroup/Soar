@@ -164,6 +164,9 @@
 				RelativePath=".\src\sml_TagError.cpp">
 			</File>
 			<File
+				RelativePath=".\src\sml_TagFilter.cpp">
+			</File>
+			<File
 				RelativePath=".\src\sml_TagName.cpp">
 			</File>
 			<File
@@ -269,6 +272,9 @@
 			</File>
 			<File
 				RelativePath=".\include\sml_TagError.h">
+			</File>
+			<File
+				RelativePath=".\include\sml_TagFilter.h">
 			</File>
 			<File
 				RelativePath=".\include\sml_TagName.h">
