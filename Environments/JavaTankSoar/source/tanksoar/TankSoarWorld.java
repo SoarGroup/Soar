@@ -38,33 +38,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	private TankSoarCell[][] m_World;
 	private boolean m_PrintedStats;
 	private Tank[] m_Tanks;
-	private ArrayList m_Collisions;
 	
-	class CrossCheck {
-		public CrossCheck(Tank tank, int direction) {
-			t1 = tank;
-			t1_t2 = direction;
-			t2 = getCell(tank.getLocation(), direction).getTank();
-			m_RD.calculate(direction);
-			t2_t1 = m_RD.backward;
-			
-			for (int i = 0; i < m_Tanks.length; ++i) {
-				if (t1 == m_Tanks[i]) {
-					t1Index = i;
-				} else if (t2 == m_Tanks[i]) {
-					t2Index = i;
-				}
-			}
-		}
-		Tank t1;
-		int t1Index;
-		int t1_t2;
-		int t2_t1;
-		Tank t2;
-		int t2Index;
-	}
-	private LinkedList m_PossibleCrossCollisions = new LinkedList();
-
 	public class Missiles {
 		LinkedList m_Flying;
 		
@@ -76,6 +50,27 @@ public class TankSoarWorld extends World implements WorldManager {
 			m_Flying = new LinkedList();
 	   	}
 	   	
+	   	public void removeWallCollisions() {
+	   		ListIterator iter = m_Flying.listIterator();
+	   		while (iter.hasNext()) {
+	   			Missile missile = (Missile)iter.next();
+	   			MapPoint location = missile.getCurrentLocation();
+	   			if (getCell(location).isWall()) {
+		   			getCell(location).setModified();
+	   				iter.remove();
+	   				continue;
+	   			}
+	   			
+	   			if (missile.getFlightPhase() == 2) {
+		   			if (getCell(location, missile.getDirection()).isWall()) {
+			   			getCell(location).setModified();
+		   				iter.remove();
+		   				continue;
+		   			}
+	   			}
+	   		}
+	   	}
+	   	
 	   	public void moveMissiles() {
 	   		ListIterator iter = m_Flying.listIterator();
 	   		while (iter.hasNext()) {
@@ -85,22 +80,10 @@ public class TankSoarWorld extends World implements WorldManager {
 
 	   			getCell(location).setModified();
 	   			location.travel(m_RD.forward);
-	   			if (getCell(location).isWall()) {
-		   			getCell(location).setModified();
-	   				iter.remove();
-	   				continue;
-	   			}
 	   			
 	   			if (missile.getFlightPhase() == 2) {
-	   				// travel again
 		   			getCell(location).setModified();
 		   			location.travel(m_RD.forward);
-		   			if (getCell(location).isWall()) {
-		   				// TODO: figure out why this code is never called
-			   			getCell(location).setModified();
-		   				iter.remove();
-		   				continue;
-		   			}
 	   			}
 	   			
 	   			missile.incrementFlightPhase();
@@ -111,9 +94,7 @@ public class TankSoarWorld extends World implements WorldManager {
    			m_RD.calculate(owner.getFacingInt());
    			MapPoint location = new MapPoint(owner.getLocation());
    			location.travel(m_RD.forward);
-   			if (!getCell(location).isWall()) {
-   				m_Flying.addLast(new Missile(location, owner.getFacingInt(), owner));
-   			}
+			m_Flying.addLast(new Missile(location, owner.getFacingInt(), owner));
 	   	}
 	   	
 	   	public int checkIncoming(MapPoint location) {
@@ -204,7 +185,6 @@ public class TankSoarWorld extends World implements WorldManager {
 	public boolean load(String mapFile) {
 		m_PrintedStats = false;
 		m_NumMissilePacks = 0;
-		m_PossibleCrossCollisions.clear();
 		
 		try {
 			// Open file
@@ -323,7 +303,16 @@ public class TankSoarWorld extends World implements WorldManager {
 			m_Tanks[i].reset();
 			m_Tanks[i].initSoar();
 		}
-		updateTankInput();
+		
+		// Update all Tank sensors
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			m_Tanks[i].updateSensors(this);
+		}
+		
+		// Write out input links
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			m_Tanks[i].writeInputLink();
+		}		
 	}
 
 	private MapPoint findStartingLocation() {
@@ -339,31 +328,6 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 		
 		return location;
-	}
-	
-	private void updateTankInput() {
-		// Update tanks
-		for (int i = 0; i < m_Tanks.length; ++i) {
-			m_Tanks[i].update(this);
-		}
-		// Second phase needed for rwaves
-		for (int i = 0; i < m_Tanks.length; ++i) {
-			m_Tanks[i].update2();
-		}
-		// Reset and ressurect dead tanks
-		for (int i = 0; i < m_Tanks.length; ++i) {
-			if (m_Tanks[i].getHealth() <= 0) {
-				getCell(m_Tanks[i].getLocation()).removeTank();
-				MapPoint location = findStartingLocation();
-				m_Tanks[i].setLocation(location);
-				// Put tank on map
-				if (getCell(location).containsMissilePack()) {
-					--m_NumMissilePacks;
-				}
-				getCell(location).setTank(m_Tanks[i]);
-				m_Tanks[i].reset();
-			}
-		}		
 	}
 	
 	public TankSoarCell getCell(MapPoint location) {
@@ -430,7 +394,15 @@ public class TankSoarWorld extends World implements WorldManager {
 			m_Tanks[original.length] = tank;
 		}
 
-		updateTankInput();
+		// Update all Tank sensors
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			m_Tanks[i].updateSensors(this);
+		}
+		
+		// Write out input links
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			m_Tanks[i].writeInputLink();
+		}		
 	}
 	
 	void destroyTank(Tank tank) {
@@ -469,7 +441,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 	
 	public void update() {
-		// reset modified flags, skipping edges
+		// reset modified flags
 		for (int y = 0; y < m_World.length; ++y) {
 			for (int x = 0; x < m_World[y].length; ++x) {
 				m_World[y][x].clearModified();
@@ -479,6 +451,7 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 		}			
 		
+		// Check for goal state
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].getPoints() >= kWinningPoints) {
 				// Goal acheived
@@ -494,122 +467,72 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 		}
 
+		// Sanity check, need tanks to make an update meaningful
 		if (m_Tanks == null) {
 			m_Logger.log("Update called with no tanks.");
 			return;
 		}
 		
-		moveTanks();
-		updateMap();
-		handleCollisions();	
-		updateTankInput();
-	}
-	
-	private void moveTanks() {
-		MapPoint[] newLocations = new MapPoint[m_Tanks.length];
-		boolean[] collisions = new boolean[m_Tanks.length];
+		// UPDATE ALGORITHM 2.0
+		// Read Tank output links
+		// Move all Missiles
+		//   Spawn new Missiles in front of Tanks
+		// Check for Missile-Wall collisions
+		// For all Tanks that move, check for Tank-Tank, Tank-Wall collisions
+		//   Cross-check, Meet-check
+		//     Cancel Tank moves that are not possible
+		//       Assign penalties to colliding tanks
+		// For all Tanks that move, move Tanks
+		// Spawn missile packs
+		// Check for Missile-Tank collisions
+		//   Assign penalties to hit tanks
+		//     Respawn killed Tanks in safe squares
+		// Update all Tank sensors
+		// Write out input links
 		
+		// Read Tank output links
 		for (int i = 0; i < m_Tanks.length; ++i) {
-			collisions[i] = false;
-			Integer move = m_Tanks[i].getMove();
-			if (move == null) {
-				continue;
-			}
-			
-			newLocations[i] = new MapPoint(m_Tanks[i].getLocation(), move.intValue());
-		}
-		
-		// First: check for tanks that want to move through each other
-		// (Cross check)
-		// TODO: this algorithm is horrible.
-   		ListIterator iter = m_PossibleCrossCollisions.listIterator();
-   		while (iter.hasNext()) {
-   			CrossCheck c = (CrossCheck)iter.next();
-   			if (c.t1.recentlyMoved() && c.t2.recentlyMoved()) {
-	   			if((c.t1.lastMoveDirection() == c.t1_t2) && (c.t2.lastMoveDirection() == c.t2_t1)) {
-	   				// Bingo
-	   				collisions[c.t1Index] = true;
-	   				collisions[c.t2Index] = true;
-	   			}
-   			}
-   		}
-   		m_PossibleCrossCollisions.clear();
-   		
-		// Next: check for tanks moving to blocked squares
-		// (Meet check)
-		for (int i = 0; i < m_Tanks.length; ++i) {
-			if (newLocations[i] == null) {
-				continue;
-			}
-			// If we're already colliding, continue
-			if (collisions[i]) {
-				continue;
-			}
+			m_Tanks[i].readOutputLink();
+		}		
 
-			// If we are moving in bounds and not moving to a blocked space
-			// make sure we're not moving into another tank that is moving
-			if (isInBounds(newLocations[i]) && !getCell(newLocations[i]).isBlocked()) {
-				for (int j = i + 1; j < m_Tanks.length; ++j) {
-					if (newLocations[j] == null) {
-						continue;
-					}
-					if (newLocations[j].equals(newLocations[i])) {
-						collisions[i] = true;
-						collisions[j] = true;
-						break;
-					}
-				}
-				continue;
-			}
-			collisions[i] = true;
-		}  		
-   		
-		// Next: apply collisions, move tanks
-		for (int i = 0; i < m_Tanks.length; ++i) {
-			if (collisions[i]) {
-				m_Tanks[i].collide();
-				continue;
-			}
-			
-			if (newLocations[i] == null) {
-				continue;
-			}
-			if (!getCell(m_Tanks[i].getLocation()).removeTank()) {
-				m_Logger.log("Warning: moving tank " + m_Tanks[i].getName() + " not at old location " + m_Tanks[i].getLocation());
-			}
-			m_Tanks[i].setLocation(newLocations[i]);
-		}  		
-	}
-	
-	private void updateMap() {
-		// Move tanks
-		for (int i = 0; i < m_Tanks.length; ++i) {
-			if (getCell(m_Tanks[i].getLocation()).containsMissilePack()) {
-				pickUpMissiles(m_Tanks[i]);
-			}
-			getCell(m_Tanks[i].getLocation()).setTank(m_Tanks[i]);
-		}
-		
-		// Move all current missiles
+		// Move all Missiles
 		m_Missiles.moveMissiles();
 		
-		// Fire new missiles
+		//   Spawn new Missiles in front of Tanks
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].firedMissile()) {
 				m_Missiles.fireMissile(m_Tanks[i]);
 			}
 		}
 		
-		// Check for missile collisions
+		// Check for Missile-Wall collisions
+		m_Missiles.removeWallCollisions();
+		
+		// For all Tanks that move, check for Tank-Tank, Tank-Wall collisions
+		//   Cross-check, Meet-check
+		// TODO: cross check
 		for (int i = 0; i < m_Tanks.length; ++i) {
-			Tank owner = m_Missiles.checkHit(m_Tanks[i].getLocation(), true);
-			if (owner != null) {
-				if (!m_Tanks[i].getShieldStatus()) {
-					getCell(m_Tanks[i].getLocation()).setExplosion();
-					owner.adjustPoints(kMissileHitAward);
-					m_Tanks[i].adjustPoints(kMissileHitPenalty);
+			if (m_Tanks[i].recentlyMoved()) {
+				if (getCell(m_Tanks[i].getLocation(), m_Tanks[i].lastMoveDirection()).isBlocked()) {
+					//     Cancel Tank moves that are not possible
+					//       Assign penalties to colliding tanks
+					m_Tanks[i].collide();
 				}
-				m_Tanks[i].hitBy(owner);
+			}
+		}
+		
+		// For all Tanks that move, move Tanks
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			if (m_Tanks[i].recentlyMoved()) {
+				if (!getCell(m_Tanks[i].getLocation()).removeTank()) {
+					m_Logger.log("Warning: moving tank " + m_Tanks[i].getName() + " not at old location " + m_Tanks[i].getLocation());
+				}
+				MapPoint newLocation = new MapPoint(m_Tanks[i].getLocation(), m_Tanks[i].lastMoveDirection());
+				m_Tanks[i].setLocation(newLocation);
+				if (getCell(m_Tanks[i].getLocation()).containsMissilePack()) {
+					pickUpMissiles(m_Tanks[i]);
+				}
+				getCell(m_Tanks[i].getLocation()).setTank(m_Tanks[i]);
 			}
 		}
 		
@@ -619,88 +542,41 @@ public class TankSoarWorld extends World implements WorldManager {
 				spawnMissilePack();
 			}
 		}
-	}
-
-	private void handleCollisions() {
-		// generate collision groups
-		ArrayList currentCollision = null;
 		
+		// Check for Missile-Tank collisions
 		for (int i = 0; i < m_Tanks.length; ++i) {
-			for (int j = i+1; j < m_Tanks.length; ++j) {
-				// only check tanks who aren't already colliding
-				if (m_Tanks[i].isColliding()) {
-					continue;
+			Tank owner = m_Missiles.checkHit(m_Tanks[i].getLocation(), true);
+			if (owner != null) {
+				TankSoarCell cell = getCell(m_Tanks[i].getLocation());
+				if (!m_Tanks[i].getShieldStatus()) {
+					cell.setExplosion();
+					owner.adjustPoints(kMissileHitAward);
+					m_Tanks[i].adjustPoints(kMissileHitPenalty);
 				}
-				
-				if (m_Tanks[i].getLocation().equals(m_Tanks[j].getLocation())) {
-					
-					// Create data structures
-					if (m_Collisions == null) {
-						m_Collisions = new ArrayList();
-					}
-					if (currentCollision == null) {
-						currentCollision = new ArrayList();
-						
-						// Add first agent to current collision
-						currentCollision.add(m_Tanks[i]);
-						
-						// Flipping collision flag unnecessary as first agent will not be traversed again
-
-						// Flip collision flag for cell
-						getCell(m_Tanks[i].getLocation()).setCollision(true);
-
-						m_Logger.log("Starting collision group at " + m_Tanks[i].getLocation());
-					}
-					
-					// Add second agent to current collision
-					currentCollision.add(m_Tanks[j]);
-
-					// Flip collision flag for second agent
-					m_Tanks[j].setColliding(true);
-				}
-			}
-			// add current collision to collisions
-			if (currentCollision != null) {
-				m_Collisions.add(currentCollision);
-				currentCollision = null;
+				//   Assign penalties to hit tanks
+				m_Tanks[i].hitBy(owner, cell);
 			}
 		}
 		
-		// if there are not collisions, we're done
-		if (m_Collisions == null) {
-			return;
-		}
-		
-		// process collision groups
-		for (int group = 0; group < m_Collisions.size(); ++group) {
-			// Retrieve collision group
-			currentCollision = (ArrayList)m_Collisions.get(group);
-			Tank[] collidees = (Tank[])currentCollision.toArray(new Tank[0]);
-			
-			m_Logger.log("Processing collision group " + group + " with " + collidees.length + " collidees.");
-			
-			// Move back to old locations, update map
-			for (int i = 0; i < collidees.length; ++i) {
-				collidees[i].collide();
-				m_RD.calculate(collidees[i].lastMoveDirection());
-				MapPoint p = collidees[i].getLocation();
-				p.travel(m_RD.backward);
-				collidees[i].setLocation(p);
-
-				if (getCell(p).containsMissilePack()) {
-					--m_NumMissilePacks;
-				}
-
-				getCell(p).setTank(collidees[i]);
-			}
-		}
-		
-		// clear collision groups
-		m_Collisions = null;
-		
-		// clear colliding flags
+		//     Respawn killed Tanks in safe squares
 		for (int i = 0; i < m_Tanks.length; ++i) {
-			m_Tanks[i].setColliding(false);
+			if (m_Tanks[i].getHealth() <= 0) {
+				getCell(m_Tanks[i].getLocation()).removeTank();
+				MapPoint location = findStartingLocation();
+				m_Tanks[i].setLocation(location);
+				getCell(location).setTank(m_Tanks[i]);
+				m_Tanks[i].reset();
+			}
+		}
+		
+		// Update all Tank sensors
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			m_Tanks[i].updateSensors(this);
+		}
+		
+		// Write out input links
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			m_Tanks[i].writeInputLink();
 		}		
 	}
 	
@@ -719,27 +595,15 @@ public class TankSoarWorld extends World implements WorldManager {
 		MapPoint location = tank.getLocation();
 		
 		if (getCell(location, WorldEntity.kNorthInt).isBlocked()) {
-			if (getCell(location, WorldEntity.kNorthInt).containsTank()) {
-				m_PossibleCrossCollisions.add(new CrossCheck(tank, WorldEntity.kNorthInt));
-			}
 			blocked |= WorldEntity.kNorthInt;
 		}
 		if (getCell(location, WorldEntity.kEastInt).isBlocked()) {
-			if (getCell(location, WorldEntity.kEastInt).containsTank()) {
-				m_PossibleCrossCollisions.add(new CrossCheck(tank, WorldEntity.kEastInt));
-			}
 			blocked |= WorldEntity.kEastInt;
 		}
 		if (getCell(location, WorldEntity.kSouthInt).isBlocked()) {
-			if (getCell(location, WorldEntity.kSouthInt).containsTank()) {
-				m_PossibleCrossCollisions.add(new CrossCheck(tank, WorldEntity.kSouthInt));
-			}
 			blocked |= WorldEntity.kSouthInt;
 		}
 		if (getCell(location, WorldEntity.kWestInt).isBlocked()) {
-			if (getCell(location, WorldEntity.kWestInt).containsTank()) {
-				m_PossibleCrossCollisions.add(new CrossCheck(tank, WorldEntity.kWestInt));
-			}
 			blocked |= WorldEntity.kWestInt;
 		}
 		

@@ -99,6 +99,7 @@ public class TankSoarCell extends Cell {
 	
 	void setRadarTouch() {
 		m_RadarTouch = true;
+		m_Modified = true;
 	}
 	
 	public Tank getTank() {
