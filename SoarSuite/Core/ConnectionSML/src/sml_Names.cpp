@@ -153,6 +153,10 @@ char const* const sml_Names::kTagLearning	= "learning" ;
 // Tag learning has attribute kTypeString
 
 // filter support
+char const* const sml_Names::kTagFilter			= "filter" ;
+char const* const sml_Names::kFilterCommand		= "command" ;
+char const* const sml_Names::kFilterError		= "error" ;
+char const* const sml_Names::kFilterOutput		= "output" ;
 char const* const sml_Names::kFilterName		= "_sml::filter" ;	// This name goes into the RHS function name space, so want it to be unlikely to be used by clients
 char const* const sml_Names::kParamNoFiltering	= "nofilter" ;
 
