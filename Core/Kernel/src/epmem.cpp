@@ -270,7 +270,7 @@ unsigned long g_last_tag = 0;
 long g_last_ret_id = 0;
 long g_num_queries = 0;
 arraylist *g_header_stack;
-char *g_save_filename=NULL; //"c:\\temp\\epmems_save.txt";
+char *g_save_filename="c:\\temp\\epmems_save.txt";
 char *g_load_filename="c:\\temp\\epmems_load.txt";
 
 
