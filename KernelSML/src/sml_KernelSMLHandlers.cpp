@@ -70,6 +70,11 @@ using namespace gSKI ;
 #undef SendMessage
 #endif
 
+#ifndef _WIN32
+// BADBAD: should be using autoconf tools here!
+#define stricmp strcasecmp
+#endif
+
 /*
 static void DebugPrint(char const* pFilename, int line, char const* pMsg)
 {
