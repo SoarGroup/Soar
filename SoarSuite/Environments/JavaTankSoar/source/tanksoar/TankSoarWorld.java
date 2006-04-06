@@ -479,9 +479,8 @@ public class TankSoarWorld extends World implements WorldManager {
 		//   Spawn new Missiles in front of Tanks
 		// Check for Missile-Wall collisions
 		// For all Tanks that move, check for Tank-Tank, Tank-Wall collisions
-		//   Cross-check, Meet-check
-		//     Cancel Tank moves that are not possible
-		//       Assign penalties to colliding tanks
+		//   Cancel Tank moves that are not possible
+		//     Assign penalties to colliding tanks
 		// For all Tanks that move, move Tanks
 		// Spawn missile packs
 		// Check for Missile-Tank collisions
@@ -509,18 +508,73 @@ public class TankSoarWorld extends World implements WorldManager {
 		m_Missiles.removeWallCollisions();
 		
 		// For all Tanks that move, check for Tank-Tank, Tank-Wall collisions
-		//   Cross-check, Meet-check
-		// TODO: cross check
+		//   Cancel Tank moves that are not possible
+		//     Assign penalties to colliding tanks
 		for (int i = 0; i < m_Tanks.length; ++i) {
+			// Get the simple wall collisions out of the way
 			if (m_Tanks[i].recentlyMoved()) {
-				if (getCell(m_Tanks[i].getLocation(), m_Tanks[i].lastMoveDirection()).isBlocked()) {
-					//     Cancel Tank moves that are not possible
-					//       Assign penalties to colliding tanks
+				TankSoarCell destinationCell = getCell(m_Tanks[i].getLocation(), m_Tanks[i].lastMoveDirection());
+				if (destinationCell.isWall()) {
 					m_Tanks[i].collide();
 				}
 			}
 		}
-		
+
+		if (m_Tanks.length > 1) {
+			// Re-set colliding to false, a helper variable for collisions
+			for (int i = 0; i < m_Tanks.length; ++i) {
+				m_Tanks[i].setColliding(false);
+			}
+			
+			// Cross-check:
+			// If moving in to a square with a tank, check that tank for 
+			// a move in the opposite direction
+			for (int i = 0; i < m_Tanks.length; ++i) {
+				if (!m_Tanks[i].isColliding() && m_Tanks[i].recentlyMoved()) {
+					TankSoarCell destinationCell = getCell(m_Tanks[i].getLocation(), m_Tanks[i].lastMoveDirection());
+					if (destinationCell.containsTank()) {
+						Tank collidee = destinationCell.getTank();
+						if (!collidee.isColliding() && collidee.recentlyMoved()) {
+							m_RD.calculate(m_Tanks[i].lastMoveDirection());
+							if (collidee.lastMoveDirection() == m_RD.backward) {
+								m_Tanks[i].setColliding(true);
+								m_Tanks[i].collide();
+								collidee.setColliding(true);
+								collidee.collide();
+							}
+						}
+					}
+				}
+			}
+	
+			// Re-set colliding to false, a helper variable for collisions
+			for (int i = 0; i < m_Tanks.length; ++i) {
+				m_Tanks[i].setColliding(false);
+			}
+			
+			// Meet check:
+			// Compare my destination location to others', if any match, set both
+			// to colliding
+			for (int i = 0; i < m_Tanks.length; ++i) {
+				if (m_Tanks[i].isColliding()) {
+					continue;
+				}
+				MapPoint myDest = new MapPoint(m_Tanks[i].getLocation(), m_Tanks[i].lastMoveDirection());
+				for (int j = i + 1; j < m_Tanks.length; ++j) {
+					if (m_Tanks[j].isColliding()) {
+						continue;
+					}
+					MapPoint theirDest = new MapPoint(m_Tanks[j].getLocation(), m_Tanks[j].lastMoveDirection());
+					if (myDest.equals(theirDest)) {
+						m_Tanks[i].setColliding(true);
+						m_Tanks[i].collide();
+						m_Tanks[j].setColliding(true);
+						m_Tanks[j].collide();
+					}
+				}
+			}
+		}
+
 		// For all Tanks that move, move Tanks
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].recentlyMoved()) {

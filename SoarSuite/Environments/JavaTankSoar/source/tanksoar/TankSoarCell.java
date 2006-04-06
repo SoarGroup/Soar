@@ -145,10 +145,10 @@ public class TankSoarCell extends Cell {
 	}
 
 	public void clearModified() {
-		m_Explosion = false;
-		if (m_RadarTouch) {
+		if (m_RadarTouch || m_Explosion) {
 			setModified();
 			m_RadarTouch = false;
+			m_Explosion = false;
 		} else {
 			super.clearModified();
 		}
