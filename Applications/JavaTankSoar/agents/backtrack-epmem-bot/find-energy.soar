@@ -1,0 +1,30 @@
+echo "\nLoading simple/find-energy.soar"
+
+# Propose find-energy operator
+# If am not in danger but am low on energy, then propose the find-energy operator.
+
+sp {propose*find-energy
+   (state <s> ^name tanksoar
+              ^io.input-link <io>
+              -^missiles-energy low)  ##%%%remove negation later
+   (<io> ^sound silent
+        -^radar.tank
+        -^incoming.<dir> yes
+         ^energyrecharger no)
+-->
+   (<s> ^operator.name find-energy)
+}
+
+
+#For experimental purposes, turn off the radar
+#to pretend that I'm out of energy
+#%%%REMOVE THIS IN FINAL TANK
+sp {apply*find-energy
+   (state <s> ^operator <op>
+              ^io <io>)
+   (<op> ^name find-energy)
+   (<io> ^input-link.radar-status on
+         ^output-link <ol>)
+-->
+   (<ol> ^radar.switch off)
+}

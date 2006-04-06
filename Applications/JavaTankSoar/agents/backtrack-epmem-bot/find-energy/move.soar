@@ -1,0 +1,57 @@
+
+#If I'm not blocked in a particular direction, 
+#propose moving in that direction
+sp {find-energy*propose*move
+   (state <s> ^name find-energy
+              ^io.input-link <il>
+              ^top-state.blocked.<abs-dir> no)
+   (<il> ^x <x>
+         ^y <y>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name move
+         ^abs-dir <abs-dir>)
+}
+
+#IF I've recently retrieved a memory of seeing 
+#   the energy charger in a particular direction
+#THEN prefer moving in that direction
+sp {find-energy*compare*move*epmem-available
+   (state <s> ^name find-energy
+              ^top-state.last-energy-epmem.direction <dir>
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name move
+          ^abs-dir <dir>)
+   (<op2> ^name move
+          ^abs-dir <> <dir>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+#IF no memory is available 
+#THEN prefer moving the direction I'm facing
+sp {find-energy*compare*move*prefer-forward
+   (state <s> ^name find-energy
+             -^top-state.last-energy-epmem
+              ^io.input-link.direction <dir>
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name move
+          ^abs-dir <dir>)
+   (<op2> ^name move
+         -^abs-dir <dir>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+
+#Move in the selected direction
+sp {apply*move
+   (state <s> ^operator <op>)
+   (<op> ^name move
+         ^abs-dir <abs-dir>)
+-->
+   (write (crlf) |=================== Moving | <abs-dir> | =======================|)
+}
+

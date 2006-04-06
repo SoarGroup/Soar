@@ -1,0 +1,9 @@
+#Check for the state that there are unevaluated moves
+sp {find-energy*elaborate*substate
+   (state <s> ^name find-energy
+              ^operator <o> +)
+   (<o> ^name move
+       -^evaluation)
+-->
+   (<s> ^unevaluated-moves true)
+}

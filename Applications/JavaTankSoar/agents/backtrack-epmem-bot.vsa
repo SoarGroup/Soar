@@ -25,30 +25,18 @@ VERSION 4
 22	19	OPERATOR turn turn.soar 23
 23	0	HLOPERATOR find-energy find-energy.soar find-energy 98 24
 24	23	FOPERATOR elaborations elaborations.soar 25
-25	23	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 118 26
-26	25	FOPERATOR elaborations elaborations.soar 27
-27	25	OPERATOR propose-gather-info propose-gather-info.soar 28
-28	23	HLOPERATOR gather-info gather-info.soar gather-info 160 29
-29	28	FOPERATOR elaborations elaborations.soar 30
-30	28	OPERATOR epmem-recall-target epmem-recall-target.soar 51
-31	28	OPERATOR epmem-record-target epmem-record-target.soar 52
-32	28	HLOPERATOR evaluate-move evaluate-move.soar evaluate-move 123 31
-33	32	FOPERATOR elaborations elaborations.soar 32
-34	32	OPERATOR epmem-recall epmem-recall.soar 33
-35	32	OPERATOR epmem-recall-next epmem-recall-next.soar 34
-36	32	OPERATOR report-evaluation report-evaluation.soar 35
-37	32	OPERATOR turn-on-radar turn-on-radar.soar 36
-38	32	OPERATOR turn-to-eval-dir turn-to-eval-dir.soar 37
-39	23	HLOPERATOR move move.soar move 165 38
-40	39	OPERATOR go-forward go-forward.soar 39
-41	39	OPERATOR turn-to-dir turn-to-dir.soar 40
-42	23	OPERATOR remove-stale-evaluation remove-stale-evaluation.soar 41
-43	0	HLOPERATOR retreat retreat.soar retreat 63 42
-44	43	FOPERATOR elaborations elaborations.soar 43
-45	43	OPERATOR move move.soar 44
-46	43	OPERATOR wait wait.soar 45
-47	0	HLOPERATOR wander wander.soar wander 6 46
-48	47	FOPERATOR elaborations elaborations.soar 47
-49	47	OPERATOR move move.soar 48
-50	47	OPERATOR turn turn.soar 49
+25	23	OPERATOR epmem-recall-energy epmem-recall-energy.soar 51
+26	23	HLOPERATOR move move.soar move 129 39
+27	26	OPERATOR go-forward go-forward.soar 40
+28	26	OPERATOR turn-to-dir turn-to-dir.soar 41
+29	23	OPERATOR remove-stale-energy-pos remove-stale-energy-pos.soar 53
+30	23	OPERATOR save-last-energy-pos save-last-energy-pos.soar 52
+31	0	HLOPERATOR retreat retreat.soar retreat 63 43
+32	31	FOPERATOR elaborations elaborations.soar 44
+33	31	OPERATOR move move.soar 45
+34	31	OPERATOR wait wait.soar 46
+35	0	HLOPERATOR wander wander.soar wander 6 47
+36	35	FOPERATOR elaborations elaborations.soar 48
+37	35	OPERATOR move move.soar 49
+38	35	OPERATOR turn turn.soar 50
 END

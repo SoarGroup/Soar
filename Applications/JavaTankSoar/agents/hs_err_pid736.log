@@ -1,0 +1,115 @@
+
+An unexpected exception has been detected in native code outside the VM.
+Unexpected Signal : EXCEPTION_ACCESS_VIOLATION (0xc0000005) occurred at PC=0x7C9EAF74
+Function=ILGetSize+0x34
+Library=C:\WINDOWS\system32\SHELL32.dll
+
+Current Java thread:
+	at org.eclipse.swt.internal.win32.OS.GetOpenFileNameW(Native Method)
+	at org.eclipse.swt.internal.win32.OS.GetOpenFileName(OS.java:1878)
+	at org.eclipse.swt.widgets.FileDialog.open(FileDialog.java:255)
+	at edu.umich.JavaBaseEnvironment.ControlPanel$11.widgetSelected(ControlPanel.java:260)
+	at org.eclipse.swt.widgets.TypedListener.handleEvent(TypedListener.java:90)
+	at org.eclipse.swt.widgets.EventTable.sendEvent(EventTable.java:66)
+	at org.eclipse.swt.widgets.Widget.sendEvent(Widget.java:843)
+	at org.eclipse.swt.widgets.Display.runDeferredEvents(Display.java:3080)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:2713)
+	at edu.umich.JavaBaseEnvironment.SWindowManager.initializeVisuals(SWindowManager.java:136)
+	at edu.umich.JavaBaseEnvironment.SWindowManager.<init>(SWindowManager.java:69)
+	at edu.umich.tanksoar.TankSWindowManager.<init>(TankSWindowManager.java:26)
+	at edu.umich.tanksoar.TanksoarJ.main(TanksoarJ.java:64)
+
+Dynamic libraries:
+0x00400000 - 0x00407000 	C:\jdk\bin\javaw.exe
+0x7C900000 - 0x7C9B0000 	C:\WINDOWS\system32\ntdll.dll
+0x7C800000 - 0x7C8F4000 	C:\WINDOWS\system32\kernel32.dll
+0x77DD0000 - 0x77E6B000 	C:\WINDOWS\system32\ADVAPI32.dll
+0x77E70000 - 0x77F01000 	C:\WINDOWS\system32\RPCRT4.dll
+0x77D40000 - 0x77DD0000 	C:\WINDOWS\system32\USER32.dll
+0x77F10000 - 0x77F57000 	C:\WINDOWS\system32\GDI32.dll
+0x77C10000 - 0x77C68000 	C:\WINDOWS\system32\MSVCRT.dll
+0x08000000 - 0x08136000 	C:\jdk\jre\bin\client\jvm.dll
+0x76B40000 - 0x76B6D000 	C:\WINDOWS\system32\WINMM.dll
+0x10000000 - 0x10007000 	C:\jdk\jre\bin\hpi.dll
+0x00840000 - 0x0084E000 	C:\jdk\jre\bin\verify.dll
+0x00850000 - 0x00868000 	C:\jdk\jre\bin\java.dll
+0x00870000 - 0x0087D000 	C:\jdk\jre\bin\zip.dll
+0x02B60000 - 0x02B7C000 	C:\jdk\jre\bin\jdwp.dll
+0x06B80000 - 0x06B85000 	C:\jdk\jre\bin\dt_socket.dll
+0x71AB0000 - 0x71AC7000 	C:\WINDOWS\system32\ws2_32.dll
+0x71AA0000 - 0x71AA8000 	C:\WINDOWS\system32\WS2HELP.dll
+0x71A50000 - 0x71A8F000 	C:\WINDOWS\System32\mswsock.dll
+0x76F20000 - 0x76F47000 	C:\WINDOWS\system32\DNSAPI.dll
+0x76FB0000 - 0x76FB8000 	C:\WINDOWS\System32\winrnr.dll
+0x76F60000 - 0x76F8C000 	C:\WINDOWS\system32\WLDAP32.dll
+0x76FC0000 - 0x76FC6000 	C:\WINDOWS\system32\rasadhlp.dll
+0x662B0000 - 0x66308000 	C:\WINDOWS\system32\hnetcfg.dll
+0x71A90000 - 0x71A98000 	C:\WINDOWS\System32\wshtcpip.dll
+0x06F70000 - 0x0710C000 	C:\txt\UMich\Soar\SoarSuite\SoarLibrary\bin\Java_sml_ClientInterface.dll
+0x07110000 - 0x07173000 	C:\txt\UMich\Soar\SoarSuite\SoarLibrary\bin\ElementXML.dll
+0x071A0000 - 0x075D1000 	C:\txt\UMich\Soar\SoarSuite\SoarLibrary\bin\SoarKernelSML.dll
+0x077B0000 - 0x07800000 	C:\txt\UMich\Soar\SoarSuite\SoarLibrary\bin\swt-win32-3139.dll
+0x774E0000 - 0x7761D000 	C:\WINDOWS\system32\ole32.dll
+0x5D090000 - 0x5D127000 	C:\WINDOWS\system32\COMCTL32.dll
+0x763B0000 - 0x763F9000 	C:\WINDOWS\system32\comdlg32.dll
+0x77F60000 - 0x77FD6000 	C:\WINDOWS\system32\SHLWAPI.dll
+0x7C9C0000 - 0x7D1D5000 	C:\WINDOWS\system32\SHELL32.dll
+0x77120000 - 0x771AC000 	C:\WINDOWS\system32\OLEAUT32.dll
+0x76390000 - 0x763AD000 	C:\WINDOWS\system32\IMM32.dll
+0x74D90000 - 0x74DFB000 	C:\WINDOWS\system32\USP10.dll
+0x773D0000 - 0x774D2000 	C:\WINDOWS\WinSxS\x86_Microsoft.Windows.Common-Controls_6595b64144ccf1df_6.0.2600.2180_x-ww_a84f1ff9\comctl32.dll
+0x74720000 - 0x7476B000 	C:\WINDOWS\system32\MSCTF.dll
+0x605D0000 - 0x605D9000 	C:\WINDOWS\system32\mslbui.dll
+0x77B40000 - 0x77B62000 	C:\WINDOWS\system32\appHelp.dll
+0x76FD0000 - 0x7704F000 	C:\WINDOWS\system32\CLBCATQ.DLL
+0x77050000 - 0x77115000 	C:\WINDOWS\system32\COMRes.dll
+0x77C00000 - 0x77C08000 	C:\WINDOWS\system32\VERSION.dll
+0x07C80000 - 0x07CEF000 	C:\Program Files\TortoiseSVN\bin\tortoisesvn.dll
+0x771B0000 - 0x77256000 	C:\WINDOWS\system32\WININET.dll
+0x77A80000 - 0x77B14000 	C:\WINDOWS\system32\CRYPT32.dll
+0x77B20000 - 0x77B32000 	C:\WINDOWS\system32\MSASN1.dll
+0x6EEC0000 - 0x6EEE2000 	C:\Program Files\TortoiseSVN\bin\libapr.dll
+0x78130000 - 0x781CB000 	C:\WINDOWS\WinSxS\x86_Microsoft.VC80.CRT_1fc8b3b9a1e18e3b_8.0.50727.42_x-ww_0de06acd\MSVCR80.dll
+0x6EE60000 - 0x6EE88000 	C:\Program Files\TortoiseSVN\bin\libaprutil.dll
+0x6EE50000 - 0x6EE5D000 	C:\Program Files\TortoiseSVN\bin\libapriconv.dll
+0x07D20000 - 0x07D2C000 	C:\Program Files\TortoiseSVN\bin\intl3_svn.dll
+0x7C420000 - 0x7C4A7000 	C:\WINDOWS\WinSxS\x86_Microsoft.VC80.CRT_1fc8b3b9a1e18e3b_8.0.50727.42_x-ww_0de06acd\MSVCP80.dll
+0x77A20000 - 0x77A74000 	C:\WINDOWS\System32\cscui.dll
+0x76600000 - 0x7661D000 	C:\WINDOWS\System32\CSCDLL.dll
+0x07F00000 - 0x07FEF000 	C:\Program Files\TortoiseCVS\TrtseShl.dll
+0x76080000 - 0x760E5000 	C:\WINDOWS\system32\MSVCP60.dll
+0x75F80000 - 0x7607D000 	C:\WINDOWS\System32\browseui.dll
+0x77920000 - 0x77A13000 	C:\WINDOWS\system32\SETUPAPI.dll
+0x76990000 - 0x769B5000 	C:\WINDOWS\system32\ntshrui.dll
+0x76B20000 - 0x76B31000 	C:\WINDOWS\system32\ATL.DLL
+0x5B860000 - 0x5B8B4000 	C:\WINDOWS\system32\NETAPI32.dll
+0x769C0000 - 0x76A73000 	C:\WINDOWS\system32\USERENV.dll
+0x5AD70000 - 0x5ADA8000 	C:\WINDOWS\system32\UxTheme.dll
+0x77760000 - 0x778CE000 	C:\WINDOWS\System32\shdocvw.dll
+0x754D0000 - 0x75550000 	C:\WINDOWS\system32\CRYPTUI.dll
+0x76C30000 - 0x76C5E000 	C:\WINDOWS\system32\WINTRUST.dll
+0x76C90000 - 0x76CB8000 	C:\WINDOWS\system32\IMAGEHLP.dll
+0x20000000 - 0x202C5000 	C:\WINDOWS\system32\xpsp2res.dll
+0x77FE0000 - 0x77FF1000 	C:\WINDOWS\system32\Secur32.dll
+0x59A60000 - 0x59B01000 	C:\WINDOWS\system32\DBGHELP.dll
+0x77260000 - 0x772FF000 	C:\WINDOWS\system32\urlmon.dll
+0x76BF0000 - 0x76BFB000 	C:\WINDOWS\system32\PSAPI.DLL
+
+Heap at VM Abort:
+Heap
+ def new generation   total 576K, used 454K [0x10010000, 0x100b0000, 0x104f0000)
+  eden space 512K,  80% used [0x10010000, 0x10076e50, 0x10090000)
+  from space 64K,  66% used [0x10090000, 0x1009aab8, 0x100a0000)
+  to   space 64K,   0% used [0x100a0000, 0x100a0000, 0x100b0000)
+ tenured generation   total 1408K, used 249K [0x104f0000, 0x10650000, 0x14010000)
+   the space 1408K,  17% used [0x104f0000, 0x1052e590, 0x1052e600, 0x10650000)
+ compacting perm gen  total 4096K, used 3008K [0x14010000, 0x14410000, 0x18010000)
+   the space 4096K,  73% used [0x14010000, 0x14300028, 0x14300200, 0x14410000)
+
+Local Time = Tue Mar 07 20:57:50 2006
+Elapsed Time = 22
+#
+# The exception above was detected in native code outside the VM
+#
+# Java VM: Java HotSpot(TM) Client VM (1.4.2_01-b06 mixed mode)
+#
