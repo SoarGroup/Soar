@@ -27,7 +27,8 @@ public class WorldEntity {
 	private MapPoint m_Location;
 	private String m_ColorString;
 	private String m_Productions;
-	
+	private boolean m_Colliding = false;
+
 	public WorldEntity(Agent agent, String productions, String color, MapPoint location) {
 		m_Agent = agent;
 		m_Location = location;
@@ -100,4 +101,13 @@ public class WorldEntity {
 	public int getFacingInt() {
 		return m_FacingInt;
 	}
+
+	public boolean isColliding() {
+		return m_Colliding;
+	}
+	
+	public void setColliding(boolean colliding) {
+		m_Colliding = colliding;
+	}
+	
 }
