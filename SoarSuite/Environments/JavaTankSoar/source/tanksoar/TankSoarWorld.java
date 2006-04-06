@@ -138,6 +138,22 @@ public class TankSoarWorld extends World implements WorldManager {
 	   		return incoming;
 	   	}
 	   	
+	   	public Tank checkSpecialHit(MapPoint location, int tankMove) {
+	   		ListIterator iter = m_Flying.listIterator();
+	   		while (iter.hasNext()) {
+	   			Missile missile = (Missile)iter.next();
+	   			if (location.equals(missile.getCurrentLocation())) {
+	   				m_RD.calculate(tankMove);
+	   				if (missile.getDirection() == m_RD.backward) {
+		   				Tank owner = missile.getOwner();
+	   					iter.remove();
+		   				return owner;
+	   				}
+	   			}
+	   		}
+	   		return null;
+	   	}
+	   	
 	   	public Tank checkHit(MapPoint location, boolean remove) {
 	   		ListIterator iter = m_Flying.listIterator();
 	   		while (iter.hasNext()) {
@@ -481,11 +497,14 @@ public class TankSoarWorld extends World implements WorldManager {
 		// For all Tanks that move, check for Tank-Tank, Tank-Wall collisions
 		//   Cancel Tank moves that are not possible
 		//     Assign penalties to colliding tanks
+		// Check for Missile-Tank special collisions
+		//   Tank and Missile swapping spaces
+		//   Assign penalties to hit tanks
 		// For all Tanks that move, move Tanks
 		// Spawn missile packs
 		// Check for Missile-Tank collisions
 		//   Assign penalties to hit tanks
-		//     Respawn killed Tanks in safe squares
+		// Respawn killed Tanks in safe squares
 		// Update all Tank sensors
 		// Write out input links
 		
@@ -575,6 +594,24 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 		}
 
+		// Check for Missile-Tank special collisions
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			if (m_Tanks[i].recentlyMoved()) {
+				//   Tank and Missile swapping spaces
+				Tank owner = m_Missiles.checkSpecialHit(m_Tanks[i].getLocation(), m_Tanks[i].lastMoveDirection());
+				if (owner != null) {
+					TankSoarCell cell = getCell(m_Tanks[i].getLocation());
+					if (!m_Tanks[i].getShieldStatus()) {
+						cell.setExplosion();
+						owner.adjustPoints(kMissileHitAward);
+						m_Tanks[i].adjustPoints(kMissileHitPenalty);
+					}
+					//   Assign penalties to hit tanks
+					m_Tanks[i].hitBy(owner, cell);
+				}
+			}
+		}
+
 		// For all Tanks that move, move Tanks
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].recentlyMoved()) {
@@ -614,7 +651,7 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 		}
 		
-		//     Respawn killed Tanks in safe squares
+		//  Respawn killed Tanks in safe squares
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].getHealth() <= 0) {
 				getCell(m_Tanks[i].getLocation()).removeTank();
