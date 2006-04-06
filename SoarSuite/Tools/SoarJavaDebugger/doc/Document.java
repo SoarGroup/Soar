@@ -851,11 +851,11 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		if (getNumberFrames() == 0)
 			return ;
 		
-		while (getNumberFrames() > 0)
+		while (!m_Display.isDisposed() && getNumberFrames() > 0)
 		{
 			try
 			{
-				if (!m_Display.readAndDispatch())
+				if (!m_Display.isDisposed() && !m_Display.readAndDispatch())
 				{
 					m_Display.sleep() ;
 				}
