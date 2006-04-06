@@ -60,14 +60,6 @@ public class TankSoarWorld extends World implements WorldManager {
 	   				iter.remove();
 	   				continue;
 	   			}
-	   			
-	   			if (missile.getFlightPhase() == 2) {
-		   			if (getCell(location, missile.getDirection()).isWall()) {
-			   			getCell(location).setModified();
-		   				iter.remove();
-		   				continue;
-		   			}
-	   			}
 	   		}
 	   	}
 	   	
@@ -82,7 +74,16 @@ public class TankSoarWorld extends World implements WorldManager {
 	   			location.travel(m_RD.forward);
 	   			
 	   			if (missile.getFlightPhase() == 2) {
+	   			}
+	   			
+	   			// Handle special wall collision here so that missile threatens properly
+	   			// on 3rd flight phase
+	   			if (missile.getFlightPhase() == 2) {
 		   			getCell(location).setModified();
+		   			if (getCell(location).isWall()) {
+		   				iter.remove();
+		   				continue;
+		   			}
 		   			location.travel(m_RD.forward);
 	   			}
 	   			

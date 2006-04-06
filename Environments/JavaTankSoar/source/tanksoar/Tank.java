@@ -565,6 +565,7 @@ public class Tank  extends WorldEntity {
 		
 		if (m_Health <= 0) {
 			adjustPoints(TankSoarWorld.kKillPenalty);
+			// TODO: multiple missiles!
 			attacker.adjustPoints(TankSoarWorld.kKillAward);
 		}
 	}
