@@ -6,7 +6,7 @@
 #package require tcl_sml_clientinterface
 
 #this is from tsiSoarCmds
-proc print {args} {return [soar_agent ExecuteCommandLine "print $args" 0 1]}
+proc print {args} { return [soar_agent ExecuteCommandLine "print $args" 0 1] }
 
 #this is Doug's version (modified by Bob)
 #proc print {arg} {
@@ -24,4 +24,5 @@ rename puts myPuts
 proc puts {arg} {
 	myPuts "Called special puts"
 	myPuts $arg
+	return $arg
 }
