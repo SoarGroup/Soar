@@ -39,10 +39,19 @@ proc getInterpreter {agentName _agent} {
 	return $interpreter
 }
 
-proc MyFilter {id userData agent filterName commandLine} {
+proc MyFilter {id userData agent filterName commandXML} {
 	global _kernel
+	global sml_Names_kFilterCommand
+	global sml_Names_kFilterOutput
+
 	set name [$agent GetAgentName]
 	set interpreter [getInterpreter $name $agent]
+
+	puts Hello
+	puts $commandXML
+
+	set xml [ElementXML_ParseXMLFromString $commandXML]
+	set commandLine [$xml GetAttribute $sml_Names_kFilterCommand]
 
 	puts "$name Command line $commandLine"
 
@@ -56,7 +65,15 @@ proc MyFilter {id userData agent filterName commandLine} {
 	#set error [catch {$agent ExecuteCommandLine "$commandLine"} result ]
 	puts "Error is $error and Result is $result"
 
-	return ""
+	# Appending 'Tcl' to the output so I can see that it's been filtered by Tcl.
+	$xml AddAttribute $sml_Names_kFilterOutput "Tcl $result"
+	$xml AddAttribute $sml_Names_kFilterCommand ""
+	
+	set outputXML [$xml GenerateXMLString 1]
+
+	puts "Output $outputXML"
+
+	return $outputXML
 }
 
 proc parentExecCommand { command args } {
@@ -86,16 +103,8 @@ proc createFilter {} {
 	
 	# Register the filter callback
 	set filterCallbackId0 [$_kernel RegisterForClientMessageEvent $sml_Names_kFilterName MyFilter ""]
-	
-	# Execute a couple of simulated commands, so it's easier to see errors and problems
-	set agent [$_kernel GetAgent soar1]
-	
-	set res1 [MyFilter 123 "" $agent $sml_Names_kFilterName "print s3"]
-	set res2 [MyFilter 123 "" $agent $sml_Names_kFilterName "print s4"]
-	set res3 [MyFilter 123 "" $agent $sml_Names_kFilterName "puts hello"]
-	set res4 [MyFilter 123 "" $agent $sml_Names_kFilterName "pwd"]
-	set res5 [MyFilter 123 "" $agent $sml_Names_kFilterName "set test hello"]
-	set res6 [MyFilter 123 "" $agent $sml_Names_kFilterName "puts \$test"]
+
+	puts "Filter registered"
 }
 
 # Start by loading the tcl interface library

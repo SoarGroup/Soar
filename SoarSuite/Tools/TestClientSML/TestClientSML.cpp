@@ -688,10 +688,22 @@ std::string MyClientMessageHandler(smlRhsEventId id, void* pUserData, Agent* pAg
 // This is a very dumb filter--it adds "--depth 2" to all commands passed to it.
 std::string MyFilterHandler(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pMessageType, char const* pCommandLine)
 {
-	cout << "Received command line " << pCommandLine << endl ;
+	cout << "Received xml " << pCommandLine << endl ;
 
-	std::string res = pCommandLine ;
-	res += " --depth 2" ;
+	ElementXML* pXML = ElementXML::ParseXMLFromString(pCommandLine) ;
+
+	std::string commandLine = pXML->GetAttribute(sml_Names::kFilterCommand) ;
+
+	commandLine += " --depth 2" ;
+
+	// Replace the command attribute in the XML
+	pXML->AddAttribute(sml_Names::kFilterCommand, commandLine.c_str()) ;
+
+	// Convert the XML back to a string and put it into a std::string ready to return
+	char *pXMLString = pXML->GenerateXMLString(true) ;
+	std::string res = pXMLString ;
+	pXML->DeleteString(pXMLString) ;
+	delete pXML ;
 
 	return res ;
 }
@@ -1692,7 +1704,7 @@ int main(int argc, char* argv[])
 	// When we have a memory leak, set this variable to
 	// the allocation number (e.g. 122) and then we'll break
 	// when that allocation occurs.
-	//_crtBreakAlloc = 550 ;
+	//_crtBreakAlloc = 1265 ;
 
 	//SimpleTimer timer ;
 
