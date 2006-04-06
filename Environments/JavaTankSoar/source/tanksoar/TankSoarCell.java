@@ -24,6 +24,8 @@ public class TankSoarCell extends Cell {
 	
 	private boolean m_Explosion = false;
 	protected boolean m_RadarTouch = false;
+	static boolean s_EnergyChargerCreated = false;
+	static boolean s_HealthChargerCreated = false;
 
 	public TankSoarCell(String name) throws Exception {
 		if (name.equalsIgnoreCase(TankSoarWorld.kTypeWall)) {
@@ -33,10 +35,12 @@ public class TankSoarCell extends Cell {
 			m_Type = kOpenInt;			
 			return;
 		} else if (name.equalsIgnoreCase(TankSoarWorld.kTypeEnergyRecharger)) {
-			m_Type = kEnergyInt;			
+			m_Type = kEnergyInt;	
+			s_EnergyChargerCreated = true;
 			return;
 		} else if (name.equalsIgnoreCase(TankSoarWorld.kTypeHealthRecharger)) {
-			m_Type = kHealthInt;			
+			m_Type = kHealthInt;	
+			s_HealthChargerCreated = true;
 			return;
 		} else {	
 			throw new Exception("Invalid type name: " + name);

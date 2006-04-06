@@ -202,6 +202,8 @@ public class TankSoarWorld extends World implements WorldManager {
 	public boolean load(String mapFile) {
 		m_PrintedStats = false;
 		m_NumMissilePacks = 0;
+		TankSoarCell.s_EnergyChargerCreated = false;
+		TankSoarCell.s_HealthChargerCreated = false;
 		
 		try {
 			// Open file
@@ -237,8 +239,12 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 		
 		// Place rechargers
-		getCell(findStartingLocation()).setHealth();
-		getCell(findStartingLocation()).setEnergy();
+		if (!TankSoarCell.s_HealthChargerCreated) {
+			getCell(findStartingLocation()).setHealth();
+		}
+		if (!TankSoarCell.s_EnergyChargerCreated) {
+			getCell(findStartingLocation()).setEnergy();
+		}
 		
 		while (m_NumMissilePacks < kMaxMissilePacks) {
 			spawnMissilePack();
