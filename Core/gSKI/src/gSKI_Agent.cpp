@@ -1870,7 +1870,7 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 	   // KJC: If a gSKI_STOP_AFTER_DECISION_CYCLE has been requested, need to
 	   // check that agent phase is at the proper stopping point before interrupting.
 	   // If not at the right phase, but interrupt was requested, then the SML scheduler
-	   // method IsAgentFinished will return true and CheckStopBeforePhase will
+	   // method IsAgentFinished will return true and MoveTo_StopBeforePhase will
 	   // step the agent by phases until this test is satisfied.
        if ((m_interruptFlags & gSKI_STOP_AFTER_DECISION_CYCLE) && 
 		   (m_agent->current_phase == m_kernel->GetStopPoint()))
