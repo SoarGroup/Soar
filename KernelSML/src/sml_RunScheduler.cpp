@@ -451,7 +451,10 @@ bool RunScheduler::AreAllOutputPhasesComplete()
 	{
 		AgentSML* pAgentSML = iter->second ;
 
-		if (pAgentSML->WasAgentOnRunList() && !pAgentSML->HasCompletedOutputPhase())
+		// if WasOnRunList AND hasn't (halted or interrupted or completedOutput)
+		if (pAgentSML->WasAgentOnRunList() 
+			&& (gSKI_RUN_COMPLETED == pAgentSML->GetResultOfLastRun()) 
+			&& !pAgentSML->HasCompletedOutputPhase())
 			return false ;
 	}
 
@@ -469,7 +472,10 @@ bool RunScheduler::HaveAllGeneratedOutput()
 	{
 		AgentSML* pAgentSML = iter->second ;
 
-		if (pAgentSML->WasAgentOnRunList() && !pAgentSML->HasGeneratedOutput())
+		// if WasOnRunList AND hasn't (halted or interrupted or completedOutput)
+		if (pAgentSML->WasAgentOnRunList() 
+			&& (gSKI_RUN_COMPLETED == pAgentSML->GetResultOfLastRun()) 
+			&& !pAgentSML->HasGeneratedOutput())
 			return false ;
 	}
 
