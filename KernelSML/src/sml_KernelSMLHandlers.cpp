@@ -1277,6 +1277,15 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 
 	if (!noFiltering && HasFilterRegistered())
 	{
+		// Expand any aliases before passing the command to the filter.
+		// It's possible this is a mistake because a really powerful filter might want to do
+		// something with the original, unaliased form (and could call this expansion itself) but
+		// it seems this will be correct in almost all cases, so let's start with this assumption and
+		// wait until it's proved incorrect.
+		std::string expandedLine ;
+		if (m_CommandLineInterface.ExpandCommandToString(pLine, &expandedLine))
+			pLine = expandedLine.c_str() ;
+
 		// We'll send the command over as an XML packet, so there's some structure to work with.
 		// The current structure is:
 		// <filter command="command" output="generated output" error="true | false"></filter>
