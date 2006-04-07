@@ -5,26 +5,22 @@
 #include "SoarInterface.h"
 #include "SoarGameGroup.h"
 #include "general.h"
+#include "include/Action.h"
 
 #include "Game.H"
 
 using namespace std;
 
-// lookup table that translates string names to action codes
-SoarActionType actionTypeLookup(const char* actionName);
-
 SoarInterface::SoarInterface(GameStateModule* _gsm,
                              sml::Agent*      _agent,
                              pthread_mutex_t* _objectActionQueueMutex,
                              pthread_mutex_t* _attentionActionQueueMutex,
-                             pthread_mutex_t* _groupActionQueueMutex,
                              pthread_mutex_t* _soarMutex
                             )
 : gsm(_gsm),
   agent(_agent),
   objectActionQueueMutex(_objectActionQueueMutex),
   attentionActionQueueMutex(_attentionActionQueueMutex),
-  groupActionQueueMutex(_groupActionQueueMutex),
   soarMutex(_soarMutex)
 {
   inputLink = agent->GetInputLink();
@@ -177,6 +173,7 @@ int SoarInterface::groupId(SoarGameGroup* group) {
 }
 
 void SoarInterface::addMapRegion(MapRegion *r) {
+  lockSoarMutex();
   assert(mapRegionTable.find(r) == mapRegionTable.end());
 
   InputLinkMapRegionRep rep;
@@ -192,15 +189,18 @@ void SoarInterface::addMapRegion(MapRegion *r) {
 
   mapRegionTable[r] = rep;
   mapRegionIdLookup[r->getId()] = r;
+  unlockSoarMutex();
 }
 
 void SoarInterface::removeMapRegion(MapRegion *r) {
+  lockSoarMutex();
   assert(mapRegionTable.find(r) != mapRegionTable.end());
   
   InputLinkMapRegionRep& rep = mapRegionTable[r];
   agent->DestroyWME(rep.identifierWME);
   mapRegionIdLookup.erase(r->getId());
   mapRegionTable.erase(r);
+  unlockSoarMutex();
 }
 
 void SoarInterface::refreshMapRegion(MapRegion *r) {
@@ -220,160 +220,227 @@ void SoarInterface::refreshMapRegion(MapRegion *r) {
 
   unlockSoarMutex();
 }
-/*
-void SoarInterface::addFeatureMap(FeatureMap *m) {
-  assert(featureMapTable.find(m) == featureMapTable.end());
+
+void SoarInterface::addFeatureMap(FeatureMap *m, string name) {
+  lockSoarMutex();
+  assert(featureMapTable.find(name) == featureMapTable.end());
 
   InputLinkFeatureMapRep rep;
-  rep.identifierWME = agent->CreateIdWME(mapIdWME, "region");
-  Rectangle box = r->getBoundingBox();
-  rep.idWME   = agent->CreateIntWME(rep.identifierWME, "id", r->getId());
-  rep.xminWME = agent->CreateIntWME(rep.identifierWME, "xmin", box.xmin);
-  rep.xmaxWME = agent->CreateIntWME(rep.identifierWME, "xmax", box.xmax);
-  rep.yminWME = agent->CreateIntWME(rep.identifierWME, "ymin", box.ymin);
-  rep.ymaxWME = agent->CreateIntWME(rep.identifierWME, "ymax", box.ymax);
+  rep.identifierWME = agent->CreateIdWME(featureMapIdWME, name.c_str());
+  rep.sector0WME = agent->CreateIntWME(rep.identifierWME, 
+                                       "sector0", m->getCount(0));
+  rep.sector1WME = agent->CreateIntWME(rep.identifierWME, 
+                                       "sector1", m->getCount(1));
+  rep.sector2WME = agent->CreateIntWME(rep.identifierWME, 
+                                       "sector2", m->getCount(2));
+  rep.sector3WME = agent->CreateIntWME(rep.identifierWME, 
+                                       "sector3", m->getCount(3));
+  rep.sector4WME = agent->CreateIntWME(rep.identifierWME, 
+                                       "sector4", m->getCount(4));
+  rep.sector5WME = agent->CreateIntWME(rep.identifierWME, 
+                                       "sector5", m->getCount(5));
+  rep.sector6WME = agent->CreateIntWME(rep.identifierWME, 
+                                       "sector6", m->getCount(6));
+  rep.sector7WME = agent->CreateIntWME(rep.identifierWME, 
+                                       "sector7", m->getCount(7));
+  rep.sector8WME = agent->CreateIntWME(rep.identifierWME, 
+                                       "sector8", m->getCount(8));
 
-  rep.sizeWME = agent->CreateIntWME(rep.identifierWME, "size", r->size());
-
-  featureMapTable[r] = rep;
-  featureMapIdLookup[r->getId()] = r;
+  featureMapTable[name] = rep;
+  unlockSoarMutex();
 }
-
+/* save for dynamic feature maps, if needed
 void SoarInterface::removeFeatureMap(FeatureMap *r) {
+  lockSoarMutex();
   assert(featureMapTable.find(r) != featureMapTable.end());
   
   InputLinkFeatureMapRep& rep = featureMapTable[r];
   agent->DestroyWME(rep.identifierWME);
   featureMapIdLookup.erase(r->getId());
   featureMapTable.erase(r);
-}
-
-void SoarInterface::refreshFeatureMap(FeatureMap *r) {
-  lockSoarMutex();
-  stale = true;
-  
-  assert(featureMapTable.find(r) != featureMapTable.end());
-  
-  InputLinkFeatureMapRep& rep = featureMapTable[r];
-  Rectangle box = r->getBoundingBox();
-  agent->Update(rep.idWME, r->getId());
-  agent->Update(rep.xminWME, box.xmin);
-  agent->Update(rep.xmaxWME, box.xmax);
-  agent->Update(rep.yminWME, box.ymin);
-  agent->Update(rep.ymaxWME, box.ymax);
-  agent->Update(rep.sizeWME, r->size());
-
   unlockSoarMutex();
 }
 */
 
+void SoarInterface::refreshFeatureMap(FeatureMap *m, string name) {
+  lockSoarMutex();
+  stale = true;
+  
+  assert(featureMapTable.find(name) != featureMapTable.end());
+  
+  InputLinkFeatureMapRep& rep = featureMapTable[name];
+  agent->Update(rep.sector0WME, m->getCount(0));
+  agent->Update(rep.sector1WME, m->getCount(1));
+  agent->Update(rep.sector2WME, m->getCount(2));
+  agent->Update(rep.sector3WME, m->getCount(3));
+  agent->Update(rep.sector4WME, m->getCount(4));
+  agent->Update(rep.sector5WME, m->getCount(5));
+  agent->Update(rep.sector6WME, m->getCount(6));
+  agent->Update(rep.sector7WME, m->getCount(7));
+  agent->Update(rep.sector8WME, m->getCount(8));
+
+  unlockSoarMutex();
+}
+
+
 // called in soar event handler to take everything off the output
 // link and put onto the action queue each time soar generates output
 void SoarInterface::getNewSoarOutput() {
+  lockSoarMutex();
+  
   int numberCommands = agent->GetNumberCommands() ;
   
-  // try to lock the object action queue over the entire loop for now
-  // might have to change later
-  pthread_mutex_lock(objectActionQueueMutex);
-
   for (int i = 0 ; i < numberCommands ; i++) {
     sml::Identifier* cmdPtr = agent->GetCommand(i) ;
 
     // check if this command has already been encountered
-    if (soarActions.find(cmdPtr) != soarActions.end()) {
+    if (cmdPtr->GetParameterValue("status") != NULL) {
       continue;
     }
-
+    
     string name = cmdPtr->GetCommandName() ;
     cout << "command name: " << name << endl;
-    SoarActionType type = actionTypeLookup(name.c_str());
-    assert(type != SA_NO_SUCH_ACTION);
+    ObjectActionType OType = objectActionTypeLookup(name.c_str());
 
-    SoarAction& newAction = soarActions[cmdPtr];
-    newAction.type = type;
-    
-    // append all the group parameters
-    int groupCounter = 0;
-    while(true) {
-      const char* paramValue = cmdPtr->GetParameterValue(catStrInt("group", groupCounter++).c_str());
-      if (paramValue == NULL) {
-        break;
+    if (OType != OA_NO_SUCH_ACTION) {
+      processObjectAction(OType, cmdPtr);
+    }
+    else {
+      AttentionActionType AType = attentionActionTypeLookup(name.c_str());
+      if (AType != AA_NO_SUCH_ACTION) {
+        processAttentionAction(AType, cmdPtr);
       }
-      int groupId = atoi(paramValue);
-      assert(groupIdLookup.find(groupId) != groupIdLookup.end());
-      newAction.groups.push_back(groupIdLookup[groupId]);
+      else {
+        assert(false);
+      }
     }
-    
-    /* There's really no need for a list of groups, all actions should
-       be group to group, or group with int parameters.
-    */
-    /* Update: We're going back to group lists, for stuff like
-     * "I want this worker to harvest this mineral and deposit to this base"
-     */
-    /*
-    string groupParam = "source_group";
-    const char* paramValue = cmdPtr->GetParameterValue(groupParam.c_str());
+  }
+
+  unlockSoarMutex();
+}
+
+void SoarInterface::processObjectAction(ObjectActionType type, 
+                                        sml::Identifier* cmdPtr) {
+  ObjectAction newAction;
+  newAction.type = type;
+  
+  lockObjectActionMutex();
+  // append all the group parameters
+  int groupCounter = 0;
+  while(true) {
+    const char* paramValue 
+    = cmdPtr->GetParameterValue(catStrInt("group", groupCounter++).c_str());
+    if  (paramValue == NULL) {
+      break;
+    }
+    int groupId = atoi(paramValue);
+    assert(groupIdLookup.find(groupId) != groupIdLookup.end());
+    newAction.groups.push_back(groupIdLookup[groupId]);
+  }
+  
+  // append all the integer parameters
+  int paramCounter = 0;
+  while (true) {
+    const char* paramValue 
+    = cmdPtr->GetParameterValue(catStrInt("param", paramCounter++).c_str());
     if (paramValue == NULL) {
-      newAction.source = NULL;
+      break;
     }
-    else {
-      int groupId = atoi(paramValue);
-      assert(groupIdLookup.find(groupId) != groupIdLookup.end());
-      newAction.source = groupIdLookup[groupId];
-    }
-    groupParam = "target_group";
-    paramValue = cmdPtr->GetParameterValue(groupParam.c_str());
-    if (paramValue == NULL) {
-      newAction.target = NULL;
-    }
-    else {
-      int groupId = atoi(paramValue);
-      assert(groupIdLookup.find(groupId) != groupIdLookup.end());
-      newAction.target = groupIdLookup[groupId];
-    }
-    */
-    
-    // append all the integer parameters
-    int paramCounter = 0;
-    while (true) {
-      const char* paramValue = cmdPtr->GetParameterValue(catStrInt("param", paramCounter++).c_str());
+    newAction.params.push_back(atoi(paramValue));
+  }
+
+  // add the new action to the action queue
+  objectActionQueue.push_back(&newAction);
+
+  cmdPtr->AddStatusComplete();
+
+  unlockObjectActionMutex();
+}
+
+void SoarInterface::processAttentionAction(AttentionActionType type, 
+                                        sml::Identifier* cmdPtr) {
+  AttentionAction newAction;
+  newAction.type = type;
+  
+  lockAttentionActionMutex();
+  const char* paramValue;
+  
+  switch (type) {
+    case AA_LOOK_LOCATION:
+    case AA_MOVE_LOCATION:  
+      paramValue = cmdPtr->GetParameterValue("x");
       if (paramValue == NULL) {
-        break;
+        improperCommandError();
+        return;
       }
       newAction.params.push_back(atoi(paramValue));
-    }
+      paramValue = cmdPtr->GetParameterValue("y");
+      if (paramValue == NULL) {
+        improperCommandError();
+        return;
+      }
+      newAction.params.push_back(atoi(paramValue));
+      break;
+    case AA_LOOK_FEATURE:
+    case AA_MOVE_FEATURE:
+      paramValue = cmdPtr->GetParameterValue("sector");
+      if (paramValue == NULL) {
+        improperCommandError();
+        return;
+      }
+      newAction.params.push_back(atoi(paramValue));
+      paramValue = cmdPtr->GetParameterValue("feature");
+      if (paramValue == NULL) {
+        improperCommandError();
+        return;
+      }
+      newAction.fmName = paramValue;
+      break;
+    case AA_RESIZE:
+    case AA_GROUPING_RADIUS:
+      paramValue = cmdPtr->GetParameterValue("value");
+      if (paramValue == NULL) {
+        improperCommandError();
+        return;
+      }
+      newAction.params.push_back(atoi(paramValue));
+      break;
+    default:
+      assert(false);
+      break;
+  }
 
-    // add the new action to the action queue
-    objectActionQueue.push_back(&newAction);
+  attentionActionQueue.push_back(&newAction);
 
-    cmdPtr->AddStatusComplete();
-  } // for over commands
+  cmdPtr->AddStatusComplete();
 
-  pthread_mutex_unlock(objectActionQueueMutex);
+  unlockAttentionActionMutex();
 }
 
 // called by middleware to get queued Soar actions
-void SoarInterface::getNewActions(list<SoarAction*>& newActions) {
-  pthread_mutex_lock(objectActionQueueMutex);
-  for(list<SoarAction*>::iterator i = objectActionQueue.begin(); 
+void SoarInterface::getNewObjectActions(list<ObjectAction*>& newActions) {
+  lockObjectActionMutex();
+  for(list<ObjectAction*>::iterator i = objectActionQueue.begin(); 
                                   i != objectActionQueue.end(); 
                                   i++)
   {
     newActions.push_back(*i);
     objectActionQueue.erase(i);
   }
-  pthread_mutex_unlock(objectActionQueueMutex);
+  unlockObjectActionMutex();
 }
 
-/* This is slow. In the future make some kind of hashtable
- */
-SoarActionType actionTypeLookup(const char* actionName) {
-  if      (!strcmp(actionName, "move"))      return SA_MOVE;
-  else if (!strcmp(actionName, "mine"))      return SA_MINE;
-  else if (!strcmp(actionName, "free"))      return SA_FREE;
-  else                                       return SA_NO_SUCH_ACTION;
+void SoarInterface::getNewAttentionActions(list<AttentionAction*>& newActions) {
+  lockAttentionActionMutex();
+  for(list<AttentionAction*>::iterator i = attentionActionQueue.begin(); 
+                                  i != attentionActionQueue.end(); 
+                                  i++)
+  {
+    newActions.push_back(*i);
+    attentionActionQueue.erase(i);
+  }
+  unlockAttentionActionMutex();
 }
-
 
 void SoarInterface::updatePlayerGold(int amount) {
   lockSoarMutex();
@@ -395,6 +462,7 @@ void SoarInterface::updatePlayerGold(int amount) {
 void SoarInterface::initSoarInputLink() {
   playerId= agent->CreateIdWME(inputLink, "me");
   mapIdWME = agent->CreateIdWME(inputLink, "map");
+  featureMapIdWME = agent->CreateIdWME(inputLink, "feature-maps");
 
   playerGoldWME = agent->CreateIntWME(playerId, "gold", 0);
   playerGroupsId = agent->CreateIdWME(playerId, "groups");
@@ -433,4 +501,23 @@ bool SoarInterface::getStale() {
 
 void SoarInterface::setStale(bool _st) {
   stale = _st;
+}
+
+void SoarInterface::lockObjectActionMutex() { 
+  pthread_mutex_lock(soarMutex);
+}
+ 
+void SoarInterface::unlockObjectActionMutex() { 
+  pthread_mutex_unlock(soarMutex);
+}
+void SoarInterface::lockAttentionActionMutex() { 
+  pthread_mutex_lock(soarMutex);
+}
+ 
+void SoarInterface::unlockAttentionActionMutex() { 
+  pthread_mutex_unlock(soarMutex);
+}
+
+void SoarInterface::improperCommandError() {
+  cout << "ERROR: Improperly formatted command!\n";
 }

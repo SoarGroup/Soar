@@ -9,7 +9,7 @@
 //#include "OrtsInterface.h"
 #include "general.h"
 #include "GameObj.H"
-#include "SoarAction.h"
+#include "Action.h"
 
 class OrtsInterface;
 class GroupManager;
@@ -23,10 +23,10 @@ class FSM{
 
 	virtual GameObj *getGameObject(){return gob;}
 	virtual void init(std::vector<sint4>);
-  virtual SoarActionType getName();
+  virtual ObjectActionType getName();
 
 protected:
-	SoarActionType name;
+	ObjectActionType name;
 	GameObj *gob;
 	Vector<sint4> params;
   OrtsInterface* ORTSIO;

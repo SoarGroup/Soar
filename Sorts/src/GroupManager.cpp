@@ -20,11 +20,25 @@ GroupManager::GroupManager(SoarInterface* si, MapManager* _mapManager,
 }
 void GroupManager::updateVision() {
   prepareForReGroup();
-  reGroup();
-  generateGroupData();
-  adjustAttention();
-  //featureMaps->updateSoar();
+    // prune empty groups (if units died)
+    // prepare list of group categories that need to be reGrouped
+    // recalculate the center member for groups that changed
   
+  reGroup();
+    // re-calculate the groups
+    
+  generateGroupData();
+    // prune groups emptied during reGrouping
+    // aggregate data about the groups
+  
+  adjustAttention();
+    // determine which groups are attended to,
+    // and send them to Soar
+  
+  updateFeatureMaps(false);
+    // update feature maps, inhibiting groups attended to,
+    // and send them to Soar
+    
   return;
 }
 
@@ -33,9 +47,9 @@ bool GroupManager::assignActions() {
   // actions have a list of params and a list of groups,
   // the first group (must exist) is the group the action will be applied to
     
-  list <SoarAction*> newActions;
-  SoarIO->getNewActions(newActions);
-  list <SoarAction*>::iterator actionIter = newActions.begin();
+  list <ObjectAction*> newActions;
+  SoarIO->getNewObjectActions(newActions);
+  list <ObjectAction*>::iterator actionIter = newActions.begin();
  
   list <SoarGameGroup*>::iterator groupIter;
   bool success = true;
@@ -65,6 +79,32 @@ bool GroupManager::assignActions() {
   }
 
   return success;
+}
+
+void GroupManager::processVisionCommands() {
+  // called when Soar changes the view window, wants to attend to an item
+  // in a feature map, or changes a grouping parameter.
+
+  // view window change:
+  // call featureMaps->changeViewWindow()
+  // updateFeatureMaps(true)
+
+  // attention shift (w/o view window shift):
+  // call adjustAttention() to select the new groups
+  // call updateFeatureMaps(false) to inhibit any newly-attended to groups
+
+  // attention shift w/ view window shift:
+  // featureMaps->changeViewWindow()
+  // adjustAttention()
+  // updateFeatureMaps(true)
+
+  // grouping change:
+  // this is the same as updateVision, except we don't need prepareForReGroup,
+  // since none of the objects in the world actually changed:
+  // reGroup()
+  // generateGroupData()
+  // adjustAttention()
+  // updateFeatureMaps(false)
 }
 
 void GroupManager::reGroup() {
@@ -266,26 +306,6 @@ void GroupManager::reGroup() {
     if ((*toMergeIter).first == (*toMergeIter).second) {
       // do nothing- the groups were already merged
     }
-    /*else { // if ((*toMergeIter).first->getSize() >
-        //(*toMergeIter).second->getSize() ) {
-      // merge second into first
-      
-      toMergeIter2 = toMergeIter;
-      toMergeIter2++;
-      while (toMergeIter2 != toMergeList.end()) {
-        // replace all occurrences of the squashed group with the
-        // new combined group
-        if ((*toMergeIter2).first == (*toMergeIter).second) {
-          (*toMergeIter2).first = (*toMergeIter).first;
-        }
-        else if ((*toMergeIter2).second == (*toMergeIter).second) {
-          (*toMergeIter2).second = (*toMergeIter).first;
-        }
-        toMergeIter2++;
-      }
-
-      (*toMergeIter).second->mergeTo((*toMergeIter).first);
-    }*/
     else {
       // merge first into second
       
@@ -397,6 +417,7 @@ void GroupManager::prepareForReGroup() {
 void GroupManager::addGroup(SoarGameObject* object) {
   groupsNotInFocus.push_back(new SoarGameGroup(object, false, ORTSIO, mapManager));
   //featureMaps->addGroup(object->getGroup());
+  // refresh will handle this fine, no need to have an addGroup
   return;
 }
 
@@ -406,8 +427,43 @@ void GroupManager::removeGroup(SoarGameGroup* group) {
   delete group;
 }
 
-//void GroupManager::updateFeatureMaps() {
+void GroupManager::updateFeatureMaps(bool refreshAll) {
+  // update the feature maps:
+  // if refreshAll, all groups in the world will be updated
+  // (needed after a view window change, since that purges the maps)
+  // otherwise, only refresh groups that changed
+  
+  // since this is always the last thing called after a regroup, clear the 
+  // staleProperties flags if set
+  
+  list<SoarGameGroup*>::iterator groupIter = groupsNotInFocus.begin();
+  while (groupIter != groupsNotInFocus.end()) {
+    if (refreshAll) {
+      featureMaps->refreshGroup(*groupIter);
+    }
+    else if ((*groupIter)->getHasStaleProperties()) {
+        featureMaps->refreshGroup(*groupIter);
+        (*groupIter)->setHasStaleProperties(false);
+    }
+    groupIter++;
+  }
 
+  groupIter = groupsInFocus.begin();
+  while (groupIter != groupsInFocus.end()) {
+    if (refreshAll) {
+      featureMaps->refreshGroup(*groupIter);
+    }
+    else if ((*groupIter)->getHasStaleProperties()) {
+        featureMaps->refreshGroup(*groupIter);
+        (*groupIter)->setHasStaleProperties(false);
+    }
+    groupIter++;
+  }
+
+  featureMaps->updateSoar();
+  return;
+  
+}
 void GroupManager::adjustAttention() {
   // iterate through all staleProperties groups, if in attn. range,
   // send params to Soar
@@ -424,10 +480,9 @@ void GroupManager::adjustAttention() {
   groupIter = groupsInFocus.begin();
   while (groupIter != groupsInFocus.end()) {
     if ((*groupIter)->getHasStaleProperties()) {
-      featureMaps->refreshGroup(*groupIter);
-      // if group moves out of focus, remember to refresh it in the fms!
       SoarIO->refreshGroup(*groupIter);
-      (*groupIter)->setHasStaleProperties(false);
+      //(*groupIter)->setHasStaleProperties(false);
+      // moved this to updateFeatureMaps()
     }
     groupIter++;
   }

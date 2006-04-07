@@ -5,7 +5,7 @@ using namespace std;
 
 MoveFSM::MoveFSM(OrtsInterface* oi, GroupManager* gm, GameObj* go) 
             : FSM(oi,gm,go) {
-  name = SA_MOVE;
+  name = OA_MOVE;
 }
 
 int MoveFSM::update()

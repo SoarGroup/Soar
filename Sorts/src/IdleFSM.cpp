@@ -3,7 +3,7 @@
 
 IdleFSM::IdleFSM(OrtsInterface* oi, GroupManager* gm, GameObj* go) 
           : FSM(oi,gm,go) {
-  name = SA_IDLE;
+  name = OA_IDLE;
 }
 
 int IdleFSM::update()

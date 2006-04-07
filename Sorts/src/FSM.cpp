@@ -18,6 +18,6 @@ void FSM::init(std::vector<signed long> p) {
   }
 }
 
-SoarActionType FSM::getName() {
+ObjectActionType FSM::getName() {
   return name;
 }

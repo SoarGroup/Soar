@@ -30,10 +30,10 @@ class SoarGameObject{
 	void identifyBehaviors();
 
 	void registerBehavior(FSM *);
-	void removeBehavior(SoarActionType);
+	void removeBehavior(ObjectActionType);
 
 	//template<class T>
-	void issueCommand(SoarActionType name, Vector<sint4> p);
+	void issueCommand(ObjectActionType name, Vector<sint4> p);
 	void update();
 
 	void setGroup(SoarGameGroup *g);
@@ -51,10 +51,10 @@ class SoarGameObject{
 
 private:
   OrtsInterface* ORTSIO;
-	map<SoarActionType, FSM *> behaviors;
+	map<ObjectActionType, FSM *> behaviors;
 	stack<FSM *> memory;
 
-  SoarActionType currentCommand;
+  ObjectActionType currentCommand;
 	SoarGameGroup* group;
   GroupManager* groupMan;
 	bool friendly;

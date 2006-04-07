@@ -38,7 +38,7 @@ SoarGameObject::~SoarGameObject()
     memory.pop();
   }
 
-  for(map<SoarActionType, FSM*>::iterator i = behaviors.begin(); 
+  for(map<ObjectActionType, FSM*>::iterator i = behaviors.begin(); 
       i != behaviors.end(); i++) 
   {
     delete i->second;
@@ -52,9 +52,9 @@ void SoarGameObject::registerBehavior(FSM *b)
 }
 
 
-void SoarGameObject::removeBehavior(SoarActionType name)
+void SoarGameObject::removeBehavior(ObjectActionType name)
 {
-  map<SoarActionType, FSM*>::iterator i = behaviors.find(name);
+  map<ObjectActionType, FSM*>::iterator i = behaviors.find(name);
   if (i != behaviors.end()) {
     delete i->second;
     behaviors.erase(i);
@@ -63,13 +63,13 @@ void SoarGameObject::removeBehavior(SoarActionType name)
 
 
 //template<class T>
-void SoarGameObject::issueCommand(SoarActionType cmd, Vector<sint4> prms)
+void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
 {
   //Whether we really want this is up for analysis
   while(!memory.empty())
     memory.pop();
 
-  map<SoarActionType, FSM*>::iterator i = behaviors.find(cmd);
+  map<ObjectActionType, FSM*>::iterator i = behaviors.find(cmd);
   assert(i != behaviors.end());
 
   i->second->init(prms);
@@ -130,7 +130,7 @@ SoarGameGroup *SoarGameObject::getGroup(void)
  return group;
 }
 
-/*SoarActionType SoarGameObject::getCurrentCommand()
+/*ObjectActionType SoarGameObject::getCurrentCommand()
 {
  return currentCommand;
 }*/

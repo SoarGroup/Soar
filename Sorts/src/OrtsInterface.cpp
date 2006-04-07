@@ -76,7 +76,6 @@ bool OrtsInterface::handle_event(const Event& e) {
       gsm->send_actions();
       //cout << "send_actions" << endl;
 
-      // what was this for again?
       groupManager->updateVision();
 
       /* I'm assuming here that those update calls from above have already

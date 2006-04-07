@@ -6,7 +6,7 @@
 
 MineFSM::MineFSM(OrtsInterface* oi, GroupManager* gm, GameObj* go) 
          : FSM(oi,gm,go) {
-  name = SA_MINE;
+  name = OA_MINE;
 }
 
 int MineFSM::update() {

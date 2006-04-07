@@ -4,14 +4,13 @@
 #include <list>
 #include <set>
 #include <string>
-#include "SoarAction.h"
+#include "Action.h"
 //#include "OrtsInterface.h"
 #include "general.h"
 #include "MapRegion.h"
 #include "MapManager.h"
 #include "Rectangle.h"
 
-class SoarInterface;
 class OrtsInterface;
 class SoarGameObject;
 class FeatureMap;
@@ -32,7 +31,7 @@ class SoarGameGroup {
     void addUnit(SoarGameObject* unit);
     bool removeUnit(SoarGameObject* unit);
     void generateData();
-    bool assignAction(SoarActionType type, list<int> params,
+    bool assignAction(ObjectActionType type, list<int> params,
                       list<SoarGameGroup*> targets);
     bool isEmpty();
 
@@ -45,7 +44,6 @@ class SoarGameGroup {
     bool getHasStaleProperties();
     void setHasStaleProperties(bool val);
     groupPropertyStruct getSoarData();
-    //void setType(int inType);
     pair<string, int> getCategory();
     int getSize();
     SoarGameObject* getCenterMember();
@@ -67,6 +65,9 @@ class SoarGameGroup {
 
     void setFMaps(list <FeatureMap*>);
     list <FeatureMap*> getFMaps();
+    
+    void setFMFeatureStrength(int);
+    int getFMFeatureStrength();
 
     Rectangle getBoundingBox();
     void getCenterLoc(int& x, int& y);
@@ -132,6 +133,7 @@ class SoarGameGroup {
     // the group needs to remember what feature maps it is in, and the sector
     int fmSector;
     list <FeatureMap*> fMaps;
+    int fmFeatureStrength;
 };
 
 #define GRP_STATUS_RUNNING 0

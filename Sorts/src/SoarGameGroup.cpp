@@ -31,6 +31,11 @@ SoarGameGroup::SoarGameGroup( SoarGameObject* unit,
     airUnits = (*(unit->gob->sod.zcat) == 1);
     landUnits = (*(unit->gob->sod.zcat) == 3);
   }
+  else {
+    minerals = false;
+    airUnits = false;
+    landUnits = false;
+  }
 
   bbox.collapse(*unit->gob->sod.x, *unit->gob->sod.y);
 
@@ -358,7 +363,7 @@ void SoarGameGroup::mergeTo(SoarGameGroup* target) {
   return;
 }
 
-bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
+bool SoarGameGroup::assignAction(ObjectActionType type, list<int> params,
                                  list<SoarGameGroup*> targets) { 
   bool result = true;
 
@@ -375,7 +380,7 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
   Vector<sint4> tempVec;
   
     
-  if (type == SA_MOVE) {
+  if (type == OA_MOVE) {
     // the third param is speed, always use 3 (the max)
     assert(params.size() == 2);
     intIt = params.begin();  
@@ -394,7 +399,7 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
       (*currentObject)->issueCommand(type, tempVec);
     } 
   }
-  else if (type == SA_MINE) {
+  else if (type == OA_MINE) {
     // targets are the mineral patch x, y, and command center
     // in that order
 
@@ -442,7 +447,7 @@ bool SoarGameGroup::assignAction(SoarActionType type, list<int> params,
       (*currentObject)->issueCommand(type, tempVec);
     } 
   }
-  else if (type == SA_FREE) {
+  else if (type == OA_FREE) {
     sticky = false;
     cout << "UNSTUCK!\n";
   }
@@ -636,4 +641,12 @@ void SoarGameGroup::setFMaps(list <FeatureMap*> _fMaps) {
 
 list <FeatureMap*> SoarGameGroup::getFMaps() {
   return fMaps;
+}
+
+void SoarGameGroup::setFMFeatureStrength(int num) {
+  fmFeatureStrength = num;
+}
+
+int SoarGameGroup::getFMFeatureStrength() {
+  return fmFeatureStrength;
 }

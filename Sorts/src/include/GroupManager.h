@@ -19,6 +19,7 @@ class GroupManager {
 
     void updateVision();
     bool assignActions();
+    void processVisionCommands();
 
     void addGroup(SoarGameObject* object);
     // used by ORTSInterface when it sees a new object- create a group for it
@@ -32,6 +33,7 @@ class GroupManager {
     void reGroup();
     void generateGroupData();
     void adjustAttention();
+    void updateFeatureMaps(bool refreshAll);
 
     void removeGroup(SoarGameGroup*);
 

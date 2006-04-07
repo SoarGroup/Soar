@@ -11,10 +11,12 @@
 #include "sml_Client.h"
 
 #include "MapRegion.h"
-#include "SoarAction.h"
+#include "Action.h"
 #include "general.h"
+#include "FeatureMap.h"
 
 class SoarGameGroup;
+//class FeatureMap;
 
 using namespace std;
 
@@ -41,6 +43,19 @@ typedef struct {
   sml::IntElement* ymaxWME; // bounding box
   sml::IntElement* sizeWME;
 } InputLinkMapRegionRep;
+
+typedef struct {
+  sml::Identifier* identifierWME;
+  sml::IntElement* sector0WME;
+  sml::IntElement* sector1WME;
+  sml::IntElement* sector2WME;
+  sml::IntElement* sector3WME;
+  sml::IntElement* sector4WME;
+  sml::IntElement* sector5WME;
+  sml::IntElement* sector6WME;
+  sml::IntElement* sector7WME;
+  sml::IntElement* sector8WME;
+} InputLinkFeatureMapRep;
 
 typedef struct {
   sml::Identifier* id;
@@ -72,13 +87,13 @@ class SoarInterface {
                   sml::Agent*      _agent,
                   pthread_mutex_t* _objectActionQueueMutex,
                   pthread_mutex_t* _attentionActionQueueMutex,
-                  pthread_mutex_t* _groupActionQueueMutex,
                   pthread_mutex_t* _soarMutex
                  );
 
     ~SoarInterface();
 
-    void getNewActions(list<SoarAction*>& newActions);
+    void getNewObjectActions(list<ObjectAction*>& newActions);
+    void getNewAttentionActions(list<AttentionAction*>& newActions);
 
     // grouping commands for Group Manager to call
     void addGroup(SoarGameGroup* group);
@@ -92,6 +107,11 @@ class SoarInterface {
     void refreshMapRegion(MapRegion* r);
     int  mapRegionId(MapRegion* r);
 
+    // feature map commands
+    void addFeatureMap(FeatureMap* m, string name);
+    //void removeFeatureMap(FeatureMap* m);
+    void refreshFeatureMap(FeatureMap*, string name);
+    
     // commit all changes to Soar Input link
     void commitInputLinkChanges();
 
@@ -105,13 +125,21 @@ class SoarInterface {
 
     void initSoarInputLink();
 
-    void lockSoarMutex();
-    void unlockSoarMutex();
     bool getStale();
     void setStale(bool);
+    void lockSoarMutex();
+    void unlockSoarMutex();
 
   private:
 
+    void lockObjectActionMutex();
+    void unlockObjectActionMutex();
+    void lockAttentionActionMutex();
+    void unlockAttentionActionMutex();
+
+    void processObjectAction(ObjectActionType, sml::Identifier*);
+    void processAttentionAction(AttentionActionType, sml::Identifier*);
+    void improperCommandError();
 
     GameStateModule* gsm;
 
@@ -154,6 +182,13 @@ class SoarInterface {
     map<MapRegion*, InputLinkMapRegionRep> mapRegionTable;
     map<int, MapRegion*>                   mapRegionIdLookup;
 
+  /**************************************************
+   *                                                *
+   * Member variables for feature maps              *
+   *                                                *
+   **************************************************/
+    sml::Identifier* featureMapIdWME;
+    map<string, InputLinkFeatureMapRep> featureMapTable;
 
   /**************************************************
    *                                                *
@@ -161,16 +196,13 @@ class SoarInterface {
    *                                                *
    **************************************************/
 
-     // keep track of actions on the input link and middleware
-    map<sml::Identifier*, SoarAction>  soarActions;
-   
-    list<SoarAction*> objectActionQueue;
-    // need to add two more, once we get the SoarAction class modified
+    list<ObjectAction*> objectActionQueue;
+    list<AttentionAction*> attentionActionQueue;
+    // need to add two more, once we get the ObjectAction class modified
 
     // associated mutexes that protect them
     pthread_mutex_t* objectActionQueueMutex;
     pthread_mutex_t* attentionActionQueueMutex;
-    pthread_mutex_t* groupActionQueueMutex;
     pthread_mutex_t* soarMutex;
 
     bool stale;

@@ -89,7 +89,6 @@ int main(int argc, char *argv[]) {
    ************************************/
   pthread_mutex_t objectActionMutex = PTHREAD_MUTEX_INITIALIZER;
   pthread_mutex_t attentionActionMutex = PTHREAD_MUTEX_INITIALIZER;
-  pthread_mutex_t groupActionMutex = PTHREAD_MUTEX_INITIALIZER;
   
   pthread_mutex_t soarMutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -145,7 +144,6 @@ int main(int argc, char *argv[]) {
                                pAgent,
                                &objectActionMutex,
                                &attentionActionMutex,
-                               &groupActionMutex,
                                &soarMutex);
 
   // register for all events
@@ -170,7 +168,7 @@ int main(int argc, char *argv[]) {
   MapManager mapManager
     ( game.get_map(), game.get_tile_points(), tileGrouper, &soarInterface );
  
-  FeatureMapManager featureMapManager;
+  FeatureMapManager featureMapManager(&soarInterface);
 
   // instantiate the group manager
   GroupManager gm(&soarInterface, &mapManager, &featureMapManager);
