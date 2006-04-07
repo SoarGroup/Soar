@@ -9,13 +9,13 @@ done
 
 if [[ `uname -s` == "Darwin" ]]
 then
-  if ! javac -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar -sourcepath . debugger/Application.java; then
+  if ! javac -source 1.4 -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar -sourcepath . debugger/Application.java; then
     echo "Build failed."
     exit 1;
   fi
   jar cfm ${SOARLIB}/SoarJavaDebugger.jar JarManifest .
 else
-  if ! javac -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar -sourcepath . debugger/Application.java; then
+  if ! javac -source 1.4 -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar -sourcepath . debugger/Application.java; then
     echo "Build failed."
     exit 1;
   fi

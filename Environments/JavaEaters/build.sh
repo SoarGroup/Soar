@@ -4,7 +4,7 @@ SOARLIB="../../SoarLibrary/bin"
 mkdir bin
 rm bin/*.class
 
-if ! javac -d bin -classpath ${SOARLIB}/swt.jar:${SOARLIB}/sml.jar:${SOARLIB}/JavaBaseEnvironment.jar -sourcepath source source/eaters/Eaters.java ; then
+if ! javac -source 1.4 -d bin -classpath ${SOARLIB}/swt.jar:${SOARLIB}/sml.jar:${SOARLIB}/JavaBaseEnvironment.jar -sourcepath source source/eaters/Eaters.java ; then
 	echo "Build failed."
 	exit 1;
 fi

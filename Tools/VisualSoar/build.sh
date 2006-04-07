@@ -6,7 +6,7 @@ do
   rm -f $file
 done
 
-if ! javac -classpath .:${SOARLIB}/sml.jar -sourcepath Source Source/edu/umich/visualsoar/VisualSoar.java; then
+if ! javac -source 1.4 -classpath .:${SOARLIB}/sml.jar -sourcepath Source Source/edu/umich/visualsoar/VisualSoar.java; then
   echo "Build failed."
   exit 1;
 fi
