@@ -133,13 +133,13 @@
 		return TCL_OK;
 	}
 	
-	// Embedded $, [ and " are replaced with \$ \[ and \" to stop them being evaluated by
+	// Embedded $, [, \ and " are replaced with \$ \[ and \" to stop them being evaluated by
 	// Tcl on the way through the callback.
 	void EscapeSpecial(std::string* s) {
-	    int pos = s->find_first_of("[$\"");
+	    int pos = s->find_first_of("[$\"\\");
 	    while(pos != std::basic_string<char*>::npos) {
 	        s->insert(pos, "\\");
-	        pos = s->find_first_of("[$\"", pos+2);
+	        pos = s->find_first_of("[$\"\\", pos+2);
 	    }	    
 	}
 	
