@@ -4,9 +4,7 @@ IF NOT EXIST ..\..\SoarLibrary\bin\sml.jar GOTO no_sml
 
 IF NOT EXIST bin mkdir bin
 del /s /Q bin\*.class
-
-@echo on
-javac -d bin -classpath ..\..\SoarLibrary\bin\swt.jar;..\..\SoarLibrary\bin\sml.jar -sourcepath source source\utilities\*.java source\simulation\*.java source\simulation\visuals\*.java
+javac -source 1.4 -d bin -classpath ..\..\SoarLibrary\bin\swt.jar;..\..\SoarLibrary\bin\sml.jar -sourcepath source source\utilities\*.java source\simulation\*.java source\simulation\visuals\*.java
 
 jar cf ..\..\SoarLibrary\bin\JavaBaseEnvironment.jar -C bin .
 @echo off
