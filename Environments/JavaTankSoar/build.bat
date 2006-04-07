@@ -5,9 +5,7 @@ IF NOT EXIST ..\..\SoarLibrary\bin\JavaBaseEnvironment.jar GOTO no_JBE
 
 IF NOT EXIST bin mkdir bin
 
-@echo on
-javac -d bin -classpath ..\..\SoarLibrary\bin\swt.jar;..\..\SoarLibrary\bin\sml.jar;..\..\SoarLibrary\bin\JavaBaseEnvironment.jar -sourcepath source source\tanksoar\TankSoar.java
-@echo off
+javac -source 1.4 -d bin -classpath ..\..\SoarLibrary\bin\swt.jar;..\..\SoarLibrary\bin\sml.jar;..\..\SoarLibrary\bin\JavaBaseEnvironment.jar -sourcepath source source\tanksoar\TankSoar.java
 
 xcopy /q /y source\* bin
 IF NOT EXIST bin\images mkdir bin\images
