@@ -164,6 +164,14 @@ public:
 	*************************************************************/
 	EXPORT bool ShouldEchoCommand(char const* pCommandLine) ;
 
+	/*************************************************************
+	* @brief Takes a command line and expands any aliases and returns
+	*		 the result.  The command is NOT executed.
+	* @param pCommandLine The command line string, arguments separated by spaces
+	* @param pExpandedLine The return value -- the expanded version of the command
+	*************************************************************/
+	bool ExpandCommandToString(const char* pCommandLine, std::string* pExpandedLine) ;
+
 protected:
 
 	void GetLastResultSML(sml::Connection* pConnection, sml::ElementXML* pResponse);

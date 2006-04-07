@@ -1068,7 +1068,7 @@ char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAg
 		sml_Names::kCommand_CommandLine, pAgentName,
 		sml_Names::kParamLine, pCommandLine,
 		sml_Names::kParamEcho, echoResults ? sml_Names::kTrue : sml_Names::kFalse,
-		sml_Names::kParamNoFiltering, m_FilteringEnabled && noFilter ? sml_Names::kTrue : sml_Names::kFalse,
+		sml_Names::kParamNoFiltering, !m_FilteringEnabled || noFilter ? sml_Names::kTrue : sml_Names::kFalse,
 		wantRawOutput);
 
 	if (m_CommandLineSucceeded)
@@ -1107,7 +1107,8 @@ bool Kernel::ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentN
 	if (!pCommandLine || !pResponse)
 		return false ;
 
-	m_CommandLineSucceeded = GetConnection()->SendAgentCommand(pResponse->GetAnalyzeXML(), sml_Names::kCommand_CommandLine, pAgentName, sml_Names::kParamLine, pCommandLine);
+	m_CommandLineSucceeded = GetConnection()->SendAgentCommand(pResponse->GetAnalyzeXML(), sml_Names::kCommand_CommandLine, pAgentName,
+							sml_Names::kParamLine, pCommandLine, sml_Names::kParamNoFiltering, sml_Names::kTrue);
 
 	return m_CommandLineSucceeded ;
 }

@@ -332,15 +332,13 @@ void CommandLineInterface::EchoString(sml::Connection* pConnection, char const* 
 /*************************************************************
 * @brief Takes a command line and expands any aliases and returns
 *		 the result.  The command is NOT executed.
-* @param pConnection The connection, for communication to the client
 * @param pCommandLine The command line string, arguments separated by spaces
-* @param pResponse Pointer to XML response object
+* @param pExpandedLine The return value -- the expanded version of the command
 *************************************************************/
-EXPORT bool CommandLineInterface::ExpandCommand(sml::Connection* pConnection, const char* pCommandLine, sml::ElementXML* pResponse)
+bool CommandLineInterface::ExpandCommandToString(const char* pCommandLine, std::string* pExpandedLine)
 {
 	SetError(CLIError::kNoError);
 
-	std::string result ;
 	vector<string> argv;
 
 	// 1) Parse command
@@ -355,14 +353,31 @@ EXPORT bool CommandLineInterface::ExpandCommand(sml::Connection* pConnection, co
 		// 3) Reassemble the command line
 		for (unsigned int i = 0 ; i < argv.size() ; i++)
 		{
-			result += argv[i] ;
-			if (i != argv.size()-1) result += " " ;
+			*pExpandedLine += argv[i] ;
+			if (i != argv.size()-1) *pExpandedLine += " " ;
 		}
 	}
 
-	pConnection->AddSimpleResultToSMLResponse(pResponse, result.c_str());
-
 	return true ;
+}
+
+/*************************************************************
+* @brief Takes a command line and expands any aliases and returns
+*		 the result.  The command is NOT executed.
+* @param pConnection The connection, for communication to the client
+* @param pCommandLine The command line string, arguments separated by spaces
+* @param pResponse Pointer to XML response object
+*************************************************************/
+EXPORT bool CommandLineInterface::ExpandCommand(sml::Connection* pConnection, const char* pCommandLine, sml::ElementXML* pResponse)
+{
+	std::string result ;
+
+	bool ok = ExpandCommandToString(pCommandLine, &result) ;
+
+	if (ok)
+		pConnection->AddSimpleResultToSMLResponse(pResponse, result.c_str());
+
+	return ok ;
 }
 
 bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, const std::string& commandLine) {

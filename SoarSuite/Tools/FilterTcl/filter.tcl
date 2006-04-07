@@ -1,3 +1,48 @@
+###############################################################################
+#
+# These are the first steps towards a full Tcl filter that will
+# allow the use of Tcl commands within a Soar process--e.g.
+# executing Tcl commands within the Java debugger.
+#
+# The basic execution cycle is that when launched, this filter
+# connects to an existing kernel and registers a command line filter.
+# As the user enters commands, those commands are sent through
+# the filter where they are evaluated as Tcl commands.
+#
+# In order for Soar commands to still work they are registered
+# with simple Tcl proxies that call over to the kernel to execute
+# the command.
+#
+# In this way, Tcl commands are evaluated as Tcl and Soar commands
+# are sent back to Soar.
+#
+# The hope is that someone who actually knows Tcl well will invest
+# some time in taking this from a prototype into a fully functional filter.
+# Some of the known issues:
+#   -- Source "e:\hello.soar" fails because Tcl tries to interpret \h as
+#      a special character.  Need to either escape the \ as \\ or reverse
+#	   it's direction to /.
+#
+#   -- alias with no args seems to cause problems.  In general, incomplete
+#	   commands have always seemed to upset Tcl and this seems to be true
+#	   with the filter too.
+#
+#   -- Closing the wish window results in a crash.  Typing "exit" at the console
+#      prompt does not cause a crash.  Presumably a call to "$_kernel Shutdown" or "exit" is needed
+#	   when the wish window is closed.
+#
+#	-- pushd and popd seem to be missing from the Tcl command set.  These should
+#	   probably be implemented with Tcl code, so that they modify the Tcl CWD rather than the
+#	   kernel's CWD.  Either that or we'll want some way to keep Tcl and the kernel's CWD's in synch.
+#
+#	-- In general each Soar command should be tested and examined to see whether it behaves
+#	   as desired.  Some (source, sp?) will likely need to be intercepted and have special
+#	   processing inserted if the default behavior isn't sufficient.  For example, we might
+#	   want to offer additional expansion of the args passed to sp so you can embed clever
+#	   things within a production.
+# 
+###############################################################################
+
 proc AgentCreatedCallback {id userData agent} {
 	puts "Agent_callback:: [$agent GetAgentName] created"
 }
@@ -47,13 +92,10 @@ proc MyFilter {id userData agent filterName commandXML} {
 	set name [$agent GetAgentName]
 	set interpreter [getInterpreter $name $agent]
 
-	puts Hello
 	puts $commandXML
 
 	set xml [ElementXML_ParseXMLFromString $commandXML]
 	set commandLine [$xml GetAttribute $sml_Names_kFilterCommand]
-
-	puts "$name Command line $commandLine"
 
 	# This is a complicated line where all the action happens.
 	# At the core is "$interpreter eval $commandLine"
@@ -61,12 +103,16 @@ proc MyFilter {id userData agent filterName commandXML} {
 	# The catch around that places whether this call succeeds or fails into "error"
 	# and the result of the command's execution (or an error message) into result.
 	set error [catch {$interpreter eval $commandLine} result]
-	#set error [catch {$_kernel ExecuteCommandLine "$commandLine" $name} result]
-	#set error [catch {$agent ExecuteCommandLine "$commandLine"} result ]
+
 	puts "Error is $error and Result is $result"
 
-	# Appending 'Tcl' to the output so I can see that it's been filtered by Tcl.
-	$xml AddAttribute $sml_Names_kFilterOutput "Tcl $result"
+	# Return the result of the command as the output string for the command
+	# which in turn will appear in the debugger
+	$xml AddAttribute $sml_Names_kFilterOutput "$result"
+
+	# Remove the original command from the XML that is returned, indicating that this command
+	# has been consumed.  Otherwise it will continue on through other filters and eventually
+	# be executed by the kernel's command line processor.
 	$xml AddAttribute $sml_Names_kFilterCommand ""
 	
 	set outputXML [$xml GenerateXMLString 1]
@@ -95,6 +141,11 @@ proc createFilter {} {
 		puts "[$_kernel GetLastErrorDescription]\n"
 		return
 	}
+
+	# This is important.  We'll disable filtering on commands *sent* from this client.
+	# Otherwise, when this client calls ExecuteCommandLine the commands will come back to
+	# the filter again--causing an infinite loop.
+	$_kernel EnableFiltering 0
 
 	puts "Created kernel\n"
 
