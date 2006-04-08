@@ -378,7 +378,7 @@ public class EatersWorld extends World implements WorldManager {
 			m_World[m_WorldSize - 1][col] = new EatersCell(kWallID);
 		}
 		
-		Random random = new Random();
+		Random random = Simulation.kRandom ? new Random() : new Random(0) ;
 		
 		double probability = kLowProbability;
 		for (int row = 2; row < m_WorldSize - 2; ++row) {
@@ -460,7 +460,7 @@ public class EatersWorld extends World implements WorldManager {
 	}
 	
 	private void generateRandomFood() {
-		Random random = new Random();
+		Random random = Simulation.kRandom ? new Random() : new Random(0) ;
 		for (int row = 1; row < m_WorldSize - 1; ++row) {
 			for (int col = 1; col < m_WorldSize - 1; ++col) {
 				if (m_World[row][col] == null) {
@@ -586,7 +586,7 @@ public class EatersWorld extends World implements WorldManager {
 
 	private MapPoint findStartingLocation() {
 		// set random starting location
-		Random random = new Random();
+		Random random = Simulation.kRandom ? new Random() : new Random(0) ;
 		MapPoint location = new MapPoint(random.nextInt(m_WorldSize), random.nextInt(m_WorldSize));
 		while (getCell(location).isWall() || getCell(location).isEater()) {
 			location.x = random.nextInt(m_WorldSize);
