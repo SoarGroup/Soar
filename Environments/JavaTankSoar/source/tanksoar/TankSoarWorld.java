@@ -29,7 +29,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	static final int kMissilePackSize = 7;
 	private int m_NumMissilePacks = 0;
 	
-	Random m_Random = new Random();
+	Random m_Random = Simulation.kRandom ? new Random() : new Random(0) ;
 	RelativeDirections m_RD = new RelativeDirections();
 	int m_MaxManhattanDistance;
 	private static final int kMaxSmellDistance = 7;

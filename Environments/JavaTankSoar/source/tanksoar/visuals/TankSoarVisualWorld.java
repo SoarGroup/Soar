@@ -39,8 +39,8 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 		
 		m_Simulation = simulation;
 		m_World = m_Simulation.getTankSoarWorld();
-		m_Random = new Random();
-
+		m_Random = Simulation.kRandom ? new Random() : new Random(0) ;
+		
 		loadImages(parent.getDisplay());
 		addPaintListener(this);		
 	}

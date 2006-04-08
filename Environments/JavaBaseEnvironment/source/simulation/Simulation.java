@@ -29,6 +29,9 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	private ArrayList m_SimulationListeners = new ArrayList();
 	private ArrayList m_AddSimulationListeners = new ArrayList();
 	private ArrayList m_RemoveSimulationListeners = new ArrayList();
+
+	// For debugging can set this to false, making all random calls follow the same sequence
+	public static final boolean kRandom = true ;
 	
 	protected Simulation(String projectFolder) {
 		// Initialize Soar
@@ -48,6 +51,10 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		// We want the most performance
 		m_Kernel.SetAutoCommit(false);
 
+		// Make all runs non-random if asked
+		if (!kRandom)
+			m_Kernel.ExecuteCommandLine("srand 0", null) ;
+		
 		// Register for events
 		m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, null);
 		m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, this, null);

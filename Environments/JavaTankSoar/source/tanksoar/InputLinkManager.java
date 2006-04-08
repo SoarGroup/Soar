@@ -2,6 +2,7 @@ package tanksoar;
 
 import java.util.Random;
 
+import simulation.Simulation;
 import sml.Agent;
 import sml.FloatElement;
 import sml.Identifier;
@@ -64,8 +65,8 @@ public class InputLinkManager {
 	
 	private final static String kNone = "none";
 
-	private Random m_Random = new Random();
-
+	private Random m_Random = Simulation.kRandom ? new Random() : new Random(0) ;
+	
 	private Identifier m_InputLink;
 	private Identifier m_BlockedWME;
 	private StringElement m_BlockedBackwardWME;
