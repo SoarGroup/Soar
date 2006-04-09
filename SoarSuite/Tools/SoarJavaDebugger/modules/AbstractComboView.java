@@ -518,7 +518,7 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 			return ;
 				
 		//System.out.println("Updating window's contents") ;
-		
+
 		// Retrieve the current command in the combo box
 		// (We use a cached value so we don't need to go to the UI thread)
 		final String command = getCurrentCommand() ;
@@ -548,7 +548,10 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 	
 	public void agentEventHandler(int eventID, Object data, String agentName)
 	{
-		if (this.m_UpdateOnStop && eventID == smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED.swigValue())
+		// Note: We need to check the agent names match because although this is called an agentEventHandler it's
+		// an event registered with the kernel -- so it's sent to all listeners, not just the agent that is reinitializing.
+		if (this.m_UpdateOnStop && eventID == smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED.swigValue() &&
+			this.getAgentFocus() != null && agentName.equals(this.getAgentFocus().GetAgentName()))
 			updateNow() ;
 	}
 	
