@@ -295,7 +295,8 @@ public class PhaseView extends AbstractFixedView implements Kernel.AgentEventInt
 	
 	public void agentEventHandler(int eventID, Object data, String agentName)
 	{
-		if (eventID == smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED.swigValue())
+		if (eventID == smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED.swigValue() &&
+			this.getAgentFocus() != null && agentName.equals(this.getAgentFocus().GetAgentName()))
 		{
 			m_DrawPhase = true ;
 			updateNow(true) ;
