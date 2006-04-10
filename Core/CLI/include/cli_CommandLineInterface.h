@@ -189,6 +189,8 @@ protected:
 	bool ParseCD(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
     bool ParseDecay(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	bool ParseCLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	bool ParseCommandToFile(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseDefaultWMEDepth(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseDirs(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseEcho(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -204,7 +206,6 @@ protected:
 	bool ParseInputPeriod(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseInternalSymbols(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseLearn(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseLS(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseMatches(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseMaxChunks(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -293,6 +294,15 @@ protected:
 	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	bool DoDecay(gSKI::IAgent* pAgent, enum eDecayOptions setting, long arg);
+
+	/*************************************************************
+	* @brief clog command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param mode The mode for the log command, see cli_CommandData.h
+	* @param pFilename The log filename, pass 0 (null) if not applicable to mode
+	* @param pToAdd The string to add to the log, pass 0 (null) if not applicable to mode
+	*************************************************************/
+	bool DoCLog(gSKI::IAgent* pAgent, const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0);
 
 	/*************************************************************
 	* @brief default-wme-depth command
@@ -403,15 +413,6 @@ protected:
 	*        see cli_CommandData.h
 	*************************************************************/
 	bool DoLearn(gSKI::IAgent* pAgent, const LearnBitset& options);
-
-	/*************************************************************
-	* @brief log command
-	* @param pAgent The pointer to the gSKI agent interface
-	* @param mode The mode for the log command, see cli_CommandData.h
-	* @param pFilename The log filename, pass 0 (null) if not applicable to mode
-	* @param pToAdd The string to add to the log, pass 0 (null) if not applicable to mode
-	*************************************************************/
-	bool DoLog(gSKI::IAgent* pAgent, const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0);
 
 	/*************************************************************
 	* @brief ls command
@@ -559,8 +560,10 @@ protected:
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param options Options for the run command, see cli_CommandData.h
 	* @param count The count, units or applicability depends on options
+	* @param interleave Support for round robin execution across agents 
+	*		 at a finer grain than the run-size parameter.
 	*************************************************************/
-	bool DoRun(gSKI::IAgent* pAgent, const RunBitset& options, int count = 0);
+	bool DoRun(gSKI::IAgent* pAgent, const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT);
 
 	/*************************************************************
 	* @brief save-backtraces command
@@ -692,13 +695,7 @@ protected:
 	bool DoWatchWMEs(gSKI::IAgent* pAgent, const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
 
 	// Print callback events go here
-	virtual void HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const char* msg) {
-		// Simply append to message result
-		if (m_PrintEventToResult) {
-			CommandLineInterface::m_Result << msg;
-		}
-		if (m_pLogFile) (*m_pLogFile) << msg;
-	}
+	virtual void HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const char* msg);
 
 	// Production callback events go here
 	virtual void HandleEvent(egSKIProductionEventId eventId, gSKI::IAgent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match);
@@ -737,6 +734,7 @@ protected:
 	int ParseLearningOptarg();
 	bool CheckOptargRemoveOrZero();
 	bool ProcessWatchLevelSettings(const int level, WatchBitset& options, WatchBitset& settings, int& wmeSetting, int& learnSetting);
+	eRunInterleaveMode ParseRunInterleaveOptarg();
 
 	/************************************************************* 	 
 	* @brief Prints the current WM activation settings
@@ -849,6 +847,8 @@ protected:
 	bool				m_PrintEventToResult;	// True when print events should append message to result
 	bool				m_EchoResult;			// If true, copy result of command to echo event stream
 	EchoMap				m_EchoMap;				// If command appears in this map, always echo it.
+	bool				m_CloseLogAfterOutput;	// Used in command-to-file command ParseCommandToFile, closes log after output
+	bool				m_VarPrint;				// Used in print command to put <>'s around identifiers.
 
 	Aliases				m_Aliases;				// Alias management object
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers

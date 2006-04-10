@@ -7,13 +7,15 @@ noinst_LTLIBRARIES = libCommandLineInterface.la
 libCommandLineInterface_la_SOURCES = \
 cli_Aliases.cpp\
 cli_CommandLineInterface.cpp\
-cli_Constants.cpp\
-cli_Interface.cpp\
+cli_Commands.cpp\
 cli_addwme.cpp\
 cli_alias.cpp\
 cli_attributepreferencesmode.cpp\
 cli_cd.cpp\
 cli_chunknameformat.cpp\
+cli_decay.cpp\
+cli_clog.cpp\
+cli_commandtofile.cpp\
 cli_defaultwmedepth.cpp\
 cli_dirs.cpp\
 cli_echo.cpp\
@@ -29,7 +31,6 @@ cli_initsoar.cpp\
 cli_inputperiod.cpp\
 cli_internalsymbols.cpp\
 cli_learn.cpp\
-cli_log.cpp\
 cli_ls.cpp\
 cli_matches.cpp\
 cli_maxchunks.cpp\
@@ -57,6 +58,7 @@ cli_soar8.cpp\
 cli_soarnews.cpp\
 cli_source.cpp\
 cli_sp.cpp\
+cli_srand.cpp\
 cli_stats.cpp\
 cli_stopsoar.cpp\
 cli_time.cpp\
@@ -66,7 +68,12 @@ cli_version.cpp\
 cli_waitsnc.cpp\
 cli_warnings.cpp\
 cli_watch.cpp\
-cli_watchwmes.cpp
+cli_watchwmes.cpp\
+../include/cli_Aliases.h\
+../include/cli_CLIError.h\
+../include/cli_CommandData.h\
+../include/cli_CommandLineInterface.h\
+../include/cli_Commands.h
 
 INCLUDES = \
 -I../../..\

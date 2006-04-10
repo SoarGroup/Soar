@@ -31,15 +31,17 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 		{'d', "decision",		0},
 		{'e', "elaboration",	0},
 		{'f', "forever",		0},
+		{'i', "interleave",		1},
+		{'n', "noupdate",		0},
 		{'o', "output",			0},
 		{'p', "phase",			0},
 		{'s', "self",			0},
 		{'u', "update",			0},
-		{'n', "noupdate",		0},
 		{0, 0, 0}
 	};
 
 	RunBitset options(0);
+	eRunInterleaveMode interleaveMode = RUN_INTERLEAVE_DEFAULT;
 
 	for (;;) {
 		if (!ProcessOptions(argv, optionsData)) return false;
@@ -54,6 +56,13 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 				break;
 			case 'f':
 				options.set(RUN_FOREVER);
+				break;
+			case 'i':
+				options.set(RUN_INTERLEAVE);
+				interleaveMode = ParseRunInterleaveOptarg();
+				if (interleaveMode == RUN_INTERLEAVE_DEFAULT) {
+					return false; // error set in parse function
+				}
 				break;
 			case 'o':
 				options.set(RUN_OUTPUT);
@@ -91,10 +100,26 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 		if (count < 0 || (count == 0 && specifiedType && !options.test(RUN_DECISION))) return SetError(CLIError::kIntegerMustBePositive);
 	} 
 
-	return DoRun(pAgent, options, count);
+	return DoRun(pAgent, options, count, interleaveMode);
 }
 
-bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options, int count) {
+eRunInterleaveMode CommandLineInterface::ParseRunInterleaveOptarg() {
+	if (m_OptionArgument == "d") {
+		return RUN_INTERLEAVE_DECISION;
+	} else if (m_OptionArgument == "e") {
+		return RUN_INTERLEAVE_ELABORATION;
+	} else if (m_OptionArgument == "o") {
+		return RUN_INTERLEAVE_OUTPUT;
+	} else if (m_OptionArgument == "p") {
+		return RUN_INTERLEAVE_PHASE;
+	}
+
+	SetErrorDetail("Invalid switch: " + m_OptionArgument);
+	SetError(CLIError::kInvalidRunInterleaveSetting);
+	return RUN_INTERLEAVE_DEFAULT;
+}
+
+bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options, int count, eRunInterleaveMode interleaveIn) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// Default run type is forever
@@ -159,7 +184,27 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 	// By default, we run one phase per agent but this isn't always appropriate.
 	egSKIRunType interleaveStepSize = gSKI_RUN_PHASE ;
 #ifdef USE_NEW_SCHEDULER
-	egSKIInterleaveType interleave  = pScheduler->DefaultInterleaveStepSize(runType) ;
+	egSKIInterleaveType interleave;
+
+	switch(interleaveIn) {
+		case RUN_INTERLEAVE_DEFAULT:
+		default:
+			interleave  = pScheduler->DefaultInterleaveStepSize(runType) ;
+			break;
+		case RUN_INTERLEAVE_ELABORATION:
+			interleave = gSKI_INTERLEAVE_ELABORATION_PHASE;
+			break;
+		case RUN_INTERLEAVE_DECISION:
+			interleave = gSKI_INTERLEAVE_DECISION_CYCLE;
+			break;
+		case RUN_INTERLEAVE_PHASE:
+			interleave = gSKI_INTERLEAVE_PHASE;
+			break;
+		case RUN_INTERLEAVE_OUTPUT:
+			interleave = gSKI_INTERLEAVE_OUTPUT;
+			break;
+	}
+
 #endif
 
 	switch (runType)
@@ -177,11 +222,15 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 	}
 
 #ifdef USE_NEW_SCHEDULER
-	pScheduler->VerifyStepSizeForRunType( runType, interleave) ;
+	if (!pScheduler->VerifyStepSizeForRunType( runType, interleave) ) {
+		SetError(CLIError::kInvalidRunInterleaveSetting);
+		SetErrorDetail("Run type and interleave setting incompatible.");
+		return false;
+	}
 #endif
 
 	// If we're running by decision cycle synchronize up the agents to the same phase before we start
-	bool synchronizeAtStart = (runType == gSKI_RUN_DECISION_CYCLE) ;
+	bool synchronizeAtStart = ((runType == gSKI_RUN_DECISION_CYCLE) || (runType == gSKI_RUN_FOREVER)) ; 
 
 	// Do the run
 #ifdef USE_OLD_SCHEDULER
@@ -220,6 +269,14 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 				m_Result << "\nRun stopped (interrupted).";
 			} else {
 				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
+			}
+			if (pScheduler->AnAgentHaltedDuringRun())
+			{
+				if (m_RawOutput) {
+					m_Result << "\nAn agent halted during the run.";
+				} else {                    
+					AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, "\nAn agent halted during the run.");		
+			    }
 			}
 			break;
 

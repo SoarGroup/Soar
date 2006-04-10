@@ -19,6 +19,8 @@ namespace cli {
 		static char const* kCLICD;
 		static char const* kCLIChunkNameFormat;
 		static char const* kCLIDecay;
+		static char const* kCLICLog;
+		static char const* kCLICommandToFile;
 		static char const* kCLIDefaultWMEDepth;
 		static char const* kCLIDirs;
 		static char const* kCLIEcho;
@@ -34,7 +36,6 @@ namespace cli {
 		static char const* kCLIInputPeriod;
 		static char const* kCLIInternalSymbols;
 		static char const* kCLILearn;
-		static char const* kCLILog;
 		static char const* kCLILS;
 		static char const* kCLIMatches;
 		static char const* kCLIMaxChunks;
