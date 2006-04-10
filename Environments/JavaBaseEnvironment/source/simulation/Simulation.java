@@ -6,7 +6,6 @@ import sml.*;
 import utilities.*;
 
 public abstract class Simulation implements Runnable, Kernel.UpdateEventInterface, Kernel.SystemEventInterface {
-	public static final String kGroupFolder = "Environments";
 	public static final String kAgentFolder = "agents";
 	public static final String kMapFolder = "maps";
 	public static final int kDebuggerTimeoutSeconds = 15;	
@@ -33,7 +32,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	// For debugging can set this to false, making all random calls follow the same sequence
 	public static final boolean kRandom = true ;
 	
-	protected Simulation(String projectFolder) {
+	protected Simulation() {
 		// Initialize Soar
 		// Create kernel
 		try {
@@ -61,16 +60,8 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		m_Kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_GENERATED_OUTPUT, this, null);
 		
 		// Generate base path
-		// TODO: chop instead of using ..
-		m_BasePath = new String(m_Kernel.GetLibraryLocation());
-		m_BasePath += System.getProperty("file.separator")
-		+ ".." + System.getProperty("file.separator") 
-		+ kGroupFolder + System.getProperty("file.separator") 
-		+ projectFolder + System.getProperty("file.separator");
-
+		m_BasePath = System.getProperty("user.dir") + System.getProperty("file.separator");
 		m_Logger.log("Base path: " + m_BasePath);
-		
-		
 	}
 	
 	protected void setWorldManager(WorldManager worldManager) {
@@ -183,11 +174,15 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		}
 		
 		Runtime r = java.lang.Runtime.getRuntime();
+		String commandLine = javabin + " -jar \"" + m_BasePath
+		+ ".." + System.getProperty("file.separator")
+		+ ".." + System.getProperty("file.separator")
+		+ "SoarLibrary" + System.getProperty("file.separator")
+		+ "bin" + System.getProperty("file.separator") 
+		+ "SoarJavaDebugger.jar\" -remote -agent " + agentName;
 		try {
 			// TODO: manage the returned process a bit better.
-			r.exec(javabin + " -jar \"" + m_Kernel.GetLibraryLocation() + System.getProperty("file.separator")
-					+ "bin" + System.getProperty("file.separator") 
-					+ "SoarJavaDebugger.jar\" -remote -agent " + agentName);
+			r.exec(commandLine);
 			
 			if (!waitForDebugger()) {
 				fireErrorMessage("Debugger spawn failed for agent: " + agentName);
