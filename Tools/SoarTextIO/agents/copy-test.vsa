@@ -1,0 +1,12 @@
+VERSION 4
+\copy-test\copy-test.dm
+0	ROOT copy-test copy-test 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR top-state top-state.soar 6
+6	0	OPERATOR copy copy.soar 7
+7	0	OPERATOR default default.soar 8
+8	0	OPERATOR initialize-copy-test initialize-copy-test.soar 9
+END

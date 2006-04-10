@@ -1,0 +1,5 @@
+sp {$super-operator$*elaborate*state
+   (state <s> ^name $super-operator$)
+   -->
+   (<s>)
+}

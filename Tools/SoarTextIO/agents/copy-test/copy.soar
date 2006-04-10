@@ -1,0 +1,20 @@
+sp {copy-test*propose*copy
+   (state <s> ^name copy-test
+              ^io <io>)
+   (<io> ^input-link.text <sc>
+        -^output-link.text <sc>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name copy
+         ^tocopy <sc>)
+}
+
+sp {apply*copy
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name copy
+         ^tocopy <sc>)
+-->
+   (<ol> ^text <sc>)
+}
+

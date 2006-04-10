@@ -1,0 +1,115 @@
+/**
+ *
+ * Copyright (c) 1996-1997 Sun Microsystems, Inc.
+ *
+ * Use of this file and the system it is part of is constrained by the
+ * file COPYRIGHT in the root directory of this system.
+ *
+ */
+
+options {
+  MULTI=true;
+  NODE_DEFAULT_VOID=true;
+}
+
+PARSER_BEGIN(eg3)
+
+class eg3 {
+  public static void main(String args[]) {
+    System.out.println("Reading from standard input...");
+    eg3 t = new eg3(System.in);
+    try {
+      ASTStart n = t.Start();
+      n.dump("");
+      System.out.println("Thank you.");
+    } catch (Exception e) {
+      System.out.println("Oops.");
+      System.out.println(e.getMessage());
+      e.printStackTrace();
+    }
+  }
+}
+
+PARSER_END(eg3)
+
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| <"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+| <"/*" (~["*"])* "*" (~["/"] (~["*"])* "*")* "/">
+}
+
+TOKEN : /* LITERALS */
+{
+  < INTEGER_LITERAL:
+        <DECIMAL_LITERAL> (["l","L"])?
+      | <HEX_LITERAL> (["l","L"])?
+      | <OCTAL_LITERAL> (["l","L"])?
+  >
+|
+  < #DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* >
+|
+  < #HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
+|
+  < #OCTAL_LITERAL: "0" (["0"-"7"])* >
+}
+
+TOKEN : /* IDENTIFIERS */
+{
+  < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
+|
+  < #LETTER: ["_","a"-"z","A"-"Z"] >
+|
+  < #DIGIT: ["0"-"9"] >
+}
+
+ASTStart Start() #Start : {}
+{
+  Expression()
+  { return jjtThis; }
+}
+
+
+void Expression() : {}
+{
+  AdditiveExpression()
+}
+
+void AdditiveExpression() : {}
+{
+  (
+    MultiplicativeExpression() ( ( "+" | "-" ) MultiplicativeExpression() )*
+  ) #Add(>1)
+}
+
+void MultiplicativeExpression() : {}
+{
+  (
+    UnaryExpression() ( ( "*" | "/" | "%" ) UnaryExpression() )*
+  ) #Mult(>1)
+}
+
+void UnaryExpression() : {}
+{
+  "(" Expression() ")" | Identifier() | Integer()
+}
+
+void Identifier() #MyID :
+{
+  Token t;
+}
+{
+  t=<IDENTIFIER>
+  {
+    jjtThis.setName(t.image);
+  }
+}
+
+void Integer() #Integer : {}
+{
+  <INTEGER_LITERAL>
+}

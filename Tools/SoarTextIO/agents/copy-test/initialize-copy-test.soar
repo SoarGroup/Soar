@@ -1,0 +1,15 @@
+sp {propose*initialize-copy-test
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-copy-test)
+}
+
+sp {apply*initialize-copy-test
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-copy-test)
+-->
+   (<s> ^name copy-test)
+}
+

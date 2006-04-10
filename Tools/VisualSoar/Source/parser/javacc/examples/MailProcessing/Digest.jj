@@ -1,0 +1,157 @@
+PARSER_BEGIN(Digest)
+
+import java.io.*;
+
+public class Digest {
+
+  static int count = 0;
+
+  static String buffer = "";
+
+  public static void main(String args[]) throws ParseException {
+    Digest parser = new Digest(System.in);
+    System.out.println("DIGEST OF RECENT MESSAGES FROM THE JAVACC MAILING LIST");
+    System.out.println("----------------------------------------------------------------------");
+    System.out.println("");
+    System.out.println("MESSAGE SUMMARY:");
+    System.out.println("");
+    parser.MailFile();
+    if (count == 0) {
+      System.out.println("There have been no messages since the last digest posting.");
+      System.out.println("");
+      System.out.println("----------------------------------------------------------------------");
+    } else {
+      System.out.println("");
+      System.out.println("----------------------------------------------------------------------");
+      System.out.println("");
+      System.out.println(buffer);
+    }
+  }
+
+}
+
+PARSER_END(Digest)
+
+
+// PARSER SPECIFICATIONS BEGIN HERE
+
+void MailFile() :
+	{
+	}
+{
+  (
+	{
+	  count++;
+	}
+    MailMessage()
+  )*
+  <EOF>
+}
+
+void MailMessage() :
+	{
+	  Token subj=null, from=null, date=null, body;
+	}
+{
+  ( subj=<SUBJECT> | from=<FROM> | date=<DATE> )+
+	{
+	  System.out.println(count + ". " + ((subj==null) ? "no subject" : subj.image));
+	  buffer += "\n";
+	  buffer += "Message " + count + ":\n";
+	  buffer += "\n";
+	  buffer += "Subject: " + ((subj==null) ? "no subject" : subj.image) + "\n";
+	  buffer += "From: " + ((from==null) ? "" : from.image) + "\n";
+	  buffer += "Date: " + ((date==null) ? "" : date.image) + "\n";
+	  buffer += "\n";
+	}
+  ( body=<BODY>
+	{
+	  buffer += body.image;
+	}
+  )*
+  <END>
+	{
+	  buffer += "\n";
+	  buffer += "----------------------------------------------------------------------\n";
+	}
+}
+
+
+// LEXICAL SPECIFICATIONS BEGIN HERE
+
+TOKEN:
+{
+  <#EOL: "\n" | "\r" | "\r\n">
+|
+  <#TWOEOLS: (("\n"|"\r\n") <EOL>) | ("\r\r" [ "\n" ])>
+|
+  <#NOT_EOL: ~["\n","\r"]>
+}
+
+<DEFAULT>
+SKIP:
+{
+  <<EOL> "*** EOOH ***" <EOL>> : MAILHEADER
+|
+  <~[]>
+}
+
+<MAILHEADER>
+SKIP:
+{
+  <_TWOEOLS: <TWOEOLS>> : MAILBODY
+    // We cannot have just a reference to a regular expression in a
+    // lexical specification - i.e., we cannot simply have <TWOEOLS>.
+|
+  "Subject: " : MAILSUBJECT
+|
+  "From: " : MAILFROM
+|
+  "Date: " : MAILDATE
+|
+  <~[]>
+}
+
+<MAILSUBJECT>
+TOKEN:
+{
+  <SUBJECT: ( <NOT_EOL> )+>
+}
+
+<MAILSUBJECT>
+SKIP:
+{
+  <_EOL1: <EOL>> : MAILHEADER
+}
+
+<MAILFROM>
+TOKEN:
+{
+  <FROM: ( <NOT_EOL> )+>
+}
+
+<MAILFROM>
+SKIP:
+{
+  <_EOL2: <EOL>> : MAILHEADER
+}
+
+<MAILDATE>
+TOKEN:
+{
+  <DATE: ( <NOT_EOL> )+>
+}
+
+<MAILDATE>
+SKIP:
+{
+  <_EOL3: <EOL>> : MAILHEADER
+}
+
+<MAILBODY>
+TOKEN:
+{
+  <BODY: (~["\n","\r","\u001f"])* <EOL>>
+|
+  <END: "\u001f"> : DEFAULT
+}

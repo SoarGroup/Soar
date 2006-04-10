@@ -1,0 +1,41 @@
+echo "\nLoading all/monitor.soar"
+
+#### Monitor impasses I don't expect to get
+
+sp {all*monitor*impasse*state-no-change
+   (state <s> ^attribute state
+              ^choices none)
+-->
+   (write (crlf) | State no-change impasse detected.|)
+#   (tcl |stop-soar -self|)
+}
+
+sp {all*monitor*operator*tie*impasse
+   (state <s> ^attribute operator
+              ^impasse tie
+              ^item <i1> ^item {<i2> <> <i1> })
+   (<i1> ^name <name1>)
+   (<i2> ^name <name2>)
+-->
+   (write (crlf) | Operator tie between | <name1> | & | <name2>)
+#   (tcl |stop-soar -self|)
+}
+#
+#sp {all*operator*impasse*tie*break
+#   (state <s> ^attribute operator
+#              ^impasse tie
+#              ^item <o> 
+#              ^superstate <ss>)
+#-->
+#   (write (crlf) | Make tied operators indifferent.|)
+#   (<ss> ^operator <o> =)}
+#
+#sp {all*monitor*output-link
+#   (state <s> ^name tanksoar
+#              ^io.output-link <out>)
+#   (<out> ^<attr> <link>)
+#   (<link> ^{ <> status <attr2> } <value>)
+#    -->
+#   (write (crlf) | Output Command: | <attr> |.| <attr2> | | <value>)
+#  }
+#

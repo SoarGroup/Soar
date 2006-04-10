@@ -1,0 +1,12 @@
+# Helps in reorder production conditions efficiently
+
+#alias pref preferences
+multi-attributes square 300
+multi-attributes action 10
+multi-attributes evaluation 5
+multi-attributes radar-map 4
+multi-attributes opposite-direction 4
+multi-attributes direction-map 4
+multi-attributes open 20
+multi-attributes obstacle 19
+                          
