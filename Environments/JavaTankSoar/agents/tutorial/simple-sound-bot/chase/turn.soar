@@ -1,0 +1,34 @@
+################################
+### Propose Turn operator if sound is not from front
+################################
+sp {chase*propose*turn
+   (state <s> ^name chase
+              ^sound-direction {<< left right >> <direction>})
+   -->
+   (<s> ^operator <o> +)
+   (<o> ^name turn
+        ^actions.rotate.direction <direction>)}
+
+#### Blocked
+   
+sp {chase*propose*turn*blocked
+   (state <s> ^name chase
+              ^sound-direction forward
+              ^io.input-link.blocked <b>)
+   (<b> ^forward yes
+        ^ { << left right >> <dir> } no)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name turn 
+        ^actions.rotate.direction <dir>)}
+
+################################
+### Propose Turn operator if sound is from the back
+################################
+sp {chase*propose*backward
+   (state <s> ^name chase
+              ^sound-direction backward)
+   -->
+   (<s> ^operator <o> +)
+   (<o> ^name turn
+        ^actions.rotate.direction left)}
