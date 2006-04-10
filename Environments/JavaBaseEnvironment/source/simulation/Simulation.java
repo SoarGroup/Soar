@@ -173,8 +173,8 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		String os = System.getProperty("os.name");
 		String commandLine;
 		if (os.matches(".+indows.*") || os.matches("INDOWS")) {
-			commandLine = "javaw -jar " + m_BasePath 
-			+ "..\\..\\SoarLibrary\\bin\\SoarJavaDebugger.jar -remote -agent " + agentName;
+			commandLine = "javaw -jar \"" + m_BasePath 
+			+ "..\\..\\SoarLibrary\\bin\\SoarJavaDebugger.jar\" -remote -agent " + agentName;
 		} else {
 			commandLine = System.getProperty("java.home") + "/bin/java -jar " + m_BasePath
 			+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -remote -agent " + agentName;
