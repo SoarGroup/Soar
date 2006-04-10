@@ -451,10 +451,9 @@ bool RunScheduler::AreAllOutputPhasesComplete()
 	{
 		AgentSML* pAgentSML = iter->second ;
 
-		// if WasOnRunList AND hasn't (halted or interrupted or completedOutput)
-		if (pAgentSML->WasAgentOnRunList() 
-			&& (gSKI_RUN_COMPLETED == pAgentSML->GetResultOfLastRun()) 
-			&& !pAgentSML->HasCompletedOutputPhase())
+		// Agents that are halted or interrupted are no longer m_ScheduledToRun
+		// Agents that are paused waiting for other agents finish a RunType, are still m_ScheduledToRun
+		if (pAgentSML->IsAgentScheduledToRun()&& !pAgentSML->HasCompletedOutputPhase())
 			return false ;
 	}
 
@@ -472,10 +471,9 @@ bool RunScheduler::HaveAllGeneratedOutput()
 	{
 		AgentSML* pAgentSML = iter->second ;
 
-		// if WasOnRunList AND hasn't (halted or interrupted or completedOutput)
-		if (pAgentSML->WasAgentOnRunList() 
-			&& (gSKI_RUN_COMPLETED == pAgentSML->GetResultOfLastRun()) 
-			&& !pAgentSML->HasGeneratedOutput())
+		// Agents that are halted or interrupted are no longer m_ScheduledToRun
+		// Agents that are paused waiting for other agents finish a RunType, are still m_ScheduledToRun
+		if (pAgentSML->IsAgentScheduledToRun()&& !pAgentSML->HasCompletedOutputPhase())
 			return false ;
 	}
 
@@ -675,7 +673,7 @@ void RunScheduler::TerminateUpdateWorldEvents(bool removeListeners)
             gSKI_RUN_EXECUTING,
             gSKI_RUN_INTERRUPTED,
             gSKI_RUN_COMPLETED,
-            gSKI_RUN_COMPLETED_AND_INTERRUPTED // not useful.  step() doesn't return it.
+            gSKI_RUN_COMPLETED_AND_INTERRUPTED 
 
 *********************************************************************/
 egSKIRunResult RunScheduler::GetOverallRunResult()

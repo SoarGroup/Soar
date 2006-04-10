@@ -574,7 +574,7 @@ namespace gSKI
       m_agent->system_halted = TRUE;
 
       // If we are not running, set the run state to halted
-      // If we are running, the run method will set the
+      // If we are running, the step method will set the
       //   state to halted.
 	  if(m_runState != gSKI_RUNSTATE_RUNNING) 
 	  {
@@ -1948,8 +1948,8 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 		   if(interrupted)
 		   {
 			   m_runState = gSKI_RUNSTATE_INTERRUPTED;
-			   //retVal     = gSKI_RUN_COMPLETED_AND_INTERRUPTED; //we always finish an interleave count
-			   retVal     = gSKI_RUN_INTERRUPTED;
+			   retVal     = gSKI_RUN_COMPLETED_AND_INTERRUPTED; 
+			   //retVal     = gSKI_RUN_INTERRUPTED;
 		   }
 		   else
 		   {
