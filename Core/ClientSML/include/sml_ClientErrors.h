@@ -59,6 +59,6 @@ public:
 	virtual ~ClientErrors() {}	
 } ;
 
-} ;	// End of namespace
+} 	// End of namespace
 
 #endif	// Header

@@ -329,6 +329,7 @@ namespace gSKI
        *           for this agent.
        */
       egSKIRunState GetRunState(Error* err = 0);
+	  void          SetRunState(egSKIRunState state, Error* err = 0) ;
 
       /**
        * @brief Gets the name of the agent

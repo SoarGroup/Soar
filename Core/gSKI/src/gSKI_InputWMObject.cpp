@@ -104,6 +104,8 @@ namespace gSKI
       MegaAssert(m_manager != 0, "Manager for InputWMObject cannot be null!");
 
       symbol_remove_ref(m_manager->GetSoarAgent(),	m_sym);
+	  ///  NO!  This should be release_io_symbol to encapsulate the ref handling.  KJC
+	  ///release_io_symbol((m_manager->GetSoarAgent(),	m_sym);
 
       if(m_gsym)
       {
@@ -442,7 +444,7 @@ namespace gSKI
      ===============================    
      ===============================
    */
-  void InputWMObject::Update(std::set<InputWMObject*>& processedObjects)
+  void InputWMObject::Update(std::set<InputWMObject*>& processedObjects, bool forceAdds, bool forceRemoves)
   {
     // First checking that this object hasn't already been added to the set of 
     // processed objects ( adding it and processing it if it hasn't; returning
@@ -493,7 +495,7 @@ namespace gSKI
       // Updating these wmes ( which creates raw kernel wmes from gSKI InputWmes
       // if they haven't already been created )
       if ( iwme != 0 ) {
-	iwme->Update();
+	iwme->Update(forceAdds, forceRemoves);
       } else {
 	MegaAssert( false, "Null InputWme registered with InputWMObject!" );
       }
@@ -509,7 +511,7 @@ namespace gSKI
       // objects to avoid being caught in cycles
       InputWMObject* obj = it->second;
       if ( obj != 0 ) {
-	obj->Update(processedObjects);
+	obj->Update(processedObjects, forceAdds, forceRemoves);
       } else {
 	MegaAssert( false, 
 		    "Null InputWMObject registered as child of another InputWMObject!");

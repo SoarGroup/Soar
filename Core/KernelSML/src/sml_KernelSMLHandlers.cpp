@@ -27,6 +27,7 @@
 #include "sml_TagResult.h"
 #include "sml_TagName.h"
 #include "sml_TagWme.h"
+#include "sml_TagFilter.h"
 #include "sml_TagCommand.h"
 #include "sml_ClientEvents.h"
 #include "sml_Events.h"
@@ -67,6 +68,11 @@ using namespace gSKI ;
 #ifdef _WIN32
 #undef GetObject
 #undef SendMessage
+#endif
+
+#ifndef _WIN32
+// BADBAD: should be using autoconf tools here!
+#define stricmp strcasecmp
 #endif
 
 /*
@@ -127,7 +133,6 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_LoadProductions]	= &sml::KernelSML::HandleLoadProductions ;
 	m_CommandMap[sml_Names::kCommand_GetInputLink]		= &sml::KernelSML::HandleGetInputLink ;
 	m_CommandMap[sml_Names::kCommand_Input]				= &sml::KernelSML::HandleInput ;
-	m_CommandMap[sml_Names::kCommand_StopOnOutput]		= &sml::KernelSML::HandleStopOnOutput ;
 	m_CommandMap[sml_Names::kCommand_CommandLine]		= &sml::KernelSML::HandleCommandLine ;
 	m_CommandMap[sml_Names::kCommand_ExpandCommandLine]	= &sml::KernelSML::HandleExpandCommandLine ;
 	m_CommandMap[sml_Names::kCommand_CheckForIncomingCommands] = &sml::KernelSML::HandleCheckForIncomingCommands ;
@@ -147,6 +152,8 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_GetRunState]		= &sml::KernelSML::HandleGetRunState ;
 	m_CommandMap[sml_Names::kCommand_IsProductionLoaded]= &sml::KernelSML::HandleIsProductionLoaded ;
 	m_CommandMap[sml_Names::kCommand_SendClientMessage] = &sml::KernelSML::HandleSendClientMessage ;
+	m_CommandMap[sml_Names::kCommand_WasAgentOnRunList] = &sml::KernelSML::HandleWasAgentOnRunList ;
+	m_CommandMap[sml_Names::kCommand_GetResultOfLastRun]= &sml::KernelSML::HandleGetResultOfLastRun ;
 }
 
 /*************************************************************
@@ -514,8 +521,15 @@ bool KernelSML::HandleGetRunState(gSKI::IAgent* pAgent, char const* pCommandName
 	}
 	else if (strcmp(pValue, sml_Names::kParamDecision) == 0)
 	{
-		// Report the current decision cycle counter (the counter reports one more than the user expects)
-		buffer << (pAgent->GetNumDecisionCyclesExecuted(pError)-1);
+		// Report the current decision number of decisions that have been executed
+		// This is currently a little tricky to determine as the agent records the
+		// number of decision cycles (output phases) executed.
+		int decisionCycles = pAgent->GetNumDecisionCyclesExecuted(pError);
+
+		if (pAgent->GetCurrentPhase(pError) == gSKI_APPLY_PHASE || pAgent->GetCurrentPhase(pError) == gSKI_OUTPUT_PHASE)
+			decisionCycles++ ;
+
+		buffer << (decisionCycles-1) ;
 	}
 	else
 	{
@@ -525,6 +539,24 @@ bool KernelSML::HandleGetRunState(gSKI::IAgent* pAgent, char const* pCommandName
 	std::string bufferStdString = buffer.str();
 	const char* bufferCString = bufferStdString.c_str();
 	return this->ReturnResult(pConnection, pResponse, bufferCString) ;
+}
+
+// Return information about the current runtime state of the agent (e.g. phase, decision cycle count etc.)
+bool KernelSML::HandleWasAgentOnRunList(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pCommandName) ; unused(pIncoming) ; unused(pError) ;
+
+	bool wasRun = GetAgentSML(pAgent)->WasAgentOnRunList() ;
+	return this->ReturnBoolResult(pConnection, pResponse, wasRun) ;
+}
+
+// Return information about the current runtime state of the agent (e.g. phase, decision cycle count etc.)
+bool KernelSML::HandleGetResultOfLastRun(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pCommandName) ; unused(pIncoming) ; unused(pError) ;
+
+	egSKIRunResult runResult = GetAgentSML(pAgent)->GetResultOfLastRun() ;
+	return this->ReturnIntResult(pConnection, pResponse, runResult) ;
 }
 
 // Returns true if the production name is currently loaded
@@ -628,21 +660,6 @@ bool KernelSML::HandleSetInterruptCheckRate(gSKI::IAgent* pAgent, char const* pC
 	GetKernel()->SetInterruptCheckRate(newRate) ;
 
 	return true ;
-}
-
-// Set a flag so Soar will break when it next generates output.  This allows us to
-// run for "n decisions" OR "until output" which we can't do with raw gSKI calls.
-bool KernelSML::HandleStopOnOutput(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
-{
-	unused(pCommandName) ; unused(pResponse) ; unused(pConnection) ; unused(pError) ;
-
-	// Get the parameters
-	bool state = pIncoming->GetArgBool(sml_Names::kParamValue, true) ;
-
-	// Make the call.
-	bool ok = GetAgentSML(pAgent)->SetStopOnOutput(state) ;
-
-	return ok ;
 }
 
 // Fire a particular event at the request of the client.
@@ -923,6 +940,13 @@ bool KernelSML::RemoveInputWME(gSKI::IAgent* pAgent, char const* pTimeTag, gSKI:
 		// Get the kernel-side identifier
 		std::string id = pWME->GetValue()->GetString() ;
 
+		// Look up the wmobject for this id
+		//IWMObject* pObject = NULL ;
+		//pInputWM->GetObjectById(id.c_str(), &pObject, pError) ;
+
+		//assert(!pError || !gSKI::isError(*pError)) ;
+		//pInputWM->RemoveObject(pObject) ;
+
 		// Remove it from the id mapping table
 		pAgentSML->RemoveID(id.c_str()) ;
 	}
@@ -959,7 +983,7 @@ static char const* GetValueType(egSKISymbolType type)
 	}
 }
 
-static bool AddWmeChildrenToXML(gSKI::IWMObject* pRoot, ElementXML* pTagResult)
+static bool AddWmeChildrenToXML(gSKI::IWMObject* pRoot, ElementXML* pTagResult, std::list<IWMObject*> *pTraversedList)
 {
 	if (!pRoot || !pTagResult)
 		return false ;
@@ -969,6 +993,18 @@ static bool AddWmeChildrenToXML(gSKI::IWMObject* pRoot, ElementXML* pTagResult)
 	while (iter->IsValid())
 	{
 		gSKI::IWme* pWME = iter->GetVal() ;
+
+		// In some cases, wmes either haven't been added yet or have already been removed from the kernel
+		// but still exist in gSKI.  In both cases, we can't (naturally) get a correct time tag for the wme
+		// so I think we should skip these wmes.  That's clearly correct if the wme has been removed, but I'm
+		// less sure if it's in the process of getting added.
+		if (pWME->HasBeenRemoved())
+		{
+			pWME->Release() ;
+			iter->Next() ;
+
+			continue ;
+		}
 
 		TagWme* pTagWme = new TagWme() ;
 
@@ -991,7 +1027,14 @@ static bool AddWmeChildrenToXML(gSKI::IWMObject* pRoot, ElementXML* pTagResult)
 		if (pWME->GetValue()->GetType() == gSKI_OBJECT)
 		{
 			gSKI::IWMObject* pChild = pWME->GetValue()->GetObject() ;
-			AddWmeChildrenToXML(pChild, pTagResult) ;
+
+			// Check that we haven't already added this identifier before
+			// (there can be cycles).
+			if (std::find(pTraversedList->begin(), pTraversedList->end(), pChild) == pTraversedList->end())
+			{
+				pTraversedList->push_back(pChild) ;
+				AddWmeChildrenToXML(pChild, pTagResult, pTraversedList) ;
+			}
 		}
 
 		pWME->Release() ;
@@ -1015,8 +1058,12 @@ bool KernelSML::HandleGetAllInput(gSKI::IAgent* pAgent, char const* pCommandName
 	gSKI::IWMObject* pRootObject = NULL ;
 	pAgent->GetInputLink()->GetRootObject(&pRootObject, pError) ;
 
+	// We need to keep track of which identifiers we've already added
+	// because this is a graph, so we may cycle back.
+	std::list<IWMObject*> traversedList ;
+
 	// Add this wme's children to XML
-	AddWmeChildrenToXML(pRootObject, pTagResult) ;
+	AddWmeChildrenToXML(pRootObject, pTagResult, &traversedList) ;
 
 	// Add the result tag to the response
 	pResponse->AddChild(pTagResult) ;
@@ -1054,8 +1101,12 @@ bool KernelSML::HandleGetAllOutput(gSKI::IAgent* pAgent, char const* pCommandNam
 	// Add this wme into the result
 	pTagResult->AddChild(pTagWme) ;
 
+	// We need to keep track of which identifiers we've already added
+	// because this is a graph, so we may cycle back.
+	std::list<IWMObject*> traversedList ;
+
 	// Add this wme's children to XML
-	AddWmeChildrenToXML(pRootObject, pTagResult) ;
+	AddWmeChildrenToXML(pRootObject, pTagResult, &traversedList) ;
 
 	// Add the message to the response
 	pResponse->AddChild(pTagResult) ;
@@ -1187,6 +1238,7 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 	// Get the parameters
 	char const* pLine = pIncoming->GetArgString(sml_Names::kParamLine) ;
 	bool echoResults  = pIncoming->GetArgBool(sml_Names::kParamEcho, false) ;
+	bool noFiltering  = pIncoming->GetArgBool(sml_Names::kParamNoFiltering, false) ;
 
 	// If the user chooses to enable this feature, certain commands are always echoed back.
 	// This is primarily to support two users connected to and debugging the same kernel at once.
@@ -1210,22 +1262,83 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 
 	if (kDebugCommandLine)
 		PrintDebugFormat("Executing %s", pLine) ;
+	
+	AgentSML* pAgentSML = this->GetAgentSML(pAgent) ;
 
 	// If we're echoing the results, also echo the command we're executing
-	if (echoResults)
-	{
-		AgentSML* pAgentSML = this->GetAgentSML(pAgent) ;
+	if (echoResults && pAgentSML)
+		pAgentSML->FireEchoEvent(pConnection, pLine) ;
 
-		if (pAgentSML)
-			pAgentSML->FireEchoEvent(pConnection, pLine) ;
+	// Send this command line through anyone registered filters.
+	// If there are no filters (or this command requested not to be filtered), this copies the original line into the filtered line unchanged.
+	char const* pFilteredLine   = pLine ;
+	bool filteredError = false ;
+	ElementXML* pFilteredXML = NULL ;
+
+	if (!noFiltering && HasFilterRegistered())
+	{
+		// We'll send the command over as an XML packet, so there's some structure to work with.
+		// The current structure is:
+		// <filter command="command" output="generated output" error="true | false"></filter>
+		// Each filter is passed this string and can modify it as they go.
+		// All attributes are optional although either command or output & error should exist.
+		// It's possible, although unlikely that all 3 could exist at once (i.e. another command to execute, yet still have output already)
+		TagFilter filterXML ;
+		filterXML.SetCommand(pLine) ;
+
+		char* pXMLString = filterXML.GenerateXMLString(true) ;
+
+		std::string filteredXML ;
+		bool filtered = this->SendFilterMessage(pAgent, pXMLString, &filteredXML) ;
+
+		// Clean up the XML message
+		filterXML.DeleteString(pXMLString) ;
+
+		// If a filter consumed the entire command, there's no more work for us to do.
+		if (filteredXML.empty())
+			return true ;
+
+		if (filtered)
+		{
+			pFilteredXML = ElementXML::ParseXMLFromString(filteredXML.c_str()) ;
+			if (!pFilteredXML)
+			{
+				// Error parsing the XML that the filter returned
+				return false ;
+			}
+
+			// Get the results of the filtering
+			pFilteredLine    = pFilteredXML->GetAttribute(sml_Names::kFilterCommand) ;
+			char const* pFilteredOutput  = pFilteredXML->GetAttribute(sml_Names::kFilterOutput) ;
+			char const* pErr = pFilteredXML->GetAttribute(sml_Names::kFilterError) ;
+			filteredError    = (pErr && stricmp(pErr, "true") == 0) ;
+
+			// See if the filter consumed the command.  If so, we just need to return the output.
+			if (!pFilteredLine || strlen(pFilteredLine) == 0)
+			{
+				// We may have no output defined and that's not an error so cover that case
+				if (pFilteredOutput == NULL)
+					pFilteredOutput = "" ;
+
+				bool res = this->ReturnResult(pConnection, pResponse, pFilteredOutput) ;
+
+				// Can only clean this up after we're finished using it or pFilteredLine will become invalid
+				delete pFilteredXML ;
+
+				return res ;
+			}
+		}
 	}
 
 	// Make the call.
 	m_CommandLineInterface.SetRawOutput(rawOutput);
-	bool result = m_CommandLineInterface.DoCommand(pConnection, pAgent, pLine, echoResults, pResponse) ;
+	bool result = m_CommandLineInterface.DoCommand(pConnection, pAgent, pFilteredLine, echoResults, pResponse) ;
 
 	if (kDebugCommandLine)
 		PrintDebugFormat("Completed %s", pLine) ;
+
+	// Can only clean this up after we're finished using it or pFilteredLine will become invalid
+	delete pFilteredXML ;
 
 	return result ;
 }

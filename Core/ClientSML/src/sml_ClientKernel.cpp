@@ -51,6 +51,13 @@ Kernel::Kernel(Connection* pConnection)
 	m_bShutdown		= false ;
 	m_ConnectionInfoChanged = false ;
 	m_bIgnoreOutput = false ;
+	m_FilteringEnabled = true ;
+
+	// We're turning on auto commit by default, so clients are a bit slower but easier to write.
+	// Power users are free to turn it off and use explicit commit calls.
+	m_bAutoCommit   = true ;
+
+	ClearError() ;
 
 	if (pConnection)
 	{
@@ -296,7 +303,6 @@ Agent* Kernel::IsXMLTraceEvent(ElementXML* pIncomingMsg)
 		// (must have been flushed after the agent was destroyed).
 		// Returning null is probably as good as we do here so
 		// always return pAgent (even if it's null).
-		assert(pAgent) ;
 		return pAgent ;
 	}
 
@@ -311,6 +317,10 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
 {
 	// Create a reply
 	ElementXML* pResponse = pConnection->CreateSMLResponse(pIncomingMsg) ;
+
+	// Make sure the connection hasn't been closed along the way
+	if (pConnection->IsClosed())
+		return pResponse ;
 
 	// Special case.  We want to intercept XML trace messages and pass them directly to the handler
 	// without analyzing them.  This is just to boost performance for these messages as speed is critical here
@@ -1029,14 +1039,26 @@ bool Kernel::DestroyAgent(Agent* pAgent)
 }
 
 /*************************************************************
+* @brief If filtering is disabled, that means all commands
+*		 sent from this client will not be filtered (sent to
+*		 external processes that have registered a filter).
+*		 The default is that filtering is enabled.
+*************************************************************/
+void Kernel::EnableFiltering(bool state)
+{
+	m_FilteringEnabled = state ;
+}
+
+/*************************************************************
 * @brief Process a command line command
 *
 * @param pCommandLine Command line string to process.
 * @param pAgentName   Agent name to apply the command line to (can be NULL)
 * @param echoResults  If true the results are also echoed through the smlEVENT_ECHO event, so they can appear in a debugger (or other listener)
+* @param noFilter	  If true this command line by-passes any external filters that have been registered (this is not common) and is executed immediately.
 * @returns The string form of output from the command.
 *************************************************************/
-char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAgentName, bool echoResults)
+char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAgentName, bool echoResults, bool noFilter)
 {
 	AnalyzeXML response;
 	bool wantRawOutput = true ;
@@ -1046,6 +1068,7 @@ char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAg
 		sml_Names::kCommand_CommandLine, pAgentName,
 		sml_Names::kParamLine, pCommandLine,
 		sml_Names::kParamEcho, echoResults ? sml_Names::kTrue : sml_Names::kFalse,
+		sml_Names::kParamNoFiltering, m_FilteringEnabled && noFilter ? sml_Names::kTrue : sml_Names::kFalse,
 		wantRawOutput);
 
 	if (m_CommandLineSucceeded)
@@ -1105,6 +1128,23 @@ void Kernel::CommitAll()
 }
 
 /*************************************************************
+* @brief Returns true if at least one agent has uncommitted changes.
+*************************************************************/
+bool Kernel::IsCommitRequired()
+{
+	int numberAgents = GetNumberAgents() ;
+
+	for (int i = 0 ; i < numberAgents ; i++)
+	{
+		Agent* pAgent = GetAgentByIndex(i) ;
+		if (pAgent->GetWM()->IsCommitRequired())
+			return true ;
+	}
+
+	return false ;
+}
+
+/*************************************************************
 * @brief   Run Soar for the specified number of decisions
 *
 * This command will currently run all agents.
@@ -1112,12 +1152,18 @@ void Kernel::CommitAll()
 * @returns The result of executing the run command.
 *		   The output from during the run is sent to a different callback.
 *************************************************************/
-char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepSize)
+char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepSize, smlInterleaveStepSize interleaveStepSize)
 {
+	if (IsCommitRequired())
+	{
+		assert(false) ;
+		return "Need to commit changes before calling a run method" ;
+	}
+
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(NULL, false, stepSize, (int)numberSteps) ;
+			((EmbeddedConnection*)GetConnection())->DirectRun(NULL, false, stepSize, interleaveStepSize, (int)numberSteps) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -1127,8 +1173,29 @@ char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepS
 	ostr << numberSteps ;
 
 	// Create the command line for the run command
-	std::string step = (stepSize == sml_DECISION) ? "-d" : (stepSize == sml_PHASE) ? "-p" : "-e" ;
-	std::string cmd = "run " + step + " " + ostr.str() ;
+	std::string step ;
+	
+	switch (stepSize)
+	{
+		case sml_DECISION:		step = "-d" ; break ;
+		case sml_PHASE:			step = "-p" ; break ;
+		case sml_ELABORATION:	step = "-e" ; break ;
+		case sml_UNTIL_OUTPUT:	step = "-o" ; break ;
+		default: return "Unrecognized step size parameter passed to RunAllAgents" ;
+	}
+
+	std::string interleave ;
+
+	switch (interleaveStepSize)
+	{
+		case sml_INTERLEAVE_ELABORATION:	interleave = "-i e" ; break ;
+		case sml_INTERLEAVE_PHASE:			interleave = "-i p" ; break ;
+		case sml_INTERLEAVE_DECISION:		interleave = "-i d" ; break ;
+		case sml_INTERLEAVE_UNTIL_OUTPUT:	interleave = "-i o" ; break ;
+		default: return "Unrecognized interleave size parameter passed to RunAllAgents" ;
+	}
+
+	std::string cmd = "run " + step + " " + interleave + " " + ostr.str() ;
 
 	// The command line currently requires an agent in order
 	// to execute a run command, so we provide one (which one should make no difference).
@@ -1142,17 +1209,34 @@ char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepS
 	return pResult ;
 }
 
-char const* Kernel::RunAllAgentsForever()
+char const* Kernel::RunAllAgentsForever(smlInterleaveStepSize interleaveStepSize)
 {
+	if (IsCommitRequired())
+	{
+		assert(false) ;
+		return "Need to commit changes before calling a run method" ;
+	}
+
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(NULL, true, sml_DECISION, 1) ;
+			((EmbeddedConnection*)GetConnection())->DirectRun(NULL, true, sml_DECISION, interleaveStepSize, 1) ;
 			return "DirectRun completed" ;
 		}
 #endif
 
-	std::string cmd = "run" ;
+	std::string interleave ;
+
+	switch (interleaveStepSize)
+	{
+		case sml_INTERLEAVE_ELABORATION:	interleave = "-i e" ; break ;
+		case sml_INTERLEAVE_PHASE:			interleave = "-i p" ; break ;
+		case sml_INTERLEAVE_DECISION:		interleave = "-i d" ; break ;
+		case sml_INTERLEAVE_UNTIL_OUTPUT:	interleave = "-i o" ; break ;
+		default: return "Unrecognized interleave size parameter passed to RunAllAgents" ;
+	}
+
+	std::string cmd = "run " + interleave ;
 
 	// The command line currently requires an agent in order
 	// to execute a run command, so we provide one (which one should make no difference).
@@ -1183,21 +1267,38 @@ char const* Kernel::RunAllAgentsForever()
 * before then that agent will stop running.  (This value can be changed with the
 * max-nil-output-cycles command).
 *************************************************************/
-char const* Kernel::RunAllTilOutput()
+char const* Kernel::RunAllTilOutput(smlInterleaveStepSize interleaveStepSize)
 {
+	if (IsCommitRequired())
+	{
+		assert(false) ;
+		return "Need to commit changes before calling a run method" ;
+	}
+
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(NULL, false, sml_UNTIL_OUTPUT, 1) ;
+			((EmbeddedConnection*)GetConnection())->DirectRun(NULL, false, sml_UNTIL_OUTPUT, interleaveStepSize, 1) ;
 			return "DirectRun completed" ;
 		}
 #endif
+
+	std::string interleave ;
+
+	switch (interleaveStepSize)
+	{
+		case sml_INTERLEAVE_ELABORATION:	interleave = "-i e" ; break ;
+		case sml_INTERLEAVE_PHASE:			interleave = "-i p" ; break ;
+		case sml_INTERLEAVE_DECISION:		interleave = "-i d" ; break ;
+		case sml_INTERLEAVE_UNTIL_OUTPUT:	interleave = "-i o" ; break ;
+		default: return "Unrecognized interleave size parameter passed to RunAllAgents" ;
+	}
 
 	// Run all agents until each has generated output.  Each agent will stop at the point
 	// it has generated output, so they may run for different numbers of decisions.
 	// For now, maxDecisions is being ignored.  We should make this a separate call
 	// to set this parameter.
-	std::string cmd = "run --output" ;
+	std::string cmd = "run --output " + interleave ;
 
 	// The command line currently requires an agent in order
 	// to execute a run command, so we provide one (which one should make no difference).

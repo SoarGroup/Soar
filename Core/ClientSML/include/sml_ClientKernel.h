@@ -44,6 +44,8 @@ class SystemEventHandlerPlusData : public EventHandlerPlusData
 public:
 	SystemEventHandler  m_Handler ;
 
+	SystemEventHandlerPlusData() {}
+
 	SystemEventHandlerPlusData(int eventID, SystemEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
 		m_Handler = handler ;
@@ -54,6 +56,8 @@ class UpdateEventHandlerPlusData : public EventHandlerPlusData
 {
 public:
 	UpdateEventHandler  m_Handler ;
+
+	UpdateEventHandlerPlusData() {}
 
 	UpdateEventHandlerPlusData(int eventID, UpdateEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
@@ -66,6 +70,8 @@ class StringEventHandlerPlusData : public EventHandlerPlusData
 public:
 	StringEventHandler  m_Handler ;
 
+	StringEventHandlerPlusData() {}
+
 	StringEventHandlerPlusData(int eventID, StringEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
 		m_Handler = handler ;
@@ -76,6 +82,8 @@ class AgentEventHandlerPlusData : public EventHandlerPlusData
 {
 public:
 	AgentEventHandler m_Handler ;
+
+	AgentEventHandlerPlusData() {}
 
 	AgentEventHandlerPlusData(int eventID, AgentEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
@@ -88,6 +96,8 @@ class RhsEventHandlerPlusData : public EventHandlerPlusData
 public:
 	RhsEventHandler	m_Handler ;
 	std::string		m_FunctionName ;
+
+	RhsEventHandlerPlusData() {}
 
 	RhsEventHandlerPlusData(int eventID, char const* pFunctionName, RhsEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
@@ -160,6 +170,9 @@ protected:
 	typedef std::list<ConnectionInfo*>::iterator ConnectionListIter ;
 	bool				m_ConnectionInfoChanged ;
 
+	// When true, commands are sent to external filters (if they are registered) for filtering before execution.
+	bool				m_FilteringEnabled ;
+
 	// Which handler functions to call when an event comes in
 	SystemEventMap		m_SystemEventMap ;
 	AgentEventMap		m_AgentEventMap ;
@@ -189,6 +202,10 @@ protected:
 
 	// If true, don't register to get output link events
 	bool m_bIgnoreOutput ;
+
+	// If true, commit all changes to working memory immediately after they occur
+	// (that is send them over to kernelSML immediately, rather than collecting them up for a single commit)
+	bool m_bAutoCommit ;
 
 	// This thread is used to check for incoming events when the client goes to sleep
 	// It ensures the client stays "alive" and is optional (there are other ways for clients to keep themselves
@@ -281,6 +298,7 @@ public:
 	* @param Optimized		If this is a current thread connection, we can short-circuit parts of the messaging system for sending input and
 	*						running Soar.  If this flag is true we use those short cuts.  If you're trying to debug the SML libraries
 	*						you may wish to disable this option (so everything goes through the standard paths).  Not available if running in a new thread.
+	*						Also if you're looking for maximum performance be sure to read about the "auto commit" options below.
 	* @param port			The port number the kernel should use to receive remote connections.  The default port for SML is 12121 (picked at random).
 	*						Passing 0 means no listening port will be created (so it will be impossible to make remote connections to the kernel).
 	*
@@ -306,12 +324,28 @@ public:
 	* @returns A new kernel object which is used to communicate with the kernel
 	*		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 	*************************************************************/
-	static Kernel* CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, int port = kDefaultSMLPort, bool ignoreOutput = false) ;
+	static Kernel* CreateRemoteConnection(bool sharedFileSystem = true, char const* pIPaddress = 0, int port = kDefaultSMLPort, bool ignoreOutput = false) ;
 
 	/*************************************************************
 	* @brief Returns the default port we use for remote connections.
 	*************************************************************/
 	static int GetDefaultPort() { return kDefaultSMLPort ; }
+
+	/*************************************************************
+	* @brief If auto commit is set to false then after making any changes
+	*		 to working memory elements (adds, updates, deletes) the client
+	*		 must call "commit" to send those changes over to Soar.
+	*		 This mode boosts performance because only a single packet
+	*		 is sent containing all of the wme changes.
+	*
+	*		 If auto commit is set to true then after any change to
+	*		 working memory, commit is called automatically and the
+	*		 change is sent immediately over to the kernel.
+	*		 This makes the developer's life easier (no need to remember
+	*		 to call commit) at the cost of some performance.
+	*************************************************************/
+	void SetAutoCommit(bool state)	{ m_bAutoCommit = state ; }
+	bool IsAutoCommitEnabled()		{ return m_bAutoCommit ; }
 
 	/*************************************************************
 	* @brief Preparation for deleting the kernel.
@@ -395,14 +429,26 @@ public:
 	bool	IsAgentValid(Agent* pAgent) ;
 
 	/*************************************************************
+	* @brief If filtering is disabled, that means all commands
+	*		 sent from this client will not be filtered (sent to
+	*		 external processes that have registered a filter).
+	*		 The default is that filtering is enabled.
+	*
+	*		 Disabling filtering overrides the noFilter setting that
+	*		 is available on a command by command basis.
+	*************************************************************/
+	void	EnableFiltering(bool state) ;
+
+	/*************************************************************
 	* @brief Process a command line command
 	*
 	* @param pCommandLine Command line string to process.
 	* @param pAgentName   Agent name to apply the command line to (can be NULL)
 	* @param echoResults  If true the results are also echoed through the smlEVENT_ECHO event, so they can appear in a debugger (or other listener)
+	* @param noFilter	  If true this command line by-passes any external filters that have been registered (this is not common) and is executed immediately.
 	* @returns The string form of output from the command.
 	*************************************************************/
-	char const* ExecuteCommandLine(char const* pCommandLine, char const* pAgentName, bool echoResults = false) ;
+	char const* ExecuteCommandLine(char const* pCommandLine, char const* pAgentName, bool echoResults = false, bool noFilter = false) ;
 
 	/*************************************************************
 	* @brief Execute a command line command and return the result
@@ -419,13 +465,17 @@ public:
 	/*************************************************************
 	* @brief   Run Soar for the specified number of decisions
 	*
+	* @param numberSteps	The number of decisions (or steps) to run the agent
+	* @param stepSize		The size of step we're running (e.g. phases, decisions, outputs)
+	* @param interleaveStepSize	 How much to run each agent before running the next agent.
+	*
 	* This command will run all agents.
 	*
 	* @returns The result of executing the run command.
 	*		   The output from during the run is sent to a different callback.
 	*************************************************************/
-	char const* RunAllAgents(unsigned long numberSteps, smlRunStepSize stepSize = sml_DECISION) ;
-	char const* RunAllAgentsForever() ;
+	char const* RunAllAgents(unsigned long numberSteps, smlRunStepSize stepSize = sml_DECISION, smlInterleaveStepSize interleaveStepSize = sml_INTERLEAVE_PHASE) ;
+	char const* RunAllAgentsForever(smlInterleaveStepSize interleaveStepSize = sml_INTERLEAVE_PHASE) ;
 
 	/*************************************************************
 	* @brief   Run Soar until either output is generated or
@@ -444,7 +494,7 @@ public:
 	* before then that agent will stop running.  (This value can be changed with the
 	* max-nil-output-cycles command).
 	*************************************************************/
-	char const* RunAllTilOutput() ;
+	char const* RunAllTilOutput(smlInterleaveStepSize interleaveStepSize = sml_INTERLEAVE_PHASE) ;
 
 	/*************************************************************
 	* @brief Interrupt the currently running Soar agent.
@@ -827,6 +877,10 @@ public:
 	*
 	* This points to the location where the kernelSML library was loaded
 	* (unless it has been changed since the load).
+	*
+	* The latest folder structure has "SoarLibrary"
+	* with a "bin" subfolder that contains the actual kernel DLL that we load.
+	* This function returns the parent "SoarLibrary" folder.
 	*************************************************************/
 	std::string GetLibraryLocation() ;
 
@@ -855,6 +909,11 @@ public:
 	*		 over to the kernel for processing.
 	*************************************************************/
 	void CommitAll() ;
+
+	/*************************************************************
+	* @brief Returns true if at least one agent has uncommitted changes.
+	*************************************************************/
+	bool IsCommitRequired() ;
 
 protected:
 	/*************************************************************

@@ -45,10 +45,9 @@ bool StringListener::RemoveListener(egSKIStringEventId eventID, Connection* pCon
 // Called when a event occurs in the kernel
 void StringListener::HandleEvent(egSKIStringEventId eventID, char const* pData)
 {
-	ConnectionListIter connectionIter = GetBegin(eventID) ;
-
-	// Nobody is listenening for this event.  That's an error as we should unregister from the kernel in that case.
-	if (connectionIter == GetEnd(eventID))
+	// Get the first listener for this event (or return if there are none)
+	ConnectionListIter connectionIter ;
+	if (!EventManager<egSKIStringEventId>::GetBegin(eventID, &connectionIter))
 		return ;
 
 	// We need the first connection for when we're building the message.  Perhaps this is a sign that

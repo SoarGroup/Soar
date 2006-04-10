@@ -131,7 +131,17 @@
 		Tcl_DoOneEvent(TCL_DONT_WAIT) ;
 
 		return TCL_OK;
-	} 
+	}
+	
+	// Embedded $, [ and " are replaced with \$ \[ and \" to stop them being evaluated by
+	// Tcl on the way through the callback.
+	void EscapeSpecial(std::string* s) {
+	    int pos = s->find_first_of("[$\"");
+	    while(pos != std::basic_string<char*>::npos) {
+	        s->insert(pos, "\\");
+	        pos = s->find_first_of("[$\"", pos+2);
+	    }	    
+	}
 	
 	void TclOutputNotificationEventCallback(void* pUserData, sml::Agent* pAgent)
 	{
@@ -150,7 +160,12 @@
 	    // this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 	    Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pAgent, SWIGTYPE_p_sml__Agent,0));
-	    Tcl_AppendStringsToObj(script, " ", pFunctionName, " \"", pArgument, "\"", NULL);
+	    
+	    // the argument could have embedded quotes, so we need to escape them
+	    std::string argument = pArgument;
+	    EscapeSpecial(&argument);
+	    
+	    Tcl_AppendStringsToObj(script, " ", pFunctionName, " \"", argument.c_str(), "\"", NULL);
 	    // since we're returning a value, we need to clear out any old values
 		Tcl_ResetResult(tud->interp);
 		// since this script will never be executed again, we use TCL_EVAL_DIRECT, which skips the compilation step
@@ -171,7 +186,12 @@
 	    // this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 	    Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pAgent, SWIGTYPE_p_sml__Agent,0));
-	    Tcl_AppendStringsToObj(script, " ", pClientName, " \"", pMessage, "\"", NULL);
+	    
+	    // the message could have embedded quotes, so we need to escape them
+	    std::string message = pMessage;
+	    EscapeSpecial(&message);
+	    
+	    Tcl_AppendStringsToObj(script, " ", pClientName, " \"", message.c_str(), "\"", NULL);
 	    // since we're returning a value, we need to clear out any old values
 		Tcl_ResetResult(tud->interp);
 		// since this script will never be executed again, we use TCL_EVAL_DIRECT, which skips the compilation step
@@ -254,8 +274,13 @@
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		// this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
+		
+		// the message could have embedded quotes, so we need to escape them
+	    std::string message = pMessage;
+	    EscapeSpecial(&message);
+	    
 		// wrap the message in quotes in case it has spaces
-		Tcl_AppendStringsToObj(script, " \"", pMessage, "\"", NULL);
+		Tcl_AppendStringsToObj(script, " \"", message.c_str(), "\"", NULL);
 		// since this script will never be executed again, we use TCL_EVAL_DIRECT, which skips the compilation step
 		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
 		
@@ -342,7 +367,12 @@
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		// this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
-		Tcl_AppendStringsToObj(script, " \"", pData, "\"", NULL);
+		
+		// the message could have embedded quotes, so we need to escape them
+	    std::string data = pData;
+	    EscapeSpecial(&data);
+	    
+		Tcl_AppendStringsToObj(script, " \"", data.c_str(), "\"", NULL);
 		// since this script will never be executed again, we use TCL_EVAL_DIRECT, which skips the compilation step
 		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
 		
@@ -360,7 +390,12 @@
 	    tud->script = Tcl_NewObj();
 	    Tcl_AppendStringsToObj(tud->script, proc, " ", NULL);
 	    Tcl_AppendObjToObj(tud->script, Tcl_NewLongObj(id));
-	    Tcl_AppendStringsToObj(tud->script, " \"", userData, "\" ", NULL);
+	    
+	    // the user data could have embedded quotes, so we need to escape them
+	    std::string ud = userData;
+	    EscapeSpecial(&ud);
+	    
+	    Tcl_AppendStringsToObj(tud->script, " \"", ud.c_str(), "\" ", NULL);
 	    
 	    return tud;
 	}
@@ -373,7 +408,12 @@
 	    // put all of the arguments together so we can just execute this as a single script later
 	    // put spaces between the arguments and wrap the userdata in quotes (in case it has spaces)
 	    tud->script = Tcl_NewObj();
-	    Tcl_AppendStringsToObj(tud->script, proc, " \"", userData, "\"", NULL);
+	    
+	    // the user data could have embedded quotes, so we need to escape them
+	    std::string ud = userData;
+	    EscapeSpecial(&ud);
+	    
+	    Tcl_AppendStringsToObj(tud->script, proc, " \"", ud.c_str(), "\"", NULL);
 	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Agent,0));
 	    
 	    return tud;
@@ -401,7 +441,12 @@
 	    // put all of the arguments together so we can just execute this as a single script later
 	    // put spaces between the arguments and wrap the userdata in quotes (in case it has spaces)
 	    tud->script = Tcl_NewObj();
-	    Tcl_AppendStringsToObj(tud->script, proc, " \"", userData, "\" ", NULL);
+	    
+	    // the user data could have embedded quotes, so we need to escape them
+	    std::string ud = userData;
+	    EscapeSpecial(&ud);
+	    
+	    Tcl_AppendStringsToObj(tud->script, proc, " \"", ud.c_str(), "\" ", NULL);
 	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Agent,0));
 	    Tcl_AppendStringsToObj(tud->script, " ", commandName, " ", NULL);
 	    
@@ -467,13 +512,15 @@
 	    return self->RegisterForAgentEvent(id, TclAgentEventCallback, (void*)tud, addToBack);
     };
     
+    // Note that we're not exposing both the function name and callback as separate parameters, because it doesn't make much sense
+    // to have different names in Tcl (and they are both strings -- in C++ they're not the same type; hence the separation there)
     int AddRhsFunction(Tcl_Interp* interp, char const* pRhsFunctionName, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclUserData(sml::smlEVENT_RHS_USER_FUNCTION, pRhsFunctionName, userData, interp);
 	    return self->AddRhsFunction(pRhsFunctionName, TclRhsEventCallback, (void*)tud, addToBack);
     };
     
-    int RegisterForClientMessageEvent(Tcl_Interp* interp, char const* pMessageType, char const* pRhsFunctionName, char* userData, bool addToBack = true) {
-	    TclUserData* tud = CreateTclUserData(sml::smlEVENT_RHS_USER_FUNCTION, pMessageType, userData, interp);
-	    return self->RegisterForClientMessageEvent(pMessageType, TclClientMessageEventCallback, (void*)tud, addToBack);
+    int RegisterForClientMessageEvent(Tcl_Interp* interp, char const* pClientName, char const* pMessageHandler, char* userData, bool addToBack = true) {
+	    TclUserData* tud = CreateTclUserData(sml::smlEVENT_RHS_USER_FUNCTION, pMessageHandler, userData, interp);
+	    return self->RegisterForClientMessageEvent(pClientName, TclClientMessageEventCallback, (void*)tud, addToBack);
     };
 }

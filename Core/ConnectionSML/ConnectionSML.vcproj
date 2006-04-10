@@ -21,7 +21,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="include;..\ElementXML\include;..\ClientSML\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;DEBUG"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="TRUE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -37,7 +37,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"/>
+				OutputFile="..\..\SoarLibrary\lib\$(ProjectName).lib"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -71,7 +71,7 @@
 				InlineFunctionExpansion="2"
 				OmitFramePointers="TRUE"
 				AdditionalIncludeDirectories="include;..\ElementXML\include;..\ClientSML\include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
@@ -85,7 +85,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				OutputFile="..\..\SoarLibrary\lib\$(ProjectName).lib"
 				IgnoreAllDefaultLibraries="TRUE"
 				IgnoreDefaultLibraryNames=""/>
 			<Tool
@@ -162,6 +162,9 @@
 			</File>
 			<File
 				RelativePath=".\src\sml_TagError.cpp">
+			</File>
+			<File
+				RelativePath=".\src\sml_TagFilter.cpp">
 			</File>
 			<File
 				RelativePath=".\src\sml_TagName.cpp">
@@ -269,6 +272,9 @@
 			</File>
 			<File
 				RelativePath=".\include\sml_TagError.h">
+			</File>
+			<File
+				RelativePath=".\include\sml_TagFilter.h">
 			</File>
 			<File
 				RelativePath=".\include\sml_TagName.h">

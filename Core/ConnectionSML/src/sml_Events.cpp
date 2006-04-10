@@ -20,6 +20,7 @@ Events::Events()
 {
 	// Kernel events
 	RegisterEvent(smlEVENT_BEFORE_SHUTDOWN, "before-shutdown") ;
+	RegisterEvent(smlEVENT_AFTER_CONNECTION, "after-connection");
 	RegisterEvent(smlEVENT_AFTER_CONNECTION_LOST, "after-connection-lost");
 	RegisterEvent(smlEVENT_BEFORE_RESTART, "before-restart") ;
 	RegisterEvent(smlEVENT_AFTER_RESTART, "after-restart") ;
@@ -100,6 +101,7 @@ Events::Events()
 
 	// Rhs user function fired
 	RegisterEvent(smlEVENT_RHS_USER_FUNCTION, "rhs-user-function") ;
+	RegisterEvent(smlEVENT_FILTER, "filter") ;
 	RegisterEvent(smlEVENT_CLIENT_MESSAGE, "client-message") ;
 }
 

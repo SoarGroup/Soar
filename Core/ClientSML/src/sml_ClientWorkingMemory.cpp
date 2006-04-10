@@ -191,6 +191,176 @@ void WorkingMemory::ClearOutputLinkChanges()
 }
 
 /*************************************************************
+* @brief This function is called when an output wme has been added.
+*
+* @param pWmeXML	The output WME being added
+* @param tracing	True if generating debug output
+*************************************************************/
+bool WorkingMemory::ReceivedOutputAddition(ElementXML* pWmeXML, bool tracing)
+{
+	// We're adding structure to the output link
+	char const* pID			= pWmeXML->GetAttribute(sml_Names::kWME_Id) ;	// These IDs will be kernel side ids (e.g. "I3" not "i3")
+	char const* pAttribute  = pWmeXML->GetAttribute(sml_Names::kWME_Attribute) ;
+	char const* pValue		= pWmeXML->GetAttribute(sml_Names::kWME_Value) ;
+	char const* pType		= pWmeXML->GetAttribute(sml_Names::kWME_ValueType) ;	// Can be NULL (=> string)
+	char const* pTimeTag	= pWmeXML->GetAttribute(sml_Names::kWME_TimeTag) ;	// These will be kernel side time tags (e.g. +5 not -7)
+
+	// Set the default value
+	if (!pType)
+		pType = sml_Names::kTypeString ;
+
+	// Check we got everything we need
+	if (!pID || !pAttribute || !pValue || !pTimeTag)
+		return false ;
+
+	if (tracing)
+	{
+		PrintDebugFormat("Received output wme: %s ^%s %s (time tag %s)", pID, pAttribute, pValue, pTimeTag) ;
+	}
+
+	long timeTag = atoi(pTimeTag) ;
+
+	// Find the parent wme that we're adding this new wme to
+	// (Actually, there can be multiple WMEs that have this identifier
+	//  as its value, but any one will do because the true parent is the
+	//  identifier symbol which is the same for any identifiers).
+	Identifier* pParent = FindIdentifier(pID, false, true) ;
+	WMElement* pAddWme = NULL ;
+
+	if (pParent)
+	{
+		// Create a client side wme object to match the output wme and add it to
+		// our tree of objects.
+		pAddWme = CreateWME(pParent, pID, pAttribute, pValue, pType, timeTag) ;
+		if (pAddWme)
+		{
+			pParent->AddChild(pAddWme) ;
+
+			// Make a record that this wme was added so we can alert the client to this change.
+			RecordAddition(pAddWme) ;
+		}
+		else
+		{
+			PrintDebugFormat("Unable to create an output wme -- type was not recognized") ;
+			GetAgent()->SetDetailedError(Error::kOutputError, "Unable to create an output wme -- type was not recognized") ;
+		}
+	}
+	else
+	{
+		// See if this is the output-link itself (we want to keep a handle to that specially)
+		if (!m_OutputLink && IsStringEqualIgnoreCase(pAttribute, sml_Names::kOutputLinkName))
+		{
+			m_OutputLink = new Identifier(GetAgent(), pValue, timeTag) ;
+		} else
+		{
+			// If we reach here we've received output which is out of order (e.g. (Y ^att value) before (X ^att Y))
+			// so there's no parent to connect it to.  We'll create the wme, keep it on a special list of orphans
+			// and try to reconnect it later.
+			pAddWme = CreateWME(NULL, pID, pAttribute, pValue, pType, timeTag) ;
+
+			if (tracing)
+				PrintDebugFormat("Received output wme (orphaned): %s ^%s %s (time tag %s)", pID, pAttribute, pValue, pTimeTag) ;
+
+			if (pAddWme)
+				m_OutputOrphans.push_back(pAddWme) ;
+		}
+	}
+
+	// If we have an output wme still waiting to be connected to its parent
+	// and we get in a new wme that is creating an identifier see if they match up.
+	if (pAddWme && pAddWme->IsIdentifier() && !m_OutputOrphans.empty())
+	{
+		TryToAttachOrphanedChildren(pAddWme->ConvertToIdentifier()) ;
+	}
+
+	return true ;
+}
+
+/*************************************************************
+* @brief Some output WMEs will come to us "out of order".
+*		 That's to say, a child of an identifier appears before
+*		 the identifier (e.g. (X ^name me) before (Y ^person X)).
+*		 This function searches the list of wmes that haven't been
+*		 attached to an identifier yet and attaches them together
+*		 (if the identifier strings match).
+*		 By the end of a single output message all children should have
+*		 been attached (and no longer be orphans).
+*
+* @param pPossibleParent	The identifier that may have orphaned children to attach.
+*************************************************************/
+bool WorkingMemory::TryToAttachOrphanedChildren(Identifier* pPossibleParent)
+{
+	if (m_OutputOrphans.empty())
+		return false ;
+
+	bool deleteFromList = true ;
+	WMElement* pWme = SearchWmeListForID(&m_OutputOrphans, pPossibleParent->GetValueAsString(), deleteFromList) ;
+
+	while (pWme)
+	{
+		pWme->SetParent(pPossibleParent) ;
+		pPossibleParent->AddChild(pWme) ;
+
+		if (this->GetAgent()->GetKernel()->IsTracingCommunications())
+			PrintDebugFormat("Adding orphaned child to this ID: %s ^%s %s (time tag %d)", pWme->GetIdentifierName(), pWme->GetAttribute(), pWme->GetValueAsString(), pWme->GetTimeTag()) ;
+
+		// If the wme being attached is itself an identifier, we have to check in turn to see if it has any orphaned children
+		if (pWme->IsIdentifier())
+			TryToAttachOrphanedChildren(pWme->ConvertToIdentifier()) ;
+
+		// Make a record that this wme was added so we can alert the client to this change.
+		RecordAddition(pWme) ;
+
+		pWme = SearchWmeListForID(&m_OutputOrphans, pPossibleParent->GetValueAsString(), deleteFromList) ;
+	}
+
+	return true ;
+}
+
+/*************************************************************
+* @brief This function is called when an output wme has been removed.
+*
+* @param pWmeXML	The output WME being removed
+* @param tracing	True if generating debug output
+*************************************************************/
+bool WorkingMemory::ReceivedOutputRemoval(ElementXML* pWmeXML, bool tracing)
+{
+	// We're removing structure from the output link
+	char const* pTimeTag = pWmeXML->GetAttribute(sml_Names::kWME_TimeTag) ;	// These will usually be kernel side time tags (e.g. +5 not -7)
+
+	long timeTag = atoi(pTimeTag) ;
+
+	// If we have no output link we can't delete things from it.
+	if (!m_OutputLink)
+		return false ;
+
+	// Find the WME which matches this tag.
+	// This may fail as we may have removed the parent of this WME already in the series of remove commands.
+	WMElement* pWME = m_OutputLink->FindFromTimeTag(timeTag) ;
+
+	// Delete the WME
+	if (pWME && pWME->GetParent())
+	{
+		if (tracing)
+			PrintDebugFormat("Removing output wme: time tag %s", pTimeTag) ;
+
+		pWME->GetParent()->RemoveChild(pWME) ;
+
+		// Make a record that this wme was removed, so we can tell the client about it.
+		// This recording will also involve deleting the wme.
+		RecordDeletion(pWME) ;
+	}
+	else
+	{
+		if (tracing)
+			PrintDebugFormat("Remove output wme request (seems to already be gone): time tag %s", pTimeTag) ;
+		return false ;
+	}
+
+	return true ;
+}
+
+/*************************************************************
 * @brief This function is called when output is received
 *		 from the Soar kernel.
 *
@@ -241,132 +411,15 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 
 		if (add)
 		{
-			// We're adding structure to the output link
-			char const* pID			= pWmeXML->GetAttribute(sml_Names::kWME_Id) ;	// These IDs will be kernel side ids (e.g. "I3" not "i3")
-			char const* pAttribute  = pWmeXML->GetAttribute(sml_Names::kWME_Attribute) ;
-			char const* pValue		= pWmeXML->GetAttribute(sml_Names::kWME_Value) ;
-			char const* pType		= pWmeXML->GetAttribute(sml_Names::kWME_ValueType) ;	// Can be NULL (=> string)
-			char const* pTimeTag	= pWmeXML->GetAttribute(sml_Names::kWME_TimeTag) ;	// These will be kernel side time tags (e.g. +5 not -7)
-
-			// Set the default value
-			if (!pType)
-				pType = sml_Names::kTypeString ;
-
-			// Check we got everything we need
-			if (!pID || !pAttribute || !pValue || !pTimeTag)
-				continue ;
-
-			if (tracing)
-			{
-				PrintDebugFormat("Received output wme: %s ^%s %s (time tag %s)", pID, pAttribute, pValue, pTimeTag) ;
-			}
-
-			long timeTag = atoi(pTimeTag) ;
-
-			// Find the parent wme that we're adding this new wme to
-			// (Actually, there can be multiple WMEs that have this identifier
-			//  as its value, but any one will do because the true parent is the
-			//  identifier symbol which is the same for any identifiers).
-			Identifier* pParent = FindIdentifier(pID, false, true) ;
-			WMElement* pAddWme = NULL ;
-
-			if (pParent)
-			{
-				// Create a client side wme object to match the output wme and add it to
-				// our tree of objects.
-				pAddWme = CreateWME(pParent, pID, pAttribute, pValue, pType, timeTag) ;
-				if (pAddWme)
-				{
-					pParent->AddChild(pAddWme) ;
-
-					// Make a record that this wme was added so we can alert the client to this change.
-					RecordAddition(pAddWme) ;
-				}
-				else
-				{
-					PrintDebugFormat("Unable to create an output wme -- type was not recognized") ;
-					GetAgent()->SetDetailedError(Error::kOutputError, "Unable to create an output wme -- type was not recognized") ;
-				}
-			}
-			else
-			{
-				// See if this is the output-link itself (we want to keep a handle to that specially)
-				if (!m_OutputLink && IsStringEqualIgnoreCase(pAttribute, sml_Names::kOutputLinkName))
-				{
-					m_OutputLink = new Identifier(GetAgent(), pValue, timeTag) ;
-				} else
-				{
-					// If we reach here we've received output which is out of order (e.g. (Y ^att value) before (X ^att Y))
-					// so there's no parent to connect it to.  We'll create the wme, keep it on a special list of orphans
-					// and try to reconnect it later.
-					pAddWme = CreateWME(NULL, pID, pAttribute, pValue, pType, timeTag) ;
-
-					if (tracing)
-						PrintDebugFormat("Received output wme (orphaned): %s ^%s %s (time tag %s)", pID, pAttribute, pValue, pTimeTag) ;
-
-					if (pAddWme)
-						m_OutputOrphans.push_back(pAddWme) ;
-				}
-			}
-
-			// If we have an output wme still waiting to be connected to its parent
-			// and we get in a new wme that is creating an identifier see if they match up.
-			if (pAddWme && pAddWme->IsIdentifier() && !m_OutputOrphans.empty())
-			{
-				Identifier* pPossibleParent = (Identifier*)pAddWme ;
-				bool deleteFromList = true ;
-				WMElement* pWme = SearchWmeListForID(&m_OutputOrphans, pPossibleParent->GetValueAsString(), deleteFromList) ;
-
-				while (pWme)
-				{
-					pWme->SetParent(pPossibleParent) ;
-					pPossibleParent->AddChild(pWme) ;
-
-					if (tracing)
-						PrintDebugFormat("Adding orphaned child to this ID: %s ^%s %s (time tag %d)", pWme->GetIdentifierName(), pWme->GetAttribute(), pWme->GetValueAsString(), pWme->GetTimeTag()) ;
-
-					// Make a record that this wme was added so we can alert the client to this change.
-					RecordAddition(pWme) ;
-
-					pWme = SearchWmeListForID(&m_OutputOrphans, pPossibleParent->GetValueAsString(), deleteFromList) ;
-				}
-			}
+			ok = ReceivedOutputAddition(pWmeXML, tracing) && ok ;
 		}
 		else if (remove)
 		{
-			// We're removing structure from the output link
-			char const* pTimeTag = pWmeXML->GetAttribute(sml_Names::kWME_TimeTag) ;	// These will usually be kernel side time tags (e.g. +5 not -7)
-
-			long timeTag = atoi(pTimeTag) ;
-
-			// If we have no output link we can't delete things from it.
-			if (!m_OutputLink)
-				continue ;
-
-			// Find the WME which matches this tag.
-			// This may fail as we may have removed the parent of this WME already in the series of remove commands.
-			WMElement* pWME = m_OutputLink->FindFromTimeTag(timeTag) ;
-
-			// Delete the WME
-			if (pWME && pWME->GetParent())
-			{
-				if (tracing)
-					PrintDebugFormat("Removing output wme: time tag %s", pTimeTag) ;
-
-				pWME->GetParent()->RemoveChild(pWME) ;
-
-				// Make a record that this wme was removed, so we can tell the client about it.
-				// This recording will also involve deleting the wme.
-				RecordDeletion(pWME) ;
-			}
-			else
-			{
-				if (tracing)
-					PrintDebugFormat("Remove output wme request (seems to already be gone): time tag %s", pTimeTag) ;
-			}
+			ok = ReceivedOutputRemoval(pWmeXML, tracing) && ok ;
 		}
 	}
 
+	// Check that we managed to reconnect all of the orphaned wmes
 	if (!m_OutputOrphans.empty())
 	{
 		ok = false ;
@@ -580,7 +633,7 @@ bool WorkingMemory::SynchronizeOutputLink()
 	AnalyzeXML incoming ;
 	ElementXML response ;
 
-	// Call to the kernel to get the current state of the input link
+	// Call to the kernel to get the current state of the output link
 	bool ok = GetConnection()->SendAgentCommand(&incoming, sml_Names::kCommand_GetAllOutput, GetAgentName()) ;
 	
 	if (!ok)
@@ -650,6 +703,10 @@ StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pA
 	// Add it to our list of changes that need to be sent to Soar.
 	m_DeltaList.AddWME(pWME) ;
 
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
+
 	return pWME ;
 }
 
@@ -680,6 +737,10 @@ IntElement* WorkingMemory::CreateIntWME(Identifier* parent, char const* pAttribu
 	// Add it to our list of changes that need to be sent to Soar.
 	m_DeltaList.AddWME(pWME) ;
 
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
+
 	return pWME ;
 }
 
@@ -709,6 +770,10 @@ FloatElement* WorkingMemory::CreateFloatWME(Identifier* parent, char const* pAtt
 
 	// Add it to our list of changes that need to be sent to Soar.
 	m_DeltaList.AddWME(pWME) ;
+
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
 
 	return pWME ;
 }
@@ -753,6 +818,10 @@ void WorkingMemory::UpdateString(StringElement* pWME, char const* pValue)
 
 	// Add it to the list of changes that need to be sent to Soar.
 	m_DeltaList.UpdateWME(removeTimeTag, pWME) ;
+
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
 }
 
 void WorkingMemory::UpdateInt(IntElement* pWME, int value)
@@ -790,6 +859,10 @@ void WorkingMemory::UpdateInt(IntElement* pWME, int value)
 
 	// Add it to the list of changes that need to be sent to Soar.
 	m_DeltaList.UpdateWME(removeTimeTag, pWME) ;
+
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
 }
 
 void WorkingMemory::UpdateFloat(FloatElement* pWME, double value)
@@ -827,6 +900,10 @@ void WorkingMemory::UpdateFloat(FloatElement* pWME, double value)
 
 	// Add it to the list of changes that need to be sent to Soar.
 	m_DeltaList.UpdateWME(removeTimeTag, pWME) ;
+
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
 }
 
 /*************************************************************
@@ -900,6 +977,10 @@ Identifier* WorkingMemory::CreateIdWME(Identifier* parent, char const* pAttribut
 	// Add it to our list of changes that need to be sent to Soar.
 	m_DeltaList.AddWME(pWME) ;
 
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
+
 	return pWME ;
 }
 
@@ -936,6 +1017,10 @@ Identifier*	WorkingMemory::CreateSharedIdWME(Identifier* parent, char const* pAt
 
 	// Add it to our list of changes that need to be sent to Soar.
 	m_DeltaList.AddWME(pWME) ;
+
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
 
 	return pWME ;
 }
@@ -984,6 +1069,10 @@ bool WorkingMemory::DestroyWME(WMElement* pWME)
 	// Now we can delete it
 	delete pWME ;
 
+	// Commit immediately if we're configured that way (makes life simpler for the client)
+	if (IsAutoCommitEnabled())
+		Commit() ;
+
 	return true ;
 }
 
@@ -997,6 +1086,24 @@ long WorkingMemory::GenerateTimeTag()
 	int tag = GetAgent()->GetKernel()->GenerateNextTimeTag() ;
 
 	return tag ;
+}
+
+/*************************************************************
+* @brief Returns true if wmes have been added and not yet committed.
+*************************************************************/
+bool WorkingMemory::IsCommitRequired()
+{
+	return (m_DeltaList.GetSize() != 0) ;
+}
+
+/*************************************************************
+* @brief Returns true if changes to i/o links should be
+*		 committed (sent to kernelSML) immediately when they
+*		 occur, so the client doesn't need to remember to call commit.
+*************************************************************/
+bool WorkingMemory::IsAutoCommitEnabled()
+{
+	return m_Agent->IsAutoCommitEnabled() ;
 }
 
 /*************************************************************

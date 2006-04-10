@@ -42,6 +42,8 @@ Agent::Agent(Kernel* pKernel, char const* pName)
 	m_WorkingMemory.SetAgent(this) ;
 	m_CallbackIDCounter = 0 ;
 	m_XMLCallback = -1 ;
+
+	ClearError() ;
 }
 
 Agent::~Agent()
@@ -901,10 +903,14 @@ void Agent::ReceivedXMLTraceEvent(smlXMLEventId id, ElementXML* pIncoming, Eleme
 		return ;
 
 	// Go through the list of event handlers calling each in turn
-	for (XMLEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
+	for (XMLEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ;)
 	{
 		XMLEventHandlerPlusData handlerPlus = *iter ;
 		XMLEventHandler handler = handlerPlus.m_Handler ;
+
+		// Advance to the next handler before we make the callback, in case
+		// the callback deletes the current handler from the list, invalidating the iterator.
+		iter++ ;
 
 		void* pUserData = handlerPlus.m_UserData ;
 
@@ -1202,8 +1208,11 @@ Identifier*	Agent::FindIdentifier(char const* pID, bool searchInput, bool search
 * @brief Schedules a WME from deletion from the input link and removes
 *		 it from the client's model of working memory.
 *
+*		 If this is an identifier then all of its children will be
+*		 deleted too (assuming it's the only parent -- i.e. part of a tree not a full graph).
+*
 *		 The caller should not access this WME after calling
-*		 DestroyWME().
+*		 DestroyWME() or any of its children if this is an identifier.
 *		 The WME is not removed from the input link until
 *		 the client calls "Commit"
 *************************************************************/
@@ -1225,6 +1234,24 @@ bool Agent::Commit()
 }
 
 /*************************************************************
+* @brief Returns true if this agent has uncommitted changes.
+*************************************************************/
+bool Agent::IsCommitRequired()
+{
+	return GetWM()->IsCommitRequired() ;
+}
+
+/*************************************************************
+* @brief Returns true if changes to i/o links should be
+*		 committed (sent to kernelSML) immediately when they
+*		 occur, so the client doesn't need to remember to call commit.
+*************************************************************/
+bool Agent::IsAutoCommitEnabled()
+{
+	return m_Kernel->IsAutoCommitEnabled() ;
+}
+
+/*************************************************************
 * @brief Reinitialize this Soar agent.
 *		 This will also cause the output link structures stored
 *		 here to be erased and the current input link to be sent over
@@ -1232,6 +1259,9 @@ bool Agent::Commit()
 *************************************************************/
 char const* Agent::InitSoar()
 {
+	// Must commit everything before doing an init-soar.
+	assert(!GetWM()->IsCommitRequired()) ;
+
 	std::string cmd = "init-soar" ;
 
 	// Execute the command.
@@ -1250,6 +1280,8 @@ char const* Agent::InitSoar()
 * The usual way to do this is to register for an event (e.g. AFTER_DECISION_CYCLE)
 * and in that event handler decide if the user wishes to stop soar.
 * If so, call to this method inside that handler.
+* If so, call to this method inside that handler (this ensures you're calling on the same
+* thread that Soar is running on so you don't get blocked).
 *
 * The request to Stop may not be honored immediately.
 * Soar will stop at the next point it is considered safe to do so.
@@ -1269,10 +1301,16 @@ char const*	Agent::StopSelf()
 *************************************************************/
 char const* Agent::RunSelf(unsigned long numberSteps, smlRunStepSize stepSize)
 {
+	if (IsCommitRequired())
+	{
+		assert(false) ;
+		return "Need to commit changes before calling a run method" ;
+	}	
+
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), false, stepSize, (int)numberSteps) ;
+			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), false, stepSize, sml_INTERLEAVE_PHASE, (int)numberSteps) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -1282,7 +1320,18 @@ char const* Agent::RunSelf(unsigned long numberSteps, smlRunStepSize stepSize)
 	ostr << numberSteps ;
 
 	// Create the command line for the run command
-	std::string step = (stepSize == sml_DECISION) ? "-d" : (stepSize == sml_PHASE) ? "-p" : "-e" ;
+	// Create the command line for the run command
+	std::string step ;
+	
+	switch (stepSize)
+	{
+		case sml_DECISION:		step = "-d" ; break ;
+		case sml_PHASE:			step = "-p" ; break ;
+		case sml_ELABORATION:	step = "-e" ; break ;
+		case sml_UNTIL_OUTPUT:	step = "-o" ; break ;
+		default: return "Unrecognized step size parameter passed to RunSelf" ;
+	}
+
 	std::string cmd = "run --self " + step + " " + ostr.str() ;
 
 	// Execute the run command.
@@ -1292,10 +1341,16 @@ char const* Agent::RunSelf(unsigned long numberSteps, smlRunStepSize stepSize)
 
 char const* Agent::RunSelfForever()
 {
+	if (IsCommitRequired())
+	{
+		assert(false) ;
+		return "Need to commit changes before calling a run method" ;
+	}
+
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), true, sml_DECISION, 1) ;
+			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), true, sml_DECISION, sml_INTERLEAVE_PHASE, 1) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -1306,6 +1361,41 @@ char const* Agent::RunSelfForever()
 	// Execute the run command.
 	char const* pResult = ExecuteCommandLine(cmd.c_str()) ;
 	return pResult ;
+}
+
+/*************************************************************
+* @brief Returns true if this agent was part of the last set
+*		 of agents that was run.
+*************************************************************/
+bool Agent::WasAgentOnRunList()
+{
+	AnalyzeXML response ;
+
+	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_WasAgentOnRunList, GetAgentName()) ;
+
+	if (!ok)
+		return false ;
+
+	bool wasRun = response.GetResultBool(false) ;
+	return wasRun ;
+}
+
+/*************************************************************
+* @brief Returns whether the last run for this agent was
+*		 interrupted (by a stop call) or completed normally.
+*************************************************************/
+smlRunResult Agent::GetResultOfLastRun()
+{
+	AnalyzeXML response ;
+
+	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetResultOfLastRun, GetAgentName()) ;
+
+	if (!ok)
+		return sml_RUN_ERROR ;
+
+	smlRunResult result = (smlRunResult)response.GetResultInt((int)sml_RUN_ERROR) ;
+
+	return result ;
 }
 
 /*************************************************************
@@ -1346,10 +1436,16 @@ bool Agent::SetStopSelfOnOutput(bool state)
 *************************************************************/
 char const* Agent::RunSelfTilOutput()
 {
+	if (IsCommitRequired())
+	{
+		assert(false) ;
+		return "Need to commit changes before calling a run method" ;
+	}
+
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), false, sml_UNTIL_OUTPUT, 1) ;
+			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), false, sml_UNTIL_OUTPUT, sml_INTERLEAVE_PHASE, 1) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -1370,6 +1466,12 @@ char const* Agent::RunSelfTilOutput()
 *************************************************************/
 void Agent::Refresh()
 {
+	// If this asserts fails, we had some changes to working memory that were
+	// not committed and then an init-soar came in.  This is a programming error
+	// as all working memory changes should be committed before other user-input (e.g. init-soar)
+	// can be called.
+	assert(!IsCommitRequired()) ;
+
 	GetWM()->Refresh() ;
 }
 
@@ -1411,11 +1513,12 @@ int Agent::GetDecisionCycleCounter()
 *
 * @param pCommandLine Command line string to process.
 * @param echoResults  If true the results are also echoed through the smlEVENT_ECHO event, so they can appear in a debugger (or other listener)
+* @param noFilter	  If true this command line by-passes any external filters that have been registered (this is not common) and is executed immediately.
 * @returns The string form of output from the command.
 *************************************************************/
-char const* Agent::ExecuteCommandLine(char const* pCommandLine, bool echoResults)
+char const* Agent::ExecuteCommandLine(char const* pCommandLine, bool echoResults, bool noFilter)
 {
-	return GetKernel()->ExecuteCommandLine(pCommandLine, GetAgentName(), echoResults) ;
+	return GetKernel()->ExecuteCommandLine(pCommandLine, GetAgentName(), echoResults, noFilter) ;
 }
 
 /*************************************************************

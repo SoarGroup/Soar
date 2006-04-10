@@ -259,7 +259,7 @@ namespace gSKI
      //std::cout << __FILE__ << ":" << __LINE__ << std::endl;
     // Perform necessary update functions
     //std::cout << "\nNormal input link update cycle!\n";
-    m_memory.Update();
+    m_memory.Update(false, false);
   }
 
   /*
@@ -270,6 +270,7 @@ namespace gSKI
   
   void InputLink::FinalUpdate()
   {
+	  Reinitialize();
     // Perform necessary update functions
     //std::cout << "\nFinal input link update cycle!\n";
   }

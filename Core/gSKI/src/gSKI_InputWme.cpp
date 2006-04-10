@@ -170,48 +170,65 @@ namespace gSKI
     //Update();
   }
 
-  void InputWme::Update()
+  void InputWme::Update(bool forceAdds, bool forceRemoves)
   {
+#ifdef _DEBUG
+	// Comment this in to get a description of which wme this is
+	// std::string update = "updating " + std::string(m_owningobject->GetId()->GetString()) + std::string(" ^") + std::string(m_attribute->GetString()) + std::string(" ") + std::string(m_value->GetString()) ;
+#endif
+
      // Adding the WME directly to working memory if were in the input or output phase
      egSKIPhaseType curphase = m_manager->GetAgent()->GetCurrentPhase();
-      if ( curphase == gSKI_INPUT_PHASE ) 
-      {
-       // If there is no raw wme for this than make one 
-       // (unless it has already been removed)
-         if ( m_rawwme == 0 && !m_removeWme ) 
-         {
-	 agent* a = m_manager->GetSoarAgent();
-	 Symbol* id = m_owningobject->GetSoarSymbol();
-	 Symbol* attr = m_attribute->GetSoarSymbol();
-	 Symbol* val = m_value->GetSoarSymbol();
-            m_rawwme = add_input_wme( a, id, attr, val );
+	 
+	 bool doAdds    = (curphase == gSKI_INPUT_PHASE || forceAdds) ;
+	 bool doRemoves = (curphase == gSKI_INPUT_PHASE || forceRemoves) ;
+	 if ( doAdds || doRemoves ) 
+	 {
+		 // If there is no raw wme for this than make one 
+		 // (unless it has already been removed)
+		 if ( doAdds && m_rawwme == 0 && !m_removeWme ) 
+		 {
+			 agent* a = m_manager->GetSoarAgent();
+			 Symbol* id = m_owningobject->GetSoarSymbol();
+			 Symbol* attr = m_attribute->GetSoarSymbol();
+			 Symbol* val = m_value->GetSoarSymbol();
+			 m_rawwme = add_input_wme( a, id, attr, val );
 
-	 MegaAssert( m_rawwme != 0, "Trouble adding an input wme!");
-       }
+			 MegaAssert( m_rawwme != 0, "Trouble adding an input wme!");
+		 }
 
-       // Removing any wme's scheduled for removal
-         if ( m_removeWme && m_rawwme != 0 ) 
-         {
-            Bool retvalue =  remove_input_wme(m_manager->GetSoarAgent(), m_rawwme);
-	 MegaAssert( retvalue, "Trouble removing an input wme!");
-            m_rawwme = 0;
+		 // Removing any wme's scheduled for removal
+		 if ( doRemoves && m_removeWme)
+		 {
+			 if (m_rawwme != 0 ) 
+			 {
+				std::string att = m_attribute->GetString() ;
+				std::string val = m_value->GetString() ;
 
-	 // Detaching this object from the other input objects
-            MegaAssert( m_owningobject != 0, "Invalid owning object for InputWme." );
-            if(m_owningobject != 0 )
-            {
-               m_owningobject->RemoveReferencedWme(this);
-            }
-	//	 m_owningobject->RemoveReferencedWme(this);
-		SetOwningObject(0);
+				Bool retvalue =  remove_input_wme(m_manager->GetSoarAgent(), m_rawwme);
+				MegaAssert( retvalue, "Trouble removing an input wme!");
+				m_rawwme = 0;
+			 }
 
-		// After the wme is really removed, we release ourselves.  We do it this way
-		// because a client calling "RemoveWme()" has no way to know when the gSKI Wme object
-		// can be released, because the removal of the kernel wme won't occur until the next
-		// input phase after RemoveWme is called.  Thus "RemoveWme" now includes a reference decrement
-		// as part of its actions, providing the client a good way to do clean up.
-		this->Release() ;
-       }
+			 // We need to handle the case where the gSKI wme was created and deleted before the kernel wme
+			 // was ever created (Soar wasn't run).  So we'll release the gSKI object where the kernel object
+			 // exists or not.
+
+			 // Detaching this object from the other input objects
+			 MegaAssert( m_owningobject != 0, "Invalid owning object for InputWme." );
+			 if(m_owningobject != 0 )
+			 {
+				 m_owningobject->RemoveReferencedWme(this);
+			 }
+			 SetOwningObject(0);
+
+			 // After the wme is really removed, we release ourselves.  We do it this way
+			 // because a client calling "RemoveWme()" has no way to know when the gSKI Wme object
+			 // can be released, because the removal of the kernel wme won't occur until the next
+			 // input phase after RemoveWme is called.  Thus "RemoveWme" now includes a reference decrement
+			 // as part of its actions, providing the client a good way to do clean up.
+			 this->Release() ;
+		 }
      }
   }
 

@@ -269,6 +269,18 @@ public:
 	std::string SendClientMessage(gSKI::IAgent* pAgent, char const* pMessageType, char const* pMessage) ;
 
 	/*************************************************************
+	* @brief	Send this command line out to all clients that have
+	*			registered a filter.  The result is the processed
+	*			version of the command line.
+	*************************************************************/
+	bool SendFilterMessage(gSKI::IAgent* pAgent, char const* pCommandLine, std::string* pResult) ;
+
+	/*************************************************************
+	* @brief	Returns true if at least one filter is registered.
+	*************************************************************/
+	bool KernelSML::HasFilterRegistered() ;
+
+	/*************************************************************
 	* @brief Convert from a string version of an event to the int (enum) version.
 	*		 Returns smlEVENT_INVALID_EVENT (== 0) if the string is not recognized.
 	*************************************************************/
@@ -353,6 +365,11 @@ public:
 	*	
 	*************************************************************/
 	AgentSML*	GetAgentSML(gSKI::IAgent* pAgent) ;
+
+	/*************************************************************
+	* @brief	Returns the number of agents.
+	*************************************************************/	
+	int			GetNumberAgents() ;
 
 	/*************************************************************
 	* @brief	Delete the agent sml object for this agent.
@@ -461,7 +478,6 @@ protected:
 	bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleExpandCommandLine(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool KernelSML::HandleStopOnOutput(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleCheckForIncomingCommands(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleDestroyAgent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleGetAgentList(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
@@ -478,6 +494,8 @@ protected:
 	bool KernelSML::HandleGetRunState(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleIsProductionLoaded(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleSendClientMessage(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
+	bool KernelSML::HandleWasAgentOnRunList(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
+	bool KernelSML::HandleGetResultOfLastRun(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 
 	// Note: Register and unregister are both sent to this one handler
 	bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;

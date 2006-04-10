@@ -70,6 +70,9 @@
 %ignore sml::Kernel::RemoveRhsFunction(int);
 %ignore sml::Kernel::UnregisterForClientMessageEvent(int);
 
+// We replace the SWIG generated shutdown with our own version which will call the SWIG generated one.
+%rename(ShutdownInternal) sml::Kernel::Shutdown();
+
 %pragma(java) jniclasscode=%{
   static {
     try {
@@ -233,6 +236,13 @@
   public boolean UnregisterForClientMessageEvent(int callbackReturnValue)
   { return smlJNI.Kernel_UnregisterForClientMessageEvent(swigCPtr, callbackReturnValue) ;}
 
+  // In Java we want to explicitly delete the C++ kernel object after calling shutdown so that the user
+  // doesn't have to call ".delete()" on their Java object (or wait for the garbage collector to do it which may never run--leading to
+  // reports of memory leaks on shutdown).  In C++ users expect to have to delete their kernel pointer but not in Java.
+  public void Shutdown() {
+    smlJNI.Kernel_ShutdownInternal(swigCPtr);
+    delete() ;
+  }
 %}
 
 // Some handy alternative method names and additional wrappers to help support some legacy code and may be

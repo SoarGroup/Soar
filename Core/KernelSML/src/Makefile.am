@@ -5,7 +5,7 @@
 lib_LTLIBRARIES = libSoarKernelSML.la 
 
 libSoarKernelSML_la_LIBADD = \
-../../Kernel/src/libSoarKernel.la\
+../../SoarKernel/src/libSoarKernel.la\
 ../../gSKI/src/libgSKI.la\
 ../../CLI/src/libCommandLineInterface.la\
 ../../ClientSML/src/libClientSML.la
@@ -30,7 +30,27 @@ sml_RunScheduler.cpp\
 sml_SystemListener.cpp\
 sml_UntypedListener.cpp\
 sml_UpdateListener.cpp\
-sml_XMLListener.cpp
+sml_XMLListener.cpp\
+../include/sml_ConnectionManager.h\
+../include/sml_UpdateListener.h\
+../include/sml_ProductionListener.h\
+../include/sml_SystemListener.h\
+../include/sml_ReceiverThread.h\
+../include/sml_RhsListener.h\
+../include/sml_KernelSML.h\
+../include/sml_UntypedListener.h\
+../include/sml_PrintListener.h\
+../include/sml_OldRunScheduler.h\
+../include/sml_RunScheduler.h\
+../include/sml_AgentListener.h\
+../include/sml_OutputListener.h\
+../include/sml_XMLListener.h\
+../include/sml_AgentOutputFlusher.h\
+../include/sml_RunListener.h\
+../include/sml_AgentSML.h\
+../include/sml_EventManager.h\
+../include/sml_ListenerThread.h\
+../include/KernelSMLdll.h
 
 INCLUDES = \
 -I../../.. \

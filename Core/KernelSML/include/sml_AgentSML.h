@@ -110,13 +110,16 @@ public:
 
 	// Release any objects or other data we are keeping.  We do this just
 	// prior to deleting AgentSML, but before the underlying gSKI agent has been deleted
-	void Clear() ;
+	void Clear(bool deletingThisAgent) ;
 
 	void RegisterForBeforeAgentDestroyedEvent() ;
 
 	// Release all of the WMEs that we currently have references to
 	// It's a little less severe than clear() which releases everything we own, not just wmes.
-	void ReleaseAllWmes() ;
+	// If flushPendingRemoves is true, make sure gSKI removes all wmes from Soar's working memory
+	// that have been marked for removal but are still waiting for the next input phase to actually
+	// be removed (this should generally be correct so we'll default to true for it).
+	void ReleaseAllWmes(bool flushPendingRemoves = true) ;
 
 	gSKI::IAgent* GetIAgent() { return m_pIAgent ; }
 
@@ -130,8 +133,6 @@ public:
 	OutputListener* GetOutputListener()							{ return m_pOutputListener ; }
 
 	void SetInputProducer(gSKI::IInputProducer* pInputProducer)	{ m_pInputProducer = pInputProducer ; }
-
-	bool SetStopOnOutput(bool state) ;
 
 	void SetSuppressRunEndsEvent(bool state) { m_SuppressRunEndsEvent = state ; }
 	bool GetSuppressRunEndsEvent()			 { return m_SuppressRunEndsEvent ; }
@@ -166,6 +167,16 @@ public:
 	*			listen in on the output.
 	*************************************************************/
 	void FireEchoEvent(Connection* pConnection, char const* pMessage) { m_PrintListener.HandleEvent(gSKIEVENT_ECHO, m_pIAgent, pMessage) ; m_PrintListener.FlushOutput(pConnection, gSKIEVENT_ECHO) ; }
+
+	/*************************************************************
+	* @brief	This is the same as the regular FireEchoEvent, except
+	*			it broadcasts to all listeners, even the originator of the command
+	*			because the self field is not set in this case.
+	*
+	*			We shouldn't use this extensively and may choose to
+	*			remove this and replace it with a different event later.
+	*************************************************************/
+	void FireEchoEventIncludingSelf(char const* pMessage) { m_PrintListener.HandleEvent(gSKIEVENT_ECHO, m_pIAgent, pMessage) ; m_PrintListener.FlushOutput(NULL, gSKIEVENT_ECHO) ; }
 
 	/*************************************************************
 	* @brief	Converts an id from a client side value to a kernel side value.

@@ -59,10 +59,12 @@ void ParseXML::InitializeLexer()
 	GetNextToken() ;
 }		
 
+// Converts from an escaped character (e.g. &lt; for <) to the original character
 char ParseXML::GetEscapeChar()
 {
 	std::string escape ;
 
+	// Consume the entire escape sequence up to the ;
 	while (!IsEOF() && GetCurrentChar() != ';')
 	{
 		escape += GetCurrentChar() ;
@@ -161,6 +163,37 @@ void ParseXML::GetNextToken()
 			SetCurrentToken(kEndMarkerString, kSymbol) ;
 			GetNextChar() ;
 		}
+		// If this is the beginning of a comment <! then handle it differently from a regular symbol
+		else if (IsCommentStart(GetCurrentChar()))
+		{
+			std::string comment ;
+
+			// Consume the ! and the two leading dashes (BADBAD, I guess we should check that they are leading -- and report a better error if they're not)
+			GetNextChar() ;
+			GetNextChar() ;
+			GetNextChar() ;
+			
+			// Keep consuming until we find --> to end the comment.
+			bool done = false ;
+			while (!IsEOF() && !done)
+			{
+				char last = GetCurrentChar() ;
+
+				// No need to escape contents within a comment as we read looking for one specific pattern ignoring the rest
+				//if (ch == kEscapeChar)
+					//ch = GetEscapeChar() ;
+
+				comment += last ;
+				GetNextChar() ;
+
+				// Check if we've reached --> which marks the end of the comment
+				int len = (int)comment.size() ;
+				done = (last == kCloseTagChar && len > 3 && comment[len-3] == '-' && comment[len-2] == '-' && comment[len-1] == '>');
+			}
+
+			// Store the comment (the part lying between <!-- and -->
+			SetCurrentToken(comment.substr(0, comment.size()-3), kComment) ;
+ 		}
 		
 		return ;
 	}
@@ -250,6 +283,13 @@ void ParseXML::GetNextToken()
 *************************************************************************/
 ElementXMLImpl* ParseXML::ParseElement()
 {
+	// Check if we're starting with a comment
+	while (Have(kComment))
+	{
+		SetLastComment(GetTokenValue()) ;
+		GetNextToken() ;
+	}
+
 	// We must start with an open tag marker
 	MustBe(kOpenTagChar) ;
 
@@ -270,7 +310,13 @@ ElementXMLImpl* ParseXML::ParseElement()
 	MustBe(kIdentifier, tagName) ;
 
 	pElement->SetTagName(tagName.c_str()) ;
-	
+
+	if (HasLastComment())
+	{
+		pElement->SetComment(GetLastComment()) ;
+		SetLastComment("") ;
+	}
+
 	// Used to record whether data is encoded binary
 	bool dataIsEncoded = false ;
 
@@ -337,6 +383,15 @@ ElementXMLImpl* ParseXML::ParseElement()
 			continue ;
 		}
 		
+		if (Have(kComment))
+		{
+			// We'll only allow comments before other XML elements.  That allows us to "hide" the comment within the existing ElementXML
+			// structure and allow the ultimate parser of the XML ignore comments completely.
+			SetLastComment(GetTokenValue()) ;
+			GetNextToken() ;
+			continue ;
+		}
+
 		// Check for the open tag, but don't consume it yet.
 		// We consume this at the start of parsing the element.
 		if (Have(kOpenTagChar, false))

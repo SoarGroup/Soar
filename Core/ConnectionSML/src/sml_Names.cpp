@@ -152,6 +152,14 @@ char const* const sml_Names::kTagWarning		= "warning" ;
 char const* const sml_Names::kTagLearning	= "learning" ;
 // Tag learning has attribute kTypeString
 
+// filter support
+char const* const sml_Names::kTagFilter			= "filter" ;
+char const* const sml_Names::kFilterCommand		= "command" ;
+char const* const sml_Names::kFilterError		= "error" ;
+char const* const sml_Names::kFilterOutput		= "output" ;
+char const* const sml_Names::kFilterName		= "_sml::filter" ;	// This name goes into the RHS function name space, so want it to be unlikely to be used by clients
+char const* const sml_Names::kParamNoFiltering	= "nofilter" ;
+
 //production printing
 char const* const sml_Names::kTagConditions                 	= "conditions" ;
 char const* const sml_Names::kTagConjunctive_Negation_Condition	= "conjunctive-negation-condition" ;
@@ -400,6 +408,9 @@ char const* const sml_Names::kCommand_GetAllOutput			= "get_all_output" ;
 char const* const sml_Names::kCommand_GetRunState			= "get_run_state" ;
 char const* const sml_Names::kCommand_IsProductionLoaded	= "is_production_loaded" ;
 char const* const sml_Names::kCommand_SendClientMessage		= "send_client_message" ;
+char const* const sml_Names::kCommand_WasAgentOnRunList		= "on_run_list" ;
+char const* const sml_Names::kCommand_GetResultOfLastRun	= "last_run_result" ;
+
 
 // command line interface
 char const* const sml_Names::kCommand_CommandLine		 = "cmdline" ;

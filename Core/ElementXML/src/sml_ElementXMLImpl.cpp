@@ -55,27 +55,33 @@ static char const* kEquals		  = "=" ;
 static char const* kSpace		  = " " ;
 static char const* kQuote		  = "\"" ;
 
+static char const* kCommentStartString	= "<!--" ;
+static char const* kCommentEndString	= "-->" ;
+
 static char const* kEncodeHex = "bin_encoding=\"hex\"" ;
 
-static const int kLenLT   = strlen(kLT) ;
-static const int kLenGT   = strlen(kGT) ;
-static const int kLenAMP  = strlen(kAMP) ;
-static const int kLenQUOT = strlen(kQUOT) ;
-static const int kLenAPOS = strlen(kAPOS) ;
+static const int kLenLT   = (int)strlen(kLT) ;
+static const int kLenGT   = (int)strlen(kGT) ;
+static const int kLenAMP  = (int)strlen(kAMP) ;
+static const int kLenQUOT = (int)strlen(kQUOT) ;
+static const int kLenAPOS = (int)strlen(kAPOS) ;
 
-static const int kLenCDataStart = strlen(kCDataStart) ;
-static const int kLenCDataEnd   = strlen(kCDataEnd) ;
+static const int kLenCDataStart = (int)strlen(kCDataStart) ;
+static const int kLenCDataEnd   = (int)strlen(kCDataEnd) ;
 
-static const int kLenStartTagOpen  = strlen(kStartTagOpen) ;
-static const int kLenStartTagClose = strlen(kStartTagClose) ;
-static const int kLenEndTagOpen    = strlen(kEndTagOpen) ;
-static const int kLenEndTagClose   = strlen(kEndTagClose) ;
+static const int kLenStartTagOpen  = (int)strlen(kStartTagOpen) ;
+static const int kLenStartTagClose = (int)strlen(kStartTagClose) ;
+static const int kLenEndTagOpen    = (int)strlen(kEndTagOpen) ;
+static const int kLenEndTagClose   = (int)strlen(kEndTagClose) ;
 
-static const int kLenEquals		   = strlen(kEquals) ;
-static const int kLenSpace		   = strlen(kSpace) ;
-static const int kLenQuote		   = strlen(kQuote) ;
+static const int kLenEquals		   = (int)strlen(kEquals) ;
+static const int kLenSpace		   = (int)strlen(kSpace) ;
+static const int kLenQuote		   = (int)strlen(kQuote) ;
 
-static const int kLenEncodeHex	   = strlen(kEncodeHex) ;
+static const int kLenEncodeHex	   = (int)strlen(kEncodeHex) ;
+
+static const int kLenCommentStartString = (int)strlen(kCommentStartString) ;
+static const int kLenCommentEndString = (int)strlen(kCommentEndString) ;
 
 inline static char const* ConvertSpecial(char base)
 {
@@ -139,7 +145,7 @@ static char binaryVal(char c)
 static void HexCharsToBinary(char const* pHexString, char*& pBinaryBuffer, int& length)
 {
 	// This length should always be an exact multiple of 2
-	int stringLength = strlen(pHexString) ;
+	int stringLength = (int)strlen(pHexString) ;
 
 	// The output will be exactly half the length of the input
 	length = (stringLength+1)/2 ;
@@ -255,6 +261,7 @@ ElementXMLImpl::ElementXMLImpl(void)
 
 	m_TagName = NULL ;
 	m_CharacterData = NULL ;
+	m_Comment = NULL ;
 	m_ErrorCode = 0 ;
 	m_pParent = NULL ;
 
@@ -277,6 +284,9 @@ static inline void StaticReleaseRef(ElementXMLImpl* pXML)
 *************************************************************/
 ElementXMLImpl::~ElementXMLImpl(void)
 {
+	// Delete the comment
+	DeleteString(m_Comment) ;
+
 	// Delete the character data
 	DeleteString(m_CharacterData) ;
 
@@ -337,6 +347,9 @@ ElementXMLImpl* ElementXMLImpl::MakeCopy() const
 
 	// Start with a null parent and override this later
 	pCopy->m_pParent		  = NULL ;
+
+	// Copy the comment
+	pCopy->SetComment(m_Comment) ;
 
 	// Copy the tag name
 	pCopy->SetTagName(m_TagName) ;
@@ -700,6 +713,34 @@ const char* ElementXMLImpl::GetAttribute(const char* attName) const
 	return iter->second ;
 }
 
+/*************************************************************
+* @brief Associate a comment with this XML element.
+*		 The comment is written in front of the element when stored/parsed.
+*
+* This type of commenting isn't completely general.  You can't have multiple
+* comment blocks before an XML element, nor can you have trailing comment blocks
+* where there is no XML element following the comment.  However, both of these are
+* unusual situations and would require a significantly more complex API to support
+* so it seems unnecessary.
+*
+* @param Comment	The comment string.
+*************************************************************/
+bool ElementXMLImpl::SetComment(const char* comment)
+{
+	m_Comment = CopyString(comment) ;
+	return true ;
+}
+
+/*************************************************************
+* @brief Returns the comment for this element.
+*
+* @returns The comment string for this element (or NULL if there is none)
+*************************************************************/
+char const* ElementXMLImpl::GetComment()
+{
+	return m_Comment;
+}
+
 ////////////////////////////////////////////////////////////////
 //
 // Character data functions (e.g the character data in <name>Albert Einstein</name> is "Albert Einstein")
@@ -826,7 +867,7 @@ int	 ElementXMLImpl::GetCharacterDataLength() const
 	if (m_DataIsBinary)
 		return this->m_BinaryDataLength ;
 	else
-		return strlen(m_CharacterData)+1 ;
+		return (int)strlen(m_CharacterData)+1 ;
 }
 
 /*************************************************************
@@ -888,10 +929,16 @@ int ElementXMLImpl::DetermineXMLStringLength(bool includeChildren) const
 {
 	int len = 0 ;
 
+	// The comment
+	if (m_Comment)
+	{
+		len += kLenCommentStartString + (int)strlen(m_Comment) + kLenCommentEndString ;
+	}
+
 	// The start tag
 	if (m_TagName)
 	{
-		len += kLenStartTagOpen + strlen(this->m_TagName) + kLenStartTagClose ;
+		len += kLenStartTagOpen + (int)strlen(this->m_TagName) + kLenStartTagClose ;
 	}
 	
 	// The character data
@@ -908,7 +955,7 @@ int ElementXMLImpl::DetermineXMLStringLength(bool includeChildren) const
 		}
 		else if (m_UseCData)
 		{
-			len += kLenCDataStart + strlen(m_CharacterData) + kLenCDataEnd ;
+			len += kLenCDataStart + (int)strlen(m_CharacterData) + kLenCDataEnd ;
 		}
 		else
 		{
@@ -924,7 +971,7 @@ int ElementXMLImpl::DetermineXMLStringLength(bool includeChildren) const
 		xmlStringConst val = mapIter->second ;
 
 		// The attribute name is an identifier and can't contain special chars
-		len += kLenSpace + strlen(att) + kLenEquals ;
+		len += kLenSpace + (int)strlen(att) + kLenEquals ;
 
 		// The value can contain special chars
 		len += kLenQuote + CountXMLLength(val) + kLenQuote ;
@@ -948,7 +995,7 @@ int ElementXMLImpl::DetermineXMLStringLength(bool includeChildren) const
 	// The end tag
 	if (m_TagName)
 	{
-		len += kLenEndTagOpen + strlen(this->m_TagName) + kLenEndTagClose ;
+		len += kLenEndTagOpen + (int)strlen(this->m_TagName) + kLenEndTagClose ;
 	}
 
 	return len ;
@@ -968,6 +1015,14 @@ char* ElementXMLImpl::GenerateXMLString(char* pStart, int maxLength, bool includ
 	// see the string being formed.
 	// pStr will walk down the available memory.
 	char* pStr = pStart ;
+
+	// Add the comment
+	if (m_Comment)
+	{
+		pStr = AddString(pStr, kCommentStartString) ;
+		pStr = AddString(pStr, m_Comment) ;
+		pStr = AddString(pStr, kCommentEndString) ;
+	}
 
 	pStr = AddString(pStr, kStartTagOpen) ;
 	

@@ -34,6 +34,8 @@ class RunEventHandlerPlusData : public EventHandlerPlusData
 {
 public:
 	RunEventHandler m_Handler ;
+	
+	RunEventHandlerPlusData() {}
 
 	RunEventHandlerPlusData(int eventID, RunEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
@@ -45,6 +47,8 @@ class ProductionEventHandlerPlusData : public EventHandlerPlusData
 {
 public:
 	ProductionEventHandler m_Handler ;
+
+	ProductionEventHandlerPlusData() {}
 
 	ProductionEventHandlerPlusData(int eventID, ProductionEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
@@ -58,6 +62,11 @@ public:
 	PrintEventHandler m_Handler ;
 	bool m_IgnoreOwnEchos ;
 
+	PrintEventHandlerPlusData() 
+	{
+		m_IgnoreOwnEchos = true;
+	}
+
 	PrintEventHandlerPlusData(int eventID, PrintEventHandler handler, void* userData, bool ignoreOwnEchos, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
 		m_Handler = handler ;
@@ -70,6 +79,8 @@ class XMLEventHandlerPlusData : public EventHandlerPlusData
 public:
 	XMLEventHandler m_Handler ;
 
+	XMLEventHandlerPlusData() {}
+
 	XMLEventHandlerPlusData(int eventID, XMLEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
 		m_Handler = handler ;
@@ -81,6 +92,8 @@ class OutputEventHandlerPlusData : public EventHandlerPlusData
 public:
 	OutputEventHandler	m_Handler ;
 	std::string			m_AttributeName ;
+
+	OutputEventHandlerPlusData() {}
 
 	OutputEventHandlerPlusData(int eventID, char const* pAttributeName, OutputEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
@@ -95,6 +108,8 @@ class OutputNotificationHandlerPlusData : public EventHandlerPlusData
 {
 public:
 	OutputNotificationHandler	m_Handler ;
+
+	OutputNotificationHandlerPlusData() {}
 
 	OutputNotificationHandlerPlusData(int eventID, OutputNotificationHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
@@ -211,6 +226,13 @@ protected:
 	void ReceivedOutputEvent(WMElement* pWmeAdded) ;
 	bool IsRegisteredForOutputEvent() ;
 
+	/*************************************************************
+	* @brief Returns true if changes to i/o links should be
+	*		 committed (sent to kernelSML) immediately when they
+	*		 occur, so the client doesn't need to remember to call commit.
+	*************************************************************/
+	bool IsAutoCommitEnabled() ;
+
 public:
 	/*************************************************************
 	* @brief Returns this agent's name.
@@ -270,8 +292,9 @@ public:
 	*		 The agent retains ownership of this object.
 	*		 The returned object is valid until the caller
 	*		 deletes the parent identifier.
-	*		 The WME is not added to Soar's input link until the
-	*		 client calls "Commit".
+	*		 If "auto commimt" is turned off in ClientKernel,
+	*		 the WME is not added to Soar's input link until the
+	*		 client calls "Commit" 
 	*************************************************************/
 	StringElement* CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue);
 
@@ -305,7 +328,8 @@ public:
 
 	/*************************************************************
 	* @brief Update the value of an existing WME.
-	*		 The value is not actually sent to the kernel
+	*		 If "auto commimt" is turned off in ClientKernel,
+	*		 the value is not actually sent to the kernel
 	*		 until "Commit" is called.
 	*************************************************************/
 	void	Update(StringElement* pWME, char const* pValue) ;
@@ -316,9 +340,13 @@ public:
 	* @brief Schedules a WME from deletion from the input link and removes
 	*		 it from the client's model of working memory.
 	*
+	*		 If this is an identifier then all of its children will be
+	*		 deleted too (assuming it's the only parent -- i.e. part of a tree not a full graph).
+	*
 	*		 The caller should not access this WME after calling
-	*		 DestroyWME().
-	*		 The WME is not removed from the input link until
+	*		 DestroyWME() or any of its children if this is an identifier.
+	*		 If "auto commimt" is turned off in ClientKernel,
+	*		 the WME is not removed from the input link until
 	*		 the client calls "Commit"
 	*************************************************************/
 	bool	DestroyWME(WMElement* pWME) ;
@@ -558,6 +586,11 @@ public:
 	bool Commit() ;
 
 	/*************************************************************
+	* @brief Returns true if this agent has uncommitted changes.
+	*************************************************************/
+	bool IsCommitRequired() ;
+
+	/*************************************************************
 	* @brief   Run one Soar agent for the specified number of decisions
 	*
 	* @returns The result of executing the run command.
@@ -565,30 +598,6 @@ public:
 	*************************************************************/
 	char const* RunSelf(unsigned long numberSteps, smlRunStepSize stepSize = sml_DECISION) ;
 	char const* RunSelfForever() ;
-
-	/*************************************************************
-	* @brief Interrupt the currently running Soar agent.
-	*
-	* Call this after calling "Run" in order to stop a Soar agent.
-	* The usual way to do this is to register for an event (e.g. AFTER_DECISION_CYCLE)
-	* and in that event handler decide if the user wishes to stop soar.
-	* If so, call to this method inside that handler.
-	*
-	* The request to Stop may not be honored immediately.
-	* Soar will stop at the next point it is considered safe to do so.
-	*
-	*************************************************************/
-	char const*	StopSelf() ;
-
-	/*************************************************************
-	* @brief   Controls whether Soar will break when it next generates
-	*		   output while running.
-	*
-	*		   Now deprecated.  Use RunSelfTilOutput instead.
-	*
-	* @param state	If true, causes Soar to break on output.  If false, Soar will not break.
-	*************************************************************/
-	// bool SetStopSelfOnOutput(bool state) ;
 
 	/*************************************************************
 	* @brief   Run Soar until either output is generated or
@@ -609,6 +618,33 @@ public:
 	* max-nil-output-cycles command).
 	*************************************************************/
 	char const* RunSelfTilOutput() ;
+
+	/*************************************************************
+	* @brief Returns true if this agent was part of the last set
+	*		 of agents that was run.
+	*************************************************************/
+	bool WasAgentOnRunList() ;
+
+	/*************************************************************
+	* @brief Returns whether the last run for this agent was
+	*		 interrupted (by a stop call) or completed normally.
+	*************************************************************/
+	smlRunResult GetResultOfLastRun() ;
+
+	/*************************************************************
+	* @brief Interrupt the currently running Soar agent.
+	*
+	* Call this after calling "Run" in order to stop a Soar agent.
+	* The usual way to do this is to register for an event (e.g. AFTER_DECISION_CYCLE)
+	* and in that event handler decide if the user wishes to stop soar.
+	* If so, call to this method inside that handler (this ensures you're calling on the same
+	* thread that Soar is running on so you don't get blocked).
+	*
+	* The request to Stop may not be honored immediately.
+	* Soar will stop at the next point it is considered safe to do so.
+	*
+	*************************************************************/
+	char const*	StopSelf() ;
 
 	/*************************************************************
 	* @brief Resend the complete input link to the kernel
@@ -634,9 +670,10 @@ public:
 	*
 	* @param pCommandLine Command line string to process.
 	* @param echoResults  If true the results are also echoed through the smlEVENT_ECHO event, so they can appear in a debugger (or other listener)
+	* @param noFilter	  If true this command line by-passes any external filters that have been registered (this is not common) and is executed immediately.
 	* @returns The string form of output from the command.
 	*************************************************************/
-	char const* ExecuteCommandLine(char const* pCommandLine, bool echoResults = false) ;
+	char const* ExecuteCommandLine(char const* pCommandLine, bool echoResults = false, bool noFilter = false) ;
 
 	/*************************************************************
 	* @brief Execute a command line command and return the result

@@ -25,7 +25,7 @@
 				InlineFunctionExpansion="0"
 				OmitFramePointers="FALSE"
 				AdditionalIncludeDirectories="&quot;$(TCL_INCLUDE)&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
-				PreprocessorDefinitions="WIN32;_DEBUG"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="TRUE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="tcl84.lib"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Tcl_sml_ClientInterface.dll"
+				OutputFile="..\..\..\SoarLibrary\bin\Tcl_sml_ClientInterface\Tcl_sml_ClientInterface.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(TCL_LIB)&quot;"
 				GenerateDebugInformation="TRUE"
@@ -55,11 +55,9 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Make Tcl package"
-				CommandLine="cd ..\..\..\SoarLibrary\bin
+				CommandLine="cd ..\..\..\SoarLibrary\bin\
+set PATH=%PATH%;$(TargetDir)..
 &quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl
-mkdir Tcl_sml_ClientInterface
-xcopy /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
-move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
@@ -93,7 +91,7 @@ move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
 				InlineFunctionExpansion="2"
 				OmitFramePointers="TRUE"
 				AdditionalIncludeDirectories="&quot;$(TCL_INCLUDE)&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
-				PreprocessorDefinitions="WIN32;NDEBUG"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="TRUE"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
@@ -109,7 +107,7 @@ move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="tcl84.lib"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Tcl_sml_ClientInterface.dll"
+				OutputFile="..\..\..\SoarLibrary\bin\Tcl_sml_ClientInterface\Tcl_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(TCL_LIB)&quot;"
 				GenerateDebugInformation="TRUE"
@@ -124,11 +122,9 @@ move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Make Tcl package"
-				CommandLine="cd ..\..\..\SoarLibrary\bin
+				CommandLine="cd ..\..\..\SoarLibrary\bin\
+set PATH=%PATH%;$(TargetDir)..
 &quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl
-mkdir Tcl_sml_ClientInterface
-xcopy /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
-move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
@@ -193,7 +189,7 @@ echo TCL_LIB: %TCL_LIB%
 echo TCL_BIN: %TCL_BIN%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -c++ -tcl -pkgversion 8.6.2  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;
+&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 8.6.2  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;
 "
 					AdditionalDependencies=""
 					Outputs="$(InputName)_wrap.cxx"/>
@@ -208,7 +204,7 @@ echo TCL_LIB: %TCL_LIB%
 echo TCL_BIN: %TCL_BIN%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -c++ -tcl -pkgversion 8.6.2  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;
+&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 8.6.2  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;
 "
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>

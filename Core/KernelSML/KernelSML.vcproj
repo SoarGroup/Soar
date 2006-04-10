@@ -21,7 +21,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\gSKI\include;..\ClientSML\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="TRUE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -38,7 +38,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
+				OutputFile="..\..\SoarLibrary\bin\Soar$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
@@ -81,7 +81,7 @@
 				InlineFunctionExpansion="2"
 				OmitFramePointers="TRUE"
 				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\gSKI\include;..\ClientSML\include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
@@ -96,7 +96,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
+				OutputFile="..\..\SoarLibrary\bin\Soar$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				IgnoreAllDefaultLibraries="FALSE"
@@ -174,9 +174,6 @@
 			</File>
 			<File
 				RelativePath=".\src\sml_ListenerThread.cpp">
-			</File>
-			<File
-				RelativePath=".\src\sml_OldRunScheduler.cpp">
 			</File>
 			<File
 				RelativePath=".\src\sml_OutputListener.cpp">
@@ -257,9 +254,6 @@
 			</File>
 			<File
 				RelativePath="..\ConnectionSML\include\sml_Names.h">
-			</File>
-			<File
-				RelativePath=".\include\sml_OldRunScheduler.h">
 			</File>
 			<File
 				RelativePath=".\include\sml_OutputListener.h">

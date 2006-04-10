@@ -31,6 +31,7 @@
    typedef enum {
       // Kernel events
       gSKIEVENT_BEFORE_SHUTDOWN            = 1,
+	  gSKIEVENT_AFTER_CONNECTION,
       gSKIEVENT_AFTER_CONNECTION_LOST,
       gSKIEVENT_BEFORE_RESTART,
       gSKIEVENT_AFTER_RESTART,
@@ -178,6 +179,7 @@
  	 // the handler is executing the function and returning a value, not just being notified
  	 // that something has happened.
  	 gSKIEVENT_RHS_USER_FUNCTION = gSKIEVENT_LAST_PRINT_EVENT + 1,
+	 gSKIEVENT_FILTER,
 	 gSKIEVENT_CLIENT_MESSAGE,
 	 gSKIEVENT_LAST_RHS_EVENT = gSKIEVENT_CLIENT_MESSAGE,
     } egSKIRhsEventId;
@@ -519,7 +521,7 @@
    *      output link before transfering to the next agent.
    */
    typedef enum {
-      gSKI_INTERLEAVE_SMALLEST_STEP,
+      gSKI_INTERLEAVE_SMALLEST_STEP,        // not used for scheduler, but tested by CLI to set default  
 	  gSKI_INTERLEAVE_ELABORATION_PHASE,
       gSKI_INTERLEAVE_PHASE,
       gSKI_INTERLEAVE_DECISION_CYCLE,

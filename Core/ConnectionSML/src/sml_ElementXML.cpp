@@ -16,6 +16,26 @@
 //
 // This class will not support the full capabilities of XML which is now a complex language.
 // It will support just the subset that is necessary for SML (Soar Markup Language) which is intended to be its primary customer.
+//
+// The implementation of this class is based around a handle (pointer) to an ElementXMLImpl object stored in the ElementXML DLL.
+// Why do we have this abstraction rather than just storing the ElementXMLImpl object right here?
+// The reason is that we're going to pass these objects between an executable (the client) and a DLL (the kernel).
+// If both are compiled on the same day with the same compiler, there's no problem passing a pointer to an object between the two.
+// However, if that's not the case (e.g. we want to use a new client with an existing Soar DLL) then we need a safe way to ensure that
+// the class layout being pointed to in the executable is the same as that used in the DLL.  If we've used different versions of a compiler
+// or changed the ElementXMLImpl class in any way, the class layout (where the fields are in memory) won't be the same and we'll get a crash
+// as soon as the object is accessed on the other side of the EXE-DLL divide.
+// 
+// The solution to this is to add a separate DLL (ElementXML DLL) and only pass around pointers to objects which it owns.
+// That way, there is no way for the two sides of the equation to get "out of synch" because there's only one implementation of
+// ElementXMLImpl in the system and it's inside ElementXML DLL.  If we change the class, we update the DLL and neither the client
+// nor the Soar Kernel DLL has any idea that a change has occured as neither can directly access the data within an ElementXMLImpl object.
+// 
+// We wouldn't normally make all of this effort unless we thought there's a real chance this sort of problem will arise and in the case
+// of the Soar kernel it's quite possible (even likely) as systems are often tied to specific versions of Soar and so old libraries and
+// clients are used.  Building in a requirement that both need to be compiled at the same time means we're building in requirements that
+// the source is available for both client and kernel--which may not always be the case if you consider commercial applications of either side.
+//
 /////////////////////////////////////////////////////////////////
 
 #include "sml_ElementXML.h"
@@ -253,6 +273,39 @@ bool ElementXML::IsTag(char const* pTagName) const
 		return true ;
 
 	return (IsStringEqual(pThisTag, pTagName)) ;
+}
+
+////////////////////////////////////////////////////////////////
+//
+// Comment functions (<!-- .... --> marks the bounds of a comment)
+//
+////////////////////////////////////////////////////////////////
+
+/*************************************************************
+* @brief Associate a comment with this XML element.
+*		 The comment is written in front of the element when stored/parsed.
+*
+* This type of commenting isn't completely general.  You can't have multiple
+* comment blocks before an XML element, nor can you have trailing comment blocks
+* where there is no XML element following the comment.  However, both of these are
+* unusual situations and would require a significantly more complex API to support
+* so it seems unnecessary.
+*
+* @param Comment	The comment string.
+*************************************************************/
+bool ElementXML::SetComment(char const* pComment)
+{
+	return ::sml_SetComment(m_hXML, pComment) ;
+}
+
+/*************************************************************
+* @brief Returns the comment for this element.
+*
+* @returns The comment string for this element (or NULL if there is none)
+*************************************************************/
+char const* ElementXML::GetComment() const
+{
+	return ::sml_GetComment(m_hXML) ;
 }
 
 ////////////////////////////////////////////////////////////////

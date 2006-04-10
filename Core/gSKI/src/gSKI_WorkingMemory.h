@@ -632,6 +632,11 @@ namespace gSKI {
      IWMStaticView* CreateSubView(const IWMObject* rootobject,
 				  Error* err = 0) const;
 
+	  /**
+       * @brief Handles updating working memory.  Not implemented for main working memory.
+       */
+	 void Update(bool forceAdds, bool forceRemoves) { } 
+
      /**
       * @brief Method to make raw soar interfaces easier to use (they require
       *        an agent pointer

@@ -48,7 +48,7 @@ public:
 	}
 
 	// Initialize this listener
-	void Init(KernelSML* pKernelSML) { m_pKernelSML = pKernelSML; }
+	void Init(KernelSML* pKernelSML) ;
 
 	// Returns true if this is the first connection listening for this event
 	virtual bool AddListener(egSKIAgentEventId eventID, Connection* pConnection) ;

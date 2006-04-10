@@ -602,6 +602,12 @@ namespace gSKI
       ClearError(err);
       return m_runState;
    }
+   	  
+   void Agent::SetRunState(egSKIRunState state,Error* err)
+   { 
+      ClearError(err);
+	  m_runState = state; 
+   }
 
       /*
    =========================
@@ -1060,7 +1066,6 @@ namespace gSKI
    {
       ClearError(err);
 	  return m_agent->d_cycle_count;
-      //return m_decisionCount;  // should be m_agent->d_cycle_count
    }
 
    /*
@@ -1898,6 +1903,31 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 	   // We've exited the run loop so we see what we should return
 	   if(m_agent->system_halted)
 	   {
+		   // if the agent halted because it is in an infinite loop of no-change impasses
+		   // interrupt the agents and allow the user to try to recover.
+		   if ((long)m_agent->bottom_goal->id.level >=  m_agent->sysparams[MAX_GOAL_DEPTH])
+		   {// the agent halted because it seems to be in an infinite loop, so throw interrupt
+               AgentManager* am = (AgentManager*)(m_kernel->GetAgentManager());
+			   am->InterruptAll(gSKI_STOP_AFTER_PHASE);
+			   m_agent->system_halted = FALSE; // hack! otherwise won't run again.  
+			   m_runState = gSKI_RUNSTATE_INTERRUPTED;
+			   retVal     = gSKI_RUN_INTERRUPTED;
+			   // Notify of the interrupt
+    
+			   RunNotifier nfAfterInt(this, m_lastPhase);
+			   m_runListeners.Notify(gSKIEVENT_AFTER_INTERRUPT, nfAfterInt);
+
+			   /* This is probably redundant with the event above, which clients can listen for... */
+			   PrintNotifier nfIntr(this, "Interrupt received.");
+			   m_printListeners.Notify(gSKIEVENT_PRINT, nfIntr);
+			   XMLNotifier xn1(this, kFunctionBeginTag, kTagMessage, 0) ;
+			   m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn1);
+			   XMLNotifier xn2(this, kFunctionAddAttribute, kTypeString, "Interrupt received.") ;
+			   m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn2);
+			   XMLNotifier xn3(this, kFunctionEndTag, kTagMessage, 0) ;
+			   m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn3);
+		   }
+		   else {
 		   // If we halted, we completed and our state is halted
 		   m_runState    = gSKI_RUNSTATE_HALTED;
 		   retVal        = gSKI_RUN_COMPLETED;
@@ -1911,6 +1941,7 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 		   m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn2);
 		   XMLNotifier xn3(this, kFunctionEndTag, kTagMessage, 0) ;
 		   m_XMLListeners.Notify(gSKIEVENT_XML_TRACE_OUTPUT, xn3);
+		   }
 	   }
 	   else if(maxStepsReached(startCount, END_COUNT)) 
 	   {

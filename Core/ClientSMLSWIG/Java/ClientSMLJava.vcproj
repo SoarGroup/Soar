@@ -22,7 +22,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(JAVA_INCLUDE)&quot;;&quot;$(JAVA_INCLUDE)\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
-				PreprocessorDefinitions="WIN32;_DEBUG"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="TRUE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -38,7 +38,7 @@
 				AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Java_sml_ClientInterface.dll"
+				OutputFile="..\..\..\SoarLibrary\bin\Java_sml_ClientInterface.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
@@ -61,11 +61,6 @@ rmdir SoarLibrary\bin\sml /S /Q
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Remove previous Java files"
-				CommandLine="echo on
-cd build
-del *.java
-cd ..
-"
 				ExcludedFromBuild="TRUE"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
@@ -97,7 +92,7 @@ cd ..
 				InlineFunctionExpansion="2"
 				OmitFramePointers="TRUE"
 				AdditionalIncludeDirectories="&quot;$(JAVA_INCLUDE)&quot;;&quot;$(JAVA_INCLUDE)\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
-				PreprocessorDefinitions="WIN32;NDEBUG"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="TRUE"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
@@ -112,7 +107,7 @@ cd ..
 				AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Java_sml_ClientInterface.dll"
+				OutputFile="..\..\..\SoarLibrary\bin\Java_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
@@ -136,12 +131,7 @@ rmdir SoarLibrary\bin\sml /S /Q
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"
-				Description="Remove previous Java files"
-				CommandLine="echo on
-cd build
-del *.java
-cd ..
-"/>
+				Description="Remove previous Java files"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
@@ -210,8 +200,12 @@ cd ..
 echo JAVA_INCLUDE: %JAVA_INCLUDE%
 echo JAVA_BIN: %JAVA_BIN%
 echo SWIG: %SWIG%
+echo Clean up old java files
 echo on
-$(SWIG)\swig.exe -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;
+cd build
+del *.java
+cd ..
+&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;
 "
 					AdditionalDependencies=""
 					Outputs="$(InputName)_wrap.cxx"/>
@@ -225,8 +219,12 @@ $(SWIG)\swig.exe -Wall -c++ -package sml -I../../ClientSML/include -I../../Eleme
 echo JAVA_INCLUDE: %JAVA_INCLUDE%
 echo JAVA_BIN: %JAVA_BIN%
 echo SWIG: %SWIG%
+echo Clean up old java files
 echo on
-$(SWIG)\swig.exe -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;
+cd build
+del *.java
+cd ..
+&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;
 "
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>

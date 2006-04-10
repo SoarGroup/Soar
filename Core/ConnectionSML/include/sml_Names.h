@@ -151,6 +151,14 @@ public:
 	static char const* const kTagLearning;
 	// Tag learning has attribute kTypeString
 
+	// filter support
+	static char const* const sml_Names::kTagFilter ;
+	static char const* const sml_Names::kFilterCommand ;
+	static char const* const sml_Names::kFilterError ;
+	static char const* const sml_Names::kFilterOutput ;
+	static char const* const sml_Names::kFilterName ;
+	static char const* const sml_Names::kParamNoFiltering ;
+
     //production printing
     static char const* const kTagConditions;
     static char const* const kTagConjunctive_Negation_Condition;
@@ -387,6 +395,8 @@ public:
 	static char const* const kCommand_GetRunState ;
 	static char const* const kCommand_IsProductionLoaded	;
 	static char const* const kCommand_SendClientMessage	;
+	static char const* const kCommand_WasAgentOnRunList	;
+	static char const* const kCommand_GetResultOfLastRun ;
 
 	// Command line interface
 	static char const* const kCommand_CommandLine ;

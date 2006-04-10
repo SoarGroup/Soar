@@ -321,6 +321,7 @@ namespace gSKI {
        *           for this agent.
        */
       virtual egSKIRunState GetRunState(Error* err = 0) = 0;
+	  virtual void          SetRunState(egSKIRunState state, Error* err = 0) = 0;
 
 
       /**

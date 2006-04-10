@@ -4,7 +4,7 @@
 ###########################################
 BASEDIR_PREFIX=../../..
 SOAR_LIBRARY=$(BASEDIR_PREFIX)/SoarLibrary
-EXTRA_DIST = Java_sml_ClientInterface.i
+EXTRA_DIST = Java_sml_ClientInterface.i JavaCallbackByHand.h build/readme.txt
 
 if SWIGJAVA
 lib_LTLIBRARIES = libJava_sml_ClientInterface.la
@@ -16,7 +16,7 @@ libJava_sml_ClientInterface_la_LIBADD = \
 $(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \
 $(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la 
 
-libJava_sml_ClientInterface_la_SOURCES = Java_sml_ClientInterface_wrap.cpp 
+nodist_libJava_sml_ClientInterface_la_SOURCES = Java_sml_ClientInterface_wrap.cpp 
 
 JAVASO = @JAVASO@
 libJava_sml_ClientInterface_la_LDFLAGS = -shrext $(JAVASO)
