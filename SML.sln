@@ -19,31 +19,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommandLineInterface", "Cor
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCommandLineInterface", "Applications\TestCLI\TestCommandLineInterface.vcproj", "{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestClientSML", "Applications\TestClientSML\TestClientSML.vcproj", "{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestConnectionSML", "Applications\TestConnectionSML\TestConnectionSML.vcproj", "{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestSMLEvents", "Applications\TestSMLEvents\TestSMLEvents.vcproj", "{8EF61FF7-214E-4955-9DBF-CCD164815E9C}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestSoarPerformance", "Applications\TestSoarPerformance\TestSoarPerformance.vcproj", "{31E16893-F132-4371-A451-7BC936385453}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "towersSML", "Applications\TOHSML\towersSML.vcproj", "{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarKernel", "Core\Kernel\SoarKernel.vcproj", "{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarKernel", "Core\SoarKernel\SoarKernel.vcproj", "{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -56,6 +32,54 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLJava", "Core\Clien
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLTcl", "Core\ClientSMLSWIG\Tcl\ClientSMLTcl.vcproj", "{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLCSharp", "Core\ClientSMLSWIG\CSharp\ClientSMLCSharp.vcproj", "{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCommandLineInterface", "Tools\TestCLI\TestCommandLineInterface.vcproj", "{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestClientSML", "Tools\TestClientSML\TestClientSML.vcproj", "{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestConnectionSML", "Tools\TestConnectionSML\TestConnectionSML.vcproj", "{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestSMLEvents", "Tools\TestSMLEvents\TestSMLEvents.vcproj", "{8EF61FF7-214E-4955-9DBF-CCD164815E9C}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestSoarPerformance", "Tools\TestSoarPerformance\TestSoarPerformance.vcproj", "{31E16893-F132-4371-A451-7BC936385453}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "towersSML", "Tools\TOHSML\towersSML.vcproj", "{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LoggerWinC", "Tools\LoggerWinC\LoggerWinC.vcproj", "{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestMultiAgent", "Tools\TestMultiAgent\TestMultiAgent.vcproj", "{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuickLink", "Tools\QuickLink\QuickLink.vcproj", "{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarTextIO", "Tools\SoarTextIO\SoarTextIO.vcproj", "{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FilterC", "Tools\FilterC\FilterC.vcproj", "{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -151,6 +175,74 @@ Global
 		{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}.Release (gSKI DLL).Build.0 = Release|Win32
 		{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}.Release (no SWIG).ActiveCfg = Release|Win32
 		{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}.Release (no SWIG).Build.0 = Release|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug.ActiveCfg = Debug|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug.Build.0 = Debug|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug (Core).ActiveCfg = Debug|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug (Core).Build.0 = Debug|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug (gSKI DLL).Build.0 = Debug|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug (no SWIG).Build.0 = Debug|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release.ActiveCfg = Release|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release.Build.0 = Release|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release (Core).ActiveCfg = Release|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release (Core).Build.0 = Release|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release (gSKI DLL).ActiveCfg = Release|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release (gSKI DLL).Build.0 = Release|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release (no SWIG).ActiveCfg = Release|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release (no SWIG).Build.0 = Release|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug.ActiveCfg = Debug|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug.Build.0 = Debug|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug (Core).ActiveCfg = Debug|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug (Core).Build.0 = Debug|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug (gSKI DLL).ActiveCfg = Debug-DLL|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug (gSKI DLL).Build.0 = Debug-DLL|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug (no SWIG).Build.0 = Debug|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release.ActiveCfg = Release|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release.Build.0 = Release|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release (Core).ActiveCfg = Release|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release (Core).Build.0 = Release|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release (gSKI DLL).ActiveCfg = Release-DLL|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release (gSKI DLL).Build.0 = Release-DLL|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release (no SWIG).ActiveCfg = Release|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release (no SWIG).Build.0 = Release|Win32
+		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug.ActiveCfg = Debug|Win32
+		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug.Build.0 = Debug|Win32
+		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug (Core).ActiveCfg = Debug|Win32
+		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
+		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug (gSKI DLL).Build.0 = Debug|Win32
+		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release.ActiveCfg = Release|Win32
+		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release.Build.0 = Release|Win32
+		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release (Core).ActiveCfg = Release|Win32
+		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release (gSKI DLL).ActiveCfg = Release|Win32
+		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release (gSKI DLL).Build.0 = Release|Win32
+		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release (no SWIG).ActiveCfg = Release|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug.ActiveCfg = Debug|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug.Build.0 = Debug|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug (Core).ActiveCfg = Debug|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug (gSKI DLL).Build.0 = Debug|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release.ActiveCfg = Release|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release.Build.0 = Release|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (Core).ActiveCfg = Release|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (gSKI DLL).ActiveCfg = Release|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (gSKI DLL).Build.0 = Release|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (no SWIG).ActiveCfg = Release|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Debug.ActiveCfg = Debug|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Debug.Build.0 = Debug|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Debug (Core).ActiveCfg = Debug|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Debug (gSKI DLL).Build.0 = Debug|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Release.ActiveCfg = Release|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Release.Build.0 = Release|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Release (Core).ActiveCfg = Release|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Release (gSKI DLL).ActiveCfg = Release|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Release (gSKI DLL).Build.0 = Release|Win32
+		{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}.Release (no SWIG).ActiveCfg = Release|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Debug.ActiveCfg = Debug|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Debug.Build.0 = Debug|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Debug (Core).ActiveCfg = Debug|Win32
@@ -168,6 +260,7 @@ Global
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.ActiveCfg = Debug|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.Build.0 = Debug|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (Core).ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (Core).Build.0 = Debug|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (gSKI DLL).Build.0 = Debug|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (no SWIG).ActiveCfg = Debug|Win32
@@ -175,6 +268,7 @@ Global
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.ActiveCfg = Release|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.Build.0 = Release|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (Core).ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (Core).Build.0 = Release|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (gSKI DLL).ActiveCfg = Release|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (gSKI DLL).Build.0 = Release|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (no SWIG).ActiveCfg = Release|Win32
@@ -235,62 +329,81 @@ Global
 		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release (gSKI DLL).Build.0 = Release|Win32
 		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release (no SWIG).ActiveCfg = Release|Win32
 		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release (no SWIG).Build.0 = Release|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug.ActiveCfg = Debug|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug.Build.0 = Debug|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug (Core).ActiveCfg = Debug|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug (Core).Build.0 = Debug|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug (gSKI DLL).Build.0 = Debug|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug (no SWIG).ActiveCfg = Debug|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug (no SWIG).Build.0 = Debug|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release.ActiveCfg = Release|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release.Build.0 = Release|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release (Core).ActiveCfg = Release|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release (Core).Build.0 = Release|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release (gSKI DLL).ActiveCfg = Release|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release (gSKI DLL).Build.0 = Release|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release (no SWIG).ActiveCfg = Release|Win32
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release (no SWIG).Build.0 = Release|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug.ActiveCfg = Debug|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug.Build.0 = Debug|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug (Core).ActiveCfg = Debug|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug (Core).Build.0 = Debug|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug (gSKI DLL).ActiveCfg = Debug-DLL|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug (gSKI DLL).Build.0 = Debug-DLL|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug (no SWIG).ActiveCfg = Debug|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug (no SWIG).Build.0 = Debug|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release.ActiveCfg = Release|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release.Build.0 = Release|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release (Core).ActiveCfg = Release|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release (Core).Build.0 = Release|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release (gSKI DLL).ActiveCfg = Release-DLL|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release (gSKI DLL).Build.0 = Release-DLL|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release (no SWIG).ActiveCfg = Release|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release (no SWIG).Build.0 = Release|Win32
-		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug.ActiveCfg = Debug|Win32
-		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug.Build.0 = Debug|Win32
-		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug (Core).ActiveCfg = Debug|Win32
-		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
-		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug (gSKI DLL).Build.0 = Debug|Win32
-		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug (no SWIG).ActiveCfg = Debug|Win32
-		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release.ActiveCfg = Release|Win32
-		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release.Build.0 = Release|Win32
-		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release (Core).ActiveCfg = Release|Win32
-		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release (gSKI DLL).ActiveCfg = Release|Win32
-		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release (gSKI DLL).Build.0 = Release|Win32
-		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release (no SWIG).ActiveCfg = Release|Win32
-		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug.ActiveCfg = Debug|Win32
-		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug.Build.0 = Debug|Win32
-		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug (Core).ActiveCfg = Debug|Win32
-		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
-		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug (gSKI DLL).Build.0 = Debug|Win32
-		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug (no SWIG).ActiveCfg = Debug|Win32
-		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release.ActiveCfg = Release|Win32
-		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release.Build.0 = Release|Win32
-		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (Core).ActiveCfg = Release|Win32
-		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (gSKI DLL).ActiveCfg = Release|Win32
-		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (gSKI DLL).Build.0 = Release|Win32
-		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (no SWIG).ActiveCfg = Release|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug.ActiveCfg = Debug|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug.Build.0 = Debug|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug (Core).ActiveCfg = Debug|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug (gSKI DLL).Build.0 = Debug|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Debug (no SWIG).Build.0 = Debug|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Release.ActiveCfg = Release|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Release.Build.0 = Release|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Release (Core).ActiveCfg = Release|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Release (Core).Build.0 = Release|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Release (gSKI DLL).ActiveCfg = Release|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Release (gSKI DLL).Build.0 = Release|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Release (no SWIG).ActiveCfg = Release|Win32
+		{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}.Release (no SWIG).Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.Build.0 = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (Core).ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (Core).Build.0 = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (gSKI DLL).Build.0 = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (no SWIG).Build.0 = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (Core).ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (Core).Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (gSKI DLL).ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (gSKI DLL).Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (no SWIG).ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (no SWIG).Build.0 = Release|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Debug.ActiveCfg = Debug|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Debug.Build.0 = Debug|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Debug (Core).ActiveCfg = Debug|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Debug (gSKI DLL).Build.0 = Debug|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Debug (no SWIG).Build.0 = Debug|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Release.ActiveCfg = Release|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Release.Build.0 = Release|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Release (Core).ActiveCfg = Release|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Release (gSKI DLL).ActiveCfg = Release|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Release (gSKI DLL).Build.0 = Release|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Release (no SWIG).ActiveCfg = Release|Win32
+		{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}.Release (no SWIG).Build.0 = Release|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Debug.ActiveCfg = Debug|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Debug.Build.0 = Debug|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Debug (Core).ActiveCfg = Debug|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Debug (gSKI DLL).Build.0 = Debug|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Debug (no SWIG).Build.0 = Debug|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release.ActiveCfg = Release|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release.Build.0 = Release|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release (Core).ActiveCfg = Release|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release (gSKI DLL).ActiveCfg = Release|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release (gSKI DLL).Build.0 = Release|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release (no SWIG).ActiveCfg = Release|Win32
+		{CE755AB7-CE29-4394-BBC5-EA9778AA6B89}.Release (no SWIG).Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.Build.0 = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (Core).ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (Core).Build.0 = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (gSKI DLL).Build.0 = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug (no SWIG).Build.0 = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (Core).ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (Core).Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (gSKI DLL).ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (gSKI DLL).Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (no SWIG).ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (no SWIG).Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
