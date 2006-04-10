@@ -4,7 +4,7 @@
 #include <list>
 #include <set>
 #include <string>
-#include "Action.h"
+#include "SoarAction.h"
 //#include "OrtsInterface.h"
 #include "general.h"
 #include "MapRegion.h"

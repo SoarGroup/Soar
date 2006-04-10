@@ -5,7 +5,7 @@
 #include "SoarInterface.h"
 #include "SoarGameGroup.h"
 #include "general.h"
-#include "include/Action.h"
+#include "SoarAction.h"
 
 #include "Game.H"
 
@@ -288,10 +288,10 @@ void SoarInterface::refreshFeatureMap(FeatureMap *m, string name) {
 void SoarInterface::getNewSoarOutput() {
   lockSoarMutex();
   
-  int numberCommands = agent->GetNumberCommands() ;
+  int numberCommands = agent->GetNumberCommands();
   
   for (int i = 0 ; i < numberCommands ; i++) {
-    sml::Identifier* cmdPtr = agent->GetCommand(i) ;
+    sml::Identifier* cmdPtr = agent->GetCommand(i);
 
     // check if this command has already been encountered
     if (cmdPtr->GetParameterValue("status") != NULL) {
@@ -300,13 +300,13 @@ void SoarInterface::getNewSoarOutput() {
     
     string name = cmdPtr->GetCommandName() ;
     cout << "command name: " << name << endl;
-    ObjectActionType OType = objectActionTypeLookup(name.c_str());
+    ObjectActionType OType = objectActionTypeLookup(name);
 
     if (OType != OA_NO_SUCH_ACTION) {
       processObjectAction(OType, cmdPtr);
     }
     else {
-      AttentionActionType AType = attentionActionTypeLookup(name.c_str());
+      AttentionActionType AType = attentionActionTypeLookup(name);
       if (AType != AA_NO_SUCH_ACTION) {
         processAttentionAction(AType, cmdPtr);
       }
@@ -350,7 +350,7 @@ void SoarInterface::processObjectAction(ObjectActionType type,
   }
 
   // add the new action to the action queue
-  objectActionQueue.push_back(&newAction);
+  objectActionQueue.push_back(newAction);
 
   cmdPtr->AddStatusComplete();
 
@@ -410,7 +410,7 @@ void SoarInterface::processAttentionAction(AttentionActionType type,
       break;
   }
 
-  attentionActionQueue.push_back(&newAction);
+  attentionActionQueue.push_back(newAction);
 
   cmdPtr->AddStatusComplete();
 
@@ -418,9 +418,9 @@ void SoarInterface::processAttentionAction(AttentionActionType type,
 }
 
 // called by middleware to get queued Soar actions
-void SoarInterface::getNewObjectActions(list<ObjectAction*>& newActions) {
+void SoarInterface::getNewObjectActions(list<ObjectAction>& newActions) {
   lockObjectActionMutex();
-  for(list<ObjectAction*>::iterator i = objectActionQueue.begin(); 
+  for(list<ObjectAction>::iterator i = objectActionQueue.begin(); 
                                   i != objectActionQueue.end(); 
                                   i++)
   {
@@ -430,9 +430,9 @@ void SoarInterface::getNewObjectActions(list<ObjectAction*>& newActions) {
   unlockObjectActionMutex();
 }
 
-void SoarInterface::getNewAttentionActions(list<AttentionAction*>& newActions) {
+void SoarInterface::getNewAttentionActions(list<AttentionAction>& newActions) {
   lockAttentionActionMutex();
-  for(list<AttentionAction*>::iterator i = attentionActionQueue.begin(); 
+  for(list<AttentionAction>::iterator i = attentionActionQueue.begin(); 
                                   i != attentionActionQueue.end(); 
                                   i++)
   {
@@ -504,18 +504,18 @@ void SoarInterface::setStale(bool _st) {
 }
 
 void SoarInterface::lockObjectActionMutex() { 
-  pthread_mutex_lock(soarMutex);
+  pthread_mutex_lock(objectActionQueueMutex);
 }
  
 void SoarInterface::unlockObjectActionMutex() { 
-  pthread_mutex_unlock(soarMutex);
+  pthread_mutex_unlock(objectActionQueueMutex);
 }
 void SoarInterface::lockAttentionActionMutex() { 
-  pthread_mutex_lock(soarMutex);
+  pthread_mutex_lock(attentionActionQueueMutex);
 }
  
 void SoarInterface::unlockAttentionActionMutex() { 
-  pthread_mutex_unlock(soarMutex);
+  pthread_mutex_unlock(attentionActionQueueMutex);
 }
 
 void SoarInterface::improperCommandError() {

@@ -20,6 +20,7 @@ const char* getCommandParameter(sml::Identifier* c, const char *name) {
     const char *val = c->GetParameterValue(name);
     if (strlen(val) == 0) {
         cout << "Error: Parameter " << name << " does not exist." << endl;
+        fflush(stdout);
         exit(1);
     }
     return val;

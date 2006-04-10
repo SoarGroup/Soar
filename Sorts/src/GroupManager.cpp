@@ -47,9 +47,10 @@ bool GroupManager::assignActions() {
   // actions have a list of params and a list of groups,
   // the first group (must exist) is the group the action will be applied to
     
-  list <ObjectAction*> newActions;
+  list <ObjectAction> newActions;
+  
   SoarIO->getNewObjectActions(newActions);
-  list <ObjectAction*>::iterator actionIter = newActions.begin();
+  list <ObjectAction>::iterator actionIter = newActions.begin();
  
   list <SoarGameGroup*>::iterator groupIter;
   bool success = true;
@@ -58,7 +59,7 @@ bool GroupManager::assignActions() {
   
   while (actionIter != newActions.end()){
     targetGroups.clear();
-    list<SoarGameGroup*>& groups = (**actionIter).groups;
+    list<SoarGameGroup*>& groups = (*actionIter).groups;
     groupIter = groups.begin();
     
     assert(groupIter != groups.end());
@@ -73,7 +74,7 @@ bool GroupManager::assignActions() {
     }
     
     success &= sourceGroup->assignAction(
-            (**actionIter).type, (**actionIter).params, targetGroups);
+            (*actionIter).type, (*actionIter).params, targetGroups);
     
     actionIter++;
   }

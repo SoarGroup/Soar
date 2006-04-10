@@ -11,7 +11,7 @@
 #include "sml_Client.h"
 
 #include "MapRegion.h"
-#include "Action.h"
+#include "SoarAction.h"
 #include "general.h"
 #include "FeatureMap.h"
 
@@ -92,8 +92,8 @@ class SoarInterface {
 
     ~SoarInterface();
 
-    void getNewObjectActions(list<ObjectAction*>& newActions);
-    void getNewAttentionActions(list<AttentionAction*>& newActions);
+    void getNewObjectActions(list<ObjectAction>& newActions);
+    void getNewAttentionActions(list<AttentionAction>& newActions);
 
     // grouping commands for Group Manager to call
     void addGroup(SoarGameGroup* group);
@@ -196,8 +196,8 @@ class SoarInterface {
    *                                                *
    **************************************************/
 
-    list<ObjectAction*> objectActionQueue;
-    list<AttentionAction*> attentionActionQueue;
+    list<ObjectAction> objectActionQueue;
+    list<AttentionAction> attentionActionQueue;
     // need to add two more, once we get the ObjectAction class modified
 
     // associated mutexes that protect them

@@ -9,7 +9,7 @@
 //#include "OrtsInterface.h"
 #include "general.h"
 #include "GameObj.H"
-#include "Action.h"
+#include "SoarAction.h"
 
 class OrtsInterface;
 class GroupManager;

@@ -33,7 +33,6 @@ void SoarUpdateEventHandler(sml::smlUpdateEventId id,
 
   if (soarInterface->getStale()) {
     soarInterface->lockSoarMutex();
-    cout << " commit ";
     agent->Commit();
     soarInterface->unlockSoarMutex();
     soarInterface->setStale(false);
