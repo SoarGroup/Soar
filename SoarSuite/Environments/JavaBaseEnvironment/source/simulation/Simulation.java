@@ -1,5 +1,8 @@
 package simulation;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 
 import sml.*;
@@ -168,35 +171,34 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		
 		// Figure out whether to use java or javaw
 		String os = System.getProperty("os.name");
-		String javabin = "java";
+		String commandLine;
 		if (os.matches(".+indows.*") || os.matches("INDOWS")) {
-			javabin = "javaw";
+			commandLine = "javaw -jar " + m_BasePath 
+			+ "..\\..\\SoarLibrary\\bin\\SoarJavaDebugger.jar -remote -agent " + agentName;
+		} else {
+			commandLine = System.getProperty("java.home") + "/bin/java -jar " + m_BasePath
+			+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -remote -agent " + agentName;
 		}
 		
 		Runtime r = java.lang.Runtime.getRuntime();
-		String commandLine = javabin + " -jar \"" + m_BasePath
-		+ ".." + System.getProperty("file.separator")
-		+ ".." + System.getProperty("file.separator")
-		+ "SoarLibrary" + System.getProperty("file.separator")
-		+ "bin" + System.getProperty("file.separator") 
-		+ "SoarJavaDebugger.jar\" -remote -agent " + agentName;
+
 		try {
 			// TODO: manage the returned process a bit better.
-			r.exec(commandLine);
+			Process p = r.exec(commandLine);
 			
-			if (!waitForDebugger()) {
+			if (!waitForDebugger(p)) {
 				fireErrorMessage("Debugger spawn failed for agent: " + agentName);
 				return;
 			}
 			
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			fireErrorMessage("IOException spawning debugger: " + e.getMessage());
 			shutdown();
 			System.exit(1);
 		}
 	}
 	
-	private boolean waitForDebugger() {
+	private boolean waitForDebugger(Process p) {
 		boolean ready = false;
 		for (int tries = 0; tries < kDebuggerTimeoutSeconds; ++tries) {
 			m_Kernel.GetAllConnectionInfo();
@@ -212,6 +214,21 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 				}
 				if (ready) break;
 			}
+//			try {
+//				BufferedReader in = new BufferedReader( new InputStreamReader(p.getInputStream()));
+//				String currentLine = null;
+//				while ((currentLine = in.readLine()) != null) {
+//					m_Logger.log(currentLine);
+//				}
+//				BufferedReader err = new BufferedReader( new InputStreamReader(p.getErrorStream()));
+//				while ((currentLine = err.readLine()) != null) {
+//					m_Logger.log(currentLine);
+//				}
+//			} catch (IOException e) {
+//				fireErrorMessage("IOException reading debugger process: " + e.getMessage());
+//				shutdown();
+//				System.exit(1);
+//			}
 			try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
 		}
 		return ready;
