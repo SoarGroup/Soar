@@ -1,2 +1,45 @@
-<html dir="ltr" lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"><head><title>Source - Soar Wiki</title></head><body class="ns-0"><div id="globalWrapper"><div id="column-content"><div id="content"><a id="contentTop" name="top"></a><h1 class="firstHeading">Source</h1><div id="bodyContent"><div id="contentSub"></div><a name="Name"></a><h1> Name </h1><p><b>source</b> - Load and evaluate the contents of a file. <a name="Synopsis"></a><h1> Synopsis </h1><pre>source <u>filename</u>
-</pre><a name="Options"></a><h1> Options </h1><table border=1 cellpadding=2><tr><td><u>filename</u></td><td> The file of Soar productions and commands to load. </td></tr></table><a name="Description"></a><h1> Description </h1><p>Load and evaluate the contents of a file. The <u><i>filename</i></u> can be a relative path or a fully qualified path. <code><b>source</b></code> will generate an implicit push to the new directory, execute the command, and then pop back to the current working directory from which the command was issued. <a name="See_Also"></a><h1> See Also </h1><p><a href="/soarwiki/Cd" title="Cd">cd</a> <a href="/soarwiki/Dirs" title="Dirs">dirs</a> <a href="/soarwiki/Home" title="Home">home</a> <a href="/soarwiki/Ls" title="Ls">ls</a> <a href="/soarwiki/Pushd" title="Pushd">pushd</a> <a href="/soarwiki/Popd" title="Popd">popd</a> <a href="/soarwiki/Topd" title="Topd">topd</a></div></div></div><div class="visualClear"></div></div></body></html>
+<html dir="ltr" lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"><head><title>Source - Soar Wiki</title></head><body class="ns-0"><div id="globalWrapper"><div id="column-content"><div id="content"><a id="contentTop" name="top"></a><h1 class="firstHeading">Source</h1><div id="bodyContent"><div id="contentSub"></div><a name="Name"></a><h1> Name </h1><p><b>source</b> - Load and evaluate the contents of a file. <a name="Synopsis"></a><h1> Synopsis </h1><pre>source -[adv] <u>filename</u>
+</pre><a name="Options"></a><h1> Options </h1><table border=1 cellpadding=2><tr><td><u>filename</u></td><td> The file of Soar productions and commands to load. </td></tr><tr><td> -a, --all </td><td> Enable a summary for each file sourced </td></tr><tr><td> -d, --disable </td><td> Disable all summaries </td></tr><tr><td> -v, --verbose </td><td> Print excised production names </td></tr></table><a name="Description"></a><h1> Description </h1><p>Load and evaluate the contents of a file. The <u><i>filename</i></u> can be a relative path or a fully qualified path. <code><b>source</b></code> will generate an implicit push to the new directory, execute the command, and then pop back to the current working directory from which the command was issued. <p>After the source completes, the number of productions sourced and excised is printed: <pre>agent&gt; source demos/mac/mac.soar
+******************
+Total: 18 productions sourced.
+Source finished.
+agent&gt; source demos/mac/mac.soar
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+Total: 18 productions sourced. 18 productions excised.
+Source finished.
+</pre><p>This can be disabled by using the -d flag: <pre>agent&gt; source demos/mac/mac.soar -d
+******************
+Source finished.
+agent&gt; source demos/mac/mac.soar -d
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+Source finished.
+</pre><p>A list of excised productions is available using the -v flag: <pre>agent&gt; source demos/mac/mac.soar -v
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+Total: 18 productions sourced. 18 productions excised.
+Excised productions:
+        mac*detect*state*success
+        mac*evaluate*state*failure*more*cannibals
+        monitor*move-boat
+        monitor*state*left
+...
+</pre><p>A separate summary for each file sourced can be enabled using the -a flag: <pre>agent&gt; source demos/mac/mac.soar -a
+_firstload.soar: 0 productions sourced.
+all_source.soar: 0 productions sourced.
+**
+goal-test.soar: 2 productions sourced.
+***
+monitor.soar: 3 productions sourced.
+****
+search-control.soar: 4 productions sourced.
+top-state.soar: 0 productions sourced.
+elaborations_source.soar: 0 productions sourced.
+_readme.soar: 0 productions sourced.
+**
+initialize-mac.soar: 2 productions sourced.
+*******
+move-boat.soar: 7 productions sourced.
+mac_source.soar: 0 productions sourced.
+mac.soar: 0 productions sourced.
+Total: 18 productions sourced.
+Source finished.
+</pre><p>Combining the -a and -v flag adds excised production names to the output for each file. <a name="See_Also"></a><h1> See Also </h1><p><a href="/soarwiki/Cd" title="Cd">cd</a> <a href="/soarwiki/Dirs" title="Dirs">dirs</a> <a href="/soarwiki/Home" title="Home">home</a> <a href="/soarwiki/Ls" title="Ls">ls</a> <a href="/soarwiki/Pushd" title="Pushd">pushd</a> <a href="/soarwiki/Popd" title="Popd">popd</a> <a href="/soarwiki/Topd" title="Topd">topd</a><div class="visualClear"></div></div></div></div><div class="visualClear"></div></div></body></html>

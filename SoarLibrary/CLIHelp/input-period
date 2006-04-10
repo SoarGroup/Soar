@@ -1,0 +1,36 @@
+                                  Input-period
+
+                                      Name
+
+   input-period - For Soar7-mode, controls the rate of input to the Soar
+   agent.
+
+                                    Synopsis
+
+ input-period [period]
+
+                                    Options
+
+   +------------------------------+
+   |period|A non-negative integer.|
+   +------------------------------+
+
+                                  Description
+
+   This command is obsolete for Soar8. In Soar8, input is done at the start
+   of every decision cycle.
+
+   For Soar7-mode, the input-period command controls the rate of input to the
+   Soar agent. If period is not specified, this command prints the current
+   input period. If period is specified, it must be a non-negative integer
+   and is used to reset the input period. A period of 0 sets input to occur
+   every elaboration cycle. A positive value for period sets Soar to accept
+   input only every nth period decision cycles. The default initial setting
+   of the input-period parameter is 0.
+
+                                    Example
+
+ input-period 5
+
+   Input is accepted only every 5th decision cycle by the Soar agent. Soar 7
+   ONLY.

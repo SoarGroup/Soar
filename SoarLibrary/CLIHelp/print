@@ -58,6 +58,8 @@ Printing items in working memory
    |-i, --internal|working memory, this means printing the individual       |
    |              |elements with their timetags, rather than the objects.   |
    |--------------+---------------------------------------------------------|
+   |-v, --varprint|Print identifiers enclosed in angle brackets.            |
+   |--------------+---------------------------------------------------------|
    |identifier    |print the object identifier. identifier must be a valid  |
    |              |Soar symbol such as S1                                   |
    |--------------+---------------------------------------------------------|

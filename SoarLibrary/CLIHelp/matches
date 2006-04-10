@@ -12,24 +12,24 @@
                                     Options
 
    +------------------------------------------------------------------------+
-   |production_name             |Print partial match information for the    |
-   |                            |named production.                          |
-   |----------------------------+-------------------------------------------|
-   |                            |For the match set, print only the names of |
-   |                            |the productions that are about to fire or  |
-   |-0, -n, --names, -c, --count|retract (the default). If printing partial |
-   |                            |matches for a production, just list the    |
-   |                            |partial match counts.                      |
-   |----------------------------+-------------------------------------------|
-   |-1, -t, --timetags          |Also print the timetags of the wmes at the |
-   |                            |first failing condition                    |
-   |----------------------------+-------------------------------------------|
-   |-2, -w, --wmes              |Also print the full wmes, not just the     |
-   |                            |timetags, at the first failing condition.  |
-   |----------------------------+-------------------------------------------|
-   |-a, --assertions            |List only productions about to fire.       |
-   |----------------------------+-------------------------------------------|
-   |-r, --retractions           |List only productions about to retract.    |
+   |production_name         |Print partial match information for the named  |
+   |                        |production.                                    |
+   |------------------------+-----------------------------------------------|
+   |                        |For the match set, print only the names of the |
+   |                        |productions that are about to fire or retract  |
+   |-n, --names, -c, --count|(the default). If printing partial matches for |
+   |                        |a production, just list the partial match      |
+   |                        |counts.                                        |
+   |------------------------+-----------------------------------------------|
+   |-t, --timetags          |Also print the timetags of the wmes at the     |
+   |                        |first failing condition                        |
+   |------------------------+-----------------------------------------------|
+   |-w, --wmes              |Also print the full wmes, not just the         |
+   |                        |timetags, at the first failing condition.      |
+   |------------------------+-----------------------------------------------|
+   |-a, --assertions        |List only productions about to fire.           |
+   |------------------------+-----------------------------------------------|
+   |-r, --retractions       |List only productions about to retract.        |
    +------------------------------------------------------------------------+
 
                                   Description

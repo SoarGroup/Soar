@@ -1,0 +1,39 @@
+                                Command-to-file
+
+                                      Name
+
+   command-to-file - Dump the printed output and results of a command to a
+   file.
+
+                                    Synopsis
+
+ command-to-file [-a] filename command [args]
+
+                                    Options
+
+   +----------------------------------------------------------+
+   |-a, --append|Append if file exists.                       |
+   |------------+---------------------------------------------|
+   |filename    |The file to log the results of the command to|
+   |------------+---------------------------------------------|
+   |command     |The command to log                           |
+   |------------+---------------------------------------------|
+   |args        |Arguments for command                        |
+   +----------------------------------------------------------+
+
+                                  Description
+
+   This command logs a single command. It is almost equivalent to opening a
+   log using clog, running the command, then closing the log, the only
+   difference is that input isn't recorded.
+
+   Running this command while a log is open is an error. There is currently
+   not support for multiple logs in the command line interface, and this
+   would be an instance of multiple logs.
+
+   This command echos output both to the screen and to a file, just like
+   clog.
+
+                                    See also
+
+   clog
