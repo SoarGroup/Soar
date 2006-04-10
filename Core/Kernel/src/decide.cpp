@@ -2385,6 +2385,21 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
     thisAgent->bottom_goal = id;
     add_impasse_wme (thisAgent, id, thisAgent->quiescence_symbol,
 		             thisAgent->t_symbol, NIL);
+	if ((NO_CHANGE_IMPASSE_TYPE == impasse_type) && 
+		(thisAgent->sysparams[MAX_GOAL_DEPTH] < thisAgent->bottom_goal->id.level )) 
+	{
+ 		// appear to be SNC'ing deep in goalstack, so interrupt and warn user
+		// KJC note: we actually halt, because there is no interrupt function in SoarKernel
+		// in the gSKI Agent code, if system_halted, MAX_GOAL_DEPTH is checked and if exceeded
+		// then the interrupt is generated and system_halted is set to FALSE so the user can recover.
+		print(thisAgent, "\nGoal stack depth exceeded %d on a no-change impasse.\n",thisAgent->sysparams[MAX_GOAL_DEPTH]);
+		print(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
+		GenerateWarningXML(thisAgent, "\nGoal stack depth exceeded on a no-change impasse.\n");
+		GenerateWarningXML(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
+		thisAgent->stop_soar = TRUE;
+		thisAgent->system_halted = TRUE;
+		thisAgent->reason_for_stopping = "Max Goal Depth exceeded.";
+	}
   } 
   else 
   {

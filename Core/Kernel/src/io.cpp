@@ -239,6 +239,8 @@ void do_input_cycle (agent* thisAgent) {
 
   if (thisAgent->prev_top_state && (!thisAgent->top_state)) {
     /* --- top state was just removed --- */
+    soar_invoke_callbacks(thisAgent, thisAgent, INPUT_PHASE_CALLBACK, 
+			 (soar_call_data) TOP_STATE_JUST_REMOVED);
     release_io_symbol (thisAgent, thisAgent->io_header);
     release_io_symbol (thisAgent, thisAgent->io_header_input);
     release_io_symbol (thisAgent, thisAgent->io_header_output);
@@ -246,8 +248,6 @@ void do_input_cycle (agent* thisAgent) {
     thisAgent->io_header_input = NIL;       /* RBD added 3/25/95 */
     thisAgent->io_header_output = NIL;       /* KJC added 3/3/99 */
     thisAgent->io_header_link = NIL;  /* KJC added 3/3/99 */
-    soar_invoke_callbacks(thisAgent, thisAgent, INPUT_PHASE_CALLBACK, 
-			 (soar_call_data) TOP_STATE_JUST_REMOVED);
   } else if ((!thisAgent->prev_top_state) && thisAgent->top_state) {
     /* --- top state was just created --- */
     /* Create io structure on top state. */
