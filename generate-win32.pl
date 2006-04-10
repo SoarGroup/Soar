@@ -32,10 +32,10 @@ use File::Path;
 my $soarurl = "https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite";
 
 # Name and version
-my $nameandversion = "Soar Suite 8.6.2-r4";
+my $nameandversion = "Soar Suite 8.6.2-r6";
 
 # File globs to completely remove from the tree (not distributed at all)
-my @remove = qw/.cvsignore *.so *.so.2 *.jnilib java_swt make-mac-app.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource *.tex/;
+my @remove = qw/.cvsignore .svn *.so *.so.2 *.jnilib java_swt make-mac-app.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource *.tex/;
 
 # Globs to copy from working copy to Core component
 # WORKING --copy-to-> CORE
@@ -147,6 +147,12 @@ sub move_step {
 	print "Step 6.1: Rename INSTALL and COPYING...\n";
 	rmove("$core/INSTALL", "$core/Install.txt");
 	rmove("$core/COPYING", "$core/License.txt");
+	
+	print "Step 6.2: Remove svn dirs from core...\n";
+	foreach (File::Find::Rule->directory()->name(".svn")->in($core)) {
+		print "Removing from core: $_\n";
+		rmtree($_) or die "Unable to remove $_: $!";
+	}
 }
 
 sub nsi_step {

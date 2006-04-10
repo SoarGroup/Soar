@@ -56,17 +56,25 @@ Section "Core Soar Components" Section1
 	CreateDirectory "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI"
 	CreateDirectory "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/Presentations"
 	CreateDirectory "$SMPROGRAMS/${MSPROGRAMSNAME}/Tutorial/"
-	
+
+	SetOutPath "$INSTDIR/Environments/JavaTOH"
+	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Towers of Hanoi (Java).lnk" "$INSTDIR/Environments/JavaTOH/run-toh.bat" "" "$INSTDIR/Resources/Icons/toh.ico"
+
+	SetOutPath "$INSTDIR/Environments/JavaMissionaries"
+	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Missionaries and Cannibals (Java).lnk" "$INSTDIR/Environments/JavaMissionaries/run-mac.bat" "" "$INSTDIR/Resources/Icons/mac.ico"
+
+	SetOutPath "$INSTDIR/Environments/JavaTankSoar"
+	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start TankSoar (Java).lnk" "$INSTDIR/Environments/JavaTankSoar/run-JavaTankSoar.bat" "" "$INSTDIR/Resources/Icons/tanksoar.ico"
+
+	SetOutPath "$INSTDIR/Environments/JavaEaters"
+	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Eaters (Java).lnk" "$INSTDIR/Environments/JavaEaters/run-JavaEaters.bat" "" "$INSTDIR/Resources/Icons/eaters.ico"
+
 	SetOutPath "$INSTDIR/SoarLibrary/bin"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Soar Debugger (Java).lnk" "$INSTDIR/SoarLibrary/bin/SoarJavaDebugger.jar" "" "$INSTDIR/Resources/Icons/soar.ico"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Towers of Hanoi (Java).lnk" "$INSTDIR/SoarLibrary/bin/toh.jar" "" "$INSTDIR/Resources/Icons/toh.ico"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Missionaries and Cannibals (Java).lnk" "$INSTDIR/SoarLibrary/bin/mac.jar" "" "$INSTDIR/Resources/Icons/mac.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Announcement.lnk" "$INSTDIR/Documentation/Announce.txt"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/License.lnk" "$INSTDIR/License.txt"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Uninstall ${APPNAMEANDVERSION}.lnk" "$INSTDIR/Uninstall ${APPNAMEANDVERSION}.exe" "" "$INSTDIR/Resources/Icons/un-soar.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start VisualSoar (Java).lnk" "$INSTDIR/SoarLibrary/bin/VisualSoar.jar" "" "$INSTDIR/Resources/Icons/vs.ico"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start TankSoar (Java).lnk" "$INSTDIR/SoarLibrary/bin/JavaTankSoar.jar" "" "$INSTDIR/Resources/Icons/tanksoar.ico"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Eaters (Java).lnk" "$INSTDIR/SoarLibrary/bin/JavaEaters.jar" "" "$INSTDIR/Resources/Icons/eaters.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start QuickLink.lnk" "$INSTDIR/SoarLibrary/bin/QuickLink.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start SoarTextIO.lnk" "$INSTDIR/SoarLibrary/bin/SoarTextIO.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestClientSML.lnk" "$INSTDIR/SoarLibrary/bin/TestClientSML.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
