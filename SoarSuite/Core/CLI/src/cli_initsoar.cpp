@@ -39,6 +39,7 @@ bool CommandLineInterface::DoInitSoar(gSKI::IAgent* pAgent) {
 
 	if (!ok)
 	{
+		m_Result << "Agent failed to reinitialize" ;
 		return SetError(CLIError::kInitSoarFailed);
 	}
 

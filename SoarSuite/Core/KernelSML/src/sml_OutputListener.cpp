@@ -25,6 +25,15 @@
 #include "IgSKI_AgentManager.h"
 #include "IgSKI_WorkingMemory.h"
 
+#ifdef _DEBUG
+// Comment this in to debug init-soar and inputwme::update calls
+//#define DEBUG_UPDATE
+#endif
+
+#ifdef DEBUG_UPDATE
+#include "sock_Debug.h"	// For PrintDebugFormat
+#endif
+
 #include <vector>
 
 using namespace sml ;
@@ -228,10 +237,17 @@ void OutputListener::HandleEvent(egSKIAgentEventId eventId, gSKI::IAgent* agentP
 	{
 		AgentSML* pAgent = this->m_KernelSML->GetAgentSML(agentPtr) ;
 
+#ifdef DEBUG_UPDATE
+	PrintDebugFormat("AgentSML before agent reinitialized received - start.") ;
+#endif
 		if (pAgent)
 		{
 			pAgent->ReleaseAllWmes() ;
 		}
+
+#ifdef DEBUG_UPDATE
+	PrintDebugFormat("AgentSML before agent reinitialized received - end.") ;
+#endif
 	}
 
 	// After the kernel has been re-initialized we need to send everything on the output link over again
