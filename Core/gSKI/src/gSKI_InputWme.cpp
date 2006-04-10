@@ -30,6 +30,10 @@
 #include "gSKI_Error.h"
 #include "MegaAssert.h"
 
+#ifdef DEBUG_UPDATE
+#include "..\..\ConnectionSML\include\sock_Debug.h"	// For PrintDebugFormat
+#endif
+
 //
 // Explicit Export for this file.
 //#include "MegaUnitTest.h"
@@ -172,16 +176,23 @@ namespace gSKI
 
   void InputWme::Update(bool forceAdds, bool forceRemoves)
   {
-#ifdef _DEBUG
-	// Comment this in to get a description of which wme this is
-	// std::string update = "updating " + std::string(m_owningobject->GetId()->GetString()) + std::string(" ^") + std::string(m_attribute->GetString()) + std::string(" ") + std::string(m_value->GetString()) ;
-#endif
-
      // Adding the WME directly to working memory if were in the input or output phase
      egSKIPhaseType curphase = m_manager->GetAgent()->GetCurrentPhase();
 	 
-	 bool doAdds    = (curphase == gSKI_INPUT_PHASE || forceAdds) ;
-	 bool doRemoves = (curphase == gSKI_INPUT_PHASE || forceRemoves) ;
+	 bool doAdds    = ((curphase == gSKI_INPUT_PHASE && !forceRemoves )|| forceAdds) ;
+	 bool doRemoves = ((curphase == gSKI_INPUT_PHASE && !forceAdds) || forceRemoves) ;
+
+#ifdef DEBUG_UPDATE
+	  std::string id = m_owningobject->GetId()->GetString() ;
+	  std::string att = m_attribute->GetString() ;
+	  std::string value = m_value->GetString() ;
+	  std::string soarwme = m_rawwme == 0 ? "No soar wme." : "Has soar wme." ;
+	  std::string remove = m_removeWme ? (doRemoves ? "Remove wme now." : "Marked for remove, but not doRemoves.") : "" ;
+	  std::string add    = !m_rawwme ? (doAdds ? "Add wme." : "Marked to add, but not doAdd.") : "" ;
+
+	  PrintDebugFormat("Updating %s ^%s %s.  Status is: %s %s %s ", id.c_str(), att.c_str(), value.c_str(), soarwme.c_str(), remove.c_str(), add.c_str()) ;
+#endif
+
 	 if ( doAdds || doRemoves ) 
 	 {
 		 // If there is no raw wme for this than make one 
@@ -189,10 +200,15 @@ namespace gSKI
 		 if ( doAdds && m_rawwme == 0 && !m_removeWme ) 
 		 {
 			 agent* a = m_manager->GetSoarAgent();
-			 Symbol* id = m_owningobject->GetSoarSymbol();
+			 Symbol* idsym = m_owningobject->GetSoarSymbol();
 			 Symbol* attr = m_attribute->GetSoarSymbol();
 			 Symbol* val = m_value->GetSoarSymbol();
-			 m_rawwme = add_input_wme( a, id, attr, val );
+
+#ifdef DEBUG_UPDATE
+			 PrintDebugFormat("Adding %s ^%s %s", id.c_str(), att.c_str(), value.c_str()) ;
+#endif
+
+			 m_rawwme = add_input_wme( a, idsym, attr, val );
 
 			 MegaAssert( m_rawwme != 0, "Trouble adding an input wme!");
 		 }
@@ -202,16 +218,18 @@ namespace gSKI
 		 {
 			 if (m_rawwme != 0 ) 
 			 {
-				std::string att = m_attribute->GetString() ;
-				std::string val = m_value->GetString() ;
+#ifdef DEBUG_UPDATE
+			    PrintDebugFormat("Removing %s ^%s %s", id.c_str(), att.c_str(), value.c_str()) ;
+#endif
 
 				Bool retvalue =  remove_input_wme(m_manager->GetSoarAgent(), m_rawwme);
+
 				MegaAssert( retvalue, "Trouble removing an input wme!");
 				m_rawwme = 0;
 			 }
 
 			 // We need to handle the case where the gSKI wme was created and deleted before the kernel wme
-			 // was ever created (Soar wasn't run).  So we'll release the gSKI object where the kernel object
+			 // was ever created (Soar wasn't run).  So we'll release the gSKI object whether the kernel object
 			 // exists or not.
 
 			 // Detaching this object from the other input objects

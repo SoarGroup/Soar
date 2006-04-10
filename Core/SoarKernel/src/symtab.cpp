@@ -454,6 +454,9 @@ Bool print_identifier_ref_info(agent* thisAgent, void* item, FILE* f) {
                   sym->common.reference_count);
 		 msg[255] = 0; /* ensure null termination */
          print (thisAgent, msg);
+
+		 if (f)
+			 fprintf(f, msg) ;
       }
    } else {
       print (thisAgent, "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
@@ -474,6 +477,15 @@ bool reset_id_counters (agent* thisAgent) {
     /* RDF 01272003: Added this to improve the output from this error message */
 	//TODO: append this to previous XML string or generate separate output?
     do_for_all_items_in_hash_table( thisAgent, thisAgent->identifier_hash_table, print_identifier_ref_info, 0);
+
+	// Also dump the ids to a txt file
+	FILE *ids = fopen("leaked-ids.txt", "w") ;
+	if (ids)
+	{
+		do_for_all_items_in_hash_table( thisAgent, thisAgent->identifier_hash_table, print_identifier_ref_info, ids);
+		fclose(ids) ;
+	}
+
     return false;
   }
   for (i=0; i<26; i++) thisAgent->id_counter[i]=1;  

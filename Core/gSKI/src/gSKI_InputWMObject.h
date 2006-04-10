@@ -309,6 +309,7 @@ namespace gSKI {
 
      // TODO: Document these methods
      void Update(std::set<InputWMObject*>& processedObjects, bool forceAdds, bool forceRemoves);
+     void UpdateWMObjectChildren(std::set<InputWMObject*>& processedObjects, bool forceAdds, bool forceRemoves);
      Symbol* GetSoarSymbol() { return m_sym; }
      
    private:
