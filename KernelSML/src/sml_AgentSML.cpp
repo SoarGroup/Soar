@@ -29,6 +29,15 @@
 #include "IgSKI_InputLink.h"
 #include "IgSKI_WorkingMemory.h"
 
+#ifdef _DEBUG
+// Comment this in to debug init-soar and inputwme::update calls
+//#define DEBUG_UPDATE
+#endif
+
+#ifdef DEBUG_UPDATE
+#include "sock_Debug.h"	// For PrintDebugFormat
+#endif
+
 #include <assert.h>
 
 using namespace sml ;
@@ -85,6 +94,10 @@ AgentSML::~AgentSML()
 // 'deletingThisAgent' should only be true when we're actually in the destructor.
 void AgentSML::Clear(bool deletingThisAgent)
 {
+#ifdef DEBUG_UPDATE
+	PrintDebugFormat("AgentSML::Clear start %s", deletingThisAgent ? "deleting this agent." : "not deleting this agent.") ;
+#endif
+
 	// Release any WME objects we still own.
 	// (Don't flush removes in this case as we're shutting down rather than just doing an init-soar).
 	ReleaseAllWmes(!deletingThisAgent) ;
@@ -94,6 +107,10 @@ void AgentSML::Clear(bool deletingThisAgent)
 	m_PrintListener.Clear();
 	m_pOutputListener->Clear() ;
 	m_XMLListener.Clear() ;
+
+#ifdef DEBUG_UPDATE
+	PrintDebugFormat("AgentSML::Clear end %s", deletingThisAgent ? "deleting this agent." : "not deleting this agent.") ;
+#endif
 }
 
 // Release all of the WMEs that we currently have references to
@@ -103,6 +120,12 @@ void AgentSML::Clear(bool deletingThisAgent)
 // be removed (this should generally be correct so we'll default to true for it).
 void AgentSML::ReleaseAllWmes(bool flushPendingRemoves)
 {
+#ifdef DEBUG_UPDATE
+	PrintDebugFormat("****************************************************") ;
+	PrintDebugFormat("%s AgentSML::ReleaseAllWmes start %s", this->GetIAgent()->GetName(), flushPendingRemoves ? "flush pending removes." : "do not flush pending removes.") ;
+	PrintDebugFormat("****************************************************") ;
+#endif
+
 	if (flushPendingRemoves)
 	{
 		bool forceAdds = false ;	// It doesn't matter if we do these or not as we're about to release everything.  Seems best to not start things up.
@@ -132,14 +155,16 @@ void AgentSML::ReleaseAllWmes(bool flushPendingRemoves)
 		m_InputLinkRoot->Release() ;
 	}
 	m_InputLinkRoot = NULL ;
-/*
-	if (m_OutputLinkRoot)
-		m_OutputLinkRoot->Release() ;
-	m_OutputLinkRoot = NULL ;
-*/
+
 	m_TimeTagMap.clear() ;
 	m_ToClientIdentifierMap.clear() ;
 	m_IdentifierMap.clear() ;
+
+#ifdef DEBUG_UPDATE
+	PrintDebugFormat("****************************************************") ;
+	PrintDebugFormat("%s AgentSML::ReleaseAllWmes end %s", this->GetIAgent()->GetName(), flushPendingRemoves ? "flush pending removes." : "do not flush pending removes.") ;
+	PrintDebugFormat("****************************************************") ;
+#endif
 }
 
 void AgentSML::RemoveAllListeners(Connection* pConnection)
@@ -158,6 +183,9 @@ public:
 	// inside gSKI.  We need to clean up any object we own now.
 	virtual void HandleEvent(egSKIAgentEventId, gSKI::IAgent* pAgent)
 	{
+#ifdef DEBUG_UPDATE
+	PrintDebugFormat("AgentSML::AgentBeforeDestroyedListener start.") ;
+#endif
 		KernelSML* pKernelSML = KernelSML::GetKernelSML() ;
 
 		// Release any wmes or other objects we're keeping
@@ -178,6 +206,10 @@ public:
 		// Do self clean-up of this object as it's just called
 		// prior to deleting the AgentSML structure.
 		delete this ;
+
+#ifdef DEBUG_UPDATE
+	PrintDebugFormat("AgentSML::AgentBeforeDestroyedListener end.") ;
+#endif
 	}
 };
 

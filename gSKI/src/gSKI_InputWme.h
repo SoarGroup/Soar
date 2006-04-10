@@ -21,6 +21,11 @@
 #include "symtab.h"
 #include "wmem.h"
 
+#ifdef _DEBUG
+// Comment this in or out to control whether debug statements are printed during update calls()
+//#define DEBUG_UPDATE
+#endif
+
 namespace gSKI {
 
    class InputWorkingMemory;

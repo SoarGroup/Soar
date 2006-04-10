@@ -282,6 +282,7 @@ void do_buffered_wm_changes (agent* thisAgent)
        */
       filtered_print_wme_remove (thisAgent, w);  /* kjh(CUSP-B2) begin */
     }
+
     wme_remove_ref (thisAgent, w);
     free_cons (thisAgent, c);
     thisAgent->wme_removal_count++;

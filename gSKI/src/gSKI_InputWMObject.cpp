@@ -32,6 +32,10 @@
 
 #include "symtab.h"
 
+#ifdef DEBUG_UPDATE
+#include "..\..\ConnectionSML\include\sock_Debug.h"	// For PrintDebugFormat
+#endif
+
 //
 // Explicit Export for this file.
 //#include "MegaUnitTest.h"
@@ -446,11 +450,21 @@ namespace gSKI
    */
   void InputWMObject::Update(std::set<InputWMObject*>& processedObjects, bool forceAdds, bool forceRemoves)
   {
-    // First checking that this object hasn't already been added to the set of 
+#ifdef DEBUG_UPDATE
+	std::string id = this->GetId()->GetString() ;
+	PrintDebugFormat("Calling InputWMObject::Update on %s", id.c_str()) ;
+#endif
+
+	// First checking that this object hasn't already been added to the set of 
     // processed objects ( adding it and processing it if it hasn't; returning
     // if it has already been processed )
     std::set<InputWMObject*>::iterator it = processedObjects.find(this);
     if ( it != processedObjects.end() ) {
+
+#ifdef DEBUG_UPDATE
+	PrintDebugFormat("Already processed %s", id.c_str()) ;
+#endif
+
       return;
     } else {
       processedObjects.insert(this);
@@ -475,6 +489,18 @@ namespace gSKI
       }
 
     }
+
+    // DJP: When doing cleanup of objects prior to an init-soar, some of the children aren't
+	// released because the parent is destroyed first.
+    // Changing the order to release the children first resolves this.
+    // It may be safe to move all updates of children to here before updating the parent
+    // but because we're close to a release I'm only moving the ones known to cause
+    // a problem which is the "forceRemoves" case.  (Quick tests for always updating children
+    // before parents suggest it's safe).
+	if (forceRemoves)
+	{
+		UpdateWMObjectChildren(processedObjects, forceAdds, forceRemoves) ;
+	}
 
 	InputWme* next = (m_vwmes.empty() ? NULL : *m_vwmes.begin()) ;
 
@@ -502,23 +528,30 @@ namespace gSKI
 
     }
 
-    // Now updating all the child objects
-    for ( std::map<InputWme*, InputWMObject*>::iterator it = m_childmap.begin();
-	  it != m_childmap.end();
-	  ++it ) {
-
-      // Updating the child objects (and remembering to pass the set of processed
-      // objects to avoid being caught in cycles
-      InputWMObject* obj = it->second;
-      if ( obj != 0 ) {
-	obj->Update(processedObjects, forceAdds, forceRemoves);
-      } else {
-	MegaAssert( false, 
-		    "Null InputWMObject registered as child of another InputWMObject!");
-      }
-    
-    }
-
+    // DJP: The normal case is that we're not doing forced removes just prior to an init-soar
+    // and so we'll do this in the order originally designed into gSKI where the children
+    // are updated after the parent.  See my comment up above about possibly moving this update children
+    // call to occur before the parent in all cases (it may be better).
+    if (!forceRemoves)
+	{
+		UpdateWMObjectChildren(processedObjects, forceAdds, forceRemoves) ;
+	}
   }
+
+	void InputWMObject::UpdateWMObjectChildren(std::set<InputWMObject*>& processedObjects, bool forceAdds, bool forceRemoves)
+	{
+		// Now updating all the child objects
+		for ( std::map<InputWme*, InputWMObject*>::iterator it = m_childmap.begin(); it != m_childmap.end(); ++it )
+		{
+		// Updating the child objects (and remembering to pass the set of processed
+		// objects to avoid being caught in cycles
+		InputWMObject* obj = it->second;
+		if ( obj != 0 ) {
+			obj->Update(processedObjects, forceAdds, forceRemoves);
+		} else {
+			MegaAssert( false, "Null InputWMObject registered as child of another InputWMObject!");
+		}
+		}
+	}
 
 }
