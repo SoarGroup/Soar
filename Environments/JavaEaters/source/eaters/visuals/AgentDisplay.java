@@ -15,7 +15,7 @@ public class AgentDisplay extends Composite {
 	public static final int kAgentMapCellSize = 20;
 	static final int kTableHeight = 120;
 	static final int kNameWidth = 75;
-	static final int kScoreWidth = 50;
+	static final int kScoreWidth = 55;
 	
 	Group m_Group;
 	Logger m_Logger = Logger.logger;
