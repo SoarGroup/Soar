@@ -25,6 +25,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <list>
 
 namespace gSKI {
 
@@ -319,9 +320,22 @@ namespace gSKI {
 
      char m_letter;
 
+	 // DJP: These sets and maps will not preserve the order that elements are added to them.
+	 // This means that input wmes will be created (at the kernel level) in a different order on different runs
+	 // as the memory addresses of the input wmes move around, producing different matching and different behavior.
+	 // We'd like to avoid adding that variability implicitly (a client can always choose to add them in different orders if it wishes)
+	 // so we'll maintain parallel lists and use the lists to walk the sequence in order, but the maps to do fast insertion
+	 // without duplication.
      std::set<InputWme*> m_vwmes;
-     std::map<InputWme*,InputWMObject*> m_parentmap;
      std::map<InputWme*,InputWMObject*> m_childmap;
+
+	 // DJP: The ordered lists for sequential access
+	 std::list<InputWme*> m_vwmesInOrder ;
+	 std::list<InputWme*> m_childmapInOrder ;
+
+	 // Nobody is using this map, so removing it
+	 // std::map<InputWme*,InputWMObject*> m_parentmap;
+
      std::set<IInputProducer*> m_producerset;
      // TODO: Do the IInputProducers need to be called back when an Input WMObject
      // is no longer valid? (Or should the Object own the Producers? Ownership
@@ -330,6 +344,7 @@ namespace gSKI {
      // agent's working memory making sharing difficult anyway.)
 
      typedef std::map<InputWme*,InputWMObject*>::iterator tWmeObjIt;
+     typedef std::map<InputWme*,InputWMObject*>::const_iterator ctWmeObjIt;
 
      typedef FwdContainerType< std::vector<IWMObject *> >  tWMObjectVec;
      typedef IteratorWithRelease<tWMObjectVec::V, tWMObjectVec::t>  tWMObjectIter;
