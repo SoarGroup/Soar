@@ -8,7 +8,6 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	public static final int kMaxTanks = 7;
 	public static final String kMapFilter = "*.tmap";
 	
-	public static final String kProjectFolder = "JavaTankSoar";
 	private static final String kTagTankSoar = "tanksoar";
 	private static final String kTagSimulation = "simulation";
 	private static final String kParamDebuggers = "debuggers";
@@ -26,7 +25,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	private TankSoarWorld m_World;
 
 	public TankSoarSimulation(String settingsFile, boolean quiet) {		
-		super(kProjectFolder);
+		super();
 		
 		// Log the settings file
 		m_Logger.log("Settings file: " + settingsFile);
