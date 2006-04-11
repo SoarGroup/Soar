@@ -56,6 +56,7 @@
 
 #include "sml_Errors.h"
 #include "ElementXMLHandle.h"
+#include "ElementXMLInterface.h"
 
 namespace sml
 {
@@ -346,7 +347,10 @@ public:
 	* @param attName	The name of the attribute to look up.
 	* @returns The value of the named attribute (or null if this attribute doesn't exist).
 	*************************************************************/
-	const char* GetAttribute(const char* attName) const ;
+	const char* ElementXML::GetAttribute(const char* attName) const
+	{
+		return ::sml_GetAttribute(m_hXML, attName) ;
+	}
 
 	////////////////////////////////////////////////////////////////
 	//
@@ -579,8 +583,15 @@ protected:
     * @param  tagName	Tag name can only contain letters, numbers, “.” “-“ and “_”.
 	* @returns	true if the tag name is valid.
 	*************************************************************/
-	bool SetTagNameFast(char const* tagName) ;
+	bool ElementXML::SetTagNameFast(char const* tagName)
+	{
+#ifdef DEBUG
+		if (!IsValidID(tagName))
+			return false ;
+#endif
 
+		return ::sml_SetTagNameFast(m_hXML, tagName) ;
+	}
 
 };
 
