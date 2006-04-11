@@ -19,21 +19,15 @@
 # The hope is that someone who actually knows Tcl well will invest
 # some time in taking this from a prototype into a fully functional filter.
 # Some of the known issues:
-#   -- Source "e:\hello.soar" fails because Tcl tries to interpret \h as
-#      a special character.  Need to either escape the \ as \\ or reverse
-#	   it's direction to /.
-#
 #   -- alias with no args seems to cause problems.  In general, incomplete
 #	   commands have always seemed to upset Tcl and this seems to be true
 #	   with the filter too.
 #
+#   -- ls is using the kernel's CWD, not Tcl's.
+#
 #   -- Closing the wish window results in a crash.  Typing "exit" at the console
 #      prompt does not cause a crash.  Presumably a call to "$_kernel Shutdown" or "exit" is needed
 #	   when the wish window is closed.
-#
-#	-- pushd and popd seem to be missing from the Tcl command set.  These should
-#	   probably be implemented with Tcl code, so that they modify the Tcl CWD rather than the
-#	   kernel's CWD.  Either that or we'll want some way to keep Tcl and the kernel's CWD's in synch.
 #
 #	-- In general each Soar command should be tested and examined to see whether it behaves
 #	   as desired.  Some (source, sp?) will likely need to be intercepted and have special
@@ -92,10 +86,16 @@ proc MyFilter {id userData agent filterName commandXML} {
 	set name [$agent GetAgentName]
 	set interpreter [getInterpreter $name $agent]
 
-	puts $commandXML
+	#puts $commandXML
 
 	set xml [ElementXML_ParseXMLFromString $commandXML]
 	set commandLine [$xml GetAttribute $sml_Names_kFilterCommand]
+
+	# Any backslash characters should be preserved (I think) so that
+	# source e:\file.soar is valid and the "\f" isn't interpreted as an escape character.	
+	set commandLine [string map {\\ \\\\} $commandLine]
+	
+	puts $commandLine
 
 	# This is a complicated line where all the action happens.
 	# At the core is "$interpreter eval $commandLine"
@@ -117,7 +117,7 @@ proc MyFilter {id userData agent filterName commandXML} {
 	
 	set outputXML [$xml GenerateXMLString 1]
 
-	puts "Output $outputXML"
+	#puts "Output $outputXML"
 
 	return $outputXML
 }
