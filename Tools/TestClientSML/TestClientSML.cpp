@@ -197,6 +197,10 @@ bool SimpleRunListener(int decisions)
 	//pKernel->SetTraceCommunications(true) ;
 
 	sml::Agent* pAgent = pKernel->CreateAgent("runagent") ;
+
+	std::string state = pAgent->ExecuteCommandLine("set-stop-phase --before --input") ;
+	cout << state ;
+
 	std::string path = std::string(pKernel->GetLibraryLocation()) + "/Tests/testrun.soar" ;
 	bool ok = pAgent->LoadProductions(path.c_str()) ;
 
@@ -206,7 +210,7 @@ bool SimpleRunListener(int decisions)
 	std::string result = pAgent->RunSelf(decisions) ;
 	cout << result ;
 
-	std::string state = pAgent->ExecuteCommandLine("print --depth 2 s1") ;
+	state = pAgent->ExecuteCommandLine("print --depth 2 s1") ;
 	cout << state ;
 
 	delete pKernel ;
@@ -248,7 +252,10 @@ bool SimpleRemoteConnect()
 
 	cout << trace << endl ;
 
-	std::string state = pAgent->ExecuteCommandLine("print --depth 2 s1") ;
+	std::string state = pAgent->ExecuteCommandLine("set-stop-phase --before --input") ;
+	cout << state ;
+
+	state = pAgent->ExecuteCommandLine("print --depth 2 s1") ;
 	cout << state ;
 
 	bool changed = pKernel->GetAllConnectionInfo() ;
@@ -384,6 +391,8 @@ bool SimpleCopyAgent()
 	}
 
 	sml::Agent* pAgent = pKernel->CreateAgent("copyagent") ;
+	std::string state = pAgent->ExecuteCommandLine("set-stop-phase --before --input") ;
+	cout << state ;
 	std::string path = std::string(pKernel->GetLibraryLocation()) + "/Tests/testcopy.soar" ;
 	bool ok = pAgent->LoadProductions(path.c_str()) ;
 
@@ -425,7 +434,7 @@ bool SimpleCopyAgent()
 	cout << result << endl ;
 	cout << trace << endl ;
 
-	std::string state = pAgent->ExecuteCommandLine("print --depth 5 s1") ;
+	state = pAgent->ExecuteCommandLine("print --depth 5 s1") ;
 	cout << state << endl ;
 
 	int changes = pAgent->GetNumberOutputLinkChanges() ;
@@ -722,6 +731,10 @@ bool InitSoarAgent(Agent* pAgent, bool doInitSoars)
 
 bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 {
+	// a number of tests below depend on running full decision cycles.
+	std::string state = pAgent->ExecuteCommandLine("set-stop-phase --before --input") ;
+	cout << state ;
+
 	// Record a RHS function
 	int callback_rhs1 = pKernel->AddRhsFunction("test-rhs", &MyRhsFunctionHandler, 0) ; 
 	int callback_rhs_dup = pKernel->AddRhsFunction("test-rhs", &MyRhsFunctionHandler, 0) ;
@@ -1612,9 +1625,14 @@ bool TimeTest(bool embedded, bool useClientThread, bool fullyOptimized)
 		pAgent->RegisterForXMLEvent(smlEVENT_XML_TRACE_OUTPUT, &MyXMLEventHandlerTimer, NULL) ;
 
 		pAgent->ExecuteCommandLine("watch 0") ;
+
 	}
 
     std::string result;
+
+	std::string state = pFirst->ExecuteCommandLine("set-stop-phase --before --input") ;
+	cout << state ;
+
     
     result = pFirst->ExecuteCommandLine("watch --learning fullprint --backtracing") ;
 	cout << result << endl ;
