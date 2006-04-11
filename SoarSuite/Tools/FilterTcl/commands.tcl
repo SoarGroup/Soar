@@ -1,6 +1,8 @@
 # This allows us to have Soar commands that are intercepted
 # and handled as we wish.
 
+# Required for pushd and friends
+package require Tclx
 
 #these are from tsiSoarCmds
 proc add-wme {args} {return [soar_agent ExecuteCommandLine "add-wme $args"]}
@@ -23,6 +25,7 @@ proc init-soar  {args} {return [soar_agent ExecuteCommandLine "init-soar  $args"
 proc input-period {args} {return [soar_agent ExecuteCommandLine "input-period $args"]}
 proc internal-symbols {args} {return [soar_agent ExecuteCommandLine "internal-symbols $args"]}
 proc learn {args} {return [soar_agent ExecuteCommandLine "learn $args"]}
+proc ls {args} {return [soar_agent ExecuteCommandLine "ls $args"]}
 proc matches {args} {return [soar_agent ExecuteCommandLine "matches $args"]}
 proc max-chunks {args} {return [soar_agent ExecuteCommandLine "max-chunks $args"]}
 proc max-elaborations {args} {return [soar_agent ExecuteCommandLine "max-elaborations $args"]}
@@ -63,7 +66,29 @@ proc watch-wmes {args} {return [soar_agent ExecuteCommandLine "watch-wmes $args"
 # printed in the debugger (if issued from there).
 rename puts myPuts
 proc puts {arg} {
-	myPuts "Called special puts"
+	myPuts "Called internal puts"
 	myPuts $arg
 	return $arg
+}
+
+# The internal Soar source now includes an implicit "pushd"/"popd" logic which makes it easier
+# to use the files.  So we'll include that here, although that may cause problems in systems that
+# assume cwd isn't changed within the source call (in which case, remove this function).
+rename source mySource
+proc source {arg} {
+	myPuts "Called internal source $arg"
+	
+	set folder [file dirname $arg]
+	if ![string equal $folder .] {
+		pushd $folder 
+	}
+	
+	set result [mySource $arg]
+	
+	if ![string equal $folder .] {
+		popd
+	}
+	
+	myPuts "Result of source $arg is $result"
+	return $result
 }
