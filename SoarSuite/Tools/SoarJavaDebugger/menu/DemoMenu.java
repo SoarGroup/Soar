@@ -138,7 +138,7 @@ public class DemoMenu
 		if (echoCommand && m_Frame.getAgentFocus() != null)
 			m_Frame.displayTextInPrimeView("\nType 'run' to execute the demo.") ;
 	}
-
+	
 	public String getLibraryLocation()
 	{
 		if (!m_Document.isConnected())

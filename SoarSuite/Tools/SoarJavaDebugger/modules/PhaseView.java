@@ -328,7 +328,7 @@ public class PhaseView extends AbstractFixedView implements Kernel.AgentEventInt
 	{
 		String result = m_Frame.getCommandResult(m_Document.getSoarCommands().getGetStopBeforeCommand(), sml_Names.getKParamPhase()) ;
 		
-		if (result == null)
+		if (result == null || result == "")
 			return smlPhase.sml_INPUT_PHASE ;
 
 		int value = Integer.parseInt(result) ;

@@ -160,6 +160,8 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 	public Agent	getAgentByIndex(int index) 	{ return m_Kernel.GetAgentByIndex(index) ; }
 	public int		getNumberAgents() 			{ return m_Kernel.GetNumberAgents() ; }
 	
+	public String	getKernelVersion()		{ return m_Kernel == null ? null : m_Kernel.GetSoarKernelVersion() ; }
+	
 	public boolean isCloseWindowWhenDestroyAgent()
 	{
 		return getAppProperties().getAppBooleanProperty(Document.kCloseOnDestroyProperty, true) && !m_SuppressCloseWindowOnDestructionAllAgents ;		

@@ -41,4 +41,6 @@ public class OSName {
 	{
 		return !isWindows() && !isMacOS() ;
 	}
+	
+	public static String kSystemLineSeparator = System.getProperty("line.separator") ;
 }
