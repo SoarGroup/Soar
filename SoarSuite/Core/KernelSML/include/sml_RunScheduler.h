@@ -133,8 +133,9 @@ public:
 protected:
 	bool            AgentsStillStepping() ;
 	bool			AreAgentsSynchronized(AgentSML* pSynchAgent) ;
+	bool			AllAgentsAtStopBeforePhase() ;
 	bool			AreAllOutputPhasesComplete() ;
-	void            CheckStopBeforePhase(egSKIRunType runStepSize) ;
+	void            MoveTo_StopBeforePhase(egSKIRunType runStepSize) ;
 	void			FireBeforeRunStartsEvents() ;
 	unsigned long	GetStepCounter(gSKI::IAgent* pAgent, egSKIRunType runStepSize) ; //for old scheduler...
     unsigned long   GetStepCounter(gSKI::IAgent* pAgent, egSKIInterleaveType stepSize) ;
