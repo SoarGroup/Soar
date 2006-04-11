@@ -69,15 +69,16 @@ public class MainFrame
 	private Menu m_MenuBar = null;
 
 	/** The menus in the menu bar */
-	private FileMenu m_FileMenu = null;
-	private EditMenu m_EditMenu = null;
-	private KernelMenu m_KernelMenu = null;
-	private AgentMenu m_AgentMenu = null;
-	private DemoMenu m_DemoMenu = null;
-	private CommandsMenu m_CommandsMenu = null;
-	private DebugLevelMenu m_DebugLevelMenu = null;
-	private PrintMenu m_PrintMenu = null;
-	private LayoutMenu m_LayoutMenu = null;
+	private FileMenu 		m_FileMenu = null;
+	private EditMenu 		m_EditMenu = null;
+	private KernelMenu 		m_KernelMenu = null;
+	private AgentMenu 		m_AgentMenu = null;
+	private DemoMenu 		m_DemoMenu = null;
+	private CommandsMenu 	m_CommandsMenu = null;
+	private DebugLevelMenu 	m_DebugLevelMenu = null;
+	private PrintMenu 		m_PrintMenu = null;
+	private LayoutMenu 		m_LayoutMenu = null;
+	private HelpMenu 		m_HelpMenu = null ;
 
 	/**
 	 * The main document object -- represents the Soar process. There is only
@@ -677,6 +678,7 @@ public class MainFrame
 		m_LayoutMenu = LayoutMenu.createMenu(this, getDocument(), "&Layout");
 		m_AgentMenu = AgentMenu.createMenu(this, getDocument(), "&Agents");
 		m_KernelMenu = KernelMenu.createMenu(this, getDocument(), "&Kernel");
+		m_HelpMenu   = HelpMenu.createMenu(this, getDocument(), "&Help") ;
 		
 		getShell().setMenuBar(m_MenuBar);
 
@@ -805,6 +807,11 @@ public class MainFrame
 	public void loadDemo(File file, boolean echoCommand)
 	{
 		this.m_DemoMenu.loadDemo(file, echoCommand);
+	}
+	
+	public String getLibraryLocation()
+	{
+		return this.m_DemoMenu.getLibraryLocation() ;
 	}
 
 	/**
