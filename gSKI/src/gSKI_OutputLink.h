@@ -173,7 +173,12 @@ namespace gSKI {
        * @returns The IWorkingMemory object associated with the data on 
        *           the agent's output link.
        */     
-      IWorkingMemory* GetOutputMemory(Error* err = 0);
+		IWorkingMemory* OutputLink::GetOutputMemory(Error* error)
+		{
+			ClearError(error);
+
+			return &m_memory;
+		}
 
       /**
        * @brief Reinitializes the output link
