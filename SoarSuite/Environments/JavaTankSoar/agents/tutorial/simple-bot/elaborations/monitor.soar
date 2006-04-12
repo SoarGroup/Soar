@@ -16,7 +16,7 @@ sp {all*monitor*operator*tie*impasse
    (<i2> ^name <name2>)
 -->
    (write (crlf) | Operator tie between | <name1> | & | <name2>)
-   (interrupt)}
+   (interrupt)
 }
 
 #

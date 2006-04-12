@@ -390,9 +390,16 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 
 	void createTank(Agent agent, String productions, String color, MapPoint location, String facing) {
-		if ((location != null) && getCell(location).isBlocked()) {
-			m_Logger.log("Initial location " + location + " is blocked, going random.");
-			location = null;
+		if (location != null) {
+			if (this.isInBounds(location)) {
+				if (getCell(location).isBlocked()) {
+					m_Logger.log("Initial location " + location + " is blocked, going random.");
+					location = null;
+				}
+			} else {
+				m_Logger.log("Initial location " + location + " is out of bounds, going random.");
+				location = null;
+			}
 		}
 		
 		Tank tank = new Tank(agent, productions, color, location, facing, this);
