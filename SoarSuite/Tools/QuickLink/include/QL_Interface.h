@@ -271,7 +271,7 @@ public:
 private:
 
 	// things need to be kept private for singleton implementation
-	QL_Interface() : should_update_views(true), kernel_destroyed(true) {}
+	QL_Interface();
 	~QL_Interface() {} 
 	QL_Interface(const QL_Interface&);
 	QL_Interface& operator= (const QL_Interface&);

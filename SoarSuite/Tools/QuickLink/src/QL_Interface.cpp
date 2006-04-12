@@ -31,6 +31,13 @@ QL_Interface& QL_Interface::instance()
 	return QLI;
 }
 
+QL_Interface::QL_Interface()  : should_update_views(true), kernel_destroyed(true) 
+{
+#ifdef _WIN32
+	_chdir("../../SoarLibrary/bin/");
+#endif
+}
+
 // return the identifier with the specified name
 Smart_Pointer<WME_Id> QL_Interface::get_identifier(string id_name)
 {
@@ -331,7 +338,7 @@ void QL_Interface::spawn_debugger()
 #if defined _WIN32 || _WIN64
 
 	// spawn the debugger asynchronously
-	assert(_chdir("../../SoarLibrary/bin/") == 0);
+	
 	int ret = _spawnlp(_P_NOWAIT, "javaw.exe", "javaw.exe", "-jar", "SoarJavaDebugger.jar", "-remote", NULL);
 	if(ret == -1) {
 		switch (errno) {
@@ -354,7 +361,6 @@ void QL_Interface::spawn_debugger()
 					throw Error(string_make(ret));
 		}
 	}
-	//assert(_chdir("../../Tools/QuickLink/") == 0);
 
 #else // linux spawnning
 
