@@ -19,15 +19,21 @@
 # The hope is that someone who actually knows Tcl well will invest
 # some time in taking this from a prototype into a fully functional filter.
 # Some of the known issues:
-#   -- alias with no args seems to cause problems.  In general, incomplete
-#	   commands have always seemed to upset Tcl and this seems to be true
-#	   with the filter too.
+#   -- the ls command is using the kernel's CWD, not Tcl's.  Tcl has its own
+#	   dir command built in, so we should probably just use that instead.
 #
-#   -- ls is using the kernel's CWD, not Tcl's.
+#   -- there seems to be a very small maximum string size (512 chars maybe?) and going
+#	   beyond that is causing problems.  Examples are "print --stack" for a stack 100 states deep
+#	   produces an error when the strings are passed through Tcl.
 #
 #   -- Closing the wish window results in a crash.  Typing "exit" at the console
 #      prompt does not cause a crash.  Presumably a call to "$_kernel Shutdown" or "exit" is needed
 #	   when the wish window is closed.
+#
+#	-- Source only displays the result of the last command.  It should collect up the results of
+#	   each command and return that.
+#
+#   -- alias with no args seems to cause problems.
 #
 #	-- In general each Soar command should be tested and examined to see whether it behaves
 #	   as desired.  Some (source, sp?) will likely need to be intercepted and have special
