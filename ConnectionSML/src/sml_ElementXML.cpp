@@ -230,16 +230,15 @@ bool ElementXML::SetTagName(char* tagName, bool copyName)
 * @param  tagName	Tag name can only contain letters, numbers, “.” “-“ and “_”.
 * @returns	true if the tag name is valid.
 *************************************************************/
-// Inlined to header
-//bool ElementXML::SetTagNameFast(char const* tagName)
-//{
-//#ifdef DEBUG
-//	if (!IsValidID(tagName))
-//		return false ;
-//#endif
-//
-//	return ::sml_SetTagNameFast(m_hXML, tagName) ;
-//}
+bool ElementXML::SetTagNameFast(char const* tagName)
+{
+#ifdef DEBUG
+	if (!IsValidID(tagName))
+		return false ;
+#endif
+
+	return ::sml_SetTagNameFast(m_hXML, tagName) ;
+}
 
 /*************************************************************
 * @brief Gets the tag name for this element.
@@ -496,11 +495,10 @@ const char* ElementXML::GetAttributeValue(int index) const
 * @param attName	The name of the attribute to look up.
 * @returns The value of the named attribute (or null if this attribute doesn't exist).
 *************************************************************/
-// Inlined into header
-//const char* ElementXML::GetAttribute(const char* attName) const
-//{
-//	return ::sml_GetAttribute(m_hXML, attName) ;
-//}
+const char* ElementXML::GetAttribute(const char* attName) const
+{
+	return ::sml_GetAttribute(m_hXML, attName) ;
+}
 
 ////////////////////////////////////////////////////////////////
 //
