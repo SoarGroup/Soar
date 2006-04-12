@@ -496,23 +496,56 @@ bool RunScheduler::AreAllOutputPhasesComplete()
 * @brief	Returns true if all currently active agents have generated
 *			output.  (This is a tighter requirement than just having
 *			completed the output phase).
-*           Called only after HaveAllCompletedOutput is true, and that
-*           method worries about interrupted and halted agents, so this
-*           method doesn't have to duplicate that logic.
+*           Called from TestforFiringUpdateWorldEvents only if 
+*           HaveAllCompletedOutput is true. 
 *********************************************************************/
 bool RunScheduler::HaveAllGeneratedOutput()
 {
+	// We only check the agents that are still scheduled to run.
+	// This allows us to start <n> agents and have some drop out (stopped by user or breakpoint etc.) and still
+	// generate the event.  However, it also means if we do a "run --self" to only run some agents this event will
+	// still fire, so we'll need to know not to update the world based on the runFlags.
+	bool agents_running = false;
+
 	for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
 	{
 		AgentSML* pAgentSML = iter->second ;
 
 		// Agents that are halted or interrupted are no longer m_ScheduledToRun
 		// Agents that are paused waiting for other agents finish a RunType, are still m_ScheduledToRun
-		if (pAgentSML->IsAgentScheduledToRun()&& !pAgentSML->HasGeneratedOutput())
-			return false ;
+		if (pAgentSML->IsAgentScheduledToRun())
+		{
+			agents_running = true;
+			if (!pAgentSML->HasGeneratedOutput())	
+				return false ;
+		}
+	}
+	// If all running agents generated output, we'll get here.  BUT we could also reach this
+	// point if ALL agents are interrupted/halted, and none are m_ScheduledToRun
+
+	if (agents_running) 
+		return true;  // we got here only if there are running agents and they all generated output
+	else
+	{
+		// ALL the agents from this run are halted or interrupted.  Check interrupted agents 
+		// to see if any of them generated output, then return true.  We don't force ALL
+		// agents to be at end of output, because some may have been RHS interrupted 
+		// or --self earlier and there's no way to tell the difference.
+		for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
+		{
+			AgentSML* pAgentSML = iter->second ;	
+			if (pAgentSML->WasAgentOnRunList() && 	
+				(gSKI_RUNSTATE_HALTED != (pAgentSML->GetIAgent()->GetRunState())) &&	
+				pAgentSML->HasGeneratedOutput())	
+				return true;
+		}
 	}
 
-	return true ;
+	// IF we're interrupted and an agent generated output, then we SHOULD return true above, 
+	// although if somehow we don't, it's possible that agents will SNC one cycle waiting for
+	// I/O to catch up.  But if we returned true here, we could get many false positive events.
+
+	return false ;
 }
 /********************************************************************
 * @brief	 Users and applications can choose to have agents always
