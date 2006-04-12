@@ -89,6 +89,9 @@ proc source {arg} {
 		popd
 	}
 	
+	# This isn't quite right as it returns the result of the last command
+	# executed.  We need a way to collect the results of all commands together and
+	# return that.
 	myPuts "Result of source $arg is $result"
 	return $result
 }
