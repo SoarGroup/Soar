@@ -201,10 +201,10 @@ void load_command_map(command_map_t& command_map)
 	command_map["L"] = load_input_file;
 	command_map["GO"] = run_til_output;
 	command_map["G"] = run_til_output;
-	command_map["SAVEP"] = save_process;
-	command_map["SP"] = save_process;
-	command_map["CLEARP"] = clear_process_mem;
-	command_map["CP"] = clear_process_mem;
+	command_map["SCRIPT"] = save_process;
+	command_map["SC"] = save_process;
+	command_map["CLEARS"] = clear_process_mem;
+	command_map["CS"] = clear_process_mem;
 	command_map["PAUSE"] = pause_process;
 	command_map["CONTINUE"] = continue_process;
 	command_map["CONT"] = continue_process;
@@ -323,6 +323,9 @@ void save_input_link(istringstream& command)
 // load an input file
 void load_input_file(istringstream& command)
 {
+	//remove this command from the process memory
+	process_memory.pop_back();
+
 	string filename;
 	if(!(command >> filename))
 		throw Error(c_load_usage_error);
@@ -352,12 +355,16 @@ void save_process(istringstream& command)
 
 	// this ninja line prints all of the strings to a file, each line is followed by a '\n'
 	copy(process_memory.begin(), process_memory.end(), ostream_iterator<string>(outfile, "\n"));
+
+	cout << endl << "Script Saved" << endl;
 }
 
 // clear the current process memory
 void clear_process_mem(istringstream&)
 {
 	process_memory.clear();
+
+	cout << endl << "Script Memory Cleared" << endl;
 }
 
 // allow keyboard input in the middle of a process
@@ -402,6 +409,8 @@ void display_input_link(istringstream&)
 void spawn_debugger(istringstream&)
 {
 	QL_Interface::instance().spawn_debugger();
+
+	process_memory.pop_back();
 }
 
 // make a remote connection
