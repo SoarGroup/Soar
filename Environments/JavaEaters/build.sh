@@ -1,14 +1,26 @@
 #!/bin/sh
 SOARLIB="../../SoarLibrary/bin"
 
-mkdir bin
-rm bin/*.class
+if [ ! -e bin ]; then
+	mkdir bin
+else
+	for file in `find bin -iname *.class`
+	do
+		rm $file
+	done
+	for file in `find bin -iname *.xml`
+	do
+		rm $file
+	done
+fi
 
 if ! javac -source 1.4 -d bin -classpath ${SOARLIB}/swt.jar:${SOARLIB}/sml.jar:${SOARLIB}/JavaBaseEnvironment.jar -sourcepath source source/eaters/Eaters.java ; then
 	echo "Build failed."
 	exit 1;
 fi
-cp source/* bin
+
+cp -f source/*.xml bin
+
 jar cfm JavaEaters.jar JarManifest -C bin .
 
 # This next block is out of date.
