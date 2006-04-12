@@ -1,196 +1,50 @@
-Version: ImageMagick 6.2.5 04/05/06 Q16 http://www.imagemagick.org
-Copyright: Copyright (C) 1999-2005 ImageMagick Studio LLC
-
-Usage: convert [options ...] file [ [options ...] file ...] [options ...] file
-
-Where options include:
-  -adjoin              join images into a single multi-image file
-  -affine matrix       affine transform matrix
-  -annotate geometry text
-                       annotate the image with text
-  -antialias           remove pixel-aliasing
-  -append              append an image sequence
-  -authenticate value  decrypt image with this password
-  -average             average an image sequence
-  -background color    background color
-  -bias value          add bias when convolving an image
-  -black-threshold value
-                       forces all pixels below the threshold into black
-  -blue-primary point  chromaticity blue primary point
-  -blur geometry       blur the image
-  -border geometry     surround image with a border of color
-  -bordercolor color   border color
-  -channel type        apply option to select image channels
-  -charcoal radius     simulate a charcoal drawing
-  -chop geometry       remove pixels from the image interior
-  -clip                clip along the first path from the 8BIM profile
-  -clip-path id        clip along a named path from the 8BIM profile
-  -clone index         clone an image
-  -coalesce            merge a sequence of images
-  -colorize value      colorize the image with the fill color
-  -colors value        preferred number of colors in the image
-  -colorspace type     alternate image colorspace
-  -combine             combine a sequence of images
-  -comment string      annotate image with comment
-  -compose operator    set image composite operator
-  -composite           composite image
-  -compress type       type of pixel compression when writing the image
-  -contrast            enhance or reduce the image contrast
-  -convolve coefficients
-                       apply a convolution kernel to the image
-  -crop geometry       cut out a rectangular region of the image
-  -cycle amount        cycle the image colormap
-  -debug events        display copious debugging information
-  -define format:option
-                       define one or more image format options
-  -deconstruct         break down an image sequence into constituent parts
-  -delay value         display the next image after pausing
-  -delete index        delete the image from the image sequence
-  -density geometry    horizontal and vertical density of the image
-  -depth value         image depth
-  -despeckle           reduce the speckles within an image
-  -display server      get image or font from this X server
-  -dispose method      GIF disposal method
-  -dither              apply Floyd/Steinberg error diffusion to image
-  -draw string         annotate the image with a graphic primitive
-  -edge radius         apply a filter to detect edges in the image
-  -emboss radius       emboss an image
-  -encoding type       text encoding type
-  -endian type         endianness (MSB or LSB) of the image
-  -enhance             apply a digital filter to enhance a noisy image
-  -equalize            perform histogram equalization to an image
-  -evaluate operator value
-                       evaluate an arithmetic, relational, or logical expression
-  -extent geometry     set the image size
-  -extract geometry    extract area from image
-  -family name         render text with this font family
-  -fill color          color to use when filling a graphic primitive
-  -filter type         use this filter when resizing an image
-  -flatten             flatten a sequence of images
-  -flip                flip image in the vertical direction
-  -floodfill geometry color
-                       floodfill the image with color
-  -flop                flop image in the horizontal direction
-  -font name           render text with this font
-  -format "string"     output formatted image characteristics
-  -frame geometry      surround image with an ornamental border
-  -fuzz distance       colors within this distance are considered equal
-  -fx expression       apply mathematical expression to an image channel(s)
-  -gamma value         level of gamma correction
-  -gaussian geometry   gaussian blur an image
-  -geometry geometry   perferred size or location of the image
-  -green-primary point chromaticity green primary point
-  -gravity type        horizontal and vertical text placement
-  -help                print program options
-  -identify            identify the format and characteristics of the image
-  -implode amount      implode image pixels about the center
-  -insert index        insert last image into the image sequence
-  -intent type         type of rendering intent when managing the image color
-  -interlace type      type of image interlacing scheme
-  -label name          assign a label to an image
-  -lat geometry        local adaptive thresholding
-  -level value         adjust the level of image contrast
-  -limit type value    pixel cache resource limit
-  -log format          format of debugging information
-  -loop iterations     add Netscape loop extension to your GIF animation
-  -map filename        transform image colors to match this set of colors
-  -mask filename       set the image clip mask
-  -matte               store matte channel if the image has one
-  -mattecolor color    frame color
-  -median radius       apply a median filter to the image
-  -modulate value      vary the brightness, saturation, and hue
-  -monitor             monitor progress
-  -monochrome          transform image to black and white
-  -morph value         morph an image sequence
-  -mosaic              create a mosaic from an image sequence
-  -motion-blur geometry
-                       simulate motion blur
-  -negate              replace every pixel with its complementary color 
-  -noise radius        add or reduce noise in an image
-  -normalize           transform image to span the full range of colors
-  -opaque color        change this color to the fill color
-  -ordered-dither NxN
-                       ordered dither the image
-  -orient type         image orientation
-  -page geometry       size and location of an image canvas (setting)
-  -paint radius        simulate an oil painting
-  -ping                efficiently determine image attributes
-  -pointsize value     font point size
-  -posterize levels    reduce the image to a limited number of color levels
-  -preview type        image preview type
-  -profile filename    add, delete, or apply an image profile
-  -quality value       JPEG/MIFF/PNG compression level
-  -quiet               suppress all error or warning messages
-  -radial-blur angle   radial blur the image
-  -raise value         lighten/darken image edges to create a 3-D effect
-  -random-threshold low,high
-                       random threshold the image
-  -region geometry     apply options to a portion of the image
-  -raise value         lighten/darken image edges to create a 3-D effect
-  -red-primary point   chromaticity red primary point
-  -render              render vector graphics
-  -repage geometry     size and location of an image canvas
-  -resample geometry   change the resolution of an image
-  -resize geometry     resize the image
-  -roll geometry       roll an image vertically or horizontally
-  -rotate degrees      apply Paeth rotation to the image
-  -sample geometry     scale image with pixel sampling
-  -sampling-factor geometry
-                       horizontal and vertical sampling factor
-  -scale geometry      scale the image
-  -scene value         image scene number
-  -seed value          pseudo-random number generator seed value
-  -segment values      segment an image
-  -separate            separate an image channel into a grayscale image
-  -sepia-tone threshold
-                       simulate a sepia-toned photo
-  -set attribute value set an image attribute
-  -shade degrees       shade the image using a distant light source
-  -shadow geometry     simulate an image shadow
-  -sharpen geometry    sharpen the image
-  -shave geometry      shave pixels from the image edges
-  -shear geometry      slide one edge of the image along the X or Y axis
-  -sigmodial-contrast geometry
-                       lightness rescaling using sigmoidal contrast enhancement
-  -size geometry       width and height of image
-  -solarize threshold  negate all pixels above the threshold level
-  -splice geometry     splice the background color into the image
-  -spread amount       displace image pixels by a random amount
-  -strip               strip image of all profiles and comments
-  -stroke color        graphic primitive stroke color
-  -strokewidth value   graphic primitive stroke width
-  -stretch type        render text with this font stretch
-  -style type          render text with this font style
-  -support factor      resize support: > 1.0 is blurry, < 1.0 is sharp
-  -swap indexes        swap two images in the image sequence
-  -swirl degrees       swirl image pixels about the center
-  -texture filename    name of texture to tile onto the image background
-  -threshold value     threshold the image
-  -thumbnail geometry  create a thumbnail of the image
-  -tile filename       tile image when filling a graphic primitive
-  -tint value          tint the image with the fill color
-  -transform           affine transform image
-  -transparent color   make this color transparent within the image
-  -treedepth value     color tree depth
-  -trim                trim image edges
-  -type type           image type
-  -undercolor color    annotation bounding box color
-  -units type          the units of image resolution
-  -unsharp geometry    sharpen the image
-  -verbose             print detailed information about the image
-  -version             print version information
-  -view                FlashPix viewing transforms
-  -virtual-pixel method
-                       virtual pixel access method
-  -wave geometry       alter an image along a sine wave
-  -weight type         render text with this font weight
-  -white-point point   chromaticity white point
-  -white-threshold value
-                       forces all pixels above the threshold into white
-  -write filename      write images to this file
-
-By default, the image format of `file' is determined by its magic
-number.  To specify a particular image format, precede the filename
-with an image format name and a colon (i.e. ps:image) or specify the
-image type as the filename suffix (i.e. image.ps).  Specify 'file' as
-'-' for standard input or output.
+<tanksoar-world><cells world-size="16">
+<row>
+<cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell>
+</row>
+<row>
+<cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+</row>
+<row>
+<cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+</row>
+<row>
+<cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+</row>
+<row>
+<cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+</row>
+<row>
+<cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+</row>
+<row>
+<cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+</row>
+<row>
+<cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+</row>
+<row>
+<cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+</row>
+<row>
+<cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+</row>
+<row>
+<cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+</row>
+<row>
+<cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+</row>
+<row>
+<cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+</row>
+<row>
+<cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+</row>
+<row>
+<cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+</row>
+<row>
+<cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell>
+</row>
+</cells></tanksoar-world>
