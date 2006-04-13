@@ -11,6 +11,7 @@
 #include "MapManager.h"
 #include "GridMapTileGrouper.h"
 #include "FeatureMapManager.h"
+#include "Sorts.h"
 
 using namespace std;
 
@@ -170,15 +171,29 @@ int main(int argc, char *argv[]) {
   FeatureMapManager featureMapManager(&soarInterface);
 
   // instantiate the group manager
-  GroupManager gm(&soarInterface, &mapManager, &featureMapManager);
+  GroupManager gm;//&soarInterface, &mapManager, &featureMapManager);
 
   OrtsInterface ortsInterface(&gsm, &soarInterface, &gm, &mapManager);
-  gm.setORTSIO(&ortsInterface);
+  //gm.setORTSIO(&ortsInterface);
   gsm.add_handler(&ortsInterface);
+
+
+  Sorts sorts(&soarInterface, &ortsInterface, &gm, &mapManager, &featureMapManager);
 
   // can't do these in the constructor, have to wait until connected to server
   ortsInterface.setMyPid(gsm.get_game().get_client_player());
   soarInterface.initSoarInputLink();
+  soarInterface.setSorts(&sorts);
+//  ortsInterface.setSorts(&sorts);
+//  gm.setSorts(&sorts);
+//  mapManager.setSorts(&sorts);
+//  featureMapManager.setSorts(&sorts);
+  
+// register for all events
+//  pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, printOutput, 0);
+  pKernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &soarInterface);
+  //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START, SoarSystemEventHandler, &state);
+  //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_STOP, SoarSystemEventHandler, &state);
 
   // start Soar in a different thread
   pthread_attr_t soarThreadAttribs;

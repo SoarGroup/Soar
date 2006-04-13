@@ -14,6 +14,8 @@
 #include "SoarAction.h"
 #include "general.h"
 #include "FeatureMap.h"
+//#include "Sorts.h"
+class Sorts;
 
 class SoarGameGroup;
 //class FeatureMap;
@@ -129,8 +131,11 @@ class SoarInterface {
     void setStale(bool);
     void lockSoarMutex();
     void unlockSoarMutex();
+    
+    void setSorts(Sorts* s) {sorts = s;}
 
   private:
+    Sorts* sorts;
 
     void lockObjectActionMutex();
     void unlockObjectActionMutex();
