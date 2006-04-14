@@ -1,5 +1,6 @@
-#include "include/FeatureMapManager.h"
-#include "include/FeatureMap.h"
+#include "FeatureMapManager.h"
+#include "FeatureMap.h"
+#include "Sorts.h"
 
 /* 
   FeatureMapManager.cpp
@@ -8,8 +9,7 @@
 
 */
 
-FeatureMapManager::FeatureMapManager(SoarInterface* _sio) :
-  SoarIO(_sio) {
+FeatureMapManager::FeatureMapManager() {
 
   string FMName;
   FeatureMap* FMPointer;
@@ -174,11 +174,11 @@ void FeatureMapManager::updateSoar() {
   cout << "Feature map info:\n";
   while (it != stringToFeatureMap.end()) {
     if (it->second->getIsPresent() == false) {
-      SoarIO->addFeatureMap(it->second, it->first);
+      sorts->SoarIO->addFeatureMap(it->second, it->first);
       it->second->setIsPresent(true);
     }
 
-    SoarIO->refreshFeatureMap(it->second, it->first);
+    sorts->SoarIO->refreshFeatureMap(it->second, it->first);
     
   ///*
     cout << "map " << it->first << ":\n";

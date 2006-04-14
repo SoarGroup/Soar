@@ -1,5 +1,3 @@
-#include"SoarGameObject.h"
-#include"SoarGameGroup.h"
 #include<iostream>
 #include<assert.h>
 #include<string>
@@ -7,24 +5,27 @@
 #include "MoveFSM.h"
 #include "MineFSM.h"
 
+#include "Sorts.h"
+#include "SoarGameObject.h"
+#include "SoarGameGroup.h"
+
 void SoarGameObject::identifyBehaviors() {
   string name = gob->bp_name();
   if (friendly && name == "worker") {
-    FSM* moveBehavior = new MoveFSM(ORTSIO, groupMan, gob);
-    FSM* mineBehavior = new MineFSM(ORTSIO, groupMan, gob);
+    FSM* moveBehavior = new MoveFSM(sorts->OrtsIO, sorts->groupManager, gob);
+    FSM* mineBehavior = new MineFSM(sorts->OrtsIO, sorts->groupManager, gob);
     registerBehavior(moveBehavior);
     registerBehavior(mineBehavior);
   }
 }
 
 SoarGameObject::SoarGameObject(
-  GameObj        *g, 
-  OrtsInterface* _ORTSIO, 
-  GroupManager*  _groupMan,
+  GameObj*       g, 
+  const Sorts*   _sorts,
   bool           _friendly, 
   bool           _world, 
   int            _id )
-: gob(g), ORTSIO(_ORTSIO), groupMan(_groupMan), 
+: gob(g), sorts(_sorts), 
   friendly(_friendly), world(_world), id(_id)
 {
   status = OBJ_IDLE;
@@ -83,7 +84,7 @@ void SoarGameObject::update()
   int fsmStatus;
   group->setHasStaleMembers();
   
-  int currentFrame = ORTSIO->getFrameID();
+  int currentFrame = sorts->OrtsIO->getFrameID();
   if (currentFrame == frameOfLastUpdate) {
     cout << "ignoring repeated update.\n";
     return;
@@ -115,7 +116,7 @@ void SoarGameObject::update()
     else {
       status = OBJ_RUNNING;
     }
-    ORTSIO->updateNextCycle(this);
+    sorts->OrtsIO->updateNextCycle(this);
   }
 }
 

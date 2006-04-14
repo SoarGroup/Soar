@@ -6,19 +6,19 @@
 #include "SoarGameGroup.h"
 #include "general.h"
 #include "SoarAction.h"
+#include "Sorts.h"
 
 #include "Game.H"
 
 using namespace std;
 
-SoarInterface::SoarInterface(GameStateModule* _gsm,
-                             sml::Agent*      _agent,
-                             pthread_mutex_t* _objectActionQueueMutex,
-                             pthread_mutex_t* _attentionActionQueueMutex,
-                             pthread_mutex_t* _soarMutex
-                            )
-: gsm(_gsm),
-  agent(_agent),
+SoarInterface::SoarInterface
+( sml::Agent*      _agent,
+  pthread_mutex_t* _objectActionQueueMutex,
+  pthread_mutex_t* _attentionActionQueueMutex,
+  pthread_mutex_t* _soarMutex
+)
+: agent(_agent),
   objectActionQueueMutex(_objectActionQueueMutex),
   attentionActionQueueMutex(_attentionActionQueueMutex),
   soarMutex(_soarMutex)
@@ -469,14 +469,23 @@ void SoarInterface::initSoarInputLink() {
 
   worldId = agent->CreateIdWME(inputLink, "world");
   worldGroupsId = agent->CreateIdWME(worldId, "groups");
-
+/*
   for(int p = 0; p < gsm->get_game().get_player_num(); p++) {
     if (p != gsm->get_game().get_client_player()) {
       otherPlayers[p].id = agent->CreateIdWME(inputLink, catStrInt("p", p).c_str());
       otherPlayers[p].groupsId = agent->CreateIdWME(otherPlayers[p].id, "groups");
     }
   }
-
+*/
+  int numPlayers = sorts->OrtsIO->getNumPlayers();
+  int myId = sorts->OrtsIO->getMyId();
+  
+  for (int p=0; p < numPlayers; p++) {
+    if (p != myId) {
+      otherPlayers[p].id = agent->CreateIdWME(inputLink, catStrInt("p", p).c_str());
+      otherPlayers[p].groupsId = agent->CreateIdWME(otherPlayers[p].id, "groups");
+    }
+  }
   agent->Commit();
 }
 

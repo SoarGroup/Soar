@@ -6,8 +6,6 @@
 #include<map>
 #include<pthread.h>
 
-#include "GameStateModule.H"
-
 #include "sml_Client.h"
 
 #include "MapRegion.h"
@@ -85,12 +83,11 @@ that group is refreshed! Initially, the stats will not be set.
 
 class SoarInterface {
   public:
-    SoarInterface(GameStateModule* _gsm,
-                  sml::Agent*      _agent,
-                  pthread_mutex_t* _objectActionQueueMutex,
-                  pthread_mutex_t* _attentionActionQueueMutex,
-                  pthread_mutex_t* _soarMutex
-                 );
+    SoarInterface
+    ( sml::Agent*      _agent,
+      pthread_mutex_t* _objectActionQueueMutex,
+      pthread_mutex_t* _attentionActionQueueMutex,
+      pthread_mutex_t* _soarMutex );
 
     ~SoarInterface();
 
@@ -132,10 +129,10 @@ class SoarInterface {
     void lockSoarMutex();
     void unlockSoarMutex();
     
-    void setSorts(Sorts* s) {sorts = s;}
+    void setSorts(const Sorts* s) {sorts = s;}
 
   private:
-    Sorts* sorts;
+    const Sorts* sorts;
 
     void lockObjectActionMutex();
     void unlockObjectActionMutex();
@@ -145,8 +142,6 @@ class SoarInterface {
     void processObjectAction(ObjectActionType, sml::Identifier*);
     void processAttentionAction(AttentionActionType, sml::Identifier*);
     void improperCommandError();
-
-    GameStateModule* gsm;
 
     // SML pointers
     sml::Agent *agent;

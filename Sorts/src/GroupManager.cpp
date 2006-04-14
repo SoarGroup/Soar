@@ -14,11 +14,6 @@ using namespace std;
 
 */
 
-//GroupManager::GroupManager(SoarInterface* si, MapManager* _sorts->getMapManager(),
-//                           FeatureMapManager* fmm) 
-//    : sorts->getSoarInterface()(si), sorts->getMapManager()(_sorts->getMapManager()), sorts->getFeatureMapManager()(fmm) {
-//  sorts->getFeatureMapManager()->changeViewWindow(230,230,460);
-//}
 
 GroupManager::GroupManager() {
 
@@ -54,7 +49,7 @@ bool GroupManager::assignActions() {
     
   list <ObjectAction> newActions;
   
-  sorts->getSoarInterface()->getNewObjectActions(newActions);
+  sorts->SoarIO->getNewObjectActions(newActions);
   list <ObjectAction>::iterator actionIter = newActions.begin();
  
   list <SoarGameGroup*>::iterator groupIter;
@@ -421,15 +416,15 @@ void GroupManager::prepareForReGroup() {
 }
 
 void GroupManager::addGroup(SoarGameObject* object) {
-  groupsNotInFocus.push_back(new SoarGameGroup(object, false, sorts->getOrtsInterface(), sorts->getMapManager()));
+  groupsNotInFocus.push_back(new SoarGameGroup(object, false, sorts));
   //sorts->getFeatureMapManager()->addGroup(object->getGroup());
   // refresh will handle this fine, no need to have an addGroup
   return;
 }
 
 void GroupManager::removeGroup(SoarGameGroup* group) {
-  sorts->getSoarInterface()->removeGroup(group);
-  sorts->getFeatureMapManager()->removeGroup(group);
+  sorts->SoarIO->removeGroup(group);
+  sorts->featureMapManager->removeGroup(group);
   delete group;
 }
 
@@ -445,10 +440,10 @@ void GroupManager::updateFeatureMaps(bool refreshAll) {
   list<SoarGameGroup*>::iterator groupIter = groupsNotInFocus.begin();
   while (groupIter != groupsNotInFocus.end()) {
     if (refreshAll) {
-      sorts->getFeatureMapManager()->refreshGroup(*groupIter);
+      sorts->featureMapManager->refreshGroup(*groupIter);
     }
     else if ((*groupIter)->getHasStaleProperties()) {
-        sorts->getFeatureMapManager()->refreshGroup(*groupIter);
+        sorts->featureMapManager->refreshGroup(*groupIter);
         (*groupIter)->setHasStaleProperties(false);
     }
     groupIter++;
@@ -457,16 +452,16 @@ void GroupManager::updateFeatureMaps(bool refreshAll) {
   groupIter = groupsInFocus.begin();
   while (groupIter != groupsInFocus.end()) {
     if (refreshAll) {
-      sorts->getFeatureMapManager()->refreshGroup(*groupIter);
+      sorts->featureMapManager->refreshGroup(*groupIter);
     }
     else if ((*groupIter)->getHasStaleProperties()) {
-        sorts->getFeatureMapManager()->refreshGroup(*groupIter);
+        sorts->featureMapManager->refreshGroup(*groupIter);
         (*groupIter)->setHasStaleProperties(false);
     }
     groupIter++;
   }
 
-  sorts->getFeatureMapManager()->updateSoar();
+  sorts->featureMapManager->updateSoar();
   return;
   
 }
@@ -478,7 +473,7 @@ void GroupManager::adjustAttention() {
   while (groupIter != groupsNotInFocus.end()) {
     // for now, move everything into focus
     groupsInFocus.push_back(*groupIter);
-    sorts->getSoarInterface()->addGroup(*groupIter);
+    sorts->SoarIO->addGroup(*groupIter);
     groupsNotInFocus.erase(groupIter);
     groupIter++;
   }
@@ -486,7 +481,7 @@ void GroupManager::adjustAttention() {
   groupIter = groupsInFocus.begin();
   while (groupIter != groupsInFocus.end()) {
     if ((*groupIter)->getHasStaleProperties()) {
-      sorts->getSoarInterface()->refreshGroup(*groupIter);
+      sorts->SoarIO->refreshGroup(*groupIter);
       //(*groupIter)->setHasStaleProperties(false);
       // moved this to updateFeatureMaps()
     }
@@ -507,9 +502,6 @@ GroupManager::~GroupManager() {
     groupIter++;
   }
 }
-/*void GroupManager::setORTSIO(OrtsInterface* oio) {
-  //ORTSIO = oio;
-}*/
 
 
 SoarGameGroup* GroupManager::getGroupNear(string type, int owner, int x, int y) {

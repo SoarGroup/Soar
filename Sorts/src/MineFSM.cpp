@@ -1,4 +1,5 @@
 #include "include/MineFSM.h"
+#include "include/GroupManager.h"
 #include "include/SoarGameGroup.h"
 #include "general.h"
 

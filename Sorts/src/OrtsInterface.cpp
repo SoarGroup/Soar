@@ -1,22 +1,19 @@
 #include <assert.h>
 
-#include "OrtsInterface.h"
+// our includes
+#include "Sorts.h"
 #include "SoarGameGroup.h"
 
+// Orts includes
 #include "GameObj.H"
 #include "GameStateModule.H"
 
-OrtsInterface::OrtsInterface( GameStateModule* _gsm,
-                              SoarInterface*   _soarInterface,
-                              GroupManager*    _groupManager,
-                              MapManager*      _mapManager )
-: gsm(_gsm), 
-  soarInterface(_soarInterface), 
-  groupManager(_groupManager),
-  mapManager(_mapManager)
+OrtsInterface::OrtsInterface(GameStateModule* _gsm)
+: gsm(_gsm)
 {
   counter = 0;
-  myPid = -1; // this must be set after we connect to the server
+  // gsm must have already connected for this to work
+  myPid = gsm->get_game().get_client_player(); 
 }
 
 void OrtsInterface::addAppearedObject(const GameObj* gameObj) {
@@ -31,11 +28,11 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   bool world    = (gsm->get_game().get_player_num() == *gameObj->sod.owner);
   int id = gsm->get_game().get_cplayer_info().get_id(gameObj);
   
-  SoarGameObject* newObj = new SoarGameObject(gameObj, this, groupManager,
+  SoarGameObject* newObj = new SoarGameObject(gameObj, sorts,
                                               friendly, world, id);
  
   // GroupManager takes care of setting the object->group pointers
-  groupManager->addGroup(newObj);
+  sorts->groupManager->addGroup(newObj);
   
 
   objectMap[gameObj] = newObj;
@@ -66,7 +63,7 @@ bool OrtsInterface::handle_event(const Event& e) {
   if (e.get_who() == GameStateModule::FROM) {
     if (e.get_what() == GameStateModule::VIEW_MSG) {
 
-      groupManager->assignActions();
+      sorts->groupManager->assignActions();
 
       const GameChanges& changes = gsm->get_changes();
       updateMap(changes);
@@ -76,12 +73,12 @@ bool OrtsInterface::handle_event(const Event& e) {
       gsm->send_actions();
       //cout << "send_actions" << endl;
 
-      groupManager->updateVision();
+      sorts->groupManager->updateVision();
 
       /* I'm assuming here that those update calls from above have already
        * updated the soar input link correctly, so commit everything
        */
-      soarInterface->commitInputLinkChanges();
+      sorts->SoarIO->commitInputLinkChanges();
     }
     return true;
   }
@@ -176,13 +173,13 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
 }
 
 void OrtsInterface::updateMap(const GameChanges& changed) {
-  mapManager->addExploredTiles(changed.new_tile_indexes);
-  mapManager->addBoundaries(changed.new_boundaries);
+  sorts->mapManager->addExploredTiles(changed.new_tile_indexes);
+  sorts->mapManager->addBoundaries(changed.new_boundaries);
 }
 
 void OrtsInterface::updateSoarPlayerInfo() {
   // only know get gold for now
-  soarInterface->updatePlayerGold(playerGameObj->get_int("gold"));
+  sorts->SoarIO->updatePlayerGold(playerGameObj->get_int("gold"));
 }
 
 OrtsInterface::~OrtsInterface() {
@@ -191,10 +188,6 @@ OrtsInterface::~OrtsInterface() {
     delete (*it).second;
     it++;
   }
-}
-
-void OrtsInterface::setMyPid(int pid) {
-  myPid = pid;
 }
 
 void OrtsInterface::updateNextCycle(SoarGameObject* sgo) {
@@ -210,6 +203,10 @@ int OrtsInterface::getWorldId() {
   return gsm->get_game().get_player_num();
 }
 
+int OrtsInterface::getNumPlayers() {
+  // for ease of code reading
+  return getWorldId();
+}
 int OrtsInterface::getMyId() {
   return myPid;
 }

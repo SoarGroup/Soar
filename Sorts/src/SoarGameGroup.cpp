@@ -1,16 +1,21 @@
-#include "include/SoarGameGroup.h"
-#include "include/general.h"
-#include "include/OrtsInterface.h"
-#include "Object.H"
+
 #include <assert.h>
 #include <vector>
 #include <iostream>
 
-SoarGameGroup::SoarGameGroup( SoarGameObject* unit, 
-                              bool _mixedType,
-                              OrtsInterface*  _ORTSIO,
-                              MapManager*     _mapManager )
-: ORTSIO(_ORTSIO), mapManager(_mapManager)
+// ORTS includes
+#include "Object.H"
+
+// our includes
+#include "include/SoarGameGroup.h"
+#include "include/general.h"
+#include "include/Sorts.h"
+
+SoarGameGroup::SoarGameGroup
+( SoarGameObject* unit, 
+  bool            _mixedType,
+  const Sorts*    _sorts )
+: sorts(_sorts)
 {
   members.insert(unit);
   unit->setGroup(this);
@@ -312,7 +317,7 @@ void SoarGameGroup::updateRegionsOccupied() {
     (*i)->groupExit(this);
   }
   regionsOccupied.clear();
-  mapManager->getRegionsIntersecting(getBoundingBox(), regionsOccupied);
+  sorts->mapManager->getRegionsIntersecting(getBoundingBox(), regionsOccupied);
 
   for( list<MapRegion*>::iterator
        i  = regionsOccupied.begin();

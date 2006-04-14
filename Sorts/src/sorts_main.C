@@ -140,21 +140,10 @@ int main(int argc, char *argv[]) {
   gsmo.host = host;
   GameStateModule gsm(gsmo);
 
-  SoarInterface soarInterface( &gsm,
-                               pAgent,
-                               &objectActionMutex,
-                               &attentionActionMutex,
-                               &soarMutex);
-
-  // register for all events
-//  pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, printOutput, 0);
-  pKernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &soarInterface);
-  //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START, SoarSystemEventHandler, &state);
-  //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_STOP, SoarSystemEventHandler, &state);
-
   // connect to ORTS server
   if (!gsm.connect()) exit(10);
   cout << "connected" << endl;
+  
 
   Game& game = gsm.get_game();
   const Map<GameTile>& m = game.get_map();
@@ -163,34 +152,42 @@ int main(int argc, char *argv[]) {
 
 
   cout <<"calling..\n";
+  
+  SoarInterface soarInterface( pAgent,
+                               &objectActionMutex,
+                               &attentionActionMutex,
+                               &soarMutex);
+
   // map manager, using the grid tile grouping method
-  GridMapTileGrouper tileGrouper(game.get_map(), game.get_tile_points(), gridSizeX, gridSizeY);
+  GridMapTileGrouper 
+    tileGrouper(game.get_map(), game.get_tile_points(), gridSizeX, gridSizeY);
   MapManager mapManager
-    ( game.get_map(), game.get_tile_points(), tileGrouper, &soarInterface );
+    ( game.get_map(), game.get_tile_points(), tileGrouper);
  
-  FeatureMapManager featureMapManager(&soarInterface);
-
-  // instantiate the group manager
-  GroupManager gm;//&soarInterface, &mapManager, &featureMapManager);
-
-  OrtsInterface ortsInterface(&gsm, &soarInterface, &gm, &mapManager);
-  //gm.setORTSIO(&ortsInterface);
-  gsm.add_handler(&ortsInterface);
+  FeatureMapManager featureMapManager;
+  GroupManager gm;
+  OrtsInterface ortsInterface(&gsm);
 
 
-  Sorts sorts(&soarInterface, &ortsInterface, &gm, &mapManager, &featureMapManager);
+  Sorts sorts(&soarInterface, 
+              &ortsInterface, 
+              &gm, 
+              &mapManager, 
+              &featureMapManager);
 
-  // can't do these in the constructor, have to wait until connected to server
-  ortsInterface.setMyPid(gsm.get_game().get_client_player());
-  soarInterface.initSoarInputLink();
+  
   soarInterface.setSorts(&sorts);
-//  ortsInterface.setSorts(&sorts);
-//  gm.setSorts(&sorts);
-//  mapManager.setSorts(&sorts);
-//  featureMapManager.setSorts(&sorts);
+  ortsInterface.setSorts(&sorts);
+  gm.setSorts(&sorts);
+  mapManager.setSorts(&sorts);
+  featureMapManager.setSorts(&sorts);
+  
+  soarInterface.initSoarInputLink();
   
 // register for all events
-//  pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, printOutput, 0);
+  gsm.add_handler(&ortsInterface);
+
+  //  pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, printOutput, 0);
   pKernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &soarInterface);
   //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START, SoarSystemEventHandler, &state);
   //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_STOP, SoarSystemEventHandler, &state);

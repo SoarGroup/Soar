@@ -8,16 +8,15 @@
 */
 
 #include "FeatureMap.h"
-#include "SoarInterface.h"
 
 #include <string>
 using namespace std;
 class SoarGameGroup;
-//class SoarInterface;
+class Sorts;
 
 class FeatureMapManager {
   public:
-    FeatureMapManager(SoarInterface* _sio);
+    FeatureMapManager();
     ~FeatureMapManager();
     void refreshGroup(SoarGameGroup* group);
     void updateSoar();
@@ -25,6 +24,7 @@ class FeatureMapManager {
     void changeViewWindow(int x, int y, int width);
     void addGroup(SoarGameGroup* group);
     void removeGroup(SoarGameGroup* group);
+    void setSorts(const Sorts* s) {sorts = s;}
   private:
     int classifyCenterPointInGrid(SoarGameGroup* group);
     list<FeatureMap* > identifyFeatures(SoarGameGroup* group);
@@ -33,8 +33,8 @@ class FeatureMapManager {
     map<string, FeatureMap* > stringToFeatureMap;
     int xMin, xMax, yMin, yMax;
     double sectorDim;
-
-    SoarInterface* SoarIO;
+  
+    const Sorts* sorts;
 };
 
 #endif

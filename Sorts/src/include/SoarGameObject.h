@@ -10,17 +10,14 @@
 
 using namespace std;
 
-
 class SoarGameGroup;
-class OrtsInterface;
-class GroupManager;
+class Sorts;
 
 class SoarGameObject{
  public:
-	SoarGameObject ( 
-    GameObj*       _gob, 
-    OrtsInterface* _ORTSIO, 
-    GroupManager*  _groupMan,
+	SoarGameObject 
+  ( GameObj*       _gob,
+    const Sorts*   _sorts,
     bool           _friendly, 
     bool           _world, 
     int            _id );
@@ -50,13 +47,13 @@ class SoarGameObject{
   GameObj *gob;
 
 private:
-  OrtsInterface* ORTSIO;
+  const Sorts* sorts;
+
 	map<ObjectActionType, FSM *> behaviors;
 	stack<FSM *> memory;
 
   ObjectActionType currentCommand;
 	SoarGameGroup* group;
-  GroupManager* groupMan;
 	bool friendly;
   bool world;
   int id;

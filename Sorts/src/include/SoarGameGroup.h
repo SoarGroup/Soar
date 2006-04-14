@@ -8,10 +8,9 @@
 //#include "OrtsInterface.h"
 #include "general.h"
 #include "MapRegion.h"
-#include "MapManager.h"
 #include "Rectangle.h"
 
-class OrtsInterface;
+class Sorts;
 class SoarGameObject;
 class FeatureMap;
 
@@ -21,10 +20,10 @@ using namespace std;
 
 class SoarGameGroup {
   public:
-    SoarGameGroup( SoarGameObject* unit,
-                   bool _mixedType,
-                   OrtsInterface*  _ORTSIO,
-                   MapManager*     _mapManager );
+    SoarGameGroup
+    ( SoarGameObject* unit,
+      bool            _mixedType,
+      const Sorts*    _sorts);
 
     ~SoarGameGroup();
 
@@ -84,6 +83,8 @@ class SoarGameGroup {
     void updateRegionsOccupied();
 
   private:
+    const Sorts* sorts;
+
     set <SoarGameObject*> members;
     groupPropertyStruct soarData;
     bool hasStaleMembers;
@@ -106,14 +107,12 @@ class SoarGameGroup {
     bool airUnits;
     bool landUnits;
     bool moving;
-    OrtsInterface* ORTSIO;
 
     // bounding box of group dimensions
     Rectangle bbox;
 
     int centerX, centerY;
 
-    MapManager* mapManager;
     list<MapRegion*> regionsOccupied;
 
     // sticky if grouped by Soar-

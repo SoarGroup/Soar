@@ -1,7 +1,6 @@
 #include "MapManager.h"
 
-#include "SoarInterface.h"
-#include "SoarGameGroup.h"
+#include "Sorts.h"
 #include "Rectangle.h"
 
 using namespace std;
@@ -9,13 +8,10 @@ using namespace std;
 MapManager::MapManager
 ( const Map<GameTile>& _gameMap, 
   int                  _tilePoints, 
-  MapTileGrouper&      _tileGrouper,
-  SoarInterface*       _soarInterface )
-
+  MapTileGrouper&      _tileGrouper)
 :gameMap(_gameMap), 
  tilePoints(_tilePoints), 
- tileGrouper(_tileGrouper),
- soarInterface(_soarInterface)
+ tileGrouper(_tileGrouper)
 { }
 
 
@@ -54,10 +50,10 @@ void MapManager::addExploredTiles(Vector<sint4> newTiles) {
     // update Soar input link
     if (regions.find(assignedRegion) == regions.end()) {
       regions.insert(tileMembership[*i]);
-      soarInterface->addMapRegion(assignedRegion);
+      sorts->SoarIO->addMapRegion(assignedRegion);
     }
     else {
-      soarInterface->refreshMapRegion(assignedRegion);
+      sorts->SoarIO->refreshMapRegion(assignedRegion);
     }
   }
 }

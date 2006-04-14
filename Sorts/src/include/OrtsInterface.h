@@ -2,10 +2,8 @@
 #define orts_interface
 
 // our includes
-#include "SoarInterface.h"
 #include "SoarGameObject.h"
-#include "GroupManager.h"
-#include "MapManager.h"
+class Sorts;
 
 // sml includes
 #include "sml_Client.h"
@@ -27,14 +25,11 @@ typedef map<SoarGameObject*, const GameObj*>::iterator revObjectMapIter;
  */
 class OrtsInterface : public EventHandler {
 public:
-  OrtsInterface( GameStateModule* _gsm, 
-                 SoarInterface*   _soarInterface, 
-                 GroupManager*    _groupManager,
-                 MapManager*      _mapManager );
+  OrtsInterface(GameStateModule* _gsm);
 
   ~OrtsInterface();
 
-  void setMyPid(int pid);
+  void setSorts(const Sorts* _sorts) { sorts = _sorts; }
 
   // SGO's use this to insert themselves in the list of required updates
   void updateNextCycle(SoarGameObject* sgo);
@@ -46,7 +41,11 @@ public:
   int getMyId();
   double getOrtsDistance(GameObj* go1, GameObj* go2);
   int getFrameID();
+  int getNumPlayers();
+
 private:
+  const Sorts* sorts;
+
   // pointers to all the orts stuff
   GameStateModule* gsm;
   GameObj *playerGameObj;
@@ -55,11 +54,6 @@ private:
   /* In the future, change these to hash maps */
   map<const GameObj*, SoarGameObject*> objectMap;
   map<SoarGameObject*, const GameObj*> revObjectMap;
-
-  // pointer to our stuff
-  SoarInterface* soarInterface;
-  GroupManager*  groupManager;
-  MapManager*    mapManager;
 
   // consistency functions
   void addAppearedObject(const GameObj* gameObj);

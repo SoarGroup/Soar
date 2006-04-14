@@ -2,22 +2,11 @@
 #define GroupManager_h
 
 #include "SoarGameObject.h"
-//#include "MapManager.h"
-//#include "FeatureMapManager.h"
-//#include "FeatureMap.h"
-//#include "SoarInterface.h"
 
-//class SoarInterface;
-//class OrtsInterface;
-//class FeatureMapManager;
-
-//#include "Sorts.h"
 class Sorts;
 
 class GroupManager {
   public:
-//    GroupManager(SoarInterface* si, MapManager* _mapManager,
-//                 FeatureMapManager* fmm);
     GroupManager();
     ~GroupManager();
 
@@ -28,11 +17,9 @@ class GroupManager {
     void addGroup(SoarGameObject* object);
     // used by ORTSInterface when it sees a new object- create a group for it
     
-    //void setORTSIO(OrtsInterface* oio);
-
     SoarGameGroup* getGroupNear(string type, int owner, int x, int y);
     
-    void setSorts(Sorts* s) {sorts = s;}
+    void setSorts(const Sorts* s) {sorts = s;}
     
   private:
     void prepareForReGroup();
@@ -43,18 +30,12 @@ class GroupManager {
 
     void removeGroup(SoarGameGroup*);
 
-//    SoarInterface* SoarIO;
-
     set <pair<string, int> > staleGroupCategories;
     
     list <SoarGameGroup*> groupsInFocus;
     list <SoarGameGroup*> groupsNotInFocus;
     
-    Sorts* sorts;
-    //OrtsInterface* ORTSIO;
-
-    //MapManager *mapManager;
-    //FeatureMapManager *featureMaps;
+    const Sorts* sorts;
 };
 
 struct objectGroupingStruct {

@@ -1,5 +1,5 @@
-#ifndef middleware_h
-#define middleware_h
+#ifndef Sorts_H
+#define Sorts_H
 
 /* Sorts class
 
@@ -23,22 +23,26 @@ class FeatureMapManager;
 */
 class Sorts {
   public:
-    Sorts(SoarInterface*, OrtsInterface*, 
-               GroupManager*, MapManager*, FeatureMapManager*);
-    SoarInterface* getSoarInterface();
-    OrtsInterface* getOrtsInterface();
-    GroupManager* getGroupManager();
-    MapManager* getMapManager();
-    FeatureMapManager* getFeatureMapManager();
-  private:
+    Sorts
+    ( SoarInterface*      _SoarIO,
+      OrtsInterface*      _OrtsIO,
+      GroupManager*       _groupManager, 
+      MapManager*         _mapManager, 
+      FeatureMapManager*  _featureMapManager)
+    {
+      SoarIO = _SoarIO;
+      OrtsIO = _OrtsIO;
+      groupManager = _groupManager;
+      mapManager = _mapManager;
+      featureMapManager = _featureMapManager;
+    }
+
     SoarInterface* SoarIO;
-    OrtsInterface* ORTSIO;
-    GroupManager* gm;
-    MapManager* mm;
-    FeatureMapManager* fmm;
+    OrtsInterface* OrtsIO;
+    GroupManager* groupManager;
+    MapManager* mapManager;
+    FeatureMapManager* featureMapManager;
 };
-
-
 
 
 #endif
