@@ -33,7 +33,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	private ArrayList m_RemoveSimulationListeners = new ArrayList();
 
 	// For debugging can set this to false, making all random calls follow the same sequence
-	public static final boolean kRandom = true ;
+	public static final boolean kRandom = false ;
 	
 	protected Simulation() {
 		// Initialize Soar
@@ -313,7 +313,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
     		}
     		
     		m_StopSoar = false;
-    		m_Kernel.RunAllAgentsForever();
+    		m_Kernel.RunAllAgentsForever(smlInterleaveStepSize.sml_INTERLEAVE_UNTIL_OUTPUT);
     		
     		if (m_Runs != 0) {
     			resetSimulation(false);
