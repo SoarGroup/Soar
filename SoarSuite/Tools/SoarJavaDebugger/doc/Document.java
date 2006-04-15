@@ -729,11 +729,23 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		// should be OK.  We may need to handle some error conditions that occur when we do this
 		// but by and large it should be acceptable and it would be good to make it work.
 
-		// Shutdown our connection.
-		m_Kernel.Shutdown() ;
+		// Shutdown our connection but don't delete the kernel object yet as it may still be in use
+		// by another event/message that's being received elsewhere by the debugger.
+		m_Kernel.ShutdownNoDelete() ;
 		
-		// Release all memory.
-		m_Kernel.delete() ;
+		// Release all memory but do it later, when all callbacks have had a chance to complete their actions.
+		// For now, I'll just pick an arbitrary delay.  The better model would be to have a way to ask the kernel
+		// when it had finished will all commands...but that's pretty complicated so I'm going with a timer.
+		final Kernel kernelToDelete = m_Kernel ;
+		Thread delayedDelete = new Thread() {
+			public void run()
+			{
+				try { sleep(1000) ; } catch (Exception e) { }
+				System.out.println("Delayed deletion of remote connection to kernel object") ;
+				kernelToDelete.delete() ;
+			}
+		};
+		delayedDelete.start();
 		
 		m_Kernel = null ;
 		m_IsStopping = false ;

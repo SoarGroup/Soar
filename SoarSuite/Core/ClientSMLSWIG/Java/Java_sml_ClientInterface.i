@@ -243,6 +243,12 @@
     smlJNI.Kernel_ShutdownInternal(swigCPtr);
     delete() ;
   }
+  
+  // Allow a user to avoid deleting the kernel object immediately, if they have some special reason.
+  public void ShutdownNoDelete()
+  {
+    smlJNI.Kernel_ShutdownInternal(swigCPtr);
+  }
 %}
 
 // Some handy alternative method names and additional wrappers to help support some legacy code and may be
