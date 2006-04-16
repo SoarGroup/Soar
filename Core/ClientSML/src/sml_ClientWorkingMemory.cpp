@@ -788,6 +788,14 @@ void WorkingMemory::UpdateString(StringElement* pWME, char const* pValue)
 	if (!pWME || !pValue)
 		return ;
 
+	// If the value hasn't changed and we're set to not blink the wme (remove/add it again)
+	// then there's no work to do.
+	if (!m_Agent->IsBlinkIfNoChange())
+	{
+		if (strcmp(pWME->GetValue(),pValue) == 0)
+			return ;
+	}
+
 	// Changing the value logically is a remove and then an add
 
 	// Get the tag of the value to remove
@@ -829,6 +837,14 @@ void WorkingMemory::UpdateInt(IntElement* pWME, int value)
 	if (!pWME)
 		return ;
 
+	// If the value hasn't changed and we're set to not blink the wme (remove/add it again)
+	// then there's no work to do.
+	if (!m_Agent->IsBlinkIfNoChange())
+	{
+		if (pWME->GetValue() == value)
+			return ;
+	}
+
 	// Changing the value logically is a remove and then an add
 
 	// Get the tag of the value to remove
@@ -869,6 +885,16 @@ void WorkingMemory::UpdateFloat(FloatElement* pWME, double value)
 {
 	if (!pWME)
 		return ;
+
+	// If the value hasn't changed and we're set to not blink the wme (remove/add it again)
+	// then there's no work to do.
+	if (!m_Agent->IsBlinkIfNoChange())
+	{
+		// Note: There's no error margin allowed on this, so the value must match exactly or
+		// the wme will blink.
+		if (pWME->GetValue() == value)
+			return ;
+	}
 
 	// Changing the value logically is a remove and then an add
 

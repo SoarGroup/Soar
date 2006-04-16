@@ -824,6 +824,21 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	if (!InitSoarAgent(pAgent, doInitSoars))
 		return false ;
 	
+	// Test the blink option
+	pAgent->SetBlinkIfNoChange(false) ;
+	long timeTag1 = pWME3->GetTimeTag() ;
+	pAgent->Update(pWME3, 50.5) ;	// Should not change the wme, so timetag should be the same
+	long timeTag2 = pWME3->GetTimeTag() ;
+	pAgent->SetBlinkIfNoChange(true) ;	// Back to the default
+	pAgent->Update(pWME3, 50.5) ;	// Should change the wme, so timetag should be the different
+	long timeTag3 = pWME3->GetTimeTag() ;
+
+	if (timeTag1 != timeTag2 || timeTag2 == timeTag3)
+	{
+		cout << "Error in handling of SetBlinkIfNoChange flag" << endl ;
+		return false ;
+	}
+
 	// Remove a wme
 	pAgent->DestroyWME(pWME3) ;
 

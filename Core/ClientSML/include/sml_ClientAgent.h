@@ -177,6 +177,10 @@ protected:
 	// Internally we register a print callback and store its id here.
 	int		m_XMLCallback ;
 
+	// When true, if a wme is updated to the same value as before we "blink" the wme by removing
+	// the old wme and adding a new one, causing rules to rematch in Soar.
+	bool	m_BlinkIfNoChange ;
+
 protected:
 	Agent(Kernel* pKernel, char const* pAgentName);
 
@@ -292,7 +296,7 @@ public:
 	*		 The agent retains ownership of this object.
 	*		 The returned object is valid until the caller
 	*		 deletes the parent identifier.
-	*		 If "auto commimt" is turned off in ClientKernel,
+	*		 If "auto commit" is turned off in ClientKernel,
 	*		 the WME is not added to Soar's input link until the
 	*		 client calls "Commit" 
 	*************************************************************/
@@ -328,13 +332,29 @@ public:
 
 	/*************************************************************
 	* @brief Update the value of an existing WME.
-	*		 If "auto commimt" is turned off in ClientKernel,
+	*		 If "auto commit" is turned off in ClientKernel,
 	*		 the value is not actually sent to the kernel
 	*		 until "Commit" is called.
+	*
+	*		 If "BlinkIfNoChange" is false then updating a wme to the
+	*		 same value it already had will be ignored.
+	*		 This value is true by default, so updating a wme to the same
+	*		 value causes the wme to be deleted and a new identical one to be added
+	*		 which will trigger rules to rematch.
+	*		 You can turn this flag on and off around a set of calls to update if you wish.
 	*************************************************************/
 	void	Update(StringElement* pWME, char const* pValue) ;
 	void	Update(IntElement* pWME, int value) ;
 	void	Update(FloatElement* pWME, double value) ;
+
+	/*************************************************************
+	* @brief This flag controls whether updating a wme to the same
+	*		 value that it already has causes it to "blink" or not.
+	*		 Blinking means the wme is removed and an identical wme is added,
+	*		 causing rules that test this wme to be rematched and to fire again.
+	*************************************************************/
+	void SetBlinkIfNoChange(bool state)	{ m_BlinkIfNoChange = state ; }
+	bool IsBlinkIfNoChange()			{ return m_BlinkIfNoChange ; }
 
 	/*************************************************************
 	* @brief Schedules a WME from deletion from the input link and removes
@@ -345,7 +365,7 @@ public:
 	*
 	*		 The caller should not access this WME after calling
 	*		 DestroyWME() or any of its children if this is an identifier.
-	*		 If "auto commimt" is turned off in ClientKernel,
+	*		 If "auto commit" is turned off in ClientKernel,
 	*		 the WME is not removed from the input link until
 	*		 the client calls "Commit"
 	*************************************************************/
