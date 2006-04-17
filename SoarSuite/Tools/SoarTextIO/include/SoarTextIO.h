@@ -236,6 +236,8 @@ private:
 		return ss.str();
 	}
 
+	buf_type decipher_type(const std::string& str);
+
 	
 };
 
