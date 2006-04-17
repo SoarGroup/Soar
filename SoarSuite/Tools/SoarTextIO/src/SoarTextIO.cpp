@@ -464,7 +464,9 @@ SoarTextIO::RespondCycle()
 	for(int i = 0; i< numberCommands2; i++)  //add's status complete
 	{
 		sml::Identifier* tmp2 = pAgent->GetCommand(i);
-		tmp2->AddStatusComplete();
+		WMEpointer* tempHolder = new WMEpointer();
+		tempHolder->holder = tmp2;
+		changes.push_back(buffered_change_t(CREATE, NULL, tempHolder, "status", "complete", STRING));
 	}
 	storeO.resize(0);
 
