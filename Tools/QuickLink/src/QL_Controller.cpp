@@ -518,12 +518,12 @@ value_type decipher_type(const string& str)
 	{
 		if (str[i] == '.')
 			num_periods++;
-		if(isalpha(str[i]) || ispunct(str[i])) // we know it is a string
+		else if(isalpha(str[i]) || ispunct(str[i])) // we know it is a string
 			return e_STRING;
 	}
 	if(num_periods == 0) // we haven't seen a character and it doesn't have a period - int
 		return e_INT;
-	else if(num_periods == 1 && (isalpha(str[0]) || isalpha(str[str.length()-1]))) // - float
+	else if(num_periods == 1 && (!isalpha(str[0]) || !isalpha(str[str.length()-1]))) // - float
 		return e_FLOAT;
 
 	// otherwise just return string
