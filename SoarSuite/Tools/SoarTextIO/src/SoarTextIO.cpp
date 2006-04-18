@@ -48,13 +48,13 @@ void* RunForever( void* info);
 
 SoarTextIO::SoarTextIO()
 {
+#ifdef _WIN32
+	_chdir("../../SoarLibrary/bin/");
+#endif
 	init_soar = false;
 	RemoteConnect();
 	cout << endl;	
-#ifndef _WIN32
-//	initscr(); // set up curses
-//	scrollok(stdscr, true);
-#endif
+
 
 
 }
@@ -282,6 +282,7 @@ SoarTextIO::WriteCycle(istream* getFrom)
 		else
 			cout << "<NOTHING>" << endl;
 		ShouldPrintNow = false;
+		print_hack = 1;
 	}
 	else
 		printRead = true; 
@@ -511,6 +512,7 @@ SoarTextIO::GetNextLine()
 			cout << forMem << endl;
 		else
 			cout << "<NOTHING>" << endl;
+		print_hack = 1;
 	}
 	forMem = "";
 	ShouldPrintNow = false;
@@ -794,7 +796,7 @@ SoarTextIO::spawnDebugger()
 
 	// spawn the debugger asynchronously
 	
-	_chdir("../../SoarLibrary/bin/");
+	
 	int ret = _spawnlp(_P_NOWAIT, "javaw.exe", "javaw.exe", "-jar", "SoarJavaDebugger.jar", "-remote", NULL);
 	if(ret == -1) {
 		switch (errno) {
@@ -817,7 +819,7 @@ SoarTextIO::spawnDebugger()
 					cout << ret << endl;
 		}
 	}
-	_chdir("../../Tools/QuickLink/");
+	
 
 #else // linux spawnning
 
