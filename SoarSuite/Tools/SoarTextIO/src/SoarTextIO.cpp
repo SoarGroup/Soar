@@ -94,6 +94,7 @@ SoarTextIO::init()
 	ShouldPrintNow = false;
 	PrintNothing = false;
 	getnextline = false;
+	print_hack = 0; // 0 indicates print normally
 
 	if(!init_soar)
 	{
@@ -266,7 +267,9 @@ SoarTextIO::WriteCycle(istream* getFrom)
 #endif // _WIN32
 	if(*getFrom == cin)
 	{
-		cout << endl << endl << endl << endl << endl << "> ";
+		if(print_hack != 2)
+			cout << endl << endl << endl << endl << endl << "> ";
+		print_hack = 0;
 #ifndef _WIN32 
 		print_position = 5;
 #endif
@@ -342,32 +345,38 @@ SoarTextIO::CarryOutCommand(istream* getFrom)
 			CreateWord();
 			forMem += (word + " ");
 		}
-		else if(checker == "--SAVE")
-			saveMem();
-		else if(checker == "--LOAD")
-			loadMem();
-		else if(checker == "--STOP")
-			m_StopNow = true;
-		else if(checker == "--RUN")
-			runner();
-		else if(checker == "--DEBUG")
-			spawnDebugger();
-		else if(checker == "--CMDLIN")
+		else 
 		{
-			string command;
-			getline(*getFrom, command);
-			pAgent->ExecuteCommandLine(command.c_str(), true);
+			print_hack = 1; // who ever has a chance to print next should
+			if(checker == "--SAVE")
+				saveMem();
+			else if(checker == "--LOAD")
+				loadMem();
+			else if(checker == "--STOP")
+				m_StopNow = true;
+			else if(checker == "--RUN")
+				runner();
+			else if(checker == "--DEBUG")
+				spawnDebugger();
+			else if(checker == "--CMDLIN")
+			{
+				string command;
+				getline(*getFrom, command);
+				pAgent->ExecuteCommandLine(command.c_str(), true);
+			}
+			else if(checker == "--NEWTHREAD")
+			{
+				initiateRes = true;
+			}
+			else if(checker == "--REMOTE")
+			{
+				initiateRem = true;
+			}
+			else if(checker == "--STEP")
+				step();
+			
+			
 		}
-		else if(checker == "--NEWTHREAD")
-		{
-			initiateRes = true;
-		}
-		else if(checker == "--REMOTE")
-		{
-			initiateRem = true;
-		}
-		else if(checker == "--STEP")
-			step();
 	}
 	if(checker != "--STEP" && checker != "--RESET" && checker != "--REMOTE" && checker != "--CMDLIN" && checker != "--DEBUG" && checker != "--RUN" && checker != "--SAVE" && checker != "--LOAD" && !loadPlease && checker != "--QUIT" && checker != "--STOP")
 	{
@@ -542,6 +551,10 @@ SoarTextIO::PrintOutput()
 	if(toPrint.size()>0)
 	{
 		printNow = false;
+		if(print_hack == 1) {
+			cout << endl << endl << endl << endl << endl << "> ";
+			print_hack = 2;
+		}
 		
 #ifdef _WIN32
 		char buffer[1000];

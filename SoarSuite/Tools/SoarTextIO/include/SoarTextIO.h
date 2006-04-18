@@ -68,6 +68,7 @@ public:
 
 private:
 
+	int print_hack;
 	//******SENTENCE STORAGE******
 	vector<WMEpointer*> sentStore;  //holds identifiers
 
