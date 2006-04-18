@@ -16,9 +16,9 @@ public class AgentDisplay extends Composite {
 	static final int kTableHeight = 120;
 	static final int kNameWidth = 75;
 	static final int kScoreWidth = 55;
-	static final int kMissilesWidth = 48;
-	static final int kHealthWidth = 45;
-	static final int kEnergyWidth = 46;
+	static final int kMissilesWidth = 66;
+	static final int kHealthWidth = 58;
+	static final int kEnergyWidth = 60;
 	
 	Logger m_Logger = Logger.logger;
 	TankSoarSimulation m_Simulation;
