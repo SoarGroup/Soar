@@ -172,7 +172,7 @@ public class EatersWorld extends World implements WorldManager {
 			if (!isEater()) {
 				return false;
 			}
-			m_Modified = true;
+			m_Redraw = true;
 			if (m_Type == kEaterInt) {
 				m_Type = kEmptyInt;
 			}
@@ -198,7 +198,7 @@ public class EatersWorld extends World implements WorldManager {
 		}
 		
 		public Food setEater(Eater eater) {
-			m_Modified = true;
+			m_Redraw = true;
 			Food f = null;
 			if (isFood()) {
 				f = removeFood();
@@ -235,7 +235,7 @@ public class EatersWorld extends World implements WorldManager {
 		
 		public Food removeFood() {
 			if (isFood()) {
-				m_Modified = true;
+				m_Redraw = true;
 				Food f = getFood();
 				if (m_Eater == null) {
 					m_Type = kEmptyInt;
@@ -667,7 +667,7 @@ public class EatersWorld extends World implements WorldManager {
 		// reset modified flags
 		for (int y = 0; y < m_World.length; ++y) {
 			for (int x = 0; x < m_World[y].length; ++x) {
-				m_World[y][x].clearModified();
+				m_World[y][x].clearRedraw();
 				if (m_World[y][x].checkCollision()) {
 					m_World[y][x].setCollision(false);
 				}
