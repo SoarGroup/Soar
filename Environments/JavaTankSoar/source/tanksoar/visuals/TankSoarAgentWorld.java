@@ -21,6 +21,7 @@ public class TankSoarAgentWorld extends VisualWorld implements PaintListener {
 	private static final int kCellSize = 20;
 	private Image[][] m_Radar = new Image[Tank.kRadarWidth][Tank.kRadarHeight];
 	private Color[][] m_Color = new Color[Tank.kRadarWidth][Tank.kRadarHeight];
+	private boolean[][] m_Modified = new boolean[Tank.kRadarWidth][Tank.kRadarHeight];
 
 	public TankSoarAgentWorld(Composite parent, int style, TankSoarSimulation simulation) {
 		super(parent, style, simulation, kCellSize);
@@ -46,6 +47,13 @@ public class TankSoarAgentWorld extends VisualWorld implements PaintListener {
 			for(int y = 0; y < Tank.kRadarHeight; ++y){
 				m_Color[x][y] = null;
 				TankSoarCell cell = radarCells[x][y];
+				
+				if (cell != null && !cell.isModified()) {
+					m_Modified[x][y] = false;
+				} else {
+					m_Modified[x][y] = true;
+				}
+				
 				if (cell == null) {
 					m_Radar[x][y] = kMiniWTF;
 					           
@@ -98,6 +106,12 @@ public class TankSoarAgentWorld extends VisualWorld implements PaintListener {
 					gc.setBackground(m_Color[x][y]);
 					gc.fillOval(m_CellSize*x + m_CellSize/2 - kDotSize/2, m_CellSize*(Tank.kRadarHeight - y - 1) + m_CellSize/2 - kDotSize/2, kDotSize, kDotSize);
 					gc.setBackground(WindowManager.widget_background);
+				}
+				
+				if (m_Modified[x][y]) {
+					gc.setForeground(WindowManager.white);
+					gc.drawOval(m_CellSize*x + m_CellSize/2 - kDotSize/2, m_CellSize*(Tank.kRadarHeight - y - 1) + m_CellSize/2 - kDotSize/2, kDotSize, kDotSize);
+			        gc.setForeground(WindowManager.black);
 				}
 			}
 		}

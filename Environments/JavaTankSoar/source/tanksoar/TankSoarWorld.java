@@ -56,7 +56,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	   			Missile missile = (Missile)iter.next();
 	   			MapPoint location = missile.getCurrentLocation();
 	   			if (getCell(location).isWall()) {
-		   			getCell(location).setModified();
+		   			getCell(location).setRedraw();
 	   				iter.remove();
 	   				continue;
 	   			}
@@ -70,7 +70,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	   			MapPoint location = missile.getCurrentLocation();
 	   			m_RD.calculate(missile.getDirection());
 
-	   			getCell(location).setModified();
+	   			getCell(location).setRedraw();
 	   			location.travel(m_RD.forward);
 	   			
 	   			if (missile.getFlightPhase() == 2) {
@@ -79,7 +79,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	   			// Handle special wall collision here so that missile threatens properly
 	   			// on 3rd flight phase
 	   			if (missile.getFlightPhase() == 2) {
-		   			getCell(location).setModified();
+		   			getCell(location).setRedraw();
 		   			if (getCell(location).isWall()) {
 		   				iter.remove();
 		   				continue;
@@ -474,6 +474,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		// reset modified flags
 		for (int y = 0; y < m_World.length; ++y) {
 			for (int x = 0; x < m_World[y].length; ++x) {
+				m_World[y][x].clearRedraw();
 				m_World[y][x].clearModified();
 				if (m_World[y][x].checkCollision()) {
 					m_World[y][x].setCollision(false);
@@ -639,7 +640,7 @@ public class TankSoarWorld extends World implements WorldManager {
 				}
 				getCell(m_Tanks[i].getLocation()).setTank(m_Tanks[i]);
 			} else if (m_Tanks[i].recentlyRotated()) {
-				getCell(m_Tanks[i].getLocation()).setModified();
+				getCell(m_Tanks[i].getLocation()).setRedraw();
 			}
 		}
 		
