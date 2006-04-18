@@ -26,6 +26,7 @@ public class TankSoarCell extends Cell {
 	protected boolean m_RadarTouch = false;
 	static boolean s_EnergyChargerCreated = false;
 	static boolean s_HealthChargerCreated = false;
+	private boolean m_Modified = false;
 
 	public TankSoarCell(String name) throws Exception {
 		if (name.equalsIgnoreCase(TankSoarWorld.kTypeWall)) {
@@ -92,18 +93,19 @@ public class TankSoarCell extends Cell {
 	}
 	
 	public void setTank(Tank tank) {
-		m_Modified = true;
+		m_Redraw = true;
 		m_Contents = kTankInt;
 		m_Tank = tank;
+		setModified();
 	}
 	
-	void setModified() {
-		m_Modified = true;
+	void setRedraw() {
+		m_Redraw = true;
 	}
 	
 	void setRadarTouch() {
 		m_RadarTouch = true;
-		m_Modified = true;
+		m_Redraw = true;
 	}
 	
 	public Tank getTank() {
@@ -114,9 +116,10 @@ public class TankSoarCell extends Cell {
 		if (m_Contents != kTankInt) {
 			return false;
 		}
-		m_Modified = true;
+		m_Redraw = true;
 		m_Contents = kNothingInt;
 		m_Tank = null;
+		setModified();
 		return true;
 	}
 	
@@ -125,22 +128,25 @@ public class TankSoarCell extends Cell {
 	}
 	
 	void setHealth() {
-		m_Modified = true;
+		m_Redraw = true;
 		m_Type = kHealthInt;
+		setModified();
 	}
 	
 	void setEnergy() {
-		m_Modified = true;
+		m_Redraw = true;
 		m_Type = kEnergyInt;
+		setModified();
 	}
 	
 	void setMissilePack() {
-		m_Modified = true;
+		m_Redraw = true;
 		m_Contents = kMissilePackInt;
+		setModified();
 	}
 	
 	void setExplosion() {
-		m_Modified = true;
+		m_Redraw = true;
 		m_Explosion = true;
 	}
 	
@@ -148,14 +154,26 @@ public class TankSoarCell extends Cell {
 		return m_Explosion;
 	}
 
-	public void clearModified() {
+	public void clearRedraw() {
 		if (m_RadarTouch || m_Explosion) {
-			setModified();
+			setRedraw();
 			m_RadarTouch = false;
 			m_Explosion = false;
 		} else {
-			super.clearModified();
+			super.clearRedraw();
 		}
+	}
+	
+	private void setModified() {
+		m_Modified = true;
+	}
+	
+	public void clearModified() {
+		m_Modified = false;
+	}
+	
+	public boolean isModified() {
+		return m_Modified;
 	}
 }
 
