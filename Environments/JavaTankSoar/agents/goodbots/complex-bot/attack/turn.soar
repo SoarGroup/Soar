@@ -1,0 +1,113 @@
+echo "\nLoading attack/turn.soar "
+
+###Propose Turn Operator
+## If the state is attack and there is a tank on radar that right next
+## to the tank, then propose turning in that direction and firing.
+
+sp {attack*propose*turn
+   (state <s> ^name attack
+              ^io.input-link.radar.tank <tank>)
+  (<tank> ^distance 0
+          ^position { << left right >> <dir> })
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name turn-and-shoot
+        ^actions <a>)
+   (<a> ^rotate.direction <dir>
+        ^fire.weapon missile)}
+
+sp {attack*propose*turn-at-corner
+   (state <s> ^name attack
+              ^io.input-link <input>)
+   (<input> ^radar <r>
+            ^blocked.<dir> yes)
+   (<r> ^tank <t>
+       -^tank.position center)
+   (<t> ^position { << left right >> <dir> }
+        ^distance 1)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name turn-at-corner
+        ^direction <dir>
+        ^actions.rotate.direction <dir>)}
+
+sp {attack*apply*turn-at-corner
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<ts> ^opposite-direction.<d> <od>)
+   (<o> ^name turn-at-corner
+        ^direction <d>)
+   -->
+   (write (crlf) |***Prepare to slide: | <od>)
+   (<ts> ^saved-slide-direction <x>)
+   (<x> ^direction <od>
+        ^distance 1)}
+
+########### Turn sound
+sp {attack*propose*turn-sound*smell
+   (state <s> ^name attack
+              ^io.input-link <il>)
+   (<il> ^smell.distance 1
+         ^sound { << left right >> <dir> }
+        -^radar.tank)
+   -->
+   (write (crlf) |Turn and shoot at sound near me.|)
+   (<s> ^operator <o> + =)
+   (<o> ^name turn
+        ^actions <a>)
+   (<a> ^rotate.direction <dir>
+        ^fire.weapon missile)}
+
+sp {attack*propose*turn-sound*behind*smell
+   (state <s> ^name attack
+              ^io.input-link <il>)
+   (<il> ^smell.distance 1
+         ^sound backward
+        -^radar.tank)
+   -->
+   (write (crlf) |Turn at sound behind me.|)
+   (<s> ^operator <o> + =)
+   (<o> ^name turn
+        ^actions <a>)
+   (<a> ^rotate.direction left)}
+
+
+########### Turn Blind
+sp {attack*propose*turn-blind*smell
+   (state <s> ^name attack
+              ^io.input-link <il>
+              ^superstate <ss>)
+   (<ss> -^square.<odir>.obstacle *yes* 
+          ^direction-map.<dir>.<ndir> <odir>)
+   (<il> ^direction <dir>
+         ^smell.distance 1
+         ^sound silent
+         ^blocked.{ << left right >> <ndir> } yes
+        -^radar.tank)
+   -->
+   (write (crlf) |Turn and shoot at smell right next to me.|)
+   (<s> ^operator <o> + =)
+   (<o> ^name turn
+        ^actions <a>)
+   (<a> ^rotate.direction <ndir>
+        ^fire.weapon missile)}
+
+sp {attack*propose*turn-blind*behind*smell
+   (state <s> ^name attack
+              ^io.input-link <il>
+              ^superstate <ss>)
+   (<ss> -^square.<odir>.obstacle *yes* 
+          ^direction-map.<dir>.backward <odir>)
+   (<il> ^direction <dir>
+         ^smell.distance 1
+         ^sound silent
+         ^blocked.backward yes
+        -^radar.tank)
+   -->
+   (write (crlf) |Turn smell behind me.|)
+   (<s> ^operator <o> + =)
+   (<o> ^name turn
+        ^actions <a>)
+   (<a> ^rotate.direction left)}
+
+

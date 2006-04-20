@@ -1,0 +1,15 @@
+echo "\nLoading explore/elaborations.soar "
+   
+## Elaborate move with radar off if it is on.
+sp {explore*elaborate*move*radar-off
+   :i-support
+   (state <s> ^name explore
+              ^operator <o>
+              ^io.input-link <il>)
+   (<il> ^radar-status on
+         ^radar <r>)
+   (<o> ^name move 
+        ^actions <a>)
+#  -(<r> ^ << energy health missiles tank >> <x>)
+-->
+   (<a> ^radar.switch off)}

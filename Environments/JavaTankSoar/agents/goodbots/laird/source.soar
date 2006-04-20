@@ -1,0 +1,12 @@
+echo "\nLoading laird/source.soar"
+multi-attributes square 100
+
+source elaborations.soar
+source all.soar
+source common.soar
+
+source attack.soar
+source chase.soar
+source retreat.soar
+source wander.soar
+echo "\nFinished loading laird/source.soar"

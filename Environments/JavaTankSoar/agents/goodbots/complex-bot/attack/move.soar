@@ -1,0 +1,63 @@
+echo "\nLoading attack/move.soar "
+
+###Propose Move Operator
+
+## Slide over to atack and fire away - No obstacles
+
+sp {attack*propose*move
+   (state <s> ^name attack
+             -^blocking-obstacle <dir> ;# computed in elaborations.soar
+              ^io.input-link.blocked.<dir> no)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name slide-to-attack
+        ^actions <a>)
+   (<a> ^fire.weapon missile
+        ^move.direction <dir>)}
+
+### Enemy tank is at diagnol - sometimes wait and shoot
+
+sp {attack*propose*stay-put
+   (state <s> ^name attack
+              ^io.input-link <il>)
+   (<il> ^blocked.<dir> no
+         ^blocked.forward no
+         ^missiles <m> 
+         ^radar <r>)
+   (<r> ^tank <t>
+       -^tank.position center)
+   (<t> ^position { << left right >> <dir> }
+        ^distance 1)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name stay-put-fire
+        ^actions.fire.weapon missile)}
+
+## In front, but no place to slide to if he attacks
+## Move forward and shoot
+sp {attack*propose*move*closer
+   (state <s> ^name attack
+              ^opening *yes*
+              ^io.input-link.blocked <b>)
+   (<b> ^left yes 
+        ^right yes
+        ^forward no)
+   -->
+   (<s> ^operator <o> + =, >)   
+   (<o> ^name move-to-opening-fire
+        ^actions <a>)
+   (<a> ^fire.weapon missile
+        ^move.direction forward)}
+
+## If no opening, try moving backward to find opening
+
+sp {attack*propose*move*backward
+   (state <s> ^name attack
+             -^opening *yes*
+              ^io.input-link.blocked.backward no)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name move-backward-fire
+        ^actions <a>)
+   (<a> ^fire.weapon missile
+        ^move.direction backward)}

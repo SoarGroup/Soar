@@ -1,0 +1,26 @@
+#If there is a tie between two move operators
+#propose gathering info about my surroundings
+sp {Impasse__Operator_Tie*propose*propose-gather-info
+   (state <s> ^impasse tie
+              ^superstate.name find-energy
+              ^item <i1>
+              ^item <i2> <> <i1>)
+   (<i1> ^name move)
+   (<i2> ^name move)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name propose-gather-info)
+}
+
+#Gathering info must be done above the tie impasse 
+#so apply this operator by proposing an operator there.
+#(Yes, this is a bit weird.)
+
+sp {apply*propose-gather-info
+   (state <s> ^operator <op>
+              ^superstate <ss>)
+   (<op> ^name propose-gather-info)
+-->
+   (<ss> ^operator <o> +)
+   (<o> ^name gather-info)
+}

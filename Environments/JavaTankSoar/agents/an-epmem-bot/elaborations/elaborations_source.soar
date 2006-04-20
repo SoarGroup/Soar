@@ -1,0 +1,7 @@
+source _all.soar
+source abs-blocked.soar
+source coord.soar
+source monitor.soar
+source output.soar
+source shields.soar
+source top-state.soar

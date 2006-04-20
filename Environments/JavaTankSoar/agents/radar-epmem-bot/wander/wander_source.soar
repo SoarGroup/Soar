@@ -1,0 +1,6 @@
+source elaborations.soar
+source move.soar
+source turn.soar
+pushd turn
+source turn_source.soar
+popd

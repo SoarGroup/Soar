@@ -1,0 +1,12 @@
+echo "\nLoading chase/radar-on.soar "
+
+## If the state is named chase and the radar is off, 
+## propose turning the radar on.
+sp {chase*elaborate*radar-on
+   (state <s> ^name chase
+              ^io.input-link.direction <dir>
+              ^operator <o>)
+   (<o> ^actions.move)
+     -->
+   (<o> ^new-direction <dir>)}
+ 

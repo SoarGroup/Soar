@@ -1,0 +1,17 @@
+#Calculates which absolute directions are blocked.
+sp {elaborate*state*blocked*root
+   (state <s> ^name tanksoar)
+-->
+   (<s> ^blocked <blocked>)
+}
+
+sp {elaborate*state*blocked
+   (state <s> ^name tanksoar
+              ^blocked <abs-block>
+              ^io.input-link.blocked <rel-block>
+              ^coord.<rel-dir> <abs-dir>)
+   (<rel-block> ^<rel-dir> <yes-no>)
+-->
+   (<abs-block> ^<abs-dir> <yes-no>)
+}
+

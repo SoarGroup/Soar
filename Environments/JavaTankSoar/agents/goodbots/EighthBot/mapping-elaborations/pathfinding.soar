@@ -1,0 +1,110 @@
+echo "\nLoading mapping-elaborations/pathfinding"
+
+
+### Set 'found-energy status indicator' when radar detects energy recharger                   
+sp {map*found-energy
+   (state <s> ^name tanksoar
+              ^operator.name
+              ^map <m>
+              ^status <st>)
+   (<m> ^energy)
+  -(<s> ^status.found-energy)
+-->
+   (<st> ^found-energy yes)
+   (write (crlf) |Found Energy!| )
+}
+   
+
+
+### Set 'found-energy status indicator' when radar detects energy recharger                   
+sp {map*found-health
+   (state <s> ^name tanksoar
+              ^operator.name
+              ^map <m>
+              ^status <st>)
+   (<m> ^health)
+  -(<s> ^status.found-health)
+-->
+   (<st> ^found-health yes)
+   (write (crlf) |Found Health!| )
+}
+
+
+
+
+
+## use o-support to marke initial position of energy or health charger, respectively
+sp {map*energy*select*initial-shortest
+   (state <s> ^name tanksoar
+              ^operator.name
+              ^map.square <sq>)
+   (<sq> ^energy yes)
+-->
+   (<sq> ^energy-info <ei>)
+   (<ei> ^distance 0
+         ^direction north)   ## arbitrary-this value is not used
+#  (write (crlf) |Marking initial-shortest energy distance| )
+}
+
+
+
+sp {map*health*select*initial-shortest
+   (state <s> ^name tanksoar
+              ^operator.name
+              ^map.square <sq>)
+   (<sq> ^health yes)
+-->
+   (<sq> ^health-info <ei>)
+   (<ei> ^distance 0
+         ^direction north)   ## arbitrary-this value is not used
+#  (write (crlf) |Marking initial-shortest health distance| )
+}
+
+
+
+
+
+
+
+## mark distance of each square from health charger. This will spread automatically via Breadth First search
+sp {map*energy*mark*distance
+   (state <s> ^name tanksoar
+              ^operator.name
+              ^map.square <sq>
+              ^opposite-direction.<dir> <odir>)
+   (<sq> ^energy-info.distance <d>)
+   (<sq> ^{<< north east south west >>
+              <dir>} <sq2>)
+   (<sq2> ^open yes)
+   -(<sq2> ^energy-info)
+   (<sq2> ^x <x> ^y <y>)
+-->
+   (<sq2> ^energy-info <ei>)
+   (<ei> ^distance (+ 1 <d>)
+             ^direction <odir>)
+#  (write (crlf) |Marking square | <x> |,| <y> | (energy) | ) 
+}
+
+
+sp {map*health*mark*distance
+   (state <s> ^name tanksoar
+              ^operator.name
+              ^map.square <sq>
+              ^opposite-direction.<dir> <odir>)
+   (<sq> ^health-info.distance <d>)
+   (<sq> ^{<< north east south west >>
+              <dir>} <sq2>)
+   (<sq2> ^open yes)
+   -(<sq2> ^health-info)
+   (<sq2> ^x <x> ^y <y>)
+-->
+   (<sq2> ^health-info <ei>)
+   (<ei> ^distance (+ 1 <d>)
+         ^direction <odir>)
+#  (write (crlf) |Marking square | <x> |,| <y> | (health) | ) 
+}
+
+
+
+
+

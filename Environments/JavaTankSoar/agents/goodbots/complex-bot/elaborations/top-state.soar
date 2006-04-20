@@ -1,0 +1,9 @@
+sp {elaborate*task*tanksoar
+   (state <s> ^superstate nil)
+   -->
+   (<s> ^name tanksoar)}
+
+sp {elaborate*top-state*top-state
+  (state <s> ^name tanksoar)
+-->
+  (<s> ^top-state <s>)}

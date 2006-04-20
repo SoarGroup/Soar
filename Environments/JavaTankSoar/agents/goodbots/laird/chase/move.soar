@@ -1,0 +1,74 @@
+echo "\nLoading chase/move.soar "
+################################
+### Propose Move-forward operator if sound is forward
+################################
+
+sp {chase*propose*move
+   (state <s> ^name chase
+             -^really-need-energy *yes*
+              ^sound.direction forward
+              ^io.input-link.blocked.forward no)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name chase-forward
+        ^actions.move.direction forward)}
+
+sp {chase*propose*move*forward*blind*attack
+   (state <s> ^name chase
+              ^sound.direction forward
+             -^idirection << forward backward >>
+              ^io.input-link <il>)
+   (<il> ^blocked <b>
+         ^energy < 40)
+   (<b> ^forward no)       
+   -->
+   (<s> ^operator <o> + =, >)
+   (<o> ^name chase-forward-attack-dieing
+        ^actions <a>)
+   (<a> ^move.direction forward
+        ^fire.weapon missile)}
+
+sp {chase*propose*move*forward*rwaves
+   (state <s> ^name chase
+             -^really-need-energy *yes*
+              ^io.input-link <il>)
+   (<il> ^blocked.forward no
+         ^rwaves.forward yes)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name chase-forward-rwaves
+        ^actions.move.direction forward)}
+
+sp {chase*propose*move*rwaves*sideways*some
+   (state <s> ^name chase
+             -^really-need-energy *yes*
+              ^io.input-link <il>)
+   (<il> ^blocked <b>
+         ^rwaves.forward yes)
+   (<b> ^forward yes
+        ^{<< left right >> <dir> } no)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name chase-sideways-rwaves
+        ^actions <a>)
+   (<a> ^move.direction <dir>
+        ^fire.weapon missile)}
+
+
+######SOMETIMES MOVES RIGHT INTO ATTACK
+
+
+#sp {all*propose*slide-away
+#   (state <s> ^name << chase wander >>
+#              ^direction <dir>
+#              ^side-direction.<dir> <ndir>
+#	     -^direction <ndir>
+#	      ^io.input-link
+#             -^tank-detected yes
+#              ^io.input-link.blocked <b>)
+#    (<b> ^<ndir> no
+#         ^<dir> yes)
+#   -->
+#   (<s> ^operator <o> + =)
+#   (<o> ^name slide-away-from-attack
+#        ^actions.move.direction <ndir>)}

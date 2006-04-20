@@ -1,0 +1,81 @@
+echo "\nLoading wander/turn.soar "
+
+################################
+### Propose Turn operator if blocked
+################################
+
+#Modified by :AMN:
+#This rule has been modified in these ways:
+#1. The hard-coded radar-power.setting 13 has been removed.
+#   Instead the setting is made via episodic memory.
+#2. The actions are now proto-actions to delay
+#   the apply of this rule while the power-setting
+#   is calculated in a subgoal. 
+#  (See wander*elaborate*proto-actions-to-actions)
+#
+sp {wander*propose*turn
+   (state <s> ^name wander
+              ^io.input-link.blocked <b>)
+   (<b> ^forward yes
+        ^ { << left right >> <dir> } no)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name turn 
+        ^proto-actions <pa>)
+   (<pa> ^rotate.direction <dir>
+         ^radar.switch on)}
+
+sp {wander*propose*turn*backward
+   (state <s> ^name wander
+              ^io.input-link.blocked <b>)
+   (<b> ^forward yes ^left yes ^right yes)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name turn 
+        ^actions.rotate.direction left)}
+
+
+##Uncomment to disable epmem use and always use power setting 13
+sp {turn*elaborate*power-setting-noepmem
+   (state <s> ^name wander
+              ^operator <o> +)
+   (<o> ^name turn
+        ^proto-actions <pa>)
+-->
+   (<pa> ^radar-power.setting 13)
+   (write (crlf) |Radar power setting HARDCODED to 13| (crlf))
+}
+
+
+
+#Added by :AMN:
+#This rule recognizes that a turn operator with
+#proto-actions is complete and converts the proto-actions
+#to actions.
+sp {wander*elaborate*proto-actions-to-actions
+   (state <s> ^name wander
+              ^operator <o>)
+   (<o> ^name turn
+        ^proto-actions <pa>)
+   (<pa> ^rotate.direction <dir>
+         ^radar.switch on
+         ^radar-power.setting {<setting> <> 13})
+-->
+   (<o> ^actions <pa>)
+   (write (crlf) |CHUNK!|)
+}
+
+#This rule is the same as above but recognizes the default
+#value and prevents chunking
+sp {wander*elaborate*proto-actions-to-actions*quiescence
+   (state <s> ^name wander
+              ^operator <o>
+              ^quiescence t)
+   (<o> ^name turn
+        ^proto-actions <pa>)
+   (<pa> ^rotate.direction <dir>
+         ^radar.switch on
+         ^radar-power.setting 13)
+-->
+   (<o> ^actions <pa>)
+}

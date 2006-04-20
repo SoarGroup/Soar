@@ -1,0 +1,15 @@
+
+
+## MOVE TO RESOURCE
+
+sp {wander*propose*move-memory*left-right*missile
+   (state <s> ^name wander
+              ^top-state <ts>)
+   (<ts> ^square.<odir>.missiles *yes* 
+         ^direction-map.<dir>.<ndir> <odir>
+        -^charger-ready *yes*
+         ^io.input-link.direction <dir>)
+-->
+   (<s> ^operator <o> + =, >)
+   (<o> ^name move-to-missiles
+        ^actions.move.direction <ndir>)}

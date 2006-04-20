@@ -1,0 +1,6 @@
+source directions.soar
+source map-init.soar
+source mapping.soar
+source missile-pathing.soar
+source pathfinding.soar
+source radar-map.soar

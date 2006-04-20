@@ -1,0 +1,7 @@
+echo "\nLoading common/source.soar"
+
+source elaborations.soar
+source monitor.soar
+
+echo "\nFinished loading common/source.soar"
+

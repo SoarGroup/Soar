@@ -1,0 +1,63 @@
+echo "\nLoading all/map-health.soar"
+
+
+sp {map*health*init
+   (state <s> ^map.square <sq>)
+   (<sq> ^health *yes*)
+   -->
+   (<s> ^found-health *yes*)
+   (<sq> ^health-info <ed>)
+   (<ed> ^distance 0)}
+
+sp {map*health*init*health-temp-info
+   (state <s> ^map.square <sq>)
+   (<sq> ^open *yes*)
+   -->
+   (<sq> ^health-info <ei>
+         ^health-temp-info.direction north
+         ^health-temp-info.direction south
+         ^health-temp-info.direction east
+         ^health-temp-info.direction west)}
+
+sp {map*health*spread*init
+   (state <s> ^map.square <sq>)
+   (<sq> ^ {<< north south east west >> <dir>} <sq2>
+         ^health-temp-info <eti>)
+   (<eti> ^direction <dir>
+         -^distance < <dir>)
+   (<sq2> ^health-info.distance <d>)
+   -->
+   (<eti> ^distance (+ <d> 1))}
+
+sp {map*health*select*shortest
+   (state <s> ^map.square <sq>)
+   (<sq> ^health-temp-info <eti>
+         ^health-info <ei>)
+   (<eti> ^direction <dir>
+          ^distance <d>)
+  -(<sq> ^health-temp-info.distance < <d>)
+   -->
+   (<ei> ^direction <dir>
+         ^distance <d>)}
+
+######### CHANGES TO WANDER
+
+sp {map*return-for-health
+   (state <s> ^found-health *yes*
+             -^need-energy *yes*
+              ^square.health-info.direction
+             -^io.input-link.health > 700)
+   -->
+   (<s> ^need-health *yes*)}
+
+sp {wander*propose*move*health
+   (state <s> ^name wander
+              ^need-health *yes*
+              ^square.health-info.direction <ndir>
+              ^dir.<dir>.<tdir> <ndir>
+             -^io.input-link.healthrecharger yes
+              ^io.input-link.direction <dir>)
+-->
+   (<s> ^operator <o> + =, >, <)
+   (<o> ^name move-for-health 
+        ^actions.move.direction <tdir>)}

@@ -1,0 +1,65 @@
+echo "\nLoading common/elaborations.soar"
+
+alias pref preferences
+
+### Helps in reorder production conditions
+multi-attributes tank 5
+
+sp {apply*operator*create-action-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^actions <act>)
+   (<act> ^<att> <value>)
+   (<value> ^{ <> status <att2> } <value2>)
+ -{(<ol> ^<att> <value>)
+  -(<value> ^status complete)}
+-->
+   (<ol> ^<att> <value>)
+   (<value> ^<att2> <value2>)}
+
+sp {apply*operator*remove-command
+   (state <s> ^operator
+              ^io.output-link <ol>)
+   (<ol> ^<att> <value>)
+   (<value> ^status complete)
+-->
+   (<ol> ^<att> <value> -)}
+
+sp {apply*operator*remove-command*duplicate*radar
+   (state <s> ^operator
+              ^io.output-link <ol>)
+   (<ol> ^radar <value> {<> <value> <value2> })
+   (<value> ^status complete
+            ^switch on)
+   (<value2> ^switch on)
+-->
+   (<ol> ^radar <value2> -)}
+
+sp {apply*operator*remove-command*duplicate*radar-power
+   (state <s> ^operator
+              ^io.output-link <ol>)
+   (<ol> ^radar-power <value> {<> <value> <value2> })
+   (<value> ^status complete
+            ^setting)
+   (<value2> ^setting)
+-->
+   (<ol> ^radar-power <value2> -)}
+
+
+sp {apply*operator*remove-empty-command
+   (state <s> ^operator
+              ^io.output-link <ol>)
+   (<ol> ^<att> <value>)
+  -(<value> ^<att2>)
+-->
+   (<ol> ^<att> <value> -)}
+
+sp {elaborate*state*io
+   (state <s> ^superstate.io <io>)
+-->
+   (<s> ^io <io>)}
+
+sp {elaborate*state*operator*name
+   (state <s> ^superstate.operator.name <name>)
+-->
+   (<s> ^name <name>)}

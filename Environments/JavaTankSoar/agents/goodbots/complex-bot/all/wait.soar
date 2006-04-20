@@ -1,0 +1,29 @@
+echo "\nLoading all/wait.soar"
+
+#### Put in a wait for a state-no-change
+
+sp {top-ps*propose*wait
+   (state <s> ^attribute state
+              ^choices none
+             -^operator.name wait)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name wait)}
+
+### This avoids a operator no-change after wait is selected
+### I've included it just to keep the trace simple
+
+sp {top-ps*apply*wait*random
+   (state <s> ^operator <o>)
+   (<o> ^name wait)
+-->
+   (<o> ^random elaboration)}
+
+sp {top-ps*select*operator*impasse*tie*break
+   (state <s> ^attribute operator
+              ^impasse tie
+              ^item <o> 
+              ^superstate <ss>)
+-->
+   (write (crlf) | Make tied operators indifferent.|)
+   (<ss> ^operator <o> =)}

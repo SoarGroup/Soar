@@ -1,0 +1,120 @@
+echo "\nLoading mapping-elaborations/missile-pathing"
+
+
+#
+#
+#### Set 'found-energy status indicator' when radar detects energy recharger
+#sp {map*found-missiles
+##:o-support
+#   (state <s> ^name tanksoar
+##              ^operator.name
+#             -^map.square.missiles no
+#              ^status <st>)
+#-->
+#   (<st> ^found-missiles yes)
+#   (write (crlf) |Found Missiles!| )
+#}
+#
+#
+#sp {missile-pathing*select*initial-shortest
+#:o-support
+#   (state <s> ^name missile-pathing
+#              ^map.square <sq>)
+#   (<sq>  ^missiles yes)
+#  -(<sq>  ^missile-info)
+#-->
+#   (<sq> ^missiles-info <ei>)
+#   (<ei> ^distance 0
+#         ^direction north)   ## arbitrary-this value is not used
+#  (write (crlf) |Marking initial-shortest missile distance| )
+#}
+#
+#
+#
+#
+#sp {missile-pathing*mark*distance
+#:o-support
+#   (state <s> ^name missile-pathing
+#              ^map.square <sq>
+#              ^opposite-direction.<dir> <odir>)
+#   (<sq> ^missiles-info.distance <d>)
+#   (<sq> ^{<< north east south west >>
+#              <dir>} <sq2>)
+#   (<sq2> ^open yes)
+#   -(<sq2> ^missiles-info)
+#   (<sq2> ^x <x> ^y <y>)
+#-->
+#   (<sq2> ^missiles-info <ei>)
+#   (<ei> ^distance (+ 1 <d>)
+#         ^direction <odir>)
+#  (write (crlf) |Marking square | <x> |,| <y> | (missiles) |)
+#}
+#
+#
+#
+#
+#
+#
+
+
+
+
+
+
+
+
+
+
+
+
+#####################################   OLD RULES
+
+
+
+### Set 'found-energy status indicator' when radar detects energy recharger                   
+sp {map*found-missiles
+#:o-support
+   (state <s> ^name tanksoar
+#              ^operator.name
+             -^map.square.missiles no
+              ^status <st>)
+-->
+   (<st> ^found-missiles yes)
+   (write (crlf) |Found Missiles!| )
+}
+
+
+sp {map*missiles*select*initial-shortest
+:o-support
+   (state <s> ^name recharge-missiles
+              ^status.need-missiles yes
+              ^map.square <sq>)
+   (<sq>  ^missiles yes)
+  #(<sq>  ^missile-info)
+-->
+   (<sq> ^missiles-info <ei>)
+   (<ei> ^distance 0
+         ^direction north)   ## arbitrary-this value is not used
+#  (write (crlf) |Marking initial-shortest missile distance| )
+}
+
+
+
+
+sp {map*missiles*mark*distance
+:o-support
+   (state <s> ^name recharge-missiles
+              ^map.square <sq>
+              ^opposite-direction.<dir> <odir>)
+   (<sq> ^missiles-info.distance <d>)
+   (<sq> ^{<< north east south west >>
+              <dir>} <sq2>)
+   (<sq2> ^open yes)
+   -(<sq2> ^missiles-info)
+   (<sq2> ^x <x> ^y <y>)
+-->
+   (<sq2> ^missiles-info <ei>)
+   (<ei> ^distance (+ 1 <d>)
+         ^direction <odir>)
+#  (write (crlf) |Marking square | <x> |,| <y> | (missiles) | ) 
+}

@@ -1,0 +1,59 @@
+sp {set-radar-power*elaborate*substate
+   (state <s> ^name turn
+              ^superstate.operator <so>
+              ^top-state.coord.<dir> <abs-dir>)
+   (<so> ^name turn
+         ^proto-actions.rotate.direction <dir>)
+-->
+   (<s> ^turn-direction <dir>
+        ^destination-abs-dir <abs-dir>)
+}
+
+
+#If the retrieved memory is a match to the current
+#(in terms of x, y and direction) then use the
+#radar distance to calculate the proper radar power
+#and place that value on the substate
+#NOTE:  This rule actually matches on the substate
+sp {turn*elaborate*power-setting
+   (state <s> ^name turn
+              ^io.input-link <il>
+              ^destination-abs-dir <abs-dir>
+              ^epmem.retrieved.io.input-link <r-il>)
+   (<il> ^x <x>
+         ^y <y>)
+   (<r-il> 
+#         ^x <x>
+#         ^y <y>
+#         ^direction <abs-dir>
+#         ^radar-setting 13
+         ^radar-distance { <dist> < 13 }
+                           )
+-->
+   (<s> ^radar-setting <dist>)
+   (write (crlf) |Radar power setting calculated | <dist> (crlf))
+}
+
+
+
+##For Debugging...
+#sp {turn*print*memory
+#   (state <s> ^name turn
+#              ^io.input-link <il>
+#              ^destination-abs-dir <abs-dir>
+#              ^epmem.retrieved.io.input-link <r-il>)
+#   (<il> ^x <x>
+#         ^y <y>)
+#   (<r-il> ^x <mem-x>
+#           ^y <mem-y>
+#           ^direction <mem-abs-dir>
+#           ^radar-setting <mem-setting>
+#           ^radar-distance <mem-dist>)
+#-->
+#   (<s> ^x <x>)
+#   (write (crlf) |Requested epmem of facing | <abs-dir> | at position | <x> |,| <y>)
+#   (write (crlf) |Received epmem of facing | <mem-abs-dir> | at position | <mem-x> |,| <mem-y>)
+#   (write (crlf) |     with setting | <mem-setting> | and distance | <mem-dist> |.| (crlf))
+#}
+#
+#

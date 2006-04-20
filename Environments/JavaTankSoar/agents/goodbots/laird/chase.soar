@@ -1,0 +1,33 @@
+echo "\nLoading destroyer/chase.soar"
+
+################################
+### Propose chase operator
+################################
+sp {propose*chase*sound
+   (state <s> ^name tanksoar
+              ^sound
+             -^tank-detected yes
+             -^missile-number none)
+   -->
+   (<s> ^name chase)}
+
+sp {propose*chase*rwaves
+   (state <s> ^name tanksoar
+              ^radiated yes
+             -^tank-detected yes
+             -^missile-number none)
+   -->
+   (<s> ^name chase)}
+
+sp {propose*chase*incoming
+   (state <s> ^name tanksoar
+              ^under-attack yes
+             -^tank-detected yes
+             -^missile-number none)
+   -->
+   (<s> ^name chase)}
+
+pushd "chase"
+source "source.soar"
+popd
+

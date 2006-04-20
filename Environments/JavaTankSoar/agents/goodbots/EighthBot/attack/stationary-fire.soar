@@ -1,0 +1,11 @@
+echo "\nLoading attack/stationary-fire.soar"
+
+
+
+sp {propose*attack*stationary-fire*fire-missile
+   (state <s> ^name attack*stationary-fire)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name fire-missile
+        ^actions.fire.weapon missile)
+}

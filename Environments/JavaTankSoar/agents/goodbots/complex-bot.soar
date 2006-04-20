@@ -1,0 +1,3 @@
+pushd complex-bot
+source complex-bot_source.soar
+popd

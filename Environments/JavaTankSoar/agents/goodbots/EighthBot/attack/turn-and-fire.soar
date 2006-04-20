@@ -1,0 +1,14 @@
+echo "\nLoading attack/turn.soar"
+
+## turn and shoot if enemy is directly to the left or right
+sp {attack*propose*turn-and-fire
+   (state <s> ^name attack
+              ^status.enemy-sighted <es>)
+   (<es> ^direction { << left right >> <dir> }
+         ^position center)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name turn
+        ^actions <a>)
+   (<a> ^rotate.direction <dir>
+        ^fire.weapon missile)}

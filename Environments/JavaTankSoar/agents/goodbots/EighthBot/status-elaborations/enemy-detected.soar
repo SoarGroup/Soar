@@ -1,0 +1,30 @@
+echo "\nLoading status-elaborations/enemy-detected.soar"
+
+
+# Enemy is detected if sound is heard
+sp {elaborate*status*enemy-detected*sound
+   (state <s> ^name tanksoar
+              ^status <st>
+              ^sound)
+-->
+   (<st> ^enemy-detected yes)
+}
+
+
+
+
+
+
+# enemy is detected if "status.in-danger == yes" 
+# (enemy must be nearby if tank is in danger. This allows
+# in-danger rules to be re-used
+sp {elaborate*status*enemy-detected*if-in-danger
+   (state <s> ^name tanksoar
+              ^status <st>)
+   (<st> ^in-danger yes)
+-->
+   (<st> ^enemy-detected yes)
+}
+
+
+

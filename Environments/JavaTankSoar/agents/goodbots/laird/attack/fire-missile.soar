@@ -1,0 +1,32 @@
+echo "\nLoading attack/fire-missile.soar "
+
+###Propose Fire Operator
+##  If the state is attack and there is a tank on radar in the center,
+##  then propose the fire missile operator. 
+
+sp {attack*propose*fire-missile
+   (state <s> ^name attack
+              ^io.input-link <il>)
+   (<il> ^radar.tank.position center
+         ^missiles { > 0 <m> })
+   -->
+   (<s> ^operator <o> + =, >)
+   (<o> ^name fire-missile
+        ^actions.fire.weapon missile)}
+
+sp {attack*propose*fire-missile*blind
+   (state <s> ^name attack
+              ^io.input-link <il>
+              ^square.<odir>.open *yes* 
+              ^dir.<dir>.forward <odir>)
+   (<il> ^direction <dir>
+         ^smell.distance 1
+         ^blocked.forward yes
+        -^radar.tank
+         ^missiles { > 0 <m> })
+   -->
+   (write (crlf) |Shoot in front at enemy - blocked in open space.|)
+   (<s> ^operator <o> + =, >)
+   (<o> ^name fire-missile
+        ^actions.fire.weapon missile)}
+

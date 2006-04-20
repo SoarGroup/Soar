@@ -1,0 +1,23 @@
+sp {evaluate-move*propose*turn-on-radar
+   (state <s> ^name evaluate-move
+              ^io.input-link.radar-status off)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name turn-on-radar
+         ^actions <a>)
+   (<a> ^radar.switch on
+        ^radar-power.setting 13)
+   
+}
+
+sp {evaluate-move*compare*turn-on-radar
+   (state <s> ^name evaluate-move
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name turn-on-radar)
+   (<op2> ^name << epmem-recall epmem-recall-next >>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+

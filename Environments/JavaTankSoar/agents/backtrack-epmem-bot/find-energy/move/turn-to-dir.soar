@@ -1,0 +1,21 @@
+sp {move*propose*turn-to-direction*left-right
+   (state <s> ^name move
+              ^direction <abs-dir>
+              ^top-state.coord.<abs-dir> { <rel-dir> << left right >> })
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name turn-to-direction
+         ^actions.rotate.direction <rel-dir>)
+}
+
+sp {move*propose*turn-to-direction*backward
+   (state <s> ^name move
+              ^direction <abs-dir>
+              ^top-state.coord.<abs-dir> backward)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name turn-to-direction
+         ^actions.rotate.direction left)
+}
+
+

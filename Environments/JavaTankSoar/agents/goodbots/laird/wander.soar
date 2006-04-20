@@ -1,0 +1,22 @@
+echo "\nLoading destroyer/wander.soar"
+
+################################
+### Propose wander operator
+################################
+
+sp {propose*wander
+   (state <s> ^name tanksoar
+             -^sound
+             -^under-attack
+             -^tank-detected yes
+             -^saved-slide-direction
+              ^io.input-link <io>)
+   (<io> -^rwaves.<dir> yes)
+-->
+   (<s> ^name wander)
+}
+
+pushd "wander"
+source "source.soar"
+popd
+

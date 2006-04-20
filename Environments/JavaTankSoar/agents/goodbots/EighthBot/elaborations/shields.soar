@@ -1,0 +1,47 @@
+echo "\nLoading elaborations/shields.soar "
+
+
+###########################################################
+### Shield Rule #1 - turn on if missile is incoming
+###########################################################
+sp {elaborate*shields-on*incoming
+   (state <s> ^operator.actions <a>
+              ^io.input-link <il>)
+   (<il> ^incoming.<dir> yes
+         ^shield-status off)
+   -->
+   (<a> ^shields.switch on)
+   (write (crlf) |shield-incoming|)
+}
+
+
+###########################################################
+# Shield Rule #2 - Turn on if enemy is 1 square away (close range)
+###########################################################
+## turn on shields if next to enemy
+ sp {elaborate*shields-on*next-to-enemy
+ (state <s> -^name explore  ## fixes weird bug
+             ^operator.actions <a>
+             ^io.input-link <il>
+             ^status.enemy-sighted.distance 1)
+   (<il> ^shield-status off)
+   -->
+   (<a> ^shields.switch on)
+   (write (crlf) |shield-next-to-enemy|)
+}
+
+###########################################################
+### Shield Rule #3 - turn OFF if no incoming missiles and/or enemy > 1 square away
+###########################################################
+sp {elaborate*shields-off
+   (state <s> ^operator.actions <a>
+              ^io.input-link <il>
+             -^status.enemy-sighted.distance 1)  ## keep on if next to enemy
+   (<il> -^incoming.<dir> yes)
+  #        ^shield-status on)
+   --> 
+   (<a> ^shields.switch off)
+}
+
+
+

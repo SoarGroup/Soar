@@ -1,0 +1,28 @@
+echo "\nLoading complex/chase.soar"
+
+################################
+### Propose chase operator
+################################
+sp {propose*chase
+   (state <s> ^name tanksoar
+              ^sound
+              ^chaseable *yes*)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name chase)}
+
+sp {propose*chase*rwaves
+   (state <s> ^name tanksoar
+              ^radiated *yes*
+              ^chaseable *yes*)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name chase)}
+
+sp {propose*chase*incoming
+   (state <s> ^name tanksoar
+              ^idirection
+              ^chaseable *yes*)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name chase)}

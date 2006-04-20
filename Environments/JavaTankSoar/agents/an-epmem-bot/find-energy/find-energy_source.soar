@@ -1,0 +1,14 @@
+source elaborations.soar
+source Impasse__Operator_Tie.soar
+pushd Impasse__Operator_Tie
+source Impasse__Operator_Tie_source.soar
+popd
+source gather-info.soar
+pushd gather-info
+source gather-info_source.soar
+popd
+source move.soar
+pushd move
+source move_source.soar
+popd
+source remove-stale-evaluation.soar

@@ -1,0 +1,126 @@
+echo "\nLoading wander/move.soar "
+################################
+### Propose Move-forward operator if front is not blocked
+################################
+
+sp {wander*propose*move
+   (state <s> ^name wander
+             -^charger-ready yes
+              ^io.input-link.blocked.forward no)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name move
+        ^actions.move.direction forward)}
+
+sp {wander*propose*slide
+   (state <s> ^name wander
+              ^slide-object <so>
+             -^square.<ld>.missiles *yes*
+             -^square.<ld>.<sdir>.obstacle *yes*
+              ^io.input-link <il>
+              ^dir.<ld>.<tdir> <sdir>
+             -^charger-ready yes)
+   (<so> ^slide-direction <sdir>
+         ^look-direction <ld>)
+   (<il> ^direction <ld>
+         ^blocked.<tdir> no)
+-->
+   (<s> ^operator <o> + =, >)
+   (<o> ^name slide-over-with-radar
+        ^new-direction <ld>
+        ^actions.move.direction <tdir>)}
+
+sp {wander*apply*slide-over-with-radar*shoot
+   (state <s> ^name wander
+              ^missile-number mongo
+              ^slide-object <so>
+              ^square.<sdir>.radar-distances.<ld> <d>
+              ^io.input-link.smell.distance <= <d>
+              ^operator <o>)
+   (<so> ^slide-direction <sdir>
+         ^look-direction <ld>)
+   (<o> ^name slide-over-with-radar
+        ^actions <a>)
+   -->
+   (write (crlf) |Shoot on chance - smell.|)
+   (<a> ^fire.weapon missile)}
+
+sp {wander*apply*move
+   (state <s> ^name wander
+              ^io.input-link.direction <dir>
+              ^dir.<dir>.<tdir> <ndir>
+             -^move-direction <ndir>
+              ^operator <o>)
+   (<o> ^actions.move.direction <tdir>)
+   -->
+   (<s> ^move-direction <ndir>)}
+
+sp {wander*apply*move*remove
+   (state <s> ^name wander
+              ^move-direction { <> <ndir> <odir> }
+              ^io.input-link.direction <dir>
+              ^dir.<dir>.<tdir> <ndir>
+              ^operator <o>)
+   (<o> ^actions.move.direction <tdir>)
+   -->
+   (<s> ^move-direction <odir> -)}
+
+sp {wander*propose*move-memory*left-right*missile
+   (state <s> ^name wander
+              ^square.<odir>.missiles *yes* 
+              ^dir.<dir>.<ndir> <odir>
+             -^charger-ready yes
+              ^io.input-link.direction <dir>)
+-->
+   (<s> ^operator <o> + =, >)
+   (<o> ^name move-to-missiles
+        ^actions.move.direction <ndir>)}
+
+sp {wander*propose*move-memory*left-right*energy
+   (state <s> ^name wander
+              ^square.<odir>.missiles *yes* 
+              ^dir.<dir>.<ndir> <odir>
+             -^charger-ready yes
+              ^io.input-link.direction <dir>
+              ^io.input-link.energy < 950)
+-->
+   (<s> ^operator <o> + =, >)
+   (<o> ^name move-to-energy
+        ^actions.move.direction <ndir>)}
+
+sp {wander*propose*move-memory*left-right*health
+   (state <s> ^name wander
+              ^square.<odir>.missiles *yes* 
+              ^dir.<dir>.<ndir> <odir>
+             -^charger-ready yes
+              ^io.input-link.direction <dir>
+              ^io.input-link.health < 950)
+-->
+   (<s> ^operator <o> + =, >)
+   (<o> ^name move-to-health
+        ^actions.move.direction <ndir>)}
+
+######### GIVE UP ON STANDARD SEARCH TECHNIQUE SO REMOVE
+#########  DATA STRUCTURES
+##
+##sp {wander*apply*move-to-missiles*remove*move-direction
+##   (state <s> ^name wander
+##              ^move-direction <md>
+##              ^operator <o>)
+##   (<o> ^name << move-to-missiles move-to-energy move-to-health >>)
+##-->
+##   (<s> ^move-direction <md> -)}
+
+########## Randomly move forward during wander if not found energy
+
+sp {wander*propose*move*no-slide
+   (state <s> ^name wander
+             -^need-energy *yes*
+             -^need-health *yes*
+              ^io.input-link.blocked.forward no)
+  -{(<s> ^operator <o1> +)
+    (<o1> ^name turn-toward-hall)}
+-->
+   (<s> ^operator <o> + =, >)
+   (<o> ^name move-forward
+        ^actions.move.direction forward)}

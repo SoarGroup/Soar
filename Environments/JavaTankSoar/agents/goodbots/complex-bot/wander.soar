@@ -1,0 +1,38 @@
+#echo "\nLoading complex/wander.soar"
+
+################################
+### Propose wander operator
+################################
+
+sp {propose*wander
+   (state <s> ^name tanksoar
+             -^sound
+             -^tank-detected *yes*
+             -^saved-slide-direction
+             -^radiated *yes*)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name wander)}
+
+sp {propose*wander*need-energy
+   (state <s> ^name tanksoar
+              ^really-need-energy *yes*
+             -^tank-detected *yes*)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name wander)
+}
+
+sp {apply*wander*remove*save-slide-direction
+   (state <s> ^name wander
+              ^operator.name wander
+              ^saved-slide-direction <x>)
+   -->
+   (<s> ^saved-slide-direction <x> -)}  
+
+sp {wander*apply*remove*turned-at
+   (state <s> ^operator.name wander
+              ^turned-at <sq>
+              ^square <> <sq>)
+   -->
+   (<s> ^turned-at <sq> -)}

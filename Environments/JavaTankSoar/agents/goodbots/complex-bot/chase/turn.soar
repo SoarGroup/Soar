@@ -1,0 +1,62 @@
+echo "\nLoading chase/turn.soar "
+
+################################
+### Propose Turn operator if sound is not from front
+################################
+sp {chase*propose*turn*sound
+   (state <s> ^name chase
+              ^io.input-link.direction <d>
+              ^sound-direction {<< left right >> <direction>})
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name chase-turn-sound
+        ^actions.rotate.direction <direction>)}
+
+################################
+### Propose Turn operator if sound is from the back
+################################
+sp {chase*propose*turn*sound*backward
+   (state <s> ^name chase
+              ^io.input-link.direction <d>
+              ^sound-direction backward)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name chase-turn-sound-backward
+        ^actions.rotate.direction left)}
+
+######RWAVES
+
+
+################################
+### Propose Turn operator if rwaves is not from front
+################################
+sp {chase*propose*turn*rwaves
+   (state <s> ^name chase
+              ^io.input-link.rwaves. {<< left right >> <direction>} yes)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name chase-turn-rwaves
+        ^actions.rotate.direction <direction>)}
+
+################################
+### Propose Turn operator if rwaves is from the back
+################################
+sp {chase*propose*turn*rwaves*backward
+   (state <s> ^name chase
+              ^io.input-link.rwaves.backward yes)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name chase-turn-backward-rwaves
+        ^actions.rotate.direction left)}
+
+##############SHOOT
+
+sp {chase*apply*turn*shoot
+   :i-support
+   (state <s> ^operator <o> +
+              ^io.input-link.smell.distance < 5
+              ^top-state.missile-number lots)
+   (<o> ^name << chase-turn-sound chase-turn-rwaves >>)
+   -->
+   (<o> ^actions.fire.weapon missile)}
+
