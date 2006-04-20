@@ -420,6 +420,7 @@ AC_OUTPUT([
 	Tools/TestCLI/Makefile
 	Tools/TestClientSML/Makefile
 	Tools/TestConnectionSML/Makefile
+	Tools/TestMultiAgent/Makefile
 	Tools/TestSMLEvents/Makefile
 	Tools/TestSoarPerformance/Makefile
 	])
