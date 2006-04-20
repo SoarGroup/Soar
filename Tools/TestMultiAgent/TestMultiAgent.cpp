@@ -55,6 +55,11 @@ void SLEEP(long secs, long msecs)
 #include <fstream>
 #include <string>
 
+#ifndef _WIN32
+// BADBAD: should be using autoconf tools here!
+#define stricmp strcasecmp
+#endif
+
 using namespace sml ;
 
 using std::cout;
