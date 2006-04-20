@@ -184,9 +184,9 @@ public class EatersWindowManager extends WindowManager implements SimulationList
 			
 		case SimulationListener.kResetEvent:
 			updateWorldGroup();
+			EatersVisualWorld.remapFoodColors(m_Simulation.getEatersWorld().getFood());
 			m_VisualWorld.setRepaint();
 			m_VisualWorld.redraw();
-			EatersVisualWorld.remapFoodColors(m_Simulation.getEatersWorld().getFood());
 			updateFoodAndScoreCount();
 			m_SimButtons.updateButtons();
 			m_AgentDisplay.worldChangeEvent();

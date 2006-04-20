@@ -149,12 +149,13 @@ namespace gSKI
      ===============================
    */
 
-   IWorkingMemory* OutputLink::GetOutputMemory(Error* error)
-   {
-      ClearError(error);
-
-      return &m_memory;
-   }
+   // Inlined into header based on profiling data
+   //IWorkingMemory* OutputLink::GetOutputMemory(Error* error)
+   //{
+   //   ClearError(error);
+   //
+   //   return &m_memory;
+   //}
 
    /*
      ===============================

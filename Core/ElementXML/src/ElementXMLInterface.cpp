@@ -36,7 +36,7 @@ static std::string s_LastParseErrorMessage ;
 
 using namespace sml ;
 
-inline ElementXMLImpl* GetElementFromHandle(ElementXML_Handle hXML)
+inline static ElementXMLImpl* GetElementFromHandle(ElementXML_Handle hXML)
 {
 	return (ElementXMLImpl*)hXML ;
 }

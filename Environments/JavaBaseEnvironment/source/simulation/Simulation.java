@@ -1,12 +1,14 @@
 package simulation;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 
 import sml.*;
 import utilities.*;
 
 public abstract class Simulation implements Runnable, Kernel.UpdateEventInterface, Kernel.SystemEventInterface {
-	public static final String kGroupFolder = "Environments";
 	public static final String kAgentFolder = "agents";
 	public static final String kMapFolder = "maps";
 	public static final int kDebuggerTimeoutSeconds = 15;	
@@ -29,8 +31,11 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	private ArrayList m_SimulationListeners = new ArrayList();
 	private ArrayList m_AddSimulationListeners = new ArrayList();
 	private ArrayList m_RemoveSimulationListeners = new ArrayList();
+
+	// For debugging can set this to false, making all random calls follow the same sequence
+	public static final boolean kRandom = false ;
 	
-	protected Simulation(String projectFolder) {
+	protected Simulation() {
 		// Initialize Soar
 		// Create kernel
 		try {
@@ -48,22 +53,18 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		// We want the most performance
 		m_Kernel.SetAutoCommit(false);
 
+		// Make all runs non-random if asked
+		if (!kRandom)
+			m_Kernel.ExecuteCommandLine("srand 0", null) ;
+		
 		// Register for events
 		m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, null);
 		m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, this, null);
 		m_Kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_GENERATED_OUTPUT, this, null);
 		
 		// Generate base path
-		// TODO: chop instead of using ..
-		m_BasePath = new String(m_Kernel.GetLibraryLocation());
-		m_BasePath += System.getProperty("file.separator")
-		+ ".." + System.getProperty("file.separator") 
-		+ kGroupFolder + System.getProperty("file.separator") 
-		+ projectFolder + System.getProperty("file.separator");
-
+		m_BasePath = System.getProperty("user.dir") + System.getProperty("file.separator");
 		m_Logger.log("Base path: " + m_BasePath);
-		
-		
 	}
 	
 	protected void setWorldManager(WorldManager worldManager) {
@@ -170,31 +171,34 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		
 		// Figure out whether to use java or javaw
 		String os = System.getProperty("os.name");
-		String javabin = "java";
+		String commandLine;
 		if (os.matches(".+indows.*") || os.matches("INDOWS")) {
-			javabin = "javaw";
+			commandLine = "javaw -jar \"" + m_BasePath 
+			+ "..\\..\\SoarLibrary\\bin\\SoarJavaDebugger.jar\" -remote -agent " + agentName;
+		} else {
+			commandLine = System.getProperty("java.home") + "/bin/java -jar " + m_BasePath
+			+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -remote -agent " + agentName;
 		}
 		
 		Runtime r = java.lang.Runtime.getRuntime();
+
 		try {
 			// TODO: manage the returned process a bit better.
-			r.exec(javabin + " -jar \"" + m_Kernel.GetLibraryLocation() + System.getProperty("file.separator")
-					+ "bin" + System.getProperty("file.separator") 
-					+ "SoarJavaDebugger.jar\" -remote -agent " + agentName);
+			Process p = r.exec(commandLine);
 			
-			if (!waitForDebugger()) {
+			if (!waitForDebugger(p)) {
 				fireErrorMessage("Debugger spawn failed for agent: " + agentName);
 				return;
 			}
 			
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			fireErrorMessage("IOException spawning debugger: " + e.getMessage());
 			shutdown();
 			System.exit(1);
 		}
 	}
 	
-	private boolean waitForDebugger() {
+	private boolean waitForDebugger(Process p) {
 		boolean ready = false;
 		for (int tries = 0; tries < kDebuggerTimeoutSeconds; ++tries) {
 			m_Kernel.GetAllConnectionInfo();
@@ -210,6 +214,21 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 				}
 				if (ready) break;
 			}
+//			try {
+//				BufferedReader in = new BufferedReader( new InputStreamReader(p.getInputStream()));
+//				String currentLine = null;
+//				while ((currentLine = in.readLine()) != null) {
+//					m_Logger.log(currentLine);
+//				}
+//				BufferedReader err = new BufferedReader( new InputStreamReader(p.getErrorStream()));
+//				while ((currentLine = err.readLine()) != null) {
+//					m_Logger.log(currentLine);
+//				}
+//			} catch (IOException e) {
+//				fireErrorMessage("IOException reading debugger process: " + e.getMessage());
+//				shutdown();
+//				System.exit(1);
+//			}
 			try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
 		}
 		return ready;
@@ -294,7 +313,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
     		}
     		
     		m_StopSoar = false;
-    		m_Kernel.RunAllAgentsForever();
+    		m_Kernel.RunAllAgentsForever(smlInterleaveStepSize.sml_INTERLEAVE_UNTIL_OUTPUT);
     		
     		if (m_Runs != 0) {
     			resetSimulation(false);

@@ -197,6 +197,10 @@ bool SimpleRunListener(int decisions)
 	//pKernel->SetTraceCommunications(true) ;
 
 	sml::Agent* pAgent = pKernel->CreateAgent("runagent") ;
+
+	std::string state = pAgent->ExecuteCommandLine("set-stop-phase --before --input") ;
+	cout << state ;
+
 	std::string path = std::string(pKernel->GetLibraryLocation()) + "/Tests/testrun.soar" ;
 	bool ok = pAgent->LoadProductions(path.c_str()) ;
 
@@ -206,7 +210,7 @@ bool SimpleRunListener(int decisions)
 	std::string result = pAgent->RunSelf(decisions) ;
 	cout << result ;
 
-	std::string state = pAgent->ExecuteCommandLine("print --depth 2 s1") ;
+	state = pAgent->ExecuteCommandLine("print --depth 2 s1") ;
 	cout << state ;
 
 	delete pKernel ;
@@ -248,7 +252,10 @@ bool SimpleRemoteConnect()
 
 	cout << trace << endl ;
 
-	std::string state = pAgent->ExecuteCommandLine("print --depth 2 s1") ;
+	std::string state = pAgent->ExecuteCommandLine("set-stop-phase --before --input") ;
+	cout << state ;
+
+	state = pAgent->ExecuteCommandLine("print --depth 2 s1") ;
 	cout << state ;
 
 	bool changed = pKernel->GetAllConnectionInfo() ;
@@ -384,6 +391,8 @@ bool SimpleCopyAgent()
 	}
 
 	sml::Agent* pAgent = pKernel->CreateAgent("copyagent") ;
+	std::string state = pAgent->ExecuteCommandLine("set-stop-phase --before --input") ;
+	cout << state ;
 	std::string path = std::string(pKernel->GetLibraryLocation()) + "/Tests/testcopy.soar" ;
 	bool ok = pAgent->LoadProductions(path.c_str()) ;
 
@@ -425,7 +434,7 @@ bool SimpleCopyAgent()
 	cout << result << endl ;
 	cout << trace << endl ;
 
-	std::string state = pAgent->ExecuteCommandLine("print --depth 5 s1") ;
+	state = pAgent->ExecuteCommandLine("print --depth 5 s1") ;
 	cout << state << endl ;
 
 	int changes = pAgent->GetNumberOutputLinkChanges() ;
@@ -722,6 +731,10 @@ bool InitSoarAgent(Agent* pAgent, bool doInitSoars)
 
 bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 {
+	// a number of tests below depend on running full decision cycles.
+	std::string state = pAgent->ExecuteCommandLine("set-stop-phase --before --input") ;
+	cout << state ;
+
 	// Record a RHS function
 	int callback_rhs1 = pKernel->AddRhsFunction("test-rhs", &MyRhsFunctionHandler, 0) ; 
 	int callback_rhs_dup = pKernel->AddRhsFunction("test-rhs", &MyRhsFunctionHandler, 0) ;
@@ -811,6 +824,21 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	if (!InitSoarAgent(pAgent, doInitSoars))
 		return false ;
 	
+	// Test the blink option
+	pAgent->SetBlinkIfNoChange(false) ;
+	long timeTag1 = pWME3->GetTimeTag() ;
+	pAgent->Update(pWME3, 50.5) ;	// Should not change the wme, so timetag should be the same
+	long timeTag2 = pWME3->GetTimeTag() ;
+	pAgent->SetBlinkIfNoChange(true) ;	// Back to the default
+	pAgent->Update(pWME3, 50.5) ;	// Should change the wme, so timetag should be the different
+	long timeTag3 = pWME3->GetTimeTag() ;
+
+	if (timeTag1 != timeTag2 || timeTag2 == timeTag3)
+	{
+		cout << "Error in handling of SetBlinkIfNoChange flag" << endl ;
+		return false ;
+	}
+
 	// Remove a wme
 	pAgent->DestroyWME(pWME3) ;
 
@@ -1612,9 +1640,14 @@ bool TimeTest(bool embedded, bool useClientThread, bool fullyOptimized)
 		pAgent->RegisterForXMLEvent(smlEVENT_XML_TRACE_OUTPUT, &MyXMLEventHandlerTimer, NULL) ;
 
 		pAgent->ExecuteCommandLine("watch 0") ;
+
 	}
 
     std::string result;
+
+	std::string state = pFirst->ExecuteCommandLine("set-stop-phase --before --input") ;
+	cout << state ;
+
     
     result = pFirst->ExecuteCommandLine("watch --learning fullprint --backtracing") ;
 	cout << result << endl ;

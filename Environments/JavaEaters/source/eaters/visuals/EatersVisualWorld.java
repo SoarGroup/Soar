@@ -113,7 +113,7 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 					
 				} else if (cell.isEmpty()) {
 					gc.setBackground(WindowManager.widget_background);
-					gc.fillOval(m_CellSize*xDraw, m_CellSize*yDraw, m_CellSize, m_CellSize);
+					gc.fillRectangle(m_CellSize*xDraw, m_CellSize*yDraw, m_CellSize, m_CellSize);
 					
 				} else if (cell.isEater()) {
 					

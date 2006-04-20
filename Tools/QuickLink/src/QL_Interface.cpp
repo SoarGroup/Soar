@@ -31,6 +31,13 @@ QL_Interface& QL_Interface::instance()
 	return QLI;
 }
 
+QL_Interface::QL_Interface()  : should_update_views(true), kernel_destroyed(true) 
+{
+#ifdef _WIN32
+	_chdir("../../SoarLibrary/bin/");
+#endif
+}
+
 // return the identifier with the specified name
 Smart_Pointer<WME_Id> QL_Interface::get_identifier(string id_name)
 {
@@ -178,6 +185,8 @@ void QL_Interface::delete_identifier(const string& parent_id, const string& attr
 	// remove the id from the id container
 	m_id_container.erase(id_name);
 
+
+
 	commit();
 
 	update_views();
@@ -263,9 +272,9 @@ void QL_Interface::QL_Shutdown()
 
 void QL_Interface::respond_to_init_soar_before()
 {
-	Smart_Pointer<WME_Id> il = m_id_container[m_input_link_name];
+	/*Smart_Pointer<WME_Id> il = m_id_container[m_input_link_name];
 	il->remove_all_children(m_pAgent);
-	m_id_container.clear();
+	m_id_container.clear();*/
 
 	// call synch input-link in case a new identifier is used for the input-link
 //	m_pAgent->SynchronizeInputLink();
@@ -274,8 +283,8 @@ void QL_Interface::respond_to_init_soar_before()
 
 void QL_Interface::respond_to_init_soar_after()
 {
-	m_pAgent->SynchronizeInputLink();
-	setup_input_link(m_input_link_name); // generates all existing wmes
+	//m_pAgent->SynchronizeInputLink();
+	//setup_input_link(m_input_link_name); // generates all existing wmes
 }
 
 void QL_Interface::remove_identifier(const string& name)
@@ -296,7 +305,7 @@ void QL_Interface::clear_input_link()
 {
 	// get the input-link id and remove all its chidren
 	Smart_Pointer<WME_Id> il = m_id_container[m_input_link_name];
-	il->remove_all_children(m_pAgent);
+	il->clear_input_link(m_pAgent);
 
 	// clear the container and put the il back in
 	m_id_container.clear();
@@ -329,7 +338,7 @@ void QL_Interface::spawn_debugger()
 #if defined _WIN32 || _WIN64
 
 	// spawn the debugger asynchronously
-	assert(_chdir("../../SoarLibrary/bin/") == 0);
+	
 	int ret = _spawnlp(_P_NOWAIT, "javaw.exe", "javaw.exe", "-jar", "SoarJavaDebugger.jar", "-remote", NULL);
 	if(ret == -1) {
 		switch (errno) {
@@ -352,7 +361,6 @@ void QL_Interface::spawn_debugger()
 					throw Error(string_make(ret));
 		}
 	}
-	assert(_chdir("../../Tools/QuickLink/") == 0);
 
 #else // linux spawnning
 

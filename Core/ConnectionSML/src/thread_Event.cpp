@@ -15,7 +15,6 @@
 /////////////////////////////////////////////////////////////////
 
 #include "thread_Event.h"
-#include "thread_OSspecific.h"
 
 using namespace soar_thread ;
 
@@ -29,18 +28,4 @@ Event::~Event()
 	delete m_Imp ;
 }
 
-void Event::WaitForEventForever()
-{
-	m_Imp->WaitForEventForever() ;
-}
-
-bool Event::WaitForEvent(long seconds, long milliseconds)
-{
-	return m_Imp->WaitForEvent(seconds, milliseconds) ;
-}
-
-void Event::TriggerEvent()
-{
-	m_Imp->TriggerEvent() ;
-}
 

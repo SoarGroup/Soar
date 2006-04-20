@@ -47,7 +47,6 @@ WME_Id::~WME_Id()
 {	
 	Agent* pAgent = QL_Interface::instance().get_agent_ptr();	
 	remove_all_children(pAgent);
-	destroy_sml_object(pAgent);
 	
 }
 
@@ -152,7 +151,7 @@ bool WME_Id::has_child(string attribute, string value)
 }
 
 // remove functions
-void WME_Id::remove_id_child(const string& att, const string& value, Agent*)
+void WME_Id::remove_id_child(const string& att, const string& value, Agent* pAgent)
 {
 	string key = make_key(att, value);
 	Smart_Pointer<WME_Id> child = m_id_children[key];
@@ -163,6 +162,17 @@ void WME_Id::remove_id_child(const string& att, const string& value, Agent*)
 	}
 	m_id_children.erase(key);
 	m_all_children.erase(child);
+
+	pAgent->DestroyWME(child->get_id_object());
+}
+
+void WME_Id::clear_input_link(Agent* pAgent)
+{
+	//destroy all wmes on first level
+	for(all_children_t::iterator it = m_all_children.begin(); it != m_all_children.end(); it++)
+		(*it)->destroy_sml_object(pAgent);
+
+	remove_all_children(pAgent);
 }
 
 void WME_Id::remove_wme_child(const string& att, double value, Agent* pAgent)

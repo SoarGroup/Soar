@@ -2,6 +2,7 @@ package tanksoar;
 
 import java.util.Random;
 
+import simulation.Simulation;
 import sml.Agent;
 import sml.FloatElement;
 import sml.Identifier;
@@ -64,8 +65,8 @@ public class InputLinkManager {
 	
 	private final static String kNone = "none";
 
-	private Random m_Random = new Random();
-
+	private Random m_Random = Simulation.kRandom ? new Random() : new Random(0) ;
+	
 	private Identifier m_InputLink;
 	private Identifier m_BlockedWME;
 	private StringElement m_BlockedBackwardWME;
@@ -123,51 +124,43 @@ public class InputLinkManager {
 	}
 	
 	private void DestroyWME(WMElement wme) {
-		if (wme == null) {
-			m_Logger.log("aha!");
-		}
+		assert wme != null;
 		m_Agent.DestroyWME(wme);
+		wme = null;
 	}
 
 	private void Update(StringElement wme, String value) {
-		if (wme == null || value == null) {
-			m_Logger.log("aha!");
-		}
+		assert wme != null;
+		assert value != null;
 		m_Agent.Update(wme, value);
 	}
 
 	private void Update(IntElement wme, int value) {
-		if (wme == null) {
-			m_Logger.log("aha!");
-		}
+		assert wme != null;
 		m_Agent.Update(wme, value);
 	}
 
 	private void Update(FloatElement wme, float value) {
-		if (wme == null) {
-			m_Logger.log("aha!");
-		}
+		assert wme != null;
 		m_Agent.Update(wme, value);
 	}
 	
 	private IntElement CreateIntWME(Identifier id, String attribute, int value) {
-		if (id == null || attribute == null) {
-			m_Logger.log("aha!");
-		}
+		assert id != null;
+		assert attribute != null;
 		return m_Agent.CreateIntWME(id, attribute, value);
 	}
 
 	private StringElement CreateStringWME(Identifier id, String attribute, String value) {
-		if (id == null || attribute == null || value == null) {
-			m_Logger.log("aha!");
-		}
+		assert id != null;
+		assert attribute != null;
+		assert value != null;
 		return m_Agent.CreateStringWME(id, attribute, value);
 	}
 
 	private FloatElement CreateFloatWME(Identifier id, String attribute, float value) {
-		if (id == null || attribute == null) {
-			m_Logger.log("aha!");
-		}
+		assert id != null;
+		assert attribute != null;
 		return m_Agent.CreateFloatWME(id, attribute, value);
 	}
 

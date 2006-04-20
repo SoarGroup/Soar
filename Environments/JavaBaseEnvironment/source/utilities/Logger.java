@@ -2,6 +2,7 @@ package utilities;
 
 import java.io.*;
 import java.sql.*;
+import java.text.DateFormat;
 
 public class Logger {
 	public static Logger logger = new Logger();
@@ -21,8 +22,9 @@ public class Logger {
 			System.exit(1);
 		}
 
-		Timestamp ts = new Timestamp(System.currentTimeMillis());
-		log("Log started: " + ts);
+		Date d = new Date(System.currentTimeMillis());
+		// BUGBUG: cannot get this to work in eclipse on linux on albatros
+		//log("Log started: " + DateFormat.getDateInstance().format(d));
 	}
 
 	public void log(String message) {

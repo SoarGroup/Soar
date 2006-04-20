@@ -464,7 +464,9 @@ SoarTextIO::RespondCycle()
 	for(int i = 0; i< numberCommands2; i++)  //add's status complete
 	{
 		sml::Identifier* tmp2 = pAgent->GetCommand(i);
-		tmp2->AddStatusComplete();
+		WMEpointer* tempHolder = new WMEpointer();
+		tempHolder->holder = tmp2;
+		changes.push_back(buffered_change_t(CREATE, NULL, tempHolder, "status", "complete", STRING));
 	}
 	storeO.resize(0);
 
@@ -643,7 +645,7 @@ SoarTextIO::CreateWord()
 	//Create word			
 	//sml::StringElement* tmp4 = NULL;// = pAgent->CreateStringWME(NextWord[NextWord.size()-1],"value",word.c_str());
 	WMEpointer* tmp4 = new WMEpointer();
-	changes.push_back(buffered_change_t(CREATE, tmp4, NextWord[NextWord.size()-1], "value", word, STRING));
+	changes.push_back(buffered_change_t(CREATE, tmp4, NextWord[NextWord.size()-1], "value", word, decipher_type(word)));
 	dontlose.push_back(tmp4);
 
 	//Create next-word identifier
@@ -892,5 +894,27 @@ SoarTextIO::GetRelevant( string toShorten )
 		toReturn = toReturn.substr( 0 , toReturn.size() - 1 );
 
 	return toReturn;
+}
+
+// decide the type of the given string
+SoarTextIO::buf_type SoarTextIO::decipher_type(const string& str)
+{
+	// look at each member of the string.  If we see a character we know it is a string
+	// otherwise, if we see a period, and all numbers we know it is a float
+	int num_periods = 0;
+	for(int i = 0; i < int(str.length()) ; i++)
+	{
+		if (str[i] == '.')
+			num_periods++;
+		else if(isalpha(str[i]) || ispunct(str[i])) // we know it is a string
+			return STRING;
+	}
+	if(num_periods == 0) // we haven't seen a character and it doesn't have a period - int
+		return INTEGER;
+	else if(num_periods == 1 && (!isalpha(str[0]) || !isalpha(str[str.length()-1]))) // - float
+		return FLOAT;
+
+	// otherwise just return string
+	return STRING;
 }
 

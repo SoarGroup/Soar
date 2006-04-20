@@ -122,6 +122,7 @@ void View_Console::display_output(Kernel* pKernel)
 	if(Input_Controller::instance().should_print_prompt)
 		cout << endl << endl << "> ";
 	Input_Controller::instance().should_print_prompt = true;
+	pKernel->GetAgent(agent_name.c_str())->ClearOutputLinkChanges();
 }
 
 void View_Console::printOutput()
@@ -168,12 +169,15 @@ void View_Console::printOutput()
 					SC.push_back(tmp2);
 				}
 			}
+			cout << ")" << endl;
 		}
 	}
 	for(unsigned int i = 0; i < storeO.size(); i++)  //resets all printed flags to false
 		storeO[i].printed = false;
 
 	cout << endl << endl << "******END OF OUTPUT******" << endl << endl;
+
+	
 
 	QL_Interface::instance().update_views_now();
 }
