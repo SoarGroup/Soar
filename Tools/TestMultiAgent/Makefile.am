@@ -6,9 +6,9 @@ BASEDIR_PREFIX = ../..
 
 bin_PROGRAMS = TestMultiAgent
 
-TestClientSML_SOURCES = TestMultiAgent.cpp
+TestMultiAgent_SOURCES = TestMultiAgent.cpp
 
-TestClientSML_LDADD = \
+TestMultiAgent_LDADD = \
 $(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \
 $(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
 
