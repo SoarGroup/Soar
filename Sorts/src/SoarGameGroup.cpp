@@ -28,6 +28,7 @@ SoarGameGroup::SoarGameGroup
   friendly = unit->isFriendly();
   world = unit->isWorld();
   mixedType = _mixedType;
+  inSoar = false;
 
   fmSector = -1;
 
@@ -654,4 +655,21 @@ void SoarGameGroup::setFMFeatureStrength(int num) {
 
 int SoarGameGroup::getFMFeatureStrength() {
   return fmFeatureStrength;
+}
+
+void SoarGameGroup::calcDistToFocus(int focusX, int focusY) {
+  distToFocus = squaredDistance(focusX, focusY, centerX, centerY);
+}
+
+int SoarGameGroup::getDistToFocus() {
+  return distToFocus;
+}
+  
+bool SoarGameGroup::getInSoar() {
+  return inSoar;
+}
+
+void SoarGameGroup::setInSoar(bool val) {
+  inSoar = val;
+  return;
 }

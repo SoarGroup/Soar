@@ -14,6 +14,8 @@ OrtsInterface::OrtsInterface(GameStateModule* _gsm)
   counter = 0;
   // gsm must have already connected for this to work
   myPid = gsm->get_game().get_client_player(); 
+  mapXDim = (gsm->get_game().get_gtiles_x())*(gsm->get_game().get_tile_points());
+  mapYDim = (gsm->get_game().get_gtiles_y())*(gsm->get_game().get_tile_points());
 }
 
 void OrtsInterface::addAppearedObject(const GameObj* gameObj) {
@@ -219,4 +221,12 @@ double OrtsInterface::getOrtsDistance(GameObj* go1, GameObj* go2) {
 
 int OrtsInterface::getFrameID() {
   return gsm->get_game().get_action_frame();
+}
+
+int OrtsInterface::getMapXDim() {
+  return mapXDim;
+}
+
+int OrtsInterface::getMapYDim() {
+  return mapYDim;
 }

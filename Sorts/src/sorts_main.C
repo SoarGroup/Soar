@@ -23,20 +23,39 @@ void printOutput(sml::smlPrintEventId id,
   cout << "[SOAR] " << pMessage << endl;
 }
 
+/* We have two different threads giving us events, Soar and ORTS.
+
+  On Soar events (below):
+    get output from agent, add commands to queues to be processed
+    process vision-only commands immediately
+    refresh Soar's input with changes in vision / the ORTS world
+
+  On ORTS events (OrtsInterface::handle_event):
+    apply Soar's object action commands to the ORTS objects
+    gather changes from the ORTS server
+    update the map
+    update each game object
+    send game object actions to ORTS
+    refresh Soar's view of the world (but don't commit)
+*/
+
+
 void SoarUpdateEventHandler(sml::smlUpdateEventId id, 
                             void*                 pUserData,
                             sml::Kernel*          pKernel,
                             sml::smlRunFlags      runFlags)
 {
   sml::Agent *agent = pKernel->GetAgent("orts_agent");
-  SoarInterface* soarInterface = (SoarInterface*) pUserData;
-  soarInterface->getNewSoarOutput();
+  Sorts* sorts = (Sorts*) pUserData;
+  
+  sorts->SoarIO->getNewSoarOutput();
+  sorts->groupManager->processVisionCommands();
 
-  if (soarInterface->getStale()) {
-    soarInterface->lockSoarMutex();
+  if (sorts->SoarIO->getStale()) {
+    sorts->SoarIO->lockSoarMutex();
     agent->Commit();
-    soarInterface->unlockSoarMutex();
-    soarInterface->setStale(false);
+    sorts->SoarIO->unlockSoarMutex();
+    sorts->SoarIO->setStale(false);
   }
 }
 
@@ -188,7 +207,7 @@ int main(int argc, char *argv[]) {
   gsm.add_handler(&ortsInterface);
 
   //  pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, printOutput, 0);
-  pKernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &soarInterface);
+  pKernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &sorts);
   //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START, SoarSystemEventHandler, &state);
   //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_STOP, SoarSystemEventHandler, &state);
 

@@ -78,6 +78,12 @@ class SoarGameGroup {
     bool getSticky();
     void setSticky(bool in);
 
+    void calcDistToFocus(int focusX, int focusY);
+    int getDistToFocus();
+
+    bool getInSoar();
+    void setInSoar(bool val);
+    
   private: // functions
     void updateBoundingBox();
     void updateRegionsOccupied();
@@ -87,6 +93,9 @@ class SoarGameGroup {
 
     set <SoarGameObject*> members;
     groupPropertyStruct soarData;
+
+    bool inSoar; // true if present in input link
+    
     bool hasStaleMembers;
     bool hasStaleProperties;
     // staleMembers means the internal statistics haven't been updated-
@@ -133,6 +142,8 @@ class SoarGameGroup {
     int fmSector;
     list <FeatureMap*> fMaps;
     int fmFeatureStrength;
+
+    int distToFocus;
 };
 
 #define GRP_STATUS_RUNNING 0

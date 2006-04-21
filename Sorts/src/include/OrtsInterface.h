@@ -43,6 +43,9 @@ public:
   int getFrameID();
   int getNumPlayers();
 
+  int getMapXDim();
+  int getMapYDim();
+
 private:
   const Sorts* sorts;
 
@@ -71,6 +74,8 @@ private:
   
   // player id of Soar
   int myPid;
+
+  int mapXDim, mapYDim;
 
   // list of SGO's that need to be updated next cycle,
   // regardless of if they change in the world or not
