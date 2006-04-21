@@ -1,3 +1,0 @@
-pushd fire-on-command
-source fire-on-command_source.soar
-popd
