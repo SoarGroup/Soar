@@ -4,7 +4,7 @@
 ###########################################
 lib_LTLIBRARIES = libElementXML.la
 
-libElementXML_la_LIBADD = ../../ConnectionSML/src/libConnectionSML.la
+#libElementXML_la_LIBADD = ../../ConnectionSML/src/libConnectionSML.la
 
 libElementXML_la_SOURCES = \
 ElementXMLInterface.cpp\
