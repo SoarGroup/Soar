@@ -41,12 +41,17 @@ public class SelectAgentDialog extends BaseDialog
 	public static String showDialog(Composite parent, String title, String[] agentNames)
 	{
 		// Create the dialog window
-		SelectAgentDialog dialog = new SelectAgentDialog(parent, title, agentNames) ;
+		final SelectAgentDialog dialog = new SelectAgentDialog(parent, title, agentNames) ;
 				
 		dialog.getDialog().setSize(400, 200) ;
 		dialog.centerDialog(parent) ;
 		dialog.open() ;
-		
+
+		// If the user makes a choice we'll close the dialog (pretty aggressive)
+		// Moved to after the creation of the dialog, to try to fix a problem on GTK where a selection event is fired immediately when
+		// the list is created (causing the dialog to close).
+		dialog.m_Agents.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { dialog.endDialog(true) ; } } ) ;
+
 		dialog.pumpMessages() ;
 		
 		return dialog.m_Result ;
@@ -70,9 +75,6 @@ public class SelectAgentDialog extends BaseDialog
 		m_Agents = new List(getOpenArea(), SWT.SINGLE | SWT.V_SCROLL | SWT.BORDER) ;
 		m_Agents.setItems(agentNames) ;
 		m_Agents.setLayoutData(FormDataHelper.anchorTop(margin)) ;
-		
-		// If the user makes a choice we'll close the dialog (pretty aggressive)
-		m_Agents.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { endDialog(true) ; } } ) ;
 	}
 	
 	/********************************************************************************************
