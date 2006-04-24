@@ -83,7 +83,12 @@ class SoarGameGroup {
 
     bool getInSoar();
     void setInSoar(bool val);
-    
+
+    // return true if the group has been around for multiple cycles
+    // (return false if it was just created)
+    // this is set to false initially, set to true when generateData called.
+    bool isOld();
+   
   private: // functions
     void updateBoundingBox();
     void updateRegionsOccupied();
@@ -95,6 +100,8 @@ class SoarGameGroup {
     groupPropertyStruct soarData;
 
     bool inSoar; // true if present in input link
+    
+    bool old;
     
     bool hasStaleMembers;
     bool hasStaleProperties;

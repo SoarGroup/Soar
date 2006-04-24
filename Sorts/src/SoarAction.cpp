@@ -19,5 +19,6 @@ AttentionActionType attentionActionTypeLookup(string actionName) {
   else if (not actionName.compare("move-feature"))      return AA_MOVE_FEATURE;
   else if (not actionName.compare("resize"))      return AA_RESIZE;
   else if (not actionName.compare("grouping-radius"))  return AA_GROUPING_RADIUS;
+  else if (not actionName.compare("num-objects"))  return AA_NUM_OBJECTS;
   else                                       return AA_NO_SUCH_ACTION;
 }

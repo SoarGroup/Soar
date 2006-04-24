@@ -49,6 +49,11 @@ void FeatureMap::addGroup(SoarGameGroup* group, int sector, int strength) {
   //assert(fmSectors[sector].find(group) == fmSectors[sector].end());
   fmSectors[sector].insert(group); 
   fmCounts[sector] += strength;
+
+  if (fmSectors[sector].size() == 1) {
+    // if this is the only object in the sector, initialize the iterator
+    fmSectorIterators[sector] = fmSectors[sector].begin();
+  }
 }
 
 void FeatureMap::removeGroup(SoarGameGroup* group, int sector, int strength) {  

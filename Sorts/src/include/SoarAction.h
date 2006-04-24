@@ -27,6 +27,7 @@ enum AttentionActionType {
   AA_LOOK_FEATURE,
   AA_MOVE_FEATURE,
   AA_GROUPING_RADIUS,
+  AA_NUM_OBJECTS,
   AA_NO_SUCH_ACTION
 };
 

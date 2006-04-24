@@ -5,10 +5,22 @@
 #include "SoarGameGroup.h"
 
 class Sorts;
-/*
-bool compareGroups(SoarGameGroup* a, SoarGameGroup* b) {
+
+/*bool compareGroups(SoarGameGroup* a, SoarGameGroup* b) {
   return a->getDistToFocus() < b->getDistToFocus();
 }*/
+
+struct ltGroupPtr {
+  bool operator()(SoarGameGroup* g1, SoarGameGroup* g2) const {
+    int d1 = g1->getDistToFocus();
+    int d2 = g2->getDistToFocus();
+    if (d1 == d2) {
+      // give an arbitrary order if distance is the same
+      return ((int)g1 < (int)g2);
+    }
+    return (d1 < d2);
+  }
+};
 
 class GroupManager {
   public:
@@ -37,20 +49,20 @@ class GroupManager {
     void updateFeatureMaps(bool refreshAll);
 
     void removeGroup(SoarGameGroup*);
+    void remakeGroupSet();
 
     set <pair<string, int> > staleGroupCategories;
-    
-//    list <SoarGameGroup*> groupsInFocus;
-//    list <SoarGameGroup*> groupsNotInFocus;
     
     // this set is maintained in sorted order, items toward the front
     // are closer to the center of focus, and have priority to go on the
     // input link.
-    set <SoarGameGroup*> groups;
+    set <SoarGameGroup*, ltGroupPtr> groups;
 
     void setAllCategoriesStale();
     
     const Sorts* sorts;
+
+    int numObjects;
 };
 
 struct objectGroupingStruct {

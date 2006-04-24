@@ -97,6 +97,15 @@ list<FeatureMap*> FeatureMapManager::identifyFeatures(SoarGameGroup* group) {
 
 void FeatureMapManager::refreshGroup(SoarGameGroup* group) {
   // for all feature maps that this group is in, update them
+
+ //* comment out this block to not inhibit things
+  if (group->getInSoar()) {
+    // inhibit this group from the feature maps- remove it if present
+    removeGroup(group);
+    return;
+  }
+  //*/
+
   int oldSectorNumber = group->getFMSector();
   int newSectorNumber = classifyCenterPointInGrid(group);
   int oldStrength =  group->getFMFeatureStrength();

@@ -21,6 +21,10 @@ GroupManager::GroupManager() {
   // (1024 = 32^2)
   groupingRadiusSquared = 1024;
 
+  // the number of objects near the focus point to add
+  // agent can change this, if it wishes to cheat
+  numObjects = 5;
+  
   focusX = (int) (sorts->OrtsIO->getMapXDim() / 2.0);
   focusY = (int) (sorts->OrtsIO->getMapYDim() / 2.0);
 
@@ -119,16 +123,44 @@ void GroupManager::processVisionCommands() {
   sorts->SoarIO->getNewAttentionActions(actions);
 
   int radius;
+  SoarGameGroup* centerGroup;
+        list<int>::iterator it;
 
   for (list<AttentionAction>::iterator i = actions.begin();
                                        i != actions.end();
                                        i++) {
     switch (i->type) {
       case AA_LOOK_LOCATION:
+        assert(i->params.size() == 2); // x,y
+        it = i->params.begin();
+        focusX = *it;
+        it++;
+        focusY = *it;
+        
+        // recalc all center distances and rebuild the order of the groups
+        remakeGroupSet();
+        adjustAttention(); 
 
         break;
       case AA_LOOK_FEATURE:
+        // attention shift (w/o view window shift)
 
+        // first (and only) param is the sector number
+        assert(i->params.size() == 1);
+        centerGroup = sorts->featureMapManager->getGroup(i->fmName, 
+                                                        *(i->params.begin()));
+        if (centerGroup == NULL) {
+          cout << "ERROR: sector " << *(i->params.begin()) << " of map " <<
+            i->fmName << " is empty! Ignoring command\n";
+          return;
+        }
+        
+        // set focus point the center of the group
+        centerGroup->getCenterLoc(focusX, focusY);
+
+        // recalc all center distances and rebuild the order of the groups
+        remakeGroupSet();
+        adjustAttention(); 
         break;
       case AA_RESIZE:
 
@@ -141,7 +173,6 @@ void GroupManager::processVisionCommands() {
       // grouping change:
       // this is the same as updateVision, except we don't need prepareForReGroup,
       // since none of the objects in the world actually changed:
-        cout << "AAA radius!\n";
         assert(i->params.size() == 1);
         radius = *(i->params.begin());
         radius *= radius;
@@ -154,9 +185,13 @@ void GroupManager::processVisionCommands() {
           updateFeatureMaps(false);
         }
         break;
+      case AA_NUM_OBJECTS:
+        assert(i->params.size() == 1);
+        numObjects = *(i->params.begin());
+        adjustAttention();
+        break;
       case AA_NO_SUCH_ACTION:
         break;
-
       default:
         break;
     }
@@ -195,20 +230,14 @@ void GroupManager::reGroup() {
   SoarGameObject* centerObject;
 
   while (catIter != staleGroupCategories.end()) {
-    cout << "doing type " << catIter->first << endl;
+  //  cout << "doing type " << catIter->first << endl;
     groupingList.clear();
     centerGroupingList.clear();
     
     for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
-   // groupIter = groupsInFocus.begin();
-   // if (groupIter == groupsInFocus.end()) {
-   //   groupIter = groupsNotInFocus.begin();
-   // }
-  //  while (groupIter != groupsNotInFocus.end()){
-      // not a typo- loop will jump between lists
       if (not (*groupIter)->getSticky() and
               (*groupIter)->getCategory() == *catIter) {
-        cout << "group " << (int) (*groupIter) << endl;
+   //     cout << "group " << (int) (*groupIter) << endl;
         // group is of the type we are re-grouping
         
         objectData.group = *groupIter;
@@ -219,7 +248,8 @@ void GroupManager::reGroup() {
         objectData.object = centerObject;
         objectData.x = *centerObject->gob->sod.x;
         objectData.y = *centerObject->gob->sod.y;
-        objectData.oldGroup = true;
+        // oldGroup means the group has been around for at least one cycle
+        objectData.oldGroup = (*groupIter)->isOld();
         
         centerGroupingList.push_back(objectData);
         objectData.oldGroup = false;
@@ -238,13 +268,6 @@ void GroupManager::reGroup() {
         }
       }
       // else it was a group of a different type
-      
-      // switch over from in-focus to not- we don't care about the
-      // distinction here
-    //  groupIter++;
-    //  if (groupIter == groupsInFocus.end()) {
-    //    groupIter = groupsNotInFocus.begin();
-    //  }
     }
     // the lists are now built, centers in a separate list we will
     // treat as being "before" the other list
@@ -280,7 +303,6 @@ void GroupManager::reGroup() {
         obj2StructIter = groupingList.begin();
       }
       while (obj2StructIter != groupingList.end()) {
-        //obj2Struct = *obj2StructIter;
         if (squaredDistance(obj1Struct.x, obj1Struct.y, 
                             (*obj2StructIter).x, (*obj2StructIter).y)
             <= groupingRadiusSquared) {
@@ -315,12 +337,12 @@ void GroupManager::reGroup() {
               }
             }
             toMergeList.push_back(groups);
-            cout << "XXX will merge " << (int) groups.first << " -> " << (int) groups.second << endl;
+         //   cout << "XXX will merge " << (int) groups.first << " -> " << (int) groups.second << endl;
           }
           else {
             // obj2 has not been assigned. Assign it to obj1's group.
-            cout << "XXX obj from group " << (int) (*obj2StructIter).group <<
-                    " joining " << (int) obj1Struct.group << endl;
+         //   cout << "XXX obj from group " << (int) (*obj2StructIter).group <<
+         //           " joining " << (int) obj1Struct.group << endl;
             (*obj2StructIter).assigned = true;
             (*obj2StructIter).group->removeUnit((*obj2StructIter).object);
             (*obj2StructIter).group = obj1Struct.group;
@@ -328,10 +350,10 @@ void GroupManager::reGroup() {
             (*obj2StructIter).oldGroup = obj1Struct.oldGroup;
             
           }
-          cout << "grouped!" << endl;
+        //  cout << "grouped!" << endl;
         }
         else {
-          cout << "not grouped!" << endl;
+       //   cout << "not grouped!" << endl;
         }
         obj2StructIter++; 
         if (obj2StructIter == centerGroupingList.end()) {
@@ -394,35 +416,43 @@ void GroupManager::generateGroupData() {
   // refresh them (re-calc stats)
  
   set<SoarGameGroup*>::iterator groupIter;
+  list<set<SoarGameGroup*>::iterator> toErase;
+  list<set<SoarGameGroup*>::iterator> toReinsert;
 
   for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
-  //groupIter = groupsInFocus.begin();
-  //while (groupIter != groupsInFocus.end()) {
     if ((*groupIter)->getHasStaleMembers()) {
       if ((*groupIter)->isEmpty()) {
-        groups.erase(groupIter);
+        toErase.push_back(groupIter);
         removeGroup(*groupIter);
       }
       else {
         (*groupIter)->generateData();
+        // groups that have stale members need to be removed and reinserted
+        // this is because the set is maintained in order of distance from
+        // the focus center, and a stale-membered group could have had this 
+        // distance changed
+        toReinsert.push_back(groupIter);
       }
     }
-    //groupIter++;
+  }
+  
+  for (list<set<SoarGameGroup*>::iterator>::iterator it= toErase.begin();
+      it != toErase.end();
+      it++) {
+    groups.erase(*it);
+  }
+  
+  SoarGameGroup* grp;
+  for (list<set<SoarGameGroup*>::iterator>::iterator it= toReinsert.begin();
+      it != toReinsert.end();
+      it++) {
+    grp = **it;
+    groups.erase(*it);
+    groups.insert(grp);
+    // groups have no knowledge of the focus point, only their distance to it.
+    grp->calcDistToFocus(focusX, focusY);
   }
 
-  /*groupIter = groupsNotInFocus.begin();
-  while (groupIter != groupsNotInFocus.end()) {
-    if ((*groupIter)->getHasStaleMembers()) {
-      if ((*groupIter)->isEmpty()) {
-        groupsInFocus.erase(groupIter);
-        removeGroup(*groupIter);
-      }
-      else {
-        (*groupIter)->generateData();
-      }
-    }
-    groupIter++;
-  }*/
   return;
 }
 
@@ -437,12 +467,15 @@ void GroupManager::prepareForReGroup() {
  
   set<SoarGameGroup*>::iterator groupIter;
 
+  list<set<SoarGameGroup*>::iterator> toErase;
+  
   for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
-  //groupIter = groupsInFocus.begin();
-  //while (groupIter != groupsInFocus.end()) {
     if ((*groupIter)->getHasStaleMembers()) {
       if ((*groupIter)->isEmpty()) {
-        groups.erase(groupIter);
+        toErase.push_back(groupIter);
+        // can't delete from sets like this- the iterator gets screwed up
+        // keep a list, delete everything at once
+        //groups.erase(groupIter);
         removeGroup(*groupIter);
       }
       else {
@@ -450,29 +483,25 @@ void GroupManager::prepareForReGroup() {
         staleGroupCategories.insert((*groupIter)->getCategory());
       }
     }
-   // groupIter++;
   }
-/*
-  groupIter = groupsNotInFocus.begin();
-  while (groupIter != groupsNotInFocus.end()) {
-    if ((*groupIter)->getHasStaleMembers()) {
-      if ((*groupIter)->isEmpty()) {
-        groupsInFocus.erase(groupIter);
-        removeGroup(*groupIter);
-      }
-      else {
-        (*groupIter)->updateCenterMember();
-        staleGroupCategories.insert((*groupIter)->getCategory());
-      }
-    }
-    groupIter++;
-  }*/
+  for (list<set<SoarGameGroup*>::iterator>::iterator it= toErase.begin();
+      it != toErase.end();
+      it++) {
+    groups.erase(*it);
+  }
   //cout << "end ref" << endl;
   return;
 }
 
 void GroupManager::addGroup(SoarGameObject* object) {
+  int size1 = groups.size();
   groups.insert(new SoarGameGroup(object, false, sorts));
+
+  // make sure the insertion takes, the compare function could
+  // make the elements seem identical, which would not let them both
+  // in the set.
+  assert(groups.size() == (unsigned int)(size1 + 1));
+  
   //sorts->getFeatureMapManager()->addGroup(object->getGroup());
   // refresh will handle this fine, no need to have an addGroup
   return;
@@ -493,30 +522,16 @@ void GroupManager::updateFeatureMaps(bool refreshAll) {
   // since this is always the last thing called after a regroup, clear the 
   // staleProperties flags if set
   
-  set<SoarGameGroup*>::iterator groupIter;// = groupsNotInFocus.begin();
+  set<SoarGameGroup*>::iterator groupIter;
   for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
-  //while (groupIter != groupsNotInFocus.end()) {
     if (refreshAll) {
       sorts->featureMapManager->refreshGroup(*groupIter);
     }
     else if ((*groupIter)->getHasStaleProperties()) {
-        sorts->featureMapManager->refreshGroup(*groupIter);
-        (*groupIter)->setHasStaleProperties(false);
+      sorts->featureMapManager->refreshGroup(*groupIter);
+      (*groupIter)->setHasStaleProperties(false);
     }
-   // groupIter++;
   }
-
- /* groupIter = groupsInFocus.begin();
-  while (groupIter != groupsInFocus.end()) {
-    if (refreshAll) {
-      sorts->featureMapManager->refreshGroup(*groupIter);
-    }
-    else if ((*groupIter)->getHasStaleProperties()) {
-        sorts->featureMapManager->refreshGroup(*groupIter);
-        (*groupIter)->setHasStaleProperties(false);
-    }
-    groupIter++;
-  }*/
 
   sorts->featureMapManager->updateSoar();
   return;
@@ -527,35 +542,38 @@ void GroupManager::adjustAttention() {
   // iterate through all staleProperties groups, if in attn. range,
   // send params to Soar
   
-  
-  set<SoarGameGroup*>::iterator groupIter;// = groupsNotInFocus.begin();
+  set<SoarGameGroup*>::iterator groupIter;
+  int i=0;
   for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
-    if (not (*groupIter)->getInSoar()) {
-      sorts->SoarIO->addGroup(*groupIter);
-      (*groupIter)->setInSoar(true);
+    if (i < numObjects) {
+      if (not (*groupIter)->getInSoar()) {
+        sorts->SoarIO->addGroup(*groupIter);
+        sorts->SoarIO->refreshGroup(*groupIter);
+        (*groupIter)->setInSoar(true);
+       // cout << "AAA adding group " << (int)*groupIter << ", dist " <<
+       //   (*groupIter)->getDistToFocus() << endl;
+        // manually refresh in the feature maps so it is inhibited
+        sorts->featureMapManager->refreshGroup(*groupIter);
+      }
+      if ((*groupIter)->getHasStaleProperties()) {
+        sorts->SoarIO->refreshGroup(*groupIter);
+        //cout << "AAA refreshing group " << (int)*groupIter << ", dist " <<
+        //  (*groupIter)->getDistToFocus() << endl;
+      }
     }
-    if ((*groupIter)->getHasStaleProperties()) {
-      sorts->SoarIO->refreshGroup(*groupIter);
+    else { 
+      //cout << "AAA not adding group " << (int)*groupIter << ", dist " <<
+      //  (*groupIter)->getDistToFocus() << endl;
+      if ((*groupIter)->getInSoar() == true) {
+        (*groupIter)->setInSoar(false);
+        sorts->SoarIO->removeGroup(*groupIter);
+        // manually refresh in the feature maps so it added back
+        sorts->featureMapManager->refreshGroup(*groupIter);
+      }
     }
+    i++;
   }
     
-    /*while (groupIter != groupsNotInFocus.end()) {
-    for now, move everything into focus
-    groupsInFocus.push_back(*groupIter);
-    sorts->SoarIO->addGroup(*groupIter);
-    groupsNotInFocus.erase(groupIter);
-    groupIter++;
-  }
-
-  groupIter = groupsInFocus.begin();
-  while (groupIter != groupsInFocus.end()) {
-    if ((*groupIter)->getHasStaleProperties()) {
-      sorts->SoarIO->refreshGroup(*groupIter);
-      //(*groupIter)->setHasStaleProperties(false);
-      // moved this to updateFeatureMaps()
-    }
-    groupIter++;
-  }*/
   return;
 }
 
@@ -563,15 +581,8 @@ void GroupManager::adjustAttention() {
 GroupManager::~GroupManager() {
   set<SoarGameGroup*>::iterator groupIter;
   for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
-  //while (groupIter != groupsNotInFocus.end()) {
     delete (*groupIter);
-  //  groupIter++;
   }
-  /*groupIter = groupsInFocus.begin();
-  while (groupIter != groupsInFocus.end()) {
-    delete (*groupIter);
-    groupIter++;
-  }*/
 }
 
 
@@ -592,14 +603,8 @@ SoarGameGroup* GroupManager::getGroupNear(string type, int owner, int x, int y) 
   SoarGameGroup* closestGroup = (SoarGameGroup*) NULL;
   
   set<SoarGameGroup*>::iterator groupIter;
-  // jump iterator between lists
 
-  /*if (groupIter == groupsInFocus.end()) {
-    // this probably won't happen (nothing in focus)
-    groupIter = groupsNotInFocus.begin();
-  }*/
   for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
-  //while (groupIter != groupsNotInFocus.end()) {
     if ((*groupIter)->getCategory() == targetCategory) {
       (*groupIter)->getCenterLoc(currentX, currentY);
       currentDistance = squaredDistance(x, y, currentX, currentY);
@@ -608,15 +613,6 @@ SoarGameGroup* GroupManager::getGroupNear(string type, int owner, int x, int y) 
         closestGroup = *groupIter;
       }
     }
-    /*else {
-      pair <string, int> pr = (*groupIter)->getCategory();      
-      cout << " not " << pr.first << " owned by " << pr.second << endl;
-    }*/
-    /*
-    groupIter++;
-    if (groupIter == groupsInFocus.end()) {
-      groupIter = groupsNotInFocus.begin();
-    }*/
   }
   
   return closestGroup;
@@ -625,24 +621,28 @@ SoarGameGroup* GroupManager::getGroupNear(string type, int owner, int x, int y) 
 void GroupManager::setAllCategoriesStale() {
   // add all categories to the stale list
   // (used to force all groups to refresh)
-  cout << "AAA sacst\n";
   staleGroupCategories.clear();
   
   set<SoarGameGroup*>::iterator groupIter;
   // jump iterator between lists
 
   for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
-  /*if (groupIter == groupsInFocus.end()) {
-    // this probably won't happen (nothing in focus)
-    groupIter = groupsNotInFocus.begin();
-  }*/
-  //while (groupIter != groupsNotInFocus.end()) {
     staleGroupCategories.insert((*groupIter)->getCategory());
-    
-    /*groupIter++;
-    if (groupIter == groupsInFocus.end()) {
-      groupIter = groupsNotInFocus.begin();
-    }*/
   }
 }
 
+void GroupManager::remakeGroupSet() {
+  // if the focus point changes, all groups need to be reinserted in the
+  // group set, since it is maintained in order of distance from the center
+
+  set<SoarGameGroup*>::iterator groupIter;
+ 
+  set<SoarGameGroup*, ltGroupPtr> newSet;
+  
+  for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
+    (*groupIter)->calcDistToFocus(focusX, focusY);
+    newSet.insert(*groupIter);
+  }
+
+  groups = newSet;
+}

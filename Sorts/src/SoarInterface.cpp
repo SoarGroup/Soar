@@ -334,7 +334,11 @@ void SoarInterface::processObjectAction(ObjectActionType type,
       break;
     }
     int groupId = atoi(paramValue);
-    assert(groupIdLookup.find(groupId) != groupIdLookup.end());
+    //assert(groupIdLookup.find(groupId) != groupIdLookup.end());
+    if (groupIdLookup.find(groupId) == groupIdLookup.end()) {
+      cout << "ERROR: no group " << groupId << endl;
+      assert(false);
+    }
     newAction.groups.push_back(groupIdLookup[groupId]);
   }
   
@@ -364,6 +368,7 @@ void SoarInterface::processAttentionAction(AttentionActionType type,
   
   lockAttentionActionMutex();
   const char* paramValue;
+  string paramString;
   
   switch (type) {
     case AA_LOOK_LOCATION:
@@ -388,7 +393,12 @@ void SoarInterface::processAttentionAction(AttentionActionType type,
         improperCommandError();
         return;
       }
-      newAction.params.push_back(atoi(paramValue));
+      // need to convert paramValue from "sector3"->3
+      paramString = paramValue;
+      // remove the first 6 characters (sector)
+      paramString.replace(0,6,"");
+      assert(paramString[0] >= '0' and paramString[0] <= '9');
+      newAction.params.push_back(atoi(paramString.c_str()));
       paramValue = cmdPtr->GetParameterValue("feature");
       if (paramValue == NULL) {
         improperCommandError();
@@ -398,6 +408,7 @@ void SoarInterface::processAttentionAction(AttentionActionType type,
       break;
     case AA_RESIZE:
     case AA_GROUPING_RADIUS:
+    case AA_NUM_OBJECTS:
       paramValue = cmdPtr->GetParameterValue("value");
       if (paramValue == NULL) {
         improperCommandError();
@@ -411,7 +422,6 @@ void SoarInterface::processAttentionAction(AttentionActionType type,
   }
 
   attentionActionQueue.push_back(newAction);
-
   cmdPtr->AddStatusComplete();
 
   unlockAttentionActionMutex();
