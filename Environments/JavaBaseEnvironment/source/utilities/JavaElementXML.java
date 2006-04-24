@@ -164,6 +164,10 @@ public class JavaElementXML
 			{
 				m_CurrentLine = m_Input.readLine() ;
 				
+				// Added by voigtjr to debug bug 755
+				if (m_CurrentLine == null) 
+					return;
+				
 				// Add the newline char(s) to the end of the line we read.
 				// This generally only matters when reading quoted strings that
 				// cover multiple lines.
