@@ -412,10 +412,6 @@ AC_OUTPUT([
 	Core/KernelSML/src/Makefile
 	Environments/Makefile
 	Tools/Makefile
-	Tools/QuickLink/Makefile
-	Tools/QuickLink/src/Makefile
-	Tools/SoarTextIO/Makefile
-	Tools/SoarTextIO/src/Makefile
 	Tools/TOHSML/Makefile
 	Tools/TestCLI/Makefile
 	Tools/TestClientSML/Makefile
