@@ -13,7 +13,8 @@ smlTowersSoarAgent.h
 
 TOHSML_LDADD = \
 $(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \
-$(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la 
+$(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la \
+$(BASEDIR_PREFIX)/Core/ClientSML/src/libClientSML.la 
 
 INCLUDES = -I$(BASEDIR_PREFIX)/Core/ClientSML/include 
 
