@@ -5,7 +5,7 @@
 
 class IdleFSM: public FSM{
  public:
-	IdleFSM(OrtsInterface*, GroupManager*,  GameObj*); 
+	IdleFSM(Sorts*,  GameObj*); 
 
 	int update();
 

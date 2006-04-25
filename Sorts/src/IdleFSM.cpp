@@ -1,8 +1,8 @@
 #include"include/IdleFSM.h"
 #include<iostream>
 
-IdleFSM::IdleFSM(OrtsInterface* oi, GroupManager* gm, GameObj* go) 
-          : FSM(oi,gm,go) {
+IdleFSM::IdleFSM(Sorts *so, GameObj* go) 
+          : FSM(so,go) {
   name = OA_IDLE;
 }
 
