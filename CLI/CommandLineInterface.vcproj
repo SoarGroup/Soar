@@ -117,12 +117,6 @@
 		<ProjectReference
 			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
 			Name="ElementXML"/>
-		<AssemblyReference
-			RelativePath="mscorlib.dll"/>
-		<AssemblyReference
-			RelativePath="System.dll"/>
-		<AssemblyReference
-			RelativePath="System.Data.dll"/>
 	</References>
 	<Files>
 		<Filter
