@@ -5,7 +5,7 @@
 
 class MoveFSM: public FSM {
  public:
-	MoveFSM(OrtsInterface*, GroupManager*,  GameObj*);
+	MoveFSM(const Sorts* sorts,  GameObj*);
 
 	int update();
 	void init(std::vector<signed long>);
@@ -14,8 +14,7 @@ class MoveFSM: public FSM {
 	enum{IDLE,WARMUP,MOVING};
 
 	int state;
-  int runTime;
-
+  	int runTime;
 };
 
 #endif

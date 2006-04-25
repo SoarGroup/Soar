@@ -46,11 +46,13 @@ public:
   int getMapXDim();
   int getMapYDim();
 
+  GameStateModule *getGSM(){return gsm;}
+
 private:
   const Sorts* sorts;
+  GameStateModule* gsm;
 
   // pointers to all the orts stuff
-  GameStateModule* gsm;
   GameObj *playerGameObj;
 
   // keep track of all game objects

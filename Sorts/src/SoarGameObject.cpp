@@ -2,7 +2,7 @@
 #include<assert.h>
 #include<string>
 
-#include "MoveFSM.h"
+#include "SPathFinder.h"
 #include "MineFSM.h"
 
 #include "Sorts.h"
@@ -12,9 +12,7 @@
 void SoarGameObject::identifyBehaviors() {
   string name = gob->bp_name();
   if (friendly && name == "worker") {
-    FSM* moveBehavior = new MoveFSM(sorts->OrtsIO, sorts->groupManager, gob);
-    FSM* mineBehavior = new MineFSM(sorts->OrtsIO, sorts->groupManager, gob);
-    registerBehavior(moveBehavior);
+    FSM* mineBehavior = new MineFSM(sorts, gob);
     registerBehavior(mineBehavior);
   }
 }

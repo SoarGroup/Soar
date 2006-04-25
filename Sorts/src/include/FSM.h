@@ -6,31 +6,28 @@
 #include<list>
 #include<vector>
 
-//#include "OrtsInterface.h"
 #include "general.h"
 #include "GameObj.H"
 #include "SoarAction.h"
 
-class OrtsInterface;
-class GroupManager;
+class Sorts;
 
 class FSM{
  public:
-	FSM(OrtsInterface*, GroupManager*, GameObj*);
+	FSM(const Sorts *, GameObj *);
 	virtual ~FSM();
 
 	virtual int update()=0;
 
 	virtual GameObj *getGameObject(){return gob;}
 	virtual void init(std::vector<sint4>);
-  virtual ObjectActionType getName();
+	virtual ObjectActionType getName();
 
 protected:
 	ObjectActionType name;
 	GameObj *gob;
 	Vector<sint4> params;
-  OrtsInterface* ORTSIO;
-  GroupManager* groupMan;
+	const Sorts *sorts;
 };
 
 

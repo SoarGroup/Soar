@@ -2,7 +2,6 @@
 #define SoarGameObject_H
 
 #include"FSM.h"
-#include "MoveFSM.h"
 #include "Rectangle.h"
 
 #include<stack>

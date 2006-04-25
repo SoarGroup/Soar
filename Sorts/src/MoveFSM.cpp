@@ -1,10 +1,12 @@
 #include"MoveFSM.h"
 #include<iostream>
 
+#include "Sorts.h"
 using namespace std;
 
-MoveFSM::MoveFSM(OrtsInterface* oi, GroupManager* gm, GameObj* go) 
-            : FSM(oi,gm,go) {
+
+MoveFSM::MoveFSM(const Sorts *so, GameObj* go) 
+            : FSM(so,go) {
   name = OA_MOVE;
 }
 

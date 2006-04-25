@@ -1,12 +1,13 @@
-#include "include/MineFSM.h"
-#include "include/GroupManager.h"
-#include "include/SoarGameGroup.h"
+#include "Sorts.h"
+#include "MineFSM.h"
+#include "GroupManager.h"
+#include "SoarGameGroup.h"
 #include "general.h"
 
 #define DISTANCE_EPSILON 25
 
-MineFSM::MineFSM(OrtsInterface* oi, GroupManager* gm, GameObj* go) 
-         : FSM(oi,gm,go) {
+MineFSM::MineFSM(const Sorts *oi, GameObj* go) 
+         : FSM(oi,go) {
   name = OA_MINE;
 }
 
@@ -31,7 +32,7 @@ int MineFSM::update() {
       if ((squaredDistance(*gob->sod.x, *gob->sod.y, mineZoneX, mineZoneY) 
           < DISTANCE_EPSILON) 
           or (*gob->sod.speed == 0)) { 
-        sgg = groupMan->getGroupNear("mineral", worldId, 
+        sgg = sorts->groupManager->getGroupNear("mineral", worldId, 
                                      *gob->sod.x, *gob->sod.y);
         if (sgg != NULL) {
           // there is a mineral patch nearby, head right to a mineral
@@ -61,13 +62,13 @@ int MineFSM::update() {
       break;
           
     case MOVING_TO_MINERAL:
-      if (not ORTSIO->isAlive(mineralId)) {
+      if (not sorts->OrtsIO->isAlive(mineralId)) {
         // minerals gone!
         //cout << "MINEFSM: minerals disappeared! looking for more" << endl;
         state = MOVING_TO_MINE_ZONE;
         gob->set_action("move", moveToMineZoneParams);
       }
-      else if (ORTSIO->getOrtsDistance(mineralObj->gob, gob) <= 2) {
+      else if (sorts->OrtsIO->getOrtsDistance(mineralObj->gob, gob) <= 2) {
         // 2 is  defined in tool blueprint file for the distance needed to mine
         if (*gob->sod.speed > 0) {
           //cout << "MINEFSM: at the mineral, but speed > 0.\n";
@@ -123,7 +124,7 @@ int MineFSM::update() {
       // once we get in range, look for a command center
       if ((squaredDistance(*gob->sod.x, *gob->sod.y, baseZoneX, baseZoneY) 
           < DISTANCE_EPSILON) or (*gob->sod.speed == 0)) { 
-        sgg = groupMan->getGroupNear("controlCenter", myId, 
+        sgg = sorts->groupManager->getGroupNear("controlCenter", myId, 
                                      *gob->sod.x, *gob->sod.y);
         if (sgg != NULL) {
           // there is a base nearby, head right to it 
@@ -151,13 +152,13 @@ int MineFSM::update() {
       break;
           
     case MOVING_TO_BASE:
-      if (not ORTSIO->isAlive(baseId)) {
+      if (not sorts->OrtsIO->isAlive(baseId)) {
         // base gone!
         //cout << "MINEFSM: base disappeared! looking for more" << endl;
         state = MOVING_TO_BASE_ZONE;
         gob->set_action("move", moveToBaseZoneParams);
       }
-      else if (ORTSIO->getOrtsDistance(baseObj->gob, gob) <= 3) {
+      else if (sorts->OrtsIO->getOrtsDistance(baseObj->gob, gob) <= 3) {
         // 3 is defined in tool blueprint file for the distance needed
         
         tempParams.clear();
@@ -208,8 +209,8 @@ void MineFSM::init(vector<signed long> p) {
   moveToBaseZoneParams.push_back(baseZoneX);
   moveToBaseZoneParams.push_back(baseZoneY);
 
-  worldId = ORTSIO->getWorldId();
-  myId = ORTSIO->getMyId();
+  worldId = sorts->OrtsIO->getWorldId();
+  myId = sorts->OrtsIO->getMyId();
   mineralObj = (SoarGameObject*) NULL;
   baseObj = (SoarGameObject*) NULL;
   mineralId = -1;

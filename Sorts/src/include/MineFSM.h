@@ -8,10 +8,10 @@
 
 class MineFSM : public FSM {
 public:
-	MineFSM(OrtsInterface*, GroupManager*, GameObj*);
+	MineFSM(const Sorts *, GameObj*);
 
-  int update();
-  void init(vector<signed long> p);
+  	int update();
+	void init(vector<signed long> p);
 private:
   enum MineState { IDLE, MINING, MOVING_TO_MINE_ZONE, MOVING_TO_BASE_ZONE,
                    MOVING_TO_MINERAL, MOVING_TO_BASE,

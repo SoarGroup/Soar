@@ -26,12 +26,14 @@ void AStar::findPath(std::list<AStarNode *> *path)
 {
 
 /*
+  //Create and insert start node into open list
+  	//Create and insert new nodes as they are needed (might be slow - Keep nodes live?)
 
-	All work goes in here
-
+  //Once goal node is found, trace parent pointers and push tiles into path list.
+	//Alter MoveFSM so that it is consistent with this definition 
+  //return
 
 */
-
 
 }
 
