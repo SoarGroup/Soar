@@ -22,7 +22,7 @@
 #load the sml stuff
 lappend auto_path .
 #this next line for tests on winter
-lappend auto_path ~/sandbox/lib
+lappend auto_path ~/sandbox/SoarSuite/SoarLibrary/lib
 package require tcl_sml_clientinterface
 
 proc PrintCallback {id userData agent message} {
@@ -104,7 +104,7 @@ set runCallbackId [$agent RegisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED Pha
 set structuredCallbackId [$agent RegisterForXMLEvent $smlEVENT_XML_TRACE_OUTPUT StructuredTraceCallback ""]
 
 #load the TOH productions
-set result [$agent LoadProductions ../demos/towers-of-hanoi/towers-of-hanoi.soar]
+set result [$agent LoadProductions ../Demos/towers-of-hanoi/towers-of-hanoi.soar]
 #loads a function to test the user-defined RHS function stuff
 set result [$agent LoadProductions ../Tests/TOHtest.soar]
 
@@ -170,7 +170,7 @@ interp create red
 #load package in slave
 red eval lappend auto_path .
 #this next line for tests on winter
-red eval lappend auto_path ~/sandbox/lib
+red eval lappend auto_path ~/sandbox/SoarSuite/SoarLibrary/lib
 red eval package require tcl_sml_clientinterface
 
 #create kernel and agent
