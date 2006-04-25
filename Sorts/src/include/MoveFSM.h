@@ -2,6 +2,7 @@
 #define MoveFSM_H
 
 #include "FSM.h"
+#include "SPathFinder.h"
 
 class MoveFSM: public FSM {
  public:
