@@ -16,8 +16,6 @@ $(BASEDIR_PREFIX)/Core/ClientSML/src/libClientSML.la
 INCLUDES = \
 -I$(BASEDIR_PREFIX)/Core/ClientSML/include \
 -I$(BASEDIR_PREFIX)/Core/ElementXML/include \
--I$(BASEDIR_PREFIX)/Core/ConnectionSML/include \
--I$(BASEDIR_PREFIX)/Core/gSKI/include \
--I$(BASEDIR_PREFIX)/Core/CLI/include
+-I$(BASEDIR_PREFIX)/Core/ConnectionSML/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)
