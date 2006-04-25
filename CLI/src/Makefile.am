@@ -67,12 +67,7 @@ cli_version.cpp\
 cli_waitsnc.cpp\
 cli_warnings.cpp\
 cli_watch.cpp\
-cli_watchwmes.cpp\
-../include/cli_Aliases.h\
-../include/cli_CLIError.h\
-../include/cli_CommandData.h\
-../include/cli_CommandLineInterface.h\
-../include/cli_Commands.h
+cli_watchwmes.cpp
 
 INCLUDES = \
 -I../include\
