@@ -27,6 +27,8 @@ class GroupManager {
     GroupManager();
     ~GroupManager();
 
+    void initialize();
+
     void updateVision();
     bool assignActions();
     void processVisionCommands();
@@ -42,6 +44,8 @@ class GroupManager {
   private:
     int groupingRadiusSquared;
     int focusX, focusY;
+    int centerX, centerY;
+    int viewWidth;
     void prepareForReGroup();
     void reGroup();
     void generateGroupData();

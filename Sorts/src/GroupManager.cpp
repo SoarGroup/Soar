@@ -17,6 +17,8 @@ using namespace std;
 
 
 GroupManager::GroupManager() {
+  // sorts ptr is NOT valid here, use the intialize() function! 
+    
   // this default should be reflected in the agent's assumptions
   // (1024 = 32^2)
   groupingRadiusSquared = 1024;
@@ -24,9 +26,19 @@ GroupManager::GroupManager() {
   // the number of objects near the focus point to add
   // agent can change this, if it wishes to cheat
   numObjects = 5;
-  
+}
+
+void GroupManager::initialize() {
+  // called right after sorts ptr set up
   focusX = (int) (sorts->OrtsIO->getMapXDim() / 2.0);
   focusY = (int) (sorts->OrtsIO->getMapYDim() / 2.0);
+
+  centerX = focusX;
+  centerY = focusY;
+
+  viewWidth = 2*focusX;
+  cout << "init: " << focusX << " " << focusY << " " << viewWidth << endl;
+  sorts->featureMapManager->changeViewWindow(focusX, focusY, viewWidth);
 
 }
 void GroupManager::updateVision() {
@@ -45,11 +57,7 @@ void GroupManager::updateVision() {
   adjustAttention();
     // determine which groups are attended to,
     // and send them to Soar
-  
   updateFeatureMaps(false);
-    // update feature maps, inhibiting groups attended to,
-    // and send them to Soar
-    
   return;
 }
 
@@ -94,7 +102,6 @@ bool GroupManager::assignActions() {
 }
 
 void GroupManager::processVisionCommands() {
-  cout << "processVision" << endl;
   // called when Soar changes the view window, wants to attend to an item
   // in a feature map, or changes a grouping parameter.
 
@@ -140,6 +147,7 @@ void GroupManager::processVisionCommands() {
         // recalc all center distances and rebuild the order of the groups
         remakeGroupSet();
         adjustAttention(); 
+        updateFeatureMaps(false);
 
         break;
       case AA_LOOK_FEATURE:
@@ -161,13 +169,40 @@ void GroupManager::processVisionCommands() {
         // recalc all center distances and rebuild the order of the groups
         remakeGroupSet();
         adjustAttention(); 
+        updateFeatureMaps(false);
         break;
       case AA_RESIZE:
-
+        assert(i->params.size() == 1);
+        viewWidth = *(i->params.begin());
+        sorts->featureMapManager->changeViewWindow(centerX, centerY, viewWidth);
+        updateFeatureMaps(true); // re-update all the feature maps-
+                                 // changeViewWindow clears them out
+        sorts->featureMapManager->updateSoar();
         break;
       case AA_MOVE_LOCATION:
         break;
       case AA_MOVE_FEATURE:
+        assert(i->params.size() == 1);
+        centerGroup = sorts->featureMapManager->getGroup(i->fmName, 
+                                                        *(i->params.begin()));
+        if (centerGroup == NULL) {
+          cout << "ERROR: sector " << *(i->params.begin()) << " of map " <<
+            i->fmName << " is empty! Ignoring command\n";
+          return;
+        }
+        
+        centerGroup->getCenterLoc(focusX, focusY);
+        centerX = focusX;
+        centerY = focusY;
+        sorts->featureMapManager->changeViewWindow(centerX, centerY, viewWidth);
+
+        // recalc all center distances and rebuild the order of the groups
+        remakeGroupSet();
+        sorts->featureMapManager->changeViewWindow(centerX, centerY, viewWidth);
+        adjustAttention(); 
+        updateFeatureMaps(true); // re-update all the feature maps-
+                                 // changeViewWindow clears them out
+        sorts->featureMapManager->updateSoar();
         break;
       case AA_GROUPING_RADIUS:
       // grouping change:
@@ -513,6 +548,49 @@ void GroupManager::removeGroup(SoarGameGroup* group) {
   delete group;
 }
 
+
+void GroupManager::adjustAttention() {
+  // iterate through all staleProperties groups, if in attn. range,
+  // send params to Soar
+  
+  set<SoarGameGroup*>::iterator groupIter;
+  int i=0;
+  for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
+    if (i < numObjects) {
+      if (not (*groupIter)->getInSoar()) {
+        sorts->SoarIO->addGroup(*groupIter);
+        sorts->SoarIO->refreshGroup(*groupIter);
+        (*groupIter)->setInSoar(true);
+       // cout << "AAA adding group " << (int)*groupIter << ", dist " <<
+       //   (*groupIter)->getDistToFocus() << endl;
+        
+        // recently added / removed from Soar is a stale property, 
+        // as far as  updateFeatureMap is concerned- the inhibition of
+        // the group must change
+        (*groupIter)->setHasStaleProperties(true);
+      }
+      else if ((*groupIter)->getHasStaleProperties()) {
+        sorts->SoarIO->refreshGroup(*groupIter);
+        //cout << "AAA refreshing group " << (int)*groupIter << ", dist " <<
+        //  (*groupIter)->getDistToFocus() << endl;
+      }
+    }
+    else { 
+      //cout << "AAA not adding group " << (int)*groupIter << ", dist " <<
+      //  (*groupIter)->getDistToFocus() << endl;
+      if ((*groupIter)->getInSoar() == true) {
+        (*groupIter)->setInSoar(false);
+        sorts->SoarIO->removeGroup(*groupIter);
+        (*groupIter)->setHasStaleProperties(true);
+      }
+    }
+    i++;
+  }
+    
+  //updateFeatureMaps(false);
+  return;
+}
+
 void GroupManager::updateFeatureMaps(bool refreshAll) {
   // update the feature maps:
   // if refreshAll, all groups in the world will be updated
@@ -536,45 +614,6 @@ void GroupManager::updateFeatureMaps(bool refreshAll) {
   sorts->featureMapManager->updateSoar();
   return;
   
-}
-
-void GroupManager::adjustAttention() {
-  // iterate through all staleProperties groups, if in attn. range,
-  // send params to Soar
-  
-  set<SoarGameGroup*>::iterator groupIter;
-  int i=0;
-  for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
-    if (i < numObjects) {
-      if (not (*groupIter)->getInSoar()) {
-        sorts->SoarIO->addGroup(*groupIter);
-        sorts->SoarIO->refreshGroup(*groupIter);
-        (*groupIter)->setInSoar(true);
-       // cout << "AAA adding group " << (int)*groupIter << ", dist " <<
-       //   (*groupIter)->getDistToFocus() << endl;
-        // manually refresh in the feature maps so it is inhibited
-        sorts->featureMapManager->refreshGroup(*groupIter);
-      }
-      if ((*groupIter)->getHasStaleProperties()) {
-        sorts->SoarIO->refreshGroup(*groupIter);
-        //cout << "AAA refreshing group " << (int)*groupIter << ", dist " <<
-        //  (*groupIter)->getDistToFocus() << endl;
-      }
-    }
-    else { 
-      //cout << "AAA not adding group " << (int)*groupIter << ", dist " <<
-      //  (*groupIter)->getDistToFocus() << endl;
-      if ((*groupIter)->getInSoar() == true) {
-        (*groupIter)->setInSoar(false);
-        sorts->SoarIO->removeGroup(*groupIter);
-        // manually refresh in the feature maps so it added back
-        sorts->featureMapManager->refreshGroup(*groupIter);
-      }
-    }
-    i++;
-  }
-    
-  return;
 }
 
 

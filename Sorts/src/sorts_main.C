@@ -45,8 +45,10 @@ void SoarUpdateEventHandler(sml::smlUpdateEventId id,
                             sml::Kernel*          pKernel,
                             sml::smlRunFlags      runFlags)
 {
-  sml::Agent *agent = pKernel->GetAgent("orts_agent");
   Sorts* sorts = (Sorts*) pUserData;
+  pthread_mutex_lock(sorts->mutex);
+  cout << "SOAR EVENT {\n";
+  sml::Agent *agent = pKernel->GetAgent("orts_agent");
   
   sorts->SoarIO->getNewSoarOutput();
   sorts->groupManager->processVisionCommands();
@@ -57,6 +59,8 @@ void SoarUpdateEventHandler(sml::smlUpdateEventId id,
     sorts->SoarIO->unlockSoarMutex();
     sorts->SoarIO->setStale(false);
   }
+  cout << "SOAR EVENT }\n";
+  pthread_mutex_unlock(sorts->mutex);
 }
 
 // the function that is executed by a separate thread to
@@ -110,6 +114,8 @@ int main(int argc, char *argv[]) {
   pthread_mutex_t attentionActionMutex = PTHREAD_MUTEX_INITIALIZER;
   
   pthread_mutex_t soarMutex = PTHREAD_MUTEX_INITIALIZER;
+ 
+  pthread_mutex_t sortsMutex = PTHREAD_MUTEX_INITIALIZER;
 
   /*******************
    * Init sml client *
@@ -192,7 +198,8 @@ int main(int argc, char *argv[]) {
               &ortsInterface, 
               &gm, 
               &mapManager, 
-              &featureMapManager);
+              &featureMapManager,
+              &sortsMutex);
 
   
   soarInterface.setSorts(&sorts);
@@ -202,6 +209,7 @@ int main(int argc, char *argv[]) {
   featureMapManager.setSorts(&sorts);
   
   soarInterface.initSoarInputLink();
+  gm.initialize();
   
 // register for all events
   gsm.add_handler(&ortsInterface);

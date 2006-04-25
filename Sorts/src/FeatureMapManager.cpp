@@ -49,8 +49,8 @@ FeatureMapManager::FeatureMapManager() {
   stringToFeatureMap[FMName] =FMPointer;
   fmList.push_back(FMPointer);
 
-  changeViewWindow(230,230,460);
-  //changeViewWindow(0,0,0);
+  //changeViewWindow(230,230,460);
+  changeViewWindow(0,0,0);
 }
 
 list<FeatureMap*> FeatureMapManager::identifyFeatures(SoarGameGroup* group) {
@@ -182,30 +182,32 @@ void FeatureMapManager::updateSoar() {
   map<string, FeatureMap*>::iterator it = stringToFeatureMap.begin();
   cout << "Feature map info:\n";
   while (it != stringToFeatureMap.end()) {
-    if (it->second->getIsPresent() == false) {
-      sorts->SoarIO->addFeatureMap(it->second, it->first);
-      it->second->setIsPresent(true);
-    }
+    if (it->second->getIsStale()) {
+      it->second->setIsStale(false);
+      if (it->second->getIsPresent() == false) {
+        sorts->SoarIO->addFeatureMap(it->second, it->first);
+        it->second->setIsPresent(true);
+      }
 
-    sorts->SoarIO->refreshFeatureMap(it->second, it->first);
-    
-  ///*
-    cout << "map " << it->first << ":\n";
-    cout << "\t" << it->second->getCount(0);
-    cout << "\t" << it->second->getCount(1);
-    cout << "\t" << it->second->getCount(2);
-    cout << endl;
-    cout << "\t" << it->second->getCount(3);
-    cout << "\t" << it->second->getCount(4);
-    cout << "\t" << it->second->getCount(5);
-    cout << endl;
-    cout << "\t" << it->second->getCount(6);
-    cout << "\t" << it->second->getCount(7);
-    cout << "\t" << it->second->getCount(8);
-    cout << endl;
+      sorts->SoarIO->refreshFeatureMap(it->second, it->first);
+      
+    ///*
+      cout << "map " << it->first << ":\n";
+      cout << "\t" << it->second->getCount(0);
+      cout << "\t" << it->second->getCount(1);
+      cout << "\t" << it->second->getCount(2);
+      cout << endl;
+      cout << "\t" << it->second->getCount(3);
+      cout << "\t" << it->second->getCount(4);
+      cout << "\t" << it->second->getCount(5);
+      cout << endl;
+      cout << "\t" << it->second->getCount(6);
+      cout << "\t" << it->second->getCount(7);
+      cout << "\t" << it->second->getCount(8);
+      cout << endl;
+    //*/
+    }
     it++;
-  //*/
-  
   }
 }
 

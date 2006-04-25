@@ -4,6 +4,7 @@
 
 #include "SPathFinder.h"
 #include "MineFSM.h"
+#include "MoveFSM.h"
 
 #include "Sorts.h"
 #include "SoarGameObject.h"
@@ -14,6 +15,8 @@ void SoarGameObject::identifyBehaviors() {
   if (friendly && name == "worker") {
     FSM* mineBehavior = new MineFSM(sorts, gob);
     registerBehavior(mineBehavior);
+    FSM* moveBehavior = new MoveFSM(sorts, gob);
+    registerBehavior(moveBehavior);
   }
 }
 

@@ -299,7 +299,7 @@ void SoarInterface::getNewSoarOutput() {
     }
     
     string name = cmdPtr->GetCommandName() ;
-    cout << "command name: " << name << endl;
+    cout << "recieved command from Soar: " << name << endl;
     ObjectActionType OType = objectActionTypeLookup(name);
 
     if (OType != OA_NO_SUCH_ACTION) {
@@ -499,14 +499,6 @@ void SoarInterface::commitInputLinkChanges() {
 //  cout << "### COMMIT FINISHED ###" << endl;
 }
 
-void SoarInterface::lockSoarMutex() { 
-  pthread_mutex_lock(soarMutex);
-}
-
-void SoarInterface::unlockSoarMutex() { 
-  pthread_mutex_unlock(soarMutex);
-}
-
 bool SoarInterface::getStale() {
   return stale;
 }
@@ -515,19 +507,29 @@ void SoarInterface::setStale(bool _st) {
   stale = _st;
 }
 
+
+// See comment in Sorts.h regarding these disabled mutexes
+void SoarInterface::lockSoarMutex() { 
+//  pthread_mutex_lock(soarMutex);
+}
+
+void SoarInterface::unlockSoarMutex() { 
+//  pthread_mutex_unlock(soarMutex);
+}
+
 void SoarInterface::lockObjectActionMutex() { 
-  pthread_mutex_lock(objectActionQueueMutex);
+//  pthread_mutex_lock(objectActionQueueMutex);
 }
  
 void SoarInterface::unlockObjectActionMutex() { 
-  pthread_mutex_unlock(objectActionQueueMutex);
+//  pthread_mutex_unlock(objectActionQueueMutex);
 }
 void SoarInterface::lockAttentionActionMutex() { 
-  pthread_mutex_lock(attentionActionQueueMutex);
+//  pthread_mutex_lock(attentionActionQueueMutex);
 }
  
 void SoarInterface::unlockAttentionActionMutex() { 
-  pthread_mutex_unlock(attentionActionQueueMutex);
+//  pthread_mutex_unlock(attentionActionQueueMutex);
 }
 
 void SoarInterface::improperCommandError() {

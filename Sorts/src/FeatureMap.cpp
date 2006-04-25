@@ -18,6 +18,7 @@ FeatureMap::FeatureMap() {
   }
   
   isPresent = false;
+  isStale = true;
 }
 
 
@@ -36,6 +37,7 @@ SoarGameGroup* FeatureMap::getGroup(int sector) {
   if (fmSectorIterators[sector] == fmSectors[sector].end()) {
     fmSectorIterators[sector] = fmSectors[sector].begin();
   }
+
   return group;
 }
 
@@ -47,6 +49,7 @@ void FeatureMap::addGroup(SoarGameGroup* group, int sector, int strength) {
   // FeatureMapManager handles identifying the sector, too
 
   //assert(fmSectors[sector].find(group) == fmSectors[sector].end());
+  isStale = true;
   fmSectors[sector].insert(group); 
   fmCounts[sector] += strength;
 
@@ -59,16 +62,18 @@ void FeatureMap::addGroup(SoarGameGroup* group, int sector, int strength) {
 void FeatureMap::removeGroup(SoarGameGroup* group, int sector, int strength) {  
   // remove the group (if it exists)
 
+  isStale = true;
   set<SoarGameGroup*>::iterator it;
   it = fmSectors[sector].find(group);
   assert(it != fmSectors[sector].end());
+  
+  fmSectors[sector].erase(it);
   
   // if the iterator points to this group, change it.
   if (fmSectorIterators[sector] == it) {
     fmSectorIterators[sector] = fmSectors[sector].begin();
   }
   
-  fmSectors[sector].erase(it);
   fmCounts[sector] -= strength;
   assert(fmCounts[sector] >= 0);
 }
@@ -78,6 +83,7 @@ int FeatureMap::getCount(int sector) {
 }
 
 void FeatureMap::clear() {
+  isStale = true;
   // remove all objects, reset the iterators
   for (unsigned int i=0; i<fmSectors.size(); i++) {
     fmSectors[i].clear();
@@ -94,4 +100,12 @@ void FeatureMap::setIsPresent(bool in) {
 
 bool FeatureMap::getIsPresent() {
   return isPresent;
+}
+
+void FeatureMap::setIsStale(bool val) {
+  isStale = val;
+}
+
+bool FeatureMap::getIsStale() {
+  return isStale;
 }

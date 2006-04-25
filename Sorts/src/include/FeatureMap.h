@@ -36,10 +36,14 @@ class FeatureMap {
 
     void setIsPresent(bool);
     bool getIsPresent();
+
+    void setIsStale(bool);
+    bool getIsStale();
   private:
     vector<set<SoarGameGroup*> > fmSectors;
     vector<set<SoarGameGroup*>::iterator> fmSectorIterators;
     vector<int> fmCounts;
     bool isPresent; // true if FM is in Soar
+    bool isStale;
 };
 #endif
