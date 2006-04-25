@@ -76,6 +76,6 @@ sock_Utils.h\
 ../include/thread_OSspecific.h\
 ../include/thread_Thread.h
 
-INCLUDES = -I../../.. -I../include -I../../ElementXML/include -I../../ClientSML/include
+INCLUDES = -I../include -I../../ElementXML/include -I../../ClientSML/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)

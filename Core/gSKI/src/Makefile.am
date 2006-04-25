@@ -158,7 +158,7 @@ portability.h\
 ../include/IgSKI_RhsFunction.h\
 ../include/IgSKI_ConditionSet.h
 
-INCLUDES = -I../../.. -I../include -I ../../SoarKernel/include
+INCLUDES = -I../include -I ../../SoarKernel/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)
 

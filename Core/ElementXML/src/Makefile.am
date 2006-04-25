@@ -4,8 +4,6 @@
 ###########################################
 lib_LTLIBRARIES = libElementXML.la
 
-#libElementXML_la_LIBADD = ../../ConnectionSML/src/libConnectionSML.la
-
 libElementXML_la_SOURCES = \
 ElementXMLInterface.cpp\
 ElementXMLdll.cpp\
@@ -21,6 +19,6 @@ sml_ParseXMLString.cpp\
 ../include/sml_ParseXMLFile.h\
 ../include/sml_ParseXMLString.h
 
-INCLUDES = -I../../.. -I../include
+INCLUDES = -I../include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)
