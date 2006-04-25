@@ -8,8 +8,8 @@ libSoarKernelSML_la_LIBADD = \
 ../../SoarKernel/src/libSoarKernel.la\
 ../../gSKI/src/libgSKI.la\
 ../../CLI/src/libCommandLineInterface.la\
-../../ClientSML/src/libClientSML.la\
-../../ConnectionSML/src/libConnectionSML.la
+../../ConnectionSML/src/libConnectionSML.la\
+../../ElementXML/src/libElementXML.la
 
 libSoarKernelSML_la_SOURCES = \
 KernelSMLInterface.cpp\
