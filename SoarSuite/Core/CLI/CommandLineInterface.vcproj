@@ -111,12 +111,6 @@
 		</Configuration>
 	</Configurations>
 	<References>
-		<ProjectReference
-			ReferencedProjectIdentifier="{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
-			Name="ConnectionSML"/>
-		<ProjectReference
-			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
-			Name="ElementXML"/>
 	</References>
 	<Files>
 		<Filter
