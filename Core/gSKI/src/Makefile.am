@@ -4,6 +4,9 @@
 ###########################################
 noinst_LTLIBRARIES = libgSKI.la
 
+libgSKI_la_LIBADD = \
+../../SoarKernel/src/libSoarKernel.la
+
 libgSKI_la_SOURCES = \
 AgentRunManager.cpp\
 Log.cpp\
