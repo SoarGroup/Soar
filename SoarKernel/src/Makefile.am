@@ -72,6 +72,6 @@ reorder.h\
 ../include/kernel_struct.h\
 ../include/production.h
 
-INCLUDES = -I../../.. -I../include
+INCLUDES = -I../include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)

@@ -53,7 +53,6 @@ sml_XMLListener.cpp\
 ../include/KernelSMLdll.h
 
 INCLUDES = \
--I../../.. \
 -I../include \
 -I../../ClientSML/include \
 -I../../ElementXML/include \

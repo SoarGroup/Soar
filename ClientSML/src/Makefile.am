@@ -41,7 +41,6 @@ sml_OutputDeltaList.cpp\
 ../include/sml_OutputDeltaList.h
 
 INCLUDES = \
--I../../..\
 -I../include\
 -I../../ElementXML/include\
 -I../../ConnectionSML/include\
