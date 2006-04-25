@@ -25,7 +25,7 @@ GroupManager::GroupManager() {
 
   // the number of objects near the focus point to add
   // agent can change this, if it wishes to cheat
-  numObjects = 5;
+  numObjects = 1;
 }
 
 void GroupManager::initialize() {
@@ -202,7 +202,6 @@ void GroupManager::processVisionCommands() {
         adjustAttention(); 
         updateFeatureMaps(true); // re-update all the feature maps-
                                  // changeViewWindow clears them out
-        sorts->featureMapManager->updateSoar();
         break;
       case AA_GROUPING_RADIUS:
       // grouping change:
@@ -265,41 +264,60 @@ void GroupManager::reGroup() {
   SoarGameObject* centerObject;
 
   while (catIter != staleGroupCategories.end()) {
-  //  cout << "doing type " << catIter->first << endl;
+    //cout << "doing type " << catIter->first << endl;
     groupingList.clear();
     centerGroupingList.clear();
     
     for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
       if (not (*groupIter)->getSticky() and
               (*groupIter)->getCategory() == *catIter) {
-   //     cout << "group " << (int) (*groupIter) << endl;
+        //cout << "group " << (int) (*groupIter) << endl;
         // group is of the type we are re-grouping
-        
-        objectData.group = *groupIter;
-        objectData.assigned = false;
-        centerObject = (*groupIter)->getCenterMember();
-    
-        // centers are stored in a separate list
-        objectData.object = centerObject;
-        objectData.x = *centerObject->gob->sod.x;
-        objectData.y = *centerObject->gob->sod.y;
-        // oldGroup means the group has been around for at least one cycle
-        objectData.oldGroup = (*groupIter)->isOld();
-        
-        centerGroupingList.push_back(objectData);
-        objectData.oldGroup = false;
-        groupMembers = (*groupIter)->getMembers();
-        objectIter = groupMembers.begin();
-        while (objectIter != groupMembers.end()) {
-          if ((*objectIter) != centerObject){
-            // don't add the center object to this list
+       
+        if ((*groupIter)->isOld()) {
+          // oldGroup means the group has been around for at least one cycle
+          // centers of old groups have priority for retaining their
+          // group ID
+          objectData.group = *groupIter;
+          objectData.assigned = false;
+          centerObject = (*groupIter)->getCenterMember();
+      
+          // centers are stored in a separate list
+          objectData.object = centerObject;
+          objectData.x = *centerObject->gob->sod.x;
+          objectData.y = *centerObject->gob->sod.y;
+          objectData.oldGroup = true;
+          
+          centerGroupingList.push_back(objectData);
+          objectData.oldGroup = false;
+          groupMembers = (*groupIter)->getMembers();
+          objectIter = groupMembers.begin();
+          while (objectIter != groupMembers.end()) {
+            if ((*objectIter) != centerObject){
+              // don't add the center object to this list
+              objectData.object = *objectIter;
+              
+              objectData.x = *(*objectIter)->gob->sod.x;
+              objectData.y = *(*objectIter)->gob->sod.y;
+              groupingList.push_back(objectData);
+            }
+            objectIter++;
+          }
+        }
+        else {
+          // not an old group- don't care about center distinction
+          objectData.group = *groupIter;
+          objectData.assigned = false;
+          objectData.oldGroup = false;
+          groupMembers = (*groupIter)->getMembers();
+          objectIter = groupMembers.begin();
+          while (objectIter != groupMembers.end()) {
             objectData.object = *objectIter;
-            
             objectData.x = *(*objectIter)->gob->sod.x;
             objectData.y = *(*objectIter)->gob->sod.y;
             groupingList.push_back(objectData);
+            objectIter++;
           }
-          objectIter++;
         }
       }
       // else it was a group of a different type
@@ -372,12 +390,12 @@ void GroupManager::reGroup() {
               }
             }
             toMergeList.push_back(groups);
-         //   cout << "XXX will merge " << (int) groups.first << " -> " << (int) groups.second << endl;
+            //cout << "XXX will merge " << (int) groups.first << " -> " << (int) groups.second << endl;
           }
           else {
             // obj2 has not been assigned. Assign it to obj1's group.
-         //   cout << "XXX obj from group " << (int) (*obj2StructIter).group <<
-         //           " joining " << (int) obj1Struct.group << endl;
+            //cout << "XXX obj from group " << (int) (*obj2StructIter).group <<
+            //        " joining " << (int) obj1Struct.group << endl;
             (*obj2StructIter).assigned = true;
             (*obj2StructIter).group->removeUnit((*obj2StructIter).object);
             (*obj2StructIter).group = obj1Struct.group;

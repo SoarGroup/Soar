@@ -295,7 +295,8 @@ int FeatureMapManager::classifyCenterPointInGrid(SoarGameGroup* group) {
 }
   
 void FeatureMapManager::clearAll() {
-  
+ 
+  // the group flags must also be cleared, do that in group manager!
   vector<FeatureMap*>::iterator it = fmList.begin();
   while (it != fmList.end()) {
     (*it)->clear();
