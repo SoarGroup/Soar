@@ -75,7 +75,6 @@ cli_watchwmes.cpp\
 ../include/cli_Commands.h
 
 INCLUDES = \
--I../../..\
 -I../include\
 -I../../gSKI/include\
 -I../../ElementXML/include\
