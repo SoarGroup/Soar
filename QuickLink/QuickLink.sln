@@ -3,15 +3,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuickLink", "QuickLink.vcpr
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSML", "..\..\Core\ClientSML\ClientSML.vcproj", "{3EDBED11-A1B3-4E00-8B6E-652523D482F0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSML", "..\SoarSuite\Core\ClientSML\ClientSML.vcproj", "{3EDBED11-A1B3-4E00-8B6E-652523D482F0}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConnectionSML", "..\..\Core\ConnectionSML\ConnectionSML.vcproj", "{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConnectionSML", "..\SoarSuite\Core\ConnectionSML\ConnectionSML.vcproj", "{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ElementXML", "..\..\Core\ElementXML\ElementXML.vcproj", "{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ElementXML", "..\SoarSuite\Core\ElementXML\ElementXML.vcproj", "{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
