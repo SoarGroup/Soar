@@ -9,7 +9,8 @@ bin_PROGRAMS = FilterC
 FilterC_SOURCES = FilterC.cpp
 
 FilterC_LDADD = \
-$(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \
+$(BASEDIR_PREFIX)/Core/ClientSML/src/libClientSML.la \
+$(BASEDIR_PREFIX)/Core/ConnectionSML/src/libConnectionSML.la \
 $(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
 
 INCLUDES = \

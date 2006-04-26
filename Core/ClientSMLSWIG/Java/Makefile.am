@@ -13,9 +13,9 @@ lib_LTLIBRARIES =
 endif
 
 libJava_sml_ClientInterface_la_LIBADD = \
-$(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \
-$(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la \
-$(BASEDIR_PREFIX)/Core/ClientSML/src/libClientSML.la 
+$(BASEDIR_PREFIX)/Core/ClientSML/src/libClientSML.la \
+$(BASEDIR_PREFIX)/Core/ConnectionSML/src/libConnectionSML.la \
+$(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
 
 nodist_libJava_sml_ClientInterface_la_SOURCES = Java_sml_ClientInterface_wrap.cpp 
 
