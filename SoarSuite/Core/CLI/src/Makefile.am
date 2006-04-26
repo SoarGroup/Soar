@@ -74,7 +74,6 @@ INCLUDES = \
 -I../../gSKI/include\
 -I../../ElementXML/include\
 -I../../ConnectionSML/include\
--I../../ClientSML/include\
 -I../../KernelSML/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)
