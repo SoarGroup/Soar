@@ -16,7 +16,7 @@
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 #include "sml_KernelSML.h"
-#include "sml_ClientEvents.h"
+#include "sml_Events.h"
 #include "sml_RunScheduler.h"
 
 #include "IgSKI_Agent.h"
