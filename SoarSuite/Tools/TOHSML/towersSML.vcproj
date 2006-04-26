@@ -22,7 +22,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\Core\ClientSML\include"
+				AdditionalIncludeDirectories="..\..\Core\ClientSML\include;..\..\Core\ConnectionSML\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -87,7 +87,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\Core\ClientSML\include"
+				AdditionalIncludeDirectories="..\..\Core\ClientSML\include;..\..\Core\ConnectionSML\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"

@@ -18,7 +18,7 @@
 
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
-#include "sml_ClientEvents.h"
+#include "sml_Events.h"
 
 #include "../../gSKI/src/gSKI_Error.h"
 #include "IgSKI_AgentManager.h"
