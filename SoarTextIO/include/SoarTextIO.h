@@ -30,41 +30,7 @@ struct WMEpointer {
 
 class SoarTextIO 
 {
-public:
 
-	//******CONSTRUCTORS******
-	SoarTextIO();
-	~SoarTextIO();
-
-	void RespondCycle();
-	//gets output from agent
-
-	void make_buffered_changes();
-
-	//******SML VARIABLES******
-	sml::Kernel* pKernel;
-	sml::Agent* pAgent;
-	WMEpointer pInputLink;
-	sml::Identifier* pOutputLink;
-	WMEpointer pTextInput;
-	sml::Identifier* pTextOutput;
-	sml::StringElement* pLastNewest;
-	vector<WMEpointer*> dontlose;
-	vector<WMEpointer*> LastSent;
-
-	bool waitForOutput, m_StopNow, printNow, m_IsRunning, initiateRem, initiateRes, init_soar;
-#ifdef _WIN32
-	static void RunForever( void* info );
-#else
-	pthread_t newThread;
-	int print_position;
-#endif
-	void runner();
-
-	void init();
-	//initializes things for SoarTextIO
-
-	
 
 private:
 
@@ -159,7 +125,6 @@ private:
 		
 	};
 	
-	list<buffered_change_t> changes;
 		
 	//******FUNCTIONAL VARIABLES******
 	int sentenceNum;
@@ -238,6 +203,43 @@ private:
 	}
 
 	buf_type decipher_type(const std::string& str);
+
+	public:
+
+		//******CONSTRUCTORS******
+		SoarTextIO();
+		~SoarTextIO();
+
+		void RespondCycle();
+		//gets output from agent
+
+		void make_buffered_changes();
+
+		//******SML VARIABLES******
+		sml::Kernel* pKernel;
+		sml::Agent* pAgent;
+		WMEpointer pInputLink;
+		sml::Identifier* pOutputLink;
+		WMEpointer pTextInput;
+		sml::Identifier* pTextOutput;
+		sml::StringElement* pLastNewest;
+		vector<WMEpointer*> dontlose;
+		vector<WMEpointer*> LastSent;
+
+		bool waitForOutput, m_StopNow, printNow, m_IsRunning, initiateRem, initiateRes, init_soar;
+#ifdef _WIN32
+		static void RunForever( void* info );
+#else
+		pthread_t newThread;
+		int print_position;
+#endif
+		void runner();
+
+		void init();
+		//initializes things for SoarTextIO
+
+
+		list<buffered_change_t> changes;
 
 	
 };

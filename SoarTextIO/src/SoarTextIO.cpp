@@ -222,7 +222,8 @@ MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 		if(STIO->LastSent.size() > 0)
 		{
 			//STIO->pAgent->DestroyWME(STIO->LastSent[0]->holder);
-			STIO->LastSent.resize(0);
+			STIO->LastSent.clear();
+			
 		}
 	}
 	//	if(STIO->pTextInput != NULL)
@@ -237,6 +238,7 @@ void enact_init_soar(sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgen
 		SoarTextIO* STIO = (SoarTextIO*)pUserData;
 		STIO->init_soar = true;
 		STIO->init();
+		STIO->changes.clear();
 	}
 }
 
