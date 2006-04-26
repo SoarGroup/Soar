@@ -1,0 +1,3 @@
+pushd Adder
+source Adder_source.soar
+popd
