@@ -1,5 +1,5 @@
-#ifndef SoarGameGroup_h
-#define SoarGameGroup_h
+#ifndef PerceptualGroup_h
+#define PerceptualGroup_h
 
 #include <list>
 #include <set>
@@ -18,25 +18,24 @@ using namespace std;
 
 //class SoarGameObject{}; // TEMPORARY
 
-class SoarGameGroup {
+class PerceptualGroup {
   public:
-    SoarGameGroup
+    PerceptualGroup
     ( SoarGameObject* unit,
-      bool            _mixedType,
       const Sorts*    _sorts);
 
-    ~SoarGameGroup();
+    ~PerceptualGroup();
 
     void addUnit(SoarGameObject* unit);
     bool removeUnit(SoarGameObject* unit);
     void generateData();
     bool assignAction(ObjectActionType type, list<int> params,
-                      list<SoarGameGroup*> targets);
+                      list<PerceptualGroup*> targets);
     bool isEmpty();
 
     list<SoarGameObject*> getMembers(); 
   
-    void mergeTo(SoarGameGroup* target);
+    void mergeTo(PerceptualGroup* target);
     bool getHasStaleMembers();
     void setHasStaleMembers();
     void setHasStaleMembers(bool val);
@@ -46,8 +45,8 @@ class SoarGameGroup {
     pair<string, int> getCategory(bool ownerGrouping);
     int getSize();
     SoarGameObject* getCenterMember();
-    SoarGameObject* getNextMember();
     void updateCenterMember();
+    void updateCenterLoc();
 
     // get the player number that owns this group
     int getOwner();
@@ -114,7 +113,6 @@ class SoarGameGroup {
     string typeName;
     
     SoarGameObject* centerMember;
-    SoarGameObject* currentMember; // for getNextMember functionality
 
     int owner;
     bool friendly;

@@ -7,43 +7,33 @@
 #include "Object.H"
 
 // our includes
-#include "include/SoarGameGroup.h"
+#include "include/PerceptualGroup.h"
 #include "include/general.h"
 #include "include/Sorts.h"
 
-SoarGameGroup::SoarGameGroup
+PerceptualGroup::PerceptualGroup
 ( SoarGameObject* unit, 
-  bool            _mixedType,
   const Sorts*    _sorts )
 : sorts(_sorts)
 {
   members.insert(unit);
-  unit->setGroup(this);
+  unit->setPerceptualGroup(this);
   setHasStaleMembers();
   hasStaleProperties= true;
   centerMember = unit;
-  currentMember = unit;
   typeName = unit->gob->bp_name();
   owner = unit->getOwner();
   friendly = unit->isFriendly();
   world = unit->isWorld();
-  mixedType = _mixedType;
+  mixedType = false;
   inSoar = false;
   old = false;
 
   fmSector = -1;
 
-  if (not mixedType) {
-    minerals = (typeName == "mineral");
-    airUnits = (*(unit->gob->sod.zcat) == 1);
-    landUnits = (*(unit->gob->sod.zcat) == 3);
-  }
-  else {
-    minerals = false;
-    airUnits = false;
-    landUnits = false;
-  }
-
+  minerals = (typeName == "mineral");
+  airUnits = (*(unit->gob->sod.zcat) == 1);
+  landUnits = (*(unit->gob->sod.zcat) == 3);
   bbox.collapse(*unit->gob->sod.x, *unit->gob->sod.y);
 
   sticky = false;
@@ -61,7 +51,7 @@ SoarGameGroup::SoarGameGroup
   ///cout << "XXX created: " << (int) this << endl;
 }
 
-SoarGameGroup::~SoarGameGroup() {
+PerceptualGroup::~PerceptualGroup() {
   for(list<MapRegion*>::iterator
       i  = regionsOccupied.begin();
       i != regionsOccupied.end();
@@ -72,27 +62,28 @@ SoarGameGroup::~SoarGameGroup() {
   //cout << "XXX destroyed: " << (int) this << endl;
 }
 
-void SoarGameGroup::addUnit(SoarGameObject* unit) {
+void PerceptualGroup::addUnit(SoarGameObject* unit) {
 
   assert(members.find(unit) == members.end());
   // don't group units from different teams together
   assert(unit->gob->get_int("owner") == owner);
+  
+  if (not mixedType and 
+     (unit->gob->bp_name() != typeName)) {
+    mixedType = true;
+    minerals = false;
+    airUnits = false;
+    landUnits = false;
+  } 
 
   members.insert(unit); 
-  unit->setGroup(this);
+  unit->setPerceptualGroup(this);
   setHasStaleMembers();
 }
 
-bool SoarGameGroup::removeUnit(SoarGameObject* unit) {
+bool PerceptualGroup::removeUnit(SoarGameObject* unit) {
   assert(members.find(unit) != members.end());
 
-  if (currentMember == unit) {
-    getNextMember();
-    // throw out the result
-    // currentMember may still be invalid (empty group)
-    // be sure to refresh before using!
-  }
-  
   members.erase(unit);
   setHasStaleMembers();
   
@@ -104,7 +95,7 @@ bool SoarGameGroup::removeUnit(SoarGameObject* unit) {
   return true;
 }
 
-void SoarGameGroup::updateBoundingBox() {
+void PerceptualGroup::updateBoundingBox() {
   bbox = (*members.begin())->getBoundingBox();
   for(set<SoarGameObject*>::iterator 
       i  = members.begin(); 
@@ -115,7 +106,7 @@ void SoarGameGroup::updateBoundingBox() {
   }
 }
 
-void SoarGameGroup::generateData() {
+void PerceptualGroup::generateData() {
   int x = 0;
   int y = 0;
   set<SoarGameObject*>::iterator currentObject;
@@ -280,7 +271,37 @@ void SoarGameGroup::generateData() {
   return;
 }
 
-void SoarGameGroup::updateCenterMember() {
+void PerceptualGroup::updateCenterLoc() {
+  // used in lieu of generateData for internal groups
+  // since the only data we actually need is the location of the center
+  
+  int x = 0;
+  int y = 0;
+  set<SoarGameObject*>::iterator currentObject;
+  
+  currentObject = members.begin();
+
+  int size = members.size();
+
+  while (currentObject != members.end()) {
+    x += *(*currentObject)->gob->sod.x;
+    y += *(*currentObject)->gob->sod.y;
+    currentObject++;
+  }
+  
+  x /= size;
+  y /= size;
+
+  centerX = x;
+  centerY = y;
+
+  hasStaleProperties = true;
+  hasStaleMembers = false;
+
+  return;
+}
+
+void PerceptualGroup::updateCenterMember() {
   double shortestDistance 
         = squaredDistance(centerX, centerY, 
           *centerMember->gob->sod.x, *centerMember->gob->sod.y);
@@ -308,7 +329,7 @@ void SoarGameGroup::updateCenterMember() {
  * Update the regions the group occupies          *
  *                                                *
  **************************************************/
-void SoarGameGroup::updateRegionsOccupied() {
+void PerceptualGroup::updateRegionsOccupied() {
   // for now, just leave all regions first and then recompute
   // which ones it enters, even if this may mean exiting and
   // entering the same region redundently
@@ -348,7 +369,7 @@ void SoarGameGroup::updateRegionsOccupied() {
   }
 }
 
-void SoarGameGroup::mergeTo(SoarGameGroup* target) {
+void PerceptualGroup::mergeTo(PerceptualGroup* target) {
   // move all members into other group
 
   // the group should be destructed after this is called.
@@ -372,8 +393,8 @@ void SoarGameGroup::mergeTo(SoarGameGroup* target) {
   return;
 }
 
-bool SoarGameGroup::assignAction(ObjectActionType type, list<int> params,
-                                 list<SoarGameGroup*> targets) { 
+bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
+                                 list<PerceptualGroup*> targets) { 
   bool result = true;
 
  /* cout << "##################" << endl;
@@ -385,7 +406,7 @@ bool SoarGameGroup::assignAction(ObjectActionType type, list<int> params,
   set<SoarGameObject*>::iterator currentObject;
   
   list<int>::iterator intIt;  
-  list<SoarGameGroup*>::iterator targetGroupIt;  
+  list<PerceptualGroup*>::iterator targetGroupIt;  
   Vector<sint4> tempVec;
   
     
@@ -417,8 +438,8 @@ bool SoarGameGroup::assignAction(ObjectActionType type, list<int> params,
     // x,y of command-center edge relative to mineral-patch
     assert(targets.size() == 2);
     targetGroupIt = targets.begin();
-    SoarGameGroup* mpGroup;
-    SoarGameGroup* ccGroup;
+    PerceptualGroup* mpGroup;
+    PerceptualGroup* ccGroup;
     mpGroup = *targetGroupIt;
     targetGroupIt++;
     ccGroup = *targetGroupIt;
@@ -467,31 +488,31 @@ bool SoarGameGroup::assignAction(ObjectActionType type, list<int> params,
   return result;
 }
 
-bool SoarGameGroup::isEmpty() {
+bool PerceptualGroup::isEmpty() {
   return (members.empty());
 }
 
-bool SoarGameGroup::getHasStaleMembers() {
+bool PerceptualGroup::getHasStaleMembers() {
   return hasStaleMembers;
 }
-void SoarGameGroup::setHasStaleMembers() {
+void PerceptualGroup::setHasStaleMembers() {
   //cout << "stale: set so" << endl;
   hasStaleMembers = true;
 }
 
-groupPropertyStruct SoarGameGroup::getSoarData() {
+groupPropertyStruct PerceptualGroup::getSoarData() {
   return soarData;
 }
 
-bool SoarGameGroup::getHasStaleProperties() {
+bool PerceptualGroup::getHasStaleProperties() {
   return hasStaleProperties;
 }
 
-void SoarGameGroup::setHasStaleProperties(bool val) {
+void PerceptualGroup::setHasStaleProperties(bool val) {
   hasStaleProperties = val;
 }
 
-list<SoarGameObject*> SoarGameGroup::getMembers() {
+list<SoarGameObject*> PerceptualGroup::getMembers() {
   list<SoarGameObject*> lst; 
   set<SoarGameObject*>::iterator memberIter=members.begin();
 
@@ -503,53 +524,41 @@ list<SoarGameObject*> SoarGameGroup::getMembers() {
   return lst;
 }
 
-SoarGameObject* SoarGameGroup::getCenterMember() {
+SoarGameObject* PerceptualGroup::getCenterMember() {
   return centerMember;
 }
 
-int SoarGameGroup::getSize() {
+int PerceptualGroup::getSize() {
   return members.size();
 }
-SoarGameObject* SoarGameGroup::getNextMember() {
-  set<SoarGameObject*>::iterator objIt;
-  objIt = members.find(currentMember);
-  assert(objIt != members.end());
-  
-  objIt++;
-  if (objIt == members.end()) {
-    objIt = members.begin();
-  }
-  currentMember = *objIt;
-  return currentMember;
-}
 
-int SoarGameGroup::getOwner() {
+int PerceptualGroup::getOwner() {
   return owner;
 }
 
-bool SoarGameGroup::isFriendly() {
+bool PerceptualGroup::isFriendly() {
   return friendly;
 }
 
-bool SoarGameGroup::isWorld() {
+bool PerceptualGroup::isWorld() {
   return world;
 }
 
-bool SoarGameGroup::isMinerals() {
+bool PerceptualGroup::isMinerals() {
   return minerals;
 }
-bool SoarGameGroup::isAirUnits() {
+bool PerceptualGroup::isAirUnits() {
   return airUnits;
 }
-bool SoarGameGroup::isLandUnits() {
+bool PerceptualGroup::isLandUnits() {
   return landUnits;
 }
 
-bool SoarGameGroup::isMoving() {
+bool PerceptualGroup::isMoving() {
   return moving;
 }
 
-pair<string, int> SoarGameGroup::getCategory(bool ownerGrouping) {
+pair<string, int> PerceptualGroup::getCategory(bool ownerGrouping) {
   // get the group's category-
   // category is the type and owner, if ownerGrouping is not used,
   // otherwise just the owner alone
@@ -566,7 +575,7 @@ pair<string, int> SoarGameGroup::getCategory(bool ownerGrouping) {
   return cat;
 }
 
-Rectangle SoarGameGroup::getBoundingBox() {
+Rectangle PerceptualGroup::getBoundingBox() {
   // checking if everything is in the bounding box, because I'm not sure
   // if the bounding box is getting updated often enough
   for(set<SoarGameObject*>::iterator
@@ -582,19 +591,19 @@ Rectangle SoarGameGroup::getBoundingBox() {
   return bbox;
 }
 
-bool SoarGameGroup::getSticky() {
+bool PerceptualGroup::getSticky() {
   return sticky;
 }
 
-void SoarGameGroup::setSticky(bool in) {
+void PerceptualGroup::setSticky(bool in) {
   sticky = in;
 }
-void SoarGameGroup::getCenterLoc(int& x, int& y) {
+void PerceptualGroup::getCenterLoc(int& x, int& y) {
   x = centerX;
   y = centerY;
 }
 
-void SoarGameGroup::getLocNear(int x, int y, int& locX, int &locY) {
+void PerceptualGroup::getLocNear(int x, int y, int& locX, int &locY) {
   // return a location on the bounding box of this group,
   // close to the given point (x,y)
   
@@ -644,50 +653,50 @@ void SoarGameGroup::getLocNear(int x, int y, int& locX, int &locY) {
   return;
 }
 
-void SoarGameGroup::setFMSector(int num) {
+void PerceptualGroup::setFMSector(int num) {
   fmSector = num;
 }
 
-int SoarGameGroup::getFMSector() {
+int PerceptualGroup::getFMSector() {
   return fmSector;
 }
 
-void SoarGameGroup::setFMaps(list <FeatureMap*> _fMaps) {
+void PerceptualGroup::setFMaps(list <FeatureMap*> _fMaps) {
   fMaps = _fMaps;
   return;
 }
 
-list <FeatureMap*> SoarGameGroup::getFMaps() {
+list <FeatureMap*> PerceptualGroup::getFMaps() {
   return fMaps;
 }
 
-void SoarGameGroup::setFMFeatureStrength(int num) {
+void PerceptualGroup::setFMFeatureStrength(int num) {
   fmFeatureStrength = num;
 }
 
-int SoarGameGroup::getFMFeatureStrength() {
+int PerceptualGroup::getFMFeatureStrength() {
   return fmFeatureStrength;
 }
 
-void SoarGameGroup::calcDistToFocus(int focusX, int focusY) {
+void PerceptualGroup::calcDistToFocus(int focusX, int focusY) {
   distToFocus = (int)squaredDistance(focusX, focusY, centerX, centerY);
   // make sure casting this to an int makes sense..
 }
 
-int SoarGameGroup::getDistToFocus() {
+int PerceptualGroup::getDistToFocus() {
   return distToFocus;
 }
   
-bool SoarGameGroup::getInSoar() {
+bool PerceptualGroup::getInSoar() {
   return inSoar;
 }
 
-void SoarGameGroup::setInSoar(bool val) {
+void PerceptualGroup::setInSoar(bool val) {
   inSoar = val;
   return;
 }
 
-bool SoarGameGroup::isOld() {
+bool PerceptualGroup::isOld() {
   return old;
 }
 
