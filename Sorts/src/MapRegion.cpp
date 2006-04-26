@@ -5,7 +5,7 @@
 #include "Map.H"
 #include "GameTile.H"
 
-#include "SoarGameGroup.h"
+#include "PerceptualGroup.h"
 
 int MapRegion::idCounter = 0;
 
@@ -40,7 +40,7 @@ int MapRegion::size() {
   return tiles.size();
 }
 
-void MapRegion::groupEnter(SoarGameGroup* g) {
+void MapRegion::groupEnter(PerceptualGroup* g) {
   assert(groupsHere.find(g) == groupsHere.end());
 
   if (groupsHere.find(g) != groupsHere.end()) {
@@ -49,7 +49,7 @@ void MapRegion::groupEnter(SoarGameGroup* g) {
   groupsHere.insert(g);
 }
 
-void MapRegion::groupExit(SoarGameGroup* g) {
+void MapRegion::groupExit(PerceptualGroup* g) {
   assert(groupsHere.find(g) != groupsHere.end());
 
   groupsHere.erase(g);
@@ -60,7 +60,7 @@ bool MapRegion::isOccupied() {
 }
 
 bool MapRegion::isFriendly() {
-  for( set<SoarGameGroup*>::iterator 
+  for( set<PerceptualGroup*>::iterator 
        i  = groupsHere.begin();
        i != groupsHere.end();
        i++ )

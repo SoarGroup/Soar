@@ -3,7 +3,7 @@
 #include <pthread.h>
 
 #include "SoarInterface.h"
-#include "SoarGameGroup.h"
+#include "PerceptualGroup.h"
 #include "general.h"
 #include "SoarAction.h"
 #include "Sorts.h"
@@ -34,7 +34,7 @@ SoarInterface::~SoarInterface() {
 /* Note: We don't need to create the property list associated with
  * the group at this time, wait until a refresh
  */
-void SoarInterface::addGroup(SoarGameGroup* group) {
+void SoarInterface::addGroup(PerceptualGroup* group) {
   // make sure the group does not exist already
   assert(groupTable.find(group) == groupTable.end());
   
@@ -46,7 +46,7 @@ void SoarInterface::addGroup(SoarGameGroup* group) {
   groupIdLookup[newGroup.groupId] = group;
 }
 
-void SoarInterface::removeGroup(SoarGameGroup* group) {
+void SoarInterface::removeGroup(PerceptualGroup* group) {
   // make sure the group exists
   //assert(groupTable.find(group) != groupTable.end());
   
@@ -66,7 +66,7 @@ void SoarInterface::removeGroup(SoarGameGroup* group) {
   groupIdLookup.erase(g.groupId);
 }
 
-void SoarInterface::refreshGroup(SoarGameGroup* group) {
+void SoarInterface::refreshGroup(PerceptualGroup* group) {
   lockSoarMutex();
   stale = true;
 
@@ -167,7 +167,7 @@ void SoarInterface::refreshGroup(SoarGameGroup* group) {
   unlockSoarMutex();
 }
 
-int SoarInterface::groupId(SoarGameGroup* group) {
+int SoarInterface::groupId(PerceptualGroup* group) {
   assert(groupTable.find(group) != groupTable.end());
   return groupTable[group].groupId;
 }

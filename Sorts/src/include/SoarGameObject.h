@@ -9,7 +9,8 @@
 
 using namespace std;
 
-class SoarGameGroup;
+class PerceptualGroup;
+class InternalGroup;
 class Sorts;
 
 class SoarGameObject{
@@ -32,8 +33,10 @@ class SoarGameObject{
 	void issueCommand(ObjectActionType name, Vector<sint4> p);
 	void update();
 
-	void setGroup(SoarGameGroup *g);
-	SoarGameGroup *getGroup();
+	void setPerceptualGroup(PerceptualGroup *g);
+	PerceptualGroup *getPerceptualGroup();
+	void setInternalGroup(InternalGroup *g);
+	InternalGroup *getInternalGroup();
 	int getStatus();
 
   int  getOwner()     { return *gob->sod.owner; }
@@ -52,7 +55,8 @@ private:
 	stack<FSM *> memory;
 
   ObjectActionType currentCommand;
-	SoarGameGroup* group;
+	PerceptualGroup* pGroup;
+	InternalGroup* iGroup;
 	bool friendly;
   bool world;
   int id;

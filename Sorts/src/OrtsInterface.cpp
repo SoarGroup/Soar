@@ -2,7 +2,8 @@
 
 // our includes
 #include "Sorts.h"
-#include "SoarGameGroup.h"
+#include "PerceptualGroup.h"
+#include "InternalGroup.h"
 
 // Orts includes
 #include "GameObj.H"
@@ -49,7 +50,8 @@ void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
 
   SoarGameObject* sObject = objectMap[gameObj];
   int id = sObject->getID();
-  sObject->getGroup()->removeUnit(sObject);
+  sObject->getPerceptualGroup()->removeUnit(sObject);
+  sObject->getInternalGroup()->removeUnit(sObject);
   
   delete objectMap[gameObj];
   objectMap.erase(gameObj);

@@ -53,7 +53,7 @@ FeatureMapManager::FeatureMapManager() {
   changeViewWindow(0,0,0);
 }
 
-list<FeatureMap*> FeatureMapManager::identifyFeatures(SoarGameGroup* group) {
+list<FeatureMap*> FeatureMapManager::identifyFeatures(PerceptualGroup* group) {
   // return a list of all the feature maps the group belongs in
   // this is where the feature maps are really determined
 
@@ -95,7 +95,7 @@ list<FeatureMap*> FeatureMapManager::identifyFeatures(SoarGameGroup* group) {
   return relevantMaps;
 }
 
-void FeatureMapManager::refreshGroup(SoarGameGroup* group) {
+void FeatureMapManager::refreshGroup(PerceptualGroup* group) {
   // if the group is in not in any feature maps, add it (if in view)
   // otherwise, update it
   
@@ -140,7 +140,7 @@ void FeatureMapManager::refreshGroup(SoarGameGroup* group) {
     
 }
 /* refresh can handle this fine..
-void FeatureMapManager::addGroup(SoarGameGroup* group) {
+void FeatureMapManager::addGroup(PerceptualGroup* group) {
   // add this group to all feature maps it belongs in
   int sectorNumber;
   int strength = group->getSize();
@@ -160,7 +160,7 @@ void FeatureMapManager::addGroup(SoarGameGroup* group) {
   }
 }
 */
-void FeatureMapManager::removeGroup(SoarGameGroup* group) {
+void FeatureMapManager::removeGroup(PerceptualGroup* group) {
   // remove this group from every feature map it is in
   int sectorNumber;
   int strength = group->getFMFeatureStrength();
@@ -213,7 +213,7 @@ void FeatureMapManager::updateSoar() {
 }
 
 
-SoarGameGroup* FeatureMapManager::getGroup(string mapName, int sector) {
+PerceptualGroup* FeatureMapManager::getGroup(string mapName, int sector) {
   // return a group from the map given in the sector given
   // return NULL if the sector is empty in that map
   
@@ -237,7 +237,7 @@ void FeatureMapManager::changeViewWindow(int x, int y, int width) {
   clearAll();
 }
 
-int FeatureMapManager::classifyCenterPointInGrid(SoarGameGroup* group) {
+int FeatureMapManager::classifyCenterPointInGrid(PerceptualGroup* group) {
   // determine which sector a given point is in
   
   int x,y;

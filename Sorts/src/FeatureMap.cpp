@@ -10,7 +10,7 @@ FeatureMap::FeatureMap() {
   // create the set for each sector
   // initialize the sector iterators
   
-  set<SoarGameGroup*> tempSector;
+  set<PerceptualGroup*> tempSector;
   for (int i=0; i<9; i++) {
     fmSectors.push_back(tempSector);
     fmSectorIterators.push_back(NULL);
@@ -22,7 +22,7 @@ FeatureMap::FeatureMap() {
 }
 
 
-SoarGameGroup* FeatureMap::getGroup(int sector) {
+PerceptualGroup* FeatureMap::getGroup(int sector) {
   // return a group from the given sector
   // cycle through the qualifying groups
   
@@ -30,7 +30,7 @@ SoarGameGroup* FeatureMap::getGroup(int sector) {
     return NULL;
   }
 
-  SoarGameGroup* group = *(fmSectorIterators[sector]);
+  PerceptualGroup* group = *(fmSectorIterators[sector]);
 
   fmSectorIterators[sector]++;
 
@@ -41,7 +41,7 @@ SoarGameGroup* FeatureMap::getGroup(int sector) {
   return group;
 }
 
-void FeatureMap::addGroup(SoarGameGroup* group, int sector, int strength) {
+void FeatureMap::addGroup(PerceptualGroup* group, int sector, int strength) {
   // add the group to the map
   // note that we don't care about looking for the features
   // since the map itself doesn't know what the features are
@@ -59,11 +59,11 @@ void FeatureMap::addGroup(SoarGameGroup* group, int sector, int strength) {
   }
 }
 
-void FeatureMap::removeGroup(SoarGameGroup* group, int sector, int strength) {  
+void FeatureMap::removeGroup(PerceptualGroup* group, int sector, int strength) {  
   // remove the group (if it exists)
 
   isStale = true;
-  set<SoarGameGroup*>::iterator it;
+  set<PerceptualGroup*>::iterator it;
   it = fmSectors[sector].find(group);
   assert(it != fmSectors[sector].end());
   

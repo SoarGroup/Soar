@@ -2,12 +2,12 @@
 #define GroupManager_h
 
 #include "SoarGameObject.h"
-#include "SoarGameGroup.h"
+#include "PerceptualGroup.h"
 
 class Sorts;
 
 struct ltGroupPtr {
-  bool operator()(SoarGameGroup* g1, SoarGameGroup* g2) const {
+  bool operator()(PerceptualGroup* g1, PerceptualGroup* g2) const {
     int d1 = g1->getDistToFocus();
     int d2 = g2->getDistToFocus();
     if (d1 == d2) {
@@ -32,7 +32,7 @@ class GroupManager {
     void makeNewGroup(SoarGameObject* object);
     // used by ORTSInterface when it sees a new object- create a group for it
     
-    SoarGameGroup* getGroupNear(string type, int owner, int x, int y);
+    InternalGroup* getGroupNear(string type, int owner, int x, int y);
     
     void setSorts(const Sorts* s) {sorts = s;}
  
@@ -47,32 +47,57 @@ class GroupManager {
     bool ownerGrouping;
     
     void prepareForReGroup();
-    void reGroup();
-    void generateGroupData();
+    void reGroupInternal();
+    void reGroupPerceptual();
+    void generatePerceptualGroupData();
+    void generateInternalGroupData();
     void adjustAttention(bool rebuildFeatureMaps);
 
-    void removeGroup(SoarGameGroup*);
+    void removePerceptualGroup(PerceptualGroup*);
     void remakeGroupSet();
 
-    set <pair<string, int> > staleGroupCategories;
+    // GroupManager must handle two sets of groups- perceptual and internal
+    // perceptual groups are input to Soar, directly and in feature maps
+    // Soar can control how they are created, adjusting the grouping radius
+    // and allowing grouping by owner or not.
+
+    // internal groups are used by the FSMs. the FSMs use groups to find nearby
+    // objects of a given type, and to do basic load balancing when, 
+    // for example, many workers mine the same mineral patch. 
+
+    // the internal groups work best at a set grouping radius, and would not 
+    // be useful with grouping by owner, so they must be separatly maintained
     
     // this set is maintained in sorted order, items toward the front
     // are closer to the center of focus, and have priority to go on the
     // input link.
-    set <SoarGameGroup*, ltGroupPtr> perceptualGroups;
-    set <SoarGameGroup*> internalGroups;
+    set <PerceptualGroup*, ltGroupPtr> perceptualGroups;
+    
+    // don't care about order of internal groups
+    list <InternalGroup*> internalGroups;
 
-    void setAllCategoriesStale();
+    set <pair<string, int> > stalePGroupCategories;
+    set <pair<string, int> > staleIGroupCategories;
+    
+
+    void setAllPerceptualCategoriesStale();
     
     const Sorts* sorts;
 
 };
 
-struct objectGroupingStruct {
+struct perceptualGroupingStruct {
   SoarGameObject* object;
-  SoarGameGroup* group;
+  PerceptualGroup* group;
   bool assigned;
   bool oldGroup;
+  int x,y;
+};
+
+struct internalGroupingStruct {
+  SoarGameObject* object;
+  InternalGroup* group;
+  bool assigned;
   int x,y;
 };
 

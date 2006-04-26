@@ -9,7 +9,7 @@
 
 #include "Rectangle.h"
 
-class SoarGameGroup;
+class PerceptualGroup;
 
 using namespace std;
 
@@ -28,8 +28,8 @@ public:
   void addTile(int tile);
   void addBoundary(GameObj* gob);
 
-  void groupEnter(SoarGameGroup* g);
-  void groupExit(SoarGameGroup* g);
+  void groupEnter(PerceptualGroup* g);
+  void groupExit(PerceptualGroup* g);
 
   // some queries on the region
   bool isOccupied();
@@ -56,7 +56,7 @@ private:
   set<int> tiles;
 
   // groups that are currently in this region
-  set<SoarGameGroup*> groupsHere;
+  set<PerceptualGroup*> groupsHere;
 
   list<Rectangle> boundaries;
 

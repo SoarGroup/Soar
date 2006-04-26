@@ -7,26 +7,26 @@
 */
 
 #include <list>
-#include "SoarGameGroup.h"
+#include "PerceptualGroup.h"
 using namespace std;
 
 
-//class SoarGameGroup;
+//class PerceptualGroup;
 
 class FeatureMap {
   public:
     FeatureMap();
     ~FeatureMap() { }
-    SoarGameGroup* getGroup(int sector);
+    PerceptualGroup* getGroup(int sector);
     // return a group from the given sector
     // cycle through the qualifying groups
 
-    void addGroup(SoarGameGroup* group, int sector, int strength);
+    void addGroup(PerceptualGroup* group, int sector, int strength);
     // add the group to the map
     // note that we don't care about looking for the features
     // since the map itself doesn't know what the features are
   
-    void removeGroup(SoarGameGroup* group, int sector, int strength);  
+    void removeGroup(PerceptualGroup* group, int sector, int strength);  
     // remove the group (if it exists)
 
     int getCount(int);
@@ -40,8 +40,8 @@ class FeatureMap {
     void setIsStale(bool);
     bool getIsStale();
   private:
-    vector<set<SoarGameGroup*> > fmSectors;
-    vector<set<SoarGameGroup*>::iterator> fmSectorIterators;
+    vector<set<PerceptualGroup*> > fmSectors;
+    vector<set<PerceptualGroup*>::iterator> fmSectorIterators;
     vector<int> fmCounts;
     bool isPresent; // true if FM is in Soar
     bool isStale;

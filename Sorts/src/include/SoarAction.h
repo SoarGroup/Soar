@@ -4,7 +4,7 @@
 #include <string>
 
 using namespace std;
-class SoarGameGroup;
+class PerceptualGroup;
 
 enum ObjectActionType {
   OA_IDLE,
@@ -16,7 +16,7 @@ enum ObjectActionType {
 
 struct ObjectAction {
   ObjectActionType type;
-  list<SoarGameGroup*> groups;
+  list<PerceptualGroup*> groups;
   list<int> params;
 };
 

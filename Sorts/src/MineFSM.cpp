@@ -1,7 +1,7 @@
 #include "Sorts.h"
 #include "MineFSM.h"
 #include "GroupManager.h"
-#include "SoarGameGroup.h"
+#include "InternalGroup.h"
 #include "general.h"
 
 #define DISTANCE_EPSILON 25
@@ -12,7 +12,7 @@ MineFSM::MineFSM(const Sorts *oi, GameObj* go)
 }
 
 int MineFSM::update() {
-  SoarGameGroup* sgg;
+  InternalGroup* intGroup;
 
   switch (state) {
     case IDLE:
@@ -32,11 +32,11 @@ int MineFSM::update() {
       if ((squaredDistance(*gob->sod.x, *gob->sod.y, mineZoneX, mineZoneY) 
           < DISTANCE_EPSILON) 
           or (*gob->sod.speed == 0)) { 
-        sgg = sorts->groupManager->getGroupNear("mineral", worldId, 
+        intGroup = sorts->groupManager->getGroupNear("mineral", worldId, 
                                      *gob->sod.x, *gob->sod.y);
-        if (sgg != NULL) {
+        if (intGroup != NULL) {
           // there is a mineral patch nearby, head right to a mineral
-          mineralObj = sgg->getNextMember();
+          mineralObj = intGroup->getNextMember();
           mineralX = *mineralObj->gob->sod.x;
           mineralY = *mineralObj->gob->sod.y;
           mineralId = mineralObj->getID();
@@ -124,11 +124,11 @@ int MineFSM::update() {
       // once we get in range, look for a command center
       if ((squaredDistance(*gob->sod.x, *gob->sod.y, baseZoneX, baseZoneY) 
           < DISTANCE_EPSILON) or (*gob->sod.speed == 0)) { 
-        sgg = sorts->groupManager->getGroupNear("controlCenter", myId, 
+        intGroup = sorts->groupManager->getGroupNear("controlCenter", myId, 
                                      *gob->sod.x, *gob->sod.y);
-        if (sgg != NULL) {
+        if (intGroup != NULL) {
           // there is a base nearby, head right to it 
-          baseObj = sgg->getNextMember();
+          baseObj = intGroup->getNextMember();
           baseX = *baseObj->gob->sod.x;
           baseY = *baseObj->gob->sod.y;
           baseId = baseObj->getID();

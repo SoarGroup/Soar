@@ -8,7 +8,8 @@
 
 #include "Sorts.h"
 #include "SoarGameObject.h"
-#include "SoarGameGroup.h"
+#include "PerceptualGroup.h"
+#include "InternalGroup.h"
 
 void SoarGameObject::identifyBehaviors() {
   string name = gob->bp_name();
@@ -83,7 +84,8 @@ void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
 void SoarGameObject::update()
 {
   int fsmStatus;
-  group->setHasStaleMembers();
+  iGroup->setHasStaleMembers();
+  pGroup->setHasStaleMembers();
   
   int currentFrame = sorts->OrtsIO->getFrameID();
   if (currentFrame == frameOfLastUpdate) {
@@ -122,16 +124,25 @@ void SoarGameObject::update()
 }
 
 
-void SoarGameObject::setGroup(SoarGameGroup *g)
+void SoarGameObject::setPerceptualGroup(PerceptualGroup *g)
 {
- group = g;
+ pGroup = g;
 }
 
-SoarGameGroup *SoarGameObject::getGroup(void)
+PerceptualGroup *SoarGameObject::getPerceptualGroup(void)
 {
- return group;
+ return pGroup;
 }
 
+void SoarGameObject::setInternalGroup(InternalGroup *g)
+{
+ iGroup = g;
+}
+
+InternalGroup *SoarGameObject::getInternalGroup(void)
+{
+ return iGroup;
+}
 /*ObjectActionType SoarGameObject::getCurrentCommand()
 {
  return currentCommand;

@@ -11,23 +11,23 @@
 
 #include <string>
 using namespace std;
-class SoarGameGroup;
+class PerceptualGroup;
 class Sorts;
 
 class FeatureMapManager {
   public:
     FeatureMapManager();
     ~FeatureMapManager();
-    void refreshGroup(SoarGameGroup* group);
+    void refreshGroup(PerceptualGroup* group);
     void updateSoar();
-    SoarGameGroup* getGroup(string mapName, int sector);
+    PerceptualGroup* getGroup(string mapName, int sector);
     void changeViewWindow(int x, int y, int width);
-    //void addGroup(SoarGameGroup* group); use refreshGroup()
-    void removeGroup(SoarGameGroup* group);
+    //void addGroup(PerceptualGroup* group); use refreshGroup()
+    void removeGroup(PerceptualGroup* group);
     void setSorts(const Sorts* s) {sorts = s;}
   private:
-    int classifyCenterPointInGrid(SoarGameGroup* group);
-    list<FeatureMap* > identifyFeatures(SoarGameGroup* group);
+    int classifyCenterPointInGrid(PerceptualGroup* group);
+    list<FeatureMap* > identifyFeatures(PerceptualGroup* group);
     void clearAll();
     vector<FeatureMap* > fmList;
     map<string, FeatureMap* > stringToFeatureMap;

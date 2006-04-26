@@ -15,7 +15,7 @@
 //#include "Sorts.h"
 class Sorts;
 
-class SoarGameGroup;
+class PerceptualGroup;
 //class FeatureMap;
 
 using namespace std;
@@ -74,7 +74,7 @@ SoarInterface will be responsible for creating and organizing the WMEs
 for the groups, but not for determining what information is in the
 structure (for example, we don't want a "health" WME for a tree, but
 SoarInterface shouldn't need to figure that out). There will be a list
-of visible properties inside the SoarGameGroups that will be set by the
+of visible properties inside the PerceptualGroups that will be set by the
 GroupManager and read by the SoarInterface to determine that.
 
 Note: addGroup should not actually add the group to the input_link until
@@ -95,10 +95,10 @@ class SoarInterface {
     void getNewAttentionActions(list<AttentionAction>& newActions);
 
     // grouping commands for Group Manager to call
-    void addGroup(SoarGameGroup* group);
-    void removeGroup(SoarGameGroup* group);
-    void refreshGroup(SoarGameGroup* group);
-    int  groupId(SoarGameGroup* group);
+    void addGroup(PerceptualGroup* group);
+    void removeGroup(PerceptualGroup* group);
+    void refreshGroup(PerceptualGroup* group);
+    int  groupId(PerceptualGroup* group);
 
     // map commands
     void addMapRegion(MapRegion* r);
@@ -169,8 +169,8 @@ class SoarInterface {
 
     // these are the maps that keep track of input link <-> middleware objects
     /* Change these later to hash maps */
-    map<SoarGameGroup*, InputLinkGroupRep> groupTable;
-    map<int, SoarGameGroup*>               groupIdLookup;
+    map<PerceptualGroup*, InputLinkGroupRep> groupTable;
+    map<int, PerceptualGroup*>               groupIdLookup;
    
   
   /**************************************************
