@@ -22,7 +22,7 @@
 
 #include "gSKI_Enumerations.h"
 #include "gSKI_Events.h"
-#include "sml_ClientEvents.h"	// To get smlRunFlags
+#include "sml_Events.h"	// To get smlRunFlags
 
 namespace gSKI {
 	class IAgent ;

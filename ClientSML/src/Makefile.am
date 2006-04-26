@@ -24,7 +24,6 @@ sml_OutputDeltaList.cpp
 INCLUDES = \
 -I../include\
 -I../../ElementXML/include\
--I../../ConnectionSML/include\
--I../../gSKI/include
+-I../../ConnectionSML/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)

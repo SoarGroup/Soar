@@ -29,7 +29,6 @@
 #include "sml_TagWme.h"
 #include "sml_TagFilter.h"
 #include "sml_TagCommand.h"
-#include "sml_ClientEvents.h"
 #include "sml_Events.h"
 #include "sml_RunScheduler.h"
 
@@ -220,7 +219,7 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 	// Decide if registering or unregistering
 	bool registerForEvent = (strcmp(pCommandName, sml_Names::kCommand_RegisterForEvent) == 0) ;
 
-	// The value sent over is actually defined in sml_ClientEvents.h but we're just casting it over to egSKIEventId.
+	// The value sent over is actually defined in sml_Events.h but we're just casting it over to egSKIEventId.
 	// So let's add some checks here to make sure that the two tables are synchronized.
 	// (If we wish we could introduce a mapping here between the two sets of ids but for now we're not doing that).
 	assert(gSKIEVENT_INVALID_EVENT == (egSKIGenericEventId)smlEVENT_INVALID_EVENT) ;	// First matches

@@ -7,7 +7,6 @@
 /////////////////////////////////////////////////////////////////
 
 #include "sml_Events.h"
-#include "sml_ClientEvents.h"
 #include <assert.h>
 
 using namespace sml ;
