@@ -16,7 +16,8 @@ AC_LIBTOOL_DLOPEN
 AC_DEFINE([NO_MEGA_UNIT_TESTS], [1], [gSKI: Defined when not using mega unit tests.])
 AC_DEFINE([VALIDATE], [assert], [BUGBUG: gSKI: not sure where this symbol is defined.])
 AC_DEFINE([UNIX], [assert], [BUGBUG: gSKI: Defined for now, needs to be removed.])
-AC_DEFINE([LINUX_STATIC_LINK], [1], [Defined when statically linking in Linux])
+# See comments in Core/ClientSML/src/sml_ClientKernel.cpp
+#AC_DEFINE([LINUX_STATIC_LINK], [1], [Defined when statically linking in Linux])
 AC_PROG_LIBTOOL
 AC_PROG_CXX
 AC_PROG_CC
@@ -412,6 +413,7 @@ AC_OUTPUT([
 	Core/KernelSML/src/Makefile
 	Environments/Makefile
 	Tools/Makefile
+	Tools/FilterC/Makefile
 	Tools/TOHSML/Makefile
 	Tools/TestCLI/Makefile
 	Tools/TestClientSML/Makefile
