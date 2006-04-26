@@ -17,8 +17,10 @@ AttentionActionType attentionActionTypeLookup(string actionName) {
   else if (not actionName.compare("look-feature"))      return AA_LOOK_FEATURE;
   else if (not actionName.compare("move-location"))      return AA_MOVE_LOCATION;
   else if (not actionName.compare("move-feature"))      return AA_MOVE_FEATURE;
-  else if (not actionName.compare("resize"))      return AA_RESIZE;
+  else if (not actionName.compare("view-width"))      return AA_RESIZE;
   else if (not actionName.compare("grouping-radius"))  return AA_GROUPING_RADIUS;
   else if (not actionName.compare("num-objects"))  return AA_NUM_OBJECTS;
+  else if (not actionName.compare("owner-grouping-on"))  return AA_OWNER_GROUPING_ON;
+  else if (not actionName.compare("owner-grouping-off"))  return AA_OWNER_GROUPING_OFF;
   else                                       return AA_NO_SUCH_ACTION;
 }

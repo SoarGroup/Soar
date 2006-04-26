@@ -34,7 +34,7 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
                                               friendly, world, id);
  
   // GroupManager takes care of setting the object->group pointers
-  sorts->groupManager->addGroup(newObj);
+  sorts->groupManager->makeNewGroup(newObj);
   
 
   objectMap[gameObj] = newObj;

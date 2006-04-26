@@ -43,7 +43,7 @@ class SoarGameGroup {
     bool getHasStaleProperties();
     void setHasStaleProperties(bool val);
     groupPropertyStruct getSoarData();
-    pair<string, int> getCategory();
+    pair<string, int> getCategory(bool ownerGrouping);
     int getSize();
     SoarGameObject* getCenterMember();
     SoarGameObject* getNextMember();

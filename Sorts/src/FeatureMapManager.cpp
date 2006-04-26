@@ -96,8 +96,9 @@ list<FeatureMap*> FeatureMapManager::identifyFeatures(SoarGameGroup* group) {
 }
 
 void FeatureMapManager::refreshGroup(SoarGameGroup* group) {
-  // for all feature maps that this group is in, update them
-
+  // if the group is in not in any feature maps, add it (if in view)
+  // otherwise, update it
+  
  //* comment out this block to not inhibit things
   if (group->getInSoar()) {
     // inhibit this group from the feature maps- remove it if present
@@ -138,7 +139,7 @@ void FeatureMapManager::refreshGroup(SoarGameGroup* group) {
   group->setFMFeatureStrength(newStrength);
     
 }
-
+/* refresh can handle this fine..
 void FeatureMapManager::addGroup(SoarGameGroup* group) {
   // add this group to all feature maps it belongs in
   int sectorNumber;
@@ -158,7 +159,7 @@ void FeatureMapManager::addGroup(SoarGameGroup* group) {
     (*it)->addGroup(group, sectorNumber, strength);
   }
 }
-
+*/
 void FeatureMapManager::removeGroup(SoarGameGroup* group) {
   // remove this group from every feature map it is in
   int sectorNumber;

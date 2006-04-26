@@ -549,9 +549,18 @@ bool SoarGameGroup::isMoving() {
   return moving;
 }
 
-pair<string, int> SoarGameGroup::getCategory() {
+pair<string, int> SoarGameGroup::getCategory(bool ownerGrouping) {
+  // get the group's category-
+  // category is the type and owner, if ownerGrouping is not used,
+  // otherwise just the owner alone
+  
   pair<string, int> cat;
-  cat.first = typeName;
+  if (not ownerGrouping) {
+    cat.first = typeName;
+  }
+  else {
+    cat.first = "";
+  }
   cat.second = owner;
 
   return cat;

@@ -6,10 +6,6 @@
 
 class Sorts;
 
-/*bool compareGroups(SoarGameGroup* a, SoarGameGroup* b) {
-  return a->getDistToFocus() < b->getDistToFocus();
-}*/
-
 struct ltGroupPtr {
   bool operator()(SoarGameGroup* g1, SoarGameGroup* g2) const {
     int d1 = g1->getDistToFocus();
@@ -33,7 +29,7 @@ class GroupManager {
     bool assignActions();
     void processVisionCommands();
 
-    void addGroup(SoarGameObject* object);
+    void makeNewGroup(SoarGameObject* object);
     // used by ORTSInterface when it sees a new object- create a group for it
     
     SoarGameGroup* getGroupNear(string type, int owner, int x, int y);
@@ -42,15 +38,18 @@ class GroupManager {
  
     
   private:
-    int groupingRadiusSquared;
+    int perceptualGroupingRadius;
+    int internalGroupingRadius;
+    int numObjects;
     int focusX, focusY;
     int centerX, centerY;
     int viewWidth;
+    bool ownerGrouping;
+    
     void prepareForReGroup();
     void reGroup();
     void generateGroupData();
-    void adjustAttention();
-    void updateFeatureMaps(bool refreshAll);
+    void adjustAttention(bool rebuildFeatureMaps);
 
     void removeGroup(SoarGameGroup*);
     void remakeGroupSet();
@@ -60,13 +59,13 @@ class GroupManager {
     // this set is maintained in sorted order, items toward the front
     // are closer to the center of focus, and have priority to go on the
     // input link.
-    set <SoarGameGroup*, ltGroupPtr> groups;
+    set <SoarGameGroup*, ltGroupPtr> perceptualGroups;
+    set <SoarGameGroup*> internalGroups;
 
     void setAllCategoriesStale();
     
     const Sorts* sorts;
 
-    int numObjects;
 };
 
 struct objectGroupingStruct {

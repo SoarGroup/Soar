@@ -311,6 +311,7 @@ void SoarInterface::getNewSoarOutput() {
         processAttentionAction(AType, cmdPtr);
       }
       else {
+        cout << "ERROR: command " << name << " not known." << endl;
         assert(false);
       }
     }
@@ -416,6 +417,10 @@ void SoarInterface::processAttentionAction(AttentionActionType type,
       }
       newAction.params.push_back(atoi(paramValue));
       break;
+    case AA_OWNER_GROUPING_ON:
+    case AA_OWNER_GROUPING_OFF:
+      // no parameters for these
+      break;  
     default:
       assert(false);
       break;

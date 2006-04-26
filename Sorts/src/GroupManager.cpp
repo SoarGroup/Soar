@@ -21,11 +21,13 @@ GroupManager::GroupManager() {
     
   // this default should be reflected in the agent's assumptions
   // (1024 = 32^2)
-  groupingRadiusSquared = 1024;
+  perceptualGroupingRadius = 1024;
 
   // the number of objects near the focus point to add
   // agent can change this, if it wishes to cheat
   numObjects = 1;
+
+  ownerGrouping = false;
 }
 
 void GroupManager::initialize() {
@@ -54,10 +56,9 @@ void GroupManager::updateVision() {
     // prune groups emptied during reGrouping
     // aggregate data about the groups
   
-  adjustAttention();
+  adjustAttention(false);
     // determine which groups are attended to,
     // and send them to Soar
-  updateFeatureMaps(false);
   return;
 }
 
@@ -146,8 +147,7 @@ void GroupManager::processVisionCommands() {
         
         // recalc all center distances and rebuild the order of the groups
         remakeGroupSet();
-        adjustAttention(); 
-        updateFeatureMaps(false);
+        adjustAttention(false); 
 
         break;
       case AA_LOOK_FEATURE:
@@ -168,16 +168,14 @@ void GroupManager::processVisionCommands() {
 
         // recalc all center distances and rebuild the order of the groups
         remakeGroupSet();
-        adjustAttention(); 
-        updateFeatureMaps(false);
+        adjustAttention(false); 
         break;
       case AA_RESIZE:
         assert(i->params.size() == 1);
         viewWidth = *(i->params.begin());
         sorts->featureMapManager->changeViewWindow(centerX, centerY, viewWidth);
-        updateFeatureMaps(true); // re-update all the feature maps-
+        adjustAttention(true);   // re-update all the feature maps-
                                  // changeViewWindow clears them out
-        sorts->featureMapManager->updateSoar();
         break;
       case AA_MOVE_LOCATION:
         break;
@@ -199,8 +197,7 @@ void GroupManager::processVisionCommands() {
         // recalc all center distances and rebuild the order of the groups
         remakeGroupSet();
         sorts->featureMapManager->changeViewWindow(centerX, centerY, viewWidth);
-        adjustAttention(); 
-        updateFeatureMaps(true); // re-update all the feature maps-
+        adjustAttention(true);   // re-update all the feature maps-
                                  // changeViewWindow clears them out
         break;
       case AA_GROUPING_RADIUS:
@@ -210,19 +207,45 @@ void GroupManager::processVisionCommands() {
         assert(i->params.size() == 1);
         radius = *(i->params.begin());
         radius *= radius;
-        if (radius != groupingRadiusSquared) {
-          groupingRadiusSquared = radius;
+        if (radius != perceptualGroupingRadius) {
+          perceptualGroupingRadius = radius;
           setAllCategoriesStale();
           reGroup();
           generateGroupData();
-          adjustAttention();
-          updateFeatureMaps(false);
+          adjustAttention(false);
         }
         break;
       case AA_NUM_OBJECTS:
         assert(i->params.size() == 1);
         numObjects = *(i->params.begin());
-        adjustAttention();
+        adjustAttention(false);
+        break;
+      case AA_OWNER_GROUPING_ON:
+        // handle similar to grouping radius change-
+        // rebuild all the groups
+        if (ownerGrouping) {
+          cout << "WARNING: turning on ownerGrouping when it is already on.\n";
+          break;
+        }
+        ownerGrouping = true; 
+        // this essentially changes the definition of category
+        
+        setAllCategoriesStale();
+        reGroup();
+        generateGroupData();
+        adjustAttention(false);
+        break;
+      case AA_OWNER_GROUPING_OFF:
+        if (not ownerGrouping) {
+          cout << "WARNING: turning off ownerGrouping when it is already off.\n";
+          break;
+        }
+        ownerGrouping = false; 
+        
+        setAllCategoriesStale();
+        reGroup();
+        generateGroupData();
+        adjustAttention(false);
         break;
       case AA_NO_SUCH_ACTION:
         break;
@@ -268,9 +291,9 @@ void GroupManager::reGroup() {
     groupingList.clear();
     centerGroupingList.clear();
     
-    for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
+    for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
       if (not (*groupIter)->getSticky() and
-              (*groupIter)->getCategory() == *catIter) {
+         ((*groupIter)->getCategory(ownerGrouping) == *catIter)) {
         //cout << "group " << (int) (*groupIter) << endl;
         // group is of the type we are re-grouping
        
@@ -343,7 +366,7 @@ void GroupManager::reGroup() {
         // make a new group for this object- no existing 
         // group has claimed it yet
         obj1Struct.group->removeUnit(obj1Struct.object);
-        addGroup(obj1Struct.object);
+        makeNewGroup(obj1Struct.object);
         obj1Struct.group = obj1Struct.object->getGroup();
         obj1Struct.assigned = true;
         //cout << "XXX making new group " << (int) obj1Struct.group << endl; 
@@ -358,7 +381,7 @@ void GroupManager::reGroup() {
       while (obj2StructIter != groupingList.end()) {
         if (squaredDistance(obj1Struct.x, obj1Struct.y, 
                             (*obj2StructIter).x, (*obj2StructIter).y)
-            <= groupingRadiusSquared) {
+            <= perceptualGroupingRadius) {
           if ((*obj2StructIter).assigned) {
             // obj2 already has been grouped- groups should merge
             pair<SoarGameGroup*, SoarGameGroup*> groups;
@@ -472,7 +495,7 @@ void GroupManager::generateGroupData() {
   list<set<SoarGameGroup*>::iterator> toErase;
   list<set<SoarGameGroup*>::iterator> toReinsert;
 
-  for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
+  for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
     if ((*groupIter)->getHasStaleMembers()) {
       if ((*groupIter)->isEmpty()) {
         toErase.push_back(groupIter);
@@ -492,7 +515,7 @@ void GroupManager::generateGroupData() {
   for (list<set<SoarGameGroup*>::iterator>::iterator it= toErase.begin();
       it != toErase.end();
       it++) {
-    groups.erase(*it);
+    perceptualGroups.erase(*it);
   }
   
   SoarGameGroup* grp;
@@ -500,8 +523,8 @@ void GroupManager::generateGroupData() {
       it != toReinsert.end();
       it++) {
     grp = **it;
-    groups.erase(*it);
-    groups.insert(grp);
+    perceptualGroups.erase(*it);
+    perceptualGroups.insert(grp);
     // groups have no knowledge of the focus point, only their distance to it.
     grp->calcDistToFocus(focusX, focusY);
   }
@@ -522,43 +545,29 @@ void GroupManager::prepareForReGroup() {
 
   list<set<SoarGameGroup*>::iterator> toErase;
   
-  for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
+  for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
     if ((*groupIter)->getHasStaleMembers()) {
       if ((*groupIter)->isEmpty()) {
         toErase.push_back(groupIter);
         // can't delete from sets like this- the iterator gets screwed up
         // keep a list, delete everything at once
-        //groups.erase(groupIter);
-        removeGroup(*groupIter);
       }
       else {
         (*groupIter)->updateCenterMember();
-        staleGroupCategories.insert((*groupIter)->getCategory());
+        staleGroupCategories.insert((*groupIter)->getCategory(ownerGrouping));
       }
     }
   }
   for (list<set<SoarGameGroup*>::iterator>::iterator it= toErase.begin();
       it != toErase.end();
       it++) {
-    groups.erase(*it);
+    removeGroup(**it);
+    perceptualGroups.erase(*it);
   }
   //cout << "end ref" << endl;
   return;
 }
 
-void GroupManager::addGroup(SoarGameObject* object) {
-  int size1 = groups.size();
-  groups.insert(new SoarGameGroup(object, false, sorts));
-
-  // make sure the insertion takes, the compare function could
-  // make the elements seem identical, which would not let them both
-  // in the set.
-  assert(groups.size() == (unsigned int)(size1 + 1));
-  
-  //sorts->getFeatureMapManager()->addGroup(object->getGroup());
-  // refresh will handle this fine, no need to have an addGroup
-  return;
-}
 
 void GroupManager::removeGroup(SoarGameGroup* group) {
   sorts->SoarIO->removeGroup(group);
@@ -566,14 +575,25 @@ void GroupManager::removeGroup(SoarGameGroup* group) {
   delete group;
 }
 
+void GroupManager::makeNewGroup(SoarGameObject* object) {
+  int size1 = perceptualGroups.size();
+  perceptualGroups.insert(new SoarGameGroup(object, false, sorts));
 
-void GroupManager::adjustAttention() {
+  // make sure the insertion takes, the compare function could
+  // make the elements seem identical, which would not let them both
+  // in the set.
+  assert(perceptualGroups.size() == (unsigned int)(size1 + 1));
+  
+  return;
+}
+
+void GroupManager::adjustAttention(bool rebuildFeatureMaps) {
   // iterate through all staleProperties groups, if in attn. range,
   // send params to Soar
   
   set<SoarGameGroup*>::iterator groupIter;
   int i=0;
-  for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
+  for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
     if (i < numObjects) {
       if (not (*groupIter)->getInSoar()) {
         sorts->SoarIO->addGroup(*groupIter);
@@ -583,7 +603,7 @@ void GroupManager::adjustAttention() {
        //   (*groupIter)->getDistToFocus() << endl;
         
         // recently added / removed from Soar is a stale property, 
-        // as far as  updateFeatureMap is concerned- the inhibition of
+        // as far as feature maps are concerned- the inhibition of
         // the group must change
         (*groupIter)->setHasStaleProperties(true);
       }
@@ -604,40 +624,40 @@ void GroupManager::adjustAttention() {
     }
     i++;
   }
-    
-  //updateFeatureMaps(false);
-  return;
-}
+  if (rebuildFeatureMaps) {
+    // do this after view window changes-
+    // the change results in empty feature maps
+    // re-add all groups (via refresh) to the feature maps
 
-void GroupManager::updateFeatureMaps(bool refreshAll) {
-  // update the feature maps:
-  // if refreshAll, all groups in the world will be updated
-  // (needed after a view window change, since that purges the maps)
-  // otherwise, only refresh groups that changed
-  
-  // since this is always the last thing called after a regroup, clear the 
-  // staleProperties flags if set
-  
-  set<SoarGameGroup*>::iterator groupIter;
-  for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
-    if (refreshAll) {
-      sorts->featureMapManager->refreshGroup(*groupIter);
-    }
-    else if ((*groupIter)->getHasStaleProperties()) {
+    // FeatureMapManager can't do this because it doesn't know what all the 
+    // groups are.
+    
+    list <FeatureMap*> emptyList;
+    
+    for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
+      // sector == -1 means that the group is not in any fmaps
+      (*groupIter)->setFMSector(-1);
       sorts->featureMapManager->refreshGroup(*groupIter);
       (*groupIter)->setHasStaleProperties(false);
+    }
+  }
+  else {
+    // just refresh groups that changed in the feature maps
+    for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
+      if ((*groupIter)->getHasStaleProperties()) {
+        sorts->featureMapManager->refreshGroup(*groupIter);
+        (*groupIter)->setHasStaleProperties(false);
+      }
     }
   }
 
   sorts->featureMapManager->updateSoar();
   return;
-  
 }
-
 
 GroupManager::~GroupManager() {
   set<SoarGameGroup*>::iterator groupIter;
-  for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
+  for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
     delete (*groupIter);
   }
 }
@@ -661,8 +681,8 @@ SoarGameGroup* GroupManager::getGroupNear(string type, int owner, int x, int y) 
   
   set<SoarGameGroup*>::iterator groupIter;
 
-  for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
-    if ((*groupIter)->getCategory() == targetCategory) {
+  for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
+    if ((*groupIter)->getCategory(false) == targetCategory) {
       (*groupIter)->getCenterLoc(currentX, currentY);
       currentDistance = squaredDistance(x, y, currentX, currentY);
       if (currentDistance < closestDistance) {
@@ -683,8 +703,8 @@ void GroupManager::setAllCategoriesStale() {
   set<SoarGameGroup*>::iterator groupIter;
   // jump iterator between lists
 
-  for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
-    staleGroupCategories.insert((*groupIter)->getCategory());
+  for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
+    staleGroupCategories.insert((*groupIter)->getCategory(ownerGrouping));
   }
 }
 
@@ -696,10 +716,10 @@ void GroupManager::remakeGroupSet() {
  
   set<SoarGameGroup*, ltGroupPtr> newSet;
   
-  for (groupIter = groups.begin(); groupIter != groups.end(); groupIter++) {
+  for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
     (*groupIter)->calcDistToFocus(focusX, focusY);
     newSet.insert(*groupIter);
   }
 
-  groups = newSet;
+  perceptualGroups = newSet;
 }

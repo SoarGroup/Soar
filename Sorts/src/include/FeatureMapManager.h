@@ -22,7 +22,7 @@ class FeatureMapManager {
     void updateSoar();
     SoarGameGroup* getGroup(string mapName, int sector);
     void changeViewWindow(int x, int y, int width);
-    void addGroup(SoarGameGroup* group);
+    //void addGroup(SoarGameGroup* group); use refreshGroup()
     void removeGroup(SoarGameGroup* group);
     void setSorts(const Sorts* s) {sorts = s;}
   private:
