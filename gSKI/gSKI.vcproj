@@ -254,9 +254,6 @@
 		</Configuration>
 	</Configurations>
 	<References>
-		<ProjectReference
-			ReferencedProjectIdentifier="{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}"
-			Name="SoarKernelSource"/>
 	</References>
 	<Files>
 		<Filter

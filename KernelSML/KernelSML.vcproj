@@ -142,6 +142,9 @@
 		<ProjectReference
 			ReferencedProjectIdentifier="{0F4205EE-35EA-4421-8F74-513603FF003F}"
 			Name="gSKI-static"/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}"
+			Name="SoarKernel"/>
 	</References>
 	<Files>
 		<Filter
