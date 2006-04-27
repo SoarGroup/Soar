@@ -804,6 +804,8 @@ protected:
 
 	void ResultToArgTag(); // clears result
 
+	void LogQuery(); // for CLog command
+
 ////////////////////////////////////////////
 	// New options code
 
