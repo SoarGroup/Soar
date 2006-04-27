@@ -968,7 +968,7 @@ bool CommandLineInterface::Trim(std::string& line) {
 }
 
 void CommandLineInterface::HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const char* msg) {
-	if (m_PrintEventToResult) {
+	if (m_PrintEventToResult || m_pLogFile) {
 		if (m_VarPrint) {
 			// Transform if varprint, see print command
 			std::string message(msg);
@@ -988,9 +988,19 @@ void CommandLineInterface::HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const c
 			regfree(&comp);
 
 			// Simply append to message result
-			CommandLineInterface::m_Result << message;
+			if (m_PrintEventToResult) {
+				CommandLineInterface::m_Result << message;
+			}
+			if (m_pLogFile) {
+				(*m_pLogFile) << message;
+			}
 		} else {
-			CommandLineInterface::m_Result << msg;
+			if (m_PrintEventToResult) {
+				CommandLineInterface::m_Result << msg;
+			}
+			if (m_pLogFile) {
+				(*m_pLogFile) << msg;
+			}
 		}
 	}
 }

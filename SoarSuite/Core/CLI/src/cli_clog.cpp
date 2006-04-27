@@ -188,7 +188,7 @@ void CommandLineInterface::LogQuery() {
 	if (m_RawOutput) {
 		m_Result << "Log file ";
 		if (m_pLogFile) {
-			m_Result << "'" + m_LogFilename + "' opened.";
+			m_Result << "'" + m_LogFilename + "' open.";
 		} else {
 			m_Result << "closed.";
 		}
