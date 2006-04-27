@@ -25,17 +25,17 @@
 //#define WIN_STATIC_LINK
 
 #ifdef _WIN32
-#ifdef _USRDLL
-#define EXPORT __declspec(dllexport)
+  #ifdef _USRDLL
+    #define EXPORT __declspec(dllexport)
+  #else
+    #ifndef WIN_STATIC_LINK
+      #define EXPORT __declspec(dllimport)
+    #else
+      #define EXPORT
+    #endif	// STATIC
+  #endif	// DLL
 #else
-#ifndef WIN_STATIC_LINK
-#define EXPORT __declspec(dllimport)
-#else
-#define EXPORT
-#endif	// STATIC
-#endif	// DLL
-#else
-#define EXPORT
+  #define EXPORT
 #endif	// WIN32
 
 #ifdef __cplusplus
