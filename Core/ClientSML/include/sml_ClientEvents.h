@@ -1,41 +1,11 @@
 /////////////////////////////////////////////////////////////////
-// List of event ids
+// Event handler stuff
 //
 // Author: Douglas Pearson, www.threepenny.net
 // Date  : October 2004
 //
-// These are the events that an SML agent can listen for and definitions
+// This includes the events that an SML agent can listen for and definitions
 // for the handlers that will be called.
-//
-// ==========================================
-// READ THESE NOTES BEFORE CHANGING THIS FILE:
-// ==========================================
-//
-// There are several constraints on the IDs in these event enums.
-//
-// First, each value must be a unique integer.
-//     That's to say the value of the enums in smlSystemEventId
-//     must not intersect with any of the values in smlRunEventId (e.g.)
-//     This is generally achieved by making the first value of one enum
-//     equal the last value of the previous enum + 1.
-//     (e.g. smlEVENT_BEFORE_SMALLEST_STEP = smlEVENT_LAST_SYSTEM_EVENT + 1)
-//
-// Second, if you change the list of events in an enum, make sure that the
-//    related test function (e.g. IsSystemEventID()) is still valid.
-//
-// Third, the values of these IDs currently are required to match the values
-//    in the gSKIEventId enumeration in the kernel.
-//    This way there's no need to map to and from ID values, making debugging
-//    easier.
-//    If we wish to break this requirement later all that's needed is to add
-//    a mapping function on the kernel side.
-//    There are some run time ASSERTs included in the kernel to help check
-//    that the mapping has not been thrown off somehow, but we basically
-//    need to be careful when changing either.
-//
-// Fourth, when you add a new event you need to add a string form for it
-//		   to the sml::Events class (defined in ConnectionSML\sml_Events.cpp)
-//
 /////////////////////////////////////////////////////////////////
 
 #ifndef SML_CLIENT_EVENT_ID_H
