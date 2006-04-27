@@ -121,7 +121,7 @@ SoarTextIO::init()
 void
 SoarTextIO::run()
 {
-	while(checker != "--QUIT")
+	while(checker != "--QUIT" && checker != "--EXIT")
 	{
 		sentStore.resize(0);
 		if(initiateRem)
@@ -222,7 +222,7 @@ MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 		if(STIO->LastSent.size() > 0)
 		{
 			//STIO->pAgent->DestroyWME(STIO->LastSent[0]->holder);
-			STIO->LastSent.clear();
+			//STIO->LastSent.clear();
 			
 		}
 	}
@@ -297,7 +297,7 @@ void
 SoarTextIO::CarryOutCommand(istream* getFrom)
 {
 	bool created = false;
-	while(checker != "--STEP" && checker != "--RESET" && checker != "--REMOTE" && checker != "--CMDLIN" && checker != "--DEBUG" && checker != "--RUN" && checker != "--STOP" && checker != "--QUIT" && checker != "--SAVE" && checker != "--LOAD" && getFrom->peek() != '\n' && getFrom->peek() != EOF && checker != "#&#&" )
+	while(checker != "--STEP" && checker != "--CLEAR" && checker != "--RESET" && checker != "--REMOTE" && checker != "--CMDLIN" && checker != "--DEBUG" && checker != "--RUN" && checker != "--STOP" && checker != "--EXIT" && checker != "--QUIT" && checker != "--SAVE" && checker != "--LOAD" && getFrom->peek() != '\n' && getFrom->peek() != EOF && checker != "#&#&" )
 	{
 		wordNum++;
 		word = "";
@@ -329,7 +329,7 @@ SoarTextIO::CarryOutCommand(istream* getFrom)
 			}
 			getnextline = false;
 		}		
-		if(checker != "--STEP" && checker != "--RESET" && checker != "--REMOTE" && checker != "--CMDLIN" && checker != "--DEBUG" && checker != "--RUN" && checker != "--QUIT" && checker != "--SAVE" && checker != "--LOAD" && checker != "#&#&" && checker != "--STOP")
+		if(checker != "--STEP" && checker != "--CLEAR" && checker != "--RESET" && checker != "--REMOTE" && checker != "--CMDLIN" && checker != "--DEBUG" && checker != "--RUN" && checker != "--EXIT" && checker != "--QUIT" && checker != "--SAVE" && checker != "--LOAD" && checker != "#&#&" && checker != "--STOP")
 		{
 			if(!created)
 			{
@@ -377,11 +377,20 @@ SoarTextIO::CarryOutCommand(istream* getFrom)
 			}
 			else if(checker == "--STEP")
 				step();
+			else if(checker == "--CLEAR")
+			{
+				if(LastSent.size() > 0)
+				{
+					changes.push_back(buffered_change_t(DESTROY, &pTextInput, NULL, "", "", ID));
+					NextWord.clear();
+					LastSent.clear();
+				}
+			}
 			
 			
 		}
 	}
-	if(checker != "--STEP" && checker != "--RESET" && checker != "--REMOTE" && checker != "--CMDLIN" && checker != "--DEBUG" && checker != "--RUN" && checker != "--SAVE" && checker != "--LOAD" && !loadPlease && checker != "--QUIT" && checker != "--STOP")
+	if(checker != "--STEP" && checker != "--CLEAR" && checker != "--RESET" && checker != "--REMOTE" && checker != "--CMDLIN" && checker != "--DEBUG" && checker != "--RUN" && checker != "--SAVE" && checker != "--LOAD" && !loadPlease && checker != "--EXIT" && checker != "--QUIT" && checker != "--STOP")
 	{
 		if(getFrom != cin)
 		{
@@ -406,7 +415,7 @@ SoarTextIO::CarryOutCommand(istream* getFrom)
 			temp = temp;
 		}
 	}
-	if(checker != "--STEP" && checker != "--RESET" && checker != "--REMOTE" && checker != "--CMDLIN" && checker != "--DEBUG" && checker != "--RUN" && checker != "--STOP" && checker != "--QUIT" && checker != "--SAVE" && checker != "--LOAD")
+	if(checker != "--STEP" && checker != "--CLEAR" && checker != "--RESET" && checker != "--REMOTE" && checker != "--CMDLIN" && checker != "--DEBUG" && checker != "--RUN" && checker != "--STOP" && checker != "--EXIT" && checker != "--QUIT" && checker != "--SAVE" && checker != "--LOAD")
 	{
 		if(NextWord.size() > 0)
 		{
