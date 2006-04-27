@@ -28,7 +28,7 @@ SPathFinder::~SPathFinder()
   gsm = NULL;
 }
 
-bool SPathFinder::handleEvent(const Event *e)
+bool SPathFinder::handle_event(const Event &e)
 {
  static Game &game = gsm->get_game();
  sint4 vf = game.get_view_frame();
@@ -36,27 +36,27 @@ bool SPathFinder::handleEvent(const Event *e)
  bool behind = abs(vf-ai) >10;
 
  //Submit message to find a path
- if(e->get_what() == SPathFinder::FIND_PATH_MSG)
+ if(e.get_what() == SPathFinder::FIND_PATH_MSG)
  {
-  const PathEvent &pe = static_cast<const PathEvent&>(*e);
+  const PathEvent &pe = static_cast<const PathEvent&>(e);
   taskQ.push(pe);
   return true;
  }
 
  //Submit message to stop all pathfinding
- if(e->get_what() == SPathFinder::FIND_PATH_STOP)
+ if(e.get_what() == SPathFinder::FIND_PATH_STOP)
  {
-  const PathStopEvent &pe = static_cast<const PathStopEvent&>(*e);
+  const PathStopEvent &pe = static_cast<const PathStopEvent&>(e);
   FORALL(pe.get_objs(),i)
   {
    pp.remove_path(*i);
   }
  }
 
- if(e->get_who() == GameStateModule::FROM)
+ if(e.get_who() == GameStateModule::FROM)
  {
   //I have no idea what this is doing... Likely need to check where it is coming from
-  if(e->get_what() == GameStateModule::VIEW_MSG)
+  if(e.get_what() == GameStateModule::VIEW_MSG)
   {
    if(!env)
     initEnv();
@@ -110,6 +110,7 @@ bool SPathFinder::handleEvent(const Event *e)
     continue;
     env->insert_object(obj);
    }
+  
   
    objs = gsm->get_changes().changed_objs;
    FORALL(objs,i)

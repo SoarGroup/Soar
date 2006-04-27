@@ -18,7 +18,7 @@ class SPathFinder: public EventHandler
 	static const sint4 FIND_PATH_MSG;
 	static const sint4 FIND_PATH_STOP;
 
-	bool handleEvent(const Event *e);
+	bool handle_event(const Event &e);
 	
 	PathProcessor pp;
 
