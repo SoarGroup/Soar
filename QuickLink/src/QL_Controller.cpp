@@ -208,11 +208,10 @@ void load_command_map(command_map_t& command_map)
 	command_map["PAUSE"] = pause_process;
 	command_map["CONTINUE"] = continue_process;
 	command_map["CONT"] = continue_process;
-	command_map["LASTOUTPUT"] = print_last_output;
-	command_map["LO"] = print_last_output;
+	command_map["OUTPUT"] = print_last_output;
 	command_map["ENDS"] = end_current_input_type;
 	command_map["ES"] = end_current_input_type;
-	command_map["STATUS"] = display_input_link;
+	command_map["INPUT"] = display_input_link;
 	command_map["DEBUG"] = spawn_debugger;
 	command_map["REMOTE"] = connect_remotely;
 	command_map["LOCAL"] = create_local_kernel;
