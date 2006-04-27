@@ -50,7 +50,7 @@ int MoveFSM::update()
  return FSM_RUNNING;
 }
 
-void MoveFSM::init(vector<signed long> p) 
+void MoveFSM::init(vector<sint4> p) 
 {
  FSM::init(p);
  real4 x,y;
@@ -63,7 +63,7 @@ void MoveFSM::init(vector<signed long> p)
  pather->handle_event(PathEvent(EventFactory::new_who(), SPathFinder::FIND_PATH_MSG, Coor3(x,y,0),objs)); 
 }
 //Might be worth it to push this up to FSM.h and template it for sint4 and objects
-//void MoveFSM::setParams(std::vector<signed long> p)
+//void MoveFSM::setParams(std::vector<sint4> p)
 //{
  //Push the movement params onto the FSM params
  //There should be 3 -> (x, y, speed)

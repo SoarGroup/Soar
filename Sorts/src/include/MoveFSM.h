@@ -9,7 +9,7 @@ class MoveFSM: public FSM {
   MoveFSM(const Sorts* sorts,  GameObj*);
 
   int update();
-	void init(std::vector<signed long>);
+	void init(std::vector<sint4>);
 
  private:
 	enum{IDLE,WARMUP,MOVING};

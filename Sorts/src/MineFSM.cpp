@@ -191,7 +191,7 @@ int MineFSM::update() {
   return FSM_RUNNING;
 }
           
-void MineFSM::init(vector<signed long> p) {
+void MineFSM::init(vector<sint4> p) {
   FSM::init(p);
 
   state = IDLE;
@@ -204,8 +204,10 @@ void MineFSM::init(vector<signed long> p) {
   baseZoneY  = p[3];
 
   // set up the parameter vectors for later use
+  moveToMineZoneParams.clear();
   moveToMineZoneParams.push_back(mineZoneX);
   moveToMineZoneParams.push_back(mineZoneY);
+  moveToBaseZoneParams.clear();
   moveToBaseZoneParams.push_back(baseZoneX);
   moveToBaseZoneParams.push_back(baseZoneY);
 

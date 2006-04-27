@@ -11,7 +11,7 @@ public:
 	MineFSM(const Sorts *, GameObj*);
 
   	int update();
-	void init(vector<signed long> p);
+	void init(vector<sint4> p);
 private:
   enum MineState { IDLE, MINING, MOVING_TO_MINE_ZONE, MOVING_TO_BASE_ZONE,
                    MOVING_TO_MINERAL, MOVING_TO_BASE,

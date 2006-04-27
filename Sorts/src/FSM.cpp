@@ -10,7 +10,7 @@ FSM::FSM(const Sorts *_sorts, GameObj* _gob)
 FSM::~FSM()
 { }
 
-void FSM::init(std::vector<signed long> p) {
+void FSM::init(std::vector<sint4> p) {
   params.clear();
   for(int i=0; i<static_cast<int>(p.size()); i++) {
     params.push_back(p[i]);
