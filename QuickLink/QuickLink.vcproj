@@ -66,7 +66,7 @@
 			ManagedExtensions="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="include; ../../Core/ClientSML/include"
+				AdditionalIncludeDirectories="include; ../SoarSuite/Core/ClientSML/include;../SoarSuite/Core/ConnectionSML/include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
