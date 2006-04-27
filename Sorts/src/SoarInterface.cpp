@@ -81,21 +81,16 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
     // add the group to the soar input link if it hasn't been already
     g.added = true;
 
-    if (group->isFriendly()) {
-      g.WMEptr = agent->CreateIdWME(playerGroupsId, "group");
-    }
-    else if (group->isWorld() ) {
-      g.WMEptr = agent->CreateIdWME(worldGroupsId, "group");
-    }
-    else {
-      g.WMEptr = agent->CreateIdWME( otherPlayers[group->getOwner()].groupsId, 
-                                     "group" );
-    }
+    g.WMEptr = agent->CreateIdWME(groupsIdWME, "group");
 
     // label the group with its id
     agent->CreateIntWME(g.WMEptr, "id", g.groupId);
     cout << "XXX adding id " << g.groupId << " ptr " << (int) group << endl;
 
+    // give owner information
+    agent->CreateIntWME(g.WMEptr, "owner", group->getOwner());
+    cout << "\towner: " << group->getOwner() << endl;
+    
     // add properties
     for(list<pair<string,int> >::iterator 
         i  = gps.stringIntPairs.begin(); 
@@ -464,36 +459,79 @@ void SoarInterface::updatePlayerGold(int amount) {
   unlockSoarMutex();
 }
 
-/*
- * inputLink ----> me ----> gold
- *             |       \--> groups
- *             |
- *             \-> p1 ---->groups ---->
- *             |                    \->
- *             \-> p2 ----> ...
- *             |
- *             \-> map ---> ...
- */
+void SoarInterface::updateVisionState(VisionParameterStruct& vps) {
+  lockSoarMutex();
+
+  agent->Update(visionParamRep.centerXWME, vps.centerX);
+  agent->Update(visionParamRep.centerYWME, vps.centerY);
+  agent->Update(visionParamRep.viewWidthWME, vps.viewWidth);
+  agent->Update(visionParamRep.focusXWME, vps.focusX);
+  agent->Update(visionParamRep.focusYWME, vps.focusY);
+  agent->Update(visionParamRep.focusYWME, vps.focusY);
+  agent->Update(visionParamRep.ownerGroupingWME, (int) vps.ownerGrouping);
+  agent->Update(visionParamRep.numObjectsWME, vps.numObjects);
+  agent->Update(visionParamRep.groupingRadiusWME, vps.groupingRadius);
+  
+  unlockSoarMutex();
+}
+
+void SoarInterface::initVisionState(VisionParameterStruct vps) {
+  initialVisionParams = vps;
+}
+
 void SoarInterface::initSoarInputLink() {
-  playerId= agent->CreateIdWME(inputLink, "me");
+  groupsIdWME = agent->CreateIdWME(inputLink, "groups");
   mapIdWME = agent->CreateIdWME(inputLink, "map");
   featureMapIdWME = agent->CreateIdWME(inputLink, "feature-maps");
-
-  playerGoldWME = agent->CreateIntWME(playerId, "gold", 0);
-  playerGroupsId = agent->CreateIdWME(playerId, "groups");
-
-  worldId = agent->CreateIdWME(inputLink, "world");
-  worldGroupsId = agent->CreateIdWME(worldId, "groups");
+  gameInfoIdWME = agent->CreateIdWME(inputLink, "game-info");
+  playerGoldWME = agent->CreateIntWME(gameInfoIdWME, "my-gold", 0);
   
-  int numPlayers = sorts->OrtsIO->getNumPlayers();
-  int myId = sorts->OrtsIO->getMyId();
+  // these never change, don't need to save the pointers
+  agent->CreateIntWME(gameInfoIdWME, "num-players", 
+                      sorts->OrtsIO->getNumPlayers());
   
-  for (int p=0; p < numPlayers; p++) {
-    if (p != myId) {
-      otherPlayers[p].id = agent->CreateIdWME(inputLink, catStrInt("p", p).c_str());
-      otherPlayers[p].groupsId = agent->CreateIdWME(otherPlayers[p].id, "groups");
-    }
-  }
+  agent->CreateIntWME(gameInfoIdWME, "map-xdim",
+                      sorts->OrtsIO->getMapXDim());
+  
+  agent->CreateIntWME(gameInfoIdWME, "map-ydim",
+                      sorts->OrtsIO->getMapYDim());
+
+  
+  // initialVisionParams must already be set!
+  visionParamRep.identifierWME = agent->CreateIdWME(inputLink, "vision-state"); 
+  visionParamRep.centerXWME 
+    = agent->CreateIntWME(visionParamRep.identifierWME,
+                          "center-x",
+                          initialVisionParams.centerX);
+  visionParamRep.centerYWME 
+    = agent->CreateIntWME(visionParamRep.identifierWME,
+                          "center-y",
+                          initialVisionParams.centerY);
+  visionParamRep.viewWidthWME 
+    = agent->CreateIntWME(visionParamRep.identifierWME,
+                          "view-width",
+                          initialVisionParams.viewWidth);
+  visionParamRep.focusXWME 
+    = agent->CreateIntWME(visionParamRep.identifierWME,
+                          "focus-x",
+                          initialVisionParams.focusX);
+  visionParamRep.focusYWME 
+    = agent->CreateIntWME(visionParamRep.identifierWME,
+                          "focus-y",
+                          initialVisionParams.focusY);
+  visionParamRep.ownerGroupingWME 
+    = agent->CreateIntWME(visionParamRep.identifierWME,
+                          "owner-grouping",
+                          (int)initialVisionParams.ownerGrouping);
+  visionParamRep.numObjectsWME 
+    = agent->CreateIntWME(visionParamRep.identifierWME,
+                          "num-objects-visible",
+                          initialVisionParams.numObjects);
+  visionParamRep.groupingRadiusWME 
+    = agent->CreateIntWME(visionParamRep.identifierWME,
+                          "grouping-radius",
+                          initialVisionParams.groupingRadius);
+  
   agent->Commit();
 }
 

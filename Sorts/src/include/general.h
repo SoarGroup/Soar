@@ -25,4 +25,15 @@ const char* getCommandParameter(sml::Identifier* c, const char *name);
 
 double squaredDistance(double x1, double y1, double x2, double y2);
 
+struct VisionParameterStruct {
+  int centerX;
+  int centerY;
+  int viewWidth;
+  int focusX;
+  int focusY;
+  bool ownerGrouping;
+  int numObjects;
+  int groupingRadius;
+};
+
 #endif

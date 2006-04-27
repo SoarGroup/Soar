@@ -221,9 +221,14 @@ void PerceptualGroup::generateData() {
   stringIntWme.second = size;
   soarData.stringIntPairs.push_back(stringIntWme);
 
-  
-  stringStringWme.first = "type";
-  stringStringWme.second = typeName;
+  if (mixedType) {
+    stringStringWme.first = "type";
+    stringStringWme.second = "mixed";
+  }
+  else {
+    stringStringWme.first = "type";
+    stringStringWme.second = typeName;
+  }
   soarData.stringStringPairs.push_back(stringStringWme);
 
   // command info:

@@ -3,8 +3,10 @@
 
 #include "SoarGameObject.h"
 #include "PerceptualGroup.h"
+#include "SoarInterface.h"
 
 class Sorts;
+
 
 struct ltGroupPtr {
   bool operator()(PerceptualGroup* g1, PerceptualGroup* g2) const {
@@ -38,13 +40,20 @@ class GroupManager {
  
     
   private:
-    int perceptualGroupingRadius;
     int internalGroupingRadius;
-    int numObjects;
-    int focusX, focusY;
-    int centerX, centerY;
-    int viewWidth;
-    bool ownerGrouping;
+    
+    VisionParameterStruct visionParams;
+    /* in general.h:
+    struct VisionParameterStruct {
+      int centerX;
+      int centerY;
+      int viewWidth;
+      int focusX;
+      int focusY;
+      bool ownerGrouping;
+      int numObjects;
+      int groupingRadius;
+    };*/
     
     void prepareForReGroup();
     void reGroupInternal();

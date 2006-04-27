@@ -22,30 +22,36 @@ GroupManager::GroupManager() {
     
   // this default should be reflected in the agent's assumptions
   // (1024 = 32^2)
-  perceptualGroupingRadius = 1024;
+  visionParams.groupingRadius = 1024;
   
   // this does not change
   internalGroupingRadius = 1024;
 
   // the number of objects near the focus point to add
   // agent can change this, if it wishes to cheat
-  numObjects = 9991;
+  visionParams.numObjects = 9;
 
-  ownerGrouping = false;
+  visionParams.ownerGrouping = false;
 }
 
 void GroupManager::initialize() {
   // called right after sorts ptr set up
-  focusX = (int) (sorts->OrtsIO->getMapXDim() / 2.0);
-  focusY = (int) (sorts->OrtsIO->getMapYDim() / 2.0);
+  visionParams.focusX = (int) (sorts->OrtsIO->getMapXDim() / 2.0);
+  visionParams.focusY = (int) (sorts->OrtsIO->getMapYDim() / 2.0);
 
-  centerX = focusX;
-  centerY = focusY;
+  visionParams.centerX = visionParams.focusX;
+  visionParams.centerY = visionParams.focusY;
 
-  viewWidth = 2*focusX;
-  cout << "init: " << focusX << " " << focusY << " " << viewWidth << endl;
-  sorts->featureMapManager->changeViewWindow(focusX, focusY, viewWidth);
+  visionParams.viewWidth = 2*visionParams.focusX;
+  
+  cout << "init: " << visionParams.focusX << " " << visionParams.focusY 
+       << " " << visionParams.viewWidth << endl;
 
+  sorts->featureMapManager->changeViewWindow(visionParams.focusX, 
+                                             visionParams.focusY, 
+                                             visionParams.viewWidth);
+
+  sorts->SoarIO->initVisionState(visionParams);
 }
 void GroupManager::updateVision() {
   prepareForReGroup();
@@ -138,7 +144,7 @@ void GroupManager::processVisionCommands() {
 
   int radius;
   PerceptualGroup* centerGroup;
-        list<int>::iterator it;
+  list<int>::iterator it;
 
   for (list<AttentionAction>::iterator i = actions.begin();
                                        i != actions.end();
@@ -147,9 +153,9 @@ void GroupManager::processVisionCommands() {
       case AA_LOOK_LOCATION:
         assert(i->params.size() == 2); // x,y
         it = i->params.begin();
-        focusX = *it;
+        visionParams.focusX = *it;
         it++;
-        focusY = *it;
+        visionParams.focusY = *it;
         
         // recalc all center distances and rebuild the order of the groups
         remakeGroupSet();
@@ -170,7 +176,7 @@ void GroupManager::processVisionCommands() {
         }
         
         // set focus point the center of the group
-        centerGroup->getCenterLoc(focusX, focusY);
+        centerGroup->getCenterLoc(visionParams.focusX, visionParams.focusY);
 
         // recalc all center distances and rebuild the order of the groups
         remakeGroupSet();
@@ -178,10 +184,14 @@ void GroupManager::processVisionCommands() {
         break;
       case AA_RESIZE:
         assert(i->params.size() == 1);
-        viewWidth = *(i->params.begin());
-        sorts->featureMapManager->changeViewWindow(centerX, centerY, viewWidth);
+        visionParams.viewWidth = *(i->params.begin());
+        sorts->featureMapManager->changeViewWindow(visionParams.centerX, 
+                                                   visionParams.centerY, 
+                                                   visionParams.viewWidth);
         adjustAttention(true);   // re-update all the feature maps-
                                  // changeViewWindow clears them out
+        
+        sorts->SoarIO->updateVisionState(visionParams); 
         break;
       case AA_MOVE_LOCATION:
         break;
@@ -195,16 +205,21 @@ void GroupManager::processVisionCommands() {
           return;
         }
         
-        centerGroup->getCenterLoc(focusX, focusY);
-        centerX = focusX;
-        centerY = focusY;
-        sorts->featureMapManager->changeViewWindow(centerX, centerY, viewWidth);
+        centerGroup->getCenterLoc(visionParams.focusX, visionParams.focusY);
+        visionParams.centerX = visionParams.focusX;
+        visionParams.centerY = visionParams.focusY;
+        sorts->featureMapManager->changeViewWindow(visionParams.centerX, 
+                                                   visionParams.centerY, 
+                                                   visionParams.viewWidth);
 
         // recalc all center distances and rebuild the order of the groups
         remakeGroupSet();
-        sorts->featureMapManager->changeViewWindow(centerX, centerY, viewWidth);
+        sorts->featureMapManager->changeViewWindow(visionParams.centerX, 
+                                                   visionParams.centerY, 
+                                                   visionParams.viewWidth);
         adjustAttention(true);   // re-update all the feature maps-
                                  // changeViewWindow clears them out
+        sorts->SoarIO->updateVisionState(visionParams); 
         break;
       case AA_GROUPING_RADIUS:
       // grouping change:
@@ -213,45 +228,49 @@ void GroupManager::processVisionCommands() {
         assert(i->params.size() == 1);
         radius = *(i->params.begin());
         radius *= radius;
-        if (radius != perceptualGroupingRadius) {
-          perceptualGroupingRadius = radius;
+        if (radius != visionParams.groupingRadius) {
+          visionParams.groupingRadius = radius;
           setAllPerceptualCategoriesStale();
           reGroupPerceptual();
           generatePerceptualGroupData();
           adjustAttention(false);
+          sorts->SoarIO->updateVisionState(visionParams); 
         }
         break;
       case AA_NUM_OBJECTS:
         assert(i->params.size() == 1);
-        numObjects = *(i->params.begin());
+        visionParams.numObjects = *(i->params.begin());
         adjustAttention(false);
+        sorts->SoarIO->updateVisionState(visionParams); 
         break;
       case AA_OWNER_GROUPING_ON:
         // handle similar to grouping radius change-
         // rebuild all the groups
-        if (ownerGrouping) {
+        if (visionParams.ownerGrouping) {
           cout << "WARNING: turning on ownerGrouping when it is already on.\n";
           break;
         }
-        ownerGrouping = true; 
+        visionParams.ownerGrouping = true; 
         // this essentially changes the definition of category
         
         setAllPerceptualCategoriesStale();
         reGroupPerceptual();
         generatePerceptualGroupData();
         adjustAttention(false);
+        sorts->SoarIO->updateVisionState(visionParams); 
         break;
       case AA_OWNER_GROUPING_OFF:
-        if (not ownerGrouping) {
+        if (not visionParams.ownerGrouping) {
           cout << "WARNING: turning off ownerGrouping when it is already off.\n";
           break;
         }
-        ownerGrouping = false; 
+        visionParams.ownerGrouping = false; 
         
         setAllPerceptualCategoriesStale();
         reGroupPerceptual();
         generatePerceptualGroupData();
         adjustAttention(false);
+        sorts->SoarIO->updateVisionState(visionParams); 
         break;
       case AA_NO_SUCH_ACTION:
         break;
@@ -285,7 +304,8 @@ void GroupManager::prepareForReGroup() {
       }
       else {
         (*groupIter)->updateCenterMember();
-        stalePGroupCategories.insert((*groupIter)->getCategory(ownerGrouping));
+        stalePGroupCategories.insert(
+            (*groupIter)->getCategory(visionParams.ownerGrouping));
       }
     }
   }
@@ -351,9 +371,11 @@ void GroupManager::reGroupPerceptual() {
     groupingList.clear();
     centerGroupingList.clear();
     
-    for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
+    for (groupIter = perceptualGroups.begin(); 
+         groupIter != perceptualGroups.end(); 
+         groupIter++) {
       if (not (*groupIter)->getSticky() and
-         ((*groupIter)->getCategory(ownerGrouping) == *catIter)) {
+         ((*groupIter)->getCategory(visionParams.ownerGrouping) == *catIter)) {
         //cout << "group " << (int) (*groupIter) << endl;
         // group is of the type we are re-grouping
        
@@ -441,7 +463,7 @@ void GroupManager::reGroupPerceptual() {
       while (obj2StructIter != groupingList.end()) {
         if (squaredDistance(obj1Struct.x, obj1Struct.y, 
                             (*obj2StructIter).x, (*obj2StructIter).y)
-            <= perceptualGroupingRadius) {
+            <= visionParams.groupingRadius) {
           if ((*obj2StructIter).assigned) {
             // obj2 already has been grouped- groups should merge
             pair<PerceptualGroup*, PerceptualGroup*> groups;
@@ -463,7 +485,8 @@ void GroupManager::reGroupPerceptual() {
             }
             else {
               // both old- keep the bigger
-              if (obj1Struct.group->getSize() > (*obj2StructIter).group->getSize()) {
+              if (obj1Struct.group->getSize() 
+                  > (*obj2StructIter).group->getSize()) {
                 groups.second = obj1Struct.group;
                 groups.first = (*obj2StructIter).group;
               }
@@ -748,7 +771,7 @@ void GroupManager::generatePerceptualGroupData() {
     perceptualGroups.erase(*it);
     perceptualGroups.insert(grp);
     // groups have no knowledge of the focus point, only their distance to it.
-    grp->calcDistToFocus(focusX, focusY);
+    grp->calcDistToFocus(visionParams.focusX, visionParams.focusY);
   }
 
   return;
@@ -798,8 +821,10 @@ void GroupManager::adjustAttention(bool rebuildFeatureMaps) {
   
   set<PerceptualGroup*>::iterator groupIter;
   int i=0;
-  for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
-    if (i < numObjects) {
+  for (groupIter = perceptualGroups.begin(); 
+       groupIter != perceptualGroups.end(); 
+       groupIter++) {
+    if (i < visionParams.numObjects) {
       if (not (*groupIter)->getInSoar()) {
         sorts->SoarIO->addGroup(*groupIter);
         sorts->SoarIO->refreshGroup(*groupIter);
@@ -839,7 +864,9 @@ void GroupManager::adjustAttention(bool rebuildFeatureMaps) {
     
     list <FeatureMap*> emptyList;
     
-    for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
+    for (groupIter = perceptualGroups.begin(); 
+         groupIter != perceptualGroups.end(); 
+         groupIter++) {
       // sector == -1 means that the group is not in any fmaps
       (*groupIter)->setFMSector(-1);
       sorts->featureMapManager->refreshGroup(*groupIter);
@@ -848,7 +875,9 @@ void GroupManager::adjustAttention(bool rebuildFeatureMaps) {
   }
   else {
     // just refresh groups that changed in the feature maps
-    for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
+    for (groupIter = perceptualGroups.begin(); 
+         groupIter != perceptualGroups.end(); 
+         groupIter++) {
       if ((*groupIter)->getHasStaleProperties()) {
         sorts->featureMapManager->refreshGroup(*groupIter);
         (*groupIter)->setHasStaleProperties(false);
@@ -862,7 +891,9 @@ void GroupManager::adjustAttention(bool rebuildFeatureMaps) {
 
 GroupManager::~GroupManager() {
   set<PerceptualGroup*>::iterator groupIter;
-  for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
+  for (groupIter = perceptualGroups.begin(); 
+       groupIter != perceptualGroups.end(); 
+       groupIter++) {
     delete (*groupIter);
   }
 }
@@ -907,8 +938,11 @@ void GroupManager::setAllPerceptualCategoriesStale() {
   set<PerceptualGroup*>::iterator groupIter;
   // jump iterator between lists
 
-  for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
-    stalePGroupCategories.insert((*groupIter)->getCategory(ownerGrouping));
+  for (groupIter = perceptualGroups.begin(); 
+      groupIter != perceptualGroups.end(); 
+      groupIter++) {
+    stalePGroupCategories.insert(
+        (*groupIter)->getCategory(visionParams.ownerGrouping));
   }
 }
 
@@ -920,8 +954,10 @@ void GroupManager::remakeGroupSet() {
  
   set<PerceptualGroup*, ltGroupPtr> newSet;
   
-  for (groupIter = perceptualGroups.begin(); groupIter != perceptualGroups.end(); groupIter++) {
-    (*groupIter)->calcDistToFocus(focusX, focusY);
+  for (groupIter = perceptualGroups.begin(); 
+      groupIter != perceptualGroups.end(); 
+      groupIter++) {
+    (*groupIter)->calcDistToFocus(visionParams.focusX, visionParams.focusY);
     newSet.insert(*groupIter);
   }
 

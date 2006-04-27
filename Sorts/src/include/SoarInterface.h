@@ -12,15 +12,12 @@
 #include "SoarAction.h"
 #include "general.h"
 #include "FeatureMap.h"
-//#include "Sorts.h"
+#include "GroupManager.h"
 class Sorts;
 
 class PerceptualGroup;
-//class FeatureMap;
 
 using namespace std;
-
-//typedef list<pair<string, int> > groupPropertyList;
 
 typedef struct {
   int groupId;
@@ -57,11 +54,18 @@ typedef struct {
   sml::IntElement* sector8WME;
 } InputLinkFeatureMapRep;
 
+
 typedef struct {
-  sml::Identifier* id;
-  sml::Identifier* groupsId;
-  // some other things in the future
-} InputLinkOtherPlayerRep;
+  sml::Identifier* identifierWME;
+  sml::IntElement* centerXWME;
+  sml::IntElement* centerYWME;
+  sml::IntElement* viewWidthWME;
+  sml::IntElement* focusXWME;
+  sml::IntElement* focusYWME;
+  sml::IntElement* ownerGroupingWME;
+  sml::IntElement* numObjectsWME;
+  sml::IntElement* groupingRadiusWME;
+} VisionParameterRep;
 
 /* 
 The GroupManager will have a pointer to this structure, and can call
@@ -123,7 +127,8 @@ class SoarInterface {
     void getNewSoarOutput();
 
     void initSoarInputLink();
-
+    void initVisionState(VisionParameterStruct vps);
+    void updateVisionState(VisionParameterStruct& vps);
     bool getStale();
     void setStale(bool);
     void lockSoarMutex();
@@ -147,13 +152,10 @@ class SoarInterface {
     sml::Agent *agent;
 
     sml::Identifier* inputLink;
-    sml::Identifier* playerId;
+    sml::Identifier* groupsIdWME;
+    sml::Identifier* gameInfoIdWME;
     sml::IntElement* playerGoldWME;
     
-    sml::Identifier* worldId;
-
-    map<int, InputLinkOtherPlayerRep> otherPlayers;
-
   /**************************************************
    *                                                *
    * Member variables for group management          *
@@ -162,10 +164,6 @@ class SoarInterface {
 
     // SoarInterface numbers each group based on its own convention
     int groupIdCounter;
-
-    // pointers to group structures on the input link
-    sml::Identifier* playerGroupsId;
-    sml::Identifier* worldGroupsId;
 
     // these are the maps that keep track of input link <-> middleware objects
     /* Change these later to hash maps */
@@ -189,6 +187,11 @@ class SoarInterface {
    **************************************************/
     sml::Identifier* featureMapIdWME;
     map<string, InputLinkFeatureMapRep> featureMapTable;
+
+    // for vision state
+
+    VisionParameterStruct initialVisionParams;
+    VisionParameterRep visionParamRep;
 
   /**************************************************
    *                                                *

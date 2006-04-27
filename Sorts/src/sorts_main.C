@@ -207,9 +207,14 @@ int main(int argc, char *argv[]) {
   gm.setSorts(&sorts);
   mapManager.setSorts(&sorts);
   featureMapManager.setSorts(&sorts);
-  
-  soarInterface.initSoarInputLink();
+ 
+  // must be connected to orts server by now
+  // must initialize the gm before soar input link
+  // gm intialize gets params from orts server via ortsinterface
+  // and calculates the initial vision params (window size, etc.)
+  // these params are then put on the input link when it is initialized
   gm.initialize();
+  soarInterface.initSoarInputLink();
   
 // register for all events
   gsm.add_handler(&ortsInterface);
