@@ -24,11 +24,13 @@ QuickLink_SOURCES = Input_Controller.cpp QL_Interface.cpp View_Console.cpp WME_I
 ../include/WME_Type.h
 
 QuickLink_LDADD = \
-$(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \
+$(BASEDIR_PREFIX)/Core/ClientSML/src/libClientSML.la \
+$(BASEDIR_PREFIX)/Core/ConnectionSML/src/libConnectionSML.la \
 $(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
 
 INCLUDES = \
 -I../include \
--I$(BASEDIR_PREFIX)/Core/ClientSML/include
+-I$(BASEDIR_PREFIX)/Core/ClientSML/include \
+-I$(BASEDIR_PREFIX)/Core/ConnectionSML/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS) -W -pedantic
