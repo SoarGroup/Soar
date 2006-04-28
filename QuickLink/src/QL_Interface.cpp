@@ -1,4 +1,10 @@
 
+#if defined(_WIN32) || defined(_WIN64)
+#	define WINDOWS
+//#elif _WIN64
+//#	define WINDOWS
+#endif
+
 #include "QL_Interface.h"
 #include "Utilities.h"
 #include "WME_Id.h"
@@ -8,7 +14,7 @@
 #include <functional>
 #include <iostream>
 #include <fstream>
-#if defined _WIN32 || _WIN64
+#ifdef WINDOWS
 #include <process.h>
 #include <windows.h>
 #include <direct.h>
@@ -33,7 +39,7 @@ QL_Interface& QL_Interface::instance()
 
 QL_Interface::QL_Interface()  : should_update_views(true), kernel_destroyed(true) 
 {
-#ifdef _WIN32
+#ifdef WINDOWS
 	_chdir("../../SoarLibrary/bin/");
 #endif
 }
@@ -335,7 +341,7 @@ void QL_Interface::print_last_output()
 
 void QL_Interface::spawn_debugger()
 {
-#if defined _WIN32 || _WIN64
+#ifdef WINDOWS
 
 	// spawn the debugger asynchronously
 	
@@ -388,7 +394,7 @@ void QL_Interface::spawn_debugger()
 
 	while(1)
 	{
-#ifdef _WIN32 || _WIN64
+#ifdef WINDOWS
 		Sleep(100);
 #else
 		sleep(1);
