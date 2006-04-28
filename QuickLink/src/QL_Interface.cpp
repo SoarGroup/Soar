@@ -1,8 +1,6 @@
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__)
 #	define WINDOWS
-//#elif _WIN64
-//#	define WINDOWS
 #endif
 
 #include "QL_Interface.h"
