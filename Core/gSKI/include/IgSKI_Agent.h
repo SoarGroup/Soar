@@ -717,6 +717,23 @@ namespace gSKI {
        */
       virtual unsigned long GetNumDecisionCyclesExecuted(Error* err = 0) = 0;
 
+  	  /**
+       * @brief Gets the number of decisions made so far
+       *
+       * Call this method when you need to know the number of decisions  
+	   *  (rather than full decision cycles)
+       *  this agent has made since it was initialized (or reinitiailzed)
+       *
+       * @param err  Pointer to client-owned error structure.  If the pointer
+       *              is not NULL this structure is filled with extended error
+       *              information.  If it is NULL (the default) extended error
+       *              information is not returned.
+       *
+       * @returns The number of decisions made since the agent was last
+       *             initialized.
+       */
+      virtual unsigned long GetNumDecisionsExecuted(Error* err = 0) = 0;
+
       /**
        * @brief Gets the current output count for this agent
        *

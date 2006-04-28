@@ -342,6 +342,7 @@ typedef struct agent_struct {
   unsigned long       num_existing_wmes;      /* current WM size */
   unsigned long       production_firing_count;  /* # of prod. firings */
   unsigned long       d_cycle_last_output;    /* last time agent produced output */  //KJC 11.17.05
+  unsigned long       decision_phases_count;  /* can differ from d_cycle_count.  want for stats */
   //?? unsigned long       out_cycle_count;       /* # of output phases have gen'd output */
   //?? unsigned long       phase_count;       /* # of phases run so far */
 

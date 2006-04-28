@@ -523,12 +523,16 @@ bool KernelSML::HandleGetRunState(gSKI::IAgent* pAgent, char const* pCommandName
 		// Report the current decision number of decisions that have been executed
 		// This is currently a little tricky to determine as the agent records the
 		// number of decision cycles (output phases) executed.
-		int decisionCycles = pAgent->GetNumDecisionCyclesExecuted(pError);
-
-		if (pAgent->GetCurrentPhase(pError) == gSKI_APPLY_PHASE || pAgent->GetCurrentPhase(pError) == gSKI_OUTPUT_PHASE)
-			decisionCycles++ ;
-
-		buffer << (decisionCycles-1) ;
+	
+		buffer << pAgent->GetNumDecisionsExecuted(pError);
+		/*  
+		 * int decisionCycles = pAgent->GetNumDecisionCyclesExecuted(pError);
+         *
+		 * if (pAgent->GetCurrentPhase(pError) == gSKI_APPLY_PHASE || pAgent->GetCurrentPhase(pError) == gSKI_OUTPUT_PHASE)
+		 *  	decisionCycles++ ;
+         *
+		 * buffer << (decisionCycles-1) ;
+		 */
 	}
 	else
 	{

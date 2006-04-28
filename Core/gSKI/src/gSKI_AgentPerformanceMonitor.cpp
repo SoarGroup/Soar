@@ -287,7 +287,8 @@ bool AgentPerformanceMonitor::parse_system_stats(int argc, char *argv[])
         } 
         else if (!strcmp("-dc-count", argv[2])) 
         {
-            m_result = ToString(a->d_cycle_count);
+			/* v8.6.2: print out decisions executed, not # full cycles */
+            m_result = ToString(a->decision_phases_count);
         } 
         else if (!strcmp("-ec-count", argv[2])) 
         {
@@ -295,9 +296,10 @@ bool AgentPerformanceMonitor::parse_system_stats(int argc, char *argv[])
         } 
         else if (!strcmp("-ecs/dc", argv[2])) 
         {
-            m_result = ToString((a->d_cycle_count
+			/* v8.6.2: print out decisions executed, not # full cycles */
+            m_result = ToString((a->decision_phases_count
                                               ? ((double) a->e_cycle_count
-                                                 / a->d_cycle_count)
+                                                 / a->decision_phases_count)
                                               : 0.0));
         } 
         else if (!strcmp("-firings-count", argv[2])) 
@@ -346,8 +348,9 @@ bool AgentPerformanceMonitor::parse_system_stats(int argc, char *argv[])
         } 
         else if (!strcmp("-ms/dc", argv[2])) 
         {
-            m_result = ToString((a->d_cycle_count
-                                              ? total_kernel_msec / a->d_cycle_count
+			/* v8.6.2: print out decisions executed, not # full cycles */
+            m_result = ToString((a->decision_phases_count
+                                              ? total_kernel_msec / a->decision_phases_count
                                               : 0.0));
         } 
         else if (!strcmp("-ms/ec", argv[2])) 
@@ -900,14 +903,16 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 #endif
 
 #endif  // #ifndef NO_TIMING_STUFF
+		
+	/* v8.6.2: print out decisions executed, not # full cycles */
 
 #if !defined(NO_TIMING_STUFF)
     //print(a, "%lu decision cycles (%.3f msec/dc)\n",
     //      current_agent(d_cycle_count),
     //      current_agent(d_cycle_count) ? total_kernel_msec / current_agent(d_cycle_count) : 0.0);
-	safeSprintf(buf, 127, "%lu decision cycles (%.3f msec/dc)\n",
-          current_agent(d_cycle_count),
-          current_agent(d_cycle_count) ? total_kernel_msec / current_agent(d_cycle_count) : 0.0);
+	safeSprintf(buf, 127, "%lu decisions (%.3f msec/decision)\n",
+          current_agent(decision_phases_count),
+          current_agent(decision_phases_count) ? total_kernel_msec / current_agent(decision_phases_count) : 0.0);
 	m_result += buf;
     //print(a, "%lu elaboration cycles (%.3f ec's per dc, %.3f msec/ec)\n",
     //      current_agent(e_cycle_count),
@@ -915,7 +920,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     //      current_agent(e_cycle_count) ? total_kernel_msec / current_agent(e_cycle_count) : 0);
 	safeSprintf(buf, 127, "%lu elaboration cycles (%.3f ec's per dc, %.3f msec/ec)\n",
           current_agent(e_cycle_count),
-          current_agent(d_cycle_count) ? (double) current_agent(e_cycle_count) / current_agent(d_cycle_count) : 0,
+          current_agent(decision_phases_count) ? (double) current_agent(e_cycle_count) / current_agent(decision_phases_count) : 0,
           current_agent(e_cycle_count) ? total_kernel_msec / current_agent(e_cycle_count) : 0);
 	m_result += buf;
     /* REW: begin 09.15.96 */
@@ -931,7 +936,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 		//      current_agent(pe_cycle_count) ? total_kernel_msec / current_agent(pe_cycle_count) : 0);
 		safeSprintf(buf, 127, "%lu p-elaboration cycles (%.3f pe's per dc, %.3f msec/pe)\n",
 				current_agent(pe_cycle_count),
-				current_agent(d_cycle_count) ? (double) current_agent(pe_cycle_count) / current_agent(d_cycle_count) : 0,
+				current_agent(decision_phases_count) ? (double) current_agent(pe_cycle_count) / current_agent(decision_phases_count) : 0,
 				current_agent(pe_cycle_count) ? total_kernel_msec / current_agent(pe_cycle_count) : 0);
 		m_result += buf;
 	}
@@ -951,7 +956,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 
 #else
     //print(a, "%lu decision cycles\n", current_agent(d_cycle_count));
-	safeSprintf(buf, 127, "%lu decision cycles\n", current_agent(d_cycle_count));
+	safeSprintf(buf, 127, "%lu decisions\n", current_agent(decision_phases_count));
 	m_result += buf;
     //print(a, "%lu elaboration cycles \n", current_agent(e_cycle_count));
 	safeSprintf(buf, 127, "%lu elaboration cycles \n", current_agent(e_cycle_count));
@@ -1388,7 +1393,7 @@ void AgentPerformanceMonitor::GetStats(AgentPerformanceData* pStats)
 	pStats->productionCountUser = a->num_productions_of_type[USER_PRODUCTION_TYPE];
 	pStats->productionCountChunk = a->num_productions_of_type[CHUNK_PRODUCTION_TYPE];
 	pStats->productionCountJustification = a->num_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE];
-	pStats->cycleCountDecision = a->d_cycle_count;
+	pStats->cycleCountDecision = a->decision_phases_count;
 	pStats->cycleCountElaboration = a->e_cycle_count;
 	pStats->productionFiringCount = a->production_firing_count;
 	pStats->wmeCountAddition = a->wme_addition_count;
