@@ -13,6 +13,10 @@
 #include "FeatureMapManager.h"
 #include "Sorts.h"
 
+#include "TerrainModule.H"
+#include "SimpleTerrain.H"
+
+
 using namespace std;
 
 void printOutput(sml::smlPrintEventId id,
@@ -47,7 +51,7 @@ void SoarUpdateEventHandler(sml::smlUpdateEventId id,
 {
   Sorts* sorts = (Sorts*) pUserData;
   pthread_mutex_lock(sorts->mutex);
-  cout << "SOAR EVENT {\n";
+  //cout << "SOAR EVENT {\n";
   sml::Agent *agent = pKernel->GetAgent("orts_agent");
   
   sorts->SoarIO->getNewSoarOutput();
@@ -59,7 +63,7 @@ void SoarUpdateEventHandler(sml::smlUpdateEventId id,
     sorts->SoarIO->unlockSoarMutex();
     sorts->SoarIO->setStale(false);
   }
-  cout << "SOAR EVENT }\n";
+  //cout << "SOAR EVENT }\n";
   pthread_mutex_unlock(sorts->mutex);
 }
 
@@ -88,6 +92,8 @@ void* RunOrts(void* ptr) {
   //sleep(1);
   }
 }
+
+typedef SimpleTerrain::ST_Terrain Terrain;
 
 int main(int argc, char *argv[]) {
 
@@ -159,12 +165,18 @@ int main(int argc, char *argv[]) {
    * Set up the connection to ORTS *
    *********************************/
   GameStateModule::Options::add();
+  Terrain::add_options();
 
   GameStateModule::Options gsmo;
   gsmo.port = port;
   gsmo.host = host;
   GameStateModule gsm(gsmo);
 
+  Terrain timp;
+  TerrainModule tm(gsm, timp);
+  gsm.add_handler(&tm);
+  
+  
   // connect to ORTS server
   if (!gsm.connect()) exit(10);
   cout << "connected" << endl;
@@ -199,6 +211,7 @@ int main(int argc, char *argv[]) {
               &gm, 
               &mapManager, 
               &featureMapManager,
+              &tm,
               &sortsMutex);
 
   

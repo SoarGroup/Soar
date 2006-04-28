@@ -14,6 +14,8 @@
 #include "include/GroupManager.h"
 #include "include/MapManager.h"
 #include "include/FeatureMapManager.h"
+
+#include "TerrainModule.H"
 /*
 class SoarInterface;
 class OrtsInterface;
@@ -29,6 +31,7 @@ class Sorts {
       GroupManager*       _groupManager, 
       MapManager*         _mapManager, 
       FeatureMapManager*  _featureMapManager,
+      TerrainModule*            _tm,
       pthread_mutex_t*    _mutex)
     {
       SoarIO = _SoarIO;
@@ -36,6 +39,7 @@ class Sorts {
       groupManager = _groupManager;
       mapManager = _mapManager;
       featureMapManager = _featureMapManager;
+      terrainModule = _tm;
       mutex = _mutex;
     }
 
@@ -44,6 +48,7 @@ class Sorts {
     GroupManager* groupManager;
     MapManager* mapManager;
     FeatureMapManager* featureMapManager;
+    TerrainModule* terrainModule;
     pthread_mutex_t* mutex;
 };
 

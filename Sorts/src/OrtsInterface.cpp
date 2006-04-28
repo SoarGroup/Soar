@@ -65,7 +65,7 @@ void OrtsInterface::removeVanishedObject(const GameObj* gameObj) {
 
 bool OrtsInterface::handle_event(const Event& e) {
   pthread_mutex_lock(sorts->mutex);
-  cout << "ORTS EVENT {\n";
+  //cout << "ORTS EVENT {\n";
   if (e.get_who() == GameStateModule::FROM) {
     if (e.get_what() == GameStateModule::VIEW_MSG) {
 
@@ -86,7 +86,7 @@ bool OrtsInterface::handle_event(const Event& e) {
        */
       sorts->SoarIO->commitInputLinkChanges();
     }
-    cout << "ORTS EVENT }\n";
+    //cout << "ORTS EVENT }\n";
     pthread_mutex_unlock(sorts->mutex);
     return true;
   }
