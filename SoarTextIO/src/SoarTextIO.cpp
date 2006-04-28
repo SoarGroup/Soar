@@ -35,10 +35,11 @@
 
 using namespace sml;
 
-void MyUpdateEventHandler(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags);
+//void MyUpdateEventHandler(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags);
 void MyStartSystemEventHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel);
 void MyStopSystemEventHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel);
 void MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent) ;
+void MyRunEventHandler(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phase);
 void enact_init_soar(sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent);
 int callBackId;
 
@@ -100,11 +101,12 @@ SoarTextIO::init()
 	{
 
 		WhenReady();
-		callBackId = pKernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES,MyUpdateEventHandler,this);
+		//callBackId = pKernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES,MyUpdateEventHandler,this);
 		callBackId = pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START,MyStartSystemEventHandler, this );
 		callBackId = pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_STOP, MyStopSystemEventHandler, this);
 		callBackId = pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENT_REINITIALIZED, MyAgentEventHandler, this);
 		callBackId = pKernel->RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, enact_init_soar, this);
+		callBackId = pAgent->RegisterForRunEvent(smlEVENT_BEFORE_INPUT_PHASE, MyRunEventHandler, this);
 		inFile.open("!@#$%^&*");
 
 		run();
@@ -180,7 +182,7 @@ RunForever( void* info )
 #endif
 
 
-void
+/*void
 MyUpdateEventHandler(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlRunFlags runFlags)
 {
 	SoarTextIO* STIO = (SoarTextIO*)pUserData;
@@ -197,7 +199,7 @@ MyUpdateEventHandler(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlR
 
 	}	
 	//STIO->pAgent->Commit();
-}
+}*/
 
 void
 MyStopSystemEventHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel)
@@ -229,6 +231,24 @@ MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 	//	if(STIO->pTextInput != NULL)
 	//		STIO->pAgent->DestroyWME(STIO->pTextInput);
 	//	STIO->init_soar = true;
+}
+
+void 
+MyRunEventHandler(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phase)
+{
+	SoarTextIO* STIO = (SoarTextIO*)pUserData;
+	STIO->make_buffered_changes();
+	if(STIO->m_StopNow == true)
+	{
+		pAgent->GetKernel()->StopAllAgents();
+		STIO->m_StopNow = false;
+		STIO->m_IsRunning = false;
+	}
+	if(STIO->pAgent->GetNumberOutputLinkChanges()!=0)
+	{
+		STIO->RespondCycle();
+
+	}	
 }
 
 void enact_init_soar(sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent)
