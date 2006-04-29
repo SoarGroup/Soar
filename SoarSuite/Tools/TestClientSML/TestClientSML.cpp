@@ -282,8 +282,8 @@ bool SimpleListener(int life)
 	bool useCurrentThread = false ;
 
 	// Create the kernel instance
-	sml::Kernel* pKernel = useCurrentThread ? sml::Kernel::CreateKernelInCurrentThread("SoarKernelSML") :
-											  sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
+	sml::Kernel* pKernel = useCurrentThread ? sml::Kernel::CreateKernelInCurrentThread() :
+											  sml::Kernel::CreateKernelInNewThread() ;
 
 	if (pKernel->HadError())
 	{
@@ -370,6 +370,95 @@ bool RefCountTest()
 		else if (buffer[0] == 'x')
 			done = true ;
 	}
+
+	pKernel->Shutdown() ;
+	delete pKernel ;
+
+	return true ;
+}
+
+// Connect to an existing agent and do some I/O
+bool SimpleRemoteIOTest()
+{
+	// Create the kernel instance
+	sml::Kernel* pKernel = sml::Kernel::CreateRemoteConnection(true, NULL) ;
+
+	if (pKernel->HadError())
+	{
+		cout << pKernel->GetLastErrorDescription() << endl ;
+		return false ;
+	}
+
+	sml::Agent* pAgent = pKernel->GetAgentByIndex(0) ;
+
+	if (!pAgent)
+	{
+		cout << "No agents running in this kernel" << endl ;
+		return false ;
+	}
+
+	pAgent->SynchronizeInputLink() ;
+	pAgent->SynchronizeOutputLink() ;
+
+	Identifier* pSentence = pAgent->CreateIdWME(pAgent->GetInputLink(), "sentence") ;
+	pAgent->CreateStringWME(pSentence, "newest", "yes") ;
+	pAgent->CreateIntWME(pSentence, "num-words", 3) ;
+	pAgent->Commit() ;
+
+	pAgent->SynchronizeInputLink() ;
+	pAgent->SynchronizeOutputLink() ;
+
+	// Run the agent so the wmes are fully created
+	//pAgent->RunSelf(1) ;
+
+	// Make sure there's long enough for the listener to notice our connection
+	SLEEP(1, 0) ;
+
+	// Disconnect
+	pKernel->Shutdown() ;
+	delete pKernel ;
+
+	return true ;
+}
+
+// Create a kernel, listen and wait until somebody connects and disconnects.
+// Then do an init-soar and shutdown.
+bool SimpleRemoteIOListener()
+{
+	// Create the kernel instance
+	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
+
+	if (pKernel->HadError())
+	{
+		cout << pKernel->GetLastErrorDescription() << endl ;
+		return false ;
+	}
+
+	sml::Agent* pAgent = pKernel->CreateAgent("test-1") ;
+
+	long pauseSecs = 0;
+	long pauseMsecs = 100 ;
+
+	bool done = false ;
+
+	while (!done)
+	{
+		// Have to call this before calling GetNumberConnections is valid.
+		pKernel->GetAllConnectionInfo() ;
+		
+		int nConnections = pKernel->GetNumberConnections() ;
+
+		if (nConnections == 2)
+			done = true ;
+
+		SLEEP(pauseSecs, pauseMsecs) ;
+	}
+
+	std::string res = pAgent->InitSoar() ;
+	cout << res << endl ;
+
+	//res = pAgent->InitSoar() ;
+	//cout << res << endl ;
 
 	pKernel->Shutdown() ;
 	delete pKernel ;
@@ -1375,7 +1464,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		// Create the appropriate type of connection
 		sml::Kernel* pKernel = embedded ?
-			(useClientThread ? sml::Kernel::CreateKernelInCurrentThread("SoarKernelSML", fullyOptimized, Kernel::GetDefaultPort())
+			(useClientThread ? sml::Kernel::CreateKernelInCurrentThread(Kernel::GetDefaultLibraryName(), fullyOptimized, Kernel::GetDefaultPort())
 			: sml::Kernel::CreateKernelInNewThread("SoarKernelSML", Kernel::GetDefaultPort()))
 			: sml::Kernel::CreateRemoteConnection(true, NULL) ;
 
@@ -1751,6 +1840,8 @@ int main(int argc, char* argv[])
 	bool synchTest = false ;
 	bool reteTest  = false ;
 	bool refCountTest = false ;
+	bool remoteIOTest = false ;
+	bool remoteIOListener = false ;
 	int  life      = 3000 ;	// Default is to live for 3000 seconds (5 mins) as a listener
 	int  decisions = 20000 ;
 
@@ -1787,6 +1878,10 @@ int main(int argc, char* argv[])
 				listener = true ;
 			if (!stricmp(argv[i], "-refcounttest"))
 				refCountTest = true ;
+			if (!stricmp(argv[i], "-remoteIOTest"))
+				remoteIOTest = true ;
+			if (!stricmp(argv[i], "-remoteIOListener"))
+				remoteIOListener = true ;
 			if (!stricmp(argv[i], "-runlistener"))
 			{
 				runlistener = true ;
@@ -1828,6 +1923,10 @@ int main(int argc, char* argv[])
 		success = SimpleReteNetLoader() ;
 	else if (remoteConnect)
 		SimpleRemoteConnect() ;
+	else if (remoteIOListener)
+		SimpleRemoteIOListener() ;
+	else if (remoteIOTest)
+		SimpleRemoteIOTest() ;
 	else if (synchTest)
 		success = SimpleRemoteSynchTest() ;
 	else if (timeTest)
