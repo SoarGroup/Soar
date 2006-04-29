@@ -51,7 +51,7 @@ public class Game implements Runnable, Kernel.UpdateEventInterface {
     public Game(int towerCount, int diskCount) {
         try {
             // create our Soar kernel
-            kernel = Kernel.CreateKernelInNewThread("SoarKernelSML");
+            kernel = Kernel.CreateKernelInNewThread();
         } catch (Exception e) {
             System.out.println("Exception while creating kernel: " + e.getMessage());
             System.exit(1);
