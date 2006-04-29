@@ -146,6 +146,7 @@ class Kernel : public ClientErrors
 
 public:
 	enum { kDefaultSMLPort = 12121 } ;
+	static char const*	kDefaultLibraryName ;
 
 protected:
 	long		m_TimeTagCounter ;	// Used to generate time tags (we do them in the kernel not the agent, so ids are unique for all agents)
@@ -305,8 +306,8 @@ public:
 	* @returns A new kernel object which is used to communicate with the kernel.
 	*		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 	*************************************************************/
-	static Kernel* CreateKernelInCurrentThread(char const* pLibraryName, bool optimized = false, int portToListenOn = kDefaultSMLPort) ;
-	static Kernel* CreateKernelInNewThread(char const* pLibraryName, int portToListenOn = kDefaultSMLPort) ;
+	static Kernel* CreateKernelInCurrentThread(char const* pLibraryName = kDefaultLibraryName, bool optimized = false, int portToListenOn = kDefaultSMLPort) ;
+	static Kernel* CreateKernelInNewThread(char const* pLibraryName = kDefaultLibraryName, int portToListenOn = kDefaultSMLPort) ;
 
 	/*************************************************************
 	* @brief Creates a connection to a receiver that is in a different
@@ -330,6 +331,11 @@ public:
 	* @brief Returns the default port we use for remote connections.
 	*************************************************************/
 	static int GetDefaultPort() { return kDefaultSMLPort ; }
+
+	/*************************************************************
+	* @brief Returns the default library name ("SoarKernelSML").
+	*************************************************************/
+	static char const* GetDefaultLibraryName() { return kDefaultLibraryName ; }
 
 	/*************************************************************
 	* @brief If auto commit is set to false then after making any changes
