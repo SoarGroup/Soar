@@ -1178,9 +1178,12 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 
 	//cout << "About to do first run-til-output" << endl ;
 
+	trace.empty() ;
+	int callbackp1 = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
+
 	// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
 	// We'll use RunAll just to test it out.  Could use RunSelf and get same result (presumably)
-	trace = pKernel->RunAllTilOutput() ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
+	std::string runRes = pKernel->RunAllTilOutput() ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
 
 	// We should stop quickly (after a decision or two)
 	if (myCount > 10)
@@ -1194,6 +1197,8 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 		return false ;
 	}
 	cout << "Agent ran for " << myCount << " decisions before we got output" << endl ;
+	cout << trace << endl ;
+	cout << runRes << endl ;
 
 	if (outputsGenerated != 1)
 	{
@@ -1218,6 +1223,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 
 	pAgent->UnregisterForOutputNotification(callback_notify) ;
 	pKernel->UnregisterForUpdateEvent(callback_g) ;
+	pAgent->UnregisterForPrintEvent(callbackp1) ;
 
 	//cout << "Time to dump output link" << endl ;
 

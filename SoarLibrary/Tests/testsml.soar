@@ -26,7 +26,7 @@ sp {apply*user*cmd
 	(<o> ^name move ^space <sp>)
 	(<sp> ^row <row> ^col <col>)
 -->
-	(cmd print <s>)}
+	(write (cmd print --depth 2 <s>))}
 
 sp {remove*complete*commands
 	(state <s> ^operator <o> ^io.output-link <ol>)
