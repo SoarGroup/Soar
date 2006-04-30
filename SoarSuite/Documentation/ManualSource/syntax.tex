@@ -1998,13 +1998,13 @@ where "\soar{log}" is a registered user-defined function.
 
 \index{cmd}
 \item[\soarb{cmd} --- ] Used to call built-in Soar commands. Spaces are inserted between concatenated 
-arguments. For example, the producttion
+arguments. For example, the production
 
 \begin{verbatim}
 sp {
    ...
    -->
-   (cmd print --depth 2 <s>) }
+   (write (cmd print --depth 2 <s>)) }
 \end{verbatim}
 
 will have the effect of printing the object bound to \soar{<s>} to depth 2.
