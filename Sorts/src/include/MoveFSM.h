@@ -2,7 +2,7 @@
 #define MoveFSM_H
 
 #include "FSM.h"
-#include "SPathFinder.h"
+#include "Sorts.h"
 
 class MoveFSM: public FSM {
  public:
@@ -17,7 +17,8 @@ class MoveFSM: public FSM {
 	int state;
   int runTime;
 
-  static SPathFinder *pather;
+//  static SPathFinder *pather;
+ 
   TerrainBase::Path path;
   int stagesLeft;
   Vector<sint4> moveParams;
