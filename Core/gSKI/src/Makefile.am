@@ -153,11 +153,7 @@ portability.h\
 ../include/gSKI_Structures.h\
 ../include/gSKI_Stub.h\
 ../include/pcre.h\
-../include/pcreposix.h\
-../lib_src/precre-4.5/config.h\
-../lib_src/precre-4.5/internal.h\
-../lib_src/precre-4.5/pcre.h\
-../lib_src/precre-4.5/pcreposix.h
+../include/pcreposix.h
 
 INCLUDES = -I../include -I ../../SoarKernel/include
 
