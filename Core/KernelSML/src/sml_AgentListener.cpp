@@ -64,7 +64,8 @@ bool AgentListener::RemoveListener(egSKIAgentEventId eventID, Connection* pConne
 {
     bool last = EventManager<egSKIAgentEventId>::BaseRemoveListener(eventID, pConnection) ;
 
-	if (last)
+	// Unregister from the kernel -- except for the two events that this class is internally listening for.
+	if (last && eventID != gSKIEVENT_BEFORE_AGENT_REINITIALIZED && eventID != gSKIEVENT_AFTER_AGENT_REINITIALIZED)
 	{
 		m_pKernelSML->GetKernel()->GetAgentManager()->RemoveAgentListener(eventID, this) ;
 	}
