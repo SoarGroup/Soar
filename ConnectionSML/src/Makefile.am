@@ -76,7 +76,9 @@ sock_Utils.h\
 ../include/thread_OSspecific.h\
 ../include/thread_Thread.h
 
-
 INCLUDES = -I../include -I../../ElementXML/include
 
+install-data-am:
+	$(INSTALL) -m 644 .libs/libConnectionSML.a $(libdir)
+	
 CXXFLAGS = $(SOAR_CXXFLAGS)

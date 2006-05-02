@@ -46,3 +46,8 @@ INCLUDES = \
 -I../../ConnectionSML/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)
+
+install-data-am:
+	$(INSTALL) -m 644 .libs/libClientSML.a $(libdir)
+	
+	
