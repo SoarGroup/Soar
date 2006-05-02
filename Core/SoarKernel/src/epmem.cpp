@@ -270,8 +270,8 @@ unsigned long g_last_tag = 0;
 long g_last_ret_id = 0;
 long g_num_queries = 0;
 arraylist *g_header_stack;
-char *g_save_filename="c:\\temp\\epmems_save.txt";
-char *g_load_filename="c:\\temp\\epmems_load.txt";
+char *g_save_filename=NULL; //"c:\\temp\\epmems_save.txt";
+char *g_load_filename=NULL; //"c:\\temp\\epmems_20002cycles.txt";
 
 
 /* EpMem macros
@@ -1818,7 +1818,7 @@ void record_epmem(agent *thisAgent)
                  && (! node->ubiquitous) )
             {
                 append_entry_to_arraylist(thisAgent, node->assoc_memories, (void *)new_epmem);
-                
+
                 //Test to see if the new arraylist has too many entries.
                 //If so, this node has become too ubiquitous and will no
                 //longer be used in mat ching
@@ -2561,15 +2561,16 @@ int is_radar_tank_match(arraylist *cue, arraylist *mem)
 }//is_radar_tank_match
 
 /* ===================================================================
-   find_best_match_TANKSOAR        *DOMAIN SPECIFIC*
+   find_best_match_RADARTANK        *DOMAIN SPECIFIC*
 
    Same as find_best_match but prints lots of debugging info.
 
-   Caveat:  This function assumes you're running tanksoar!!
+   Caveat:  This function assumes you're doing the radar task
+            in tanksoar!!
 
    Created:  10 November 2005
    =================================================================== */
-episodic_memory *find_best_match_TANKSOAR(agent *thisAgent, arraylist *cue)
+episodic_memory *find_best_match_RADARTANK(agent *thisAgent, arraylist *cue)
 {
     int best_score = 0;
     episodic_memory *best_mem = NULL;
@@ -2723,7 +2724,255 @@ episodic_memory *find_best_match_TANKSOAR(agent *thisAgent, arraylist *cue)
     
     
     return best_mem;
-}//find_best_match_TANKSOAR
+}//find_best_match_RADARTANK 
+
+/* ===================================================================
+   get_energy_tank_data            *DOMAIN SPECIFIC*
+
+   Retrieves the x,y position, direction and radar-setting from an arraylist
+
+   Created:  10 Nov 2005
+   =================================================================== */
+typedef struct energy_tank_data_struct
+{
+    int x;
+    int y;
+    int position;               // 1=center, 2=left, 3=right, 0=not in the epmem
+} energy_tank_data;
+
+void get_energy_tank_data(arraylist *al, energy_tank_data *etd)
+{
+    int i;
+    wmetree *input_link = NULL;
+    wmetree *radar = NULL;
+    wmetree *energy = NULL;
+        
+    
+    etd->x = -1;
+    etd->y = -1;
+    etd->position = 0;
+
+    for(i = 0; i < al->size; i++)
+    {
+        actwme *aw = (actwme *)al->array[i]; //%%%HACK: should call get_arraylist_entry instead
+        char *attr = aw->node->attr;
+
+        if ( (strlen(attr) == 10) && (strcmp(attr, "input-link") == 0) )
+        {
+            input_link = aw->node;
+        }
+        else if ( (strlen(attr) == 5) && (strcmp(attr, "radar") == 0) && (aw->node->parent == input_link))
+        {
+            radar = aw->node;
+        }
+        else if ( (strlen(attr) == 6) && (strcmp(attr, "energy") == 0) && (aw->node->parent == radar))
+        {
+            energy = aw->node;
+        }
+        else if ( (strlen(attr) == 1) && (aw->node->parent == input_link) && (strcmp(attr, "x") == 0) )
+        {
+            etd->x = aw->node->val.intval;
+        }
+        else if ( (strlen(attr) == 1) && (aw->node->parent == input_link) && (strcmp(attr, "y") == 0) )
+        {
+            etd->y = aw->node->val.intval;
+        }
+        else if ( (strlen(attr) == 8) && (aw->node->parent == energy) && (strcmp(attr, "position") == 0) )
+        {
+            switch(aw->node->val.strval[0])
+            {
+                case 'c':
+                    etd->position = 1;
+                    break;
+                case 'l':
+                    etd->position = 2;
+                    break;
+                case 'r':
+                    etd->position = 3;
+                    break;
+                default:
+                    break;
+            }//switch
+        }//else
+    }//for
+}//get_energy_tank_data
+
+
+
+/* ===================================================================
+   is_energy_tank_match            *DOMAIN SPECIFIC*
+
+   Determines whether the given memory matches the given cue within
+   the context of the TankSoar energy tank.  (Used for debugging.)
+
+   Created:  02 May 2006
+   =================================================================== */
+int is_energy_tank_match(arraylist *cue, arraylist *mem)
+{
+    energy_tank_data cue_etd;
+    energy_tank_data mem_etd;
+
+    get_energy_tank_data(cue, &cue_etd);
+    get_energy_tank_data(mem, &mem_etd);
+
+    if ( (cue_etd.x != -1)
+         && (cue_etd.y != -1)
+         && (cue_etd.position != 0)
+         && (cue_etd.x == mem_etd.x)
+         && (cue_etd.y == mem_etd.y)
+         && (cue_etd.position == mem_etd.position) )
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+    
+}//is_energy_tank_match
+
+
+
+/* ===================================================================
+   find_best_match_ENERGYTANK        *DOMAIN SPECIFIC*
+
+   Same as find_best_match but prints lots of debugging info.
+
+   Caveat:  This function assumes you're doing the radar task
+            in tanksoar!!
+
+   Created:  01 May 2006
+   =================================================================== */
+episodic_memory *find_best_match_ENERGYTANK(agent *thisAgent, arraylist *cue)
+{
+    int best_score = 0;
+    episodic_memory *best_mem = NULL;
+    int i;
+    int j;
+    int comp_count = 0;         // number of epmems that were examined
+
+    //%%%DEBUGGING
+    print(thisAgent, "\nRECEIVED THIS CUE", best_score);
+    print_memory(thisAgent, cue, &g_wmetree, 2, 3);
+    
+    start_timer(thisAgent, &(thisAgent->epmem_match_start_time));
+
+    //If there aren't enough memories to examine just return
+    //the first one
+    if (g_memories->size <= memory_match_wait)
+    {
+        return 0;
+    }
+
+    //Give this match a unique id
+    g_last_ret_id++;
+
+    //Every memory gets a match score boost if it contains a memory
+    //that's in the cue.  So we need to loop over the assoc_memories
+    //list for each wmetree node in the cue
+    for(i = 0; i < cue->size; i++)
+    {
+        //pull an entry out of the cue
+        actwme *aw_cue = (actwme *)get_arraylist_entry(thisAgent, cue,i);
+
+        // if the entry has associated epmems then note that this node
+        // was used in the match
+        if (aw_cue->node->assoc_memories->size > 0)
+        {
+            aw_cue->node->query_count++;
+        }
+
+//          //%%%DEBUGGING
+//          print(thisAgent, "\n\tMatches for cue entry %s: ",
+//                aw_cue->node->attr);
+
+        //Loop over the associated epmems
+        for(j = 1; j < aw_cue->node->assoc_memories->size; j++)
+        {
+            //get the next associated epmem
+            episodic_memory *epmem =
+                (episodic_memory *)get_arraylist_entry(thisAgent, aw_cue->node->assoc_memories,j);
+
+            //Find the entry in that epmem that matches the cue entry
+            actwme *aw_mem = epmem_find_actwme_entry(thisAgent, epmem->content, aw_cue->node);
+
+            if (aw_mem != NULL)
+            {
+//                  //%%%DEBUGGING
+//                  print(thisAgent, "%d, ", epmem->index);
+                
+                if (epmem->last_usage != g_last_ret_id)
+                {
+                    //Reinit the match score from last time
+                    epmem->last_usage = g_last_ret_id;
+                    epmem->match_score = aw_mem->activation;
+                    comp_count++;
+                }
+                else
+                {
+                    //Increment the match score
+                    epmem->match_score += aw_mem->activation;
+                }
+            }
+
+            if (epmem->match_score > best_score)
+            {
+//                  //%%%DEBUGGING
+//                  if (best_mem != NULL)
+//                  {
+//                      print(thisAgent,
+//                            "\nRejected the following memory (#%d) with match score %d:",
+//                            best_mem->index,
+//                            best_score);
+//                      print_memory(thisAgent, best_mem->content, &g_wmetree, 2, 3,
+//                                   "io input-link x y radar energy position");
+//                  }
+                
+                best_score = epmem->match_score;
+                best_mem = epmem;
+            }
+//              //%%%DEBUGGING
+//              else if (is_energy_tank_match(cue, epmem->content))
+//              {
+//                  print(thisAgent,
+//                        "\nRejected matching memory (#%d) with match score %d:",
+//                        epmem->index, epmem->match_score);
+//                  print_memory(thisAgent, epmem->content, &g_wmetree, 2, 3,
+//                               "io input-link x y radar energy position");
+                
+//              }
+        }//for
+    }//for
+
+    stop_timer(thisAgent, &(thisAgent->epmem_match_start_time), &(thisAgent->epmem_match_total_time));
+
+    //%%%DEBUGGING
+    stop_timer(thisAgent, &(thisAgent->epmem_retrieve_start_time), &(thisAgent->epmem_retrieve_total_time));
+    stop_timer(thisAgent, &(thisAgent->epmem_start_time), &(thisAgent->epmem_total_time));
+    print(thisAgent, "\nmemories searched:\t%d of %d\n", comp_count, g_memories->size);
+    print(thisAgent, "\nbest match score=%d\n", best_score);
+    start_timer(thisAgent, &(thisAgent->epmem_start_time));
+    start_timer(thisAgent, &(thisAgent->epmem_retrieve_start_time));
+
+    //%%%DEBUGGING
+    if (best_mem != NULL)
+    {
+        if (is_energy_tank_match(cue, best_mem->content))
+        {
+            print(thisAgent,
+                  "\nSelected CORRECT memory (#%d) with match score %d:",
+                  best_mem->index, best_score);
+        }
+        else
+        {
+            print(thisAgent,
+                  "\nSelected INCORRECT memory (#%d) with match score %d:",
+                  best_mem->index, best_score);
+        }             
+        print_memory(thisAgent, best_mem->content, &g_wmetree, 2, 3,
+                     "io input-link x y radar energy position");
+    }
+    
+    return best_mem;
+}//find_best_match_ENERGYTANK
 
 
 /* ===================================================================
@@ -2855,7 +3104,7 @@ arraylist *respond_to_query(agent *thisAgent, epmem_header *h)
     g_num_queries++;
 
     //Match query to current memories list
-    h->curr_memory = find_best_match_TANKSOAR(thisAgent, al_query);
+    h->curr_memory = find_best_match_ENERGYTANK(thisAgent, al_query);
 
     //Cleanup
     destroy_arraylist(thisAgent, al_query);
@@ -3382,7 +3631,10 @@ void epmem_print_mem_usage(agent *thisAgent)
     for(i = 1; i < g_memories->size; i++)
     {
         epmem = (episodic_memory *)get_arraylist_entry(thisAgent, g_memories, i);
-        num_actwmes += epmem->content->size;
+        if (epmem->content != NULL)
+        {
+            num_actwmes += epmem->content->size;
+        }
     }
     
     print(thisAgent, "\n");
@@ -3675,7 +3927,7 @@ int epmem_save_epmems_to_file(agent *thisAgent,
 
     fputs("BEGIN MEM LIST\n", f);
 
-    for(i = 0; i < memlist->size; i++)
+    for(i = 1; i < memlist->size; i++)
     {
         episodic_memory *epmem =
             (episodic_memory *)get_arraylist_entry(thisAgent, g_memories, i);
@@ -3844,7 +4096,7 @@ void epmem_clear_all_memories(agent *thisAgent)
 
    Created: 23 Mar 2006
    =================================================================== */
-#define EPMEM_BUFLEN 41728
+#define EPMEM_BUFLEN 166912
 arraylist *epmem_load_wmetree_from_file(agent *thisAgent,
                                         FILE *f,
                                         wmetree *root_node,
@@ -3995,6 +4247,13 @@ arraylist *epmem_load_wmetree_from_file(agent *thisAgent,
             append_entry_to_arraylist(thisAgent, node->assoc_memories, (void *)epmem);
 
             str = strtok(NULL, " ");
+            if (str == NULL)
+            {
+                print(thisAgent, "ERROR: File improperly formatted.  Expected a node id but reached end-of-string.  Could this be a buffer overrun? Episode load aborted.", str);
+                //%%%Clean up already loaded data here
+                destroy_arraylist(thisAgent, nodelist);
+                return NULL;
+            }
             mem_id = atoi(str);
         }//while
         
@@ -4319,7 +4578,12 @@ void init_epmem(agent *thisAgent)
     //Load pre-set episodic memories
     if (g_load_filename != NULL)
     {
+        char *tmp;
         epmem_load_episodic_memory_from_file(thisAgent);
+        tmp = g_save_filename;
+        g_save_filename="c:\\temp\\epmems_sanity.txt";
+        epmem_save_episodic_memory_to_file(thisAgent); // sanity
+        g_save_filename=tmp;
     }
    
     //Reset the timers
