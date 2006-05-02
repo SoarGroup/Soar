@@ -62,6 +62,9 @@ public class Tank  extends WorldEntity {
 	private final static int kInitialHealth = 1000;
 	private final static int kInitialMissiles = 15;
 	
+	private final static int kMaximumEnergy = 1000;
+	private final static int kMaximumHealth = 1000;
+	
 	private RelativeDirections m_RD = new RelativeDirections();
 	private TankSoarWorld m_World;
 
@@ -356,11 +359,11 @@ public class Tank  extends WorldEntity {
 		if (m_Health > 0) {
 			if (cell.isEnergyRecharger()) {
 				m_Energy += 250;
-				m_Energy = m_Energy > kInitialEnergy ? kInitialEnergy : m_Energy;
+				m_Energy = m_Energy > kMaximumEnergy ? kMaximumEnergy : m_Energy;
 			}
 			if (cell.isHealthRecharger()) {
 				m_Health += 250;
-				m_Health = m_Health > kInitialHealth ? kInitialHealth : m_Health;
+				m_Health = m_Health > kMaximumHealth ? kMaximumHealth : m_Health;
 			}
 		}
 		
