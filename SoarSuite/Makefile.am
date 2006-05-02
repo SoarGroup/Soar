@@ -38,3 +38,5 @@ install-data-am:
 	$(INSTALL) SoarLibrary/bin/libswt-pi-carbon-3139.jnilib $(libdir)
 	$(INSTALL) SoarLibrary/bin/libswt-pi-gtk-3139.so $(libdir)
 	$(INSTALL) SoarLibrary/bin/libswt-webkit-carbon-3139.jnilib $(libdir)
+	$(INSTALL) SoarLibrary/lib/libClientSML.a $(libdir)
+	$(INSTALL) SoarLibrary/lib/libConnectionSML.a $(libdir)
