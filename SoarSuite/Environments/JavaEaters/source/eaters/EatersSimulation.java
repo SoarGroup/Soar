@@ -100,7 +100,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		// add initial eaters
 		if (initialNames != null) {
 			for (int i = 0; i < initialNames.length; ++i) {
-				createEntity(initialNames[i], getAgentPath() + initialProductions[i], initialColors[i], null, null);
+				createEntity(initialNames[i], getAgentPath() + initialProductions[i], initialColors[i], null, null, -1, -1, -1);
 			}
 		}
 		
@@ -111,9 +111,9 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		}
 	}
 	
-    public void createEntity(String name, String productions, String color, MapPoint location, String facing) {
-    	if (location != null || facing != null) {
-    		m_Logger.log("Location or facing given but ignored!");
+    public void createEntity(String name, String productions, String color, MapPoint location, String facing, int energy, int health, int missiles) {
+    	if (location != null || facing != null || energy != -1 || health != -1 || missiles != -1) {
+    		m_Logger.log("An ignored parameter was given a non-default value!");
     	}
     	
     	if (name == null || productions == null) {
