@@ -65,8 +65,6 @@ public class InputLinkManager {
 	
 	private final static String kNone = "none";
 
-	private Random m_Random = Simulation.kRandom ? new Random() : new Random(0) ;
-	
 	private Identifier m_InputLink;
 	private Identifier m_BlockedWME;
 	private StringElement m_BlockedBackwardWME;
@@ -452,7 +450,7 @@ public class InputLinkManager {
 		}
 		
 		// Random
-		float random = m_Random.nextFloat();
+		float random = m_World.m_Random.nextFloat();
 		if (m_Reset) {
 			m_RandomWME = CreateFloatWME(m_InputLink, kRandomID, random);
 		} else {

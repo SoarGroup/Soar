@@ -24,8 +24,8 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		
 	private TankSoarWorld m_World;
 
-	public TankSoarSimulation(String settingsFile, boolean quiet) {		
-		super();
+	public TankSoarSimulation(String settingsFile, boolean quiet, boolean noRandom) {		
+		super(noRandom);
 		
 		// Log the settings file
 		m_Logger.log("Settings file: " + settingsFile);
