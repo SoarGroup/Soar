@@ -6,5 +6,6 @@ public interface SimulationManager {
 	public WorldManager getWorldManager();
 	public World getWorld();
 	public String getAgentPath();
-    public void createEntity(String name, String productions, String color, MapPoint location, String facing);
+	// TODO: energy, health, and missiles don't belong in an interface used by eaters. Bad.
+    public void createEntity(String name, String productions, String color, MapPoint location, String facing, int energy, int health, int missiles);
 }
