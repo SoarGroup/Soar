@@ -19,6 +19,7 @@ public class Eaters {
 	private boolean m_Console;
 	private String m_LogFile;
 	private boolean m_Append;
+	private boolean m_NotRandom;
 
 	public Eaters(String[] args) {
 		
@@ -44,7 +45,7 @@ public class Eaters {
 		}
 		
 		// Initialize the simulation
-		EatersSimulation simulation = new EatersSimulation(m_SettingsFile, m_Quiet);
+		EatersSimulation simulation = new EatersSimulation(m_SettingsFile, m_Quiet, m_NotRandom);
 		
 		// Initialize the window manager, if applicable.
 		if(!m_Quiet) {
@@ -115,6 +116,7 @@ public class Eaters {
 		m_Console = hasOption(args, "-console");
 		m_LogFile = getOptionValue(args, "-log");
 		m_Append = hasOption(args, "-append");
+		m_NotRandom = hasOption(args, "-notrandom");
 	
 		if (m_LogFile != null) {
 			m_Console = false;
@@ -134,6 +136,7 @@ public class Eaters {
 		System.out.println("\t-append: If logging to file, append.  Ignored if -console present.");
 		System.out.println("\t-quiet: Disables all windows, runs simulation quietly.");
 		System.out.println("\t-settings: XML file with with run settings.");
+		System.out.println("\t-notrandom: Disable randomness by seeding the generator with 0.");
 	}
 	
 	// Returns true if a given option appears in the list
