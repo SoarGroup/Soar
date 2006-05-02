@@ -440,6 +440,7 @@ bool SimpleRemoteIOListener()
 	long pauseMsecs = 100 ;
 
 	bool done = false ;
+	bool connected = false ;
 
 	while (!done)
 	{
@@ -448,11 +449,17 @@ bool SimpleRemoteIOListener()
 		
 		int nConnections = pKernel->GetNumberConnections() ;
 
+		// Wait until another system has connected and disconnected, then do an init-soar
 		if (nConnections == 2)
+			connected = true ;
+
+		if (nConnections == 1 && connected)
 			done = true ;
 
 		SLEEP(pauseSecs, pauseMsecs) ;
 	}
+
+	SLEEP(1,0) ;
 
 	std::string res = pAgent->InitSoar() ;
 	cout << res << endl ;
