@@ -31,11 +31,11 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	private ArrayList m_SimulationListeners = new ArrayList();
 	private ArrayList m_AddSimulationListeners = new ArrayList();
 	private ArrayList m_RemoveSimulationListeners = new ArrayList();
+	private boolean m_NotRandom = false;
 
-	// For debugging can set this to false, making all random calls follow the same sequence
-	public static final boolean kRandom = false ;
-	
-	protected Simulation() {
+	protected Simulation(boolean noRandom) {
+		m_NotRandom = noRandom;
+		
 		// Initialize Soar
 		// Create kernel
 		try {
@@ -54,8 +54,10 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		m_Kernel.SetAutoCommit(false);
 
 		// Make all runs non-random if asked
-		if (!kRandom)
+		// For debugging, set this to make all random calls follow the same sequence
+		if (m_NotRandom) {
 			m_Kernel.ExecuteCommandLine("srand 0", null) ;
+		}
 		
 		// Register for events
 		m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, null);
@@ -65,6 +67,10 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		// Generate base path
 		m_BasePath = System.getProperty("user.dir") + System.getProperty("file.separator");
 		m_Logger.log("Base path: " + m_BasePath);
+	}
+	
+	public boolean isRandom() {
+		return !m_NotRandom;
 	}
 	
 	protected void setWorldManager(WorldManager worldManager) {
