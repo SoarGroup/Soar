@@ -58,10 +58,6 @@ public class Tank  extends WorldEntity {
 	private final static int kMissileEnergyDamage = 250;
 	private final static int kCollisionHealthDamage = 100;
 	
-	private final static int kInitialEnergy = 1000;
-	private final static int kInitialHealth = 1000;
-	private final static int kInitialMissiles = 15;
-	
 	private final static int kMaximumEnergy = 1000;
 	private final static int kMaximumHealth = 1000;
 	
@@ -82,8 +78,13 @@ public class Tank  extends WorldEntity {
 	private boolean m_RadarSwitch;
 	private int m_RadarDistance;
 	private int m_SmellDistance;
+	
+	private int m_InitialEnergy = 1000;
+	private int m_InitialHealth = 1000;
+	private int m_InitialMissiles = 15;
+	
 
-	public Tank(Agent agent, String productions, String color, MapPoint location, String facing, TankSoarWorld world) {
+	public Tank(Agent agent, String productions, String color, MapPoint location, String facing, int energy, int health, int missiles, TankSoarWorld world) {
 		super(agent, productions, color, location);
 		
 		m_World = world;
@@ -93,6 +94,16 @@ public class Tank  extends WorldEntity {
 		}
 		m_InitialFacing = facing;		
 		m_InitialLocation = location;
+		
+		if (energy != -1) {
+			m_InitialEnergy = energy;
+		}
+		if (health != -1) {
+			m_InitialHealth = health;
+		}
+		if (missiles != -1) {
+			m_InitialMissiles = missiles;
+		}
 	
 		m_LastMove = new MoveInfo();
 		m_ILM = new InputLinkManager(m_World, this);
@@ -110,10 +121,10 @@ public class Tank  extends WorldEntity {
 		m_SmellDistance = 0;
 		m_RadarSwitch = false;
 		m_RWaves = 0;
-		m_Missiles = kInitialMissiles;
+		m_Missiles = m_InitialMissiles;
 		m_ShieldStatus = false;
-		m_Health = kInitialHealth;
-		m_Energy = kInitialEnergy;
+		m_Health = m_InitialHealth;
+		m_Energy = m_InitialEnergy;
 				
 		m_LastMove.reset();	
 		

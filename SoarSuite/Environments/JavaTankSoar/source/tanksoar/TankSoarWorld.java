@@ -383,14 +383,14 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 	
 	void createTank(Agent agent, String productions, String color) {
-		createTank(agent, productions, color, null, null);
+		createTank(agent, productions, color, null, null, -1, -1, -1);
 	}
 
 	void createTank(Agent agent, String productions, String color, MapPoint location) {
-		createTank(agent, productions, color, location, null);
+		createTank(agent, productions, color, location, null, -1, -1, -1);
 	}
 
-	void createTank(Agent agent, String productions, String color, MapPoint location, String facing) {
+	void createTank(Agent agent, String productions, String color, MapPoint location, String facing, int energy, int health, int missiles) {
 		if (location != null) {
 			if (this.isInBounds(location)) {
 				if (getCell(location).isBlocked()) {
@@ -403,7 +403,7 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 		}
 		
-		Tank tank = new Tank(agent, productions, color, location, facing, this);
+		Tank tank = new Tank(agent, productions, color, location, facing, energy, health, missiles, this);
 
 		if (location == null) {
 			location = findStartingLocation();
