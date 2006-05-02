@@ -24,8 +24,6 @@ dist-hook:
 	rm `find $(distdir) -name *.jar`
 	wget http://winter.eecs.umich.edu/jars/motif/swt.jar
 	mv swt.jar $(distdir)/SoarLibrary/bin
-	cp Core/ClientSML/src/.libs/libClientSML.a $(distdir)/SoarLibrary/lib
-	cp Core/ConnectionSML/src/.libs/libConnectionSML.a $(distdir)/SoarLibrary/lib
 
 install-data-am:
 	$(INSTALL) SoarLibrary/bin/libswt-atk-gtk-3139.so $(libdir)
@@ -38,5 +36,3 @@ install-data-am:
 	$(INSTALL) SoarLibrary/bin/libswt-pi-carbon-3139.jnilib $(libdir)
 	$(INSTALL) SoarLibrary/bin/libswt-pi-gtk-3139.so $(libdir)
 	$(INSTALL) SoarLibrary/bin/libswt-webkit-carbon-3139.jnilib $(libdir)
-	$(INSTALL) SoarLibrary/lib/libClientSML.a $(libdir)
-	$(INSTALL) SoarLibrary/lib/libConnectionSML.a $(libdir)
