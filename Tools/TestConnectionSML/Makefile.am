@@ -9,8 +9,8 @@ bin_PROGRAMS = TestConnectionSML
 TestConnectionSML_SOURCES = TestConnectionSML.cpp
 
 TestConnectionSML_LDADD = \
-$(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la\
-$(BASEDIR_PREFIX)/Core/ConnectionSML/src/libConnectionSML.la
+$(BASEDIR_PREFIX)/Core/ConnectionSML/src/libConnectionSML.la\
+$(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
 
 INCLUDES = \
 -I$(BASEDIR_PREFIX)/Core/ConnectionSML/include \
