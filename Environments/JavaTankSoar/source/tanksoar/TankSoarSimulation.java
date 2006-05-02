@@ -20,6 +20,9 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	private static final String kParamX = "x";
 	private static final String kParamY = "y";
 	private static final String kParamFacing = "facing";
+	private static final String kParamEnergy = "energy";
+	private static final String kParamHealth = "health";
+	private static final String kParamMissiles = "missiles";
 	private static final String kDefaultMap = "default.tmap";
 		
 	private TankSoarWorld m_World;
@@ -35,6 +38,9 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		String [] initialColors = null;
 		MapPoint [] initialLocations = null;
 		String [] initialFacing = null;
+		int [] initialEnergy = null;
+		int [] initialHealth = null;
+		int [] initialMissiles = null;
 	
 		// Load settings file
 		try {
@@ -67,6 +73,9 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 					initialColors = new String[child.getNumberChildren()];
 					initialLocations = new MapPoint[child.getNumberChildren()];
 					initialFacing = new String[child.getNumberChildren()];
+					initialEnergy = new int[child.getNumberChildren()];
+					initialHealth = new int[child.getNumberChildren()];
+					initialMissiles = new int[child.getNumberChildren()];
 					
 					for (int j = 0; j < initialNames.length; ++j) {
 						JavaElementXML agent = child.getChild(j);
@@ -84,6 +93,10 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 						initialColors[j] = agent.getAttribute(kParamColor);
 						initialLocations[j] = new MapPoint(agent.getAttributeIntDefault(kParamX, -1), agent.getAttributeIntDefault(kParamY, -1));
 						initialFacing[j] = agent.getAttribute(kParamFacing);
+						
+						initialEnergy[j] = agent.getAttributeIntDefault(kParamEnergy, -1);
+						initialHealth[j] = agent.getAttributeIntDefault(kParamHealth, -1);
+						initialMissiles[j] = agent.getAttributeIntDefault(kParamMissiles, -1);
 						
 					}
 				} else {
@@ -109,7 +122,9 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		// add initial eaters
 		if (initialNames != null) {
 			for (int i = 0; i < initialNames.length; ++i) {
-				createEntity(initialNames[i], getAgentPath() + initialProductions[i], initialColors[i], initialLocations[i], initialFacing[i]);
+				createEntity(initialNames[i], getAgentPath() + initialProductions[i], 
+						initialColors[i], initialLocations[i], initialFacing[i],
+						initialEnergy[i], initialHealth[i], initialMissiles[i]);
 			}
 		}
 		
@@ -119,7 +134,8 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		}
 	}
 	
-    public void createEntity(String name, String productions, String color, MapPoint location, String facing) {
+    public void createEntity(String name, String productions, String color, MapPoint location, String facing,
+    		int energy, int health, int missiles) {
     	if (name == null || productions == null) {
     		fireErrorMessage("Failed to create agent, name, productions or color null.");
     		return;
@@ -135,7 +151,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		if (agent == null) {
 			return;
 		}
-		m_World.createTank(agent, productions, color, location, facing);
+		m_World.createTank(agent, productions, color, location, facing, energy, health, missiles);
 		spawnDebugger(name);		
 		fireSimulationEvent(SimulationListener.kAgentCreatedEvent);   	
     }
