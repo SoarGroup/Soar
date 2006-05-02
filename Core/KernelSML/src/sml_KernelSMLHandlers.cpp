@@ -479,19 +479,6 @@ bool KernelSML::HandleShutdown(gSKI::IAgent* pAgent, char const* pCommandName, C
 	// so that there's still a stable system to respond to the event.
 	FireSystemEvent(gSKIEVENT_BEFORE_SHUTDOWN) ;
 
-	// If we're actively running, stop everyone first and then delete.
-	/* DJP: This is experimental code -- yet to be tested.  I think we may need to handle this in the client (in another thread)
-	if (this->GetRunScheduler()->IsRunning())
-	{
-		// Request the agents to stop.  Only delete them once they actually have.
-		m_pSystemStopListener = new OnSystemStopDeleteAll() ;
-		GetKernel()->AddSystemListener(gSKIEVENT_SYSTEM_STOP, m_pSystemStopListener) ;
-		GetKernel()->GetAgentManager()->InterruptAll(gSKI_STOP_AFTER_SMALLEST_STEP, pError) ;
-
-		return false ;
-	}
-	*/
-
 	// Delete all agents explicitly now (so listeners can hear that the agents have been destroyed).
 	DeleteAllAgents(true) ;
 
