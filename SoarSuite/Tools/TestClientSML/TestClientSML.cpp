@@ -493,6 +493,9 @@ bool StopTest()
 	pAgent->ExecuteCommandLine("run -o 3") ;
 	int decisions = pAgent->GetDecisionCycleCounter() ;
 
+	if (decisions > 0)
+		return false ;
+
 	pKernel->Shutdown() ;
 	delete pKernel ;
 
