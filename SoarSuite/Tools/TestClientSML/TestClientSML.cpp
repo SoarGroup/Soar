@@ -473,6 +473,32 @@ bool SimpleRemoteIOListener()
 	return true ;
 }
 
+bool StopTest()
+{
+	// Create the kernel instance
+	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread() ;
+
+	if (pKernel->HadError())
+	{
+		cout << pKernel->GetLastErrorDescription() << endl ;
+		return false ;
+	}
+
+	sml::Agent* pAgent = pKernel->CreateAgent("stoptest") ;
+
+//	std::string production = "sp {stop (state <s> ^superstate nil) --> (cmd stop-soar)}" ;
+	std::string production = "sp {stop (state <s> ^superstate nil) --> (interrupt)}" ;
+	std::string res = pAgent->ExecuteCommandLine(production.c_str()) ;
+
+	pAgent->ExecuteCommandLine("run -o 3") ;
+	int decisions = pAgent->GetDecisionCycleCounter() ;
+
+	pKernel->Shutdown() ;
+	delete pKernel ;
+
+	return true ;
+}
+
 // Creates an agent that copies values from input link to output link
 // so we can test that this is OK.
 bool SimpleCopyAgent()
@@ -1855,6 +1881,7 @@ int main(int argc, char* argv[])
 	bool refCountTest = false ;
 	bool remoteIOTest = false ;
 	bool remoteIOListener = false ;
+	bool stopTest = false ;
 	int  life      = 3000 ;	// Default is to live for 3000 seconds (5 mins) as a listener
 	int  decisions = 20000 ;
 
@@ -1885,6 +1912,8 @@ int main(int argc, char* argv[])
 				reteTest = true ;
 			if (!stricmp(argv[i], "-synch"))
 				synchTest = true ;
+			if (!stricmp(argv[i], "-stoptest"))
+				stopTest = true ;
 			if (!stricmp(argv[i], "-remote"))
 				remote = true ;
 			if (!stricmp(argv[i], "-listener"))
@@ -1934,6 +1963,8 @@ int main(int argc, char* argv[])
 		success = SimpleCopyAgent() ;
 	else if (reteTest)
 		success = SimpleReteNetLoader() ;
+	else if (stopTest)
+		success = StopTest() ;
 	else if (remoteConnect)
 		SimpleRemoteConnect() ;
 	else if (remoteIOListener)
