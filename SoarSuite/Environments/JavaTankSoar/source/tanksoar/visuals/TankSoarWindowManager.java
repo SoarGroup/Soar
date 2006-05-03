@@ -24,7 +24,7 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 		m_Simulation = simulation;
 		
 		GridLayout gl = new GridLayout();
-		gl.numColumns = 2;
+		gl.numColumns = 3;
 		m_Shell.setLayout(gl);
 		
 		GridData gd;
@@ -36,7 +36,7 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 		gd = new GridData();
 		gd.widthHint = m_VisualWorld.getWidth();
 		gd.heightHint = m_VisualWorld.getHeight();
-		gd.verticalSpan = 3;
+		gd.verticalSpan = 2;
 		m_WorldGroup.setLayoutData(gd);
 		m_VisualWorld.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
@@ -64,6 +64,7 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 
 		m_AgentDisplay = new AgentDisplay(m_Shell, m_Simulation);
 		gd = new GridData();
+		gd.horizontalSpan = 2;
 		m_AgentDisplay.setLayoutData(gd);
 		
 		VisualWorld.remapEntityColors(m_Simulation.getWorldManager().getEntities());
