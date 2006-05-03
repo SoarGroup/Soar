@@ -12,7 +12,7 @@ class MoveFSM: public FSM {
 	void init(std::vector<sint4>);
 
  private:
-	enum{IDLE,WARMUP,MOVING};
+	enum{IDLE,WARMUP,MOVING,ALREADY_THERE};
 
 	int state;
   int runTime;

@@ -29,7 +29,7 @@ GroupManager::GroupManager() {
 
   // the number of objects near the focus point to add
   // agent can change this, if it wishes to cheat
-  visionParams.numObjects = 9;
+  visionParams.numObjects = 4;
 
   visionParams.ownerGrouping = false;
 }

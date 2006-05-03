@@ -68,6 +68,7 @@ void SoarGameObject::removeBehavior(ObjectActionType name)
 //template<class T>
 void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
 {
+  cout << "initting: " << (int)this << endl;
   //Whether we really want this is up for analysis
   while(!memory.empty())
     memory.pop();
@@ -83,26 +84,31 @@ void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
 
 void SoarGameObject::update()
 {
+  cout << "upd: " << (int)this << " grp " << (int)pGroup << endl;
   int fsmStatus;
   iGroup->setHasStaleMembers();
   pGroup->setHasStaleMembers();
   
-  int currentFrame = sorts->OrtsIO->getFrameID();
+  int currentFrame = sorts->OrtsIO->getViewFrame();
   if (currentFrame == frameOfLastUpdate) {
     cout << "ignoring repeated update.\n";
+    sorts->OrtsIO->updateNextCycle(this);
     return;
   }
   frameOfLastUpdate = currentFrame;
   
   if(!memory.empty())
   {
+    cout << "fsm: " << memory.top()->getName() << endl;
     fsmStatus = memory.top()->update();
     // if we get a done status, remove the action
     // stuck result means that the FSM is hung up, but may continue
     // if things get out of the way (don't give up on it)
     if((fsmStatus != FSM_RUNNING) 
        && (fsmStatus != FSM_STUCK)) {
+      cout << "pop!\n";
       memory.pop();
+      cout << "memsize: " << memory.size() << endl;
     //  if(memory.empty())
         //currentCommand = SA_IDLE;
     }
@@ -120,6 +126,9 @@ void SoarGameObject::update()
       status = OBJ_RUNNING;
     }
     sorts->OrtsIO->updateNextCycle(this);
+  }
+  else {
+    cout << "empty memory\n";
   }
 }
 

@@ -29,7 +29,7 @@ public:
 
   ~OrtsInterface();
 
-  void setSorts(const Sorts* _sorts) { sorts = _sorts; }
+  void setSorts(Sorts* _sorts) { sorts = _sorts; }
 
   // SGO's use this to insert themselves in the list of required updates
   void updateNextCycle(SoarGameObject* sgo);
@@ -40,7 +40,8 @@ public:
   int getWorldId();
   int getMyId();
   double getOrtsDistance(GameObj* go1, GameObj* go2);
-  int getFrameID();
+  int getViewFrame();
+  int getActionFrame();
   int getNumPlayers();
 
   int getMapXDim();
@@ -49,7 +50,7 @@ public:
   GameStateModule *getGSM(){return gsm;}
 
 private:
-  const Sorts* sorts;
+  Sorts* sorts;
   GameStateModule* gsm;
 
   // pointers to all the orts stuff
@@ -78,6 +79,9 @@ private:
   int myPid;
 
   int mapXDim, mapYDim;
+
+  int lastActionFrame;
+  int viewFrame;
 
   // list of SGO's that need to be updated next cycle,
   // regardless of if they change in the world or not

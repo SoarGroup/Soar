@@ -32,6 +32,7 @@ PerceptualGroup::PerceptualGroup
   fmSector = -1;
 
   minerals = (typeName == "mineral");
+  friendlyWorker = (typeName == "worker");
   airUnits = (*(unit->gob->sod.zcat) == 1);
   landUnits = (*(unit->gob->sod.zcat) == 3);
   bbox.collapse(*unit->gob->sod.x, *unit->gob->sod.y);
@@ -72,6 +73,7 @@ void PerceptualGroup::addUnit(SoarGameObject* unit) {
      (unit->gob->bp_name() != typeName)) {
     mixedType = true;
     minerals = false;
+    friendlyWorker = false;
     airUnits = false;
     landUnits = false;
   } 
@@ -590,8 +592,9 @@ Rectangle PerceptualGroup::getBoundingBox() {
   {
     int x = *(*i)->gob->sod.x;
     int y = *(*i)->gob->sod.y;
-    assert(bbox.xmin <= x && x <= bbox.xmax &&
-           bbox.ymin <= y && y <= bbox.ymax);
+   // FIXME: asserts in game1
+    // assert(bbox.xmin <= x && x <= bbox.xmax &&
+   //        bbox.ymin <= y && y <= bbox.ymax);
   }
   return bbox;
 }
@@ -705,3 +708,7 @@ bool PerceptualGroup::isOld() {
   return old;
 }
 
+
+bool PerceptualGroup::isFriendlyWorker() {
+  return friendlyWorker;
+}

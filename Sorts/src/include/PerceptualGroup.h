@@ -57,6 +57,7 @@ class PerceptualGroup {
     bool isAirUnits();
     bool isLandUnits();
     bool isMoving();
+    bool isFriendlyWorker();
 
     void setFMSector(int);
     int getFMSector();
@@ -121,6 +122,7 @@ class PerceptualGroup {
     bool airUnits;
     bool landUnits;
     bool moving;
+    bool friendlyWorker;
 
     // bounding box of group dimensions
     Rectangle bbox;

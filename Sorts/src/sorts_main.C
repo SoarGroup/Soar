@@ -51,10 +51,21 @@ void SoarUpdateEventHandler(sml::smlUpdateEventId id,
 {
   Sorts* sorts = (Sorts*) pUserData;
   pthread_mutex_lock(sorts->mutex);
-  //cout << "SOAR EVENT {\n";
+  cout << "SOAR EVENT {\n";
+  if (sorts->catchup == true) {
+    cout << "ignoring Soar event, ORTS is behind.\n";
+    pthread_mutex_unlock(sorts->mutex);
+    return;
+  }
   sml::Agent *agent = pKernel->GetAgent("orts_agent");
   
   sorts->SoarIO->getNewSoarOutput();
+
+  // vision commands must be processed here- these are swapping
+  // in and out the groups on the input link.
+  // if they were processed in the ORTS handler, the agent
+  // would have a delay from when it looked somewhere and when
+  // the objects there appeared.
   sorts->groupManager->processVisionCommands();
 
   if (sorts->SoarIO->getStale()) {
@@ -63,7 +74,7 @@ void SoarUpdateEventHandler(sml::smlUpdateEventId id,
     sorts->SoarIO->unlockSoarMutex();
     sorts->SoarIO->setStale(false);
   }
-  //cout << "SOAR EVENT }\n";
+  cout << "SOAR EVENT }\n";
   pthread_mutex_unlock(sorts->mutex);
 }
 

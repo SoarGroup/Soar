@@ -116,7 +116,7 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
     }
   }
   else {
-    cout << "XXX updating id " << g.groupId << endl;
+    cout << "XXX updating id " << g.groupId << " ptr " << (int) group << endl;
     // group already added, just update values.
     // Note that I'm assuming no new values are introduced
     for(list<pair<string, int> >::iterator

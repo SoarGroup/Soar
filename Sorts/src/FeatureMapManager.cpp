@@ -49,6 +49,11 @@ FeatureMapManager::FeatureMapManager() {
   stringToFeatureMap[FMName] =FMPointer;
   fmList.push_back(FMPointer);
 
+  FMName = "friendly_workers";
+  FMPointer = new FeatureMap();
+  stringToFeatureMap[FMName] =FMPointer;
+  fmList.push_back(FMPointer);
+  
   //changeViewWindow(230,230,460);
   changeViewWindow(0,0,0);
 }
@@ -59,7 +64,7 @@ list<FeatureMap*> FeatureMapManager::identifyFeatures(PerceptualGroup* group) {
 
   list<FeatureMap*> relevantMaps;
   
-  assert(fmList.size() == 7);
+  assert(fmList.size() == 8);
 
   // see the constructor above for where the maps are named and put in the list
   
@@ -90,6 +95,9 @@ list<FeatureMap*> FeatureMapManager::identifyFeatures(PerceptualGroup* group) {
   // moving_units
   if (group->isMoving()) {
     relevantMaps.push_back(fmList[6]);
+  }
+  if (group->isFriendlyWorker()) {
+    relevantMaps.push_back(fmList[7]);
   }
   
   return relevantMaps;

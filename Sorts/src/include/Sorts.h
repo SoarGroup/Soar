@@ -41,6 +41,7 @@ class Sorts {
       featureMapManager = _featureMapManager;
       terrainModule = _tm;
       mutex = _mutex;
+      catchup = false;
     }
 
     SoarInterface* SoarIO;
@@ -50,6 +51,7 @@ class Sorts {
     FeatureMapManager* featureMapManager;
     TerrainModule* terrainModule;
     pthread_mutex_t* mutex;
+    bool catchup;
 };
 
 /* The mutex in the Sorts object is now the mutex for everything. Previously, 

@@ -17,8 +17,67 @@ OrtsInterface::OrtsInterface(GameStateModule* _gsm)
   myPid = gsm->get_game().get_client_player(); 
   mapXDim = (gsm->get_game().get_gtiles_x())*(gsm->get_game().get_tile_points());
   mapYDim = (gsm->get_game().get_gtiles_y())*(gsm->get_game().get_tile_points());
+  lastActionFrame = 0;
+  viewFrame = -1;
 }
 
+bool OrtsInterface::handle_event(const Event& e) {
+  pthread_mutex_lock(sorts->mutex);
+  if (e.get_who() == GameStateModule::FROM) {
+    if (e.get_what() == GameStateModule::VIEW_MSG) {
+      cout << "ORTS EVENT {\n";
+      viewFrame = gsm->get_game().get_view_frame();
+      int aFrame = gsm->get_game().get_action_frame();
+      
+      if (aFrame != -1) {
+        lastActionFrame = aFrame;
+      }
+      cout << "event for frame " << viewFrame << "/" << lastActionFrame << endl;
+      int skipped = gsm->get_game().get_skipped_actions();
+      if (skipped) {
+        cout << "WARNING: skipped actions: " << skipped << endl;
+      }
+      if (aFrame != -1 and ((viewFrame - lastActionFrame) > 10)) {
+        sorts->catchup = true;
+        cout << "client is behind, skipping event. v: "<< viewFrame << " a:" << aFrame << "\n";
+        gsm->send_actions(); // empty, needed?
+        pthread_mutex_unlock(sorts->mutex);
+        return true;
+      }
+      
+      sorts->catchup = false;
+      
+      int merged = gsm->get_game().get_merged_actions();
+      if (merged) {
+        // these appear to be harmless
+        //  cout << "WARNING: merged actions (what does this mean?)" << merged << endl;
+      }
+
+      sorts->groupManager->assignActions();
+
+      const GameChanges& changes = gsm->get_changes();
+      updateMap(changes);
+      updateSoarGameObjects(changes);
+
+      // since the FSM's have been updated, we should send the actions here
+      gsm->send_actions();
+
+      sorts->groupManager->updateVision();
+
+      /* I'm assuming here that those update calls from above have already
+       * updated the soar input link correctly, so commit everything
+       */
+      sorts->SoarIO->commitInputLinkChanges();
+    }
+    cout << "ORTS EVENT }\n";
+    pthread_mutex_unlock(sorts->mutex);
+    return true;
+  }
+  else {
+    pthread_mutex_unlock(sorts->mutex);
+    return false;
+  }
+}
 void OrtsInterface::addAppearedObject(const GameObj* gameObj) {
   assert(false);
 }
@@ -63,39 +122,6 @@ void OrtsInterface::removeVanishedObject(const GameObj* gameObj) {
   removeDeadObject(gameObj);
 }
 
-bool OrtsInterface::handle_event(const Event& e) {
-  pthread_mutex_lock(sorts->mutex);
-  //cout << "ORTS EVENT {\n";
-  if (e.get_who() == GameStateModule::FROM) {
-    if (e.get_what() == GameStateModule::VIEW_MSG) {
-
-      sorts->groupManager->assignActions();
-
-      const GameChanges& changes = gsm->get_changes();
-      updateMap(changes);
-      updateSoarGameObjects(changes);
-
-      // since the FSM's have been updated, we should send the actions here
-      gsm->send_actions();
-      //cout << "send_actions" << endl;
-
-      sorts->groupManager->updateVision();
-
-      /* I'm assuming here that those update calls from above have already
-       * updated the soar input link correctly, so commit everything
-       */
-      sorts->SoarIO->commitInputLinkChanges();
-    }
-    //cout << "ORTS EVENT }\n";
-    pthread_mutex_unlock(sorts->mutex);
-    return true;
-  }
-  else {
-    cout << "ORTS EVENT }\n";
-    pthread_mutex_unlock(sorts->mutex);
-    return false;
-  }
-}
 
 void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
   // an update can cause an object to insert itself back in the required
@@ -227,8 +253,12 @@ double OrtsInterface::getOrtsDistance(GameObj* go1, GameObj* go2) {
   return (double) gsm->get_game().distance(*go1, *go2);
 }
 
-int OrtsInterface::getFrameID() {
-  return gsm->get_game().get_action_frame();
+int OrtsInterface::getViewFrame() {
+  return viewFrame;
+}
+
+int OrtsInterface::getActionFrame() {
+  return lastActionFrame;
 }
 
 int OrtsInterface::getMapXDim() {
