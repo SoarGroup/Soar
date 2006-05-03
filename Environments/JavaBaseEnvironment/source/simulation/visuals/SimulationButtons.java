@@ -22,15 +22,9 @@ public class SimulationButtons extends Composite {
 		
 		m_Simulation = simulation;
 
-		GridLayout gl = new GridLayout();
-		gl.numColumns = 4;
-		setLayout(gl);
+		setLayout(new FillLayout());
 				
-		GridData gd;
-		
 		m_RunButton = new Button(this, SWT.PUSH);
-		gd = new GridData();
-		m_RunButton.setLayoutData(gd);
 		m_RunButton.setText("Run");
 		m_RunButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -53,8 +47,6 @@ public class SimulationButtons extends Composite {
 		});
 		
 		m_StopButton = new Button(this, SWT.PUSH);
-		gd = new GridData();
-		m_StopButton.setLayoutData(gd);
 		m_StopButton.setText("Stop");
 		m_StopButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -64,8 +56,6 @@ public class SimulationButtons extends Composite {
 		});
 		
 		m_StepButton = new Button(this, SWT.PUSH);
-		gd = new GridData();
-		m_StepButton.setLayoutData(gd);
 		m_StepButton.setText("Step");
 		m_StepButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -74,8 +64,6 @@ public class SimulationButtons extends Composite {
 		});
 		
 		m_ResetButton = new Button(this, SWT.PUSH);
-		gd = new GridData();
-		m_ResetButton.setLayoutData(gd);
 		m_ResetButton.setText("Reset");
 		m_ResetButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
