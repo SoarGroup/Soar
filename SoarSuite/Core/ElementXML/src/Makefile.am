@@ -20,6 +20,6 @@ sml_ParseXMLString.cpp\
 ../include/sml_ParseXMLString.h
 
 
-INCLUDES = -I../include
+INCLUDES = -I../include -I../../shared/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)

@@ -14,6 +14,7 @@ $(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
 
 INCLUDES = \
 -I$(BASEDIR_PREFIX)/Core/ConnectionSML/include \
--I$(BASEDIR_PREFIX)/Core/ElementXML/include
+-I$(BASEDIR_PREFIX)/Core/ElementXML/include \
+-I$(BASEDIR_PREFIX)/Core/shared/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)
