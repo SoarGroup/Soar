@@ -20,7 +20,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\gSKI\include"
+				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\gSKI\include;..\shared\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="TRUE"
 				MinimalRebuild="TRUE"
@@ -80,7 +80,7 @@
 				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="2"
 				OmitFramePointers="TRUE"
-				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\gSKI\include"
+				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\gSKI\include;..\shared\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -216,6 +216,9 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+			<File
+				RelativePath="..\shared\include\Export.h">
+			</File>
 			<File
 				RelativePath="..\ConnectionSML\include\KernelSMLDirect.h">
 			</File>
