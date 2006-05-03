@@ -62,10 +62,15 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 		group2.setLayout(new FillLayout());
 		m_MapButtons = new MapButtons(group2, m_Simulation, TankSoarSimulation.kMapFilter);
 
-		m_AgentDisplay = new AgentDisplay(m_Shell, m_Simulation);
+		Group group3 = new Group(m_Shell, SWT.NONE);
+		gd = new GridData();
+		group3.setLayoutData(gd);
+		group3.setText("Agents");
+		group3.setLayout(new FillLayout());
+		m_AgentDisplay = new AgentDisplay(group3, m_Simulation);
 		gd = new GridData();
 		gd.horizontalSpan = 2;
-		m_AgentDisplay.setLayoutData(gd);
+		group3.setLayoutData(gd);
 		
 		VisualWorld.remapEntityColors(m_Simulation.getWorldManager().getEntities());
 		m_VisualWorld.generateBackground();

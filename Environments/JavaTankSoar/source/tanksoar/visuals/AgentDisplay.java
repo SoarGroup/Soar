@@ -38,35 +38,17 @@ public class AgentDisplay extends Composite {
 		super(parent, SWT.NONE);
 		m_Simulation = simulation;
 
-		setLayout(new FillLayout());
-		
-		Group outerGroup = new Group(this, SWT.NONE);
-		outerGroup.setText("Agents");
-		
 		GridLayout gl = new GridLayout();
-		gl.numColumns = 2;
-		outerGroup.setLayout(gl);
-		
-		GridData gd;
-		
-		Composite leftComposite = new Composite(outerGroup, SWT.NONE);
-		gd = new GridData();
-		gd.verticalAlignment = GridData.BEGINNING;
-		leftComposite.setLayoutData(gd);
+		gl.numColumns = 1;
+		setLayout(gl);
 
-		gl = new GridLayout();
-		gl.numColumns = 2;
-		leftComposite.setLayout(gl);
-
-		Composite agentButtons;
-		agentButtons = new Composite(leftComposite, SWT.NONE);
-		agentButtons.setLayout(new FillLayout());
-		gd = new GridData();
-		gd.horizontalAlignment = GridData.BEGINNING;
-		gd.horizontalSpan = 2;
-		agentButtons.setLayoutData(gd);
+		GridData gd;	
 		
-		m_NewAgentButton = new Button(agentButtons, SWT.PUSH);
+		Composite row1 = new Composite(this, SWT.NONE);
+		row1.setLayoutData(new GridData());
+		row1.setLayout(new FillLayout());
+		
+		m_NewAgentButton = new Button(row1, SWT.PUSH);
 		m_NewAgentButton.setText("New");
 		m_NewAgentButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -74,7 +56,7 @@ public class AgentDisplay extends Composite {
 			}
 		});
 		
-		m_CloneAgentButton = new Button(agentButtons, SWT.PUSH);
+		m_CloneAgentButton = new Button(row1, SWT.PUSH);
 		m_CloneAgentButton.setText("Clone");
 		m_CloneAgentButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -99,7 +81,7 @@ public class AgentDisplay extends Composite {
 			}
 		});
 		
-		m_DestroyAgentButton = new Button(agentButtons, SWT.PUSH);
+		m_DestroyAgentButton = new Button(row1, SWT.PUSH);
 		m_DestroyAgentButton.setText("Destroy");
 		m_DestroyAgentButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -110,11 +92,8 @@ public class AgentDisplay extends Composite {
 			}
 		});
 				
-		m_SpawnDebuggersButton = new Button(leftComposite, SWT.CHECK);
-		gd = new GridData();
-		gd.horizontalAlignment = GridData.BEGINNING;
-		gd.horizontalSpan = 2;
-		m_SpawnDebuggersButton.setLayoutData(gd);
+		m_SpawnDebuggersButton = new Button(this, SWT.CHECK);
+		m_SpawnDebuggersButton.setLayoutData(new GridData());
 		m_SpawnDebuggersButton.setText("Spawn debugger");
 		m_SpawnDebuggersButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -122,10 +101,8 @@ public class AgentDisplay extends Composite {
 			}
 		});		
 
-		m_AgentTable = new Table(leftComposite, SWT.BORDER | SWT.FULL_SELECTION);
+		m_AgentTable = new Table(this, SWT.BORDER | SWT.FULL_SELECTION);
 		gd = new GridData();
-		gd.horizontalAlignment = GridData.BEGINNING;
-		gd.horizontalSpan = 2;
 		gd.heightHint = kTableHeight;
 		m_AgentTable.setLayoutData(gd);
 		TableColumn tc1 = new TableColumn(m_AgentTable, SWT.CENTER);
@@ -156,73 +133,70 @@ public class AgentDisplay extends Composite {
 			}
 		});
 		
-		Label blocked = new Label(leftComposite, SWT.BORDER);
+		Composite row3 = new Composite(this, SWT.NONE);
+		row3.setLayoutData(new GridData());
+		gl = new GridLayout();
+		gl.numColumns = 3;
+		row3.setLayout(gl);
+		
+		Label blocked = new Label(row3, SWT.BORDER);
 		gd = new GridData();
-		gd.grabExcessHorizontalSpace = true;
-		gd.horizontalAlignment = GridData.CENTER;
 		gd.heightHint = 50;
 		gd.widthHint = 50;
 		blocked.setLayoutData(gd);
 		blocked.setText("blocked");
 
-		Label rwaves = new Label(leftComposite, SWT.BORDER);
+		Label rwaves = new Label(row3, SWT.BORDER);
 		gd = new GridData();
-		gd.grabExcessHorizontalSpace = true;
-		gd.horizontalAlignment = GridData.CENTER;
 		gd.heightHint = 50;
 		gd.widthHint = 50;
 		rwaves.setLayoutData(gd);
 		rwaves.setText("rwaves");
 
-		Label sound = new Label(leftComposite, SWT.BORDER);
-		gd = new GridData();
-		gd.grabExcessHorizontalSpace = true;
-		gd.horizontalAlignment = GridData.CENTER;
-		gd.heightHint = 50;
-		gd.widthHint = 50;
-		sound.setLayoutData(gd);
-		sound.setText("sound");
-
-		Label incoming = new Label(leftComposite, SWT.BORDER);
-		gd = new GridData();
-		gd.grabExcessHorizontalSpace = true;
-		gd.horizontalAlignment = GridData.CENTER;
-		gd.heightHint = 50;
-		gd.widthHint = 50;
-		incoming.setLayoutData(gd);
-		incoming.setText("incoming");
-		
-		Group smellGroup = new Group(leftComposite, SWT.NONE);
+		Group smellGroup = new Group(row3, SWT.NONE);
 		smellGroup.setText("Smell distance");
 		smellGroup.setLayout(new FillLayout());
 		gd = new GridData();
-		gd.horizontalSpan = 2;
+		gd.verticalAlignment = SWT.TOP;
 		smellGroup.setLayoutData(gd);
 		m_Smell = new ProgressBar(smellGroup, SWT.HORIZONTAL);
 		m_Smell.setMinimum(0);
 		m_Smell.setMaximum(m_Simulation.getTankSoarWorld().getMaxManhattanDistance());
 
-		Group rightGroup = new Group(outerGroup, SWT.NONE);
-		rightGroup.setText("Radar");
-		gl = new GridLayout();
-		gl.numColumns = 2;
-		rightGroup.setLayout(gl);
+		Label sound = new Label(row3, SWT.BORDER);
+		gd = new GridData();
+		gd.heightHint = 50;
+		gd.widthHint = 50;
+		sound.setLayoutData(gd);
+		sound.setText("sound");
+
+		Label incoming = new Label(row3, SWT.BORDER);
+		gd = new GridData();
+		gd.heightHint = 50;
+		gd.widthHint = 50;
+		incoming.setLayoutData(gd);
+		incoming.setText("incoming");
 		
-		m_AgentWorld = new TankSoarAgentWorld(rightGroup, SWT.BORDER, m_Simulation);
+		Group row4 = new Group(this, SWT.NONE);
+		row4.setText("Radar data and setting");
+		gl = new GridLayout();
+		row4.setLayout(gl);
+		
+		m_AgentWorld = new TankSoarAgentWorld(row4, SWT.BORDER, m_Simulation);
 		gd = new GridData();
 		gd.heightHint = m_AgentWorld.getHeight();
 		gd.widthHint = m_AgentWorld.getWidth();		
 		m_AgentWorld.setLayoutData(gd);
 
-		m_Radar = new ProgressBar(rightGroup, SWT.VERTICAL);
+		m_Radar = new ProgressBar(row4, SWT.NONE);
 		gd = new GridData();
-		gd.heightHint = m_AgentWorld.getHeight();
+		gd.widthHint = m_AgentWorld.getWidth();
 		m_Radar.setLayoutData(gd);
 		m_Radar.setMinimum(0);
 		m_Radar.setMaximum(14);
 		
 		updateTankList();
-		updateButtons();		
+		updateButtons();	
 	}
 	
 	void selectEntity(WorldEntity entity) {
