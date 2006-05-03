@@ -69,9 +69,10 @@ private:
 
   // event handler functions
   bool handle_event(const Event& e);
-  void updateSoarGameObjects(const GameChanges& changes);
-  void updateMap(const GameChanges& changes);
+  void updateSoarGameObjects();
+  void updateMap();
   void updateSoarPlayerInfo();
+  void mergeChanges(GameChanges& newChanges);
   
   int counter;
   
@@ -87,6 +88,8 @@ private:
   // regardless of if they change in the world or not
   set <SoarGameObject*> requiredUpdatesNextCycle;
   set <int> liveIDs;
+  
+  GameChanges changes;
 };
 
 #endif

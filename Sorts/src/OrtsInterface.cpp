@@ -28,19 +28,28 @@ bool OrtsInterface::handle_event(const Event& e) {
       cout << "ORTS EVENT {\n";
       viewFrame = gsm->get_game().get_view_frame();
       int aFrame = gsm->get_game().get_action_frame();
+        
+      mergeChanges(const_cast<GameChanges&> (gsm->get_changes())); 
+      // cleared every event, so we need to merge the changes for skipped
+      // events
+
+      // if you can figure out how to iterate through a vector inside a
+      // const'd class, feel free to fix the const_cast
       
       if (aFrame != -1) {
         lastActionFrame = aFrame;
       }
-      cout << "event for frame " << viewFrame << "/" << lastActionFrame << endl;
+      cout << "event for frame " 
+           << viewFrame << "/" << lastActionFrame << endl;
       int skipped = gsm->get_game().get_skipped_actions();
       if (skipped) {
         cout << "WARNING: skipped actions: " << skipped << endl;
       }
-      if (aFrame != -1 and ((viewFrame - lastActionFrame) > 10)) {
+      if ((viewFrame - lastActionFrame) > 10) {
         sorts->catchup = true;
-        cout << "client is behind, skipping event. v: "<< viewFrame << " a:" << aFrame << "\n";
-        gsm->send_actions(); // empty, needed?
+        cout << "client is behind, skipping event. v: "
+             << viewFrame << " a:" << lastActionFrame << "\n";
+        gsm->send_actions(); // empty, needed by server
         pthread_mutex_unlock(sorts->mutex);
         return true;
       }
@@ -55,9 +64,9 @@ bool OrtsInterface::handle_event(const Event& e) {
 
       sorts->groupManager->assignActions();
 
-      const GameChanges& changes = gsm->get_changes();
-      updateMap(changes);
-      updateSoarGameObjects(changes);
+      updateMap();
+      updateSoarGameObjects();
+      changes.clear();
 
       // since the FSM's have been updated, we should send the actions here
       gsm->send_actions();
@@ -99,6 +108,9 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
 
   objectMap[gameObj] = newObj;
   
+  /*if (liveIDs.find(id) != liveIDs.end()) {
+    cout << "ERROR: appeard object is there already: " << (int)gameObj << endl;
+  }*/
   assert(liveIDs.find(id) == liveIDs.end());
   liveIDs.insert(id);
 }
@@ -123,7 +135,7 @@ void OrtsInterface::removeVanishedObject(const GameObj* gameObj) {
 }
 
 
-void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
+void OrtsInterface::updateSoarGameObjects() {
   // an update can cause an object to insert itself back in the required
   // queue, so copy it out and clear it so we don't update each object 
   // more than once
@@ -132,7 +144,7 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
   requiredUpdatesNextCycle.clear();
   
   // add new objects
-  FORALL(changed.new_objs, obj) {
+  FORALL(changes.new_objs, obj) {
     GameObj* gob = (*obj)->get_GameObj();
     if (gob == 0) continue;
     if (gob->sod.in_game) {
@@ -145,7 +157,7 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
     }
   }
 
-  FORALL(changed.changed_objs, obj) {
+  FORALL(changes.changed_objs, obj) {
     GameObj* gob = (*obj)->get_GameObj();
     SoarGameObject* sgo;
     if (gob == 0) {
@@ -170,7 +182,7 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
     }
   }
 
-  FORALL(changed.vanished_objs, obj) {
+  FORALL(changes.vanished_objs, obj) {
     GameObj* gob = (*obj)->get_GameObj();
     if (gob == 0) continue;
     if (gob->sod.in_game) {
@@ -185,7 +197,7 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
     }
   }
   
-  FORALL(changed.dead_objs, obj) {
+  FORALL(changes.dead_objs, obj) {
     GameObj* gob = (*obj)->get_GameObj();
     if (gob == 0) continue;
     if (gob->sod.in_game) {
@@ -208,9 +220,9 @@ void OrtsInterface::updateSoarGameObjects(const GameChanges& changed) {
   
 }
 
-void OrtsInterface::updateMap(const GameChanges& changed) {
-  sorts->mapManager->addExploredTiles(changed.new_tile_indexes);
-  sorts->mapManager->addBoundaries(changed.new_boundaries);
+void OrtsInterface::updateMap() {
+  sorts->mapManager->addExploredTiles(changes.new_tile_indexes);
+  sorts->mapManager->addBoundaries(changes.new_boundaries);
 }
 
 void OrtsInterface::updateSoarPlayerInfo() {
@@ -267,4 +279,75 @@ int OrtsInterface::getMapXDim() {
 
 int OrtsInterface::getMapYDim() {
   return mapYDim;
+}
+
+
+void OrtsInterface::mergeChanges(GameChanges& newChanges) {
+  // add the new gameChanges to the existing set, if any
+  // this is needed since we can skip ORTS events, and the gameChanges
+  // sent by the server are cleared every cycle.
+
+  // must handle cases where objects appear and disappear without an unskipped
+  // event consistently
+
+  // new_objs: add all to changes
+  // changed_objs: add all to changes, if not present
+  // vanished_objs: if present in new/changed, rm from those, 
+  //   otherwise add to changes
+  // dead_objs: same
+  // new_tile_indexes: add all to changes
+  // new_boundaries: add all to changes
+  Vector<ScriptObj*>::iterator it;
+  Vector<ScriptObj*>::iterator it2;
+  bool found;
+  for (it = newChanges.new_objs.begin(); 
+       it != newChanges.new_objs.end(); 
+       it++) {
+    changes.new_objs.push_back(*it);
+  }
+
+  for (it = newChanges.changed_objs.begin(); 
+       it != newChanges.changed_objs.end(); 
+       it++) {
+    if (changes.changed_objs.find(*it) != changes.changed_objs.end()) {
+      changes.changed_objs.push_back(*it);
+    }
+  }
+
+  for (it = newChanges.vanished_objs.begin(); 
+       it != newChanges.vanished_objs.end(); 
+       it++) {
+    found = false;
+    it2 = changes.new_objs.find(*it);
+    if (it2 != changes.new_objs.end()) {
+      changes.new_objs.erase(it2);
+      found = true;
+    }
+    it2 = changes.changed_objs.find(*it);
+    if (it2 != changes.changed_objs.end()) {
+      changes.changed_objs.erase(it2);
+      found = true;
+    }
+    if (not found) {
+      changes.vanished_objs.push_back(*it);
+    }
+  }
+  for (it = newChanges.dead_objs.begin(); 
+       it != newChanges.dead_objs.end(); 
+       it++) {
+    found = false;
+    it2 = changes.new_objs.find(*it);
+    if (it2 != changes.new_objs.end()) {
+      changes.new_objs.erase(it2);
+      found = true;
+    }
+    it2 = changes.changed_objs.find(*it);
+    if (it2 != changes.changed_objs.end()) {
+      changes.changed_objs.erase(it2);
+      found = true;
+    }
+    if (not found) {
+      changes.dead_objs.push_back(*it);
+    }
+  }
 }
