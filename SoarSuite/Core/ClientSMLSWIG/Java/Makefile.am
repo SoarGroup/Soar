@@ -27,7 +27,15 @@ JAVAINC= @JAVAINC@
 JAVAC= @JAVAC@
 JAR=@JAR@
 INCLUDES   = -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include $(JAVAINC)
-CXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused -fvisibility=default
+
+if VISIBILITY_AVAILABLE
+SWIGCXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused -fvisibility=default
+else
+SWIGCXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused
+endif
+
+CXXFLAGS = $(SWIGCXXFLAGS)
+
 CLEANFILES = build/*.java build/*.class Java_sml_ClientInterface_wrap.cpp
 
 SWIGOPT    = -java -Wall -package sml $(INCLUDES) -outdir build

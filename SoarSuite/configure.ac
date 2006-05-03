@@ -28,12 +28,15 @@ saved_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -fvisibility=hidden"
 AC_MSG_CHECKING([for -fvisibility=hidden])
 AC_COMPILE_IFELSE([char foo;],
-
-    [   AC_MSG_RESULT([yes])
-        SYMBOL_VISIBILITY="-fvisibility=hidden" ],
-    AC_MSG_RESULT([no]))
+    [	AC_MSG_RESULT([yes])
+	SYMBOL_VISIBILITY="-fvisibility=hidden" 
+	visibility=true],
+    [	AC_MSG_RESULT([no])
+	visibility=false])
 CFLAGS="$saved_CFLAGS"
 AC_SUBST(SYMBOL_VISIBILITY)
+AM_CONDITIONAL(VISIBILITY_AVAILABLE, test x$visibility = xtrue)
+# end check for visibility compiler support
 
 # Tcl and Java switches for SWIG
 AC_ARG_ENABLE(tcl,
