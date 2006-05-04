@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="TestCommandLineInterface"
+	Name="TestCLI"
 	ProjectGUID="{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}"
 	RootNamespace="TestCommandLineInterface"
 	Keyword="ManagedCProj">
