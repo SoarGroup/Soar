@@ -14,8 +14,8 @@
 #include "include/GroupManager.h"
 #include "include/MapManager.h"
 #include "include/FeatureMapManager.h"
-#include "Satellite.h"
 
+#include "Satellite.h"
 #include "TerrainModule.H"
 /*
 class SoarInterface;
@@ -47,16 +47,18 @@ class Sorts {
       catchup = false;
     }
 
-    SoarInterface* SoarIO;
-    OrtsInterface* OrtsIO;
-    GroupManager* groupManager;
-    MapManager* mapManager;
-    FeatureMapManager* featureMapManager;
-    TerrainModule* terrainModule;
-    Satellite *satellite;
-    pthread_mutex_t* mutex;
-    bool catchup;
+    static SoarInterface* SoarIO;
+    static OrtsInterface* OrtsIO;
+    static GroupManager* groupManager;
+    static MapManager* mapManager;
+    static FeatureMapManager* featureMapManager;
+    static TerrainModule* terrainModule;
+    static Satellite *satellite;
+    static pthread_mutex_t* mutex;
+    static bool catchup;
 };
+
+
 
 /* The mutex in the Sorts object is now the mutex for everything. Previously, 
    we used mutexes for the shared data structures and Soar IO, but this 

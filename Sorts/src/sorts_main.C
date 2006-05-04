@@ -49,33 +49,33 @@ void SoarUpdateEventHandler(sml::smlUpdateEventId id,
                             sml::Kernel*          pKernel,
                             sml::smlRunFlags      runFlags)
 {
-  Sorts* sorts = (Sorts*) pUserData;
-  pthread_mutex_lock(sorts->mutex);
+  //Sorts* sorts = (Sorts*) pUserData;
+  pthread_mutex_lock(Sorts::mutex);
   cout << "SOAR EVENT {\n";
-  if (sorts->catchup == true) {
+  if (Sorts::catchup == true) {
     cout << "ignoring Soar event, ORTS is behind.\n";
-    pthread_mutex_unlock(sorts->mutex);
+    pthread_mutex_unlock(Sorts::mutex);
     return;
   }
   sml::Agent *agent = pKernel->GetAgent("orts_agent");
   
-  sorts->SoarIO->getNewSoarOutput();
+  Sorts::SoarIO->getNewSoarOutput();
 
   // vision commands must be processed here- these are swapping
   // in and out the groups on the input link.
   // if they were processed in the ORTS handler, the agent
   // would have a delay from when it looked somewhere and when
   // the objects there appeared.
-  sorts->groupManager->processVisionCommands();
+  Sorts::groupManager->processVisionCommands();
 
-  if (sorts->SoarIO->getStale()) {
-    sorts->SoarIO->lockSoarMutex();
+  if (Sorts::SoarIO->getStale()) {
+    Sorts::SoarIO->lockSoarMutex();
     agent->Commit();
-    sorts->SoarIO->unlockSoarMutex();
-    sorts->SoarIO->setStale(false);
+    Sorts::SoarIO->unlockSoarMutex();
+    Sorts::SoarIO->setStale(false);
   }
   cout << "SOAR EVENT }\n";
-  pthread_mutex_unlock(sorts->mutex);
+  pthread_mutex_unlock(Sorts::mutex);
 }
 
 // the function that is executed by a separate thread to

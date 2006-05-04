@@ -2,7 +2,6 @@
 #include<assert.h>
 #include<string>
 
-#include "SPathFinder.h"
 #include "MineFSM.h"
 #include "MoveFSM.h"
 
