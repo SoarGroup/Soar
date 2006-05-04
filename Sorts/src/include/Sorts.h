@@ -14,6 +14,7 @@
 #include "include/GroupManager.h"
 #include "include/MapManager.h"
 #include "include/FeatureMapManager.h"
+#include "Satellite.h"
 
 #include "TerrainModule.H"
 /*
@@ -31,7 +32,8 @@ class Sorts {
       GroupManager*       _groupManager, 
       MapManager*         _mapManager, 
       FeatureMapManager*  _featureMapManager,
-      TerrainModule*            _tm,
+      TerrainModule*      _tm,
+      Satellite *         _satellite,
       pthread_mutex_t*    _mutex)
     {
       SoarIO = _SoarIO;
@@ -40,6 +42,7 @@ class Sorts {
       mapManager = _mapManager;
       featureMapManager = _featureMapManager;
       terrainModule = _tm;
+      satellite = _satellite;
       mutex = _mutex;
       catchup = false;
     }
@@ -50,6 +53,7 @@ class Sorts {
     MapManager* mapManager;
     FeatureMapManager* featureMapManager;
     TerrainModule* terrainModule;
+    Satellite *satellite;
     pthread_mutex_t* mutex;
     bool catchup;
 };

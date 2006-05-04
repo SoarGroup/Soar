@@ -17,8 +17,6 @@ class MoveFSM: public FSM {
 	int state;
   int runTime;
 
-//  static SPathFinder *pather;
- 
   TerrainBase::Path path;
   int stagesLeft;
   Vector<sint4> moveParams;

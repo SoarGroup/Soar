@@ -216,6 +216,7 @@ int main(int argc, char *argv[]) {
   GroupManager gm;
   OrtsInterface ortsInterface(&gsm);
 
+  Satellite satellite;
 
   Sorts sorts(&soarInterface, 
               &ortsInterface, 
@@ -223,6 +224,7 @@ int main(int argc, char *argv[]) {
               &mapManager, 
               &featureMapManager,
               &tm,
+              &satellite,
               &sortsMutex);
 
   
@@ -231,7 +233,8 @@ int main(int argc, char *argv[]) {
   gm.setSorts(&sorts);
   mapManager.setSorts(&sorts);
   featureMapManager.setSorts(&sorts);
- 
+  satellite.setSorts(&sorts);
+  
   // must be connected to orts server by now
   // must initialize the gm before soar input link
   // gm intialize gets params from orts server via ortsinterface

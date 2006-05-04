@@ -4,9 +4,6 @@
 #include "Sorts.h"
 using namespace std;
 
-//SPathFinder *MoveFSM::pather=NULL;
-
-
 MoveFSM::MoveFSM(const Sorts *so, GameObj* go) 
             : FSM(so,go) 
 {
