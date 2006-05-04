@@ -353,7 +353,15 @@ int main(int argc, char** argv)
 		// Passing false here so we don't execute Soar in our thread
 		// which means we can handle incoming remote connections automatically.
 		sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
+		
+		// Check for kernel creation errors
+		// Note that even if there are errors in the kernel's creation
+		// there should still be a kernel object (so one can query for errors)
 		assert(pKernel);
+		if(pKernel->HadError()) {
+			cout << "Error: " << pKernel->GetLastErrorDescription() << endl;
+			exit(1);
+		}
 
 		// Create agent
 		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
