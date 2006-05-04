@@ -1229,9 +1229,26 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
 		gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagWME);
 
         break;
-      case FULL_WME_TRACE:
-        print (thisAgent, " ");
-        print_wme (thisAgent, cond->bt.wme_);
+      case FULL_WME_TRACE:	
+		  if (action != RETRACTING) {
+			  print (thisAgent, " ");
+			  print_wme (thisAgent, cond->bt.wme_);
+		  } else {
+			  // Not all conds available when retracting, depending on DO_TOP_LEVEL_REF_CTS
+			  #ifdef DO_TOP_LEVEL_REF_CTS
+			  print (thisAgent, " ");
+			  print_wme (thisAgent, cond->bt.wme_);
+              #else
+
+			  // Wmes that matched the LHS of a retraction may already be free'd; just print tt.
+			  print (thisAgent, " %lu", cond->bt.wme_->timetag);
+
+			  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagWME);
+			  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kWME_TimeTag, cond->bt.wme_->timetag);
+			  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagWME);
+ 
+              #endif
+		  }
         break;
       }
     }
