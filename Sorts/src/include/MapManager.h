@@ -35,7 +35,6 @@ public:
   void focus(int region);
   void defocus();
 
-  void setSorts(const Sorts* s) {sorts = s;}
 private:
   const Map<GameTile>& gameMap;
   int tilePoints;
@@ -43,7 +42,6 @@ private:
 
   set<MapRegion*> regions;
   map<int, MapRegion*> tileMembership;
-  const Sorts* sorts;
 };
 
 #endif

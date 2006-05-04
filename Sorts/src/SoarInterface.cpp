@@ -488,13 +488,13 @@ void SoarInterface::initSoarInputLink() {
   
   // these never change, don't need to save the pointers
   agent->CreateIntWME(gameInfoIdWME, "num-players", 
-                      sorts->OrtsIO->getNumPlayers());
+                      Sorts::OrtsIO->getNumPlayers());
   
   agent->CreateIntWME(gameInfoIdWME, "map-xdim",
-                      sorts->OrtsIO->getMapXDim());
+                      Sorts::OrtsIO->getMapXDim());
   
   agent->CreateIntWME(gameInfoIdWME, "map-ydim",
-                      sorts->OrtsIO->getMapYDim());
+                      Sorts::OrtsIO->getMapYDim());
 
   
   // initialVisionParams must already be set!

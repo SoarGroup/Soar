@@ -36,8 +36,8 @@ GroupManager::GroupManager() {
 
 void GroupManager::initialize() {
   // called right after sorts ptr set up
-  visionParams.focusX = (int) (sorts->OrtsIO->getMapXDim() / 2.0);
-  visionParams.focusY = (int) (sorts->OrtsIO->getMapYDim() / 2.0);
+  visionParams.focusX = (int) (Sorts::OrtsIO->getMapXDim() / 2.0);
+  visionParams.focusY = (int) (Sorts::OrtsIO->getMapYDim() / 2.0);
 
   visionParams.centerX = visionParams.focusX;
   visionParams.centerY = visionParams.focusY;
@@ -47,11 +47,11 @@ void GroupManager::initialize() {
   cout << "init: " << visionParams.focusX << " " << visionParams.focusY 
        << " " << visionParams.viewWidth << endl;
 
-  sorts->featureMapManager->changeViewWindow(visionParams.focusX, 
+  Sorts::featureMapManager->changeViewWindow(visionParams.focusX, 
                                              visionParams.focusY, 
                                              visionParams.viewWidth);
 
-  sorts->SoarIO->initVisionState(visionParams);
+  Sorts::SoarIO->initVisionState(visionParams);
 }
 void GroupManager::updateVision() {
   prepareForReGroup();
@@ -75,13 +75,13 @@ void GroupManager::updateVision() {
 }
 
 bool GroupManager::assignActions() {
-  // through the sorts->getSoarInterface(), look for any new actions, and assign them to groups
+  // through the Sorts::getSoarInterface(), look for any new actions, and assign them to groups
   // actions have a list of params and a list of groups,
   // the first group (must exist) is the group the action will be applied to
     
   list <ObjectAction> newActions;
   
-  sorts->SoarIO->getNewObjectActions(newActions);
+  Sorts::SoarIO->getNewObjectActions(newActions);
   list <ObjectAction>::iterator actionIter = newActions.begin();
  
   list <PerceptualGroup*>::iterator groupIter;
@@ -119,7 +119,7 @@ void GroupManager::processVisionCommands() {
   // in a feature map, or changes a grouping parameter.
 
   // view window change:
-  // call sorts->getFeatureMapManager()->changeViewWindow()
+  // call Sorts::getFeatureMapManager()->changeViewWindow()
   // updateFeatureMaps(true)
 
   // attention shift (w/o view window shift):
@@ -127,7 +127,7 @@ void GroupManager::processVisionCommands() {
   // call updateFeatureMaps(false) to inhibit any newly-attended to groups
 
   // attention shift w/ view window shift:
-  // sorts->getFeatureMapManager()->changeViewWindow()
+  // Sorts::getFeatureMapManager()->changeViewWindow()
   // adjustAttention()
   // updateFeatureMaps(true)
 
@@ -140,7 +140,7 @@ void GroupManager::processVisionCommands() {
   // updateFeatureMaps(false)
   
   list<AttentionAction> actions;
-  sorts->SoarIO->getNewAttentionActions(actions);
+  Sorts::SoarIO->getNewAttentionActions(actions);
 
   int radius;
   PerceptualGroup* centerGroup;
@@ -167,7 +167,7 @@ void GroupManager::processVisionCommands() {
 
         // first (and only) param is the sector number
         assert(i->params.size() == 1);
-        centerGroup = sorts->featureMapManager->getGroup(i->fmName, 
+        centerGroup = Sorts::featureMapManager->getGroup(i->fmName, 
                                                         *(i->params.begin()));
         if (centerGroup == NULL) {
           cout << "ERROR: sector " << *(i->params.begin()) << " of map " <<
@@ -185,19 +185,19 @@ void GroupManager::processVisionCommands() {
       case AA_RESIZE:
         assert(i->params.size() == 1);
         visionParams.viewWidth = *(i->params.begin());
-        sorts->featureMapManager->changeViewWindow(visionParams.centerX, 
+        Sorts::featureMapManager->changeViewWindow(visionParams.centerX, 
                                                    visionParams.centerY, 
                                                    visionParams.viewWidth);
         adjustAttention(true);   // re-update all the feature maps-
                                  // changeViewWindow clears them out
         
-        sorts->SoarIO->updateVisionState(visionParams); 
+        Sorts::SoarIO->updateVisionState(visionParams); 
         break;
       case AA_MOVE_LOCATION:
         break;
       case AA_MOVE_FEATURE:
         assert(i->params.size() == 1);
-        centerGroup = sorts->featureMapManager->getGroup(i->fmName, 
+        centerGroup = Sorts::featureMapManager->getGroup(i->fmName, 
                                                         *(i->params.begin()));
         if (centerGroup == NULL) {
           cout << "ERROR: sector " << *(i->params.begin()) << " of map " <<
@@ -208,18 +208,18 @@ void GroupManager::processVisionCommands() {
         centerGroup->getCenterLoc(visionParams.focusX, visionParams.focusY);
         visionParams.centerX = visionParams.focusX;
         visionParams.centerY = visionParams.focusY;
-        sorts->featureMapManager->changeViewWindow(visionParams.centerX, 
+        Sorts::featureMapManager->changeViewWindow(visionParams.centerX, 
                                                    visionParams.centerY, 
                                                    visionParams.viewWidth);
 
         // recalc all center distances and rebuild the order of the groups
         remakeGroupSet();
-        sorts->featureMapManager->changeViewWindow(visionParams.centerX, 
+        Sorts::featureMapManager->changeViewWindow(visionParams.centerX, 
                                                    visionParams.centerY, 
                                                    visionParams.viewWidth);
         adjustAttention(true);   // re-update all the feature maps-
                                  // changeViewWindow clears them out
-        sorts->SoarIO->updateVisionState(visionParams); 
+        Sorts::SoarIO->updateVisionState(visionParams); 
         break;
       case AA_GROUPING_RADIUS:
       // grouping change:
@@ -234,14 +234,14 @@ void GroupManager::processVisionCommands() {
           reGroupPerceptual();
           generatePerceptualGroupData();
           adjustAttention(false);
-          sorts->SoarIO->updateVisionState(visionParams); 
+          Sorts::SoarIO->updateVisionState(visionParams); 
         }
         break;
       case AA_NUM_OBJECTS:
         assert(i->params.size() == 1);
         visionParams.numObjects = *(i->params.begin());
         adjustAttention(false);
-        sorts->SoarIO->updateVisionState(visionParams); 
+        Sorts::SoarIO->updateVisionState(visionParams); 
         break;
       case AA_OWNER_GROUPING_ON:
         // handle similar to grouping radius change-
@@ -257,7 +257,7 @@ void GroupManager::processVisionCommands() {
         reGroupPerceptual();
         generatePerceptualGroupData();
         adjustAttention(false);
-        sorts->SoarIO->updateVisionState(visionParams); 
+        Sorts::SoarIO->updateVisionState(visionParams); 
         break;
       case AA_OWNER_GROUPING_OFF:
         if (not visionParams.ownerGrouping) {
@@ -270,7 +270,7 @@ void GroupManager::processVisionCommands() {
         reGroupPerceptual();
         generatePerceptualGroupData();
         adjustAttention(false);
-        sorts->SoarIO->updateVisionState(visionParams); 
+        Sorts::SoarIO->updateVisionState(visionParams); 
         break;
       case AA_NO_SUCH_ACTION:
         break;
@@ -448,7 +448,7 @@ void GroupManager::reGroupPerceptual() {
         // make a new group for this object- no existing 
         // group has claimed it yet
         obj1Struct.group->removeUnit(obj1Struct.object);
-        perceptualGroups.insert(new PerceptualGroup(obj1Struct.object, sorts));
+        perceptualGroups.insert(new PerceptualGroup(obj1Struct.object));
         obj1Struct.group = obj1Struct.object->getPerceptualGroup();
         obj1Struct.assigned = true;
         //cout << "XXX making new group " << (int) obj1Struct.group << endl; 
@@ -725,8 +725,8 @@ void GroupManager::reGroupInternal() {
 }
 
 void GroupManager::removePerceptualGroup(PerceptualGroup* group) {
-  sorts->SoarIO->removeGroup(group);
-  sorts->featureMapManager->removeGroup(group);
+  Sorts::SoarIO->removeGroup(group);
+  Sorts::featureMapManager->removeGroup(group);
   delete group;
 }
 
@@ -804,7 +804,7 @@ void GroupManager::generateInternalGroupData() {
 void GroupManager::makeNewGroup(SoarGameObject* object) {
   // make a new perceptual and internal group for the object
   int size1 = perceptualGroups.size();
-  perceptualGroups.insert(new PerceptualGroup(object, sorts));
+  perceptualGroups.insert(new PerceptualGroup(object));
 
   // make sure the insertion takes, the compare function could
   // make the elements seem identical, which would not let them both
@@ -826,8 +826,8 @@ void GroupManager::adjustAttention(bool rebuildFeatureMaps) {
        groupIter++) {
     if (i < visionParams.numObjects) {
       if (not (*groupIter)->getInSoar()) {
-        sorts->SoarIO->addGroup(*groupIter);
-        sorts->SoarIO->refreshGroup(*groupIter);
+        Sorts::SoarIO->addGroup(*groupIter);
+        Sorts::SoarIO->refreshGroup(*groupIter);
         (*groupIter)->setInSoar(true);
        // cout << "AAA adding group " << (int)*groupIter << ", dist " <<
        //   (*groupIter)->getDistToFocus() << endl;
@@ -838,7 +838,7 @@ void GroupManager::adjustAttention(bool rebuildFeatureMaps) {
         (*groupIter)->setHasStaleProperties(true);
       }
       else if ((*groupIter)->getHasStaleProperties()) {
-        sorts->SoarIO->refreshGroup(*groupIter);
+        Sorts::SoarIO->refreshGroup(*groupIter);
         //cout << "AAA refreshing group " << (int)*groupIter << ", dist " <<
         //  (*groupIter)->getDistToFocus() << endl;
       }
@@ -848,7 +848,7 @@ void GroupManager::adjustAttention(bool rebuildFeatureMaps) {
       //  (*groupIter)->getDistToFocus() << endl;
       if ((*groupIter)->getInSoar() == true) {
         (*groupIter)->setInSoar(false);
-        sorts->SoarIO->removeGroup(*groupIter);
+        Sorts::SoarIO->removeGroup(*groupIter);
         (*groupIter)->setHasStaleProperties(true);
       }
     }
@@ -869,7 +869,7 @@ void GroupManager::adjustAttention(bool rebuildFeatureMaps) {
          groupIter++) {
       // sector == -1 means that the group is not in any fmaps
       (*groupIter)->setFMSector(-1);
-      sorts->featureMapManager->refreshGroup(*groupIter);
+      Sorts::featureMapManager->refreshGroup(*groupIter);
       (*groupIter)->setHasStaleProperties(false);
     }
   }
@@ -879,13 +879,13 @@ void GroupManager::adjustAttention(bool rebuildFeatureMaps) {
          groupIter != perceptualGroups.end(); 
          groupIter++) {
       if ((*groupIter)->getHasStaleProperties()) {
-        sorts->featureMapManager->refreshGroup(*groupIter);
+        Sorts::featureMapManager->refreshGroup(*groupIter);
         (*groupIter)->setHasStaleProperties(false);
       }
     }
   }
 
-  sorts->featureMapManager->updateSoar();
+  Sorts::featureMapManager->updateSoar();
   return;
 }
 

@@ -49,7 +49,6 @@ void SoarUpdateEventHandler(sml::smlUpdateEventId id,
                             sml::Kernel*          pKernel,
                             sml::smlRunFlags      runFlags)
 {
-  //Sorts* sorts = (Sorts*) pUserData;
   pthread_mutex_lock(Sorts::mutex);
   cout << "SOAR EVENT {\n";
   if (Sorts::catchup == true) {
@@ -228,11 +227,6 @@ int main(int argc, char *argv[]) {
               &sortsMutex);
 
   
-  soarInterface.setSorts(&sorts);
-  ortsInterface.setSorts(&sorts);
-  gm.setSorts(&sorts);
-  mapManager.setSorts(&sorts);
-  featureMapManager.setSorts(&sorts);
   satellite.init();
   
   // must be connected to orts server by now

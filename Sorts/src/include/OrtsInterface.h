@@ -29,8 +29,6 @@ public:
 
   ~OrtsInterface();
 
-  void setSorts(Sorts* _sorts) { sorts = _sorts; }
-
   // SGO's use this to insert themselves in the list of required updates
   void updateNextCycle(SoarGameObject* sgo);
   
@@ -50,7 +48,6 @@ public:
   GameStateModule *getGSM(){return gsm;}
 
 private:
-  Sorts* sorts;
   GameStateModule* gsm;
 
   // pointers to all the orts stuff

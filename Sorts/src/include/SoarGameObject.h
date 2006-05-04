@@ -17,7 +17,6 @@ class SoarGameObject{
  public:
 	SoarGameObject 
   ( GameObj*       _gob,
-    const Sorts*   _sorts,
     bool           _friendly, 
     bool           _world, 
     int            _id );
@@ -49,8 +48,6 @@ class SoarGameObject{
   GameObj *gob;
 
 private:
-  const Sorts* sorts;
-
 	map<ObjectActionType, FSM *> behaviors;
 	stack<FSM *> memory;
 

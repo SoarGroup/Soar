@@ -134,10 +134,8 @@ class SoarInterface {
     void lockSoarMutex();
     void unlockSoarMutex();
     
-    void setSorts(const Sorts* s) {sorts = s;}
 
   private:
-    const Sorts* sorts;
 
     void lockObjectActionMutex();
     void unlockObjectActionMutex();

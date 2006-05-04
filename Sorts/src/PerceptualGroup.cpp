@@ -12,10 +12,7 @@
 #include "include/Sorts.h"
 
 PerceptualGroup::PerceptualGroup
-( SoarGameObject* unit, 
-  const Sorts*    _sorts )
-: sorts(_sorts)
-{
+( SoarGameObject* unit){
   members.insert(unit);
   unit->setPerceptualGroup(this);
   setHasStaleMembers();
@@ -349,7 +346,7 @@ void PerceptualGroup::updateRegionsOccupied() {
     (*i)->groupExit(this);
   }
   regionsOccupied.clear();
-  sorts->mapManager->getRegionsIntersecting(getBoundingBox(), regionsOccupied);
+  Sorts::mapManager->getRegionsIntersecting(getBoundingBox(), regionsOccupied);
 
   for( list<MapRegion*>::iterator
        i  = regionsOccupied.begin();

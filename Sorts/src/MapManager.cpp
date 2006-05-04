@@ -50,10 +50,10 @@ void MapManager::addExploredTiles(Vector<sint4> newTiles) {
     // update Soar input link
     if (regions.find(assignedRegion) == regions.end()) {
       regions.insert(tileMembership[*i]);
-      sorts->SoarIO->addMapRegion(assignedRegion);
+      Sorts::SoarIO->addMapRegion(assignedRegion);
     }
     else {
-      sorts->SoarIO->refreshMapRegion(assignedRegion);
+      Sorts::SoarIO->refreshMapRegion(assignedRegion);
     }
   }
 }

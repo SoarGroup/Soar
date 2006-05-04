@@ -22,7 +22,7 @@ OrtsInterface::OrtsInterface(GameStateModule* _gsm)
 }
 
 bool OrtsInterface::handle_event(const Event& e) {
-  pthread_mutex_lock(sorts->mutex);
+  pthread_mutex_lock(Sorts::mutex);
   if (e.get_who() == GameStateModule::FROM) {
     if (e.get_what() == GameStateModule::VIEW_MSG) {
       cout << "ORTS EVENT {\n";
@@ -46,15 +46,15 @@ bool OrtsInterface::handle_event(const Event& e) {
         cout << "WARNING: skipped actions: " << skipped << endl;
       }
       if ((viewFrame - lastActionFrame) > 10) {
-        sorts->catchup = true;
+        Sorts::catchup = true;
         cout << "client is behind, skipping event. v: "
              << viewFrame << " a:" << lastActionFrame << "\n";
         gsm->send_actions(); // empty, needed by server
-        pthread_mutex_unlock(sorts->mutex);
+        pthread_mutex_unlock(Sorts::mutex);
         return true;
       }
       
-      sorts->catchup = false;
+      Sorts::catchup = false;
       
       int merged = gsm->get_game().get_merged_actions();
       if (merged) {
@@ -62,7 +62,7 @@ bool OrtsInterface::handle_event(const Event& e) {
         //  cout << "WARNING: merged actions (what does this mean?)" << merged << endl;
       }
 
-      sorts->groupManager->assignActions();
+      Sorts::groupManager->assignActions();
 
       updateMap();
       updateSoarGameObjects();
@@ -71,19 +71,19 @@ bool OrtsInterface::handle_event(const Event& e) {
       // since the FSM's have been updated, we should send the actions here
       gsm->send_actions();
 
-      sorts->groupManager->updateVision();
+      Sorts::groupManager->updateVision();
 
       /* I'm assuming here that those update calls from above have already
        * updated the soar input link correctly, so commit everything
        */
-      sorts->SoarIO->commitInputLinkChanges();
+      Sorts::SoarIO->commitInputLinkChanges();
     }
     cout << "ORTS EVENT }\n";
-    pthread_mutex_unlock(sorts->mutex);
+    pthread_mutex_unlock(Sorts::mutex);
     return true;
   }
   else {
-    pthread_mutex_unlock(sorts->mutex);
+    pthread_mutex_unlock(Sorts::mutex);
     return false;
   }
 }
@@ -99,11 +99,11 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   bool world    = (gsm->get_game().get_player_num() == *gameObj->sod.owner);
   int id = gsm->get_game().get_cplayer_info().get_id(gameObj);
   
-  SoarGameObject* newObj = new SoarGameObject(gameObj, sorts,
+  SoarGameObject* newObj = new SoarGameObject(gameObj,
                                               friendly, world, id);
  
   // GroupManager takes care of setting the object->group pointers
-  sorts->groupManager->makeNewGroup(newObj);
+  Sorts::groupManager->makeNewGroup(newObj);
   
 
   objectMap[gameObj] = newObj;
@@ -221,13 +221,13 @@ void OrtsInterface::updateSoarGameObjects() {
 }
 
 void OrtsInterface::updateMap() {
-  sorts->mapManager->addExploredTiles(changes.new_tile_indexes);
-  sorts->mapManager->addBoundaries(changes.new_boundaries);
+  Sorts::mapManager->addExploredTiles(changes.new_tile_indexes);
+  Sorts::mapManager->addBoundaries(changes.new_boundaries);
 }
 
 void OrtsInterface::updateSoarPlayerInfo() {
   // only know get gold for now
-  sorts->SoarIO->updatePlayerGold(playerGameObj->get_int("gold"));
+  Sorts::SoarIO->updatePlayerGold(playerGameObj->get_int("gold"));
 }
 
 OrtsInterface::~OrtsInterface() {

@@ -24,7 +24,6 @@ class FeatureMapManager {
     void changeViewWindow(int x, int y, int width);
     //void addGroup(PerceptualGroup* group); use refreshGroup()
     void removeGroup(PerceptualGroup* group);
-    void setSorts(const Sorts* s) {sorts = s;}
   private:
     int classifyCenterPointInGrid(PerceptualGroup* group);
     list<FeatureMap* > identifyFeatures(PerceptualGroup* group);
@@ -34,7 +33,6 @@ class FeatureMapManager {
     int xMin, xMax, yMin, yMax;
     double sectorDim;
   
-    const Sorts* sorts;
 };
 
 #endif

@@ -36,9 +36,6 @@ class GroupManager {
     
     InternalGroup* getGroupNear(string type, int owner, int x, int y);
     
-    void setSorts(const Sorts* s) {sorts = s;}
- 
-    
   private:
     int internalGroupingRadius;
     
@@ -91,8 +88,6 @@ class GroupManager {
 
     void setAllPerceptualCategoriesStale();
     
-    const Sorts* sorts;
-
 };
 
 struct perceptualGroupingStruct {

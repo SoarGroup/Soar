@@ -194,11 +194,11 @@ void FeatureMapManager::updateSoar() {
     if (it->second->getIsStale()) {
       it->second->setIsStale(false);
       if (it->second->getIsPresent() == false) {
-        sorts->SoarIO->addFeatureMap(it->second, it->first);
+        Sorts::SoarIO->addFeatureMap(it->second, it->first);
         it->second->setIsPresent(true);
       }
 
-      sorts->SoarIO->refreshFeatureMap(it->second, it->first);
+      Sorts::SoarIO->refreshFeatureMap(it->second, it->first);
       
     ///*
       cout << "map " << it->first << ":\n";

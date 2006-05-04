@@ -21,8 +21,7 @@ using namespace std;
 class PerceptualGroup {
   public:
     PerceptualGroup
-    ( SoarGameObject* unit,
-      const Sorts*    _sorts);
+    ( SoarGameObject* unit);
 
     ~PerceptualGroup();
 
@@ -94,8 +93,6 @@ class PerceptualGroup {
     void updateRegionsOccupied();
 
   private:
-    const Sorts* sorts;
-
     set <SoarGameObject*> members;
     groupPropertyStruct soarData;
 

@@ -22,11 +22,10 @@ void SoarGameObject::identifyBehaviors() {
 
 SoarGameObject::SoarGameObject(
   GameObj*       g, 
-  const Sorts*   _sorts,
   bool           _friendly, 
   bool           _world, 
   int            _id )
-: gob(g), sorts(_sorts), 
+: gob(g), 
   friendly(_friendly), world(_world), id(_id)
 {
   status = OBJ_IDLE;
@@ -88,10 +87,10 @@ void SoarGameObject::update()
   iGroup->setHasStaleMembers();
   pGroup->setHasStaleMembers();
   
-  int currentFrame = sorts->OrtsIO->getViewFrame();
+  int currentFrame = Sorts::OrtsIO->getViewFrame();
   if (currentFrame == frameOfLastUpdate) {
     cout << "ignoring repeated update.\n";
-    sorts->OrtsIO->updateNextCycle(this);
+    Sorts::OrtsIO->updateNextCycle(this);
     return;
   }
   frameOfLastUpdate = currentFrame;
@@ -124,7 +123,7 @@ void SoarGameObject::update()
     else {
       status = OBJ_RUNNING;
     }
-    sorts->OrtsIO->updateNextCycle(this);
+    Sorts::OrtsIO->updateNextCycle(this);
   }
   else {
     cout << "empty memory\n";
