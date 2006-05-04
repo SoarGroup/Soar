@@ -328,14 +328,16 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
     }
     
   	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
-  		if (m_StopSoar) {
-  			m_StopSoar = false;
-  			m_Kernel.StopAllAgents();
-  		}
   		//m_Logger.log("Update number " + m_WorldCount);
   		m_WorldManager.update();
 		++m_WorldCount;
 		fireSimulationEvent(SimulationListener.kUpdateEvent);
+
+		// Test this after the world has been updated, in case it's asking us to stop
+		if (m_StopSoar) {
+  			m_StopSoar = false;
+  			m_Kernel.StopAllAgents();
+  		}
   	}
   	
     public void systemEventHandler(int eventID, Object data, Kernel kernel) {
