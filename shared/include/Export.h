@@ -17,10 +17,12 @@
 
 #ifndef EXPORT
 # if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
-#   if defined(STATIC_LINKED)
+#   if defined(_USRDLL)
+#     define EXPORT __declspec(dllexport)
+#   elif defined(STATIC_LINKED)
 #     define EXPORT
 #   else
-#     define EXPORT __declspec(dllexport)
+#     define EXPORT __declspec(dllimport)
 #   endif
 # else
 #   if defined(__GNUC__) && defined(GCC_HASCLASSVISIBILITY)
