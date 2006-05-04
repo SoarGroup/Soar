@@ -13,9 +13,9 @@
 void SoarGameObject::identifyBehaviors() {
   string name = gob->bp_name();
   if (friendly && name == "worker") {
-    FSM* mineBehavior = new MineFSM(sorts, gob);
+    FSM* mineBehavior = new MineFSM(gob);
     registerBehavior(mineBehavior);
-    FSM* moveBehavior = new MoveFSM(sorts, gob);
+    FSM* moveBehavior = new MoveFSM(gob);
     registerBehavior(moveBehavior);
   }
 }

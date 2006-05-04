@@ -17,14 +17,12 @@ public:
   Satellite(); 
   ~Satellite();
 
-  void setSorts(const Sorts *);
+  void init();
 
   // querying functions
   std::list<GameObj*> *getObjectsInRegion(int x, int y);
 
 private:
-
-  const Sorts* sorts;
 
   std::vector<std::list<GameObj*> > Map;
 

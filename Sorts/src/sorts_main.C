@@ -233,7 +233,7 @@ int main(int argc, char *argv[]) {
   gm.setSorts(&sorts);
   mapManager.setSorts(&sorts);
   featureMapManager.setSorts(&sorts);
-  satellite.setSorts(&sorts);
+  satellite.init();
   
   // must be connected to orts server by now
   // must initialize the gm before soar input link

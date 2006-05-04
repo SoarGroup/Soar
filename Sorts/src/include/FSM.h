@@ -14,7 +14,7 @@ class Sorts;
 
 class FSM{
  public:
-	FSM(const Sorts *, GameObj *);
+	FSM(GameObj *);
 	virtual ~FSM();
 
 	virtual int update()=0;
@@ -27,7 +27,6 @@ protected:
 	ObjectActionType name;
 	GameObj *gob;
 	Vector<sint4> params;
-	const Sorts *sorts;
 };
 
 

@@ -8,9 +8,9 @@
 
 class MineFSM : public FSM {
 public:
-	MineFSM(const Sorts *, GameObj*);
+	MineFSM(GameObj*);
 
-  	int update();
+ 	int update();
 	void init(vector<sint4> p);
 private:
   enum MineState { IDLE, MINING, MOVING_TO_MINE_ZONE, MOVING_TO_BASE_ZONE,

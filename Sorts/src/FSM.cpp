@@ -1,10 +1,9 @@
 #include "include/FSM.h"
 //#include "include/OrtsInterface.h"
 
-FSM::FSM(const Sorts *_sorts, GameObj* _gob)
+FSM::FSM(GameObj* _gob)
 {
   gob = _gob;
-  sorts = _sorts;
 }
 
 FSM::~FSM()

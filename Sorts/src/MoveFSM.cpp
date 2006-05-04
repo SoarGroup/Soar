@@ -4,8 +4,8 @@
 #include "Sorts.h"
 using namespace std;
 
-MoveFSM::MoveFSM(const Sorts *so, GameObj* go) 
-            : FSM(so,go) 
+MoveFSM::MoveFSM(GameObj* go) 
+            : FSM(go) 
 {
   name = OA_MOVE;
 }
@@ -94,7 +94,7 @@ void MoveFSM::init(vector<sint4> p)
  l2.x = p[0];
  l2.y = p[1];
  
- sorts->terrainModule->findPath(gob, l2, path);
+ Sorts::terrainModule->findPath(gob, l2, path);
  //path.locs.clear();
  //path.locs.push_back(l2); 
  for (unsigned int i=0; i<path.locs.size(); i++) 

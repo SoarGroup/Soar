@@ -6,7 +6,7 @@
 
 class MoveFSM: public FSM {
  public:
-  MoveFSM(const Sorts* sorts,  GameObj*);
+  MoveFSM(GameObj*);
 
   int update();
 	void init(std::vector<sint4>);
