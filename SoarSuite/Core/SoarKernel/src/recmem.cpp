@@ -410,13 +410,13 @@ void fill_in_new_instantiation_stuff (agent* thisAgent, instantiation *inst,
 	 */
 
   for (cond=inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next)
-    if (cond->type==POSITIVE_CONDITION) {
+    if (cond->type==POSITIVE_CONDITION) {		
         #ifdef DO_TOP_LEVEL_REF_CTS
 		wme_add_ref (cond->bt.wme_);
         #else
 		if (level > TOP_GOAL_LEVEL) wme_add_ref (cond->bt.wme_);
         #endif
-		/* --- if trace is for a lower level, find one for this level --- */
+ 		/* --- if trace is for a lower level, find one for this level --- */
       if (cond->bt.trace) {
         if (cond->bt.trace->inst->match_goal_level > level) { 
           cond->bt.trace = find_clone_for_level (cond->bt.trace, level);
@@ -779,7 +779,8 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst) {
        }
        free_list (thisAgent, c_old);
      }
-     /* mvp done */
+     /* mvp done */  
+
      #ifdef DO_TOP_LEVEL_REF_CTS
        wme_remove_ref (thisAgent, cond->bt.wme_);
        if (cond->bt.trace) preference_remove_ref (thisAgent, cond->bt.trace);
@@ -835,7 +836,7 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
             print_instantiation_with_wmes (thisAgent, inst, 
 				(wme_trace_type)thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM],1);
 			if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
-				print (thisAgent, " -->");
+				print (thisAgent, " -->\n");
 				gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagActionSideMarker);
 				gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagActionSideMarker);
 			}
