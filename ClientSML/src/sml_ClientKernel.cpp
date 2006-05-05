@@ -37,7 +37,7 @@
 
 using namespace sml ;
 
-char const* Kernel::kDefaultLibraryName = "SoarKernelSML" ;
+char const* const Kernel::kDefaultLibraryName = "SoarKernelSML" ;
 
 Kernel::Kernel(Connection* pConnection)
 {
