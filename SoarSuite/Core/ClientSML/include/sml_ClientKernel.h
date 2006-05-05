@@ -146,7 +146,7 @@ class Kernel : public ClientErrors
 
 public:
 	enum { kDefaultSMLPort = 12121 } ;
-	static char const*	kDefaultLibraryName ;
+	static char const* const kDefaultLibraryName ;
 
 protected:
 	long		m_TimeTagCounter ;	// Used to generate time tags (we do them in the kernel not the agent, so ids are unique for all agents)
