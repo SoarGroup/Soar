@@ -1,1 +1,1 @@
-rete-net -load "obscure-bot.soarx"
+rete-net --load "obscure-bot.soarx"
