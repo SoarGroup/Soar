@@ -523,19 +523,19 @@ public class Tank  extends WorldEntity {
 		m_ILM.write();
 	}
 	
-	int forward() {
+	public int forward() {
 		return m_RD.forward;
 	}
 	
-	int backward() {
+	public int backward() {
 		return m_RD.backward;
 	}
 	
-	int left() {
+	public int left() {
 		return m_RD.left;
 	}
 	
-	int right() {
+	public int right() {
 		return m_RD.right;
 	}
 	
