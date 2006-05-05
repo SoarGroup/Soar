@@ -164,6 +164,7 @@ public class Tank  extends WorldEntity {
 	
 	public void readOutputLink() {
 		m_LastMove.reset();
+		m_RWaves = 0;
 		
 		int numberOfCommands = m_Agent.GetNumberCommands();
 		if (numberOfCommands == 0) {
@@ -274,93 +275,6 @@ public class Tank  extends WorldEntity {
 				m_LastMove.move = false;
 			}
 		}
-	}
-	
-	public Integer getMove() {
-		m_LastMove.reset();
-		m_RWaves = 0;
-		
-		if (m_Agent.GetNumberCommands() == 0) {
-			m_Logger.log(getName() + " issued no command.");
-			return null;
-		}
-		
-		for (int i = 0; i < m_Agent.GetNumberCommands(); ++i) {
-		
-			Identifier commandId = m_Agent.GetCommand(i);
-			String commandName = commandId.GetAttribute();
-
-			if (commandName.equalsIgnoreCase(kMoveID)) {
-				m_LastMove.move = true;
-				
-				if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kForwardID)) {
-					m_LastMove.moveDirection = m_RD.forward;
-				} else if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kBackwardID)) {
-					m_LastMove.moveDirection = m_RD.backward;
-				} else if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kLeftID)) {
-					m_LastMove.moveDirection = m_RD.left;
-				} else if (commandId.GetParameterValue(kDirectionID).equalsIgnoreCase(kRightID)) {
-					m_LastMove.moveDirection = m_RD.right;
-				} else {
-					m_Logger.log("Assert");
-				}
-				
-			} else if (commandName.equalsIgnoreCase(kFireID)) {
-		 		if (m_Missiles > 0) {
-		 			m_LastMove.fire = true;
-		 		} else {
-					m_Logger.log(getName() + ": Attempted to fire missle with no missiles.");
-				}
-				// Weapon ignored
-				
-			} else if (commandName.equalsIgnoreCase(kRadarID)) {
-				m_LastMove.radar = true;
-				m_LastMove.radarSwitch = commandId.GetParameterValue(kSwitchID).equalsIgnoreCase(kOn) ? true : false;  
-				
-			} else if (commandName.equalsIgnoreCase(kRadarPowerID)) {
-				String powerValue = commandId.GetParameterValue(kSettingID);
-				if (powerValue != null) {
-					try {
-						m_LastMove.radarPowerSetting = Integer.decode(powerValue).intValue();
-					} catch (NumberFormatException e) {
-						m_Logger.log(getName() + ": Unable to parse radar power setting " + powerValue + ": " + e.getMessage());
-					}
-					m_LastMove.radarPower = true;
-				} else {
-					m_Logger.log(getName() + ": Radar power setting is null.");
-				}
-				
-			} else if (commandName.equalsIgnoreCase(kShieldsID)) {
-				m_LastMove.shields = true;
-				m_LastMove.shieldsSetting = commandId.GetParameterValue(kSwitchID).equalsIgnoreCase(kOn) ? true : false; 
-				
-			} else if (commandName.equalsIgnoreCase(kRotateID)) {
-				m_LastMove.rotate = true;
-				m_LastMove.rotateDirection = commandId.GetParameterValue(kDirectionID);
-				
-				// Rotation must be handled pronto and never fails.
-				if (m_LastMove.rotate) {
-					rotate(m_LastMove.rotateDirection);
-				}
-				
-			} else {
-				m_Logger.log(getName() + ": Unknown command: " + commandName);
-				continue;
-			}
-			commandId.AddStatusComplete();
-		}
-		
-    	m_Agent.ClearOutputLinkChanges();
-		m_Agent.Commit();
-		
-		// Do not allow a move if we rotated.
-		if (m_LastMove.rotate) {
-			if (m_LastMove.move) {
-				m_Logger.log("Tried to move with a rotation, rotating only.");
-				m_LastMove.move = false;
-			}
-		}
-		return m_LastMove.move ? new Integer(m_LastMove.moveDirection) : null;
 	}
 	
 	public void updateSensors(TankSoarWorld world) {		
@@ -493,10 +407,12 @@ public class Tank  extends WorldEntity {
 			}
 			
 			radarCells[position][distance] = m_World.getCell(location, relativeDirection);
-			if (radarCells[position][distance].containsTank()) {
-				radarCells[position][distance].getTank().setRWaves(backward());
+			if (!(position == 1 && distance == 0)) {
+				if (radarCells[position][distance].containsTank()) {
+					radarCells[position][distance].getTank().setRWaves(backward());
+				}
 			}
-
+			
 			if ((position == kRadarCenter) && radarCells[position][distance].isBlocked()) {
 				if ((position != kRadarCenter) || (distance != 0)) {
 					return true;
