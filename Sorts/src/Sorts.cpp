@@ -2,7 +2,8 @@
 
 SoarInterface* Sorts::SoarIO = NULL;
 OrtsInterface* Sorts::OrtsIO = NULL;
-GroupManager* Sorts::groupManager = NULL;
+PerceptualGroupManager* Sorts::pGroupManager = NULL;
+InternalGroupManager* Sorts::iGroupManager = NULL;
 MapManager* Sorts::mapManager = NULL;
 FeatureMapManager* Sorts::featureMapManager = NULL;
 TerrainModule* Sorts::terrainModule = NULL;

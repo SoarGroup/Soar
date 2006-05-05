@@ -401,12 +401,6 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
                                  list<PerceptualGroup*> targets) { 
   bool result = true;
 
- /* cout << "##################" << endl;
-  for(list<int>::iterator i = params.begin(); i != params.end(); i++) {
-    cout << *i << " ";
-  }
-  cout << endl;
-*/
   set<SoarGameObject*>::iterator currentObject;
   
   list<int>::iterator intIt;  

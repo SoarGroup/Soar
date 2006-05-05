@@ -232,7 +232,7 @@ PerceptualGroup* FeatureMapManager::getGroup(string mapName, int sector) {
 }
 
 void FeatureMapManager::changeViewWindow(int x, int y, int width) {
-  // the GroupManager is responsible for re-populating the maps when this changes!
+  // the PerceptualGroupManager is responsible for re-populating the maps when this changes!
   // (FMM does not know anything about groups not in view)
   int half = (int) (width / 2);
   xMin = x - half;

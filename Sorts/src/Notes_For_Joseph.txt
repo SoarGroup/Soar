@@ -1,5 +1,5 @@
 I changed the call in ORTSInterface to look up the group pointer in the sgo to remove dead objects.
-Also, I changed the groupManager.addGroup(SGO*) function to be void, it can
+Also, I changed the pGroupManager.addGroup(SGO*) function to be void, it can
 set the SGO->SGG pointer itself (it used to return the SGG ptr). I fixed the
 call in ORTSInterface to work with that.
 

@@ -65,7 +65,7 @@ void SoarUpdateEventHandler(sml::smlUpdateEventId id,
   // if they were processed in the ORTS handler, the agent
   // would have a delay from when it looked somewhere and when
   // the objects there appeared.
-  Sorts::groupManager->processVisionCommands();
+  Sorts::pGroupManager->processVisionCommands();
 
   if (Sorts::SoarIO->getStale()) {
     Sorts::SoarIO->lockSoarMutex();
@@ -212,29 +212,30 @@ int main(int argc, char *argv[]) {
     ( game.get_map(), game.get_tile_points(), tileGrouper);
  
   FeatureMapManager featureMapManager;
-  GroupManager gm;
+  PerceptualGroupManager pgm;
+  InternalGroupManager igm;
   OrtsInterface ortsInterface(&gsm);
 
   Satellite satellite;
 
   Sorts sorts(&soarInterface, 
               &ortsInterface, 
-              &gm, 
+              &pgm, 
+              &igm,
               &mapManager, 
               &featureMapManager,
               &tm,
               &satellite,
               &sortsMutex);
 
-  
   satellite.init();
   
   // must be connected to orts server by now
   // must initialize the gm before soar input link
-  // gm intialize gets params from orts server via ortsinterface
+  // pgm intialize gets params from orts server via ortsinterface
   // and calculates the initial vision params (window size, etc.)
   // these params are then put on the input link when it is initialized
-  gm.initialize();
+  pgm.initialize();
   soarInterface.initSoarInputLink();
   
 // register for all events

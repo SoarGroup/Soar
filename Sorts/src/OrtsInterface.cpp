@@ -62,7 +62,7 @@ bool OrtsInterface::handle_event(const Event& e) {
         //  cout << "WARNING: merged actions (what does this mean?)" << merged << endl;
       }
 
-      Sorts::groupManager->assignActions();
+      Sorts::pGroupManager->assignActions();
 
       updateMap();
       updateSoarGameObjects();
@@ -71,7 +71,7 @@ bool OrtsInterface::handle_event(const Event& e) {
       // since the FSM's have been updated, we should send the actions here
       gsm->send_actions();
 
-      Sorts::groupManager->updateVision();
+      Sorts::pGroupManager->updateGroups();
 
       /* I'm assuming here that those update calls from above have already
        * updated the soar input link correctly, so commit everything
@@ -102,8 +102,9 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   SoarGameObject* newObj = new SoarGameObject(gameObj,
                                               friendly, world, id);
  
-  // GroupManager takes care of setting the object->group pointers
-  Sorts::groupManager->makeNewGroup(newObj);
+  // PerceptualGroupManager takes care of setting the object->group pointers
+  Sorts::pGroupManager->makeNewGroup(newObj);
+  Sorts::iGroupManager->makeNewGroup(newObj);
   
 
   objectMap[gameObj] = newObj;

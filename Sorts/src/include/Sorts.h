@@ -9,27 +9,23 @@
    most lower-level objects should have a pointer to this
 */
 
-#include "include/SoarInterface.h"
-#include "include/OrtsInterface.h"
-#include "include/GroupManager.h"
-#include "include/MapManager.h"
-#include "include/FeatureMapManager.h"
+#include "SoarInterface.h"
+#include "OrtsInterface.h"
+#include "PerceptualGroupManager.h"
+#include "InternalGroupManager.h"
+#include "MapManager.h"
+#include "FeatureMapManager.h"
 
 #include "Satellite.h"
 #include "TerrainModule.H"
-/*
-class SoarInterface;
-class OrtsInterface;
-class GroupManager;
-class MapManager;
-class FeatureMapManager;
-*/
+
 class Sorts {
   public:
     Sorts
     ( SoarInterface*      _SoarIO,
       OrtsInterface*      _OrtsIO,
-      GroupManager*       _groupManager, 
+      PerceptualGroupManager*       _pGroupManager, 
+      InternalGroupManager* _iGroupManager,
       MapManager*         _mapManager, 
       FeatureMapManager*  _featureMapManager,
       TerrainModule*      _tm,
@@ -38,7 +34,8 @@ class Sorts {
     {
       SoarIO = _SoarIO;
       OrtsIO = _OrtsIO;
-      groupManager = _groupManager;
+      pGroupManager = _pGroupManager;
+      iGroupManager = _iGroupManager;
       mapManager = _mapManager;
       featureMapManager = _featureMapManager;
       terrainModule = _tm;
@@ -49,7 +46,8 @@ class Sorts {
 
     static SoarInterface* SoarIO;
     static OrtsInterface* OrtsIO;
-    static GroupManager* groupManager;
+    static PerceptualGroupManager* pGroupManager;
+    static InternalGroupManager* iGroupManager;
     static MapManager* mapManager;
     static FeatureMapManager* featureMapManager;
     static TerrainModule* terrainModule;
@@ -67,7 +65,7 @@ class Sorts {
    leaving the old mutexes in SoarInterface.cpp, but commented out- if we
    ever can use actual multithreading, they will allow that (where this scheme
    will not). If that is the case, a mutex needs to be added around the 
-   functions in GroupManager, since both Soar and ORTS events call them.
+   functions in PerceptualGroupManager, since both Soar and ORTS events call them.
 
    -sw, 4/25/06
 */

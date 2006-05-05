@@ -1,6 +1,6 @@
 #include "Sorts.h"
 #include "MineFSM.h"
-#include "GroupManager.h"
+#include "PerceptualGroupManager.h"
 #include "InternalGroup.h"
 #include "general.h"
 
@@ -32,7 +32,7 @@ int MineFSM::update() {
       if ((squaredDistance(*gob->sod.x, *gob->sod.y, mineZoneX, mineZoneY) 
           < DISTANCE_EPSILON) 
           or (*gob->sod.speed == 0)) { 
-        intGroup = Sorts::groupManager->getGroupNear("mineral", worldId, 
+        intGroup = Sorts::iGroupManager->getGroupNear("mineral", worldId, 
                                      *gob->sod.x, *gob->sod.y);
         if (intGroup != NULL) {
           // there is a mineral patch nearby, head right to a mineral
@@ -124,7 +124,7 @@ int MineFSM::update() {
       // once we get in range, look for a command center
       if ((squaredDistance(*gob->sod.x, *gob->sod.y, baseZoneX, baseZoneY) 
           < DISTANCE_EPSILON) or (*gob->sod.speed == 0)) { 
-        intGroup = Sorts::groupManager->getGroupNear("controlCenter", myId, 
+        intGroup = Sorts::iGroupManager->getGroupNear("controlCenter", myId, 
                                      *gob->sod.x, *gob->sod.y);
         if (intGroup != NULL) {
           // there is a base nearby, head right to it 

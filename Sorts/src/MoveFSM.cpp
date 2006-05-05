@@ -13,7 +13,7 @@ MoveFSM::MoveFSM(GameObj* go)
 int MoveFSM::update() {
   
   if (gob->is_pending_action()) {
-//    cout << "MOVEFSM: action has not taken affect!\n";
+    cout << "MOVEFSM: action has not taken affect!\n";
     return FSM_RUNNING;
   }
 

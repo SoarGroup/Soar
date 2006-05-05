@@ -1,32 +1,28 @@
-#include "include/GroupManager.h"
+#include "include/PerceptualGroupManager.h"
 #include "include/general.h"
 #include <iostream>
 
 #include "PerceptualGroup.h"
-#include "InternalGroup.h"
 #include "Sorts.h"
 #include "SoarInterface.h"
 
 using namespace std;
 
 /*
-  GroupManager.cpp
+  PerceptualGroupManager.cpp
   SORTS project
   Sam Wintermute, 2006
 
 */
 
 
-GroupManager::GroupManager() {
+PerceptualGroupManager::PerceptualGroupManager() {
   // sorts ptr is NOT valid here, use the intialize() function! 
     
   // this default should be reflected in the agent's assumptions
   // (1024 = 32^2)
   visionParams.groupingRadius = 1024;
   
-  // this does not change
-  internalGroupingRadius = 1024;
-
   // the number of objects near the focus point to add
   // agent can change this, if it wishes to cheat
   visionParams.numObjects = 4;
@@ -34,7 +30,7 @@ GroupManager::GroupManager() {
   visionParams.ownerGrouping = false;
 }
 
-void GroupManager::initialize() {
+void PerceptualGroupManager::initialize() {
   // called right after sorts ptr set up
   visionParams.focusX = (int) (Sorts::OrtsIO->getMapXDim() / 2.0);
   visionParams.focusY = (int) (Sorts::OrtsIO->getMapYDim() / 2.0);
@@ -53,18 +49,16 @@ void GroupManager::initialize() {
 
   Sorts::SoarIO->initVisionState(visionParams);
 }
-void GroupManager::updateVision() {
+void PerceptualGroupManager::updateGroups() {
   prepareForReGroup();
     // prune empty groups (if units died)
     // prepare list of group categories that need to be reGrouped
     // recalculate the center member for groups that changed
   
-  reGroupInternal();
-  reGroupPerceptual();
+  reGroup();
     // re-calculate the groups
     
-  generateInternalGroupData();
-  generatePerceptualGroupData();
+  generateGroupData();
     // prune groups emptied during reGrouping
     // aggregate data about the groups
   
@@ -74,7 +68,7 @@ void GroupManager::updateVision() {
   return;
 }
 
-bool GroupManager::assignActions() {
+bool PerceptualGroupManager::assignActions() {
   // through the Sorts::getSoarInterface(), look for any new actions, and assign them to groups
   // actions have a list of params and a list of groups,
   // the first group (must exist) is the group the action will be applied to
@@ -114,7 +108,7 @@ bool GroupManager::assignActions() {
   return success;
 }
 
-void GroupManager::processVisionCommands() {
+void PerceptualGroupManager::processVisionCommands() {
   // called when Soar changes the view window, wants to attend to an item
   // in a feature map, or changes a grouping parameter.
 
@@ -134,8 +128,8 @@ void GroupManager::processVisionCommands() {
   // grouping change:
   // this is the same as updateVision, except we don't need prepareForReGroup,
   // since none of the objects in the world actually changed:
-  // reGroupPerceptual()
-  // generatePerceptualGroupData()
+  // reGroup()
+  // generateGroupData()
   // adjustAttention()
   // updateFeatureMaps(false)
   
@@ -230,9 +224,9 @@ void GroupManager::processVisionCommands() {
         radius *= radius;
         if (radius != visionParams.groupingRadius) {
           visionParams.groupingRadius = radius;
-          setAllPerceptualCategoriesStale();
-          reGroupPerceptual();
-          generatePerceptualGroupData();
+          setAllCategoriesStale();
+          reGroup();
+          generateGroupData();
           adjustAttention(false);
           Sorts::SoarIO->updateVisionState(visionParams); 
         }
@@ -253,9 +247,9 @@ void GroupManager::processVisionCommands() {
         visionParams.ownerGrouping = true; 
         // this essentially changes the definition of category
         
-        setAllPerceptualCategoriesStale();
-        reGroupPerceptual();
-        generatePerceptualGroupData();
+        setAllCategoriesStale();
+        reGroup();
+        generateGroupData();
         adjustAttention(false);
         Sorts::SoarIO->updateVisionState(visionParams); 
         break;
@@ -266,9 +260,9 @@ void GroupManager::processVisionCommands() {
         }
         visionParams.ownerGrouping = false; 
         
-        setAllPerceptualCategoriesStale();
-        reGroupPerceptual();
-        generatePerceptualGroupData();
+        setAllCategoriesStale();
+        reGroup();
+        generateGroupData();
         adjustAttention(false);
         Sorts::SoarIO->updateVisionState(visionParams); 
         break;
@@ -280,7 +274,7 @@ void GroupManager::processVisionCommands() {
   }
 }
 
-void GroupManager::prepareForReGroup() {
+void PerceptualGroupManager::prepareForReGroup() {
   // iterate through all the groups, if they are stale,
   // recalculate the center member
  
@@ -304,7 +298,7 @@ void GroupManager::prepareForReGroup() {
       }
       else {
         (*groupIter)->updateCenterMember();
-        stalePGroupCategories.insert(
+        staleGroupCategories.insert(
             (*groupIter)->getCategory(visionParams.ownerGrouping));
       }
     }
@@ -312,31 +306,17 @@ void GroupManager::prepareForReGroup() {
   for (list<set<PerceptualGroup*>::iterator>::iterator it= toErase.begin();
       it != toErase.end();
       it++) {
-    removePerceptualGroup(**it);
+    removeGroup(**it);
     perceptualGroups.erase(*it);
   }
 
-  list<InternalGroup*>::iterator igroupIter; 
-  for (igroupIter = internalGroups.begin();
-       igroupIter != internalGroups.end(); 
-       igroupIter++) {
-    if ((*igroupIter)->getHasStaleMembers()) {
-      if ((*igroupIter)->isEmpty()) {
-        delete (*igroupIter);
-        internalGroups.erase(igroupIter);
-      }
-      else {
-        staleIGroupCategories.insert((*igroupIter)->getCategory());
-      }
-    }
-  }
   //cout << "end ref" << endl;
   return;
 }
 
 
-void GroupManager::reGroupPerceptual() {
-  // iterate through stalePGroupCategories set
+void PerceptualGroupManager::reGroup() {
+  // iterate through staleGroupCategories set
   //  find all the groups of each type
   //  add the members to a big list, centers first
   //  keep a struct for each object:
@@ -350,7 +330,7 @@ void GroupManager::reGroupPerceptual() {
   //        if neither is set, choice is arbitrary
   //        if both are set, prefer the larger group
 
-  set<pair<string, int> >::iterator catIter = stalePGroupCategories.begin();
+  set<pair<string, int> >::iterator catIter = staleGroupCategories.begin();
   perceptualGroupingStruct objectData;
   list<SoarGameObject*> groupMembers;
   set<PerceptualGroup*>::iterator groupIter;
@@ -366,7 +346,7 @@ void GroupManager::reGroupPerceptual() {
   
   SoarGameObject* centerObject;
 
-  while (catIter != stalePGroupCategories.end()) {
+  while (catIter != staleGroupCategories.end()) {
     //cout << "doing type " << catIter->first << endl;
     groupingList.clear();
     centerGroupingList.clear();
@@ -565,172 +545,19 @@ void GroupManager::reGroupPerceptual() {
     toMergeIter++;
   }
  
-  stalePGroupCategories.clear();
+  staleGroupCategories.clear();
   //cout << "XXX regroup done" << endl;
   return;
 }
 
-void GroupManager::reGroupInternal() {
-  // this is simpler than reGroupPerceptual because we don't care about
-  // groups maintaining their identities across cycles
-  
-  // iterate through stalePGroupCategories set
-  //  find all the groups of each type
-  //  add the members to a big list
-  //  keep a struct for each object:
-  //    ptr to the obj, flag for if it has been assigned a group, ptr to group
-  //  go through each obj1 in the list
-  //    if not flagged, rm from old group and make a new group
-  //    check each object (obj2) below in list:
-  //      if objs are close and obj2 not flagged, flag obj2 and bring to same group
-  //      if objs are close and obj2 flagged, merge groups
-  
-  set<pair<string, int> >::iterator catIter = staleIGroupCategories.begin();
-  internalGroupingStruct objectData;
-  list<SoarGameObject*> groupMembers;
-  list<InternalGroup*>::iterator groupIter;
-  list<SoarGameObject*>::iterator objectIter;
-  
-  list<internalGroupingStruct> groupingList;
 
-  // save all the to-merge pairs in a list
-  // do all the merges at the end
-  // this prevents invalid groups in the list (groups are deleted after a merge)
-  list<pair<InternalGroup*, InternalGroup*> > toMergeList;
-  
-  while (catIter != staleIGroupCategories.end()) {
-    //cout << "doing type " << catIter->first << endl;
-    groupingList.clear();
-    
-    for (groupIter = internalGroups.begin(); 
-        groupIter != internalGroups.end(); 
-        groupIter++) {
-      if ((*groupIter)->getCategory() == *catIter) {
-        //cout << "group " << (int) (*groupIter) << endl;
-        // group is of the type we are re-grouping
-       
-        // not an old group- don't care about center distinction
-        objectData.group = *groupIter;
-        objectData.assigned = false;
-        groupMembers = (*groupIter)->getMembers();
-        objectIter = groupMembers.begin();
-        while (objectIter != groupMembers.end()) {
-          objectData.object = *objectIter;
-          objectData.x = *(*objectIter)->gob->sod.x;
-          objectData.y = *(*objectIter)->gob->sod.y;
-          groupingList.push_back(objectData);
-          objectIter++;
-        }
-      }
-      // else it was a group of a different type
-    }
-    list<internalGroupingStruct>::iterator obj1StructIter, obj2StructIter;
-    internalGroupingStruct obj1Struct;
-    
-    obj1StructIter = groupingList.begin();
-    
-    while (obj1StructIter != groupingList.end()) {
-      obj1Struct = *obj1StructIter;
-      
-      if (not obj1Struct.assigned) {
-        // make a new group for this object- no existing 
-        // group has claimed it yet
-        obj1Struct.group->removeUnit(obj1Struct.object);
-        internalGroups.push_back(new InternalGroup(obj1Struct.object));
-        obj1Struct.group = obj1Struct.object->getInternalGroup();
-        obj1Struct.assigned = true;
-        //cout << "XXX making new group " << (int) obj1Struct.group << endl; 
-      }
-     
-      // iterate through all lower objects to see if they should join the group
-      obj2StructIter = obj1StructIter;
-      obj2StructIter++;
-      
-      while (obj2StructIter != groupingList.end()) {
-        if (squaredDistance(obj1Struct.x, obj1Struct.y, 
-                            (*obj2StructIter).x, (*obj2StructIter).y)
-            <= internalGroupingRadius) {
-          if ((*obj2StructIter).assigned) {
-            // obj2 already has been grouped- groups should merge
-            pair<InternalGroup*, InternalGroup*> groups;
-
-            groups.second = obj1Struct.group;
-            groups.first = (*obj2StructIter).group;
-            
-            toMergeList.push_back(groups);
-            //cout << "XXX will merge " << (int) groups.first << " -> " << (int) groups.second << endl;
-          }
-          else {
-            // obj2 has not been assigned. Assign it to obj1's group.
-            //cout << "XXX obj from group " << (int) (*obj2StructIter).group <<
-            //        " joining " << (int) obj1Struct.group << endl;
-            (*obj2StructIter).assigned = true;
-            (*obj2StructIter).group->removeUnit((*obj2StructIter).object);
-            (*obj2StructIter).group = obj1Struct.group;
-            (*obj2StructIter).group->addUnit((*obj2StructIter).object);
-            
-          }
-        //  cout << "grouped!" << endl;
-        }
-        else {
-       //   cout << "not grouped!" << endl;
-        }
-        obj2StructIter++; 
-      }
-      // jump the iterator between the two lists
-      obj1StructIter++;
-    }
-    catIter++;
-  } // end iterating through all the types that need re-grouping
-  
-  // do merges- always merge the first group to the second
-  
-  list<pair<InternalGroup*, InternalGroup*> >::iterator toMergeIter;
-  list<pair<InternalGroup*, InternalGroup*> >::iterator toMergeIter2;
-
-  // if two groups merge, we need to ensure that the subsumed group
-  // does not have any outstanding merges
-  toMergeIter = toMergeList.begin();
-  while (toMergeIter != toMergeList.end()) {
-    //cout << "groups " << (int)  (*toMergeIter).first << " and " << (int) (*toMergeIter).second << " will merge\n";
-    if ((*toMergeIter).first == (*toMergeIter).second) {
-      // do nothing- the groups were already merged
-    }
-    else {
-      // merge first into second
-      
-      toMergeIter2 = toMergeIter;
-      toMergeIter2++;
-      while (toMergeIter2 != toMergeList.end()) {
-        // replace all occurrences of the squashed group with the
-        // new combined group
-        if ((*toMergeIter2).first == (*toMergeIter).first) {
-          (*toMergeIter2).first = (*toMergeIter).second;
-        }
-        if ((*toMergeIter2).second == (*toMergeIter).first) {
-          (*toMergeIter2).second = (*toMergeIter).second;
-        }
-        toMergeIter2++;
-      }
-
-      (*toMergeIter).first->mergeTo((*toMergeIter).second);
-    }
-    
-    toMergeIter++;
-  }
- 
-  staleIGroupCategories.clear();
-  //cout << "XXX regroup done" << endl;
-  return;
-}
-
-void GroupManager::removePerceptualGroup(PerceptualGroup* group) {
+void PerceptualGroupManager::removeGroup(PerceptualGroup* group) {
   Sorts::SoarIO->removeGroup(group);
   Sorts::featureMapManager->removeGroup(group);
   delete group;
 }
 
-void GroupManager::generatePerceptualGroupData() {
+void PerceptualGroupManager::generateGroupData() {
   // iterate through all the groups, if they are stale,
   // refresh them (re-calc stats)
  
@@ -744,7 +571,7 @@ void GroupManager::generatePerceptualGroupData() {
     if ((*groupIter)->getHasStaleMembers()) {
       if ((*groupIter)->isEmpty()) {
         toErase.push_back(groupIter);
-        removePerceptualGroup(*groupIter);
+        removeGroup(*groupIter);
       }
       else {
         (*groupIter)->generateData();
@@ -777,32 +604,8 @@ void GroupManager::generatePerceptualGroupData() {
   return;
 }
 
-void GroupManager::generateInternalGroupData() {
-  // iterate through all the groups, if they are stale,
-  // refresh them (re-calc stats)
- 
-  list<InternalGroup*>::iterator groupIter;
 
-  for (groupIter = internalGroups.begin(); 
-       groupIter != internalGroups.end(); 
-       groupIter++) {
-    if ((*groupIter)->getHasStaleMembers()) {
-      if ((*groupIter)->isEmpty()) {
-        delete (*groupIter);
-        internalGroups.erase(groupIter);
-      }
-      else {
-        (*groupIter)->updateCenterLoc();
-        (*groupIter)->setHasStaleMembers(false);
-      }
-    }
-  }
-  
-  return;
-}
-
-void GroupManager::makeNewGroup(SoarGameObject* object) {
-  // make a new perceptual and internal group for the object
+void PerceptualGroupManager::makeNewGroup(SoarGameObject* object) {
   int size1 = perceptualGroups.size();
   perceptualGroups.insert(new PerceptualGroup(object));
 
@@ -810,13 +613,12 @@ void GroupManager::makeNewGroup(SoarGameObject* object) {
   // make the elements seem identical, which would not let them both
   // in the set.
   assert(perceptualGroups.size() == (unsigned int)(size1 + 1));
- 
-  internalGroups.push_back(new InternalGroup(object));
+  
   return;
 }
 
-void GroupManager::adjustAttention(bool rebuildFeatureMaps) {
-  // iterate through all staleProperties groups, if in attn. range,
+void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
+  // iterate through all staleroperties groups, if in attn. range,
   // send params to Soar
   
   set<PerceptualGroup*>::iterator groupIter;
@@ -889,7 +691,7 @@ void GroupManager::adjustAttention(bool rebuildFeatureMaps) {
   return;
 }
 
-GroupManager::~GroupManager() {
+PerceptualGroupManager::~PerceptualGroupManager() {
   set<PerceptualGroup*>::iterator groupIter;
   for (groupIter = perceptualGroups.begin(); 
        groupIter != perceptualGroups.end(); 
@@ -899,41 +701,11 @@ GroupManager::~GroupManager() {
 }
 
 
-InternalGroup* GroupManager::getGroupNear(string type, int owner, int x, int y) {
-  // return NULL if no groups of that type are known
-  
-  //cout << "search for " << type << " owned by " << owner << endl;
-  pair<string, int> targetCategory;
-  targetCategory.first = type;
-  targetCategory.second = owner;
-  
-  int currentX, currentY;
-  double currentDistance;
-  double closestDistance = 99999999;
-  InternalGroup* closestGroup = (InternalGroup*) NULL;
-  
-  list<InternalGroup*>::iterator groupIter;
 
-  for (groupIter = internalGroups.begin(); 
-      groupIter != internalGroups.end(); 
-      groupIter++) {
-    if ((*groupIter)->getCategory() == targetCategory) {
-      (*groupIter)->getCenterLoc(currentX, currentY);
-      currentDistance = squaredDistance(x, y, currentX, currentY);
-      if (currentDistance < closestDistance) {
-        closestDistance = currentDistance;
-        closestGroup = *groupIter;
-      }
-    }
-  }
-  
-  return closestGroup;
-}
-
-void GroupManager::setAllPerceptualCategoriesStale() {
+void PerceptualGroupManager::setAllCategoriesStale() {
   // add all categories to the stale list
   // (used to force all groups to refresh after grouping params change)
-  stalePGroupCategories.clear();
+  staleGroupCategories.clear();
   
   set<PerceptualGroup*>::iterator groupIter;
   // jump iterator between lists
@@ -941,12 +713,12 @@ void GroupManager::setAllPerceptualCategoriesStale() {
   for (groupIter = perceptualGroups.begin(); 
       groupIter != perceptualGroups.end(); 
       groupIter++) {
-    stalePGroupCategories.insert(
+    staleGroupCategories.insert(
         (*groupIter)->getCategory(visionParams.ownerGrouping));
   }
 }
 
-void GroupManager::remakeGroupSet() {
+void PerceptualGroupManager::remakeGroupSet() {
   // if the focus point changes, all groups need to be reinserted in the
   // group set, since it is maintained in order of distance from the center
 
