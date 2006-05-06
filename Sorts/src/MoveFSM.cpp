@@ -4,10 +4,33 @@
 #include "Sorts.h"
 using namespace std;
 
+Satellite *MoveFSM::satellite = NULL;
+
+
 MoveFSM::MoveFSM(GameObj* go) 
             : FSM(go) 
 {
   name = OA_MOVE;
+
+  if(!satellite)
+  {
+   satellite = new Satellite();
+   satellite->init();
+  }
+  else
+   satellite->refCount++;
+
+  satellite->addObject(gob);
+  vec_count = 0;
+}
+
+MoveFSM::~MoveFSM()
+{
+ if(satellite->refCount==1)
+ {
+  delete satellite;
+  satellite = NULL;
+ }
 }
 
 int MoveFSM::update() {
@@ -20,12 +43,8 @@ int MoveFSM::update() {
  switch(state){
 
 	case IDLE:
-	 //Start moving
-//   cout << "SETA: " << moveParams[0] << " " << moveParams[1] << endl;
-//   cout << "on GOB: " << (int)gob << endl;
    gob->set_action("move", moveParams);
 	 state = MOVING;
-//   cout << "IDLE!\n";
    break;
   
   case ALREADY_THERE:
@@ -34,25 +53,20 @@ int MoveFSM::update() {
 
 	case MOVING:
 	 const ServerObjData &sod = gob->sod;
-   double distToTarget 
-     = squaredDistance(*sod.x, *sod.y, moveParams[0], moveParams[1]); 
-//   cout << "MOVE @ " << *sod.speed << endl;
-
+   double distToTarget = squaredDistance(*sod.x, *sod.y, moveParams[0], moveParams[1]); 
 	 // if speed drops to 0
    // and we are not there, failure
-   if (*sod.speed == 0) {
-//     cout << "ZERO SPEED\n";
+   if (*sod.speed == 0) 
+   {
      // this should be +/- some amount 
      // to account for multiple objects at the same location 
      if (distToTarget < 400) {
        counter = 0;
        //If you arrived, then check is there is another path segment to traverse
        if (stagesLeft >= 0) {
-  //       cout << "MOVEFSM: next stage\n";
          moveParams[0] = path.locs[stagesLeft].x;
          moveParams[1] = path.locs[stagesLeft].y;
          stagesLeft--;
-  //       cout << "SETA: " << moveParams[0] << " " << moveParams[1] << endl;
 	       gob->set_action("move", moveParams);
        }
        else 
@@ -71,13 +85,15 @@ int MoveFSM::update() {
        }
      }
    }
-   else if (distToTarget <= 1 and stagesLeft >= 0) {
+   else 
+    if (distToTarget <= 1 and stagesLeft >= 0) 
+    {
      cout << "MOVEFSM: in-motion dir change\n";
      moveParams[0] = path.locs[stagesLeft].x;
      moveParams[1] = path.locs[stagesLeft].y;
      stagesLeft--;
      gob->set_action("move", moveParams);
-   }
+    }
      
    break;
 
@@ -111,3 +127,47 @@ void MoveFSM::init(vector<sint4> p)
    state = ALREADY_THERE;
  }
 }
+
+
+// Returns the actual move vector of the object
+// New move coordinates are placed into the moveParams structure
+bool MoveFSM::getMoveVector()
+{
+ bool answer = false;
+ // - Things don't change rapidly
+ // - Return false is not enough time has passed
+ //   - Need to figure out how much time is enough
+ if(vec_count < 20)
+ {
+  vec_count++;
+  return answer;
+ }
+
+ std::list<GameObj*> *neighbors = satellite->getObjectsInRegion(*(gob->sod.x), *(gob->sod.y));
+ std::list<GameObj*>::iterator it;
+
+ // Add up the repulsion vectors
+ for(it = neighbors->begin(); it!=neighbors->end(); it++)
+ {
+  
+ }
+ 
+ //Add in the attraction vector
+ sint4 x = path.locs[stagesLeft].x;
+ sint4 y = path.locs[stagesLeft].y;
+
+ //This won't work... Just trying something out
+ if(abs(x-moveParams[0])>10)
+ {
+  moveParams[0] = x;
+  answer = true;
+ }
+ if(abs(y-moveParams[1])>10)
+ {
+  moveParams[1] = y;
+  answer = true;
+ }
+ 
+ return answer;
+}
+

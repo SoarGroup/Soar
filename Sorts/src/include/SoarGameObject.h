@@ -11,7 +11,6 @@ using namespace std;
 
 class PerceptualGroup;
 class InternalGroup;
-class Sorts;
 
 class SoarGameObject{
  public:

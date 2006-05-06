@@ -3,6 +3,7 @@
 
 Satellite::Satellite()
 {
+ refCount = 1;
 }
 
 void Satellite::init()
@@ -22,4 +23,14 @@ Satellite::~Satellite()
 std::list<GameObj*> *Satellite::getObjectsInRegion(int x, int y)
 {
  return &Map[y*width+x];
+}
+
+
+void Satellite::addObject(GameObj *gob)
+{
+ sint4 x = *(gob->sod.x);
+ sint4 y = *(gob->sod.y);
+ 
+ Map[y*width+x].push_back(gob); 
+ return;
 }

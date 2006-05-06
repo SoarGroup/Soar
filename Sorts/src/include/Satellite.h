@@ -19,8 +19,11 @@ public:
 
   void init();
 
+  void addObject(GameObj *gob);
   // querying functions
   std::list<GameObj*> *getObjectsInRegion(int x, int y);
+
+  int refCount;
 
 private:
 

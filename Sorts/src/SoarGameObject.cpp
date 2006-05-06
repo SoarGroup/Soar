@@ -41,8 +41,7 @@ SoarGameObject::~SoarGameObject()
     memory.pop();
   }
 
-  for(map<ObjectActionType, FSM*>::iterator i = behaviors.begin(); 
-      i != behaviors.end(); i++) 
+  for(map<ObjectActionType, FSM*>::iterator i = behaviors.begin(); i != behaviors.end(); i++) 
   {
     delete i->second;
   }
