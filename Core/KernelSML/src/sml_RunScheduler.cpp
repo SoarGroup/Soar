@@ -850,7 +850,7 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize,
 	//  If so, we'll decrement  the RunCount before entering the Run loop so  
 	//  as not to run more Decision phases than specified in the runCount.  See bug #710.
 	if (gSKI_RUN_DECISION_CYCLE == runStepSize) 
-		 if (!AllAgentsAtStopBeforePhase()) count--;
+		 if (!AllAgentsAtStopBeforePhase() && (count > 0)) count--;
  
 
 	// If we issue a "run 0" and all agents are synched and in the correct state we're done.
