@@ -1,0 +1,101 @@
+sp {propose*retrieve-new-tasks
+   (state <s> ^name sorts
+              ^planning <p>)
+   (<p> ^newly-completed.task <nct>
+        ^current-plan <cp>)
+   (<nct> ^name <tn>
+          ^plan <cp>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name planning-retrieve-new-tasks
+        ^completed-task <nct>)}
+
+sp {apply*retrieve-new-tasks
+   (state <s> ^name sorts
+              ^planning <p>
+              ^operator <o>)
+   (<p> ^retrieval-buffer <rb>
+        ^newly-completed <nc>)
+   (<o> ^name planning-retrieve-new-tasks
+        ^completed-task <t>)
+-->
+   # some kind of magic happens here and tasks that depend on <t> are retrieved onto the retrieval buffer
+   (<nc> ^task <t> -)}
+
+sp {propose*complete-task
+   (state <s> ^name sorts
+              ^planning <p>)
+   (<p> ^execution-buffer.task <ct>)
+   (<ct> ^completed)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name planning-complete-task
+        ^task <t>)}
+
+sp {apply*complete-task
+   (state <s> ^name sorts
+              ^planning <p>
+              ^io.input-link.view-frame <vf>
+              ^operator <o>)
+   (<p> ^execution-buffer <eb>
+        ^newly-completed <nc>
+        ^completed <c>)
+   (<o> ^name planning-complete-task
+        ^task <t>)
+   (<t> ^name <n> ^plan <pl>)
+-->
+   (<nc> ^task <nct>)
+   (<nct> ^name <n>
+          ^plan <pl>
+          ^completion-frame <vf>)
+   (<c> ^task <ct>)
+   (<ct> ^name <n>
+         ^plan <pl>
+         ^completion-frame <vf>)
+   (<eb> ^task <t> -)}
+
+sp {propose*resolve-dep
+   (state <s> ^name sorts
+              ^planning <p>)
+   (<p> ^retrieval-buffer.task <rt>
+        ^completed.task <ct>)
+   (<rt> ^dep <p>)
+   (<ct> ^name <p>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name planning-resolve-dep
+        ^task <rt>
+        ^dep <p>)}
+
+sp {apply*resolve-dep
+   (state <s> ^name sorts
+              ^operator <o>)
+   (<o> ^name planning-resolve-dep
+        ^task <t>
+        ^dep <p>)
+-->
+   (<t> ^dep <p> -)}
+
+sp {propose*execute-task
+   (state <s> ^name sorts
+              ^planning <p>)
+   (<p> ^retrieval-buffer.task <rt>
+        ^execution-buffer <eb>)
+  -(<rt> ^dep)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name planning-execute-task
+        ^task <rt>)}
+
+sp {apply*execute-task
+   (state <s> ^name sorts
+              ^planning <p>
+              ^operator <o>)
+   (<p> ^retrieval-buffer <rb>
+        ^execution-buffer <eb>)
+   (<o> ^name planning-execute-task
+        ^task <t>)
+-->
+   (<eb> ^task <t>)
+   (<rb> ^task <t> -)}
+

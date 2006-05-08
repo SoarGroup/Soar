@@ -1,0 +1,33 @@
+sp {apply*look-at-feature
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name look-at-feature
+         ^feature <feature>
+         ^sector <sector>)
+-->
+   (<ol> ^look-feature <lf>)
+   (<lf> ^feature <feature>
+         ^sector <sector>)
+}
+
+sp {apply*move-to-feature
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name move-to-feature
+         ^feature <feature>
+         ^sector <sector>)
+-->
+   (<ol> ^move-feature <lf>)
+   (<lf> ^feature <feature>
+         ^sector <sector>)
+}
+
+sp {apply*change-view-width
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name change-view-width
+         ^width <w>)
+-->
+   (<ol> ^view-width <vw>)
+   (<vw> ^value <w>)
+}

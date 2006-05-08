@@ -1,0 +1,6 @@
+sp {init-grouping-level
+   (state <s> ^top-state <ts>)
+   (<s> -^top-state grouping-level)
+-->
+   (<ts> ^grouping-level small-groups)
+}

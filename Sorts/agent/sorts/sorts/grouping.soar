@@ -1,0 +1,49 @@
+
+
+# switches to grouping by owner rather than by type
+sp {apply*enable-owner-grouping
+   (state <s> ^operator <o>
+              ^io <io>)
+    (<o> ^name enable-owner-grouping)
+-->
+   (<io> ^output-link enable-owner-grouping)
+}
+
+sp {apply*set-grouping-individuals
+    (state <s> ^operator <o>
+               ^io.output-link <ol>
+               ^top-state <ts>)
+    (<o> ^name set-grouping-individuals)
+-->
+   (<ts> ^grouping-level individuals)
+   (<ts> ^grouping-level small-groups -)
+   (<ts> ^grouping-level large-groups -)
+   (<ol> ^grouping-radius <g>)
+   (<g> ^value 0)
+}
+
+sp {apply*set-grouping-small-groups
+    (state <s> ^operator <o>
+               ^io.output-link <ol>
+               ^top-state <ts>)
+    (<o> ^name set-grouping-small-groups)
+-->
+   (<ts> ^grouping-level individuals -)
+   (<ts> ^grouping-level small-groups)
+   (<ts> ^grouping-level large-groups -)
+   (<ol> ^grouping-radius <g>)
+   (<g> ^value 32)
+}
+
+sp {apply*set-grouping-large-groups
+    (state <s> ^operator <o>
+               ^io.output-link <ol>
+               ^top-state <ts>)
+    (<o> ^name set-grouping-large-groups)
+-->
+   (<ts> ^grouping-level individuals -)
+   (<ts> ^grouping-level small-groups -)
+   (<ts> ^grouping-level large-groups)
+   (<ol> ^grouping-radius <g>)
+   (<g> ^value 64)
+}

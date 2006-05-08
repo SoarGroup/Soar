@@ -1,0 +1,126 @@
+sp {propose*cue-appraisal-ptask-view-frame
+   (state <s> ^name sorts
+              ^planning.execution-buffer.task <t>
+              ^io.input-link.view-frame <vf>
+             -^appraisal-cue)
+   (<t> ^appraisal-triggers.view-frame < <vf>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name cue-appraisal-view-frame
+        ^task <t>)}
+
+sp {propose*cue-appraisal-otask-view-frame
+   (state <s> ^name sorts
+              ^opportunity-task-buffer.task <t>
+              ^io.input-link.view-frame <vf>
+             -^appraisal-cue)
+   (<t> ^^appraisal-triggers.view-frame < <vf>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name cue-appraisal-view-frame
+        ^task <t>)}
+
+sp {apply*cue-appraisal-view-frame
+   (state <s> ^name sorts
+              ^operator <o>)
+   (<o> ^name cue-appraisal-view-frame
+        ^task <t>)
+   (<t> ^appraisal-triggers <at>)
+-->
+   (<s> ^appraisal-cue <c>)
+   (<c> ^task <t>)
+   (<at> ^view-frame -)} # appraisal procedure responsible for adding a new view-frame attribute
+
+sp {propose*cue-appraisal-ptask-task-complete-nonrecurring
+   (state <s> ^name sorts
+              ^planning ( ^execution-buffer.task <t> ^completed.task.name <ctn> )
+              ^io.input-link.view-frame <vf>
+             -^appraisal-cue)
+   (<t> ^appraisal-triggers <at>)
+   (<at> ^task-complete <tc>)
+   (<tc> ^task-name <ctn>
+        -^recurring)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name cue-appraisal-task-complete-nonrecurring
+        ^task <t>
+        ^appraisal-triggers <at>
+        ^task-complete-struct <tc>)}
+
+sp {propose*cue-appraisal-otask-task-complete-nonrecurring
+   (state <s> ^name sorts
+              ^opportunity-task-buffer.task <t>
+              ^planning.completed.task.name <ctn>
+              ^io.input-link.view-frame <vf>
+             -^appraisal-cue)
+   (<t> ^appraisal-triggers <at>)
+   (<at> ^task-complete <tc>)
+   (<tc> ^task-name <ctn>
+        -^recurring)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name cue-appraisal-task-complete-nonrecurring
+        ^task <t>
+        ^appraisal-triggers <at>
+        ^task-complete-struct <tc>)}
+
+sp {apply*cue-appraisal-task-complete-nonrecurring
+   (state <s> ^name sorts
+              ^operator <o>)
+   (<o> ^name cue-appraisal-task-complete-nonrecurring
+        ^task <t>
+        ^appraisal-triggers <at>
+        ^task-complete-struct <tc>)
+-->
+   (<s> ^appraisal-cue <c>)
+   (<c> ^task <t>)
+   (<at> ^task-complete <tc> -)}
+
+sp {propose*cue-appraisal-ptask-task-complete-recurring
+   (state <s> ^name sorts
+              ^planning ( ^execution-buffer.task <t> ^completed.task <ct>)
+             -^appraisal-cue)
+   (<t> ^appraisal-triggers.task-complete <tc>)
+   (<tc> ^task-name <ctn>
+         ^recurring <r>)
+   (<r> ^last-completion-frame <lcf>)
+   (<ct> ^name <ctn>
+         ^completion-frame > <lcf>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name cue-appraisal-task-complete-recurring
+        ^task <t>
+        ^recurring-struct <r>
+        ^completed-task <ct>)}
+
+sp {propose*cue-appraisal-otask-task-complete-recurring
+   (state <s> ^name sorts
+              ^opportunity-task-buffer.task <t>
+              ^planning.completed.task <ct>
+             -^appraisal-cue)
+   (<t> ^appraisal-triggers.task-complete <tc>)
+   (<tc> ^task-name <ctn>
+         ^recurring <r>)
+   (<r> ^last-completion-frame <lcf>)
+   (<ct> ^name <ctn>
+         ^completion-frame > <lcf>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name cue-appraisal-task-complete-recurring
+        ^task <t>
+        ^recurring-struct <r>
+        ^completed-task <ct>)}
+
+sp {apply*cue-appraisal-task-complete-recurring
+   (state <s> ^name sorts
+              ^operator <o>)
+   (<o> ^name cue-appraisal-task-complete-recurring
+        ^task <t>
+        ^recurring-struct <r>
+        ^completed-task <ct>)
+   (<ct> ^completion-frame <f>)
+-->
+   (<s> ^appraisal-cue <c>)
+   (<c> ^task <t>)
+   (<r> ^last-completion-frame -)
+   (<r> ^last-completion-frame <f>)}
