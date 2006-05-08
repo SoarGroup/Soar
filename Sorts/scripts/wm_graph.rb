@@ -1,5 +1,3 @@
-# FIRST RUBY PROGRAM EVAR!!1!!1!
-# 
 # Parses Soar working memory syntax and outputs a graphviz representation.
 #
 # Joseph Xu
