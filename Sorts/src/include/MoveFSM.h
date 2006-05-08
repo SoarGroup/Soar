@@ -21,12 +21,13 @@ class MoveFSM: public FSM {
 	int state;
   int runTime;
 
+  TerrainBase::Loc loc;
+
   TerrainBase::Path path;
   int stagesLeft;
   Vector<sint4> moveParams;
   int counter;
 
-  static Satellite *satellite;
   int vec_count;
 };
 

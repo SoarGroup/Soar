@@ -4,37 +4,28 @@
 #include "Sorts.h"
 using namespace std;
 
-Satellite *MoveFSM::satellite = NULL;
-
 
 MoveFSM::MoveFSM(GameObj* go) 
             : FSM(go) 
 {
   name = OA_MOVE;
 
-  if(!satellite)
-  {
-   satellite = new Satellite();
-   satellite->init();
-  }
-  else
-   satellite->refCount++;
-
-  satellite->addObject(gob);
+  Sorts::satellite->addObject(gob);
   vec_count = 0;
+  
+  loc.x = (*gob->sod.x);
+  loc.y = (*gob->sod.y);
 }
 
 MoveFSM::~MoveFSM()
 {
- if(satellite->refCount==1)
- {
-  delete satellite;
-  satellite = NULL;
- }
 }
 
 int MoveFSM::update() {
   
+  loc.x = (*gob->sod.x);
+  loc.y = (*gob->sod.y);
+
   if (gob->is_pending_action()) {
     cout << "MOVEFSM: action has not taken affect!\n";
     return FSM_RUNNING;
@@ -94,6 +85,15 @@ int MoveFSM::update() {
      stagesLeft--;
      gob->set_action("move", moveParams);
     }
+    else
+    {
+     if(getMoveVector())
+     {
+      cout<<"Magnetized\n";
+      gob->set_action("move",moveParams);
+      vec_count = 0;
+     }
+    }
      
    break;
 
@@ -106,11 +106,7 @@ void MoveFSM::init(vector<sint4> p)
 {
  FSM::init(p);
 
- TerrainBase::Loc l2;
- l2.x = p[0];
- l2.y = p[1];
- 
- Sorts::terrainModule->findPath(gob, l2, path);
+ Sorts::terrainModule->findPath(gob, loc, path);
  //path.locs.clear();
  //path.locs.push_back(l2); 
  for (unsigned int i=0; i<path.locs.size(); i++) 
@@ -137,32 +133,45 @@ bool MoveFSM::getMoveVector()
  // - Things don't change rapidly
  // - Return false is not enough time has passed
  //   - Need to figure out how much time is enough
- if(vec_count < 20)
+ if(vec_count < 60)
  {
   vec_count++;
   return answer;
  }
 
- std::list<GameObj*> *neighbors = satellite->getObjectsInRegion(*(gob->sod.x), *(gob->sod.y));
+
+ std::list<GameObj*> *neighbors = Sorts::satellite->getObjectsInRegion(*(gob->sod.x), *(gob->sod.y));
  std::list<GameObj*>::iterator it;
+ 
+ sint4 x = 0;
+ sint4 y = 0;
 
  // Add up the repulsion vectors
  for(it = neighbors->begin(); it!=neighbors->end(); it++)
  {
-  
+  x += (*(*it)->sod.x)-loc.x;
+  y += (*(*it)->sod.y)-loc.y;
  }
- 
- //Add in the attraction vector
- sint4 x = path.locs[stagesLeft].x;
- sint4 y = path.locs[stagesLeft].y;
+ // Normalize the vector
+ sint4 d = static_cast<sint4>(sqrt((loc.x-x)*(loc.x-x)+(loc.y-y)*(loc.y-y)));
+ x /= d;
+ y /= d;
 
- //This won't work... Just trying something out
- if(abs(x-moveParams[0])>10)
+ // Add in the attraction vector
+ sint4 x1 = path.locs[stagesLeft].x - loc.x;
+ sint4 y1 = path.locs[stagesLeft].y - loc.y;
+ d = static_cast<sint4>(sqrt((loc.x-x1)*(loc.x-x1)+(loc.y-y1)*(loc.y-y1)));
+
+ x += x1/d;
+ y += y1/d;
+
+ // This won't work... Just trying something out
+ if(abs(x1/d-x)>10)
  {
   moveParams[0] = x;
   answer = true;
  }
- if(abs(y-moveParams[1])>10)
+ if(abs(y1/d-y)>10)
  {
   moveParams[1] = y;
   answer = true;
