@@ -4,15 +4,23 @@ VERSION 4
 1	0	FOPERATOR _firstload _firstload.soar 2
 2	0	FOLDER all all 3
 3	2	OPERATOR group-memory group-memory.soar 4
-4	0	FOLDER elaborations elaborations 5
-5	4	FOPERATOR _all _all.soar 6
-6	4	FOPERATOR top-state top-state.soar 7
-7	0	HLOPERATOR explore explore.soar explore 14 8
-8	7	FOPERATOR elaborations elaborations.soar 9
-9	7	HLOPERATOR designate-explorer designate-explorer.soar designate-explorer 21 10
-10	9	FOPERATOR elaborations elaborations.soar 11
-11	9	OPERATOR choose-explorer choose-explorer.soar 12
-12	9	OPERATOR isolate-explorer isolate-explorer.soar 13
-13	7	OPERATOR move-to-region move-to-region.soar 14
-14	0	OPERATOR initialize-sorts initialize-sorts.soar 15
+4	2	OPERATOR memorize-group memorize-group.soar 5
+5	0	FOLDER elaborations elaborations 6
+6	5	FOPERATOR _all _all.soar 7
+7	5	FOPERATOR init-grouping-level init-grouping-level.soar 23
+8	5	FOPERATOR memorize-group-cue memorize-group-cue.soar 8
+9	5	FOPERATOR top-state top-state.soar 9
+10	0	OPERATOR cue-appraisal cue-appraisal.soar 10
+11	0	HLOPERATOR explore explore.soar explore 14 11
+12	11	FOPERATOR elaborations elaborations.soar 12
+13	11	HLOPERATOR designate-explorer designate-explorer.soar designate-explorer 21 13
+14	13	FOPERATOR elaborations elaborations.soar 14
+15	13	OPERATOR choose-explorer choose-explorer.soar 15
+16	13	OPERATOR isolate-explorer isolate-explorer.soar 16
+17	11	OPERATOR move-to-region move-to-region.soar 17
+18	0	OPERATOR grouping grouping.soar 22
+19	0	OPERATOR initialize-sorts initialize-sorts.soar 18
+20	0	OPERATOR planning planning.soar 19
+21	0	OPERATOR task-switch task-switch.soar 20
+22	0	OPERATOR vision vision.soar 21
 END

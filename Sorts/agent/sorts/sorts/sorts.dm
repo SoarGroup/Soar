@@ -1,4 +1,4 @@
-28
+38
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -27,12 +27,27 @@ ENUMERATION 24 1 choose-explorer
 SOAR_ID 25
 ENUMERATION 26 1 isolate-explorer
 SOAR_ID 27
-30
+SOAR_ID 28
+ENUMERATION 29 1 locate-inactive-group
+SOAR_ID 30
+ENUMERATION 31 1 memorize-group
+SOAR_ID 32
+ENUMERATION 33 1 cue-appraisal
+SOAR_ID 34
+ENUMERATION 35 1 vision
+SOAR_ID 36
+ENUMERATION 37 1 grouping
+40
 0 io 1
 0 name 7
 0 operator 4
 0 operator 9
 0 operator 12
+0 operator 28
+0 operator 30
+0 operator 32
+0 operator 34
+0 operator 36
 0 superstate 6
 0 top-state 0
 0 type 5
@@ -58,3 +73,8 @@ SOAR_ID 27
 21 type 22
 25 name 24
 27 name 26
+28 name 29
+30 name 31
+32 name 33
+34 name 35
+36 name 37

@@ -1,3 +1,5 @@
+# THIS FILE IS REALLY REALLY OLD
+
 # If you see one of your own groups, and you haven't memorized it, then
 # remember it.
 #
@@ -12,11 +14,12 @@
 sp {propose*remember-my-group
    (state <s> ^name sorts
               ^io.input-link <in>
-              ^me <me>)
-   (<in> ^groups.me.group <see-group>
+              ^group-memory <gmem>)
+   (<in> ^objects.object <see-group>
          ^view-frame <f>)
-   (<see-group> ^id <gid>)
-   (<me> -^group.id <gid>)
+   (<see-group> ^id <gid>
+                ^owner "me")
+   (<gmem> -^group.id <gid>)
 -->
    (<s> ^operator <o> +)
    (<o> ^name remember-my-group
@@ -26,17 +29,17 @@ sp {propose*remember-my-group
 sp {apply*remember-my-group
    (state <s> ^name sorts
               ^operator <o>
-              ^me <me>)
+              ^group-memory <gmem>)
    (<o> ^name remember-my-group
         ^group <see-group>
         ^view-frame <f>)
    (<see-group> ^id <gid>
-                ^x <x>
-                ^y <y>
+                ^x-pos <x>
+                ^y-pos <y>
                 ^type <t>
                 ^num-members <n>)
 -->
-   (<me> ^group <new-group>)
+   (<gmem> ^group <new-group>)
    (<new-group> ^id <gid>
                 ^last-x <x>
                 ^last-y <y>
@@ -51,8 +54,8 @@ sp {apply*remember-my-group
 sp {propose*refresh-my-group-memory
    (state <s> ^name sorts
               ^io.input-link <in>
-              ^me.group <mem-group>)
-   (<in> ^groups.me.group <see-group>
+              ^group-memory.group <mem-group>)
+   (<in> ^objects.object <see-group>
          ^view-frame <f>)
    (<see-group> ^id <gid>)
    (<mem-group> ^id <gid>
@@ -66,14 +69,14 @@ sp {propose*refresh-my-group-memory
 sp {apply*refresh-my-group-memory
    (state <s> ^name sorts
               ^operator <o>
-              ^me <me>)
+              ^group-memory <gmem>)
    (<o> ^name refresh-my-group-memory
         ^group <see-group>
         ^view-frame <f>)
-   (<me> ^group <mem-group>)
+   (<gmem> ^group <mem-group>)
    (<see-group> ^id <gid>
-                ^x <x>
-                ^y <y>
+                ^x-pos <x>
+                ^y-pos <y>
                 ^type <t>
                 ^num-members <n>)
    (<mem-group> ^id <gid>)
@@ -97,9 +100,10 @@ sp {propose*remember-immobile-world-group
    (state <s> ^name sorts
               ^io.input-link <in>
               ^world <world>)
-   (<in> ^groups.world.group <see-group>
+   (<in> ^objects.object <see-group>
          ^view-frame <f>)
    (<see-group> ^id <gid>
+                ^owner "world"
                 ^mobile 0)
    (<world> -^group.id <gid>)
 -->
