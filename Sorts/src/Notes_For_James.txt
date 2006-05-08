@@ -27,6 +27,9 @@ For Testing:
 - From the orts3 directory, run the following commands in separate windows
   - On ummu2
     - bin/orts -nplayers 2 -soar map_simple -sdelay 15 -port 8888
-    - bin/sorts -port 8888 -productions moveEx.soar | tee log
+    - bin/sorts -port 8888 -productions converge.soar | tee log
+      - Use gdb to debug
+        - gdb --ars bin/sorts -port 8888 -productions converge.soar | tee log
+        
   - Run GUI on your computer
     - bin/ortsg -host ummu2 -port 8888 --nosound

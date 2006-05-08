@@ -20,8 +20,10 @@ class MoveFSM: public FSM {
 
 	int state;
   int runTime;
+  sint4 sat_loc;
 
   TerrainBase::Loc loc;
+  TerrainBase::Loc target;
 
   TerrainBase::Path path;
   int stagesLeft;

@@ -10,7 +10,7 @@ MoveFSM::MoveFSM(GameObj* go)
 {
   name = OA_MOVE;
 
-  Sorts::satellite->addObject(gob);
+  sat_loc = Sorts::satellite->addObject(gob);
   vec_count = 0;
   
   loc.x = (*gob->sod.x);
@@ -25,6 +25,8 @@ int MoveFSM::update() {
   
   loc.x = (*gob->sod.x);
   loc.y = (*gob->sod.y);
+
+  sat_loc = Sorts::satellite->updateObject(gob,sat_loc);
 
   if (gob->is_pending_action()) {
     cout << "MOVEFSM: action has not taken affect!\n";
@@ -55,8 +57,8 @@ int MoveFSM::update() {
        counter = 0;
        //If you arrived, then check is there is another path segment to traverse
        if (stagesLeft >= 0) {
-         moveParams[0] = path.locs[stagesLeft].x;
-         moveParams[1] = path.locs[stagesLeft].y;
+         target.x = moveParams[0] = path.locs[stagesLeft].x;
+         target.y = moveParams[1] = path.locs[stagesLeft].y;
          stagesLeft--;
 	       gob->set_action("move", moveParams);
        }
@@ -80,8 +82,8 @@ int MoveFSM::update() {
     if (distToTarget <= 1 and stagesLeft >= 0) 
     {
      cout << "MOVEFSM: in-motion dir change\n";
-     moveParams[0] = path.locs[stagesLeft].x;
-     moveParams[1] = path.locs[stagesLeft].y;
+     target.x = moveParams[0] = path.locs[stagesLeft].x;
+     target.y = moveParams[1] = path.locs[stagesLeft].y;
      stagesLeft--;
      gob->set_action("move", moveParams);
     }
@@ -106,7 +108,11 @@ void MoveFSM::init(vector<sint4> p)
 {
  FSM::init(p);
 
- Sorts::terrainModule->findPath(gob, loc, path);
+ TerrainBase::Loc l;
+ l.x = p[0];
+ l.y = p[1];
+
+ Sorts::terrainModule->findPath(gob, l, path);
  //path.locs.clear();
  //path.locs.push_back(l2); 
  for (unsigned int i=0; i<path.locs.size(); i++) 
@@ -158,8 +164,8 @@ bool MoveFSM::getMoveVector()
  y /= d;
 
  // Add in the attraction vector
- sint4 x1 = path.locs[stagesLeft].x - loc.x;
- sint4 y1 = path.locs[stagesLeft].y - loc.y;
+ sint4 x1 = target.x - loc.x;
+ sint4 y1 = target.y - loc.y;
  d = static_cast<sint4>(sqrt((loc.x-x1)*(loc.x-x1)+(loc.y-y1)*(loc.y-y1)));
 
  x += x1/d;

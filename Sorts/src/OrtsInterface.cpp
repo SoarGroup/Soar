@@ -123,7 +123,8 @@ void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   SoarGameObject* sObject = objectMap[gameObj];
   int id = sObject->getID();
   sObject->getPerceptualGroup()->removeUnit(sObject);
-  sObject->getInternalGroup()->removeUnit(sObject);
+  if(sObject->getInternalGroup()!=NULL)
+   sObject->getInternalGroup()->removeUnit(sObject);
   
   delete objectMap[gameObj];
   objectMap.erase(gameObj);
