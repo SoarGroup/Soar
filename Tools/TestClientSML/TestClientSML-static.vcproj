@@ -122,7 +122,7 @@
 			Name="ConnectionSML-static"/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
-			Name="ElementXML"/>
+			Name="ElementXML-static"/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{4C6CC3DE-C022-4043-8E73-72FE1E1224C4}"
 			Name="KernelSML-static"/>
