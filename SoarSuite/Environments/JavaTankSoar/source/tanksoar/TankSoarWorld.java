@@ -813,7 +813,7 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 		}
 		
-		m_Logger.log("Finished search.");
+		//m_Logger.log("Finished search.");
 		
 		if (relativeDirection == -1) {
 			relativeDirection = 0;
