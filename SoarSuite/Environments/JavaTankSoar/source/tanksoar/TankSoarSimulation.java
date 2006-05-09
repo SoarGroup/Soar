@@ -134,6 +134,10 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		}
 	}
 	
+	void notificationMessage(String notifyMessage) {
+		super.fireNotificationMessage(notifyMessage);
+	}
+	
     public void createEntity(String name, String productions, String color, MapPoint location, String facing,
     		int energy, int health, int missiles) {
     	if (name == null || productions == null) {

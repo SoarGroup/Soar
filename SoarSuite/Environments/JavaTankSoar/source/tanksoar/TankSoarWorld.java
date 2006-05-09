@@ -488,11 +488,12 @@ public class TankSoarWorld extends World implements WorldManager {
 			if (m_Tanks[i].getPoints() >= kWinningPoints) {
 				// Goal acheived
 				if (!m_PrintedStats) {
+					m_Simulation.notificationMessage("At least one tank has achieved at least " + Integer.toString(kWinningPoints) + " points.");
 					m_Simulation.stopSimulation();
 					m_PrintedStats = true;
-					m_Logger.log(m_Tanks[i].getName() + " is the winning tank.");
 					for (int j = 0; j < m_Tanks.length; ++j) {
-						m_Logger.log(m_Tanks[j].getName() + ": " + m_Tanks[j].getPoints());
+						m_Logger.log(m_Tanks[j].getName() + ": " + m_Tanks[j].getPoints() 
+								+ ((m_Tanks[j].getPoints() >= kWinningPoints) ? " (winner)." : "."));
 					}
 				}
 				return;
