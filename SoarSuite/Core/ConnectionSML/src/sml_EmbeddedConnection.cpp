@@ -187,7 +187,7 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 // As a test
 //#define WIN_STATIC_LINK
 
-#ifdef WIN_STATIC_LINK
+#ifdef STATIC_LINKED
 #define WINDOWS_STATIC
 #else
 #define WINDOWS_DLL
