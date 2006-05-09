@@ -857,6 +857,8 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize,
 	if (!m_pSynchAgentSML && TestIfAllFinished(runStepSize, count))
 		runFinished = true ;
 
+	if (0 == count) runFinished = true;
+
 	// Run all agents that have previously been marked as "scheduled to run".
 	while (!runFinished)
 	{
