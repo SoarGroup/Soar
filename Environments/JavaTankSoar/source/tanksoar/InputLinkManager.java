@@ -602,6 +602,9 @@ public class InputLinkManager {
 	}
 	
 	private String getCellID(TankSoarCell cell) {
+		if (cell.containsTank()) {
+			return kTankID;
+		}
 		if (cell.isWall()) {
 			return kObstacleID;
 		}
@@ -613,9 +616,6 @@ public class InputLinkManager {
 		}
 		if (cell.containsMissilePack()) {
 			return kMissilesID;
-		}
-		if (cell.containsTank()) {
-			return kTankID;
 		}
 		return kOpenID;
 	}
