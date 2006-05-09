@@ -32,9 +32,11 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	private ArrayList m_AddSimulationListeners = new ArrayList();
 	private ArrayList m_RemoveSimulationListeners = new ArrayList();
 	private boolean m_NotRandom = false;
+	private boolean m_RunTilOutput = false;
 
-	protected Simulation(boolean noRandom) {
+	protected Simulation(boolean noRandom, boolean runTilOutput) {
 		m_NotRandom = noRandom;
+		m_RunTilOutput = runTilOutput;
 		
 		// Initialize Soar
 		// Create kernel
@@ -275,7 +277,11 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	}
 	
 	public void stepSimulation() {
-		m_Kernel.RunAllTilOutput();
+		if (m_RunTilOutput) {
+			m_Kernel.RunAllTilOutput();
+		} else {
+			m_Kernel.RunAllAgents(1);
+		}
 	}
 	
 	public void stopSimulation() {
@@ -319,7 +325,11 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
     		}
     		
     		m_StopSoar = false;
-    		m_Kernel.RunAllAgentsForever(smlInterleaveStepSize.sml_INTERLEAVE_UNTIL_OUTPUT);
+    		if (m_RunTilOutput) {
+    			m_Kernel.RunAllAgentsForever(smlInterleaveStepSize.sml_INTERLEAVE_UNTIL_OUTPUT);
+    		} else {
+    			m_Kernel.RunAllAgentsForever();
+    		}
     		
     		if (m_Runs != 0) {
     			resetSimulation(false);
