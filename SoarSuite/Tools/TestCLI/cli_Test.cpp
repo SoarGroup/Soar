@@ -426,6 +426,9 @@ int main(int argc, char** argv)
 		delete g_pCommandProcessor;
 		delete g_pInputQueue;
 	} // end local scope
+
+// Static linking means we're going to see leaks from anywhere (e.g. gSKI, kernel etc.) which is overkill.
+#ifndef STATIC_LINKED
 #ifdef _MSC_VER
 //	A deliberate memory leak which I can use to test the memory checking code is working.
 //	char* pTest = new char[10] ;
@@ -451,6 +454,7 @@ int main(int argc, char** argv)
 	str = 0;
 
 #endif // _MSC_VER
+#endif	// STATIC_LINKED
 
 	return 0;
 }
