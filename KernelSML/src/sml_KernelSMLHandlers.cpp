@@ -1248,6 +1248,9 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 	if (echoResults && pAgentSML)
 		pAgentSML->FireEchoEvent(pConnection, pLine) ;
 
+	if (kDebugCommandLine)
+		PrintDebugFormat("Echoed line\n") ;
+
 	// Send this command line through anyone registered filters.
 	// If there are no filters (or this command requested not to be filtered), this copies the original line into the filtered line unchanged.
 	char const* pFilteredLine   = pLine ;
@@ -1317,6 +1320,9 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 			}
 		}
 	}
+
+	if (kDebugCommandLine)
+		PrintDebugFormat("Filtered line is %s\n", pFilteredLine) ;
 
 	// Make the call.
 	m_CommandLineInterface.SetRawOutput(rawOutput);
