@@ -1,18 +1,33 @@
-
-if { $tcl_platform(platform) == "windows" } {
-    #option add *Listbox.background      SystemWindow widgetDefault
-    option add *ListBox.background      SystemWindow widgetDefault
-    #option add *Button.padY             0 widgetDefault
-    option add *ButtonBox.padY          0 widgetDefault
-    option add *Dialog.padY             0 widgetDefault
-    option add *Dialog.anchor           e widgetDefault
-} else {
-    option add *Scrollbar.width         12 widgetDefault
-    option add *Scrollbar.borderWidth   1  widgetDefault
-    option add *Dialog.separator        1  widgetDefault
-    option add *MainFrame.relief        raised widgetDefault
-    option add *MainFrame.separator     none   widgetDefault
+namespace eval Widget {}
+proc Widget::_opt_defaults {{prio widgetDefault}} {
+    if {$::tcl_version >= 8.4} {
+	set plat [tk windowingsystem]
+    } else {
+	set plat $::tcl_platform(platform)
+    }
+    switch -exact $plat {
+	"aqua" {
+	}
+	"win32" -
+	"windows" {
+	    #option add *Listbox.background	SystemWindow $prio
+	    option add *ListBox.background	SystemWindow $prio
+	    #option add *Button.padY		0 $prio
+	    option add *ButtonBox.padY		0 $prio
+	    option add *Dialog.padY		0 $prio
+	    option add *Dialog.anchor		e $prio
+	}
+	"x11" -
+	default {
+	    option add *Scrollbar.width		12 $prio
+	    option add *Scrollbar.borderWidth	1  $prio
+	    option add *Dialog.separator	1  $prio
+	    option add *MainFrame.relief	raised $prio
+	    option add *MainFrame.separator	none   $prio
+	}
+    }
 }
+Widget::_opt_defaults
 
 option read [file join $::BWIDGET::LIBRARY "lang" "en.rc"]
 

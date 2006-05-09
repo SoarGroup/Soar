@@ -17,13 +17,13 @@ TCL_DLL_FILE="tcl84.dll"
 TCL_VERSION='8.4'
 TCL_MAJOR_VERSION='8'
 TCL_MINOR_VERSION='4'
-TCL_PATCH_LEVEL='.10'
+TCL_PATCH_LEVEL='.11'
 
 # C compiler to use for compilation.
 TCL_CC='cl'
 
 # -D flags for use with the C compiler.
-TCL_DEFS=' -DHAVE_NO_LPFN_DECLS=1 '
+TCL_DEFS=' -DHAVE_NO_LPFN_DECLS=1 -DTCL_THREADS=1 -DUSE_THREAD_ALLOC=1 '
 
 # If TCL was built with debugging symbols, generated libraries contain
 # this string at the end of the library name (before the extension).
@@ -178,5 +178,5 @@ TCL_BUILD_STUB_LIB_PATH='/home/Administrator/dbn/lba/night/builds/win32-ix86/tcl
 TCL_STUB_LIB_PATH='C:/Tcl/lib/tclstub84.lib'
 
 # Flag, 1: we built Tcl with threads enables, 0 we didn't
-TCL_THREADS=0
+TCL_THREADS=1
 

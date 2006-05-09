@@ -17,10 +17,10 @@
 TK_VERSION='8.4'
 TK_MAJOR_VERSION='8'
 TK_MINOR_VERSION='4'
-TK_PATCH_LEVEL='.10'
+TK_PATCH_LEVEL='.11'
 
 # -D flags for use with the C compiler.
-TK_DEFS=' '
+TK_DEFS=' -DTCL_THREADS=1 -DUSE_THREAD_ALLOC=1 '
 
 # Flag, 1: we built a shared lib, 0 we didn't
 TK_SHARED_BUILD=1
