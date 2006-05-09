@@ -574,17 +574,18 @@ public class TankSoarWorld extends World implements WorldManager {
 							m_RD.calculate(m_Tanks[i].lastMoveDirection());
 							if (collidee.lastMoveDirection() == m_RD.backward) {
 								m_Tanks[i].setColliding(true);
-								m_Tanks[i].collide();
 								collidee.setColliding(true);
-								collidee.collide();
 							}
 						}
 					}
 				}
 			}
 	
-			// Re-set colliding to false, a helper variable for collisions
+			// Apply collisions and re-set colliding to false, a helper variable for collisions
 			for (int i = 0; i < m_Tanks.length; ++i) {
+				if (m_Tanks[i].isColliding()) {
+					m_Tanks[i].collide();
+				}
 				m_Tanks[i].setColliding(false);
 			}
 			
@@ -592,25 +593,31 @@ public class TankSoarWorld extends World implements WorldManager {
 			// Compare my destination location to others', if any match, set both
 			// to colliding
 			for (int i = 0; i < m_Tanks.length; ++i) {
-				if (m_Tanks[i].isColliding()) {
+				if (m_Tanks[i].isColliding() || !m_Tanks[i].recentlyMoved()) {
 					continue;
 				}
 				MapPoint myDest = new MapPoint(m_Tanks[i].getLocation(), m_Tanks[i].lastMoveDirection());
 				for (int j = i + 1; j < m_Tanks.length; ++j) {
-					if (m_Tanks[j].isColliding()) {
+					if (!m_Tanks[j].recentlyMoved()) {
 						continue;
 					}
 					MapPoint theirDest = new MapPoint(m_Tanks[j].getLocation(), m_Tanks[j].lastMoveDirection());
 					if (myDest.equals(theirDest)) {
 						m_Tanks[i].setColliding(true);
-						m_Tanks[i].collide();
 						m_Tanks[j].setColliding(true);
-						m_Tanks[j].collide();
 					}
 				}
 			}
 		}
 
+		// Apply collisions and re-set colliding to false, a helper variable for collisions
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			if (m_Tanks[i].isColliding()) {
+				m_Tanks[i].collide();
+			}
+			m_Tanks[i].setColliding(false);
+		}
+		
 		// Check for Missile-Tank special collisions
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].recentlyMoved()) {
