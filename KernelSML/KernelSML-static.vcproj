@@ -115,7 +115,7 @@
 			Name="ConnectionSML-static"/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
-			Name="ElementXML"/>
+			Name="ElementXML-static"/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{0F4205EE-35EA-4421-8F74-513603FF003F}"
 			Name="gSKI-static"/>
