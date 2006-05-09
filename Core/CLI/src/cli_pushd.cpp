@@ -33,6 +33,9 @@ bool CommandLineInterface::ParsePushD(gSKI::IAgent* pAgent, std::vector<std::str
 
 bool CommandLineInterface::DoPushD(const std::string& directory) {
 	
+	// Sanity check thanks to rchong
+	if (directory.length() == 0) return true;
+
 	// Target directory required, checked in DoCD call.
 
 	// Save the current (soon to be old) directory
