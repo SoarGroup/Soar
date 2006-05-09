@@ -365,6 +365,12 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		m_Logger.log(errorMessage);
 	}
 	
+	protected void fireNotificationMessage(String notifyMessage) {
+		m_LastErrorMessage = notifyMessage;
+		fireSimulationEvent(SimulationListener.kNotificationEvent);
+		m_Logger.log(notifyMessage);
+	}
+	
 	public void addSimulationListener(SimulationListener listener) {
 		m_AddSimulationListeners.add(listener);
 	}
