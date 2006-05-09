@@ -10,7 +10,8 @@ public interface SimulationListener {
 		kUpdateEvent = 4,
 		kResetEvent = 5,
 		kAgentCreatedEvent = 6,
-		kAgentDestroyedEvent = 7;
+		kAgentDestroyedEvent = 7,
+		kNotificationEvent = 8;
 	
 	public void simulationEventHandler(int type);
 }
