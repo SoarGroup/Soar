@@ -941,7 +941,7 @@ bool CommandLineInterface::Trim(std::string& line) {
 					searchpos = pos + 1;
 				} else {
 					{
-						std::string::size_type nlpos = line.find('\n', searchpos + 1);
+						std::string::size_type nlpos = line.find('\n', pos + 1);
 						if (nlpos == std::string::npos) {
 							// No newline encountered
 							line = line.substr(0, pos);

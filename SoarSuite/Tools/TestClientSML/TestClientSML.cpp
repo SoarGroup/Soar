@@ -487,7 +487,14 @@ bool StopTest()
 	sml::Agent* pAgent = pKernel->CreateAgent("stoptest") ;
 
 //	std::string production = "sp {stop (state <s> ^superstate nil) --> (cmd stop-soar)}" ;
-	std::string production = "sp {stop (state <s> ^superstate nil) --> (interrupt)}" ;
+	std::string production = "sp {towers-of-hanoi*propose*initialize\n\
+   (state <s> ^superstate nil # peg-b if odd number of disks, peg-c if even\n\
+             -^name)\n\
+-->\n\
+   (<s> ^operator <o> +)\n\
+   (<o> ^name initialize-toh)}\n" ;
+
+//	std::string production = "sp {stop (state <s> ^superstate nil) --> (interrupt)}" ;
 	std::string res = pAgent->ExecuteCommandLine(production.c_str()) ;
 
 	pAgent->ExecuteCommandLine("run -o 3") ;
