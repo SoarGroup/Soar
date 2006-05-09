@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------------
 #  widget.tcl
 #  This file is part of Unifix BWidget Toolkit
-#  $Id: widget.tcl,v 1.28 2004/09/14 23:44:30 hobbs Exp $
+#  $Id: widget.tcl,v 1.29 2005/07/28 00:40:42 hobbs Exp $
 # ----------------------------------------------------------------------------
 #  Index of commands:
 #     - Widget::tkinclude
@@ -63,6 +63,12 @@ namespace eval Widget {
     variable _class
     variable _tk_widget
 
+    # This controls whether we try to use themed widgets from Tile
+    variable _theme 0
+
+    variable _aqua [expr {($::tcl_version >= 8.4) &&
+			  [string equal [tk windowingsystem] "aqua"]}]
+
     array set _optiontype {
         TkResource Widget::_test_tkresource
         BwResource Widget::_test_bwresource
@@ -78,7 +84,6 @@ namespace eval Widget {
 
     proc use {} {}
 }
-
 
 
 # ----------------------------------------------------------------------------
@@ -494,7 +499,9 @@ proc Widget::init { class path options } {
     set fpath $path
     set rdbclass [string map [list :: ""] $class]
     if { ![winfo exists $path] } {
-	set fpath ".#BWidgetClass#$class"
+	set fpath ".#BWidget.#Class#$class"
+	# encapsulation frame to not pollute '.' childspace
+	if {![winfo exists ".#BWidget"]} { frame ".#BWidget" }
 	if { ![winfo exists $fpath] } {
 	    frame $fpath -class $rdbclass
 	}
@@ -682,7 +689,9 @@ proc Widget::initFromODB {class path options} {
     set fpath [_get_window $class $path]
     set rdbclass [string map [list :: ""] $class]
     if { ![winfo exists $path] } {
-	set fpath ".#BWidgetClass#$class"
+	set fpath ".#BWidget.#Class#$class"
+	# encapsulation frame to not pollute '.' childspace
+	if {![winfo exists ".#BWidget"]} { frame ".#BWidget" }
 	if { ![winfo exists $fpath] } {
 	    frame $fpath -class $rdbclass
 	}
@@ -1066,8 +1075,10 @@ proc Widget::_get_tkwidget_options { tkwidget } {
     variable _tk_widget
     variable _optiondb
     variable _optionclass
-    
-    set widget ".#BWidget#$tkwidget"
+
+    set widget ".#BWidget.#$tkwidget"
+    # encapsulation frame to not pollute '.' childspace
+    if {![winfo exists ".#BWidget"]} { frame ".#BWidget" }
     if { ![winfo exists $widget] || ![info exists _tk_widget($tkwidget)] } {
 	set widget [$tkwidget $widget]
 	# JDC: Withdraw toplevels, otherwise visible
@@ -1118,7 +1129,7 @@ proc Widget::_test_tkresource { option value arg } {
 #    set tkwidget [lindex $arg 0]
 #    set realopt  [lindex $arg 1]
     foreach {tkwidget realopt} $arg break
-    set path     ".#BWidget#$tkwidget"
+    set path     ".#BWidget.#$tkwidget"
     set old      [$path cget $realopt]
     $path configure $realopt $value
     set res      [$path cget $realopt]
@@ -1546,4 +1557,20 @@ proc Widget::nextIndex { path node } {
 proc Widget::exists { path } {
     variable _class
     return [info exists _class($path)]
+}
+
+proc Widget::theme {{bool {}}} {
+    # Private, *experimental* API that may change at any time - JH
+    variable _theme
+    if {[llength [info level 0]] == 2} {
+	# set theme-ability
+	if {[catch {package require tile 0.6}]
+	    && [catch {package require tile 1}]} {
+	    return -code error "BWidget's theming requires tile 0.6+"
+	} else {
+	    catch {style default BWSlim.Toolbutton -padding 0}
+	}
+	set _theme [string is true -strict $bool]
+    }
+    return $_theme
 }

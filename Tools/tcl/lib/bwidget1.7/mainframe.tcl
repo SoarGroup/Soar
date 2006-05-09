@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------------
 #  mainframe.tcl
 #  This file is part of Unifix BWidget Toolkit
-#  $Id: mainframe.tcl,v 1.17 2004/10/09 00:18:07 pointsman Exp $
+#  $Id: mainframe.tcl,v 1.18 2005/08/11 02:35:27 hobbs Exp $
 # ------------------------------------------------------------------------------
 #  Index of commands:
 #     - MainFrame::create
@@ -71,7 +71,11 @@ proc MainFrame::create { path args } {
     global   tcl_platform
     variable _widget
 
-    set path [frame $path -takefocus 0 -highlightthickness 0]
+    if {[Widget::theme]} {
+	set path [ttk::frame $path]
+    } else {
+	set path [frame $path -takefocus 0 -highlightthickness 0]
+    }
     set top  [winfo parent $path]
     if { ![string equal [winfo toplevel $path] $top] } {
         destroy $path
@@ -86,15 +90,24 @@ proc MainFrame::create { path args } {
         set relief flat
         set bd     0
     }
-    set topframe  [eval [list frame $path.topf] \
-		       -relief flat -borderwidth 0 \
-		       [Widget::subcget $path .topf]]
-    set userframe [eval [list frame $path.frame] \
-		       [Widget::subcget $path .frame] \
-                       -relief $relief -borderwidth $bd]
-    set botframe  [eval [list frame $path.botf] \
-		       -relief $relief -borderwidth $bd \
-		       [Widget::subcget $path .botf]]
+    if {[Widget::theme]} {
+	set topframe  [eval [list ttk::frame $path.topf] \
+			   [Widget::subcget $path .topf]]
+	set userframe [eval [list ttk::frame $path.frame] \
+			   [Widget::subcget $path .frame]]
+	set botframe  [eval [list ttk::frame $path.botf] \
+			   [Widget::subcget $path .botf]]
+    } else {
+	set topframe  [eval [list frame $path.topf] \
+			   -relief flat -borderwidth 0 \
+			   [Widget::subcget $path .topf]]
+	set userframe [eval [list frame $path.frame] \
+			   [Widget::subcget $path .frame] \
+			   -relief $relief -borderwidth $bd]
+	set botframe  [eval [list frame $path.botf] \
+			   -relief $relief -borderwidth $bd \
+			   [Widget::subcget $path .botf]]
+    }
 
     pack $topframe -fill x
     grid columnconfigure $topframe 0 -weight 1
@@ -114,21 +127,27 @@ proc MainFrame::create { path args } {
     }
 
     # --- status bar ---------------------------------------------------------
-    if {[string length [Widget::getoption $path -statusbarfont]] >0 } {
+    if {[string length [Widget::getoption $path -statusbarfont]]} {
 	set sbfnt [list -font [Widget::getoption $path -statusbarfont]]
     } else {
 	set sbfnt ""
     }
 
-    set status   [frame $path.status -relief flat -borderwidth 0 \
-                      -takefocus 0 -highlightthickness 0 -background $bg]
-    set label    [eval [list label $status.label \
-	    -textvariable [Widget::getoption $path -textvariable] \
-	    -takefocus 0 -highlightthickness 0 -background $bg] $sbfnt]
-    set indframe [frame $status.indf -relief flat -borderwidth 0 \
-                      -takefocus 0 -highlightthickness 0 -background $bg]
-    set prgframe [frame $status.prgf -relief flat -borderwidth 0 \
-                      -takefocus 0 -highlightthickness 0 -background $bg]
+    if {[Widget::theme]} {
+	set status   [ttk::frame $path.status]
+	set label    [eval [list ttk::label $status.label \
+				-textvariable [Widget::getoption $path -textvariable] \
+				-background $bg] $sbfnt]
+	set indframe [ttk::frame $status.indf]
+	set prgframe [ttk::frame $status.prgf]
+    } else {
+	set status   [frame $path.status -background $bg]
+	set label    [eval [list label $status.label \
+				-textvariable [Widget::getoption $path -textvariable] \
+				-background $bg] $sbfnt]
+	set indframe [frame $status.indf -background $bg]
+	set prgframe [frame $status.prgf -background $bg]
+    }
 
     place $label    -anchor w -x 0 -rely 0.5
     place $indframe -anchor ne -relx 1 -y 0 -relheight 1
