@@ -753,7 +753,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		
 		LinkedList searchList = new LinkedList();
 		searchList.addLast(tank.getLocation());
-		m_Logger.log("Starting search at " + tank.getLocation());
+		//m_Logger.log("Starting search at " + tank.getLocation());
 		int relativeDirection = -1;
 		
 		while (searchList.size() > 0) {
@@ -783,14 +783,19 @@ public class TankSoarWorld extends World implements WorldManager {
 							
 				if (newCell.containsTank() && newCell.getTank().recentlyMovedOrRotated()) {
 					
-					m_Logger.log("Found recently moved tank at " + newLocation);	
+					//m_Logger.log("Found recently moved tank at " + newLocation);	
 					
+					int distance = 1;
 					while(getCell(location).getParent() != null) {
+						++distance;
 						newLocation = location;
 						location = getCell(location).getParent();
 					}
-					m_Logger.log("First cell on path is " + newLocation);	
-					relativeDirection = location.directionTo(newLocation);
+					//m_Logger.log("Distance to loud tank is " + Integer.toString(distance));	
+					//m_Logger.log("First cell on path is " + newLocation);	
+					if (distance  <= kMaxSmellDistance) {
+						relativeDirection = location.directionTo(newLocation);
+					}
 					break;
 				}
 				
