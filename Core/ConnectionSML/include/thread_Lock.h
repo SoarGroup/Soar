@@ -13,7 +13,7 @@
 // {
 //    private: Mutex m_Mutex ;
 // 
-//    public: void MyMethod() { Lock(&m_Mutex) ; Safely modify data now ; }
+//    public: void MyMethod() { Lock loc(&m_Mutex) ; Safely modify data now ; }
 // }
 //
 // We also include "ConditionLock" here.
