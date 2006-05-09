@@ -69,6 +69,8 @@ int MoveFSM::update() {
      else {//Try again
        if (counter++ < 5) {
        // just keep trying until its done.
+          moveParams[0] = target.x;
+          moveParams[1] = target.y;
 	        gob->set_action("move", moveParams);
           cout << "MOVEFSM: temp stuck\n";
        }
@@ -89,11 +91,11 @@ int MoveFSM::update() {
     }
     else
     {
+     cout<<"Magnetized\n";
      if(getMoveVector())
      {
-      cout<<"Magnetized\n";
+      cout<<"MoveParams: "<<moveParams[0]<<","<<moveParams[1]<<"\n";
       gob->set_action("move",moveParams);
-      vec_count = 0;
      }
     }
      
@@ -139,18 +141,19 @@ bool MoveFSM::getMoveVector()
  // - Things don't change rapidly
  // - Return false is not enough time has passed
  //   - Need to figure out how much time is enough
- if(vec_count < 60)
+ cout<<"Vec_count: "<<vec_count<<"\n";
+ if(vec_count < 5)
  {
   vec_count++;
   return answer;
  }
-
+ vec_count = 0;
 
  std::list<GameObj*> *neighbors = Sorts::satellite->getObjectsInRegion(*(gob->sod.x), *(gob->sod.y));
  std::list<GameObj*>::iterator it;
  
- sint4 x = 0;
- sint4 y = 0;
+ float x = 0;
+ float y = 0;
 
  // Add up the repulsion vectors
  for(it = neighbors->begin(); it!=neighbors->end(); it++)
@@ -159,29 +162,37 @@ bool MoveFSM::getMoveVector()
   y += (*(*it)->sod.y)-loc.y;
  }
  // Normalize the vector
- sint4 d = static_cast<sint4>(sqrt((loc.x-x)*(loc.x-x)+(loc.y-y)*(loc.y-y)));
+ float d = sqrt((loc.x-x)*(loc.x-x)+(loc.y-y)*(loc.y-y));
  x /= d;
  y /= d;
 
+ x *=5;
+ y *=5;
+ 
  // Add in the attraction vector
- sint4 x1 = target.x - loc.x;
- sint4 y1 = target.y - loc.y;
- d = static_cast<sint4>(sqrt((loc.x-x1)*(loc.x-x1)+(loc.y-y1)*(loc.y-y1)));
+ float x1 = target.x - loc.x;
+ float y1 = target.y - loc.y;
+ d = sqrt((loc.x-x1)*(loc.x-x1)+(loc.y-y1)*(loc.y-y1));
+
+ cout<<"Size: "<< neighbors->size()<<"\n";
+ cout<<"Repulsion Vector: ("<<x<<","<<y<<")\n";
+ cout<<"Attraction Vector: ("<<x1/d<<","<<y1/d<<")\n";
 
  x += x1/d;
  y += y1/d;
+ cout<<"Combined Vector: ("<<x<<","<<y<<")\n";
 
  // This won't work... Just trying something out
- if(abs(x1/d-x)>10)
- {
-  moveParams[0] = x;
+// if(abs(x1/d-x)>10)
+// {
+  moveParams[0] = static_cast<sint4>(x)+moveParams[0];
   answer = true;
- }
- if(abs(y1/d-y)>10)
- {
-  moveParams[1] = y;
+// }
+// if(abs(y1/d-y)>10)
+// {
+  moveParams[1] = static_cast<sint4>(y)+moveParams[1];
   answer = true;
- }
+// }
  
  return answer;
 }
