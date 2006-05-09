@@ -85,26 +85,39 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 
     StripQuotes(filename);
 
-    // Separate the path out of the filename if any
+	// Separate the path out of the filename if any
 	std::string path;
-	unsigned int separator1 = filename.rfind('/');
+
+	// begin: rchong: 2006-05-05
+	//
+	// these two variables were defined as unsigned int.  this
+	// worked on intel 32-bit processors, but broke on AMD 64-bit
+	// processors.  they should be std::string::size_type as is
+	// done in other source files.  also, the DoPushD(path)
+	// was duplicated in each condition; i moved it outside.
+
+	std::string::size_type separator1 = filename.rfind('/');
+	std::string::size_type separator2 = filename.rfind('\\');
+
 	if (separator1 != std::string::npos) {
 		++separator1;
 		if (separator1 < filename.length()) {
 			path = filename.substr(0, separator1);
 			filename = filename.substr(separator1, filename.length() - separator1);
-			if (!DoPushD(path)) return false;
 		}
 	}
-	unsigned int separator2 = filename.rfind('\\');
+
 	if (separator2 != std::string::npos) {
 		++separator2;
 		if (separator2 < filename.length()) {
 			path = filename.substr(0, separator2);
 			filename = filename.substr(separator2, filename.length() - separator2);
-			if (!DoPushD(path)) return false;
 		}
 	}
+
+	if (!DoPushD(path)) return false;
+
+	// end: rchong: 2006-05-05
 
 	// Open the file
 	std::ifstream soarFile(filename.c_str());
