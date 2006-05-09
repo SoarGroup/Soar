@@ -150,10 +150,17 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 			return;
 			
 		case SimulationListener.kErrorMessageEvent:
-			MessageBox mb = new MessageBox(m_Shell, SWT.ICON_ERROR | SWT.OK | SWT.WRAP);
-			mb.setMessage(m_Simulation.getLastErrorMessage());
-			mb.setText("Eaters Error");
-			mb.open();
+			MessageBox mb1 = new MessageBox(m_Shell, SWT.ICON_ERROR | SWT.OK | SWT.WRAP);
+			mb1.setMessage(m_Simulation.getLastErrorMessage());
+			mb1.setText("TankSoar Error");
+			mb1.open();
+			return;
+			
+		case SimulationListener.kNotificationEvent:
+			MessageBox mb2 = new MessageBox(m_Shell, SWT.ICON_INFORMATION | SWT.OK | SWT.WRAP);
+			mb2.setMessage(m_Simulation.getLastErrorMessage());
+			mb2.setText("TankSoar");
+			mb2.open();
 			return;
 			
 		case SimulationListener.kUpdateEvent:
