@@ -16,8 +16,6 @@ AC_LIBTOOL_DLOPEN
 AC_DEFINE([NO_MEGA_UNIT_TESTS], [1], [gSKI: Defined when not using mega unit tests.])
 AC_DEFINE([VALIDATE], [assert], [BUGBUG: gSKI: not sure where this symbol is defined.])
 AC_DEFINE([UNIX], [assert], [BUGBUG: gSKI: Defined for now, needs to be removed.])
-# See comments in Core/ClientSML/src/sml_ClientKernel.cpp
-#AC_DEFINE([LINUX_STATIC_LINK], [1], [Defined when statically linking in Linux])
 AC_PROG_LIBTOOL
 AC_PROG_CXX
 AC_PROG_CC
@@ -50,6 +48,10 @@ AC_ARG_ENABLE(tcl,
 AM_CONDITIONAL(SWIGTCL, test x$tcl = xtrue)
 if test "$tcl" = "true"
 then
+  if test "$enable_shared" = "no"
+  then
+    AC_MSG_ERROR([*** Shared libraries must be enabled for Tcl support!])
+  fi
   AC_PROG_SWIG(1.3.24)
   SWIG_ENABLE_CXX
   AC_CHECK_HEADER([tcl.h],,[AC_MSG_ERROR([*** Cannot find required header!  See previous line. Debian users: please see the following URL for a workaround: https://winter.eecs.umich.edu/soar-bugzilla/show_bug.cgi?id=543])])
@@ -67,8 +69,18 @@ AC_ARG_ENABLE(java,
 AM_CONDITIONAL(SWIGJAVA, test x$java = xtrue)
 if test "$java" = "true"
 then
+  if test "$enable_shared" = "no"
+  then
+    AC_MSG_ERROR([*** Shared libraries must be enabled for Java support! Try adding --disable-java if this is ok.])
+  fi
   AC_PROG_SWIG(1.3.24)
   SWIG_ENABLE_CXX
+fi
+
+# See comments in Core/ClientSML/src/sml_ClientKernel.cpp
+if test "$enable_shared" = "no"
+then
+  AC_DEFINE([LINUX_STATIC_LINK], [1], [Defined when statically linking in Linux])
 fi
 
 # Checks for libraries.
