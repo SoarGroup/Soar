@@ -80,7 +80,7 @@ fi
 # See comments in Core/ClientSML/src/sml_ClientKernel.cpp
 if test "$enable_shared" = "no"
 then
-  AC_DEFINE([LINUX_STATIC_LINK], [1], [Defined when statically linking in Linux])
+  AC_DEFINE([STATIC_LINKED], [1], [Defined when statically linking])
 fi
 
 # Checks for libraries.
