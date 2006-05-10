@@ -26,7 +26,7 @@ CXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused
 LIBDIR=@libdir@
 SO=@SO@
 
-SWIGOPT    = -tcl -Wall -pkgversion 8.6.1 $(INCLUDES) -outdir build
+SWIGOPT    = -tcl -Wall -pkgversion 8.6.2 $(INCLUDES) -outdir build
 
 Tcl_sml_ClientInterface_wrap.cpp: Tcl_sml_ClientInterface.i
 	$(SWIG) $(SWIGOPT) -o $@ $<
