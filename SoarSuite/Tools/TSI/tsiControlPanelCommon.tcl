@@ -115,7 +115,7 @@ if {0} {
    $name eval tsiInitAgent  ; # generates TSI Agent Window if !hideAgentWin
    $name alias tsiLoadAgentSource tsiLoadAgentSource $name
 
-   $name eval [list set version 8.6.0]
+   $name eval [list set version 8.6.2]
 }
 
    $name eval [list set _kernel $_kernel]
@@ -192,7 +192,7 @@ if (0) {
    $name alias tsiListAgents tsiListAgents
    $name eval tsiInitAgent
    $name alias tsiLoadAgentSource tsiLoadAgentSource $name
-   $name eval [list set version 8.6.0]
+   $name eval [list set version 8.6.2]
 
    set tsiAgentInfo($name,sourceDir) "$filepath"
    set tsiAgentInfo($name,sourceFile) "$filename"
