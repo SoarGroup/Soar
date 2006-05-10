@@ -183,8 +183,6 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	}
 
 #ifdef _WIN32
-// As a test
-//#define WIN_STATIC_LINK
 #  ifdef STATIC_LINKED
 #    define WINDOWS_STATIC
 #  else
@@ -230,7 +228,7 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	m_pProcessMessageFunction = (ProcessMessageFunction)GetProcAddress(hLibrary, "sml_ProcessMessage") ;
 	m_pCreateEmbeddedFunction = (CreateEmbeddedConnectionFunction)GetProcAddress(hLibrary, "sml_CreateEmbeddedConnection") ;
 
-#  ifdef KERNEL_SML_DIRECT
+#ifdef KERNEL_SML_DIRECT
 	m_pDirectAddWMEStringFunction =		(DirectAddWMEStringFunction)GetProcAddress(hLibrary, "sml_DirectAddWME_String") ;
 	m_pDirectAddWMEIntFunction =		(DirectAddWMEIntFunction)GetProcAddress(hLibrary, "sml_DirectAddWME_Int") ;
 	m_pDirectAddWMEDoubleFunction =		(DirectAddWMEDoubleFunction)GetProcAddress(hLibrary, "sml_DirectAddWME_Double") ;
@@ -258,7 +256,7 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 		if (optimized && !IsAsynchronous())
 			m_bIsDirectConnection = true ;
 	}
-#  endif
+#endif
 
 	// See if we got the functions
 	if (!m_pProcessMessageFunction || !m_pCreateEmbeddedFunction)
