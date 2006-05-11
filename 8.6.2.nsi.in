@@ -75,8 +75,6 @@ Section "Core Soar Components" Section1
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/License.lnk" "$INSTDIR/License.txt"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Uninstall ${APPNAMEANDVERSION}.lnk" "$INSTDIR/Uninstall ${APPNAMEANDVERSION}.exe" "" "$INSTDIR/Resources/Icons/un-soar.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start VisualSoar (Java).lnk" "$INSTDIR/SoarLibrary/bin/VisualSoar.jar" "" "$INSTDIR/Resources/Icons/vs.ico"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start QuickLink.lnk" "$INSTDIR/SoarLibrary/bin/QuickLink.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start SoarTextIO.lnk" "$INSTDIR/SoarLibrary/bin/SoarTextIO.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestClientSML.lnk" "$INSTDIR/SoarLibrary/bin/TestClientSML.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestCommandLineInterface.lnk" "$INSTDIR/SoarLibrary/bin/TestCommandLineInterface.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestConnectionSML.lnk" "$INSTDIR/SoarLibrary/bin/TestConnectionSML.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
