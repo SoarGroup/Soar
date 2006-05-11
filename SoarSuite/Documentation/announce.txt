@@ -1,11 +1,11 @@
-Announcing Soar 8.6.1!
+Announcing Soar 8.6.2!
 ======================
 
-This announcement describes the primary changes in this latest release. It also 
-includes the 8.6.0 announcement for reference (read that first if you didn't
-download 8.6.0).
+This announcement describes the primary changes in this latest release.
 
-Soar 8.6.1 can be downloaded from the Soar homepage at:
+This release covers Windows and Linux (OS X forthcoming).
+
+Soar 8.6.2 can be downloaded from the Soar homepage at:
 
 http://sitemaker.umich.edu/soar
 
@@ -16,232 +16,66 @@ Requirements
   available in the path). Get it at http://java.sun.com/. Most machines 
   probably already have this installed.
 
-* Tcl 8.4.x or later required to run Eaters on linux and OS X 10.3 (wish
-  should be available in the path). Get it at http://www.tcl.tk/. OS X 10.4
-  comes with this pre-installed, and the Windows installer includes it.
+* If you want to run Tcl applications on Linux, Tcl 8.4.x or later is
+  required (note that the tutorial applications are now available in
+  Java).  Also note that we do not currently support threaded builds
+  of Tcl (e.g. ActiveTcl 8.4.11.2 or later).
 
 New in this release
 ===================
 
 * Capabilities added:
-  -- Linux and Mac support
-  -- Soar 7 mode now works.  Some Soar7 demos are included as well.
-  -- Tcl Eaters is included.  Tcl Eaters uses the familiar Eaters Control Panel, 
-     but the default Agent window is the new SoarJavaDebugger.  The TSI is only
-     partially converted to the new SML interface to Soar, and the SoarJavaDebugger
-     is more capable and better integrated.
-  -- Java Missionaries and Cannibals is included.
-  -- Added ability to filter trace output in debugger after a trace has been created
-  -- Added ability to stop scrolling trace window in debugger
-  -- Added partial command matching for command line.
-  -- Introduced new event-driven simulation support, removing the need for
-     "start-system" command (see "SML Quick Start Guide" for details).
-  -- Clients can now determine when other clients are connected and ready
-  -- sml.jar now included in soar-library for Java developers.
-  -- TestSMLEvents application added: provides a rudimentary command line interface 
-     so the users can test the events and view examples of each.
+  -- C# added to list of supported languages (now C++, Java, Tcl, C#).
+  -- Eaters and TankSoar rewritten in Java.
+  -- The "stop-point" in the decision cycle can now be changed (by
+     default Soar will stop between the decision and application
+     phases).
+  -- Tcl commands can now be used within the debugger by running a separate
+     Tcl filter alongside the debugger (preliminary version in this release).
+  -- Filtering of command line input allowed in any language and can be chained
+  -- New SML tutorial (in Environments/JavaTOH)
+  -- Added support for arbitrary communication from one client to another (not just to/from the kernel)
+  -- Multiple agents can now be interleaved by decision cycle or by output, as well as by phase.
+  -- Support for arbitrary logging of Soar execution through custom logging applications added
+  -- Support for logging output in debugger on a window by window basis
+  -- Java 5.0 supported.
+  -- Visual Studio 2005 supported.
 
 * Performance further improved:
-  -- Improved and extended kernel XML generation resulting in performance boost
-     for those applications which use it (i.e. the Java debugger)
-  -- Better use of threads in Java debugger resulting in massive performance boost
-  -- Replaced tree trace window in debugger with faster version
-  -- New threading model in SML for better performace with multiple applications
+  -- Windows performance improved (30+% faster in Towers of Hanoi SML).
+  -- Vastly improved Linux performance (~20x in some cases).
+  -- Java versions of Eaters and TankSoar are many times faster than
+     their Tcl equivalents.
 
 * Updates and fixes
-  -- Running by phases and elaborations now works properly: Propose and Apply run 
-     to full quiescence when running by Phase; when running by Elaboration, Soar
-     will always run one round of production firings, which might require that
-     Input, Decide or Output phases be executed as well.
-  -- Manual updated
-  -- Tutorials for new debugger updated
-  -- Added lots of aliases that existed in older versions of Soar
-  -- Rewrote command line parsing code to avoid potential licensing issues
-  -- Numerous other smaller bug fixes.
-
-Clarification regarding the "tcl" RHS function:
-===============================================
-While we are no longer providing a built-in "tcl" RHS function, there is nothing
-to prevent someone from registering the old "tcl" RHS function which does the
-same thing. Those needing to support legacy code should do this.  Those 
-applications will then require that Tcl is always part of the build.
-For new applications,  "exec" provides the same functionality in a 
-language-independent way.
-
+  -- Reorganized directory structure to be more logical.
+  -- Static libraries required for building SML applications are now
+     distributed in SoarLibrary/lib.
+  -- Many memory leaks fixed.
+  -- init-soar works much better.
+  -- Updated Java apps to SWT 3.1.2.
+  -- Java Debugger now uses GTK interface by default in Linux (fixes
+     many motif-specific bugs).
+  -- Lots of SML changes to improve correctness and functionality.
+  -- Several Soar7-mode commands added.
+  -- Registering for callbacks in Java now uses interfaces.
+  -- Soar kernel now uses a new random number generator.
+  -- Lots of documentation updates.
+  -- Many, many other changes (see bugzilla for details).
+  
 Known issues:
 =============
 
-* VisualSoar seems to have intermittent issues on some OS X machines. This appears
-  to be a bug in Java on that platform.
-* Log command only works properly from Java debugger if in text mode (as opposed
-  to tree mode).
-* Tanksoar is not yet available.
-* Soar seems to "stutter" under Mac OS 10.4 (but it does work properly).
-* Sometimes the trace output can fall behind actual execution, making
-  the debugger appear unresponsive (it's really just trying to catch up).
-* Some rare warning messages may not appear fully in the Java debugger's tree
-  view (but they appear fine in the text view). If you find specific cases of
-  this, please let us know.
-* Pausing trace window in debugger causes the text to flicker on Windows and Linux
-  and doesn't work well on OS X (these are os and SWT issues; we can't fix them).
-* VisualSoar can only connect to kernel using default values for port/ip.
-* When running Eaters on Linux with a debugger connected, the debugger seems to
-  "steal" the focus while Soar is running.
-* For Soar7 mode, the commands attribute-preferences-mode and input-period 
-  are not yet implemented.  
-* Also in Soar 7 mode, a potential crash from tentative-retractions of
-  justifications, that has existed since 8.5.2 and possibly earlier, 
-  is avoided with an ugly hack;  please contact us if you suspect you are
-  running into problems related to this issue.
-
+* TankSoar and Eaters have some redraw issues (forcing a redraw, e.g. by
+  moving the window, fixes this).
+* Remote connections on Linux can be slow.
+* ^status complete comes in immediately instead of during input phase.
+* The Soar 7 mode implementation currently relies on an ugly hack. If you
+  experience problems in this mode, please let us know.
+* Many other minor issues (see bugzilla for details).
 
 If any other issues or bugs are found, please send mail to:
 
+soar-sml-list@lists.sourceforge.net (preferred)
+-or-
 soar-group@lists.sourceforge.net
-
-Announcing Soar 8.6.0!
-======================
-
-This announcement describes the primary changes in this latest release. Among
-them are:
-
-* Limitations in this release
-* SML: A new XML-based API for interfacing with Soar
-* A new Soar debugger written in Java
-* Command line changes
-
-Soar 8.6.0 can be downloaded from the Soar homepage at:
-
-http://sitemaker.umich.edu/soar
-
-Limitations in this release
-===========================
-
-* 8.6.0 is a Windows-only release.
-* The manual needs more work (but it is included).
-* Soar7 mode (i.e. soar8 --off) does not work yet.
-* The tutorial needs to be updated so it is not included.
-* Eaters and TankSoar are not included.
-
-We anticipate an 8.6.1 release before the Soar workshop which should include
-Linux and Mac releases, support for Soar7 mode, and will possibly address some
-of these other issues as well.
-
-If any other issues or bugs are found, please send mail to:
-
-soar-sml-list@lists.sourceforge.net
-
-SML: A new XML-based API for interfacing with Soar
-==================================================
-
-Interfacing to Soar has always been something of a challenge.  Initially we were
-limited to building interfaces in the Soar implementation language (LISP then
-C/C++).  We extended this to allow the use of Tcl but the extension ended up
-requiring Tcl for all Soar systems.  SGIO opened up support for having a
-simulation running either with Soar embedded or as a separate process but it was
-limited to sending just I/O information which prevented debugging of embedded
-processes.  gSKI provided a clean interface into the kernel but support for
-other languages, debugging or remote I/O has yet to be implemented.
-
-With this 8.6 release we are providing an alternative approach for interfacing
-into Soar called SML (Soar Markup Language). This interface:
-
-* supports multiple languages (Java, C++ and Tcl currently) while removing any
-requirement on Tcl
-
-* supports a uniform method for building I/O interfaces (for simulations) as
-well as command interfaces (for debugging)
-
-* supports embedding Soar kernels within a simulation or debugger and
-communicating remotely between the two
-
-* supports multiple clients (debuggers, simulations, other tools) connecting
-to a single kernel instance
-
-* supports dynamic connection and disconnection of tools (esp debuggers)
-from a running kernel
-
-* provides a uniform, high level and data-driven model for the interface while
-retaining high performance
-
-* moves command line support out of the kernel, while providing universal
-access to it from any client
-
-* includes a new, cleaned up command line syntax
-
-* in many cases the interface is faster (sometimes an order of magnitude
-faster) than our 8.5.2 interfaces
-
-* includes gSKI in the main Soar Consortium kernel for the first time
-
-* follows the SGIO interface model in many ways, making converting existing
-simulations easier
-
-Through these changes, the kernel itself has been largely unchanged so sets of
-productions from 8.5.2 should run identically in 8.6 although some command line
-arguments (e.g. "learning -off") have changed slightly so they will require
-updating.  Details on that below.
-
-The Soar Java debugger
-======================
-A preliminary new debugger in Java is provided which interfaces with Soar via SML.
-This new debugger:
-
-* has much higher performance than the TSI for detailed traces
-* already offers a structured view of high watch traces
-* can be dynamically attached to and detached from remote Soar instances
-* is designed to be highly customizable by each user
-* employs a plug-in architecture to allow for modular extensions in the future
-
-At this point the debugger should be considered a beta version.
-
-Command Line Changes
-====================
-One of the major changes in Soar 8.6 is syntax changes for the commands.  The
-syntax was changed to increase consistency across commands and greatly
-increase ease of parsing of commands (making adding new commands much easier).
-Unfortunately, this means that some common commands used in Soar source files need
-to be changed before those files will load in Soar 8.6.
-
-Options now require two dashes before the unabbreviated name (e.g. run --decision 3)
-and a single dash before the abbreviated name (e.g. run -d 3).
-
-Output-strings-destination has been deprecated.  The command "echo" sends its args 
-to the current output stream.  Applications should register for
-SML print events to receive Soar trace output.  The associated command-to-file
-is also obsolete.  
-
-format-watch is not yet implemented.  It will only be added if there is need for
-it in the user community.  Kernel support has not been removed, but no user
-interface support has been implemented.
-
-For complete documentation on the current syntax of the commands, use the "help"
-command, read the manual, or read the documentation online at:
-http://winter.eecs.umich.edu/soarwiki/Soar_Command_Line_Interface.
-
-For your convenience, here are some of the most common changes that are required
-to allow existing source files to load:
-
-* learn -on => learn --on
-* set warnings off => warnings --off
-
-RHS function changes:
-
-* "tcl" is no longer supported.  It has been replaced by "exec" (for user-provided
-functions) and "cmd" to execute standard command-line commands.  User-provided
-functions must be registered with the Soar kernel via a call to Kernel::AddRhsFunction.
-
-* Built-in RHS functions like "write" and the math functionality are unchanged.
-
-* See sections 3.3.6.6 to 3.3.6.12 (especially 3.3.6.11) for more information on RHS
-functions.
-
-These common commands have NOT changed:
-
-* multi-attributes
-* pushd
-* popd
-* sp
-
-To learn more about SML, the debugger or how to build a simulation using the new
-interface please see the documentation included with the release.
