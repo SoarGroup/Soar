@@ -105,16 +105,14 @@ void PerceptualGroup::updateBoundingBox() {
   }
 }
 
+// This function calculates all the data that will go on the input link
 void PerceptualGroup::generateData() {
   int x = 0;
   int y = 0;
-  set<SoarGameObject*>::iterator currentObject;
   
   soarData.stringIntPairs.clear();
   soarData.stringStringPairs.clear();
   soarData.regionsOccupied.clear();
-
-  currentObject = members.begin();
 
   int health = 0;
   int speed = 0;
@@ -126,12 +124,17 @@ void PerceptualGroup::generateData() {
   int idle = 0;
   int stuck = 0;
     
+  double avg_heading_i = 0.0, avg_heading_j = 0.0;
+
   moving = false;
   
   int objStatus;
 
-  while (currentObject != members.end()) {
-    
+  for( set<SoarGameObject*>::iterator 
+       currentObject =  members.begin();
+       currentObject != members.end();
+       currentObject++ )
+  {
     if (canMine) {
       mineralCount += (*currentObject)->gob->get_int("minerals");
     }
@@ -149,6 +152,11 @@ void PerceptualGroup::generateData() {
     x += *(*currentObject)->gob->sod.x;
     y += *(*currentObject)->gob->sod.y;
 
+    double hi, hj;
+    getHeadingVector((*currentObject)->gob->get_int("heading"), &hi, &hj);
+    avg_heading_i += hi;
+    avg_heading_j += hj;
+
     objStatus = (*currentObject)->getStatus();
     if (objStatus == OBJ_RUNNING) {
       running++;
@@ -165,10 +173,9 @@ void PerceptualGroup::generateData() {
     else if (objStatus == OBJ_STUCK) {
       stuck++;
     }
-      
-    currentObject++;
-  } // while (currentObject != members.end())
-  
+  } 
+ 
+  // average all attributes
   health /= size;
   speed /= size;
   x /= size;
@@ -180,7 +187,13 @@ void PerceptualGroup::generateData() {
   updateBoundingBox();
   updateRegionsOccupied();
 
+  // normalize the heading vector
+  double heading_mag = sqrt(avg_heading_i * avg_heading_i + avg_heading_j * avg_heading_j);
+  avg_heading_i /= heading_mag;
+  avg_heading_j /= heading_mag;
+
   pair<string, int> stringIntWme;
+  pair<string, float> stringFloatWme;
   pair<string, string> stringStringWme;
 
   stringIntWme.first = "health";
@@ -216,6 +229,15 @@ void PerceptualGroup::generateData() {
   stringIntWme.second = bbox.ymax;
   soarData.stringIntPairs.push_back(stringIntWme);
 
+
+//// Heading info
+  stringFloatWme.first = "heading-i";
+  stringFloatWme.second = (float) avg_heading_i;
+  soarData.stringFloatPairs.push_back(stringFloatWme);
+  stringFloatWme.first = "heading-j";
+  stringFloatWme.second = (float) avg_heading_j;
+  soarData.stringFloatPairs.push_back(stringFloatWme);
+  
   stringIntWme.first = "num_members";
   stringIntWme.second = size;
   soarData.stringIntPairs.push_back(stringIntWme);
@@ -407,80 +429,87 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
   list<PerceptualGroup*>::iterator targetGroupIt;  
   Vector<sint4> tempVec;
   
-    
-  if (type == OA_MOVE) {
-    // the third param is speed, always use 3 (the max)
-    assert(params.size() == 2);
-    intIt = params.begin();  
-    tempVec.push_back(*intIt);
-    intIt++;
-    tempVec.push_back(*intIt);
-    tempVec.push_back(3);
+  switch (type) {
+    case OA_MOVE:
+      // the third param is speed, always use 3 (the max)
+      assert(params.size() == 2);
+      intIt = params.begin();  
+      tempVec.push_back(*intIt);
+      intIt++;
+      tempVec.push_back(*intIt);
+      tempVec.push_back(3);
 
-    currentCommand = "move";
-    sticky = true;
-    // this group is stuck together from now on,
-    // until Soar issues an unstick action
-    for (currentObject = members.begin();
-         currentObject != members.end();
-         currentObject++) {
-      (*currentObject)->issueCommand(type, tempVec);
-    } 
-  }
-  else if (type == OA_MINE) {
-    // targets are the mineral patch x, y, and command center
-    // in that order
+      currentCommand = "move";
+      sticky = true;
+      // this group is stuck together from now on,
+      // until Soar issues an unstick action
+      for (currentObject = members.begin();
+           currentObject != members.end();
+           currentObject++) {
+        (*currentObject)->issueCommand(type, tempVec);
+      } 
+      break;
 
-    // FSM parameters:
-    // x,y of mineral-patch edge relative to command-center
-    // x,y of command-center edge relative to mineral-patch
-    assert(targets.size() == 2);
-    targetGroupIt = targets.begin();
-    PerceptualGroup* mpGroup;
-    PerceptualGroup* ccGroup;
-    mpGroup = *targetGroupIt;
-    targetGroupIt++;
-    ccGroup = *targetGroupIt;
-   
-    // get the centers of the mineral patch and command center
-    int mpX, mpY;
-    mpGroup->getCenterLoc(mpX, mpY);
-    
-    int ccX, ccY;
-    ccGroup->getCenterLoc(ccX, ccY);
-    
-    int mpEdgeX, mpEdgeY;
-    int ccEdgeX, ccEdgeY;
-    
-    // get the location on the edge of the mineral patch the worker
-    // should walk to
-    mpGroup->getLocNear(ccX, ccY, mpEdgeX, mpEdgeY);
-    // likewise for the edge of the command center
-    ccGroup->getLocNear(mpX, mpY, ccEdgeX, ccEdgeY);
+    case OA_MINE:
+      // targets are the mineral patch x, y, and command center
+      // in that order
 
-    // fill in FSM parameters
-    tempVec.push_back(mpEdgeX);
-    tempVec.push_back(mpEdgeY);
-    tempVec.push_back(ccEdgeX);
-    tempVec.push_back(ccEdgeY);
+      // FSM parameters:
+      // x,y of mineral-patch edge relative to command-center
+      // x,y of command-center edge relative to mineral-patch
+      assert(targets.size() == 2);
+      targetGroupIt = targets.begin();
+      PerceptualGroup* mpGroup;
+      PerceptualGroup* ccGroup;
+      mpGroup = *targetGroupIt;
+      targetGroupIt++;
+      ccGroup = *targetGroupIt;
+     
+      // get the centers of the mineral patch and command center
+      int mpX, mpY;
+      mpGroup->getCenterLoc(mpX, mpY);
+      
+      int ccX, ccY;
+      ccGroup->getCenterLoc(ccX, ccY);
+      
+      int mpEdgeX, mpEdgeY;
+      int ccEdgeX, ccEdgeY;
+      
+      // get the location on the edge of the mineral patch the worker
+      // should walk to
+      mpGroup->getLocNear(ccX, ccY, mpEdgeX, mpEdgeY);
+      // likewise for the edge of the command center
+      ccGroup->getLocNear(mpX, mpY, ccEdgeX, ccEdgeY);
 
-    currentCommand = "mine";
-    sticky = true;
-    // this group is stuck together from now on,
-    // until Soar issues an unstick action
-    
-    for (currentObject = members.begin();
-         currentObject != members.end();
-         currentObject++) {
-      (*currentObject)->issueCommand(type, tempVec);
-    } 
-  }
-  else if (type == OA_FREE) {
-    sticky = false;
-    cout << "UNSTUCK!\n";
-  }
-  else {
-    assert(false);  
+      // fill in FSM parameters
+      tempVec.push_back(mpEdgeX);
+      tempVec.push_back(mpEdgeY);
+      tempVec.push_back(ccEdgeX);
+      tempVec.push_back(ccEdgeY);
+
+      currentCommand = "mine";
+      sticky = true;
+      // this group is stuck together from now on,
+      // until Soar issues an unstick action
+      
+      for (currentObject = members.begin();
+           currentObject != members.end();
+           currentObject++) {
+        (*currentObject)->issueCommand(type, tempVec);
+      }
+      break;
+
+    case OA_FREE:
+      sticky = false;
+      cout << "UNSTUCK!\n";
+      break;
+
+    case OA_ATTACK:
+      assert(params.size() == 1);
+      assert(targets.size() == 1);
+
+    default:
+      assert(false);  
   }
   
   return result;

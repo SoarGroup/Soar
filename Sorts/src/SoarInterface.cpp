@@ -102,6 +102,16 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
         agent->CreateIntWME(g.WMEptr, (*i).first.c_str(), (*i).second);
       cout << "\tadd: " << (*i).first << " " << (*i).second << endl;
     }
+    for(list<pair<string,float> >::iterator
+        i  = gps.stringFloatPairs.begin();
+        i != gps.stringFloatPairs.end();
+        i++)
+    {
+      g.floatProperties[(*i).first] = 
+        agent->CreateFloatWME(g.WMEptr, (*i).first.c_str(), (*i).second);
+      cout << "\tadd: " << (*i).first << " " << (*i).second << endl;
+    }
+
     for(list<pair<string,string> >::iterator 
         i = gps.stringStringPairs.begin(); 
         i != gps.stringStringPairs.end(); 
@@ -130,6 +140,17 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
       agent->Update(g.intProperties[(*i).first], (*i).second);
       cout << "\tupd: " << (*i).first << " " << (*i).second << endl;
     }
+
+    for(list<pair<string,float> >::iterator
+        i  = gps.stringFloatPairs.begin();
+        i != gps.stringFloatPairs.end();
+        i++)
+    {
+      assert(g.floatProperties.find(i->first) != g.floatProperties.end());
+      agent->Update(g.floatProperties[i->first], i->second); 
+      cout << "\tupd: " << i->first << " " << i->second << endl;
+    }
+
     for(list<pair<string, string> >::iterator 
         j = gps.stringStringPairs.begin();
         j != gps.stringStringPairs.end(); 

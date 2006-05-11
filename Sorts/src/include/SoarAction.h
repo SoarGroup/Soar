@@ -11,6 +11,7 @@ enum ObjectActionType {
   OA_NO_SUCH_ACTION,
   OA_MINE,
   OA_MOVE,
+  OA_ATTACK,
   OA_FREE
 };
 

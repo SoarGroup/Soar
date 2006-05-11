@@ -26,6 +26,7 @@ typedef struct {
   // change this later into hash_map<string, IntElement*> and write a hash
   // function for strings
   map<string, sml::IntElement*> intProperties;
+  map<string, sml::FloatElement*> floatProperties;
   map<string, sml::StringElement*> stringProperties;
   // a list of integers for the IDs of the regions its in
   list<sml::IntElement*> regionWMEs;

@@ -13,20 +13,20 @@
 class Sorts;
 
 class FSM{
- public:
-	FSM(GameObj *);
-	virtual ~FSM();
+public:
+  FSM(GameObj *);
+  virtual ~FSM();
 
-	virtual int update()=0;
+  virtual int update()=0;
 
-	virtual GameObj *getGameObject(){return gob;}
-	virtual void init(std::vector<sint4>);
-	virtual ObjectActionType getName();
+  virtual GameObj *getGameObject(){return gob;}
+  virtual void init(std::vector<sint4>);
+  virtual ObjectActionType getName();
 
 protected:
-	ObjectActionType name;
-	GameObj *gob;
-	Vector<sint4> params;
+  ObjectActionType name;
+  GameObj *gob;
+  Vector<sint4> params;
 };
 
 

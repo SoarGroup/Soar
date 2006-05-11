@@ -54,9 +54,13 @@ void PerceptualGroupManager::updateGroups() {
     // prune empty groups (if units died)
     // prepare list of group categories that need to be reGrouped
     // recalculate the center member for groups that changed
-  
-  reGroup();
-    // re-calculate the groups
+
+  if (visionParams.groupingRadius == 0) {
+    staleGroupCategories.clear();
+  }
+  else {
+    reGroup();
+  }
     
   generateGroupData();
     // prune groups emptied during reGrouping
