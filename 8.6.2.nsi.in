@@ -175,13 +175,12 @@ Section Uninstall
 
 	Delete "$INSTDIR/SoarLibrary/bin/testjavasml-success.txt"
 	Delete "$INSTDIR/SoarLibrary/bin/testclientsml-success.txt"
+	Delete "$INSTDIR/SoarLibrary/bin/testmultiagent-success.txt"
 	Delete "$INSTDIR/SoarLibrary/bin/towers-sml-success.txt"
 	Delete "$INSTDIR/SoarLibrary/bin/default-layout.xml"
 	Delete "$INSTDIR/SoarLibrary/bin/javaw.exe.manifest"
 	Delete "$INSTDIR/SoarLibrary/bin/default-layout.dlf"
 	Delete "$INSTDIR/SoarLibrary/bin/default-text.dlf"
-	Delete "$INSTDIR/SoarLibrary/bin/EaterLog.txt"
-	Delete "$INSTDIR/SoarLibrary/bin/eaters-default-settings.xml"
 	Delete "$INSTDIR/SoarLibrary/bin/VSPreferences.txt"
 	RMDir /r "$INSTDIR/Environments/JavaMissionaries/src"
 
