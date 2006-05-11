@@ -603,8 +603,10 @@ public class TankSoarWorld extends World implements WorldManager {
 					}
 					MapPoint theirDest = new MapPoint(m_Tanks[j].getLocation(), m_Tanks[j].lastMoveDirection());
 					if (myDest.equals(theirDest)) {
+						// FIXME: Both should collide, but that causes a SNC!
 						m_Tanks[i].setColliding(true);
-						m_Tanks[j].setColliding(true);
+						//m_Tanks[j].setColliding(true);
+						break;
 					}
 				}
 			}
