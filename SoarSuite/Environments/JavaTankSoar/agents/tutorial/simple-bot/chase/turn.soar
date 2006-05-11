@@ -5,7 +5,7 @@ sp {chase*propose*turn
    (state <s> ^name chase
               ^sound-direction {<< left right >> <direction>})
    -->
-   (<s> ^operator <o> +)
+   (<s> ^operator <o> + =)
    (<o> ^name turn
         ^actions.rotate.direction <direction>)}
 
