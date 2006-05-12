@@ -5,6 +5,7 @@ OrtsInterface* Sorts::OrtsIO = NULL;
 PerceptualGroupManager* Sorts::pGroupManager = NULL;
 InternalGroupManager* Sorts::iGroupManager = NULL;
 MapManager* Sorts::mapManager = NULL;
+MineManager* Sorts::mineManager = NULL;
 FeatureMapManager* Sorts::featureMapManager = NULL;
 TerrainModule* Sorts::terrainModule = NULL;
 Satellite *Sorts::satellite = NULL;

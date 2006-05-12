@@ -26,7 +26,8 @@ string int2str(int x);
 
 const char* getCommandParameter(sml::Identifier* c, const char *name);
 
-double squaredDistance(double x1, double y1, double x2, double y2);
+double squaredDistance(int x1, int y1, int x2, int y2);
+double distance(int x1, int y1, int x2, int y2);
 
 // translates the heading data from the heading variable
 // in the game object into a vector (i, j). 
@@ -43,4 +44,11 @@ struct VisionParameterStruct {
   int groupingRadius;
 };
 
+struct coordinate {
+  int x;
+  int y;
+};
+
+double coordDistance(coordinate c1, coordinate c2);
+double coordDistanceSq(coordinate c1, coordinate c2);
 #endif

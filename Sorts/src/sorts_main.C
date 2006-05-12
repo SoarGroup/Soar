@@ -9,6 +9,7 @@
 #include "SoarInterface.h"
 #include "OrtsInterface.h"
 #include "MapManager.h"
+#include "MineManager.h"
 #include "GridMapTileGrouper.h"
 #include "FeatureMapManager.h"
 #include "Sorts.h"
@@ -217,6 +218,7 @@ int main(int argc, char *argv[]) {
   OrtsInterface ortsInterface(&gsm);
 
   Satellite satellite;
+  MineManager mineMan;
 
   Sorts sorts(&soarInterface, 
               &ortsInterface, 
@@ -226,6 +228,7 @@ int main(int argc, char *argv[]) {
               &featureMapManager,
               &tm,
               &satellite,
+              &mineMan,
               &sortsMutex);
 
   satellite.init();

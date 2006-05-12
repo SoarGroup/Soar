@@ -41,6 +41,7 @@ class SoarGameObject{
  	bool isFriendly()   { return friendly; }
   bool isWorld()      { return world; }
   int getID()         { return id; }
+  coordinate getLocation();
 
   Rectangle getBoundingBox();
 

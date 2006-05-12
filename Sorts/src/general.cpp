@@ -1,5 +1,5 @@
 #include "general.h"
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <sstream>
 
@@ -28,7 +28,7 @@ const char* getCommandParameter(sml::Identifier* c, const char *name) {
     return val;
 }
 
-double squaredDistance(double x1, double y1, double x2, double y2) {
+double squaredDistance(int x1, int y1, int x2, int y2) {
   return ((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
 }
 
@@ -37,3 +37,12 @@ void getHeadingVector(int gameHeading, double *i, double *j) {
   *i = -1 * cos(angle);
   *j = sin(angle);
 }
+
+double coordDistanceSq(coordinate c1, coordinate c2) {
+  return ((c2.x-c1.x)*(c2.x-c1.x)+(c2.y-c1.y)*(c2.y-c1.y));
+}
+
+double coordDistance(coordinate c1, coordinate c2) {
+  return sqrt(((c2.x-c1.x)*(c2.x-c1.x)+(c2.y-c1.y)*(c2.y-c1.y)));
+}
+

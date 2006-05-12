@@ -15,6 +15,8 @@
 #include "InternalGroupManager.h"
 #include "MapManager.h"
 #include "FeatureMapManager.h"
+//#include "MineManager.h"
+class MineManager;
 
 #include "Satellite.h"
 #include "TerrainModule.H"
@@ -29,7 +31,8 @@ class Sorts {
       MapManager*         _mapManager, 
       FeatureMapManager*  _featureMapManager,
       TerrainModule*      _tm,
-      Satellite *         _satellite,
+      Satellite*          _satellite,
+      MineManager*        _mineMan,
       pthread_mutex_t*    _mutex)
     {
       SoarIO = _SoarIO;
@@ -40,6 +43,7 @@ class Sorts {
       featureMapManager = _featureMapManager;
       terrainModule = _tm;
       satellite = _satellite;
+      mineManager = _mineMan;
       mutex = _mutex;
       catchup = false;
     }
@@ -52,6 +56,7 @@ class Sorts {
     static FeatureMapManager* featureMapManager;
     static TerrainModule* terrainModule;
     static Satellite *satellite;
+    static MineManager *mineManager;
     static pthread_mutex_t* mutex;
     static bool catchup;
 };

@@ -168,3 +168,12 @@ Rectangle SoarGameObject::getBoundingBox() {
   r.ymax = *gob->sod.y + *gob->sod.radius;
   return r;
 }
+
+coordinate SoarGameObject::getLocation() {
+ // if this gets used a lot, we should make the coord a member
+  coordinate c;
+  c.x = *gob->sod.x;
+  c.y = *gob->sod.y;
+
+  return c;
+}

@@ -4,32 +4,30 @@
 #include "FSM.h"
 #include "general.h"
 #include "OrtsInterface.h"
-
+#include "MineManager.h"
+#include "MoveFSM.h"
+struct MiningRoute;
 
 class MineFSM : public FSM {
 public:
 	MineFSM(GameObj*);
+  ~MineFSM();
 
  	int update();
 	void init(vector<sint4> p);
-private:
-  enum MineState { IDLE, MINING, MOVING_TO_MINE_ZONE, MOVING_TO_BASE_ZONE,
-                   MOVING_TO_MINERAL, MOVING_TO_BASE,
-                   SEND_MOVE_TO_MINE_COMMAND};
-  MineState state;
-
-  int mineZoneX, mineZoneY, baseZoneX, baseZoneY;
-
-  int mineralX, mineralY, mineralId;
-  int baseX, baseY, baseId;
-
-  int worldId, myId;
-
-  Vector<sint4> moveToMineZoneParams, moveToBaseZoneParams;
-  Vector<sint4> tempParams;
   
-  SoarGameObject* mineralObj;
-  SoarGameObject* baseObj;
+  // called by MineManager if a mineral or cc disappears
+  void abortMining();
+  void setSoarGameObject(SoarGameObject* _sgo) { sgo = _sgo; }
+  SoarGameObject* getSoarGameObject() { return sgo; }
+private:
+  enum MineState { IDLE, MINING, MOVING_TO_MINERAL, MOVING_TO_DROPOFF,
+                   SEND_MOVE_TO_MINE_COMMAND };
+  MineState state;
+  MiningRoute* route;
+  SoarGameObject* sgo;
+  MoveFSM* moveFSM;
+  int precision, timer;
 };
 
 #endif
