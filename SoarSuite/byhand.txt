@@ -3,3 +3,5 @@ To do by hand:
 Remove core/Documentation/Manual Source
 Remove JavaMissionaries/bin & src
 Move VisualSoar/Source back to source
+Move pkgIndex.tcl from source to core
+Move makeTclSMLPackage.tcl back to source
