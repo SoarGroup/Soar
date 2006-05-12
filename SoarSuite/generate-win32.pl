@@ -32,14 +32,14 @@ use File::Path;
 my $soarurl = "https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite";
 
 # Name and version
-my $nameandversion = "Soar Suite 8.6.2-r7";
+my $nameandversion = "Soar Suite 8.6.2-r8";
 
 # File globs to completely remove from the tree (not distributed at all)
 my @remove = qw/.cvsignore .svn *.so *.so.2 *.jnilib java_swt make-mac-app.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource Old *.tex/;
 
 # Globs to copy from working copy to Core component
 # WORKING --copy-to-> CORE
-my @copyglobs = qw(*.pdf *.dll *.exe *.jar ClientSML.lib ElementXML.lib ConnectionSML.lib Tcl_sml_ClientInterface mac towers-of-hanoi-SML.soar);
+my @copyglobs = qw(*.pdf *.dll *.exe *.jar *.tcl ClientSML.lib ElementXML.lib ConnectionSML.lib Tcl_sml_ClientInterface mac towers-of-hanoi-SML.soar);
 
 # Globs to MOVE from Source component to Core component
 # SOURCE --move-to-> CORE
