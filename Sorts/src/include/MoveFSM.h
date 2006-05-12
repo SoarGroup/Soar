@@ -31,6 +31,7 @@ class MoveFSM: public FSM {
   int counter;
 
   int vec_count;
+  int precision;
 };
 
 #endif
