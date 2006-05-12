@@ -108,7 +108,7 @@ sub build_step {
 sub checkout_step { 
 	print "Step 2: Check out source from SVN...\n";
 	rmtree($source);
-	system "svn export $soarurl $source";
+	system "svn export $soarurl $source --native-eol CRLF";
 	
 	print "Step 3: Remove globs from source that are not to be distributed with the release...\n";
 
