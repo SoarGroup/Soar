@@ -1,0 +1,5 @@
+To do by hand:
+
+Remove core/Documentation/Manual Source
+Remove JavaMissionaries/bin & src
+Move VisualSoar/Source back to source
