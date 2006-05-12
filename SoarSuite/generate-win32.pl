@@ -35,7 +35,7 @@ my $soarurl = "https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite";
 my $nameandversion = "Soar Suite 8.6.2-r8";
 
 # File globs to completely remove from the tree (not distributed at all)
-my @remove = qw/.cvsignore .svn *.so *.so.2 *.jnilib java_swt make-mac-app.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource Old *.tex/;
+my @remove = qw/INSTALL .cvsignore .svn *.xcodeproj *.so *.so.2 *.jnilib java_swt make-mac-app.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 Figures ManualSource Old *.tex/;
 
 # Globs to copy from working copy to Core component
 # WORKING --copy-to-> CORE
@@ -43,7 +43,7 @@ my @copyglobs = qw(*.pdf *.dll *.exe *.jar *.tcl ClientSML.lib ElementXML.lib Co
 
 # Globs to MOVE from Source component to Core component
 # SOURCE --move-to-> CORE
-my @moveglobs = qw/COPYING INSTALL Documentation Resources SoarLibrary agents maps/;
+my @moveglobs = qw/COPYING Documentation Resources SoarLibrary agents maps templates *.bat/;
 
 # Nullsoft installer script input file
 my $nsiinput = "8.6.2.nsi.in";
@@ -144,13 +144,18 @@ sub move_step {
 		rcopy($_, "$core/$outputdir");
 	}
 	
-	print "Step 6.1: Rename INSTALL and COPYING...\n";
-	rmove("$core/INSTALL", "$core/Install.txt");
+	print "Step 6.1: Rename COPYING...\n";
 	rmove("$core/COPYING", "$core/License.txt");
 	
 	print "Step 6.2: Remove svn dirs from core...\n";
 	foreach (File::Find::Rule->directory()->name(".svn")->in($core)) {
 		print "Removing from core: $_\n";
+		rmtree($_) or die "Unable to remove $_: $!";
+	}
+	
+	print "Step 6.3: Remove svn dirs from source...\n";
+	foreach (File::Find::Rule->directory()->name(".svn")->in($source)) {
+		print "Removing from source: $_\n";
 		rmtree($_) or die "Unable to remove $_: $!";
 	}
 }
