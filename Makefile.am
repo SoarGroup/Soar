@@ -18,7 +18,7 @@ if SWIGJAVA
 else
 endif
 
-EXTRA_DIST = Documentation Resources SoarLibrary 
+EXTRA_DIST = Documentation Resources SoarLibrary acsite.m4
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`
 	rm `find $(distdir) -name *.jar`
