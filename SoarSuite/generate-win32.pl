@@ -35,15 +35,15 @@ my $soarurl = "https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite";
 my $nameandversion = "Soar Suite 8.6.2-r9";
 
 # File globs to completely remove from the tree (not distributed at all)
-my @remove = qw/INSTALL .cvsignore .svn *.xcodeproj *.so *.so.2 *.jnilib java_swt make-mac-app.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 Figures ManualSource Old *.tex/;
+my @remove = qw/INSTALL .project .cvsignore .svn *.xcodeproj *.so *.so.1 *.so.2 *.jnilib java_swt *.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource Figures Old *.tex Scripts/;
 
 # Globs to copy from working copy to Core component
 # WORKING --copy-to-> CORE
-my @copyglobs = qw(*.pdf *.dll *.exe *.jar *.tcl ClientSML.lib ElementXML.lib ConnectionSML.lib Tcl_sml_ClientInterface mac towers-of-hanoi-SML.soar);
+my @copyglobs = qw(*.pdf *.dll *.exe *.jar ClientSML.lib ElementXML.lib ConnectionSML.lib Tcl_sml_ClientInterface mac towers-of-hanoi-SML.soar);
 
 # Globs to MOVE from Source component to Core component
 # SOURCE --move-to-> CORE
-my @moveglobs = qw/COPYING Documentation Resources SoarLibrary agents maps templates *.bat/;
+my @moveglobs = qw/COPYING Documentation Resources SoarLibrary agents maps templates tcl TSI TclEaters run-*.bat TestTclSML.tcl pkgIndex.tcl mac.soar FilterTcl/;
 
 # Nullsoft installer script input file
 my $nsiinput = "8.6.2.nsi.in";
@@ -94,7 +94,6 @@ if ($checkout == 1) {
 
 &copy_step;
 &move_step;
-&nsi_step;
 exit(0);
 
 ################################
@@ -114,12 +113,12 @@ sub checkout_step {
 
 	foreach (File::Find::Rule->file()->name(@remove)->in($source)) {
 		print "Removing from source: $_\n";
-		unlink $_ or die "Unable to remove $_: $!";
+		unlink $_;
 	}
 
 	foreach (File::Find::Rule->directory()->name(@remove)->in($source)) {
 		print "Removing from source: $_\n";
-		rmtree($_) or die "Unable to remove $_: $!";
+		rmtree($_);
 	}
 }
 
@@ -158,10 +157,25 @@ sub move_step {
 		print "Removing from source: $_\n";
 		rmtree($_) or die "Unable to remove $_: $!";
 	}
+
+	print "Step 6.4: Remove globs again...\n";
+	foreach (File::Find::Rule->file()->name(@remove)->in($source)) {
+		print "Removing from source: $_\n";
+		unlink $_;
+	}
+	foreach (File::Find::Rule->directory()->name(@remove)->in($source)) {
+		print "Removing from source: $_\n";
+		rmtree($_);
+	}
 }
 
 sub nsi_step {
 	print "Step 7: Generate NSI installer script...\n";
+	
+	print "Step 7.1: make readable...\n";
+	system "chmod -R 777 $core";
+	system "chmod -R 777 $source";
+	
 	open(NSIINPUT, $nsiinput) or die "Couldn't open nsi input file: $!";
 	open(NSIOUTPUT, ">$nsioutput") or die "Couldn't open nsi output file: $!";
 
