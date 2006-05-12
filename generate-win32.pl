@@ -167,14 +167,14 @@ sub move_step {
 		print "Removing from source: $_\n";
 		rmtree($_);
 	}
+
+	print "Step 6.5: make readable...\n";
+	system "chmod -R 777 $core";
+	system "chmod -R 777 $source";	
 }
 
 sub nsi_step {
 	print "Step 7: Generate NSI installer script...\n";
-	
-	print "Step 7.1: make readable...\n";
-	system "chmod -R 777 $core";
-	system "chmod -R 777 $source";
 	
 	open(NSIINPUT, $nsiinput) or die "Couldn't open nsi input file: $!";
 	open(NSIOUTPUT, ">$nsioutput") or die "Couldn't open nsi output file: $!";
