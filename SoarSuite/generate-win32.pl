@@ -32,7 +32,7 @@ use File::Path;
 my $soarurl = "https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite";
 
 # Name and version
-my $nameandversion = "Soar Suite 8.6.2-r8";
+my $nameandversion = "Soar Suite 8.6.2-r9";
 
 # File globs to completely remove from the tree (not distributed at all)
 my @remove = qw/INSTALL .cvsignore .svn *.xcodeproj *.so *.so.2 *.jnilib java_swt make-mac-app.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 Figures ManualSource Old *.tex/;
