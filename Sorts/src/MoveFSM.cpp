@@ -4,6 +4,8 @@
 #include "Sorts.h"
 using namespace std;
 
+//Comment out to turn magnetism off
+#define MAGNETISM
 
 MoveFSM::MoveFSM(GameObj* go) 
             : FSM(go) 
@@ -91,7 +93,8 @@ int MoveFSM::update() {
      stagesLeft--;
      gob->set_action("move", moveParams);
     }
-    //Cut out this else if you want to stop magnetism
+
+#ifdef MAGENTISM    
     else
     {
      cout<<"Magnetized\n";
@@ -101,7 +104,8 @@ int MoveFSM::update() {
       gob->set_action("move",moveParams);
      }
     }
-     
+#endif
+
    break;
 
 	}
@@ -156,6 +160,7 @@ bool MoveFSM::getMoveVector()
   vec_count++;
   return answer;
  }
+ answer = true;
  vec_count = 0;
 
  std::list<GameObj*> *neighbors = Sorts::satellite->getObjectsInRegion(*(gob->sod.x), *(gob->sod.y));
@@ -175,9 +180,6 @@ bool MoveFSM::getMoveVector()
  x /= d;
  y /= d;
 
- x *=5;
- y *=5;
- 
  // Add in the attraction vector
  float x1 = target.x - loc.x;
  float y1 = target.y - loc.y;
@@ -190,19 +192,84 @@ bool MoveFSM::getMoveVector()
  x += x1/d;
  y += y1/d;
  cout<<"Combined Vector: ("<<x<<","<<y<<")\n";
-
- // This won't work... Just trying something out
-// if(abs(x1/d-x)>10)
-// {
-  moveParams[0] = static_cast<sint4>(x)+moveParams[0];
-  answer = true;
-// }
-// if(abs(y1/d-y)>10)
-// {
-  moveParams[1] = static_cast<sint4>(y)+moveParams[1];
-  answer = true;
-// }
+ 
+ TerrainBase::Loc loc = getHeadingVector(static_cast<sint4>(x),static_cast<sint4>(y));
+ 
+ moveParams[0] = loc.x;
+ moveParams[1] = loc.y;
  
  return answer;
 }
 
+double MoveFSM::getHeading(sint4 x, sint4 y)
+{
+ x=0;
+ y=0;
+ return 0.0;
+}
+
+TerrainBase::Loc MoveFSM::getHeadingVector(sint4 target_x, sint4 target_y)
+{
+ sint4 x = *(gob->sod.x);
+ sint4 y = *(gob->sod.y);
+ 
+ double m = (target_y-y)/(target_x-x);
+ double b = (y-m*x);
+ int quadrant;
+ 
+
+ if(x<target_x)
+  if(y<target_y)
+   quadrant = 4;
+  else
+   quadrant = 1;
+ else
+  if(y<target_y)
+   quadrant = 2; 
+  else
+   quadrant = 3;
+
+ 
+ TerrainBase::Loc loc;
+ switch(quadrant){
+    case 1:
+     if((loc.x = static_cast<sint4>(-1*b/m)) > Sorts::OrtsIO->getMapXDim())
+     {
+      loc.x = Sorts::OrtsIO->getMapXDim();
+      loc.y = static_cast<sint4>(m*loc.x+b);
+     }
+     else
+      loc.y = 0;
+     break;
+    case 2:
+     if((loc.x = static_cast<sint4>(-1*b/m)) < 0)
+     {
+      loc.x = 0;
+      loc.y = static_cast<sint4>(b);
+     }
+     else
+      loc.y = 0;
+     break;
+    case 3:
+     if((loc.x = static_cast<sint4>((Sorts::OrtsIO->getMapYDim()-b)/m)) < 0)
+     {
+      loc.x = 0;
+      loc.y = static_cast<sint4>(b);
+     }
+     else
+      loc.y = Sorts::OrtsIO->getMapYDim();
+     break;
+    case 4:
+     if((loc.x = static_cast<sint4>((Sorts::OrtsIO->getMapYDim()-b)/m)) > Sorts::OrtsIO->getMapXDim())
+     {
+      loc.x = Sorts::OrtsIO->getMapXDim();
+      loc.y = static_cast<sint4>(m*loc.x+b);
+     }
+     else
+      loc.y = Sorts::OrtsIO->getMapYDim();
+     break;
+    }
+    
+ cout<<"Heading Vector: ("<<loc.x<<","<<loc.y<<","<<quadrant<<")\n";
+ return loc;
+}

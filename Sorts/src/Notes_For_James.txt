@@ -32,4 +32,4 @@ For Testing:
         - gdb --ars bin/sorts -port 8888 -productions converge.soar | tee log
         
   - Run GUI on your computer
-    - bin/ortsg -host ummu2 -port 8888 --nosound
+    - bin/ortsg -host ummu2 -port 8888
