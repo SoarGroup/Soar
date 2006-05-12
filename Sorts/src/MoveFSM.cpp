@@ -91,6 +91,7 @@ int MoveFSM::update() {
      stagesLeft--;
      gob->set_action("move", moveParams);
     }
+    //Cut out this else if you want to stop magnetism
     else
     {
      cout<<"Magnetized\n";
