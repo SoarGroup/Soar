@@ -1,3 +1,5 @@
+#!/usr/bin/ruby
+
 # Parses Soar working memory syntax and outputs a graphviz representation.
 #
 # Joseph Xu

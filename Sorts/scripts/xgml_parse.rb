@@ -1,3 +1,13 @@
+#!/usr/bin/ruby
+
+############################################################
+#
+# Converts a plan graph specified in xgml format into 
+# production rules that retrieve plan tasks when the
+# appropriate preconditions for that task has been met.
+# 
+############################################################
+
 require 'rexml/document'
 require 'set'
 include REXML
@@ -16,6 +26,7 @@ input=""
 ARGF.each {|line| input.concat(line)}
 
 tasks = Hash.new(0)
+initTasks = Set.new # tasks that don't have preconditions
 retrievals = Hash.new(0)
 deps = Hash.new(0)
 
@@ -23,7 +34,7 @@ doc = Document.new(input)
 graph = doc.root.elements["section[@name='graph']"]
 
 taskId = 0
-graph.each_element("section[@name='node']") {|nodeElem|
+graph.each_element("section[@name='node']") { |nodeElem|
   id = nodeElem.elements["attribute[@key='id']"][0].to_s
   label = nodeElem.elements["attribute[@key='label']"][0].to_s.gsub(/[\s\n*]/,"")
 
@@ -46,10 +57,11 @@ graph.each_element("section[@name='node']") {|nodeElem|
   paramList.scan(/(\w+)=(\w+)/) { |var, val| task.params[var] = val } if paramList != nil
 
   tasks[id] = task
+  initTasks.add(task)
   taskId += 1
 }
 
-graph.each_element("section[@name='edge']") {|edgeElem|
+graph.each_element("section[@name='edge']") { |edgeElem|
   source = tasks[edgeElem.elements["attribute[@key='source']"][0].to_s]
   target = tasks[edgeElem.elements["attribute[@key='target']"][0].to_s]
 
@@ -68,9 +80,62 @@ graph.each_element("section[@name='edge']") {|edgeElem|
     ns.add(source)
     deps[target] = ns
   end
+
+  # since there was a retrieval rule for the target task, 
+  # it has preconditions, and thus is not an initial task
+  initTasks.delete(target)
 }
 
 opId = 0      # to guarantee uniqueness
+
+#
+# Process all tasks without dependencies
+#
+initTasks.each { |t|
+  opName = "get-init-task-#{t.name}"
+
+  paramString = ""
+  t.params.each_pair { |param_name, param_val|
+    paramString.concat(" ^#{param_name} #{param_val}") 
+  }
+
+  op_proposal = <<EOF
+sp {plan-memory*propose*#{opName}
+   (state <s> ^name sorts
+              ^planning <pl>)
+   (<pl> ^execution-buffer <eb>
+         ^retrieval-buffer <rb>
+         ^newly-completed <nc> 
+         ^completed <c>)
+  -(<eb> ^task.name #{t.name})
+  -(<rb> ^task.name #{t.name})
+  -(<c> ^task.name #{t.name})
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name #{opName})}
+EOF
+
+  op_apply = <<EOF
+sp {plan-memory*apply*#{opName}
+   (state <s> ^name sorts
+              ^operator <o>
+              ^planning.retrieval-buffer <rb>)
+   (<o> ^name #{opName})
+-->
+   (<rb> ^task <rt>)
+   (<rt> ^name #{t.name}
+         ^instance-of #{t.instance_of}
+         ^params <p>)
+   (<p> #{paramString})}
+EOF
+
+  puts op_proposal,"\n",op_apply,"\n"
+  opId += 1
+}
+
+#
+# Process all tasks with dependencies
+#
 retrievals.each_pair { |src, adjList|
   adjList.each { |tgt|
     opName = "#{src.name}-trigger-#{tgt.name}-#{opId}"
@@ -116,7 +181,7 @@ sp {plan-memory*apply*#{opName}
    (<p> #{paramString})}
 EOF
 
-    puts op_proposal, op_apply
+    puts op_proposal,"\n",op_apply,"\n"
     opId += 1
   }
 }
