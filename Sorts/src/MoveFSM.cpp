@@ -15,6 +15,7 @@ MoveFSM::MoveFSM(GameObj* go)
   
   loc.x = (*gob->sod.x);
   loc.y = (*gob->sod.y);
+  precision = 400;
 }
 
 MoveFSM::~MoveFSM()
@@ -53,7 +54,8 @@ int MoveFSM::update() {
    {
      // this should be +/- some amount 
      // to account for multiple objects at the same location 
-     if (distToTarget < 400) {
+     if ((stagesLeft > 0 and distToTarget < 400)
+         or (stagesLeft == 0 and distToTarget <= precision)) {
        counter = 0;
        //If you arrived, then check is there is another path segment to traverse
        if (stagesLeft >= 0) {
@@ -109,10 +111,16 @@ int MoveFSM::update() {
 void MoveFSM::init(vector<sint4> p) 
 {
  FSM::init(p);
-
+ 
  TerrainBase::Loc l;
  l.x = p[0];
  l.y = p[1];
+ 
+ if (p.size() == 3) {
+   // third parameter specifies how close to the target we must get
+   precision = p[2];
+   precision *= precision; // since we use distance squared
+ }
 
  Sorts::terrainModule->findPath(gob, l, path);
  //path.locs.clear();
