@@ -35,7 +35,7 @@ my $soarurl = "https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite";
 my $nameandversion = "Soar Suite 8.6.2-r9";
 
 # File globs to completely remove from the tree (not distributed at all)
-my @remove = qw/byhand.txt INSTALL .project .cvsignore .svn *.xcodeproj *.so *.so.1 *.so.2 *.jnilib java_swt *.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource Figures Old *.tex Scripts/;
+my @remove = qw/Makefile.in 8.6.2.nsi.in byhand.txt INSTALL .project .cvsignore .svn *.xcodeproj *.so *.so.1 *.so.2 *.jnilib java_swt *.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource Figures Old *.tex Scripts/;
 
 # Globs to copy from working copy to Core component
 # WORKING --copy-to-> CORE
@@ -43,7 +43,7 @@ my @copyglobs = qw(*.pdf *.dll *.exe *.jar ClientSML.lib ElementXML.lib Connecti
 
 # Globs to MOVE from Source component to Core component
 # SOURCE --move-to-> CORE
-my @moveglobs = qw/COPYING Documentation Resources SoarLibrary agents maps templates tcl TSI TclEaters run-*.bat TestTclSML.tcl pkgIndex.tcl mac.soar FilterTcl/;
+my @moveglobs = qw/COPYING Documentation docs Resources SoarLibrary agents maps templates tcl TSI TclEaters run-*.bat TestTclSML.tcl pkgIndex.tcl mac.soar FilterTcl/;
 
 # Nullsoft installer script input file
 my $nsiinput = "8.6.2.nsi.in";
@@ -63,37 +63,38 @@ my $msprogramsname = $nameandversion;
 $msprogramsname =~ s/Suite //;
 
 # Parse command line options
-my $build = 1;
-my $checkout = 1;
-my $nsionly = 0;
+my $build = 0;
+my $checkout = 0;
+my $nsi = 0;
 my @dirstodelete;
 my @filestodelete;
 
 foreach (@ARGV) {
-	if ($_ eq "-nobuild") {
-		$build = 0;
-	} elsif ($_ eq "-nocheckout") {
-		$checkout = 0;
-	} elsif ($_ eq "-nsionly") {
-		$nsionly = 1;
+	if ($_ eq "-build") {
+		$build = 1;
+	} elsif ($_ eq "-checkout") {
+		$checkout = 1;
+	} elsif ($_ eq "-nsi") {
+		$nsi = 1;
 	}
 }
 
-if ($nsionly) {
+if ($nsi) {
 	&nsi_step;
 	exit(0);
 }
 
 if ($build == 1) {
 	&build_step;
+	exit(0);
 }
 
 if ($checkout == 1) {
 	&checkout_step;
+	&copy_step;
+	&move_step;
 }
 
-&copy_step;
-&move_step;
 exit(0);
 
 ################################
