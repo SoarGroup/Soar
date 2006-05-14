@@ -143,6 +143,73 @@ set PATH=%PATH%;$(TargetDir)..
 			<Tool
 				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
+		<Configuration
+			Name="Distribution|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			CharacterSet="2"
+			ManagedExtensions="FALSE"
+			WholeProgramOptimization="TRUE">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="2"
+				OmitFramePointers="TRUE"
+				AdditionalIncludeDirectories="&quot;$(TCL_INCLUDE)&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
+				StringPooling="TRUE"
+				MinimalRebuild="FALSE"
+				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="TRUE"
+				AssemblerListingLocation="$(IntDir)/"
+				ProgramDataBaseFileName="$(IntDir)/"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="FALSE"
+				DebugInformationFormat="0"/>
+			<Tool
+				Name="VCCustomBuildTool"
+				AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="tcl84.lib"
+				OutputFile="..\..\..\SoarLibrary\bin\Tcl_sml_ClientInterface\Tcl_sml_ClientInterface.dll"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;$(TCL_LIB)&quot;"
+				GenerateDebugInformation="FALSE"
+				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				ImportLibrary="$(OutDir)/$(ProjectName).lib"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				Description="Make Tcl package"
+				CommandLine="cd ..\..\..\SoarLibrary\bin\
+set PATH=%PATH%;$(TargetDir)..
+&quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl
+"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
 	</Configurations>
 	<References>
 		<ProjectReference
@@ -196,6 +263,20 @@ echo on
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:
+echo TCL_INCLUDE: %TCL_INCLUDE%
+echo TCL_LIB: %TCL_LIB%
+echo TCL_BIN: %TCL_BIN%
+echo SWIG: %SWIG%
+echo on
+&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 8.6.2  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;
+"
+					Outputs="$(InputName)_wrap.cxx"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Distribution|Win32">
 				<Tool
 					Name="VCCustomBuildTool"
 					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:

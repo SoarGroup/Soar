@@ -147,6 +147,76 @@ rmdir SoarLibrary\bin\sml /S /Q
 			<Tool
 				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
+		<Configuration
+			Name="Distribution|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			CharacterSet="2"
+			ManagedExtensions="FALSE"
+			WholeProgramOptimization="TRUE">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="2"
+				OmitFramePointers="TRUE"
+				AdditionalIncludeDirectories="&quot;$(JAVA_INCLUDE)&quot;;&quot;$(JAVA_INCLUDE)\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
+				StringPooling="TRUE"
+				MinimalRebuild="FALSE"
+				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="TRUE"
+				AssemblerListingLocation="$(IntDir)/"
+				ProgramDataBaseFileName="$(IntDir)/"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="FALSE"
+				DebugInformationFormat="0"/>
+			<Tool
+				Name="VCCustomBuildTool"
+				AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"/>
+			<Tool
+				Name="VCLinkerTool"
+				OutputFile="..\..\..\SoarLibrary\bin\Java_sml_ClientInterface.dll"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories=""
+				GenerateDebugInformation="FALSE"
+				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				ImportLibrary="$(OutDir)\$(ProjectName).lib"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				Description="Create sml.jar at release point"
+				CommandLine="echo on
+cd ..\..\..
+xcopy Core\ClientSMLSWIG\Java\build\*.java SoarLibrary\bin\sml\* /Y /I /Q
+&quot;%JAVA_BIN%/javac&quot; SoarLibrary\bin\sml\*.java
+&quot;%JAVA_BIN%/jar&quot; cf SoarLibrary\bin\sml.jar -C SoarLibrary\bin sml
+rmdir SoarLibrary\bin\sml /S /Q
+"/>
+			<Tool
+				Name="VCPreBuildEventTool"
+				Description="Remove previous Java files"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
 	</Configurations>
 	<References>
 		<ProjectReference
@@ -212,6 +282,24 @@ cd ..
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Performing Custom Build Step on Java_sml_ClientInterface.i"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:
+echo JAVA_INCLUDE: %JAVA_INCLUDE%
+echo JAVA_BIN: %JAVA_BIN%
+echo SWIG: %SWIG%
+echo Clean up old java files
+echo on
+cd build
+del *.java
+cd ..
+&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;
+"
+					Outputs="$(InputName)_wrap.cxx"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Distribution|Win32">
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Performing Custom Build Step on Java_sml_ClientInterface.i"
