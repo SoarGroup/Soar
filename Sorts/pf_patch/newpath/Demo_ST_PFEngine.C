@@ -25,41 +25,44 @@ namespace Demo_SimpleTerrain
     disp = subtile_points/2;
   }
 
-bool ST_Terrain::PFEngine::find_path(const TerrainBase::Loc &start,
-                                       const TerrainBase::Loc &goal,
+  //-----------------------------------------------------------------------------
+  bool ST_Terrain::PFEngine::find_path(const TerrainBase::Loc &start,
+                                       const TerrainBase::Loc &goal, 
                                        TerrainBase::Path& output)
   {
-    SimpleMap<AStarCell> amap(map->get_w(), map->get_h());
-    // will need a diff version for air pathfinding
-    MapPtr m = map;
+    SimpleMap<AStarCell> amap(map.get_w(), map.get_h());
+    MapPtr m = &map;
     Vector<TerrainBase::Loc> path;
     Vector<TerrainBase::Loc> clear;
 
     sint4 x1, y1;
     x1 = start.x;
-    y1 = start.y
+    y1 = start.y;
     x1 = world2x(x1);
     y1 = world2y(y1);
     sint4 x2 = world2x(goal.x);
     sint4 y2 = world2y(goal.y);
 
     // constrain goal to inside the map
-    x2 = min(max(x2,(sint4)1), map->get_w()-2);
-    y2 = min(max(y2,(sint4)1), map->get_h()-2);
+    x2 = min(max(x2,(sint4)1), map.get_w()-2);
+    y2 = min(max(y2,(sint4)1), map.get_h()-2);
 
     bool found = false;
-    int r = 3;
+    int r = 3; // for workers
     int newr = r / subtile_points;
     if( r%subtile_points >= subtile_points/2 )
       newr++;
     Bucket b = BucketFactory::get_bucket(newr);
     b.set_center(TerrainBase::Loc(x1, y1));
 
+    // clear current location (ignoring the target object)
     clear_location(b, *m, clear);
 
     // now find a path
     cout << "FINDING PATHS" << endl;
     found = simple_astar(*m, amap, b, x2, y2);
+
+    // and return this object
 
     if (!found) {
       cout << "no path found" << endl;
@@ -72,11 +75,11 @@ bool ST_Terrain::PFEngine::find_path(const TerrainBase::Loc &start,
       //    path.push_back(TerrainBase::Loc(x2world(x2),y2world(y2)));
       //    cout << "[G]" << "\t: " << "X: "<< goal.x << " Y: " <<  goal.y << endl;
       do {
-        (*map)(cell).flags = 1;
+        map(cell).flags = 1;
         uint4 p = amap(cell).parent;
         if (p) {
-          x2 = x2world(map->i2x(p));
-          y2 = y2world(map->i2y(p));
+          x2 = x2world(map.i2x(p));
+          y2 = y2world(map.i2y(p));
 
           path.push_back(TerrainBase::Loc(x2,y2));
           //       uint4 i = path.size()-1;
@@ -90,11 +93,11 @@ bool ST_Terrain::PFEngine::find_path(const TerrainBase::Loc &start,
         path.erase(path.end()-1);
 
       //add the part to clear current location
-      FORALL (clear, i) {
+      FORALL (clear, i) { 
         path.push_back(*i);
       }
       //    cout << "[S]" << "\t: " << "X: "<< obj->get_int("x") << " Y: " <<  obj->get_int("y") << endl;
-      if (path.size() > 0) {
+      if (path.size() > 0) { 
         smoothen_path(path);
       }
     }
@@ -104,7 +107,6 @@ bool ST_Terrain::PFEngine::find_path(const TerrainBase::Loc &start,
     // fixme: is this correct? what if path.size() == 0 ?
     return found;
   }
-  //-----------------------------------------------------------------------------
   bool ST_Terrain::PFEngine::find_path(const Object *obj,
                                        const TerrainBase::Loc &goal, 
                                        TerrainBase::Path& output)
