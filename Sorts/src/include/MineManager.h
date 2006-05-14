@@ -72,7 +72,7 @@ struct ltMiningRoutePtr {
     double d2 = g2->optimality;
     if (d1 == d2) {
       // give an arbitrary order if optimality is the same
-      return ((int)&g1 < (int)&g2);
+      return ((int)g1 < (int)g2);
     }
     return (d1 < d2);
   }

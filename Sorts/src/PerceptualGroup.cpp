@@ -13,6 +13,7 @@
 #include "AttackManager.h"
 #include "AttackManagerRegistry.h"
 #include "AttackFSM.h"
+#include "MineManager.h"
 
 PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
   members.insert(unit);
@@ -436,6 +437,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
   list<int>::iterator intIt;  
   list<PerceptualGroup*>::iterator targetGroupIt;  
   Vector<sint4> tempVec;
+  list<SoarGameObject*> sgoList;
   
   switch (type) {
     case OA_MOVE:
@@ -465,6 +467,9 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       sticky = true;
       // this group is stuck together from now on,
       // until Soar issues an unstick action
+      
+      getMembers(sgoList);
+      Sorts::mineManager->prepareRoutes(sgoList);
       
       for (currentObject = members.begin();
            currentObject != members.end();

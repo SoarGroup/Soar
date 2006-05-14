@@ -21,7 +21,7 @@ PerceptualGroupManager::PerceptualGroupManager() {
     
   // this default should be reflected in the agent's assumptions
   // (1024 = 32^2)
-  visionParams.groupingRadius = 1024;
+  visionParams.groupingRadius = 102400;
   
   // the number of objects near the focus point to add
   // agent can change this, if it wishes to cheat

@@ -4,6 +4,7 @@
 #include "Sorts.h"
 #include "PerceptualGroup.h"
 #include "InternalGroup.h"
+#include "MineManager.h"
 
 // Orts includes
 #include "GameObj.H"
@@ -106,10 +107,17 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   // PerceptualGroupManager takes care of setting the object->group pointers
   Sorts::pGroupManager->makeNewGroup(newObj);
   Sorts::iGroupManager->makeNewGroup(newObj);
+
+  if (gameObj->bp_name() == "mineral") {
+    Sorts::mineManager->addMineral(newObj);
+  }
+  else if (gameObj->bp_name() == "controlCenter") {
+    Sorts::mineManager->addControlCenter(newObj);
+  }
   
 
   objectMap[gameObj] = newObj;
-  
+   
   /*if (liveIDs.find(id) != liveIDs.end()) {
     cout << "ERROR: appeard object is there already: " << (int)gameObj << endl;
   }*/
@@ -126,6 +134,13 @@ void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   sObject->getPerceptualGroup()->removeUnit(sObject);
   if(sObject->getInternalGroup()!=NULL)
    sObject->getInternalGroup()->removeUnit(sObject);
+  
+  if (gameObj->bp_name() == "mineral") {
+    Sorts::mineManager->removeMineral(sObject);
+  }
+  else if (gameObj->bp_name() == "controlCenter") {
+    Sorts::mineManager->removeControlCenter(sObject);
+  }
   
   delete objectMap[gameObj];
   objectMap.erase(gameObj);
