@@ -1,13 +1,12 @@
-
+
 ###
-###		7.4	Operator Subgoaling (modified extensively by JEL/mvp 07-Nov-93)
-#######################################################################################
+###		7.4	Operator Subgoaling #######################################################################################
 ###  RESTRICTIONS ON USE:
 ###
-###     1. The problem space used for operator implmentation can not be exactly
+###     1. The problem space used for operator implementation can not be exactly
 ###     the same problem space used for operator subgoaling (or the original
 ###     task problem space).  It can be a duplicate, but can not have the same
-###     identifier.  This is because operator subgoaling is signalled by the
+###     identifier.  This is because operator subgoaling is signaled by the
 ###     selection of the task space as the problem space in the operator
 ###     no-change subgoal.
 ###
@@ -167,7 +166,7 @@ sp {default*generic*opsub*subgoal-on-all-desired-super-desireds
 	      ^impasse no-change ^attribute operator ^superstate <ss>)
    (<ss> ^problem-space <p> ^desired <o>)
    -->
-   (<s> ^super-desired <o> <o> &)}
+   (<s> ^super-desired <o>)}
  
 sp {default*generic*opsub*subgoal-on-all-super-desireds
    :default
@@ -175,7 +174,7 @@ sp {default*generic*opsub*subgoal-on-all-super-desireds
 	      ^impasse no-change ^attribute operator ^superstate <ss>)
    (<ss> ^problem-space <p> ^super-desired <o>)
    -->
-   (<s> ^super-desired <o> <o> &)}
+   (<s> ^super-desired <o>)}
  
 sp {default*apply*evaluate*augment*evaluation-operator-super-desired
    :default
@@ -183,7 +182,7 @@ sp {default*apply*evaluate*augment*evaluation-operator-super-desired
    (<ss> ^super-desired <d>)
    (<o> ^evaluation <e> ^type evaluation)
    -->
-   (<o> ^super-desired <d> <d> &)}
+   (<o> ^super-desired <d>)}
  
 sp {default*elaborate*state*eval*super-desired
    :default
@@ -191,7 +190,7 @@ sp {default*elaborate*state*eval*super-desired
    (<ss> ^operator <so>)
    (<so> ^type evaluation ^super-desired <d>)
    -->
-   (<s> ^super-desired <d> <d> &)}
+   (<s> ^super-desired <d>)}
 
 
 

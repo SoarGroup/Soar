@@ -5,16 +5,13 @@
 ## File            : default/simple.soar
 ## Author          : John Laird
 ## Created on      : Mon Feb 27 16:15:34 1989  
-## Last Modified By:  <laird@SOAR>
-## Last Modified On: 28 Sep 1999, 12:40:13
+## Last Modified By:  <laird@umich.edu>
+## Last Modified On: 14 May, 2006
 ## 
-## Contents:     Simple Default productions for Soar 8.1
+## Contents:     Simple Default productions for Soar 8.6
 ##
 ###############################################################################
 ##
-## Significant Changes made to Convert to Soar 8.1
-##    Removed names on top state (top-state, top-goal).
-##    Causes problems with other default rules
 ###
 ###
 ###		7.1	Default knowledge for the top context
