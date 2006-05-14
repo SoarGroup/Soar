@@ -15,7 +15,9 @@
 #include "InternalGroupManager.h"
 #include "MapManager.h"
 #include "FeatureMapManager.h"
+//#include "AttackManagerRegistry.h"
 //#include "MineManager.h"
+class AttackManagerRegistry;
 class MineManager;
 
 #include "Satellite.h"
@@ -24,16 +26,17 @@ class MineManager;
 class Sorts {
   public:
     Sorts
-    ( SoarInterface*      _SoarIO,
-      OrtsInterface*      _OrtsIO,
-      PerceptualGroupManager*       _pGroupManager, 
-      InternalGroupManager* _iGroupManager,
-      MapManager*         _mapManager, 
-      FeatureMapManager*  _featureMapManager,
-      TerrainModule*      _tm,
-      Satellite*          _satellite,
-      MineManager*        _mineMan,
-      pthread_mutex_t*    _mutex)
+    ( SoarInterface*          _SoarIO,
+      OrtsInterface*          _OrtsIO,
+      PerceptualGroupManager* _pGroupManager, 
+      InternalGroupManager*   _iGroupManager,
+      MapManager*             _mapManager, 
+      FeatureMapManager*      _featureMapManager,
+      TerrainModule*          _tm,
+      Satellite *             _satellite,
+      AttackManagerRegistry*  _amr,
+      MineManager*            _mineMan,
+      pthread_mutex_t*        _mutex )
     {
       SoarIO = _SoarIO;
       OrtsIO = _OrtsIO;
@@ -43,22 +46,24 @@ class Sorts {
       featureMapManager = _featureMapManager;
       terrainModule = _tm;
       satellite = _satellite;
+      amr = _amr;
       mineManager = _mineMan;
       mutex = _mutex;
       catchup = false;
     }
 
-    static SoarInterface* SoarIO;
-    static OrtsInterface* OrtsIO;
-    static PerceptualGroupManager* pGroupManager;
-    static InternalGroupManager* iGroupManager;
-    static MapManager* mapManager;
-    static FeatureMapManager* featureMapManager;
-    static TerrainModule* terrainModule;
-    static Satellite *satellite;
-    static MineManager *mineManager;
-    static pthread_mutex_t* mutex;
-    static bool catchup;
+    static SoarInterface*           SoarIO;
+    static OrtsInterface*           OrtsIO;
+    static PerceptualGroupManager*  pGroupManager;
+    static InternalGroupManager*    iGroupManager;
+    static MapManager*              mapManager;
+    static FeatureMapManager*       featureMapManager;
+    static TerrainModule*           terrainModule;
+    static Satellite*               satellite;
+    static AttackManagerRegistry*   amr;
+    static MineManager*             mineManager;
+    static pthread_mutex_t*         mutex;
+    static bool                     catchup;
 };
 
 

@@ -39,7 +39,7 @@ bool canHit(GameObj *gob, const Circle& c, bool isGround) {
   if (weapon == NULL) {
     return false;
   }
-  double d = squaredDistance(*gob->sod.x, *gob->sod.y, c.x, c.y);
+  double d = squaredDistance(*gob->sod.x, *gob->sod.y, (int) c.x, (int) c.y);
   double r;
   if (isGround) {
     r = weapon->get_int("max_ground_range") + *gob->sod.radius + c.r;
@@ -55,7 +55,7 @@ bool canHit(GameObj* atk, const Circle& loc, GameObj *tgt) {
   if (weapon == NULL) {
     return false;
   }
-  double d = squaredDistance(loc.x, loc.y, *tgt->sod.x, *tgt->sod.y);
+  double d = squaredDistance((int) loc.x, (int) loc.y, *tgt->sod.x, *tgt->sod.y);
   double r;
   if (*tgt->sod.zcat == GameObj::ON_LAND) {
     r = weapon->get_int("max_ground_range") + *atk->sod.radius + *tgt->sod.radius;
@@ -68,7 +68,7 @@ bool canHit(GameObj* atk, const Circle& loc, GameObj *tgt) {
 }
 
 bool canHit(const Circle& c1, const Circle& c2, double range) {
-  double d = squaredDistance(c1.x, c1.y, c2.x, c2.y);
+  double d = squaredDistance((int) c1.x, (int) c1.y, (int) c2.x, (int) c2.y);
   double r = range + c1.r + c2.r;
   return r * r >= d;
 }
@@ -121,10 +121,11 @@ bool attackArcPos(GameObj* atk, GameObj* tgt, Circle& pos) {
 }
 
 AttackManager::AttackManager
-( const vector<SoarGameObject*>& _units, 
+( const set<SoarGameObject*>& _units, 
   const vector<SoarGameObject*>& _targets)
-: units(_units), targets(_targets), currTarget(NULL)
+: targets(_targets), currTarget(NULL)
 {
+  units.insert(units.begin(), _units.begin(), _units.end());
 }
 
 

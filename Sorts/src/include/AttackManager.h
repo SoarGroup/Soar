@@ -1,7 +1,8 @@
 #ifndef AttackManager_H
 #define AttackManager_H
 
-#include<vector>
+#include <vector>
+#include <set>
 
 #include "Circle.h"
 #include "SoarGameObject.h"
@@ -15,7 +16,7 @@ using namespace std;
 class AttackManager {
 public:
   AttackManager
-  ( const vector<SoarGameObject*>& _units, 
+  ( const set<SoarGameObject*>& _units, 
     const vector<SoarGameObject*>& _targets );
 
   int direct(AttackFSM* fsm);

@@ -7,12 +7,14 @@
 #include "Object.H"
 
 // our includes
-#include "include/PerceptualGroup.h"
-#include "include/general.h"
-#include "include/Sorts.h"
+#include "PerceptualGroup.h"
+#include "general.h"
+#include "Sorts.h"
+#include "AttackManager.h"
+#include "AttackManagerRegistry.h"
+#include "AttackFSM.h"
 
-PerceptualGroup::PerceptualGroup
-( SoarGameObject* unit){
+PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
   members.insert(unit);
   unit->setPerceptualGroup(this);
   setHasStaleMembers();
@@ -46,6 +48,7 @@ PerceptualGroup::PerceptualGroup
 
   centerX = 0;
   centerY = 0;
+
   ///cout << "XXX created: " << (int) this << endl;
 }
 
@@ -152,10 +155,13 @@ void PerceptualGroup::generateData() {
     x += *(*currentObject)->gob->sod.x;
     y += *(*currentObject)->gob->sod.y;
 
-    double hi, hj;
-    getHeadingVector((*currentObject)->gob->get_int("heading"), &hi, &hj);
-    avg_heading_i += hi;
-    avg_heading_j += hj;
+    // average heading over those units that could move
+    if ((*currentObject)->gob->has_attr("heading")) {
+      double hi, hj;
+      getHeadingVector((*currentObject)->gob->get_int("heading"), &hi, &hj);
+      avg_heading_i += hi;
+      avg_heading_j += hj;
+    }
 
     objStatus = (*currentObject)->getStatus();
     if (objStatus == OBJ_RUNNING) {
@@ -504,9 +510,32 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       cout << "UNSTUCK!\n";
       break;
 
-    case OA_ATTACK:
-      assert(params.size() == 1);
-      assert(targets.size() == 1);
+    case OA_ATTACK: {
+      vector<SoarGameObject*> myUnits;
+      myUnits.insert(myUnits.begin(), members.begin(), members.end());
+
+      vector<SoarGameObject*> allTargets;
+      for( list<PerceptualGroup*>::iterator
+           i =  targets.begin();
+           i != targets.end();
+           i++)
+      {
+        allTargets.insert(allTargets.end(), (*i)->members.begin(), (*i)->members.end());
+      }
+      
+      AttackManager* m = new AttackManager(members, allTargets);
+      Vector<sint4> params;
+      params.push_back(Sorts::amr->add(m));
+
+      for(set<SoarGameObject*>::iterator
+          i =  members.begin();
+          i != members.end();
+          i++)
+      {
+        (*i)->issueCommand(type, params);
+      }
+      break;
+    }
 
     default:
       assert(false);  
@@ -539,16 +568,9 @@ void PerceptualGroup::setHasStaleProperties(bool val) {
   hasStaleProperties = val;
 }
 
-list<SoarGameObject*> PerceptualGroup::getMembers() {
-  list<SoarGameObject*> lst; 
-  set<SoarGameObject*>::iterator memberIter=members.begin();
-
-  while (memberIter != members.end()) {
-    lst.push_back(*memberIter);
-    memberIter++;
-  }
-
-  return lst;
+void PerceptualGroup::getMembers(list<SoarGameObject*> memberList) {
+  memberList.clear();
+  memberList.insert(memberList.begin(), members.begin(), members.end());
 }
 
 SoarGameObject* PerceptualGroup::getCenterMember() {

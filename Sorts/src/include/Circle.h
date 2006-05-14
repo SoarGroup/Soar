@@ -11,14 +11,14 @@ public:
   : x(_x), y(_y), r(_r)
   { rsq = r * r; }
 
-  bool contains(double px, double py) {
+  bool contains(double px, double py) const {
     double dx = px - x;
     double dy = py - y;
     return (dx * dx + dy * dy <= rsq);
   }
 
 
-  bool intersects(const Circle& other) {
+  bool intersects(const Circle& other) const {
     double dx = other.x - x;
     double dy = other.y - y;
     double rs = other.r + r;

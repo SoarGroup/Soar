@@ -24,7 +24,7 @@ class InternalGroup {
     void updateCenterLoc();
     bool isEmpty();
 
-    list<SoarGameObject*> getMembers(); 
+    void getMembers(list<SoarGameObject*> memberList); 
   
     void mergeTo(InternalGroup* target);
     bool getHasStaleMembers();

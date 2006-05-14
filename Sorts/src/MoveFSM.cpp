@@ -201,6 +201,15 @@ bool MoveFSM::getMoveVector()
  return answer;
 }
 
+void MoveFSM::stop() {
+  Vector<sint4> params;
+  params.push_back(*gob->sod.x);
+  params.push_back(*gob->sod.y);
+  params.push_back(0);
+  gob->set_action("move", params);
+  state = ALREADY_THERE;
+}
+
 double MoveFSM::getHeading(sint4 x, sint4 y)
 {
  x=0;

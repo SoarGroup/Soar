@@ -3,7 +3,6 @@
 #include <iostream>
 #include <sstream>
 
-
 using namespace std;
 
 string catStrInt(const char* str, int x) {

@@ -69,7 +69,7 @@ class PerceptualGroupManager {
     
 
     void setAllCategoriesStale();
-    
+
 };
 
 struct perceptualGroupingStruct {

@@ -9,6 +9,13 @@ Rectangle::Rectangle(int _xmin, int _xmax, int _ymin, int _ymax)
 : xmin(_xmin), xmax(_xmax), ymin(_ymin), ymax(_ymax)
 { }
 
+Rectangle::Rectangle(int x, int y, int width, int height, bool ugly) {
+  xmin = x - width / 2;
+  xmax = x + width / 2;
+  ymin = y - height / 2;
+  ymax = y + height / 2;
+}
+
 Rectangle::Rectangle(const Rectangle& other) 
 : xmin(other.xmin), xmax(other.xmax), ymin(other.ymin), ymax(other.ymax)
 { }
@@ -59,6 +66,27 @@ bool Rectangle::intersects(const Rectangle& other) {
     }
   }
   return false;
+}
+
+bool Rectangle::intersects(const Circle& c) {
+  if (xmin <= c.x && c.x <= xmax) {
+    return (ymin - c.r <= c.y && c.y <= ymax + c.r);
+  }
+  if (ymin <= c.y && c.y <= ymax) {
+    return (xmin - c.r <= c.x && c.x <= xmax + c.r);
+  }
+  if (c.x < xmin) {
+    if (c.y < ymin) {
+      return c.contains(xmin, ymin);
+    }
+    return c.contains(xmin, ymax);
+  }
+  else { // c.x > xmax
+    if (c.y < ymin) {
+      return c.contains(xmax, ymin);
+    }
+    return c.contains(xmax, ymax);
+  }
 }
 
 bool Rectangle::contains(int x, int y) {

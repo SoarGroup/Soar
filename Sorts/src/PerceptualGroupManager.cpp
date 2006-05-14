@@ -379,7 +379,7 @@ void PerceptualGroupManager::reGroup() {
           
           centerGroupingList.push_back(objectData);
           objectData.oldGroup = false;
-          groupMembers = (*groupIter)->getMembers();
+          (*groupIter)->getMembers(groupMembers);
           objectIter = groupMembers.begin();
           while (objectIter != groupMembers.end()) {
             if ((*objectIter) != centerObject){
@@ -398,7 +398,7 @@ void PerceptualGroupManager::reGroup() {
           objectData.group = *groupIter;
           objectData.assigned = false;
           objectData.oldGroup = false;
-          groupMembers = (*groupIter)->getMembers();
+          (*groupIter)->getMembers(groupMembers);
           objectIter = groupMembers.begin();
           while (objectIter != groupMembers.end()) {
             objectData.object = *objectIter;

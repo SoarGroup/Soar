@@ -32,7 +32,7 @@ class PerceptualGroup {
                       list<PerceptualGroup*> targets);
     bool isEmpty();
 
-    list<SoarGameObject*> getMembers(); 
+    void getMembers(list<SoarGameObject*> memberList); 
   
     void mergeTo(PerceptualGroup* target);
     bool getHasStaleMembers();
@@ -148,6 +148,7 @@ class PerceptualGroup {
     int fmFeatureStrength;
 
     int distToFocus;
+
 };
 
 #define GRP_STATUS_RUNNING 0

@@ -124,16 +124,9 @@ void InternalGroup::setHasStaleMembers() {
   hasStaleMembers = true;
 }
 
-list<SoarGameObject*> InternalGroup::getMembers() {
-  list<SoarGameObject*> lst; 
-  set<SoarGameObject*>::iterator memberIter=members.begin();
-
-  while (memberIter != members.end()) {
-    lst.push_back(*memberIter);
-    memberIter++;
-  }
-
-  return lst;
+void InternalGroup::getMembers(list<SoarGameObject*> memberList) {
+  memberList.clear();
+  memberList.insert(memberList.begin(), members.begin(), members.end());
 }
 
 int InternalGroup::getSize() {

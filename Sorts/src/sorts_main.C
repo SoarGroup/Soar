@@ -9,6 +9,7 @@
 #include "SoarInterface.h"
 #include "OrtsInterface.h"
 #include "MapManager.h"
+#include "AttackManagerRegistry.h"
 #include "MineManager.h"
 #include "GridMapTileGrouper.h"
 #include "FeatureMapManager.h"
@@ -219,6 +220,7 @@ int main(int argc, char *argv[]) {
 
   Satellite satellite;
   MineManager mineMan;
+  AttackManagerRegistry amr;
 
   Sorts sorts(&soarInterface, 
               &ortsInterface, 
@@ -228,6 +230,7 @@ int main(int argc, char *argv[]) {
               &featureMapManager,
               &tm,
               &satellite,
+              &amr,
               &mineMan,
               &sortsMutex);
 

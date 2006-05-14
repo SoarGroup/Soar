@@ -4,6 +4,7 @@
 #include "FSM.h"
 #include "Sorts.h"
 #include "Satellite.h"
+#include "SimpleTerrain.H"
 
 class MoveFSM: public FSM {
  public:
@@ -17,6 +18,8 @@ class MoveFSM: public FSM {
   double getHeading(sint4, sint4);
   TerrainBase::Loc getHeadingVector(sint4 , sint4);
   
+
+  void stop();
 
  private:
 	enum{IDLE,WARMUP,MOVING,ALREADY_THERE, TURNING};

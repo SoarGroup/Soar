@@ -10,11 +10,11 @@ class AttackManager;
 class AttackFSM : public FSM {
 
 public:
-	AttackFSM(GameObj*, AttackManager*);
+	AttackFSM(GameObj*);
 	~AttackFSM();
 
+  void init(vector<sint4> p);
 	int update();
-
 
 // these are all commands from the attack manager
   void attack(SoarGameObject* t);
@@ -22,15 +22,20 @@ public:
   SoarGameObject* getTarget() { return target; }
 
   void move(int x, int y);
-  bool isMoving() { return moveFSM != NULL; }
+  bool isMoving() { return moving; }
   void getDestination(int* x, int* y);
   void stopMoving();
 
 private:
   AttackManager* manager;
+
   SoarGameObject* target;
+  ScriptObj* weapon;
+
   MoveFSM* moveFSM;
   int dest_x, dest_y;
+
+  bool moving;
 };
 
 

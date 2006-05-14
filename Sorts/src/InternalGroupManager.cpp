@@ -97,7 +97,7 @@ void InternalGroupManager::reGroup() {
         // not an old group- don't care about center distinction
         objectData.group = *groupIter;
         objectData.assigned = false;
-        groupMembers = (*groupIter)->getMembers();
+        (*groupIter)->getMembers(groupMembers);
         objectIter = groupMembers.begin();
         while (objectIter != groupMembers.end()) {
           objectData.object = *objectIter;
