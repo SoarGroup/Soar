@@ -4,7 +4,7 @@
 #include "FSM.h"
 #include "Sorts.h"
 #include "Satellite.h"
-#include "SimpleTerrain.H"
+#include "Demo_SimpleTerrain.H"
 
 class MoveFSM: public FSM {
  public:

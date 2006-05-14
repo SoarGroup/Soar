@@ -88,25 +88,27 @@ bool PerceptualGroupManager::assignActions() {
   PerceptualGroup* sourceGroup;
   
   while (actionIter != newActions.end()){
-    targetGroups.clear();
-    list<PerceptualGroup*>& groups = (*actionIter).groups;
-    groupIter = groups.begin();
-    
-    assert(groupIter != groups.end());
-    // the first group is the group the action is applied to, it must exist
-    
-    sourceGroup = *groupIter;
-    groupIter++;
-    
-    while (groupIter != groups.end()) {
-      targetGroups.push_back(*groupIter);
+    if ((*actionIter).type != OA_NO_SUCH_ACTION) {
+      targetGroups.clear();
+      list<PerceptualGroup*>& groups = (*actionIter).groups;
+      groupIter = groups.begin();
+      
+      assert(groupIter != groups.end());
+      // the first group is the group the action is applied to, it must exist
+      
+      sourceGroup = *groupIter;
       groupIter++;
+      
+      while (groupIter != groups.end()) {
+        targetGroups.push_back(*groupIter);
+        groupIter++;
+      }
+      
+      success &= sourceGroup->assignAction(
+              (*actionIter).type, (*actionIter).params, targetGroups);
+      
+      actionIter++;
     }
-    
-    success &= sourceGroup->assignAction(
-            (*actionIter).type, (*actionIter).params, targetGroups);
-    
-    actionIter++;
   }
 
   return success;

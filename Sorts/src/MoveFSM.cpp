@@ -5,7 +5,7 @@
 using namespace std;
 
 //Comment out to turn magnetism off
-#define MAGNETISM
+//#define MAGNETISM
 
 MoveFSM::MoveFSM(GameObj* go) 
             : FSM(go) 

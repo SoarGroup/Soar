@@ -32,7 +32,7 @@ class PerceptualGroup {
                       list<PerceptualGroup*> targets);
     bool isEmpty();
 
-    void getMembers(list<SoarGameObject*> memberList); 
+    void getMembers(list<SoarGameObject*>& memberList); 
   
     void mergeTo(PerceptualGroup* target);
     bool getHasStaleMembers();

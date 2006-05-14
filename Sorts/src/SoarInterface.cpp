@@ -354,9 +354,12 @@ void SoarInterface::processObjectAction(ObjectActionType type,
     //assert(groupIdLookup.find(groupId) != groupIdLookup.end());
     if (groupIdLookup.find(groupId) == groupIdLookup.end()) {
       cout << "ERROR: no group " << groupId << endl;
-      assert(false);
+      newAction.type = OA_NO_SUCH_ACTION;
+      //assert(false);
     }
-    newAction.groups.push_back(groupIdLookup[groupId]);
+    else {
+      newAction.groups.push_back(groupIdLookup[groupId]);
+    }
   }
   
   // append all the integer parameters

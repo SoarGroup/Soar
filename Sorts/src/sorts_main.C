@@ -16,7 +16,7 @@
 #include "Sorts.h"
 
 #include "TerrainModule.H"
-#include "SimpleTerrain.H"
+#include "Demo_SimpleTerrain.H"
 
 
 using namespace std;
@@ -105,7 +105,7 @@ void* RunOrts(void* ptr) {
   }
 }
 
-typedef SimpleTerrain::ST_Terrain Terrain;
+typedef Demo_SimpleTerrain::ST_Terrain Terrain;
 
 int main(int argc, char *argv[]) {
 
@@ -134,11 +134,13 @@ int main(int argc, char *argv[]) {
   pthread_mutex_t soarMutex = PTHREAD_MUTEX_INITIALIZER;
  
   pthread_mutex_t sortsMutex = PTHREAD_MUTEX_INITIALIZER;
+  cout << "about to init sml\n";
 
   /*******************
    * Init sml client *
    *******************/
   sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
+  cout << "done\n";
 
   // Check that nothing went wrong.  We will always get back a kernel object
   // even if something went wrong and we have to abort.

@@ -117,6 +117,7 @@ void PerceptualGroup::generateData() {
   soarData.stringFloatPairs.clear();
   soarData.stringStringPairs.clear();
   soarData.regionsOccupied.clear();
+  soarData.stringFloatPairs.clear();
 
   int health = 0;
   int speed = 0;
@@ -458,43 +459,9 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       break;
 
     case OA_MINE:
-      // targets are the mineral patch x, y, and command center
-      // in that order
-
-      // FSM parameters:
-      // x,y of mineral-patch edge relative to command-center
-      // x,y of command-center edge relative to mineral-patch
-      assert(targets.size() == 2);
-      targetGroupIt = targets.begin();
-      PerceptualGroup* mpGroup;
-      PerceptualGroup* ccGroup;
-      mpGroup = *targetGroupIt;
-      targetGroupIt++;
-      ccGroup = *targetGroupIt;
-     
-      // get the centers of the mineral patch and command center
-      int mpX, mpY;
-      mpGroup->getCenterLoc(mpX, mpY);
-      
-      int ccX, ccY;
-      ccGroup->getCenterLoc(ccX, ccY);
-      
-      int mpEdgeX, mpEdgeY;
-      int ccEdgeX, ccEdgeY;
-      
-      // get the location on the edge of the mineral patch the worker
-      // should walk to
-      mpGroup->getLocNear(ccX, ccY, mpEdgeX, mpEdgeY);
-      // likewise for the edge of the command center
-      ccGroup->getLocNear(mpX, mpY, ccEdgeX, ccEdgeY);
-
-      // fill in FSM parameters
-      tempVec.push_back(mpEdgeX);
-      tempVec.push_back(mpEdgeY);
-      tempVec.push_back(ccEdgeX);
-      tempVec.push_back(ccEdgeY);
-
+      assert(targets.size() == 0);
       currentCommand = "mine";
+      tempVec.clear();
       sticky = true;
       // this group is stuck together from now on,
       // until Soar issues an unstick action
@@ -569,7 +536,7 @@ void PerceptualGroup::setHasStaleProperties(bool val) {
   hasStaleProperties = val;
 }
 
-void PerceptualGroup::getMembers(list<SoarGameObject*> memberList) {
+void PerceptualGroup::getMembers(list<SoarGameObject*>& memberList) {
   memberList.clear();
   memberList.insert(memberList.begin(), members.begin(), members.end());
 }
