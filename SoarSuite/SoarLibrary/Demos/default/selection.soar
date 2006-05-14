@@ -5,12 +5,11 @@
 ## File            : default/selection.soar
 ## Author          : John Laird
 ## Created on      : Mon Feb 27 16:15:34 1989  
-## Last Modified On: 26 October, 2003
+## Last Modified On: 14 May, 2006
 ## 
-## Contents:     Default productions for selection problem space for Soar 8.5
+## Contents:     Default productions for selection problem space for Soar 8.6
 ##
 ######################################################################
-### Change made for Soar 8.5
 ###
 ### Significant Changes made to Convert to Soar 8.2
 ###    1. evaluate-object -> evaluate-operator
@@ -21,9 +20,7 @@
 ###       assume problem space will be regenerated in subgoal based on name
 ###    6. Added some documentation
 ###    
-
 ###
-
 ###    State structure:
 ###    (state <s> ^evaluation <e>
 ###               ^not-all-operators-evaulated true
@@ -42,8 +39,6 @@
 ###         ^superproblem-space
 ###         ^superstate 
 
-
-
 ### Use selection for all choice multiple, impasses 
 
 sp {selection*elaborate*name*selection
@@ -51,7 +46,6 @@ sp {selection*elaborate*name*selection
    (state <s> ^choices multiple)
    -->
    (<s> ^name selection)}
-
 
 ###
 ###      7.3.1 The evaluate-operator operator
@@ -71,7 +65,6 @@ sp {selection*propose*evaluate-operator
    (<o> ^name evaluate-operator 
         ^superoperator <i>)}
 
-
 ### Make them indifferent if not ^operator-selection not-indifferent.
 
 sp {selection*select*evaluate-operator*indifferent
@@ -83,7 +76,7 @@ sp {selection*select*evaluate-operator*indifferent
    -->
    (<s> ^operator <o> =)}
 
-### Create evaluation once the eval operator is selected.
+### Create evaluation once the evaluate operator is selected.
  
 sp {selection*apply*state*evaluation
    :default
@@ -106,8 +99,6 @@ sp {selection*elaborate*evaluate-operator*evaluation
    -->
    (<o> ^evaluation <e>)}
 
-
-
 sp {selection*elaborate*evaluate-operator*superproblem-space
    :default
    (state <s> ^name selection
@@ -125,7 +116,7 @@ sp {selection*elaborate*evaluate-operator*superstate
    (<o> ^name evaluate-operator)
    -->
    (<o> ^superstate <ss>)}
-
+
 ###
 ###      7.3.1.1 Evaluation Objects
 ###
@@ -144,7 +135,7 @@ sp {selection*elaborate*evaluation*desired
    -->
    (<e> ^desired <d>)}
 
-
+
 ###
 ###      7.3.1.2 Applying the evaluate-operator operator
 ###
@@ -152,7 +143,7 @@ sp {selection*elaborate*evaluation*desired
 ### to do the job, see the next section.
 
 
-
+
 ###
 ###      7.3.2   The evaluation subgoal
 ###
@@ -227,7 +218,7 @@ sp {evaluate-operator*elaborate*state*look-ahead-operator*no-copy
    -->
    (<s> ^look-ahead-operator <o>)}   
 
-### install copy of operator in lookahead context.
+### Install copy of operator in lookahead context.
 
 sp {evaluate-operator*propose*look-ahead
    :default
@@ -252,7 +243,6 @@ sp {evaluate-operator*elaborate*state*tried-tied-operator
               ^look-ahead-operator <o>)
    -->
    (<s> ^tried-tied-operator <o>)}
-
 
 ### Give symbol-value failure when no operators are proposed in subgoals
 
@@ -291,33 +281,31 @@ sp {evaluate-operator*elaborate*evaluation*failure*constraint-failure
 sp {evaluate-operator*elaborate*symbolic-evaluation*from-subgoal
    :default
    (state <s> ^operator <so>
-				  ^evaluation <e>)
+		  ^evaluation <e>)
    (<so> ^name evaluate-operator
          ^evaluation <e>
          ^evaluation.desired <eb>)
    (state <ss> ^superstate <s>
 					^ { << required-success success partial-success 
-							 indifferent partial-failure failure prohibit-failure
-							 draw lose win >> <svalue> } <eb>)
+					       indifferent partial-failure failure prohibit-failure
+						 draw lose win >> <svalue> } <eb>)
    -->
    (<e> ^symbolic-value <svalue>)}
-
 
 sp {evaluate-operator*elaborate*numeric-evaluation*from-subgoal
    :default
    (state <s> ^operator <so>
-				  ^evaluation <e>)
+		  ^evaluation <e>)
    (<so> ^name evaluate-operator
          ^evaluation <e>
          ^evaluation.desired <eb>)
    (state <ss> ^superstate <s>
-					^desired <eb>
-					^numeric-value <v>)
+		   ^desired <eb>
+		   ^numeric-value <v>)
    -->
    (<e> ^numeric-value <v>)}
 
-
-##                                Added to handle duplicated desireds
+## Added to handle duplicated desireds
 sp {evaluate-operator*elaborate*evaluation*from-subgoal*duplicate-desired
    :default
    (state <s> ^superstate <ss>
@@ -333,7 +321,7 @@ sp {evaluate-operator*elaborate*evaluation*from-subgoal*duplicate-desired
    -->
    (<e> ^symbolic-value <svalue>)}
 
-
+
 ###
 ###      7.3.2.1. State Copying
 ###
@@ -344,7 +332,7 @@ sp {evaluate-operator*elaborate*evaluation*from-subgoal*duplicate-desired
 sp {evaluate-operator*elaborate*default-for-default-state-copy-is-yes 
    :default
    (state <s> ^superstate.operator.name evaluate-operator
-				  ^problem-space <p>)
+		  ^problem-space <p>)
   -(<p> ^default-state-copy no)
    -->
    (<s> ^default-state-copy yes)}
@@ -352,7 +340,7 @@ sp {evaluate-operator*elaborate*default-for-default-state-copy-is-yes
 sp {evaluate-operator*elaborate*default-state-copy-from-problem-space 
    :default
    (state <s> ^superstate.operator.name evaluate-operator
-				  ^problem-space.default-state-copy <yes-or-no>)
+		  ^problem-space.default-state-copy <yes-or-no>)
    -->
    (<s> ^default-state-copy <yes-or-no>)}
 
@@ -375,7 +363,7 @@ sp {evaluate-operator*elaborate*state*default-copy-is-all-attributes-at-level-on
 sp {evaluate-operator*elaborate*state*default-copy-is-all-attributes-at-level-one*no-problem-space
    :default
    (state <s> ^impasse no-change
-				 -^problem-space
+		 -^problem-space
               ^attribute operator
               ^superstate.operator <so>)
    (<so> ^name evaluate-operator 
@@ -400,7 +388,7 @@ sp {evaluate-operator*elaborate*state*create-duplicates-table
    :default
    (state <s> ^impasse no-change
               ^attribute operator
-				  ^default-state-copy yes
+		  ^default-state-copy yes
               ^superstate.operator.name evaluate-operator)
    -->
    (<s> ^duplicates* <d>)}
@@ -446,7 +434,7 @@ sp {evaluate-operator*elaborate*state*change-one-level-attribute-to-duplicate
    (<s> ^<att> <id> - 
         ^<att> <new-id>)}
 
-### Fixes, when all-attributess-at-level one.
+### Fixes, when all-attributes-at-level one.
 
 sp {evaluate-operator*elaborate*state*change-all-attributes-at-level-one-to-duplicate
    :default
@@ -493,7 +481,6 @@ sp {evaluate-operator*elaborate*state*duplicate-id-for-all-attributes
 ### augmentations that don't point to objects that have been
 ### duplicated. 
 
-#set warnings off
 warnings --off
 sp {evaluate-operator*elaborate*add-attribute-to-duplicate 
    :default
@@ -505,12 +492,10 @@ sp {evaluate-operator*elaborate*add-attribute-to-duplicate
    (<id> ^ { <> tried-tied-operator <sub-att> } <sub-val>)
    -->
    (<new-id> ^<sub-att> <sub-val>)}
-#set warnings on
 warnings --on
 
 ### Next copy augmentations that point to duplicated objects:
 
-#set warnings off
 warnings --off
 sp {evaluate-operator*elaborate*add-duplicated-attribute-to-duplicate 
    :default
@@ -521,7 +506,6 @@ sp {evaluate-operator*elaborate*add-duplicated-attribute-to-duplicate
    (<id> ^ { <> tried-tied-operator <sub-att> } <sub-val>)
    -->
    (<new-id> ^<sub-att> <new-val>)}
-# commented out by voigtjr
 warnings --on
 
 ### Added ^two-level-attributes <att>.  Previously, it
@@ -587,7 +571,7 @@ sp {evaluate-operator*elaborate*state*eval*desired
 sp {duplicate-desired*copy-old-value
    :default
    (state <s> ^superstate.operator <so>
-				  ^problem-space <p>
+		  ^problem-space <p>
               ^duplicates* <d>
               ^desired <o-copy>)
    (<so> ^name evaluate-operator
@@ -604,7 +588,7 @@ sp {duplicate-desired*copy-old-value
 sp {duplicate-desired*replace-old-value
    :default
    (state <s> ^duplicates*.<id> <copy-id>
-				  ^problem-space <p>
+		  ^problem-space <p>
               ^desired <o-copy>)
    (<o-copy> ^duplicate-of* <o>)
    (<o> ^ { <> duplicate-of* <att> } <id>)
@@ -612,7 +596,8 @@ sp {duplicate-desired*replace-old-value
    -->
    (<o-copy> ^<att> <copy-id>)}
 
-
+
+
 
 ###      7.3.2.3 Operator copying   
 ###
@@ -627,7 +612,7 @@ sp {duplicate-desired*replace-old-value
 sp {evaluate-operator*elaborate*operator*default-operator-copy-is-yes 
    :default
    (state <s> ^superstate.operator.name evaluate-operator
-				  ^problem-space <p>)
+		  ^problem-space <p>)
   -(<p> ^default-operator-copy no)
    -->
    (<s> ^default-operator-copy yes)}
@@ -636,7 +621,7 @@ sp {evaluate-operator*elaborate*operator*default-operator-copy-is-yes
 sp {evaluate-operator*elaborate*operator*copy-default-operator-copy-from-problem-space 
    :default
    (state <s> ^superstate.operator.name evaluate-operator 
-				  ^problem-space.default-operator-copy <yes-or-no>)
+		  ^problem-space.default-operator-copy <yes-or-no>)
    -->
    (<s> ^default-operator-copy <yes-or-no>)}
 
@@ -646,8 +631,8 @@ sp {evaluate-operator*elaborate*state*create-duplicates-table-for-operator-only
    :default
    (state <s> ^impasse no-change
               ^attribute operator
-				  ^default-operator-copy yes 
-				- ^default-state-copy yes)
+		  ^default-operator-copy yes 
+		- ^default-state-copy yes)
    -->
    (<s> ^duplicates* <d>)}
 
@@ -657,7 +642,7 @@ sp {evaluate-operator*elaborate*state*create-duplicates-table-for-operator-only
 sp {evaluate-operator*elaborate*operator*add-attribute-to-duplicate-operator 
    :default
    (state <s> ^duplicates* <d>
-				  ^problem-space <p>
+		  ^problem-space <p>
               ^look-ahead-operator <o-copy>)
    (<o-copy> ^duplicate-of* <o>)
    (<o> ^ { <> duplicate-of* <att> } <val>)
@@ -671,7 +656,7 @@ sp {evaluate-operator*elaborate*operator*add-attribute-to-duplicate-operator
 sp {evaluate-operator*elaborate*operator*add-duplicated-attribute-to-duplicate-operator 
    :default
    (state <s> ^duplicates* <d>
-				  ^problem-space <p>
+		  ^problem-space <p>
               ^look-ahead-operator <o-copy>)
    (<o-copy> ^duplicate-of* <o>)
    (<o> ^ { <> duplicate-of* <att> } <id>)
@@ -679,7 +664,8 @@ sp {evaluate-operator*elaborate*operator*add-duplicated-attribute-to-duplicate-o
    (<d> ^<id> <copy-id>)
    -->
    (<o-copy> ^<att> <copy-id>)}
-
+
+
 
 ###
 ###     7.3.3   Computing evaluations
@@ -752,7 +738,8 @@ sp {selection*compare*prefer-lower-evaluation
    -->
    (<ss> ^operator <o2> < <o1>)}  
 
-
+
+
 ###
 ###      7.3.3.3 Computing symbolic evaluations
 ###
@@ -782,7 +769,7 @@ sp {selection*compare*success-evaluation-better-than-partial-success
    (<e1> ^superoperator <x> 
          ^symbolic-value success 
          ^desired <d>)
-   (<e2> ^sueproperator { <> <x> <y> } 
+   (<e2> ^superoperator { <> <x> <y> } 
          ^symbolic-value partial-success 
          ^desired <d>)
    -->
@@ -876,7 +863,8 @@ sp {selection*select*prohibit-failure-evaluation-becomes-prohibit-preference
    (<ss> ^operator <o1> ~)}
 
 
-
+
+
 ###
 ###      7.3.3.4 Default evaluations
 ###
@@ -890,7 +878,7 @@ sp {selection*select*prohibit-failure-evaluation-becomes-prohibit-preference
 sp {selection*pass-back-success    
    :default
    (state <s> ^superstate.superstate.operator <sso>
-              ^evaluation.symbolic-value << required-success success-success >>)
+              ^evaluation.symbolic-value required-success)
    (<sso> ^name evaluate-operator 
           ^evaluation <e2> 
           ^superoperator.name)
@@ -898,7 +886,7 @@ sp {selection*pass-back-success
    (<e2> ^symbolic-value partial-success)}
 
 
-
+
 ###
 ###      7.3.3.5 Novalue evaluations
 ###
@@ -961,7 +949,8 @@ sp {selection*compare*novalue-evaluation-always-worse
    -->
    (<ss> ^operator <o2> > <o1>)} 
 
-
+
+
 ###
 ###        7.3.4   Halting Soar with success or failure
 ###
@@ -1035,8 +1024,7 @@ sp {monitor*operator*evaluation
         ^evaluation. << numeric-value symbolic-value >> <n>)
    (<obj> ^name <name>)
    -->
-   (write (crlf) |  Evaluation of | <obj> | (|
-   <name> |) is | <n>)}
+   (write (crlf) |  Evaluation of | <obj> | (| <name> |) is | <n>)}
 
 
 

@@ -1,0 +1,3 @@
+pushd selection
+source selection_source.soar
+popd
