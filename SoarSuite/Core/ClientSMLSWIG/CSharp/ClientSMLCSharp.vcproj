@@ -128,6 +128,62 @@ cd ..
 			<Tool
 				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
+		<Configuration
+			Name="Distribution|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			CharacterSet="2"
+			ManagedExtensions="FALSE"
+			WholeProgramOptimization="TRUE">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
+				MinimalRebuild="FALSE"
+				RuntimeLibrary="0"
+				AssemblerListingLocation="$(IntDir)/"
+				ProgramDataBaseFileName="$(IntDir)/"
+				WarningLevel="3"
+				DebugInformationFormat="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				OutputFile="$(SolutionDir)\SoarLibrary\bin\CSharp_sml_ClientInterface.dll"
+				LinkIncremental="1"
+				GenerateDebugInformation="FALSE"
+				ImportLibrary="$(OutDir)\$(ProjectName).lib"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				CommandLine="csc /target:library /out:build\smlCSharp.dll build\*.cs
+xcopy build\*.dll &quot;$(SolutionDir)\SoarLibrary\bin&quot; /Y /I /Q
+del build\*.dll
+"/>
+			<Tool
+				Name="VCPreBuildEventTool"
+				CommandLine="echo on
+cd build
+del *.cs
+cd ..
+"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
 	</Configurations>
 	<References>
 		<ProjectReference
@@ -180,6 +236,17 @@ echo on
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:
+echo SWIG: %SWIG%
+echo on
+&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -namespace sml -dllimport CSharp_sml_ClientInterface -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -csharp -outdir build &quot;$(InputPath)&quot;
+"
+					Outputs="$(InputName)_wrap.cxx"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Distribution|Win32">
 				<Tool
 					Name="VCCustomBuildTool"
 					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:
