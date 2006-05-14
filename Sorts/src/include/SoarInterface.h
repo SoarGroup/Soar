@@ -99,6 +99,8 @@ class SoarInterface {
     void getNewObjectActions(list<ObjectAction>& newActions);
     void getNewAttentionActions(list<AttentionAction>& newActions);
 
+    void updateViewFrame(int frame);
+
     // grouping commands for Group Manager to call
     void addGroup(PerceptualGroup* group);
     void removeGroup(PerceptualGroup* group);
@@ -154,7 +156,8 @@ class SoarInterface {
     sml::Identifier* groupsIdWME;
     sml::Identifier* gameInfoIdWME;
     sml::IntElement* playerGoldWME;
-    
+    sml::IntElement* viewFrameWME;
+
   /**************************************************
    *                                                *
    * Member variables for group management          *
@@ -206,6 +209,7 @@ class SoarInterface {
     pthread_mutex_t* objectActionQueueMutex;
     pthread_mutex_t* attentionActionQueueMutex;
     pthread_mutex_t* soarMutex;
+
 
     bool stale;
 };

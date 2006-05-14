@@ -27,6 +27,7 @@ bool OrtsInterface::handle_event(const Event& e) {
     if (e.get_what() == GameStateModule::VIEW_MSG) {
       cout << "ORTS EVENT {\n";
       viewFrame = gsm->get_game().get_view_frame();
+      Sorts::SoarIO->updateViewFrame(viewFrame);
       int aFrame = gsm->get_game().get_action_frame();
         
       mergeChanges(const_cast<GameChanges&> (gsm->get_changes())); 

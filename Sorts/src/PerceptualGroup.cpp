@@ -114,6 +114,7 @@ void PerceptualGroup::generateData() {
   int y = 0;
   
   soarData.stringIntPairs.clear();
+  soarData.stringFloatPairs.clear();
   soarData.stringStringPairs.clear();
   soarData.regionsOccupied.clear();
 

@@ -506,7 +506,8 @@ void SoarInterface::initSoarInputLink() {
   featureMapIdWME = agent->CreateIdWME(inputLink, "feature-maps");
   gameInfoIdWME = agent->CreateIdWME(inputLink, "game-info");
   playerGoldWME = agent->CreateIntWME(gameInfoIdWME, "my-gold", 0);
-  
+  viewFrameWME = agent->CreateIntWME(inputLink, "view-frame", -1);
+
   // these never change, don't need to save the pointers
   agent->CreateIntWME(gameInfoIdWME, "num-players", 
                       Sorts::OrtsIO->getNumPlayers());
@@ -517,7 +518,6 @@ void SoarInterface::initSoarInputLink() {
   agent->CreateIntWME(gameInfoIdWME, "map-ydim",
                       Sorts::OrtsIO->getMapYDim());
 
-  
   // initialVisionParams must already be set!
   visionParamRep.identifierWME = agent->CreateIdWME(inputLink, "vision-state"); 
   visionParamRep.centerXWME 
@@ -598,4 +598,8 @@ void SoarInterface::unlockAttentionActionMutex() {
 
 void SoarInterface::improperCommandError() {
   cout << "ERROR: Improperly formatted command!\n";
+}
+
+void SoarInterface::updateViewFrame(int frame) {
+  agent->Update(viewFrameWME, frame);
 }
