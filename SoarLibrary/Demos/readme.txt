@@ -1,8 +1,8 @@
-# Soar8demos/README
+# Soar 8.6 demos/README
 # John Laird
-# May 25, 2004
+# May 15, 2006
 # 
-# Classic AI problems implemented for Soar 8 (8.6.0)
+# Classic AI problems implemented for Soar 8 (8.6.2)
 #
 # Blocks-World: Stack blocks
 #    Demonstrates means-ends analysis and operator-subgoaling.
@@ -22,6 +22,11 @@
 #    Has two versions, both of which using look-ahead search 
 #    and chunking showing tradeoffs in state representations for
 #    operator application vs. state copying.
+# Arithmetic:
+#    Does multicolumn addition and subtraction using simple
+#    addition facts. Automatically generates, solves, and verifies
+#    1000 problems. Demonstrates hierarchical task decomposition
+#    and chunking over the decomposition. 
 #    
 # Default:
 #    Holds rules used for implementing common problem solving
