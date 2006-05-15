@@ -21,6 +21,7 @@ public:
 
   sint4 addObject(GameObj *gob);
   sint4 updateObject(GameObj *gob, sint4 sat_loc);
+  void removeObject(GameObj *gob, sint4 sat_loc);
   // querying functions
   std::list<GameObj*> *getObjectsInRegion(int x, int y);
 

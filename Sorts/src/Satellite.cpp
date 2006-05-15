@@ -60,3 +60,7 @@ sint4 Satellite::updateObject(GameObj *gob, sint4 sat_loc)
  //return new_sat_loc;
 }
 
+void Satellite::removeObject(GameObj *gob, sint4 sat_loc)
+{
+ Map[sat_loc].remove(gob);
+}

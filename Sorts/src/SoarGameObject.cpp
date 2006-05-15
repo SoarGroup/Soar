@@ -20,7 +20,7 @@ void SoarGameObject::identifyBehaviors() {
     registerBehavior(moveBehavior);
   }
 
-  sat_loc = Sorts::satellite->addObject(gob);
+
 }
 
 SoarGameObject::SoarGameObject(
@@ -36,11 +36,15 @@ SoarGameObject::SoarGameObject(
   identifyBehaviors();
   iGroup = NULL;
   pGroup = NULL;
+
+  sat_loc = Sorts::satellite->addObject(gob);
 }
 
 SoarGameObject::~SoarGameObject()
 {
-  while(!memory.empty()) {
+ Sorts::satellite->removeObject(gob,sat_loc);
+
+ while(!memory.empty()) {
     memory.pop();
   }
 
