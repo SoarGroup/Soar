@@ -35,7 +35,7 @@ my $soarurl = "https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite";
 my $nameandversion = "Soar Suite 8.6.2-r10";
 
 # File globs to completely remove from the tree
-my @remove = qw/Makefile.in 8.6.2.nsi.in byhand.txt INSTALL .project .cvsignore .svn *.xcodeproj *.so *.so.1 *.so.2 *.jnilib java_swt *.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource Old *.tex Scripts/;
+my @remove = qw/Makefile.in 8.6.2.nsi.in INSTALL .project .cvsignore .svn *.xcodeproj *.so *.so.1 *.so.2 *.jnilib java_swt *.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource Old *.tex Scripts/;
 
 # Globs to copy from working copy to Core component
 # WORKING --copy-to-> CORE
@@ -47,7 +47,7 @@ my @copysourceglobs = qw(ClientSML.lib ElementXML.lib ConnectionSML.lib Tcl_sml_
 
 # Globs to MOVE from Source component to Core component
 # SOURCE --move-to-> CORE
-my @moveglobs = qw/COPYING Documentation docs Icons SoarLibrary agents maps templates tcl TSI TclEaters run-*.bat TestTclSML.tcl pkgIndex.tcl mac.soar FilterTcl/;
+my @moveglobs = qw/COPYING Documentation docs Icons SoarLibrary agents maps templates tcl TSI TclEaters run-*.bat TestTclSML.tcl pkgIndex.tcl mac.soar FilterTcl towers-of-hanoi-SML.soar/;
 
 # Nullsoft installer script input file
 my $nsiinput = "8.6.2.nsi.in";
