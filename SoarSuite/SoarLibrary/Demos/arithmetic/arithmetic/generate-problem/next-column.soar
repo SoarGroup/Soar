@@ -1,0 +1,21 @@
+sp {generate-problem*propose*next-column
+   (state <s> ^name generate-problem
+              ^current-column <c1>)
+   (<c1> ^digit1
+         ^digit2
+         ^next-column <x>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name next-column)
+}
+
+sp {generate-problem*apply*next-column
+   (state <s> ^operator <op>
+              ^current-column <cc>)
+   (<op> ^name next-column)
+   (<cc> ^next-column <nc>)
+-->
+   (<s> ^current-column <cc> -
+                        <nc>)
+}
+
