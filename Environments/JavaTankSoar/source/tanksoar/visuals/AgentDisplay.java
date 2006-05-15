@@ -29,7 +29,6 @@ public class AgentDisplay extends Composite {
 	Button m_NewAgentButton;
 	Button m_CloneAgentButton;
 	Button m_DestroyAgentButton;
-	Button m_SpawnDebuggersButton;
 	TankSoarAgentWorld m_AgentWorld;
 	ProgressBar m_Smell;
 	ProgressBar m_Radar;
@@ -96,15 +95,6 @@ public class AgentDisplay extends Composite {
 			}
 		});
 				
-		m_SpawnDebuggersButton = new Button(this, SWT.CHECK);
-		m_SpawnDebuggersButton.setLayoutData(new GridData());
-		m_SpawnDebuggersButton.setText("Spawn debugger");
-		m_SpawnDebuggersButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				m_Simulation.setSpawnDebuggers(m_SpawnDebuggersButton.getSelection());
-			}
-		});		
-
 		m_AgentTable = new Table(this, SWT.BORDER | SWT.FULL_SELECTION);
 		gd = new GridData();
 		gd.heightHint = kTableHeight;
@@ -328,11 +318,9 @@ public class AgentDisplay extends Composite {
 			noAgents = true;
 		}
 		boolean selectedEater = (m_SelectedEntity != null);
-		boolean spawnDebuggers = m_Simulation.getSpawnDebuggers();
 		
 		m_NewAgentButton.setEnabled(!running && !agentsFull);
 		m_CloneAgentButton.setEnabled(!running && !agentsFull && selectedEater);
 		m_DestroyAgentButton.setEnabled(!running && !noAgents && selectedEater);
-		m_SpawnDebuggersButton.setSelection(spawnDebuggers);
  	}
 }

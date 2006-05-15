@@ -17,6 +17,7 @@ public class CreateAgentDialog extends Dialog {
 	Combo m_Color;
 	Button m_CreateEntity;
 	static String lastProductions = null;
+	Button m_SpawnDebuggerButton;
 	
 	public CreateAgentDialog(Shell parent, SimulationManager simulation) {
 		super(parent);
@@ -128,6 +129,20 @@ public class CreateAgentDialog extends Dialog {
 			}
 		});
 		
+		m_SpawnDebuggerButton = new Button(dialog, SWT.CHECK);
+		gd = new GridData();
+		gd.horizontalAlignment = GridData.BEGINNING;
+		gd.horizontalSpan = 3;
+		m_SpawnDebuggerButton.setLayoutData(gd);
+		m_SpawnDebuggerButton.setText("Spawn debugger");
+		m_SpawnDebuggerButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				m_Simulation.setSpawnDebuggers(m_SpawnDebuggerButton.getSelection());
+			}
+		});		
+		m_SpawnDebuggerButton.setSelection(m_Simulation.getSpawnDebuggers());
+		m_SpawnDebuggerButton.setEnabled(!m_Simulation.isDebuggerConnected());
+
 		Composite okCancel = new Composite(dialog, SWT.NONE);
 		gd = new GridData();
 		gd.horizontalAlignment = GridData.END;

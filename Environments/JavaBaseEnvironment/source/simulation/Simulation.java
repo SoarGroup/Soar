@@ -175,7 +175,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	
 	public void spawnDebugger(String agentName) {
 		if (!m_Debuggers) return;
-		if (debuggerConnected()) return;
+		if (isDebuggerConnected()) return;
 		
 		// Figure out whether to use java or javaw
 		String os = System.getProperty("os.name");
@@ -242,7 +242,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		return ready;
 	}
 	
-	private boolean debuggerConnected() {
+	public boolean isDebuggerConnected() {
 		boolean connected = false;
 		m_Kernel.GetAllConnectionInfo();
 		for (int i = 0; i < m_Kernel.GetNumberConnections(); ++i) {
