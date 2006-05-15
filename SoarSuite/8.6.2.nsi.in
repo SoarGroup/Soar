@@ -158,7 +158,7 @@ Section -FinishSection
 	WriteRegStr HKLM "Software/${APPNAME}" "" "$INSTDIR"
 	WriteRegStr HKLM "Software/Microsoft/Windows/CurrentVersion/Uninstall/${APPNAMEANDVERSION}" "DisplayName" "${APPNAMEANDVERSION}"
 	WriteRegStr HKLM "Software/Microsoft/Windows/CurrentVersion/Uninstall/${APPNAMEANDVERSION}" "DisplayIcon" "$INSTDIR/Resources/Icons/soar.ico"
-	WriteRegStr HKLM "Software/Microsoft/Windows/CurrentVersion/Uninstall/${APPNAMEANDVERSION}" "UninstallString" "$INSTDIR/uninstall.exe"
+	WriteRegStr HKLM "Software/Microsoft/Windows/CurrentVersion/Uninstall/${APPNAMEANDVERSION}" "UninstallString" "$INSTDIR/Uninstall ${APPNAMEANDVERSION}.exe"
 
 	WriteUninstaller "$INSTDIR/Uninstall ${APPNAMEANDVERSION}.exe"
 
