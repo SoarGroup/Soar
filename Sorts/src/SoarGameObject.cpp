@@ -19,6 +19,8 @@ void SoarGameObject::identifyBehaviors() {
     FSM* moveBehavior = new MoveFSM(gob);
     registerBehavior(moveBehavior);
   }
+
+  sat_loc = Sorts::satellite->addObject(gob);
 }
 
 SoarGameObject::SoarGameObject(
@@ -86,6 +88,9 @@ void SoarGameObject::update()
 {
   cout << "upd: " << (int)this << " grp " << (int)pGroup << endl;
   int fsmStatus;
+
+  sat_loc = Sorts::satellite->updateObject(gob,sat_loc);
+  
   if (iGroup != NULL) {
     iGroup->setHasStaleMembers();
   }

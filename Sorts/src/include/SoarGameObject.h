@@ -48,6 +48,9 @@ class SoarGameObject{
   GameObj *gob;
 
 private:
+
+  sint4 sat_loc;
+
 	map<ObjectActionType, FSM *> behaviors;
 	stack<FSM *> memory;
 

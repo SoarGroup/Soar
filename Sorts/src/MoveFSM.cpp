@@ -12,7 +12,6 @@ MoveFSM::MoveFSM(GameObj* go)
 {
   name = OA_MOVE;
 
-  sat_loc = Sorts::satellite->addObject(gob);
   vec_count = 0;
   
   loc.x = (*gob->sod.x);
@@ -28,8 +27,6 @@ int MoveFSM::update() {
   
   loc.x = (*gob->sod.x);
   loc.y = (*gob->sod.y);
-
-  sat_loc = Sorts::satellite->updateObject(gob,sat_loc);
 
   if (gob->is_pending_action()) {
     cout << "MOVEFSM: action has not taken affect!\n";

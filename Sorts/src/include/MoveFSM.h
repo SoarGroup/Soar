@@ -26,7 +26,6 @@ class MoveFSM: public FSM {
 
 	int state;
   int runTime;
-  sint4 sat_loc;
   double heading;
 
   TerrainBase::Loc loc;
