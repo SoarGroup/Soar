@@ -39,11 +39,11 @@ my @remove = qw/Makefile.in 8.6.2.nsi.in byhand.txt INSTALL .project .cvsignore 
 
 # Globs to copy from working copy to Core component
 # WORKING --copy-to-> CORE
-my @copycoreglobs = qw(*.pdf *.dll *.exe *.jar Tcl_sml_ClientInterface mac towers-of-hanoi-SML.soar Tcl_sml_ClientInterface_wrap.cxx Java_sml_ClientInterface_wrap.cxx CSharp_sml_ClientInterface_wrap.cxx);
+my @copycoreglobs = qw(*.pdf *.dll *.exe *.jar);
 
 # Globs to copy from working copy to Source component
 # WORKING --copy-to-> SOURCE
-my @copysourceglobs = qw(ClientSML.lib ElementXML.lib ConnectionSML.lib);
+my @copysourceglobs = qw(ClientSML.lib ElementXML.lib ConnectionSML.lib Tcl_sml_ClientInterface mac towers-of-hanoi-SML.soar Tcl_sml_ClientInterface_wrap.cxx Java_sml_ClientInterface_wrap.cxx CSharp_sml_ClientInterface_wrap.cxx);
 
 # Globs to MOVE from Source component to Core component
 # SOURCE --move-to-> CORE
