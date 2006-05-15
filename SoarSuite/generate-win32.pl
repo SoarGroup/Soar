@@ -34,8 +34,8 @@ my $soarurl = "https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite";
 # Name and version
 my $nameandversion = "Soar Suite 8.6.2-r10";
 
-# File globs to completely remove from the tree (stuff in repo not distributed at all)
-my @remove = qw/Makefile.in 8.6.2.nsi.in byhand.txt INSTALL .project .cvsignore .svn *.xcodeproj *.so *.so.1 *.so.2 *.jnilib java_swt *.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource Figures Old *.tex Scripts/;
+# File globs to completely remove from the tree
+my @remove = qw/Makefile.in 8.6.2.nsi.in byhand.txt INSTALL .project .cvsignore .svn *.xcodeproj *.so *.so.1 *.so.2 *.jnilib java_swt *.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource Old *.tex Scripts/;
 
 # Globs to copy from working copy to Core component
 # WORKING --copy-to-> CORE
@@ -43,7 +43,7 @@ my @copycoreglobs = qw(*.pdf *.dll *.exe *.jar);
 
 # Globs to copy from working copy to Source component
 # WORKING --copy-to-> SOURCE
-my @copysourceglobs = qw(ClientSML.lib ElementXML.lib ConnectionSML.lib Tcl_sml_ClientInterface mac towers-of-hanoi-SML.soar Tcl_sml_ClientInterface_wrap.cxx Java_sml_ClientInterface_wrap.cxx CSharp_sml_ClientInterface_wrap.cxx);
+my @copysourceglobs = qw(ClientSML.lib ElementXML.lib ConnectionSML.lib Tcl_sml_ClientInterface Tcl_sml_ClientInterface_wrap.cxx Java_sml_ClientInterface_wrap.cxx CSharp_sml_ClientInterface_wrap.cxx);
 
 # Globs to MOVE from Source component to Core component
 # SOURCE --move-to-> CORE
@@ -114,6 +114,9 @@ sub checkout_step {
 	rmtree($source) or die $!;
 	system "svn export $soarurl $source --native-eol CRLF";
 	
+	system "chmod -R 777 $core";
+	system "chmod -R 777 $source";	
+
 	print "Step 3: Remove globs from source that are not to be distributed with the release...\n";
 
 	foreach (File::Find::Rule->file()->name(@remove)->in($source)) {
@@ -136,12 +139,16 @@ sub copy_step {
 		print "Copying to core: $_\n";
 		rcopy($_, "$core/$_") or die $!;
 	}
+	system "chmod -R 777 $core";
+	system "chmod -R 777 $source";	
 	print "Step 5.1: Copy globs from working tree to source...\n";
 	foreach (File::Find::Rule->directory()->name(@copysourceglobs)->in("."), File::Find::Rule->file()->name(@copysourceglobs)->mindepth(2)->in(".")) {
 		# This creates destination if it doesn't exist.
 		print "Copying to source: $_\n";
 		rcopy($_, "$source/$_") or die $!;
 	}
+	system "chmod -R 777 $core";
+	system "chmod -R 777 $source";	
 }
 
 sub move_step {
@@ -151,8 +158,10 @@ sub move_step {
 		print "Moving from source to core: $_\n";
 		/$source(.*)/;
 		my $outputdir = $1;
-		rmove($_, "$core/$outputdir") or die $!;
+		rmove($_, "$core/$outputdir") or print $! . "\n";
 	}
+	system "chmod -R 777 $core";
+	system "chmod -R 777 $source";	
 	
 	print "Step 6.1: Rename COPYING...\n";
 	rmove("$core/COPYING", "$core/License.txt") or die $!;
@@ -172,11 +181,11 @@ sub move_step {
 	print "Step 6.4: Remove globs again...\n";
 	foreach (File::Find::Rule->file()->name(@remove)->in($source)) {
 		print "Removing from source: $_\n";
-		unlink $_ or die $!;
+		unlink;
 	}
 	foreach (File::Find::Rule->directory()->name(@remove)->in($source)) {
 		print "Removing from source: $_\n";
-		rmtree($_) or die $!;
+		rmtree($_);
 	}
 
 	print "Step 6.5: final tweaks (by hand)...\n";
@@ -187,33 +196,25 @@ sub move_step {
 	print "removing tree $core/SoarLibrary/lib\n";
 	rmtree("$core/SoarLibrary/lib") or die $!;
 	
-#	print "removing tree $core/Environments/JavaMissionaries/bin\n";
-#	rmtree("$core/Environments/JavaMissionaries/bin") or die $!;
-	
-#	print "removing tree $core/Environments/JavaMissionaries/src\n";
-#	rmtree("$core/Environments/JavaMissionaries/src") or die $!;
+	print "removing tree $core/Tools/TestCSharpSML\n";
+	rmtree("$core/Tools/TestCSharpSML") or die $!;
 	
 	print "unlinking: $core/SoarLibrary/bin/makeTclSMLPackage.tcl\n";
-	unlink("$core/SoarLibrary/bin/makeTclSMLPackage.tcl") or die;
+	unlink("$core/SoarLibrary/bin/makeTclSMLPackage.tcl") or die $!;
 
-	print "unlinking: $core/SoarLibrary/bin/makeTclSMLPackage.tcl\n";
-	unlink("$core/SoarLibrary/bin/makeTclSMLPackage.tcl") or die;
-	
 	print "removing tree $core/Core/ClientSMLSWIG/Java/build\n";
 	rmtree("$source/Core/ClientSMLSWIG/Java/build") or die $!;
 
 	print "copying: SoarLibrary/bin/tcl_sml_clientinterface/pkgIndex.tcl\n";
 	copy("SoarLibrary/bin/tcl_sml_clientinterface/pkgIndex.tcl", "$core/SoarLibrary/bin/tcl_sml_clientinterface/pkgIndex.tcl") or die $!;
+	system "chmod -R 777 $core";
+	system "chmod -R 777 $source";	
 	
 	print "moving: $core/Tools/VisualSoar/Source\n";
 	rmove("$core/Tools/VisualSoar/Source", "$source/Tools/VisualSoar/Source") or die $1;
 
-	print "Step 6.6: make readable...\n";
 	system "chmod -R 777 $core";
 	system "chmod -R 777 $source";	
-}
-
-sub byhand_step {
 }
 
 sub nsi_step {
