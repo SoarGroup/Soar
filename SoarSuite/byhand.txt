@@ -3,7 +3,7 @@ Build:
 	Rebuild all (Distribution configuration)
 	Rebuild all (Distribution-libs configuration)
     testcsharpsml.sln
-	Rebuild all (Release configuration)
+	Rebuild all (Distribution configuration)
 run buildJavaApps.bat
 
 
