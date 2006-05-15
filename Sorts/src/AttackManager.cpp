@@ -1,5 +1,8 @@
 #include "AttackManager.h"
+#include "AttackManagerRegistry.h"
 #include "Circle.h"
+#include "Sorts.h"
+
 #include "ScriptObj.H"
 
 // some useful functions
@@ -73,6 +76,13 @@ bool canHit(const Circle& c1, const Circle& c2, double range) {
   return r * r >= d;
 }
 
+bool attackArcPos(GameObj*atk, GameObj* tgt, Circle& pos) {
+  pos.x = *tgt->sod.x;
+  pos.y = *tgt->sod.y;
+  return true;
+}
+
+/*
 bool attackArcPos(GameObj* atk, GameObj* tgt, Circle& pos) {
   int range;
   int atkRadius = *atk->sod.radius;
@@ -104,7 +114,7 @@ bool attackArcPos(GameObj* atk, GameObj* tgt, Circle& pos) {
     // first counter-clockwise (increase angle)
     c.x = range * cos(startAng + currInc);
     c.y = range * sin(startAng + currInc);
-    if ( /* there's no collision */ true) {
+    if ( true ) { // there's no collision
       pos = c;
       return true;
     }
@@ -112,22 +122,50 @@ bool attackArcPos(GameObj* atk, GameObj* tgt, Circle& pos) {
     // now clockwise (decrease angle)
     c.x = range * cos(startAng - currInc);
     c.y = range * sin(startAng - currInc);
-    if ( /* there's no collision */ true) {
+    if ( true ) { // there's no collision 
       pos = c;
       return true;
     }
   }
   return false;
 }
+*/
 
-AttackManager::AttackManager
-( const set<SoarGameObject*>& _units, 
-  const vector<SoarGameObject*>& _targets)
-: targets(_targets), currTarget(NULL)
+AttackManager::AttackManager(const set<SoarGameObject*>& _targets)
+: targets(_targets), currTarget(NULL), currAttackParams(1)
 {
-  units.insert(units.begin(), _units.begin(), _units.end());
 }
 
+AttackManager::~AttackManager() {
+  int status;
+  if (targets.size() == 0) {
+    status = 1;
+  }
+  else {
+    status = 0;
+  }
+
+  for(list<AttackFSM*>::iterator
+      i =  team.begin();
+      i != team.end();
+      i++)
+  {
+    (*i)->disown(status);
+  }
+}
+
+void AttackManager::registerFSM(AttackFSM* fsm) {
+  team.push_back(fsm);
+}
+
+void AttackManager::unregisterFSM(AttackFSM* fsm) {
+  assert(find(team.begin(), team.end(), fsm) != team.end());
+  team.erase(find(team.begin(), team.end(), fsm));
+  if (team.size() == 0) {
+    Sorts::amr->removeManager(this);
+    delete this;
+  }
+}
 
 // the current strategy is basically to focus fire on one enemy
 // at a time until they're all dead, starting with the one that
@@ -138,8 +176,15 @@ AttackManager::AttackManager
 // i.e. some balance between ease of killing and damage rate
 int AttackManager::direct(AttackFSM* fsm) {
   if (currTarget == NULL || !Sorts::OrtsIO->isAlive(currTarget->getID())) {
+    if (currTarget != NULL) {
+      // the current target is dead or moved out of view
+      targets.erase(currTarget);
+    }
     selectTarget();
     if (currTarget == NULL) {
+      // no more targets left
+      Sorts::amr->removeManager(this);
+      delete this;
       return 1;
     }
   }
@@ -149,7 +194,7 @@ int AttackManager::direct(AttackFSM* fsm) {
     // find someone he can hit, don't waste time by not shooting
     if (fsm->getTarget() == NULL ||
         !canHit(gob, fsm->getTarget()->gob)) {
-      for(vector<SoarGameObject*>::iterator
+      for(set<SoarGameObject*>::iterator
           i =  targets.begin();
           i != targets.end();
           i++)
@@ -187,7 +232,7 @@ void AttackManager::selectTarget() {
   double best_dmg = -1.0;
   currTarget = NULL;
   
-  for(vector<SoarGameObject*>::iterator
+  for(set<SoarGameObject*>::iterator
       i =  targets.begin(); 
       i != targets.end();
       i++)

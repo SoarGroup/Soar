@@ -15,23 +15,22 @@ using namespace std;
 
 class AttackManager {
 public:
-  AttackManager
-  ( const set<SoarGameObject*>& _units, 
-    const vector<SoarGameObject*>& _targets );
+  AttackManager(const set<SoarGameObject*>& _targets);
+  ~AttackManager();
 
+  void registerFSM(AttackFSM* fsm);
+  void unregisterFSM(AttackFSM* fsm);
   int direct(AttackFSM* fsm);
+
+  set<SoarGameObject*>* getTargets() { return &targets; }
 
 private: // functions
   void selectTarget();
   void positionAndAttack();
 
 private:
-  enum AttackState { IDLE, ATTACKING };
-
-  AttackState state;
-
-  vector<SoarGameObject*> units;
-  vector<SoarGameObject*> targets;
+  list<AttackFSM*> team;
+  set<SoarGameObject*> targets;
 
   SoarGameObject* currTarget;
   Vector<sint4> currAttackParams;

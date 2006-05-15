@@ -2,26 +2,32 @@
 #define AttackManagerRegistry_H
 
 #include <vector>
+#include <set>
 
+#include "PerceptualGroup.h"
 #include "AttackManager.h"
 
 using namespace std;
 
 class AttackManagerRegistry {
 public:
-  AttackManagerRegistry() { }
+  AttackManagerRegistry() : uid(0) { }
   
-  int add(AttackManager* m) {
-    managers.push_back(m);
-    return managers.size() - 1;
-  }
+  int assignManager(const list<PerceptualGroup*>& targets);
 
-  AttackManager* get(int i) {
-    return managers[i];
-  }
+  AttackManager* getManager(int id);
+
+  void removeManager(AttackManager* m);
 
 private:
-  vector<AttackManager*> managers;
+  typedef struct {
+    int                   id;
+    AttackManager*        manager;
+  } ManagerRecord;
+
+  int uid;
+
+  list<ManagerRecord> managers;
 };
 
 #endif

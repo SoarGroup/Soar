@@ -10,9 +10,16 @@ AttackFSM::AttackFSM(GameObj* gob)
 : FSM(gob)
 {
   name = OA_ATTACK;
+  weapon = gob->component("weapon");
+  assert(weapon != NULL);
+  moveFSM = NULL;
+  manager = NULL;
 }
 
 AttackFSM::~AttackFSM() {
+  if (manager != NULL) {
+    manager->unregisterFSM(this);
+  }
   if (moveFSM != NULL) {
     delete moveFSM;
   }
@@ -22,10 +29,23 @@ void AttackFSM::init(vector<sint4> params) {
   FSM::init(params);
 
   // get the attack manager from the registry
-  manager = Sorts::amr->get(params[0]);
+  manager = Sorts::amr->getManager(params[0]);
+  manager->registerFSM(this);
+  target = NULL;
+  dest_x = 0; dest_y = 0;
+  moving = false;
+  disownedStatus = 0;
 }
 
 int AttackFSM::update() {
+  if (manager == NULL) {
+    if (disownedStatus == 0) {
+      return FSM_FAILURE;
+    }
+    else {
+      return FSM_SUCCESS;
+    }
+  }
   if (manager->direct(this) == 1) {
     return FSM_SUCCESS;
   }
@@ -36,6 +56,7 @@ int AttackFSM::update() {
         break;
       case FSM_FAILURE:
         // what to do here?
+        std::cout << "##JZXU## MOVE FAILED" << std::endl;
         moving = false;
         break;
     }
@@ -81,4 +102,9 @@ void AttackFSM::getDestination(int* x, int* y) {
     *x = *gob->sod.x;
     *y = *gob->sod.y;
   }
+}
+
+void AttackFSM::disown(int lastStatus) {
+  disownedStatus = lastStatus;
+  manager = NULL;
 }

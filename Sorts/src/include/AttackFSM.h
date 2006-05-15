@@ -26,6 +26,9 @@ public:
   void getDestination(int* x, int* y);
   void stopMoving();
 
+  // AttackManager is about to be deallocated, 
+  void disown(int lastStatus);
+
 private:
   AttackManager* manager;
 
@@ -36,6 +39,8 @@ private:
   int dest_x, dest_y;
 
   bool moving;
+
+  int disownedStatus;
 };
 
 

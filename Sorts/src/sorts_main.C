@@ -110,6 +110,7 @@ typedef Demo_SimpleTerrain::ST_Terrain Terrain;
 int main(int argc, char *argv[]) {
 
   int port = 7777;
+  int soarPort = 12121;
   string host = "127.0.0.1";
   char* productions = NULL;
   for(int i = 1; i < argc; i++) {
@@ -121,6 +122,9 @@ int main(int argc, char *argv[]) {
     }
     else if (strcmp(argv[i], "-productions") == 0) {
       productions = argv[i+1];
+    }
+    else if (strcmp(argv[i], "-soar-port") == 0) {
+      soarPort = atoi(argv[i+1]);
     }
   }
   
@@ -139,7 +143,7 @@ int main(int argc, char *argv[]) {
   /*******************
    * Init sml client *
    *******************/
-  sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
+  sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML", soarPort) ;
   cout << "done\n";
 
   // Check that nothing went wrong.  We will always get back a kernel object

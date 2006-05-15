@@ -509,7 +509,7 @@ void SoarInterface::initSoarInputLink() {
   featureMapIdWME = agent->CreateIdWME(inputLink, "feature-maps");
   gameInfoIdWME = agent->CreateIdWME(inputLink, "game-info");
   playerGoldWME = agent->CreateIntWME(gameInfoIdWME, "my-gold", 0);
-  viewFrameWME = agent->CreateIntWME(inputLink, "view-frame", -1);
+  viewFrameWME = agent->CreateIntWME(gameInfoIdWME, "view-frame", -1);
 
   // these never change, don't need to save the pointers
   agent->CreateIntWME(gameInfoIdWME, "num-players", 
@@ -520,6 +520,8 @@ void SoarInterface::initSoarInputLink() {
   
   agent->CreateIntWME(gameInfoIdWME, "map-ydim",
                       Sorts::OrtsIO->getMapYDim());
+
+  agent->CreateIntWME(gameInfoIdWME, "player-id", Sorts::OrtsIO->getMyId());
 
   // initialVisionParams must already be set!
   visionParamRep.identifierWME = agent->CreateIdWME(inputLink, "vision-state"); 

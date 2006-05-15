@@ -487,18 +487,9 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       vector<SoarGameObject*> myUnits;
       myUnits.insert(myUnits.begin(), members.begin(), members.end());
 
-      vector<SoarGameObject*> allTargets;
-      for( list<PerceptualGroup*>::iterator
-           i =  targets.begin();
-           i != targets.end();
-           i++)
-      {
-        allTargets.insert(allTargets.end(), (*i)->members.begin(), (*i)->members.end());
-      }
-      
-      AttackManager* m = new AttackManager(members, allTargets);
-      Vector<sint4> params;
-      params.push_back(Sorts::amr->add(m));
+      int managerId = Sorts::amr->assignManager(targets);
+      Vector<sint4> params(1);
+      params.push_back(managerId);
 
       for(set<SoarGameObject*>::iterator
           i =  members.begin();

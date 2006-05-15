@@ -4,23 +4,33 @@
 
 #include "MineFSM.h"
 #include "MoveFSM.h"
+#include "AttackFSM.h"
 
 #include "Sorts.h"
 #include "SoarGameObject.h"
 #include "PerceptualGroup.h"
 #include "InternalGroup.h"
 
+using namespace std;
+
 void SoarGameObject::identifyBehaviors() {
   string name = gob->bp_name();
-  if (friendly && name == "worker") {
-    FSM* mineBehavior = new MineFSM(gob);
-    ((MineFSM*)mineBehavior)->setSoarGameObject(this);
-    registerBehavior(mineBehavior);
-    FSM* moveBehavior = new MoveFSM(gob);
-    registerBehavior(moveBehavior);
+  if (friendly) {
+    if (name == "worker") {
+      FSM* mineBehavior = new MineFSM(gob);
+      registerBehavior(mineBehavior);
+      FSM* moveBehavior = new MoveFSM(gob);
+      registerBehavior(moveBehavior);
+    }
+    else if (name == "marine") {
+      FSM* attackBehavior = new AttackFSM(gob);
+      registerBehavior(attackBehavior);
+    }
+    else if (name == "tank") {
+      FSM* attackBehavior = new AttackFSM(gob);
+      registerBehavior(attackBehavior);
+    }
   }
-
-
 }
 
 SoarGameObject::SoarGameObject(
@@ -80,6 +90,10 @@ void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
     memory.pop();
 
   map<ObjectActionType, FSM*>::iterator i = behaviors.find(cmd);
+  cout << "ACTION TYPE ACTION TYPE ACTION TYPE ACTION TYPE "
+       << (cmd == OA_ATTACK) << endl;
+  cout << gob->bp_name() << endl;
+  cout << behaviors.size() << endl;
   assert(i != behaviors.end());
 
   i->second->init(prms);
