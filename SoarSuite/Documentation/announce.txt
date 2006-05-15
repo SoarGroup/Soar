@@ -72,6 +72,8 @@ Known issues:
 * ^status complete comes in immediately instead of during input phase.
 * The Soar 7 mode implementation currently relies on an ugly hack. If you
   experience problems in this mode, please let us know.
+* In TankSoar, the obscure-bot sometimes generates a scary-looking kernel
+  error message.  It appears to be safe to ignore.
 * Many other minor issues (see bugzilla for details).
 
 If any other issues or bugs are found, please send mail to:
