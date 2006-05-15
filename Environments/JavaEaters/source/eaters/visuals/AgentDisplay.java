@@ -29,6 +29,7 @@ public class AgentDisplay extends Composite {
 	Button m_NewAgentButton;
 	Button m_CloneAgentButton;
 	Button m_DestroyAgentButton;
+	Button m_ReloadProductionsButton;
 
 	public AgentDisplay(final Composite parent, EatersSimulation simulation) {
 		super(parent, SWT.NONE);
@@ -93,6 +94,17 @@ public class AgentDisplay extends Composite {
 					return;
 				}
 				m_Simulation.destroyEntity(m_SelectedEntity);
+			}
+		});
+				
+		m_ReloadProductionsButton = new Button(m_AgentButtons, SWT.PUSH);
+		m_ReloadProductionsButton.setText("Reload");
+		m_ReloadProductionsButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				if (m_SelectedEntity == null) {
+					return;
+				}
+				m_SelectedEntity.reloadProductions();
 			}
 		});
 				
@@ -200,5 +212,6 @@ public class AgentDisplay extends Composite {
 		m_NewAgentButton.setEnabled(!running && !agentsFull);
 		m_CloneAgentButton.setEnabled(!running && !agentsFull && selectedEater);
 		m_DestroyAgentButton.setEnabled(!running && !noAgents && selectedEater);
+		m_ReloadProductionsButton.setEnabled(!running && !noAgents && selectedEater);
  	}
 }
