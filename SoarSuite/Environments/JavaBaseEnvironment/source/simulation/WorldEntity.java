@@ -43,6 +43,10 @@ public class WorldEntity {
 		return m_Productions;
 	}
 	
+	public void reloadProductions() {
+		m_Agent.LoadProductions(m_Productions, true);
+	}
+	
 	public String getName() {
 		return m_Name;
 	}
@@ -109,5 +113,4 @@ public class WorldEntity {
 	public void setColliding(boolean colliding) {
 		m_Colliding = colliding;
 	}
-	
 }
