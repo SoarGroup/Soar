@@ -102,7 +102,8 @@ namespace Demo_SimpleTerrain {
     static const sint4 FACTOR = 128; ///< distance multiplier (real->int)
     static const sint4 DIAG   = sint4(FACTOR*1.4142);
     /// cost of passing though a square occupied by another unit
-    static const sint4 UNIT_COST = 1000000;
+    static const sint4 UNIT_COST = 5000000;
+    //static const sint4 UNIT_COST = 1000000;
     /** cost of passing though a square within the direction of
     * another units x-second distance
     * x-second distance: if a unit continues to move in a straight

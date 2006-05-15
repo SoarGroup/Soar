@@ -127,7 +127,7 @@ namespace Demo_SimpleTerrain
     y2 = min(max(y2,(sint4)1), map.get_h()-2);
 
     bool found = false;
-    int r = obj->get_radius();
+    int r = 3;//obj->get_radius();
     int newr = r / subtile_points;
     if( r%subtile_points >= subtile_points/2 )
       newr++;
@@ -154,7 +154,7 @@ namespace Demo_SimpleTerrain
       //    sint4 x1, y1, x2, y2;
       path.push_back( goal );
       //    path.push_back(TerrainBase::Loc(x2world(x2),y2world(y2)));
-      //    cout << "[G]" << "\t: " << "X: "<< goal.x << " Y: " <<  goal.y << endl;
+          //cout << "[G]" << "\t: " << "X: "<< goal.x << " Y: " <<  goal.y << endl;
       do {
         map(cell).flags = 1;
         uint4 p = amap(cell).parent;
@@ -163,8 +163,8 @@ namespace Demo_SimpleTerrain
           y2 = y2world(map.i2y(p));
 
           path.push_back(TerrainBase::Loc(x2,y2));
-          //       uint4 i = path.size()-1;
-          //       if (i > 1) cout << "[" << i << "]\t: " << "X: "<< path[i].x << " Y: " <<  path[i].y << endl;
+                 uint4 i = path.size()-1;
+                 //if (i > 1) cout << "[" << i << "]\t: " << "X: "<< path[i].x << " Y: " <<  path[i].y << endl;
         }
         cell = p;
       } while(cell);
@@ -177,7 +177,7 @@ namespace Demo_SimpleTerrain
       FORALL (clear, i) { 
         path.push_back(*i);
       }
-      //    cout << "[S]" << "\t: " << "X: "<< obj->get_int("x") << " Y: " <<  obj->get_int("y") << endl;
+          //cout << "[S]" << "\t: " << "X: "<< obj->get_int("x") << " Y: " <<  obj->get_int("y") << endl;
       if (path.size() > 0) { 
         smoothen_path(path);
       }
@@ -396,7 +396,7 @@ namespace Demo_SimpleTerrain
         if (!freeDirection[i]) continue;
 
         uint4 nn_index = he.cell + smap.get_d(i); // neighbour
-        //      if (smap(nn_index).max_size < size) continue; // object does not fit
+           //   if (smap(nn_index).max_size < size) continue; // object does not fit
 
         // cout << int(nn->max_size) << " " << int(size) << endl;
 
@@ -589,9 +589,11 @@ namespace Demo_SimpleTerrain
       Loc cworld(world2x(c.x), world2y(c.y));
 
       b.set_center(cworld);
+      //insert_bucket(b, zcat, TEMP, 1, cost*UNIT_COST);
       insert_bucket(b, zcat, TEMP, 0, cost*UNIT_COST);
 
       b2.set_center(cworld);
+      //insert_bucket(b2, zcat, TEMP, 1, cost*UNIT_COST/2);
       insert_bucket(b2, zcat, TEMP, 0, cost*UNIT_COST/2);
 
       // fixme: heading is not accessible through Object

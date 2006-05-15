@@ -23,8 +23,6 @@ namespace Demo_SimpleTerrain {
   }
   void ST_Terrain::findPath(const Object* gob, const Object* l2, Path &path) {
     sint4 x1, y1; l2->get_center(x1, y1);
-    x1 = pfEngine->world2x(x1);
-    y1 = pfEngine->world2y(y1);
     Loc l;
     l.x = x1;
     l.y = y1;
