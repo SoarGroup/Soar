@@ -9,10 +9,17 @@ run buildJavaApps.bat
 
 To do by hand:
 
-Remove core/Documentation/Manual Source
-Remove JavaMissionaries/bin & src
-Move VisualSoar/Source back to source
-Move pkgIndex.tcl from working to core
-remove makeTclSMLPackage.tcl from core
-move Resources/Templates back to source
-remove Core\ClientSMLSWIG\Java\build
+Remove:
+core/Documentation/Manual Source
+core/SoarLibrary/lib
+core/JavaMissionaries/bin & src
+core/SoarLibrary/bin/makeTclSMLPackage.tcl
+core/Core/ClientSMLSWIG/Java/build
+
+Move to source:
+core/Tools/VisualSoar/Source
+core/Resources/Templates
+
+Copy to source:
+working/SoarLibrary/bin/tcl_sml_clientinterface/pkgIndex.tcl
+
