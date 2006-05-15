@@ -1,3 +1,10 @@
+Build:
+sml.sln:
+	Rebuild all (Distribution configuration)
+	Rebuild all (Distribution-libs configuration)
+testcsharpsml.sln
+	Rebuild all (Release configuration)
+
 To do by hand:
 
 Remove core/Documentation/Manual Source
