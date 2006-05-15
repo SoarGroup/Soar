@@ -34,7 +34,7 @@ my $soarurl = "https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite";
 # Name and version
 my $nameandversion = "Soar Suite 8.6.2-r10";
 
-# File globs to completely remove from the tree (not distributed at all)
+# File globs to completely remove from the tree (stuff in repo not distributed at all)
 my @remove = qw/Makefile.in 8.6.2.nsi.in byhand.txt INSTALL .project .cvsignore .svn *.xcodeproj *.so *.so.1 *.so.2 *.jnilib java_swt *.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource Figures Old *.tex Scripts/;
 
 # Globs to copy from working copy to Core component
@@ -47,7 +47,7 @@ my @copysourceglobs = qw(ClientSML.lib ElementXML.lib ConnectionSML.lib Tcl_sml_
 
 # Globs to MOVE from Source component to Core component
 # SOURCE --move-to-> CORE
-my @moveglobs = qw/COPYING Documentation docs Resources SoarLibrary agents maps templates tcl TSI TclEaters run-*.bat TestTclSML.tcl pkgIndex.tcl mac.soar FilterTcl/;
+my @moveglobs = qw/COPYING Documentation docs Icons SoarLibrary agents maps templates tcl TSI TclEaters run-*.bat TestTclSML.tcl pkgIndex.tcl mac.soar FilterTcl/;
 
 # Nullsoft installer script input file
 my $nsiinput = "8.6.2.nsi.in";
@@ -111,19 +111,19 @@ sub build_step {
 
 sub checkout_step { 
 	print "Step 2: Check out source from SVN...\n";
-	rmtree($source);
+	rmtree($source) or die $!;
 	system "svn export $soarurl $source --native-eol CRLF";
 	
 	print "Step 3: Remove globs from source that are not to be distributed with the release...\n";
 
 	foreach (File::Find::Rule->file()->name(@remove)->in($source)) {
 		print "Removing from source: $_\n";
-		unlink $_;
+		unlink $_ or die $!;
 	}
 
 	foreach (File::Find::Rule->directory()->name(@remove)->in($source)) {
 		print "Removing from source: $_\n";
-		rmtree($_);
+		rmtree($_) or die $!;
 	}
 }
 
@@ -134,13 +134,13 @@ sub copy_step {
 	foreach (File::Find::Rule->directory()->name(@copycoreglobs)->in("."), File::Find::Rule->file()->name(@copycoreglobs)->mindepth(2)->in(".")) {
 		# This creates destination if it doesn't exist.
 		print "Copying to core: $_\n";
-		rcopy($_, "$core/$_");
+		rcopy($_, "$core/$_") or die $!;
 	}
 	print "Step 5.1: Copy globs from working tree to source...\n";
 	foreach (File::Find::Rule->directory()->name(@copysourceglobs)->in("."), File::Find::Rule->file()->name(@copysourceglobs)->mindepth(2)->in(".")) {
 		# This creates destination if it doesn't exist.
 		print "Copying to source: $_\n";
-		rcopy($_, "$source/$_");
+		rcopy($_, "$source/$_") or die $!;
 	}
 }
 
@@ -151,11 +151,11 @@ sub move_step {
 		print "Moving from source to core: $_\n";
 		/$source(.*)/;
 		my $outputdir = $1;
-		rcopy($_, "$core/$outputdir");
+		rmove($_, "$core/$outputdir") or die $!;
 	}
 	
 	print "Step 6.1: Rename COPYING...\n";
-	rmove("$core/COPYING", "$core/License.txt");
+	rmove("$core/COPYING", "$core/License.txt") or die $!;
 	
 	print "Step 6.2: Remove svn dirs from core...\n";
 	foreach (File::Find::Rule->directory()->name(".svn")->in($core)) {
@@ -172,16 +172,48 @@ sub move_step {
 	print "Step 6.4: Remove globs again...\n";
 	foreach (File::Find::Rule->file()->name(@remove)->in($source)) {
 		print "Removing from source: $_\n";
-		unlink $_;
+		unlink $_ or die $!;
 	}
 	foreach (File::Find::Rule->directory()->name(@remove)->in($source)) {
 		print "Removing from source: $_\n";
-		rmtree($_);
+		rmtree($_) or die $!;
 	}
 
-	print "Step 6.5: make readable...\n";
+	print "Step 6.5: final tweaks (by hand)...\n";
+	
+	print "removing tree $core/Documentation/ManualSource\n";
+	rmtree("$core/Documentation/ManualSource") or die $!;
+	
+	print "removing tree $core/SoarLibrary/lib\n";
+	rmtree("$core/SoarLibrary/lib") or die $!;
+	
+#	print "removing tree $core/Environments/JavaMissionaries/bin\n";
+#	rmtree("$core/Environments/JavaMissionaries/bin") or die $!;
+	
+#	print "removing tree $core/Environments/JavaMissionaries/src\n";
+#	rmtree("$core/Environments/JavaMissionaries/src") or die $!;
+	
+	print "unlinking: $core/SoarLibrary/bin/makeTclSMLPackage.tcl\n";
+	unlink("$core/SoarLibrary/bin/makeTclSMLPackage.tcl") or die;
+
+	print "unlinking: $core/SoarLibrary/bin/makeTclSMLPackage.tcl\n";
+	unlink("$core/SoarLibrary/bin/makeTclSMLPackage.tcl") or die;
+	
+	print "removing tree $core/Core/ClientSMLSWIG/Java/build\n";
+	rmtree("$source/Core/ClientSMLSWIG/Java/build") or die $!;
+
+	print "copying: SoarLibrary/bin/tcl_sml_clientinterface/pkgIndex.tcl\n";
+	copy("SoarLibrary/bin/tcl_sml_clientinterface/pkgIndex.tcl", "$core/SoarLibrary/bin/tcl_sml_clientinterface/pkgIndex.tcl") or die $!;
+	
+	print "moving: $core/Tools/VisualSoar/Source\n";
+	rmove("$core/Tools/VisualSoar/Source", "$source/Tools/VisualSoar/Source") or die $1;
+
+	print "Step 6.6: make readable...\n";
 	system "chmod -R 777 $core";
 	system "chmod -R 777 $source";	
+}
+
+sub byhand_step {
 }
 
 sub nsi_step {
