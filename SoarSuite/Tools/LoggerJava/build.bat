@@ -6,6 +6,7 @@ rem Also, if there are spaces in the path, it must be wrapped in quotes
 
 set SOARLIB=..\..\SoarLibrary\bin
 
+del /S /Q *.class 
 %2javac.exe -source 1.4 -classpath %SOARLIB%\sml.jar;. log\MainFrame.java
 %2jar cfm %SOARLIB%\LoggerJava.jar JarManifest .
 
