@@ -111,7 +111,7 @@
 		</Configuration>
 		<Configuration
 			Name="Distribution|Win32"
-			OutputDirectory="$(ConfigurationName)"
+			OutputDirectory="build"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
 			CharacterSet="2"
