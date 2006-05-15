@@ -1,0 +1,20 @@
+source _firstload.soar
+pushd all
+source all_source.soar
+popd
+pushd elaborations
+source elaborations_source.soar
+popd
+source finish-problem.soar
+source generate-facts.soar
+source generate-problem.soar
+pushd generate-problem
+source generate-problem_source.soar
+popd
+source initialize-arithmetic.soar
+source next-column.soar
+source process-column.soar
+pushd process-column
+source process-column_source.soar
+popd
+source stop-arithmetic.soar
