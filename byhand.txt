@@ -1,9 +1,11 @@
 Build:
-sml.sln:
+    sml.sln:
 	Rebuild all (Distribution configuration)
 	Rebuild all (Distribution-libs configuration)
-testcsharpsml.sln
+    testcsharpsml.sln
 	Rebuild all (Release configuration)
+run buildJavaApps.bat
+
 
 To do by hand:
 
