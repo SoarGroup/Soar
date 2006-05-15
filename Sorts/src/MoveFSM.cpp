@@ -46,7 +46,8 @@ int MoveFSM::update() {
 
 	case MOVING:
 	 const ServerObjData &sod = gob->sod;
-   double distToTarget = squaredDistance(*sod.x, *sod.y, moveParams[0], moveParams[1]); 
+   double distToTarget = squaredDistance(*sod.x, *sod.y, moveParams[0], moveParams[1]);
+
 	 // if speed drops to 0
    // and we are not there, failure
    if (*sod.speed == 0) 
@@ -54,7 +55,7 @@ int MoveFSM::update() {
      // this should be +/- some amount 
      // to account for multiple objects at the same location 
      if ((stagesLeft > 0 and distToTarget < 400)
-         or (stagesLeft == 0 and distToTarget <= precision)) {
+         or (stagesLeft == -1 and distToTarget <= precision)) {
        counter = 0;
        //If you arrived, then check is there is another path segment to traverse
        if (stagesLeft >= 0) {
@@ -63,9 +64,12 @@ int MoveFSM::update() {
          stagesLeft--;
 	       gob->set_action("move", moveParams);
        }
-       else 
+       else { 
+        cout << "dist: " << distToTarget << endl;
+        cout << "target: " << *sod.x << *sod.y << endl;
         //Otherwise, you are at your goal
         return FSM_SUCCESS;     
+       }
      }
      else {//Try again
        if (counter++ < 5) {
@@ -121,10 +125,13 @@ void MoveFSM::init(vector<sint4> p)
  if (p.size() == 3) {
    // third parameter specifies how close to the target we must get
    precision = p[2];
+   cout << "INIT: " << p[2] << endl;
    precision *= precision; // since we use distance squared
  }
 
  Sorts::terrainModule->findPath(gob, l, path);
+ cout << "path " << *gob->sod.x << "," << *gob->sod.y << "->"
+   << l.x << "," << l.y << endl;
  //path.locs.clear();
  //path.locs.push_back(l2); 
  for (unsigned int i=0; i<path.locs.size(); i++) 

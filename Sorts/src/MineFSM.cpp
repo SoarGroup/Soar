@@ -34,8 +34,8 @@ int MineFSM::update() {
         state = MOVING_TO_DROPOFF;
       }
       else {
-        tempVec.push_back(route->mineralLoc.x);
-        tempVec.push_back(route->mineralLoc.y);
+        tempVec.push_back(route->miningLoc.x);
+        tempVec.push_back(route->miningLoc.y);
         tempVec.push_back(precision);
         moveFSM->init(tempVec);
         moveFSM->update();
@@ -49,15 +49,21 @@ int MineFSM::update() {
       }
       else if (moveStatus == FSM_FAILURE) {
         // ??
-        tempVec.push_back(route->mineralLoc.x);
-        tempVec.push_back(route->mineralLoc.y);
+        tempVec.push_back(route->miningLoc.x);
+        tempVec.push_back(route->miningLoc.y);
         tempVec.push_back(precision);
         moveFSM->init(tempVec);
       }
       else if (moveStatus == FSM_SUCCESS) {
-        temp = route->mineral->getID();
+        temp = route->mineralInfo->mineral->getID();
         assert(Sorts::OrtsIO->isAlive(temp));
-        assert(Sorts::OrtsIO->getOrtsDistance(route->mineral->gob, gob) <= 2);
+        cout << "orts dist: " << Sorts::OrtsIO->getOrtsDistance(
+                                      route->mineralInfo->mineral->gob, gob) << endl;
+        cout << "from " << *route->mineralInfo->mineral->gob->sod.x << 
+            "," << *route->mineralInfo->mineral->gob->sod.y << 
+            " to " << *gob->sod.x << 
+            "," << *gob->sod.y << endl;
+        assert(Sorts::OrtsIO->getOrtsDistance(route->mineralInfo->mineral->gob, gob) <= 2);
         // otherwise, we need to work on the MoveFSM precision
         
         tempVec.push_back(temp);
@@ -103,13 +109,19 @@ int MineFSM::update() {
         moveFSM->init(tempVec);
       }
       else if (moveStatus == FSM_SUCCESS) {
-        temp = route->mineral->getID();
+        temp = route->mineralInfo->mineral->getID();
         assert(Sorts::OrtsIO->isAlive(temp));
-        assert(Sorts::OrtsIO->getOrtsDistance(route->cCenter->gob, gob) <= 3);
+        cout << "orts dist: " << Sorts::OrtsIO->getOrtsDistance(
+                                      route->cCenterInfo->cCenter->gob, gob) << endl;
+        cout << "from " << *route->cCenterInfo->cCenter->gob->sod.x << 
+            "," << *route->cCenterInfo->cCenter->gob->sod.y << 
+            " to " << *gob->sod.x << 
+            "," << *gob->sod.y << endl;
+        assert(Sorts::OrtsIO->getOrtsDistance(route->cCenterInfo->cCenter->gob, gob) <= 3);
         // otherwise, we need to work on the MoveFSM precision
         
         tempVec.clear();
-        tempVec.push_back(route->cCenter->getID());
+        tempVec.push_back(route->cCenterInfo->cCenter->getID());
         gob->set_action("return_resources", tempVec);
         state = SEND_MOVE_TO_MINE_COMMAND;
         if (timer != -1) {
@@ -130,8 +142,8 @@ int MineFSM::update() {
       if (timer != -1) {
         timer = Sorts::OrtsIO->getViewFrame();
       }
-      tempVec.push_back(route->mineralLoc.x);
-      tempVec.push_back(route->mineralLoc.y);
+      tempVec.push_back(route->miningLoc.x);
+      tempVec.push_back(route->miningLoc.y);
       tempVec.push_back(precision);
       moveFSM->init(tempVec);
       moveFSM->update();

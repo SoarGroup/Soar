@@ -12,6 +12,13 @@ class Sorts;
   Sam Wintermute, 2006 
 */ 
 
+enum Direction {
+  NORTH=0,
+  SOUTH=1,
+  EAST=2,
+  WEST=3
+};
+
 enum RouteHeuristicStage {
   // this is the heuristic used to determine path optimality
   
@@ -36,35 +43,50 @@ enum RouteHeuristicStage {
 #define CCENTER_MINRADIUS 31
 
 struct StationInfo;
+struct MineralInfo;
+struct CCenterInfo;
 struct MiningRoute {
-  coordinate mineralLoc;
+  coordinate miningLoc;
   coordinate dropoffLoc;
-  SoarGameObject* mineral;
-  SoarGameObject* cCenter;
+  MineralInfo* mineralInfo;
+  CCenterInfo* cCenterInfo;
   list<MineFSM*> fsms;
   double optimality;
   double pathlength;
   RouteHeuristicStage stage;
   StationInfo* mineStation;
   StationInfo* dropoffStation;
+  bool valid;
 };
 
-struct StationInfo {
-  int optimality;
-  list <MiningRoute*> routes;
-};
+#define MINERAL_EDGE_STATIONS 2
+#define CC_EDGE_STATIONS 11
 
 struct MineralInfo {
   SoarGameObject* mineral;
   list<MiningRoute*> routes;
+  bool stationsValid[4];
+  StationInfo* northStations[MINERAL_EDGE_STATIONS];
+  StationInfo* southStations[MINERAL_EDGE_STATIONS];
+  StationInfo* eastStations[MINERAL_EDGE_STATIONS];
+  StationInfo* westStations[MINERAL_EDGE_STATIONS];
 };
 
-struct cCenterInfo {
+struct CCenterInfo {
   SoarGameObject* cCenter;
   list <MiningRoute*> routes;
+  bool stationsValid[4];
+  StationInfo* northStations[CC_EDGE_STATIONS];
+  StationInfo* southStations[CC_EDGE_STATIONS];
+  StationInfo* eastStations[CC_EDGE_STATIONS];
+  StationInfo* westStations[CC_EDGE_STATIONS];
 };
 
-  
+struct StationInfo {
+  int optimality;
+  coordinate location;
+  list <MiningRoute*> routes;
+};
 
 struct ltMiningRoutePtr {
   bool operator()(MiningRoute* g1, MiningRoute* g2) const {
@@ -78,11 +100,11 @@ struct ltMiningRoutePtr {
   }
 };
 
-struct ltMineralInfo {
+struct ltMineralInfoPtr {
   // use this so we can have a set of mineralInfo's, but do quick lookups
   // based on the mineral object alone
-  bool operator()(MineralInfo g1, MineralInfo g2) const {
-    return ((int)g1.mineral < (int)g2.mineral);
+  bool operator()(MineralInfo* g1, MineralInfo* g2) const {
+    return ((int)(g1->mineral) < (int)(g2->mineral));
   }
 };
 class MineManager {
@@ -120,11 +142,11 @@ class MineManager {
   private:
     // store minerals here, for quick lookup when they disappear
     // MineralInfo connects minerals to routes
-    set<MineralInfo, ltMineralInfo> minerals;
+    set<MineralInfo*, ltMineralInfoPtr> minerals;
     
     // store commandCenters here- they rarely change, so a list is fine
-    // cCenterInfo connects cCenters to routes
-    list<cCenterInfo> cCenters;
+    // CCenterInfo connects cCenters to routes
+    list<CCenterInfo*> cCenters;
     
     // routes- keep the most optimal at the top
     set<MiningRoute*, ltMiningRoutePtr> routes;
@@ -132,9 +154,13 @@ class MineManager {
     // storage for the sgo->route assignments
     map<SoarGameObject*, MiningRoute*> assignments;
 
-    // keep track of usage of stations (mining or dropoff)
-    list<StationInfo> stations;
-    int nextStationID;
+    // keep station ptrs somewhere so we can delete them
+    list<StationInfo*> allStations;
+
+    // routes to be deleted-
+    // can't delete until the end because they may be in lists in various
+    // places (attached to minerals, etc.)
+    list<MiningRoute*> invalidRoutes;
     
     void removeFromRoute(MiningRoute* route, MineFSM* fsm);
     void removeFromRoute(MiningRoute* route, list<MineFSM*>::iterator it);
@@ -142,12 +168,16 @@ class MineManager {
     void addCostToRoute(MiningRoute* route);
     void adjustOptimality(MiningRoute* route);
     void calculateOptimality(MiningRoute* route);
-    void addRoute(cCenterInfo* cci, const MineralInfo* mi);
+    void addRoute(CCenterInfo* cci, MineralInfo* mi);
     MiningRoute* getBestRoute();
     void expandSLD(MiningRoute* route);
     void expandObjObj(MiningRoute* route);
     void expandEdgeEdge(MiningRoute* route);
     double pathFindDist(SoarGameObject* obj1, SoarGameObject* obj2);
     double pathFindDist(coordinate loc1, coordinate loc2);
+    bool stationBlocked(coordinate c);
+    void allocateMiningStations(MineralInfo* m, Direction d);
+    void allocateDropoffStations(CCenterInfo* m, Direction d);
+    Direction getRelDirection(coordinate c1, coordinate c2);
 };
 #endif
