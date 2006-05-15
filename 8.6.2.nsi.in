@@ -9,6 +9,8 @@ InstallDir "$PROGRAMFILES/${INSTALLDIR}"
 InstallDirRegKey HKLM "Software/${APPNAME}" ""
 OutFile "${OUTFILE}"
 
+BrandingText "The Center for Cognitive Architecture"
+
 !include "MUI.nsh"
 
 Icon "Resources/Icons/soar.ico"

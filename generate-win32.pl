@@ -32,14 +32,18 @@ use File::Path;
 my $soarurl = "https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite";
 
 # Name and version
-my $nameandversion = "Soar Suite 8.6.2-r9";
+my $nameandversion = "Soar Suite 8.6.2-r10";
 
 # File globs to completely remove from the tree (not distributed at all)
 my @remove = qw/Makefile.in 8.6.2.nsi.in byhand.txt INSTALL .project .cvsignore .svn *.xcodeproj *.so *.so.1 *.so.2 *.jnilib java_swt *.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource Figures Old *.tex Scripts/;
 
 # Globs to copy from working copy to Core component
 # WORKING --copy-to-> CORE
-my @copyglobs = qw(*.pdf *.dll *.exe *.jar ClientSML.lib ElementXML.lib ConnectionSML.lib Tcl_sml_ClientInterface mac towers-of-hanoi-SML.soar);
+my @copycoreglobs = qw(*.pdf *.dll *.exe *.jar Tcl_sml_ClientInterface mac towers-of-hanoi-SML.soar Tcl_sml_ClientInterface_wrap.cxx Java_sml_ClientInterface_wrap.cxx CSharp_sml_ClientInterface_wrap.cxx);
+
+# Globs to copy from working copy to Source component
+# WORKING --copy-to-> SOURCE
+my @copysourceglobs = qw(ClientSML.lib ElementXML.lib ConnectionSML.lib);
 
 # Globs to MOVE from Source component to Core component
 # SOURCE --move-to-> CORE
@@ -127,10 +131,16 @@ sub copy_step {
 	print "Step 4: Remove old core tree...\n";
 	rmtree($core, 1);
 	print "Step 5: Copy globs from working tree to core...\n";
-	foreach (File::Find::Rule->directory()->name(@copyglobs)->in("."), File::Find::Rule->file()->name(@copyglobs)->mindepth(2)->in(".")) {
+	foreach (File::Find::Rule->directory()->name(@copycoreglobs)->in("."), File::Find::Rule->file()->name(@copycoreglobs)->mindepth(2)->in(".")) {
 		# This creates destination if it doesn't exist.
 		print "Copying to core: $_\n";
 		rcopy($_, "$core/$_");
+	}
+	print "Step 5.1: Copy globs from working tree to source...\n";
+	foreach (File::Find::Rule->directory()->name(@copysourceglobs)->in("."), File::Find::Rule->file()->name(@copysourceglobs)->mindepth(2)->in(".")) {
+		# This creates destination if it doesn't exist.
+		print "Copying to source: $_\n";
+		rcopy($_, "$source/$_");
 	}
 }
 
