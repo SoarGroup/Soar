@@ -130,7 +130,7 @@ cd ..
 		</Configuration>
 		<Configuration
 			Name="Distribution|Win32"
-			OutputDirectory="$(ConfigurationName)"
+			OutputDirectory="build"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
