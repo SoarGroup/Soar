@@ -32,7 +32,7 @@ use File::Path;
 my $soarurl = "https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite";
 
 # Name and version
-my $nameandversion = "Soar Suite 8.6.2-r10";
+my $nameandversion = "Soar Suite 8.6.2-r11";
 
 # File globs to completely remove from the tree
 my @remove = qw/Makefile.in 8.6.2.nsi.in INSTALL .project .cvsignore .svn *.xcodeproj *.so *.so.1 *.so.2 *.jnilib java_swt *.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource Old *.tex Scripts/;
@@ -111,7 +111,7 @@ sub build_step {
 
 sub checkout_step { 
 	print "Step 2: Check out source from SVN...\n";
-	rmtree($source) or die $!;
+	rmtree($source);
 	system "svn export $soarurl $source --native-eol CRLF";
 	
 	system "chmod -R 777 $core";
@@ -141,14 +141,6 @@ sub copy_step {
 	}
 	system "chmod -R 777 $core";
 	system "chmod -R 777 $source";	
-	print "Step 5.1: Copy globs from working tree to source...\n";
-	foreach (File::Find::Rule->directory()->name(@copysourceglobs)->in("."), File::Find::Rule->file()->name(@copysourceglobs)->mindepth(2)->in(".")) {
-		# This creates destination if it doesn't exist.
-		print "Copying to source: $_\n";
-		rcopy($_, "$source/$_") or die $!;
-	}
-	system "chmod -R 777 $core";
-	system "chmod -R 777 $source";	
 }
 
 sub move_step {
@@ -163,6 +155,15 @@ sub move_step {
 	system "chmod -R 777 $core";
 	system "chmod -R 777 $source";	
 	
+	print "Step 6.01: Copy globs from working tree to source...\n";
+	foreach (File::Find::Rule->directory()->name(@copysourceglobs)->in("."), File::Find::Rule->file()->name(@copysourceglobs)->mindepth(2)->in(".")) {
+		# This creates destination if it doesn't exist.
+		print "Copying to source: $_\n";
+		rcopy($_, "$source/$_") or die $!;
+	}
+	system "chmod -R 777 $core";
+	system "chmod -R 777 $source";	
+
 	print "Step 6.1: Rename COPYING...\n";
 	rmove("$core/COPYING", "$core/License.txt") or die $!;
 	
