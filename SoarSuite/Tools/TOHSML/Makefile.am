@@ -11,10 +11,18 @@ Towers.h\
 smlTowers.h\
 smlTowersSoarAgent.h
 
+if STATIC_LINKED_CONDITIONAL
+TOHSML_LDADD = \
+$(BASEDIR_PREFIX)/Core/ClientSML/src/libClientSML.la \
+$(BASEDIR_PREFIX)/Core/ConnectionSML/src/libConnectionSML.la \
+$(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la \
+$(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la
+else
 TOHSML_LDADD = \
 $(BASEDIR_PREFIX)/Core/ClientSML/src/libClientSML.la \
 $(BASEDIR_PREFIX)/Core/ConnectionSML/src/libConnectionSML.la \
 $(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
+endif
 
 INCLUDES = \
 -I$(BASEDIR_PREFIX)/Core/ClientSML/include \
