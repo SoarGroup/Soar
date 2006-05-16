@@ -32,7 +32,7 @@ use File::Path;
 my $soarurl = "https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite";
 
 # Name and version
-my $nameandversion = "Soar Suite 8.6.2-r13";
+my $nameandversion = "Soar Suite 8.6.2-r14";
 
 # File globs to completely remove from the tree
 my @remove = qw/Makefile.in 8.6.2.nsi.in INSTALL .project .cvsignore .svn *.xcodeproj *.so *.so.1 *.so.2 *.jnilib java_swt *.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource Old *.tex Scripts/;
@@ -209,8 +209,9 @@ sub move_step {
 	print "removing tree $core/Tools/TestCSharpSML\n";
 	rmtree("$core/Tools/TestCSharpSML") or die $!;
 	
-	print "unlinking: $core/SoarLibrary/bin/makeTclSMLPackage.tcl\n";
-	unlink("$core/SoarLibrary/bin/makeTclSMLPackage.tcl") or die $!;
+	print "moving: $core/SoarLibrary/bin/makeTclSMLPackage.tcl\n";
+	mkdir("$source/SoarLibrary/bin");
+	rmove("$core/SoarLibrary/bin/makeTclSMLPackage.tcl", "$source/SoarLibrary/bin/makeTclSMLPackage.tcl") or die $1;
 
 	print "unlinking: $core/Core/ClientSMLSWIG/Java/build/readme.txt\n";
 	rmtree("$source/Core/ClientSMLSWIG/Java/build/readme.txt") or die $!;
