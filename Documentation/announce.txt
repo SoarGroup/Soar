@@ -57,7 +57,7 @@ New in 8.6.2
   -- Tcl commands can now be used from the SoarJavaDebugger by running 
      a separate Tcl filter alongside the debugger 
      (this is a preliminary version in this release).
-  -- Support for filtering of command line input in thru language 
+  -- Support for filtering of command line input in any supported language 
      Filtering can be chained.  
   -- Support for logging output in SoarJavaDebugger on a window-by-window basis
   -- Support for arbitrary logging of Soar execution through custom logging 
