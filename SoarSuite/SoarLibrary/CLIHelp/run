@@ -41,8 +41,9 @@
    |count            |A single integer which specifies the number of cycles |
    |                 |to run Soar.                                          |
    |-----------------+------------------------------------------------------|
-   |-i, --interleave |Support round robin execution across agents at a finer|
-   |                 |grain than the run-size parameter.                    |
+   |                 |Support round robin execution across agents at a finer|
+   |-i, --interleave |grain than the run-size parameter. e = elaboration, p |
+   |                 |= phase, d = decision, o = output                     |
    +------------------------------------------------------------------------+
 
 Deprecated Options
@@ -63,9 +64,9 @@ Deprecated Options
    by an action of a production, or until an external interrupt is issued by
    the user. The run command can also specify that Soar should run only for a
    specific number of Soar cycles or phases (which may also be prematurely
-   stopped by a production action or a control-C). This is helpful for
-   debugging sessions, where users may want to pay careful attention to the
-   specific productions that are firing and retracting.
+   stopped by a production action or the stop-soar command). This is helpful
+   for debugging sessions, where users may want to pay careful attention to
+   the specific productions that are firing and retracting.
 
    The run command takes optional arguments: an integer, count, which
    specifies how many units to run; and a units flag indicating what steps or
