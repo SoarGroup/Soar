@@ -8,9 +8,16 @@ bin_PROGRAMS = TestConnectionSML
 
 TestConnectionSML_SOURCES = TestConnectionSML.cpp
 
+if STATIC_LINKED_CONDITIONAL
 TestConnectionSML_LDADD = \
-$(BASEDIR_PREFIX)/Core/ConnectionSML/src/libConnectionSML.la\
+$(BASEDIR_PREFIX)/Core/ConnectionSML/src/libConnectionSML.la \
+$(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la \
+$(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la
+else
+TestConnectionSML_LDADD = \
+$(BASEDIR_PREFIX)/Core/ConnectionSML/src/libConnectionSML.la \
 $(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
+endif
 
 INCLUDES = \
 -I$(BASEDIR_PREFIX)/Core/ConnectionSML/include \

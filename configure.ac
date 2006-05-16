@@ -82,6 +82,7 @@ if test "$enable_shared" = "no"
 then
   AC_DEFINE([STATIC_LINKED], [1], [Defined when statically linking])
 fi
+AM_CONDITIONAL([STATIC_LINKED_CONDITIONAL], test x$enable_shared = xno)
 
 # Checks for libraries.
 
