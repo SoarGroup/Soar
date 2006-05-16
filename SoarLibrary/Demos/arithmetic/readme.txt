@@ -7,13 +7,13 @@ Last modifications 5/15/2006
 
 This program supports arithmetic ands subtraction between two multi-digit 
 numbers. It formulates the problem in multiple columns. It does not use any 
-math functions and as currently formulate has table of all single digit 
+math functions. As currently formulated, it uses a table of all single digit 
 addition facts (for addition and one subtraction strategy) and tables of 
 simple subtraction facts and addition by ten to single digits (for a second 
 subtraction strategy). These facts can be converted to a semantic memory 
-access (in the application of computer-result).
+access (in the application of compute-result).
 
-Each primitive operator is relatively simple; without complex proposal 
+Each primitive operator is relatively simple: without complex proposal 
 conditions, control rules, lots of control flags or complex conditional 
 operator applications. The actual execution trace is sometimes a bit tricky – 
 especially for subtraction.
