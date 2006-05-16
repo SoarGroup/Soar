@@ -141,6 +141,15 @@ sub copy_step {
 	}
 	system "chmod -R 777 $core";
 	system "chmod -R 777 $source";	
+	
+	print "Step 5.1: Copy swig java files from working tree to source...\n";
+	foreach (File::Find::Rule->file()->name(@copycoreglobs)->in("Core/ClientSMLSWIG/Java/build")) {
+		# This creates destination if it doesn't exist.
+		print "Copying to source: $_\n";
+		rcopy($_, "$source/$_") or die $!;
+	}
+	system "chmod -R 777 $core";
+	system "chmod -R 777 $source";	
 }
 
 sub move_step {
@@ -203,8 +212,8 @@ sub move_step {
 	print "unlinking: $core/SoarLibrary/bin/makeTclSMLPackage.tcl\n";
 	unlink("$core/SoarLibrary/bin/makeTclSMLPackage.tcl") or die $!;
 
-	print "removing tree $core/Core/ClientSMLSWIG/Java/build\n";
-	rmtree("$source/Core/ClientSMLSWIG/Java/build") or die $!;
+	print "unlinking: $core/Core/ClientSMLSWIG/Java/build/readme.txt\n";
+	rmtree("$source/Core/ClientSMLSWIG/Java/build/readme.txt") or die $!;
 
 	print "copying: SoarLibrary/bin/tcl_sml_clientinterface/pkgIndex.tcl\n";
 	copy("SoarLibrary/bin/tcl_sml_clientinterface/pkgIndex.tcl", "$core/SoarLibrary/bin/tcl_sml_clientinterface/pkgIndex.tcl") or die $!;
