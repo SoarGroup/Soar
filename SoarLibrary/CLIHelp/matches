@@ -6,8 +6,8 @@
 
                                     Synopsis
 
- matches [-nc0t1w2] production_name
- matches -[a|r] [-nc0t1w2]
+ matches [-nctw] production_name
+ matches -[a|r] [-nctw]
 
                                     Options
 
@@ -45,8 +45,8 @@ Printing the match set
    default action prints only the names of the productions which are about to
    fire or retract. If there are multiple instantiations of a production, the
    total number of instantiations of that production is printed after the
-   production name, unless --timetags|1 or --wmes|2 are specified, in which
-   case each instantiation is printed on a separate line.
+   production name, unless --timetags or --wmes are specified, in which case
+   each instantiation is printed on a separate line.
 
    When printing the match set, the --assertions and --retractions arguments
    may be specified to restrict the output to print only the assertions or
@@ -64,10 +64,10 @@ Printing partial matches for productions
    When printing partial matches, the default action is to print only the
    counts of the number of WME's that match, and is a handy tool for
    determining which condition failed to match for a production that you
-   thought should have fired. At levels 1 and 2 (or --timetags and --wmes
-   arguments) the matches command displays the WME's immediately after the
-   first condition that failed to match --- temporarily interrupting the
-   printing of the production conditions themselves.
+   thought should have fired. At levels --timetags and --wmes the matches
+   command displays the WME's immediately after the first condition that
+   failed to match --- temporarily interrupting the printing of the
+   production conditions themselves.
 
 Notes
 
@@ -92,7 +92,3 @@ Notes
    This example prints the wme timetags for a single production.
 
  matches -t my*first*production
-
-                                    See Also
-
-   monitor
