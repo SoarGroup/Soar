@@ -60,7 +60,7 @@ struct MiningRoute {
 };
 
 #define MINERAL_EDGE_STATIONS 2
-#define CC_EDGE_STATIONS 11
+#define CC_EDGE_STATIONS 9
 
 struct MineralInfo {
   SoarGameObject* mineral;

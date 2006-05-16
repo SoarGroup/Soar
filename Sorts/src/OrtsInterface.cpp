@@ -111,7 +111,7 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   if (gameObj->bp_name() == "mineral") {
     Sorts::mineManager->addMineral(newObj);
   }
-  else if (gameObj->bp_name() == "controlCenter") {
+  else if (friendly && gameObj->bp_name() == "controlCenter") {
     Sorts::mineManager->addControlCenter(newObj);
   }
   

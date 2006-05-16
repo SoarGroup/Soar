@@ -52,9 +52,7 @@ int MoveFSM::update() {
    // and we are not there, failure
    if (*sod.speed == 0) 
    {
-     // this should be +/- some amount 
-     // to account for multiple objects at the same location 
-     if ((stagesLeft > 0 and distToTarget < 400)
+     if ((stagesLeft > 0 and distToTarget < 4)
          or (stagesLeft == -1 and distToTarget <= precision)) {
        counter = 0;
        //If you arrived, then check is there is another path segment to traverse
@@ -95,7 +93,7 @@ int MoveFSM::update() {
      gob->set_action("move", moveParams);
     }
 
-#ifdef MAGENTISM    
+#ifdef MAGNETISM    
     else
     {
      cout<<"Magnetized\n";

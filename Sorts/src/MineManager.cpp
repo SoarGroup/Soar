@@ -527,6 +527,7 @@ void MineManager::expandEdgeEdge(MiningRoute* route) {
         newRoute = new MiningRoute(*route);
         newRoute->mineStation = mineStation;
         newRoute->dropoffStation = dropoffStation;
+        newRoute->stage = PF_DIST;
 
         // yes, this is redundant, 
         // (route->location == route->station->location)
@@ -535,24 +536,31 @@ void MineManager::expandEdgeEdge(MiningRoute* route) {
         newRoute->miningLoc = mineStation->location;
         newRoute->dropoffLoc = dropoffStation->location;
 
-        newRoute->pathlength = pathFindDist(newRoute->dropoffStation->location, 
-                                            newRoute->mineStation->location);
-        newRoute->stage = PF_DIST;
-
-        if (newRoute->pathlength == -1) {
-          cout << "deleting unreachable point-point route\n";
+        if (dropoffStation->optimality > 500
+            or mineStation->optimality > 500) {
+          cout << "immediately rejecting EE route, station is full.\n";
           delete newRoute;
         }
         else {
-          // register the route with everyone who needs to know about it
-          mineStation->routes.push_back(newRoute);
-          dropoffStation->routes.push_back(newRoute);
-          newRoute->mineralInfo->routes.push_back(newRoute);
-          newRoute->cCenterInfo->routes.push_back(newRoute);
-          
-          calculateOptimality(newRoute);
-          cout << "adding route: " << newRoute->optimality << endl;
-          routes.insert(newRoute);
+
+          newRoute->pathlength = pathFindDist(newRoute->dropoffStation->location, 
+                                              newRoute->mineStation->location);
+
+          if (newRoute->pathlength == -1) {
+            cout << "deleting unreachable point-point route\n";
+            delete newRoute;
+          }
+          else {
+            // register the route with everyone who needs to know about it
+            mineStation->routes.push_back(newRoute);
+            dropoffStation->routes.push_back(newRoute);
+            newRoute->mineralInfo->routes.push_back(newRoute);
+            newRoute->cCenterInfo->routes.push_back(newRoute);
+            
+            calculateOptimality(newRoute);
+            cout << "adding route: " << newRoute->optimality << endl;
+            routes.insert(newRoute);
+          }
         }
       }
       else {
@@ -576,13 +584,13 @@ void MineManager::allocateMiningStations(MineralInfo* mi, Direction d) {
     switch (d) {
       case NORTH:
         mi->northStations[i] = newStation;
-        newStation->location.x = mineralCenter.x - 3 + i*6;
+        newStation->location.x = mineralCenter.x - 4 + i*7;
         newStation->location.y 
           = mineralCenter.y + WORKER_RADIUS + MINERAL_RADIUS + 1;
         break;
       case SOUTH:
         mi->southStations[i] = newStation;
-        newStation->location.x = mineralCenter.x - 3 + i*6;
+        newStation->location.x = mineralCenter.x - 4 + i*7;
         newStation->location.y 
           = mineralCenter.y - (WORKER_RADIUS + MINERAL_RADIUS + 1);
         break;
@@ -590,13 +598,13 @@ void MineManager::allocateMiningStations(MineralInfo* mi, Direction d) {
         mi->eastStations[i] = newStation;
         newStation->location.x 
           = mineralCenter.x + WORKER_RADIUS + MINERAL_RADIUS + 1;
-        newStation->location.y = mineralCenter.y - 3 + i*6;
+        newStation->location.y = mineralCenter.y - 4 + i*7;
         break;
       case WEST:
         mi->westStations[i] = newStation;
         newStation->location.x 
           = mineralCenter.x - (WORKER_RADIUS + MINERAL_RADIUS + 1);
-        newStation->location.y = mineralCenter.y - 3 + i*6;
+        newStation->location.y = mineralCenter.y - 4 + i*7;
         break;
     }
     if (stationBlocked(newStation->location)) {
@@ -613,19 +621,19 @@ void MineManager::allocateDropoffStations(CCenterInfo* cci, Direction d) {
   StationInfo* newStation;
   coordinate ccCenter = cci->cCenter->getLocation();
   
-  assert (CC_EDGE_STATIONS == 11);
-  for (int i=0; i<11; i++) {
+  assert (CC_EDGE_STATIONS == 9);
+  for (int i=0; i<9; i++) {
     newStation = new StationInfo;
     switch (d) {
       case NORTH:
         cci->northStations[i] = newStation;
-        newStation->location.x = ccCenter.x - 33 + i*6;
+        newStation->location.x = ccCenter.x - 33 + i*7;
         newStation->location.y 
           = ccCenter.y + WORKER_RADIUS + CCENTER_MINRADIUS + 2;
         break;
       case SOUTH:
         cci->southStations[i] = newStation;
-        newStation->location.x = ccCenter.x - 33 + i*6;
+        newStation->location.x = ccCenter.x - 33 + i*7;
         newStation->location.y 
           = ccCenter.y - (WORKER_RADIUS + CCENTER_MINRADIUS + 2);
         break;
@@ -633,13 +641,13 @@ void MineManager::allocateDropoffStations(CCenterInfo* cci, Direction d) {
         cci->eastStations[i] = newStation;
         newStation->location.x 
           = ccCenter.x + WORKER_RADIUS + CCENTER_MINRADIUS + 2;
-        newStation->location.y = ccCenter.y - 33 + i*6;
+        newStation->location.y = ccCenter.y - 33 + i*7;
         break;
       case WEST:
         cci->westStations[i] = newStation;
         newStation->location.x 
           = ccCenter.x - (WORKER_RADIUS + CCENTER_MINRADIUS + 2);
-        newStation->location.y = ccCenter.y - 33 + i*6;
+        newStation->location.y = ccCenter.y - 33 + i*7;
         break;
     }
     if (stationBlocked(newStation->location)) {
@@ -650,9 +658,6 @@ void MineManager::allocateDropoffStations(CCenterInfo* cci, Direction d) {
     }
   }
   cci->stationsValid[d] = true;
-  cout << cci->westStations[0]->location.y;
-  cout << " " << cci->westStations[1]->location.y;
-  cout <<  "DIR: " << d << endl;
 }
 
 double MineManager::pathFindDist(SoarGameObject* obj1, SoarGameObject* obj2) {
