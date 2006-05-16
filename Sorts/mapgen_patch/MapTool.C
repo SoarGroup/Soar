@@ -1,8 +1,8 @@
 /** @file MapTool.C
     @see MapTool.H
 
-    $Id: MapTool.C,v 1.62 2005/11/16 19:17:46 orts_furtak Exp $
-    $Source: /home/cvs/orts3/libs/serverclient/src/MapTool.C,v $
+    $Id: MapTool.C,v 1.65 2006/05/09 22:41:53 orts_furtak Exp $
+    $Source: /usr/bodo1/cvs/cvs/orts3/libs/serverclient/src/MapTool.C,v $
 */
 // This is an ORTS file (c) Michael Buro, licensed under the GPL
 
@@ -105,27 +105,40 @@ void MapTool::place_unit(stringstream &world,
 
 //===================================================================
 
+static string strip_white(const string &s)
+{
+  string foo;
+  FORU (i, s.size()) {
+    if (!iswspace(s[i])) foo += s[i];
+  }
+  return foo;
+}
+
+//===================================================================
+
 void MapTool::parse_map_include(stringstream &world, string &fname)
 {
   ifstream file(fname.c_str());
   if (!file) ERR2("file not found:", fname);
 
   string base;
-  uint4 p = fname.rfind(PATH_SEP, fname.size());
+  size_t p = fname.rfind(PATH_SEP, fname.size());
   if (p != string::npos) {
     base = fname.substr(0, p+1);
   }
 
   while (file.good()) {
     
-    string t;
+    string t, u;
     getline(file, t);
     if (!file) break;
+    u = strip_white(t);
 
-    if (t == "<INCLUDE>") {
+    if (u == "<INCLUDE>") {
       FOREVER {
         string i;
         getline(file, i);
+        i = strip_white(i);
         if (i == "</INCLUDE>") break;
         if (i == "") continue;
         i = i.substr(1, i.length()-2);
@@ -2152,9 +2165,11 @@ void MapTool::generate_ctf_map(
 
       if (ramp_d[i]) {
 	if (ramp_d[i] <= 8) {
-	  map_data(i).set_ramp(height[i], height[i]+1, (Tile::Compass)ramp_d[i]);
+	  map_data(i).set_ramp(height[i], height[i]+1,
+			       static_cast<Tile::Compass>(ramp_d[i]));
 	} else {
-	  map_data(i).set_ramp(height[i], height[i]+1, height[i]+1, (Tile::Compass)(ramp_d[i]-10));
+	  map_data(i).set_ramp(height[i], height[i]+1, height[i]+1,
+			       static_cast<Tile::Compass>(ramp_d[i]-10));
 	}
       } else {
         map_data(i).set_flat(height[i]);
