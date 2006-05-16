@@ -4,7 +4,7 @@
 ###########################################
 
 AC_PREREQ(2.57)
-AC_INIT([SoarSuite], [8.6.2-r3], [soar-group@lists.sourceforge.net])
+AC_INIT([SoarSuite], [8.6.2-r4], [soar-group@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([Core/SoarKernel/include/soarkernel.h])
 AM_INIT_AUTOMAKE([foreign tar-ustar])
 AC_REVISION($Revision$)
