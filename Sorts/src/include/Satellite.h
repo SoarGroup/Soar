@@ -24,6 +24,7 @@ public:
   void removeObject(GameObj *gob, sint4 sat_loc);
   // querying functions
   std::list<GameObj*> *getObjectsInRegion(int x, int y);
+  std::list<GameObj*> *getCollisions(sint4 x, sint4 y, sint4 r);
 
   int refCount;
 
