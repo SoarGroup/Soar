@@ -79,7 +79,10 @@ void AttackFSM::move(int x, int y) {
   if (moveFSM == NULL) {
     moveFSM = new MoveFSM(gob);
   }
-  vector<sint4> moveParams;
+  if (moving) {
+    moveFSM->stop();
+  }
+  vector<sint4> moveParams(2);
   moveParams.push_back(x);
   moveParams.push_back(y);
   moveFSM->init(moveParams);
@@ -94,7 +97,7 @@ void AttackFSM::stopMoving() {
 }
 
 void AttackFSM::getDestination(int* x, int* y) {
-  if (moveFSM != NULL) {
+  if (moving) {
     *x = dest_x;
     *y = dest_y;
   }

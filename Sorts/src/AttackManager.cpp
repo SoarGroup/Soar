@@ -176,6 +176,7 @@ void AttackManager::unregisterFSM(AttackFSM* fsm) {
 // i.e. some balance between ease of killing and damage rate
 int AttackManager::direct(AttackFSM* fsm) {
   if (currTarget == NULL || !Sorts::OrtsIO->isAlive(currTarget->getID())) {
+    cout << "ATTACK MANAGER: SELECT NEW TARGET" << endl;
     if (currTarget != NULL) {
       // the current target is dead or moved out of view
       targets.erase(currTarget);
@@ -193,7 +194,8 @@ int AttackManager::direct(AttackFSM* fsm) {
   if (!canHit(gob, currTarget->gob)) {
     // find someone he can hit, don't waste time by not shooting
     if (fsm->getTarget() == NULL ||
-        !canHit(gob, fsm->getTarget()->gob)) {
+        !canHit(gob, fsm->getTarget()->gob)) 
+    {
       for(set<SoarGameObject*>::iterator
           i =  targets.begin();
           i != targets.end();
@@ -210,13 +212,16 @@ int AttackManager::direct(AttackFSM* fsm) {
     fsm->getDestination(&dest_x, &dest_y);
     Circle dest(dest_x, dest_y, *gob->sod.radius);
     if (!fsm->isMoving() || !canHit(gob, dest, currTarget->gob)) {
+      cout << "ATTACK MANAGER: CALLING NEW MOVE COMMAND" << endl;
       Circle pos;
       if(attackArcPos(gob, currTarget->gob, pos)) {
+        cout << "ATTACK MANAGER: TRYING TO MOVE TO "
+             << pos.x << ", " << pos.y << endl;
         fsm->move((int) pos.x, (int) pos.y);
       }
       else {
         // the entire circle around the guy is surrounded
-        // what to do here?
+        // should find another target to shoot at
       }
     }
   }
