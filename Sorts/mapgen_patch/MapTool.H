@@ -99,6 +99,7 @@ public:
   static void init_map_data(MapData &md);
   static void generate_game_tiles(MapData &md, std::stringstream& world, bool bad_init);
   static void generate_game1_map(std::stringstream &world);
+  static void generate_soarbp_map(std::stringstream &world);
   static void generate_game2_map(std::stringstream &world);
   static void generate_game3_map(std::stringstream &world);
   

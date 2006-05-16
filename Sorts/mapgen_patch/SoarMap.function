@@ -926,3 +926,62 @@ not valid code here anymore, but these are the units:
   world << "</OBJECTS>\n";
 }
 
+void MapTool::generate_soarbp_map(stringstream &output_world)
+{
+  MapData md;
+
+  init_map_data(md);
+
+ try_again:;
+
+  REM("generate world");
+  
+  stringstream world;
+
+  generate_game_tiles(md, world);
+
+  string fname = opt.bp_file;
+  fname = sanitize_path(fname);
+  parse_map_include(world, fname);
+
+  world << "<OBJECTS>\n";
+
+  sint4 loops = 0;
+
+  FOREVER {
+
+    // create start locations
+
+    FORU (p, md.num_players) {
+      
+      // retry if hung
+      if (++loops >= 1000) goto try_again;
+      
+      sint4 x0, y0;
+      rand_loc(md, x0, y0);
+      if (!base_loc_ok(md, x0, y0)) { --p; continue; }
+    
+      mark_base_loc(md, x0, y0);
+      place_unit(world, "start_loc", p, x0, y0);
+    }
+
+    // create random resource clusters
+  
+    FORS (i, GAME1_NUM_CLUSTERS) {
+
+      // retry if hung
+      if (++loops >= 1000) goto try_again;
+
+      sint4 x0, y0;
+
+      rand_loc(md, x0, y0);
+      if (!resource_loc_ok(md, x0, y0)) { --i; continue; }
+      populate_resource_loc(md, x0, y0, world);
+    }
+
+    break;
+  }
+  world << "</OBJECTS>\n";
+
+  output_world << world.str();
+}

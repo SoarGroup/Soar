@@ -1,4 +1,4 @@
-// $Id: orts_main.C,v 1.30 2005/11/16 19:17:46 orts_furtak Exp $
+// $Id: orts_main.C,v 1.32 2006/04/26 03:22:00 orts_mburo Exp $
 
 // This is an ORTS file (c) Michael Buro, licensed under the GPL
  
@@ -35,9 +35,10 @@ static void add_options()
   o.put("-debug",   false,           "debug mode");
  
 // FRANO
-  o.put("-frano",false,"frano's test map");
-  
-  o.put("-soar", string (""), "soar test map");
+  o.put("-frano", "frano's test map");
+
+  o.put("-soar", string(""), "soar test map");
+
   o.put("-marines", "generate marines");  
   
   o.put("-game1",   "tournament game 1");
@@ -98,10 +99,9 @@ void create_orts_world(stringstream &world)
       bool frano = false;
       Options::get("-frano", frano);
       // ---
-      //soar ---
       string soar = "";
-      Options::get("-soar",soar);
-      // ---
+      Options::get("-soar", soar);
+
       if      (game1)   MapTool::generate_game1_map(world);
       else if (game2)   MapTool::generate_game2_map(world);
       else if (game3)   MapTool::generate_game3_map(world);
@@ -110,8 +110,13 @@ void create_orts_world(stringstream &world)
         MapTool::generate_marine_map(world);
       else if (frano) {
         MapTool::generate_frano_map(world);
-      } else if (soar != "")
+      }
+      else if (soar == "bp") {
+        MapTool::generate_soarbp_map(world);
+      }
+      else if (soar != "") {
         MapTool::generate_soar_map(world, soar.c_str());
+      }
       else if (island)
         MapTool::generate_island_map(world);
       else if (debug)
@@ -157,6 +162,13 @@ struct ClientEventHandler : public EventHandler
       if (e.get_what() == GameStateModule::VIEW_MSG) {
 
 	cout << "." << flush;
+
+	if (gsm->get_game().get_action_frame() >= 0) {
+	  sint4 lag = gsm->get_game().get_view_frame() - gsm->get_game().get_action_frame();
+	  if (lag) cout << "L:" << lag << " ";
+	}
+	if (gsm->get_game().get_skipped_actions() != 0) cout << "S:" << gsm->get_game().get_skipped_actions() << " ";
+	if (gsm->get_game().get_merged_actions() > 1) cout << "M:" << gsm->get_game().get_merged_actions() << " ";
 	
 	if (gui) {
 	  gui->event();
@@ -165,6 +177,17 @@ struct ClientEventHandler : public EventHandler
 	}
 
 	gsm->send_actions();
+
+#if 0	
+ 	// "swamp" server
+	gsm->send_actions();	
+	gsm->send_actions();
+	gsm->send_actions();	
+	gsm->send_actions();
+	gsm->send_actions();	
+	gsm->send_actions();
+	gsm->send_actions();	
+#endif
 	
 	return true;
 

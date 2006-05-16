@@ -1,8 +1,8 @@
 Copy the files to these locations in the ORTS tree, then make orts:
 apps/orts/src/orts_main.C
-libs/serverclient/src/MapTool.C
 libs/serverclient/src/MapTool.H
 libs/serverclient/src/SoarMap.function
+and add #include "SoarMap.function" to the end of TournamentMapTool.C
 
 Put the map_settings_example file wherever. To run with a Soar map, put the settings file in the command line after -soar.
 
