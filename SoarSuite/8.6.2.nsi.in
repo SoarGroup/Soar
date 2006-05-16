@@ -118,11 +118,9 @@ Section "Core Soar Components" Section1
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI/gSKI-Design-Document.lnk" "$INSTDIR/Documentation/gSKI/gSKI-Design-Document.pdf"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI/gSKIProductionUseCases.lnk" "$INSTDIR/Documentation/gSKI/gSKIProductionUseCases.pdf"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI/gSKI-Req.lnk" "$INSTDIR/Documentation/gSKI/gSKI-Req.pdf"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI/gSKI-Requirements-Document-with-Goals.lnk" "$INSTDIR/Documentation/gSKI/gSKI-Requirements-Document-with-Goals.pdf"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI/Moving to GSKI.lnk" "$INSTDIR/Documentation/gSKI/Moving to GSKI.pdf"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI/Requirements Document with Goals.lnk" "$INSTDIR/Documentation/gSKI/Requirements Document with Goals.pdf"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI/Soar TCL Commands in Soar 8.lnk" "$INSTDIR/Documentation/gSKI/Soar TCL Commands in Soar 8.pdf"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI/Thoughts on SWIG and the Java API.lnk" "$INSTDIR/Documentation/gSKI/Thoughts on SWIG and the Java API.pdf"
 	
 	SetOutPath "$INSTDIR/Documentation/Presentations/"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/Presentations/SML High-level.lnk" "$INSTDIR/Documentation/Presentations/SML High-level presentation.pdf"
