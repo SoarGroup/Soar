@@ -321,8 +321,6 @@ void MineManager::addRoute(CCenterInfo* cci, MineralInfo* mi) {
   route->pathlength = coordDistance(route->miningLoc, route->dropoffLoc)
                      - CCENTER_MAXRADIUS
                      - MINERAL_RADIUS; 
-  cout << "dist: " << coordDistance(route->miningLoc, route->dropoffLoc) 
-    << " -" << CCENTER_MAXRADIUS << " -" << MINERAL_RADIUS << endl;
   route->stage = STRAIGHT_LINE_DIST;
   route->mineStation = NULL;
   route->dropoffStation = NULL;

@@ -123,12 +123,11 @@ void MoveFSM::init(vector<sint4> p)
  if (p.size() == 3) {
    // third parameter specifies how close to the target we must get
    precision = p[2];
-   cout << "INIT: " << p[2] << endl;
    precision *= precision; // since we use distance squared
  }
 
  Sorts::terrainModule->findPath(gob, l, path);
- cout << "path " << *gob->sod.x << "," << *gob->sod.y << "->"
+ cout << "MoveFSM initialized. Path " << *gob->sod.x << "," << *gob->sod.y << "->"
    << l.x << "," << l.y << endl;
  //path.locs.clear();
  //path.locs.push_back(l2); 
