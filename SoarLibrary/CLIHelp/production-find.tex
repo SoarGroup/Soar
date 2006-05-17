@@ -34,15 +34,21 @@ production-find [-lrs[n|c]] \emph{pattern}
  with value \emph{t}
 . In addition, limit the rules to only those that test an operator named \emph{foo}
 : \begin{verbatim}
-production-find {(<state> ^gumby <gv> ^operator.name foo)(<gv> ^alive t)} 
+production-find (<state> ^gumby <gv> ^operator.name foo)(<gv> ^alive t)
 \end{verbatim}
- Note that in the above command, $<$state$>$ does not have to match the exact variable name used in the production. \\ 
+ Note that in the above command, $<$state$>$ does not have to match the exact variable name used in the production. 
  Find productions that propose the operator \emph{foo}
 : \begin{verbatim}
-production-find -rhs {(<x> ^operator <op> +)(<op> ^name foo)}
+production-find --rhs (<x> ^operator <op> +)(<op> ^name foo)
 \end{verbatim}
  Find chunks that test the attribute \^{}pokey: \begin{verbatim}
-production-find -chunks {(<x> ^pokey *)}
+production-find --chunks (<x> ^pokey *)
+\end{verbatim}
+ Examples using the water-jugs demo: \begin{verbatim}
+source demos/water-jug/water-jug.soar
+production-find (<s> ^name *)(<j> ^volume *)
+production-find (<s> ^name *)(<j> ^volume 3)
+production-find --rhs (<j> ^* <volume>)
 \end{verbatim}
 \subsubsection*{See Also}
 \hyperref[sp]{sp} 

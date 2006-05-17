@@ -7,6 +7,7 @@ use strict;
 my $cliSource = "../../../Core/CLI/src/cli_Commands.cpp";
 my $commandNames = "../command-names";
 my $htmlProcess = "./html-process.pl";
+my $latexProcess = "./latex-post-process.pl";
 
 # Generate command-names from source
 open COMMANDS, "<$cliSource" or die "Could not open $cliSource: $!";
@@ -39,6 +40,7 @@ foreach my $command (@commands) {
 	my $commandWiki = "../$command.wiki.html";
 	my $commandHtml = "../$command.html";
 	my $commandFile = "../$command";
+	my $commandTex  = "../$command.tex";
 
 	`wget -q -O $commandWiki http://winter.eecs.umich.edu/soarwiki/$command`;
 
@@ -46,10 +48,9 @@ foreach my $command (@commands) {
 	unlink $commandWiki or die "Could not remove $commandWiki: $!";
 
 	`elinks -dump -no-numbering -no-references $commandHtml > $commandFile`;
+	
+	`html2latex --nopar $commandHtml`;
+	`$latexProcess < $commandTex > $commandTex.new`;
+	rename ("$commandTex.new", "$commandTex") or die "Could not rename $commandTex.new: $!";
 }
-#  chdir "../help" or die "Could not change to ../help directory: $!";
-#  `html2latex --nopar @names[$i].html`;
-#  `../help-scripts/latex-post-process.pl < @names[$i].tex > @names[$i].tex.new`;
-#  rename "@names[$i].tex.new", "@names[$i].tex" or die "Could not rename @names[$i].tex.new: $!";
   #`pdflatex --interaction=nonstopmode @names[$i].tex`;
-#  chdir "../help-scripts" or die "Could not change back to ../help-scripts directory: $!";
