@@ -8,17 +8,17 @@ watch-wmes -[l|R] [-t <type>]
 \end{verbatim}
 \subsubsection*{Options}
 \begin{tabular}{|l|l|}
-\hline 
- -a, --add-filter  & Add a filter to print wmes that meet the type and pattern criteria.  \\
- \hline 
- -r, --remove-filter  & Delete filters for printing wmes that match the type and pattern criteria.  \\
- \hline 
- -l, --list-filter  & List the filters of this type currently in use. Does not use the pattern argument.  \\
- \hline 
- -R, --reset-filter  & Delete all filters of this type. Does not use pattern arg.  \\
- \hline 
- -t, --type  & Follow with a type of wme filter, see below.  \\
- \hline 
+\hline
+\soar{ -a, --add-filter } & Add a filter to print wmes that meet the type and pattern criteria.  \\
+\hline
+\soar{ -r, --remove-filter } & Delete filters for printing wmes that match the type and pattern criteria.  \\
+\hline
+\soar{ -l, --list-filter } & List the filters of this type currently in use. Does not use the pattern argument.  \\
+\hline
+\soar{ -R, --reset-filter } & Delete all filters of this type. Does not use pattern arg.  \\
+\hline
+\soar{ -t, --type } & Follow with a type of wme filter, see below.  \\
+\hline
 \end{tabular}
 \paragraph*{Pattern}
  The pattern is an id-attribute-value triplet: \begin{verbatim}
@@ -31,16 +31,16 @@ watch-wmes -[l|R] [-t <type>]
 \paragraph*{Types}
  When using the -t flag, it must be followed by one of the following: 
 \begin{tabular}{|l|l|}
-\hline 
- adds  & Print info when a wme is \emph{added}
+\hline
+\soar{ adds } & Print info when a wme is \emph{added}
 .  \\
- \hline 
- removes  & Print info when a wme is \emph{retracted}
+\hline
+\soar{ removes } & Print info when a wme is \emph{retracted}
 .  \\
- \hline 
- both  & Print info when a wme is added \emph{or}
+\hline
+\soar{ both } & Print info when a wme is added \emph{or}
  retracted.  \\
- \hline 
+\hline
 \end{tabular}
  When issuing a \textbf{-R}
  or \textbf{-l}

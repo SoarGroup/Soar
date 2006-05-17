@@ -4,6 +4,7 @@ use strict;
 
 my $state = "header";
 my $removed_dash = "no";
+my $after_hline = "no";
 
 my $command;
 
@@ -27,6 +28,25 @@ while (<>) {
   } else {
     if (/\\begin\{tabular\}\{\|c\|c\|c\|\}/) {
       print "\\begin{tabular}{|l|l|l|}\n";
+      next;
+    }
+  }
+
+  if (/ *\\hline/) {
+    $after_hline = "yes";
+    print "\\hline\n";
+    next;
+  }
+
+  if ($after_hline eq "yes") {
+    $after_hline = "no";
+    if (/\\end\{tabular\}/) {
+      print "\\end{tabular}\n";
+      next;
+    }
+    
+    if (/(.+)( +\&.+)/) {
+      print "\\soar{$1}$2\n";
       next;
     }
   }

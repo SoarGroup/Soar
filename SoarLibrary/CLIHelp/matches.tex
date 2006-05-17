@@ -9,19 +9,19 @@ matches -[a|r] [-nctw]
 \end{verbatim}
 \subsubsection*{Options}
 \begin{tabular}{|l|l|}
-\hline 
-production\_name & Print partial match information for the named production.  \\
- \hline 
- -n, --names, -c, --count  & For the match set, print only the names of the productions that are about to fire or retract (the default). If printing partial matches for a production, just list the partial match counts.  \\
- \hline 
- -t, --timetags  & Also print the timetags of the wmes at the first failing condition  \\
- \hline 
- -w, --wmes  & Also print the full wmes, not just the timetags, at the first failing condition.  \\
- \hline 
- -a, --assertions  & List only productions about to fire.  \\
- \hline 
- -r, --retractions  & List only productions about to retract.  \\
- \hline 
+\hline
+\soar{production\_name} & Print partial match information for the named production.  \\
+\hline
+\soar{ -n, --names, -c, --count } & For the match set, print only the names of the productions that are about to fire or retract (the default). If printing partial matches for a production, just list the partial match counts.  \\
+\hline
+\soar{ -t, --timetags } & Also print the timetags of the wmes at the first failing condition  \\
+\hline
+\soar{ -w, --wmes } & Also print the full wmes, not just the timetags, at the first failing condition.  \\
+\hline
+\soar{ -a, --assertions } & List only productions about to fire.  \\
+\hline
+\soar{ -r, --retractions } & List only productions about to retract.  \\
+\hline
 \end{tabular}
 \subsubsection*{Description}
  The matches command prints a list of productions that have instantiations in the match set, i.e., those productions that will retract or fire in the next Propose or Apply phase. It also will print partial match information for a single, named production. 
