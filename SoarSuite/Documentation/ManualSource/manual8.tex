@@ -61,6 +61,7 @@
 % * If you get an ``undefined reference'' error for a label you know you've
 %   defined, the most likely cause is that you've forgotten an \end{verbatim}
 %   line in the previous section. The next possibility is that you opened a
+ls
 %   comment environment and closed it way later than you thought.
 % * If the page count seems to suddenly shoot up, its a good bet that you
 %   forgot an \end{verbatim} somewhere. If it suddenly drops, you probably
@@ -104,8 +105,8 @@
 %       the TOC listing for chapter 6. (This can be done in emacs with a
 %       replace-rexexp.) (Replace-regexp ``.\texttt.{.*}}'' with ``}'')
 %---------------------------------------------------------------------------
-%\documentclass[12pt,twoside,named]{book}
-\documentclass[12pt,twoside,final]{book}
+\documentclass[12pt,twoside,named]{book}
+%\documentclass[12pt,twoside,final]{book}
 			    % final restricts line overruns, but might be default
 \usepackage{named}		% for bibliography (named.sty is in this dir)
 \usepackage{makeidx}		% for index
@@ -183,7 +184,7 @@
 
 %\newcommand{\insertfigure}[2]{\vspace{2in}}
 \newcommand{\insertfigure}[2]{		%\protect\rule[0.0in]{6in}{.01in}
-			      \capstart   % works with hypcap package, figures must have captions
+			   %   \capstart   % works with hypcap package, figures must have captions
 			      \begin{center}
                               \ \epsfig{file=#1,height=#2}
                               \end{center}}
@@ -371,7 +372,7 @@
 	}
 
 \vspace*{0pt plus 1filll}
-	Copyright \copyright\ 1998, J. E. Laird and C. B. Congdon 
+	Copyright \copyright\ 1998 - 2006, J. E. Laird and C. B. Congdon 
 \vspace{.1in}
 
 Development of earlier versions of this manual were supported under
@@ -539,16 +540,16 @@ and Ocean Surveillance Center, RDT\&E division.
 % change 'include's to 'input' for final version
 %  (use 'include' instead if you're only printing part of the manual)
 %\include{a-glossary}
-\include{a-blockscode}
-\include{a-grammars}
-\include{a-support}
-\include{a-preferences}
+\input{a-blockscode}
+\input{a-grammars}
+\input{a-support}
+\input{a-preferences}
 %\include{a-using}
 %\include{a-default}
 %\include{a-support}
 %\include{SAN-preferences}
 %\include{SAN-tcl-io}
-\include{a-gds}
+\input{a-gds}
 % ----------------------------------------------------------------------------
 % References
 % ----------------------------------------------------------------------------
