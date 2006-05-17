@@ -6,8 +6,8 @@
 
                                     Synopsis
 
- clog [aEUR"Ae] filename
- clog aEUR"a  string
+ clog -[Ae] filename
+ clog aEUR"a string
  clog [aEUR"cdoq]
 
                                     Options

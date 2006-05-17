@@ -7,11 +7,11 @@ warnings -[e|d]
 \end{verbatim}
 \subsubsection*{Options}
 \begin{tabular}{|l|l|}
-\hline 
- -e, --enable, --on  & Default. Print all warning messages from the kernel.  \\
- \hline 
- -d, --disable, --off  & Disable all, except most critical, warning messages.  \\
- \hline 
+\hline
+\soar{ -e, --enable, --on } & Default. Print all warning messages from the kernel.  \\
+\hline
+\soar{ -d, --disable, --off } & Disable all, except most critical, warning messages.  \\
+\hline
 \end{tabular}
 \subsubsection*{Description}
  Enables and disables the printing of warning messages. If an argument is specified, then the warnings are set to that state. If no argument is given, then the current warnings status is printed. At startup, warnings are initially enabled. If warnings are disabled using this command, then some warnings may still be printed, since some are considered too important to ignore. 

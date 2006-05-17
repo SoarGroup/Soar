@@ -10,23 +10,23 @@ learn -e [ab]
 \end{verbatim}
 \subsubsection*{Options}
 \begin{tabular}{|l|l|}
-\hline 
- -e, --enable, --on  & Turn chunking on. Can be modified by -a or -b.  \\
- \hline 
- -d, --disable, --off  & Turn all chunking off. (default)  \\
- \hline 
- -E, --except  & Learning is on, except as specified by RHS \textbf{dont-learn}
+\hline
+\soar{ -e, --enable, --on } & Turn chunking on. Can be modified by -a or -b.  \\
+\hline
+\soar{ -d, --disable, --off } & Turn all chunking off. (default)  \\
+\hline
+\soar{ -E, --except } & Learning is on, except as specified by RHS \textbf{dont-learn}
  actions.  \\
- \hline 
- -o, --only  & Chunking is on only as specified by RHS \textbf{force-learn}
+\hline
+\soar{ -o, --only } & Chunking is on only as specified by RHS \textbf{force-learn}
  actions.  \\
- \hline 
- -l, --list  & Prints listings of dont-learn and force-learn states.  \\
- \hline 
- -a, --all-levels  & Build chunks whenever a subgoal returns a result. Learning must be --enabled.  \\
- \hline 
- -b, --bottom-up  & Build chunks only for subgoals that have not yet had any subgoals with chunks built. Learning must be --enabled.  \\
- \hline 
+\hline
+\soar{ -l, --list } & Prints listings of dont-learn and force-learn states.  \\
+\hline
+\soar{ -a, --all-levels } & Build chunks whenever a subgoal returns a result. Learning must be --enabled.  \\
+\hline
+\soar{ -b, --bottom-up } & Build chunks only for subgoals that have not yet had any subgoals with chunks built. Learning must be --enabled.  \\
+\hline
 \end{tabular}
 \subsubsection*{Description}
  The learn command controls the parameters for chunking (Soar's learning mechanism). With no arguments, this command prints out the current learning environment status. If arguments are provided, they will alter the learning environment as described in the options and arguments table. The watch command can be used to provide various levels of detail when productions are learned. Learning is \textbf{disabled}
@@ -62,11 +62,11 @@ learn -l
 \end{verbatim}
 \subsubsection*{Default Aliases}
 \begin{tabular}{|l|l|}
-\hline 
- Alias  & Maps to  \\
- \hline 
- l  & learn  \\
- \hline 
+\hline
+\soar{ Alias } & Maps to  \\
+\hline
+\soar{ l } & learn  \\
+\hline
 \end{tabular}
 \subsubsection*{See Also}
 \hyperref[watch]{watch} \hyperref[explain-backtraces]{explain-backtraces} \hyperref[save-backtraces]{save-backtraces} 

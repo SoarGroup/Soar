@@ -14,61 +14,61 @@ print -s[oS]
 \subsubsection*{Options}
 \subsection*{Printing items in production memory}
 \begin{tabular}{|l|l|}
-\hline 
- -a, --all  & print the names of all productions currently loaded  \\
- \hline 
- -c, --chunks  & print the names of all chunks currently loaded  \\
- \hline 
- -D, --defaults  & print the names of all default productions currently loaded  \\
- \hline 
- -f, --full  & When printing productions, print the whole production. This is the default when printing a named production.  \\
- \hline 
- -F, --filename  & also prints the name of the file that contains the production.  \\
- \hline 
- -i, --internal  & items should be printed in their internal form. For productions, this means leaving conditions in their reordered (rete net) form.  \\
- \hline 
- -j, --justifications  & print the names of all justifications currently loaded.  \\
- \hline 
- -n, --name  & When printing productions, print only the name and not the whole production. This is the default when printing any category of productions, as opposed to a named production.  \\
- \hline 
- -u, --user  & print the names of all user productions currently loaded  \\
- \hline 
-production\_name & print the production named production-name \\
- \hline 
+\hline
+\soar{ -a, --all } & print the names of all productions currently loaded  \\
+\hline
+\soar{ -c, --chunks } & print the names of all chunks currently loaded  \\
+\hline
+\soar{ -D, --defaults } & print the names of all default productions currently loaded  \\
+\hline
+\soar{ -f, --full } & When printing productions, print the whole production. This is the default when printing a named production.  \\
+\hline
+\soar{ -F, --filename } & also prints the name of the file that contains the production.  \\
+\hline
+\soar{ -i, --internal } & items should be printed in their internal form. For productions, this means leaving conditions in their reordered (rete net) form.  \\
+\hline
+\soar{ -j, --justifications } & print the names of all justifications currently loaded.  \\
+\hline
+\soar{ -n, --name } & When printing productions, print only the name and not the whole production. This is the default when printing any category of productions, as opposed to a named production.  \\
+\hline
+\soar{ -u, --user } & print the names of all user productions currently loaded  \\
+\hline
+\soar{production\_name} & print the production named production-name \\
+\hline
 \end{tabular}
 \subsection*{Printing items in working memory}
 \begin{tabular}{|l|l|}
-\hline 
+\hline
  -d, --depth \emph{n}
  & This option overrides the default printing depth (see the default-wme-depth command for more detail).  \\
- \hline 
- -i, --internal  & items should be printed in their internal form. For working memory, this means printing the individual elements with their timetags, rather than the objects.  \\
- \hline 
- -v, --varprint  & Print identifiers enclosed in angle brackets.  \\
- \hline 
+\hline
+\soar{ -i, --internal } & items should be printed in their internal form. For working memory, this means printing the individual elements with their timetags, rather than the objects.  \\
+\hline
+\soar{ -v, --varprint } & Print identifiers enclosed in angle brackets.  \\
+\hline
 \emph{identifier}
  & print the object \emph{identifier}
 . \emph{identifier}
  must be a valid Soar symbol such as \textbf{S1 }
- \hline 
+\hline
 \emph{pattern}
  & print the object whose working memory elements matching the given pattern. See Description for more information on printing objects matching a specific pattern.  \\
- \hline 
+\hline
 \emph{timetag}
  & print the object in working memory with the given \emph{timetag}
- \hline 
+\hline
 \end{tabular}
 \subsection*{Printing the current subgoal stack}
 \begin{tabular}{|l|l|}
-\hline 
- -s, --stack  & Specifies that the Soar goal stack should be printed. By default this includes both states and operators.  \\
- \hline 
- -o, --operators  & When printing the stack, print only \textbf{operators}
+\hline
+\soar{ -s, --stack } & Specifies that the Soar goal stack should be printed. By default this includes both states and operators.  \\
+\hline
+\soar{ -o, --operators } & When printing the stack, print only \textbf{operators}
 .  \\
- \hline 
- -S, --states  & When printing the stack, print only \textbf{states}
+\hline
+\soar{ -S, --states } & When printing the stack, print only \textbf{states}
 .  \\
- \hline 
+\hline
 \end{tabular}
 \subsubsection*{Description}
  The \textbf{print}
@@ -97,15 +97,15 @@ print -u
 \end{verbatim}
 \subsubsection*{Default Aliases}
 \begin{tabular}{|l|l|}
-\hline 
- Alias  & Maps to  \\
- \hline 
- p  & print  \\
- \hline 
- pc  & print --chunks  \\
- \hline 
- wmes  & print -i  \\
- \hline 
+\hline
+\soar{ Alias } & Maps to  \\
+\hline
+\soar{ p } & print  \\
+\hline
+\soar{ pc } & print --chunks  \\
+\hline
+\soar{ wmes } & print -i  \\
+\hline
 \end{tabular}
 \subsubsection*{See Also}
 \hyperref[default-wme-depth]{default-wme-depth} \hyperref[predefined-aliases]{predefined-aliases} 

@@ -8,17 +8,17 @@ add-wme id [^]attribute value [+]
 \end{verbatim}
 \subsubsection*{Options}
 \begin{tabular}{|l|l|}
-\hline 
- id  & Must be an existing identifier.  \\
- \hline 
- \^{}  & Leading \^{} on attribute is optional.  \\
- \hline 
- attribute  & Attribute can be any Soar symbol. Use * to have Soar create a new identifier.  \\
- \hline 
- value  & Value can be any soar symbol. Use * to have Soar create a new identifier.  \\
- \hline 
- +  & If the optional preference is specified, its value must be + (acceptable).  \\
- \hline 
+\hline
+\soar{ id } & Must be an existing identifier.  \\
+\hline
+\soar{ \^{} } & Leading \^{} on attribute is optional.  \\
+\hline
+\soar{ attribute } & Attribute can be any Soar symbol. Use * to have Soar create a new identifier.  \\
+\hline
+\soar{ value } & Value can be any soar symbol. Use * to have Soar create a new identifier.  \\
+\hline
+\soar{ + } & If the optional preference is specified, its value must be + (acceptable).  \\
+\hline
 \end{tabular}
 \subsubsection*{Description}
  Manually add an element to working memory. \textbf{add-wme}
@@ -36,11 +36,11 @@ add-wme Z2 message * +
 \end{verbatim}
 \subsubsection*{Default Aliases}
 \begin{tabular}{|l|l|}
-\hline 
- Alias  & Maps to  \\
- \hline 
- aw  & add-wme  \\
- \hline 
+\hline
+\soar{ Alias } & Maps to  \\
+\hline
+\soar{ aw } & add-wme  \\
+\hline
 \end{tabular}
 \subsubsection*{Warnings}
  Be careful how you use this command. It may have weird side effects (possibly even including system crashes). For example, the chunker can't backtrace through wmes created via \textbf{add-wme}

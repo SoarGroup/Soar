@@ -8,17 +8,17 @@ o-support-mode [0|1|2|3|4]
 \end{verbatim}
 \subsubsection*{Options}
 \begin{tabular}{|l|l|}
-\hline 
- 0  & Mode 0 is the base mode. O-support is calculated based on the structure of working memory that is tested and modified. Testing an operator or operator acceptable preference results in state or operator augmentations being o-supported. The support computation is very complex (see soar manual).  \\
- \hline 
- 1  & Not available through gSKI.  \\
- \hline 
- 2  & Mode 2 is the same as mode 0 except that all support is calculated the production structure, not from working memory structure. Augmentations of operators are still o-supported.  \\
- \hline 
- 3  & Mode 3 is the same as mode 2 except that operator elaborations (adding attributes to operators) now get i-support even though you have to test the operator to elaborate an operator.  \\
- \hline 
- 4  & Mode 4 is the default.  \\
- \hline 
+\hline
+\soar{ 0 } & Mode 0 is the base mode. O-support is calculated based on the structure of working memory that is tested and modified. Testing an operator or operator acceptable preference results in state or operator augmentations being o-supported. The support computation is very complex (see soar manual).  \\
+\hline
+\soar{ 1 } & Not available through gSKI.  \\
+\hline
+\soar{ 2 } & Mode 2 is the same as mode 0 except that all support is calculated the production structure, not from working memory structure. Augmentations of operators are still o-supported.  \\
+\hline
+\soar{ 3 } & Mode 3 is the same as mode 2 except that operator elaborations (adding attributes to operators) now get i-support even though you have to test the operator to elaborate an operator.  \\
+\hline
+\soar{ 4 } & Mode 4 is the default.  \\
+\hline
 \end{tabular}
 \subsubsection*{Description}
  The \textbf{o-support-mode}
