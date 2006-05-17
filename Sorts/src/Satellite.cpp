@@ -5,11 +5,12 @@ Satellite::Satellite()
 {
  width = 0;
  height = 0;
+ Map.resize(1000);
 }
 
 void Satellite::init()
 {
- tile_points = 100;
+ tile_points = 40;
  width = Sorts::OrtsIO->getMapXDim()/tile_points + 1;
  height = Sorts::OrtsIO->getMapYDim()/tile_points + 1;
 

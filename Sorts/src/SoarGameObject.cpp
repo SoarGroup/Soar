@@ -47,13 +47,17 @@ SoarGameObject::SoarGameObject(
   identifyBehaviors();
   iGroup = NULL;
   pGroup = NULL;
-
-  sat_loc = Sorts::satellite->addObject(gob);
+  
+  if (gob->bp_name() != "mineral") {
+    sat_loc = Sorts::satellite->addObject(gob);
+  }
 }
 
 SoarGameObject::~SoarGameObject()
 {
- Sorts::satellite->removeObject(gob,sat_loc);
+  if (gob->bp_name() != "mineral") {
+    Sorts::satellite->removeObject(gob,sat_loc);
+  }
 
  while(!memory.empty()) {
     memory.pop();
@@ -108,8 +112,10 @@ void SoarGameObject::update()
   cout << "upd: " << (int)this << " grp " << (int)pGroup << endl;
   int fsmStatus;
 
-  sat_loc = Sorts::satellite->updateObject(gob,sat_loc);
-  
+  if (gob->bp_name() != "mineral") {
+    sat_loc = Sorts::satellite->updateObject(gob,sat_loc);
+  }
+    
   if (iGroup != NULL) {
     iGroup->setHasStaleMembers();
   }

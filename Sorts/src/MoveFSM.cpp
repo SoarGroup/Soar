@@ -5,7 +5,7 @@
 using namespace std;
 
 //Comment out to turn magnetism off
-//#define MAGNETISM
+#define MAGNETISM
 
 MoveFSM::MoveFSM(GameObj* go) 
             : FSM(go) 
@@ -46,7 +46,7 @@ int MoveFSM::update() {
 
 	case MOVING:
 	 const ServerObjData &sod = gob->sod;
-   double distToTarget = squaredDistance(*sod.x, *sod.y, moveParams[0], moveParams[1]);
+   double distToTarget = squaredDistance(*sod.x, *sod.y, target.x, target.y);
 
 	 // if speed drops to 0
    // and we are not there, failure
@@ -64,7 +64,7 @@ int MoveFSM::update() {
        }
        else { 
         cout << "dist: " << distToTarget << endl;
-        cout << "target: " << *sod.x << *sod.y << endl;
+        cout << "target: " << target.x << target.y << endl;
         //Otherwise, you are at your goal
         return FSM_SUCCESS;     
        }
@@ -96,10 +96,10 @@ int MoveFSM::update() {
 #ifdef MAGNETISM    
     else
     {
-     cout<<"Magnetized\n";
+     cout << "MOVEFSM: Magnetized\n";
      if(getMoveVector())
      {
-      cout<<"MoveParams: "<<moveParams[0]<<","<<moveParams[1]<<"\n";
+      cout<<"MOVEFSM: MoveParams: "<<moveParams[0]<<","<<moveParams[1]<<"\n";
       gob->set_action("move",moveParams);
      }
     }
@@ -127,12 +127,12 @@ void MoveFSM::init(vector<sint4> p)
  }
 
  Sorts::terrainModule->findPath(gob, l, path);
- cout << "MoveFSM initialized. Path " << *gob->sod.x << "," << *gob->sod.y << "->"
+ cout << "MOVEFSM initialized. Path " << *gob->sod.x << "," << *gob->sod.y << "->"
    << l.x << "," << l.y << endl;
  //path.locs.clear();
  //path.locs.push_back(l2); 
  for (unsigned int i=0; i<path.locs.size(); i++) 
-  cout << "loc " << i << " " << path.locs[i].x << ", "<< path.locs[i].y << endl;
+  cout << "MOVEFSM loc " << i << " " << path.locs[i].x << ", "<< path.locs[i].y << endl;
 
  stagesLeft = path.locs.size()-1;
  moveParams.clear();
@@ -140,6 +140,8 @@ void MoveFSM::init(vector<sint4> p)
    moveParams.push_back(path.locs[stagesLeft].x);
    moveParams.push_back(path.locs[stagesLeft].y);
    state = IDLE;
+   target.x = moveParams[0];
+   target.y = moveParams[1];
  }
  else {
    state = ALREADY_THERE;
@@ -155,7 +157,7 @@ bool MoveFSM::getMoveVector()
  // - Things don't change rapidly
  // - Return false is not enough time has passed
  //   - Need to figure out how much time is enough
- cout<<"Vec_count: "<<vec_count<<"\n";
+ cout<<"MOVEFSM: Vec_count: "<<vec_count<<"\n";
  if(vec_count < 5)
  {
   vec_count++;
@@ -164,7 +166,7 @@ bool MoveFSM::getMoveVector()
  answer = true;
  vec_count = 0;
 
- std::list<GameObj*> *neighbors = Sorts::satellite->getObjectsInRegion(*(gob->sod.x), *(gob->sod.y));
+ std::list<GameObj*> *neighbors = new list<GameObj*>;// = Sorts::satellite->getObjectsInRegion(*(gob->sod.x), *(gob->sod.y));
  std::list<GameObj*>::iterator it;
  
  float x = 0;
@@ -173,6 +175,7 @@ bool MoveFSM::getMoveVector()
  // Add up the repulsion vectors
  for(it = neighbors->begin(); it!=neighbors->end(); it++)
  {
+   // normalize? /dist^2
   x += (*(*it)->sod.x)-loc.x;
   y += (*(*it)->sod.y)-loc.y;
  }
@@ -186,9 +189,9 @@ bool MoveFSM::getMoveVector()
  float y1 = target.y - loc.y;
  d = sqrt((loc.x-x1)*(loc.x-x1)+(loc.y-y1)*(loc.y-y1));
 
- cout<<"Size: "<< neighbors->size()<<"\n";
- cout<<"Repulsion Vector: ("<<x<<","<<y<<")\n";
- cout<<"Attraction Vector: ("<<x1/d<<","<<y1/d<<")\n";
+ cout<<"MOVEFSM: Size: "<< neighbors->size()<<"\n";
+ cout<<"MOVEFSM: Repulsion Vector: ("<<x<<","<<y<<")\n";
+ cout<<"MOVEFSM: Attraction Vector: ("<<x1/d<<","<<y1/d<<")\n";
 
  x += x1/d;
  y += y1/d;
@@ -280,6 +283,6 @@ TerrainBase::Loc MoveFSM::getHeadingVector(sint4 target_x, sint4 target_y)
      break;
     }
     
- cout<<"Heading Vector: ("<<loc.x<<","<<loc.y<<","<<quadrant<<")\n";
+ cout<<"MOVEFSM: Heading Vector: ("<<loc.x<<","<<loc.y<<","<<quadrant<<")\n";
  return loc;
 }
