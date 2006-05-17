@@ -22,6 +22,14 @@ EXTRA_DIST = Documentation Resources SoarLibrary acsite.m4
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`
 	rm `find $(distdir) -name *.jar`
+	rm -rf $(distdir)/Documentation/ManualSource
+	rm -rf $(distdir)/Documentation/Old
+	rm -rf `find $(distdir)/Documentation -name *.ppt`
+	rm -rf `find $(distdir)/Documentation -name *.doc`
+	rm -rf $(distdir)/Resources/Templates
+	rm -rf `find $(distdir)/SoarLibrary/CLIHelp -name *.tex`
+	rm -rf $(distdir)/SoarLibrary/CLIHelp/Scripts
+	rm -rf `find $(distdir)/SoarLibrary/bin -name *.dll`
 	wget http://winter.eecs.umich.edu/jars/gtk/swt.jar
 	mv swt.jar $(distdir)/SoarLibrary/bin
 
