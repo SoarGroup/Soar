@@ -129,13 +129,19 @@ std::list<GameObj*> *Satellite::getCollisions(sint4 x, sint4 y, sint4 r)
 
  
  //3. For each marked cell, check all object inside of it for collisions with the circle
+ TerrainBase::Loc obj;
+ sint4 objr;
  std::list<GameObj*>::iterator it;
  for(int i=0; i<9; i++)
   if(check[i])
    for(it = Map[cells[i]].begin(); it != Map[cells[i]].end(); it++)
-    if(true/*Inside the circle*/)
-     //Should check distance between object and loc vs sum of radii
+   {
+    obj.x =  (*(*it)->sod.x);
+    obj.y =  (*(*it)->sod.y);
+    objr =  (*(*it)->sod.radius);
+    if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) < (r+objr) * (r+objr)) //Inside the circle
      cols->push_back((*it));
+   }
    
  //Return all items target circle collides with
  return cols;

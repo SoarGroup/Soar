@@ -15,7 +15,6 @@ class MoveFSM: public FSM {
 	void init(std::vector<sint4>);
 
   bool getMoveVector(); //returns truee if there needs to be a change in direction, otherwise false
-  double getHeading(sint4, sint4);
   TerrainBase::Loc getHeadingVector(sint4 , sint4);
   
 

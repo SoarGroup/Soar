@@ -148,6 +148,14 @@ void MoveFSM::init(vector<sint4> p)
  }
 }
 
+void MoveFSM::stop() {
+  Vector<sint4> params;
+  params.push_back(*gob->sod.x);
+  params.push_back(*gob->sod.y);
+  params.push_back(0);
+  gob->set_action("move", params);
+  state = ALREADY_THERE;
+}
 
 // Returns the actual move vector of the object
 // New move coordinates are placed into the moveParams structure
@@ -205,21 +213,6 @@ bool MoveFSM::getMoveVector()
  return answer;
 }
 
-void MoveFSM::stop() {
-  Vector<sint4> params;
-  params.push_back(*gob->sod.x);
-  params.push_back(*gob->sod.y);
-  params.push_back(0);
-  gob->set_action("move", params);
-  state = ALREADY_THERE;
-}
-
-double MoveFSM::getHeading(sint4 x, sint4 y)
-{
- x=0;
- y=0;
- return 0.0;
-}
 
 TerrainBase::Loc MoveFSM::getHeadingVector(sint4 target_x, sint4 target_y)
 {
