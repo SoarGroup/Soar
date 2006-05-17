@@ -10,8 +10,8 @@ Satellite::Satellite()
 void Satellite::init()
 {
  tile_points = 100;
- width = Sorts::OrtsIO->getMapXDim()/tile_points;
- height = Sorts::OrtsIO->getMapYDim()/tile_points;
+ width = Sorts::OrtsIO->getMapXDim()/tile_points + 1;
+ height = Sorts::OrtsIO->getMapYDim()/tile_points + 1;
 
  //Tilepoints define the granularity of the grid... The higher the tilepoints, the coarser the detail
  Map.resize(static_cast<int>(width*height));
@@ -98,33 +98,33 @@ std::list<GameObj*> *Satellite::getCollisions(sint4 x, sint4 y, sint4 r)
  if(cells[4] != cells[5])
   check[5] = true;
  //NorthEast
- cells[2] = cells[1] && cells[5];
+ check[2] = check[1] && check[5];
  //South
  if(cells[4] != cells[7])
-  cells[7] = true;
+  check[7] = true;
  //SouthEasr
- cells[8] = cells[5] && cells[7];
+ check[8] = check[5] && check[7];
  //West
  if(cells[4] != cells[3])
    check[3]= true;
  //SourhWest
- cells[6] = cells[7] && cells[3];
+ check[6] = check[7] && check[3];
  //NorthWest
- cells[0] = cells[3] && cells[1];
+ check[0] = check[3] && check[1];
  
- //Make sure we the cells are inside the map
+ //Make sure we the check are inside the map
  //Left Side
  if((x-r)<0)
-  cells[0] = cells[3] = cells[6] = false;
+  check[0] = check[3] = check[6] = false;
  //Right Side
  if((x+r)>Sorts::OrtsIO->getMapXDim())
-  cells[2] = cells[5] = cells[8] = false;
+  check[2] = check[5] = check[8] = false;
  //Top Side
  if((y-r)<0)
-  cells[0] = cells[1] = cells[2] = false;
+  check[0] = check[1] = check[2] = false;
  //Bottom Side
  if((y+r)>Sorts::OrtsIO->getMapYDim())
-  cells[6] = cells[7] = cells[8] = false;
+  check[6] = check[7] = check[8] = false;
 
  
  //3. For each marked cell, check all object inside of it for collisions with the circle
