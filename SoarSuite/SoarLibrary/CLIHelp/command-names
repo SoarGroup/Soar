@@ -8,6 +8,7 @@ command-to-file
 default-wme-depth
 dirs
 echo
+echo-commands
 edit-production
 excise
 explain-backtraces

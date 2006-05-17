@@ -6,7 +6,7 @@ Print memory usage for partial matches.
 \begin{verbatim}
 memories [-cdju] [\emph{n}
 ]
-memories production_name 
+memories production_name
 \end{verbatim}
 \subsubsection*{Options}
 \begin{tabular}{|l|l|}
@@ -27,7 +27,8 @@ production\_name & Print memory usage for a specific production.  \\
 \end{tabular}
 \subsubsection*{Description}
  The \textbf{memories}
- command prints out the internal memory usage for full and partial matches of production instantiations, with the productions using the most memory printed first. With no arguments, the memories command prints memory usage for all productions. If a production\_name is specified, memory usage will be printed only for that production. If a positive integer \emph{n}
+ command prints out the internal memory usage for full and partial matches of production instantiations, with the productions using the most memory printed first. With no arguments, the memories command prints memory usage for all productions. If a \emph{production\_name}
+ is specified, memory usage will be printed only for that production. If a positive integer \emph{n}
  is given, only \emph{n}
  productions will be printed: the \emph{n}
  productions that use the most memory. Output may be restricted to print memory usage for particular types of productions using the command options. 

@@ -4,9 +4,8 @@
 Print the number of times each production has fired. 
 \subsubsection*{Synopsis}
 \begin{verbatim}
-firing-counts [\emph{n}
-]
-firing-counts \emph{production_names}
+firing-counts [n]
+firing-counts production_names
 \end{verbatim}
 \subsubsection*{Options}
  If given, an option can take one of two forms -- an integer or a list of production names: 
@@ -36,7 +35,7 @@ firing-counts 10
 firing-counts my*first*production my*second*production
 \end{verbatim}
 \subsubsection*{Warnings}
- Firing-counts are reset to zero after an init-soar. \\ 
+ Firing-counts are reset to zero after an init-soar. 
  NB: This command is slow, because the sorting takes time O(n*log n) 
 \subsubsection*{Default Aliases}
 \begin{tabular}{|l|l|}

@@ -35,7 +35,7 @@ explain-backtraces -c n prodname
  with no argument prints a list of all chunks and justifications for which backtracing information is available. 
 \subsubsection*{Examples}
  Examining the chunk \textbf{chunk-65*d13*tie*2}
- generated in a water-jug task:  \begin{verbatim}
+ generated in a water-jug task: \begin{verbatim}
 soar> explain-backtraces chunk-65*d13*tie*2
  (sp chunk-65*d13*tie*2
   (state <s2> ^name water-jug ^jug <n4> ^jug <n3>)
@@ -74,7 +74,7 @@ soar> explain-backtraces chunk-65*d13*tie*2
 21 :  (<n2> ^contents 3)               Ground : (N4 ^contents 3)
 22 :  (<o1> ^jug <n2>)                 Ground : (O18 ^jug N4)
 \end{verbatim}
- Further examining condition 21:  \begin{verbatim}
+ Further examining condition 21: \begin{verbatim}
 soar> explain-backtraces -c 21 chunk-65*d13*tie*2
 Explanation of why condition  (N4 ^contents 3) was included in chunk-65*d13*tie*2
 Production chunk-64*d13*opnochange*1 matched
