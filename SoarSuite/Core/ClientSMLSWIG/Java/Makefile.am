@@ -17,7 +17,7 @@ $(BASEDIR_PREFIX)/Core/ClientSML/src/libClientSML.la \
 $(BASEDIR_PREFIX)/Core/ConnectionSML/src/libConnectionSML.la \
 $(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
 
-nodist_libJava_sml_ClientInterface_la_SOURCES = Java_sml_ClientInterface_wrap.cpp JavaCallbackByHand.h 
+libJava_sml_ClientInterface_la_SOURCES = Java_sml_ClientInterface_wrap.cpp JavaCallbackByHand.h 
 
 JAVASO = @JAVASO@
 libJava_sml_ClientInterface_la_LDFLAGS = -shrext $(JAVASO)
