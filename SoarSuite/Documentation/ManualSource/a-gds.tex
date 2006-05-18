@@ -454,7 +454,6 @@ INSERT DIAGRAM HERE
 each goal when the goal is created.  The GDS is deallocated when the
 goal is removed.  A NIL WME pointer for the GDS indicates a goal has
 no WMEs in its GDS.
-
 \item Updating a WME GDS pointer \\ A WME should appear in only the
 GDS of the highest goal for which it is dependent.  If a WME is
 determined to already be in a GDS lower than the current goal, its GDS
@@ -463,8 +462,6 @@ DLL of the lower goal, and added to the higher one.  If there are no
 other WMEs on the gds\_WME DLL of the lower goal, its WME pointer is
 set to NIL (the GDS itself is retained, because we don't want to have
 to reallocate memory for the GDS if we need to add to it later.)
-
-
 
 \end{itemize}
 
