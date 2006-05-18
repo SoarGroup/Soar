@@ -64,7 +64,11 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		// Register for events
 		m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, null);
 		m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, this, null);
-		m_Kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_GENERATED_OUTPUT, this, null);
+		if (m_RunTilOutput) {
+			m_Kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_GENERATED_OUTPUT, this, null);
+		} else {
+			m_Kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null);
+		}
 		
 		// Generate base path
 		m_BasePath = System.getProperty("user.dir") + System.getProperty("file.separator");
