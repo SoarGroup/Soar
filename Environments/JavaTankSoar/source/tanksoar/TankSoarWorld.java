@@ -509,7 +509,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		// UPDATE ALGORITHM 2.0
 		// Read Tank output links
 		// Move all Missiles
-		//   Spawn new Missiles in front of Tanks
+		// BUGBUG: Moving this!:  Spawn new Missiles in front of Tanks
 		// Check for Missile-Wall collisions
 		// For all Tanks that move, check for Tank-Tank, Tank-Wall collisions
 		//   Cancel Tank moves that are not possible
@@ -532,16 +532,6 @@ public class TankSoarWorld extends World implements WorldManager {
 
 		// Move all Missiles
 		m_Missiles.moveMissiles();
-		
-		//   Spawn new Missiles in front of Tanks
-		for (int i = 0; i < m_Tanks.length; ++i) {
-			if (m_Tanks[i].firedMissile()) {
-				m_Missiles.fireMissile(m_Tanks[i]);
-			}
-		}
-		
-		// Check for Missile-Wall collisions
-		m_Missiles.removeWallCollisions();
 		
 		// For all Tanks that move, check for Tank-Tank, Tank-Wall collisions
 		//   Cancel Tank moves that are not possible
@@ -654,6 +644,16 @@ public class TankSoarWorld extends World implements WorldManager {
 				getCell(m_Tanks[i].getLocation()).setRedraw();
 			}
 		}
+		
+		//   Spawn new Missiles in front of Tanks
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			if (m_Tanks[i].firedMissile()) {
+				m_Missiles.fireMissile(m_Tanks[i]);
+			}
+		}
+		
+		// Check for Missile-Wall collisions
+		m_Missiles.removeWallCollisions();
 		
 		// Spawn missile packs
 		if (m_NumMissilePacks < kMaxMissilePacks) {
