@@ -140,45 +140,54 @@ public class TankSoarWorld extends World implements WorldManager {
 	   	}
 	   	
 	   	public Tank checkSpecialHit(MapPoint location, int tankMove) {
+	   		Tank owner = null;
 	   		ListIterator iter = m_Flying.listIterator();
 	   		while (iter.hasNext()) {
 	   			Missile missile = (Missile)iter.next();
 	   			if (location.equals(missile.getCurrentLocation())) {
 	   				m_RD.calculate(tankMove);
 	   				if (missile.getDirection() == m_RD.backward) {
-		   				Tank owner = missile.getOwner();
+	   					if (owner == null) {
+	   						owner = missile.getOwner();
+	   					}
 	   					iter.remove();
-		   				return owner;
 	   				}
 	   			}
 	   		}
-	   		return null;
+	   		return owner;
 	   	}
 	   	
 	   	public Tank checkHit(MapPoint location, boolean remove) {
+	   		Tank owner = null;
 	   		ListIterator iter = m_Flying.listIterator();
 	   		while (iter.hasNext()) {
 	   			Missile missile = (Missile)iter.next();
 	   			if (location.equals(missile.getCurrentLocation())) {
-	   				Tank owner = missile.getOwner();
+	   				if (owner == null) {
+	   					owner = missile.getOwner();
+	   				}
 	   				if (remove) {
 	   					iter.remove();
+	   				} else {
+	   					return owner;
 	   				}
-	   				return owner;
 	   			}
 	   			if (missile.getFlightPhase() == 2) {
 		   			MapPoint missileLoc = new MapPoint(missile.getCurrentLocation());
 		   			missileLoc.travel(missile.getDirection());
 		   			if (location.equals(missileLoc)) {
-		   				Tank owner = missile.getOwner();
+		   				if (owner == null) {
+		   					owner = missile.getOwner();
+		   				}
 		   				if (remove) {
 		   					iter.remove();
+		   				} else {
+		   					return owner;
 		   				}
-		   				return owner;
 		   			}
 	   			}
 	   		}
-	   		return null;
+	   		return owner;
 	   	}
 	   	
 	   	public Missile[] getMissiles() {
@@ -640,7 +649,8 @@ public class TankSoarWorld extends World implements WorldManager {
 					pickUpMissiles(m_Tanks[i]);
 				}
 				getCell(m_Tanks[i].getLocation()).setTank(m_Tanks[i]);
-			} else if (m_Tanks[i].recentlyRotated()) {
+			} else /*if (m_Tanks[i].recentlyRotated())*/ {
+				// REDRAW no matter what.
 				getCell(m_Tanks[i].getLocation()).setRedraw();
 			}
 		}
