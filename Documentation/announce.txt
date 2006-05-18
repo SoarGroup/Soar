@@ -75,7 +75,8 @@ New in 8.6.2
      or output-generation.  
   -- Phase-specific event generation  (e.g. BEFORE_PROPOSE_PHAE & 
      AFTER_PROPOSE_PHASE etc)
-
+  -- Input wmes are now automatically committed by default removing the need
+     to manually call commit().
  
 * Performance improvements:
   -- Windows performance improved (> 30% faster in Towers of Hanoi SML).
