@@ -35,7 +35,7 @@ my $soarurl = "https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite";
 my $nameandversion = "Soar Suite 8.6.2";
 
 # File globs to completely remove from the tree
-my @remove = qw/Makefile.in 8.6.2.nsi.in INSTALL .project .cvsignore .svn *.xcodeproj *.so *.so.1 *.so.2 *.jnilib java_swt *.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource Old *.tex Scripts/;
+my @remove = qw/Makefile.in 8.6.2.nsi.in INSTALL README .project .cvsignore .svn *.xcodeproj *.so *.so.1 *.so.2 *.jnilib java_swt *.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource Old *.tex Scripts/;
 
 # Globs to copy from working copy to Core component
 # WORKING --copy-to-> CORE
