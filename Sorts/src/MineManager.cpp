@@ -8,6 +8,10 @@
    Sam Wintermute, 2006
 */
 
+#define msg cout << "MM: "
+
+#define UNUSABLE_OPTIMALITY 1000
+
 MineManager::MineManager() {
 }
 
@@ -268,8 +272,8 @@ void MineManager::addFSMToRoute(MiningRoute* route, MineFSM* fsm) {
 void MineManager::addCostToRoute(MiningRoute* route) {
   assert(route->mineStation != NULL);
   assert(route->dropoffStation != NULL);
-  route->mineStation->optimality += 1000;
-  route->dropoffStation->optimality += 1000;
+  route->mineStation->optimality += UNUSABLE_OPTIMALITY;
+  route->dropoffStation->optimality += UNUSABLE_OPTIMALITY;
   
   for (list<MiningRoute*>::iterator it = route->mineStation->routes.begin();
        it != route->mineStation->routes.end();
@@ -488,6 +492,7 @@ void MineManager::expandEdgeEdge(MiningRoute* route) {
   
   StationInfo* mineStation;
   StationInfo* dropoffStation;
+  // yes, we do initialize these before using (ignore the compiler warning)
   
   for (int i=0; i<MINERAL_EDGE_STATIONS; i++) {
     for (int j=0; j<CC_EDGE_STATIONS; j++) {
@@ -534,9 +539,13 @@ void MineManager::expandEdgeEdge(MiningRoute* route) {
         newRoute->miningLoc = mineStation->location;
         newRoute->dropoffLoc = dropoffStation->location;
 
-        if (dropoffStation->optimality > 500
-            or mineStation->optimality > 500) {
+        if (dropoffStation->optimality >= UNUSABLE_OPTIMALITY
+            or mineStation->optimality >= UNUSABLE_OPTIMALITY) {
           cout << "immediately rejecting EE route, station is full.\n";
+          delete newRoute;
+        }
+        else if (collision(dropoffStation) or collision(mineStation)) {
+          cout << "immediately rejecting EE route: collision.\n";
           delete newRoute;
         }
         else {
@@ -734,4 +743,36 @@ Direction MineManager::getRelDirection(coordinate first, coordinate second) {
     assert(second.y < first.y);
     return SOUTH;
   }
+}
+
+bool MineManager::collision(StationInfo* station) {
+  // return true if a worker at this station would collide with something
+  // also, cut down the optimality of the station, so it won't be
+  // checked again.
+
+  list<GameObj*> collisions;
+  
+  Sorts::satellite->getCollisions(station->location.x, station->location.y,
+                                  WORKER_RADIUS + 1, collisions);
+  cout << "MM: station at " << station->location.x << "," 
+       << station->location.y << " collides with " << collisions.size() 
+       << " things.\n";
+  
+  for (list<GameObj*>::iterator it = collisions.begin();
+       it != collisions.end();
+       it++) {
+    if ((*it)->bp_name() != "worker"
+        and (*it)->bp_name() != "sheep") {
+      cout << "MM: station collides with " << (*it)->bp_name() << endl;
+      cout << "MM: loc: " << *(*it)->sod.x << "," << *(*it)->sod.y << endl;
+      msg << "radius " << *(*it)->sod.radius << endl; 
+      station->optimality = UNUSABLE_OPTIMALITY;
+      return true;
+    }
+    else { 
+      cout << "MM: ignoring worker collision.\n";
+    }
+  }
+
+  return false;
 }

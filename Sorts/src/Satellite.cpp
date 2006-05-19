@@ -1,22 +1,23 @@
 #include "Satellite.h"
 #include "Sorts.h"
 
-Satellite::Satellite()
-{
- width = 0;
- height = 0;
- Map.resize(1000);
+#define msg cout << "SAT: "
+
+Satellite::Satellite() {
+  width = 0;
+  height = 0;
 }
 
-void Satellite::init()
-{
- tile_points = 40;
- width = Sorts::OrtsIO->getMapXDim()/tile_points + 1;
- height = Sorts::OrtsIO->getMapYDim()/tile_points + 1;
+void Satellite::init() {
+  tile_points = 40;
+  width = Sorts::OrtsIO->getMapXDim()/tile_points + 1;
+  height = Sorts::OrtsIO->getMapYDim()/tile_points + 1;
 
- //Tilepoints define the granularity of the grid... The higher the tilepoints, the coarser the detail
- Map.resize(static_cast<int>(width*height));
- cout<<"Initializing Satellite grid: ("<<width<<","<<height<<","<<(width*height)<<")\n";
+  // Tilepoints define the granularity of the grid... 
+  // The higher the tilepoints, the coarser the detail
+  Map.resize(static_cast<int>(width*height));
+  msg  << "Initializing Satellite grid: (" << width<<"," << height
+       << "," << (width*height) << ")\n";
 }
 
 Satellite::~Satellite()
@@ -31,17 +32,18 @@ std::list<GameObj*> *Satellite::getObjectsInRegion(int x, int y)
 }
 
 
-sint4 Satellite::addObject(GameObj *gob)
-{
- sint4 x = *(gob->sod.x);
- sint4 y = *(gob->sod.y);
- 
- //Map[0].push_back(gob);
- Map[(y*width+x)/tile_points].push_back(gob); 
- cout<<"Satellite: Registered new Object: "<<gob->bp_name()<<"\n";
+sint4 Satellite::addObject(GameObj *gob) {
+  sint4 x = *(gob->sod.x);
+  sint4 y = *(gob->sod.y);
+  if ((y*width+x)/tile_points >= Map.size()) {
+    msg << "ERROR: out of bounds, not adding: " << x << "," << y << endl;
+    return -1; 
+  }
+  
+  Map[(y*width+x)/tile_points].push_back(gob); 
+  msg<<"Registered new Object: "<<gob->bp_name()<<"\n";
 
- //return 0;
- return static_cast<sint4>((y*width+x)/tile_points);
+  return static_cast<sint4>((y*width+x)/tile_points);
 }
 
 sint4 Satellite::updateObject(GameObj *gob, sint4 sat_loc)
@@ -62,14 +64,14 @@ sint4 Satellite::updateObject(GameObj *gob, sint4 sat_loc)
  return new_sat_loc;
 }
 
-void Satellite::removeObject(GameObj *gob, sint4 sat_loc)
-{
- Map[sat_loc].remove(gob);
+void Satellite::removeObject(GameObj *gob, sint4 sat_loc) {
+  if (sat_loc < 0) return;
+  Map[sat_loc].remove(gob);
 }
 
-std::list<GameObj*> *Satellite::getCollisions(sint4 x, sint4 y, sint4 r)
+void Satellite::getCollisions(sint4 x, sint4 y, sint4 r, 
+                              list<GameObj*>& collisions)
 {
- std::list<GameObj*> *cols = new std::list<GameObj*>;
  
  int cells[9];
  bool check[9] = {false};
@@ -140,9 +142,9 @@ std::list<GameObj*> *Satellite::getCollisions(sint4 x, sint4 y, sint4 r)
     obj.y =  (*(*it)->sod.y);
     objr =  (*(*it)->sod.radius);
     if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) < (r+objr) * (r+objr)) //Inside the circle
-     cols->push_back((*it));
+     collisions.push_back((*it));
    }
    
  //Return all items target circle collides with
- return cols;
+ return;
 }

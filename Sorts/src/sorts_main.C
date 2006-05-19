@@ -24,8 +24,7 @@ using namespace std;
 void printOutput(sml::smlPrintEventId id,
                  void*                pUserData,
                  sml::Agent*          pAgent,
-                 const char*          pMessage)
-{
+                 const char*          pMessage) {
   cout << "[SOAR] " << pMessage << endl;
 }
 
@@ -49,8 +48,7 @@ void printOutput(sml::smlPrintEventId id,
 void SoarUpdateEventHandler(sml::smlUpdateEventId id, 
                             void*                 pUserData,
                             sml::Kernel*          pKernel,
-                            sml::smlRunFlags      runFlags)
-{
+                            sml::smlRunFlags      runFlags) {
   pthread_mutex_lock(Sorts::mutex);
   cout << "SOAR EVENT {\n";
   if (Sorts::catchup == true) {
@@ -111,6 +109,7 @@ int main(int argc, char *argv[]) {
 
   int port = 7777;
   int soarPort = 12121;
+  int seed = 0;
   string host = "127.0.0.1";
   char* productions = NULL;
   for(int i = 1; i < argc; i++) {
@@ -126,7 +125,12 @@ int main(int argc, char *argv[]) {
     else if (strcmp(argv[i], "-soar-port") == 0) {
       soarPort = atoi(argv[i+1]);
     }
+    else if (strcmp(argv[i], "-seed") == 0) {
+      seed = atoi(argv[i+1]);
+    }
   }
+
+  srand(seed);
   
 
   /************************************

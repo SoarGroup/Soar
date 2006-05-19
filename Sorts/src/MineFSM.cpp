@@ -83,8 +83,11 @@ int MineFSM::update() {
           gob->get_int("is_mobile") == 1) {
           // finished mining
         if (gob->get_int("minerals") == 0) {
-          cout << "MINEFSM: Mining failed for some reason!\n";
-          assert(false);
+          cout << "MINEFSM: Mining failed for some reason! Trying again..\n";
+          temp = route->mineralInfo->mineral->getID();
+          tempVec.push_back(temp);
+          gob->component("pickaxe")->set_action("mine", tempVec); 
+          //assert(false);
         }
         else {
           tempVec.push_back(route->dropoffLoc.x);

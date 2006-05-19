@@ -23,6 +23,7 @@ class MoveFSM: public FSM {
  private:
 	enum{IDLE,WARMUP,MOVING,ALREADY_THERE, TURNING};
 
+  veerRight(int& x, int& y);
 	int state;
   int runTime;
   double heading;
@@ -34,6 +35,7 @@ class MoveFSM: public FSM {
   int stagesLeft;
   Vector<sint4> moveParams;
   int counter;
+  int counter_max;
 
   int vec_count;
   int precision;

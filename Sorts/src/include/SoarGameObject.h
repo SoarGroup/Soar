@@ -65,6 +65,11 @@ private:
 
   int status;
 
+  bool friendlyWorker;
+  // these are only updated for friendly workers!
+  coordinate lastLocation;
+  int motionlessFrames;
+
 };
 
 #define OBJ_IDLE 0

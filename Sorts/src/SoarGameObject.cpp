@@ -11,6 +11,8 @@
 #include "PerceptualGroup.h"
 #include "InternalGroup.h"
 
+#define msg cout << "SGO: "
+
 using namespace std;
 
 void SoarGameObject::identifyBehaviors() {
@@ -22,6 +24,7 @@ void SoarGameObject::identifyBehaviors() {
       registerBehavior(mineBehavior);
       FSM* moveBehavior = new MoveFSM(gob);
       registerBehavior(moveBehavior);
+      friendlyWorker = true;
     }
     else if (name == "marine") {
       FSM* attackBehavior = new AttackFSM(gob);
@@ -44,20 +47,20 @@ SoarGameObject::SoarGameObject(
 {
   status = OBJ_IDLE;
   frameOfLastUpdate = -1;
+  lastLocation = getLocation();
+  friendlyWorker = false; // determined in identifyBehaviors
+  motionlessFrames = 0;
+  
   identifyBehaviors();
   iGroup = NULL;
   pGroup = NULL;
   
-  if (gob->bp_name() != "mineral") {
-    sat_loc = Sorts::satellite->addObject(gob);
-  }
+  sat_loc = Sorts::satellite->addObject(gob);
 }
 
 SoarGameObject::~SoarGameObject()
 {
-  if (gob->bp_name() != "mineral") {
-    Sorts::satellite->removeObject(gob,sat_loc);
-  }
+  Sorts::satellite->removeObject(gob,sat_loc);
 
  while(!memory.empty()) {
     memory.pop();
@@ -127,7 +130,6 @@ void SoarGameObject::update()
     Sorts::OrtsIO->updateNextCycle(this);
     return;
   }
-  frameOfLastUpdate = currentFrame;
   
   if(!memory.empty())
   {
@@ -159,12 +161,27 @@ void SoarGameObject::update()
   else {
     //cout << "empty memory\n";
   }
+
+  // spit out a warning if the object sits still for a long time
+  if (friendlyWorker) {
+    if (getLocation() == lastLocation) {
+      motionlessFrames += (currentFrame - frameOfLastUpdate);
+    }
+    else {
+      motionlessFrames = 0;
+    }
+    if (motionlessFrames > 50) {
+      msg << "WARNING: worker " << (int)this << " has been still for " 
+          << motionlessFrames << " frames\n";
+    }
+    lastLocation = getLocation();
+  }
+  frameOfLastUpdate = currentFrame;
 }
 
 
-void SoarGameObject::setPerceptualGroup(PerceptualGroup *g)
-{
- pGroup = g;
+void SoarGameObject::setPerceptualGroup(PerceptualGroup *g) {
+  pGroup = g;
 }
 
 PerceptualGroup *SoarGameObject::getPerceptualGroup(void)

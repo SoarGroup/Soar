@@ -179,5 +179,6 @@ class MineManager {
     void allocateMiningStations(MineralInfo* m, Direction d);
     void allocateDropoffStations(CCenterInfo* m, Direction d);
     Direction getRelDirection(coordinate c1, coordinate c2);
+    bool collision(StationInfo* station);
 };
 #endif

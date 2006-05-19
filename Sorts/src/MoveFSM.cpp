@@ -4,8 +4,10 @@
 #include "Sorts.h"
 using namespace std;
 
+#define msg cout << "MOVEFSM: "
+
 //Comment out to turn magnetism off
-#define MAGNETISM
+//#define MAGNETISM
 
 MoveFSM::MoveFSM(GameObj* go) 
             : FSM(go) 
@@ -29,15 +31,18 @@ int MoveFSM::update() {
   loc.y = (*gob->sod.y);
 
   if (gob->is_pending_action()) {
-    cout << "MOVEFSM: action has not taken affect!\n";
+    msg << "action has not taken affect!\n";
     return FSM_RUNNING;
   }
 
- switch(state){
+ switch(state) {
 
 	case IDLE:
-   gob->set_action("move", moveParams);
-	 state = MOVING;
+    gob->set_action("move", moveParams);
+	  state = MOVING;
+    counter = 0;
+    //counter_max = 1 + (rand() % 4);
+    counter_max = 0 + (rand() %2 );//1 + (rand() % 4);
    break;
   
   case ALREADY_THERE:
@@ -55,6 +60,8 @@ int MoveFSM::update() {
      if ((stagesLeft > 0 and distToTarget < 4)
          or (stagesLeft == -1 and distToTarget <= precision)) {
        counter = 0;
+       counter_max = 0 + (rand() %2 );//1 + (rand() % 4);
+       msg << "using counter of " << counter_max << endl;
        //If you arrived, then check is there is another path segment to traverse
        if (stagesLeft >= 0) {
          target.x = moveParams[0] = path.locs[stagesLeft].x;
@@ -68,29 +75,30 @@ int MoveFSM::update() {
         //Otherwise, you are at your goal
         return FSM_SUCCESS;     
        }
-     }
-     else {//Try again
-       if (counter++ < 5) {
-       // just keep trying until its done.
-          moveParams[0] = target.x;
+      }
+      else {//Try again
+        if (counter++ < counter_max) {
+        // just keep trying until its done.
+        /*  moveParams[0] = target.x;
           moveParams[1] = target.y;
 	        gob->set_action("move", moveParams);
-          cout << "MOVEFSM: temp stuck\n";
-       }
-       else {
+          cout << "MOVEFSM: temp stuck\n";*/
+          veerRight(moveParams[0], moveParams[1]);
+	        gob->set_action("move", moveParams);
+          msg << "veer right\n";
+        }
+        else {
         // cout << "SETA: " << moveParams[0] << " " << moveParams[1] << endl;
-         return FSM_FAILURE;
-       }
-     }
-   }
-   else 
-    if (distToTarget <= 1 and stagesLeft >= 0) 
-    {
-     cout << "MOVEFSM: in-motion dir change\n";
-     target.x = moveParams[0] = path.locs[stagesLeft].x;
-     target.y = moveParams[1] = path.locs[stagesLeft].y;
-     stagesLeft--;
-     gob->set_action("move", moveParams);
+          return FSM_FAILURE;
+        }
+      }
+    }
+    else if (distToTarget <= 1 and stagesLeft >= 0) {
+      cout << "MOVEFSM: in-motion dir change\n";
+      target.x = moveParams[0] = path.locs[stagesLeft].x;
+      target.y = moveParams[1] = path.locs[stagesLeft].y;
+      stagesLeft--;
+      gob->set_action("move", moveParams);
     }
 
 #ifdef MAGNETISM    
@@ -166,10 +174,10 @@ bool MoveFSM::getMoveVector()
  // - Return false is not enough time has passed
  //   - Need to figure out how much time is enough
  cout<<"MOVEFSM: Vec_count: "<<vec_count<<"\n";
- if(vec_count < 5)
+// if(vec_count < 5)
  {
   vec_count++;
-  return answer;
+//  return answer;
  }
  answer = true;
  vec_count = 0;
@@ -278,4 +286,9 @@ TerrainBase::Loc MoveFSM::getHeadingVector(sint4 target_x, sint4 target_y)
     
  cout<<"MOVEFSM: Heading Vector: ("<<loc.x<<","<<loc.y<<","<<quadrant<<")\n";
  return loc;
+}
+
+void MoveFSM::veerRight(int& newX, int& newY) {
+  newX = target.x;
+  newY = target.y;
 }
