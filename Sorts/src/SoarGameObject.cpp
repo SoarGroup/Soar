@@ -106,6 +106,7 @@ void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
 
   i->second->init(prms);
   memory.push(i->second);
+  motionlessFrames = 0;
   update();
 }
 
@@ -115,9 +116,7 @@ void SoarGameObject::update()
   cout << "upd: " << (int)this << " grp " << (int)pGroup << endl;
   int fsmStatus;
 
-  if (gob->bp_name() != "mineral") {
-    sat_loc = Sorts::satellite->updateObject(gob,sat_loc);
-  }
+  sat_loc = Sorts::satellite->updateObject(gob,sat_loc);
     
   if (iGroup != NULL) {
     iGroup->setHasStaleMembers();
@@ -164,15 +163,23 @@ void SoarGameObject::update()
 
   // spit out a warning if the object sits still for a long time
   if (friendlyWorker) {
-    if (getLocation() == lastLocation) {
-      motionlessFrames += (currentFrame - frameOfLastUpdate);
+    if (currentFrame != Sorts::OrtsIO->getActionFrame()) {
+      motionlessFrames = 0;
+      // don't count lag problems
     }
     else {
-      motionlessFrames = 0;
-    }
-    if (motionlessFrames > 50) {
-      msg << "WARNING: worker " << (int)this << " has been still for " 
-          << motionlessFrames << " frames\n";
+      if (getLocation() == lastLocation) {
+        motionlessFrames++;//= (currentFrame - frameOfLastUpdate);
+      }
+      else {
+        motionlessFrames = 0;
+      }
+      if (motionlessFrames > 50) {
+        msg << "WARNING: worker " << (int)this << " has been still for " 
+            << motionlessFrames << " frames\n";
+        memory.top()->panic();
+        motionlessFrames = 0;
+      }
     }
     lastLocation = getLocation();
   }

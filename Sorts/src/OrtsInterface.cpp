@@ -20,6 +20,7 @@ OrtsInterface::OrtsInterface(GameStateModule* _gsm)
   mapYDim = (gsm->get_game().get_gtiles_y())*(gsm->get_game().get_tile_points());
   lastActionFrame = 0;
   viewFrame = -1;
+  skippedActions = 0;
 }
 
 bool OrtsInterface::handle_event(const Event& e) {
@@ -43,9 +44,9 @@ bool OrtsInterface::handle_event(const Event& e) {
       }
       cout << "event for frame " 
            << viewFrame << "/" << lastActionFrame << endl;
-      int skipped = gsm->get_game().get_skipped_actions();
-      if (skipped) {
-        cout << "WARNING: skipped actions: " << skipped << endl;
+      skippedActions = gsm->get_game().get_skipped_actions();
+      if (skippedActions) {
+        cout << "WARNING: skipped actions: " << skippedActions << endl;
       }
       if ((viewFrame - lastActionFrame) > 10) {
         Sorts::catchup = true;

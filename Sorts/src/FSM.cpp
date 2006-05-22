@@ -19,3 +19,6 @@ void FSM::init(std::vector<sint4> p) {
 ObjectActionType FSM::getName() {
   return name;
 }
+
+void FSM::panic(){
+}

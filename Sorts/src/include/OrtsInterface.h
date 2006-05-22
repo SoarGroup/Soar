@@ -45,8 +45,7 @@ public:
   int getMapXDim();
   int getMapYDim();
 
-  GameStateModule *getGSM(){return gsm;}
-
+  int getSkippedActions() { return skippedActions; } 
 private:
   GameStateModule* gsm;
 
@@ -76,6 +75,7 @@ private:
   // player id of Soar
   int myPid;
 
+  int skippedActions;
   int mapXDim, mapYDim;
 
   int lastActionFrame;

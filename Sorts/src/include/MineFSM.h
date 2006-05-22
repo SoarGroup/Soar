@@ -18,17 +18,20 @@ public:
   
   // called by MineManager if a mineral or cc disappears
   void abortMining();
+  void panic();
   void setSoarGameObject(SoarGameObject* _sgo) { sgo = _sgo; }
   SoarGameObject* getSoarGameObject() { return sgo; }
 private:
   enum MineState { IDLE, MINING, MOVING_TO_MINERAL, MOVING_TO_DROPOFF,
-                   SEND_MOVE_TO_MINE_COMMAND };
+                   SEND_MOVE_TO_MINE_COMMAND, PANIC_START, PANIC };
   MineState state;
   MiningRoute* route;
   SoarGameObject* sgo;
   MoveFSM* moveFSM;
   int precision, timer;
-  bool firstMove;
+  bool timed;
+  int giveUpThreshold;
+  int panicCount;
 };
 
 #endif

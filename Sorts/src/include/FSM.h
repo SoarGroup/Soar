@@ -22,6 +22,7 @@ public:
   virtual GameObj *getGameObject(){return gob;}
   virtual void init(std::vector<sint4>);
   virtual ObjectActionType getName();
+  virtual void panic();
 
 protected:
   ObjectActionType name;

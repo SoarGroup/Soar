@@ -130,6 +130,8 @@ class MineManager {
     MiningRoute* reportMiningResults(int time, MiningRoute* route, bool atBase,
                                      MineFSM* fsm);
 
+    MiningRoute* minerGivesUp(MiningRoute*, MineFSM*); 
+
     // called by OrtsInterface when minerals appear and disappear
     void addMineral(SoarGameObject* mineral);
     void removeMineral(SoarGameObject* mineral);
@@ -142,6 +144,7 @@ class MineManager {
     void removeWorker(MiningRoute* route, MineFSM* fsm);
     
   private:
+    int newRoutes;
     // store minerals here, for quick lookup when they disappear
     // MineralInfo connects minerals to routes
     set<MineralInfo*, ltMineralInfoPtr> minerals;

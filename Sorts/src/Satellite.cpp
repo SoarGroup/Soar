@@ -56,7 +56,8 @@ void Satellite::addImaginaryWorker(coordinate c) {
   }
   
   ImaginaryWorkers[(c.y*width+c.x)/tile_points].push_back(c); 
-  msg<<"Registered new imaginary worker.\n";
+  msg << "Registered new imaginary worker.\n";
+  msg << "iw loc: " << c.x << "," << c.y << endl;
 }
 
 sint4 Satellite::updateObject(GameObj *gob, sint4 sat_loc)
@@ -88,17 +89,18 @@ void Satellite::getCollisions(sint4 x, sint4 y, sint4 r,
  
  int cells[9];
  bool check[9] = {false};
+ int twoR = r+r;
 
  //1. Figure out which cells surround the target location 
- cells[0] = static_cast<int>((((y-r)*width)+(x-r))/tile_points);
- cells[1] = static_cast<int>((((y-r)*width)+(x))/tile_points);
- cells[2] = static_cast<int>((((y-r)*width)+(x+r))/tile_points);
- cells[3] = static_cast<int>((((y)*width)+(x-r))/tile_points);
+ cells[0] = static_cast<int>((((y-twoR)*width)+(x-twoR))/tile_points);
+ cells[1] = static_cast<int>((((y-twoR)*width)+(x))/tile_points);
+ cells[2] = static_cast<int>((((y-twoR)*width)+(x+twoR))/tile_points);
+ cells[3] = static_cast<int>((((y)*width)+(x-twoR))/tile_points);
  cells[4] = static_cast<int>((((y)*width)+(x))/tile_points);
- cells[5] = static_cast<int>((((y)*width)+(x+r))/tile_points);
- cells[6] = static_cast<int>((((y+r)*width)+(x-r))/tile_points);
- cells[7] = static_cast<int>((((y+r)*width)+(x))/tile_points);
- cells[8] = static_cast<int>((((y+r)*width)+(x+r))/tile_points);
+ cells[5] = static_cast<int>((((y)*width)+(x+twoR))/tile_points);
+ cells[6] = static_cast<int>((((y+twoR)*width)+(x-twoR))/tile_points);
+ cells[7] = static_cast<int>((((y+twoR)*width)+(x))/tile_points);
+ cells[8] = static_cast<int>((((y+twoR)*width)+(x+twoR))/tile_points);
 
  //2. Figure out which cells are under (or partially under) the circle
  // 0 1 2
@@ -169,17 +171,18 @@ bool Satellite::hasMiningCollision(coordinate c) {
   sint4 x = c.x;
   sint4 y = c.y;
   sint4 r = WORKER_RADIUS;
+  sint4 bigR = WORKER_RADIUS + WORKER_RADIUS;
   
   //1. Figure out which cells surround the target location 
-  cells[0] = static_cast<int>((((y-r)*width)+(x-r))/tile_points);
-  cells[1] = static_cast<int>((((y-r)*width)+(x))/tile_points);
-  cells[2] = static_cast<int>((((y-r)*width)+(x+r))/tile_points);
-  cells[3] = static_cast<int>((((y)*width)+(x-r))/tile_points);
+  cells[0] = static_cast<int>((((y-bigR)*width)+(x-bigR))/tile_points);
+  cells[1] = static_cast<int>((((y-bigR)*width)+(x))/tile_points);
+  cells[2] = static_cast<int>((((y-bigR)*width)+(x+bigR))/tile_points);
+  cells[3] = static_cast<int>((((y)*width)+(x-bigR))/tile_points);
   cells[4] = static_cast<int>((((y)*width)+(x))/tile_points);
-  cells[5] = static_cast<int>((((y)*width)+(x+r))/tile_points);
-  cells[6] = static_cast<int>((((y+r)*width)+(x-r))/tile_points);
-  cells[7] = static_cast<int>((((y+r)*width)+(x))/tile_points);
-  cells[8] = static_cast<int>((((y+r)*width)+(x+r))/tile_points);
+  cells[5] = static_cast<int>((((y)*width)+(x+bigR))/tile_points);
+  cells[6] = static_cast<int>((((y+bigR)*width)+(x-bigR))/tile_points);
+  cells[7] = static_cast<int>((((y+bigR)*width)+(x))/tile_points);
+  cells[8] = static_cast<int>((((y+bigR)*width)+(x+bigR))/tile_points);
 
   //2. Figure out which cells are under (or partially under) the circle
   // 0 1 2
@@ -251,10 +254,11 @@ bool Satellite::hasMiningCollision(coordinate c) {
           iwit++) {
         obj.x = (*iwit).x;
         obj.y = (*iwit).y;
-        objr = WORKER_RADIUS;
+        objr = WORKER_RADIUS + 1;
         if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
          < (r+objr) * (r+objr))  {
           //Inside the circle
+          msg << "imaginary worker collision!\n";
           return true;
         }
       }

@@ -14,7 +14,10 @@
 #define WAYPOINT_PENALTY 10
 #define NOLEARNING
 
+#define MAX_NEW_ROUTES 00
+
 MineManager::MineManager() {
+  newRoutes = 0;
 }
 
 MineManager::~MineManager() {
@@ -100,8 +103,8 @@ MiningRoute* MineManager::getMiningRoute(MineFSM* fsm) {
 }
 MiningRoute* MineManager::reportMiningResults(int time, MiningRoute* route, 
                                               bool atBase, MineFSM* fsm) {
-  msg << "results! for pathlength " << route->pathlength << " time is " 
-      << time << endl;
+  double speed = (route->pathlength)/time;
+  msg << "results! speed is " << speed << endl;
 #ifdef NOLEARNING 
   return NULL;
 #endif
@@ -117,6 +120,23 @@ MiningRoute* MineManager::reportMiningResults(int time, MiningRoute* route,
   }
 
   return NULL;
+}
+
+MiningRoute* MineManager::minerGivesUp(MiningRoute* route, MineFSM* fsm) {
+  msg << "choosing new route.\n";
+  if (newRoutes++ < MAX_NEW_ROUTES) {
+    route->mineStation->optimality = UNUSABLE_OPTIMALITY;
+    removeFromRoute(route, fsm);
+    adjustOptimality(route);
+    MiningRoute* best = getBestRoute();
+    addCostToRoute(best);
+    addFSMToRoute(best, fsm);
+    return best;
+  }
+  else {
+    msg << "no new route given out, MAX_NEW_ROUTES reached.\n";
+    return NULL;
+  }
 }
 void MineManager::addMineral(SoarGameObject* mineral) {
   MineralInfo* mi = new MineralInfo;
@@ -313,6 +333,8 @@ void MineManager::addCostToRoute(MiningRoute* route) {
     adjustOptimality(*it);
   }
 
+  Sorts::satellite->addImaginaryWorker(route->miningLoc);
+  Sorts::satellite->addImaginaryWorker(route->dropoffLoc);
   //addImaginaryObstacle(route->miningLoc);
   //addImaginaryObstacle(route->dropoffLoc);
 }
