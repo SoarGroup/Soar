@@ -7,6 +7,7 @@
 #include "GameTile.H"
 #include "Global.H"
 #include "Vector.H"
+#include "general.h"
 
 class Sorts;
 
@@ -23,14 +24,19 @@ public:
   sint4 updateObject(GameObj *gob, sint4 sat_loc);
   void removeObject(GameObj *gob, sint4 sat_loc);
   // querying functions
-  std::list<GameObj*> *getObjectsInRegion(int x, int y);
+  std::set<GameObj*> *getObjectsInRegion(int x, int y);
   void getCollisions(sint4 x, sint4 y, sint4 r, list<GameObj*>& collisions);
+ 
+  // for MineManager
+  void addImaginaryWorker(coordinate c);
+  bool hasMiningCollision(coordinate c);
 
   int refCount;
 
 private:
 
-  std::vector<std::list<GameObj*> > Map;
+  vector<set<GameObj*> > Map;
+  vector<list<coordinate> > ImaginaryWorkers; // used by MineManager
 
   int tile_points;
   int width;

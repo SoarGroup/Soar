@@ -28,6 +28,7 @@ private:
   SoarGameObject* sgo;
   MoveFSM* moveFSM;
   int precision, timer;
+  bool firstMove;
 };
 
 #endif

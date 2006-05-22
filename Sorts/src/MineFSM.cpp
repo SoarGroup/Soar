@@ -70,9 +70,12 @@ int MineFSM::update() {
         gob->component("pickaxe")->set_action("mine", tempVec); 
         cout << "MINEFSM: mining commencing!\n";
         state = MINING;
-        Sorts::mineManager
-                ->reportMiningResults((Sorts::OrtsIO->getViewFrame()-timer), 
-                                      route, false, this);
+        if (not firstMove) { 
+          Sorts::mineManager
+                  ->reportMiningResults((Sorts::OrtsIO->getViewFrame()-timer), 
+                                        route, false, this);
+        }
+        firstMove = false;
       }
       else {
         assert(false);
@@ -166,6 +169,7 @@ void MineFSM::init(vector<sint4> p) {
   assert(route != NULL);
   
   state = IDLE;
+  firstMove = true;
 
   assert (p.size() == 0);
   moveFSM = new MoveFSM(gob);

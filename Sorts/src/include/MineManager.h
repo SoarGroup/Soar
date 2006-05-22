@@ -66,6 +66,7 @@ struct MineralInfo {
   SoarGameObject* mineral;
   list<MiningRoute*> routes;
   bool stationsValid[4];
+  bool stationsFull[4];
   StationInfo* northStations[MINERAL_EDGE_STATIONS];
   StationInfo* southStations[MINERAL_EDGE_STATIONS];
   StationInfo* eastStations[MINERAL_EDGE_STATIONS];
@@ -76,6 +77,7 @@ struct CCenterInfo {
   SoarGameObject* cCenter;
   list <MiningRoute*> routes;
   bool stationsValid[4];
+  bool stationsFull[4];
   StationInfo* northStations[CC_EDGE_STATIONS];
   StationInfo* southStations[CC_EDGE_STATIONS];
   StationInfo* eastStations[CC_EDGE_STATIONS];
@@ -175,10 +177,10 @@ class MineManager {
     void expandEdgeEdge(MiningRoute* route);
     double pathFindDist(SoarGameObject* obj1, SoarGameObject* obj2);
     double pathFindDist(coordinate loc1, coordinate loc2);
-    bool stationBlocked(coordinate c);
     void allocateMiningStations(MineralInfo* m, Direction d);
     void allocateDropoffStations(CCenterInfo* m, Direction d);
     Direction getRelDirection(coordinate c1, coordinate c2);
     bool collision(StationInfo* station);
+    void addImaginaryObstacle(coordinate c);
 };
 #endif
