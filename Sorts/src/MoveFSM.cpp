@@ -258,9 +258,8 @@ void MoveFSM::veerRight() {
   // do not allow multiple rightward moves! better to just return failure
   // so the FSM is reinitted with a new path
 
-  assert(stagesLeft+1 < path.locs.size());
-
-  if (target != path.locs[stagesLeft+1]) {
+  if (stagesLeft+1 < path.locs.size() 
+      || target != path.locs[stagesLeft+1]) {
     // we've already veered, do nothing
     msg << "already veered!\n";
     return;

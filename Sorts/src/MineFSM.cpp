@@ -268,8 +268,8 @@ MineFSM::~MineFSM() {
 void MineFSM::abortMining() {
   route = Sorts::mineManager->getMiningRoute(this);
   assert(route != NULL);
-  if (state == MOVING_TO_MINERAL) {
-    //moveFSM->stop();
+  if (moveFSM != NULL) {
+    moveFSM->stop();
   }
   state = IDLE;
 }

@@ -10,6 +10,8 @@
 #include "GameObj.H"
 #include "GameStateModule.H"
 
+#define msg cout << "ORTSIO "
+
 OrtsInterface::OrtsInterface(GameStateModule* _gsm)
 : gsm(_gsm)
 {
@@ -44,7 +46,18 @@ bool OrtsInterface::handle_event(const Event& e) {
       }
       cout << "event for frame " 
            << viewFrame << "/" << lastActionFrame << endl;
-      skippedActions = gsm->get_game().get_skipped_actions();
+      if (viewFrame == lastActionFrame and Sorts::catchup) {
+        msg << "caught up at frame " << viewFrame << endl;
+      }
+      if (Sorts::catchup) {
+        // we haven't modified catchup yet, 
+        // so this means the last event was skipped
+        // accumulate skipped actions, in that case
+        skippedActions += gsm->get_game().get_skipped_actions();
+      }
+      else {
+        skippedActions = gsm->get_game().get_skipped_actions();
+      }
       if (skippedActions) {
         cout << "WARNING: skipped actions: " << skippedActions << endl;
       }
@@ -104,6 +117,8 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   
   SoarGameObject* newObj = new SoarGameObject(gameObj,
                                               friendly, world, id);
+  msg << "addCreated gob: " << (int)gameObj << " sgo: " << (int)newObj 
+      << " id: " << id << endl;
  
   // PerceptualGroupManager takes care of setting the object->group pointers
   Sorts::pGroupManager->makeNewGroup(newObj);
@@ -119,9 +134,9 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
 
   objectMap[gameObj] = newObj;
    
-  /*if (liveIDs.find(id) != liveIDs.end()) {
+  if (liveIDs.find(id) != liveIDs.end()) {
     cout << "ERROR: appeard object is there already: " << (int)gameObj << endl;
-  }*/
+  }
   assert(liveIDs.find(id) == liveIDs.end());
   liveIDs.insert(id);
 }
@@ -142,9 +157,10 @@ void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   else if (gameObj->bp_name() == "controlCenter") {
     Sorts::mineManager->removeControlCenter(sObject);
   }
-  
-  delete objectMap[gameObj];
+ 
   objectMap.erase(gameObj);
+  delete sObject;
+  assert(liveIDs.find(id) != liveIDs.end());
   liveIDs.erase(id);
 }
   
