@@ -30,9 +30,10 @@ void AttackFSM::init(vector<sint4> params) {
 
   // get the attack manager from the registry
   manager = Sorts::amr->getManager(params[0]);
+  assert(manager != NULL);
   manager->registerFSM(this);
   target = NULL;
-  dest_x = 0; dest_y = 0;
+  dest.x = *gob->sod.x; dest.y = *gob->sod.y;
   moving = false;
   disownedStatus = 0;
 }
@@ -56,8 +57,9 @@ int AttackFSM::update() {
         break;
       case FSM_FAILURE:
         // what to do here?
-        std::cout << "##JZXU## MOVE FAILED" << std::endl;
         moving = false;
+        break;
+      default:
         break;
     }
   }
@@ -83,28 +85,19 @@ void AttackFSM::move(int x, int y) {
     moveFSM->stop();
   }
   vector<sint4> moveParams(2);
-  moveParams.push_back(x);
-  moveParams.push_back(y);
+  moveParams[0] = x;
+  moveParams[1] = y;
   moveFSM->init(moveParams);
-  dest_x = x;
-  dest_y = y;
+  dest.x = x;
+  dest.y = y;
   moving = true;
 }
 
 void AttackFSM::stopMoving() {
   moveFSM->stop();
   moving = false;
-}
-
-void AttackFSM::getDestination(int* x, int* y) {
-  if (moving) {
-    *x = dest_x;
-    *y = dest_y;
-  }
-  else {
-    *x = *gob->sod.x;
-    *y = *gob->sod.y;
-  }
+  dest.x = *gob->sod.x;
+  dest.y = *gob->sod.y;
 }
 
 void AttackFSM::disown(int lastStatus) {

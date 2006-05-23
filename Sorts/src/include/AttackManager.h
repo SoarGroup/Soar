@@ -4,6 +4,7 @@
 #include <vector>
 #include <set>
 
+#include "Point.h"
 #include "Circle.h"
 #include "SoarGameObject.h"
 #include "AttackFSM.h"
@@ -25,8 +26,11 @@ public:
   set<SoarGameObject*>* getTargets() { return &targets; }
 
 private: // functions
-  void selectTarget();
-  void positionAndAttack();
+  void            selectTarget();
+  SoarGameObject* selectCloseTarget(GameObj* gob);
+  void            positionAndAttack();
+  void            updateTargetList();
+  Point           attackArcPos(GameObj* atk, GameObj* tgt);
 
 private:
   list<AttackFSM*> team;

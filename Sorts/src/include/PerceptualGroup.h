@@ -40,7 +40,7 @@ class PerceptualGroup {
     void setHasStaleMembers(bool val);
     bool getHasStaleProperties();
     void setHasStaleProperties(bool val);
-    groupPropertyStruct getSoarData();
+    groupPropertyStruct* getSoarData();
     pair<string, int> getCategory(bool ownerGrouping);
     int getSize();
     SoarGameObject* getCenterMember();

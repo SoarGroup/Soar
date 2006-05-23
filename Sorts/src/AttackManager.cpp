@@ -5,6 +5,8 @@
 
 #include "ScriptObj.H"
 
+#define msg cout << "AttackManager.cpp: "
+
 // some useful functions
 double calcWeaponDamageRate(GameObj* gob) {
   ScriptObj* weapon = gob->component("weapon");
@@ -76,60 +78,119 @@ bool canHit(const Circle& c1, const Circle& c2, double range) {
   return r * r >= d;
 }
 
+// fake version
+/*
 bool attackArcPos(GameObj*atk, GameObj* tgt, Circle& pos) {
   pos.x = *tgt->sod.x;
   pos.y = *tgt->sod.y;
   return true;
 }
+*/
 
-/*
-bool attackArcPos(GameObj* atk, GameObj* tgt, Circle& pos) {
+
+Point AttackManager::attackArcPos(GameObj* atk, GameObj* tgt) {
   int range;
   int atkRadius = *atk->sod.radius;
+  int tgtRadius = *tgt->sod.radius;
+  Point aPos(*atk->sod.x, *atk->sod.y);
+  Point tPos(*tgt->sod.x, *tgt->sod.y);
+  msg << "ax: " << aPos.x << endl;
+  msg << "ay: " << aPos.y << endl;
+  msg << "tx: " << tPos.x << endl;
+  msg << "ty: " << tPos.y << endl;
   if (*tgt->sod.zcat == GameObj::ON_LAND) {
-    range = atk->component("weapon")->get_int("max_ground_range") + atkRadius;
+    range = atk->component("weapon")->get_int("max_ground_range") 
+      + atkRadius + tgtRadius;
   }
   else {
-    range = atk->component("weapon")->get_int("max_air_range") + atkRadius;
+    range = atk->component("weapon")->get_int("max_air_range") 
+      + atkRadius + tgtRadius;
   }
   
   double circumference = 2 * PI * range;
   double angleInc = PI * (*atk->sod.radius * 2) / circumference;
 
-  double dx = *tgt->sod.x - *atk->sod.x;
-  double dy = *tgt->sod.y - *atk->sod.y;
-  double mag = sqrt(dx * dx + dy * dy);
-  double ndx = dx / mag;
+  double dx   = aPos.x - tPos.x;
+  double dy   = aPos.y - tPos.y;
+  double dist = dx * dx + dy * dy;
+  double ndx  = dx / dist;
 
   double startAng;
   if (dy >= 0) {
     startAng = acos(ndx);
+    msg << "ang: " << startAng << endl;
   }
   else {
-    startAng = 2 * PI - acos(ndx);
+    startAng = PI + acos(ndx);
+    msg << "ang(m): " << startAng << endl;
   }
 
   for(double currInc = 0; currInc < PI; currInc += angleInc) {
-    Circle c(0, 0, atkRadius);
+    list<GameObj*> collisions;
+    Point fPos, ifPos;
     // first counter-clockwise (increase angle)
-    c.x = range * cos(startAng + currInc);
-    c.y = range * sin(startAng + currInc);
-    if ( true ) { // there's no collision
-      pos = c;
-      return true;
+    fPos.x = tPos.x + range * cos(startAng + currInc);
+    fPos.y = tPos.y + range * sin(startAng + currInc);
+    if (fPos.x >= 0 && fPos.y >= 0) {
+      ifPos = fPos.roundToward(tPos);
+
+      bool slotTaken = false;
+      for(list<AttackFSM*>::iterator
+          i =  team.begin();
+          i != team.end();
+          i++) 
+      {
+        if ((*i)->isMoving()) {
+          double d = ifPos.distSqTo((*i)->getDestination());
+          double r = *(*i)->getGameObject()->sod.radius + atkRadius;
+          if (d < r * r) {
+            slotTaken = true;
+            break;
+          }
+        }
+      }
+      if (!slotTaken) {
+        Sorts::satellite->getCollisions(
+          ifPos.intx(), ifPos.inty(), atkRadius, NULL, collisions);
+        if (collisions.size() == 0) { // there's no collision
+          return ifPos;
+        }
+      }
     }
     
     // now clockwise (decrease angle)
-    c.x = range * cos(startAng - currInc);
-    c.y = range * sin(startAng - currInc);
-    if ( true ) { // there's no collision 
-      pos = c;
-      return true;
+    fPos.x = tPos.x + range * cos(startAng - currInc);
+    fPos.y = tPos.y + range * sin(startAng - currInc);
+    if (fPos.x >= 0 && fPos.y >= 0) {
+      ifPos = fPos.roundToward(tPos);
+
+      bool slotTaken = false;
+      for(list<AttackFSM*>::iterator
+          i =  team.begin();
+          i != team.end();
+          i++) 
+      {
+        if ((*i)->isMoving()) {
+          double d = ifPos.distSqTo((*i)->getDestination());
+          double r = *(*i)->getGameObject()->sod.radius + atkRadius;
+          if (d < r * r) {
+            slotTaken = true;
+            break;
+          }
+        }
+      }
+      if (!slotTaken) {
+        Sorts::satellite->getCollisions(
+          ifPos.intx(), ifPos.inty(), atkRadius, NULL, collisions);
+        if (collisions.size() == 0) { 
+          return ifPos;
+        }
+      }
     }
   }
-  return false;
+  Point errPos(-1, -1);
+  return errPos;
 }
-*/
 
 AttackManager::AttackManager(const set<SoarGameObject*>& _targets)
 : targets(_targets), currTarget(NULL), currAttackParams(1)
@@ -175,12 +236,9 @@ void AttackManager::unregisterFSM(AttackFSM* fsm) {
 // the most urgent unit to kill based on more sophisticated measures
 // i.e. some balance between ease of killing and damage rate
 int AttackManager::direct(AttackFSM* fsm) {
-  if (currTarget == NULL || !Sorts::OrtsIO->isAlive(currTarget->getID())) {
+  updateTargetList();
+  if (currTarget == NULL) {
     cout << "ATTACK MANAGER: SELECT NEW TARGET" << endl;
-    if (currTarget != NULL) {
-      // the current target is dead or moved out of view
-      targets.erase(currTarget);
-    }
     selectTarget();
     if (currTarget == NULL) {
       // no more targets left
@@ -194,30 +252,22 @@ int AttackManager::direct(AttackFSM* fsm) {
   if (!canHit(gob, currTarget->gob)) {
     // find someone he can hit, don't waste time by not shooting
     if (fsm->getTarget() == NULL ||
+        !Sorts::OrtsIO->isAlive(fsm->getTarget()->getID()) ||
         !canHit(gob, fsm->getTarget()->gob)) 
     {
-      for(set<SoarGameObject*>::iterator
-          i =  targets.begin();
-          i != targets.end();
-          i++)
-      {
-        if (canHit(gob, (*i)->gob)) {
-          fsm->attack(*i);
-          break;
-        }
+      SoarGameObject* tempTarget = selectCloseTarget(gob);
+      if (tempTarget != NULL) {
+        fsm->attack(tempTarget);
       }
     }
     // if he's not already moving toward currTarget, tell him to
-    int dest_x, dest_y;
-    fsm->getDestination(&dest_x, &dest_y);
-    Circle dest(dest_x, dest_y, *gob->sod.radius);
-    if (!fsm->isMoving() || !canHit(gob, dest, currTarget->gob)) {
-      cout << "ATTACK MANAGER: CALLING NEW MOVE COMMAND" << endl;
-      Circle pos;
-      if(attackArcPos(gob, currTarget->gob, pos)) {
-        cout << "ATTACK MANAGER: TRYING TO MOVE TO "
-             << pos.x << ", " << pos.y << endl;
-        fsm->move((int) pos.x, (int) pos.y);
+    Point dest = fsm->getDestination();
+    Circle cdest(dest.x, dest.y, *gob->sod.radius);
+    if (!fsm->isMoving() || !canHit(gob, cdest, currTarget->gob)) {
+      Point pos = attackArcPos(gob, currTarget->gob);
+      if(pos.x >= 0) {
+        msg << "Moving to Position: " << pos.x << ", " << pos.y << endl;
+        fsm->move(pos.intx(), pos.inty());
       }
       else {
         // the entire circle around the guy is surrounded
@@ -230,6 +280,24 @@ int AttackManager::direct(AttackFSM* fsm) {
   }
 
   return 0;
+}
+
+void AttackManager::updateTargetList() {
+  for(set<SoarGameObject*>::iterator
+      i =  targets.begin(); 
+      i != targets.end();
+      i++)
+  {
+    if (!Sorts::OrtsIO->isAlive((*i)->getID())) {
+      msg << "Unit is no longer alive or moved out of view" << endl;
+      targets.erase(i);
+      continue;
+    }
+  }
+  // finally check the current target
+  if (currTarget != NULL && !Sorts::OrtsIO->isAlive(currTarget->getID())) {
+    currTarget = NULL;
+  }
 }
 
 void AttackManager::selectTarget() {
@@ -253,4 +321,17 @@ void AttackManager::selectTarget() {
   }
 }
 
-
+SoarGameObject* AttackManager::selectCloseTarget(GameObj* gob) {
+  SoarGameObject* target = NULL;
+  for(set<SoarGameObject*>::iterator
+      i =  targets.begin();
+      i != targets.end();
+      i++)
+  {
+    if (canHit(gob, (*i)->gob)) {
+      target = *i;
+      break;
+    }
+  }
+  return target;
+}

@@ -70,7 +70,7 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
   lockSoarMutex();
   stale = true;
 
-  groupPropertyStruct gps = group->getSoarData();
+  groupPropertyStruct& gps = *group->getSoarData();
   
   // make sure the group exists
   assert(groupTable.find(group) != groupTable.end());

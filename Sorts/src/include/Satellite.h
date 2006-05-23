@@ -9,6 +9,8 @@
 #include "Vector.H"
 #include "general.h"
 
+#include "ERF.h"
+
 class Sorts;
 
 using namespace std;
@@ -22,10 +24,11 @@ public:
 
   sint4 addObject(GameObj *gob);
   sint4 updateObject(GameObj *gob, sint4 sat_loc);
-  void removeObject(GameObj *gob, sint4 sat_loc);
+  void  removeObject(GameObj *gob, sint4 sat_loc);
+
   // querying functions
   std::set<GameObj*> *getObjectsInRegion(int x, int y);
-  void getCollisions(sint4 x, sint4 y, sint4 r, list<GameObj*>& collisions);
+  void getCollisions(sint4 x, sint4 y, sint4 r, ERF* erf, list<GameObj*>& collisions);
  
   // for MineManager
   void addImaginaryWorker(coordinate c);

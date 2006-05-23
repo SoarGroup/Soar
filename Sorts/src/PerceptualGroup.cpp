@@ -14,6 +14,9 @@
 #include "AttackManagerRegistry.h"
 #include "AttackFSM.h"
 #include "MineManager.h"
+#include "SidedInfluenceERF.h"
+
+#define msg cout << "PerceptualGroup.cpp: "
 
 PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
   members.insert(unit);
@@ -261,6 +264,51 @@ void PerceptualGroup::generateData() {
   }
   soarData.stringStringPairs.push_back(stringStringWme);
 
+//// Threats and support
+  Circle approx = bbox.getCircumscribingCircle();
+  int numPlayers = Sorts::OrtsIO->getNumPlayers();
+  // this probably isn't right
+  bool isGround = (*(*members.begin())->gob->sod.zcat == GameObj::ON_LAND);
+  list<GameObj*> collisions;
+  int threats = 0;
+  int support = 0;
+  msg << "-------------" << endl;
+  msg << "Group at " << x << "," << y << " under owner " << owner << endl;
+  for(int side = 0; side < numPlayers; side++) {
+    msg << "Checking collisions with owner... " << side << endl;
+
+    SidedInfluenceERF erf(10, side, isGround); // look ten viewframe ahead
+    Sorts::satellite->getCollisions
+      ((int) approx.x, (int) approx.y, (int) approx.r, &erf, collisions);
+
+    set<GameObj*> temp;
+    temp.clear();
+    for(list<GameObj*>::iterator
+        i  = collisions.begin();
+        i != collisions.end();
+        i++) 
+    {
+      assert(temp.find(*i) == temp.end());
+      temp.insert(*i);
+      msg << "Collides with obj at " << *(*i)->sod.x << ", " 
+          << *(*i)->sod.y << " owned by " << (*i)->get_int("owner") << endl;
+    }
+
+    if (side != owner) {
+      threats += collisions.size();
+    }
+    else {
+      // of course you will always intersect yourself
+      support += collisions.size() - members.size();
+    }
+  }
+  stringIntWme.first = "threats";
+  stringIntWme.second = threats;
+  soarData.stringIntPairs.push_back(stringIntWme);
+  stringIntWme.first = "support";
+  stringIntWme.second = support;
+  soarData.stringIntPairs.push_back(stringIntWme);
+
   // command info:
   // show last command, and as many status attributes as are applicable
   // if a group has one member succeed, fail, or still running, that 
@@ -489,7 +537,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
 
       int managerId = Sorts::amr->assignManager(targets);
       Vector<sint4> params(1);
-      params.push_back(managerId);
+      params[0] = managerId;
 
       for(set<SoarGameObject*>::iterator
           i =  members.begin();
@@ -520,8 +568,8 @@ void PerceptualGroup::setHasStaleMembers() {
   hasStaleMembers = true;
 }
 
-groupPropertyStruct PerceptualGroup::getSoarData() {
-  return soarData;
+groupPropertyStruct* PerceptualGroup::getSoarData() {
+  return &soarData;
 }
 
 bool PerceptualGroup::getHasStaleProperties() {

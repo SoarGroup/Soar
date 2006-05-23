@@ -342,7 +342,7 @@ bool MoveFSM::veerAhead(int distToTargetSq) {
 bool MoveFSM::collision(int x, int y) {
   list<GameObj*> collisions;
   
-  Sorts::satellite->getCollisions(x, y, 6, collisions);
+  Sorts::satellite->getCollisions(x, y, 6, NULL, collisions);
   msg << x << "," << y << " collides with " << collisions.size() 
        << " things.\n";
   
@@ -367,7 +367,7 @@ bool MoveFSM::dynamicCollision(int x, int y) {
   // return true if loc collides with a sheep or worker
   list<GameObj*> collisions;
   
-  Sorts::satellite->getCollisions(x, y, 6, collisions);
+  Sorts::satellite->getCollisions(x, y, 6, NULL, collisions);
   msg << x << "," << y << " collides with " << collisions.size() 
        << " things.\n";
   

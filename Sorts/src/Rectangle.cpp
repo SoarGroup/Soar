@@ -1,4 +1,5 @@
 #include "Rectangle.h"
+#include "math.h"
 #include <iostream>
 
 using namespace std;
@@ -101,6 +102,13 @@ int Rectangle::area() {
   return (xmax - xmin) * (ymax - ymin);
 }
 
+Circle Rectangle::getCircumscribingCircle() {
+  int dx = (xmax - xmin) / 2;
+  int dy = (ymax - ymin) / 2;
+  double d  = sqrt(dx * dx + dy * dy);
+  return Circle(xmin + dx, ymin + dy, d);
+}
+
 Rectangle& Rectangle::operator=(const Rectangle& rhs) {
   xmin = rhs.xmin;
   xmax = rhs.xmax;
@@ -114,3 +122,4 @@ ostream& operator<<(ostream& os, const Rectangle& r) {
      << "),(" << r.xmax << "," << r.ymax << "))";
   return os;
 }
+

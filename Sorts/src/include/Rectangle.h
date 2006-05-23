@@ -25,6 +25,8 @@ public:
   bool contains(const Rectangle& r);
   int  area();
 
+  Circle getCircumscribingCircle();
+
   Rectangle& operator=(const Rectangle& rhs);
   friend ostream& operator<<(ostream& os, const Rectangle& r);
 

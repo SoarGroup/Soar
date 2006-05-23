@@ -1,6 +1,7 @@
 #ifndef AttackFSM_H
 #define AttackFSM_H
 
+#include "Point.h"
 #include "FSM.h"
 #include "MoveFSM.h"
 #include "SoarGameObject.h"
@@ -23,7 +24,7 @@ public:
 
   void move(int x, int y);
   bool isMoving() { return moving; }
-  void getDestination(int* x, int* y);
+  Point getDestination() { return dest; }
   void stopMoving();
 
   // AttackManager is about to be deallocated, 
@@ -36,8 +37,9 @@ private:
   ScriptObj* weapon;
 
   MoveFSM* moveFSM;
-  int dest_x, dest_y;
+  Point dest;
 
+public: // for debug only
   bool moving;
 
   int disownedStatus;

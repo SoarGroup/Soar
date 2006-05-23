@@ -62,7 +62,7 @@ SoarGameObject::~SoarGameObject()
 {
   Sorts::satellite->removeObject(gob,sat_loc);
 
- while(!memory.empty()) {
+  while(!memory.empty()) {
     memory.pop();
   }
 

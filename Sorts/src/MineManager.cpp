@@ -868,7 +868,7 @@ bool MineManager::collision(StationInfo* station) {
   list<GameObj*> collisions;
   
   Sorts::satellite->getCollisions(station->location.x, station->location.y,
-                                  WORKER_RADIUS + 1, collisions);
+                                  WORKER_RADIUS + 1, NULL, collisions);
   msg << "station at " << station->location.x << "," 
        << station->location.y << " collides with " << collisions.size() 
        << " things.\n";
@@ -897,5 +897,5 @@ void MineManager::addImaginaryObstacle(coordinate c) {
   TerrainBase::Loc l;
   l.x = c.x;
   l.y = c.y;
-  Sorts::terrainModule->insertImaginaryWorker(l);
+  //Sorts::terrainModule->insertImaginaryWorker(l);
 }
