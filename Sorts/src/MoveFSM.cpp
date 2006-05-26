@@ -5,10 +5,24 @@
 #include "Sorts.h"
 using namespace std;
 
-#define msg cout << "MOVEFSM: "
+#define msg cout << "MOVEFSM(" << (int)this << "): "
 #define TOLERANCE 4 // for waypoints, squared
-#define VEERWIDTH 12  // radius of worker == 3
+#define VEERWIDTH 10  // radius of worker == 3
 
+
+// these quantities are determined randomly within a range
+// veercount: number of veers allowed in a row
+// if exceeded, veering does nothing (keep pushing ahead)
+#define MIN_VEERCOUNT 1 
+#define MAX_VEERCOUNT_DIFF 1 //  min < value < min+maxdiff
+
+// define to veer right, left, right .. etc (vs. always right)
+//#define ALTERNATE_VEERING
+
+// counter: number of consecutive in-place veers before FSM_FAILURE returned
+// i.e. the max number of cycles to allow zero speed before giving up
+#define MIN_COUNTER 1
+#define MAX_COUNTER_DIFF 3 // min < value <  min+maxdiff
 
 //Comment out to turn magnetism off
 //#define MAGNETISM
@@ -33,23 +47,33 @@ using namespace std;
    rad = sqrt(x^2 + rfd^2)
 */
 
-#define RADAR_FORWARD_DIST 7 // must be > 6, or the worker will collide 
                              // w/ itself!
 #define RADAR_FORWARD_DIST_SQ RADAR_FORWARD_DIST * RADAR_FORWARD_DIST
 
-// x=6
+// x=6, rfd 7
+#define RADAR_FORWARD_DIST 7 // must be > 6, or the worker will collide 
 #define RADAR_VEER_ANGLE .70862
 #define RADAR_ANGLE_DIST 9.22
+
+//x=10, rfd 7
+//#define RADAR_FORWARD_DIST 7 // must be > 6, or the worker will collide 
+//#define RADAR_VEER_ANGLE .96
+//#define RADAR_ANGLE_DIST 12.2
+
 
 MoveFSM::MoveFSM(GameObj* go) 
             : FSM(go) {
   name = OA_MOVE;
 
   vec_count = 0;
+  veerCount = 0;
   
-  loc.x = (*gob->sod.x);
-  loc.y = (*gob->sod.y);
+  currentLocation.x = (*gob->sod.x);
+  currentLocation.y = (*gob->sod.y);
   precision = 400;
+  lastRight = false;
+  lastLocation.x = -1;
+  lastLocation.y = -1;
 }
 
 MoveFSM::~MoveFSM() {
@@ -58,28 +82,28 @@ MoveFSM::~MoveFSM() {
 int MoveFSM::update() {
  // bool noEffectLastFrame = noEffect;
   
-  loc.x = (*gob->sod.x);
-  loc.y = (*gob->sod.y);
-  msg << "current location: " << loc.x << "," << loc.y << endl;
+  currentLocation.x = (*gob->sod.x);
+  currentLocation.y = (*gob->sod.y);
+  msg << "current location: " << currentLocation.x << "," 
+                              << currentLocation.y << endl;
 
   if (gob->is_pending_action()) {
     msg << "action has not taken affect!\n";
-  //  noEffect = true;
     return FSM_RUNNING;
   }
-  //noEffect = false;
 
  switch(state) {
 
 	case IDLE:
+    msg << "idle\n";
     gob->set_action("move", moveParams);
 	  state = MOVING;
     counter = 0;
-    //counter_max = 1 + (rand() % 4);
-    counter_max = 1;// + (rand() %2 );//1 + (rand() % 4);
+    counter_max = MIN_COUNTER + (rand()%MAX_COUNTER_DIFF );
    break;
   
   case ALREADY_THERE:
+   msg << "already there\n";
     if (squaredDistance(*gob->sod.x, *gob->sod.y, target.x, target.y) 
         <= precision) {
       return FSM_SUCCESS; 
@@ -91,20 +115,28 @@ int MoveFSM::update() {
     break;
 
 	case MOVING:
-	  const ServerObjData &sod = gob->sod;
+	  msg << "moving @ speed " << *gob->sod.speed << "\n";
+    const ServerObjData &sod = gob->sod;
     double distToTarget = squaredDistance(*sod.x, *sod.y, target.x, target.y);
 
 	  // if speed drops to 0
     // and we are not there, failure
-    if (*sod.speed == 0) {
+    if (*sod.speed == 0 or (currentLocation == lastLocation)) {
+      if (*sod.speed > 0) {
+        msg << "moving, but stuck, somehow.\n";
+      }
       if ((stagesLeft > 0 and distToTarget < TOLERANCE)
          or (stagesLeft == -1 and distToTarget <= precision)) {
         counter = 0;
-        counter_max = 1;// + (rand() %2 );//1 + (rand() % 4);
+        counter_max = MIN_COUNTER + (rand()%MAX_COUNTER_DIFF );
         msg << "using counter of " << counter_max << endl;
         // If you arrived, then check if 
         // there is another path segment to traverse
         if (stagesLeft >= 0) {
+          if (target == path.locs[stagesLeft+1]) {
+            // this means we reached a "real" waypoint (not one set by veering)
+            veerCount = 0;
+          }
           target.x = moveParams[0] = path.locs[stagesLeft].x;
           target.y = moveParams[1] = path.locs[stagesLeft].y;
           stagesLeft--;
@@ -129,19 +161,28 @@ int MoveFSM::update() {
         }
         else {
         // cout << "SETA: " << moveParams[0] << " " << moveParams[1] << endl;
+          msg << "failed, must repath\n";
           return FSM_FAILURE;
         }
       }
     }
     else if (distToTarget <= 1 and stagesLeft >= 0) {
+      counter = 0;
       cout << "MOVEFSM: in-motion dir change\n";
+      if (target == path.locs[stagesLeft+1]) {
+        // this means we reached a "real" waypoint (not one set by veering)
+        veerCount = 0;
+      }
+        
       target.x = moveParams[0] = path.locs[stagesLeft].x;
       target.y = moveParams[1] = path.locs[stagesLeft].y;
       stagesLeft--;
       gob->set_action("move", moveParams);
     }
-#ifdef RADAR
     else {
+      // moving, not at waypoint
+      counter = 0;
+#ifdef RADAR
       if (veerAhead((int)distToTarget)) {
         // may or may not change target
         moveParams[0] = target.x;
@@ -149,23 +190,22 @@ int MoveFSM::update() {
         gob->set_action("move", moveParams);
         msg << "pre-veering\n";
       }
-    }
 #endif
 
 #ifdef MAGNETISM    
-    else {
       cout << "MOVEFSM: Magnetized\n";
       if(getMoveVector()) {
         cout<<"MOVEFSM: MoveParams: "<<moveParams[0]<<","<<moveParams[1]<<"\n";
         gob->set_action("move",moveParams);
       }
-    }
 #endif
+    }
 
     break;
 
     
 	} // switch (state)
+  lastLocation = currentLocation;
  
   return FSM_RUNNING;
 }
@@ -258,30 +298,61 @@ void MoveFSM::veerRight() {
   // do not allow multiple rightward moves! better to just return failure
   // so the FSM is reinitted with a new path
 
-  if (stagesLeft+1 < path.locs.size() 
-      || target != path.locs[stagesLeft+1]) {
+  //if (stagesLeft+1 < path.locs.size() 
+   //   || target != path.locs[stagesLeft+1]) {
     // we've already veered, do nothing
-    msg << "already veered!\n";
-    return;
-  }
+   // msg << "already veered!\n";
+    if (veerCount > (rand()%MAX_VEERCOUNT_DIFF + MIN_VEERCOUNT)) {
+      msg << "already veered too much!\n";
+      return;
+    }
+  //}
  
   double deltaX = target.x - *gob->sod.x;
   double deltaY = target.y - *gob->sod.y;
  
   double headingAngle = atan2(deltaY, deltaX); // -pi to pi (deltaX == 0 ok)
-  headingAngle += (PI/2.0);
-
+  if (lastRight) {
+    headingAngle -= (PI/2.0);
+  }
+  else {
+    headingAngle += (PI/2.0);
+  }
+  
   int newX = *gob->sod.x + (int)(VEERWIDTH*cos(headingAngle));
   int newY = *gob->sod.y + (int)(VEERWIDTH*sin(headingAngle));
 
-  msg << "veer " << *gob->sod.x << "," << *gob->sod.y << "->"
-      << newX << "," << newY << " on the way to " 
-      << target.x << "," << target.y << endl;
-
   if (!collision(newX, newY)) {
+    msg << "trying right.\n";
+    if (target == path.locs[stagesLeft+1]) {
+      stagesLeft++;
+    }
+#ifdef ALTERNATE_VEERING
+    lastRight = not lastRight;
+#endif
+    msg << "veer " << *gob->sod.x << "," << *gob->sod.y << "->"
+        << newX << "," << newY << " on the way to " 
+        << target.x << "," << target.y << endl;
     target.x = newX;
     target.y = newY;
-    stagesLeft++;
+    veerCount++;
+  }
+  else {
+    // no ALTERNATE_VEERING!
+    headingAngle -= PI;
+    newX = *gob->sod.x + (int)(VEERWIDTH*cos(headingAngle));
+    newY = *gob->sod.y + (int)(VEERWIDTH*sin(headingAngle));
+
+    msg << "veering left (obstacles be damned).\n";
+    if (target == path.locs[stagesLeft+1]) {
+      stagesLeft++;
+    }
+    msg << "veer " << *gob->sod.x << "," << *gob->sod.y << "->"
+        << newX << "," << newY << " on the way to " 
+        << target.x << "," << target.y << endl;
+    target.x = newX;
+    target.y = newY;
+    veerCount++;
   }
 
   return;
@@ -298,11 +369,13 @@ bool MoveFSM::veerAhead(int distToTargetSq) {
 
   assert(stagesLeft+1 < path.locs.size());
 
-  if (target != path.locs[stagesLeft+1]) {
+  //if (target != path.locs[stagesLeft+1]) {
     // we've already veered, do nothing
-    msg << "already veered!\n";
-    return false;
-  }
+    if (veerCount > (rand()%MAX_VEERCOUNT_DIFF + MIN_VEERCOUNT)) {
+      msg << "already veered too much!\n";
+      return false;
+    }
+  //}
   if (distToTargetSq <= RADAR_FORWARD_DIST_SQ) {
     msg << "not veering, target is too close\n";
     return false;
@@ -319,14 +392,25 @@ bool MoveFSM::veerAhead(int distToTargetSq) {
 
   if (dynamicCollision(newX, newY)) {
     msg << "veerAhead sees an obstacle!\n";
-    headingAngle += RADAR_VEER_ANGLE;
-    newX = *gob->sod.x + (int)(RADAR_ANGLE_DIST*cos(RADAR_VEER_ANGLE));
-    newY = *gob->sod.y + (int)(RADAR_ANGLE_DIST*sin(RADAR_VEER_ANGLE));
+    if (lastRight) {
+      headingAngle -= RADAR_VEER_ANGLE;
+    }
+    else {
+      headingAngle += RADAR_VEER_ANGLE;
+    }
+    newX = *gob->sod.x + (int)(RADAR_ANGLE_DIST*cos(headingAngle));
+    newY = *gob->sod.y + (int)(RADAR_ANGLE_DIST*sin(headingAngle));
     if (!collision(newX, newY)) {
+      if (target == path.locs[stagesLeft+1]) {
+        stagesLeft++;
+      }
       target.x = newX;
       target.y = newY;
-      stagesLeft++;
       msg << "veering ahead!\n";
+      veerCount++;
+#ifdef ALTERNATE_VEERING
+      lastRight = not lastRight;
+#endif
       return true;
     }
     else {
@@ -395,7 +479,7 @@ bool MoveFSM::dynamicCollision(int x, int y) {
 bool MoveFSM::getMoveVector()
 {
  bool answer = false;
- // - Things don't change rapidly
+ /*// - Things don't change rapidly
  // - Return false is not enough time has passed
  //   - Need to figure out how much time is enough
  cout<<"MOVEFSM: Vec_count: "<<vec_count<<"\n";
@@ -442,7 +526,7 @@ bool MoveFSM::getMoveVector()
  
  moveParams[0] = loc.x;
  moveParams[1] = loc.y;
- 
+ */
  return answer;
 }
 

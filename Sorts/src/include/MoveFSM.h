@@ -5,6 +5,7 @@
 #include "Sorts.h"
 #include "Satellite.h"
 #include "Demo_SimpleTerrain.H"
+#include "general.h"
 
 class MoveFSM: public FSM {
  public:
@@ -20,6 +21,7 @@ class MoveFSM: public FSM {
   
 
   void stop();
+  coordinate currentLocation;
 
  private:
 	enum{IDLE,WARMUP,MOVING,ALREADY_THERE, TURNING};
@@ -32,7 +34,6 @@ class MoveFSM: public FSM {
   int runTime;
   double heading;
 
-  TerrainBase::Loc loc;
   TerrainBase::Loc target;
 
   TerrainBase::Path path;
@@ -43,6 +44,9 @@ class MoveFSM: public FSM {
 
   int vec_count;
   int precision;
+  bool lastRight;
+  int veerCount;
+  coordinate lastLocation;
 };
 
 #endif

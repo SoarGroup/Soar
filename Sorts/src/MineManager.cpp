@@ -11,10 +11,16 @@
 #define msg cout << "MM: "
 
 #define UNUSABLE_OPTIMALITY 1000
-#define WAYPOINT_PENALTY 10
+#define WAYPOINT_PENALTY 20
 #define NOLEARNING
 
+#define DROPOFF_COST UNUSABLE_OPTIMALITY
+
+#define PF_CACHE
+
 #define MAX_NEW_ROUTES 00
+
+//#define IMAGINARY_WORKERS_IN_PF
 
 MineManager::MineManager() {
   newRoutes = 0;
@@ -44,6 +50,7 @@ void MineManager::prepareRoutes(list<SoarGameObject*>& miners) {
   MiningRoute* best;
 
   msg << "preparing " << numAssignments << " routes.\n";
+  Sorts::terrainModule->removeDynamicObjs();
 
   // if this fails, not every route that was prepared last time was requested 
   // by the FSM.
@@ -60,6 +67,7 @@ void MineManager::prepareRoutes(list<SoarGameObject*>& miners) {
     
     assigned.push_back(false);
   }
+  Sorts::terrainModule->insertDynamicObjs();
   double minDistance;
   int minMinerIdx;
   SoarGameObject* minMinerPtr;
@@ -310,7 +318,7 @@ void MineManager::removeFromRoute(MiningRoute* route,
   route->fsms.erase(it);
   //route->mineStation->optimality--;
   //route->dropoffStation->optimality--;
-  route->dropoffStation->optimality = 0;
+  route->dropoffStation->optimality -= DROPOFF_COST;
   adjustOptimality(route);
 }
 
@@ -324,7 +332,9 @@ void MineManager::addCostToRoute(MiningRoute* route) {
   assert(route->mineStation != NULL);
   assert(route->dropoffStation != NULL);
   route->mineStation->optimality += UNUSABLE_OPTIMALITY;
-  route->dropoffStation->optimality += UNUSABLE_OPTIMALITY;
+  route->dropoffStation->optimality += DROPOFF_COST; //UNUSABLE_OPTIMALITY;
+  msg << "adding costs to: " << (int) route->mineStation << " and " 
+                             << (int) route->dropoffStation << endl;
 
   for (list<MiningRoute*>::iterator it = route->mineStation->routes.begin();
        it != route->mineStation->routes.end();
@@ -339,7 +349,7 @@ void MineManager::addCostToRoute(MiningRoute* route) {
 
   Sorts::satellite->addImaginaryWorker(route->miningLoc);
   Sorts::satellite->addImaginaryWorker(route->dropoffLoc);
-  //addImaginaryObstacle(route->miningLoc);
+  addImaginaryObstacle(route->miningLoc);
   //addImaginaryObstacle(route->dropoffLoc);
 }
 
@@ -435,6 +445,7 @@ MiningRoute* MineManager::getBestRoute() {
   msg << "top route is "
       << topRoute->dropoffLoc.x << "," << topRoute->dropoffLoc.y << " to "
       << topRoute->miningLoc.x << "," << topRoute->miningLoc.y << endl;
+  msg << "top route optimality: " << topRoute->optimality << endl;
 
   return topRoute;
 }
@@ -550,7 +561,9 @@ void MineManager::expandObjObj(MiningRoute* route) {
 
 void MineManager::expandEdgeEdge(MiningRoute* route) {
   msg << "expandEE\n";
-  
+
+  double pfCache[CC_EDGE_STATIONS/2 + 1];
+  for (int i=0; i<(CC_EDGE_STATIONS/2 +1); i++) {pfCache[i]=-1;}  
   // make 22 point-point routes from an edge-edge route
   // the existing locations in the route are the centers of the edges
   
@@ -633,7 +646,8 @@ void MineManager::expandEdgeEdge(MiningRoute* route) {
       newRoute->dropoffLoc = dropoffStation->location;
 
       if (dropoffStation->optimality >= UNUSABLE_OPTIMALITY) {
-        msg << "immediately rejecting EE route, station is full.\n";
+        msg << "immediately rejecting EE route, dstation "
+            << (int)dropoffStation << " is full.\n";
         delete newRoute;
         fullDO++;
         if (mineStation->optimality >= UNUSABLE_OPTIMALITY) {
@@ -641,22 +655,51 @@ void MineManager::expandEdgeEdge(MiningRoute* route) {
         }
       }
       else if (mineStation->optimality >= UNUSABLE_OPTIMALITY) {
-        msg << "immediately rejecting EE route, station is full.\n";
+        msg << "immediately rejecting EE route, mstation "
+            << (int)mineStation << " is full.\n";
         delete newRoute;
         fullM++;
-      }
-      else if (collision(dropoffStation)) {
-        msg << "immediately rejecting EE route: collision.\n";
-        delete newRoute;
       }
       else if (collision(mineStation)) {
         msg << "immediately rejecting EE route: collision.\n";
         delete newRoute;
       }
+      else if (collision(dropoffStation)) {
+        msg << "immediately rejecting EE route: collision.\n";
+        delete newRoute;
+      }
+      else if (Sorts::satellite->hasMiningCollision(mineStation->location, 
+                                                    true)) {
+        mineStation->optimality = UNUSABLE_OPTIMALITY;
+        msg << "immediately rejecting EE route: "
+            << "ms intersects too many minerals\n";
+      }
       else {
-
-        newRoute->pathlength = pathFindDist(newRoute->dropoffStation->location, 
-                                            newRoute->mineStation->location);
+#ifdef PF_CACHE
+        if (i == 0 and (j%2 == 0)) {
+          newRoute->pathlength 
+            = pathFindDist(newRoute->dropoffStation->location, 
+                           newRoute->mineStation->location);
+          pfCache[j/2] = newRoute->pathlength;
+        }
+        else {
+          if (pfCache[j/2] != -1) {
+            newRoute->pathlength = pfCache[j/2];
+          }
+          else {
+            // we skipped the station that was supposed to set this
+            newRoute->pathlength 
+              = pathFindDist(newRoute->dropoffStation->location, 
+                            newRoute->mineStation->location);
+            pfCache[j/2] = newRoute->pathlength;
+          }
+            
+        }
+#else
+        newRoute->pathlength 
+          = pathFindDist(newRoute->dropoffStation->location, 
+                         newRoute->mineStation->location);
+#endif  
 
         if (newRoute->pathlength == -1) {
           msg << "deleting unreachable point-point route\n";
@@ -825,7 +868,6 @@ double MineManager::pathFindDist(coordinate loc1, coordinate loc2) {
       prevLoc = path.locs[i];
     }
     msg << "accumulated " << (path.locs.size()-2)*WAYPOINT_PENALTY << " wpp\n";
-    result -= WAYPOINT_PENALTY;
   }
   msg << "raw pf dist: " << result << "\n";
   msg << "w/o radii " << result - CCENTER_MINRADIUS - MINERAL_RADIUS << endl;
@@ -856,7 +898,8 @@ Direction MineManager::getRelDirection(coordinate first, coordinate second) {
 }
 
 bool MineManager::collision(StationInfo* station) {
-  if (Sorts::satellite->hasMiningCollision(station->location)) {
+  if (Sorts::satellite->hasMiningCollision(station->location, false)) {
+    msg << "setting high opt: collision at " << (int)station << endl;
     station->optimality = UNUSABLE_OPTIMALITY;
     return true;
   }
@@ -893,9 +936,11 @@ bool MineManager::collision(StationInfo* station) {
 }
 
 void MineManager::addImaginaryObstacle(coordinate c) {
+#ifdef IMAGINARY_WORKERS_IN_PF
   // tell the pathfinder a worker is forever standing in that spot
   TerrainBase::Loc l;
   l.x = c.x;
   l.y = c.y;
-  //Sorts::terrainModule->insertImaginaryWorker(l);
+  Sorts::terrainModule->insertImaginaryWorker(l);
+#endif
 }

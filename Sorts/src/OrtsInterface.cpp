@@ -21,8 +21,11 @@ OrtsInterface::OrtsInterface(GameStateModule* _gsm)
   mapXDim = (gsm->get_game().get_gtiles_x())*(gsm->get_game().get_tile_points());
   mapYDim = (gsm->get_game().get_gtiles_y())*(gsm->get_game().get_tile_points());
   lastActionFrame = 0;
+  gold = 0;
   viewFrame = -1;
   skippedActions = 0;
+  PlayerInfo &pi = gsm->get_game().get_cplayer_info();
+  playerGameObj = (GameObj*)(pi.global_obj("player"));
 }
 
 bool OrtsInterface::handle_event(const Event& e) {
@@ -46,7 +49,7 @@ bool OrtsInterface::handle_event(const Event& e) {
       }
       cout << "event for frame " 
            << viewFrame << "/" << lastActionFrame << endl;
-      if (viewFrame == lastActionFrame and Sorts::catchup) {
+      if ((viewFrame -lastActionFrame) < 10 and Sorts::catchup) {
         msg << "caught up at frame " << viewFrame << endl;
       }
       if (Sorts::catchup) {
@@ -117,8 +120,6 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   
   SoarGameObject* newObj = new SoarGameObject(gameObj,
                                               friendly, world, id);
-  msg << "addCreated gob: " << (int)gameObj << " sgo: " << (int)newObj 
-      << " id: " << id << endl;
  
   // PerceptualGroupManager takes care of setting the object->group pointers
   Sorts::pGroupManager->makeNewGroup(newObj);
@@ -213,7 +214,8 @@ void OrtsInterface::updateSoarGameObjects() {
       requiredThisCycle.erase(sgo);
     }
     else if (gob == playerGameObj) {
-      updateSoarPlayerInfo();
+      //updateSoarPlayerInfo();
+      assert(false);
     }
   }
 
@@ -253,6 +255,7 @@ void OrtsInterface::updateSoarGameObjects() {
     (*it)->update();
   }
   
+   updateSoarPlayerInfo();
 }
 
 void OrtsInterface::updateMap() {
@@ -262,7 +265,10 @@ void OrtsInterface::updateMap() {
 
 void OrtsInterface::updateSoarPlayerInfo() {
   // only know get gold for now
-  Sorts::SoarIO->updatePlayerGold(playerGameObj->get_int("gold"));
+  if (gold != playerGameObj->get_int("minerals")) {
+    gold = playerGameObj->get_int("minerals");
+    Sorts::SoarIO->updatePlayerGold(gold);
+  }
 }
 
 OrtsInterface::~OrtsInterface() {

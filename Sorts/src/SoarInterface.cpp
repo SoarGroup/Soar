@@ -10,6 +10,8 @@
 
 #include "Game.H"
 
+#define msg cout << "SOARIO "
+
 using namespace std;
 
 SoarInterface::SoarInterface
@@ -479,6 +481,7 @@ void SoarInterface::getNewAttentionActions(list<AttentionAction>& newActions) {
 void SoarInterface::updatePlayerGold(int amount) {
   lockSoarMutex();
   stale = true;
+  msg << "updating mineral count: " << amount << endl;
   agent->Update(playerGoldWME, amount);
   unlockSoarMutex();
 }

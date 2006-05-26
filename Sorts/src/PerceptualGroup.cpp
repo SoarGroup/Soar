@@ -263,7 +263,7 @@ void PerceptualGroup::generateData() {
     stringStringWme.second = typeName;
   }
   soarData.stringStringPairs.push_back(stringStringWme);
-
+/*
 //// Threats and support
   Circle approx = bbox.getCircumscribingCircle();
   int numPlayers = Sorts::OrtsIO->getNumPlayers();
@@ -308,7 +308,7 @@ void PerceptualGroup::generateData() {
   stringIntWme.first = "support";
   stringIntWme.second = support;
   soarData.stringIntPairs.push_back(stringIntWme);
-
+*/ 
   // command info:
   // show last command, and as many status attributes as are applicable
   // if a group has one member succeed, fail, or still running, that 

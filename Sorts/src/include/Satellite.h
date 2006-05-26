@@ -32,7 +32,7 @@ public:
  
   // for MineManager
   void addImaginaryWorker(coordinate c);
-  bool hasMiningCollision(coordinate c);
+  bool hasMiningCollision(coordinate c, bool b);
 
   int refCount;
 

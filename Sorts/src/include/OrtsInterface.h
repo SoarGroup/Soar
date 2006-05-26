@@ -71,6 +71,7 @@ private:
   void mergeChanges(GameChanges& newChanges);
   
   int counter;
+  int gold;
   
   // player id of Soar
   int myPid;

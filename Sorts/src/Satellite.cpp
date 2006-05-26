@@ -5,6 +5,10 @@
 
 #define WORKER_RADIUS 3
 
+#define WORKER_CROWD_FACTOR 4
+#define CROWD_MAX_MINERALS 8
+#define CROWD_MAX_WORKERS 2
+
 #define msg cout << "Satellite.cpp: "
 
 inline int intDivC(int x, int y) {
@@ -216,14 +220,21 @@ void Satellite::getCollisions
   }
 }
 
-bool Satellite::hasMiningCollision(coordinate c) {
+bool Satellite::hasMiningCollision(coordinate c, bool checkCrowding) {
   int cells[9];
   bool check[9] = {false};
 
+  sint4 r, bigR;
+  if (checkCrowding) {
+    r = WORKER_CROWD_FACTOR*WORKER_RADIUS;
+  }
+  else {
+    r = WORKER_RADIUS;
+  }
+
+  bigR = r + tile_points;
   sint4 x = c.x;
   sint4 y = c.y;
-  sint4 r = WORKER_RADIUS;
-  sint4 bigR = WORKER_RADIUS + WORKER_RADIUS;
 
    //1. Figure out which cells surround the target location 
   cells[0] = (y - bigR) / tile_points * width + (x - bigR) / tile_points;
@@ -284,6 +295,7 @@ bool Satellite::hasMiningCollision(coordinate c) {
   sint4 objr;
   set<GameObj*>::iterator it;
   list<coordinate>::iterator iwit;
+  int crowdCount = 0;
   
   for(int i=0; i<9; i++) {
     if(check[i]) {
@@ -294,13 +306,27 @@ bool Satellite::hasMiningCollision(coordinate c) {
         if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
          < (r+objr) * (r+objr))  {
           //Inside the circle
-          if (((*it)->bp_name() != "worker") 
-              and
-              ((*it)->bp_name() != "sheep")) {
-            return true;
+          if (not checkCrowding) {
+            if (((*it)->bp_name() != "worker") 
+                and
+                ((*it)->bp_name() != "sheep")
+                and
+                ((*it)->bp_name() != "controlCenter")) {
+              msg << "mining collision with " << (*it)->bp_name() << endl;
+              return true;
+            }
           }
+          else if ((*it)->bp_name() == "mineral") {
+            crowdCount++;
+            if (crowdCount >= CROWD_MAX_MINERALS) {
+              msg << "too many minerals!\n";
+              return true;
+            }
+          }
+          
         }
       }
+      crowdCount = 0;
       for(iwit = ImaginaryWorkers[cells[i]].begin(); 
           iwit != ImaginaryWorkers[cells[i]].end(); 
           iwit++) {
@@ -308,10 +334,19 @@ bool Satellite::hasMiningCollision(coordinate c) {
         obj.y = (*iwit).y;
         objr = WORKER_RADIUS + 1;
         if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
-         < (r+objr) * (r+objr))  {
+        < (r+objr) * (r+objr))  {
           //Inside the circle
-          msg << "imaginary worker collision!\n";
-          return true;
+          if (not checkCrowding) {
+            msg << "imaginary worker collision!\n";
+            return true;
+          }
+          else {
+            crowdCount++;
+            if (crowdCount >= CROWD_MAX_WORKERS) {
+              msg << "too many imaginary workers!\n";
+              return true;
+            }
+          }
         }
       }
     }

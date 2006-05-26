@@ -11,7 +11,8 @@
 #include "PerceptualGroup.h"
 #include "InternalGroup.h"
 
-#define msg cout << "SGO: "
+#define msg cout << "SGO(" << (int)this << "): "
+#define PANIC_FRAMES 20
 
 using namespace std;
 
@@ -174,9 +175,9 @@ void SoarGameObject::update()
       else {
         motionlessFrames = 0;
       }
-      if (motionlessFrames > 50) {
-        msg << "WARNING: worker " << (int)this << " has been still for " 
-            << motionlessFrames << " frames\n";
+      if (motionlessFrames > PANIC_FRAMES) {
+        msg << "worker has been still for " 
+            << motionlessFrames << " frames, time to panic.\n";
         memory.top()->panic();
         motionlessFrames = 0;
       }

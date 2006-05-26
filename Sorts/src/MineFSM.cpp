@@ -7,6 +7,7 @@
 
 #define GIVEUPSPEED .66
 #define RAW_GIVEUP_THRESHOLD 200
+#define OPPORTUNISTIC_DROPOFF
 
 MineFSM::MineFSM(GameObj* go) 
          : FSM(go) {
@@ -31,13 +32,13 @@ int MineFSM::update() {
   // time since timer started
   msg << "timer: " << timer << endl;
 
-  if (timer > RAW_GIVEUP_THRESHOLD) {
+/*  if (timer > RAW_GIVEUP_THRESHOLD) {
     msg << "giving up before starting\n";
     newRoute = Sorts::mineManager->minerGivesUp(route, this);
     
     if (newRoute != NULL) {
       route = newRoute;
-      giveUpThreshold = (int)GIVEUPSPEED*route->pathlength;
+      giveUpThreshold = (int)(GIVEUPSPEED*route->pathlength);
       timer = 0;//Sorts::OrtsIO->getViewFrame(); 
       timed = false;// don't clock this leg, we're not on the new route
       state = IDLE;
@@ -56,7 +57,7 @@ int MineFSM::update() {
       state = IDLE;
     }
   }
-  
+  */
   
   if (gob->is_pending_action()) {
     cout << "MOVEFSM: action has not taken affect!\n";
@@ -153,7 +154,16 @@ int MineFSM::update() {
     case MOVING_TO_DROPOFF:
       moveStatus = moveFSM->update();
       if (moveStatus == FSM_RUNNING) {
-        // do nothing
+#ifdef OPPORTUNISTIC_DROPOFF
+        if (Sorts::OrtsIO->getOrtsDistance(route->cCenterInfo->cCenter->gob,
+                                           gob) <= 3) {
+          tempVec.clear();
+          tempVec.push_back(route->cCenterInfo->cCenter->getID());
+          gob->set_action("return_resources", tempVec);
+          state = SEND_MOVE_TO_MINE_COMMAND;
+          msg << "opportunistic dropoff!\n";
+        }
+#endif
       }
       else if (moveStatus == FSM_FAILURE) {
         // ??
@@ -247,7 +257,7 @@ void MineFSM::init(vector<sint4> p) {
   // returns null if manager wasn't prepared
   assert(route != NULL);
   
-  giveUpThreshold = (int)GIVEUPSPEED*route->pathlength;
+  giveUpThreshold = (int)(GIVEUPSPEED*route->pathlength);
   
   state = IDLE;
 
