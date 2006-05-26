@@ -34,32 +34,34 @@ Satellite::~Satellite()
 
 std::set<GameObj*> *Satellite::getObjectsInRegion(int x, int y)
 {
- return &Map[(y*width+x)/tile_points];
+ return &Map[y / tile_points * width + x / tile_points];
 }
 
 
 sint4 Satellite::addObject(GameObj *gob) {
   sint4 x = *(gob->sod.x);
   sint4 y = *(gob->sod.y);
-  if ((y*width+x)/tile_points >= Map.size()) {
+  int cell = y / tile_points * width + x / tile_points;
+  if (cell >= Map.size()) {
     msg << "ERROR: out of bounds, not adding: " << x << "," << y << endl;
     return -1; 
   }
   
-  Map[(y*width+x)/tile_points].insert(gob); 
+  Map[cell].insert(gob); 
   msg<<"Registered new Object: "<<gob->bp_name()<<"\n";
 
-  return static_cast<sint4>((y*width+x)/tile_points);
+  return cell;
 }
 
 void Satellite::addImaginaryWorker(coordinate c) {
   // no need for removal/update support
-  if ((c.y*width+c.x)/tile_points >= Map.size()) {
+  int cell = c.y / tile_points * width + c.x / tile_points;
+  if (cell >= Map.size()) {
     msg << "ERROR: out of bounds, not adding: " << c.x << "," << c.y << endl;
     return; 
   }
   
-  ImaginaryWorkers[(c.y*width+c.x)/tile_points].push_back(c); 
+  ImaginaryWorkers[cell].push_back(c); 
   msg << "Registered new imaginary worker.\n";
   msg << "iw loc: " << c.x << "," << c.y << endl;
 }
@@ -69,7 +71,7 @@ sint4 Satellite::updateObject(GameObj *gob, sint4 sat_loc)
  //return 0;
  sint4 x = *(gob->sod.x);
  sint4 y = *(gob->sod.y);
- sint4 new_sat_loc = static_cast<sint4>((y*width+x)/tile_points);
+ sint4 new_sat_loc = static_cast<sint4>(y / tile_points * width + x / tile_points);
 
  if(sat_loc != new_sat_loc)
  {
