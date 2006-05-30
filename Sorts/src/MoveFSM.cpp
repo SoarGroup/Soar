@@ -268,7 +268,7 @@ void MoveFSM::init(vector<sint4> p)
         << path.locs[i].x << ", "<< path.locs[i].y << endl;
   }*/
 
-  if (pathlength > -1) {
+  if (pathLength > -1) {
     usingIWWP = true;
     imaginaryWorkerWaypoint = path.locs[(path.locs.size()/2)];
     Sorts::terrainModule->insertImaginaryWorker(imaginaryWorkerWaypoint);

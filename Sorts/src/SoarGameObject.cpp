@@ -164,11 +164,11 @@ void SoarGameObject::update()
 
   // spit out a warning if the object sits still for a long time
   if (friendlyWorker) {
-    if (currentFrame != Sorts::OrtsIO->getActionFrame()) {
+    /*if (currentFrame != Sorts::OrtsIO->getActionFrame()) {
       motionlessFrames = 0;
       // don't count lag problems
-    }
-    else {
+    }*/
+    //else {
       if (getLocation() == lastLocation) {
         motionlessFrames++;//= (currentFrame - frameOfLastUpdate);
       }
@@ -181,7 +181,7 @@ void SoarGameObject::update()
         memory.top()->panic();
         motionlessFrames = 0;
       }
-    }
+    //}
     lastLocation = getLocation();
   }
   frameOfLastUpdate = currentFrame;

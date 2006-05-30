@@ -167,13 +167,22 @@ int MineFSM::update() {
       moveStatus = moveFSM->update();
       if (moveStatus == FSM_RUNNING) {
 #ifdef OPPORTUNISTIC_DROPOFF
-        if (Sorts::OrtsIO->getOrtsDistance(route->cCenterInfo->cCenter->gob,
-                                           gob) <= 3) {
+        int ccDist = Sorts::OrtsIO->getOrtsDistance(
+            route->cCenterInfo->cCenter->gob, gob);
+        if (ccDist <= 3) {
           tempVec.clear();
           tempVec.push_back(route->cCenterInfo->cCenter->getID());
           gob->set_action("return_resources", tempVec);
           state = SEND_MOVE_TO_MINE_COMMAND;
           msg << "opportunistic dropoff!\n";
+        }
+        else if (ccDist <= 5) {
+          tempVec.clear();
+          coordinate loc = route->cCenterInfo->cCenter->getLocation();
+          tempVec.push_back(loc.x);
+          tempVec.push_back(loc.y);
+          msg << "opportunistic veer-toward station.\n";
+          moveFSM->init(tempVec);
         }
 #endif
       }
