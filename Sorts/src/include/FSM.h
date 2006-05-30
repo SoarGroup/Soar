@@ -35,5 +35,6 @@ protected:
 #define FSM_SUCCESS 1
 #define FSM_FAILURE 2
 #define FSM_STUCK 3
+#define FSM_UNREACHABLE 4
 
 #endif

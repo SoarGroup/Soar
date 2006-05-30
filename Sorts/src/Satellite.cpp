@@ -52,7 +52,7 @@ sint4 Satellite::addObject(GameObj *gob) {
   }
   
   Map[cell].insert(gob); 
-  msg<<"Registered new Object: "<<gob->bp_name()<<"\n";
+  msg<<"Registered new Object: "<<gob->bp_name()<<" gob " << (int)gob << "\n";
 
   return cell;
 }
@@ -229,7 +229,7 @@ bool Satellite::hasMiningCollision(coordinate c, bool checkCrowding) {
     r = WORKER_CROWD_FACTOR*WORKER_RADIUS;
   }
   else {
-    r = WORKER_RADIUS;
+    r = WORKER_RADIUS + 1;
   }
 
   bigR = r + tile_points;
@@ -277,16 +277,16 @@ bool Satellite::hasMiningCollision(coordinate c, bool checkCrowding) {
   
   //Make sure we the check are inside the map
   //Left Side
-  if((x-r)<0)
+  if((x-bigR)<0)
     check[0] = check[3] = check[6] = false;
   //Right Side
-  if((x+r)>Sorts::OrtsIO->getMapXDim())
+  if((x+bigR)>Sorts::OrtsIO->getMapXDim())
     check[2] = check[5] = check[8] = false;
   //Top Side
-  if((y-r)<0)
+  if((y-bigR)<0)
     check[0] = check[1] = check[2] = false;
   //Bottom Side
-  if((y+r)>Sorts::OrtsIO->getMapYDim())
+  if((y+bigR)>Sorts::OrtsIO->getMapYDim())
     check[6] = check[7] = check[8] = false;
 
   
@@ -299,7 +299,9 @@ bool Satellite::hasMiningCollision(coordinate c, bool checkCrowding) {
   
   for(int i=0; i<9; i++) {
     if(check[i]) {
+      assert(cells[i] < Map.size());
       for(it = Map[cells[i]].begin(); it != Map[cells[i]].end(); it++) {
+        msg << "gob: " << (int)*it << endl;
         obj.x =  (*(*it)->sod.x);
         obj.y =  (*(*it)->sod.y);
         objr =  (*(*it)->sod.radius);

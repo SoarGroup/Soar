@@ -34,10 +34,12 @@ class MoveFSM: public FSM {
   int runTime;
   double heading;
 
+  void clearWPWorkers(); 
+
   TerrainBase::Loc target;
 
   TerrainBase::Path path;
-  int stagesLeft;
+  int nextWPIndex;
   Vector<sint4> moveParams;
   int counter;
   int counter_max;
@@ -47,6 +49,9 @@ class MoveFSM: public FSM {
   bool lastRight;
   int veerCount;
   coordinate lastLocation;
+
+  TerrainBase::Loc imaginaryWorkerWaypoint;
+  bool usingIWWP;
 };
 
 #endif

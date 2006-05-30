@@ -12,7 +12,7 @@
 #include "InternalGroup.h"
 
 #define msg cout << "SGO(" << (int)this << "): "
-#define PANIC_FRAMES 20
+#define PANIC_FRAMES 30
 
 using namespace std;
 

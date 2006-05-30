@@ -28,6 +28,8 @@ using namespace std;
 //#define MAGNETISM
 #define RADAR
 
+#define WAYPOINT_IMAGINARY_WORKERS
+  
 /*
   radar parameters used by the veerAhead function
   look in front of the gob, if the spot RADAR_FORWARD_DIST ahead
@@ -74,6 +76,8 @@ MoveFSM::MoveFSM(GameObj* go)
   lastRight = false;
   lastLocation.x = -1;
   lastLocation.y = -1;
+  nextWPIndex = -1;
+  usingIWWP = false;
 }
 
 MoveFSM::~MoveFSM() {
@@ -118,7 +122,7 @@ int MoveFSM::update() {
     }
     else {
       // no path was found, and we aren't close enough
-      return FSM_FAILURE;
+      return FSM_UNREACHABLE;
     }
     break;
 
@@ -133,27 +137,39 @@ int MoveFSM::update() {
       if (*sod.speed > 0) {
         msg << "moving, but stuck, somehow.\n";
       }
-      if ((stagesLeft >= 0 and distToTarget < TOLERANCE)
-         or (stagesLeft == -1 and distToTarget <= precision)) {
+      if ((nextWPIndex >= 0 and distToTarget < TOLERANCE)
+         or (nextWPIndex == -1 and distToTarget <= precision)) {
         counter = 0;
         counter_max = MIN_COUNTER + (rand()%MAX_COUNTER_DIFF );
         msg << "using counter of " << counter_max << endl;
         // If you arrived, then check if 
         // there is another path segment to traverse
-        if (stagesLeft >= 0) {
-          if (target == path.locs[stagesLeft]) {
+        if (nextWPIndex >= 0) {
+          if (nextWPIndex+1 < path.locs.size() and
+              target == path.locs[nextWPIndex+1]) {
             // this means we reached a "real" waypoint (not one set by veering)
             veerCount = 0;
           }
-          target.x = moveParams[0] = path.locs[stagesLeft].x;
-          target.y = moveParams[1] = path.locs[stagesLeft].y;
-          stagesLeft--;
+          if (usingIWWP and target == imaginaryWorkerWaypoint) {
+            Sorts::terrainModule->
+              removeImaginaryWorker(imaginaryWorkerWaypoint);
+            usingIWWP = false;
+          }
+          target.x = moveParams[0] = path.locs[nextWPIndex].x;
+          target.y = moveParams[1] = path.locs[nextWPIndex].y;
+          nextWPIndex--;
 	        gob->set_action("move", moveParams);
         }
         else { 
+          // nextWPIndex == -1: we must be there
           msg << "dist: " << distToTarget << endl;
           msg << "target: " << target.x << target.y << endl;
           // Otherwise, you are at your goal
+          if (usingIWWP and target == imaginaryWorkerWaypoint) {
+            Sorts::terrainModule->
+              removeImaginaryWorker(imaginaryWorkerWaypoint);
+            usingIWWP = false;
+          }
           return FSM_SUCCESS;     
         }
       }
@@ -170,21 +186,28 @@ int MoveFSM::update() {
         else {
         // cout << "SETA: " << moveParams[0] << " " << moveParams[1] << endl;
           msg << "failed, must repath\n";
+          clearWPWorkers();
           return FSM_FAILURE;
         }
       }
     }
-    else if (distToTarget <= TOLERANCE and stagesLeft >= 0) {
+    else if (distToTarget <= TOLERANCE and nextWPIndex >= 0) {
       counter = 0;
       cout << "MOVEFSM: in-motion dir change\n";
-      if (target == path.locs[stagesLeft]) {
+      if (nextWPIndex+1 < path.locs.size() and
+          target == path.locs[nextWPIndex+1]) {
         // this means we reached a "real" waypoint (not one set by veering)
         veerCount = 0;
+        if (usingIWWP and target == imaginaryWorkerWaypoint) {
+          Sorts::terrainModule->
+            removeImaginaryWorker(imaginaryWorkerWaypoint);
+          usingIWWP = false;
+        }
       }
         
-      target.x = moveParams[0] = path.locs[stagesLeft].x;
-      target.y = moveParams[1] = path.locs[stagesLeft].y;
-      stagesLeft--;
+      target.x = moveParams[0] = path.locs[nextWPIndex].x;
+      target.y = moveParams[1] = path.locs[nextWPIndex].y;
+      nextWPIndex--;
       gob->set_action("move", moveParams);
     }
     else {
@@ -225,6 +248,7 @@ void MoveFSM::init(vector<sint4> p)
   TerrainBase::Loc l;
   l.x = p[0];
   l.y = p[1];
+  int pathLength;
  
   if (p.size() == 3) {
     // third parameter specifies how close to the target we must get
@@ -232,19 +256,30 @@ void MoveFSM::init(vector<sint4> p)
     precision *= precision; // since we use distance squared
   }
 
+  clearWPWorkers();
   Sorts::terrainModule->findPath(gob, l, path);
+  pathLength = path.locs.size();
   msg << "initialized. Path " << *gob->sod.x << "," << *gob->sod.y << "->"
       << l.x << "," << l.y << endl;
-  for (unsigned int i=0; i<path.locs.size(); i++) {
+  
+  /*for (unsigned int i=0; i<pathLength; i++) {
+    Sorts::terrainModule->insertImaginaryWorker(path.locs[i]);
     msg << "loc " << i << " " 
         << path.locs[i].x << ", "<< path.locs[i].y << endl;
+  }*/
+
+  if (pathlength > -1) {
+    usingIWWP = true;
+    imaginaryWorkerWaypoint = path.locs[(path.locs.size()/2)];
+    Sorts::terrainModule->insertImaginaryWorker(imaginaryWorkerWaypoint);
   }
-  stagesLeft = path.locs.size()-1;
+  
+  nextWPIndex = path.locs.size()-1;
   moveParams.clear();
   if (path.locs.size() > 0) {
-    moveParams.push_back(path.locs[stagesLeft].x);
-    moveParams.push_back(path.locs[stagesLeft].y);
-    stagesLeft--;
+    moveParams.push_back(path.locs[nextWPIndex].x);
+    moveParams.push_back(path.locs[nextWPIndex].y);
+    nextWPIndex--;
     state = IDLE;
     target.x = moveParams[0];
     target.y = moveParams[1];
@@ -263,7 +298,8 @@ void MoveFSM::initNoPath(vector<sint4> p)
   TerrainBase::Loc l;
   l.x = p[0];
   l.y = p[1];
- 
+
+  clearWPWorkers();
   if (p.size() == 3) {
     // third parameter specifies how close to the target we must get
     precision = p[2];
@@ -272,12 +308,14 @@ void MoveFSM::initNoPath(vector<sint4> p)
 
   path.locs.clear();
   path.locs.push_back(l);
-  stagesLeft = path.locs.size()-1;
+ 
+  usingIWWP = false;
+  nextWPIndex = path.locs.size()-1;
   moveParams.clear();
   if (path.locs.size() > 0) {
-    moveParams.push_back(path.locs[stagesLeft].x);
-    moveParams.push_back(path.locs[stagesLeft].y);
-    stagesLeft--;
+    moveParams.push_back(path.locs[nextWPIndex].x);
+    moveParams.push_back(path.locs[nextWPIndex].y);
+    nextWPIndex--;
     state = IDLE;
     target.x = moveParams[0];
     target.y = moveParams[1];
@@ -296,18 +334,36 @@ void MoveFSM::stop() {
   params.push_back(0);
   gob->set_action("move", params);
   state = ALREADY_THERE;
+  clearWPWorkers();
+}
+
+void MoveFSM::clearWPWorkers() {
+/*  if (nextWPIndex+1 < path.locs.size() and
+      nextWPIndex >= 0 and
+      target == path.locs[nextWPIndex+1]) {
+    Sorts::terrainModule->removeImaginaryWorker(target);
+  }
+  for (int i = nextWPIndex; i >=0; i--) {
+    Sorts::terrainModule->removeImaginaryWorker(path.locs[i]);
+  }
+  nextWPIndex = -1;
+  */
+  if (usingIWWP) {
+    Sorts::terrainModule->removeImaginaryWorker(imaginaryWorkerWaypoint);
+    usingIWWP = false;
+  }
 }
 
 void MoveFSM::veerRight() {
   // if there is open space to the right,
   // make that the new target.
-  // if that happens, increment stagesLeft so the current waypoint
+  // if that happens, increment nextWPIndex so the current waypoint
   // is moved to after we get to the right
   // do not allow multiple rightward moves! better to just return failure
   // so the FSM is reinitted with a new path
 
-  //if (stagesLeft+1 < path.locs.size() 
-   //   || target != path.locs[stagesLeft+1]) {
+  //if (nextWPIndex+1 < path.locs.size() 
+   //   || target != path.locs[nextWPIndex+1]) {
     // we've already veered, do nothing
    // msg << "already veered!\n";
     if (veerCount > (rand()%MAX_VEERCOUNT_DIFF + MIN_VEERCOUNT)) {
@@ -333,9 +389,9 @@ void MoveFSM::veerRight() {
 
   if (!collision(newX, newY)) {
     msg << "trying right.\n";
-    if ((stagesLeft+1 < path.locs.size()) and
-        target == path.locs[stagesLeft+1]) {
-      stagesLeft++;
+    if ((nextWPIndex+1 < path.locs.size()) and
+        target == path.locs[nextWPIndex+1]) {
+      nextWPIndex++;
     }
     msg << "veer " << *gob->sod.x << "," << *gob->sod.y << "->"
         << newX << "," << newY << " on the way to " 
@@ -355,8 +411,9 @@ void MoveFSM::veerRight() {
     newY = *gob->sod.y + (int)(width*sin(headingAngle));
 
     msg << "veering left (obstacles be damned).\n";
-    if (target == path.locs[stagesLeft+1]) {
-      stagesLeft++;
+    if ((nextWPIndex+1 < path.locs.size()) and
+        target == path.locs[nextWPIndex+1]) {
+      nextWPIndex++;
     }
     msg << "veer " << *gob->sod.x << "," << *gob->sod.y << "->"
         << newX << "," << newY << " on the way to " 
@@ -376,12 +433,12 @@ bool MoveFSM::veerAhead(int distToTargetSq) {
   // estimate where we will be next cycle
   // if there is something there, try the space to the right
   // make that the new target if it is clear
-  // if that happens, increment stagesLeft so the current waypoint
+  // if that happens, increment nextWPIndex so the current waypoint
   // is moved to after we get to the right
   // do not allow multiple rightward moves! better to just return failure
   // so the FSM is reinitted with a new path
 
-  //if (target != path.locs[stagesLeft+1]) {
+  //if (target != path.locs[nextWPIndex+1]) {
     // we've already veered, do nothing
     if (veerCount > (rand()%MAX_VEERCOUNT_DIFF + MIN_VEERCOUNT)) {
       msg << "already veered too much!\n";
@@ -413,9 +470,9 @@ bool MoveFSM::veerAhead(int distToTargetSq) {
     newX = *gob->sod.x + (int)(RADAR_ANGLE_DIST*cos(headingAngle));
     newY = *gob->sod.y + (int)(RADAR_ANGLE_DIST*sin(headingAngle));
     if (!collision(newX, newY)) {
-      if ((stagesLeft+1 < path.locs.size()) and 
-           target == path.locs[stagesLeft+1]) {
-        stagesLeft++;
+      if ((nextWPIndex+1 < path.locs.size()) and 
+           target == path.locs[nextWPIndex+1]) {
+        nextWPIndex++;
       }
       target.x = newX;
       target.y = newY;

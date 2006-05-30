@@ -151,6 +151,8 @@ class MineManager {
     
   private:
     int newRoutes;
+    int maxX;
+    int maxY;
     // store minerals here, for quick lookup when they disappear
     // MineralInfo connects minerals to routes
     set<MineralInfo*, ltMineralInfoPtr> minerals;

@@ -19,12 +19,14 @@
 
 #define PF_CACHE
 
-#define MAX_NEW_ROUTES 00
+#define MAX_NEW_ROUTES 2000
 
 //#define IMAGINARY_WORKERS_IN_PF
 
 MineManager::MineManager() {
   newRoutes = 0;
+  maxX = -1;
+  maxY = -1; // initted in prepareRoutes
 }
 
 MineManager::~MineManager() {
@@ -46,6 +48,8 @@ MineManager::~MineManager() {
 }
 
 void MineManager::prepareRoutes(list<SoarGameObject*>& miners) {
+  maxX = Sorts::OrtsIO->getMapXDim();
+  maxY = Sorts::OrtsIO->getMapYDim();
   list<MiningRoute*> bestRoutes;
   int numAssignments = miners.size();
   MiningRoute* best;
@@ -119,7 +123,7 @@ MiningRoute* MineManager::reportMiningResults(int time, MiningRoute* route,
 #endif
   if (time > route->pathlength) {
     msg << "choosing new route.\n";
-    route->mineStation->optimality = UNUSABLE_OPTIMALITY;
+    route->mineStation->optimality += UNUSABLE_OPTIMALITY;
     removeFromRoute(route, fsm);
     adjustOptimality(route);
     MiningRoute* best = getBestRoute();
@@ -134,7 +138,7 @@ MiningRoute* MineManager::reportMiningResults(int time, MiningRoute* route,
 MiningRoute* MineManager::minerGivesUp(MiningRoute* route, MineFSM* fsm) {
   msg << "choosing new route.\n";
   if (newRoutes++ < MAX_NEW_ROUTES) {
-    route->mineStation->optimality = UNUSABLE_OPTIMALITY;
+    route->mineStation->optimality += UNUSABLE_OPTIMALITY;
     removeFromRoute(route, fsm);
     adjustOptimality(route);
     MiningRoute* best = getBestRoute();
@@ -554,8 +558,21 @@ void MineManager::expandObjObj(MiningRoute* route) {
         // will this cause lots of inefficiency?
       }
       else {
-        newRoute->pathlength = pathFindDist(newRoute->miningLoc,
-                                            newRoute->dropoffLoc);
+        if (newRoute->miningLoc.x > 0 &&
+            newRoute->miningLoc.y > 0 &&
+            newRoute->dropoffLoc.x > 0 &&
+            newRoute->dropoffLoc.y > 0 &&
+            newRoute->miningLoc.x < maxX &&
+            newRoute->miningLoc.y < maxY &&
+            newRoute->dropoffLoc.x < maxX &&
+            newRoute->dropoffLoc.y < maxY) {
+          newRoute->pathlength = pathFindDist(newRoute->miningLoc,
+                                              newRoute->dropoffLoc);
+        }
+        else {
+          newRoute->pathlength = -1;
+        }
+        
         if (newRoute->pathlength == -1) {
           msg << "deleting unreachable edge-edge route\n";
           msg << "from " << newRoute->dropoffLoc << " on " 
@@ -780,12 +797,13 @@ void MineManager::expandSIU(MiningRoute* route) {
     routes.erase(route);
     route->valid = false;
   }
-          
-  routes.erase(route);
-  calculateOptimality(route);
-  msg << "route back from the dead: " << route->optimality << endl;
-  msg << "mineral: " << (int(route->mineralInfo->mineral)) << endl;
-  routes.insert(route);
+  else {
+    routes.erase(route);
+    calculateOptimality(route);
+    msg << "route back from the dead: " << route->optimality << endl;
+    msg << "mineral: " << (int(route->mineralInfo->mineral)) << endl;
+    routes.insert(route);
+  }
 } 
 
 void MineManager::allocateMiningStations(MineralInfo* mi, Direction d) {
@@ -793,7 +811,7 @@ void MineManager::allocateMiningStations(MineralInfo* mi, Direction d) {
   coordinate mineralCenter = mi->mineral->getLocation();
   
   assert (MINERAL_EDGE_STATIONS == 2);
-  for (int i=0; i<2; i++) {
+  for (int i=0; i<MINERAL_EDGE_STATIONS; i++) {
     newStation = new StationInfo;
     allStations.push_back(newStation);
     switch (d) {
