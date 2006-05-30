@@ -34,7 +34,13 @@ enum RouteHeuristicStage {
   // then, if it still appears best, the edge-edge routes need to be expanded
   // to ~20 point-to-point route, with
   // the actual pathfind distance between the points
-  PF_DIST
+  PF_DIST,
+
+  // when an edge-edge route is expanded, we can save lots of time if we
+  // don't pf new routes where a station is in use, since we don't want to 
+  // double up on routes. but when workers leave routes, stations open up
+  // and the affected routes should be reconsidered
+  STATION_IN_USE
 };
 
 #define CCENTER_MAXRADIUS 44
@@ -178,6 +184,7 @@ class MineManager {
     void expandSLD(MiningRoute* route);
     void expandObjObj(MiningRoute* route);
     void expandEdgeEdge(MiningRoute* route);
+    void expandSIU(MiningRoute* route);
     double pathFindDist(SoarGameObject* obj1, SoarGameObject* obj2);
     double pathFindDist(coordinate loc1, coordinate loc2);
     void allocateMiningStations(MineralInfo* m, Direction d);

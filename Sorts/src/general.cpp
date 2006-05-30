@@ -48,3 +48,9 @@ double coordDistance(coordinate c1, coordinate c2) {
 bool operator ==(const coordinate& c1, const coordinate& c2) {
   return ((c1.x == c2.x) && (c1.y == c2.y));
 }
+
+ostream& operator << (ostream& os, const coordinate& c) {
+   return os<< c.x << "," << c.y <<endl;
+}
+
+

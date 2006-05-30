@@ -6,7 +6,7 @@
 using namespace std;
 
 #define msg cout << "MOVEFSM(" << (int)this << "): "
-#define TOLERANCE 4 // for waypoints, squared
+#define TOLERANCE 9 // for waypoints, squared
 #define VEERWIDTH 10  // radius of worker == 3
 
 
@@ -14,10 +14,10 @@ using namespace std;
 // veercount: number of veers allowed in a row
 // if exceeded, veering does nothing (keep pushing ahead)
 #define MIN_VEERCOUNT 1 
-#define MAX_VEERCOUNT_DIFF 1 //  min < value < min+maxdiff
+#define MAX_VEERCOUNT_DIFF 4 //  min < value < min+maxdiff
 
 // define to veer right, left, right .. etc (vs. always right)
-//#define ALTERNATE_VEERING
+#define ALTERNATE_VEERING
 
 // counter: number of consecutive in-place veers before FSM_FAILURE returned
 // i.e. the max number of cycles to allow zero speed before giving up
@@ -92,6 +92,14 @@ int MoveFSM::update() {
     return FSM_RUNNING;
   }
 
+  // FIXME
+  if (rand()% 2) {
+    lastRight = true;
+  }
+  else {
+    lastRight = false;
+  }
+  
  switch(state) {
 
 	case IDLE:
@@ -125,7 +133,7 @@ int MoveFSM::update() {
       if (*sod.speed > 0) {
         msg << "moving, but stuck, somehow.\n";
       }
-      if ((stagesLeft > 0 and distToTarget < TOLERANCE)
+      if ((stagesLeft >= 0 and distToTarget < TOLERANCE)
          or (stagesLeft == -1 and distToTarget <= precision)) {
         counter = 0;
         counter_max = MIN_COUNTER + (rand()%MAX_COUNTER_DIFF );
@@ -133,7 +141,7 @@ int MoveFSM::update() {
         // If you arrived, then check if 
         // there is another path segment to traverse
         if (stagesLeft >= 0) {
-          if (target == path.locs[stagesLeft+1]) {
+          if (target == path.locs[stagesLeft]) {
             // this means we reached a "real" waypoint (not one set by veering)
             veerCount = 0;
           }
@@ -166,10 +174,10 @@ int MoveFSM::update() {
         }
       }
     }
-    else if (distToTarget <= 1 and stagesLeft >= 0) {
+    else if (distToTarget <= TOLERANCE and stagesLeft >= 0) {
       counter = 0;
       cout << "MOVEFSM: in-motion dir change\n";
-      if (target == path.locs[stagesLeft+1]) {
+      if (target == path.locs[stagesLeft]) {
         // this means we reached a "real" waypoint (not one set by veering)
         veerCount = 0;
       }
@@ -318,18 +326,17 @@ void MoveFSM::veerRight() {
   else {
     headingAngle += (PI/2.0);
   }
-  
-  int newX = *gob->sod.x + (int)(VEERWIDTH*cos(headingAngle));
-  int newY = *gob->sod.y + (int)(VEERWIDTH*sin(headingAngle));
+ 
+  int width = VEERWIDTH + rand()%8;
+  int newX = *gob->sod.x + (int)(width*cos(headingAngle));
+  int newY = *gob->sod.y + (int)(width*sin(headingAngle));
 
   if (!collision(newX, newY)) {
     msg << "trying right.\n";
-    if (target == path.locs[stagesLeft+1]) {
+    if ((stagesLeft+1 < path.locs.size()) and
+        target == path.locs[stagesLeft+1]) {
       stagesLeft++;
     }
-#ifdef ALTERNATE_VEERING
-    lastRight = not lastRight;
-#endif
     msg << "veer " << *gob->sod.x << "," << *gob->sod.y << "->"
         << newX << "," << newY << " on the way to " 
         << target.x << "," << target.y << endl;
@@ -338,10 +345,14 @@ void MoveFSM::veerRight() {
     veerCount++;
   }
   else {
-    // no ALTERNATE_VEERING!
-    headingAngle -= PI;
-    newX = *gob->sod.x + (int)(VEERWIDTH*cos(headingAngle));
-    newY = *gob->sod.y + (int)(VEERWIDTH*sin(headingAngle));
+    if (lastRight) {
+      headingAngle += PI;
+    }
+    else {
+      headingAngle -= PI;  
+    }
+    newX = *gob->sod.x + (int)(width*cos(headingAngle));
+    newY = *gob->sod.y + (int)(width*sin(headingAngle));
 
     msg << "veering left (obstacles be damned).\n";
     if (target == path.locs[stagesLeft+1]) {
@@ -355,6 +366,9 @@ void MoveFSM::veerRight() {
     veerCount++;
   }
 
+#ifdef ALTERNATE_VEERING
+    lastRight = not lastRight;
+#endif
   return;
 }
 
@@ -366,8 +380,6 @@ bool MoveFSM::veerAhead(int distToTargetSq) {
   // is moved to after we get to the right
   // do not allow multiple rightward moves! better to just return failure
   // so the FSM is reinitted with a new path
-
-  assert(stagesLeft+1 < path.locs.size());
 
   //if (target != path.locs[stagesLeft+1]) {
     // we've already veered, do nothing
@@ -401,7 +413,8 @@ bool MoveFSM::veerAhead(int distToTargetSq) {
     newX = *gob->sod.x + (int)(RADAR_ANGLE_DIST*cos(headingAngle));
     newY = *gob->sod.y + (int)(RADAR_ANGLE_DIST*sin(headingAngle));
     if (!collision(newX, newY)) {
-      if (target == path.locs[stagesLeft+1]) {
+      if ((stagesLeft+1 < path.locs.size()) and 
+           target == path.locs[stagesLeft+1]) {
         stagesLeft++;
       }
       target.x = newX;
