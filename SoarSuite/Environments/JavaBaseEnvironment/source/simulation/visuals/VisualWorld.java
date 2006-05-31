@@ -9,7 +9,7 @@ import utilities.*;
 import simulation.*;
 
 public class VisualWorld extends Canvas {
-	protected static HashMap m_EntityColors;
+	public static HashMap m_EntityColors;
 	
 	public static void remapEntityColors(WorldEntity[] entities) {
 		if (entities == null) {
