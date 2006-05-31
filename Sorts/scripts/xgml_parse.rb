@@ -67,7 +67,7 @@ graph.each_element("section[@name='edge']") { |edgeElem|
 
   isStartCondition = false
   edgeElem.each_element("section[@name='LabelGraphics']") { |edgeLabel|
-    edgeLabel.each_element("attribute[@key='text']") { |label|
+    edgeLabel.each_element("attribute[@key='text']") { |label| 
       if label.text == "start"
         isStartCondition = true
       end
@@ -149,9 +149,9 @@ sp {plan-memory*apply*#{opName}
 -->
    (<rb> ^task <rt>)
    (<rt> ^name #{t.name}
-         ^instance-of #{t.instance_of})
+         ^instance-of #{t.instance_of})}
 EOF
-
+  end
   opId += 1
 }
 
@@ -164,9 +164,8 @@ retrievals.each_pair { |src, adjList|
     opName = "#{src.name}-trigger-#{tgt.name}-#{opId}"
 
     depString = ""
-    deps[tgt].each {|d| 
-      if (d[1])
-        # start dependency
+    deps[tgt].each {|d|
+      if d[1] # start condition
         depString.concat(" ^start-dep #{d[0].name}")
       else
         depString.concat(" ^dep #{d[0].name}")
@@ -196,8 +195,8 @@ sp {plan-memory*propose*#{opName}
    (<o> ^name #{opName})}
 EOF
 
-  if paramString.size > 0
-    puts <<EOF
+    if paramString.size > 0
+      puts <<EOF
 sp {plan-memory*apply*#{opName}
    (state <s> ^name sorts
               ^operator <o>
@@ -209,8 +208,8 @@ sp {plan-memory*apply*#{opName}
          ^instance-of #{tgt.instance_of}
          #{depString})}
 EOF
-  else
-    puts <<EOF
+    else
+      puts <<EOF
 sp {plan-memory*apply*#{opName}
    (state <s> ^name sorts
               ^operator <o>
@@ -224,7 +223,7 @@ sp {plan-memory*apply*#{opName}
          #{depString})
    (<p> #{paramString})}
 EOF
-  end
+    end
 
     opId += 1
   }
