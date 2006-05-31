@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="/SoarLibrary/bin/sml.jar"/>
-	<classpathentry exported="true" kind="lib" path="/SoarLibrary/bin/swt.jar"/>
+	<classpathentry exported="true" sourcepath="C:/eclipse-SDK-3.1.2-win32/eclipse/src.zip" kind="lib" path="/SoarLibrary/bin/swt.jar"/>
 	<classpathentry kind="src" path="source"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

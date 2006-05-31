@@ -35,7 +35,11 @@ public class WorldEntity {
 		m_ColorString = color;
 		m_Productions = productions;
 
-		m_Name = m_Agent.GetAgentName();
+		if (m_Agent == null) {
+			m_Name = m_Productions;
+		} else {
+			m_Name = m_Agent.GetAgentName();
+		}
 		m_Logger.log("Created agent: " + m_Name);
 	}
 	
@@ -44,6 +48,9 @@ public class WorldEntity {
 	}
 	
 	public void reloadProductions() {
+		if (m_Agent == null) {
+			return;
+		}
 		m_Agent.LoadProductions(m_Productions, true);
 	}
 	
@@ -68,6 +75,9 @@ public class WorldEntity {
 	}
 	
 	public void initSoar() {
+		if (m_Agent == null) {
+			return;
+		}
 		m_Agent.InitSoar();
 	}
 	
