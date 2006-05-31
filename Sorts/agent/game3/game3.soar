@@ -1,0 +1,3 @@
+pushd game3
+source game3_source.soar
+popd
