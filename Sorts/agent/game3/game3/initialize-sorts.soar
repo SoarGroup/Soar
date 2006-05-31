@@ -11,7 +11,15 @@ sp {apply*initialize-sorts
    (<op> ^name initialize-sorts)
 -->
    (<s> ^name sorts
-        ^grouping-level small-groups)
+        ^grouping-level small-groups
+        ^planning <pl>
+        ^opportunity-task-buffer <otb>
+        ^group-memory <gm>)
+   (<pl> ^retrieval-buffer <rb>
+         ^execution-buffer <eb>
+         ^completed <c>)
+   (<gm> ^mine <mg>
+         ^world <wg>)
 }
 
 sp {propose*start-build-workers

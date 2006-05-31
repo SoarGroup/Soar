@@ -9,5 +9,7 @@ source apply-basic-actions.soar
 source basic.soar
 source build-barracks.soar
 source miner-assignment.soar
+source plan-one.soar
+source planning.soar
 source apply-vision-commands.soar
 source initialize-sorts.soar
