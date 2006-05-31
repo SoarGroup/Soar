@@ -84,11 +84,13 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 						initialNames[j] = agent.getAttribute(kParamName);
 						initialProductions[j] = agent.getAttribute(kParamProductions);
 						
-						// Next two lines kind of a hack.  Convert / to \\ on windows, and vice versa
-						if (System.getProperty("file.separator").equalsIgnoreCase("\\")) {
-							initialProductions[j] = initialProductions[j].replaceAll("/", "\\\\");
-						} else if (System.getProperty("file.separator").equalsIgnoreCase("/")) {
-							initialProductions[j] = initialProductions[j].replaceAll("\\\\", "/");
+						if (initialProductions[j] != null) { 
+							// Next two lines kind of a hack.  Convert / to \\ on windows, and vice versa
+							if (System.getProperty("file.separator").equalsIgnoreCase("\\")) {
+								initialProductions[j] = initialProductions[j].replaceAll("/", "\\\\");
+							} else if (System.getProperty("file.separator").equalsIgnoreCase("/")) {
+								initialProductions[j] = initialProductions[j].replaceAll("\\\\", "/");
+							}
 						}
 						
 						initialColors[j] = agent.getAttribute(kParamColor);
@@ -120,12 +122,18 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		setWorldManager(m_World);
 		resetSimulation(false);
 		
-		// add initial eaters
+		// add initial tanks
 		if (initialNames != null) {
 			for (int i = 0; i < initialNames.length; ++i) {
-				createEntity(initialNames[i], getAgentPath() + initialProductions[i], 
-						initialColors[i], initialLocations[i], initialFacing[i],
-						initialEnergy[i], initialHealth[i], initialMissiles[i]);
+				if (initialProductions[i] != null) {
+					createEntity(initialNames[i], getAgentPath() + initialProductions[i], 
+							initialColors[i], initialLocations[i], initialFacing[i],
+							initialEnergy[i], initialHealth[i], initialMissiles[i]);
+				} else {
+					createEntity(initialNames[i], null, 
+							initialColors[i], initialLocations[i], initialFacing[i],
+							initialEnergy[i], initialHealth[i], initialMissiles[i]);
+				}
 			}
 		}
 		
