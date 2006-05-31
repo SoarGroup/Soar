@@ -26,6 +26,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	private static final String kDefaultMap = "default.tmap";
 		
 	private TankSoarWorld m_World;
+	private MoveInfo m_HumanInput;
 
 	public TankSoarSimulation(String settingsFile, boolean quiet, boolean noRandom) {		
 		super(noRandom, true);
@@ -138,10 +139,22 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		super.fireNotificationMessage(notifyMessage);
 	}
 	
+	void readHumanInput() {
+		super.fireSimulationEvent(SimulationListener.kHumanInputEvent);
+	}
+	
+	MoveInfo getHumanInput() {
+		return m_HumanInput;
+	}
+	
+	public void setHumanInput(MoveInfo humanInput) {
+		m_HumanInput = humanInput;
+	}
+	
     public void createEntity(String name, String productions, String color, MapPoint location, String facing,
     		int energy, int health, int missiles) {
-    	if (name == null || productions == null) {
-    		fireErrorMessage("Failed to create agent, name, productions or color null.");
+    	if (name == null || color == null) {
+    		fireErrorMessage("Failed to create agent, name or color null.");
     		return;
     	}
     	
@@ -151,10 +164,17 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
     		}
     	}
     	
-		Agent agent = createAgent(name, productions);
-		if (agent == null) {
-			return;
-		}
+    	Agent agent = null;
+    	if (productions == null) {
+    		// Human agent
+    		productions = name;
+    	} else {
+			agent = createAgent(name, productions);
+			if (agent == null) {
+	    		fireErrorMessage("Failed to create agent.");
+				return;
+			}
+    	}
 		m_World.createTank(agent, productions, color, location, facing, energy, health, missiles);
 		spawnDebugger(name);		
 		fireSimulationEvent(SimulationListener.kAgentCreatedEvent);   	

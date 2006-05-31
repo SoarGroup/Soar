@@ -536,7 +536,12 @@ public class TankSoarWorld extends World implements WorldManager {
 		
 		// Read Tank output links
 		for (int i = 0; i < m_Tanks.length; ++i) {
-			m_Tanks[i].readOutputLink();
+			if (m_Tanks[i].getAgent() != null) {
+				m_Tanks[i].readOutputLink();
+			} else {
+				m_Simulation.readHumanInput();
+				m_Tanks[i].humanInput(m_Simulation.getHumanInput());
+			}
 		}		
 
 		// Move all Missiles

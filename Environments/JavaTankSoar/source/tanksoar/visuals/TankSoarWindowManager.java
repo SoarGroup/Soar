@@ -193,6 +193,11 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 			m_AgentDisplay.agentEvent();
 			return;
 			
+		case SimulationListener.kHumanInputEvent:
+			HumanInputWindow inputWindow = new HumanInputWindow(m_Shell, m_Simulation);
+			m_Simulation.setHumanInput(inputWindow.getMove());
+			return;
+			
 		default:
 			m_Logger.log("Invalid event type received: " + new Integer(type));
 			return;

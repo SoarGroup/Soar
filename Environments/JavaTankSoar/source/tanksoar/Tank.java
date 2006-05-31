@@ -9,8 +9,8 @@ public class Tank  extends WorldEntity {
 	private final static String kDirectionID = "direction";
 	private final static String kBackwardID = "backward";
 	private final static String kForwardID = "forward";
-	private final static String kLeftID = "left";
-	private final static String kRightID = "right";
+	public final static String kLeftID = "left";
+	public final static String kRightID = "right";
 	private final static String kFireID = "fire";
 	private final static String kRadarID = "radar";
 	private final static String kSwitchID = "switch";
@@ -23,33 +23,6 @@ public class Tank  extends WorldEntity {
 
 	private TankSoarCell[][] radarCells = new TankSoarCell[kRadarWidth][kRadarHeight];
 
-	public class MoveInfo {
-		boolean move;
-		int moveDirection;
-		
-		boolean rotate;
-		String rotateDirection;
-		
-		boolean fire;
-		
-		boolean radar;
-		boolean radarSwitch;
-		
-		boolean radarPower;
-		int radarPowerSetting;
-		
-		boolean shields;
-		boolean shieldsSetting;
-		
-		public MoveInfo() {
-			reset();
-		}
-		
-		public void reset() {
-			move = rotate = fire = radar = radarPower = shields = false;
-		}
-	}
-	
 	public final static int kRadarWidth = 3;
 	public final static int kRadarHeight = 14;
 	
@@ -106,7 +79,9 @@ public class Tank  extends WorldEntity {
 		}
 	
 		m_LastMove = new MoveInfo();
-		m_ILM = new InputLinkManager(m_World, this);
+		if (m_Agent != null) {
+			m_ILM = new InputLinkManager(m_World, this);
+		}
 		
 		reset();
 	}
@@ -134,7 +109,9 @@ public class Tank  extends WorldEntity {
 		
 		clearRadar();
 		
-		m_ILM.clear();
+		if (m_Agent != null) {
+			m_ILM.clear();
+		}
 	}
 	
 	public boolean getRadarStatus() {
@@ -162,10 +139,28 @@ public class Tank  extends WorldEntity {
 		return m_SmellDistance;
 	}
 	
+	public void humanInput(MoveInfo move) {
+		assert move != null;
+		
+		m_LastMove.reset();
+		m_LastMove = move;
+		m_RWaves = 0;
+		
+		if (m_LastMove.rotate) {
+			rotate(m_LastMove.rotateDirection);
+			// Do not allow a move if we rotated.
+			if (m_LastMove.move) {
+				m_Logger.log("Tried to move with a rotation, rotating only.");
+				m_LastMove.move = false;
+			}
+		}
+	}
+	
 	public void readOutputLink() {
 		m_LastMove.reset();
 		m_RWaves = 0;
 		
+		assert m_Agent != null;
 		int numberOfCommands = m_Agent.GetNumberCommands();
 		if (numberOfCommands == 0) {
 			m_Logger.log(getName() + " issued no command.");
@@ -436,7 +431,9 @@ public class Tank  extends WorldEntity {
 	}
 	
 	public void writeInputLink() {
-		m_ILM.write();
+		if (m_Agent != null) {
+			m_ILM.write();
+		}
 	}
 	
 	public int forward() {
