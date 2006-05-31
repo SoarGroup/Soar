@@ -5,13 +5,15 @@ popd
 pushd elaborations
 source elaborations_source.soar
 popd
-source cue-appraisal.soar
-source explore.soar
-pushd explore
-source explore_source.soar
+source build_barracks.soar
+pushd build_barracks
+source build_barracks_source.soar
 popd
+source cue-appraisal.soar
+source generated-plan-productions.soar
 source grouping.soar
 source initialize-sorts.soar
 source planning.soar
 source task-switch.soar
+source test-task-productions.soar
 source vision.soar

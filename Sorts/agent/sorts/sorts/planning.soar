@@ -1,27 +1,3 @@
-sp {propose*retrieve-new-tasks
-   (state <s> ^name sorts
-              ^planning <p>)
-   (<p> ^newly-completed.task <nct>
-        ^current-plan <cp>)
-   (<nct> ^name <tn>
-          ^plan <cp>)
--->
-   (<s> ^operator <o> +)
-   (<o> ^name planning-retrieve-new-tasks
-        ^completed-task <nct>)}
-
-sp {apply*retrieve-new-tasks
-   (state <s> ^name sorts
-              ^planning <p>
-              ^operator <o>)
-   (<p> ^retrieval-buffer <rb>
-        ^newly-completed <nc>)
-   (<o> ^name planning-retrieve-new-tasks
-        ^completed-task <t>)
--->
-   # some kind of magic happens here and tasks that depend on <t> are retrieved onto the retrieval buffer
-   (<nc> ^task <t> -)}
-
 sp {propose*complete-task
    (state <s> ^name sorts
               ^planning <p>)
@@ -30,7 +6,7 @@ sp {propose*complete-task
 -->
    (<s> ^operator <o> +)
    (<o> ^name planning-complete-task
-        ^task <t>)}
+        ^task <ct>)}
 
 sp {apply*complete-task
    (state <s> ^name sorts
@@ -38,34 +14,30 @@ sp {apply*complete-task
               ^io.input-link.view-frame <vf>
               ^operator <o>)
    (<p> ^execution-buffer <eb>
-        ^newly-completed <nc>
         ^completed <c>)
    (<o> ^name planning-complete-task
         ^task <t>)
-   (<t> ^name <n> ^plan <pl>)
+   #(<t> ^name <n> ^plan <pl>)
+   (<t> ^name <n>)
 -->
-   (<nc> ^task <nct>)
-   (<nct> ^name <n>
-          ^plan <pl>
-          ^completion-frame <vf>)
    (<c> ^task <ct>)
    (<ct> ^name <n>
-         ^plan <pl>
+        # ^plan <pl>
          ^completion-frame <vf>)
    (<eb> ^task <t> -)}
 
 sp {propose*resolve-dep
    (state <s> ^name sorts
-              ^planning <p>)
-   (<p> ^retrieval-buffer.task <rt>
-        ^completed.task <ct>)
-   (<rt> ^dep <p>)
-   (<ct> ^name <p>)
+              ^planning <pl>)
+   (<pl> ^retrieval-buffer.task <rt>
+         ^completed <c>)
+   (<rt> ^dep <d>)
+   (<c> ^task.name <d>)
 -->
    (<s> ^operator <o> +)
    (<o> ^name planning-resolve-dep
         ^task <rt>
-        ^dep <p>)}
+        ^dep <d>)}
 
 sp {apply*resolve-dep
    (state <s> ^name sorts
@@ -76,12 +48,37 @@ sp {apply*resolve-dep
 -->
    (<t> ^dep <p> -)}
 
+sp {propose*resolve-start-dep
+   (state <s> ^name sorts
+              ^planning <pl>)
+   (<pl> ^retrieval-buffer.task <rt>
+         ^execution-buffer.task <et>)
+   (<rt> ^start-dep <d>)
+   (<et> ^name <d>
+         ^started)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name planning-resolve-dep
+        ^task <rt>
+        ^start-dep <d>)}
+
+sp {apply*resolve-start-dep
+   (state <s> ^name sorts
+              ^operator <o>)
+   (<o> ^name planning-resolve-dep
+        ^task <t>
+        ^start-dep <p>)
+-->
+   (<t> ^start-dep <p> -)}
+
+
 sp {propose*execute-task
    (state <s> ^name sorts
               ^planning <p>)
    (<p> ^retrieval-buffer.task <rt>
         ^execution-buffer <eb>)
-  -(<rt> ^dep)
+   (<rt> -^dep
+         -^start-dep)
 -->
    (<s> ^operator <o> +)
    (<o> ^name planning-execute-task

@@ -1,8 +1,0 @@
-# to explore, we first have to decide which unit to use
-
-sp {explore*propose*designate-explorer
-   (state <s> ^name explore
-             -^explorer)
--->
-   (<s> ^operator <o>)
-   (<o> ^name designate-explorer)}

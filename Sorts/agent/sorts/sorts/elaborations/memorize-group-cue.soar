@@ -4,44 +4,44 @@ sp {elaborate*memorize-group-cue-mine-no-conflict
    (state <s> ^top-state <ts>
               ^io.input-link <in> 
               ^memorize-group-cue <mgc>)
-   (<in> ^objects.object <obj>
+   (<in> ^groups.group <g>
          ^grouping-level <gl>)
    (<ts> ^group-memory.mine <gm>)
    (<mgc> ^id <id>
           ^type mine)
-   (<obj> ^id <id>
+   (<g> ^id <id>
           ^type <t>
           ^x-min <xmin>
           ^x-max <xmax>
           ^y-min <ymin>
           ^y-max <ymax>)
-  -{(<gm> ^group <g>)
-    (<g> ^type <t>
-         ^grouping-level <gl>
-         ^x-pos { >= <xmin> <= <xmax> }
-         ^y-pos { >= <ymin> <= <ymax> })}
+  -{(<gm> ^group <g1>)
+    (<g1> ^type <t>
+          ^grouping-level <gl>
+          ^x-pos { >= <xmin> <= <xmax> }
+          ^y-pos { >= <ymin> <= <ymax> })}
 -->
-   (<mgc> ^no-conflict)}
+   (<mgc> ^no-conflict <c>)}
 
-sp {elaborate*memorize-group-mine-cue-conflict
+sp {elaborate*memorize-group-cue-mine-with-conflict
    (state <s> ^top-state <ts>
               ^io.input-link <in> 
               ^memorize-group-cue <mgc>)
-   (<in> ^objects.object <obj>
+   (<in> ^groups.group <g>
          ^grouping-level <gl>)
    (<ts> ^group-memory.mine <gm>)
    (<mgc> ^id <id>
           ^type mine)
-   (<obj> ^id <id>
+   (<g> ^id <id>
           ^type <t>
           ^x-min <xmin>
           ^x-max <xmax>
           ^y-min <ymin>
           ^y-max <ymax>)
-   (<gm> ^group <g>)
-   (<g> ^type <t>
-        ^grouping-level <gl>
-        ^x-pos { >= <xmin> <= <xmax> }
-        ^y-pos { >= <ymin> <= <ymax> })
+   (<gm> ^group <g1>)
+   (<g1> ^type <t>
+         ^grouping-level <gl>
+         ^x-pos { >= <xmin> <= <xmax> }
+         ^y-pos { >= <ymin> <= <ymax> })
 -->
    (<mgc> ^conflict <g>)}

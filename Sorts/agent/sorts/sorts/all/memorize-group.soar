@@ -1,10 +1,10 @@
 sp {propose*memorize-my-group-no-conflict
-   (state <s> ^io.input-link.objects.object <obj>
+   (state <s> ^io.input-link.groups.group <g>
               ^memorize-group-cue <mgc>)
    (<mgc> ^id <id>
           ^type mine
           ^no-conflict)
-   (<obj> ^id <id>)
+   (<g> ^id <id>)
 -->
    (<s> ^operator <o> +)
    (<o> ^name memorize-my-group-no-conflict
@@ -30,12 +30,12 @@ sp {apply*memorize-my-group-no-conflict
           ^grouping-level <gl>)}
 
 sp {propose*memorize-my-group-conflict
-   (state <s> ^io.input-link.objects.object <obj>
+   (state <s> ^io.input-link.groups.group <g>
               ^memorize-group-cue <mgc>)
    (<mgc> ^id <id>
           ^type mine
           ^conflict <old>)
-   (<obj> ^id <id>)
+   (<g> ^id <id>)
 -->
    (<s> ^operator <o> +)
    (<o> ^name memorize-my-group-conflict

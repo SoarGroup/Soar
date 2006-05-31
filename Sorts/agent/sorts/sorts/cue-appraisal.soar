@@ -14,7 +14,7 @@ sp {propose*cue-appraisal-otask-view-frame
               ^opportunity-task-buffer.task <t>
               ^io.input-link.view-frame <vf>
              -^appraisal-cue)
-   (<t> ^^appraisal-triggers.view-frame < <vf>)
+   (<t> ^appraisal-triggers.view-frame < <vf>)
 -->
    (<s> ^operator <o> +)
    (<o> ^name cue-appraisal-view-frame
@@ -29,7 +29,7 @@ sp {apply*cue-appraisal-view-frame
 -->
    (<s> ^appraisal-cue <c>)
    (<c> ^task <t>)
-   (<at> ^view-frame -)} # appraisal procedure responsible for adding a new view-frame attribute
+   (<at> ^view-frame <vf> -)} # appraisal procedure responsible for adding a new view-frame attribute
 
 sp {propose*cue-appraisal-ptask-task-complete-nonrecurring
    (state <s> ^name sorts
@@ -122,5 +122,5 @@ sp {apply*cue-appraisal-task-complete-recurring
 -->
    (<s> ^appraisal-cue <c>)
    (<c> ^task <t>)
-   (<r> ^last-completion-frame -)
+   (<r> ^last-completion-frame <of> -)
    (<r> ^last-completion-frame <f>)}

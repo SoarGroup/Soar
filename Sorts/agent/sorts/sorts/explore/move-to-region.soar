@@ -1,5 +1,0 @@
-sp {explore*propose*move-to-region
-   (state <s> ^name explore
-              ^explorer <gid>
-              ^io.input-link <i>)
-   (
