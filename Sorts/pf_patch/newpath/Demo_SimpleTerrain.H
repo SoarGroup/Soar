@@ -114,6 +114,10 @@ namespace Demo_SimpleTerrain {
     virtual void findPath(const Object* gob, const Loc &l2, Path &path);
     virtual void findPath(const Object* gob, const Object* l2, Path &path);
     virtual void findPath(const Loc &l1, const Loc &l2, Path &path);
+    virtual void insertImaginaryWorker(Loc l);
+    virtual void removeImaginaryWorker(Loc l);
+    virtual void insertDynamicObjs();
+    virtual void removeDynamicObjs();
     //@}
     //---------------------------------------------------------------------
 

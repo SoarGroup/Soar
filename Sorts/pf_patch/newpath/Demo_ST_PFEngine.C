@@ -6,7 +6,12 @@
 
 #include "Demo_ST_PFEngine.H"
 #include "Options.H"
+#include "GameObj.H"
 #include <iostream>
+
+#define WORKER_RADIUS 3
+#define WP_COST UNIT_COST / 8 
+#define msg cout << "PFENG: "
 
 using namespace std;
 using boost::array;
@@ -24,22 +29,20 @@ namespace Demo_SimpleTerrain
     subtile_points = tile_points_/gran;
     disp = subtile_points/2;
   }
-
-  //-----------------------------------------------------------------------------
+  
   bool ST_Terrain::PFEngine::find_path(const TerrainBase::Loc &start,
                                        const TerrainBase::Loc &goal, 
                                        TerrainBase::Path& output)
   {
     SimpleMap<AStarCell> amap(map.get_w(), map.get_h());
     MapPtr m = &map;
+    //MapPtr m = (obj->get_zcat() == Object::ON_LAND)? &map : &air_map;
     Vector<TerrainBase::Loc> path;
     Vector<TerrainBase::Loc> clear;
 
     sint4 x1, y1;
-    x1 = start.x;
-    y1 = start.y;
-    x1 = world2x(x1);
-    y1 = world2y(y1);
+    x1 = world2x(start.x);
+    y1 = world2y(start.y);
     sint4 x2 = world2x(goal.x);
     sint4 y2 = world2y(goal.y);
 
@@ -48,7 +51,9 @@ namespace Demo_SimpleTerrain
     y2 = min(max(y2,(sint4)1), map.get_h()-2);
 
     bool found = false;
-    int r = 3; // for workers
+    int r = WORKER_RADIUS;
+    // if this function is used for other types, fix this!
+    
     int newr = r / subtile_points;
     if( r%subtile_points >= subtile_points/2 )
       newr++;
@@ -56,13 +61,15 @@ namespace Demo_SimpleTerrain
     b.set_center(TerrainBase::Loc(x1, y1));
 
     // clear current location (ignoring the target object)
-    clear_location(b, *m, clear);
+    //remove_object(obj);
+    //clear_location(b, *m, clear);
 
     // now find a path
     cout << "FINDING PATHS" << endl;
     found = simple_astar(*m, amap, b, x2, y2);
 
     // and return this object
+    //insert_object(obj);
 
     if (!found) {
       cout << "no path found" << endl;
@@ -107,6 +114,90 @@ namespace Demo_SimpleTerrain
     // fixme: is this correct? what if path.size() == 0 ?
     return found;
   }
+
+  //-----------------------------------------------------------------------------
+
+  void ST_Terrain::PFEngine::clearGobLocation(const Object *obj) {
+    // I actually have no idea why to do this, but the existing find_path does
+    // it...
+    
+    MapPtr m = (obj->get_zcat() == Object::ON_LAND)? &map : &air_map;
+    Vector<TerrainBase::Loc> clear;
+    if (obj->get_shape() == Object::RECTANGLE) {
+      return; // since there is no get_radius for rectangles
+              // I don't know how to do this
+    }
+    int r = obj->get_radius();
+    sint4 x1, y1; obj->get_center(x1, y1);
+    x1 = world2x(x1);
+    y1 = world2y(y1);
+    int newr = r / subtile_points;
+    if( r%subtile_points >= subtile_points/2 )
+      newr++;
+    Bucket b = BucketFactory::get_bucket(newr);
+    b.set_center(TerrainBase::Loc(x1, y1));
+    clear_location(b, *m, clear);
+  } 
+  void ST_Terrain::PFEngine::insertImaginaryWorker(TerrainBase::Loc l)
+  {
+    msg << "imag ins: " << l.x << "," << l.y << endl;
+    sint4 cost = 1;
+
+    sint4 r = 1;//WORKER_RADIUS;
+    Object::ZCat zcat;
+
+    zcat = Object::ON_LAND;
+
+    int newr = r / subtile_points;
+    if (r % subtile_points >= subtile_points / 2) newr++;
+    Bucket b = BucketFactory::get_bucket(newr);
+    Bucket b2 = BucketFactory::get_bucket(newr-1);
+    Loc cworld(world2x(l.x), world2y(l.y));
+
+    b.set_center(cworld);
+    insert_bucket(b, zcat, TEMP, 0, cost*WP_COST);
+
+    b2.set_center(cworld);
+    insert_bucket(b2, zcat, TEMP, 0, cost*WP_COST/2);
+
+  }
+  void ST_Terrain::PFEngine::removeImaginaryWorker(TerrainBase::Loc l)
+  {
+    msg << "imag rem: " << l.x << "," << l.y << endl;
+    sint4 cost = -1;
+
+    sint4 r = 1;//WORKER_RADIUS;
+    Object::ZCat zcat;
+
+    zcat = Object::ON_LAND;
+
+    int newr = r / subtile_points;
+    if (r % subtile_points >= subtile_points / 2) newr++;
+    Bucket b = BucketFactory::get_bucket(newr);
+    Bucket b2 = BucketFactory::get_bucket(newr-1);
+    Loc cworld(world2x(l.x), world2y(l.y));
+
+    b.set_center(cworld);
+    insert_bucket(b, zcat, TEMP, 0, cost*WP_COST);
+
+    b2.set_center(cworld);
+    insert_bucket(b2, zcat, TEMP, 0, cost*WP_COST/2);
+
+  }
+  void ST_Terrain::PFEngine::removeDynamicObjs() {
+    for (std::set<const Object*>::iterator it = dynamicObjs.begin();
+         it != dynamicObjs.end();
+         it++) {
+      ir_object(*it, false);
+    }
+  }
+  void ST_Terrain::PFEngine::insertDynamicObjs() {
+    for (std::set<const Object*>::iterator it = dynamicObjs.begin();
+         it != dynamicObjs.end();
+         it++) {
+      ir_object(*it, true);
+    }
+  }
   bool ST_Terrain::PFEngine::find_path(const Object *obj,
                                        const TerrainBase::Loc &goal, 
                                        TerrainBase::Path& output)
@@ -127,7 +218,7 @@ namespace Demo_SimpleTerrain
     y2 = min(max(y2,(sint4)1), map.get_h()-2);
 
     bool found = false;
-    int r = 3;//obj->get_radius();
+    int r = obj->get_radius();
     int newr = r / subtile_points;
     if( r%subtile_points >= subtile_points/2 )
       newr++;
@@ -154,7 +245,7 @@ namespace Demo_SimpleTerrain
       //    sint4 x1, y1, x2, y2;
       path.push_back( goal );
       //    path.push_back(TerrainBase::Loc(x2world(x2),y2world(y2)));
-          //cout << "[G]" << "\t: " << "X: "<< goal.x << " Y: " <<  goal.y << endl;
+      //    cout << "[G]" << "\t: " << "X: "<< goal.x << " Y: " <<  goal.y << endl;
       do {
         map(cell).flags = 1;
         uint4 p = amap(cell).parent;
@@ -163,8 +254,8 @@ namespace Demo_SimpleTerrain
           y2 = y2world(map.i2y(p));
 
           path.push_back(TerrainBase::Loc(x2,y2));
-                 uint4 i = path.size()-1;
-                 //if (i > 1) cout << "[" << i << "]\t: " << "X: "<< path[i].x << " Y: " <<  path[i].y << endl;
+          //       uint4 i = path.size()-1;
+          //       if (i > 1) cout << "[" << i << "]\t: " << "X: "<< path[i].x << " Y: " <<  path[i].y << endl;
         }
         cell = p;
       } while(cell);
@@ -177,7 +268,7 @@ namespace Demo_SimpleTerrain
       FORALL (clear, i) { 
         path.push_back(*i);
       }
-          //cout << "[S]" << "\t: " << "X: "<< obj->get_int("x") << " Y: " <<  obj->get_int("y") << endl;
+      //    cout << "[S]" << "\t: " << "X: "<< obj->get_int("x") << " Y: " <<  obj->get_int("y") << endl;
       if (path.size() > 0) { 
         smoothen_path(path);
       }
@@ -396,7 +487,7 @@ namespace Demo_SimpleTerrain
         if (!freeDirection[i]) continue;
 
         uint4 nn_index = he.cell + smap.get_d(i); // neighbour
-           //   if (smap(nn_index).max_size < size) continue; // object does not fit
+        //      if (smap(nn_index).max_size < size) continue; // object does not fit
 
         // cout << int(nn->max_size) << " " << int(size) << endl;
 
@@ -511,12 +602,20 @@ namespace Demo_SimpleTerrain
   void ST_Terrain::PFEngine::insert_object(const Object *obj)
   {    
     ir_object(obj, true);
+    if (((GameObj*)obj)->bp_name() == "worker" or
+        ((GameObj*)obj)->bp_name() == "sheep" ) {
+      dynamicObjs.insert(obj);
+    }
   }
 
   //-----------------------------------------------------------------------------
   void ST_Terrain::PFEngine::remove_object(const Object *obj)
   {
     ir_object(obj, false);
+    if (((GameObj*)obj)->bp_name() == "worker" or
+        ((GameObj*)obj)->bp_name() == "sheep" ) {
+      dynamicObjs.erase(obj);
+    }
   }
 
   //-----------------------------------------------------------------------------
@@ -589,11 +688,9 @@ namespace Demo_SimpleTerrain
       Loc cworld(world2x(c.x), world2y(c.y));
 
       b.set_center(cworld);
-      //insert_bucket(b, zcat, TEMP, 1, cost*UNIT_COST);
       insert_bucket(b, zcat, TEMP, 0, cost*UNIT_COST);
 
       b2.set_center(cworld);
-      //insert_bucket(b2, zcat, TEMP, 1, cost*UNIT_COST/2);
       insert_bucket(b2, zcat, TEMP, 0, cost*UNIT_COST/2);
 
       // fixme: heading is not accessible through Object

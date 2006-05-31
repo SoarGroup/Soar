@@ -32,6 +32,12 @@ namespace Demo_SimpleTerrain {
     /// Perform pathfinding, return true iff path found, and the path itself in 'output'
     bool find_path(const Object *obj, const TerrainBase::Loc &goal, TerrainBase::Path& output);
     bool find_path(const TerrainBase::Loc &start, const TerrainBase::Loc &goal, TerrainBase::Path& output);
+    void clearGobLocation(const Object*);
+    void insertImaginaryWorker(TerrainBase::Loc l);
+    void removeImaginaryWorker(TerrainBase::Loc l);
+    void insertDynamicObjs();
+    void removeDynamicObjs();
+    std::set<const Object*> dynamicObjs;
 
 
 //    typedef boost::shared_ptr< SimpleMap<SizeCell> > MapPtr;

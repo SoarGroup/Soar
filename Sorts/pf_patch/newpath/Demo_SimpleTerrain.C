@@ -21,14 +21,63 @@ namespace Demo_SimpleTerrain {
   void ST_Terrain::findPath(const Loc &l1, const Loc &l2, Path &path) {
     pfEngine->find_path(l1, l2, path);
   }
+  void ST_Terrain::insertImaginaryWorker(Loc l) {
+    pfEngine->insertImaginaryWorker(l);
+  }
+  void ST_Terrain::removeImaginaryWorker(Loc l) {
+    pfEngine->removeImaginaryWorker(l);
+  }
+  void ST_Terrain::removeDynamicObjs() {
+    pfEngine->removeDynamicObjs();
+  }
+  void ST_Terrain::insertDynamicObjs() {
+    pfEngine->insertDynamicObjs();
+  }
   void ST_Terrain::findPath(const Object* gob, const Object* l2, Path &path) {
     sint4 x1, y1; l2->get_center(x1, y1);
     Loc l;
     l.x = x1;
     l.y = y1;
+    sint4 x2, y2; gob->get_center(x2, y2);
+    Loc lg;
+    lg.x = x2;
+    lg.y = y2;
+   /* 
+    MapPtr m = (gob->get_zcat() == Object::ON_LAND)? &map : &air_map;
+    Vector<TerrainBase::Loc> path;
+    Vector<TerrainBase::Loc> clear;
+
+    sint4 x1, y1; obj->get_center(x1, y1);
+    x1 = world2x(x1);
+    y1 = world2y(y1);
+    sint4 x2 = world2x(goal.x);
+    sint4 y2 = world2y(goal.y);
+
+    // constrain goal to inside the map
+    x2 = min(max(x2,(sint4)1), map.get_w()-2);
+    y2 = min(max(y2,(sint4)1), map.get_h()-2);
+
+    bool found = false;
+    int r = obj->get_radius();
+    int newr = r / subtile_points;
+    if( r%subtile_points >= subtile_points/2 )
+      newr++;
+    Bucket b = BucketFactory::get_bucket(newr);
+    b.set_center(TerrainBase::Loc(x1, y1));
+
+    // clear current location (ignoring the target object)
+    remove_object(obj);
+    clear_location(b, *m, clear);
+
+    */
+    //cout << "goal: " << l.x << "," << l.y << endl;
     pfEngine->remove_object(l2);
-    pfEngine->find_path(gob, l, path);
+    pfEngine->clearGobLocation(l2);
+    pfEngine->remove_object(gob);
+    pfEngine->clearGobLocation(gob);
+    pfEngine->find_path(lg, l, path);
     pfEngine->insert_object(l2);
+    pfEngine->insert_object(gob);
   }
 
 
