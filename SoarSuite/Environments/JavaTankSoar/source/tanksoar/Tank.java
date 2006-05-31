@@ -51,6 +51,7 @@ public class Tank  extends WorldEntity {
 	private boolean m_RadarSwitch;
 	private int m_RadarDistance;
 	private int m_SmellDistance;
+	private String m_SmellColor;
 	
 	private int m_InitialEnergy = 1000;
 	private int m_InitialHealth = 1000;
@@ -94,6 +95,7 @@ public class Tank  extends WorldEntity {
 		m_RadarPower = 0;
 		m_RadarDistance = 0;
 		m_SmellDistance = 0;
+		m_SmellColor = null;
 		m_RadarSwitch = false;
 		m_RWaves = 0;
 		m_Missiles = m_InitialMissiles;
@@ -123,8 +125,9 @@ public class Tank  extends WorldEntity {
 	}
 	
 	// TODO: possibly move calculation in to this class
-	void setSmellDistance(int distance) {
+	void setSmell(int distance, String color) {
 		m_SmellDistance = distance;
+		m_SmellColor = color;
 	}
 	
 	public TankSoarCell[][] getRadarCells() {
@@ -137,6 +140,10 @@ public class Tank  extends WorldEntity {
 	
 	public int getSmellDistance() {
 		return m_SmellDistance;
+	}
+	
+	public String getSmellColor() {
+		return m_SmellColor;
 	}
 	
 	public void humanInput(MoveInfo move) {

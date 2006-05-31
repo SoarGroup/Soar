@@ -2,6 +2,7 @@ package tanksoar.visuals;
 
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
@@ -261,6 +262,9 @@ public class AgentDisplay extends Composite {
 		m_Radar.setToolTipText(Integer.toString(m_Radar.getSelection()));
 		m_Smell.setSelection(m_Tanks[m_AgentTable.getSelectionIndex()].getSmellDistance());
 		m_Smell.setToolTipText(Integer.toString(m_Smell.getSelection()));
+		if (m_Smell.getSelection() > 0) {
+			m_Smell.setForeground(TankSoarWindowManager.getColor(m_Tanks[m_AgentTable.getSelectionIndex()].getSmellColor()));
+		}
 		m_AgentWorld.enable();
 		m_AgentWorld.redraw();
 		m_Blocked.redraw();
@@ -286,6 +290,9 @@ public class AgentDisplay extends Composite {
 			m_Radar.setToolTipText(Integer.toString(m_Radar.getSelection()));
 			m_Smell.setSelection(m_Tanks[m_AgentTable.getSelectionIndex()].getSmellDistance());
 			m_Smell.setToolTipText(Integer.toString(m_Smell.getSelection()));
+			if (m_Smell.getSelection() > 0) {
+				m_Smell.setForeground(TankSoarWindowManager.getColor(m_Tanks[m_AgentTable.getSelectionIndex()].getSmellColor()));
+			}
 			m_AgentWorld.redraw();
 			m_Blocked.redraw();
 			m_RWaves.redraw();
