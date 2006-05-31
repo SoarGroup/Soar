@@ -30,6 +30,7 @@ public class AgentDisplay extends Composite {
 	Button m_CloneAgentButton;
 	Button m_DestroyAgentButton;
 	Button m_ReloadProductionsButton;
+	Button m_HumanAgentButton;
 	TankSoarAgentWorld m_AgentWorld;
 	ProgressBar m_Smell;
 	ProgressBar m_Radar;
@@ -60,6 +61,36 @@ public class AgentDisplay extends Composite {
 			}
 		});
 		
+		m_HumanAgentButton = new Button(row1, SWT.PUSH);
+		m_HumanAgentButton.setText("Human");
+		m_HumanAgentButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				String color = null;
+				// TODO: this probably isn't the most efficient way of doing this, but this is not a bottleneck point
+				if (m_Tanks != null) {
+					for (int i = 0; i < TankSoarWindowManager.kColors.length; ++i) {
+						boolean notTaken = true;
+						for (int j = 0; j < m_Tanks.length; ++j) {
+							if (m_Tanks[j].getColor().equalsIgnoreCase(TankSoarWindowManager.kColors[i])) {
+								notTaken = false;
+								break;
+							}
+						}
+						if (notTaken) {
+							color = TankSoarWindowManager.kColors[i];
+							break;
+						}
+					}
+				} else {
+					color = TankSoarWindowManager.kColors[0];
+				}
+				boolean spawnDebuggers = m_Simulation.getSpawnDebuggers();
+				m_Simulation.setSpawnDebuggers(false);
+				m_Simulation.createEntity(color + "-human", null, color, null, null, -1, -1, -1);
+				m_Simulation.setSpawnDebuggers(spawnDebuggers);
+			}
+		});
+				
 		m_CloneAgentButton = new Button(row1, SWT.PUSH);
 		m_CloneAgentButton.setText("Clone");
 		m_CloneAgentButton.addSelectionListener(new SelectionAdapter() {
@@ -330,10 +361,11 @@ public class AgentDisplay extends Composite {
 			noAgents = true;
 		}
 		boolean selectedEater = (m_SelectedEntity != null);
+		boolean selectedIsHuman = selectedEater ? (m_SelectedEntity.getAgent() == null) : false;
 		
 		m_NewAgentButton.setEnabled(!running && !agentsFull);
-		m_CloneAgentButton.setEnabled(!running && !agentsFull && selectedEater);
+		m_CloneAgentButton.setEnabled(!running && !agentsFull && selectedEater && !selectedIsHuman);
 		m_DestroyAgentButton.setEnabled(!running && !noAgents && selectedEater);
-		m_ReloadProductionsButton.setEnabled(!running && !noAgents && selectedEater);
+		m_ReloadProductionsButton.setEnabled(!running && !noAgents && selectedEater && !selectedIsHuman);
  	}
 }
