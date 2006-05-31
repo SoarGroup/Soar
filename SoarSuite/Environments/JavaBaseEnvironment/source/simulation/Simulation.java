@@ -141,7 +141,9 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
     		return;
 		}	
 		m_WorldManager.destroyEntity(entity);
-		m_Kernel.DestroyAgent(entity.getAgent());
+		if (entity.getAgent() != null) {
+			m_Kernel.DestroyAgent(entity.getAgent());
+		}
 		fireSimulationEvent(SimulationListener.kAgentDestroyedEvent);
 	}
 	
@@ -270,17 +272,58 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		}
 	}
 	
+	private boolean hasSoarAgents() {
+		WorldEntity[] entities = this.m_WorldManager.getEntities();
+		if (entities == null) {
+			return false;
+		}
+		
+		for (int x = 0; x < entities.length; ++x) {
+			Agent agent = entities[x].getAgent();
+			if (agent == null) {
+				continue;
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	private void manualStep() {
+		m_WorldManager.update();
+		++m_WorldCount;
+		fireSimulationEvent(SimulationListener.kUpdateEvent);
+	}
+	
 	public void startSimulation(boolean inNewThread) {
         m_StopSoar = false;
-		if (inNewThread) {
-			m_RunThread = new Thread(this);
-	        m_RunThread.start();
+		if (!hasSoarAgents()) {
+			m_Running = true;
+			fireSimulationEvent(SimulationListener.kStartEvent);
+			while (!m_StopSoar) {
+				manualStep();
+			}
+			m_Running = false;
+			fireSimulationEvent(SimulationListener.kStopEvent);	
+			return;
 		} else {
-			run();
+			if (inNewThread) {
+				m_RunThread = new Thread(this);
+		        m_RunThread.start();
+			} else {
+				run();
+			}
 		}
 	}
 	
 	public void stepSimulation() {
+		if (!hasSoarAgents()) {
+			m_Running = true;
+			fireSimulationEvent(SimulationListener.kStartEvent);
+			manualStep();
+			m_Running = false;
+			fireSimulationEvent(SimulationListener.kStopEvent);	
+			return;
+		}
 		if (m_RunTilOutput) {
 			m_Kernel.RunAllTilOutput();
 		} else {
