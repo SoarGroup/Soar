@@ -1,0 +1,21 @@
+sp {propose*miner-assignment
+   (state <s> ^name sorts
+              ^running-task.name miner-assignment)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name miner-assignment)
+}
+
+sp {miner-assignment*assign-miner
+   (state <s> ^name miner-assignment
+              ^io.input-link.groups <gs>)
+   (<gs> ^group <g>)
+   (<g> ^type worker
+        ^id   <gid>
+        ^owner 0
+        ^command_running 0)
+-->
+   (<s> ^operator <o> + > =)
+    (<o> ^name mine
+         ^group <gid>)
+}

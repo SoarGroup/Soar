@@ -1,0 +1,42 @@
+sp {propose*initialize-sorts
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-sorts)
+}
+
+sp {apply*initialize-sorts
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-sorts)
+-->
+   (<s> ^name sorts
+        ^grouping-level small-groups)
+}
+
+sp {propose*start-build-workers
+   (state <s> ^name sorts
+             -^running-task.name build-workers)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-build-workers)
+}
+
+sp {propose*start-miner-assignment
+   (state <s> ^name sorts
+             -^running-task.name miner-assignment)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-miner-assignment)
+}
+sp {apply*start-build-workers
+   (state <s> ^operator.name start-build-workers)
+-->
+   (<s> ^running-task.name build-workers)
+}
+
+sp {apply*start-miner-assignment
+   (state <s> ^operator.name start-miner-assignment)
+-->
+   (<s> ^running-task.name miner-assignment)
+}

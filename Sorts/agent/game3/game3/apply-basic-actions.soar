@@ -1,0 +1,22 @@
+sp {apply*move
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name move
+        ^group <g>
+        ^x <x>
+        ^y <y> )
+-->
+   (<ol> ^move <m>)
+   (<m> ^group0 <g>
+        ^param0 <x>
+        ^param1 <y>)
+}
+sp {apply*mine
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name mine
+        ^group <g>)
+-->
+   (<ol> ^mine <m>)
+   (<m> ^group0 <g>)
+}

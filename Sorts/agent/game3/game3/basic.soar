@@ -1,0 +1,51 @@
+sp {elaborate*io
+   (state <s> ^superstate.io <io>)
+-->
+   (<s> ^io <io>)
+}
+
+
+sp {top-state*propose*wait
+    (state <s> ^attribute state
+               ^choices none
+              -^operator.name wait)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name wait)
+}
+
+sp {propose*clean-command
+    (state <s> ^io.output-link <cmdname>)
+    (<cmdname> ^<cmdinstance>)
+    (<cmdinstance> ^status complete
+                   ^comment out) # broken!
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name clean-command
+         ^command-name <cmdname>
+         ^command-instance <cmdinstance>)
+}
+sp {apply*clean-command
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name clean-command
+         ^command-name <cmdname>
+         ^command-instance <cmdinstance>)
+-->
+   (<ol> ^<cmdname> <cmdinstance> -)
+}
+sp {propose*remove-move-command
+    (state <s> ^io.output-link.move <m>)
+    (<m> ^status complete)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name remove-move-command
+         ^command <m>)}
+
+sp {apply*remove-move-command
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name remove-move-command
+         ^command <m>)
+-->
+    (<ol> ^move <m> -)}
