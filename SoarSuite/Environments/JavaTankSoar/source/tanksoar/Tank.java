@@ -153,6 +153,14 @@ public class Tank  extends WorldEntity {
 		m_LastMove = move;
 		m_RWaves = 0;
 		
+		// Must check missile count now
+		if (m_LastMove.fire) {
+			if (m_Missiles <= 0) {
+				m_Logger.log(getName() + ": Attempted to fire missle with no missiles.");	
+				m_LastMove.fire = false;
+			}
+		}
+
 		// Shields must be handled pronto
 		if (m_LastMove.shields) {
 			handleShields();
