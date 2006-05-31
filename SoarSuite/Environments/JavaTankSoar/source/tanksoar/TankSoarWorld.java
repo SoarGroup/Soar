@@ -846,19 +846,21 @@ public class TankSoarWorld extends World implements WorldManager {
 		Tank closestTank = null;
 		int closestDistance = m_MaxManhattanDistance + 1;
 		
+		//m_Logger.log("Sniffing for stinky tank...");
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (tank == m_Tanks[i]) {
 				continue;
 			}
 			
 			int distance = tank.getLocation().getManhattanDistanceTo(m_Tanks[i].getLocation());
-			if (distance <= closestDistance) {
+			//m_Logger.log(tank.getColor() + tank.getLocation() + " is " + distance + " from " + m_Tanks[i].getColor() + m_Tanks[i].getLocation());
+			if (distance < closestDistance) {
 				closestDistance = distance;
+				closestTank = m_Tanks[i];
+			} else if (distance == closestDistance) {
 				if (closestTank != null) {
 					// More than one, pick one at random
 					closestTank = m_Random.nextBoolean() ? closestTank : m_Tanks[i];
-				} else {
-					closestTank = m_Tanks[i];
 				}
 			}
 		}
