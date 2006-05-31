@@ -12,7 +12,7 @@
 #include "SoarInterface.h"
 #include "OrtsInterface.h"
 #include "PerceptualGroupManager.h"
-#include "InternalGroupManager.h"
+//#include "InternalGroupManager.h"
 #include "MapManager.h"
 #include "FeatureMapManager.h"
 //#include "AttackManagerRegistry.h"
@@ -29,7 +29,7 @@ class Sorts {
     ( SoarInterface*          _SoarIO,
       OrtsInterface*          _OrtsIO,
       PerceptualGroupManager* _pGroupManager, 
-      InternalGroupManager*   _iGroupManager,
+  //    InternalGroupManager*   _iGroupManager,
       MapManager*             _mapManager, 
       FeatureMapManager*      _featureMapManager,
       TerrainModule*          _tm,
@@ -41,7 +41,7 @@ class Sorts {
       SoarIO = _SoarIO;
       OrtsIO = _OrtsIO;
       pGroupManager = _pGroupManager;
-      iGroupManager = _iGroupManager;
+      //iGroupManager = _iGroupManager;
       mapManager = _mapManager;
       featureMapManager = _featureMapManager;
       terrainModule = _tm;
@@ -55,7 +55,7 @@ class Sorts {
     static SoarInterface*           SoarIO;
     static OrtsInterface*           OrtsIO;
     static PerceptualGroupManager*  pGroupManager;
-    static InternalGroupManager*    iGroupManager;
+  //  static InternalGroupManager*    iGroupManager;
     static MapManager*              mapManager;
     static FeatureMapManager*       featureMapManager;
     static TerrainModule*           terrainModule;

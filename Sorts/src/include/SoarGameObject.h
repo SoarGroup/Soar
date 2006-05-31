@@ -33,8 +33,8 @@ class SoarGameObject{
 
 	void setPerceptualGroup(PerceptualGroup *g);
 	PerceptualGroup *getPerceptualGroup();
-	void setInternalGroup(InternalGroup *g);
-	InternalGroup *getInternalGroup();
+	//void setInternalGroup(InternalGroup *g);
+	//InternalGroup *getInternalGroup();
 	int getStatus();
 
   int  getOwner()     { return *gob->sod.owner; }
@@ -56,7 +56,7 @@ private:
 
   ObjectActionType currentCommand;
 	PerceptualGroup* pGroup;
-	InternalGroup* iGroup;
+	//InternalGroup* iGroup;
 	bool friendly;
   bool world;
   int id;

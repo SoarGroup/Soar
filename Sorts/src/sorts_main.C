@@ -225,7 +225,7 @@ int main(int argc, char *argv[]) {
  
   FeatureMapManager featureMapManager;
   PerceptualGroupManager pgm;
-  InternalGroupManager igm;
+  //InternalGroupManager igm;
   OrtsInterface ortsInterface(&gsm);
 
   Satellite satellite;
@@ -235,7 +235,7 @@ int main(int argc, char *argv[]) {
   Sorts sorts(&soarInterface, 
               &ortsInterface, 
               &pgm, 
-              &igm,
+              //&igm,
               &mapManager, 
               &featureMapManager,
               &tm,

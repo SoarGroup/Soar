@@ -3,7 +3,7 @@
 // our includes
 #include "Sorts.h"
 #include "PerceptualGroup.h"
-#include "InternalGroup.h"
+//#include "InternalGroup.h"
 #include "MineManager.h"
 
 // Orts includes
@@ -123,7 +123,7 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
  
   // PerceptualGroupManager takes care of setting the object->group pointers
   Sorts::pGroupManager->makeNewGroup(newObj);
-  Sorts::iGroupManager->makeNewGroup(newObj);
+ // Sorts::iGroupManager->makeNewGroup(newObj);
 
   if (gameObj->bp_name() == "mineral") {
     Sorts::mineManager->addMineral(newObj);
@@ -149,8 +149,8 @@ void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   SoarGameObject* sObject = objectMap[gameObj];
   int id = sObject->getID();
   sObject->getPerceptualGroup()->removeUnit(sObject);
-  if(sObject->getInternalGroup()!=NULL)
-   sObject->getInternalGroup()->removeUnit(sObject);
+  //if(sObject->getInternalGroup()!=NULL)
+ //  sObject->getInternalGroup()->removeUnit(sObject);
   
   if (gameObj->bp_name() == "mineral") {
     Sorts::mineManager->removeMineral(sObject);

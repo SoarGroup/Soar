@@ -9,7 +9,7 @@
 #include "Sorts.h"
 #include "SoarGameObject.h"
 #include "PerceptualGroup.h"
-#include "InternalGroup.h"
+//#include "InternalGroup.h"
 
 #define msg cout << "SGO(" << (int)this << "): "
 #define PANIC_FRAMES 30
@@ -53,7 +53,7 @@ SoarGameObject::SoarGameObject(
   motionlessFrames = 0;
   
   identifyBehaviors();
-  iGroup = NULL;
+  //iGroup = NULL;
   pGroup = NULL;
   
   sat_loc = Sorts::satellite->addObject(gob);
@@ -119,9 +119,9 @@ void SoarGameObject::update()
 
   sat_loc = Sorts::satellite->updateObject(gob,sat_loc);
     
-  if (iGroup != NULL) {
+ /* if (iGroup != NULL) {
     iGroup->setHasStaleMembers();
-  }
+  }*/
   pGroup->setHasStaleMembers();
   
   int currentFrame = Sorts::OrtsIO->getViewFrame();
@@ -197,7 +197,7 @@ PerceptualGroup *SoarGameObject::getPerceptualGroup(void)
  return pGroup;
 }
 
-void SoarGameObject::setInternalGroup(InternalGroup *g)
+/*void SoarGameObject::setInternalGroup(InternalGroup *g)
 {
  iGroup = g;
 }
@@ -205,10 +205,6 @@ void SoarGameObject::setInternalGroup(InternalGroup *g)
 InternalGroup *SoarGameObject::getInternalGroup(void)
 {
  return iGroup;
-}
-/*ObjectActionType SoarGameObject::getCurrentCommand()
-{
- return currentCommand;
 }*/
 
 int SoarGameObject::getStatus()
