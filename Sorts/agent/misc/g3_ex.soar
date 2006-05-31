@@ -1,0 +1,537 @@
+
+## vsExtract.pl: extracting from file game3.soar
+
+## vsExtract.pl: extracting from file game3_source.soar
+
+## vsExtract.pl: extracting from file _firstload.soar
+
+## vsExtract.pl: extracting from file all_source.soar
+
+## vsExtract.pl: extracting from file elaborations_source.soar
+
+## vsExtract.pl: extracting from file _all.soar
+
+## vsExtract.pl: extracting from file top-state.soar
+
+## vsExtract.pl: extracting from file apply-basic-actions.soar
+sp {apply*move
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name move
+        ^group <g>
+        ^x <x>
+        ^y <y> )
+-->
+   (<ol> ^move <m>)
+   (<m> ^group0 <g>
+        ^param0 <x>
+        ^param1 <y>)
+}
+sp {apply*mine
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name mine
+        ^group <g>)
+-->
+   (<ol> ^mine <m>)
+   (<m> ^group0 <g>)
+}
+
+## vsExtract.pl: extracting from file basic.soar
+sp {elaborate*io
+   (state <s> ^superstate.io <io>)
+-->
+   (<s> ^io <io>)
+}
+
+
+sp {top-state*propose*wait
+    (state <s> ^attribute state
+               ^choices none
+              -^operator.name wait)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name wait)
+}
+
+sp {propose*clean-command
+    (state <s> ^io.output-link <cmdname>)
+    (<cmdname> ^<cmdinstance>)
+    (<cmdinstance> ^status complete
+                   ^comment out) # broken!
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name clean-command
+         ^command-name <cmdname>
+         ^command-instance <cmdinstance>)
+}
+sp {apply*clean-command
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name clean-command
+         ^command-name <cmdname>
+         ^command-instance <cmdinstance>)
+-->
+   (<ol> ^<cmdname> <cmdinstance> -)
+}
+sp {propose*remove-move-command
+    (state <s> ^io.output-link.move <m>)
+    (<m> ^status complete)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name remove-move-command
+         ^command <m>)}
+
+sp {apply*remove-move-command
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name remove-move-command
+         ^command <m>)
+-->
+    (<ol> ^move <m> -)}
+
+## vsExtract.pl: extracting from file build-barracks.soar
+# comment!
+
+## vsExtract.pl: extracting from file miner-assignment.soar
+sp {propose*miner-assignment
+   (state <s> ^name sorts
+              ^running-task.name build-barracks)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name miner-assignment)
+}
+
+sp {miner-assignment*assign-miner
+   (state <s> ^name miner-assignment
+              ^io.input-link.groups <gs>)
+   (<gs> ^group <g>)
+   (<g> ^type worker
+        ^id   <gid>
+        ^owner 0
+        ^command_running 0)
+-->
+   (<s> ^operator <o> + > =)
+    (<o> ^name mine
+         ^group <gid>)
+}
+
+## vsExtract.pl: extracting from file plan-one.soar
+sp {plan-memory*propose*get-init-task-explore1
+  (state <s> ^name sorts
+             ^planning <pl>)
+  (<pl> ^execution-buffer <eb>
+        ^retrieval-buffer <rb>
+        ^completed <c>)
+ -(<eb> ^task.name explore1)
+ -(<rb> ^task.name explore1)
+ -(<c> ^task.name explore1)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name get-init-task-explore1)}
+
+sp {plan-memory*apply*get-init-task-explore1
+  (state <s> ^name sorts
+             ^operator <o>
+             ^planning.retrieval-buffer <rb>)
+  (<o> ^name get-init-task-explore1)
+-->
+  (<rb> ^task <rt>)
+  (<rt> ^name explore1
+        ^instance-of explore
+        ^params <p>)
+  (<p>  ^unit worker)}
+
+sp {plan-memory*propose*get-init-task-build_barracks0
+  (state <s> ^name sorts
+             ^planning <pl>)
+  (<pl> ^execution-buffer <eb>
+        ^retrieval-buffer <rb>
+        ^completed <c>)
+ -(<eb> ^task.name build_barracks0)
+ -(<rb> ^task.name build_barracks0)
+ -(<c> ^task.name build_barracks0)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name get-init-task-build_barracks0)}
+
+sp {plan-memory*apply*get-init-task-build_barracks0
+  (state <s> ^name sorts
+             ^operator <o>
+             ^planning.retrieval-buffer <rb>)
+  (<o> ^name get-init-task-build_barracks0)
+-->
+  (<rb> ^task <rt>)
+  (<rt> ^name build_barracks0
+        ^instance-of build_barracks
+   )
+}
+
+sp {plan-memory*propose*explore1-trigger-attack4-2
+  (state <s> ^name sorts
+             ^planning <pl>)
+  (<pl> ^execution-buffer <eb>
+        ^retrieval-buffer <rb>
+        ^completed <c>)
+  (<nc> ^task.name explore1)
+ -(<eb> ^task.name attack4)
+ -(<rb> ^task.name attack4)
+ -(<c> ^task.name attack4)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name explore1-trigger-attack4-2)}
+
+sp {plan-memory*apply*explore1-trigger-attack4-2
+  (state <s> ^name sorts
+             ^operator <o>
+             ^planning.retrieval-buffer <rb>)
+  (<o> ^name explore1-trigger-attack4-2)
+-->
+  (<rb> ^task <rt>)
+  (<rt> ^name attack4
+        ^instance-of attack       
+         ^start-dep build_marines2 ^dep explore1)
+}
+
+sp {plan-memory*propose*build_barracks0-trigger-mine3-3
+  (state <s> ^name sorts
+             ^planning <pl>)
+  (<pl> ^execution-buffer <eb>
+        ^retrieval-buffer <rb>
+        ^completed <c>)
+  (<nc> ^task.name build_barracks0)
+ -(<eb> ^task.name mine3)
+ -(<rb> ^task.name mine3)
+ -(<c> ^task.name mine3)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name build_barracks0-trigger-mine3-3)}
+
+sp {plan-memory*apply*build_barracks0-trigger-mine3-3
+  (state <s> ^name sorts
+             ^operator <o>
+             ^planning.retrieval-buffer <rb>)
+  (<o> ^name build_barracks0-trigger-mine3-3)
+-->
+  (<rb> ^task <rt>)
+  (<rt> ^name mine3
+        ^instance-of mine
+        ^params <p>
+         ^start-dep build_barracks0)
+  (<p>  ^workers 0)}
+
+sp {plan-memory*propose*build_barracks0-trigger-build_workers5-4
+  (state <s> ^name sorts
+             ^planning <pl>)
+  (<pl> ^execution-buffer <eb>
+        ^retrieval-buffer <rb>
+        ^completed <c>)
+  (<nc> ^task.name build_barracks0)
+ -(<eb> ^task.name build_workers5)
+ -(<rb> ^task.name build_workers5)
+ -(<c> ^task.name build_workers5)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name build_barracks0-trigger-build_workers5-4)}
+
+sp {plan-memory*apply*build_barracks0-trigger-build_workers5-4
+  (state <s> ^name sorts
+             ^operator <o>
+             ^planning.retrieval-buffer <rb>)
+  (<o> ^name build_barracks0-trigger-build_workers5-4)
+-->
+  (<rb> ^task <rt>)
+  (<rt> ^name build_workers5
+        ^instance-of build_workers
+        ^params <p>
+         ^start-dep build_barracks0)
+  (<p>  ^num 0)}
+
+sp {plan-memory*propose*build_barracks0-trigger-build_marines2-5
+  (state <s> ^name sorts
+             ^planning <pl>)
+  (<pl> ^execution-buffer <eb>
+        ^retrieval-buffer <rb>
+        ^completed <c>)
+  (<nc> ^task.name build_barracks0)
+ -(<eb> ^task.name build_marines2)
+ -(<rb> ^task.name build_marines2)
+ -(<c> ^task.name build_marines2)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name build_barracks0-trigger-build_marines2-5)}
+
+sp {plan-memory*apply*build_barracks0-trigger-build_marines2-5
+  (state <s> ^name sorts
+             ^operator <o>
+             ^planning.retrieval-buffer <rb>)
+  (<o> ^name build_barracks0-trigger-build_marines2-5)
+-->
+  (<rb> ^task <rt>)
+  (<rt> ^name build_marines2
+        ^instance-of build_marines
+        ^params <p>
+         ^dep build_barracks0)
+  (<p>  ^num 0)}
+
+sp {plan-memory*propose*build_marines2-trigger-attack4-6
+  (state <s> ^name sorts
+             ^planning <pl>)
+  (<pl> ^execution-buffer <eb>
+        ^retrieval-buffer <rb>
+        ^completed <c>)
+  (<nc> ^task.name build_marines2)
+ -(<eb> ^task.name attack4)
+ -(<rb> ^task.name attack4)
+ -(<c> ^task.name attack4)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name build_marines2-trigger-attack4-6)}
+
+sp {plan-memory*apply*build_marines2-trigger-attack4-6
+  (state <s> ^name sorts
+             ^operator <o>
+             ^planning.retrieval-buffer <rb>)
+  (<o> ^name build_marines2-trigger-attack4-6)
+-->
+  (<rb> ^task <rt>)
+  (<rt> ^name attack4
+        ^instance-of attack
+         ^start-dep build_marines2 ^dep explore1)
+  }
+## vsExtract.pl: extracting from file planning.soar
+sp {propose*complete-task
+   (state <s> ^name sorts
+              ^planning <p>)
+   (<p> ^execution-buffer.task <ct>)
+   (<ct> ^completed)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name planning-complete-task
+        ^task <ct>)}
+
+sp {apply*complete-task
+   (state <s> ^name sorts
+              ^planning <p>
+              ^io.input-link.view-frame <vf>
+              ^operator <o>)
+   (<p> ^execution-buffer <eb>
+        ^completed <c>)
+   (<o> ^name planning-complete-task
+        ^task <t>)
+   #(<t> ^name <n> ^plan <pl>)
+   (<t> ^name <n>)
+-->
+   (<c> ^task <ct>)
+   (<ct> ^name <n>
+        # ^plan <pl>
+         ^completion-frame <vf>)
+   (<eb> ^task <t> -)}
+
+sp {propose*resolve-dep
+   (state <s> ^name sorts
+              ^planning <pl>)
+   (<pl> ^retrieval-buffer.task <rt>
+         ^completed <c>)
+   (<rt> ^dep <d>)
+   (<c> ^task.name <d>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name planning-resolve-dep
+        ^task <rt>
+        ^dep <d>)}
+
+sp {apply*resolve-dep
+   (state <s> ^name sorts
+              ^operator <o>)
+   (<o> ^name planning-resolve-dep
+        ^task <t>
+        ^dep <p>)
+-->
+   (<t> ^dep <p> -)}
+
+sp {propose*resolve-start-dep
+   (state <s> ^name sorts
+              ^planning <pl>)
+   (<pl> ^retrieval-buffer.task <rt>
+         ^execution-buffer.task <et>)
+   (<rt> ^start-dep <d>)
+   (<et> ^name <d>
+         ^started)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name planning-resolve-dep
+        ^task <rt>
+        ^start-dep <d>)}
+
+sp {apply*resolve-start-dep
+   (state <s> ^name sorts
+              ^operator <o>)
+   (<o> ^name planning-resolve-dep
+        ^task <t>
+        ^start-dep <p>)
+-->
+   (<t> ^start-dep <p> -)}
+
+
+sp {propose*execute-task
+   (state <s> ^name sorts
+              ^planning <p>)
+   (<p> ^retrieval-buffer.task <rt>
+        ^execution-buffer <eb>)
+   (<rt> -^dep
+         -^start-dep)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name planning-execute-task
+        ^task <rt>)}
+
+sp {apply*execute-task
+   (state <s> ^name sorts
+              ^planning <p>
+              ^operator <o>)
+   (<p> ^retrieval-buffer <rb>
+        ^execution-buffer <eb>)
+   (<o> ^name planning-execute-task
+        ^task <t>)
+-->
+   (<eb> ^task <t>)
+   (<rb> ^task <t> -)}
+## vsExtract.pl: extracting from file apply-vision-commands.soar
+sp {apply*enable-owner-grouping
+   (state <s> ^operator <o>
+              ^io <io>)
+    (<o> ^name enable-owner-grouping)
+-->
+   (<io> ^output-link enable-owner-grouping)
+}
+
+sp {apply*look-at-feature
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name look-at-feature
+         ^feature <feature>
+         ^sector <sector>)
+-->
+   (<ol> ^look-feature <lf>)
+   (<lf> ^feature <feature>
+         ^sector <sector>)
+}
+sp {apply*move-to-feature
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name move-to-feature
+         ^feature <feature>
+         ^sector <sector>)
+-->
+   (<ol> ^move-feature <lf>)
+   (<lf> ^feature <feature>
+         ^sector <sector>)
+}
+
+sp {apply*change-view-width
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name change-view-width
+         ^width <w>)
+-->
+   (<ol> ^view-width <vw>)
+   (<vw> ^value <w>)
+}
+
+sp {init-grouping-level
+   (state <s> ^top-state <ts>)
+   (<s> -^top-state grouping-level)
+-->
+   (<ts> ^grouping-level small-groups)
+}
+sp {apply*set-grouping-individuals
+    (state <s> ^operator <o>
+               ^io.output-link <ol>
+               ^top-state <ts>)
+    (<o> ^name set-grouping-individuals)
+-->
+   (<ts> ^grouping-level individuals)
+   (<ts> ^grouping-level small-groups -)
+   (<ts> ^grouping-level large-groups -)
+   (<ol> ^grouping-radius <g>)
+   (<g> ^value 0)
+}
+
+sp {apply*set-grouping-small-groups
+    (state <s> ^operator <o>
+               ^io.output-link <ol>
+               ^top-state <ts>)
+    (<o> ^name set-grouping-small-groups)
+-->
+   (<ts> ^grouping-level individuals -)
+   (<ts> ^grouping-level small-groups)
+   (<ts> ^grouping-level large-groups -)
+   (<ol> ^grouping-radius <g>)
+   (<g> ^value 32)
+}
+
+sp {apply*set-grouping-large-groups
+    (state <s> ^operator <o>
+               ^io.output-link <ol>
+               ^top-state <ts>)
+    (<o> ^name set-grouping-large-groups)
+-->
+   (<ts> ^grouping-level individuals -)
+   (<ts> ^grouping-level small-groups -)
+   (<ts> ^grouping-level large-groups)
+   (<ol> ^grouping-radius <g>)
+   (<g> ^value 64)
+}
+
+## vsExtract.pl: extracting from file initialize-sorts.soar
+sp {propose*initialize-sorts
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-sorts)
+}
+
+sp {apply*initialize-sorts
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-sorts)
+-->
+   (<s> ^name sorts
+        ^grouping-level small-groups
+        ^planning <pl>
+        ^opportunity-task-buffer <otb>
+        ^group-memory <gm>)
+   (<pl> ^retrieval-buffer <rb>
+         ^execution-buffer <eb>
+         ^completed <c>)
+   (<gm> ^mine <mg>
+         ^world <wg>)
+}
+
+sp {propose*start-build-workers
+   (state <s> ^name sorts
+             -^running-task.name build-workers)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-build-workers)
+}
+
+sp {propose*start-miner-assignment
+   (state <s> ^name sorts
+             -^running-task.name miner-assignment)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-miner-assignment)
+}
+sp {apply*start-build-workers
+   (state <s> ^operator.name start-build-workers)
+-->
+   (<s> ^running-task.name build-workers)
+}
+
+sp {apply*start-miner-assignment
+   (state <s> ^operator.name start-miner-assignment)
+-->
+   (<s> ^running-task.name miner-assignment)
+}

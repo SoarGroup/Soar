@@ -1,0 +1,347 @@
+
+## vsExtract.pl: extracting from file move.soar
+
+## vsExtract.pl: extracting from file move_source.soar
+
+## vsExtract.pl: extracting from file _firstload.soar
+
+## vsExtract.pl: extracting from file all_source.soar
+
+## vsExtract.pl: extracting from file elaborations_source.soar
+
+## vsExtract.pl: extracting from file _all.soar
+sp {elaborate*state*name
+   (state <s> ^superstate.operator.name <name>)
+-->
+   (<s> ^name <name>)
+}
+
+sp {elaborate*state*top-state
+   (state <s> ^superstate.top-state <ts>)
+-->
+   (<s> ^top-state <ts>)
+}
+
+
+## vsExtract.pl: extracting from file top-state.soar
+sp {elaborate*top-state*top-state
+   (state <s> ^superstate nil)
+-->
+   (<s> ^top-state <s>)
+}
+
+
+## vsExtract.pl: extracting from file apply-vision-commands.soar
+sp {apply*enable-owner-grouping
+   (state <s> ^operator <o>
+              ^io <io>)
+    (<o> ^name enable-owner-grouping)
+-->
+   (<io> ^output-link enable-owner-grouping)
+}
+
+sp {apply*look-at-feature
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name look-at-feature
+         ^feature <feature>
+         ^sector <sector>)
+-->
+   (<ol> ^look-feature <lf>)
+   (<lf> ^feature <feature>
+         ^sector <sector>)
+}
+sp {apply*move-to-feature
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name move-to-feature
+         ^feature <feature>
+         ^sector <sector>)
+-->
+   (<ol> ^move-feature <lf>)
+   (<lf> ^feature <feature>
+         ^sector <sector>)
+}
+
+sp {apply*change-view-width
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name change-view-width
+         ^width <w>)
+-->
+   (<ol> ^view-width <vw>)
+   (<vw> ^value <w>)
+}
+   
+sp {init-grouping-level
+   (state <s> ^top-state <ts>)
+   (<s> -^top-state grouping-level)
+-->
+   (<ts> ^grouping-level small-groups)
+}
+
+sp {apply*set-grouping-individuals
+    (state <s> ^operator <o>
+               ^io.output-link <ol>
+               ^top-state <ts>)
+    (<o> ^name set-grouping-individuals)
+-->
+   (<ts> ^grouping-level individuals)
+   (<ts> ^grouping-level small-groups -)
+   (<ts> ^grouping-level large-groups -)
+   (<ol> ^grouping-radius <g>)
+   (<g> ^value 0)
+}
+
+sp {apply*set-grouping-small-groups
+    (state <s> ^operator <o>
+               ^io.output-link <ol>
+               ^top-state <ts>)
+    (<o> ^name set-grouping-small-groups)
+-->
+   (<ts> ^grouping-level individuals -)
+   (<ts> ^grouping-level small-groups)
+   (<ts> ^grouping-level large-groups -)
+   (<ol> ^grouping-radius <g>)
+   (<g> ^value 32)
+}
+
+sp {apply*set-grouping-large-groups
+    (state <s> ^operator <o>
+               ^io.output-link <ol>
+               ^top-state <ts>)
+    (<o> ^name set-grouping-large-groups)
+-->
+   (<ts> ^grouping-level individuals -)
+   (<ts> ^grouping-level small-groups -)
+   (<ts> ^grouping-level large-groups)
+   (<ol> ^grouping-radius <g>)
+   (<g> ^value 64)
+}
+## vsExtract.pl: extracting from file follow-workers.soar
+
+sp {propose*move-to-friendly-workers
+   (state <s> ^io.input-link <il>)
+   (<il> ^feature-maps.friendly_workers <fr>)
+   (<fr> ^<sector> > 0)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name move-to-feature
+        ^feature friendly_workers
+        ^sector <sector>)
+}
+## vsExtract.pl: extracting from file basic.soar
+#####################
+# generic operators #
+#####################
+
+
+
+sp {propose*remove-move-command
+    (state <s> ^io.output-link.move <m>)
+    (<m> ^status complete)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name remove-move-command
+         ^command <m>)}
+
+sp {apply*remove-move-command
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name remove-move-command
+         ^command <m>)
+-->
+    (<ol> ^move <m> -)}
+
+sp {top-state*propose*wait
+    (state <s> ^attribute state
+               ^choices none
+              -^operator.name wait)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name wait)}
+## vsExtract.pl: extracting from file free.soar
+sp {propose*free
+   (state <s> ^io.input-link <il>)
+   (<s> -^freed <id>)
+   (<il> ^groups.group <g>)
+   (<g> ^type worker
+        ^id <id>
+        ^command_running 0
+        ^command agagnan)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name free
+        ^group <id>)
+}
+
+sp {apply*free
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name free
+        ^group <id>)
+-->
+   (<s> ^freed <id>)
+   (<ol> ^free.group0 <id>)
+}
+## vsExtract.pl: extracting from file initialize-move.soar
+sp {propose*initialize-move
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-move)
+}
+
+sp {apply*initialize-move
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-move)
+-->
+   (<s> ^name move)
+}
+
+
+## vsExtract.pl: extracting from file initialize-move_source.soar
+
+## vsExtract.pl: extracting from file elaborations.soar
+
+## vsExtract.pl: extracting from file move.soar
+sp {propose*move-north-west
+    (state <s> ^io.input-link <il>
+              -^already-mining <gid>
+               )
+    (<il> ^groups <gs>)
+    (<gs> ^group <g>)
+    (<g> ^type worker
+         ^id   <gid>
+         ^y-pos > 100
+         ^command_running 0
+         ^comment out)
+-->
+   (<s> ^operator <o> + > =)
+    (<o> ^name move
+         ^group <gid>
+         ^x 10
+         ^y 10)}
+
+
+
+sp {propose*move-south-east
+    (state <s> ^io.input-link <il>
+              -^already-mining <gid>
+               )
+    (<il> ^groups <gs>)
+    (<gs> ^group <g>)
+    (<g> ^type worker
+         ^id   <gid>
+         ^command_running 0
+         ^command_success 0)
+-->
+   (<s> ^operator <o> + > =)
+    (<o> ^name move
+         ^group <gid>
+         ^x 300
+         ^y 300)
+}
+
+
+sp {apply*move
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name move
+        ^group <g>
+        ^x <x>
+        ^y <y> )
+-->
+   (<ol> ^move <m>)
+   (<m> ^group0 <g>
+        ^param0 <x>
+        ^param1 <y>)
+}
+
+sp {propose*remember-base
+    (state <s> ^io.input-link <il>
+              -^base)
+    (<il> ^groups.group <g>)
+    (<g> ^type  controlCenter
+         ^id    <id>)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name remember-base
+         ^id    <id>)}
+
+sp {apply*remember-base
+    (state <s> ^operator <o>)
+    (<o> ^name  remember-base
+         ^id    <id>)
+-->
+    (<s> ^base <b>)
+    (<b> ^id   <id>)}
+
+sp {propose*remember-mineral
+    (state <s> ^io.input-link <il>
+               ^base <b>
+              -^mineral)
+    (<il> ^world.groups.group <g>)
+    (<g> ^type mineral
+         ^id    <id>)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name remember-mineral
+         ^id    <id>)}
+
+sp {apply*remember-mineral
+    (state <s> ^operator <o>)
+    (<o> ^name remember-mineral
+         ^id    <id>)
+-->
+    (<s> ^mineral <m>)
+    (<m> ^id      <id>)}
+
+sp {propose*mine
+    (state <s> ^mineral         <m>
+               ^base            <b>
+              -^already-mining <wid>
+               ^io.input-link   <il>
+               )
+    (<il>      ^me.groups.group <w>)
+    (<w>       ^type            worker
+               ^id              <wid>)
+    (<m>       ^id              <mid>)
+    (<b>       ^id              <bid>)
+-->
+    (<s> ^operator <o> + > =)
+    (<o> ^name mine
+         ^worker-id  <wid>
+         ^mineral-id <mid>
+         ^base-id    <bid>)}
+
+#sp {apply*mine
+#    (state <s> ^operator <o>
+#               ^io.output-link <ol>)
+#    (<o> ^name mine
+#         ^worker-id  <wid>
+#         ^mineral-id <mid>
+#         ^base-id    <bid>
+#         ^afaa aga)
+#-->
+ #  (<s> ^already-mining <wid>)
+  # (<ol> ^mine <m>)
+   #(<m> ^group0 <wid>
+    #    ^group1 <mid>
+     #   ^group2 <bid>)}
+
+sp {apply*mine
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name mine
+         ^worker-id  <wid>
+         ^mineral-id <mid>
+         ^base-id    <bid>)
+-->
+   (<s> ^already-mining <wid>)
+   (<ol> ^grouping-radius <g>)
+   (<g> ^value 0)
+}
+
+
