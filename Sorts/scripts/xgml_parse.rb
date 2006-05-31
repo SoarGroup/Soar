@@ -65,6 +65,15 @@ graph.each_element("section[@name='edge']") { |edgeElem|
   source = tasks[edgeElem.elements["attribute[@key='source']"][0].to_s]
   target = tasks[edgeElem.elements["attribute[@key='target']"][0].to_s]
 
+  isStartCondition = false
+  edgeElem.each_element("section[@name='LabelGraphics']") { |edgeLabel|
+    edgeLabel.each_element("attribute[@key='text']") { |label|
+      if label.text == "start"
+        isStartCondition = true
+      end
+    }
+  }
+
   if retrievals.has_key?(source)
     retrievals[source].add(target)
   else
@@ -74,10 +83,10 @@ graph.each_element("section[@name='edge']") { |edgeElem|
   end
 
   if deps.has_key?(target)
-    deps[target].add(source)
+    deps[target].add([source, isStartCondition])
   else
     ns = Set.new
-    ns.add(source)
+    ns.add([source, isStartCondition])
     deps[target] = ns
   end
 
@@ -99,23 +108,25 @@ initTasks.each { |t|
     paramString.concat(" ^#{param_name} #{param_val}") 
   }
 
-  op_proposal = <<EOF
+  # soar code for the actual operator
+
+  puts <<EOF
 sp {plan-memory*propose*#{opName}
    (state <s> ^name sorts
               ^planning <pl>)
    (<pl> ^execution-buffer <eb>
          ^retrieval-buffer <rb>
-         ^newly-completed <nc> 
          ^completed <c>)
   -(<eb> ^task.name #{t.name})
   -(<rb> ^task.name #{t.name})
-  -(<c> ^task.name #{t.name})
+  -(<c>  ^task.name #{t.name})
 -->
    (<s> ^operator <o> +)
    (<o> ^name #{opName})}
 EOF
 
-  op_apply = <<EOF
+  if paramString.size > 0
+    puts <<EOF
 sp {plan-memory*apply*#{opName}
    (state <s> ^name sorts
               ^operator <o>
@@ -128,8 +139,19 @@ sp {plan-memory*apply*#{opName}
          ^params <p>)
    (<p> #{paramString})}
 EOF
+  else
+    puts <<EOF
+sp {plan-memory*apply*#{opName}
+   (state <s> ^name sorts
+              ^operator <o>
+              ^planning.retrieval-buffer <rb>)
+   (<o> ^name #{opName})
+-->
+   (<rb> ^task <rt>)
+   (<rt> ^name #{t.name}
+         ^instance-of #{t.instance_of})
+EOF
 
-  puts op_proposal,"\n",op_apply,"\n"
   opId += 1
 }
 
@@ -137,11 +159,19 @@ EOF
 # Process all tasks with dependencies
 #
 retrievals.each_pair { |src, adjList|
+
   adjList.each { |tgt|
     opName = "#{src.name}-trigger-#{tgt.name}-#{opId}"
 
     depString = ""
-    deps[tgt].each {|d| depString.concat(" ^dep #{d.name}")}
+    deps[tgt].each {|d| 
+      if (d[1])
+        # start dependency
+        depString.concat(" ^start-dep #{d[0].name}")
+      else
+        depString.concat(" ^dep #{d[0].name}")
+      end
+    }
 
     paramString = ""
     tgt.params.each_pair { |param_name, param_val|
@@ -149,24 +179,38 @@ retrievals.each_pair { |src, adjList|
     }
 
     # soar code for the actual operator
-    op_proposal = <<EOF
+
+    puts <<EOF
 sp {plan-memory*propose*#{opName}
    (state <s> ^name sorts
               ^planning <pl>)
    (<pl> ^execution-buffer <eb>
          ^retrieval-buffer <rb>
-         ^newly-completed <nc> 
          ^completed <c>)
-   (<nc> ^task.name #{src.name})
+   (<c>  ^task.name #{src.name})
   -(<eb> ^task.name #{tgt.name})
   -(<rb> ^task.name #{tgt.name})
-  -(<c> ^task.name #{tgt.name})
+  -(<c>  ^task.name #{tgt.name})
 -->
    (<s> ^operator <o> +)
    (<o> ^name #{opName})}
 EOF
 
-    op_apply = <<EOF
+  if paramString.size > 0
+    puts <<EOF
+sp {plan-memory*apply*#{opName}
+   (state <s> ^name sorts
+              ^operator <o>
+              ^planning.retrieval-buffer <rb>)
+   (<o> ^name #{opName})
+-->
+   (<rb> ^task <rt>)
+   (<rt> ^name #{tgt.name}
+         ^instance-of #{tgt.instance_of}
+         #{depString})}
+EOF
+  else
+    puts <<EOF
 sp {plan-memory*apply*#{opName}
    (state <s> ^name sorts
               ^operator <o>
@@ -180,8 +224,8 @@ sp {plan-memory*apply*#{opName}
          #{depString})
    (<p> #{paramString})}
 EOF
+  end
 
-    puts op_proposal,"\n",op_apply,"\n"
     opId += 1
   }
 }
