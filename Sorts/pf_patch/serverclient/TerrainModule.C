@@ -256,3 +256,17 @@ void TerrainModule::findPath(GameObj* gob, GameObj* goal, TerrainBase::Path& pat
     timp.findPath(gob, goal, path);
 }
 
+void TerrainModule::insertImaginaryWorker(TerrainBase::Loc l) {
+  timp.insertImaginaryWorker(l);
+}
+void TerrainModule::removeImaginaryWorker(TerrainBase::Loc l) {
+  timp.removeImaginaryWorker(l);
+}
+void TerrainModule::insertDynamicObjs() {
+  timp.insertDynamicObjs();
+}
+void TerrainModule::removeDynamicObjs() {
+  timp.removeDynamicObjs();
+}
+
+

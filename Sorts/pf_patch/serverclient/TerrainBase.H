@@ -225,6 +225,10 @@ public :
   virtual void findPath(const Object* gob, const Loc &l2, Path &path) = 0;
     virtual void findPath(const Loc &l1, const Loc &l2, Path &path) = 0;
       virtual void findPath(const Object* gob, const Object* l2, Path &path) = 0;
+      virtual void insertImaginaryWorker(Loc l) = 0;
+      virtual void removeImaginaryWorker(Loc l) = 0;
+      virtual void insertDynamicObjs() = 0;
+      virtual void removeDynamicObjs() = 0;
   
 
   //---------------------------------------------------------------------

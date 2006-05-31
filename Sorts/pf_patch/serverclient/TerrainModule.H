@@ -20,6 +20,10 @@ public:
 void findPath(GameObj* gob, TerrainBase::Loc goal, TerrainBase::Path& path);
   void findPath(TerrainBase::Loc start, TerrainBase::Loc goal, TerrainBase::Path& path);
     void findPath(GameObj* gob, GameObj* goal, TerrainBase::Path& path);
+    void insertImaginaryWorker(TerrainBase::Loc l);
+    void removeImaginaryWorker(TerrainBase::Loc l);
+    void insertDynamicObjs();
+    void removeDynamicObjs();
 
 
   //---------------------------------------------------------
