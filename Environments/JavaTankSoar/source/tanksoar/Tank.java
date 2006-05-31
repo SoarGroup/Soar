@@ -153,6 +153,11 @@ public class Tank  extends WorldEntity {
 		m_LastMove = move;
 		m_RWaves = 0;
 		
+		// Shields must be handled pronto
+		if (m_LastMove.shields) {
+			handleShields();
+		}
+		
 		if (m_LastMove.rotate) {
 			rotate(m_LastMove.rotateDirection);
 			// Do not allow a move if we rotated.
@@ -245,6 +250,9 @@ public class Tank  extends WorldEntity {
 				m_LastMove.shields = true;
 				m_LastMove.shieldsSetting = shieldsSetting.equalsIgnoreCase(kOn) ? true : false; 
 				
+				// Shields must be handled pronto
+				handleShields();
+				
 			} else if (commandName.equalsIgnoreCase(kRotateID)) {
 				
 				m_LastMove.rotateDirection = commandId.GetParameterValue(kDirectionID);
@@ -279,21 +287,7 @@ public class Tank  extends WorldEntity {
 		}
 	}
 	
-	public void updateSensors(TankSoarWorld world) {		
-		TankSoarCell cell = world.getCell(getLocation());
-		
-		// Chargers
-		if (m_Health > 0) {
-			if (cell.isEnergyRecharger()) {
-				m_Energy += 250;
-				m_Energy = m_Energy > kMaximumEnergy ? kMaximumEnergy : m_Energy;
-			}
-			if (cell.isHealthRecharger()) {
-				m_Health += 250;
-				m_Health = m_Health > kMaximumHealth ? kMaximumHealth : m_Health;
-			}
-		}
-		
+	private void handleShields() {
 		// Handle shields.
 		boolean desiredShieldStatus = m_LastMove.shields ? m_LastMove.shieldsSetting : m_ShieldStatus;
 		boolean enoughPowerForShields = m_Energy >= kSheildEnergyUsage;
@@ -313,7 +307,23 @@ public class Tank  extends WorldEntity {
 		if (m_ShieldStatus) {
 			m_Energy -= kSheildEnergyUsage;
 		}
+	}
 	
+	public void updateSensors(TankSoarWorld world) {		
+		TankSoarCell cell = world.getCell(getLocation());
+		
+		// Chargers
+		if (m_Health > 0) {
+			if (cell.isEnergyRecharger()) {
+				m_Energy += 250;
+				m_Energy = m_Energy > kMaximumEnergy ? kMaximumEnergy : m_Energy;
+			}
+			if (cell.isHealthRecharger()) {
+				m_Health += 250;
+				m_Health = m_Health > kMaximumHealth ? kMaximumHealth : m_Health;
+			}
+		}
+		
 		// Handle radar.
 		// Figure out desired radar power.
 		int desiredRadarPower = m_LastMove.radarPower ? m_LastMove.radarPowerSetting : m_RadarPower;
