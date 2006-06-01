@@ -39,12 +39,7 @@ sp {apply*change-view-width
    (<vw> ^value <w>)
 }
 
-sp {init-grouping-level
-   (state <s> ^top-state <ts>)
-   (<s> -^top-state grouping-level)
--->
-   (<ts> ^grouping-level small-groups)
-}
+
 sp {apply*set-grouping-individuals
     (state <s> ^operator <o>
                ^io.output-link <ol>

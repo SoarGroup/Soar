@@ -1,4 +1,4 @@
-26
+28
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -25,7 +25,9 @@ SOAR_ID 22
 ENUMERATION 23 1 grouping
 SOAR_ID 24
 ENUMERATION 25 1 apply-mine
-26
+ENUMERATION 26 1 find-worker
+SOAR_ID 27
+28
 0 io 1
 0 name 7
 0 operator 4
@@ -37,6 +39,7 @@ ENUMERATION 25 1 apply-mine
 0 operator 20
 0 operator 22
 0 operator 24
+0 operator 27
 0 superstate 6
 0 top-state 0
 0 type 5
@@ -52,3 +55,4 @@ ENUMERATION 25 1 apply-mine
 20 name 21
 22 name 23
 24 name 25
+27 name 26

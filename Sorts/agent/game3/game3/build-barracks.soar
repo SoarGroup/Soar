@@ -1,1 +1,147 @@
-# comment!
+sp {propose*build-barracks
+   (state <s> ^name sorts
+              ^running-task.name build-barracks)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name build-barracks)
+}
+
+
+sp {build-barracks*propose*set-cCenter-loc
+   (state <s> ^name build-barracks
+              ^io.input-link.groups <gs>
+             -^top-state.build-barracks.cCenter)
+   (<gs> ^group <g>)
+   (<g> ^type controlCenter
+        ^owner 0
+        ^x-pos <x>
+        ^y-pos <y>)
+        
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name set-cCenter-loc
+        ^x <x>
+        ^y <y>)
+}
+
+sp {build-barracks*apply*set-cCenter-loc
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name set-cCenter-loc
+        ^x <x>
+        ^y <y>)
+-->
+   (<ts> ^build-barracks.cCenter <cc>)
+   (<cc> ^x <x>
+         ^y <y>)
+}
+
+# this should keep looking at friendly units until a cCenter is seen
+sp {build-barracks*propose*find-cCenter
+   (state <s> ^name build-barracks
+             -^top-state.build-barracks.cCenter)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name visual-search-friendly)
+}
+
+sp {build-barracks*propose*find-build-location
+   (state <s> ^name build-barracks
+              ^top-state.build-barracks.cCenter <cc>
+             -^top-state.build-barracks.location)
+   (<cc> ^x <x>
+         ^y <y>)
+        
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name find-build-location
+        ^x <x>
+        ^y <y>
+        ^width 100)
+}
+
+sp {apply*find-build-location
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name find-build-location
+        ^x <x>
+        ^y <y>
+        ^width <w>)
+-->
+   (<ts> ^build-barracks.location <l>)
+   (<l> ^x (- <x> <w>)
+        ^y <y>)
+}
+
+sp {build-barracks*propose*location-found
+   (state <s> ^name build-barracks
+              ^top-state.find-location-near.result <l>)
+   (<l> ^x <x>
+        ^y <y>)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name barracks-location-found
+        ^x <x>
+        ^y <y>)
+}
+
+sp {build-barracks*apply*location-found
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name barracks-location-found
+        ^x <x>
+        ^y <y>)
+-->
+   (<ts> ^build-barracks.location <l>)
+   (<l> ^x <x>
+        ^y <y>)
+   (<s> ^top-state find-location-near -)
+}
+   
+
+sp {build-barracks*propose*find-worker
+   (state <s> ^name build-barracks
+             -^top-state.build-barracks.worker-id
+              ^top-state.build-barracks.location.x <x>
+              ^top-state.build-barracks.location.y <y>)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name find-free-worker
+        ^x <x>
+        ^y <y>)
+}
+
+sp {build-barracks*propose*worker-found
+   (state <s> ^name build-barracks
+              ^top-state.find-free-worker <f>)
+   (<f> ^done true
+        ^worker <id>)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name bb-worker-found
+        ^id <id>)
+}
+
+sp {build-barracks*apply*worker-found
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name bb-worker-found
+        ^id <id>)
+-->
+   (<ts> ^build-barracks.worker-id <id>)
+   (<s> ^top-state find-free-worker -)
+}
+
+sp {build-barracks*propose*start-build
+   (state <s> ^name build-barracks
+              ^top-state.build-barracks.worker-id <id>
+              ^top-state.build-barracks.location.x <x>
+              ^top-state.build-barracks.location.y <y>)
+-->
+   (<s> ^operator <o> + > =)
+    (<o> ^name orts-build-barracks
+         ^worker <id>
+         ^x <x>
+         ^y <y>)
+    (<s> ^top-state.build-barracks.started-build true)
+}

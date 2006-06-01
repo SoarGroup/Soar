@@ -1,7 +1,7 @@
-sp {apply*move
+sp {apply*orts-move
    (state <s> ^operator <o>
               ^io.output-link <ol>)
-   (<o> ^name move
+   (<o> ^name orts-move
         ^group <g>
         ^x <x>
         ^y <y> )
@@ -11,12 +11,39 @@ sp {apply*move
         ^param0 <x>
         ^param1 <y>)
 }
-sp {apply*mine
+sp {apply*orts-mine
    (state <s> ^operator <o>
               ^io.output-link <ol>)
-   (<o> ^name mine
+   (<o> ^name orts-mine
         ^group <g>)
 -->
    (<ol> ^mine <m>)
    (<m> ^group0 <g>)
+}
+
+sp {apply*orts-build-barracks
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name orts-build-barracks
+        ^worker <w>
+        ^x <x>
+        ^y <y>)
+-->
+   (<ol> ^build <b>)
+   (<b> ^group0 <w>
+        ^param0 1 # for barracks (see BuildFSM.h)
+        ^param1 <x>
+        ^param2 <y>)
+}
+
+sp {apply*orts-set-sticky
+   (state <s> ^operator <o>
+              ^io.output-link <ol>
+              ^top-state <ts>)
+   (<o> ^name orts-set-sticky
+        ^group <g>)
+-->
+   (<ol> ^stick <m>)
+   (<m> ^group0 <g>)
+   (<ts> ^finished-commands orts-set-sticky)
 }
