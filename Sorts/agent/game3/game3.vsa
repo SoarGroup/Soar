@@ -9,9 +9,10 @@ VERSION 4
 6	0	FOPERATOR apply-basic-actions apply-basic-actions.soar 7
 7	0	FOPERATOR basic basic.soar 8
 8	0	FOPERATOR build-barracks build-barracks.soar 9
-9	0	FOPERATOR miner-assignment miner-assignment.soar 10
-10	0	FOPERATOR plan-one plan-one.soar 14
-11	0	FOPERATOR planning planning.soar 13
-12	0	OPERATOR apply-vision-commands apply-vision-commands.soar 11
-13	0	OPERATOR initialize-sorts initialize-sorts.soar 12
+9	0	FOPERATOR fake-planning-start fake-planning-start.soar 16
+10	0	FOPERATOR miner-assignment miner-assignment.soar 10
+11	0	FOPERATOR x_plan-one x_plan-one.soar 11
+12	0	FOPERATOR x_planning x_planning.soar 12
+13	0	OPERATOR apply-vision-commands apply-vision-commands.soar 13
+14	0	OPERATOR initialize-sorts initialize-sorts.soar 14
 END

@@ -1,6 +1,6 @@
 sp {propose*miner-assignment
    (state <s> ^name sorts
-              ^running-task.name build-barracks)
+              ^running-task.name miner-assignment)
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name miner-assignment)

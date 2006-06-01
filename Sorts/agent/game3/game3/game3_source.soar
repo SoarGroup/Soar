@@ -8,8 +8,9 @@ popd
 source apply-basic-actions.soar
 source basic.soar
 source build-barracks.soar
+source fake-planning-start.soar
 source miner-assignment.soar
-source plan-one.soar
-source planning.soar
+source x_plan-one.soar
+source x_planning.soar
 source apply-vision-commands.soar
 source initialize-sorts.soar

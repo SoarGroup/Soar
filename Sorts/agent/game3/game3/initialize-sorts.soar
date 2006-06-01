@@ -22,29 +22,4 @@ sp {apply*initialize-sorts
          ^world <wg>)
 }
 
-sp {propose*start-build-workers
-   (state <s> ^name sorts
-             -^running-task.name build-workers)
--->
-   (<s> ^operator <o> + > =)
-   (<o> ^name start-build-workers)
-}
 
-sp {propose*start-miner-assignment
-   (state <s> ^name sorts
-             -^running-task.name miner-assignment)
--->
-   (<s> ^operator <o> + > =)
-   (<o> ^name start-miner-assignment)
-}
-sp {apply*start-build-workers
-   (state <s> ^operator.name start-build-workers)
--->
-   (<s> ^running-task.name build-workers)
-}
-
-sp {apply*start-miner-assignment
-   (state <s> ^operator.name start-miner-assignment)
--->
-   (<s> ^running-task.name miner-assignment)
-}
