@@ -121,7 +121,7 @@ int MineFSM::update() {
             "," << *gob->sod.y << endl;
         
         */
-        assert(Sorts::OrtsIO->getOrtsDistance(route->mineralInfo->mineral->gob,
+        assert(Sorts::OrtsIO->getOrtsDistance(route->mineralInfo->mineral->getGob(),
                                               gob) <= 2);
         // otherwise, we need to work on the MoveFSM precision
         
@@ -168,7 +168,7 @@ int MineFSM::update() {
       if (moveStatus == FSM_RUNNING) {
 #ifdef OPPORTUNISTIC_DROPOFF
         int ccDist = Sorts::OrtsIO->getOrtsDistance(
-            route->cCenterInfo->cCenter->gob, gob);
+            route->cCenterInfo->cCenter->getGob(), gob);
         if (ccDist <= 3) {
           tempVec.clear();
           tempVec.push_back(route->cCenterInfo->cCenter->getID());
@@ -205,7 +205,7 @@ int MineFSM::update() {
             " to " << *gob->sod.x << 
             "," << *gob->sod.y << endl;
         */
-        assert(Sorts::OrtsIO->getOrtsDistance(route->cCenterInfo->cCenter->gob,
+        assert(Sorts::OrtsIO->getOrtsDistance(route->cCenterInfo->cCenter->getGob(),
                                               gob) <= 3);
         // otherwise, we need to work on the MoveFSM precision
         

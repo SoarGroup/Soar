@@ -99,10 +99,6 @@ void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
     memory.pop();
 
   map<ObjectActionType, FSM*>::iterator i = behaviors.find(cmd);
-  cout << "ACTION TYPE ACTION TYPE ACTION TYPE ACTION TYPE "
-       << (cmd == OA_ATTACK) << endl;
-  cout << gob->bp_name() << endl;
-  cout << behaviors.size() << endl;
   assert(i != behaviors.end());
 
   i->second->init(prms);

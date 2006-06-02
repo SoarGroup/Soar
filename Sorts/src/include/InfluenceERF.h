@@ -1,16 +1,16 @@
-#ifndef SidedInfluenceERF_H
-#define SidedInfluenceERF_H
+#ifndef InfluenceERF_H
+#define InfluenceERF_H
 
 #include "ERF.h"
 
 #include "ScriptObj.H"
 
-#define msg cout << "SidedInfluenceERF.h: "
+#define msg cout << "InfluenceERF.h: "
 
-class SidedInfluenceERF : public ERF {
+class InfluenceERF : public ERF {
 public:
-  SidedInfluenceERF(int time_ticks, int _side, bool isGround) 
-  : ticks(time_ticks), side(_side)
+  InfluenceERF(int time_ticks, bool isGround) 
+  : ticks(time_ticks)
   {
     if (isGround) {
       rangeType = "max_ground_range";
@@ -20,12 +20,9 @@ public:
     }
   }
 
-  ~SidedInfluenceERF() { }
+  ~InfluenceERF() { }
 
   double operator()(GameObj* gob) {
-    if (gob->get_int("owner") != side) {
-      return -1.0;
-    }
     int move_dist;
     if (gob->has_attr("max_speed")) {
       move_dist = gob->get_int("max_speed") * ticks;
@@ -51,7 +48,6 @@ public:
 
 private:
   int ticks;
-  int side;
   string rangeType;
 };
 

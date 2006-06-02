@@ -3,6 +3,9 @@
 #include<stdlib.h>
 #include<pthread.h>
 
+#include <SDL/SDL.h>
+
+//#include "sml_Connection.h"
 #include "sml_Client.h"
 
 // our includes
@@ -19,13 +22,13 @@
 #include "Demo_SimpleTerrain.H"
 
 
-using namespace std;
+using namespace sml;
 
-void printOutput(sml::smlPrintEventId id,
+void printOutput(smlPrintEventId id,
                  void*                pUserData,
-                 sml::Agent*          pAgent,
+                 Agent*          pAgent,
                  const char*          pMessage) {
-  cout << "[SOAR] " << pMessage << endl;
+  std::cout << "[SOAR] " << pMessage << std::endl;
 }
 
 /* We have two different threads giving us events, Soar and ORTS.
@@ -45,18 +48,18 @@ void printOutput(sml::smlPrintEventId id,
 */
 
 
-void SoarUpdateEventHandler(sml::smlUpdateEventId id, 
+void SoarUpdateEventHandler(smlUpdateEventId id, 
                             void*                 pUserData,
-                            sml::Kernel*          pKernel,
-                            sml::smlRunFlags      runFlags) {
+                            Kernel*          pKernel,
+                            smlRunFlags      runFlags) {
   pthread_mutex_lock(Sorts::mutex);
-  cout << "SOAR EVENT {\n";
+  std::cout << "SOAR EVENT {\n";
   if (Sorts::catchup == true) {
-    cout << "ignoring Soar event, ORTS is behind.\n";
+    std::cout << "ignoring Soar event, ORTS is behind.\n";
     pthread_mutex_unlock(Sorts::mutex);
     return;
   }
-  sml::Agent *agent = pKernel->GetAgent("orts_agent");
+  Agent *agent = pKernel->GetAgent("orts_agent");
   
   Sorts::SoarIO->getNewSoarOutput();
 
@@ -73,7 +76,7 @@ void SoarUpdateEventHandler(sml::smlUpdateEventId id,
     Sorts::SoarIO->unlockSoarMutex();
     Sorts::SoarIO->setStale(false);
   }
-  cout << "SOAR EVENT }\n";
+  std::cout << "SOAR EVENT }\n";
   pthread_mutex_unlock(Sorts::mutex);
 }
 
@@ -84,7 +87,7 @@ void* RunSoar(void* ptr) {
    * grab the CPU and never let it go
    */
   sleep(1);
-  ((sml::Kernel*) ptr)->RunAllAgentsForever(sml::sml_INTERLEAVE_DECISION);
+  ((Kernel*) ptr)->RunAllAgentsForever(sml_INTERLEAVE_DECISION);
 
   // just to keep the compiler from warning
   return NULL;
@@ -106,6 +109,7 @@ void* RunOrts(void* ptr) {
 typedef Demo_SimpleTerrain::ST_Terrain Terrain;
 
 int main(int argc, char *argv[]) {
+  atexit(SDL_Quit);
 
   int port = 7777;
   int soarPort = 12121;
@@ -142,24 +146,24 @@ int main(int argc, char *argv[]) {
   pthread_mutex_t soarMutex = PTHREAD_MUTEX_INITIALIZER;
  
   pthread_mutex_t sortsMutex = PTHREAD_MUTEX_INITIALIZER;
-  cout << "about to init sml\n";
+  std::cout << "about to init sml\n";
 
   /*******************
    * Init sml client *
    *******************/
-  sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML", soarPort) ;
-  cout << "done\n";
+  Kernel* pKernel = Kernel::CreateKernelInNewThread("SoarKernelSML", soarPort) ;
+  std::cout << "done\n";
 
   // Check that nothing went wrong.  We will always get back a kernel object
   // even if something went wrong and we have to abort.
   if (pKernel->HadError()) {
-    cout << pKernel->GetLastErrorDescription() << endl;
+    std::cout << pKernel->GetLastErrorDescription() << std::endl;
     return 1;
   }
 
   // Create a Soar agent named test
   // NOTE: We don't delete the agent pointer.  It's owned by the kernel
-  sml::Agent* pAgent = pKernel->CreateAgent("orts_agent") ;
+  Agent* pAgent = pKernel->CreateAgent("orts_agent") ;
 
   // Check that nothing went wrong
   // NOTE: No agent gets created if thereâs a problem, so we have to check foor
@@ -174,12 +178,12 @@ int main(int argc, char *argv[]) {
     pAgent->LoadProductions(productions) ;
   }
   else {
-    cout << "Specify some productions to load!" << endl;
+    std::cout << "Specify some productions to load!" << std::endl;
     exit(1);
   }
 
   if (pAgent->HadError()) {
-    cout << pAgent->GetLastErrorDescription() << endl ;
+    std::cout << pAgent->GetLastErrorDescription() << std::endl ;
     return 1;
   }
 
@@ -201,7 +205,7 @@ int main(int argc, char *argv[]) {
   
   // connect to ORTS server
   if (!gsm.connect()) exit(10);
-  cout << "connected" << endl;
+  std::cout << "connected" << std::endl;
   
 
   Game& game = gsm.get_game();
@@ -210,7 +214,7 @@ int main(int argc, char *argv[]) {
   int gridSizeY = m.get_height() / 2;
 
 
-  cout <<"calling..\n";
+  std::cout <<"calling..\n";
   
   SoarInterface soarInterface( pAgent,
                                &objectActionMutex,
@@ -253,12 +257,20 @@ int main(int argc, char *argv[]) {
   // these params are then put on the input link when it is initialized
   pgm.initialize();
   soarInterface.initSoarInputLink();
-  
+
+#ifdef USE_CANVAS
+  // initialize the canvas
+  Sorts::canvas.init
+    ( ortsInterface.getMapXDim(), 
+      ortsInterface.getMapYDim(),
+      1.7 );
+#endif
+
 // register for all events
   gsm.add_handler(&ortsInterface);
 
-  //  pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, printOutput, 0);
-  pKernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &sorts);
+  //  pAgent->RegisterForPrintEvent(smlEVENT_PRINT, printOutput, 0);
+  pKernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &sorts);
   //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START, SoarSystemEventHandler, &state);
   //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_STOP, SoarSystemEventHandler, &state);
 
@@ -267,7 +279,7 @@ int main(int argc, char *argv[]) {
   pthread_attr_init(&soarThreadAttribs);
   pthread_t soarThread;
   pthread_create(&soarThread, &soarThreadAttribs, RunSoar, (void*) pKernel);
-  cout << "Soar is running" << endl;
+  std::cout << "Soar is running" << std::endl;
 
 
   // this drives the orts interrupt, which drives the middleware
@@ -275,12 +287,14 @@ int main(int argc, char *argv[]) {
   pthread_attr_init(&ortsThreadAttribs);
   pthread_t ortsThread;
   pthread_create(&ortsThread, &ortsThreadAttribs, RunOrts, (void*) &gsm);
-  cout << "ORTS client is running" << endl;
+  std::cout << "ORTS client is running" << std::endl;
 
   pthread_join(soarThread, NULL);
+  cout << "IT'S A TRAP" << endl;
   pthread_join(ortsThread, NULL);
+  cout << "IT'S A TRAP AGAIN" << endl;
 
-  cout << "!!!! Everything is finished !!!!" << endl;
+  std::cout << "!!!! Everything is finished !!!!" << std::endl;
 
   return 0;
 }

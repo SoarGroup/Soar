@@ -21,7 +21,7 @@ PerceptualGroupManager::PerceptualGroupManager() {
     
   // this default should be reflected in the agent's assumptions
   // (1024 = 32^2)
-  visionParams.groupingRadius = 102400;
+  visionParams.groupingRadius = 1024;
   
   // the number of objects near the focus point to add
   // agent can change this, if it wishes to cheat
@@ -375,8 +375,8 @@ void PerceptualGroupManager::reGroup() {
       
           // centers are stored in a separate list
           objectData.object = centerObject;
-          objectData.x = *centerObject->gob->sod.x;
-          objectData.y = *centerObject->gob->sod.y;
+          objectData.x = *centerObject->getGob()->sod.x;
+          objectData.y = *centerObject->getGob()->sod.y;
           objectData.oldGroup = true;
           
           centerGroupingList.push_back(objectData);
@@ -388,8 +388,8 @@ void PerceptualGroupManager::reGroup() {
               // don't add the center object to this list
               objectData.object = *objectIter;
               
-              objectData.x = *(*objectIter)->gob->sod.x;
-              objectData.y = *(*objectIter)->gob->sod.y;
+              objectData.x = *(*objectIter)->getGob()->sod.x;
+              objectData.y = *(*objectIter)->getGob()->sod.y;
               groupingList.push_back(objectData);
             }
             objectIter++;
@@ -404,8 +404,8 @@ void PerceptualGroupManager::reGroup() {
           objectIter = groupMembers.begin();
           while (objectIter != groupMembers.end()) {
             objectData.object = *objectIter;
-            objectData.x = *(*objectIter)->gob->sod.x;
-            objectData.y = *(*objectIter)->gob->sod.y;
+            objectData.x = *(*objectIter)->getGob()->sod.x;
+            objectData.y = *(*objectIter)->getGob()->sod.y;
             groupingList.push_back(objectData);
             objectIter++;
           }

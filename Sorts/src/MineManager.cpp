@@ -55,7 +55,7 @@ void MineManager::prepareRoutes(list<SoarGameObject*>& miners) {
   MiningRoute* best;
 
   msg << "preparing " << numAssignments << " routes.\n";
-  Sorts::terrainModule->removeDynamicObjs();
+  //Sorts::terrainModule->removeDynamicObjs();
 
   // if this fails, not every route that was prepared last time was requested 
   // by the FSM.
@@ -72,7 +72,7 @@ void MineManager::prepareRoutes(list<SoarGameObject*>& miners) {
     
     assigned.push_back(false);
   }
-  Sorts::terrainModule->insertDynamicObjs();
+  //Sorts::terrainModule->insertDynamicObjs();
   double minDistance;
   int minMinerIdx;
   SoarGameObject* minMinerPtr;
@@ -887,25 +887,25 @@ double MineManager::pathFindDist(SoarGameObject* obj1, SoarGameObject* obj2) {
   TerrainBase::Path path;
   TerrainBase::Loc prevLoc;
   msg << "finding path:\n"
-      << *(obj1->gob->sod.x) << ","<< *(obj1->gob->sod.y)
-      << " -> " << *(obj2->gob->sod.x) << ","<< *(obj2->gob->sod.y)
+      << *(obj1->getGob()->sod.x) << ","<< *(obj1->getGob()->sod.y)
+      << " -> " << *(obj2->getGob()->sod.x) << ","<< *(obj2->getGob()->sod.y)
       << endl;
-  Sorts::terrainModule->findPath(obj1->gob, obj2->gob, path);
+  Sorts::terrainModule->findPath(obj1->getGob(), obj2->getGob(), path);
   double result = 0;
   if (path.locs.size() == 0) {
     result = -1;
   }
   else {
     // path is obj1->obj2, waypoints in reverse order
-    prevLoc.x = *obj1->gob->sod.x;
-    prevLoc.y = *obj1->gob->sod.y;
+    prevLoc.x = *obj1->getGob()->sod.x;
+    prevLoc.y = *obj1->getGob()->sod.y;
     msg << "loc: " << prevLoc.x << "," << prevLoc.y << endl;
     for (int i=path.locs.size()-1; i>=0; i--) {
       result += path.locs[i].distance(prevLoc);
       msg << "loc: " << path.locs[i].x << "," << path.locs[i].y << endl;
       prevLoc = path.locs[i];
     }
-    msg << "then: " <<*obj2->gob->sod.x << "," << *obj2->gob->sod.y << endl;
+    msg << "then: " <<*obj2->getGob()->sod.x << "," << *obj2->getGob()->sod.y << endl;
   }
   msg << "raw pf dist: " << result << "\n";
   return result;

@@ -109,7 +109,6 @@ void Satellite::getCollisions
     cr = r + (int) erf->maxRadius();
   }
   int binSize = intDivC(cr, tile_points);
-  msg << "binSize: " << binSize << endl;
   int binTilePoints = binSize * tile_points;
   int binWidth = intDivC(Sorts::OrtsIO->getMapXDim(), binTilePoints);
   assert (binWidth == intDivC(width, binSize));
@@ -177,7 +176,6 @@ void Satellite::getCollisions
   std::set<GameObj*>::iterator it;
   for(int i=0; i<9; i++) {
     if(check[i]) {
-      msg << "Checking bin " << bins[i] << endl;
       int cellStartRow = (bins[i] / binWidth) * binSize;
       int cellStartCol = (bins[i] % binWidth) * binSize;
       for(int j = cellStartRow; j < cellStartRow + binSize; j++) {
@@ -186,8 +184,6 @@ void Satellite::getCollisions
           if (k >= width) { break; }
 
           int cell = j * width + k;
-          msg << "Checking cell " << j << ", " << k << "(" << cell
-              << ")" << endl;
           for(it = Map[cell].begin(); it != Map[cell].end(); it++) {
             int objx =  *(*it)->sod.x;
             int objy =  *(*it)->sod.y;

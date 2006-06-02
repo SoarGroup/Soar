@@ -178,7 +178,36 @@ void OrtsInterface::updateSoarGameObjects() {
   
   set <SoarGameObject*> requiredThisCycle = requiredUpdatesNextCycle;
   requiredUpdatesNextCycle.clear();
+
+  FORALL(changes.vanished_objs, obj) {
+    GameObj* gob = (*obj)->get_GameObj();
+    if (gob == 0) continue;
+    if (gob->sod.in_game) {
+      /* we should have a SoarGameObject for this GameObj, if not, we're in
+       * trouble
+       */
+      assert(objectMap.find(gob) != objectMap.end());
+      requiredUpdatesNextCycle.erase(objectMap[gob]);
+      requiredThisCycle.erase(objectMap[gob]);
+      removeVanishedObject(gob);
+
+    }
+  }
   
+  FORALL(changes.dead_objs, obj) {
+    GameObj* gob = (*obj)->get_GameObj();
+    if (gob == 0) continue;
+    if (gob->sod.in_game) {
+      /* we should have a SoarGameObject for this GameObj, if not, we're in
+       * trouble
+       */
+      assert(objectMap.find(gob) != objectMap.end());
+      requiredUpdatesNextCycle.erase(objectMap[gob]);
+      requiredThisCycle.erase(objectMap[gob]);
+      removeDeadObject(gob);
+    }
+  }
+
   // add new objects
   FORALL(changes.new_objs, obj) {
     GameObj* gob = (*obj)->get_GameObj();
@@ -216,35 +245,6 @@ void OrtsInterface::updateSoarGameObjects() {
     else if (gob == playerGameObj) {
       //updateSoarPlayerInfo();
       assert(false);
-    }
-  }
-
-  FORALL(changes.vanished_objs, obj) {
-    GameObj* gob = (*obj)->get_GameObj();
-    if (gob == 0) continue;
-    if (gob->sod.in_game) {
-      /* we should have a SoarGameObject for this GameObj, if not, we're in
-       * trouble
-       */
-      assert(objectMap.find(gob) != objectMap.end());
-      requiredUpdatesNextCycle.erase(objectMap[gob]);
-      requiredThisCycle.erase(objectMap[gob]);
-      removeVanishedObject(gob);
-
-    }
-  }
-  
-  FORALL(changes.dead_objs, obj) {
-    GameObj* gob = (*obj)->get_GameObj();
-    if (gob == 0) continue;
-    if (gob->sod.in_game) {
-      /* we should have a SoarGameObject for this GameObj, if not, we're in
-       * trouble
-       */
-      assert(objectMap.find(gob) != objectMap.end());
-      requiredUpdatesNextCycle.erase(objectMap[gob]);
-      requiredThisCycle.erase(objectMap[gob]);
-      removeDeadObject(gob);
     }
   }
 

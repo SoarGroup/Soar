@@ -45,9 +45,10 @@ class SoarGameObject{
 
   Rectangle getBoundingBox();
 
-  GameObj *gob;
+  GameObj* getGob()   { return gob; }
 
 private:
+  GameObj* gob;
 
   sint4 sat_loc;
 

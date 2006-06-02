@@ -4,7 +4,9 @@
 #include <list>
 #include <set>
 #include <string>
+
 #include "SoarAction.h"
+#include "AttributeSet.h"
 //#include "OrtsInterface.h"
 #include "general.h"
 #include "MapRegion.h"
@@ -40,7 +42,7 @@ class PerceptualGroup {
     void setHasStaleMembers(bool val);
     bool getHasStaleProperties();
     void setHasStaleProperties(bool val);
-    groupPropertyStruct* getSoarData();
+    const AttributeSet& getAttributes();
     pair<string, int> getCategory(bool ownerGrouping);
     int getSize();
     SoarGameObject* getCenterMember();
@@ -87,14 +89,16 @@ class PerceptualGroup {
     // (return false if it was just created)
     // this is set to false initially, set to true when generateData called.
     bool isOld();
-   
+    
+    void getRegionsOccupied(list<int>& regions);
+
   private: // functions
     void updateBoundingBox();
     void updateRegionsOccupied();
 
   private:
     set <SoarGameObject*> members;
-    groupPropertyStruct soarData;
+    AttributeSet attribs;
 
     bool inSoar; // true if present in input link
     

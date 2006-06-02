@@ -1,7 +1,7 @@
 #ifndef AttackFSM_H
 #define AttackFSM_H
 
-#include "Point.h"
+#include "Vec2d.h"
 #include "FSM.h"
 #include "MoveFSM.h"
 #include "SoarGameObject.h"
@@ -20,24 +20,33 @@ public:
 // these are all commands from the attack manager
   void attack(SoarGameObject* t);
   bool isFiring();
-  SoarGameObject* getTarget() { return target; }
+  SoarGameObject* firingAt() { return firingTarget; }
 
-  void move(int x, int y);
+  int move(int x, int y);
   bool isMoving() { return moving; }
-  Point getDestination() { return dest; }
+  Vec2d getDestination() { return dest; }
   void stopMoving();
 
   // AttackManager is about to be deallocated, 
   void disown(int lastStatus);
 
+
+public:
+  bool reassign;
+  int failCount;
+  SoarGameObject* target;
+
 private:
   AttackManager* manager;
 
-  SoarGameObject* target;
   ScriptObj* weapon;
 
   MoveFSM* moveFSM;
-  Point dest;
+  Vec2d dest;
+
+  Vector<sint4> attackParams;
+
+  SoarGameObject* firingTarget;
 
 public: // for debug only
   bool moving;

@@ -1,11 +1,16 @@
 #ifndef general_h
 #define general_h
 
-#include<list>
-#include<utility>
-#include<iostream>
+#include <list>
+#include <utility>
+#include <iostream>
+
+#include "Circle.h"
+#include "Vec2d.h"
 
 #include "sml_Client.h"
+
+#include "GameObj.H"
 
 #define PI 3.141592654
 
@@ -13,12 +18,6 @@ using namespace std;
 
 // I had to move this here because of forward declaration crazyness
 typedef list<pair<string, int> > groupPropertyList;
-struct groupPropertyStruct {
-  list<pair<string, int> >    stringIntPairs;
-  list<pair<string, float> >  stringFloatPairs;
-  list<pair<string, string> > stringStringPairs;
-  list<int> regionsOccupied;
-};
 
 string catStrInt(const char* str, int x);
 
@@ -31,7 +30,7 @@ double distance(int x1, int y1, int x2, int y2);
 
 // translates the heading data from the heading variable
 // in the game object into a vector (i, j). 
-void getHeadingVector(int gameHeading, double *i, double *j);
+Vec2d getHeadingVector(int gameHeading);
 
 struct VisionParameterStruct {
   int centerX;
@@ -53,5 +52,18 @@ double coordDistance(coordinate c1, coordinate c2);
 double coordDistanceSq(coordinate c1, coordinate c2);
 bool operator ==(const coordinate& c1, const coordinate& c2);
 ostream& operator << (ostream& os, const coordinate& c);
+
+
+/******************************************************
+ * WEAPON RELATED FUNCTIONS                           *
+ ******************************************************/
+double weaponDamageRate(GameObj* gob);
+bool canHit(GameObj *atk, GameObj *tgt);
+bool canHit(GameObj *gob, const Circle& c, bool isGround);
+bool canHit(GameObj* atk, const Circle& loc, GameObj *tgt);
+bool canHit(const Circle& c1, const Circle& c2, double range); 
+
+void positionsOnCircle (const Vec2d& center, const Vec2d& firstPos, 
+  double chordLen, list<Vec2d>& positions);
 
 #endif

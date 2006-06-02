@@ -72,13 +72,17 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
   lockSoarMutex();
   stale = true;
 
-  groupPropertyStruct& gps = *group->getSoarData();
+  AttributeSet attribs = group->getAttributes();
   
   // make sure the group exists
   assert(groupTable.find(group) != groupTable.end());
   
   InputLinkGroupRep &g = groupTable[group];
  
+  list<IntAttribType>    intAttribs    = attribs.getIntAttributes();
+  list<FloatAttribType>  floatAttribs  = attribs.getFloatAttributes();
+  list<StringAttribType> stringAttribs = attribs.getStringAttributes();
+
   if (!g.added) {
     // add the group to the soar input link if it hasn't been already
     g.added = true;
@@ -94,36 +98,35 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
     cout << "\towner: " << group->getOwner() << endl;
     
     // add properties
-    for(list<pair<string,int> >::iterator 
-        i  = gps.stringIntPairs.begin(); 
-        i != gps.stringIntPairs.end(); 
+    for(list<IntAttribType>::iterator 
+        i  = intAttribs.begin(); 
+        i != intAttribs.end(); 
         i++) 
     {
       // create a new WME object for the property
-      g.intProperties[(*i).first] = 
-        agent->CreateIntWME(g.WMEptr, (*i).first.c_str(), (*i).second);
-      cout << "\tadd: " << (*i).first << " " << (*i).second << endl;
-    }
-    for(list<pair<string,float> >::iterator
-        i  = gps.stringFloatPairs.begin();
-        i != gps.stringFloatPairs.end();
-        i++)
-    {
-      g.floatProperties[(*i).first] = 
-        agent->CreateFloatWME(g.WMEptr, (*i).first.c_str(), (*i).second);
+      g.intProperties[i->first] = 
+        agent->CreateIntWME(g.WMEptr, i->first.c_str(), i->second);
       cout << "\tadd: " << (*i).first << " " << (*i).second << endl;
     }
 
-    for(list<pair<string,string> >::iterator 
-        i = gps.stringStringPairs.begin(); 
-        i != gps.stringStringPairs.end(); 
+    for(list<FloatAttribType>::iterator
+        i  = floatAttribs.begin();
+        i != floatAttribs.end();
+        i++)
+    {
+      g.floatProperties[i->first] = 
+        agent->CreateFloatWME(g.WMEptr, i->first.c_str(), i->second);
+      cout << "\tadd: " << i->first << " " << i->second << endl;
+    }
+
+    for(list<StringAttribType>::iterator 
+        i  = stringAttribs.begin(); 
+        i != stringAttribs.end(); 
         i++) 
     {
       // create a new WME object for the property
-      g.stringProperties[(*i).first] = 
-        agent->CreateStringWME( g.WMEptr, 
-                                (*i).first.c_str(), 
-                                (*i).second.c_str() );
+      g.stringProperties[i->first] = 
+        agent->CreateStringWME(g.WMEptr,i->first.c_str(),i->second.c_str());
       cout << "\tadd: " << (*i).first << " " << (*i).second << endl;
     }
   }
@@ -131,10 +134,10 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
     cout << "XXX updating id " << g.groupId << " ptr " << (int) group << endl;
     // group already added, just update values.
     // Note that I'm assuming no new values are introduced
-    for(list<pair<string, int> >::iterator
-        i = gps.stringIntPairs.begin(); 
-        i != gps.stringIntPairs.end(); 
-        i++)
+    for(list<IntAttribType>::iterator 
+       i  = intAttribs.begin(); 
+       i != intAttribs.end(); 
+       i++) 
     {
       // (added assertions to check this.. -sw)
       assert(g.intProperties.find((*i).first) 
@@ -143,9 +146,9 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
       cout << "\tupd: " << (*i).first << " " << (*i).second << endl;
     }
 
-    for(list<pair<string,float> >::iterator
-        i  = gps.stringFloatPairs.begin();
-        i != gps.stringFloatPairs.end();
+    for(list<FloatAttribType>::iterator
+        i  = floatAttribs.begin();
+        i != floatAttribs.end();
         i++)
     {
       assert(g.floatProperties.find(i->first) != g.floatProperties.end());
@@ -153,15 +156,14 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
       cout << "\tupd: " << i->first << " " << i->second << endl;
     }
 
-    for(list<pair<string, string> >::iterator 
-        j = gps.stringStringPairs.begin();
-        j != gps.stringStringPairs.end(); 
-        j++) 
+    for(list<StringAttribType>::iterator 
+        i  = stringAttribs.begin(); 
+        i != stringAttribs.end(); 
+        i++) 
     {
-      assert(g.stringProperties.find((*j).first) 
-             != g.stringProperties.end());
-      agent->Update(g.stringProperties[(*j).first], (*j).second.c_str());
-      cout << "\tupd: " << (*j).first << " " << (*j).second << endl;
+      assert(g.stringProperties.find(i->first) != g.stringProperties.end());
+      agent->Update(g.stringProperties[i->first], i->second.c_str());
+      cout << "\tupd: " << i->first << " " << i->second << endl;
     }
   }
 
@@ -174,9 +176,13 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
     agent->DestroyWME(*i);
   }
   g.regionWMEs.clear();
+
+  list<int> regions;
+  group->getRegionsOccupied(regions);
+
   for(list<int>::iterator 
-      i  = gps.regionsOccupied.begin();
-      i != gps.regionsOccupied.end();
+      i  = regions.begin();
+      i != regions.end();
       i++)
   {
     g.regionWMEs.push_back(agent->CreateIntWME(g.WMEptr, "in-region", *i));
@@ -357,29 +363,34 @@ void SoarInterface::processObjectAction(ObjectActionType type,
     if (groupIdLookup.find(groupId) == groupIdLookup.end()) {
       cout << "ERROR: no group " << groupId << endl;
       newAction.type = OA_NO_SUCH_ACTION;
+      break;
       //assert(false);
     }
     else {
       newAction.groups.push_back(groupIdLookup[groupId]);
     }
   }
-  
-  // append all the integer parameters
-  int paramCounter = 0;
-  while (true) {
-    const char* paramValue 
-    = cmdPtr->GetParameterValue(catStrInt("param", paramCounter++).c_str());
-    if (paramValue == NULL) {
-      break;
+
+  if (newAction.type != OA_NO_SUCH_ACTION) {
+    // append all the integer parameters
+    int paramCounter = 0;
+    while (true) {
+      const char* paramValue 
+      = cmdPtr->GetParameterValue(catStrInt("param", paramCounter++).c_str());
+      if (paramValue == NULL) {
+        break;
+      }
+      newAction.params.push_back(atoi(paramValue));
     }
-    newAction.params.push_back(atoi(paramValue));
+    // add the new action to the action queue
+    objectActionQueue.push_back(newAction);
+
+    cmdPtr->AddStatusComplete();
   }
-
-  // add the new action to the action queue
-  objectActionQueue.push_back(newAction);
-
-  cmdPtr->AddStatusComplete();
-
+  else {
+    cmdPtr->AddStatusError();
+  }
+  
   unlockObjectActionMutex();
 }
 

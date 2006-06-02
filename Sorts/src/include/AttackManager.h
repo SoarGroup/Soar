@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <set>
+#include <map>
 
 #include "Point.h"
 #include "Circle.h"
@@ -11,6 +12,8 @@
 
 #include "Vector.H"
 #include "GameObj.H"
+
+#include "SortsCanvas.h"
 
 using namespace std;
 
@@ -29,15 +32,20 @@ private: // functions
   void            selectTarget();
   SoarGameObject* selectCloseTarget(GameObj* gob);
   void            positionAndAttack();
-  void            updateTargetList();
-  Point           attackArcPos(GameObj* atk, GameObj* tgt);
+  int             updateTargetList();
+  void            reprioritize();
+  void            attackArcPos(GameObj* atk, GameObj* tgt, list<Vec2d>& positions);
 
-private:
+  void            assignTarget(AttackFSM* fsm, SoarGameObject* target);
+  void            unassignTarget(SoarGameObject* target);
+
+private: // variables
+  
   list<AttackFSM*> team;
   set<SoarGameObject*> targets;
+  vector<SoarGameObject*> sortedTargets;
 
-  SoarGameObject* currTarget;
-  Vector<sint4> currAttackParams;
+  map<SoarGameObject*, list<AttackFSM*>*> targetAssignments;
 };
 
 #endif

@@ -23,6 +23,8 @@ class MineManager;
 #include "Satellite.h"
 #include "TerrainModule.H"
 
+#include "SortsCanvas.h"
+
 class Sorts {
   public:
     Sorts
@@ -64,6 +66,7 @@ class Sorts {
     static MineManager*             mineManager;
     static pthread_mutex_t*         mutex;
     static bool                     catchup;
+    static SortsCanvas              canvas;
 };
 
 

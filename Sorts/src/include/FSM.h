@@ -19,7 +19,7 @@ public:
 
   virtual int update()=0;
 
-  virtual GameObj *getGameObject(){return gob;}
+  GameObj* getGob(){return gob;}
   virtual void init(std::vector<sint4>);
   virtual ObjectActionType getName();
   virtual void panic();

@@ -14,7 +14,8 @@
 #include "AttackManagerRegistry.h"
 #include "AttackFSM.h"
 #include "MineManager.h"
-#include "SidedInfluenceERF.h"
+#include "InfluenceERF.h"
+#include "Vec2d.h"
 
 #define msg cout << "PerceptualGroup.cpp: "
 
@@ -24,7 +25,7 @@ PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
   setHasStaleMembers();
   hasStaleProperties= true;
   centerMember = unit;
-  typeName = unit->gob->bp_name();
+  typeName = unit->getGob()->bp_name();
   owner = unit->getOwner();
   friendly = unit->isFriendly();
   world = unit->isWorld();
@@ -36,9 +37,9 @@ PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
 
   minerals = (typeName == "mineral");
   friendlyWorker = (typeName == "worker");
-  airUnits = (*(unit->gob->sod.zcat) == 1);
-  landUnits = (*(unit->gob->sod.zcat) == 3);
-  bbox.collapse(*unit->gob->sod.x, *unit->gob->sod.y);
+  airUnits = (*(unit->getGob()->sod.zcat) == 1);
+  landUnits = (*(unit->getGob()->sod.zcat) == 3);
+  bbox.collapse(*unit->getGob()->sod.x, *unit->getGob()->sod.y);
 
   sticky = false;
   commandStatus = GRP_STATUS_IDLE;
@@ -71,10 +72,10 @@ void PerceptualGroup::addUnit(SoarGameObject* unit) {
 
   assert(members.find(unit) == members.end());
   // don't group units from different teams together
-  assert(unit->gob->get_int("owner") == owner);
+  assert(unit->getGob()->get_int("owner") == owner);
   
   if (not mixedType and 
-     (unit->gob->bp_name() != typeName)) {
+     (unit->getGob()->bp_name() != typeName)) {
     mixedType = true;
     minerals = false;
     friendlyWorker = false;
@@ -116,12 +117,8 @@ void PerceptualGroup::updateBoundingBox() {
 void PerceptualGroup::generateData() {
   int x = 0;
   int y = 0;
-  
-  soarData.stringIntPairs.clear();
-  soarData.stringFloatPairs.clear();
-  soarData.stringStringPairs.clear();
-  soarData.regionsOccupied.clear();
-  soarData.stringFloatPairs.clear();
+ 
+  attribs.clear();
 
   int health = 0;
   int speed = 0;
@@ -133,7 +130,7 @@ void PerceptualGroup::generateData() {
   int idle = 0;
   int stuck = 0;
     
-  double avg_heading_i = 0.0, avg_heading_j = 0.0;
+  Vec2d avg_heading;
 
   moving = false;
   
@@ -145,28 +142,25 @@ void PerceptualGroup::generateData() {
        currentObject++ )
   {
     if (canMine) {
-      mineralCount += (*currentObject)->gob->get_int("minerals");
+      mineralCount += (*currentObject)->getGob()->get_int("minerals");
     }
     
     // not everything has health
     // if no hp, just set it to 0
     // get_int asserts if not valid, this is what it calls internally
-    if ((*currentObject)->gob->get_int_ptr("hp") != 0) {
-      health += (*currentObject)->gob->get_int("hp");
+    if ((*currentObject)->getGob()->get_int_ptr("hp") != 0) {
+      health += (*currentObject)->getGob()->get_int("hp");
     }
     else {
       health += 0;
     }
-    speed += *(*currentObject)->gob->sod.speed;
-    x += *(*currentObject)->gob->sod.x;
-    y += *(*currentObject)->gob->sod.y;
+    speed += *(*currentObject)->getGob()->sod.speed;
+    x += *(*currentObject)->getGob()->sod.x;
+    y += *(*currentObject)->getGob()->sod.y;
 
     // average heading over those units that could move
-    if ((*currentObject)->gob->has_attr("heading")) {
-      double hi, hj;
-      getHeadingVector((*currentObject)->gob->get_int("heading"), &hi, &hj);
-      avg_heading_i += hi;
-      avg_heading_j += hj;
+    if ((*currentObject)->getGob()->has_attr("heading")) {
+      avg_heading += getHeadingVector((*currentObject)->getGob()->get_int("heading"));
     }
 
     objStatus = (*currentObject)->getStatus();
@@ -199,147 +193,96 @@ void PerceptualGroup::generateData() {
   updateBoundingBox();
   updateRegionsOccupied();
 
-  // normalize the heading vector
-  double heading_mag = sqrt(avg_heading_i * avg_heading_i + avg_heading_j * avg_heading_j);
-  avg_heading_i /= heading_mag;
-  avg_heading_j /= heading_mag;
+  attribs.add("health", health);
+  attribs.add("speed", speed);
+  attribs.add("num-members", size);
 
-  pair<string, int> stringIntWme;
-  pair<string, float> stringFloatWme;
-  pair<string, string> stringStringWme;
-
-  stringIntWme.first = "health";
-  stringIntWme.second = health;
-  soarData.stringIntPairs.push_back(stringIntWme);
-
-  stringIntWme.first = "speed";
-  stringIntWme.second = speed;
-  soarData.stringIntPairs.push_back(stringIntWme);
-
-  // how do we want to represent position?
-  stringIntWme.first = "x-pos";
-  stringIntWme.second = x;
-  soarData.stringIntPairs.push_back(stringIntWme);
-
-  stringIntWme.first = "y-pos";
-  stringIntWme.second = y;
-  soarData.stringIntPairs.push_back(stringIntWme);
-
-  stringIntWme.first = "x-min";
-  stringIntWme.second = bbox.xmin;
-  soarData.stringIntPairs.push_back(stringIntWme);
-
-  stringIntWme.first = "x-max";
-  stringIntWme.second = bbox.xmax;
-  soarData.stringIntPairs.push_back(stringIntWme);
-
-  stringIntWme.first = "y-min";
-  stringIntWme.second = bbox.ymin;
-  soarData.stringIntPairs.push_back(stringIntWme);
-
-  stringIntWme.first = "y-max";
-  stringIntWme.second = bbox.ymax;
-  soarData.stringIntPairs.push_back(stringIntWme);
-
-
-//// Heading info
-  stringFloatWme.first = "heading-i";
-  stringFloatWme.second = (float) avg_heading_i;
-  soarData.stringFloatPairs.push_back(stringFloatWme);
-  stringFloatWme.first = "heading-j";
-  stringFloatWme.second = (float) avg_heading_j;
-  soarData.stringFloatPairs.push_back(stringFloatWme);
-  
-  stringIntWme.first = "num_members";
-  stringIntWme.second = size;
-  soarData.stringIntPairs.push_back(stringIntWme);
+  attribs.add("x-pos", x);
+  attribs.add("y-pos", y);
+  attribs.add("x-min", bbox.xmin);
+  attribs.add("x-max", bbox.xmax);
+  attribs.add("y-min", bbox.ymin);
+  attribs.add("y-max", bbox.ymax);
 
   if (mixedType) {
-    stringStringWme.first = "type";
-    stringStringWme.second = "mixed";
+    attribs.add("type", "mixed");
   }
   else {
-    stringStringWme.first = "type";
-    stringStringWme.second = typeName;
+    attribs.add("type", typeName);
   }
-  soarData.stringStringPairs.push_back(stringStringWme);
-/*
+
+#if 0
+//// Heading info
+  Vec2d normHeading = avg_heading.norm();
+  attribs.add("heading-i", (float) normHeading(0));
+  attribs.add("heading-j", (float) normHeading(1));
+
 //// Threats and support
-  Circle approx = bbox.getCircumscribingCircle();
-  int numPlayers = Sorts::OrtsIO->getNumPlayers();
-  // this probably isn't right
-  bool isGround = (*(*members.begin())->gob->sod.zcat == GameObj::ON_LAND);
-  list<GameObj*> collisions;
-  int threats = 0;
-  int support = 0;
-  msg << "-------------" << endl;
-  msg << "Group at " << x << "," << y << " under owner " << owner << endl;
-  for(int side = 0; side < numPlayers; side++) {
-    msg << "Checking collisions with owner... " << side << endl;
+  int worldId = Sorts::OrtsIO->getWorldId();
+  if (owner != worldId) {
+    Vec2d avgThreatVec;
+    Vec2d avgSupportVec;
+    Circle approx = bbox.getCircumscribingCircle();
+    int numPlayers = Sorts::OrtsIO->getNumPlayers();
+    // this probably isn't right
+    bool isGround = (*(*members.begin())->gob->sod.zcat == GameObj::ON_LAND);
+    list<GameObj*> collisions;
+    int threats = 0;
+    int support = 0;
+    msg << "-------------" << endl;
+    msg << "Group at " << x << "," << y << " under owner " << owner << endl;
 
-    SidedInfluenceERF erf(10, side, isGround); // look ten viewframe ahead
+    InfluenceERF erf(10, isGround); // look ten viewframe ahead
     Sorts::satellite->getCollisions
-      ((int) approx.x, (int) approx.y, (int) approx.r, &erf, collisions);
+      ((int) x, (int) y, (int) approx.r, &erf, collisions);
 
-    set<GameObj*> temp;
-    temp.clear();
     for(list<GameObj*>::iterator
         i  = collisions.begin();
         i != collisions.end();
         i++) 
     {
-      assert(temp.find(*i) == temp.end());
-      temp.insert(*i);
-      msg << "Collides with obj at " << *(*i)->sod.x << ", " 
-          << *(*i)->sod.y << " owned by " << (*i)->get_int("owner") << endl;
+      if (*(*i)->sod.owner == worldId) {
+        continue;
+      }
+      else if (*(*i)->sod.owner != owner) {
+        threats++;
+        avgThreatVec += Vec2d(*(*i)->sod.x - x, *(*i)->sod.y - y);
+      }
+      else {
+        support++;
+        avgSupportVec += Vec2d(*(*i)->sod.x - x, *(*i)->sod.y - y);
+      }
     }
+    // obviously you intersect yourself
+    support -= members.size();
 
-    if (side != owner) {
-      threats += collisions.size();
-    }
-    else {
-      // of course you will always intersect yourself
-      support += collisions.size() - members.size();
-    }
-  }
-  stringIntWme.first = "threats";
-  stringIntWme.second = threats;
-  soarData.stringIntPairs.push_back(stringIntWme);
-  stringIntWme.first = "support";
-  stringIntWme.second = support;
-  soarData.stringIntPairs.push_back(stringIntWme);
+    avgThreatVec = avgThreatVec.norm();
+    avgSupportVec = avgSupportVec.norm();
+    
+    attribs.add("num-threats", threats);
+    attribs.add("threat-vector-i", (float) avgThreatVec(0));
+    attribs.add("threat-vector-j", (float) avgThreatVec(1));
 */ 
+    attribs.add("num-supports", support);
+    attribs.add("support-vector-i", (float) avgSupportVec(0));
+    attribs.add("support-vector-j", (float) avgSupportVec(1));
+  }
+#endif
+  
   // command info:
   // show last command, and as many status attributes as are applicable
   // if a group has one member succeed, fail, or still running, that 
   // status is there
 
   if (friendly) {
-    stringStringWme.first = "command";
-    stringStringWme.second = currentCommand;
-    soarData.stringStringPairs.push_back(stringStringWme);
-
-    stringIntWme.first = "command_running";
-    stringIntWme.second = running;
-    soarData.stringIntPairs.push_back(stringIntWme);
-
-    stringIntWme.first = "command_success";
-    stringIntWme.second = success;
-    soarData.stringIntPairs.push_back(stringIntWme);
-    
-    stringIntWme.first = "command_failure";
-    stringIntWme.second = failure;
-    soarData.stringIntPairs.push_back(stringIntWme);
-    
-    stringIntWme.first = "command_stuck";
-    stringIntWme.second = stuck;
-    soarData.stringIntPairs.push_back(stringIntWme);
-    
+    attribs.add("command", currentCommand);
+    attribs.add("command_running", running);
+    attribs.add("command_success", success);
+    attribs.add("command_failure", failure);
+    attribs.add("command_stuck", stuck);
   }
   if (canMine) {
-    stringIntWme.first = "minerals";
-    stringIntWme.second = mineralCount;
-    soarData.stringIntPairs.push_back(stringIntWme);
+    attribs.add("minerals", mineralCount);
   }
   
   hasStaleProperties = true;
@@ -350,8 +293,6 @@ void PerceptualGroup::generateData() {
   }
 
   old = true;
-   
-  return;
 }
 
 void PerceptualGroup::updateCenterLoc() {
@@ -367,8 +308,8 @@ void PerceptualGroup::updateCenterLoc() {
   int size = members.size();
 
   while (currentObject != members.end()) {
-    x += *(*currentObject)->gob->sod.x;
-    y += *(*currentObject)->gob->sod.y;
+    x += *(*currentObject)->getGob()->sod.x;
+    y += *(*currentObject)->getGob()->sod.y;
     currentObject++;
   }
   
@@ -387,7 +328,7 @@ void PerceptualGroup::updateCenterLoc() {
 void PerceptualGroup::updateCenterMember() {
   double shortestDistance 
         = squaredDistance(centerX, centerY, 
-          *centerMember->gob->sod.x, *centerMember->gob->sod.y);
+          *centerMember->getGob()->sod.x, *centerMember->getGob()->sod.y);
 
   double currentDistance;
   
@@ -395,7 +336,7 @@ void PerceptualGroup::updateCenterMember() {
   currentObject = members.begin();
   while (currentObject != members.end()) {
     currentDistance = squaredDistance(centerX, centerY, 
-                      *(*currentObject)->gob->sod.x, *(*currentObject)->gob->sod.y);
+                      *(*currentObject)->getGob()->sod.x, *(*currentObject)->getGob()->sod.y);
     if (currentDistance < shortestDistance) {
       shortestDistance = currentDistance;
       centerMember = *currentObject;
@@ -448,7 +389,17 @@ void PerceptualGroup::updateRegionsOccupied() {
   {
  //   cout << "&&& Group " << (int) this << " has entered region " << (*i)->getId() << endl;
     (*i)->groupEnter(this);
-    soarData.regionsOccupied.push_back((*i)->getId());
+  }
+}
+
+void PerceptualGroup::getRegionsOccupied(list<int>& regions) {
+  regions.clear();
+  for( list<MapRegion*>::iterator 
+       i  = regionsOccupied.begin();
+       i != regionsOccupied.end();
+       i++ )
+  {
+    regions.push_back((*i)->getId());
   }
 }
 
@@ -568,8 +519,8 @@ void PerceptualGroup::setHasStaleMembers() {
   hasStaleMembers = true;
 }
 
-groupPropertyStruct* PerceptualGroup::getSoarData() {
-  return &soarData;
+const AttributeSet& PerceptualGroup::getAttributes() {
+  return attribs;
 }
 
 bool PerceptualGroup::getHasStaleProperties() {
@@ -644,8 +595,8 @@ Rectangle PerceptualGroup::getBoundingBox() {
       i != members.end();
       i++)
   {
-    int x = *(*i)->gob->sod.x;
-    int y = *(*i)->gob->sod.y;
+    int x = *(*i)->getGob()->sod.x;
+    int y = *(*i)->getGob()->sod.y;
    // FIXME: asserts in game1
     // assert(bbox.xmin <= x && x <= bbox.xmax &&
    //        bbox.ymin <= y && y <= bbox.ymax);

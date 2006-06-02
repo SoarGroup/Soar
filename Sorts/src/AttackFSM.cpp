@@ -1,13 +1,15 @@
 #include "AttackFSM.h"
 #include "AttackManager.h"
 #include "AttackManagerRegistry.h"
-
+#include "general.h"
 #include "Sorts.h"
+
+#define msg cout << "AttackFSM.cpp "
 
 using namespace std;
 
 AttackFSM::AttackFSM(GameObj* gob)
-: FSM(gob)
+: FSM(gob), attackParams(1)
 {
   name = OA_ATTACK;
   weapon = gob->component("weapon");
@@ -29,16 +31,32 @@ void AttackFSM::init(vector<sint4> params) {
   FSM::init(params);
 
   // get the attack manager from the registry
-  manager = Sorts::amr->getManager(params[0]);
-  assert(manager != NULL);
-  manager->registerFSM(this);
-  target = NULL;
-  dest.x = *gob->sod.x; dest.y = *gob->sod.y;
+  AttackManager* newManager = Sorts::amr->getManager(params[0]);
+  assert(newManager != NULL);
+  if (manager != NULL && newManager != manager) {
+    msg << "HIJACKED!" << endl;
+    manager->unregisterFSM(this);
+  }
+  if (manager == newManager) {
+    msg << "Reassigned to identical attack manager" << endl;
+  }
+  else {
+    manager = newManager;
+    manager->registerFSM(this);
+  }
+  dest.set(0, *gob->sod.x);
+  dest.set(1, *gob->sod.y);
   moving = false;
   disownedStatus = 0;
+
+  target = NULL;
+  firingTarget = NULL;
+  reassign = true;
+  failCount = 0;
 }
 
 int AttackFSM::update() {
+  vector<sint4> moveParams(2);
   if (manager == NULL) {
     if (disownedStatus == 0) {
       return FSM_FAILURE;
@@ -47,16 +65,29 @@ int AttackFSM::update() {
       return FSM_SUCCESS;
     }
   }
-  if (manager->direct(this) == 1) {
+  int status = manager->direct(this);
+  if (status > 0) {
     return FSM_SUCCESS;
   }
+  if (status < 0) {
+    return FSM_FAILURE;
+  }
+
   if (moving) {
     switch(moveFSM->update()) {
       case FSM_SUCCESS:
         moving = false;
         break;
       case FSM_FAILURE:
-        // what to do here?
+        // repath
+        msg << "MOVE FAILED" << endl;
+        moveParams[0] = dest(0);
+        moveParams[1] = dest(1);
+        moveFSM->init(moveParams);
+        break;
+      case FSM_UNREACHABLE:
+        // unreachable dest, this should never happen
+        msg << "(" << dest(0) << "," << dest(1) << ") UNREACHABLE" << endl;
         moving = false;
         break;
       default:
@@ -67,17 +98,18 @@ int AttackFSM::update() {
 }
 
 void AttackFSM::attack(SoarGameObject* t) {
-  target = t;
-  Vector<sint4> attackParams;
-  attackParams.push_back(target->getID());
-  weapon->set_action("attack", attackParams);
+  if (t != NULL) {
+    attackParams[0] = target->getID();
+    weapon->set_action("attack", attackParams);
+    firingTarget = t;
+  }
 }
 
 bool AttackFSM::isFiring() {
   return weapon->get_int("shooting") == 1;
 }
 
-void AttackFSM::move(int x, int y) {
+int AttackFSM::move(int x, int y) {
   if (moveFSM == NULL) {
     moveFSM = new MoveFSM(gob);
   }
@@ -88,16 +120,24 @@ void AttackFSM::move(int x, int y) {
   moveParams[0] = x;
   moveParams[1] = y;
   moveFSM->init(moveParams);
-  dest.x = x;
-  dest.y = y;
-  moving = true;
+  int status = moveFSM->update();
+  switch (status) {
+    case FSM_UNREACHABLE:
+      msg << "(" << x << "," << y << endl;
+      return 1;
+    default:
+      dest.set(0, x);
+      dest.set(1, y);
+      moving = true;
+      return 0;
+  }
 }
 
 void AttackFSM::stopMoving() {
   moveFSM->stop();
   moving = false;
-  dest.x = *gob->sod.x;
-  dest.y = *gob->sod.y;
+  dest.set(0, *gob->sod.x);
+  dest.set(1, *gob->sod.y);
 }
 
 void AttackFSM::disown(int lastStatus) {
