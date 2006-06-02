@@ -15,6 +15,7 @@ enum ObjectActionType {
   OA_MOVE,
   OA_BUILD,
   OA_ATTACK,
+  OA_ATTACK_NEAR,
   OA_SEVER,
   OA_FREE,
   OA_STICK

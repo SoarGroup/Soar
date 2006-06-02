@@ -1,5 +1,6 @@
 ORTS_ROOT=../../..
-SOURCES=Sorts.cpp AStar.cpp AStarNode.cpp FSM.cpp general.cpp GridMapTileGrouper.cpp SoarInterface.cpp PerceptualGroupManager.cpp IdleFSM.cpp MapManager.cpp MapRegion.cpp MineFSM.cpp MoveFSM.cpp OrtsInterface.cpp Rectangle.cpp SoarGameGroup.cpp SoarGameObject.cpp FeatureMapManager.cpp FeatureMap.cpp SoarAction.cpp MineManager.cpp
+SOURCES= AttackFSM.cpp AttackManager.cpp AttackManagerRegistry.cpp AttackNearFSM.cpp AttributeSet.cpp BuildFSM.cpp DefendFSM.cpp FeatureMap.cpp FeatureMapManager.cpp FSM.cpp general.cpp GridMapTileGrouper.cpp IdleFSM.cpp MapManager.cpp MapRegion.cpp MineFSM.cpp MineManager.cpp MoveFSM.cpp OrtsInterface.cpp PerceptualGroup.cpp PerceptualGroupManager.cpp Rectangle.cpp SDLCanvas.cpp SoarAction.cpp SoarGameObject.cpp SoarInterface.cpp SortsCanvas.cpp Sorts.cpp SpatialDB.cpp
+
 OBJECTS=$(SOURCES:.cpp=.o) sorts_main.o
 DEPS=$(SOURCES:.cpp=.d) sorts_main.d
 
@@ -9,3 +10,4 @@ sorts:
 clean:
 	cd $(ORTS_ROOT)/dep; rm -f $(DEPS)
 	cd $(ORTS_ROOT)/obj/dbg; rm -f $(OBJECTS)
+

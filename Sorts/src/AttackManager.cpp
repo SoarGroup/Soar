@@ -8,6 +8,10 @@
 
 #define msg cout << "AttackManager.cpp: "
 
+#ifdef USE_CANVAS
+#define USE_CANVAS_ATTACK_MANAGER
+#endif
+
 // fake version
 /*
 bool attackArcPos(GameObj*atk, GameObj* tgt, Circle& pos) {
@@ -83,7 +87,7 @@ AttackManager::AttackManager(const set<SoarGameObject*>& _targets)
 {
   reprioritize();
 
-#ifdef USE_CANVAS
+#ifdef USE_CANVAS_ATTACK_MANAGER
   for(set<SoarGameObject*>::iterator
       i  = targets.begin();
       i != targets.end();
@@ -111,7 +115,7 @@ AttackManager::~AttackManager() {
       i != team.end();
       ++i)
   {
-#ifdef USE_CANVAS
+#ifdef USE_CANVAS_ATTACK_MANAGER
     Sorts::canvas.unregisterGob((*i)->getGob());
 #endif
     (*i)->disown(status);
@@ -128,7 +132,7 @@ AttackManager::~AttackManager() {
 
 void AttackManager::registerFSM(AttackFSM* fsm) {
   team.push_back(fsm);
-#ifdef USE_CANVAS
+#ifdef USE_CANVAS_ATTACK_MANAGER
   Sorts::canvas.registerGob(fsm->getGob());
 #endif
 }
@@ -137,7 +141,7 @@ void AttackManager::unregisterFSM(AttackFSM* fsm) {
   assert(find(team.begin(), team.end(), fsm) != team.end());
   team.erase(find(team.begin(), team.end(), fsm));
 
-#ifdef USE_CANVAS
+#ifdef USE_CANVAS_ATTACK_MANAGER
   Sorts::canvas.unregisterGob(fsm->getGob());
 #endif
   if (team.size() == 0) {
@@ -187,7 +191,7 @@ void AttackManager::unassignTarget(SoarGameObject* target) {
 
 // In the future, also implement running weak units away
 int AttackManager::direct(AttackFSM* fsm) {
-#ifdef USE_CANVAS
+#ifdef USE_CANVAS_ATTACK_MANAGER
   Sorts::canvas.setColor(fsm->getGob(), 0, 255, 0);
   Sorts::canvas.update();
   Sorts::canvas.setColor(fsm->getGob(), 255, 255, 255);
@@ -316,7 +320,7 @@ int AttackManager::updateTargetList() {
       msg << "(" << (int) this << ") Unit " << (*i)->getID() << " is no longer alive or moved out of view" << endl;
       // this target could have been in multiple attack managers
 
-#ifdef USE_CANVAS
+#ifdef USE_CANVAS_ATTACK_MANAGER
       if (Sorts::canvas.gobRegistered((*i)->getGob())) {
         Sorts::canvas.unregisterGob((*i)->getGob());
       }

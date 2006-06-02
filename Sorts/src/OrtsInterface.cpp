@@ -88,6 +88,7 @@ bool OrtsInterface::handle_event(const Event& e) {
       updateSoarGameObjects();
       changes.clear();
 
+
       // since the FSM's have been updated, we should send the actions here
       gsm->send_actions();
 
@@ -270,8 +271,8 @@ void OrtsInterface::updateSoarGameObjects() {
 }
 
 void OrtsInterface::updateMap() {
-  Sorts::mapManager->addExploredTiles(changes.new_tile_indexes);
-  Sorts::mapManager->addBoundaries(changes.new_boundaries);
+//  Sorts::mapManager->addExploredTiles(changes.new_tile_indexes);
+//  Sorts::mapManager->addBoundaries(changes.new_boundaries);
 }
 
 void OrtsInterface::updateSoarPlayerInfo() {

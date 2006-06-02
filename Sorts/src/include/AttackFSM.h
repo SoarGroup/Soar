@@ -38,20 +38,14 @@ public:
 
 private:
   AttackManager* manager;
-
   ScriptObj* weapon;
-
   MoveFSM* moveFSM;
   Vec2d dest;
-
   Vector<sint4> attackParams;
-
   SoarGameObject* firingTarget;
-
-public: // for debug only
   bool moving;
-
   int disownedStatus;
+
 };
 
 

@@ -53,7 +53,8 @@ private:
   sint4 sat_loc;
 
 	map<ObjectActionType, FSM *> behaviors;
-	stack<FSM *> memory;
+  FSM* assignedBehavior;
+  list<FSM*> defaultBehaviors;
 
   ObjectActionType currentCommand;
 	PerceptualGroup* pGroup;

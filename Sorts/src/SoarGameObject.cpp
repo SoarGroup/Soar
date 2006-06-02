@@ -6,6 +6,7 @@
 #include "MoveFSM.h"
 #include "IdleFSM.h"
 #include "AttackFSM.h"
+#include "AttackNearFSM.h"
 #include "BuildFSM.h"
 
 #include "Sorts.h"
@@ -36,10 +37,16 @@ void SoarGameObject::identifyBehaviors() {
     else if (name == "marine") {
       FSM* attackBehavior = new AttackFSM(gob);
       registerBehavior(attackBehavior);
-    }
+      FSM* attackNear = new AttackNearFSM(gob);
+      registerBehavior(attackNear);
+      defaultBehaviors.push_back(attackNear);
+     }
     else if (name == "tank") {
       FSM* attackBehavior = new AttackFSM(gob);
       registerBehavior(attackBehavior);
+      FSM* attackNear = new AttackNearFSM(gob);
+      registerBehavior(attackNear);
+      defaultBehaviors.push_back(attackNear);
     }
   }
 }
@@ -69,11 +76,10 @@ SoarGameObject::~SoarGameObject()
 {
   Sorts::spatialDB->removeObject(gob,sat_loc);
 
-  while(!memory.empty()) {
-    memory.pop();
-  }
-
-  for(map<ObjectActionType, FSM*>::iterator i = behaviors.begin(); i != behaviors.end(); i++) 
+  for(map<ObjectActionType, FSM*>::iterator 
+      i  = behaviors.begin(); 
+      i != behaviors.end(); 
+      ++i) 
   {
     delete i->second;
   }
@@ -101,15 +107,13 @@ void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
 {
   msg << "command issued: " << (int)cmd << endl;
   
-  while(!memory.empty())
-    memory.pop();
-
   map<ObjectActionType, FSM*>::iterator i = behaviors.find(cmd);
   
   assert(i != behaviors.end());
 
   i->second->init(prms);
-  memory.push(i->second);
+  assignedBehavior = i->second;
+
   motionlessFrames = 0;
   update();
 }
@@ -133,18 +137,16 @@ void SoarGameObject::update()
     Sorts::OrtsIO->updateNextCycle(this);
     return;
   }
-  
-  if(!memory.empty())
-  {
-    fsmStatus = memory.top()->update();
+
+  // first carry out assigned behavior
+  if (assignedBehavior != NULL) {
+    fsmStatus = assignedBehavior->update();
+
     // if we get a done status, remove the action
     // stuck result means that the FSM is hung up, but may continue
     // if things get out of the way (don't give up on it)
-    if((fsmStatus != FSM_RUNNING) 
-       && (fsmStatus != FSM_STUCK)) {
-      memory.pop();
-    //  if(memory.empty())
-        //currentCommand = SA_IDLE;
+    if((fsmStatus != FSM_RUNNING) && (fsmStatus != FSM_STUCK)) {
+      assignedBehavior = NULL;
     }
 
     if (fsmStatus == FSM_SUCCESS) {
@@ -165,6 +167,18 @@ void SoarGameObject::update()
     //msg << "empty memory\n";
   }
 
+  // do default behaviors (if action has not yet been assigned)
+  for(list<FSM*>::iterator
+      i  = defaultBehaviors.begin();
+      i != defaultBehaviors.end();
+      ++i)
+  {
+    if (gob->is_pending_action()) {
+      break;
+    }
+    (*i)->update(); // don't care about the status for now
+  }
+
   // spit out a warning if the object sits still for a long time
   if (friendlyWorker) {
     /*if (currentFrame != Sorts::OrtsIO->getActionFrame()) {
@@ -181,7 +195,8 @@ void SoarGameObject::update()
       if (motionlessFrames > PANIC_FRAMES) {
         msg << "worker has been still for " 
             << motionlessFrames << " frames, time to panic.\n";
-        memory.top()->panic();
+        assert(assignedBehavior != NULL);
+        assignedBehavior->panic();
         motionlessFrames = 0;
       }
     //}

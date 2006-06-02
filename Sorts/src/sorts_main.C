@@ -89,7 +89,13 @@ void* RunSoar(void* ptr) {
    * grab the CPU and never let it go
    */
   sleep(1);
+
+#ifdef SOAR_862
+  ((Agent*) ptr)->Commit();
+  ((Agent*) ptr)->RunSelfForever();
+#else
   ((Kernel*) ptr)->RunAllAgentsForever(sml_INTERLEAVE_DECISION);
+#endif
 
   // just to keep the compiler from warning
   return NULL;
@@ -175,6 +181,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+
   // Load some productions
   if (productions != NULL) {
     pAgent->LoadProductions(productions) ;
@@ -204,12 +211,10 @@ int main(int argc, char *argv[]) {
   TerrainModule tm(gsm, timp);
   gsm.add_handler(&tm);
   
-  
   // connect to ORTS server
   if (!gsm.connect()) exit(10);
   std::cout << "connected" << std::endl;
   
-
   Game& game = gsm.get_game();
   const Map<GameTile>& m = game.get_map();
   int gridSizeX = m.get_width() / 2;
@@ -282,7 +287,13 @@ int main(int argc, char *argv[]) {
   pthread_attr_t soarThreadAttribs;
   pthread_attr_init(&soarThreadAttribs);
   pthread_t soarThread;
+  
+#ifdef SOAR_862
+  pKernel->SetAutoCommit(false);
+  pthread_create(&soarThread, &soarThreadAttribs, RunSoar, (void*) pAgent);
+#else
   pthread_create(&soarThread, &soarThreadAttribs, RunSoar, (void*) pKernel);
+#endif
   std::cout << "Soar is running" << std::endl;
 
 
