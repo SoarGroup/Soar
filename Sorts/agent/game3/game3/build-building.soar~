@@ -1,4 +1,3 @@
-
 sp {build-building*propose*set-cCenter-loc
    (state <s> ^name build-building
               ^io.input-link.groups <gs>
@@ -42,39 +41,33 @@ sp {build-building*propose*find-build-location
    (state <s> ^name build-building
               ^top-state.build-building.cCenter <cc>
              -^top-state.build-building.location
-              ^superstate.operator.building-dim <dim>)
+              ^superstate.operator.building-dim <dim>
+              ^superstate.operator.building-type <t>
+             -^top-state.finished-command orts-locate-building)
    (<cc> ^x <x>
          ^y <y>)
         
 -->
    (<s> ^operator <o> + > =)
-   (<o> ^name find-build-location
+   (<o> ^name orts-locate-building
         ^x <x>
         ^y <y>
-        ^width (+ <dim> 31 40)) # keep a gap of 40 cCenter->building
+        ^distance (+ <dim> 31 40) # keep a gap of 40 cCenter->building
+        ^building-type <t>) 
 }
 
-sp {apply*find-build-location
-   (state <s> ^operator <o>
-              ^top-state <ts>)
-   (<o> ^name find-build-location
-        ^x <x>
-        ^y <y>
-        ^width <w>)
--->
-   (<ts> ^build-building.location <l>)
-   (<l> ^x (- <x> <w>)
-        ^y <y>)
-}
 
 sp {build-building*propose*location-found
    (state <s> ^name build-building
-              ^top-state.find-location-near.result <l>)
-   (<l> ^x <x>
-        ^y <y>)
+              ^top-state.finished-command orts-locate-building
+              ^io.input-link <il>)
+   (<il> ^query-results <q>)
+   (<q> ^query-name locate-building
+        ^param0 <x>
+        ^param1 <y>)
 -->
    (<s> ^operator <o> + > =)
-   (<o> ^name barracks-location-found
+   (<o> ^name building-location-found
         ^x <x>
         ^y <y>)
 }
@@ -82,83 +75,63 @@ sp {build-building*propose*location-found
 sp {build-building*apply*location-found
    (state <s> ^operator <o>
               ^top-state <ts>)
-   (<ts> ^find-location-near <fnn>)
-   (<o> ^name barracks-location-found
+   (<ts> ^finished-command orts-locate-building)
+   (<o> ^name building-location-found
         ^x <x>
         ^y <y>)
 -->
    (<ts> ^build-building.location <l>)
    (<l> ^x <x>
         ^y <y>)
-   (<ts> ^find-location-near <fnn> -)
+   (<ts> ^finished-command orts-locate-building -)
 }
    
 
+sp {build-building*propose*change-grouping-level
+   (state <s> ^name build-building
+              -^top-state.grouping-level individuals)
+  -{(<gs> ^group <g>)
+     (<g> ^type worker
+          ^owner 0
+          ^command_running 0
+          ^num_members 1)}
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name set-grouping-individuals)
+}
+
 sp {build-building*propose*find-worker
-   (state <s> ^name build-building
-              ^top-state <ts>)
-   (<ts> ^build-building.location.x <x>
-         ^build-building.location.y <y>
-        -^build-building.worker-id
-        -^find-free-worker.done true)
--->
-   (<s> ^operator <o> + > =)
-   (<o> ^name find-free-worker
-        ^x <x>
-        ^y <y>)
-}
-
-sp {build-building*propose*worker-found
-   (state <s> ^name build-building
-              ^top-state.find-free-worker <f>)
-   (<f> ^done true
-        ^worker <id>)
--->
-   (<s> ^operator <o> + > =)
-   (<o> ^name bb-worker-found
-        ^id <id>)
-}
-
-sp {build-building*apply*worker-found
-   (state <s> ^operator <o>
-              ^top-state <ts>)
-   (<ts> ^find-free-worker <ffw>)
-   (<o> ^name bb-worker-found
-        ^id <id>)
--->
-   (<ts> ^build-building.worker-id <id>
-         ^find-free-worker <ffw> -)
-}
-
-# worker was identified, but we lost him
-# if this happens a lot, remember the location and look back there
-
-#must be prefered to start-build
-sp {build-building*propose*find-lost-worker
    (state <s> ^name build-building
               ^top-state <ts>
               ^io.input-link <il>)
-   (<ts> ^build-building.worker-id <id>
-         ^build-building.location.x <x>
+   (<ts> ^build-building.location.x <x>
          ^build-building.location.y <y>
-        -^build-building.started-build true
-        -^visual-search done)
+        -^build-building.started-build true)
    (<il> ^groups <gs>)
    -{(<gs> ^group <g>)
      (<g> ^type worker
-          ^id <id>)}
+          ^owner 0
+          ^command_running 0
+          ^num_members 1)}
 -->
-   (<s> ^operator <o> + > =)
+   (<s> ^operator <o> + < =) # prefer changing group level
    (<o> ^name visual-search
-        ^worker-id <id>)
+        ^search-type friendly_workers)
 }
 
 sp {build-building*propose*start-build
    (state <s> ^name build-building
               ^top-state <ts>
-              ^superstate.operator.building-type <tp>)
-   (<ts> ^build-building.worker-id <id>
-         ^build-building.location.x <x>
+              ^superstate.operator.building-type <tp>
+              ^io.input-link <il>) 
+   (<il> ^groups <gs>)
+   (<gs> ^group <g>)
+   (<g> ^type worker
+        ^id <id>
+        ^owner 0
+        ^command_running 0
+        ^num_members 1)
+   (<ts> ^build-building.location.x <x>
          ^build-building.location.y <y>
         -^build-building.started-build true
         -^finished-command orts-build-building)

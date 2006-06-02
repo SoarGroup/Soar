@@ -1,11 +1,11 @@
-669
+954
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
 SOAR_ID 3
 ENUMERATION 4 1 state
 ENUMERATION 5 1 nil
-ENUMERATION 6 5 build-barracks find-free-worker miner-assignment sorts visual-search-friendly
+ENUMERATION 6 7 build-barracks build-building find-free-worker miner-assignment sorts visual-search visual-search-friendly
 ENUMERATION 7 1 initialize-sorts
 SOAR_ID 8
 ENUMERATION 9 1 explore
@@ -668,9 +668,295 @@ INTEGER_RANGE 665 -2147483648 2147483647
 SOAR_ID 666
 SOAR_ID 667
 SOAR_ID 668
-668
+SOAR_ID 669
+ENUMERATION 670 1 orts-build-building
+SOAR_ID 671
+SOAR_ID 672
+SOAR_ID 673
+SOAR_ID 674
+SOAR_ID 675
+SOAR_ID 676
+SOAR_ID 677
+SOAR_ID 678
+SOAR_ID 679
+SOAR_ID 680
+SOAR_ID 681
+SOAR_ID 682
+SOAR_ID 683
+SOAR_ID 684
+SOAR_ID 685
+SOAR_ID 686
+SOAR_ID 687
+SOAR_ID 688
+SOAR_ID 689
+SOAR_ID 690
+SOAR_ID 691
+SOAR_ID 692
+SOAR_ID 693
+SOAR_ID 694
+SOAR_ID 695
+SOAR_ID 696
+SOAR_ID 697
+SOAR_ID 698
+SOAR_ID 699
+SOAR_ID 700
+SOAR_ID 701
+SOAR_ID 702
+SOAR_ID 703
+SOAR_ID 704
+SOAR_ID 705
+SOAR_ID 706
+SOAR_ID 707
+SOAR_ID 708
+SOAR_ID 709
+SOAR_ID 710
+SOAR_ID 711
+SOAR_ID 712
+SOAR_ID 713
+SOAR_ID 714
+SOAR_ID 715
+SOAR_ID 716
+SOAR_ID 717
+SOAR_ID 718
+SOAR_ID 719
+ENUMERATION 720 2 orts-build-building orts-set-sticky
+SOAR_ID 721
+SOAR_ID 722
+ENUMERATION 723 1 build-building
+INTEGER_RANGE 724 -2147483648 2147483647
+INTEGER_RANGE 725 -2147483648 2147483647
+INTEGER_RANGE 726 -2147483648 2147483647
+INTEGER_RANGE 727 -2147483648 2147483647
+INTEGER_RANGE 728 -2147483648 2147483647
+INTEGER_RANGE 729 -2147483648 2147483647
+INTEGER_RANGE 730 -2147483648 2147483647
+INTEGER_RANGE 731 -2147483648 2147483647
+INTEGER_RANGE 732 -2147483648 2147483647
+INTEGER_RANGE 733 -2147483648 2147483647
+INTEGER_RANGE 734 -2147483648 2147483647
+INTEGER_RANGE 735 -2147483648 2147483647
+INTEGER_RANGE 736 -2147483648 2147483647
+INTEGER_RANGE 737 -2147483648 2147483647
+INTEGER_RANGE 738 -2147483648 2147483647
+INTEGER_RANGE 739 -2147483648 2147483647
+INTEGER_RANGE 740 -2147483648 2147483647
+INTEGER_RANGE 741 -2147483648 2147483647
+INTEGER_RANGE 742 -2147483648 2147483647
+INTEGER_RANGE 743 -2147483648 2147483647
+INTEGER_RANGE 744 -2147483648 2147483647
+INTEGER_RANGE 745 -2147483648 2147483647
+INTEGER_RANGE 746 -2147483648 2147483647
+INTEGER_RANGE 747 -2147483648 2147483647
+INTEGER_RANGE 748 -2147483648 2147483647
+INTEGER_RANGE 749 -2147483648 2147483647
+INTEGER_RANGE 750 -2147483648 2147483647
+INTEGER_RANGE 751 -2147483648 2147483647
+INTEGER_RANGE 752 -2147483648 2147483647
+INTEGER_RANGE 753 -2147483648 2147483647
+INTEGER_RANGE 754 -2147483648 2147483647
+INTEGER_RANGE 755 -2147483648 2147483647
+INTEGER_RANGE 756 -2147483648 2147483647
+INTEGER_RANGE 757 -2147483648 2147483647
+INTEGER_RANGE 758 -2147483648 2147483647
+INTEGER_RANGE 759 -2147483648 2147483647
+INTEGER_RANGE 760 -2147483648 2147483647
+INTEGER_RANGE 761 -2147483648 2147483647
+INTEGER_RANGE 762 -2147483648 2147483647
+INTEGER_RANGE 763 -2147483648 2147483647
+INTEGER_RANGE 764 -2147483648 2147483647
+INTEGER_RANGE 765 -2147483648 2147483647
+INTEGER_RANGE 766 -2147483648 2147483647
+INTEGER_RANGE 767 -2147483648 2147483647
+INTEGER_RANGE 768 -2147483648 2147483647
+INTEGER_RANGE 769 -2147483648 2147483647
+INTEGER_RANGE 770 -2147483648 2147483647
+INTEGER_RANGE 771 -2147483648 2147483647
+INTEGER_RANGE 772 -2147483648 2147483647
+INTEGER_RANGE 773 -2147483648 2147483647
+INTEGER_RANGE 774 -2147483648 2147483647
+INTEGER_RANGE 775 -2147483648 2147483647
+INTEGER_RANGE 776 -2147483648 2147483647
+INTEGER_RANGE 777 -2147483648 2147483647
+INTEGER_RANGE 778 -2147483648 2147483647
+INTEGER_RANGE 779 -2147483648 2147483647
+INTEGER_RANGE 780 -2147483648 2147483647
+INTEGER_RANGE 781 -2147483648 2147483647
+INTEGER_RANGE 782 -2147483648 2147483647
+INTEGER_RANGE 783 -2147483648 2147483647
+INTEGER_RANGE 784 -2147483648 2147483647
+INTEGER_RANGE 785 -2147483648 2147483647
+INTEGER_RANGE 786 -2147483648 2147483647
+INTEGER_RANGE 787 -2147483648 2147483647
+INTEGER_RANGE 788 -2147483648 2147483647
+INTEGER_RANGE 789 -2147483648 2147483647
+INTEGER_RANGE 790 -2147483648 2147483647
+INTEGER_RANGE 791 -2147483648 2147483647
+INTEGER_RANGE 792 -2147483648 2147483647
+INTEGER_RANGE 793 -2147483648 2147483647
+INTEGER_RANGE 794 -2147483648 2147483647
+INTEGER_RANGE 795 -2147483648 2147483647
+INTEGER_RANGE 796 -2147483648 2147483647
+INTEGER_RANGE 797 -2147483648 2147483647
+INTEGER_RANGE 798 -2147483648 2147483647
+INTEGER_RANGE 799 -2147483648 2147483647
+INTEGER_RANGE 800 -2147483648 2147483647
+INTEGER_RANGE 801 -2147483648 2147483647
+INTEGER_RANGE 802 -2147483648 2147483647
+INTEGER_RANGE 803 -2147483648 2147483647
+INTEGER_RANGE 804 -2147483648 2147483647
+INTEGER_RANGE 805 -2147483648 2147483647
+INTEGER_RANGE 806 -2147483648 2147483647
+INTEGER_RANGE 807 -2147483648 2147483647
+INTEGER_RANGE 808 -2147483648 2147483647
+INTEGER_RANGE 809 -2147483648 2147483647
+INTEGER_RANGE 810 -2147483648 2147483647
+INTEGER_RANGE 811 -2147483648 2147483647
+INTEGER_RANGE 812 -2147483648 2147483647
+INTEGER_RANGE 813 -2147483648 2147483647
+INTEGER_RANGE 814 -2147483648 2147483647
+INTEGER_RANGE 815 -2147483648 2147483647
+INTEGER_RANGE 816 -2147483648 2147483647
+INTEGER_RANGE 817 -2147483648 2147483647
+INTEGER_RANGE 818 -2147483648 2147483647
+INTEGER_RANGE 819 -2147483648 2147483647
+INTEGER_RANGE 820 -2147483648 2147483647
+INTEGER_RANGE 821 -2147483648 2147483647
+INTEGER_RANGE 822 -2147483648 2147483647
+INTEGER_RANGE 823 -2147483648 2147483647
+SOAR_ID 824
+SOAR_ID 825
+SOAR_ID 826
+ENUMERATION 827 1 visual-search
+ENUMERATION 828 2 friendly friendly_workers
+ENUMERATION 829 2 friendly friendly_workers
+ENUMERATION 830 2 friendly friendly_workers
+ENUMERATION 831 2 friendly friendly_workers
+ENUMERATION 832 2 friendly friendly_workers
+ENUMERATION 833 2 friendly friendly_workers
+ENUMERATION 834 2 friendly friendly_workers
+ENUMERATION 835 2 friendly friendly_workers
+ENUMERATION 836 2 friendly friendly_workers
+ENUMERATION 837 2 friendly friendly_workers
+ENUMERATION 838 2 friendly friendly_workers
+ENUMERATION 839 2 friendly friendly_workers
+ENUMERATION 840 2 friendly friendly_workers
+ENUMERATION 841 2 friendly friendly_workers
+ENUMERATION 842 2 friendly friendly_workers
+ENUMERATION 843 2 friendly friendly_workers
+ENUMERATION 844 2 friendly friendly_workers
+ENUMERATION 845 2 friendly friendly_workers
+ENUMERATION 846 2 friendly friendly_workers
+ENUMERATION 847 2 friendly friendly_workers
+ENUMERATION 848 2 friendly friendly_workers
+ENUMERATION 849 2 friendly friendly_workers
+ENUMERATION 850 2 friendly friendly_workers
+ENUMERATION 851 2 friendly friendly_workers
+ENUMERATION 852 2 friendly friendly_workers
+ENUMERATION 853 2 friendly friendly_workers
+ENUMERATION 854 2 friendly friendly_workers
+ENUMERATION 855 2 friendly friendly_workers
+ENUMERATION 856 2 friendly friendly_workers
+ENUMERATION 857 2 friendly friendly_workers
+ENUMERATION 858 2 friendly friendly_workers
+ENUMERATION 859 2 friendly friendly_workers
+ENUMERATION 860 2 friendly friendly_workers
+ENUMERATION 861 2 friendly friendly_workers
+ENUMERATION 862 2 friendly friendly_workers
+ENUMERATION 863 2 friendly friendly_workers
+ENUMERATION 864 2 friendly friendly_workers
+ENUMERATION 865 2 friendly friendly_workers
+ENUMERATION 866 2 friendly friendly_workers
+ENUMERATION 867 2 friendly friendly_workers
+ENUMERATION 868 2 friendly friendly_workers
+ENUMERATION 869 2 friendly friendly_workers
+ENUMERATION 870 2 friendly friendly_workers
+ENUMERATION 871 2 friendly friendly_workers
+ENUMERATION 872 2 friendly friendly_workers
+ENUMERATION 873 2 friendly friendly_workers
+ENUMERATION 874 2 friendly friendly_workers
+ENUMERATION 875 2 friendly friendly_workers
+ENUMERATION 876 2 friendly friendly_workers
+ENUMERATION 877 2 friendly friendly_workers
+ENUMERATION 878 2 friendly friendly_workers
+SOAR_ID 879
+SOAR_ID 880
+SOAR_ID 881
+SOAR_ID 882
+SOAR_ID 883
+SOAR_ID 884
+SOAR_ID 885
+ENUMERATION 886 1 true
+ENUMERATION 887 1 done
+SOAR_ID 888
+SOAR_ID 889
+SOAR_ID 890
+SOAR_ID 891
+SOAR_ID 892
+SOAR_ID 893
+SOAR_ID 894
+SOAR_ID 895
+SOAR_ID 896
+SOAR_ID 897
+SOAR_ID 898
+SOAR_ID 899
+SOAR_ID 900
+SOAR_ID 901
+SOAR_ID 902
+SOAR_ID 903
+SOAR_ID 904
+SOAR_ID 905
+SOAR_ID 906
+SOAR_ID 907
+SOAR_ID 908
+SOAR_ID 909
+SOAR_ID 910
+SOAR_ID 911
+SOAR_ID 912
+SOAR_ID 913
+SOAR_ID 914
+SOAR_ID 915
+SOAR_ID 916
+SOAR_ID 917
+SOAR_ID 918
+SOAR_ID 919
+SOAR_ID 920
+SOAR_ID 921
+SOAR_ID 922
+SOAR_ID 923
+SOAR_ID 924
+SOAR_ID 925
+SOAR_ID 926
+SOAR_ID 927
+SOAR_ID 928
+SOAR_ID 929
+SOAR_ID 930
+SOAR_ID 931
+SOAR_ID 932
+SOAR_ID 933
+SOAR_ID 934
+SOAR_ID 935
+SOAR_ID 936
+SOAR_ID 937
+SOAR_ID 938
+SOAR_ID 939
+SOAR_ID 940
+SOAR_ID 941
+ENUMERATION 942 1 build-building*mark-started
+ENUMERATION 943 1 friendly_workers
+ENUMERATION 944 1 friendly_workers
+SOAR_ID 945
+ENUMERATION 946 1 visual-search*start-search
+SOAR_ID 947
+INTEGER_RANGE 948 -2147483648 2147483647
+SOAR_ID 949
+SOAR_ID 950
+SOAR_ID 951
+ENUMERATION 952 1 true
+SOAR_ID 953
+953
 0 attribute 80
 0 build-barracks 138
+0 build-building 721
 0 choices 81
 0 comment 213
 0 find-location-near 171
@@ -728,6 +1014,11 @@ SOAR_ID 668
 0 operator 625
 0 operator 629
 0 operator 632
+0 operator 669
+0 operator 722
+0 operator 826
+0 operator 941
+0 operator 945
 0 opportunity-task-buffer 635
 0 planning 244
 0 running-task 134
@@ -743,6 +1034,9 @@ SOAR_ID 668
 2 groups 137
 2 map 10
 2 view-frame 317
+3 building-dim 790
+3 building-type 686
+3 building-type 740
 3 command 132
 3 command-instance 114
 3 command-name 99
@@ -751,13 +1045,18 @@ SOAR_ID 668
 3 group 36
 3 id 204
 3 name 7
+3 search-type 844
 3 sector 617
 3 start-dep 483
 3 task 315
 3 width 167
 3 worker 71
+3 worker-id 904
 3 x 46
 3 y 56
+8 building-dim 793
+8 building-type 689
+8 building-type 743
 8 command 119
 8 command-instance 102
 8 command-name 87
@@ -766,13 +1065,18 @@ SOAR_ID 668
 8 group 31
 8 id 186
 8 name 9
+8 search-type 847
 8 sector 581
 8 start-dep 448
 8 task 282
 8 width 151
 8 worker 65
+8 worker-id 908
 8 x 41
 8 y 51
+11 building-dim 795
+11 building-type 691
+11 building-type 745
 11 command 129
 11 command-instance 111
 11 command-name 96
@@ -781,13 +1085,18 @@ SOAR_ID 668
 11 group 34
 11 id 201
 11 name 12
+11 search-type 849
 11 sector 614
 11 start-dep 480
 11 task 313
 11 width 164
 11 worker 69
+11 worker-id 910
 11 x 44
 11 y 54
+13 building-dim 797
+13 building-type 693
+13 building-type 747
 13 command 120
 13 command-instance 103
 13 command-name 88
@@ -796,13 +1105,18 @@ SOAR_ID 668
 13 group 30
 13 id 187
 13 name 14
+13 search-type 851
 13 sector 580
 13 start-dep 447
 13 task 281
 13 width 152
 13 worker 64
+13 worker-id 912
 13 x 40
 13 y 50
+15 building-dim 817
+15 building-type 713
+15 building-type 767
 15 command 121
 15 command-instance 104
 15 command-name 89
@@ -811,13 +1125,18 @@ SOAR_ID 668
 15 group 33
 15 id 188
 15 name 16
+15 search-type 872
 15 sector 584
 15 start-dep 451
 15 task 285
 15 width 153
 15 worker 67
+15 worker-id 933
 15 x 43
 15 y 53
+17 building-dim 819
+17 building-type 715
+17 building-type 769
 17 command 127
 17 command-instance 109
 17 command-name 94
@@ -826,13 +1145,18 @@ SOAR_ID 668
 17 group 29
 17 id 197
 17 name 18
+17 search-type 874
 17 sector 610
 17 start-dep 476
 17 task 310
 17 width 161
 17 worker 63
+17 worker-id 935
 17 x 39
 17 y 49
+19 building-dim 810
+19 building-type 706
+19 building-type 760
 19 command 131
 19 command-instance 113
 19 command-name 98
@@ -841,13 +1165,18 @@ SOAR_ID 668
 19 group 35
 19 id 203
 19 name 20
+19 search-type 865
 19 sector 615
 19 start-dep 481
 19 task 314
 19 width 166
 19 worker 70
+19 worker-id 926
 19 x 45
 19 y 55
+21 building-dim 784
+21 building-type 681
+21 building-type 734
 21 command 125
 21 command-instance 107
 21 command-name 92
@@ -856,13 +1185,18 @@ SOAR_ID 668
 21 group 38
 21 id 194
 21 name 22
+21 search-type 838
 21 sector 607
 21 start-dep 473
 21 task 307
 21 width 159
 21 worker 74
+21 worker-id 898
 21 x 48
 21 y 58
+23 building-dim 791
+23 building-type 687
+23 building-type 741
 23 command 122
 23 command-instance 105
 23 command-name 90
@@ -871,13 +1205,18 @@ SOAR_ID 668
 23 group 32
 23 id 189
 23 name 24
+23 search-type 845
 23 sector 602
 23 start-dep 468
 23 task 302
 23 width 154
 23 worker 66
+23 worker-id 906
 23 x 42
 23 y 52
+26 building-dim 809
+26 building-type 705
+26 building-type 759
 26 command 133
 26 command-instance 115
 26 command-name 100
@@ -886,13 +1225,18 @@ SOAR_ID 668
 26 group 37
 26 id 205
 26 name 25
+26 search-type 863
 26 sector 618
 26 start-dep 484
 26 task 316
 26 width 168
 26 worker 73
+26 worker-id 924
 26 x 47
 26 y 57
+27 building-dim 802
+27 building-type 698
+27 building-type 752
 27 command 130
 27 command-instance 112
 27 command-name 97
@@ -900,11 +1244,16 @@ SOAR_ID 668
 27 feature 569
 27 id 202
 27 name 28
+27 search-type 856
 27 sector 613
 27 start-dep 479
 27 task 312
 27 width 165
 27 worker 68
+27 worker-id 917
+59 building-dim 781
+59 building-type 678
+59 building-type 731
 59 command 124
 59 command-instance 106
 59 command-name 91
@@ -912,11 +1261,16 @@ SOAR_ID 668
 59 feature 562
 59 id 193
 59 name 60
+59 search-type 835
 59 sector 606
 59 start-dep 472
 59 task 306
 59 width 158
 59 worker 72
+59 worker-id 895
+61 building-dim 800
+61 building-type 696
+61 building-type 750
 61 command 118
 61 command-instance 101
 61 command-name 86
@@ -924,10 +1278,15 @@ SOAR_ID 668
 61 feature 533
 61 id 184
 61 name 62
+61 search-type 854
 61 sector 577
 61 start-dep 444
 61 task 278
 61 width 149
+61 worker-id 915
+75 building-dim 779
+75 building-type 676
+75 building-type 729
 75 command 128
 75 command-instance 110
 75 command-name 95
@@ -935,11 +1294,17 @@ SOAR_ID 668
 75 feature 547
 75 id 199
 75 name 76
+75 search-type 833
 75 sector 591
 75 start-dep 458
 75 task 292
 75 width 162
+75 worker-id 893
 78 io 79
+78 operator 880
+82 building-dim 789
+82 building-type 685
+82 building-type 739
 82 command 126
 82 command-instance 108
 82 command-name 93
@@ -947,124 +1312,195 @@ SOAR_ID 668
 82 feature 544
 82 id 195
 82 name 83
+82 search-type 843
 82 sector 588
 82 start-dep 455
 82 task 289
 82 width 160
+82 worker-id 903
+84 building-dim 814
+84 building-type 710
+84 building-type 764
 84 command 123
 84 dep 387
 84 feature 559
 84 id 190
 84 name 85
+84 search-type 869
 84 sector 603
 84 start-dep 469
 84 task 303
 84 width 155
+84 worker-id 930
+116 building-dim 807
+116 building-type 703
+116 building-type 757
 116 dep 388
 116 feature 560
 116 id 191
 116 name 117
+116 search-type 861
 116 sector 604
 116 start-dep 470
 116 task 304
 116 width 156
+116 worker-id 922
 134 name 210
+135 building-dim 799
+135 building-type 695
+135 building-type 749
 135 dep 370
 135 feature 541
 135 id 192
 135 name 136
+135 search-type 853
 135 sector 585
 135 start-dep 452
 135 task 286
 135 width 157
+135 worker-id 914
 137 group 222
 138 cCenter 141
 138 location 144
+139 building-dim 783
+139 building-type 680
+139 building-type 733
 139 dep 396
 139 feature 568
 139 id 200
 139 name 140
+139 search-type 837
 139 sector 612
 139 start-dep 478
 139 task 311
 139 width 163
+139 worker-id 897
 141 x 145
 141 y 146
+142 building-dim 782
+142 building-type 679
+142 building-type 732
 142 dep 367
 142 feature 538
 142 id 185
 142 name 143
+142 search-type 836
 142 sector 582
 142 start-dep 449
 142 task 283
 142 width 150
+142 worker-id 896
 144 x 169
 144 y 170
+147 building-dim 794
+147 building-type 690
+147 building-type 744
 147 dep 392
 147 feature 564
 147 id 196
 147 name 148
+147 search-type 848
 147 sector 608
 147 start-dep 474
 147 task 308
+147 worker-id 909
+172 building-dim 813
+172 building-type 709
+172 building-type 763
 172 dep 377
 172 feature 548
 172 id 198
 172 name 173
+172 search-type 868
 172 sector 592
 172 start-dep 459
 172 task 293
+172 worker-id 929
 175 build-barracks 176
+175 build-building 824
 175 find-free-worker 181
 175 find-location-near 238
+175 finished-command 720
 175 finished-commands 232
 175 grouping-level 218
 175 reserved-worker 223
+175 visual-search 887
+175 visual-search 947
 176 cCenter 642
 176 location 177
 176 started-build 209
 176 worker-id 207
 177 x 208
 177 y 178
+179 building-dim 805
+179 building-type 701
+179 building-type 755
 179 dep 382
 179 feature 554
 179 id 206
 179 name 180
+179 search-type 859
 179 sector 598
 179 start-dep 464
 179 task 298
+179 worker-id 920
 181 done 233
 181 worker 221
+182 building-dim 815
+182 building-type 711
+182 building-type 765
 182 dep 385
 182 feature 557
 182 name 183
+182 search-type 870
 182 sector 601
 182 start-dep 467
 182 task 301
+182 worker-id 931
+211 building-dim 811
+211 building-type 707
+211 building-type 761
 211 dep 381
 211 feature 553
 211 name 212
+211 search-type 866
 211 sector 597
 211 start-dep 463
 211 task 297
+211 worker-id 927
+214 building-dim 818
+214 building-type 714
+214 building-type 768
 214 dep 364
 214 feature 535
 214 name 215
+214 search-type 873
 214 sector 579
 214 start-dep 446
 214 task 280
+214 worker-id 934
+216 building-dim 820
+216 building-type 716
+216 building-type 770
 216 dep 380
 216 feature 552
 216 name 217
+216 search-type 875
 216 sector 596
 216 start-dep 462
 216 task 296
+216 worker-id 936
+219 building-dim 816
+219 building-type 712
+219 building-type 766
 219 dep 372
 219 feature 543
 219 name 220
+219 search-type 871
 219 sector 587
 219 start-dep 454
 219 task 288
+219 worker-id 932
 222 command_running 227
 222 id 225
 222 num_members 228
@@ -1073,48 +1509,79 @@ SOAR_ID 668
 222 type 224
 222 x-pos 643
 222 y-pos 644
+230 building-dim 803
+230 building-type 699
+230 building-type 753
 230 dep 375
 230 feature 546
 230 name 231
+230 search-type 857
 230 sector 590
 230 start-dep 457
 230 task 291
+230 worker-id 918
+234 building-dim 821
+234 building-type 717
+234 building-type 771
 234 dep 393
 234 feature 565
 234 name 235
+234 search-type 876
 234 sector 609
 234 start-dep 475
 234 task 309
+234 worker-id 937
+236 building-dim 785
+236 building-type 682
+236 building-type 735
 236 dep 368
 236 feature 539
 236 name 237
+236 search-type 839
 236 sector 583
 236 start-dep 450
 236 task 284
+236 worker-id 899
 238 result 647
+239 building-dim 808
+239 building-type 704
+239 building-type 758
 239 dep 363
 239 feature 534
 239 name 240
+239 search-type 862
 239 sector 578
 239 start-dep 445
 239 task 279
+239 worker-id 923
+241 building-dim 787
+241 building-type 684
+241 building-type 737
 241 dep 361
 241 feature 532
 241 name 242
+241 search-type 841
 241 sector 576
 241 start-dep 443
 241 task 277
+241 worker-id 901
 243 friendly 650
+243 friendly_workers 951
 244 comment 255
 244 completed 249
 244 execution-buffer 248
 244 retrieval-buffer 247
+245 building-dim 804
+245 building-type 700
+245 building-type 754
 245 dep 383
 245 feature 555
 245 name 246
+245 search-type 858
 245 sector 599
 245 start-dep 465
 245 task 299
+245 worker-id 919
 247 task 250
 248 task 256
 249 task 257
@@ -1123,55 +1590,90 @@ SOAR_ID 668
 250 name 253
 250 params 266
 250 start-dep 260
+251 building-dim 780
+251 building-type 677
+251 building-type 730
 251 dep 374
 251 feature 545
 251 name 252
+251 search-type 834
 251 sector 589
 251 start-dep 456
 251 task 290
+251 worker-id 894
 256 completed 274
 256 name 262
 256 started 442
 257 completion-frame 358
 257 name 263
+258 building-dim 796
+258 building-type 692
+258 building-type 746
 258 dep 371
 258 feature 542
 258 name 259
+258 search-type 850
 258 sector 586
 258 start-dep 453
 258 task 287
+258 worker-id 911
+264 building-dim 792
+264 building-type 688
+264 building-type 742
 264 dep 389
 264 feature 561
 264 name 265
+264 search-type 846
 264 sector 605
 264 start-dep 471
 264 task 305
+264 worker-id 907
 266 num 269
 266 unit 651
 266 workers 652
+267 building-dim 822
+267 building-type 718
+267 building-type 772
 267 dep 384
 267 feature 556
 267 name 268
+267 search-type 877
 267 sector 600
 267 start-dep 466
 267 task 300
+267 worker-id 938
+270 building-dim 778
+270 building-type 675
+270 building-type 728
 270 dep 378
 270 feature 549
 270 name 271
+270 search-type 832
 270 sector 593
 270 start-dep 460
 270 task 294
+270 worker-id 892
+272 building-dim 812
+272 building-type 708
+272 building-type 762
 272 dep 379
 272 feature 550
 272 name 273
+272 search-type 867
 272 sector 594
 272 start-dep 461
 272 task 295
+272 worker-id 928
+275 building-dim 806
+275 building-type 702
+275 building-type 756
 275 dep 395
 275 feature 567
 275 name 276
+275 search-type 860
 275 sector 611
 275 start-dep 477
+275 worker-id 921
 277 dep 420
 277 name 336
 277 start-dep 503
@@ -1292,17 +1794,37 @@ SOAR_ID 668
 316 dep 417
 316 name 333
 316 start-dep 500
+359 building-dim 775
+359 building-type 672
+359 building-type 725
 359 feature 572
 359 name 360
+359 search-type 829
 359 sector 616
 359 start-dep 482
+359 worker-id 889
+525 building-dim 823
+525 building-type 719
+525 building-type 773
 525 feature 575
 525 name 526
+525 search-type 878
 525 sector 619
+525 worker-id 939
+527 building-dim 798
+527 building-type 694
+527 building-type 748
 527 feature 551
 527 name 528
+527 search-type 852
 527 sector 595
+527 worker-id 913
+530 building-dim 776
+530 building-type 673
+530 building-type 726
 530 name 531
+530 search-type 830
+530 worker-id 890
 620 build 639
 620 grouping-radius 628
 620 look-feature 621
@@ -1313,14 +1835,34 @@ SOAR_ID 668
 620 view-width 627
 621 feature 653
 621 sector 654
+622 building-dim 774
+622 building-type 671
+622 building-type 724
 622 name 623
+622 search-type 828
+622 worker-id 888
 624 feature 655
 624 sector 656
+625 building-dim 801
+625 building-type 697
+625 building-type 751
 625 name 626
+625 search-type 855
+625 worker-id 916
 627 value 657
 628 value 631
+629 building-dim 777
+629 building-type 674
+629 building-type 727
 629 name 630
+629 search-type 831
+629 worker-id 891
+632 building-dim 786
+632 building-type 683
+632 building-type 736
 632 name 633
+632 search-type 840
+632 worker-id 900
 636 mine 658
 636 world 659
 637 group0 660
@@ -1337,3 +1879,31 @@ SOAR_ID 668
 642 y 646
 647 x 648
 647 y 649
+669 building-dim 788
+669 building-type 738
+669 name 670
+669 search-type 842
+669 worker-id 902
+721 started-build 952
+722 name 723
+722 search-type 864
+722 worker-id 925
+824 cCenter 825
+824 location 879
+824 started-build 886
+824 worker-id 885
+825 x 881
+825 y 882
+826 name 827
+826 search-type 944
+826 worker-id 905
+879 x 883
+879 y 884
+880 building-dim 953
+880 building-type 940
+880 search-type 949
+880 worker-id 950
+941 name 942
+941 search-type 943
+945 name 946
+947 count 948

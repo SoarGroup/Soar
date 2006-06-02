@@ -50,3 +50,22 @@ sp {apply*orts-set-sticky
    (<m> ^group0 <g>)
    (<ts> ^finished-command orts-set-sticky)
 }
+
+sp {apply*orts-locate-building
+   (state <s> ^operator <o>
+              ^io.output-link <ol>
+              ^top-state <ts>)
+   (<o> ^name orts-locate-building
+        ^building-type <t>
+        ^x <x>
+        ^y <y>
+        ^distance <dist>)
+-->
+   (<ol> ^locate-building <lb>)
+   (<lb> ^building <t>
+         ^x <x>
+         ^y <y>
+         ^distance <dist>)
+   (<ts> ^finished-command orts-locate-building)
+}
+   

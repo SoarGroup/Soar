@@ -45,7 +45,7 @@ sp {visual-search*propose*search-worker
    -{(<gs> ^group <g>)
      (<g> ^type worker
           ^id <id>)}
-   (<il> ^groups.group <xx>)
+   (<il> ^groups.group <xx>) #re-propose if groups change
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name look-at-feature
