@@ -1,0 +1,25 @@
+sp {propose*initialize-sorts
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-sorts)
+}
+
+sp {apply*initialize-sorts
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-sorts)
+-->
+   (<s> ^name sorts
+        ^grouping-level small-groups
+        ^planning <pl>
+        ^opportunity-task-buffer <otb>
+        ^group-memory <gm>)
+   (<pl> ^retrieval-buffer <rb>
+         ^execution-buffer <eb>
+         ^completed <c>)
+   (<gm> ^mine <mg>
+         ^world <wg>)
+}
+
+

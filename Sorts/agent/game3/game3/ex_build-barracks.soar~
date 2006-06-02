@@ -1,0 +1,90 @@
+sp {propose*build-barracks
+   (state <s> ^name sorts
+              ^running-task.name build-barracks)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name build-barracks)
+}
+
+# this should keep looking at friendly units until a cCenter is seen
+sp {build-barracks*propose*find-cCenter
+   (state <s> ^name build-barracks
+              ^io.input-link.groups <gs>
+             -^location)
+   -{(<gs> ^group <g>)
+   (<g> ^type controlCenter
+        ^owner 0)}
+        
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name visual-search-friendly)
+}
+
+sp {build-barracks*propose*find-build-location
+   (state <s> ^name build-barracks
+              ^io.input-link.groups <gs>
+             -^location)
+   (<gs> ^group <g>)
+   (<g> ^type controlCenter
+        ^owner 0
+        ^x-pos <x>
+        ^y-pos <y>)
+        
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name find-location-near
+        ^x <x>
+        ^y <y>
+        ^width 100)
+}
+
+sp {build-barracks*propose*find-worker-id-init
+   (state <s> ^name build-barracks
+             -^worker-id
+              ^location.x <x>
+              ^location.y <y>)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name find-free-worker
+        ^x <x>
+        ^y <y>)
+}
+
+sp {build-barracks*propose*find-worker-id-disappeared
+   (state <s> ^name build-barracks
+              ^worker-id <id>
+              ^location.x <x>
+              ^location.y <y>
+              ^io.input-link.groups <gs>)
+   -{(<gs> ^group <g>)
+   (<g> ^type worker
+        ^id <id>
+        ^num_members 1
+        ^command_running 0)}
+        
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name find-free-worker
+        ^x <x>
+        ^y <y>)
+}
+
+sp {build-barracks*propose*start-build
+   (state <s> ^name build-barracks
+              ^worker-id <id>
+              ^location.x <x>
+              ^location.y <y>
+              ^io.input-link.groups <gs>)
+   (<gs> ^group <g>)
+   (<g> ^type worker
+        ^id <id>
+        ^command_running 0
+        ^num_members 1)
+-->
+   (<s> ^operator <o> + > =)
+    (<o> ^name orts-build-barracks
+         ^worker <id>
+         ^x <x>
+         ^y <y>)
+    (<s> ^started-build true)
+}

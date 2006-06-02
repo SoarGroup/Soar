@@ -1,0 +1,12 @@
+sp {apply*find-location-near
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name find-location-near
+        ^x <x>
+        ^y <y>
+        ^width <w>)
+-->
+   (<ts> ^find-location-near.result <l>)
+   (<l> ^x (- <x> <w>)
+        ^y <y>)
+}

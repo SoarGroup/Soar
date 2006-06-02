@@ -1,0 +1,90 @@
+#TODO: visual search if no free workers!
+
+sp {find-free-worker*propose*change-grouping-level
+   (state <s> ^name find-free-worker
+              -^top-state.grouping-level individuals)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name set-grouping-individuals)
+}
+
+sp {find-free-worker*propose*search
+   (state <s> ^name find-free-worker
+              ^top-state <ts>
+              ^io.input-link.groups <gs>
+             -^top-state.find-free-worker.worker)
+   (<gs> ^group <g>)
+   -{(<g> ^type worker
+        ^id <id>
+        ^owner 0
+        ^command_running 0
+        ^num_members 1
+        ^sticky 0)
+     (<ts> -^reserved-worker <id>)}
+-->
+   (<s> ^operator <o> + < =)
+   (<o> ^name visual-search
+        ^search-type friendly_workers)
+}
+
+sp {find-free-worker*propose*choose-worker
+   (state <s> ^name find-free-worker
+              ^top-state <ts>
+              ^io.input-link.groups <gs>
+             -^top-state.find-free-worker.worker)
+   (<gs> ^group <g>)
+   (<g> ^type worker
+        ^id <id>
+        ^owner 0
+        ^command_running 0
+        ^num_members 1
+        ^sticky 0)
+   (<ts> -^reserved-worker <id>)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name choose-worker
+        ^id <id>)
+}
+
+sp {find-free-worker*apply*choose-worker
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name choose-worker
+        ^id <id>)
+-->
+   (<ts> ^find-free-worker.worker <id>)
+}
+   
+sp {find-free-worker*propose*set-worker-sticky
+   (state <s> ^name find-free-worker
+              ^top-state.find-free-worker <w>
+              ^top-state <ts>
+             -^top-state.finished-command orts-set-sticky)
+   (<w> ^worker <id>
+       -^done true)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name orts-set-sticky
+        ^group <id>)
+}
+
+sp {find-free-worker*propose*worker-found
+   (state <s> ^name find-free-worker
+              ^top-state.find-free-worker.worker <id>
+              ^top-state.finished-command orts-set-sticky)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name worker-found)
+}
+
+sp {find-free-worker*apply*worker-found
+   (state <s> ^operator.name worker-found
+              ^top-state <ts>)
+   (<ts> ^find-free-worker <w>
+         ^finished-command orts-set-sticky)
+   (<w> ^worker <id>)
+-->
+   (<ts> ^finished-command orts-set-sticky -) # clean up
+   (<w> ^done true)
+   (<ts> ^reserved-worker <id>)
+}

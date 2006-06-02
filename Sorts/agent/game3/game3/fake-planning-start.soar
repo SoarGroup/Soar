@@ -1,0 +1,43 @@
+sp {propose*start-build-barracks
+   (state <s> ^name sorts
+             -^running-task.name build-barracks)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-build-barracks)
+}
+
+sp {propose*start-build-workers
+   (state <s> ^name sorts
+              ^comment out
+             -^running-task.name build-workers)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-build-workers)
+}
+
+sp {propose*start-miner-assignment
+   (state <s> ^name sorts
+              ^comment out
+             -^running-task.name miner-assignment)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-miner-assignment)
+}
+
+sp {apply*start-build-barracks
+   (state <s> ^operator.name start-build-barracks)
+-->
+   (<s> ^running-task.name build-barracks)
+}
+
+sp {apply*start-build-workers
+   (state <s> ^operator.name start-build-workers)
+-->
+   (<s> ^running-task.name build-workers)
+}
+
+sp {apply*start-miner-assignment
+   (state <s> ^operator.name start-miner-assignment)
+-->
+   (<s> ^running-task.name miner-assignment)
+}
