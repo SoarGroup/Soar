@@ -14,10 +14,6 @@ using namespace std;
 class BuildFSM : public FSM {
 public:
 
-  enum BUILDING_TYPE { CONTROL_CENTER=0, 
-                       BARRACKS=1, 
-                       FACTORY=2 }; // just for game 3
-
   BuildFSM(GameObj* gob);
   ~BuildFSM();
 
@@ -26,7 +22,7 @@ public:
 
 private:
   int loc_x, loc_y;
-  BUILDING_TYPE type;
+  BuildingType type;
 
   // for calculating intersections
   Rectangle buildingBounds;

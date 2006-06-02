@@ -1,5 +1,7 @@
 #ifndef soaraction_h
 #define soaraction_h
+#include "general.h"
+
 #include <list>
 #include <string>
 
@@ -42,9 +44,22 @@ struct AttentionAction {
     list<int> params;
     string fmName;
 };
-    
+
+enum MapActionType {
+  MA_FIND_BUILDING_LOC,
+  MA_NO_SUCH_ACTION
+};
+
+struct MapAction {
+  MapActionType type;
+  BuildingType building;
+  coordinate nearLocation;
+  int minDistance;
+};
+
 ObjectActionType objectActionTypeLookup(string actionName);
 
 AttentionActionType attentionActionTypeLookup(string actionName);
+MapActionType mapActionTypeLookup(string actionName);
 
 #endif

@@ -335,8 +335,14 @@ void SoarInterface::getNewSoarOutput() {
         processAttentionAction(AType, cmdPtr);
       }
       else {
-        cout << "ERROR: command " << name << " not known." << endl;
-        assert(false);
+        MapActionType MType = mapActionTypeLookup(name);
+        if (MType != MA_NO_SUCH_ACTION) {
+          processMapAction(MType, cmdPtr);
+        }
+        else {
+          cout << "ERROR: command " << name << " not known." << endl;
+          assert(false);
+        }
       }
     }
   }
@@ -464,6 +470,39 @@ void SoarInterface::processAttentionAction(AttentionActionType type,
   unlockAttentionActionMutex();
 }
 
+void SoarInterface::processMapAction(MapActionType type, 
+                                        sml::Identifier* cmdPtr) {
+  MapAction newAction;
+  newAction.type = type;
+  
+  if (newAction.type != MA_NO_SUCH_ACTION) {
+    // type is MA_FIND_BUILDING_LOC (the only thing supported)
+    
+    const char* paramValue;
+    paramValue  = cmdPtr->GetParameterValue("building");
+    assert (paramValue != NULL);
+    newAction.building = (BuildingType)(atoi(paramValue)); 
+    paramValue  = cmdPtr->GetParameterValue("x");
+    assert (paramValue != NULL);
+    newAction.nearLocation.x = (BuildingType)(atoi(paramValue)); 
+    paramValue  = cmdPtr->GetParameterValue("y");
+    assert (paramValue != NULL);
+    newAction.nearLocation.y = (BuildingType)(atoi(paramValue)); 
+    paramValue  = cmdPtr->GetParameterValue("distance");
+    assert (paramValue != NULL);
+    newAction.minDistance = (BuildingType)(atoi(paramValue)); 
+    
+    mapActionQueue.push_back(newAction);
+
+    cmdPtr->AddStatusComplete();
+  }
+  else {
+    cmdPtr->AddStatusError();
+  }
+  
+}
+
+
 // called by middleware to get queued Soar actions
 void SoarInterface::getNewObjectActions(list<ObjectAction>& newActions) {
   lockObjectActionMutex();
@@ -489,6 +528,15 @@ void SoarInterface::getNewAttentionActions(list<AttentionAction>& newActions) {
   unlockAttentionActionMutex();
 }
 
+void SoarInterface::getNewMapActions(list<MapAction>& newActions) {
+  for(list<MapAction>::iterator i = mapActionQueue.begin(); 
+                                  i != mapActionQueue.end(); 
+                                  i++) {
+    newActions.push_back(*i);
+    mapActionQueue.erase(i);
+  }
+}
+
 void SoarInterface::updatePlayerGold(int amount) {
   lockSoarMutex();
   stale = true;
@@ -497,9 +545,19 @@ void SoarInterface::updatePlayerGold(int amount) {
   unlockSoarMutex();
 }
 
+void SoarInterface::updateQueryResult(string name, int param0, int param1) {
+  lockSoarMutex();
+  stale = true;
+  agent->Update(queryResultRep.queryNameWME, name.c_str());
+  agent->Update(queryResultRep.param0WME, param0);
+  agent->Update(queryResultRep.param1WME, param1);
+  unlockSoarMutex();
+}
+
 void SoarInterface::updateVisionState(VisionParameterStruct& vps) {
   lockSoarMutex();
 
+  stale = true;
   agent->Update(visionParamRep.centerXWME, vps.centerX);
   agent->Update(visionParamRep.centerYWME, vps.centerY);
   agent->Update(visionParamRep.viewWidthWME, vps.viewWidth);
@@ -525,6 +583,7 @@ void SoarInterface::initSoarInputLink() {
   playerGoldWME = agent->CreateIntWME(gameInfoIdWME, "my-gold", 0);
   viewFrameWME = agent->CreateIntWME(gameInfoIdWME, "view-frame", -1);
 
+
   // these never change, don't need to save the pointers
   agent->CreateIntWME(gameInfoIdWME, "num-players", 
                       Sorts::OrtsIO->getNumPlayers());
@@ -537,6 +596,17 @@ void SoarInterface::initSoarInputLink() {
 
   agent->CreateIntWME(gameInfoIdWME, "player-id", Sorts::OrtsIO->getMyId());
 
+  queryResultRep.identifierWME = agent->CreateIdWME(inputLink, "query-results");
+  queryResultRep.queryNameWME 
+    = agent->CreateStringWME(queryResultRep.identifierWME,
+                             "query-name", "none");
+  queryResultRep.param0WME
+    = agent->CreateIntWME(queryResultRep.identifierWME,
+                          "param0", -1);
+  queryResultRep.param1WME
+    = agent->CreateIntWME(queryResultRep.identifierWME,
+                          "param1", -1);
+  
   // initialVisionParams must already be set!
   visionParamRep.identifierWME = agent->CreateIdWME(inputLink, "vision-state"); 
   visionParamRep.centerXWME 

@@ -28,3 +28,8 @@ AttentionActionType attentionActionTypeLookup(string actionName) {
   else if (not actionName.compare("enable-owner-grouping"))  return AA_OWNER_GROUPING_OFF;
   else                                       return AA_NO_SUCH_ACTION;
 }
+
+MapActionType mapActionTypeLookup(string actionName) {
+  if      (not actionName.compare("locate-building")) return MA_FIND_BUILDING_LOC;
+  else                                       return MA_NO_SUCH_ACTION;
+}

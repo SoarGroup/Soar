@@ -16,6 +16,7 @@
 #include "MineManager.h"
 #include "GridMapTileGrouper.h"
 #include "FeatureMapManager.h"
+#include "MapQuery.h"
 #include "Sorts.h"
 
 #include "TerrainModule.H"
@@ -69,6 +70,7 @@ void SoarUpdateEventHandler(smlUpdateEventId id,
   // would have a delay from when it looked somewhere and when
   // the objects there appeared.
   Sorts::pGroupManager->processVisionCommands();
+  Sorts::mapQuery->processMapCommands();
 
   if (Sorts::SoarIO->getStale()) {
     Sorts::SoarIO->lockSoarMutex();
@@ -232,6 +234,7 @@ int main(int argc, char *argv[]) {
   //InternalGroupManager igm;
   OrtsInterface ortsInterface(&gsm);
 
+  MapQuery mapQ;
   SpatialDB spatialDB;
   MineManager mineMan;
   AttackManagerRegistry amr;
@@ -246,6 +249,7 @@ int main(int argc, char *argv[]) {
               &spatialDB,
               &amr,
               &mineMan,
+              &mapQ,
               &sortsMutex);
 
   spatialDB.init();

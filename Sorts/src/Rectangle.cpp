@@ -90,6 +90,77 @@ bool Rectangle::intersects(const Circle& c) {
   }
 }
 
+bool Rectangle::intersects(line& l) {
+  
+  // cases where line completely away from box (most common)
+  if ((l.a.x < xmin && l.b.x < xmin) ||
+      (l.a.x > xmax && l.b.x > xmax) ||
+      (l.a.y < ymin && l.b.y < ymin) ||
+      (l.a.y > ymax && l.b.y > ymax)) {
+    return false;
+  }
+  else if (l.a.x == l.b.x ||
+           l.a.y == l.b.y) {
+    // straight lines: if they pass the previous condition, they must
+    // intersect (this is probably the common intersect case)
+    return true;
+  }
+  // cases where endpoint is in the box
+  else if (contains(l.a.x, l.a.y)) {
+    return true;
+  }
+  else if (contains(l.b.x, l.b.y)) {
+    return true;
+  }
+  else {
+    // pretend the line is infinitely long, and determine whether or not
+    // the box corners all lie on the same side of it.
+    if (l.a.x > l.b.x) {
+      coordinate temp = l.a;
+      l.a = l.b;
+      l.b = l.a;
+    }
+
+    int slope = (l.b.y - l.a.y)/(l.b.x - l.b.x);
+    bool above[4];
+
+    if (ymax > (l.a.y + (xmin-l.a.x)*slope)) {
+      above[0] = true;
+    }
+    else {
+      above[0] = false;
+    }
+                                          
+    if (ymin > (l.a.y + (xmin-l.a.x)*slope)) {
+      above[1] = true;
+    }
+    else {
+      above[1] = false;
+    }
+    
+    if (ymax > (l.a.y + (xmax-l.a.x)*slope)) {
+      above[2] = true;
+    }
+    else {
+      above[2] = false;
+    }
+    if (ymin > (l.a.y + (xmax-l.a.x)*slope)) {
+      above[3] = true;
+    }
+    else {
+      above[3] = false;
+    }
+    
+    if (above[0] && above[1] && above[2] && above[3]) {
+      return false;
+    }
+    else if (!above[0] && !above[1] && !above[2] && !above[3]) {
+      return false;
+    }
+    return true;
+  }
+}
+
 bool Rectangle::contains(int x, int y) {
   return xmin <= x && xmax >= x && ymin <= y && ymax >= y;
 }

@@ -1,5 +1,6 @@
 #include "SpatialDB.h"
 #include "Sorts.h"
+#include "general.h"
 
 #include <map>
 
@@ -280,6 +281,20 @@ void SpatialDB::getCollisions
 }
 
 bool SpatialDB::hasMiningCollision(coordinate c, bool checkCrowding) {
+  return hasObjectCollisionInt(c, checkCrowding, WORKER_RADIUS+1);
+}
+
+bool SpatialDB::hasObjectCollision(Rectangle* rect) {
+  // overestimate as a circle
+  coordinate c;
+  c.x = (int)(rect->xmax - rect->xmin);
+  c.y = (int)(rect->ymax - rect->ymin);
+  int radius = (int)(sqrt(squaredDistance(c.x, c.y, rect->xmax, rect->ymax)));
+  return hasObjectCollisionInt(c, false, radius);
+}
+
+bool SpatialDB::hasObjectCollisionInt(coordinate c, 
+                                   bool checkCrowding, int radius) {
   int cells[9];
   bool check[9] = {false};
 
@@ -288,7 +303,7 @@ bool SpatialDB::hasMiningCollision(coordinate c, bool checkCrowding) {
     r = WORKER_CROWD_FACTOR*WORKER_RADIUS;
   }
   else {
-    r = WORKER_RADIUS + 1;
+    r = radius;
   }
 
   bigR = r + tile_points;
@@ -440,11 +455,11 @@ bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
           it != terrainLineMap[cellNum].end();
           it++) {
         msg << "checking intersection\n";
-/*        if (rect->intersects(*it)) {
-          msg << "rect " << *rect << " intersects line " << (*it).x 
-              << "-" << (*it).y << endl;
+        if (rect->intersects(*it)) {
+          msg << "rect " << *rect << " intersects line " << (*it).a 
+              << "-" << (*it).b << endl;
           return true;
-        }*/
+        }
       }
     }
   }

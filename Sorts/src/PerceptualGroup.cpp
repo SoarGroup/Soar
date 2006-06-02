@@ -195,7 +195,7 @@ void PerceptualGroup::generateData() {
 
   attribs.add("health", health);
   attribs.add("speed", speed);
-  attribs.add("num-members", size);
+  attribs.add("num_members", size);
 
   attribs.add("x-pos", x);
   attribs.add("y-pos", y);

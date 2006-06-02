@@ -38,11 +38,14 @@ public:
   void addTerrainLine(line l);
 
   bool hasTerrainCollision(Rectangle* r);
+  bool hasObjectCollision(Rectangle* r);
 
   int refCount;
 
 private:
 
+  bool hasObjectCollisionInt(coordinate c, bool b, int r);
+  
   vector<set<GameObj*> > gobMap;
   vector<list<coordinate> > imaginaryWorkerMap; // used by MineManager
   vector<list<line> > terrainLineMap;

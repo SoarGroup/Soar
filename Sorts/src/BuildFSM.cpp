@@ -1,18 +1,18 @@
 #include "BuildFSM.h"
 #include "Rectangle.h"
 
-Rectangle getBuildingBounds(BuildFSM::BUILDING_TYPE type, int centerX, int centerY) {
+Rectangle getBuildingBounds(BuildingType type, int centerX, int centerY) {
   int width, height;
   switch (type) {
-    case BuildFSM::CONTROL_CENTER:
+    case CONTROL_CENTER:
       width = 4 * 16 - 2;
       height = 4 * 16 - 2;
       break;
-    case BuildFSM::BARRACKS:
+    case BARRACKS:
       width = 4 * 16 - 2;
       height = 3 * 16 - 2;
       break;
-    case BuildFSM::FACTORY:
+    case FACTORY:
       width = 4 * 16 - 2;
       height = 3 * 16 - 2;
       break;
@@ -35,7 +35,7 @@ BuildFSM::~BuildFSM() {
 
 void BuildFSM::init(vector<sint4> params) {
   FSM::init(params);
-  type = (BUILDING_TYPE) params[0];
+  type = (BuildingType) params[0];
   loc_x = params[1];
   loc_y = params[2];
   buildingBounds = getBuildingBounds(type, loc_x, loc_y);

@@ -48,6 +48,13 @@ struct coordinate {
   int y;
 };
 
+enum BuildingType { 
+  CONTROL_CENTER=0, 
+  BARRACKS=1, 
+  FACTORY=2 
+}; // just for game 3
+
+
 struct line {
   coordinate a;
   coordinate b;

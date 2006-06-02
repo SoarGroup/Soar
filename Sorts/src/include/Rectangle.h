@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "Circle.h"
+#include "general.h"
 
 using namespace std;
 
@@ -21,6 +22,7 @@ public:
 
   bool intersects(const Rectangle& other);
   bool intersects(const Circle& c);
+  bool intersects(line& l);
   bool contains(int x, int y);
   bool contains(const Rectangle& r);
   int  area();

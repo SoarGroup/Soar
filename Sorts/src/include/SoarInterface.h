@@ -68,6 +68,13 @@ typedef struct {
   sml::IntElement* groupingRadiusWME;
 } VisionParameterRep;
 
+typedef struct {
+  sml::Identifier* identifierWME;
+  sml::StringElement* queryNameWME;
+  sml::IntElement* param0WME;
+  sml::IntElement* param1WME;
+} QueryResultRep;
+
 /* 
 The PerceptualGroupManager will have a pointer to this structure, and can call
 the public functions to get new actions and change what groups Soar can
@@ -98,6 +105,7 @@ class SoarInterface {
 
     void getNewObjectActions(list<ObjectAction>& newActions);
     void getNewAttentionActions(list<AttentionAction>& newActions);
+    void getNewMapActions(list<MapAction>& newActions);
 
     void updateViewFrame(int frame);
 
@@ -124,6 +132,7 @@ class SoarInterface {
     // update player info
     void updatePlayerGold(int amount);
 
+    void updateQueryResult(string name, int param0, int param1);
     /* this is the function for the Soar interrupt handler.
      * Don't try to call this
      */
@@ -147,6 +156,7 @@ class SoarInterface {
 
     void processObjectAction(ObjectActionType, sml::Identifier*);
     void processAttentionAction(AttentionActionType, sml::Identifier*);
+    void processMapAction(MapActionType, sml::Identifier*);
     void improperCommandError();
 
     // SML pointers
@@ -195,6 +205,8 @@ class SoarInterface {
     VisionParameterStruct initialVisionParams;
     VisionParameterRep visionParamRep;
 
+    QueryResultRep queryResultRep;
+
   /**************************************************
    *                                                *
    * Member variables for actions                   *
@@ -203,9 +215,9 @@ class SoarInterface {
 
     list<ObjectAction> objectActionQueue;
     list<AttentionAction> attentionActionQueue;
-    // need to add two more, once we get the ObjectAction class modified
+    list<MapAction> mapActionQueue;
 
-    // associated mutexes that protect them
+    // associated mutexes that protect them (no longer used)
     pthread_mutex_t* objectActionQueueMutex;
     pthread_mutex_t* attentionActionQueueMutex;
     pthread_mutex_t* soarMutex;
