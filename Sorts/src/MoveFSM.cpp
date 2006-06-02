@@ -496,7 +496,7 @@ bool MoveFSM::veerAhead(int distToTargetSq) {
 bool MoveFSM::collision(int x, int y) {
   list<GameObj*> collisions;
   
-  Sorts::satellite->getCollisions(x, y, 6, NULL, collisions);
+  Sorts::spatialDB->getCollisions(x, y, 6, NULL, collisions);
   msg << x << "," << y << " collides with " << collisions.size() 
        << " things.\n";
   
@@ -521,7 +521,7 @@ bool MoveFSM::dynamicCollision(int x, int y) {
   // return true if loc collides with a sheep or worker
   list<GameObj*> collisions;
   
-  Sorts::satellite->getCollisions(x, y, 6, NULL, collisions);
+  Sorts::spatialDB->getCollisions(x, y, 6, NULL, collisions);
   msg << x << "," << y << " collides with " << collisions.size() 
        << " things.\n";
   
@@ -561,7 +561,7 @@ bool MoveFSM::getMoveVector()
  answer = true;
  vec_count = 0;
 
- std::list<GameObj*> *neighbors = new list<GameObj*>;// = Sorts::satellite->getObjectsInRegion(*(gob->sod.x), *(gob->sod.y));
+ std::list<GameObj*> *neighbors = new list<GameObj*>;// = Sorts::spatialDB->getObjectsInRegion(*(gob->sod.x), *(gob->sod.y));
  std::list<GameObj*>::iterator it;
  
  float x = 0;

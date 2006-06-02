@@ -20,7 +20,7 @@
 class AttackManagerRegistry;
 class MineManager;
 
-#include "Satellite.h"
+#include "SpatialDB.h"
 #include "TerrainModule.H"
 
 #include "SortsCanvas.h"
@@ -35,7 +35,7 @@ class Sorts {
       MapManager*             _mapManager, 
       FeatureMapManager*      _featureMapManager,
       TerrainModule*          _tm,
-      Satellite *             _satellite,
+      SpatialDB *             _spatialDB,
       AttackManagerRegistry*  _amr,
       MineManager*            _mineMan,
       pthread_mutex_t*        _mutex )
@@ -47,7 +47,7 @@ class Sorts {
       mapManager = _mapManager;
       featureMapManager = _featureMapManager;
       terrainModule = _tm;
-      satellite = _satellite;
+      spatialDB = _spatialDB;
       amr = _amr;
       mineManager = _mineMan;
       mutex = _mutex;
@@ -61,7 +61,7 @@ class Sorts {
     static MapManager*              mapManager;
     static FeatureMapManager*       featureMapManager;
     static TerrainModule*           terrainModule;
-    static Satellite*               satellite;
+    static SpatialDB*               spatialDB;
     static AttackManagerRegistry*   amr;
     static MineManager*             mineManager;
     static pthread_mutex_t*         mutex;

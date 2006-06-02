@@ -9,8 +9,7 @@ MineManager*            Sorts::mineManager = NULL;
 AttackManagerRegistry*  Sorts::amr = NULL;
 FeatureMapManager*      Sorts::featureMapManager = NULL;
 TerrainModule*          Sorts::terrainModule = NULL;
-Satellite*              Sorts::satellite = NULL;
+SpatialDB*              Sorts::spatialDB = NULL;
 pthread_mutex_t*        Sorts::mutex = NULL;
 bool                    Sorts::catchup;
 SortsCanvas             Sorts::canvas;
-

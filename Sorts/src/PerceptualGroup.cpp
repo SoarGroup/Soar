@@ -233,7 +233,7 @@ void PerceptualGroup::generateData() {
     msg << "Group at " << x << "," << y << " under owner " << owner << endl;
 
     InfluenceERF erf(10, isGround); // look ten viewframe ahead
-    Sorts::satellite->getCollisions
+    Sorts::spatialDB->getCollisions
       ((int) x, (int) y, (int) approx.r, &erf, collisions);
 
     for(list<GameObj*>::iterator
@@ -275,6 +275,14 @@ void PerceptualGroup::generateData() {
   // status is there
 
   if (friendly) {
+
+    if (sticky) {
+      attribs.add("sticky", 1);
+    }
+    else {
+      attribs.add("sticky", 0);
+    }
+    
     attribs.add("command", currentCommand);
     attribs.add("command_running", running);
     attribs.add("command_success", success);
@@ -480,25 +488,80 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
     case OA_FREE:
       sticky = false;
       cout << "UNSTUCK!\n";
+      hasStaleMembers = true;
       break;
-
+    case OA_STICK:
+      sticky = true;
+      cout << "STUCK!\n";
+      hasStaleMembers = true;
+      break;
+    case OA_SEVER: {
+      // remove n closest members near x,y, add to new sticky group
+      assert(params.size() == 3); // n,x,y
+      intIt = params.begin();
+      
+      int numMembers = *intIt;
+      coordinate c;
+      intIt++;
+      c.x = *intIt;
+      intIt++;
+      c.y = *intIt;
+      SoarGameObject* member;
+     
+      if (numMembers == 0) return false;
+      member = getMemberNear(c);
+      if (member == NULL) return false;
+      removeUnit(member);
+      Sorts::pGroupManager->makeNewGroup(member);
+      PerceptualGroup* newGroup = member->getPerceptualGroup();
+      member->issueCommand(OA_IDLE, tempVec);
+      // make the new group idle
+      
+      newGroup->setSticky(true);
+      for (int i=1; i<numMembers; i++) {
+        member = getMemberNear(c);
+        if (member == NULL) return false;
+        removeUnit(member);
+        newGroup->addUnit(member);
+        member->issueCommand(OA_IDLE, tempVec);
+      }
+      newGroup->setSticky(true);
+      }
+      break;
     case OA_ATTACK: {
       vector<SoarGameObject*> myUnits;
       myUnits.insert(myUnits.begin(), members.begin(), members.end());
 
       int managerId = Sorts::amr->assignManager(targets);
-      Vector<sint4> params(1);
-      params[0] = managerId;
+      tempVec.clear();
+      tempVec.push_back(managerId);
 
       for(set<SoarGameObject*>::iterator
           i =  members.begin();
           i != members.end();
           i++)
       {
-        (*i)->issueCommand(type, params);
+        (*i)->issueCommand(type, tempVec);
       }
       break;
     }
+    case OA_BUILD:
+      assert(params.size() == 3);
+      // building type, x, y
+      intIt = params.begin();
+      tempVec.clear();
+      tempVec.push_back(*intIt);
+      ++intIt;
+      tempVec.push_back(*intIt);
+      ++intIt;
+      tempVec.push_back(*intIt);
+      
+      for (currentObject = members.begin();
+           currentObject != members.end();
+           currentObject++) {
+        (*currentObject)->issueCommand(type, tempVec);
+      }
+      break;
 
     default:
       assert(false);  
@@ -716,4 +779,22 @@ bool PerceptualGroup::isOld() {
 
 bool PerceptualGroup::isFriendlyWorker() {
   return friendlyWorker;
+}
+
+SoarGameObject* PerceptualGroup::getMemberNear(coordinate c) {
+  double currentDistance;
+  double closestDistance = 999999999;
+  SoarGameObject* closestMember = NULL;
+  
+  for (set<SoarGameObject*>::iterator it = members.begin();
+       it != members.end();
+       it++) {
+    currentDistance = coordDistanceSq((*it)->getLocation(), c);
+    if (currentDistance < closestDistance) {
+      closestDistance = currentDistance;
+      closestMember = *it;
+    }
+  }
+
+  return closestMember;
 }

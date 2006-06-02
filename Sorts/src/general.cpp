@@ -58,7 +58,7 @@ bool operator ==(const coordinate& c1, const coordinate& c2) {
 }
 
 ostream& operator << (ostream& os, const coordinate& c) {
-   return os<< c.x << "," << c.y <<endl;
+   return os<< c.x << "," << c.y;
 }
 
 /******************************************************

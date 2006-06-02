@@ -25,7 +25,7 @@ PerceptualGroupManager::PerceptualGroupManager() {
   
   // the number of objects near the focus point to add
   // agent can change this, if it wishes to cheat
-  visionParams.numObjects = 4;
+  visionParams.numObjects = 44;
 
   visionParams.ownerGrouping = false;
 }

@@ -5,6 +5,7 @@
 #include "PerceptualGroup.h"
 //#include "InternalGroup.h"
 #include "MineManager.h"
+#include "SpatialDB.h"
 
 // Orts includes
 #include "GameObj.H"
@@ -207,6 +208,16 @@ void OrtsInterface::updateSoarGameObjects() {
       removeDeadObject(gob);
     }
   }
+  
+  FORALL(changes.new_boundaries, obj) {
+    GameObj* gob = (*obj)->get_GameObj();
+    line l;
+    l.a.x = *gob->sod.x1;
+    l.a.y = *gob->sod.y1;
+    l.b.x = *gob->sod.x2;
+    l.b.y = *gob->sod.y2;
+    Sorts::spatialDB->addTerrainLine(l);
+  }
 
   // add new objects
   FORALL(changes.new_objs, obj) {
@@ -340,11 +351,22 @@ void OrtsInterface::mergeChanges(GameChanges& newChanges) {
   // new_boundaries: add all to changes
   Vector<ScriptObj*>::iterator it;
   Vector<ScriptObj*>::iterator it2;
+  Vector<int>::iterator intIt;
   bool found;
   for (it = newChanges.new_objs.begin(); 
        it != newChanges.new_objs.end(); 
        it++) {
     changes.new_objs.push_back(*it);
+  }
+  for (intIt = newChanges.new_tile_indexes.begin(); 
+       intIt != newChanges.new_tile_indexes.end(); 
+       intIt++) {
+    changes.new_tile_indexes.push_back(*intIt);
+  }
+  for (it = newChanges.new_boundaries.begin(); 
+       it != newChanges.new_boundaries.end(); 
+       it++) {
+    changes.new_boundaries.push_back(*it);
   }
 
   for (it = newChanges.changed_objs.begin(); 

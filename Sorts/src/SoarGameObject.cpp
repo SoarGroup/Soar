@@ -4,7 +4,9 @@
 
 #include "MineFSM.h"
 #include "MoveFSM.h"
+#include "IdleFSM.h"
 #include "AttackFSM.h"
+#include "BuildFSM.h"
 
 #include "Sorts.h"
 #include "SoarGameObject.h"
@@ -18,6 +20,8 @@ using namespace std;
 
 void SoarGameObject::identifyBehaviors() {
   string name = gob->bp_name();
+  FSM* idleBehavior = new IdleFSM(gob);
+  registerBehavior(idleBehavior);
   if (friendly) {
     if (name == "worker") {
       FSM* mineBehavior = new MineFSM(gob);
@@ -25,6 +29,8 @@ void SoarGameObject::identifyBehaviors() {
       registerBehavior(mineBehavior);
       FSM* moveBehavior = new MoveFSM(gob);
       registerBehavior(moveBehavior);
+      FSM* buildBehavior = new BuildFSM(gob);
+      registerBehavior(buildBehavior);
       friendlyWorker = true;
     }
     else if (name == "marine") {
@@ -56,12 +62,12 @@ SoarGameObject::SoarGameObject(
   //iGroup = NULL;
   pGroup = NULL;
   
-  sat_loc = Sorts::satellite->addObject(gob);
+  sat_loc = Sorts::spatialDB->addObject(gob);
 }
 
 SoarGameObject::~SoarGameObject()
 {
-  Sorts::satellite->removeObject(gob,sat_loc);
+  Sorts::spatialDB->removeObject(gob,sat_loc);
 
   while(!memory.empty()) {
     memory.pop();
@@ -93,12 +99,13 @@ void SoarGameObject::removeBehavior(ObjectActionType name)
 //template<class T>
 void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
 {
-  cout << "initting: " << (int)this << endl;
-  //Whether we really want this is up for analysis
+  msg << "command issued: " << (int)cmd << endl;
+  
   while(!memory.empty())
     memory.pop();
 
   map<ObjectActionType, FSM*>::iterator i = behaviors.find(cmd);
+  
   assert(i != behaviors.end());
 
   i->second->init(prms);
@@ -110,10 +117,10 @@ void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
 
 void SoarGameObject::update()
 {
-  cout << "upd: " << (int)this << " grp " << (int)pGroup << endl;
+  msg << "upd: " << (int)this << " grp " << (int)pGroup << endl;
   int fsmStatus;
 
-  sat_loc = Sorts::satellite->updateObject(gob,sat_loc);
+  sat_loc = Sorts::spatialDB->updateObject(gob,sat_loc);
     
  /* if (iGroup != NULL) {
     iGroup->setHasStaleMembers();
@@ -122,7 +129,7 @@ void SoarGameObject::update()
   
   int currentFrame = Sorts::OrtsIO->getViewFrame();
   if (currentFrame == frameOfLastUpdate) {
-    cout << "ignoring repeated update.\n";
+    msg << "ignoring repeated update.\n";
     Sorts::OrtsIO->updateNextCycle(this);
     return;
   }
@@ -155,7 +162,7 @@ void SoarGameObject::update()
     Sorts::OrtsIO->updateNextCycle(this);
   }
   else {
-    //cout << "empty memory\n";
+    //msg << "empty memory\n";
   }
 
   // spit out a warning if the object sits still for a long time

@@ -99,6 +99,7 @@ class PerceptualGroup {
   private:
     set <SoarGameObject*> members;
     AttributeSet attribs;
+    SoarGameObject* getMemberNear(coordinate c);
 
     bool inSoar; // true if present in input link
     

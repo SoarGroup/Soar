@@ -23,7 +23,9 @@ Rectangle getBuildingBounds(BuildFSM::BUILDING_TYPE type, int centerX, int cente
 
 BuildFSM::BuildFSM(GameObj* _gob) 
 : FSM(_gob)
-{ }
+{ 
+  name = OA_BUILD;  
+}
 
 BuildFSM::~BuildFSM() {
   if (moveFSM != NULL) {

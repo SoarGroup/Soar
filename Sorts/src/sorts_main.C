@@ -232,7 +232,7 @@ int main(int argc, char *argv[]) {
   //InternalGroupManager igm;
   OrtsInterface ortsInterface(&gsm);
 
-  Satellite satellite;
+  SpatialDB spatialDB;
   MineManager mineMan;
   AttackManagerRegistry amr;
 
@@ -243,12 +243,12 @@ int main(int argc, char *argv[]) {
               &mapManager, 
               &featureMapManager,
               &tm,
-              &satellite,
+              &spatialDB,
               &amr,
               &mineMan,
               &sortsMutex);
 
-  satellite.init();
+  spatialDB.init();
   
   // must be connected to orts server by now
   // must initialize the gm before soar input link

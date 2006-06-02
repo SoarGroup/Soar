@@ -23,7 +23,7 @@ void DefendFSM::init(vector<sint4> p) {
 
 int DefendFSM::update() {
   list<GameObj*> collisions;
-  Sorts::satellite->getCollisions(origin(0), origin(1), defendRadius, NULL, collisions);
+  Sorts::spatialDB->getCollisions(origin(0), origin(1), defendRadius, NULL, collisions);
 
   GameObj* biggestThreat = NULL;
   double threatRatio = 0; // avg damage rate / hp

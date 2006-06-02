@@ -1,5 +1,5 @@
-#ifndef Satellite_H_
-#define Satellite_H_
+#ifndef SpatialDB_H_
+#define SpatialDB_H_
 
 #include "Map.H"
 #include "ScriptObj.H"
@@ -8,6 +8,7 @@
 #include "Global.H"
 #include "Vector.H"
 #include "general.h"
+#include "Rectangle.h"
 
 #include "ERF.h"
 
@@ -15,10 +16,10 @@ class Sorts;
 
 using namespace std;
 
-class Satellite {
+class SpatialDB {
 public:
-  Satellite(); 
-  ~Satellite();
+  SpatialDB(); 
+  ~SpatialDB();
 
   void init();
 
@@ -34,13 +35,22 @@ public:
   void addImaginaryWorker(coordinate c);
   bool hasMiningCollision(coordinate c, bool b);
 
+  void addTerrainLine(line l);
+
+  bool hasTerrainCollision(Rectangle* r);
+
   int refCount;
 
 private:
 
-  vector<set<GameObj*> > Map;
-  vector<list<coordinate> > ImaginaryWorkers; // used by MineManager
+  vector<set<GameObj*> > gobMap;
+  vector<list<coordinate> > imaginaryWorkerMap; // used by MineManager
+  vector<list<line> > terrainLineMap;
 
+  int getCellNumber(int x, int y);
+  int cell2row(int);
+  int cell2column(int);
+  int colRow2cell(int, int);
   int tile_points;
   int width;
   int height;

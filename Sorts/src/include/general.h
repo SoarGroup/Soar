@@ -48,6 +48,11 @@ struct coordinate {
   int y;
 };
 
+struct line {
+  coordinate a;
+  coordinate b;
+};
+
 double coordDistance(coordinate c1, coordinate c2);
 double coordDistanceSq(coordinate c1, coordinate c2);
 bool operator ==(const coordinate& c1, const coordinate& c2);

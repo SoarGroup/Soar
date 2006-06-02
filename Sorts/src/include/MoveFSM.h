@@ -3,7 +3,7 @@
 
 #include "FSM.h"
 #include "Sorts.h"
-#include "Satellite.h"
+#include "SpatialDB.h"
 #include "Demo_SimpleTerrain.H"
 #include "general.h"
 

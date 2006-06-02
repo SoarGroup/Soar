@@ -68,7 +68,7 @@ void AttackManager::attackArcPos
         }
       }
       if (!slotTaken) {
-        Sorts::satellite->getCollisions(
+        Sorts::spatialDB->getCollisions(
           intPos(0), intPos(1), atkRadius, NULL, collisions);
         if (collisions.size() == 0) { // there's no collision
           positions.push_back(intPos);
