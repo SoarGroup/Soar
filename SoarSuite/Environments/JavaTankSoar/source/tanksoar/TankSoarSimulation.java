@@ -13,6 +13,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	private static final String kParamDebuggers = "debuggers";
 	private static final String kParamDefaultMap = "default-map";
 	private static final String kParamRuns = "runs";
+	private static final String kParamMaxUpdates = "max-updates";
 	private static final String kTagAgents = "agents";
 	private static final String kParamName = "name";
 	private static final String kParamProductions = "productions";
@@ -65,6 +66,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 					}
 					setDefaultMap(defaultMap);
 					setRuns(child.getAttributeIntDefault(kParamRuns, 0));
+					setMaxUpdates(child.getAttributeIntDefault(kParamMaxUpdates, 0));
 					
 					m_Logger.log("Default map: " + defaultMap);
 					
