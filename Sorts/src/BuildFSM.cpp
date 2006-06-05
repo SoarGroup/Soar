@@ -31,6 +31,8 @@ BuildFSM::BuildFSM(GameObj* _gob)
 : FSM(_gob)
 { 
   name = OA_BUILD;  
+  state = IDLE;
+  justStarted = false;
 }
 
 BuildFSM::~BuildFSM() {
@@ -45,64 +47,29 @@ void BuildFSM::init(vector<sint4> params) {
   loc_x = params[1];
   loc_y = params[2];
   buildingBounds = getBuildingBounds(type, loc_x, loc_y);
-  startedMove = false;
-  building = false;
-  startedBuild = false;
+  state = IDLE;
 }
 
 int BuildFSM::update() {
   
   int moveStatus;
-  
-  if (building) {
-    if (gob->get_int("is_mobile") == 1) {
-      // is this a reliable test for completion?
-      msg << "building completed.\n";
-      return FSM_SUCCESS;
-    }
-  }
-  else {
-    Circle unitBounds(*gob->sod.x, *gob->sod.y, *gob->sod.radius);
-    if (not startedBuild and buildingBounds.intersects(unitBounds)) {
-      msg << "reached bounds while moving\n";
-      if (startedMove) {
-        moveFSM->stop();
-      }
-      startedBuild = true;
-    }
-    else if (!startedMove) {
+  Vector<sint4> params;
+  Circle unitBounds(*gob->sod.x, *gob->sod.y, *gob->sod.radius);
+
+  switch (state) {
+    case IDLE:
       // begin moving toward build site
       if (moveFSM == NULL) {
         moveFSM = new MoveFSM(gob);
       }
-      vector<sint4> moveParams;
-      moveParams.push_back(loc_x);
-      moveParams.push_back(loc_y);
+      params.push_back(loc_x);
+      params.push_back(loc_y);
       msg << "moving to location.\n";
-      moveFSM->init(moveParams);
+      moveFSM->init(params);
       moveFSM->update();
-      startedMove = true;
-    }
-    else if (startedBuild) {
-      // start building
-      msg << "starting build.\n";
-      Vector<sint4> buildParams;
-      buildParams.push_back(loc_x);
-      buildParams.push_back(loc_y);
-      switch (type) {
-        case CONTROL_CENTER:
-          gob->set_action("build_controlCenter", buildParams);
-          break;
-        case BARRACKS:
-          gob->set_action("build_barracks", buildParams);
-          break;
-        case FACTORY:
-          gob->set_action("build_factory", buildParams);
-          break;
-      }
-      building = true;
-    }
-    else {
+      nextState = MOVING;
+      break;
+    case MOVING:
       moveStatus = moveFSM->update();
       if (moveStatus == FSM_FAILURE) {
         // can't get to the place
@@ -119,9 +86,14 @@ int BuildFSM::update() {
               << " y " << buildingBounds.ymin << "->" << buildingBounds.ymax  << endl;
         }
         else {
-          msg << "ERROR: why wasn't this caught above?\n";
+          msg << "ERROR: not there\n";
+          assert(false);
         }
-        startedBuild = true;
+        nextState = START_BUILD;
+      }
+      else if (buildingBounds.intersects(unitBounds)) {
+        moveFSM->stop();
+        nextState = START_BUILD;
       }
       else if (moveStatus != FSM_RUNNING) {
         // unreachable, probably
@@ -131,11 +103,49 @@ int BuildFSM::update() {
       else {
         msg << "movefsm running\n";
       }
-    }
+      break;
+    case START_BUILD:
+      if (Sorts::OrtsIO->getBuildAction()) {
+        msg << "skipping build: another fsm just started.\n";
+      }
+      else {
+        Sorts::OrtsIO->setBuildAction();
+        justStarted = true;
+        
+        msg << "starting build.\n";
+        params.push_back(loc_x);
+        params.push_back(loc_y);
+        switch (type) {
+          case CONTROL_CENTER:
+            gob->set_action("build_controlCenter", params);
+            break;
+          case BARRACKS:
+            gob->set_action("build_barracks", params);
+            break;
+          case FACTORY:
+            gob->set_action("build_factory", params);
+            break;
+        }
+        nextState = BUILDING;
+      }
+      break;
+    case BUILDING:
+      if (justStarted) {
+        if (Sorts::OrtsIO->getLastError() != 0) {
+          msg << "orts reported an error, failing.\n";
+          return FSM_FAILURE;
+        }
+        justStarted = false;
+      }
+      if (gob->get_int("is_mobile") == 1) {
+        // is this a reliable test for completion?
+        msg << "building completed.\n";
+        return FSM_SUCCESS;
+      }
+      break;
   }
-  if (building) {
-    msg << "building in progress\n";
-  }
+  
+  state = nextState;
   
   return FSM_RUNNING;
 }

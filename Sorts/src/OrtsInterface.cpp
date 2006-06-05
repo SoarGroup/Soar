@@ -27,6 +27,8 @@ OrtsInterface::OrtsInterface(GameStateModule* _gsm)
   skippedActions = 0;
   PlayerInfo &pi = gsm->get_game().get_cplayer_info();
   playerGameObj = (GameObj*)(pi.global_obj("player"));
+  buildingThisCycle = false;
+  lastError = 0;
 }
 
 bool OrtsInterface::handle_event(const Event& e) {
@@ -177,6 +179,12 @@ void OrtsInterface::updateSoarGameObjects() {
   // an update can cause an object to insert itself back in the required
   // queue, so copy it out and clear it so we don't update each object 
   // more than once
+
+  lastError = playerGameObj->get_int("errNum");
+  if (lastError > 0) {
+    playerGameObj->set_int("errNum", 0);
+  }
+  buildingThisCycle = false;
   
   set <SoarGameObject*> requiredThisCycle = requiredUpdatesNextCycle;
   requiredUpdatesNextCycle.clear();
@@ -276,6 +284,10 @@ void OrtsInterface::updateMap() {
 }
 
 void OrtsInterface::updateSoarPlayerInfo() {
+  msg << "player error num: " <<
+      playerGameObj->get_int("errNum") << endl;
+  playerGameObj->set_int("errNum", 0);
+  
   // only know get gold for now
   if (gold != playerGameObj->get_int("minerals")) {
     gold = playerGameObj->get_int("minerals");

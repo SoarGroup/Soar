@@ -27,8 +27,10 @@ private:
   // for calculating intersections
   Rectangle buildingBounds;
 
-  bool building, startedMove, startedBuild;
-
+  enum BuildState { IDLE, MOVING, START_BUILD, BUILDING };
+  bool justStarted;
+  BuildState state, nextState;
+  
   MoveFSM* moveFSM;
 };
 

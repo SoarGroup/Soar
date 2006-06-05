@@ -47,6 +47,10 @@ public:
   int getMapYDim();
 
   int getSkippedActions() { return skippedActions; } 
+
+  int getLastError() { return lastError; }
+  void setBuildAction() { buildingThisCycle = true; }
+  bool getBuildAction() { return buildingThisCycle; }
 private:
   GameStateModule* gsm;
 
@@ -85,6 +89,9 @@ private:
   int lastActionFrame;
   int viewFrame;
 
+  int lastError;
+  bool buildingThisCycle;
+  
   // list of SGO's that need to be updated next cycle,
   // regardless of if they change in the world or not
   set <SoarGameObject*> requiredUpdatesNextCycle;

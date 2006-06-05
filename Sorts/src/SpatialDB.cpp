@@ -376,7 +376,6 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
     if(check[i]) {
       assert(cells[i] < gobMap.size());
       for(it = gobMap[cells[i]].begin(); it != gobMap[cells[i]].end(); it++) {
-        msg << "gob: " << (int)*it << endl;
         obj.x =  (*(*it)->sod.x);
         obj.y =  (*(*it)->sod.y);
         objr =  (*(*it)->sod.radius);
@@ -384,14 +383,15 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
          < (r+objr) * (r+objr))  {
           //Inside the circle
           if (not checkCrowding) {
-            if (forMining and
-                ((*it)->bp_name() != "worker") 
-                and
-                ((*it)->bp_name() != "sheep")
-                and
-                ((*it)->bp_name() != "controlCenter")) {
-              msg << "mining collision with " << (*it)->bp_name() << endl;
-              return true;
+            if (forMining) {
+              if (((*it)->bp_name() != "worker") 
+                  and
+                  ((*it)->bp_name() != "sheep")
+                  and
+                  ((*it)->bp_name() != "controlCenter")) {
+                msg << "mining collision with " << (*it)->bp_name() << endl;
+                return true;
+              }
             }
             else {
               msg << "object collision with " << (*it)->bp_name() << endl;
@@ -443,8 +443,6 @@ bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
  // only supports rectangles (buildings) now!
 
   int upperRightSector = getCellNumber(rect->xmax, rect->ymin);
-  //int upperLeftSector = getCellNumber(rect->xmin, rect->ymin);
-  //int lowerRightSector = getCellNumber(rect->xmax, rect->ymax);
   int lowerLeftSector = getCellNumber(rect->xmin, rect->ymax);
 
   int minCol = cell2column(lowerLeftSector);
@@ -470,6 +468,16 @@ bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
         }
       }
     }
+  }
+
+  int mapXdim = Sorts::OrtsIO->getMapXDim();
+  int mapYdim = Sorts::OrtsIO->getMapYDim();
+
+  if (rect->xmax > mapXdim ||
+      rect->xmin < 0 ||
+      rect->ymax > mapYdim || 
+      rect->ymin < 0) {
+    return true;
   }
 
   return false;
