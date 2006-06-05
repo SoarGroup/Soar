@@ -186,6 +186,7 @@ public class Tank  extends WorldEntity {
 			m_Logger.log(getName() + " issued no command.");
 			return;
 		}
+		Identifier moveId = null;
 		
 		for (int i = 0; i < numberOfCommands; ++i) {
 			Identifier commandId = m_Agent.GetCommand(i);
@@ -194,12 +195,14 @@ public class Tank  extends WorldEntity {
 			if (commandName.equalsIgnoreCase(kMoveID)) {
 				if (m_LastMove.move == true) {
 					m_Logger.log(getName() + ": Detected more than one move command on output link, ignoring.");
+					commandId.AddStatusError();
 					continue;
 				}
 
 				String moveDirection = commandId.GetParameterValue(kDirectionID);
 				if (moveDirection == null) {
 					m_Logger.log(getName() + ": null move direction.");
+					commandId.AddStatusError();
 					continue;
 				}
 				
@@ -213,13 +216,16 @@ public class Tank  extends WorldEntity {
 					m_LastMove.moveDirection = m_RD.right;
 				} else {
 					m_Logger.log(getName() + ": illegal move direction: " + moveDirection);
+					commandId.AddStatusError();
 					continue;
 				}
+				moveId = commandId;
 				m_LastMove.move = true;
 				
 			} else if (commandName.equalsIgnoreCase(kFireID)) {
 				if (m_LastMove.fire == true) {
 					m_Logger.log(getName() + ": Detected more than one fire command on output link, ignoring.");
+					commandId.AddStatusError();
 					continue;
 				}
 				
@@ -227,6 +233,7 @@ public class Tank  extends WorldEntity {
 		 			m_LastMove.fire = true;
 		 		} else {
 					m_Logger.log(getName() + ": Attempted to fire missle with no missiles.");
+					commandId.AddStatusError();
 					continue;
 				}
 				// Weapon ignored
@@ -234,12 +241,14 @@ public class Tank  extends WorldEntity {
 			} else if (commandName.equalsIgnoreCase(kRadarID)) {
 				if (m_LastMove.radar == true) {
 					m_Logger.log(getName() + ": Detected more than one radar command on output link, ignoring.");
+					commandId.AddStatusError();
 					continue;
 				}
 				
 				String radarSwitch = commandId.GetParameterValue(kSwitchID);
 				if (radarSwitch == null) {
 					m_Logger.log(getName() + ": null radar switch.");
+					commandId.AddStatusError();
 					continue;
 				}
 				m_LastMove.radar = true;
@@ -248,12 +257,14 @@ public class Tank  extends WorldEntity {
 			} else if (commandName.equalsIgnoreCase(kRadarPowerID)) {
 				if (m_LastMove.radarPower == true) {
 					m_Logger.log(getName() + ": Detected more than one radar power command on output link, ignoring.");
+					commandId.AddStatusError();
 					continue;
 				}
 				
 				String powerValue = commandId.GetParameterValue(kSettingID);
 				if (powerValue == null) {
 					m_Logger.log(getName() + ": null radar power value.");
+					commandId.AddStatusError();
 					continue;
 				}
 				
@@ -261,6 +272,7 @@ public class Tank  extends WorldEntity {
 					m_LastMove.radarPowerSetting = Integer.decode(powerValue).intValue();
 				} catch (NumberFormatException e) {
 					m_Logger.log(getName() + ": Unable to parse radar power setting " + powerValue + ": " + e.getMessage());
+					commandId.AddStatusError();
 					continue;
 				}
 				m_LastMove.radarPower = true;
@@ -268,12 +280,14 @@ public class Tank  extends WorldEntity {
 			} else if (commandName.equalsIgnoreCase(kShieldsID)) {
 				if (m_LastMove.shields == true) {
 					m_Logger.log(getName() + ": Detected more than one shields command on output link, ignoring.");
+					commandId.AddStatusError();
 					continue;
 				}
 				
 				String shieldsSetting = commandId.GetParameterValue(kSwitchID);
 				if (shieldsSetting == null) {
 					m_Logger.log(getName() + ": null shields setting.");
+					commandId.AddStatusError();
 					continue;
 				}
 				m_LastMove.shields = true;
@@ -285,12 +299,14 @@ public class Tank  extends WorldEntity {
 			} else if (commandName.equalsIgnoreCase(kRotateID)) {
 				if (m_LastMove.rotate == true) {
 					m_Logger.log(getName() + ": Detected more than one rotate command on output link, ignoring.");
+					commandId.AddStatusError();
 					continue;
 				}
 				
 				m_LastMove.rotateDirection = commandId.GetParameterValue(kDirectionID);
 				if (m_LastMove.rotateDirection == null) {
 					m_Logger.log(getName() + ": null rotation direction.");
+					commandId.AddStatusError();
 					continue;
 				}
 				
@@ -303,6 +319,7 @@ public class Tank  extends WorldEntity {
 				
 			} else {
 				m_Logger.log(getName() + ": Unknown command: " + commandName);
+				commandId.AddStatusError();
 				continue;
 			}
 			commandId.AddStatusComplete();
@@ -315,6 +332,9 @@ public class Tank  extends WorldEntity {
 		if (m_LastMove.rotate) {
 			if (m_LastMove.move) {
 				m_Logger.log("Tried to move with a rotation, rotating only.");
+				assert moveId != null;
+				moveId.AddStatusError();
+				moveId = null;
 				m_LastMove.move = false;
 			}
 		}
