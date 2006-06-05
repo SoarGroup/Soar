@@ -541,6 +541,8 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       tempVec.clear();
       tempVec.push_back(managerId);
 
+      sticky = true;
+
       for(set<SoarGameObject*>::iterator
           i =  members.begin();
           i != members.end();
@@ -560,6 +562,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       tempVec.push_back(*intIt);
       ++intIt;
       tempVec.push_back(*intIt);
+      sticky = true;
       
       for (currentObject = members.begin();
            currentObject != members.end();
