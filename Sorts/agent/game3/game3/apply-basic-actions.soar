@@ -29,14 +29,17 @@ sp {apply*orts-build-building
         ^worker <w>
         ^x <x>
         ^y <y>
-        ^building-type <t>)
+        ^building-type <t>
+        ^task-id <tid>)
 -->
    (<ol> ^build <b>)
    (<b> ^group0 <w>
         ^param0 <t>
         ^param1 <x>
         ^param2 <y>)
-   (<ts> ^finished-command orts-build-building)
+   (<ts> ^finished-command <fc>)
+   (<fc> ^name orts-build-building
+         ^task-id <tid>)
 }
 
 sp {apply*orts-set-sticky
@@ -59,13 +62,16 @@ sp {apply*orts-locate-building
         ^building-type <t>
         ^x <x>
         ^y <y>
-        ^distance <dist>)
+        ^distance <dist>
+        ^task-id <tid>)
 -->
    (<ol> ^locate-building <lb>)
    (<lb> ^building <t>
          ^x <x>
          ^y <y>
          ^distance <dist>)
-   (<ts> ^finished-command orts-locate-building)
+   (<ts> ^finished-command <fc>)
+   (<fc> ^name orts-locate-building
+         ^task-id <tid>)
 }
    

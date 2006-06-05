@@ -1,10 +1,15 @@
 sp {propose*build-barracks
    (state <s> ^name sorts
-              ^running-task.name build-barracks
-             -^build-building.started-build true)
+              ^running-task <rt>
+              ^execution-buffer.task <ts>)
+   (<rt> ^name build-barracks
+         ^id <id>)
+   (<ts> ^id <id>
+        -^completed <cmp>)
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name build-building
         ^building-type 1 # see BuildFSM.h for building type->int translation
-        ^building-dim 32) # width/2
+        ^building-dim 32
+        ^task-id <id>) # width/2
 }

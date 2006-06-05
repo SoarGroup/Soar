@@ -27,17 +27,26 @@ sp {propose*start-miner-assignment
 sp {apply*start-build-barracks
    (state <s> ^operator.name start-build-barracks)
 -->
-   (<s> ^running-task.name build-barracks)
+   (<s> ^running-task <rt>
+        ^execution-buffer <eb>)
+   (<rt> ^name build-barracks
+         ^id 1234)
+   (<eb> ^task <t>)
+   (<t> ^id 1234)
 }
 
 sp {apply*start-build-workers
    (state <s> ^operator.name start-build-workers)
 -->
-   (<s> ^running-task.name build-workers)
+   (<s> ^running-task <rt>)
+   (<rt> ^name build-workers
+         ^id 15151)
 }
 
 sp {apply*start-miner-assignment
    (state <s> ^operator.name start-miner-assignment)
 -->
-   (<s> ^running-task.name miner-assignment)
+   (<s> ^running-task <rt>)
+   (<rt> ^name miner-assignment
+         ^id 26612)
 }

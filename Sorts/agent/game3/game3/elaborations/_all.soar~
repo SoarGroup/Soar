@@ -9,3 +9,11 @@ sp {elaborate*state*top-state
 -->
    (<s> ^top-state <ts>)
 }
+
+
+# copy down the task id from the operator to the impasse state
+#sp {elaborate*state*task-id
+#   (state <s> ^superstate.operator.task-id <tid>)
+#-->
+#   (<s> ^task-id <tid>>)
+#}
