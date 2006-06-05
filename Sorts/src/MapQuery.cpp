@@ -56,7 +56,7 @@ void MapQuery::findBuildingLoc(BuildingType building, coordinate nearLocation,
     newLoc.y = nearLocation.y + (int)(minDistance*sin(angle));
 
     Rectangle rect(newLoc.x, newLoc.y, buildingWidth, buildingHeight, true);
-    if (not Sorts::spatialDB->hasObjectCollision(&rect)
+    /*if (not Sorts::spatialDB->hasObjectCollision(&rect)
         and not Sorts::spatialDB->hasTerrainCollision(&rect)) {
       found = true;
       msg << "found location: " << newLoc << endl;
@@ -64,7 +64,8 @@ void MapQuery::findBuildingLoc(BuildingType building, coordinate nearLocation,
     }
     else {
       msg << "bad location: " << newLoc << endl;
-    }
+    }*/
+    found = true; break;
   }
 
   if (found) {

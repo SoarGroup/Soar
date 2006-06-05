@@ -28,23 +28,23 @@ public:
   void  removeObject(GameObj *gob, sint4 sat_loc);
 
   // querying functions
-  std::set<GameObj*> *getObjectsInRegion(int x, int y);
+  set<GameObj*> *getObjectsInRegion(int x, int y);
   void getCollisions(sint4 x, sint4 y, sint4 r, ERF* erf, list<GameObj*>& collisions);
- 
-  // for MineManager
-  void addImaginaryWorker(coordinate c);
   bool hasMiningCollision(coordinate c, bool b);
 
-  void addTerrainLine(line l);
-
+  // used by building locator
   bool hasTerrainCollision(Rectangle* r);
   bool hasObjectCollision(Rectangle* r);
+ 
+  void addImaginaryWorker(coordinate c);
+
+  void addTerrainLine(line l);
 
   int refCount;
 
 private:
 
-  bool hasObjectCollisionInt(coordinate c, bool b, int r);
+  bool hasObjectCollisionInt(coordinate, int, bool, bool);
   
   vector<set<GameObj*> > gobMap;
   vector<list<coordinate> > imaginaryWorkerMap; // used by MineManager

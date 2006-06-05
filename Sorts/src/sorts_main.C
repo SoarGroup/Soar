@@ -26,7 +26,7 @@
 using namespace sml;
 
 void printOutput(smlPrintEventId id,
-                 void*                pUserData,
+                 void*  pUserData, 
                  Agent*          pAgent,
                  const char*          pMessage) {
   std::cout << "[SOAR] " << pMessage << std::endl;
@@ -104,14 +104,10 @@ void* RunSoar(void* ptr) {
 void* RunOrts(void* ptr) {
   GameStateModule* gsm = (GameStateModule*) ptr;
   while(1) {
-  /*
-    if (!gsm->recv_view()) {
-      SDL_Delay(1);
-    }
-  */
-  gsm->recv_view();
-  //sleep(1);
+    gsm->recv_view();
   }
+  // unreachable (what is this supposed to return, anyway?)
+  return NULL;
 }
 
 typedef Demo_SimpleTerrain::ST_Terrain Terrain;

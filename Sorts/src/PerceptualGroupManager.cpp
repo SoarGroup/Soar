@@ -6,6 +6,8 @@
 #include "Sorts.h"
 #include "SoarInterface.h"
 
+#define msg cout << "GRPMAN: " 
+
 using namespace std;
 
 /*
@@ -40,7 +42,7 @@ void PerceptualGroupManager::initialize() {
 
   visionParams.viewWidth = 2*visionParams.focusX;
   
-  cout << "init: " << visionParams.focusX << " " << visionParams.focusY 
+  msg << "init: " << visionParams.focusX << " " << visionParams.focusY 
        << " " << visionParams.viewWidth << endl;
 
   Sorts::featureMapManager->changeViewWindow(visionParams.focusX, 
@@ -170,7 +172,7 @@ void PerceptualGroupManager::processVisionCommands() {
         centerGroup = Sorts::featureMapManager->getGroup(i->fmName, 
                                                         *(i->params.begin()));
         if (centerGroup == NULL) {
-          cout << "ERROR: sector " << *(i->params.begin()) << " of map " <<
+          msg << "ERROR: sector " << *(i->params.begin()) << " of map " <<
             i->fmName << " is empty! Ignoring command\n";
           return;
         }
@@ -200,7 +202,7 @@ void PerceptualGroupManager::processVisionCommands() {
         centerGroup = Sorts::featureMapManager->getGroup(i->fmName, 
                                                         *(i->params.begin()));
         if (centerGroup == NULL) {
-          cout << "ERROR: sector " << *(i->params.begin()) << " of map " <<
+          msg << "ERROR: sector " << *(i->params.begin()) << " of map " <<
             i->fmName << " is empty! Ignoring command\n";
           return;
         }
@@ -247,7 +249,7 @@ void PerceptualGroupManager::processVisionCommands() {
         // handle similar to grouping radius change-
         // rebuild all the groups
         if (visionParams.ownerGrouping) {
-          cout << "WARNING: turning on ownerGrouping when it is already on.\n";
+          msg << "WARNING: turning on ownerGrouping when it is already on.\n";
           break;
         }
         visionParams.ownerGrouping = true; 
@@ -261,7 +263,7 @@ void PerceptualGroupManager::processVisionCommands() {
         break;
       case AA_OWNER_GROUPING_OFF:
         if (not visionParams.ownerGrouping) {
-          cout << "WARNING: turning off ownerGrouping when it is already off.\n";
+          msg << "WARNING: turning off ownerGrouping when it is already off.\n";
           break;
         }
         visionParams.ownerGrouping = false; 
@@ -316,7 +318,7 @@ void PerceptualGroupManager::prepareForReGroup() {
     perceptualGroups.erase(*it);
   }
 
-  //cout << "end ref" << endl;
+  //msg << "end ref" << endl;
   return;
 }
 
@@ -353,7 +355,7 @@ void PerceptualGroupManager::reGroup() {
   SoarGameObject* centerObject;
 
   while (catIter != staleGroupCategories.end()) {
-    //cout << "doing type " << catIter->first << endl;
+    //msg << "doing type " << catIter->first << endl;
     groupingList.clear();
     centerGroupingList.clear();
     
@@ -362,7 +364,7 @@ void PerceptualGroupManager::reGroup() {
          groupIter++) {
       if (not (*groupIter)->getSticky() and
          ((*groupIter)->getCategory(visionParams.ownerGrouping) == *catIter)) {
-        //cout << "group " << (int) (*groupIter) << endl;
+        //msg << "group " << (int) (*groupIter) << endl;
         // group is of the type we are re-grouping
        
         if ((*groupIter)->isOld()) {
@@ -437,7 +439,7 @@ void PerceptualGroupManager::reGroup() {
         perceptualGroups.insert(new PerceptualGroup(obj1Struct.object));
         obj1Struct.group = obj1Struct.object->getPerceptualGroup();
         obj1Struct.assigned = true;
-        //cout << "XXX making new group " << (int) obj1Struct.group << endl; 
+        //msg << "XXX making new group " << (int) obj1Struct.group << endl; 
       }
      
       // iterate through all lower objects to see if they should join the group
@@ -482,11 +484,11 @@ void PerceptualGroupManager::reGroup() {
               }
             }
             toMergeList.push_back(groups);
-            //cout << "XXX will merge " << (int) groups.first << " -> " << (int) groups.second << endl;
+            //msg << "XXX will merge " << (int) groups.first << " -> " << (int) groups.second << endl;
           }
           else {
             // obj2 has not been assigned. Assign it to obj1's group.
-            //cout << "XXX obj from group " << (int) (*obj2StructIter).group <<
+            //msg << "XXX obj from group " << (int) (*obj2StructIter).group <<
             //        " joining " << (int) obj1Struct.group << endl;
             (*obj2StructIter).assigned = true;
             (*obj2StructIter).group->removeUnit((*obj2StructIter).object);
@@ -495,10 +497,10 @@ void PerceptualGroupManager::reGroup() {
             (*obj2StructIter).oldGroup = obj1Struct.oldGroup;
             
           }
-        //  cout << "grouped!" << endl;
+        //  msg << "grouped!" << endl;
         }
         else {
-       //   cout << "not grouped!" << endl;
+       //   msg << "not grouped!" << endl;
         }
         obj2StructIter++; 
         if (obj2StructIter == centerGroupingList.end()) {
@@ -524,7 +526,7 @@ void PerceptualGroupManager::reGroup() {
   // does not have any outstanding merges
   toMergeIter = toMergeList.begin();
   while (toMergeIter != toMergeList.end()) {
-    //cout << "groups " << (int)  (*toMergeIter).first << " and " << (int) (*toMergeIter).second << " will merge\n";
+    //msg << "groups " << (int)  (*toMergeIter).first << " and " << (int) (*toMergeIter).second << " will merge\n";
     if ((*toMergeIter).first == (*toMergeIter).second) {
       // do nothing- the groups were already merged
     }
@@ -552,7 +554,7 @@ void PerceptualGroupManager::reGroup() {
   }
  
   staleGroupCategories.clear();
-  //cout << "XXX regroup done" << endl;
+  //msg << "XXX regroup done" << endl;
   return;
 }
 
@@ -612,14 +614,8 @@ void PerceptualGroupManager::generateGroupData() {
 
 
 void PerceptualGroupManager::makeNewGroup(SoarGameObject* object) {
-  int size1 = perceptualGroups.size();
   perceptualGroups.insert(new PerceptualGroup(object));
 
-  // make sure the insertion takes, the compare function could
-  // make the elements seem identical, which would not let them both
-  // in the set.
-  assert(perceptualGroups.size() == (unsigned int)(size1 + 1));
-  
   return;
 }
 
@@ -637,8 +633,6 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
         Sorts::SoarIO->addGroup(*groupIter);
         Sorts::SoarIO->refreshGroup(*groupIter);
         (*groupIter)->setInSoar(true);
-       // cout << "AAA adding group " << (int)*groupIter << ", dist " <<
-       //   (*groupIter)->getDistToFocus() << endl;
         
         // recently added / removed from Soar is a stale property, 
         // as far as feature maps are concerned- the inhibition of
@@ -647,17 +641,21 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
       }
       else if ((*groupIter)->getHasStaleProperties()) {
         Sorts::SoarIO->refreshGroup(*groupIter);
-        //cout << "AAA refreshing group " << (int)*groupIter << ", dist " <<
-        //  (*groupIter)->getDistToFocus() << endl;
       }
     }
     else { 
-      //cout << "AAA not adding group " << (int)*groupIter << ", dist " <<
-      //  (*groupIter)->getDistToFocus() << endl;
       if ((*groupIter)->getInSoar() == true) {
-        (*groupIter)->setInSoar(false);
-        Sorts::SoarIO->removeGroup(*groupIter);
-        (*groupIter)->setHasStaleProperties(true);
+          // HACK: always attend to groups with commands
+          // (non-idle statuses)
+        if (not (*groupIter)->getHasCommand()) {
+          (*groupIter)->setInSoar(false);
+          Sorts::SoarIO->removeGroup(*groupIter);
+          (*groupIter)->setHasStaleProperties(true);
+        }
+        else if ((*groupIter)->getHasStaleProperties()) {
+          msg << "refresh due to command (out of normal range)\n";
+          Sorts::SoarIO->refreshGroup(*groupIter);
+        }
       }
     }
     i++;

@@ -154,6 +154,7 @@ void SoarGameObject::update()
     }
     else if (fsmStatus == FSM_FAILURE) {
       status = OBJ_FAILURE;
+      msg << "got obj_failure\n";
     }
     else if (fsmStatus == FSM_STUCK) {
       status = OBJ_STUCK;

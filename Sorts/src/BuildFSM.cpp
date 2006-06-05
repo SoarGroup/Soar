@@ -1,6 +1,9 @@
 #include "BuildFSM.h"
 #include "Rectangle.h"
 
+
+#define msg cout << "BUILDFSM: "
+
 Rectangle getBuildingBounds(BuildingType type, int centerX, int centerY) {
   int width, height;
   switch (type) {
@@ -15,6 +18,9 @@ Rectangle getBuildingBounds(BuildingType type, int centerX, int centerY) {
     case FACTORY:
       width = 4 * 16 - 2;
       height = 3 * 16 - 2;
+      break;
+    default:
+      assert(false);
       break;
   }
   Rectangle r(centerX, centerY, width, height, true);
@@ -39,30 +45,47 @@ void BuildFSM::init(vector<sint4> params) {
   loc_x = params[1];
   loc_y = params[2];
   buildingBounds = getBuildingBounds(type, loc_x, loc_y);
-  isMoving = false;
+  startedMove = false;
   building = false;
-  finished = false;
+  startedBuild = false;
 }
 
 int BuildFSM::update() {
-  if (finished) {
-    return FSM_SUCCESS;
-  }
+  
+  int moveStatus;
+  
   if (building) {
     if (gob->get_int("is_mobile") == 1) {
       // is this a reliable test for completion?
+      msg << "building completed.\n";
       return FSM_SUCCESS;
     }
   }
   else {
     Circle unitBounds(*gob->sod.x, *gob->sod.y, *gob->sod.radius);
-    if (buildingBounds.intersects(unitBounds)) {
-      if (isMoving) {
+    if (not startedBuild and buildingBounds.intersects(unitBounds)) {
+      msg << "reached bounds while moving\n";
+      if (startedMove) {
         moveFSM->stop();
-        isMoving = false;
       }
-
+      startedBuild = true;
+    }
+    else if (!startedMove) {
+      // begin moving toward build site
+      if (moveFSM == NULL) {
+        moveFSM = new MoveFSM(gob);
+      }
+      vector<sint4> moveParams;
+      moveParams.push_back(loc_x);
+      moveParams.push_back(loc_y);
+      msg << "moving to location.\n";
+      moveFSM->init(moveParams);
+      moveFSM->update();
+      startedMove = true;
+    }
+    else if (startedBuild) {
       // start building
+      msg << "starting build.\n";
       Vector<sint4> buildParams;
       buildParams.push_back(loc_x);
       buildParams.push_back(loc_y);
@@ -79,24 +102,40 @@ int BuildFSM::update() {
       }
       building = true;
     }
-    else if (!isMoving) {
-      // begin moving toward build site
-      if (moveFSM == NULL) {
-        moveFSM = new MoveFSM(gob);
-      }
-      vector<sint4> moveParams;
-      moveParams.push_back(loc_x);
-      moveParams.push_back(loc_y);
-      moveFSM->init(moveParams);
-      moveFSM->update();
-      isMoving = true;
-    }
     else {
-      if (moveFSM->update() == FSM_FAILURE) {
+      moveStatus = moveFSM->update();
+      if (moveStatus == FSM_FAILURE) {
         // can't get to the place
+        msg << "move has failed!\n";
         return FSM_FAILURE;
+      }
+      else if (moveStatus == FSM_SUCCESS) {
+        if (not buildingBounds.intersects(unitBounds)) {
+          msg << "no intersection:\n";
+          msg << "unit: " <<  unitBounds.x << "," << unitBounds.y 
+              << " rad " << unitBounds.r << endl;
+          msg << "bldg x: " 
+              << buildingBounds.xmin << "->" << buildingBounds.xmax 
+              << " y " << buildingBounds.ymin << "->" << buildingBounds.ymax  << endl;
+        }
+        else {
+          msg << "ERROR: why wasn't this caught above?\n";
+        }
+        startedBuild = true;
+      }
+      else if (moveStatus != FSM_RUNNING) {
+        // unreachable, probably
+        msg << "fail, move returned " << moveStatus << endl;
+        return FSM_FAILURE;
+      }
+      else {
+        msg << "movefsm running\n";
       }
     }
   }
+  if (building) {
+    msg << "building in progress\n";
+  }
+  
   return FSM_RUNNING;
 }

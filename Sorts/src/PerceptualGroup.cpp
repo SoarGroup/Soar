@@ -32,6 +32,7 @@ PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
   mixedType = false;
   inSoar = false;
   old = false;
+  hasCommand = false;
 
   fmSector = -1;
 
@@ -42,7 +43,6 @@ PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
   bbox.collapse(*unit->getGob()->sod.x, *unit->getGob()->sod.y);
 
   sticky = false;
-  commandStatus = GRP_STATUS_IDLE;
   currentCommand = "none";
   if (typeName == "worker") {
     canMine = true;
@@ -288,6 +288,11 @@ void PerceptualGroup::generateData() {
     attribs.add("command_success", success);
     attribs.add("command_failure", failure);
     attribs.add("command_stuck", stuck);
+    if (running > 0
+        or success > 0
+        or failure > 0) {
+      hasCommand = true;
+    }
   }
   if (canMine) {
     attribs.add("minerals", mineralCount);

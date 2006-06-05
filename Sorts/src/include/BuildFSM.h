@@ -27,7 +27,7 @@ private:
   // for calculating intersections
   Rectangle buildingBounds;
 
-  bool building, isMoving, finished;
+  bool building, startedMove, startedBuild;
 
   MoveFSM* moveFSM;
 };

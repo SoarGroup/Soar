@@ -281,20 +281,21 @@ void SpatialDB::getCollisions
 }
 
 bool SpatialDB::hasMiningCollision(coordinate c, bool checkCrowding) {
-  return hasObjectCollisionInt(c, checkCrowding, WORKER_RADIUS+1);
+  return hasObjectCollisionInt(c, WORKER_RADIUS+1, true, checkCrowding);
 }
 
 bool SpatialDB::hasObjectCollision(Rectangle* rect) {
   // overestimate as a circle
   coordinate c;
-  c.x = (int)(rect->xmax - rect->xmin);
-  c.y = (int)(rect->ymax - rect->ymin);
+  c.x = (int)((rect->xmax + rect->xmin)/2.0);
+  c.y = (int)((rect->ymax + rect->ymin)/2.0);
   int radius = (int)(sqrt(squaredDistance(c.x, c.y, rect->xmax, rect->ymax)));
-  return hasObjectCollisionInt(c, false, radius);
+  return hasObjectCollisionInt(c, radius, false, false);
 }
 
 bool SpatialDB::hasObjectCollisionInt(coordinate c, 
-                                   bool checkCrowding, int radius) {
+                                      int radius, bool forMining, 
+                                      bool checkCrowding) {
   int cells[9];
   bool check[9] = {false};
 
@@ -383,7 +384,8 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
          < (r+objr) * (r+objr))  {
           //Inside the circle
           if (not checkCrowding) {
-            if (((*it)->bp_name() != "worker") 
+            if (forMining and
+                ((*it)->bp_name() != "worker") 
                 and
                 ((*it)->bp_name() != "sheep")
                 and
@@ -391,6 +393,10 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
               msg << "mining collision with " << (*it)->bp_name() << endl;
               return true;
             }
+            else {
+              msg << "object collision with " << (*it)->bp_name() << endl;
+              return true;
+            } 
           }
           else if ((*it)->bp_name() == "mineral") {
             crowdCount++;
@@ -408,7 +414,7 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
           iwit++) {
         obj.x = (*iwit).x;
         obj.y = (*iwit).y;
-        objr = WORKER_RADIUS + 1;
+        objr = WORKER_RADIUS + 1; // radius of the imaginary worker
         if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
         < (r+objr) * (r+objr))  {
           //Inside the circle
@@ -427,6 +433,8 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
       }
     }
   }
+  msg << "object at " << c << " with radius " << radius 
+      << " has no collisions\n"; 
   return false; // no collisions
 }
 

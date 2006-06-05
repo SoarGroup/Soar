@@ -92,6 +92,9 @@ class PerceptualGroup {
     
     void getRegionsOccupied(list<int>& regions);
 
+
+    bool getHasCommand() { return hasCommand; }
+
   private: // functions
     void updateBoundingBox();
     void updateRegionsOccupied();
@@ -137,9 +140,9 @@ class PerceptualGroup {
     // issuing a command makes it auto-sticky until command ends & Soar acks
     bool sticky;
 
-    // info on the last command executed- what is it, and is it done?
+    // info on the last command
     string currentCommand;
-    int commandStatus;
+    bool hasCommand;
 
     bool canMine;
     
@@ -156,8 +159,4 @@ class PerceptualGroup {
 
 };
 
-#define GRP_STATUS_RUNNING 0
-#define GRP_STATUS_SUCCESS 1
-#define GRP_STATUS_FAILURE 2
-#define GRP_STATUS_IDLE 3
 #endif
