@@ -509,6 +509,20 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 		}
 
+		// Check for max updates
+		if (m_Simulation.reachedMaxUpdates()) {
+			if (!m_PrintedStats) {
+				m_Simulation.stopSimulation();
+				m_PrintedStats = true;
+				m_Logger.log("Reached maximum updates, stopping.");
+				for (int j = 0; j < m_Tanks.length; ++j) {
+					m_Logger.log(m_Tanks[j].getName() + ": " + m_Tanks[j].getPoints() 
+							+ ((m_Tanks[j].getPoints() >= kWinningPoints) ? " (winner)." : "."));
+				}
+			}
+			return;
+		}
+		
 		// Sanity check, need tanks to make an update meaningful
 		if (m_Tanks == null) {
 			m_Logger.log("Update called with no tanks.");
