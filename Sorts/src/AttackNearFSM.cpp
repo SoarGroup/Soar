@@ -1,8 +1,10 @@
 #include "AttackNearFSM.h"
 #include "Sorts.h"
 
-AttackNearFSM::AttackNearFSM(GameObj* gob)
-: FSM(gob), attackParams(1)
+#define msg cout << "AttackNearFSM.cpp: "
+
+AttackNearFSM::AttackNearFSM(SoarGameObject* _sgob)
+: FSM(_sgob->getGob()), sgob(_sgob), attackParams(1)
 {
   name = OA_ATTACK_NEAR;
   count = 100;
@@ -48,6 +50,7 @@ int AttackNearFSM::update() {
       if (canHit(gob, *i)) {
         attackParams[0] = Sorts::OrtsIO->getGobId(*i);
         weapon->set_action("attack", attackParams);
+        sgob->setLastAttacked(attackParams[0]);
         break;
       }
     }

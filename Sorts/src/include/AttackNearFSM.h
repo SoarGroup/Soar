@@ -2,15 +2,17 @@
 #define AttackNearFSM_h
 
 #include "FSM.h"
+#include "SoarGameObject.h"
 
 class AttackNearFSM : public FSM {
 public:
-  AttackNearFSM(GameObj* gob);
+  AttackNearFSM(SoarGameObject* sgob);
 
   void init() { }
   int update();
 
 private:
+  SoarGameObject* sgob;
   list<GameObj*> nearby;
   ScriptObj* weapon;
   int maxAttackRange;

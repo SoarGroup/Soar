@@ -35,16 +35,18 @@ void SoarGameObject::identifyBehaviors() {
       friendlyWorker = true;
     }
     else if (name == "marine") {
-      FSM* attackBehavior = new AttackFSM(gob);
+      msg << "Registering behaviors for " << (int) gob << endl;
+      FSM* attackBehavior = new AttackFSM(this);
       registerBehavior(attackBehavior);
-      FSM* attackNear = new AttackNearFSM(gob);
+      FSM* attackNear = new AttackNearFSM(this);
       registerBehavior(attackNear);
       defaultBehaviors.push_back(attackNear);
      }
     else if (name == "tank") {
-      FSM* attackBehavior = new AttackFSM(gob);
+      msg << "Registering behaviors for " << (int) gob << endl;
+      FSM* attackBehavior = new AttackFSM(this);
       registerBehavior(attackBehavior);
-      FSM* attackNear = new AttackNearFSM(gob);
+      FSM* attackNear = new AttackNearFSM(this);
       registerBehavior(attackNear);
       defaultBehaviors.push_back(attackNear);
     }
@@ -204,6 +206,15 @@ void SoarGameObject::update()
     lastLocation = getLocation();
   }
   frameOfLastUpdate = currentFrame;
+
+  if (lastAttackedId >= 0) {
+    ScriptObj* weapon = gob->component("weapon");
+    assert(weapon != NULL); 
+    // lastAttackedId should never be set if the object has no weapon
+    if (weapon->get_int("shooting") == 0) {
+      lastAttackedId = -1;
+    }
+  }
 }
 
 

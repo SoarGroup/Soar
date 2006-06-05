@@ -11,7 +11,7 @@ class AttackManager;
 class AttackFSM : public FSM {
 
 public:
-	AttackFSM(GameObj*);
+	AttackFSM(SoarGameObject* sgob);
 	~AttackFSM();
 
   void init(vector<sint4> p);
@@ -20,7 +20,6 @@ public:
 // these are all commands from the attack manager
   void attack(SoarGameObject* t);
   bool isFiring();
-  SoarGameObject* firingAt() { return firingTarget; }
 
   int move(int x, int y);
   bool isMoving() { return moving; }
@@ -37,12 +36,12 @@ public:
   SoarGameObject* target;
 
 private:
+  SoarGameObject* sgob;
   AttackManager* manager;
   ScriptObj* weapon;
   MoveFSM* moveFSM;
   Vec2d dest;
   Vector<sint4> attackParams;
-  SoarGameObject* firingTarget;
   bool moving;
   int disownedStatus;
 

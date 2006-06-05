@@ -11,7 +11,7 @@
 #include "GameObj.H"
 #include "GameStateModule.H"
 
-#define msg cout << "ORTSIO "
+#define msg cout << "OrtsInterface.cpp "
 
 OrtsInterface::OrtsInterface(GameStateModule* _gsm)
 : gsm(_gsm)
@@ -136,7 +136,7 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
     Sorts::mineManager->addControlCenter(newObj);
   }
   
-
+  msg << (int) gameObj << " added" << endl;
   objectMap[gameObj] = newObj;
    
   if (liveIDs.find(id) != liveIDs.end()) {
@@ -231,7 +231,7 @@ void OrtsInterface::updateSoarGameObjects() {
   // add new objects
   FORALL(changes.new_objs, obj) {
     GameObj* gob = (*obj)->get_GameObj();
-    if (gob == 0) continue;
+    if (gob == NULL) continue;
     if (gob->sod.in_game) {
       /* It's not clear whether this object was created or appeared, maybe we
        * should drop the distinction altogether, or do some extra bookkeeping
@@ -245,7 +245,7 @@ void OrtsInterface::updateSoarGameObjects() {
   FORALL(changes.changed_objs, obj) {
     GameObj* gob = (*obj)->get_GameObj();
     SoarGameObject* sgo;
-    if (gob == 0) {
+    if (gob == NULL) {
       continue;
     }
     else if (gob->sod.in_game) {
@@ -322,6 +322,16 @@ int OrtsInterface::getNumPlayers() {
 }
 int OrtsInterface::getMyId() {
   return myPid;
+}
+
+SoarGameObject* OrtsInterface::getSoarGameObject(GameObj* gob) {
+  map<const GameObj*, SoarGameObject*>::iterator pos = objectMap.find(gob);
+  if (pos == objectMap.end()) {
+    return NULL;
+  }
+  else {
+    return pos->second;
+  }
 }
 
 double OrtsInterface::getOrtsDistance(GameObj* go1, GameObj* go2) {

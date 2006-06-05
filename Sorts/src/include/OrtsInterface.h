@@ -38,6 +38,7 @@ public:
   int getWorldId();
   int getMyId();
   int getGobId(GameObj* gob) { return gsm->get_game().get_cplayer_info().get_id(gob); }
+  SoarGameObject* getSoarGameObject(GameObj* gob);
   double getOrtsDistance(GameObj* go1, GameObj* go2);
   int getViewFrame();
   int getActionFrame();
@@ -59,9 +60,8 @@ private:
 
   // keep track of all game objects
   /* In the future, change these to hash maps */
-public:
   map<const GameObj*, SoarGameObject*> objectMap;
-private:
+
   map<SoarGameObject*, const GameObj*> revObjectMap;
 
   // consistency functions

@@ -22,7 +22,6 @@
 #include "TerrainModule.H"
 #include "Demo_SimpleTerrain.H"
 
-
 using namespace sml;
 
 void printOutput(smlPrintEventId id,

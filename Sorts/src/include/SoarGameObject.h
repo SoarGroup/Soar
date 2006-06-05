@@ -47,6 +47,9 @@ class SoarGameObject{
 
   GameObj* getGob()   { return gob; }
 
+  void setLastAttacked(int id) { lastAttackedId = id; }
+  int  getLastAttacked()       { return lastAttackedId; }
+
 private:
   GameObj* gob;
 
@@ -72,6 +75,7 @@ private:
   coordinate lastLocation;
   int motionlessFrames;
 
+  int lastAttackedId;
 };
 
 #define OBJ_IDLE 0

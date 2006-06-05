@@ -8,8 +8,8 @@
 
 using namespace std;
 
-AttackFSM::AttackFSM(GameObj* gob)
-: FSM(gob), attackParams(1)
+AttackFSM::AttackFSM(SoarGameObject* _sgob)
+: FSM(_sgob->getGob()), sgob(_sgob), attackParams(1)
 {
   name = OA_ATTACK;
   weapon = gob->component("weapon");
@@ -50,7 +50,6 @@ void AttackFSM::init(vector<sint4> params) {
   disownedStatus = 0;
 
   target = NULL;
-  firingTarget = NULL;
   reassign = true;
   failCount = 0;
 }
@@ -101,7 +100,7 @@ void AttackFSM::attack(SoarGameObject* t) {
   if (t != NULL) {
     attackParams[0] = target->getID();
     weapon->set_action("attack", attackParams);
-    firingTarget = t;
+    sgob->setLastAttacked(attackParams[0]);
   }
 }
 

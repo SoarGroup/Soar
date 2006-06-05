@@ -88,6 +88,7 @@ AttackManager::AttackManager(const set<SoarGameObject*>& _targets)
   reprioritize();
 
 #ifdef USE_CANVAS_ATTACK_MANAGER
+  Uint8 r = (Uint8) (((int) this) % 156) + 100;
   for(set<SoarGameObject*>::iterator
       i  = targets.begin();
       i != targets.end();
@@ -95,7 +96,7 @@ AttackManager::AttackManager(const set<SoarGameObject*>& _targets)
   {
     if (!Sorts::canvas.gobRegistered((*i)->getGob())) {
       Sorts::canvas.registerGob((*i)->getGob());
-      Sorts::canvas.setColor((*i)->getGob(), 255, 0, 0);
+      Sorts::canvas.setColor((*i)->getGob(), r, 0, 0);
     }
   }
 #endif
@@ -134,6 +135,8 @@ void AttackManager::registerFSM(AttackFSM* fsm) {
   team.push_back(fsm);
 #ifdef USE_CANVAS_ATTACK_MANAGER
   Sorts::canvas.registerGob(fsm->getGob());
+  Uint8 b = (Uint8) (((int) this) % 156) + 100;
+  Sorts::canvas.setColor(fsm->getGob(), 0, 0, b);
 #endif
 }
 
@@ -192,12 +195,13 @@ void AttackManager::unassignTarget(SoarGameObject* target) {
 // In the future, also implement running weak units away
 int AttackManager::direct(AttackFSM* fsm) {
 #ifdef USE_CANVAS_ATTACK_MANAGER
-  Sorts::canvas.setColor(fsm->getGob(), 0, 255, 0);
+//  Sorts::canvas.setColor(fsm->getGob(), 0, 255, 0);
   Sorts::canvas.update();
-  Sorts::canvas.setColor(fsm->getGob(), 255, 255, 255);
+//  Sorts::canvas.setColor(fsm->getGob(), 255, 255, 255);
 #endif
 
   GameObj* gob = fsm->getGob();
+  SoarGameObject* sgob = Sorts::OrtsIO->getSoarGameObject(gob);
 
   if (updateTargetList() > 0) {
     if (targets.size() == 0) {
@@ -246,6 +250,9 @@ int AttackManager::direct(AttackFSM* fsm) {
         {
           if (fsm->move((*j)(0), (*j)(1)) == 0) {
             msg <<"Moving to Position: "<<(*j)(0)<<", "<<(*j)(1)<<endl;
+#ifdef USE_CANVAS_ATTACK_MANAGER
+            Sorts::canvas.trackDestination(fsm->getGob(), (*j)(0), (*j)(1));
+#endif
             fsm->target = *i;
 //            Sorts::canvas.makeTempCircle((*j)(0), (*j)(1), *fsm->getGob()->sod.radius, 1)->setCircleColor(0, 255, 0);
             break;
@@ -295,6 +302,9 @@ int AttackManager::direct(AttackFSM* fsm) {
     {
       if (fsm->move((*i)(0), (*i)(1)) == 0) {
         msg << "Moving to Position: " << (*i)(0) << ", " << (*i)(1) << endl;
+#ifdef USE_CANVAS_ATTACK_MANAGER
+        Sorts::canvas.trackDestination(fsm->getGob(), (*i)(0), (*i)(1));
+#endif
         break;
       }
     }
@@ -302,7 +312,9 @@ int AttackManager::direct(AttackFSM* fsm) {
       fsm->target = NULL;
     }
   }
-  else if (!fsm->isFiring() || fsm->firingAt() != fsm->target) {
+  else if (!fsm->isFiring() ||  
+           sgob->getLastAttacked() != fsm->target->getID())
+  {
     fsm->attack(fsm->target);
   }
 

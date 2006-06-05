@@ -26,6 +26,8 @@ class MineManager;
 
 #include "SortsCanvas.h"
 
+#define USE_CANVAS
+
 class Sorts {
   public:
     Sorts
@@ -70,7 +72,9 @@ class Sorts {
     static MapQuery*                mapQuery;
     static pthread_mutex_t*         mutex;
     static bool                     catchup;
+#ifdef USE_CANVAS
     static SortsCanvas              canvas;
+#endif
 };
 
 
