@@ -192,7 +192,11 @@ public class Tank  extends WorldEntity {
 			String commandName = commandId.GetAttribute();
 
 			if (commandName.equalsIgnoreCase(kMoveID)) {
-				
+				if (m_LastMove.move == true) {
+					m_Logger.log(getName() + ": Detected more than one move command on output link, ignoring.");
+					continue;
+				}
+
 				String moveDirection = commandId.GetParameterValue(kDirectionID);
 				if (moveDirection == null) {
 					m_Logger.log(getName() + ": null move direction.");
@@ -214,6 +218,11 @@ public class Tank  extends WorldEntity {
 				m_LastMove.move = true;
 				
 			} else if (commandName.equalsIgnoreCase(kFireID)) {
+				if (m_LastMove.fire == true) {
+					m_Logger.log(getName() + ": Detected more than one fire command on output link, ignoring.");
+					continue;
+				}
+				
 		 		if (m_Missiles > 0) {
 		 			m_LastMove.fire = true;
 		 		} else {
@@ -223,6 +232,10 @@ public class Tank  extends WorldEntity {
 				// Weapon ignored
 				
 			} else if (commandName.equalsIgnoreCase(kRadarID)) {
+				if (m_LastMove.radar == true) {
+					m_Logger.log(getName() + ": Detected more than one radar command on output link, ignoring.");
+					continue;
+				}
 				
 				String radarSwitch = commandId.GetParameterValue(kSwitchID);
 				if (radarSwitch == null) {
@@ -233,6 +246,10 @@ public class Tank  extends WorldEntity {
 				m_LastMove.radarSwitch = radarSwitch.equalsIgnoreCase(kOn) ? true : false;  
 				
 			} else if (commandName.equalsIgnoreCase(kRadarPowerID)) {
+				if (m_LastMove.radarPower == true) {
+					m_Logger.log(getName() + ": Detected more than one radar power command on output link, ignoring.");
+					continue;
+				}
 				
 				String powerValue = commandId.GetParameterValue(kSettingID);
 				if (powerValue == null) {
@@ -249,6 +266,10 @@ public class Tank  extends WorldEntity {
 				m_LastMove.radarPower = true;
 				
 			} else if (commandName.equalsIgnoreCase(kShieldsID)) {
+				if (m_LastMove.shields == true) {
+					m_Logger.log(getName() + ": Detected more than one shields command on output link, ignoring.");
+					continue;
+				}
 				
 				String shieldsSetting = commandId.GetParameterValue(kSwitchID);
 				if (shieldsSetting == null) {
@@ -262,6 +283,10 @@ public class Tank  extends WorldEntity {
 				handleShields();
 				
 			} else if (commandName.equalsIgnoreCase(kRotateID)) {
+				if (m_LastMove.rotate == true) {
+					m_Logger.log(getName() + ": Detected more than one rotate command on output link, ignoring.");
+					continue;
+				}
 				
 				m_LastMove.rotateDirection = commandId.GetParameterValue(kDirectionID);
 				if (m_LastMove.rotateDirection == null) {
