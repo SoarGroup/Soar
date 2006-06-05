@@ -121,7 +121,7 @@ sp {plan-memory*propose*#{opName}
   -(<rb> ^task.name #{t.name})
   -(<c>  ^task.name #{t.name})
 -->
-   (<s> ^operator <o> +)
+   (<s> ^operator <o> + =)
    (<o> ^name #{opName})}
 EOF
 
@@ -136,6 +136,7 @@ sp {plan-memory*apply*#{opName}
    (<rb> ^task <rt>)
    (<rt> ^name #{t.name}
          ^instance-of #{t.instance_of}
+         ^id #{opId}
          ^params <p>)
    (<p> #{paramString})}
 EOF
@@ -149,7 +150,8 @@ sp {plan-memory*apply*#{opName}
 -->
    (<rb> ^task <rt>)
    (<rt> ^name #{t.name}
-         ^instance-of #{t.instance_of})}
+         ^id #{opId}
+         ^instance-of #{t.instance_of})
 EOF
   end
   opId += 1
@@ -205,6 +207,7 @@ sp {plan-memory*apply*#{opName}
 -->
    (<rb> ^task <rt>)
    (<rt> ^name #{tgt.name}
+         ^id #{opId}
          ^instance-of #{tgt.instance_of}
          #{depString})}
 EOF
@@ -218,6 +221,7 @@ sp {plan-memory*apply*#{opName}
 -->
    (<rb> ^task <rt>)
    (<rt> ^name #{tgt.name}
+         ^id #{opId}
          ^instance-of #{tgt.instance_of}
          ^params <p>
          #{depString})
