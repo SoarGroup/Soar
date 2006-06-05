@@ -169,7 +169,6 @@ public class Eater extends WorldEntity {
 			m_Logger.log("Unknown command: " + commandName);
 			return null;
 		}
-		m_Moved = true;
 		
 		String donteat = commandId.GetParameterValue(kDontEatID);
 		if (donteat == null) {

@@ -630,6 +630,7 @@ public class EatersWorld extends World implements WorldManager {
 				if (move.jump) {
 					m_Eaters[i].adjustPoints(kJumpPenalty);
 				}
+				m_Eaters[i].setMoved();
 			} else {
 				m_Eaters[i].adjustPoints(kWallPenalty);
 			}
