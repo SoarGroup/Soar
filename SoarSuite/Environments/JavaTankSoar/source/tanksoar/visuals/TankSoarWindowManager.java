@@ -19,6 +19,7 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 	final TankSoarVisualWorld m_VisualWorld;
 	final AgentDisplay m_AgentDisplay;
 	final Group m_WorldGroup;
+	final Label m_WC;
 	
 	public TankSoarWindowManager(TankSoarSimulation simulation) {
 		m_Simulation = simulation;
@@ -36,7 +37,7 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 		gd = new GridData();
 		gd.widthHint = m_VisualWorld.getWidth();
 		gd.heightHint = m_VisualWorld.getHeight();
-		gd.verticalSpan = 2;
+		gd.verticalSpan = 3;
 		m_WorldGroup.setLayoutData(gd);
 		m_VisualWorld.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
@@ -62,6 +63,22 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 		group2.setLayout(new FillLayout());
 		m_MapButtons = new MapButtons(group2, m_Simulation, TankSoarSimulation.kMapFilter);
 
+		Composite comp1 = new Composite(m_Shell, SWT.NONE);
+		gd = new GridData();
+		gd.horizontalSpan = 2;
+		comp1.setLayoutData(gd);
+		gl = new GridLayout();
+		gl.numColumns = 2;
+		comp1.setLayout(gl);
+		Label wcLabel = new Label(comp1, SWT.NONE);
+		wcLabel.setText("World Count:");
+		wcLabel.setLayoutData(new GridData());
+		m_WC = new Label(comp1, SWT.NONE);
+		gd = new GridData();
+		gd.widthHint = 50;
+		m_WC.setLayoutData(gd);
+		updateWorldCount();
+		
 		Group group3 = new Group(m_Shell, SWT.NONE);
 		gd = new GridData();
 		group3.setLayoutData(gd);
@@ -166,6 +183,7 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 		case SimulationListener.kUpdateEvent:
 			m_VisualWorld.redraw();
 			m_AgentDisplay.worldChangeEvent();
+			updateWorldCount();
 			return;
 			
 		case SimulationListener.kResetEvent:
@@ -175,6 +193,7 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 			m_VisualWorld.redraw();
 			m_SimButtons.updateButtons();
 			m_AgentDisplay.worldChangeEvent();
+			updateWorldCount();
 			return;
 			
 		case SimulationListener.kAgentCreatedEvent:
@@ -183,6 +202,7 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 			VisualWorld.remapEntityColors(m_Simulation.getWorldManager().getEntities());
 			m_SimButtons.updateButtons();
 			m_AgentDisplay.agentEvent();
+			updateWorldCount();
 			return;
 			
 		case SimulationListener.kAgentDestroyedEvent:
@@ -213,5 +233,9 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 				dispatchEvent(type);
 			}
 		});
+	}
+	
+	void updateWorldCount() {
+		m_WC.setText(Integer.toString(m_Simulation.getWorldCount()));
 	}
 }
