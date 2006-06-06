@@ -571,6 +571,21 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       }
       break;
 
+    case OA_TRAIN:
+      assert(params.size() == 2);
+      // type to train, number
+      intIt = params.begin();
+      tempVec.clear();
+      tempVec.push_back(*intIt);
+      ++intIt;
+      tempVec.push_back(*intIt);
+      sticky = true;
+      for (currentObject = members.begin();
+           currentObject != members.end();
+           currentObject++) {
+        (*currentObject)->issueCommand(type, tempVec);
+      }
+      break;
     default:
       assert(false);  
   }

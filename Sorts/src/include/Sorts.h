@@ -26,7 +26,7 @@ class MineManager;
 
 #include "SortsCanvas.h"
 
-#define USE_CANVAS
+//#define USE_CANVAS
 
 class Sorts {
   public:

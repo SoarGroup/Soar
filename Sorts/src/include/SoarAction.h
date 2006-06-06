@@ -18,6 +18,7 @@ enum ObjectActionType {
   OA_ATTACK_NEAR,
   OA_SEVER,
   OA_FREE,
+  OA_TRAIN,
   OA_STICK
 };
 

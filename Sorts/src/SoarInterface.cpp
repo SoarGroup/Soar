@@ -323,7 +323,7 @@ void SoarInterface::getNewSoarOutput() {
     }
     
     string name = cmdPtr->GetCommandName() ;
-    cout << "recieved command from Soar: " << name << endl;
+    msg << "recieved command from Soar: " << name << endl;
     ObjectActionType OType = objectActionTypeLookup(name);
 
     if (OType != OA_NO_SUCH_ACTION) {

@@ -97,7 +97,7 @@ void SpatialDB::addTerrainLine(line l) {
     msg << "ERROR: out of bounds, not adding: " << l.a << " - " << l.b << endl;
     return; 
   }
-  msg << "adding terrain line from " << l.a << " to " << l.b << endl;
+  //msg << "adding terrain line from " << l.a << " to " << l.b << endl;
   int col1 = cell2column(cell1);
   int row1 = cell2row(cell1);
   int col2 = cell2column(cell2);
@@ -125,9 +125,8 @@ void SpatialDB::addTerrainLine(line l) {
       count++;
     }
   }
-  msg << "registered in " << count << " cells.\n";
+  //msg << "registered in " << count << " cells.\n";
 
-//  imaginaryWorkerMap[cell1].push_back(c); 
 }
 
 sint4 SpatialDB::updateObject(GameObj *gob, sint4 sat_loc)
@@ -440,7 +439,7 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
 bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
  // determine which sectors the gob is in
  // only supports rectangles (buildings) now!
-
+  
   int upperRightSector = getCellNumber(rect->xmax, rect->ymin);
   int lowerLeftSector = getCellNumber(rect->xmin, rect->ymax);
 
@@ -467,16 +466,6 @@ bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
         }
       }
     }
-  }
-
-  int mapXdim = Sorts::OrtsIO->getMapXDim();
-  int mapYdim = Sorts::OrtsIO->getMapYDim();
-
-  if (rect->xmax > mapXdim ||
-      rect->xmin < 0 ||
-      rect->ymax > mapYdim || 
-      rect->ymin < 0) {
-    return true;
   }
 
   return false;

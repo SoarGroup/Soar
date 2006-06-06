@@ -121,7 +121,9 @@ bool Rectangle::intersects(line& l) {
       l.b = l.a;
     }
 
-    int slope = (l.b.y - l.a.y)/(l.b.x - l.b.x);
+    int slope = (l.b.y - l.a.y)/(l.b.x - l.a.x);
+    // can't div by 0: l.b.x == l.a.x handled above
+
     bool above[4];
 
     if (ymax > (l.a.y + (xmin-l.a.x)*slope)) {

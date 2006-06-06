@@ -8,6 +8,7 @@
 #include "AttackFSM.h"
 #include "AttackNearFSM.h"
 #include "BuildFSM.h"
+#include "TrainFSM.h"
 
 #include "Sorts.h"
 #include "SoarGameObject.h"
@@ -50,6 +51,18 @@ void SoarGameObject::identifyBehaviors() {
       registerBehavior(attackNear);
       defaultBehaviors.push_back(attackNear);
     }
+    else if (name == "controlCenter") {
+      FSM* trainBehavior = new TrainFSM(gob);
+      registerBehavior(trainBehavior);
+    }
+    else if (name == "barracks") {
+      FSM* trainBehavior = new TrainFSM(gob);
+      registerBehavior(trainBehavior);
+    }
+    else if (name == "factory") { 
+      FSM* trainBehavior = new TrainFSM(gob);
+      registerBehavior(trainBehavior);
+    }
   }
 }
 
@@ -70,6 +83,7 @@ SoarGameObject::SoarGameObject(
   identifyBehaviors();
   //iGroup = NULL;
   pGroup = NULL;
+  lastAttackedId = -1;
   
   sat_loc = Sorts::spatialDB->addObject(gob);
 }

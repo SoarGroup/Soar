@@ -47,6 +47,8 @@ void MapQuery::findBuildingLoc(BuildingType building, coordinate nearLocation,
   double angle;
   coordinate newLoc;
   bool found = false;
+  int mapXdim = Sorts::OrtsIO->getMapXDim();
+  int mapYdim = Sorts::OrtsIO->getMapYDim();
   
   for (int i=0; i<MAX_BUILDING_PLACE_TRIES; i++) {
     angle = rand() % 6283; // approx 1000pi
@@ -56,8 +58,14 @@ void MapQuery::findBuildingLoc(BuildingType building, coordinate nearLocation,
     newLoc.y = nearLocation.y + (int)(minDistance*sin(angle));
 
     Rectangle rect(newLoc.x, newLoc.y, buildingWidth, buildingHeight, true);
-    if (not Sorts::spatialDB->hasObjectCollision(&rect)
-        and not Sorts::spatialDB->hasTerrainCollision(&rect)) {
+    
+
+    if (rect.xmax < mapXdim
+        && rect.xmin > 0
+        && rect.ymax < mapYdim 
+        && rect.ymin > 0
+        && not Sorts::spatialDB->hasObjectCollision(&rect)
+        && not Sorts::spatialDB->hasTerrainCollision(&rect)) {
       found = true;
       msg << "found location: " << newLoc << endl;
       break;

@@ -51,7 +51,7 @@ int MineFSM::update() {
     newRoute = Sorts::mineManager->minerGivesUp(route, this);
     if (newRoute != NULL) {
       route = newRoute;
-      giveUpThreshold = GIVEUPSPEED*route->pathlength;
+      giveUpThreshold = GIVEUPSPEED*((int)route->pathlength);
       timer = 0;//Sorts::OrtsIO->getViewFrame(); 
       timed = false;// don't clock this leg, we're not on the new route
       state = IDLE;
@@ -167,7 +167,7 @@ int MineFSM::update() {
       moveStatus = moveFSM->update();
       if (moveStatus == FSM_RUNNING) {
 #ifdef OPPORTUNISTIC_DROPOFF
-        int ccDist = Sorts::OrtsIO->getOrtsDistance(
+        double ccDist = Sorts::OrtsIO->getOrtsDistance(
             route->cCenterInfo->cCenter->getGob(), gob);
         if (ccDist <= 3) {
           tempVec.clear();

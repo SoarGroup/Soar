@@ -54,6 +54,11 @@ enum BuildingType {
   FACTORY=2 
 }; // just for game 3
 
+enum TrainingType {
+  WORKER=0,
+  MARINE=1,
+  TANK=2
+};
 
 struct line {
   coordinate a;

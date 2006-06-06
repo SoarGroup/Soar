@@ -11,7 +11,7 @@
 #include "GameObj.H"
 #include "GameStateModule.H"
 
-#define msg cout << "OrtsInterface.cpp "
+#define msg cout << "ORTSIO "
 
 OrtsInterface::OrtsInterface(GameStateModule* _gsm)
 : gsm(_gsm)

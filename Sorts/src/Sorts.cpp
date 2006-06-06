@@ -13,4 +13,6 @@ SpatialDB*              Sorts::spatialDB = NULL;
 MapQuery*               Sorts::mapQuery = NULL;
 pthread_mutex_t*        Sorts::mutex = NULL;
 bool                    Sorts::catchup;
+#ifdef USE_CANVAS 
 SortsCanvas             Sorts::canvas;
+#endif
