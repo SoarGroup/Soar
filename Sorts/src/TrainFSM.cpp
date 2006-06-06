@@ -2,6 +2,7 @@
 
 #define msg cout << "TRAINFSM: "
 
+#define MAX_WARMUP_TIME 5
 #define MIN_BUILD_TIME 10
 
 TrainFSM::TrainFSM(GameObj* _gob) 
@@ -50,9 +51,13 @@ int TrainFSM::update() {
       nextState = TRAINING;
       break;
     case TRAINING:
+      currentFrame = Sorts::OrtsIO->getActionFrame();
       active = gob->get_int("active");
       if (active == 0) {
-        if ((Sorts::OrtsIO->getActionFrame() - setFrame) < MIN_BUILD_TIME) {
+        if ((currentFrame - setFrame) < MAX_WARMUP_TIME) {
+          msg << "giving the action a chance to stick\n";
+        }
+        else if ((currentFrame - setFrame) < MIN_BUILD_TIME) {
           msg << "done too quickly, returning failure.\n";
           return FSM_FAILURE;
         }

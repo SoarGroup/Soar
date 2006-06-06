@@ -26,7 +26,7 @@
 
 #define MAX_SOAR_AHEAD_CYCLES 50
 
-#define SOAR_862
+//#define SOAR_862
 
 using namespace sml;
 
