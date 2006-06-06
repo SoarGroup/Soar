@@ -1,7 +1,7 @@
 #ifndef TerrainBase_H
 #define TerrainBase_H
 
-// $Id: TerrainBase.H,v 1.11 2006/05/14 13:20:52 ddeutscher Exp $
+// $Id: TerrainBase.H,v 1.19 2006/06/05 16:56:11 ddeutscher Exp $
 // This is an ORTS file (c) Michael Buro, David Deutscher, licensed under the GPL
 
 // Terrain Base Class
@@ -59,7 +59,6 @@ public :
     }
   };
 
-
 //------------------------------------------------------------------------
   /// A pair of locations, representing boundaries etc.
   struct Segment
@@ -71,8 +70,9 @@ public :
 
     /** positive if l3 is on the left of the line from l1 to l2;
         negative if l3 is on the right;
-        0 if l3 is on the line containing the segment. */
-    sint4 is_left_turn(const Loc &l3) const { return (l2.x-l1.x)*(l3.y-l1.y) - (l2.y-l1.y)*(l3.x-l1.x); };
+        0 if l3 is on the line containing the segment. 
+        Adapted for the reversed y-axis used by ORTS. */
+    sint4 is_left_turn(const Loc &l3) const { return (l2.y-l1.y)*(l3.x-l1.x) - (l2.x-l1.x)*(l3.y-l1.y); };
 
     /// true if the segments intersect (or touch at an endpoint/s)
     bool touches(const Segment &o) const { 
@@ -99,13 +99,13 @@ public :
     Path() : id() { }
     Path(const Path &other) : id(other.id), locs(other.locs) {};
   private:
-    Path operator=(const Path &other);
+    Path& operator=(const Path &other);
   };
 
 
 //------------------------------------------------------------------------
-  /// A pathfinding task to be executed
-  struct Task
+  /// A movement goal
+  struct Goal
   {
     /// target location or an object to reach?
     enum Target { LOCATION, OBJ }           target;
@@ -113,49 +113,67 @@ public :
     /// reach vicinity, touch object, attack object?
     enum Mode   { VICINITY, TOUCH, ATTACK } mode;
 
-    /// units traveling at individual speeds or in formation?
-    enum Group  { INDIVIDUAL, FORMATION }   group;
-
-    /// the objects to be moved
-    std::set<const Object*> objs; // links
-    //Vector<const Object*> objs; 
-
     /// The goal location (if target==LOCATION)
-    Loc goal_loc;
+    Loc loc;
+    
+    /** The goal object (if target==OBJ). 
+        It's the implementation's responsibility to track remove_object() 
+        calls and handle cases of a goal object dying or vanishing in the 
+        FOW (and this pointer becoming invalid). */
+    const Object *obj;
 
-    /** The goal object (if target==OBJ). It's the implementation's responsibility to
-        track remove_object() calls and handle cases of a goal object dying or 
-        vanishing in the FOW (and this pointer becoming invalid). */
-    const Object *goal_obj;  // link
+    /// The distance from the target that is 'close enough' (if mode==VICINITY)
+    sint4 distance;
 
-//    Task() { target = LOCATION; mode = VICINITY; group = INDIVIDUAL; }
-    Task(Target t = LOCATION, Mode m = VICINITY, Group g = INDIVIDUAL) 
-      : target(t), mode(m), group(g) {};
-    Task(const Task &other) : 
-      target(other.target), mode(other.mode), group(other.group), 
-      objs(other.objs), goal_loc(other.goal_loc), goal_obj(other.goal_obj) {};
+    Goal(Target t, Mode m) : target(t), mode(m), obj(NULL), distance(0) {};
+    Goal(const Goal &other) 
+      : target(other.target), mode(other.mode), loc(other.loc), obj(other.obj),
+        distance(other.distance) {};
   private:
-    Task operator=(const Task &other);
+    Goal& operator=(const Goal &other);
+
+  };
+
+  /// A pathfinding task to be executed
+  struct Task
+  {
+    /// The goal of the movement.
+    Goal goal;
+
+    /// Units traveling at individual speeds or in formation?
+    enum Group { INDIVIDUAL, FORMATION } group;
+
+    /** The objects to be moved. 
+        It's the implementation's responsibility to track remove_object() 
+        calls and handle cases of a objects dying or vanishing in the 
+        FOW (and pointers becoming invalid). */
+    std::set<const Object*> objs;
+
+    Task(Goal::Target t = Goal::LOCATION, Goal::Mode m = Goal::VICINITY, Group g = INDIVIDUAL) 
+      : goal(t,m), group(g)  {};
+    Task(const Task &other) : goal(other.goal), group(other.group), objs(other.objs) {};
+  private:
+    Task& operator=(const Task &other);
   };
 
 
 //------------------------------------------------------------------------
   /// Shortcut construction of a "move a single obj to a location target" Task
   struct Obj2LocTask : public TerrainBase::Task {
-    Obj2LocTask(Object *obj, const Loc& goal_loc_) : Task(LOCATION, TOUCH, INDIVIDUAL) {
-        goal_loc = goal_loc_;
-        objs.insert(obj);
-      };
+    Obj2LocTask(Object *obj, const Loc& goal_loc_) : Task(Goal::LOCATION, Goal::TOUCH, INDIVIDUAL) {
+      goal.loc = goal_loc_;
+      objs.insert(obj);	
+    };
   };
 
 
 //------------------------------------------------------------------------
   /// Shortcut construction of a "move a single obj to an object target" Task
   struct Obj2ObjTask : public TerrainBase::Task {
-    Obj2ObjTask(Object *obj, Object *goal_obj_) : Task(OBJ, TOUCH, INDIVIDUAL) {
-        goal_obj = goal_obj_;
-        objs.insert(obj);
-      };
+    Obj2ObjTask(Object *obj, const Object *goal_obj_) : Task(Goal::OBJ, Goal::TOUCH, INDIVIDUAL) {
+      goal.obj = goal_obj_;
+      objs.insert(obj);
+    };
   };
 
 
@@ -177,7 +195,10 @@ public :
       can arrive/fail individually. */
   struct StatusMsg
   {
-    enum Type { ARRIVED, FAILURE } type;
+    enum Type { ARRIVED,          ///< object arrived at goal
+                NO_PATH_FAILURE,  ///< no path to goal could be computed
+                MOVEMENT_FAILURE  ///< failed to execute the planned task
+    } type;
 
     TaskId task_id;
     const Object *obj; // link
@@ -219,16 +240,54 @@ public :
   //---------------------------------------------------------------------
 
 
-  /** Compute path between l1 and l2 for circular object
-      and returns length (in tile_points); < 0 iff path doesn't exist. */
-  virtual real8 find_path(const Loc &l1, const Loc &l2, sint4 radius, Path &path) = 0;
-  virtual void findPath(const Object* gob, const Loc &l2, Path &path) = 0;
+  //---------------------------------------------------------------------
+  /// \name Requests for an immediate planning of a path
+  //---------------------------------------------------------------------
+  //@{
+  /// Flags that specify what objects to consider as obstacles.
+  enum ConsiderObjects {
+    CONSIDER_ALL                = 0,
+    /// Ignore all friendly (owned) mobile objects.
+    IGNORE_MOBILE_FRIENDS   = 0x001, 
+    /// Ignore all enemy mobile objects.
+    IGNORE_MOBILE_FOES      = 0x010,
+    /// Ignore all neutral ("sheep") mobile objects.
+    IGNORE_MOBILE_NEUTRALS  = 0x100,
+    /// Ignore all mobile objects, considering only boundaries and non-mobile objects.
+    IGNORE_ALL_MOBILE_OBJS      = IGNORE_MOBILE_FRIENDS | IGNORE_MOBILE_FOES | IGNORE_MOBILE_NEUTRALS,
+  };
+
+  /** Compute path between l1 and l2 for a circular object.
+      @param l1         Start of requested path.
+      @param l2         End of requested path.
+      @param radius     Radius (half width) of the requested path.
+      @param path       If != NULL, and a path was found, this will contain the it
+                        (including l2 but not l1), with the first waypoint in locs[0].
+      @param consider   What objects to consider as obstacles when searching for a path.
+      @return           The length of the path (in tile_points); < 0 iff path doesn't exist. 
+  */
+  virtual real8 find_path(const Loc &l1, const Loc &l2, sint4 radius, Path *path, ConsiderObjects consider = CONSIDER_ALL) = 0;
+
+virtual void findPath(const Object* gob, const Loc &l2, Path &path) = 0;
     virtual void findPath(const Loc &l1, const Loc &l2, Path &path) = 0;
       virtual void findPath(const Object* gob, const Object* l2, Path &path) = 0;
       virtual void insertImaginaryWorker(Loc l) = 0;
       virtual void removeImaginaryWorker(Loc l) = 0;
       virtual void insertDynamicObjs() = 0;
       virtual void removeDynamicObjs() = 0;
+
+
+  /** Compute path for a given (circular only) Object with a given Goal,
+      @param obj        The object to move, including the start position and radius.
+      @param goal       Target of the requested path (location or object etc.).
+      @param path       If != NULL, and a path was found, this will contain it 
+                        (including the final but not the start position), with the 
+                        first waypoint in locs[0].
+      @param consider   What objects to consider as obstacles when searching for a path.
+      @return           The length of the path (in tile_points); < 0 iff path doesn't exist. 
+  */
+  virtual real8 find_path(const Object *obj, const Goal &goal, Path *path, ConsiderObjects consider = CONSIDER_ALL) = 0;
+  //---------------------------------------------------------------------
   
 
   //---------------------------------------------------------------------
@@ -252,16 +311,9 @@ public :
   virtual void execute_tasks(Vector<MoveCmd> &cmds, Vector<StatusMsg> &msgs) = 0;
   /** Plan the paths you're handling. This is where long thinking should be done.
       Return true iff did some lengthy processing */
-  virtual bool plan_tasks(void) = 0;
+  virtual bool plan_tasks(sint4 max_time = 0) = 0;
   //@}
   //---------------------------------------------------------------------
-
-#if 0
-  // creates a gfx widget that displays the terrain status
-  // implemented in libs/gfxclient to avoid linking of gfx stuff in
-  // non-gfx clients
-  virtual CWidget *create_widget() const { return 0; }
-#endif
 
 protected:
   // data
@@ -269,6 +321,9 @@ protected:
         tiles_y;          ///< playfield height
   sint4 tile_points;      ///< points on tile edge on fine grid
 };
+
+extern std::ostream& operator<<(std::ostream& os, const TerrainBase::Loc& l);
+extern std::ostream& operator<<(std::ostream& os, const TerrainBase::Segment& s);
 
 REGISTER_TYPEOF(2401, Vector<TerrainBase::Segment>::iterator);
 REGISTER_TYPEOF(2402, Vector<TerrainBase::Segment>::const_iterator);
@@ -281,6 +336,9 @@ REGISTER_TYPEOF(2406, Vector<TerrainBase::StatusMsg>::const_iterator);
 
 REGISTER_TYPEOF(2407, Vector<TerrainBase::MoveCmd>::iterator);
 REGISTER_TYPEOF(2408, Vector<TerrainBase::MoveCmd>::const_iterator);
+
+REGISTER_TYPEOF(2409, Vector<TerrainBase::Loc>::reverse_iterator);
+REGISTER_TYPEOF(2410, Vector<TerrainBase::Loc>::const_reverse_iterator);
 
 #if 0
   // later

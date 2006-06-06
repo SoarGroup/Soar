@@ -1,7 +1,7 @@
 #ifndef Demo_SimpleTerrain_H
 #define Demo_SimpleTerrain_H
 
-// $Id: Demo_SimpleTerrain.H,v 1.5 2006/05/10 12:34:51 ddeutscher Exp $
+// $Id: Demo_SimpleTerrain.H,v 1.9 2006/06/06 11:25:38 ddeutscher Exp $
 
 // This is an ORTS file 
 // (c) Michael Buro, Sami Wagiaalla, David Deutscher
@@ -108,9 +108,12 @@ namespace Demo_SimpleTerrain {
     virtual void remove_task(TaskId tid);
 
     virtual void execute_tasks(Vector<MoveCmd> &cmds, Vector<StatusMsg> &msgs);
-    virtual bool plan_tasks(void);
+    virtual bool plan_tasks(sint4 max_time=0);
 
-    virtual real8 find_path(const Loc &l1, const Loc &l2, sint4 radius, Path &path);
+    virtual real8 find_path(const Loc &l1, const Loc &l2, sint4 radius, Path *path, ConsiderObjects consider = CONSIDER_ALL);
+    virtual real8 find_path(const Object *obj, const Goal &goal, Path *path, ConsiderObjects consider = CONSIDER_ALL);
+    
+    // Sorts additions
     virtual void findPath(const Object* gob, const Loc &l2, Path &path);
     virtual void findPath(const Object* gob, const Object* l2, Path &path);
     virtual void findPath(const Loc &l1, const Loc &l2, Path &path);
@@ -118,6 +121,7 @@ namespace Demo_SimpleTerrain {
     virtual void removeImaginaryWorker(Loc l);
     virtual void insertDynamicObjs();
     virtual void removeDynamicObjs();
+
     //@}
     //---------------------------------------------------------------------
 
@@ -158,10 +162,12 @@ namespace Demo_SimpleTerrain {
     Random rand;
 
     friend class SimpleTerrainWidget;
+    friend class SimpleTerrainOverlay;
   };
 
 } // end of namespace Demo_SimpleTerrain
 
-REGISTER_TYPEOFS_TerrainBasicImp(2501, Demo_SimpleTerrain::ST_Task);
+REGISTER_TYPEOFS_TerrainBasicImp_OneTime(2501, Demo_SimpleTerrain::ST_Task);
+REGISTER_TYPEOFS_TerrainBasicImp_ForEach(2505, Demo_SimpleTerrain::ST_Task);
 
 #endif

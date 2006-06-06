@@ -1,4 +1,4 @@
-// $Id: Demo_SimpleTerrain.C,v 1.3 2006/05/10 12:34:51 ddeutscher Exp $
+// $Id: Demo_SimpleTerrain.C,v 1.7 2006/06/05 16:56:11 ddeutscher Exp $
 
 // This is an ORTS file 
 // (c) Michael Buro, Sami Wagiaalla, David Deutscher
@@ -15,7 +15,8 @@ using namespace std;
 //#define TEST(x) x
 
 namespace Demo_SimpleTerrain {
-  void ST_Terrain::findPath(const Object* gob, const Loc &l2, Path &path) {    
+  // Sorts additions
+  void ST_Terrain::findPath(const Object* gob, const Loc &l2, Path &path) {
     pfEngine->find_path(gob, l2, path);
   }
   void ST_Terrain::findPath(const Loc &l1, const Loc &l2, Path &path) {
@@ -33,7 +34,7 @@ namespace Demo_SimpleTerrain {
   void ST_Terrain::insertDynamicObjs() {
     pfEngine->insertDynamicObjs();
   }
-  void ST_Terrain::findPath(const Object* gob, const Object* l2, Path &path) {
+void ST_Terrain::findPath(const Object* gob, const Object* l2, Path &path) {
     sint4 x1, y1; l2->get_center(x1, y1);
     Loc l;
     l.x = x1;
@@ -42,7 +43,7 @@ namespace Demo_SimpleTerrain {
     Loc lg;
     lg.x = x2;
     lg.y = y2;
-   /* 
+   /*
     MapPtr m = (gob->get_zcat() == Object::ON_LAND)? &map : &air_map;
     Vector<TerrainBase::Loc> path;
     Vector<TerrainBase::Loc> clear;
@@ -133,9 +134,9 @@ namespace Demo_SimpleTerrain {
       // Change the target of the task to the last known location of the object
       FIND(taskId2task, ti2tIt, i->second);
       assert(ti2tIt != taskId2task.end());
-      ti2tIt->second->task.target = Task::LOCATION;
-      ti2tIt->second->task.goal_obj->get_center(ti2tIt->second->task.goal_loc.x, 
-                                                ti2tIt->second->task.goal_loc.y);
+      ti2tIt->second->task.goal.target = Goal::LOCATION;
+      ti2tIt->second->task.goal.obj->get_center(ti2tIt->second->task.goal.loc.x, 
+                                                ti2tIt->second->task.goal.loc.y);
     }
 
     TerrainBasicImp<ST_Task>::remove_obj(obj);
@@ -171,9 +172,15 @@ namespace Demo_SimpleTerrain {
 
 
   //----------------------------------------------------------------------------------
-  real8 ST_Terrain::find_path(const Loc &/*l1*/, const Loc &/*l2*/, sint4 /*radius*/, Path &/*path*/)
+  real8 ST_Terrain::find_path(const Loc &/*l1*/, const Loc &/*l2*/, sint4 /*radius*/, Path * /*path*/, ConsiderObjects /*consider*/)
   {
-    assert(0); // unimplemented yet    
+    assert(0); // unimplemented yet
+    return -1;
+  }
+
+  real8 ST_Terrain::find_path(const Object * /*obj*/, const Goal &/*goal*/, Path * /*path*/, ConsiderObjects /*consider*/)
+  {
+    assert(0); // unimplemented yet
     return -1;
   }
 
@@ -214,7 +221,7 @@ namespace Demo_SimpleTerrain {
         // fixme: this is not robust to future changes in the meaning of TaskId.
         s.task_id = (TerrainBase::TaskId)&(*i);
         s.obj = *(i->task.objs.begin());
-        s.type = TerrainBase::StatusMsg::FAILURE;
+        s.type = TerrainBase::StatusMsg::NO_PATH_FAILURE;
         msgs.push_back(s);
         continue;
       }
@@ -322,7 +329,7 @@ namespace Demo_SimpleTerrain {
             // fixme: this is not robust to future changes in the meaning of TaskId.
             s.task_id = (TerrainBase::TaskId)&(*i);
             s.obj = obj;
-            s.type = TerrainBase::StatusMsg::FAILURE;
+            s.type = TerrainBase::StatusMsg::MOVEMENT_FAILURE;
             msgs.push_back(s);
           }
         }
@@ -367,7 +374,7 @@ namespace Demo_SimpleTerrain {
   }
 
   //----------------------------------------------------------------------------------
-  bool ST_Terrain::plan_tasks(void)
+  bool ST_Terrain::plan_tasks(sint4 /*max_time*/)
   {
     // plan a failed path
     bool did_something = plan_failed_task();
@@ -402,11 +409,11 @@ namespace Demo_SimpleTerrain {
 
     // target location
     Loc goal;
-    if (tit->task.target == Task::LOCATION)
-      goal = tit->task.goal_loc;
+    if (tit->task.goal.target == Goal::LOCATION)
+      goal = tit->task.goal.loc;
     else {
-      assert (tit->task.target == Task::OBJ);
-      tit->task.goal_obj->get_center(goal.x, goal.y);
+      assert (tit->task.goal.target == Goal::OBJ);
+      tit->task.goal.obj->get_center(goal.x, goal.y);
     }
 
     // plan
@@ -472,36 +479,36 @@ namespace Demo_SimpleTerrain {
   bool ST_Terrain::is_at_goal(const Object* obj, const Task& task)
   {
       // Getting to the goal depends on the definition of the task:
-      if( task.target == Task::OBJ ) {
-          switch(task.mode) {
-            case Task::TOUCH :
-              return( obj->distance_to(*task.goal_obj) <= 1 );
+      if( task.goal.target == Goal::OBJ ) {
+          switch(task.goal.mode) {
+            case Goal::TOUCH :
+              return( obj->distance_to(*task.goal.obj) <= 1 );
               // using 1-tick look-ahead:
               //return( obj->distance_to(*task.goal_obj) <= obj->get_speed() );
               break;
 
-            case Task::VICINITY :
+            case Goal::VICINITY :
               assert(0 && "Not implemented yet");
               break;
 
-            case Task::ATTACK :
+            case Goal::ATTACK :
               assert(0 && "Not implemented yet");
               break;
 
             default:
               ERR("Unknown mode");
           }
-      } else if( task.target == Task::LOCATION ) {
-          switch(task.mode) {
-            case Task::TOUCH :
-              return is_at_location(obj, task.goal_loc);
+      } else if( task.goal.target == Goal::LOCATION ) {
+          switch(task.goal.mode) {
+            case Goal::TOUCH :
+              return is_at_location(obj, task.goal.loc);
               break;
 
-            case Task::VICINITY :
+            case Goal::VICINITY :
               assert(0 && "Not implemented yet");
               break;
 
-            case Task::ATTACK :
+            case Goal::ATTACK :
               assert(0 && "Not implemented yet");
               break;
 
