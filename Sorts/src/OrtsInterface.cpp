@@ -32,6 +32,8 @@ OrtsInterface::OrtsInterface(GameStateModule* _gsm)
 }
 
 bool OrtsInterface::handle_event(const Event& e) {
+  msg << "SOARCYCLES: " << Sorts::cyclesSoarAhead << endl;
+  Sorts::cyclesSoarAhead = 0;
   pthread_mutex_lock(Sorts::mutex);
   if (e.get_who() == GameStateModule::FROM) {
     if (e.get_what() == GameStateModule::VIEW_MSG) {

@@ -22,6 +22,12 @@
 #include "TerrainModule.H"
 #include "Demo_SimpleTerrain.H"
 
+#define msg cout << "sorts_main.C: "
+
+#define MAX_SOAR_AHEAD_CYCLES 50
+
+#define SOAR_862
+
 using namespace sml;
 
 void printOutput(smlPrintEventId id,
@@ -48,6 +54,43 @@ void printOutput(smlPrintEventId id,
 */
 
 
+#ifdef SOAR_862
+void SoarOutputEventHandler
+( smlRunEventId id, 
+  void*         pUserData, 
+  Agent*        agent, 
+  smlPhase      phase )
+{
+  if (Sorts::cyclesSoarAhead < MAX_SOAR_AHEAD_CYCLES) {
+    Sorts::cyclesSoarAhead++;
+    pthread_mutex_lock(Sorts::mutex);
+    std::cout << "SOAR EVENT {\n";
+    if (Sorts::catchup == true) {
+      std::cout << "ignoring Soar event, ORTS is behind.\n";
+      pthread_mutex_unlock(Sorts::mutex);
+      return;
+    }
+    Sorts::SoarIO->getNewSoarOutput();
+
+    // vision commands must be processed here- these are swapping
+    // in and out the groups on the input link.
+    // if they were processed in the ORTS handler, the agent
+    // would have a delay from when it looked somewhere and when
+    // the objects there appeared.
+    Sorts::pGroupManager->processVisionCommands();
+    Sorts::mapQuery->processMapCommands();
+
+    if (Sorts::SoarIO->getStale()) {
+      Sorts::SoarIO->lockSoarMutex();
+      agent->Commit();
+      Sorts::SoarIO->unlockSoarMutex();
+      Sorts::SoarIO->setStale(false);
+    }
+    std::cout << "SOAR EVENT }\n";
+    pthread_mutex_unlock(Sorts::mutex);
+  }
+}
+#else
 void SoarUpdateEventHandler(smlUpdateEventId id, 
                             void*                 pUserData,
                             Kernel*          pKernel,
@@ -80,6 +123,7 @@ void SoarUpdateEventHandler(smlUpdateEventId id,
   std::cout << "SOAR EVENT }\n";
   pthread_mutex_unlock(Sorts::mutex);
 }
+#endif
 
 // the function that is executed by a separate thread to
 // run the Soar agent
@@ -91,7 +135,9 @@ void* RunSoar(void* ptr) {
 
 #ifdef SOAR_862
   ((Agent*) ptr)->Commit();
+  msg << "Commit finished" << endl;
   ((Agent*) ptr)->RunSelfForever();
+  msg << "Soar just returned" << endl;
 #else
   ((Kernel*) ptr)->RunAllAgentsForever(sml_INTERLEAVE_DECISION);
 #endif
@@ -273,10 +319,12 @@ int main(int argc, char *argv[]) {
 // register for all events
   gsm.add_handler(&ortsInterface);
 
-  //  pAgent->RegisterForPrintEvent(smlEVENT_PRINT, printOutput, 0);
+#ifdef SOAR_862
+  pAgent->RegisterForRunEvent(smlEVENT_AFTER_OUTPUT_PHASE, SoarOutputEventHandler, &sorts);
+ // pAgent->RegisterForRunEvent(smlEVENT_BEFORE_INPUT_PHASE, SoarInputEventHandler, &sorts);
+#else
   pKernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &sorts);
-  //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START, SoarSystemEventHandler, &state);
-  //pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_STOP, SoarSystemEventHandler, &state);
+#endif
 
   // start Soar in a different thread
   pthread_attr_t soarThreadAttribs;

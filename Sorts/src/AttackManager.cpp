@@ -195,9 +195,9 @@ void AttackManager::unassignTarget(SoarGameObject* target) {
 // In the future, also implement running weak units away
 int AttackManager::direct(AttackFSM* fsm) {
 #ifdef USE_CANVAS_ATTACK_MANAGER
-//  Sorts::canvas.setColor(fsm->getGob(), 0, 255, 0);
+  Sorts::canvas.setColor(fsm->getGob(), 0, 255, 0);
   Sorts::canvas.update();
-//  Sorts::canvas.setColor(fsm->getGob(), 255, 255, 255);
+  Sorts::canvas.setColor(fsm->getGob(), 255, 255, 255);
 #endif
 
   GameObj* gob = fsm->getGob();

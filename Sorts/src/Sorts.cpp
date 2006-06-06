@@ -12,7 +12,8 @@ TerrainModule*          Sorts::terrainModule = NULL;
 SpatialDB*              Sorts::spatialDB = NULL;
 MapQuery*               Sorts::mapQuery = NULL;
 pthread_mutex_t*        Sorts::mutex = NULL;
-bool                    Sorts::catchup;
+int                     Sorts::cyclesSoarAhead = 0;
+bool                    Sorts::catchup = false;
 #ifdef USE_CANVAS 
 SortsCanvas             Sorts::canvas;
 #endif

@@ -72,6 +72,7 @@ class Sorts {
     static MapQuery*                mapQuery;
     static pthread_mutex_t*         mutex;
     static bool                     catchup;
+    static int                      cyclesSoarAhead;
 #ifdef USE_CANVAS
     static SortsCanvas              canvas;
 #endif
