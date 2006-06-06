@@ -184,6 +184,7 @@ void OrtsInterface::updateSoarGameObjects() {
 
   lastError = playerGameObj->get_int("errNum");
   if (lastError > 0) {
+    msg << "ORTS reported error " << lastError << endl;
     playerGameObj->set_int("errNum", 0);
   }
   buildingThisCycle = false;
@@ -286,9 +287,6 @@ void OrtsInterface::updateMap() {
 }
 
 void OrtsInterface::updateSoarPlayerInfo() {
-  msg << "player error num: " <<
-      playerGameObj->get_int("errNum") << endl;
-  playerGameObj->set_int("errNum", 0);
   
   // only know get gold for now
   if (gold != playerGameObj->get_int("minerals")) {

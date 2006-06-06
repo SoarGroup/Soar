@@ -2,7 +2,7 @@
 #include "Sorts.h"
 #include "Rectangle.h"
 
-#define MAX_BUILDING_PLACE_TRIES 50
+#define MAX_BUILDING_PLACE_TRIES 70
 #define msg cout << "MQ: "
 
 MapQuery::MapQuery() {

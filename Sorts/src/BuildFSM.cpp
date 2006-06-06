@@ -21,7 +21,7 @@ Rectangle getBuildingBounds(BuildingType type, int centerX, int centerY) {
       break;
     default:
       assert(false);
-      break;
+      break; 
   }
   Rectangle r(centerX, centerY, width, height, true);
   return r;
@@ -77,21 +77,11 @@ int BuildFSM::update() {
         return FSM_FAILURE;
       }
       else if (moveStatus == FSM_SUCCESS) {
-        if (not buildingBounds.intersects(unitBounds)) {
-          msg << "no intersection:\n";
-          msg << "unit: " <<  unitBounds.x << "," << unitBounds.y 
-              << " rad " << unitBounds.r << endl;
-          msg << "bldg x: " 
-              << buildingBounds.xmin << "->" << buildingBounds.xmax 
-              << " y " << buildingBounds.ymin << "->" << buildingBounds.ymax  << endl;
-        }
-        else {
-          msg << "ERROR: not there\n";
-          assert(false);
-        }
+        msg << "at the site, move done\n";
         nextState = START_BUILD;
       }
       else if (buildingBounds.intersects(unitBounds)) {
+        msg << "at the site, stopping moving.\n";
         moveFSM->stop();
         nextState = START_BUILD;
       }

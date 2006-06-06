@@ -22,7 +22,7 @@ SpatialDB::SpatialDB() {
 }
 
 void SpatialDB::init() {
-  tile_points = 40;
+  tile_points = 50;
   width = intDivC(Sorts::OrtsIO->getMapXDim(), tile_points);
   height = intDivC(Sorts::OrtsIO->getMapYDim(), tile_points);
 
