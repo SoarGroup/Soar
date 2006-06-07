@@ -126,7 +126,7 @@ public class TankSoar {
 	}
 	
 	protected void printCommandLineHelp() {
-		System.out.println("Java Eaters help");
+		System.out.println("Java TankSoar help");
 		System.out.println("\t-console: Send all log messages to console, overridden by -log.");
 		System.out.println("\t-log: File name to log messages to (default: " + kDefaultFile + ").");
 		System.out.println("\t-append: If logging to file, append.  Ignored if -console present.");
