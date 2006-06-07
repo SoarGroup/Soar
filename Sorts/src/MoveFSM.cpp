@@ -575,14 +575,14 @@ bool MoveFSM::getMoveVector()
   y += (*(*it)->sod.y)-loc.y;
  }
  // Normalize the vector
- float d = sqrt((loc.x-x)*(loc.x-x)+(loc.y-y)*(loc.y-y));
+ float d = sqrt((float)((loc.x-x)*(loc.x-x)+(loc.y-y)*(loc.y-y)));
  x /= d;
  y /= d;
 
  // Add in the attraction vector
  float x1 = target.x - loc.x;
  float y1 = target.y - loc.y;
- d = sqrt((loc.x-x1)*(loc.x-x1)+(loc.y-y1)*(loc.y-y1));
+ d = sqrt((float)((loc.x-x1)*(loc.x-x1)+(loc.y-y1)*(loc.y-y1)));
 
  cout<<"MOVEFSM: Size: "<< neighbors->size()<<"\n";
  cout<<"MOVEFSM: Repulsion Vector: ("<<x<<","<<y<<")\n";

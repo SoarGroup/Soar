@@ -50,7 +50,7 @@ double coordDistanceSq(coordinate c1, coordinate c2) {
 }
 
 double coordDistance(coordinate c1, coordinate c2) {
-  return sqrt(((c2.x-c1.x)*(c2.x-c1.x)+(c2.y-c1.y)*(c2.y-c1.y)));
+  return sqrt((double)(((c2.x-c1.x)*(c2.x-c1.x)+(c2.y-c1.y)*(c2.y-c1.y))));
 }
 
 bool operator ==(const coordinate& c1, const coordinate& c2) {

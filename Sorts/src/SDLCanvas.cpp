@@ -1,5 +1,7 @@
 #include "SDLCanvas.h"
 #include <signal.h>
+#ifdef USE_CANVAS
+
 
 SDLCanvas::SDLCanvas()
 {
@@ -172,3 +174,5 @@ void SDLCanvas::clear() {
   shapes.clear();
   temps.clear();
 }
+
+#endif

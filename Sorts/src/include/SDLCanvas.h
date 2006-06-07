@@ -1,6 +1,8 @@
 #ifndef SDLCanvas_h
 #define SDLCanvas_h
 
+#ifdef USE_CANVAS
+
 #include <SDL/SDL.h>
 #include <SDL/SDL_gfxPrimitives.h>
 
@@ -54,4 +56,5 @@ private:
   Uint16 canvasw, canvash;
 };
 
+#endif
 #endif

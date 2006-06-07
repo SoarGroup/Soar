@@ -178,7 +178,7 @@ int Rectangle::area() {
 Circle Rectangle::getCircumscribingCircle() {
   int dx = (xmax - xmin) / 2;
   int dy = (ymax - ymin) / 2;
-  double d  = sqrt(dx * dx + dy * dy);
+  double d  = sqrt((double)(dx * dx + dy * dy));
   return Circle(xmin + dx, ymin + dy, d);
 }
 
