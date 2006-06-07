@@ -30,6 +30,8 @@
 
 using namespace sml;
 
+bool soarStarted;
+
 void printOutput(smlPrintEventId id,
                  void*  pUserData, 
                  Agent*          pAgent,
@@ -55,6 +57,17 @@ void printOutput(smlPrintEventId id,
 
 
 #ifdef SOAR_862
+
+void SoarStartRunEventHandler
+( smlRunEventId id, 
+  void*         pUserData, 
+  Agent*        agent, 
+  smlPhase      phase )
+{
+  soarStarted = true;
+  msg << "Soar Started" << endl;
+}
+
 void SoarOutputEventHandler
 ( smlRunEventId id, 
   void*         pUserData, 
@@ -135,9 +148,7 @@ void* RunSoar(void* ptr) {
 
 #ifdef SOAR_862
   ((Agent*) ptr)->Commit();
-  msg << "Commit finished" << endl;
   ((Agent*) ptr)->RunSelfForever();
-  msg << "Soar just returned" << endl;
 #else
   ((Kernel*) ptr)->RunAllAgentsForever(sml_INTERLEAVE_DECISION);
 #endif
@@ -148,6 +159,9 @@ void* RunSoar(void* ptr) {
 
 void* RunOrts(void* ptr) {
   GameStateModule* gsm = (GameStateModule*) ptr;
+  while (!soarStarted) {
+    msg << "SPIN SPIN SPIN" << endl;
+  }
   while(1) {
     gsm->recv_view();
   }
@@ -158,7 +172,11 @@ void* RunOrts(void* ptr) {
 typedef Demo_SimpleTerrain::ST_Terrain Terrain;
 
 int main(int argc, char *argv[]) {
+#ifdef USE_CANVAS
   atexit(SDL_Quit);
+#endif
+
+  soarStarted = false;
 
   int port = 7777;
   int soarPort = 12121;
@@ -320,7 +338,8 @@ int main(int argc, char *argv[]) {
   gsm.add_handler(&ortsInterface);
 
 #ifdef SOAR_862
-  pAgent->RegisterForRunEvent(smlEVENT_AFTER_OUTPUT_PHASE, SoarOutputEventHandler, &sorts);
+  pAgent->RegisterForRunEvent(smlEVENT_BEFORE_RUN_STARTS, SoarStartRunEventHandler, NULL);
+  pAgent->RegisterForRunEvent(smlEVENT_AFTER_OUTPUT_PHASE, SoarOutputEventHandler, NULL);
  // pAgent->RegisterForRunEvent(smlEVENT_BEFORE_INPUT_PHASE, SoarInputEventHandler, &sorts);
 #else
   pKernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &sorts);
@@ -339,8 +358,6 @@ int main(int argc, char *argv[]) {
 #else
   pthread_create(&soarThread, &soarThreadAttribs, RunSoar, (void*) pKernel);
 #endif
-  std::cout << "Soar is running" << std::endl;
-
 
   // this drives the orts interrupt, which drives the middleware
   pthread_attr_t ortsThreadAttribs;
@@ -350,9 +367,7 @@ int main(int argc, char *argv[]) {
   std::cout << "ORTS client is running" << std::endl;
 
   pthread_join(soarThread, NULL);
-  cout << "IT'S A TRAP" << endl;
   pthread_join(ortsThread, NULL);
-  cout << "IT'S A TRAP AGAIN" << endl;
 
   std::cout << "!!!! Everything is finished !!!!" << std::endl;
 

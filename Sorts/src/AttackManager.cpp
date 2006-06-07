@@ -195,9 +195,8 @@ void AttackManager::unassignTarget(SoarGameObject* target) {
 // In the future, also implement running weak units away
 int AttackManager::direct(AttackFSM* fsm) {
 #ifdef USE_CANVAS_ATTACK_MANAGER
-  Sorts::canvas.setColor(fsm->getGob(), 0, 255, 0);
+  Sorts::canvas.flashColor(fsm->getGob(), 0, 255, 0, 1);
   Sorts::canvas.update();
-  Sorts::canvas.setColor(fsm->getGob(), 255, 255, 255);
 #endif
 
   GameObj* gob = fsm->getGob();
@@ -229,6 +228,7 @@ int AttackManager::direct(AttackFSM* fsm) {
     return -1;
   }
 
+  // try to hit immediately attackable things first
   if (fsm->target == NULL) {
     for(vector<SoarGameObject*>::iterator
         i  = sortedTargets.begin();
@@ -237,44 +237,48 @@ int AttackManager::direct(AttackFSM* fsm) {
     {
       if (canHit(gob, (*i)->getGob())) {
         fsm->target = *i;
+#ifdef USE_CANVAS_ATTACK_MANAGER
+        GameObj* gob = (*i)->getGob();
+        Sorts::canvas.trackDestination(fsm->getGob(), *gob->sod.x, *gob->sod.y);
+#endif
         break;
       }
-      else {
+    }
+  }
+  if (fsm->target == NULL) {
+    for(vector<SoarGameObject*>::iterator
+      i  = sortedTargets.begin();
+      i != sortedTargets.end();
+      ++i)
+    {
 //        Sorts::canvas.setColor(fsm->getGob(), 0, 0, 255);
-        list<Vec2d> positions;
-        attackArcPos(fsm->getGob(), (*i)->getGob(), positions);
-        for(list<Vec2d>::iterator
-            j  = positions.begin();
-            j != positions.end();
-            ++j)
-        {
-          if (fsm->move((*j)(0), (*j)(1)) == 0) {
-            msg <<"Moving to Position: "<<(*j)(0)<<", "<<(*j)(1)<<endl;
+      list<Vec2d> positions;
+      attackArcPos(fsm->getGob(), (*i)->getGob(), positions);
+      for(list<Vec2d>::iterator
+          j  = positions.begin();
+          j != positions.end();
+          ++j)
+      {
+        if (fsm->move((*j)(0), (*j)(1)) == 0) {
+          msg <<"Moving to Position: "<<(*j)(0)<<", "<<(*j)(1)<<endl;
+          fsm->target = *i;
 #ifdef USE_CANVAS_ATTACK_MANAGER
-            Sorts::canvas.trackDestination(fsm->getGob(), (*j)(0), (*j)(1));
+          GameObj* gob = (*i)->getGob();
+          Sorts::canvas.trackDestination(fsm->getGob(),*gob->sod.x,*gob->sod.y);
 #endif
-            fsm->target = *i;
-//            Sorts::canvas.makeTempCircle((*j)(0), (*j)(1), *fsm->getGob()->sod.radius, 1)->setCircleColor(0, 255, 0);
-            break;
-          }
-          else {
-//            Sorts::canvas.makeTempCircle((*j)(0), (*j)(1), *fsm->getGob()->sod.radius, 1);
-          }
+          break;
         }
-//        Sorts::canvas.redraw();
-//        Sorts::canvas.setColor(fsm->getGob(), 255, 255, 255);
       }
       if (fsm->target != NULL) {
         break;
       }
     }
-
-    if (fsm->target == NULL) {
-      // wasn't successfully assigned a target, wait until next time
-      ++(fsm->failCount);
-      msg << "Assignment Failed" << endl;
-      return 0;
-    }
+  }
+  if (fsm->target == NULL) {
+    // wasn't successfully assigned a target, wait until next time
+    ++(fsm->failCount);
+    msg << "Assignment Failed" << endl;
+    return 0;
   }
 
   assert(fsm->target != NULL);
@@ -303,7 +307,7 @@ int AttackManager::direct(AttackFSM* fsm) {
       if (fsm->move((*i)(0), (*i)(1)) == 0) {
         msg << "Moving to Position: " << (*i)(0) << ", " << (*i)(1) << endl;
 #ifdef USE_CANVAS_ATTACK_MANAGER
-        Sorts::canvas.trackDestination(fsm->getGob(), (*i)(0), (*i)(1));
+//        Sorts::canvas.trackDestination(fsm->getGob(), (*i)(0), (*i)(1));
 #endif
         break;
       }

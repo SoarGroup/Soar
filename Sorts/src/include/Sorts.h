@@ -9,6 +9,8 @@
    most lower-level objects should have a pointer to this
 */
 
+//#define USE_CANVAS
+
 #include "SoarInterface.h"
 #include "OrtsInterface.h"
 #include "PerceptualGroupManager.h"
@@ -24,9 +26,9 @@ class MineManager;
 #include "SpatialDB.h"
 #include "TerrainModule.H"
 
+#ifdef USE_CANVAS
 #include "SortsCanvas.h"
-
-//#define USE_CANVAS
+#endif
 
 class Sorts {
   public:

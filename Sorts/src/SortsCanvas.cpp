@@ -1,6 +1,8 @@
 #include "SortsCanvas.h"
 #ifdef USE_CANVAS // in Sorts.h 
 
+#define REDRAW_PERIOD 10
+
 SortsCanvas::SortsCanvas() { 
   updateCounter = 0;
 }
@@ -26,6 +28,7 @@ void SortsCanvas::registerGob(GameObj* gob) {
   newObj.mainCircle = canvas.makeCircle(*gob->sod.x, *gob->sod.y, *gob->sod.radius);
 
   newObj.mainCircle->setLabel(gob->bp_name().c_str());
+  newObj.origColor = newObj.mainCircle->getCircleColor();
   newObj.compound->addShape(newObj.mainCircle);
   canvasObjs[gob] = newObj;
 }
@@ -54,10 +57,18 @@ void SortsCanvas::unregisterGob(GameObj* gob) {
 void SortsCanvas::setColor(GameObj* gob, Uint8 r, Uint8 g, Uint8 b) {
   assert(canvasObjs.find(gob) != canvasObjs.end());
   dynamic_cast<SDLCanvasCircle*>(canvasObjs[gob].mainCircle)->setCircleColor(r, g, b);
+  canvasObjs[gob].origColor.set(r, g, b);
+}
+
+void SortsCanvas::flashColor(GameObj* gob, Uint8 r, Uint8 g, Uint8 b, int cycles) {
+  assert(canvasObjs.find(gob) != canvasObjs.end());
+  CanvasObjInfo& canvasObj = canvasObjs.find(gob)->second;
+  canvasObj.flashColorCycles = cycles;
+  canvasObj.mainCircle->setCircleColor(r, g, b);
 }
 
 void SortsCanvas::update() {
-  if (updateCounter < 10) {
+  if (updateCounter < REDRAW_PERIOD) {
     ++updateCounter;
     return;
   }
@@ -71,6 +82,12 @@ void SortsCanvas::update() {
     GameObj* gob = i->first;
     CanvasObjInfo& obj = i->second;
     obj.compound->moveTo(*gob->sod.x, *gob->sod.y);
+    if (obj.flashColorCycles > 0) {
+      --obj.flashColorCycles;
+      if (obj.flashColorCycles == 0) {
+        obj.mainCircle->setCircleColor(obj.origColor);
+      }
+    }
   }
   canvas.redraw();
 }

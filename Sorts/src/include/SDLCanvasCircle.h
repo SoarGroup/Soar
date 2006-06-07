@@ -34,10 +34,17 @@ public:
     SDLCanvasShape::draw();
   }
 
+  SDLColor getCircleColor() {
+    return color;
+  }
+
   void setCircleColor(Uint8 r, Uint8 g, Uint8 b) {
     color = SDLColor(r, g, b);
   }
 
+  void setCircleColor(const SDLColor& c) {
+    color = SDLColor(c.r, c.g, c.b);
+  }
 private:
   Uint16 r;
   SDLColor color;

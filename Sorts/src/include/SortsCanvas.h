@@ -15,12 +15,15 @@ struct CanvasObjInfo {
   SDLCanvasCircle*       mainCircle;
   SDLCanvasTrackedShape* tracker;
   SDLCanvasStableLine*   trackingLine;
+  SDLColor               origColor;
+  int                    flashColorCycles;
 
-  CanvasObjInfo() {
+  CanvasObjInfo() : origColor(255, 255, 255) {
     compound = NULL;
     mainCircle = NULL;
     tracker = NULL;
     trackingLine = NULL;
+    flashColorCycles = 0;
   }
 };
 
@@ -35,6 +38,7 @@ public:
   void unregisterGob(GameObj* gob);
 
   void setColor(GameObj* gob, Uint8 r, Uint8 g, Uint8 b);
+  void flashColor(GameObj* gob, Uint8 r, Uint8 g, Uint8 b, int cycles);
   void update();
 
   void trackDestination(GameObj* gob, double destx, double desty);
