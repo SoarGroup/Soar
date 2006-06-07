@@ -33,6 +33,7 @@ BuildFSM::BuildFSM(GameObj* _gob)
   name = OA_BUILD;  
   state = IDLE;
   justStarted = false;
+  moveFSM = NULL;
 }
 
 BuildFSM::~BuildFSM() {
@@ -48,6 +49,7 @@ void BuildFSM::init(vector<sint4> params) {
   loc_y = params[2];
   buildingBounds = getBuildingBounds(type, loc_x, loc_y);
   state = IDLE;
+  buildFrame = -1;
 }
 
 int BuildFSM::update() {
@@ -103,6 +105,7 @@ int BuildFSM::update() {
         justStarted = true;
         
         msg << "starting build.\n";
+        buildFrame = Sorts::OrtsIO->getViewFrame();
         params.push_back(loc_x);
         params.push_back(loc_y);
         switch (type) {
@@ -120,6 +123,10 @@ int BuildFSM::update() {
       }
       break;
     case BUILDING:
+      if (Sorts::OrtsIO->getActionFrame() - buildFrame < 1) {
+        msg << "behind a bit.\n";
+        return FSM_RUNNING;
+      }
       if (justStarted) {
         if (Sorts::OrtsIO->getLastError() != 0) {
           msg << "orts reported an error, failing.\n";

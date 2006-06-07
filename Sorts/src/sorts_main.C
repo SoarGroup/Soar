@@ -34,7 +34,7 @@ void printOutput(smlPrintEventId id,
                  void*  pUserData, 
                  Agent*          pAgent,
                  const char*          pMessage) {
-  std::cout << "[SOAR] " << pMessage << std::endl;
+  std::cout << "SOARINT: " << pMessage << std::endl;
 }
 
 /* We have two different threads giving us events, Soar and ORTS.
@@ -325,6 +325,8 @@ int main(int argc, char *argv[]) {
 #else
   pKernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &sorts);
 #endif
+
+  pAgent->RegisterForPrintEvent(smlEVENT_PRINT, printOutput, &sorts);  
 
   // start Soar in a different thread
   pthread_attr_t soarThreadAttribs;

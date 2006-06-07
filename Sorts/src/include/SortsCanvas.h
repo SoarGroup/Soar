@@ -1,5 +1,6 @@
 #ifndef SortsCanvas_h
 #define SortsCanvas_h
+#ifdef USE_CANVAS // in Sorts.h
 
 #include <map>
 
@@ -52,4 +53,5 @@ public:
   int updateCounter;
 };
 
+#endif // def USE_CANVAS
 #endif

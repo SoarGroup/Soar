@@ -21,7 +21,7 @@ public:
   void init(vector<sint4>);
 
 private:
-  int loc_x, loc_y;
+  int loc_x, loc_y, buildFrame;
   BuildingType type;
 
   // for calculating intersections

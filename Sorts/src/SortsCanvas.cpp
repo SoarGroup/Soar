@@ -1,4 +1,5 @@
 #include "SortsCanvas.h"
+#ifdef USE_CANVAS // in Sorts.h 
 
 SortsCanvas::SortsCanvas() { 
   updateCounter = 0;
@@ -100,3 +101,5 @@ void SortsCanvas::stopTracking(GameObj* gob) {
 bool SortsCanvas::gobRegistered(GameObj* gob) {
   return (canvasObjs.find(gob) != canvasObjs.end());
 }
+
+#endif

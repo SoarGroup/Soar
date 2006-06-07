@@ -226,7 +226,8 @@ int MineFSM::update() {
         }*/
       }
       else {
-        assert(false);
+        // unreachable or stuck
+        state = PANIC_START;
       }
       break;
     case SEND_MOVE_TO_MINE_COMMAND:
