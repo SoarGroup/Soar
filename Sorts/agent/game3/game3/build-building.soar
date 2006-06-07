@@ -2,16 +2,16 @@ sp {build-building*propose*init
    (state <s> ^name build-building
               ^superstate.operator <op>
               ^top-state <ts>)
-   (<op> ^task-id <tid>
-         ^building-type <ty>
-         ^building-dim <dim>)
+   (<op> ^building-type <ty>
+         ^building-dim <dim>
+         ^task-id <tid>)
    (<ts> -^build-building.task-id <tid>)
 -->
    (<s> ^operator <o> +)
    (<o> ^name init*build-building
-        ^task-id <tid>
         ^building-type <ty>
-        ^building-dim <dim>)
+        ^building-dim <dim>
+        ^task-id <tid>)
 }
 
 sp {build-building*apply*init
@@ -22,7 +22,6 @@ sp {build-building*apply*init
         ^building-type <ty>
         ^building-dim <dim>)
 -->
-   (<s> ^task-id <tid>)
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>
          ^building-type <ty>
@@ -85,9 +84,9 @@ sp {build-building*propose*find-build-location
         -^location <loc>
          ^building-dim <dim>
          ^building-type <t>)
-  -{(<ts> ^finished-command <fc>)
+  -{(<ts> ^io.output-link.command <fc>)
     (<fc> ^task-id <tid>
-          ^name orts-locate-building)}
+          ^name locate-building)}
    (<cc> ^x <x>
          ^y <y>)
         
@@ -100,44 +99,77 @@ sp {build-building*propose*find-build-location
         ^distance (+ <dim> 31 40) # keep a gap of 40 cCenter->building
         ^building-type <t>) 
 }
+sp {build-building*propose*no-location-found
+   (state <s> ^name build-building
+              ^task-id <tid>
+              ^top-state.io.output-link.command <fi>
+              ^io.input-link <il>)
+   (<fi> ^task-id <tid>
+         ^name locate-building)
+   (<il> ^query-results <q>)
+   (<q> ^query-name locate-building
+        ^param0 -1
+        ^param1 -1)
+-->
+   (<s> ^operator <o> + >) # prefer to location-found
+   (<o> ^name bb*no-location-found
+        ^task-id <tid>
+        ^finished-command <fi>)
+}
 
+sp {build-building*apply*no-location-found
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name bb*no-location-found
+        ^task-id <tid>
+        ^finished-command <fi>)
+   (<ts> ^build-building <bb>
+         ^io.output-link <ol>)
+   (<bb> ^task-id <tid>)
+   
+-->
+   (<ol> ^command <fi> -)
+}
 
 sp {build-building*propose*location-found
    (state <s> ^name build-building
               ^task-id <tid>
-              ^top-state.finished-command <fi>
+              ^io.output-link.command <cm>
               ^io.input-link <il>)
-   (<fi> ^task-id <tid>
-         ^name orts-locate-building)
+   (<cm> ^task-id <tid>
+         ^name locate-building
+         ^status complete)
    (<il> ^query-results <q>)
    (<q> ^query-name locate-building
         ^param0 <x>
         ^param1 <y>)
 -->
-   (<s> ^operator <o> + > =)
+   (<s> ^operator <o> +)
    (<o> ^name building-location-found
         ^x <x>
         ^y <y>
         ^task-id <tid>
-        ^finished-command <fi>)
+        ^command <cm>)
 }
 
 sp {build-building*apply*location-found
    (state <s> ^operator <o>
-              ^top-state <ts>)
+              ^top-state <ts>
+              ^io.output-link <ol>)
    (<o> ^name building-location-found
         ^x <x>
         ^y <y>
         ^task-id <tid>
-        ^finished-command <fi>)
+        ^command <cm>)
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>)
+   (<ol> ^command <cm>)
    
 -->
    (<bb> ^location <l>)
    (<l> ^x <x>
         ^y <y>)
-   (<ts> ^finished-command <fi> -)
+   (<ol> ^command <cm> -)
 }
    
 
@@ -250,7 +282,8 @@ sp {build-building*propose*start-build
    (state <s> ^name build-building
               ^top-state <ts>
               ^task-id <tid>
-              ^io.input-link <il>) 
+              ^io.input-link <il>
+              ^io.output-link <ol>)
    (<il> ^groups <gs>)
    (<gs> ^group <g>)
    (<g> ^type worker
@@ -265,12 +298,12 @@ sp {build-building*propose*start-build
         -^started-build true
          ^building-type <tp>
          ^worker <id>)
-   -{(<ts> ^finished-command <fc>)
-    (<fc> ^task-id <tid>
-          ^name orts-build-building)}
+  -{(<ol> ^command <c>)
+    (<c> ^task-id <tid>
+          ^name build)}
 -->
     (<s> ^operator <o> +  =)
-    (<o> ^name orts-build-building
+    (<o> ^name orts-build
          ^worker <id>
          ^x <x>
          ^y <y>
@@ -281,10 +314,11 @@ sp {build-building*propose*start-build
 sp {build-building*propose*mark-started
    (state <s> ^name build-building
               ^task-id <tid>
-              ^top-state <ts>)
-   (<ts> ^finished-command <fc>)
+              ^top-state <ts>
+              ^io.output-link <ol>)
+   (<ol> ^command <fc>)
    (<fc> ^task-id <tid>
-         ^name orts-build-building)
+         ^name build)
 -->
    (<s> ^operator <o> + >)
    (<o> ^name build-building*mark-started
@@ -296,14 +330,15 @@ sp {build-building*apply*mark-started
               ^top-state <ts>)
    (<o> ^name build-building*mark-started
         ^task-id <tid>)
-   (<ts> ^finished-command <fc>
+   (<ts> ^io.output-link <ol>
          ^build-building <bb>)
+   (<ol> ^command <fc>)
    (<fc> ^task-id <tid>
-         ^name orts-build-building)
+         ^name build)
    (<bb> ^task-id <tid>)
 -->
    (<bb> ^started-build true)
-   (<ts> ^finished-command <fc> -)
+   (<ol> ^command <fc> -)
 }
 
 sp {build-building*propose*retry-failed
@@ -323,22 +358,6 @@ sp {build-building*propose*retry-failed
         ^task-id <tid>)
 }
 
-sp {build-building*apply*retry-failed
-   (state <s> ^operator <o>
-              ^top-state.build-building <bb>
-              ^comment out)
-   (<o> ^name bb*retry-failed
-        ^task-id <tid>)
-   (<bb> ^task-id <tid>
-         ^building-started <bs>
-         ^location <loc>
-         ^worker <id>)
--->
-   (<bb> ^building-started <bs> -)
-   (<bb> ^location <loc> -)
-   (<bb> ^worker <id> -)
-   
-}
 
 sp {build-building*apply*retry-failed
    (state <s> ^operator <o>
@@ -350,8 +369,35 @@ sp {build-building*apply*retry-failed
 -->
    (<ts> ^build-building <bb> -)
 }
-   
-   
 
-   
-   
+sp {build-building*propose*done
+   (state <s> ^name build-building
+              ^task-id <tid>
+              ^top-state <ts>
+              ^io.input-link.groups.group <g>)
+   (<ts> ^build-building <bb>)
+   (<bb> ^task-id <tid>
+         ^worker <id>
+         ^started-build true)
+   (<g> ^id <id>
+        ^command_success 1)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name bb*done
+        ^task-id <tid>)
+}
+
+
+sp {build-building*apply*done
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name bb*done
+        ^task-id <tid>)
+   (<ts> ^build-building <bb>)
+   (<bb> ^task-id <tid>)
+   (<ts> ^planning.execution-buffer.task <t>)
+   (<t> ^id <tid>)
+-->
+   (<ts> ^build-building <bb> -)
+   (<t> ^completed true)
+}

@@ -4,54 +4,64 @@ sp {apply*orts-move
    (<o> ^name orts-move
         ^group <g>
         ^x <x>
-        ^y <y> )
+        ^y <y> 
+        ^task-id <tid>)
 -->
-   (<ol> ^move <m>)
+   (<ol> ^command <m>)
    (<m> ^group0 <g>
         ^param0 <x>
-        ^param1 <y>)
+        ^param1 <y>
+        ^name move
+        ^task-id <tid>)
 }
 sp {apply*orts-mine
    (state <s> ^operator <o>
               ^io.output-link <ol>)
    (<o> ^name orts-mine
-        ^group <g>)
+        ^group <g>
+        ^task-id <tid>)
 -->
-   (<ol> ^mine <m>)
-   (<m> ^group0 <g>)
+   (<ol> ^command <m>)
+   (<m> ^group0 <g>
+        ^name mine
+        ^task-id <tid>)
 }
 
-sp {apply*orts-build-building
+sp {apply*orts-build
    (state <s> ^operator <o>
               ^io.output-link <ol>
               ^top-state <ts>)
-   (<o> ^name orts-build-building
+   (<o> ^name orts-build
         ^worker <w>
         ^x <x>
         ^y <y>
         ^building-type <t>
         ^task-id <tid>)
 -->
-   (<ol> ^build <b>)
+   (<ol> ^command <b>)
    (<b> ^group0 <w>
         ^param0 <t>
         ^param1 <x>
-        ^param2 <y>)
-   (<ts> ^finished-command <fc>)
-   (<fc> ^name orts-build-building
-         ^task-id <tid>)
+        ^param2 <y>
+        ^name build
+        ^task-id <tid>)
 }
 
-sp {apply*orts-set-sticky
+
+
+
+sp {apply*orts-stick
    (state <s> ^operator <o>
               ^io.output-link <ol>
               ^top-state <ts>)
-   (<o> ^name orts-set-sticky
-        ^group <g>)
+   (<o> ^name orts-stick
+        ^group <g>
+        ^task-id <tid>)
 -->
-   (<ol> ^stick <m>)
-   (<m> ^group0 <g>)
-   (<ts> ^finished-command orts-set-sticky)
+   (<ol> ^command <m>)
+   (<m> ^group0 <g>
+        ^name stick
+        ^task-id <tid>)
 }
 
 sp {apply*orts-locate-building
@@ -65,13 +75,68 @@ sp {apply*orts-locate-building
         ^distance <dist>
         ^task-id <tid>)
 -->
-   (<ol> ^locate-building <lb>)
+   (<ol> ^command <lb>)
    (<lb> ^building <t>
          ^x <x>
          ^y <y>
-         ^distance <dist>)
-   (<ts> ^finished-command <fc>)
-   (<fc> ^name orts-locate-building
+         ^distance <dist>
+         ^name locate-building
          ^task-id <tid>)
 }
-   
+ 
+sp {apply*orts-train
+   (state <s> ^operator <o>
+              ^io.output-link <ol>
+              ^top-state <ts>)
+   (<o> ^name orts-train
+        ^building <b>
+        ^unit-type <t>
+        ^number <n>
+        ^task-id <tid>)
+-->
+   (<ol> ^command <tr>)
+   (<tr> ^group0 <b>
+        ^param0 <t>
+        ^param1 <n>
+        ^name train
+        ^task-id <tid>)
+}
+
+sp {propose*mark-finished
+   (state <s> ^top-state <ts>
+              ^comment out)
+   (<ts> ^io.output-link <ol>
+         ^sent-command <sc>)
+   (<sc> ^name <nm>
+         ^task-id <tid>)
+   (<ol> ^command <com>)
+   (<com> ^status <stat>
+          ^name <nm>
+          ^task-id <tid>)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name mark-finished
+        ^command-name <nm>
+        ^status <stat>
+        ^task-id <tid>)
+}
+
+sp {apply*mark-finished
+   (state <s> ^operator <o>
+              ^top-state <ts>
+              ^io.output-link <ol>)
+   (<o> ^name mark-finished
+        ^command-name <nm>
+        ^status <st>
+        ^task-id <tid>)
+  
+   (<ol> ^command <c>)
+   (<c> ^name <nm>
+        ^task-id <tid>)
+-->
+   (<ol> ^command <c> -)
+   (<ts> ^finished-command <fc>)
+   (<fc> ^name <nm>
+         ^task-id <tid>
+         ^status <st>)
+}

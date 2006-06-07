@@ -9,12 +9,13 @@ source apply-basic-actions.soar
 source basic.soar
 source build-barracks.soar
 source build-building.soar
+source build-units.soar
+source build-workers.soar
 source fake-planning-start.soar
-source find-free-worker.soar
 source find-location-near.soar
 source miner-assignment.soar
+source task-switch.soar
 source visual-search.soar
-source x_build-building.soar
 source x_plan-one.soar
 source x_planning.soar
 source apply-vision-commands.soar

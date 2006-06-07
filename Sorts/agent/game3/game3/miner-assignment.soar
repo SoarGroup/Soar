@@ -16,6 +16,6 @@ sp {miner-assignment*assign-miner
         ^command_running 0)
 -->
    (<s> ^operator <o> + > =)
-    (<o> ^name mine
+    (<o> ^name orts-mine
          ^group <gid>)
 }

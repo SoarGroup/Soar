@@ -1,52 +1,80 @@
 sp {propose*start-build-barracks
    (state <s> ^name sorts
-             -^running-task.name build-barracks)
+              ^planning.execution-buffer <eb>)
+  -{(<eb> ^task <t>)
+    (<t> ^name build-barracks
+          ^id 1234)}
 -->
    (<s> ^operator <o> + > =)
-   (<o> ^name start-build-barracks)
+   (<o> ^name start-task
+        ^task-name build-barracks
+        ^task-id 1234)
 }
 
 sp {propose*start-build-workers
    (state <s> ^name sorts
-              ^comment out
-             -^running-task.name build-workers)
+              ^planning.execution-buffer <eb>)
+  -{(<eb> ^task <t>)
+    (<t> ^name build-workers
+          ^id 2525)}
 -->
    (<s> ^operator <o> + > =)
-   (<o> ^name start-build-workers)
+   (<o> ^name start-task
+        ^task-name build-workers
+        ^task-id 2525)
 }
 
-sp {propose*start-miner-assignment
+sp {propose*start-build-barracks2
    (state <s> ^name sorts
-              ^comment out
-             -^running-task.name miner-assignment)
+              ^planning.execution-buffer <eb>)
+  -{(<eb> ^task <t>)
+    (<t> ^name build-barracks
+          ^id 1243)}
 -->
    (<s> ^operator <o> + > =)
-   (<o> ^name start-miner-assignment)
+   (<o> ^name start-task
+        ^task-name build-barracks
+        ^task-id 1243)
 }
 
-sp {apply*start-build-barracks
-   (state <s> ^operator.name start-build-barracks)
+
+sp {apply*start-task
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<ts> ^planning.execution-buffer <eb>)
+   (<o> ^name start-task
+        ^task-id <tid>
+        ^task-name <tn>)
 -->
-   (<s> ^running-task <rt>
-        ^execution-buffer <eb>)
-   (<rt> ^name build-barracks
-         ^id 1234)
    (<eb> ^task <t>)
-   (<t> ^id 1234)
+   (<t> ^id <tid>
+        ^name <tn>)
 }
 
-sp {apply*start-build-workers
-   (state <s> ^operator.name start-build-workers)
+
+sp {propose*execute-task
+   (state <s> ^name sorts
+             -^running-task
+              ^planning.execution-buffer <eb>)
+   (<eb> ^task <t>)
+   (<t> ^name <nm>
+        ^id <tid>
+       -^completed true)
 -->
-   (<s> ^running-task <rt>)
-   (<rt> ^name build-workers
-         ^id 15151)
+   (<s> ^operator <o> + =)
+   (<o> ^name execute-task
+        ^task <t>)
 }
 
-sp {apply*start-miner-assignment
-   (state <s> ^operator.name start-miner-assignment)
+sp {apply*execute-task
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name execute-task
+        ^task <t>)
+   (<t> ^name <nm>
+        ^id <tid>)
 -->
-   (<s> ^running-task <rt>)
-   (<rt> ^name miner-assignment
-         ^id 26612)
+   (<ts> ^running-task <rt>)
+   (<rt> ^name <nm>
+         ^id <tid>)
 }

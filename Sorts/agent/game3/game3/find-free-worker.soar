@@ -1,4 +1,4 @@
-#TODO: visual search if no free workers!
+TODO: visual search if no free workers!
 
 sp {find-free-worker*propose*change-grouping-level
    (state <s> ^name find-free-worker

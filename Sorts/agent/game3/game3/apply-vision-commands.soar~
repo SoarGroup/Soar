@@ -1,9 +1,10 @@
 sp {apply*enable-owner-grouping
    (state <s> ^operator <o>
-              ^io <io>)
+              ^io.output-link <ol>)
     (<o> ^name enable-owner-grouping)
 -->
-   (<io> ^output-link enable-owner-grouping)
+   (<ol> ^command <c>)
+   (<c> ^name enable-owner-grouping)
 }
 
 sp {apply*look-at-feature
@@ -13,9 +14,10 @@ sp {apply*look-at-feature
          ^feature <feature>
          ^sector <sector>)
 -->
-   (<ol> ^look-feature <lf>)
+   (<ol> ^command <lf>)
    (<lf> ^feature <feature>
-         ^sector <sector>)
+         ^sector <sector>
+         ^name look-feature)
 }
 sp {apply*move-to-feature
     (state <s> ^operator <o>
@@ -24,9 +26,10 @@ sp {apply*move-to-feature
          ^feature <feature>
          ^sector <sector>)
 -->
-   (<ol> ^move-feature <lf>)
+   (<ol> ^command <lf>)
    (<lf> ^feature <feature>
-         ^sector <sector>)
+         ^sector <sector>
+         ^name move-feature)
 }
 
 sp {apply*change-view-width
@@ -35,8 +38,9 @@ sp {apply*change-view-width
     (<o> ^name change-view-width
          ^width <w>)
 -->
-   (<ol> ^view-width <vw>)
-   (<vw> ^value <w>)
+   (<ol> ^command <vw>)
+   (<vw> ^value <w>
+         ^name view-width)
 }
 
 
@@ -49,8 +53,9 @@ sp {apply*set-grouping-individuals
    (<ts> ^grouping-level individuals)
    (<ts> ^grouping-level small-groups -)
    (<ts> ^grouping-level large-groups -)
-   (<ol> ^grouping-radius <g>)
-   (<g> ^value 0)
+   (<ol> ^command <g>)
+   (<g> ^value 0
+        ^name grouping-radius)
 }
 
 sp {apply*set-grouping-small-groups
@@ -62,8 +67,9 @@ sp {apply*set-grouping-small-groups
    (<ts> ^grouping-level individuals -)
    (<ts> ^grouping-level small-groups)
    (<ts> ^grouping-level large-groups -)
-   (<ol> ^grouping-radius <g>)
-   (<g> ^value 32)
+   (<ol> ^command <g>)
+   (<g> ^value 32
+        ^name grouping-radius)
 }
 
 sp {apply*set-grouping-large-groups
@@ -75,6 +81,7 @@ sp {apply*set-grouping-large-groups
    (<ts> ^grouping-level individuals -)
    (<ts> ^grouping-level small-groups -)
    (<ts> ^grouping-level large-groups)
-   (<ol> ^grouping-radius <g>)
-   (<g> ^value 64)
+   (<ol> ^command <g>)
+   (<g> ^value 64
+        ^name grouping-radius)
 }

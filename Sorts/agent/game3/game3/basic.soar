@@ -4,10 +4,17 @@ sp {elaborate*io
    (<s> ^io <io>)
 }
 
+sp {elaborate*task-id
+   (state <s> ^superstate.operator.task-id <tid>)
+-->
+   (<s> ^task-id <tid>)
+}
+
 
 sp {top-state*propose*wait
     (state <s> ^attribute state
                ^choices none
+               ^comment out
               -^operator.name wait)
 -->
     (<s> ^operator <o> +)

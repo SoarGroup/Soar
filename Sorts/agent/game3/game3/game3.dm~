@@ -1,11 +1,11 @@
-1257
+2048
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
 SOAR_ID 3
 ENUMERATION 4 1 state
 ENUMERATION 5 1 nil
-ENUMERATION 6 7 build-barracks build-building find-free-worker miner-assignment sorts visual-search visual-search-friendly
+ENUMERATION 6 8 build-barracks build-building build-units find-free-worker miner-assignment sorts visual-search visual-search-friendly
 ENUMERATION 7 1 initialize-sorts
 SOAR_ID 8
 ENUMERATION 9 1 explore
@@ -719,7 +719,7 @@ SOAR_ID 716
 SOAR_ID 717
 SOAR_ID 718
 SOAR_ID 719
-ENUMERATION 720 2 orts-build-building orts-set-sticky
+ENUMERATION 720 3 orts-build-building orts-locate-building orts-set-sticky
 SOAR_ID 721
 SOAR_ID 722
 ENUMERATION 723 1 build-building
@@ -1008,10 +1008,10 @@ SOAR_ID 1005
 SOAR_ID 1006
 SOAR_ID 1007
 SOAR_ID 1008
-ENUMERATION 1009 2 orts-build-building orts-locate-building
+ENUMERATION 1009 1 orts-locate-building
 SOAR_ID 1010
 SOAR_ID 1011
-ENUMERATION 1012 1 orts-locate-building
+SOAR_ID 1012
 SOAR_ID 1013
 SOAR_ID 1014
 SOAR_ID 1015
@@ -1069,10 +1069,10 @@ SOAR_ID 1066
 SOAR_ID 1067
 SOAR_ID 1068
 SOAR_ID 1069
-SOAR_ID 1070
+ENUMERATION 1070 1 init*build-building
 SOAR_ID 1071
 SOAR_ID 1072
-ENUMERATION 1073 1 init*build-building
+SOAR_ID 1073
 SOAR_ID 1074
 SOAR_ID 1075
 SOAR_ID 1076
@@ -1187,10 +1187,10 @@ SOAR_ID 1184
 SOAR_ID 1185
 SOAR_ID 1186
 SOAR_ID 1187
-SOAR_ID 1188
+ENUMERATION 1188 1 building-location-found
 SOAR_ID 1189
 SOAR_ID 1190
-ENUMERATION 1191 1 building-location-found
+SOAR_ID 1191
 SOAR_ID 1192
 SOAR_ID 1193
 SOAR_ID 1194
@@ -1246,23 +1246,814 @@ SOAR_ID 1243
 SOAR_ID 1244
 SOAR_ID 1245
 SOAR_ID 1246
-SOAR_ID 1247
+ENUMERATION 1247 1 bb*remember-id
 SOAR_ID 1248
-SOAR_ID 1249
-ENUMERATION 1250 1 bb*remember-id
+ENUMERATION 1249 1 bb*clear-worker-id
+INTEGER_RANGE 1250 -2147483648 2147483647
 SOAR_ID 1251
-ENUMERATION 1252 1 bb*clear-worker-id
-INTEGER_RANGE 1253 -2147483648 2147483647
+ENUMERATION 1252 1 bb*retry-failed
+SOAR_ID 1253
 SOAR_ID 1254
-ENUMERATION 1255 1 bb*retry-failed
+SOAR_ID 1255
 SOAR_ID 1256
-1256
+SOAR_ID 1257
+SOAR_ID 1258
+ENUMERATION 1259 1 orts-train-units
+SOAR_ID 1260
+SOAR_ID 1261
+SOAR_ID 1262
+SOAR_ID 1263
+SOAR_ID 1264
+SOAR_ID 1265
+SOAR_ID 1266
+SOAR_ID 1267
+SOAR_ID 1268
+SOAR_ID 1269
+SOAR_ID 1270
+SOAR_ID 1271
+SOAR_ID 1272
+SOAR_ID 1273
+SOAR_ID 1274
+SOAR_ID 1275
+SOAR_ID 1276
+SOAR_ID 1277
+SOAR_ID 1278
+SOAR_ID 1279
+SOAR_ID 1280
+SOAR_ID 1281
+SOAR_ID 1282
+SOAR_ID 1283
+SOAR_ID 1284
+SOAR_ID 1285
+SOAR_ID 1286
+SOAR_ID 1287
+SOAR_ID 1288
+SOAR_ID 1289
+SOAR_ID 1290
+SOAR_ID 1291
+SOAR_ID 1292
+SOAR_ID 1293
+SOAR_ID 1294
+SOAR_ID 1295
+SOAR_ID 1296
+SOAR_ID 1297
+SOAR_ID 1298
+SOAR_ID 1299
+SOAR_ID 1300
+SOAR_ID 1301
+SOAR_ID 1302
+SOAR_ID 1303
+SOAR_ID 1304
+SOAR_ID 1305
+SOAR_ID 1306
+SOAR_ID 1307
+SOAR_ID 1308
+SOAR_ID 1309
+SOAR_ID 1310
+SOAR_ID 1311
+SOAR_ID 1312
+SOAR_ID 1313
+SOAR_ID 1314
+SOAR_ID 1315
+SOAR_ID 1316
+SOAR_ID 1317
+SOAR_ID 1318
+SOAR_ID 1319
+SOAR_ID 1320
+SOAR_ID 1321
+SOAR_ID 1322
+SOAR_ID 1323
+SOAR_ID 1324
+SOAR_ID 1325
+SOAR_ID 1326
+SOAR_ID 1327
+SOAR_ID 1328
+SOAR_ID 1329
+SOAR_ID 1330
+SOAR_ID 1331
+SOAR_ID 1332
+SOAR_ID 1333
+SOAR_ID 1334
+SOAR_ID 1335
+SOAR_ID 1336
+SOAR_ID 1337
+SOAR_ID 1338
+SOAR_ID 1339
+SOAR_ID 1340
+SOAR_ID 1341
+SOAR_ID 1342
+SOAR_ID 1343
+SOAR_ID 1344
+SOAR_ID 1345
+SOAR_ID 1346
+SOAR_ID 1347
+SOAR_ID 1348
+SOAR_ID 1349
+SOAR_ID 1350
+SOAR_ID 1351
+SOAR_ID 1352
+SOAR_ID 1353
+SOAR_ID 1354
+SOAR_ID 1355
+SOAR_ID 1356
+SOAR_ID 1357
+SOAR_ID 1358
+SOAR_ID 1359
+SOAR_ID 1360
+SOAR_ID 1361
+SOAR_ID 1362
+SOAR_ID 1363
+SOAR_ID 1364
+SOAR_ID 1365
+SOAR_ID 1366
+SOAR_ID 1367
+SOAR_ID 1368
+SOAR_ID 1369
+SOAR_ID 1370
+SOAR_ID 1371
+SOAR_ID 1372
+SOAR_ID 1373
+SOAR_ID 1374
+SOAR_ID 1375
+SOAR_ID 1376
+SOAR_ID 1377
+SOAR_ID 1378
+SOAR_ID 1379
+SOAR_ID 1380
+SOAR_ID 1381
+SOAR_ID 1382
+SOAR_ID 1383
+SOAR_ID 1384
+SOAR_ID 1385
+SOAR_ID 1386
+SOAR_ID 1387
+SOAR_ID 1388
+SOAR_ID 1389
+SOAR_ID 1390
+SOAR_ID 1391
+SOAR_ID 1392
+SOAR_ID 1393
+SOAR_ID 1394
+SOAR_ID 1395
+SOAR_ID 1396
+SOAR_ID 1397
+SOAR_ID 1398
+SOAR_ID 1399
+SOAR_ID 1400
+SOAR_ID 1401
+SOAR_ID 1402
+SOAR_ID 1403
+SOAR_ID 1404
+SOAR_ID 1405
+SOAR_ID 1406
+SOAR_ID 1407
+SOAR_ID 1408
+SOAR_ID 1409
+SOAR_ID 1410
+SOAR_ID 1411
+SOAR_ID 1412
+SOAR_ID 1413
+SOAR_ID 1414
+SOAR_ID 1415
+SOAR_ID 1416
+SOAR_ID 1417
+SOAR_ID 1418
+SOAR_ID 1419
+SOAR_ID 1420
+SOAR_ID 1421
+SOAR_ID 1422
+SOAR_ID 1423
+SOAR_ID 1424
+SOAR_ID 1425
+SOAR_ID 1426
+SOAR_ID 1427
+SOAR_ID 1428
+SOAR_ID 1429
+SOAR_ID 1430
+SOAR_ID 1431
+SOAR_ID 1432
+SOAR_ID 1433
+SOAR_ID 1434
+SOAR_ID 1435
+SOAR_ID 1436
+SOAR_ID 1437
+SOAR_ID 1438
+SOAR_ID 1439
+SOAR_ID 1440
+SOAR_ID 1441
+SOAR_ID 1442
+SOAR_ID 1443
+SOAR_ID 1444
+SOAR_ID 1445
+SOAR_ID 1446
+SOAR_ID 1447
+SOAR_ID 1448
+SOAR_ID 1449
+SOAR_ID 1450
+SOAR_ID 1451
+SOAR_ID 1452
+SOAR_ID 1453
+SOAR_ID 1454
+SOAR_ID 1455
+SOAR_ID 1456
+SOAR_ID 1457
+SOAR_ID 1458
+SOAR_ID 1459
+SOAR_ID 1460
+SOAR_ID 1461
+SOAR_ID 1462
+SOAR_ID 1463
+SOAR_ID 1464
+SOAR_ID 1465
+SOAR_ID 1466
+SOAR_ID 1467
+SOAR_ID 1468
+SOAR_ID 1469
+SOAR_ID 1470
+SOAR_ID 1471
+SOAR_ID 1472
+SOAR_ID 1473
+SOAR_ID 1474
+SOAR_ID 1475
+SOAR_ID 1476
+SOAR_ID 1477
+SOAR_ID 1478
+SOAR_ID 1479
+SOAR_ID 1480
+SOAR_ID 1481
+SOAR_ID 1482
+SOAR_ID 1483
+SOAR_ID 1484
+SOAR_ID 1485
+SOAR_ID 1486
+SOAR_ID 1487
+SOAR_ID 1488
+SOAR_ID 1489
+SOAR_ID 1490
+SOAR_ID 1491
+SOAR_ID 1492
+SOAR_ID 1493
+SOAR_ID 1494
+SOAR_ID 1495
+SOAR_ID 1496
+SOAR_ID 1497
+SOAR_ID 1498
+SOAR_ID 1499
+SOAR_ID 1500
+SOAR_ID 1501
+SOAR_ID 1502
+SOAR_ID 1503
+SOAR_ID 1504
+SOAR_ID 1505
+SOAR_ID 1506
+SOAR_ID 1507
+SOAR_ID 1508
+SOAR_ID 1509
+SOAR_ID 1510
+SOAR_ID 1511
+SOAR_ID 1512
+SOAR_ID 1513
+SOAR_ID 1514
+SOAR_ID 1515
+SOAR_ID 1516
+SOAR_ID 1517
+SOAR_ID 1518
+SOAR_ID 1519
+SOAR_ID 1520
+SOAR_ID 1521
+SOAR_ID 1522
+SOAR_ID 1523
+SOAR_ID 1524
+SOAR_ID 1525
+SOAR_ID 1526
+SOAR_ID 1527
+SOAR_ID 1528
+SOAR_ID 1529
+SOAR_ID 1530
+SOAR_ID 1531
+SOAR_ID 1532
+SOAR_ID 1533
+SOAR_ID 1534
+SOAR_ID 1535
+SOAR_ID 1536
+SOAR_ID 1537
+SOAR_ID 1538
+SOAR_ID 1539
+SOAR_ID 1540
+SOAR_ID 1541
+SOAR_ID 1542
+SOAR_ID 1543
+SOAR_ID 1544
+SOAR_ID 1545
+SOAR_ID 1546
+SOAR_ID 1547
+SOAR_ID 1548
+SOAR_ID 1549
+SOAR_ID 1550
+SOAR_ID 1551
+SOAR_ID 1552
+SOAR_ID 1553
+ENUMERATION 1554 1 locate-building
+SOAR_ID 1555
+SOAR_ID 1556
+SOAR_ID 1557
+SOAR_ID 1558
+SOAR_ID 1559
+ENUMERATION 1560 1 build-units
+INTEGER_RANGE 1561 -2147483648 2147483647
+INTEGER_RANGE 1562 -2147483648 2147483647
+INTEGER_RANGE 1563 -2147483648 2147483647
+INTEGER_RANGE 1564 -2147483648 2147483647
+INTEGER_RANGE 1565 -2147483648 2147483647
+INTEGER_RANGE 1566 -2147483648 2147483647
+INTEGER_RANGE 1567 -2147483648 2147483647
+INTEGER_RANGE 1568 -2147483648 2147483647
+INTEGER_RANGE 1569 -2147483648 2147483647
+INTEGER_RANGE 1570 -2147483648 2147483647
+INTEGER_RANGE 1571 -2147483648 2147483647
+INTEGER_RANGE 1572 -2147483648 2147483647
+INTEGER_RANGE 1573 -2147483648 2147483647
+INTEGER_RANGE 1574 -2147483648 2147483647
+INTEGER_RANGE 1575 -2147483648 2147483647
+INTEGER_RANGE 1576 -2147483648 2147483647
+INTEGER_RANGE 1577 -2147483648 2147483647
+INTEGER_RANGE 1578 -2147483648 2147483647
+INTEGER_RANGE 1579 -2147483648 2147483647
+INTEGER_RANGE 1580 -2147483648 2147483647
+INTEGER_RANGE 1581 -2147483648 2147483647
+INTEGER_RANGE 1582 -2147483648 2147483647
+INTEGER_RANGE 1583 -2147483648 2147483647
+INTEGER_RANGE 1584 -2147483648 2147483647
+INTEGER_RANGE 1585 -2147483648 2147483647
+INTEGER_RANGE 1586 -2147483648 2147483647
+INTEGER_RANGE 1587 -2147483648 2147483647
+INTEGER_RANGE 1588 -2147483648 2147483647
+INTEGER_RANGE 1589 -2147483648 2147483647
+INTEGER_RANGE 1590 -2147483648 2147483647
+INTEGER_RANGE 1591 -2147483648 2147483647
+INTEGER_RANGE 1592 -2147483648 2147483647
+INTEGER_RANGE 1593 -2147483648 2147483647
+INTEGER_RANGE 1594 -2147483648 2147483647
+INTEGER_RANGE 1595 -2147483648 2147483647
+INTEGER_RANGE 1596 -2147483648 2147483647
+INTEGER_RANGE 1597 -2147483648 2147483647
+INTEGER_RANGE 1598 -2147483648 2147483647
+INTEGER_RANGE 1599 -2147483648 2147483647
+INTEGER_RANGE 1600 -2147483648 2147483647
+INTEGER_RANGE 1601 -2147483648 2147483647
+INTEGER_RANGE 1602 -2147483648 2147483647
+INTEGER_RANGE 1603 -2147483648 2147483647
+INTEGER_RANGE 1604 -2147483648 2147483647
+INTEGER_RANGE 1605 -2147483648 2147483647
+INTEGER_RANGE 1606 -2147483648 2147483647
+INTEGER_RANGE 1607 -2147483648 2147483647
+INTEGER_RANGE 1608 -2147483648 2147483647
+INTEGER_RANGE 1609 -2147483648 2147483647
+INTEGER_RANGE 1610 -2147483648 2147483647
+INTEGER_RANGE 1611 -2147483648 2147483647
+INTEGER_RANGE 1612 -2147483648 2147483647
+INTEGER_RANGE 1613 -2147483648 2147483647
+INTEGER_RANGE 1614 -2147483648 2147483647
+INTEGER_RANGE 1615 -2147483648 2147483647
+INTEGER_RANGE 1616 -2147483648 2147483647
+INTEGER_RANGE 1617 -2147483648 2147483647
+INTEGER_RANGE 1618 -2147483648 2147483647
+INTEGER_RANGE 1619 -2147483648 2147483647
+INTEGER_RANGE 1620 -2147483648 2147483647
+INTEGER_RANGE 1621 -2147483648 2147483647
+ENUMERATION 1622 2 commandCenter controlCenter
+ENUMERATION 1623 2 commandCenter controlCenter
+ENUMERATION 1624 2 commandCenter controlCenter
+ENUMERATION 1625 2 commandCenter controlCenter
+ENUMERATION 1626 2 commandCenter controlCenter
+ENUMERATION 1627 2 commandCenter controlCenter
+ENUMERATION 1628 2 commandCenter controlCenter
+ENUMERATION 1629 2 commandCenter controlCenter
+ENUMERATION 1630 2 commandCenter controlCenter
+ENUMERATION 1631 2 commandCenter controlCenter
+ENUMERATION 1632 2 commandCenter controlCenter
+ENUMERATION 1633 2 commandCenter controlCenter
+ENUMERATION 1634 2 commandCenter controlCenter
+ENUMERATION 1635 2 commandCenter controlCenter
+ENUMERATION 1636 2 commandCenter controlCenter
+ENUMERATION 1637 2 commandCenter controlCenter
+ENUMERATION 1638 2 commandCenter controlCenter
+ENUMERATION 1639 2 commandCenter controlCenter
+ENUMERATION 1640 2 commandCenter controlCenter
+ENUMERATION 1641 2 commandCenter controlCenter
+ENUMERATION 1642 2 commandCenter controlCenter
+ENUMERATION 1643 2 commandCenter controlCenter
+ENUMERATION 1644 2 commandCenter controlCenter
+ENUMERATION 1645 2 commandCenter controlCenter
+ENUMERATION 1646 2 commandCenter controlCenter
+ENUMERATION 1647 2 commandCenter controlCenter
+ENUMERATION 1648 2 commandCenter controlCenter
+ENUMERATION 1649 2 commandCenter controlCenter
+ENUMERATION 1650 2 commandCenter controlCenter
+ENUMERATION 1651 2 commandCenter controlCenter
+ENUMERATION 1652 2 commandCenter controlCenter
+ENUMERATION 1653 2 commandCenter controlCenter
+ENUMERATION 1654 2 commandCenter controlCenter
+ENUMERATION 1655 2 commandCenter controlCenter
+ENUMERATION 1656 2 commandCenter controlCenter
+ENUMERATION 1657 2 commandCenter controlCenter
+ENUMERATION 1658 2 commandCenter controlCenter
+ENUMERATION 1659 2 commandCenter controlCenter
+ENUMERATION 1660 2 commandCenter controlCenter
+ENUMERATION 1661 2 commandCenter controlCenter
+ENUMERATION 1662 2 commandCenter controlCenter
+ENUMERATION 1663 2 commandCenter controlCenter
+ENUMERATION 1664 2 commandCenter controlCenter
+ENUMERATION 1665 2 commandCenter controlCenter
+ENUMERATION 1666 2 commandCenter controlCenter
+ENUMERATION 1667 2 commandCenter controlCenter
+ENUMERATION 1668 2 commandCenter controlCenter
+ENUMERATION 1669 2 commandCenter controlCenter
+ENUMERATION 1670 2 commandCenter controlCenter
+ENUMERATION 1671 2 commandCenter controlCenter
+ENUMERATION 1672 2 commandCenter controlCenter
+ENUMERATION 1673 2 commandCenter controlCenter
+ENUMERATION 1674 2 commandCenter controlCenter
+ENUMERATION 1675 2 commandCenter controlCenter
+ENUMERATION 1676 2 commandCenter controlCenter
+ENUMERATION 1677 2 commandCenter controlCenter
+ENUMERATION 1678 2 commandCenter controlCenter
+ENUMERATION 1679 2 commandCenter controlCenter
+ENUMERATION 1680 2 commandCenter controlCenter
+ENUMERATION 1681 2 commandCenter controlCenter
+ENUMERATION 1682 2 commandCenter controlCenter
+INTEGER_RANGE 1683 -2147483648 2147483647
+INTEGER_RANGE 1684 -2147483648 2147483647
+INTEGER_RANGE 1685 -2147483648 2147483647
+INTEGER_RANGE 1686 -2147483648 2147483647
+INTEGER_RANGE 1687 -2147483648 2147483647
+INTEGER_RANGE 1688 -2147483648 2147483647
+INTEGER_RANGE 1689 -2147483648 2147483647
+INTEGER_RANGE 1690 -2147483648 2147483647
+INTEGER_RANGE 1691 -2147483648 2147483647
+INTEGER_RANGE 1692 -2147483648 2147483647
+INTEGER_RANGE 1693 -2147483648 2147483647
+INTEGER_RANGE 1694 -2147483648 2147483647
+INTEGER_RANGE 1695 -2147483648 2147483647
+INTEGER_RANGE 1696 -2147483648 2147483647
+INTEGER_RANGE 1697 -2147483648 2147483647
+INTEGER_RANGE 1698 -2147483648 2147483647
+INTEGER_RANGE 1699 -2147483648 2147483647
+INTEGER_RANGE 1700 -2147483648 2147483647
+INTEGER_RANGE 1701 -2147483648 2147483647
+INTEGER_RANGE 1702 -2147483648 2147483647
+INTEGER_RANGE 1703 -2147483648 2147483647
+INTEGER_RANGE 1704 -2147483648 2147483647
+INTEGER_RANGE 1705 -2147483648 2147483647
+INTEGER_RANGE 1706 -2147483648 2147483647
+INTEGER_RANGE 1707 -2147483648 2147483647
+INTEGER_RANGE 1708 -2147483648 2147483647
+INTEGER_RANGE 1709 -2147483648 2147483647
+INTEGER_RANGE 1710 -2147483648 2147483647
+INTEGER_RANGE 1711 -2147483648 2147483647
+INTEGER_RANGE 1712 -2147483648 2147483647
+INTEGER_RANGE 1713 -2147483648 2147483647
+INTEGER_RANGE 1714 -2147483648 2147483647
+INTEGER_RANGE 1715 -2147483648 2147483647
+INTEGER_RANGE 1716 -2147483648 2147483647
+INTEGER_RANGE 1717 -2147483648 2147483647
+INTEGER_RANGE 1718 -2147483648 2147483647
+INTEGER_RANGE 1719 -2147483648 2147483647
+INTEGER_RANGE 1720 -2147483648 2147483647
+INTEGER_RANGE 1721 -2147483648 2147483647
+INTEGER_RANGE 1722 -2147483648 2147483647
+INTEGER_RANGE 1723 -2147483648 2147483647
+INTEGER_RANGE 1724 -2147483648 2147483647
+INTEGER_RANGE 1725 -2147483648 2147483647
+INTEGER_RANGE 1726 -2147483648 2147483647
+INTEGER_RANGE 1727 -2147483648 2147483647
+INTEGER_RANGE 1728 -2147483648 2147483647
+INTEGER_RANGE 1729 -2147483648 2147483647
+INTEGER_RANGE 1730 -2147483648 2147483647
+INTEGER_RANGE 1731 -2147483648 2147483647
+INTEGER_RANGE 1732 -2147483648 2147483647
+INTEGER_RANGE 1733 -2147483648 2147483647
+INTEGER_RANGE 1734 -2147483648 2147483647
+INTEGER_RANGE 1735 -2147483648 2147483647
+INTEGER_RANGE 1736 -2147483648 2147483647
+INTEGER_RANGE 1737 -2147483648 2147483647
+INTEGER_RANGE 1738 -2147483648 2147483647
+INTEGER_RANGE 1739 -2147483648 2147483647
+INTEGER_RANGE 1740 -2147483648 2147483647
+INTEGER_RANGE 1741 -2147483648 2147483647
+INTEGER_RANGE 1742 -2147483648 2147483647
+INTEGER_RANGE 1743 -2147483648 2147483647
+INTEGER_RANGE 1744 -2147483648 2147483647
+INTEGER_RANGE 1745 -2147483648 2147483647
+ENUMERATION 1746 1 orts-locate-building
+SOAR_ID 1747
+ENUMERATION 1748 3 orts-build-building orts-locate-building orts-train-units
+SOAR_ID 1749
+SOAR_ID 1750
+SOAR_ID 1751
+SOAR_ID 1752
+SOAR_ID 1753
+SOAR_ID 1754
+ENUMERATION 1755 11 build enable-owner-grouping grouping-radius locate-building look-feature mine move move-feature stick train view-width
+SOAR_ID 1756
+SOAR_ID 1757
+ENUMERATION 1758 1 orts-build
+SOAR_ID 1759
+SOAR_ID 1760
+SOAR_ID 1761
+SOAR_ID 1762
+ENUMERATION 1763 1 orts-stick
+SOAR_ID 1764
+SOAR_ID 1765
+SOAR_ID 1766
+SOAR_ID 1767
+SOAR_ID 1768
+ENUMERATION 1769 1 orts-train
+SOAR_ID 1770
+SOAR_ID 1771
+SOAR_ID 1772
+ENUMERATION 1773 1 mark-finished
+SOAR_ID 1774
+SOAR_ID 1775
+SOAR_ID 1776
+SOAR_ID 1777
+SOAR_ID 1778
+SOAR_ID 1779
+SOAR_ID 1780
+SOAR_ID 1781
+SOAR_ID 1782
+SOAR_ID 1783
+SOAR_ID 1784
+SOAR_ID 1785
+SOAR_ID 1786
+SOAR_ID 1787
+SOAR_ID 1788
+SOAR_ID 1789
+SOAR_ID 1790
+SOAR_ID 1791
+SOAR_ID 1792
+SOAR_ID 1793
+SOAR_ID 1794
+SOAR_ID 1795
+SOAR_ID 1796
+SOAR_ID 1797
+SOAR_ID 1798
+SOAR_ID 1799
+SOAR_ID 1800
+SOAR_ID 1801
+SOAR_ID 1802
+SOAR_ID 1803
+SOAR_ID 1804
+SOAR_ID 1805
+SOAR_ID 1806
+SOAR_ID 1807
+SOAR_ID 1808
+SOAR_ID 1809
+SOAR_ID 1810
+SOAR_ID 1811
+SOAR_ID 1812
+SOAR_ID 1813
+SOAR_ID 1814
+SOAR_ID 1815
+SOAR_ID 1816
+SOAR_ID 1817
+SOAR_ID 1818
+SOAR_ID 1819
+SOAR_ID 1820
+SOAR_ID 1821
+SOAR_ID 1822
+SOAR_ID 1823
+SOAR_ID 1824
+SOAR_ID 1825
+SOAR_ID 1826
+SOAR_ID 1827
+SOAR_ID 1828
+SOAR_ID 1829
+SOAR_ID 1830
+SOAR_ID 1831
+SOAR_ID 1832
+SOAR_ID 1833
+SOAR_ID 1834
+SOAR_ID 1835
+SOAR_ID 1836
+SOAR_ID 1837
+SOAR_ID 1838
+SOAR_ID 1839
+SOAR_ID 1840
+SOAR_ID 1841
+SOAR_ID 1842
+INTEGER_RANGE 1843 -2147483648 2147483647
+INTEGER_RANGE 1844 -2147483648 2147483647
+SOAR_ID 1845
+ENUMERATION 1846 1 bb*no-location-found
+ENUMERATION 1847 1 complete
+SOAR_ID 1848
+ENUMERATION 1849 3 build locate-building train
+INTEGER_RANGE 1850 -2147483648 2147483647
+SOAR_ID 1851
+ENUMERATION 1852 1 bb*done
+SOAR_ID 1853
+SOAR_ID 1854
+SOAR_ID 1855
+SOAR_ID 1856
+SOAR_ID 1857
+SOAR_ID 1858
+ENUMERATION 1859 1 init*build-units
+SOAR_ID 1860
+SOAR_ID 1861
+SOAR_ID 1862
+SOAR_ID 1863
+SOAR_ID 1864
+SOAR_ID 1865
+ENUMERATION 1866 1 bu*remember-id
+SOAR_ID 1867
+SOAR_ID 1868
+SOAR_ID 1869
+SOAR_ID 1870
+SOAR_ID 1871
+SOAR_ID 1872
+SOAR_ID 1873
+SOAR_ID 1874
+SOAR_ID 1875
+SOAR_ID 1876
+SOAR_ID 1877
+SOAR_ID 1878
+SOAR_ID 1879
+SOAR_ID 1880
+SOAR_ID 1881
+SOAR_ID 1882
+SOAR_ID 1883
+SOAR_ID 1884
+SOAR_ID 1885
+SOAR_ID 1886
+SOAR_ID 1887
+SOAR_ID 1888
+SOAR_ID 1889
+SOAR_ID 1890
+SOAR_ID 1891
+SOAR_ID 1892
+SOAR_ID 1893
+SOAR_ID 1894
+SOAR_ID 1895
+SOAR_ID 1896
+SOAR_ID 1897
+SOAR_ID 1898
+SOAR_ID 1899
+SOAR_ID 1900
+SOAR_ID 1901
+SOAR_ID 1902
+SOAR_ID 1903
+SOAR_ID 1904
+SOAR_ID 1905
+SOAR_ID 1906
+SOAR_ID 1907
+SOAR_ID 1908
+SOAR_ID 1909
+SOAR_ID 1910
+SOAR_ID 1911
+SOAR_ID 1912
+SOAR_ID 1913
+SOAR_ID 1914
+SOAR_ID 1915
+SOAR_ID 1916
+SOAR_ID 1917
+SOAR_ID 1918
+SOAR_ID 1919
+SOAR_ID 1920
+SOAR_ID 1921
+SOAR_ID 1922
+SOAR_ID 1923
+SOAR_ID 1924
+SOAR_ID 1925
+SOAR_ID 1926
+SOAR_ID 1927
+SOAR_ID 1928
+SOAR_ID 1929
+SOAR_ID 1930
+SOAR_ID 1931
+SOAR_ID 1932
+SOAR_ID 1933
+SOAR_ID 1934
+SOAR_ID 1935
+SOAR_ID 1936
+ENUMERATION 1937 1 bu*clear-building-id
+ENUMERATION 1938 1 true
+SOAR_ID 1939
+ENUMERATION 1940 1 build-units*mark-started
+SOAR_ID 1941
+ENUMERATION 1942 1 bu*retry-failed
+SOAR_ID 1943
+ENUMERATION 1944 1 bu*done
+SOAR_ID 1945
+ENUMERATION 1946 1 controlCenter
+ENUMERATION 1947 1 controlCenter
+ENUMERATION 1948 1 controlCenter
+ENUMERATION 1949 1 controlCenter
+ENUMERATION 1950 1 controlCenter
+ENUMERATION 1951 1 controlCenter
+ENUMERATION 1952 1 controlCenter
+ENUMERATION 1953 1 controlCenter
+ENUMERATION 1954 1 controlCenter
+ENUMERATION 1955 1 controlCenter
+ENUMERATION 1956 1 controlCenter
+ENUMERATION 1957 1 controlCenter
+ENUMERATION 1958 1 controlCenter
+SOAR_ID 1959
+SOAR_ID 1960
+SOAR_ID 1961
+ENUMERATION 1962 1 task-switch
+SOAR_ID 1963
+SOAR_ID 1964
+SOAR_ID 1965
+SOAR_ID 1966
+SOAR_ID 1967
+SOAR_ID 1968
+SOAR_ID 1969
+SOAR_ID 1970
+SOAR_ID 1971
+SOAR_ID 1972
+SOAR_ID 1973
+SOAR_ID 1974
+SOAR_ID 1975
+SOAR_ID 1976
+SOAR_ID 1977
+SOAR_ID 1978
+SOAR_ID 1979
+SOAR_ID 1980
+SOAR_ID 1981
+SOAR_ID 1982
+SOAR_ID 1983
+SOAR_ID 1984
+SOAR_ID 1985
+SOAR_ID 1986
+SOAR_ID 1987
+SOAR_ID 1988
+SOAR_ID 1989
+SOAR_ID 1990
+SOAR_ID 1991
+SOAR_ID 1992
+SOAR_ID 1993
+SOAR_ID 1994
+SOAR_ID 1995
+SOAR_ID 1996
+SOAR_ID 1997
+SOAR_ID 1998
+SOAR_ID 1999
+SOAR_ID 2000
+SOAR_ID 2001
+SOAR_ID 2002
+SOAR_ID 2003
+SOAR_ID 2004
+SOAR_ID 2005
+SOAR_ID 2006
+SOAR_ID 2007
+SOAR_ID 2008
+SOAR_ID 2009
+SOAR_ID 2010
+SOAR_ID 2011
+SOAR_ID 2012
+SOAR_ID 2013
+SOAR_ID 2014
+SOAR_ID 2015
+SOAR_ID 2016
+SOAR_ID 2017
+SOAR_ID 2018
+SOAR_ID 2019
+SOAR_ID 2020
+SOAR_ID 2021
+SOAR_ID 2022
+SOAR_ID 2023
+SOAR_ID 2024
+SOAR_ID 2025
+SOAR_ID 2026
+SOAR_ID 2027
+SOAR_ID 2028
+SOAR_ID 2029
+SOAR_ID 2030
+SOAR_ID 2031
+SOAR_ID 2032
+SOAR_ID 2033
+SOAR_ID 2034
+SOAR_ID 2035
+SOAR_ID 2036
+SOAR_ID 2037
+SOAR_ID 2038
+SOAR_ID 2039
+SOAR_ID 2040
+SOAR_ID 2041
+INTEGER_RANGE 2042 -2147483648 2147483647
+SOAR_ID 2043
+SOAR_ID 2044
+SOAR_ID 2045
+SOAR_ID 2046
+ENUMERATION 2047 1 true
+2047
 0 attribute 80
 0 build-barracks 138
 0 build-building 721
 0 choices 81
 0 comment 213
-0 execution-buffer 1068
+0 execution-buffer 1065
 0 find-location-near 171
 0 finished-commands 77
 0 group-memory 636
@@ -1323,18 +2114,33 @@ SOAR_ID 1256
 0 operator 826
 0 operator 941
 0 operator 945
-0 operator 1011
-0 operator 1072
-0 operator 1190
-0 operator 1249
+0 operator 1008
+0 operator 1069
+0 operator 1187
+0 operator 1246
+0 operator 1248
 0 operator 1251
-0 operator 1254
+0 operator 1258
+0 operator 1559
+0 operator 1757
+0 operator 1762
+0 operator 1768
+0 operator 1772
+0 operator 1845
+0 operator 1851
+0 operator 1858
+0 operator 1865
+0 operator 1936
+0 operator 1939
+0 operator 1941
+0 operator 1943
+0 operator 1961
 0 opportunity-task-buffer 635
 0 planning 244
 0 running-task 134
 0 superstate 5
 0 superstate 78
-0 task-id 1074
+0 task-id 1071
 0 top-state 175
 0 top-state 174
 0 type 4
@@ -1344,488 +2150,694 @@ SOAR_ID 1256
 2 feature-maps 243
 2 groups 137
 2 map 10
-2 query-results 1189
+2 query-results 1186
 2 view-frame 317
-3 bb-data 1098
+3 bb-data 1095
+3 building 1284
 3 building-dim 790
+3 building-id 1904
+3 building-name 1647
 3 building-type 686
 3 building-type 740
 3 command 132
 3 command-instance 114
 3 command-name 99
 3 dep 400
-3 distance 1034
+3 distance 1031
 3 feature 573
-3 finished-command 1213
+3 finished-command 1210
 3 group 36
 3 id 204
 3 name 7
+3 number 1404
+3 number 1586
+3 old-task 2001
 3 search-type 844
 3 sector 617
 3 start-dep 483
+3 status 1808
 3 task 315
 3 task-id 975
+3 unit-type 1344
+3 unit-type 1708
 3 width 167
 3 worker 71
 3 worker-id 904
 3 x 46
 3 y 56
-8 bb-data 1091
+8 bb-data 1088
+8 building 1276
 8 building-dim 793
+8 building-id 1929
+8 building-name 1639
 8 building-type 689
 8 building-type 743
 8 command 119
 8 command-instance 102
 8 command-name 87
 8 dep 366
-8 distance 1027
+8 distance 1024
 8 feature 537
-8 finished-command 1206
+8 finished-command 1203
 8 group 31
 8 id 186
 8 name 9
+8 number 1396
+8 number 1578
+8 old-task 2029
 8 search-type 847
 8 sector 581
 8 start-dep 448
+8 status 1832
 8 task 282
 8 task-id 968
+8 unit-type 1336
+8 unit-type 1700
 8 width 151
 8 worker 65
 8 worker-id 908
 8 x 41
 8 y 51
-11 bb-data 1114
+11 bb-data 1111
+11 building 1301
 11 building-dim 795
+11 building-id 1899
+11 building-name 1664
 11 building-type 691
 11 building-type 745
 11 command 129
 11 command-instance 111
 11 command-name 96
 11 dep 398
-11 distance 1049
+11 distance 1046
 11 feature 570
-11 finished-command 1229
+11 finished-command 1226
 11 group 34
 11 id 201
 11 name 12
+11 number 1421
+11 number 1603
+11 old-task 1996
 11 search-type 849
 11 sector 614
 11 start-dep 480
+11 status 1803
 11 task 313
 11 task-id 990
+11 unit-type 1361
+11 unit-type 1725
 11 width 164
 11 worker 69
 11 worker-id 910
 11 x 44
 11 y 54
-13 bb-data 1087
+13 bb-data 1084
+13 building 1272
 13 building-dim 797
+13 building-id 1906
+13 building-name 1635
 13 building-type 693
 13 building-type 747
 13 command 120
 13 command-instance 103
 13 command-name 88
 13 dep 365
-13 distance 1023
+13 distance 1020
 13 feature 536
-13 finished-command 1202
+13 finished-command 1199
 13 group 30
 13 id 187
 13 name 14
+13 number 1392
+13 number 1574
+13 old-task 2003
 13 search-type 851
 13 sector 580
 13 start-dep 447
+13 status 1810
 13 task 281
 13 task-id 964
+13 unit-type 1332
+13 unit-type 1696
 13 width 152
 13 worker 64
 13 worker-id 912
 13 x 40
 13 y 50
-15 bb-data 1080
+15 bb-data 1077
+15 building 1263
 15 building-dim 817
+15 building-id 1902
+15 building-name 1626
 15 building-type 713
 15 building-type 767
 15 command 121
 15 command-instance 104
 15 command-name 89
 15 dep 369
-15 distance 1016
+15 distance 1013
 15 feature 540
-15 finished-command 1195
+15 finished-command 1192
 15 group 33
 15 id 188
 15 name 16
+15 number 1383
+15 number 1565
+15 old-task 1999
 15 search-type 872
 15 sector 584
 15 start-dep 451
+15 status 1806
 15 task 285
 15 task-id 957
+15 unit-type 1323
+15 unit-type 1687
 15 width 153
 15 worker 67
 15 worker-id 933
 15 x 43
 15 y 53
-17 bb-data 1088
+17 bb-data 1085
+17 building 1273
 17 building-dim 819
+17 building-id 1897
+17 building-name 1636
 17 building-type 715
 17 building-type 769
 17 command 127
 17 command-instance 109
 17 command-name 94
 17 dep 394
-17 distance 1024
+17 distance 1021
 17 feature 566
-17 finished-command 1203
+17 finished-command 1200
 17 group 29
 17 id 197
 17 name 18
+17 number 1393
+17 number 1575
+17 old-task 1994
 17 search-type 874
 17 sector 610
 17 start-dep 476
+17 status 1801
 17 task 310
 17 task-id 965
+17 unit-type 1333
+17 unit-type 1697
 17 width 161
 17 worker 63
 17 worker-id 935
 17 x 39
 17 y 49
-19 bb-data 1117
+19 bb-data 1114
+19 building 1304
 19 building-dim 810
+19 building-id 1888
+19 building-name 1667
 19 building-type 706
 19 building-type 760
 19 command 131
 19 command-instance 113
 19 command-name 98
 19 dep 399
-19 distance 1052
+19 distance 1049
 19 feature 571
-19 finished-command 1232
+19 finished-command 1229
 19 group 35
 19 id 203
 19 name 20
+19 number 1424
+19 number 1606
+19 old-task 1985
 19 search-type 865
 19 sector 615
 19 start-dep 481
+19 status 1793
 19 task 314
 19 task-id 993
+19 unit-type 1364
+19 unit-type 1728
 19 width 166
 19 worker 70
 19 worker-id 926
 19 x 45
 19 y 55
-21 bb-data 1089
+21 bb-data 1086
+21 building 1274
 21 building-dim 784
+21 building-id 1900
+21 building-name 1637
 21 building-type 681
 21 building-type 734
 21 command 125
 21 command-instance 107
 21 command-name 92
 21 dep 391
-21 distance 1025
+21 distance 1022
 21 feature 563
-21 finished-command 1204
+21 finished-command 1201
 21 group 38
 21 id 194
 21 name 22
+21 number 1394
+21 number 1576
+21 old-task 1997
 21 search-type 838
 21 sector 607
 21 start-dep 473
+21 status 1804
 21 task 307
 21 task-id 966
+21 unit-type 1334
+21 unit-type 1698
 21 width 159
 21 worker 74
 21 worker-id 898
 21 x 48
 21 y 58
-23 bb-data 1111
+23 bb-data 1108
+23 building 1298
 23 building-dim 791
+23 building-id 1909
+23 building-name 1661
 23 building-type 687
 23 building-type 741
 23 command 122
 23 command-instance 105
 23 command-name 90
 23 dep 386
-23 distance 1046
+23 distance 1043
 23 feature 558
-23 finished-command 1226
+23 finished-command 1223
 23 group 32
 23 id 189
 23 name 24
+23 number 1418
+23 number 1600
+23 old-task 2006
 23 search-type 845
 23 sector 602
 23 start-dep 468
+23 status 1813
 23 task 302
 23 task-id 987
+23 unit-type 1358
+23 unit-type 1722
 23 width 154
 23 worker 66
 23 worker-id 906
 23 x 42
 23 y 52
-26 bb-data 1109
+26 bb-data 1106
+26 building 1295
 26 building-dim 809
+26 building-id 1926
+26 building-name 1658
 26 building-type 705
 26 building-type 759
 26 command 133
 26 command-instance 115
 26 command-name 100
 26 dep 401
-26 distance 1044
+26 distance 1041
 26 feature 574
-26 finished-command 1224
+26 finished-command 1221
 26 group 37
 26 id 205
 26 name 25
+26 number 1415
+26 number 1597
+26 old-task 2025
 26 search-type 863
 26 sector 618
 26 start-dep 484
+26 status 1829
 26 task 316
 26 task-id 985
+26 unit-type 1355
+26 unit-type 1719
 26 width 168
 26 worker 73
 26 worker-id 924
 26 x 47
 26 y 57
-27 bb-data 1122
+27 bb-data 1119
+27 building 1309
 27 building-dim 802
+27 building-id 1913
+27 building-name 1672
 27 building-type 698
 27 building-type 752
 27 command 130
 27 command-instance 112
 27 command-name 97
 27 dep 397
-27 distance 1056
+27 distance 1053
 27 feature 569
-27 finished-command 1237
+27 finished-command 1234
 27 id 202
 27 name 28
+27 number 1429
+27 number 1611
+27 old-task 2010
 27 search-type 856
 27 sector 613
 27 start-dep 479
+27 status 1817
 27 task 312
 27 task-id 997
+27 unit-type 1369
+27 unit-type 1733
 27 width 165
 27 worker 68
 27 worker-id 917
-59 bb-data 1131
+59 bb-data 1128
+59 building 1318
 59 building-dim 781
+59 building-id 1884
+59 building-name 1681
 59 building-type 678
 59 building-type 731
 59 command 124
 59 command-instance 106
 59 command-name 91
 59 dep 390
-59 distance 1065
+59 distance 1062
 59 feature 562
-59 finished-command 1246
+59 finished-command 1243
 59 id 193
 59 name 60
+59 number 1438
+59 number 1620
+59 old-task 1981
 59 search-type 835
 59 sector 606
 59 start-dep 472
+59 status 1789
 59 task 306
 59 task-id 1006
+59 unit-type 1378
+59 unit-type 1742
 59 width 158
 59 worker 72
 59 worker-id 895
-61 bb-data 1120
+61 bb-data 1117
+61 building 1307
 61 building-dim 800
+61 building-id 1908
+61 building-name 1670
 61 building-type 696
 61 building-type 750
 61 command 118
 61 command-instance 101
 61 command-name 86
 61 dep 362
-61 distance 1054
+61 distance 1051
 61 feature 533
-61 finished-command 1235
+61 finished-command 1232
 61 id 184
 61 name 62
+61 number 1427
+61 number 1609
+61 old-task 2005
 61 search-type 854
 61 sector 577
 61 start-dep 444
+61 status 1812
 61 task 278
 61 task-id 995
+61 unit-type 1367
+61 unit-type 1731
 61 width 149
 61 worker-id 915
-75 bb-data 1100
+75 bb-data 1097
+75 building 1286
 75 building-dim 779
+75 building-id 1928
+75 building-name 1649
 75 building-type 676
 75 building-type 729
 75 command 128
 75 command-instance 110
 75 command-name 95
 75 dep 376
-75 distance 1036
+75 distance 1033
 75 feature 547
-75 finished-command 1215
+75 finished-command 1212
 75 id 199
 75 name 76
+75 number 1406
+75 number 1588
+75 old-task 2028
 75 search-type 833
 75 sector 591
 75 start-dep 458
+75 status 1831
 75 task 292
 75 task-id 977
+75 unit-type 1346
+75 unit-type 1710
 75 width 162
 75 worker-id 893
 78 io 79
 78 operator 880
-82 bb-data 1124
+78 task-id 1959
+82 bb-data 1121
+82 building 1311
 82 building-dim 789
+82 building-id 1881
+82 building-name 1674
 82 building-type 685
 82 building-type 739
 82 command 126
 82 command-instance 108
 82 command-name 93
 82 dep 373
-82 distance 1058
+82 distance 1055
 82 feature 544
-82 finished-command 1239
+82 finished-command 1236
 82 id 195
 82 name 83
+82 number 1431
+82 number 1613
+82 old-task 1978
 82 search-type 843
 82 sector 588
 82 start-dep 455
+82 status 1787
 82 task 289
 82 task-id 999
+82 unit-type 1371
+82 unit-type 1735
 82 width 160
 82 worker-id 903
-84 bb-data 1119
+84 bb-data 1116
+84 building 1306
 84 building-dim 814
+84 building-id 1880
+84 building-name 1669
 84 building-type 710
 84 building-type 764
 84 command 123
 84 dep 387
-84 distance 1053
+84 distance 1050
 84 feature 559
-84 finished-command 1234
+84 finished-command 1231
 84 id 190
 84 name 85
+84 number 1426
+84 number 1608
+84 old-task 1977
 84 search-type 869
 84 sector 603
 84 start-dep 469
+84 status 1786
 84 task 303
 84 task-id 994
+84 unit-type 1366
+84 unit-type 1730
 84 width 155
 84 worker-id 930
-116 bb-data 1126
+116 bb-data 1123
+116 building 1313
 116 building-dim 807
+116 building-id 1879
+116 building-name 1676
 116 building-type 703
 116 building-type 757
 116 dep 388
-116 distance 1060
+116 distance 1057
 116 feature 560
-116 finished-command 1241
+116 finished-command 1238
 116 id 191
 116 name 117
+116 number 1433
+116 number 1615
+116 old-task 1976
 116 search-type 861
 116 sector 604
 116 start-dep 470
+116 status 1785
 116 task 304
 116 task-id 1001
+116 unit-type 1373
+116 unit-type 1737
 116 width 156
 116 worker-id 922
-134 id 1069
+134 id 1066
+134 id 1744
 134 name 210
-135 bb-data 1129
+135 bb-data 1126
+135 building 1316
 135 building-dim 799
+135 building-id 1934
+135 building-name 1679
 135 building-type 695
 135 building-type 749
 135 dep 370
-135 distance 1063
+135 distance 1060
 135 feature 541
-135 finished-command 1244
+135 finished-command 1241
 135 id 192
 135 name 136
+135 number 1436
+135 number 1618
+135 old-task 2034
 135 search-type 853
 135 sector 585
 135 start-dep 452
+135 status 1837
 135 task 286
 135 task-id 1004
+135 unit-type 1376
+135 unit-type 1740
 135 width 157
 135 worker-id 914
 137 group 222
 138 cCenter 141
 138 location 144
-139 bb-data 1095
+139 bb-data 1092
+139 building 1280
 139 building-dim 783
+139 building-id 1911
+139 building-name 1643
 139 building-type 680
 139 building-type 733
 139 dep 396
-139 distance 1031
+139 distance 1028
 139 feature 568
-139 finished-command 1210
+139 finished-command 1207
 139 id 200
 139 name 140
+139 number 1400
+139 number 1582
+139 old-task 2008
 139 search-type 837
 139 sector 612
 139 start-dep 478
+139 status 1815
 139 task 311
 139 task-id 972
+139 unit-type 1340
+139 unit-type 1704
 139 width 163
 139 worker-id 897
 141 x 145
 141 y 146
-142 bb-data 1125
+142 bb-data 1122
+142 building 1312
 142 building-dim 782
+142 building-id 1873
+142 building-name 1675
 142 building-type 679
 142 building-type 732
 142 dep 367
-142 distance 1059
+142 distance 1056
 142 feature 538
-142 finished-command 1240
+142 finished-command 1237
 142 id 185
 142 name 143
+142 number 1432
+142 number 1614
+142 old-task 1969
 142 search-type 836
 142 sector 582
 142 start-dep 449
+142 status 1779
 142 task 283
 142 task-id 1000
+142 unit-type 1372
+142 unit-type 1736
 142 width 150
 142 worker-id 896
 144 x 169
 144 y 170
-147 bb-data 1128
+147 bb-data 1125
+147 building 1315
 147 building-dim 794
+147 building-id 1871
+147 building-name 1678
 147 building-type 690
 147 building-type 744
 147 dep 392
-147 distance 1062
+147 distance 1059
 147 feature 564
-147 finished-command 1243
+147 finished-command 1240
 147 id 196
 147 name 148
+147 number 1435
+147 number 1617
+147 old-task 1967
 147 search-type 848
 147 sector 608
 147 start-dep 474
+147 status 1777
 147 task 308
 147 task-id 1003
+147 unit-type 1375
+147 unit-type 1739
 147 worker-id 909
-172 bb-data 1084
+172 bb-data 1081
+172 building 1268
 172 building-dim 813
+172 building-id 1885
+172 building-name 1631
 172 building-type 709
 172 building-type 763
 172 dep 377
-172 distance 1020
+172 distance 1017
 172 feature 548
-172 finished-command 1199
+172 finished-command 1196
 172 id 198
 172 name 173
+172 number 1388
+172 number 1570
+172 old-task 1982
 172 search-type 868
 172 sector 592
 172 start-dep 459
+172 status 1790
 172 task 293
 172 task-id 961
+172 unit-type 1328
+172 unit-type 1692
 172 worker-id 929
 175 build-barracks 176
 175 build-building 824
+175 build-units 1857
 175 find-free-worker 181
 175 find-location-near 238
 175 finished-command 720
-175 finished-command 1008
+175 finished-command 1746
+175 finished-command 1747
 175 finished-commands 232
 175 grouping-level 218
+175 io 1770
+175 planning 1853
 175 reserved-worker 223
+175 running-task 1960
+175 sent-command 1771
 175 visual-search 887
 175 visual-search 947
 176 cCenter 642
@@ -1834,101 +2846,156 @@ SOAR_ID 1256
 176 worker-id 207
 177 x 208
 177 y 178
-179 bb-data 1110
+179 bb-data 1107
+179 building 1296
 179 building-dim 805
+179 building-id 1895
+179 building-name 1659
 179 building-type 701
 179 building-type 755
 179 dep 382
-179 distance 1045
+179 distance 1042
 179 feature 554
-179 finished-command 1225
+179 finished-command 1222
 179 id 206
 179 name 180
+179 number 1416
+179 number 1598
+179 old-task 1992
 179 search-type 859
 179 sector 598
 179 start-dep 464
+179 status 1799
 179 task 298
 179 task-id 986
+179 unit-type 1356
+179 unit-type 1720
 179 worker-id 920
 181 done 233
 181 worker 221
-182 bb-data 1082
+182 bb-data 1079
+182 building 1266
 182 building-dim 815
+182 building-id 1877
+182 building-name 1629
 182 building-type 711
 182 building-type 765
 182 dep 385
-182 distance 1018
+182 distance 1015
 182 feature 557
-182 finished-command 1197
+182 finished-command 1194
 182 name 183
+182 number 1386
+182 number 1568
+182 old-task 1974
 182 search-type 870
 182 sector 601
 182 start-dep 467
+182 status 1783
 182 task 301
 182 task-id 959
+182 unit-type 1326
+182 unit-type 1690
 182 worker-id 931
-211 bb-data 1096
+211 bb-data 1093
+211 building 1281
 211 building-dim 811
+211 building-id 1922
+211 building-name 1644
 211 building-type 707
 211 building-type 761
 211 dep 381
-211 distance 1032
+211 distance 1029
 211 feature 553
-211 finished-command 1211
+211 finished-command 1208
 211 name 212
+211 number 1401
+211 number 1583
+211 old-task 2021
 211 search-type 866
 211 sector 597
 211 start-dep 463
+211 status 1825
 211 task 297
 211 task-id 973
+211 unit-type 1341
+211 unit-type 1705
 211 worker-id 927
-214 bb-data 1090
+214 bb-data 1087
+214 building 1275
 214 building-dim 818
+214 building-id 1932
+214 building-name 1638
 214 building-type 714
 214 building-type 768
 214 dep 364
-214 distance 1026
+214 distance 1023
 214 feature 535
-214 finished-command 1205
+214 finished-command 1202
 214 name 215
+214 number 1395
+214 number 1577
+214 old-task 2032
 214 search-type 873
 214 sector 579
 214 start-dep 446
+214 status 1835
 214 task 280
 214 task-id 967
+214 unit-type 1335
+214 unit-type 1699
 214 worker-id 934
-216 bb-data 1101
+216 bb-data 1098
+216 building 1287
 216 building-dim 820
+216 building-id 1889
+216 building-name 1650
 216 building-type 716
 216 building-type 770
 216 dep 380
-216 distance 1037
+216 distance 1034
 216 feature 552
-216 finished-command 1216
+216 finished-command 1213
 216 name 217
+216 number 1407
+216 number 1589
+216 old-task 1986
 216 search-type 875
 216 sector 596
 216 start-dep 462
+216 status 1794
 216 task 296
 216 task-id 978
+216 unit-type 1347
+216 unit-type 1711
 216 worker-id 936
-219 bb-data 1115
+219 bb-data 1112
+219 building 1302
 219 building-dim 816
+219 building-id 1868
+219 building-name 1665
 219 building-type 712
 219 building-type 766
 219 dep 372
-219 distance 1050
+219 distance 1047
 219 feature 543
-219 finished-command 1230
+219 finished-command 1227
 219 name 220
+219 number 1422
+219 number 1604
+219 old-task 1964
 219 search-type 871
 219 sector 587
 219 start-dep 454
+219 status 1775
 219 task 288
 219 task-id 991
+219 unit-type 1362
+219 unit-type 1726
 219 worker-id 932
-222 command_failure 1253
+222 command_failure 1250
 222 command_running 227
+222 command_success 1850
 222 id 225
 222 num_members 228
 222 owner 226
@@ -1936,81 +3003,126 @@ SOAR_ID 1256
 222 type 224
 222 x-pos 643
 222 y-pos 644
-230 bb-data 1116
+230 bb-data 1113
+230 building 1303
 230 building-dim 803
+230 building-id 1931
+230 building-name 1666
 230 building-type 699
 230 building-type 753
 230 dep 375
-230 distance 1051
+230 distance 1048
 230 feature 546
-230 finished-command 1231
+230 finished-command 1228
 230 name 231
+230 number 1423
+230 number 1605
+230 old-task 2031
 230 search-type 857
 230 sector 590
 230 start-dep 457
+230 status 1834
 230 task 291
 230 task-id 992
+230 unit-type 1363
+230 unit-type 1727
 230 worker-id 918
-234 bb-data 1086
+234 bb-data 1083
+234 building 1271
 234 building-dim 821
+234 building-id 1935
+234 building-name 1634
 234 building-type 717
 234 building-type 771
 234 dep 393
-234 distance 1022
+234 distance 1019
 234 feature 565
-234 finished-command 1201
+234 finished-command 1198
 234 name 235
+234 number 1391
+234 number 1573
+234 old-task 2035
 234 search-type 876
 234 sector 609
 234 start-dep 475
+234 status 1838
 234 task 309
 234 task-id 963
+234 unit-type 1331
+234 unit-type 1695
 234 worker-id 937
-236 bb-data 1085
+236 bb-data 1082
+236 building 1270
 236 building-dim 785
+236 building-id 1905
+236 building-name 1633
 236 building-type 682
 236 building-type 735
 236 dep 368
-236 distance 1021
+236 distance 1018
 236 feature 539
-236 finished-command 1200
+236 finished-command 1197
 236 name 237
+236 number 1390
+236 number 1572
+236 old-task 2002
 236 search-type 839
 236 sector 583
 236 start-dep 450
+236 status 1809
 236 task 284
 236 task-id 962
+236 unit-type 1330
+236 unit-type 1694
 236 worker-id 899
 238 result 647
-239 bb-data 1099
+239 bb-data 1096
+239 building 1285
 239 building-dim 808
+239 building-id 1910
+239 building-name 1648
 239 building-type 704
 239 building-type 758
 239 dep 363
-239 distance 1035
+239 distance 1032
 239 feature 534
-239 finished-command 1214
+239 finished-command 1211
 239 name 240
+239 number 1405
+239 number 1587
+239 old-task 2007
 239 search-type 862
 239 sector 578
 239 start-dep 445
+239 status 1814
 239 task 279
 239 task-id 976
+239 unit-type 1345
+239 unit-type 1709
 239 worker-id 923
-241 bb-data 1077
+241 bb-data 1074
+241 building 1260
 241 building-dim 787
+241 building-id 1933
+241 building-name 1623
 241 building-type 684
 241 building-type 737
 241 dep 361
-241 distance 1013
+241 distance 1010
 241 feature 532
-241 finished-command 1192
+241 finished-command 1189
 241 name 242
+241 number 1380
+241 number 1562
+241 old-task 2033
 241 search-type 841
 241 sector 576
 241 start-dep 443
+241 status 1836
 241 task 277
 241 task-id 954
+241 unit-type 1320
+241 unit-type 1684
 241 worker-id 901
 243 friendly 650
 243 friendly_workers 951
@@ -2018,20 +3130,29 @@ SOAR_ID 1256
 244 completed 249
 244 execution-buffer 248
 244 retrieval-buffer 247
-245 bb-data 1121
+245 bb-data 1118
+245 building 1308
 245 building-dim 804
+245 building-id 1917
+245 building-name 1671
 245 building-type 700
 245 building-type 754
 245 dep 383
-245 distance 1055
+245 distance 1052
 245 feature 555
-245 finished-command 1236
+245 finished-command 1233
 245 name 246
+245 number 1428
+245 number 1610
+245 old-task 2014
 245 search-type 858
 245 sector 599
 245 start-dep 465
+245 status 1821
 245 task 299
 245 task-id 996
+245 unit-type 1368
+245 unit-type 1732
 245 worker-id 919
 247 task 250
 248 task 256
@@ -2041,117 +3162,181 @@ SOAR_ID 1256
 250 name 253
 250 params 266
 250 start-dep 260
-251 bb-data 1105
+251 bb-data 1102
+251 building 1291
 251 building-dim 780
+251 building-id 1875
+251 building-name 1654
 251 building-type 677
 251 building-type 730
 251 dep 374
-251 distance 1041
+251 distance 1038
 251 feature 545
-251 finished-command 1220
+251 finished-command 1217
 251 name 252
+251 number 1411
+251 number 1593
+251 old-task 1972
 251 search-type 834
 251 sector 589
 251 start-dep 456
+251 status 1781
 251 task 290
 251 task-id 982
+251 unit-type 1351
+251 unit-type 1715
 251 worker-id 894
 256 completed 274
+256 id 1840
 256 name 262
 256 started 442
 257 completion-frame 358
 257 name 263
-258 bb-data 1112
+258 bb-data 1109
+258 building 1299
 258 building-dim 796
+258 building-id 1893
+258 building-name 1662
 258 building-type 692
 258 building-type 746
 258 dep 371
-258 distance 1047
+258 distance 1044
 258 feature 542
-258 finished-command 1227
+258 finished-command 1224
 258 name 259
+258 number 1419
+258 number 1601
+258 old-task 1990
 258 search-type 850
 258 sector 586
 258 start-dep 453
+258 status 1797
 258 task 287
 258 task-id 988
+258 unit-type 1359
+258 unit-type 1723
 258 worker-id 911
-264 bb-data 1093
+264 bb-data 1090
+264 building 1278
 264 building-dim 792
+264 building-id 1914
+264 building-name 1641
 264 building-type 688
 264 building-type 742
 264 dep 389
-264 distance 1029
+264 distance 1026
 264 feature 561
-264 finished-command 1208
+264 finished-command 1205
 264 name 265
+264 number 1398
+264 number 1580
+264 old-task 2011
 264 search-type 846
 264 sector 605
 264 start-dep 471
+264 status 1818
 264 task 305
 264 task-id 970
+264 unit-type 1338
+264 unit-type 1702
 264 worker-id 907
 266 num 269
 266 unit 651
 266 workers 652
-267 bb-data 1097
+267 bb-data 1094
+267 building 1283
 267 building-dim 822
+267 building-id 1894
+267 building-name 1646
 267 building-type 718
 267 building-type 772
 267 dep 384
-267 distance 1033
+267 distance 1030
 267 feature 556
-267 finished-command 1212
+267 finished-command 1209
 267 name 268
+267 number 1403
+267 number 1585
+267 old-task 1991
 267 search-type 877
 267 sector 600
 267 start-dep 466
+267 status 1798
 267 task 300
 267 task-id 974
+267 unit-type 1343
+267 unit-type 1707
 267 worker-id 938
-270 bb-data 1106
+270 bb-data 1103
+270 building 1292
 270 building-dim 778
+270 building-id 1927
+270 building-name 1655
 270 building-type 675
 270 building-type 728
 270 dep 378
-270 distance 1042
+270 distance 1039
 270 feature 549
-270 finished-command 1221
+270 finished-command 1218
 270 name 271
+270 number 1412
+270 number 1594
+270 old-task 2027
 270 search-type 832
 270 sector 593
 270 start-dep 460
+270 status 1830
 270 task 294
 270 task-id 983
+270 unit-type 1352
+270 unit-type 1716
 270 worker-id 892
-272 bb-data 1103
+272 bb-data 1100
+272 building 1289
 272 building-dim 812
+272 building-id 1883
+272 building-name 1652
 272 building-type 708
 272 building-type 762
 272 dep 379
-272 distance 1039
+272 distance 1036
 272 feature 550
-272 finished-command 1218
+272 finished-command 1215
 272 name 273
+272 number 1409
+272 number 1591
+272 old-task 1980
 272 search-type 867
 272 sector 594
 272 start-dep 461
+272 status 1788
 272 task 295
 272 task-id 980
+272 unit-type 1349
+272 unit-type 1713
 272 worker-id 928
-275 bb-data 1094
+275 bb-data 1091
+275 building 1279
 275 building-dim 806
+275 building-id 1903
+275 building-name 1642
 275 building-type 702
 275 building-type 756
 275 dep 395
-275 distance 1030
+275 distance 1027
 275 feature 567
-275 finished-command 1209
+275 finished-command 1206
 275 name 276
+275 number 1399
+275 number 1581
+275 old-task 2000
 275 search-type 860
 275 sector 611
 275 start-dep 477
+275 status 1807
 275 task-id 971
+275 unit-type 1339
+275 unit-type 1703
 275 worker-id 921
 277 dep 420
 277 name 336
@@ -2273,107 +3458,181 @@ SOAR_ID 1256
 316 dep 417
 316 name 333
 316 start-dep 500
-359 bb-data 1113
+359 bb-data 1110
+359 building 1300
 359 building-dim 775
+359 building-id 1890
+359 building-name 1663
 359 building-type 672
 359 building-type 725
-359 distance 1048
+359 distance 1045
 359 feature 572
-359 finished-command 1228
+359 finished-command 1225
 359 name 360
+359 number 1420
+359 number 1602
+359 old-task 1987
 359 search-type 829
 359 sector 616
 359 start-dep 482
+359 status 1795
 359 task-id 989
+359 unit-type 1360
+359 unit-type 1724
 359 worker-id 889
-525 bb-data 1107
+525 bb-data 1104
+525 building 1293
 525 building-dim 823
+525 building-id 1891
+525 building-name 1656
 525 building-type 719
 525 building-type 773
-525 distance 1043
+525 distance 1040
 525 feature 575
-525 finished-command 1222
+525 finished-command 1219
 525 name 526
+525 number 1413
+525 number 1595
+525 old-task 1988
 525 search-type 878
 525 sector 619
+525 status 1796
 525 task-id 984
+525 unit-type 1353
+525 unit-type 1717
 525 worker-id 939
-527 bb-data 1078
+527 bb-data 1075
+527 building 1261
 527 building-dim 798
+527 building-id 1930
+527 building-name 1624
 527 building-type 694
 527 building-type 748
-527 distance 1014
+527 distance 1011
 527 feature 551
-527 finished-command 1193
+527 finished-command 1190
 527 name 528
+527 number 1381
+527 number 1563
+527 old-task 2030
 527 search-type 852
 527 sector 595
+527 status 1833
 527 task-id 955
+527 unit-type 1321
+527 unit-type 1685
 527 worker-id 913
-530 bb-data 1102
+530 bb-data 1099
+530 building 1288
 530 building-dim 776
+530 building-id 1874
+530 building-name 1651
 530 building-type 673
 530 building-type 726
-530 distance 1038
-530 finished-command 1217
+530 distance 1035
+530 finished-command 1214
 530 name 531
+530 number 1408
+530 number 1590
+530 old-task 1970
 530 search-type 830
+530 status 1780
 530 task-id 979
+530 unit-type 1348
+530 unit-type 1712
 530 worker-id 890
 620 build 639
+620 command 1753
 620 grouping-radius 628
-620 locate-building 1067
+620 locate-building 1064
 620 look-feature 621
 620 mine 638
 620 move 637
 620 move-feature 624
 620 stick 640
+620 train 1440
 620 view-width 627
 621 feature 653
 621 sector 654
-622 bb-data 1081
+622 bb-data 1078
+622 building 1264
 622 building-dim 774
+622 building-id 1923
+622 building-name 1627
 622 building-type 671
 622 building-type 724
-622 distance 1017
-622 finished-command 1196
+622 distance 1014
+622 finished-command 1193
 622 name 623
+622 number 1384
+622 number 1566
+622 old-task 2022
 622 search-type 828
+622 status 1826
 622 task-id 958
+622 unit-type 1324
+622 unit-type 1688
 622 worker-id 888
 624 feature 655
 624 sector 656
-625 bb-data 1092
+625 bb-data 1089
+625 building 1277
 625 building-dim 801
+625 building-id 1919
+625 building-name 1640
 625 building-type 697
 625 building-type 751
-625 distance 1028
-625 finished-command 1207
+625 distance 1025
+625 finished-command 1204
 625 name 626
+625 number 1397
+625 number 1579
+625 old-task 2017
 625 search-type 855
+625 status 1823
 625 task-id 969
+625 unit-type 1337
+625 unit-type 1701
 625 worker-id 916
 627 value 657
 628 value 631
-629 bb-data 1083
+629 bb-data 1080
+629 building 1267
 629 building-dim 777
+629 building-id 1924
+629 building-name 1630
 629 building-type 674
 629 building-type 727
-629 distance 1019
-629 finished-command 1198
+629 distance 1016
+629 finished-command 1195
 629 name 630
+629 number 1387
+629 number 1569
+629 old-task 2023
 629 search-type 831
+629 status 1827
 629 task-id 960
+629 unit-type 1327
+629 unit-type 1691
 629 worker-id 891
-632 bb-data 1079
+632 bb-data 1076
+632 building 1262
 632 building-dim 786
+632 building-id 1901
+632 building-name 1625
 632 building-type 683
 632 building-type 736
-632 distance 1015
-632 finished-command 1194
+632 distance 1012
+632 finished-command 1191
 632 name 633
+632 number 1382
+632 number 1564
+632 old-task 1998
 632 search-type 840
+632 status 1805
 632 task-id 956
+632 unit-type 1322
+632 unit-type 1686
 632 worker-id 900
 636 mine 658
 636 world 659
@@ -2391,125 +3650,448 @@ SOAR_ID 1256
 642 y 646
 647 x 648
 647 y 649
-669 bb-data 1127
+669 bb-data 1124
+669 building 1314
 669 building-dim 788
+669 building-id 1867
+669 building-name 1677
 669 building-type 738
-669 distance 1061
-669 finished-command 1242
+669 distance 1058
+669 finished-command 1239
 669 name 670
+669 number 1434
+669 number 1616
+669 old-task 1963
 669 search-type 842
+669 status 1774
 669 task-id 1002
+669 unit-type 1374
+669 unit-type 1738
 669 worker-id 902
 721 started-build 952
-722 bb-data 1132
-722 distance 1066
-722 finished-command 1247
+722 bb-data 1129
+722 building 1319
+722 building-id 1918
+722 building-name 1682
+722 distance 1063
+722 finished-command 1244
 722 name 723
+722 number 1439
+722 number 1621
+722 old-task 2016
 722 search-type 864
+722 status 1822
 722 task-id 1007
+722 unit-type 1379
+722 unit-type 1743
 722 worker-id 925
-824 building-dim 1076
-824 building-started 1256
-824 building-type 1075
+824 building-dim 1073
+824 building-started 1253
+824 building-type 1072
 824 cCenter 825
 824 location 879
 824 started-build 886
-824 task-id 1071
-824 worker 1248
+824 task-id 1068
+824 worker 1245
 824 worker-id 885
 825 x 881
 825 y 882
-826 bb-data 1130
-826 distance 1064
-826 finished-command 1245
+826 bb-data 1127
+826 building 1317
+826 building-id 1876
+826 building-name 1680
+826 distance 1061
+826 finished-command 1242
 826 name 827
+826 number 1437
+826 number 1619
+826 old-task 1973
 826 search-type 944
+826 status 1782
 826 task-id 1005
+826 unit-type 1377
+826 unit-type 1741
 826 worker-id 905
 879 x 883
 879 y 884
 880 building-dim 953
+880 building-name 1855
 880 building-type 940
+880 number 1854
 880 search-type 949
-880 task-id 1070
+880 task-id 1067
+880 unit-type 1856
 880 worker-id 950
-941 bb-data 1104
-941 distance 1040
-941 finished-command 1219
+941 bb-data 1101
+941 building 1290
+941 building-id 1896
+941 building-name 1653
+941 distance 1037
+941 finished-command 1216
 941 name 942
+941 number 1410
+941 number 1592
+941 old-task 1993
 941 search-type 943
+941 status 1800
 941 task-id 981
-945 bb-data 1123
-945 distance 1057
-945 finished-command 1238
+941 unit-type 1350
+941 unit-type 1714
+945 bb-data 1120
+945 building 1310
+945 building-id 1887
+945 building-name 1673
+945 distance 1054
+945 finished-command 1235
 945 name 946
+945 number 1430
+945 number 1612
+945 old-task 1984
+945 status 1792
 945 task-id 998
+945 unit-type 1370
+945 unit-type 1734
 947 count 948
+1008 bb-data 1115
+1008 building 1305
+1008 building-id 1872
+1008 building-name 1668
+1008 finished-command 1230
 1008 name 1009
-1008 task-id 1010
-1011 bb-data 1118
-1011 finished-command 1233
-1011 name 1012
-1072 bb-data 1108
-1072 finished-command 1223
-1072 name 1073
-1077 cCenter 1179
-1078 cCenter 1144
-1079 cCenter 1180
-1080 cCenter 1135
-1081 cCenter 1152
-1082 cCenter 1142
-1083 cCenter 1166
-1084 cCenter 1177
-1085 cCenter 1186
-1086 cCenter 1136
-1087 cCenter 1188
-1088 cCenter 1184
-1089 cCenter 1169
-1090 cCenter 1134
-1091 cCenter 1181
-1092 cCenter 1187
-1093 cCenter 1165
-1094 cCenter 1141
-1095 cCenter 1155
-1096 cCenter 1150
-1097 cCenter 1138
-1098 cCenter 1143
-1099 cCenter 1183
-1100 cCenter 1139
-1101 cCenter 1167
-1102 cCenter 1162
-1103 cCenter 1149
-1104 cCenter 1159
-1105 cCenter 1158
-1106 cCenter 1163
-1107 cCenter 1175
-1108 cCenter 1151
-1109 cCenter 1173
-1110 cCenter 1170
-1111 cCenter 1171
-1112 cCenter 1137
-1113 cCenter 1174
-1114 cCenter 1153
-1115 cCenter 1182
-1116 cCenter 1157
-1117 cCenter 1176
-1118 cCenter 1178
-1119 cCenter 1140
-1120 cCenter 1160
-1121 cCenter 1154
-1122 cCenter 1164
-1123 cCenter 1147
-1124 cCenter 1185
-1125 cCenter 1148
-1126 cCenter 1156
-1127 cCenter 1161
-1128 cCenter 1145
-1129 cCenter 1146
-1130 cCenter 1133
-1131 cCenter 1172
-1132 cCenter 1168
-1190 name 1191
-1249 name 1250
+1008 number 1425
+1008 number 1607
+1008 old-task 1968
+1008 status 1778
+1008 unit-type 1365
+1008 unit-type 1729
+1064 building 1254
+1064 distance 1257
+1064 x 1255
+1064 y 1256
+1065 task 1441
+1069 bb-data 1105
+1069 building 1294
+1069 building-id 1912
+1069 building-name 1657
+1069 finished-command 1220
+1069 name 1070
+1069 number 1414
+1069 number 1596
+1069 old-task 2009
+1069 status 1816
+1069 unit-type 1354
+1069 unit-type 1718
+1074 cCenter 1176
+1075 cCenter 1141
+1076 cCenter 1177
+1077 cCenter 1132
+1078 cCenter 1149
+1079 cCenter 1139
+1080 cCenter 1163
+1081 cCenter 1174
+1082 cCenter 1183
+1083 cCenter 1133
+1084 cCenter 1185
+1085 cCenter 1181
+1086 cCenter 1166
+1087 cCenter 1131
+1088 cCenter 1178
+1089 cCenter 1184
+1090 cCenter 1162
+1091 cCenter 1138
+1092 cCenter 1152
+1093 cCenter 1147
+1094 cCenter 1135
+1095 cCenter 1140
+1096 cCenter 1180
+1097 cCenter 1136
+1098 cCenter 1164
+1099 cCenter 1159
+1100 cCenter 1146
+1101 cCenter 1156
+1102 cCenter 1155
+1103 cCenter 1160
+1104 cCenter 1172
+1105 cCenter 1148
+1106 cCenter 1170
+1107 cCenter 1167
+1108 cCenter 1168
+1109 cCenter 1134
+1110 cCenter 1171
+1111 cCenter 1150
+1112 cCenter 1179
+1113 cCenter 1154
+1114 cCenter 1173
+1115 cCenter 1175
+1116 cCenter 1137
+1117 cCenter 1157
+1118 cCenter 1151
+1119 cCenter 1161
+1120 cCenter 1144
+1121 cCenter 1182
+1122 cCenter 1145
+1123 cCenter 1153
+1124 cCenter 1158
+1125 cCenter 1142
+1126 cCenter 1143
+1127 cCenter 1130
+1128 cCenter 1169
+1129 cCenter 1165
+1130 x 1481
+1130 y 1537
+1131 x 1443
+1131 y 1499
+1132 x 1474
+1132 y 1530
+1133 x 1446
+1133 y 1502
+1134 x 1470
+1134 y 1526
+1135 x 1449
+1135 y 1505
+1136 x 1485
+1136 y 1541
+1137 x 1472
+1137 y 1528
+1138 x 1475
+1138 y 1531
+1139 x 1463
+1139 y 1519
+1140 x 1496
+1140 y 1552
+1141 x 1459
+1141 y 1515
+1142 x 1467
+1142 y 1523
+1143 x 1479
+1143 y 1535
+1144 x 1480
+1144 y 1536
+1145 x 1462
+1145 y 1518
+1146 x 1468
+1146 y 1524
+1147 x 1457
+1147 y 1513
+1148 x 1445
+1148 y 1501
+1149 x 1484
+1149 y 1540
+1150 x 1487
+1150 y 1543
+1151 x 1465
+1151 y 1521
+1152 x 1477
+1152 y 1533
+1153 x 1497
+1153 y 1553
+1154 x 1489
+1154 y 1545
+1155 x 1490
+1155 y 1546
+1156 x 1447
+1156 y 1503
+1157 x 1455
+1157 y 1511
+1158 x 1482
+1158 y 1538
+1159 x 1461
+1159 y 1517
+1160 x 1491
+1160 y 1547
+1161 x 1454
+1161 y 1510
+1162 x 1452
+1162 y 1508
+1163 x 1456
+1163 y 1512
+1164 x 1488
+1164 y 1544
+1165 x 1476
+1165 y 1532
+1166 x 1492
+1166 y 1548
+1167 x 1450
+1167 y 1506
+1168 x 1444
+1168 y 1500
+1169 x 1483
+1169 y 1539
+1170 x 1486
+1170 y 1542
+1171 x 1464
+1171 y 1520
+1172 x 1448
+1172 y 1504
+1173 x 1494
+1173 y 1550
+1174 x 1469
+1174 y 1525
+1175 x 1442
+1175 y 1498
+1176 x 1471
+1176 y 1527
+1177 x 1458
+1177 y 1514
+1178 x 1466
+1178 y 1522
+1179 x 1453
+1179 y 1509
+1180 x 1451
+1180 y 1507
+1181 x 1460
+1181 y 1516
+1182 x 1495
+1182 y 1551
+1183 x 1478
+1183 y 1534
+1184 x 1473
+1184 y 1529
+1185 x 1493
+1185 y 1549
+1186 param0 1555
+1186 param0 1843
+1186 param1 1556
+1186 param1 1844
+1186 query-name 1554
+1187 building 1297
+1187 building-id 1898
+1187 building-name 1660
+1187 name 1188
+1187 number 1417
+1187 number 1599
+1187 old-task 1995
+1187 status 1802
+1187 unit-type 1357
+1187 unit-type 1721
+1246 building 1265
+1246 building-id 1878
+1246 building-name 1628
+1246 name 1247
+1246 number 1385
+1246 number 1567
+1246 old-task 1975
+1246 status 1784
+1246 unit-type 1325
+1246 unit-type 1689
+1248 building 1282
+1248 building-id 1925
+1248 building-name 1645
+1248 name 1249
+1248 number 1402
+1248 number 1584
+1248 old-task 2024
+1248 status 1828
+1248 unit-type 1342
+1248 unit-type 1706
+1251 building 1269
+1251 building-id 1921
+1251 building-name 1632
 1251 name 1252
-1254 name 1255
+1251 number 1389
+1251 number 1571
+1251 old-task 2019
+1251 status 1824
+1251 unit-type 1329
+1251 unit-type 1693
+1258 building-id 1916
+1258 building-name 1622
+1258 name 1259
+1258 number 1561
+1258 old-task 2013
+1258 status 1820
+1258 unit-type 1683
+1440 group0 1750
+1440 param0 1751
+1440 param1 1752
+1441 completed 1558
+1441 id 1557
+1441 id 1745
+1559 building-id 1915
+1559 building-name 1953
+1559 name 1560
+1559 old-task 2012
+1559 status 1819
+1747 name 1748
+1747 status 1839
+1747 task-id 1749
+1753 building 1764
+1753 distance 1767
+1753 feature 2039
+1753 group0 1754
+1753 name 1755
+1753 param0 1759
+1753 param1 1760
+1753 param2 1761
+1753 sector 2040
+1753 status 1847
+1753 task-id 1756
+1753 value 2041
+1753 value 2042
+1753 x 1765
+1753 y 1766
+1757 building-id 1886
+1757 building-name 1950
+1757 name 1758
+1757 old-task 1983
+1757 status 1791
+1762 building-id 1907
+1762 building-name 1952
+1762 name 1763
+1762 old-task 2004
+1762 status 1811
+1768 building-id 1870
+1768 building-name 1947
+1768 name 1769
+1768 old-task 1966
+1768 status 1776
+1770 output-link 1841
+1771 name 2043
+1771 task-id 2044
+1772 building-id 1869
+1772 building-name 1946
+1772 name 1773
+1772 old-task 1965
+1841 command 1842
+1842 name 1849
+1842 status 2045
+1842 task-id 1848
+1845 building-id 1892
+1845 building-name 1951
+1845 name 1846
+1845 old-task 1989
+1851 building-id 1920
+1851 building-name 1955
+1851 name 1852
+1851 old-task 2018
+1853 execution-buffer 1945
+1857 building-id 1864
+1857 building-name 1862
+1857 number 1861
+1857 started-train 1938
+1857 task-id 1860
+1857 unit-type 1863
+1858 building-id 1882
+1858 building-name 1949
+1858 name 1859
+1858 old-task 1979
+1865 building-name 1958
+1865 name 1866
+1865 old-task 2036
+1936 building-name 1948
+1936 name 1937
+1936 old-task 1971
+1939 building-name 1956
+1939 name 1940
+1939 old-task 2020
+1941 building-name 1957
+1941 name 1942
+1941 old-task 2026
+1943 building-name 1954
+1943 name 1944
+1943 old-task 2015
+1945 task 2038
+1960 id 2037
+1961 name 1962
+2038 completed 2047
+2038 id 2046
