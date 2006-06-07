@@ -98,7 +98,8 @@ int MineFSM::update() {
         moveFSM->init(tempVec);
       }
       else if (moveStatus == FSM_UNREACHABLE) {
-        assert(false);
+        //assert(false);
+        msg << "ERROR: miner has unreachable route!\n";
         // mineManager should not have given this path out
         newRoute = Sorts::mineManager->minerGivesUp(route, this);
         if (newRoute != NULL) {
@@ -107,6 +108,12 @@ int MineFSM::update() {
           timer = 0;//Sorts::OrtsIO->getViewFrame(); 
           timed = false;// don't clock this leg, we're not on the new route
           state = IDLE;
+        }
+        else { // try again
+          tempVec.push_back(route->miningLoc.x);
+          tempVec.push_back(route->miningLoc.y);
+          tempVec.push_back(precision);
+          moveFSM->init(tempVec);
         }
       }
       else if (moveStatus == FSM_SUCCESS) {
