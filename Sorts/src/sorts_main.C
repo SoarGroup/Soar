@@ -31,7 +31,7 @@
 
 using namespace sml;
 
-bool useSoarSkipping;
+bool useSoarStops;
 
 void printOutput
 ( smlPrintEventId id,
@@ -77,8 +77,10 @@ void SoarAfterDecisionCycleEventHandler
   Agent*        agent, 
   smlPhase      phase )
 {
-  if (!Sorts::SoarIO->isSoarRunning()) {
-    agent->StopSelf();
+  if (useSoarStops) {
+    if (!Sorts::SoarIO->isSoarRunning()) {
+      agent->StopSelf();
+    }
   }
 }
 
@@ -89,9 +91,7 @@ void SoarOutputEventHandler
   smlPhase      phase )
 {
   if (Sorts::cyclesSoarAhead > 10) {
-    if (useSoarSkipping) {
-      Sorts::SoarIO->stopSoar();
-    }
+    Sorts::SoarIO->stopSoar();
   }
   else {
     Sorts::cyclesSoarAhead++;
@@ -167,24 +167,36 @@ void* RunSoar(void* ptr) {
    */
   sleep(1);
 
-  while (true) {
+  if (useSoarStops) {
+    while (true) {
+#ifdef SOAR_862
+      pthread_mutex_lock(Sorts::mutex);
+    //  Sorts::SoarIO->lockSoarMutex();
+      // to be unlocked upon the start event
+      ((Agent*) ptr)->Commit();
+      ((Agent*) ptr)->RunSelfForever();
+#else
+      ((Kernel*) ptr)->RunAllAgentsForever(sml_INTERLEAVE_DECISION);
+#endif
+      msg << "I BROKE OUT" << endl;
+      // spin until Soar gets started again
+      while (!Sorts::SoarIO->isSoarRunning()) {
+        usleep(50000);
+      }
+      msg << "Going Back Up Again" << endl;
+    }
+  }
+  else {
 #ifdef SOAR_862
     pthread_mutex_lock(Sorts::mutex);
-  //  Sorts::SoarIO->lockSoarMutex();
     // to be unlocked upon the start event
     ((Agent*) ptr)->Commit();
     ((Agent*) ptr)->RunSelfForever();
 #else
     ((Kernel*) ptr)->RunAllAgentsForever(sml_INTERLEAVE_DECISION);
 #endif
-    msg << "I BROKE OUT" << endl;
-    // spin until Soar gets started again
-    while (!Sorts::SoarIO->isSoarRunning()) {
-      usleep(50000);
-    }
-    msg << "Going Back Up Again" << endl;
   }
-
+ 
   // just to keep the compiler from warning
   return NULL;
 }
@@ -213,7 +225,7 @@ int main(int argc, char *argv[]) {
   int seed = 0;
   string host = "127.0.0.1";
   char* productions = NULL;
-  useSoarSkipping = true;
+  useSoarStops = true;
 
   for(int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-port") == 0) {
@@ -231,8 +243,8 @@ int main(int argc, char *argv[]) {
     else if (strcmp(argv[i], "-seed") == 0) {
       seed = atoi(argv[i+1]);
     }
-    else if (strcmp(argv[1], "-no-stop") == 0) {
-      useSoarSkipping = false;
+    else if (strcmp(argv[i], "-no-stop") == 0) {
+      useSoarStops = false;
     }
   }
 
@@ -317,10 +329,11 @@ int main(int argc, char *argv[]) {
 
   std::cout <<"calling..\n";
   
-  SoarInterface soarInterface( pAgent,
-                               &objectActionMutex,
-                               &attentionActionMutex,
-                               &soarMutex);
+  SoarInterface soarInterface
+  ( pAgent,
+    &objectActionMutex,
+    &attentionActionMutex,
+    &soarMutex);
 
   // map manager, using the grid tile grouping method
   GridMapTileGrouper 

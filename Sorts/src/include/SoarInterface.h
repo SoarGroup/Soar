@@ -99,7 +99,7 @@ class SoarInterface {
     ( sml::Agent*      _agent,
       pthread_mutex_t* _objectActionQueueMutex,
       pthread_mutex_t* _attentionActionQueueMutex,
-      pthread_mutex_t* _soarMutex );
+      pthread_mutex_t* _soarMutex);
 
     ~SoarInterface();
 
