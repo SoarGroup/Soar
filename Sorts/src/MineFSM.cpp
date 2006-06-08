@@ -128,8 +128,8 @@ int MineFSM::update() {
             "," << *gob->sod.y << endl;
         
         */
-        assert(Sorts::OrtsIO->getOrtsDistance(route->mineralInfo->mineral->getGob(),
-                                              gob) <= 2);
+        //assert(Sorts::OrtsIO->getOrtsDistance(route->mineralInfo->mineral->getGob(),
+         //                                     gob) <= 2);
         // otherwise, we need to work on the MoveFSM precision
         
         tempVec.push_back(temp);
