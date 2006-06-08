@@ -10,8 +10,8 @@ class Sorts;
 
 struct ltGroupPtr {
   bool operator()(PerceptualGroup* g1, PerceptualGroup* g2) const {
-    int d1 = g1->getDistToFocus();
-    int d2 = g2->getDistToFocus();
+    double d1 = g1->getDistToFocus();
+    double d2 = g2->getDistToFocus();
     if (d1 == d2) {
       // give an arbitrary order if distance is the same
       return ((int)g1 < (int)g2);
@@ -30,6 +30,8 @@ class PerceptualGroupManager {
     void updateGroups();
     bool assignActions();
     void processVisionCommands();
+
+    void updateQueryDistances(); 
 
     void makeNewGroup(SoarGameObject* object);
     // used by ORTSInterface when it sees a new object- create a group for it

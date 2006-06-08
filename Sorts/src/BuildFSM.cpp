@@ -1,6 +1,7 @@
 #include "BuildFSM.h"
 #include "Rectangle.h"
 
+#define MIN_BUILD_UPDATES 10
 
 #define msg cout << "BUILDFSM: "
 
@@ -105,6 +106,7 @@ int BuildFSM::update() {
         justStarted = true;
         
         msg << "starting build.\n";
+        buildCycles = 0;
         buildFrame = Sorts::OrtsIO->getViewFrame();
         params.push_back(loc_x);
         params.push_back(loc_y);
@@ -123,6 +125,7 @@ int BuildFSM::update() {
       }
       break;
     case BUILDING:
+      buildCycles++;
       if (Sorts::OrtsIO->getActionFrame() - buildFrame < 1) {
         msg << "behind a bit.\n";
         return FSM_RUNNING;
@@ -135,6 +138,10 @@ int BuildFSM::update() {
         justStarted = false;
       }
       if (gob->get_int("is_mobile") == 1) {
+        if (buildCycles < MIN_BUILD_UPDATES) {
+          msg << "finished impossibly fast.\n";
+          return FSM_FAILURE;
+        }
         // is this a reliable test for completion?
         msg << "building completed.\n";
         return FSM_SUCCESS;

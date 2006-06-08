@@ -10,6 +10,9 @@
 
 #define msg cout << "MM: "
 
+#define NO_DOS
+#define NO_OBJ_OBJ
+
 #define UNUSABLE_OPTIMALITY 1000
 #define WAYPOINT_PENALTY 10
 #define NOLEARNING
@@ -20,6 +23,10 @@
 #define PF_CACHE
 
 #define MAX_NEW_ROUTES 0000
+
+#define SLDOO_OVERESTIMATE 0//30//15
+#define OOEE_OVERESTIMATE 0//40//20
+#define EEPP_OVERESTIMATE 0//40//20
 
 //#define IMAGINARY_WORKERS_IN_PF
 
@@ -323,8 +330,9 @@ void MineManager::removeFromRoute(MiningRoute* route,
   route->fsms.erase(fsmIt);
   route->mineStation->optimality -= MINE_COST;
   //route->dropoffStation->optimality--;
+#ifndef NO_DOS
   route->dropoffStation->optimality -= DROPOFF_COST;
-  
+#endif
   for (list<MiningRoute*>::iterator it = route->mineStation->routes.begin();
        it != route->mineStation->routes.end();
        it++) {
@@ -352,7 +360,9 @@ void MineManager::addCostToRoute(MiningRoute* route) {
   assert(route->mineStation != NULL);
   assert(route->dropoffStation != NULL);
   route->mineStation->optimality += MINE_COST;
+#ifndef NO_DOS
   route->dropoffStation->optimality += DROPOFF_COST; //UNUSABLE_OPTIMALITY;
+#endif
   msg << "adding costs to: " << (int) route->mineStation << " and " 
                              << (int) route->dropoffStation << endl;
 
@@ -361,11 +371,13 @@ void MineManager::addCostToRoute(MiningRoute* route) {
        it++) {
     adjustOptimality(*it);
   }
+#ifndef NO_DOS
   for (list<MiningRoute*>::iterator it = route->dropoffStation->routes.begin();
        it != route->dropoffStation->routes.end();
        it++) {
     adjustOptimality(*it);
   }
+#endif
 
   Sorts::spatialDB->addImaginaryWorker(route->miningLoc);
   Sorts::spatialDB->addImaginaryWorker(route->dropoffLoc);
@@ -388,9 +400,14 @@ void MineManager::adjustOptimality(MiningRoute* route) {
 void MineManager::calculateOptimality(MiningRoute* route) {
   // for now, just make it infeasible to use the same station as another route
   if (route->mineStation != NULL) {
+#ifndef NO_DOS
     route->optimality = route->pathlength 
                         + 100 * (route->mineStation->optimality)
                         + 100 * (route->dropoffStation->optimality);
+#else
+    route->optimality = route->pathlength
+                        + 100 * (route->mineStation->optimality);
+#endif
   }
   else {
     route->optimality = route->pathlength;
@@ -415,7 +432,11 @@ void MineManager::addRoute(CCenterInfo* cci, MineralInfo* mi) {
   route->pathlength = coordDistance(route->miningLoc, route->dropoffLoc)
                      - CCENTER_MAXRADIUS
                      - MINERAL_RADIUS; 
+#ifdef NO_OBJ_OBJ
+  route->stage = OBJ_OBJ_PF_DIST;
+#else
   route->stage = STRAIGHT_LINE_DIST;
+#endif
   route->mineStation = NULL;
   route->dropoffStation = NULL;
   calculateOptimality(route);
@@ -437,9 +458,12 @@ MiningRoute* MineManager::getBestRoute() {
   }
   RouteHeuristicStage topStage = topRoute->stage;
   
+  MiningRoute* newTop;
+  bool earlyQuit = false;
   while (topStage != PF_DIST) {
     msg << "looking at route "; 
     msg << "opt: " << topRoute->optimality << endl;
+    msg << "stage: " << topStage << endl;
     switch (topStage) {
       case STRAIGHT_LINE_DIST:
         expandSLD(topRoute);
@@ -460,9 +484,24 @@ MiningRoute* MineManager::getBestRoute() {
         break;
     
     }
-    topRoute = *routes.begin();
-    assert(topRoute->valid);
+
+    newTop = *routes.begin();
+    assert(newTop->valid);
+    
+    if (0){//((topRoute->optimality - newTop->optimality) < PRECISION) {
+      msg << "not changing top\n";
+    }
+    /*
+    if (topRoute->stage == PF_DIST &&
+        ((topRoute->optimality - newTop->optimality) < PRECISION)) {
+      earlyQuit = true;
+      msg << "early quit\n";
+    }*/
+    else {
+      topRoute = newTop;
+    }
     topStage = topRoute->stage;
+    
   }
 
   msg << "top route is "
@@ -476,6 +515,8 @@ MiningRoute* MineManager::getBestRoute() {
 void MineManager::expandSLD(MiningRoute* route) {
   msg << "expandSLD\n";
   double oldPath = route->pathlength;
+  double oldOpt = route->optimality;
+
   route->pathlength = pathFindDist(route->mineralInfo->mineral,
                                    route->cCenterInfo->cCenter);
   assert (route->pathlength >= oldPath-1);
@@ -489,8 +530,10 @@ void MineManager::expandSLD(MiningRoute* route) {
   else {
     route->pathlength -= CCENTER_MAXRADIUS;
     route->pathlength -= MINERAL_RADIUS;
+    route->pathlength += SLDOO_OVERESTIMATE;
     adjustOptimality(route);
     msg << "opt is now: " << route->optimality << endl;
+    msg << "SLDOO opch " << (route->optimality - oldOpt) << endl;
     msg << "for mineral " << ((int)(route->mineralInfo->mineral)) << endl;
   }
 }
@@ -499,6 +542,7 @@ void MineManager::expandObjObj(MiningRoute* route) {
   msg << "for mineral " << (int)route->mineralInfo->mineral << endl;
   // make 16 edge-edge routes from an obj-obj route
   // the existing locations in the route are the centers of the objects
+  double oldOpt = route->optimality;
   
   MiningRoute* newRoute;
   // temporary stations for this expansion stage
@@ -508,6 +552,7 @@ void MineManager::expandObjObj(MiningRoute* route) {
   Direction mineralDirection;
   Direction cCenterDirection;
   
+#ifndef NO_DOS
   for (int i=0; i<4; i++) {
     for (int j=0; j<4; j++) {
       newRoute = new MiningRoute(*route);
@@ -584,7 +629,9 @@ void MineManager::expandObjObj(MiningRoute* route) {
           delete newRoute;
         }
         else {
+          newRoute->pathlength += OOEE_OVERESTIMATE;
           calculateOptimality(newRoute);
+          msg << "OOEE opch " << (newRoute->optimality - oldOpt) << endl;
           msg << "adding route: " << newRoute->optimality << endl;
           routes.insert(newRoute);
           newRoute->mineralInfo->routes.push_back(newRoute);
@@ -594,6 +641,62 @@ void MineManager::expandObjObj(MiningRoute* route) {
       }
     }
   }
+#else // no dropoff stations
+  for (int i=0; i<4; i++) {
+    newRoute = new MiningRoute(*route);
+    full = false;
+    switch (i) {
+      case 0:
+        // need to be w/in 2 to mine..
+        mineralDirection = WEST;
+        newRoute->miningLoc.x -= (WORKER_RADIUS + MINERAL_RADIUS + 1);
+        break;
+      case 1:
+        mineralDirection = EAST;
+        newRoute->miningLoc.x += (WORKER_RADIUS + MINERAL_RADIUS + 1);
+        break;
+      case 2:
+        mineralDirection = NORTH;
+        newRoute->miningLoc.y -= (WORKER_RADIUS + MINERAL_RADIUS + 1);
+        break;
+      case 3:
+        mineralDirection = SOUTH;
+        newRoute->miningLoc.y += (WORKER_RADIUS + MINERAL_RADIUS + 1);
+        break;
+    }
+    if (newRoute->miningLoc.x > 0 &&
+        newRoute->miningLoc.y > 0 &&
+        newRoute->miningLoc.x < maxX &&
+        newRoute->miningLoc.y < maxY) {
+      newRoute->pathlength = pathFindDist(newRoute->miningLoc,
+                                          newRoute->dropoffLoc,
+                                          false);
+                            // - CCENTER_MINRADIUS - MINERAL_RADIUS;
+    }
+    else {
+      newRoute->pathlength = -1;
+    }
+    
+    if (newRoute->pathlength == -1) {
+      msg << "deleting unreachable edge-edge route\n";
+      msg << "from " << newRoute->dropoffLoc << " on " 
+          << (int)newRoute->cCenterInfo->cCenter << " to " 
+          << newRoute->miningLoc << " on " 
+          << (int)newRoute->mineralInfo->mineral << endl;
+      delete newRoute;
+    }
+    else {
+      newRoute->pathlength += OOEE_OVERESTIMATE;
+      calculateOptimality(newRoute);
+      msg << "OOEE opch " << (newRoute->optimality - oldOpt) << endl;
+      msg << "adding route: " << newRoute->optimality << endl;
+      routes.insert(newRoute);
+      newRoute->mineralInfo->routes.push_back(newRoute);
+      newRoute->cCenterInfo->routes.push_back(newRoute);
+      newRoute->stage = EDGE_EDGE_PF_DIST;
+    }
+  }
+#endif
   // remove the original route
   routes.erase(route);
   //delete route;
@@ -601,9 +704,12 @@ void MineManager::expandObjObj(MiningRoute* route) {
   invalidRoutes.push_back(route);
 }
 
+#ifndef NO_DOS
 void MineManager::expandEdgeEdge(MiningRoute* route) {
   msg << "expandEE\n";
 
+  double oldOpt = route->optimality;
+  
   double pfCache[CC_EDGE_STATIONS/2 + 1];
   for (int i=0; i<(CC_EDGE_STATIONS/2 +1); i++) {pfCache[i]=-1;}  
   // make 22 point-point routes from an edge-edge route
@@ -766,9 +872,11 @@ void MineManager::expandEdgeEdge(MiningRoute* route) {
           dropoffStation->routes.push_back(newRoute);
           newRoute->mineralInfo->routes.push_back(newRoute);
           newRoute->cCenterInfo->routes.push_back(newRoute);
+          newRoute->pathlength += EEPP_OVERESTIMATE;
           
           calculateOptimality(newRoute);
           msg << "adding route: " << newRoute->optimality << endl;
+          msg << "EEPP opch " << (newRoute->optimality - oldOpt) << endl;
           msg << dropoffStation->location.x << "," << dropoffStation->location.y
               << "->" 
               << mineStation->location.x << "," << mineStation->location.y 
@@ -791,6 +899,135 @@ void MineManager::expandEdgeEdge(MiningRoute* route) {
   routes.erase(route);
   invalidRoutes.push_back(route);
 }
+# else // no dropoff stations
+void MineManager::expandEdgeEdge(MiningRoute* route) {
+  msg << "expandEE\n";
+
+  double oldOpt = route->optimality;
+  double pfCache = -1;
+  
+  Direction mineralDir 
+    = getRelDirection(route->mineralInfo->mineral->getLocation(), 
+                      route->miningLoc);
+
+  if (route->mineralInfo->stationsFull[mineralDir]) { 
+    msg << "not expanding EE route: stations full\n";
+    route->valid = false;
+    routes.erase(route);
+    invalidRoutes.push_back(route);
+    return;
+  }
+    
+  bool mineralHasStations = route->mineralInfo->stationsValid[mineralDir];
+ 
+  MiningRoute* newRoute;
+  
+  if (not mineralHasStations) {
+    allocateMiningStations(route->mineralInfo, mineralDir);
+  }
+  
+  StationInfo* mineStation;
+  StationInfo* dropoffStation = new StationInfo;
+
+  dropoffStation->location = route->cCenterInfo->cCenter->getLocation();
+  int fullM = 0;
+  
+  for (int i=0; i<MINERAL_EDGE_STATIONS; i++) {
+    switch (mineralDir) {
+      case NORTH:
+        mineStation = route->mineralInfo->northStations[i];
+        break;
+      case SOUTH:
+        mineStation = route->mineralInfo->southStations[i];
+        break;
+      case EAST:
+        mineStation = route->mineralInfo->eastStations[i];
+        break;
+      case WEST:
+        mineStation = route->mineralInfo->westStations[i];
+        break;
+    }
+    newRoute = new MiningRoute(*route);
+    newRoute->mineStation = mineStation;
+    newRoute->dropoffStation = dropoffStation;
+    newRoute->stage = PF_DIST;
+
+    // yes, this is redundant, 
+    // (route->location == route->station->location)
+    // but the location at the top level must exist, since some routes
+    // don't have stations (as they are not fully expanded)
+    newRoute->miningLoc = mineStation->location;
+
+    if (mineStation->optimality >= UNUSABLE_OPTIMALITY) {
+      msg << "rejecting EE route, station is full.\n";
+      newRoute->stage = STATION_IN_USE; 
+      newRoute->pathlength = route->pathlength;
+      mineStation->routes.push_back(newRoute);
+      newRoute->mineralInfo->routes.push_back(newRoute);
+      newRoute->cCenterInfo->routes.push_back(newRoute);
+      
+      calculateOptimality(newRoute);
+      msg << "adding SIU route: " << newRoute->optimality << endl;
+      msg << "mineral: " << (int(newRoute->mineralInfo->mineral)) << endl;
+      routes.insert(newRoute);
+      
+    }
+    else if (collision(mineStation)) {
+      msg << "immediately rejecting EE route: collision.\n";
+      delete newRoute;
+    }
+    else {
+      if (i == 0) {
+        newRoute->pathlength 
+          = pathFindDist(newRoute->dropoffStation->location, 
+                          newRoute->mineStation->location,
+                          true);
+        pfCache = newRoute->pathlength;
+      }
+      else {
+        if (pfCache != -1) {
+          newRoute->pathlength = pfCache;
+        }
+        else {
+          // we skipped the station that was supposed to set this
+          newRoute->pathlength 
+            = pathFindDist(newRoute->dropoffStation->location, 
+                          newRoute->mineStation->location,
+                          true);
+          pfCache = newRoute->pathlength;
+        }
+          
+      }
+
+      if (newRoute->pathlength == -1) {
+        msg << "deleting unreachable point-point route\n";
+        delete newRoute;
+      }
+      else {
+        // register the route with everyone who needs to know about it
+        mineStation->routes.push_back(newRoute);
+        newRoute->mineralInfo->routes.push_back(newRoute);
+        newRoute->cCenterInfo->routes.push_back(newRoute);
+        newRoute->pathlength += EEPP_OVERESTIMATE;
+        
+        calculateOptimality(newRoute);
+        msg << "adding route: " << newRoute->optimality << endl;
+        msg << "EEPP opch " << (newRoute->optimality - oldOpt) << endl;
+        msg << "mineral: " << (int(newRoute->mineralInfo->mineral)) << endl;
+        routes.insert(newRoute);
+      }
+    }
+  }
+
+  // use this opportunity to mark the edges full if every route was skipped
+  if (fullM == MINERAL_EDGE_STATIONS) {
+    route->mineralInfo->stationsFull[mineralDir] = true;
+  }
+  route->valid = false;
+  routes.erase(route);
+  invalidRoutes.push_back(route);
+}
+#endif
 
 void MineManager::expandSIU(MiningRoute* route) {
   route->pathlength 
@@ -855,19 +1092,19 @@ void MineManager::allocateDropoffStations(CCenterInfo* cci, Direction d) {
   StationInfo* newStation;
   coordinate ccCenter = cci->cCenter->getLocation();
   
-  assert (CC_EDGE_STATIONS == 9);
-  for (int i=0; i<9; i++) {
+  assert (CC_EDGE_STATIONS == 10);
+  for (int i=0; i<10; i++) {
     newStation = new StationInfo;
     switch (d) {
       case SOUTH:
         cci->southStations[i] = newStation;
-        newStation->location.x = ccCenter.x - 33 + i*7;
+        newStation->location.x =(int)(ccCenter.x - 32 + i*7);
         newStation->location.y 
           = ccCenter.y + WORKER_RADIUS + CCENTER_MINRADIUS + 2;
         break;
       case NORTH:
         cci->northStations[i] = newStation;
-        newStation->location.x = ccCenter.x - 33 + i*7;
+        newStation->location.x =(int)( ccCenter.x - 32 + i*7);
         newStation->location.y 
           = ccCenter.y - (WORKER_RADIUS + CCENTER_MINRADIUS + 2);
         break;
@@ -875,13 +1112,13 @@ void MineManager::allocateDropoffStations(CCenterInfo* cci, Direction d) {
         cci->eastStations[i] = newStation;
         newStation->location.x 
           = ccCenter.x + WORKER_RADIUS + CCENTER_MINRADIUS + 2;
-        newStation->location.y = ccCenter.y - 33 + i*7;
+        newStation->location.y =(int)( ccCenter.y - 32 + i*7);
         break;
       case WEST:
         cci->westStations[i] = newStation;
         newStation->location.x 
           = ccCenter.x - (WORKER_RADIUS + CCENTER_MINRADIUS + 2);
-        newStation->location.y = ccCenter.y - 33 + i*7;
+        newStation->location.y =(int)( ccCenter.y - 32 + i*7);
         break;
     }
     newStation->optimality = 0;

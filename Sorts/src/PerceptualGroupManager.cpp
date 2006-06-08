@@ -83,6 +83,8 @@ bool PerceptualGroupManager::assignActions() {
   
   Sorts::SoarIO->getNewObjectActions(newActions);
   list <ObjectAction>::iterator actionIter = newActions.begin();
+
+  msg << "assigning " << newActions.size() << " new actions.\n";
  
   list <PerceptualGroup*>::iterator groupIter;
   bool success = true;
@@ -112,9 +114,25 @@ bool PerceptualGroupManager::assignActions() {
       actionIter++;
     }
   }
-
+  msg << "done assigning.\n";
   return success;
 }
+
+void PerceptualGroupManager::updateQueryDistances() {
+  // called from MapQuery, need to re-generate all gp. data so new
+  // distToQuery is picked up
+
+  for (set<PerceptualGroup*>::iterator groupIter = perceptualGroups.begin(); 
+       groupIter != perceptualGroups.end(); 
+       groupIter++) {
+    // inSoar status can't change in this situation
+    if ((*groupIter)->getInSoar() == true) {
+      (*groupIter)->generateData();  
+      Sorts::SoarIO->refreshGroup(*groupIter);
+    }
+  }
+}
+  
 
 void PerceptualGroupManager::processVisionCommands() {
   // called when Soar changes the view window, wants to attend to an item
@@ -582,6 +600,7 @@ void PerceptualGroupManager::generateGroupData() {
         removeGroup(*groupIter);
       }
       else {
+        (*groupIter)->calcDistToFocus(visionParams.focusX, visionParams.focusY);
         (*groupIter)->generateData();
         // groups that have stale members need to be removed and reinserted
         // this is because the set is maintained in order of distance from
@@ -605,8 +624,6 @@ void PerceptualGroupManager::generateGroupData() {
     grp = **it;
     perceptualGroups.erase(*it);
     perceptualGroups.insert(grp);
-    // groups have no knowledge of the focus point, only their distance to it.
-    grp->calcDistToFocus(visionParams.focusX, visionParams.focusY);
   }
 
   return;

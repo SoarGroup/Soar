@@ -22,6 +22,7 @@ public:
 
 private:
   int loc_x, loc_y, buildFrame;
+  int buildCycles;
   BuildingType type;
 
   // for calculating intersections

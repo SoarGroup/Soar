@@ -6,6 +6,8 @@
 #define msg cout << "MQ: "
 
 MapQuery::MapQuery() {
+  lastResult.x = 0;
+  lastResult.y = 0;
 }
 
 void MapQuery::processMapCommands() {
@@ -77,7 +79,9 @@ void MapQuery::findBuildingLoc(BuildingType building, coordinate nearLocation,
   }
 
   if (found) {
+    lastResult = newLoc;
     Sorts::SoarIO->updateQueryResult("locate-building", newLoc.x, newLoc.y);
+    Sorts::pGroupManager->updateQueryDistances();
   }
   else {
     msg << "no location found! "<< endl;
@@ -85,3 +89,6 @@ void MapQuery::findBuildingLoc(BuildingType building, coordinate nearLocation,
   }
 } 
  
+coordinate MapQuery::getLastResult() {
+  return lastResult;
+}

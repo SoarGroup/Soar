@@ -59,6 +59,9 @@ PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
   centerX = 0;
   centerY = 0;
 
+  lastQueryResult.x = -1;
+  lastQueryResult.y = -1;
+  lastQueryDist = 0;
   ///cout << "XXX created: " << (int) this << endl;
 }
 
@@ -208,6 +211,15 @@ void PerceptualGroup::generateData() {
   attribs.add("x-max", bbox.xmax);
   attribs.add("y-min", bbox.ymin);
   attribs.add("y-max", bbox.ymax);
+
+  attribs.add("dist_to_focus", (float)distToFocus);
+
+  coordinate lastQ = Sorts::mapQuery->getLastResult();
+  if (lastQ.x != lastQueryResult.x ||
+      lastQ.y != lastQueryResult.y) {
+    lastQueryDist = sqrt(squaredDistance(centerX, centerY, lastQ.x, lastQ.y));
+  }
+  attribs.add("dist_to_query", (float)lastQueryDist);
 
   if (mixedType) {
     attribs.add("type", "mixed");
@@ -783,11 +795,10 @@ int PerceptualGroup::getFMFeatureStrength() {
 }
 
 void PerceptualGroup::calcDistToFocus(int focusX, int focusY) {
-  distToFocus = (int)squaredDistance(focusX, focusY, centerX, centerY);
-  // make sure casting this to an int makes sense..
+  distToFocus = squaredDistance(focusX, focusY, centerX, centerY);
 }
 
-int PerceptualGroup::getDistToFocus() {
+double PerceptualGroup::getDistToFocus() {
   return distToFocus;
 }
   

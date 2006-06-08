@@ -162,7 +162,9 @@ int MineFSM::update() {
         else {
           tempVec.push_back(route->dropoffLoc.x);
           tempVec.push_back(route->dropoffLoc.y);
+          Sorts::terrainModule->removeControlCenters();
           moveFSM->init(tempVec);
+          Sorts::terrainModule->insertControlCenters();
           moveFSM->update();
           //timer = 0;//Sorts::OrtsIO->getViewFrame();
           timed = true;
@@ -199,7 +201,9 @@ int MineFSM::update() {
         tempVec.push_back(route->dropoffLoc.x);
         tempVec.push_back(route->dropoffLoc.y);
         tempVec.push_back(precision);
+        Sorts::terrainModule->removeControlCenters();
         moveFSM->init(tempVec);
+        Sorts::terrainModule->insertControlCenters();
       }
       else if (moveStatus == FSM_SUCCESS) {
         temp = route->mineralInfo->mineral->getID();

@@ -80,7 +80,7 @@ class PerceptualGroup {
     void setSticky(bool in);
 
     void calcDistToFocus(int focusX, int focusY);
-    int getDistToFocus();
+    double getDistToFocus();
 
     bool getInSoar();
     void setInSoar(bool val);
@@ -155,7 +155,9 @@ class PerceptualGroup {
     list <FeatureMap*> fMaps;
     int fmFeatureStrength;
 
-    int distToFocus;
+    double distToFocus;
+    coordinate lastQueryResult;
+    double lastQueryDist;
 
 };
 

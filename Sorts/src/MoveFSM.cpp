@@ -262,11 +262,10 @@ void MoveFSM::init(vector<sint4> p)
   msg << "initialized. Path " << *gob->sod.x << "," << *gob->sod.y << "->"
       << l.x << "," << l.y << endl;
   
-  /*for (unsigned int i=0; i<pathLength; i++) {
-    Sorts::terrainModule->insertImaginaryWorker(path.locs[i]);
+  for (unsigned int i=0; i<pathLength; i++) {
     msg << "loc " << i << " " 
         << path.locs[i].x << ", "<< path.locs[i].y << endl;
-  }*/
+  }
 
   if (pathLength > 0) {
     usingIWWP = true;
@@ -277,6 +276,12 @@ void MoveFSM::init(vector<sint4> p)
   nextWPIndex = path.locs.size()-1;
   moveParams.clear();
   if (path.locs.size() > 0) {
+    if (path.locs.size() > 1
+        and collision(path.locs[nextWPIndex].x, path.locs[nextWPIndex].y)) {
+      nextWPIndex--;
+      msg << "first waypoint is inside an object, skipping.\n";
+    }
+      
     moveParams.push_back(path.locs[nextWPIndex].x);
     moveParams.push_back(path.locs[nextWPIndex].y);
     nextWPIndex--;

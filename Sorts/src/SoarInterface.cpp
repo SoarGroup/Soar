@@ -322,8 +322,13 @@ void SoarInterface::getNewSoarOutput() {
       continue;
     }
     
+    // support either name-as-command, or command with name attribute
     string name = cmdPtr->GetCommandName() ;
-    msg << "received command from Soar: " << name << endl;
+    if (name == "command") {
+      name = cmdPtr->GetParameterValue("name");
+    }
+      
+    msg << "recieved command from Soar: " << name << endl;
     ObjectActionType OType = objectActionTypeLookup(name);
 
     if (OType != OA_NO_SUCH_ACTION) {
@@ -511,8 +516,8 @@ void SoarInterface::getNewObjectActions(list<ObjectAction>& newActions) {
                                   i++)
   {
     newActions.push_back(*i);
-    objectActionQueue.erase(i);
   }
+  objectActionQueue.clear();
   unlockObjectActionMutex();
 }
 
@@ -523,8 +528,8 @@ void SoarInterface::getNewAttentionActions(list<AttentionAction>& newActions) {
                                   i++)
   {
     newActions.push_back(*i);
-    attentionActionQueue.erase(i);
   }
+  attentionActionQueue.clear();
   unlockAttentionActionMutex();
 }
 
@@ -533,8 +538,8 @@ void SoarInterface::getNewMapActions(list<MapAction>& newActions) {
                                   i != mapActionQueue.end(); 
                                   i++) {
     newActions.push_back(*i);
-    mapActionQueue.erase(i);
   }
+  mapActionQueue.clear();
 }
 
 void SoarInterface::updatePlayerGold(int amount) {
