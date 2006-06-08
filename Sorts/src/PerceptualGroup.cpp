@@ -17,6 +17,11 @@
 #include "InfluenceERF.h"
 #include "Vec2d.h"
 
+#ifdef USE_CANVAS
+#include "SortsCanvas.h"
+#define USE_CANVAS_GROUPS
+#endif
+
 #define msg cout << "PerceptualGroup.cpp: "
 
 PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {

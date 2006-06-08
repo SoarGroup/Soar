@@ -31,6 +31,8 @@
 
 using namespace sml;
 
+bool useSoarSkipping;
+
 void printOutput
 ( smlPrintEventId id,
   void*           pUserData, 
@@ -87,7 +89,9 @@ void SoarOutputEventHandler
   smlPhase      phase )
 {
   if (Sorts::cyclesSoarAhead > 10) {
-    Sorts::SoarIO->stopSoar();
+    if (useSoarSkipping) {
+      Sorts::SoarIO->stopSoar();
+    }
   }
   else {
     Sorts::cyclesSoarAhead++;
@@ -209,6 +213,8 @@ int main(int argc, char *argv[]) {
   int seed = 0;
   string host = "127.0.0.1";
   char* productions = NULL;
+  useSoarSkipping = true;
+
   for(int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-port") == 0) {
       port = atoi(argv[i+1]);
@@ -224,6 +230,9 @@ int main(int argc, char *argv[]) {
     }
     else if (strcmp(argv[i], "-seed") == 0) {
       seed = atoi(argv[i+1]);
+    }
+    else if (strcmp(argv[1], "-no-stop") == 0) {
+      useSoarSkipping = false;
     }
   }
 

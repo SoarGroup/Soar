@@ -45,6 +45,11 @@ public:
   void setCircleColor(const SDLColor& c) {
     color = SDLColor(c.r, c.g, c.b);
   }
+
+  void setRadius(double radius) {
+    r = space->toCS(radius);
+  }
+
 private:
   Uint16 r;
   SDLColor color;

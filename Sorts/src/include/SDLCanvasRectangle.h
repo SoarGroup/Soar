@@ -29,6 +29,7 @@ public:
   }
 
   void setAngle(double angle) {
+    a = angle;
     double sinTheta = sin(angle);
     double cosTheta = cos(angle);
 
@@ -88,9 +89,16 @@ public:
     SDLCanvasShape::translate(dx, dy);
   }
 
+  void resize(double w, double h) {
+    halfw = w / 2;
+    halfh = h / 2;
+    setAngle(a);
+  }
+
 private:
   double halfw;
   double halfh;
+  double a;
   Sint16 vx[4];
   Sint16 vy[4];
 
