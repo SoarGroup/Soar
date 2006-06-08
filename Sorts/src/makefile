@@ -10,4 +10,4 @@ sorts:
 clean:
 	cd $(ORTS_ROOT)/dep; rm -f $(DEPS)
 	cd $(ORTS_ROOT)/obj/dbg; rm -f $(OBJECTS)
-
+	cd $(ORTS_ROOT)/obj/opt; rm -f $(OBJECTS)

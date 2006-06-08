@@ -37,6 +37,8 @@ void SoarGameObject::identifyBehaviors() {
     }
     else if (name == "marine") {
       msg << "Registering behaviors for " << (int) gob << endl;
+      FSM* moveBehavior = new MoveFSM(gob);
+      registerBehavior(moveBehavior);
       FSM* attackBehavior = new AttackFSM(this);
       registerBehavior(attackBehavior);
       FSM* attackNear = new AttackNearFSM(this);
@@ -45,6 +47,8 @@ void SoarGameObject::identifyBehaviors() {
      }
     else if (name == "tank") {
       msg << "Registering behaviors for " << (int) gob << endl;
+      FSM* moveBehavior = new MoveFSM(gob);
+      registerBehavior(moveBehavior);
       FSM* attackBehavior = new AttackFSM(this);
       registerBehavior(attackBehavior);
       FSM* attackNear = new AttackNearFSM(this);

@@ -145,7 +145,10 @@ class SoarInterface {
     void setStale(bool);
     void lockSoarMutex();
     void unlockSoarMutex();
-    
+
+    void stopSoar();
+    void startSoar();
+    bool isSoarRunning() { return soarRunning; }
 
   private:
 
@@ -222,8 +225,8 @@ class SoarInterface {
     pthread_mutex_t* attentionActionQueueMutex;
     pthread_mutex_t* soarMutex;
 
-
     bool stale;
+    bool soarRunning;
 };
 
 #endif

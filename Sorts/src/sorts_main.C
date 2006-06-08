@@ -1,5 +1,6 @@
 #include<iostream>
 #include<stdio.h>
+#include<unistd.h>
 #include<stdlib.h>
 #include<pthread.h>
 
@@ -24,18 +25,18 @@
 
 #define msg cout << "sorts_main.C: "
 
-#define MAX_SOAR_AHEAD_CYCLES 50
+#define MAX_SOAR_AHEAD_CYCLES 5
 
 #define SOAR_862
 
 using namespace sml;
 
-bool soarStarted;
-
-void printOutput(smlPrintEventId id,
-                 void*  pUserData, 
-                 Agent*          pAgent,
-                 const char*          pMessage) {
+void printOutput
+( smlPrintEventId id,
+  void*           pUserData, 
+  Agent*          pAgent,
+  const char*     pMessage)
+{
   std::cout << "SOARINT: " << pMessage << std::endl;
 }
 
@@ -64,8 +65,19 @@ void SoarStartRunEventHandler
   Agent*        agent, 
   smlPhase      phase )
 {
-  soarStarted = true;
-  msg << "Soar Started" << endl;
+  pthread_mutex_unlock(Sorts::mutex);
+  //Sorts::SoarIO->unlockSoarMutex();  
+}
+
+void SoarAfterDecisionCycleEventHandler
+( smlRunEventId id, 
+  void*         pUserData, 
+  Agent*        agent, 
+  smlPhase      phase )
+{
+  if (!Sorts::SoarIO->isSoarRunning()) {
+    agent->StopSelf();
+  }
 }
 
 void SoarOutputEventHandler
@@ -74,34 +86,39 @@ void SoarOutputEventHandler
   Agent*        agent, 
   smlPhase      phase )
 {
-  if (Sorts::cyclesSoarAhead < MAX_SOAR_AHEAD_CYCLES) {
-    Sorts::cyclesSoarAhead++;
-    pthread_mutex_lock(Sorts::mutex);
-    std::cout << "SOAR EVENT {\n";
-    if (Sorts::catchup == true) {
-      std::cout << "ignoring Soar event, ORTS is behind.\n";
-      pthread_mutex_unlock(Sorts::mutex);
-      return;
-    }
-    Sorts::SoarIO->getNewSoarOutput();
-
-    // vision commands must be processed here- these are swapping
-    // in and out the groups on the input link.
-    // if they were processed in the ORTS handler, the agent
-    // would have a delay from when it looked somewhere and when
-    // the objects there appeared.
-    Sorts::pGroupManager->processVisionCommands();
-    Sorts::mapQuery->processMapCommands();
-
-    if (Sorts::SoarIO->getStale()) {
-      Sorts::SoarIO->lockSoarMutex();
-      agent->Commit();
-      Sorts::SoarIO->unlockSoarMutex();
-      Sorts::SoarIO->setStale(false);
-    }
-    std::cout << "SOAR EVENT }\n";
-    pthread_mutex_unlock(Sorts::mutex);
+  if (Sorts::cyclesSoarAhead > 10) {
+    Sorts::SoarIO->stopSoar();
   }
+  else {
+    Sorts::cyclesSoarAhead++;
+  }
+
+  pthread_mutex_lock(Sorts::mutex);
+  std::cout << "SOAR EVENT {\n";
+  if (Sorts::catchup == true) {
+    std::cout << "ignoring Soar event, ORTS is behind.\n";
+    pthread_mutex_unlock(Sorts::mutex);
+    return;
+  }
+  Sorts::SoarIO->getNewSoarOutput();
+
+  // vision commands must be processed here- these are swapping
+  // in and out the groups on the input link.
+  // if they were processed in the ORTS handler, the agent
+  // would have a delay from when it looked somewhere and when
+  // the objects there appeared.
+  Sorts::pGroupManager->processVisionCommands();
+  Sorts::mapQuery->processMapCommands();
+
+  if (Sorts::SoarIO->getStale()) {
+    // why do we have these here?
+    //Sorts::SoarIO->lockSoarMutex();
+    agent->Commit();
+    //Sorts::SoarIO->unlockSoarMutex();
+    Sorts::SoarIO->setStale(false);
+  }
+  std::cout << "SOAR EVENT }\n";
+  pthread_mutex_unlock(Sorts::mutex);
 }
 #else
 void SoarUpdateEventHandler(smlUpdateEventId id, 
@@ -146,12 +163,23 @@ void* RunSoar(void* ptr) {
    */
   sleep(1);
 
+  while (true) {
 #ifdef SOAR_862
-  ((Agent*) ptr)->Commit();
-  ((Agent*) ptr)->RunSelfForever();
+    pthread_mutex_lock(Sorts::mutex);
+  //  Sorts::SoarIO->lockSoarMutex();
+    // to be unlocked upon the start event
+    ((Agent*) ptr)->Commit();
+    ((Agent*) ptr)->RunSelfForever();
 #else
-  ((Kernel*) ptr)->RunAllAgentsForever(sml_INTERLEAVE_DECISION);
+    ((Kernel*) ptr)->RunAllAgentsForever(sml_INTERLEAVE_DECISION);
 #endif
+    msg << "I BROKE OUT" << endl;
+    // spin until Soar gets started again
+    while (!Sorts::SoarIO->isSoarRunning()) {
+      usleep(50000);
+    }
+    msg << "Going Back Up Again" << endl;
+  }
 
   // just to keep the compiler from warning
   return NULL;
@@ -159,11 +187,11 @@ void* RunSoar(void* ptr) {
 
 void* RunOrts(void* ptr) {
   GameStateModule* gsm = (GameStateModule*) ptr;
-  while (!soarStarted) {
-    msg << "SPIN SPIN SPIN" << endl;
-  }
+  msg << "Starting ORTS" << endl;
   while(1) {
-    gsm->recv_view();
+    if (!gsm->recv_view()) {
+      SDL_Delay(1);
+    }
   }
   // unreachable (what is this supposed to return, anyway?)
   return NULL;
@@ -175,8 +203,6 @@ int main(int argc, char *argv[]) {
 #ifdef USE_CANVAS
   atexit(SDL_Quit);
 #endif
-
-  soarStarted = false;
 
   int port = 7777;
   int soarPort = 12121;
@@ -340,6 +366,7 @@ int main(int argc, char *argv[]) {
 #ifdef SOAR_862
   pAgent->RegisterForRunEvent(smlEVENT_BEFORE_RUN_STARTS, SoarStartRunEventHandler, NULL);
   pAgent->RegisterForRunEvent(smlEVENT_AFTER_OUTPUT_PHASE, SoarOutputEventHandler, NULL);
+  pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, SoarAfterDecisionCycleEventHandler, NULL);
  // pAgent->RegisterForRunEvent(smlEVENT_BEFORE_INPUT_PHASE, SoarInputEventHandler, &sorts);
 #else
   pKernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &sorts);
@@ -368,8 +395,6 @@ int main(int argc, char *argv[]) {
 
   pthread_join(soarThread, NULL);
   pthread_join(ortsThread, NULL);
-
-  std::cout << "!!!! Everything is finished !!!!" << std::endl;
 
   return 0;
 }

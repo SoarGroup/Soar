@@ -1,3 +1,5 @@
+#include <sys/time.h>
+
 #include "AttackManager.h"
 #include "general.h"
 #include "AttackManagerRegistry.h"
@@ -194,6 +196,8 @@ void AttackManager::unassignTarget(SoarGameObject* target) {
 
 // In the future, also implement running weak units away
 int AttackManager::direct(AttackFSM* fsm) {
+  timeval st;
+  gettimeofday(&st, NULL);
 #ifdef USE_CANVAS_ATTACK_MANAGER
   Sorts::canvas.flashColor(fsm->getGob(), 0, 255, 0, 1);
   Sorts::canvas.update();
@@ -322,6 +326,9 @@ int AttackManager::direct(AttackFSM* fsm) {
     fsm->attack(fsm->target);
   }
 
+  timeval et;
+  gettimeofday(&et, NULL);
+  msg << "TIME SPENT: " << et.tv_usec - st.tv_usec << endl;
   return 0;
 }
 

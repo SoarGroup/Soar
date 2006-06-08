@@ -83,4 +83,6 @@ bool canHit(const Circle& c1, const Circle& c2, double range);
 void positionsOnCircle (const Vec2d& center, const Vec2d& firstPos, 
   double chordLen, list<Vec2d>& positions);
 
+
+unsigned long gettime();
 #endif

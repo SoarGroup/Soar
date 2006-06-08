@@ -1,3 +1,4 @@
+#include <sys/time.h>
 #include <assert.h>
 
 // our includes
@@ -32,12 +33,13 @@ OrtsInterface::OrtsInterface(GameStateModule* _gsm)
 }
 
 bool OrtsInterface::handle_event(const Event& e) {
-  msg << "SOARCYCLES: " << Sorts::cyclesSoarAhead << endl;
-  Sorts::cyclesSoarAhead = 0;
+  unsigned long st = gettime();
   pthread_mutex_lock(Sorts::mutex);
   if (e.get_who() == GameStateModule::FROM) {
     if (e.get_what() == GameStateModule::VIEW_MSG) {
-      cout << "ORTS EVENT {\n";
+      msg << "SOARCYCLES: " << Sorts::cyclesSoarAhead << endl;
+      Sorts::cyclesSoarAhead = 0;
+      msg << "ORTS EVENT {\n";
       viewFrame = gsm->get_game().get_view_frame();
       Sorts::SoarIO->updateViewFrame(viewFrame);
       int aFrame = gsm->get_game().get_action_frame();
@@ -75,6 +77,7 @@ bool OrtsInterface::handle_event(const Event& e) {
              << viewFrame << " a:" << lastActionFrame << "\n";
         gsm->send_actions(); // empty, needed by server
         pthread_mutex_unlock(Sorts::mutex);
+        Sorts::SoarIO->startSoar();
         return true;
       }
       
@@ -102,8 +105,9 @@ bool OrtsInterface::handle_event(const Event& e) {
        * updated the soar input link correctly, so commit everything
        */
       Sorts::SoarIO->commitInputLinkChanges();
+      Sorts::SoarIO->startSoar();
     }
-    cout << "ORTS EVENT }\n";
+    msg << "ORTS EVENT } t: " << gettime() - st << endl;
     pthread_mutex_unlock(Sorts::mutex);
     return true;
   }
@@ -112,6 +116,7 @@ bool OrtsInterface::handle_event(const Event& e) {
     return false;
   }
 }
+
 void OrtsInterface::addAppearedObject(const GameObj* gameObj) {
   assert(false);
 }

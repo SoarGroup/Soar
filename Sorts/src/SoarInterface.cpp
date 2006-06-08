@@ -28,6 +28,7 @@ SoarInterface::SoarInterface
   inputLink = agent->GetInputLink();
   groupIdCounter = 0;
   stale = true;
+  soarRunning = true;
 }
 
 SoarInterface::~SoarInterface() {
@@ -323,7 +324,7 @@ void SoarInterface::getNewSoarOutput() {
     }
     
     string name = cmdPtr->GetCommandName() ;
-    msg << "recieved command from Soar: " << name << endl;
+    msg << "received command from Soar: " << name << endl;
     ObjectActionType OType = objectActionTypeLookup(name);
 
     if (OType != OA_NO_SUCH_ACTION) {
@@ -576,6 +577,7 @@ void SoarInterface::initVisionState(VisionParameterStruct vps) {
 }
 
 void SoarInterface::initSoarInputLink() {
+  lockSoarMutex();
   groupsIdWME = agent->CreateIdWME(inputLink, "groups");
   mapIdWME = agent->CreateIdWME(inputLink, "map");
   featureMapIdWME = agent->CreateIdWME(inputLink, "feature-maps");
@@ -643,6 +645,7 @@ void SoarInterface::initSoarInputLink() {
                           initialVisionParams.groupingRadius);
   
   agent->Commit();
+  unlockSoarMutex();
 }
 
 
@@ -663,10 +666,13 @@ void SoarInterface::setStale(bool _st) {
 
 // See comment in Sorts.h regarding these disabled mutexes
 void SoarInterface::lockSoarMutex() { 
+//  msg << "Trying to grab the mutex" << endl;
 //  pthread_mutex_lock(soarMutex);
+//  msg << "Grabbed the mutex" << endl;
 }
 
 void SoarInterface::unlockSoarMutex() { 
+//  msg << "Releasing the mutex" << endl;
 //  pthread_mutex_unlock(soarMutex);
 }
 
@@ -690,5 +696,16 @@ void SoarInterface::improperCommandError() {
 }
 
 void SoarInterface::updateViewFrame(int frame) {
+  lockSoarMutex();
   agent->Update(viewFrameWME, frame);
+  unlockSoarMutex();
+}
+
+void SoarInterface::stopSoar() {
+  soarRunning = false;
+}
+
+void SoarInterface::startSoar() {
+  soarRunning = true;
+  msg << "Soar Started" << endl;
 }

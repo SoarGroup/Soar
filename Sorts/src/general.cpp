@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <sstream>
+#include <sys/time.h>
 
 #include "GameConst.H"
 #include "GameObj.H"
@@ -173,3 +174,8 @@ void positionsOnCircle
   }
 }
 
+unsigned long gettime() {
+  timeval t;
+  gettimeofday(&t, NULL);
+  return t.tv_sec * 1000000 + t.tv_usec;
+}
