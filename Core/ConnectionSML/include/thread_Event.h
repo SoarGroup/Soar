@@ -27,19 +27,19 @@ public:
 	Event() ;
 	~Event() ;
 
-	void Event::WaitForEventForever()
+	void WaitForEventForever()
 	{
 		m_Imp->WaitForEventForever() ;
 	}
 
 	// Returns true if event was triggered.  False if we just timed out.
 	//The timeout is seconds + milliseconds, where milliseconds < 1000
-	bool Event::WaitForEvent(long seconds, long milliseconds)
+	bool WaitForEvent(long seconds, long milliseconds)
 	{
 		return m_Imp->WaitForEvent(seconds, milliseconds) ;
 	}
 
-	void Event::TriggerEvent()
+	void TriggerEvent()
 	{
 		m_Imp->TriggerEvent() ;
 	}
