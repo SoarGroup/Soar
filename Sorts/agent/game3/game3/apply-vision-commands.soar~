@@ -1,10 +1,12 @@
 sp {apply*enable-owner-grouping
    (state <s> ^operator <o>
               ^io.output-link <ol>)
-    (<o> ^name enable-owner-grouping)
+    (<o> ^name enable-owner-grouping
+         ^task-id <tid>)
 -->
    (<ol> ^command <c>)
-   (<c> ^name enable-owner-grouping)
+   (<c> ^name enable-owner-grouping
+         ^task-id <tid>)
 }
 
 sp {apply*look-at-feature
@@ -12,35 +14,41 @@ sp {apply*look-at-feature
                ^io.output-link <ol>)
     (<o> ^name look-at-feature
          ^feature <feature>
-         ^sector <sector>)
+         ^sector <sector>
+         ^task-id <tid>)
 -->
    (<ol> ^command <lf>)
    (<lf> ^feature <feature>
          ^sector <sector>
-         ^name look-feature)
+         ^name look-feature
+         ^task-id <tid>)
 }
 sp {apply*move-to-feature
     (state <s> ^operator <o>
                ^io.output-link <ol>)
     (<o> ^name move-to-feature
          ^feature <feature>
-         ^sector <sector>)
+         ^sector <sector>
+         ^task-id <tid>)
 -->
    (<ol> ^command <lf>)
    (<lf> ^feature <feature>
          ^sector <sector>
-         ^name move-feature)
+         ^name move-feature
+         ^task-id <tid>)
 }
 
 sp {apply*change-view-width
     (state <s> ^operator <o>
                ^io.output-link <ol>)
     (<o> ^name change-view-width
-         ^width <w>)
+         ^width <w>
+         ^task-id <tid>)
 -->
    (<ol> ^command <vw>)
    (<vw> ^value <w>
-         ^name view-width)
+         ^name view-width
+         ^task-id <tid>)
 }
 
 
@@ -48,40 +56,62 @@ sp {apply*set-grouping-individuals
     (state <s> ^operator <o>
                ^io.output-link <ol>
                ^top-state <ts>)
-    (<o> ^name set-grouping-individuals)
+    (<o> ^name set-grouping-individuals
+         ^task-id <tid>)
 -->
    (<ts> ^grouping-level individuals)
    (<ts> ^grouping-level small-groups -)
    (<ts> ^grouping-level large-groups -)
    (<ol> ^command <g>)
    (<g> ^value 0
-        ^name grouping-radius)
+        ^name grouping-radius
+         ^task-id <tid>)
 }
 
 sp {apply*set-grouping-small-groups
     (state <s> ^operator <o>
                ^io.output-link <ol>
                ^top-state <ts>)
-    (<o> ^name set-grouping-small-groups)
+    (<o> ^name set-grouping-small-groups
+         ^task-id <tid>)
 -->
    (<ts> ^grouping-level individuals -)
    (<ts> ^grouping-level small-groups)
    (<ts> ^grouping-level large-groups -)
    (<ol> ^command <g>)
    (<g> ^value 32
-        ^name grouping-radius)
+        ^name grouping-radius
+         ^task-id <tid>)
 }
 
 sp {apply*set-grouping-large-groups
     (state <s> ^operator <o>
                ^io.output-link <ol>
                ^top-state <ts>)
-    (<o> ^name set-grouping-large-groups)
+    (<o> ^name set-grouping-large-groups
+         ^task-id <tid>)
 -->
    (<ts> ^grouping-level individuals -)
    (<ts> ^grouping-level small-groups -)
    (<ts> ^grouping-level large-groups)
    (<ol> ^command <g>)
    (<g> ^value 64
-        ^name grouping-radius)
+        ^name grouping-radius
+         ^task-id <tid>)
 }
+sp {apply*look-at-location
+    (state <s> ^operator <o>
+               ^io.output-link <ol>
+               ^top-state <ts>)
+    (<o> ^name look-at-location
+         ^x <x>
+         ^y <y>
+         ^task-id <tid>)
+-->
+   (<ol> ^command <g>)
+   (<g> ^name look-location
+        ^x <x>
+        ^y <y>
+         ^task-id <tid>)
+}
+

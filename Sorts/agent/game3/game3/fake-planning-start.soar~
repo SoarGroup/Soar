@@ -10,6 +10,19 @@ sp {propose*start-build-barracks
         ^task-name build-barracks
         ^task-id 1234)
 }
+sp {propose*start-build-barracks2
+   (state <s> ^name sorts
+              ^comment out
+              ^planning.execution-buffer <eb>)
+  -{(<eb> ^task <t>)
+    (<t> ^name build-barracks
+          ^id 12774)}
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-task
+        ^task-name build-barracks
+        ^task-id 12774)
+}
 
 sp {propose*start-build-workers
    (state <s> ^name sorts
@@ -24,19 +37,55 @@ sp {propose*start-build-workers
         ^task-id 2525)
 }
 
-sp {propose*start-build-barracks2
+sp {propose*start-build-marines
    (state <s> ^name sorts
               ^planning.execution-buffer <eb>)
   -{(<eb> ^task <t>)
-    (<t> ^name build-barracks
-          ^id 1243)}
+    (<t> ^name build-marines
+          ^id 2526)}
+   (<eb> ^task <t1>)
+   (<t1>  ^name build-barracks
+         ^completed true)
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name start-task
-        ^task-name build-barracks
-        ^task-id 1243)
+        ^task-name build-marines
+        ^task-id 2526)
 }
 
+sp {propose*start-marine-attack
+   (state <s> ^name sorts
+              ^planning.execution-buffer <eb>
+              ^top-state.build-units <bu>)
+  -{(<eb> ^task <t>)
+    (<t> ^name marine-attack
+          ^id 4444)}
+   (<bu> ^unit-type 1) # marines are being built
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-task
+        ^task-name marine-attack
+        ^task-id 4444)
+}
+
+
+sp {propose*start-miner-assignment
+   (state <s> ^name sorts
+              ^planning.execution-buffer <eb>
+              ^top-state <ts>)
+  -{(<eb> ^task <t>)
+    (<t> ^name miner-assignment
+          ^id 5555)}
+              # wait until barracks construction, so we don't take all the workers.
+   (<ts> ^build-building <bb>)
+   (<bb> ^task-id 1234 
+         ^started-build true)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-task
+        ^task-name miner-assignment
+        ^task-id 5555)
+}
 
 sp {apply*start-task
    (state <s> ^operator <o>

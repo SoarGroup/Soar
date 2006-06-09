@@ -25,7 +25,8 @@ sp {build-building*apply*init
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>
          ^building-type <ty>
-         ^building-dim <dim>)
+         ^building-dim <dim>
+         ^building-distance (+ <dim> 31 40))
 }
 
 sp {build-building*propose*set-cCenter-loc
@@ -71,7 +72,8 @@ sp {build-building*propose*find-cCenter
 -->
    (<s> ^operator <o> + =)
    (<o> ^name visual-search
-        ^search-type friendly)
+        ^search-type friendly
+        ^task-id <tid>)
 }
 
 sp {build-building*propose*find-build-location
@@ -83,7 +85,8 @@ sp {build-building*propose*find-build-location
          ^cCenter <cc>
         -^location <loc>
          ^building-dim <dim>
-         ^building-type <t>)
+         ^building-type <t>
+         ^building-distance <dist>)
   -{(<ts> ^io.output-link.command <fc>)
     (<fc> ^task-id <tid>
           ^name locate-building)}
@@ -96,7 +99,7 @@ sp {build-building*propose*find-build-location
         ^x <x>
         ^y <y>
         ^task-id <tid>
-        ^distance (+ <dim> 31 40) # keep a gap of 40 cCenter->building
+        ^distance <dist>
         ^building-type <t>) 
 }
 sp {build-building*propose*no-location-found
@@ -125,10 +128,13 @@ sp {build-building*apply*no-location-found
         ^finished-command <fi>)
    (<ts> ^build-building <bb>
          ^io.output-link <ol>)
-   (<bb> ^task-id <tid>)
+   (<bb> ^task-id <tid>
+         ^building-distance  <dist>)
    
 -->
    (<ol> ^command <fi> -)
+   (<bb> ^building-distance <dist> -)
+   (<bb> ^building-distance (+ <dist> 10))
 }
 
 sp {build-building*propose*location-found
@@ -171,21 +177,56 @@ sp {build-building*apply*location-found
         ^y <y>)
    (<ol> ^command <cm> -)
 }
-   
+
+
 
 sp {build-building*propose*change-grouping-level
    (state <s> ^name build-building
-              -^top-state.grouping-level individuals
+              ^task-id <tid>
+             ^top-state <ts>
                ^io.input-link.groups <gs>)
   -{(<gs> ^group <g>)
      (<g> ^type worker
           ^owner 0
           ^command_running 0
           ^num_members 1)}
+  -{(<ts> ^grouping-level individuals)}
+   (<ts> ^build-building <bb>)
+   (<bb> ^task-id <tid>
+         ^location <l>
+        -^worker)
 -->
    (<s> ^operator <o> + > =)
-   (<o> ^name set-grouping-individuals)
+   (<o> ^name set-grouping-individuals
+        ^task-id <tid>)
 }
+
+sp {build-building*propose*clean-grouping-command
+   (state <s> ^name build-building
+              ^task-id <tid>
+              ^io.output-link <ol>)
+   (<ol> ^command <c>)
+   (<c> ^name grouping-radius
+        ^task-id <tid>
+        ^status complete)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name bb*clear-grouping-command
+        ^task-id <tid>)
+}
+
+sp {build-building*apply*clean-grouping-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name bb*clear-grouping-command
+        ^task-id <tid>)
+   (<ol> ^command <c>)
+   (<c> ^name grouping-radius
+        ^task-id <tid>)
+-->
+   (<ol> ^command <c> -)
+}
+
 
 sp {build-building*propose*find-worker
    (state <s> ^name build-building
@@ -206,30 +247,64 @@ sp {build-building*propose*find-worker
 -->
    (<s> ^operator <o> + < =) # prefer changing group level
    (<o> ^name visual-search
-        ^search-type friendly_workers)
+        ^search-type friendly_workers
+        ^task-id <tid>)
 }
+
+sp {build-building*propose*clean-vs-command
+   (state <s> ^name build-building
+              ^task-id <tid>
+              ^io.output-link <ol>)
+   (<ol> ^command <c>)
+   (<c> ^name look-feature
+        ^task-id <tid>
+        ^status complete)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name bb*clear-vs-command
+        ^task-id <tid>)
+}
+
+sp {build-building*apply*clean-vs-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name bb*clear-vs-command
+        ^task-id <tid>)
+   (<ol> ^command <c>)
+   (<c> ^name look-feature
+        ^task-id <tid>)
+-->
+   (<ol> ^command <c> -)
+}
+
+
 
 sp {build-building*propose*remember-id
    (state <s> ^name build-building
               ^top-state <ts>
-              ^io.input-link.groups.group <g>
+              ^io <io>
               ^task-id <tid>)
+   (<io> ^input-link <il>
+         ^output-link <ol>)
+   (<il> ^groups.group <g>)
    (<g> ^type worker
         ^id <id>
         ^owner 0
         ^command_running 0
-        ^num_members 1)
+        ^num_members 1
+        ^dist_to_query <d>)
    (<ts> ^build-building <bb>)
-      #  -^reserved-worker <id>)
    (<bb> ^task-id <tid>
-         ^location.x <x>
-         ^location.y <y>
+         ^location <loc>
         -^worker <wrk>)
+# no pending commands: this worker could have been assigned by another bb
+  -{(<ol> ^command <c>)}
   
 -->
-    (<s> ^operator <o> +  =)
+    (<s> ^operator <o> + =)
     (<o> ^name bb*remember-id
          ^worker <id>
+         ^dist <d>
          ^task-id <tid>)
 }
 
@@ -245,6 +320,18 @@ sp {build-building*apply*remember-id
    (<bb> ^worker <id>)
   # (<ts> ^reserved-worker <id>)
 }
+
+sp {build-building*prefer-closer-worker
+   (state <s> ^operator <o1> +
+              ^operator <o2> +)
+   (<o1> ^name bb*remember-id
+         ^dist <d1>)
+   (<o2> ^name bb*remember-id
+         ^dist <d2> < <d1>)
+-->
+   (<s> ^operator <o2> > <o1>)
+}
+
 
 sp {build-building*propose*clear-worker-id # worker disappears
    (state <s> ^name build-building
@@ -318,7 +405,8 @@ sp {build-building*propose*mark-started
               ^io.output-link <ol>)
    (<ol> ^command <fc>)
    (<fc> ^task-id <tid>
-         ^name build)
+         ^name build
+         ^status complete)
 -->
    (<s> ^operator <o> + >)
    (<o> ^name build-building*mark-started
@@ -334,7 +422,8 @@ sp {build-building*apply*mark-started
          ^build-building <bb>)
    (<ol> ^command <fc>)
    (<fc> ^task-id <tid>
-         ^name build)
+         ^name build
+         ^status complete)
    (<bb> ^task-id <tid>)
 -->
    (<bb> ^started-build true)

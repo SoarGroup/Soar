@@ -1,42 +1,29 @@
 
 
-sp {visual-search*propose*start-search
-    (state <s> ^name visual-search
-               ^top-state <ts>
-               ^comment out)
-    (<ts> -^visual-search <vs>)
--->
-   (<s> ^operator <o> + >)
-   (<o> ^name visual-search*start-search)
-}
-
-sp {visual-search*apply*start-search
-   (state <s> ^operator <o>
-              ^top-state <ts>)
-   (<o> ^name visual-search*start-search)
--->
-   (<ts> ^visual-search.count 0)
-}
-
 sp {visual-search*propose*search-type
    (state <s> ^name visual-search
               ^superstate.operator.search-type <f>
+              ^superstate.operator.task-id <tid>
               ^io.input-link <il>
-              ^top-state <ts>)
+              ^top-state <ts>
+              ^io.output-link <ol>)
    (<il> ^feature-maps.friendly <fr>)
    (<fr> ^<sector> > 0)
-  # (<ts> ^visual-search.count <c>)
    (<il> ^groups.group <g>) #re-propose if groups change
+  -{(<ol> ^command <c>)
+    (<c> ^name look-at-feature)}
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name look-at-feature
         ^feature <f>
-        ^sector <sector>)
+        ^sector <sector>
+        ^task-id <tid>)
 }
 
 sp {visual-search*propose*search-worker
    (state <s> ^name visual-search
               ^superstate.operator.worker-id <id>
+              ^superstate.operator.task-id <tid>
               ^io.input-link <il>
               ^top-state <ts>)
    (<il> ^feature-maps.friendly_workers <fr>)
@@ -50,5 +37,6 @@ sp {visual-search*propose*search-worker
    (<s> ^operator <o> + > =)
    (<o> ^name look-at-feature
         ^feature friendly_workers
-        ^sector <sector>)
+        ^sector <sector>
+        ^task-id <tid>)
 }

@@ -1,3 +1,25 @@
+# all actions need task-id's, since multiple tasks might issue similar commands
+
+# remove all status errors- the operators should just get re-proposed
+
+sp {propose*remove-errors
+   (state <s> ^io.output-link.command <c>)
+   (<c> ^status error)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name remove-status-error
+        ^command <c>)
+}
+
+sp {apply*remove-status-error
+   (state <s> ^operator <o>
+              ^top-state.io.output-link <ol>)
+   (<o> ^name remove-status-error
+        ^command <c>)
+-->
+   (<ol> ^command <c> -)
+}
+
 sp {apply*orts-move
    (state <s> ^operator <o>
               ^io.output-link <ol>)
@@ -14,6 +36,22 @@ sp {apply*orts-move
         ^name move
         ^task-id <tid>)
 }
+
+sp {apply*orts-attack
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name orts-attack
+        ^friendly-group <gf>
+        ^enemy-group <ge>
+        ^task-id <tid>)
+-->
+   (<ol> ^command <m>)
+   (<m> ^group0 <gf>
+        ^group1 <ge>
+        ^name attack
+        ^task-id <tid>)
+}
+
 sp {apply*orts-mine
    (state <s> ^operator <o>
               ^io.output-link <ol>)
@@ -26,6 +64,7 @@ sp {apply*orts-mine
         ^name mine
         ^task-id <tid>)
 }
+
 
 sp {apply*orts-build
    (state <s> ^operator <o>
@@ -102,41 +141,3 @@ sp {apply*orts-train
         ^task-id <tid>)
 }
 
-sp {propose*mark-finished
-   (state <s> ^top-state <ts>
-              ^comment out)
-   (<ts> ^io.output-link <ol>
-         ^sent-command <sc>)
-   (<sc> ^name <nm>
-         ^task-id <tid>)
-   (<ol> ^command <com>)
-   (<com> ^status <stat>
-          ^name <nm>
-          ^task-id <tid>)
--->
-   (<s> ^operator <o> + > =)
-   (<o> ^name mark-finished
-        ^command-name <nm>
-        ^status <stat>
-        ^task-id <tid>)
-}
-
-sp {apply*mark-finished
-   (state <s> ^operator <o>
-              ^top-state <ts>
-              ^io.output-link <ol>)
-   (<o> ^name mark-finished
-        ^command-name <nm>
-        ^status <st>
-        ^task-id <tid>)
-  
-   (<ol> ^command <c>)
-   (<c> ^name <nm>
-        ^task-id <tid>)
--->
-   (<ol> ^command <c> -)
-   (<ts> ^finished-command <fc>)
-   (<fc> ^name <nm>
-         ^task-id <tid>
-         ^status <st>)
-}
