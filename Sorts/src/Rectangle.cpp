@@ -196,3 +196,51 @@ ostream& operator<<(ostream& os, const Rectangle& r) {
   return os;
 }
 
+coordinate Rectangle::getClosestEdgePoint(coordinate& from) {
+  // assume coordinate is not in box!
+  coordinate result;
+  if (from.x >= xmin and from.x <= xmax) {
+    result.x = from.x;
+    if (from.y < ymin) {
+      result.y = ymin;
+    }
+    else {
+      result.y = ymax;
+    }
+    return result;
+  }
+  
+  if (from.y >= ymin and from.y <= ymax) {
+    result.y = from.y;
+    if (from.x < xmin) {
+      result.x = xmin;
+    }
+    else {
+      result.x = xmax;
+    }
+    return result;
+  }
+  
+  if (from.y <= ymin and from.x <= xmin) {
+    result.x = xmin;
+    result.y = ymin;
+    return result;
+  }
+  if (from.y >= ymax and from.x >= xmax) {
+    result.x = xmax;
+    result.y = ymax;
+    return result;
+  }
+  if (from.y <= ymin and from.x >= xmax) {
+    result.x = xmax;
+    result.y = ymin;
+    return result;
+  }
+  //if (from.y >= ymax and from.x <= xmin) {
+    // implied
+    result.x = xmin;
+    result.y = ymax;
+    return result;
+  //}
+}
+  

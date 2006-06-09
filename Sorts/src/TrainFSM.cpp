@@ -29,7 +29,10 @@ void TrainFSM::init(vector<sint4> params) {
 
 int TrainFSM::update() {  
   int active;
-  int currentFrame;
+  if (gob->is_pending_action()) {
+    msg << "action has not taken effect!\n";
+    return FSM_RUNNING;
+  }
   switch (state) {
     case IDLE:
       msg << "training beginning.\n";
@@ -47,17 +50,17 @@ int TrainFSM::update() {
           gob->set_action("build_tank", dummy);
           break;
       }
-      setFrame = Sorts::OrtsIO->getViewFrame();
+      trainCycles = 0;
       nextState = TRAINING;
       break;
     case TRAINING:
-      currentFrame = Sorts::OrtsIO->getActionFrame();
+      trainCycles++;
       active = gob->get_int("active");
       if (active == 0) {
-        if ((currentFrame - setFrame) < MAX_WARMUP_TIME) {
+        if (trainCycles < MAX_WARMUP_TIME) {
           msg << "giving the action a chance to stick\n";
         }
-        else if ((currentFrame - setFrame) < MIN_BUILD_TIME) {
+        else if (trainCycles < MIN_BUILD_TIME) {
           msg << "done too quickly, returning failure.\n";
           return FSM_FAILURE;
         }

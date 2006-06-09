@@ -10,7 +10,6 @@
 
 #define msg cout << "MM: "
 
-#define NO_DOS
 #define NO_OBJ_OBJ
 
 #define UNUSABLE_OPTIMALITY 1000
@@ -22,7 +21,7 @@
 
 #define PF_CACHE
 
-#define MAX_NEW_ROUTES 0000
+#define MAX_NEW_ROUTES 1000
 
 #define SLDOO_OVERESTIMATE 0//30//15
 #define OOEE_OVERESTIMATE 0//40//20

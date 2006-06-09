@@ -37,12 +37,9 @@ int AttackNearFSM::update() {
   else {
     count++;
   }
-
-  for(list<GameObj*>::iterator
-      i  = nearby.begin();
-      i != nearby.end();
-      ++i)
-  {
+  
+  list<GameObj*>::iterator i = nearby.begin();
+  while (i != nearby.end()) {
     if (Sorts::OrtsIO->isAlive(Sorts::OrtsIO->getGobId(*i)) &&
         *(*i)->sod.owner != Sorts::OrtsIO->getMyId() && 
         *(*i)->sod.owner != Sorts::OrtsIO->getWorldId())
@@ -53,9 +50,10 @@ int AttackNearFSM::update() {
         sgob->setLastAttacked(attackParams[0]);
         break;
       }
+      ++i;
     }
     else {
-      nearby.erase(i);
+      i = nearby.erase(i);
     }
   }
   return FSM_RUNNING;

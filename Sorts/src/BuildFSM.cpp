@@ -60,6 +60,10 @@ int BuildFSM::update() {
   Circle unitBounds(*gob->sod.x, *gob->sod.y, *gob->sod.radius);
 
   switch (state) {
+    if (gob->is_pending_action()) {
+      msg << "action has not taken effect!\n";
+      return FSM_RUNNING;
+    }
     case IDLE:
       // begin moving toward build site
       if (moveFSM == NULL) {

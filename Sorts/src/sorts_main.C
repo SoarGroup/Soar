@@ -93,12 +93,11 @@ void SoarOutputEventHandler
   if (Sorts::cyclesSoarAhead > 10) {
     Sorts::SoarIO->stopSoar();
   }
-  else {
-    Sorts::cyclesSoarAhead++;
-  }
+  Sorts::cyclesSoarAhead++;
 
   pthread_mutex_lock(Sorts::mutex);
   std::cout << "SOAR EVENT {\n";
+  
   if (Sorts::catchup == true) {
     std::cout << "ignoring Soar event, ORTS is behind.\n";
     pthread_mutex_unlock(Sorts::mutex);
@@ -394,7 +393,7 @@ int main(int argc, char *argv[]) {
   pKernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &sorts);
 #endif
 
- // pAgent->RegisterForPrintEvent(smlEVENT_PRINT, printOutput, &sorts);  
+  pAgent->RegisterForPrintEvent(smlEVENT_PRINT, printOutput, &sorts);  
 
   // start Soar in a different thread
   pthread_attr_t soarThreadAttribs;

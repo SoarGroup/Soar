@@ -551,9 +551,6 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       }
       break;
     case OA_ATTACK: {
-      vector<SoarGameObject*> myUnits;
-      myUnits.insert(myUnits.begin(), members.begin(), members.end());
-
       int managerId = Sorts::amr->assignManager(targets);
       tempVec.clear();
       tempVec.push_back(managerId);

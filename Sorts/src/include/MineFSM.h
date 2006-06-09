@@ -32,6 +32,8 @@ private:
   bool timed;
   int giveUpThreshold;
   int panicCount;
+  coordinate dropoffLoc;
+  void calcDropoffLoc();
 };
 
 #endif

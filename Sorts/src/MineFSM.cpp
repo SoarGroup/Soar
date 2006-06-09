@@ -30,7 +30,6 @@ int MineFSM::update() {
     timer++;
   }
   // time since timer started
-  msg << "timer: " << timer << endl;
 
   if (timer > RAW_GIVEUP_THRESHOLD) {
     msg << "giving up before starting\n";
@@ -38,6 +37,7 @@ int MineFSM::update() {
     
     if (newRoute != NULL) {
       route = newRoute;
+      calcDropoffLoc();
       giveUpThreshold = (int)(GIVEUPSPEED*route->pathlength);
       timer = 0;//Sorts::OrtsIO->getViewFrame(); 
       timed = false;// don't clock this leg, we're not on the new route
@@ -51,6 +51,7 @@ int MineFSM::update() {
     newRoute = Sorts::mineManager->minerGivesUp(route, this);
     if (newRoute != NULL) {
       route = newRoute;
+      calcDropoffLoc();
       giveUpThreshold = GIVEUPSPEED*((int)route->pathlength);
       timer = 0;//Sorts::OrtsIO->getViewFrame(); 
       timed = false;// don't clock this leg, we're not on the new route
@@ -70,8 +71,8 @@ int MineFSM::update() {
       timer = 0;//Sorts::OrtsIO->getViewFrame();
       if (gob->get_int("minerals") > 1) {
         // go to cc first
-        tempVec.push_back(route->dropoffLoc.x);
-        tempVec.push_back(route->dropoffLoc.y);
+        tempVec.push_back(dropoffLoc.x);
+        tempVec.push_back(dropoffLoc.y);
         moveFSM->init(tempVec);
         moveFSM->update();
         state = MOVING_TO_DROPOFF;
@@ -104,6 +105,7 @@ int MineFSM::update() {
         newRoute = Sorts::mineManager->minerGivesUp(route, this);
         if (newRoute != NULL) {
           route = newRoute;
+          calcDropoffLoc();
           giveUpThreshold = (int)(GIVEUPSPEED*route->pathlength);
           timer = 0;//Sorts::OrtsIO->getViewFrame(); 
           timed = false;// don't clock this leg, we're not on the new route
@@ -160,11 +162,11 @@ int MineFSM::update() {
           //assert(false);
         }
         else {
-          tempVec.push_back(route->dropoffLoc.x);
-          tempVec.push_back(route->dropoffLoc.y);
-          Sorts::terrainModule->removeControlCenters();
+          tempVec.push_back(dropoffLoc.x);
+          tempVec.push_back(dropoffLoc.y);
+          //Sorts::terrainModule->removeControlCenters();
           moveFSM->init(tempVec);
-          Sorts::terrainModule->insertControlCenters();
+          //Sorts::terrainModule->insertControlCenters();
           moveFSM->update();
           //timer = 0;//Sorts::OrtsIO->getViewFrame();
           timed = true;
@@ -198,8 +200,8 @@ int MineFSM::update() {
       else if (moveStatus == FSM_FAILURE) {
         // ??
        
-        tempVec.push_back(route->dropoffLoc.x);
-        tempVec.push_back(route->dropoffLoc.y);
+        tempVec.push_back(dropoffLoc.x);
+        tempVec.push_back(dropoffLoc.y);
         tempVec.push_back(precision);
         Sorts::terrainModule->removeControlCenters();
         moveFSM->init(tempVec);
@@ -295,8 +297,24 @@ void MineFSM::init(vector<sint4> p) {
   state = IDLE;
 
   assert (p.size() == 0);
-  moveFSM = new MoveFSM(gob);
 
+  moveFSM = new MoveFSM(gob);
+  calcDropoffLoc();
+}
+
+
+void MineFSM::calcDropoffLoc() {
+#ifdef xxNO_DOS
+  // make fake d.o. loc
+  int ccWidth = 4 * 16 - 2;
+  int ccHeight = 4 * 16 - 2;
+  coordinate ccLoc = route->cCenterInfo->cCenter->getLocation();
+  Rectangle r(ccLoc.x, ccLoc.y, ccWidth, ccHeight, true);
+  dropoffLoc = r.getClosestEdgePoint(route->miningLoc);
+  msg << "fake DO loc: " << dropoffLoc << endl;
+#else
+  dropoffLoc = route->dropoffLoc;
+#endif
 }
 
 MineFSM::~MineFSM() {

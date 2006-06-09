@@ -23,7 +23,7 @@ public:
 private:
   int num, numTrained;
   TrainingType type;
-  int setFrame;
+  int trainCycles;
 
   enum TrainState { IDLE, TRAINING };
   TrainState state, nextState;
