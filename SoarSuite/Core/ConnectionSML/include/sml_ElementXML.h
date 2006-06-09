@@ -78,7 +78,7 @@ public:
 	/*************************************************************
 	* @brief XML ids can only contain letters, numbers, “.” “-“ and “_”.
 	*************************************************************/
-	static bool ElementXML::IsValidID(char const* str) ;
+	static bool IsValidID(char const* str) ;
 
 public:
 	////////////////////////////////////////////////////////////////
