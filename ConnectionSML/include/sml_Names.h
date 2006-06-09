@@ -152,12 +152,12 @@ public:
 	// Tag learning has attribute kTypeString
 
 	// filter support
-	static char const* const sml_Names::kTagFilter ;
-	static char const* const sml_Names::kFilterCommand ;
-	static char const* const sml_Names::kFilterError ;
-	static char const* const sml_Names::kFilterOutput ;
-	static char const* const sml_Names::kFilterName ;
-	static char const* const sml_Names::kParamNoFiltering ;
+	static char const* const kTagFilter ;
+	static char const* const kFilterCommand ;
+	static char const* const kFilterError ;
+	static char const* const kFilterOutput ;
+	static char const* const kFilterName ;
+	static char const* const kParamNoFiltering ;
 
     //production printing
     static char const* const kTagConditions;
