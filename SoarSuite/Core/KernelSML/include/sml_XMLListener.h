@@ -86,7 +86,7 @@ public:
 	void FlushOutput(egSKIXMLEventId eventID);
 
 	// Echo the list of wmes received back to any listeners
-	void XMLListener::FireInputReceivedEvent(ElementXML const* pCommands) ;
+	void FireInputReceivedEvent(ElementXML const* pCommands) ;
 } ;
 
 }
