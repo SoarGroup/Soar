@@ -75,6 +75,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FilterC", "Tools\FilterC\Fi
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLPython", "Core\ClientSMLSWIG\Python\ClientSMLPython.vcproj", "{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -430,6 +434,26 @@ Global
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (gSKI DLL).Build.0 = Release|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (no SWIG).ActiveCfg = Release|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release (no SWIG).Build.0 = Release|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug.ActiveCfg = Debug|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug.Build.0 = Debug|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug (Core).ActiveCfg = Debug|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug (Core).Build.0 = Debug|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug (gSKI DLL).ActiveCfg = Debug|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug (gSKI DLL).Build.0 = Debug|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug (no SWIG).ActiveCfg = Debug|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug (no SWIG).Build.0 = Debug|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Distribution.ActiveCfg = Distribution|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Distribution.Build.0 = Distribution|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Distribution-libs.ActiveCfg = Distribution|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Distribution-libs.Build.0 = Distribution|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release.ActiveCfg = Release|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release.Build.0 = Release|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (Core).ActiveCfg = Release|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (Core).Build.0 = Release|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (gSKI DLL).ActiveCfg = Release|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (gSKI DLL).Build.0 = Release|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (no SWIG).ActiveCfg = Release|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release (no SWIG).Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
