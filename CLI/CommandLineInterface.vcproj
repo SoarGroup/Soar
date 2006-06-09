@@ -1,163 +1,234 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="8.00"
 	Name="CommandLineInterface"
 	ProjectGUID="{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}"
 	RootNamespace="getopttest"
-	Keyword="ManagedCProj">
+	Keyword="ManagedCProj"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="build"
 			IntermediateDirectory="$(OutDir)\Debug"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
-			ManagedExtensions="FALSE">
+			ManagedExtensions="0"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="include;..\gSKI\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG;_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
+				StringPooling="true"
+				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				BufferSecurityCheck="FALSE"
-				EnableFunctionLevelLinking="TRUE"
+				BufferSecurityCheck="false"
+				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				AssemblerListingLocation="$(IntDir)/"
 				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="4"
-				Detect64BitPortabilityProblems="FALSE"
-				DebugInformationFormat="4"/>
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="4"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\$(ProjectName).lib"/>
+				OutputFile="$(OutDir)\$(ProjectName).lib"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="build"
 			IntermediateDirectory="$(OutDir)\Release"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
-			ManagedExtensions="FALSE"
-			WholeProgramOptimization="TRUE">
+			ManagedExtensions="0"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
-				GlobalOptimizations="TRUE"
+				Optimization="2"
 				InlineFunctionExpansion="2"
-				OmitFramePointers="TRUE"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="include;..\gSKI\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="TRUE"
-				MinimalRebuild="FALSE"
+				StringPooling="true"
+				MinimalRebuild="false"
 				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="TRUE"
+				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				AssemblerListingLocation="$(IntDir)/"
 				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="4"
-				Detect64BitPortabilityProblems="FALSE"
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\$(ProjectName).lib"/>
+				OutputFile="$(OutDir)\$(ProjectName).lib"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Distribution|Win32"
 			OutputDirectory="build"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
-			ManagedExtensions="FALSE"
-			WholeProgramOptimization="TRUE">
+			ManagedExtensions="0"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
-				GlobalOptimizations="TRUE"
+				Optimization="2"
 				InlineFunctionExpansion="2"
-				OmitFramePointers="TRUE"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="include;..\gSKI\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="TRUE"
-				MinimalRebuild="FALSE"
+				StringPooling="true"
+				MinimalRebuild="false"
 				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="TRUE"
+				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				AssemblerListingLocation="$(IntDir)/"
 				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="4"
-				Detect64BitPortabilityProblems="FALSE"
-				DebugInformationFormat="0"/>
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="0"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\$(ProjectName).lib"/>
+				OutputFile="$(OutDir)\$(ProjectName).lib"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -166,233 +237,306 @@
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
 			<File
-				RelativePath=".\src\cli_Aliases.cpp">
+				RelativePath=".\src\cli_Aliases.cpp"
+				>
 			</File>
 			<File
-				RelativePath=".\src\cli_CommandLineInterface.cpp">
+				RelativePath=".\src\cli_CommandLineInterface.cpp"
+				>
 			</File>
 			<File
-				RelativePath=".\src\cli_Commands.cpp">
+				RelativePath=".\src\cli_Commands.cpp"
+				>
 			</File>
 			<Filter
 				Name="Commands"
-				Filter="">
+				>
 				<File
-					RelativePath=".\src\cli_addwme.cpp">
+					RelativePath=".\src\cli_addwme.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_alias.cpp">
+					RelativePath=".\src\cli_alias.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_attributepreferencesmode.cpp">
+					RelativePath=".\src\cli_attributepreferencesmode.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_cd.cpp">
+					RelativePath=".\src\cli_cd.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_chunknameformat.cpp">
+					RelativePath=".\src\cli_chunknameformat.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_clog.cpp">
+					RelativePath=".\src\cli_clog.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_commandtofile.cpp">
+					RelativePath=".\src\cli_commandtofile.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_defaultwmedepth.cpp">
+					RelativePath=".\src\cli_defaultwmedepth.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_dirs.cpp">
+					RelativePath=".\src\cli_dirs.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_echo.cpp">
+					RelativePath=".\src\cli_echo.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_echocommands.cpp">
+					RelativePath=".\src\cli_echocommands.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_editproduction.cpp">
+					RelativePath=".\src\cli_editproduction.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_excise.cpp">
+					RelativePath=".\src\cli_excise.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_explainbacktraces.cpp">
+					RelativePath=".\src\cli_explainbacktraces.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_firingcounts.cpp">
+					RelativePath=".\src\cli_firingcounts.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_gdsprint.cpp">
+					RelativePath=".\src\cli_gdsprint.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_help.cpp">
+					RelativePath=".\src\cli_help.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_indifferentselection.cpp">
+					RelativePath=".\src\cli_indifferentselection.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_initsoar.cpp">
+					RelativePath=".\src\cli_initsoar.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_inputperiod.cpp">
+					RelativePath=".\src\cli_inputperiod.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_internalsymbols.cpp">
+					RelativePath=".\src\cli_internalsymbols.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_learn.cpp">
+					RelativePath=".\src\cli_learn.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_ls.cpp">
+					RelativePath=".\src\cli_ls.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_matches.cpp">
+					RelativePath=".\src\cli_matches.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_maxchunks.cpp">
+					RelativePath=".\src\cli_maxchunks.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_maxelaborations.cpp">
+					RelativePath=".\src\cli_maxelaborations.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_maxniloutputcycles.cpp">
+					RelativePath=".\src\cli_maxniloutputcycles.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_memories.cpp">
+					RelativePath=".\src\cli_memories.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_multiattributes.cpp">
+					RelativePath=".\src\cli_multiattributes.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_numericindifferentmode.cpp">
+					RelativePath=".\src\cli_numericindifferentmode.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_osupportmode.cpp">
+					RelativePath=".\src\cli_osupportmode.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_popd.cpp">
+					RelativePath=".\src\cli_popd.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_preferences.cpp">
+					RelativePath=".\src\cli_preferences.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_print.cpp">
+					RelativePath=".\src\cli_print.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_productionfind.cpp">
+					RelativePath=".\src\cli_productionfind.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_pushd.cpp">
+					RelativePath=".\src\cli_pushd.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_pwatch.cpp">
+					RelativePath=".\src\cli_pwatch.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_pwd.cpp">
+					RelativePath=".\src\cli_pwd.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_quit.cpp">
+					RelativePath=".\src\cli_quit.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_removewme.cpp">
+					RelativePath=".\src\cli_removewme.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_retenet.cpp">
+					RelativePath=".\src\cli_retenet.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_run.cpp">
+					RelativePath=".\src\cli_run.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_savebacktraces.cpp">
+					RelativePath=".\src\cli_savebacktraces.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_setlibrarylocation.cpp">
+					RelativePath=".\src\cli_setlibrarylocation.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_setstopphase.cpp">
+					RelativePath=".\src\cli_setstopphase.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_soar8.cpp">
+					RelativePath=".\src\cli_soar8.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_soarnews.cpp">
+					RelativePath=".\src\cli_soarnews.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_source.cpp">
+					RelativePath=".\src\cli_source.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_sp.cpp">
+					RelativePath=".\src\cli_sp.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_srand.cpp">
+					RelativePath=".\src\cli_srand.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_stats.cpp">
+					RelativePath=".\src\cli_stats.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_stopsoar.cpp">
+					RelativePath=".\src\cli_stopsoar.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_time.cpp">
+					RelativePath=".\src\cli_time.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_timers.cpp">
+					RelativePath=".\src\cli_timers.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_verbose.cpp">
+					RelativePath=".\src\cli_verbose.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_version.cpp">
+					RelativePath=".\src\cli_version.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_waitsnc.cpp">
+					RelativePath=".\src\cli_waitsnc.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_warnings.cpp">
+					RelativePath=".\src\cli_warnings.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_watch.cpp">
+					RelativePath=".\src\cli_watch.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\src\cli_watchwmes.cpp">
+					RelativePath=".\src\cli_watchwmes.cpp"
+					>
 				</File>
 			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			>
 			<File
-				RelativePath=".\include\cli_Aliases.h">
+				RelativePath=".\include\cli_Aliases.h"
+				>
 			</File>
 			<File
-				RelativePath=".\include\cli_CLIError.h">
+				RelativePath=".\include\cli_CLIError.h"
+				>
 			</File>
 			<File
-				RelativePath=".\include\cli_CommandData.h">
+				RelativePath=".\include\cli_CommandData.h"
+				>
 			</File>
 			<File
-				RelativePath=".\include\cli_CommandLineInterface.h">
+				RelativePath=".\include\cli_CommandLineInterface.h"
+				>
 			</File>
 			<File
-				RelativePath=".\include\cli_Commands.h">
+				RelativePath=".\include\cli_Commands.h"
+				>
 			</File>
 			<File
-				RelativePath="..\shared\include\Export.h">
+				RelativePath="..\shared\include\Export.h"
+				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			>
 		</Filter>
 	</Files>
 	<Globals>
 		<Global
 			Name="DevPartner_IsInstrumented"
-			Value="1"/>
+			Value="1"
+		/>
 	</Globals>
 </VisualStudioProject>
