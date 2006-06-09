@@ -275,6 +275,8 @@ virtual void findPath(const Object* gob, const Loc &l2, Path &path) = 0;
       virtual void removeImaginaryWorker(Loc l) = 0;
       virtual void insertDynamicObjs() = 0;
       virtual void removeDynamicObjs() = 0;
+      virtual void insertControlCenters() = 0;
+      virtual void removeControlCenters() = 0;
 
 
   /** Compute path for a given (circular only) Object with a given Goal,

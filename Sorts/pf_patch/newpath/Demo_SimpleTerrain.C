@@ -34,6 +34,12 @@ namespace Demo_SimpleTerrain {
   void ST_Terrain::insertDynamicObjs() {
     pfEngine->insertDynamicObjs();
   }
+  void ST_Terrain::removeControlCenters() {
+    pfEngine->removeControlCenters();
+  }
+  void ST_Terrain::insertControlCenters() {
+    pfEngine->insertControlCenters();
+  }
 void ST_Terrain::findPath(const Object* gob, const Object* l2, Path &path) {
     sint4 x1, y1; l2->get_center(x1, y1);
     Loc l;

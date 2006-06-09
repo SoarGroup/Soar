@@ -121,6 +121,8 @@ namespace Demo_SimpleTerrain {
     virtual void removeImaginaryWorker(Loc l);
     virtual void insertDynamicObjs();
     virtual void removeDynamicObjs();
+    virtual void insertControlCenters();
+    virtual void removeControlCenters();
 
     //@}
     //---------------------------------------------------------------------

@@ -198,6 +198,20 @@ namespace Demo_SimpleTerrain
       ir_object(*it, true);
     }
   }
+  void ST_Terrain::PFEngine::removeControlCenters() {
+    for (std::set<const Object*>::iterator it = controlCenters.begin();
+         it != controlCenters.end();
+         it++) {
+      ir_object(*it, false);
+    }
+  }
+  void ST_Terrain::PFEngine::insertControlCenters() {
+    for (std::set<const Object*>::iterator it = controlCenters.begin();
+         it != controlCenters.end();
+         it++) {
+      ir_object(*it, true);
+    }
+  }
   bool ST_Terrain::PFEngine::find_path(const Object *obj,
                                        const TerrainBase::Loc &goal, 
                                        TerrainBase::Path& output)
@@ -601,6 +615,10 @@ namespace Demo_SimpleTerrain
   //-----------------------------------------------------------------------------
   void ST_Terrain::PFEngine::insert_object(const Object *obj)
   {    
+    if (((GameObj*)obj)->bp_name() == "controlCenter") {
+      controlCenters.insert(obj);
+    }
+       
     ir_object(obj, true);
     if (((GameObj*)obj)->bp_name() == "worker" or
         ((GameObj*)obj)->bp_name() == "sheep" ) {
@@ -611,6 +629,9 @@ namespace Demo_SimpleTerrain
   //-----------------------------------------------------------------------------
   void ST_Terrain::PFEngine::remove_object(const Object *obj)
   {
+    if (((GameObj*)obj)->bp_name() == "controlCenter") {
+      controlCenters.erase(obj);
+    }
     ir_object(obj, false);
     if (((GameObj*)obj)->bp_name() == "worker" or
         ((GameObj*)obj)->bp_name() == "sheep" ) {

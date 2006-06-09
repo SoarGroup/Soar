@@ -268,5 +268,11 @@ void TerrainModule::insertDynamicObjs() {
 void TerrainModule::removeDynamicObjs() {
   timp.removeDynamicObjs();
 }
+void TerrainModule::insertControlCenters() {
+  timp.insertControlCenters();
+}
+void TerrainModule::removeControlCenters() {
+  timp.removeControlCenters();
+}
 
 

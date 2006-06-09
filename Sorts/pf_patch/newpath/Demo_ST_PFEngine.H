@@ -37,7 +37,10 @@ namespace Demo_SimpleTerrain {
     void removeImaginaryWorker(TerrainBase::Loc l);
     void insertDynamicObjs();
     void removeDynamicObjs();
+    void insertControlCenters();
+    void removeControlCenters();
     std::set<const Object*> dynamicObjs;
+    std::set<const Object*> controlCenters;
 
 
 //    typedef boost::shared_ptr< SimpleMap<SizeCell> > MapPtr;

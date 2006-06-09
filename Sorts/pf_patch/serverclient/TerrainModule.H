@@ -24,6 +24,8 @@ void findPath(GameObj* gob, TerrainBase::Loc goal, TerrainBase::Path& path);
     void removeImaginaryWorker(TerrainBase::Loc l);
     void insertDynamicObjs();
     void removeDynamicObjs();
+    void insertControlCenters();
+    void removeControlCenters();
 
 
   //---------------------------------------------------------
