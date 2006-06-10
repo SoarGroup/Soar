@@ -13,6 +13,7 @@ enum ObjectActionType {
   OA_NO_SUCH_ACTION,
   OA_MINE,
   OA_MOVE,
+  OA_MOVE_INTERNAL,
   OA_BUILD,
   OA_ATTACK,
   OA_ATTACK_NEAR,

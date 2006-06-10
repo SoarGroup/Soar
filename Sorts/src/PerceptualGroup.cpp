@@ -205,6 +205,8 @@ void PerceptualGroup::generateData() {
   attribs.add("speed", speed);
   attribs.add("num_members", size);
 
+  attribs.add("enemy", ((not world) and (not friendly)));
+
   attribs.add("x-pos", x);
   attribs.add("y-pos", y);
   attribs.add("x-min", bbox.xmin);
@@ -470,13 +472,13 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
   
   switch (type) {
     case OA_MOVE:
-      // the third param is speed, always use 3 (the max)
-      assert(params.size() == 2);
-      intIt = params.begin();  
-      tempVec.push_back(*intIt);
-      intIt++;
-      tempVec.push_back(*intIt);
-      tempVec.push_back(3);
+      // the third param is precision
+      assert(params.size() >= 2);
+      for (intIt = params.begin();
+          intIt != params.end();
+          intIt++) {
+        tempVec.push_back(*intIt);
+      }
 
       currentCommand = "move";
       sticky = true;
@@ -551,6 +553,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       }
       break;
     case OA_ATTACK: {
+      currentCommand = "attack";
       int managerId = Sorts::amr->assignManager(targets);
       tempVec.clear();
       tempVec.push_back(managerId);

@@ -65,7 +65,7 @@ using namespace std;
 
 MoveFSM::MoveFSM(GameObj* go) 
             : FSM(go) {
-  name = OA_MOVE;
+  name = OA_MOVE_INTERNAL;
 
   vec_count = 0;
   veerCount = 0;

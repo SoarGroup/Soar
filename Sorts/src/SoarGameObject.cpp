@@ -3,7 +3,7 @@
 #include<string>
 
 #include "MineFSM.h"
-#include "MoveFSM.h"
+#include "PersistentMoveFSM.h"
 #include "IdleFSM.h"
 #include "AttackFSM.h"
 #include "AttackNearFSM.h"
@@ -29,7 +29,7 @@ void SoarGameObject::identifyBehaviors() {
       FSM* mineBehavior = new MineFSM(gob);
       ((MineFSM*)mineBehavior)->setSoarGameObject(this);
       registerBehavior(mineBehavior);
-      FSM* moveBehavior = new MoveFSM(gob);
+      FSM* moveBehavior = new PersistentMoveFSM(gob);
       registerBehavior(moveBehavior);
       FSM* buildBehavior = new BuildFSM(gob);
       registerBehavior(buildBehavior);
@@ -37,7 +37,7 @@ void SoarGameObject::identifyBehaviors() {
     }
     else if (name == "marine") {
       msg << "Registering behaviors for " << (int) gob << endl;
-      FSM* moveBehavior = new MoveFSM(gob);
+      FSM* moveBehavior = new PersistentMoveFSM(gob);
       registerBehavior(moveBehavior);
       FSM* attackBehavior = new AttackFSM(this);
       registerBehavior(attackBehavior);
@@ -47,7 +47,7 @@ void SoarGameObject::identifyBehaviors() {
      }
     else if (name == "tank") {
       msg << "Registering behaviors for " << (int) gob << endl;
-      FSM* moveBehavior = new MoveFSM(gob);
+      FSM* moveBehavior = new PersistentMoveFSM(gob);
       registerBehavior(moveBehavior);
       FSM* attackBehavior = new AttackFSM(this);
       registerBehavior(attackBehavior);
