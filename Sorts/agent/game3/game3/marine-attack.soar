@@ -1,0 +1,12 @@
+sp {propose*marine-attack
+   (state <s> ^name sorts
+              ^running-task <rt>)
+   (<rt> ^name marine-attack
+         ^id <id>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name explore-attack
+        ^unit-type marine
+        ^group-size 5
+        ^task-id <id>) 
+}

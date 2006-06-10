@@ -19,7 +19,7 @@ sp {miner-assignment*propose*change-grouping-level
               ^top-state <ts>)
   -{(<ts> ^grouping-level large-groups)}
 -->
-   (<s> ^operator <o> +)
+   (<s> ^operator <o> + =)
    (<o> ^name set-grouping-large-groups
         ^task-id <tid>)
 }

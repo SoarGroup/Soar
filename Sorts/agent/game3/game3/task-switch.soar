@@ -1,0 +1,47 @@
+sp {top-state*propose*wait
+    (state <s> ^attribute state
+               ^choices none
+              -^operator.name wait)
+-->
+   (<s> ^operator <o> + <)
+    (<o> ^name wait)
+}
+
+
+sp {task-switch*propose*switch
+   (state <s> ^attribute state
+              ^choices none
+              ^top-state <ts>
+              ^superstate.task-id <tid>)
+   (<ts> ^running-task <rt>)
+   (<rt> ^id <tid>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name task-switch
+        ^old-task <tid>)
+}
+
+sp {task-switch*apply*switch
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name task-switch
+        ^old-task <id>)
+   (<ts> ^running-task <rt>)
+   (<rt> ^id <id>)
+-->
+   (<ts> ^running-task <rt> -)
+}
+
+sp {task-switch*propose*switch-from-completed
+   (state <s> ^top-state <ts>)
+   (<ts> ^planning.execution-buffer <eb>)
+   (<ts> ^running-task <rt>)
+   (<rt> ^id <tid>)
+   (<eb> ^task <t>)
+   (<t> ^id <tid>
+        ^completed <cmp>)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name task-switch
+        ^old-task <tid>)
+}

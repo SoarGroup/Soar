@@ -33,12 +33,13 @@ sp {build-building*propose*set-cCenter-loc
    (state <s> ^name build-building
               ^io.input-link.groups <gs>
               ^task-id <tid>
-              ^top-state.build-building <bb>)
+              ^top-state.build-building <bb>
+              ^top-state.my-id <me>)
    (<bb> ^task-id <tid>
         -^cCenter <cc>)
    (<gs> ^group <g>)
    (<g> ^type controlCenter
-        ^owner 0
+        ^owner <me>
         ^x-pos <x>
         ^y-pos <y>)
         
@@ -184,10 +185,11 @@ sp {build-building*propose*change-grouping-level
    (state <s> ^name build-building
               ^task-id <tid>
              ^top-state <ts>
-               ^io.input-link.groups <gs>)
+               ^io.input-link.groups <gs>
+               ^top-state.my-id <me>)
   -{(<gs> ^group <g>)
      (<g> ^type worker
-          ^owner 0
+          ^owner <me>
           ^command_running 0
           ^num_members 1)}
   -{(<ts> ^grouping-level individuals)}
@@ -232,7 +234,8 @@ sp {build-building*propose*find-worker
    (state <s> ^name build-building
               ^top-state <ts>
               ^io.input-link <il>
-              ^task-id <tid>)
+              ^task-id <tid>
+              ^top-state.my-id <me>)
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>
          ^location.x <x>
@@ -241,7 +244,7 @@ sp {build-building*propose*find-worker
    (<il> ^groups <gs>)
    -{(<gs> ^group <g>)
      (<g> ^type worker
-          ^owner 0
+          ^owner <me>
           ^command_running 0
           ^num_members 1)}
 -->
@@ -283,13 +286,14 @@ sp {build-building*propose*remember-id
    (state <s> ^name build-building
               ^top-state <ts>
               ^io <io>
-              ^task-id <tid>)
+              ^task-id <tid>
+              ^top-state.my-id <me>)
    (<io> ^input-link <il>
          ^output-link <ol>)
    (<il> ^groups.group <g>)
    (<g> ^type worker
         ^id <id>
-        ^owner 0
+        ^owner <me>
         ^command_running 0
         ^num_members 1
         ^dist_to_query <d>)
@@ -370,12 +374,13 @@ sp {build-building*propose*start-build
               ^top-state <ts>
               ^task-id <tid>
               ^io.input-link <il>
-              ^io.output-link <ol>)
+              ^io.output-link <ol>
+              ^top-state.my-id <me>)
    (<il> ^groups <gs>)
    (<gs> ^group <g>)
    (<g> ^type worker
         ^id <id>
-        ^owner 0
+        ^owner <me>
         ^command_running 0
         ^num_members 1)
    (<ts> ^build-building <bb>)
@@ -434,7 +439,8 @@ sp {build-building*propose*retry-failed
    (state <s> ^name build-building
               ^task-id <tid>
               ^top-state <ts>
-              ^io.input-link.groups.group <g>)
+              ^io.input-link.groups.group <g>
+             -^io.output-link.command.task-id <tid>)
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>
          ^worker <id>

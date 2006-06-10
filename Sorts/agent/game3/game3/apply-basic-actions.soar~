@@ -20,19 +20,39 @@ sp {apply*remove-status-error
    (<ol> ^command <c> -)
 }
 
-sp {apply*orts-move
+sp {apply*orts-move1
    (state <s> ^operator <o>
               ^io.output-link <ol>)
    (<o> ^name orts-move
         ^group <g>
         ^x <x>
         ^y <y> 
+       -^precision
         ^task-id <tid>)
 -->
    (<ol> ^command <m>)
    (<m> ^group0 <g>
         ^param0 <x>
         ^param1 <y>
+        ^name move
+        ^task-id <tid>)
+}
+
+sp {apply*orts-move2
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name orts-move
+        ^group <g>
+        ^x <x>
+        ^y <y>
+        ^precision <pr>
+        ^task-id <tid>)
+-->
+   (<ol> ^command <m>)
+   (<m> ^group0 <g>
+        ^param0 <x>
+        ^param1 <y>
+        ^param2 <pr>
         ^name move
         ^task-id <tid>)
 }

@@ -1,0 +1,16 @@
+sp {propose*build-marines
+   (state <s> ^name sorts
+              ^running-task <rt>
+              ^planning.execution-buffer.task <ts>)
+   (<rt> ^name build-marines
+         ^id <id>)
+   (<ts> ^id <id>
+        -^completed <cmp>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name build-units
+        ^number 2000
+        ^building-name barracks
+        ^unit-type 1 # see general.h for unit type->int translation
+        ^task-id <id>)
+}

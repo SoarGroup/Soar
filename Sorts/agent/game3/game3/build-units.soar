@@ -1,0 +1,314 @@
+sp {build-units*propose*init
+   (state <s> ^name build-units
+              ^superstate.operator <op>
+              ^top-state <ts>)
+   (<op> ^task-id <tid>
+         ^number <num>
+         ^building-name <nam>
+         ^unit-type <ty>)
+   (<ts> -^build-units.task-id <tid>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name init*build-units
+        ^number <num>
+        ^building-name <nam>
+        ^unit-type <ty>
+        ^task-id <tid>)
+}
+
+sp {build-units*apply*init
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name init*build-units
+        ^task-id <tid> 
+        ^number <num>
+        ^building-name <nam>
+        ^unit-type <ty>)
+-->
+   (<s> ^task-id <tid>)
+   (<ts> ^build-units <bu>)
+   (<bu> ^task-id <tid>
+        ^number <num>
+        ^building-name <nam>
+        ^unit-type <ty>)
+}
+
+sp {build-units*propose*change-grouping-level
+   (state <s> ^name build-units
+              ^task-id <tid>
+              -^top-state.grouping-level individuals
+               ^io.input-link.groups <gs>
+               ^top-state.build-units <bu>
+               ^top-state.my-id <me>)
+   (<bu> ^task-id <tid>
+         ^building-name <nam>
+        -^building-id)
+  -{(<gs> ^group <g>)
+    (<g> ^type <nam>
+         ^owner <me>
+        ^num_members 1
+        ^command_running 0)}
+
+-->
+   (<s> ^operator <o> + < =)
+   (<o> ^name set-grouping-individuals
+        ^task-id <tid>)
+}
+
+sp {build-units*propose*clean-grouping-command
+   (state <s> ^name build-units
+              ^task-id <tid>
+              ^io.output-link <ol>)
+   (<ol> ^command <c>)
+   (<c> ^name grouping-radius
+        ^task-id <tid>
+        ^status complete)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name bu*clear-grouping-command
+        ^task-id <tid>)
+}
+
+sp {build-units*apply*clean-grouping-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name bu*clear-grouping-command
+        ^task-id <tid>)
+   (<ol> ^command <c>)
+   (<c> ^name grouping-radius
+        ^task-id <tid>)
+-->
+   (<ol> ^command <c> -)
+}
+# this should keep looking at friendly units until the correct building is seen
+sp {build-units*propose*find-building
+   (state <s> ^name build-units
+              ^top-state <ts>
+              ^io.input-link <il>
+              ^task-id <tid>
+              ^top-state.my-id <me>)
+   (<ts> ^build-units <bu>)
+   (<bu> ^task-id <tid>
+         ^building-name <nam>
+        -^building-id)
+   (<il> ^groups <gs>)
+   -{(<gs> ^group <g>)
+     (<g> ^type <nam>
+          ^owner <me>
+          ^num_members 1)}
+-->
+   (<s> ^operator <o> + < =) # prefer changing group level
+   (<o> ^name visual-search
+        ^search-type friendly
+        ^task-id <tid>)
+}
+
+sp {build-units*propose*clean-vs-command
+   (state <s> ^name build-units
+              ^task-id <tid>
+              ^io.output-link <ol>)
+   (<ol> ^command <c>)
+   (<c> ^name look-feature
+        ^task-id <tid>
+        ^status complete)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name bu*clear-vs-command
+        ^task-id <tid>)
+}
+
+sp {build-units*apply*clean-vs-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name bu*clear-vs-command
+        ^task-id <tid>)
+   (<ol> ^command <c>)
+   (<c> ^name look-feature
+        ^task-id <tid>)
+-->
+   (<ol> ^command <c> -)
+}
+
+sp {build-units*elaborate*eligible-building
+   (state <s> ^name build-units
+              ^task-id <tid>
+              ^top-state.build-units <bu>
+              ^io.input-link.groups.group <g>
+              ^top-state.my-id <me>)
+   (<bu> ^task-id <tid>
+         ^building-name <nam>)
+   (<g> ^type <nam>
+        ^command_running 0
+        ^owner <me>
+        ^num_members 1
+        ^id <id>)
+-->
+   (<s> ^eligible-building <id>)
+}
+
+
+sp {build-units*propose*save-building
+   (state <s> ^name build-units
+              ^top-state.build-units <bu>
+              ^task-id <tid>
+              ^eligible-building <id>)
+   (<bu> ^task-id <tid>
+         -^building-id)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name bu*save-building
+         ^id <id>)
+}
+
+sp {build-units*apply*save-building
+   (state <s> ^name build-units
+              ^task-id <tid>
+              ^top-state.build-units <bu>
+              ^operator <o>)
+   (<bu> ^task-id <tid>)
+   (<o> ^name bu*save-building
+        ^id <id>)
+-->
+   (<bu> ^building-id <id>)
+}
+
+sp {build-units*propose*remove-building
+   (state <s> ^name build-units
+              ^top-state.build-units <bu>
+              ^task-id <tid>
+              ^io.input-link.groups <gs>)
+  -{(<gs> ^group.id <id>)}
+   (<bu> ^task-id <tid>
+         ^building-id <id>)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name bu*remove-building)
+}
+
+sp {build-units*apply*remove-building
+   (state <s> ^name build-units
+              ^task-id <tid>
+              ^top-state.build-units <bu>
+              ^operator <o>)
+   (<bu> ^task-id <tid>)
+   (<o> ^name bu*remove-building)
+-->
+   (<bu> ^building-id <id> -)
+}
+
+
+sp {build-units*propose*start-train
+   (state <s> ^name build-units
+              ^top-state <ts>
+              ^task-id <tid> 
+              ^eligible-building <id>)
+   (<ts> ^build-units <bu>)
+   (<bu> ^task-id <tid>
+         ^building-name <nam>
+         ^unit-type <ty>
+         ^number <num>
+         ^building-id <id>)
+  -{(<ts> ^io.output-link.command <fc>)
+    (<fc> ^task-id <tid>
+          ^name train)}
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name orts-train
+         ^building <id>
+         ^unit-type <ty>
+         ^number <num>
+         ^task-id <tid>)
+}
+
+sp {build-units*propose*mark-started
+   (state <s> ^name build-units
+              ^task-id <tid>
+              ^top-state <ts>)
+   (<ts> ^io.output-link.command <fc>)
+   (<fc> ^task-id <tid>
+         ^name train
+         ^status complete)
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name build-units*mark-started
+        ^task-id <tid>)
+}
+
+sp {build-units*apply*mark-started
+   (state <s> ^operator <o> 
+              ^top-state <ts>)
+   (<o> ^name build-units*mark-started
+        ^task-id <tid>)
+   (<ts> ^io.output-link <ol>
+         ^build-units <bu>)
+   (<ol> ^command <fc>)
+   (<fc> ^task-id <tid>
+         ^name train
+         ^status complete)
+   (<bu> ^task-id <tid>)
+-->
+   (<ol> ^command <fc> -)
+}
+
+sp {build-units*propose*retry-failed
+   (state <s> ^name build-units
+              ^comment out
+              ^task-id <tid>
+              ^top-state <ts>
+              ^io.input-link.groups.group <g>)
+   (<ts> ^build-units <bu>)
+   (<bu> ^task-id <tid>
+         ^building-id <id>
+         ^started-train true)
+   (<g> ^id <id>
+        ^command_failure 1)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name bu*retry-failed
+        ^task-id <tid>)
+}
+
+
+sp {build-units*apply*retry-failed
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name bu*retry-failed
+        ^task-id <tid>)
+   (<ts> ^build-units <bu>)
+   (<bu> ^task-id <tid>)
+-->
+   (<ts> ^build-units <bu> -)
+}
+  
+
+sp {build-units*propose*done
+   (state <s> ^name build-units
+              ^task-id <tid>
+              ^top-state <ts>
+              ^io.input-link.groups.group <g>)
+   (<ts> ^build-units <bu>)
+   (<bu> ^task-id <tid>
+         ^building-id <id>)
+   (<g> ^id <id>
+        ^command train
+        ^command_success 1)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name bu*done
+        ^task-id <tid>)
+}
+
+sp {build-units*apply*done
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name bu*done
+        ^task-id <tid>)
+   (<ts> ^build-units <bu>)
+   (<bu> ^task-id <tid>)
+   (<ts> ^planning.execution-buffer.task <t>)
+   (<t> ^id <tid>)
+-->
+   (<ts> ^build-units <bu> -)
+   (<t> ^completed true)
+}
+   
