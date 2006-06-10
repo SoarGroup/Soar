@@ -61,8 +61,8 @@ int TrainFSM::update() {
           msg << "giving the action a chance to stick\n";
         }
         else if (trainCycles < MIN_BUILD_TIME) {
-          msg << "done too quickly, returning failure.\n";
-          return FSM_FAILURE;
+          msg << "done too quickly, restarting.\n";
+          nextState = IDLE;
         }
         else {
           msg << "built one unit.\n";
@@ -81,4 +81,5 @@ int TrainFSM::update() {
   state = nextState;
   
   return FSM_RUNNING;
-}
+} 
+

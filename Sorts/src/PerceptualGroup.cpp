@@ -571,6 +571,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
     }
     case OA_BUILD:
       assert(params.size() == 3);
+      currentCommand = "build";
       // building type, x, y
       intIt = params.begin();
       tempVec.clear();
@@ -590,6 +591,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
 
     case OA_TRAIN:
       assert(params.size() == 2);
+      currentCommand = "train";
       // type to train, number
       intIt = params.begin();
       tempVec.clear();
