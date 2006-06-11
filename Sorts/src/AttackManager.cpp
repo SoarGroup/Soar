@@ -30,7 +30,21 @@ void AttackManager::attackArcPos
 {
   int range;
   int atkRadius = *atk->sod.radius;
-  int tgtRadius = *tgt->sod.radius;
+  int tgtRadius; 
+  if (*tgt->sod.shape == SHAPE_RECTANGLE) {
+    int tgtHeight = *tgt->sod.y2 - *tgt.sod->y1;
+    int tgtWidth  = *tgt->sod.x2 - *tgt.sod->x1;
+    assert(tgtHeight > 0 && tgtWidth > 0);
+    if (tgtHeight < tgtWidth) {
+      tgtRadius = tgtHeight;
+    }
+    else {
+      tgtRadius = tgtWidth;
+    }
+  }
+  else {
+    tgtRadius = *tgt->sod.radius;
+  }
   Vec2d aPos(*atk->sod.x, *atk->sod.y);
   Vec2d tPos(*tgt->sod.x, *tgt->sod.y);
   if (*tgt->sod.zcat == GameObj::ON_LAND) {
