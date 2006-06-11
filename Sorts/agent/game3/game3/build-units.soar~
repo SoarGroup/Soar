@@ -293,7 +293,7 @@ sp {build-units*propose*done
         ^command train
         ^command_success 1)
 -->
-   (<s> ^operator <o> + =)
+   (<s> ^operator <o> + > =)
    (<o> ^name bu*done
         ^task-id <tid>)
 }

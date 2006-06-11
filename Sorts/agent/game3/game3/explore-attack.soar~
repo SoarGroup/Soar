@@ -40,7 +40,8 @@ sp {explore-attack*apply*init
         ^explore-dir <ed5>
         ^explore-dir <ed6>
         ^explore-dir <ed7>
-        ^explore-dir <ed8>)
+        ^explore-dir <ed8>
+        ^explore-dir <ed9>)
    (<ed1> ^count 0
           ^x 10
           ^y 10)
@@ -64,7 +65,10 @@ sp {explore-attack*apply*init
           ^y 10)
    (<ed8> ^count 0
           ^x (div <xmax> 2)
-          ^y (- <ymax> 10))
+          ^y (- <ymax> 10)) 
+   (<ed9> ^count 0
+          ^x (div <xmax> 2)
+          ^y (div <ymax> 2))
 }
 
 sp {explore-attack*elaborate*eligible-explorer
@@ -267,10 +271,9 @@ sp {explore-attack*propose*explore
               ^top-state.explore-attack <ea>
               -^enemy-group
               -^enemy-feature
-               ^io.output-link <ol>
+              -^io.output-link.command.group0 <id>
                ^top-state.grouping-level individuals
                ^io.input-link.groups.group <g>)
-  (<ol> -^command.task-id <tid>) # this task cannot have an outstanding command
   (<ea> ^task-id <tid>
         ^explore-dir <ed>
         ^explorer <id>)
@@ -332,7 +335,7 @@ sp {explore-attack*propose*handle-explore-start
    (<ed> ^x <x>
          ^y <y>)
 -->
-   (<s> ^operator <o> + >)
+   (<s> ^operator <o> + > =)
    (<o> ^name ea*handle-explore-start
         ^explore-dir <ed>
         ^task-id <tid>)

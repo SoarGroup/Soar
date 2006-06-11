@@ -27,3 +27,11 @@ sp {top-state*elaborate*my-id
 -->
    (<ts> ^my-id <id>)
 }
+
+sp {elaborate*print-ties
+   (state <s> ^impasse tie
+              ^item.name <o1>
+              ^item.name <o2>)
+-->
+   (write |operators involved in tie: | <o1> |, | <o2> (crlf))
+}

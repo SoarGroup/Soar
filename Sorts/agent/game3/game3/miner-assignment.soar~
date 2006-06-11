@@ -54,19 +54,19 @@ sp {miner-assignment*propose*assign-miner
    (state <s> ^name miner-assignment
               ^io.input-link.groups <gs>
               ^io.output-link <ol>
-              ^top-state <ts>
+              ^top-state.grouping-level large-groups
+              ^top-state.my-id <me>
               ^task-id <tid>)
    (<gs> ^group <g>)
    (<g> ^type worker
         ^id   <gid>
-        ^owner 0
+        ^owner <me>
         ^command_running 0
         ^command_success 0
         ^command_failure 0)
   -{(<ol> ^command <c>)
     (<c> ^name mine
          ^group0 <g>)}
-   (<ts> ^grouping-level large-groups)
 -->
    (<s> ^operator <o> + =)
     (<o> ^name orts-mine

@@ -19,6 +19,7 @@ source marine-attack.soar
 source miner-assignment.soar
 source task-switch.soar
 source visual-search.soar
+source worker-attack.soar
 source x_plan-one.soar
 source x_planning.soar
 source apply-vision-commands.soar

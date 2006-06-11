@@ -10,10 +10,13 @@ sp {propose*start-build-barracks
         ^task-name build-barracks
         ^task-id 1234)
 }
+
+# if we're producing marines and have an excess of minerals, build another barracks
 sp {propose*start-build-barracks2
    (state <s> ^name sorts
-              ^comment out
-              ^planning.execution-buffer <eb>)
+              ^planning.execution-buffer <eb>
+              ^io.input-link.game-info.marine-count > 0
+              ^io.input-link.game-info.my-minerals >= 400)
   -{(<eb> ^task <t>)
     (<t> ^name build-barracks
           ^id 12774)}
@@ -68,6 +71,22 @@ sp {propose*start-marine-attack
         ^task-id 4444)
 }
 
+# use this for rushing
+sp {propose*start-worker-attack
+   (state <s> ^name sorts
+              ^comment out
+              ^planning.execution-buffer <eb>)
+  -{(<eb> ^task <t>)
+    (<t> ^name worker-attack
+          ^id 4424)}
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-task
+        ^task-name worker-attack
+        ^task-id 4424)
+}
+
+
 
 sp {propose*start-miner-assignment
    (state <s> ^name sorts
@@ -79,7 +98,13 @@ sp {propose*start-miner-assignment
               # wait until barracks construction, so we don't take all the workers.
    (<ts> ^build-building <bb>)
    (<bb> ^task-id 1234 
-         ^started-build true)
+         ^started-build true
+         ^worker <id>)
+   # wait for the actual building phase to begin (fsm changes the command at this point)
+   # this way, we can exploit the parallelism of building and assigning miners at the same time
+   (<ts> ^io.input-link.groups.group <g>)
+   (<g> ^id <id>
+        ^command build-started)
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name start-task
