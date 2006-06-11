@@ -22,7 +22,7 @@ public:
 
   bool intersects(const Rectangle& other);
   bool intersects(const Circle& c);
-  bool intersects(line& l);
+  bool intersects(Line& l);
   bool contains(int x, int y);
   bool contains(const Rectangle& r);
   int  area();

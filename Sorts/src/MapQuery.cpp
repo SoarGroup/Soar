@@ -5,9 +5,8 @@
 #define MAX_BUILDING_PLACE_TRIES 70
 #define msg cout << "MQ: "
 
-MapQuery::MapQuery() {
-  lastResult.x = 0;
-  lastResult.y = 0;
+MapQuery::MapQuery() 
+  : lastResult(0,0) {
 }
 
 void MapQuery::processMapCommands() {

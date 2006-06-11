@@ -131,6 +131,7 @@ class SoarInterface {
 
     // update player info
     void updatePlayerGold(int amount);
+    void updatePlayerUnits(int, int, int);
 
     void updateQueryResult(string name, int param0, int param1);
     /* this is the function for the Soar interrupt handler.
@@ -169,6 +170,9 @@ class SoarInterface {
     sml::Identifier* groupsIdWME;
     sml::Identifier* gameInfoIdWME;
     sml::IntElement* playerGoldWME;
+    sml::IntElement* playerWorkersWME;
+    sml::IntElement* playerMarinesWME;
+    sml::IntElement* playerTanksWME;
     sml::IntElement* viewFrameWME;
 
   /**************************************************

@@ -53,6 +53,8 @@ struct coordinate {
     x = _x; y = _y;
   }
 
+  coordinate() {}
+
   bool operator==(const coordinate& c) {
     return x == c.x and y == c.y;
   }

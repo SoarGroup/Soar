@@ -90,7 +90,7 @@ bool Rectangle::intersects(const Circle& c) {
   }
 }
 
-bool Rectangle::intersects(line& l) {
+bool Rectangle::intersects(Line& l) {
   
   // cases where line completely away from box (most common)
   if ((l.a.x < xmin && l.b.x < xmin) ||

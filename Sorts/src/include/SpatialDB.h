@@ -38,7 +38,7 @@ public:
  
   void addImaginaryWorker(coordinate c);
 
-  void addTerrainLine(line l);
+  void addTerrainLine(Line l);
 
   int refCount;
 
@@ -48,7 +48,7 @@ private:
   
   vector<set<GameObj*> > gobMap;
   vector<list<coordinate> > imaginaryWorkerMap; // used by MineManager
-  vector<list<line> > terrainLineMap;
+  vector<list<Line> > terrainLineMap;
 
   int getCellNumber(int x, int y);
   int cell2row(int);

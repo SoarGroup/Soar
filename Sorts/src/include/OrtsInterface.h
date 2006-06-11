@@ -52,6 +52,8 @@ public:
   int getLastError() { return lastError; }
   void setBuildAction() { buildingThisCycle = true; }
   bool getBuildAction() { return buildingThisCycle; }
+
+  int getCurrentMinerals() { return gold; }
 private:
   GameStateModule* gsm;
 
@@ -91,7 +93,9 @@ private:
 
   int lastError;
   bool buildingThisCycle;
+  bool unitCountsStale;
   
+  int numWorkers, numMarines, numTanks;
   // list of SGO's that need to be updated next cycle,
   // regardless of if they change in the world or not
   set <SoarGameObject*> requiredUpdatesNextCycle;

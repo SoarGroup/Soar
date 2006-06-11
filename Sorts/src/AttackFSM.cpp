@@ -118,6 +118,7 @@ int AttackFSM::move(int x, int y) {
   vector<sint4> moveParams(2);
   moveParams[0] = x;
   moveParams[1] = y;
+  msg << "initting move\n";
   moveFSM->init(moveParams);
   int status = moveFSM->update();
   switch (status) {

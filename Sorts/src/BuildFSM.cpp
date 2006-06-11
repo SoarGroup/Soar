@@ -5,27 +5,30 @@
 
 #define msg cout << "BUILDFSM: "
 
-Rectangle getBuildingBounds(BuildingType type, int centerX, int centerY) {
+void BuildFSM::setBuildingInfo(BuildingType type, int centerX, int centerY) {
   int width, height;
   switch (type) {
     case CONTROL_CENTER:
       width = 4 * 16 - 2;
       height = 4 * 16 - 2;
+      cost = 600;
       break;
     case BARRACKS:
       width = 4 * 16 - 2;
       height = 3 * 16 - 2;
+      cost = 400;
       break;
     case FACTORY:
       width = 4 * 16 - 2;
       height = 3 * 16 - 2;
+      cost = 400;
       break;
     default:
       assert(false);
       break; 
   }
   Rectangle r(centerX, centerY, width, height, true);
-  return r;
+  buildingBounds = r;
 }
 
 BuildFSM::BuildFSM(GameObj* _gob) 
@@ -35,6 +38,7 @@ BuildFSM::BuildFSM(GameObj* _gob)
   state = IDLE;
   justStarted = false;
   moveFSM = NULL;
+  sgo = NULL;
 }
 
 BuildFSM::~BuildFSM() {
@@ -45,10 +49,11 @@ BuildFSM::~BuildFSM() {
 
 void BuildFSM::init(vector<sint4> params) {
   FSM::init(params);
+  assert(sgo != NULL);
   type = (BuildingType) params[0];
   loc_x = params[1];
   loc_y = params[2];
-  buildingBounds = getBuildingBounds(type, loc_x, loc_y);
+  setBuildingInfo(type, loc_x, loc_y);
   state = IDLE;
   buildFrame = -1;
 }
@@ -105,11 +110,15 @@ int BuildFSM::update() {
       if (Sorts::OrtsIO->getBuildAction()) {
         msg << "skipping build: another fsm just started.\n";
       }
+      else if (Sorts::OrtsIO->getCurrentMinerals() < cost) {
+        msg << "can't afford this building now.\n";
+      }
       else {
         Sorts::OrtsIO->setBuildAction();
         justStarted = true;
         
         msg << "starting build.\n";
+        sgo->getPerceptualGroup()->setCommandString("build-started");
         buildCycles = 0;
         buildFrame = Sorts::OrtsIO->getViewFrame();
         params.push_back(loc_x);

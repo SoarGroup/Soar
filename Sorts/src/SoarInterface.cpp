@@ -550,6 +550,15 @@ void SoarInterface::updatePlayerGold(int amount) {
   unlockSoarMutex();
 }
 
+void SoarInterface::updatePlayerUnits(int workers, int tanks, int marines) {
+  lockSoarMutex();
+  stale = true;
+  agent->Update(playerWorkersWME, workers);
+  agent->Update(playerTanksWME, tanks);
+  agent->Update(playerMarinesWME, marines);
+  unlockSoarMutex();
+}
+
 void SoarInterface::updateQueryResult(string name, int param0, int param1) {
   lockSoarMutex();
   stale = true;
@@ -586,9 +595,13 @@ void SoarInterface::initSoarInputLink() {
   mapIdWME = agent->CreateIdWME(inputLink, "map");
   featureMapIdWME = agent->CreateIdWME(inputLink, "feature-maps");
   gameInfoIdWME = agent->CreateIdWME(inputLink, "game-info");
-  playerGoldWME = agent->CreateIntWME(gameInfoIdWME, "my-gold", 0);
+  playerGoldWME = agent->CreateIntWME(gameInfoIdWME, "my-minerals", 0);
   viewFrameWME = agent->CreateIntWME(gameInfoIdWME, "view-frame", -1);
 
+  // TODO: make this better (dynamically add new types, etc..) 
+  playerWorkersWME = agent->CreateIntWME(gameInfoIdWME, "worker-count", 0);
+  playerMarinesWME = agent->CreateIntWME(gameInfoIdWME, "marine-count", 0);
+  playerTanksWME = agent->CreateIntWME(gameInfoIdWME, "tank-count", 0);
 
   // these never change, don't need to save the pointers
   agent->CreateIntWME(gameInfoIdWME, "num-players", 

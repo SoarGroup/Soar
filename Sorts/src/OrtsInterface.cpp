@@ -30,6 +30,10 @@ OrtsInterface::OrtsInterface(GameStateModule* _gsm)
   playerGameObj = (GameObj*)(pi.global_obj("player"));
   buildingThisCycle = false;
   lastError = 0;
+  numWorkers = 0;
+  numMarines = 0;
+  numTanks = 0;
+  unitCountsStale = false;
 }
 
 bool OrtsInterface::handle_event(const Event& e) {
@@ -136,11 +140,24 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   Sorts::pGroupManager->makeNewGroup(newObj);
  // Sorts::iGroupManager->makeNewGroup(newObj);
 
-  if (gameObj->bp_name() == "mineral") {
+  string name = gameObj->bp_name();
+  if (name == "mineral") {
     Sorts::mineManager->addMineral(newObj);
   }
-  else if (friendly && gameObj->bp_name() == "controlCenter") {
+  else if (friendly && name == "controlCenter") {
     Sorts::mineManager->addControlCenter(newObj);
+  }
+  else if (friendly && name == "worker") {
+    numWorkers++;
+    unitCountsStale = true;
+  }
+  else if (friendly && name == "marine") {
+    numMarines++;
+    unitCountsStale = true;
+  }
+  else if (friendly && name == "tank") {
+    numTanks++;
+    unitCountsStale = true;
   }
   
   msg << (int) gameObj << " added" << endl;
@@ -197,6 +214,8 @@ void OrtsInterface::updateSoarGameObjects() {
   set <SoarGameObject*> requiredThisCycle = requiredUpdatesNextCycle;
   requiredUpdatesNextCycle.clear();
 
+  updateSoarPlayerInfo();
+  
   FORALL(changes.vanished_objs, obj) {
     GameObj* gob = (*obj)->get_GameObj();
     if (gob == 0) continue;
@@ -228,11 +247,7 @@ void OrtsInterface::updateSoarGameObjects() {
   
   FORALL(changes.new_boundaries, obj) {
     GameObj* gob = (*obj)->get_GameObj();
-    line l;
-    l.a.x = *gob->sod.x1;
-    l.a.y = *gob->sod.y1;
-    l.b.x = *gob->sod.x2;
-    l.b.y = *gob->sod.y2;
+    Line l (*gob->sod.x1, *gob->sod.y1, *gob->sod.x2, *gob->sod.y2);
     Sorts::spatialDB->addTerrainLine(l);
   }
 
@@ -271,7 +286,6 @@ void OrtsInterface::updateSoarGameObjects() {
       requiredThisCycle.erase(sgo);
     }
     else if (gob == playerGameObj) {
-      //updateSoarPlayerInfo();
       assert(false);
     }
   }
@@ -282,8 +296,12 @@ void OrtsInterface::updateSoarGameObjects() {
       it++) {
     (*it)->update();
   }
+
+  if (unitCountsStale) {
+    unitCountsStale = false;
+    Sorts::SoarIO->updatePlayerUnits(numWorkers, numTanks, numMarines);
+  }
   
-   updateSoarPlayerInfo();
 }
 
 void OrtsInterface::updateMap() {

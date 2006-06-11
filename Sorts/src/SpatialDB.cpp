@@ -89,7 +89,7 @@ int SpatialDB::colRow2cell(int row, int col) {
   return (col + row*width);
 }
 
-void SpatialDB::addTerrainLine(line l) {
+void SpatialDB::addTerrainLine(Line l) {
   // no need for removal/update support
   int cell1 = getCellNumber(l.a.x, l.a.y);
   int cell2 = getCellNumber(l.b.x, l.b.y);
@@ -451,7 +451,7 @@ bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
   assert (minCol <= maxCol && minRow <= maxRow);
 
   int cellNum;
-  list<line>::iterator it;
+  list<Line>::iterator it;
   for (int i=minCol; i<=maxCol; i++) {
     for (int j=minRow; j<=maxRow; j++) {
       cellNum = colRow2cell(i,j);

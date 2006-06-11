@@ -32,7 +32,10 @@ void SoarGameObject::identifyBehaviors() {
       FSM* moveBehavior = new PersistentMoveFSM(gob);
       registerBehavior(moveBehavior);
       FSM* buildBehavior = new BuildFSM(gob);
+      ((BuildFSM*)buildBehavior)->setSoarGameObject(this);
       registerBehavior(buildBehavior);
+      FSM* attackBehavior = new AttackFSM(this);
+      registerBehavior(attackBehavior);
       friendlyWorker = true;
     }
     else if (name == "marine") {
