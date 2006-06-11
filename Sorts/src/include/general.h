@@ -15,6 +15,9 @@
 
 #define PI 3.141592654
 
+#define SHAPE_CIRCLE 1
+#define SHAPE_RECTANGLE 3
+
 using namespace std;
 
 // I had to move this here because of forward declaration crazyness

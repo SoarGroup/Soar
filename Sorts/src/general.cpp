@@ -12,9 +12,6 @@
 #include "Vec2d.h"
 #include "Rectangle.h"
 
-#define SHAPE_CIRCLE 1
-#define SHAPE_RECTANGLE 3
-
 using namespace std;
 
 string catStrInt(const char* str, int x) {

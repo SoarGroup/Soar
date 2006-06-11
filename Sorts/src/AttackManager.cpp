@@ -32,8 +32,8 @@ void AttackManager::attackArcPos
   int atkRadius = *atk->sod.radius;
   int tgtRadius; 
   if (*tgt->sod.shape == SHAPE_RECTANGLE) {
-    int tgtHeight = *tgt->sod.y2 - *tgt.sod->y1;
-    int tgtWidth  = *tgt->sod.x2 - *tgt.sod->x1;
+    int tgtHeight = *tgt->sod.y2 - *tgt->sod.y1;
+    int tgtWidth  = *tgt->sod.x2 - *tgt->sod.x1;
     assert(tgtHeight > 0 && tgtWidth > 0);
     if (tgtHeight < tgtWidth) {
       tgtRadius = tgtHeight;
