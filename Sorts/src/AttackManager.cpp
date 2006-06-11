@@ -292,8 +292,7 @@ int AttackManager::direct(AttackFSM* fsm) {
   if (!canHit(gob, tgob)) {
     if (fsm->isMoving()) {
       Vec2d dest = fsm->getDestination();
-      Circle cdest(dest(0), dest(1), *gob->sod.radius);
-      if (canHit(gob, cdest, tgob)) {
+      if (canHit(gob, dest, tgob)) {
         // on his way like he should be, let him keep going
         return 0;
       }

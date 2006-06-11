@@ -11,6 +11,9 @@
 #include "Circle.h"
 #include "Vec2d.h"
 
+#define SHAPE_CIRCLE 1
+#define SHAPE_RECTANGLE 3
+
 using namespace std;
 
 string catStrInt(const char* str, int x) {
@@ -45,6 +48,11 @@ Vec2d getHeadingVector(int gameHeading) {
   return Vec2d(-1 * cos(arad), sin(arad));
 }
 
+Vec2d getDamageVector(int damageDir) {
+  double adeg = GameConst::angle_from_dir(damageDir, GameConst::DAMAGE_N);
+  double arad = adeg * PI / 180.0;
+  return Vec2d(-1 * cos(arad), sin(arad));
+}
 
 double coordDistanceSq(coordinate c1, coordinate c2) {
   return ((c2.x-c1.x)*(c2.x-c1.x)+(c2.y-c1.y)*(c2.y-c1.y));
@@ -85,16 +93,30 @@ bool canHit(GameObj *atk, GameObj *tgt) {
   if (weapon == NULL) {
     return false;
   }
-  double d = 
-    squaredDistance(*atk->sod.x, *atk->sod.y, *tgt->sod.x, *tgt->sod.y);
-  double r;
-  if (*tgt->sod.zcat == GameObj::ON_LAND) {
-    r = weapon->get_int("max_ground_range") + *atk->sod.radius + *tgt->sod.radius;
+  
+  if (*tgt->sod.shape == SHAPE_RECTANGLE) {
+    double wr;
+    if (*tgt->sod.zcat == GameObj::ON_LAND) {
+      wr = weapon->get_int("max_ground_range") + *atk->sod.radius;
+    }
+    else {
+      wr = weapon->get_int("max_air_range") + *atk->sod.radius;
+    }
+    Circle c(*atk->sod.x, *atk->sod.y, wr);
+    Rectangle r(*tgt->sod.x1, *tgt->sod.x2, *tgt->sod.y1, *tgt->sod.y2);
+    return r.intersects(c);
   }
   else {
-    r = weapon->get_int("max_air_range") + *atk->sod.radius + *tgt->sod.radius;
+    double d = squaredDistance(*atk->sod.x, *atk->sod.y, *tgt->sod.x, *tgt->sod.y);
+    double r;
+    if (*tgt->sod.zcat == GameObj::ON_LAND) {
+      r = weapon->get_int("max_ground_range") + *atk->sod.radius + *tgt->sod.radius;
+    }
+    else {
+      r = weapon->get_int("max_air_range") + *atk->sod.radius + *tgt->sod.radius;
+    }
+    return r * r >= d;
   }
-  return r * r >= d;
 }
 
 bool canHit(GameObj *gob, const Circle& c, bool isGround) {
@@ -113,21 +135,35 @@ bool canHit(GameObj *gob, const Circle& c, bool isGround) {
   return r * r >= d;
 }
 
-bool canHit(GameObj* atk, const Circle& loc, GameObj *tgt) {
+bool canHit(GameObj* atk, const Vec2d& loc, GameObj *tgt) {
   ScriptObj* weapon = atk->component("weapon");
   if (weapon == NULL) {
     return false;
   }
-  double d = squaredDistance((int) loc.x, (int) loc.y, *tgt->sod.x, *tgt->sod.y);
-  double r;
-  if (*tgt->sod.zcat == GameObj::ON_LAND) {
-    r = weapon->get_int("max_ground_range") + *atk->sod.radius + *tgt->sod.radius;
+
+  if (*tgt->sod.shape == SHAPE_RECTANGLE) {
+    double wr;
+    if (*tgt->sod.zcat == GameObj::ON_LAND) {
+      wr = weapon->get_int("max_ground_range") + *atk->sod.radius;
+    }
+    else {
+      wr = weapon->get_int("max_air_range") + *atk->sod.radius;
+    }
+    Circle c(loc(0), loc(1), wr);
+    Rectangle r(*tgt->sod.x1, *tgt->sod.x2, *tgt->sod.y1, *tgt->sod.y2);
+    return r.intersects(c);
   }
   else {
-    r = weapon->get_int("max_air_range") + *atk->sod.radius + *tgt->sod.radius;
+    double d = squaredDistance((int) loc(0), (int) loc(1), *tgt->sod.x, *tgt->sod.y);
+    double r;
+    if (*tgt->sod.zcat == GameObj::ON_LAND) {
+      r = weapon->get_int("max_ground_range") + *atk->sod.radius + *tgt->sod.radius;
+    }
+    else {
+      r = weapon->get_int("max_air_range") + *atk->sod.radius + *tgt->sod.radius;
+    }
+    return r * r >= d;
   }
-  return r * r >= d;
- 
 }
 
 bool canHit(const Circle& c1, const Circle& c2, double range) {
