@@ -1321,6 +1321,11 @@ void chunk_instantiation (agent* thisAgent,
 #endif
 #endif
 	  
+#ifdef SOAR_WMEM_ACTIVATION
+    //Boost tested wmes in justification or chunk
+    activate_wmes_in_inst(thisAgent, chunk_inst);
+#endif 
+      
 	  return;
 	  
 chunking_done: {}

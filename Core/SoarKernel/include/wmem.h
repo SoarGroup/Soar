@@ -36,6 +36,8 @@
 #ifndef WMEM_H
 #define WMEM_H
 
+#include "kernel.h"
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -146,6 +148,14 @@ typedef struct wme_struct {
   struct wme_struct *gds_next, *gds_prev; /* used for dll of wmes in gds */
   /* REW: end   09.15.96 */
 
+#ifdef SOAR_WMEM_ACTIVATION
+    /* MRJ 5/23/01 */
+    struct wme_decay_element_struct *decay_element;
+    bool has_decay_element;
+    /* MRJ end */
+#endif
+    
+    
 } wme;
 
 #ifdef USE_MACROS

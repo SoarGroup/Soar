@@ -14,6 +14,20 @@
 
 namespace cli {
 
+	enum eDecayOptions {
+        DECAY_REPORT_SETTINGS,
+        DECAY_ON,          
+        DECAY_OFF,         
+        DECAY_ACTIVATION,  
+        DECAY_I_SUPPORT_MODE,
+        DECAY_FORGETTING,  
+        DECAY_WME_CRITERIA,
+        DECAY_PRECISION,   
+        DECAY_LOG,         
+        DECAY_EXPONENT,    
+		DECAY_NUM_OPTIONS, // must be last
+	};
+    
 	enum eExciseOptions {
 		EXCISE_ALL,
 		EXCISE_CHUNKS,

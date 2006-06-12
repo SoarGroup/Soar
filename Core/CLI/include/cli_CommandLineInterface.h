@@ -187,6 +187,7 @@ protected:
 	bool ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseCLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseCommandToFile(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+        bool ParseDecay(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseDefaultWMEDepth(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseDirs(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseEcho(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -293,6 +294,12 @@ protected:
 	* @param pToAdd The string to add to the log, pass 0 (null) if not applicable to mode
 	*************************************************************/
 	bool DoCLog(gSKI::IAgent* pAgent, const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0);
+
+	/*************************************************************
+	* @brief decay command
+	* @param pAgent The pointer to the gSKI agent interface
+	*************************************************************/
+	bool DoDecay(gSKI::IAgent* pAgent, enum eDecayOptions setting, long arg);
 
 	/*************************************************************
 	* @brief default-wme-depth command
@@ -727,10 +734,20 @@ protected:
 
 	eRunInterleaveMode ParseRunInterleaveOptarg();
 
+	/************************************************************* 	 
+	* @brief Prints the current WM activation settings
+	*************************************************************/ 	 
+        void PrintCurrentDecaySettings(gSKI::IAgent* pAgent);
+
 	/*************************************************************
 	* @brief 
 	*************************************************************/
 	bool IsInteger(const std::string& s);
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool IsFloat(const std::string& s);
 
 	/*************************************************************
 	* @brief 

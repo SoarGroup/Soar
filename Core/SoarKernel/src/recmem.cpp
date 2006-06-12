@@ -822,6 +822,10 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
   
   trace_it = trace_firings_of_inst (thisAgent, inst);
 
+#ifdef SOAR_WMEM_ACTIVATION
+  decay_update_wmes_in_retracted_inst(thisAgent, inst);
+#endif //SOAR_WMEM_ACTIVATION
+
   /* --- retract any preferences that are in TM and aren't o-supported --- */
   pref = inst->preferences_generated;
 
@@ -1005,6 +1009,11 @@ void assert_new_preferences (agent* thisAgent)
             preference_add_ref (pref);
             preference_remove_ref (thisAgent, pref);
          }
+
+#ifdef SOAR_WMEM_ACTIVATION
+         activate_wmes_in_pref(thisAgent, pref);
+#endif  //SOAR_WMEM_ACTIVATION
+         
       }
    }
    
@@ -1057,6 +1066,22 @@ void do_preference_phase (agent* thisAgent) {
 		  print_phase (thisAgent, "\n--- Preference Phase ---\n",0);
   }
 
+#ifdef SOAR_WMEM_ACTIVATION
+/*
+  In some cases (especially in Soar 8) the existence of an ms-change struct
+  does not guarantee that the production will actually fire.  Specifically, if
+  the goal is removed by GDS or the operator is removed then the production
+  will not fire.  However, when this occurs reference count is decremented
+  again when the ms-change is removed.  At least we think this might be what's
+  going on.  At the moment it seems prudent to stick with an "if it ain't broke
+  don't fix it" approach.  If you start seeing WMEs with unexplained
+  references, this would be the first place to look.  (MRJ & AMN, July 2003)
+*/
+    if ((thisAgent->sysparams)[WME_DECAY_SYSPARAM])
+    {
+        decay_update_wmes_tested_in_prods(thisAgent);
+    } 
+#endif //SOAR_WMEM_ACTIVATION
 
   thisAgent->newly_created_instantiations = NIL;
 

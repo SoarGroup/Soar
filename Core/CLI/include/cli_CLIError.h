@@ -88,8 +88,8 @@ namespace cli {
 			kPrintSubOptionsOfStack				= 73,
 			kHelpFileError						= 74,
 			kNewlineBeforePipe					= 75,
-            kAlreadyRunning                     = 76,
-            kRunFailed                          = 77,
+                        kAlreadyRunning                     = 76,
+                        kRunFailed                          = 77,
 			kNoPreferences						= 78, // FIXME: remove
 			kAmbiguousCommand					= 79,
 			kAmbiguousOption					= 80, 
@@ -98,7 +98,9 @@ namespace cli {
 			kInvalidBackslashEscapeCharacter	= 83, 
 			kInitSoarFailed						= 84, 
 			kPreferencesError					= 85, // FIXME: document in wiki
-			kInvalidRunInterleaveSetting		= 86,
+			kFloatExpected                      = 86, // FIXME: document in wiki
+
+			kInvalidRunInterleaveSetting		= 87,
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -182,6 +184,7 @@ namespace cli {
 				case kInvalidBackslashEscapeCharacter:	return "Invalid backslash escape character, see documentation.";
 				case kInitSoarFailed:					return "Agent could not be reinitialized.  Probably due to an internal memory leak." ;
 				case kPreferencesError:					return "Preferences command failed." ;
+				case kFloatExpected:					return "Floating point argument expected.";
 				case kInvalidRunInterleaveSetting:		return "Invalid setting for run interleave option." ;
 				default:								return "Unknown error code.";
 			}

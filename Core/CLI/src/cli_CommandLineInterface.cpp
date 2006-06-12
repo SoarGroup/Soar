@@ -53,6 +53,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIChunkNameFormat]				= &cli::CommandLineInterface::ParseChunkNameFormat;
 	m_CommandMap[Commands::kCLICLog]						= &cli::CommandLineInterface::ParseCLog;
 	m_CommandMap[Commands::kCLICommandToFile]				= &cli::CommandLineInterface::ParseCommandToFile;
+	m_CommandMap[Commands::kCLIDecay]                       = &cli::CommandLineInterface::ParseDecay;
 	m_CommandMap[Commands::kCLIDefaultWMEDepth]				= &cli::CommandLineInterface::ParseDefaultWMEDepth;
 	m_CommandMap[Commands::kCLIDirs]						= &cli::CommandLineInterface::ParseDirs;
 	m_CommandMap[Commands::kCLIEcho]						= &cli::CommandLineInterface::ParseEcho;
@@ -115,6 +116,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIChunkNameFormat]			= true ;
 	m_EchoMap[Commands::kCLICLog]						= true ;
 	m_EchoMap[Commands::kCLICommandToFile]				= true ;
+	m_EchoMap[Commands::kCLIDecay]                      = true ;
 	m_EchoMap[Commands::kCLIDefaultWMEDepth]			= true ;
 	m_EchoMap[Commands::kCLIEcho]						= true ;
 	m_EchoMap[Commands::kCLIEchoCommands]				= true ;
@@ -658,6 +660,32 @@ bool CommandLineInterface::IsInteger(const string& s) {
 		++iter;
 	}
 	return true;
+}
+
+bool CommandLineInterface::IsFloat(const string& s) {
+	string::const_iterator iter = s.begin();
+    bool bDecimal = false;
+	
+	// Allow negatives
+	if (s.length() > 1) {
+		if (*iter == '-') {
+			++iter;
+		}
+	}
+
+	while (iter != s.end()) {
+		if (!isdigit(*iter)) {
+            if ((*iter == '.') && (!bDecimal)) {
+                bDecimal = true;
+            }
+            else {
+                return false;
+            }
+		}
+		++iter;
+	}
+    
+	return bDecimal;
 }
 
 bool CommandLineInterface::RequireAgent(gSKI::IAgent* pAgent) {

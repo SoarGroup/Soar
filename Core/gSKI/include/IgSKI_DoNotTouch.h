@@ -151,6 +151,8 @@ namespace gSKI
 		virtual void SetChunkCount(IAgent* pIAgent, unsigned long count) = 0;
 
 		virtual void SeedRandomNumberGenerator(unsigned long int* pSeed) = 0;
+                virtual void DecayInit(IAgent* pIAgent) = 0;
+                virtual void DecayDeInit(IAgent* pIAgent) = 0;
 	  };
    }
 }
@@ -277,10 +279,21 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* rmarinie 11/04 */
 #define TIMERS_ENABLED                           33
 
-#define MAX_GOAL_DEPTH							 34
+#define MAX_GOAL_DEPTH			       	 34
+
+//The following constants are used by SOAR_WMEM_ACTIVATION
+
+#define WME_DECAY_SYSPARAM                       35
+#define WME_DECAY_EXPONENT_SYSPARAM              36
+#define WME_DECAY_WME_CRITERIA_SYSPARAM          37
+#define WME_DECAY_ALLOW_FORGETTING_SYSPARAM      38
+#define WME_DECAY_I_SUPPORT_MODE_SYSPARAM        39
+#define WME_DECAY_PERSISTENT_ACTIVATION_SYSPARAM 40
+#define WME_DECAY_PRECISION_SYSPARAM             41
+#define WME_DECAY_LOGGING_SYSPARAM               42
 
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  34
+#define HIGHEST_SYSPARAM_NUMBER                  42
 
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024   /* AGR 536  - from sys/param.h */

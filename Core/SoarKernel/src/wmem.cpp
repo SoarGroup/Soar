@@ -116,6 +116,11 @@ wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool a
   w->gds_next = NIL;
 /* REW: end 09.15.96 */
 
+#ifdef SOAR_WMEM_ACTIVATION
+     w->decay_element = NIL;
+     w->has_decay_element = FALSE;
+#endif
+  
   return w;
 }
 
@@ -282,6 +287,16 @@ void do_buffered_wm_changes (agent* thisAgent)
        */
       filtered_print_wme_remove (thisAgent, w);  /* kjh(CUSP-B2) begin */
     }
+    
+#ifdef SOAR_WMEM_ACTIVATION
+	if ((thisAgent->sysparams)[WME_DECAY_SYSPARAM])
+    {
+        if(w->has_decay_element)
+        {
+            decay_deactivate_element(thisAgent, w);
+        }
+	}
+#endif //SOAR_WMEM_ACTIVATION
 
     wme_remove_ref (thisAgent, w);
     free_cons (thisAgent, c);
@@ -296,6 +311,17 @@ void deallocate_wme (agent* thisAgent, wme *w) {
   print_with_symbols (thisAgent, "\nDeallocate wme: ");
   print_wme (thisAgent, w);
 #endif
+
+#ifdef SOAR_WMEM_ACTIVATION
+  if ((thisAgent->sysparams)[WME_DECAY_SYSPARAM])
+  {
+      if(w->has_decay_element)
+      {
+          decay_remove_element(thisAgent, w);
+      }
+  }
+#endif //SOAR_WMEM_ACTIVATION
+  
   symbol_remove_ref (thisAgent, w->id);
   symbol_remove_ref (thisAgent, w->attr);
   symbol_remove_ref (thisAgent, w->value);

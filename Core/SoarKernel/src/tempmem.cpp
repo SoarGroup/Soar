@@ -131,8 +131,23 @@ void mark_slot_as_changed (agent* thisAgent, slot *s) {
       allocate_with_pool (thisAgent, &thisAgent->dl_cons_pool, &dc);
       dc->item = s;
       s->changed = dc;
+
+#ifdef SOAR_WMEM_ACTIVATION
+      s->num_changes = 1;
+#endif //SOAR_WMEM_ACTIVATION
+      
       insert_at_head_of_dll (thisAgent->changed_slots, dc, next, prev);
     }
+#ifdef SOAR_WMEM_ACTIVATION
+    else
+    {
+        if(s->num_changes < DECAY_HISTORY_SIZE)
+        {
+            s->num_changes++;
+        }
+    } 
+#endif //SOAR_WMEM_ACTIVATION
+    
   }
 }
 

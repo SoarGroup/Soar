@@ -477,6 +477,20 @@ void init_sysparams (agent* thisAgent) {
   thisAgent->sysparams[USE_LONG_CHUNK_NAMES] = TRUE;  /* kjh(B14) */
   thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = FALSE;
   thisAgent->sysparams[TIMERS_ENABLED] = TRUE;
+
+#ifdef SOAR_WMEM_ACTIVATION
+  //Decay system toggle
+  (thisAgent->sysparams)[WME_DECAY_SYSPARAM] = FALSE;
+  
+  //These default values are specified in activate.h
+  (thisAgent->sysparams)[WME_DECAY_EXPONENT_SYSPARAM] = DECAY_DEFAULT_EXPONENT;
+  (thisAgent->sysparams)[WME_DECAY_WME_CRITERIA_SYSPARAM] = DECAY_DEFAULT_WME_CRITERIA;
+  (thisAgent->sysparams)[WME_DECAY_ALLOW_FORGETTING_SYSPARAM] = DECAY_DEFAULT_ALLOW_FORGETTING;
+  (thisAgent->sysparams)[WME_DECAY_I_SUPPORT_MODE_SYSPARAM] = DECAY_DEFAULT_I_SUPPORT_MODE;
+  (thisAgent->sysparams)[WME_DECAY_PERSISTENT_ACTIVATION_SYSPARAM] = DECAY_DEFAULT_PERSISTENT_ACTIVATION;
+
+#endif //SOAR_WMEM_ACTIVATION
+  
 }
 
 /* ===================================================================
@@ -579,6 +593,12 @@ void reset_statistics (agent* thisAgent) {
      reset_timer (&thisAgent->match_cpu_time[ii]);
      reset_timer (&thisAgent->gds_cpu_time[ii]);
   }
+
+#ifdef SOAR_WMEM_ACTIVATION
+  reset_timer (&(thisAgent->total_decay_time));
+#endif //SOAR_WMEM_ACTIVATION
+  
+
 }
 
 void reinitialize_all_agents ( Kernel* thisKernel ) {
@@ -1092,6 +1112,14 @@ void do_one_top_level_phase (agent* thisAgent)
 
 	  do_output_cycle(thisAgent);
 
+#ifdef SOAR_WMEM_ACTIVATION
+     if ((thisAgent->sysparams)[WME_DECAY_SYSPARAM])
+     {
+         decay_move_and_remove_wmes(thisAgent);
+     }
+#endif /*SOAR_WMEM_ACTIVATION*/
+
+      
  	  soar_invoke_callbacks(thisAgent, thisAgent, 
 			 AFTER_OUTPUT_PHASE_CALLBACK,
 			 (soar_call_data) NULL);
@@ -1159,6 +1187,13 @@ void do_one_top_level_phase (agent* thisAgent)
          thisAgent->d_cycle_count++;
 	  thisAgent->decision_phases_count++;  /* counts decisions, not cycles, for more accurate stats */
 
+#ifdef SOAR_WMEM_ACTIVATION
+      if ((thisAgent->sysparams)[WME_DECAY_SYSPARAM])
+      {
+          decay_move_and_remove_wmes(thisAgent);
+      }
+#endif
+      
       /* AGR REW1 begin */
 	  if (!thisAgent->input_period) 
 		  thisAgent->input_cycle_flag = TRUE;

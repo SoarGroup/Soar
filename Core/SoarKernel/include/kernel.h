@@ -8,6 +8,10 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -177,6 +181,10 @@ enum ni_mode {
  */
 //#define AGRESSIVE_ONC
 
+
+#define SOAR_WMEM_ACTIVATION    // compile switch
+    
+    
 /* --------------------------- */
 /* Current Soar version number */
 /* --------------------------- */

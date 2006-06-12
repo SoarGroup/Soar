@@ -195,6 +195,9 @@
 			Name="Source files"
 			Filter=".cpp">
 			<File
+				RelativePath=".\src\activate.cpp">
+			</File>
+			<File
 				RelativePath=".\src\agent.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
@@ -768,6 +771,9 @@
 		<Filter
 			Name="Header files"
 			Filter=".h">
+			<File
+				RelativePath=".\include\activate.h">
+			</File>
 			<File
 				RelativePath=".\include\agent.h">
 			</File>
