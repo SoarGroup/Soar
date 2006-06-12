@@ -39,60 +39,159 @@ sp {elaborate*top-state*top-state
 
 
 ## vsExtract.pl: extracting from file apply-basic-actions.soar
-sp {apply*orts-move
+# all actions need task-id's, since multiple tasks might issue similar commands
+
+# remove all status errors- the operators should just get re-proposed
+
+sp {propose*remove-errors
+   (state <s> ^io.output-link.command <c>)
+   (<c> ^status error)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name remove-status-error
+        ^command <c>)
+}
+
+sp {apply*remove-status-error
+   (state <s> ^operator <o>
+              ^top-state.io.output-link <ol>)
+   (<o> ^name remove-status-error
+        ^command <c>)
+-->
+   (<ol> ^command <c> -)
+}
+
+sp {apply*orts-move1
    (state <s> ^operator <o>
               ^io.output-link <ol>)
    (<o> ^name orts-move
         ^group <g>
         ^x <x>
-        ^y <y> )
+        ^y <y> 
+       -^precision
+        ^task-id <tid>)
 -->
-   (<ol> ^move <m>)
+   (<ol> ^command <m>)
    (<m> ^group0 <g>
         ^param0 <x>
-        ^param1 <y>)
+        ^param1 <y>
+        ^name move
+        ^task-id <tid>)
 }
+
+sp {apply*orts-move2
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name orts-move
+        ^group <g>
+        ^x <x>
+        ^y <y>
+        ^precision <pr>
+        ^task-id <tid>)
+-->
+   (<ol> ^command <m>)
+   (<m> ^group0 <g>
+        ^param0 <x>
+        ^param1 <y>
+        ^param2 <pr>
+        ^name move
+        ^task-id <tid>)
+}
+
+sp {apply*orts-attack
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name orts-attack
+        ^friendly-group <gf>
+        ^enemy-group <ge>
+        ^task-id <tid>)
+-->
+   (<ol> ^command <m>)
+   (<m> ^group0 <gf>
+        ^group1 <ge>
+        ^name attack
+        ^task-id <tid>)
+}
+
 sp {apply*orts-mine
    (state <s> ^operator <o>
               ^io.output-link <ol>)
    (<o> ^name orts-mine
-        ^group <g>)
+        ^group <g>
+        ^task-id <tid>)
 -->
-   (<ol> ^mine <m>)
-   (<m> ^group0 <g>)
+   (<ol> ^command <m>)
+   (<m> ^group0 <g>
+        ^name mine
+        ^task-id <tid>)
 }
 
-sp {apply*orts-build-building
+
+sp {apply*orts-build
    (state <s> ^operator <o>
               ^io.output-link <ol>
               ^top-state <ts>)
-   (<o> ^name orts-build-building
+   (<o> ^name orts-build
         ^worker <w>
         ^x <x>
         ^y <y>
         ^building-type <t>
         ^task-id <tid>)
 -->
-   (<ol> ^build <b>)
+   (<ol> ^command <b>)
    (<b> ^group0 <w>
         ^param0 <t>
         ^param1 <x>
-        ^param2 <y>)
-   (<ts> ^finished-command <fc>)
-   (<fc> ^name orts-build-building
-         ^task-id <tid>)
+        ^param2 <y>
+        ^name build
+        ^task-id <tid>)
 }
 
-sp {apply*orts-set-sticky
+
+
+
+sp {apply*orts-stick
    (state <s> ^operator <o>
               ^io.output-link <ol>
               ^top-state <ts>)
-   (<o> ^name orts-set-sticky
-        ^group <g>)
+   (<o> ^name orts-stick
+        ^group <g>
+        ^task-id <tid>)
 -->
-   (<ol> ^stick <m>)
-   (<m> ^group0 <g>)
-   (<ts> ^finished-command orts-set-sticky)
+   (<ol> ^command <m>)
+   (<m> ^group0 <g>
+        ^name stick
+        ^task-id <tid>)
+}
+
+sp {apply*orts-stick
+   (state <s> ^operator <o>
+              ^io.output-link <ol>
+              ^top-state <ts>)
+   (<o> ^name orts-join
+        ^from-group <gf>
+        ^to-group <gt>
+        ^task-id <tid>)
+-->
+   (<ol> ^command <m>)
+   (<m> ^group0 <gf>
+        ^group1 <gt>
+        ^name join
+        ^task-id <tid>)
+}
+
+sp {apply*orts-free
+   (state <s> ^operator <o>
+              ^io.output-link <ol>
+              ^top-state <ts>)
+   (<o> ^name orts-free
+        ^group <g>
+        ^task-id <tid>)
+-->
+   (<ol> ^command <m>)
+   (<m> ^group0 <g>
+        ^name free
+        ^task-id <tid>)
 }
 
 sp {apply*orts-locate-building
@@ -106,40 +205,45 @@ sp {apply*orts-locate-building
         ^distance <dist>
         ^task-id <tid>)
 -->
-   (<ol> ^locate-building <lb>)
+   (<ol> ^command <lb>)
    (<lb> ^building <t>
          ^x <x>
          ^y <y>
-         ^distance <dist>)
-   (<ts> ^finished-command <fc>)
-   (<fc> ^name orts-locate-building
+         ^distance <dist>
+         ^name locate-building
          ^task-id <tid>)
 }
  
-sp {apply*orts-train-units
+sp {apply*orts-train
    (state <s> ^operator <o>
               ^io.output-link <ol>
               ^top-state <ts>)
-   (<o> ^name orts-train-units
+   (<o> ^name orts-train
         ^building <b>
         ^unit-type <t>
         ^number <n>
         ^task-id <tid>)
 -->
-   (<ol> ^train <tr>)
+   (<ol> ^command <tr>)
    (<tr> ^group0 <b>
         ^param0 <t>
-        ^param1 <n>)
-   (<ts> ^finished-command <fc>)
-   (<fc> ^name orts-train-units
-         ^task-id <tid>)
+        ^param1 <n>
+        ^name train
+        ^task-id <tid>)
 }
+
 
 ## vsExtract.pl: extracting from file basic.soar
 sp {elaborate*io
    (state <s> ^superstate.io <io>)
 -->
    (<s> ^io <io>)
+}
+
+sp {elaborate*task-id
+   (state <s> ^superstate.operator.task-id <tid>)
+-->
+   (<s> ^task-id <tid>)
 }
 
 
@@ -153,17 +257,31 @@ sp {top-state*propose*wait
     (<o> ^name wait)
 }
 
+sp {top-state*elaborate*my-id
+   (state <s> ^io.input-link.game-info.player-id <id>
+              ^top-state <ts>)
+-->
+   (<ts> ^my-id <id>)
+}
+
+sp {elaborate*print-ties
+   (state <s> ^impasse tie
+              ^item.name <o1>
+              ^item.name <o2>)
+-->
+   (write |operators involved in tie: | <o1> |, | <o2> (crlf))
+}
 ## vsExtract.pl: extracting from file build-barracks.soar
 sp {propose*build-barracks
    (state <s> ^name sorts
               ^running-task <rt>
-              ^execution-buffer.task <ts>)
+              ^planning.execution-buffer.task <ts>)
    (<rt> ^name build-barracks
          ^id <id>)
    (<ts> ^id <id>
         -^completed <cmp>)
 -->
-   (<s> ^operator <o> + > =)
+   (<s> ^operator <o> + =)
    (<o> ^name build-building
         ^building-type 1 # see general.h for building type->int translation
         ^building-dim 32 # width/2
@@ -175,16 +293,16 @@ sp {build-building*propose*init
    (state <s> ^name build-building
               ^superstate.operator <op>
               ^top-state <ts>)
-   (<op> ^task-id <tid>
-         ^building-type <ty>
-         ^building-dim <dim>)
+   (<op> ^building-type <ty>
+         ^building-dim <dim>
+         ^task-id <tid>)
    (<ts> -^build-building.task-id <tid>)
 -->
    (<s> ^operator <o> +)
    (<o> ^name init*build-building
-        ^task-id <tid>
         ^building-type <ty>
-        ^building-dim <dim>)
+        ^building-dim <dim>
+        ^task-id <tid>)
 }
 
 sp {build-building*apply*init
@@ -195,23 +313,24 @@ sp {build-building*apply*init
         ^building-type <ty>
         ^building-dim <dim>)
 -->
-   (<s> ^task-id <tid>)
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>
          ^building-type <ty>
-         ^building-dim <dim>)
+         ^building-dim <dim>
+         ^building-distance (+ <dim> 31 40))
 }
 
 sp {build-building*propose*set-cCenter-loc
    (state <s> ^name build-building
               ^io.input-link.groups <gs>
               ^task-id <tid>
-              ^top-state.build-building <bb>)
+              ^top-state.build-building <bb>
+              ^top-state.my-id <me>)
    (<bb> ^task-id <tid>
         -^cCenter <cc>)
    (<gs> ^group <g>)
    (<g> ^type controlCenter
-        ^owner 0
+        ^owner <me>
         ^x-pos <x>
         ^y-pos <y>)
         
@@ -245,7 +364,8 @@ sp {build-building*propose*find-cCenter
 -->
    (<s> ^operator <o> + =)
    (<o> ^name visual-search
-        ^search-type friendly)
+        ^search-type friendly
+        ^task-id <tid>)
 }
 
 sp {build-building*propose*find-build-location
@@ -257,10 +377,11 @@ sp {build-building*propose*find-build-location
          ^cCenter <cc>
         -^location <loc>
          ^building-dim <dim>
-         ^building-type <t>)
-  -{(<ts> ^finished-command <fc>)
+         ^building-type <t>
+         ^building-distance <dist>)
+  -{(<ts> ^io.output-link.command <fc>)
     (<fc> ^task-id <tid>
-          ^name orts-locate-building)}
+          ^name locate-building)}
    (<cc> ^x <x>
          ^y <y>)
         
@@ -270,16 +391,16 @@ sp {build-building*propose*find-build-location
         ^x <x>
         ^y <y>
         ^task-id <tid>
-        ^distance (+ <dim> 31 40) # keep a gap of 40 cCenter->building
+        ^distance <dist>
         ^building-type <t>) 
 }
 sp {build-building*propose*no-location-found
    (state <s> ^name build-building
               ^task-id <tid>
-              ^top-state.finished-command <fi>
+              ^top-state.io.output-link.command <fi>
               ^io.input-link <il>)
    (<fi> ^task-id <tid>
-         ^name orts-locate-building)
+         ^name locate-building)
    (<il> ^query-results <q>)
    (<q> ^query-name locate-building
         ^param0 -1
@@ -297,20 +418,25 @@ sp {build-building*apply*no-location-found
    (<o> ^name bb*no-location-found
         ^task-id <tid>
         ^finished-command <fi>)
-   (<ts> ^build-building <bb>)
-   (<bb> ^task-id <tid>)
+   (<ts> ^build-building <bb>
+         ^io.output-link <ol>)
+   (<bb> ^task-id <tid>
+         ^building-distance  <dist>)
    
 -->
-   (<ts> ^finished-command <fi> -)
+   (<ol> ^command <fi> -)
+   (<bb> ^building-distance <dist> -)
+   (<bb> ^building-distance (+ <dist> 10))
 }
 
 sp {build-building*propose*location-found
    (state <s> ^name build-building
               ^task-id <tid>
-              ^top-state.finished-command <fi>
+              ^io.output-link.command <cm>
               ^io.input-link <il>)
-   (<fi> ^task-id <tid>
-         ^name orts-locate-building)
+   (<cm> ^task-id <tid>
+         ^name locate-building
+         ^status complete)
    (<il> ^query-results <q>)
    (<q> ^query-name locate-building
         ^param0 <x>
@@ -321,47 +447,86 @@ sp {build-building*propose*location-found
         ^x <x>
         ^y <y>
         ^task-id <tid>
-        ^finished-command <fi>)
+        ^command <cm>)
 }
 
 sp {build-building*apply*location-found
    (state <s> ^operator <o>
-              ^top-state <ts>)
+              ^top-state <ts>
+              ^io.output-link <ol>)
    (<o> ^name building-location-found
         ^x <x>
         ^y <y>
         ^task-id <tid>
-        ^finished-command <fi>)
+        ^command <cm>)
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>)
+   (<ol> ^command <cm>)
    
 -->
    (<bb> ^location <l>)
    (<l> ^x <x>
         ^y <y>)
-   (<ts> ^finished-command <fi> -)
+   (<ol> ^command <cm> -)
 }
-   
+
+
 
 sp {build-building*propose*change-grouping-level
    (state <s> ^name build-building
-              -^top-state.grouping-level individuals
-               ^io.input-link.groups <gs>)
+              ^task-id <tid>
+             ^top-state <ts>
+               ^io.input-link.groups <gs>
+               ^top-state.my-id <me>)
   -{(<gs> ^group <g>)
      (<g> ^type worker
-          ^owner 0
+          ^owner <me>
           ^command_running 0
           ^num_members 1)}
+  -{(<ts> ^grouping-level individuals)}
+   (<ts> ^build-building <bb>)
+   (<bb> ^task-id <tid>
+         ^location <l>
+        -^worker)
 -->
    (<s> ^operator <o> + > =)
-   (<o> ^name set-grouping-individuals)
+   (<o> ^name set-grouping-individuals
+        ^task-id <tid>)
 }
+
+sp {build-building*propose*clean-grouping-command
+   (state <s> ^name build-building
+              ^task-id <tid>
+              ^io.output-link <ol>)
+   (<ol> ^command <c>)
+   (<c> ^name grouping-radius
+        ^task-id <tid>
+        ^status complete)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name bb*clear-grouping-command
+        ^task-id <tid>)
+}
+
+sp {build-building*apply*clean-grouping-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name bb*clear-grouping-command
+        ^task-id <tid>)
+   (<ol> ^command <c>)
+   (<c> ^name grouping-radius
+        ^task-id <tid>)
+-->
+   (<ol> ^command <c> -)
+}
+
 
 sp {build-building*propose*find-worker
    (state <s> ^name build-building
               ^top-state <ts>
               ^io.input-link <il>
-              ^task-id <tid>)
+              ^task-id <tid>
+              ^top-state.my-id <me>)
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>
          ^location.x <x>
@@ -370,36 +535,72 @@ sp {build-building*propose*find-worker
    (<il> ^groups <gs>)
    -{(<gs> ^group <g>)
      (<g> ^type worker
-          ^owner 0
+          ^owner <me>
           ^command_running 0
           ^num_members 1)}
 -->
    (<s> ^operator <o> + < =) # prefer changing group level
    (<o> ^name visual-search
-        ^search-type friendly_workers)
+        ^search-type friendly_workers
+        ^task-id <tid>)
 }
+
+sp {build-building*propose*clean-vs-command
+   (state <s> ^name build-building
+              ^task-id <tid>
+              ^io.output-link <ol>)
+   (<ol> ^command <c>)
+   (<c> ^name look-feature
+        ^task-id <tid>
+        ^status complete)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name bb*clear-vs-command
+        ^task-id <tid>)
+}
+
+
+sp {build-building*apply*clean-vs-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name bb*clear-vs-command
+        ^task-id <tid>)
+   (<ol> ^command <c>)
+   (<c> ^name look-feature
+        ^task-id <tid>)
+-->
+   (<ol> ^command <c> -)
+}
+
+
 
 sp {build-building*propose*remember-id
    (state <s> ^name build-building
               ^top-state <ts>
-              ^io.input-link.groups.group <g>
-              ^task-id <tid>)
+              ^io <io>
+              ^task-id <tid>
+              ^top-state.my-id <me>)
+   (<io> ^input-link <il>
+         ^output-link <ol>)
+   (<il> ^groups.group <g>)
    (<g> ^type worker
         ^id <id>
-        ^owner 0
+        ^owner <me>
         ^command_running 0
-        ^num_members 1)
+        ^num_members 1
+        ^dist_to_query <d>)
    (<ts> ^build-building <bb>)
-      #  -^reserved-worker <id>)
    (<bb> ^task-id <tid>
-         ^location.x <x>
-         ^location.y <y>
+         ^location <loc>
         -^worker <wrk>)
+# no pending commands: this worker could have been assigned by another bb
+  -{(<ol> ^command <c>)}
   
 -->
-    (<s> ^operator <o> +  =)
+    (<s> ^operator <o> + =)
     (<o> ^name bb*remember-id
          ^worker <id>
+         ^dist <d>
          ^task-id <tid>)
 }
 
@@ -415,6 +616,18 @@ sp {build-building*apply*remember-id
    (<bb> ^worker <id>)
   # (<ts> ^reserved-worker <id>)
 }
+
+sp {build-building*prefer-closer-worker
+   (state <s> ^operator <o1> +
+              ^operator <o2> +)
+   (<o1> ^name bb*remember-id
+         ^dist <d1>)
+   (<o2> ^name bb*remember-id
+         ^dist <d2> < <d1>)
+-->
+   (<s> ^operator <o2> > <o1>)
+}
+
 
 sp {build-building*propose*clear-worker-id # worker disappears
    (state <s> ^name build-building
@@ -452,12 +665,14 @@ sp {build-building*propose*start-build
    (state <s> ^name build-building
               ^top-state <ts>
               ^task-id <tid>
-              ^io.input-link <il>) 
+              ^io.input-link <il>
+              ^io.output-link <ol>
+              ^top-state.my-id <me>)
    (<il> ^groups <gs>)
    (<gs> ^group <g>)
    (<g> ^type worker
         ^id <id>
-        ^owner 0
+        ^owner <me>
         ^command_running 0
         ^num_members 1)
    (<ts> ^build-building <bb>)
@@ -467,12 +682,12 @@ sp {build-building*propose*start-build
         -^started-build true
          ^building-type <tp>
          ^worker <id>)
-   -{(<ts> ^finished-command <fc>)
-    (<fc> ^task-id <tid>
-          ^name orts-build-building)}
+  -{(<ol> ^command <c>)
+    (<c> ^task-id <tid>
+          ^name build)}
 -->
     (<s> ^operator <o> +  =)
-    (<o> ^name orts-build-building
+    (<o> ^name orts-build
          ^worker <id>
          ^x <x>
          ^y <y>
@@ -483,10 +698,12 @@ sp {build-building*propose*start-build
 sp {build-building*propose*mark-started
    (state <s> ^name build-building
               ^task-id <tid>
-              ^top-state <ts>)
-   (<ts> ^finished-command <fc>)
+              ^top-state <ts>
+              ^io.output-link <ol>)
+   (<ol> ^command <fc>)
    (<fc> ^task-id <tid>
-         ^name orts-build-building)
+         ^name build
+         ^status complete)
 -->
    (<s> ^operator <o> + >)
    (<o> ^name build-building*mark-started
@@ -498,21 +715,24 @@ sp {build-building*apply*mark-started
               ^top-state <ts>)
    (<o> ^name build-building*mark-started
         ^task-id <tid>)
-   (<ts> ^finished-command <fc>
+   (<ts> ^io.output-link <ol>
          ^build-building <bb>)
+   (<ol> ^command <fc>)
    (<fc> ^task-id <tid>
-         ^name orts-build-building)
+         ^name build
+         ^status complete)
    (<bb> ^task-id <tid>)
 -->
    (<bb> ^started-build true)
-   (<ts> ^finished-command <fc> -)
+   (<ol> ^command <fc> -)
 }
 
 sp {build-building*propose*retry-failed
    (state <s> ^name build-building
               ^task-id <tid>
               ^top-state <ts>
-              ^io.input-link.groups.group <g>)
+              ^io.input-link.groups.group <g>
+             -^io.output-link.command.task-id <tid>)
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>
          ^worker <id>
@@ -537,17 +757,92 @@ sp {build-building*apply*retry-failed
    (<ts> ^build-building <bb> -)
 }
 
+# workers that failed to build
+sp {build-building*propose*free-worker-nonbuilder
+   (state <s> ^name build-building
+              ^task-id <tid>
+              ^top-state <ts>
+              ^io.input-link.groups.group <g>
+             -^io.output-link.command.group0 <id>)
+   (<ts> ^build-building <bb>)
+   (<bb> ^task-id <tid>
+         ^started-build true
+        -^worker <id>)
+   (<g> ^id <id>
+        ^command_running 0
+        ^command build)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name orts-free
+        ^group <id>
+        ^task-id <tid>)
+}
+
+# only do this if successful
+sp {build-building*propose*free-worker-builder
+   (state <s> ^name build-building
+              ^task-id <tid>
+              ^top-state <ts>
+              ^io.input-link.groups.group <g>
+             -^io.output-link.command.group0 <id>)
+   (<ts> ^build-building <bb>)
+   (<bb> ^task-id <tid>
+         ^started-build true
+         ^worker <id>)
+   (<g> ^id <id>
+        ^command_success 1)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name orts-free
+        ^group <id>
+        ^task-id <tid>)
+}
+
+sp {build-building*propose*clean-free-command
+   (state <s> ^name build-building
+              ^task-id <tid>
+              ^io.output-link <ol>)
+   (<ol> ^command <c>)
+   (<c> ^name free
+        ^task-id <tid>
+        ^status complete)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name bb*clean-free-command
+        ^task-id <tid>)
+}
+
+
+sp {build-building*apply*clean-free-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name bb*clean-free-command
+        ^task-id <tid>)
+   (<ol> ^command <c>)
+   (<c> ^name free
+        ^task-id <tid>)
+-->
+   (<ol> ^command <c> -)
+}
+
+# done if building started, but builder no longer has the command (was freed)
+# once we free the worker, it may even drop off io, but if it is still building, in must be in io
 sp {build-building*propose*done
    (state <s> ^name build-building
               ^task-id <tid>
               ^top-state <ts>
-              ^io.input-link.groups.group <g>)
+              ^io.input-link.groups <gs>
+             -^io.output-link.command.task-id <tid>)
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>
          ^worker <id>
          ^started-build true)
-   (<g> ^id <id>
-        ^command_success 1)
+   -{(<gs> ^group <g>)
+    (<g> ^id <id>
+          ^command build)}   
+    -{(<gs> ^group <g>)
+     (<g> ^id <id>
+          ^command build-started)}
 -->
    (<s> ^operator <o> +)
    (<o> ^name bb*done
@@ -562,12 +857,30 @@ sp {build-building*apply*done
         ^task-id <tid>)
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>)
-   (<ts> ^execution-buffer.task <t>)
+   (<ts> ^planning.execution-buffer.task <t>)
    (<t> ^id <tid>)
 -->
    (<ts> ^build-building <bb> -)
    (<t> ^completed true)
 }
+## vsExtract.pl: extracting from file build-marines.soar
+sp {propose*build-marines
+   (state <s> ^name sorts
+              ^running-task <rt>
+              ^planning.execution-buffer.task <ts>)
+   (<rt> ^name build-marines
+         ^id <id>)
+   (<ts> ^id <id>
+        -^completed <cmp>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name build-units
+        ^number 2000
+        ^building-name barracks
+        ^unit-type 1 # see general.h for unit type->int translation
+        ^task-id <id>)
+}
+
 ## vsExtract.pl: extracting from file build-units.soar
 sp {build-units*propose*init
    (state <s> ^name build-units
@@ -581,10 +894,10 @@ sp {build-units*propose*init
 -->
    (<s> ^operator <o> +)
    (<o> ^name init*build-units
-        ^task-id <tid>
         ^number <num>
         ^building-name <nam>
-        ^unit-type <ty>)
+        ^unit-type <ty>
+        ^task-id <tid>)
 }
 
 sp {build-units*apply*init
@@ -604,29 +917,60 @@ sp {build-units*apply*init
         ^unit-type <ty>)
 }
 
-# fix this up if we are in danger of non-singleton groups of buildings
 sp {build-units*propose*change-grouping-level
    (state <s> ^name build-units
-              ^comment out
+              ^task-id <tid>
               -^top-state.grouping-level individuals
-               ^io.input-link.groups <gs>)
+               ^io.input-link.groups <gs>
+               ^top-state.build-units <bu>
+               ^top-state.my-id <me>)
+   (<bu> ^task-id <tid>
+         ^building-name <nam>
+        -^building-id)
   -{(<gs> ^group <g>)
-     (<g> ^type worker
-          ^owner 0
-          ^command_running 0
-          ^num_members 1)}
+    (<g> ^type <nam>
+         ^owner <me>
+        ^num_members 1
+        ^command_running 0)}
+
 -->
-   (<s> ^operator <o> + > =)
-   (<o> ^name set-grouping-individuals)
+   (<s> ^operator <o> + < =)
+   (<o> ^name set-grouping-individuals
+        ^task-id <tid>)
 }
 
+sp {build-units*propose*clean-grouping-command
+   (state <s> ^name build-units
+              ^task-id <tid>
+              ^io.output-link <ol>)
+   (<ol> ^command <c>)
+   (<c> ^name grouping-radius
+        ^task-id <tid>
+        ^status complete)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name bu*clear-grouping-command
+        ^task-id <tid>)
+}
+
+sp {build-units*apply*clean-grouping-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name bu*clear-grouping-command
+        ^task-id <tid>)
+   (<ol> ^command <c>)
+   (<c> ^name grouping-radius
+        ^task-id <tid>)
+-->
+   (<ol> ^command <c> -)
+}
 # this should keep looking at friendly units until the correct building is seen
-# todo: find building not already training (or training the least)
 sp {build-units*propose*find-building
    (state <s> ^name build-units
               ^top-state <ts>
               ^io.input-link <il>
-              ^task-id <tid>)
+              ^task-id <tid>
+              ^top-state.my-id <me>)
    (<ts> ^build-units <bu>)
    (<bu> ^task-id <tid>
          ^building-name <nam>
@@ -634,101 +978,127 @@ sp {build-units*propose*find-building
    (<il> ^groups <gs>)
    -{(<gs> ^group <g>)
      (<g> ^type <nam>
-          ^owner 0
+          ^owner <me>
           ^num_members 1)}
 -->
-   (<s> ^operator <o> + <) # prefer changing group level
+   (<s> ^operator <o> + < =) # prefer changing group level
    (<o> ^name visual-search
-        ^search-type friendly)
-}
-
-sp {build-units*propose*remember-id
-   (state <s> ^name build-units
-              ^top-state <ts>
-              ^io.input-link.groups.group <g>
-              ^task-id <tid>)   
-   (<ts> ^build-units <bu>)
-   (<bu> ^task-id <tid>
-         ^building-name <nam>
-        -^building-id <id>)
-   (<g> ^type <nam>
-        ^id <id>
-        ^owner 0
-        ^num_members 1)
-
-  
--->
-    (<s> ^operator <o> +)
-    (<o> ^name bu*remember-id
-         ^building-id <id>
-         ^task-id <tid>)
-}
-
-sp {build-units*apply*remember-id
-   (state <s> ^operator <o>
-              ^top-state <ts>)
-   (<ts> ^build-units <bu>)
-   (<o> ^name bu*remember-id
-        ^building-id <id>
+        ^search-type friendly
         ^task-id <tid>)
+}
+
+sp {build-units*propose*clean-vs-command
+   (state <s> ^name build-units
+              ^task-id <tid>
+              ^io.output-link <ol>)
+   (<ol> ^command <c>)
+   (<c> ^name look-feature
+        ^task-id <tid>
+        ^status complete)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name bu*clear-vs-command
+        ^task-id <tid>)
+}
+
+sp {build-units*apply*clean-vs-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name bu*clear-vs-command
+        ^task-id <tid>)
+   (<ol> ^command <c>)
+   (<c> ^name look-feature
+        ^task-id <tid>)
+-->
+   (<ol> ^command <c> -)
+}
+
+sp {build-units*elaborate*eligible-building
+   (state <s> ^name build-units
+              ^task-id <tid>
+              ^top-state.build-units <bu>
+              ^io.input-link.groups.group <g>
+              ^top-state.my-id <me>)
+   (<bu> ^task-id <tid>
+         ^building-name <nam>)
+   (<g> ^type <nam>
+        ^command_running 0
+        ^owner <me>
+        ^num_members 1
+        ^id <id>)
+-->
+   (<s> ^eligible-building <id>)
+}
+
+
+sp {build-units*propose*save-building
+   (state <s> ^name build-units
+              ^top-state.build-units <bu>
+              ^task-id <tid>
+              ^eligible-building <id>)
+   (<bu> ^task-id <tid>
+         -^building-id)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name bu*save-building
+         ^id <id>)
+}
+
+sp {build-units*apply*save-building
+   (state <s> ^name build-units
+              ^task-id <tid>
+              ^top-state.build-units <bu>
+              ^operator <o>)
    (<bu> ^task-id <tid>)
+   (<o> ^name bu*save-building
+        ^id <id>)
 -->
    (<bu> ^building-id <id>)
 }
 
-sp {build-units*propose*clear-building-id # building disappears
+sp {build-units*propose*remove-building
    (state <s> ^name build-units
-              ^top-state <ts>
-              ^io.input-link.groups <gs>
-              ^task-id <tid>)
-   (<ts> ^build-units <bu>)
-   (<bu> ^task-id <tid>
-         ^building-id <id>
-         ^building-name <nam>)
-  -{(<gs> ^group <g>)
-    (<g> ^type <nam>
-        ^id <id>)}
-  
--->
-   (<s> ^operator <o> + >)
-    (<o> ^name bu*clear-building-id
-         ^task-id <tid>)
-}
-
-sp {build-units*apply*clear-building-id
-   (state <s> ^operator <o>
-              ^top-state <ts>)
-   (<ts> ^build-units <bu> )
-   (<o> ^name bu*clear-building-id
-        ^task-id <tid>)
+              ^top-state.build-units <bu>
+              ^task-id <tid>
+              -^io.input-link.groupsgroup.id <id>)
    (<bu> ^task-id <tid>
          ^building-id <id>)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name bu*remove-building
+         ^id <id>)
+}
+
+sp {build-units*apply*remove-building
+   (state <s> ^name build-units
+              ^task-id <tid>
+              ^top-state.build-units <bu>
+              ^operator <o>)
+   (<bu> ^task-id <tid>)
+   (<o> ^name bu*remove-building
+        ^id <id>)
 -->
    (<bu> ^building-id <id> -)
 }
 
+
 sp {build-units*propose*start-train
    (state <s> ^name build-units
               ^top-state <ts>
-              ^task-id <tid>
-              ^io.input-link <il>) 
+              ^task-id <tid> 
+              ^eligible-building <id>)
    (<ts> ^build-units <bu>)
    (<bu> ^task-id <tid>
-         ^building-id <id>
          ^building-name <nam>
-        -^started-train true
          ^unit-type <ty>
-         ^number <num>)
-   (<il> ^groups <gs>)
-   (<gs> ^group <g>)
-   (<g> ^type <nam>
-        ^id <id>)
-   -{(<ts> ^finished-command <fc>)
+         ^number <num>
+         ^building-id <id>)
+  -{(<ts> ^io.output-link.command <fc>)
     (<fc> ^task-id <tid>
-          ^name orts-train-units)}
+          ^name train)}
 -->
     (<s> ^operator <o> + =)
-    (<o> ^name orts-train-units
+    (<o> ^name orts-train
          ^building <id>
          ^unit-type <ty>
          ^number <num>
@@ -739,9 +1109,10 @@ sp {build-units*propose*mark-started
    (state <s> ^name build-units
               ^task-id <tid>
               ^top-state <ts>)
-   (<ts> ^finished-command <fc>)
+   (<ts> ^io.output-link.command <fc>)
    (<fc> ^task-id <tid>
-         ^name orts-train-units)
+         ^name train
+         ^status complete)
 -->
    (<s> ^operator <o> + >)
    (<o> ^name build-units*mark-started
@@ -753,18 +1124,20 @@ sp {build-units*apply*mark-started
               ^top-state <ts>)
    (<o> ^name build-units*mark-started
         ^task-id <tid>)
-   (<ts> ^finished-command <fc>
+   (<ts> ^io.output-link <ol>
          ^build-units <bu>)
+   (<ol> ^command <fc>)
    (<fc> ^task-id <tid>
-         ^name orts-train-units)
+         ^name train
+         ^status complete)
    (<bu> ^task-id <tid>)
 -->
-   (<bu> ^started-train true)
-   (<ts> ^finished-command <fc> -)
+   (<ol> ^command <fc> -)
 }
 
 sp {build-units*propose*retry-failed
    (state <s> ^name build-units
+              ^comment out
               ^task-id <tid>
               ^top-state <ts>
               ^io.input-link.groups.group <g>)
@@ -791,7 +1164,8 @@ sp {build-units*apply*retry-failed
 -->
    (<ts> ^build-units <bu> -)
 }
-   
+  
+
 sp {build-units*propose*done
    (state <s> ^name build-units
               ^task-id <tid>
@@ -799,15 +1173,16 @@ sp {build-units*propose*done
               ^io.input-link.groups.group <g>)
    (<ts> ^build-units <bu>)
    (<bu> ^task-id <tid>
-         ^building-id <id>
-         ^started-train true)
+         ^building-id <id>)
    (<g> ^id <id>
+        ^command train
         ^command_success 1)
 -->
-   (<s> ^operator <o> +)
+   (<s> ^operator <o> + > =)
    (<o> ^name bu*done
         ^task-id <tid>)
 }
+
 sp {build-units*apply*done
    (state <s> ^operator <o>
               ^top-state <ts>)
@@ -815,7 +1190,7 @@ sp {build-units*apply*done
         ^task-id <tid>)
    (<ts> ^build-units <bu>)
    (<bu> ^task-id <tid>)
-   (<ts> ^execution-buffer.task <t>)
+   (<ts> ^planning.execution-buffer.task <t>)
    (<t> ^id <tid>)
 -->
    (<ts> ^build-units <bu> -)
@@ -827,167 +1202,637 @@ sp {build-units*apply*done
 sp {propose*build-workers
    (state <s> ^name sorts
               ^running-task <rt>
-              ^execution-buffer.task <ts>)
+              ^planning.execution-buffer.task <ts>)
    (<rt> ^name build-workers
          ^id <id>)
    (<ts> ^id <id>
         -^completed <cmp>)
 -->
-   (<s> ^operator <o> + > =)
+   (<s> ^operator <o> + =)
    (<o> ^name build-units
-        ^number 20
+        ^number 10
         ^building-name controlCenter
         ^unit-type 0 # see general.h for unit type->int translation
         ^task-id <id>)
 }
 
+## vsExtract.pl: extracting from file explore-attack.soar
+sp {explore-attack*propose*init
+   (state <s> ^name explore-attack
+              ^superstate.operator <op>
+              ^top-state <ts>
+              ^top-state.grouping-level huge-groups
+              ^io.input-link.groups.group <g>)
+   (<g> ^type <ty>
+        ^num_members >= <sz>)
+   (<op> ^unit-type <ty>
+         ^task-id <tid>
+         ^group-size <sz>)
+   (<ts> -^explore-attack.task-id <tid>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name init*explore-attack
+        ^unit-type <ty>
+        ^group-size <sz>
+        ^task-id <tid>)
+}
+
+sp {explore-attack*apply*init
+   (state <s> ^operator <o>
+              ^top-state <ts>
+              ^io.input-link.game-info.map-xdim <xmax>
+              ^io.input-link.game-info.map-ydim <ymax>)
+   (<o> ^name init*explore-attack
+        ^unit-type <ty>
+        ^group-size <sz>
+        ^task-id <tid>)
+-->
+   (<ts> ^explore-attack <ea>)
+   (<ea> ^task-id <tid>
+         ^unit-type <ty>
+        ^group-size <sz>
+        ^explorer-count 0
+        ^explore-dir <ed1>
+        ^explore-dir <ed2>
+        ^explore-dir <ed3>
+        ^explore-dir <ed4>
+        ^explore-dir <ed5>
+        ^explore-dir <ed6>
+        ^explore-dir <ed7>
+        ^explore-dir <ed8>
+        ^explore-dir <ed9>)
+   (<ed1> ^count 0
+          ^x 10
+          ^y 10)
+   (<ed2> ^count 0
+          ^x 10
+          ^y (- <ymax> 10))
+   (<ed3> ^count 0
+          ^x (- <xmax> 10)
+          ^y 10)
+   (<ed4> ^count 0
+          ^x (- <xmax> 10)
+          ^y (- <ymax> 10))
+   (<ed5> ^count 0
+          ^x 10
+          ^y (div <ymax> 2))
+   (<ed6> ^count 0
+          ^x (- <xmax> 10)
+          ^y (div <ymax> 2))
+   (<ed7> ^count 0
+          ^x (div <xmax> 2)
+          ^y 10)
+   (<ed8> ^count 0
+          ^x (div <xmax> 2)
+          ^y (- <ymax> 10)) 
+   (<ed9> ^count 0
+          ^x (div <xmax> 2)
+          ^y (div <ymax> 2))
+}
+
+sp {explore-attack*elaborate*eligible-explorer
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+              ^io.input-link.groups <gs>
+              ^top-state.explore-attack <ea>
+              ^top-state.grouping-level individuals
+              ^top-state.my-id <me>)
+   (<ea> ^task-id <tid>
+         ^unit-type <ty>)
+   (<gs> ^group <gf>)
+   (<gf> ^owner <me>
+         ^command_running 0
+         ^type <ty>
+         ^id <idf>)
+-->
+  (<s> ^eligible-explorer <idf>)
+}
+
+sp {explore-attack*elaborate*eligible-attacker
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+              ^io.input-link.groups <gs>
+              ^top-state.explore-attack <ea>
+              ^top-state.grouping-level huge-groups
+              ^top-state.my-id <me>)
+   (<ea> ^task-id <tid>
+         ^unit-type <ty>)
+   (<gs> ^group <gf>)
+   (<gf> ^owner <me>
+         -^command attack
+         ^type <ty>
+         ^id <idf>)
+-->
+  (<s> ^eligible-attacker <idf>)
+}
+sp {explore-attack*elaborate*eligible-attacker2
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+              ^io.input-link.groups <gs>
+              ^top-state.explore-attack <ea>
+              ^top-state.grouping-level huge-groups
+              ^top-state.my-id <me>)
+   (<ea> ^task-id <tid>
+         ^unit-type <ty>)
+   (<gs> ^group <gf>)
+   (<gf> ^owner <me>
+         ^command attack
+         ^command_running 0
+         ^type <ty>
+         ^id <idf>)
+-->
+  (<s> ^eligible-attacker <idf>)
+}
+
+
+
+sp {explore-attack*elaborate*enemy-group
+   (state <s> ^name explore-attack
+              ^io.input-link.groups <gs>)
+   (<gs> ^group <ge>)
+   (<ge> ^enemy 1
+         ^id <ide>)       
+-->
+  (<s> ^enemy-group <ide>)
+} 
+
+sp {explore-attack*elaborate*enemy-fm-present
+   (state <s> ^name explore-attack
+              ^comment out
+              ^io.input-link.feature-maps.enemy <ef>)
+   (<ef> ^<sector> > 0)
+-->
+  (<s> ^enemy-feature <sector>)
+} 
+
+# need to explore- send out individuals
+sp {explore-attack*propose*change-grouping-level1
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+             ^top-state <ts>
+            -^top-state.io.output-link.command.task-id <tid>
+            -^enemy-group
+             -^eligible-explorer)
+  -{(<ts> ^grouping-level individuals)}
+   (<ts> ^explore-attack <ea>)
+   (<ea> ^task-id <tid>)
+-->
+   (<s> ^operator <o> + > = )
+   (<o> ^name set-grouping-individuals
+        ^task-id <tid>)
+}
+
+# enemies present- send large groups to attack
+sp {explore-attack*propose*change-grouping-level2
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+             ^top-state <ts>
+            -^top-state.io.output-link.command.task-id <tid>
+             ^enemy-group)
+  -{(<ts> ^grouping-level huge-groups)}
+   (<ts> ^explore-attack <ea>)
+   (<ea> ^task-id <tid>)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name set-grouping-huge-groups
+        ^task-id <tid>)
+}
+
+# not initted yet- looking for a big group
+sp {explore-attack*propose*change-grouping-level3
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+             ^top-state <ts>
+            -^top-state.io.output-link.command.task-id <tid>)
+  -{(<ts> ^grouping-level huge-groups)}
+  -{(<ts> ^explore-attack <ea>)
+    (<ea> ^task-id <tid>)}
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name set-grouping-huge-groups
+        ^task-id <tid>)
+}
+
+
+sp {explore-attack*propose*clean-grouping-command
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+              ^io.output-link <ol>)
+   (<ol> ^command <c>)
+   (<c> ^name grouping-radius
+        ^task-id <tid>
+        ^status complete)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name ea*clear-grouping-command
+        ^task-id <tid>)
+}
+
+sp {explore-attack*apply*clean-grouping-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name ea*clear-grouping-command
+        ^task-id <tid>)
+   (<ol> ^command <c>)
+   (<c> ^name grouping-radius
+        ^task-id <tid>)
+-->
+   (<ol> ^command <c> -)
+}
+
+sp {explore-attack*propose*attack
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+              ^eligible-attacker <gf>
+              ^enemy-group <ge>
+             -^io.output-link.command.group0 <gf>
+              ^top-state.grouping-level huge-groups)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name orts-attack
+        ^friendly-group <gf>
+        ^enemy-group <ge>
+        ^task-id <tid>)
+}
+
+# attack manager should handle ganging up better
+sp {explore-attack*prefer*already-attacking
+   (state <s> ^operator <o1> +
+              ^operator <o2> +
+              ^name explore-attack
+              ^task-id <tid>
+              ^io.output-link.command <c>
+              ^io.input-link.groups.group <g>)
+   (<c> ^task-id <tid>
+         ^name attack
+         ^group1 <target>)
+   (<g> ^id <rejected>
+       -^type barracks)
+   (<o1> ^name orts-attack
+         ^enemy-group <target>)
+   (<o2> ^name orts-attack
+        -^enemy-group <target>)
+   (<o2> ^enemy-group <rejected>)
+-->
+   (<s> ^operator <o1> > <o2>)
+}
+
+sp {explore-attack*prefer*not-worker
+   (state <s> ^operator <o1> +
+              ^comment out
+              ^operator <o2> +
+              ^name explore-attack
+              ^task-id <tid>
+              ^io.input-link.groups.group <g1>
+              ^io.input-link.groups.group <g2>)
+   (<g1> ^id <e1>
+         -^type worker)
+   (<g2> ^id <e2>
+         ^type worker)
+   (<o1> ^name orts-attack
+         ^enemy-group <e1>)
+   (<o2> ^name orts-attack
+         ^enemy-group <e2>)
+-->
+   (<s> ^operator <o1> > <o2>)
+}
+
+sp {explore-attack*prefer*barracks
+   (state <s> ^operator <o1> +
+              ^operator <o2> +
+              ^name explore-attack
+              ^task-id <tid>
+              ^io.input-link.groups.group <g1>
+              ^io.input-link.groups.group <g2>)
+   (<g1> ^id <e1>
+         ^type barracks)
+   (<g2> ^id <e2>
+         -^type barracks)
+   (<o1> ^name orts-attack
+         ^enemy-group <e1>)
+   (<o2> ^name orts-attack
+         ^enemy-group <e2>)
+-->
+   (<s> ^operator <o1> > <o2>)
+}
+
+sp {explore-attack*propose*clean-attack-command
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+              ^io.output-link <ol>)
+   (<ol> ^command <c>)
+   (<c> ^name attack
+        ^task-id <tid>
+        ^status complete)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name ea*clear-attack-command
+        ^task-id <tid>)
+}
+
+sp {explore-attack*apply*clean-attack-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name ea*clear-attack-command
+        ^task-id <tid>)
+   (<ol> ^command <c>)
+   (<c> ^name attack
+        ^task-id <tid>)
+-->
+   (<ol> ^command <c> -)
+}
+         
+sp {explore-attack*propose*explore
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+              ^top-state.explore-attack <ea>
+              -^enemy-group
+              -^enemy-feature
+              -^io.output-link.command.group0 <id>
+               ^top-state.grouping-level individuals
+               ^io.input-link.groups.group <g>)
+  (<ea> ^task-id <tid>
+        ^explore-dir <ed>
+        ^explorer <id>)
+  (<ed> ^x <x>
+        ^y <y>)
+  (<g> ^id <id>
+       ^command_running 0)
+-->
+  (<s> ^operator <o> + =)
+  (<o> ^name orts-move
+       ^group <id>
+       ^x <x>
+       ^y <y>
+       ^precision 50
+       ^task-id <tid>
+   )
+}
+
+
+sp {build-building*prefer-less-explored
+   (state <s> ^operator <o1> +
+              ^operator <o2> +
+              ^name explore-attack
+              ^task-id <tid>
+              ^top-state.explore-attack <ea>)
+   (<ea> ^task-id <tid>
+         ^explore-dir <ed1>
+         ^explore-dir <ed2>)
+   (<ed1> ^x <x1>
+          ^y <y1>
+          ^count <c1>)
+   (<ed2> ^x <x2>
+          ^y <y2>
+          ^count <c2> > <c1>)
+   (<o1> ^name orts-move
+         ^x <x1>
+         ^y <y1>)
+   (<o2> ^name orts-move
+         ^x <x2>
+         ^y <y2>)
+-->
+   (<s> ^operator <o1> > <o2>)
+}
+
+
+sp {explore-attack*propose*handle-explore-start
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+              ^top-state <ts>
+              ^io.output-link.command <cm>)
+   (<cm> ^task-id <tid>
+         ^name move
+         ^param0 <x>
+         ^param1 <y>
+         ^status complete)
+   (<ts> ^explore-attack <ea>)
+   (<ea> ^task-id <tid>
+         ^explore-dir <ed>)
+   (<ed> ^x <x>
+         ^y <y>)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name ea*handle-explore-start
+        ^explore-dir <ed>
+        ^task-id <tid>)
+}
+
+
+
+sp {explore-attack*apply*handle-explore-start
+   (state <s> ^operator <o> 
+              ^top-state <ts>)
+   (<o> ^name ea*handle-explore-start
+        ^task-id <tid>
+        ^explore-dir <ed>)
+   (<ts> ^io.output-link <ol>
+         ^explore-attack <ea>)
+   (<ol> ^command <fc>)
+   (<fc> ^task-id <tid>
+         ^name move
+         ^status complete)
+   (<ea> ^task-id <tid>
+         ^explore-dir <ed>)
+   (<ed> ^count <co>)
+-->
+   (<ed> ^count <co> -)
+   (<ol> ^command <fc> -)
+   (<ed> ^count (+ <co> 1))
+}
+
+sp {explore-attack*propose*add-explorer
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+              ^top-state.explore-attack <ea>
+              ^eligible-explorer <id>)
+   (<ea> ^task-id <tid>
+         ^explorer-count < 5
+        -^explorer <id>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name ea*add-explorer
+        ^id <id>)
+}
+
+sp {propose-attack*apply*add-explorer
+   (state <s> ^operator <o>
+              ^task-id <tid>
+              ^top-state.explore-attack <ea>)
+   (<ea> ^task-id <tid>
+         ^explorer-count <ec>)
+   (<o> ^name ea*add-explorer
+        ^id <id>)
+-->
+   (<ea> ^explorer-count <ec> -)
+   (<ea> ^explorer-count (+ <ec> 1))
+   (<ea> ^explorer <id>)
+}
+
+sp {explore-attack*propose*remove-explorer
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+              ^top-state.explore-attack <ea>
+             -^io.input-link.groups.group.id <id>)
+   (<ea> ^task-id <tid>
+         ^explorer <id>)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name ea*remove-explorer
+        ^id <id>)
+}
+
+sp {propose-attack*apply*remove-explorer
+   (state <s> ^operator <o>
+              ^task-id <tid>
+              ^top-state.explore-attack <ea>)
+   (<ea> ^task-id <tid>
+         ^explorer-count <ec>)
+   (<o> ^name ea*remove-explorer
+        ^id <id>)
+-->
+   (<ea> ^explorer-count <ec> -)
+   (<ea> ^explorer-count (- <ec> 1))
+   (<ea> ^explorer <id> -)
+}
 ## vsExtract.pl: extracting from file fake-planning-start.soar
 sp {propose*start-build-barracks
    (state <s> ^name sorts
-   ^comment out
-             -^running-task.name build-barracks)
+              ^planning.execution-buffer <eb>)
+  -{(<eb> ^task <t>)
+    (<t> ^name build-barracks
+          ^id 1234)}
 -->
    (<s> ^operator <o> + > =)
-   (<o> ^name start-build-barracks)
+   (<o> ^name start-task
+        ^task-name build-barracks
+        ^task-id 1234
+        ^priority low)
+}
+
+# if we're producing marines and have an excess of minerals, build another barracks
+sp {propose*start-build-barracks2
+   (state <s> ^name sorts
+              ^planning.execution-buffer <eb>
+              ^io.input-link.game-info.marine-count > 0
+              ^io.input-link.game-info.my-minerals >= 400)
+  -{(<eb> ^task <t>)
+    (<t> ^name build-barracks
+          ^id 12774)}
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-task
+        ^task-name build-barracks
+        ^task-id 12774
+        ^priority low)
 }
 
 sp {propose*start-build-workers
    (state <s> ^name sorts
-             -^running-task.name build-workers)
+              ^planning.execution-buffer <eb>)
+  -{(<eb> ^task <t>)
+    (<t> ^name build-workers
+          ^id 2525)}
 -->
    (<s> ^operator <o> + > =)
-   (<o> ^name start-build-workers)
+   (<o> ^name start-task
+        ^task-name build-workers
+        ^task-id 2525
+        ^priority low)
 }
+
+sp {propose*start-build-marines
+   (state <s> ^name sorts
+              ^planning.execution-buffer <eb>)
+  -{(<eb> ^task <t>)
+    (<t> ^name build-marines
+          ^id 2526)}
+   (<eb> ^task <t1>)
+   (<t1>  ^name build-barracks
+         ^completed true)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-task
+        ^task-name build-marines
+        ^task-id 2526
+        ^priority medium)
+}
+
+sp {propose*start-marine-attack
+   (state <s> ^name sorts
+              ^planning.execution-buffer <eb>
+              ^top-state.build-units <bu>)
+  -{(<eb> ^task <t>)
+    (<t> ^name marine-attack
+          ^id 4444)}
+   (<bu> ^unit-type 1) # marines are being built
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-task
+        ^task-name marine-attack
+        ^task-id 4444
+        ^priority high)
+}
+
+# use this for rushing
+sp {propose*start-worker-attack
+   (state <s> ^name sorts
+              ^comment out
+              ^planning.execution-buffer <eb>)
+  -{(<eb> ^task <t>)
+    (<t> ^name worker-attack
+          ^id 4424)}
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-task
+        ^task-name worker-attack
+        ^task-id 4424
+        ^priority high)
+}
+
+
 
 sp {propose*start-miner-assignment
    (state <s> ^name sorts
-              ^comment out
-             -^running-task.name miner-assignment)
+              ^planning.execution-buffer <eb>
+              ^top-state <ts>)
+  -{(<eb> ^task <t>)
+    (<t> ^name miner-assignment
+          ^id 5555)}
+              # wait until barracks construction, so we don't take all the workers.
+   (<ts> ^build-building <bb>)
+   (<bb> ^task-id 1234 
+         ^started-build true
+         ^worker <id>)
+   # wait for the actual building phase to begin (fsm changes the command at this point)
+   # this way, we can exploit the parallelism of building and assigning miners at the same time
+   (<ts> ^io.input-link.groups.group <g>)
+   (<g> ^id <id>
+        ^command build-started)
 -->
    (<s> ^operator <o> + > =)
-   (<o> ^name start-miner-assignment)
+   (<o> ^name start-task
+        ^task-name miner-assignment
+        ^task-id 5555
+        ^priority medium)
 }
 
-sp {apply*start-build-barracks
-   (state <s> ^operator.name start-build-barracks)
--->
-   (<s> ^running-task <rt>
-        ^execution-buffer <eb>)
-   (<rt> ^name build-barracks
-         ^id 1234)
-   (<eb> ^task <t>)
-   (<t> ^id 1234)
-}
-
-sp {apply*start-build-workers
-   (state <s> ^operator.name start-build-workers)
--->
-   (<s> ^running-task <rt>
-        ^execution-buffer <eb>)
-   (<rt> ^name build-workers
-         ^id 15151)
-   (<eb> ^task <t>)
-   (<t> ^id 15151)
-}
-
-sp {apply*start-miner-assignment
-   (state <s> ^operator.name start-miner-assignment)
--->
-   (<s> ^running-task <rt>)
-   (<rt> ^name miner-assignment
-         ^id 26612)
-}
-## vsExtract.pl: extracting from file find-free-worker.soar
-#TODO: visual search if no free workers!
-
-sp {find-free-worker*propose*change-grouping-level
-   (state <s> ^name find-free-worker
-              -^top-state.grouping-level individuals)
--->
-   (<s> ^operator <o> + > =)
-   (<o> ^name set-grouping-individuals)
-}
-
-sp {find-free-worker*propose*search
-   (state <s> ^name find-free-worker
-              ^top-state <ts>
-              ^io.input-link.groups <gs>
-             -^top-state.find-free-worker.worker)
-   (<gs> ^group <g>)
-   -{(<g> ^type worker
-        ^id <id>
-        ^owner 0
-        ^command_running 0
-        ^num_members 1
-        ^sticky 0)
-     (<ts> -^reserved-worker <id>)}
--->
-   (<s> ^operator <o> + < =)
-   (<o> ^name visual-search
-        ^search-type friendly_workers)
-}
-
-sp {find-free-worker*propose*choose-worker
-   (state <s> ^name find-free-worker
-              ^top-state <ts>
-              ^io.input-link.groups <gs>
-             -^top-state.find-free-worker.worker)
-   (<gs> ^group <g>)
-   (<g> ^type worker
-        ^id <id>
-        ^owner 0
-        ^command_running 0
-        ^num_members 1
-        ^sticky 0)
-   (<ts> -^reserved-worker <id>)
--->
-   (<s> ^operator <o> + > =)
-   (<o> ^name choose-worker
-        ^id <id>)
-}
-
-sp {find-free-worker*apply*choose-worker
+sp {apply*start-task
    (state <s> ^operator <o>
               ^top-state <ts>)
-   (<o> ^name choose-worker
-        ^id <id>)
+   (<ts> ^planning.execution-buffer <eb>)
+   (<o> ^name start-task
+        ^task-id <tid>
+        ^task-name <tn>
+        ^priority <pr>)
 -->
-   (<ts> ^find-free-worker.worker <id>)
-}
-   
-sp {find-free-worker*propose*set-worker-sticky
-   (state <s> ^name find-free-worker
-              ^top-state.find-free-worker <w>
-              ^top-state <ts>
-             -^top-state.finished-command orts-set-sticky)
-   (<w> ^worker <id>
-       -^done true)
--->
-   (<s> ^operator <o> + > =)
-   (<o> ^name orts-set-sticky
-        ^group <id>)
+   (<eb> ^task <t>)
+   (<t> ^id <tid>
+        ^name <tn>
+        ^priority <pr>)
 }
 
-sp {find-free-worker*propose*worker-found
-   (state <s> ^name find-free-worker
-              ^top-state.find-free-worker.worker <id>
-              ^top-state.finished-command orts-set-sticky)
--->
-   (<s> ^operator <o> + > =)
-   (<o> ^name worker-found)
-}
 
-sp {find-free-worker*apply*worker-found
-   (state <s> ^operator.name worker-found
-              ^top-state <ts>)
-   (<ts> ^find-free-worker <w>
-         ^finished-command orts-set-sticky)
-   (<w> ^worker <id>)
--->
-   (<ts> ^finished-command orts-set-sticky -) # clean up
-   (<w> ^done true)
-   (<ts> ^reserved-worker <id>)
-}
 
 ## vsExtract.pl: extracting from file find-location-near.soar
 sp {apply*find-location-near
@@ -1004,28 +1849,187 @@ sp {apply*find-location-near
 }
 
 
+## vsExtract.pl: extracting from file marine-attack.soar
+sp {propose*marine-attack
+   (state <s> ^name sorts
+              ^running-task <rt>)
+   (<rt> ^name marine-attack
+         ^id <id>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name explore-attack
+        ^unit-type marine
+        ^group-size 5
+        ^task-id <id>) 
+}
+
 ## vsExtract.pl: extracting from file miner-assignment.soar
 sp {propose*miner-assignment
    (state <s> ^name sorts
-              ^running-task.name miner-assignment)
+              ^running-task <rt>
+              ^planning.execution-buffer.task <ts>)
+   (<rt> ^name miner-assignment
+         ^id <id>)
+   (<ts> ^id <id>
+        -^completed <cmp>)
+   
 -->
-   (<s> ^operator <o> + > =)
-   (<o> ^name miner-assignment)
+   (<s> ^operator <o> +)
+   (<o> ^name miner-assignment
+        ^task-id <id>)
 }
 
-sp {miner-assignment*assign-miner
+sp {miner-assignment*propose*change-grouping-level
    (state <s> ^name miner-assignment
-              ^io.input-link.groups <gs>)
+              ^task-id <tid>
+              ^top-state <ts>)
+  -{(<ts> ^grouping-level huge-groups)}
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name set-grouping-huge-groups
+        ^task-id <tid>)
+}
+
+sp {miner-assignment*propose*clean-grouping-command
+   (state <s> ^name miner-assignment
+              ^task-id <tid>
+              ^io.output-link <ol>)
+   (<ol> ^command <c>)
+   (<c> ^name grouping-radius
+        ^task-id <tid>
+        ^status complete)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name ma*clear-grouping-command
+        ^task-id <tid>)
+}
+
+sp {miner-assignment*apply*clean-grouping-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name ma*clear-grouping-command
+        ^task-id <tid>)
+   (<ol> ^command <c>)
+   (<c> ^name grouping-radius
+        ^task-id <tid>)
+-->
+   (<ol> ^command <c> -)
+}
+
+sp {miner-assignment*propose*assign-miner
+   (state <s> ^name miner-assignment
+              ^io.input-link.groups <gs>
+              ^io.output-link <ol>
+              ^top-state.grouping-level huge-groups
+              ^top-state.my-id <me>
+              ^task-id <tid>)
    (<gs> ^group <g>)
    (<g> ^type worker
         ^id   <gid>
-        ^owner 0
-        ^command_running 0)
+        ^owner <me>
+        ^command_running 0
+        ^command_success 0
+        ^command_failure 0)
+  -{(<ol> ^command <c>)
+    (<c> ^name mine
+         ^group0 <gid>)}
+-->
+   (<s> ^operator <o> + =)
+    (<o> ^name orts-mine
+         ^group <gid>
+         ^task-id <tid>)
+}
+
+sp {miner-assignment*propose*clean-mine-command
+   (state <s> ^name miner-assignment
+              ^task-id <tid>
+              ^top-state <ts>
+              ^io.output-link <ol>)
+   (<ol> ^command <fc>)
+   (<fc> ^task-id <tid>
+         ^name mine
+         ^status complete)
 -->
    (<s> ^operator <o> + > =)
-    (<o> ^name mine
-         ^group <gid>)
+   (<o> ^name miner-assignment*clean-mine-command
+        ^task-id <tid>)
 }
+
+sp {miner-assignment*apply*clean-mine-command
+   (state <s> ^operator <o> 
+              ^top-state <ts>)
+   (<o> ^name miner-assignment*clean-mine-command
+        ^task-id <tid>)
+   (<ts> ^io.output-link <ol>)
+   (<ol> ^command <fc>)
+   (<fc> ^task-id <tid>
+         ^name mine
+         ^status complete)
+-->
+   (<ol> ^command <fc> -)
+}
+
+sp {miner-assignment*propose*join-miners
+   (state <s> ^name miner-assignment
+              ^io.input-link.groups <gs>
+              ^io.output-link <ol>
+              ^top-state.grouping-level huge-groups
+              ^top-state.my-id <me>
+              ^task-id <tid>
+             -^io.output-link.command.group0 <gid2>)
+   (<gs> ^group <g1>
+         ^group <g2>)
+   (<g1> ^type worker
+         ^owner <me>
+        ^id   <gid1>
+        ^num_members <nm1>
+        ^command mine)
+   (<g2> ^type worker
+         ^owner <me>
+        ^id   <gid2>
+        ^num_members <nm2> < <nm1>
+        ^command mine)
+-->
+   (<s> ^operator <o> + =)
+    (<o> ^name orts-join
+         ^from-group <gid2>
+         ^to-group <gid1>
+         ^task-id <tid>)
+}
+
+sp {miner-assignment*propose*clean-join-command
+   (state <s> ^name miner-assignment
+              ^task-id <tid>
+              ^top-state <ts>
+              ^io.output-link <ol>)
+   (<ol> ^command <fc>)
+   (<fc> ^task-id <tid>
+         ^name join
+         ^status complete)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name miner-assignment*clean-join-command
+        ^task-id <tid>)
+}
+
+sp {miner-assignment*apply*clean-join-command
+   (state <s> ^operator <o> 
+              ^top-state <ts>)
+   (<o> ^name miner-assignment*clean-join-command
+        ^task-id <tid>)
+   (<ts> ^io.output-link <ol>)
+   (<ol> ^command <fc>)
+   (<fc> ^task-id <tid>
+         ^name join
+         ^status complete)
+-->
+   (<ol> ^command <fc> -)
+}
+
+
+# task never finishes..
+
+
 
 ## vsExtract.pl: extracting from file task-switch.soar
 sp {top-state*propose*wait
@@ -1033,7 +2037,7 @@ sp {top-state*propose*wait
                ^choices none
               -^operator.name wait)
 -->
-    (<s> ^operator <o> +)
+   (<s> ^operator <o> + <)
     (<o> ^name wait)
 }
 
@@ -1041,63 +2045,158 @@ sp {top-state*propose*wait
 sp {task-switch*propose*switch
    (state <s> ^attribute state
               ^choices none
-              ^comment out
               ^top-state <ts>
-             -^operator.name task-switch)
+              ^superstate.task-id <tid>)
    (<ts> ^running-task <rt>)
+   (<rt> ^id <tid>)
 -->
-   (<s> ^operator <o> +)
-   (<o> ^name task-switch)
+   (<s> ^operator <o> + =)
+   (<o> ^name task-switch
+        ^old-task <tid>)
 }
 
-sp {task-switch*apply*switch
+sp {task-switch*apply*switch1
    (state <s> ^operator <o>
               ^top-state <ts>)
-   (<o> ^name task-switch)
+   (<o> ^name task-switch
+        ^old-task <id>)
    (<ts> ^running-task <rt>)
+   (<rt> ^id <id>)
+   (<ts> -^last-task)
 -->
    (<ts> ^running-task <rt> -)
-}
-## vsExtract.pl: extracting from file visual-search.soar
-
-
-sp {visual-search*propose*start-search
-    (state <s> ^name visual-search
-               ^top-state <ts>
-               ^comment out)
-    (<ts> -^visual-search <vs>)
--->
-   (<s> ^operator <o> + >)
-   (<o> ^name visual-search*start-search)
+   (<ts> ^last-task <id>)
 }
 
-sp {visual-search*apply*start-search
+sp {task-switch*apply*switch2
    (state <s> ^operator <o>
               ^top-state <ts>)
-   (<o> ^name visual-search*start-search)
+   (<o> ^name task-switch
+        ^old-task <id>)
+   (<ts> ^running-task <rt>)
+   (<rt> ^id <id>)
+   (<ts> ^last-task <lt>)
 -->
-   (<ts> ^visual-search.count 0)
+   (<ts> ^running-task <rt> -)
+   (<ts> ^last-task <lt> -)
+   (<ts> ^last-task <id>)
 }
+
+sp {task-switch*propose*switch-from-completed
+   (state <s> ^top-state <ts>)
+   (<ts> ^planning.execution-buffer <eb>)
+   (<ts> ^running-task <rt>)
+   (<rt> ^id <tid>)
+   (<eb> ^task <t>)
+   (<t> ^id <tid>
+        ^completed <cmp>)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name task-switch
+        ^old-task <tid>)
+}
+
+sp {propose*execute-task-low
+   (state <s> ^name sorts
+             -^running-task
+              ^planning.execution-buffer <eb>)
+   (<eb> ^task <t>)
+   (<t> ^name <nm>
+        ^id <tid>
+       -^completed true
+        ^priority low)
+-->
+   (<s> ^operator <o> + = 10)
+   (<o> ^name execute-task
+        ^task <t>)
+}
+
+
+sp {propose*execute-task-medium
+   (state <s> ^name sorts
+             -^running-task
+              ^planning.execution-buffer <eb>)
+   (<eb> ^task <t>)
+   (<t> ^name <nm>
+        ^id <tid>
+       -^completed true
+        ^priority medium)
+-->
+   (<s> ^operator <o> + = 20)
+   (<o> ^name execute-task
+        ^task <t>)
+}
+
+sp {propose*execute-task-high
+   (state <s> ^name sorts
+             -^running-task
+              ^planning.execution-buffer <eb>)
+   (<eb> ^task <t>)
+   (<t> ^name <nm>
+        ^id <tid>
+       -^completed true
+        ^priority high)
+-->
+   (<s> ^operator <o> + = 30)
+   (<o> ^name execute-task
+        ^task <t>)
+}
+
+sp {apply*execute-task
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name execute-task
+        ^task <t>)
+   (<t> ^name <nm>
+        ^id <tid>)
+-->
+   (<ts> ^running-task <rt>)
+   (<rt> ^name <nm>
+         ^id <tid>)
+}
+
+# don't allow the last task, if there is a choice
+sp {task-switch*disprefer-last
+   (state <s> ^operator <o1> +
+              ^operator <o2> +
+              ^top-state <ts>)
+   (<o1> ^name execute-task
+         ^task.id <tid1>)
+   (<o2> ^name execute-task
+         ^task.id <tid2>)
+   (<ts> ^last-task <tid1>)
+-->
+   (<s> ^operator <o1> < <o2>)
+}
+
+
+## vsExtract.pl: extracting from file visual-search.soar
+
 
 sp {visual-search*propose*search-type
    (state <s> ^name visual-search
               ^superstate.operator.search-type <f>
+              ^superstate.operator.task-id <tid>
               ^io.input-link <il>
-              ^top-state <ts>)
+              ^top-state <ts>
+              ^io.output-link <ol>)
    (<il> ^feature-maps.friendly <fr>)
    (<fr> ^<sector> > 0)
-  # (<ts> ^visual-search.count <c>)
    (<il> ^groups.group <g>) #re-propose if groups change
+  -{(<ol> ^command <c>)
+    (<c> ^name look-at-feature)}
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name look-at-feature
         ^feature <f>
-        ^sector <sector>)
+        ^sector <sector>
+        ^task-id <tid>)
 }
 
 sp {visual-search*propose*search-worker
    (state <s> ^name visual-search
               ^superstate.operator.worker-id <id>
+              ^superstate.operator.task-id <tid>
               ^io.input-link <il>
               ^top-state <ts>)
    (<il> ^feature-maps.friendly_workers <fr>)
@@ -1111,7 +2210,22 @@ sp {visual-search*propose*search-worker
    (<s> ^operator <o> + > =)
    (<o> ^name look-at-feature
         ^feature friendly_workers
-        ^sector <sector>)
+        ^sector <sector>
+        ^task-id <tid>)
+}
+
+## vsExtract.pl: extracting from file worker-attack.soar
+sp {propose*worker-attack
+   (state <s> ^name sorts
+              ^running-task <rt>)
+   (<rt> ^name worker-attack
+         ^id <id>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name explore-attack
+        ^unit-type worker
+        ^group-size 5
+        ^task-id <id>) 
 }
 
 ## vsExtract.pl: extracting from file x_plan-one.soar
@@ -1401,10 +2515,13 @@ sp {visual-search*propose*search-worker
 ## vsExtract.pl: extracting from file apply-vision-commands.soar
 sp {apply*enable-owner-grouping
    (state <s> ^operator <o>
-              ^io <io>)
-    (<o> ^name enable-owner-grouping)
+              ^io.output-link <ol>)
+    (<o> ^name enable-owner-grouping
+         ^task-id <tid>)
 -->
-   (<io> ^output-link enable-owner-grouping)
+   (<ol> ^command <c>)
+   (<c> ^name enable-owner-grouping
+         ^task-id <tid>)
 }
 
 sp {apply*look-at-feature
@@ -1412,32 +2529,41 @@ sp {apply*look-at-feature
                ^io.output-link <ol>)
     (<o> ^name look-at-feature
          ^feature <feature>
-         ^sector <sector>)
+         ^sector <sector>
+         ^task-id <tid>)
 -->
-   (<ol> ^look-feature <lf>)
+   (<ol> ^command <lf>)
    (<lf> ^feature <feature>
-         ^sector <sector>)
+         ^sector <sector>
+         ^name look-feature
+         ^task-id <tid>)
 }
 sp {apply*move-to-feature
     (state <s> ^operator <o>
                ^io.output-link <ol>)
     (<o> ^name move-to-feature
          ^feature <feature>
-         ^sector <sector>)
+         ^sector <sector>
+         ^task-id <tid>)
 -->
-   (<ol> ^move-feature <lf>)
+   (<ol> ^command <lf>)
    (<lf> ^feature <feature>
-         ^sector <sector>)
+         ^sector <sector>
+         ^name move-feature
+         ^task-id <tid>)
 }
 
 sp {apply*change-view-width
     (state <s> ^operator <o>
                ^io.output-link <ol>)
     (<o> ^name change-view-width
-         ^width <w>)
+         ^width <w>
+         ^task-id <tid>)
 -->
-   (<ol> ^view-width <vw>)
-   (<vw> ^value <w>)
+   (<ol> ^command <vw>)
+   (<vw> ^value <w>
+         ^name view-width
+         ^task-id <tid>)
 }
 
 
@@ -1445,40 +2571,82 @@ sp {apply*set-grouping-individuals
     (state <s> ^operator <o>
                ^io.output-link <ol>
                ^top-state <ts>)
-    (<o> ^name set-grouping-individuals)
+    (<o> ^name set-grouping-individuals
+         ^task-id <tid>)
+    (<ts> ^grouping-level <gl>)
 -->
    (<ts> ^grouping-level individuals)
-   (<ts> ^grouping-level small-groups -)
-   (<ts> ^grouping-level large-groups -)
-   (<ol> ^grouping-radius <g>)
-   (<g> ^value 0)
+   (<ts> ^grouping-level <gl> -)
+   (<ol> ^command <g>)
+   (<g> ^value 0
+        ^name grouping-radius
+         ^task-id <tid>)
 }
 
 sp {apply*set-grouping-small-groups
     (state <s> ^operator <o>
                ^io.output-link <ol>
                ^top-state <ts>)
-    (<o> ^name set-grouping-small-groups)
+    (<o> ^name set-grouping-small-groups
+         ^task-id <tid>)
+    (<ts> ^grouping-level <gl>)
 -->
-   (<ts> ^grouping-level individuals -)
    (<ts> ^grouping-level small-groups)
-   (<ts> ^grouping-level large-groups -)
-   (<ol> ^grouping-radius <g>)
-   (<g> ^value 32)
+   (<ts> ^grouping-level <gl> -)
+   (<ol> ^command <g>)
+   (<g> ^value 32
+        ^name grouping-radius
+         ^task-id <tid>)
 }
 
 sp {apply*set-grouping-large-groups
     (state <s> ^operator <o>
                ^io.output-link <ol>
                ^top-state <ts>)
-    (<o> ^name set-grouping-large-groups)
+    (<o> ^name set-grouping-large-groups
+         ^task-id <tid>)
+    (<ts> ^grouping-level <gl>)
 -->
-   (<ts> ^grouping-level individuals -)
-   (<ts> ^grouping-level small-groups -)
    (<ts> ^grouping-level large-groups)
-   (<ol> ^grouping-radius <g>)
-   (<g> ^value 64)
+   (<ts> ^grouping-level <gl> -)
+   (<ol> ^command <g>)
+   (<g> ^value 64
+        ^name grouping-radius
+         ^task-id <tid>)
 }
+
+sp {apply*set-grouping-huge-groups
+    (state <s> ^operator <o>
+               ^io.output-link <ol>
+               ^top-state <ts>)
+    (<o> ^name set-grouping-huge-groups
+         ^task-id <tid>)
+    (<ts> ^grouping-level <gl>)
+-->
+   (<ts> ^grouping-level <gl> -)
+   (<ts> ^grouping-level huge-groups)
+   (<ol> ^command <g>)
+   (<g> ^value 9999999
+        ^name grouping-radius
+         ^task-id <tid>)
+}
+
+sp {apply*look-at-location
+    (state <s> ^operator <o>
+               ^io.output-link <ol>
+               ^top-state <ts>)
+    (<o> ^name look-at-location
+         ^x <x>
+         ^y <y>
+         ^task-id <tid>)
+-->
+   (<ol> ^command <g>)
+   (<g> ^name look-location
+        ^x <x>
+        ^y <y>
+         ^task-id <tid>)
+}
+
 
 ## vsExtract.pl: extracting from file initialize-sorts.soar
 sp {propose*initialize-sorts
