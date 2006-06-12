@@ -279,7 +279,13 @@ void MoveFSM::init(vector<sint4> p)
     if (path.locs.size() > 1
         and collision(path.locs[nextWPIndex].x, path.locs[nextWPIndex].y)) {
       nextWPIndex--;
-      msg << "first waypoint is inside an object, skipping.\n";
+      msg << "first waypoint is inside an object, avoiding.\n";
+      if (path.locs.size() > 2
+        and collision(path.locs[nextWPIndex].x, path.locs[nextWPIndex].y)) {
+        nextWPIndex--;
+        msg << "second waypoint is also inside an object, avoiding.\n";
+      }
+        
     }
       
     moveParams.push_back(path.locs[nextWPIndex].x);

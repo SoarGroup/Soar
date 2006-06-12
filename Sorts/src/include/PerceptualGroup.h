@@ -96,6 +96,7 @@ class PerceptualGroup {
     bool getHasCommand() { return hasCommand; }
   
     void setCommandString(string st) { currentCommand = st; }
+    string getCommandString() { return currentCommand; }
 
   private: // functions
     void updateBoundingBox();

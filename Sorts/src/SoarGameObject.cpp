@@ -204,26 +204,19 @@ void SoarGameObject::update()
   }
 
   // spit out a warning if the object sits still for a long time
-  if (friendlyWorker) {
-    /*if (currentFrame != Sorts::OrtsIO->getActionFrame()) {
+  if (friendlyWorker and assignedBehavior != NULL) {
+    if (getLocation() == lastLocation) {
+      motionlessFrames++;//= (currentFrame - frameOfLastUpdate);
+    }
+    else {
       motionlessFrames = 0;
-      // don't count lag problems
-    }*/
-    //else {
-      if (getLocation() == lastLocation) {
-        motionlessFrames++;//= (currentFrame - frameOfLastUpdate);
-      }
-      else {
-        motionlessFrames = 0;
-      }
-      if (motionlessFrames > PANIC_FRAMES) {
-        msg << "worker has been still for " 
-            << motionlessFrames << " frames, time to panic.\n";
-        assert(assignedBehavior != NULL);
-        assignedBehavior->panic();
-        motionlessFrames = 0;
-      }
-    //}
+    }
+    if (motionlessFrames > PANIC_FRAMES) {
+      msg << "worker has been still for " 
+          << motionlessFrames << " frames, time to panic.\n";
+      assignedBehavior->panic();
+      motionlessFrames = 0;
+    }
     lastLocation = getLocation();
   }
   frameOfLastUpdate = currentFrame;
@@ -248,15 +241,6 @@ PerceptualGroup *SoarGameObject::getPerceptualGroup(void)
  return pGroup;
 }
 
-/*void SoarGameObject::setInternalGroup(InternalGroup *g)
-{
- iGroup = g;
-}
-
-InternalGroup *SoarGameObject::getInternalGroup(void)
-{
- return iGroup;
-}*/
 
 int SoarGameObject::getStatus()
 {
@@ -279,4 +263,12 @@ coordinate SoarGameObject::getLocation() {
   c.y = *gob->sod.y;
 
   return c;
+}
+
+void SoarGameObject::endCommand() {
+  if (assignedBehavior != NULL) {
+    assignedBehavior->stop();
+  }
+  assignedBehavior = NULL;
+  status = OBJ_IDLE;
 }

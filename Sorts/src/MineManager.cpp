@@ -10,7 +10,7 @@
 
 #define msg cout << "MM: "
 
-#define NO_OBJ_OBJ
+//#define NO_OBJ_OBJ
 
 #define UNUSABLE_OPTIMALITY 1000
 #define WAYPOINT_PENALTY 10

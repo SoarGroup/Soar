@@ -318,7 +318,7 @@ void SoarInterface::getNewSoarOutput() {
     sml::Identifier* cmdPtr = agent->GetCommand(i);
 
     // check if this command has already been encountered
-    if (cmdPtr->GetParameterValue("status") != NULL) {
+    if (cmdPtr->GetParameterValue("added-to-queue") != NULL) {
       continue;
     }
     
@@ -350,6 +350,7 @@ void SoarInterface::getNewSoarOutput() {
         }
       }
     }
+    agent->CreateIntWME(cmdPtr, "added-to-queue", 1);
   }
 
   unlockSoarMutex();
@@ -363,13 +364,14 @@ void SoarInterface::processObjectAction(ObjectActionType type,
   lockObjectActionMutex();
   // append all the group parameters
   int groupCounter = 0;
+  int groupId;
   while(true) {
     const char* paramValue 
     = cmdPtr->GetParameterValue(catStrInt("group", groupCounter++).c_str());
     if  (paramValue == NULL) {
       break;
     }
-    int groupId = atoi(paramValue);
+    groupId = atoi(paramValue);
     //assert(groupIdLookup.find(groupId) != groupIdLookup.end());
     if (groupIdLookup.find(groupId) == groupIdLookup.end()) {
       cout << "ERROR: no group " << groupId << endl;
@@ -394,9 +396,13 @@ void SoarInterface::processObjectAction(ObjectActionType type,
       newAction.params.push_back(atoi(paramValue));
     }
     // add the new action to the action queue
-    objectActionQueue.push_back(newAction);
 
-    cmdPtr->AddStatusComplete();
+    OAQueueStruct oaqs;
+    oaqs.action = newAction;
+    oaqs.wme = cmdPtr;
+    oaqs.gid = groupId;
+    objectActionQueue.push_back(oaqs);
+
   }
   else {
     cmdPtr->AddStatusError();
@@ -469,8 +475,10 @@ void SoarInterface::processAttentionAction(AttentionActionType type,
       break;
   }
 
-  attentionActionQueue.push_back(newAction);
-  cmdPtr->AddStatusComplete();
+  AAQueueStruct aaqs;
+  aaqs.action = newAction;
+  aaqs.wme = cmdPtr;
+  attentionActionQueue.push_back(aaqs);
 
   unlockAttentionActionMutex();
 }
@@ -497,9 +505,11 @@ void SoarInterface::processMapAction(MapActionType type,
     assert (paramValue != NULL);
     newAction.minDistance = (BuildingType)(atoi(paramValue)); 
     
-    mapActionQueue.push_back(newAction);
+    MAQueueStruct maqs;
+    maqs.action = newAction;
+    maqs.wme = cmdPtr;
+    mapActionQueue.push_back(maqs);
 
-    cmdPtr->AddStatusComplete();
   }
   else {
     cmdPtr->AddStatusError();
@@ -511,11 +521,19 @@ void SoarInterface::processMapAction(MapActionType type,
 // called by middleware to get queued Soar actions
 void SoarInterface::getNewObjectActions(list<ObjectAction>& newActions) {
   lockObjectActionMutex();
-  for(list<ObjectAction>::iterator i = objectActionQueue.begin(); 
+  for(list<OAQueueStruct>::iterator i = objectActionQueue.begin(); 
                                   i != objectActionQueue.end(); 
                                   i++)
   {
-    newActions.push_back(*i);
+    if (groupIdLookup.find((*i).gid) == groupIdLookup.end()) {
+      msg << "ERROR: no group " << (*i).gid << endl;
+      msg << "it disappeared after it was inserted (due to vision cmds).\n";
+      (*i).wme->AddStatusError();
+    }
+    else {
+      newActions.push_back((*i).action);
+      (*i).wme->AddStatusComplete();
+    }
   }
   objectActionQueue.clear();
   unlockObjectActionMutex();
@@ -523,21 +541,23 @@ void SoarInterface::getNewObjectActions(list<ObjectAction>& newActions) {
 
 void SoarInterface::getNewAttentionActions(list<AttentionAction>& newActions) {
   lockAttentionActionMutex();
-  for(list<AttentionAction>::iterator i = attentionActionQueue.begin(); 
+  for(list<AAQueueStruct>::iterator i = attentionActionQueue.begin(); 
                                   i != attentionActionQueue.end(); 
                                   i++)
   {
-    newActions.push_back(*i);
+    newActions.push_back((*i).action);
+    (*i).wme->AddStatusComplete();
   }
   attentionActionQueue.clear();
   unlockAttentionActionMutex();
 }
 
 void SoarInterface::getNewMapActions(list<MapAction>& newActions) {
-  for(list<MapAction>::iterator i = mapActionQueue.begin(); 
+  for(list<MAQueueStruct>::iterator i = mapActionQueue.begin(); 
                                   i != mapActionQueue.end(); 
                                   i++) {
-    newActions.push_back(*i);
+    newActions.push_back((*i).action);
+    (*i).wme->AddStatusComplete();
   }
   mapActionQueue.clear();
 }

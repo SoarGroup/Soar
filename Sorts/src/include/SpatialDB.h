@@ -36,6 +36,8 @@ public:
   bool hasTerrainCollision(Rectangle* r);
   bool hasObjectCollision(Rectangle* r);
  
+  bool hasObjectCollision(sint4 x, sint4 y, sint4 r);
+
   void addImaginaryWorker(coordinate c);
 
   void addTerrainLine(Line l);

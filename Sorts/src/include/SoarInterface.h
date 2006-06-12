@@ -75,6 +75,20 @@ typedef struct {
   sml::IntElement* param1WME;
 } QueryResultRep;
 
+struct OAQueueStruct {
+  ObjectAction action;
+  sml::Identifier* wme;
+  int gid;
+};
+struct AAQueueStruct {
+  AttentionAction action;
+  sml::Identifier* wme;
+};
+struct MAQueueStruct {
+  MapAction action;
+  sml::Identifier* wme;
+};
+
 /* 
 The PerceptualGroupManager will have a pointer to this structure, and can call
 the public functions to get new actions and change what groups Soar can
@@ -220,9 +234,9 @@ class SoarInterface {
    *                                                *
    **************************************************/
 
-    list<ObjectAction> objectActionQueue;
-    list<AttentionAction> attentionActionQueue;
-    list<MapAction> mapActionQueue;
+    list<OAQueueStruct> objectActionQueue;
+    list<AAQueueStruct> attentionActionQueue;
+    list<MAQueueStruct> mapActionQueue;
 
     // associated mutexes that protect them (no longer used)
     pthread_mutex_t* objectActionQueueMutex;

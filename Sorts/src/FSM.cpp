@@ -22,3 +22,5 @@ ObjectActionType FSM::getName() {
 
 void FSM::panic(){
 }
+void FSM::stop(){
+}

@@ -11,6 +11,7 @@ ObjectActionType objectActionTypeLookup(string actionName) {
   else if (not actionName.compare("free"))      return OA_FREE;
   else if (not actionName.compare("attack"))    return OA_ATTACK;
   else if (not actionName.compare("sever"))    return OA_SEVER;
+  else if (not actionName.compare("join"))    return OA_JOIN;
   else if (not actionName.compare("build"))    return OA_BUILD;
   else if (not actionName.compare("stick"))    return OA_STICK;
   else if (not actionName.compare("train"))    return OA_TRAIN;

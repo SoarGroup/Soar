@@ -155,6 +155,7 @@ void SpatialDB::removeObject(GameObj *gob, sint4 sat_loc) {
 void SpatialDB::getCollisions
 ( sint4 x, sint4 y, sint4 r, ERF* erf, list<GameObj*>& collisions)
 {
+  msg << "checking circle (getColl)\n";
   collisions.clear();
 
   // how many cells to bin together to get the size of a bin
@@ -291,9 +292,15 @@ bool SpatialDB::hasObjectCollision(Rectangle* rect) {
   return hasObjectCollisionInt(c, radius, false, false);
 }
 
+bool SpatialDB::hasObjectCollision(sint4 x, sint4 y, sint4 r) {
+  coordinate c(x,y);
+  return hasObjectCollisionInt(c, r, false, false);
+}
+
 bool SpatialDB::hasObjectCollisionInt(coordinate c, 
                                       int radius, bool forMining, 
                                       bool checkCrowding) {
+  msg << "checking circle\n";
   int cells[9];
   bool check[9] = {false};
 

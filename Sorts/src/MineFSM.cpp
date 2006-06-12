@@ -156,9 +156,22 @@ int MineFSM::update() {
           // finished mining
         if (gob->get_int("minerals") == 0) {
           cout << "MINEFSM: Mining failed for some reason! Trying again..\n";
-          temp = route->mineralInfo->mineral->getID();
-          tempVec.push_back(temp);
-          gob->component("pickaxe")->set_action("mine", tempVec); 
+          newRoute = Sorts::mineManager->minerGivesUp(route, this);
+          if (newRoute != NULL) {
+            route = newRoute;
+            calcDropoffLoc();
+            giveUpThreshold = (int)(GIVEUPSPEED*route->pathlength);
+            timer = 0;//Sorts::OrtsIO->getViewFrame(); 
+            timed = false;// don't clock this leg, we're not on the new route
+            state = IDLE;
+          }
+          else { // try again
+            tempVec.push_back(route->miningLoc.x);
+            tempVec.push_back(route->miningLoc.y);
+            tempVec.push_back(precision);
+            moveFSM->init(tempVec);
+            state = MOVING_TO_MINERAL;
+          }
           //assert(false);
         }
         else {

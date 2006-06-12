@@ -118,7 +118,6 @@ int BuildFSM::update() {
         justStarted = true;
         
         msg << "starting build.\n";
-        sgo->getPerceptualGroup()->setCommandString("build-started");
         buildCycles = 0;
         buildFrame = Sorts::OrtsIO->getViewFrame();
         params.push_back(loc_x);
@@ -149,6 +148,7 @@ int BuildFSM::update() {
           return FSM_FAILURE;
         }
         justStarted = false;
+        sgo->getPerceptualGroup()->setCommandString("build-started");
       }
       if (gob->get_int("is_mobile") == 1) {
         if (buildCycles < MIN_BUILD_UPDATES) {

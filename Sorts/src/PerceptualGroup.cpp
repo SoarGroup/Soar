@@ -511,8 +511,13 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
 
     case OA_FREE:
       sticky = false;
-      cout << "UNSTUCK!\n";
+      currentCommand = "none";
       hasStaleMembers = true;
+      for (currentObject = members.begin();
+           currentObject != members.end();
+           currentObject++) {
+        (*currentObject)->endCommand();
+      }
       break;
     case OA_STICK:
       sticky = true;
@@ -552,6 +557,18 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       newGroup->setSticky(true);
       }
       break;
+      
+    case OA_JOIN: {
+      // join two groups with the same command
+      // mixed types will be handled, though
+      assert(targets.size() == 1);
+      PerceptualGroup* tgt = *targets.begin();
+      assert(currentCommand == tgt->getCommandString());
+      this->mergeTo(tgt);
+      tgt->setHasStaleMembers();
+      break;
+    }
+
     case OA_ATTACK: {
       currentCommand = "attack";
       int managerId = Sorts::amr->assignManager(targets);

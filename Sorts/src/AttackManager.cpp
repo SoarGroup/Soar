@@ -36,10 +36,10 @@ void AttackManager::attackArcPos
     int tgtWidth  = *tgt->sod.x2 - *tgt->sod.x1;
     assert(tgtHeight > 0 && tgtWidth > 0);
     if (tgtHeight < tgtWidth) {
-      tgtRadius = tgtHeight;
+      tgtRadius = tgtHeight/2;
     }
     else {
-      tgtRadius = tgtWidth;
+      tgtRadius = tgtWidth/2;
     }
   }
   else {
@@ -88,11 +88,15 @@ void AttackManager::attackArcPos
         }
       }
       if (!slotTaken) {
-        Sorts::spatialDB->getCollisions(
+        if (not Sorts::spatialDB->hasObjectCollision(intPos(0), intPos(1), 
+                                                     atkRadius)) {
+          positions.push_back(intPos);
+        }
+        /*Sorts::spatialDB->getCollisions(
           intPos(0), intPos(1), atkRadius, NULL, collisions);
         if (collisions.size() == 0) { // there's no collision
           positions.push_back(intPos);
-        }
+        }*/
       }
     }
   }
@@ -309,6 +313,9 @@ int AttackManager::direct(AttackFSM* fsm) {
       if (canHit(gob, dest, tgob)) {
         // on his way like he should be, let him keep going
         return 0;
+      }
+      else {
+        msg << "xxx_dest can't hit\n";
       }
     }
     // not moving, or should be moving somewhere else

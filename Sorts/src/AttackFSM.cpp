@@ -55,6 +55,7 @@ void AttackFSM::init(vector<sint4> params) {
 }
 
 int AttackFSM::update() {
+  msg << "updating.\n";
   vector<sint4> moveParams(2);
   if (manager == NULL) {
     if (disownedStatus == 0) {

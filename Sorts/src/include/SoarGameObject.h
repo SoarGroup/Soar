@@ -29,6 +29,7 @@ class SoarGameObject{
 
 	//template<class T>
 	void issueCommand(ObjectActionType name, Vector<sint4> p);
+  void endCommand();
 	void update();
 
 	void setPerceptualGroup(PerceptualGroup *g);

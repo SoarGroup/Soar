@@ -14,6 +14,8 @@
 
 #define msg cout << "ORTSIO "
 
+#define NO_WORLD_GROUPS
+
 OrtsInterface::OrtsInterface(GameStateModule* _gsm)
 : gsm(_gsm)
 {
@@ -136,9 +138,13 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   SoarGameObject* newObj = new SoarGameObject(gameObj,
                                               friendly, world, id);
  
-  // PerceptualGroupManager takes care of setting the object->group pointers
+#ifdef NO_WORLD_GROUPS
+  if (not world) {
+    Sorts::pGroupManager->makeNewGroup(newObj);
+  }
+#else 
   Sorts::pGroupManager->makeNewGroup(newObj);
- // Sorts::iGroupManager->makeNewGroup(newObj);
+#endif
 
   string name = gameObj->bp_name();
   if (name == "mineral") {
@@ -176,10 +182,9 @@ void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
 
   SoarGameObject* sObject = objectMap[gameObj];
   int id = sObject->getID();
-  sObject->getPerceptualGroup()->removeUnit(sObject);
-  //if(sObject->getInternalGroup()!=NULL)
- //  sObject->getInternalGroup()->removeUnit(sObject);
-  
+  if (sObject->getPerceptualGroup() != NULL) {
+    sObject->getPerceptualGroup()->removeUnit(sObject);
+  } 
   if (gameObj->bp_name() == "mineral") {
     Sorts::mineManager->removeMineral(sObject);
   }

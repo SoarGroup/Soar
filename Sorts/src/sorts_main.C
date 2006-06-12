@@ -96,6 +96,7 @@ void SoarOutputEventHandler
   Sorts::cyclesSoarAhead++;
 
   pthread_mutex_lock(Sorts::mutex);
+  unsigned long st = gettime();
   std::cout << "SOAR EVENT {\n";
   
   if (Sorts::catchup == true) {
@@ -120,7 +121,7 @@ void SoarOutputEventHandler
     //Sorts::SoarIO->unlockSoarMutex();
     Sorts::SoarIO->setStale(false);
   }
-  std::cout << "SOAR EVENT }\n";
+  std::cout << "SOAR EVENT } t: " << gettime() - st << "\n";
   pthread_mutex_unlock(Sorts::mutex);
 }
 #else
