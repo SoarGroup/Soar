@@ -1,7 +1,7 @@
 #ifndef MINEMANAGER_H
 #define MINEMANAGER_H
 
-#define NO_DOS
+//#define NO_DOS
 
 #include "general.h"
 #include "SoarGameObject.h"
@@ -179,6 +179,7 @@ class MineManager {
     
     void removeFromRoute(MiningRoute* route, MineFSM* fsm);
     void removeFromRoute(MiningRoute* route, list<MineFSM*>::iterator it);
+    void removeFromRouteNoErase(MiningRoute* route, list<MineFSM*>::iterator it);
     void addFSMToRoute(MiningRoute* route, MineFSM* fsm);
     void addCostToRoute(MiningRoute* route);
     void adjustOptimality(MiningRoute* route);
