@@ -7,8 +7,8 @@ using namespace std;
 
 #define msg cout << "MOVEFSM(" << (int)this << "): "
 #define TOLERANCE 9 // for waypoints, squared
-#define VEERWIDTH 10  // radius of worker == 3
-
+#define VEERWIDTH 6  // radius of worker == 3
+// orig: 10
 
 // these quantities are determined randomly within a range
 // veercount: number of veers allowed in a row
@@ -23,6 +23,7 @@ using namespace std;
 // i.e. the max number of cycles to allow zero speed before giving up
 #define MIN_COUNTER 1
 #define MAX_COUNTER_DIFF 3 // min < value <  min+maxdiff
+// orig: 3
 
 //Comment out to turn magnetism off
 //#define MAGNETISM
