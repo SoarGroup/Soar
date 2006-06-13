@@ -7,11 +7,13 @@
 
 #include "Vec2d.h"
 #include "Circle.h"
-#include "Vec2d.h"
 
 #include "sml_Client.h"
 
 #include "GameObj.H"
+
+#define SHAPE_CIRCLE 1
+#define SHAPE_RECTANGLE 3
 
 #define PI 3.141592654
 

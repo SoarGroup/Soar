@@ -22,7 +22,8 @@ enum ObjectActionType {
   OA_JOIN,
   OA_FREE,
   OA_TRAIN,
-  OA_STICK
+  OA_STICK,
+  OA_STOP
 };
 
 struct ObjectAction {

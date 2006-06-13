@@ -47,7 +47,7 @@ public:
   }
 
   void setRadius(double radius) {
-    r = space->toCS(radius);
+    r = getSpace()->toCS(radius);
   }
 
 private:

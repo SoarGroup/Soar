@@ -145,3 +145,23 @@ void AttackFSM::disown(int lastStatus) {
   disownedStatus = lastStatus;
   manager = NULL;
 }
+
+void AttackFSM::stop() {
+  if (manager != NULL) {
+    manager->unregisterFSM(this);
+    manager = NULL;
+    disownedStatus = 0;
+  }
+  if (moving) {
+    moveFSM->stop();
+    moving = false;
+  }
+  dest.set(0, *gob->sod.x);
+  dest.set(1, *gob->sod.y);
+
+  if (target != NULL and target->getID() == sgob->getLastAttacked()) {
+    Vector<sint4> stopParams(0);
+    weapon->set_action("stop", stopParams);
+    sgob->setLastAttacked(-1);
+  }
+}

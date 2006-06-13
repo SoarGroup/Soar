@@ -29,6 +29,7 @@ public:
   // AttackManager is about to be deallocated, 
   void disown(int lastStatus);
 
+  void stop();
 
 public:
   bool reassign;

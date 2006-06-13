@@ -6,16 +6,17 @@ using namespace std;
 /* This is slow. In the future make some kind of hashtable
  */
 ObjectActionType objectActionTypeLookup(string actionName) {
-  if      (not actionName.compare("move"))      return OA_MOVE;
-  else if (not actionName.compare("mine"))      return OA_MINE;
-  else if (not actionName.compare("free"))      return OA_FREE;
-  else if (not actionName.compare("attack"))    return OA_ATTACK;
+  if      (not actionName.compare("move"))     return OA_MOVE;
+  else if (not actionName.compare("mine"))     return OA_MINE;
+  else if (not actionName.compare("free"))     return OA_FREE;
+  else if (not actionName.compare("attack"))   return OA_ATTACK;
   else if (not actionName.compare("sever"))    return OA_SEVER;
   else if (not actionName.compare("join"))    return OA_JOIN;
   else if (not actionName.compare("build"))    return OA_BUILD;
   else if (not actionName.compare("stick"))    return OA_STICK;
   else if (not actionName.compare("train"))    return OA_TRAIN;
-  else                                       return OA_NO_SUCH_ACTION;
+  else if (not actionName.compare("stop"))     return OA_STOP;
+  else                                         return OA_NO_SUCH_ACTION;
 }
 
 AttentionActionType attentionActionTypeLookup(string actionName) {

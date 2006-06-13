@@ -36,10 +36,10 @@ void AttackManager::attackArcPos
     int tgtWidth  = *tgt->sod.x2 - *tgt->sod.x1;
     assert(tgtHeight > 0 && tgtWidth > 0);
     if (tgtHeight < tgtWidth) {
-      tgtRadius = tgtHeight/2;
+      tgtRadius = tgtHeight / 2;
     }
     else {
-      tgtRadius = tgtWidth/2;
+      tgtRadius = tgtWidth / 2;
     }
   }
   else {
@@ -88,15 +88,15 @@ void AttackManager::attackArcPos
         }
       }
       if (!slotTaken) {
-        if (not Sorts::spatialDB->hasObjectCollision(intPos(0), intPos(1), 
-                                                     atkRadius)) {
+        if (!Sorts::spatialDB->hasObjectCollision
+              (intPos(0), intPos(1), atkRadius, NULL)
+            and
+            !Sorts::spatialDB->hasTerrainCollision
+              (intPos(0), intPos(1), atkRadius)
+           )
+        {
           positions.push_back(intPos);
         }
-        /*Sorts::spatialDB->getCollisions(
-          intPos(0), intPos(1), atkRadius, NULL, collisions);
-        if (collisions.size() == 0) { // there's no collision
-          positions.push_back(intPos);
-        }*/
       }
     }
   }

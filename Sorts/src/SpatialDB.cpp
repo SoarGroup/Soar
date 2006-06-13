@@ -30,8 +30,8 @@ void SpatialDB::init() {
   // Tilepoints define the granularity of the grid... 
   // The higher the tilepoints, the coarser the detail
   gobMap.resize(mapsize);
+  contours.resize(mapsize);
   imaginaryWorkerMap.resize(mapsize);
-  terrainLineMap.resize(mapsize);
   msg  << "Initializing SpatialDB grid: (" << width<<"," << height
        << "," << (width*height) << ")\n";
 }
@@ -85,48 +85,8 @@ int SpatialDB::cell2column(int cellNum) {
   return (cellNum % width);
 }
 
-int SpatialDB::colRow2cell(int row, int col) {
+int SpatialDB::rowCol2cell(int row, int col) {
   return (col + row*width);
-}
-
-void SpatialDB::addTerrainLine(Line l) {
-  // no need for removal/update support
-  int cell1 = getCellNumber(l.a.x, l.a.y);
-  int cell2 = getCellNumber(l.b.x, l.b.y);
-  if (cell1 >= gobMap.size() || cell2 >= gobMap.size()) {
-    msg << "ERROR: out of bounds, not adding: " << l.a << " - " << l.b << endl;
-    return; 
-  }
-  //msg << "adding terrain line from " << l.a << " to " << l.b << endl;
-  int col1 = cell2column(cell1);
-  int row1 = cell2row(cell1);
-  int col2 = cell2column(cell2);
-  int row2 = cell2row(cell2);
-
-  int count = 0;
-  int cellNum;
-  
-  if (col1 > col2) {
-    int tmp = col1;
-    col1 = col2;
-    col2 = tmp;
-  }
-  if (row1 > row2) {
-    int tmp = row1;
-    row1 = row2;
-    row2 = tmp;
-  }
-    
-  for (int i=col1; i<= col2; i++) {
-    for (int j=row1; j<= row2; j++) {
-      cellNum = colRow2cell(i,j);
-    //  msg << "register in cell " << cellNum << endl;
-      terrainLineMap[cellNum].push_back(l);
-      count++;
-    }
-  }
-  //msg << "registered in " << count << " cells.\n";
-
 }
 
 sint4 SpatialDB::updateObject(GameObj *gob, sint4 sat_loc)
@@ -152,12 +112,13 @@ void SpatialDB::removeObject(GameObj *gob, sint4 sat_loc) {
   gobMap[sat_loc].erase(gob);
 }
 
-void SpatialDB::getCollisions
-( sint4 x, sint4 y, sint4 r, ERF* erf, list<GameObj*>& collisions)
+void SpatialDB::calcBinning
+( sint4 x, 
+  sint4 y, 
+  sint4 r, 
+  ERF* erf, 
+  BinInfo& info )
 {
-  msg << "checking circle (getColl)\n";
-  collisions.clear();
-
   // how many cells to bin together to get the size of a bin
   // to be bigger than the max expected radius
   int cr; // collision radius
@@ -172,20 +133,21 @@ void SpatialDB::getCollisions
   int binTilePoints = binSize * tile_points;
   int binWidth = intDivC(Sorts::OrtsIO->getMapXDim(), binTilePoints);
   assert (binWidth == intDivC(width, binSize));
-  
-  int bins[9];
-  bool check[9] = {false};
+
+  for(int i = 0; i < 9; i++) {
+    info.check[i] = false;
+  }
 
   //1. Figure out which bins surround the target location 
-  bins[0] = (y - cr) / binTilePoints * binWidth + (x - cr) / binTilePoints;
-  bins[1] = (y - cr) / binTilePoints * binWidth + x / binTilePoints;
-  bins[2] = (y - cr) / binTilePoints * binWidth + (x + cr) / binTilePoints;
-  bins[3] = y / binTilePoints * binWidth + (x - cr) / binTilePoints;
-  bins[4] = y / binTilePoints * binWidth + x / binTilePoints;
-  bins[5] = y / binTilePoints * binWidth + (x + cr) / binTilePoints;
-  bins[6] = (y + cr) / binTilePoints * binWidth + (x - cr) / binTilePoints;
-  bins[7] = (y + cr) / binTilePoints * binWidth + x / binTilePoints;
-  bins[8] = (y + cr) / binTilePoints * binWidth + (x + cr) / binTilePoints;
+  info.bins[0] = (y-cr)/binTilePoints*binWidth+(x-cr)/binTilePoints;
+  info.bins[1]=(y-cr)/binTilePoints*binWidth+x/binTilePoints;
+  info.bins[2]=(y-cr)/binTilePoints*binWidth+(x+cr)/binTilePoints;
+  info.bins[3]=y/binTilePoints*binWidth+(x-cr)/binTilePoints;
+  info.bins[4]=y/binTilePoints*binWidth+x/binTilePoints;
+  info.bins[5]=y/binTilePoints*binWidth+(x+cr)/binTilePoints;
+  info.bins[6]=(y+cr)/binTilePoints*binWidth+(x-cr)/binTilePoints;
+  info.bins[7]=(y+cr)/binTilePoints*binWidth+x/binTilePoints;
+  info.bins[8]=(y+cr)/binTilePoints*binWidth+(x+cr)/binTilePoints;
   
   //2. Figure out which bins are under (or partially under) the circle
   // 0 1 2
@@ -193,60 +155,73 @@ void SpatialDB::getCollisions
   // 6 7 8
 
   //Center cell
-  check[4] = true; 
+  info.check[4] = true; 
   //North
-  if(bins[4] != bins[1])
-   check[1] = true;  
+  if(info.bins[4] != info.bins[1])
+   info.check[1] = true;  
   //East
-  if(bins[4] != bins[5])
-    check[5] = true;
+  if(info.bins[4] != info.bins[5])
+    info.check[5] = true;
   //NorthEast
-  check[2] = check[1] && check[5];
+  info.check[2] = info.check[1] && info.check[5];
   //South
-  if(bins[4] != bins[7])
-    check[7] = true;
+  if(info.bins[4] != info.bins[7])
+    info.check[7] = true;
   //SouthEast
-  check[8] = check[5] && check[7];
+  info.check[8] = info.check[5] && info.check[7];
   //West
-  if(bins[4] != bins[3])
-    check[3]= true;
+  if(info.bins[4] != info.bins[3])
+    info.check[3]= true;
   //SourhWest
-  check[6] = check[7] && check[3];
+  info.check[6] = info.check[7] && info.check[3];
   //NorthWest
-  check[0] = check[3] && check[1];
+  info.check[0] = info.check[3] && info.check[1];
 
   //Make sure we the check are inside the map
   //Left Side
   if(x < cr)
-    check[0] = check[3] = check[6] = false;
+    info.check[0] = info.check[3] = info.check[6] = false;
   //Right Side
   if(x+cr > Sorts::OrtsIO->getMapXDim())
-    check[2] = check[5] = check[8] = false;
+    info.check[2] = info.check[5] = info.check[8] = false;
   //Top Side
   if(y < cr)
-    check[0] = check[1] = check[2] = false;
+    info.check[0] = info.check[1] = info.check[2] = false;
   //Bottom Side
   if(y+cr > Sorts::OrtsIO->getMapYDim())
-    check[6] = check[7] = check[8] = false;
+    info.check[6] = info.check[7] = info.check[8] = false;
 
- 
+  info.binSize = binSize;
+  info.binWidth = binWidth;
+  info.binTilePoints = binTilePoints;
+}
+
+void SpatialDB::getObjectCollisions
+( sint4 x, 
+  sint4 y, 
+  sint4 r, 
+  ERF* erf, 
+  list<GameObj*>& objCol)
+{
+  objCol.clear();
+
+  BinInfo info;
+  calcBinning(x, y, r, erf, info);
+
   // For each marked cell, check all objects inside of it 
   // for collisions with the circle
-  map<GameObj*, int> whereFound;
+  //map<GameObj*, int> whereFound;
   std::set<GameObj*>::iterator it;
   for(int i=0; i<9; i++) {
-    if(check[i]) {
-      //msg << "Checking bin " << bins[i] << endl;
-      int cellStartRow = (bins[i] / binWidth) * binSize;
-      int cellStartCol = (bins[i] % binWidth) * binSize;
-      for(int j = cellStartRow; j < cellStartRow + binSize; j++) {
+    if(info.check[i]) {
+      int cellStartRow = (info.bins[i] / info.binWidth) * info.binSize;
+      int cellStartCol = (info.bins[i] % info.binWidth) * info.binSize;
+      for(int j = cellStartRow; j < cellStartRow + info.binSize; j++) {
         if (j >= height) { break; }
-        for(int k = cellStartCol; k < cellStartCol + binSize; k++) {
+        for(int k = cellStartCol; k < cellStartCol + info.binSize; k++) {
           if (k >= width) { break; }
 
           int cell = j * width + k;
-       //   msg << "Checking cell " << j << ", " << k << "(" << cell
-        //      << ")" << endl;
           for(it = gobMap[cell].begin(); it != gobMap[cell].end(); it++) {
             int objx =  *(*it)->sod.x;
             int objy =  *(*it)->sod.y;
@@ -262,7 +237,8 @@ void SpatialDB::getCollisions
             }
             if((x-objx)*(x-objx)+(y-objy)*(y-objy) < (r+objr)*(r+objr)) {
               //Inside the circle
-              collisions.push_back((*it));
+              objCol.push_back((*it));
+              /*
               if (whereFound.find(*it) != whereFound.end()) {
                 msg << "Object found previously in " << whereFound[*it]
                     << "is now found at " << cell << endl;
@@ -271,12 +247,59 @@ void SpatialDB::getCollisions
               else {
                 whereFound[*it] = cell;
               }
+              */
             } 
           }
         }
       }
     }
   }
+}
+
+bool SpatialDB::hasObjectCollision
+( sint4 x, 
+  sint4 y, 
+  sint4 r, 
+  ERF* erf)
+{
+  BinInfo info;
+  calcBinning(x, y, r, erf, info);
+
+  // For each marked cell, check all objects inside of it 
+  // for collisions with the circle
+  std::set<GameObj*>::iterator it;
+  for(int i=0; i<9; i++) {
+    if(info.check[i]) {
+      int cellStartRow = (info.bins[i] / info.binWidth) * info.binSize;
+      int cellStartCol = (info.bins[i] % info.binWidth) * info.binSize;
+      for(int j = cellStartRow; j < cellStartRow + info.binSize; j++) {
+        if (j >= height) { break; }
+        for(int k = cellStartCol; k < cellStartCol + info.binSize; k++) {
+          if (k >= width) { break; }
+
+          int cell = j * width + k;
+          for(it = gobMap[cell].begin(); it != gobMap[cell].end(); it++) {
+            int objx = *(*it)->sod.x;
+            int objy = *(*it)->sod.y;
+            int objr;
+            if (erf == NULL) {
+              objr =  (*(*it)->sod.radius);
+            }
+            else {
+              objr = (int) (*erf)(*it);
+              if (objr < 0) {
+                continue;
+              }
+            }
+            if((x-objx)*(x-objx)+(y-objy)*(y-objy) < (r+objr)*(r+objr)) {
+              return true;
+            } 
+          }
+        }
+      }
+    }
+  }
+  return false;
 }
 
 bool SpatialDB::hasMiningCollision(coordinate c, bool checkCrowding) {
@@ -292,15 +315,9 @@ bool SpatialDB::hasObjectCollision(Rectangle* rect) {
   return hasObjectCollisionInt(c, radius, false, false);
 }
 
-bool SpatialDB::hasObjectCollision(sint4 x, sint4 y, sint4 r) {
-  coordinate c(x,y);
-  return hasObjectCollisionInt(c, r, false, false);
-}
-
 bool SpatialDB::hasObjectCollisionInt(coordinate c, 
                                       int radius, bool forMining, 
                                       bool checkCrowding) {
-  msg << "checking circle\n";
   int cells[9];
   bool check[9] = {false};
 
@@ -443,12 +460,83 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
   return false; // no collisions
 }
 
-bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
- // determine which sectors the gob is in
- // only supports rectangles (buildings) now!
+void SpatialDB::addTerrainContour(TerrainContour* contour) {
+  cout << contour << " add xxxxxx" << endl;
+  assert(contourLocs.find(contour) == contourLocs.end());
   
-  int upperRightSector = getCellNumber(rect->xmax, rect->ymin);
-  int lowerLeftSector = getCellNumber(rect->xmin, rect->ymax);
+  contourLocs.insert(pair<TerrainContour*, list<int> >(contour, list<int>()));
+
+  Rectangle bbox = contour->getBoundingBox();
+  int cellcmin = bbox.xmin / tile_points;
+  int cellcmax = bbox.xmax / tile_points;
+  int cellrmin = bbox.ymin / tile_points;
+  int cellrmax = bbox.ymax / tile_points;
+  
+  for(int r = cellrmin; r <= cellrmax; r++) {
+    for(int c = cellcmin; c <= cellcmax; c++) {
+      int cell = rowCol2cell(r, c);
+      int xmin = c * tile_points;
+      int xmax = (c + 1) * tile_points;
+      int ymin = r * tile_points;
+      int ymax = (r + 1) * tile_points;
+      if (contour->intersectsRectangle(xmin, ymin, xmax, ymax)) {
+        contourLocs[contour].push_back(cell);
+        contours[cell].push_back(contour);
+      }
+    }
+  }
+}
+
+void SpatialDB::removeTerrainContour(TerrainContour* contour) {
+  cout << contour << " remove xxxxxx" << endl;
+  assert(contourLocs.find(contour) != contourLocs.end());
+
+  list<int>& locs = contourLocs[contour];
+  for(list<int>::iterator i = locs.begin(); i != locs.end(); ++i) {
+    list<TerrainContour*>::iterator j =
+      find(contours[*i].begin(), contours[*i].end(), contour);
+
+    assert(j != contours[*i].end());
+    contours[*i].erase(j);
+  }
+
+  contourLocs.erase(contour);
+}
+
+// remember that a contour can only grow in size
+void SpatialDB::updateTerrainContour(TerrainContour* contour) {
+  cout << contour << " update xxxxxx" << endl;
+  assert(contourLocs.find(contour) != contourLocs.end());
+ 
+  Rectangle bbox = contour->getBoundingBox();
+  int cellcmin = bbox.xmin / tile_points;
+  int cellcmax = bbox.xmax / tile_points;
+  int cellrmin = bbox.ymin / tile_points;
+  int cellrmax = bbox.ymax / tile_points;
+  
+  for(int c = cellcmin; c <= cellcmax; c++) {
+    for(int r = cellrmin; r <= cellrmax; r++) {
+      int cell = rowCol2cell(r, c);
+      if (find(contours[cell].begin(), contours[cell].end(), contour) ==
+          contours[cell].end()) 
+      {
+        int xmin = c * tile_points;
+        int xmax = (c + 1) * tile_points;
+        int ymin = r * tile_points;
+        int ymax = (r + 1) * tile_points;
+        if (contour->intersectsRectangle(xmin, ymin, xmax, ymax)) {
+          contourLocs[contour].push_back(cell);
+          contours[cell].push_back(contour);
+        }
+      }
+    }
+  }
+}
+
+bool SpatialDB::hasTerrainCollision(Rectangle& r) {
+  
+  int upperRightSector = getCellNumber(r.xmax, r.ymin);
+  int lowerLeftSector = getCellNumber(r.xmin, r.ymax);
 
   int minCol = cell2column(lowerLeftSector);
   int maxCol = cell2column(upperRightSector);
@@ -458,17 +546,15 @@ bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
   assert (minCol <= maxCol && minRow <= maxRow);
 
   int cellNum;
-  list<Line>::iterator it;
   for (int i=minCol; i<=maxCol; i++) {
     for (int j=minRow; j<=maxRow; j++) {
-      cellNum = colRow2cell(i,j);
-      for (it = terrainLineMap[cellNum].begin();
-          it != terrainLineMap[cellNum].end();
-          it++) {
-        msg << "checking intersection\n";
-        if (rect->intersects(*it)) {
-          msg << "rect " << *rect << " intersects line " << (*it).a 
-              << "-" << (*it).b << endl;
+      cellNum = rowCol2cell(i,j);
+      for(list<TerrainContour*>::iterator
+          c  = contours[cellNum].begin();
+          c != contours[cellNum].end();
+          ++c)
+      {
+        if ((*c)->intersectsRectangle(r.xmin, r.ymin, r.xmax, r.ymax)) {
           return true;
         }
       }
@@ -478,4 +564,95 @@ bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
   return false;
 }
 
+bool SpatialDB::hasTerrainCollision(int cx, int cy, int r) {
 
+  int minCol = (cx - r) / tile_points;
+  int maxCol = (cx + r) / tile_points;
+  int minRow = (cy - r) / tile_points;
+  int maxRow = (cy + r) / tile_points;
+
+  assert (minCol <= maxCol && minRow <= maxRow);
+
+  int cellNum;
+  for (int i=minCol; i<=maxCol; i++) {
+    for (int j=minRow; j<=maxRow; j++) {
+      cellNum = rowCol2cell(i,j);
+      for(list<TerrainContour*>::iterator
+          c  = contours[cellNum].begin();
+          c != contours[cellNum].end();
+          ++c)
+      {
+        if ((*c)->intersectsCircle(cx, cy, r)) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+void SpatialDB::getTerrainCollisions
+( Rectangle& r, 
+  list<TerrainContour*>& collisions ) 
+{
+  collisions.clear();
+  
+  int upperRightSector = getCellNumber(r.xmax, r.ymin);
+  int lowerLeftSector = getCellNumber(r.xmin, r.ymax);
+
+  int minCol = cell2column(lowerLeftSector);
+  int maxCol = cell2column(upperRightSector);
+  int minRow = cell2row(upperRightSector);
+  int maxRow = cell2row(lowerLeftSector);
+
+  assert (minCol <= maxCol && minRow <= maxRow);
+
+  int cellNum;
+  for (int i=minCol; i<=maxCol; i++) {
+    for (int j=minRow; j<=maxRow; j++) {
+      cellNum = rowCol2cell(i,j);
+      for(list<TerrainContour*>::iterator
+          c  = contours[cellNum].begin();
+          c != contours[cellNum].end();
+          ++c)
+      {
+        if ((*c)->intersectsRectangle(r.xmin, r.ymin, r.xmax, r.ymax)) {
+          collisions.push_back(*c);
+        }
+      }
+    }
+  }
+}
+
+void SpatialDB::getTerrainCollisions
+( int cx, 
+  int cy, 
+  int r,
+  list<TerrainContour*>& collisions) 
+{
+  collisions.clear();
+
+  int minCol = (cx - r) / tile_points;
+  int maxCol = (cx + r) / tile_points;
+  int minRow = (cy - r) / tile_points;
+  int maxRow = (cy + r) / tile_points;
+
+  assert (minCol <= maxCol && minRow <= maxRow);
+
+  int cellNum;
+  for (int i=minCol; i<=maxCol; i++) {
+    for (int j=minRow; j<=maxRow; j++) {
+      cellNum = rowCol2cell(i,j);
+      for(list<TerrainContour*>::iterator
+          c  = contours[cellNum].begin();
+          c != contours[cellNum].end();
+          ++c)
+      {
+        if ((*c)->intersectsCircle(cx, cy, r)) {
+          collisions.push_back(*c);
+        }
+      }
+    }
+  }
+}

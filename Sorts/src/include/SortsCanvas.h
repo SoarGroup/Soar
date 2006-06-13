@@ -1,6 +1,5 @@
 #ifndef SortsCanvas_h
 #define SortsCanvas_h
-#ifdef USE_CANVAS // in Sorts.h
 
 #include <map>
 
@@ -50,6 +49,8 @@ public:
     return canvas.makeTempCircle(cx, cy, r, t);
   }
 
+  void drawLine(double x1, double y1, double x2, double y2);
+
 private:
   SDLCanvas canvas;
 public:
@@ -57,5 +58,4 @@ public:
   int updateCounter;
 };
 
-#endif // def USE_CANVAS
 #endif

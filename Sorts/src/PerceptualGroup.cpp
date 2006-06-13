@@ -137,7 +137,10 @@ void PerceptualGroup::generateData() {
   int failure = 0;
   int idle = 0;
   int stuck = 0;
-    
+
+  int shooting = 0;
+  int damaged = 0;
+
   Vec2d avg_heading;
 
   moving = false;
@@ -149,26 +152,37 @@ void PerceptualGroup::generateData() {
        currentObject != members.end();
        currentObject++ )
   {
+    GameObj* gob = (*currentObject)->getGob();
+
     if (canMine) {
-      mineralCount += (*currentObject)->getGob()->get_int("minerals");
+      mineralCount += gob->get_int("minerals");
     }
     
     // not everything has health
     // if no hp, just set it to 0
     // get_int asserts if not valid, this is what it calls internally
-    if ((*currentObject)->getGob()->get_int_ptr("hp") != 0) {
-      health += (*currentObject)->getGob()->get_int("hp");
+    if (gob->get_int_ptr("hp") != 0) {
+      health += gob->get_int("hp");
     }
     else {
       health += 0;
     }
-    speed += *(*currentObject)->getGob()->sod.speed;
-    x += *(*currentObject)->getGob()->sod.x;
-    y += *(*currentObject)->getGob()->sod.y;
+    speed += *gob->sod.speed;
+    x += *gob->sod.x;
+    y += *gob->sod.y;
 
     // average heading over those units that could move
-    if ((*currentObject)->getGob()->has_attr("heading")) {
-      avg_heading += getHeadingVector((*currentObject)->getGob()->get_int("heading"));
+    if (gob->has_attr("heading")) {
+      avg_heading += getHeadingVector(gob->get_int("heading"));
+    }
+
+    ScriptObj* weapon = gob->component("weapon");
+    if (weapon != NULL and weapon->get_int("shooting") == 1) {
+      ++shooting;
+    }
+    
+    if (gob->dir_damage[gob->dir_max_damage] > 0) {
+      ++damaged;
     }
 
     objStatus = (*currentObject)->getStatus();
@@ -190,8 +204,6 @@ void PerceptualGroup::generateData() {
   } 
  
   // average all attributes
-  health /= size;
-  speed /= size;
   x /= size;
   y /= size;
 
@@ -201,8 +213,8 @@ void PerceptualGroup::generateData() {
   updateBoundingBox();
   updateRegionsOccupied();
 
-  attribs.add("health", health);
-  attribs.add("speed", speed);
+  attribs.add("health", health / size);
+  attribs.add("speed", speed / size);
   attribs.add("num_members", size);
 
   attribs.add("enemy", ((not world) and (not friendly)));
@@ -229,6 +241,9 @@ void PerceptualGroup::generateData() {
   else {
     attribs.add("type", typeName);
   }
+
+  attribs.add("shooting", shooting);
+  attribs.add("taking-damage", damaged);
 
 #if 0
 //// Heading info
@@ -622,6 +637,19 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
         (*currentObject)->issueCommand(type, tempVec);
       }
       break;
+
+    case OA_STOP:
+      sticky = false;
+      tempVec.clear();
+      for (currentObject  = members.begin();
+           currentObject != members.end();
+           currentObject++)
+      {
+        (*currentObject)->issueCommand(type, tempVec);
+      }
+      hasStaleMembers = true;
+      break;
+
     default:
       assert(false);  
   }

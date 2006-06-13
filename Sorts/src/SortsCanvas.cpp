@@ -1,5 +1,4 @@
 #include "SortsCanvas.h"
-#ifdef USE_CANVAS // in Sorts.h 
 
 #define REDRAW_PERIOD 10
 
@@ -119,4 +118,7 @@ bool SortsCanvas::gobRegistered(GameObj* gob) {
   return (canvasObjs.find(gob) != canvasObjs.end());
 }
 
-#endif
+void SortsCanvas::drawLine(double x1, double y1, double x2, double y2) {
+  canvas.makeLine(x1, y1, x2, y2);
+}
+

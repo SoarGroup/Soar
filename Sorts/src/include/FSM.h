@@ -23,7 +23,7 @@ public:
   virtual void init(std::vector<sint4>);
   virtual ObjectActionType getName();
   virtual void panic();
-  virtual void stop();
+  virtual void stop() { } // default stop behavior does nothing
 
 protected:
   ObjectActionType name;

@@ -130,12 +130,18 @@ void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
 {
   msg << "command issued: " << (int)cmd << endl;
   
-  map<ObjectActionType, FSM*>::iterator i = behaviors.find(cmd);
-  
-  assert(i != behaviors.end());
-
-  i->second->init(prms);
-  assignedBehavior = i->second;
+  if (cmd == OA_STOP) {
+    if (assignedBehavior != NULL) {
+      assignedBehavior->stop();
+      assignedBehavior = NULL;
+    }
+  }
+  else {
+    map<ObjectActionType, FSM*>::iterator i = behaviors.find(cmd);
+    assert(i != behaviors.end());
+    i->second->init(prms);
+    assignedBehavior = i->second;
+  }
 
   motionlessFrames = 0;
   update();
@@ -188,6 +194,7 @@ void SoarGameObject::update()
     Sorts::OrtsIO->updateNextCycle(this);
   }
   else {
+    status = OBJ_IDLE;
     //msg << "empty memory\n";
   }
 

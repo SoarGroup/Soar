@@ -181,7 +181,7 @@ void* RunSoar(void* ptr) {
       msg << "I BROKE OUT" << endl;
       // spin until Soar gets started again
       while (!Sorts::SoarIO->isSoarRunning()) {
-        usleep(50000);
+        usleep(125000); // assuming 8 fps from server
       }
       msg << "Going Back Up Again" << endl;
     }
@@ -224,6 +224,7 @@ int main(int argc, char *argv[]) {
   int soarPort = 12121;
   int seed = 0;
   string host = "127.0.0.1";
+  string id = "a";
   char* productions = NULL;
   useSoarStops = true;
 
@@ -245,6 +246,9 @@ int main(int argc, char *argv[]) {
     }
     else if (strcmp(argv[i], "-no-stop") == 0) {
       useSoarStops = false;
+    }
+    else if (strcmp(argv[i], "-id") == 0) {
+      id = argv[i+1];
     }
   }
 
@@ -311,6 +315,7 @@ int main(int argc, char *argv[]) {
   GameStateModule::Options gsmo;
   gsmo.port = port;
   gsmo.host = host;
+  gsmo.id = id;
   GameStateModule gsm(gsmo);
 
   Terrain timp;

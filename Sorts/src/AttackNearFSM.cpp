@@ -26,7 +26,7 @@ int AttackNearFSM::update() {
   }
 
   if (count > 10) {
-    Sorts::spatialDB->getCollisions(
+    Sorts::spatialDB->getObjectCollisions(
       *gob->sod.x, 
       *gob->sod.y, 
       maxAttackRange,

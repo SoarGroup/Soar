@@ -1,8 +1,6 @@
 #ifndef SDLCanvas_h
 #define SDLCanvas_h
 
-#ifdef USE_CANVAS
-
 #include <SDL/SDL.h>
 #include <SDL/SDL_gfxPrimitives.h>
 
@@ -15,6 +13,7 @@
 #include "SDLCanvasDirCircle.h"
 #include "SDLCanvasTrackedShape.h"
 #include "SDLCanvasCompound.h"
+#include "SDLCanvasStableLine.h"
 
 struct TempShape {
   SDLCanvasShape* shape;
@@ -33,6 +32,7 @@ public:
   SDLCanvasDirCircle* makeDirCircle(double cx, double cy, double r, double a);
   SDLCanvasRectangle* makeRectangle(double cx, double cy, double w, double h, double a);
   SDLCanvasCompound*  makeCompound(double cx, double cy);
+  SDLCanvasStableLine* makeLine(double x1, double y1, double x2, double y2);
   SDLCanvasTrackedShape* makeTracker(double sx, double sy, double dx, double dy, bool isStart);
 
 
@@ -40,8 +40,8 @@ public:
   SDLCanvasDirCircle* makeTempDirCircle(double cx, double cy, double r, double a, int t);
   SDLCanvasRectangle* makeTempRectangle(double cx, double cy, double w, double h, double a, int t);
 
-
   void remove(SDLCanvasShape* shape);
+
 
   void clear();
   bool initted();
@@ -56,5 +56,4 @@ private:
   Uint16 canvasw, canvash;
 };
 
-#endif
 #endif

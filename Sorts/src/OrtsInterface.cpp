@@ -6,13 +6,16 @@
 #include "PerceptualGroup.h"
 //#include "InternalGroup.h"
 #include "MineManager.h"
-#include "SpatialDB.h"
 
 // Orts includes
 #include "GameObj.H"
 #include "GameStateModule.H"
 
 #define msg cout << "ORTSIO "
+
+#ifdef USE_CANVAS
+#include "SortsCanvas.h"
+#endif
 
 #define NO_WORLD_GROUPS
 
@@ -229,7 +232,7 @@ void OrtsInterface::updateSoarGameObjects() {
        * trouble
        */
       assert(objectMap.find(gob) != objectMap.end());
-      requiredUpdatesNextCycle.erase(objectMap[gob]);
+      //requiredUpdatesNextCycle.erase(objectMap[gob]);
       requiredThisCycle.erase(objectMap[gob]);
       removeVanishedObject(gob);
 
@@ -244,7 +247,7 @@ void OrtsInterface::updateSoarGameObjects() {
        * trouble
        */
       assert(objectMap.find(gob) != objectMap.end());
-      requiredUpdatesNextCycle.erase(objectMap[gob]);
+      //requiredUpdatesNextCycle.erase(objectMap[gob]);
       requiredThisCycle.erase(objectMap[gob]);
       removeDeadObject(gob);
     }
@@ -253,7 +256,12 @@ void OrtsInterface::updateSoarGameObjects() {
   FORALL(changes.new_boundaries, obj) {
     GameObj* gob = (*obj)->get_GameObj();
     Line l (*gob->sod.x1, *gob->sod.y1, *gob->sod.x2, *gob->sod.y2);
-    Sorts::spatialDB->addTerrainLine(l);
+    Sorts::terrainManager.addSegment
+      (*gob->sod.x1, *gob->sod.y1, *gob->sod.x2, *gob->sod.y2);
+#ifdef USE_CANVAS
+//    Sorts::canvas.drawLine(l.a.x, l.a.y, l.b.x, l.b.y);
+//    Sorts::canvas.update();
+#endif
   }
 
   // add new objects

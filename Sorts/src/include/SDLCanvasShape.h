@@ -14,7 +14,7 @@ using namespace std;
 class SDLCanvasShape {
 public:
   SDLCanvasShape (SDL_Surface* _surface, SDLCanvasSpace* _space)
-    : surface(_surface), space(_space), center(0, 0), wCenter(0, 0), label("")
+    : surface(_surface), space(_space), wCenter(0, 0), center(0, 0), label("")
   {
     trace = false;
     labelColor = SDLColor(255, 255, 255);
@@ -30,8 +30,8 @@ public:
       string _label ) 
     : surface(_surface), 
       space(_space), 
-      center(space->toCS(cx, cy)), 
       wCenter(cx, cy),
+      center(space->toCS(cx, cy)), 
       label(_label) 
   {
     trace = false;

@@ -1,7 +1,5 @@
 #include "SDLCanvas.h"
 #include <signal.h>
-#ifdef USE_CANVAS
-
 
 SDLCanvas::SDLCanvas()
 {
@@ -83,7 +81,7 @@ SDLCanvasCircle* SDLCanvas::makeCircle(double cx, double cy, double r) {
 }
 
 SDLCanvasDirCircle* SDLCanvas::makeDirCircle(double cx, double cy, double r, double a) {
-  SDLCanvasDirCircle* c = new SDLCanvasDirCircle(screen, &space, cx, cy, r, 0, "");
+  SDLCanvasDirCircle* c = new SDLCanvasDirCircle(screen, &space, cx, cy, r, a, "");
   shapes.push_back(c);
   return c;
 }
@@ -125,7 +123,7 @@ SDLCanvasCircle* SDLCanvas::makeTempCircle(double cx, double cy, double r, int t
 
 SDLCanvasDirCircle* SDLCanvas::makeTempDirCircle(double cx, double cy, double r, double a, int t) {
   TempShape ts;
-  SDLCanvasDirCircle* c = new SDLCanvasDirCircle(screen, &space, cx, cy, r, 0, "");
+  SDLCanvasDirCircle* c = new SDLCanvasDirCircle(screen, &space, cx, cy, r, a, "");
   ts.shape = c;
   ts.count = t;
   temps.push_back(ts);
@@ -175,4 +173,14 @@ void SDLCanvas::clear() {
   temps.clear();
 }
 
-#endif
+SDLCanvasStableLine* SDLCanvas::makeLine
+( double x1, 
+  double y1, 
+  double x2, 
+  double y2 ) 
+{
+  SDLCanvasStableLine* l = new SDLCanvasStableLine(screen,&space,x1,y1,x2,y2);
+  shapes.push_back(l);
+  return l;
+}
+

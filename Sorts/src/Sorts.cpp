@@ -11,6 +11,7 @@ FeatureMapManager*      Sorts::featureMapManager = NULL;
 TerrainModule*          Sorts::terrainModule = NULL;
 SpatialDB*              Sorts::spatialDB = NULL;
 MapQuery*               Sorts::mapQuery = NULL;
+TerrainManager          Sorts::terrainManager;
 pthread_mutex_t*        Sorts::mutex = NULL;
 int                     Sorts::cyclesSoarAhead = 0;
 bool                    Sorts::catchup = false;

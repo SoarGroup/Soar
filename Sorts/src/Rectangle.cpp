@@ -6,6 +6,8 @@ using namespace std;
 
 Rectangle::Rectangle() : xmin(0), xmax(0), ymin(0), ymax(0) {}
 
+Rectangle::Rectangle(int x, int y) : xmin(x), xmax(x), ymin(y), ymax(y) {}
+
 Rectangle::Rectangle(int _xmin, int _xmax, int _ymin, int _ymax)
 : xmin(_xmin), xmax(_xmax), ymin(_ymin), ymax(_ymax)
 { }

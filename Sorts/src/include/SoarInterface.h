@@ -1,5 +1,5 @@
-#ifndef soarinterface_h
-#define soarinterface_h
+#ifndef SoarInterface_H
+#define SoarInterface_H
 
 #include<utility>
 #include<list>
@@ -13,6 +13,7 @@
 #include "general.h"
 #include "FeatureMap.h"
 #include "PerceptualGroupManager.h"
+
 class Sorts;
 
 class PerceptualGroup;

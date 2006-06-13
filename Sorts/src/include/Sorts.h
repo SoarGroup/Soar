@@ -9,7 +9,7 @@
    most lower-level objects should have a pointer to this
 */
 
-//#define USE_CANVAS
+#define USE_CANVAS
 
 #include "SoarInterface.h"
 #include "OrtsInterface.h"
@@ -18,6 +18,7 @@
 #include "MapManager.h"
 #include "FeatureMapManager.h"
 #include "MapQuery.h"
+#include "TerrainManager.h"
 //#include "AttackManagerRegistry.h"
 //#include "MineManager.h"
 class AttackManagerRegistry;
@@ -72,6 +73,7 @@ class Sorts {
     static AttackManagerRegistry*   amr;
     static MineManager*             mineManager;
     static MapQuery*                mapQuery;
+    static TerrainManager           terrainManager;
     static pthread_mutex_t*         mutex;
     static bool                     catchup;
     static int                      cyclesSoarAhead;
