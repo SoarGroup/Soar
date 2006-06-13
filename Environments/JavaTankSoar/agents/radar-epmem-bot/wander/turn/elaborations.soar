@@ -23,10 +23,10 @@ sp {turn*elaborate*power-setting
    (<il> ^x <x>
          ^y <y>)
    (<r-il> 
-#         ^x <x>
-#         ^y <y>
-#         ^direction <abs-dir>
-#         ^radar-setting 13
+         ^x <x>
+         ^y <y>
+         ^direction <abs-dir>
+         ^radar-setting 13
          ^radar-distance { <dist> < 13 }
                            )
 -->
