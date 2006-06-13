@@ -280,7 +280,7 @@ long g_last_ret_id = 0;
 long g_num_queries = 0;
 arraylist *g_header_stack;
 char *g_save_filename=NULL; //"c:\\temp\\epmems_save.txt";
-char *g_load_filename=NULL; //"c:\\temp\\epmems_20002cycles_simplebot.txt";
+char *g_load_filename=NULL; //"c:\\temp\\epmems_15000cycles_modsimplebot_chunky2map.txt"; //NULL; 
 
 /* EpMem macros
 
@@ -4735,15 +4735,10 @@ void init_epmem(agent *thisAgent)
     //Initialize the g_header_stack array
     g_header_stack = make_arraylist(thisAgent, 20);
 
-    //Load pre-set episodic memories
+    //Load pre-recorded episodic memories
     if (g_load_filename != NULL)
     {
-        char *tmp;
         epmem_load_episodic_memory_from_file(thisAgent);
-        tmp = g_save_filename;
-        g_save_filename="c:\\temp\\epmems_sanity.txt";
-        epmem_save_episodic_memory_to_file(thisAgent); // sanity
-        g_save_filename=tmp;
     }
    
     //Reset the timers
