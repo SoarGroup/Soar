@@ -4,3 +4,15 @@ multi-attributes tank 3
 multi-attributes open 10
 multi-attributes square 100
 multi-attributes obstacle 12
+
+
+##epmem perf testing
+#learn --off
+#clog /temp/foo.log
+#
+#decay --off
+#decay --wme-criteria architectural
+#decay --i-support-mode no-create
+#decay --forget off
+#decay --on
+#
