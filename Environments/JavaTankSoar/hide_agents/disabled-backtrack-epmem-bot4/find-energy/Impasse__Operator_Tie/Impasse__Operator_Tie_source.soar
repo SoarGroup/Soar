@@ -1,6 +1,0 @@
-source elaborations.soar
-source epmem-recall-see-energy.soar
-source epmem-recall-see-energy-path.soar
-source give-up.soar
-source record-energy-path.soar
-source remove-epmem-query.soar

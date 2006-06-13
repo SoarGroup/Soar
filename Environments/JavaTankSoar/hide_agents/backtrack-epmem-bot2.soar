@@ -1,3 +1,0 @@
-pushd backtrack-epmem-bot2
-source backtrack-epmem-bot2_source.soar
-popd

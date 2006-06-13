@@ -1,9 +1,0 @@
-#echo "\nLoading all/turn.soar "
-
-sp {all*turn*elaborate*new-direction
-   (state <s> ^operator <o>
-              ^io.input-link.direction <dir>
-              ^top-state.direction-map.<dir>.<lr> <ndir>)
-   (<o> ^actions.rotate.direction <lr>)
--->
-   (<o> ^new-direction <ndir>)}

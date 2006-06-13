@@ -1,8 +1,0 @@
-source charge.soar
-source elaborations.soar
-source move.soar
-source move-to-energy.soar
-source move-to-health.soar
-source move-to-missiles.soar
-source record-sound.soar
-source turn.soar

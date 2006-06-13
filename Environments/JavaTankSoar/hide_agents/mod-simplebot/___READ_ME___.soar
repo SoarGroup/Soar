@@ -1,5 +1,0 @@
-#This is a modified version of Simplebot that turns more often
-#when wandering (rather than always preferring to move forwared).  
-#In addition, the radar is never turned off (assuming infinite energy).
-#The intent to is gather a bigger variety of useful episodes about 
-#the map.

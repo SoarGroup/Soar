@@ -1,9 +1,0 @@
-echo "\nLoading attack/source.soar"
-
-source fire-missile.soar
-source move.soar
-source turn.soar
-source slide.soar
-source wait.soar
-echo "\nFinished loading attack/source.soar"
-

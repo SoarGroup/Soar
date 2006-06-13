@@ -1,6 +1,0 @@
-source enemy-detected.soar
-source enemy-sighted.soar
-source in-danger.soar
-source need-resources.soar
-source resources.soar
-source visit.soar

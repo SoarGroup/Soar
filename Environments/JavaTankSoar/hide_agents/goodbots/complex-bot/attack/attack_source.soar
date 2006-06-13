@@ -1,6 +1,0 @@
-source elaborations.soar
-source fire-missile.soar
-source move.soar
-source slide-out-of-attack.soar
-source turn.soar
-source wait.soar

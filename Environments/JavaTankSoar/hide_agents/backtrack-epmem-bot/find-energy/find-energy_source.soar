@@ -1,8 +1,0 @@
-source elaborations.soar
-source epmem-recall-energy.soar
-source move.soar
-pushd move
-source move_source.soar
-popd
-source remove-stale-energy-pos.soar
-source save-last-energy-pos.soar

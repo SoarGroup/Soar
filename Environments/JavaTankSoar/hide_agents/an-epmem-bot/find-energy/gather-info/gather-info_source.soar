@@ -1,5 +1,0 @@
-source elaborations.soar
-source evaluate-move.soar
-pushd evaluate-move
-source evaluate-move_source.soar
-popd

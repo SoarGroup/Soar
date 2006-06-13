@@ -1,6 +1,0 @@
-source elaborations.soar
-source epmem-recall.soar
-source epmem-recall-next.soar
-source report-evaluation.soar
-source turn-on-radar.soar
-source turn-to-eval-dir.soar

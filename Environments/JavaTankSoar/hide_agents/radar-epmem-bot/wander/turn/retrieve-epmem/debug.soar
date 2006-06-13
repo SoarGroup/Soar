@@ -1,8 +1,0 @@
-sp {retrieve-epmem*elaborate*substate
-   (state <s> ^name retrieve-epmem
-              ^superstate.operator <so>)
-   (<so> ^name retrieve-epmem)
--->
-   (write (crlf) |Retrieved memory not used:| (crlf))
-   (cmd |matches turn*elaborate*power-setting|)
-}

@@ -1,3 +1,0 @@
-pushd EighthBot
-source EighthBot_source.soar
-popd
