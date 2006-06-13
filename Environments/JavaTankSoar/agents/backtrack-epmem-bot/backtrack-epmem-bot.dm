@@ -1,4 +1,4 @@
-144
+146
 SOAR_ID 0
 ENUMERATION 1 1 nil
 SOAR_ID 2
@@ -143,7 +143,9 @@ ENUMERATION 140 1 save-last-energy-pos
 SOAR_ID 141
 ENUMERATION 142 1 remove-stale-energy-pos
 SOAR_ID 143
-190
+SOAR_ID 144
+ENUMERATION 145 1 wait-for-recharge
+192
 0 attribute 55
 0 blocked 112
 0 choices 56
@@ -160,6 +162,7 @@ SOAR_ID 143
 0 operator 84
 0 operator 89
 0 operator 96
+0 operator 144
 0 side-direction 40
 0 superstate 1
 0 top-state 0
@@ -334,3 +337,4 @@ SOAR_ID 143
 139 name 138
 141 name 140
 143 name 142
+144 name 145

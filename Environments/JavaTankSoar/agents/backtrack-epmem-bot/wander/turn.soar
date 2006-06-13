@@ -7,8 +7,7 @@ echo "\nLoading wander/turn.soar "
 sp {wander*propose*turn
    (state <s> ^name wander
               ^io.input-link.blocked <b>)
-   (<b> ^forward yes
-        ^ { << left right >> <dir> } no)
+   (<b> ^ { << left right >> <dir> } no)
 -->
    (<s> ^operator <o> + =)
    (<o> ^name turn 

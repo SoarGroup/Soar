@@ -8,10 +8,25 @@ sp {elaborate*top-state*top-state
 -->
   (<s> ^top-state <s>)}
 
+sp {elaborate*state*max-energy
+   (state <s> ^name tanksoar)
+-->
+   (<s> ^max-energy 500)}
+
+sp {elaborate*state*energy-thresholds
+   (state <s> ^name tanksoar
+              ^max-energy <me>)
+-->
+   (<s> ^energy-low-thresh (* <me> 0.2))
+   (<s> ^energy-high-thresh (* <me> 0.9))
+}
+
+
 sp {elaborate*state*energy*low
    (state <s> ^name tanksoar
-              ^io.input-link.energy <= 200)
-   -->
+              ^energy-low-thresh <elt>
+              ^io.input-link.energy <= <elt>)
+-->
    (<s> ^missiles-energy low)}
 
 sp {elaborate*state*missiles*low

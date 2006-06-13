@@ -9,7 +9,7 @@ sp {apply*operator*create-action-command
 -->
    (<ol> ^<att> <value3>)
    (<value3> ^<att2> <value2>)
-   (write (crlf) |Sending command | <att> <att2> <value2>)
+#   (write (crlf) |Sending command | <att> <att2> <value2>)
 }
 
 sp {apply*operator*remove-command
@@ -19,5 +19,5 @@ sp {apply*operator*remove-command
    (<value> ^status complete)
 -->
    (<ol> ^<att> <value> -)
-   (write (crlf) |Removing command | <att>)
+#   (write (crlf) |Removing command | <att>)
 }

@@ -7,14 +7,13 @@ multi-attributes obstacle 12
 
 #epmem perf testing
 learn --off
-
-log /temp/foo.log
+clog /temp/foo.log
 #log -new /temp/foo.log <---Soar 8.5.2 syntax
 
 decay --off
-decay --wme-criteria arch
+decay --wme-criteria architectural
 decay --i-support-mode no-create
 decay --forget off
 decay --on
 
-
+srand

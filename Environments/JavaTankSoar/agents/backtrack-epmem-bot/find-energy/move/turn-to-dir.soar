@@ -5,7 +5,10 @@ sp {move*propose*turn-to-direction*left-right
 -->
    (<s> ^operator <op> + =)
    (<op> ^name turn-to-direction
-         ^actions.rotate.direction <rel-dir>)
+         ^actions <a>)
+   (<a> ^rotate.direction <rel-dir>
+        ^radar.switch on
+        ^radar-power.setting 13)
 }
 
 sp {move*propose*turn-to-direction*backward

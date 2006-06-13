@@ -22,6 +22,7 @@ source retreat.soar
 pushd retreat
 source retreat_source.soar
 popd
+source wait-for-recharge.soar
 source wander.soar
 pushd wander
 source wander_source.soar

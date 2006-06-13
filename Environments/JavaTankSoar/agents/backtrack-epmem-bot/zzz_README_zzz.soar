@@ -3,77 +3,10 @@
 #to find the energy charger.
 #
 
-###Converting from Soar 8.5.2 to Soar 8.6
-# 1. -firstload.soar
-#    a. Replace dashes with double dashes
-#    b.  fix syntax in log command
-# 2. elaborations/monitor.soar
-#    a.  replace 'tcl' with 'exec'
+#07 June 2006
+#This version is designed to follow N-step paths.
 
-#NOTE:  I've abandoned this design (below) for a simpler bot (20 Oct '05).
-#        A high level view of where I was heading is below:
-
-#find-energy
-#+---recall-target = peform an episodic retrieval of the agent seeing
-#                    the energy charger
-#+---init-path = create a new ^path object on the state that contains
-#                information about a (possibly incomplete) path to the
-#                charger.  This object is put into the "pending" state.
-#+---record-cue = extracts info from the currently retrieved memory
-#                 needed to cue an expanded path and stores it in a
-#                 path object.  The object is now marked "inactive".
-#+---expand-path = performs an episodic retrieval using the cue on a
-#                  ^path object.  Sets a path object to the "active"
-#                  state.
-#+---record-direction = Look in a particular direction to record
-#                       information about areas that the tanks can
-#                       see.
-#    +---turn = turn in the selected direction
-#    +---record-path-begin = record the beginning of a path as a
-#                            ^path-begin object
-#+---complete-path = attach a ^path-begin to a ^path.  The ^path's
-#                    status is marked as "selected"
-#+---cleaup-path = once a path has been selected, the other ^path and
-#                  ^path-begin objects are cleaned up.
-#+---follow-path = follow the selected path
-#    +---move = in addition to movement, records last position
-#    +---turn
-#+---recover-path = moves back onto the selected path after a
-#                   divergence (i.e., combat with other tank) OR
-#                   removes the path if it can not be recovered.  I'm
-#                   predicting a simple algorithm here that just looks
-#                   in the appropriate direction and sees if it can see
-#                   it's last x,y position on the path.
-#    +---move
-#    +---turn
-#+---move-to-target = fires when the energy charger actually becomes
-#                     visible to the sensors (and also prevents
-#                     epmem-recall when target is already in sight)
-#    +---move
-#    +---turn
-#+---remove-old-path = fires when agent is on the energy charger to
-#                      clean up a selected path.
-#                    
-#
-#
-#^path
-#    ^status inactive/pending/active/selected
-#    ^current-leg
-#        ^destination-x
-#        ^destination-y
-#        ^last-x
-#        ^last-y
-#        ^next-leg
-#
-#
-#^path-begin
-#    ^destination-x
-#    ^destination-y
-#
-#
-#Issues:
-#- How to decide whether a retrieved memory is actually a good match to
-#  a cue?  Should we rely on match strength?  Or should we allow
-#  multiple memory retrieval?  Both?
-#
-
+#08 June 2006
+#This version is disabled so that epmem retrievals never
+#result in decisions.  Specifically, the record-energy-path
+#operator apply rule is commented out.

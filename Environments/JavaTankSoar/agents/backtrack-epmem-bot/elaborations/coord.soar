@@ -97,3 +97,19 @@ sp {elaborate*state*rta*west
         ^right north
         ^left south)
 }
+
+#These elaborations give opposite directions
+sp {elaborate*state*opposites
+   (state <s> ^name tanksoar)
+-->
+   (<s> ^opposite <opp>)
+   (<opp> ^north south
+          ^east west
+          ^west weast
+          ^south north
+          ^forward backward
+          ^backward forward
+          ^left right
+          ^right left)
+}
+
