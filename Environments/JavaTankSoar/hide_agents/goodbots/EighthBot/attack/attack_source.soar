@@ -1,0 +1,10 @@
+source elaborations.soar
+source remove-manuevers.soar
+source shoot-and-duck.soar
+pushd shoot-and-duck
+source shoot-and-duck_source.soar
+popd
+source target-directly-behind.soar
+source slide-and-shoot.soar
+source stationary-fire.soar
+source turn-and-fire.soar

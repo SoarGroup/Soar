@@ -1,0 +1,35 @@
+# Helps in reorder production conditions efficiently
+multi-attributes dirlr 2 
+multi-attributes tank 3 
+multi-attributes open 10
+multi-attributes square 100
+multi-attributes obstacle 12
+
+
+learn --off
+
+clog /temp/foo.log
+
+decay --off
+decay --wme-criteria architectural
+decay --i-support-mode no-create
+decay --forget off
+decay --on
+
+#Get the help files working
+set-library-location c:\txt\umich\soar\soar-dev\soar-library
+
+
+##Soar 8.5.2 settings
+##====================
+##epmem perf testing
+#learn -off
+#
+#log -new /temp/foo.log
+#
+#decay -off
+#decay -wme-criteria arch
+#decay -i-support-mode no-create
+#decay -forget off
+#decay -on
+

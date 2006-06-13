@@ -1,0 +1,4 @@
+source elaborations.soar
+source move.soar
+source record-sound.soar
+source turn.soar

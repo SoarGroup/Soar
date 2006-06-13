@@ -1,0 +1,65 @@
+
+#If I'm not blocked in a particular direction, 
+#propose moving in that direction
+sp {find-energy*propose*move
+   (state <s> ^name find-energy
+              ^top-state.blocked.<abs-dir> no)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name move
+         ^abs-dir <abs-dir>)
+}
+
+#Evaluation structures (created by the gather-info
+#subgoal) can be used to elaborate operators with 
+#an evaluation
+sp {find-energy*elaborate*move
+   (state <s> ^name find-energy
+              ^operator <o> +
+              ^top-state.evaluation <eval>)
+   (<o> ^name move
+        ^abs-dir <abs-dir>)
+   (<eval> ^abs-dir <abs-dir>
+           ^value <n>)
+-->
+   (<o> ^evaluation <n>)
+}
+
+
+#Compare operators that have been evaluated.
+#Smaller evaluations are better because the
+#evaluation value is the distance between tank 
+#and goal.
+sp {find-energy*compare*move
+   (state <s> ^name find-energy
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name move
+          ^evaluation <eval>)
+   (<op2> ^name move
+          ^evaluation > <eval>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+sp {find-energy*compare*move*equal
+   (state <s> ^name find-energy
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name move
+          ^evaluation <eval>)
+   (<op2> ^name move
+          ^evaluation <eval>)
+-->
+   (<s> ^operator <op1> = <op2>)
+}
+
+#Move in the selected direction
+sp {apply*move
+   (state <s> ^operator <op>)
+   (<op> ^name move
+         ^abs-dir <abs-dir>)
+-->
+   (write (crlf) |=================== Moving | <abs-dir> | =======================|)
+}
+

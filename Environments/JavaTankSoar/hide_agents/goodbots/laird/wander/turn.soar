@@ -1,0 +1,138 @@
+echo "\nLoading wander/turn.soar "
+ 
+sp {wander*propose*turn*one-step-early
+   (state <s> ^name wander
+              ^move-direction <dir>
+              ^dir.<dir>.{ <tdir> << left right >> } <lrdir>
+              ^square.<dir>.<lrdir> <msq>
+              ^square.<dir>.open *yes*
+             -^io.input-link.radar.missiles
+              ^io.input-link.direction <dir>
+             -^need-energy *yes*
+             -^need-health *yes*)
+   (<msq> ^open *yes*           ;# Open in wall
+         -^<lrdir>.obstacle *yes*)  ;# More than a single space
+-->
+   (<s> ^operator <o> + =, >)
+   (<o> ^name turn-toward-hall 
+        ^hall-direction <lrdir>
+        ^slide-direction <dir>
+        ^actions <a>)
+   (<a> ^rotate.direction <tdir>)}
+
+sp {wander*apply*turn*one-step-early
+   (state <s> ^name wander
+              ^operator <o>)
+   (<o> ^name turn-toward-hall
+        ^hall-direction <hdir>
+        ^slide-direction <sdir>)
+-->
+   (<s> ^slide-object <so>)
+   (<so> ^slide-direction <sdir>
+         ^look-direction <hdir>)}
+ 
+sp {wander*apply*turn*one-step-early*remove
+   (state <s> ^slide-object <so>
+              ^operator <o>)
+  -(<o> ^name << turn-toward-hall slide-over-with-radar >>)
+   -->
+   (write (crlf) |Remove Slide object.|)
+   (<s> ^slide-object <so> -)}
+ 
+sp {wander*propose*turn*straighten-out
+   (state <s> ^name wander
+              ^io.input-link.direction <dir>
+             -^need-energy *yes*
+             -^need-health *yes*
+             -^io.input-link.radar.missiles
+              ^move-direction { <mdir> <> <dir> }
+              ^dir.<dir>.{ <tdir> << left right >> } <mdir>
+             -^square.<mdir>.<dir>.open *yes*  ;# Will slide over in   this case
+             -^square.<mdir>.obstacle *yes*
+             )
+-->
+   (<s> ^operator <o> + =, >)
+   (<o> ^name turn-straighten-out
+        ^actions <a>)
+   (<a> ^rotate.direction <tdir>)}
+
+################################
+### Propose Turn operator if blocked
+################################
+
+sp {wander*propose*turn
+   (state <s> ^name wander
+             -^need-energy *yes*
+             -^need-health *yes*
+             -^slide-object
+              ^io.input-link.blocked <b>)
+   (<b> ^forward yes
+        ^ { << left right >> <tdir> } no)
+-->
+   (<s> ^operator <o> + =, >)
+   (<o> ^name turn-blocked
+        ^actions <a>)
+   (<a> ^rotate.direction <tdir>)}
+
+sp {wander*propose*turn*reject
+   (state <s> ^name wander
+              ^operator <o> +)
+   (<o> ^name turn-blocked
+        ^actions.rotate.direction <tdir>)
+   (<s> ^move-direction <ndir>
+       -^need-energy *yes*
+       -^need-health *yes*
+        ^io.input-link.direction <dir>
+        ^dir.<dir>.<tdir> <ndir>)
+-->
+   (<s> ^operator <o> -)}
+
+sp {wander*propose*turn*backward
+   (state <s> ^name wander
+              ^io.input-link.blocked <b>)
+   (<b> ^forward yes 
+        ^left yes 
+        ^right yes)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name turn-blocked
+        ^actions.rotate.direction left)}
+
+sp {wander*apply*turn*update*move
+   (state <s> ^name wander
+              ^io.output-link.rotate.direction.status complete
+              ^io.input-link.direction <dir>
+              ^operator <o>)
+   (<o> ^name turn-blocked)
+   -->
+   (<s> ^move-direction <dir>)}
+
+sp {wander*apply*turn*update*move*remove
+   (state <s> ^name wander
+              ^operator <o>
+              ^move-direction { <mdir> <> <dir> })
+   (<o> ^name turn-blocked
+        ^new-direction <dir>)
+   -->
+   (<s> ^move-direction <mdir> -)}
+
+
+sp {wander*pref*turn*unvisited
+   (state <s> ^name wander
+              ^operator <o1> +
+              ^operator <o2> +
+       -^need-energy *yes*
+       -^need-health *yes*
+        ^io.input-link.direction <dir>
+        ^dir.<dir>.<tdir1> <ndir1>
+        ^dir.<dir>.<tdir2> <ndir2>
+        ^square <sq>)
+   (<sq> ^<ndir1>.visited *yes*
+        -^<ndir2>.visited *yes*)
+   (<o1> ^name turn-blocked
+         ^actions.rotate.direction <tdir1>)
+   (<o2> ^name turn-blocked
+         ^actions.rotate.direction <tdir2>)
+   -->
+   (<s> ^operator <o1> < <o2>)}
+

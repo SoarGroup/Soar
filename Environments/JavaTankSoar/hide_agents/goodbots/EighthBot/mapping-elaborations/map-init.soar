@@ -1,0 +1,333 @@
+echo "\nLoading elaborations/map-init.soar "
+
+#### create map data structure
+sp {elaborate*map*init
+   (state <s> ^name tanksoar)
+-->
+   (write (crlf) |Created Map|)
+   (<s> ^map.square 
+          <s0_0>  <s0_1>  <s0_2>  <s0_3>  <s0_4>  <s0_5>  <s0_6>  <s0_7>
+  <s0_8>  <s0_9>  <s0_10>  <s0_11>  <s0_12>  <s0_13>  <s0_14>  <s0_15>
+
+  <s1_0>  <s1_1>  <s1_2>  <s1_3>  <s1_4>  <s1_5>  <s1_6>  <s1_7>
+  <s1_8>  <s1_9>  <s1_10>  <s1_11>  <s1_12>  <s1_13>  <s1_14>  <s1_15>
+
+  <s2_0>  <s2_1>  <s2_2>  <s2_3>  <s2_4>  <s2_5>  <s2_6>  <s2_7>
+  <s2_8>  <s2_9>  <s2_10>  <s2_11>  <s2_12>  <s2_13>  <s2_14>  <s2_15>
+
+  <s3_0>  <s3_1>  <s3_2>  <s3_3>  <s3_4>  <s3_5>  <s3_6>  <s3_7>
+  <s3_8>  <s3_9>  <s3_10>  <s3_11>  <s3_12>  <s3_13>  <s3_14>  <s3_15>
+
+  <s4_0>  <s4_1>  <s4_2>  <s4_3>  <s4_4>  <s4_5>  <s4_6>  <s4_7>
+  <s4_8>  <s4_9>  <s4_10>  <s4_11>  <s4_12>  <s4_13>  <s4_14>  <s4_15>
+
+  <s5_0>  <s5_1>  <s5_2>  <s5_3>  <s5_4>  <s5_5>  <s5_6>  <s5_7>
+  <s5_8>  <s5_9>  <s5_10>  <s5_11>  <s5_12>  <s5_13>  <s5_14>  <s5_15>
+
+  <s6_0>  <s6_1>  <s6_2>  <s6_3>  <s6_4>  <s6_5>  <s6_6>  <s6_7>
+  <s6_8>  <s6_9>  <s6_10>  <s6_11>  <s6_12>  <s6_13>  <s6_14>  <s6_15>
+
+  <s7_0>  <s7_1>  <s7_2>  <s7_3>  <s7_4>  <s7_5>  <s7_6>  <s7_7>
+  <s7_8>  <s7_9>  <s7_10>  <s7_11>  <s7_12>  <s7_13>  <s7_14>  <s7_15>
+
+  <s8_0>  <s8_1>  <s8_2>  <s8_3>  <s8_4>  <s8_5>  <s8_6>  <s8_7>
+  <s8_8>  <s8_9>  <s8_10>  <s8_11>  <s8_12>  <s8_13>  <s8_14>  <s8_15>
+
+  <s9_0>  <s9_1>  <s9_2>  <s9_3>  <s9_4>  <s9_5>  <s9_6>  <s9_7>
+  <s9_8>  <s9_9>  <s9_10>  <s9_11>  <s9_12>  <s9_13>  <s9_14>  <s9_15>
+
+  <s10_0>  <s10_1>  <s10_2>  <s10_3>  <s10_4>  <s10_5>  <s10_6>  <s10_7>
+  <s10_8>  <s10_9>  <s10_10>  <s10_11>  <s10_12>  <s10_13>  <s10_14>  <s10_15>
+
+  <s11_0>  <s11_1>  <s11_2>  <s11_3>  <s11_4>  <s11_5>  <s11_6>  <s11_7>
+  <s11_8>  <s11_9>  <s11_10>  <s11_11>  <s11_12>  <s11_13>  <s11_14>  <s11_15>
+
+  <s12_0>  <s12_1>  <s12_2>  <s12_3>  <s12_4>  <s12_5>  <s12_6>  <s12_7>
+  <s12_8>  <s12_9>  <s12_10>  <s12_11>  <s12_12>  <s12_13>  <s12_14>  <s12_15>
+
+  <s13_0>  <s13_1>  <s13_2>  <s13_3>  <s13_4>  <s13_5>  <s13_6>  <s13_7>
+  <s13_8>  <s13_9>  <s13_10>  <s13_11>  <s13_12>  <s13_13>  <s13_14>  <s13_15>
+
+  <s14_0>  <s14_1>  <s14_2>  <s14_3>  <s14_4>  <s14_5>  <s14_6>  <s14_7>
+  <s14_8>  <s14_9>  <s14_10>  <s14_11>  <s14_12>  <s14_13>  <s14_14>  <s14_15>
+
+  <s15_0>  <s15_1>  <s15_2>  <s15_3>  <s15_4>  <s15_5>  <s15_6>  <s15_7>
+  <s15_8>  <s15_9>  <s15_10>  <s15_11>  <s15_12>  <s15_13>  <s15_14>  <s15_15>)
+
+
+
+
+
+
+
+(<s0_0>   ^visit 0  ^x 0  ^y 0      ^east <s1_0>   ^south <s0_1>    )
+(<s0_1>   ^visit 0  ^x 0  ^y 1  ^north <s0_0>  ^east <s1_1>   ^south <s0_2>    )
+(<s0_2>   ^visit 0  ^x 0  ^y 2  ^north <s0_1>  ^east <s1_2>   ^south <s0_3>    )
+(<s0_3>   ^visit 0  ^x 0  ^y 3  ^north <s0_2>  ^east <s1_3>   ^south <s0_4>    )
+(<s0_4>   ^visit 0  ^x 0  ^y 4  ^north <s0_3>  ^east <s1_4>   ^south <s0_5>    )
+(<s0_5>   ^visit 0  ^x 0  ^y 5  ^north <s0_4>  ^east <s1_5>   ^south <s0_6>    )
+(<s0_6>   ^visit 0  ^x 0  ^y 6  ^north <s0_5>  ^east <s1_6>   ^south <s0_7>    )
+(<s0_7>   ^visit 0  ^x 0  ^y 7  ^north <s0_6>  ^east <s1_7>   ^south <s0_8>    )
+(<s0_8>   ^visit 0  ^x 0  ^y 8  ^north <s0_7>  ^east <s1_8>   ^south <s0_9>    )
+(<s0_9>   ^visit 0  ^x 0  ^y 9  ^north <s0_8>  ^east <s1_9>   ^south <s0_10>    )
+(<s0_10>  ^visit 0  ^x 0  ^y 10  ^north <s0_9>  ^east <s1_10>  ^south <s0_11>    )
+(<s0_11>  ^visit 0  ^x 0  ^y 11  ^north <s0_10>  ^east <s1_11>  ^south <s0_12>    )
+(<s0_12>  ^visit 0  ^x 0  ^y 12  ^north <s0_11>  ^east <s1_12>  ^south <s0_13>    )
+(<s0_13>  ^visit 0  ^x 0  ^y 13  ^north <s0_12>  ^east <s1_13>  ^south <s0_14>    )
+(<s0_14>  ^visit 0  ^x 0  ^y 14  ^north <s0_13>  ^east <s1_14>  ^south <s0_15>    )
+(<s0_15>  ^visit 0  ^x 0  ^y 15  ^north <s0_14>  ^east <s1_15>        )
+
+(<s1_0>   ^visit 0  ^x 1  ^y 0      ^east <s2_0>   ^south <s1_1>  ^west <s0_0>)
+(<s1_1>   ^visit 0  ^x 1  ^y 1  ^north <s1_0>  ^east <s2_1>   ^south <s1_2>  ^west <s0_1>)
+(<s1_2>   ^visit 0  ^x 1  ^y 2  ^north <s1_1>  ^east <s2_2>   ^south <s1_3>  ^west <s0_2>)
+(<s1_3>   ^visit 0  ^x 1  ^y 3  ^north <s1_2>  ^east <s2_3>   ^south <s1_4>  ^west <s0_3>)
+(<s1_4>   ^visit 0  ^x 1  ^y 4  ^north <s1_3>  ^east <s2_4>   ^south <s1_5>  ^west <s0_4>)
+(<s1_5>   ^visit 0  ^x 1  ^y 5  ^north <s1_4>  ^east <s2_5>   ^south <s1_6>  ^west <s0_5>)
+(<s1_6>   ^visit 0  ^x 1  ^y 6  ^north <s1_5>  ^east <s2_6>   ^south <s1_7>  ^west <s0_6>)
+(<s1_7>   ^visit 0  ^x 1  ^y 7  ^north <s1_6>  ^east <s2_7>   ^south <s1_8>  ^west <s0_7>)
+(<s1_8>   ^visit 0  ^x 1  ^y 8  ^north <s1_7>  ^east <s2_8>   ^south <s1_9>  ^west <s0_8>)
+(<s1_9>   ^visit 0  ^x 1  ^y 9  ^north <s1_8>  ^east <s2_9>   ^south <s1_10>  ^west <s0_9>)
+(<s1_10>  ^visit 0  ^x 1  ^y 10  ^north <s1_9>  ^east <s2_10>  ^south <s1_11>  ^west <s0_10>)
+(<s1_11>  ^visit 0  ^x 1  ^y 11  ^north <s1_10>  ^east <s2_11>  ^south <s1_12>  ^west <s0_11>)
+(<s1_12>  ^visit 0  ^x 1  ^y 12  ^north <s1_11>  ^east <s2_12>  ^south <s1_13>  ^west <s0_12>)
+(<s1_13>  ^visit 0  ^x 1  ^y 13  ^north <s1_12>  ^east <s2_13>  ^south <s1_14>  ^west <s0_13>)
+(<s1_14>  ^visit 0  ^x 1  ^y 14  ^north <s1_13>  ^east <s2_14>  ^south <s1_15>  ^west <s0_14>)
+(<s1_15>  ^visit 0  ^x 1  ^y 15  ^north <s1_14>  ^east <s2_15>      ^west <s0_15>)
+
+(<s2_0>   ^visit 0  ^x 2  ^y 0      ^east <s3_0>   ^south <s2_1>  ^west <s1_0>)
+(<s2_1>   ^visit 0  ^x 2  ^y 1  ^north <s2_0>  ^east <s3_1>   ^south <s2_2>  ^west <s1_1>)
+(<s2_2>   ^visit 0  ^x 2  ^y 2  ^north <s2_1>  ^east <s3_2>   ^south <s2_3>  ^west <s1_2>)
+(<s2_3>   ^visit 0  ^x 2  ^y 3  ^north <s2_2>  ^east <s3_3>   ^south <s2_4>  ^west <s1_3>)
+(<s2_4>   ^visit 0  ^x 2  ^y 4  ^north <s2_3>  ^east <s3_4>   ^south <s2_5>  ^west <s1_4>)
+(<s2_5>   ^visit 0  ^x 2  ^y 5  ^north <s2_4>  ^east <s3_5>   ^south <s2_6>  ^west <s1_5>)
+(<s2_6>   ^visit 0  ^x 2  ^y 6  ^north <s2_5>  ^east <s3_6>   ^south <s2_7>  ^west <s1_6>)
+(<s2_7>   ^visit 0  ^x 2  ^y 7  ^north <s2_6>  ^east <s3_7>   ^south <s2_8>  ^west <s1_7>)
+(<s2_8>   ^visit 0  ^x 2  ^y 8  ^north <s2_7>  ^east <s3_8>   ^south <s2_9>  ^west <s1_8>)
+(<s2_9>   ^visit 0  ^x 2  ^y 9  ^north <s2_8>  ^east <s3_9>   ^south <s2_10>  ^west <s1_9>)
+(<s2_10>  ^visit 0  ^x 2  ^y 10  ^north <s2_9>  ^east <s3_10>  ^south <s2_11>  ^west <s1_10>)
+(<s2_11>  ^visit 0  ^x 2  ^y 11  ^north <s2_10>  ^east <s3_11>  ^south <s2_12>  ^west <s1_11>)
+(<s2_12>  ^visit 0  ^x 2  ^y 12  ^north <s2_11>  ^east <s3_12>  ^south <s2_13>  ^west <s1_12>)
+(<s2_13>  ^visit 0  ^x 2  ^y 13  ^north <s2_12>  ^east <s3_13>  ^south <s2_14>  ^west <s1_13>)
+(<s2_14>  ^visit 0  ^x 2  ^y 14  ^north <s2_13>  ^east <s3_14>  ^south <s2_15>  ^west <s1_14>)
+(<s2_15>  ^visit 0  ^x 2  ^y 15  ^north <s2_14>  ^east <s3_15>      ^west <s1_15>)
+
+(<s3_0>   ^visit 0  ^x 3  ^y 0      ^east <s4_0>   ^south <s3_1>  ^west <s2_0>)
+(<s3_1>   ^visit 0  ^x 3  ^y 1  ^north <s3_0>  ^east <s4_1>   ^south <s3_2>  ^west <s2_1>)
+(<s3_2>   ^visit 0  ^x 3  ^y 2  ^north <s3_1>  ^east <s4_2>   ^south <s3_3>  ^west <s2_2>)
+(<s3_3>   ^visit 0  ^x 3  ^y 3  ^north <s3_2>  ^east <s4_3>   ^south <s3_4>  ^west <s2_3>)
+(<s3_4>   ^visit 0  ^x 3  ^y 4  ^north <s3_3>  ^east <s4_4>   ^south <s3_5>  ^west <s2_4>)
+(<s3_5>   ^visit 0  ^x 3  ^y 5  ^north <s3_4>  ^east <s4_5>   ^south <s3_6>  ^west <s2_5>)
+(<s3_6>   ^visit 0  ^x 3  ^y 6  ^north <s3_5>  ^east <s4_6>   ^south <s3_7>  ^west <s2_6>)
+(<s3_7>   ^visit 0  ^x 3  ^y 7  ^north <s3_6>  ^east <s4_7>   ^south <s3_8>  ^west <s2_7>)
+(<s3_8>   ^visit 0  ^x 3  ^y 8  ^north <s3_7>  ^east <s4_8>   ^south <s3_9>  ^west <s2_8>)
+(<s3_9>   ^visit 0  ^x 3  ^y 9  ^north <s3_8>  ^east <s4_9>   ^south <s3_10>  ^west <s2_9>)
+(<s3_10>  ^visit 0  ^x 3  ^y 10  ^north <s3_9>  ^east <s4_10>  ^south <s3_11>  ^west <s2_10>)
+(<s3_11>  ^visit 0  ^x 3  ^y 11  ^north <s3_10>  ^east <s4_11>  ^south <s3_12>  ^west <s2_11>)
+(<s3_12>  ^visit 0  ^x 3  ^y 12  ^north <s3_11>  ^east <s4_12>  ^south <s3_13>  ^west <s2_12>)
+(<s3_13>  ^visit 0  ^x 3  ^y 13  ^north <s3_12>  ^east <s4_13>  ^south <s3_14>  ^west <s2_13>)
+(<s3_14>  ^visit 0  ^x 3  ^y 14  ^north <s3_13>  ^east <s4_14>  ^south <s3_15>  ^west <s2_14>)
+(<s3_15>  ^visit 0  ^x 3  ^y 15  ^north <s3_14>  ^east <s4_15>      ^west <s2_15>)
+
+(<s4_0>   ^visit 0  ^x 4  ^y 0      ^east <s5_0>   ^south <s4_1>  ^west <s3_0>)
+(<s4_1>   ^visit 0  ^x 4  ^y 1  ^north <s4_0>  ^east <s5_1>   ^south <s4_2>  ^west <s3_1>)
+(<s4_2>   ^visit 0  ^x 4  ^y 2  ^north <s4_1>  ^east <s5_2>   ^south <s4_3>  ^west <s3_2>)
+(<s4_3>   ^visit 0  ^x 4  ^y 3  ^north <s4_2>  ^east <s5_3>   ^south <s4_4>  ^west <s3_3>)
+(<s4_4>   ^visit 0  ^x 4  ^y 4  ^north <s4_3>  ^east <s5_4>   ^south <s4_5>  ^west <s3_4>)
+(<s4_5>   ^visit 0  ^x 4  ^y 5  ^north <s4_4>  ^east <s5_5>   ^south <s4_6>  ^west <s3_5>)
+(<s4_6>   ^visit 0  ^x 4  ^y 6  ^north <s4_5>  ^east <s5_6>   ^south <s4_7>  ^west <s3_6>)
+(<s4_7>   ^visit 0  ^x 4  ^y 7  ^north <s4_6>  ^east <s5_7>   ^south <s4_8>  ^west <s3_7>)
+(<s4_8>   ^visit 0  ^x 4  ^y 8  ^north <s4_7>  ^east <s5_8>   ^south <s4_9>  ^west <s3_8>)
+(<s4_9>   ^visit 0  ^x 4  ^y 9  ^north <s4_8>  ^east <s5_9>   ^south <s4_10>  ^west <s3_9>)
+(<s4_10>  ^visit 0  ^x 4  ^y 10  ^north <s4_9>  ^east <s5_10>  ^south <s4_11>  ^west <s3_10>)
+(<s4_11>  ^visit 0  ^x 4  ^y 11  ^north <s4_10>  ^east <s5_11>  ^south <s4_12>  ^west <s3_11>)
+(<s4_12>  ^visit 0  ^x 4  ^y 12  ^north <s4_11>  ^east <s5_12>  ^south <s4_13>  ^west <s3_12>)
+(<s4_13>  ^visit 0  ^x 4  ^y 13  ^north <s4_12>  ^east <s5_13>  ^south <s4_14>  ^west <s3_13>)
+(<s4_14>  ^visit 0  ^x 4  ^y 14  ^north <s4_13>  ^east <s5_14>  ^south <s4_15>  ^west <s3_14>)
+(<s4_15>  ^visit 0  ^x 4  ^y 15  ^north <s4_14>  ^east <s5_15>      ^west <s3_15>)
+
+(<s5_0>   ^visit 0  ^x 5  ^y 0      ^east <s6_0>   ^south <s5_1>  ^west <s4_0>)
+(<s5_1>   ^visit 0  ^x 5  ^y 1  ^north <s5_0>  ^east <s6_1>   ^south <s5_2>  ^west <s4_1>)
+(<s5_2>   ^visit 0  ^x 5  ^y 2  ^north <s5_1>  ^east <s6_2>   ^south <s5_3>  ^west <s4_2>)
+(<s5_3>   ^visit 0  ^x 5  ^y 3  ^north <s5_2>  ^east <s6_3>   ^south <s5_4>  ^west <s4_3>)
+(<s5_4>   ^visit 0  ^x 5  ^y 4  ^north <s5_3>  ^east <s6_4>   ^south <s5_5>  ^west <s4_4>)
+(<s5_5>   ^visit 0  ^x 5  ^y 5  ^north <s5_4>  ^east <s6_5>   ^south <s5_6>  ^west <s4_5>)
+(<s5_6>   ^visit 0  ^x 5  ^y 6  ^north <s5_5>  ^east <s6_6>   ^south <s5_7>  ^west <s4_6>)
+(<s5_7>   ^visit 0  ^x 5  ^y 7  ^north <s5_6>  ^east <s6_7>   ^south <s5_8>  ^west <s4_7>)
+(<s5_8>   ^visit 0  ^x 5  ^y 8  ^north <s5_7>  ^east <s6_8>   ^south <s5_9>  ^west <s4_8>)
+(<s5_9>   ^visit 0  ^x 5  ^y 9  ^north <s5_8>  ^east <s6_9>   ^south <s5_10>  ^west <s4_9>)
+(<s5_10>  ^visit 0  ^x 5  ^y 10  ^north <s5_9>  ^east <s6_10>  ^south <s5_11>  ^west <s4_10>)
+(<s5_11>  ^visit 0  ^x 5  ^y 11  ^north <s5_10>  ^east <s6_11>  ^south <s5_12>  ^west <s4_11>)
+(<s5_12>  ^visit 0  ^x 5  ^y 12  ^north <s5_11>  ^east <s6_12>  ^south <s5_13>  ^west <s4_12>)
+(<s5_13>  ^visit 0  ^x 5  ^y 13  ^north <s5_12>  ^east <s6_13>  ^south <s5_14>  ^west <s4_13>)
+(<s5_14>  ^visit 0  ^x 5  ^y 14  ^north <s5_13>  ^east <s6_14>  ^south <s5_15>  ^west <s4_14>)
+(<s5_15>  ^visit 0  ^x 5  ^y 15  ^north <s5_14>  ^east <s6_15>      ^west <s4_15>)
+
+(<s6_0>   ^visit 0  ^x 6  ^y 0      ^east <s7_0>   ^south <s6_1>  ^west <s5_0>)
+(<s6_1>   ^visit 0  ^x 6  ^y 1  ^north <s6_0>  ^east <s7_1>   ^south <s6_2>  ^west <s5_1>)
+(<s6_2>   ^visit 0  ^x 6  ^y 2  ^north <s6_1>  ^east <s7_2>   ^south <s6_3>  ^west <s5_2>)
+(<s6_3>   ^visit 0  ^x 6  ^y 3  ^north <s6_2>  ^east <s7_3>   ^south <s6_4>  ^west <s5_3>)
+(<s6_4>   ^visit 0  ^x 6  ^y 4  ^north <s6_3>  ^east <s7_4>   ^south <s6_5>  ^west <s5_4>)
+(<s6_5>   ^visit 0  ^x 6  ^y 5  ^north <s6_4>  ^east <s7_5>   ^south <s6_6>  ^west <s5_5>)
+(<s6_6>   ^visit 0  ^x 6  ^y 6  ^north <s6_5>  ^east <s7_6>   ^south <s6_7>  ^west <s5_6>)
+(<s6_7>   ^visit 0  ^x 6  ^y 7  ^north <s6_6>  ^east <s7_7>   ^south <s6_8>  ^west <s5_7>)
+(<s6_8>   ^visit 0  ^x 6  ^y 8  ^north <s6_7>  ^east <s7_8>   ^south <s6_9>  ^west <s5_8>)
+(<s6_9>   ^visit 0  ^x 6  ^y 9  ^north <s6_8>  ^east <s7_9>   ^south <s6_10>  ^west <s5_9>)
+(<s6_10>  ^visit 0  ^x 6  ^y 10  ^north <s6_9>  ^east <s7_10>  ^south <s6_11>  ^west <s5_10>)
+(<s6_11>  ^visit 0  ^x 6  ^y 11  ^north <s6_10>  ^east <s7_11>  ^south <s6_12>  ^west <s5_11>)
+(<s6_12>  ^visit 0  ^x 6  ^y 12  ^north <s6_11>  ^east <s7_12>  ^south <s6_13>  ^west <s5_12>)
+(<s6_13>  ^visit 0  ^x 6  ^y 13  ^north <s6_12>  ^east <s7_13>  ^south <s6_14>  ^west <s5_13>)
+(<s6_14>  ^visit 0  ^x 6  ^y 14  ^north <s6_13>  ^east <s7_14>  ^south <s6_15>  ^west <s5_14>)
+(<s6_15>  ^visit 0  ^x 6  ^y 15  ^north <s6_14>  ^east <s7_15>      ^west <s5_15>)
+
+(<s7_0>   ^visit 0  ^x 7  ^y 0      ^east <s8_0>   ^south <s7_1>  ^west <s6_0>)
+(<s7_1>   ^visit 0  ^x 7  ^y 1  ^north <s7_0>  ^east <s8_1>   ^south <s7_2>  ^west <s6_1>)
+(<s7_2>   ^visit 0  ^x 7  ^y 2  ^north <s7_1>  ^east <s8_2>   ^south <s7_3>  ^west <s6_2>)
+(<s7_3>   ^visit 0  ^x 7  ^y 3  ^north <s7_2>  ^east <s8_3>   ^south <s7_4>  ^west <s6_3>)
+(<s7_4>   ^visit 0  ^x 7  ^y 4  ^north <s7_3>  ^east <s8_4>   ^south <s7_5>  ^west <s6_4>)
+(<s7_5>   ^visit 0  ^x 7  ^y 5  ^north <s7_4>  ^east <s8_5>   ^south <s7_6>  ^west <s6_5>)
+(<s7_6>   ^visit 0  ^x 7  ^y 6  ^north <s7_5>  ^east <s8_6>   ^south <s7_7>  ^west <s6_6>)
+(<s7_7>   ^visit 0  ^x 7  ^y 7  ^north <s7_6>  ^east <s8_7>   ^south <s7_8>  ^west <s6_7>)
+(<s7_8>   ^visit 0  ^x 7  ^y 8  ^north <s7_7>  ^east <s8_8>   ^south <s7_9>  ^west <s6_8>)
+(<s7_9>   ^visit 0  ^x 7  ^y 9  ^north <s7_8>  ^east <s8_9>   ^south <s7_10>  ^west <s6_9>)
+(<s7_10>  ^visit 0  ^x 7  ^y 10  ^north <s7_9>  ^east <s8_10>  ^south <s7_11>  ^west <s6_10>)
+(<s7_11>  ^visit 0  ^x 7  ^y 11  ^north <s7_10>  ^east <s8_11>  ^south <s7_12>  ^west <s6_11>)
+(<s7_12>  ^visit 0  ^x 7  ^y 12  ^north <s7_11>  ^east <s8_12>  ^south <s7_13>  ^west <s6_12>)
+(<s7_13>  ^visit 0  ^x 7  ^y 13  ^north <s7_12>  ^east <s8_13>  ^south <s7_14>  ^west <s6_13>)
+(<s7_14>  ^visit 0  ^x 7  ^y 14  ^north <s7_13>  ^east <s8_14>  ^south <s7_15>  ^west <s6_14>)
+(<s7_15>  ^visit 0  ^x 7  ^y 15  ^north <s7_14>  ^east <s8_15>      ^west <s6_15>)
+
+(<s8_0>   ^visit 0  ^x 8  ^y 0      ^east <s9_0>   ^south <s8_1>  ^west <s7_0>)
+(<s8_1>   ^visit 0  ^x 8  ^y 1  ^north <s8_0>  ^east <s9_1>   ^south <s8_2>  ^west <s7_1>)
+(<s8_2>   ^visit 0  ^x 8  ^y 2  ^north <s8_1>  ^east <s9_2>   ^south <s8_3>  ^west <s7_2>)
+(<s8_3>   ^visit 0  ^x 8  ^y 3  ^north <s8_2>  ^east <s9_3>   ^south <s8_4>  ^west <s7_3>)
+(<s8_4>   ^visit 0  ^x 8  ^y 4  ^north <s8_3>  ^east <s9_4>   ^south <s8_5>  ^west <s7_4>)
+(<s8_5>   ^visit 0  ^x 8  ^y 5  ^north <s8_4>  ^east <s9_5>   ^south <s8_6>  ^west <s7_5>)
+(<s8_6>   ^visit 0  ^x 8  ^y 6  ^north <s8_5>  ^east <s9_6>   ^south <s8_7>  ^west <s7_6>)
+(<s8_7>   ^visit 0  ^x 8  ^y 7  ^north <s8_6>  ^east <s9_7>   ^south <s8_8>  ^west <s7_7>)
+(<s8_8>   ^visit 0  ^x 8  ^y 8  ^north <s8_7>  ^east <s9_8>   ^south <s8_9>  ^west <s7_8>)
+(<s8_9>   ^visit 0  ^x 8  ^y 9  ^north <s8_8>  ^east <s9_9>   ^south <s8_10>  ^west <s7_9>)
+(<s8_10>  ^visit 0  ^x 8  ^y 10  ^north <s8_9>  ^east <s9_10>  ^south <s8_11>  ^west <s7_10>)
+(<s8_11>  ^visit 0  ^x 8  ^y 11  ^north <s8_10>  ^east <s9_11>  ^south <s8_12>  ^west <s7_11>)
+(<s8_12>  ^visit 0  ^x 8  ^y 12  ^north <s8_11>  ^east <s9_12>  ^south <s8_13>  ^west <s7_12>)
+(<s8_13>  ^visit 0  ^x 8  ^y 13  ^north <s8_12>  ^east <s9_13>  ^south <s8_14>  ^west <s7_13>)
+(<s8_14>  ^visit 0  ^x 8  ^y 14  ^north <s8_13>  ^east <s9_14>  ^south <s8_15>  ^west <s7_14>)
+(<s8_15>  ^visit 0  ^x 8  ^y 15  ^north <s8_14>  ^east <s9_15>      ^west <s7_15>)
+
+(<s9_0>   ^visit 0  ^x 9  ^y 0      ^east <s10_0>   ^south <s9_1>  ^west <s8_0>)
+(<s9_1>   ^visit 0  ^x 9  ^y 1  ^north <s9_0>  ^east <s10_1>   ^south <s9_2>  ^west <s8_1>)
+(<s9_2>   ^visit 0  ^x 9  ^y 2  ^north <s9_1>  ^east <s10_2>   ^south <s9_3>  ^west <s8_2>)
+(<s9_3>   ^visit 0  ^x 9  ^y 3  ^north <s9_2>  ^east <s10_3>   ^south <s9_4>  ^west <s8_3>)
+(<s9_4>   ^visit 0  ^x 9  ^y 4  ^north <s9_3>  ^east <s10_4>   ^south <s9_5>  ^west <s8_4>)
+(<s9_5>   ^visit 0  ^x 9  ^y 5  ^north <s9_4>  ^east <s10_5>   ^south <s9_6>  ^west <s8_5>)
+(<s9_6>   ^visit 0  ^x 9  ^y 6  ^north <s9_5>  ^east <s10_6>   ^south <s9_7>  ^west <s8_6>)
+(<s9_7>   ^visit 0  ^x 9  ^y 7  ^north <s9_6>  ^east <s10_7>   ^south <s9_8>  ^west <s8_7>)
+(<s9_8>   ^visit 0  ^x 9  ^y 8  ^north <s9_7>  ^east <s10_8>   ^south <s9_9>  ^west <s8_8>)
+(<s9_9>   ^visit 0  ^x 9  ^y 9  ^north <s9_8>  ^east <s10_9>   ^south <s9_10>  ^west <s8_9>)
+(<s9_10>  ^visit 0  ^x 9  ^y 10  ^north <s9_9>  ^east <s10_10>  ^south <s9_11>  ^west <s8_10>)
+(<s9_11>  ^visit 0  ^x 9  ^y 11  ^north <s9_10>  ^east <s10_11>  ^south <s9_12>  ^west <s8_11>)
+(<s9_12>  ^visit 0  ^x 9  ^y 12  ^north <s9_11>  ^east <s10_12>  ^south <s9_13>  ^west <s8_12>)
+(<s9_13>  ^visit 0  ^x 9  ^y 13  ^north <s9_12>  ^east <s10_13>  ^south <s9_14>  ^west <s8_13>)
+(<s9_14>  ^visit 0  ^x 9  ^y 14  ^north <s9_13>  ^east <s10_14>  ^south <s9_15>  ^west <s8_14>)
+(<s9_15>  ^visit 0  ^x 9  ^y 15  ^north <s9_14>  ^east <s10_15>      ^west <s8_15>)
+
+(<s10_0>  ^visit 0  ^x 10  ^y 0      ^east <s11_0>  ^south <s10_1>  ^west <s9_0>)
+(<s10_1>  ^visit 0  ^x 10  ^y 1  ^north <s10_0>  ^east <s11_1>  ^south <s10_2>  ^west <s9_1>)
+(<s10_2>  ^visit 0  ^x 10  ^y 2  ^north <s10_1>  ^east <s11_2>  ^south <s10_3>  ^west <s9_2>)
+(<s10_3>  ^visit 0  ^x 10  ^y 3  ^north <s10_2>  ^east <s11_3>  ^south <s10_4>  ^west <s9_3>)
+(<s10_4>  ^visit 0  ^x 10  ^y 4  ^north <s10_3>  ^east <s11_4>  ^south <s10_5>  ^west <s9_4>)
+(<s10_5>  ^visit 0  ^x 10  ^y 5  ^north <s10_4>  ^east <s11_5>  ^south <s10_6>  ^west <s9_5>)
+(<s10_6>  ^visit 0  ^x 10  ^y 6  ^north <s10_5>  ^east <s11_6>  ^south <s10_7>  ^west <s9_6>)
+(<s10_7>  ^visit 0  ^x 10  ^y 7  ^north <s10_6>  ^east <s11_7>  ^south <s10_8>  ^west <s9_7>)
+(<s10_8>  ^visit 0  ^x 10  ^y 8  ^north <s10_7>  ^east <s11_8>  ^south <s10_9>  ^west <s9_8>)
+(<s10_9>  ^visit 0  ^x 10  ^y 9  ^north <s10_8>  ^east <s11_9>  ^south <s10_10>  ^west <s9_9>)
+(<s10_10>  ^visit 0  ^x 10  ^y 10  ^north <s10_9>  ^east <s11_10>  ^south <s10_11>  ^west <s9_10>)
+(<s10_11>  ^visit 0  ^x 10  ^y 11  ^north <s10_10>  ^east <s11_11>  ^south <s10_12>  ^west <s9_11>)
+(<s10_12>  ^visit 0  ^x 10  ^y 12  ^north <s10_11>  ^east <s11_12>  ^south <s10_13>  ^west <s9_12>)
+(<s10_13>  ^visit 0  ^x 10  ^y 13  ^north <s10_12>  ^east <s11_13>  ^south <s10_14>  ^west <s9_13>)
+(<s10_14>  ^visit 0  ^x 10  ^y 14  ^north <s10_13>  ^east <s11_14>  ^south <s10_15>  ^west <s9_14>)
+(<s10_15>  ^visit 0  ^x 10  ^y 15  ^north <s10_14>  ^east <s11_15>      ^west <s9_15>)
+
+(<s11_0>  ^visit 0  ^x 11  ^y 0      ^east <s12_0>  ^south <s11_1>  ^west <s10_0>)
+(<s11_1>  ^visit 0  ^x 11  ^y 1  ^north <s11_0>  ^east <s12_1>  ^south <s11_2>  ^west <s10_1>)
+(<s11_2>  ^visit 0  ^x 11  ^y 2  ^north <s11_1>  ^east <s12_2>  ^south <s11_3>  ^west <s10_2>)
+(<s11_3>  ^visit 0  ^x 11  ^y 3  ^north <s11_2>  ^east <s12_3>  ^south <s11_4>  ^west <s10_3>)
+(<s11_4>  ^visit 0  ^x 11  ^y 4  ^north <s11_3>  ^east <s12_4>  ^south <s11_5>  ^west <s10_4>)
+(<s11_5>  ^visit 0  ^x 11  ^y 5  ^north <s11_4>  ^east <s12_5>  ^south <s11_6>  ^west <s10_5>)
+(<s11_6>  ^visit 0  ^x 11  ^y 6  ^north <s11_5>  ^east <s12_6>  ^south <s11_7>  ^west <s10_6>)
+(<s11_7>  ^visit 0  ^x 11  ^y 7  ^north <s11_6>  ^east <s12_7>  ^south <s11_8>  ^west <s10_7>)
+(<s11_8>  ^visit 0  ^x 11  ^y 8  ^north <s11_7>  ^east <s12_8>  ^south <s11_9>  ^west <s10_8>)
+(<s11_9>  ^visit 0  ^x 11  ^y 9  ^north <s11_8>  ^east <s12_9>  ^south <s11_10>  ^west <s10_9>)
+(<s11_10>  ^visit 0  ^x 11  ^y 10  ^north <s11_9>  ^east <s12_10>  ^south <s11_11>  ^west <s10_10>)
+(<s11_11>  ^visit 0  ^x 11  ^y 11  ^north <s11_10>  ^east <s12_11>  ^south <s11_12>  ^west <s10_11>)
+(<s11_12>  ^visit 0  ^x 11  ^y 12  ^north <s11_11>  ^east <s12_12>  ^south <s11_13>  ^west <s10_12>)
+(<s11_13>  ^visit 0  ^x 11  ^y 13  ^north <s11_12>  ^east <s12_13>  ^south <s11_14>  ^west <s10_13>)
+(<s11_14>  ^visit 0  ^x 11  ^y 14  ^north <s11_13>  ^east <s12_14>  ^south <s11_15>  ^west <s10_14>)
+(<s11_15>  ^visit 0  ^x 11  ^y 15  ^north <s11_14>  ^east <s12_15>      ^west <s10_15>)
+
+(<s12_0>  ^visit 0  ^x 12  ^y 0      ^east <s13_0>  ^south <s12_1>  ^west <s11_0>)
+(<s12_1>  ^visit 0  ^x 12  ^y 1  ^north <s12_0>  ^east <s13_1>  ^south <s12_2>  ^west <s11_1>)
+(<s12_2>  ^visit 0  ^x 12  ^y 2  ^north <s12_1>  ^east <s13_2>  ^south <s12_3>  ^west <s11_2>)
+(<s12_3>  ^visit 0  ^x 12  ^y 3  ^north <s12_2>  ^east <s13_3>  ^south <s12_4>  ^west <s11_3>)
+(<s12_4>  ^visit 0  ^x 12  ^y 4  ^north <s12_3>  ^east <s13_4>  ^south <s12_5>  ^west <s11_4>)
+(<s12_5>  ^visit 0  ^x 12  ^y 5  ^north <s12_4>  ^east <s13_5>  ^south <s12_6>  ^west <s11_5>)
+(<s12_6>  ^visit 0  ^x 12  ^y 6  ^north <s12_5>  ^east <s13_6>  ^south <s12_7>  ^west <s11_6>)
+(<s12_7>  ^visit 0  ^x 12  ^y 7  ^north <s12_6>  ^east <s13_7>  ^south <s12_8>  ^west <s11_7>)
+(<s12_8>  ^visit 0  ^x 12  ^y 8  ^north <s12_7>  ^east <s13_8>  ^south <s12_9>  ^west <s11_8>)
+(<s12_9>  ^visit 0  ^x 12  ^y 9  ^north <s12_8>  ^east <s13_9>  ^south <s12_10>  ^west <s11_9>)
+(<s12_10>  ^visit 0  ^x 12  ^y 10  ^north <s12_9>  ^east <s13_10>  ^south <s12_11>  ^west <s11_10>)
+(<s12_11>  ^visit 0  ^x 12  ^y 11  ^north <s12_10>  ^east <s13_11>  ^south <s12_12>  ^west <s11_11>)
+(<s12_12>  ^visit 0  ^x 12  ^y 12  ^north <s12_11>  ^east <s13_12>  ^south <s12_13>  ^west <s11_12>)
+(<s12_13>  ^visit 0  ^x 12  ^y 13  ^north <s12_12>  ^east <s13_13>  ^south <s12_14>  ^west <s11_13>)
+(<s12_14>  ^visit 0  ^x 12  ^y 14  ^north <s12_13>  ^east <s13_14>  ^south <s12_15>  ^west <s11_14>)
+(<s12_15>  ^visit 0  ^x 12  ^y 15  ^north <s12_14>  ^east <s13_15>      ^west <s11_15>)
+
+(<s13_0>  ^visit 0  ^x 13  ^y 0      ^east <s14_0>  ^south <s13_1>  ^west <s12_0>)
+(<s13_1>  ^visit 0  ^x 13  ^y 1  ^north <s13_0>  ^east <s14_1>  ^south <s13_2>  ^west <s12_1>)
+(<s13_2>  ^visit 0  ^x 13  ^y 2  ^north <s13_1>  ^east <s14_2>  ^south <s13_3>  ^west <s12_2>)
+(<s13_3>  ^visit 0  ^x 13  ^y 3  ^north <s13_2>  ^east <s14_3>  ^south <s13_4>  ^west <s12_3>)
+(<s13_4>  ^visit 0  ^x 13  ^y 4  ^north <s13_3>  ^east <s14_4>  ^south <s13_5>  ^west <s12_4>)
+(<s13_5>  ^visit 0  ^x 13  ^y 5  ^north <s13_4>  ^east <s14_5>  ^south <s13_6>  ^west <s12_5>)
+(<s13_6>  ^visit 0  ^x 13  ^y 6  ^north <s13_5>  ^east <s14_6>  ^south <s13_7>  ^west <s12_6>)
+(<s13_7>  ^visit 0  ^x 13  ^y 7  ^north <s13_6>  ^east <s14_7>  ^south <s13_8>  ^west <s12_7>)
+(<s13_8>  ^visit 0  ^x 13  ^y 8  ^north <s13_7>  ^east <s14_8>  ^south <s13_9>  ^west <s12_8>)
+(<s13_9>  ^visit 0  ^x 13  ^y 9  ^north <s13_8>  ^east <s14_9>  ^south <s13_10>  ^west <s12_9>)
+(<s13_10>  ^visit 0  ^x 13  ^y 10  ^north <s13_9>  ^east <s14_10>  ^south <s13_11>  ^west <s12_10>)
+(<s13_11>  ^visit 0  ^x 13  ^y 11  ^north <s13_10>  ^east <s14_11>  ^south <s13_12>  ^west <s12_11>)
+(<s13_12>  ^visit 0  ^x 13  ^y 12  ^north <s13_11>  ^east <s14_12>  ^south <s13_13>  ^west <s12_12>)
+(<s13_13>  ^visit 0  ^x 13  ^y 13  ^north <s13_12>  ^east <s14_13>  ^south <s13_14>  ^west <s12_13>)
+(<s13_14>  ^visit 0  ^x 13  ^y 14  ^north <s13_13>  ^east <s14_14>  ^south <s13_15>  ^west <s12_14>)
+(<s13_15>  ^visit 0  ^x 13  ^y 15  ^north <s13_14>  ^east <s14_15>      ^west <s12_15>)
+
+(<s14_0>  ^visit 0  ^x 14  ^y 0      ^east <s15_0>  ^south <s14_1>  ^west <s13_0>)
+(<s14_1>  ^visit 0  ^x 14  ^y 1  ^north <s14_0>  ^east <s15_1>  ^south <s14_2>  ^west <s13_1>)
+(<s14_2>  ^visit 0  ^x 14  ^y 2  ^north <s14_1>  ^east <s15_2>  ^south <s14_3>  ^west <s13_2>)
+(<s14_3>  ^visit 0  ^x 14  ^y 3  ^north <s14_2>  ^east <s15_3>  ^south <s14_4>  ^west <s13_3>)
+(<s14_4>  ^visit 0  ^x 14  ^y 4  ^north <s14_3>  ^east <s15_4>  ^south <s14_5>  ^west <s13_4>)
+(<s14_5>  ^visit 0  ^x 14  ^y 5  ^north <s14_4>  ^east <s15_5>  ^south <s14_6>  ^west <s13_5>)
+(<s14_6>  ^visit 0  ^x 14  ^y 6  ^north <s14_5>  ^east <s15_6>  ^south <s14_7>  ^west <s13_6>)
+(<s14_7>  ^visit 0  ^x 14  ^y 7  ^north <s14_6>  ^east <s15_7>  ^south <s14_8>  ^west <s13_7>)
+(<s14_8>  ^visit 0  ^x 14  ^y 8  ^north <s14_7>  ^east <s15_8>  ^south <s14_9>  ^west <s13_8>)
+(<s14_9>  ^visit 0  ^x 14  ^y 9  ^north <s14_8>  ^east <s15_9>  ^south <s14_10>  ^west <s13_9>)
+(<s14_10>  ^visit 0  ^x 14  ^y 10  ^north <s14_9>  ^east <s15_10>  ^south <s14_11>  ^west <s13_10>)
+(<s14_11>  ^visit 0  ^x 14  ^y 11  ^north <s14_10>  ^east <s15_11>  ^south <s14_12>  ^west <s13_11>)
+(<s14_12>  ^visit 0  ^x 14  ^y 12  ^north <s14_11>  ^east <s15_12>  ^south <s14_13>  ^west <s13_12>)
+(<s14_13>  ^visit 0  ^x 14  ^y 13  ^north <s14_12>  ^east <s15_13>  ^south <s14_14>  ^west <s13_13>)
+(<s14_14>  ^visit 0  ^x 14  ^y 14  ^north <s14_13>  ^east <s15_14>  ^south <s14_15>  ^west <s13_14>)
+(<s14_15>  ^visit 0  ^x 14  ^y 15  ^north <s14_14>  ^east <s15_15>      ^west <s13_15>)
+
+(<s15_0>  ^visit 0  ^x 15  ^y 0          ^south <s15_1>  ^west <s14_0>)
+(<s15_1>  ^visit 0  ^x 15  ^y 1  ^north <s15_0>      ^south <s15_2>  ^west <s14_1>)
+(<s15_2>  ^visit 0  ^x 15  ^y 2  ^north <s15_1>      ^south <s15_3>  ^west <s14_2>)
+(<s15_3>  ^visit 0  ^x 15  ^y 3  ^north <s15_2>      ^south <s15_4>  ^west <s14_3>)
+(<s15_4>  ^visit 0  ^x 15  ^y 4  ^north <s15_3>      ^south <s15_5>  ^west <s14_4>)
+(<s15_5>  ^visit 0  ^x 15  ^y 5  ^north <s15_4>      ^south <s15_6>  ^west <s14_5>)
+(<s15_6>  ^visit 0  ^x 15  ^y 6  ^north <s15_5>      ^south <s15_7>  ^west <s14_6>)
+(<s15_7>  ^visit 0  ^x 15  ^y 7  ^north <s15_6>      ^south <s15_8>  ^west <s14_7>)
+(<s15_8>  ^visit 0  ^x 15  ^y 8  ^north <s15_7>      ^south <s15_9>  ^west <s14_8>)
+(<s15_9>  ^visit 0  ^x 15  ^y 9  ^north <s15_8>      ^south <s15_10>  ^west <s14_9>)
+(<s15_10>  ^visit 0  ^x 15  ^y 10  ^north <s15_9>      ^south <s15_11>  ^west <s14_10>)
+(<s15_11>  ^visit 0  ^x 15  ^y 11  ^north <s15_10>      ^south <s15_12>  ^west <s14_11>)
+(<s15_12>  ^visit 0  ^x 15  ^y 12  ^north <s15_11>      ^south <s15_13>  ^west <s14_12>)
+(<s15_13>  ^visit 0  ^x 15  ^y 13  ^north <s15_12>      ^south <s15_14>  ^west <s14_13>)
+(<s15_14>  ^visit 0  ^x 15  ^y 14  ^north <s15_13>      ^south <s15_15>  ^west <s14_14>)
+(<s15_15>  ^visit 0  ^x 15  ^y 15  ^north <s15_14>          ^west <s14_15>)}

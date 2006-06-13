@@ -1,0 +1,50 @@
+#Propose evaluating each available direction
+#using episodic memory
+sp {move*propose*evaluate-move
+   (state <s> ^name gather-info
+              ^top-state <ts>)
+   (<ts> ^blocked.<abs-dir> no
+         -^evaluation.abs-dir <abs-dir>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name evaluate-move
+         ^abs-dir <abs-dir>)
+}
+
+#Prefer evaluating moves in the direction that I am already facing
+sp {compare*evaluate-move*eval-forward-first
+   (state <s> ^name gather-info
+              ^operator <op1> +
+                        <op2> +
+              ^top-state.coord.forward <abs-dir>)
+   (<op1> ^name evaluate-move
+          ^abs-dir <abs-dir>)
+   (<op2> ^name evaluate-move
+          ^abs-dir <> <abs-dir>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+#Least preference for evaluating moves behind me.
+sp {compare*evaluate-move*eval-backward-last
+   (state <s> ^name gather-info
+              ^operator <op1> +
+                        <op2> +
+              ^top-state.coord.backward <abs-dir>)
+   (<op1> ^name evaluate-move
+          ^abs-dir <> <abs-dir>)
+   (<op2> ^name evaluate-move
+          ^abs-dir <abs-dir>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+
+
+sp {apply*evaluate-move*monitor
+   (state <s> ^operator <op>)
+   (<op> ^name evaluate-move
+         ^abs-dir <abs-dir>)
+-->
+   (write (crlf) |Evaluating move | <abs-dir> |.|)
+}

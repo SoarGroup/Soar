@@ -1,0 +1,12 @@
+echo "\nLoading wander/source.soar"
+
+source move.soar
+source turn.soar
+source charge.soar
+echo "\nFinished loading wander/source.soar"
+
+## REmoved radar-off
+## Added to turn if new sound
+## Added radar on if new sound
+##source turn-sound.soar
+##source radar-on.soar

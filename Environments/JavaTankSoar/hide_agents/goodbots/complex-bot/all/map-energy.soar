@@ -1,0 +1,67 @@
+#echo "\nLoading all/map-energy.soar"
+
+sp {map*energy*init
+   (state <s> ^map.square <sq>)
+   (<sq> ^energy *yes*)
+   -->
+   (<s> ^found-energy *yes*)
+   (<sq> ^energy-info <ed>)
+   (<ed> ^distance 0)}
+
+sp {map*energy*init*energy-temp-info
+   (state <s> ^map.square <sq>)
+   (<sq> ^open *yes*)
+   -->
+   (<sq> ^energy-info <ei>
+         ^energy-temp-info.direction north
+         ^energy-temp-info.direction south
+         ^energy-temp-info.direction east
+         ^energy-temp-info.direction west)}
+
+sp {map*energy*spread*init
+   (state <s> ^map.square <sq>)
+   (<sq> ^ {<< north south east west >> <dir>} <sq2>
+         ^energy-temp-info <eti>)
+   (<eti> ^direction <dir>
+         -^distance < <dir>)
+   (<sq2> ^energy-info.distance <d>)
+   -->
+   (<eti> ^distance (+ <d> 1))}
+
+sp {map*energy*select*shortest
+   (state <s> ^map.square <sq>)
+   (<sq> ^energy-temp-info <eti>
+         ^energy-info <ei>)
+   (<eti> ^direction <dir>
+          ^distance <d>)
+  -(<sq> ^energy-temp-info.distance < <d>)
+   -->
+   (<ei> ^direction <dir>
+         ^distance <d>)}
+#
+#sp {map*energy*select*shortest-test
+#   (state <s> ^map.square <sq>)
+#   (<sq> ^{<< north south east west >> <dir>}.energy-info.distance <d> 
+#         ^energy-info <ei>)
+#  -(<sq> ^<dir2>.energy-info.distance < <d>)
+#   -->
+#   (<ei> ^direction <dir>
+#         ^distance (+ 1 <d>))}
+
+######### CHANGES TO WANDER
+
+sp {map*return-for-energy
+   (state <s> ^found-energy *yes*
+              ^square.energy-info.direction
+             -^io.input-link.energy > 700)
+   -->
+   (<s> ^need-energy *yes*)}
+
+sp {map*return-for-energy*really
+   (state <s> ^found-energy *yes*
+              ^square.energy-info.direction
+             -^io.input-link.energy > 200)
+   -->
+   (<s> ^really-need-energy *yes*)}
+
+

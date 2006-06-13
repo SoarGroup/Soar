@@ -1,0 +1,16 @@
+echo "\nLoading simple/attack.soar"
+
+
+### Propose attack operator
+#  If the state is the top state, and there is a tank on radar, and health and energy are not low, then 
+#  propose the attack operator.
+sp {propose*attack
+   (state <s> ^name tanksoar
+              ^io.input-link.radar.tank
+             -^missiles-energy low)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name attack)}
+
+
+

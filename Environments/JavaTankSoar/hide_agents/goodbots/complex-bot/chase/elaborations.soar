@@ -1,0 +1,24 @@
+echo "\nLoading chase/elaborations.soar "
+
+## Compute relative direction of sound from saved absolute direction
+
+sp {chase*elaborate*state*relative-direction
+   (state <s> ^name chase
+              ^io.input-link.direction <direction>
+              ^top-state <ss>)
+   (<ss> ^sound.absolute-direction <abs-sound>
+         ^direction-map.<direction>.<rel-sound> <abs-sound>)
+   -->
+   (<s> ^sound-direction <rel-sound>)}
+
+## If the state is named chase and the radar is off, 
+## propose turning the radar on.
+sp {chase*elaborate*radar-on
+   :i-support
+   (state <s> ^name chase
+              ^io.input-link.direction <dir>
+              ^operator <o>)
+   (<o> ^actions.move)
+     -->
+   (<o> ^new-direction <dir>)}
+ 

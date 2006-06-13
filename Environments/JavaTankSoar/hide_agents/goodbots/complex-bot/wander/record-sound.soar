@@ -1,0 +1,25 @@
+#echo "\nLoading wander/record-sound.soar "
+
+######## RECORD SOUND ##########
+
+sp {wander*propose*record-sound
+   (state <s> ^name wander
+              ^io.input-link.sound <> silent
+             -^superstate.sound)
+-->
+   (<s> ^operator <o> + >, =)
+   (<o> ^name record-sound)}
+
+sp {wander*apply*record-sound
+   (state <s> ^operator.name record-sound
+              ^io.input-link <il>
+              ^superstate <ss>)
+   (<il> ^sound <rel-sound>
+         ^direction <direction>
+         ^clock <clock>)
+   (<ss> ^direction-map.<direction>.<rel-sound> <abs-sound>)
+   -->
+   (<ss> ^sound <sd>)
+   (<sd> ^absolute-direction <abs-sound>
+         ^expire-time (+ <clock> 5))}
+

@@ -1,0 +1,12 @@
+#This is a modification of the simple-bot from the Soar tutorial.
+#The find-energy subgoal has been added to use episodic memory 
+#to find the energy charger.
+#
+
+#29 May 06
+#This version differs from the original implementation in
+#that the epmem retrievals occur in a subgoal and
+#the relevant results of the retrieval are placed on 
+#the top state via the ^energy-path elaboration.
+#This is in preparation for doing multiple step
+#paths to the energy charger.

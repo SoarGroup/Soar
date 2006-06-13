@@ -1,0 +1,25 @@
+#IF an energy path exists from the current position
+#THEN note this on the top-state
+sp {elaborate*state*available-energy-path
+   (state <s> ^energy-path <path>
+              ^io.input-link <il>)
+   (<path> ^x <x>
+           ^y <y>)
+   (<il> ^x <x>
+         ^y <y>)
+-->
+   (<s> ^available-energy-path <path>)
+}
+
+#Elaborate all energy paths with their relative
+#distance from the current location 
+sp {elaborate*state*energy-path*distance-from-here
+   (state <s> ^io.input-link <il>
+              ^energy-path <path>)
+   (<il> ^x <x>
+         ^y <y>)
+   (<path> ^x <path-x>
+           ^y <path-y>)
+-->
+   (<path> ^distance-from-here (+ (abs (- <x> <path-x>)) (abs (- <y> <path-y>))))
+}

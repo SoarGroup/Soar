@@ -1,0 +1,21 @@
+echo "\nLoading attack/wait.soar "
+
+## Wait until time to slide
+sp {attack*propose*wait-for-slide  
+   (state <s> ^name attack
+              ^superstate.saved-slide-direction <d>
+             -^operator.name wait-for-slide)
+   -->
+   (<s> ^operator <o> + =, <)
+   (<o> ^name wait-for-slide)}
+
+sp {attack*propose*wait-no-fire
+   (state <s> ^name attack
+             -^operator.name wait-no-fire
+              ^blocking-obstacle <dir>
+             -^opening *yes*)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name wait-no-fire)}
+
+

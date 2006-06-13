@@ -1,0 +1,11 @@
+echo "\nLoading all/fire-missile.soar "
+
+sp {elaborate*fire-missile
+   (state <s> ^name tanksoar
+             -^operator.name slide-out-of-attack
+             -^missile.number none
+              ^idirection forward
+              ^io.output-link <ol>)
+   -->
+   (<ol> ^fire.weapon missile)}
+

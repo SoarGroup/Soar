@@ -1,0 +1,27 @@
+sp {evaluate-move*propose*epmem-recall-next
+   (state <s> ^name evaluate-move
+              ^epmem <epmem>)
+   (<epmem> ^retrieved <ret>
+            ^query <query>
+            ^retrieval-count <n>)
+   (<ret> -^no-retrieval
+           ^<any>)
+   (<query> -^command next)
+   
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name epmem-recall-next)
+}
+
+sp {apply*epmem-recall-next
+   (state <s> ^operator <op>
+              ^epmem <epmem>)
+   (<op> ^name epmem-recall-next)
+   (<epmem> ^query <query>
+            ^retrieval-count <n>)
+   (<query> ^io <epmem-io>)
+-->
+   (<query> ^command next
+            ^io <epmem-io> -)
+}
+

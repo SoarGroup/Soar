@@ -1,0 +1,79 @@
+#IF I have retrieved a memory of seeing the energy
+#   charger from a position different than my position
+#BUT the different position is only off in the x-coordinate
+#THEN Record it as a partial path
+sp {recall-energy-path*propose*record-partial-path*x
+   (state <s> ^name recall-energy-path
+              ^io.input-link <il>
+              ^epmem.retrieved.io.input-link <ril>)
+   (<il> ^x <x>
+         ^y <y>)
+   (<ril> ^x <ret-x> <> <x>
+          ^y <y>
+          ^radar.energy)
+  -(<s> ^partial-path.axis x)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name record-partial-path
+         ^target-x <ret-x>
+         ^target-y <y>
+         ^x <x>
+         ^y <y>
+         ^axis x
+         ^distance (+ (abs (- <x> <ret-x>)) 1))
+}
+
+#Same as above but for the y-axis
+sp {recall-energy-path*propose*record-partial-path*y
+   (state <s> ^name recall-energy-path
+              ^io.input-link <il>
+              ^epmem.retrieved.io.input-link <ril>)
+   (<il> ^x <x>
+         ^y <y>)
+   (<ril> ^x <x>
+          ^y <ret-y> <> <y>
+          ^radar.energy)
+  -(<s> ^partial-path.axis y)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name record-partial-path
+         ^target-x <x>
+         ^target-y <ret-y>
+         ^x <x>
+         ^y <y>
+         ^axis y
+         ^distance (+ (abs (- <y> <ret-y>)) 1))
+}
+
+#Record the partial path before removing the epmem
+sp {recall-energy-path*compare*record-partial-path
+   (state <s> ^name recall-energy-path
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name record-partial-path)
+   (<op2> ^name remove-epmem-query)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+
+#IF the operator is selected
+#THEN record the partial-path on the state
+sp {apply*record-partial-path
+   (state <s> ^operator <op>)
+   (<op> ^name record-partial-path
+         ^target-x <x>
+         ^target-y <ret-y>
+         ^x <x>
+         ^y <y>
+         ^axis <axis>
+         ^distance <dist>)
+-->
+   (<s> ^partial-path <pp>)
+   (<pp> ^target-x <x>
+         ^target-y <ret-y>
+         ^x <x>
+         ^y <y>
+         ^axis <axis>
+         ^distance <dist>)
+}

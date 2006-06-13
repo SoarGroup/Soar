@@ -1,0 +1,17 @@
+echo "\nLoading simple/wander.soar"
+
+# Propose wander operator
+# If there is no tank detected on radar, and the sound is silent, and there
+# is no incoming, then propose the wander operator.
+
+sp {propose*wander
+   (state <s> ^name tanksoar
+              ^io.input-link <io>
+             -^missiles-energy low)
+   (<io> ^sound silent
+        -^radar.tank
+        -^incoming.<dir> yes)
+-->
+   (<s> ^operator.name wander)
+}
+

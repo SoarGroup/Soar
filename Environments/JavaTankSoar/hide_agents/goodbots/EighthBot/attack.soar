@@ -1,0 +1,87 @@
+echo "\nLoading simple/attack.soar"
+
+
+# Propose attack if enemy sighted and resources are OK
+sp {propose*attack
+   (state <s> ^name tanksoar
+              ^status <st>)
+   (<st> ^enemy-sighted
+         -^need-energy
+         -^need-missiles
+         -^need-health)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name attack)
+}
+
+
+###################################################
+##
+##   ATTACK METHODS
+##
+##
+#####################################################
+
+
+## Sit still and fire if enemy is front and resources are high
+sp {attack*propose*stationary-fire
+   (state <s> ^name attack
+              ^status.enemy-sighted <es>)
+   (<es> ^direction forward
+         ^position center)
+-->
+   (<s> ^operator <o> + = )
+   (<o> ^name attack*stationary-fire)
+}
+
+
+
+## handle situation when enemy is behind tank
+sp {attack*propose*target-directly-behind
+   (state <s> ^name attack
+              ^status.enemy-sighted <es>)
+   (<es> ^direction backward
+         ^position center)
+-->
+   (<s> ^operator <o> + = )
+   (<o> ^name attack*target-directly-behind)
+}
+
+
+
+#######################################
+## SHOOT AND DUCK
+##
+## propose shoot-and duck if open line of fire to enemy,
+## and can duck to left or right to a blocked line-of-fire
+## position (aka COVER)
+sp {attack*propose*shoot-and-duck
+   (state <s> ^name attack
+              ^io.input-link <il>
+              ^string-to-integer <sti>
+              ^status <st>)
+   (<st> ^enemy-sighted <es>
+         ^line-of-fire <lf>)
+   (<sti> ^<string> <dist>)   ## convert number to string for indexing
+   (<es> ^distance <dist>
+         ^direction forward
+         ^position center)
+   (<lf> ^<string>.center.open
+        -^<string>.<dir>.open)
+   (<il> ^blocked.{ << left right >> <dir>} no)      ## can slide to the side
+-->
+   (<s> ^operator <o> + =,>)
+   (<o> ^name attack*shoot-and-duck)
+}
+### resume manuever if partway through (total action takes several steps
+sp {attack*propose*shoot-and-duck*resume
+   (state <s> ^name attack
+              ^status.manuever.action << fire duck slide-back >>)
+-->
+   (<s> ^operator <o> + >,=)
+   (<o> ^name attack*shoot-and-duck)
+}
+
+
+
+

@@ -1,0 +1,16 @@
+###Propose Move Operator
+## If the state is attack and there is a tank on radar that is not in the center, and there is not a tank in the 
+## center, then propose the move operator in the direction of the tank.
+
+
+ sp {attack*propose*slide
+   (state <s> ^name attack
+              ^io.input-link <input>)
+   (<input> ^blocked.<dir> no
+            ^radar <r>)
+   (<r> ^tank.position { << left right >> <dir> }
+       -^tank.position center)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name slide
+        ^actions.move.direction <dir>)}

@@ -1,0 +1,27 @@
+echo "\nLoading retreat/move.soar"
+
+sp {retreat*propose*move
+   (state <s> ^name retreat
+              ^direction <dir>
+	      ^side-direction.<dir> <ndir>
+	     -^direction <ndir>
+	     -^avoid-direction <ndir>
+              ^io.input-link.blocked.<ndir> no)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name move
+        ^actions.move.direction <ndir>)}
+
+sp {retreat*propose*move*away
+   (state <s> ^name retreat
+              ^direction <dir>)
+  -(<s> ^side-direction.<dir> <ndir>
+	 -^direction <ndir>
+	 -^avoid-direction <ndir>
+        ^io.input-link.blocked.<ndir> yes)
+   (<s> ^opposite.<dir> <odir>
+        ^io.input-link.blocked.<odir> no)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name move
+        ^actions.move.direction <odir>)}

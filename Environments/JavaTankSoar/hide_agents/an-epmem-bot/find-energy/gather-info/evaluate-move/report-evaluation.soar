@@ -1,0 +1,74 @@
+sp {evaluate-move*propose*report-evaluation*success
+   (state <s> ^name evaluate-move
+              ^top-state <ts>
+              ^epmem <epmem>
+              ^eval-dir <abs-dir>)
+   (<epmem> ^retrieved.io.input-link.energyrecharger yes
+            ^retrieval-count <n>)
+  -(<ts> ^evaluation.abs-dir <abs-dir>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name report-evaluation
+         ^eval-dir <abs-dir>
+         ^value <n>)
+}
+
+sp {evaluate-move*propose*report-evaluation*give-up
+   (state <s> ^name evaluate-move
+              ^top-state <ts>
+              ^epmem <epmem>
+              ^eval-dir <abs-dir>)
+   (<epmem> -^retrieved.io.input-link.energyrecharger yes
+            ^retrieval-count 30)
+  -(<ts> ^evaluation.abs-dir <abs-dir>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name report-evaluation
+         ^eval-dir <abs-dir>
+         ^value 30)
+}
+
+sp {evaluate-move*propose*report-evaluation*no-retrieval
+   (state <s> ^name evaluate-move
+              ^top-state <ts>
+              ^epmem.retrieved.no-retrieval
+              ^eval-dir <abs-dir>)
+  -(<ts> ^evaluation.abs-dir <abs-dir>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name report-evaluation
+         ^eval-dir <abs-dir>
+         ^value 29)
+}
+
+sp {evaluate-move*compare*report-evaluation
+   (state <s> ^name evaluate-move
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name report-evaluation)
+   (<op2> ^name << epmem-recall epmem-recall-next >>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+sp {apply*report-evaluation
+   (state <s> ^name evaluate-move
+              ^top-state <ts>
+              ^operator <op>
+              ^io.input-link <il>)
+   (<op> ^name report-evaluation
+         ^eval-dir <abs-dir>
+         ^value <n>)
+   (<il> ^x <x>
+         ^y <y>)
+-->
+   (<ts> ^evaluation <eval>)
+   (<eval> ^abs-dir <abs-dir>
+           ^value <n>
+           ^x <x>
+           ^y <y>)
+   (write (crlf) |Evaluating move | <abs-dir> | with value | <n> |.|)
+}
+
+
+

@@ -1,0 +1,115 @@
+#Calculates translation between absolute and relative directions
+
+sp {elaborate*state*coord
+   (state <s> ^name tanksoar)
+   -->
+   (<s> ^coord <coord>)
+}
+
+#These elaborations calculate the absolute direction (forward, backward, left, right) that corresponds
+#to a given relative direction (north south east west).
+sp {elaborate*state*atr*north
+   (state <s> ^name tanksoar
+              ^coord <coord>
+              ^io.input-link.direction north)
+-->
+   (<coord> ^north forward
+        ^south backward
+        ^east right
+        ^west left)
+}
+
+sp {elaborate*state*atr*south
+   (state <s> ^name tanksoar              
+              ^coord <coord>
+              ^io.input-link.direction south)
+-->
+   (<coord> ^north backward
+        ^south forward
+        ^east left
+        ^west right)
+}
+
+sp {elaborate*state*atr*east
+   (state <s> ^name tanksoar               
+              ^coord <coord>
+              ^io.input-link.direction east)
+-->
+   (<coord> ^north left
+        ^south right
+        ^east forward
+        ^west backward)
+}
+
+sp {elaborate*state*atr*west
+   (state <s> ^name tanksoar               
+              ^coord <coord>
+              ^io.input-link.direction west)
+-->
+   (<coord> ^north right
+        ^south left
+        ^east backward
+        ^west forward)
+}
+
+#These elaborations calculate the absolute direction (north south east west) that corresponds
+#to a given relative direction (forward, backward, left, right).
+sp {elaborate*state*rta*north
+   (state <s> ^name tanksoar               
+              ^coord <coord>
+              ^io.input-link.direction north)
+   -->
+   (<coord> ^forward north
+        ^backward south
+        ^right east
+        ^left west)
+}
+
+sp {elaborate*state*rta*south
+   (state <s> ^name tanksoar               
+              ^coord <coord>
+              ^io.input-link.direction south)
+   -->
+   (<coord> ^forward south
+        ^backward north
+        ^right west
+        ^left east)
+}
+
+sp {elaborate*state*rta*east
+   (state <s> ^name tanksoar               
+              ^coord <coord>
+              ^io.input-link.direction east)
+   -->
+   (<coord> ^forward east
+        ^backward west
+        ^right south
+        ^left north)
+}
+
+sp {elaborate*state*rta*west
+   (state <s> ^name tanksoar               
+              ^coord <coord>
+              ^io.input-link.direction west)
+   -->
+   (<coord> ^forward west
+        ^backward east
+        ^right north
+        ^left south)
+}
+
+#These elaborations give opposite directions
+sp {elaborate*state*opposites
+   (state <s> ^name tanksoar)
+-->
+   (<s> ^opposite <opp>)
+   (<opp> ^north south
+          ^east west
+          ^west east
+          ^south north
+          ^forward backward
+          ^backward forward
+          ^left right
+          ^right left)
+}
+

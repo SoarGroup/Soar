@@ -1,0 +1,7 @@
+source _all.soar
+source monitor.soar
+source output.soar
+source parameters.soar
+source radar.soar
+source shields.soar
+source top-state.soar

@@ -1,0 +1,9 @@
+echo "\nLoading retreat/source.soar"
+
+source elaborations.soar
+
+source move.soar
+source wait.soar
+
+echo "\nFinished loading retreat/source.soar"
+

@@ -1,0 +1,27 @@
+#IF I'm on the energy recharger
+#AND I'm not close to a full energy charge
+#THEN propose a rotation
+sp {backtrack-epmem-bot*propose*wait-for-recharge
+   (state <s> ^name tanksoar
+              ^energy-high-thresh <eht>
+              ^io.input-link <il>)
+   (<il> ^energyrecharger yes
+         ^energy < <eht>
+         ^direction <dir>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name wait-for-recharge
+         ^actions.rotate.direction right)
+}
+
+#Better to recharge before wandering off
+sp {backtrack-epmem-bot*compare*wait-for-recharge
+   (state <s> ^name tanksoar
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name wait-for-recharge)
+   (<op2> ^name wander)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+

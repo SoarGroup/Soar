@@ -1,0 +1,11 @@
+#Elaborate the state with the current direction we 
+#are moving
+sp {move*elaborate*direction
+   (state <s> ^name move
+              ^superstate.operator <so>)
+   (<so> ^name move
+         ^abs-dir <abs-dir>)
+-->
+   (<s> ^direction <abs-dir>)
+}
+

@@ -1,0 +1,94 @@
+echo "\nLoading elaborations/radar.soar"
+
+
+## turn radar on when resurrected - since it test for a status struct, it won't fire when tank is created
+sp {elaborate*radar*resurrected
+   (state <s> ^operator.actions <a>
+              ^io.input-link <il>
+              ^status.max-radar-setting.<dir> <max-radar>)
+   (<il> ^resurrect yes
+         ^direction <dir>)
+   -->
+   (<a> ^radar.switch on
+        ^radar-power.setting <max-radar>)
+#   (write (crlf) |tank resurrected - turning radar ON|)
+}
+
+
+
+## set up max-radar-setting struct
+sp {elaborate*radar*power-setting*coordinate-based*all-directions
+   (state <s> ^name tanksoar
+              ^io.input-link <il>
+              ^status <st>)
+   (<il> ^x <x>
+         ^y <y>)
+-->
+   (<st> ^max-radar-setting <set>)
+   (<set> ^north (- <y> 1 )
+          ^south (- 14 <y>)
+          ^west  (- <x> 1 )
+          ^east  (- 14 <x>))}
+ 
+
+
+#############################################################
+### Update current radar-power-settings w/ the most efficient setting.
+### which is stored as 'max-radar-setting'
+###############################################################
+
+## use recommended radar setting
+sp {elaborate*radar*power-setting*standing-still-or-sliding
+  (state <s>  ^operator.actions <a>
+              ^io.input-link <il>
+              ^status.max-radar-setting.<dir> <max-radar>)
+   (<a>  -^rotate.direction << left right >>
+         -^move.direction << forward backward >>)
+   (<il>  ^direction <dir>
+          ^radar-setting  >  <max-radar>)
+-->
+   (<a> ^radar-power.setting <max-radar>)}
+
+
+### subtract one from recommended radar distance since you are moving forward
+### (the '>=' is CRUCIAL since subtraction is used
+sp {elaborate*radar*power-setting*moving-forward
+  (state <s>  ^operator.actions <a>
+              ^io.input-link <il>
+              ^status.max-radar-setting.<dir> <max-radar>)
+   (<a>   ^move.direction forward)
+   (<il>  ^direction <dir>
+          ^radar-setting  >=  <max-radar>)
+-->
+   (<a> ^radar-power.setting ( - <max-radar> 1) )}
+
+
+### subtract one from recommended radar distance since you are moving forward
+sp {elaborate*radar*power-setting*moving-backward
+  (state <s>  ^operator.actions <a>
+              ^io.input-link <il>
+              ^status.max-radar-setting.<dir> <max-radar>)
+   (<a>   ^move.direction backward)
+   (<il>  ^direction <dir>
+          ^radar-setting  >  <max-radar>)
+-->
+   (<a> ^radar-power.setting ( + <max-radar> 1) )
+#   (write |<crlf> Haven't tested setting radar when moving backward!!|)
+}
+
+
+
+### subtract one from recommended radar distance since you are moving forward
+sp {elaborate*radar*power-setting*turning
+  (state <s>  ^operator.actions <a>
+              ^io.input-link <il>
+              ^status.max-radar-setting.<new-dir> <max-radar>
+              ^direction-map <dm>)
+  (<a>   ^rotate.direction <turn>)
+  (<dm>  ^<dir>.<turn> <new-dir>)
+  (<il>  ^direction <dir>)
+-->
+   (<a> ^radar-power.setting <max-radar> )}
+
+
+

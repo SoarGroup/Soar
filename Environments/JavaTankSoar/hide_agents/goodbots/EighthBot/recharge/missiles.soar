@@ -1,0 +1,14 @@
+sp {recharge-missiles*propose*move
+   (state <s> ^name recharge-missiles
+              ^io.input-link <il>
+              ^status <st>
+              ^direction-map.<dir>.<tdir> <ndir>)
+   (<il> ^direction <dir>)
+   (<st> ^square.missiles-info.direction <ndir>)
+      
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name move-to-missiles 
+        ^actions.move.direction <tdir>)
+ #  (write (crlf) |Proposed move-to-missiles| )
+}

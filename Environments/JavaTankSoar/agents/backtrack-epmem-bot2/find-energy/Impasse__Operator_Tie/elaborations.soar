@@ -1,0 +1,11 @@
+#IF I'm conflicted about what direction to move
+#AND I was in the find-energy substate
+#THEN trigger epmem retrievals to find a path
+sp {find-energy*propose*Impasse__Operator_Tie
+   (state <s> ^impasse tie
+              ^superstate.name find-energy
+              ^item <it1> <> <it2>
+             -^item.name <> move)
+-->
+   (<s> ^name recall-energy-path)
+}

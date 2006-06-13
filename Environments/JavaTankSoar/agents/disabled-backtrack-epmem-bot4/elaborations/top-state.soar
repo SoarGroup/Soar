@@ -1,0 +1,48 @@
+sp {elaborate*task*tanksoar
+   (state <s> ^superstate nil)
+   -->
+   (<s> ^name tanksoar)}
+
+sp {elaborate*top-state*top-state
+  (state <s> ^name tanksoar)
+-->
+  (<s> ^top-state <s>)}
+
+sp {elaborate*state*max-energy
+   (state <s> ^name tanksoar)
+-->
+   (<s> ^max-energy 500)}
+
+sp {elaborate*state*energy-thresholds
+   (state <s> ^name tanksoar
+              ^max-energy <me>)
+-->
+   (<s> ^energy-low-thresh (* <me> 0.2))
+   (<s> ^energy-high-thresh (* <me> 0.9))
+}
+
+
+sp {elaborate*state*energy*low
+   (state <s> ^name tanksoar
+              ^energy-low-thresh <elt>
+              ^io.input-link.energy <= <elt>)
+-->
+   (<s> ^missiles-energy low)}
+
+sp {elaborate*state*missiles*low
+   (state <s> ^name tanksoar
+              ^io.input-link.missiles 0)
+   -->
+   (<s> ^missiles-energy low)}
+
+## These are used in retreat/move.soar
+sp {elaborate*sidestep-directions
+   (state <s> ^name tanksoar)
+   -->
+   (<s> ^side-direction <sd>)
+   (<sd> ^forward right left  
+         ^backward right left
+         ^right forward backward 
+         ^left forward backward)}
+
+

@@ -1,0 +1,46 @@
+#######
+# Determine if user needs resources
+#######
+sp {elaborate*need-health*not-attacking
+   (state <s> ^name tanksoar
+              ^status <st>)
+   (<st> -^enemy-sighted
+         -^health-level high
+          ^found-health yes
+          ^square.health-info)  ## make sure current square has a marked route to recharger
+-->
+   (<st> ^need-health yes)
+}
+
+
+#######
+# Determine if user needs resources
+#######
+sp {elaborate*need-energy*not-attacking
+   (state <s> ^name tanksoar
+              ^status <st>)
+   (<st> -^enemy-sighted
+         -^energy-level high
+          ^found-energy yes
+          ^square.energy-info)
+-->
+   (<st> ^need-energy yes)
+}
+
+
+
+#######
+# Determine if user needs missiles 
+#  - this version is slightly different, since location of
+#    missiles is not static
+#######
+sp {elaborate*need-missiles*not-attacking
+   (state <s> ^name tanksoar
+              ^status <st>
+              ^map.square.missiles yes)
+   (<st> -^enemy-sighted
+         -^missiles-level high)
+-->
+   (<st> ^need-missiles yes)
+}
+

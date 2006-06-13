@@ -1,0 +1,11 @@
+echo "\nLoading chase/radar-on.soar "
+
+## Add radar to current operators
+sp {chase*elaborate*radar
+   (state <s> ^name chase
+              ^io.input-link.direction <dir>
+              ^operator <o>)
+   (<o> ^actions.move)
+     -->
+   (<o> ^new-direction <dir>)}
+ 

@@ -1,0 +1,34 @@
+echo "\nLoading destroyer/retreat.soar"
+
+sp {propose*retreat*sound
+   (state <s> ^name tanksoar
+              ^missile-number none
+              ^sound)
+   -->
+   (<s> ^name retreat)}
+
+sp {propose*retreat*rwaves
+   (state <s> ^name tanksoar
+              ^missile-number none
+              ^io.input-link.rwaves.<dir> yes)
+   -->
+   (<s> ^name retreat)}
+ 
+sp {propose*retreat*radar
+   (state <s> ^name tanksoar
+              ^missile-number none
+              ^tank-detected yes)
+   -->
+   (<s> ^name retreat)}
+
+sp {propose*retreat*incoming
+   (state <s> ^name tanksoar
+              ^missile-number none
+              ^io.input-link.incoming.<dir> yes)
+   -->
+   (<s> ^name retreat)}
+
+pushd "retreat"
+source "source.soar"
+popd
+

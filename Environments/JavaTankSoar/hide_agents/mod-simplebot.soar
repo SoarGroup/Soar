@@ -1,0 +1,3 @@
+pushd mod-simplebot
+source mod-simplebot_source.soar
+popd

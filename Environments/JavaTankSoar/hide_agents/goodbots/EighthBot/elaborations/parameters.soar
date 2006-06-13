@@ -1,0 +1,20 @@
+echo "\nLoading elaborations/parameters.soar"
+
+# define general parameters for behavior
+sp {elaborate*top-state*parameters
+   (state <s> ^name tanksoar)
+-->
+   (<s> ^parameters <p>)
+   (<p> ^max-energy            950    # max level to recharge energy before leaving recharger
+        ^energy-critical       300    # energy @ or below this value, indicates when to seek re-charger and to avoid combat
+        ^energy-low            800    # energy @ or below this value, but above 'energy-critical'. Above this value is considered 'energy-high'
+        ^max-health            950    # max level to recharge health to before leaving recharger
+        ^health-critical       300    # health @ or below this value, indicates when to seek re-charger and to avoid combat
+        ^health-low            500    # health @ or below this value, but above 'health-critical'. Above this value is considered 'health-high'
+        ^missiles-low            2    # when to start conserving ammo.. above this level is considered 'high' & will be more reckless w/ shooting
+        ^missiles-critical       0    # @ or below this value, will avoid attacking and find missiles
+        ^detection-smell-dist    4    # min dist for tank to detect enemy w/ this sensor
+        ^detection-sound-dist    5    # min dist for tank to detect enemy w/ this sensor
+                    )}
+
+

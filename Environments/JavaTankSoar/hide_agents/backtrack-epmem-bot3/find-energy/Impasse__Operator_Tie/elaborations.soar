@@ -1,0 +1,62 @@
+#IF I'm conflicted about what direction to move
+#AND I was in the find-energy substate
+#THEN trigger epmem retrievals to find a path
+sp {find-energy*propose*Impasse__Operator_Tie
+   (state <s> ^impasse tie
+              ^superstate.name find-energy)
+#              ^item <it1> 
+#              ^item <it2> <> <it1>
+#             -^item.name <> move)
+-->
+   (<s> ^name recall-energy-path)
+}
+
+#IF a partial path exists
+#AND it's for a location East of here
+#THEN elaborate the path with that direction
+sp {partial-path*elaborate*direction*east
+   (state <s> ^partial-path <pp>
+              ^io.input-link <il>)
+   (<il> ^x <x>
+         ^y <y>)
+   (<pp> ^target-x > <x>
+         ^y <y>)
+-->
+   (<pp> ^direction east)
+}
+
+#as above but for West
+sp {partial-path*elaborate*direction*west
+   (state <s> ^partial-path <pp>
+              ^io.input-link <il>)
+   (<il> ^x <x>
+         ^y <y>)
+   (<pp> ^target-x < <x>
+         ^y <y>)
+-->
+   (<pp> ^direction west)
+}
+
+#as above but for North
+sp {partial-path*elaborate*direction*north
+   (state <s> ^partial-path <pp>
+              ^io.input-link <il>)
+   (<il> ^x <x>
+         ^y <y>)
+   (<pp> ^x <x>
+         ^target-y < <y>)
+-->
+   (<pp> ^direction north)
+}
+
+#as above but for South
+sp {partial-path*elaborate*direction*south
+   (state <s> ^partial-path <pp>
+              ^io.input-link <il>)
+   (<il> ^x <x>
+         ^y <y>)
+   (<pp> ^x <x>
+         ^target-y > <y>)
+-->
+   (<pp> ^direction south)
+}

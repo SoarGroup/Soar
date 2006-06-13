@@ -1,0 +1,80 @@
+echo "\nLoading status-elaborations/enemy-sighted.soar"
+
+# Enemy is sighted if it is on radar and in front
+sp {elaborate*status*enemy-sighted*radar*front
+   (state <s> ^io.input-link.radar.tank <t>
+              ^status <st>)
+   (<t> ^distance <d> > 0
+        ^position <pos>)
+-->
+   (<st> ^enemy-sighted <es>)
+   (<es> ^direction forward
+         ^position <pos>
+         ^distance <d>
+         ^reason radar-front)
+}
+
+
+# Enemy is sighted if it is on radar and on the left or right
+sp {elaborate*status*enemy-sighted*side
+   (state <s> ^io.input-link.radar.tank <t>
+              ^status <st>)
+   (<t> ^distance 0
+        ^position <dir>)
+-->
+   (<st> ^enemy-sighted <es>)
+   (<es> ^direction <dir>
+         ^position center
+         ^distance 1  ## since it's on the side
+         ^reason radar-side)
+}
+
+
+# Enemy is sighted if smell == 1 and sound is heard
+sp {elaborate*status*enemy-sighted*smell-sound
+   (state <s> ^io.input-link <il>
+              ^status <st>)
+   (<il> ^smell.distance 1
+         ^sound {<< left right forward backward >> <dir> })
+-->
+   (<st> ^enemy-sighted <es>)
+   (<es> ^direction <dir>
+         ^position center
+         ^distance 1
+         ^reason smell-sound)
+}
+
+
+# Blocked sensors do not agree with map -- enemy must be next
+# to tank
+sp {elaborate*status*enemy-sighted*map-conflict
+   (state <s> ^io.input-link <il>
+              ^status <st>
+              ^direction-map.<heading>.<bdir> <mdir>)
+   (<il> ^blocked.<bdir> yes
+         ^direction <heading>)
+   (<st> ^square.<mdir>.open yes)
+-->
+   (<st> ^enemy-sighted <es>)
+   (<es> ^direction <bdir>
+         ^position center
+         ^distance 1
+         ^reason map-conflict)
+}
+
+
+# Enemy is in stage 3 of duck-and-shoot manuever
+# (ducking behind wall and waiting to pop-back
+sp {elaborate*status*enemy-sighted*duck-and-shoot-stage-3
+   (state <s> ^io.input-link.direction <heading>
+              ^status <st>)
+   (<st> ^manuever <man>)
+   (<man> ^action slide-back
+          ^direction <dir>)
+-->
+   (<st> ^enemy-sighted <es>)
+   (<es> ^direction <heading>
+         ^position <dir>
+         ^distance 13    ## arbitrary 
+         ^reason duck-and-shoot)
+}

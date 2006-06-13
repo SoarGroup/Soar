@@ -1,0 +1,55 @@
+echo "\nLoading recharge/move.soar"
+
+sp {recharge-energy*propose*move
+   (state <s> ^name recharge-energy
+              ^io.input-link <il>
+              ^status <st>
+              ^direction-map.<dir>.<tdir> <ndir>)
+   (<il> -^energyrecharger yes
+          ^direction <dir>)
+   (<st>  ^square.energy-info.direction <ndir>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name move-to-energy 
+        ^actions.move.direction <tdir>)
+ #  (write (crlf) |Proposed move-to-energy| )
+}
+
+
+
+## turn on energy charger to look for enemies
+sp {recharge-energy*propose*turn
+   (state <s> ^name recharge-energy
+              ^io.input-link <il>
+              ^status.max-radar-setting.<ndir> <max-radar>
+              ^direction-map.<heading>.<dir> <ndir>)
+   (<il> ^blocked.{ << left right >> <dir>} no
+         ^direction <heading>
+         ^energyrecharger yes)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name recharging-lookout
+        ^actions <a>)
+   (<a> ^rotate.direction <dir>
+        ^radar.switch on
+        ^radar-power.setting <max-radar>)
+}
+
+
+
+
+sp {recharge-health*propose*move
+   (state <s> ^name recharge-health
+              ^io.input-link <il>
+              ^status <st>
+              ^direction-map.<dir>.<tdir> <ndir>)
+   (<il> -^healthrecharger yes
+          ^direction <dir>)
+   (<st>  ^square.health-info.direction <ndir>)
+      
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name move-to-health 
+        ^actions.move.direction <tdir>)
+  # (write (crlf) |Proposed move-to-health| )
+}

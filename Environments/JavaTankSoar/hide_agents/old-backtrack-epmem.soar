@@ -1,0 +1,3 @@
+pushd old-backtrack-epmem
+source old-backtrack-epmem_source.soar
+popd

@@ -1,0 +1,205 @@
+echo "\nLoading all/sounds.soar "
+
+sp {all*propose*record-sound
+   (state <s> ^name << chase wander >>
+              ^io.input-link <il>
+             -^sound.direction <direction>
+             -^sound.original-clock <clock>)
+   (<il> ^sound { <> silent <direction> }
+         ^clock <clock>)
+-->
+   (write (crlf) |Sound clock: | <clock>)
+   (<s> ^operator <o> + >, =, <)
+   (<o> ^name record-sound
+        ^s-direction <direction>
+        ^clock <clock>)}
+
+sp {all*propose*record-sound*front-blocked*right
+   (state <s> ^name chase
+              ^sound <sd>
+              ^io.input-link <il>)
+   (<il> ^sound silent
+         ^blocked <b>
+         ^clock <cc>)
+   (<sd> ^original-clock <c> 
+         ^direction forward
+         ^expire-time > <cc>)
+   (<b> ^forward yes
+        ^left yes
+        ^right no) 
+-->
+    (write (crlf) |Sound clock: | <c>)
+    (<s> ^operator <o> + >, =, <)
+    (<o> ^name record-sound
+         ^s-direction right
+         ^clock <c>)}
+
+sp {all*propose*record-sound*front-blocked*left
+   (state <s> ^name chase
+              ^sound <sd>
+              ^io.input-link <il>)
+   (<il> ^sound silent
+         ^blocked <b>
+         ^clock <cc>)
+   (<sd> ^original-clock <c> 
+         ^direction forward
+         ^expire-time > <cc>)
+   (<b> ^forward yes
+        ^left no
+        ^right yes) 
+-->
+   (write (crlf) |Sound clock: | <c>)
+   (<s> ^operator <o> + >, =, <)
+   (<o> ^name record-sound
+        ^s-direction left
+        ^clock <c>)}
+
+##########SELECT#########
+sp {all*select*record-sound
+   (state <s> ^operator <o1> +
+              ^operator <o2> +)
+   (<o1> ^name record-sound)
+   (<o2> ^name << slide-over-with-radar move-forward
+                  turn-toward-hall turn-straighten-out >>)
+
+   -->
+   (write (crlf) |Prefer Record Sound|)
+   (<s> ^operator <o1> > <o2>)}
+
+
+###########APPLY#########
+sp {all*apply*record-sound*turn
+   (state <s> ^operator <o>
+              ^dir.<dir>.<tdir> <ndir>
+              ^io.input-link.direction <dir>)
+   (<o> ^name record-sound
+        ^s-direction {<< left right >> <tdir>})
+   -->
+   (write (crlf) |Turn toward sound: | <ndir>)
+   (<o> ^direction forward
+        ^new-direction <ndir>
+        ^actions.rotate.direction <tdir>)}
+
+sp {all*apply*record-sound*move
+   (state <s> ^operator <o>
+              ^io.input-link.blocked.forward no
+              ^io.input-link.direction <dir>)
+   (<o> ^name record-sound
+        ^s-direction forward)
+   -->
+   (<o> ^direction forward
+        ^new-direction <dir>
+        ^actions.move.direction forward)}
+
+sp {all*apply*record-sound*move*forward-blocked
+   (state <s> ^operator <o>
+              ^io.input-link.blocked.forward yes)
+   (<o> ^name record-sound
+        ^s-direction forward)
+   -->
+   (<o> ^direction forward)}
+
+sp {all*apply*record-sound*turn-backward
+   (state <s> ^operator <o>)
+   (<o> ^name record-sound
+        ^s-direction backward)
+   -->
+   (<o> ^direction left
+        ^actions.rotate.direction left)}
+
+sp {all*apply*record-sound*fire-missile*forward
+   (state <s> ^io.input-link.smell.distance < 5
+              ^missile-number lots
+              ^operator <o>)
+   (<o> ^name record-sound
+        ^direction forward)
+   -->
+   (write (crlf) |Fire missile|)
+   (<o> ^actions.fire.weapon missile)}
+
+sp {all*apply*record-sound*fire-missile*low-energy
+   (state <s> ^io.input-link.energy < 50
+              ^missile-number <> none
+              ^operator <o>)
+   (<o> ^name record-sound
+        ^direction forward)
+   -->
+   (<o> ^actions.fire.weapon missile)}
+
+
+#### APPLY
+sp {all*apply*record-sound
+   (state <s> ^operator <o>)
+   (<o> ^name record-sound
+        ^direction <direction>
+        ^clock <clock>)
+   -->
+   (<s> ^sound <sd>)
+   (<sd> ^direction <direction>
+         ^original-clock <clock>
+         ^expire-time (+ <clock> 6))}
+
+sp {all*apply*record-sound*remove
+   (state <s> ^operator <o>
+              ^sound <sd>)
+   (<sd> ^original-clock <> <clock>)
+   (<o> ^name record-sound
+        ^direction <direction>
+        ^clock <clock>)
+   -->
+   (<s> ^sound <sd> -)}
+
+sp {all*apply*record-sound*remove*direction
+   (state <s> ^operator <o>
+              ^sound <sd>)
+   (<sd> ^direction <> <direction>)
+   (<o> ^name record-sound
+        ^direction <direction>)
+   -->
+   (<s> ^sound <sd> -)}
+
+######## REMOVE ##########
+
+sp {all*propose*remove*sound
+   (state <s> ^name tanksoar
+             -^name attack
+              ^sound <sd>
+              ^io.input-link <il>)
+   (<il> ^sound silent 
+        -^clock < <clock>)
+   (<sd> ^expire-time <clock>)
+-->
+   (<s> ^operator <o> + =, >)
+   (<o> ^name remove-sound)}
+
+sp {all*sound*update*front-blocked*both
+   (state <s> ^name tanksoar
+             -^name attack
+              ^sound.direction forward
+              ^io.input-link <il>)
+   (<il> ^sound silent
+         ^blocked <b>)
+   (<b> ^forward yes
+        ^left no
+        ^right no)
+-->
+   (write (crlf) |Remove sound - ambiguious|)
+   (<s> ^operator <o> + =, >)
+   (<o> ^name remove-sound)}
+
+sp {all*apply*remove*sound
+   (state <s> ^operator.name remove-sound
+              ^sound <sd>)
+-->
+   (<s> ^sound <sd> -)}
+
+sp {all*apply*record-sound*radar
+   (state <s> ^name chase
+              ^io.input-link.direction <dir>
+              ^io.output-link <ol>
+              ^operator <o>)
+   (<o> ^name record-sound)
+     -->
+   (<ol> ^radar.switch on
+         ^radar-power.setting 7)}
+ 

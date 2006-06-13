@@ -1,0 +1,13 @@
+#======= RADAR EpMem Bot =========
+#Created:  21 Oct 05
+#Description:  This agent uses its episodic memory to determine what range to 
+#              set its radar to when it turns it on.
+#
+
+###Converting from Soar 8.5.2 to Soar 8.6
+# 1. -firstload.soar
+#    a. Replace dashes with double dashes
+#    b.  fix syntax in log command
+# 2. elaborations/monitor.soar
+#    a.  replace 'tcl' with 'exec'
+

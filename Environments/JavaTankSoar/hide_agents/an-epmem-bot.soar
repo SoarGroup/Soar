@@ -1,0 +1,3 @@
+pushd an-epmem-bot
+source an-epmem-bot_source.soar
+popd

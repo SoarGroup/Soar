@@ -1,0 +1,86 @@
+
+#IF I have calculated a proper radar power
+#THEN report this to the superstate operator
+sp {apply*turn*good-retrieval
+   (state <s> ^name turn
+              ^superstate.operator <op>
+              ^radar-setting { <power> < 13 })
+   (<op> ^name turn
+         ^proto-actions <pa>)
+-->
+   (<pa> ^radar-power.setting <power>)
+   (write (crlf) |Calculated radar power setting used: | <power> (crlf))
+}
+
+#IF I have calculated a proper radar power
+#   BUT the power level is the default value
+#THEN report this to the superstate operator
+#NOTE:  quiescenece is tested to provent chunking over
+#       this default
+sp {apply*turn*bad-retrieval*default
+   (state <s> ^name turn
+              ^superstate.operator <op>
+              ^superstate.quiescence t
+              ^radar-setting 13
+              ^quiescence t)
+   (<op> ^name turn
+         ^proto-actions <pa>)
+-->
+   (<pa> ^radar-power.setting <power>)
+   (write (crlf) |Default radar power setting retrieved.| (crlf))
+}
+
+
+#IF I have performed an episodic retrieval
+#   but I have failed to caculate a proper radar power
+#THEN report a default value to the superstate operator
+#NOTE:  quiescenece is tested to provent chunking over
+#       this default
+sp {apply*turn*bad-retrieval*no-setting
+   (state <s> ^impasse no-change
+              ^superstate.quiescence t
+              ^quiescence t
+              ^superstate <ss>)
+   (<ss> ^name turn
+         ^superstate.operator <op>
+         ^epmem <epmem>
+        -^radar-setting <power>)
+   (<epmem> ^query.io <io>
+            ^retrieved.name)
+   (<op> ^name turn
+         ^proto-actions <pa>)
+-->
+   (<pa> ^radar-power.setting 13)
+   (write (crlf) |Bad Retrieval.  Default radar power setting used.| (crlf))
+}
+
+#IF I have performed an episodic retrieval
+#   AND I have failed to retrieve a memory
+#THEN report a default value to the superstate operator
+#NOTE:  quiescenece is tested to provent chunking over
+#       this default
+sp {apply*turn*no-retrieval
+   (state <s> ^impasse no-change
+              ^superstate.quiescence t
+              ^quiescence t
+              ^superstate <ss>)
+   (<ss> ^name turn
+         ^superstate.operator <op>
+         ^epmem <epmem>
+        -^radar-setting <power>)
+   (<epmem> ^query.io <io>
+            ^retrieved.no-retrieval true)
+   (<op> ^name turn
+         ^proto-actions <pa>)
+-->
+   (<pa> ^radar-power.setting 13)
+   (write (crlf) |No Retrieval. Default radar power setting used.| (crlf))
+}
+
+
+#NOTE:  Why are we testing quiescence t on the superstate
+#       as well?
+#       It turns out that since we are changing a datastructure 
+#       on the superstate that we must test it in both places 
+#       to prevent chunking.  JEL says this is a bug.
+#

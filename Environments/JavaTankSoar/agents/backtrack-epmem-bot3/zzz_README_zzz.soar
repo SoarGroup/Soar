@@ -1,0 +1,7 @@
+#This is a modification of the simple-bot from the Soar tutorial.
+#The find-energy subgoal has been added to use episodic memory 
+#to find the energy charger.
+#
+
+#30 May 06
+#This version is equipped to do a one -or- two step path to the energy charger.

@@ -1,0 +1,71 @@
+#IF I have a partial path to the energy charger
+#AND I haven't performed this query already along
+#     the partial path's axis (x or y)
+#AND the ^epmem.queue link is empty (ready for a new query)
+#THEN Attempt to retrieve an epmem of me seeing
+#     the partial path's target position from here
+sp {recall-energy-path*propose*epmem-recall-see-energy-path
+   (state <s> ^name recall-energy-path
+              ^partial-path <pp>
+              ^io.input-link <il>
+             -^epmem-recall-see-energy-path <axis>
+             -^epmem.query.<anything>)
+   (<il> ^x <x>
+         ^y <y>)
+   (<pp> ^x <x>
+         ^y <y>
+         ^distance <dist>
+         ^direction <abs-dir>
+         ^axis <axis>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name epmem-recall-see-energy-path
+         ^partial-path <pp>)
+}
+
+#IF I already have a memory of seeing energy nearby
+#THEN prefer making a path with it rather than retrieving
+sp {recall-energy-path*compare*epmem-recall-see-energy-path
+   (state <s> ^name recall-energy-path
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name epmem-recall-see-energy-path)
+   (<op2> ^name epmem-recall-see-energy-nearby)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+
+
+#IF the operator has been selected
+#THEN cue for a memory of seeing the previously 
+#     path's position from this position
+sp {apply*epmem-recall-see-energy-path
+   (state <s> ^operator <op>
+              ^io.input-link <il>
+              ^epmem.query <query>)
+   (<il> ^x <x>
+         ^y <y>)
+   (<op> ^name epmem-recall-see-energy-path
+         ^partial-path <pp>)
+   (<pp> ^direction <abs-dir>
+         ^distance <dist>)
+-->
+   (<query> ^io.input-link <qil>)
+   (<qil> ^x <x>
+          ^y <y>
+          ^direction <abs-dir>
+          ^radar-status on
+          ^radar-distance <dist>)
+   (write (crlf) |QUERY:  Can I see the position |<dist>| spaces |<abs-dir>| of me?|)
+}
+
+#IF the operator has been selected
+#THEN note that I've attempted this query already
+sp {apply*epmem-recall-see-energy-path*note-complete
+   (state <s> ^operator <o>)
+   (<o> ^name epmem-recall-see-energy-path
+        ^partial-path.axis <axis>)
+-->
+   (<s> ^epmem-recall-see-energy-path <axis>)
+}

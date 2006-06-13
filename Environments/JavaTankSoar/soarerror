@@ -1,0 +1,5 @@
+Internal Soar Error:  symbol_to_string called on bad symbol
+Soar cannot recover from this error. 
+You will have to restart Soar to run an agent.
+Data is still available for inspection, but may be corrupt.
+If a log was open, it has been closed for safety.

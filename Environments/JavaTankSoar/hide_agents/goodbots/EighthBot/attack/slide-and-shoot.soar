@@ -1,0 +1,50 @@
+echo "\nLoading attack/slide-and-shoot"
+
+### slide and shoot if enemy is at a diagonal and can slide left/right
+sp {propose*attack*slide-and-shoot*side-step
+   (state <s> ^name attack
+              ^io.input-link <il>
+              ^status <st>
+              ^direction-map.<heading>.<dir> <sdir>)
+   (<st> ^enemy-sighted <es>
+         ^square.<sdir>.<heading>.open yes)     ## check if one square to side & forward is blocked - this eliminates many bad slides into blocked line-of-fires
+   (<es> ^direction forward
+         ^position { << left right >> <dir>})
+   (<il> ^blocked.<dir> no
+         ^direction <heading>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name attack*slide-and-shoot*side-step
+        ^actions <a>)
+   (<a> ^move.direction <dir>
+        ^weapon.fire missile)
+}
+
+
+### move forward or backward and shoot if enemy is at a diagonal and can't move left/right
+sp {propose*attack*slide-and-shoot*charge
+   (state <s> ^name attack
+              ^io.input-link <il>
+              ^status.enemy-sighted <es>)
+   (<es> ^direction {<< forward backward >> <dir>})
+   (<il> ^blocked.<dir> no)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name attack*slide-and-shoot*forward-backward
+        ^actions <a>)
+   (<a> ^move.direction <dir>
+        ^weapon.fire missile)
+}
+
+
+
+### prefer sliding over charging
+#sp {select*attack*prefer*slide
+#   (state <s> ^operator <oA> +
+#              ^operator <oB> +)
+#   (<oA> ^name attack*slide-and-shoot*side-step)
+#   (<oB> ^name attack*slide-and-shoot*forward)
+#-->
+#   (<s> ^operator  <oA>  >  <oB>)
+#}
+

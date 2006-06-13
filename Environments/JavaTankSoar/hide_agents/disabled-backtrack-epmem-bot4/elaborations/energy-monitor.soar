@@ -1,0 +1,12 @@
+#This rule reports the agent's energy level at each
+#movement
+sp {elaborate*state*energy-level
+   (state <s> ^superstate nil
+              ^io.input-link <il>)
+   (<il> ^x <x>
+         ^y <y>
+         ^direction <dir>
+         ^energy <energy>)
+-->
+   (write (crlf) |Energy level=| <energy>)
+}

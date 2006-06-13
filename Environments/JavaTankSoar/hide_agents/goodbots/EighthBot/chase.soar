@@ -1,0 +1,32 @@
+echo "\nLoading simple/chase.soar"
+
+################################
+### Propose chase operator if resouces OK, can't see but can detect enemy
+################################
+sp {propose*chase
+   (state <s> ^name tanksoar
+              ^status <st>)
+   (<st> -^in-danger
+          ^enemy-detected
+         -^enemy-sighted
+         -^need-health
+         -^need-energy
+         -^need-missiles)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name chase)
+}
+
+
+
+
+
+
+#################################
+#sp {propose*chase
+#   (state <s> ^name tanksoar
+#              ^sound
+#             -^io.input-link.radar.tank
+#             -^missiles-energy low)
+#   -->
+#   (<s> ^operator.name chase)}

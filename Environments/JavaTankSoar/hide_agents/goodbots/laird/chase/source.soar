@@ -1,0 +1,7 @@
+echo "\nLoading chase/source.soar"
+
+source move.soar
+source radar-on.soar
+source turn.soar
+echo "\nFinished loading chase/source.soar"
+

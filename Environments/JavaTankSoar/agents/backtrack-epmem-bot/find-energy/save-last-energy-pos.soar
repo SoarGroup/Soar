@@ -1,0 +1,78 @@
+##IF I've retrieved a memory of seeing the 
+##   energy charger from this position
+##AND the last recorded position is out of date
+##THEN record that position for future reference
+#sp {find-energy*propose*save-last-energy-pos
+#   (state <s> ^name find-energy
+#              ^io.input-link <il>
+#              ^epmem.retrieved.io.input-link <ril>
+#              ^top-state <ts>)
+#   (<il> ^x <x>
+#         ^y <y>)
+#   (<ril> ^x <x>
+#          ^y <y>
+#          ^direction <dir>
+#          ^radar.energy <energy>)
+#   (<energy> ^position <pos>
+#             ^distance <dist>)
+#  -{(<ts> ^last-energy-epmem <lee>)
+#    (<lee> ^x <x>
+#           ^y <y>)}
+#-->
+#   (<s> ^operator <op> + =)
+#   (<op> ^name save-last-energy-pos
+#         ^x <x>
+#         ^y <y>
+#         ^direction <dir>
+#         ^position <pos>
+#         ^distance <dist>)
+#}
+#
+##IF the save-last-energy-pos operator has been selected
+##AND a previously recorded entry is present
+##THEN remove it
+#sp {apply*save-last-energy-pos*remove-old-x
+#   (state <s> ^operator <op>
+#              ^epmem.retrieved.io.input-link.x <x>
+#              ^top-state <ts>)
+#   (<op> ^name save-last-energy-pos)
+#   (<ts> ^last-energy-epmem <lee>)
+#   (<lee> ^x <old-x> <> <x>)
+#-->
+#   (<ts> ^last-energy-epmem <lee> -)
+#}
+#
+#sp {apply*save-last-energy-pos*remove-old-y
+#   (state <s> ^operator <op>
+#              ^epmem.retrieved.io.input-link.y <y>
+#              ^top-state <ts>)
+#   (<op> ^name save-last-energy-pos)
+#   (<ts> ^last-energy-epmem <lee>)
+#   (<lee> ^y <old-y> <> <y>)
+#-->
+#   (<ts> ^last-energy-epmem <lee> -)
+#}
+#
+#
+##IF the operator has been selected
+##THEN store the info on the top state
+#sp {apply*save-last-energy-pos
+#   (state <s> ^operator <op>
+#              ^top-state <ts>)
+#  -(<ts> ^last-energy-epmem <lee>)
+#   (<op> ^name save-last-energy-pos
+#         ^x <x>
+#         ^y <y>
+#         ^direction <dir>
+#         ^position <pos>
+#         ^distance <dist>)
+#-->
+#   (<ts> ^last-energy-epmem <lee>)
+#   (<lee> ^x <x>
+#          ^y <y>
+#          ^direction <dir>
+#          ^position <pos>
+#          ^distance <dist>)
+#}
+#
+#

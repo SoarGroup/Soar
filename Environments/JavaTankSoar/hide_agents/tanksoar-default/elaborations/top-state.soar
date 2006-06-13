@@ -1,0 +1,5 @@
+sp {elaborate*top-state*top-state
+  (state <s> ^name tanksoar-default)
+-->
+  (<s> ^top-state <s>)
+}

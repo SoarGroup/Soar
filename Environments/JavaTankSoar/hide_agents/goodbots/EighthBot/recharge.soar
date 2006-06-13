@@ -1,0 +1,65 @@
+echo "\nLoading recharge.soar"
+
+
+# Propose recharge if energy is low
+sp {propose*recharge*energy
+   (state <s> ^name tanksoar
+              ^status <st>)
+   (<st> ^need-energy yes
+        -^in-danger)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name recharge-energy)
+}
+
+
+
+# Propose recharge if energy is low
+sp {propose*recharge*health
+   (state <s> ^name tanksoar
+              ^status <st>)
+   (<st> ^need-health yes
+        -^in-danger)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name recharge-health)
+}
+
+
+# Propose recharge if energy is low
+sp {propose*recharge*missiles
+   (state <s> ^name tanksoar
+              ^status <st>)
+   (<st> ^need-missiles yes
+        -^in-danger)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name recharge-missiles)
+}
+
+
+## Priority of recharging
+##   1.) energy (highest)
+##   2.) missiles
+##   3.) health
+sp {select*recharge*operator*prefer-energy
+   (state <s> ^operator <oA> +
+              ^operator <oB> +)
+   (<oA> ^name recharge-energy)
+   (<oB> ^name << recharge-health recharge-missiles >> )
+-->
+   (<s> ^operator  <oA>  >  <oB>)
+}
+
+sp {select*recharge*operator*prefer-missiles
+   (state <s> ^operator <oA> +
+              ^operator <oB> +)
+   (<oA> ^name recharge-missiles)
+   (<oB> ^name recharge-health)
+-->
+   (<s> ^operator  <oA>  >  <oB>)
+}
+
+
+
+

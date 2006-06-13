@@ -1,0 +1,3 @@
+pushd disabled-backtrack-epmem-bot4
+source disabled-backtrack-epmem-bot4_source.soar
+popd

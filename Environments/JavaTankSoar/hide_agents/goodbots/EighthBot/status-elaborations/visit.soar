@@ -1,0 +1,27 @@
+echo "\nLoading status-elaborations/visit"
+
+
+### propose operator to update current square's visiting time
+### (should happen every time)
+sp {propose*update-visit-time
+   (state <s> ^name << explore chase retreate recharge attack >>
+              ^io.input-link.clock <ck>
+              ^status.square.visit  <>  <ck>)
+-->
+   (<s> ^operator <o> + =,>)
+   (<o> ^name update-visit-time)
+ #  (write (crlf) |proposing update-vist-time operator|)
+}
+
+## update visit time in current square
+sp {apply*update-visit-time
+   (state <s> ^operator.name update-visit-time
+              ^status.square <sq>
+              ^io.input-link.clock <ck>)
+   (<sq> ^visit <vB>)
+-->
+   (<sq> ^visit <vB> - )
+   (<sq> ^visit <ck>   )
+  # (<o> ^time <vB> - )
+ #  (write (crlf) |applying update-vist-time operator: | <ck>)
+}

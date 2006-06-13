@@ -1,0 +1,6 @@
+source elaborations.soar
+source set-radar-power.soar
+source retrieve-epmem.soar
+pushd retrieve-epmem
+source retrieve-epmem_source.soar
+popd

@@ -1,0 +1,12 @@
+#IF an energy path exists from the current position
+#THEN note this on the top-state
+sp {elaborate*state*energy-path
+   (state <s> ^energy-path <path>
+              ^io.input-link <il>)
+   (<path> ^x <x>
+           ^y <y>)
+   (<il> ^x <x>
+         ^y <y>)
+-->
+   (<s> ^available-energy-path <path>)
+}
