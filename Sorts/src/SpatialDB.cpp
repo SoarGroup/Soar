@@ -5,6 +5,7 @@
 #include <map>
 
 #define WORKER_RADIUS 3
+#define IMAG_OBSTACLE_RADIUS 12
 
 #define WORKER_CROWD_FACTOR 4
 #define CROWD_MAX_MINERALS 8
@@ -31,7 +32,9 @@ void SpatialDB::init() {
   // The higher the tilepoints, the coarser the detail
   gobMap.resize(mapsize);
   contours.resize(mapsize);
+  terrainLineMap.resize(mapsize);
   imaginaryWorkerMap.resize(mapsize);
+  imaginaryObstacleMap.resize(mapsize);
   msg  << "Initializing SpatialDB grid: (" << width<<"," << height
        << "," << (width*height) << ")\n";
 }
@@ -71,6 +74,23 @@ void SpatialDB::addImaginaryWorker(coordinate c) {
   imaginaryWorkerMap[cell].push_back(c); 
   msg << "Registered new imaginary worker.\n";
   msg << "iw loc: " << c.x << "," << c.y << endl;
+}
+
+void SpatialDB::addImaginaryObstacle(coordinate c) {
+  // no need for removal/update support
+  int cell = getCellNumber(c.x, c.y);
+  if (cell >= gobMap.size()) {
+    msg << "ERROR: out of bounds, not adding: " << c.x << "," << c.y << endl;
+    return; 
+  }
+  
+  imaginaryObstacleMap[cell].push_back(c); 
+  msg << "Registered new imaginary obstacle.\n";
+  msg << "loc: " << c.x << "," << c.y << endl;
+#ifdef USE_CANVAS
+  Sorts::canvas.makeTempCircle(c.x,c.y,IMAG_OBSTACLE_RADIUS,9999999);
+  Sorts::canvas.update();
+#endif
 }
 
 int SpatialDB::getCellNumber(int x, int y) {
@@ -425,12 +445,14 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
                     ((*it)->bp_name() != "sheep")
                     ) {
                   msg << "mining collision with " << (*it)->bp_name() << endl;
+                  msg << "at loc " << obj.x << "," << obj.y << endl;
                   return true;
                 }
               }
               else {
                 if ((*it) != ignoreGob) {
                   msg << "object collision with " << (*it)->bp_name() << endl;
+                  msg << "at loc " << obj.x << "," << obj.y << endl;
                   return true;
                 }
               } 
@@ -455,31 +477,48 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
             }
           }
           else if (r.intersects(circle) and (*it) != ignoreGob) {
+            msg << "collision with " << (*it)->bp_name() << " at " <<
+              *(*it)->sod.x << "," << *(*it)->sod.y << endl;
             return true;
           }
         }
       }
       crowdCount = 0;
-      for(iwit = imaginaryWorkerMap[cells[i]].begin(); 
-          iwit != imaginaryWorkerMap[cells[i]].end(); 
+      if (forMining) {
+        for(iwit = imaginaryWorkerMap[cells[i]].begin(); 
+            iwit != imaginaryWorkerMap[cells[i]].end(); 
+            iwit++) {
+          obj.x = (*iwit).x;
+          obj.y = (*iwit).y;
+          objr = WORKER_RADIUS + 1; // radius of the imaginary worker
+          if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
+          < (r+objr) * (r+objr))  {
+            //Inside the circle
+            if (not checkCrowding) {
+              msg << "imaginary worker collision!\n";
+              return true;
+            }
+            else {
+              crowdCount++;
+              if (crowdCount >= CROWD_MAX_WORKERS) {
+                msg << "too many imaginary workers!\n";
+                return true;
+              }
+            }
+          }
+        }
+      }
+      for(iwit = imaginaryObstacleMap[cells[i]].begin(); 
+          iwit != imaginaryObstacleMap[cells[i]].end(); 
           iwit++) {
         obj.x = (*iwit).x;
         obj.y = (*iwit).y;
-        objr = WORKER_RADIUS + 1; // radius of the imaginary worker
+        objr = IMAG_OBSTACLE_RADIUS;
         if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
         < (r+objr) * (r+objr))  {
           //Inside the circle
-          if (not checkCrowding) {
-            msg << "imaginary worker collision!\n";
-            return true;
-          }
-          else {
-            crowdCount++;
-            if (crowdCount >= CROWD_MAX_WORKERS) {
-              msg << "too many imaginary workers!\n";
-              return true;
-            }
-          }
+          msg << "imaginary obstacle collision!\n";
+          return true;
         }
       }
     }
@@ -561,7 +600,7 @@ void SpatialDB::updateTerrainContour(TerrainContour* contour) {
     }
   }
 }
-
+/*
 bool SpatialDB::hasTerrainCollision(Rectangle& r) {
   
   int upperRightSector = getCellNumber(r.xmax, r.ymin);
@@ -592,7 +631,7 @@ bool SpatialDB::hasTerrainCollision(Rectangle& r) {
 
   return false;
 }
-
+*/
 bool SpatialDB::hasTerrainCollision(int cx, int cy, int r) {
 
   int minCol = (cx - r) / tile_points;
@@ -685,3 +724,80 @@ void SpatialDB::getTerrainCollisions
     }
   }
 }
+
+void SpatialDB::addTerrainLine(Line l) {
+  // no need for removal/update support
+  int cell1 = getCellNumber(l.a.x, l.a.y);
+  int cell2 = getCellNumber(l.b.x, l.b.y);
+  if (cell1 >= gobMap.size() || cell2 >= gobMap.size()) {
+    msg << "ERROR: out of bounds, not adding: " << l.a << " - " << l.b << endl;
+    return;
+  }
+  //msg << "adding terrain line from " << l.a << " to " << l.b << endl;
+  int col1 = cell2column(cell1);
+  int row1 = cell2row(cell1);
+  int col2 = cell2column(cell2);
+  int row2 = cell2row(cell2);
+
+  int count = 0;
+  int cellNum;
+
+  if (col1 > col2) {
+    int tmp = col1;
+    col1 = col2;
+    col2 = tmp;
+  }
+  if (row1 > row2) {
+    int tmp = row1;
+    row1 = row2;
+    row2 = tmp;
+  }
+
+  for (int i=col1; i<= col2; i++) {
+    for (int j=row1; j<= row2; j++) {
+      cellNum = rowCol2cell(i,j);
+    //  msg << "register in cell " << cellNum << endl;
+      terrainLineMap[cellNum].push_back(l);
+      count++;
+    }
+  }
+  //msg << "registered in " << count << " cells.\n";
+
+}
+
+bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
+ // determine which sectors the gob is in
+ // only supports rectangles (buildings) now!
+
+  int upperRightSector = getCellNumber(rect->xmax, rect->ymin);
+  int lowerLeftSector = getCellNumber(rect->xmin, rect->ymax);
+
+  int minCol = cell2column(lowerLeftSector);
+  int maxCol = cell2column(upperRightSector);
+  int minRow = cell2row(upperRightSector);
+  int maxRow = cell2row(lowerLeftSector);
+
+  assert (minCol <= maxCol && minRow <= maxRow);
+
+  int cellNum;
+  list<Line>::iterator it;
+  for (int i=minCol; i<=maxCol; i++) {
+    for (int j=minRow; j<=maxRow; j++) {
+      cellNum = rowCol2cell(i,j);
+      for (it = terrainLineMap[cellNum].begin();
+          it != terrainLineMap[cellNum].end();
+          it++) {
+        msg << "checking intersection\n";
+        if (rect->intersects(*it)) {
+          msg << "rect " << *rect << " intersects line " << (*it).a
+              << "-" << (*it).b << endl;
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+

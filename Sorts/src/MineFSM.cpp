@@ -292,6 +292,10 @@ int MineFSM::update() {
             << tempVec[0] << "," << tempVec[1] << endl;
       }
       break;
+    case FAIL:
+      // no mining routes
+      return FSM_FAILURE;
+      break;
   }
   return FSM_RUNNING;
 }
@@ -341,7 +345,10 @@ MineFSM::~MineFSM() {
 
 void MineFSM::abortMining() {
   route = Sorts::mineManager->getMiningRoute(this);
-  assert(route != NULL);
+  if (route == NULL) {
+    state = FAIL;
+    return;
+  }
   if (moveFSM != NULL) {
     moveFSM->stop();
   }

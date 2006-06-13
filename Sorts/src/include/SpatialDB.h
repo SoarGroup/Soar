@@ -54,17 +54,20 @@ public:
   bool hasMiningCollision(coordinate c, bool b);
 
   // used by building locator
-  bool hasTerrainCollision(Rectangle& r);
+  //bool hasTerrainCollision(Rectangle& r);
   bool hasTerrainCollision(int cx, int cy, int r);
   void getTerrainCollisions(Rectangle&, list<TerrainContour*>&);
   void getTerrainCollisions(int, int,  int, list<TerrainContour*>&);
-
+  bool hasTerrainCollision(Rectangle* r);
   bool hasObjectCollision(Rectangle* r);
   bool hasObjectCollision(coordinate c, int r, GameObj* ignoreGob);
  
   bool hasObjectCollision(sint4 x, sint4 y, sint4 r);
 
   void addImaginaryWorker(coordinate c);
+  void addImaginaryObstacle(coordinate c);
+  
+  void addTerrainLine(Line l);
 
   void addTerrainContour(TerrainContour* c);
   void removeTerrainContour(TerrainContour* c);
@@ -80,7 +83,8 @@ private: // functions
 private:
   vector<set<GameObj*> > gobMap;
   vector<list<coordinate> > imaginaryWorkerMap; // used by MineManager
-
+  vector<list<coordinate> > imaginaryObstacleMap;
+  vector<list<Line> > terrainLineMap;
   map<TerrainContour*, list<int> > contourLocs;
   vector<list<TerrainContour*> > contours;
 

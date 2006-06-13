@@ -23,7 +23,7 @@ public:
   SoarGameObject* getSoarGameObject() { return sgo; }
 private:
   enum MineState { IDLE, MINING, MOVING_TO_MINERAL, MOVING_TO_DROPOFF,
-                   SEND_MOVE_TO_MINE_COMMAND, PANIC_START, PANIC };
+                   SEND_MOVE_TO_MINE_COMMAND, PANIC_START, PANIC, FAIL };
   MineState state;
   MiningRoute* route;
   SoarGameObject* sgo;

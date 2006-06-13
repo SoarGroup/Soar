@@ -117,14 +117,11 @@ int MoveFSM::update() {
   
   case ALREADY_THERE:
    msg << "already there\n";
-    if (squaredDistance(*gob->sod.x, *gob->sod.y, target.x, target.y) 
-        <= precision) {
-      return FSM_SUCCESS; 
-    }
-    else {
-      // no path was found, and we aren't close enough
-      return FSM_UNREACHABLE;
-    }
+    return FSM_SUCCESS; 
+    break;
+
+  case UNREACHABLE:
+    return FSM_UNREACHABLE;
     break;
 
 	case MOVING:
@@ -296,10 +293,16 @@ void MoveFSM::init(vector<sint4> p)
     target.x = moveParams[0];
     target.y = moveParams[1];
   }
-  else {
+  else if (squaredDistance(*gob->sod.x, *gob->sod.y, l.x, l.y) 
+        <= precision) {
     target.x = l.x;
     target.y = l.y;
     state = ALREADY_THERE; // or no path!
+  }
+  else {
+    state = UNREACHABLE;
+    coordinate c(l.x,l.y);
+    Sorts::spatialDB->addImaginaryObstacle(c);
   }
 }
 
@@ -324,19 +327,12 @@ void MoveFSM::initNoPath(vector<sint4> p)
   usingIWWP = false;
   nextWPIndex = path.locs.size()-1;
   moveParams.clear();
-  if (path.locs.size() > 0) {
-    moveParams.push_back(path.locs[nextWPIndex].x);
-    moveParams.push_back(path.locs[nextWPIndex].y);
-    nextWPIndex--;
-    state = IDLE;
-    target.x = moveParams[0];
-    target.y = moveParams[1];
-  }
-  else {
-    target.x = l.x;
-    target.y = l.y;
-    state = ALREADY_THERE; // or no path!
-  }
+  moveParams.push_back(path.locs[nextWPIndex].x);
+  moveParams.push_back(path.locs[nextWPIndex].y);
+  nextWPIndex--;
+  state = IDLE;
+  target.x = moveParams[0];
+  target.y = moveParams[1];
 }
 
 void MoveFSM::stop() {
@@ -509,7 +505,7 @@ bool MoveFSM::collision(int x, int y) {
   coordinate c(x,y);
   
   //Sorts::spatialDB->getObjectCollisions(x, y, 6, NULL, collisions);
-  return Sorts::spatialDB->hasObjectCollision(c, 6, gob);
+  return Sorts::spatialDB->hasObjectCollision(c, *gob->sod.radius, gob);
   /*
   msg << x << "," << y << " collides with " << collisions.size() 
        << " things.\n";

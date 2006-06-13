@@ -256,8 +256,9 @@ void OrtsInterface::updateSoarGameObjects() {
   FORALL(changes.new_boundaries, obj) {
     GameObj* gob = (*obj)->get_GameObj();
     Line l (*gob->sod.x1, *gob->sod.y1, *gob->sod.x2, *gob->sod.y2);
-    Sorts::terrainManager.addSegment
-      (*gob->sod.x1, *gob->sod.y1, *gob->sod.x2, *gob->sod.y2);
+//    Sorts::terrainManager.addSegment
+//      (*gob->sod.x1, *gob->sod.y1, *gob->sod.x2, *gob->sod.y2);
+    Sorts::spatialDB->addTerrainLine(l);
 #ifdef USE_CANVAS
 //    Sorts::canvas.drawLine(l.a.x, l.a.y, l.b.x, l.b.y);
 //    Sorts::canvas.update();
@@ -372,7 +373,6 @@ SoarGameObject* OrtsInterface::getSoarGameObject(GameObj* gob) {
 
 double OrtsInterface::getOrtsDistance(GameObj* go1, GameObj* go2) {
   // return the distance between two objects as determined by ORTS
-  // use sparingly (does this go over the network?)
   return (double) gsm->get_game().distance(*go1, *go2);
 }
 

@@ -72,6 +72,9 @@ void MineManager::prepareRoutes(list<SoarGameObject*>& miners) {
 
   for (int i=0; i<numAssignments; i++) {
     best = getBestRoute();
+    if (best == NULL) {
+      return;
+    }
     assert (best->stage == PF_DIST); 
     bestRoutes.push_back(best);
     addCostToRoute(best);
@@ -114,7 +117,11 @@ void MineManager::prepareRoutes(list<SoarGameObject*>& miners) {
 MiningRoute* MineManager::getMiningRoute(MineFSM* fsm) {
   map<SoarGameObject*, MiningRoute*>::iterator route 
       = assignments.find(fsm->getSoarGameObject());
-  assert(route != assignments.end());
+  if (route == assignments.end()) {
+    // if prepareRoutes quit because there were no routes
+    return NULL;
+  }
+  
   MiningRoute* ret = (*route).second;
   assignments.erase(route);
   addFSMToRoute(ret, fsm);
@@ -133,8 +140,10 @@ MiningRoute* MineManager::reportMiningResults(int time, MiningRoute* route,
     removeFromRoute(route, fsm);
     adjustOptimality(route);
     MiningRoute* best = getBestRoute();
-    addCostToRoute(best);
-    addFSMToRoute(best, fsm);
+    if (best != NULL) {
+      addCostToRoute(best);
+      addFSMToRoute(best, fsm);
+    }
     return best;
   }
 
@@ -148,8 +157,10 @@ MiningRoute* MineManager::minerGivesUp(MiningRoute* route, MineFSM* fsm) {
     removeFromRoute(route, fsm);
     adjustOptimality(route);
     MiningRoute* best = getBestRoute();
-    addCostToRoute(best);
-    addFSMToRoute(best, fsm);
+    if (best != NULL) {
+      addCostToRoute(best);
+      addFSMToRoute(best, fsm);
+    }
     return best;
   }
   else {
@@ -451,12 +462,12 @@ MiningRoute* MineManager::getBestRoute() {
   // keep expanding routes until the best (top of the set)
   // is a point-to-point path
   MiningRoute* topRoute = *routes.begin();
-  if (topRoute == *routes.end()) {
+  if (routes.begin() == routes.end()) {
     msg << "error: trying to mine w/o any routes (is at least one mineral and cc in view?\n";
-  assert(false);
+    return NULL;
   }
-  RouteHeuristicStage topStage = topRoute->stage;
   
+  RouteHeuristicStage topStage = topRoute->stage;
   MiningRoute* newTop;
   bool earlyQuit = false;
   while (topStage != PF_DIST) {
@@ -485,6 +496,9 @@ MiningRoute* MineManager::getBestRoute() {
     }
 
     newTop = *routes.begin();
+    if (routes.begin() == routes.end()) {
+      return NULL;
+    }
     assert(newTop->valid);
     
     if (0){//((topRoute->optimality - newTop->optimality) < PRECISION) {

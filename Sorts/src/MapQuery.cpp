@@ -66,7 +66,7 @@ void MapQuery::findBuildingLoc(BuildingType building, coordinate nearLocation,
         && rect.ymax < mapYdim 
         && rect.ymin > 0
         && not Sorts::spatialDB->hasObjectCollision(&rect)
-        && not Sorts::spatialDB->hasTerrainCollision(rect)) {
+        && not Sorts::spatialDB->hasTerrainCollision(&rect)) {
       found = true;
       msg << "found location: " << newLoc << endl;
       break;

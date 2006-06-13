@@ -23,7 +23,7 @@ class MoveFSM: public FSM {
   coordinate currentLocation;
 
  private:
-	enum{IDLE,WARMUP,MOVING,ALREADY_THERE, TURNING};
+	enum{IDLE,WARMUP,MOVING,ALREADY_THERE,UNREACHABLE};
 
   void veerRight();
   bool veerAhead(int dtt);
