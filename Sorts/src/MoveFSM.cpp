@@ -506,9 +506,11 @@ bool MoveFSM::veerAhead(int distToTargetSq) {
 }
 
 bool MoveFSM::collision(int x, int y) {
-  list<GameObj*> collisions;
+  coordinate c(x,y);
   
-  Sorts::spatialDB->getObjectCollisions(x, y, 6, NULL, collisions);
+  //Sorts::spatialDB->getObjectCollisions(x, y, 6, NULL, collisions);
+  return Sorts::spatialDB->hasObjectCollision(c, 6, gob);
+  /*
   msg << x << "," << y << " collides with " << collisions.size() 
        << " things.\n";
   
@@ -526,7 +528,7 @@ bool MoveFSM::collision(int x, int y) {
     }
   }
 
-  return false;
+  return false;*/
 }
 
 bool MoveFSM::dynamicCollision(int x, int y) {

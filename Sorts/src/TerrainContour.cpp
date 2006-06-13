@@ -28,14 +28,17 @@ TerrainContour::TerrainContour(list<Point> cycle) {
   {
     list<Point>::iterator j = i;
     ++j;
+#ifdef USE_CANVAS
     if (j != cycle.end()) {
       Sorts::canvas.drawLine(i->x, i->y, j->x, j->y);
     }
+#endif
     contour.push_back(Point_2(i->x, i->y));
     bbox.accomodate(i->x, i->y);
   }
+#ifdef USE_CANVAS
   Sorts::canvas.update();
-
+#endif
   assert(contour.is_simple());
   if (contour.orientation() == CGAL::NEGATIVE) {
     contour.reverse_orientation();
@@ -97,10 +100,10 @@ bool TerrainContour::canJoin(const TerrainContour& other) {
 // the points list ordered correctly
 void TerrainContour::addSegment(int x1, int y1, int x2, int y2) {
   assert(open);
-
+#ifdef USE_CANVAS
   Sorts::canvas.drawLine(x1, y1, x2, y2);
   Sorts::canvas.update();
-
+#endif
   Point_2 p1(x1, y1);
   Point_2 p2(x2, y2);
  

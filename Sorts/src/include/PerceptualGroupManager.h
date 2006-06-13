@@ -14,7 +14,7 @@ struct ltGroupPtr {
     double d2 = g2->getDistToFocus();
     if (d1 == d2) {
       // give an arbitrary order if distance is the same
-      return ((int)g1 < (int)g2);
+      return ((unsigned int)g1 < (unsigned int)g2);
     }
     return (d1 < d2);
   }

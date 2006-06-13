@@ -372,6 +372,9 @@ void PerceptualGroupManager::reGroup() {
   
   SoarGameObject* centerObject;
 
+  PerceptualGroup* newGroup;
+  int size;
+
   while (catIter != staleGroupCategories.end()) {
     //msg << "doing type " << catIter->first << endl;
     groupingList.clear();
@@ -402,6 +405,7 @@ void PerceptualGroupManager::reGroup() {
           centerGroupingList.push_back(objectData);
           objectData.oldGroup = false;
           (*groupIter)->getMembers(groupMembers);
+          //msg << "group has " << groupMembers.size() << " members.\n";
           objectIter = groupMembers.begin();
           while (objectIter != groupMembers.end()) {
             if ((*objectIter) != centerObject){
@@ -454,8 +458,16 @@ void PerceptualGroupManager::reGroup() {
         // make a new group for this object- no existing 
         // group has claimed it yet
         obj1Struct.group->removeUnit(obj1Struct.object);
-        perceptualGroups.insert(new PerceptualGroup(obj1Struct.object));
-        obj1Struct.group = obj1Struct.object->getPerceptualGroup();
+        newGroup = new PerceptualGroup(obj1Struct.object);
+        newGroup->calcDistToFocus(visionParams.focusX, visionParams.focusY);
+        size = perceptualGroups.size();
+        perceptualGroups.insert(newGroup);
+        assert(perceptualGroups.size() == size + 1);
+        if (perceptualGroups.size() != size + 1) {
+          // if dbg is off
+          msg << "ERROR: bad insertion!\n";
+        }
+        obj1Struct.group = newGroup;
         obj1Struct.assigned = true;
         //msg << "XXX making new group " << (int) obj1Struct.group << endl; 
       }
@@ -507,7 +519,7 @@ void PerceptualGroupManager::reGroup() {
           else {
             // obj2 has not been assigned. Assign it to obj1's group.
             //msg << "XXX obj from group " << (int) (*obj2StructIter).group <<
-            //        " joining " << (int) obj1Struct.group << endl;
+             //       " joining " << (int) obj1Struct.group << endl;
             (*obj2StructIter).assigned = true;
             (*obj2StructIter).group->removeUnit((*obj2StructIter).object);
             (*obj2StructIter).group = obj1Struct.group;
@@ -515,10 +527,10 @@ void PerceptualGroupManager::reGroup() {
             (*obj2StructIter).oldGroup = obj1Struct.oldGroup;
             
           }
-        //  msg << "grouped!" << endl;
+          //msg << "grouped!" << endl;
         }
         else {
-       //   msg << "not grouped!" << endl;
+          //msg << "not grouped!" << endl;
         }
         obj2StructIter++; 
         if (obj2StructIter == centerGroupingList.end()) {
@@ -631,7 +643,16 @@ void PerceptualGroupManager::generateGroupData() {
 
 
 void PerceptualGroupManager::makeNewGroup(SoarGameObject* object) {
-  perceptualGroups.insert(new PerceptualGroup(object));
+  PerceptualGroup* newGroup;
+  newGroup = new PerceptualGroup(object);
+  newGroup->calcDistToFocus(visionParams.focusX, visionParams.focusY);
+  int size = perceptualGroups.size();
+  perceptualGroups.insert(newGroup);
+  assert(perceptualGroups.size() == size+1);
+  if (perceptualGroups.size() != size + 1) {
+    // if dbg is off
+    msg << "ERROR: bad insertion!\n";
+  }
 
   return;
 }

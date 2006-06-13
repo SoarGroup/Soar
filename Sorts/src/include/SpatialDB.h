@@ -60,6 +60,7 @@ public:
   void getTerrainCollisions(int, int,  int, list<TerrainContour*>&);
 
   bool hasObjectCollision(Rectangle* r);
+  bool hasObjectCollision(coordinate c, int r, GameObj* ignoreGob);
  
   bool hasObjectCollision(sint4 x, sint4 y, sint4 r);
 
@@ -73,7 +74,7 @@ public:
 
 private: // functions
 
-  bool hasObjectCollisionInt(coordinate, int, bool, bool);
+  bool hasObjectCollisionInt(coordinate, int, bool, bool, GameObj*);
   void calcBinning (sint4 x, sint4 y, sint4 r, ERF* erf, BinInfo& info);
 
 private:

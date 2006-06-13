@@ -1,7 +1,7 @@
 #ifndef MINEMANAGER_H
 #define MINEMANAGER_H
 
-//#define NO_DOS
+#define NO_DOS
 
 #include "general.h"
 #include "SoarGameObject.h"

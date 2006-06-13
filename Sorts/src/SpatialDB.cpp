@@ -302,8 +302,18 @@ bool SpatialDB::hasObjectCollision
   return false;
 }
 
+bool SpatialDB::hasObjectCollision(coordinate c, int r, GameObj* gob) {
+  // ignore collisions with gob
+  return hasObjectCollisionInt(c, r, false, false, gob);
+}
+
+bool SpatialDB::hasObjectCollision(sint4 x, sint4 y, sint4 r) {
+  coordinate c(x,y);
+  return hasObjectCollisionInt(c, r, false, false, NULL);
+}
+
 bool SpatialDB::hasMiningCollision(coordinate c, bool checkCrowding) {
-  return hasObjectCollisionInt(c, WORKER_RADIUS+1, true, checkCrowding);
+  return hasObjectCollisionInt(c, WORKER_RADIUS+1, true, checkCrowding, NULL);
 }
 
 bool SpatialDB::hasObjectCollision(Rectangle* rect) {
@@ -312,12 +322,13 @@ bool SpatialDB::hasObjectCollision(Rectangle* rect) {
   c.x = (int)((rect->xmax + rect->xmin)/2.0);
   c.y = (int)((rect->ymax + rect->ymin)/2.0);
   int radius = (int)(sqrt(squaredDistance(c.x, c.y, rect->xmax, rect->ymax)));
-  return hasObjectCollisionInt(c, radius, false, false);
+  return hasObjectCollisionInt(c, radius, false, false, NULL);
 }
 
 bool SpatialDB::hasObjectCollisionInt(coordinate c, 
                                       int radius, bool forMining, 
-                                      bool checkCrowding) {
+                                      bool checkCrowding,
+                                      GameObj* ignoreGob) {
   int cells[9];
   bool check[9] = {false};
 
@@ -393,6 +404,8 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
   set<GameObj*>::iterator it;
   list<coordinate>::iterator iwit;
   int crowdCount = 0;
+
+  Circle circle(x,y,r);
   
   for(int i=0; i<9; i++) {
     if(check[i]) {
@@ -401,33 +414,49 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
         obj.x =  (*(*it)->sod.x);
         obj.y =  (*(*it)->sod.y);
         objr =  (*(*it)->sod.radius);
-        if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
-         < (r+objr) * (r+objr))  {
-          //Inside the circle
-          if (not checkCrowding) {
-            if (forMining) {
-              if (((*it)->bp_name() != "worker") 
-                  and
-                  ((*it)->bp_name() != "sheep")
-                  and
-                  ((*it)->bp_name() != "controlCenter")) {
-                msg << "mining collision with " << (*it)->bp_name() << endl;
+        if (*(*it)->sod.shape != SHAPE_RECTANGLE) {
+          if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
+          < (r+objr) * (r+objr))  {
+            // inside the circle
+            if (not checkCrowding) {
+              if (forMining) {
+                if (((*it)->bp_name() != "worker") 
+                    and
+                    ((*it)->bp_name() != "sheep")
+                    ) {
+                  msg << "mining collision with " << (*it)->bp_name() << endl;
+                  return true;
+                }
+              }
+              else {
+                if ((*it) != ignoreGob) {
+                  msg << "object collision with " << (*it)->bp_name() << endl;
+                  return true;
+                }
+              } 
+            }
+            else if ((*it)->bp_name() == "mineral") {
+              crowdCount++;
+              if (crowdCount >= CROWD_MAX_MINERALS) {
+                msg << "too many minerals!\n";
                 return true;
               }
             }
-            else {
-              msg << "object collision with " << (*it)->bp_name() << endl;
-              return true;
-            } 
+            
           }
-          else if ((*it)->bp_name() == "mineral") {
-            crowdCount++;
-            if (crowdCount >= CROWD_MAX_MINERALS) {
-              msg << "too many minerals!\n";
+        }
+        else {
+          // rectangle
+          Rectangle r(*(*it)->sod.x1, *(*it)->sod.x2, 
+                      *(*it)->sod.y1, *(*it)->sod.y2);
+          if (forMining) {
+            if (r.intersects(circle) and (*it)->bp_name() != "controlCenter") {
               return true;
             }
           }
-          
+          else if (r.intersects(circle) and (*it) != ignoreGob) {
+            return true;
+          }
         }
       }
       crowdCount = 0;

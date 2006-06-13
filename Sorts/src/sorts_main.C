@@ -29,6 +29,8 @@
 
 #define SOAR_862
 
+//#define PRINT_SOAR
+
 using namespace sml;
 
 bool useSoarStops;
@@ -399,7 +401,9 @@ int main(int argc, char *argv[]) {
   pKernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &sorts);
 #endif
 
+#ifdef PRINT_SOAR
   pAgent->RegisterForPrintEvent(smlEVENT_PRINT, printOutput, &sorts);  
+#endif
 
   // start Soar in a different thread
   pthread_attr_t soarThreadAttribs;

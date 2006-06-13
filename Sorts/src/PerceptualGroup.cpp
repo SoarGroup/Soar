@@ -62,6 +62,8 @@ PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
   lastQueryResult.x = -1;
   lastQueryResult.y = -1;
   lastQueryDist = 0;
+
+  distToFocus = 0;
   ///cout << "XXX created: " << (int) this << endl;
 }
 

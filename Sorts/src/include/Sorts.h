@@ -9,7 +9,7 @@
    most lower-level objects should have a pointer to this
 */
 
-#define USE_CANVAS
+//#define USE_CANVAS
 
 #include "SoarInterface.h"
 #include "OrtsInterface.h"
