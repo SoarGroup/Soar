@@ -101,15 +101,12 @@ bool BFS::insertEdge(Point p1, Point p2, list<Point>* cycle) {
     return true;
   }
   else if (i1 != loc2Node.end()) {
-    cout << "CREATING NODE" << endl;
     createNode(i1->second, p2);
   }
   else if (i2 != loc2Node.end()) {
-    cout << "CREATING NODE" << endl;
     createNode(i2->second, p1);
   }
   else {
-    cout << "AT FAULT: (" << p1.x << "," << p1.y << ") (" << p2.x << ", " << p2.y << ")" << endl;
     assert(false);
   }
 
@@ -120,8 +117,8 @@ void BFS::takeOver(BFS* other, Point myPoint, Point otherPoint) {
   assert(loc2Node.find(myPoint) != loc2Node.end());
   assert(other->loc2Node.find(otherPoint) != other->loc2Node.end());
 
-  BFSNode* par = loc2Node.find(myPoint)->second;
-  BFSNode* child = other->loc2Node.find(otherPoint)->second;
+  BFSNode* par = loc2Node[myPoint];
+  BFSNode* child = other->loc2Node[otherPoint];
 
   other->combined = true;
 
@@ -135,5 +132,7 @@ void BFS::takeOver(BFS* other, Point myPoint, Point otherPoint) {
     id2Node[n->id] = n;
     loc2Node[n->loc] = n;
   }
+
+  par->children.push_back(child);
   child->rotate(par);
 }
