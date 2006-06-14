@@ -251,8 +251,7 @@ void MineManager::removeMineral(SoarGameObject* mineral) {
         fsmsToAbort.push_back(*it3);
 
         // this frees the resources (dropoff point matters, in this case)
-        // and deletes the MineFSM from the route
-        removeFromRoute(*it2, it3);
+        removeFromRouteNoErase(*it2, it3);
       }
       invalidRoutes.push_back(*it2);
       // route will still appear at the other end
@@ -296,8 +295,9 @@ void MineManager::removeControlCenter(SoarGameObject* center) {
             fsmsToAbort.push_back(*it3);
             // this frees the resources (dropoff point matters, in this case)
             // and deletes the MineFSM from the route
-            removeFromRoute(*it2, it3);
+            removeFromRouteNoErase(*it2, it3);
           }
+          (*it2)->fsms.clear();
           // remove the route 
           (*it2)->valid = false;
           invalidRoutes.push_back(*it2);
@@ -329,20 +329,23 @@ void MineManager::removeFromRoute(MiningRoute* route, MineFSM* fsm) {
        it != route->fsms.end();
        it++) {
     if (*it == fsm) {
-      removeFromRoute(route, it);
+      removeFromRouteNoErase(route, it);
     }
+    route->fsms.erase(it);
+    it = route->fsms.end();
   }
 }
 
-void MineManager::removeFromRoute(MiningRoute* route, 
+void MineManager::removeFromRouteNoErase(MiningRoute* route, 
                                   list<MineFSM*>::iterator fsmIt) {
+  // added due to the stupid STL list erase problem
   //assignments.erase(*it->getSoarGameObject());
-  route->fsms.erase(fsmIt);
   route->mineStation->optimality -= MINE_COST;
   //route->dropoffStation->optimality--;
 #ifndef NO_DOS
   route->dropoffStation->optimality -= DROPOFF_COST;
 #endif
+  
   for (list<MiningRoute*>::iterator it = route->mineStation->routes.begin();
        it != route->mineStation->routes.end();
        it++) {
@@ -358,6 +361,13 @@ void MineManager::removeFromRoute(MiningRoute* route,
       adjustOptimality(*it);
     }
   }
+}
+
+
+void MineManager::removeFromRoute(MiningRoute* route, 
+                                  list<MineFSM*>::iterator fsmIt) {
+  // use the noErase version!
+  assert(false);
 }
 
     
