@@ -353,7 +353,7 @@ void PerceptualGroup::generateData() {
 
   old = true;
 
-  if (typeName = "worker" and currentCommand != "mine") {
+  if (typeName == "worker" and currentCommand != "mine") {
   set<SoarGameObject*>::iterator currentObject;
       currentCommand = "mine";
       Vector<sint4> tempVec;
@@ -365,6 +365,7 @@ void PerceptualGroup::generateData() {
       
       getMembers(sgoList);
       Sorts::mineManager->prepareRoutes(sgoList);
+      ObjectActionType type = OA_MINE; 
       
       for (currentObject = members.begin();
            currentObject != members.end();
