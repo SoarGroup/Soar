@@ -108,9 +108,15 @@ bool canHit(GameObj *gob, const Circle& c, bool isGround);
 bool canHit(GameObj* atk, const Vec2d& loc, GameObj *tgt);
 bool canHit(const Circle& c1, const Circle& c2, double range); 
 
-void positionsOnCircle (const Vec2d& center, const Vec2d& firstPos, 
-  double chordLen, list<Vec2d>& positions);
+void positionsOnCircle 
+( const Vec2d& center, 
+  const Vec2d& firstPos, 
+  double chordLen, 
+  list<Vec2d>& positions);
 
 
 unsigned long gettime();
+
+int gobX(GameObj* gob);
+int gobY(GameObj* gob);
 #endif

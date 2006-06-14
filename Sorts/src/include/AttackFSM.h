@@ -31,6 +31,10 @@ public:
 
   void stop();
 
+  int getAvgDamage() {
+    return (weapon->get_int("min_damage") + weapon->get_int("max_damage")) / 2;
+  }
+
 public:
   bool reassign;
   int failCount;
@@ -45,7 +49,9 @@ private:
   Vector<sint4> attackParams;
   bool moving;
   int disownedStatus;
-
+  
+  bool firstMove;
+  int moveFails;
 };
 
 

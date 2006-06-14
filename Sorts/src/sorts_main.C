@@ -92,18 +92,19 @@ void SoarOutputEventHandler
   Agent*        agent, 
   smlPhase      phase )
 {
-  if (Sorts::cyclesSoarAhead > 10) {
+  unsigned long st = gettime();
+  if (Sorts::cyclesSoarAhead > 5) {
     Sorts::SoarIO->stopSoar();
   }
   Sorts::cyclesSoarAhead++;
 
   pthread_mutex_lock(Sorts::mutex);
-  unsigned long st = gettime();
   std::cout << "SOAR EVENT {\n";
   
   if (Sorts::catchup == true) {
     std::cout << "ignoring Soar event, ORTS is behind.\n";
     pthread_mutex_unlock(Sorts::mutex);
+    msg << "TIME " << (gettime() - st) / 1000 << endl;
     return;
   }
   Sorts::SoarIO->getNewSoarOutput();
@@ -123,7 +124,8 @@ void SoarOutputEventHandler
     //Sorts::SoarIO->unlockSoarMutex();
     Sorts::SoarIO->setStale(false);
   }
-  std::cout << "SOAR EVENT } t: " << gettime() - st << "\n";
+  cout << "SOAR EVENT }" << endl;
+  msg << "TIME " << (gettime() - st) / 1000 << endl;
   pthread_mutex_unlock(Sorts::mutex);
 }
 #else
@@ -136,6 +138,7 @@ void SoarUpdateEventHandler(smlUpdateEventId id,
   if (Sorts::catchup == true) {
     std::cout << "ignoring Soar event, ORTS is behind.\n";
     pthread_mutex_unlock(Sorts::mutex);
+    msg << "TIME " << (gettime() - st) / 1000 << endl;
     return;
   }
   Agent *agent = pKernel->GetAgent("orts_agent");
@@ -183,7 +186,7 @@ void* RunSoar(void* ptr) {
       msg << "I BROKE OUT" << endl;
       // spin until Soar gets started again
       while (!Sorts::SoarIO->isSoarRunning()) {
-        usleep(125000); // assuming 8 fps from server
+        usleep(60000); // assuming 8 fps from server
       }
       msg << "Going Back Up Again" << endl;
     }
@@ -207,10 +210,12 @@ void* RunOrts(void* ptr) {
   GameStateModule* gsm = (GameStateModule*) ptr;
   msg << "Starting ORTS" << endl;
   while(1) {
+//  for(unsigned long i = 0; i < 1000; i++) {
     if (!gsm->recv_view()) {
-      SDL_Delay(1);
+      usleep(30000);
     }
   }
+  exit(0);
   // unreachable (what is this supposed to return, anyway?)
   return NULL;
 }

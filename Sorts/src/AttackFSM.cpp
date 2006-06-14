@@ -55,45 +55,63 @@ void AttackFSM::init(vector<sint4> params) {
 }
 
 int AttackFSM::update() {
+  unsigned long st = gettime();
   msg << "updating.\n";
   vector<sint4> moveParams(2);
   if (manager == NULL) {
     if (disownedStatus == 0) {
+      msg << "TIME " << (gettime() - st) / 1000 << endl;
       return FSM_FAILURE;
     }
     else {
+      msg << "TIME " << (gettime() - st) / 1000 << endl;
       return FSM_SUCCESS;
     }
   }
   int status = manager->direct(this);
   if (status > 0) {
+    msg << "TIME " << (gettime() - st) / 1000 << endl;
     return FSM_SUCCESS;
   }
   if (status < 0) {
+    msg << "TIME " << (gettime() - st) / 1000 << endl;
     return FSM_FAILURE;
   }
 
   if (moving) {
-    switch(moveFSM->update()) {
-      case FSM_SUCCESS:
-        moving = false;
-        break;
-      case FSM_FAILURE:
-        // repath
-        msg << "MOVE FAILED" << endl;
-        moveParams[0] = dest(0);
-        moveParams[1] = dest(1);
-        moveFSM->init(moveParams);
-        break;
-      case FSM_UNREACHABLE:
-        // unreachable dest, this should never happen
-        msg << "(" << dest(0) << "," << dest(1) << ") UNREACHABLE" << endl;
-        moving = false;
-        break;
-      default:
-        break;
+    if (firstMove) {
+      // don't call update again on first move
+      firstMove = false;
+    }
+    else {
+      switch(moveFSM->update()) {
+        case FSM_SUCCESS:
+          moving = false;
+          break;
+        case FSM_FAILURE:
+          moveFails++;
+          if (moveFails > 5) {
+            moving = false;
+          }
+          else {
+            // repath
+            msg << "MOVE FAILED" << endl;
+            moveParams[0] = dest(0);
+            moveParams[1] = dest(1);
+            moveFSM->init(moveParams);
+          }
+          break;
+        case FSM_UNREACHABLE:
+          // unreachable dest, this should never happen
+          msg << "(" << dest(0) << "," << dest(1) << ") UNREACHABLE" << endl;
+          moving = false;
+          break;
+        default:
+          break;
+      }
     }
   }
+  msg << "TIME " << (gettime() - st) / 1000 << endl;
   return FSM_RUNNING;
 }
 
@@ -110,6 +128,8 @@ bool AttackFSM::isFiring() {
 }
 
 int AttackFSM::move(int x, int y) {
+  firstMove = true;
+  moveFails = 0;
   if (moveFSM == NULL) {
     moveFSM = new MoveFSM(gob);
   }
@@ -119,7 +139,7 @@ int AttackFSM::move(int x, int y) {
   vector<sint4> moveParams(2);
   moveParams[0] = x;
   moveParams[1] = y;
-  msg << "initting move\n";
+  msg << "initting move (" << x << ", " << y << ")" << endl;
   moveFSM->init(moveParams);
   int status = moveFSM->update();
   switch (status) {

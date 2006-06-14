@@ -87,6 +87,7 @@ bool OrtsInterface::handle_event(const Event& e) {
         gsm->send_actions(); // empty, needed by server
         pthread_mutex_unlock(Sorts::mutex);
         Sorts::SoarIO->startSoar();
+        msg << "TIME " << (gettime() - st) / 1000 << endl; 
         return true;
       }
       
@@ -116,12 +117,14 @@ bool OrtsInterface::handle_event(const Event& e) {
       Sorts::SoarIO->commitInputLinkChanges();
       Sorts::SoarIO->startSoar();
     }
-    msg << "ORTS EVENT } t: " << gettime() - st << endl;
+    msg << "ORTS EVENT }" << endl;
     pthread_mutex_unlock(Sorts::mutex);
+    msg << "TIME " << (gettime() - st) / 1000 << endl; 
     return true;
   }
   else {
     pthread_mutex_unlock(Sorts::mutex);
+    msg << "TIME " << (gettime() - st) / 1000 << endl; 
     return false;
   }
 }

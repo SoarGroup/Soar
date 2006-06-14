@@ -9,6 +9,7 @@
 #include "Circle.h"
 #include "SoarGameObject.h"
 #include "AttackFSM.h"
+#include "AttackTargetInfo.h"
 
 #include "Vector.H"
 #include "GameObj.H"
@@ -26,7 +27,7 @@ public:
   void unregisterFSM(AttackFSM* fsm);
   int direct(AttackFSM* fsm);
 
-  set<SoarGameObject*>* getTargets() { return &targets; }
+  set<SoarGameObject*>* getTargets() { return &targetSet; }
 
 private: // functions
   void            selectTarget();
@@ -37,15 +38,16 @@ private: // functions
   void            attackArcPos(GameObj* atk, GameObj* tgt, list<Vec2d>& positions);
 
   void            assignTarget(AttackFSM* fsm, SoarGameObject* target);
-  void            unassignTarget(SoarGameObject* target);
+  void            unassignTarget(AttackFSM* fsm);
+  void            unassignAll(SoarGameObject* target);
+  bool            findTarget(AttackFSM* fsm);
 
 private: // variables
-  
   list<AttackFSM*> team;
-  set<SoarGameObject*> targets;
+  set<SoarGameObject*> targetSet;
+  map<SoarGameObject*, AttackTargetInfo> targets;
   vector<SoarGameObject*> sortedTargets;
 
-  map<SoarGameObject*, list<AttackFSM*>*> targetAssignments;
 };
 
 #endif

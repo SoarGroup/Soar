@@ -183,11 +183,11 @@ void PerceptualGroup::generateData() {
     if (weapon != NULL and weapon->get_int("shooting") == 1) {
       ++shooting;
     }
-   /* 
-    if (gob->dir_damage[gob->dir_max_damage] > 0) {
+
+    if (gob->dir_dmg > 0) {
       ++damaged;
     }
-*/
+
     objStatus = (*currentObject)->getStatus();
     if (objStatus == OBJ_RUNNING) {
       running++;
@@ -248,12 +248,14 @@ void PerceptualGroup::generateData() {
 
   attribs.add("shooting", shooting);
 
+/*
   if (health < prevHealth) {
     damaged = 1;
   }
   else {
     damaged = 0;
   }
+*/
   prevHealth = health;
   attribs.add("taking-damage", damaged);
 

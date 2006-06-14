@@ -1,6 +1,7 @@
 #ifndef BFS_H_
 #define BFS_H_
 
+#include <set>
 #include <map>
 #include <list>
 #include <algorithm>
@@ -37,7 +38,7 @@ struct BFSNode {
 
 class BFS {
 public:
-  BFS(Point rootLoc);
+  BFS(Point rootLoc, int _xmax, int _ymax);
   ~BFS();
  
   bool insertEdge(Point p1, Point p2, list<Point>* cycle);
@@ -48,12 +49,18 @@ public:
 private: // functions
   void createNode(BFSNode* par, Point loc);
   void findCycle(BFSNode* n1, BFSNode* n2, list<Point>& cycle);
+  void findBoundaryCycle(BFSNode* n1, BFSNode* n2, list<Point>& cycle);
 
 private:
   int idCounter;
   bool combined;
   map<int, BFSNode*>   id2Node;
   map<Point, BFSNode*> loc2Node;
+
+  set<BFSNode*> boundaryLeaves;
+
+  int xmax;
+  int ymax;
 };
 
 #endif

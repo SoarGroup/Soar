@@ -213,3 +213,11 @@ unsigned long gettime() {
   gettimeofday(&t, NULL);
   return t.tv_sec * 1000000 + t.tv_usec;
 }
+
+int gobX(GameObj* gob) {
+  return *gob->sod.x;
+}
+
+int gobY(GameObj* gob) {
+  return *gob->sod.y;
+}
