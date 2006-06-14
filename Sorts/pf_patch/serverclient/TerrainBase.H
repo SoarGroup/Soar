@@ -1,7 +1,7 @@
 #ifndef TerrainBase_H
 #define TerrainBase_H
 
-// $Id: TerrainBase.H,v 1.19 2006/06/05 16:56:11 ddeutscher Exp $
+// $Id: TerrainBase.H,v 1.22 2006/06/09 15:14:01 ddeutscher Exp $
 // This is an ORTS file (c) Michael Buro, David Deutscher, licensed under the GPL
 
 // Terrain Base Class
@@ -98,8 +98,13 @@ public :
 
     Path() : id() { }
     Path(const Path &other) : id(other.id), locs(other.locs) {};
-  private:
-    Path& operator=(const Path &other);
+    Path& operator=(const Path &other) { 
+      if( this != &other ) { 
+        id = other.id;
+        locs = other.locs;
+      }
+      return *this;
+    };
   };
 
 
@@ -217,15 +222,18 @@ public :
   virtual ~TerrainBase();
 
   /// Set map dimensions
-  /** set playfield dimensions
+  /** set playfield dimensions and gives the pathfinder the IDs of the client
+      and the neutral players
       tiles_x/y : dimensions in tiles
       tile_points : points on tile edge on fine grid 
   */
-  virtual void init(sint4 tiles_x_, sint4 tiles_y_, sint4 tile_points_)
+  virtual void init(sint4 tiles_x_, sint4 tiles_y_, sint4 tile_points_, sint4 client_pID_, sint4 neutral_pID_)
   {
     tiles_x = tiles_x_;
     tiles_y = tiles_y_;
     tile_points = tile_points_;
+    client_pID = client_pID_;
+    neutral_pID = neutral_pID_;
   };
 
   //---------------------------------------------------------------------
@@ -312,8 +320,10 @@ virtual void findPath(const Object* gob, const Loc &l2, Path &path) = 0;
       messages, and is expected to return quickly. */
   virtual void execute_tasks(Vector<MoveCmd> &cmds, Vector<StatusMsg> &msgs) = 0;
   /** Plan the paths you're handling. This is where long thinking should be done.
-      Return true iff did some lengthy processing */
-  virtual bool plan_tasks(sint4 max_time = 0) = 0;
+      Return true iff did some lengthy processing.
+      Try to use only the specified amount of time for planning before returning
+      control to the caller. If max_time == 0 then there is no requested time limit. */
+  virtual bool plan_tasks(uint4 max_time = 0) = 0;
   //@}
   //---------------------------------------------------------------------
 
@@ -322,6 +332,8 @@ protected:
   sint4 tiles_x,          ///< playfield width
         tiles_y;          ///< playfield height
   sint4 tile_points;      ///< points on tile edge on fine grid
+  sint4 client_pID,       ///< ID of the client player
+        neutral_pID;      ///< ID of neutral player (eg. sheep)
 };
 
 extern std::ostream& operator<<(std::ostream& os, const TerrainBase::Loc& l);
@@ -341,6 +353,9 @@ REGISTER_TYPEOF(2408, Vector<TerrainBase::MoveCmd>::const_iterator);
 
 REGISTER_TYPEOF(2409, Vector<TerrainBase::Loc>::reverse_iterator);
 REGISTER_TYPEOF(2410, Vector<TerrainBase::Loc>::const_reverse_iterator);
+
+REGISTER_TYPEOF(2411, Vector<TerrainBase::Path>::iterator);
+REGISTER_TYPEOF(2412, Vector<TerrainBase::Path>::const_iterator);
 
 #if 0
   // later

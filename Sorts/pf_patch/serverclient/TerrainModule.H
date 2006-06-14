@@ -1,7 +1,7 @@
 #ifndef TerrainModule_H
 #define TerrainModule_H
 
-// $Id: TerrainModule.H,v 1.6 2006/05/10 12:34:52 ddeutscher Exp $
+// $Id: TerrainModule.H,v 1.9 2006/06/09 12:48:47 ddeutscher Exp $
 // This is an ORTS file (c) Michael Buro, David Deutscher, licensed under the GPL
 
 // glue between ORTS and terrain code
@@ -70,14 +70,15 @@ void findPath(GameObj* gob, TerrainBase::Loc goal, TerrainBase::Path& path);
   {
   public:
     
-    PathStatusEvent(sint4 who, sint4 what, GameObj *obj_) :
-      Event(who, what), obj(obj_) {}
+    PathStatusEvent(sint4 who, sint4 what, sint4 details_, GameObj *obj_) :
+      Event(who, what), obj(obj_), details(details_) {}
     
     GameObj* get_obj() const { return obj; }
+    sint4 get_details() const { return details; };
     
   private:
-    
     GameObj *obj;
+    sint4 details;
   };
 
   //---------------------------------------------------------
@@ -87,9 +88,15 @@ void findPath(GameObj* gob, TerrainBase::Loc goal, TerrainBase::Path& path);
   static const sint4 FIND_PATH_STOP;
   static const sint4 PATH_SUCCESS;
   static const sint4 PATH_FAILURE;
-
-  // can pass different terrain implementations here
-  TerrainModule(GameStateModule &gsm_, TerrainBase &timp);
+  static const sint4 PATH_PLAN_FAILURE;
+  static const sint4 PATH_MOVE_FAILURE;
+  static const sint4 MOVE_PRIORITY;///< Priority of Move commands
+  
+  /** Initialize the TerrainModule with some implementation of the TerrainBase 
+      interface. Optionally give a bound on the maximum time (in milliseconds)
+      spent by the implementation on planning per each game tick 
+      (0 = automatic limit). */
+  TerrainModule(GameStateModule &gsm, TerrainBase &timp, sint4 max_ms_per_tick = 0);
   ~TerrainModule();
 
   bool handle_event(const Event &e);
@@ -102,7 +109,8 @@ private:
   void notify_timp_on_world_changes(const GameChanges &changes);
   
   GameStateModule &gsm;
-  TerrainBase &timp;    // terrain implementation
+  TerrainBase &timp;        ///< terrain implementation
+  sint4 max_ms_per_tick;    ///< max time (milliseconds) to be spent by timp on planning in each game tick
   
   CWidget *widget;
 };

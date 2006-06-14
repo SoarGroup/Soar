@@ -1,9 +1,8 @@
-// $Id: TerrainModule.C,v 1.9 2006/05/10 12:34:52 ddeutscher Exp $
+// $Id: TerrainModule.C,v 1.24 2006/06/10 02:48:35 orts_mburo Exp $
 
 // This is an ORTS file (c) Michael Buro, David Deutscher, licensed under the GPL
 
 #include "TerrainModule.H"
-#include "TerrainBase.H"
 #include "Game.H"
 #include "GameObj.H"
 #include "Options.H"
@@ -11,22 +10,30 @@
 
 using namespace std;
 
-const sint4 TerrainModule::FROM           = EventFactory::new_who();
-const sint4 TerrainModule::FIND_PATH_MSG  = EventFactory::new_what();
-const sint4 TerrainModule::FIND_PATH_STOP = EventFactory::new_what();
-const sint4 TerrainModule::PATH_SUCCESS   = EventFactory::new_what();
-const sint4 TerrainModule::PATH_FAILURE   = EventFactory::new_what();
+const sint4 TerrainModule::FROM               = EventFactory::new_who();
+const sint4 TerrainModule::FIND_PATH_MSG      = EventFactory::new_what();
+const sint4 TerrainModule::FIND_PATH_STOP     = EventFactory::new_what();
+const sint4 TerrainModule::PATH_SUCCESS       = EventFactory::new_what();
+const sint4 TerrainModule::PATH_FAILURE       = EventFactory::new_what();
+const sint4 TerrainModule::PATH_PLAN_FAILURE  = EventFactory::new_what();
+const sint4 TerrainModule::PATH_MOVE_FAILURE  = EventFactory::new_what();
+const sint4 TerrainModule::MOVE_PRIORITY = 1; 
 
-
-TerrainModule::TerrainModule(GameStateModule &gsm_, TerrainBase &timp_)
-  : gsm(gsm_), timp(timp_)
+TerrainModule::TerrainModule(GameStateModule &gsm_, TerrainBase &timp_, sint4 max_ms_per_tick_)
+  : gsm(gsm_), timp(timp_), max_ms_per_tick(max_ms_per_tick_)
 {
-  // widget = timp.create_widget();  // fixme: move code to gfxclient
+  gsm.add_handler(this);
+
+  // Auto compute max_ms_per_tick
+  //if( max_ms_per_tick == 0 ){    
+  //max_ms_per_tick = (uint4)(1000/gsm.get_game().get_freq() - 20);  // milliseconds
+    //}
 }
 
 
 TerrainModule::~TerrainModule()
-{ 
+{
+  gsm.remove_handler(this);
   // delete widget;  // fixme: move code to gfxclient
 }
 
@@ -120,9 +127,15 @@ bool TerrainModule::handle_event(const Event &e)
 
       // If this is the first view, initialize the TerrainBase implementation
       if( game.get_view_frame() == 0 ) {
+	if( max_ms_per_tick == 0 ){    
+	  max_ms_per_tick = (uint4)(1000/gsm.get_game().get_freq() - 20);  // milliseconds
+	  cout << "MAXTIME " << max_ms_per_tick << endl;
+	}
         timp.init(game.get_map().get_width(),
                   game.get_map().get_height(),
-                  game.get_tile_points());
+                  game.get_tile_points(),
+		  game.get_client_player(),
+		  game.get_player_num()); //The total number of players is also the id of the neutral player.
       }
 
       notify_timp_on_world_changes(gsm.get_changes());
@@ -138,13 +151,19 @@ bool TerrainModule::handle_event(const Event &e)
          probably involving the main client loop controling when to set actions
          (e.g. when no server messages are available in the read buffer).
       */
-
+      /*
       // Give the implementation a chance to plan
       if( !behind ) {
         behind = timp.plan_tasks();
-      }
+	}
       // if still not behind, execute the active tasks
       if( !behind ) {
+      act();
+      }*/
+      
+      // plan and execute moves, but not if we're behind
+      if( !behind ) {
+        timp.plan_tasks(max_ms_per_tick);
         act();
       }
     }
@@ -232,17 +251,28 @@ void TerrainModule::act(void)
     params.push_back(m->next_loc.x);
     params.push_back(m->next_loc.y);
     params.push_back(max((sint4)0,m->speed));
-    gob->set_action("move", params);
+    gob->set_action("move", params, MOVE_PRIORITY);
   }
 
   // send the msgs
   FORALL(msgs, m) {
     GameObj* gob = dynamic_cast<GameObj*>(const_cast<Object*>(m->obj));
-    if( !gob ) continue;
-    sint4 type = (m->type == TerrainBase::StatusMsg::ARRIVED)? PATH_SUCCESS : PATH_FAILURE;
-    call_handlers(PathStatusEvent(FROM, type, gob));
+    if( !gob )
+      continue;
+
+    sint4 type = PATH_SUCCESS;
+    sint4 details = 0;
+    if( m->type == TerrainBase::StatusMsg::NO_PATH_FAILURE ) {
+      type = PATH_FAILURE;
+      details = PATH_PLAN_FAILURE;
+    } else if( m->type == TerrainBase::StatusMsg::MOVEMENT_FAILURE ) {
+      type = PATH_FAILURE;
+      details = PATH_MOVE_FAILURE;
+    }
+    call_handlers(PathStatusEvent(FROM, type, details, gob));
   }
 }
+
 void TerrainModule::findPath(GameObj* gob, TerrainBase::Loc goal, TerrainBase::Path& path) {
     timp.findPath(gob, goal, path);
 }
@@ -274,5 +304,4 @@ void TerrainModule::insertControlCenters() {
 void TerrainModule::removeControlCenters() {
   timp.removeControlCenters();
 }
-
 

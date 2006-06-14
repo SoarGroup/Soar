@@ -1,7 +1,7 @@
 #ifndef Demo_SimpleTerrain_H
 #define Demo_SimpleTerrain_H
 
-// $Id: Demo_SimpleTerrain.H,v 1.9 2006/06/06 11:25:38 ddeutscher Exp $
+// $Id: Demo_SimpleTerrain.H,v 1.11 2006/06/09 18:46:14 ddeutscher Exp $
 
 // This is an ORTS file 
 // (c) Michael Buro, Sami Wagiaalla, David Deutscher
@@ -97,7 +97,7 @@ namespace Demo_SimpleTerrain {
     /// \name Implementation of relevant parts of the TerrainBase interface
     //---------------------------------------------------------------------
     //@{
-    virtual void init(sint4 tiles_x_, sint4 tiles_y_, sint4 tile_points_);
+    virtual void init(sint4 tiles_x_, sint4 tiles_y_, sint4 tile_points_, sint4 me, sint4 neutral);
 
     virtual void add_obj(const Object *obj);
     virtual void update_obj(const Object *obj);
@@ -108,11 +108,11 @@ namespace Demo_SimpleTerrain {
     virtual void remove_task(TaskId tid);
 
     virtual void execute_tasks(Vector<MoveCmd> &cmds, Vector<StatusMsg> &msgs);
-    virtual bool plan_tasks(sint4 max_time=0);
+    virtual bool plan_tasks(uint4 max_time=0);
 
     virtual real8 find_path(const Loc &l1, const Loc &l2, sint4 radius, Path *path, ConsiderObjects consider = CONSIDER_ALL);
     virtual real8 find_path(const Object *obj, const Goal &goal, Path *path, ConsiderObjects consider = CONSIDER_ALL);
-    
+
     // Sorts additions
     virtual void findPath(const Object* gob, const Loc &l2, Path &path);
     virtual void findPath(const Object* gob, const Object* l2, Path &path);

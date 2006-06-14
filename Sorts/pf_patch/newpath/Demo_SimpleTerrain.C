@@ -1,4 +1,4 @@
-// $Id: Demo_SimpleTerrain.C,v 1.7 2006/06/05 16:56:11 ddeutscher Exp $
+// $Id: Demo_SimpleTerrain.C,v 1.9 2006/06/09 18:46:14 ddeutscher Exp $
 
 // This is an ORTS file 
 // (c) Michael Buro, Sami Wagiaalla, David Deutscher
@@ -49,35 +49,6 @@ void ST_Terrain::findPath(const Object* gob, const Object* l2, Path &path) {
     Loc lg;
     lg.x = x2;
     lg.y = y2;
-   /*
-    MapPtr m = (gob->get_zcat() == Object::ON_LAND)? &map : &air_map;
-    Vector<TerrainBase::Loc> path;
-    Vector<TerrainBase::Loc> clear;
-
-    sint4 x1, y1; obj->get_center(x1, y1);
-    x1 = world2x(x1);
-    y1 = world2y(y1);
-    sint4 x2 = world2x(goal.x);
-    sint4 y2 = world2y(goal.y);
-
-    // constrain goal to inside the map
-    x2 = min(max(x2,(sint4)1), map.get_w()-2);
-    y2 = min(max(y2,(sint4)1), map.get_h()-2);
-
-    bool found = false;
-    int r = obj->get_radius();
-    int newr = r / subtile_points;
-    if( r%subtile_points >= subtile_points/2 )
-      newr++;
-    Bucket b = BucketFactory::get_bucket(newr);
-    b.set_center(TerrainBase::Loc(x1, y1));
-
-    // clear current location (ignoring the target object)
-    remove_object(obj);
-    clear_location(b, *m, clear);
-
-    */
-    //cout << "goal: " << l.x << "," << l.y << endl;
     pfEngine->remove_object(l2);
     pfEngine->clearGobLocation(l2);
     pfEngine->remove_object(gob);
@@ -97,9 +68,9 @@ void ST_Terrain::findPath(const Object* gob, const Object* l2, Path &path) {
   }
 
   //-----------------------------------------------------------------------------
-  void ST_Terrain::init(sint4 tiles_x_, sint4 tiles_y_, sint4 tile_points_)
+  void ST_Terrain::init(sint4 tiles_x_, sint4 tiles_y_, sint4 tile_points_, sint4 me, sint4 neutral)
   {
-    TerrainBasicImp<ST_Task>::init(tiles_x_, tiles_y_, tile_points_);
+    TerrainBasicImp<ST_Task>::init(tiles_x_, tiles_y_, tile_points_, me, neutral);
     sint4 gran;
     Options::get("-gran", gran);
     pfEngine = boost::shared_ptr<PFEngine>(new PFEngine(tiles_x_, tiles_y_, tile_points_, gran));
@@ -380,7 +351,7 @@ void ST_Terrain::findPath(const Object* gob, const Object* l2, Path &path) {
   }
 
   //----------------------------------------------------------------------------------
-  bool ST_Terrain::plan_tasks(sint4 /*max_time*/)
+  bool ST_Terrain::plan_tasks(uint4 /*max_time*/)
   {
     // plan a failed path
     bool did_something = plan_failed_task();
