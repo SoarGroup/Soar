@@ -221,3 +221,9 @@ int gobX(GameObj* gob) {
 int gobY(GameObj* gob) {
   return *gob->sod.y;
 }
+
+
+bool damageTaken(int dir, uint4 dmg_vector) {
+  uint4 mask = 1 << dir;
+  return (mask & dmg_vector);
+}

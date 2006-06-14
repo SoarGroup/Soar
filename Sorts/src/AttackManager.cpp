@@ -17,30 +17,189 @@
 #endif
 
 
+inline int min(int a, int b) {
+  if (a < b) return a; return b;
+}
+
+inline int max(int a, int b) {
+  if (a > b) return a; return b;
+}
+
+enum Side { LEFT, RIGHT, TOP, BOTTOM };
+
+void positionsOnRectangle
+( int ax, int ay, int tx1, int ty1, int tx2, int ty2, 
+  int offset, int distBetween, 
+  list<Vec2d>& positions)
+{
+  Side s[4];
+
+  int posX1 = tx1 - offset;
+  int posY1 = ty1 - offset;
+  int posX2 = tx2 + offset;
+  int posY2 = ty2 + offset;
+
+  int closeX = -1, closeY = -1;
+
+  if (ax < tx1) {
+    if (ay < ty1) {
+      // upper left corner
+      int diffx = tx1 - ax;
+      int diffy = ty1 - ay;
+      if (diffx < diffy) {
+        s[0] = TOP; s[1] = LEFT; s[2] = BOTTOM; s[3] = RIGHT;
+        closeX = tx1;
+      }
+      else {
+        s[0] = LEFT; s[1] = TOP; s[2] = RIGHT; s[3] = BOTTOM;
+        closeY = ty1;
+      }
+    }
+    else if (ay > ty2) {
+      // lower left corner
+      int diffx = tx1 - ax;
+      int diffy = ay - ty2;
+      if (diffx < diffy) {
+        s[0] = BOTTOM; s[1] = LEFT; s[2] = TOP; s[3] = RIGHT;
+        closeX = tx1;
+      }
+      else {
+        s[0] = LEFT; s[1] = BOTTOM; s[2] = RIGHT; s[3] = TOP;
+        closeY = ty2;
+      }
+    }
+    else {
+      // left side
+      s[0] = LEFT; s[1] = BOTTOM; s[2] = TOP; s[3] = RIGHT;
+      closeY = ay;
+    }
+  }
+  else if (ax > tx2) {
+    if (ay < ty1) {
+      // upper right corner
+      int diffx = ax - tx2;
+      int diffy = ty1 - ay;
+      if (diffx < diffy) {
+        s[0] = TOP; s[1] = RIGHT; s[2] = BOTTOM; s[3] = LEFT;
+        closeX = tx2;
+      }
+      else {
+        s[0] = RIGHT; s[1] = TOP; s[2] = LEFT; s[3] = BOTTOM;
+        closeY = ty1;
+      }
+    }
+    else if (ay > ty2) {
+      // lower right corner
+      int diffx = ax - tx2;
+      int diffy = ay - ty2;
+      if (diffx < diffy) {
+        s[0] = BOTTOM; s[1] = RIGHT; s[2] = TOP; s[3] = LEFT;
+        closeX = tx2;
+      }
+      else {
+        s[0] = RIGHT; s[1] = BOTTOM; s[2] = LEFT; s[3] = TOP;
+        closeY = ty2;
+      }
+    }
+    else {
+      // right side
+      s[0] = RIGHT; s[1] = TOP; s[2] = BOTTOM; s[3] = LEFT;
+      closeY = ay;
+    }
+  }
+  else if (ay < ty1) {
+    // top
+    s[0] = TOP; s[1] = RIGHT; s[2] = LEFT; s[3] = BOTTOM;
+    closeX = ax;
+  }
+  else {
+    // bottom
+    s[0] = BOTTOM; s[1] = LEFT; s[2] = RIGHT; s[3] = TOP;
+    closeX = ax;
+  }
+ 
+  msg << "PATTERN START" << endl;
+  int d;
+  for(int i = 0; i < 4; i++) {
+    switch(s[i]) {
+      case TOP:
+        assert(closeX >= 0);
+        positions.push_back(Vec2d(closeX, posY1));
+        for(d=distBetween; closeX-d>=tx1 || closeX+d<=tx2; d+=distBetween) {
+          if (closeX-d >= tx1) {
+            positions.push_back(Vec2d(closeX-d, posY1));
+            msg << "PATTERN: " << closeX-d << " " << posY1 << endl;
+          }
+          if (closeX+d <= tx2) {
+            positions.push_back(Vec2d(closeX+d, posY1));
+            msg << "PATTERN: " << closeX+d << " " << posY1 << endl;
+          }
+        }
+        closeY = ty1; // for next side
+        break;
+      case BOTTOM:
+        assert(closeX >= 0);
+        positions.push_back(Vec2d(closeX, posY2));
+        for(d=distBetween; closeX-d>=tx1 || closeX+d<=tx2; d+=distBetween) {
+          if (closeX-d >= tx1) {
+            positions.push_back(Vec2d(closeX-d, posY2));
+            msg << "PATTERN: " << closeX-d << " " << posY2 << endl;
+          }
+          if (closeX+d <= tx2) {
+            positions.push_back(Vec2d(closeX+d, posY2));
+            msg << "PATTERN: " << closeX+d << " " << posY2 << endl;
+          }
+        }
+        closeY = ty2;
+        break;
+      case LEFT:
+        assert(closeY >= 0);
+        positions.push_back(Vec2d(posX1, closeY));
+        for(d=distBetween; closeY-d>=ty1 || closeY+d<=ty2; d+=distBetween) {
+          if (closeY-d >= ty1) {
+            positions.push_back(Vec2d(posX1, closeY-d));
+            msg << "PATTERN: " << posX1 << " " << closeY-d << endl;
+          }
+          if (closeY+d <= ty2) {
+            positions.push_back(Vec2d(posX1, closeY+d));
+            msg << "PATTERN: " << posX1 << " " << closeY+d << endl;
+          }
+        }
+        closeX = tx1;
+        break;
+      case RIGHT:
+        assert(closeY >= 0);
+        positions.push_back(Vec2d(posX2, closeY));
+        for(d=distBetween; closeY-d>=ty1 || closeY+d<=ty2; d+=distBetween) {
+          if (closeY-d >= ty1) {
+            positions.push_back(Vec2d(posX2, closeY-d));
+            msg << "PATTERN: " << posX2 << " " << closeY-d << endl;
+          }
+          if (closeY+d <= ty2) {
+            positions.push_back(Vec2d(posX2, closeY+d));
+            msg << "PATTERN: " << posX2 << " " << closeY+d << endl;
+          }
+        }
+        closeX = tx2;
+        break;
+      default:
+        assert(false);
+    }
+  }
+  msg << "PATTERN END" << endl;
+}
+
 void AttackManager::attackArcPos
 ( GameObj* atk, 
   GameObj* tgt, 
   list<Vec2d>& positions) 
 {
-  int range;
   int atkRadius = *atk->sod.radius;
-  int tgtRadius; 
-  if (*tgt->sod.shape == SHAPE_RECTANGLE) {
-    int tgtHeight = *tgt->sod.y2 - *tgt->sod.y1;
-    int tgtWidth  = *tgt->sod.x2 - *tgt->sod.x1;
-    assert(tgtHeight > 0 && tgtWidth > 0);
-    if (tgtHeight < tgtWidth) {
-      tgtRadius = tgtHeight / 2;
-    }
-    else {
-      tgtRadius = tgtWidth / 2;
-    }
-  }
-  else {
-    tgtRadius = *tgt->sod.radius;
-  }
+  int tgtRadius = *tgt->sod.radius;
   Vec2d aPos(*atk->sod.x, *atk->sod.y);
   Vec2d tPos(*tgt->sod.x, *tgt->sod.y);
+
+  int range;
   if (*tgt->sod.zcat == GameObj::ON_LAND) {
     range = atk->component("weapon")->get_int("max_ground_range") 
       + atkRadius + tgtRadius;
@@ -52,10 +211,24 @@ void AttackManager::attackArcPos
 
   range = range - 3; // for safety
 
-  Vec2d closestPos = tPos - Vec2d(tPos - aPos, range);
   list<Vec2d> atkPos;
-  positionsOnCircle(tPos, closestPos, *atk->sod.radius * 2, atkPos);
-  
+  if (*tgt->sod.shape == SHAPE_RECTANGLE) {
+    positionsOnRectangle
+    ( *atk->sod.x,
+      *atk->sod.y,
+      *tgt->sod.x1, 
+      *tgt->sod.x2, 
+      *tgt->sod.y1, 
+      *tgt->sod.y2,
+      range,
+      atkRadius * 2,
+      atkPos          );
+  }
+  else {
+    Vec2d closestPos = tPos - Vec2d(tPos - aPos, range);
+    positionsOnCircle(tPos, closestPos, *atk->sod.radius * 2, atkPos);
+  }
+
   for(list<Vec2d>::iterator
       i  = atkPos.begin();
       i != atkPos.end();
@@ -201,7 +374,28 @@ void AttackManager::unassignAll(SoarGameObject* target) {
 bool AttackManager::findTarget(AttackFSM* fsm) {
   msg << "FINDING A TARGET" << endl;
   GameObj* gob = fsm->getGob();
+  vector<SoarGameObject*> saturated;
+
+/*
+  for(vector<SoarGameObject*>::iterator
+        i  = sortedTargets.begin();
+        i != sortedTargets.end();
+        ++i)
+  {
+    if (targets[*i].isSaturated()) {
+      saturated.push_back(*i);
+    }
+  }
+
   for(int checkSaturated = 1; checkSaturated >= 0; checkSaturated--) {
+    vector<SoarGameObject*>* toCheck;
+    if (checkSaturated == 0) {
+      toCheck = &saturated;
+    }
+    else {
+      toCheck = &sortedTargets;
+    }
+*/
   // try to hit immediately attackable things first
 //  for(int checkSaturated = 1; checkSaturated >= 0; checkSaturated--) {
     for(vector<SoarGameObject*>::iterator
@@ -209,10 +403,9 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
         i != sortedTargets.end();
         ++i)
     {
-      msg << "target: " << (*i)->getGob()->bp_name() << endl;
-      if (canHit(gob, (*i)->getGob()) && 
-          (checkSaturated == 0 || !targets[*i].isSaturated()))
-      {
+//      if (canHit(gob, (*i)->getGob()) && 
+//          (checkSaturated == 0 || !targets[*i].isSaturated()))
+      if (canHit(gob, (*i)->getGob())) {
         assignTarget(fsm, *i);
 #ifdef USE_CANVAS_ATTACK_MANAGER
         GameObj* tgob = (*i)->getGob();
@@ -231,7 +424,7 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
       i != sortedTargets.end();
       ++i)
     {
-      if (checkSaturated == 0 || !targets[*i].isSaturated()) {
+//      if (checkSaturated == 0 || !targets[*i].isSaturated()) {
         list<Vec2d> positions;
         attackArcPos(fsm->getGob(), (*i)->getGob(), positions);
         for(list<Vec2d>::iterator
@@ -253,7 +446,7 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
             msg << "ARC CHECK MOVE FAIL" << endl;
           }
         }
-      }
+//      }
     }
 //  }
 
@@ -264,17 +457,17 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
         i != sortedTargets.end();
         ++i)
     {
-      if (checkSaturated == 0 || !targets[*i].isSaturated()) {
+//      if (checkSaturated == 0 || !targets[*i].isSaturated()) {
         GameObj* gob = (*i)->getGob();
         if (fsm->move(*gob->sod.x, *gob->sod.y) == 0) {
           assignTarget(fsm, *i);
           msg << "LAST RESORT TARG" << endl;
           return true;
         }
-      }
+//      }
     }
 //  }
-  }
+//  }
   return false;
 }
 

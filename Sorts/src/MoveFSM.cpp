@@ -21,7 +21,7 @@ using namespace std;
 
 // counter: number of consecutive in-place veers before FSM_FAILURE returned
 // i.e. the max number of cycles to allow zero speed before giving up
-#define MIN_COUNTER 1
+#define MIN_COUNTER 2
 #define MAX_COUNTER_DIFF 3 // min < value <  min+maxdiff
 // orig: 3
 

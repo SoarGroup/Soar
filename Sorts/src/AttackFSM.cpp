@@ -128,7 +128,6 @@ bool AttackFSM::isFiring() {
 }
 
 int AttackFSM::move(int x, int y) {
-  firstMove = true;
   moveFails = 0;
   if (moveFSM == NULL) {
     moveFSM = new MoveFSM(gob);
@@ -150,6 +149,7 @@ int AttackFSM::move(int x, int y) {
       dest.set(0, x);
       dest.set(1, y);
       moving = true;
+      firstMove = true;
       return 0;
   }
 }

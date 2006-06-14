@@ -119,4 +119,7 @@ unsigned long gettime();
 
 int gobX(GameObj* gob);
 int gobY(GameObj* gob);
+
+bool damageTaken(int dir, uint4 dmg_vector);
+
 #endif
