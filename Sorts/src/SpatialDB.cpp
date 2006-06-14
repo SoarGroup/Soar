@@ -94,7 +94,7 @@ void SpatialDB::addImaginaryObstacle(coordinate c) {
 }
 
 int SpatialDB::getCellNumber(int x, int y) {
-  return (y / tile_points) * width + x / tile_points;
+  return ((int)(y / tile_points)) * width + (int)(x / tile_points);
 }
 
 int SpatialDB::cell2row(int cellNum) {
@@ -324,16 +324,17 @@ bool SpatialDB::hasObjectCollision
 
 bool SpatialDB::hasObjectCollision(coordinate c, int r, GameObj* gob) {
   // ignore collisions with gob
-  return hasObjectCollisionInt(c, r, false, false, gob);
+  return hasObjectCollisionInt(c, r, false, false, gob, false);
 }
 
 bool SpatialDB::hasObjectCollision(sint4 x, sint4 y, sint4 r) {
   coordinate c(x,y);
-  return hasObjectCollisionInt(c, r, false, false, NULL);
+  return hasObjectCollisionInt(c, r, false, false, NULL, false);
 }
 
 bool SpatialDB::hasMiningCollision(coordinate c, bool checkCrowding) {
-  return hasObjectCollisionInt(c, WORKER_RADIUS+1, true, checkCrowding, NULL);
+  return hasObjectCollisionInt(c, WORKER_RADIUS+1, true, checkCrowding, 
+                               NULL, false);
 }
 
 bool SpatialDB::hasObjectCollision(Rectangle* rect) {
@@ -342,13 +343,19 @@ bool SpatialDB::hasObjectCollision(Rectangle* rect) {
   c.x = (int)((rect->xmax + rect->xmin)/2.0);
   c.y = (int)((rect->ymax + rect->ymin)/2.0);
   int radius = (int)(sqrt(squaredDistance(c.x, c.y, rect->xmax, rect->ymax)));
-  return hasObjectCollisionInt(c, radius, false, false, NULL);
+  return hasObjectCollisionInt(c, radius, false, false, NULL, false);
+}
+
+bool SpatialDB::hasImaginaryObstacleCollision(sint4 x, sint4 y, sint4 r) {
+  coordinate c(x,y);
+  return hasObjectCollisionInt(c, r, false, false, NULL, true);
 }
 
 bool SpatialDB::hasObjectCollisionInt(coordinate c, 
                                       int radius, bool forMining, 
                                       bool checkCrowding,
-                                      GameObj* ignoreGob) {
+                                      GameObj* ignoreGob, 
+                                      bool justImaginaryObstacles) {
   int cells[9];
   bool check[9] = {false};
 
@@ -360,7 +367,7 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
     r = radius;
   }
 
-  bigR = r + tile_points;
+  bigR = tile_points;
   sint4 x = c.x;
   sint4 y = c.y;
 
@@ -426,88 +433,94 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
   int crowdCount = 0;
 
   Circle circle(x,y,r);
-  
+ 
   for(int i=0; i<9; i++) {
     if(check[i]) {
+  //    msg << "checking cell " << cells[i] << "\n";
       assert(cells[i] < gobMap.size());
-      for(it = gobMap[cells[i]].begin(); it != gobMap[cells[i]].end(); it++) {
-        obj.x =  (*(*it)->sod.x);
-        obj.y =  (*(*it)->sod.y);
-        objr =  (*(*it)->sod.radius);
-        if (*(*it)->sod.shape != SHAPE_RECTANGLE) {
-          if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
-          < (r+objr) * (r+objr))  {
-            // inside the circle
-            if (not checkCrowding) {
-              if (forMining) {
-                if (((*it)->bp_name() != "worker") 
-                    and
-                    ((*it)->bp_name() != "sheep")
-                    ) {
-                  msg << "mining collision with " << (*it)->bp_name() << endl;
-                  msg << "at loc " << obj.x << "," << obj.y << endl;
+      if (not justImaginaryObstacles) {
+        for(it = gobMap[cells[i]].begin(); it != gobMap[cells[i]].end(); it++) {
+          obj.x =  (*(*it)->sod.x);
+          obj.y =  (*(*it)->sod.y);
+          objr =  (*(*it)->sod.radius);
+          if (*(*it)->sod.shape != SHAPE_RECTANGLE) {
+            if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
+            < (r+objr) * (r+objr))  {
+              // inside the circle
+              if (not checkCrowding) {
+                if (forMining) {
+                  if (((*it)->bp_name() != "worker") 
+                      and
+                      ((*it)->bp_name() != "sheep")
+                      ) {
+                    msg << "mining collision with " << (*it)->bp_name() << endl;
+                    msg << "at loc " << obj.x << "," << obj.y << endl;
+                    return true;
+                  }
+                }
+                else {
+                  if ((*it) != ignoreGob) {
+                    msg << "object collision with " << (*it)->bp_name() << endl;
+                    msg << "at loc " << obj.x << "," << obj.y << endl;
+                    return true;
+                  }
+                } 
+              }
+              else if ((*it)->bp_name() == "mineral") {
+                crowdCount++;
+                if (crowdCount >= CROWD_MAX_MINERALS) {
+                  msg << "too many minerals!\n";
                   return true;
                 }
+              }
+              
+            }
+          }
+          else {
+            // rectangle
+            Rectangle r(*(*it)->sod.x1, *(*it)->sod.x2, 
+                        *(*it)->sod.y1, *(*it)->sod.y2);
+            if (forMining) {
+              if (r.intersects(circle) and (*it)->bp_name() != "controlCenter") {
+                return true;
+              }
+            }
+            else if (r.intersects(circle) and (*it) != ignoreGob) {
+              msg << "object at " << c << " with radius " << radius 
+                  << " has collision with " << (*it)->bp_name() << " at " <<
+                *(*it)->sod.x << "," << *(*it)->sod.y << endl;
+              return true;
+            }
+           
+          }
+        }
+        crowdCount = 0;
+        if (forMining) {
+          for(iwit = imaginaryWorkerMap[cells[i]].begin(); 
+              iwit != imaginaryWorkerMap[cells[i]].end(); 
+              iwit++) {
+            obj.x = (*iwit).x;
+            obj.y = (*iwit).y;
+            objr = WORKER_RADIUS + 1; // radius of the imaginary worker
+            if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
+            < (r+objr) * (r+objr))  {
+              //Inside the circle
+              if (not checkCrowding) {
+                msg << "imaginary worker collision!\n";
+                return true;
               }
               else {
-                if ((*it) != ignoreGob) {
-                  msg << "object collision with " << (*it)->bp_name() << endl;
-                  msg << "at loc " << obj.x << "," << obj.y << endl;
+                crowdCount++;
+                if (crowdCount >= CROWD_MAX_WORKERS) {
+                  msg << "too many imaginary workers!\n";
                   return true;
                 }
-              } 
-            }
-            else if ((*it)->bp_name() == "mineral") {
-              crowdCount++;
-              if (crowdCount >= CROWD_MAX_MINERALS) {
-                msg << "too many minerals!\n";
-                return true;
-              }
-            }
-            
-          }
-        }
-        else {
-          // rectangle
-          Rectangle r(*(*it)->sod.x1, *(*it)->sod.x2, 
-                      *(*it)->sod.y1, *(*it)->sod.y2);
-          if (forMining) {
-            if (r.intersects(circle) and (*it)->bp_name() != "controlCenter") {
-              return true;
-            }
-          }
-          else if (r.intersects(circle) and (*it) != ignoreGob) {
-            msg << "collision with " << (*it)->bp_name() << " at " <<
-              *(*it)->sod.x << "," << *(*it)->sod.y << endl;
-            return true;
-          }
-        }
-      }
-      crowdCount = 0;
-      if (forMining) {
-        for(iwit = imaginaryWorkerMap[cells[i]].begin(); 
-            iwit != imaginaryWorkerMap[cells[i]].end(); 
-            iwit++) {
-          obj.x = (*iwit).x;
-          obj.y = (*iwit).y;
-          objr = WORKER_RADIUS + 1; // radius of the imaginary worker
-          if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
-          < (r+objr) * (r+objr))  {
-            //Inside the circle
-            if (not checkCrowding) {
-              msg << "imaginary worker collision!\n";
-              return true;
-            }
-            else {
-              crowdCount++;
-              if (crowdCount >= CROWD_MAX_WORKERS) {
-                msg << "too many imaginary workers!\n";
-                return true;
               }
             }
           }
         }
-      }
+      } // end if not justImaginaryObstacles
+      
       for(iwit = imaginaryObstacleMap[cells[i]].begin(); 
           iwit != imaginaryObstacleMap[cells[i]].end(); 
           iwit++) {
@@ -517,7 +530,8 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
         if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
         < (r+objr) * (r+objr))  {
           //Inside the circle
-          msg << "imaginary obstacle collision!\n";
+          msg << "object at " << c << " with radius " << radius 
+              << "has imaginary obstacle collision!\n";
           return true;
         }
       }
