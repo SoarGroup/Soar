@@ -266,11 +266,6 @@ void MoveFSM::init(vector<sint4> p)
         << path.locs[i].x << ", "<< path.locs[i].y << endl;
   }
 
-  if (pathLength > 0) {
-    usingIWWP = true;
-    imaginaryWorkerWaypoint = path.locs[(path.locs.size()/2)];
-    Sorts::terrainModule->insertImaginaryWorker(imaginaryWorkerWaypoint);
-  }
   
   nextWPIndex = path.locs.size()-1;
   moveParams.clear();
@@ -285,6 +280,11 @@ void MoveFSM::init(vector<sint4> p)
         msg << "second waypoint is also inside an object, avoiding.\n";
       }
         
+    }
+    if ((nextWPIndex-1) > 0) {
+      usingIWWP = true;
+      imaginaryWorkerWaypoint = path.locs[((nextWPIndex-1)/2)];
+      Sorts::terrainModule->insertImaginaryWorker(imaginaryWorkerWaypoint);
     }
       
     moveParams.push_back(path.locs[nextWPIndex].x);
