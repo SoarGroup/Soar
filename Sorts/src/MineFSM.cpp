@@ -14,6 +14,7 @@ MineFSM::MineFSM(GameObj* go)
   name = OA_MINE;
   sgo = NULL;
   moveFSM = NULL;
+  route = NULL;
   precision = 1;
   timer = 0;
   timed = false;

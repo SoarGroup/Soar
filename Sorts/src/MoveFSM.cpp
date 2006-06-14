@@ -253,12 +253,13 @@ void MoveFSM::init(vector<sint4> p)
     precision = p[2];
     precision *= precision; // since we use distance squared
   }
+  
+  msg << "initialized. Path " << *gob->sod.x << "," << *gob->sod.y << "->"
+      << l.x << "," << l.y << endl;
 
   clearWPWorkers();
   Sorts::terrainModule->findPath(gob, l, path);
   pathLength = path.locs.size();
-  msg << "initialized. Path " << *gob->sod.x << "," << *gob->sod.y << "->"
-      << l.x << "," << l.y << endl;
   
   for (unsigned int i=0; i<pathLength; i++) {
     msg << "loc " << i << " " 

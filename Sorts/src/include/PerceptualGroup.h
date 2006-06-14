@@ -110,6 +110,7 @@ class PerceptualGroup {
     bool inSoar; // true if present in input link
     
     bool old;
+    int prevHealth;
     
     bool hasStaleMembers;
     bool hasStaleProperties;

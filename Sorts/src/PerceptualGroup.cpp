@@ -38,6 +38,7 @@ PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
   inSoar = false;
   old = false;
   hasCommand = false;
+  prevHealth = 0;
 
   fmSector = -1;
 
@@ -182,11 +183,11 @@ void PerceptualGroup::generateData() {
     if (weapon != NULL and weapon->get_int("shooting") == 1) {
       ++shooting;
     }
-    
+   /* 
     if (gob->dir_damage[gob->dir_max_damage] > 0) {
       ++damaged;
     }
-
+*/
     objStatus = (*currentObject)->getStatus();
     if (objStatus == OBJ_RUNNING) {
       running++;
@@ -214,8 +215,9 @@ void PerceptualGroup::generateData() {
 
   updateBoundingBox();
   updateRegionsOccupied();
-
-  attribs.add("health", health / size);
+  
+  health /= size;
+  attribs.add("health", health);
   attribs.add("speed", speed / size);
   attribs.add("num_members", size);
 
@@ -245,6 +247,14 @@ void PerceptualGroup::generateData() {
   }
 
   attribs.add("shooting", shooting);
+
+  if (health < prevHealth) {
+    damaged = 1;
+  }
+  else {
+    damaged = 0;
+  }
+  prevHealth = health;
   attribs.add("taking-damage", damaged);
 
 #if 0

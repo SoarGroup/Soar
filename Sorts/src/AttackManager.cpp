@@ -305,6 +305,9 @@ int AttackManager::direct(AttackFSM* fsm) {
 
   assert(fsm->target != NULL);
 
+  msg << "attacking target: " << fsm->target->getGob()->bp_name() << " " 
+      << fsm->target->getGob() << endl;
+
   fsm->failCount = 0;
   GameObj* tgob = fsm->target->getGob();
   if (!canHit(gob, tgob)) {

@@ -194,8 +194,9 @@ void SoarGameObject::update()
     Sorts::OrtsIO->updateNextCycle(this);
   }
   else {
-    status = OBJ_IDLE;
-    //msg << "empty memory\n";
+    //status = OBJ_IDLE;
+    // don't set status to idle.. we need the last FSM status to stick
+    // around when commands end
   }
 
   // do default behaviors (if action has not yet been assigned)
