@@ -327,7 +327,7 @@ int main(int argc, char *argv[]) {
 
   Terrain timp;
   TerrainModule tm(gsm, timp);
-  gsm.add_handler(&tm);
+  //gsm.add_handler(&tm);
   
   // connect to ORTS server
   if (!gsm.connect()) exit(10);

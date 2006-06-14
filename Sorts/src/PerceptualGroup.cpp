@@ -38,7 +38,6 @@ PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
   inSoar = false;
   old = false;
   hasCommand = false;
-  prevHealth = 0;
 
   fmSector = -1;
 
@@ -248,15 +247,6 @@ void PerceptualGroup::generateData() {
 
   attribs.add("shooting", shooting);
 
-/*
-  if (health < prevHealth) {
-    damaged = 1;
-  }
-  else {
-    damaged = 0;
-  }
-*/
-  prevHealth = health;
   attribs.add("taking-damage", damaged);
 
 #if 0
