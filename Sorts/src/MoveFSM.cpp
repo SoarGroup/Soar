@@ -21,7 +21,7 @@ using namespace std;
 
 // counter: number of consecutive in-place veers before FSM_FAILURE returned
 // i.e. the max number of cycles to allow zero speed before giving up
-#define MIN_COUNTER 2
+#define MIN_COUNTER 1
 #define MAX_COUNTER_DIFF 3 // min < value <  min+maxdiff
 // orig: 3
 
@@ -258,52 +258,59 @@ void MoveFSM::init(vector<sint4> p)
       << l.x << "," << l.y << endl;
 
   clearWPWorkers();
-  Sorts::terrainModule->findPath(gob, l, path);
-  pathLength = path.locs.size();
-  
-  for (unsigned int i=0; i<pathLength; i++) {
-    msg << "loc " << i << " " 
-        << path.locs[i].x << ", "<< path.locs[i].y << endl;
-  }
-
-  
-  nextWPIndex = path.locs.size()-1;
-  moveParams.clear();
-  if (path.locs.size() > 0) {
-    if (path.locs.size() > 1
-        and collision(path.locs[nextWPIndex].x, path.locs[nextWPIndex].y)) {
-      nextWPIndex--;
-      msg << "first waypoint is inside an object, avoiding.\n";
-      if (path.locs.size() > 2
-        and collision(path.locs[nextWPIndex].x, path.locs[nextWPIndex].y)) {
-        nextWPIndex--;
-        msg << "second waypoint is also inside an object, avoiding.\n";
-      }
-        
-    }
-    if ((nextWPIndex-1) > 0) {
-      usingIWWP = true;
-      imaginaryWorkerWaypoint = path.locs[((nextWPIndex-1)/2)];
-      Sorts::terrainModule->insertImaginaryWorker(imaginaryWorkerWaypoint);
-    }
-      
-    moveParams.push_back(path.locs[nextWPIndex].x);
-    moveParams.push_back(path.locs[nextWPIndex].y);
-    nextWPIndex--;
-    state = IDLE;
-    target.x = moveParams[0];
-    target.y = moveParams[1];
-  }
-  else if (squaredDistance(*gob->sod.x, *gob->sod.y, l.x, l.y) 
-        <= precision) {
-    target.x = l.x;
-    target.y = l.y;
-    state = ALREADY_THERE; // or no path!
+  if (Sorts::spatialDB->hasImaginaryObstacleCollision(l.x, l.y, 
+                                                      *gob->sod.radius)) {
+    msg << "not pathfinding, probably no-path.\n";
+    state = UNREACHABLE;
   }
   else {
-    state = UNREACHABLE;
-    coordinate c(l.x,l.y);
-    Sorts::spatialDB->addImaginaryObstacle(c);
+    Sorts::terrainModule->findPath(gob, l, path);
+    pathLength = path.locs.size();
+    
+    for (unsigned int i=0; i<pathLength; i++) {
+      msg << "loc " << i << " " 
+          << path.locs[i].x << ", "<< path.locs[i].y << endl;
+    }
+    
+    nextWPIndex = path.locs.size()-1;
+    moveParams.clear();
+    if (path.locs.size() > 0) {
+      if (path.locs.size() > 1
+          and collision(path.locs[nextWPIndex].x, path.locs[nextWPIndex].y)) {
+        nextWPIndex--;
+        msg << "first waypoint is inside an object, avoiding.\n";
+        if (path.locs.size() > 2
+          and collision(path.locs[nextWPIndex].x, path.locs[nextWPIndex].y)) {
+          nextWPIndex--;
+          msg << "second waypoint is also inside an object, avoiding.\n";
+        }
+          
+      }
+
+      if ((nextWPIndex-1) > 0) {
+        usingIWWP = true;
+        imaginaryWorkerWaypoint = path.locs[((nextWPIndex-1)/2)];
+        Sorts::terrainModule->insertImaginaryWorker(imaginaryWorkerWaypoint);
+      }
+        
+      moveParams.push_back(path.locs[nextWPIndex].x);
+      moveParams.push_back(path.locs[nextWPIndex].y);
+      nextWPIndex--;
+      state = IDLE;
+      target.x = moveParams[0];
+      target.y = moveParams[1];
+    }
+    else if (squaredDistance(*gob->sod.x, *gob->sod.y, l.x, l.y) 
+          <= precision) {
+      target.x = l.x;
+      target.y = l.y;
+      state = ALREADY_THERE; // or no path!
+    }
+    else {
+      state = UNREACHABLE;
+      coordinate c(l.x,l.y);
+      Sorts::spatialDB->addImaginaryObstacle(c);
+    }
   }
 }
 

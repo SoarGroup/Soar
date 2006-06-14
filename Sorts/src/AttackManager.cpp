@@ -209,6 +209,7 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
         i != sortedTargets.end();
         ++i)
     {
+      msg << "target: " << (*i)->getGob()->bp_name() << endl;
       if (canHit(gob, (*i)->getGob()) && 
           (checkSaturated == 0 || !targets[*i].isSaturated()))
       {

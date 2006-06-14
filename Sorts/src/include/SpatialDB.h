@@ -52,6 +52,7 @@ public:
   bool hasObjectCollision(sint4 x, sint4 y, sint4 r, ERF* erf);
 
   bool hasMiningCollision(coordinate c, bool b);
+  bool hasImaginaryObstacleCollision(sint4 x, sint4 y, sint4 r);
 
   // used by building locator
   //bool hasTerrainCollision(Rectangle& r);
@@ -77,7 +78,7 @@ public:
 
 private: // functions
 
-  bool hasObjectCollisionInt(coordinate, int, bool, bool, GameObj*);
+  bool hasObjectCollisionInt(coordinate, int, bool, bool, GameObj*, bool);
   void calcBinning (sint4 x, sint4 y, sint4 r, ERF* erf, BinInfo& info);
 
 private:
