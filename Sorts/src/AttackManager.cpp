@@ -195,37 +195,50 @@ void AttackManager::attackArcPos
   list<Vec2d>& positions) 
 {
   int atkRadius = *atk->sod.radius;
-  int tgtRadius = *tgt->sod.radius;
   Vec2d aPos(*atk->sod.x, *atk->sod.y);
   Vec2d tPos(*tgt->sod.x, *tgt->sod.y);
 
   int range;
   if (*tgt->sod.zcat == GameObj::ON_LAND) {
     range = atk->component("weapon")->get_int("max_ground_range") 
-      + atkRadius + tgtRadius;
+      + atkRadius;
   }
   else {
     range = atk->component("weapon")->get_int("max_air_range") 
-      + atkRadius + tgtRadius;
+      + atkRadius;
   }
 
   range = range - 3; // for safety
 
   list<Vec2d> atkPos;
   if (*tgt->sod.shape == SHAPE_RECTANGLE) {
-    positionsOnRectangle
-    ( *atk->sod.x,
-      *atk->sod.y,
-      *tgt->sod.x1, 
-      *tgt->sod.x2, 
-      *tgt->sod.y1, 
-      *tgt->sod.y2,
-      range,
-      atkRadius * 2,
-      atkPos          );
+    int halfwidth = (*tgt->sod.x2 - *tgt->sod.x1) /  2;
+    int halfheight = (*tgt->sod.y2 - *tgt->sod.y1) /  2;
+
+    int radius = min(halfwidth, halfheight);
+
+    if (radius < range / 2) {
+      // treat this as a circle
+      int tgtRadius = *tgt->sod.radius;
+      Vec2d closestPos = tPos - Vec2d(tPos - aPos, range + tgtRadius);
+      positionsOnCircle(tPos, closestPos, *atk->sod.radius * 2, atkPos);
+    }
+    else {
+      positionsOnRectangle
+      ( *atk->sod.x,
+        *atk->sod.y,
+        *tgt->sod.x1, 
+        *tgt->sod.x2, 
+        *tgt->sod.y1, 
+        *tgt->sod.y2,
+        range,
+        atkRadius * 2,
+        atkPos );
+    }
   }
   else {
-    Vec2d closestPos = tPos - Vec2d(tPos - aPos, range);
+    int tgtRadius = *tgt->sod.radius;
+    Vec2d closestPos = tPos - Vec2d(tPos - aPos, range + tgtRadius);
     positionsOnCircle(tPos, closestPos, *atk->sod.radius * 2, atkPos);
   }
 
