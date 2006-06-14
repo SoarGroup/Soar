@@ -18,7 +18,7 @@
 #include "MapManager.h"
 #include "FeatureMapManager.h"
 #include "MapQuery.h"
-#include "TerrainManager.h"
+//#include "TerrainManager.h"
 //#include "AttackManagerRegistry.h"
 //#include "MineManager.h"
 class AttackManagerRegistry;
@@ -73,7 +73,7 @@ class Sorts {
     static AttackManagerRegistry*   amr;
     static MineManager*             mineManager;
     static MapQuery*                mapQuery;
-    static TerrainManager           terrainManager;
+ //   static TerrainManager           terrainManager;
     static pthread_mutex_t*         mutex;
     static bool                     catchup;
     static int                      cyclesSoarAhead;

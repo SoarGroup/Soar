@@ -90,9 +90,9 @@ void AttackManager::attackArcPos
       if (!slotTaken) {
         if (!Sorts::spatialDB->hasObjectCollision
               (intPos(0), intPos(1), atkRadius)
-            and
-            !Sorts::spatialDB->hasTerrainCollision
-              (intPos(0), intPos(1), atkRadius)
+     //       and
+     //       !Sorts::spatialDB->hasTerrainCollision
+     //         (intPos(0), intPos(1), atkRadius)
            )
         {
           positions.push_back(intPos);

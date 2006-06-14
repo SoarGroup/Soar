@@ -13,7 +13,7 @@
 
 #include "general.h"
 #include "Rectangle.h"
-#include "TerrainContour.h"
+//#include "TerrainContour.h"
 #include "ERF.h"
 
 class Sorts;
@@ -56,8 +56,8 @@ public:
   // used by building locator
   //bool hasTerrainCollision(Rectangle& r);
   bool hasTerrainCollision(int cx, int cy, int r);
-  void getTerrainCollisions(Rectangle&, list<TerrainContour*>&);
-  void getTerrainCollisions(int, int,  int, list<TerrainContour*>&);
+ // void getTerrainCollisions(Rectangle&, list<TerrainContour*>&);
+//  void getTerrainCollisions(int, int,  int, list<TerrainContour*>&);
   bool hasTerrainCollision(Rectangle* r);
   bool hasObjectCollision(Rectangle* r);
   bool hasObjectCollision(coordinate c, int r, GameObj* ignoreGob);
@@ -69,9 +69,9 @@ public:
   
   void addTerrainLine(Line l);
 
-  void addTerrainContour(TerrainContour* c);
-  void removeTerrainContour(TerrainContour* c);
-  void updateTerrainContour(TerrainContour* c);
+//  void addTerrainContour(TerrainContour* c);
+//  void removeTerrainContour(TerrainContour* c);
+//  void updateTerrainContour(TerrainContour* c);
 
   int refCount;
 
@@ -85,8 +85,8 @@ private:
   vector<list<coordinate> > imaginaryWorkerMap; // used by MineManager
   vector<list<coordinate> > imaginaryObstacleMap;
   vector<list<Line> > terrainLineMap;
-  map<TerrainContour*, list<int> > contourLocs;
-  vector<list<TerrainContour*> > contours;
+//  map<TerrainContour*, list<int> > contourLocs;
+//  vector<list<TerrainContour*> > contours;
 
   int getCellNumber(int x, int y);
   int cell2row(int);

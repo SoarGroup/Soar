@@ -31,7 +31,7 @@ void SpatialDB::init() {
   // Tilepoints define the granularity of the grid... 
   // The higher the tilepoints, the coarser the detail
   gobMap.resize(mapsize);
-  contours.resize(mapsize);
+  //contours.resize(mapsize);
   terrainLineMap.resize(mapsize);
   imaginaryWorkerMap.resize(mapsize);
   imaginaryObstacleMap.resize(mapsize);
@@ -527,7 +527,7 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
       << " has no collisions\n"; 
   return false; // no collisions
 }
-
+/*
 void SpatialDB::addTerrainContour(TerrainContour* contour) {
   cout << contour << " add xxxxxx" << endl;
   assert(contourLocs.find(contour) == contourLocs.end());
@@ -599,7 +599,7 @@ void SpatialDB::updateTerrainContour(TerrainContour* contour) {
       }
     }
   }
-}
+}*/
 /*
 bool SpatialDB::hasTerrainCollision(Rectangle& r) {
   
@@ -631,7 +631,7 @@ bool SpatialDB::hasTerrainCollision(Rectangle& r) {
 
   return false;
 }
-*/
+*//*
 bool SpatialDB::hasTerrainCollision(int cx, int cy, int r) {
 
   int minCol = (cx - r) / tile_points;
@@ -723,7 +723,7 @@ void SpatialDB::getTerrainCollisions
       }
     }
   }
-}
+}*/
 
 void SpatialDB::addTerrainLine(Line l) {
   // no need for removal/update support
