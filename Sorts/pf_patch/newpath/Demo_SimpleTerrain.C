@@ -50,9 +50,9 @@ void ST_Terrain::findPath(const Object* gob, const Object* l2, Path &path) {
     lg.x = x2;
     lg.y = y2;
     pfEngine->remove_object(l2);
-    pfEngine->clearGobLocation(l2);
+    //pfEngine->clearGobLocation(l2);
     pfEngine->remove_object(gob);
-    pfEngine->clearGobLocation(gob);
+    //pfEngine->clearGobLocation(gob);
     pfEngine->find_path(lg, l, path);
     pfEngine->insert_object(l2);
     pfEngine->insert_object(gob);
