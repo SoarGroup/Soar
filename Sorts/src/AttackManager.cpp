@@ -10,7 +10,8 @@
 
 #define msg cout << "AttackManager.cpp: "
 
-#define MAX_INDIVIDUAL_AHEAD 0.5
+#define WAIT_RATIO    0.5
+#define RESUME_RATIO  0.85
 
 #ifdef USE_CANVAS
 #define USE_CANVAS_ATTACK_MANAGER
@@ -229,6 +230,7 @@ void positionsOnRectangle
 void AttackManager::attackArcPos
 ( GameObj* atk, 
   GameObj* tgt, 
+  int layer,
   list<Vec2d>& positions) 
 {
   int atkRadius = *atk->sod.radius;
@@ -245,7 +247,8 @@ void AttackManager::attackArcPos
       + atkRadius;
   }
 
-  range = range * 0.8; // for safety
+  range = range * 0.9; // for safety
+  range -= layer * atkRadius * 2;
 
   list<Vec2d> atkPos;
   if (*tgt->sod.shape == SHAPE_RECTANGLE) {
@@ -426,8 +429,8 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
   msg << "FINDING A TARGET" << endl;
   GameObj* gob = fsm->getGob();
   vector<SoarGameObject*> saturated;
+  vector<SoarGameObject*> unsaturated;
 
-/*
   for(vector<SoarGameObject*>::iterator
         i  = sortedTargets.begin();
         i != sortedTargets.end();
@@ -436,8 +439,12 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
     if (targets[*i].isSaturated()) {
       saturated.push_back(*i);
     }
+    else {
+      unsaturated.push_back(*i);
+    }
   }
 
+/*
   for(int checkSaturated = 1; checkSaturated >= 0; checkSaturated--) {
     vector<SoarGameObject*>* toCheck;
     if (checkSaturated == 0) {
@@ -448,7 +455,6 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
     }
 */
   // try to hit immediately attackable things first
-//  for(int checkSaturated = 1; checkSaturated >= 0; checkSaturated--) {
     for(vector<SoarGameObject*>::iterator
         i  = sortedTargets.begin();
         i != sortedTargets.end();
@@ -466,7 +472,6 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
         return true;
       }
     }
-//  }
 
   // now try to attack the "best" target
 //  for(int checkSaturated = 1; checkSaturated >= 0; checkSaturated--) {
@@ -477,7 +482,7 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
     {
 //      if (checkSaturated == 0 || !targets[*i].isSaturated()) {
         list<Vec2d> positions;
-        attackArcPos(fsm->getGob(), (*i)->getGob(), positions);
+        attackArcPos(fsm->getGob(), (*i)->getGob(), 0, positions);
         for(list<Vec2d>::iterator
             j  = positions.begin();
             j != positions.end();
@@ -603,6 +608,11 @@ int AttackManager::direct(AttackFSM* fsm) {
   
   assert(fsm->target != NULL);
 
+  if (targets.find(fsm->target) == targets.end()) {
+    msg << "bad target: (" << fsm->target->getGob() << ") " << fsm->target->getGob()->bp_name() << endl;
+    exit(1);
+  }
+
   msg << "attacking target: " << fsm->target->getGob()->bp_name() << " " 
       << fsm->target->getGob() << endl;
 
@@ -618,10 +628,9 @@ int AttackManager::direct(AttackFSM* fsm) {
         if (gob->dir_dmg == 0) {
           double distToTarget 
             = squaredDistance(gobX(gob), gobY(gob), gobX(tgob), gobY(tgob));
-          if (distToTarget < info.avgAttackerDistance() * MAX_INDIVIDUAL_AHEAD)
+          if (distToTarget < info.avgAttackerDistance() * WAIT_RATIO)
           {
             msg << "WAITING FOR OTHERS TO CATCH UP" << endl;
-            fsm->stopMoving();
             fsm->waitingForCatchup = true;
           }
         }
@@ -638,7 +647,7 @@ int AttackManager::direct(AttackFSM* fsm) {
         info.avgAttackerDistance();
         double distToTarget 
           = squaredDistance(gobX(gob), gobY(gob), gobX(tgob), gobY(tgob));
-        if (distToTarget >= info.avgAttackerDistance() * MAX_INDIVIDUAL_AHEAD) {
+        if (distToTarget >= info.avgAttackerDistance() * RESUME_RATIO) {
           fsm->waitingForCatchup = false;
         }
         else {
@@ -646,13 +655,17 @@ int AttackManager::direct(AttackFSM* fsm) {
           return 0;
         }
       }
+      else {
+        // forget you guys, I'm getting out of here
+        fsm->waitingForCatchup = false;
+      }
       // otherwise, he's taking damage, so start moving
     }
     // not moving, or should be moving somewhere else
     msg << "CANNOT HIT" << endl;
 
     list<Vec2d> positions;
-    attackArcPos(gob, tgob, positions);
+    attackArcPos(gob, tgob, 0, positions);
     for(list<Vec2d>::iterator
         i  = positions.begin();
         i != positions.end();

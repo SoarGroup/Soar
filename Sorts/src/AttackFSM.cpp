@@ -78,7 +78,7 @@ int AttackFSM::update() {
     return FSM_FAILURE;
   }
 
-  if (moving) {
+  if (moving && !waitingForCatchup) {
     if (firstMove) {
       // don't call update again on first move
       firstMove = false;

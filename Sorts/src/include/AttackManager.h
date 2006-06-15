@@ -30,17 +30,15 @@ public:
   set<SoarGameObject*>* getTargets() { return &targetSet; }
 
 private: // functions
-  void            selectTarget();
-  SoarGameObject* selectCloseTarget(GameObj* gob);
-  void            positionAndAttack();
-  int             updateTargetList();
-  void            reprioritize();
-  void            attackArcPos(GameObj* atk, GameObj* tgt, list<Vec2d>& positions);
+  void  selectTarget();
+  int   updateTargetList();
+  void  reprioritize();
+  void  attackArcPos(GameObj* atk, GameObj* tgt, int layer, list<Vec2d>& positions);
 
-  void            assignTarget(AttackFSM* fsm, SoarGameObject* target);
-  void            unassignTarget(AttackFSM* fsm);
-  void            unassignAll(SoarGameObject* target);
-  bool            findTarget(AttackFSM* fsm);
+  void  assignTarget(AttackFSM* fsm, SoarGameObject* target);
+  void  unassignTarget(AttackFSM* fsm);
+  void  unassignAll(SoarGameObject* target);
+  bool  findTarget(AttackFSM* fsm);
 
 private: // variables
   list<AttackFSM*> team;

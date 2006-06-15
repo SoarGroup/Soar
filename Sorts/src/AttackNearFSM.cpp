@@ -25,7 +25,7 @@ int AttackNearFSM::update() {
     return FSM_RUNNING;
   }
 
-  if (count > 10) {
+  if (count > 3) {
     Sorts::spatialDB->getObjectCollisions(
       *gob->sod.x, 
       *gob->sod.y, 
