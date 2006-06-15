@@ -616,13 +616,13 @@ int AttackManager::direct(AttackFSM* fsm) {
       Vec2d dest = fsm->getDestination();
       if (canHit(gob, dest, tgob)) {
         if (gob->dir_dmg == 0) {
-          info.avgAttackerDistance();
           double distToTarget 
             = squaredDistance(gobX(gob), gobY(gob), gobX(tgob), gobY(tgob));
           if (distToTarget < info.avgAttackerDistance() * MAX_INDIVIDUAL_AHEAD)
           {
             msg << "WAITING FOR OTHERS TO CATCH UP" << endl;
             fsm->stopMoving();
+            fsm->waitingForCatchup = true;
           }
         }
         // everything's fine, keep going
@@ -632,6 +632,21 @@ int AttackManager::direct(AttackFSM* fsm) {
       else {
         msg << "xxx_dest can't hit\n";
       }
+    }
+    if (fsm->waitingForCatchup) {
+      if (gob->dir_dmg == 0) {
+        info.avgAttackerDistance();
+        double distToTarget 
+          = squaredDistance(gobX(gob), gobY(gob), gobX(tgob), gobY(tgob));
+        if (distToTarget >= info.avgAttackerDistance() * MAX_INDIVIDUAL_AHEAD) {
+          fsm->waitingForCatchup = false;
+        }
+        else {
+          // keep waiting
+          return 0;
+        }
+      }
+      // otherwise, he's taking damage, so start moving
     }
     // not moving, or should be moving somewhere else
     msg << "CANNOT HIT" << endl;

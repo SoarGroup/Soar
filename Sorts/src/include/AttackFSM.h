@@ -39,6 +39,7 @@ public:
   bool reassign;
   int failCount;
   SoarGameObject* target;
+  bool waitingForCatchup;
 
 private:
   SoarGameObject* sgob;
