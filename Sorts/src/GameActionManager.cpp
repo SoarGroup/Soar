@@ -49,6 +49,10 @@ void GameActionManager::findBuildingLoc(BuildingType building, coordinate nearLo
     buildingHeight = 48;
     buildingRadius = 38;
   }
+  else {
+    buildingRadius = buildingWidth = buildingHeight = 0;
+    assert(false);
+  }
 
   minDistance += buildingRadius;
 

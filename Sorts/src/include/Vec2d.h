@@ -88,6 +88,7 @@ public:
         return j;
       default:
         assert(false);
+        return i;
     }
   }
 

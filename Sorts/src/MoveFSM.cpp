@@ -271,7 +271,7 @@ void MoveFSM::init(vector<sint4> p)
     Sorts::terrainModule->findPath(gob, l, path);
     pathLength = path.locs.size();
     
-    for (unsigned int i=0; i<pathLength; i++) {
+    for (int i=0; i<pathLength; i++) {
       msg << "loc " << i << " " 
           << path.locs[i].x << ", "<< path.locs[i].y << endl;
     }

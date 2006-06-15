@@ -24,6 +24,7 @@ void BuildFSM::setBuildingInfo(BuildingType type, int centerX, int centerY) {
       cost = 400;
       break;
     default:
+      width=height=0;
       assert(false);
       break; 
   }

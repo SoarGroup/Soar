@@ -51,6 +51,7 @@ inline int maxRadius(GameObj* gob) {
       return *gob->sod.radius;
     default:
       assert(false);
+      return *gob->sod.radius;
   }
 }
 
@@ -247,7 +248,7 @@ void AttackManager::attackArcPos
       + atkRadius;
   }
 
-  range = range * 0.8; // for safety
+  range = (int)(range * 0.8); // for safety
   range -= layer * atkRadius * 2;
 
   list<Vec2d> atkPos;
@@ -295,7 +296,7 @@ void AttackManager::attackArcPos
     if (0 <= intPos(0) && intPos(0) <= Sorts::OrtsIO->getMapXDim() && 
         0 <= intPos(1) && intPos(1) <= Sorts::OrtsIO->getMapYDim()) 
     {
-      if (Sorts::spatialDB->hasObjectCollision(intPos(0),intPos(1),atkRadius)) {
+      if (Sorts::spatialDB->hasObjectCollision((int)intPos(0),(int)intPos(1),atkRadius)) {
     //      or 
      //       Sorts::spatialDB->hasTerrainCollision
      //         (intPos(0), intPos(1), atkRadius)
@@ -488,7 +489,7 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
             j != positions.end();
             ++j)
         {
-          if (fsm->move((*j)(0), (*j)(1)) == 0) {
+          if (fsm->move((int)(*j)(0), (int)(*j)(1)) == 0) {
             msg <<"Moving to Position: "<<(*j)(0)<<", "<<(*j)(1)<<endl;
             assignTarget(fsm, *i);
 #ifdef USE_CANVAS_ATTACK_MANAGER
@@ -516,7 +517,7 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
 //      if (checkSaturated == 0 || !targets[*i].isSaturated()) {
         GameObj* tgob = (*i)->getGob();
         Vec2d closePos = getClosePos(gob, tgob);
-        if (fsm->move(closePos(0), closePos(1)) == 0) {
+        if (fsm->move((int)closePos(0), (int)closePos(1)) == 0) {
           assignTarget(fsm, *i);
           msg << "LAST RESORT TARG" << endl;
           return true;
@@ -551,7 +552,7 @@ int AttackManager::direct(AttackFSM* fsm) {
       if (damageTaken(i, gob->dir_dmg)) {
         Vec2d retreatVector = getHeadingVector(i).inv();
         Vec2d moveDest = Vec2d(gobX(gob), gobY(gob)) + Vec2d(retreatVector, 10);
-        fsm->move(moveDest(0), moveDest(1));
+        fsm->move((int)moveDest(0), (int)moveDest(1));
         msg << "RETREATING TO " << moveDest(0) << ", " << moveDest(1) << endl;
         return 0;
       }
@@ -672,7 +673,7 @@ int AttackManager::direct(AttackFSM* fsm) {
         i != positions.end();
         ++i)
     {
-      if (fsm->move((*i)(0), (*i)(1)) == 0) {
+      if (fsm->move((int)(*i)(0), (int)(*i)(1)) == 0) {
         msg << "Moving to Position: " << (*i)(0) << ", " << (*i)(1) << endl;
 #ifdef USE_CANVAS_ATTACK_MANAGER
 //        Sorts::canvas.trackDestination(fsm->getGob(), (*i)(0), (*i)(1));

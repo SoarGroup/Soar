@@ -748,17 +748,17 @@ pair<string, int> PerceptualGroup::getCategory(bool ownerGrouping) {
 Rectangle PerceptualGroup::getBoundingBox() {
   // checking if everything is in the bounding box, because I'm not sure
   // if the bounding box is getting updated often enough
-  for(set<SoarGameObject*>::iterator
+  /*for(set<SoarGameObject*>::iterator
       i  = members.begin();
       i != members.end();
       i++)
   {
-    int x = *(*i)->getGob()->sod.x;
-    int y = *(*i)->getGob()->sod.y;
+    //int x = *(*i)->getGob()->sod.x;
+    //int y = *(*i)->getGob()->sod.y;
    // FIXME: asserts in game1
     // assert(bbox.xmin <= x && x <= bbox.xmax &&
    //        bbox.ymin <= y && y <= bbox.ymax);
-  }
+  }*/
   return bbox;
 }
 

@@ -90,8 +90,8 @@ int AttackFSM::update() {
       if (moveStatus == FSM_RUNNING || 
           moveStatus == FSM_SUCCESS) {
         msg << "panic succeeded.\n";
-        moveParams[0] = dest(0);
-        moveParams[1] = dest(1);
+        moveParams[0] = (int)dest(0);
+        moveParams[1] = (int)dest(1);
         moveFSM->init(moveParams);
         moveFSM->update();
         panic = false;
@@ -115,8 +115,8 @@ int AttackFSM::update() {
           else {
             // repath
             msg << "MOVE FAILED" << endl;
-            moveParams[0] = dest(0);
-            moveParams[1] = dest(1);
+            moveParams[0] = (int)dest(0);
+            moveParams[1] = (int)dest(1);
             moveFSM->init(moveParams);
           }
           break;

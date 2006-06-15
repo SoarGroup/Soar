@@ -53,7 +53,7 @@ int MineFSM::update() {
     if (newRoute != NULL) {
       route = newRoute;
       calcDropoffLoc();
-      giveUpThreshold = GIVEUPSPEED*((int)route->pathlength);
+      giveUpThreshold = (int)(GIVEUPSPEED*(route->pathlength));
       timer = 0;//Sorts::OrtsIO->getViewFrame(); 
       timed = false;// don't clock this leg, we're not on the new route
       state = IDLE;
