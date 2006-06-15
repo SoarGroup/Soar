@@ -217,6 +217,7 @@ int MineFSM::update() {
         tempVec.push_back(dropoffLoc.x);
         tempVec.push_back(dropoffLoc.y);
         tempVec.push_back(precision);
+      
         Sorts::terrainModule->removeControlCenters();
         moveFSM->init(tempVec);
         Sorts::terrainModule->insertControlCenters();
@@ -269,11 +270,8 @@ int MineFSM::update() {
       break;
     case PANIC_START:
       if (moveFSM != NULL) {
-        tempVec.push_back(*gob->sod.x + ((int)rand() % 20) -5);
-        tempVec.push_back(*gob->sod.y + ((int)rand() % 20) -5);
-        moveFSM->initNoPath(tempVec);
+        moveFSM->panic();
         moveFSM->update();
-        msg << "panic! to " << tempVec[0] << "," << tempVec[1] << endl;
       }
       panicCount = 0;
       state = PANIC;
@@ -284,13 +282,10 @@ int MineFSM::update() {
         state = IDLE;
       }
       else if (moveStatus == FSM_FAILURE) {
-        tempVec.push_back(*gob->sod.x + ((int)rand() % 30) -15);
-        tempVec.push_back(*gob->sod.y + ((int)rand() % 30) -15);
-        moveFSM->init(tempVec);
+        moveFSM->panic();
         moveFSM->update();
         panicCount++;
-        msg << "repanic! count " << panicCount << "  to " 
-            << tempVec[0] << "," << tempVec[1] << endl;
+        msg << "repanic! count " << panicCount << endl; 
       }
       break;
     case FAIL:

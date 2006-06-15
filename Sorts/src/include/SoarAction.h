@@ -51,21 +51,24 @@ struct AttentionAction {
     string fmName;
 };
 
-enum MapActionType {
-  MA_FIND_BUILDING_LOC,
-  MA_NO_SUCH_ACTION
+// TODO: change to GameAction
+enum GameActionType {
+  GA_FIND_BUILDING_LOC,
+  GA_SET_MINERAL_BUFFER,
+  GA_CLEAR_MINERAL_BUFFER,
+  GA_NO_SUCH_ACTION
 };
 
-struct MapAction {
-  MapActionType type;
+struct GameAction {
+  GameActionType type;
   BuildingType building;
   coordinate nearLocation;
-  int minDistance;
+  int intValue;
 };
 
 ObjectActionType objectActionTypeLookup(string actionName);
 
 AttentionActionType attentionActionTypeLookup(string actionName);
-MapActionType mapActionTypeLookup(string actionName);
+GameActionType gameActionTypeLookup(string actionName);
 
 #endif

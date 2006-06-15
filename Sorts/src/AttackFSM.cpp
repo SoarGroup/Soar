@@ -4,7 +4,7 @@
 #include "general.h"
 #include "Sorts.h"
 
-#define msg cout << "AttackFSM.cpp "
+#define msg cout << "ATKMAN(" << this << "): "
 
 using namespace std;
 
@@ -16,6 +16,7 @@ AttackFSM::AttackFSM(SoarGameObject* _sgob)
   assert(weapon != NULL);
   moveFSM = NULL;
   manager = NULL;
+  waitingForCatchup = false;
 }
 
 AttackFSM::~AttackFSM() {
@@ -30,6 +31,7 @@ AttackFSM::~AttackFSM() {
 void AttackFSM::init(vector<sint4> params) {
   FSM::init(params);
 
+  panic = false;
   // get the attack manager from the registry
   AttackManager* newManager = Sorts::amr->getManager(params[0]);
   assert(newManager != NULL);
@@ -83,6 +85,23 @@ int AttackFSM::update() {
       // don't call update again on first move
       firstMove = false;
     }
+    else if (panic) {
+      int moveStatus = moveFSM->update();
+      if (moveStatus == FSM_RUNNING || 
+          moveStatus == FSM_SUCCESS) {
+        msg << "panic succeeded.\n";
+        moveParams[0] = dest(0);
+        moveParams[1] = dest(1);
+        moveFSM->init(moveParams);
+        moveFSM->update();
+        panic = false;
+      }
+      else {
+        msg << "panic again..\n";
+        moveFSM->panic();
+        moveFSM->update();
+      }
+    }   
     else {
       switch(moveFSM->update()) {
         case FSM_SUCCESS:
@@ -106,10 +125,19 @@ int AttackFSM::update() {
           msg << "(" << dest(0) << "," << dest(1) << ") UNREACHABLE" << endl;
           moving = false;
           break;
+        case FSM_STUCK:
+          panic = true;
+          msg << "panic starting.\n";
+          moveFSM->panic();
+          moveFSM->update();
         default:
           break;
       }
     }
+  }
+  else {
+    msg << "not updating move, moving=" << moving << " waitingForCatchup=" 
+        << waitingForCatchup << endl;
   }
   msg << "TIME " << (gettime() - st) / 1000 << endl;
   return FSM_RUNNING;

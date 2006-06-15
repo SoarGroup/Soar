@@ -340,9 +340,9 @@ void SoarInterface::getNewSoarOutput() {
         processAttentionAction(AType, cmdPtr);
       }
       else {
-        MapActionType MType = mapActionTypeLookup(name);
-        if (MType != MA_NO_SUCH_ACTION) {
-          processMapAction(MType, cmdPtr);
+        GameActionType MType = gameActionTypeLookup(name);
+        if (MType != GA_NO_SUCH_ACTION) {
+          processGameAction(MType, cmdPtr);
         }
         else {
           cout << "ERROR: command " << name << " not known." << endl;
@@ -483,36 +483,45 @@ void SoarInterface::processAttentionAction(AttentionActionType type,
   unlockAttentionActionMutex();
 }
 
-void SoarInterface::processMapAction(MapActionType type, 
+void SoarInterface::processGameAction(GameActionType type, 
                                         sml::Identifier* cmdPtr) {
-  MapAction newAction;
+  GameAction newAction;
   newAction.type = type;
-  
-  if (newAction.type != MA_NO_SUCH_ACTION) {
-    // type is MA_FIND_BUILDING_LOC (the only thing supported)
-    
-    const char* paramValue;
-    paramValue  = cmdPtr->GetParameterValue("building");
-    assert (paramValue != NULL);
-    newAction.building = (BuildingType)(atoi(paramValue)); 
-    paramValue  = cmdPtr->GetParameterValue("x");
-    assert (paramValue != NULL);
-    newAction.nearLocation.x = (BuildingType)(atoi(paramValue)); 
-    paramValue  = cmdPtr->GetParameterValue("y");
-    assert (paramValue != NULL);
-    newAction.nearLocation.y = (BuildingType)(atoi(paramValue)); 
-    paramValue  = cmdPtr->GetParameterValue("distance");
-    assert (paramValue != NULL);
-    newAction.minDistance = (BuildingType)(atoi(paramValue)); 
-    
-    MAQueueStruct maqs;
-    maqs.action = newAction;
-    maqs.wme = cmdPtr;
-    mapActionQueue.push_back(maqs);
-
-  }
-  else {
-    cmdPtr->AddStatusError();
+  const char* paramValue;
+  GAQueueStruct gaqs;
+  gaqs.wme = cmdPtr;
+  switch (type) {
+    case GA_NO_SUCH_ACTION:
+      cmdPtr->AddStatusError();
+      break;
+    case GA_FIND_BUILDING_LOC:
+      paramValue  = cmdPtr->GetParameterValue("building");
+      assert (paramValue != NULL);
+      newAction.building = (BuildingType)(atoi(paramValue)); 
+      paramValue  = cmdPtr->GetParameterValue("x");
+      assert (paramValue != NULL);
+      newAction.nearLocation.x = (BuildingType)(atoi(paramValue)); 
+      paramValue  = cmdPtr->GetParameterValue("y");
+      assert (paramValue != NULL);
+      newAction.nearLocation.y = (BuildingType)(atoi(paramValue)); 
+      paramValue  = cmdPtr->GetParameterValue("distance");
+      assert (paramValue != NULL);
+      newAction.intValue = (BuildingType)(atoi(paramValue)); 
+      
+      gaqs.action = newAction;
+      gameActionQueue.push_back(gaqs);
+      break;
+    case GA_SET_MINERAL_BUFFER:
+      paramValue  = cmdPtr->GetParameterValue("value");
+      assert (paramValue != NULL);
+      newAction.intValue = atoi(paramValue); 
+      gaqs.action = newAction;
+      gameActionQueue.push_back(gaqs);
+      break; 
+    case GA_CLEAR_MINERAL_BUFFER:
+      gaqs.action = newAction;
+      gameActionQueue.push_back(gaqs);
+      break; 
   }
   
 }
@@ -552,14 +561,14 @@ void SoarInterface::getNewAttentionActions(list<AttentionAction>& newActions) {
   unlockAttentionActionMutex();
 }
 
-void SoarInterface::getNewMapActions(list<MapAction>& newActions) {
-  for(list<MAQueueStruct>::iterator i = mapActionQueue.begin(); 
-                                  i != mapActionQueue.end(); 
+void SoarInterface::getNewGameActions(list<GameAction>& newActions) {
+  for(list<GAQueueStruct>::iterator i = gameActionQueue.begin(); 
+                                  i != gameActionQueue.end(); 
                                   i++) {
     newActions.push_back((*i).action);
     (*i).wme->AddStatusComplete();
   }
-  mapActionQueue.clear();
+  gameActionQueue.clear();
 }
 
 void SoarInterface::updatePlayerGold(int amount) {
@@ -567,6 +576,13 @@ void SoarInterface::updatePlayerGold(int amount) {
   stale = true;
   msg << "updating mineral count: " << amount << endl;
   agent->Update(playerGoldWME, amount);
+  unlockSoarMutex();
+}
+
+void SoarInterface::updateMineralBuffer(int val) {
+  lockSoarMutex();
+  stale = true;
+  agent->Update(mineralBufferWME, val);
   unlockSoarMutex();
 }
 
@@ -616,6 +632,7 @@ void SoarInterface::initSoarInputLink() {
   featureMapIdWME = agent->CreateIdWME(inputLink, "feature-maps");
   gameInfoIdWME = agent->CreateIdWME(inputLink, "game-info");
   playerGoldWME = agent->CreateIntWME(gameInfoIdWME, "my-minerals", 0);
+  mineralBufferWME = agent->CreateIntWME(gameInfoIdWME, "mineral-buffer", 0);
   viewFrameWME = agent->CreateIntWME(gameInfoIdWME, "view-frame", -1);
 
   // TODO: make this better (dynamically add new types, etc..) 

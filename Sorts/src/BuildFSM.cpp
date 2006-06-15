@@ -53,6 +53,8 @@ void BuildFSM::init(vector<sint4> params) {
   type = (BuildingType) params[0];
   loc_x = params[1];
   loc_y = params[2];
+  bufferAvailable = params[3];
+  
   setBuildingInfo(type, loc_x, loc_y);
   state = IDLE;
   buildFrame = -1;
@@ -86,6 +88,7 @@ int BuildFSM::update() {
       if (moveStatus == FSM_FAILURE) {
         // can't get to the place
         msg << "move has failed!\n";
+        deductFromBuffer();
         return FSM_FAILURE;
       }
       else if (moveStatus == FSM_SUCCESS) {
@@ -100,17 +103,26 @@ int BuildFSM::update() {
       else if (moveStatus != FSM_RUNNING) {
         // unreachable, probably
         msg << "fail, move returned " << moveStatus << endl;
+        deductFromBuffer();
         return FSM_FAILURE;
       }
       else {
         msg << "movefsm running\n";
       }
       break;
-    case START_BUILD:
+    case START_BUILD: {
+      int effectiveBuffer = Sorts::gameActionManager->getMineralBuffer()
+                            - bufferAvailable;
+      if (effectiveBuffer < 0) {
+        msg << "did we buffer enough minerals?\n";
+        effectiveBuffer = 0;
+      }
+      
       if (Sorts::OrtsIO->getBuildAction()) {
         msg << "skipping build: another fsm just started.\n";
       }
-      else if (Sorts::OrtsIO->getCurrentMinerals() < cost) {
+      else if ((Sorts::OrtsIO->getCurrentMinerals() 
+                    - effectiveBuffer) < cost) {
         msg << "can't afford this building now.\n";
       }
       else {
@@ -133,10 +145,12 @@ int BuildFSM::update() {
             gob->set_action("build_factory", params);
             break;
         }
+        deductFromBuffer();
         nextState = BUILDING;
       }
       break;
-    case BUILDING:
+    }
+    case BUILDING: {
       buildCycles++;
       if (Sorts::OrtsIO->getActionFrame() - buildFrame < 1) {
         msg << "behind a bit.\n";
@@ -160,9 +174,32 @@ int BuildFSM::update() {
         return FSM_SUCCESS;
       }
       break;
+    }
   }
   
   state = nextState;
   
   return FSM_RUNNING;
+}
+
+void BuildFSM::deductFromBuffer() {
+  int bufferDeduction;
+  if (bufferAvailable >= cost) {
+    bufferDeduction = cost;
+  }
+  else {
+    bufferDeduction = bufferAvailable;
+  }
+
+  if (bufferDeduction) {
+    int oldSize = Sorts::gameActionManager->getMineralBuffer();
+    if (oldSize - bufferDeduction >= 0) {
+      Sorts::gameActionManager->setMineralBuffer(oldSize 
+                                                - bufferDeduction);
+    }
+    else {
+      Sorts::gameActionManager->setMineralBuffer(0);
+    }
+  }
+  bufferAvailable -= bufferDeduction;
 }

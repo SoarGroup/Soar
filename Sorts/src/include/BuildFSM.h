@@ -22,11 +22,13 @@ public:
   void setSoarGameObject(SoarGameObject* _sgo) { sgo = _sgo; }
 
 private:
+  void deductFromBuffer();
   int loc_x, loc_y, buildFrame;
   int buildCycles;
   int cost;
   BuildingType type;
   SoarGameObject* sgo;
+  int bufferAvailable;
   void setBuildingInfo(BuildingType type, int centerX, int centerY);
 
   // for calculating intersections

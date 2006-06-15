@@ -339,8 +339,8 @@ AttackManager::AttackManager(const set<SoarGameObject*>& _targets)
 #ifdef USE_CANVAS_ATTACK_MANAGER
   Uint8 r = (Uint8) (((int) this) % 156) + 100;
   for(set<SoarGameObject*>::iterator
-      i  = targets.begin();
-      i != targets.end();
+      i  = targetSet.begin();
+      i != targetSet.end();
       ++i)
   {
     if (!Sorts::canvas.gobRegistered((*i)->getGob())) {

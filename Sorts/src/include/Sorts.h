@@ -9,7 +9,7 @@
    most lower-level objects should have a pointer to this
 */
 
-//#define USE_CANVAS
+#define USE_CANVAS
 
 #include "SoarInterface.h"
 #include "OrtsInterface.h"
@@ -17,7 +17,7 @@
 //#include "InternalGroupManager.h"
 #include "MapManager.h"
 #include "FeatureMapManager.h"
-#include "MapQuery.h"
+#include "GameActionManager.h"
 //#include "TerrainManager.h"
 //#include "AttackManagerRegistry.h"
 //#include "MineManager.h"
@@ -44,7 +44,7 @@ class Sorts {
       SpatialDB *             _spatialDB,
       AttackManagerRegistry*  _amr,
       MineManager*            _mineMan,
-      MapQuery*               _mapQuery,
+      GameActionManager*      _gam,
       pthread_mutex_t*        _mutex )
     {
       SoarIO = _SoarIO;
@@ -57,7 +57,7 @@ class Sorts {
       spatialDB = _spatialDB;
       amr = _amr;
       mineManager = _mineMan;
-      mapQuery = _mapQuery;
+      gameActionManager = _gam;
       mutex = _mutex;
       catchup = false;
     }
@@ -72,7 +72,7 @@ class Sorts {
     static SpatialDB*               spatialDB;
     static AttackManagerRegistry*   amr;
     static MineManager*             mineManager;
-    static MapQuery*                mapQuery;
+    static GameActionManager*       gameActionManager;
  //   static TerrainManager           terrainManager;
     static pthread_mutex_t*         mutex;
     static bool                     catchup;

@@ -124,6 +124,10 @@ int MoveFSM::update() {
     return FSM_UNREACHABLE;
     break;
 
+  case STUCK:
+    return FSM_STUCK;
+    break;
+
 	case MOVING:
 	  msg << "moving @ speed " << *gob->sod.speed << "\n";
     const ServerObjData &sod = gob->sod;
@@ -258,12 +262,12 @@ void MoveFSM::init(vector<sint4> p)
       << l.x << "," << l.y << endl;
 
   clearWPWorkers();
-  if (Sorts::spatialDB->hasImaginaryObstacleCollision(l.x, l.y, 
+  /*if (Sorts::spatialDB->hasImaginaryObstacleCollision(l.x, l.y, 
                                                       *gob->sod.radius)) {
     msg << "not pathfinding, probably no-path.\n";
     state = UNREACHABLE;
   }
-  else {
+  else*/ {
     Sorts::terrainModule->findPath(gob, l, path);
     pathLength = path.locs.size();
     
@@ -304,12 +308,19 @@ void MoveFSM::init(vector<sint4> p)
           <= precision) {
       target.x = l.x;
       target.y = l.y;
-      state = ALREADY_THERE; // or no path!
+      state = ALREADY_THERE; 
     }
     else {
-      state = UNREACHABLE;
-      coordinate c(l.x,l.y);
-      Sorts::spatialDB->addImaginaryObstacle(c);
+      if (not isReachableFromBuilding(l)) { 
+        msg << "adding unreachable location.\n";
+        coordinate c(l.x,l.y);
+        Sorts::spatialDB->addImaginaryObstacle(c);
+        state = UNREACHABLE;
+      }
+      else {
+        msg << "pathfind fails from my point only!\n";
+        state = STUCK;
+      }
     }
   }
 }
@@ -685,3 +696,17 @@ TerrainBase::Loc MoveFSM::getHeadingVector(sint4 target_x, sint4 target_y)
  return loc;
 }
 
+bool MoveFSM::isReachableFromBuilding(TerrainBase::Loc l) {
+  TerrainBase::Path tempPath;
+  Sorts::terrainModule->findPath(Sorts::OrtsIO->getReachabilityObject(), 
+                                 l, tempPath);
+  return (tempPath.locs.size() > 0);
+}
+
+void MoveFSM::panic() {
+  vector<sint4> tempVec;
+  tempVec.push_back(*gob->sod.x + ((int)rand() % 30) -15);
+  tempVec.push_back(*gob->sod.y + ((int)rand() % 30) -15);
+  initNoPath(tempVec);
+}
+                  

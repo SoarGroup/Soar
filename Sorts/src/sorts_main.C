@@ -17,7 +17,7 @@
 #include "MineManager.h"
 #include "GridMapTileGrouper.h"
 #include "FeatureMapManager.h"
-#include "MapQuery.h"
+#include "GameActionManager.h"
 #include "Sorts.h"
 
 #include "TerrainModule.H"
@@ -115,7 +115,7 @@ void SoarOutputEventHandler
   // would have a delay from when it looked somewhere and when
   // the objects there appeared.
   Sorts::pGroupManager->processVisionCommands();
-  Sorts::mapQuery->processMapCommands();
+  Sorts::gameActionManager->processGameCommands();
 
   if (Sorts::SoarIO->getStale()) {
     // why do we have these here?
@@ -358,7 +358,7 @@ int main(int argc, char *argv[]) {
   //InternalGroupManager igm;
   OrtsInterface ortsInterface(&gsm);
 
-  MapQuery mapQ;
+  GameActionManager gaMan;
   SpatialDB spatialDB;
   MineManager mineMan;
   AttackManagerRegistry amr;
@@ -373,7 +373,7 @@ int main(int argc, char *argv[]) {
               &spatialDB,
               &amr,
               &mineMan,
-              &mapQ,
+              &gaMan,
               &sortsMutex);
 
   spatialDB.init();

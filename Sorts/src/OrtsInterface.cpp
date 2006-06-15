@@ -39,6 +39,7 @@ OrtsInterface::OrtsInterface(GameStateModule* _gsm)
   numMarines = 0;
   numTanks = 0;
   unitCountsStale = false;
+  reachabilityObject = NULL;
 }
 
 bool OrtsInterface::handle_event(const Event& e) {
@@ -171,6 +172,15 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
     numTanks++;
     unitCountsStale = true;
   }
+
+  if (friendly && (name == "controlCenter" ||
+                   name == "barracks" ||
+                   name == "factory")) {
+    friendlyBuildings.push_back(gameObj);
+    if (reachabilityObject == NULL) {
+      reachabilityObject = gameObj;
+    }
+  }
   
   msg << (int) gameObj << " added" << endl;
   objectMap[gameObj] = newObj;
@@ -184,6 +194,8 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
 
 void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   // make sure the game object exists
+  bool friendly = (myPid == *gameObj->sod.owner);
+  string name = gameObj->bp_name();
   assert(objectMap.find(gameObj) != objectMap.end());
 
   SoarGameObject* sObject = objectMap[gameObj];
@@ -191,13 +203,29 @@ void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   if (sObject->getPerceptualGroup() != NULL) {
     sObject->getPerceptualGroup()->removeUnit(sObject);
   } 
-  if (gameObj->bp_name() == "mineral") {
+  if (name == "mineral") {
     Sorts::mineManager->removeMineral(sObject);
   }
-  else if (gameObj->bp_name() == "controlCenter") {
+  else if (friendly and name == "controlCenter") {
     Sorts::mineManager->removeControlCenter(sObject);
   }
- 
+  
+  if (friendly && (name == "controlCenter" ||
+                   name == "barracks" ||
+                   name == "factory")) {
+    friendlyBuildings.remove(gameObj);
+    if (reachabilityObject == gameObj) {
+      if (friendlyBuildings.begin() != friendlyBuildings.end()) {
+        reachabilityObject = const_cast<GameObj*> (*friendlyBuildings.begin());
+      }
+      else {
+        reachabilityObject = NULL;
+        msg << "ERROR: can't find a friendly building" 
+            << " to use as reachability source. Did we lose?\n";
+      }
+    }
+  }
+
   objectMap.erase(gameObj);
   delete sObject;
   assert(liveIDs.find(id) != liveIDs.end());
@@ -263,8 +291,8 @@ void OrtsInterface::updateSoarGameObjects() {
 //      (*gob->sod.x1, *gob->sod.y1, *gob->sod.x2, *gob->sod.y2);
     Sorts::spatialDB->addTerrainLine(l);
 #ifdef USE_CANVAS
-//    Sorts::canvas.drawLine(l.a.x, l.a.y, l.b.x, l.b.y);
-//    Sorts::canvas.update();
+    Sorts::canvas.drawLine(l.a.x, l.a.y, l.b.x, l.b.y);
+    Sorts::canvas.update();
 #endif
   }
 
@@ -476,3 +504,5 @@ void OrtsInterface::mergeChanges(GameChanges& newChanges) {
     }
   }
 }
+
+

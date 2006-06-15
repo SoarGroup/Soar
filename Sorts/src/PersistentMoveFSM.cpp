@@ -5,7 +5,7 @@
 #define msg cout << "PMFSM(" << (int)this << "): "
 
 #define MAX_REPATHS 30
-#define MAX_UNREACHABLE 2
+#define MAX_UNREACHABLE 4
 
 PersistentMoveFSM::PersistentMoveFSM(GameObj* go) 
          : FSM(go) {
@@ -45,15 +45,20 @@ int PersistentMoveFSM::update() {
         tempParams.push_back(targetLoc.y);
         moveFSM->init(tempParams);
       }
+      else if (moveStatus == FSM_STUCK) {
+     //   unreachableCount++;
+     //   msg << "unreachable count" << unreachableCount << endl;
+     //   if (unreachableCount >= MAX_UNREACHABLE) {
+     //     return FSM_FAILURE;
+     //   }
+        moveFSM->panic();
+        moveFSM->update();
+        state = PANIC;
+        msg << "panic starting..\n";
+        panicUpdateCount = 0;
+      }
       else if (moveStatus == FSM_UNREACHABLE) {
-        unreachableCount++;
-        msg << "unreachable count" << unreachableCount << endl;
-        if (unreachableCount >= MAX_UNREACHABLE) {
-          return FSM_FAILURE;
-        }
-        tempParams.push_back(targetLoc.x);
-        tempParams.push_back(targetLoc.y);
-        moveFSM->init(tempParams);
+        return FSM_FAILURE;
       }
       else if (moveStatus == FSM_SUCCESS) {
         return FSM_SUCCESS;
@@ -62,6 +67,24 @@ int PersistentMoveFSM::update() {
         assert(false);
       }
       break;
+    case PANIC:
+      moveStatus = moveFSM->update();
+      if (panicUpdateCount++ < 4 and
+          moveStatus == FSM_RUNNING || moveStatus == FSM_SUCCESS) {
+        msg << "panic succeeded.\n";
+        // moving! reinit to the right coords
+        state = IDLE;
+      }
+      else if (moveStatus == FSM_RUNNING) {
+        msg << "panic in progress.\n";
+      }
+      else {
+        moveFSM->panic();
+        moveFSM->update();
+        msg << "panic again..\n";
+      }
+      break;
+      
       
   }
   

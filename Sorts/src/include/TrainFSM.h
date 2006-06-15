@@ -24,6 +24,9 @@ private:
   int num, numTrained;
   TrainingType type;
   int trainCycles;
+  int cost;
+  string command;
+  int bufferAvailable;
 
   enum TrainState { IDLE, TRAINING };
   TrainState state, nextState;

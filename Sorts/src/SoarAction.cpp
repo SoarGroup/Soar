@@ -32,7 +32,9 @@ AttentionActionType attentionActionTypeLookup(string actionName) {
   else                                       return AA_NO_SUCH_ACTION;
 }
 
-MapActionType mapActionTypeLookup(string actionName) {
-  if      (not actionName.compare("locate-building")) return MA_FIND_BUILDING_LOC;
-  else                                       return MA_NO_SUCH_ACTION;
+GameActionType gameActionTypeLookup(string actionName) {
+  if      (not actionName.compare("locate-building")) return GA_FIND_BUILDING_LOC;
+  else if (not actionName.compare("increase-mineral-buffer"))  return GA_SET_MINERAL_BUFFER;
+  else if (not actionName.compare("clear-mineral-buffer"))  return GA_CLEAR_MINERAL_BUFFER;
+  else                                       return GA_NO_SUCH_ACTION;
 }

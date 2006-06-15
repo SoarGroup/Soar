@@ -231,7 +231,7 @@ void PerceptualGroup::generateData() {
 
   attribs.add("dist_to_focus", (float)distToFocus);
 
-  coordinate lastQ = Sorts::mapQuery->getLastResult();
+  coordinate lastQ = Sorts::gameActionManager->getLastResult();
   if (lastQ.x != lastQueryResult.x ||
       lastQ.y != lastQueryResult.y) {
     lastQueryDist = sqrt(squaredDistance(centerX, centerY, lastQ.x, lastQ.y));
@@ -606,11 +606,13 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       break;
     }
     case OA_BUILD:
-      assert(params.size() == 3);
+      assert(params.size() == 4);
       currentCommand = "build";
-      // building type, x, y
+      // building type, x, y, usebuffer
       intIt = params.begin();
       tempVec.clear();
+      tempVec.push_back(*intIt);
+      ++intIt;
       tempVec.push_back(*intIt);
       ++intIt;
       tempVec.push_back(*intIt);
@@ -626,11 +628,13 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       break;
 
     case OA_TRAIN:
-      assert(params.size() == 2);
+      assert(params.size() == 3);
       currentCommand = "train";
-      // type to train, number
+      // type to train, number, usebuffer
       intIt = params.begin();
       tempVec.clear();
+      tempVec.push_back(*intIt);
+      ++intIt;
       tempVec.push_back(*intIt);
       ++intIt;
       tempVec.push_back(*intIt);

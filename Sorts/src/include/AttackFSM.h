@@ -40,6 +40,7 @@ public:
   int failCount;
   SoarGameObject* target;
   bool waitingForCatchup;
+  bool panic;
 
 private:
   SoarGameObject* sgob;

@@ -15,12 +15,13 @@ public:
 	void init(vector<sint4> p);
   
 private:
-  enum PMState {IDLE, MOVE};
+  enum PMState {IDLE, MOVE, PANIC};
   int unreachableCount, repathCount, tolerance;
   coordinate targetLoc;
   PMState state;
   MoveFSM* moveFSM;
   vector<sint4> tempParams;
+  int panicUpdateCount;
 };
 
 #endif

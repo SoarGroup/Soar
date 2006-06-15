@@ -85,8 +85,8 @@ struct AAQueueStruct {
   AttentionAction action;
   sml::Identifier* wme;
 };
-struct MAQueueStruct {
-  MapAction action;
+struct GAQueueStruct {
+  GameAction action;
   sml::Identifier* wme;
 };
 
@@ -120,7 +120,7 @@ class SoarInterface {
 
     void getNewObjectActions(list<ObjectAction>& newActions);
     void getNewAttentionActions(list<AttentionAction>& newActions);
-    void getNewMapActions(list<MapAction>& newActions);
+    void getNewGameActions(list<GameAction>& newActions);
 
     void updateViewFrame(int frame);
 
@@ -147,6 +147,8 @@ class SoarInterface {
     // update player info
     void updatePlayerGold(int amount);
     void updatePlayerUnits(int, int, int);
+
+    void updateMineralBuffer(int);
 
     void updateQueryResult(string name, int param0, int param1);
     /* this is the function for the Soar interrupt handler.
@@ -175,7 +177,7 @@ class SoarInterface {
 
     void processObjectAction(ObjectActionType, sml::Identifier*);
     void processAttentionAction(AttentionActionType, sml::Identifier*);
-    void processMapAction(MapActionType, sml::Identifier*);
+    void processGameAction(GameActionType, sml::Identifier*);
     void improperCommandError();
 
     // SML pointers
@@ -189,6 +191,7 @@ class SoarInterface {
     sml::IntElement* playerMarinesWME;
     sml::IntElement* playerTanksWME;
     sml::IntElement* viewFrameWME;
+    sml::IntElement* mineralBufferWME;
 
   /**************************************************
    *                                                *
@@ -237,7 +240,7 @@ class SoarInterface {
 
     list<OAQueueStruct> objectActionQueue;
     list<AAQueueStruct> attentionActionQueue;
-    list<MAQueueStruct> mapActionQueue;
+    list<GAQueueStruct> gameActionQueue;
 
     // associated mutexes that protect them (no longer used)
     pthread_mutex_t* objectActionQueueMutex;

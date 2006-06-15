@@ -54,6 +54,8 @@ public:
   bool getBuildAction() { return buildingThisCycle; }
 
   int getCurrentMinerals() { return gold; }
+
+  GameObj* getReachabilityObject() { return reachabilityObject; }
 private:
   GameStateModule* gsm;
 
@@ -102,6 +104,10 @@ private:
   set <int> liveIDs;
   
   GameChanges changes;
+
+  list <const GameObj*> friendlyBuildings;
+  
+  GameObj* reachabilityObject;
 };
 
 #endif

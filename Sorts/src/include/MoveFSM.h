@@ -20,15 +20,17 @@ class MoveFSM: public FSM {
   
 
   void stop();
+  void panic();
   coordinate currentLocation;
 
  private:
-	enum{IDLE,WARMUP,MOVING,ALREADY_THERE,UNREACHABLE};
+	enum{IDLE,WARMUP,MOVING,ALREADY_THERE,UNREACHABLE,STUCK};
 
   void veerRight();
   bool veerAhead(int dtt);
   bool collision(int x, int y);
   bool dynamicCollision(int x, int y);
+  bool isReachableFromBuilding(TerrainBase::Loc l);
 	int state;
   int runTime;
   double heading;

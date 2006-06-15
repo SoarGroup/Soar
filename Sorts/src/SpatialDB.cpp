@@ -5,7 +5,7 @@
 #include <map>
 
 #define WORKER_RADIUS 3
-#define IMAG_OBSTACLE_RADIUS 12
+#define IMAG_OBSTACLE_RADIUS 10
 
 #define WORKER_CROWD_FACTOR 4
 #define CROWD_MAX_MINERALS 8

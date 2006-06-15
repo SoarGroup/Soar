@@ -19,11 +19,30 @@ TrainFSM::~TrainFSM() {
 
 void TrainFSM::init(vector<sint4> params) {
   FSM::init(params);
-  assert(params.size() == 2);
+  assert(params.size() == 3);
   type = (TrainingType) params[0];
   num = params[1];
+  bufferAvailable = params[2];
+
   state = IDLE;
   numTrained = 0;
+  switch (type) {
+    case WORKER:
+      cost = 50;
+      assert(gob->bp_name() == "controlCenter");
+      command = "train_worker";
+      break;
+    case MARINE:
+      cost = 50;
+      assert(gob->bp_name() == "barracks");
+      command = "train_marine";
+      break;
+    case TANK:
+      cost = 200;
+      assert(gob->bp_name() == "factory");
+      command = "build_tank";
+      break;
+  }
   msg << "initted\n";
 }
 
@@ -34,26 +53,48 @@ int TrainFSM::update() {
     return FSM_RUNNING;
   }
   switch (state) {
-    case IDLE:
+    case IDLE: {
       msg << "training beginning.\n";
-      switch (type) {
-        case WORKER:
-          assert(gob->bp_name() == "controlCenter");
-          gob->set_action("train_worker", dummy);
-          break;
-        case MARINE:
-          assert(gob->bp_name() == "barracks");
-          gob->set_action("train_marine", dummy);
-          break;
-        case TANK:
-          assert(gob->bp_name() == "factory");
-          gob->set_action("build_tank", dummy);
-          break;
+      int effectiveBuffer = Sorts::gameActionManager->getMineralBuffer()
+                            - bufferAvailable;
+      if (effectiveBuffer < 0) {
+        msg << "did we buffer enough minerals?\n";
+        effectiveBuffer = 0;
       }
-      trainCycles = 0;
-      nextState = TRAINING;
+      
+      if ((Sorts::OrtsIO->getCurrentMinerals() 
+                    - effectiveBuffer) < cost) {
+        msg << "can't afford this unit now.\n";
+        nextState = IDLE;
+      }
+      else {
+        msg << "training beginning.\n";
+        gob->set_action(command, dummy);
+        int bufferDeduction;
+        if (bufferAvailable >= cost) {
+          bufferDeduction = cost;
+        }
+        else {
+          bufferDeduction = bufferAvailable;
+        }
+
+        if (bufferDeduction) {
+          int oldSize = Sorts::gameActionManager->getMineralBuffer();
+          if (oldSize - bufferDeduction >= 0) {
+            Sorts::gameActionManager->setMineralBuffer(oldSize 
+                                                      - bufferDeduction);
+          }
+          else {
+            Sorts::gameActionManager->setMineralBuffer(0);
+          }
+        }
+        bufferAvailable -= bufferDeduction;
+        trainCycles = 0;
+        nextState = TRAINING;
+      }
       break;
-    case TRAINING:
+    }
+    case TRAINING: {
       trainCycles++;
       active = gob->get_int("active");
       if (active == 0) {
@@ -62,6 +103,7 @@ int TrainFSM::update() {
         }
         else if (trainCycles < MIN_BUILD_TIME) {
           msg << "done too quickly, restarting.\n";
+          // TODO: fix the buffer!
           nextState = IDLE;
         }
         else {
@@ -76,6 +118,7 @@ int TrainFSM::update() {
         }
       }
       break;
+    } 
   }
   
   state = nextState;

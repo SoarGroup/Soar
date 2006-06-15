@@ -10,7 +10,7 @@ AttackManagerRegistry*  Sorts::amr = NULL;
 FeatureMapManager*      Sorts::featureMapManager = NULL;
 TerrainModule*          Sorts::terrainModule = NULL;
 SpatialDB*              Sorts::spatialDB = NULL;
-MapQuery*               Sorts::mapQuery = NULL;
+GameActionManager*      Sorts::gameActionManager = NULL;
 //TerrainManager          Sorts::terrainManager;
 pthread_mutex_t*        Sorts::mutex = NULL;
 int                     Sorts::cyclesSoarAhead = 0;
