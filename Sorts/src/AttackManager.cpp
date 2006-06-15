@@ -31,13 +31,44 @@ inline int max(int a, int b) {
   return b;
 }
 
-enum Side { LEFT, RIGHT, TOP, BOTTOM };
+inline int minRadius(GameObj* gob) {
+  switch (*gob->sod.shape) {
+    case SHAPE_RECTANGLE:
+      return min((*gob->sod.x2-*gob->sod.x1), (*gob->sod.y2-*gob->sod.y1))/2;
+    case SHAPE_CIRCLE:
+      return *gob->sod.radius;
+    default:
+      assert(false);
+  }
+}
+
+inline int maxRadius(GameObj* gob) {
+  switch (*gob->sod.shape) {
+    case SHAPE_RECTANGLE:
+      return max((*gob->sod.x2-*gob->sod.x1), (*gob->sod.y2-*gob->sod.y1))/2;
+    case SHAPE_CIRCLE:
+      return *gob->sod.radius;
+    default:
+      assert(false);
+  }
+}
+
+Vec2d getClosePos(GameObj* src, GameObj* tgt) {
+  int srcRadius = maxRadius(src);
+  int tgtRadius = maxRadius(tgt);
+  Vec2d srcPos(gobX(src), gobY(src));
+  Vec2d tgtPos(gobX(tgt), gobY(tgt));
+
+  return tgtPos - Vec2d(tgtPos - srcPos, srcRadius + tgtRadius);
+}
+
 
 void positionsOnRectangle
 ( int ax, int ay, int tx1, int ty1, int tx2, int ty2, 
   int offset, int distBetween, 
   list<Vec2d>& positions)
 {
+  enum Side { LEFT, RIGHT, TOP, BOTTOM };
   Side s[4];
 
   int posX1 = tx1 - offset;
@@ -248,7 +279,7 @@ void AttackManager::attackArcPos
   else {
     int tgtRadius = *tgt->sod.radius;
     Vec2d closestPos = tPos - Vec2d(tPos - aPos, range + tgtRadius);
-    positionsOnCircle(tPos, closestPos, *atk->sod.radius * 2, atkPos);
+    positionsOnCircle(tPos, closestPos, *atk->sod.radius * 4, atkPos);
   }
 
   for(list<Vec2d>::iterator
@@ -478,8 +509,9 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
         ++i)
     {
 //      if (checkSaturated == 0 || !targets[*i].isSaturated()) {
-        GameObj* gob = (*i)->getGob();
-        if (fsm->move(*gob->sod.x, *gob->sod.y) == 0) {
+        GameObj* tgob = (*i)->getGob();
+        Vec2d closePos = getClosePos(gob, tgob);
+        if (fsm->move(closePos(0), closePos(1)) == 0) {
           assignTarget(fsm, *i);
           msg << "LAST RESORT TARG" << endl;
           return true;
@@ -736,3 +768,7 @@ void AttackManager::reprioritize() {
   sortedTargets.insert(sortedTargets.end(), targetSet.begin(), targetSet.end());
   sort(sortedTargets.begin(), sortedTargets.end(), comparator);
 }
+
+
+
+

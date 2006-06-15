@@ -209,8 +209,8 @@ void* RunSoar(void* ptr) {
 void* RunOrts(void* ptr) {
   GameStateModule* gsm = (GameStateModule*) ptr;
   msg << "Starting ORTS" << endl;
-  while(1) {
-//  for(unsigned long i = 0; i < 1000; i++) {
+//  while(1) {
+  for(unsigned long i = 0; i < 1000; i++) {
     if (!gsm->recv_view()) {
       usleep(30000);
     }
