@@ -18,11 +18,17 @@
 
 
 inline int min(int a, int b) {
-  if (a < b) return a; return b;
+  if (a < b) {
+    return a;
+  }
+  return b;
 }
 
 inline int max(int a, int b) {
-  if (a > b) return a; return b;
+  if (a > b) {
+    return a;
+  }
+  return b;
 }
 
 enum Side { LEFT, RIGHT, TOP, BOTTOM };
@@ -212,11 +218,17 @@ void AttackManager::attackArcPos
 
   list<Vec2d> atkPos;
   if (*tgt->sod.shape == SHAPE_RECTANGLE) {
+    msg << "paranoid x1: " << *tgt->sod.x1 << endl;
+    msg << "paranoid y1: " << *tgt->sod.y1 << endl;
+    msg << "paranoid x2: " << *tgt->sod.x2 << endl;
+    msg << "paranoid y2: " << *tgt->sod.y2 << endl;
     int halfwidth = (*tgt->sod.x2 - *tgt->sod.x1) /  2;
     int halfheight = (*tgt->sod.y2 - *tgt->sod.y1) /  2;
 
     int minRadius = min(halfwidth, halfheight);
     int maxRadius = max(halfwidth, halfheight);
+
+    msg << "USING RADIUS " << minRadius << endl;
 
     if (maxRadius < range / 2) {
       // treat this as a circle
@@ -253,6 +265,12 @@ void AttackManager::attackArcPos
     if (0 <= intPos(0) && intPos(0) <= Sorts::OrtsIO->getMapXDim() && 
         0 <= intPos(1) && intPos(1) <= Sorts::OrtsIO->getMapYDim()) 
     {
+      if (Sorts::spatialDB->hasObjectCollision(intPos(0),intPos(1),atkRadius)) {
+    //      or 
+     //       Sorts::spatialDB->hasTerrainCollision
+     //         (intPos(0), intPos(1), atkRadius)
+         continue;
+      }
       bool slotTaken = false;
       for(list<AttackFSM*>::iterator
           j =  team.begin();
@@ -269,15 +287,7 @@ void AttackManager::attackArcPos
         }
       }
       if (!slotTaken) {
-        if (!Sorts::spatialDB->hasObjectCollision
-              (intPos(0), intPos(1), atkRadius)
-     //       and
-     //       !Sorts::spatialDB->hasTerrainCollision
-     //         (intPos(0), intPos(1), atkRadius)
-           )
-        {
-          positions.push_back(intPos);
-        }
+        positions.push_back(intPos);
       }
     }
   //positions.push_back(intPos);
@@ -632,11 +642,8 @@ int AttackManager::direct(AttackFSM* fsm) {
 
 int AttackManager::updateTargetList() {
   int numVanished = 0;
-  for(map<SoarGameObject*, AttackTargetInfo>::iterator
-      i =  targets.begin(); 
-      i != targets.end();
-      ++i)
-  {
+  map<SoarGameObject*, AttackTargetInfo>::iterator i = targets.begin();
+  while (i != targets.end()) {
     if (!Sorts::OrtsIO->isAlive(i->first->getID())) {
       msg << "(" << (int) this << ") Unit " << i->first->getID() << " is no longer alive or moved out of view" << endl;
 
@@ -647,9 +654,13 @@ int AttackManager::updateTargetList() {
       }
 #endif
       unassignAll(i->first);
-      targets.erase(i);
       targetSet.erase(i->first);
+      map<SoarGameObject*, AttackTargetInfo>::iterator j = i++;
+      targets.erase(j);
       ++numVanished;
+    }
+    else {
+      ++i;
     }
   }
   return numVanished;
