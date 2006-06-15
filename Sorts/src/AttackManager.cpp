@@ -334,6 +334,7 @@ AttackManager::AttackManager(const set<SoarGameObject*>& _targets)
       ++i)
   {
     targets.insert(pair<SoarGameObject*, AttackTargetInfo>(*i, AttackTargetInfo(*i)));
+    idSet.insert((*i)->getID());
   }
   reprioritize();
 
@@ -609,8 +610,8 @@ int AttackManager::direct(AttackFSM* fsm) {
   
   assert(fsm->target != NULL);
 
-  if (targets.find(fsm->target) == targets.end()) {
-    msg << "bad target: (" << fsm->target->getGob() << ") " << fsm->target->getGob()->bp_name() << endl;
+  if (idSet.find(fsm->target->getID()) == idSet.end()) {
+    msg << "bad target Ptr: " << fsm->target->getGob() << " id: " << fsm->target->getID() << " name: " << fsm->target->getGob()->bp_name() << endl;
   }
 
   msg << "attacking target: " << fsm->target->getGob()->bp_name() << " " 
@@ -798,7 +799,3 @@ void AttackManager::reprioritize() {
   sortedTargets.insert(sortedTargets.end(), targetSet.begin(), targetSet.end());
   sort(sortedTargets.begin(), sortedTargets.end(), comparator);
 }
-
-
-
-

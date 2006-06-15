@@ -54,6 +54,7 @@ void AttackFSM::init(vector<sint4> params) {
   target = NULL;
   reassign = true;
   failCount = 0;
+  waitingForCatchup = false;
 }
 
 int AttackFSM::update() {
@@ -79,6 +80,9 @@ int AttackFSM::update() {
     msg << "TIME " << (gettime() - st) / 1000 << endl;
     return FSM_FAILURE;
   }
+
+  msg << "moving: " << moving << endl;
+  msg << "waiting: " << waitingForCatchup << endl;
 
   if (moving && !waitingForCatchup) {
     if (firstMove) {

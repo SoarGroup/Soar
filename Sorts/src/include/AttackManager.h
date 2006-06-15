@@ -45,7 +45,8 @@ private: // variables
   set<SoarGameObject*> targetSet;
   map<SoarGameObject*, AttackTargetInfo> targets;
   vector<SoarGameObject*> sortedTargets;
-
+  
+  set<int> idSet;
 };
 
 #endif
