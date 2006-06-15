@@ -227,6 +227,7 @@ void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   }
 
   objectMap.erase(gameObj);
+  msg << "deceased sgo: " << (int)sObject << endl;
   delete sObject;
   assert(liveIDs.find(id) != liveIDs.end());
   liveIDs.erase(id);

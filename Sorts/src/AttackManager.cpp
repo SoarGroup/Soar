@@ -8,7 +8,7 @@
 
 #include "ScriptObj.H"
 
-#define msg cout << "AttackManager.cpp: "
+#define msg cout << "ATKMAN(" << (int)this << "): "
 
 #define WAIT_RATIO    0.5
 #define RESUME_RATIO  0.85
@@ -611,11 +611,12 @@ int AttackManager::direct(AttackFSM* fsm) {
   assert(fsm->target != NULL);
 
   if (idSet.find(fsm->target->getID()) == idSet.end()) {
-    msg << "bad target Ptr: " << fsm->target->getGob() << " id: " << fsm->target->getID() << " name: " << fsm->target->getGob()->bp_name() << endl;
+    msg << "bad target Ptr: " <<(int) fsm->target->getGob() << " id: " << fsm->target->getID() << " name: " << fsm->target->getGob()->bp_name() << endl;
+    msg << "bad target sgo ptr: " << (int)fsm->target << endl;
   }
 
   msg << "attacking target: " << fsm->target->getGob()->bp_name() << " " 
-      << fsm->target->getGob() << endl;
+      << fsm->target->getGob() << " aka sgo " << (int)fsm->target << endl;
 
   fsm->failCount = 0;
 
