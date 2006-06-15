@@ -247,7 +247,7 @@ void AttackManager::attackArcPos
       + atkRadius;
   }
 
-  range = range * 0.9; // for safety
+  range = range * 0.8; // for safety
   range -= layer * atkRadius * 2;
 
   list<Vec2d> atkPos;
@@ -638,12 +638,12 @@ int AttackManager::direct(AttackFSM* fsm) {
         return 0;
       }
       else {
-        msg << "xxx_dest can't hit\n";
+        msg << "xxx_dest can't hit. Dest: " << dest(0) << "," << dest(1) << " Targ: " << gobX(tgob) << "," << gobY(tgob) << endl;
       }
     }
     if (fsm->waitingForCatchup) {
-      if (gob->dir_dmg == 0) {
-        info.avgAttackerDistance();
+      msg << "WAITING" << endl;
+      if ((gob->dir_dmg == 0) && (canHit(gob, fsm->getDestination(), tgob))) {
         double distToTarget 
           = squaredDistance(gobX(gob), gobY(gob), gobX(tgob), gobY(tgob));
         if (distToTarget >= info.avgAttackerDistance() * RESUME_RATIO) {
@@ -651,6 +651,7 @@ int AttackManager::direct(AttackFSM* fsm) {
         }
         else {
           // keep waiting
+          msg << "TIME SPENT: " << (gettime() - st) / 1000 << endl;
           return 0;
         }
       }
@@ -658,7 +659,8 @@ int AttackManager::direct(AttackFSM* fsm) {
         // forget you guys, I'm getting out of here
         fsm->waitingForCatchup = false;
       }
-      // otherwise, he's taking damage, so start moving
+      // otherwise, he's taking damage, or the target changed
+      // position, so start moving
     }
     // not moving, or should be moving somewhere else
     msg << "CANNOT HIT" << endl;

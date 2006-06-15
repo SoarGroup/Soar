@@ -91,29 +91,23 @@ bool canHit(GameObj *atk, GameObj *tgt) {
   if (weapon == NULL) {
     return false;
   }
+  double wr; 
   
+  if (*tgt->sod.zcat == GameObj::ON_LAND) {
+    wr = weapon->get_int("max_ground_range") + *atk->sod.radius;
+  }
+  else {
+    wr = weapon->get_int("max_air_range") + *atk->sod.radius;
+  }
   if (*tgt->sod.shape == SHAPE_RECTANGLE) {
-    double wr;
-    if (*tgt->sod.zcat == GameObj::ON_LAND) {
-      wr = weapon->get_int("max_ground_range") + *atk->sod.radius;
-    }
-    else {
-      wr = weapon->get_int("max_air_range") + *atk->sod.radius;
-    }
     Circle c(*atk->sod.x, *atk->sod.y, wr);
     Rectangle r(*tgt->sod.x1, *tgt->sod.x2, *tgt->sod.y1, *tgt->sod.y2);
     return r.intersects(c);
   }
   else {
     double d = squaredDistance(*atk->sod.x, *atk->sod.y, *tgt->sod.x, *tgt->sod.y);
-    double r;
-    if (*tgt->sod.zcat == GameObj::ON_LAND) {
-      r = weapon->get_int("max_ground_range") + *atk->sod.radius + *tgt->sod.radius;
-    }
-    else {
-      r = weapon->get_int("max_air_range") + *atk->sod.radius + *tgt->sod.radius;
-    }
-    return r * r >= d;
+    wr += *tgt->sod.radius;
+    return wr * wr >= d;
   }
 }
 
@@ -139,28 +133,22 @@ bool canHit(GameObj* atk, const Vec2d& loc, GameObj *tgt) {
     return false;
   }
 
+  double wr;
+  if (*tgt->sod.zcat == GameObj::ON_LAND) {
+    wr = weapon->get_int("max_ground_range") + *atk->sod.radius;
+  }
+  else {
+    wr = weapon->get_int("max_air_range") + *atk->sod.radius;
+  }
   if (*tgt->sod.shape == SHAPE_RECTANGLE) {
-    double wr;
-    if (*tgt->sod.zcat == GameObj::ON_LAND) {
-      wr = weapon->get_int("max_ground_range") + *atk->sod.radius;
-    }
-    else {
-      wr = weapon->get_int("max_air_range") + *atk->sod.radius;
-    }
     Circle c(loc(0), loc(1), wr);
     Rectangle r(*tgt->sod.x1, *tgt->sod.x2, *tgt->sod.y1, *tgt->sod.y2);
     return r.intersects(c);
   }
   else {
     double d = squaredDistance((int) loc(0), (int) loc(1), *tgt->sod.x, *tgt->sod.y);
-    double r;
-    if (*tgt->sod.zcat == GameObj::ON_LAND) {
-      r = weapon->get_int("max_ground_range") + *atk->sod.radius + *tgt->sod.radius;
-    }
-    else {
-      r = weapon->get_int("max_air_range") + *atk->sod.radius + *tgt->sod.radius;
-    }
-    return r * r >= d;
+    wr += *tgt->sod.radius;
+    return wr * wr >= d;
   }
 }
 
