@@ -9,6 +9,8 @@
 #include "AttackFSM.h"
 #include "Circle.h"
 
+#include <map>
+
 class AttackTargetInfo {
 public:
   AttackTargetInfo() { assert(false); }
@@ -39,6 +41,8 @@ private:
   GameObj*        gob;
   set<AttackFSM*> attackers;
   list<Circle>    attackPos;
+
+  map<AttackFSM*, int> avgDmg;
 };
 
 #endif

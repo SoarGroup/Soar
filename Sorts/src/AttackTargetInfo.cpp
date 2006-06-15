@@ -12,23 +12,27 @@ void AttackTargetInfo::assignAttacker(AttackFSM* fsm) {
   ScriptObj* weapon = fsm->getGob()->component("weapon");
   assert(weapon != NULL);
   volleyDamage += fsm->getAvgDamage();
+  avgDmg[fsm] = fsm->getAvgDamage();
 }
 
 void AttackTargetInfo::unassignAttacker(AttackFSM* fsm) {
   attackers.erase(fsm);
-  volleyDamage -= fsm->getAvgDamage();
+  volleyDamage -= avgDmg[fsm];
+  avgDmg.erase(fsm);
 }
 
 double AttackTargetInfo::avgAttackerDistance() {
   double avgDist = 0;
-  GameObj* tGob = target->getGob();
+  if (attackers.size() == 0) {
+    assert(false);
+  }
   for(set<AttackFSM*>::iterator
       i  = attackers.begin();
       i != attackers.end();
       ++i)
   {
     GameObj* aGob = (*i)->getGob();
-    avgDist += squaredDistance(*aGob->sod.x, *aGob->sod.y, *tGob->sod.x, *tGob->sod.y);
+    avgDist += squaredDistance(gobX(aGob), gobY(aGob), gobX(gob), gobY(gob));
   }
   avgDist /= attackers.size();
   cout << "AVERAGEDIST: " << avgDist << endl;
