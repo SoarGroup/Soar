@@ -610,7 +610,6 @@ int AttackManager::direct(AttackFSM* fsm) {
 
   if (targets.find(fsm->target) == targets.end()) {
     msg << "bad target: (" << fsm->target->getGob() << ") " << fsm->target->getGob()->bp_name() << endl;
-    exit(1);
   }
 
   msg << "attacking target: " << fsm->target->getGob()->bp_name() << " " 
