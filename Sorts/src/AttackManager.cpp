@@ -129,7 +129,7 @@ void positionsOnRectangle
   for(int i = 0; i < 4; i++) {
     switch(s[i]) {
       case TOP:
-        assert(closeX >= 0);
+        assert(tx1 <= closeX && closeX <= tx2);
         positions.push_back(Vec2d(closeX, posY1));
         for(d=distBetween; closeX-d>=tx1 || closeX+d<=tx2; d+=distBetween) {
           if (closeX-d >= tx1) {
@@ -144,7 +144,7 @@ void positionsOnRectangle
         closeY = ty1; // for next side
         break;
       case BOTTOM:
-        assert(closeX >= 0);
+        assert(tx1 <= closeX && closeX <= tx2);
         positions.push_back(Vec2d(closeX, posY2));
         for(d=distBetween; closeX-d>=tx1 || closeX+d<=tx2; d+=distBetween) {
           if (closeX-d >= tx1) {
@@ -159,7 +159,7 @@ void positionsOnRectangle
         closeY = ty2;
         break;
       case LEFT:
-        assert(closeY >= 0);
+        assert(ty1 <= closeY && closeY <= ty2);
         positions.push_back(Vec2d(posX1, closeY));
         for(d=distBetween; closeY-d>=ty1 || closeY+d<=ty2; d+=distBetween) {
           if (closeY-d >= ty1) {
@@ -174,7 +174,7 @@ void positionsOnRectangle
         closeX = tx1;
         break;
       case RIGHT:
-        assert(closeY >= 0);
+        assert(ty1 <= closeY && closeY <= ty2);
         positions.push_back(Vec2d(posX2, closeY));
         for(d=distBetween; closeY-d>=ty1 || closeY+d<=ty2; d+=distBetween) {
           if (closeY-d >= ty1) {
@@ -214,14 +214,10 @@ void AttackManager::attackArcPos
       + atkRadius;
   }
 
-  range = range * 0.9; // for safety
+  range = range * 0.8; // for safety
 
   list<Vec2d> atkPos;
   if (*tgt->sod.shape == SHAPE_RECTANGLE) {
-    msg << "paranoid x1: " << *tgt->sod.x1 << endl;
-    msg << "paranoid y1: " << *tgt->sod.y1 << endl;
-    msg << "paranoid x2: " << *tgt->sod.x2 << endl;
-    msg << "paranoid y2: " << *tgt->sod.y2 << endl;
     int halfwidth = (*tgt->sod.x2 - *tgt->sod.x1) /  2;
     int halfheight = (*tgt->sod.y2 - *tgt->sod.y1) /  2;
 
@@ -230,7 +226,8 @@ void AttackManager::attackArcPos
 
     msg << "USING RADIUS " << minRadius << endl;
 
-    if (maxRadius < range / 2) {
+    //if (maxRadius < range / 2) {
+    if (false) {
       // treat this as a circle
       Vec2d closestPos = tPos - Vec2d(tPos - aPos, range + minRadius);
       positionsOnCircle(tPos, closestPos, *atk->sod.radius * 2, atkPos);
@@ -241,8 +238,8 @@ void AttackManager::attackArcPos
       ( *atk->sod.x,
         *atk->sod.y,
         *tgt->sod.x1, 
-        *tgt->sod.x2, 
         *tgt->sod.y1, 
+        *tgt->sod.x2, 
         *tgt->sod.y2,
         range,
         atkRadius * 2,
