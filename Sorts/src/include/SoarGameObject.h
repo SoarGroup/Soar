@@ -37,6 +37,7 @@ class SoarGameObject{
 	//void setInternalGroup(InternalGroup *g);
 	//InternalGroup *getInternalGroup();
 	int getStatus();
+  void removeFromGame();
 
   int  getOwner()     { return *gob->sod.owner; }
  	bool isFriendly()   { return friendly; }
@@ -50,6 +51,7 @@ class SoarGameObject{
 
   void setLastAttacked(int id) { lastAttackedId = id; }
   int  getLastAttacked()       { return lastAttackedId; }
+  string getName() { return name; }
 
 private:
   GameObj* gob;
@@ -70,6 +72,7 @@ private:
   int frameOfLastUpdate;
 
   int status;
+  string name;
 
   bool friendlyWorker;
   // these are only updated for friendly workers!

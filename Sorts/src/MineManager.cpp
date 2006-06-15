@@ -224,9 +224,7 @@ void MineManager::removeMineral(SoarGameObject* mineral) {
   // if anyone is mining this mineral, we need to interrupt them
   // and re-route
   
-  coordinate c = mineral->getLocation();
-  msg << "removing mineral " << (int)mineral << " at " 
-      << c.x << "," << c.y << endl;
+  msg << "removing mineral " << (int)mineral << endl; 
 
   MineralInfo dummy;
   dummy.mineral = mineral;

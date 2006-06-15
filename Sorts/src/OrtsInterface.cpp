@@ -194,11 +194,11 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
 
 void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   // make sure the game object exists
-  bool friendly = (myPid == *gameObj->sod.owner);
-  string name = gameObj->bp_name();
   assert(objectMap.find(gameObj) != objectMap.end());
 
   SoarGameObject* sObject = objectMap[gameObj];
+  bool friendly = sObject->isFriendly();
+  string name = sObject->getName();
   int id = sObject->getID();
   if (sObject->getPerceptualGroup() != NULL) {
     sObject->getPerceptualGroup()->removeUnit(sObject);
@@ -228,7 +228,8 @@ void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
 
   objectMap.erase(gameObj);
   msg << "deceased sgo: " << (int)sObject << endl;
-  delete sObject;
+  //delete sObject;
+  sObject->removeFromGame();
   assert(liveIDs.find(id) != liveIDs.end());
   liveIDs.erase(id);
 }

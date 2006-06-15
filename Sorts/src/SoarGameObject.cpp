@@ -21,7 +21,7 @@
 using namespace std;
 
 void SoarGameObject::identifyBehaviors() {
-  string name = gob->bp_name();
+  name = gob->bp_name();
   FSM* idleBehavior = new IdleFSM(gob);
   registerBehavior(idleBehavior);
   if (friendly) {
@@ -97,8 +97,10 @@ SoarGameObject::SoarGameObject(
 
 SoarGameObject::~SoarGameObject()
 {
-  Sorts::spatialDB->removeObject(gob,sat_loc);
+  removeFromGame();
+}
 
+void SoarGameObject::removeFromGame() {
   for(map<ObjectActionType, FSM*>::iterator 
       i  = behaviors.begin(); 
       i != behaviors.end(); 
@@ -106,6 +108,7 @@ SoarGameObject::~SoarGameObject()
   {
     delete i->second;
   }
+  Sorts::spatialDB->removeObject(gob,sat_loc);
 }
 
 void SoarGameObject::registerBehavior(FSM *b)

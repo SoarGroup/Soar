@@ -17,7 +17,8 @@
 #define USE_CANVAS_ATTACK_MANAGER
 #endif
 
-
+#define NO_WAITING
+  
 inline int min(int a, int b) {
   if (a < b) {
     return a;
@@ -633,7 +634,9 @@ int AttackManager::direct(AttackFSM* fsm) {
           if (distToTarget < info.avgAttackerDistance() * WAIT_RATIO)
           {
             msg << "WAITING FOR OTHERS TO CATCH UP" << endl;
+#ifndef NO_WAITING
             fsm->waitingForCatchup = true;
+#endif
           }
         }
         // everything's fine, keep going
