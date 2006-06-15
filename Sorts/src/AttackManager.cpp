@@ -124,7 +124,7 @@ void positionsOnRectangle
     closeX = ax;
   }
  
-  msg << "PATTERN START" << endl;
+//  msg << "PATTERN START" << endl;
   int d;
   for(int i = 0; i < 4; i++) {
     switch(s[i]) {
@@ -134,11 +134,11 @@ void positionsOnRectangle
         for(d=distBetween; closeX-d>=tx1 || closeX+d<=tx2; d+=distBetween) {
           if (closeX-d >= tx1) {
             positions.push_back(Vec2d(closeX-d, posY1));
-            msg << "PATTERN: " << closeX-d << " " << posY1 << endl;
+//            msg << "PATTERN: " << closeX-d << " " << posY1 << endl;
           }
           if (closeX+d <= tx2) {
             positions.push_back(Vec2d(closeX+d, posY1));
-            msg << "PATTERN: " << closeX+d << " " << posY1 << endl;
+//            msg << "PATTERN: " << closeX+d << " " << posY1 << endl;
           }
         }
         closeY = ty1; // for next side
@@ -149,11 +149,11 @@ void positionsOnRectangle
         for(d=distBetween; closeX-d>=tx1 || closeX+d<=tx2; d+=distBetween) {
           if (closeX-d >= tx1) {
             positions.push_back(Vec2d(closeX-d, posY2));
-            msg << "PATTERN: " << closeX-d << " " << posY2 << endl;
+//            msg << "PATTERN: " << closeX-d << " " << posY2 << endl;
           }
           if (closeX+d <= tx2) {
             positions.push_back(Vec2d(closeX+d, posY2));
-            msg << "PATTERN: " << closeX+d << " " << posY2 << endl;
+//            msg << "PATTERN: " << closeX+d << " " << posY2 << endl;
           }
         }
         closeY = ty2;
@@ -164,11 +164,11 @@ void positionsOnRectangle
         for(d=distBetween; closeY-d>=ty1 || closeY+d<=ty2; d+=distBetween) {
           if (closeY-d >= ty1) {
             positions.push_back(Vec2d(posX1, closeY-d));
-            msg << "PATTERN: " << posX1 << " " << closeY-d << endl;
+//            msg << "PATTERN: " << posX1 << " " << closeY-d << endl;
           }
           if (closeY+d <= ty2) {
             positions.push_back(Vec2d(posX1, closeY+d));
-            msg << "PATTERN: " << posX1 << " " << closeY+d << endl;
+//            msg << "PATTERN: " << posX1 << " " << closeY+d << endl;
           }
         }
         closeX = tx1;
@@ -179,11 +179,11 @@ void positionsOnRectangle
         for(d=distBetween; closeY-d>=ty1 || closeY+d<=ty2; d+=distBetween) {
           if (closeY-d >= ty1) {
             positions.push_back(Vec2d(posX2, closeY-d));
-            msg << "PATTERN: " << posX2 << " " << closeY-d << endl;
+//            msg << "PATTERN: " << posX2 << " " << closeY-d << endl;
           }
           if (closeY+d <= ty2) {
             positions.push_back(Vec2d(posX2, closeY+d));
-            msg << "PATTERN: " << posX2 << " " << closeY+d << endl;
+//            msg << "PATTERN: " << posX2 << " " << closeY+d << endl;
           }
         }
         closeX = tx2;
@@ -192,7 +192,7 @@ void positionsOnRectangle
         assert(false);
     }
   }
-  msg << "PATTERN END" << endl;
+//  msg << "PATTERN END" << endl;
 }
 
 void AttackManager::attackArcPos
@@ -226,8 +226,7 @@ void AttackManager::attackArcPos
 
     msg << "USING RADIUS " << minRadius << endl;
 
-    //if (maxRadius < range / 2) {
-    if (false) {
+    if (maxRadius - minRadius < range / 2) {
       // treat this as a circle
       Vec2d closestPos = tPos - Vec2d(tPos - aPos, range + minRadius);
       positionsOnCircle(tPos, closestPos, *atk->sod.radius * 2, atkPos);
