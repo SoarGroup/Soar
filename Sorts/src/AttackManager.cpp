@@ -208,22 +208,23 @@ void AttackManager::attackArcPos
       + atkRadius;
   }
 
-  range = range - 3; // for safety
+  range = range * 0.9; // for safety
 
   list<Vec2d> atkPos;
   if (*tgt->sod.shape == SHAPE_RECTANGLE) {
     int halfwidth = (*tgt->sod.x2 - *tgt->sod.x1) /  2;
     int halfheight = (*tgt->sod.y2 - *tgt->sod.y1) /  2;
 
-    int radius = min(halfwidth, halfheight);
+    int minRadius = min(halfwidth, halfheight);
+    int maxRadius = max(halfwidth, halfheight);
 
-    if (radius < range / 2) {
+    if (maxRadius < range / 2) {
       // treat this as a circle
-      int tgtRadius = *tgt->sod.radius;
-      Vec2d closestPos = tPos - Vec2d(tPos - aPos, range + tgtRadius);
+      Vec2d closestPos = tPos - Vec2d(tPos - aPos, range + minRadius);
       positionsOnCircle(tPos, closestPos, *atk->sod.radius * 2, atkPos);
     }
     else {
+      // treat as a real rectangle
       positionsOnRectangle
       ( *atk->sod.x,
         *atk->sod.y,
@@ -500,9 +501,18 @@ int AttackManager::direct(AttackFSM* fsm) {
   SoarGameObject* sgob = Sorts::OrtsIO->getSoarGameObject(gob);
 
   if ( gob->dir_dmg > 0 && 
-       ((double) gob->get_int("hp")) / gob->get_int("max_hp") < 0.2) 
+       ((double) gob->get_int("hp")) / gob->get_int("max_hp") < 0.2)
   {
-    
+    // time to run away
+    for(int i = 0; i < GameConst::DAMAGE_N; ++i) {
+      if (damageTaken(i, gob->dir_dmg)) {
+        Vec2d retreatVector = getHeadingVector(i).inv();
+        Vec2d moveDest = Vec2d(gobX(gob), gobY(gob)) + Vec2d(retreatVector, 10);
+        fsm->move(moveDest(0), moveDest(1));
+        msg << "RETREATING TO " << moveDest(0) << ", " << moveDest(1) << endl;
+        return 0;
+      }
+    }
   }
 
   int numUnassigned = 0;
@@ -567,19 +577,19 @@ int AttackManager::direct(AttackFSM* fsm) {
     if (fsm->isMoving()) {
       Vec2d dest = fsm->getDestination();
       if (canHit(gob, dest, tgob)) {
-//        info.avgAttackerDistance();
-//        double distToTarget 
-//          = squaredDistance(gobX(gob), gobY(gob), gobX(tgob), gobY(tgob));
-//        cout << "DIST: " << distToTarget << endl;
-  //      if (distToTarget < info.avgAttackerDistance() * MAX_INDIVIDUAL_AHEAD ) {
-          // if he's too far ahead of everyone, stop until others catch up
-  //        fsm->stopMoving();
-  //      }
-  //      else {
-          // everything's fine, keep going
-          msg << "TIME SPENT: " << (gettime() - st) / 1000 << endl;
-          return 0;
-  //      }
+        if (gob->dir_dmg == 0) {
+          info.avgAttackerDistance();
+          double distToTarget 
+            = squaredDistance(gobX(gob), gobY(gob), gobX(tgob), gobY(tgob));
+          if (distToTarget < info.avgAttackerDistance() * MAX_INDIVIDUAL_AHEAD)
+          {
+            msg << "WAITING FOR OTHERS TO CATCH UP" << endl;
+            fsm->stopMoving();
+          }
+        }
+        // everything's fine, keep going
+        msg << "TIME SPENT: " << (gettime() - st) / 1000 << endl;
+        return 0;
       }
       else {
         msg << "xxx_dest can't hit\n";
