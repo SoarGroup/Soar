@@ -1,0 +1,128 @@
+
+
+sp {propose*attack-immediate-tanks
+   (state <s> ^name game2
+              ^my-pid <pid>
+              ^io.input-link.groups.group <myg>)
+   (<myg> ^id <mygid>
+          ^owner <pid>
+          ^enemy-intersect <eg>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name attack
+        ^attacker <myg>
+        ^target <eg>)}
+
+sp {propose*attack-shooting-tanks
+   (state <s> ^name game2
+              ^my-pid <pid>
+              ^enemy <eid>
+              ^situation normal
+              ^io.input-link.groups <gs>)
+   (<gs> ^group <g1>
+         ^group { <g2> <> <g1> })
+   (<g1> ^type tank
+         ^owner <pid>
+         ^command_running 0
+        -^enemy-intersects
+         ^num_members <nm1>)
+   (<g2> ^type tank
+         ^owner <eid>
+         ^shooting > 0
+         ^num_members { <= <nm1> <nm2> })
+
+sp {propose*attack-tanks
+   (state <s> ^name game2
+              ^my-pid <pid>
+              ^enemy <eid>
+              ^situation normal
+              ^io.input-link.groups <gs>)
+   (<gs> ^group <g1>
+         ^group { <g2> <> <g1> })
+   (<g1> ^type tank
+         ^owner <pid>
+         ^command_running 0
+        -^enemy-intersects
+         ^num_members <nm1>)
+   (<g2> ^type tank
+         ^owner <eid>
+         ^num_members { <= <nm1> <nm2> })
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name attack
+        ^attacker <g1>
+        ^target <g2>)}
+
+sp {propose*attack-bases
+   (state <s> ^name game2
+              ^my-pid <pid>
+              ^enemy <eid>
+              ^situation normal
+              ^io.input-link.groups <gs>)
+   (<gs> ^group <g1>
+         ^group { <g2> <> <g1> })
+   (<g1> ^type tank
+         ^owner <pid>
+        -^enemy-intersects
+         ^command_running 0)
+   (<g2> ^type |controlCenter|
+         ^owner <eid>)
+  -{(<gs> ^group <tankg>)
+    (<tankg> ^owner <eid>
+             ^type tank)}
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name attack
+        ^attacker <g1>
+        ^target <g2>)}
+
+sp {apply*attack
+   (state <s> ^io.output-link <out>
+              ^operator <o>)
+   (<o> ^name attack
+        ^attacker.id <aid>
+        ^target.id <tid>)
+-->
+   (<out> ^attack <atk>)
+   (<atk> ^group0 <aid>
+          ^group1 <tid>)}
+
+sp {apply*attack-create-memory
+   (state <s> ^io.output-link <out>
+              ^operator <o>)
+   (<o> ^name attack
+        ^attacker <a>
+        ^target.id <tid>)
+   (<a> ^id <aid>
+        ^num_members <n>)
+  -{(<s> ^attack-memory <am>)
+    (<am> ^target <tid>)}
+-->
+   (<s> ^attack-memory <new-am>)
+   (<new-am> ^target <tid>
+             ^attacker <aid>
+             ^group-count 1
+             ^unit-count <n>)}
+
+sp {apply*attack-update-memory
+   (state <s> ^io.output-link <out>
+              ^operator <o>)
+   (<o> ^name attack
+        ^attacker <a>
+        ^target.id <tid>)
+   (<a> ^id <aid>
+        ^num_members <n>)
+   (<s> ^attack-memory <am>)
+   (<am> ^target <tid>
+        -^attacker <aid>
+         ^group-count <gc>
+         ^unit-count <uc>
+         ^double-unit-count <duc>)
+-->
+   (<am> ^attacker <aid>
+         ^group-count (+ <gc> 1)
+         ^group-count <gc> -
+         ^unit-count (+ <uc> <n>)
+         ^unit-count <uc> -
+         ^double-unit-count (* 2 (+ <uc> <n>))
+         ^double-unit-count <duc> -)}

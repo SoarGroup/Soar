@@ -1,0 +1,12 @@
+sp {propose*initialize-situation
+   (state <s> ^name game2
+             -^situation)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name initialize-situation)}
+
+sp {apply*initialize-situation
+   (state <s> ^operator <o>)
+   (<o> ^name initialize-situation)
+-->
+   (<s> ^situation normal)}

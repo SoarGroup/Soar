@@ -1,0 +1,85 @@
+sp {elaborate*attack-tanks-first
+   (state <s> ^operator <o1> +
+                        <o2> +)
+   (<o1> ^name attack
+         ^target.type tank)
+   (<o2> ^name attack
+         ^target.type |controlCenter|)
+-->
+   (<s> ^operator <o2> ~)}
+
+# For now, don't worry about bases being saturated
+
+sp {elaborate*saturation-point
+   (state <s> ^operator <o> +
+              ^attack-memory <am>)
+   (<o> ^name attack
+        ^target <t>)
+   (<t> ^id <targetid>
+        ^type tank
+        ^num_members <tn>)
+-->
+   (<o> ^saturation-point (* 3 <tn>))}
+
+sp {elaborate*tanks-saturated
+   (state <s> ^operator <o> +
+              ^attack-memory <am>)
+   (<o> ^target.id <targetid>
+        ^saturation-point <sp>)
+   (<am> ^target <targetid>
+         ^unit-count <sp>)
+-->
+   (<s> ^operator <o> ~)}
+
+sp {elaborate*distance-to-target
+   (state <s> ^operator <o> +)
+   (<o> ^name attack
+        ^attacker <a>
+        ^target <t>)
+   (<a> ^x-pos <ax>
+        ^y-pos <ay>)
+   (<t> ^x-pos <tx>
+        ^y-pos <ty>)
+-->
+   (<o> ^distance (+ (* (- <ax> <tx>) (- <ax> <tx>)) (* (- <ay> <ty>) (- <ay> <ty>))))} 
+
+
+sp {elaborate*prefer-closer-targets
+   (state <s> ^operator <o1> +
+                        <o2> +)
+   (<o1> ^name attack
+         ^attacker <a>
+         ^target.type <t>
+         ^distance <d1>)
+   (<o2> ^name attack
+         ^attacker <a>
+         ^target.type <t>
+         ^distance < <d1>) 
+-->
+   (<s> ^operator <o1> < <o2>)}
+
+sp {elaborate*prefer-shooting-more
+   (state <s> ^operator <o1> +
+                        <o2> +)
+   (<o1> ^name attack
+         ^attacker <a>
+         ^target <t1>)
+   (<o2> ^name attack
+         ^attacker <a>
+         ^target <t2>)
+   (<t1> ^type tank
+         ^shooting <s1>)
+   (<t2> ^type tank
+         ^shooting < <s1>)
+-->
+   (<s> ^operator <o1> > <o2>)}
+
+# always prefer the ones that haven't been attacked yet
+# change this later
+sp {elaborate*random-conflict-resolution
+   (state <s> ^superstate <ss>
+              ^impasse conflict
+              ^item <o1>
+              ^item <o2>)
+-->
+   (<ss> ^operator <o1> ~)}

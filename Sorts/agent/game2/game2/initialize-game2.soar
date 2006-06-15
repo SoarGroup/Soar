@@ -1,0 +1,15 @@
+sp {propose*initialize-game2
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-game2)
+}
+
+sp {apply*initialize-game2
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-game2)
+-->
+   (<s> ^name game2)
+}
+

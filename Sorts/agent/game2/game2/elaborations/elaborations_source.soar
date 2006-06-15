@@ -1,0 +1,8 @@
+source _all.soar
+source attack-preferences.soar
+source enemy-base-guard.soar
+source enemy-intersect.soar
+source identify-base-attacker.soar
+source regroup-intersect.soar
+source top-state.soar
+source wait.soar

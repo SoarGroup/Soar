@@ -1,0 +1,30 @@
+VERSION 4
+/game2/game2.dm
+0	ROOT game2 game2 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR attack-preferences attack-preferences.soar 6
+6	3	FOPERATOR enemy-base-guard enemy-base-guard.soar 7
+7	3	FOPERATOR enemy-intersect enemy-intersect.soar 8
+8	3	FOPERATOR identify-base-attacker identify-base-attacker.soar 27
+9	3	FOPERATOR regroup-intersect regroup-intersect.soar 9
+10	3	FOPERATOR top-state top-state.soar 10
+11	3	FOPERATOR wait wait.soar 11
+12	0	OPERATOR attack attack.soar 12
+13	0	OPERATOR attack-memory attack-memory.soar 13
+14	0	OPERATOR base-memory base-memory.soar 14
+15	0	OPERATOR give-up-hopeless-base give-up-hopeless-base.soar 15
+16	0	OPERATOR identify-enemy identify-enemy.soar 16
+17	0	OPERATOR identify-self identify-self.soar 17
+18	0	OPERATOR initialize-game2 initialize-game2.soar 18
+19	0	OPERATOR initialize-situation initialize-situation.soar 26
+20	0	OPERATOR layout-assess layout-assess.soar 19
+21	0	OPERATOR protect-last-base protect-last-base.soar 20
+22	0	OPERATOR regroup regroup.soar 21
+23	0	OPERATOR remove-command remove-command.soar 22
+24	0	OPERATOR retreat retreat.soar 23
+25	0	OPERATOR unstick unstick.soar 24
+26	0	OPERATOR vision vision.soar 25
+END

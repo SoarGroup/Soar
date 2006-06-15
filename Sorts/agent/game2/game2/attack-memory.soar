@@ -1,0 +1,57 @@
+sp {propose*remove-attack-error
+   (state <s> ^name game2
+              ^io.output-link.attack <a>
+              ^attack-memory <am>)
+   (<a> ^status error
+        ^group0 <attackerid>
+        ^group1 <targetid>)
+   (<am> ^target <targetid>
+         ^attacker <attackerid>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name remove-attack-error
+        ^command <a>
+        ^memory <am>)}
+
+sp {apply*remove-attack-error
+   (state <s> ^operator <o>
+              ^io.output-link <out>)
+   (<o> ^name remove-attack-error
+        ^command <c>
+        ^memory <am>)
+   (<c> ^group0 <attackerid>
+        ^group1 <targetid>)
+   (<am> ^attack-count <c>)
+-->
+   (<am> ^attacker <attackerid> -
+         ^group-count (- <c> 1)
+         ^group-count <c> -)
+   (<out> ^attack <c> -)}
+
+sp {propose*remove-attack-memory*target-gone
+   (state <s> ^name game2
+              ^io.input-link.groups <gs>
+              ^attack-memory <am>)
+   (<am> ^target <tid>)
+  -{(<gs> ^group <g>)
+    (<g> ^id <tid>)}
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name remove-attack-memory
+        ^memory <am>)}
+
+sp {propose*remove-attack-memory*no-attackers
+   (state <s> ^name game2
+              ^attack-memory <am>)
+   (<am> ^attack-count 0)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name remove-attack-memory
+        ^memory <am>)}
+
+sp {apply*remove-attack-memory
+   (state <s> ^operator <o>)
+   (<o> ^name remove-attack-memory
+        ^memory <am>)
+-->
+   (<s> ^attack-memory <am> -)}

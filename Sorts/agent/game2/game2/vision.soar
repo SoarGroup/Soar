@@ -1,0 +1,40 @@
+sp {propose*set-grouping-radius-64
+   (state <s> ^name game2
+              ^io.input-link.vision-state.grouping-radius { <r> < 4096 })
+-->
+   (<s> ^operator <o> !)
+   (<o> ^name set-grouping-radius-64)}
+
+sp {apply*set-grouping-radius-64
+   (state <s> ^operator <o>
+              ^io.output-link <out>)
+   (<o> ^name set-grouping-radius-64)
+-->
+   (<out> ^grouping-radius <gr>)
+   (<gr> ^value 64)}
+
+sp {propose*see-all-groups
+   (state <s> ^name game2
+              ^my-pid <pid>
+              ^enemy <eid>
+              ^io.input-link <in>)
+   (<in> ^groups <gs>
+         ^vision-state.num-objects-visible < 1000)
+  -{(<gs> ^group <g1>
+          ^group <g2>)
+    (<g1> ^id <g1id>
+          ^type tank
+          ^owner <pid>)
+    (<g2> ^id { <> <g1id> <g2id> }
+          ^owner <eid>)}
+-->
+   (<s> ^operator <o> !)
+   (<o> ^name see-all-groups)}
+
+sp {apply*see-all-groups
+   (state <s> ^io.output-link <out>
+              ^operator <o>)
+   (<o> ^name see-all-groups)
+-->
+   (<out> ^num-objects <no>)
+   (<no> ^value 1000)}

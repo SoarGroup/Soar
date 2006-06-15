@@ -1,0 +1,22 @@
+sp {elaborate*enemy-base-guard
+   (state <s> ^name game2
+              ^enemy <eid>
+              ^io.input-link.groups <gs>)
+   (<gs> ^group <ebase>
+         ^group <etanks>)
+   (<ebase> ^id <baseid>
+            ^type |controlCenter|
+            ^owner <eid>
+            ^x-min <xminb>
+            ^x-max <xmaxb>
+            ^y-min <yminb>
+            ^y-max <ymaxb>)
+   (<etanks> ^id <tanksid>
+             ^type tank
+             ^owner <eid>
+             ^x-min <= <xmaxb>
+             ^x-max >= <xminb>
+             ^y-min <= <ymaxb>
+             ^y-max >= <yminb>)
+-->
+   (<ebase> ^guard <tanksid>)}

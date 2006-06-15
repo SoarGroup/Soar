@@ -1,0 +1,22 @@
+sp {elaborate*enemy-intersect
+   (state <s> ^io.input-link.groups <gs>
+              ^my-pid <pid>
+              ^enemy <eid>)
+   (<gs> ^group <mygroup>
+         ^group { <enemygroup> <> <mygroup> })
+   (<mygroup> ^id <g1id>
+              ^owner <pid>
+              ^type tank
+              ^x-min <xmin1>
+              ^x-max <xmax1>
+              ^y-min <ymin1>
+              ^y-max <ymax1>)
+   (<enemygroup> ^id <g2id>
+                 ^owner <eid>
+                 ^type tank
+                 ^x-min <= <xmax1>
+                 ^x-max >= <xmin1>
+                 ^y-min <= <ymax1>
+                 ^y-max >= <ymin1>)
+-->
+   (<mygroup> ^enemy-intersect <enemygroup>)}

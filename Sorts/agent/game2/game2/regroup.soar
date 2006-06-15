@@ -1,0 +1,119 @@
+sp {propose*regroup
+   (state <s> ^name game2
+              ^situation normal
+              ^enemy <eid>
+              ^io.input-link <in>)
+   (<in> ^groups <g>
+         ^game-info.player-id <pid>)
+   (<g> ^group <fg1>
+        ^group <fg2>
+        ^group <eg>)
+   (<fg1> ^id <fgid1>
+          ^type tank
+          ^owner <pid>
+          ^command_running 0
+          ^num_members <fg1n>)
+   (<fg2> ^id <fgid2> <> <fgid1>
+          ^type tank
+          ^owner <pid>
+          ^command_running 0
+          ^num_members <fg2n>)
+   (<eg>  ^id <egid>
+          ^type tank
+          ^owner <eid>
+          ^num_members { <en> > <fg1n> > <fg2n> })
+  -{(<g> ^group <small1>)
+    (<small1> ^type tank
+              ^owner <eid>
+              ^num_members < <fg1n>)}
+  -{(<g> ^group <small2>)
+    (<small2> ^type tank
+              ^owner <eid>
+              ^num_members < <fg2n>)}
+ -{(<g> ^group <big>)
+   (<big> ^type tank
+          ^owner <pid>
+          ^num_members > <en>)}
+-->
+   (<s> ^operator <o> + = <)
+   (<o> ^name regroup
+        ^group1 <fg1>
+        ^group2 <fg2>)}
+
+sp {apply*regroup
+   (state <s> ^operator <o>
+              ^io.output-link <out>)
+   (<o> ^name regroup
+        ^group1 <g1>
+        ^group2 <g2>)
+   (<g1> ^id <g1id>
+         ^x-pos <x1>
+         ^y-pos <y1>)
+   (<g2> ^id <g2id>
+         ^x-pos <x2>
+         ^y-pos <y2>)
+-->
+   (<out> ^move <m1>
+          ^move <m2>)
+   (<m1> ^group0 <g1id>
+#         ^param0 (/ (+ <x1> <x2>) 2)
+#         ^param1 (/ (+ <y1> <y2>) 2))
+         ^param0 <x2>
+         ^param1 <y2>)
+   (<m2> ^group0 <g2id>
+#         ^param0 (/ (+ <x1> <x2>) 2)
+#         ^param1 (/ (+ <y1> <y2>) 2))
+         ^param0 <x1>
+         ^param1 <y1>)
+   (<s> ^regrouping <rg>)
+   (<rg> ^group <g1id>
+         ^group <g2id>)}
+
+sp {propose*regroup-combine
+   (state <s> ^name game2
+              ^regrouping <rg>)
+   (<rg> ^group <g1id>
+         ^group { <g2id> <> <g1id> }
+         ^x-intersect 1
+         ^y-intersect 1)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name regroup-combine
+        ^regroup <rg>)}
+
+sp {apply*regroup-combine
+   (state <s> ^operator <o>
+              ^io.output-link <out>)
+   (<o> ^name regroup-combine
+        ^regroup <rg>)
+   (<rg> ^group <g1id>
+         ^group { <g2id> <> <g1id> })
+-->
+   (<out> ^stop <s1>
+          ^stop <s2>)
+   (<s1> ^group0 <g1id>)
+   (<s2> ^group0 <g2id>)}
+
+# if one of the groups disappears, then either
+# we've successfully regrouped, or the group
+# disapppeared for some other reason. 
+sp {propose*complete-regroup
+   (state <s> ^name game2
+              ^regrouping <rg>
+              ^io.input-link.groups <gs>)
+   (<rg> ^group <gid>)
+  -{(<gs> ^group <g>)
+    (<g> ^id <gid>)}
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name complete-regroup
+        ^regroup <rg>)}
+
+sp {apply*complete-regroup
+   (state <s> ^operator <o>
+              ^regrouping <rg>)
+   (<o> ^name complete-regroup
+        ^regroup <rg>)
+-->
+   (<s> ^regrouping <rg> -)}
+   
