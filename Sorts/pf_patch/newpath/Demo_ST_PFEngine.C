@@ -232,7 +232,14 @@ namespace Demo_SimpleTerrain
     y2 = min(max(y2,(sint4)1), map.get_h()-2);
 
     bool found = false;
-    int r = obj->get_radius();
+    int r;
+    if (obj->get_shape() == Object::RECTANGLE) {
+      // HACK: we pf from the controlCenter to determine unreachable areas
+      r = 3;
+    }
+    else {
+      r = obj->get_radius();
+    }
     int newr = r / subtile_points;
     if( r%subtile_points >= subtile_points/2 )
       newr++;
