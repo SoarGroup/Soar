@@ -1,4 +1,3 @@
-
 sp {propose*attack-immediate-tanks
    (state <s> ^name game2
               ^my-pid <pid>
