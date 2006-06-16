@@ -113,6 +113,25 @@ sp {apply*orts-attack
         ^task-id <tid>)
 }
 
+sp {apply*orts-sever
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name orts-sever
+        ^group <gf>
+        ^num <n>
+        ^x <x>
+        ^y <y>
+        ^task-id <tid>)
+-->
+   (<ol> ^command <m>)
+   (<m> ^group0 <gf>
+        ^param0 <n>
+        ^param1 <x>
+        ^param2 <y>
+        ^name sever
+        ^task-id <tid>)
+}
+
 sp {apply*orts-mine
    (state <s> ^operator <o>
               ^io.output-link <ol>)
@@ -654,7 +673,6 @@ sp {build-building*propose*set-cCenter-loc
         ^owner <me>
         ^x-pos <x>
         ^y-pos <y>)
-        
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name set-cCenter-loc
@@ -705,7 +723,6 @@ sp {build-building*propose*find-build-location
           ^name locate-building)}
    (<cc> ^x <x>
          ^y <y>)
-        
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name orts-locate-building
@@ -713,7 +730,7 @@ sp {build-building*propose*find-build-location
         ^y <y>
         ^task-id <tid>
         ^distance <dist>
-        ^building-type <t>) 
+        ^building-type <t>)
 }
 sp {build-building*propose*no-location-found
    (state <s> ^name build-building
@@ -743,7 +760,6 @@ sp {build-building*apply*no-location-found
          ^io.output-link <ol>)
    (<bb> ^task-id <tid>
          ^building-distance  <dist>)
-   
 -->
    (<ol> ^command <fi> -)
    (<bb> ^building-distance <dist> -)
@@ -783,7 +799,6 @@ sp {build-building*apply*location-found
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>)
    (<ol> ^command <cm>)
-   
 -->
    (<bb> ^location <l>)
    (<l> ^x <x>
@@ -796,16 +811,16 @@ sp {build-building*apply*location-found
 sp {build-building*propose*change-grouping-level
    (state <s> ^name build-building
               ^task-id <tid>
-             ^top-state <ts>
-            -^top-state.under-attack true
-               ^io.input-link.groups <gs>
-               ^top-state.my-id <me>)
+              ^top-state <ts>
+             -^top-state.under-attack true
+              ^io.input-link.groups <gs>
+              ^top-state.my-id <me>)
   -{(<gs> ^group <g>)
-     (<g> ^type worker
-          ^owner <me>
-          ^command_running 0
-          ^num_members 1)}
-  -{(<ts> ^grouping-level individuals)}
+    (<g> ^type worker
+         ^owner <me>
+         ^command_running 0
+         ^num_members 1)}
+                     -{(<ts> ^grouping-level individuals)}
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>
          ^location <l>
@@ -855,11 +870,11 @@ sp {build-building*propose*find-worker
          ^location.y <y>
         -^worker)
    (<il> ^groups <gs>)
-   -{(<gs> ^group <g>)
-     (<g> ^type worker
-          ^owner <me>
-          ^command_running 0
-          ^num_members 1)}
+  -{(<gs> ^group <g>)
+    (<g> ^type worker
+         ^owner <me>
+         ^command_running 0
+         ^num_members 1)}
 -->
    (<s> ^operator <o> + < =) # prefer changing group level
    (<o> ^name visual-search
@@ -896,6 +911,67 @@ sp {build-building*apply*clean-vs-command
 
 
 
+sp {build-building*propose*sever-worker
+   (state <s> ^name build-building
+              ^top-state <ts>
+              ^io.input-link <il>
+              ^task-id <tid>
+              ^top-state.my-id <me>
+             -^io.output-link.command.group0 <gid>)
+   (<ts> ^build-building <bb>)
+   (<bb> ^task-id <tid>
+         ^location.x <x>
+         ^location.y <y>
+        -^worker)
+   (<il> ^groups <gs>)
+   (<gs> ^group <g>)
+   (<g> ^type worker
+        ^owner <me>
+        ^command mine
+        ^id <gid>)
+   -{(<gs> ^group <g1>)
+   (<g1> ^type worker
+        ^owner <me>
+        ^command severed)}
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name orts-sever
+        ^num 1
+        ^group <g>
+        ^x <x>
+        ^y <y>
+        ^task-id <tid>)
+}
+
+sp {build-building*propose*clean-sever-command
+   (state <s> ^name build-building
+              ^task-id <tid>
+              ^io.output-link <ol>)
+   (<ol> ^command <c>)
+   (<c> ^name sever
+        ^task-id <tid>
+        ^status complete)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name bb*clear-sever-command
+        ^task-id <tid>)
+}
+
+
+sp {build-building*apply*clean-sever-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name bb*clear-sever-command
+        ^task-id <tid>)
+   (<ol> ^command <c>)
+   (<c> ^name sever
+        ^task-id <tid>)
+-->
+   (<ol> ^command <c> -)
+}
+
+
+
 sp {build-building*propose*remember-id
    (state <s> ^name build-building
               ^top-state <ts>
@@ -909,6 +985,7 @@ sp {build-building*propose*remember-id
         ^id <id>
         ^owner <me>
         ^command_running 0
+       -^command severed
         ^num_members 1
         ^dist_to_query <d>)
    (<ts> ^build-building <bb>)
@@ -916,14 +993,45 @@ sp {build-building*propose*remember-id
          ^location <loc>
         -^worker <wrk>)
 # no pending commands: this worker could have been assigned by another bb
--{(<ol> ^command.group0 <id>)}
+  -{(<ol> ^command.group0 <id>)}
   
 -->
-    (<s> ^operator <o> + =)
-    (<o> ^name bb*remember-id
-         ^worker <id>
-         ^dist <d>
-         ^task-id <tid>)
+   (<s> ^operator <o> + =)
+   (<o> ^name bb*remember-id
+        ^worker <id>
+        ^dist <d>
+        ^task-id <tid>)
+}
+
+#severed
+sp {build-building*propose*remember-id2
+   (state <s> ^name build-building
+              ^top-state <ts>
+              ^io <io>
+              ^task-id <tid>
+              ^top-state.my-id <me>)
+   (<io> ^input-link <il>
+         ^output-link <ol>)
+   (<il> ^groups.group <g>)
+   (<g> ^type worker
+        ^id <id>
+        ^owner <me>
+        ^command severed
+        ^num_members 1
+        ^dist_to_query <d>)
+   (<ts> ^build-building <bb>)
+   (<bb> ^task-id <tid>
+         ^location <loc>
+        -^worker <wrk>)
+# no pending commands: this worker could have been assigned by another bb
+  -{(<ol> ^command.group0 <id>)}
+  
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name bb*remember-id
+        ^worker <id>
+        ^dist <d>
+        ^task-id <tid>)
 }
 
 sp {build-building*apply*remember-id
@@ -960,13 +1068,12 @@ sp {build-building*propose*clear-worker-id # worker disappears
          ^worker <id>)
   -{(<gs> ^group <g>)
     (<g> ^type worker
-        ^id <id>)}
+         ^id <id>)}
    (<ts> ^build-building <bb>)
-  
 -->
    (<s> ^operator <o> + > =)
-    (<o> ^name bb*clear-worker-id
-         ^task-id <tid>)
+   (<o> ^name bb*clear-worker-id
+        ^task-id <tid>)
 }
 
 sp {build-building*apply*clear-worker-id
@@ -993,16 +1100,16 @@ sp {build-building*propose*buffer-minerals
          ^location.x <x>
          ^location.y <y>
          ^mineral-buffer-amount <bf>
-         -^minerals-buffered
+        -^minerals-buffered
          ^worker <id>)
   -{(<ol> ^command <c>)
     (<c> ^task-id <tid>
-          ^name increase-mineral-buffer)}
+         ^name increase-mineral-buffer)}
 -->
-    (<s> ^operator <o> +  =)
-    (<o> ^name orts-increase-mineral-buffer
-         ^value <bf>
-         ^task-id <tid>)
+   (<s> ^operator <o> +  =)
+   (<o> ^name orts-increase-mineral-buffer
+        ^value <bf>
+        ^task-id <tid>)
 }
 
 sp {build-building*propose*minerals-buffered
@@ -1015,13 +1122,13 @@ sp {build-building*propose*minerals-buffered
          ^name increase-mineral-buffer
          ^status complete)
 -->
-   (<s> ^operator <o> + >)
+   (<s> ^operator <o> + > =)
    (<o> ^name build-building*minerals-buffered
         ^task-id <tid>)
 }
 
 sp {build-building*apply*minerals-buffered
-   (state <s> ^operator <o> 
+   (state <s> ^operator <o>
               ^top-state <ts>)
    (<o> ^name build-building*minerals-buffered
         ^task-id <tid>)
@@ -1063,16 +1170,16 @@ sp {build-building*propose*start-build
          ^worker <id>)
   -{(<ol> ^command <c>)
     (<c> ^task-id <tid>
-          ^name build)}
+         ^name build)}
 -->
-    (<s> ^operator <o> +  =)
-    (<o> ^name orts-build
-         ^worker <id>
-         ^x <x>
-         ^y <y>
-         ^building-type <tp>
-         ^use-buffer <bf>
-         ^task-id <tid>)
+   (<s> ^operator <o> +  =)
+   (<o> ^name orts-build
+        ^worker <id>
+        ^x <x>
+        ^y <y>
+        ^building-type <tp>
+        ^use-buffer <bf>
+        ^task-id <tid>)
 }
 
 sp {build-building*propose*mark-started
@@ -1085,13 +1192,13 @@ sp {build-building*propose*mark-started
          ^name build
          ^status complete)
 -->
-   (<s> ^operator <o> + >)
+   (<s> ^operator <o> + > =)
    (<o> ^name build-building*mark-started
         ^task-id <tid>)
 }
 
 sp {build-building*apply*mark-started
-   (state <s> ^operator <o> 
+   (state <s> ^operator <o>
               ^top-state <ts>)
    (<o> ^name build-building*mark-started
         ^task-id <tid>)
@@ -1217,14 +1324,14 @@ sp {build-building*propose*done
    (<bb> ^task-id <tid>
          ^worker <id>
          ^started-build true)
-   -{(<gs> ^group <g>)
+  -{(<gs> ^group <g>)
     (<g> ^id <id>
-          ^command build)}   
-    -{(<gs> ^group <g>)
-     (<g> ^id <id>
-          ^command build-started)}
+         ^command build)}
+                 -{(<gs> ^group <g>)
+                   (<g> ^id <id>
+                        ^command build-started)}
 -->
-   (<s> ^operator <o> +)
+   (<s> ^operator <o> + =)
    (<o> ^name bb*done
         ^task-id <tid>)
 }
@@ -1474,7 +1581,8 @@ sp {build-units*propose*buffer-minerals
    (state <s> ^name build-units
               ^top-state <ts>
               ^task-id <tid> 
-              ^eligible-building <id>)
+              ^eligible-building <id>
+              ^io.output-link <ol>)
    (<ts> ^build-units <bu>)
    (<bu> ^task-id <tid>
          ^building-name <nam>
@@ -1825,10 +1933,12 @@ sp {explore-attack*elaborate*eligible-attacker_taking-damage
 sp {explore-attack*elaborate*eligible-attacker_failed-attacker
    (state <s> ^name explore-attack
               ^task-id <tid>
-              ^io.input-link.groups <gs>
+              ^io.input-link.groups.group <gf>
               ^top-state.explore-attack <ea>
              -^io.output-link.command.group0 <idf>
               ^top-state.my-id <me>)
+   (<ea> ^task-id <tid>
+         ^unit-type <ty>)
    (<gf> ^owner <me>
          ^command attack
          ^command_running 0
@@ -1841,11 +1951,12 @@ sp {explore-attack*elaborate*eligible-attacker_failed-attacker
 sp {explore-attack*elaborate*eligible-attacker_explorers
    (state <s> ^name explore-attack
               ^task-id <tid>
-              ^io.input-link.groups <gs>
+              ^io.input-link.groups.group <gf>
               ^top-state.explore-attack <ea>
              -^io.output-link.command.group0 <idf>
               ^top-state.my-id <me>)
    (<ea> ^task-id <tid>
+         ^unit-type <ty>
          ^explorer <idf>)
    (<gf> ^owner <me>
          ^command move
@@ -1873,6 +1984,108 @@ sp {explore-attack*elaborate*enemy-fm-present
 -->
    (<s> ^enemy-feature <sector>)
 }
+
+sp {explore-attack*propose*remember-enemy-cc
+   (state <s> ^name explore-attack
+              ^io.input-link.groups.group <g>
+              ^top-state.explore-attack <ea>
+              ^task-id <tid>)
+   (<g> ^enemy 1
+        ^type controlCenter
+        ^x-pos <x>
+        ^y-pos <y>)
+   (<ea> ^task-id <tid>)
+  -{(<ea> ^enemy-base <eb>)
+    (<eb> ^x <x>
+          ^y <y>)}
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name ea*remember-enemy-cc
+        ^x <x>
+        ^y <y>)
+}
+
+sp {explore-attack*apply*remember-enemy-cc
+   (state <s> ^name explore-attack
+              ^operator <o>
+              ^top-state.explore-attack <ea>
+              ^task-id <tid>)
+   (<o> ^name ea*remember-enemy-cc
+        ^x <x>
+        ^y <y>)
+   (<ea> ^task-id <tid>)
+-->
+   (<ea> ^enemy-base <eb>)
+   (<eb> ^x <x>
+         ^y <y>)
+}
+
+sp {explore-attack*elaborate*dist-to-enemy-base
+   (state <s> ^name base-defend
+              ^top-state.explore-attack <ea>
+              ^io.input-link.groups.group <g>
+              ^task-id <tid>
+              ^my-id <me>)
+   (<ea> ^task-id <tid>
+         ^enemy-base <eb>)
+   (<eb> ^x <bx>
+         ^y <by>)
+   (<g> ^owner <me>
+        ^x-pos <x>
+        ^y-pos <y>
+        ^id <id>)
+-->
+   (<s> ^enemy-base <e>)
+   (<e> ^x <x>
+        ^y <y>
+        ^dist (+ (* (- <bx> <x>) (- <bx> <x>))
+                 (* (- <by> <y>) (- <by> <y>))))
+}
+
+sp {explore-attack*propose*forget-enemy-cc
+   (state <s> ^name explore-attack
+              ^io.input-link.groups <gs>
+              ^top-state.explore-attack <ea>
+              ^task-id <tid>
+              ^enemy-base <eb2>)
+# we don't see a cc  
+-{(<gs> ^group <g>)
+   (<g> ^enemy 1
+        ^type controlCenter
+        ^x-pos <x>
+        ^y-pos <y>)}
+   (<ea> ^task-id <tid>)
+   # but are close to where it should be
+  (<ea> ^enemy-base <eb>)
+    (<eb> ^x <x>
+          ^y <y>)
+    (<eb2> ^x <x>
+           ^y <y>
+           ^dist < 100)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name ea*forget-enemy-cc
+        ^x <x>
+        ^y <y>)
+}
+
+sp {explore-attack*apply*forget-enemy-cc
+   (state <s> ^name explore-attack
+              ^operator <o>
+              ^top-state.explore-attack <ea>
+              ^task-id <tid>)
+   (<o> ^name ea*forget-enemy-cc
+        ^x <x>
+        ^y <y>)
+   (<ea> ^task-id <tid>
+        ^enemy-base <eb>)
+   (<eb> ^x <x>
+         ^y <y>) 
+-->
+   (<ea> ^enemy-base <eb> -)
+
+}
+
 
 # need to explore- send out individuals
 sp {explore-attack*propose*change-grouping-level1
@@ -2066,7 +2279,7 @@ sp {explore-attack*apply*clean-attack-command
    (<ol> ^command <c> -)
 }
          
-sp {explore-attack*propose*explore
+sp {explore-attack*propose*explore_unknown
    (state <s> ^name explore-attack
               ^task-id <tid>
               ^top-state.explore-attack <ea>
@@ -2093,6 +2306,32 @@ sp {explore-attack*propose*explore
                  )
 }
 
+sp {explore-attack*propose*explore_enemybase
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+              ^top-state.explore-attack <ea>
+             -^enemy-group
+             -^enemy-feature
+             -^io.output-link.command.group0 <id>
+              ^top-state.grouping-level individuals
+              ^io.input-link.groups.group <g>)
+   (<ea> ^task-id <tid>
+         ^explorer <id>
+         ^enemy-base <eb>)
+   (<eb> ^x <x>
+         ^y <y>)
+   (<g> ^id <id>
+        ^command_running 0)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name orts-move
+        ^group <id>
+        ^x <x>
+        ^y <y>
+        ^precision 50
+        ^task-id <tid>
+                 )
+}
 
 sp {build-building*prefer-less-explored
    (state <s> ^operator <o1> +
@@ -2225,7 +2464,7 @@ sp {propose*start-build-barracks
               ^planning.execution-buffer <eb>)
   -{(<eb> ^task <t>)
     (<t> ^name build-barracks
-          ^id 1234)}
+         ^id 1234)}
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name start-task
@@ -2242,7 +2481,7 @@ sp {propose*start-build-barracks2
               ^io.input-link.game-info.my-minerals >= 400)
   -{(<eb> ^task <t>)
     (<t> ^name build-barracks
-          ^id 12774)}
+         ^id 12774)}
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name start-task
@@ -2256,7 +2495,7 @@ sp {propose*start-build-workers
               ^planning.execution-buffer <eb>)
   -{(<eb> ^task <t>)
     (<t> ^name build-workers
-          ^id 2525)}
+         ^id 2525)}
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name start-task
@@ -2265,15 +2504,41 @@ sp {propose*start-build-workers
         ^priority low)
 }
 
+sp {propose*resurrect-build-workers
+   (state <s> ^name sorts
+              ^planning.execution-buffer <eb>
+              ^io.input-link.game-info.worker-count < 10)
+   (<eb> ^task <t>)
+   (<t> ^name build-workers
+        ^id 2525
+        ^completed true)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name resurrect-task
+        ^task-id 2525)
+}
+
+sp {apply*resurrect-task
+   (state <s> ^name sorts
+              ^planning.execution-buffer.task <t>
+              ^operator <o>)
+   (<o> ^name resurrect-task
+        ^task-id <tid>)
+   (<t> ^id <tid>
+        ^completed true)
+-->
+   (<t> ^completed true -)
+}
+
 sp {propose*start-build-marines
    (state <s> ^name sorts
               ^planning.execution-buffer <eb>)
   -{(<eb> ^task <t>)
     (<t> ^name build-marines
-          ^id 2526)}
+         ^id 2526)}
    (<eb> ^task <t1>)
    (<t1>  ^name build-barracks
-         ^completed true)
+          ^completed true)
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name start-task
@@ -2288,7 +2553,7 @@ sp {propose*start-marine-attack
               ^io.input-link.game-info.marine-count > 0)
   -{(<eb> ^task <t>)
     (<t> ^name marine-attack
-          ^id 4444)}
+         ^id 4444)}
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name start-task
@@ -2304,7 +2569,7 @@ sp {propose*start-worker-attack
               ^planning.execution-buffer <eb>)
   -{(<eb> ^task <t>)
     (<t> ^name worker-attack
-          ^id 4424)}
+         ^id 4424)}
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name start-task
@@ -2319,7 +2584,7 @@ sp {propose*start-base-defend
               ^planning.execution-buffer <eb>)
   -{(<eb> ^task <t>)
     (<t> ^name base-defend
-          ^id 4325)}
+         ^id 4325)}
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name start-task
@@ -2336,10 +2601,10 @@ sp {propose*start-miner-assignment
               ^top-state <ts>)
   -{(<eb> ^task <t>)
     (<t> ^name miner-assignment
-          ^id 5555)}
+         ^id 5555)}
               # wait until barracks construction, so we don't take all the workers.
    (<ts> ^build-building <bb>)
-   (<bb> ^task-id 1234 
+   (<bb> ^task-id 1234
          ^started-build true
          ^worker <id>)
    # wait for the actual building phase to begin (fsm changes the command at this point)
