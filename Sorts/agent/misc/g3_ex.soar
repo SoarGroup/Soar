@@ -938,7 +938,7 @@ sp {build-building*propose*sever-worker
    (<s> ^operator <o> + > =)
    (<o> ^name orts-sever
         ^num 1
-        ^group <g>
+        ^group <gid>
         ^x <x>
         ^y <y>
         ^task-id <tid>)
