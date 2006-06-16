@@ -922,7 +922,8 @@ sp {build-building*propose*sever-worker
    (<bb> ^task-id <tid>
          ^location.x <x>
          ^location.y <y>
-        -^worker)
+        -^worker
+        -^started-build true)
    (<il> ^groups <gs>)
    (<gs> ^group <g>)
    (<g> ^type worker
@@ -1157,7 +1158,6 @@ sp {build-building*propose*start-build
    (<g> ^type worker
         ^id <id>
         ^owner <me>
-        ^command_running 0
         ^num_members 1)
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>
