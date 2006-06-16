@@ -1919,9 +1919,12 @@ namespace gSKI
 			insert_at_head_of_dll(pWme->id->id.input_wmes, pWme, next, prev);
 			add_wme_to_wm(pSoarAgent, pWme);
 
-                        #ifdef SOAR_WMEM_ACTIVATION
-			decay_update_new_wme(pSoarAgent, pWme, 1);
-                        #endif //SOAR_WMEM_ACTIVATION
+            #ifdef SOAR_WMEM_ACTIVATION
+//			if ((pSoarAgent->sysparams)[WME_DECAY_SYSPARAM]) {
+				
+				decay_update_new_wme(pSoarAgent, pWme, 1);
+//			}
+            #endif //SOAR_WMEM_ACTIVATION
 
 #ifdef USE_CAPTURE_REPLAY
 			// TODO

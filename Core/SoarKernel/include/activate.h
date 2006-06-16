@@ -58,6 +58,7 @@ extern void activate_wmes_in_inst(agent *thisAgent, instantiation *inst);
 extern void decay_update_wmes_tested_in_prods(agent *thisAgent);
 extern void decay_update_wmes_in_retracted_inst(agent *thisAgent, instantiation *inst);
 extern int decay_activation_level(agent *thisAgent, wme *w);
+extern float decay_activation(agent *thisAgent, wme *w);
 extern void decay_move_and_remove_wmes(agent *thisAgent);
 extern void decay_deactivate_element(agent *thisAgent, wme *w);
 extern void decay_remove_element(agent *thisAgent, wme *w);
@@ -143,7 +144,16 @@ extern void decay_print_most_activated_wmes(agent *thisAgent, int n);
  *                                       not an instantiation activates
  *                                       WMEs just once, or every cycle until
  *                                       it is retracted.
- *                                       
+ *
+ *
+ * DECAY_INT_NO_ACTIVATION               If an external caller asks for the
+ *                                       activation level of a WME that is not
+ *                                       activated, then this is the value that
+ *                                       is returned. 
+ * DECAY_FLOAT_NO_ACTIVATION             If an external caller asks for the
+ *                                       activation of a WME that is not
+ *                                       activated, then this is the value that
+ *                                       is returned. 
  */
 #define MAX_DECAY 200
 #define DECAY_ARRAY_SIZE (MAX_DECAY + 1)
@@ -173,6 +183,10 @@ extern void decay_print_most_activated_wmes(agent *thisAgent, int n);
 #define DECAY_DEFAULT_PRECISION                 DECAY_PRECISION_HIGH
 
 #define DECAY_DEFAULT_LOGGING                   0
+
+#define DECAY_INT_NO_ACTIVATION                 -1
+#define DECAY_FLOAT_NO_ACTIVATION               99999999.9999
+    
 
 /*
  * Decay Data Structures
