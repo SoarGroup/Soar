@@ -1,5 +1,4 @@
 
-
 sp {propose*attack-immediate-tanks
    (state <s> ^name game2
               ^my-pid <pid>
@@ -30,6 +29,11 @@ sp {propose*attack-shooting-tanks
          ^owner <eid>
          ^shooting > 0
          ^num_members { <= <nm1> <nm2> })
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name attack
+        ^attacker <g1>
+        ^target <g2>)}
 
 sp {propose*attack-tanks
    (state <s> ^name game2
