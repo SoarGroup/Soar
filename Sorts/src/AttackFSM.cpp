@@ -4,7 +4,7 @@
 #include "general.h"
 #include "Sorts.h"
 
-#define msg cout << "ATKMAN(" << this << "): "
+#define msg cout << "ATKFSM(" << this << "): "
 
 using namespace std;
 
@@ -112,6 +112,7 @@ int AttackFSM::update() {
           moving = false;
           break;
         case FSM_FAILURE:
+//        case FSM_STUCK:
           moveFails++;
           if (moveFails > 5) {
             moving = false;
@@ -131,9 +132,10 @@ int AttackFSM::update() {
           break;
         case FSM_STUCK:
           panic = true;
+          msg << "Stuck at " << gobX(gob) << ", " << gobY(gob) << " trying to get to " << dest(0) << "," << dest(1) << endl;
           msg << "panic starting.\n";
           moveFSM->panic();
-          moveFSM->update();
+          moveFSM->update(); 
         default:
           break;
       }
@@ -175,6 +177,7 @@ int AttackFSM::move(int x, int y) {
   int status = moveFSM->update();
   switch (status) {
     case FSM_UNREACHABLE:
+    case FSM_STUCK:
       msg << "(" << x << "," << y << endl;
       return 1;
     default:
