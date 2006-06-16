@@ -573,6 +573,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
         newGroup->addUnit(member);
         member->issueCommand(OA_IDLE, tempVec);
       }
+      newGroup->setCommandString("severed");
       newGroup->setSticky(true);
       }
       break;
