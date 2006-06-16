@@ -14,6 +14,7 @@ public:
   ~MineFSM();
 
  	int update();
+  void stop();
 	void init(vector<sint4> p);
   
   // called by MineManager if a mineral or cc disappears

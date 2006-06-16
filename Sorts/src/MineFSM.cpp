@@ -331,14 +331,21 @@ void MineFSM::calcDropoffLoc() {
 }
 
 MineFSM::~MineFSM() {
+  stop();
   if (moveFSM != NULL) {
     delete moveFSM;
+  }
+}
+
+void MineFSM::stop() {
+  if (moveFSM != NULL) {
+    moveFSM->stop();
   }
   if (route != NULL) {
     Sorts::mineManager->removeWorker(route, this);
   }
 }
-
+  
 void MineFSM::abortMining() {
   route = Sorts::mineManager->getMiningRoute(this);
   if (route == NULL) {

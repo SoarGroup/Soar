@@ -9,16 +9,16 @@ AttackTargetInfo::AttackTargetInfo(SoarGameObject* _target)
 
 void AttackTargetInfo::assignAttacker(AttackFSM* fsm) {
   attackers.insert(fsm);
-  ScriptObj* weapon = fsm->getGob()->component("weapon");
-  assert(weapon != NULL);
-  volleyDamage += fsm->getAvgDamage();
-  avgDmg[fsm] = fsm->getAvgDamage();
+ // ScriptObj* weapon = fsm->getGob()->component("weapon");
+ // assert(weapon != NULL);
+//  volleyDamage += fsm->getAvgDamage();
+//  avgDmg[fsm] = fsm->getAvgDamage();
 }
 
 void AttackTargetInfo::unassignAttacker(AttackFSM* fsm) {
   attackers.erase(fsm);
-  volleyDamage -= avgDmg[fsm];
-  avgDmg.erase(fsm);
+//  volleyDamage -= avgDmg[fsm];
+//  avgDmg.erase(fsm);
 }
 
 double AttackTargetInfo::avgAttackerDistance() {

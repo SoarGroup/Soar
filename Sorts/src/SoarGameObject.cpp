@@ -91,6 +91,7 @@ SoarGameObject::SoarGameObject(
   //iGroup = NULL;
   pGroup = NULL;
   lastAttackedId = -1;
+  assignedBehavior = NULL;
   
   sat_loc = Sorts::spatialDB->addObject(gob);
 }
@@ -132,12 +133,12 @@ void SoarGameObject::removeBehavior(ObjectActionType name)
 void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
 {
   msg << "command issued: " << (int)cmd << endl;
+  if (assignedBehavior != NULL) {
+    assignedBehavior->stop();
+  }
   
   if (cmd == OA_STOP) {
-    if (assignedBehavior != NULL) {
-      assignedBehavior->stop();
-      assignedBehavior = NULL;
-    }
+    assignedBehavior = NULL;
   }
   else {
     map<ObjectActionType, FSM*>::iterator i = behaviors.find(cmd);

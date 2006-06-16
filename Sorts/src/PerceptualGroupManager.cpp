@@ -23,7 +23,7 @@ PerceptualGroupManager::PerceptualGroupManager() {
     
   // this default should be reflected in the agent's assumptions
   // (1024 = 32^2)
-  visionParams.groupingRadius = 1024;
+  visionParams.groupingRadius = 0;
   
   // the number of objects near the focus point to add
   // agent can change this, if it wishes to cheat
@@ -680,6 +680,10 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
       else if ((*groupIter)->getHasStaleProperties()) {
         Sorts::SoarIO->refreshGroup(*groupIter);
       }
+      else {
+        msg << "XXX group " << (int)(*groupIter) 
+            << " hasn't changed, but present\n";
+      }
     }
     else { 
       if ((*groupIter)->getInSoar() == true) {
@@ -694,6 +698,10 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
           msg << "refresh due to command (out of normal range)\n";
           Sorts::SoarIO->refreshGroup(*groupIter);
         }
+      }
+      else {
+        msg << "XXX group " << (int)(*groupIter) 
+            << " is out of attention.\n";
       }
     }
     i++;

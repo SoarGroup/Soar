@@ -262,12 +262,12 @@ void MoveFSM::init(vector<sint4> p)
       << l.x << "," << l.y << endl;
 
   clearWPWorkers();
-  /*if (Sorts::spatialDB->hasImaginaryObstacleCollision(l.x, l.y, 
+  if (Sorts::spatialDB->hasImaginaryObstacleCollision(l.x, l.y, 
                                                       *gob->sod.radius)) {
     msg << "not pathfinding, probably no-path.\n";
     state = UNREACHABLE;
   }
-  else*/ {
+  else {
     Sorts::terrainModule->findPath(gob, l, path);
     pathLength = path.locs.size();
     
