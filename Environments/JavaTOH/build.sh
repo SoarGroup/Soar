@@ -1,4 +1,6 @@
 #!/bin/sh
+pushd `echo $0 | sed -n 's/^\(.*\)build.sh/\1/p'` > /dev/null
+
 SOARLIB="../../SoarLibrary/bin"
 
 if [ ! -e bin ]; then
@@ -10,12 +12,11 @@ else
         done
 fi
 
-if ! javac -source 1.4 -d bin -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar -sourcepath src src/edu/umich/toh/TowersOfHanoi.java; then
-        echo "Build failed."
-        exit 1;
-fi
-
-jar cfm toh.jar JarManifest -C bin .
+javac -source 1.4 -d bin -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar -sourcepath src src/edu/umich/toh/TowersOfHanoi.java
+RET=$?
+if [[ $RET = 0 ]]
+  then jar cfm toh.jar JarManifest -C bin .
+  RET=$?
 
 #if [[ `uname -s` == "Darwin" ]]
 #then
@@ -31,3 +32,9 @@ jar cfm toh.jar JarManifest -C bin .
 #    cp /System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub $APP_PATH/MacOS
 #    chmod a+x $APP_PATH/MacOS/JavaApplicationStub
 #fi
+
+fi
+
+popd > /dev/null
+
+exit $RET

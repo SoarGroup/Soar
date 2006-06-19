@@ -1,4 +1,7 @@
 #!/bin/sh
+
+pushd `echo $0 | sed -n 's/^\(.*\)build.sh/\1/p'` > /dev/null
+
 SOARLIB="../../SoarLibrary/bin"
 
 if [ ! -e bin ]; then
@@ -19,13 +22,15 @@ else
 	mkdir bin/images
 fi
 
-if ! javac -source 1.4 -d bin -classpath ${SOARLIB}/swt.jar:${SOARLIB}/sml.jar:${SOARLIB}/JavaBaseEnvironment.jar -sourcepath source source/tanksoar/TankSoar.java ; then
-	echo "Build failed."
-	exit 1;
+javac -source 1.4 -d bin -classpath ${SOARLIB}/swt.jar:${SOARLIB}/sml.jar:${SOARLIB}/JavaBaseEnvironment.jar -sourcepath source source/tanksoar/TankSoar.java
+RET=$?
+if [[ $RET = 0 ]]
+  then cp -f source/*.xml bin
+  cp -f source/images/* bin/images
+  jar cfm JavaTankSoar.jar JarManifest -C bin .
+  RET=$?
 fi
 
-cp -f source/*.xml bin
-cp -f source/images/* bin/images
+popd > /dev/null
 
-jar cfm JavaTankSoar.jar JarManifest -C bin .
-
+exit $RET
