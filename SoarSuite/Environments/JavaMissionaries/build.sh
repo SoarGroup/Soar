@@ -1,4 +1,6 @@
 #!/bin/sh
+pushd `echo $0 | sed -n 's/^\(.*\)build.sh/\1/p'` > /dev/null
+
 SOARLIB="../../SoarLibrary/bin"
 
 if [ ! -e bin ]; then
@@ -21,12 +23,14 @@ fi
 
 
 
-if ! javac -source 1.4 -d bin -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar -sourcepath src src/edu/umich/mac/MissionariesAndCannibals.java; then
-	echo "Build failed."
-	exit 1;
+javac -source 1.4 -d bin -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar -sourcepath src src/edu/umich/mac/MissionariesAndCannibals.java
+RET=$?
+if [[ $RET = 0 ]]
+  then cp -f src/mac/* bin/mac
+  jar cfm mac.jar JarManifest -C bin .
+  RET=$?
 fi
 
-cp -f src/mac/* bin/mac
+popd > /dev/null
 
-jar cfm mac.jar JarManifest -C bin .
-
+exit $RET
