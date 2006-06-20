@@ -389,7 +389,9 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
   		//m_Logger.log("Update number " + m_WorldCount);
   		m_WorldManager.update();
 		++m_WorldCount;
-		//m_Logger.log("World count: " + Integer.toString(m_WorldCount));
+		if (m_WorldCount % 250 == 0) {
+			m_Logger.log("World count: " + Integer.toString(m_WorldCount));
+		}
 		fireSimulationEvent(SimulationListener.kUpdateEvent);
 
 		// Test this after the world has been updated, in case it's asking us to stop
