@@ -27,19 +27,20 @@ def welcome_page(userid=None):
     return
 
 def register_page(userid=None, email=None):
-    print "<form method='POST' action='" + action_link("register") + "'>"
+    print "<form method='POST' action='index.cgi'>"
     
     print "User ID: <input type='text' name='userid'",
     if userid != None:
         print "value='" + userid + "'",
-    print " />"
+    print " /><br />"
 
     print "Email address (required, must be valid, will not be published): <input type='text' name='email'",
     if email != None:
         print "value='" + email + "'",
-    print " />"
+    print " /><br />"
     
-    print "<input type='hidden' name='confirm' />"
+    print "<input type='hidden' name='action' value='register' />"
+    print "<input type='hidden' name='confirm' value='True' />"
     print "<input type='submit' value='Register' />"
     print "</form>"
     
@@ -56,8 +57,9 @@ def send_confirmation(userid=None, email=None):
     server.sendmail(from_addr="tsladder@winter.eecs.umich.edu", to_addrs=email, msg=message)
 
 def confirm_page():
-    print "<form method='POST' action='" + action_link("confirm") + "'>"
+    print "<form method='POST' action='index.cgi'>"
     print "Enter confirmation code from email: <input type='text' name='code' />"
+    print "<input type='hidden' name='action' value='confirm' />"
     print "<input type='submit' value='Confirm' />"
     print "</form>"
 

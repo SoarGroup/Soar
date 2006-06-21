@@ -31,26 +31,26 @@ elif action == "register":
 	if form.has_key("confirm"):
 		userid = None
 		if form.has_key("userid"):
-			userid = form["userid"]
+			userid = form["userid"].value
 		
 		email = None
 		if form.has_key("email"):
-			email = form["email"]
+			email = form["email"].value
 			
 		# TODO: Make sure userid is unique and legal
 		# if not legal: functions.register_page(userid, email)
 		# Send confirmation code to email address
-		if not functions.send_confirmation(userid, email):
+		if functions.send_confirmation(userid, email) == None:
+			functions.confirm_page()
+		else:
 			print "<p><font color='red'>Sending of confirmation email failed. Check email address.</p>"
 			functions.register_page(userid, email)
-		else:
-			functions.confirm_page()
 	else:
 		functions.register_page()
 		
 elif action == "confirm":
 	if form.has_key("code"):
-		code = form["code"]
+		code = form["code"].value
 		if code == "abc123":
 			print "<p>Confirmation successful.</p>"
 			functions.welcome_page()
