@@ -7,6 +7,8 @@ import cgitb; cgitb.enable()
 #import cgitb; cgitb.enable(display=0, logdir="/tmp")
 
 print "Content-type: text/html\n\n"
+print "<h1>Java TankSoar Ladder</h1>"
+
 
 def upload_page():
 	print "<form method='POST' enctype='multipart/form-data' action='index.cgi'>"
