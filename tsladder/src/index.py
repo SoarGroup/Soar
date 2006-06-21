@@ -12,7 +12,7 @@ print "<h1>Java TankSoar Ladder</h1>"
 form = cgi.FieldStorage()
 
 if not (form.has_key("action")):
-	welcome_page()
+	functions.welcome_page()
 
 elif form["action"].value == "upload":
 	if form["userid"] == None:
