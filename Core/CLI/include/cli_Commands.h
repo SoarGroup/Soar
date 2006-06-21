@@ -73,6 +73,18 @@ namespace cli {
 		static char const* kCLIWarnings;
 		static char const* kCLIWatch;
 		static char const* kCLIWatchWMEs;
+		//#ifdef SEMANTIC_MEMORY
+		static char const* kCLILoadMemory; //YJ
+		static char const* kCLIPrintMemory; //YJ
+		static char const* kCLIClearMemory; //YJ
+		static char const* kCLISummarizeMemory; //YJ
+		static char const* kCLISmemOption; //YJ
+
+		static char const* kCLICluster; //YJ
+
+		static char const* kCLIClusterTrain; //YJ
+		static char const* kCLIClusterRecognize; //YJ
+		//#endif 
 	}; // struct
 } // namespace cli
 

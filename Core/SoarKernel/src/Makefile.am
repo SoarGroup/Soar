@@ -9,6 +9,7 @@ agent.cpp\
 backtrace.cpp\
 callback.cpp\
 chunk.cpp\
+Cluster.cpp\
 consistency.cpp\
 decide.cpp\
 explain.cpp\
@@ -27,6 +28,8 @@ reorder.cpp\
 rete.cpp\
 rhsfun.cpp\
 rhsfun_math.cpp\
+semantic_memory.cpp\
+smem.cpp\
 soar_rand.cpp\
 symtab.cpp\
 tempmem.cpp\

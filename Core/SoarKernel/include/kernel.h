@@ -104,6 +104,9 @@ typedef union symbol_union Symbol;
 /* Uncomment the following line to debug memory usage */
 /* #define DEBUG_MEMORY */
 
+/* Uncomment the following line to enable semantic_memory facility */
+#define SEMANTIC_MEMORY
+
 /* Comment out the following line to avoid the overhead of keeping statistics
    on memory pool usage */
 //#define MEMORY_POOL_STATS

@@ -26,8 +26,9 @@
 
 //#define DEBUG_WMES
 
-#include "wmem.h"
 #include "kernel.h"
+
+#include "wmem.h"
 #include "agent.h"
 #include "gdatastructs.h"
 #include "symtab.h"
@@ -37,6 +38,7 @@
 #include "print.h"
 #include "tempmem.h"
 
+#include "smem.h"
 /* JC ADDED */
 #include "gski_event_system_functions.h"
 
@@ -270,6 +272,12 @@ void do_buffered_wm_changes (agent* thisAgent)
       filtered_print_wme_add(thisAgent, w); /* kjh(CUSP-B2) begin */
     }
     wme_add_ref (w);
+	#ifdef SEMANTIC_MEMORY
+  // YJ
+	smem_save_wme (thisAgent, w);
+  //End YJ
+	#endif SEMANTIC_MEMORY
+
     free_cons (thisAgent, c);
     thisAgent->wme_addition_count++;
   }

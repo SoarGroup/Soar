@@ -21,9 +21,9 @@
  *  must be kept up to date.
  * =======================================================================
  */
+#include "kernel.h"
 
 #include "agent.h"
-#include "kernel.h"
 #include "mem.h"
 #include "lexer.h"
 #include "symtab.h"
@@ -144,6 +144,22 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
 //  newAgent->current_line_index                 = 0;
 //#endif /* _WINDOWS */
   /* String redirection */
+#ifdef SEMANTIC_MEMORY
+  // YJ
+  newAgent->association_rule_counter			=0; // YJ's rule counter, old for rec_link
+  newAgent->semantic_memory = new SemanticMemory();
+  newAgent->retrieve_ready = true;
+  newAgent->cluster_ready = true;
+  newAgent->to_be_saved_wmes = new set<LME>;
+  newAgent->prohibited_ids = new set<string>;
+  newAgent->gold_level_to_smem_links = new vector<vector<wme*> >();
+
+  // 100 Units, 300 max dimensions
+  newAgent->clusterNet = new NetWork(100,300);
+
+  //End YJ
+#endif //SEMANTIC_MEMORY
+
   newAgent->using_output_string                = FALSE;
   newAgent->using_input_string                 = FALSE;
   newAgent->output_string                      = NIL;
@@ -404,7 +420,20 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
 
   /* KNOWN MEMORY LEAK! Need to track down and free ALL structures */
   /* pointed to be fields in the agent structure.                  */
-  
+
+#ifdef SEMANTIC_MEMORY
+  //YJ's stuff
+ // delete_agent->semantic_memory->clear();
+  delete delete_agent->semantic_memory;
+  delete delete_agent->clusterNet;
+
+  delete delete_agent->to_be_saved_wmes;
+  delete delete_agent->prohibited_ids;
+  delete delete_agent->gold_level_to_smem_links;
+  //delete_agent->top_goal->id.common_symbol_info.reference_count --;
+  //print_with_symbols(delete_agent, "%f being dereferenced", delete_agent->top_goal);
+  // YJ's tuff
+#endif SEMANTIC_MEMORY
 
   /* Free soar agent structure */
   free((void *) delete_agent);

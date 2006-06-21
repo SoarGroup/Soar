@@ -23,6 +23,7 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="include;..\gSKI\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG;_CRT_SECURE_NO_DEPRECATE"
+
 				StringPooling="TRUE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -244,6 +245,9 @@
 				</File>
 				<File
 					RelativePath=".\src\cli_learn.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_loadMemory.cpp">
 				</File>
 				<File
 					RelativePath=".\src\cli_ls.cpp">

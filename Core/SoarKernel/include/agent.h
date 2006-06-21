@@ -20,17 +20,25 @@
 #ifndef AGENT_H
 #define AGENT_H
 
+#include "kernel.h" 
+
 #ifndef GSYSPARAMS_H
 #include"gsysparam.h"
 #endif
 
-#include "kernel.h" 
 #include "init_soar.h"
 #include "mem.h"
 #include "lexer.h"
 #include "chunk.h"
 #include "callback.h"
 
+// YJ's stuff
+//#ifdef SEMANTIC_MEMORY
+// For header, better always include, gSKI need this compile argument too
+#include "Cluster.h"
+#include "semantic_memory.h"
+//#include "Cluster.h"
+//#endif SEMANTIC_MEMORY
 /* JC ADDED: Included to allow gski callbacks */
 #include "gski_event_system_data.h"
 
@@ -122,6 +130,41 @@ typedef struct token_struct token;
 typedef char * test;
 
 typedef struct agent_struct {
+	//#ifdef SEMANTIC_MEMORY
+	// Better not use directive for this, since other projects (gSKI) refers to it.
+	// YJ's stuff
+	Symbol *rec_link_symbol;
+	Symbol *rec_link_header;
+	wme *rec_header_link;
+	
+	Symbol *smem_link_id;
+	Symbol *smem_link_attr;
+	wme *smem_link;
+
+	Symbol *retrieve_link_id;
+	Symbol *retrieve_link_attr;
+	wme *retrieve_link_wme;
+	
+	Symbol *save_link_id;
+	Symbol *save_link_attr;
+	wme *save_link;
+	
+	
+	//Semantic Memory
+	SemanticMemory* semantic_memory;
+	NetWork* clusterNet;
+	bool retrieve_ready;
+	bool cluster_ready;
+	// For automatically save wmes - all new wmes in every cycle
+	set<LME>* to_be_saved_wmes;
+	set<string>* prohibited_ids;
+	vector<vector<wme*> >* gold_level_to_smem_links;
+	
+
+	unsigned long association_rule_counter;
+	// YJ's stuff
+	//#endif SEMANTIC_MEMORY
+
   /* After v8.6.1, all conditional compilations were removed
    * from struct definitions, including the agent struct below
    */

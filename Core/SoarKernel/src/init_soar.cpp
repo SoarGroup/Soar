@@ -52,6 +52,14 @@
 #include "gski_event_system_functions.h"
 
 #define INIT_FILE       "init.soar"
+#ifdef SEMANTIC_MEMORY
+// YJ's stuff
+
+extern void smem_routine(agent* thisAgent);
+extern void YJ_input_phase_call(agent* thisAgent);
+extern void YJ_decision_phase_call(agent* thisAgent);
+extern void YJ_application_phase_call(agent* thisAgent);
+#endif // SEMANTIC_MEMORY
 
 /* REW: begin 08.20.97   these defined in consistency.c  */
 extern void determine_highest_active_production_level_in_stack_propose(agent* thisAgent);
@@ -477,6 +485,13 @@ void init_sysparams (agent* thisAgent) {
   thisAgent->sysparams[USE_LONG_CHUNK_NAMES] = TRUE;  /* kjh(B14) */
   thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = FALSE;
   thisAgent->sysparams[TIMERS_ENABLED] = TRUE;
+
+  // SEMANTIC_MEMORY
+  thisAgent->sysparams[SMEM_SYSPARAM] = 0;
+  // 0 all off
+  // 1 deliberate saving is on, automatic saving is off
+  // 2 automatic saving is on, deliberate saving is off
+  // SEMANTIC_MEMORY
 }
 
 /* ===================================================================
@@ -754,6 +769,11 @@ void do_one_top_level_phase (agent* thisAgent)
   switch (thisAgent->current_phase) {
 
   case INPUT_PHASE:
+#ifdef SEMANTIC_MEMORY	
+	  // YJ
+		YJ_input_phase_call(thisAgent);
+	  // YJ
+#endif /* SEMANTIC_MEMORY */
 
 	 if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
          print_phase (thisAgent, "\n--- Input Phase --- \n",0);
@@ -981,6 +1001,11 @@ void do_one_top_level_phase (agent* thisAgent)
 
   /////////////////////////////////////////////////////////////////////////////////
   case APPLY_PHASE:   /* added in 8.6 to clarify Soar8 decision cycle */
+#ifdef SEMANTIC_MEMORY
+	  //YJ	
+	  YJ_application_phase_call(thisAgent);
+	//YJ
+#endif /* SEMANTIC_MEMORY */
 
       #ifndef NO_TIMING_STUFF
       start_timer (thisAgent, &thisAgent->start_phase_tv);
@@ -1079,6 +1104,15 @@ void do_one_top_level_phase (agent* thisAgent)
 
 	  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
           print_phase (thisAgent, "\n--- Output Phase ---\n",0);
+	
+#ifdef SEMANTIC_MEMORY
+	  // YJ's stuff
+	  smem_routine(thisAgent);
+	  //
+#endif /* SEMANTIC_MEMORY */
+
+       /* JC ADDED: Tell gski about output phase beginning */
+       gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_PHASE, gSKI_K_OUTPUT_PHASE, 0);
       
       #ifndef NO_TIMING_STUFF      /* REW:  28.07.96 */
 	  start_timer (thisAgent, &thisAgent->start_phase_tv);

@@ -21,10 +21,10 @@
                         Backtracing routines
    ==================================================================== */
 
+#include "kernel.h"
 
 #include "backtrace.h"
 #include "mem.h"
-#include "kernel.h"
 #include "print.h"
 #include "wmem.h"
 #include "gdatastructs.h"

@@ -2440,5 +2440,176 @@ namespace gSKI
 			}
 			SoarSeedRNG();
 		}
+		// used by Semantic Memory loadMemory commandline
+		// SEMANTIC_MEMORY
+		void TgDWorkArounds::load_semantic_memory_data(IAgent* pIAgent, std::string id, std::string attr, std::string value, int type){
+			
+			Agent* pAgent2 = (Agent*)(pIAgent);
+			agent* thisAgent = pAgent2->GetSoarAgent();
+			
+			char id_letter = id[0];
+			unsigned long id_number = StringToUnsignedLong(id.substr(1));
+			//AddListenerAndDisableCallbacks(pAgent);
+			//print(thisAgent, "%c counter %d, number%d\n", id_letter, 
+			//	 thisAgent->id_counter[id_letter-'A'], id_number);
+			//RemoveListenerAndEnableCallbacks(pAgent);
+
+			if(id_number >= thisAgent->id_counter[id_letter-'A']){
+				thisAgent->id_counter[id_letter-'A'] = id_number+1;//start from the next number
+				//AddListenerAndDisableCallbacks(pAgent);
+				//print(thisAgent, "%c counter %d\n", id_letter, id_number);
+				//RemoveListenerAndEnableCallbacks(pAgent);
+
+			}
+
+			// get rid of leading zeros of the id number, kind of preprocessing
+			char new_id[32];
+			sprintf(new_id, "%c%d", id_letter, id_number);
+			id = string(new_id);
+			thisAgent->semantic_memory->insert_LME(id, attr, value, type);
+		}
+
+		void TgDWorkArounds::print_semantic_memory(IAgent* pIAgent, string attr, string value){
+			Agent* pAgent2 = (Agent*)(pIAgent);
+			agent* thisAgent = pAgent2->GetSoarAgent();
+			//thisAgent->semantic_memory->insert_LME(id, attr, value, type);
+
+			vector<LME*> content;
+			thisAgent->semantic_memory->dump(content);
+			for(vector<LME*>::iterator itr = content.begin(); itr != content.end(); ++itr){
+				
+				//mResult << std::endl;
+				//AddListenerAndDisableCallbacks(pIAgent);
+				//print(thisAgent, "<%s, %s, %s, %d>\n",(*itr)->id.c_str(), (*itr)->attr.c_str(), (*itr)->value.c_str(), (*itr)->value_type);
+				//RemoveListenerAndEnableCallbacks(pIAgent);
+			}
+			
+			set<string> filtered_id_set;
+			bool filter = false;
+			if(attr != "" && value != ""){
+				// At this time, matching doesn't check value type yet, i.e 1 is the same as |1|
+				filtered_id_set = thisAgent->semantic_memory->match_attr_value(attr, value, -1);
+				filter = true;
+			}
+
+			HASH_S_HASH_S_HASH_S_LP id_attr_hash = thisAgent->semantic_memory->get_id_attr_hash();
+			for(HASH_S_HASH_S_HASH_S_LP::iterator itr = id_attr_hash.begin(); itr != id_attr_hash.end(); ++itr){
+				string id = itr->first;
+				if(filter && filtered_id_set.find(id) == filtered_id_set.end()){
+					continue;
+				}
+				print(thisAgent, "\n");
+				HASH_S_HASH_S_LP attr_hash = itr->second;
+				for(HASH_S_HASH_S_LP::iterator itr2 = attr_hash.begin(); itr2 != attr_hash.end(); ++itr2){
+					string attr = itr2->first;
+					HASH_S_LP value_hash = itr2->second;
+					for(HASH_S_LP::iterator itr3 = value_hash.begin(); itr3 != value_hash.end(); ++itr3){
+						string value = itr3->first;
+						int lme_index = itr3->second;
+						LME * lme_ptr = thisAgent->semantic_memory->getLME_ptr(lme_index);
+						
+
+						print(thisAgent, "<%s, %s, %s> ",id.c_str(), attr.c_str(), value.c_str());
+						print(thisAgent, "[");
+						for(int i=0; i<lme_ptr->boost_history.size(); ++i){
+							print(thisAgent, "%d, ",lme_ptr->boost_history[i]);
+						}
+						print(thisAgent, "]\n");
+					}
+				}
+				
+			}
+
+		}
+		int TgDWorkArounds::clear_semantic_memory(IAgent* pIAgent){
+
+			Agent* pAgent2 = (Agent*)(pIAgent);
+			agent* thisAgent = pAgent2->GetSoarAgent();
+			//thisAgent->semantic_memory->insert_LME(id, attr, value, type);
+			print(thisAgent, "Clearing smematic memory\n");
+			int size = thisAgent->semantic_memory->clear();
+			//AddListenerAndDisableCallbacks(pAgent);
+			print(thisAgent, "%d LMEs cleared\n",size);
+			//RemoveListenerAndEnableCallbacks(pAgent);
+			return size;
+		}
+		int TgDWorkArounds::semantic_memory_chunk_count(IAgent* pIAgent){
+
+			Agent* pAgent2 = (Agent*)(pIAgent);
+			agent* thisAgent = pAgent2->GetSoarAgent();
+			return thisAgent->semantic_memory->get_chunk_count();
+		}
+
+		int TgDWorkArounds::semantic_memory_lme_count(IAgent* pIAgent){
+
+			Agent* pAgent2 = (Agent*)(pIAgent);
+			agent* thisAgent = pAgent2->GetSoarAgent();
+			return thisAgent->semantic_memory->get_lme_count();
+		}
+
+		int TgDWorkArounds::semantic_memory_set_parameter(IAgent* pIAgent, long parameter){
+
+			Agent* pAgent2 = (Agent*)(pIAgent);
+			agent* thisAgent = pAgent2->GetSoarAgent();
+			if(parameter == 2){ // display
+				
+			}
+			else if(parameter == 0 || parameter == 1){
+				thisAgent->sysparams[SMEM_SYSPARAM] = parameter;
+			}
+			return thisAgent->sysparams[SMEM_SYSPARAM];	
+		}
+		
+		int TgDWorkArounds::clustering (IAgent* pIAgent, std::vector<std::vector<double> > weights, bool print_flag, bool reset_flag){
+			Agent* pAgent2 = (Agent*)(pIAgent);
+			agent* thisAgent = pAgent2->GetSoarAgent();
+			int used_dim = thisAgent->clusterNet->attr_val_pair_to_index.size();
+			print(thisAgent, "Used DIM: %d\n", used_dim);
+			
+			//for(int i=0; i<thisAgent->clusterNet->units.size(); ++i){
+			if(print_flag){
+				for(int i=0; i< 20; ++i){
+					for(int j=0; j<10; ++j){
+						print(thisAgent, "%f ", thisAgent->clusterNet->units[i].weights[j]);
+					}
+					print(thisAgent,"\n");
+				}
+			}
+			//if(load_flag){
+			//	for(int i=0; i<weights.size(); ++i){
+			//		for(int j=0; j<weights[i].size(); ++j){
+			//			thisAgent->clusterNet->units[i].weights[j] = weights[i][j];
+			//		}
+			//	}
+			//}
+			if(reset_flag){
+				thisAgent->clusterNet->reset();
+			}
+
+			
+			return 1;
+		}
+
+		int TgDWorkArounds::cluster_train (IAgent* pIAgent, std::vector<std::vector<std::pair<std::string, std::string> > > instances){
+			Agent* pAgent2 = (Agent*)(pIAgent);
+			agent* thisAgent = pAgent2->GetSoarAgent();
+			for(int i=0; i<instances.size(); ++i){
+				thisAgent->clusterNet->cluster_input(instances[i], true);
+			}
+
+			return 1;
+		}
+
+		std::vector<std::vector<int> > TgDWorkArounds::cluster_recognize (IAgent* pIAgent, std::vector<std::vector<std::pair<std::string, std::string> > > instances){
+			Agent* pAgent2 = (Agent*)(pIAgent);
+			agent* thisAgent = pAgent2->GetSoarAgent();
+			
+			std::vector<std::vector<int> > clusters;
+			for(int i=0; i<instances.size(); ++i){
+				clusters.push_back(thisAgent->clusterNet->cluster_input(instances[i], false));
+			}
+			return clusters;
+		}
+		// SEMANTIC_MEMORY
 	}// class
 }// namespace
