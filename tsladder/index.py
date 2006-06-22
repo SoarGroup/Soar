@@ -29,7 +29,7 @@ print "<body><h1>Java TankSoar Ladder</h1>"
 print "<h2>Welcome " + userconfig['username'] + "</h2>"
 
 print "<a href='/tsladder/index.cgi?login=logout'>Log out</a> | <a href='/tsladder/index.cgi?login=editaccount'>Edit account</a>",
-if userconfig['admin'] > 0:
+if userconfig['admin'] == "3":
 	print " | <a href='/tsladder/index.cgi?login=admin'>Admin</a>"
 print "<br />"
 
