@@ -19,7 +19,7 @@ theform = cgi.FieldStorage()
 from logintools import login
 action, userconfig = login(theform, userdir, thisscript, action)
 
-#from functions import *
+from functions import *
 
 print "Content-type: text/html\n\n"
 
@@ -33,58 +33,17 @@ if userconfig['admin'] == "3":
 	print " | <a href='/tsladder/index.cgi?login=admin'>Admin</a>"
 print "<br />"
 
-print "</body></html>"
+print "<p>You're early! There isn't any code here yet.</p>"
 
-#form = cgi.FieldStorage()
-#
-#if not (form.has_key("action")):
-#	welcome_page()
-#	sys.exit()
-#
-#action = form["action"].value
-#
-#if action == "login":
-#	pass
-#
-#elif action == "logout":
-#	pass
-#
-#elif action == "register":
-#	if form.has_key("confirm"):
-#		userid = None
-#		if form.has_key("userid"):
-#			userid = form["userid"].value
-#		
-#		email = None
-#		if form.has_key("email"):
-#			email = form["email"].value
-#			
-#		# TODO: Make sure userid is unique and legal
-#		# if not legal: register_page(userid, email)
-#		# Send confirmation code to email address
-#		if send_confirmation(userid, email) == None:
-#			confirm_page()
-#		else:
-#			print "<p><font color='red'>Sending of confirmation email failed. Check email address.</p>"
-#			register_page(userid, email)
-#	else:
-#		register_page()
-#		
-#elif action == "confirm":
-#	if form.has_key("code"):
-#		code = form["code"].value
-#		if code == "abc123":
-#			print "<p>Confirmation successful.</p>"
-#			welcome_page()
-#		else:
-#			print "<p><font color='red'>Confirmation unsuccessful.</p>"
-#	else:
-#		welcome_page()
-#		
-#else:
-#	print "<p><font color='red'>Unknown action: ", action, "</font></p>"
-#	welcome_page()
-#
+form = cgi.FieldStorage()
+
+if not (form.has_key("action")):
+	welcome_page()
+else:
+	print "<p>action is " + form["action"].value + "</p>"
+
+	action = form["action"].value
+
 #if action == "upload":
 #	if form["userid"] == None:
 #		print "<font color='red'>You must enter a User ID</font>"
@@ -93,3 +52,6 @@ print "</body></html>"
 #		print "<h1>User ID:", form["userid"], "</h1>"
 #		save_tank()
 #		print "<h1>Saved tank: ", form["upfile"].filename, "</h1>"
+
+print "</body></html>"
+

@@ -14,16 +14,8 @@ def action_anchor(action=None, text=None):
         text = "Home"
     return "<a href='" + action_link(action) + "'>" + text + "</a>"
 
-def welcome_page(userid=None):
-    if userid == None:
-        guest = True
-        userid = "guest"
-    print "<p>Welcome, " + userid + ".</p>"
-    
-    if guest == True:
-        print action_anchor(action="login", text="Log in") + " or " + action_anchor(action="register") + "."
-    else:
-        print action_anchor(action="logout", text="Log out") + "."
+def welcome_page():
+    print "<p>Welcome page.</p>"
     return
 
 def register_page(userid=None, email=None):
