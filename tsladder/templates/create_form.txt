@@ -1,0 +1,14 @@
+<div id="createform"> 
+    <form action="**makepage**" method="post">
+        <table summary="Form to get details for the page to create." border="1">
+            <tr><td>Page Name :</td><td><input name="pagename" type="text" value="**page name**"></td></tr>
+            <tr><td>Page Title :</td><td><input name="doctitle" type="text" value="**page title**"></td></tr>
+            <tr><td>Page Description :</td><td><textarea name="description" >**description**</textarea>
+            <input type="hidden" name="editor" value="on" />
+            <input type="hidden" name="site" value="**the site**" />
+            </td></tr>
+ 
+            <tr><td>&nbsp;</td><td><input type="submit" value="Create Page" /></td></tr>
+        </table>
+        </form>
+</div>

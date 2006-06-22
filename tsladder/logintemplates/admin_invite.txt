@@ -1,0 +1,26 @@
+<h2>Create or Invite New Users</h2>
+
+<p>If you select 'Invite User' then an email will be sent to the address you supply, asking the user to confirm the new login (and telling them their initial password). If you select 'Create New User' then the new login will be created immediately (and no email sent). Admin level should be a number between 0 and 3. For normal users the value should be 0.</p>
+
+<div style="margin:auto;max-width:50%">
+    <form action="**thisscript**" method="post" class="table">
+        <table summary="Form to create a new login." border="1" >
+            <tr><td align="center"><strong>Create or Invite : </strong></td> <td align="center"> 
+            <input type="radio" name="create" **create1** value="create">Create New User<br >
+            <input type="radio" name="create" **create2** value="invite">Invite User            
+            </td></tr>
+            <tr><td align="center"><strong>Real Name : </strong></td><td><input name="realname" type="text" value="**realname**"></td></tr>
+            <tr><td align="center"><strong>Login Name : </strong></td><td><input name="username" type="text" value="**username**"></td></tr>
+            <tr><td align="center"><strong>Email Address : </strong></td><td><input name="email" type="text" value="**email**"></td></tr>
+            <tr><td align="center"><strong>Admin Level : </strong></td><td><input name="adminlev" type="text" value="**adminlev**"></td></tr>            
+            <tr><td align="center"><strong>Initial Password : </strong></td><td><input name="pass1" type="text" value="**pass1**">
+            <tr><td align="center"><strong>Confirm Password : </strong></td><td><input name="pass2" type="text" value="**pass2**">
+            <input type="hidden" name="login" value="admin">
+            <input type="hidden" name="action" value="**action**">
+            <input type="hidden" name="admin" value="doinvite">
+            </td></tr>
+            
+            <tr><td>&nbsp;</td><td align="center"><input type="submit" value="Submit"></td></tr>
+        </table>
+    </form>
+</div>

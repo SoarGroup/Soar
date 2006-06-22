@@ -1,0 +1,59 @@
+<p>From this screen you can edit a few of the settings in the main config file. You can also change some of the settings for the <em>default user</em>. These values are transferred to every new account.</p>
+
+<table>
+<tr><td> 
+<h2>Config File Values</h2>
+<p>This is a description of all the config file values that you can edit from this page.</p>
+<p>
+<dl>
+<dt>newloginlink</dt>
+<dd>Setting this to 'Yes' or 'No' determines whether users will be able to create new logins or not. It also determines whether the <em>'Create New Login'</em> appears on the login screen.</dd>
+<dt>adminmail</dt>
+<dd>This is the email address that reports of new login confirmations are sent to. Setting this to '' switches this off.</dd>
+<dt>email_subject</dt>
+<dd>This is the Subject Line of the emails sent to new users.</dd>
+<dt>email_message</dt>
+<dd>This is the body of the message sent to new users, along with the link to confirm the account.</dd>
+</dl>
+</p>
+
+
+<h2>Default User Values</h2>
+<p>This is a description of all the default user values that you can edit from this page.</p>
+<p>
+<dl>
+<dt>max-age</dt>
+<dd>This is the maximum age of the cookie we use, in seconds. Setting it to zero usually means (slightly browser dependent) the cookie will only endure for that browser session. Common values are 3600=1 hour, 86400=1 day, 604800=1 week. The cookie is reset after every new page access - so this is the maximum time in between visits that the cookie will last. After that, the user will have to login again.</dd>
+<dt>editable</dt>
+<dd>This is whether the user is allowed to change their password, email address etc.</dd>
+</dl>
+</p>
+
+</td><td width="50%">
+
+<h2>Edit the Values</h2>
+
+    <form action="**thisscript**" method="post">
+    <input type="hidden" name="action" value="**action**">
+    <input type="hidden" name="login" value="admin">
+    <input type="hidden" name="admin" value="doeditconfig">
+    <table border="1" summary="Edit Config File and Default User"  class="table">
+    <tr> <th colspan="2">Config File Values</th></tr>
+    <tr><td align="center"> <strong>New Login Link : </strong></td><td align="center"> <input type="checkbox" name="loginlink" **loginlink**>Allow New Logins ?</td></tr>
+    <tr><td align="center"> <strong>Admin Email : </strong></td><td align="center"> <input type="text" name="adminmail" value="**adminmail**"></td></tr>
+    <tr><td align="center"> <strong>Email Subject : </strong></td><td align="center"> <input type="text" name="emailsubject" value="**email subject**"></td></tr>
+    <tr><td align="center"> <strong>Email Message : </strong></td><td align="center"> <textarea name="emailmsg">**email message**</textarea></td></tr>
+
+    <tr><td align="center"> &nbsp;</td><td align="center"> &nbsp;</td></tr>
+    <tr> <th colspan="2">Default User Values</th></tr>
+    <tr><td align="center"> <strong>Cookie max-age : </strong></td><td align="center"> <input type="text" name="maxage" value="**maxage**"></td></tr>
+    <tr><td align="center"> <strong>Accounts Editable : </strong></td><td align="center"> <input type="checkbox" name="editable" **editable** >Can New Users Edit <br>Account Details ?</td></tr>
+    <tr><td align="center"> &nbsp;</td><td align="center"> &nbsp;</td></tr>
+    <tr><td align="center"> <input type="reset"></td><td align="center"> <input type="submit" value="Submit Changes"></td></tr>
+
+    </table>
+    </form>
+
+
+</td></tr>
+</table>

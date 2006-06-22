@@ -1,0 +1,33 @@
+<div id="editform"> 
+    <form action="**makepage**" method="post">
+        <table summary="Form to get details for the page to create." border="1">
+            <tr><td>Page Name :</td><td><input name="pagename" type="text" value="**page name**"></td></tr>
+            <tr><td>Page Title :</td><td><input name="doctitle" type="text" value="**page title**"></td></tr>
+            <tr><td>Page Description :</td><td><textarea name="description" >**description**</textarea>
+            <input type="hidden" name="site" value="**the site**" />
+            <input type="hidden" name="detail" value="**filename**" />
+            </td></tr>
+            <tr><td>&nbsp;</td>
+            <td><input type="submit" value="Submit Change" /></form></td></tr>        
+        
+<!-- **del start**        
+                          <tr><td colspan="2">&nbsp;</td></tr>
+                          <tr><td align="center" valign="middle"><form action="**makepage**" method="post">
+                          <input type="hidden" name="site" value="**the site**" />
+                          <input type="hidden" name="delete" value="**filename**" />
+                          <input name="pagename" type="hidden" value="**page name**">
+                          <input name="doctitle" type="hidden" value="**page title**">
+                          <input name="description" type="hidden" value="**description**">
+                          <input type="checkbox" name="confirm"  value="off" />Confirm
+                          </td><td align="center"> 
+                          <input type="submit" value="Delete Page" /></form>
+                          </td></tr> 
+**del end** --> 
+        </table>
+        
+</div>
+
+<p>To return to the main index <a href="**makepage**">Click Here</a>.</p>
+
+  
+

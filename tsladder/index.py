@@ -6,6 +6,10 @@ import cgitb; cgitb.enable()
 
 import functions
 
+import sys
+moduleDirLoc = 'modules'
+sys.path.append(moduleDirLoc)
+
 print "Content-type: text/html\n\n"
 
 title = "Java TankSoar Ladder"

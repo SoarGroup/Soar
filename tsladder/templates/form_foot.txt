@@ -1,0 +1,15 @@
+
+    <div class="kupu-editorframe">
+      <iframe id="kupu-editor" class="kupu-editor-iframe" frameborder="0" src="**edit file**" scrolling="auto">
+      </iframe>
+      <textarea class="kupu-editor-textarea" id="kupu-editor-textarea"> </textarea>
+    </div>
+  
+    </div>
+  
+      </form>
+    </body>
+  
+
+</html>
+  

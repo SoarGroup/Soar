@@ -1,1 +1,1 @@
-src/index.py
+index.py
