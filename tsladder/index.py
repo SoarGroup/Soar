@@ -23,13 +23,15 @@ action, userconfig = login(theform, userdir, thisscript, action)
 
 print "Content-type: text/html\n\n"
 
-title = "Java TankSoar Ladder"
-print "<head><title>" + title + "</title></head>"
-print "<h1>" + title + "</h1>"
+print "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">"
+print "<html lang='en'><head><title>Java TankSoar Ladder</title></head>"
+print "<body><h1>Java TankSoar Ladder</h1>"
 
 print "<a href='/tsladder/index.cgi?login=logout'>Log out</a><br />"
 print "<a href='/tsladder/index.cgi?login=editaccount'>Edit account</a><br />"
 print "<a href='/tsladder/index.cgi?login=admin'>Admin</a><br />"
+
+print "</html>"
 
 #form = cgi.FieldStorage()
 #
