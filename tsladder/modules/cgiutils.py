@@ -216,13 +216,13 @@ def sendmailme(to_email, msg, email_subject=None, from_email=None,
     if not isinstance(to_email, list):
         to_email = [to_email]
     o = os.popen("%(a)s -t -f %(b)s" % {'a':sendmail, 'b':from_email},"w")
-    o.write("To: %s\r\n" %  ','.join(to_email))
+    o.write("To: %s\n" %  ','.join(to_email))
     if from_email:
-        o.write("From: %s\r\n" %  from_email)
+        o.write("From: %s\n" %  from_email)
     if not html and email_subject:
-        o.write("Subject: %s\r\n" %  email_subject)
-    o.write("\r\n")
-    o.write("%s\r\n" % msg)
+        o.write("Subject: %s\n" %  email_subject)
+    o.write("\n")
+    o.write("%s" % msg)
     o.close()
 
 def createhtmlmail(subject, html, text=None):
