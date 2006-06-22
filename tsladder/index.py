@@ -27,6 +27,10 @@ title = "Java TankSoar Ladder"
 print "<head><title>" + title + "</title></head>"
 print "<h1>" + title + "</h1>"
 
+print "<a href='/tsladder/index.cgi?login=logout'>Log out</a><br />"
+print "<a href='/tsladder/index.cgi?login=editaccount'>Edit account</a><br />"
+print "<a href='/tsladder/index.cgi?login=admin'>Admin</a><br />"
+
 #form = cgi.FieldStorage()
 #
 #if not (form.has_key("action")):
