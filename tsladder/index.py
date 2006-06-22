@@ -21,13 +21,12 @@ action, userconfig = login(theform, userdir, thisscript, action)
 
 #from functions import *
 
-#print "Content-type: text/html\n\n"
-#
-#title = "Java TankSoar Ladder"
-#
-#print "<head><title>" + title + "</title></head>"
-#print "<h1>" + title + "</h1>"
-#
+print "Content-type: text/html\n\n"
+
+title = "Java TankSoar Ladder"
+print "<head><title>" + title + "</title></head>"
+print "<h1>" + title + "</h1>"
+
 #form = cgi.FieldStorage()
 #
 #if not (form.has_key("action")):
