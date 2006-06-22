@@ -215,7 +215,7 @@ def sendmailme(to_email, msg, email_subject=None, from_email=None,
     """
     if not isinstance(to_email, list):
         to_email = [to_email]
-    o = os.popen("%s -t" %  sendmail,"w")
+    o = os.popen("%(a)s -t -f %(b)s" % {'a':sendmail, 'b':from_email},"w")
     o.write("To: %s\r\n" %  ','.join(to_email))
     if from_email:
         o.write("From: %s\r\n" %  from_email)
