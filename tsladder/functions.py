@@ -1,61 +1,17 @@
 #!/usr/bin/python
 
-import smtplib
-
-def action_link(action=None):
-    if action == None:
-        return "index.cgi"
-    return "index.cgi?action=" + action
-
-def action_anchor(action=None, text=None):
-    if (action != None) & (text == None):
-        text = action
-    elif text == None:
-        text = "Home"
-    return "<a href='" + action_link(action) + "'>" + text + "</a>"
+from configobj import ConfigObj
+from pathutils import *
+from cgiutils import *
 
 def welcome_page():
-    print "<p>Welcome page.</p>"
-    return
+    newwelcomepage = readfile('templates/header.txt')
+    newwelcomepage += "<p>Don't touch anything, winter could explode.</p>"
+    newwelcomepage = readfile('templates/footer.txt')
+    print serverline + "\n" + newwelcomepage
+    sys.exit()
 
-def register_page(userid=None, email=None):
-    print "<form method='POST' action='index.cgi'>"
-    
-    print "User ID: <input type='text' name='userid'",
-    if userid != None:
-        print "value='" + userid + "'",
-    print " /><br />"
-
-    print "Email address (required, must be valid, will not be published): <input type='text' name='email'",
-    if email != None:
-        print "value='" + email + "'",
-    print " /><br />"
-    
-    print "<input type='hidden' name='action' value='register' />"
-    print "<input type='hidden' name='confirm' value='True' />"
-    print "<input type='submit' value='Register' />"
-    print "</form>"
-    
-def send_confirmation(userid=None, email=None):
-    if (email == None) | (userid == None):
-        return False
-    
-    message = "From: Java TankSoar Ladder <tsladder@winter.eecs.umich.edu>\r\n"
-    message += "To: " + userid + " <" + email + ">\r\n"
-    message += "Subject: Registration\r\n\r\n"
-    message += "Confirmation code: abc123"
-    
-    server = smtplib.SMTP('localhost')
-    server.sendmail(from_addr="tsladder@winter.eecs.umich.edu", to_addrs=email, msg=message)
-
-def confirm_page():
-    print "<form method='POST' action='index.cgi'>"
-    print "Enter confirmation code from email: <input type='text' name='code' />"
-    print "<input type='hidden' name='action' value='confirm' />"
-    print "<input type='submit' value='Confirm' />"
-    print "</form>"
-
-def upload_page():
+def upload_page(action, userconfig):
     print "<form method='POST' enctype='multipart/form-data' action='index.cgi'>"
     print "User ID: <input type='text' name='userid' /><br />"
     print "Tank ID: <input type='text' name='tankid' /><br />"

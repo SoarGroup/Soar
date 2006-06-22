@@ -12,14 +12,13 @@ from configobj import ConfigObj
 from pathutils import *
 from cgiutils import *
 
-thisscript = os.environ.get('SCRIPT_NAME', '')
-action = None
 userdir = 'users/'
 theform = cgi.FieldStorage()
 from logintools import login
-action, userconfig = login(theform, userdir, thisscript, action)
+action, userconfig = login(theform, userdir)
 
 from functions import *
+
 
 print "Content-type: text/html\n\n"
 
@@ -28,30 +27,17 @@ print "<html lang='en'><head><title>JTSL: Home</title><link href='/tsladder/jtsl
 print "<body><h1>Java TankSoar Ladder</h1>"
 print "<h2>Welcome " + userconfig['username'] + "</h2>"
 
-print "<a href='/tsladder/index.cgi?login=logout'>Log out</a> | <a href='/tsladder/index.cgi?login=editaccount'>Edit account</a>",
+print "<p><a href='/tsladder/index.cgi?login=logout'>Log out</a> | <a href='/tsladder/index.cgi?login=editaccount'>Edit account</a>",
 if userconfig['admin'] == "3":
 	print " | <a href='/tsladder/index.cgi?login=admin'>Admin</a>"
-print "<br />"
-
-print "<p>You're early! There isn't any code here yet.</p>"
+print "</p>"
 
 form = cgi.FieldStorage()
 
-if not (form.has_key("action")):
+if action == None:
 	welcome_page()
-else:
-	print "<p>action is " + form["action"].value + "</p>"
 
-	action = form["action"].value
+print "<p>Action is '" + action + "'</p>"
 
-#if action == "upload":
-#	if form["userid"] == None:
-#		print "<font color='red'>You must enter a User ID</font>"
-#		upload_page()
-#	elif form["tankid"] == None: 
-#		print "<h1>User ID:", form["userid"], "</h1>"
-#		save_tank()
-#		print "<h1>Saved tank: ", form["upfile"].filename, "</h1>"
-
-print "</body></html>"
-
+if action == "upload":
+	upload_page(action, userconfig)
