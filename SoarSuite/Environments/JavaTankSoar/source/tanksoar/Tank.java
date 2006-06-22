@@ -356,10 +356,6 @@ public class Tank  extends WorldEntity {
 			// Turn the shield off.
 			m_ShieldStatus = false;
 		}
-		// Consume shield energy.
-		if (m_ShieldStatus) {
-			m_Energy -= kSheildEnergyUsage;
-		}
 	}
 	
 	public void updateSensors(TankSoarWorld world) {		
@@ -375,6 +371,11 @@ public class Tank  extends WorldEntity {
 				m_Health += 250;
 				m_Health = m_Health > kMaximumHealth ? kMaximumHealth : m_Health;
 			}
+		}
+		
+		// Consume shield energy.
+		if (m_ShieldStatus) {
+			m_Energy -= kSheildEnergyUsage;
 		}
 		
 		// Handle radar.
