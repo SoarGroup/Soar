@@ -4,11 +4,14 @@ import cgi
 import cgitb; cgitb.enable()
 #import cgitb; cgitb.enable(display=0, logdir="/tmp")
 
-import functions
-
 import sys
-moduleDirLoc = 'modules'
-sys.path.append(moduleDirLoc)
+sys.path.append(os.path.abspath('../modules'))
+
+from configobj import ConfigObj
+from pathutils import *
+from cgiutils import *
+
+from functions import *
 
 print "Content-type: text/html\n\n"
 
@@ -20,7 +23,7 @@ print "<h1>" + title + "</h1>"
 form = cgi.FieldStorage()
 
 if not (form.has_key("action")):
-	functions.welcome_page()
+	welcome_page()
 	raise SystemExit
 
 action = form["action"].value
@@ -42,30 +45,30 @@ elif action == "register":
 			email = form["email"].value
 			
 		# TODO: Make sure userid is unique and legal
-		# if not legal: functions.register_page(userid, email)
+		# if not legal: register_page(userid, email)
 		# Send confirmation code to email address
-		if functions.send_confirmation(userid, email) == None:
-			functions.confirm_page()
+		if send_confirmation(userid, email) == None:
+			confirm_page()
 		else:
 			print "<p><font color='red'>Sending of confirmation email failed. Check email address.</p>"
-			functions.register_page(userid, email)
+			register_page(userid, email)
 	else:
-		functions.register_page()
+		register_page()
 		
 elif action == "confirm":
 	if form.has_key("code"):
 		code = form["code"].value
 		if code == "abc123":
 			print "<p>Confirmation successful.</p>"
-			functions.welcome_page()
+			welcome_page()
 		else:
 			print "<p><font color='red'>Confirmation unsuccessful.</p>"
 	else:
-		functions.welcome_page()
+		welcome_page()
 		
 else:
 	print "<p><font color='red'>Unknown action: ", action, "</font></p>"
-	functions.welcome_page()
+	welcome_page()
 
 #
 #if action == "upload":
