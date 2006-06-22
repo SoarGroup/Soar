@@ -24,14 +24,16 @@ action, userconfig = login(theform, userdir, thisscript, action)
 print "Content-type: text/html\n\n"
 
 print "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">"
-print "<html lang='en'><head><title>Java TankSoar Ladder</title></head>"
+print "<html lang='en'><head><title>JTSL: Home</title><link href='/tsladder/jtsl.css' rel='stylesheet' type='text/css'/></head>"
 print "<body><h1>Java TankSoar Ladder</h1>"
+print "<h2>Welcome " + userconfig['username'] + "</h2>"
 
-print "<a href='/tsladder/index.cgi?login=logout'>Log out</a><br />"
-print "<a href='/tsladder/index.cgi?login=editaccount'>Edit account</a><br />"
-print "<a href='/tsladder/index.cgi?login=admin'>Admin</a><br />"
+print "<a href='/tsladder/index.cgi?login=logout'>Log out</a> | <a href='/tsladder/index.cgi?login=editaccount'>Edit account</a>",
+if userconfig['admin'] > 0:
+	print " | <a href='/tsladder/index.cgi?login=admin'>Admin</a>"
+print "<br />"
 
-print "</html>"
+print "</body></html>"
 
 #form = cgi.FieldStorage()
 #
