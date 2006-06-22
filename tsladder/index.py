@@ -1,10 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python -u
 
 import cgi
 import cgitb; cgitb.enable()
 #import cgitb; cgitb.enable(display=0, logdir="/tmp")
 
 import sys
+import os
 sys.path.append(os.path.abspath('modules'))
 
 from configobj import ConfigObj
@@ -13,7 +14,7 @@ from cgiutils import *
 
 thisscript = os.environ.get('SCRIPT_NAME', '')
 action = None
-userdir = 'users'
+userdir = 'users/'
 theform = cgi.FieldStorage()
 from logintools import login
 action, userconfig = login(theform, userdir, thisscript, action)
