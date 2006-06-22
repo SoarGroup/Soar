@@ -97,7 +97,7 @@ def donewlogin(theform, userdir, thisscript, action=None):
     msg = config['email_message'] + '\n'
     msg = msg + SCRIPTLOC + thisscript + '?login=confirm&id=' + link_url
     writefile('log.txt', msg)
-    sendmailme(email, msg, config['email_subject'], email, html=False)
+    sendmailme(email, msg, config['email_subject'], config['adminmail'], html=False)
     #
     templatedir = config['templatedir']
     logindonepage = readfile(templatedir+logindone)
