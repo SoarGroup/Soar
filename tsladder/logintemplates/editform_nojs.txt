@@ -2,7 +2,6 @@
     <form action="**script**" method="post">
         <table summary="Form to edit account details." border="1">
             <tr><td>Real Name :</td><td><input name="realname" type="text" value="**realname**"></td></tr>
-            <tr><td colspan="2">&nbsp</td></tr>
             <tr><td>Email Address :</td><td><input name="email" type="text" value="**email**"></td></tr>
             <tr><td>Current Password :</td><td><input name="pass0" type="password">
             <tr><td>New Password :</td><td><input name="pass1" type="password">
