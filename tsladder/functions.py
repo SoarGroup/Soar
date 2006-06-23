@@ -29,34 +29,42 @@ def welcome_page(action, userconfig):
     sys.exit()
 
 def managetanks_page(action, userconfig):
-    page = readfile('templates/header.txt')
-    page += account_links(userconfig)
-    page += "<p>Don't touch anything, winter could explode.</p>"
-    page += readfile('templates/managetanks.txt')
-    page += readfile('templates/footer.txt')
+	page = readfile('templates/header.txt')
+	page += account_links(userconfig)
+	page += "<p>Don't touch anything, winter could explode.</p>"
+	page += readfile('templates/managetanks.txt')
+	page += readfile('templates/footer.txt')
 
-    tanktable = "<table border='0'>\n"
-    tanktable += "<tr><td>Tank 1</td><td>Link</td></tr>\n"
-    tanktable += "\n</table>"
+	tanktable = "<table border='1'>\n"
+	if (not userconfig.has_key('tanks')) | (len(userconfig['tanks']) == 0):
+		tanktable += "<tr><td>No tanks.</td></tr>\n"
+	else:
+		for tank in userconfig['tanks']:
+			tanktable += "<tr><td>"
+			tanktable += tank + " (" + userconfig[tank]['source'] + ")"
+			tanktable += "</td><td><a href=''>Delete</a></td></tr>\n"
+	tanktable += "\n</table>"
+	tanktable += "<p>" + repr(userconfig) + "</p>"
 
-    page = page.replace('**tank table**', tanktable)
-	
-    print "Content-type: text/html\n"
-    print page
-    sys.exit()
+	page = page.replace('**tank table**', tanktable)
+	page = page.replace('**upload tank link**', thisscript+'?action=upload')
+
+	print "Content-type: text/html\n"
+	print page
+	sys.exit()
 	
 def upload_page(action, userconfig):
-    print "<form method='POST' enctype='multipart/form-data' action='index.cgi'>"
-    print "User ID: <input type='text' name='userid' /><br />"
-    print "Tank ID: <input type='text' name='tankid' /><br />"
-    print "Tank zip: <input type='file' name='upfile' /><br />"
-    print "<input type='submit' value='Upload Tank' />"
-    print "<input type='hidden' name='action' value='upload' />"
-    print "</form>"
-    return
+	page = readfile('templates/header.txt')
+	page += account_links(userconfig)
+	page += readfile('templates/uploadform.txt')
+	page += readfile('templates/footer.txt')
+
+	print "Content-type: text/html\n"
+	print page
+	sys.exit();
 
 def save_tank():
-    f = open("tanks/" + form["upfile"].filename, 'w')
-    f.write(form["upfile"].value)
-    f.close()
-    return
+	f = open("tanks/" + form["upfile"].filename, 'w')
+	f.write(form["upfile"].value)
+	f.close()
+	sys.exit();

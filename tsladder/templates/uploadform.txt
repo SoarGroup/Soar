@@ -1,0 +1,7 @@
+<form method='POST' enctype='multipart/form-data' action='index.cgi'>
+User ID: <input type='text' name='userid' /><br />
+Tank ID: <input type='text' name='tankid' /><br />
+Tank zip: <input type='file' name='upfile' /><br />
+<input type='submit' value='Upload Tank' />
+<input type='hidden' name='action' value='upload' />
+</form> 

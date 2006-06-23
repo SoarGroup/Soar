@@ -26,3 +26,6 @@ if action == None:
 
 if action == "managetanks":
 	managetanks_page(action, userconfig)
+
+if action == "upload":
+	upload_page(action, userconfig)
