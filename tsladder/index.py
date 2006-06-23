@@ -19,8 +19,6 @@ action, userconfig = login(theform, userdir)
 
 from functions import *
 
-form = cgi.FieldStorage()
-
 if action == None:
 	welcome_page(action, userconfig)
 
@@ -28,4 +26,14 @@ if action == "managetanks":
 	managetanks_page(action, userconfig)
 
 if action == "upload":
-	upload_page(action, userconfig)
+	tankname = theform['tankname'].value
+	tankfile = theform['tankfile'].value
+	tankfilename = theform['tankfile'].filename
+	source = theform['source'].value
+	upload_page(action, userconfig, tankname, tankfilename, tankfile, source)
+
+if action == "deletetank":
+	tank = theform['tank'].value
+	delete_tank(action, userconfig, tank)
+	managetanks_page(action, userconfig)
+	
