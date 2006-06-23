@@ -1,9 +1,12 @@
 #!/usr/bin/python
 
 import sys
+import os
 from configobj import ConfigObj
 from pathutils import *
 from cgiutils import *
+
+thisscript = os.environ['SCRIPT_NAME']
 
 def account_links(userconfig):
 	ret = "<p><a href='/tsladder/index.cgi?login=logout'>Log out</a> | <a href='/tsladder/index.cgi?login=editaccount'>Edit account</a>"
@@ -33,7 +36,7 @@ def managetanks_page(action, userconfig):
     page += readfile('templates/footer.txt')
 
     tanktable = "<table border='0'>\n"
-    tanktable += "<tr><td></td></tr>\n"
+    tanktable += "<tr><td>Tank 1</td><td>Link</td></tr>\n"
     tanktable += "\n</table>"
 
     page = page.replace('**tank table**', tanktable)
