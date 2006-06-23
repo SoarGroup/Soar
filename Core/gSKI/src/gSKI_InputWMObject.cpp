@@ -289,8 +289,9 @@ namespace gSKI
       MegaAssert( wme != 0 , "Can't add a null input wme!");
       if ( wme == 0 ) return;
 
-      m_vwmes.insert(wme);
-	  m_vwmesInOrder.push_back(wme) ;
+	  std::pair<std::set<InputWme*>::iterator, bool> added = m_vwmes.insert(wme);
+	  if (added.second)
+		  m_vwmesInOrder.push_back(wme) ;
 
       wme->SetOwningObject(this);
 
