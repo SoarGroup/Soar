@@ -682,6 +682,8 @@ Identifier* WorkingMemory::GetOutputLink()
 *************************************************************/
 StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue)
 {
+	assert(m_Agent == parent->GetAgent()) ;
+
 	StringElement* pWME = new StringElement(GetAgent(), parent, parent->GetValueAsString(), pAttribute, pValue, GenerateTimeTag()) ;
 
 	// Record that the identifer owns this new WME
@@ -716,6 +718,8 @@ StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pA
 *************************************************************/
 IntElement* WorkingMemory::CreateIntWME(Identifier* parent, char const* pAttribute, int value)
 {
+	assert(m_Agent == parent->GetAgent()) ;
+
 	IntElement* pWME = new IntElement(GetAgent(), parent, parent->GetValueAsString(), pAttribute, value, GenerateTimeTag()) ;
 
 	// Record that the identifer owns this new WME
@@ -750,6 +754,8 @@ IntElement* WorkingMemory::CreateIntWME(Identifier* parent, char const* pAttribu
 *************************************************************/
 FloatElement* WorkingMemory::CreateFloatWME(Identifier* parent, char const* pAttribute, double value)
 {
+	assert(m_Agent == parent->GetAgent()) ;
+
 	FloatElement* pWME = new FloatElement(GetAgent(), parent, parent->GetValueAsString(), pAttribute, value, GenerateTimeTag()) ;
 
 	// Record that the identifer owns this new WME
@@ -787,6 +793,8 @@ void WorkingMemory::UpdateString(StringElement* pWME, char const* pValue)
 {
 	if (!pWME || !pValue)
 		return ;
+
+	assert(m_Agent == pWME->GetAgent()) ;
 
 	// If the value hasn't changed and we're set to not blink the wme (remove/add it again)
 	// then there's no work to do.
@@ -837,6 +845,8 @@ void WorkingMemory::UpdateInt(IntElement* pWME, int value)
 	if (!pWME)
 		return ;
 
+	assert(m_Agent == pWME->GetAgent()) ;
+
 	// If the value hasn't changed and we're set to not blink the wme (remove/add it again)
 	// then there's no work to do.
 	if (!m_Agent->IsBlinkIfNoChange())
@@ -885,6 +895,8 @@ void WorkingMemory::UpdateFloat(FloatElement* pWME, double value)
 {
 	if (!pWME)
 		return ;
+
+	assert(m_Agent == pWME->GetAgent()) ;
 
 	// If the value hasn't changed and we're set to not blink the wme (remove/add it again)
 	// then there's no work to do.
@@ -974,6 +986,8 @@ void WorkingMemory::GenerateNewID(char const* pAttribute, std::string* pID)
 *************************************************************/
 Identifier* WorkingMemory::CreateIdWME(Identifier* parent, char const* pAttribute)
 {
+	assert(m_Agent == parent->GetAgent()) ;
+
 	// Create a new, unique id (e.g. "i3").  This id will be mapped to a different id
 	// in the kernel.
 	std::string id ;
@@ -1017,6 +1031,9 @@ Identifier* WorkingMemory::CreateIdWME(Identifier* parent, char const* pAttribut
 *************************************************************/
 Identifier*	WorkingMemory::CreateSharedIdWME(Identifier* parent, char const* pAttribute, Identifier* pSharedValue)
 {
+	assert(m_Agent == parent->GetAgent()) ;
+	assert(m_Agent == pSharedValue->GetAgent()) ;
+
 	// Look up the id from the existing identifier
 	std::string id = pSharedValue->GetValueAsString() ;
 
@@ -1062,6 +1079,8 @@ Identifier*	WorkingMemory::CreateSharedIdWME(Identifier* parent, char const* pAt
 *************************************************************/
 bool WorkingMemory::DestroyWME(WMElement* pWME)
 {
+	assert(m_Agent == pWME->GetAgent()) ;
+
 	IdentifierSymbol* parent = pWME->GetIdentifier() ;
 
 	// We can't delete top level WMEs (e.g. the WME that represents the input-link's ID)
