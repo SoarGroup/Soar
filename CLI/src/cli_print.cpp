@@ -210,7 +210,9 @@ bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, PrintBitset options, in
 	}
 
 	// Default to symbol print if there is an arg, otherwise print all
-	AddListenerAndDisableCallbacks(pAgent);
+	if (m_RawOutput) AddListenerAndDisableCallbacks(pAgent);
+	else			 AddXMLListenerAndDisableCallbacks(pAgent) ;
+
 	if (options.test(PRINT_VARPRINT)) {
 		m_VarPrint = true;
 	}
@@ -223,7 +225,9 @@ bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, PrintBitset options, in
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
 	}
 	m_VarPrint = false;
-	RemoveListenerAndEnableCallbacks(pAgent);
+
+	if (m_RawOutput) RemoveListenerAndEnableCallbacks(pAgent);
+	else			 RemoveXMLListenerAndEnableCallbacks(pAgent) ;
 
 	// put the result into a message(string) arg tag
 	if (!m_RawOutput) ResultToArgTag();

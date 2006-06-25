@@ -125,6 +125,7 @@ public:
 	static char const* const kWME_Attribute ;
 	static char const* const kWME_Value ;
 	static char const* const kWME_ValueType ;
+	static char const* const kWME_AttributeType	;
 	static char const* const kWME_Preference;
 	static char const* const kWME_Action ;
 	// kjc question:  should the next entry be kWMEAction_Add?

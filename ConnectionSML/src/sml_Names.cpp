@@ -130,7 +130,8 @@ char const* const sml_Names::kWME_TimeTag	= "tag" ;
 char const* const sml_Names::kWME_Id		= "id" ;
 char const* const sml_Names::kWME_Attribute	= "attr" ;
 char const* const sml_Names::kWME_Value		= "value" ;
-char const* const sml_Names::kWME_ValueType	= "type" ;
+char const* const sml_Names::kWME_ValueType	= "valtype" ;
+char const* const sml_Names::kWME_AttributeType	= "attrtype" ;
 char const* const sml_Names::kWME_Preference= "preference";
 char const* const sml_Names::kWME_Action	= "action" ;
 // kjc question:  should the next entry be kWMEAction_Add?

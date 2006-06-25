@@ -36,6 +36,7 @@
 #include "sml_StringOps.h"
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
+#include "sml_XMLTrace.h"
 
 
 using namespace cli;
@@ -159,6 +160,8 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	gSKI::ClearError(&m_gSKIError);
 	m_Initialized = true;
 	m_PrintEventToResult = false;
+	m_XMLEventToResult = false;
+	m_XMLEventTag = 0 ;
 	m_EchoResult = false ;
 	m_pAgentSML = 0 ;
 	m_CloseLogAfterOutput = false;
@@ -716,6 +719,25 @@ void CommandLineInterface::RemoveListenerAndEnableCallbacks(gSKI::IAgent* pAgent
 	if (m_pKernelSML) m_pKernelSML->EnablePrintCallback(pAgent);
 }
 
+void CommandLineInterface::AddXMLListenerAndDisableCallbacks(gSKI::IAgent* pAgent) {
+	if (m_pKernelSML) m_pKernelSML->DisablePrintCallback(pAgent);
+	m_XMLEventToResult = true;
+	if (pAgent) pAgent->AddXMLListener(gSKIEVENT_XML_TRACE_OUTPUT, this);
+}
+
+void CommandLineInterface::RemoveXMLListenerAndEnableCallbacks(gSKI::IAgent* pAgent) {
+	if (pAgent) pAgent->RemoveXMLListener(gSKIEVENT_XML_TRACE_OUTPUT, this);
+	m_XMLEventToResult = false;
+	if (m_pKernelSML) m_pKernelSML->EnablePrintCallback(pAgent);
+
+	if (m_XMLEventTag)
+	{
+		m_ResponseTags.push_back(m_XMLEventTag->DetatchObject()) ;
+		delete m_XMLEventTag ;
+		m_XMLEventTag = NULL ;
+	}
+}
+
 bool CommandLineInterface::SetError(cli::ErrorCode code) {
 	m_LastError = code;
 	return false;
@@ -965,6 +987,56 @@ bool CommandLineInterface::Trim(std::string& line) {
 
 	if (pipe) return SetError(CLIError::kNewlineBeforePipe);
 	return true;
+}
+
+/** 
+* @brief Event callback function
+*
+* This method recieves callbacks when the xml event occurs for an agent.
+*
+* @param eventId	  Id of the event that occured (can only be gSKIEVENT_XML_TRACE_OUTPUT)
+* @param agentPtr	  Pointer to the agent that fired the print event
+* @param funcType     Pointer to c-style string containing the function type (i.e. addTag, addAttributeValuePair, endTag)
+* @param attOrTag     Pointer to c-style string containing the tag to add or remove or the attribute to add
+* @param value		  Pointer to c-style string containing the value to add (may be NULL if just adding/ending a tag)
+*/
+void CommandLineInterface::HandleEvent(egSKIXMLEventId eventId, gSKI::IAgent* agentPtr, const char* funcType, const char* attOrTag, const char* value) {
+	unused(eventId) ;
+	unused(agentPtr) ;
+
+	// Collect up the incoming XML events into an XML object
+	if (!m_XMLEventTag)
+		m_XMLEventTag = new XMLTrace() ;
+
+	// We need to decide what type of operation this is and we'd like to do that
+	// fairly efficiently so we'll switch based on the first character of the name.
+	char ch = funcType[0] ;
+
+	switch (ch)
+	{
+	case 'b' : 
+		if (strcmp(sml_Names::kFunctionBeginTag, funcType) == 0)
+		{
+			m_XMLEventTag->BeginTag(attOrTag) ;
+		}
+		break ;
+	case 'e':
+		if (strcmp(sml_Names::kFunctionEndTag, funcType) == 0)
+		{
+			m_XMLEventTag->EndTag(attOrTag) ;
+		}
+		break ;
+	case 'a':
+		if (strcmp(sml_Names::kFunctionAddAttribute, funcType) == 0)
+		{
+			m_XMLEventTag->AddAttribute(attOrTag, value) ;
+		}
+		break ;
+	default:
+		// This is an unknown function type
+		assert(ch == 'b' || ch == 'e' || ch == 'a') ;
+		break ;
+	}
 }
 
 void CommandLineInterface::HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const char* msg) {
