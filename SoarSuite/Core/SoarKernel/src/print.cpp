@@ -386,7 +386,23 @@ char *string_to_escaped_string (agent* thisAgent, char *s,
 }
 
 
-
+char const* symbol_to_typeString(agent* thisAgent, Symbol* sym)
+{
+  switch(sym->common.symbol_type) {
+  case VARIABLE_SYMBOL_TYPE:
+	  return kTypeVariable ;
+  case IDENTIFIER_SYMBOL_TYPE:
+	  return kTypeID ;
+  case INT_CONSTANT_SYMBOL_TYPE:
+	  return kTypeInt ;
+  case FLOAT_CONSTANT_SYMBOL_TYPE:
+	  return kTypeDouble ;
+  case SYM_CONSTANT_SYMBOL_TYPE:
+	  return kTypeString ;
+  default:
+	  return 0 ;
+  }
+}
 
 char *symbol_to_string (agent* thisAgent, Symbol *sym, 
 						Bool rereadable, char *dest, size_t dest_size) {
@@ -1161,6 +1177,7 @@ void print_wme (agent* thisAgent, wme *w) {
   gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kWME_Id, symbol_to_string (thisAgent, w->id, true, 0, 0));
   gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kWME_Attribute, symbol_to_string (thisAgent, w->attr, true, 0, 0));
   gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kWME_Value, symbol_to_string (thisAgent, w->value, true, 0, 0));
+  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kWME_ValueType, symbol_to_typeString(thisAgent, w->value));
   if (w->acceptable) gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kWMEPreference, "+");
   gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagWME);
 

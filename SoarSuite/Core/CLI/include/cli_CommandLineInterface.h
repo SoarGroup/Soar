@@ -59,6 +59,7 @@ namespace sml {
 	class KernelSML;
 	class Connection ;
 	class AgentSML;
+	class XMLTrace;
 }
 
 namespace cli {
@@ -103,7 +104,7 @@ typedef struct {
 	int argument;
 } Options;
 
-class CommandLineInterface : public gSKI::IPrintListener, public gSKI::IProductionListener {
+class CommandLineInterface : public gSKI::IPrintListener, public gSKI::IProductionListener, public gSKI::IXMLListener {
 public:
 
 	EXPORT CommandLineInterface();
@@ -687,6 +688,9 @@ protected:
 	// Print callback events go here
 	virtual void HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const char* msg);
 
+	// XML callback events go here
+	virtual void HandleEvent(egSKIXMLEventId eventId, gSKI::IAgent* agentPtr, const char* funcType, const char* attOrTag, const char* value);
+
 	// Production callback events go here
 	virtual void HandleEvent(egSKIProductionEventId eventId, gSKI::IAgent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match);
 
@@ -788,6 +792,9 @@ protected:
 	void AddListenerAndDisableCallbacks(gSKI::IAgent* pAgent);
 	void RemoveListenerAndEnableCallbacks(gSKI::IAgent* pAgent);
 
+	void AddXMLListenerAndDisableCallbacks(gSKI::IAgent* pAgent) ;
+	void RemoveXMLListenerAndEnableCallbacks(gSKI::IAgent* pAgent) ;
+
 	bool SetError(cli::ErrorCode code);				// always returns false
 	bool SetErrorDetail(const std::string detail);	// always returns false
 
@@ -828,6 +835,8 @@ protected:
 	std::string			m_LastErrorDetail;		// Additional detail concerning the last error
 	gSKI::Error			m_gSKIError;			// gSKI error output from calls made to process the command
 	bool				m_PrintEventToResult;	// True when print events should append message to result
+	bool				m_XMLEventToResult;		// True when xml events should append message to result
+	sml::XMLTrace*		m_XMLEventTag;			// Used to collect up the xml events
 	bool				m_EchoResult;			// If true, copy result of command to echo event stream
 	EchoMap				m_EchoMap;				// If command appears in this map, always echo it.
 	bool				m_CloseLogAfterOutput;	// Used in command-to-file command ParseCommandToFile, closes log after output
