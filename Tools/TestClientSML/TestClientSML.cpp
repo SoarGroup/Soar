@@ -541,10 +541,20 @@ bool SimpleCopyAgent()
         (W3 ^num-word 3 ^word in)
 */
 
+	Identifier* map = pAgent->GetInputLink() ;
+	Identifier* square2 = pAgent->CreateIdWME(map, "square");
+	Identifier* square5 = pAgent->CreateIdWME(map, "square");
+	pAgent->CreateSharedIdWME(square2, "north", square5) ;
+	pAgent->CreateSharedIdWME(square5, "south", square2) ;
+
 	Identifier* pSentence = pAgent->CreateIdWME(pAgent->GetInputLink(), "sentence") ;
 	pAgent->CreateStringWME(pSentence, "newest", "yes") ;
 	pAgent->CreateIntWME(pSentence, "num-words", 3) ;
 	Identifier* pWord1 = pAgent->CreateIdWME(pSentence, "word") ;
+
+	Identifier* pWord5 = pAgent->CreateSharedIdWME(pSentence, "word", pWord1) ;
+
+
 	Identifier* pWord2 = pAgent->CreateIdWME(pSentence, "word") ;
 	Identifier* pWord3 = pAgent->CreateIdWME(pSentence, "word") ;
 	pAgent->CreateIntWME(pWord1, "num-word", 1) ;
@@ -1031,6 +1041,44 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	{
 		cout << "Error getting library location via XML call" << endl ;
 	}
+
+	// 2nd Test calling CommandLineXML.
+	ClientAnalyzedXML xml2 ;
+	success = pKernel->ExecuteCommandLineXML("print -i --depth 3 s1", pAgent->GetAgentName(), &xml2) ;
+	
+	if (!success)
+	{
+		cout << "Error calling ExecuteCommandLineXML" << endl ;
+		return false ;
+	}
+
+	// Convert to a string--just so I can see what we got
+	char* xmlString = xml2.GenerateXMLString(true) ;
+
+	ElementXML const* pResult = xml2.GetResultTag() ;
+
+	if (!pResult)
+	{
+		cout << "Error in results from ExecuteCommandLineXML" << endl ;
+		return false ;
+	}
+
+	// The XML format of "print" is a <trace> tag containing a series of
+	// a) <wme> tags (if this is an --internal print) or
+	// b) <id> tags that contain <wme> tags if this is not an --internal print.
+	ElementXML traceChild ;
+	success = pResult->GetChild(&traceChild, 0) ;
+
+	int nChildren = traceChild.GetNumberChildren() ;
+	ElementXML wmeChild ;
+	for (int i = 0 ; i < nChildren ; i++)
+	{
+		traceChild.GetChild(&wmeChild, i) ;
+		char* wmeString = wmeChild.GenerateXMLString(true) ;
+		cout << wmeString << endl ;
+		wmeChild.DeleteString(wmeString) ;
+	}
+	xml2.DeleteString(xmlString) ;
 
 	// Test that we get a callback after the decision cycle runs
 	// We'll pass in an "int" and use it to count decisions (just as an example of passing user data around)

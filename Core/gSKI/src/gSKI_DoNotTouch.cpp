@@ -31,6 +31,8 @@
 #include "decide.h"
 #include "explain.h"
 #include "soar_rand.h"
+#include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
+#include "gski_event_system_functions.h" // support for triggering XML events
 
 //#include "../../SoarIO/ConnectionSML/include/sock_Debug.h"
 
@@ -326,22 +328,30 @@ namespace gSKI
 
 		/* This should probably be in the Soar kernel interface. */
 #define NEATLY_PRINT_BUF_SIZE 10000
-		void neatly_print_wme_augmentation_of_id (agent* agnt, wme *w, int indentation) {
+		void neatly_print_wme_augmentation_of_id (agent* thisAgent, wme *w, int indentation) {
 			char buf[NEATLY_PRINT_BUF_SIZE], *ch;
+
+			gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagWME);
+			gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kWME_TimeTag, w->timetag);
+			gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kWME_Attribute, symbol_to_string (thisAgent, w->attr, true, 0, 0));
+			gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kWME_Value, symbol_to_string (thisAgent, w->value, true, 0, 0));
+			gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kWME_ValueType, symbol_to_typeString(thisAgent, w->value));
+			if (w->acceptable) gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kWMEPreference, "+");
+			gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagWME);
 
 			strcpy (buf, " ^");
 			ch = buf;
 			while (*ch) ch++;
-			symbol_to_string (agnt, w->attr, TRUE, ch, NEATLY_PRINT_BUF_SIZE - (ch - buf)); while (*ch) ch++;
+			symbol_to_string (thisAgent, w->attr, TRUE, ch, NEATLY_PRINT_BUF_SIZE - (ch - buf)); while (*ch) ch++;
 			*(ch++) = ' ';
-			symbol_to_string (agnt, w->value, TRUE, ch, NEATLY_PRINT_BUF_SIZE - (ch - buf)); while (*ch) ch++;
+			symbol_to_string (thisAgent, w->value, TRUE, ch, NEATLY_PRINT_BUF_SIZE - (ch - buf)); while (*ch) ch++;
 			if (w->acceptable) { strcpy (ch, " +"); while (*ch) ch++; }
 
-			if (get_printer_output_column(agnt) + (ch - buf) >= 80) {
-				print (agnt, "\n");
-				print_spaces (agnt, indentation+6);
+			if (get_printer_output_column(thisAgent) + (ch - buf) >= 80) {
+				print (thisAgent, "\n");
+				print_spaces (thisAgent, indentation+6);
 			}
-			print_string (agnt, buf);
+			print_string (thisAgent, buf);
 		}
 
 		void print_augs_of_id (agent* agnt,
@@ -401,10 +411,19 @@ namespace gSKI
 			} else {
 				print_spaces (agnt, indent);
 				print_with_symbols (agnt, "(%y", id);
+
+				// XML format of an <id> followed by a series of <wmes> each of which shares the original ID.
+				// <id id="s1"><wme tag="123" attr="foo" attrtype="string" val="123" valtype="string"></wme><wme attr="bar" ...></wme></id>
+				gSKI_MakeAgentCallbackXML(agnt, kFunctionBeginTag, kWME_Id);
+				gSKI_MakeAgentCallbackXML(agnt, kFunctionAddAttribute, kWME_Id, symbol_to_string (agnt, id, true, 0, 0));
+
 				for (attr=0; attr < num_attr; attr++) {
 					w = list[attr];
 					neatly_print_wme_augmentation_of_id (agnt, w, indent);
 				}
+				
+				gSKI_MakeAgentCallbackXML(agnt, kFunctionEndTag, kWME_Id);
+
 				print (agnt, ")\n");
 			}
 			free_memory(agnt, list, MISCELLANEOUS_MEM_USAGE);

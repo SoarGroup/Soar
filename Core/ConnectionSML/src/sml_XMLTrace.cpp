@@ -81,8 +81,8 @@ void XMLTrace::BeginTag(char const* pTagName)
 	ElementXML_Handle hChild = NULL ;
 
 	// The new tag is created as a child of the current tag (if we have one)
-	// or the root if we don't.  Adding the child delete the pChild object
-	// normally, so we have to create a second one.  Perhaps we should design AddChild?
+	// or the root if we don't.  Adding the child deletes the pChild object
+	// normally, so we have to create a second one.  Perhaps we should redesign AddChild?
 	if (m_pCurrentTag == NULL)
 		hChild = m_XML->AddChild(pChild) ;
 	else
@@ -163,4 +163,19 @@ ElementXML_Handle XMLTrace::Detach()
 	m_XML = NULL ;
 
 	return hXML ;
+}
+
+/*************************************************************
+* @brief Releases ownership of the underlying XML object.
+*
+* As for Detach() but returns an object rather than a handle.
+*************************************************************/
+ElementXML* XMLTrace::DetatchObject()
+{
+	delete m_pCurrentTag ;
+	m_pCurrentTag = NULL ;
+
+	ElementXML* pResult = m_XML ;
+	m_XML = NULL ;
+	return pResult ;
 }

@@ -28,6 +28,15 @@ namespace xmlTraceNames
 
 	// Tags defined for Trace output at each watch level:
 
+	// Types
+	static char const* const kTypeString	= "string" ;
+	static char const* const kTypeInt		= "int" ;
+	static char const* const kTypeDouble	= "double" ;
+	static char const* const kTypeChar		= "char" ;
+	static char const* const kTypeBoolean	= "boolean" ;
+	static char const* const kTypeID		= "id" ;
+	static char const* const kTypeVariable	= "variable" ;
+
 	// <trace> contains the rest.
 	static char const* const kTagTrace		= "trace" ;
 
@@ -81,7 +90,8 @@ namespace xmlTraceNames
 	static char const* const kWME_Id		= "id" ;
 	static char const* const kWME_Attribute	= "attr" ;
 	static char const* const kWME_Value		= "value" ;
-	static char const* const kWME_ValueType	= "type" ;
+	static char const* const kWME_AttributeType	= "attrtype" ;
+	static char const* const kWME_ValueType	= "valtype" ;
 	static char const* const kWMEPreference = "preference";
 	static char const* const kWME_Action	= "action" ;
 	// kjc question:  should the next entry be kWMEAction_Add?
@@ -170,9 +180,6 @@ namespace xmlTraceNames
 	static char const* const kFunctionBeginTag		= "begintag";
 	static char const* const kFunctionEndTag		= "endtag";
 	static char const* const kFunctionAddAttribute	= "addattribute";
-
-	static char const* const kTypeString	= "string" ;
-
 };
 
 #endif // XML_TRACE_NAMESH

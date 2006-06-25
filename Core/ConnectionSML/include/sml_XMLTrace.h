@@ -101,6 +101,13 @@ public:
 	*		deleted or Reset() should be called on it.
     *************************************************************/
 	ElementXML_Handle Detach() ;
+
+	/*************************************************************
+	* @brief Releases ownership of the underlying XML object.
+	*
+	* As for Detach() but returns an object rather than a handle.
+	*************************************************************/
+	ElementXML* DetatchObject() ;
 } ;
 
 }
