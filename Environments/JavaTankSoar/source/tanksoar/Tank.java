@@ -183,7 +183,7 @@ public class Tank  extends WorldEntity {
 		assert m_Agent != null;
 		int numberOfCommands = m_Agent.GetNumberCommands();
 		if (numberOfCommands == 0) {
-			m_Logger.log(getName() + " issued no command.");
+			//m_Logger.log(getName() + " issued no command.");
 			return;
 		}
 		Identifier moveId = null;
