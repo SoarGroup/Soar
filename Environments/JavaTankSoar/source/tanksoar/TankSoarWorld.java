@@ -22,7 +22,6 @@ public class TankSoarWorld extends World implements WorldManager {
 	static final int kKillPenalty = -2;
 	private static final int kMissileHitAward = 2;
 	private static final int kMissileHitPenalty = -1;
-	private static final int kWinningPoints = 50;
 	
 	private static final int kMaxMissilePacks = 3;
 	private static final double kMisslePackRespawn = 0.05;
@@ -494,15 +493,15 @@ public class TankSoarWorld extends World implements WorldManager {
 		
 		// Check for goal state
 		for (int i = 0; i < m_Tanks.length; ++i) {
-			if (m_Tanks[i].getPoints() >= kWinningPoints) {
+			if (m_Tanks[i].getPoints() >= m_Simulation.getWinningScore()) {
 				// Goal acheived
 				if (!m_PrintedStats) {
-					m_Simulation.notificationMessage("At least one tank has achieved at least " + Integer.toString(kWinningPoints) + " points.");
+					m_Simulation.notificationMessage("At least one tank has achieved at least " + Integer.toString(m_Simulation.getWinningScore()) + " points.");
 					m_Simulation.stopSimulation();
 					m_PrintedStats = true;
 					for (int j = 0; j < m_Tanks.length; ++j) {
 						m_Logger.log(m_Tanks[j].getName() + ": " + m_Tanks[j].getPoints() 
-								+ ((m_Tanks[j].getPoints() >= kWinningPoints) ? " (winner)." : "."));
+								+ ((m_Tanks[j].getPoints() >= m_Simulation.getWinningScore()) ? " (winner)." : "."));
 					}
 				}
 				return;
@@ -517,7 +516,7 @@ public class TankSoarWorld extends World implements WorldManager {
 				m_Logger.log("Reached maximum updates, stopping.");
 				for (int j = 0; j < m_Tanks.length; ++j) {
 					m_Logger.log(m_Tanks[j].getName() + ": " + m_Tanks[j].getPoints() 
-							+ ((m_Tanks[j].getPoints() >= kWinningPoints) ? " (winner)." : "."));
+							+ ((m_Tanks[j].getPoints() >= m_Simulation.getWinningScore()) ? " (winner)." : "."));
 				}
 			}
 			return;
