@@ -144,7 +144,11 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		
 		// if in quiet mode, run!
 		if (quiet) {
-	    	startSimulation(false);
+			if ((m_World.getTanks() == null) || (m_World.getTanks().length == 0)) {
+				m_Logger.log("Quiet mode started with no tanks!");
+			} else {
+				startSimulation(false);
+			}
 	    	shutdown();
 		}
 	}
