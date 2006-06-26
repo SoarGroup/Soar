@@ -441,13 +441,13 @@ public class Tank  extends WorldEntity {
 			distance = i;
 			if (scanCells(i, location) == true) {
 				// Blocked
-				clearCells(i, location);
 				break;
 			}
 
 			// Update for next distance
 			location.travel(forward());
 		}
+		clearCells(distance, location);
 		return distance;
 	}
 	
