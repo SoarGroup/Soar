@@ -127,7 +127,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		setWorldManager(m_World);
 		resetSimulation(false);
 		
-		if (quiet && (initialNames == null)) {
+		if (quiet && (initialNames == null) && (initialNames.length == 0)) {
 			super.fireErrorMessage("Quiet mode started with no tanks!");
 			shutdown();
 		}
