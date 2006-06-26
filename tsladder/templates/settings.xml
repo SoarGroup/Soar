@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<tanksoar>
+  <simulation debuggers="false" default-map="default.tmap" runs="0" max-updates="2000" winning-score="10"></simulation>
+  <agents>
+    <agent name="**tank1 name**" productions="**tank1 source**" color="red"></agent>
+    <agent name="**tank2 name**" productions="**tank2 source**" color="blue"></agent>
+  </agents>
+</tanksoar>

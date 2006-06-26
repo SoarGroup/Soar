@@ -11,7 +11,7 @@ thisscript = os.environ['SCRIPT_NAME']
 
 def account_links(userconfig):
 	ret = "<p><a href='" + thisscript + "'>Home</a> | <a href='" + thisscript + "?action=managetanks'>Manage Tanks</a> | <a href='" + thisscript + "?login=logout'>Log out</a> | <a href='" + thisscript + "?login=editaccount'>Edit account</a>"
-	if (userconfig != None) & (userconfig['admin'] == "3"):
+	if (userconfig != None) and (userconfig['admin'] == "3"):
         	ret += " | <a href='" + thisscript + "?login=admin'>Admin</a>"
 	ret += "</p>\n"
 	return ret
@@ -34,13 +34,13 @@ def managetanks_page(action, userconfig):
 	page += readfile('templates/footer.html')
 
 	tanktable = "<table border='1'>\n"
-	if (not userconfig.has_key('tanks')) | (len(userconfig['tanks']) == 0):
+	if (not userconfig.has_key('tanks')) or (len(userconfig['tanks']) == 0):
 		tanktable += "<tr><td>No tanks.</td></tr>\n"
 	else:
 		for tank in userconfig['tanks']:
 			tanktable += "<tr><td>"
 			tanktable += tank + " (" + userconfig[tank]['source'] + ")"
-			tanktable += "</td><td><a href='" + thisscript + "?action=viewtank&tank=" + tank + "'>View</a></td><td><a href='" + thisscript + "?action=deletetank&tank=" + tank + "'>Delete</a></td></tr>\n"
+			tanktable += "</td><td><a href='" + thisscript + "?action=mirrormatch&tank=" + tank + "'>MirrorMatch</a></td><td><a href='" + thisscript + "?action=viewtank&tank=" + tank + "'>View</a></td><td><a href='" + thisscript + "?action=deletetank&tank=" + tank + "'>Delete</a></td></tr>\n"
 	tanktable += "\n</table>"
 
 	page = page.replace('**tank table**', tanktable)
@@ -101,8 +101,6 @@ def upload_page(action, userconfig, tankname, tankfilename, tankfile, source):
 			page += "<p>Tank name: " + tankname + "</p>"
 			page += "<p>Tank filename: " + tankfilename + "</p>"
 			
-		page += "<p><a href='" + thisscript + "?action=managetanks'>Manage my tanks</a></p>"
-		
 	page += readfile('templates/footer.html')
 
 	print "Content-type: text/html\n"
@@ -126,7 +124,7 @@ def list_files(tank):
 	for root, dirs, files in os.walk(tank):
 		print "<h3>" + root + "</h3>"
 		for name in files:
-			if name.endswith(".soar") | name.endswith(".txt"):
+			if name.endswith(".soar") or name.endswith(".txt"):
 				print "<a href='" + thisscript + "?action=viewfile&tank=" + tank + "&file=" + os.path.join(root,name) + "'>" + name + "</a><br />"
 			else:
 				print name + "<br />"
@@ -144,3 +142,24 @@ def view_file_page(action, userconfig, tank, file):
 	print readfile("tanks/" + userconfig['username'] + "/" + file)
 	sys.exit()
 
+def mirrormatch_page(action, userconfig, tank):
+	print "Content-type: text/plain\n"
+	
+	settings = readfile("templates/settings.xml")
+	
+	settings = settings.replace('**tank1 name**', tank + "1")
+	settings = settings.replace('**tank2 name**', tank + "2")
+	settings = settings.replace('**tank1 source**', "tanks/" + userconfig['username'] + "/" + tank + "/" + userconfig[tank]['source'])
+	settings = settings.replace('**tank2 source**', "tanks/" + userconfig['username'] + "/" + tank + "/" + userconfig[tank]['source'])
+
+	settingsfile = open("JavaTankSoar/tanksoar-default-settings.xml", 'w')
+	settingsfile.write(settings)
+	settingsfile.close()
+	
+	cwd = os.getcwd()
+	os.chdir('JavaTankSoar')
+	os.system('./fight.sh')
+	os.chdir(cwd)
+	
+	print readfile('JavaTankSoar/TankSoarLog.txt')
+	sys.exit()

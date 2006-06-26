@@ -45,3 +45,7 @@ if action == "viewfile":
 	tank = theform['tank'].value
 	file = theform['file'].value
 	view_file_page(action, userconfig, tank, file)
+
+if action == "mirrormatch":
+	tank = theform['tank'].value
+	mirrormatch_page(action, userconfig, tank)
