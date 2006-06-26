@@ -83,6 +83,7 @@ public class InputLinkManager {
 	private StringElement m_IncomingLeftWME;
 	private StringElement m_IncomingRightWME;
 	private IntElement m_MissilesWME;
+	private StringElement m_MyColorWME;
 	private StringElement m_RadarStatusWME;
 	private IntElement m_RadarDistanceWME;
 	private IntElement m_RadarSettingWME;
@@ -176,6 +177,7 @@ public class InputLinkManager {
 		DestroyWME(m_HealthRechargerWME);
 		DestroyWME(m_IncomingWME);
 		DestroyWME(m_MissilesWME);
+		DestroyWME(m_MyColorWME);
 		DestroyWME(m_RadarStatusWME);
 		DestroyWME(m_RadarDistanceWME);
 		DestroyWME(m_RadarSettingWME);
@@ -388,7 +390,7 @@ public class InputLinkManager {
 		
 		// Color
 		if (m_Reset) {
-			CreateStringWME(m_InputLink, kMyColorID, m_Tank.getColor());
+			m_MyColorWME = CreateStringWME(m_InputLink, kMyColorID, m_Tank.getColor());
 		}
 		
 		int worldCount = m_World.getWorldCount();
