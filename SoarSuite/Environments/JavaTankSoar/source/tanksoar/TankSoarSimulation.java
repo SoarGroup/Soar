@@ -127,6 +127,11 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		setWorldManager(m_World);
 		resetSimulation(false);
 		
+		if (quiet && (initialNames == null)) {
+			super.fireErrorMessage("Quiet mode started with no tanks!");
+			shutdown();
+		}
+		
 		// add initial tanks
 		if (initialNames != null) {
 			for (int i = 0; i < initialNames.length; ++i) {
@@ -144,11 +149,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		
 		// if in quiet mode, run!
 		if (quiet) {
-			if ((m_World.getTanks() == null) || (m_World.getTanks().length == 0)) {
-				m_Logger.log("Quiet mode started with no tanks!");
-			} else {
-				startSimulation(false);
-			}
+			startSimulation(false);
 	    	shutdown();
 		}
 	}
