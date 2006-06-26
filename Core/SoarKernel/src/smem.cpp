@@ -12,17 +12,6 @@
 
 wme *add_input_wme_with_history(agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value){
 	wme* w = add_input_wme(thisAgent, id, attr, value);
-#ifdef SOAR_WMEM_ACTIVATION	
-	decay_update_new_wme(thisAgent, w, 0);
-	if(w->has_decay_element){
-		w->decay_element->boost_history[0] = 2;
-		w->decay_element->boost_history[1] = 10;
-		w->decay_element->history_count = 2;
-	}
-	else{
-		
-	}
-#endif SOAR_WMEM_ACTIVATION
 	return w;
 }
 
@@ -642,6 +631,15 @@ void append_smem_links(agent* thisAgent){
 	wme* retrieve_wme = add_input_wme(thisAgent, smem_id, make_sym_constant(thisAgent, "retrieve"), retrieve_id);		
 	wme* save_wme = add_input_wme(thisAgent, smem_id, make_sym_constant(thisAgent, "save"), save_id);
 	wme* cluster_wme = add_input_wme(thisAgent, smem_id, make_sym_constant(thisAgent, "cluster"), cluster_id);
+
+	// The id's created above are leaked on init-soar.  I think if we do a
+	// symbol_remove_ref() here on each of them, they will no longer leak.  The wme's
+	// themselves get cleaned up when the state is removed.  KJC 06/06
+    symbol_remove_ref(thisAgent, smem_id);
+    symbol_remove_ref(thisAgent, save_id);
+    symbol_remove_ref(thisAgent, retrieve_id);
+    symbol_remove_ref(thisAgent, cluster_id);
+
 
 	vector<wme*> wmes;
 	
