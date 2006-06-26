@@ -375,7 +375,12 @@ public class Tank  extends WorldEntity {
 		
 		// Consume shield energy.
 		if (m_ShieldStatus) {
-			m_Energy -= kSheildEnergyUsage;
+			boolean enoughPowerForShields = m_Energy >= kSheildEnergyUsage;
+			if (enoughPowerForShields) {
+				m_Energy -= kSheildEnergyUsage;
+			} else {
+				m_ShieldStatus = false;
+			}
 		}
 		
 		// Handle radar.
