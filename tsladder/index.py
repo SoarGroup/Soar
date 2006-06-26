@@ -37,3 +37,11 @@ if action == "deletetank":
 	delete_tank(action, userconfig, tank)
 	managetanks_page(action, userconfig)
 	
+if action == "viewtank":
+	tank = theform['tank'].value
+	view_tank_page(action, userconfig, tank)
+
+if action == "viewfile":
+	tank = theform['tank'].value
+	file = theform['file'].value
+	view_file_page(action, userconfig, tank, file)

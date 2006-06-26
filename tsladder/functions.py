@@ -10,20 +10,17 @@ from cgiutils import *
 thisscript = os.environ['SCRIPT_NAME']
 
 def account_links(userconfig):
-	ret = "<p><a href='/tsladder/index.cgi?login=logout'>Log out</a> | <a href='/tsladder/index.cgi?login=editaccount'>Edit account</a>"
+	ret = "<p><a href='" + thisscript + "'>Home</a> | <a href='" + thisscript + "?action=managetanks'>Manage Tanks</a> | <a href='" + thisscript + "?login=logout'>Log out</a> | <a href='" + thisscript + "?login=editaccount'>Edit account</a>"
 	if (userconfig != None) & (userconfig['admin'] == "3"):
-        	ret += " | <a href='/tsladder/index.cgi?login=admin'>Admin</a>"
+        	ret += " | <a href='" + thisscript + "?login=admin'>Admin</a>"
 	ret += "</p>\n"
 	return ret
 	
 def welcome_page(action, userconfig):
     page = readfile('templates/header.html')
     page += account_links(userconfig)
-    page += "<p>Don't touch anything, winter could explode.</p>"
     page += readfile('templates/menu.html')
     page += readfile('templates/footer.html')
-    
-    page = page.replace('**manage tanks link**', thisscript+'?action=managetanks')
     
     print "Content-type: text/html\n"
     print page
@@ -32,7 +29,7 @@ def welcome_page(action, userconfig):
 def managetanks_page(action, userconfig):
 	page = readfile('templates/header.html')
 	page += account_links(userconfig)
-	page += "<p>" + repr(userconfig) + "</p>"
+	#page += "<p>" + repr(userconfig) + "</p>"
 	page += readfile('templates/managetanks.html')
 	page += readfile('templates/footer.html')
 
@@ -43,7 +40,7 @@ def managetanks_page(action, userconfig):
 		for tank in userconfig['tanks']:
 			tanktable += "<tr><td>"
 			tanktable += tank + " (" + userconfig[tank]['source'] + ")"
-			tanktable += "</td><td><a href='" + thisscript + "?action=deletetank&tank=" + tank + "'>Delete</a></td></tr>\n"
+			tanktable += "</td><td><a href='" + thisscript + "?action=viewtank&tank=" + tank + "'>View</a></td><td><a href='" + thisscript + "?action=deletetank&tank=" + tank + "'>Delete</a></td></tr>\n"
 	tanktable += "\n</table>"
 
 	page = page.replace('**tank table**', tanktable)
@@ -110,4 +107,40 @@ def upload_page(action, userconfig, tankname, tankfilename, tankfile, source):
 
 	print "Content-type: text/html\n"
 	print page
-	sys.exit();
+	sys.exit()
+
+def view_tank_page(action, userconfig, tank):
+	print "Content-type: text/html\n"
+	print readfile('templates/header.html')
+	print account_links(userconfig)
+	cwd = os.getcwd()
+	tanksdir = "tanks/" + userconfig['username']
+	os.chdir(tanksdir)
+	list_files(tank)
+	os.chdir(cwd)
+
+	print readfile('templates/footer.html')
+	sys.exit()
+
+def list_files(tank):
+	for root, dirs, files in os.walk(tank):
+		print "<h3>" + root + "</h3>"
+		for name in files:
+			if name.endswith(".soar") | name.endswith(".txt"):
+				print "<a href='" + thisscript + "?action=viewfile&tank=" + tank + "&file=" + os.path.join(root,name) + "'>" + name + "</a><br />"
+			else:
+				print name + "<br />"
+	print
+	return
+
+def view_file_page(action, userconfig, tank, file):
+	print "Content-type: text/plain\n"
+	if file.find("..") != -1:
+		sys.exit()
+	
+	if not file.startswith(tank):
+		sys.exit()
+
+	print readfile("tanks/" + userconfig['username'] + "/" + file)
+	sys.exit()
+
