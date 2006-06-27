@@ -166,6 +166,8 @@ def view_file_page(action, userid, cursor, tankid, file):
 	print readfile("tanks/" + username + "/" + file)
 	sys.exit()
 
+import time
+
 def mirrormatch_page(action, userid, cursor, tankid):
 	print "Content-type: text/plain\n"
 	
@@ -174,10 +176,10 @@ def mirrormatch_page(action, userid, cursor, tankid):
 	
 	settings = readfile("templates/settings.xml")
 	
-	settings = settings.replace('**tank1 name**', tank[2] + "1")
-	settings = settings.replace('**tank2 name**', tank[2] + "2")
-	settings = settings.replace('**tank1 source**', "tanks/" + username + "/" + tank[2] + "/" + tank[7])
-	settings = settings.replace('**tank2 source**', "tanks/" + username + "/" + tank[2] + "/" + tank[7])
+	settings = settings.replace('**red tank name**', tank[2] + "-red")
+	settings = settings.replace('**blue tank name**', tank[2] + "-blue")
+	settings = settings.replace('**red tank source**', "tanks/" + username + "/" + tank[2] + "/" + tank[7])
+	settings = settings.replace('**blue tank source**', "tanks/" + username + "/" + tank[2] + "/" + tank[7])
 
 	settingsfile = open("JavaTankSoar/tanksoar-default-settings.xml", 'w')
 	settingsfile.write(settings)
@@ -185,8 +187,26 @@ def mirrormatch_page(action, userid, cursor, tankid):
 	
 	cwd = os.getcwd()
 	os.chdir('JavaTankSoar')
-	os.system('./fight.sh')
-	os.chdir(cwd)
+	os.unlink("TankSoarLog.txt")
+	#output = os.popen('./fight.sh')
+	os.spawnlp(os.P_NOWAIT, './fight.sh', './fight.sh')
+
+	while not os.path.exists("TankSoarLog.txt"):
+		time.sleep(1)
+		
+	output = open("TankSoarLog.txt")
 	
-	print readfile('JavaTankSoar/TankSoarLog.txt')
+	breakout = False
+	while True:
+		for line in output.readlines():
+			sys.stdout.write(line)
+			if line.startswith("Shutdown called."):
+				breakout = True
+				break
+		if breakout:
+			break;
+		time.sleep(1)
+	
+	output.close()
+	os.chdir(cwd)
 	sys.exit()
