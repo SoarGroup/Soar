@@ -40,6 +40,7 @@ OrtsInterface::OrtsInterface(GameStateModule* _gsm)
   numTanks = 0;
   unitCountsStale = false;
   reachabilityObject = NULL;
+  deadCount = 0;
 }
 
 bool OrtsInterface::handle_event(const Event& e) {
@@ -51,6 +52,25 @@ bool OrtsInterface::handle_event(const Event& e) {
       Sorts::cyclesSoarAhead = 0;
       msg << "ORTS EVENT {\n";
       viewFrame = gsm->get_game().get_view_frame();
+      if (Sorts::catchup) {
+        // we haven't modified catchup yet, 
+        // so this means the last event was skipped
+        // accumulate skipped actions, in that case
+        skippedActions += gsm->get_game().get_skipped_actions();
+      }
+      else {
+        skippedActions = gsm->get_game().get_skipped_actions();
+      }
+#ifdef USE_CANVAS
+      stringstream ss;
+      string status;
+      ss << "ORTS Event " << viewFrame;
+      if (skippedActions) {
+        ss << " SKIPPED ACTIONS: " << skippedActions;
+      }
+      status = ss.str();
+      Sorts::canvas.setStatus(status);
+#endif
       Sorts::SoarIO->updateViewFrame(viewFrame);
       int aFrame = gsm->get_game().get_action_frame();
         
@@ -69,19 +89,11 @@ bool OrtsInterface::handle_event(const Event& e) {
       if ((viewFrame -lastActionFrame) < 10 and Sorts::catchup) {
         msg << "caught up at frame " << viewFrame << endl;
       }
-      if (Sorts::catchup) {
-        // we haven't modified catchup yet, 
-        // so this means the last event was skipped
-        // accumulate skipped actions, in that case
-        skippedActions += gsm->get_game().get_skipped_actions();
-      }
-      else {
-        skippedActions = gsm->get_game().get_skipped_actions();
-      }
       if (skippedActions) {
         cout << "WARNING: skipped actions: " << skippedActions << endl;
       }
-      if ((viewFrame - lastActionFrame) > 10) {
+      // formerly 10
+      if ((viewFrame - lastActionFrame) > 0) {
         Sorts::catchup = true;
         cout << "client is behind, skipping event. v: "
              << viewFrame << " a:" << lastActionFrame << "\n";
@@ -119,6 +131,9 @@ bool OrtsInterface::handle_event(const Event& e) {
       Sorts::SoarIO->startSoar();
     }
     msg << "ORTS EVENT }" << endl;
+#ifdef USE_CANVAS
+    Sorts::canvas.clearStatus();
+#endif
     pthread_mutex_unlock(Sorts::mutex);
     msg << "TIME " << (gettime() - st) / 1000 << endl; 
     return true;
@@ -195,6 +210,7 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
 void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   // make sure the game object exists
   assert(objectMap.find(gameObj) != objectMap.end());
+  deadCount++;
 
   SoarGameObject* sObject = objectMap[gameObj];
   bool friendly = sObject->isFriendly();

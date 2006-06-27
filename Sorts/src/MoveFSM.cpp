@@ -311,14 +311,18 @@ void MoveFSM::init(vector<sint4> p)
       state = ALREADY_THERE; 
     }
     else {
+      coordinate c(l.x,l.y);
       if (not isReachableFromBuilding(l)) { 
         msg << "adding unreachable location.\n";
-        coordinate c(l.x,l.y);
         Sorts::spatialDB->addImaginaryObstacle(c);
         state = UNREACHABLE;
       }
       else {
         msg << "pathfind fails from my point only!\n";
+#ifdef USE_CANVAS
+        Sorts::canvas.makeTempCircle(c.x,c.y,3,10);
+        Sorts::canvas.update();
+#endif
         state = STUCK;
       }
     }

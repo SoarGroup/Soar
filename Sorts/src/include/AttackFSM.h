@@ -25,6 +25,7 @@ public:
   bool isMoving() { return moving; }
   Vec2d getDestination() { return dest; }
   void stopMoving();
+  void setPendingInit(int);
 
   // AttackManager is about to be deallocated, 
   void disown(int lastStatus);
@@ -45,6 +46,7 @@ public:
 private:
   SoarGameObject* sgob;
   AttackManager* manager;
+  int pendingNewManager;
   ScriptObj* weapon;
   MoveFSM* moveFSM;
   Vec2d dest;

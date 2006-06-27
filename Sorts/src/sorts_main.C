@@ -42,6 +42,12 @@ void printOutput
   const char*     pMessage)
 {
   std::cout << "SOARINT: " << pMessage << std::endl;
+#ifdef USE_CANVAS
+  pthread_mutex_lock(Sorts::mutex);
+  string s(pMessage);
+  Sorts::canvas.setSoarStatus(s);
+  pthread_mutex_unlock(Sorts::mutex);
+#endif
 }
 
 /* We have two different threads giving us events, Soar and ORTS.

@@ -133,6 +133,12 @@ void SoarGameObject::removeBehavior(ObjectActionType name)
 void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
 {
   msg << "command issued: " << (int)cmd << endl;
+
+  if (assignedBehavior != NULL && 
+      assignedBehavior->getName() == OA_ATTACK &&
+      cmd == OA_ATTACK) {
+    ((AttackFSM*)assignedBehavior)->setPendingInit(prms[0]);
+  }
   if (assignedBehavior != NULL) {
     assignedBehavior->stop();
   }
@@ -147,6 +153,9 @@ void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
     assignedBehavior = i->second;
   }
 
+  if (cmd == OA_ATTACK) {
+    ((AttackFSM*)assignedBehavior)->setPendingInit(-1);
+  }
   motionlessFrames = 0;
   update();
 }

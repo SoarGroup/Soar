@@ -56,6 +56,7 @@ public:
   int getCurrentMinerals() { return gold; }
 
   GameObj* getReachabilityObject() { return reachabilityObject; }
+  int getDeadCount() { return deadCount; }
 private:
   GameStateModule* gsm;
 
@@ -108,6 +109,7 @@ private:
   list <const GameObj*> friendlyBuildings;
   
   GameObj* reachabilityObject;
+  int deadCount;
 };
 
 #endif

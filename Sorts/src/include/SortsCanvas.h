@@ -50,9 +50,15 @@ public:
   }
 
   void drawLine(double x1, double y1, double x2, double y2);
+  void setStatus(string);
+  void clearStatus();
+  
+  void setSoarStatus(string);
 
 private:
   SDLCanvas canvas;
+  CanvasObjInfo statusObj;
+  CanvasObjInfo soarStatObj;
 public:
   map<GameObj*, CanvasObjInfo> canvasObjs;
   int updateCounter;

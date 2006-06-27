@@ -9,6 +9,18 @@ SortsCanvas::SortsCanvas() {
 void SortsCanvas::init(double ww, double wh, double scale) {
   int status = canvas.init(ww, wh, scale);
   assert(status == 0);
+  statusObj.compound = canvas.makeCompound(10,10);
+  statusObj.mainCircle = canvas.makeCircle(10,5,1);
+  statusObj.mainCircle->setLabel("initted");
+  statusObj.mainCircle->setCircleColor(198,226,255);
+  statusObj.origColor = statusObj.mainCircle->getCircleColor();
+  statusObj.compound->addShape(statusObj.mainCircle);
+  soarStatObj.compound = canvas.makeCompound(10,10);
+  soarStatObj.mainCircle = canvas.makeCircle(10,25,1);
+  soarStatObj.mainCircle->setLabel("");
+  soarStatObj.mainCircle->setCircleColor(198,226,255);
+  soarStatObj.origColor = soarStatObj.mainCircle->getCircleColor();
+  soarStatObj.compound->addShape(soarStatObj.mainCircle);
 }
 
 bool SortsCanvas::initted() {
@@ -96,6 +108,12 @@ void SortsCanvas::trackDestination(GameObj* gob,double destx,double desty) {
   stopTracking(gob);
 
   CanvasObjInfo& obj = canvasObjs[gob];
+  if (*gob->sod.x < 0 || *gob->sod.y < 0) {
+    cout << "ERROR: gob out of canvas!\n";
+  }
+  if (destx < 0 || desty < 0) {
+    cout << "ERROR: dest out of canvas!\n";
+  }
   SDLCanvasTrackedShape* t = canvas.makeTracker(*gob->sod.x, *gob->sod.y, destx, desty, true);
   obj.compound->addShape(t);
   obj.tracker = t;
@@ -122,3 +140,15 @@ void SortsCanvas::drawLine(double x1, double y1, double x2, double y2) {
   canvas.makeLine(x1, y1, x2, y2);
 }
 
+void SortsCanvas::setStatus(string status) {
+  statusObj.mainCircle->setLabel(status);
+  canvas.redraw();
+}
+void SortsCanvas::clearStatus() {
+  statusObj.mainCircle->setLabel("");
+  canvas.redraw();
+}
+void SortsCanvas::setSoarStatus(string status) {
+  soarStatObj.mainCircle->setLabel(status);
+  canvas.redraw();
+}

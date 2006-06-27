@@ -17,6 +17,7 @@ AttackFSM::AttackFSM(SoarGameObject* _sgob)
   moveFSM = NULL;
   manager = NULL;
   waitingForCatchup = false;
+  pendingNewManager = -1;
 }
 
 AttackFSM::~AttackFSM() {
@@ -34,6 +35,10 @@ void AttackFSM::init(vector<sint4> params) {
   panic = false;
   // get the attack manager from the registry
   AttackManager* newManager = Sorts::amr->getManager(params[0]);
+
+  // FIXME: there is a problem here, if a single object gets re-assigned to
+  // the same targets..
+  // no new attackManager is created 
   assert(newManager != NULL);
   if (manager != NULL && newManager != manager) {
     msg << "HIJACKED!" << endl;
@@ -152,6 +157,7 @@ int AttackFSM::update() {
 void AttackFSM::attack(SoarGameObject* t) {
   if (t != NULL) {
     attackParams[0] = target->getID();
+    assert (Sorts::OrtsIO->isAlive(attackParams[0]));
     weapon->set_action("attack", attackParams);
     sgob->setLastAttacked(attackParams[0]);
   }
@@ -201,10 +207,19 @@ void AttackFSM::disown(int lastStatus) {
   manager = NULL;
 }
 
+void AttackFSM::setPendingInit(int manID) {
+  // workaround, so we don't remove ourselves from the manager we are initting
+  // to during stop()
+  pendingNewManager = manID;
+}
+
 void AttackFSM::stop() {
   if (manager != NULL) {
-    manager->unregisterFSM(this);
-    manager = NULL;
+    if (pendingNewManager != -1 &&
+        manager != Sorts::amr->getManager(pendingNewManager)) {
+      manager->unregisterFSM(this);
+      manager = NULL;
+    }
     disownedStatus = 0;
   }
   if (moving) {

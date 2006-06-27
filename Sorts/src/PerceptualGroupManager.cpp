@@ -23,7 +23,7 @@ PerceptualGroupManager::PerceptualGroupManager() {
     
   // this default should be reflected in the agent's assumptions
   // (1024 = 32^2)
-  visionParams.groupingRadius = 0;
+  visionParams.groupingRadius = 4096;
   
   // the number of objects near the focus point to add
   // agent can change this, if it wishes to cheat
@@ -376,7 +376,7 @@ void PerceptualGroupManager::reGroup() {
   int size;
 
   while (catIter != staleGroupCategories.end()) {
-    //msg << "doing type " << catIter->first << endl;
+//    msg << "doing type " << catIter->first << endl;
     groupingList.clear();
     centerGroupingList.clear();
     
@@ -385,7 +385,7 @@ void PerceptualGroupManager::reGroup() {
          groupIter++) {
       if (not (*groupIter)->getSticky() and
          ((*groupIter)->getCategory(visionParams.ownerGrouping) == *catIter)) {
-        //msg << "group " << (int) (*groupIter) << endl;
+  //      msg << "group " << (int) (*groupIter) << endl;
         // group is of the type we are re-grouping
        
         if ((*groupIter)->isOld()) {
@@ -405,7 +405,7 @@ void PerceptualGroupManager::reGroup() {
           centerGroupingList.push_back(objectData);
           objectData.oldGroup = false;
           (*groupIter)->getMembers(groupMembers);
-          //msg << "group has " << groupMembers.size() << " members.\n";
+    //      msg << "group has " << groupMembers.size() << " members.\n";
           objectIter = groupMembers.begin();
           while (objectIter != groupMembers.end()) {
             if ((*objectIter) != centerObject){
@@ -469,7 +469,7 @@ void PerceptualGroupManager::reGroup() {
         }
         obj1Struct.group = newGroup;
         obj1Struct.assigned = true;
-        //msg << "XXX making new group " << (int) obj1Struct.group << endl; 
+   //     msg << "XXX making new group " << (int) obj1Struct.group << endl; 
       }
      
       // iterate through all lower objects to see if they should join the group
@@ -514,12 +514,12 @@ void PerceptualGroupManager::reGroup() {
               }
             }
             toMergeList.push_back(groups);
-            //msg << "XXX will merge " << (int) groups.first << " -> " << (int) groups.second << endl;
+    //        msg << "XXX will merge " << (int) groups.first << " -> " << (int) groups.second << endl;
           }
           else {
             // obj2 has not been assigned. Assign it to obj1's group.
-            //msg << "XXX obj from group " << (int) (*obj2StructIter).group <<
-             //       " joining " << (int) obj1Struct.group << endl;
+      //      msg << "XXX obj from group " << (int) (*obj2StructIter).group <<
+      //              " joining " << (int) obj1Struct.group << endl;
             (*obj2StructIter).assigned = true;
             (*obj2StructIter).group->removeUnit((*obj2StructIter).object);
             (*obj2StructIter).group = obj1Struct.group;
@@ -527,10 +527,10 @@ void PerceptualGroupManager::reGroup() {
             (*obj2StructIter).oldGroup = obj1Struct.oldGroup;
             
           }
-          //msg << "grouped!" << endl;
+     //     msg << "grouped!" << endl;
         }
         else {
-          //msg << "not grouped!" << endl;
+     //     msg << "not grouped!" << endl;
         }
         obj2StructIter++; 
         if (obj2StructIter == centerGroupingList.end()) {
@@ -584,7 +584,7 @@ void PerceptualGroupManager::reGroup() {
   }
  
   staleGroupCategories.clear();
-  //msg << "XXX regroup done" << endl;
+//  msg << "XXX regroup done" << endl;
   return;
 }
 
@@ -635,7 +635,13 @@ void PerceptualGroupManager::generateGroupData() {
       it++) {
     grp = **it;
     perceptualGroups.erase(*it);
+    int size = perceptualGroups.size();
     perceptualGroups.insert(grp);
+    assert(perceptualGroups.size() == size+1);
+    if (perceptualGroups.size() != size + 1) {
+      // if dbg is off
+      msg << "ERROR: bad insertion!\n";
+    }
   }
 
   return;
@@ -663,9 +669,11 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
   
   set<PerceptualGroup*>::iterator groupIter;
   int i=0;
+  int totalObjs = 0;
   for (groupIter = perceptualGroups.begin(); 
        groupIter != perceptualGroups.end(); 
        groupIter++) {
+    totalObjs += (*groupIter)->getSize();
     if (i < visionParams.numObjects) {
       if (not (*groupIter)->getInSoar()) {
         Sorts::SoarIO->addGroup(*groupIter);
@@ -683,6 +691,10 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
       else {
         msg << "XXX group " << (int)(*groupIter) 
             << " hasn't changed, but present\n";
+        pair<string,int> cat = (*groupIter)->getCategory(false);
+        msg << "XXX type: " << cat.first << "\n";
+        msg << "XXX owner: " << cat.second << "\n";
+        msg << "XXX members: " << (*groupIter)->getSize() << "\n";
       }
     }
     else { 
@@ -705,6 +717,11 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
       }
     }
     i++;
+  }
+  msg << "TOTALO: " << totalObjs << "\n";;
+  //assert(totalObjs == (115 - Sorts::OrtsIO->getDeadCount()));
+  if (totalObjs != (115- Sorts::OrtsIO->getDeadCount())) {
+    msg << "ERROR: if this is game 2, we expect " << 115- Sorts::OrtsIO->getDeadCount() << " objects.\n";
   }
   if (rebuildFeatureMaps) {
     // do this after view window changes-

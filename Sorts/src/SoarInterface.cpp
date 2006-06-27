@@ -313,12 +313,14 @@ void SoarInterface::getNewSoarOutput() {
   lockSoarMutex();
   
   int numberCommands = agent->GetNumberCommands();
+  int oldCommandCount = 0;
   
   for (int i = 0 ; i < numberCommands ; i++) {
     sml::Identifier* cmdPtr = agent->GetCommand(i);
 
     // check if this command has already been encountered
     if (cmdPtr->GetParameterValue("added-to-queue") != NULL) {
+      oldCommandCount++;
       continue;
     }
     
@@ -352,6 +354,8 @@ void SoarInterface::getNewSoarOutput() {
     }
     agent->CreateIntWME(cmdPtr, "added-to-queue", 1);
   }
+
+  msg << "old command count: " << oldCommandCount << endl;
 
   unlockSoarMutex();
 }
