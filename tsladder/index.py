@@ -19,33 +19,54 @@ action, userconfig = login(theform, userdir)
 
 from functions import *
 
+import MySQLdb
+
+def get_userid(cursor, screwed=False):
+	cursor.execute("SELECT * FROM users WHERE username=%s", (userconfig['username'],))
+	if int(cursor.rowcount) < 1:
+		if screwed:
+			raise RuntimeError("Username addition silently failed, preventing recursion.")
+		cursor.execute("INSERT INTO users (username) VALUES(%s)", (userconfig['username'],))
+		userid = get_userid(cursor, True)
+	result = cursor.fetchone()
+	return int(result[0])
+
+db = MySQLdb.connect(host="localhost", user="tsladder", passwd="75EbRL", db="tsladder")
+cursor = db.cursor()
+userid = get_userid(cursor)
+if userid == 0:
+	cursor.execute("INSERT INTO users (username) VALUES(%s)", (userconfig['username'],))
+	userid = get_userid(cursor)
+
 if action == None:
-	welcome_page(action, userconfig)
+	welcome_page(action, userid, cursor)
 
 if action == "managetanks":
-	managetanks_page(action, userconfig)
+	managetanks_page(action, userid, cursor)
 
 if action == "upload":
 	tankname = theform['tankname'].value
 	tankfile = theform['tankfile'].value
 	tankfilename = theform['tankfile'].filename
 	source = theform['source'].value
-	upload_page(action, userconfig, tankname, tankfilename, tankfile, source)
+	upload_page(action, userid, cursor, tankname, tankfilename, tankfile, source)
 
 if action == "deletetank":
-	tank = theform['tank'].value
-	delete_tank(action, userconfig, tank)
-	managetanks_page(action, userconfig)
+	tankid = int(theform['tankid'].value)
+	delete_tank(action, userid, cursor, tankid)
+	managetanks_page(action, userid, cursor)
 	
 if action == "viewtank":
-	tank = theform['tank'].value
-	view_tank_page(action, userconfig, tank)
+	tankid = int(theform['tankid'].value)
+	view_tank_page(action, userid, cursor, tankid)
 
 if action == "viewfile":
-	tank = theform['tank'].value
+	tankid = int(theform['tankid'].value)
 	file = theform['file'].value
-	view_file_page(action, userconfig, tank, file)
+	view_file_page(action, userid, cursor, tankid, file)
 
 if action == "mirrormatch":
-	tank = theform['tank'].value
-	mirrormatch_page(action, userconfig, tank)
+	tankid = int(theform['tankid'].value)
+	mirrormatch_page(action, userid, cursor, tankid)
+
+
