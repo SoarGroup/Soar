@@ -8,6 +8,7 @@ import time
 import MySQLdb
 import logging
 from pathutils import *
+import re
 
 pid = os.fork()
 if pid != 0:
@@ -27,14 +28,16 @@ db = MySQLdb.connect(host="localhost", user="tsladder", passwd="75EbRL", db="tsl
 cursor = db.cursor()
 logging.info('Connected to database.')
 
+sleepytime = 5
+
 while True:
 	cursor.execute("SELECT * FROM tanks ORDER BY RAND(NOW()) LIMIT 2")
 	if int(cursor.rowcount) < 2:
 		logging.warning('There is only one tank in the database.')
 		logging.info("Sleeping for a bit.")
-		time.sleep(10)
+		time.sleep(sleepytime)
 		continue
-	
+
 	redtank = None
 	reduser = None
 	bluetank = None
@@ -63,8 +66,8 @@ while True:
 
 	settings = readfile("templates/settings.xml")
 
-	settings = settings.replace('**red tank name**', redtank[2])
-	settings = settings.replace('**blue tank name**', bluetank[2])
+	settings = settings.replace('**red tank name**', reduser + "." + redtank[2])
+	settings = settings.replace('**blue tank name**', blueuser + "." + bluetank[2])
 	settings = settings.replace('**red tank source**', "tanks/" + reduser + "/" + redtank[2] + "/" + redtank[7])
 	settings = settings.replace('**blue tank source**', "tanks/" + blueuser + "/" + bluetank[2] + "/" + bluetank[7])
 
@@ -81,10 +84,51 @@ while True:
 	os.system('java -jar JavaTankSoar.jar -quiet')
 
 	logging.info("Match finished.")
+
+	output = file("TankSoarLog.txt");
+	matched_something = False
+	for line in output.readlines():
+		match = re.match(r"(.+): (-?\d+) \((\w+)\)", line)
+		if match == None:
+			continue
+		matched_something = True
+		#logging.debug("Matched this line: %s", line)
+		tankname, score, status = match.groups()
+		score = int(score)
+		if status == "winner":
+			sql = "UPDATE tanks SET wins=wins+1 WHERE tankid=%s";
+		elif status == "loser":
+			sql = "UPDATE tanks SET losses=losses+1 WHERE tankid=%s";
+		elif status == "draw":
+			sql = "UPDATE tanks SET draws=draws+1 WHERE tankid=%s";
+		else:
+			logging.warning("Unknown status %s for %s!", status, tankname)
+			continue
+
+		tankid = None
+		if tankname == reduser + "." + redtank[2]:
+			tankid = redtank[0]
+		else:
+			tankid = bluetank[0]
+		cursor.execute(sql, (tankid,))
+		cursor.execute("SELECT pointspermatch, wins, losses, draws FROM tanks WHERE tankid=%s", (tankid,))
+		pointspermatch, wins, losses, draws = cursor.fetchone()
+		matches = int(wins) + int(losses) + int(draws)
+		pointspermatch = ((pointspermatch*(matches-1)) + score) / matches
+		cursor.execute("UPDATE tanks SET pointspermatch=%s WHERE tankid=%s", (pointspermatch, tankid))
+		logging.info("%s (%s) scored %d points (%s), %f pointspermatch in %d matches.", tankname, tankid, score, status, pointspermatch, matches)
+		
+		
+	output.close()
 	os.chdir(cwd)
 
+	if not matched_something:
+		logging.warning("Failed to match status lines! Ignoring match!")
+
+	
+	
 	logging.info("Sleeping for a bit.")
-	time.sleep(10)
+	time.sleep(sleepytime)
 
 logging.info('Shutting down.')
 logging.shutdown()
