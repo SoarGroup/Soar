@@ -44,6 +44,7 @@ while True:
 	blueuser = None
 
 	for tank in cursor.fetchall():
+		cursor.execute("UPDATE tanks SET fighting=1 WHERE tankid=%s", (tank[0],))
 		cursor.execute("SELECT username FROM users WHERE userid=%s", (tank[1],))
 		username = cursor.fetchone()[0]
 		status = "active"
@@ -84,7 +85,10 @@ while True:
 	os.system('java -jar JavaTankSoar.jar -quiet')
 
 	logging.info("Match finished.")
-
+	
+	cursor.execute("UPDATE tanks SET fighting=0 WHERE tankid=%s", (redtank[0],))
+	cursor.execute("UPDATE tanks SET fighting=0 WHERE tankid=%s", (bluetank[0],))
+	
 	output = file("TankSoarLog.txt");
 	matched_something = False
 	for line in output.readlines():
