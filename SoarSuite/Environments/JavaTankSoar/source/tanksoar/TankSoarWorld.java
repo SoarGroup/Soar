@@ -492,31 +492,57 @@ public class TankSoarWorld extends World implements WorldManager {
 		}			
 		
 		// Check for goal state
-		for (int i = 0; i < m_Tanks.length; ++i) {
-			if (m_Tanks[i].getPoints() >= m_Simulation.getWinningScore()) {
-				// Goal acheived
+		int[] scores = null;
+		boolean draw = false;
+		int highScore = (m_Tanks.length > 0) ? m_Tanks[0].getPoints() : 0;
+		
+		if (m_Tanks.length > 1) {
+			scores = new int[m_Tanks.length];
+			
+			for (int i = 0; i < m_Tanks.length; ++i) {
+				scores[i] = m_Tanks[i].getPoints();
+			}
+			Arrays.sort(scores);
+			highScore = scores[scores.length - 1];
+			if (scores[scores.length - 1] ==  scores[scores.length - 2]) {
+				draw = true;
+			}
+			
+			if (scores[scores.length - 1] >= m_Simulation.getWinningScore()) {
+				// We have a winner (or a draw)
+				
 				if (!m_PrintedStats) {
 					m_Simulation.notificationMessage("At least one tank has achieved at least " + Integer.toString(m_Simulation.getWinningScore()) + " points.");
 					m_Simulation.stopSimulation();
 					m_PrintedStats = true;
 					for (int j = 0; j < m_Tanks.length; ++j) {
-						m_Logger.log(m_Tanks[j].getName() + ": " + m_Tanks[j].getPoints() 
-								+ ((m_Tanks[j].getPoints() >= m_Simulation.getWinningScore()) ? " (winner)." : "."));
+						String status = null;
+						if (m_Tanks[j].getPoints() == highScore) {
+							status = draw ? "draw" : "winner";
+						} else {
+							status = "loser";
+						}
+						m_Logger.log(m_Tanks[j].getName() + ": " + m_Tanks[j].getPoints() + " (" + status + ").");
 					}
 				}
 				return;
 			}
 		}
-
+		
 		// Check for max updates
 		if (m_Simulation.reachedMaxUpdates()) {
 			if (!m_PrintedStats) {
+				m_Simulation.notificationMessage("Reached maximum updates, stopping.");
 				m_Simulation.stopSimulation();
 				m_PrintedStats = true;
-				m_Logger.log("Reached maximum updates, stopping.");
 				for (int j = 0; j < m_Tanks.length; ++j) {
-					m_Logger.log(m_Tanks[j].getName() + ": " + m_Tanks[j].getPoints() 
-							+ ((m_Tanks[j].getPoints() >= m_Simulation.getWinningScore()) ? " (winner)." : "."));
+					String status = null;
+					if (m_Tanks[j].getPoints() == highScore) {
+						status = draw ? "draw" : "winner";
+					} else {
+						status = "loser";
+					}
+					m_Logger.log(m_Tanks[j].getName() + ": " + m_Tanks[j].getPoints() + " (" + status + ").");
 				}
 			}
 			return;
