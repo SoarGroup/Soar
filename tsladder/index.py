@@ -22,14 +22,14 @@ from functions import *
 import MySQLdb
 
 def get_userid(cursor, screwed=False):
-	cursor.execute("SELECT * FROM users WHERE username=%s", (userconfig['username'],))
+	cursor.execute("SELECT userid FROM users WHERE username=%s", (userconfig['username'],))
 	if int(cursor.rowcount) < 1:
 		if screwed:
 			raise RuntimeError("Username addition silently failed, preventing recursion.")
 		cursor.execute("INSERT INTO users (username) VALUES(%s)", (userconfig['username'],))
 		userid = get_userid(cursor, True)
-	result = cursor.fetchone()
-	return int(result[0])
+	result, = cursor.fetchone()
+	return int(result)
 
 db = MySQLdb.connect(host="localhost", user="tsladder", passwd="75EbRL", db="tsladder")
 cursor = db.cursor()

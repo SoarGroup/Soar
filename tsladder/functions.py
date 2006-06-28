@@ -34,6 +34,25 @@ def welcome_page(action, userid, cursor):
 	page += readfile('templates/menu.html')
 	page += readfile('templates/footer.html')
 
+	stats = "<table border='1'>\n"
+	stats += "<tr><td>Tank</td><td>Wins</td><td>Losses</td><td>Draws</td><td>Points per Match</td></tr>\n"
+	cursor.execute("SELECT * FROM tanks")
+	for tank in cursor.fetchall():
+		username = get_username(tank[1], cursor)
+		stats += "<tr><td>"
+		stats += username + "." + tank[2]
+		stats += "</td><td>"
+		stats += str(tank[3])
+		stats += "</td><td>"
+		stats += str(tank[4])
+		stats += "</td><td>"
+		stats += str(tank[5])
+		stats += "</td><td>"
+		stats += str(tank[6])
+		stats += "</td></tr>\n"
+	stats += "</table>"
+	
+	page = page.replace('**stats table**', stats)
 	print "Content-type: text/html\n"
 	print page
 	sys.exit()
