@@ -69,10 +69,19 @@ def managetanks_page(action, userid, cursor):
 	
 def delete_tank(action, userid, cursor, tankid):
 	tankname = get_tank(tankid, cursor)[2]
+	username = get_username(userid, cursor)
+
+	cursor.execute("SELECT fighting FROM tanks WHERE tankid=%s", (tankid,))
+	fighting, = cursor.fetchone()
+	fighting = int(fighting)
+	if fighting:
+		print "Content-type: text/html\n"
+		print readfile('templates/header.html')
+		print account_links(username)
+		print "<font color='red'>" + tankname + " is currently fighting, try again in a little while.</font>"
+		sys.exit()
 
 	cursor.execute("DELETE FROM tanks WHERE tankid=%s", (tankid,))
-	
-	username = get_username(userid, cursor)
 	
 	top = "tanks/" + username + "/" + tankname
 	shutil.rmtree(top)
