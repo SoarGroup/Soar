@@ -2,9 +2,12 @@
 
 import os
 import sys
+sys.path.append(os.path.abspath('modules'))
+
 import time
 import MySQLdb
 import logging
+from pathutils import *
 
 pid = os.fork()
 if pid != 0:
@@ -25,21 +28,63 @@ cursor = db.cursor()
 logging.info('Connected to database.')
 
 while True:
-	cursor.execute("SELECT * FROM tanks")
+	cursor.execute("SELECT * FROM tanks ORDER BY RAND(NOW()) LIMIT 2")
 	if int(cursor.rowcount) < 2:
-		logging.warning('There is only one tank in the database. Sleeping.')
+		logging.warning('There is only one tank in the database.')
+		logging.info("Sleeping for a bit.")
 		time.sleep(10)
-	else:
-		break
+		continue
+	
+	redtank = None
+	reduser = None
+	bluetank = None
+	blueuser = None
 
-for tank in cursor.fetchall():
-	cursor.execute("SELECT username FROM users WHERE userid=%s", (tank[1],))
-	status = "active"
-	if not tank[8]:
-		status = "inactive"
-	logging.info("Tank: %s: %s: (%d-%d-%d) (%s)", 
-		    cursor.fetchone()[0], 
-		    tank[2], tank[3], tank[4], tank[5], status) 
+	for tank in cursor.fetchall():
+		cursor.execute("SELECT username FROM users WHERE userid=%s", (tank[1],))
+		username = cursor.fetchone()[0]
+		status = "active"
+		color = None
+		if not tank[8]:
+			status = "inactive"
+	
+		if redtank == None:
+			color = "Red"
+			redtank = tank
+			reduser = username
+		else:
+			color = "Blue"
+			bluetank = tank
+			blueuser = username
+
+		logging.info("%s: %s.%s: (%d-%d-%d) (%s)", 
+			     color, username,
+			     tank[2], tank[3], tank[4], tank[5], status) 
+
+	settings = readfile("templates/settings.xml")
+
+	settings = settings.replace('**red tank name**', redtank[2])
+	settings = settings.replace('**blue tank name**', bluetank[2])
+	settings = settings.replace('**red tank source**', "tanks/" + reduser + "/" + redtank[2] + "/" + redtank[7])
+	settings = settings.replace('**blue tank source**', "tanks/" + blueuser + "/" + bluetank[2] + "/" + bluetank[7])
+
+	settingsfile = open("JavaTankSoar/tanksoar-default-settings.xml", 'w')
+	settingsfile.write(settings)
+	settingsfile.close()
+
+	logging.info("Starting match.")
+	
+	cwd = os.getcwd()
+	os.chdir('JavaTankSoar')
+	if os.path.exists("TankSoarLog.txt"):
+		os.unlink("TankSoarLog.txt")
+	os.system('java -jar JavaTankSoar.jar -quiet')
+
+	logging.info("Match finished.")
+	os.chdir(cwd)
+
+	logging.info("Sleeping for a bit.")
+	time.sleep(10)
 
 logging.info('Shutting down.')
 logging.shutdown()
