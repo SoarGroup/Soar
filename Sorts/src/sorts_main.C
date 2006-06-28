@@ -23,7 +23,7 @@
 #include "TerrainModule.H"
 #include "Demo_SimpleTerrain.H"
 
-#define msg cout << "sorts_main.C: "
+#define msg cout << "MAIN: "
 
 #define MAX_SOAR_AHEAD_CYCLES 5
 
@@ -105,12 +105,12 @@ void SoarOutputEventHandler
   Sorts::cyclesSoarAhead++;
 
   pthread_mutex_lock(Sorts::mutex);
-  std::cout << "SOAR EVENT {\n";
+  cout << "SOAR EVENT {\n";
   
   if (Sorts::catchup == true) {
-    std::cout << "ignoring Soar event, ORTS is behind.\n";
+    cout << "ignoring Soar event, ORTS is behind.\n";
     pthread_mutex_unlock(Sorts::mutex);
-    msg << "TIME " << (gettime() - st) / 1000 << endl;
+   // msg << "TIME " << (gettime() - st) / 1000 << endl;
     return;
   }
   Sorts::SoarIO->getNewSoarOutput();
@@ -131,7 +131,7 @@ void SoarOutputEventHandler
     Sorts::SoarIO->setStale(false);
   }
   cout << "SOAR EVENT }" << endl;
-  msg << "TIME " << (gettime() - st) / 1000 << endl;
+ // msg << "TIME " << (gettime() - st) / 1000 << endl;
   pthread_mutex_unlock(Sorts::mutex);
 }
 #else
@@ -189,12 +189,10 @@ void* RunSoar(void* ptr) {
 #else
       ((Kernel*) ptr)->RunAllAgentsForever(sml_INTERLEAVE_DECISION);
 #endif
-      msg << "I BROKE OUT" << endl;
       // spin until Soar gets started again
       while (!Sorts::SoarIO->isSoarRunning()) {
         usleep(60000); // assuming 8 fps from server
       }
-      msg << "Going Back Up Again" << endl;
     }
   }
   else {
@@ -248,7 +246,8 @@ int main(int argc, char *argv[]) {
     else if (strcmp(argv[i], "-host") == 0) {
       host = argv[i+1];
     }
-    else if (strcmp(argv[i], "-productions") == 0) {
+    else if ((strcmp(argv[i], "-productions") == 0)
+            || (strcmp(argv[i], "-p") == 0)) {
       productions = argv[i+1];
     }
     else if (strcmp(argv[i], "-soar-port") == 0) {
@@ -310,12 +309,13 @@ int main(int argc, char *argv[]) {
     pAgent->LoadProductions(productions) ;
   }
   else {
-    std::cout << "Specify some productions to load!" << std::endl;
+    cout << "ERROR: No productions specified. Use -p or -productions.\n";
     exit(1);
   }
 
   if (pAgent->HadError()) {
-    std::cout << pAgent->GetLastErrorDescription() << std::endl ;
+    cout << "Soar agent reported an error:\n";
+    cout << pAgent->GetLastErrorDescription() << endl ;
     return 1;
   }
 

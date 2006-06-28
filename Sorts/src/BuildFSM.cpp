@@ -3,7 +3,9 @@
 
 #define MIN_BUILD_UPDATES 10
 
-#define msg cout << Sorts::frame << " BUILDFSM: "
+#define CLASS_TOKEN "BUILDFSM"
+#define DEBUG_OUTPUT false 
+#include "OutputDefinitions.h"
 
 void BuildFSM::setBuildingInfo(BuildingType type, int centerX, int centerY) {
   int width, height;
@@ -108,7 +110,7 @@ int BuildFSM::update() {
         return FSM_FAILURE;
       }
       else {
-        msg << "movefsm running\n";
+        dbg << "movefsm running\n";
       }
       break;
     case START_BUILD: {
@@ -154,7 +156,7 @@ int BuildFSM::update() {
     case BUILDING: {
       buildCycles++;
       if (Sorts::OrtsIO->getActionFrame() - buildFrame < 1) {
-        msg << "behind a bit.\n";
+        dbg << "behind a bit.\n";
         return FSM_RUNNING;
       }
       if (justStarted) {

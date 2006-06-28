@@ -6,7 +6,9 @@
 #include "Sorts.h"
 #include "SoarInterface.h"
 
-#define msg cout << Sorts::frame << " GRPMAN: " 
+#define CLASS_TOKEN "GRPMAN"
+#define DEBUG_OUTPUT true 
+#include "OutputDefinitionsUnique.h"
 
 using namespace std;
 
@@ -23,7 +25,7 @@ PerceptualGroupManager::PerceptualGroupManager() {
     
   // this default should be reflected in the agent's assumptions
   // (1024 = 32^2)
-  visionParams.groupingRadius = 4096;
+  visionParams.groupingRadius = 0;
   
   // the number of objects near the focus point to add
   // agent can change this, if it wishes to cheat
@@ -114,7 +116,7 @@ bool PerceptualGroupManager::assignActions() {
       actionIter++;
     }
   }
-  msg << "done assigning.\n";
+  dbg << "done assigning.\n";
   return success;
 }
 
@@ -469,7 +471,7 @@ void PerceptualGroupManager::reGroup() {
         }
         obj1Struct.group = newGroup;
         obj1Struct.assigned = true;
-   //     msg << "input-link making new group " << (int) obj1Struct.group << endl; 
+   //     msg << "ILNK making new group " << (int) obj1Struct.group << endl; 
       }
      
       // iterate through all lower objects to see if they should join the group
@@ -514,11 +516,11 @@ void PerceptualGroupManager::reGroup() {
               }
             }
             toMergeList.push_back(groups);
-    //        msg << "input-link will merge " << (int) groups.first << " -> " << (int) groups.second << endl;
+    //        msg << "ILNK will merge " << (int) groups.first << " -> " << (int) groups.second << endl;
           }
           else {
             // obj2 has not been assigned. Assign it to obj1's group.
-      //      msg << "input-link obj from group " << (int) (*obj2StructIter).group <<
+      //      msg << "ILNK obj from group " << (int) (*obj2StructIter).group <<
       //              " joining " << (int) obj1Struct.group << endl;
             (*obj2StructIter).assigned = true;
             (*obj2StructIter).group->removeUnit((*obj2StructIter).object);
@@ -584,7 +586,7 @@ void PerceptualGroupManager::reGroup() {
   }
  
   staleGroupCategories.clear();
-//  msg << "input-link regroup done" << endl;
+//  msg << "ILNK regroup done" << endl;
   return;
 }
 
@@ -689,12 +691,12 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
         Sorts::SoarIO->refreshGroup(*groupIter);
       }
       else {
-        msg << "input-link group " << (*groupIter) 
+        dbg << "ILNK group " << (*groupIter) 
             << " hasn't changed, but present\n";
         pair<string,int> cat = (*groupIter)->getCategory(false);
-        msg << "input-link type: " << cat.first << "\n";
-        msg << "input-link owner: " << cat.second << "\n";
-        msg << "input-link members: " << (*groupIter)->getSize() << "\n";
+        dbg << "ILNK type: " << cat.first << "\n";
+        dbg << "ILNK owner: " << cat.second << "\n";
+        dbg << "ILNK members: " << (*groupIter)->getSize() << "\n";
       }
     }
     else { 
@@ -707,21 +709,21 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
           (*groupIter)->setHasStaleProperties(true);
         }
         else if ((*groupIter)->getHasStaleProperties()) {
-          msg << "refresh due to command (out of normal range)\n";
+          dbg << "refresh due to command (out of normal range)\n";
           Sorts::SoarIO->refreshGroup(*groupIter);
         }
       }
       else {
-        msg << "input-link group " << (*groupIter) 
+        dbg << "ILNK group " << (*groupIter) 
             << " is out of attention.\n";
       }
     }
     i++;
   }
-  msg << "TOTALO: " << totalObjs << "\n";;
+  dbg << "TOTALO: " << totalObjs << "\n";;
   //assert(totalObjs == (115 - Sorts::OrtsIO->getDeadCount()));
   if (totalObjs != (115- Sorts::OrtsIO->getDeadCount())) {
-    msg << "ERROR: if this is game 2, we expect " << 115- Sorts::OrtsIO->getDeadCount() << " objects.\n";
+    dbg << "ERROR: if this is game 2, we expect " << 115- Sorts::OrtsIO->getDeadCount() << " objects.\n";
   }
   if (rebuildFeatureMaps) {
     // do this after view window changes-

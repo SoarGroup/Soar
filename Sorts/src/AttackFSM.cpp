@@ -4,7 +4,9 @@
 #include "general.h"
 #include "Sorts.h"
 
-#define msg cout << Sorts::frame << " ATKFSM(" << this << "): "
+#define CLASS_TOKEN "ATKFSM"
+#define DEBUG_OUTPUT false 
+#include "OutputDefinitions.h"
 
 using namespace std;
 
@@ -58,21 +60,21 @@ int AttackFSM::update() {
   vector<sint4> moveParams(2);
   if (manager == NULL) {
     if (disownedStatus == 0) {
-      msg << "TIME " << (gettime() - st) / 1000 << endl;
+      dbg << "TIME " << (gettime() - st) / 1000 << endl;
       return FSM_FAILURE;
     }
     else {
-      msg << "TIME " << (gettime() - st) / 1000 << endl;
+      dbg << "TIME " << (gettime() - st) / 1000 << endl;
       return FSM_SUCCESS;
     }
   }
   int status = manager->direct(this);
   if (status > 0) {
-    msg << "TIME " << (gettime() - st) / 1000 << endl;
+    dbg << "TIME " << (gettime() - st) / 1000 << endl;
     return FSM_SUCCESS;
   }
   if (status < 0) {
-    msg << "TIME " << (gettime() - st) / 1000 << endl;
+    dbg << "TIME " << (gettime() - st) / 1000 << endl;
     return FSM_FAILURE;
   }
 
@@ -134,10 +136,10 @@ int AttackFSM::update() {
     }
   }
   else {
-    msg << "not updating move, moving=" << moving << " waitingForCatchup=" 
+    dbg << "not updating move, moving=" << moving << " waitingForCatchup=" 
         << waitingForCatchup << endl;
   }
-  msg << "TIME " << (gettime() - st) / 1000 << endl;
+  dbg << "TIME " << (gettime() - st) / 1000 << endl;
   return FSM_RUNNING;
 }
 
@@ -171,7 +173,7 @@ int AttackFSM::move(int x, int y) {
   switch (status) {
     case FSM_UNREACHABLE:
     case FSM_STUCK:
-      msg << "(" << x << "," << y << endl;
+      msg << "movefsm is stuck!" << endl;
       return 1;
     default:
       dest.set(0, x);

@@ -11,7 +11,9 @@
 #include "GameObj.H"
 #include "GameStateModule.H"
 
-#define msg cout << Sorts::frame << " ORTSIO: "
+#define CLASS_TOKEN "ORTSIO"
+#define DEBUG_OUTPUT false 
+#include "OutputDefinitionsUnique.h"
 
 #ifdef USE_CANVAS
 #include "SortsCanvas.h"
@@ -53,7 +55,7 @@ bool OrtsInterface::handle_event(const Event& e) {
   pthread_mutex_lock(Sorts::mutex);
   if (e.get_who() == GameStateModule::FROM) {
     if (e.get_what() == GameStateModule::VIEW_MSG) {
-      msg << "SOARCYCLES: " << Sorts::cyclesSoarAhead << endl;
+      dbg << "SOARCYCLES: " << Sorts::cyclesSoarAhead << endl;
       Sorts::cyclesSoarAhead = 0;
       msg << "ORTS EVENT {\n";
       viewFrame = gsm->get_game().get_view_frame();
@@ -90,22 +92,22 @@ bool OrtsInterface::handle_event(const Event& e) {
       if (aFrame != -1) {
         lastActionFrame = aFrame;
       }
-      cout << "event for frame " 
+      msg << "frame beginning " 
            << viewFrame << "/" << lastActionFrame << endl;
       if ((viewFrame -lastActionFrame) < ALLOWED_LAG and Sorts::catchup) {
         msg << "caught up at frame " << viewFrame << endl;
       }
       if (skippedActions) {
-        cout << "WARNING: skipped actions: " << skippedActions << endl;
+        msg << "WARNING: skipped actions: " << skippedActions << endl;
       }
       if ((viewFrame - lastActionFrame) > ALLOWED_LAG) {
         Sorts::catchup = true;
-        cout << "client is behind, skipping event. v: "
+        msg << "client is behind, skipping event. v: "
              << viewFrame << " a:" << lastActionFrame << "\n";
         gsm->send_actions(); // empty, needed by server
         pthread_mutex_unlock(Sorts::mutex);
         Sorts::SoarIO->startSoar();
-        msg << "TIME " << (gettime() - st) / 1000 << endl; 
+        dbg << "TIME " << (gettime() - st) / 1000 << endl; 
         return true;
       }
       
@@ -206,7 +208,7 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   objectMap[gameObj] = newObj;
    
   if (liveIDs.find(id) != liveIDs.end()) {
-    cout << "ERROR: appeared object is there already: " << gameObj << endl;
+    msg << "ERROR: appeared object is there already: " << gameObj << endl;
   }
   assert(liveIDs.find(id) == liveIDs.end());
   liveIDs.insert(id);

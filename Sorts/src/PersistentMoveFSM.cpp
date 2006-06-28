@@ -2,7 +2,9 @@
 #include "PersistentMoveFSM.h"
 #include "general.h"
 
-#define msg cout << "PMFSM(" << (int)this << "): "
+#define CLASS_TOKEN "PMOVEFSM"
+#define DEBUG_OUTPUT false 
+#include "OutputDefinitions.h"
 
 #define MAX_REPATHS 30
 #define MAX_UNREACHABLE 4
@@ -103,7 +105,7 @@ void PersistentMoveFSM::init(vector<sint4> p) {
   else {
     tolerance = 10; // default
   }
-  msg << "initted, tolerance is " << tolerance << endl;
+  dbg << "initted, tolerance is " << tolerance << endl;
   tolerance *= tolerance; // square it
   moveFSM = new MoveFSM(gob);
   state = IDLE;

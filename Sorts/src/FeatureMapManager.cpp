@@ -9,6 +9,10 @@
 
 */
 
+#define CLASS_TOKEN "FMMAN"
+#define DEBUG_OUTPUT false
+#include "OutputDefinitionsUnique.h"
+
 FeatureMapManager::FeatureMapManager() {
 
   string FMName;
@@ -130,14 +134,14 @@ void FeatureMapManager::refreshGroup(PerceptualGroup* group) {
   
   if (oldSectorNumber != -1) {
     oldFeatureMaps = group->getFMaps();
-    //cout << "removing grp " << (int)group << " from " << oldFeatureMaps.size() << " fms\n";
+    //msg << "removing grp " << (int)group << " from " << oldFeatureMaps.size() << " fms\n";
     for (it=oldFeatureMaps.begin(); it != oldFeatureMaps.end(); it++ ) {
       (*it)->removeGroup(group, oldSectorNumber, oldStrength);
     }
   }
 
   if (newSectorNumber != -1) {
-    //cout << "adding grp " << (int)group << " to " << newFeatureMaps.size() << " fms\n";
+    //msg << "adding grp " << (int)group << " to " << newFeatureMaps.size() << " fms\n";
     for (it=newFeatureMaps.begin(); it != newFeatureMaps.end(); it++ ) {
       (*it)->addGroup(group, newSectorNumber, newStrength);
     }
@@ -189,7 +193,7 @@ void FeatureMapManager::removeGroup(PerceptualGroup* group) {
 
 void FeatureMapManager::updateSoar() {
   map<string, FeatureMap*>::iterator it = stringToFeatureMap.begin();
-  cout << "Feature map info:\n";
+  msg << "feature map info:\n";
   while (it != stringToFeatureMap.end()) {
     if (it->second->getIsStale()) {
       it->second->setIsStale(false);
@@ -201,19 +205,19 @@ void FeatureMapManager::updateSoar() {
       Sorts::SoarIO->refreshFeatureMap(it->second, it->first);
       
     ///*
-      cout << "map " << it->first << ":\n";
-      cout << "\t" << it->second->getCount(0);
-      cout << "\t" << it->second->getCount(1);
-      cout << "\t" << it->second->getCount(2);
-      cout << endl;
-      cout << "\t" << it->second->getCount(3);
-      cout << "\t" << it->second->getCount(4);
-      cout << "\t" << it->second->getCount(5);
-      cout << endl;
-      cout << "\t" << it->second->getCount(6);
-      cout << "\t" << it->second->getCount(7);
-      cout << "\t" << it->second->getCount(8);
-      cout << endl;
+      msg << "map " << it->first << ":\n";
+      msg << "\t" << it->second->getCount(0);
+      msg << "\t" << it->second->getCount(1);
+      msg << "\t" << it->second->getCount(2);
+      msg << endl;
+      msg << "\t" << it->second->getCount(3);
+      msg << "\t" << it->second->getCount(4);
+      msg << "\t" << it->second->getCount(5);
+      msg << endl;
+      msg << "\t" << it->second->getCount(6);
+      msg << "\t" << it->second->getCount(7);
+      msg << "\t" << it->second->getCount(8);
+      msg << endl;
     //*/
     }
     it++;

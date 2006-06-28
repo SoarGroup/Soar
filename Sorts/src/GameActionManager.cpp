@@ -3,7 +3,10 @@
 #include "Rectangle.h"
 
 #define MAX_BUILDING_PLACE_TRIES 70
-#define msg cout << "GAM: "
+
+#define CLASS_TOKEN "GAMAN"
+#define DEBUG_OUTPUT false
+#include "OutputDefinitionsUnique.h"
 
 GameActionManager::GameActionManager() 
   : lastResult(0,0) {
@@ -83,7 +86,7 @@ void GameActionManager::findBuildingLoc(BuildingType building, coordinate nearLo
       break;
     }
     else {
-      msg << "bad location: " << newLoc << endl;
+      dbg << "bad location: " << newLoc << endl;
     }
     //found = true; break;
   }

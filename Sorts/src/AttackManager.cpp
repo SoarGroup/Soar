@@ -8,8 +8,10 @@
 
 #include "ScriptObj.H"
 
-#define msg cout << Sorts::frame << " ATKMAN(" << (int)this << "): "
-
+#define CLASS_TOKEN "ATKMAN"
+#define DEBUG_OUTPUT false 
+#include "OutputDefinitions.h"
+  
 #define WAIT_RATIO    0.5
 #define RESUME_RATIO  0.85
 
@@ -250,7 +252,7 @@ void AttackManager::attackArcPos
     int minRadius = min(halfwidth, halfheight);
     int maxRadius = max(halfwidth, halfheight);
 
-    msg << "USING RADIUS " << minRadius << endl;
+    dbg << "USING RADIUS " << minRadius << endl;
 
     if (maxRadius - minRadius < range / 2) {
       // treat this as a circle
@@ -492,7 +494,7 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
             GameObj* gob = (*i)->getGob();
             Sorts::canvas.trackDestination(fsm->getGob(),*gob->sod.x,*gob->sod.y);
 #endif
-            msg << "ARC TARG" << endl;
+            dbg << "ARC TARG" << endl;
             return true;
           }
           else {
@@ -549,7 +551,7 @@ int AttackManager::direct(AttackFSM* fsm) {
         Vec2d retreatVector = getHeadingVector(i).inv();
         Vec2d moveDest = Vec2d(gobX(gob), gobY(gob)) + Vec2d(retreatVector, 10);
         fsm->move((int)moveDest(0), (int)moveDest(1));
-        msg << "RETREATING TO " << moveDest(0) << ", " << moveDest(1) << endl;
+        msg  << "RETREATING TO " << moveDest(0) << ", " << moveDest(1) << endl;
         return 0;
       }
     }
@@ -606,12 +608,12 @@ int AttackManager::direct(AttackFSM* fsm) {
   assert(fsm->getTarget() != NULL);
 
   if (idSet.find(fsm->getTarget()->getID()) == idSet.end()) {
-    msg << "bad target Ptr: " <<(int) fsm->getTarget()->getGob() << " id: " << fsm->getTarget()->getID() << " name: " << fsm->getTarget()->getGob()->bp_name() << endl;
-    msg << "bad target sgo ptr: " << (int)fsm->getTarget() << endl;
+    msg << "bad target Ptr: " << fsm->getTarget()->getGob() << " id: " << fsm->getTarget()->getID() << " name: " << fsm->getTarget()->getGob()->bp_name() << endl;
+    msg << "bad target sgo ptr: " << fsm->getTarget() << endl;
   }
 
   msg << "attacking target: " << fsm->getTarget()->getGob()->bp_name() << " " 
-      << fsm->getTarget()->getGob() << " aka sgo " << (int)fsm->getTarget() << endl;
+      << fsm->getTarget()->getGob() << " aka sgo " << fsm->getTarget() << endl;
 
   fsm->failCount = 0;
 
@@ -634,7 +636,7 @@ int AttackManager::direct(AttackFSM* fsm) {
           }
         }
         // everything's fine, keep going
-        msg << "TIME SPENT: " << (gettime() - st) / 1000 << endl;
+        dbg << "TIME SPENT: " << (gettime() - st) / 1000 << endl;
         return 0;
       }
       else {
@@ -651,7 +653,7 @@ int AttackManager::direct(AttackFSM* fsm) {
         }
         else {
           // keep waiting
-          msg << "TIME SPENT: " << (gettime() - st) / 1000 << endl;
+          dbg << "TIME SPENT: " << (gettime() - st) / 1000 << endl;
           return 0;
         }
       }
@@ -693,7 +695,7 @@ int AttackManager::direct(AttackFSM* fsm) {
     fsm->attack(fsm->getTarget());
   }
 
-  msg << "TIME SPENT: " << (gettime() - st) / 1000 << endl;
+  dbg << "TIME SPENT: " << (gettime() - st) / 1000 << endl;
   return 0;
 }
 

@@ -14,7 +14,10 @@
 #include "SoarGameObject.h"
 #include "PerceptualGroup.h"
 
-#define msg cout << Sorts::frame << " SGO(" << this << "): "
+#define CLASS_TOKEN "SGO"
+#define DEBUG_OUTPUT false
+#include "OutputDefinitions.h"
+
 #define PANIC_FRAMES 30
 
 using namespace std;
@@ -149,7 +152,7 @@ void SoarGameObject::assignAction(ObjectActionType cmd, Vector<sint4> prms)
 
 void SoarGameObject::update()
 {
-  msg << "updating sgo " << this << " in group " << pGroup << endl;
+  msg << "updating sgo, group is " << pGroup << endl;
   if (gob->is_pending_action()) {
     msg << "ignored update, there is a pending action.\n";
     Sorts::OrtsIO->updateNextCycle(this);

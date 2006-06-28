@@ -3,7 +3,9 @@
 #include "general.h"
 #include "MineManager.h"
 
-#define msg cout << "MINEFSM: "
+#define CLASS_TOKEN "MINEFSM"
+#define DEBUG_OUTPUT false 
+#include "OutputDefinitions.h"
 
 #define GIVEUPSPEED .66
 #define RAW_GIVEUP_THRESHOLD 200 
@@ -22,6 +24,7 @@ MineFSM::MineFSM(GameObj* go)
 }
 
 int MineFSM::update() {
+  msg << "updating\n";
   assert (sgo != NULL);
   Vector<sint4> tempVec;
   int moveStatus;
@@ -62,12 +65,12 @@ int MineFSM::update() {
   
   
   if (gob->is_pending_action()) {
-    cout << "MOVEFSM: action has not taken affect!\n";
+    msg << "action has not taken affect!\n";
     return FSM_RUNNING;
   }
   switch (state) {
     case IDLE:
-      cout << "MINEFSM: starting\n";
+      msg << "starting\n";
       timed = false;
       timer = 0;//Sorts::OrtsIO->getViewFrame();
       if (gob->get_int("minerals") > 1) {
@@ -137,7 +140,7 @@ int MineFSM::update() {
         
         tempVec.push_back(temp);
         gob->component("pickaxe")->set_action("mine", tempVec); 
-        cout << "MINEFSM: mining commencing!\n";
+        msg << "mining commencing!\n";
         state = MINING;
         timer = 0;
         /*
@@ -156,7 +159,7 @@ int MineFSM::update() {
           gob->get_int("is_mobile") == 1) {
           // finished mining
         if (gob->get_int("minerals") == 0) {
-          cout << "MINEFSM: Mining failed for some reason! Trying again..\n";
+          msg << "mining failed for some reason! Trying again..\n";
           newRoute = Sorts::mineManager->minerGivesUp(route, this);
           if (newRoute != NULL) {
             route = newRoute;
@@ -324,7 +327,7 @@ void MineFSM::calcDropoffLoc() {
   coordinate ccLoc = route->cCenterInfo->cCenter->getLocation();
   Rectangle r(ccLoc.x, ccLoc.y, ccWidth, ccHeight, true);
   dropoffLoc = r.getClosestEdgePoint(route->miningLoc);
-  msg << "fake DO loc: " << dropoffLoc << endl;
+  dbg << "fake DO loc: " << dropoffLoc << endl;
 #else
   dropoffLoc = route->dropoffLoc;
 #endif

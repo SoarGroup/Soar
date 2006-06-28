@@ -22,7 +22,9 @@
 #define USE_CANVAS_GROUPS
 #endif
 
-#define msg cout << Sorts::frame << " PGROUP: "
+#define CLASS_TOKEN "GROUP"
+#define DEBUG_OUTPUT true 
+#include "OutputDefinitions.h"
 
 PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
   members.insert(unit);
@@ -64,7 +66,7 @@ PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
   lastQueryDist = 0;
 
   distToFocus = 0;
-  ///cout << "XXX created: " << (int) this << endl;
+  dbg << "created" << endl;
 }
 
 PerceptualGroup::~PerceptualGroup() {
@@ -75,7 +77,7 @@ PerceptualGroup::~PerceptualGroup() {
   {
     (*i)->groupExit(this);
   }
-  //cout << "XXX destroyed: " << (int) this << endl;
+  dbg << "destroyed" << endl;
 }
 
 void PerceptualGroup::addUnit(SoarGameObject* unit) {
@@ -413,7 +415,6 @@ void PerceptualGroup::updateRegionsOccupied() {
        i != regionsOccupied.end();
        i++ )
   {
- //   cout << "&&& Group " << (int) this << " has exited from region " << (*i)->getId() << endl;
     (*i)->groupExit(this);
   }
   regionsOccupied.clear();
@@ -438,7 +439,6 @@ void PerceptualGroup::updateRegionsOccupied() {
        i != regionsOccupied.end();
        i++ )
   {
- //   cout << "&&& Group " << (int) this << " has entered region " << (*i)->getId() << endl;
     (*i)->groupEnter(this);
   }
 }
@@ -460,7 +460,7 @@ void PerceptualGroup::mergeTo(PerceptualGroup* target) {
   // the group should be destructed after this is called.
 
   if (target == this) {
-    cout << "WARNING: merge of group to self requested. Ignoring." << endl;
+    msg << "WARNING: merge of group to self requested. Ignoring." << endl;
     return;
   }
   
@@ -540,7 +540,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       break;
     case OA_STICK:
       sticky = true;
-      cout << "STUCK!\n";
+      msg << "STUCK!\n";
       hasStaleMembers = true;
       break;
     case OA_SEVER: {
@@ -674,7 +674,6 @@ bool PerceptualGroup::getHasStaleMembers() {
   return hasStaleMembers;
 }
 void PerceptualGroup::setHasStaleMembers() {
-  //cout << "stale: set so" << endl;
   hasStaleMembers = true;
 }
 

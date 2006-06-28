@@ -1,7 +1,9 @@
 #include "AttackNearFSM.h"
 #include "Sorts.h"
 
-#define msg cout << "AttackNearFSM.cpp: "
+#define CLASS_TOKEN "ATKNEARFSM"
+#define DEBUG_OUTPUT false 
+#include "OutputDefinitions.h"
 
 AttackNearFSM::AttackNearFSM(SoarGameObject* _sgob)
 : FSM(_sgob->getGob()), sgob(_sgob), attackParams(1)
@@ -46,6 +48,7 @@ int AttackNearFSM::update() {
     {
       if (canHit(gob, *i)) {
         attackParams[0] = Sorts::OrtsIO->getGobId(*i);
+        msg << "opportunistic attack!\n";
         weapon->set_action("attack", attackParams);
         sgob->setLastAttacked(attackParams[0]);
         break;

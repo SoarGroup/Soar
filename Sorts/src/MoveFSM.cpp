@@ -5,7 +5,10 @@
 #include "Sorts.h"
 using namespace std;
 
-#define msg cout << Sorts::frame << " MOVEFSM(" << this << "): "
+#define CLASS_TOKEN "MOVEFSM"
+#define DEBUG_OUTPUT false 
+#include "OutputDefinitions.h"
+
 #define TOLERANCE 9 // for waypoints, squared
 #define VEERWIDTH 6  // radius of worker == 3
 // orig: 10
@@ -143,7 +146,7 @@ int MoveFSM::update() {
          or (nextWPIndex == -1 and distToTarget <= precision)) {
         counter = 0;
         counter_max = MIN_COUNTER + (rand()%MAX_COUNTER_DIFF );
-        msg << "using counter of " << counter_max << endl;
+        dbg << "using counter of " << counter_max << endl;
         // If you arrived, then check if 
         // there is another path segment to traverse
         if (nextWPIndex >= 0) {
@@ -164,8 +167,8 @@ int MoveFSM::update() {
         }
         else { 
           // nextWPIndex == -1: we must be there
-          msg << "dist: " << distToTarget << endl;
-          msg << "target: " << target.x << target.y << endl;
+          dbg << "dist: " << distToTarget << endl;
+          dbg << "target: " << target.x << target.y << endl;
           // Otherwise, you are at your goal
           if (usingIWWP and target == imaginaryWorkerWaypoint) {
             Sorts::terrainModule->
@@ -195,7 +198,7 @@ int MoveFSM::update() {
     }
     else if (distToTarget <= TOLERANCE and nextWPIndex >= 0) {
       counter = 0;
-      cout << "MOVEFSM: in-motion dir change\n";
+      dbg << "in-motion dir change\n";
       if (nextWPIndex+1 < path.locs.size() and
           target == path.locs[nextWPIndex+1]) {
         // this means we reached a "real" waypoint (not one set by veering)
@@ -272,7 +275,7 @@ void MoveFSM::init(vector<sint4> p)
     pathLength = path.locs.size();
     
     for (int i=0; i<pathLength; i++) {
-      msg << "loc " << i << " " 
+      dbg << "loc " << i << " " 
           << path.locs[i].x << ", "<< path.locs[i].y << endl;
     }
     
@@ -419,7 +422,7 @@ void MoveFSM::veerRight() {
   int newY = *gob->sod.y + (int)(width*sin(headingAngle));
 
   if (!collision(newX, newY)) {
-    msg << "trying right.\n";
+    dbg << "trying right.\n";
     if ((nextWPIndex+1 < path.locs.size()) and
         target == path.locs[nextWPIndex+1]) {
       nextWPIndex++;
@@ -520,34 +523,14 @@ bool MoveFSM::veerAhead(int distToTargetSq) {
     }
   }
 
-  msg << "clear ahead, no veer\n";
+  dbg << "clear ahead, no veer\n";
   return false;
 }
 
 bool MoveFSM::collision(int x, int y) {
   coordinate c(x,y);
   
-  //Sorts::spatialDB->getObjectCollisions(x, y, 6, NULL, collisions);
   return Sorts::spatialDB->hasObjectCollision(c, *gob->sod.radius, gob);
-  /*
-  msg << x << "," << y << " collides with " << collisions.size() 
-       << " things.\n";
-  
-  for (list<GameObj*>::iterator it = collisions.begin();
-       it != collisions.end();
-       it++) {
-    if ((*it) == gob) {
-      msg << "gob collides w/self, ignoring\n";
-    }
-    else {
-      msg << "collides with " << (*it)->bp_name() << endl;
-      msg << "loc: " << *(*it)->sod.x << "," << *(*it)->sod.y << endl;
-      msg << "radius " << *(*it)->sod.radius << endl; 
-      return true;
-    }
-  }
-
-  return false;*/
 }
 
 bool MoveFSM::dynamicCollision(int x, int y) {
@@ -555,20 +538,20 @@ bool MoveFSM::dynamicCollision(int x, int y) {
   list<GameObj*> collisions;
   
   Sorts::spatialDB->getObjectCollisions(x, y, 6, NULL, collisions);
-  msg << x << "," << y << " collides with " << collisions.size() 
+  dbg << x << "," << y << " collides with " << collisions.size() 
        << " things.\n";
   
   for (list<GameObj*>::iterator it = collisions.begin();
        it != collisions.end();
        it++) {
     if ((*it) == gob) {
-      msg << "gob collides w/self, ignoring\n";
+      dbg << "gob collides w/self, ignoring\n";
     }
     else if ((*it)->bp_name() == "worker" or
              (*it)->bp_name() == "sheep") {
       msg << "collides with " << (*it)->bp_name() << endl;
-      msg << "loc: " << *(*it)->sod.x << "," << *(*it)->sod.y << endl;
-      msg << "radius " << *(*it)->sod.radius << endl; 
+      dbg << "loc: " << *(*it)->sod.x << "," << *(*it)->sod.y << endl;
+      dbg << "radius " << *(*it)->sod.radius << endl; 
       return true;
     }
   }
@@ -702,7 +685,15 @@ TerrainBase::Loc MoveFSM::getHeadingVector(sint4 target_x, sint4 target_y)
 
 bool MoveFSM::isReachableFromBuilding(TerrainBase::Loc l) {
   TerrainBase::Path tempPath;
-  Sorts::terrainModule->findPath(Sorts::OrtsIO->getReachabilityObject(), 
+  GameObj* sourceObj = Sorts::OrtsIO->getReachabilityObject();
+
+  // sourceObj (usually the controlCenter) is always reachable,
+  // but has path length 0 to itself
+  if (gobX(sourceObj) == l.x && gobY(sourceObj) == l.y) {
+    return true;
+  }
+  
+  Sorts::terrainModule->findPath(sourceObj, 
                                  l, tempPath);
   return (tempPath.locs.size() > 0);
 }

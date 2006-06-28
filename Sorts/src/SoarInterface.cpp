@@ -10,7 +10,9 @@
 
 #include "Game.H"
 
-#define msg cout << Sorts::frame << " SOARIO: "
+#define CLASS_TOKEN "SOARIO"
+#define DEBUG_OUTPUT true 
+#include "OutputDefinitionsUnique.h"
 
 using namespace std;
 
@@ -61,7 +63,7 @@ void SoarInterface::removeGroup(PerceptualGroup* group) {
   
   InputLinkGroupRep &g = groupTable[group];
   if (g.groupId >= 0) {
-    msg << "input-link remove id " << g.groupId << " ptr " << group << endl;
+    msg << "ILNK remove id " << g.groupId << " ptr " << group << endl;
     agent->DestroyWME(g.WMEptr);
   }
   groupTable.erase(group);
@@ -91,7 +93,7 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
 
     // label the group with its id
     agent->CreateIntWME(g.WMEptr, "id", g.groupId);
-    msg << "input-link adding id " << g.groupId << " ptr " << (int) group << endl;
+    msg << "ILNK adding id " << g.groupId << " ptr " << (int) group << endl;
 
     // give owner information
     agent->CreateIntWME(g.WMEptr, "owner", group->getOwner());
@@ -131,7 +133,7 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
     }
   }
   else {
-    msg << "input-link updating id " << g.groupId << " ptr " << (int) group << endl;
+    msg << "ILNK updating id " << g.groupId << " ptr " << (int) group << endl;
     // group already added, just update values.
     // Note that I'm assuming no new values are introduced
     for(list<IntAttribType>::iterator 
@@ -355,7 +357,7 @@ void SoarInterface::getNewSoarOutput() {
     agent->CreateIntWME(cmdPtr, "added-to-queue", 1);
   }
 
-  msg << "old command count: " << oldCommandCount << endl;
+  dbg << "old command count: " << oldCommandCount << endl;
 
   unlockSoarMutex();
 }
@@ -765,5 +767,5 @@ void SoarInterface::stopSoar() {
 
 void SoarInterface::startSoar() {
   soarRunning = true;
-  msg << "Soar Started" << endl;
+  dbg << "Soar Started" << endl;
 }
