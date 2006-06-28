@@ -4,7 +4,7 @@
 #include "general.h"
 #include "Sorts.h"
 
-#define msg cout << "ATKFSM(" << this << "): "
+#define msg cout << Sorts::frame << " ATKFSM(" << this << "): "
 
 using namespace std;
 
@@ -17,7 +17,6 @@ AttackFSM::AttackFSM(SoarGameObject* _sgob)
   moveFSM = NULL;
   manager = NULL;
   waitingForCatchup = false;
-  pendingNewManager = -1;
 }
 
 AttackFSM::~AttackFSM() {
@@ -33,24 +32,15 @@ void AttackFSM::init(vector<sint4> params) {
   FSM::init(params);
 
   panic = false;
+
+  assert(manager == NULL);
+  
   // get the attack manager from the registry
   AttackManager* newManager = Sorts::amr->getManager(params[0]);
 
-  // FIXME: there is a problem here, if a single object gets re-assigned to
-  // the same targets..
-  // no new attackManager is created 
   assert(newManager != NULL);
-  if (manager != NULL && newManager != manager) {
-    msg << "HIJACKED!" << endl;
-    manager->unregisterFSM(this);
-  }
-  if (manager == newManager) {
-    msg << "Reassigned to identical attack manager" << endl;
-  }
-  else {
-    manager = newManager;
-    manager->registerFSM(this);
-  }
+  manager = newManager;
+  manager->registerFSM(this);
   dest.set(0, *gob->sod.x);
   dest.set(1, *gob->sod.y);
   moving = false;
@@ -85,9 +75,6 @@ int AttackFSM::update() {
     msg << "TIME " << (gettime() - st) / 1000 << endl;
     return FSM_FAILURE;
   }
-
-  msg << "moving: " << moving << endl;
-  msg << "waiting: " << waitingForCatchup << endl;
 
   if (moving && !waitingForCatchup) {
     if (firstMove) {
@@ -207,19 +194,11 @@ void AttackFSM::disown(int lastStatus) {
   manager = NULL;
 }
 
-void AttackFSM::setPendingInit(int manID) {
-  // workaround, so we don't remove ourselves from the manager we are initting
-  // to during stop()
-  pendingNewManager = manID;
-}
 
 void AttackFSM::stop() {
   if (manager != NULL) {
-    if (pendingNewManager != -1 &&
-        manager != Sorts::amr->getManager(pendingNewManager)) {
-      manager->unregisterFSM(this);
-      manager = NULL;
-    }
+    manager->unregisterFSM(this);
+    manager = NULL;
     disownedStatus = 0;
   }
   if (moving) {
@@ -234,4 +213,9 @@ void AttackFSM::stop() {
     weapon->set_action("stop", stopParams);
     sgob->setLastAttacked(-1);
   }
+}
+
+int AttackFSM::getAvgDamage() {
+  assert(Sorts::OrtsIO->isAlive(sgob->getID()));
+  return (weapon->get_int("min_damage") + weapon->get_int("max_damage")) / 2;
 }

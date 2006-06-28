@@ -13,7 +13,7 @@ class AttackManagerRegistry {
 public:
   AttackManagerRegistry() : uid(0) { }
   
-  int assignManager(const list<PerceptualGroup*>& targets);
+  int assignManager(const list<PerceptualGroup*>& targets, int numNewAttackers);
 
   AttackManager* getManager(int id);
 

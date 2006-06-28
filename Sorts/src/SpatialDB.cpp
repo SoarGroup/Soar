@@ -11,7 +11,7 @@
 #define CROWD_MAX_MINERALS 8
 #define CROWD_MAX_WORKERS 2
 
-#define msg cout << "SDB: "
+#define msg cout << Sorts::frame << " SDB: "
 
 inline int intDivC(int x, int y) {
   return (int) ceilf(((float) x) / y);
@@ -35,7 +35,7 @@ void SpatialDB::init() {
   terrainLineMap.resize(mapsize);
   imaginaryWorkerMap.resize(mapsize);
   imaginaryObstacleMap.resize(mapsize);
-  msg  << "Initializing SpatialDB grid: (" << width<<"," << height
+  msg  << "initializing SpatialDB grid: (" << width<<"," << height
        << "," << (width*height) << ")\n";
 }
 
@@ -58,7 +58,7 @@ sint4 SpatialDB::addObject(GameObj *gob) {
   }
   
   gobMap[cell].insert(gob); 
-  msg<<"Registered new Object: "<<gob->bp_name()<<" gob " << (int)gob << "\n";
+  msg << "registered new object: " << gob->bp_name() << " gob " << gob << "\n";
 
   return cell;
 }
@@ -453,15 +453,15 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
                       and
                       ((*it)->bp_name() != "sheep")
                       ) {
-                    msg << "mining collision with " << (*it)->bp_name() << endl;
-                    msg << "at loc " << obj.x << "," << obj.y << endl;
+                    //msg << "mining collision with " << (*it)->bp_name() << endl;
+                    //msg << "at loc " << obj.x << "," << obj.y << endl;
                     return true;
                   }
                 }
                 else {
                   if ((*it) != ignoreGob) {
-                    msg << "object collision with " << (*it)->bp_name() << endl;
-                    msg << "at loc " << obj.x << "," << obj.y << endl;
+                    //msg << "object collision with " << (*it)->bp_name() << endl;
+                    //msg << "at loc " << obj.x << "," << obj.y << endl;
                     return true;
                   }
                 } 
@@ -486,9 +486,9 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
               }
             }
             else if (r.intersects(circle) and (*it) != ignoreGob) {
-              msg << "object at " << c << " with radius " << radius 
-                  << " has collision with " << (*it)->bp_name() << " at " <<
-                *(*it)->sod.x << "," << *(*it)->sod.y << endl;
+             // msg << "object at " << c << " with radius " << radius 
+             //     << " has collision with " << (*it)->bp_name() << " at " <<
+             //   *(*it)->sod.x << "," << *(*it)->sod.y << endl;
               return true;
             }
            
@@ -530,15 +530,15 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
         if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
         < (r+objr) * (r+objr))  {
           //Inside the circle
-          msg << "object at " << c << " with radius " << radius 
-              << "has imaginary obstacle collision!\n";
+       //   msg << "object at " << c << " with radius " << radius 
+       //       << "has imaginary obstacle collision!\n";
           return true;
         }
       }
     }
   }
-  msg << "object at " << c << " with radius " << radius 
-      << " has no collisions\n"; 
+ // msg << "object at " << c << " with radius " << radius 
+ //     << " has no collisions\n"; 
   return false; // no collisions
 }
 /*

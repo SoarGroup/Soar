@@ -1,6 +1,6 @@
 #include "TrainFSM.h"
 
-#define msg cout << "TRAINFSM: "
+#define msg cout << Sorts::frame << " TRAINFSM: "
 
 #define MAX_WARMUP_TIME 5
 #define MIN_BUILD_TIME 10

@@ -31,11 +31,11 @@ double AttackTargetInfo::avgAttackerDistance() {
       i != attackers.end();
       ++i)
   {
+    assert(Sorts::OrtsIO->isAlive((*i)->getSGO()->getID()));
     GameObj* aGob = (*i)->getGob();
     avgDist += squaredDistance(gobX(aGob), gobY(aGob), gobX(gob), gobY(gob));
   }
   avgDist /= attackers.size();
-  cout << "AVERAGEDIST: " << avgDist << endl;
   return avgDist;
 
 }

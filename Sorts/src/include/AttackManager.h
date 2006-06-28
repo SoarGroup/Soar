@@ -23,6 +23,7 @@ public:
   AttackManager(const set<SoarGameObject*>& _targets);
   ~AttackManager();
 
+  void addNewAttackers(int num);
   void registerFSM(AttackFSM* fsm);
   void unregisterFSM(AttackFSM* fsm);
   int direct(AttackFSM* fsm);
@@ -47,6 +48,8 @@ private: // variables
   vector<SoarGameObject*> sortedTargets;
   
   set<int> idSet;
+
+  int numNewAttackers;
 };
 
 #endif

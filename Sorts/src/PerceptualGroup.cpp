@@ -22,7 +22,7 @@
 #define USE_CANVAS_GROUPS
 #endif
 
-#define msg cout << "PerceptualGroup.cpp: "
+#define msg cout << Sorts::frame << " PGROUP: "
 
 PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
   members.insert(unit);
@@ -506,7 +506,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       for (currentObject = members.begin();
            currentObject != members.end();
            currentObject++) {
-        (*currentObject)->issueCommand(type, tempVec);
+        (*currentObject)->assignAction(type, tempVec);
       } 
       break;
 
@@ -524,7 +524,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       for (currentObject = members.begin();
            currentObject != members.end();
            currentObject++) {
-        (*currentObject)->issueCommand(type, tempVec);
+        (*currentObject)->assignAction(type, tempVec);
       }
       break;
 
@@ -562,7 +562,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       removeUnit(member);
       Sorts::pGroupManager->makeNewGroup(member);
       PerceptualGroup* newGroup = member->getPerceptualGroup();
-      member->issueCommand(OA_IDLE, tempVec);
+      member->assignAction(OA_IDLE, tempVec);
       // make the new group idle
       
       newGroup->setSticky(true);
@@ -571,7 +571,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
         if (member == NULL) return false;
         removeUnit(member);
         newGroup->addUnit(member);
-        member->issueCommand(OA_IDLE, tempVec);
+        member->assignAction(OA_IDLE, tempVec);
       }
       newGroup->setCommandString("severed");
       newGroup->setSticky(true);
@@ -591,7 +591,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
 
     case OA_ATTACK: {
       currentCommand = "attack";
-      int managerId = Sorts::amr->assignManager(targets);
+      int managerId = Sorts::amr->assignManager(targets, members.size());
       tempVec.clear();
       tempVec.push_back(managerId);
 
@@ -602,7 +602,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
           i != members.end();
           i++)
       {
-        (*i)->issueCommand(type, tempVec);
+        (*i)->assignAction(type, tempVec);
       }
       break;
     }
@@ -624,7 +624,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       for (currentObject = members.begin();
            currentObject != members.end();
            currentObject++) {
-        (*currentObject)->issueCommand(type, tempVec);
+        (*currentObject)->assignAction(type, tempVec);
       }
       break;
 
@@ -643,7 +643,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       for (currentObject = members.begin();
            currentObject != members.end();
            currentObject++) {
-        (*currentObject)->issueCommand(type, tempVec);
+        (*currentObject)->assignAction(type, tempVec);
       }
       break;
 
@@ -654,7 +654,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
            currentObject != members.end();
            currentObject++)
       {
-        (*currentObject)->issueCommand(type, tempVec);
+        (*currentObject)->assignAction(type, tempVec);
       }
       hasStaleMembers = true;
       break;

@@ -10,7 +10,7 @@
 
 #include "Game.H"
 
-#define msg cout << "SOARIO "
+#define msg cout << Sorts::frame << " SOARIO: "
 
 using namespace std;
 
@@ -61,7 +61,7 @@ void SoarInterface::removeGroup(PerceptualGroup* group) {
   
   InputLinkGroupRep &g = groupTable[group];
   if (g.groupId >= 0) {
-    cout << "XXX remove id " << g.groupId << " ptr " << (int)group << endl;
+    msg << "input-link remove id " << g.groupId << " ptr " << group << endl;
     agent->DestroyWME(g.WMEptr);
   }
   groupTable.erase(group);
@@ -91,11 +91,11 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
 
     // label the group with its id
     agent->CreateIntWME(g.WMEptr, "id", g.groupId);
-    cout << "XXX adding id " << g.groupId << " ptr " << (int) group << endl;
+    msg << "input-link adding id " << g.groupId << " ptr " << (int) group << endl;
 
     // give owner information
     agent->CreateIntWME(g.WMEptr, "owner", group->getOwner());
-    cout << "\towner: " << group->getOwner() << endl;
+    msg << "\towner: " << group->getOwner() << endl;
     
     // add properties
     for(list<IntAttribType>::iterator 
@@ -106,7 +106,7 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
       // create a new WME object for the property
       g.intProperties[i->first] = 
         agent->CreateIntWME(g.WMEptr, i->first.c_str(), i->second);
-      cout << "\tadd: " << (*i).first << " " << (*i).second << endl;
+      msg << "\tadd: " << (*i).first << " " << (*i).second << endl;
     }
 
     for(list<FloatAttribType>::iterator
@@ -116,7 +116,7 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
     {
       g.floatProperties[i->first] = 
         agent->CreateFloatWME(g.WMEptr, i->first.c_str(), i->second);
-      cout << "\tadd: " << i->first << " " << i->second << endl;
+      msg << "\tadd: " << i->first << " " << i->second << endl;
     }
 
     for(list<StringAttribType>::iterator 
@@ -127,11 +127,11 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
       // create a new WME object for the property
       g.stringProperties[i->first] = 
         agent->CreateStringWME(g.WMEptr,i->first.c_str(),i->second.c_str());
-      cout << "\tadd: " << (*i).first << " " << (*i).second << endl;
+      msg << "\tadd: " << (*i).first << " " << (*i).second << endl;
     }
   }
   else {
-    cout << "XXX updating id " << g.groupId << " ptr " << (int) group << endl;
+    msg << "input-link updating id " << g.groupId << " ptr " << (int) group << endl;
     // group already added, just update values.
     // Note that I'm assuming no new values are introduced
     for(list<IntAttribType>::iterator 
@@ -143,7 +143,7 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
       assert(g.intProperties.find((*i).first) 
              != g.intProperties.end());
       agent->Update(g.intProperties[(*i).first], (*i).second);
-      cout << "\tupd: " << (*i).first << " " << (*i).second << endl;
+      msg << "\tupd: " << (*i).first << " " << (*i).second << endl;
     }
 
     for(list<FloatAttribType>::iterator
@@ -153,7 +153,7 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
     {
       assert(g.floatProperties.find(i->first) != g.floatProperties.end());
       agent->Update(g.floatProperties[i->first], i->second); 
-      cout << "\tupd: " << i->first << " " << i->second << endl;
+      msg << "\tupd: " << i->first << " " << i->second << endl;
     }
 
     for(list<StringAttribType>::iterator 
@@ -163,7 +163,7 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
     {
       assert(g.stringProperties.find(i->first) != g.stringProperties.end());
       agent->Update(g.stringProperties[i->first], i->second.c_str());
-      cout << "\tupd: " << i->first << " " << i->second << endl;
+      msg << "\tupd: " << i->first << " " << i->second << endl;
     }
   }
 
@@ -347,7 +347,7 @@ void SoarInterface::getNewSoarOutput() {
           processGameAction(MType, cmdPtr);
         }
         else {
-          cout << "ERROR: command " << name << " not known." << endl;
+          msg << "ERROR: command " << name << " not known." << endl;
           assert(false);
         }
       }
@@ -378,7 +378,7 @@ void SoarInterface::processObjectAction(ObjectActionType type,
     groupId = atoi(paramValue);
     //assert(groupIdLookup.find(groupId) != groupIdLookup.end());
     if (groupIdLookup.find(groupId) == groupIdLookup.end()) {
-      cout << "ERROR: no group " << groupId << endl;
+      msg << "ERROR: no group " << groupId << endl;
       newAction.type = OA_NO_SUCH_ACTION;
       break;
       //assert(false);
@@ -750,7 +750,7 @@ void SoarInterface::unlockAttentionActionMutex() {
 }
 
 void SoarInterface::improperCommandError() {
-  cout << "ERROR: Improperly formatted command!\n";
+  msg << "ERROR: Improperly formatted command!\n";
 }
 
 void SoarInterface::updateViewFrame(int frame) {

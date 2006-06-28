@@ -11,13 +11,18 @@
 #include "GameObj.H"
 #include "GameStateModule.H"
 
-#define msg cout << "ORTSIO "
+#define msg cout << Sorts::frame << " ORTSIO: "
 
 #ifdef USE_CANVAS
 #include "SortsCanvas.h"
 #endif
 
 #define NO_WORLD_GROUPS
+
+// how many frames behind can we be?
+// 10 used for competition,
+// but what can we really do if we're behind? most actions are set every cycle
+#define ALLOWED_LAG 0
 
 OrtsInterface::OrtsInterface(GameStateModule* _gsm)
 : gsm(_gsm)
@@ -52,6 +57,7 @@ bool OrtsInterface::handle_event(const Event& e) {
       Sorts::cyclesSoarAhead = 0;
       msg << "ORTS EVENT {\n";
       viewFrame = gsm->get_game().get_view_frame();
+      Sorts::frame = viewFrame;
       if (Sorts::catchup) {
         // we haven't modified catchup yet, 
         // so this means the last event was skipped
@@ -86,14 +92,13 @@ bool OrtsInterface::handle_event(const Event& e) {
       }
       cout << "event for frame " 
            << viewFrame << "/" << lastActionFrame << endl;
-      if ((viewFrame -lastActionFrame) < 10 and Sorts::catchup) {
+      if ((viewFrame -lastActionFrame) < ALLOWED_LAG and Sorts::catchup) {
         msg << "caught up at frame " << viewFrame << endl;
       }
       if (skippedActions) {
         cout << "WARNING: skipped actions: " << skippedActions << endl;
       }
-      // formerly 10
-      if ((viewFrame - lastActionFrame) > 0) {
+      if ((viewFrame - lastActionFrame) > ALLOWED_LAG) {
         Sorts::catchup = true;
         cout << "client is behind, skipping event. v: "
              << viewFrame << " a:" << lastActionFrame << "\n";
@@ -197,11 +202,11 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
     }
   }
   
-  msg << (int) gameObj << " added" << endl;
+  msg << gameObj << " added" << endl;
   objectMap[gameObj] = newObj;
    
   if (liveIDs.find(id) != liveIDs.end()) {
-    cout << "ERROR: appeard object is there already: " << (int)gameObj << endl;
+    cout << "ERROR: appeared object is there already: " << gameObj << endl;
   }
   assert(liveIDs.find(id) == liveIDs.end());
   liveIDs.insert(id);
@@ -243,7 +248,7 @@ void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   }
 
   objectMap.erase(gameObj);
-  msg << "deceased sgo: " << (int)sObject << endl;
+  msg << "deceased sgo: " << sObject << " id: " << id << endl;
   //delete sObject;
   sObject->removeFromGame();
   assert(liveIDs.find(id) != liveIDs.end());
@@ -338,7 +343,6 @@ void OrtsInterface::updateSoarGameObjects() {
       /* we should have a SoarGameObject for this GameObj, if not, we're in
        * trouble
        */
-      //cout << "updating an object: " << (int) gob << endl;
       assert(objectMap.find(gob) != objectMap.end());
 
       // just call update to let it know there were changes

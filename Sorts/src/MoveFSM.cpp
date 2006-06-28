@@ -5,7 +5,7 @@
 #include "Sorts.h"
 using namespace std;
 
-#define msg cout << "MOVEFSM(" << (int)this << "): "
+#define msg cout << Sorts::frame << " MOVEFSM(" << this << "): "
 #define TOLERANCE 9 // for waypoints, squared
 #define VEERWIDTH 6  // radius of worker == 3
 // orig: 10

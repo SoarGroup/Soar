@@ -14,13 +14,9 @@
 #include "SoarInterface.h"
 #include "OrtsInterface.h"
 #include "PerceptualGroupManager.h"
-//#include "InternalGroupManager.h"
 #include "MapManager.h"
 #include "FeatureMapManager.h"
 #include "GameActionManager.h"
-//#include "TerrainManager.h"
-//#include "AttackManagerRegistry.h"
-//#include "MineManager.h"
 class AttackManagerRegistry;
 class MineManager;
 
@@ -37,7 +33,6 @@ class Sorts {
     ( SoarInterface*          _SoarIO,
       OrtsInterface*          _OrtsIO,
       PerceptualGroupManager* _pGroupManager, 
-  //    InternalGroupManager*   _iGroupManager,
       MapManager*             _mapManager, 
       FeatureMapManager*      _featureMapManager,
       TerrainModule*          _tm,
@@ -50,7 +45,6 @@ class Sorts {
       SoarIO = _SoarIO;
       OrtsIO = _OrtsIO;
       pGroupManager = _pGroupManager;
-      //iGroupManager = _iGroupManager;
       mapManager = _mapManager;
       featureMapManager = _featureMapManager;
       terrainModule = _tm;
@@ -60,12 +54,12 @@ class Sorts {
       gameActionManager = _gam;
       mutex = _mutex;
       catchup = false;
+      frame = -1;
     }
 
     static SoarInterface*           SoarIO;
     static OrtsInterface*           OrtsIO;
     static PerceptualGroupManager*  pGroupManager;
-  //  static InternalGroupManager*    iGroupManager;
     static MapManager*              mapManager;
     static FeatureMapManager*       featureMapManager;
     static TerrainModule*           terrainModule;
@@ -77,6 +71,7 @@ class Sorts {
     static pthread_mutex_t*         mutex;
     static bool                     catchup;
     static int                      cyclesSoarAhead;
+    static int frame;
 #ifdef USE_CANVAS
     static SortsCanvas              canvas;
 #endif

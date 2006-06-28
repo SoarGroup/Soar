@@ -6,7 +6,7 @@
 #include "Sorts.h"
 #include "SoarInterface.h"
 
-#define msg cout << "GRPMAN: " 
+#define msg cout << Sorts::frame << " GRPMAN: " 
 
 using namespace std;
 
@@ -469,7 +469,7 @@ void PerceptualGroupManager::reGroup() {
         }
         obj1Struct.group = newGroup;
         obj1Struct.assigned = true;
-   //     msg << "XXX making new group " << (int) obj1Struct.group << endl; 
+   //     msg << "input-link making new group " << (int) obj1Struct.group << endl; 
       }
      
       // iterate through all lower objects to see if they should join the group
@@ -514,11 +514,11 @@ void PerceptualGroupManager::reGroup() {
               }
             }
             toMergeList.push_back(groups);
-    //        msg << "XXX will merge " << (int) groups.first << " -> " << (int) groups.second << endl;
+    //        msg << "input-link will merge " << (int) groups.first << " -> " << (int) groups.second << endl;
           }
           else {
             // obj2 has not been assigned. Assign it to obj1's group.
-      //      msg << "XXX obj from group " << (int) (*obj2StructIter).group <<
+      //      msg << "input-link obj from group " << (int) (*obj2StructIter).group <<
       //              " joining " << (int) obj1Struct.group << endl;
             (*obj2StructIter).assigned = true;
             (*obj2StructIter).group->removeUnit((*obj2StructIter).object);
@@ -584,7 +584,7 @@ void PerceptualGroupManager::reGroup() {
   }
  
   staleGroupCategories.clear();
-//  msg << "XXX regroup done" << endl;
+//  msg << "input-link regroup done" << endl;
   return;
 }
 
@@ -689,12 +689,12 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
         Sorts::SoarIO->refreshGroup(*groupIter);
       }
       else {
-        msg << "XXX group " << (int)(*groupIter) 
+        msg << "input-link group " << (*groupIter) 
             << " hasn't changed, but present\n";
         pair<string,int> cat = (*groupIter)->getCategory(false);
-        msg << "XXX type: " << cat.first << "\n";
-        msg << "XXX owner: " << cat.second << "\n";
-        msg << "XXX members: " << (*groupIter)->getSize() << "\n";
+        msg << "input-link type: " << cat.first << "\n";
+        msg << "input-link owner: " << cat.second << "\n";
+        msg << "input-link members: " << (*groupIter)->getSize() << "\n";
       }
     }
     else { 
@@ -712,7 +712,7 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
         }
       }
       else {
-        msg << "XXX group " << (int)(*groupIter) 
+        msg << "input-link group " << (*groupIter) 
             << " is out of attention.\n";
       }
     }

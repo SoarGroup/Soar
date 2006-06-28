@@ -25,28 +25,29 @@ public:
   bool isMoving() { return moving; }
   Vec2d getDestination() { return dest; }
   void stopMoving();
-  void setPendingInit(int);
 
   // AttackManager is about to be deallocated, 
   void disown(int lastStatus);
 
   void stop();
 
-  int getAvgDamage() {
-    return (weapon->get_int("min_damage") + weapon->get_int("max_damage")) / 2;
-  }
+  int getAvgDamage();
 
-public:
-  bool reassign;
+  SoarGameObject* getTarget() { return target; }
+  void setTarget(SoarGameObject* tar) { target = tar; }
+  SoarGameObject* getSGO() { return sgob; }
+
+  void setReassign(bool b) { reassign = b; }
   int failCount;
-  SoarGameObject* target;
   bool waitingForCatchup;
-  bool panic;
 
 private:
+  bool reassign;
+  SoarGameObject* target;
+  bool panic;
   SoarGameObject* sgob;
   AttackManager* manager;
-  int pendingNewManager;
+  int pendingManagerID;
   ScriptObj* weapon;
   MoveFSM* moveFSM;
   Vec2d dest;

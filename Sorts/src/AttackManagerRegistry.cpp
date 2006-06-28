@@ -3,10 +3,10 @@
 #include "SoarGameObject.h"
 #include "PerceptualGroup.h"
 
-#define msg cout << "AttackManagerRegistry.cpp: "
+#define msg cout << Sorts::frame << " AMREG: "
 
 int AttackManagerRegistry::assignManager
-( const list<PerceptualGroup*>& targets )
+( const list<PerceptualGroup*>& targets, int numNewAttackers )
 {
   set<SoarGameObject*> allTargets;
   for(list<PerceptualGroup*>::const_iterator
@@ -32,6 +32,7 @@ int AttackManagerRegistry::assignManager
   {
     // this check can take a while
     if (*(*i).manager->getTargets() == allTargets) { 
+      (*i).manager->addNewAttackers(numNewAttackers);
       return (*i).id;
     }
   }
@@ -42,6 +43,7 @@ int AttackManagerRegistry::assignManager
   AttackManager* m = new AttackManager(allTargets);
   newRecord.id = uid++;
   newRecord.manager = m;
+  m->addNewAttackers(numNewAttackers);
   managers.push_back(newRecord);
   return newRecord.id;
 }

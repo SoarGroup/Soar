@@ -13,9 +13,8 @@
 #include "Sorts.h"
 #include "SoarGameObject.h"
 #include "PerceptualGroup.h"
-//#include "InternalGroup.h"
 
-#define msg cout << "SGO(" << (int)this << "): "
+#define msg cout << Sorts::frame << " SGO(" << this << "): "
 #define PANIC_FRAMES 30
 
 using namespace std;
@@ -39,7 +38,6 @@ void SoarGameObject::identifyBehaviors() {
       friendlyWorker = true;
     }
     else if (name == "marine") {
-      msg << "Registering behaviors for " << (int) gob << endl;
       FSM* moveBehavior = new PersistentMoveFSM(gob);
       registerBehavior(moveBehavior);
       FSM* attackBehavior = new AttackFSM(this);
@@ -49,7 +47,6 @@ void SoarGameObject::identifyBehaviors() {
       defaultBehaviors.push_back(attackNear);
      }
     else if (name == "tank") {
-      msg << "Registering behaviors for " << (int) gob << endl;
       FSM* moveBehavior = new PersistentMoveFSM(gob);
       registerBehavior(moveBehavior);
       FSM* attackBehavior = new AttackFSM(this);
@@ -88,7 +85,6 @@ SoarGameObject::SoarGameObject(
   motionlessFrames = 0;
   
   identifyBehaviors();
-  //iGroup = NULL;
   pGroup = NULL;
   lastAttackedId = -1;
   assignedBehavior = NULL;
@@ -129,16 +125,10 @@ void SoarGameObject::removeBehavior(ObjectActionType name)
 }
 
 
-//template<class T>
-void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
+void SoarGameObject::assignAction(ObjectActionType cmd, Vector<sint4> prms)
 {
-  msg << "command issued: " << (int)cmd << endl;
+  msg << "assigning action: " << (int)cmd << endl;
 
-  if (assignedBehavior != NULL && 
-      assignedBehavior->getName() == OA_ATTACK &&
-      cmd == OA_ATTACK) {
-    ((AttackFSM*)assignedBehavior)->setPendingInit(prms[0]);
-  }
   if (assignedBehavior != NULL) {
     assignedBehavior->stop();
   }
@@ -152,10 +142,6 @@ void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
     i->second->init(prms);
     assignedBehavior = i->second;
   }
-
-  if (cmd == OA_ATTACK) {
-    ((AttackFSM*)assignedBehavior)->setPendingInit(-1);
-  }
   motionlessFrames = 0;
   update();
 }
@@ -163,14 +149,17 @@ void SoarGameObject::issueCommand(ObjectActionType cmd, Vector<sint4> prms)
 
 void SoarGameObject::update()
 {
-  msg << "upd: " << (int)this << " grp " << (int)pGroup << endl;
+  msg << "updating sgo " << this << " in group " << pGroup << endl;
+  if (gob->is_pending_action()) {
+    msg << "ignored update, there is a pending action.\n";
+    Sorts::OrtsIO->updateNextCycle(this);
+    return;
+  }
+  
   int fsmStatus;
 
   sat_loc = Sorts::spatialDB->updateObject(gob,sat_loc);
     
- /* if (iGroup != NULL) {
-    iGroup->setHasStaleMembers();
-  }*/
   pGroup->setHasStaleMembers();
   
   int currentFrame = Sorts::OrtsIO->getViewFrame();
@@ -227,7 +216,7 @@ void SoarGameObject::update()
   // spit out a warning if the object sits still for a long time
   if (friendlyWorker and assignedBehavior != NULL) {
     if (getLocation() == lastLocation) {
-      motionlessFrames++;//= (currentFrame - frameOfLastUpdate);
+      motionlessFrames++;
     }
     else {
       motionlessFrames = 0;

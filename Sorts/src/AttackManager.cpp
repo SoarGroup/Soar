@@ -8,7 +8,7 @@
 
 #include "ScriptObj.H"
 
-#define msg cout << "ATKMAN(" << (int)this << "): "
+#define msg cout << Sorts::frame << " ATKMAN(" << (int)this << "): "
 
 #define WAIT_RATIO    0.5
 #define RESUME_RATIO  0.85
@@ -319,6 +319,7 @@ void AttackManager::attackArcPos
 AttackManager::AttackManager(const set<SoarGameObject*>& _targets)
 : targetSet(_targets)
 {
+  numNewAttackers = 0;
   for(set<SoarGameObject*>::iterator
       i  = targetSet.begin();
       i != targetSet.end();
@@ -366,6 +367,8 @@ AttackManager::~AttackManager() {
 }
 
 void AttackManager::registerFSM(AttackFSM* fsm) {
+  assert(numNewAttackers > 0);
+  numNewAttackers--;
   team.push_back(fsm);
 #ifdef USE_CANVAS_ATTACK_MANAGER
   Sorts::canvas.registerGob(fsm->getGob());
@@ -377,15 +380,15 @@ void AttackManager::registerFSM(AttackFSM* fsm) {
 void AttackManager::unregisterFSM(AttackFSM* fsm) {
   assert(find(team.begin(), team.end(), fsm) != team.end());
   team.erase(find(team.begin(), team.end(), fsm));
-  if (fsm->target != NULL) {
+  if (fsm->getTarget() != NULL) {
     unassignTarget(fsm);
   }
 
 #ifdef USE_CANVAS_ATTACK_MANAGER
   Sorts::canvas.unregisterGob(fsm->getGob());
 #endif
-  if (team.size() == 0) {
-    msg << "I've gone out the window (Nobody cares about me anymore)" << endl;
+  if (team.size() + numNewAttackers == 0) {
+    msg << "team size is now 0, going away.." << endl;
     Sorts::amr->removeManager(this);
     delete this;
   }
@@ -394,14 +397,14 @@ void AttackManager::unregisterFSM(AttackFSM* fsm) {
 void AttackManager::assignTarget(AttackFSM* fsm, SoarGameObject* target) {
   assert(targets.find(target) != targets.end());
   targets[target].assignAttacker(fsm);
-  fsm->target = target;
+  fsm->setTarget(target);
 }
 
 void AttackManager::unassignTarget(AttackFSM* fsm) {
-  assert(fsm->target != NULL);
-  assert(targets.find(fsm->target) != targets.end());
-  targets[fsm->target].unassignAttacker(fsm);
-  fsm->target = NULL;
+  assert(fsm->getTarget() != NULL);
+  assert(targets.find(fsm->getTarget()) != targets.end());
+  targets[fsm->getTarget()].unassignAttacker(fsm);
+  fsm->setTarget(NULL);
 }
 
 void AttackManager::unassignAll(SoarGameObject* target) {
@@ -413,8 +416,8 @@ void AttackManager::unassignAll(SoarGameObject* target) {
       i != info.attackers_end();
       ++i)
   {
-    (*i)->target = NULL;
-    (*i)->reassign = true;
+    (*i)->setTarget(NULL);
+    (*i)->setReassign(true);
   }
   info.unassignAll();
 }
@@ -558,7 +561,7 @@ int AttackManager::direct(AttackFSM* fsm) {
       i != team.end();
       ++i)
   {
-    if ((*i)->target == NULL) {
+    if ((*i)->getTarget() == NULL) {
       numUnassigned++;
     }
   }
@@ -587,7 +590,7 @@ int AttackManager::direct(AttackFSM* fsm) {
     */
   }
 
-  if (fsm->target == NULL) {
+  if (fsm->getTarget() == NULL) {
     unsigned long st_find = gettime();
     if (!findTarget(fsm)) {
       msg << "FIND TARGET FAILED" << endl;
@@ -600,20 +603,20 @@ int AttackManager::direct(AttackFSM* fsm) {
     msg << "TIME TO FIND TARGET: " << (gettime() - st_find) / 1000 << endl;
   }
   
-  assert(fsm->target != NULL);
+  assert(fsm->getTarget() != NULL);
 
-  if (idSet.find(fsm->target->getID()) == idSet.end()) {
-    msg << "bad target Ptr: " <<(int) fsm->target->getGob() << " id: " << fsm->target->getID() << " name: " << fsm->target->getGob()->bp_name() << endl;
-    msg << "bad target sgo ptr: " << (int)fsm->target << endl;
+  if (idSet.find(fsm->getTarget()->getID()) == idSet.end()) {
+    msg << "bad target Ptr: " <<(int) fsm->getTarget()->getGob() << " id: " << fsm->getTarget()->getID() << " name: " << fsm->getTarget()->getGob()->bp_name() << endl;
+    msg << "bad target sgo ptr: " << (int)fsm->getTarget() << endl;
   }
 
-  msg << "attacking target: " << fsm->target->getGob()->bp_name() << " " 
-      << fsm->target->getGob() << " aka sgo " << (int)fsm->target << endl;
+  msg << "attacking target: " << fsm->getTarget()->getGob()->bp_name() << " " 
+      << fsm->getTarget()->getGob() << " aka sgo " << (int)fsm->getTarget() << endl;
 
   fsm->failCount = 0;
 
-  GameObj* tgob = fsm->target->getGob();
-  AttackTargetInfo& info = targets[fsm->target];
+  GameObj* tgob = fsm->getTarget()->getGob();
+  AttackTargetInfo& info = targets[fsm->getTarget()];
 
   if (!canHit(gob, tgob)) {
     if (fsm->isMoving()) {
@@ -681,13 +684,13 @@ int AttackManager::direct(AttackFSM* fsm) {
       }
     }
     if (!fsm->isMoving()) {
-      fsm->target = NULL;
+      fsm->setTarget(NULL);
     }
   }
   else if (!fsm->isFiring() ||  
-           sgob->getLastAttacked() != fsm->target->getID())
+           sgob->getLastAttacked() != fsm->getTarget()->getID())
   {
-    fsm->attack(fsm->target);
+    fsm->attack(fsm->getTarget());
   }
 
   msg << "TIME SPENT: " << (gettime() - st) / 1000 << endl;
@@ -793,4 +796,16 @@ void AttackManager::reprioritize() {
   sortedTargets.clear();
   sortedTargets.insert(sortedTargets.end(), targetSet.begin(), targetSet.end());
   sort(sortedTargets.begin(), sortedTargets.end(), comparator);
+}
+
+
+void AttackManager::addNewAttackers(int num) {
+  // an action has been assigned to a group, but the FSMs have not been created
+  // make sure the manager is not detroyed until this many FSMs have been
+  // added-- fix the case where the last attacker is unassigned the same cycle
+  // new attackers are added
+
+  assert(numNewAttackers == 0); 
+  
+  numNewAttackers = num;
 }

@@ -3,7 +3,7 @@
 
 #define MIN_BUILD_UPDATES 10
 
-#define msg cout << "BUILDFSM: "
+#define msg cout << Sorts::frame << " BUILDFSM: "
 
 void BuildFSM::setBuildingInfo(BuildingType type, int centerX, int centerY) {
   int width, height;

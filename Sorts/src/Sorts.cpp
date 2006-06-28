@@ -3,7 +3,6 @@
 SoarInterface*          Sorts::SoarIO = NULL;
 OrtsInterface*          Sorts::OrtsIO = NULL;
 PerceptualGroupManager* Sorts::pGroupManager = NULL;
-//InternalGroupManager* Sorts::iGroupManager = NULL;
 MapManager*             Sorts::mapManager = NULL;
 MineManager*            Sorts::mineManager = NULL;
 AttackManagerRegistry*  Sorts::amr = NULL;
@@ -15,6 +14,7 @@ GameActionManager*      Sorts::gameActionManager = NULL;
 pthread_mutex_t*        Sorts::mutex = NULL;
 int                     Sorts::cyclesSoarAhead = 0;
 bool                    Sorts::catchup = false;
+int                     Sorts::frame = -1;
 #ifdef USE_CANVAS 
 SortsCanvas             Sorts::canvas;
 #endif
