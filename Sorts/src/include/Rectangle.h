@@ -30,6 +30,7 @@ public:
 
   int getWidth();
   int getHeight();
+  void getCenterPoint(int& x, int& y);
 
   coordinate getClosestEdgePoint(coordinate& from);
 

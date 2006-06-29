@@ -3,7 +3,9 @@
 #include "SoarGameObject.h"
 #include "PerceptualGroup.h"
 
-#define msg cout << Sorts::frame << " AMREG: "
+#define CLASS_TOKEN "AMREG"
+#define DEBUG_OUTPUT false 
+#include "OutputDefinitionsUnique.h"
 
 int AttackManagerRegistry::assignManager
 ( const list<PerceptualGroup*>& targets, int numNewAttackers )
@@ -38,7 +40,7 @@ int AttackManagerRegistry::assignManager
   }
 
   // create a new one
-  msg << managers.size() << endl;
+  dbg << managers.size() << endl;
   ManagerRecord newRecord;
   AttackManager* m = new AttackManager(allTargets);
   newRecord.id = uid++;
@@ -69,7 +71,7 @@ void AttackManagerRegistry::removeManager(AttackManager* m) {
   {
     if ((*i).manager == m) {
       managers.erase(i);
-      msg << managers.size() << endl;
+      dbg << managers.size() << endl;
       return;
     }
   }

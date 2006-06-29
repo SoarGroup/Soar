@@ -761,6 +761,8 @@ void PerceptualGroup::setSticky(bool in) {
   sticky = in;
 }
 void PerceptualGroup::getCenterLoc(int& x, int& y) {
+  // note: this is the average of all the locations of the members
+  // it is NOT the center point of the bounding box!
   x = centerX;
   y = centerY;
 }

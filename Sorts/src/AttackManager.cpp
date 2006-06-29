@@ -361,7 +361,7 @@ AttackManager::~AttackManager() {
   {
 #ifdef USE_CANVAS_ATTACK_MANAGER
     //Sorts::canvas.unregisterGob((*i)->getGob());
-    Sorts::canvas.resetGob((*i)->getGob());
+    Sorts::canvas.resetSGO((*i)->getSGO());
 #endif
     (*i)->disown(status);
   }
@@ -374,7 +374,7 @@ void AttackManager::registerFSM(AttackFSM* fsm) {
 #ifdef USE_CANVAS_ATTACK_MANAGER
   //Sorts::canvas.registerGob(fsm->getGob());
   Uint8 b = (Uint8) (((int) this) % 156) + 100;
-  Sorts::canvas.setColor(fsm->getGob(), 0, 0, b);
+  Sorts::canvas.setColor(fsm->getSGO(), 0, 0, b);
 #endif
 }
 
@@ -389,8 +389,8 @@ void AttackManager::unregisterFSM(AttackFSM* fsm) {
   // in addition to attack reassignments, this is called as a result 
   // of units being killed, in which case the gob is
   // already removed from the canvas
-  if (Sorts::canvas.gobRegistered(fsm->getGob())) {  
-    Sorts::canvas.resetGob(fsm->getGob());
+  if (Sorts::canvas.sgoRegistered(fsm->getSGO())) {  
+    Sorts::canvas.resetSGO(fsm->getSGO());
   }
 #endif
   if (team.size() + numNewAttackers == 0) {
@@ -468,8 +468,8 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
       if (canHit(gob, (*i)->getGob())) {
         assignTarget(fsm, *i);
 #ifdef USE_CANVAS_ATTACK_MANAGER
-        GameObj* tgob = (*i)->getGob();
-        Sorts::canvas.trackDestination(gob, gobX(tgob), gobY(tgob));
+        Sorts::canvas.trackDestination(fsm->getSGO(), 
+                                       (*i)->getX(), (*i)->getY());
 #endif
         msg << "NEARBY TARG" << endl;
         return true;
@@ -491,12 +491,12 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
             j != positions.end();
             ++j)
         {
-          if (fsm->move((int)(*j)(0), (int)(*j)(1)) == 0) {
+          if (fsm->move((int)(*j)(0), (int)(*j)(1), false) == 0) {
             msg <<"Moving to Position: "<<(*j)(0)<<", "<<(*j)(1)<<endl;
             assignTarget(fsm, *i);
 #ifdef USE_CANVAS_ATTACK_MANAGER
-            GameObj* gob = (*i)->getGob();
-            Sorts::canvas.trackDestination(fsm->getGob(),*gob->sod.x,*gob->sod.y);
+            Sorts::canvas.trackDestination(fsm->getSGO(), 
+                                           (*i)->getX(), (*i)->getY());
 #endif
             dbg << "ARC TARG" << endl;
             return true;
@@ -519,7 +519,9 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
 //      if (checkSaturated == 0 || !targets[*i].isSaturated()) {
         GameObj* tgob = (*i)->getGob();
         Vec2d closePos = getClosePos(gob, tgob);
-        if (fsm->move((int)closePos(0), (int)closePos(1)) == 0) {
+        // force a pathfind, now, since the target must have had lots of
+        // failure points nearby, but should be reachable
+        if (fsm->move((int)closePos(0), (int)closePos(1), true) == 0) {
           assignTarget(fsm, *i);
           msg << "LAST RESORT TARG" << endl;
           return true;
@@ -539,8 +541,8 @@ int AttackManager::direct(AttackFSM* fsm) {
   msg << "NUMTARGS: " << targets.size() << endl;
   unsigned long st = gettime();
 #ifdef USE_CANVAS_ATTACK_MANAGER
-  Sorts::canvas.flashColor(fsm->getGob(), 0, 255, 0, 1);
-  Sorts::canvas.update();
+  Sorts::canvas.flashColor(fsm->getSGO(), 0, 255, 0, 1);
+ // Sorts::canvas.update();
 #endif
 
   GameObj* gob = fsm->getGob();
@@ -554,7 +556,7 @@ int AttackManager::direct(AttackFSM* fsm) {
       if (damageTaken(i, gob->dir_dmg)) {
         Vec2d retreatVector = getHeadingVector(i).inv();
         Vec2d moveDest = Vec2d(gobX(gob), gobY(gob)) + Vec2d(retreatVector, 10);
-        fsm->move((int)moveDest(0), (int)moveDest(1));
+        fsm->move((int)moveDest(0), (int)moveDest(1), false);
         msg  << "RETREATING TO " << moveDest(0) << ", " << moveDest(1) << endl;
         return 0;
       }
@@ -678,7 +680,7 @@ int AttackManager::direct(AttackFSM* fsm) {
         i != positions.end();
         ++i)
     {
-      if (fsm->move((int)(*i)(0), (int)(*i)(1)) == 0) {
+      if (fsm->move((int)(*i)(0), (int)(*i)(1), false) == 0) {
         msg << "Moving to Position: " << (*i)(0) << ", " << (*i)(1) << endl;
 #ifdef USE_CANVAS_ATTACK_MANAGER
 //        Sorts::canvas.trackDestination(fsm->getGob(), (*i)(0), (*i)(1));
@@ -712,7 +714,9 @@ int AttackManager::updateTargetList() {
 
 #ifdef USE_CANVAS_ATTACK_MANAGER
       // this target could have been in multiple attack managers
-      Sorts::canvas.resetGob(i->first->getGob());
+      //Sorts::canvas.resetSGO(i->first);
+
+      // already removed from canvas by OrtsIO
 #endif
       unassignAll(i->first);
       targetSet.erase(i->first);

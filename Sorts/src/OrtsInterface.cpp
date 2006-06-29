@@ -179,7 +179,7 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   }
 
 #ifdef USE_CANVAS
-  Sorts::canvas.registerGob(const_cast<GameObj*>(gameObj));
+  Sorts::canvas.registerSGO(newObj);
 #endif
   
 #ifdef NO_WORLD_GROUPS
@@ -264,7 +264,7 @@ void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   }
 
 #ifdef USE_CANVAS
-  Sorts::canvas.unregisterGob(const_cast<GameObj*>(gameObj));
+  Sorts::canvas.unregisterSGO(sObject);
 #endif
 
   objectMap.erase(gameObj);

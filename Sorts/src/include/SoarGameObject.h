@@ -49,6 +49,10 @@ class SoarGameObject{
 
   GameObj* getGob()   { return gob; }
 
+  int getX();
+  int getY();
+  int getRadius();
+
   void setLastAttacked(int id) { lastAttackedId = id; }
   int  getLastAttacked()       { return lastAttackedId; }
   string getName() { return name; }

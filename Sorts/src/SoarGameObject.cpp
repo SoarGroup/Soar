@@ -180,6 +180,9 @@ void SoarGameObject::update()
     // stuck result means that the FSM is hung up, but may continue
     // if things get out of the way (don't give up on it)
     if((fsmStatus != FSM_RUNNING) && (fsmStatus != FSM_STUCK)) {
+      // note that stop() is NOT called on the FSM that just finished-
+      // stop() is meant to halt the behavior, if it is done it is assumed that
+      // the behavior is halted
       assignedBehavior = NULL;
     }
 
@@ -282,6 +285,18 @@ coordinate SoarGameObject::getLocation() {
   c.y = *gob->sod.y;
 
   return c;
+}
+
+int SoarGameObject::getX() {
+  return *gob->sod.x;
+}
+
+int SoarGameObject::getY() {
+  return *gob->sod.y;
+}
+
+int SoarGameObject::getRadius() {
+  return *gob->sod.radius;
 }
 
 void SoarGameObject::endCommand() {

@@ -44,21 +44,21 @@ public:
   void init(double ww, double wh, double scale);
   bool initted();
   void clear();
-  void registerGob(GameObj* gob);
-  void unregisterGob(GameObj* gob);
-  void resetGob(GameObj* gob);
+  void registerSGO(SoarGameObject* sgo);
+  void unregisterSGO(SoarGameObject* sgo);
+  void resetSGO(SoarGameObject* sgo);
 
   void registerGroup(PerceptualGroup* group);
   void unregisterGroup(PerceptualGroup* group);
 
-  void setColor(GameObj* gob, Uint8 r, Uint8 g, Uint8 b);
-  void flashColor(GameObj* gob, Uint8 r, Uint8 g, Uint8 b, int cycles);
+  void setColor(SoarGameObject* sgo, Uint8 r, Uint8 g, Uint8 b);
+  void flashColor(SoarGameObject* sgo, Uint8 r, Uint8 g, Uint8 b, int cycles);
   void update();
 
-  void trackDestination(GameObj* gob, double destx, double desty);
-  void stopTracking(GameObj* gob);
+  void trackDestination(SoarGameObject* sgo, double destx, double desty);
+  void stopTracking(CanvasObjInfo& obj);
 
-  bool gobRegistered(GameObj* gob);
+  bool sgoRegistered(SoarGameObject* sgo);
 
   SDLCanvasCircle* makeTempCircle(double cx, double cy, double r, int t) {
     return canvas.makeTempCircle(cx, cy, r, t);
@@ -75,7 +75,7 @@ private:
   CanvasObjInfo statusObj;
   CanvasObjInfo soarStatObj;
 public:
-  map<GameObj*, CanvasObjInfo> canvasObjs;
+  map<SoarGameObject*, CanvasObjInfo> canvasObjs;
   map<PerceptualGroup*, CanvasGroupInfo> canvasGroups;
   int updateCounter;
 };

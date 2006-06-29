@@ -151,7 +151,8 @@ int MineFSM::update() {
         }*/
       }
       else {
-        assert(false);
+        // STUCK
+        state = PANIC_START;
       }
       break;
     case MINING:

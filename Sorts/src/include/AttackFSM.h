@@ -21,7 +21,7 @@ public:
   void attack(SoarGameObject* t);
   bool isFiring();
 
-  int move(int x, int y);
+  int move(int x, int y, bool b);
   bool isMoving() { return moving; }
   Vec2d getDestination() { return dest; }
   void stopMoving();

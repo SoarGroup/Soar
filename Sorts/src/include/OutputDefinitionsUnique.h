@@ -1,3 +1,5 @@
+#include "Sorts.h"
+
 // DON'T put include guards around this
 // it must be uniquely included for every cpp file that uses it,
 // since what msg is defined as changes

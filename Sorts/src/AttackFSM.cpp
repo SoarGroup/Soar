@@ -61,20 +61,24 @@ int AttackFSM::update() {
   if (manager == NULL) {
     if (disownedStatus == 0) {
       dbg << "TIME " << (gettime() - st) / 1000 << endl;
+      stop();
       return FSM_FAILURE;
     }
     else {
       dbg << "TIME " << (gettime() - st) / 1000 << endl;
+      stop();
       return FSM_SUCCESS;
     }
   }
   int status = manager->direct(this);
   if (status > 0) {
     dbg << "TIME " << (gettime() - st) / 1000 << endl;
+    stop();
     return FSM_SUCCESS;
   }
   if (status < 0) {
     dbg << "TIME " << (gettime() - st) / 1000 << endl;
+    stop();
     return FSM_FAILURE;
   }
 
@@ -156,7 +160,7 @@ bool AttackFSM::isFiring() {
   return weapon->get_int("shooting") == 1;
 }
 
-int AttackFSM::move(int x, int y) {
+int AttackFSM::move(int x, int y, bool forcePathfind) {
   moveFails = 0;
   if (moveFSM == NULL) {
     moveFSM = new MoveFSM(gob);
@@ -167,6 +171,13 @@ int AttackFSM::move(int x, int y) {
   vector<sint4> moveParams(2);
   moveParams[0] = x;
   moveParams[1] = y;
+
+  if (forcePathfind) {
+    // add a fourth (and third, ignored) parameter, to signal forced pathfind
+    moveParams.push_back(-1);
+    moveParams.push_back(1);
+  }
+
   msg << "initting move (" << x << ", " << y << ")" << endl;
   moveFSM->init(moveParams);
   int status = moveFSM->update();

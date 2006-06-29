@@ -5,7 +5,7 @@
 #include <map>
 
 #define WORKER_RADIUS 3
-#define IMAG_OBSTACLE_RADIUS 10
+#define IMAG_OBSTACLE_RADIUS 8 
 
 #define WORKER_CROWD_FACTOR 4
 #define CROWD_MAX_MINERALS 8
@@ -91,7 +91,6 @@ void SpatialDB::addImaginaryObstacle(coordinate c) {
   dbg << "loc: " << c.x << "," << c.y << endl;
 #ifdef USE_CANVAS
   Sorts::canvas.makeTempCircle(c.x,c.y,IMAG_OBSTACLE_RADIUS,9999999);
-  Sorts::canvas.update();
 #endif
 }
 

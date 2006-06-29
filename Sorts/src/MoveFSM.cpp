@@ -254,20 +254,31 @@ void MoveFSM::init(vector<sint4> p)
   l.x = p[0];
   l.y = p[1];
   int pathLength;
+  bool forcePathfind = false;
  
-  if (p.size() == 3) {
+  if (p.size() >= 3 && p[2] != -1) {
     // third parameter specifies how close to the target we must get
     precision = p[2];
     precision *= precision; // since we use distance squared
+  }
+
+  if (p.size() == 4) {
+    // fourth param presence means force a pathfind
+    // this is used when we know the destination should be reachable, but may
+    // be close to unreachable locations, so we shouldn't skip the pathfind if 
+    // we have an imag. obs. collision
+
+    forcePathfind = true;
   }
   
   msg << "initialized. Path " << *gob->sod.x << "," << *gob->sod.y << "->"
       << l.x << "," << l.y << endl;
 
   clearWPWorkers();
-  if (Sorts::spatialDB->hasImaginaryObstacleCollision(l.x, l.y, 
+  if (not forcePathfind and
+      Sorts::spatialDB->hasImaginaryObstacleCollision(l.x, l.y, 
                                                       *gob->sod.radius)) {
-    msg << "not pathfinding, probably no-path.\n";
+    msg << "imag obs. collision, not pathfinding, probably no-path.\n";
     state = UNREACHABLE;
   }
   else {
@@ -322,10 +333,6 @@ void MoveFSM::init(vector<sint4> p)
       }
       else {
         msg << "pathfind fails from my point only!\n";
-#ifdef USE_CANVAS
-        Sorts::canvas.makeTempCircle(c.x,c.y,3,10);
-        Sorts::canvas.update();
-#endif
         state = STUCK;
       }
     }

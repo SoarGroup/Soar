@@ -4,6 +4,10 @@
 
 using namespace std;
 
+#define CLASS_TOKEN "RECT"
+#define DEBUG_OUTPUT false 
+#include "OutputDefinitions.h"
+
 Rectangle::Rectangle() : xmin(0), xmax(0), ymin(0), ymax(0) {}
 
 Rectangle::Rectangle(int x, int y) : xmin(x), xmax(x), ymin(y), ymax(y) {}
@@ -49,6 +53,8 @@ void Rectangle::accomodate(int x, int y) {
 }
 
 void Rectangle::accomodate(const Rectangle& other) {
+  dbg << "accomodating " << other << endl; 
+      
   if (other.xmin < xmin) { xmin = other.xmin; }
   if (other.xmax > xmax) { xmax = other.xmax; }
   if (other.ymin < ymin) { ymin = other.ymin; }
@@ -252,4 +258,9 @@ int Rectangle::getWidth() {
 
 int Rectangle::getHeight() {
   return ymax - ymin;
+}
+
+void Rectangle::getCenterPoint(int& x, int& y) {
+  x = (xmax + xmin) / 2; 
+  y = (ymax + ymin) / 2; 
 }
