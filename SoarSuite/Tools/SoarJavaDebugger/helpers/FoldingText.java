@@ -847,6 +847,10 @@ public class FoldingText
 		// When we reach the correct length of string we've found the character.
 		// This is slow and a bit clumsy, but since it's just on a right-click I think it's ok.
 		GC gc = new GC(m_Text) ;
+
+		// Need to adjust for the scroll bar.
+		int scrollX = m_Text.getHorizontalBar().getSelection() ;
+		mouseX = mouseX + scrollX ;
 		
 		int selectionPoint = -1 ;
 		for (int i = 0 ; i < text.length() ; i++)
