@@ -26,7 +26,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		super(notRandom, false);
 		
 		// Log the settings file
-		m_Logger.log("Settings file: " + settingsFile);
+		logger.fine("Settings file: " + settingsFile);
 
 		String [] initialNames = null;
 		String [] initialProductions = null;
@@ -56,7 +56,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 					setRuns(child.getAttributeIntDefault(kParamRuns, 0));
 					setMaxUpdates(child.getAttributeIntDefault(kParamMaxUpdates, 0));
 					
-					m_Logger.log("Default map: " + defaultMap);
+					logger.fine("Default map: " + defaultMap);
 					
 				} else if (tagName.equalsIgnoreCase(kTagAgents)) {
 					initialNames = new String[child.getNumberChildren()];
@@ -113,7 +113,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 	
     public void createEntity(String name, String productions, String color, MapPoint location, String facing, int energy, int health, int missiles) {
     	if (location != null || facing != null || energy != -1 || health != -1 || missiles != -1) {
-    		m_Logger.log("An ignored parameter was given a non-default value!");
+    		logger.warning("An ignored parameter was given a non-default value!");
     	}
     	
     	if (name == null || productions == null) {

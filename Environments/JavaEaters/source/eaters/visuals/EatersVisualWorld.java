@@ -152,7 +152,7 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 					// TODO: this is a lot of string compares, should be integer switch
 					switch (food.getShape()) {
 					default:
-						m_Logger.log("Invalid food shape '" + food.getShapeName() + "', using round.");
+						logger.warning("Invalid food shape '" + food.getShapeName() + "', using round.");
 					case EatersWorld.Food.kRoundInt:
 						fill1 = (int)(m_CellSize/2.8);
 						fill2 = m_CellSize - fill1 + 1;

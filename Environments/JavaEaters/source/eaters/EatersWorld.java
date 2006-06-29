@@ -1,6 +1,7 @@
 package eaters;
 
 import java.util.*;
+import java.util.logging.*;
 
 import simulation.*;
 import sml.*;
@@ -46,8 +47,6 @@ public class EatersWorld extends World implements WorldManager {
 		int m_Shape;
 		String m_ColorString;
 		
-		protected Logger m_Logger = Logger.logger;
-
 		public Food(String name, int value, String shape, String color) {
 			m_Name = name;
 			m_Value = value;
@@ -338,13 +337,13 @@ public class EatersWorld extends World implements WorldManager {
 			}
 
 		} catch (Exception e) {
-			m_Logger.log("Error loading map: " + e.getMessage());
+			logger.warning("Error loading map: " + e.getMessage());
 			return false;
 		}
 		
 		resetEaters();
 		
-		m_Logger.log(mapFile + " loaded.");
+		logger.info(mapFile + " loaded.");
 		return true;
 	}
 	
@@ -363,7 +362,7 @@ public class EatersWorld extends World implements WorldManager {
 					throw new Exception("Error (generateWallsFromXML) on row: " + row + ", column: " + col);
 				}
 			}
-			//m_Logger.log(rowString);
+			//logger.finest(rowString);
 		}
 	}
 	
@@ -455,7 +454,7 @@ public class EatersWorld extends World implements WorldManager {
 					}
 				}
 			}
-			//m_Logger.log(rowString);
+			//logger.finest(rowString);
 		}
 	}
 	
@@ -554,7 +553,7 @@ public class EatersWorld extends World implements WorldManager {
 				return;
 			}
 		}
-		m_Logger.log("Couldn't find entity name match for " + entity.getName() + ", ignoring.");
+		logger.warning("Couldn't find entity name match for " + entity.getName() + ", ignoring.");
 	}
 	
 	void destroyEater(Eater eater) {
@@ -618,13 +617,13 @@ public class EatersWorld extends World implements WorldManager {
 				newLocation = new MapPoint(oldLocation.x - distance, oldLocation.y);
 				
 			} else {
-				m_Logger.log("Invalid move direction: " + move.direction);
+				logger.warning("Invalid move direction: " + move.direction);
 				return;
 			}
 			
 			if (isInBounds(newLocation) && !getCell(newLocation).isWall()) {
 				if (!getCell(oldLocation).removeEater()) {
-					m_Logger.log("Warning: moving eater " + m_Eaters[i].getName() + " not at old location " + oldLocation);
+					logger.warning("Warning: moving eater " + m_Eaters[i].getName() + " not at old location " + oldLocation);
 				}
 				m_Eaters[i].setLocation(newLocation);
 				if (move.jump) {
@@ -679,9 +678,9 @@ public class EatersWorld extends World implements WorldManager {
 			if (!m_PrintedStats) {
 				m_Simulation.stopSimulation();
 				m_PrintedStats = true;
-				m_Logger.log("Reached maximum updates, stopping.");
+				logger.info("Reached maximum updates, stopping.");
 				for (int i = 0; i < m_Eaters.length; ++i) {
-					m_Logger.log(m_Eaters[i].getName() + ": " + m_Eaters[i].getPoints());
+					logger.info(m_Eaters[i].getName() + ": " + m_Eaters[i].getPoints());
 				}
 			}
 			return;
@@ -691,16 +690,16 @@ public class EatersWorld extends World implements WorldManager {
 			if (!m_PrintedStats) {
 				m_Simulation.stopSimulation();
 				m_PrintedStats = true;
-				m_Logger.log("All of the food is gone.");
+				logger.info("All of the food is gone.");
 				for (int i = 0; i < m_Eaters.length; ++i) {
-					m_Logger.log(m_Eaters[i].getName() + ": " + m_Eaters[i].getPoints());
+					logger.info(m_Eaters[i].getName() + ": " + m_Eaters[i].getPoints());
 				}
 			}
 			return;
 		}
 
 		if (m_Eaters == null) {
-			m_Logger.log("Update called with no eaters.");
+			logger.warning("Update called with no eaters.");
 			return;
 		}
 		
@@ -742,7 +741,7 @@ public class EatersWorld extends World implements WorldManager {
 						// Flip collision flag for cell
 						getCell(m_Eaters[i].getLocation()).setCollision(true);
 
-						m_Logger.log("Starting collision group at " + m_Eaters[i].getLocation());
+						logger.fine("Starting collision group at " + m_Eaters[i].getLocation());
 					}
 					
 					// Add second agent to current collision
@@ -770,7 +769,7 @@ public class EatersWorld extends World implements WorldManager {
 			currentCollision = (ArrayList)m_Collisions.get(group);
 			Eater[] collidees = (Eater[])currentCollision.toArray(new Eater[0]);
 			
-			m_Logger.log("Processing collision group " + group + " with " + collidees.length + " collidees.");
+			logger.fine("Processing collision group " + group + " with " + collidees.length + " collidees.");
 			
 			// Redistribute wealth
 			int cash = 0;			
@@ -778,7 +777,7 @@ public class EatersWorld extends World implements WorldManager {
 				cash += collidees[i].getPoints();
 			}			
 			cash /= collidees.length;
-			m_Logger.log("Cash to each: " + cash);
+			logger.fine("Cash to each: " + cash);
 			for (int i = 0; i < collidees.length; ++i) {
 				collidees[i].setPoints(cash);
 			}
