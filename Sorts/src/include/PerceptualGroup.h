@@ -69,7 +69,7 @@ class PerceptualGroup {
     void setFMFeatureStrength(int);
     int getFMFeatureStrength();
 
-    Rectangle getBoundingBox();
+    Rectangle& getBoundingBox();
     void getCenterLoc(int& x, int& y);
 
     // return a point (locX, locY) on the bounding box of the group
@@ -84,6 +84,9 @@ class PerceptualGroup {
 
     bool getInSoar();
     void setInSoar(bool val);
+
+    int getSoarID();
+    void setSoarID(int);
 
     // return true if the group has been around for multiple cycles
     // (return false if it was just created)
@@ -161,6 +164,7 @@ class PerceptualGroup {
     double distToFocus;
     coordinate lastQueryResult;
     double lastQueryDist;
+    int soarID;
 
 };
 

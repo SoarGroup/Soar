@@ -48,15 +48,13 @@ void SoarInterface::addGroup(PerceptualGroup* group) {
   
   groupTable[group] = newGroup;
   groupIdLookup[newGroup.groupId] = group;
+  group->setSoarID(newGroup.groupId);
 }
 
 void SoarInterface::removeGroup(PerceptualGroup* group) {
   // make sure the group exists
-  //assert(groupTable.find(group) != groupTable.end());
+  assert(groupTable.find(group) != groupTable.end());
   
-  // false removes can come in (fairly frequently)
-  // if a group is merged into another the same cycle it appears, a false remove
-  // is generated
   if (groupTable.find(group) == groupTable.end()) {
     return;
   }
@@ -93,7 +91,7 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
 
     // label the group with its id
     agent->CreateIntWME(g.WMEptr, "id", g.groupId);
-    msg << "ILNK adding id " << g.groupId << " ptr " << (int) group << endl;
+    msg << "ILNK adding id " << g.groupId << " ptr " << group << endl;
 
     // give owner information
     agent->CreateIntWME(g.WMEptr, "owner", group->getOwner());
@@ -133,7 +131,7 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
     }
   }
   else {
-    msg << "ILNK updating id " << g.groupId << " ptr " << (int) group << endl;
+    msg << "ILNK updating id " << g.groupId << " ptr " <<  group << endl;
     // group already added, just update values.
     // Note that I'm assuming no new values are introduced
     for(list<IntAttribType>::iterator 
@@ -769,3 +767,4 @@ void SoarInterface::startSoar() {
   soarRunning = true;
   dbg << "Soar Started" << endl;
 }
+

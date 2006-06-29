@@ -1,6 +1,11 @@
 #include "SortsCanvas.h"
+#include "Sorts.h"
 
-#define REDRAW_PERIOD 10
+#define REDRAW_PERIOD 1
+
+#define CLASS_TOKEN "CANVAS"
+#define DEBUG_OUTPUT true 
+#include "OutputDefinitionsUnique.h"
 
 SortsCanvas::SortsCanvas() { 
   updateCounter = 0;
@@ -38,7 +43,7 @@ void SortsCanvas::registerGob(GameObj* gob) {
   newObj.compound = canvas.makeCompound(*gob->sod.x, *gob->sod.y);
   newObj.mainCircle = canvas.makeCircle(*gob->sod.x, *gob->sod.y, *gob->sod.radius);
 
-  newObj.mainCircle->setLabel(gob->bp_name().c_str());
+//  newObj.mainCircle->setLabel(gob->bp_name().c_str());
   newObj.origColor = newObj.mainCircle->getCircleColor();
   newObj.compound->addShape(newObj.mainCircle);
   canvasObjs[gob] = newObj;
@@ -64,6 +69,66 @@ void SortsCanvas::unregisterGob(GameObj* gob) {
   }
   canvasObjs.erase(gob);
 }
+
+void SortsCanvas::registerGroup(PerceptualGroup* group) {
+  assert(canvasGroups.find(group) == canvasGroups.end());
+  int x, y;
+  group->getCenterLoc(x,y);
+  Rectangle r = group->getBoundingBox();
+
+  int width = r.getWidth();
+  int height = r.getHeight();
+  
+  stringstream ss;
+  string label;
+  ss << "id " << group->getSoarID();
+  label = ss.str();
+  
+  CanvasGroupInfo newObj;
+  newObj.compound = canvas.makeCompound(x,y);
+  newObj.mainRectangle = canvas.makeRectangle(x, y, width, height, 0);
+  newObj.mainRectangle->setLabel(label);
+  if (group->isFriendly()) {
+    newObj.mainRectangle->setRectangleColor(255,255,0);
+  }
+  else {
+    newObj.mainRectangle->setRectangleColor(255,0,0);
+  }
+  // TODO: case for world objs
+  newObj.compound->addShape(newObj.mainRectangle);
+  canvasGroups[group] = newObj;
+}
+
+void SortsCanvas::unregisterGroup(PerceptualGroup* group) {
+  assert(canvasGroups.find(group) != canvasGroups.end());
+  CanvasGroupInfo& obj = canvasGroups[group];
+  list<SDLCanvasShape*> elements;
+  obj.compound->getElements(elements);
+
+  for(list<SDLCanvasShape*>::iterator
+      i  = elements.begin();
+      i != elements.end();
+      ++i)
+  {
+    canvas.remove(*i);
+  }
+  canvas.remove(obj.compound);
+
+  canvasGroups.erase(group);
+}
+
+void SortsCanvas::resetGob(GameObj* gob) {
+  assert(canvasObjs.find(gob) != canvasObjs.end());
+  CanvasObjInfo& obj = canvasObjs[gob];
+  if (obj.trackingLine != NULL) {
+    canvas.remove(obj.trackingLine);
+    delete obj.trackingLine;
+    obj.trackingLine = NULL;
+  }
+  obj.origColor.set(255,255,255);
+}
+  
+
 
 void SortsCanvas::setColor(GameObj* gob, Uint8 r, Uint8 g, Uint8 b) {
   assert(canvasObjs.find(gob) != canvasObjs.end());
@@ -99,7 +164,10 @@ void SortsCanvas::update() {
         obj.mainCircle->setCircleColor(obj.origColor);
       }
     }
+    dbg << "updating gob " << gob << ", type " << gob->bp_name() 
+        << " owned by " << *gob->sod.owner << endl;
   }
+
   canvas.redraw();
 }
 
@@ -109,10 +177,10 @@ void SortsCanvas::trackDestination(GameObj* gob,double destx,double desty) {
 
   CanvasObjInfo& obj = canvasObjs[gob];
   if (*gob->sod.x < 0 || *gob->sod.y < 0) {
-    cout << "ERROR: gob out of canvas!\n";
+    msg << "ERROR: gob out of canvas!\n";
   }
   if (destx < 0 || desty < 0) {
-    cout << "ERROR: dest out of canvas!\n";
+    msg << "ERROR: dest out of canvas!\n";
   }
   SDLCanvasTrackedShape* t = canvas.makeTracker(*gob->sod.x, *gob->sod.y, destx, desty, true);
   obj.compound->addShape(t);

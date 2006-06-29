@@ -69,17 +69,6 @@ bool OrtsInterface::handle_event(const Event& e) {
       else {
         skippedActions = gsm->get_game().get_skipped_actions();
       }
-#ifdef USE_CANVAS
-      stringstream ss;
-      string status;
-      ss << "ORTS Event " << viewFrame;
-      if (skippedActions) {
-        ss << " SKIPPED ACTIONS: " << skippedActions;
-      }
-      status = ss.str();
-      Sorts::canvas.setStatus(status);
-#endif
-      Sorts::SoarIO->updateViewFrame(viewFrame);
       int aFrame = gsm->get_game().get_action_frame();
         
       mergeChanges(const_cast<GameChanges&> (gsm->get_changes())); 
@@ -104,13 +93,28 @@ bool OrtsInterface::handle_event(const Event& e) {
         Sorts::catchup = true;
         msg << "client is behind, skipping event. v: "
              << viewFrame << " a:" << lastActionFrame << "\n";
+#ifdef USE_CANVAS
+        Sorts::canvas.setStatus("skipping event");
+#endif
         gsm->send_actions(); // empty, needed by server
         pthread_mutex_unlock(Sorts::mutex);
         Sorts::SoarIO->startSoar();
         dbg << "TIME " << (gettime() - st) / 1000 << endl; 
         return true;
       }
+#ifdef USE_CANVAS
+      stringstream ss;
+      string status;
+      ss << "ORTS Event " << viewFrame;
+      if (skippedActions) {
+        ss << " SKIPPED ACTIONS: " << skippedActions;
+      }
+      status = ss.str();
+      Sorts::canvas.setStatus(status);
+      Sorts::canvas.update();
+#endif
       
+      Sorts::SoarIO->updateViewFrame(viewFrame);
       Sorts::catchup = false;
       
       int merged = gsm->get_game().get_merged_actions();
@@ -119,8 +123,8 @@ bool OrtsInterface::handle_event(const Event& e) {
         //  cout << "WARNING: merged actions (what does this mean?)" << merged << endl;
       }
 
+      removeDeadObjects();
       Sorts::pGroupManager->assignActions();
-
       updateMap();
       updateSoarGameObjects();
       changes.clear();
@@ -167,6 +171,17 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   SoarGameObject* newObj = new SoarGameObject(gameObj,
                                               friendly, world, id);
  
+  string name = gameObj->bp_name();
+
+  if (name == "start_loc") {
+    msg << "ignoring start_loc GameObj.\n";
+    return;
+  }
+
+#ifdef USE_CANVAS
+  Sorts::canvas.registerGob(const_cast<GameObj*>(gameObj));
+#endif
+  
 #ifdef NO_WORLD_GROUPS
   if (not world) {
     Sorts::pGroupManager->makeNewGroup(newObj);
@@ -175,7 +190,6 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   Sorts::pGroupManager->makeNewGroup(newObj);
 #endif
 
-  string name = gameObj->bp_name();
   if (name == "mineral") {
     Sorts::mineManager->addMineral(newObj);
   }
@@ -249,6 +263,10 @@ void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
     }
   }
 
+#ifdef USE_CANVAS
+  Sorts::canvas.unregisterGob(const_cast<GameObj*>(gameObj));
+#endif
+
   objectMap.erase(gameObj);
   msg << "deceased sgo: " << sObject << " id: " << id << endl;
   //delete sObject;
@@ -262,6 +280,32 @@ void OrtsInterface::removeVanishedObject(const GameObj* gameObj) {
   removeDeadObject(gameObj);
 }
 
+void OrtsInterface::removeDeadObjects() {
+  // this must happen before assignActions, and updateSoarGameObjects must
+  // happen after- this way, we won't have problems if we assign an action to
+  // something that just died
+  
+  FORALL(changes.vanished_objs, obj) {
+    GameObj* gob = (*obj)->get_GameObj();
+    if (gob == 0) continue;
+    if (gob->sod.in_game) {
+      assert(objectMap.find(gob) != objectMap.end());
+      requiredUpdatesNextCycle.erase(objectMap[gob]);
+      removeVanishedObject(gob);
+
+    }
+  }
+  
+  FORALL(changes.dead_objs, obj) {
+    GameObj* gob = (*obj)->get_GameObj();
+    if (gob == 0) continue;
+    if (gob->sod.in_game) {
+      assert(objectMap.find(gob) != objectMap.end());
+      requiredUpdatesNextCycle.erase(objectMap[gob]);
+      removeDeadObject(gob);
+    }
+  }
+}
 
 void OrtsInterface::updateSoarGameObjects() {
   // an update can cause an object to insert itself back in the required
@@ -280,34 +324,6 @@ void OrtsInterface::updateSoarGameObjects() {
 
   updateSoarPlayerInfo();
   
-  FORALL(changes.vanished_objs, obj) {
-    GameObj* gob = (*obj)->get_GameObj();
-    if (gob == 0) continue;
-    if (gob->sod.in_game) {
-      /* we should have a SoarGameObject for this GameObj, if not, we're in
-       * trouble
-       */
-      assert(objectMap.find(gob) != objectMap.end());
-      //requiredUpdatesNextCycle.erase(objectMap[gob]);
-      requiredThisCycle.erase(objectMap[gob]);
-      removeVanishedObject(gob);
-
-    }
-  }
-  
-  FORALL(changes.dead_objs, obj) {
-    GameObj* gob = (*obj)->get_GameObj();
-    if (gob == 0) continue;
-    if (gob->sod.in_game) {
-      /* we should have a SoarGameObject for this GameObj, if not, we're in
-       * trouble
-       */
-      assert(objectMap.find(gob) != objectMap.end());
-      //requiredUpdatesNextCycle.erase(objectMap[gob]);
-      requiredThisCycle.erase(objectMap[gob]);
-      removeDeadObject(gob);
-    }
-  }
   
   FORALL(changes.new_boundaries, obj) {
     GameObj* gob = (*obj)->get_GameObj();

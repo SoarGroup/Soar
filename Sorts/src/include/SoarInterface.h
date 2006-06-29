@@ -168,6 +168,8 @@ class SoarInterface {
     void startSoar();
     bool isSoarRunning() { return soarRunning; }
 
+    int getSoarID(PerceptualGroup* grp);
+
   private:
 
     void lockObjectActionMutex();

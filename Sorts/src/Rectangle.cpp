@@ -246,3 +246,10 @@ coordinate Rectangle::getClosestEdgePoint(coordinate& from) {
   //}
 }
   
+int Rectangle::getWidth() {
+  return xmax - xmin;
+}
+
+int Rectangle::getHeight() {
+  return ymax - ymin;
+}

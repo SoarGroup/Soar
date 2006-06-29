@@ -11,7 +11,9 @@
 #define CROWD_MAX_MINERALS 8
 #define CROWD_MAX_WORKERS 2
 
-#define msg cout << Sorts::frame << " SDB: "
+#define CLASS_TOKEN "SDB"
+#define DEBUG_OUTPUT false 
+#include "OutputDefinitionsUnique.h"
 
 inline int intDivC(int x, int y) {
   return (int) ceilf(((float) x) / y);
@@ -72,8 +74,8 @@ void SpatialDB::addImaginaryWorker(coordinate c) {
   }
   
   imaginaryWorkerMap[cell].push_back(c); 
-  msg << "Registered new imaginary worker.\n";
-  msg << "iw loc: " << c.x << "," << c.y << endl;
+  dbg << "registered new imaginary worker.\n";
+  dbg << "iw loc: " << c.x << "," << c.y << endl;
 }
 
 void SpatialDB::addImaginaryObstacle(coordinate c) {
@@ -85,8 +87,8 @@ void SpatialDB::addImaginaryObstacle(coordinate c) {
   }
   
   imaginaryObstacleMap[cell].push_back(c); 
-  msg << "Registered new imaginary obstacle.\n";
-  msg << "loc: " << c.x << "," << c.y << endl;
+  dbg << "Registered new imaginary obstacle.\n";
+  dbg << "loc: " << c.x << "," << c.y << endl;
 #ifdef USE_CANVAS
   Sorts::canvas.makeTempCircle(c.x,c.y,IMAG_OBSTACLE_RADIUS,9999999);
   Sorts::canvas.update();

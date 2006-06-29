@@ -29,7 +29,7 @@
 
 #define SOAR_862
 
-#define PRINT_SOAR
+//#define PRINT_SOAR
 
 using namespace sml;
 

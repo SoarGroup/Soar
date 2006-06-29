@@ -28,6 +28,9 @@ public:
   bool contains(const Rectangle& r);
   int  area();
 
+  int getWidth();
+  int getHeight();
+
   coordinate getClosestEdgePoint(coordinate& from);
 
   Circle getCircumscribingCircle();

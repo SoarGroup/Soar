@@ -131,6 +131,11 @@ void PerceptualGroupManager::updateQueryDistances() {
     if ((*groupIter)->getInSoar() == true) {
       (*groupIter)->generateData();  
       Sorts::SoarIO->refreshGroup(*groupIter);
+#ifdef USE_CANVAS
+      Sorts::canvas.unregisterGroup(*groupIter);
+      Sorts::canvas.registerGroup(*groupIter);
+#endif
+      
     }
   }
 }
@@ -592,7 +597,12 @@ void PerceptualGroupManager::reGroup() {
 
 
 void PerceptualGroupManager::removeGroup(PerceptualGroup* group) {
-  Sorts::SoarIO->removeGroup(group);
+  if (group->getInSoar()) {
+    Sorts::SoarIO->removeGroup(group);
+#ifdef USE_CANVAS
+    Sorts::canvas.unregisterGroup(group);
+#endif
+  }
   Sorts::featureMapManager->removeGroup(group);
   delete group;
 }
@@ -686,9 +696,16 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
         // as far as feature maps are concerned- the inhibition of
         // the group must change
         (*groupIter)->setHasStaleProperties(true);
+#ifdef USE_CANVAS
+        Sorts::canvas.registerGroup(*groupIter);
+#endif
       }
       else if ((*groupIter)->getHasStaleProperties()) {
         Sorts::SoarIO->refreshGroup(*groupIter);
+#ifdef USE_CANVAS
+        Sorts::canvas.unregisterGroup(*groupIter);
+        Sorts::canvas.registerGroup(*groupIter);
+#endif
       }
       else {
         dbg << "ILNK group " << (*groupIter) 
@@ -706,11 +723,18 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
         if (not (*groupIter)->getHasCommand()) {
           (*groupIter)->setInSoar(false);
           Sorts::SoarIO->removeGroup(*groupIter);
+#ifdef USE_CANVAS
+          Sorts::canvas.unregisterGroup(*groupIter);
+#endif
           (*groupIter)->setHasStaleProperties(true);
         }
         else if ((*groupIter)->getHasStaleProperties()) {
           dbg << "refresh due to command (out of normal range)\n";
           Sorts::SoarIO->refreshGroup(*groupIter);
+#ifdef USE_CANVAS
+        Sorts::canvas.unregisterGroup(*groupIter);
+        Sorts::canvas.registerGroup(*groupIter);
+#endif
         }
       }
       else {

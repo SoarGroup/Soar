@@ -42,6 +42,7 @@ PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
   hasCommand = false;
 
   fmSector = -1;
+  soarID = -1;
 
   minerals = (typeName == "mineral");
   friendlyWorker = (typeName == "worker");
@@ -115,13 +116,16 @@ bool PerceptualGroup::removeUnit(SoarGameObject* unit) {
 }
 
 void PerceptualGroup::updateBoundingBox() {
-  bbox = (*members.begin())->getBoundingBox();
-  for(set<SoarGameObject*>::iterator 
-      i  = members.begin(); 
-      i != members.end(); 
-      i++)
-  {
+  dbg << "updating bbox for " << members.size() << " units.\n";
+  if (members.size() == 0) {
+    return;
+  }
+  set<SoarGameObject*>::iterator i = members.begin();
+  bbox = (*i)->getBoundingBox();
+  ++i;
+  while (i != members.end()) {
     bbox.accomodate((*i)->getBoundingBox());
+    ++i;
   }
 }
 
@@ -745,20 +749,7 @@ pair<string, int> PerceptualGroup::getCategory(bool ownerGrouping) {
   return cat;
 }
 
-Rectangle PerceptualGroup::getBoundingBox() {
-  // checking if everything is in the bounding box, because I'm not sure
-  // if the bounding box is getting updated often enough
-  /*for(set<SoarGameObject*>::iterator
-      i  = members.begin();
-      i != members.end();
-      i++)
-  {
-    //int x = *(*i)->getGob()->sod.x;
-    //int y = *(*i)->getGob()->sod.y;
-   // FIXME: asserts in game1
-    // assert(bbox.xmin <= x && x <= bbox.xmax &&
-   //        bbox.ymin <= y && y <= bbox.ymax);
-  }*/
+Rectangle& PerceptualGroup::getBoundingBox() {
   return bbox;
 }
 
@@ -891,4 +882,12 @@ SoarGameObject* PerceptualGroup::getMemberNear(coordinate c) {
   }
 
   return closestMember;
+}
+
+int PerceptualGroup::getSoarID() {
+  return soarID;
+}
+
+void PerceptualGroup::setSoarID(int id) {
+  soarID = id;
 }

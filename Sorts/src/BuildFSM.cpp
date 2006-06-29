@@ -64,6 +64,8 @@ void BuildFSM::init(vector<sint4> params) {
 }
 
 int BuildFSM::update() {
+  assert(sgo != NULL);
+  assert(Sorts::OrtsIO->isAlive(sgo->getID()));
   
   int moveStatus;
   Vector<sint4> params;

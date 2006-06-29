@@ -4,6 +4,7 @@
 #include <map>
 
 #include "GameObj.H"
+#include "PerceptualGroup.h"
 
 #include "SDLCanvas.h"
 
@@ -26,6 +27,16 @@ struct CanvasObjInfo {
   }
 };
 
+struct CanvasGroupInfo {
+  SDLCanvasCompound*     compound;
+  SDLCanvasRectangle*       mainRectangle;
+
+  CanvasGroupInfo() {
+    compound = NULL;
+    mainRectangle = NULL;
+  }
+};
+
 class SortsCanvas {
 public:
   SortsCanvas();
@@ -35,6 +46,10 @@ public:
   void clear();
   void registerGob(GameObj* gob);
   void unregisterGob(GameObj* gob);
+  void resetGob(GameObj* gob);
+
+  void registerGroup(PerceptualGroup* group);
+  void unregisterGroup(PerceptualGroup* group);
 
   void setColor(GameObj* gob, Uint8 r, Uint8 g, Uint8 b);
   void flashColor(GameObj* gob, Uint8 r, Uint8 g, Uint8 b, int cycles);
@@ -61,6 +76,7 @@ private:
   CanvasObjInfo soarStatObj;
 public:
   map<GameObj*, CanvasObjInfo> canvasObjs;
+  map<PerceptualGroup*, CanvasGroupInfo> canvasGroups;
   int updateCounter;
 };
 

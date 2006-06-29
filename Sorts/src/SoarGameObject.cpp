@@ -261,12 +261,18 @@ int SoarGameObject::getStatus()
 }
 
 Rectangle SoarGameObject::getBoundingBox() {
-  Rectangle r;
-  r.xmin = *gob->sod.x - *gob->sod.radius;
-  r.xmax = *gob->sod.x + *gob->sod.radius;
-  r.ymin = *gob->sod.y - *gob->sod.radius;
-  r.ymax = *gob->sod.y + *gob->sod.radius;
-  return r;
+  if (*gob->sod.shape == SHAPE_RECTANGLE) {
+    Rectangle r(*gob->sod.x1, *gob->sod.x2, *gob->sod.y1, *gob->sod.y2);
+    return r;
+  }
+  else {
+    Rectangle r;
+    r.xmin = *gob->sod.x - *gob->sod.radius;
+    r.xmax = *gob->sod.x + *gob->sod.radius;
+    r.ymin = *gob->sod.y - *gob->sod.radius;
+    r.ymax = *gob->sod.y + *gob->sod.radius;
+    return r;
+  }
 }
 
 coordinate SoarGameObject::getLocation() {

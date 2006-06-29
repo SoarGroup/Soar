@@ -57,7 +57,6 @@ public:
     for(int i = 0; i < 4; ++i) {
       vx[i] = getSpace()->toCS(c.x + x[i]);
       vy[i] = getSpace()->toCS(c.y + y[i]);
-      cout << vx[i] << ", " << vy[i] << endl;
     }
   }
 

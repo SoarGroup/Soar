@@ -331,7 +331,7 @@ AttackManager::AttackManager(const set<SoarGameObject*>& _targets)
     idSet.insert((*i)->getID());
   }
   reprioritize();
-
+/*
 #ifdef USE_CANVAS_ATTACK_MANAGER
   Uint8 r = (Uint8) (((int) this) % 156) + 100;
   for(set<SoarGameObject*>::iterator
@@ -339,12 +339,10 @@ AttackManager::AttackManager(const set<SoarGameObject*>& _targets)
       i != targetSet.end();
       ++i)
   {
-    if (!Sorts::canvas.gobRegistered((*i)->getGob())) {
-      Sorts::canvas.registerGob((*i)->getGob());
-      Sorts::canvas.setColor((*i)->getGob(), r, 0, 0);
-    }
+    assert(Sorts::canvas.gobRegistered((*i)->getGob()));
+    Sorts::canvas.setColor((*i)->getGob(), r, 0, 0);
   }
-#endif
+#endif*/
 }
 
 AttackManager::~AttackManager() {
@@ -362,7 +360,8 @@ AttackManager::~AttackManager() {
       ++i)
   {
 #ifdef USE_CANVAS_ATTACK_MANAGER
-    Sorts::canvas.unregisterGob((*i)->getGob());
+    //Sorts::canvas.unregisterGob((*i)->getGob());
+    Sorts::canvas.resetGob((*i)->getGob());
 #endif
     (*i)->disown(status);
   }
@@ -373,7 +372,7 @@ void AttackManager::registerFSM(AttackFSM* fsm) {
   numNewAttackers--;
   team.push_back(fsm);
 #ifdef USE_CANVAS_ATTACK_MANAGER
-  Sorts::canvas.registerGob(fsm->getGob());
+  //Sorts::canvas.registerGob(fsm->getGob());
   Uint8 b = (Uint8) (((int) this) % 156) + 100;
   Sorts::canvas.setColor(fsm->getGob(), 0, 0, b);
 #endif
@@ -387,7 +386,12 @@ void AttackManager::unregisterFSM(AttackFSM* fsm) {
   }
 
 #ifdef USE_CANVAS_ATTACK_MANAGER
-  Sorts::canvas.unregisterGob(fsm->getGob());
+  // in addition to attack reassignments, this is called as a result 
+  // of units being killed, in which case the gob is
+  // already removed from the canvas
+  if (Sorts::canvas.gobRegistered(fsm->getGob())) {  
+    Sorts::canvas.resetGob(fsm->getGob());
+  }
 #endif
   if (team.size() + numNewAttackers == 0) {
     msg << "team size is now 0, going away.." << endl;
@@ -602,7 +606,7 @@ int AttackManager::direct(AttackFSM* fsm) {
       }
       return 0;
     }
-    msg << "TIME TO FIND TARGET: " << (gettime() - st_find) / 1000 << endl;
+    dbg << "TIME TO FIND TARGET: " << (gettime() - st_find) / 1000 << endl;
   }
   
   assert(fsm->getTarget() != NULL);
@@ -704,13 +708,11 @@ int AttackManager::updateTargetList() {
   map<SoarGameObject*, AttackTargetInfo>::iterator i = targets.begin();
   while (i != targets.end()) {
     if (!Sorts::OrtsIO->isAlive(i->first->getID())) {
-      msg << "(" << (int) this << ") Unit " << i->first->getID() << " is no longer alive or moved out of view" << endl;
+      msg << "(" << this << ") Unit " << i->first->getID() << " is no longer alive or moved out of view" << endl;
 
 #ifdef USE_CANVAS_ATTACK_MANAGER
       // this target could have been in multiple attack managers
-      if (Sorts::canvas.gobRegistered(i->first->getGob())) {
-        Sorts::canvas.unregisterGob(i->first->getGob());
-      }
+      Sorts::canvas.resetGob(i->first->getGob());
 #endif
       unassignAll(i->first);
       targetSet.erase(i->first);

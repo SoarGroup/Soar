@@ -78,6 +78,7 @@ private:
   // event handler functions
   bool handle_event(const Event& e);
   void updateSoarGameObjects();
+  void removeDeadObjects();
   void updateMap();
   void updateSoarPlayerInfo();
   void mergeChanges(GameChanges& newChanges);
