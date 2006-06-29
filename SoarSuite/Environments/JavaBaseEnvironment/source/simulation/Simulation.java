@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.logging.*;
 
 import sml.*;
 import utilities.*;
@@ -13,7 +14,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	public static final String kMapFolder = "maps";
 	public static final int kDebuggerTimeoutSeconds = 15;	
 	
-	protected Logger m_Logger = Logger.logger;
+	protected static Logger logger = Logger.getLogger("simulation");
 	
 	private String m_CurrentMap;
 	private String m_DefaultMap;
@@ -72,7 +73,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		
 		// Generate base path
 		m_BasePath = System.getProperty("user.dir") + System.getProperty("file.separator");
-		m_Logger.log("Base path: " + m_BasePath);
+		logger.fine("Base path: " + m_BasePath);
 	}
 	
 	public boolean isRandom() {
@@ -137,7 +138,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
         
 	public void destroyEntity(WorldEntity entity) {
 		if (entity == null) {
-    		m_Logger.log("Asked to destroy null entity, ignoring.");
+    		logger.warning("Asked to destroy null entity, ignoring.");
     		return;
 		}	
 		m_WorldManager.destroyEntity(entity);
@@ -232,11 +233,11 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 //				BufferedReader in = new BufferedReader( new InputStreamReader(p.getInputStream()));
 //				String currentLine = null;
 //				while ((currentLine = in.readLine()) != null) {
-//					m_Logger.log(currentLine);
+//					logger.finer(currentLine);
 //				}
 //				BufferedReader err = new BufferedReader( new InputStreamReader(p.getErrorStream()));
 //				while ((currentLine = err.readLine()) != null) {
-//					m_Logger.log(currentLine);
+//					logger.finer(currentLine);
 //				}
 //			} catch (IOException e) {
 //				fireErrorMessage("IOException reading debugger process: " + e.getMessage());
@@ -262,7 +263,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	}
 	
 	public void shutdown() {
-		m_Logger.log("Shutdown called.");
+		logger.info("Shutdown called.");
 		if (m_WorldManager != null) {
 			m_WorldManager.shutdown();
 		}
@@ -291,7 +292,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	private void manualStep() {
 		m_WorldManager.update();
 		++m_WorldCount;
-		//m_Logger.log("World count: " + Integer.toString(m_WorldCount));
+		//logger.finest("World count: " + Integer.toString(m_WorldCount));
 		fireSimulationEvent(SimulationListener.kUpdateEvent);
 	}
 	
@@ -386,11 +387,11 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
     }
     
   	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
-  		//m_Logger.log("Update number " + m_WorldCount);
+  		logger.finest("Update number " + m_WorldCount);
   		m_WorldManager.update();
 		++m_WorldCount;
 		if (m_WorldCount % 250 == 0) {
-			m_Logger.log("World count: " + Integer.toString(m_WorldCount));
+			logger.fine("World count: " + Integer.toString(m_WorldCount));
 		}
 		fireSimulationEvent(SimulationListener.kUpdateEvent);
 
@@ -404,32 +405,32 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
     public void systemEventHandler(int eventID, Object data, Kernel kernel) {
   		if (eventID == smlSystemEventId.smlEVENT_SYSTEM_START.swigValue()) {
   			// Start simulation
-  			m_Logger.log("Start event received from kernel.");
+  			logger.fine("Start event received from kernel.");
   			m_Running = true;
   			fireSimulationEvent(SimulationListener.kStartEvent);
   		} else if (eventID == smlSystemEventId.smlEVENT_SYSTEM_STOP.swigValue()) {
   			// Stop simulation
-  			m_Logger.log("Stop event received from kernel.");
+  			logger.fine("Stop event received from kernel.");
   			m_Running = false;
   			if (m_Runs == 0) {
   				m_RunThread = null;
   			}
   			fireSimulationEvent(SimulationListener.kStopEvent);	
  		} else {
- 			m_Logger.log("Unknown system event received from kernel: " + eventID);
+ 			logger.warning("Unknown system event received from kernel: " + eventID);
  		}
     }
     
 	protected void fireErrorMessage(String errorMessage) {
 		m_LastErrorMessage = errorMessage;
 		fireSimulationEvent(SimulationListener.kErrorMessageEvent);
-		m_Logger.log(errorMessage);
+		logger.info(errorMessage);
 	}
 	
 	protected void fireNotificationMessage(String notifyMessage) {
 		m_LastErrorMessage = notifyMessage;
 		fireSimulationEvent(SimulationListener.kNotificationEvent);
-		m_Logger.log(notifyMessage);
+		logger.info(notifyMessage);
 	}
 	
 	public void addSimulationListener(SimulationListener listener) {

@@ -4,8 +4,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-
-import utilities.Logger;
+import java.util.logging.*;
 
 public class WindowManager {
 	public static final String kMapPrefix = "Map: ";
@@ -61,7 +60,7 @@ public class WindowManager {
 		return null;
 	}
 
-	protected Logger m_Logger = Logger.logger;
+	protected static Logger logger = Logger.getLogger("simulation.visuals");
 	protected Display m_Display;
 	protected Shell m_Shell;
 

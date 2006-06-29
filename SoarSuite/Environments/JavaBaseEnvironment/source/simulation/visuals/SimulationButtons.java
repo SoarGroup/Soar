@@ -1,5 +1,7 @@
 package simulation.visuals;
 
+import java.util.logging.*;
+
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.*;
@@ -13,7 +15,7 @@ public class SimulationButtons extends Composite {
 	protected Button m_StepButton;
 	protected Button m_ResetButton;
 //	protected Text m_RunsText;
-	protected Logger m_Logger = Logger.logger;
+	protected static Logger logger = Logger.getLogger("simulation.visuals");
 	
 	private Simulation m_Simulation;
 	
