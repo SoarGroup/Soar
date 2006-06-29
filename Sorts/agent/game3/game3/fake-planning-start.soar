@@ -3,12 +3,13 @@ sp {propose*start-build-barracks
               ^planning.execution-buffer <eb>)
   -{(<eb> ^task <t>)
     (<t> ^name build-barracks
-          ^id 1234)}
+         ^id 1234)}
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name start-task
         ^task-name build-barracks
-        ^task-id 1234)
+        ^task-id 1234
+        ^priority low)
 }
 
 # if we're producing marines and have an excess of minerals, build another barracks
@@ -19,12 +20,13 @@ sp {propose*start-build-barracks2
               ^io.input-link.game-info.my-minerals >= 400)
   -{(<eb> ^task <t>)
     (<t> ^name build-barracks
-          ^id 12774)}
+         ^id 12774)}
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name start-task
         ^task-name build-barracks
-        ^task-id 12774)
+        ^task-id 12774
+        ^priority low)
 }
 
 sp {propose*start-build-workers
@@ -32,12 +34,39 @@ sp {propose*start-build-workers
               ^planning.execution-buffer <eb>)
   -{(<eb> ^task <t>)
     (<t> ^name build-workers
-          ^id 2525)}
+         ^id 2525)}
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name start-task
         ^task-name build-workers
+        ^task-id 2525
+        ^priority low)
+}
+
+sp {propose*resurrect-build-workers
+   (state <s> ^name sorts
+              ^planning.execution-buffer <eb>
+              ^io.input-link.game-info.worker-count < 10)
+   (<eb> ^task <t>)
+   (<t> ^name build-workers
+        ^id 2525
+        ^completed true)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name resurrect-task
         ^task-id 2525)
+}
+
+sp {apply*resurrect-task
+   (state <s> ^name sorts
+              ^planning.execution-buffer.task <t>
+              ^operator <o>)
+   (<o> ^name resurrect-task
+        ^task-id <tid>)
+   (<t> ^id <tid>
+        ^completed true)
+-->
+   (<t> ^completed true -)
 }
 
 sp {propose*start-build-marines
@@ -45,30 +74,31 @@ sp {propose*start-build-marines
               ^planning.execution-buffer <eb>)
   -{(<eb> ^task <t>)
     (<t> ^name build-marines
-          ^id 2526)}
+         ^id 2526)}
    (<eb> ^task <t1>)
    (<t1>  ^name build-barracks
-         ^completed true)
+          ^completed true)
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name start-task
         ^task-name build-marines
-        ^task-id 2526)
+        ^task-id 2526
+        ^priority medium)
 }
 
 sp {propose*start-marine-attack
    (state <s> ^name sorts
               ^planning.execution-buffer <eb>
-              ^top-state.build-units <bu>)
+              ^io.input-link.game-info.marine-count > 0)
   -{(<eb> ^task <t>)
     (<t> ^name marine-attack
-          ^id 4444)}
-   (<bu> ^unit-type 1) # marines are being built
+         ^id 4444)}
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name start-task
         ^task-name marine-attack
-        ^task-id 4444)
+        ^task-id 4444
+        ^priority high)
 }
 
 # use this for rushing
@@ -78,14 +108,30 @@ sp {propose*start-worker-attack
               ^planning.execution-buffer <eb>)
   -{(<eb> ^task <t>)
     (<t> ^name worker-attack
-          ^id 4424)}
+         ^id 4424)}
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name start-task
         ^task-name worker-attack
-        ^task-id 4424)
+        ^task-id 4424
+        ^priority high)
 }
 
+# rush / emergency response
+sp {propose*start-base-defend
+   (state <s> ^name sorts
+              ^planning.execution-buffer <eb>)
+  -{(<eb> ^task <t>)
+    (<t> ^name base-defend
+         ^id 4325)}
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-task
+        ^task-name base-defend
+        ^task-id 4325
+        # bump self to high if needed
+        ^priority medium)
+}
 
 
 sp {propose*start-miner-assignment
@@ -94,10 +140,10 @@ sp {propose*start-miner-assignment
               ^top-state <ts>)
   -{(<eb> ^task <t>)
     (<t> ^name miner-assignment
-          ^id 5555)}
+         ^id 5555)}
               # wait until barracks construction, so we don't take all the workers.
    (<ts> ^build-building <bb>)
-   (<bb> ^task-id 1234 
+   (<bb> ^task-id 1234
          ^started-build true
          ^worker <id>)
    # wait for the actual building phase to begin (fsm changes the command at this point)
@@ -109,7 +155,8 @@ sp {propose*start-miner-assignment
    (<s> ^operator <o> + > =)
    (<o> ^name start-task
         ^task-name miner-assignment
-        ^task-id 5555)
+        ^task-id 5555
+        ^priority medium)
 }
 
 sp {apply*start-task
@@ -118,37 +165,13 @@ sp {apply*start-task
    (<ts> ^planning.execution-buffer <eb>)
    (<o> ^name start-task
         ^task-id <tid>
-        ^task-name <tn>)
+        ^task-name <tn>
+        ^priority <pr>)
 -->
    (<eb> ^task <t>)
    (<t> ^id <tid>
-        ^name <tn>)
+        ^name <tn>
+        ^priority <pr>)
 }
 
 
-sp {propose*execute-task
-   (state <s> ^name sorts
-             -^running-task
-              ^planning.execution-buffer <eb>)
-   (<eb> ^task <t>)
-   (<t> ^name <nm>
-        ^id <tid>
-       -^completed true)
--->
-   (<s> ^operator <o> + =)
-   (<o> ^name execute-task
-        ^task <t>)
-}
-
-sp {apply*execute-task
-   (state <s> ^operator <o>
-              ^top-state <ts>)
-   (<o> ^name execute-task
-        ^task <t>)
-   (<t> ^name <nm>
-        ^id <tid>)
--->
-   (<ts> ^running-task <rt>)
-   (<rt> ^name <nm>
-         ^id <tid>)
-}

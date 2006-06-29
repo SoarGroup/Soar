@@ -1,12 +1,14 @@
 sp {propose*marine-attack
    (state <s> ^name sorts
-              ^running-task <rt>)
+              ^running-task <rt>
+             -^top-state.under-attack true)
    (<rt> ^name marine-attack
          ^id <id>)
 -->
    (<s> ^operator <o> + =)
    (<o> ^name explore-attack
         ^unit-type marine
-        ^group-size 5
+        ^group-size 10
+        ^rush no
         ^task-id <id>) 
 }

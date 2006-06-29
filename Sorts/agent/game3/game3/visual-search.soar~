@@ -26,7 +26,7 @@ sp {visual-search*propose*search-worker
               ^superstate.operator.task-id <tid>
               ^io.input-link <il>
               ^top-state <ts>)
-   (<il> ^feature-maps.friendly_workers <fr>)
+   (<il> ^feature-maps.friendly-workers <fr>)
    (<fr> ^<sector> > 0)
    (<il> ^groups <gs>)
    -{(<gs> ^group <g>)
@@ -36,7 +36,7 @@ sp {visual-search*propose*search-worker
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name look-at-feature
-        ^feature friendly_workers
+        ^feature friendly-workers
         ^sector <sector>
         ^task-id <tid>)
 }

@@ -21,15 +21,31 @@ sp {task-switch*propose*switch
         ^old-task <tid>)
 }
 
-sp {task-switch*apply*switch
+sp {task-switch*apply*switch1
    (state <s> ^operator <o>
               ^top-state <ts>)
    (<o> ^name task-switch
         ^old-task <id>)
    (<ts> ^running-task <rt>)
    (<rt> ^id <id>)
+   (<ts> -^last-task)
 -->
    (<ts> ^running-task <rt> -)
+   (<ts> ^last-task <id>)
+}
+
+sp {task-switch*apply*switch2
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name task-switch
+        ^old-task <id>)
+   (<ts> ^running-task <rt>)
+   (<rt> ^id <id>)
+   (<ts> ^last-task <lt>)
+-->
+   (<ts> ^running-task <rt> -)
+   (<ts> ^last-task <lt> -)
+   (<ts> ^last-task <id>)
 }
 
 sp {task-switch*propose*switch-from-completed
@@ -45,3 +61,77 @@ sp {task-switch*propose*switch-from-completed
    (<o> ^name task-switch
         ^old-task <tid>)
 }
+
+sp {propose*execute-task-low
+   (state <s> ^name sorts
+             -^running-task
+              ^planning.execution-buffer <eb>)
+   (<eb> ^task <t>)
+   (<t> ^name <nm>
+        ^id <tid>
+       -^completed true
+        ^priority low)
+-->
+   (<s> ^operator <o> + = 10)
+   (<o> ^name execute-task
+        ^task <t>)
+}
+
+
+sp {propose*execute-task-medium
+   (state <s> ^name sorts
+             -^running-task
+              ^planning.execution-buffer <eb>)
+   (<eb> ^task <t>)
+   (<t> ^name <nm>
+        ^id <tid>
+       -^completed true
+        ^priority medium)
+-->
+   (<s> ^operator <o> + = 20)
+   (<o> ^name execute-task
+        ^task <t>)
+}
+
+sp {propose*execute-task-high
+   (state <s> ^name sorts
+             -^running-task
+              ^planning.execution-buffer <eb>)
+   (<eb> ^task <t>)
+   (<t> ^name <nm>
+        ^id <tid>
+       -^completed true
+        ^priority high)
+-->
+   (<s> ^operator <o> + = 30)
+   (<o> ^name execute-task
+        ^task <t>)
+}
+
+sp {apply*execute-task
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name execute-task
+        ^task <t>)
+   (<t> ^name <nm>
+        ^id <tid>)
+-->
+   (<ts> ^running-task <rt>)
+   (<rt> ^name <nm>
+         ^id <tid>)
+}
+
+# don't allow the last task, if there is a choice
+sp {task-switch*disprefer-last
+   (state <s> ^operator <o1> +
+              ^operator <o2> +
+              ^top-state <ts>)
+   (<o1> ^name execute-task
+         ^task.id <tid1>)
+   (<o2> ^name execute-task
+         ^task.id <tid2>)
+   (<ts> ^last-task <tid1>)
+-->
+   (<s> ^operator <o1> < <o2>)
+}
+

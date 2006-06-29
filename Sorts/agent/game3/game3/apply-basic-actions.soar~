@@ -72,6 +72,25 @@ sp {apply*orts-attack
         ^task-id <tid>)
 }
 
+sp {apply*orts-sever
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name orts-sever
+        ^group <gf>
+        ^num <n>
+        ^x <x>
+        ^y <y>
+        ^task-id <tid>)
+-->
+   (<ol> ^command <m>)
+   (<m> ^group0 <gf>
+        ^param0 <n>
+        ^param1 <x>
+        ^param2 <y>
+        ^name sever
+        ^task-id <tid>)
+}
+
 sp {apply*orts-mine
    (state <s> ^operator <o>
               ^io.output-link <ol>)
@@ -94,6 +113,7 @@ sp {apply*orts-build
         ^worker <w>
         ^x <x>
         ^y <y>
+        ^use-buffer <ub>
         ^building-type <t>
         ^task-id <tid>)
 -->
@@ -102,6 +122,7 @@ sp {apply*orts-build
         ^param0 <t>
         ^param1 <x>
         ^param2 <y>
+        ^param3 <ub>
         ^name build
         ^task-id <tid>)
 }
@@ -120,6 +141,36 @@ sp {apply*orts-stick
    (<ol> ^command <m>)
    (<m> ^group0 <g>
         ^name stick
+        ^task-id <tid>)
+}
+
+sp {apply*orts-stick
+   (state <s> ^operator <o>
+              ^io.output-link <ol>
+              ^top-state <ts>)
+   (<o> ^name orts-join
+        ^from-group <gf>
+        ^to-group <gt>
+        ^task-id <tid>)
+-->
+   (<ol> ^command <m>)
+   (<m> ^group0 <gf>
+        ^group1 <gt>
+        ^name join
+        ^task-id <tid>)
+}
+
+sp {apply*orts-free
+   (state <s> ^operator <o>
+              ^io.output-link <ol>
+              ^top-state <ts>)
+   (<o> ^name orts-free
+        ^group <g>
+        ^task-id <tid>)
+-->
+   (<ol> ^command <m>)
+   (<m> ^group0 <g>
+        ^name free
         ^task-id <tid>)
 }
 
@@ -151,13 +202,30 @@ sp {apply*orts-train
         ^building <b>
         ^unit-type <t>
         ^number <n>
+        ^use-buffer <ub>
         ^task-id <tid>)
 -->
    (<ol> ^command <tr>)
    (<tr> ^group0 <b>
         ^param0 <t>
         ^param1 <n>
+        ^param2 <ub>
         ^name train
         ^task-id <tid>)
 }
+
+sp {apply*orts-increase-mineral-buffer
+   (state <s> ^operator <o>
+              ^io.output-link <ol>
+              ^top-state <ts>)
+   (<o> ^name orts-increase-mineral-buffer
+        ^value <v>
+        ^task-id <tid>)
+-->
+   (<ol> ^command <tr>)
+   (<tr> ^value <v>
+        ^name increase-mineral-buffer
+        ^task-id <tid>)
+}
+
 

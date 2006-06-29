@@ -1,11 +1,12 @@
-sp {build-units*propose*init
+qsp {build-units*propose*init
    (state <s> ^name build-units
               ^superstate.operator <op>
               ^top-state <ts>)
    (<op> ^task-id <tid>
          ^number <num>
          ^building-name <nam>
-         ^unit-type <ty>)
+         ^unit-type <ty>
+         ^mineral-buffer-amount <bf>)
    (<ts> -^build-units.task-id <tid>)
 -->
    (<s> ^operator <o> +)
@@ -13,6 +14,7 @@ sp {build-units*propose*init
         ^number <num>
         ^building-name <nam>
         ^unit-type <ty>
+         ^mineral-buffer-amount <bf>
         ^task-id <tid>)
 }
 
@@ -23,6 +25,7 @@ sp {build-units*apply*init
         ^task-id <tid> 
         ^number <num>
         ^building-name <nam>
+         ^mineral-buffer-amount <bf>
         ^unit-type <ty>)
 -->
    (<s> ^task-id <tid>)
@@ -30,9 +33,11 @@ sp {build-units*apply*init
    (<bu> ^task-id <tid>
         ^number <num>
         ^building-name <nam>
+         ^mineral-buffer-amount <bf>
         ^unit-type <ty>)
 }
 
+# change grouping level only if it might do something (break up a large or mixed group)
 sp {build-units*propose*change-grouping-level
    (state <s> ^name build-units
               ^task-id <tid>
@@ -43,11 +48,11 @@ sp {build-units*propose*change-grouping-level
    (<bu> ^task-id <tid>
          ^building-name <nam>
         -^building-id)
-  -{(<gs> ^group <g>)
-    (<g> ^type <nam>
+  (<gs> ^group <g>)
+  (<g> ^type <nam> # or mixed
          ^owner <me>
-        ^num_members 1
-        ^command_running 0)}
+         ^num-members > 1
+        ^command-running 0)
 
 -->
    (<s> ^operator <o> + < =)
@@ -86,7 +91,9 @@ sp {build-units*propose*find-building
               ^top-state <ts>
               ^io.input-link <il>
               ^task-id <tid>
-              ^top-state.my-id <me>)
+              ^top-state.my-id <me>
+              ^io.input-link.feature-maps.friendly <fr>)
+   (<fr> ^<sector> > 0)
    (<ts> ^build-units <bu>)
    (<bu> ^task-id <tid>
          ^building-name <nam>
@@ -95,7 +102,7 @@ sp {build-units*propose*find-building
    -{(<gs> ^group <g>)
      (<g> ^type <nam>
           ^owner <me>
-          ^num_members 1)}
+          ^num-members 1)}
 -->
    (<s> ^operator <o> + < =) # prefer changing group level
    (<o> ^name visual-search
@@ -138,9 +145,9 @@ sp {build-units*elaborate*eligible-building
    (<bu> ^task-id <tid>
          ^building-name <nam>)
    (<g> ^type <nam>
-        ^command_running 0
+        ^command-running 0
         ^owner <me>
-        ^num_members 1
+        ^num-members 1
         ^id <id>)
 -->
    (<s> ^eligible-building <id>)
@@ -176,13 +183,13 @@ sp {build-units*propose*remove-building
    (state <s> ^name build-units
               ^top-state.build-units <bu>
               ^task-id <tid>
-              ^io.input-link.groups <gs>)
-  -{(<gs> ^group.id <id>)}
+             -^io.input-link.groups.group.id <id>)
    (<bu> ^task-id <tid>
          ^building-id <id>)
 -->
     (<s> ^operator <o> + =)
-    (<o> ^name bu*remove-building)
+    (<o> ^name bu*remove-building
+         ^id <id>)
 }
 
 sp {build-units*apply*remove-building
@@ -191,9 +198,67 @@ sp {build-units*apply*remove-building
               ^top-state.build-units <bu>
               ^operator <o>)
    (<bu> ^task-id <tid>)
-   (<o> ^name bu*remove-building)
+   (<o> ^name bu*remove-building
+        ^id <id>)
 -->
    (<bu> ^building-id <id> -)
+}
+
+
+sp {build-units*propose*buffer-minerals
+   (state <s> ^name build-units
+              ^top-state <ts>
+              ^task-id <tid> 
+              ^eligible-building <id>
+              ^io.output-link <ol>)
+   (<ts> ^build-units <bu>)
+   (<bu> ^task-id <tid>
+         ^building-name <nam>
+         ^unit-type <ty>
+         ^number <num>
+         ^building-id <id>
+         ^mineral-buffer-amount <bf>
+         -^minerals-buffered true)
+  -{(<ol> ^command <c>)
+    (<c> ^task-id <tid>
+          ^name increase-mineral-buffer)}
+-->
+    (<s> ^operator <o> +  =)
+    (<o> ^name orts-increase-mineral-buffer
+         ^value <bf>
+         ^task-id <tid>)
+}
+
+sp {build-units*propose*minerals-buffered
+   (state <s> ^name build-units
+              ^task-id <tid>
+              ^top-state <ts>
+              ^io.output-link <ol>)
+   (<ol> ^command <fc>)
+   (<fc> ^task-id <tid>
+         ^name increase-mineral-buffer
+         ^status complete)
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name build-units*minerals-buffered
+        ^task-id <tid>)
+}
+
+sp {build-units*apply*minerals-buffered
+   (state <s> ^operator <o> 
+              ^top-state <ts>)
+   (<o> ^name build-units*minerals-buffered
+        ^task-id <tid>)
+   (<ts> ^io.output-link <ol>
+         ^build-units <bu>)
+   (<ol> ^command <fc>)
+   (<fc> ^task-id <tid>
+         ^name increase-mineral-buffer
+         ^status complete)
+   (<bu> ^task-id <tid>)
+-->
+   (<bu> ^minerals-buffered true)
+   (<ol> ^command <fc> -)
 }
 
 
@@ -207,7 +272,9 @@ sp {build-units*propose*start-train
          ^building-name <nam>
          ^unit-type <ty>
          ^number <num>
-         ^building-id <id>)
+         ^building-id <id>
+         ^mineral-buffer-amount <bf>
+         ^minerals-buffered true)
   -{(<ts> ^io.output-link.command <fc>)
     (<fc> ^task-id <tid>
           ^name train)}
@@ -217,6 +284,7 @@ sp {build-units*propose*start-train
          ^building <id>
          ^unit-type <ty>
          ^number <num>
+         ^use-buffer <bf>
          ^task-id <tid>)
 }
 
@@ -261,7 +329,7 @@ sp {build-units*propose*retry-failed
          ^building-id <id>
          ^started-train true)
    (<g> ^id <id>
-        ^command_failure 1)
+        ^command-failure 1)
 -->
    (<s> ^operator <o> +)
    (<o> ^name bu*retry-failed
@@ -291,7 +359,7 @@ sp {build-units*propose*done
          ^building-id <id>)
    (<g> ^id <id>
         ^command train
-        ^command_success 1)
+        ^command-success 1)
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name bu*done

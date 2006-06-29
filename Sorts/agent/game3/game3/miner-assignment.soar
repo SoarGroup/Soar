@@ -1,6 +1,7 @@
 sp {propose*miner-assignment
    (state <s> ^name sorts
               ^running-task <rt>
+             -^top-state.under-attack true
               ^planning.execution-buffer.task <ts>)
    (<rt> ^name miner-assignment
          ^id <id>)
@@ -17,10 +18,10 @@ sp {miner-assignment*propose*change-grouping-level
    (state <s> ^name miner-assignment
               ^task-id <tid>
               ^top-state <ts>)
-  -{(<ts> ^grouping-level large-groups)}
+  -{(<ts> ^grouping-level huge-groups)}
 -->
    (<s> ^operator <o> + =)
-   (<o> ^name set-grouping-large-groups
+   (<o> ^name set-grouping-huge-groups
         ^task-id <tid>)
 }
 
@@ -54,19 +55,19 @@ sp {miner-assignment*propose*assign-miner
    (state <s> ^name miner-assignment
               ^io.input-link.groups <gs>
               ^io.output-link <ol>
-              ^top-state.grouping-level large-groups
+              ^top-state.grouping-level huge-groups
               ^top-state.my-id <me>
               ^task-id <tid>)
    (<gs> ^group <g>)
    (<g> ^type worker
         ^id   <gid>
         ^owner <me>
-        ^command_running 0
-        ^command_success 0
-        ^command_failure 0)
+        ^command-running 0)
+ #       ^command-success 0
+ #       ^command-failure 0)
   -{(<ol> ^command <c>)
     (<c> ^name mine
-         ^group0 <g>)}
+         ^group0 <gid>)}
 -->
    (<s> ^operator <o> + =)
     (<o> ^name orts-mine
@@ -74,7 +75,7 @@ sp {miner-assignment*propose*assign-miner
          ^task-id <tid>)
 }
 
-sp {miner-assignment*propose*clean-command
+sp {miner-assignment*propose*clean-mine-command
    (state <s> ^name miner-assignment
               ^task-id <tid>
               ^top-state <ts>
@@ -85,14 +86,14 @@ sp {miner-assignment*propose*clean-command
          ^status complete)
 -->
    (<s> ^operator <o> + > =)
-   (<o> ^name miner-assignment*clean-command
+   (<o> ^name miner-assignment*clean-mine-command
         ^task-id <tid>)
 }
 
-sp {miner-assignment*apply*clean-command
+sp {miner-assignment*apply*clean-mine-command
    (state <s> ^operator <o> 
               ^top-state <ts>)
-   (<o> ^name miner-assignment*clean-command
+   (<o> ^name miner-assignment*clean-mine-command
         ^task-id <tid>)
    (<ts> ^io.output-link <ol>)
    (<ol> ^command <fc>)
@@ -102,6 +103,64 @@ sp {miner-assignment*apply*clean-command
 -->
    (<ol> ^command <fc> -)
 }
+
+sp {miner-assignment*propose*join-miners
+   (state <s> ^name miner-assignment
+              ^io.input-link.groups <gs>
+              ^io.output-link <ol>
+              ^top-state.grouping-level huge-groups
+              ^top-state.my-id <me>
+              ^task-id <tid>
+             -^io.output-link.command.group0 <gid2>)
+   (<gs> ^group <g1>
+         ^group <g2>)
+   (<g1> ^type worker
+         ^owner <me>
+        ^id   <gid1>
+        ^num-members <nm1>
+        ^command mine)
+   (<g2> ^type worker
+         ^owner <me>
+        ^id   <gid2>
+        ^num-members <nm2> < <nm1>
+        ^command mine)
+-->
+   (<s> ^operator <o> + =)
+    (<o> ^name orts-join
+         ^from-group <gid2>
+         ^to-group <gid1>
+         ^task-id <tid>)
+}
+
+sp {miner-assignment*propose*clean-join-command
+   (state <s> ^name miner-assignment
+              ^task-id <tid>
+              ^top-state <ts>
+              ^io.output-link <ol>)
+   (<ol> ^command <fc>)
+   (<fc> ^task-id <tid>
+         ^name join
+         ^status complete)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name miner-assignment*clean-join-command
+        ^task-id <tid>)
+}
+
+sp {miner-assignment*apply*clean-join-command
+   (state <s> ^operator <o> 
+              ^top-state <ts>)
+   (<o> ^name miner-assignment*clean-join-command
+        ^task-id <tid>)
+   (<ts> ^io.output-link <ol>)
+   (<ol> ^command <fc>)
+   (<fc> ^task-id <tid>
+         ^name join
+         ^status complete)
+-->
+   (<ol> ^command <fc> -)
+}
+
 
 # task never finishes..
 

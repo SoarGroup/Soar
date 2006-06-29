@@ -6,6 +6,7 @@ pushd elaborations
 source elaborations_source.soar
 popd
 source apply-basic-actions.soar
+source base-defend.soar
 source basic.soar
 source build-barracks.soar
 source build-building.soar

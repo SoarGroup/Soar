@@ -10,6 +10,7 @@ sp {propose*build-workers
    (<s> ^operator <o> + =)
    (<o> ^name build-units
         ^number 10
+        ^mineral-buffer-amount 0
         ^building-name controlCenter
         ^unit-type 0 # see general.h for unit type->int translation
         ^task-id <id>)

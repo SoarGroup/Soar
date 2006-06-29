@@ -11,7 +11,7 @@ sp {apply*initialize-sorts
    (<op> ^name initialize-sorts)
 -->
    (<s> ^name sorts
-        ^grouping-level small-groups
+        ^grouping-level individuals # fix for weird Soar bug
         ^planning <pl>
         ^opportunity-task-buffer <otb>
         ^group-memory <gm>)

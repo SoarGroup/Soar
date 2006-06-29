@@ -11,5 +11,6 @@ sp {propose*build-barracks
    (<o> ^name build-building
         ^building-type 1 # see general.h for building type->int translation
         ^building-dim 32 # width/2
+        ^mineral-buffer-amount 400
         ^task-id <id>) 
 }

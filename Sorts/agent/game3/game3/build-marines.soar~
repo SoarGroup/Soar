@@ -11,6 +11,7 @@ sp {propose*build-marines
    (<o> ^name build-units
         ^number 2000
         ^building-name barracks
+        ^mineral-buffer-amount 0
         ^unit-type 1 # see general.h for unit type->int translation
         ^task-id <id>)
 }
