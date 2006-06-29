@@ -1,9 +1,11 @@
 package simulation;
 
+import java.util.logging.*;
+
 import utilities.*;
 
 public class World {
-	protected Logger m_Logger = Logger.logger;
+	protected static Logger logger = Logger.getLogger("simulation");
 	protected int m_WorldSize;
 
 	public int getSize() {

@@ -1,5 +1,7 @@
 package simulation;
 
+import java.util.logging.*;
+
 import org.eclipse.swt.graphics.*;
 
 import sml.*;
@@ -16,7 +18,7 @@ public class WorldEntity {
 	public final static int kSouthInt = 4;
 	public final static int kWestInt = 8;
 	
-	protected Logger m_Logger = Logger.logger;
+	protected static Logger logger = Logger.getLogger("simulation");
 	protected Agent m_Agent;	
 	protected Color m_Color;
 	protected String m_Facing;
@@ -40,7 +42,7 @@ public class WorldEntity {
 		} else {
 			m_Name = m_Agent.GetAgentName();
 		}
-		m_Logger.log("Created agent: " + m_Name);
+		logger.info("Created agent: " + m_Name);
 	}
 	
 	public String getProductions() {
