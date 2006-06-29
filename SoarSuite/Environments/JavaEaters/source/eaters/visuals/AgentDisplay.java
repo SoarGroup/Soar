@@ -1,5 +1,7 @@
 package eaters.visuals;
 
+import java.util.logging.Logger;
+
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.*;
@@ -18,8 +20,8 @@ public class AgentDisplay extends Composite {
 	static final int kScoreWidth = 55;
 	
 	Group m_Group;
-	Logger m_Logger = Logger.logger;
-	EatersSimulation m_Simulation;
+	Logger logger = Logger.getLogger("eaters.visuals");
+	protected static EatersSimulation m_Simulation;
 	Table m_AgentTable;
 	EatersVisualWorld m_AgentWorld;
 	WorldEntity m_SelectedEntity;

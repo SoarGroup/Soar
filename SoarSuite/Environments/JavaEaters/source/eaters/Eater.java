@@ -109,7 +109,7 @@ public class Eater extends WorldEntity {
 	
 	public void updateInput(EatersWorld world) {
 		// Anything you want to log about each eater each frame can go here:
-		//m_Logger.log(getName() + " at " + getLocation() + " score " + getPoints());
+		//logger.info(getName() + " at " + getLocation() + " score " + getPoints());
 		
 
 		int xView, yView;
@@ -149,12 +149,12 @@ public class Eater extends WorldEntity {
 	
 	public MoveInfo getMove() {
 		if (m_Agent.GetNumberCommands() == 0) {
-			m_Logger.log(getName() + " issued no command.");
+			logger.fine(getName() + " issued no command.");
 			return null;
 		}
 		
 		if (m_Agent.GetNumberCommands() > 1) {
-			m_Logger.log(getName() + " issued more than one command, using first.");
+			logger.fine(getName() + " issued more than one command, using first.");
 		}
 
 		Identifier commandId = m_Agent.GetCommand(0);
@@ -166,7 +166,7 @@ public class Eater extends WorldEntity {
 		} else if (commandName.equalsIgnoreCase(kJumpID)) {
 			move.jump = true;
 		} else {
-			m_Logger.log("Unknown command: " + commandName);
+			logger.warning("Unknown command: " + commandName);
 			return null;
 		}
 		
@@ -187,7 +187,7 @@ public class Eater extends WorldEntity {
 			return move;
 		}
 		
-		m_Logger.log("Improperly formatted command: " + kMoveID);
+		logger.warning("Improperly formatted command: " + kMoveID);
 		return null;
 	}
 	
