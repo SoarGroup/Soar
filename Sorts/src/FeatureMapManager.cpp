@@ -38,22 +38,22 @@ FeatureMapManager::FeatureMapManager() {
   stringToFeatureMap[FMName] =FMPointer;
   fmList.push_back(FMPointer);
 
-  FMName = "air_units";
+  FMName = "air-units";
   FMPointer = new FeatureMap();
   stringToFeatureMap[FMName] =FMPointer;
   fmList.push_back(FMPointer);
   
-  FMName = "land_units";
+  FMName = "land-units";
   FMPointer = new FeatureMap();
   stringToFeatureMap[FMName] =FMPointer;
   fmList.push_back(FMPointer);
   
-  FMName = "moving_units";
+  FMName = "moving-units";
   FMPointer = new FeatureMap();
   stringToFeatureMap[FMName] =FMPointer;
   fmList.push_back(FMPointer);
 
-  FMName = "friendly_workers";
+  FMName = "friendly-workers";
   FMPointer = new FeatureMap();
   stringToFeatureMap[FMName] =FMPointer;
   fmList.push_back(FMPointer);

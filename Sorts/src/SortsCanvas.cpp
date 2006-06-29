@@ -4,7 +4,7 @@
 #define REDRAW_PERIOD 1
 
 #define CLASS_TOKEN "CANVAS"
-#define DEBUG_OUTPUT false 
+#define DEBUG_OUTPUT true 
 #include "OutputDefinitionsUnique.h"
 
 SortsCanvas::SortsCanvas() { 
@@ -26,6 +26,12 @@ void SortsCanvas::init(double ww, double wh, double scale) {
   soarStatObj.mainCircle->setCircleColor(198,226,255);
   soarStatObj.origColor = soarStatObj.mainCircle->getCircleColor();
   soarStatObj.compound->addShape(soarStatObj.mainCircle);
+  commandStatObj.compound = canvas.makeCompound(10,10);
+  commandStatObj.mainCircle = canvas.makeCircle(10,45,1);
+  commandStatObj.mainCircle->setLabel("");
+  commandStatObj.mainCircle->setCircleColor(198,226,255);
+  commandStatObj.origColor = commandStatObj.mainCircle->getCircleColor();
+  commandStatObj.compound->addShape(commandStatObj.mainCircle);
 }
 
 bool SortsCanvas::initted() {
@@ -222,5 +228,9 @@ void SortsCanvas::clearStatus() {
 }
 void SortsCanvas::setSoarStatus(string status) {
   soarStatObj.mainCircle->setLabel(status);
+  canvas.redraw();
+}
+void SortsCanvas::setCommandStatus(string status) {
+  commandStatObj.mainCircle->setLabel(status);
   canvas.redraw();
 }

@@ -153,6 +153,12 @@ void SoarGameObject::assignAction(ObjectActionType cmd, Vector<sint4> prms)
 void SoarGameObject::update()
 {
   msg << "updating sgo, group is " << pGroup << endl;
+  sat_loc = Sorts::spatialDB->updateObject(gob,sat_loc);
+  if (pGroup == NULL) {
+    // this happens if we are ignoring world objects
+    return;
+  }
+  
   if (gob->is_pending_action()) {
     msg << "ignored update, there is a pending action.\n";
     Sorts::OrtsIO->updateNextCycle(this);
@@ -161,7 +167,6 @@ void SoarGameObject::update()
   
   int fsmStatus;
 
-  sat_loc = Sorts::spatialDB->updateObject(gob,sat_loc);
     
   pGroup->setHasStaleMembers();
   

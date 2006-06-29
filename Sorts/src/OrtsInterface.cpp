@@ -218,7 +218,7 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
     }
   }
   
-  msg << gameObj << " added" << endl;
+  msg << gameObj << " added, id " << id << endl;
   objectMap[gameObj] = newObj;
    
   if (liveIDs.find(id) != liveIDs.end()) {
@@ -371,7 +371,7 @@ void OrtsInterface::updateSoarGameObjects() {
       requiredThisCycle.erase(sgo);
     }
     else if (gob == playerGameObj) {
-      assert(false);
+      // we check this every cycle
     }
   }
 
@@ -502,7 +502,7 @@ void OrtsInterface::mergeChanges(GameChanges& newChanges) {
   for (it = newChanges.changed_objs.begin(); 
        it != newChanges.changed_objs.end(); 
        it++) {
-    if (changes.changed_objs.find(*it) != changes.changed_objs.end()) {
+    if (changes.changed_objs.find(*it) == changes.changed_objs.end()) {
       changes.changed_objs.push_back(*it);
     }
   }
@@ -519,7 +519,6 @@ void OrtsInterface::mergeChanges(GameChanges& newChanges) {
     it2 = changes.changed_objs.find(*it);
     if (it2 != changes.changed_objs.end()) {
       changes.changed_objs.erase(it2);
-      found = true;
     }
     if (not found) {
       changes.vanished_objs.push_back(*it);
@@ -537,7 +536,6 @@ void OrtsInterface::mergeChanges(GameChanges& newChanges) {
     it2 = changes.changed_objs.find(*it);
     if (it2 != changes.changed_objs.end()) {
       changes.changed_objs.erase(it2);
-      found = true;
     }
     if (not found) {
       changes.dead_objs.push_back(*it);

@@ -224,7 +224,7 @@ void PerceptualGroup::generateData() {
   health /= size;
   attribs.add("health", health);
   attribs.add("speed", speed / size);
-  attribs.add("num_members", size);
+  attribs.add("num-members", size);
 
   attribs.add("enemy", ((not world) and (not friendly)));
 
@@ -235,14 +235,14 @@ void PerceptualGroup::generateData() {
   attribs.add("y-min", bbox.ymin);
   attribs.add("y-max", bbox.ymax);
 
-  attribs.add("dist_to_focus", (float)distToFocus);
+  attribs.add("dist-to-focus", (float)distToFocus);
 
   coordinate lastQ = Sorts::gameActionManager->getLastResult();
   if (lastQ.x != lastQueryResult.x ||
       lastQ.y != lastQueryResult.y) {
     lastQueryDist = sqrt(squaredDistance(centerX, centerY, lastQ.x, lastQ.y));
   }
-  attribs.add("dist_to_query", (float)lastQueryDist);
+  attribs.add("dist-to-query", (float)lastQueryDist);
 
   if (mixedType) {
     attribs.add("type", "mixed");
@@ -328,10 +328,10 @@ void PerceptualGroup::generateData() {
     }
     
     attribs.add("command", currentCommand);
-    attribs.add("command_running", running);
-    attribs.add("command_success", success);
-    attribs.add("command_failure", failure);
-    attribs.add("command_stuck", stuck);
+    attribs.add("command-running", running);
+    attribs.add("command-success", success);
+    attribs.add("command-failure", failure);
+    attribs.add("command-stuck", stuck);
     if (running > 0
         or success > 0
         or failure > 0) {

@@ -314,6 +314,8 @@ void SoarInterface::getNewSoarOutput() {
   
   int numberCommands = agent->GetNumberCommands();
   int oldCommandCount = 0;
+
+  string name("");
   
   for (int i = 0 ; i < numberCommands ; i++) {
     sml::Identifier* cmdPtr = agent->GetCommand(i);
@@ -325,7 +327,7 @@ void SoarInterface::getNewSoarOutput() {
     }
     
     // support either name-as-command, or command with name attribute
-    string name = cmdPtr->GetCommandName() ;
+    name = cmdPtr->GetCommandName() ;
     if (name == "command") {
       name = cmdPtr->GetParameterValue("name");
     }
@@ -354,6 +356,12 @@ void SoarInterface::getNewSoarOutput() {
     }
     agent->CreateIntWME(cmdPtr, "added-to-queue", 1);
   }
+#ifdef USE_CANVAS
+  if (name != "") {
+    Sorts::canvas.setCommandStatus("last Soar command: " + name);
+    // naturally, this misses multiple commands in the same cycle
+  }
+#endif
 
   dbg << "old command count: " << oldCommandCount << endl;
 

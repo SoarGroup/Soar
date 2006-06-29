@@ -69,11 +69,13 @@ public:
   void clearStatus();
   
   void setSoarStatus(string);
+  void setCommandStatus(string);
 
 private:
   SDLCanvas canvas;
   CanvasObjInfo statusObj;
   CanvasObjInfo soarStatObj;
+  CanvasObjInfo commandStatObj;
 public:
   map<SoarGameObject*, CanvasObjInfo> canvasObjs;
   map<PerceptualGroup*, CanvasGroupInfo> canvasGroups;
