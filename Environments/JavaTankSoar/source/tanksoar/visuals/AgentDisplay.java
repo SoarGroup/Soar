@@ -1,5 +1,7 @@
 package tanksoar.visuals;
 
+import java.util.logging.*;
+
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
@@ -21,7 +23,7 @@ public class AgentDisplay extends Composite {
 	static final int kHealthWidth = 58;
 	static final int kEnergyWidth = 60;
 	
-	Logger m_Logger = Logger.logger;
+	protected static Logger logger = Logger.getLogger("tanksoar.visuals");
 	TankSoarSimulation m_Simulation;
 	Table m_AgentTable;
 	WorldEntity m_SelectedEntity;

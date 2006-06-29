@@ -219,7 +219,7 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 			return;
 			
 		default:
-			m_Logger.log("Invalid event type received: " + new Integer(type));
+			logger.warning("Invalid event type received: " + new Integer(type));
 			return;
 		}		
 	}

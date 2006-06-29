@@ -1,7 +1,7 @@
 package tanksoar;
 
 import java.util.Random;
-
+import java.util.logging.*;
 import simulation.Simulation;
 import sml.Agent;
 import sml.FloatElement;
@@ -9,7 +9,6 @@ import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
 import sml.WMElement;
-import utilities.Logger;
 import utilities.MapPoint;
 
 public class InputLinkManager {
@@ -104,7 +103,7 @@ public class InputLinkManager {
 	private IntElement m_xWME;
 	private IntElement m_yWME;			
 
-	private Logger m_Logger = Logger.logger;
+	private static Logger logger = Logger.getLogger("tanksoar");
 	
 	private Identifier[][] radarCellIDs = new Identifier[Tank.kRadarWidth][Tank.kRadarHeight];
 	private StringElement[][] radarColors = new StringElement[Tank.kRadarWidth][Tank.kRadarHeight];
@@ -324,7 +323,7 @@ public class InputLinkManager {
 			soundString = kRightID;
 		} else {
 			if (sound > 0) {
-				m_Logger.log("Warning: sound reported as more than one direction.");
+				logger.warning("Warning: sound reported as more than one direction.");
 			}
 			soundString = kSilentID;
 		}
@@ -493,7 +492,7 @@ public class InputLinkManager {
 	}
 	
 	private void generateNewRadar() {
-//		m_Logger.log("generateNewRadar()");
+//		logger.finest("generateNewRadar()");
 		TankSoarCell[][] radarCells = m_Tank.getRadarCells();
 		for (int j = 0; j < Tank.kRadarHeight; ++j) {
 			boolean done = false;
@@ -526,7 +525,7 @@ public class InputLinkManager {
 					}
 				}
 			}
-//			m_Logger.log(outstring);
+//			logger.finest(outstring);
 			if (done == true) {
 				break;
 			}
@@ -534,7 +533,7 @@ public class InputLinkManager {
 	}
 	
 	private void updateRadar() {
-//		m_Logger.log("updateRadar()");
+//		logger.finest("updateRadar()");
 		TankSoarCell[][] radarCells = m_Tank.getRadarCells();
 		for (int i = 0; i < Tank.kRadarWidth; ++i) {
 //			String outstring = new String();
@@ -589,12 +588,12 @@ public class InputLinkManager {
 					}
 				}
 			}
-//			m_Logger.log(outstring);
+//			logger.finest(outstring);
 		}
 	}
 
 	private void clearRadar() {
-//		m_Logger.log("clearRadar()");
+//		logger.finest("clearRadar()");
 		for (int i = 0; i < Tank.kRadarWidth; ++i) {
 			for (int j = 0; j < Tank.kRadarHeight; ++j) {
 				radarCellIDs[i][j] = null;
