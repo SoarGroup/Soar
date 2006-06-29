@@ -243,7 +243,7 @@ public class TankSoarWorld extends World implements WorldManager {
 			generateWorldFromXML(cells);
 
 		} catch (Exception e) {
-			m_Logger.log("Error loading map: " + e.getMessage());
+			logger.warning("Error loading map: " + e.getMessage());
 			return false;
 		}
 		
@@ -261,7 +261,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		m_Missiles.reset();
 		resetTanks();
 		
-		m_Logger.log(mapFile + " loaded.");
+		logger.fine(mapFile + " loaded.");
 		return true;
 	}
 	
@@ -290,7 +290,7 @@ public class TankSoarWorld extends World implements WorldManager {
 					throw new Exception("Error (generateWorldFromXML) on row: " + row + ", column: " + col);
 				}
 			}
-			//m_Logger.log(rowString);
+			//logger.fine(rowString);
 		}
 	}
 	
@@ -305,7 +305,7 @@ public class TankSoarWorld extends World implements WorldManager {
 				return;
 			}
 		}
-		m_Logger.log("Couldn't find entity name match for " + entity.getName() + ", ignoring.");
+		logger.warning("Couldn't find entity name match for " + entity.getName() + ", ignoring.");
 	}
 	
 	public WorldEntity[] getEntities() {
@@ -319,7 +319,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			MapPoint location = m_Tanks[i].getInitialLocation();
 			if (location != null && getCell(location).isBlocked()) {
-				m_Logger.log("Initial location " + location + " is blocked, going random.");
+				logger.warning("Initial location " + location + " is blocked, going random.");
 				location = null;
 			}
 			if (location == null) {
@@ -402,11 +402,11 @@ public class TankSoarWorld extends World implements WorldManager {
 		if (location != null) {
 			if (this.isInBounds(location)) {
 				if (getCell(location).isBlocked()) {
-					m_Logger.log("Initial location " + location + " is blocked, going random.");
+					logger.warning("Initial location " + location + " is blocked, going random.");
 					location = null;
 				}
 			} else {
-				m_Logger.log("Initial location " + location + " is out of bounds, going random.");
+				logger.warning("Initial location " + location + " is out of bounds, going random.");
 				location = null;
 			}
 		}
@@ -522,7 +522,7 @@ public class TankSoarWorld extends World implements WorldManager {
 						} else {
 							status = "loser";
 						}
-						m_Logger.log(m_Tanks[j].getName() + ": " + m_Tanks[j].getPoints() + " (" + status + ").");
+						logger.info(m_Tanks[j].getName() + ": " + m_Tanks[j].getPoints() + " (" + status + ").");
 					}
 				}
 				return;
@@ -542,7 +542,7 @@ public class TankSoarWorld extends World implements WorldManager {
 					} else {
 						status = "loser";
 					}
-					m_Logger.log(m_Tanks[j].getName() + ": " + m_Tanks[j].getPoints() + " (" + status + ").");
+					logger.info(m_Tanks[j].getName() + ": " + m_Tanks[j].getPoints() + " (" + status + ").");
 				}
 			}
 			return;
@@ -550,7 +550,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		
 		// Sanity check, need tanks to make an update meaningful
 		if (m_Tanks == null) {
-			m_Logger.log("Update called with no tanks.");
+			logger.warning("Update called with no tanks.");
 			return;
 		}
 		
@@ -685,7 +685,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].recentlyMoved()) {
 				if (!getCell(m_Tanks[i].getLocation()).removeTank()) {
-					m_Logger.log("Warning: moving tank " + m_Tanks[i].getName() + " not at old location " + m_Tanks[i].getLocation());
+					logger.warning("Warning: moving tank " + m_Tanks[i].getName() + " not at old location " + m_Tanks[i].getLocation());
 				}
 				MapPoint newLocation = new MapPoint(m_Tanks[i].getLocation(), m_Tanks[i].lastMoveDirection());
 				m_Tanks[i].setLocation(newLocation);
@@ -809,7 +809,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		
 		LinkedList searchList = new LinkedList();
 		searchList.addLast(tank.getLocation());
-		//m_Logger.log("Starting search at " + tank.getLocation());
+		//logger.finer("Starting search at " + tank.getLocation());
 		int relativeDirection = -1;
 		
 		while (searchList.size() > 0) {
@@ -839,7 +839,7 @@ public class TankSoarWorld extends World implements WorldManager {
 							
 				if (newCell.containsTank() && newCell.getTank().recentlyMovedOrRotated()) {
 					
-					//m_Logger.log("Found recently moved tank at " + newLocation);	
+					//logger.finer("Found recently moved tank at " + newLocation);	
 					
 					int distance = 1;
 					while(getCell(location).getParent() != null) {
@@ -847,8 +847,8 @@ public class TankSoarWorld extends World implements WorldManager {
 						newLocation = location;
 						location = getCell(location).getParent();
 					}
-					//m_Logger.log("Distance to loud tank is " + Integer.toString(distance));	
-					//m_Logger.log("First cell on path is " + newLocation);	
+					//logger.finer("Distance to loud tank is " + Integer.toString(distance));	
+					//logger.finer("First cell on path is " + newLocation);	
 					if (distance  <= kMaxSmellDistance) {
 						relativeDirection = location.directionTo(newLocation);
 					}
@@ -859,7 +859,7 @@ public class TankSoarWorld extends World implements WorldManager {
 					break;
 				}
 				
-				//m_Logger.log("Adding " + newLocation + " with parent " + location);				
+				//logger.finer("Adding " + newLocation + " with parent " + location);				
 				newCell.setParent(location);
 				searchList.addLast(newLocation);
 			}
@@ -869,7 +869,7 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 		}
 		
-		//m_Logger.log("Finished search.");
+		//logger.finer("Finished search.");
 		
 		if (relativeDirection == -1) {
 			relativeDirection = 0;
@@ -885,14 +885,14 @@ public class TankSoarWorld extends World implements WorldManager {
 		Tank closestTank = null;
 		int closestDistance = m_MaxManhattanDistance + 1;
 		
-		//m_Logger.log("Sniffing for stinky tank...");
+		//logger.finer("Sniffing for stinky tank...");
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (tank == m_Tanks[i]) {
 				continue;
 			}
 			
 			int distance = tank.getLocation().getManhattanDistanceTo(m_Tanks[i].getLocation());
-			//m_Logger.log(tank.getColor() + tank.getLocation() + " is " + distance + " from " + m_Tanks[i].getColor() + m_Tanks[i].getLocation());
+			//logger.finer(tank.getColor() + tank.getLocation() + " is " + distance + " from " + m_Tanks[i].getColor() + m_Tanks[i].getLocation());
 			if (distance < closestDistance) {
 				closestDistance = distance;
 				closestTank = m_Tanks[i];

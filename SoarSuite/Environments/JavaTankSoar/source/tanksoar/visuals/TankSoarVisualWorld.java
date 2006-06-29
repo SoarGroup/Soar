@@ -90,7 +90,7 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 				} else if (cell.isHealthRecharger()) {
 					m_Background[x][y] = kHealth;
 				} else {
-					m_Logger.log("Unknown cell at " + x + "," + y);
+					logger.warning("Unknown cell at " + x + "," + y);
 					m_Background[x][y] = kWTF;
 				}
 			}

@@ -35,7 +35,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		super(noRandom, true);
 		
 		// Log the settings file
-		m_Logger.log("Settings file: " + settingsFile);
+		logger.fine("Settings file: " + settingsFile);
 
 		String [] initialNames = null;
 		String [] initialProductions = null;
@@ -71,7 +71,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 					setMaxUpdates(child.getAttributeIntDefault(kParamMaxUpdates, 0));
 					setWinningScore(child.getAttributeIntDefault(kParamWinningScore, 50));
 										
-					m_Logger.log("Default map: " + defaultMap);
+					logger.fine("Default map: " + defaultMap);
 					
 				} else if (tagName.equalsIgnoreCase(kTagAgents)) {
 					initialNames = new String[child.getNumberChildren()];
@@ -160,7 +160,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	
 	public void setWinningScore(int score) {
 		if (score <= 0) {
-			m_Logger.log("Invalid winning-score parameter in config file, resetting to 50.");
+			logger.warning("Invalid winning-score parameter in config file, resetting to 50.");
 			score = 50;
 		}
 		m_WinningScore = score;
@@ -230,7 +230,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 
 	public void destroyTank(Tank tank) {
 		if (tank == null) {
-    		m_Logger.log("Asked to destroy null agent, ignoring.");
+    		logger.warning("Asked to destroy null agent, ignoring.");
     		return;
 		}	
 		m_World.destroyTank(tank);
