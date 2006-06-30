@@ -33,7 +33,6 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 	private TankSoarSimulation m_Simulation;
 	private TankSoarWorld m_World;
 	private MapPoint m_AgentLocation;
-	private Random m_Random;
 	private Image[][] m_Background;
 	RelativeDirections m_RD = new RelativeDirections();
 	
@@ -42,7 +41,6 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 		
 		m_Simulation = simulation;
 		m_World = m_Simulation.getTankSoarWorld();
-		m_Random = m_Simulation.isRandom() ? new Random() : new Random(0) ;
 		
 		loadImages(parent.getDisplay());
 		addPaintListener(this);		
@@ -82,12 +80,12 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 				if (cell.isWall()) {
 					if ((x == 0) || (x == m_World.getSize() - 1) || (y == 0) || (y == m_World.getSize() - 1)) {
 						// Rocks on outer edge
-						m_Background[x][y] = kRocks[m_Random.nextInt(kRocks.length)];
+						m_Background[x][y] = kRocks[Simulation.random.nextInt(kRocks.length)];
 					} else {
-						m_Background[x][y] = kTrees[m_Random.nextInt(kTrees.length)];
+						m_Background[x][y] = kTrees[Simulation.random.nextInt(kTrees.length)];
 					}
 				} else if (cell.isOpen()) {
-					m_Background[x][y] = kGrass[m_Random.nextInt(kGrass.length)];
+					m_Background[x][y] = kGrass[Simulation.random.nextInt(kGrass.length)];
 				} else if (cell.isEnergyRecharger()) {
 					m_Background[x][y] = kRecharger;
 				} else if (cell.isHealthRecharger()) {

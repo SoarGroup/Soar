@@ -451,7 +451,7 @@ public class InputLinkManager {
 		}
 		
 		// Random
-		float random = m_World.m_Random.nextFloat();
+		float random = Simulation.random.nextFloat();
 		if (m_Reset) {
 			m_RandomWME = CreateFloatWME(m_InputLink, kRandomID, random);
 		} else {
