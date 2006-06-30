@@ -39,9 +39,6 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	public TankSoarSimulation(String settingsFile, boolean quiet, boolean noRandom) {		
 		super(noRandom, true);
 		
-		// Log the settings file
-		logger.fine("Settings file: " + settingsFile);
-
 		String [] initialNames = null;
 		String [] initialProductions = null;
 		String [] initialColors = null;
@@ -53,6 +50,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	
 		// Load settings file
 		try {
+			logger.finer("Parsing settings file: " + settingsFile);
 			JavaElementXML root = JavaElementXML.ReadFromFile(settingsFile);
 			if (!root.getTagName().equalsIgnoreCase(kTagTankSoar)) {
 				throw new Exception("Top level tag not " + kTagTankSoar);
@@ -62,7 +60,6 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 			for (int i = 0 ; i < root.getNumberChildren() ; ++i)
 			{
 				JavaElementXML child = root.getChild(i) ;
-
 				String tagName = child.getTagName() ;
 				
 				if (tagName.equalsIgnoreCase(kTagSimulation)) {
@@ -76,7 +73,11 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 					setMaxUpdates(child.getAttributeIntDefault(kParamMaxUpdates, 0));
 					setWinningScore(child.getAttributeIntDefault(kParamWinningScore, 50));
 										
-					logger.fine("Default map: " + defaultMap);
+					logger.finest("Spawn debuggers: " + Boolean.toString(getSpawnDebuggers()));
+					logger.finest("Default map: " + defaultMap);
+					logger.finest("Runs: " + Integer.toString(getRuns()));
+					logger.finest("Max updates: " + Integer.toString(getMaxUpdates()));
+					logger.finest("Winning score: " + Integer.toString(getWinningScore()));
 					
 				} else if (tagName.equalsIgnoreCase(kTagAgents)) {
 					initialNames = new String[child.getNumberChildren()];
@@ -111,6 +112,14 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 						initialHealth[j] = agent.getAttributeIntDefault(kParamHealth, -1);
 						initialMissiles[j] = agent.getAttributeIntDefault(kParamMissiles, -1);
 						
+						logger.finest("Name: " + initialNames[j]);
+						logger.finest("   Productions: " + initialProductions[j]);
+						logger.finest("   Color: " + initialColors[j]);
+						logger.finest("   Location: " + initialLocations[j].toString());
+						logger.finest("   Facing: " + initialFacing[j]);
+						logger.finest("   Energy: " + Integer.toString(initialEnergy[j]));
+						logger.finest("   Health: " + Integer.toString(initialHealth[j]));
+						logger.finest("   Missiles: " + Integer.toString(initialMissiles[j]));
 					}
 				} else {
 					// Throw during development, but really we should just ignore this
@@ -119,12 +128,12 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 				}
 			}				
 		} catch (Exception e) {
-			fireErrorMessage("Error loading XML settings: " + e.getMessage());
+			fireErrorMessageSevere("Error loading XML settings: " + e.getMessage());
 			shutdown();
 			System.exit(1);
-
 		}
 
+		logger.finer(getMapPath() + getDefaultMap());
 		setCurrentMap(getMapPath() + getDefaultMap());
 
 		// Load default world
@@ -150,10 +159,11 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		// if in quiet mode, run!
 		if (quiet) {
 			if (m_World.getTanks() == null) {
-				super.fireErrorMessage("Quiet mode started with no tanks!");
+				super.fireErrorMessageSevere("Quiet mode started with no tanks!");
 				shutdown();
 				return;
 			}
+			logger.finer("Quiet mode execution starting.");
 			startSimulation(false);
 			shutdown();
 		}
@@ -165,7 +175,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	
 	public void setWinningScore(int score) {
 		if (score <= 0) {
-			logger.warning("Invalid winning-score parameter in config file, resetting to 50.");
+			logger.warning("Invalid winning-score: " + Integer.toString(score) + ", resetting to 50.");
 			score = 50;
 		}
 		m_WinningScore = score;
@@ -190,12 +200,13 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
     public void createEntity(String name, String productions, String color, MapPoint location, String facing,
     		int energy, int health, int missiles) {
     	if (name == null || color == null) {
-    		fireErrorMessage("Failed to create agent, name or color null.");
+    		fireErrorMessageWarning("Failed to create agent, name or color null.");
     		return;
     	}
     	
     	if (location != null) {
     		if ((location.x == -1) || (location.y == -1)) {
+    			logger.finer("Ignoring non-null location " + location.toString());
     			location = null;
     		}
     	}
@@ -203,13 +214,15 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
     	Agent agent = null;
     	if (productions == null) {
     		// Human agent
+    		logger.finer("Creating human agent.");
     		productions = name;
     	} else {
 			agent = createAgent(name, productions);
 			if (agent == null) {
-	    		fireErrorMessage("Failed to create agent.");
+	    		fireErrorMessageWarning("Failed to create agent.");
 				return;
 			}
+			logger.finer("Created Soar agent.");
     	}
 		m_World.createTank(agent, productions, color, location, facing, energy, health, missiles);
 		spawnDebugger(name);		

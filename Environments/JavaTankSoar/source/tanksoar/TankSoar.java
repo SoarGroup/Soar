@@ -14,7 +14,6 @@ public class TankSoar {
 	private boolean quietSwitch;
 	private String settingsFilename;
 	private String logFilename;
-	private boolean appendSwitch;
 	private boolean notRandomSwitch;
 	
 	private static Logger logger = Logger.getLogger("tanksoar");
@@ -22,18 +21,8 @@ public class TankSoar {
 
 	public TankSoar(String[] args) {
 		
-		// Install default settings file
-		try {
-			Install(kDefaultXMLSettingsFile);
-		} catch (IOException e) {
-			System.out.println("Error installing default settings: " + e.getMessage());
-			System.exit(0);
-		}
-		
 		// Deal with the command line
-		if (!parseCommandLine(args)) {
-			return;
-		}
+		parseCommandLine(args);
 		
 		// Initialize logger
 		// TODO: Append switch
@@ -48,23 +37,37 @@ public class TankSoar {
 			System.err.println("Failed to create " + logFilename + ": " + e.getMessage());
 			System.exit(1);
 		}
-//		// Console Handler
-//		ConsoleHandler handler = new ConsoleHandler();
-//		handler.setLevel(Level.ALL);
-//		rootLogger.addHandler(handler);
-		
+
 		// TODO: set log level via command line
 		logger.setLevel(Level.ALL);
-		logger.info("Java TankSoar started.");
+		logger.info("Java TankSoar started (" + Level.ALL.getName() + ").");
+		String commandLine = new String();
+		for (int i = 0; i < args.length; ++i) {
+			commandLine += args[i];
+			commandLine += " ";
+		}
+		logger.finer("Command line: " + commandLine);
+
+		// Install default settings file if it doesn't exist
+		try {
+			Install(kDefaultXMLSettingsFile);
+		} catch (IOException e) {
+			logger.severe("Error installing default settings: " + e.getMessage());
+			System.exit(1);
+		}
+		
 		
 		// Initialize the simulation
-		logger.fine("Initializing simulation.");
+		logger.finer("Initializing simulation.");
 		TankSoarSimulation simulation = new TankSoarSimulation(settingsFilename, quietSwitch, notRandomSwitch);
 		
 		// Initialize the window manager, if applicable.
 		if(!quietSwitch) {
+			logger.finer("Initializing window manager.");
 			new TankSoarWindowManager(simulation);
 		}
+		
+		logger.finer("Exiting.");
 		System.exit(0);
 	}
 
@@ -74,18 +77,16 @@ public class TankSoar {
 		File library = new File(file) ;
 
 		if (library.exists()) {
-			System.out.println(library + " already exists so not installing from the JAR file") ;
+			logger.finer(library + " already exists so not installing from the JAR file");
 			return;
 		}
 		
-		// Get the DLL from inside the JAR file
-		// It should be placed at the root of the JAR (not in a subfolder)
 		String jarpath = "/" + library.getPath() ;
 		InputStream is = this.getClass().getResourceAsStream(jarpath) ;
 		
 		if (is == null) {
-			System.out.println("Failed to find " + jarpath + " in the JAR file") ;
-			return;
+			logger.severe("Failed to find " + jarpath + " in the JAR file") ;
+			System.exit(1);
 		}
 		
 		// Make sure we can delete the library.  This is actually here to cover the
@@ -94,8 +95,8 @@ public class TankSoar {
 		// end up with a blank file.  Explicitly trying to delete it first ensures that
 		// we're not reading the same file that we're writing.
 		if (library.exists() && !library.delete()) {
-			System.out.println("Failed to remove the existing layout file " + library) ;
-			return;
+			logger.severe("Failed to remove the existing layout file " + library) ;
+			System.exit(1);
 		}
 		
 		// Create the new file on disk
@@ -116,35 +117,26 @@ public class TankSoar {
 		is.close() ;
 		os.close() ;
 		
-		System.out.println("Installed " + library + " onto the local disk from JAR file") ;
+		logger.finer("Installed " + library + " onto the local disk from JAR file") ;
 	}
 
-	public boolean parseCommandLine(String[] args) {
+	public void parseCommandLine(String[] args) {
 		if (hasOption(args, "-?") || hasOption(args, "-help") || hasOption(args, "-h")) {
 			printCommandLineHelp();
-			return false;
+			System.exit(0);
 		}
 
 		quietSwitch = hasOption(args, "-quiet");
-		settingsFilename = getOptionValue(args, "-settings");
-		logFilename = getOptionValue(args, "-log");
-		appendSwitch = hasOption(args, "-append");
+		settingsFilename = getOptionValue(args, "-settings", kDefaultXMLSettingsFile);
+		logFilename = getOptionValue(args, "-log", kDefaultLogFilename);
 		notRandomSwitch = hasOption(args, "-notrandom");
-		
-		if (settingsFilename == null) {
-			settingsFilename = kDefaultXMLSettingsFile;
-		}
-		
-		return true;
 	}
 	
 	protected void printCommandLineHelp() {
 		System.out.println("Java TankSoar help");
 		System.out.println("\t-log: File name to log messages to (default: " + kDefaultLogFilename + ").");
-		System.out.println("\t-append: CURRENTLY NOT IMPLEMENTED");
-		/*If logging to file, append.  Ignored if -console present.");*/
 		System.out.println("\t-quiet: Disables all windows, runs simulation quietly.");
-		System.out.println("\t-settings: XML file with with run settings.");
+		System.out.println("\t-settings: XML file with with run settings (default: " + kDefaultXMLSettingsFile + ").");
 		System.out.println("\t-notrandom: Disable randomness by seeding the generator with 0.");
 	}
 	
@@ -160,12 +152,12 @@ public class TankSoar {
 	
 	// Returns the next argument after the matching option.
 	// (Use this for parameters like -port ppp)
-	protected String getOptionValue(String[] args, String option) {
+	protected String getOptionValue(String[] args, String option, String defaultValue) {
 		for (int i = 0 ; i < args.length-1 ; i++) {
 			if (args[i].equalsIgnoreCase(option))
 				return args[i+1] ;
 		}		
-		return null ;
+		return defaultValue ;
 	}
 
 	public static void main(String[] args) {
