@@ -450,6 +450,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	
 	void destroyTank(Tank tank) {
 		if (m_Tanks == null) {
+			logger.finer("Asked to destroy a tank when none exist.");
 			return;
 		}
 		for (int i = 0; i < m_Tanks.length; ++i) {
@@ -484,7 +485,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 	
 	public void update() {
-		// reset modified flags
+		logger.finest("Resetting modified flags on map.");
 		for (int y = 0; y < m_World.length; ++y) {
 			for (int x = 0; x < m_World[y].length; ++x) {
 				m_World[y][x].clearRedraw();
@@ -494,7 +495,7 @@ public class TankSoarWorld extends World implements WorldManager {
 				}
 			}
 		}			
-		
+
 		// Check for goal state
 		int[] scores = null;
 		boolean draw = false;
@@ -509,6 +510,7 @@ public class TankSoarWorld extends World implements WorldManager {
 			Arrays.sort(scores);
 			highScore = scores[scores.length - 1];
 			if (scores[scores.length - 1] ==  scores[scores.length - 2]) {
+				logger.finer("Draw detected.");
 				draw = true;
 			}
 			
@@ -598,6 +600,7 @@ public class TankSoarWorld extends World implements WorldManager {
 			if (m_Tanks[i].recentlyMoved()) {
 				TankSoarCell destinationCell = getCell(m_Tanks[i].getLocation(), m_Tanks[i].lastMoveDirection());
 				if (destinationCell.isWall()) {
+					logger.fine(m_Tanks[i].getName() + " hit a wall.");
 					m_Tanks[i].collide();
 				}
 			}
@@ -620,6 +623,7 @@ public class TankSoarWorld extends World implements WorldManager {
 						if (!collidee.isColliding() && collidee.recentlyMoved()) {
 							m_RD.calculate(m_Tanks[i].lastMoveDirection());
 							if (collidee.lastMoveDirection() == m_RD.backward) {
+								logger.fine(m_Tanks[i].getName() + " cross-collided with " + collidee.getName());
 								m_Tanks[i].setColliding(true);
 								collidee.setColliding(true);
 							}
@@ -650,8 +654,10 @@ public class TankSoarWorld extends World implements WorldManager {
 					}
 					MapPoint theirDest = new MapPoint(m_Tanks[j].getLocation(), m_Tanks[j].lastMoveDirection());
 					if (myDest.equals(theirDest)) {
+						logger.fine(m_Tanks[i].getName() + " meet-collided with " + m_Tanks[j].getName());
 						// FIXME: Both should collide, but that causes a SNC!
 						m_Tanks[i].setColliding(true);
+						logger.warning(m_Tanks[j].getName() + " should be penalized for a collision but isn't because of bug 779.");
 						//m_Tanks[j].setColliding(true);
 						break;
 					}
