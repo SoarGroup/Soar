@@ -14,7 +14,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	public static final String kMapFolder = "maps";
 	public static final int kDebuggerTimeoutSeconds = 15;	
 	
-	protected static Logger logger = Logger.getLogger("simulation");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	private String m_CurrentMap;
 	private String m_DefaultMap;

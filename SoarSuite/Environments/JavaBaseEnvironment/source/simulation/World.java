@@ -5,7 +5,7 @@ import java.util.logging.*;
 import utilities.*;
 
 public class World {
-	protected static Logger logger = Logger.getLogger("simulation");
+	private static Logger logger = Logger.getLogger("simulation");
 	protected int m_WorldSize;
 
 	public int getSize() {

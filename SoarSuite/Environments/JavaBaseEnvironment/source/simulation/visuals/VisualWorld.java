@@ -1,7 +1,7 @@
 package simulation.visuals;
 
 import java.util.HashMap;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
@@ -25,7 +25,7 @@ public class VisualWorld extends Canvas {
 
 	public static boolean internalRepaint = false;
 	
-	protected static Logger logger = Logger.getLogger("simulation.visuals");
+	private static Logger logger = Logger.getLogger("simulation.visuals");
 	protected Display m_Display;
 	protected int m_CellSize;
 	protected boolean m_Disabled = false;
