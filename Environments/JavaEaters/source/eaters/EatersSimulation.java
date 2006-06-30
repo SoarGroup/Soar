@@ -93,10 +93,9 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 				}
 			}				
 		} catch (Exception e) {
-			fireErrorMessage("Error loading XML settings: " + e.getMessage());
+			fireErrorMessageSevere("Error loading XML settings: " + e.getMessage());
 			shutdown();
 			System.exit(1);
-
 		}
 
 		setCurrentMap(getMapPath() + getDefaultMap());
@@ -132,7 +131,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
     	}
     	
     	if (name == null || productions == null) {
-    		fireErrorMessage("Failed to create agent, name, productions or color null.");
+    		fireErrorMessageWarning("Failed to create agent, name, productions or color null.");
     		return;
     	}
     	
