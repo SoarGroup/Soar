@@ -30,9 +30,9 @@ JAR=@JAR@
 INCLUDES   = -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include $(JAVAINC)
 
 if VISIBILITY_AVAILABLE
-SWIGCXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused -fno-strict-aliasing -fvisibility=default
+SWIGCXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused -fvisibility=default
 else
-SWIGCXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused -fno-strict-aliasing
+SWIGCXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused
 endif
 
 CXXFLAGS = $(SWIGCXXFLAGS)

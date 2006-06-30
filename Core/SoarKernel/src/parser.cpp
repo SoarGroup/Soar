@@ -152,7 +152,7 @@ void substitute_for_placeholders_in_test (agent* thisAgent, test *t) {
     return;
   case CONJUNCTIVE_TEST:
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      substitute_for_placeholders_in_test (thisAgent, (test *)(void *)(&(c->first)));
+      substitute_for_placeholders_in_test (thisAgent, (test *)(&(c->first)));
     return;
   default:  /* relational tests other than equality */
     substitute_for_placeholders_in_symbol (thisAgent, &(ct->data.referent));
@@ -181,12 +181,12 @@ void substitute_for_placeholders_in_action_list (agent* thisAgent, action *a) {
   for ( ; a!=NIL; a=a->next) {
     if (a->type == MAKE_ACTION) {
       if (rhs_value_is_symbol(a->id)) {
-	substitute_for_placeholders_in_symbol(thisAgent, (Symbol **)(void *)&(a->id));
+	substitute_for_placeholders_in_symbol(thisAgent, (Symbol **)&(a->id));
       }
       if (rhs_value_is_symbol(a->attr))
-	substitute_for_placeholders_in_symbol(thisAgent, (Symbol **)(void *)&(a->attr));
+	substitute_for_placeholders_in_symbol(thisAgent, (Symbol **)&(a->attr));
       if (rhs_value_is_symbol(a->value))
-	substitute_for_placeholders_in_symbol(thisAgent, (Symbol **)(void *)&(a->value));
+	substitute_for_placeholders_in_symbol(thisAgent, (Symbol **)&(a->value));
     }
   }
 }
