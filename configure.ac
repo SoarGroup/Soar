@@ -121,7 +121,7 @@ AC_FUNC_STAT
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([endpwent getcwd gethostname gettimeofday inet_ntoa memmove memset mkdir modf regcomp rmdir select setlocale socket sqrt strcasecmp strchr strerror strtol strstr],,[AC_MSG_ERROR([*** Cannot find required function!  See previous line.])])
 
-SOAR_CXXFLAGS="-Wall -g -O2 -fno-strict-aliasing $SYMBOL_VISIBILITY"
+SOAR_CXXFLAGS="-Wall -g -O2 $SYMBOL_VISIBILITY"
 AC_SUBST(SOAR_CXXFLAGS)
 
 ####################
