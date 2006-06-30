@@ -515,6 +515,18 @@ public class EatersWorld extends World implements WorldManager {
 	}
 
 	void createEater(Agent agent, String productions, String color, MapPoint location) {
+		if (location != null) {
+			if (this.isInBounds(location)) {
+				if (getCell(location).isWall()) {
+					logger.warning("Initial location " + location + " is wall, going random.");
+					location = null;
+				}
+			} else {
+				logger.warning("Initial location " + location + " is out of bounds, going random.");
+				location = null;
+			}
+		}
+
 		if (location == null) {
 			location = findStartingLocation();
 		}

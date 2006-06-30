@@ -22,7 +22,9 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 	private static final String kParamProductions = "productions";
 	private static final String kParamColor = "color";
 	private static final String kDefaultMap = "default.emap";
-		
+	private static final String kParamX = "x";
+	private static final String kParamY = "y";
+
 	private EatersWorld m_EatersWorld;
 
 	public EatersSimulation(String settingsFile, boolean quiet, boolean notRandom) {	
@@ -34,6 +36,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		String [] initialNames = null;
 		String [] initialProductions = null;
 		String [] initialColors = null;
+		MapPoint [] initialLocations = null;
 		
 		// Load settings file
 		try {
@@ -65,6 +68,8 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 					initialNames = new String[child.getNumberChildren()];
 					initialProductions = new String[child.getNumberChildren()];
 					initialColors = new String[child.getNumberChildren()];
+					initialLocations = new MapPoint[child.getNumberChildren()];
+
 					for (int j = 0; j < initialNames.length; ++j) {
 						JavaElementXML agent = child.getChild(j);
 						
@@ -79,6 +84,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 						}
 						
 						initialColors[j] = agent.getAttribute(kParamColor);
+						initialLocations[j] = new MapPoint(agent.getAttributeIntDefault(kParamX, -1), agent.getAttributeIntDefault(kParamY, -1));
 					}
 				} else {
 					// Throw during development, but really we should just ignore this
@@ -103,7 +109,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		// add initial eaters
 		if (initialNames != null) {
 			for (int i = 0; i < initialNames.length; ++i) {
-				createEntity(initialNames[i], getAgentPath() + initialProductions[i], initialColors[i], null, null, -1, -1, -1);
+				createEntity(initialNames[i], getAgentPath() + initialProductions[i], initialColors[i], initialLocations[i], null, -1, -1, -1);
 			}
 		}
 		
@@ -115,8 +121,14 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 	}
 	
     public void createEntity(String name, String productions, String color, MapPoint location, String facing, int energy, int health, int missiles) {
-    	if (location != null || facing != null || energy != -1 || health != -1 || missiles != -1) {
+    	if (facing != null || energy != -1 || health != -1 || missiles != -1) {
     		logger.warning("An ignored parameter was given a non-default value!");
+    	}
+    	
+    	if (location != null) {
+    		if ((location.x == -1) || (location.y == -1)) {
+    			location = null;
+    		}
     	}
     	
     	if (name == null || productions == null) {
@@ -128,7 +140,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		if (agent == null) {
 			return;
 		}
-		m_EatersWorld.createEater(agent, productions, color);
+		m_EatersWorld.createEater(agent, productions, color, location);
 		spawnDebugger(name);		
 		fireSimulationEvent(SimulationListener.kAgentCreatedEvent);   	
     }
