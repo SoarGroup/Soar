@@ -1,10 +1,14 @@
 package eaters.visuals;
 
+import java.util.logging.*;
+
 import org.eclipse.swt.widgets.*;
 import eaters.*;
 import simulation.visuals.*;
 
 public class EatersSimulationButtons extends SimulationButtons {
+	private static Logger logger = Logger.getLogger("eaters.visuals");
+	
 	EatersSimulation m_Simulation;
 	
 	public EatersSimulationButtons(Composite parent, EatersSimulation simulation) {

@@ -1,10 +1,13 @@
 package eaters;
 
+import java.util.logging.*;
+
 import simulation.*;
 import sml.*;
 import utilities.*;
 
 public class EatersSimulation extends Simulation implements SimulationManager {
+	private static Logger logger = Logger.getLogger("eaters");
 	public static final int kMaxEaters = 7;	
 	public static final String kMapFilter = "*.emap";
 	

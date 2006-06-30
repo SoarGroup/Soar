@@ -1,6 +1,7 @@
 package eaters.visuals;
 
 import java.util.*;
+import java.util.logging.*;
 
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
@@ -12,6 +13,8 @@ import simulation.visuals.*;
 import utilities.*;
 
 public class EatersVisualWorld extends VisualWorld implements PaintListener {
+	private static Logger logger = Logger.getLogger("eaters.visuals");
+	
 	static HashMap m_FoodColors;
 	
 	public static void remapFoodColors(EatersWorld.Food[] food) {
