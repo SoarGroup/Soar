@@ -1,8 +1,11 @@
 package tanksoar;
 
+import java.util.logging.*;
+
 import utilities.*;
 
 public class Missile {
+	private static Logger logger = Logger.getLogger("tanksoar");
 	private MapPoint m_CurrentLocation;
 	private int m_FlightPhase; // 0, 1 == affects current location, 2 == affects current location + 1
 	private int m_Direction;

@@ -1,9 +1,13 @@
 package tanksoar;
 
+import java.util.logging.*;
+
 import simulation.*;
 import utilities.*;
 
 public class TankSoarCell extends Cell {
+	private static Logger logger = Logger.getLogger("tanksoar");
+	
 	// background
 	private static final int kWallInt = 0;
 	private static final int kOpenInt = 1;

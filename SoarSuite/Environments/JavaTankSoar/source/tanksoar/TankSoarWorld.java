@@ -1,12 +1,16 @@
 package tanksoar;
 
 import java.util.*;
+import java.util.logging.*;
 
 import simulation.*;
 import sml.*;
 import utilities.*;
 
 public class TankSoarWorld extends World implements WorldManager {
+	
+	private static Logger logger = Logger.getLogger("tanksoar");
+	
 	private static final String kTagTankSoarWorld = "tanksoar-world";
 
 	private static final String kTagCells = "cells";

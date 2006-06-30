@@ -1,6 +1,9 @@
 package tanksoar;
 
+import java.util.logging.*;
+
 public class MoveInfo {
+	private static Logger logger = Logger.getLogger("tanksoar");
 	public boolean move;
 	public int moveDirection;
 	
