@@ -44,36 +44,42 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		try {
 			m_Kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", 12121);
 		} catch (Exception e) {
-			fireErrorMessage("Exception while creating kernel: " + e.getMessage());
+			fireErrorMessageSevere("Exception while creating kernel: " + e.getMessage());
 			System.exit(1);
 		}
 
 		if (m_Kernel.HadError()) {
-			fireErrorMessage("Error creating kernel: " + m_Kernel.GetLastErrorDescription());
+			fireErrorMessageSevere("Error creating kernel: " + m_Kernel.GetLastErrorDescription());
 			System.exit(1);
 		}
 		
 		// We want the most performance
+		logger.finest("Setting auto commit false.");
 		m_Kernel.SetAutoCommit(false);
 
 		// Make all runs non-random if asked
 		// For debugging, set this to make all random calls follow the same sequence
 		if (m_NotRandom) {
+			logger.finer("Seeding generator 0.");
 			m_Kernel.ExecuteCommandLine("srand 0", null) ;
+		} else {
+			logger.finest("Not seeding generator.");
 		}
 		
 		// Register for events
 		m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, null);
 		m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, this, null);
 		if (m_RunTilOutput) {
+			logger.finest("Registering for: smlEVENT_AFTER_ALL_GENERATED_OUTPUT");
 			m_Kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_GENERATED_OUTPUT, this, null);
 		} else {
+			logger.finest("Registering for: smlEVENT_AFTER_ALL_OUTPUT_PHASES");
 			m_Kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null);
 		}
 		
 		// Generate base path
 		m_BasePath = System.getProperty("user.dir") + System.getProperty("file.separator");
-		logger.fine("Base path: " + m_BasePath);
+		logger.finer("Base path: " + m_BasePath);
 	}
 	
 	public boolean isRandom() {
@@ -128,7 +134,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
     	Agent agent = m_Kernel.CreateAgent(name);
     	boolean load = agent.LoadProductions(productions);
     	if (!load || agent.HadError()) {
-			fireErrorMessage("Failed to create agent " + name + " (" + productions + "): " + agent.GetLastErrorDescription());
+			fireErrorMessageWarning("Failed to create agent " + name + " (" + productions + "): " + agent.GetLastErrorDescription());
 			m_Kernel.DestroyAgent(agent);
 			agent.delete();
     		return null;
@@ -162,12 +168,21 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		m_MaxUpdates = updates;
 	}
 	
+	public int getMaxUpdates() {
+		return m_MaxUpdates;
+	}
+	
 	public void changeMap(String map) {
+		logger.finer("Changing map.");
 		setCurrentMap(map);
 		resetSimulation(true);
 	}	
 
 	protected void destroyAgent(Agent agent) {
+		if (agent == null) {
+    		logger.warning("Asked to destroy null agent, ignoring.");
+    		return;
+		}	
 		m_Kernel.DestroyAgent(agent);
 		agent.delete();
     }
@@ -196,18 +211,19 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		}
 		
 		Runtime r = java.lang.Runtime.getRuntime();
+		logger.finer("Spawning debugger: " + commandLine);
 
 		try {
 			// TODO: manage the returned process a bit better.
 			Process p = r.exec(commandLine);
 			
 			if (!waitForDebugger(p)) {
-				fireErrorMessage("Debugger spawn failed for agent: " + agentName);
+				fireErrorMessageWarning("Debugger spawn failed for agent: " + agentName);
 				return;
 			}
 			
 		} catch (IOException e) {
-			fireErrorMessage("IOException spawning debugger: " + e.getMessage());
+			fireErrorMessageSevere("IOException spawning debugger: " + e.getMessage());
 			shutdown();
 			System.exit(1);
 		}
@@ -229,22 +245,10 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 				}
 				if (ready) break;
 			}
-//			try {
-//				BufferedReader in = new BufferedReader( new InputStreamReader(p.getInputStream()));
-//				String currentLine = null;
-//				while ((currentLine = in.readLine()) != null) {
-//					logger.finer(currentLine);
-//				}
-//				BufferedReader err = new BufferedReader( new InputStreamReader(p.getErrorStream()));
-//				while ((currentLine = err.readLine()) != null) {
-//					logger.finer(currentLine);
-//				}
-//			} catch (IOException e) {
-//				fireErrorMessage("IOException reading debugger process: " + e.getMessage());
-//				shutdown();
-//				System.exit(1);
-//			}
-			try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+			try { 
+				logger.finest("Waiting for debugger.");
+				Thread.sleep(1000); 
+			} catch (InterruptedException ignored) {}
 		}
 		return ready;
 	}
@@ -268,6 +272,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 			m_WorldManager.shutdown();
 		}
 		if (m_Kernel != null) {
+			logger.finer("Shutting down kernel.");
 			m_Kernel.Shutdown();
 			m_Kernel.delete();
 		}
@@ -292,7 +297,11 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	private void manualStep() {
 		m_WorldManager.update();
 		++m_WorldCount;
-		//logger.finest("World count: " + Integer.toString(m_WorldCount));
+		if (m_WorldCount % 250 == 0) {
+			logger.info("World count: " + Integer.toString(m_WorldCount));
+		} else {
+			logger.finest("World count: " + Integer.toString(m_WorldCount));
+		}
 		fireSimulationEvent(SimulationListener.kUpdateEvent);
 	}
 	
@@ -334,6 +343,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	}
 	
 	public void stopSimulation() {
+		logger.finer("Stopping simulation");
 		if (m_Runs == 0) {
 			m_RunThread = null;
 		}
@@ -345,10 +355,11 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	}
 
 	public void resetSimulation(boolean fallBackToDefault) {
+		logger.info("Resetting simulation.");
 		String fatalErrorMessage = null;
 		if (!m_WorldManager.load(m_CurrentMap)) {
 			if (fallBackToDefault) {
-				fireErrorMessage("Error loading map, check log for more information. Loading default map.");
+				fireErrorMessageWarning("Error loading map, check log for more information. Loading default map.");
 				// Fall back to default map
 				m_CurrentMap = getMapPath() + m_DefaultMap;
 				if (!m_WorldManager.load(m_CurrentMap)) {
@@ -359,7 +370,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 			}
 		}
 		if (fatalErrorMessage != null) {
-			fireErrorMessage(fatalErrorMessage);
+			fireErrorMessageSevere(fatalErrorMessage);
 			shutdown();
 			System.exit(1);
 		}
@@ -387,17 +398,19 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
     }
     
   	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
-  		logger.finest("Update number " + m_WorldCount);
   		m_WorldManager.update();
 		++m_WorldCount;
 		if (m_WorldCount % 250 == 0) {
-			logger.fine("World count: " + Integer.toString(m_WorldCount));
+			logger.info("World count: " + Integer.toString(m_WorldCount));
+		} else {
+			logger.finest("World count: " + Integer.toString(m_WorldCount));
 		}
 		fireSimulationEvent(SimulationListener.kUpdateEvent);
 
 		// Test this after the world has been updated, in case it's asking us to stop
 		if (m_StopSoar) {
   			m_StopSoar = false;
+  			logger.finest("Stopping all agents.");
   			m_Kernel.StopAllAgents();
   		}
   	}
@@ -405,39 +418,50 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
     public void systemEventHandler(int eventID, Object data, Kernel kernel) {
   		if (eventID == smlSystemEventId.smlEVENT_SYSTEM_START.swigValue()) {
   			// Start simulation
-  			logger.fine("Start event received from kernel.");
+  			logger.finer("Start event received from kernel.");
   			m_Running = true;
   			fireSimulationEvent(SimulationListener.kStartEvent);
   		} else if (eventID == smlSystemEventId.smlEVENT_SYSTEM_STOP.swigValue()) {
   			// Stop simulation
-  			logger.fine("Stop event received from kernel.");
+  			logger.finer("Stop event received from kernel.");
   			m_Running = false;
   			if (m_Runs == 0) {
   				m_RunThread = null;
   			}
   			fireSimulationEvent(SimulationListener.kStopEvent);	
  		} else {
- 			logger.warning("Unknown system event received from kernel: " + eventID);
+ 			logger.warning("Unknown system event received from kernel, ignoring: " + eventID);
  		}
     }
     
-	protected void fireErrorMessage(String errorMessage) {
+    private void fireErrorMessage(String errorMessage) {
 		m_LastErrorMessage = errorMessage;
 		fireSimulationEvent(SimulationListener.kErrorMessageEvent);
-		logger.info(errorMessage);
+    }
+    
+	protected void fireErrorMessageWarning(String errorMessage) {
+		logger.warning(errorMessage);
+		fireErrorMessage(errorMessage);
+	}
+	
+	protected void fireErrorMessageSevere(String errorMessage) {
+		logger.severe(errorMessage);
+		fireErrorMessage(errorMessage);
 	}
 	
 	protected void fireNotificationMessage(String notifyMessage) {
+		logger.info(notifyMessage);
 		m_LastErrorMessage = notifyMessage;
 		fireSimulationEvent(SimulationListener.kNotificationEvent);
-		logger.info(notifyMessage);
 	}
 	
 	public void addSimulationListener(SimulationListener listener) {
+		logger.finest("Adding a simulation listener.");
 		m_AddSimulationListeners.add(listener);
 	}
 	
 	public void removeSimulationListener(SimulationListener listener) {
+		logger.finest("Removing a simulation listener.");
 		m_RemoveSimulationListeners.add(listener);
 	}
 	
