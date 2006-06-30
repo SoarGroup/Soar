@@ -192,7 +192,7 @@ public class Tank  extends WorldEntity {
 				m_LastMove.move = false;
 			}
 		}
-		logger.info(getName() + " (human): world count: " + Integer.toString(m_World.getWorldCount()) + ", move: " + m_LastMove.toString());
+		logger.info(getName() + " (human) at " + getLocation().toString() +", world count: " + Integer.toString(m_World.getWorldCount()) + ", move: " + m_LastMove.toString());
 	}
 	
 	public void readOutputLink() {
@@ -357,7 +357,7 @@ public class Tank  extends WorldEntity {
 				m_LastMove.move = false;
 			}
 		}
-		logger.info(getName() + ": world count: " + Integer.toString(m_World.getWorldCount()) + ", move: " + m_LastMove.toString());
+		logger.info(getName() + " at " + getLocation().toString() +", world count: " + Integer.toString(m_World.getWorldCount()) + ", move: " + m_LastMove.toString());
 	}
 	
 	private void handleShields() {
