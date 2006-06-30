@@ -306,6 +306,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	}
 	
 	public void startSimulation(boolean inNewThread) {
+		logger.info("Starting simulation.");
         m_StopSoar = false;
 		if (!hasSoarAgents()) {
 			m_Running = true;
@@ -327,6 +328,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	}
 	
 	public void stepSimulation() {
+		logger.info("Stepping simulation.");
 		if (!hasSoarAgents()) {
 			m_Running = true;
 			fireSimulationEvent(SimulationListener.kStartEvent);
@@ -343,7 +345,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	}
 	
 	public void stopSimulation() {
-		logger.finer("Stopping simulation");
+		logger.info("Stopping simulation.");
 		if (m_Runs == 0) {
 			m_RunThread = null;
 		}

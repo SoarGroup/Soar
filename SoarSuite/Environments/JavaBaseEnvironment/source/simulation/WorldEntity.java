@@ -18,6 +18,22 @@ public class WorldEntity {
 	public final static int kSouthInt = 4;
 	public final static int kWestInt = 8;
 	
+	public static String directionToString(int direction) {
+		switch (direction) {
+			default:
+				break;
+			case kNorthInt:
+				return kNorth;
+			case kEastInt:
+				return kEast;
+			case kSouthInt:
+				return kSouth;
+			case kWestInt:
+				return kWest;
+		}
+		return null;
+	}
+	
 	private static Logger logger = Logger.getLogger("simulation");
 	protected Agent m_Agent;	
 	protected Color m_Color;
@@ -42,7 +58,7 @@ public class WorldEntity {
 		} else {
 			m_Name = m_Agent.GetAgentName();
 		}
-		logger.info("Created agent: " + m_Name);
+		logger.fine("Created agent: " + m_Name);
 	}
 	
 	public String getProductions() {
@@ -88,7 +104,9 @@ public class WorldEntity {
 	}
 	
 	public void adjustPoints(int delta) {
+		int previous = m_Points;
 		m_Points += delta;
+		logger.info(getName() + " score: " + Integer.toString(previous) + " -> " + Integer.toString(m_Points));
 	}
 	public void setLocation(MapPoint location) {
 		m_Location = location;
