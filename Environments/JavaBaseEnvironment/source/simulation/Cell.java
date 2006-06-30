@@ -1,9 +1,12 @@
 package simulation;
 
+import java.util.logging.*;
+
 public class Cell {
 	protected int m_Type;
 	protected boolean m_Redraw = true;
 	private boolean m_Collision = false;
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	public void setCollision(boolean setting) {
 		m_Collision = setting;

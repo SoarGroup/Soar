@@ -1,8 +1,11 @@
 package utilities;
 
+import java.util.logging.*;
+
 import simulation.*;
 
 public class MapPoint {
+	private static Logger logger = Logger.getLogger("utilities");
 	public int x;
 	public int y;
 

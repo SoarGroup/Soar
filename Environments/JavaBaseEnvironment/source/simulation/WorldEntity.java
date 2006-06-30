@@ -18,7 +18,7 @@ public class WorldEntity {
 	public final static int kSouthInt = 4;
 	public final static int kWestInt = 8;
 	
-	protected static Logger logger = Logger.getLogger("simulation");
+	private static Logger logger = Logger.getLogger("simulation");
 	protected Agent m_Agent;	
 	protected Color m_Color;
 	protected String m_Facing;
