@@ -379,8 +379,6 @@ public class EatersWorld extends World implements WorldManager {
 			m_World[m_WorldSize - 1][col] = new EatersCell(kWallID);
 		}
 		
-		Random random = m_Simulation.isRandom() ? new Random() : new Random(0) ;
-		
 		double probability = kLowProbability;
 		for (int row = 2; row < m_WorldSize - 2; ++row) {
 			for (int col = 2; col < m_WorldSize - 2; ++col) {
@@ -388,7 +386,7 @@ public class EatersWorld extends World implements WorldManager {
 					if (wallOnAnySide(row, col)) {
 						probability = kHigherProbability;					
 					}
-					if (random.nextDouble() < probability) {
+					if (Simulation.random.nextDouble() < probability) {
 						m_World[row][col] = new EatersCell(kWallID);
 					}
 					probability = kLowProbability;
@@ -461,11 +459,10 @@ public class EatersWorld extends World implements WorldManager {
 	}
 	
 	private void generateRandomFood() {
-		Random random = m_Simulation.isRandom() ? new Random() : new Random(0) ;
 		for (int row = 1; row < m_WorldSize - 1; ++row) {
 			for (int col = 1; col < m_WorldSize - 1; ++col) {
 				if (m_World[row][col] == null) {
-					m_World[row][col] = new EatersCell(random.nextInt(m_Food.length));
+					m_World[row][col] = new EatersCell(Simulation.random.nextInt(m_Food.length));
 				}
 			}
 		}		
@@ -599,11 +596,10 @@ public class EatersWorld extends World implements WorldManager {
 
 	private MapPoint findStartingLocation() {
 		// set random starting location
-		Random random = m_Simulation.isRandom() ? new Random() : new Random(0) ;
-		MapPoint location = new MapPoint(random.nextInt(m_WorldSize), random.nextInt(m_WorldSize));
+		MapPoint location = new MapPoint(Simulation.random.nextInt(m_WorldSize), Simulation.random.nextInt(m_WorldSize));
 		while (getCell(location).isWall() || getCell(location).isEater()) {
-			location.x = random.nextInt(m_WorldSize);
-			location.y = random.nextInt(m_WorldSize);				
+			location.x = Simulation.random.nextInt(m_WorldSize);
+			location.y = Simulation.random.nextInt(m_WorldSize);				
 		}
 		
 		return location;
