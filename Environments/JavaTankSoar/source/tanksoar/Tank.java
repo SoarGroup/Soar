@@ -25,6 +25,12 @@ public class Tank  extends WorldEntity {
 	private final static String kShieldsID = "shields";
 	private final static String kRotateID = "rotate";
 
+	private static final int kMissileHitAward = 2;
+	private static final int kMissileHitPenalty = -1;
+	private static final int kKillAward = 3;
+	private static final int kKillPenalty = -2;
+	
+
 	private TankSoarCell[][] radarCells = new TankSoarCell[kRadarWidth][kRadarHeight];
 
 	public final static int kRadarWidth = 3;
@@ -88,6 +94,8 @@ public class Tank  extends WorldEntity {
 			m_ILM = new InputLinkManager(m_World, this);
 		}
 		
+		logger.info("Created tank: " + getName());
+		
 		reset();
 	}
 	
@@ -118,6 +126,12 @@ public class Tank  extends WorldEntity {
 		if (m_Agent != null) {
 			m_ILM.clear();
 		}
+		
+		logger.info(getName() + ": reset: (facing: " + m_InitialFacing 
+				+ ")(missiles: " + Integer.toString(m_InitialMissiles)
+				+ ")(health: " + Integer.toString(m_InitialHealth)
+				+ ")(energy: " + Integer.toString(m_InitialEnergy)
+				+ ")");
 	}
 	
 	public boolean getRadarStatus() {
@@ -160,7 +174,7 @@ public class Tank  extends WorldEntity {
 		// Must check missile count now
 		if (m_LastMove.fire) {
 			if (m_Missiles <= 0) {
-				logger.info(getName() + ": Attempted to fire missle with no missiles.");	
+				logger.fine(getName() + ": Attempted to fire missle with no missiles.");	
 				m_LastMove.fire = false;
 			}
 		}
@@ -174,10 +188,11 @@ public class Tank  extends WorldEntity {
 			rotate(m_LastMove.rotateDirection);
 			// Do not allow a move if we rotated.
 			if (m_LastMove.move) {
-				logger.info("Tried to move with a rotation, rotating only.");
+				logger.fine(getName() + ": Tried to move with a rotation, rotating only.");
 				m_LastMove.move = false;
 			}
 		}
+		logger.info(getName() + " (human): world count: " + Integer.toString(m_World.getWorldCount()) + ", move: " + m_LastMove.toString());
 	}
 	
 	public void readOutputLink() {
@@ -187,7 +202,7 @@ public class Tank  extends WorldEntity {
 		assert m_Agent != null;
 		int numberOfCommands = m_Agent.GetNumberCommands();
 		if (numberOfCommands == 0) {
-			//logger.info(getName() + " issued no command.");
+			logger.fine(getName() + ": world count: " + Integer.toString(m_World.getWorldCount()) + ", issued no command.");
 			return;
 		}
 		Identifier moveId = null;
@@ -198,14 +213,14 @@ public class Tank  extends WorldEntity {
 
 			if (commandName.equalsIgnoreCase(kMoveID)) {
 				if (m_LastMove.move == true) {
-					logger.fine(getName() + ": Detected more than one move command on output link, ignoring.");
+					logger.fine(getName() + ": Extra move commands detected.");
 					commandId.AddStatusError();
 					continue;
 				}
 
 				String moveDirection = commandId.GetParameterValue(kDirectionID);
 				if (moveDirection == null) {
-					logger.info(getName() + ": null move direction.");
+					logger.fine(getName() + ": null move direction.");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -219,7 +234,7 @@ public class Tank  extends WorldEntity {
 				} else if (moveDirection.equalsIgnoreCase(kRightID)) {
 					m_LastMove.moveDirection = m_RD.right;
 				} else {
-					logger.info(getName() + ": illegal move direction: " + moveDirection);
+					logger.fine(getName() + ": illegal move direction: " + moveDirection);
 					commandId.AddStatusError();
 					continue;
 				}
@@ -228,7 +243,7 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kFireID)) {
 				if (m_LastMove.fire == true) {
-					logger.fine(getName() + ": Detected more than one fire command on output link, ignoring.");
+					logger.fine(getName() + ": Extra fire commands detected.");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -236,7 +251,7 @@ public class Tank  extends WorldEntity {
 		 		if (m_Missiles > 0) {
 		 			m_LastMove.fire = true;
 		 		} else {
-					logger.info(getName() + ": Attempted to fire missle with no missiles.");
+					logger.fine(getName() + ": Attempted fire with no missles.");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -244,14 +259,14 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kRadarID)) {
 				if (m_LastMove.radar == true) {
-					logger.fine(getName() + ": Detected more than one radar command on output link, ignoring.");
+					logger.fine(getName() + ": Extra radar commands detected.");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String radarSwitch = commandId.GetParameterValue(kSwitchID);
 				if (radarSwitch == null) {
-					logger.info(getName() + ": null radar switch.");
+					logger.fine(getName() + ": null radar switch.");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -260,14 +275,14 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kRadarPowerID)) {
 				if (m_LastMove.radarPower == true) {
-					logger.fine(getName() + ": Detected more than one radar power command on output link, ignoring.");
+					logger.fine(getName() + ": Extra radar power commands detected.");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String powerValue = commandId.GetParameterValue(kSettingID);
 				if (powerValue == null) {
-					logger.info(getName() + ": null radar power value.");
+					logger.fine(getName() + ": null radar power value.");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -275,7 +290,7 @@ public class Tank  extends WorldEntity {
 				try {
 					m_LastMove.radarPowerSetting = Integer.decode(powerValue).intValue();
 				} catch (NumberFormatException e) {
-					logger.info(getName() + ": Unable to parse radar power setting " + powerValue + ": " + e.getMessage());
+					logger.fine(getName() + ": Unable to parse radar power setting " + powerValue + ": " + e.getMessage());
 					commandId.AddStatusError();
 					continue;
 				}
@@ -283,14 +298,14 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kShieldsID)) {
 				if (m_LastMove.shields == true) {
-					logger.fine(getName() + ": Detected more than one shields command on output link, ignoring.");
+					logger.fine(getName() + ": Extra shield commands detected.");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String shieldsSetting = commandId.GetParameterValue(kSwitchID);
 				if (shieldsSetting == null) {
-					logger.info(getName() + ": null shields setting.");
+					logger.fine(getName() + ": null shields setting.");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -302,14 +317,14 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kRotateID)) {
 				if (m_LastMove.rotate == true) {
-					logger.fine(getName() + ": Detected more than one rotate command on output link, ignoring.");
+					logger.fine(getName() + ": Extra rotate commands detected.");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				m_LastMove.rotateDirection = commandId.GetParameterValue(kDirectionID);
 				if (m_LastMove.rotateDirection == null) {
-					logger.info(getName() + ": null rotation direction.");
+					logger.fine(getName() + ": null rotation direction.");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -335,13 +350,14 @@ public class Tank  extends WorldEntity {
 		// Do not allow a move if we rotated.
 		if (m_LastMove.rotate) {
 			if (m_LastMove.move) {
-				logger.info("Tried to move with a rotation, rotating only.");
+				logger.fine("Tried to move with a rotation, rotating only.");
 				assert moveId != null;
 				moveId.AddStatusError();
 				moveId = null;
 				m_LastMove.move = false;
 			}
 		}
+		logger.info(getName() + ": world count: " + Integer.toString(m_World.getWorldCount()) + ", move: " + m_LastMove.toString());
 	}
 	
 	private void handleShields() {
@@ -359,6 +375,9 @@ public class Tank  extends WorldEntity {
 		if ((m_ShieldStatus && !desiredShieldStatus) || !enoughPowerForShields) {
 			// Turn the shield off.
 			m_ShieldStatus = false;
+			if (!enoughPowerForShields) {
+				logger.fine(getName() + ": Not enough power for shields.");
+			}
 		}
 	}
 	
@@ -368,12 +387,12 @@ public class Tank  extends WorldEntity {
 		// Chargers
 		if (m_Health > 0) {
 			if (cell.isEnergyRecharger()) {
-				m_Energy += 250;
-				m_Energy = m_Energy > kMaximumEnergy ? kMaximumEnergy : m_Energy;
+				logger.info(getName() + ": Recharging energy.");
+				adjustEnergy(250);
 			}
 			if (cell.isHealthRecharger()) {
-				m_Health += 250;
-				m_Health = m_Health > kMaximumHealth ? kMaximumHealth : m_Health;
+				logger.info(getName() + ": Recharging health.");
+				adjustEnergy(250);
 			}
 		}
 		
@@ -381,8 +400,9 @@ public class Tank  extends WorldEntity {
 		if (m_ShieldStatus) {
 			boolean enoughPowerForShields = m_Energy >= kSheildEnergyUsage;
 			if (enoughPowerForShields) {
-				m_Energy -= kSheildEnergyUsage;
+				adjustEnergy(kSheildEnergyUsage * -1);
 			} else {
+				logger.fine(getName() + ": Not enough power for shields.");
 				m_ShieldStatus = false;
 			}
 		}
@@ -393,9 +413,13 @@ public class Tank  extends WorldEntity {
 		// Never exceed max power
 		desiredRadarPower = desiredRadarPower > Tank.kRadarHeight ? Tank.kRadarHeight : desiredRadarPower;
 		// Never exceed current energy usage
-		desiredRadarPower = desiredRadarPower > m_Energy ? m_Energy : desiredRadarPower;
+		if (desiredRadarPower > m_Energy) {
+			logger.fine(getName() + ": Radar power limited by available energy: " + Integer.toString(m_Energy));
+			desiredRadarPower =  m_Energy;
+		}
 		// If the power setting changed, set it.
 		if (m_RadarPower != desiredRadarPower) {
+			logger.fine(getName() + " radar power: " + Integer.toString(m_RadarPower) + " -> " + Integer.toString(desiredRadarPower));
 			m_RadarPower = desiredRadarPower;
 		}
 		
@@ -415,7 +439,7 @@ public class Tank  extends WorldEntity {
 		}
 		// Consume radar energy.
 		if (m_RadarSwitch) {
-			m_Energy -= m_RadarPower;
+			adjustEnergy(m_RadarPower * -1);
 			m_RadarDistance = scan(m_RadarPower);
 		} else {
 			clearRadar();
@@ -424,6 +448,7 @@ public class Tank  extends WorldEntity {
 		
 		// Missiles
 		if (m_LastMove.fire) {
+			logger.fine(getName() + ": Consuming missile.");
 			m_Missiles -= 1;
 		}
 	
@@ -445,6 +470,7 @@ public class Tank  extends WorldEntity {
 			distance = i;
 			if (scanCells(i, location) == true) {
 				// Blocked
+				logger.fine(getName() + ": Radar scan blocked at distance " + Integer.toString(distance));
 				break;
 			}
 
@@ -484,6 +510,7 @@ public class Tank  extends WorldEntity {
 			radarCells[position][distance] = m_World.getCell(location, relativeDirection);
 			if (!(position == 1 && distance == 0)) {
 				if (radarCells[position][distance].containsTank()) {
+					logger.fine(getName() + ": Radar waves from " + WorldEntity.directionToString(backward()) + " hitting tank " + radarCells[position][distance].getTank().getName());
 					radarCells[position][distance].getTank().setRWaves(backward());
 				}
 			}
@@ -533,6 +560,7 @@ public class Tank  extends WorldEntity {
 	}
 	
 	public void addMissiles(int numberToAdd) {
+		logger.info(getName() + ": picked up " + Integer.toString(numberToAdd) + " missiles.");
 		m_Missiles += numberToAdd;
 	}
 	
@@ -547,42 +575,64 @@ public class Tank  extends WorldEntity {
 	public void hitBy(Tank attacker, TankSoarCell currentCell) {
 		// Missile damage
 		if (m_ShieldStatus) {
-			m_Energy -= kMissileEnergyDamage;
-			if (m_Energy < 0) {
-				m_Energy = 0;
-			}
+			logger.info(getName() + ": hit by " + attacker.getName() + " (shields up)");
+			adjustEnergy(kMissileEnergyDamage * -1);
+
 		} else {
-			m_Health -= kMissileHealthDamage;
-			if (m_Health < 0) {
-				m_Health = 0;
-			}
+			logger.info(getName() + ": hit by " + attacker.getName() + " (shields down)");
+			adjustHealth(kMissileHealthDamage * -1);
+
+			attacker.adjustPoints(kMissileHitAward);
+			adjustPoints(kMissileHitPenalty);
 		}
 
 		// Chargers
 		if (m_Health > 0) {
 			if (currentCell.isEnergyRecharger()) {
+				logger.info(getName() + ": hit by " + attacker.getName() + " while on the energy charger");
 				// Instant death
-				m_Health = 0;
+				adjustHealth(m_Health * -1);
 			}
 			if (currentCell.isHealthRecharger()) {
+				logger.info(getName() + ": hit by " + attacker.getName() + " while on the health charger");
 				// Instant death
-				m_Health = 0;
+				adjustHealth(m_Health * -1);
 			}
 		}
 		
 		if (m_Health <= 0) {
-			adjustPoints(TankSoarWorld.kKillPenalty);
+			logger.info(getName() + ": fragged by " + attacker.getName());
+			adjustPoints(kKillPenalty);
 			// TODO: multiple missiles!
-			attacker.adjustPoints(TankSoarWorld.kKillAward);
+			attacker.adjustPoints(kKillAward);
 		}
+	}
+	
+	public void adjustEnergy(int delta) {
+		int previous = m_Energy;
+		m_Energy += delta;
+		if (m_Energy < 0) {
+			m_Energy = 0;
+		} else if (m_Energy > kMaximumEnergy) {
+			m_Energy = kMaximumEnergy;
+		}			
+		logger.info(getName() + ": energy: " + Integer.toString(previous) + " -> " + Integer.toString(m_Energy));
+	}
+	
+	public void adjustHealth(int delta) {
+		int previous = m_Health;
+		m_Health += delta;
+		if (m_Health < 0) {
+			m_Health = 0;
+		} else if (m_Health > kMaximumHealth) {
+			m_Health = kMaximumHealth;
+		}
+		logger.info(getName() + ": health: " + Integer.toString(previous) + " -> " + Integer.toString(m_Health));
 	}
 	
 	public void collide() {
 		// Collision damage
-		m_Health -= kCollisionHealthDamage;
-		if (m_Health < 0) {
-			m_Health = 0;
-		}
+		adjustHealth(kCollisionHealthDamage * -1);
 		m_LastMove.move = false;
 	}
 	public int getEnergy() {

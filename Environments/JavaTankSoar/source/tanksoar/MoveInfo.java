@@ -2,6 +2,8 @@ package tanksoar;
 
 import java.util.logging.*;
 
+import simulation.WorldEntity;
+
 public class MoveInfo {
 	private static Logger logger = Logger.getLogger("tanksoar");
 	public boolean move;
@@ -27,6 +29,31 @@ public class MoveInfo {
 	
 	public void reset() {
 		move = rotate = fire = radar = radarPower = shields = false;
+	}
+	
+	public String toString() {
+		String output = "(";
+		if (move) {
+			output += "(move: " + WorldEntity.directionToString(moveDirection) + ")";
+		}
+		if (rotate) {
+			output += "(rotate: " + rotateDirection + ")";			
+		}
+		if (fire) {
+			output += "(fire)";
+		}
+		if (radar) {
+			output += "(radar: " + (radarSwitch ? "on" : "off") + ")";
+		}
+		if (radarPower) {
+			output += "(radarPower: " + Integer.toString(radarPowerSetting) + ")";
+		}
+		if (shields) {
+			output += "(shields: " + (shieldsSetting ? "on" : "off") + ")";
+		}
+		 
+		output += ")";
+		return output;
 	}
 }
 
