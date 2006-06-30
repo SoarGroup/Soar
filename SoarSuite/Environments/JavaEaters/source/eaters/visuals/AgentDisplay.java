@@ -14,13 +14,14 @@ import simulation.visuals.*;
 import utilities.*;
 
 public class AgentDisplay extends Composite {
+	private static Logger logger = Logger.getLogger("eaters.visuals");
+	
 	public static final int kAgentMapCellSize = 20;
 	static final int kTableHeight = 120;
 	static final int kNameWidth = 75;
 	static final int kScoreWidth = 55;
 	
 	Group m_Group;
-	Logger logger = Logger.getLogger("eaters.visuals");
 	protected static EatersSimulation m_Simulation;
 	Table m_AgentTable;
 	EatersVisualWorld m_AgentWorld;

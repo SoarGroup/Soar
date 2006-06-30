@@ -8,6 +8,8 @@ import sml.*;
 import utilities.*;
 
 public class EatersWorld extends World implements WorldManager {
+	private static Logger logger = Logger.getLogger("eaters");
+	
 	private static final String kTagEatersWorld = "eaters-world";
 
 	private static final String kTagFood = "food";

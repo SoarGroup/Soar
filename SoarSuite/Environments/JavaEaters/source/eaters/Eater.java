@@ -1,10 +1,14 @@
 package eaters;
 
+import java.util.logging.*;
+
 import simulation.*;
 import sml.*;
 import utilities.*;
 
 public class Eater extends WorldEntity {
+	private static Logger logger = Logger.getLogger("eaters");
+	
 	public final static int kEaterVision = 2;
 	
 	public final static String kEaterID = "eater";

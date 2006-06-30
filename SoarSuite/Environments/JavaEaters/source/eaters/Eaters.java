@@ -11,6 +11,7 @@ import utilities.*;
 import eaters.visuals.EatersWindowManager;
 
 public class Eaters {
+	private static Logger logger = Logger.getLogger("eaters");
 	
 	public static final String kDefaultXMLSettingsFile = "eaters-default-settings.xml";
 	private final String kDefaultLogFilename = "EaterLog.txt";
@@ -21,7 +22,6 @@ public class Eaters {
 	private boolean appendSwitch;
 	private boolean notRandomSwitch;
 	
-	private static Logger logger = Logger.getLogger("eaters");
 	private static Logger rootLogger = Logger.getLogger("");
 
 	public Eaters(String[] args) {

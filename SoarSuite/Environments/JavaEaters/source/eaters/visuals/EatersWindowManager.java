@@ -1,5 +1,7 @@
 package eaters.visuals;
 
+import java.util.logging.*;
+
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.*;
@@ -10,6 +12,7 @@ import simulation.*;
 import simulation.visuals.*;
 
 public class EatersWindowManager extends WindowManager implements SimulationListener {
+	private static Logger logger = Logger.getLogger("eaters.visuals");
 	public static final int kMainMapCellSize = 20;
 	public static final String kFoodRemaining = "Food remaining: ";
 	public static final String kScoreRemaining = "Points remaining: ";
