@@ -44,6 +44,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 		
 	   	public void reset() {
+	   		logger.finest("Resetting missiles.");
 			m_Flying = new LinkedList();
 	   	}
 	   	
@@ -193,6 +194,17 @@ public class TankSoarWorld extends World implements WorldManager {
 	   		}
 	   		return (Missile[])m_Flying.toArray(new Missile[0]);
 	   	}
+	   	
+	   	public void removeMissilesOwnedBy(Tank owner) {
+	   		ListIterator iter = m_Flying.listIterator();
+	   		while (iter.hasNext()) {
+	   			Missile missile = (Missile)iter.next();
+	   			if (missile.getOwner() == owner) {
+	   				logger.finest("Removing missile at " + missile.getCurrentLocation().toString() + " owned by " + owner.getName() + " due to death");
+	   				iter.remove();
+	   			}
+	   		}
+	   	}
 	}
 	
 	private Missiles m_Missiles = new Missiles();
@@ -303,6 +315,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].getName() == entity.getName()) {
 				destroyTank(m_Tanks[i]);
+				m_Missiles.removeMissilesOwnedBy(m_Tanks[i]);
 				return;
 			}
 		}
@@ -755,6 +768,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].getHealth() <= 0) {
 				getCell(m_Tanks[i].getLocation()).removeTank();
+				m_Missiles.removeMissilesOwnedBy(m_Tanks[i]);
 				MapPoint location = findStartingLocation();
 				logger.info(m_Tanks[i].getName() + ": Spawning at " + location.toString());
 				m_Tanks[i].setLocation(location);
