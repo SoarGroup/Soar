@@ -223,7 +223,7 @@ void variablize_test (agent* thisAgent, test *t) {
     return;
   case CONJUNCTIVE_TEST:
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      variablize_test (thisAgent, (test *)(void *)(&(c->first)));
+      variablize_test (thisAgent, (test *)(&(c->first)));
     return;
   default:  /* relational tests other than equality */
     variablize_symbol (thisAgent, &(ct->data.referent));
