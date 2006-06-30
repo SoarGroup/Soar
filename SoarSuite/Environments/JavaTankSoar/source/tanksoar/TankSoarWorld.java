@@ -27,7 +27,6 @@ public class TankSoarWorld extends World implements WorldManager {
 	static final int kMissilePackSize = 7;
 	private int m_NumMissilePacks = 0;
 	
-	Random m_Random;
 	RelativeDirections m_RD = new RelativeDirections();
 	int m_MaxManhattanDistance;
 	private static final int kMaxSmellDistance = 7;
@@ -204,7 +203,6 @@ public class TankSoarWorld extends World implements WorldManager {
 	
    	public TankSoarWorld(TankSoarSimulation simulation) {
 		m_Simulation = simulation;
-		m_Random = simulation.isRandom() ? new Random() : new Random(0);
 	}
 	
 	public boolean load(String mapFile) {
@@ -352,14 +350,14 @@ public class TankSoarWorld extends World implements WorldManager {
 
 	private MapPoint findStartingLocation() {
 		// set random starting location
-		MapPoint location = new MapPoint(m_Random.nextInt(m_WorldSize), m_Random.nextInt(m_WorldSize));
+		MapPoint location = new MapPoint(Simulation.random.nextInt(m_WorldSize), Simulation.random.nextInt(m_WorldSize));
 		while (getCell(location).isBlocked() 
 				|| getCell(location).isEnergyRecharger() 
 				|| getCell(location).isHealthRecharger() 
 				|| getCell(location).hasContents() 
 				|| (m_Missiles.checkHit(location, false) != null)) {
-			location.x = m_Random.nextInt(m_WorldSize);
-			location.y = m_Random.nextInt(m_WorldSize);				
+			location.x = Simulation.random.nextInt(m_WorldSize);
+			location.y = Simulation.random.nextInt(m_WorldSize);				
 		}
 		
 		return location;
@@ -735,7 +733,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		
 		// Spawn missile packs
 		if (m_NumMissilePacks < kMaxMissilePacks) {
-			if (m_Random.nextFloat() < kMisslePackRespawn) {
+			if (Simulation.random.nextFloat() < kMisslePackRespawn) {
 				spawnMissilePack();
 			}
 		}
@@ -922,7 +920,7 @@ public class TankSoarWorld extends World implements WorldManager {
 			} else if (distance == closestDistance) {
 				if (closestTank != null) {
 					// More than one, pick one at random
-					closestTank = m_Random.nextBoolean() ? closestTank : m_Tanks[i];
+					closestTank = Simulation.random.nextBoolean() ? closestTank : m_Tanks[i];
 					logger.finest("Picked " + closestTank.getName() + " randomly.");
 				}
 			}
