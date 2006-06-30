@@ -1,10 +1,15 @@
 package tanksoar;
 
+import java.util.logging.*;
+
 import simulation.*;
 import sml.*;
 import utilities.*;
 
 public class TankSoarSimulation extends Simulation implements SimulationManager {
+
+	private static Logger logger = Logger.getLogger("tanksoar");
+	
 	public static final int kMaxTanks = 7;
 	public static final String kMapFilter = "*.tmap";
 	

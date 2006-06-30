@@ -1,10 +1,14 @@
 package tanksoar.visuals;
 
+import java.util.logging.*;
+
 import org.eclipse.swt.widgets.*;
 import simulation.visuals.*;
 import tanksoar.*;
 
 public class TankSoarSimulationButtons extends SimulationButtons {
+	private static Logger logger = Logger.getLogger("tanksoar.visuals");
+	
 	TankSoarSimulation m_Simulation;
 	
 	public TankSoarSimulationButtons(Composite parent, TankSoarSimulation simulation) {

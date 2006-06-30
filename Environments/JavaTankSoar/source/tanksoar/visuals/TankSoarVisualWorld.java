@@ -1,6 +1,7 @@
 package tanksoar.visuals;
 
 import java.util.*;
+import java.util.logging.*;
 
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
@@ -12,6 +13,8 @@ import tanksoar.*;
 import utilities.*;
 
 public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
+	private static Logger logger = Logger.getLogger("tanksoar.visuals");
+	
 	private static HashMap kTanks = new HashMap(4);
 	private static Image[] kRocks = new Image[3];
 	private static Image[] kTrees = new Image[3];

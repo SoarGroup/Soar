@@ -1,10 +1,14 @@
 package tanksoar;
 
+import java.util.logging.*;
+
 import simulation.*;
 import utilities.*;
 import sml.*;
 
 public class Tank  extends WorldEntity {
+	private static Logger logger = Logger.getLogger("tanksoar");
+	
 	private final static String kMoveID = "move";
 	private final static String kDirectionID = "direction";
 	private final static String kBackwardID = "backward";
@@ -194,7 +198,7 @@ public class Tank  extends WorldEntity {
 
 			if (commandName.equalsIgnoreCase(kMoveID)) {
 				if (m_LastMove.move == true) {
-					logger.info(getName() + ": Detected more than one move command on output link, ignoring.");
+					logger.fine(getName() + ": Detected more than one move command on output link, ignoring.");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -224,7 +228,7 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kFireID)) {
 				if (m_LastMove.fire == true) {
-					logger.info(getName() + ": Detected more than one fire command on output link, ignoring.");
+					logger.fine(getName() + ": Detected more than one fire command on output link, ignoring.");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -240,7 +244,7 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kRadarID)) {
 				if (m_LastMove.radar == true) {
-					logger.info(getName() + ": Detected more than one radar command on output link, ignoring.");
+					logger.fine(getName() + ": Detected more than one radar command on output link, ignoring.");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -256,7 +260,7 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kRadarPowerID)) {
 				if (m_LastMove.radarPower == true) {
-					logger.info(getName() + ": Detected more than one radar power command on output link, ignoring.");
+					logger.fine(getName() + ": Detected more than one radar power command on output link, ignoring.");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -279,7 +283,7 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kShieldsID)) {
 				if (m_LastMove.shields == true) {
-					logger.info(getName() + ": Detected more than one shields command on output link, ignoring.");
+					logger.fine(getName() + ": Detected more than one shields command on output link, ignoring.");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -298,7 +302,7 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kRotateID)) {
 				if (m_LastMove.rotate == true) {
-					logger.info(getName() + ": Detected more than one rotate command on output link, ignoring.");
+					logger.fine(getName() + ": Detected more than one rotate command on output link, ignoring.");
 					commandId.AddStatusError();
 					continue;
 				}

@@ -1,5 +1,7 @@
 package tanksoar.visuals;
 
+import java.util.logging.*;
+
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
@@ -9,6 +11,8 @@ import simulation.visuals.*;
 
 public class TankSoarAgentWorld extends VisualWorld implements PaintListener {
 
+	private static Logger logger = Logger.getLogger("tanksoar.visuals");
+	
 	private static Image kMiniWTF;
 	private static Image kMiniOpen;
 	private static Image kMiniObstacle;

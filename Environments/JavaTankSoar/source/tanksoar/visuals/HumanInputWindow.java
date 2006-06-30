@@ -1,5 +1,7 @@
 package tanksoar.visuals;
 
+import java.util.logging.*;
+
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.*;
@@ -9,6 +11,8 @@ import simulation.*;
 import tanksoar.*;
 
 public class HumanInputWindow {
+	
+	private static Logger logger = Logger.getLogger("tanksoar.visuals");
 	
 	MoveInfo m_Move = new MoveInfo();
 	
