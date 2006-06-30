@@ -323,7 +323,7 @@ public class InputLinkManager {
 			soundString = kRightID;
 		} else {
 			if (sound > 0) {
-				logger.warning("Warning: sound reported as more than one direction.");
+				logger.warning(m_Tank.getName() + ": sound reported as more than one direction.");
 			}
 			soundString = kSilentID;
 		}

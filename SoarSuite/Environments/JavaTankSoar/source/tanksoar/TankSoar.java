@@ -15,6 +15,8 @@ public class TankSoar {
 	private String settingsFilename;
 	private String logFilename;
 	private boolean notRandomSwitch;
+	private boolean noLogSwitch;
+	private Level logLevel = Level.INFO;
 	
 	private static Logger logger = Logger.getLogger("tanksoar");
 	private static Logger rootLogger = Logger.getLogger("");
@@ -26,27 +28,28 @@ public class TankSoar {
 		
 		// Initialize logger
 		// TODO: Append switch
-		if (logFilename == null) {
-			logFilename = kDefaultLogFilename;
-		}
-		try {
-			FileHandler handler = new FileHandler(logFilename);
-			handler.setFormatter(new JonsFormatter());
-			rootLogger.addHandler(handler);
-		} catch (IOException e) {
-			System.err.println("Failed to create " + logFilename + ": " + e.getMessage());
-			System.exit(1);
-		}
+		if (!noLogSwitch) {
+			if (logFilename == null) {
+				logFilename = kDefaultLogFilename;
+			}
+			try {
+				FileHandler handler = new FileHandler(logFilename);
+				handler.setFormatter(new JonsFormatter());
+				rootLogger.addHandler(handler);
+			} catch (IOException e) {
+				System.err.println("Failed to create " + logFilename + ": " + e.getMessage());
+				System.exit(1);
+			}
 
-		// TODO: set log level via command line
-		logger.setLevel(Level.ALL);
-		logger.info("Java TankSoar started (" + Level.ALL.getName() + ").");
-		String commandLine = new String();
-		for (int i = 0; i < args.length; ++i) {
-			commandLine += args[i];
-			commandLine += " ";
+			logger.setLevel(logLevel);
+			logger.info("Java TankSoar started (logging " + logger.getLevel().getName() + " and up).");
+			String commandLine = new String();
+			for (int i = 0; i < args.length; ++i) {
+				commandLine += args[i];
+				commandLine += " ";
+			}
+			logger.finer("Command line: " + commandLine);
 		}
-		logger.finer("Command line: " + commandLine);
 
 		// Install default settings file if it doesn't exist
 		try {
@@ -130,14 +133,29 @@ public class TankSoar {
 		settingsFilename = getOptionValue(args, "-settings", kDefaultXMLSettingsFile);
 		logFilename = getOptionValue(args, "-log", kDefaultLogFilename);
 		notRandomSwitch = hasOption(args, "-notrandom");
+		noLogSwitch = hasOption(args, "-nolog");
+		if (hasOption(args, "-fine")) {
+			logLevel = Level.FINE;
+		} 
+		if (hasOption(args, "-finer")) {
+			logLevel = Level.FINER;
+		} 
+		if (hasOption(args, "-finest")) {
+			logLevel = Level.FINEST;
+		} 
 	}
 	
 	protected void printCommandLineHelp() {
 		System.out.println("Java TankSoar help");
-		System.out.println("\t-log: File name to log messages to (default: " + kDefaultLogFilename + ").");
 		System.out.println("\t-quiet: Disables all windows, runs simulation quietly.");
 		System.out.println("\t-settings: XML file with with run settings (default: " + kDefaultXMLSettingsFile + ").");
 		System.out.println("\t-notrandom: Disable randomness by seeding the generator with 0.");
+
+		System.out.println("\t-log: File name to log messages to (default: " + kDefaultLogFilename + ").");
+		System.out.println("\t-nolog: Disable logging (default: logging enabled)");
+		System.out.println("\t-fine: Log verbosely");
+		System.out.println("\t-finer: Log very verbosely");
+		System.out.println("\t-finest: Log extremely verbosely (use at own risk!)");
 	}
 	
 	// Returns true if a given option appears in the list

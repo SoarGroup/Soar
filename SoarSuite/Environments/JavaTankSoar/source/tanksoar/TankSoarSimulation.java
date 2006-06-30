@@ -133,7 +133,6 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 			System.exit(1);
 		}
 
-		logger.finer(getMapPath() + getDefaultMap());
 		setCurrentMap(getMapPath() + getDefaultMap());
 
 		// Load default world
