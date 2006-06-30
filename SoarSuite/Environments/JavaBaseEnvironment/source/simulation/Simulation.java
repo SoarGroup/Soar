@@ -15,6 +15,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	public static final int kDebuggerTimeoutSeconds = 15;	
 	
 	private static Logger logger = Logger.getLogger("simulation");
+	public static Random random;
 	
 	private String m_CurrentMap;
 	private String m_DefaultMap;
@@ -32,11 +33,9 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	private ArrayList m_SimulationListeners = new ArrayList();
 	private ArrayList m_AddSimulationListeners = new ArrayList();
 	private ArrayList m_RemoveSimulationListeners = new ArrayList();
-	private boolean m_NotRandom = false;
 	private boolean m_RunTilOutput = false;
 
 	protected Simulation(boolean noRandom, boolean runTilOutput) {
-		m_NotRandom = noRandom;
 		m_RunTilOutput = runTilOutput;
 		
 		// Initialize Soar
@@ -59,11 +58,13 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 
 		// Make all runs non-random if asked
 		// For debugging, set this to make all random calls follow the same sequence
-		if (m_NotRandom) {
+		if (noRandom) {
 			logger.finer("Seeding generator 0.");
 			m_Kernel.ExecuteCommandLine("srand 0", null) ;
+			random = new Random(0);
 		} else {
 			logger.finest("Not seeding generator.");
+			random = new Random();
 		}
 		
 		// Register for events
@@ -80,10 +81,6 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		// Generate base path
 		m_BasePath = System.getProperty("user.dir") + System.getProperty("file.separator");
 		logger.finer("Base path: " + m_BasePath);
-	}
-	
-	public boolean isRandom() {
-		return !m_NotRandom;
 	}
 	
 	protected void setWorldManager(WorldManager worldManager) {
