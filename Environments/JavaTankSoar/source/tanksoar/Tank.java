@@ -573,6 +573,8 @@ public class Tank  extends WorldEntity {
 	}
 	
 	public void hitBy(Tank attacker, TankSoarCell currentCell) {
+		assert !getName().equals(attacker.getName());
+		
 		// Missile damage
 		if (m_ShieldStatus) {
 			logger.info(getName() + ": hit by " + attacker.getName() + " (shields up)");
