@@ -3455,7 +3455,7 @@ void fixup_rhs_value_variable_references (agent* thisAgent, rhs_value *rv,
 
   if (rhs_value_is_funcall(*rv)) {
     for (c=rhs_value_to_funcall_list(*rv)->rest; c!=NIL; c=c->rest)
-      fixup_rhs_value_variable_references (thisAgent, (rhs_value *)(void *)(&(c->first)),
+      fixup_rhs_value_variable_references (thisAgent, (rhs_value *)(&(c->first)),
                                            bottom_depth, rhs_unbound_vars_for_new_prod, 
                                                                                    num_rhs_unbound_vars_for_new_prod, 
                                                                                    rhs_unbound_vars_tc);
