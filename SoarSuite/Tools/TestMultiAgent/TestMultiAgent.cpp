@@ -55,9 +55,15 @@ void SLEEP(long secs, long msecs)
 #include <fstream>
 #include <string>
 
-#ifndef _WIN32
-// BADBAD: should be using autoconf tools here!
+#if HAVE_STRINGS_H
+#include <strings.h>
+#if HAVE_STRCASECMP
 #define stricmp strcasecmp
+#endif // HAVE_STRCASECMP
+#endif // HAVE_STRINGS_H
+
+#ifdef _MSC_VER
+#define stricmp _stricmp
 #endif
 
 using namespace sml ;

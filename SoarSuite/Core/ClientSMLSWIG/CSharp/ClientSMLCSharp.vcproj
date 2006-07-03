@@ -23,7 +23,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
 			ManagedExtensions="0"
-			WholeProgramOptimization="1"
+			WholeProgramOptimization="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -67,7 +67,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="false"
 				OutputFile="$(SolutionDir)\SoarLibrary\bin\CSharp_sml_ClientInterface.dll"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
 				ImportLibrary="$(OutDir)\$(ProjectName).lib"
@@ -261,12 +261,15 @@
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{3EDBED11-A1B3-4E00-8B6E-652523D482F0}"
+			RelativePathToProject=".\Core\ClientSML\ClientSML.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
+			RelativePathToProject=".\Core\ConnectionSML\ConnectionSML.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
+			RelativePathToProject=".\Core\ElementXML\ElementXML.vcproj"
 		/>
 	</References>
 	<Files>

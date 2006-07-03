@@ -14,6 +14,10 @@
 #endif // HAVE_STRCASECMP
 #endif // HAVE_STRINGS_H
 
+#ifdef _MSC_VER
+#define stricmp _stricmp
+#endif
+
 //#include <crtdbg.h>
 
 // Quick addition so we can time this easily.
