@@ -31,11 +31,13 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	private ArrayList m_SimulationListeners = new ArrayList();
 	private ArrayList m_AddSimulationListeners = new ArrayList();
 	private ArrayList m_RemoveSimulationListeners = new ArrayList();
+	private boolean m_NotRandom = false;
+	private boolean m_RunTilOutput = false;
 
-	// For debugging can set this to false, making all random calls follow the same sequence
-	public static final boolean kRandom = false ;
-	
-	protected Simulation() {
+	protected Simulation(boolean noRandom, boolean runTilOutput) {
+		m_NotRandom = noRandom;
+		m_RunTilOutput = runTilOutput;
+		
 		// Initialize Soar
 		// Create kernel
 		try {
@@ -54,17 +56,27 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		m_Kernel.SetAutoCommit(false);
 
 		// Make all runs non-random if asked
-		if (!kRandom)
+		// For debugging, set this to make all random calls follow the same sequence
+		if (m_NotRandom) {
 			m_Kernel.ExecuteCommandLine("srand 0", null) ;
+		}
 		
 		// Register for events
 		m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, null);
 		m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, this, null);
-		m_Kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_GENERATED_OUTPUT, this, null);
+		if (m_RunTilOutput) {
+			m_Kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_GENERATED_OUTPUT, this, null);
+		} else {
+			m_Kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null);
+		}
 		
 		// Generate base path
 		m_BasePath = System.getProperty("user.dir") + System.getProperty("file.separator");
 		m_Logger.log("Base path: " + m_BasePath);
+	}
+	
+	public boolean isRandom() {
+		return !m_NotRandom;
 	}
 	
 	protected void setWorldManager(WorldManager worldManager) {
@@ -129,7 +141,9 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
     		return;
 		}	
 		m_WorldManager.destroyEntity(entity);
-		m_Kernel.DestroyAgent(entity.getAgent());
+		if (entity.getAgent() != null) {
+			m_Kernel.DestroyAgent(entity.getAgent());
+		}
 		fireSimulationEvent(SimulationListener.kAgentDestroyedEvent);
 	}
 	
@@ -167,7 +181,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	
 	public void spawnDebugger(String agentName) {
 		if (!m_Debuggers) return;
-		if (debuggerConnected()) return;
+		if (isDebuggerConnected()) return;
 		
 		// Figure out whether to use java or javaw
 		String os = System.getProperty("os.name");
@@ -234,7 +248,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		return ready;
 	}
 	
-	private boolean debuggerConnected() {
+	public boolean isDebuggerConnected() {
 		boolean connected = false;
 		m_Kernel.GetAllConnectionInfo();
 		for (int i = 0; i < m_Kernel.GetNumberConnections(); ++i) {
@@ -258,18 +272,64 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		}
 	}
 	
+	private boolean hasSoarAgents() {
+		WorldEntity[] entities = this.m_WorldManager.getEntities();
+		if (entities == null) {
+			return false;
+		}
+		
+		for (int x = 0; x < entities.length; ++x) {
+			Agent agent = entities[x].getAgent();
+			if (agent == null) {
+				continue;
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	private void manualStep() {
+		m_WorldManager.update();
+		++m_WorldCount;
+		//m_Logger.log("World count: " + Integer.toString(m_WorldCount));
+		fireSimulationEvent(SimulationListener.kUpdateEvent);
+	}
+	
 	public void startSimulation(boolean inNewThread) {
         m_StopSoar = false;
-		if (inNewThread) {
-			m_RunThread = new Thread(this);
-	        m_RunThread.start();
+		if (!hasSoarAgents()) {
+			m_Running = true;
+			fireSimulationEvent(SimulationListener.kStartEvent);
+			while (!m_StopSoar) {
+				manualStep();
+			}
+			m_Running = false;
+			fireSimulationEvent(SimulationListener.kStopEvent);	
+			return;
 		} else {
-			run();
+			if (inNewThread) {
+				m_RunThread = new Thread(this);
+		        m_RunThread.start();
+			} else {
+				run();
+			}
 		}
 	}
 	
 	public void stepSimulation() {
-		m_Kernel.RunAllTilOutput();
+		if (!hasSoarAgents()) {
+			m_Running = true;
+			fireSimulationEvent(SimulationListener.kStartEvent);
+			manualStep();
+			m_Running = false;
+			fireSimulationEvent(SimulationListener.kStopEvent);	
+			return;
+		}
+		if (m_RunTilOutput) {
+			m_Kernel.RunAllTilOutput();
+		} else {
+			m_Kernel.RunAllAgents(1);
+		}
 	}
 	
 	public void stopSimulation() {
@@ -313,7 +373,11 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
     		}
     		
     		m_StopSoar = false;
-    		m_Kernel.RunAllAgentsForever(smlInterleaveStepSize.sml_INTERLEAVE_UNTIL_OUTPUT);
+    		if (m_RunTilOutput) {
+    			m_Kernel.RunAllAgentsForever(smlInterleaveStepSize.sml_INTERLEAVE_UNTIL_OUTPUT);
+    		} else {
+    			m_Kernel.RunAllAgentsForever();
+    		}
     		
     		if (m_Runs != 0) {
     			resetSimulation(false);
@@ -322,14 +386,17 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
     }
     
   	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
-  		if (m_StopSoar) {
-  			m_StopSoar = false;
-  			m_Kernel.StopAllAgents();
-  		}
   		//m_Logger.log("Update number " + m_WorldCount);
   		m_WorldManager.update();
 		++m_WorldCount;
+		//m_Logger.log("World count: " + Integer.toString(m_WorldCount));
 		fireSimulationEvent(SimulationListener.kUpdateEvent);
+
+		// Test this after the world has been updated, in case it's asking us to stop
+		if (m_StopSoar) {
+  			m_StopSoar = false;
+  			m_Kernel.StopAllAgents();
+  		}
   	}
   	
     public void systemEventHandler(int eventID, Object data, Kernel kernel) {
@@ -355,6 +422,12 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		m_LastErrorMessage = errorMessage;
 		fireSimulationEvent(SimulationListener.kErrorMessageEvent);
 		m_Logger.log(errorMessage);
+	}
+	
+	protected void fireNotificationMessage(String notifyMessage) {
+		m_LastErrorMessage = notifyMessage;
+		fireSimulationEvent(SimulationListener.kNotificationEvent);
+		m_Logger.log(notifyMessage);
 	}
 	
 	public void addSimulationListener(SimulationListener listener) {

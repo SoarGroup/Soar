@@ -103,7 +103,7 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 				}
 				
 				EatersWorld.EatersCell cell = m_World.getCell(x, y);
-				if (!cell.isModified() && m_Painted) {
+				if (!cell.needsRedraw() && m_Painted) {
 					continue;
 				}
 				

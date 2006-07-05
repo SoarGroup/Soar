@@ -2,6 +2,7 @@ package tanksoar.visuals;
 
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
@@ -16,9 +17,9 @@ public class AgentDisplay extends Composite {
 	static final int kTableHeight = 120;
 	static final int kNameWidth = 75;
 	static final int kScoreWidth = 55;
-	static final int kMissilesWidth = 48;
-	static final int kHealthWidth = 45;
-	static final int kEnergyWidth = 46;
+	static final int kMissilesWidth = 66;
+	static final int kHealthWidth = 58;
+	static final int kEnergyWidth = 60;
 	
 	Logger m_Logger = Logger.logger;
 	TankSoarSimulation m_Simulation;
@@ -29,44 +30,31 @@ public class AgentDisplay extends Composite {
 	Button m_NewAgentButton;
 	Button m_CloneAgentButton;
 	Button m_DestroyAgentButton;
-	Button m_SpawnDebuggersButton;
+	Button m_ReloadProductionsButton;
+	Button m_HumanAgentButton;
 	TankSoarAgentWorld m_AgentWorld;
 	ProgressBar m_Smell;
 	ProgressBar m_Radar;
+	BlockedDiagram m_Blocked;
+	BlockedDiagram m_RWaves;
+	BlockedDiagram m_Sound;
+	BlockedDiagram m_Incoming;
 
 	public AgentDisplay(final Composite parent, TankSoarSimulation simulation) {
 		super(parent, SWT.NONE);
 		m_Simulation = simulation;
 
-		setLayout(new FillLayout());
-		
-		Group outerGroup = new Group(this, SWT.NONE);
-		outerGroup.setText("Agents");
-		
 		GridLayout gl = new GridLayout();
-		gl.numColumns = 2;
-		outerGroup.setLayout(gl);
-		
-		GridData gd;
-		
-		Composite leftComposite = new Composite(outerGroup, SWT.NONE);
-		gd = new GridData();
-		gd.verticalAlignment = GridData.BEGINNING;
-		leftComposite.setLayoutData(gd);
+		gl.numColumns = 1;
+		setLayout(gl);
 
-		gl = new GridLayout();
-		gl.numColumns = 2;
-		leftComposite.setLayout(gl);
-
-		Composite agentButtons;
-		agentButtons = new Composite(leftComposite, SWT.NONE);
-		agentButtons.setLayout(new FillLayout());
-		gd = new GridData();
-		gd.horizontalAlignment = GridData.BEGINNING;
-		gd.horizontalSpan = 2;
-		agentButtons.setLayoutData(gd);
+		GridData gd;	
 		
-		m_NewAgentButton = new Button(agentButtons, SWT.PUSH);
+		Composite row1 = new Composite(this, SWT.NONE);
+		row1.setLayoutData(new GridData());
+		row1.setLayout(new FillLayout());
+		
+		m_NewAgentButton = new Button(row1, SWT.PUSH);
 		m_NewAgentButton.setText("New");
 		m_NewAgentButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -74,7 +62,37 @@ public class AgentDisplay extends Composite {
 			}
 		});
 		
-		m_CloneAgentButton = new Button(agentButtons, SWT.PUSH);
+		m_HumanAgentButton = new Button(row1, SWT.PUSH);
+		m_HumanAgentButton.setText("Human");
+		m_HumanAgentButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				String color = null;
+				// TODO: this probably isn't the most efficient way of doing this, but this is not a bottleneck point
+				if (m_Tanks != null) {
+					for (int i = 0; i < TankSoarWindowManager.kColors.length; ++i) {
+						boolean notTaken = true;
+						for (int j = 0; j < m_Tanks.length; ++j) {
+							if (m_Tanks[j].getColor().equalsIgnoreCase(TankSoarWindowManager.kColors[i])) {
+								notTaken = false;
+								break;
+							}
+						}
+						if (notTaken) {
+							color = TankSoarWindowManager.kColors[i];
+							break;
+						}
+					}
+				} else {
+					color = TankSoarWindowManager.kColors[0];
+				}
+				boolean spawnDebuggers = m_Simulation.getSpawnDebuggers();
+				m_Simulation.setSpawnDebuggers(false);
+				m_Simulation.createEntity(color + "-human", null, color, null, null, -1, -1, -1);
+				m_Simulation.setSpawnDebuggers(spawnDebuggers);
+			}
+		});
+				
+		m_CloneAgentButton = new Button(row1, SWT.PUSH);
 		m_CloneAgentButton.setText("Clone");
 		m_CloneAgentButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -95,11 +113,11 @@ public class AgentDisplay extends Composite {
 				}
 				
 				// Risking null exception here, but that should not be possible ;)
-				m_Simulation.createEntity(color, m_SelectedEntity.getProductions(), color, null, null);
+				m_Simulation.createEntity(color, m_SelectedEntity.getProductions(), color, null, null, -1, -1, -1);
 			}
 		});
 		
-		m_DestroyAgentButton = new Button(agentButtons, SWT.PUSH);
+		m_DestroyAgentButton = new Button(row1, SWT.PUSH);
 		m_DestroyAgentButton.setText("Destroy");
 		m_DestroyAgentButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -110,22 +128,19 @@ public class AgentDisplay extends Composite {
 			}
 		});
 				
-		m_SpawnDebuggersButton = new Button(leftComposite, SWT.CHECK);
-		gd = new GridData();
-		gd.horizontalAlignment = GridData.BEGINNING;
-		gd.horizontalSpan = 2;
-		m_SpawnDebuggersButton.setLayoutData(gd);
-		m_SpawnDebuggersButton.setText("Spawn debugger");
-		m_SpawnDebuggersButton.addSelectionListener(new SelectionAdapter() {
+		m_ReloadProductionsButton = new Button(row1, SWT.PUSH);
+		m_ReloadProductionsButton.setText("Reload");
+		m_ReloadProductionsButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				m_Simulation.setSpawnDebuggers(m_SpawnDebuggersButton.getSelection());
+				if (m_SelectedEntity == null) {
+					return;
+				}
+				m_SelectedEntity.reloadProductions();
 			}
-		});		
-
-		m_AgentTable = new Table(leftComposite, SWT.BORDER | SWT.FULL_SELECTION);
+		});
+				
+		m_AgentTable = new Table(this, SWT.BORDER | SWT.FULL_SELECTION);
 		gd = new GridData();
-		gd.horizontalAlignment = GridData.BEGINNING;
-		gd.horizontalSpan = 2;
 		gd.heightHint = kTableHeight;
 		m_AgentTable.setLayoutData(gd);
 		TableColumn tc1 = new TableColumn(m_AgentTable, SWT.CENTER);
@@ -156,73 +171,78 @@ public class AgentDisplay extends Composite {
 			}
 		});
 		
-		Label blocked = new Label(leftComposite, SWT.BORDER);
-		gd = new GridData();
-		gd.grabExcessHorizontalSpace = true;
-		gd.horizontalAlignment = GridData.CENTER;
-		gd.heightHint = 50;
-		gd.widthHint = 50;
-		blocked.setLayoutData(gd);
-		blocked.setText("blocked");
-
-		Label rwaves = new Label(leftComposite, SWT.BORDER);
-		gd = new GridData();
-		gd.grabExcessHorizontalSpace = true;
-		gd.horizontalAlignment = GridData.CENTER;
-		gd.heightHint = 50;
-		gd.widthHint = 50;
-		rwaves.setLayoutData(gd);
-		rwaves.setText("rwaves");
-
-		Label sound = new Label(leftComposite, SWT.BORDER);
-		gd = new GridData();
-		gd.grabExcessHorizontalSpace = true;
-		gd.horizontalAlignment = GridData.CENTER;
-		gd.heightHint = 50;
-		gd.widthHint = 50;
-		sound.setLayoutData(gd);
-		sound.setText("sound");
-
-		Label incoming = new Label(leftComposite, SWT.BORDER);
-		gd = new GridData();
-		gd.grabExcessHorizontalSpace = true;
-		gd.horizontalAlignment = GridData.CENTER;
-		gd.heightHint = 50;
-		gd.widthHint = 50;
-		incoming.setLayoutData(gd);
-		incoming.setText("incoming");
+		Composite row3 = new Composite(this, SWT.NONE);
+		row3.setLayoutData(new GridData());
+		gl = new GridLayout();
+		gl.numColumns = 4;
+		row3.setLayout(gl);
 		
-		Group smellGroup = new Group(leftComposite, SWT.NONE);
+		Group blockedGroup = new Group(row3, SWT.NONE);
+		gd = new GridData();
+		gd.heightHint = 50;
+		gd.widthHint = 50;
+		blockedGroup.setLayoutData(gd);
+		blockedGroup.setText("Blocked");
+		blockedGroup.setLayout(new FillLayout());
+		m_Blocked = new BlockedDiagram(blockedGroup, SWT.NONE);
+		
+		Group rwavesGroup = new Group(row3, SWT.NONE);
+		gd = new GridData();
+		gd.heightHint = 50;
+		gd.widthHint = 50;
+		rwavesGroup.setLayoutData(gd);
+		rwavesGroup.setText("RWaves");
+		rwavesGroup.setLayout(new FillLayout());
+		m_RWaves = new BlockedDiagram(rwavesGroup, SWT.NONE);
+		
+		Group soundGroup = new Group(row3, SWT.NONE);
+		gd = new GridData();
+		gd.heightHint = 50;
+		gd.widthHint = 50;
+		soundGroup.setLayoutData(gd);
+		soundGroup.setText("Sound");
+		soundGroup.setLayout(new FillLayout());
+		m_Sound = new BlockedDiagram(soundGroup, SWT.NONE);
+		
+		Group incomingGroup = new Group(row3, SWT.NONE);
+		gd = new GridData();
+		gd.heightHint = 50;
+		gd.widthHint = 50;
+		incomingGroup.setLayoutData(gd);
+		incomingGroup.setText("Incoming");
+		incomingGroup.setLayout(new FillLayout());
+		m_Incoming = new BlockedDiagram(incomingGroup, SWT.NONE);
+		
+		Group smellGroup = new Group(this, SWT.NONE);
 		smellGroup.setText("Smell distance");
 		smellGroup.setLayout(new FillLayout());
 		gd = new GridData();
-		gd.horizontalSpan = 2;
+		gd.verticalAlignment = SWT.TOP;
 		smellGroup.setLayoutData(gd);
 		m_Smell = new ProgressBar(smellGroup, SWT.HORIZONTAL);
 		m_Smell.setMinimum(0);
 		m_Smell.setMaximum(m_Simulation.getTankSoarWorld().getMaxManhattanDistance());
 
-		Group rightGroup = new Group(outerGroup, SWT.NONE);
-		rightGroup.setText("Radar");
+		Group row5 = new Group(this, SWT.NONE);
+		row5.setText("Radar data and setting");
 		gl = new GridLayout();
-		gl.numColumns = 2;
-		rightGroup.setLayout(gl);
+		row5.setLayout(gl);
 		
-		m_AgentWorld = new TankSoarAgentWorld(rightGroup, SWT.BORDER, m_Simulation);
+		m_AgentWorld = new TankSoarAgentWorld(row5, SWT.BORDER, m_Simulation);
 		gd = new GridData();
 		gd.heightHint = m_AgentWorld.getHeight();
 		gd.widthHint = m_AgentWorld.getWidth();		
 		m_AgentWorld.setLayoutData(gd);
 
-		m_Radar = new ProgressBar(rightGroup, SWT.VERTICAL);
+		m_Radar = new ProgressBar(row5, SWT.NONE);
 		gd = new GridData();
-		gd.heightHint = m_AgentWorld.getHeight();
+		gd.widthHint = m_AgentWorld.getWidth();
 		m_Radar.setLayoutData(gd);
 		m_Radar.setMinimum(0);
 		m_Radar.setMaximum(14);
 		
 		updateTankList();
-		updateButtons();		
+		updateButtons();	
 	}
 	
 	void selectEntity(WorldEntity entity) {
@@ -234,12 +254,23 @@ public class AgentDisplay extends Composite {
 			}
 		}
 		m_AgentWorld.update(m_Tanks[m_AgentTable.getSelectionIndex()]);
+		m_Blocked.updateBlocked(m_Simulation.getTankSoarWorld(), m_Tanks[m_AgentTable.getSelectionIndex()]);
+		m_RWaves.updateRWaves(m_Simulation.getTankSoarWorld(), m_Tanks[m_AgentTable.getSelectionIndex()]);
+		m_Sound.updateSound(m_Simulation.getTankSoarWorld(), m_Tanks[m_AgentTable.getSelectionIndex()]);
+		m_Incoming.updateIncoming(m_Simulation.getTankSoarWorld(), m_Tanks[m_AgentTable.getSelectionIndex()]);
 		m_Radar.setSelection(m_Tanks[m_AgentTable.getSelectionIndex()].getRadarSetting());
 		m_Radar.setToolTipText(Integer.toString(m_Radar.getSelection()));
 		m_Smell.setSelection(m_Tanks[m_AgentTable.getSelectionIndex()].getSmellDistance());
 		m_Smell.setToolTipText(Integer.toString(m_Smell.getSelection()));
+		if (m_Smell.getSelection() > 0) {
+			m_Smell.setForeground(TankSoarWindowManager.getColor(m_Tanks[m_AgentTable.getSelectionIndex()].getSmellColor()));
+		}
 		m_AgentWorld.enable();
 		m_AgentWorld.redraw();
+		m_Blocked.redraw();
+		m_RWaves.redraw();
+		m_Sound.redraw();
+		m_Incoming.redraw();
 	}
 	
 	void agentEvent() {
@@ -251,11 +282,22 @@ public class AgentDisplay extends Composite {
 		m_Smell.setMaximum(m_Simulation.getTankSoarWorld().getMaxManhattanDistance());
 		if (m_SelectedEntity != null) {
 			m_AgentWorld.update(m_Tanks[m_AgentTable.getSelectionIndex()]);
+			m_Blocked.updateBlocked(m_Simulation.getTankSoarWorld(), m_Tanks[m_AgentTable.getSelectionIndex()]);
+			m_RWaves.updateRWaves(m_Simulation.getTankSoarWorld(), m_Tanks[m_AgentTable.getSelectionIndex()]);
+			m_Sound.updateSound(m_Simulation.getTankSoarWorld(), m_Tanks[m_AgentTable.getSelectionIndex()]);
+			m_Incoming.updateIncoming(m_Simulation.getTankSoarWorld(), m_Tanks[m_AgentTable.getSelectionIndex()]);
 			m_Radar.setSelection(m_Tanks[m_AgentTable.getSelectionIndex()].getRadarSetting());
 			m_Radar.setToolTipText(Integer.toString(m_Radar.getSelection()));
 			m_Smell.setSelection(m_Tanks[m_AgentTable.getSelectionIndex()].getSmellDistance());
 			m_Smell.setToolTipText(Integer.toString(m_Smell.getSelection()));
+			if (m_Smell.getSelection() > 0) {
+				m_Smell.setForeground(TankSoarWindowManager.getColor(m_Tanks[m_AgentTable.getSelectionIndex()].getSmellColor()));
+			}
 			m_AgentWorld.redraw();
+			m_Blocked.redraw();
+			m_RWaves.redraw();
+			m_Sound.redraw();
+			m_Incoming.redraw();
 		} else {
 			m_Radar.setSelection(0);
 			m_Radar.setToolTipText("0");
@@ -304,7 +346,15 @@ public class AgentDisplay extends Composite {
 			m_Smell.setToolTipText("0");
 			m_AgentTable.deselectAll();
 			m_AgentWorld.disable();
+			m_Blocked.disable();
+			m_RWaves.disable();
+			m_Sound.disable();
+			m_Incoming.disable();
 			m_AgentWorld.redraw();
+			m_Blocked.redraw();
+			m_RWaves.redraw();
+			m_Sound.redraw();
+			m_Incoming.redraw();
 		}
 	}
 	
@@ -318,11 +368,11 @@ public class AgentDisplay extends Composite {
 			noAgents = true;
 		}
 		boolean selectedEater = (m_SelectedEntity != null);
-		boolean spawnDebuggers = m_Simulation.getSpawnDebuggers();
+		boolean selectedIsHuman = selectedEater ? (m_SelectedEntity.getAgent() == null) : false;
 		
 		m_NewAgentButton.setEnabled(!running && !agentsFull);
-		m_CloneAgentButton.setEnabled(!running && !agentsFull && selectedEater);
+		m_CloneAgentButton.setEnabled(!running && !agentsFull && selectedEater && !selectedIsHuman);
 		m_DestroyAgentButton.setEnabled(!running && !noAgents && selectedEater);
-		m_SpawnDebuggersButton.setSelection(spawnDebuggers);
+		m_ReloadProductionsButton.setEnabled(!running && !noAgents && selectedEater && !selectedIsHuman);
  	}
 }

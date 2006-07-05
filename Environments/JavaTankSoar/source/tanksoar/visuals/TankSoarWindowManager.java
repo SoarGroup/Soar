@@ -19,12 +19,13 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 	final TankSoarVisualWorld m_VisualWorld;
 	final AgentDisplay m_AgentDisplay;
 	final Group m_WorldGroup;
+	final Label m_WC;
 	
 	public TankSoarWindowManager(TankSoarSimulation simulation) {
 		m_Simulation = simulation;
 		
 		GridLayout gl = new GridLayout();
-		gl.numColumns = 2;
+		gl.numColumns = 3;
 		m_Shell.setLayout(gl);
 		
 		GridData gd;
@@ -62,9 +63,31 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 		group2.setLayout(new FillLayout());
 		m_MapButtons = new MapButtons(group2, m_Simulation, TankSoarSimulation.kMapFilter);
 
-		m_AgentDisplay = new AgentDisplay(m_Shell, m_Simulation);
+		Composite comp1 = new Composite(m_Shell, SWT.NONE);
 		gd = new GridData();
-		m_AgentDisplay.setLayoutData(gd);
+		gd.horizontalSpan = 2;
+		comp1.setLayoutData(gd);
+		gl = new GridLayout();
+		gl.numColumns = 2;
+		comp1.setLayout(gl);
+		Label wcLabel = new Label(comp1, SWT.NONE);
+		wcLabel.setText("World Count:");
+		wcLabel.setLayoutData(new GridData());
+		m_WC = new Label(comp1, SWT.NONE);
+		gd = new GridData();
+		gd.widthHint = 50;
+		m_WC.setLayoutData(gd);
+		updateWorldCount();
+		
+		Group group3 = new Group(m_Shell, SWT.NONE);
+		gd = new GridData();
+		group3.setLayoutData(gd);
+		group3.setText("Agents");
+		group3.setLayout(new FillLayout());
+		m_AgentDisplay = new AgentDisplay(group3, m_Simulation);
+		gd = new GridData();
+		gd.horizontalSpan = 2;
+		group3.setLayoutData(gd);
 		
 		VisualWorld.remapEntityColors(m_Simulation.getWorldManager().getEntities());
 		m_VisualWorld.generateBackground();
@@ -144,15 +167,23 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 			return;
 			
 		case SimulationListener.kErrorMessageEvent:
-			MessageBox mb = new MessageBox(m_Shell, SWT.ICON_ERROR | SWT.OK | SWT.WRAP);
-			mb.setMessage(m_Simulation.getLastErrorMessage());
-			mb.setText("Eaters Error");
-			mb.open();
+			MessageBox mb1 = new MessageBox(m_Shell, SWT.ICON_ERROR | SWT.OK | SWT.WRAP);
+			mb1.setMessage(m_Simulation.getLastErrorMessage());
+			mb1.setText("TankSoar Error");
+			mb1.open();
+			return;
+			
+		case SimulationListener.kNotificationEvent:
+			MessageBox mb2 = new MessageBox(m_Shell, SWT.ICON_INFORMATION | SWT.OK | SWT.WRAP);
+			mb2.setMessage(m_Simulation.getLastErrorMessage());
+			mb2.setText("TankSoar");
+			mb2.open();
 			return;
 			
 		case SimulationListener.kUpdateEvent:
 			m_VisualWorld.redraw();
 			m_AgentDisplay.worldChangeEvent();
+			updateWorldCount();
 			return;
 			
 		case SimulationListener.kResetEvent:
@@ -162,6 +193,7 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 			m_VisualWorld.redraw();
 			m_SimButtons.updateButtons();
 			m_AgentDisplay.worldChangeEvent();
+			updateWorldCount();
 			return;
 			
 		case SimulationListener.kAgentCreatedEvent:
@@ -170,6 +202,7 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 			VisualWorld.remapEntityColors(m_Simulation.getWorldManager().getEntities());
 			m_SimButtons.updateButtons();
 			m_AgentDisplay.agentEvent();
+			updateWorldCount();
 			return;
 			
 		case SimulationListener.kAgentDestroyedEvent:
@@ -178,6 +211,11 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 			VisualWorld.remapEntityColors(m_Simulation.getWorldManager().getEntities());
 			m_SimButtons.updateButtons();
 			m_AgentDisplay.agentEvent();
+			return;
+			
+		case SimulationListener.kHumanInputEvent:
+			HumanInputWindow inputWindow = new HumanInputWindow(m_Shell, m_Simulation);
+			m_Simulation.setHumanInput(inputWindow.getMove());
 			return;
 			
 		default:
@@ -195,5 +233,9 @@ public class TankSoarWindowManager extends WindowManager implements SimulationLi
 				dispatchEvent(type);
 			}
 		});
+	}
+	
+	void updateWorldCount() {
+		m_WC.setText(Integer.toString(m_Simulation.getWorldCount()));
 	}
 }

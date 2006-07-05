@@ -1,0 +1,53 @@
+VERSION 4
+\backtrack-epmem-bot5\backtrack-epmem-bot5.dm
+0	ROOT backtrack-epmem-bot5 backtrack-epmem-bot5 1
+1	0	OPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	2	OPERATOR wait wait.soar 4
+4	0	FOLDER elaborations elaborations 5
+5	4	FOPERATOR _all _all.soar 6
+6	4	FOPERATOR _breakpoints _breakpoints.soar 7
+7	4	FOPERATOR abs-blocked abs-blocked.soar 8
+8	4	FOPERATOR coord coord.soar 9
+9	4	FOPERATOR energy-monitor energy-monitor.soar 10
+10	4	FOPERATOR energy-path energy-path.soar 11
+11	4	FOPERATOR epmem-monitor epmem-monitor.soar 12
+12	4	FOPERATOR monitor monitor.soar 13
+13	4	FOPERATOR output output.soar 14
+14	4	FOPERATOR shields shields.soar 15
+15	4	FOPERATOR top-state top-state.soar 16
+16	0	FOPERATOR zzz_README_zzz zzz_README_zzz.soar 17
+17	0	HLOPERATOR attack attack.soar attack 61 18
+18	17	FOPERATOR elaborations elaborations.soar 19
+19	17	OPERATOR fire-missile fire-missile.soar 20
+20	17	OPERATOR move move.soar 21
+21	17	OPERATOR slide slide.soar 22
+22	17	OPERATOR turn turn.soar 23
+23	0	HLOPERATOR chase chase.soar chase 62 24
+24	23	FOPERATOR elaborations elaborations.soar 25
+25	23	OPERATOR move move.soar 26
+26	23	OPERATOR turn turn.soar 27
+27	0	HLOPERATOR find-energy find-energy.soar find-energy 98 28
+28	27	FOPERATOR elaborations elaborations.soar 29
+29	27	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 150 30
+30	29	FOPERATOR elaborations elaborations.soar 31
+31	29	OPERATOR epmem-recall-see-energy epmem-recall-see-energy.soar 32
+32	29	OPERATOR epmem-recall-see-energy-path epmem-recall-see-energy-path.soar 33
+33	29	OPERATOR give-up give-up.soar 34
+34	29	HLIOPERATOR Impasse__State_No-Change Impasse__State_No-Change.soar Impasse__State_No-Change 163 49
+35	34	FOPERATOR elaborations elaborations.soar 50
+36	29	OPERATOR record-energy-path record-energy-path.soar 35
+37	29	OPERATOR remove-epmem-query remove-epmem-query.soar 36
+38	27	HLOPERATOR move move.soar move 129 37
+39	38	OPERATOR go-forward go-forward.soar 38
+40	38	OPERATOR turn-to-dir turn-to-dir.soar 39
+41	0	HLOPERATOR retreat retreat.soar retreat 63 40
+42	41	FOPERATOR elaborations elaborations.soar 41
+43	41	OPERATOR move move.soar 42
+44	41	OPERATOR wait wait.soar 43
+45	0	OPERATOR wait-for-recharge wait-for-recharge.soar 44
+46	0	HLOPERATOR wander wander.soar wander 6 45
+47	46	FOPERATOR elaborations elaborations.soar 46
+48	46	OPERATOR move move.soar 47
+49	46	OPERATOR turn turn.soar 48
+END

@@ -172,7 +172,7 @@ public class EatersWorld extends World implements WorldManager {
 			if (!isEater()) {
 				return false;
 			}
-			m_Modified = true;
+			m_Redraw = true;
 			if (m_Type == kEaterInt) {
 				m_Type = kEmptyInt;
 			}
@@ -198,7 +198,7 @@ public class EatersWorld extends World implements WorldManager {
 		}
 		
 		public Food setEater(Eater eater) {
-			m_Modified = true;
+			m_Redraw = true;
 			Food f = null;
 			if (isFood()) {
 				f = removeFood();
@@ -235,7 +235,7 @@ public class EatersWorld extends World implements WorldManager {
 		
 		public Food removeFood() {
 			if (isFood()) {
-				m_Modified = true;
+				m_Redraw = true;
 				Food f = getFood();
 				if (m_Eater == null) {
 					m_Type = kEmptyInt;
@@ -378,7 +378,7 @@ public class EatersWorld extends World implements WorldManager {
 			m_World[m_WorldSize - 1][col] = new EatersCell(kWallID);
 		}
 		
-		Random random = Simulation.kRandom ? new Random() : new Random(0) ;
+		Random random = m_Simulation.isRandom() ? new Random() : new Random(0) ;
 		
 		double probability = kLowProbability;
 		for (int row = 2; row < m_WorldSize - 2; ++row) {
@@ -460,7 +460,7 @@ public class EatersWorld extends World implements WorldManager {
 	}
 	
 	private void generateRandomFood() {
-		Random random = Simulation.kRandom ? new Random() : new Random(0) ;
+		Random random = m_Simulation.isRandom() ? new Random() : new Random(0) ;
 		for (int row = 1; row < m_WorldSize - 1; ++row) {
 			for (int col = 1; col < m_WorldSize - 1; ++col) {
 				if (m_World[row][col] == null) {
@@ -586,7 +586,7 @@ public class EatersWorld extends World implements WorldManager {
 
 	private MapPoint findStartingLocation() {
 		// set random starting location
-		Random random = Simulation.kRandom ? new Random() : new Random(0) ;
+		Random random = m_Simulation.isRandom() ? new Random() : new Random(0) ;
 		MapPoint location = new MapPoint(random.nextInt(m_WorldSize), random.nextInt(m_WorldSize));
 		while (getCell(location).isWall() || getCell(location).isEater()) {
 			location.x = random.nextInt(m_WorldSize);
@@ -630,6 +630,7 @@ public class EatersWorld extends World implements WorldManager {
 				if (move.jump) {
 					m_Eaters[i].adjustPoints(kJumpPenalty);
 				}
+				m_Eaters[i].setMoved();
 			} else {
 				m_Eaters[i].adjustPoints(kWallPenalty);
 			}
@@ -667,7 +668,7 @@ public class EatersWorld extends World implements WorldManager {
 		// reset modified flags
 		for (int y = 0; y < m_World.length; ++y) {
 			for (int x = 0; x < m_World[y].length; ++x) {
-				m_World[y][x].clearModified();
+				m_World[y][x].clearRedraw();
 				if (m_World[y][x].checkCollision()) {
 					m_World[y][x].setCollision(false);
 				}

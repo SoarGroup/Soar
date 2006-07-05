@@ -39,7 +39,7 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 		
 		m_Simulation = simulation;
 		m_World = m_Simulation.getTankSoarWorld();
-		m_Random = Simulation.kRandom ? new Random() : new Random(0) ;
+		m_Random = m_Simulation.isRandom() ? new Random() : new Random(0) ;
 		
 		loadImages(parent.getDisplay());
 		addPaintListener(this);		
@@ -131,7 +131,7 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 		for(int x = 0; x < m_World.getSize(); ++x){
 			for(int y = 0; y < m_World.getSize(); ++y){
 				TankSoarCell cell = m_World.getCell(x, y);
-				if (!cell.isModified() && m_Painted) {
+				if (!cell.needsRedraw() && m_Painted) {
 					continue;
 				}
 				

@@ -35,7 +35,7 @@ public class Logger {
 		
 		try {
 			m_Output.write(message);
-			m_Output.write("\n");
+			m_Output.write(System.getProperty("line.separator"));
 			m_Output.flush();
 		} catch (IOException e) {
 			System.out.println("Warning: logger write failed.");

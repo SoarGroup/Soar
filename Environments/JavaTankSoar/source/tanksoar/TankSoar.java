@@ -15,6 +15,7 @@ public class TankSoar {
 	private boolean m_Console;
 	private String m_LogFile;
 	private boolean m_Append;
+	private boolean m_NotRandom;
 
 	public TankSoar(String[] args) {
 		
@@ -40,7 +41,7 @@ public class TankSoar {
 		}
 		
 		// Initialize the simulation
-		TankSoarSimulation simulation = new TankSoarSimulation(m_SettingsFile, m_Quiet);
+		TankSoarSimulation simulation = new TankSoarSimulation(m_SettingsFile, m_Quiet, m_NotRandom);
 		
 		// Initialize the window manager, if applicable.
 		if(!m_Quiet) {
@@ -111,7 +112,8 @@ public class TankSoar {
 		m_Console = hasOption(args, "-console");
 		m_LogFile = getOptionValue(args, "-log");
 		m_Append = hasOption(args, "-append");
-	
+		m_NotRandom = hasOption(args, "-notrandom");
+		
 		if (m_LogFile != null) {
 			m_Console = false;
 		}
@@ -124,12 +126,13 @@ public class TankSoar {
 	}
 	
 	protected void printCommandLineHelp() {
-		System.out.println("Java Eaters help");
+		System.out.println("Java TankSoar help");
 		System.out.println("\t-console: Send all log messages to console, overridden by -log.");
 		System.out.println("\t-log: File name to log messages to (default: " + kDefaultFile + ").");
 		System.out.println("\t-append: If logging to file, append.  Ignored if -console present.");
 		System.out.println("\t-quiet: Disables all windows, runs simulation quietly.");
 		System.out.println("\t-settings: XML file with with run settings.");
+		System.out.println("\t-notrandom: Disable randomness by seeding the generator with 0.");
 	}
 	
 	// Returns true if a given option appears in the list

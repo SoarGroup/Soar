@@ -65,8 +65,6 @@ public class InputLinkManager {
 	
 	private final static String kNone = "none";
 
-	private Random m_Random = Simulation.kRandom ? new Random() : new Random(0) ;
-	
 	private Identifier m_InputLink;
 	private Identifier m_BlockedWME;
 	private StringElement m_BlockedBackwardWME;
@@ -340,7 +338,7 @@ public class InputLinkManager {
 		Tank closestTank = m_World.getStinkyTankNear(m_Tank);
 		String closestTankColor = (closestTank == null) ? kNone : closestTank.getColor();
 		int distance = (closestTank == null) ? 0 : location.getManhattanDistanceTo(closestTank.getLocation());
-		m_Tank.setSmellDistance(distance);
+		m_Tank.setSmell(distance, distance == 0 ? null : closestTankColor);
 		if (m_Reset) {
 			m_SmellWME = m_Agent.CreateIdWME(m_InputLink, kSmellID);
 			m_SmellColorWME = CreateStringWME(m_SmellWME, kColorID, closestTankColor);
@@ -452,7 +450,7 @@ public class InputLinkManager {
 		}
 		
 		// Random
-		float random = m_Random.nextFloat();
+		float random = m_World.m_Random.nextFloat();
 		if (m_Reset) {
 			m_RandomWME = CreateFloatWME(m_InputLink, kRandomID, random);
 		} else {
@@ -604,6 +602,9 @@ public class InputLinkManager {
 	}
 	
 	private String getCellID(TankSoarCell cell) {
+		if (cell.containsTank()) {
+			return kTankID;
+		}
 		if (cell.isWall()) {
 			return kObstacleID;
 		}
@@ -615,9 +616,6 @@ public class InputLinkManager {
 		}
 		if (cell.containsMissilePack()) {
 			return kMissilesID;
-		}
-		if (cell.containsTank()) {
-			return kTankID;
 		}
 		return kOpenID;
 	}
