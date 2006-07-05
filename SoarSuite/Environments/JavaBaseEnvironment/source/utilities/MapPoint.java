@@ -24,13 +24,6 @@ public class MapPoint {
 		this.y = p.y;
 	}
 	
-	public MapPoint(MapPoint p, int direction) {
-		this.x = p.x;
-		this.y = p.y;
-		x += getXIncrement(direction);
-		y += getYIncrement(direction);
-	}
-	
 	public String toString() {
 		return "(" + x + "," + y + ")";
 	}
