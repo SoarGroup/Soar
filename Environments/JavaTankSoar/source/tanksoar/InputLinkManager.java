@@ -356,7 +356,7 @@ public class InputLinkManager {
 		// if the closest tank is greater than 7 away, there is no
 		// possibility of hearing anything
 		int sound = 0;
-		if (closestTank.getLocation().getManhattanDistanceTo(m_Tank.getLocation()) > TankSoarWorld.kMaxSmellDistance) {
+		if ((closestTank != null) && closestTank.getLocation().getManhattanDistanceTo(m_Tank.getLocation()) <= TankSoarWorld.kMaxSmellDistance) {
 			sound = m_World.getSoundNear(m_Tank);
 		}
 		String soundString;
