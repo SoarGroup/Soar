@@ -75,4 +75,4 @@ reorder.h\
 
 INCLUDES = -I../include
 
-CXXFLAGS = $(SOAR_CXXFLAGS)
+CXXFLAGS = $(SOAR_CXXFLAGS) -fno-strict-aliasing
