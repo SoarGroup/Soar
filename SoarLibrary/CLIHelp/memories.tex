@@ -6,28 +6,29 @@ Print memory usage for partial matches.
 \begin{verbatim}
 memories [-cdju] [\emph{n}
 ]
-memories production_name 
+memories production_name
 \end{verbatim}
 \subsubsection*{Options}
 \begin{tabular}{|l|l|}
-\hline 
- -c, --chunks  & Print memory usage of chunks.  \\
- \hline 
- -d, --default  & Print memory usage of default productions.  \\
- \hline 
- -j, --justifications  & Print memory usage of justifications.  \\
- \hline 
- -u, --user  & Print memory usage of user-defined productions.  \\
- \hline 
-production\_name & Print memory usage for a specific production.  \\
- \hline 
+\hline
+\soar{ -c, --chunks } & Print memory usage of chunks.  \\
+\hline
+\soar{ -d, --default } & Print memory usage of default productions.  \\
+\hline
+\soar{ -j, --justifications } & Print memory usage of justifications.  \\
+\hline
+\soar{ -u, --user } & Print memory usage of user-defined productions.  \\
+\hline
+\soar{production\_name} & Print memory usage for a specific production.  \\
+\hline
 \emph{n}
  & Number of productions to print, sorted by those that use the most memory.  \\
- \hline 
+\hline
 \end{tabular}
 \subsubsection*{Description}
  The \textbf{memories}
- command prints out the internal memory usage for full and partial matches of production instantiations, with the productions using the most memory printed first. With no arguments, the memories command prints memory usage for all productions. If a production\_name is specified, memory usage will be printed only for that production. If a positive integer \emph{n}
+ command prints out the internal memory usage for full and partial matches of production instantiations, with the productions using the most memory printed first. With no arguments, the memories command prints memory usage for all productions. If a \emph{production\_name}
+ is specified, memory usage will be printed only for that production. If a positive integer \emph{n}
  is given, only \emph{n}
  productions will be printed: the \emph{n}
  productions that use the most memory. Output may be restricted to print memory usage for particular types of productions using the command options. 

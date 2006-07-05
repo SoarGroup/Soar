@@ -4,30 +4,30 @@
 Prints information about partial matches and the match set. 
 \subsubsection*{Synopsis}
 \begin{verbatim}
-matches [-nc0t1w2] production_name
-matches -[a|r] [-nc0t1w2]
+matches [-nctw] production_name
+matches -[a|r] [-nctw]
 \end{verbatim}
 \subsubsection*{Options}
 \begin{tabular}{|l|l|}
-\hline 
-production\_name & Print partial match information for the named production.  \\
- \hline 
- -0, -n, --names, -c, --count  & For the match set, print only the names of the productions that are about to fire or retract (the default). If printing partial matches for a production, just list the partial match counts.  \\
- \hline 
- -1, -t, --timetags  & Also print the timetags of the wmes at the first failing condition  \\
- \hline 
- -2, -w, --wmes  & Also print the full wmes, not just the timetags, at the first failing condition.  \\
- \hline 
- -a, --assertions  & List only productions about to fire.  \\
- \hline 
- -r, --retractions  & List only productions about to retract.  \\
- \hline 
+\hline
+\soar{production\_name} & Print partial match information for the named production.  \\
+\hline
+\soar{ -n, --names, -c, --count } & For the match set, print only the names of the productions that are about to fire or retract (the default). If printing partial matches for a production, just list the partial match counts.  \\
+\hline
+\soar{ -t, --timetags } & Also print the timetags of the wmes at the first failing condition  \\
+\hline
+\soar{ -w, --wmes } & Also print the full wmes, not just the timetags, at the first failing condition.  \\
+\hline
+\soar{ -a, --assertions } & List only productions about to fire.  \\
+\hline
+\soar{ -r, --retractions } & List only productions about to retract.  \\
+\hline
 \end{tabular}
 \subsubsection*{Description}
  The matches command prints a list of productions that have instantiations in the match set, i.e., those productions that will retract or fire in the next Propose or Apply phase. It also will print partial match information for a single, named production. 
 \subsection*{Printing the match set}
- When printing the match set (i.e., no production name is specified), the default action prints only the names of the productions which are about to fire or retract. If there are multiple instantiations of a production, the total number of instantiations of that production is printed after the production name, unless \textbf{--timetags|1}
- or \textbf{--wmes|2}
+ When printing the match set (i.e., no production name is specified), the default action prints only the names of the productions which are about to fire or retract. If there are multiple instantiations of a production, the total number of instantiations of that production is printed after the production name, unless \textbf{--timetags}
+ or \textbf{--wmes}
  are specified, in which case each instantiation is printed on a separate line. 
  When printing the match set, the \textbf{--assertions}
  and \textbf{--retractions}
@@ -37,11 +37,9 @@ production\_name & Print partial match information for the named production.  \\
  command can be used to print information about partial matches for a named production. In this case, the conditions of the production are listed, each preceded by the number of currently active matches for that condition. If a condition is negated, it is preceded by a minus sign \textbf{-}
 . The pointer \textbf{$>$$>$$>$$>$}
  before a condition indicates that this is the first condition that failed to match. 
- When printing partial matches, the default action is to print only the counts of the number of WME's that match, and is a handy tool for determining which condition failed to match for a production that you thought should have fired. At levels \textbf{1}
- and \textbf{2}
- (or \textbf{--timetags}
+ When printing partial matches, the default action is to print only the counts of the number of WME's that match, and is a handy tool for determining which condition failed to match for a production that you thought should have fired. At levels \textbf{--timetags}
  and \textbf{--wmes}
- arguments) the \textbf{matches}
+ the \textbf{matches}
  command displays the WME's immediately after the first condition that failed to match --- temporarily interrupting the printing of the production conditions themselves. 
 \subsection*{Notes}
  When printing partial match information, some of the matches displayed by this command may have already fired, depending on when in the execution cycle this command is called. To check for the matches that are about to fire, use the \textbf{matches}
@@ -57,5 +55,3 @@ matches --assertions --wmes
  This example prints the wme timetags for a single production. \begin{verbatim}
 matches -t my*first*production
 \end{verbatim}
-\subsubsection*{See Also}
-\hyperref[monitor]{monitor} 

@@ -1,0 +1,21 @@
+\subsection{\soarb{srand}}
+\label{srand}
+\index{srand}
+Seed the random number generator. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+srand [seed]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline
+\soar{ seed } & Random number generator seed.  \\
+\hline
+\end{tabular}
+\subsubsection*{Description}
+ Seeds the random number generator with the passed seed. Calling srand without providing a seed will seed the generator based on the contents of /dev/urandom (if available) or else based on time() and clock() values. 
+\subsubsection*{Examples}
+\begin{verbatim}
+srand 0
+\end{verbatim}
+\subsubsection*{See Also}

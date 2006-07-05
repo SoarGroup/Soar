@@ -65,6 +65,10 @@
  :chunk          specifies that this production is a chunk
                  (this matters for learn trace)
 
+ :interrupt      specifies that Soar should stop running when this
+                 production matches but before it fires
+                 (this is a useful debugging tool)
+
    Multiple flags may be used, but not both of o-support and no-support.
 
    Although you could force your productions to provide O-support or

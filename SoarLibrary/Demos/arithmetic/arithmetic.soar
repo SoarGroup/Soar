@@ -1,0 +1,3 @@
+pushd arithmetic
+source arithmetic_source.soar
+popd

@@ -18,6 +18,10 @@ sp {<u>production_body</u>}
 
 :chunk          specifies that this production is a chunk 
                 (this matters for learn trace)
+
+:interrupt      specifies that Soar should stop running when this 
+                production matches but before it fires
+                (this is a useful debugging tool)
 </pre><p>Multiple flags may be used, but not both of <b>o-support</b> and <b>no-support</b>. <p>Although you could force your productions to provide O-support or I-support by using these commands --- regardless of the structure of the conditions and actions of the production --- this is not proper coding style. The <b>o-support</b> and <b>no-support</b> flags are included to help with debugging, but should not be used in a standard Soar program. <a name="Examples"></a><h1> Examples </h1><pre>sp {blocks*create-problem-space   
      &quot;This creates the top-level space&quot;
      (state &lt;s1&gt; ^superstate nil)

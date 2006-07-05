@@ -6,24 +6,24 @@ Examine details about the preferences that support the specified \emph{id}
 . 
 \subsubsection*{Synopsis}
 \begin{verbatim}
-preferences [-0123nNtw] [id] [[^]attribute]
+preferences [-0123nNtw] [[id] [[^]attribute]]
 \end{verbatim}
 \subsubsection*{Options}
 \begin{tabular}{|l|l|}
-\hline 
- -0, -n, --none  & Print just the preferences themselves  \\
- \hline 
- -1, -N, --names  & Print the preferences and the names of the productions that generated them  \\
- \hline 
- -2, -t, --timetags  & Print the information for the --names option above plus the timetags of the wmes matched by the indicated productions  \\
- \hline 
- -3, -w, --wmes  & Print the information for the --timetags option above plus the entire wme.  \\
- \hline 
-id & Must be an existing Soar object identifier.  \\
- \hline 
-attribute & Must be an existing \emph{\^{}attribute}
+\hline
+\soar{ -0, -n, --none } & Print just the preferences themselves  \\
+\hline
+\soar{ -1, -N, --names } & Print the preferences and the names of the productions that generated them  \\
+\hline
+\soar{ -2, -t, --timetags } & Print the information for the --names option above plus the timetags of the wmes matched by the indicated productions  \\
+\hline
+\soar{ -3, -w, --wmes } & Print the information for the --timetags option above plus the entire wme.  \\
+\hline
+\soar{id} & Must be an existing Soar object identifier.  \\
+\hline
+\soar{attribute} & Must be an existing \emph{\^{}attribute}
  of the specified identifier.  \\
- \hline 
+\hline
 \end{tabular}
 \subsubsection*{Description}
  The \textbf{preferences}
@@ -59,12 +59,4 @@ acceptables:
  I5  + :O 
  J1  + :O
 \end{verbatim}
-\subsubsection*{Default Aliases}
-\begin{tabular}{|l|l|}
-\hline 
- Alias  & Maps to  \\
- \hline 
- pr  & preferences  \\
- \hline 
-\end{tabular}
 \subsubsection*{See Also}

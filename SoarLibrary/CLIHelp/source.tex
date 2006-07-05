@@ -4,17 +4,75 @@
 Load and evaluate the contents of a file. 
 \subsubsection*{Synopsis}
 \begin{verbatim}
-source filename
+source -[adv] filename
 \end{verbatim}
 \subsubsection*{Options}
 \begin{tabular}{|l|l|}
-\hline 
-filename & The file of Soar productions and commands to load.  \\
- \hline 
+\hline
+\soar{filename} & The file of Soar productions and commands to load.  \\
+\hline
+\soar{ -a, --all } & Enable a summary for each file sourced  \\
+\hline
+\soar{ -d, --disable } & Disable all summaries  \\
+\hline
+\soar{ -v, --verbose } & Print excised production names  \\
+\hline
 \end{tabular}
 \subsubsection*{Description}
  Load and evaluate the contents of a file. The \emph{filename}
  can be a relative path or a fully qualified path. \textbf{source}
  will generate an implicit push to the new directory, execute the command, and then pop back to the current working directory from which the command was issued. 
+ After the source completes, the number of productions sourced and excised is printed: \begin{verbatim}
+agent> source demos/mac/mac.soar
+******************
+Total: 18 productions sourced.
+Source finished.
+agent> source demos/mac/mac.soar
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+Total: 18 productions sourced. 18 productions excised.
+Source finished.
+\end{verbatim}
+ This can be disabled by using the -d flag: \begin{verbatim}
+agent> source demos/mac/mac.soar -d
+******************
+Source finished.
+agent> source demos/mac/mac.soar -d
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+Source finished.
+\end{verbatim}
+ A list of excised productions is available using the -v flag: \begin{verbatim}
+agent> source demos/mac/mac.soar -v
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+Total: 18 productions sourced. 18 productions excised.
+Excised productions:
+        mac*detect*state*success
+        mac*evaluate*state*failure*more*cannibals
+        monitor*move-boat
+        monitor*state*left
+...
+\end{verbatim}
+ A separate summary for each file sourced can be enabled using the -a flag: \begin{verbatim}
+agent> source demos/mac/mac.soar -a
+_firstload.soar: 0 productions sourced.
+all_source.soar: 0 productions sourced.
+**
+goal-test.soar: 2 productions sourced.
+***
+monitor.soar: 3 productions sourced.
+****
+search-control.soar: 4 productions sourced.
+top-state.soar: 0 productions sourced.
+elaborations_source.soar: 0 productions sourced.
+_readme.soar: 0 productions sourced.
+**
+initialize-mac.soar: 2 productions sourced.
+*******
+move-boat.soar: 7 productions sourced.
+mac_source.soar: 0 productions sourced.
+mac.soar: 0 productions sourced.
+Total: 18 productions sourced.
+Source finished.
+\end{verbatim}
+ Combining the -a and -v flag adds excised production names to the output for each file. 
 \subsubsection*{See Also}
 \hyperref[cd]{cd} \hyperref[dirs]{dirs} \hyperref[home]{home} \hyperref[ls]{ls} \hyperref[pushd]{pushd} \hyperref[popd]{popd} \hyperref[topd]{topd} 
