@@ -36,7 +36,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	private boolean m_PrintedStats;
 	private Tank[] m_Tanks;
 	
-	private LinkedList<Missile> missiles = new LinkedList<Missile>();
+	private LinkedList missiles = new LinkedList();
 	
    	public TankSoarWorld(TankSoarSimulation simulation) {
 		m_Simulation = simulation;
@@ -753,9 +753,9 @@ public class TankSoarWorld extends World implements WorldManager {
 	
 	private int removeMissilesOwnedBy(Tank owner) {
 		int count = 0;
-		ListIterator<Missile> iter = missiles.listIterator();
+		ListIterator iter = missiles.listIterator();
 		while (iter.hasNext()) {
-			Missile missile = iter.next();
+			Missile missile = (Missile)iter.next();
 			if (missile.getOwner().equals(owner)) {
 				logger.finer("Removing missile id " + Integer.toString(missile.getID()) + " owned by " + owner.getName());
 				++count;
@@ -768,14 +768,14 @@ public class TankSoarWorld extends World implements WorldManager {
 	private void removeMissilesByID(Integer[] ids) {
 		assert ids != null;
 		for (int i = 0; i < ids.length; ++i) {
-			removeMissileByID(ids[i]);
+			removeMissileByID(ids[i].intValue());
 		}
 	}
 	
 	private void removeMissileByID(int id) {
-		ListIterator<Missile> iter = missiles.listIterator();
+		ListIterator iter = missiles.listIterator();
 		while (iter.hasNext()) {
-			Missile missile = iter.next();
+			Missile missile = (Missile)iter.next();
 			if (missile.getID() == id) {
 				logger.finer("Removing missile by id " + Integer.toString(id));
 				iter.remove();
@@ -786,9 +786,9 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 	
 	Missile getMissileByID(int id) {
-		ListIterator<Missile> iter = missiles.listIterator();
+		ListIterator iter = missiles.listIterator();
 		while (iter.hasNext()) {
-			Missile missile = iter.next();
+			Missile missile = (Missile)iter.next();
 			if (missile.getID() == id) {
 				return missile;
 			}
@@ -798,29 +798,29 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 	
    	private Integer[] checkForMissileThreat(MapPoint location) {
-   		ArrayList<Integer> ids = new ArrayList<Integer>();
+   		ArrayList ids = new ArrayList();
    		
-   		ListIterator<Missile> iter = missiles.listIterator();
+   		ListIterator iter = missiles.listIterator();
    		while (iter.hasNext()) {
-   			Missile missile = iter.next();
+   			Missile missile = (Missile)iter.next();
    			MapPoint[] threats = missile.getThreatenedLocations();
    			for (int i = 0; i < threats.length; ++i) {
    				if (location.equals(threats[i])) {
    					logger.finer("Missile id " + Integer.toString(missile.getID()) + " threat detected for " + location.toString());
-   					ids.add(missile.getID());
+   					ids.add(new Integer(missile.getID()));
    				}
    			}
    		}
    		if (ids.size() > 0) {
-   			return ids.toArray(new Integer[0]);
+   			return (Integer[])ids.toArray(new Integer[0]);
    		}
    		return null;
    	}
    	
    	private void moveMissiles() {
-   		ListIterator<Missile> iter = missiles.listIterator();
+   		ListIterator iter = missiles.listIterator();
    		while (iter.hasNext()) {
-   			Missile missile = iter.next();
+   			Missile missile = (Missile)iter.next();
    			
   			getCell(missile.getLocation()).setRedraw();
    			if (missile.getFlightPhase() == 2) {
@@ -856,11 +856,11 @@ public class TankSoarWorld extends World implements WorldManager {
    		m_RD.calculate(tank.getLastMoveDirection());
    		MapPoint lastTankLocation = tank.getLocation().travel(m_RD.backward);
    		
-   		ArrayList<Integer> ids = new ArrayList<Integer>();
+   		ArrayList ids = new ArrayList();
 
-   		ListIterator<Missile> iter = missiles.listIterator();
+   		ListIterator iter = missiles.listIterator();
    		while (iter.hasNext()) {
-   			Missile missile = iter.next();
+   			Missile missile = (Missile)iter.next();
    			// Must be moving the opposite direction
    			if (missile.getDirection() != m_RD.backward) {
    				continue;
@@ -868,11 +868,11 @@ public class TankSoarWorld extends World implements WorldManager {
    			
    			if (missile.getLocation().equals(lastTankLocation)) {
 				logger.finer("Missile id " + Integer.toString(missile.getID()) + " pass threat detected for " + tank.getName());
-				ids.add(missile.getID());
+				ids.add(new Integer(missile.getID()));
    			}
    		}
    		if (ids.size() > 0) {
-   			return ids.toArray(new Integer[0]);
+   			return (Integer[])ids.toArray(new Integer[0]);
    		}
    		return null;
   	}
@@ -890,9 +890,9 @@ public class TankSoarWorld extends World implements WorldManager {
    	
    	public int checkMissileIncoming(MapPoint location) {
    		int incoming = 0;
-   		ListIterator<Missile> iter = missiles.listIterator();
+   		ListIterator iter = missiles.listIterator();
    		while (iter.hasNext()) {
-   			Missile missile = iter.next();
+   			Missile missile = (Missile)iter.next();
    			if (missile.getLocation().x == location.x) {
    				// We're in the same row
    				if (missile.getLocation().y < location.y) {
@@ -930,6 +930,6 @@ public class TankSoarWorld extends World implements WorldManager {
    	}
    	
    	public Missile[] getMissiles() {
-   		return missiles.toArray(new Missile[0]);
+   		return (Missile[])missiles.toArray(new Missile[0]);
    	}
 }
