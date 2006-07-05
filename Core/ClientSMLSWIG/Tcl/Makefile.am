@@ -22,7 +22,7 @@ $(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
 INCLUDES   = -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include
 
 SWIG=@SWIG@
-CXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused
+CXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused -fno-strict-aliasing
 LIBDIR=@libdir@
 SO=@SO@
 
