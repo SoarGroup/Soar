@@ -822,6 +822,11 @@ public class TankSoarWorld extends World implements WorldManager {
    		while (iter.hasNext()) {
    			Missile missile = iter.next();
    			
+  			getCell(missile.getLocation()).setRedraw();
+   			if (missile.getFlightPhase() == 2) {
+   				getCell(missile.getLocation().travel(missile.getDirection())).setRedraw();
+   			}
+
    			MapPoint[] threats = missile.getThreatenedLocations();
    			if (threats.length == 2) {
    				if (getCell(threats[1]).isWall()) {
@@ -831,7 +836,6 @@ public class TankSoarWorld extends World implements WorldManager {
    				}
    			}
 
-  			getCell(missile.getLocation()).setRedraw();
    			missile.move();
    			
    			if (getCell(missile.getLocation()).isWall()) {
