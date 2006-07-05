@@ -282,8 +282,8 @@ bool SimpleListener(int life)
 	bool useCurrentThread = false ;
 
 	// Create the kernel instance
-	sml::Kernel* pKernel = useCurrentThread ? sml::Kernel::CreateKernelInCurrentThread("SoarKernelSML") :
-											  sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
+	sml::Kernel* pKernel = useCurrentThread ? sml::Kernel::CreateKernelInCurrentThread() :
+											  sml::Kernel::CreateKernelInNewThread() ;
 
 	if (pKernel->HadError())
 	{
@@ -370,6 +370,138 @@ bool RefCountTest()
 		else if (buffer[0] == 'x')
 			done = true ;
 	}
+
+	pKernel->Shutdown() ;
+	delete pKernel ;
+
+	return true ;
+}
+
+// Connect to an existing agent and do some I/O
+bool SimpleRemoteIOTest()
+{
+	// Create the kernel instance
+	sml::Kernel* pKernel = sml::Kernel::CreateRemoteConnection(true, NULL) ;
+
+	if (pKernel->HadError())
+	{
+		cout << pKernel->GetLastErrorDescription() << endl ;
+		return false ;
+	}
+
+	sml::Agent* pAgent = pKernel->GetAgentByIndex(0) ;
+
+	if (!pAgent)
+	{
+		cout << "No agents running in this kernel" << endl ;
+		return false ;
+	}
+
+	pAgent->SynchronizeInputLink() ;
+	pAgent->SynchronizeOutputLink() ;
+
+	Identifier* pSentence = pAgent->CreateIdWME(pAgent->GetInputLink(), "sentence") ;
+	pAgent->CreateStringWME(pSentence, "newest", "yes") ;
+	pAgent->CreateIntWME(pSentence, "num-words", 3) ;
+	pAgent->Commit() ;
+
+	pAgent->SynchronizeInputLink() ;
+	pAgent->SynchronizeOutputLink() ;
+
+	// Run the agent so the wmes are fully created
+	//pAgent->RunSelf(1) ;
+
+	// Make sure there's long enough for the listener to notice our connection
+	SLEEP(1, 0) ;
+
+	// Disconnect
+	pKernel->Shutdown() ;
+	delete pKernel ;
+
+	return true ;
+}
+
+// Create a kernel, listen and wait until somebody connects and disconnects.
+// Then do an init-soar and shutdown.
+bool SimpleRemoteIOListener()
+{
+	// Create the kernel instance
+	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
+
+	if (pKernel->HadError())
+	{
+		cout << pKernel->GetLastErrorDescription() << endl ;
+		return false ;
+	}
+
+	sml::Agent* pAgent = pKernel->CreateAgent("test-1") ;
+
+	long pauseSecs = 0;
+	long pauseMsecs = 100 ;
+
+	bool done = false ;
+	bool connected = false ;
+
+	while (!done)
+	{
+		// Have to call this before calling GetNumberConnections is valid.
+		pKernel->GetAllConnectionInfo() ;
+		
+		int nConnections = pKernel->GetNumberConnections() ;
+
+		// Wait until another system has connected and disconnected, then do an init-soar
+		if (nConnections == 2)
+			connected = true ;
+
+		if (nConnections == 1 && connected)
+			done = true ;
+
+		SLEEP(pauseSecs, pauseMsecs) ;
+	}
+
+	SLEEP(1,0) ;
+
+	std::string res = pAgent->InitSoar() ;
+	cout << res << endl ;
+
+	//res = pAgent->InitSoar() ;
+	//cout << res << endl ;
+
+	pKernel->Shutdown() ;
+	delete pKernel ;
+
+	return true ;
+}
+
+bool StopTest()
+{
+	// Create the kernel instance
+	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread() ;
+
+	if (pKernel->HadError())
+	{
+		cout << pKernel->GetLastErrorDescription() << endl ;
+		return false ;
+	}
+
+	sml::Agent* pAgent = pKernel->CreateAgent("stoptest") ;
+
+//	std::string production = "sp {stop (state <s> ^superstate nil) --> (cmd stop-soar)}" ;
+	std::string production = "sp {towers-of-hanoi*propose*initialize\n\
+   (state <s> ^superstate nil # peg-b if odd number of disks, peg-c if even\n\
+             -^name)\n\
+-->\n\
+   (<s> ^operator <o> +)\n\
+   (<o> ^name initialize-toh)}\n" ;
+
+//	std::string production = "sp {stop (state <s> ^superstate nil) --> (interrupt)}" ;
+	std::string res = pAgent->ExecuteCommandLine(production.c_str()) ;
+
+	pAgent->ExecuteCommandLine("run -o 3") ;
+	int decisions = pAgent->GetDecisionCycleCounter() ;
+
+	if (decisions > 0)
+		return false ;
 
 	pKernel->Shutdown() ;
 	delete pKernel ;
@@ -723,7 +855,9 @@ bool InitSoarAgent(Agent* pAgent, bool doInitSoars)
 	{
 		char const* pResult = pAgent->InitSoar() ;
 		cout << pResult << endl ;
-		return pAgent->GetLastCommandLineResult() ;
+
+        
+		//%%% REMOVED FOR EPMEM: return pAgent->GetLastCommandLineResult() ;
 	}
 
 	return true;
@@ -1089,9 +1223,12 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 
 	//cout << "About to do first run-til-output" << endl ;
 
+	trace.empty() ;
+	int callbackp1 = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
+
 	// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
 	// We'll use RunAll just to test it out.  Could use RunSelf and get same result (presumably)
-	trace = pKernel->RunAllTilOutput() ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
+	std::string runRes = pKernel->RunAllTilOutput() ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
 
 	// We should stop quickly (after a decision or two)
 	if (myCount > 10)
@@ -1105,6 +1242,8 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 		return false ;
 	}
 	cout << "Agent ran for " << myCount << " decisions before we got output" << endl ;
+	cout << trace << endl ;
+	cout << runRes << endl ;
 
 	if (outputsGenerated != 1)
 	{
@@ -1129,6 +1268,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 
 	pAgent->UnregisterForOutputNotification(callback_notify) ;
 	pKernel->UnregisterForUpdateEvent(callback_g) ;
+	pAgent->UnregisterForPrintEvent(callbackp1) ;
 
 	//cout << "Time to dump output link" << endl ;
 
@@ -1375,7 +1515,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		// Create the appropriate type of connection
 		sml::Kernel* pKernel = embedded ?
-			(useClientThread ? sml::Kernel::CreateKernelInCurrentThread("SoarKernelSML", fullyOptimized, Kernel::GetDefaultPort())
+			(useClientThread ? sml::Kernel::CreateKernelInCurrentThread(Kernel::GetDefaultLibraryName(), fullyOptimized, Kernel::GetDefaultPort())
 			: sml::Kernel::CreateKernelInNewThread("SoarKernelSML", Kernel::GetDefaultPort()))
 			: sml::Kernel::CreateRemoteConnection(true, NULL) ;
 
@@ -1751,6 +1891,9 @@ int main(int argc, char* argv[])
 	bool synchTest = false ;
 	bool reteTest  = false ;
 	bool refCountTest = false ;
+	bool remoteIOTest = false ;
+	bool remoteIOListener = false ;
+	bool stopTest = false ;
 	int  life      = 3000 ;	// Default is to live for 3000 seconds (5 mins) as a listener
 	int  decisions = 20000 ;
 
@@ -1781,12 +1924,18 @@ int main(int argc, char* argv[])
 				reteTest = true ;
 			if (!stricmp(argv[i], "-synch"))
 				synchTest = true ;
+			if (!stricmp(argv[i], "-stoptest"))
+				stopTest = true ;
 			if (!stricmp(argv[i], "-remote"))
 				remote = true ;
 			if (!stricmp(argv[i], "-listener"))
 				listener = true ;
 			if (!stricmp(argv[i], "-refcounttest"))
 				refCountTest = true ;
+			if (!stricmp(argv[i], "-remoteIOTest"))
+				remoteIOTest = true ;
+			if (!stricmp(argv[i], "-remoteIOListener"))
+				remoteIOListener = true ;
 			if (!stricmp(argv[i], "-runlistener"))
 			{
 				runlistener = true ;
@@ -1826,8 +1975,14 @@ int main(int argc, char* argv[])
 		success = SimpleCopyAgent() ;
 	else if (reteTest)
 		success = SimpleReteNetLoader() ;
+	else if (stopTest)
+		success = StopTest() ;
 	else if (remoteConnect)
 		SimpleRemoteConnect() ;
+	else if (remoteIOListener)
+		SimpleRemoteIOListener() ;
+	else if (remoteIOTest)
+		SimpleRemoteIOTest() ;
 	else if (synchTest)
 		success = SimpleRemoteSynchTest() ;
 	else if (timeTest)
@@ -1848,6 +2003,8 @@ int main(int argc, char* argv[])
 	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
 	printf("\nIf no leaks appear here, but some appear in the output\nwindow in the debugger, they have been leaked from a DLL.\nWhich is reporting when it's unloaded.\n\n") ;
 
+// Static linking means we're going to see leaks from anywhere (e.g. gSKI, kernel etc.) which is overkill.
+#ifndef STATIC_LINKED
 #ifdef _MSC_VER
 	// Set the memory checking output to go to Visual Studio's debug window (so we have a copy to keep)
 	// and to stdout so we can see it immediately.
@@ -1869,4 +2026,5 @@ int main(int argc, char* argv[])
 		unused(str);
 	}
 #endif // _MSC_VER
+#endif // STATIC_LINKED
 }

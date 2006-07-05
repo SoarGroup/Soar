@@ -9,8 +9,8 @@
 # Copyright (c) 1998-2000 by Ajuba Solutions.
 # All rights reserved.
 # 
-# RCS: @(#) $Id: bgerror.tcl,v 1.23.2.2 2004/04/17 03:54:10 hobbs Exp $
-# $Id: bgerror.tcl,v 1.23.2.2 2004/04/17 03:54:10 hobbs Exp $
+# RCS: @(#) $Id: bgerror.tcl,v 1.23.2.3 2005/07/28 21:37:48 hobbs Exp $
+# $Id: bgerror.tcl,v 1.23.2.3 2005/07/28 21:37:48 hobbs Exp $
 
 namespace eval ::tk::dialog::error {
     namespace import -force ::tk::msgcat::*
@@ -139,7 +139,7 @@ proc ::tk::dialog::error::bgerror err {
 
     if {($tcl_platform(platform) eq "macintosh")
             || ([tk windowingsystem] eq "aqua")} {
-	::tk::unsupported::MacWindowStyle style .bgerrorDialog dBoxProc
+	::tk::unsupported::MacWindowStyle style .bgerrorDialog zoomDocProc
     }
 
     frame .bgerrorDialog.bot

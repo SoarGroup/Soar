@@ -6,11 +6,14 @@ EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
+		Distribution = Distribution
 		Release = Release
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
 		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug.ActiveCfg = Debug|.NET
 		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug.Build.0 = Debug|.NET
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Distribution.ActiveCfg = Distribution|.NET
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Distribution.Build.0 = Distribution|.NET
 		{29277D02-A002-439F-B3E7-C89C16A21818}.Release.ActiveCfg = Release|.NET
 		{29277D02-A002-439F-B3E7-C89C16A21818}.Release.Build.0 = Release|.NET
 	EndGlobalSection

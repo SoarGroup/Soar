@@ -353,7 +353,15 @@ int main(int argc, char** argv)
 		// Passing false here so we don't execute Soar in our thread
 		// which means we can handle incoming remote connections automatically.
 		sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
+		
+		// Check for kernel creation errors
+		// Note that even if there are errors in the kernel's creation
+		// there should still be a kernel object (so one can query for errors)
 		assert(pKernel);
+		if(pKernel->HadError()) {
+			cout << "Error: " << pKernel->GetLastErrorDescription() << endl;
+			exit(1);
+		}
 
 		// Create agent
 		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
@@ -418,6 +426,9 @@ int main(int argc, char** argv)
 		delete g_pCommandProcessor;
 		delete g_pInputQueue;
 	} // end local scope
+
+// Static linking means we're going to see leaks from anywhere (e.g. gSKI, kernel etc.) which is overkill.
+#ifndef STATIC_LINKED
 #ifdef _MSC_VER
 //	A deliberate memory leak which I can use to test the memory checking code is working.
 //	char* pTest = new char[10] ;
@@ -443,6 +454,7 @@ int main(int argc, char** argv)
 	str = 0;
 
 #endif // _MSC_VER
+#endif	// STATIC_LINKED
 
 	return 0;
 }

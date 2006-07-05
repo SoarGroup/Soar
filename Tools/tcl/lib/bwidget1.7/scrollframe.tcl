@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------------
 #  scrollframe.tcl
 #  This file is part of Unifix BWidget Toolkit
-#  $Id: scrollframe.tcl,v 1.6 2003/10/20 21:23:52 damonc Exp $
+#  $Id: scrollframe.tcl,v 1.7 2005/07/28 00:40:42 hobbs Exp $
 # ----------------------------------------------------------------------------
 #  Index of commands:
 #     - ScrollableFrame::create
@@ -55,8 +55,14 @@ proc ScrollableFrame::create { path args } {
     set canvas [eval [list canvas $path] [Widget::subcget $path :cmd] \
                     -highlightthickness 0 -borderwidth 0 -relief flat]
 
-    set frame  [eval [list frame $path.frame] [Widget::subcget $path .frame] \
-                    -highlightthickness 0 -borderwidth 0 -relief flat]
+    if {[Widget::theme]} {
+	set frame [eval [list ttk::frame $path.frame] \
+		       [Widget::subcget $path .frame]]
+    } else {
+	set frame [eval [list frame $path.frame] \
+		       [Widget::subcget $path .frame] \
+		       -highlightthickness 0 -borderwidth 0 -relief flat]
+    }
 
     $canvas create window 0 0 -anchor nw -window $frame -tags win \
         -width  [Widget::cget $path -areawidth] \

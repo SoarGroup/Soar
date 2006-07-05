@@ -140,7 +140,7 @@ int main() {
 
 		StatsTracker stTest1_learnoff, stTest1_learnon;
 		vector<string> commands;
-		commands.push_back("source TestSoarPerformance.soar");
+		commands.push_back("source ../Tests/TestSoarPerformance.soar");
 		commands.push_back("watch 0");
 		
 		int numTrials = 3;

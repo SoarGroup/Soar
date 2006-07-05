@@ -57,6 +57,8 @@ public class DemoMenu
 				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("mac", "mac.soar")) ; } } ;
 	private AbstractAction m_MacPlanning = new AbstractAction("Missionaries Planning") 
 				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("mac", "mac-planning.soar")) ; } } ;
+	private AbstractAction m_Arithmetic    = new AbstractAction("Arithmetic") 
+				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("arithmetic", "arithmetic.soar")) ; } } ;
 			
 //    private AbstractAction m_DemoPathItem  	= new AbstractAction("Set the library path (contains the demos)...")	{ public void actionPerformed(ActionEvent e) { setLibraryPath() ; } } ;
 
@@ -97,6 +99,8 @@ public class DemoMenu
 		water.add(m_Waterjug) ;
 		water.add(m_Waterjug_Lookahead) ;
 
+		menu.add(m_Arithmetic) ;
+		
 		updateMenu() ;
 		
 		return menu ;		

@@ -1,6 +1,0 @@
-sp {elaborate*top-state*top-state
-   (state <s> ^superstate nil)
--->
-   (<s> ^top-state <s>)
-}
-

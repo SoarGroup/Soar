@@ -8,14 +8,22 @@ bin_PROGRAMS = TestSMLEvents
 
 TestSMLEvents_SOURCES = TestSMLEvents.cpp
 
+if STATIC_LINKED_CONDITIONAL
 TestSMLEvents_LDADD = \
-$(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \
+$(BASEDIR_PREFIX)/Core/ClientSML/src/libClientSML.la \
+$(BASEDIR_PREFIX)/Core/ConnectionSML/src/libConnectionSML.la \
+$(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la \
+$(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la
+else
+TestSMLEvents_LDADD = \
+$(BASEDIR_PREFIX)/Core/ClientSML/src/libClientSML.la \
+$(BASEDIR_PREFIX)/Core/ConnectionSML/src/libConnectionSML.la \
 $(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
+endif
 
 INCLUDES = \
 -I$(BASEDIR_PREFIX)/Core/ClientSML/include \
 -I$(BASEDIR_PREFIX)/Core/ElementXML/include \
--I$(BASEDIR_PREFIX)/Core/ConnectionSML/include \
--I$(BASEDIR_PREFIX)/Core/KernelSML/include 
+-I$(BASEDIR_PREFIX)/Core/ConnectionSML/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)
