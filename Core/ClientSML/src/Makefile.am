@@ -41,10 +41,14 @@ sml_OutputDeltaList.cpp\
 ../include/sml_OutputDeltaList.h
 
 INCLUDES = \
--I../../..\
 -I../include\
 -I../../ElementXML/include\
 -I../../ConnectionSML/include\
--I../../gSKI/include
+-I../../shared/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)
+
+install-data-am:
+	$(INSTALL) -m 644 .libs/libClientSML.a $(libdir)
+	
+	

@@ -29,7 +29,6 @@
 #include "sml_TagWme.h"
 #include "sml_TagFilter.h"
 #include "sml_TagCommand.h"
-#include "sml_ClientEvents.h"
 #include "sml_Events.h"
 #include "sml_RunScheduler.h"
 
@@ -220,7 +219,7 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 	// Decide if registering or unregistering
 	bool registerForEvent = (strcmp(pCommandName, sml_Names::kCommand_RegisterForEvent) == 0) ;
 
-	// The value sent over is actually defined in sml_ClientEvents.h but we're just casting it over to egSKIEventId.
+	// The value sent over is actually defined in sml_Events.h but we're just casting it over to egSKIEventId.
 	// So let's add some checks here to make sure that the two tables are synchronized.
 	// (If we wish we could introduce a mapping here between the two sets of ids but for now we're not doing that).
 	assert(gSKIEVENT_INVALID_EVENT == (egSKIGenericEventId)smlEVENT_INVALID_EVENT) ;	// First matches
@@ -480,19 +479,6 @@ bool KernelSML::HandleShutdown(gSKI::IAgent* pAgent, char const* pCommandName, C
 	// so that there's still a stable system to respond to the event.
 	FireSystemEvent(gSKIEVENT_BEFORE_SHUTDOWN) ;
 
-	// If we're actively running, stop everyone first and then delete.
-	/* DJP: This is experimental code -- yet to be tested.  I think we may need to handle this in the client (in another thread)
-	if (this->GetRunScheduler()->IsRunning())
-	{
-		// Request the agents to stop.  Only delete them once they actually have.
-		m_pSystemStopListener = new OnSystemStopDeleteAll() ;
-		GetKernel()->AddSystemListener(gSKIEVENT_SYSTEM_STOP, m_pSystemStopListener) ;
-		GetKernel()->GetAgentManager()->InterruptAll(gSKI_STOP_AFTER_SMALLEST_STEP, pError) ;
-
-		return false ;
-	}
-	*/
-
 	// Delete all agents explicitly now (so listeners can hear that the agents have been destroyed).
 	DeleteAllAgents(true) ;
 
@@ -522,14 +508,7 @@ bool KernelSML::HandleGetRunState(gSKI::IAgent* pAgent, char const* pCommandName
 	else if (strcmp(pValue, sml_Names::kParamDecision) == 0)
 	{
 		// Report the current decision number of decisions that have been executed
-		// This is currently a little tricky to determine as the agent records the
-		// number of decision cycles (output phases) executed.
-		int decisionCycles = pAgent->GetNumDecisionCyclesExecuted(pError);
-
-		if (pAgent->GetCurrentPhase(pError) == gSKI_APPLY_PHASE || pAgent->GetCurrentPhase(pError) == gSKI_OUTPUT_PHASE)
-			decisionCycles++ ;
-
-		buffer << (decisionCycles-1) ;
+		buffer << pAgent->GetNumDecisionsExecuted(pError);
 	}
 	else
 	{
@@ -1269,6 +1248,9 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 	if (echoResults && pAgentSML)
 		pAgentSML->FireEchoEvent(pConnection, pLine) ;
 
+	if (kDebugCommandLine)
+		PrintDebugFormat("Echoed line\n") ;
+
 	// Send this command line through anyone registered filters.
 	// If there are no filters (or this command requested not to be filtered), this copies the original line into the filtered line unchanged.
 	char const* pFilteredLine   = pLine ;
@@ -1277,6 +1259,15 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 
 	if (!noFiltering && HasFilterRegistered())
 	{
+		// Expand any aliases before passing the command to the filter.
+		// It's possible this is a mistake because a really powerful filter might want to do
+		// something with the original, unaliased form (and could call this expansion itself) but
+		// it seems this will be correct in almost all cases, so let's start with this assumption and
+		// wait until it's proved incorrect.
+		std::string expandedLine ;
+		if (m_CommandLineInterface.ExpandCommandToString(pLine, &expandedLine))
+			pLine = expandedLine.c_str() ;
+
 		// We'll send the command over as an XML packet, so there's some structure to work with.
 		// The current structure is:
 		// <filter command="command" output="generated output" error="true | false"></filter>
@@ -1329,6 +1320,9 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 			}
 		}
 	}
+
+	if (kDebugCommandLine)
+		PrintDebugFormat("Filtered line is %s\n", pFilteredLine) ;
 
 	// Make the call.
 	m_CommandLineInterface.SetRawOutput(rawOutput);

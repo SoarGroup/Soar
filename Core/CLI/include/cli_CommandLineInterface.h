@@ -41,19 +41,8 @@
 // For test
 //#define WIN_STATIC_LINK
 
-#ifdef _WIN32
-#ifdef _USRDLL
-#define EXPORT __declspec(dllexport)
-#else
-#ifndef WIN_STATIC_LINK
-#define EXPORT __declspec(dllimport)
-#else
-#define EXPORT
-#endif	// STATIC
-#endif	// DLL
-#else
-#define EXPORT
-#endif	// WIN32
+// get definition of EXPORT
+#include "Export.h"
 
 #ifndef unused
 #define unused(x) (void)(x)
@@ -163,6 +152,14 @@ public:
 	* @param pCommandLine	The command line being tested
 	*************************************************************/
 	EXPORT bool ShouldEchoCommand(char const* pCommandLine) ;
+
+	/*************************************************************
+	* @brief Takes a command line and expands any aliases and returns
+	*		 the result.  The command is NOT executed.
+	* @param pCommandLine The command line string, arguments separated by spaces
+	* @param pExpandedLine The return value -- the expanded version of the command
+	*************************************************************/
+	bool ExpandCommandToString(const char* pCommandLine, std::string* pExpandedLine) ;
 
 protected:
 
@@ -811,6 +808,8 @@ protected:
 	bool SetErrorDetail(const std::string detail);	// always returns false
 
 	void ResultToArgTag(); // clears result
+
+	void LogQuery(); // for CLog command
 
 ////////////////////////////////////////////
 	// New options code

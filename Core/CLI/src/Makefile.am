@@ -75,13 +75,13 @@ cli_watchwmes.cpp\
 ../include/cli_CommandLineInterface.h\
 ../include/cli_Commands.h
 
+
 INCLUDES = \
--I../../..\
 -I../include\
 -I../../gSKI/include\
 -I../../ElementXML/include\
 -I../../ConnectionSML/include\
--I../../ClientSML/include\
--I../../KernelSML/include
+-I../../KernelSML/include\
+-I../../shared/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)

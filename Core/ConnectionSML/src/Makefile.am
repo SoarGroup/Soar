@@ -60,10 +60,10 @@ sock_Utils.h\
 ../include/sml_TagArg.h\
 ../include/sml_TagCommand.h\
 ../include/sml_TagError.h\
+../include/sml_TagFilter.h\
 ../include/sml_TagName.h\
 ../include/sml_TagResult.h\
 ../include/sml_TagWme.h\
-../include/sml_TagFilter.h\
 ../include/sml_XMLTrace.h\
 ../include/sock_ClientSocket.h\
 ../include/sock_Debug.h\
@@ -76,6 +76,9 @@ sock_Utils.h\
 ../include/thread_OSspecific.h\
 ../include/thread_Thread.h
 
-INCLUDES = -I../../.. -I../include -I../../ElementXML/include -I../../ClientSML/include
+INCLUDES = -I../include -I../../ElementXML/include -I../../shared/include
 
+install-data-am:
+	$(INSTALL) -m 644 .libs/libConnectionSML.a $(libdir)
+	
 CXXFLAGS = $(SOAR_CXXFLAGS)

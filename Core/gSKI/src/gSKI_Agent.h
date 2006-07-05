@@ -689,6 +689,24 @@ namespace gSKI
        */
       unsigned long GetNumDecisionCyclesExecuted(Error* err = 0);
 
+	  /**
+       * @brief Gets the number of decisions made so far
+       *
+       * Call this method when you need to know the number of decisions  
+	   *  (rather than full decision cycles)
+       *  this agent has made since it was initialized (or reinitiailzed)
+       *
+       * @param err  Pointer to client-owned error structure.  If the pointer
+       *              is not NULL this structure is filled with extended error
+       *              information.  If it is NULL (the default) extended error
+       *              information is not returned.
+       *
+       * @returns The number of decisions made since the agent was last
+       *             initialized.
+       */
+      unsigned long GetNumDecisionsExecuted(Error* err = 0);
+
+
       /**
        * @brief Gets the current output count for this agent
        *
@@ -1322,13 +1340,13 @@ namespace gSKI
 	   * This mechanism queries the SoarKernel agent to get the phase type when invoked.
        */
    
-	  static void Agent::HandleKernelRunEventCallback( soar_callback_agent agent,
+	  static void HandleKernelRunEventCallback( soar_callback_agent agent,
 					                                   soar_callback_data callbackdata,
                                                        soar_call_data calldata );
 
-	  static void Agent::DeleteRunEventCallbackData (soar_callback_data);
+	  static void DeleteRunEventCallbackData (soar_callback_data);
 
-	  static void Agent::HandleEventStatic(egSKIRunEventId eventID, Agent* pAgent, egSKIPhaseType phase) ;
+	  static void HandleEventStatic(egSKIRunEventId eventID, Agent* pAgent, egSKIPhaseType phase) ;
 
 	  /** 
        * @brief Listener manager definitions 

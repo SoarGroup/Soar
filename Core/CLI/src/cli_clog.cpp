@@ -176,24 +176,27 @@ bool CommandLineInterface::DoCLog(gSKI::IAgent* pAgent, const eLogMode mode, con
 			break;
 
 		case LOG_QUERY:
-			if (m_RawOutput) {
-				m_Result << "Log file ";
-				if (m_pLogFile) {
-					m_Result << "'" + m_LogFilename + "' opened.";
-				} else {
-					m_Result << "closed.";
-				}
-
-			} else {
-				const char* setting = m_pLogFile ? sml_Names::kTrue : sml_Names::kFalse;
-				AppendArgTagFast(sml_Names::kParamLogSetting, sml_Names::kTypeBoolean, setting);
-
-				if (m_LogFilename.size()) AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, m_LogFilename.c_str());
-			}
 			break;
 		default: assert(false);
 	}
 
+	LogQuery();
 	return true;
 }
 
+void CommandLineInterface::LogQuery() {
+	if (m_RawOutput) {
+		m_Result << "Log file ";
+		if (m_pLogFile) {
+			m_Result << "'" + m_LogFilename + "' open.";
+		} else {
+			m_Result << "closed.";
+		}
+
+	} else {
+		const char* setting = m_pLogFile ? sml_Names::kTrue : sml_Names::kFalse;
+		AppendArgTagFast(sml_Names::kParamLogSetting, sml_Names::kTypeBoolean, setting);
+
+		if (m_LogFilename.size()) AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, m_LogFilename.c_str());
+	}
+}

@@ -3318,7 +3318,7 @@ arraylist *respond_to_query(agent *thisAgent, epmem_header *h)
     g_num_queries++;
 
     //Match query to current memories list
-    h->curr_memory = find_best_match(thisAgent, h, al_query);
+    h->curr_memory = find_best_match_ENERGYTANK(thisAgent, h, al_query);
 
     //Cleanup
     destroy_arraylist(thisAgent, al_query);

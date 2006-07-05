@@ -37,6 +37,8 @@
 
 using namespace sml ;
 
+char const* const Kernel::kDefaultLibraryName = "SoarKernelSML" ;
+
 Kernel::Kernel(Connection* pConnection)
 {
 	m_Connection     = pConnection ;
@@ -70,7 +72,15 @@ Kernel::Kernel(Connection* pConnection)
 			m_pEventThread->Start() ;
 	}
 
-#ifdef LINUX_STATIC_LINK
+/* voigtjr, rmarinie
+ *
+ * Upon further tinkering, we have discovered that the use of the code within
+ * the following symbol on Linux is no longer necessary, and, in fact, causes 
+ * problems, but we are leaving it in in case our analysis turns out to be
+ * incorrect.
+ */
+	
+//#ifdef LINUX_STATIC_LINK
 	// On Linux the linker only makes a single pass through the libraries
 	// so if we try to statically link all of the code together, it fails to
 	// see sml_ProcessMessage and the other methods that are exported from KernelSML because
@@ -82,9 +92,9 @@ Kernel::Kernel(Connection* pConnection)
 	//
 	// If we're in Windows this is not an issue (because the Windows linker supports these cyclical references)
 	// and if we're loading KernelSML dynamically (the normal fashion) this is also not a problem.
-	sml_ProcessMessage(0,0,0);
-	sml_CreateEmbeddedConnection(0,0,0,0);
-#endif
+//	sml_ProcessMessage(0,0,0);
+//	sml_CreateEmbeddedConnection(0,0,0,0);
+//#endif
 }
 
 /*************************************************************
@@ -1068,7 +1078,7 @@ char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAg
 		sml_Names::kCommand_CommandLine, pAgentName,
 		sml_Names::kParamLine, pCommandLine,
 		sml_Names::kParamEcho, echoResults ? sml_Names::kTrue : sml_Names::kFalse,
-		sml_Names::kParamNoFiltering, m_FilteringEnabled && noFilter ? sml_Names::kTrue : sml_Names::kFalse,
+		sml_Names::kParamNoFiltering, !m_FilteringEnabled || noFilter ? sml_Names::kTrue : sml_Names::kFalse,
 		wantRawOutput);
 
 	if (m_CommandLineSucceeded)
@@ -1107,7 +1117,8 @@ bool Kernel::ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentN
 	if (!pCommandLine || !pResponse)
 		return false ;
 
-	m_CommandLineSucceeded = GetConnection()->SendAgentCommand(pResponse->GetAnalyzeXML(), sml_Names::kCommand_CommandLine, pAgentName, sml_Names::kParamLine, pCommandLine);
+	m_CommandLineSucceeded = GetConnection()->SendAgentCommand(pResponse->GetAnalyzeXML(), sml_Names::kCommand_CommandLine, pAgentName,
+							sml_Names::kParamLine, pCommandLine, sml_Names::kParamNoFiltering, sml_Names::kTrue);
 
 	return m_CommandLineSucceeded ;
 }

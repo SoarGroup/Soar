@@ -205,7 +205,7 @@ public:
 	* @param pError			Pass in a pointer to an int and receive back an error code if there is a problem.
 	* @returns An EmbeddedConnection instance.
 	*************************************************************/
-	static Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, bool clientThread, bool optimized, int portToListenOn = kDefaultSMLPort, ErrorCode* pError = NULL) ;
+	static Connection* CreateEmbeddedConnection(char const* pLibraryName, bool clientThread, bool optimized, int portToListenOn = kDefaultSMLPort, ErrorCode* pError = NULL) ;
 
 	/*************************************************************
 	* @brief Creates a connection to a receiver that is in a different
@@ -607,7 +607,7 @@ protected:
 	/*************************************************************
 	* @brief Gets the list of callbacks associated with a given doctype (e.g. "call")
 	**************************************************************/
-	virtual CallbackList* Connection::GetCallbackList(char const* pType) ;
+	virtual CallbackList* GetCallbackList(char const* pType) ;
 
 	/*************************************************************
 	* @brief Removes the top message from the incoming message queue

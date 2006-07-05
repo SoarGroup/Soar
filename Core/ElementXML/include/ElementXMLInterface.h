@@ -23,15 +23,8 @@
 
 #include "ElementXMLHandle.h"
 
-#ifdef _WIN32
-#ifdef _USRDLL
-#define EXPORT __declspec(dllexport)
-#else
-#define EXPORT __declspec(dllimport)
-#endif	// DLL
-#else
-#define EXPORT
-#endif	// WIN32
+// get definition of EXPORT
+#include "Export.h"
 
 //DJP: A quick test of statically linked version of ElementXML
 /*

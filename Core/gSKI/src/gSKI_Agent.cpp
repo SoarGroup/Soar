@@ -1070,6 +1070,18 @@ namespace gSKI
 
    /*
    =============================
+   if desire number of decisions instead of full D_cycles
+   =============================
+   */
+   unsigned long Agent::GetNumDecisionsExecuted(Error* err)
+   {
+      ClearError(err);
+	  return m_agent->decision_phases_count;
+   }
+
+
+   /*
+   =============================
    This is a local gSKI counter, not from Kernel
    =============================
    */

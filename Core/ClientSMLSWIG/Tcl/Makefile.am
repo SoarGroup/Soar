@@ -15,7 +15,8 @@ endif
 libTcl_sml_ClientInterface_la_SOURCES = Tcl_sml_ClientInterface_wrap.cpp 
 
 libTcl_sml_ClientInterface_la_LIBADD = \
-$(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \
+$(BASEDIR_PREFIX)/Core/ClientSML/src/libClientSML.la \
+$(BASEDIR_PREFIX)/Core/ConnectionSML/src/libConnectionSML.la \
 $(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
 
 INCLUDES   = -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include
@@ -25,7 +26,7 @@ CXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused
 LIBDIR=@libdir@
 SO=@SO@
 
-SWIGOPT    = -tcl -Wall -pkgversion 8.6.1 $(INCLUDES) -outdir build
+SWIGOPT    = -tcl -Wall -pkgversion 8.6.2 $(INCLUDES) -outdir build
 
 Tcl_sml_ClientInterface_wrap.cpp: Tcl_sml_ClientInterface.i
 	$(SWIG) $(SWIGOPT) -o $@ $<

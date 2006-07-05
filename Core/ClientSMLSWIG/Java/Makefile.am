@@ -4,7 +4,7 @@
 ###########################################
 BASEDIR_PREFIX=../../..
 SOAR_LIBRARY=$(BASEDIR_PREFIX)/SoarLibrary
-EXTRA_DIST = Java_sml_ClientInterface.i JavaCallbackByHand.h build/readme.txt
+EXTRA_DIST = Java_sml_ClientInterface.i build/readme.txt
 
 if SWIGJAVA
 lib_LTLIBRARIES = libJava_sml_ClientInterface.la
@@ -13,10 +13,12 @@ lib_LTLIBRARIES =
 endif
 
 libJava_sml_ClientInterface_la_LIBADD = \
-$(BASEDIR_PREFIX)/Core/KernelSML/src/libSoarKernelSML.la \
-$(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la 
+$(BASEDIR_PREFIX)/Core/ClientSML/src/libClientSML.la \
+$(BASEDIR_PREFIX)/Core/ConnectionSML/src/libConnectionSML.la \
+$(BASEDIR_PREFIX)/Core/ElementXML/src/libElementXML.la
 
-nodist_libJava_sml_ClientInterface_la_SOURCES = Java_sml_ClientInterface_wrap.cpp 
+libJava_sml_ClientInterface_la_SOURCES = JavaCallbackByHand.h 
+nodist_libJava_sml_ClientInterface_la_SOURCES = Java_sml_ClientInterface_wrap.cpp
 
 JAVASO = @JAVASO@
 libJava_sml_ClientInterface_la_LDFLAGS = -shrext $(JAVASO)
@@ -26,7 +28,15 @@ JAVAINC= @JAVAINC@
 JAVAC= @JAVAC@
 JAR=@JAR@
 INCLUDES   = -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include $(JAVAINC)
-CXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused
+
+if VISIBILITY_AVAILABLE
+SWIGCXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused -fvisibility=default
+else
+SWIGCXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused
+endif
+
+CXXFLAGS = $(SWIGCXXFLAGS)
+
 CLEANFILES = build/*.java build/*.class Java_sml_ClientInterface_wrap.cpp
 
 SWIGOPT    = -java -Wall -package sml $(INCLUDES) -outdir build

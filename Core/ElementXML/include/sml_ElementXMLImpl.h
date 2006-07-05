@@ -125,7 +125,7 @@ public:
 	/*************************************************************
 	* @brief XML ids can only contain letters, numbers, “.” “-“ and “_”.
 	*************************************************************/
-	static bool ElementXMLImpl::IsValidID(xmlStringConst str) ;
+	static bool IsValidID(xmlStringConst str) ;
 
 public:
 	////////////////////////////////////////////////////////////////
@@ -393,7 +393,7 @@ public:
 	*
 	* @returns True if buffer is binary after conversion.
 	*************************************************************/
-	bool ElementXMLImpl::ConvertCharacterDataToBinary() ;
+	bool ConvertCharacterDataToBinary() ;
 
 	/*************************************************************
 	* @brief Converts the stored binary data into a string of
@@ -402,7 +402,7 @@ public:
 	*
 	* @returns true if buffer is characters after conversion.
 	*************************************************************/
-	bool ElementXMLImpl::ConvertBinaryDataToCharacters() ;
+	bool ConvertBinaryDataToCharacters() ;
 
     /*************************************************************
     * @brief Returns the length of the character data.

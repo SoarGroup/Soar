@@ -334,6 +334,38 @@ void CommandLineInterface::EchoString(sml::Connection* pConnection, char const* 
 /*************************************************************
 * @brief Takes a command line and expands any aliases and returns
 *		 the result.  The command is NOT executed.
+* @param pCommandLine The command line string, arguments separated by spaces
+* @param pExpandedLine The return value -- the expanded version of the command
+*************************************************************/
+bool CommandLineInterface::ExpandCommandToString(const char* pCommandLine, std::string* pExpandedLine)
+{
+	SetError(CLIError::kNoError);
+
+	vector<string> argv;
+
+	// 1) Parse command
+	if (Tokenize(pCommandLine, argv) == -1)
+		return false ;
+
+	// 2) Translate aliases
+	if (!argv.empty())
+	{
+		m_Aliases.Translate(argv);
+		
+		// 3) Reassemble the command line
+		for (unsigned int i = 0 ; i < argv.size() ; i++)
+		{
+			*pExpandedLine += argv[i] ;
+			if (i != argv.size()-1) *pExpandedLine += " " ;
+		}
+	}
+
+	return true ;
+}
+
+/*************************************************************
+* @brief Takes a command line and expands any aliases and returns
+*		 the result.  The command is NOT executed.
 * @param pConnection The connection, for communication to the client
 * @param pCommandLine The command line string, arguments separated by spaces
 * @param pResponse Pointer to XML response object
@@ -954,7 +986,7 @@ bool CommandLineInterface::Trim(std::string& line) {
 					searchpos = pos + 1;
 				} else {
 					{
-						std::string::size_type nlpos = line.find('\n', searchpos + 1);
+						std::string::size_type nlpos = line.find('\n', pos + 1);
 						if (nlpos == std::string::npos) {
 							// No newline encountered
 							line = line.substr(0, pos);
@@ -981,7 +1013,7 @@ bool CommandLineInterface::Trim(std::string& line) {
 }
 
 void CommandLineInterface::HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const char* msg) {
-	if (m_PrintEventToResult) {
+	if (m_PrintEventToResult || m_pLogFile) {
 		if (m_VarPrint) {
 			// Transform if varprint, see print command
 			std::string message(msg);
@@ -1001,9 +1033,19 @@ void CommandLineInterface::HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const c
 			regfree(&comp);
 
 			// Simply append to message result
-			CommandLineInterface::m_Result << message;
+			if (m_PrintEventToResult) {
+				CommandLineInterface::m_Result << message;
+			}
+			if (m_pLogFile) {
+				(*m_pLogFile) << message;
+			}
 		} else {
-			CommandLineInterface::m_Result << msg;
+			if (m_PrintEventToResult) {
+				CommandLineInterface::m_Result << msg;
+			}
+			if (m_pLogFile) {
+				(*m_pLogFile) << msg;
+			}
 		}
 	}
 }

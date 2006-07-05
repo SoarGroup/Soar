@@ -229,7 +229,7 @@ bool CommandLineInterface::ParseDecay(gSKI::IAgent* pAgent, std::vector<std::str
                 }
                 else
                 {
-                    fileHandle = fopen(m_OptionArgument.c_str(), "aw");
+                    fileHandle = fopen(m_OptionArgument.c_str(), "w");
                     if (fileHandle == NULL)
                     {
                         msg = "Error opening file: ";

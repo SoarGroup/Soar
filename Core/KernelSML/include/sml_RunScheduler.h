@@ -22,7 +22,7 @@
 
 #include "gSKI_Enumerations.h"
 #include "gSKI_Events.h"
-#include "sml_ClientEvents.h"	// To get smlRunFlags
+#include "sml_Events.h"	// To get smlRunFlags
 
 namespace gSKI {
 	class IAgent ;
@@ -59,7 +59,7 @@ public:
 	* @return   interleaveStepSize -- how large of a step each agent is run 
 	*           before other agents are run
     *********************************************************************/
-	egSKIInterleaveType RunScheduler::DefaultInterleaveStepSize(egSKIRunType runStepSize) ;
+	egSKIInterleaveType DefaultInterleaveStepSize(egSKIRunType runStepSize) ;
 
     /********************************************************************
     * @brief	Don't try to Run with an nonsense interleaveStepSize
@@ -68,7 +68,7 @@ public:
  	* @param interleaveStepSize -- how large of a step each agent is run 
 	*                              before other agents are run
     *********************************************************************/
-    bool RunScheduler::VerifyStepSizeForRunType(egSKIRunType runStepSize, egSKIInterleaveType interleave) ;
+    bool VerifyStepSizeForRunType(egSKIRunType runStepSize, egSKIInterleaveType interleave) ;
 
 	/*************************************************************
 	* @brief	Indicate that the next time RunScheduledAgents() is called
@@ -140,7 +140,7 @@ protected:
 	unsigned long	GetStepCounter(gSKI::IAgent* pAgent, egSKIRunType runStepSize) ; //for old scheduler...
     unsigned long   GetStepCounter(gSKI::IAgent* pAgent, egSKIInterleaveType stepSize) ;
 	unsigned long	GetRunCounter(gSKI::IAgent* pAgent, egSKIRunType runStepSize) ;
-    egSKIRunResult  RunScheduler::GetOverallRunResult() ;
+    egSKIRunResult  GetOverallRunResult() ;
 	void			HandleEvent(egSKIRunEventId eventID, gSKI::IAgent* pAgent, egSKIPhaseType phase) ;
 	bool			HaveAllGeneratedOutput() ;
 	void            InitializeRunCounters(egSKIRunType runStepSize, egSKIInterleaveType stepSize) ;

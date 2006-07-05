@@ -502,6 +502,7 @@ Symbol *int_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
     }
     return make_int_constant (thisAgent, int_val);
   } else if (sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
+    symbol_add_ref(sym) ;
     return sym;
   } else if (sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
     double int_part;
@@ -557,6 +558,7 @@ Symbol *float_rhs_function_code (agent* thisAgent, list *args, void* user_data) 
     }
     return make_float_constant (thisAgent, (float)float_val);
   } else if (sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
+    symbol_add_ref(sym) ;
     return sym;
   } else if (sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
     return make_float_constant(thisAgent, (float) sym->ic.value);

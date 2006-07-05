@@ -183,25 +183,29 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	}
 
 #ifdef _WIN32
-
-// As a test
-//#define WIN_STATIC_LINK
-
-#ifdef WIN_STATIC_LINK
-#define WINDOWS_STATIC
-#else
-#define WINDOWS_DLL
-#endif
+#  ifdef STATIC_LINKED
+#    define WINDOWS_STATIC
+#  else
+#    define WINDOWS_SHARED
+#  endif
 #endif
 
-#ifdef WINDOWS_DLL
+#ifdef HAVE_CONFIG_H //to test for Linux/OS X
+#  ifdef STATIC_LINKED
+#    define LINUX_STATIC
+#  elif defined(HAVE_DLFCN_H) //if we don't have this, then we're implicitly doing a static build
+#    define LINUX_SHARED
+#  endif
+#endif
+
+#ifdef WINDOWS_SHARED
 	// The windows shared library
 	libraryName = libraryName + ".dll";
 	
 	// Now load the library itself.
 	HMODULE hLibrary = LoadLibrary(libraryName.c_str()) ;
 
-#elif defined(HAVE_DLFCN_H)
+#elif defined(LINUX_SHARED) 
 	std::string newLibraryName = "lib" + libraryName + ".so";
 	void* hLibrary = 0;
 	hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
@@ -213,7 +217,7 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	// FIXME error details can be returned by a call to dlerror()
 #endif
 
-#if defined(HAVE_DLFCN_H) || defined(WINDOWS_DLL)
+#if defined(LINUX_SHARED) || defined(WINDOWS_SHARED)
 	if (!hLibrary)
 	{
 		SetError(Error::kLibraryNotFound) ;
@@ -261,14 +265,14 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 		return false ;
 	}
 
-#else // _WIN32 || LINUX_DIRECT
+#else // defined(LINUX_SHARED) || defined(WINDOWS_SHARED)
 	// If we're not in Windows and we can't dynamically load methods we'll just get
 	// by with the two we really need.  This just means we can't get maximum optimization on
 	// this particular platform.
 	m_pProcessMessageFunction = &sml_ProcessMessage;
 	m_pCreateEmbeddedFunction = &sml_CreateEmbeddedConnection;
 
-#endif // _WIN32 || LINUX_DIRECT
+#endif // defined(LINUX_SHARED) || defined(WINDOWS_SHARED)
 
 	// We only use the creation function once to create a connection object (which we'll pass back
 	// with each call).

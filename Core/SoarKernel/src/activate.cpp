@@ -178,6 +178,7 @@
 #include "decide.h"
 #include "prefmem.h"
 #include "print.h"
+#include "production.h"
 #include "activate.h"
 
 #ifdef SOAR_WMEM_ACTIVATION
@@ -471,7 +472,7 @@ float decay_activation(agent *thisAgent, wme *w)
     
     if (!w->has_decay_element)
     {
-        return DECAY_FLOAT_NO_ACTIVATION;
+        return (float)DECAY_FLOAT_NO_ACTIVATION;
     }
 
     //Calculate and print the activation level
@@ -500,14 +501,17 @@ float decay_activation(agent *thisAgent, wme *w)
 
 
    Created:  12 August 2003
+   Updated:  09 June 2006 - Added loop detection
    ========================================================================= */
-
-void decay_reference_wme(agent *thisAgent, wme *w)
+void decay_reference_wme(agent *thisAgent, wme *w, int depth = 0)
 {
     preference *pref = w->preference;
     instantiation *inst;
     condition *c;
 
+    //Avoid stack overflow
+    if (depth > 10) return;
+    
     /*
      * Step 1:  Check for cases where referencing the WME is easy.  This should
      *          happen the majority of the time.
@@ -558,7 +562,7 @@ void decay_reference_wme(agent *thisAgent, wme *w)
      *          reference them instead.
      *
      */
-    
+
     inst = pref->inst;
     c = inst->top_of_instantiated_conditions;
     while(c != NIL)
@@ -566,9 +570,9 @@ void decay_reference_wme(agent *thisAgent, wme *w)
         //BUGBUG: How to handle negative conditions?  Ignore for now.
         if (c->type == POSITIVE_CONDITION)
         {
-            decay_reference_wme(thisAgent, c->bt.wme_); // recurse %%%has c->bt.wme_ been deprecated??%%%
-        }
-        
+            // recurse %%%has c->bt.wme_ been deprecated??%%%
+            decay_reference_wme(thisAgent, c->bt.wme_, depth + 1); 
+        }//if
         c = c->next;
     }//while
 
@@ -592,7 +596,7 @@ void decay_reference_wme(agent *thisAgent, wme *w)
 
    Created:  11 Mar 2004
    ========================================================================= */
-int dcah_helper(wme *w, wme_decay_element *el)
+int dcah_helper(wme *w, wme_decay_element *el, int depth = 0)
 {
     preference *pref = w->preference;
     instantiation *inst;
@@ -602,6 +606,9 @@ int dcah_helper(wme *w, wme_decay_element *el)
     int i,j;
 
     if (pref == NIL) return 0;
+    
+    //Avoid stack overflow (This is a kludge, I know)
+    if (depth > 10) return 0;
     
     inst = pref->inst;
     cond = inst->top_of_instantiated_conditions;
@@ -627,7 +634,7 @@ int dcah_helper(wme *w, wme_decay_element *el)
              }//if
              else
              {
-                 num_cond_wmes += dcah_helper(cond_wme, el);
+                 num_cond_wmes += dcah_helper(cond_wme, el, depth +1);
              }//else
         }//if
         
@@ -825,6 +832,11 @@ void decay_update_new_wme(agent *thisAgent, wme *w, int num_refs)
     w->decay_element = temp_el;
     w->has_decay_element = TRUE;
 
+    log_activation("\nNew WME:    (%y ^%y %y) ", w->id, w->attr, w->value);
+#ifdef DECAY_DEBUG
+    print(thisAgent, "%d refs", num_refs);
+#endif
+    
     stop_timer(thisAgent, &(thisAgent->decay_tv), &(thisAgent->total_decay_time));
     stop_timer(thisAgent, &(thisAgent->decay_new_wme_tv), &(thisAgent->total_decay_new_wme_time));
     
@@ -1713,10 +1725,10 @@ void decay_write_log(agent *thisAgent, wme *w)
     print(thisAgent, "(%ul: ", w->timetag);
     print_with_symbols(thisAgent, "%y ^%y %y)\t", w->id, w->attr, w->value);
 
-    //Print a baseline activation for all cycles before this WME existed
+    //Print a tab for each cycle that transpired before this WME existed
     for(i = 1; i < el->log->start; i++)
     {
-        fprintf(f, "%f\t", DECAY_ACTIVATION_CUTOFF);
+        fprintf(f, "\t");
     }
 
     //Print the activation for every previous cycle that this WME has existed
@@ -1805,6 +1817,13 @@ void decay_remove_element(agent *thisAgent, wme *w)
     start_timer(thisAgent, &(thisAgent->decay_tv));
     start_timer(thisAgent, &(thisAgent->decay_deallocate_tv_2));
     start_timer(thisAgent, &(thisAgent->decay_deallocate_tv));
+
+    //Make sure this wme has an element and that element has not already been
+    //deactivated
+    if ( (! w->has_decay_element) || (w->decay_element->just_removed) )
+    {
+        return;
+    }
 
     //Deactivate the wme first
     decay_deactivate_element(thisAgent, w);
