@@ -1484,6 +1484,7 @@ void print_memory(agent *thisAgent, arraylist *epmem,
 
         //print the activation level
         print(thisAgent, "(%d)", aw->activation);
+
     }//else
     print(thisAgent, "\n");
 
@@ -2675,14 +2676,18 @@ int is_radar_tank_match(arraylist *cue, arraylist *mem)
 episodic_memory *find_best_match_RADARTANK(agent *thisAgent, epmem_header *h, arraylist *cue)
 {
     int best_score = 0;
-    episodic_memory *best_mem = NULL;
+    episodic_memory *best_mem_via_score = NULL;
+    int cue_cardinality = 0;
+    int best_cardinality = 0;
+    episodic_memory *best_mem_via_cardinality = NULL;
+    episodic_memory *selected_mem = NULL;
     int i;
     int j;
     int comp_count = 0;         // number of epmems that were examined
 
-    //%%%DEBUGGING
-    print(thisAgent, "\nRECEIVED THIS CUE", best_score);
-    print_memory(thisAgent, cue, &g_wmetree, 2, 3);
+//      //%%%DEBUGGING
+//      print(thisAgent, "\nRECEIVED THIS CUE", best_score);
+//      print_memory(thisAgent, cue, &g_wmetree, 2, 5);
     
     start_timer(thisAgent, &(thisAgent->epmem_match_start_time));
 
@@ -2711,9 +2716,15 @@ episodic_memory *find_best_match_RADARTANK(agent *thisAgent, epmem_header *h, ar
             aw_cue->node->query_count++;
         }
 
-        //%%%DEBUGGING
-        print(thisAgent, "\n\tMatches for cue entry %s: ",
-              aw_cue->node->attr);
+        //If the entry is a leaf node then add it to the cue cardinality
+        //used for detecting an exact match
+        if (aw_cue->node->children->count == 0)
+        {
+            cue_cardinality++;
+        }
+
+//          //%%%DEBUGGING
+//          print(thisAgent, "\n\tMatches for cue entry %s: ", aw_cue->node->attr);
 
         //Loop over the associated epmems
         for(j = 1; j < aw_cue->node->assoc_memories->size; j++)
@@ -2722,57 +2733,86 @@ episodic_memory *find_best_match_RADARTANK(agent *thisAgent, epmem_header *h, ar
             episodic_memory *epmem =
                 (episodic_memory *)get_arraylist_entry(thisAgent, aw_cue->node->assoc_memories,j);
 
+            //Record that there was a match
+            if (epmem->last_usage != g_last_ret_id)
+            {
+                //Reinit the match data from last time
+                epmem->last_usage = g_last_ret_id;
+                comp_count++;
+                epmem->match_score = 0;
+                epmem->num_matches = 1;
+            }
+            else
+            {
+                (epmem->num_matches)++;
+            }
+            
             //Find the entry in that epmem that matches the cue entry
             actwme *aw_mem = epmem_find_actwme_entry(thisAgent, epmem->content, aw_cue->node);
 
             if (aw_mem != NULL)
             {
-                //%%%DEBUGGING
-                print(thisAgent, "%d, ", epmem->index);
+//                  //%%%DEBUGGING
+//                  print(thisAgent, "%d, ", epmem->index);
                 
-                if (epmem->last_usage != g_last_ret_id)
-                {
-                    //Reinit the match score from last time
-                    epmem->last_usage = g_last_ret_id;
-                    epmem->match_score = aw_mem->activation;
-                    comp_count++;
-                }
-                else
-                {
-                    //Increment the match score
-                    epmem->match_score += aw_mem->activation;
-                }
+                //Increment the match score
+                epmem->match_score += aw_mem->activation;
             }
 
+            //Check to see if this mem has the best match score so far
             if (epmem->match_score > best_score)
             {
-                //%%%DEBUGGING
-                if (best_mem != NULL)
-                {
-                    print(thisAgent,
-                          "\nRejected the following memory (#%d) with match score %d:",
-                          best_mem->index,
-                          best_score);
-                    print_memory(thisAgent, best_mem->content, &g_wmetree, 2, 3,
-                                 "io input-link x y direction radar-setting");
-                }
+//                  //%%%DEBUGGING
+//                  if (best_mem_via_score != NULL)
+//                  {
+//                      print(thisAgent,
+//                            "\nRejected the following memory (#%d) with match score %d:",
+//                            best_mem_via_score->index,
+//                            best_score);
+//                      print_memory(thisAgent, best_mem_via_score->content, &g_wmetree, 2, 5,
+//                                   "io input-link x y direction radar-setting");
+//                  }
                 
                 best_score = epmem->match_score;
-                best_mem = epmem;
+                best_mem_via_score = epmem;
             }
-            //%%%DEBUGGING
-            else if (is_radar_tank_match(cue, epmem->content))
+//              //%%%DEBUGGING
+//              else if (is_radar_tank_match(cue, epmem->content))
+//              {
+//                  print(thisAgent,
+//                        "\nRejected matching memory (#%d) with match score %d:",
+//                        epmem->index, epmem->match_score);
+//                  print_memory(thisAgent, epmem->content, &g_wmetree, 2, 6,
+//                               "io input-link x y radar radar position radar radar position");
+//              }
+            
+            //Check to see if this mem has the best match cardinality so far
+            if (epmem->num_matches > best_cardinality)
             {
-                print(thisAgent,
-                      "\nRejected matching memory (#%d) with match score %d:",
-                      epmem->index, epmem->match_score);
-                print_memory(thisAgent, epmem->content, &g_wmetree, 2, 3,
-                             "io input-link x y direction radar-setting");
-                
+                best_mem_via_cardinality = epmem;
+                best_cardinality = epmem->num_matches;
             }
+            else if ( (epmem->num_matches == best_cardinality)
+                      && (epmem->match_score > best_mem_via_cardinality->match_score) )
+            {
+                best_mem_via_cardinality = epmem;
+                best_cardinality = epmem->num_matches;
+            }
+            
         }//for
     }//for
 
+    //The selected memory is the exact match.  If there is no exact match, then
+    //the epmem with the best match score is returned.
+    if (best_cardinality == cue_cardinality)
+    {
+        selected_mem = best_mem_via_cardinality;
+    }
+    else
+    {
+        selected_mem = best_mem_via_score;
+    }
+    
     stop_timer(thisAgent, &(thisAgent->epmem_match_start_time), &(thisAgent->epmem_match_total_time));
 
     //%%%DEBUGGING
@@ -2780,27 +2820,28 @@ episodic_memory *find_best_match_RADARTANK(agent *thisAgent, epmem_header *h, ar
     stop_timer(thisAgent, &(thisAgent->epmem_start_time), &(thisAgent->epmem_total_time));
     print(thisAgent, "\nmemories searched:\t%d of %d\n", comp_count, g_memories->size);
     print(thisAgent, "\nbest match score=%d\n", best_score);
+    print(thisAgent, "\nbest match cardinality=%d of %d\n", best_cardinality, cue_cardinality);
     start_timer(thisAgent, &(thisAgent->epmem_start_time));
     start_timer(thisAgent, &(thisAgent->epmem_retrieve_start_time));
 
-    //%%%DEBUGGING
-    if (best_mem != NULL)
-    {
-        if (is_radar_tank_match(cue, best_mem->content))
-        {
-            print(thisAgent,
-                  "\nSelected CORRECT memory (#%d) with match score %d:",
-                  best_mem->index, best_score);
-        }
-        else
-        {
-            print(thisAgent,
-                  "\nSelected INCORRECT memory (#%d) with match score %d:",
-                  best_mem->index, best_score);
-        }             
-        print_memory(thisAgent, best_mem->content, &g_wmetree, 2, 6,
-                     "io input-link x y direction radar-setting radar-distance");
-    }
+//      //%%%DEBUGGING
+//      if (selected_mem != NULL)
+//      {
+//          if (is_radar_tank_match(cue, selected_mem->content))
+//          {
+//              print(thisAgent,
+//                    "\nSelected CORRECT memory (#%d) with match score %d:",
+//                    selected_mem->index, best_score);
+//          }
+//          else
+//          {
+//              print(thisAgent,
+//                    "\nSelected INCORRECT memory (#%d) with match score %d:",
+//                    selected_mem->index, best_score);
+//          }             
+//          print_memory(thisAgent, selected_mem->content, &g_wmetree, 2, 6,
+//                       "io input-link x y direction radar radar position radar radar radar-distance radar-setting radar-status");
+//      }
 
 //      //%%%HARDCODE:  Only chunk over exact match
 //      if (is_radar_tank_match(cue, best_mem->content))
@@ -2823,10 +2864,15 @@ episodic_memory *find_best_match_RADARTANK(agent *thisAgent, epmem_header *h, ar
 //      {
 //          thisAgent->sysparams[LEARNING_ON_SYSPARAM] = TRUE;
 //      }
+
     
+    //Record the statistics for this match
+    h->last_cue_size = cue_cardinality;
+    h->last_match_size = selected_mem->num_matches;
+    h->last_match_score = selected_mem->match_score;
     
-    return best_mem;
-}//find_best_match_RADARTANK 
+    return selected_mem;
+}//find_best_match_RADARTANK
 
 /* ===================================================================
    get_energy_tank_data            *DOMAIN SPECIFIC*
@@ -3015,8 +3061,7 @@ episodic_memory *find_best_match_ENERGYTANK(agent *thisAgent, epmem_header *h, a
         }
 
 //          //%%%DEBUGGING
-//          print(thisAgent, "\n\tMatches for cue entry %s: ",
-//                aw_cue->node->attr);
+//          print(thisAgent, "\n\tMatches for cue entry %s: ", aw_cue->node->attr);
 
         //Loop over the associated epmems
         for(j = 1; j < aw_cue->node->assoc_memories->size; j++)
@@ -3132,7 +3177,7 @@ episodic_memory *find_best_match_ENERGYTANK(agent *thisAgent, epmem_header *h, a
 //                    selected_mem->index, best_score);
 //          }             
 //          print_memory(thisAgent, selected_mem->content, &g_wmetree, 2, 6,
-//                       "io input-link x y radar energy position radar energy position");
+//                       "io input-link x y direction radar energy position radar energy radar-distance radar-setting radar-status");
 //      }
 
     //Record the statistics for this match
