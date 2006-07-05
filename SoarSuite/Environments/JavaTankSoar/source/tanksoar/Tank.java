@@ -583,7 +583,7 @@ public class Tank  extends WorldEntity {
 		
 		String output = getName() + ": hit by missile(s): ";
 		for (int i = 0; i < missileIDs.length; ++i) {
-			output += Integer.toString(missileIDs[i]) + " ";
+			output += missileIDs[i].toString() + " ";
 		}
 		if (m_ShieldStatus) {
 			output += "(shields up)";
@@ -591,7 +591,7 @@ public class Tank  extends WorldEntity {
 		} else {
 			adjustHealth(kMissileHealthDamage * -1 * missileIDs.length);
 			for (int i = 0; i < missileIDs.length; ++i) {
-				Tank owner = m_World.getMissileByID(missileIDs[i]).getOwner();
+				Tank owner = m_World.getMissileByID(missileIDs[i].intValue()).getOwner();
 				assert !owner.equals(this);
 				owner.adjustPoints(kMissileHitAward);
 				adjustPoints(kMissileHitPenalty);
@@ -608,7 +608,7 @@ public class Tank  extends WorldEntity {
 			logger.info(getName() + ": fragged");
 			adjustPoints(kKillPenalty);
 			for (int i = 0; i < missileIDs.length; ++i) {
-				Tank owner = m_World.getMissileByID(missileIDs[i]).getOwner();
+				Tank owner = m_World.getMissileByID(missileIDs[i].intValue()).getOwner();
 				assert !owner.equals(this);
 				owner.adjustPoints(kKillAward);
 			}
