@@ -36,182 +36,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	private boolean m_PrintedStats;
 	private Tank[] m_Tanks;
 	
-	public class Missiles {
-		LinkedList m_Flying;
-		
-		public Missiles() {
-			reset();
-		}
-		
-	   	public void reset() {
-	   		logger.finest("Resetting missiles.");
-			m_Flying = new LinkedList();
-	   	}
-	   	
-	   	public void removeWallCollisions() {
-	   		ListIterator iter = m_Flying.listIterator();
-	   		while (iter.hasNext()) {
-	   			Missile missile = (Missile)iter.next();
-	   			MapPoint location = missile.getCurrentLocation();
-	   			if (getCell(location).isWall()) {
-		   			getCell(location).setRedraw();
-	   				iter.remove();
-	   				continue;
-	   			}
-	   		}
-	   	}
-	   	
-	   	public void moveMissiles() {
-	   		ListIterator iter = m_Flying.listIterator();
-	   		while (iter.hasNext()) {
-	   			Missile missile = (Missile)iter.next();
-	   			MapPoint location = missile.getCurrentLocation();
-	   			m_RD.calculate(missile.getDirection());
-
-	   			getCell(location).setRedraw();
-	   			location.travel(m_RD.forward);
-	   			
-	   			if (missile.getFlightPhase() == 2) {
-	   			}
-	   			
-	   			// Handle special wall collision here so that missile threatens properly
-	   			// on 3rd flight phase
-	   			if (missile.getFlightPhase() == 2) {
-		   			getCell(location).setRedraw();
-		   			if (getCell(location).isWall()) {
-		   				iter.remove();
-		   				continue;
-		   			}
-		   			location.travel(m_RD.forward);
-	   			}
-	   			
-	   			missile.incrementFlightPhase();
-	   		}
-	   	}
-
-	   	public void fireMissile(Tank owner) {
-   			m_RD.calculate(owner.getFacingInt());
-   			MapPoint location = new MapPoint(owner.getLocation());
-   			location.travel(m_RD.forward);
-			m_Flying.addLast(new Missile(location, owner.getFacingInt(), owner));
-	   	}
-	   	
-	   	public int checkIncoming(MapPoint location) {
-	   		int incoming = 0;
-	   		ListIterator iter = m_Flying.listIterator();
-	   		while (iter.hasNext()) {
-	   			Missile missile = (Missile)iter.next();
-	   			if (missile.getCurrentLocation().x == location.x) {
-	   				// We're in the same row
-	   				if (missile.getCurrentLocation().y < location.y) {
-	   					// The missile is above us
-	   					if (missile.getDirection() == WorldEntity.kSouthInt) {
-	   						// and travelling toward us
-	   						incoming |= WorldEntity.kNorthInt;
-	   					}
-	   				} else {
-	   					// The missile is below us
-	   					if (missile.getDirection() == WorldEntity.kNorthInt) {
-	   						// and travelling toward us
-	   						incoming |= WorldEntity.kSouthInt;
-	   					}
-	   				}
-	   			}
-	   			if (missile.getCurrentLocation().y == location.y) {
-	   				// We're in the same column
-	   				if (missile.getCurrentLocation().x < location.x) {
-	   					// The missile is to our left
-	   					if (missile.getDirection() == WorldEntity.kEastInt) {
-	   						// and travelling toward us
-	   						incoming |= WorldEntity.kWestInt;
-	   					}
-	   				} else {
-	   					// The missile is to our right
-	   					if (missile.getDirection() == WorldEntity.kWestInt) {
-	   						// and travelling toward us
-	   						incoming |= WorldEntity.kEastInt;
-	   					}
-	   				}
-	   			}
-	   		}
-	   		return incoming;
-	   	}
-	   	
-	   	public Tank checkSpecialHit(MapPoint location, int tankMove) {
-	   		Tank owner = null;
-	   		ListIterator iter = m_Flying.listIterator();
-	   		while (iter.hasNext()) {
-	   			Missile missile = (Missile)iter.next();
-	   			if (location.equals(missile.getCurrentLocation())) {
-	   				m_RD.calculate(tankMove);
-	   				if (missile.getDirection() == m_RD.backward) {
-	   					if (owner == null) {
-	   						owner = missile.getOwner();
-	   					}
-	   					iter.remove();
-	   				}
-	   			}
-	   		}
-	   		return owner;
-	   	}
-	   	
-	   	public Tank checkHit(MapPoint location, boolean remove) {
-	   		Tank owner = null;
-	   		ListIterator iter = m_Flying.listIterator();
-	   		while (iter.hasNext()) {
-	   			Missile missile = (Missile)iter.next();
-	   			if (location.equals(missile.getCurrentLocation())) {
-	   				if (owner == null) {
-	   					owner = missile.getOwner();
-	   				}
-	   				if (remove) {
-	   					iter.remove();
-	   				} else {
-	   					return owner;
-	   				}
-	   			}
-	   			if (missile.getFlightPhase() == 2) {
-		   			MapPoint missileLoc = new MapPoint(missile.getCurrentLocation());
-		   			missileLoc.travel(missile.getDirection());
-		   			if (location.equals(missileLoc)) {
-		   				if (owner == null) {
-		   					owner = missile.getOwner();
-		   				}
-		   				if (remove) {
-		   					iter.remove();
-		   				} else {
-		   					return owner;
-		   				}
-		   			}
-	   			}
-	   		}
-	   		return owner;
-	   	}
-	   	
-	   	public Missile[] getMissiles() {
-	   		if (m_Flying.size() == 0) {
-	   			return null;
-	   		}
-	   		return (Missile[])m_Flying.toArray(new Missile[0]);
-	   	}
-	   	
-	   	public void removeMissilesOwnedBy(Tank owner) {
-	   		ListIterator iter = m_Flying.listIterator();
-	   		while (iter.hasNext()) {
-	   			Missile missile = (Missile)iter.next();
-	   			if (missile.getOwner() == owner) {
-	   				logger.finest("Removing missile at " + missile.getCurrentLocation().toString() + " owned by " + owner.getName() + " due to death");
-	   				iter.remove();
-	   			}
-	   		}
-	   	}
-	}
-	
-	private Missiles m_Missiles = new Missiles();
-	
-	public Missile[] getMissiles() {
-		return m_Missiles.getMissiles();
-	}
+	private LinkedList<Missile> missiles = new LinkedList<Missile>();
 	
    	public TankSoarWorld(TankSoarSimulation simulation) {
 		m_Simulation = simulation;
@@ -270,7 +95,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		while (m_NumMissilePacks < kMaxMissilePacks) {
 			spawnMissilePack();
 		}
-		m_Missiles.reset();
+		missiles.clear();
 		resetTanks();
 		return true;
 	}
@@ -314,8 +139,8 @@ public class TankSoarWorld extends World implements WorldManager {
 	public void destroyEntity(WorldEntity entity) {
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].getName() == entity.getName()) {
+				removeMissilesOwnedBy(m_Tanks[i]);
 				destroyTank(m_Tanks[i]);
-				m_Missiles.removeMissilesOwnedBy(m_Tanks[i]);
 				return;
 			}
 		}
@@ -367,8 +192,8 @@ public class TankSoarWorld extends World implements WorldManager {
 		while (getCell(location).isBlocked() 
 				|| getCell(location).isEnergyRecharger() 
 				|| getCell(location).isHealthRecharger() 
-				|| getCell(location).hasContents() 
-				|| (m_Missiles.checkHit(location, false) != null)) {
+				|| getCell(location).hasContents()
+				|| (checkForMissileThreat(location) != null)) {
 			location.x = Simulation.random.nextInt(m_WorldSize);
 			location.y = Simulation.random.nextInt(m_WorldSize);				
 		}
@@ -585,25 +410,6 @@ public class TankSoarWorld extends World implements WorldManager {
 			return;
 		}
 		
-		// UPDATE ALGORITHM 2.0
-		// Read Tank output links
-		// Move all Missiles
-		// BUGBUG: Moving this!:  Spawn new Missiles in front of Tanks
-		// Check for Missile-Wall collisions
-		// For all Tanks that move, check for Tank-Tank, Tank-Wall collisions
-		//   Cancel Tank moves that are not possible
-		//     Assign penalties to colliding tanks
-		// Check for Missile-Tank special collisions
-		//   Tank and Missile swapping spaces
-		//   Assign penalties to hit tanks
-		// For all Tanks that move, move Tanks
-		// Spawn missile packs
-		// Check for Missile-Tank collisions
-		//   Assign penalties to hit tanks
-		// Respawn killed Tanks in safe squares
-		// Update all Tank sensors
-		// Write out input links
-		
 		// Read Tank output links
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].getAgent() != null) {
@@ -614,16 +420,13 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 		}		
 
-		// Move all Missiles
-		m_Missiles.moveMissiles();
-		
 		// For all Tanks that move, check for Tank-Tank, Tank-Wall collisions
 		//   Cancel Tank moves that are not possible
 		//     Assign penalties to colliding tanks
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			// Get the simple wall collisions out of the way
 			if (m_Tanks[i].recentlyMoved()) {
-				TankSoarCell destinationCell = getCell(m_Tanks[i].getLocation(), m_Tanks[i].lastMoveDirection());
+				TankSoarCell destinationCell = getCell(m_Tanks[i].getLocation(), m_Tanks[i].getLastMoveDirection());
 				if (destinationCell.isWall()) {
 					logger.fine(m_Tanks[i].getName() + ": hit a wall.");
 					m_Tanks[i].collide();
@@ -642,12 +445,12 @@ public class TankSoarWorld extends World implements WorldManager {
 			// a move in the opposite direction
 			for (int i = 0; i < m_Tanks.length; ++i) {
 				if (!m_Tanks[i].isColliding() && m_Tanks[i].recentlyMoved()) {
-					TankSoarCell destinationCell = getCell(m_Tanks[i].getLocation(), m_Tanks[i].lastMoveDirection());
+					TankSoarCell destinationCell = getCell(m_Tanks[i].getLocation(), m_Tanks[i].getLastMoveDirection());
 					if (destinationCell.containsTank()) {
 						Tank collidee = destinationCell.getTank();
 						if (!collidee.isColliding() && collidee.recentlyMoved()) {
-							m_RD.calculate(m_Tanks[i].lastMoveDirection());
-							if (collidee.lastMoveDirection() == m_RD.backward) {
+							m_RD.calculate(m_Tanks[i].getLastMoveDirection());
+							if (collidee.getLastMoveDirection() == m_RD.backward) {
 								logger.fine(m_Tanks[i].getName() + ": cross-collided with " + collidee.getName());
 								m_Tanks[i].setColliding(true);
 								collidee.setColliding(true);
@@ -672,12 +475,12 @@ public class TankSoarWorld extends World implements WorldManager {
 				if (m_Tanks[i].isColliding() || !m_Tanks[i].recentlyMoved()) {
 					continue;
 				}
-				MapPoint myDest = new MapPoint(m_Tanks[i].getLocation(), m_Tanks[i].lastMoveDirection());
+				MapPoint myDest = new MapPoint(m_Tanks[i].getLocation(), m_Tanks[i].getLastMoveDirection());
 				for (int j = i + 1; j < m_Tanks.length; ++j) {
 					if (!m_Tanks[j].recentlyMoved()) {
 						continue;
 					}
-					MapPoint theirDest = new MapPoint(m_Tanks[j].getLocation(), m_Tanks[j].lastMoveDirection());
+					MapPoint theirDest = new MapPoint(m_Tanks[j].getLocation(), m_Tanks[j].getLastMoveDirection());
 					if (myDest.equals(theirDest)) {
 						logger.fine(m_Tanks[i].getName() + ": meet-collided with " + m_Tanks[j].getName());
 						// FIXME: Both should collide, but that causes a SNC!
@@ -698,23 +501,6 @@ public class TankSoarWorld extends World implements WorldManager {
 			m_Tanks[i].setColliding(false);
 		}
 		
-		// Check for Missile-Tank special collisions
-		for (int i = 0; i < m_Tanks.length; ++i) {
-			if (m_Tanks[i].recentlyMoved()) {
-				//   Tank and Missile swapping spaces
-				Tank owner = m_Missiles.checkSpecialHit(m_Tanks[i].getLocation(), m_Tanks[i].lastMoveDirection());
-				if (owner != null) {
-					logger.fine(m_Tanks[i].getName() + ": moved through a missile.");
-					TankSoarCell cell = getCell(m_Tanks[i].getLocation());
-					//   Assign penalties to hit tanks
-					m_Tanks[i].hitBy(owner, cell);
-					if (!m_Tanks[i].getShieldStatus()) {
-						cell.setExplosion();
-					}
-				}
-			}
-		}
-
 		// For all Tanks that move, move Tanks
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].recentlyMoved()) {
@@ -722,7 +508,7 @@ public class TankSoarWorld extends World implements WorldManager {
 					assert false;
 					logger.warning("Moving tank " + m_Tanks[i].getName() + " not at old location " + m_Tanks[i].getLocation());
 				}
-				MapPoint newLocation = new MapPoint(m_Tanks[i].getLocation(), m_Tanks[i].lastMoveDirection());
+				MapPoint newLocation = new MapPoint(m_Tanks[i].getLocation(), m_Tanks[i].getLastMoveDirection());
 				m_Tanks[i].setLocation(newLocation);
 				if (getCell(m_Tanks[i].getLocation()).containsMissilePack()) {
 					pickUpMissiles(m_Tanks[i]);
@@ -734,15 +520,32 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 		}
 		
+		// Move all Missiles
+		moveMissiles();
+		
+		// Check for Missile-Tank special collisions
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			if (m_Tanks[i].recentlyMoved()) {
+				//   Tank and Missile swapping spaces
+				Integer[] ids = checkMissilePassThreat(m_Tanks[i]);
+				if (ids != null) {
+					logger.fine(m_Tanks[i].getName() + ": moved through " + Integer.toString(ids.length) + " missile(s).");
+					//   Assign penalties and awards
+					m_Tanks[i].hitBy(ids);
+					removeMissilesByID(ids);
+					if (!m_Tanks[i].getShieldStatus()) {
+						getCell(m_Tanks[i].getLocation()).setExplosion();
+					}
+				}
+			}
+		}
+
 		//   Spawn new Missiles in front of Tanks
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].firedMissile()) {
-				m_Missiles.fireMissile(m_Tanks[i]);
+				addMissile(m_Tanks[i]);
 			}
 		}
-		
-		// Check for Missile-Wall collisions
-		m_Missiles.removeWallCollisions();
 		
 		// Spawn missile packs
 		if (m_NumMissilePacks < kMaxMissilePacks) {
@@ -753,13 +556,14 @@ public class TankSoarWorld extends World implements WorldManager {
 		
 		// Check for Missile-Tank collisions
 		for (int i = 0; i < m_Tanks.length; ++i) {
-			Tank owner = m_Missiles.checkHit(m_Tanks[i].getLocation(), true);
-			if (owner != null) {
-				TankSoarCell cell = getCell(m_Tanks[i].getLocation());
-				//   Assign penalties to hit tanks
-				m_Tanks[i].hitBy(owner, cell);
+			Integer[] ids = checkForMissileThreat(m_Tanks[i].getLocation());
+			if (ids != null) {
+				logger.fine(m_Tanks[i].getName() + ": hit by " + Integer.toString(ids.length) + " missile(s).");
+				//   Assign penalties and awards
+				m_Tanks[i].hitBy(ids);
+				removeMissilesByID(ids);
 				if (!m_Tanks[i].getShieldStatus()) {
-					cell.setExplosion();
+					getCell(m_Tanks[i].getLocation()).setExplosion();
 				}
 			}
 		}
@@ -768,7 +572,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].getHealth() <= 0) {
 				getCell(m_Tanks[i].getLocation()).removeTank();
-				m_Missiles.removeMissilesOwnedBy(m_Tanks[i]);
+				removeMissilesOwnedBy(m_Tanks[i]);
 				MapPoint location = findStartingLocation();
 				logger.info(m_Tanks[i].getName() + ": Spawning at " + location.toString());
 				m_Tanks[i].setLocation(location);
@@ -819,7 +623,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 
 	public int getIncomingByLocation(MapPoint location) {
-		return m_Missiles.checkIncoming(location);
+		return checkMissileIncoming(location);
 	}
 	
 	public int getSoundNear(Tank tank) {
@@ -946,4 +750,182 @@ public class TankSoarWorld extends World implements WorldManager {
 	public int getMaxManhattanDistance() {
 		return m_MaxManhattanDistance;
 	}
+	
+	private int removeMissilesOwnedBy(Tank owner) {
+		int count = 0;
+		ListIterator<Missile> iter = missiles.listIterator();
+		while (iter.hasNext()) {
+			Missile missile = iter.next();
+			if (missile.getOwner().equals(owner)) {
+				logger.finer("Removing missile id " + Integer.toString(missile.getID()) + " owned by " + owner.getName());
+				++count;
+				iter.remove();
+			}
+		}
+		return count;
+	}
+	
+	private void removeMissilesByID(Integer[] ids) {
+		assert ids != null;
+		for (int i = 0; i < ids.length; ++i) {
+			removeMissileByID(ids[i]);
+		}
+	}
+	
+	private void removeMissileByID(int id) {
+		ListIterator<Missile> iter = missiles.listIterator();
+		while (iter.hasNext()) {
+			Missile missile = iter.next();
+			if (missile.getID() == id) {
+				logger.finer("Removing missile by id " + Integer.toString(id));
+				iter.remove();
+				return;
+			}
+		}
+		assert false;
+	}
+	
+	Missile getMissileByID(int id) {
+		ListIterator<Missile> iter = missiles.listIterator();
+		while (iter.hasNext()) {
+			Missile missile = iter.next();
+			if (missile.getID() == id) {
+				return missile;
+			}
+		}
+		assert false;
+		return null;
+	}
+	
+   	private Integer[] checkForMissileThreat(MapPoint location) {
+   		ArrayList<Integer> ids = new ArrayList<Integer>();
+   		
+   		ListIterator<Missile> iter = missiles.listIterator();
+   		while (iter.hasNext()) {
+   			Missile missile = iter.next();
+   			MapPoint[] threats = missile.getThreatenedLocations();
+   			for (int i = 0; i < threats.length; ++i) {
+   				if (location.equals(threats[i])) {
+   					logger.finer("Missile id " + Integer.toString(missile.getID()) + " threat detected for " + location.toString());
+   					ids.add(missile.getID());
+   				}
+   			}
+   		}
+   		if (ids.size() > 0) {
+   			return ids.toArray(new Integer[0]);
+   		}
+   		return null;
+   	}
+   	
+   	private void moveMissiles() {
+   		ListIterator<Missile> iter = missiles.listIterator();
+   		while (iter.hasNext()) {
+   			Missile missile = iter.next();
+   			
+   			MapPoint[] threats = missile.getThreatenedLocations();
+   			if (threats.length == 2) {
+   				if (getCell(threats[1]).isWall()) {
+   					logger.finer("Removing missile id " + Integer.toString(missile.getID()) + " on move due to wall impact (flight phase 3)");
+   					iter.remove();
+   					continue;
+   				}
+   			}
+
+  			getCell(missile.getLocation()).setRedraw();
+   			missile.move();
+   			
+   			if (getCell(missile.getLocation()).isWall()) {
+				logger.finer("Removing missile id " + Integer.toString(missile.getID()) + " on move due to wall impact");
+					iter.remove();
+   					continue;
+   			}
+
+   			threats = missile.getThreatenedLocations();
+   			for (int i = 0; i < threats.length; ++i) {
+   				getCell(threats[i]).setRedraw();
+   			}
+   		}
+   	}
+   	
+   	private Integer[] checkMissilePassThreat(Tank tank) {
+   		// The tank and missiles have already moved.
+   		m_RD.calculate(tank.getLastMoveDirection());
+   		MapPoint lastTankLocation = tank.getLocation().travel(m_RD.backward);
+   		
+   		ArrayList<Integer> ids = new ArrayList<Integer>();
+
+   		ListIterator<Missile> iter = missiles.listIterator();
+   		while (iter.hasNext()) {
+   			Missile missile = iter.next();
+   			// Must be moving the opposite direction
+   			if (missile.getDirection() != m_RD.backward) {
+   				continue;
+   			}
+   			
+   			if (missile.getLocation().equals(lastTankLocation)) {
+				logger.finer("Missile id " + Integer.toString(missile.getID()) + " pass threat detected for " + tank.getName());
+				ids.add(missile.getID());
+   			}
+   		}
+   		if (ids.size() > 0) {
+   			return ids.toArray(new Integer[0]);
+   		}
+   		return null;
+  	}
+   	
+   	public void addMissile(Tank owner) {
+		MapPoint location = new MapPoint(owner.getLocation().travel(owner.getFacingInt()));
+		if (getCell(location).isWall()) {
+			logger.fine(owner.getName() + " fired a missile in to a wall");
+			return;
+		}
+		Missile missile = new Missile(location, owner.getFacingInt(), owner);
+		missiles.add(missile);
+		logger.info(owner.getName() + " fired missile id " + Integer.toString(missile.getID()));
+   	}
+   	
+   	public int checkMissileIncoming(MapPoint location) {
+   		int incoming = 0;
+   		ListIterator<Missile> iter = missiles.listIterator();
+   		while (iter.hasNext()) {
+   			Missile missile = iter.next();
+   			if (missile.getLocation().x == location.x) {
+   				// We're in the same row
+   				if (missile.getLocation().y < location.y) {
+   					// The missile is above us
+   					if (missile.getDirection() == WorldEntity.kSouthInt) {
+   						// and travelling toward us
+   						incoming |= WorldEntity.kNorthInt;
+   					}
+   				} else {
+   					// The missile is below us
+   					if (missile.getDirection() == WorldEntity.kNorthInt) {
+   						// and travelling toward us
+   						incoming |= WorldEntity.kSouthInt;
+   					}
+   				}
+   			}
+   			if (missile.getLocation().y == location.y) {
+   				// We're in the same column
+   				if (missile.getLocation().x < location.x) {
+   					// The missile is to our left
+   					if (missile.getDirection() == WorldEntity.kEastInt) {
+   						// and travelling toward us
+   						incoming |= WorldEntity.kWestInt;
+   					}
+   				} else {
+   					// The missile is to our right
+   					if (missile.getDirection() == WorldEntity.kWestInt) {
+   						// and travelling toward us
+   						incoming |= WorldEntity.kEastInt;
+   					}
+   				}
+   			}
+   		}
+   		return incoming;
+   	}
+   	
+   	public Missile[] getMissiles() {
+   		return missiles.toArray(new Missile[0]);
+   	}
 }

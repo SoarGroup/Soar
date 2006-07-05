@@ -99,6 +99,13 @@ public class Tank  extends WorldEntity {
 		reset();
 	}
 	
+	public boolean equals(Tank tank) {
+		if (getName().equals(tank.getName())) {
+			return true;
+		}
+		return false;
+	}
+	
 	public MapPoint getInitialLocation() {
 		return m_InitialLocation;
 	}
@@ -475,7 +482,7 @@ public class Tank  extends WorldEntity {
 			}
 
 			// Update for next distance
-			location.travel(forward());
+			location = location.travel(forward());
 		}
 		clearCells(distance, location);
 		return distance;
@@ -572,41 +579,39 @@ public class Tank  extends WorldEntity {
 		return m_Health;
 	}
 	
-	public void hitBy(Tank attacker, TankSoarCell currentCell) {
-		assert !getName().equals(attacker.getName());
+	public void hitBy(Integer[] missileIDs) {
 		
-		// Missile damage
-		if (m_ShieldStatus) {
-			logger.info(getName() + ": hit by " + attacker.getName() + " (shields up)");
-			adjustEnergy(kMissileEnergyDamage * -1);
-
-		} else {
-			logger.info(getName() + ": hit by " + attacker.getName() + " (shields down)");
-			adjustHealth(kMissileHealthDamage * -1);
-
-			attacker.adjustPoints(kMissileHitAward);
-			adjustPoints(kMissileHitPenalty);
+		String output = getName() + ": hit by missile(s): ";
+		for (int i = 0; i < missileIDs.length; ++i) {
+			output += Integer.toString(missileIDs[i]) + " ";
 		}
-
-		// Chargers
-		if (m_Health > 0) {
-			if (currentCell.isEnergyRecharger()) {
-				logger.info(getName() + ": hit by " + attacker.getName() + " while on the energy charger");
-				// Instant death
-				adjustHealth(m_Health * -1);
+		if (m_ShieldStatus) {
+			output += "(shields up)";
+			adjustEnergy(kMissileEnergyDamage * -1 * missileIDs.length);
+		} else {
+			adjustHealth(kMissileHealthDamage * -1 * missileIDs.length);
+			for (int i = 0; i < missileIDs.length; ++i) {
+				Tank owner = m_World.getMissileByID(missileIDs[i]).getOwner();
+				assert !owner.equals(this);
+				owner.adjustPoints(kMissileHitAward);
+				adjustPoints(kMissileHitPenalty);
 			}
-			if (currentCell.isHealthRecharger()) {
-				logger.info(getName() + ": hit by " + attacker.getName() + " while on the health charger");
-				// Instant death
-				adjustHealth(m_Health * -1);
-			}
+		}
+		logger.info(output);
+		
+		if (m_World.getCell(getLocation()).isEnergyRecharger() || m_World.getCell(getLocation()).isHealthRecharger()) {
+			logger.info(getName() + ": hit on charger");
+			adjustHealth(m_Health * -1);
 		}
 		
 		if (m_Health <= 0) {
-			logger.info(getName() + ": fragged by " + attacker.getName());
+			logger.info(getName() + ": fragged");
 			adjustPoints(kKillPenalty);
-			// TODO: multiple missiles!
-			attacker.adjustPoints(kKillAward);
+			for (int i = 0; i < missileIDs.length; ++i) {
+				Tank owner = m_World.getMissileByID(missileIDs[i]).getOwner();
+				assert !owner.equals(this);
+				owner.adjustPoints(kKillAward);
+			}
 		}
 	}
 	
@@ -657,7 +662,7 @@ public class Tank  extends WorldEntity {
 		return m_LastMove.rotate;
 	}
 	
-	public int lastMoveDirection() {
+	public int getLastMoveDirection() {
 		return m_LastMove.moveDirection;
 	}
 	

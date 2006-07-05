@@ -213,7 +213,7 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 							mY = 10;
 							break;
 						}
-						gc.drawImage(kMissile, (missiles[i].getCurrentLocation().x * m_CellSize) + mX, (missiles[i].getCurrentLocation().y * m_CellSize) + mY);
+						gc.drawImage(kMissile, (missiles[i].getLocation().x * m_CellSize) + mX, (missiles[i].getLocation().y * m_CellSize) + mY);
 					}
 				}
 				
@@ -236,34 +236,34 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 								width = m_CellSize*3;
 								height = m_CellSize;
 								start = 0;
-								point.travel(m_RD.forward);
-								point.travel(m_RD.left);
+								point = point.travel(m_RD.forward);
+								point = point.travel(m_RD.left);
 								break;
 							case WorldEntity.kSouthInt:
 								width = m_CellSize*3;
 								height = m_CellSize;
 								start = 180;
-								point.travel(m_RD.forward);
-								point.travel(m_RD.right);
+								point = point.travel(m_RD.forward);
+								point = point.travel(m_RD.right);
 								break;
 							case WorldEntity.kEastInt:
 								width = m_CellSize;
 								height = m_CellSize*3;
 								start = -90;
-								point.travel(m_RD.forward);
-								point.travel(m_RD.left);
+								point = point.travel(m_RD.forward);
+								point = point.travel(m_RD.left);
 								break;
 							case WorldEntity.kWestInt:
 								width = m_CellSize;
 								height = m_CellSize*3;
 								start = 90;
-								point.travel(m_RD.forward);
-								point.travel(m_RD.right);
+								point = point.travel(m_RD.forward);
+								point = point.travel(m_RD.right);
 								break;
 							}
 							for (int j = 0; j < setting; ++j) {
 								gc.drawArc(point.x*m_CellSize,point.y*m_CellSize,width - 2,height - 2, start,180);
-								point.travel(m_RD.forward);
+								point = point.travel(m_RD.forward);
 							}
 						}
 					}
