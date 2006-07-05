@@ -4,9 +4,9 @@
 ###########################################
 
 AC_PREREQ(2.57)
-AC_INIT([SoarSuite], [8.6.2-r2], [soar-group@lists.sourceforge.net])
+AC_INIT([SoarSuite], [8.6.2-r5], [soar-group@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([Core/SoarKernel/include/soarkernel.h])
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([foreign tar-ustar])
 AC_REVISION($Revision$)
 AM_CONFIG_HEADER([config.h])
 AC_PREFIX_DEFAULT([/usr/local/soar])
@@ -16,11 +16,25 @@ AC_LIBTOOL_DLOPEN
 AC_DEFINE([NO_MEGA_UNIT_TESTS], [1], [gSKI: Defined when not using mega unit tests.])
 AC_DEFINE([VALIDATE], [assert], [BUGBUG: gSKI: not sure where this symbol is defined.])
 AC_DEFINE([UNIX], [assert], [BUGBUG: gSKI: Defined for now, needs to be removed.])
-AC_DEFINE([LINUX_STATIC_LINK], [1], [Defined when statically linking in Linux])
 AC_PROG_LIBTOOL
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_MAKE_SET
+
+# check if the compiler support -fvisibility=hidden (GCC >= 4)
+saved_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -fvisibility=hidden"
+AC_MSG_CHECKING([for -fvisibility=hidden])
+AC_COMPILE_IFELSE([char foo;],
+    [	AC_MSG_RESULT([yes])
+	SYMBOL_VISIBILITY="-fvisibility=hidden" 
+	visibility=true],
+    [	AC_MSG_RESULT([no])
+	visibility=false])
+CFLAGS="$saved_CFLAGS"
+AC_SUBST(SYMBOL_VISIBILITY)
+AM_CONDITIONAL(VISIBILITY_AVAILABLE, test x$visibility = xtrue)
+# end check for visibility compiler support
 
 # Tcl and Java switches for SWIG
 AC_ARG_ENABLE(tcl,
@@ -34,6 +48,10 @@ AC_ARG_ENABLE(tcl,
 AM_CONDITIONAL(SWIGTCL, test x$tcl = xtrue)
 if test "$tcl" = "true"
 then
+  if test "$enable_shared" = "no"
+  then
+    AC_MSG_ERROR([*** Shared libraries must be enabled for Tcl support!])
+  fi
   AC_PROG_SWIG(1.3.24)
   SWIG_ENABLE_CXX
   AC_CHECK_HEADER([tcl.h],,[AC_MSG_ERROR([*** Cannot find required header!  See previous line. Debian users: please see the following URL for a workaround: https://winter.eecs.umich.edu/soar-bugzilla/show_bug.cgi?id=543])])
@@ -51,9 +69,20 @@ AC_ARG_ENABLE(java,
 AM_CONDITIONAL(SWIGJAVA, test x$java = xtrue)
 if test "$java" = "true"
 then
+  if test "$enable_shared" = "no"
+  then
+    AC_MSG_ERROR([*** Shared libraries must be enabled for Java support! Try adding --disable-java if this is ok.])
+  fi
   AC_PROG_SWIG(1.3.24)
   SWIG_ENABLE_CXX
 fi
+
+# See comments in Core/ClientSML/src/sml_ClientKernel.cpp
+if test "$enable_shared" = "no"
+then
+  AC_DEFINE([STATIC_LINKED], [1], [Defined when statically linking])
+fi
+AM_CONDITIONAL([STATIC_LINKED_CONDITIONAL], test x$enable_shared = xno)
 
 # Checks for libraries.
 
@@ -92,7 +121,7 @@ AC_FUNC_STAT
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([endpwent getcwd gethostname gettimeofday inet_ntoa memmove memset mkdir modf regcomp rmdir select setlocale socket sqrt strcasecmp strchr strerror strtol strstr],,[AC_MSG_ERROR([*** Cannot find required function!  See previous line.])])
 
-SOAR_CXXFLAGS="-Wall -g"
+SOAR_CXXFLAGS="-Wall -g -O2 -fno-strict-aliasing $SYMBOL_VISIBILITY"
 AC_SUBST(SOAR_CXXFLAGS)
 
 ####################
@@ -412,14 +441,12 @@ AC_OUTPUT([
 	Core/KernelSML/src/Makefile
 	Environments/Makefile
 	Tools/Makefile
-	Tools/QuickLink/Makefile
-	Tools/QuickLink/src/Makefile
-	Tools/SoarTextIO/Makefile
-	Tools/SoarTextIO/src/Makefile
+	Tools/FilterC/Makefile
 	Tools/TOHSML/Makefile
 	Tools/TestCLI/Makefile
 	Tools/TestClientSML/Makefile
 	Tools/TestConnectionSML/Makefile
+	Tools/TestMultiAgent/Makefile
 	Tools/TestSMLEvents/Makefile
 	Tools/TestSoarPerformance/Makefile
 	])

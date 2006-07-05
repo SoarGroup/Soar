@@ -18,11 +18,19 @@ if SWIGJAVA
 else
 endif
 
-EXTRA_DIST = Documentation Resources SoarLibrary 
+EXTRA_DIST = Documentation Resources SoarLibrary acsite.m4
 dist-hook:
-	rm -rf `find $(distdir) -name .svn`
-	rm `find $(distdir) -name *.jar`
-	wget http://winter.eecs.umich.edu/jars/motif/swt.jar
+	find $(distdir) -iname .svn -depth -exec rm -rfv {} \;
+	find $(distdir) -iname *.jar -exec rm -rfv {} \;
+	find $(distdir) -iname *.ppt -exec rm -rfv {} \;
+	find $(distdir) -iname *.doc -exec rm -rfv {} \;
+	find $(distdir) -iname *.tex -exec rm -rfv {} \;
+	find $(distdir) -iname *.dll -exec rm -rfv {} \;
+	rm -rfv $(distdir)/Documentation/ManualSource
+	rm -rfv $(distdir)/Documentation/Old
+	rm -rfv $(distdir)/Resources/Templates
+	rm -rfv $(distdir)/SoarLibrary/CLIHelp/Scripts
+	wget http://winter.eecs.umich.edu/jars/gtk/swt.jar
 	mv swt.jar $(distdir)/SoarLibrary/bin
 
 install-data-am:

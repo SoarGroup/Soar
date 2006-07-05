@@ -9,6 +9,8 @@ InstallDir "$PROGRAMFILES/${INSTALLDIR}"
 InstallDirRegKey HKLM "Software/${APPNAME}" ""
 OutFile "${OUTFILE}"
 
+BrandingText "The Center for Cognitive Architecture"
+
 !include "MUI.nsh"
 
 Icon "Resources/Icons/soar.ico"
@@ -56,27 +58,38 @@ Section "Core Soar Components" Section1
 	CreateDirectory "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI"
 	CreateDirectory "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/Presentations"
 	CreateDirectory "$SMPROGRAMS/${MSPROGRAMSNAME}/Tutorial/"
-	
+
+	SetOutPath "$INSTDIR/Environments/JavaTOH"
+	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Towers of Hanoi (Java).lnk" "$INSTDIR/Environments/JavaTOH/run-toh.bat" "" "$INSTDIR/Resources/Icons/toh.ico"
+
+	SetOutPath "$INSTDIR/Environments/JavaMissionaries"
+	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Missionaries and Cannibals (Java).lnk" "$INSTDIR/Environments/JavaMissionaries/run-mac.bat" "" "$INSTDIR/Resources/Icons/mac.ico"
+
+	SetOutPath "$INSTDIR/Environments/JavaTankSoar"
+	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start TankSoar (Java).lnk" "$INSTDIR/Environments/JavaTankSoar/run-JavaTankSoar.bat" "" "$INSTDIR/Resources/Icons/tanksoar.ico"
+
+	SetOutPath "$INSTDIR/Environments/JavaEaters"
+	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Eaters (Java).lnk" "$INSTDIR/Environments/JavaEaters/run-JavaEaters.bat" "" "$INSTDIR/Resources/Icons/eaters.ico"
+
 	SetOutPath "$INSTDIR/SoarLibrary/bin"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Soar Debugger (Java).lnk" "$INSTDIR/SoarLibrary/bin/SoarJavaDebugger.jar" "" "$INSTDIR/Resources/Icons/soar.ico"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Towers of Hanoi (Java).lnk" "$INSTDIR/SoarLibrary/bin/toh.jar" "" "$INSTDIR/Resources/Icons/toh.ico"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Missionaries and Cannibals (Java).lnk" "$INSTDIR/SoarLibrary/bin/mac.jar" "" "$INSTDIR/Resources/Icons/mac.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Announcement.lnk" "$INSTDIR/Documentation/Announce.txt"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/License.lnk" "$INSTDIR/License.txt"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Uninstall ${APPNAMEANDVERSION}.lnk" "$INSTDIR/Uninstall ${APPNAMEANDVERSION}.exe" "" "$INSTDIR/Resources/Icons/un-soar.ico"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start VisualSoar (Java).lnk" "$INSTDIR/SoarLibrary/bin/VisualSoar.jar" "" "$INSTDIR/Resources/Icons/vs.ico"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start TankSoar (Java).lnk" "$INSTDIR/SoarLibrary/bin/JavaTankSoar.jar" "" "$INSTDIR/Resources/Icons/tanksoar.ico"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start Eaters (Java).lnk" "$INSTDIR/SoarLibrary/bin/JavaEaters.jar" "" "$INSTDIR/Resources/Icons/eaters.ico"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start QuickLink.lnk" "$INSTDIR/SoarLibrary/bin/QuickLink.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Start SoarTextIO.lnk" "$INSTDIR/SoarLibrary/bin/SoarTextIO.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$INSTDIR/FilterTcl.lnk" "$INSTDIR/Tools/FilterTcl/start-filter.bat" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$INSTDIR/FilterC.lnk" "$INSTDIR/SoarLibrary/bin/FilterC.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$INSTDIR/LoggerWinC.lnk" "$INSTDIR/SoarLibrary/bin/LoggerWinC.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestClientSML.lnk" "$INSTDIR/SoarLibrary/bin/TestClientSML.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
-	CreateShortCut "$INSTDIR/TestCommandLineInterface.lnk" "$INSTDIR/SoarLibrary/bin/TestCommandLineInterface.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$INSTDIR/TestCLI.lnk" "$INSTDIR/SoarLibrary/bin/TestCLI.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestConnectionSML.lnk" "$INSTDIR/SoarLibrary/bin/TestConnectionSML.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestMultiAgent.lnk" "$INSTDIR/SoarLibrary/bin/TestMultiAgent.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestSMLEvents.lnk" "$INSTDIR/SoarLibrary/bin/TestSMLEvents.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$INSTDIR/TestCSharpSML.lnk" "$INSTDIR/SoarLibrary/bin/TestCSharpSML.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestSoarPerformance.lnk" "$INSTDIR/SoarLibrary/bin/TestSoarPerformance.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
-	CreateShortCut "$INSTDIR/towersSML.lnk" "$INSTDIR/SoarLibrary/bin/towersSML.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$INSTDIR/TOHSML.lnk" "$INSTDIR/SoarLibrary/bin/TOHSML.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestJavaSML.lnk" "$INSTDIR/SoarLibrary/bin/TestJavaSML.jar" "" "$INSTDIR/Resources/Icons/testapp.ico"
+	CreateShortCut "$INSTDIR/LoggerJava.lnk" "$INSTDIR/SoarLibrary/bin/LoggerJava.jar" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	
 	SetOutPath "$INSTDIR/Documentation/"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Tutorial/Soar Tutorial Part 1.lnk" "$INSTDIR/Documentation/Soar Tutorial Part 1.pdf"
@@ -105,11 +118,9 @@ Section "Core Soar Components" Section1
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI/gSKI-Design-Document.lnk" "$INSTDIR/Documentation/gSKI/gSKI-Design-Document.pdf"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI/gSKIProductionUseCases.lnk" "$INSTDIR/Documentation/gSKI/gSKIProductionUseCases.pdf"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI/gSKI-Req.lnk" "$INSTDIR/Documentation/gSKI/gSKI-Req.pdf"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI/gSKI-Requirements-Document-with-Goals.lnk" "$INSTDIR/Documentation/gSKI/gSKI-Requirements-Document-with-Goals.pdf"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI/Moving to GSKI.lnk" "$INSTDIR/Documentation/gSKI/Moving to GSKI.pdf"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI/Requirements Document with Goals.lnk" "$INSTDIR/Documentation/gSKI/Requirements Document with Goals.pdf"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI/Soar TCL Commands in Soar 8.lnk" "$INSTDIR/Documentation/gSKI/Soar TCL Commands in Soar 8.pdf"
-	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/gSKI/Thoughts on SWIG and the Java API.lnk" "$INSTDIR/Documentation/gSKI/Thoughts on SWIG and the Java API.pdf"
 	
 	SetOutPath "$INSTDIR/Documentation/Presentations/"
 	CreateShortCut "$SMPROGRAMS/${MSPROGRAMSNAME}/Documentation/Presentations/SML High-level.lnk" "$INSTDIR/Documentation/Presentations/SML High-level presentation.pdf"
@@ -145,7 +156,7 @@ Section -FinishSection
 	WriteRegStr HKLM "Software/${APPNAME}" "" "$INSTDIR"
 	WriteRegStr HKLM "Software/Microsoft/Windows/CurrentVersion/Uninstall/${APPNAMEANDVERSION}" "DisplayName" "${APPNAMEANDVERSION}"
 	WriteRegStr HKLM "Software/Microsoft/Windows/CurrentVersion/Uninstall/${APPNAMEANDVERSION}" "DisplayIcon" "$INSTDIR/Resources/Icons/soar.ico"
-	WriteRegStr HKLM "Software/Microsoft/Windows/CurrentVersion/Uninstall/${APPNAMEANDVERSION}" "UninstallString" "$INSTDIR/uninstall.exe"
+	WriteRegStr HKLM "Software/Microsoft/Windows/CurrentVersion/Uninstall/${APPNAMEANDVERSION}" "UninstallString" "$INSTDIR/Uninstall ${APPNAMEANDVERSION}.exe"
 
 	WriteUninstaller "$INSTDIR/Uninstall ${APPNAMEANDVERSION}.exe"
 
@@ -169,13 +180,12 @@ Section Uninstall
 
 	Delete "$INSTDIR/SoarLibrary/bin/testjavasml-success.txt"
 	Delete "$INSTDIR/SoarLibrary/bin/testclientsml-success.txt"
+	Delete "$INSTDIR/SoarLibrary/bin/testmultiagent-success.txt"
 	Delete "$INSTDIR/SoarLibrary/bin/towers-sml-success.txt"
 	Delete "$INSTDIR/SoarLibrary/bin/default-layout.xml"
 	Delete "$INSTDIR/SoarLibrary/bin/javaw.exe.manifest"
 	Delete "$INSTDIR/SoarLibrary/bin/default-layout.dlf"
 	Delete "$INSTDIR/SoarLibrary/bin/default-text.dlf"
-	Delete "$INSTDIR/SoarLibrary/bin/EaterLog.txt"
-	Delete "$INSTDIR/SoarLibrary/bin/eaters-default-settings.xml"
 	Delete "$INSTDIR/SoarLibrary/bin/VSPreferences.txt"
 	RMDir /r "$INSTDIR/Environments/JavaMissionaries/src"
 

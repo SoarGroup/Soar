@@ -32,18 +32,22 @@ use File::Path;
 my $soarurl = "https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite";
 
 # Name and version
-my $nameandversion = "Soar Suite 8.6.2-r4";
+my $nameandversion = "Soar Suite 8.6.2";
 
-# File globs to completely remove from the tree (not distributed at all)
-my @remove = qw/.cvsignore *.so *.so.2 *.jnilib java_swt make-mac-app.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource *.tex/;
+# File globs to completely remove from the tree
+my @remove = qw/Makefile.in 8.6.2.nsi.in INSTALL README .project .cvsignore .svn *.xcodeproj *.so *.so.1 *.so.2 *.jnilib java_swt *.sh *.plist *.doc *.ppt *.pl *.am *.ac *.m4 ManualSource Old *.tex Scripts/;
 
 # Globs to copy from working copy to Core component
 # WORKING --copy-to-> CORE
-my @copyglobs = qw(*.pdf *.dll *.exe *.jar ClientSML.lib ElementXML.lib ConnectionSML.lib Tcl_sml_ClientInterface mac towers-of-hanoi-SML.soar);
+my @copycoreglobs = qw(*.pdf *.dll *.exe *.jar);
+
+# Globs to copy from working copy to Source component
+# WORKING --copy-to-> SOURCE
+my @copysourceglobs = qw(ClientSML.lib ElementXML.lib ConnectionSML.lib Tcl_sml_ClientInterface Tcl_sml_ClientInterface_wrap.cxx Java_sml_ClientInterface_wrap.cxx CSharp_sml_ClientInterface_wrap.cxx);
 
 # Globs to MOVE from Source component to Core component
 # SOURCE --move-to-> CORE
-my @moveglobs = qw/COPYING INSTALL Documentation Resources SoarLibrary agents maps/;
+my @moveglobs = qw/COPYING Documentation docs Icons SoarLibrary agents maps templates tcl TSI TclEaters run-*.bat TestTclSML.tcl pkgIndex.tcl mac.soar FilterTcl towers-of-hanoi-SML.soar/;
 
 # Nullsoft installer script input file
 my $nsiinput = "8.6.2.nsi.in";
@@ -63,38 +67,38 @@ my $msprogramsname = $nameandversion;
 $msprogramsname =~ s/Suite //;
 
 # Parse command line options
-my $build = 1;
-my $checkout = 1;
-my $nsionly = 0;
+my $build = 0;
+my $checkout = 0;
+my $nsi = 0;
 my @dirstodelete;
 my @filestodelete;
 
 foreach (@ARGV) {
-	if ($_ eq "-nobuild") {
-		$build = 0;
-	} elsif ($_ eq "-nocheckout") {
-		$checkout = 0;
-	} elsif ($_ eq "-nsionly") {
-		$nsionly = 1;
+	if ($_ eq "-build") {
+		$build = 1;
+	} elsif ($_ eq "-checkout") {
+		$checkout = 1;
+	} elsif ($_ eq "-nsi") {
+		$nsi = 1;
 	}
 }
 
-if ($nsionly) {
+if ($nsi) {
 	&nsi_step;
 	exit(0);
 }
 
 if ($build == 1) {
 	&build_step;
+	exit(0);
 }
 
 if ($checkout == 1) {
 	&checkout_step;
+	&copy_step;
+	&move_step;
 }
 
-&copy_step;
-&move_step;
-&nsi_step;
 exit(0);
 
 ################################
@@ -108,18 +112,21 @@ sub build_step {
 sub checkout_step { 
 	print "Step 2: Check out source from SVN...\n";
 	rmtree($source);
-	system "svn export $soarurl $source";
+	system "svn export $soarurl $source --native-eol CRLF";
 	
+	system "chmod -R 777 $core";
+	system "chmod -R 777 $source";	
+
 	print "Step 3: Remove globs from source that are not to be distributed with the release...\n";
 
 	foreach (File::Find::Rule->file()->name(@remove)->in($source)) {
 		print "Removing from source: $_\n";
-		unlink $_ or die "Unable to remove $_: $!";
+		unlink $_ or die $!;
 	}
 
 	foreach (File::Find::Rule->directory()->name(@remove)->in($source)) {
 		print "Removing from source: $_\n";
-		rmtree($_) or die "Unable to remove $_: $!";
+		rmtree($_) or die $!;
 	}
 }
 
@@ -127,11 +134,22 @@ sub copy_step {
 	print "Step 4: Remove old core tree...\n";
 	rmtree($core, 1);
 	print "Step 5: Copy globs from working tree to core...\n";
-	foreach (File::Find::Rule->directory()->name(@copyglobs)->in("."), File::Find::Rule->file()->name(@copyglobs)->mindepth(2)->in(".")) {
+	foreach (File::Find::Rule->directory()->name(@copycoreglobs)->in("."), File::Find::Rule->file()->name(@copycoreglobs)->mindepth(2)->in(".")) {
 		# This creates destination if it doesn't exist.
 		print "Copying to core: $_\n";
-		rcopy($_, "$core/$_");
+		rcopy($_, "$core/$_") or die $!;
 	}
+	system "chmod -R 777 $core";
+	system "chmod -R 777 $source";	
+	
+	print "Step 5.1: Copy swig java files from working tree to source...\n";
+	foreach (File::Find::Rule->file()->name("*.java")->in("Core/ClientSMLSWIG/Java/build")) {
+		# This creates destination if it doesn't exist.
+		print "Copying to source: $_\n";
+		rcopy($_, "$source/$_") or die $!;
+	}
+	system "chmod -R 777 $core";
+	system "chmod -R 777 $source";	
 }
 
 sub move_step {
@@ -141,16 +159,78 @@ sub move_step {
 		print "Moving from source to core: $_\n";
 		/$source(.*)/;
 		my $outputdir = $1;
-		rcopy($_, "$core/$outputdir");
+		rmove($_, "$core/$outputdir") or print $! . "\n";
+	}
+	system "chmod -R 777 $core";
+	system "chmod -R 777 $source";	
+	
+	print "Step 6.01: Copy globs from working tree to source...\n";
+	foreach (File::Find::Rule->directory()->name(@copysourceglobs)->in("."), File::Find::Rule->file()->name(@copysourceglobs)->mindepth(2)->in(".")) {
+		# This creates destination if it doesn't exist.
+		print "Copying to source: $_\n";
+		rcopy($_, "$source/$_") or die $!;
+	}
+	system "chmod -R 777 $core";
+	system "chmod -R 777 $source";	
+
+	print "Step 6.1: Rename COPYING...\n";
+	rmove("$core/COPYING", "$core/License.txt") or die $!;
+	
+	print "Step 6.2: Remove svn dirs from core...\n";
+	foreach (File::Find::Rule->directory()->name(".svn")->in($core)) {
+		print "Removing from core: $_\n";
+		rmtree($_) or die "Unable to remove $_: $!";
 	}
 	
-	print "Step 6.1: Rename INSTALL and COPYING...\n";
-	rmove("$core/INSTALL", "$core/Install.txt");
-	rmove("$core/COPYING", "$core/License.txt");
+	print "Step 6.3: Remove svn dirs from source...\n";
+	foreach (File::Find::Rule->directory()->name(".svn")->in($source)) {
+		print "Removing from source: $_\n";
+		rmtree($_) or die "Unable to remove $_: $!";
+	}
+
+	print "Step 6.4: Remove globs again...\n";
+	foreach (File::Find::Rule->file()->name(@remove)->in($source)) {
+		print "Removing from source: $_\n";
+		unlink;
+	}
+	foreach (File::Find::Rule->directory()->name(@remove)->in($source)) {
+		print "Removing from source: $_\n";
+		rmtree($_);
+	}
+
+	print "Step 6.5: final tweaks (by hand)...\n";
+	
+	print "removing tree $core/Documentation/ManualSource\n";
+	rmtree("$core/Documentation/ManualSource") or die $!;
+	
+	print "removing tree $core/SoarLibrary/lib\n";
+	rmtree("$core/SoarLibrary/lib") or die $!;
+	
+	print "removing tree $core/Tools/TestCSharpSML\n";
+	rmtree("$core/Tools/TestCSharpSML") or die $!;
+	
+	print "moving: $core/SoarLibrary/bin/makeTclSMLPackage.tcl\n";
+	mkdir("$source/SoarLibrary/bin");
+	rmove("$core/SoarLibrary/bin/makeTclSMLPackage.tcl", "$source/SoarLibrary/bin/makeTclSMLPackage.tcl") or die $1;
+
+	print "unlinking: $core/Core/ClientSMLSWIG/Java/build/readme.txt\n";
+	rmtree("$source/Core/ClientSMLSWIG/Java/build/readme.txt") or die $!;
+
+	print "copying: SoarLibrary/bin/tcl_sml_clientinterface/pkgIndex.tcl\n";
+	copy("SoarLibrary/bin/tcl_sml_clientinterface/pkgIndex.tcl", "$core/SoarLibrary/bin/tcl_sml_clientinterface/pkgIndex.tcl") or die $!;
+	system "chmod -R 777 $core";
+	system "chmod -R 777 $source";	
+	
+	print "moving: $core/Tools/VisualSoar/Source\n";
+	rmove("$core/Tools/VisualSoar/Source", "$source/Tools/VisualSoar/Source") or die $1;
+
+	system "chmod -R 777 $core";
+	system "chmod -R 777 $source";	
 }
 
 sub nsi_step {
 	print "Step 7: Generate NSI installer script...\n";
+	
 	open(NSIINPUT, $nsiinput) or die "Couldn't open nsi input file: $!";
 	open(NSIOUTPUT, ">$nsioutput") or die "Couldn't open nsi output file: $!";
 
