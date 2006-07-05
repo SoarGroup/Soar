@@ -29,6 +29,7 @@ cursor = db.cursor()
 logging.info('Connected to database.')
 
 sleepytime = 5
+matchNumber = 1
 
 while True:
 	cursor.execute("SELECT * FROM tanks ORDER BY RAND(NOW()) LIMIT 2")
@@ -72,31 +73,32 @@ while True:
 	settings = settings.replace('**red tank source**', "tanks/" + reduser + "/" + redtank[2] + "/" + redtank[7])
 	settings = settings.replace('**blue tank source**', "tanks/" + blueuser + "/" + bluetank[2] + "/" + bluetank[7])
 
-	settingsfile = open("JavaTankSoar/tanksoar-default-settings.xml", 'w')
+	settingsfile = open("JavaTankSoar/" + str(matchNumber) + ".xml", 'w')
 	settingsfile.write(settings)
 	settingsfile.close()
 
-	logging.info("Starting match.")
+	logging.info("Starting match " + str(matchNumber) + ".")
 	
 	cwd = os.getcwd()
 	os.chdir('JavaTankSoar')
-	if os.path.exists("TankSoarLog.txt"):
-		os.unlink("TankSoarLog.txt")
-	os.system('java -jar JavaTankSoar.jar -quiet')
+	#if os.path.exists("TankSoarLog.txt"):
+	#	os.unlink("TankSoarLog.txt")
+	os.system('java -jar JavaTankSoar.jar -quiet -notrandom -log tsladder-logs/' + str(matchNumber) + '.txt -settings ' + str(matchNumber) + '.xml')
 
-	logging.info("Match finished.")
+	logging.info("Match " + str(matchNumber) + " finished.")
 	
 	cursor.execute("UPDATE tanks SET fighting=0 WHERE tankid=%s", (redtank[0],))
 	cursor.execute("UPDATE tanks SET fighting=0 WHERE tankid=%s", (bluetank[0],))
 	
-	output = file("TankSoarLog.txt");
+	output = file("tsladder-logs/" + str(matchNumber) + ".txt");
+	matchNumber += 1;
 	matched_something = False
 	for line in output.readlines():
-		match = re.match(r"(.+): (-?\d+) \((\w+)\)", line)
+		match = re.match(r".+ INFO (.+): (-?\d+) \((\w+)\)", line)
 		if match == None:
 			continue
 		matched_something = True
-		#logging.debug("Matched this line: %s", line)
+		logging.debug("Matched this line: %s", line)
 		tankname, score, status = match.groups()
 		score = int(score)
 		if status == "winner":
