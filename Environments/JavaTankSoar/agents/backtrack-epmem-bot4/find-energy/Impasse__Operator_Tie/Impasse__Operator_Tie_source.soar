@@ -2,5 +2,9 @@ source elaborations.soar
 source epmem-recall-see-energy.soar
 source epmem-recall-see-energy-path.soar
 source give-up.soar
+source Impasse__State_No-Change.soar
+pushd Impasse__State_No-Change
+source Impasse__State_No-Change_source.soar
+popd
 source record-energy-path.soar
 source remove-epmem-query.soar

@@ -164,9 +164,8 @@ sp {apply*epmem-recall-see-energy-path
    (<qil> ^x <x>
           ^y <y>
           ^direction <abs-dir>
-          ^radar-status on
-          ^radar-setting 13)
-   (write (crlf) |QUERY:  Can I see the position |<dist>| spaces |<abs-dir>| of me?|)
+          ^radar-status on)
+   (write (crlf) |QUERY:  Did I remember looking |<abs-dir>| of here (| <x> |,| <y> |)?|)
 }
 
 #IF the operator has been selected

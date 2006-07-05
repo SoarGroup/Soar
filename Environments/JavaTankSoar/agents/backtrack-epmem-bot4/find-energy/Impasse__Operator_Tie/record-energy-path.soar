@@ -4,19 +4,21 @@
 sp {recall-energy-path*propose*record-energy-path*on-radar
    (state <s> ^name recall-energy-path
               ^io.input-link <il>
-             -^top-state.available-energy-path)
+              ^superstate <ss>
+              ^item <op1> <op2>)
    (<il> ^radar <radar>
          ^x <x>
          ^y <y>
          ^direction <dir>)
    (<radar> ^energy.distance <dist>)
+   (<ss> ^operator <op1> +
+         ^operator <op2> +)
+   (<op1> ^name move
+         ^abs-dir <dir>)
+   (<op2> ^name move
+        -^abs-dir <dir>)
 -->
-   (<s> ^operator <op> +)
-   (<op> ^name record-energy-path
-         ^x <x>
-         ^y <y>
-         ^abs-dir <dir>
-         ^distance <dist>)
+   (<ss> ^operator <op1> > <op2>)
    (write (crlf) |RADAR: I can see energy | <dir> | of here.|)
 }
 
@@ -28,20 +30,22 @@ sp {recall-energy-path*propose*record-energy-path*direct
    (state <s> ^name recall-energy-path
               ^io.input-link <il>
               ^epmem.retrieved.io.input-link <ril>
-             -^top-state.available-energy-path)
+              ^superstate <ss>
+              ^item <op1> <op2>)
    (<il> ^x <x>
          ^y <y>)
    (<ril> ^x <x>
           ^y <y>
           ^radar.energy.distance <dist>
           ^direction <dir>)
+   (<ss> ^operator <op1> +
+         ^operator <op2> +)
+   (<op1> ^name move
+         ^abs-dir <dir>)
+   (<op2> ^name move
+        -^abs-dir <dir>)
 -->
-   (<s> ^operator <op> +)
-   (<op> ^name record-energy-path
-         ^x <x>
-         ^y <y>
-         ^abs-dir <dir>
-         ^distance <dist>)
+   (<ss> ^operator <op1> > <op2>)
    (write (crlf) |EPMEM: I last saw energy | <dir> | of here.|)
 }
 
@@ -56,7 +60,8 @@ sp {recall-energy-path*propose*record-energy-path*indirect
               ^io.input-link <il>
               ^latest-path <path>
               ^epmem <epmem>
-             -^top-state.available-energy-path)
+              ^superstate <ss>
+              ^item <op1> <op2>)
    (<epmem> ^match-cardinality 1.0
             ^retrieved.io.input-link <ril>)
    (<path> ^distance-from-here <dfh>
@@ -68,31 +73,13 @@ sp {recall-energy-path*propose*record-energy-path*indirect
           ^radar-distance > <dfh>
           ^direction <dir>
          -^radar.energy)
+   (<ss> ^operator <op1> +
+         ^operator <op2> +)
+   (<op1> ^name move
+         ^abs-dir <dir>)
+   (<op2> ^name move
+        -^abs-dir <dir>)
 -->
-   (<s> ^operator <op> +)
-   (<op> ^name record-energy-path
-         ^x <x>
-         ^y <y>
-         ^abs-dir <dir>
-         ^distance (+ <dfh> <dist>))
+   (<ss> ^operator <op1> > <op2>)
    (write (crlf) |EPMEM: I think I can find energy if I go | <dfh> | spaces | <dir> | of here.|)
-}
-
-
-#IF the operator has been selected
-#THEN create an energy-path on the top-state
-sp {apply*record-energy-path
-   (state <s> ^operator <op>
-              ^top-state <ts>)
-   (<op> ^name record-energy-path
-         ^x <x>
-         ^y <y>
-         ^abs-dir <abs-dir>
-         ^distance <dist>)
--->
-   (<ts> ^energy-path <ep>)
-   (<ep> ^x <x>
-         ^y <y>
-         ^abs-dir <abs-dir>
-         ^distance <dist>)
 }

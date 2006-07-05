@@ -1,6 +1,7 @@
-#These are for the chunky2 map file.
-
-
+##These are for the chunky2 map file.
+#
+#
+##Position just east or west of the charger
 #sp {breakpoint-1
 #   (state <s> ^superstate nil
 #              ^io.input-link <il>)
@@ -11,7 +12,8 @@
 #   (interrupt)
 #}
 #
-#
+##Position one step away from just west
+##of the charger
 #sp {breakpoint-2
 #   (state <s> ^superstate nil
 #              ^io.input-link <il>)
@@ -21,3 +23,7 @@
 #-->
 #   (interrupt)
 #}
+#
+#
+#
+#

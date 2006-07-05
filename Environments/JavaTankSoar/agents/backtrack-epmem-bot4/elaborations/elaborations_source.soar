@@ -1,6 +1,6 @@
 source _all.soar
-source abs-blocked.soar
 source _breakpoints.soar
+source abs-blocked.soar
 source coord.soar
 source energy-monitor.soar
 source energy-path.soar

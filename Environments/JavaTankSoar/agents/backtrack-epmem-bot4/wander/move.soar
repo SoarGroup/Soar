@@ -6,7 +6,8 @@ echo "\nLoading wander/move.soar "
 
 sp {wander*propose*move
    (state <s> ^name wander
-              ^io.input-link.blocked.forward no)
+              ^io.input-link.blocked.forward no
+              ^quiescence t)
 -->
    (<s> ^operator <o> + =)
    (<o> ^name move

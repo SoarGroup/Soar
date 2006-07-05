@@ -21,12 +21,13 @@ sp {recall-energy-path*compare*give-up
 
 #IF the operator is selected
 #THEN post a give up notice on the superstate
-#NOTE:  :o-support is a hack.  Remove to crash activation.cpp.
 sp {apply*give-up
    (state <s> ^operator <op>
-              ^superstate <ss>)
+              ^superstate <ss>
+              ^quiescence t)
    (<op> ^name give-up)
 -->
    (<ss> ^epmem-gave-up true)
 }
+
 

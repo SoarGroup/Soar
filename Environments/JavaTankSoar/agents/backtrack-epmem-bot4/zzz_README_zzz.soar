@@ -6,4 +6,10 @@
 #07 June 2006
 #This version is designed to follow N-step paths.
 
-
+#26 June 2006
+#This is my attempt to replace the ^energy-path structs with actual chunks.  
+#The result is something that only chunks over direct paths to the energy
+#charger.  Multiple step paths require that I record some semantic knowledge
+#indicating which squares I know how to reach the charger from so I can use
+#those squares as intermediate goals.
+#

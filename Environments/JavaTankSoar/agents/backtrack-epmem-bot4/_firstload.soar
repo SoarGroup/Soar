@@ -5,8 +5,11 @@ multi-attributes open 10
 multi-attributes square 100
 multi-attributes obstacle 12
 
+#CHUNKING IS ACTIVE
+learn --on
+
+
 #epmem perf testing
-learn --off
 clog /temp/foo.log
 #log -new /temp/foo.log <---Soar 8.5.2 syntax
 

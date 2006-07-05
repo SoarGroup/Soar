@@ -4,7 +4,8 @@
 sp {find-energy*propose*move
    (state <s> ^name find-energy
               ^io.input-link <il>
-              ^top-state.blocked.<abs-dir> no)
+              ^top-state.blocked.<abs-dir> no
+             -^epmem-gave-up true)
    (<il> ^x <x>
          ^y <y>)
 -->
@@ -12,6 +13,23 @@ sp {find-energy*propose*move
    (<op> ^name move
          ^abs-dir <abs-dir>)
 }
+
+#If I'm not blocked in a particular direction, 
+#propose moving in that direction
+sp {find-energy*propose*move*no-chunking
+   (state <s> ^name find-energy
+              ^io.input-link <il>
+              ^top-state.blocked.<abs-dir> no
+              ^epmem-gave-up true
+              ^quiescence t)
+   (<il> ^x <x>
+         ^y <y>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name move
+         ^abs-dir <abs-dir>)
+}
+
 
 #IF a path has been found to energy charger
 #THEN prefer moving along that path
