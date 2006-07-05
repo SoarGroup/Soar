@@ -29,7 +29,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	
 	RelativeDirections m_RD = new RelativeDirections();
 	int m_MaxManhattanDistance;
-	private static final int kMaxSmellDistance = 7;
+	static final int kMaxSmellDistance = 7;
 
 	private TankSoarSimulation m_Simulation;
 	private TankSoarCell[][] m_World;
@@ -628,12 +628,6 @@ public class TankSoarWorld extends World implements WorldManager {
 	
 	public int getSoundNear(Tank tank) {
 		if ((m_Tanks == null) || (m_Tanks.length <= 1)) {
-			return 0;
-		}
-		
-		// if the closest tank is greater than 7 away, there is no
-		// possibility of hearing anything
-		if (getStinkyTankNear(tank).getLocation().getManhattanDistanceTo(tank.getLocation()) > kMaxSmellDistance) {
 			return 0;
 		}
 		
