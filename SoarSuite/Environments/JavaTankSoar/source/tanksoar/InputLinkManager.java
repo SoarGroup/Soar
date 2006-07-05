@@ -310,31 +310,6 @@ public class InputLinkManager {
 			}
 		}
 
-		// Sound
-		int sound = m_World.getSoundNear(m_Tank);
-		String soundString;
-		if (sound == m_Tank.forward()) {
-			soundString = kForwardID;
-		} else if (sound == m_Tank.backward()) {
-			soundString = kBackwardID;
-		} else if (sound == m_Tank.left()) {
-			soundString = kLeftID;
-		} else if (sound == m_Tank.right()) {
-			soundString = kRightID;
-		} else {
-			if (sound > 0) {
-				logger.warning(m_Tank.getName() + ": sound reported as more than one direction.");
-			}
-			soundString = kSilentID;
-		}
-		if (m_Reset) {
-			m_SoundWME = CreateStringWME(m_InputLink, kSoundID, soundString);			
-		} else {
-			if (!m_SoundWME.GetValue().equalsIgnoreCase(soundString)) {
-				Update(m_SoundWME, soundString);
-			}
-		}
-		
 		// Smell
 		Tank closestTank = m_World.getStinkyTankNear(m_Tank);
 		String closestTankColor = (closestTank == null) ? kNone : closestTank.getColor();
@@ -377,6 +352,36 @@ public class InputLinkManager {
 			}
 		}
 
+		// Sound
+		// if the closest tank is greater than 7 away, there is no
+		// possibility of hearing anything
+		int sound = 0;
+		if (closestTank.getLocation().getManhattanDistanceTo(m_Tank.getLocation()) > TankSoarWorld.kMaxSmellDistance) {
+			sound = m_World.getSoundNear(m_Tank);
+		}
+		String soundString;
+		if (sound == m_Tank.forward()) {
+			soundString = kForwardID;
+		} else if (sound == m_Tank.backward()) {
+			soundString = kBackwardID;
+		} else if (sound == m_Tank.left()) {
+			soundString = kLeftID;
+		} else if (sound == m_Tank.right()) {
+			soundString = kRightID;
+		} else {
+			if (sound > 0) {
+				logger.warning(m_Tank.getName() + ": sound reported as more than one direction.");
+			}
+			soundString = kSilentID;
+		}
+		if (m_Reset) {
+			m_SoundWME = CreateStringWME(m_InputLink, kSoundID, soundString);			
+		} else {
+			if (!m_SoundWME.GetValue().equalsIgnoreCase(soundString)) {
+				Update(m_SoundWME, soundString);
+			}
+		}
+		
 		// Missiles
 		int missiles = m_Tank.getMissiles();
 		if (m_Reset) {
