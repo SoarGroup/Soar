@@ -27,16 +27,16 @@ public class MapPoint {
 	public MapPoint(MapPoint p, int direction) {
 		this.x = p.x;
 		this.y = p.y;
-		this.travel(direction);
+		x += getXIncrement(direction);
+		y += getYIncrement(direction);
 	}
 	
 	public String toString() {
 		return "(" + x + "," + y + ")";
 	}
 	
-	public void travel(int direction) {
-		x += getXIncrement(direction);
-		y += getYIncrement(direction);
+	public MapPoint travel(int direction) {
+		return new MapPoint(x + getXIncrement(direction), y + getYIncrement(direction));
 	}
 	
 	public boolean equals(MapPoint p) {
@@ -58,7 +58,7 @@ public class MapPoint {
 		return direction;
 	}
 	
-	public static int getXIncrement(int direction) {
+	private static int getXIncrement(int direction) {
 		switch (direction) {
 		case WorldEntity.kWestInt:
 			return -1;
@@ -70,7 +70,7 @@ public class MapPoint {
 		return 0;
 	}
 	
-	public static int getYIncrement(int direction) {
+	private static int getYIncrement(int direction) {
 		switch (direction) {
 		case WorldEntity.kNorthInt:
 			return -1;
