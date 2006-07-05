@@ -551,6 +551,7 @@ void reset_production_firing_counts(agent* thisAgent) {
 void reset_statistics (agent* thisAgent) {
 
   thisAgent->d_cycle_count = 0;
+  thisAgent->decision_phases_count = 0;
   thisAgent->e_cycle_count = 0;
   thisAgent->e_cycles_this_d_cycle = 0;
   thisAgent->chunks_this_d_cycle = 0;
@@ -1189,6 +1190,7 @@ void do_one_top_level_phase (agent* thisAgent)
       if (thisAgent->operand2_mode == FALSE)
       {
          thisAgent->d_cycle_count++;
+         thisAgent->decision_phases_count++;
 
 #ifdef SOAR_WMEM_ACTIVATION
          //IMPORTANT:  This code needs to be inside the if-statement
