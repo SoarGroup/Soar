@@ -29,8 +29,6 @@
 
 #define SOAR_862
 
-//#define PRINT_SOAR
-
 using namespace sml;
 
 bool useSoarStops;
@@ -43,10 +41,10 @@ void printOutput
 {
   std::cout << "SOARINT: " << pMessage << std::endl;
 #ifdef USE_CANVAS
-  pthread_mutex_lock(Sorts::mutex);
+ /* pthread_mutex_lock(Sorts::mutex);
   string s(pMessage);
   Sorts::canvas.setSoarStatus(s);
-  pthread_mutex_unlock(Sorts::mutex);
+  pthread_mutex_unlock(Sorts::mutex);*/
 #endif
 }
 
@@ -239,6 +237,8 @@ int main(int argc, char *argv[]) {
   char* productions = NULL;
   useSoarStops = true;
 
+  bool printSoar = false;
+
   for(int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-port") == 0) {
       port = atoi(argv[i+1]);
@@ -261,6 +261,9 @@ int main(int argc, char *argv[]) {
     }
     else if (strcmp(argv[i], "-id") == 0) {
       id = argv[i+1];
+    }
+    else if (strcmp(argv[i], "-print-soar") == 0) {
+      printSoar = true;
     }
   }
 
@@ -397,7 +400,8 @@ int main(int argc, char *argv[]) {
   Sorts::canvas.init
     ( ortsInterface.getMapXDim(), 
       ortsInterface.getMapYDim(),
-      1.7 );
+      1.2 );
+     // 1.7 );
 #endif
 
 // register for all events
@@ -412,10 +416,10 @@ int main(int argc, char *argv[]) {
   pKernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &sorts);
 #endif
 
-#ifdef PRINT_SOAR
-  pAgent->RegisterForPrintEvent(smlEVENT_PRINT, printOutput, &sorts);  
-#endif
-
+  if (printSoar) {
+    pAgent->RegisterForPrintEvent(smlEVENT_PRINT, printOutput, &sorts);  
+  }
+    
   // start Soar in a different thread
   pthread_attr_t soarThreadAttribs;
   pthread_attr_init(&soarThreadAttribs);

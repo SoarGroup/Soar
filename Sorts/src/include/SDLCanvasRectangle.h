@@ -68,8 +68,16 @@ public:
     SDLCanvasShape::draw();
   }
 
-  void setRectangleColor(Uint8 r, Uint8 g, Uint8 b) {
+  void setShapeColor(Uint8 r, Uint8 g, Uint8 b) {
     color = SDLColor(r, g, b);
+  }
+  
+  void setShapeColor(const SDLColor& c) {
+    color = SDLColor(c.r, c.g, c.b);
+  }
+
+  SDLColor getShapeColor() {
+    return color;
   }
 
   virtual void moveTo(double x, double y) {

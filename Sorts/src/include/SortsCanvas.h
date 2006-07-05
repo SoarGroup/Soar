@@ -12,7 +12,7 @@ using namespace std;
 
 struct CanvasObjInfo {
   SDLCanvasCompound*     compound;
-  SDLCanvasCircle*       mainCircle;
+  SDLCanvasShape*       mainShape;
   SDLCanvasTrackedShape* tracker;
   SDLCanvasStableLine*   trackingLine;
   SDLColor               origColor;
@@ -20,7 +20,7 @@ struct CanvasObjInfo {
 
   CanvasObjInfo() : origColor(255, 255, 255) {
     compound = NULL;
-    mainCircle = NULL;
+    mainShape = NULL;
     tracker = NULL;
     trackingLine = NULL;
     flashColorCycles = 0;

@@ -745,9 +745,8 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
     i++;
   }
   dbg << "TOTALO: " << totalObjs << "\n";;
-  //assert(totalObjs == (115 - Sorts::OrtsIO->getDeadCount()));
-  if (totalObjs != (115- Sorts::OrtsIO->getDeadCount())) {
-    dbg << "ERROR: if this is game 2, we expect " << 115- Sorts::OrtsIO->getDeadCount() << " objects.\n";
+  if (totalObjs != (110- Sorts::OrtsIO->getDeadCount())) {
+    dbg << "ERROR: if this is game 2, we expect " << 110- Sorts::OrtsIO->getDeadCount() << " objects.\n";
   }
   if (rebuildFeatureMaps) {
     // do this after view window changes-

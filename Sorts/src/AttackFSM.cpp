@@ -148,6 +148,9 @@ int AttackFSM::update() {
 }
 
 void AttackFSM::attack(SoarGameObject* t) {
+#ifdef USE_CANVAS
+  Sorts::canvas.flashColor(sgob, 255, 255, 0, 1); // yellow
+#endif
   if (t != NULL) {
     attackParams[0] = target->getID();
     assert (Sorts::OrtsIO->isAlive(attackParams[0]));
@@ -183,9 +186,17 @@ int AttackFSM::move(int x, int y, bool forcePathfind) {
   int status = moveFSM->update();
   switch (status) {
     case FSM_UNREACHABLE:
+      msg << "destination is unreachable!\n";
+      return -1;
     case FSM_STUCK:
       msg << "movefsm is stuck!" << endl;
-      return 1;
+      msg << "tell attackMan dest is OK, but start panic.\n";
+      dest.set(0, x);
+      dest.set(1, y);
+      moving = true;
+      firstMove = true;
+      panic = true;
+      return 0;
     default:
       dest.set(0, x);
       dest.set(1, y);

@@ -15,7 +15,7 @@
 #include "PerceptualGroup.h"
 
 #define CLASS_TOKEN "SGO"
-#define DEBUG_OUTPUT false
+#define DEBUG_OUTPUT false 
 #include "OutputDefinitions.h"
 
 #define PANIC_FRAMES 30
@@ -23,7 +23,6 @@
 using namespace std;
 
 void SoarGameObject::identifyBehaviors() {
-  name = gob->bp_name();
   FSM* idleBehavior = new IdleFSM(gob);
   registerBehavior(idleBehavior);
   if (friendly) {
@@ -81,6 +80,21 @@ SoarGameObject::SoarGameObject(
 : gob(g), 
   friendly(_friendly), world(_world), id(_id)
 {
+  name = gob->bp_name();
+  
+  // this will error if sgos are created for start_loc objects
+  // but we throw those out before here
+  mobile = (gob->get_int("is_mobile") != 0);
+  
+  rectangle = (*gob->sod.shape == SHAPE_RECTANGLE);
+  if (rectangle) {
+    width = *gob->sod.x2 - *gob->sod.x1;
+    height = *gob->sod.y2 - *gob->sod.y1;
+  }
+  else {
+    width = height = 2*(*gob->sod.radius);
+  }
+
   status = OBJ_IDLE;
   frameOfLastUpdate = -1;
   lastLocation = getLocation();
@@ -206,6 +220,9 @@ void SoarGameObject::update()
     }
     Sorts::OrtsIO->updateNextCycle(this);
   }
+  else if (defaultBehaviors.size() > 0) {
+    Sorts::OrtsIO->updateNextCycle(this);
+  }
   else {
     //status = OBJ_IDLE;
     // don't set status to idle.. we need the last FSM status to stick
@@ -249,6 +266,11 @@ void SoarGameObject::update()
     if (weapon->get_int("shooting") == 0) {
       lastAttackedId = -1;
     }
+    else {
+#ifdef USE_CANVAS
+        Sorts::canvas.flashColor(this, 153, 50, 205, 1); // purple
+#endif
+    }
   }
 }
 
@@ -269,7 +291,7 @@ int SoarGameObject::getStatus()
 }
 
 Rectangle SoarGameObject::getBoundingBox() {
-  if (*gob->sod.shape == SHAPE_RECTANGLE) {
+  if (rectangle) {
     Rectangle r(*gob->sod.x1, *gob->sod.x2, *gob->sod.y1, *gob->sod.y2);
     return r;
   }

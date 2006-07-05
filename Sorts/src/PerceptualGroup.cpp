@@ -116,7 +116,7 @@ bool PerceptualGroup::removeUnit(SoarGameObject* unit) {
 }
 
 void PerceptualGroup::updateBoundingBox() {
-  dbg << "updating bbox for " << members.size() << " units.\n";
+  //dbg << "updating bbox for " << members.size() << " units.\n";
   if (members.size() == 0) {
     return;
   }

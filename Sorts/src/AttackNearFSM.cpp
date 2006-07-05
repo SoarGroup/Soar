@@ -23,6 +23,7 @@ AttackNearFSM::AttackNearFSM(SoarGameObject* _sgob)
 }
 
 int AttackNearFSM::update() {
+  msg << "updating.\n";
   if (weapon->get_int("shooting") == 1) {
     return FSM_RUNNING;
   }
@@ -38,6 +39,7 @@ int AttackNearFSM::update() {
   }
   else {
     count++;
+    msg << "waiting..\n";
   }
   
   list<GameObj*>::iterator i = nearby.begin();
@@ -47,6 +49,9 @@ int AttackNearFSM::update() {
         *(*i)->sod.owner != Sorts::OrtsIO->getWorldId())
     {
       if (canHit(gob, *i)) {
+#ifdef USE_CANVAS
+        Sorts::canvas.flashColor(sgob, 255, 128, 0, 1); // orange
+#endif
         attackParams[0] = Sorts::OrtsIO->getGobId(*i);
         msg << "opportunistic attack!\n";
         weapon->set_action("attack", attackParams);

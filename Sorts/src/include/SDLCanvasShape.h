@@ -95,6 +95,21 @@ public:
   double          getX()      const { return wCenter.x; }
   double          getY()      const { return wCenter.y; }
 
+
+  // these must be overridden by the derived class if they are called!
+  virtual void setShapeColor(Uint8 r, Uint8 g, Uint8 b) {
+    assert(false);
+  }
+  virtual void setShapeColor(const SDLColor& c) {
+    cout << "ERROR: can't set a color for this!:" << this << "\n";
+    assert(false);
+  }
+  virtual SDLColor getShapeColor() {
+    assert(false);
+    SDLColor c(0,0,0);
+    return c;
+  }
+
 protected:
 
   SDLCanvasPoint getCanvasCenter() const { 

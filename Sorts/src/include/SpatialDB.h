@@ -89,11 +89,12 @@ private:
 //  map<TerrainContour*, list<int> > contourLocs;
 //  vector<list<TerrainContour*> > contours;
 
+
   int getCellNumber(int x, int y);
   int cell2row(int);
   int cell2column(int);
   int rowCol2cell(int, int);
-  int tile_points;
+  int sdbTilePoints;
   int width;
   int height;
 

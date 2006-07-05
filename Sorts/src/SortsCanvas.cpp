@@ -1,10 +1,10 @@
 #include "SortsCanvas.h"
 #include "Sorts.h"
 
-#define REDRAW_PERIOD 1
+#define REDRAW_PERIOD 0
 
 #define CLASS_TOKEN "CANVAS"
-#define DEBUG_OUTPUT true 
+#define DEBUG_OUTPUT false 
 #include "OutputDefinitionsUnique.h"
 
 SortsCanvas::SortsCanvas() { 
@@ -15,23 +15,23 @@ void SortsCanvas::init(double ww, double wh, double scale) {
   int status = canvas.init(ww, wh, scale);
   assert(status == 0);
   statusObj.compound = canvas.makeCompound(10,10);
-  statusObj.mainCircle = canvas.makeCircle(10,5,1);
-  statusObj.mainCircle->setLabel("initted");
-  statusObj.mainCircle->setCircleColor(198,226,255);
-  statusObj.origColor = statusObj.mainCircle->getCircleColor();
-  statusObj.compound->addShape(statusObj.mainCircle);
+  statusObj.mainShape = canvas.makeCircle(10,5,1);
+  statusObj.mainShape->setLabel("initted");
+  statusObj.mainShape->setShapeColor(198,226,255);
+  statusObj.origColor = statusObj.mainShape->getShapeColor();
+  statusObj.compound->addShape(statusObj.mainShape);
   soarStatObj.compound = canvas.makeCompound(10,10);
-  soarStatObj.mainCircle = canvas.makeCircle(10,25,1);
-  soarStatObj.mainCircle->setLabel("");
-  soarStatObj.mainCircle->setCircleColor(198,226,255);
-  soarStatObj.origColor = soarStatObj.mainCircle->getCircleColor();
-  soarStatObj.compound->addShape(soarStatObj.mainCircle);
+  soarStatObj.mainShape = canvas.makeCircle(10,25,1);
+  soarStatObj.mainShape->setLabel("");
+  soarStatObj.mainShape->setShapeColor(198,226,255);
+  soarStatObj.origColor = soarStatObj.mainShape->getShapeColor();
+  soarStatObj.compound->addShape(soarStatObj.mainShape);
   commandStatObj.compound = canvas.makeCompound(10,10);
-  commandStatObj.mainCircle = canvas.makeCircle(10,45,1);
-  commandStatObj.mainCircle->setLabel("");
-  commandStatObj.mainCircle->setCircleColor(198,226,255);
-  commandStatObj.origColor = commandStatObj.mainCircle->getCircleColor();
-  commandStatObj.compound->addShape(commandStatObj.mainCircle);
+  commandStatObj.mainShape = canvas.makeCircle(10,45,1);
+  commandStatObj.mainShape->setLabel("");
+  commandStatObj.mainShape->setShapeColor(198,226,255);
+  commandStatObj.origColor = commandStatObj.mainShape->getShapeColor();
+  commandStatObj.compound->addShape(commandStatObj.mainShape);
 }
 
 bool SortsCanvas::initted() {
@@ -47,20 +47,27 @@ void SortsCanvas::registerSGO(SoarGameObject* sgo) {
   assert(canvasObjs.find(sgo) == canvasObjs.end());
   CanvasObjInfo newObj;
   newObj.compound = canvas.makeCompound(sgo->getX(), sgo->getY());
-  newObj.mainCircle = canvas.makeCircle(sgo->getX(), sgo->getY(), sgo->getRadius());
-  if (sgo->isWorld()) {
-    newObj.mainCircle->setCircleColor(0,0,255);
-  }
-  else if (sgo->isFriendly()) {
-    newObj.mainCircle->setCircleColor(0,255,255);
+  if (sgo->isRectangle()) {
+    newObj.mainShape = canvas.makeRectangle(sgo->getX(), sgo->getY(), 
+                         sgo->getWidth(), sgo->getHeight(), 0);
   }
   else {
-    newObj.mainCircle->setCircleColor(255,0,255);
+    newObj.mainShape = canvas.makeCircle(sgo->getX(), sgo->getY(), 
+                                          sgo->getRadius());
+  }
+  if (sgo->isWorld()) {
+    newObj.mainShape->setShapeColor(0,0,255);
+  }
+  else if (sgo->isFriendly()) {
+    newObj.mainShape->setShapeColor(0,255,255);
+  }
+  else {
+    newObj.mainShape->setShapeColor(255,0,255);
   }
 
-//  newObj.mainCircle->setLabel(sgo->getName().c_str());
-  newObj.origColor = newObj.mainCircle->getCircleColor();
-  newObj.compound->addShape(newObj.mainCircle);
+//  newObj.mainShape->setLabel(sgo->getName().c_str());
+  newObj.origColor = newObj.mainShape->getShapeColor();
+  newObj.compound->addShape(newObj.mainShape);
   canvasObjs[sgo] = newObj;
 }
 
@@ -104,10 +111,10 @@ void SortsCanvas::registerGroup(PerceptualGroup* group) {
   newObj.mainRectangle = canvas.makeRectangle(x, y, width, height, 0);
   newObj.mainRectangle->setLabel(label);
   if (group->isFriendly()) {
-    newObj.mainRectangle->setRectangleColor(0,255,0);
+    newObj.mainRectangle->setShapeColor(0,255,0);
   }
   else {
-    newObj.mainRectangle->setRectangleColor(255,0,0);
+    newObj.mainRectangle->setShapeColor(255,0,0);
   }
   // TODO: case for world objs
   newObj.compound->addShape(newObj.mainRectangle);
@@ -136,14 +143,14 @@ void SortsCanvas::resetSGO(SoarGameObject* sgo) {
   assert(canvasObjs.find(sgo) != canvasObjs.end());
   CanvasObjInfo& obj = canvasObjs[sgo];
   stopTracking(obj);
-  obj.origColor.set(255,255,255);
+  //obj.origColor.set(255,255,255);
 }
   
 
 
 void SortsCanvas::setColor(SoarGameObject* sgo, Uint8 r, Uint8 g, Uint8 b) {
   assert(canvasObjs.find(sgo) != canvasObjs.end());
-  dynamic_cast<SDLCanvasCircle*>(canvasObjs[sgo].mainCircle)->setCircleColor(r, g, b);
+  canvasObjs[sgo].mainShape->setShapeColor(r, g, b);
   canvasObjs[sgo].origColor.set(r, g, b);
 }
 
@@ -151,7 +158,7 @@ void SortsCanvas::flashColor(SoarGameObject* sgo, Uint8 r, Uint8 g, Uint8 b, int
   assert(canvasObjs.find(sgo) != canvasObjs.end());
   CanvasObjInfo& canvasObj = canvasObjs.find(sgo)->second;
   canvasObj.flashColorCycles = cycles;
-  canvasObj.mainCircle->setCircleColor(r, g, b);
+  canvasObj.mainShape->setShapeColor(r, g, b);
 }
 
 void SortsCanvas::update() {
@@ -167,17 +174,24 @@ void SortsCanvas::update() {
       ++i)
   {
     SoarGameObject* sgo = i->first;
-    CanvasObjInfo& obj = i->second;
-    obj.compound->moveTo(sgo->getX(), sgo->getY());
-    if (obj.flashColorCycles > 0) {
-      --obj.flashColorCycles;
-      if (obj.flashColorCycles == 0) {
-        obj.mainCircle->setCircleColor(obj.origColor);
+    // don't bother updating immobile things
+    // if they die, unregisterSGO will get it
+
+    // isMobile is set at constructor time, so watch out if things that are
+    // immobile when first seen later become mobile
+    if (sgo->isMobile()) {
+      CanvasObjInfo& obj = i->second;
+      obj.compound->moveTo(sgo->getX(), sgo->getY());
+      dbg << "updating sgo " << sgo << ", type " << sgo->getName() 
+          << " owned by " << sgo->getOwner() 
+          << " located at " << sgo->getLocation() << endl;
+      if (obj.flashColorCycles > 0) {
+        --obj.flashColorCycles;
+        if (obj.flashColorCycles == 0) {
+          obj.mainShape->setShapeColor(obj.origColor);
+        }
       }
     }
-    dbg << "updating sgo " << sgo << ", type " << sgo->getName() 
-        << " owned by " << sgo->getOwner() 
-        << " located at " << sgo->getLocation() << endl;
   }
 
   canvas.redraw();
@@ -219,18 +233,18 @@ void SortsCanvas::drawLine(double x1, double y1, double x2, double y2) {
 }
 
 void SortsCanvas::setStatus(string status) {
-  statusObj.mainCircle->setLabel(status);
+  statusObj.mainShape->setLabel(status);
   canvas.redraw();
 }
 void SortsCanvas::clearStatus() {
-  statusObj.mainCircle->setLabel("");
+  statusObj.mainShape->setLabel("");
   canvas.redraw();
 }
 void SortsCanvas::setSoarStatus(string status) {
-  soarStatObj.mainCircle->setLabel(status);
+  soarStatObj.mainShape->setLabel(status);
   canvas.redraw();
 }
 void SortsCanvas::setCommandStatus(string status) {
-  commandStatObj.mainCircle->setLabel(status);
+  commandStatObj.mainShape->setLabel(status);
   canvas.redraw();
 }

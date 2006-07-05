@@ -57,11 +57,19 @@ class SoarGameObject{
   int  getLastAttacked()       { return lastAttackedId; }
   string getName() { return name; }
 
+  bool isMobile() { return mobile; }
+  bool isRectangle() { return rectangle; }
+  int getWidth() { return width; }
+  int getHeight() { return height; }
 private:
   GameObj* gob;
 
   sint4 sat_loc;
 
+  bool mobile;
+  bool rectangle;
+  int width, height;
+  
 	map<ObjectActionType, FSM *> behaviors;
   FSM* assignedBehavior;
   list<FSM*> defaultBehaviors;

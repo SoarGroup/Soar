@@ -1,5 +1,9 @@
 #include "AttackTargetInfo.h"
 
+#define CLASS_TOKEN "ATKTAR"
+#define DEBUG_OUTPUT false 
+#include "OutputDefinitions.h"
+
 AttackTargetInfo::AttackTargetInfo(SoarGameObject* _target)
 : target(_target)
 { 
@@ -31,7 +35,10 @@ double AttackTargetInfo::avgAttackerDistance() {
       i != attackers.end();
       ++i)
   {
-    assert(Sorts::OrtsIO->isAlive((*i)->getSGO()->getID()));
+    if (not Sorts::OrtsIO->isAlive((*i)->getSGO()->getID())) {
+      msg << "ERROR: stale attacker! SGO: " << (*i)->getSGO() << endl;
+      assert(false);
+    }
     GameObj* aGob = (*i)->getGob();
     avgDist += squaredDistance(gobX(aGob), gobY(aGob), gobX(gob), gobY(gob));
   }

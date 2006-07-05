@@ -371,11 +371,6 @@ void AttackManager::registerFSM(AttackFSM* fsm) {
   assert(numNewAttackers > 0);
   numNewAttackers--;
   team.push_back(fsm);
-#ifdef USE_CANVAS_ATTACK_MANAGER
-  //Sorts::canvas.registerGob(fsm->getGob());
-  Uint8 b = (Uint8) (((int) this) % 156) + 100;
-  Sorts::canvas.setColor(fsm->getSGO(), 0, 0, b);
-#endif
 }
 
 void AttackManager::unregisterFSM(AttackFSM* fsm) {
@@ -541,7 +536,7 @@ int AttackManager::direct(AttackFSM* fsm) {
   msg << "NUMTARGS: " << targets.size() << endl;
   unsigned long st = gettime();
 #ifdef USE_CANVAS_ATTACK_MANAGER
-  Sorts::canvas.flashColor(fsm->getSGO(), 0, 255, 0, 1);
+  //Sorts::canvas.flashColor(fsm->getSGO(), 255, 255, 0, 1);
  // Sorts::canvas.update();
 #endif
 

@@ -25,9 +25,9 @@ SpatialDB::SpatialDB() {
 }
 
 void SpatialDB::init() {
-  tile_points = 50;
-  width = intDivC(Sorts::OrtsIO->getMapXDim(), tile_points);
-  height = intDivC(Sorts::OrtsIO->getMapYDim(), tile_points);
+  sdbTilePoints = 50;
+  width = intDivC(Sorts::OrtsIO->getMapXDim(), sdbTilePoints);
+  height = intDivC(Sorts::OrtsIO->getMapYDim(), sdbTilePoints);
 
   int mapsize = static_cast<int>(width*height);
   // Tilepoints define the granularity of the grid... 
@@ -95,7 +95,7 @@ void SpatialDB::addImaginaryObstacle(coordinate c) {
 }
 
 int SpatialDB::getCellNumber(int x, int y) {
-  return ((int)(y / tile_points)) * width + (int)(x / tile_points);
+  return ((int)(y / sdbTilePoints)) * width + (int)(x / sdbTilePoints);
 }
 
 int SpatialDB::cell2row(int cellNum) {
@@ -144,14 +144,14 @@ void SpatialDB::calcBinning
   // to be bigger than the max expected radius
   int cr; // collision radius
   if (erf == NULL) {
-    cr = r + intDivC(tile_points, 2); 
-    // tile_points being the upperbound of the radii of other objects
+    cr = r + intDivC(sdbTilePoints, 2); 
+    // sdbTilePoints being the upperbound of the radii of other objects
   }
   else {
     cr = r + (int) erf->maxRadius();
   }
-  int binSize = intDivC(cr, tile_points);
-  int binTilePoints = binSize * tile_points;
+  int binSize = intDivC(cr, sdbTilePoints);
+  int binTilePoints = binSize * sdbTilePoints;
   int binWidth = intDivC(Sorts::OrtsIO->getMapXDim(), binTilePoints);
   assert (binWidth == intDivC(width, binSize));
 
@@ -368,7 +368,7 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
     r = radius;
   }
 
-  bigR = tile_points;
+  bigR = sdbTilePoints;
   sint4 x = c.x;
   sint4 y = c.y;
 
@@ -550,18 +550,18 @@ void SpatialDB::addTerrainContour(TerrainContour* contour) {
   contourLocs.insert(pair<TerrainContour*, list<int> >(contour, list<int>()));
 
   Rectangle bbox = contour->getBoundingBox();
-  int cellcmin = bbox.xmin / tile_points;
-  int cellcmax = bbox.xmax / tile_points;
-  int cellrmin = bbox.ymin / tile_points;
-  int cellrmax = bbox.ymax / tile_points;
+  int cellcmin = bbox.xmin / sdbTilePoints;
+  int cellcmax = bbox.xmax / sdbTilePoints;
+  int cellrmin = bbox.ymin / sdbTilePoints;
+  int cellrmax = bbox.ymax / sdbTilePoints;
   
   for(int r = cellrmin; r <= cellrmax; r++) {
     for(int c = cellcmin; c <= cellcmax; c++) {
       int cell = rowCol2cell(r, c);
-      int xmin = c * tile_points;
-      int xmax = (c + 1) * tile_points;
-      int ymin = r * tile_points;
-      int ymax = (r + 1) * tile_points;
+      int xmin = c * sdbTilePoints;
+      int xmax = (c + 1) * sdbTilePoints;
+      int ymin = r * sdbTilePoints;
+      int ymax = (r + 1) * sdbTilePoints;
       if (contour->intersectsRectangle(xmin, ymin, xmax, ymax)) {
         contourLocs[contour].push_back(cell);
         contours[cell].push_back(contour);
@@ -592,10 +592,10 @@ void SpatialDB::updateTerrainContour(TerrainContour* contour) {
   assert(contourLocs.find(contour) != contourLocs.end());
  
   Rectangle bbox = contour->getBoundingBox();
-  int cellcmin = bbox.xmin / tile_points;
-  int cellcmax = bbox.xmax / tile_points;
-  int cellrmin = bbox.ymin / tile_points;
-  int cellrmax = bbox.ymax / tile_points;
+  int cellcmin = bbox.xmin / sdbTilePoints;
+  int cellcmax = bbox.xmax / sdbTilePoints;
+  int cellrmin = bbox.ymin / sdbTilePoints;
+  int cellrmax = bbox.ymax / sdbTilePoints;
   
   for(int c = cellcmin; c <= cellcmax; c++) {
     for(int r = cellrmin; r <= cellrmax; r++) {
@@ -603,10 +603,10 @@ void SpatialDB::updateTerrainContour(TerrainContour* contour) {
       if (find(contours[cell].begin(), contours[cell].end(), contour) ==
           contours[cell].end()) 
       {
-        int xmin = c * tile_points;
-        int xmax = (c + 1) * tile_points;
-        int ymin = r * tile_points;
-        int ymax = (r + 1) * tile_points;
+        int xmin = c * sdbTilePoints;
+        int xmax = (c + 1) * sdbTilePoints;
+        int ymin = r * sdbTilePoints;
+        int ymax = (r + 1) * sdbTilePoints;
         if (contour->intersectsRectangle(xmin, ymin, xmax, ymax)) {
           contourLocs[contour].push_back(cell);
           contours[cell].push_back(contour);
@@ -649,10 +649,10 @@ bool SpatialDB::hasTerrainCollision(Rectangle& r) {
 *//*
 bool SpatialDB::hasTerrainCollision(int cx, int cy, int r) {
 
-  int minCol = (cx - r) / tile_points;
-  int maxCol = (cx + r) / tile_points;
-  int minRow = (cy - r) / tile_points;
-  int maxRow = (cy + r) / tile_points;
+  int minCol = (cx - r) / sdbTilePoints;
+  int maxCol = (cx + r) / sdbTilePoints;
+  int minRow = (cy - r) / sdbTilePoints;
+  int maxRow = (cy + r) / sdbTilePoints;
 
   assert (minCol <= maxCol && minRow <= maxRow);
 
@@ -716,10 +716,10 @@ void SpatialDB::getTerrainCollisions
 {
   collisions.clear();
 
-  int minCol = (cx - r) / tile_points;
-  int maxCol = (cx + r) / tile_points;
-  int minRow = (cy - r) / tile_points;
-  int maxRow = (cy + r) / tile_points;
+  int minCol = (cx - r) / sdbTilePoints;
+  int maxCol = (cx + r) / sdbTilePoints;
+  int minRow = (cy - r) / sdbTilePoints;
+  int maxRow = (cy + r) / sdbTilePoints;
 
   assert (minCol <= maxCol && minRow <= maxRow);
 

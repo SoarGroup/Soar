@@ -168,15 +168,16 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   bool world    = (gsm->get_game().get_player_num() == *gameObj->sod.owner);
   int id = gsm->get_game().get_cplayer_info().get_id(gameObj);
   
-  SoarGameObject* newObj = new SoarGameObject(gameObj,
-                                              friendly, world, id);
- 
   string name = gameObj->bp_name();
 
   if (name == "start_loc") {
     msg << "ignoring start_loc GameObj.\n";
     return;
   }
+  
+  SoarGameObject* newObj = new SoarGameObject(gameObj,
+                                              friendly, world, id);
+ 
 
 #ifdef USE_CANVAS
   Sorts::canvas.registerSGO(newObj);
@@ -224,6 +225,8 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   if (liveIDs.find(id) != liveIDs.end()) {
     msg << "ERROR: appeared object is there already: " << gameObj << endl;
   }
+
+  newObj->update();
   assert(liveIDs.find(id) == liveIDs.end());
   liveIDs.insert(id);
 }
