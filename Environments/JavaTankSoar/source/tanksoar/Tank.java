@@ -580,20 +580,22 @@ public class Tank  extends WorldEntity {
 	}
 	
 	public void hitBy(Integer[] missileIDs) {
+		Tank[] owners = new Tank[missileIDs.length];
 		
 		String output = getName() + ": hit by missile(s): ";
 		for (int i = 0; i < missileIDs.length; ++i) {
-			output += missileIDs[i].toString() + " ";
+			owners[i] = m_World.getMissileByID(missileIDs[i].intValue()).getOwner();
+			output += missileIDs[i].toString() + " (" + owners[i].getName() + ") ";
 		}
+		
 		if (m_ShieldStatus) {
 			output += "(shields up)";
 			adjustEnergy(kMissileEnergyDamage * -1 * missileIDs.length);
 		} else {
 			adjustHealth(kMissileHealthDamage * -1 * missileIDs.length);
-			for (int i = 0; i < missileIDs.length; ++i) {
-				Tank owner = m_World.getMissileByID(missileIDs[i].intValue()).getOwner();
-				assert !owner.equals(this);
-				owner.adjustPoints(kMissileHitAward);
+			for (int i = 0; i < owners.length; ++i) {
+				assert !owners[i].equals(this);
+				owners[i].adjustPoints(kMissileHitAward);
 				adjustPoints(kMissileHitPenalty);
 			}
 		}
@@ -607,10 +609,18 @@ public class Tank  extends WorldEntity {
 		if (m_Health <= 0) {
 			logger.info(getName() + ": fragged");
 			adjustPoints(kKillPenalty);
-			for (int i = 0; i < missileIDs.length; ++i) {
-				Tank owner = m_World.getMissileByID(missileIDs[i].intValue()).getOwner();
-				assert !owner.equals(this);
-				owner.adjustPoints(kKillAward);
+			for (int i = 0; i < owners.length; ++i) {
+				assert !owners[i].equals(this);
+				boolean duplicate = false;
+				for (int j = i - 1; j >= 0; --j) {
+					// remove duplicates
+					if (owners[i].equals(owners[j])) {
+						duplicate = true;
+					}
+				}
+				if (!duplicate) {
+					owners[i].adjustPoints(kKillAward);
+				}
 			}
 		}
 	}
