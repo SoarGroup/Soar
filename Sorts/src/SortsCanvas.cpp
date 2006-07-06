@@ -1,7 +1,7 @@
 #include "SortsCanvas.h"
 #include "Sorts.h"
 
-#define REDRAW_PERIOD 0
+#define REDRAW_PERIOD 1
 
 #define CLASS_TOKEN "CANVAS"
 #define DEBUG_OUTPUT false 
@@ -66,6 +66,12 @@ void SortsCanvas::registerSGO(SoarGameObject* sgo) {
   }
 
 //  newObj.mainShape->setLabel(sgo->getName().c_str());
+  //stringstream ss;
+  //PerceptualGroup* p = sgo->getPerceptualGroup();
+  //if (p != NULL) {
+  //  ss << sgo->getPerceptualGroup()->getDistToFocus();
+  //}
+  //newObj.mainShape->setLabel(ss.str());
   newObj.origColor = newObj.mainShape->getShapeColor();
   newObj.compound->addShape(newObj.mainShape);
   canvasObjs[sgo] = newObj;

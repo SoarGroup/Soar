@@ -61,6 +61,8 @@ class SoarGameObject{
   bool isRectangle() { return rectangle; }
   int getWidth() { return width; }
   int getHeight() { return height; }
+
+  void setLastAttackOpportunistic(bool b) { lastAttackOpportunistic = b; }
 private:
   GameObj* gob;
 
@@ -92,6 +94,7 @@ private:
   int motionlessFrames;
 
   int lastAttackedId;
+  bool lastAttackOpportunistic;
 };
 
 #define OBJ_IDLE 0

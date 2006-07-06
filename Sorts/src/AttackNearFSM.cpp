@@ -50,12 +50,13 @@ int AttackNearFSM::update() {
     {
       if (canHit(gob, *i)) {
 #ifdef USE_CANVAS
-        Sorts::canvas.flashColor(sgob, 255, 128, 0, 1); // orange
+        //Sorts::canvas.flashColor(sgob, 255, 128, 0, 1); // orange
 #endif
         attackParams[0] = Sorts::OrtsIO->getGobId(*i);
         msg << "opportunistic attack!\n";
         weapon->set_action("attack", attackParams);
         sgob->setLastAttacked(attackParams[0]);
+        sgob->setLastAttackOpportunistic(true);
         break;
       }
       ++i;

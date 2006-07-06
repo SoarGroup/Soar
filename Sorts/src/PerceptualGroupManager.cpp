@@ -624,8 +624,8 @@ void PerceptualGroupManager::generateGroupData() {
         removeGroup(*groupIter);
       }
       else {
-        (*groupIter)->calcDistToFocus(visionParams.focusX, visionParams.focusY);
         (*groupIter)->generateData();
+        (*groupIter)->calcDistToFocus(visionParams.focusX, visionParams.focusY);
         // groups that have stale members need to be removed and reinserted
         // this is because the set is maintained in order of distance from
         // the focus center, and a stale-membered group could have had this 

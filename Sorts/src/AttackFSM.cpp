@@ -149,13 +149,14 @@ int AttackFSM::update() {
 
 void AttackFSM::attack(SoarGameObject* t) {
 #ifdef USE_CANVAS
-  Sorts::canvas.flashColor(sgob, 255, 255, 0, 1); // yellow
+  //Sorts::canvas.flashColor(sgob, 255, 255, 0, 1); // yellow
 #endif
   if (t != NULL) {
     attackParams[0] = target->getID();
     assert (Sorts::OrtsIO->isAlive(attackParams[0]));
     weapon->set_action("attack", attackParams);
     sgob->setLastAttacked(attackParams[0]);
+    sgob->setLastAttackOpportunistic(false);
   }
 }
 

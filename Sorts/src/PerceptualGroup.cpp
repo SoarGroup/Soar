@@ -43,12 +43,13 @@ PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
 
   fmSector = -1;
   soarID = -1;
+  GameObj* gob = unit->getGob();
 
   minerals = (typeName == "mineral");
   friendlyWorker = (typeName == "worker");
-  airUnits = (*(unit->getGob()->sod.zcat) == 1);
-  landUnits = (*(unit->getGob()->sod.zcat) == 3);
-  bbox.collapse(*unit->getGob()->sod.x, *unit->getGob()->sod.y);
+  airUnits = (*(gob->sod.zcat) == 1);
+  landUnits = (*(gob->sod.zcat) == 3);
+  bbox.collapse(*gob->sod.x, *gob->sod.y);
 
   sticky = false;
   currentCommand = "none";
@@ -59,8 +60,8 @@ PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
     canMine = false;
   }
 
-  centerX = 0;
-  centerY = 0;
+  centerX = *gob->sod.x;
+  centerY = *gob->sod.y;
 
   lastQueryResult.x = -1;
   lastQueryResult.y = -1;
@@ -843,7 +844,7 @@ int PerceptualGroup::getFMFeatureStrength() {
 }
 
 void PerceptualGroup::calcDistToFocus(int focusX, int focusY) {
-  distToFocus = squaredDistance(focusX, focusY, centerX, centerY);
+  distToFocus = sqrt(squaredDistance(focusX, focusY, centerX, centerY));
 }
 
 double PerceptualGroup::getDistToFocus() {

@@ -101,6 +101,8 @@ SoarGameObject::SoarGameObject(
   friendlyWorker = false; // determined in identifyBehaviors
   motionlessFrames = 0;
   
+  lastAttackOpportunistic = false;
+
   identifyBehaviors();
   pGroup = NULL;
   lastAttackedId = -1;
@@ -221,6 +223,7 @@ void SoarGameObject::update()
     Sorts::OrtsIO->updateNextCycle(this);
   }
   else if (defaultBehaviors.size() > 0) {
+    // always update objs with default behaviors
     Sorts::OrtsIO->updateNextCycle(this);
   }
   else {
@@ -263,12 +266,18 @@ void SoarGameObject::update()
     ScriptObj* weapon = gob->component("weapon");
     assert(weapon != NULL); 
     // lastAttackedId should never be set if the object has no weapon
-    if (weapon->get_int("shooting") == 0) {
+    if (not gob->is_pending_action() and weapon->get_int("shooting") == 0) {
       lastAttackedId = -1;
     }
-    else {
+    else if (weapon->get_int("shooting") != 0) {
 #ifdef USE_CANVAS
-        Sorts::canvas.flashColor(this, 153, 50, 205, 1); // purple
+      // flash different colors for opportunistic vs. assigned attacks
+      if (not lastAttackOpportunistic) {
+        Sorts::canvas.flashColor(this, 153, 50, 205, 1); // purple 
+      }
+      else {
+        Sorts::canvas.flashColor(this, 255, 128, 0, 1); // orange
+      }
 #endif
     }
   }

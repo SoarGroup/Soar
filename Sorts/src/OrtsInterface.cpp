@@ -179,10 +179,6 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
                                               friendly, world, id);
  
 
-#ifdef USE_CANVAS
-  Sorts::canvas.registerSGO(newObj);
-#endif
-  
 #ifdef NO_WORLD_GROUPS
   if (not world) {
     Sorts::pGroupManager->makeNewGroup(newObj);
@@ -218,6 +214,11 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
       reachabilityObject = gameObj;
     }
   }
+
+#ifdef USE_CANVAS
+  Sorts::canvas.registerSGO(newObj);
+#endif
+  
   
   msg << gameObj << " added, id " << id << endl;
   objectMap[gameObj] = newObj;
