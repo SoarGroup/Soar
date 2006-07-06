@@ -1063,15 +1063,9 @@ void CommandLineInterface::HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const c
 			if (m_PrintEventToResult) {
 				CommandLineInterface::m_Result << message;
 			}
-			if (m_pLogFile) {
-				(*m_pLogFile) << message;
-			}
 		} else {
 			if (m_PrintEventToResult) {
 				CommandLineInterface::m_Result << msg;
-			}
-			if (m_pLogFile) {
-				(*m_pLogFile) << msg;
 			}
 		}
 	}
