@@ -2499,11 +2499,19 @@ int compare_memories_act_indiv_mem(agent *thisAgent, arraylist *epmem1, arraylis
 episodic_memory *find_best_match(agent *thisAgent, epmem_header *h, arraylist *cue)
 {
     int best_score = 0;
-    episodic_memory *best_mem = NULL;
+    episodic_memory *best_mem_via_score = NULL;
+    int cue_cardinality = 0;
+    int best_cardinality = 0;
+    episodic_memory *best_mem_via_cardinality = NULL;
+    episodic_memory *selected_mem = NULL;
     int i;
     int j;
     int comp_count = 0;         // number of epmems that were examined
 
+//      //%%%DEBUGGING
+//      print(thisAgent, "\nRECEIVED THIS CUE", best_score);
+//      print_memory(thisAgent, cue, &g_wmetree, 2, 5);
+    
     start_timer(thisAgent, &(thisAgent->epmem_match_start_time));
 
     //If there aren't enough memories to examine just return
@@ -2516,58 +2524,126 @@ episodic_memory *find_best_match(agent *thisAgent, epmem_header *h, arraylist *c
     //Give this match a unique id
     g_last_ret_id++;
 
-    //Every memory gets a match score boost if it contains a WME
+    //Every memory gets a match score boost if it contains a memory
     //that's in the cue.  So we need to loop over the assoc_memories
     //list for each wmetree node in the cue
     for(i = 0; i < cue->size; i++)
     {
+        //pull an entry out of the cue
         actwme *aw_cue = (actwme *)get_arraylist_entry(thisAgent, cue,i);
 
+        // if the entry has associated epmems then note that this node
+        // was used in the match
         if (aw_cue->node->assoc_memories->size > 0)
         {
-            // note that this node was used in the match
             aw_cue->node->query_count++;
         }
-            
-        for(j = 0; j < aw_cue->node->assoc_memories->size; j++)
+
+        //If the entry is a leaf node then add it to the cue cardinality
+        //used for detecting an exact match
+        if (aw_cue->node->children->count == 0)
         {
+            cue_cardinality++;
+        }
+
+//          //%%%DEBUGGING
+//          print(thisAgent, "\n\tMatches for cue entry %s: ", aw_cue->node->attr);
+
+        //Loop over the associated epmems
+        for(j = 1; j < aw_cue->node->assoc_memories->size; j++)
+        {
+            //get the next associated epmem
             episodic_memory *epmem =
                 (episodic_memory *)get_arraylist_entry(thisAgent, aw_cue->node->assoc_memories,j);
+
+            //Record that there was a match
+            if (epmem->last_usage != g_last_ret_id)
+            {
+                //Reinit the match data from last time
+                epmem->last_usage = g_last_ret_id;
+                comp_count++;
+                epmem->match_score = 0;
+                epmem->num_matches = 1;
+            }
+            else
+            {
+                (epmem->num_matches)++;
+            }
+            
+            //Find the entry in that epmem that matches the cue entry
             actwme *aw_mem = epmem_find_actwme_entry(thisAgent, epmem->content, aw_cue->node);
 
             if (aw_mem != NULL)
             {
-                if (epmem->last_usage != g_last_ret_id)
-                {
-                    epmem->last_usage = g_last_ret_id;
-                    epmem->match_score = aw_mem->activation;
-                    comp_count++;
-                }
-                else
-                {
-                    epmem->match_score += aw_mem->activation;
-                }
+//                  //%%%DEBUGGING
+//                  print(thisAgent, "%d, ", epmem->index);
+                
+                //Increment the match score
+                epmem->match_score += aw_mem->activation;
             }
 
+            //Check to see if this mem has the best match score so far
             if (epmem->match_score > best_score)
             {
+//                  //%%%DEBUGGING
+//                  if (best_mem_via_score != NULL)
+//                  {
+//                      print(thisAgent,
+//                            "\nRejected the following memory (#%d) with match score %d:",
+//                            best_mem_via_score->index,
+//                            best_score);
+//                      print_memory(thisAgent, best_mem_via_score->content, &g_wmetree, 2, 5,
+//                                   "io input-link x y direction radar-setting");
+//                  }
+                
                 best_score = epmem->match_score;
-                best_mem = epmem;
+                best_mem_via_score = epmem;
             }
+            
+            //Check to see if this mem has the best match cardinality so far
+            if (epmem->num_matches > best_cardinality)
+            {
+                best_mem_via_cardinality = epmem;
+                best_cardinality = epmem->num_matches;
+            }
+            else if ( (epmem->num_matches == best_cardinality)
+                      && (epmem->match_score > best_mem_via_cardinality->match_score) )
+            {
+                best_mem_via_cardinality = epmem;
+                best_cardinality = epmem->num_matches;
+            }
+            
         }//for
     }//for
 
+    //The selected memory is the exact match.  If there is no exact match, then
+    //the epmem with the best match score is returned.
+    if (best_cardinality == cue_cardinality)
+    {
+        selected_mem = best_mem_via_cardinality;
+    }
+    else
+    {
+        selected_mem = best_mem_via_score;
+    }
+    
     stop_timer(thisAgent, &(thisAgent->epmem_match_start_time), &(thisAgent->epmem_match_total_time));
 
-//      //%%%DEBUGGING
-//      stop_timer(thisAgent, &(thisAgent->epmem_retrieve_start_time), &(thisAgent->epmem_retrieve_total_time));
-//      stop_timer(thisAgent, &(thisAgent->epmem_start_time), &(thisAgent->epmem_total_time));
-//      print(thisAgent, "\nmemories searched:\t%d of %d\n", comp_count, g_memories->size);
-//      print(thisAgent, "\nbest match score=%d\n", best_score);
-//      start_timer(thisAgent, &(thisAgent->epmem_start_time));
-//      start_timer(thisAgent, &(thisAgent->epmem_retrieve_start_time));
+    //%%%DEBUGGING
+    stop_timer(thisAgent, &(thisAgent->epmem_retrieve_start_time), &(thisAgent->epmem_retrieve_total_time));
+    stop_timer(thisAgent, &(thisAgent->epmem_start_time), &(thisAgent->epmem_total_time));
+    print(thisAgent, "\nmemories searched:\t%d of %d\n", comp_count, g_memories->size);
+    print(thisAgent, "\nbest match score=%d\n", best_score);
+    print(thisAgent, "\nbest match cardinality=%d of %d\n", best_cardinality, cue_cardinality);
+    start_timer(thisAgent, &(thisAgent->epmem_start_time));
+    start_timer(thisAgent, &(thisAgent->epmem_retrieve_start_time));
 
-    return best_mem;
+    //Record the statistics for this match
+    h->last_cue_size = cue_cardinality;
+    h->last_match_size = selected_mem->num_matches;
+    h->last_match_score = selected_mem->match_score;
+    
+    return selected_mem;
 }//find_best_match
 
 
