@@ -9,7 +9,7 @@ sp {propose*miner-assignment
         -^completed <cmp>)
    
 -->
-   (<s> ^operator <o> +)
+   (<s> ^operator <o> + =)
    (<o> ^name miner-assignment
         ^task-id <id>)
 }
@@ -18,39 +18,15 @@ sp {miner-assignment*propose*change-grouping-level
    (state <s> ^name miner-assignment
               ^task-id <tid>
               ^top-state <ts>)
-  -{(<ts> ^grouping-level huge-groups)}
+  (<ts> -^grouping-level huge-groups
+        -^grouping-level change-pending)
 -->
    (<s> ^operator <o> + =)
    (<o> ^name set-grouping-huge-groups
         ^task-id <tid>)
 }
 
-sp {miner-assignment*propose*clean-grouping-command
-   (state <s> ^name miner-assignment
-              ^task-id <tid>
-              ^io.output-link <ol>)
-   (<ol> ^command <c>)
-   (<c> ^name grouping-radius
-        ^task-id <tid>
-        ^status complete)
--->
-   (<s> ^operator <o> + =)
-   (<o> ^name ma*clear-grouping-command
-        ^task-id <tid>)
-}
-
-sp {miner-assignment*apply*clean-grouping-command
-   (state <s> ^operator <o>
-              ^io.output-link <ol>)
-   (<o> ^name ma*clear-grouping-command
-        ^task-id <tid>)
-   (<ol> ^command <c>)
-   (<c> ^name grouping-radius
-        ^task-id <tid>)
--->
-   (<ol> ^command <c> -)
-}
-
+# this is tricky, since we want it to kick in for finished attacks, but not steal builders
 sp {miner-assignment*propose*assign-miner
    (state <s> ^name miner-assignment
               ^io.input-link.groups <gs>
@@ -62,7 +38,8 @@ sp {miner-assignment*propose*assign-miner
    (<g> ^type worker
         ^id   <gid>
         ^owner <me>
-        ^command-running 0)
+        ^command-running 0
+       -^command build-started)
  #       ^command-success 0
  #       ^command-failure 0)
   -{(<ol> ^command <c>)

@@ -51,6 +51,7 @@ sp {apply*change-view-width
          ^task-id <tid>)
 }
 
+# these should never apply if one is pending! make sure the proposals reflect this
 
 sp {apply*set-grouping-individuals
    (state <s> ^operator <o>
@@ -58,9 +59,10 @@ sp {apply*set-grouping-individuals
               ^top-state <ts>)
    (<o> ^name set-grouping-individuals
         ^task-id <tid>)
-   (<ts> ^grouping-level <gl>)
+   (<ts> ^grouping-level {<gl> <> change-pending})
 -->
-   (<ts> ^grouping-level individuals)
+   (<ts> ^grouping-level change-pending
+         ^pending-grouping-level individuals)
    (<ts> ^grouping-level <gl> -)
    (<ol> ^command <g>)
    (<g> ^value 1
@@ -74,9 +76,10 @@ sp {apply*set-grouping-small-groups
               ^top-state <ts>)
    (<o> ^name set-grouping-small-groups
         ^task-id <tid>)
-   (<ts> ^grouping-level <gl>)
+   (<ts> ^grouping-level {<gl> <> change-pending})
 -->
-   (<ts> ^grouping-level small-groups)
+   (<ts> ^grouping-level change-pending
+         ^pending-grouping-level small-groups)
    (<ts> ^grouping-level <gl> -)
    (<ol> ^command <g>)
    (<g> ^value 32
@@ -90,9 +93,10 @@ sp {apply*set-grouping-large-groups
               ^top-state <ts>)
    (<o> ^name set-grouping-large-groups
         ^task-id <tid>)
-   (<ts> ^grouping-level <gl>)
+   (<ts> ^grouping-level {<gl> <> change-pending})
 -->
-   (<ts> ^grouping-level large-groups)
+   (<ts> ^grouping-level change-pending
+         ^pending-grouping-level large-groups)
    (<ts> ^grouping-level <gl> -)
    (<ol> ^command <g>)
    (<g> ^value 64
@@ -106,14 +110,47 @@ sp {apply*set-grouping-huge-groups
               ^top-state <ts>)
    (<o> ^name set-grouping-huge-groups
         ^task-id <tid>)
-   (<ts> ^grouping-level <gl>)
+   (<ts> ^grouping-level {<gl> <> change-pending})
 -->
    (<ts> ^grouping-level <gl> -)
-   (<ts> ^grouping-level huge-groups)
+   (<ts> ^grouping-level change-pending
+         ^pending-grouping-level huge-groups)
    (<ol> ^command <g>)
    (<g> ^value 9999
         ^name grouping-radius
         ^task-id <tid>)
+}
+
+sp {propose*clean-grouping-command
+   (state <s> ^io.output-link <ol>
+              ^top-state <ts>
+              ^task-id <tid>)
+   (<ol> ^command <c>)
+   (<c> ^name grouping-radius
+        ^status complete
+        ^task-id <tid>)
+   (<ts> ^grouping-level change-pending
+         ^pending-grouping-level <pgl>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name clean-grouping-command)
+}
+
+sp {apply*clean-grouping-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>
+              ^top-state <ts>)
+   (<o> ^name clean-grouping-command)
+   (<ol> ^command <c>)
+   (<c> ^name grouping-radius
+        ^status complete)
+   (<ts> ^grouping-level change-pending
+         ^pending-grouping-level <pgl>)
+-->
+   (<ol> ^command <c> -)
+   (<ts> ^grouping-level change-pending -)
+   (<ts> ^pending-grouping-level <pgl> -)
+   (<ts> ^grouping-level <pgl>)
 }
 
 sp {apply*look-at-location

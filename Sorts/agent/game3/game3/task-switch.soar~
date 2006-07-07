@@ -11,8 +11,7 @@ sp {top-state*propose*wait
 sp {task-switch*propose*switch
    (state <s> ^attribute state
               ^choices none
-              ^top-state <ts>
-              ^superstate.task-id <tid>)
+              ^top-state <ts>)
    (<ts> ^running-task <rt>)
    (<rt> ^id <tid>)
 -->
@@ -74,7 +73,8 @@ sp {propose*execute-task-low
 -->
    (<s> ^operator <o> + = 10)
    (<o> ^name execute-task
-        ^task <t>)
+        ^task <t>
+        ^task-id <tid>)
 }
 
 
@@ -90,7 +90,8 @@ sp {propose*execute-task-medium
 -->
    (<s> ^operator <o> + = 20)
    (<o> ^name execute-task
-        ^task <t>)
+        ^task <t>
+        ^task-id <tid>)
 }
 
 sp {propose*execute-task-high
@@ -105,7 +106,8 @@ sp {propose*execute-task-high
 -->
    (<s> ^operator <o> + = 30)
    (<o> ^name execute-task
-        ^task <t>)
+        ^task <t>
+        ^task-id <tid>)
 }
 
 sp {apply*execute-task

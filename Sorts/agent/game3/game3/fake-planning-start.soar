@@ -86,6 +86,24 @@ sp {propose*start-build-marines
         ^priority medium)
 }
 
+sp {propose*start-build-marines2
+   (state <s> ^name sorts
+              ^planning.execution-buffer <eb>)
+  -{(<eb> ^task <t>)
+    (<t> ^name build-marines
+         ^id 2527)}
+   (<eb> ^task <t1>)
+   (<t1>  ^name build-barracks
+          ^id 12774 # the second build-barracks
+          ^completed true)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name start-task
+        ^task-name build-marines
+        ^task-id 2527
+        ^priority medium)
+}
+
 sp {propose*start-marine-attack
    (state <s> ^name sorts
               ^planning.execution-buffer <eb>

@@ -320,7 +320,8 @@ sp {explore-attack*propose*change-grouping-level1
              -^top-state.io.output-link.command.task-id <tid>
              -^enemy-group
              -^eligible-explorer)
-  -{(<ts> ^grouping-level individuals)}
+  (<ts> -^grouping-level individuals
+        -^grouping-level change-pending)
    (<ts> ^explore-attack <ea>)
    (<ea> ^task-id <tid>)
 -->
@@ -336,7 +337,8 @@ sp {explore-attack*propose*change-grouping-level2
               ^top-state <ts>
              -^top-state.io.output-link.command.task-id <tid>
               ^enemy-group)
-  -{(<ts> ^grouping-level large-groups)}
+  (<ts> -^grouping-level large-groups
+        -^grouping-level change-pending)
    (<ts> ^explore-attack <ea>)
    (<ea> ^task-id <tid>)
 -->
@@ -345,32 +347,6 @@ sp {explore-attack*propose*change-grouping-level2
         ^task-id <tid>)
 }
 
-
-sp {explore-attack*propose*clean-grouping-command
-   (state <s> ^name explore-attack
-              ^task-id <tid>
-              ^io.output-link <ol>)
-   (<ol> ^command <c>)
-   (<c> ^name grouping-radius
-        ^task-id <tid>
-        ^status complete)
--->
-   (<s> ^operator <o> + > =)
-   (<o> ^name ea*clear-grouping-command
-        ^task-id <tid>)
-}
-
-sp {explore-attack*apply*clean-grouping-command
-   (state <s> ^operator <o>
-              ^io.output-link <ol>)
-   (<o> ^name ea*clear-grouping-command
-        ^task-id <tid>)
-   (<ol> ^command <c>)
-   (<c> ^name grouping-radius
-        ^task-id <tid>)
--->
-   (<ol> ^command <c> -)
-}
 
 sp {explore-attack*propose*attack
    (state <s> ^name explore-attack
@@ -584,6 +560,7 @@ sp {build-building*prefer-less-explored
 }
 
 
+# for non-enemybase
 sp {explore-attack*propose*handle-explore-start
    (state <s> ^name explore-attack
               ^task-id <tid>
@@ -628,6 +605,41 @@ sp {explore-attack*apply*handle-explore-start
    (<ol> ^command <fc> -)
    (<ed> ^count (+ <co> 1))
 }
+
+# enemybase explorers
+sp {explore-attack*propose*handle-explore-start2
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+              ^top-state <ts>
+              ^io.output-link.command <cm>)
+   (<cm> ^task-id <tid>
+         ^name move
+         ^param0 <x>
+         ^param1 <y>
+         ^status complete)
+-->
+   (<s> ^operator <o> +  =)
+   (<o> ^name ea*handle-explore-start
+        ^task-id <tid>)
+}
+
+
+
+sp {explore-attack*apply*handle-explore-start2
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name ea*handle-explore-start
+        ^task-id <tid>
+        -^explore-dir)
+   (<ts> ^io.output-link <ol>)
+   (<ol> ^command <fc>)
+   (<fc> ^task-id <tid>
+         ^name move
+         ^status complete)
+-->
+   (<ol> ^command <fc> -)
+}
+
 
 sp {explore-attack*propose*add-explorer
    (state <s> ^name explore-attack

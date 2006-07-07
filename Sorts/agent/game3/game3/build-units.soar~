@@ -1,4 +1,4 @@
-qsp {build-units*propose*init
+sp {build-units*propose*init
    (state <s> ^name build-units
               ^superstate.operator <op>
               ^top-state <ts>)
@@ -42,6 +42,7 @@ sp {build-units*propose*change-grouping-level
    (state <s> ^name build-units
               ^task-id <tid>
               -^top-state.grouping-level individuals
+              -^top-state.grouping-level change-pending
                ^io.input-link.groups <gs>
                ^top-state.build-units <bu>
                ^top-state.my-id <me>)
@@ -60,31 +61,7 @@ sp {build-units*propose*change-grouping-level
         ^task-id <tid>)
 }
 
-sp {build-units*propose*clean-grouping-command
-   (state <s> ^name build-units
-              ^task-id <tid>
-              ^io.output-link <ol>)
-   (<ol> ^command <c>)
-   (<c> ^name grouping-radius
-        ^task-id <tid>
-        ^status complete)
--->
-   (<s> ^operator <o> + =)
-   (<o> ^name bu*clear-grouping-command
-        ^task-id <tid>)
-}
 
-sp {build-units*apply*clean-grouping-command
-   (state <s> ^operator <o>
-              ^io.output-link <ol>)
-   (<o> ^name bu*clear-grouping-command
-        ^task-id <tid>)
-   (<ol> ^command <c>)
-   (<c> ^name grouping-radius
-        ^task-id <tid>)
--->
-   (<ol> ^command <c> -)
-}
 # this should keep looking at friendly units until the correct building is seen
 sp {build-units*propose*find-building
    (state <s> ^name build-units

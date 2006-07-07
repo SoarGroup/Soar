@@ -193,7 +193,8 @@ sp {build-building*propose*change-grouping-level
          ^owner <me>
          ^command-running 0
          ^num-members 1)}
-                     -{(<ts> ^grouping-level individuals)}
+  (<ts> -^grouping-level individuals
+        -^grouping-level change-pending)
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>
          ^location <l>
@@ -202,32 +203,6 @@ sp {build-building*propose*change-grouping-level
    (<s> ^operator <o> + > =)
    (<o> ^name set-grouping-individuals
         ^task-id <tid>)
-}
-
-sp {build-building*propose*clean-grouping-command
-   (state <s> ^name build-building
-              ^task-id <tid>
-              ^io.output-link <ol>)
-   (<ol> ^command <c>)
-   (<c> ^name grouping-radius
-        ^task-id <tid>
-        ^status complete)
--->
-   (<s> ^operator <o> + =)
-   (<o> ^name bb*clear-grouping-command
-        ^task-id <tid>)
-}
-
-sp {build-building*apply*clean-grouping-command
-   (state <s> ^operator <o>
-              ^io.output-link <ol>)
-   (<o> ^name bb*clear-grouping-command
-        ^task-id <tid>)
-   (<ol> ^command <c>)
-   (<c> ^name grouping-radius
-        ^task-id <tid>)
--->
-   (<ol> ^command <c> -)
 }
 
 
