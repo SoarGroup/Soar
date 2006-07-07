@@ -1,3 +1,21 @@
+/*
+    This file is part of Sorts, an interface between Soar and ORTS.
+    (c) 2006 James Irizarry, Sam Wintermute, and Joseph Xu
+
+    Sorts is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    Sorts is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Sorts; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA    
+*/
 #include<iostream>
 #include <assert.h>
 #include <pthread.h>
@@ -550,6 +568,12 @@ void SoarInterface::getNewObjectActions(list<ObjectAction>& newActions) {
       msg << "ERROR: no group " << (*i).gid << endl;
       msg << "it disappeared after it was inserted (due to vision cmds).\n";
       (*i).wme->AddStatusError();
+      // is there a segfault here? is it possible that Soar can remove the wme
+      // (maybe due to support going away) while the action is in the queue?
+
+      // a segfault appeared to happen around here, after two attack commands
+      // and a regroup were added at once- I think the regroup wiped out the
+      // attacking groups, so this should have tripped (7/5/06)
     }
     else {
       newActions.push_back((*i).action);

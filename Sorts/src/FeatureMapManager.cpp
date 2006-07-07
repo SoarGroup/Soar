@@ -1,3 +1,21 @@
+/*
+    This file is part of Sorts, an interface between Soar and ORTS.
+    (c) 2006 James Irizarry, Sam Wintermute, and Joseph Xu
+
+    Sorts is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    Sorts is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Sorts; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA    
+*/
 #include "FeatureMapManager.h"
 #include "FeatureMap.h"
 #include "Sorts.h"
@@ -205,19 +223,19 @@ void FeatureMapManager::updateSoar() {
       Sorts::SoarIO->refreshFeatureMap(it->second, it->first);
       
     ///*
-      msg << "map " << it->first << ":\n";
-      msg << "\t" << it->second->getCount(0);
-      msg << "\t" << it->second->getCount(1);
-      msg << "\t" << it->second->getCount(2);
-      msg << endl;
-      msg << "\t" << it->second->getCount(3);
-      msg << "\t" << it->second->getCount(4);
-      msg << "\t" << it->second->getCount(5);
-      msg << endl;
-      msg << "\t" << it->second->getCount(6);
-      msg << "\t" << it->second->getCount(7);
-      msg << "\t" << it->second->getCount(8);
-      msg << endl;
+      msg << "map " << it->first << ":\n"
+       << "\t" << it->second->getCount(0)
+       << "\t" << it->second->getCount(1)
+       << "\t" << it->second->getCount(2)
+       << endl
+       << "\t" << it->second->getCount(3)
+       << "\t" << it->second->getCount(4)
+       << "\t" << it->second->getCount(5)
+       << endl
+       << "\t" << it->second->getCount(6)
+       << "\t" << it->second->getCount(7)
+       << "\t" << it->second->getCount(8)
+       << endl;
     //*/
     }
     it++;
