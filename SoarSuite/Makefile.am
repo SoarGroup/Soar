@@ -34,17 +34,17 @@ dist-hook:
 	mv swt.jar $(distdir)/SoarLibrary/bin
 
 install-data-am:
-	$(INSTALL) SoarLibrary/bin/libcairo-swt.so
-	$(INSTALL) SoarLibrary/bin/libswt-agl-carbon-3232.jnilib
-	$(INSTALL) SoarLibrary/bin/libswt-atk-gtk-3232.so
-	$(INSTALL) SoarLibrary/bin/libswt-awt-gtk-3232.so
-	$(INSTALL) SoarLibrary/bin/libswt-cairo-gtk-3232.so
-	$(INSTALL) SoarLibrary/bin/libswt-carbon-3232.jnilib
-	$(INSTALL) SoarLibrary/bin/libswt-glx-gtk-3232.so
-	$(INSTALL) SoarLibrary/bin/libswt-gnome-gtk-3232.so
-	$(INSTALL) SoarLibrary/bin/libswt-gtk-3232.so
-	$(INSTALL) SoarLibrary/bin/libswt-mozilla-gcc3-gtk-3232.so
-	$(INSTALL) SoarLibrary/bin/libswt-mozilla-gtk-3232.so
-	$(INSTALL) SoarLibrary/bin/libswt-pi-carbon-3232.jnilib
-	$(INSTALL) SoarLibrary/bin/libswt-pi-gtk-3232.so
-	$(INSTALL) SoarLibrary/bin/libswt-webkit-carbon-3232.jnilib
+	$(INSTALL) SoarLibrary/bin/libcairo-swt.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-agl-carbon-3232.jnilib $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-atk-gtk-3232.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-awt-gtk-3232.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-cairo-gtk-3232.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-carbon-3232.jnilib $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-glx-gtk-3232.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-gnome-gtk-3232.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-gtk-3232.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-mozilla-gcc3-gtk-3232.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-mozilla-gtk-3232.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-pi-carbon-3232.jnilib $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-pi-gtk-3232.so $(libdir)
+	$(INSTALL) SoarLibrary/bin/libswt-webkit-carbon-3232.jnilib $(libdir)
