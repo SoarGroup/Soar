@@ -8,11 +8,11 @@ if [ ! -e bin ]; then
         mkdir bin
 	mkdir bin/images
 else
-        for file in `find bin -iname *.class`
+        for file in `find bin -iname "*.class"`
         do
                 rm $file
         done
-        for file in `find bin -iname *.xml`
+        for file in `find bin -iname "*.xml"`
         do
                 rm $file
         done
