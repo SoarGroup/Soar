@@ -8,10 +8,6 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -149,24 +145,12 @@ typedef union symbol_union Symbol;
 #define NUMERIC_INDIFFERENCE
 
 #ifdef NUMERIC_INDIFFERENCE
-
-/* UnComment the following line to enable reinforcement learning */
-#define REINFORCEMENT_LEARNING
-
 /* Possible modes for numeric indifference */
 enum ni_mode {
     NUMERIC_INDIFFERENT_MODE_AVG,
     NUMERIC_INDIFFERENT_MODE_SUM,
 };
 #endif 
- 
- /* Possible exploration policies for RL. */
-
-enum exp_mode {
- 	BOLTZMANN_EXPLORATION,
- 	EPSILON_GREEDY_EXPLORATION,
- 	NO_EXPLORATION,
-};
 
 /* Comment the following line to disable workaround for bug 139 */
 #define BUG_139_WORKAROUND
@@ -193,10 +177,6 @@ enum exp_mode {
  */
 //#define AGRESSIVE_ONC
 
-
-//#define SOAR_WMEM_ACTIVATION    // compile switch
-    
-    
 /* --------------------------- */
 /* Current Soar version number */
 /* --------------------------- */

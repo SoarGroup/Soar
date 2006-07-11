@@ -31,7 +31,6 @@
 #include "decide.h"
 #include "explain.h"
 #include "soar_rand.h"
-#include "reinforcement_learning.h"
 
 //#include "../../SoarIO/ConnectionSML/include/sock_Debug.h"
 
@@ -195,7 +194,6 @@ namespace gSKI
 			if (!full_prod) 
 			{
 				print_with_symbols(agnt, "%y  ",prod->name);
-				if (prod->RL) print_with_symbols(agnt, "%y", rhs_value_to_symbol(prod->action_list->referent));
 			}
 			if (print_filename) 
 			{
@@ -801,33 +799,6 @@ namespace gSKI
 			}
 		}
 
-		void TgDWorkArounds::PrintRL(IAgent*	thisAgent,
-					     char* arg,
-					     bool internal,
-					     bool print_filename,
-					     bool full_prod)
-		{
-		  Agent* internalAgent = (Agent*) (thisAgent);
-		  MegaAssert(internalAgent != 0, "Bad agent pointer passed to set_sysparams.");
-		  
-		  for (production* prod=internalAgent->GetSoarAgent()->all_productions_of_type[DEFAULT_PRODUCTION_TYPE];
-		       prod != NIL; prod = prod->next)
-		    {
-		      if (prod->RL)		do_print_for_production(internalAgent->GetSoarAgent(),prod,internal, print_filename,full_prod);
-		    }
-
-		  for (production* prod=internalAgent->GetSoarAgent()->all_productions_of_type[USER_PRODUCTION_TYPE];
-		       prod != NIL; prod = prod->next)
-		    {
-		      if (prod->RL) do_print_for_production(internalAgent->GetSoarAgent(),prod,internal,print_filename,full_prod);
-		    }
-		  
-		  for (production* prod=internalAgent->GetSoarAgent()->all_productions_of_type[CHUNK_PRODUCTION_TYPE];
-		       prod != NIL; prod = prod->next)
-		    {
-		      if (prod->RL) do_print_for_production(internalAgent->GetSoarAgent(),prod,internal,print_filename,full_prod);
-		    }
-		}
 
 		slot *find_slot (Symbol *id, Symbol *attr) 
 		{
@@ -1070,43 +1041,23 @@ namespace gSKI
 		}
 
 
-#ifdef NUMERIC_INDIFFERENCE
-		char * pref_names[] =
-		{
-			"acceptable",
-			"require",
-			"reject",
-			"prohibit",
-			"reconsider",
-			"unary indifferent",
-			"unary parallel",
-			"best",
-			"worst",
-			"binary indifferent",
-			"binary parallel",
-			"better",
-			"worse" ,
-			"numeric indifferent",
-			"template"
-		};
-#else
+
 		char * pref_names[] =
 		{  
 			"acceptable",
-			"require",
-			"reject",
-			"prohibit",
-			"reconsider",
-			"unary indifferent",
-			"unary parallel",
-			"best",
-			"worst",
-			"binary indifferent",
-			"binary parallel",
-			"better",
-			"worse" 
+				"require",
+				"reject",
+				"prohibit",
+				"reconsider",
+				"unary indifferent",
+				"unary parallel",
+				"best",
+				"worst",
+				"binary indifferent",
+				"binary parallel",
+				"better",
+				"worse" 
 		};
-#endif
 
 		int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool print_prod, wme_trace_type wtt)
 		{
@@ -1968,13 +1919,6 @@ namespace gSKI
 			insert_at_head_of_dll(pWme->id->id.input_wmes, pWme, next, prev);
 			add_wme_to_wm(pSoarAgent, pWme);
 
-            #ifdef SOAR_WMEM_ACTIVATION
-//			if ((pSoarAgent->sysparams)[WME_DECAY_SYSPARAM]) {
-				
-				decay_update_new_wme(pSoarAgent, pWme, 1);
-//			}
-            #endif //SOAR_WMEM_ACTIVATION
-
 #ifdef USE_CAPTURE_REPLAY
 			// TODO
 #endif // USE_CAPTURE_REPLAY
@@ -2488,13 +2432,6 @@ namespace gSKI
 			pSoarAgent->chunk_count = count;
 		}
 
-		void TgDWorkArounds::ResetRL(IAgent* pIAgent)
-				{
-					Agent* pAgent = (Agent*) (pIAgent);
-					agent* pSoarAgent = pAgent->GetSoarAgent();
-					reset_RL(pSoarAgent);
-				}
-
 		void TgDWorkArounds::SeedRandomNumberGenerator(unsigned long int* pSeed)
 		{
 			if (pSeed) {
@@ -2503,27 +2440,5 @@ namespace gSKI
 			}
 			SoarSeedRNG();
 		}
-
-#if (0)
-#ifdef SOAR_WMEM_ACTIVATION
-
-  	         void TgDWorkArounds::DecayInit(IAgent* pIAgent)
-  	         {
-  	             Agent* pAgent = (Agent*)(pIAgent);
-  	             agent* pSoarAgent = pAgent->GetSoarAgent();
-  	 
-  	             decay_init(pSoarAgent);
-  	         }
-  	 
-  	         void TgDWorkArounds::DecayDeInit(IAgent* pIAgent)
-  	         {
-  	             Agent* pAgent = (Agent*)(pIAgent);
-  	             agent* pSoarAgent = pAgent->GetSoarAgent();
-  	 
-  	             decay_deinit(pSoarAgent);
-  	         }
-#endif
-#endif
-
 	}// class
 }// namespace

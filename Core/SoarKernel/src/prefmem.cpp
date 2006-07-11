@@ -53,10 +53,7 @@ char * preference_name[] =
   "binary indifferent",
   "binary parallel",
   "better",
-  "worse",
-  "numeric indifferent",
-  "template"
-};
+  "worse" };
 
 /*                     Preference Management Routines
 
@@ -86,14 +83,6 @@ preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *at
   p->slot = NIL;
   p->next_clone = NIL;
   p->prev_clone = NIL;
-
-#ifdef NUMERIC_INDIFFERENCE
-  if (preference_is_binary(p->type)){
-    if ((referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
-	(referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE))
-      p->type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
-  }
-#endif
 
 #ifdef DEBUG_PREFS
   print (thisAgent, "\nAllocating preference at 0x%8x: ", (unsigned long)p);

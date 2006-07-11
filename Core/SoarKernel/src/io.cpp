@@ -181,13 +181,6 @@ wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value) {
   insert_at_head_of_dll (id->id.input_wmes, w, next, prev);
   add_wme_to_wm (thisAgent, w);
 
-#ifdef SOAR_WMEM_ACTIVATION
-   // shouldn't we e checking the sysparam?  
-  if ((thisAgent->sysparams)[WME_DECAY_SYSPARAM]) {
-	  decay_update_new_wme(thisAgent, w, 1);
-  }
-#endif //SOAR_WMEM_ACTIVATION
-
 
   return w;
 }
@@ -246,10 +239,6 @@ void do_input_cycle (agent* thisAgent) {
     release_io_symbol (thisAgent, thisAgent->io_header);
     release_io_symbol (thisAgent, thisAgent->io_header_input);
     release_io_symbol (thisAgent, thisAgent->io_header_output);
-#ifdef NUMERIC_INDIFFERENCE
-    release_io_symbol (thisAgent, thisAgent->reward_header);
-    thisAgent->reward_header = NIL;
-#endif
     thisAgent->io_header = NIL;       /* RBD added 3/25/95 */
     thisAgent->io_header_input = NIL;       /* RBD added 3/25/95 */
     thisAgent->io_header_output = NIL;       /* KJC added 3/3/99 */

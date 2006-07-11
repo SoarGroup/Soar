@@ -53,9 +53,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIChunkNameFormat]				= &cli::CommandLineInterface::ParseChunkNameFormat;
 	m_CommandMap[Commands::kCLICLog]						= &cli::CommandLineInterface::ParseCLog;
 	m_CommandMap[Commands::kCLICommandToFile]				= &cli::CommandLineInterface::ParseCommandToFile;
-#ifdef SOAR_WMEM_ACTIVATION
-	m_CommandMap[Commands::kCLIDecay]                       = &cli::CommandLineInterface::ParseDecay;
-#endif //SOAR_WMEM_ACTIVATION
 	m_CommandMap[Commands::kCLIDefaultWMEDepth]				= &cli::CommandLineInterface::ParseDefaultWMEDepth;
 	m_CommandMap[Commands::kCLIDirs]						= &cli::CommandLineInterface::ParseDirs;
 	m_CommandMap[Commands::kCLIEcho]						= &cli::CommandLineInterface::ParseEcho;
@@ -63,8 +60,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIEditProduction]				= &cli::CommandLineInterface::ParseEditProduction;
 	m_CommandMap[Commands::kCLIExcise]						= &cli::CommandLineInterface::ParseExcise;
 	m_CommandMap[Commands::kCLIExplainBacktraces]			= &cli::CommandLineInterface::ParseExplainBacktraces;
-	m_CommandMap[Commands::kCLIExploration]			 	    = &cli::CommandLineInterface::ParseExploration;
-       	m_CommandMap[Commands::kCLIFiringCounts]				= &cli::CommandLineInterface::ParseFiringCounts;
+	m_CommandMap[Commands::kCLIFiringCounts]				= &cli::CommandLineInterface::ParseFiringCounts;
 	m_CommandMap[Commands::kCLIGDSPrint]					= &cli::CommandLineInterface::ParseGDSPrint;
 	m_CommandMap[Commands::kCLIHelp]						= &cli::CommandLineInterface::ParseHelp;
 	m_CommandMap[Commands::kCLIIndifferentSelection]		= &cli::CommandLineInterface::ParseIndifferentSelection;
@@ -91,7 +87,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIQuit]						= &cli::CommandLineInterface::ParseQuit;
 	m_CommandMap[Commands::kCLIRemoveWME]					= &cli::CommandLineInterface::ParseRemoveWME;
 	m_CommandMap[Commands::kCLIReteNet]						= &cli::CommandLineInterface::ParseReteNet;
-	m_CommandMap[Commands::kCLIRL]						    = &cli::CommandLineInterface::ParseRL;
 	m_CommandMap[Commands::kCLIRun]							= &cli::CommandLineInterface::ParseRun;
 	m_CommandMap[Commands::kCLISaveBacktraces]				= &cli::CommandLineInterface::ParseSaveBacktraces;
 	m_CommandMap[Commands::kCLISetLibraryLocation]			= &cli::CommandLineInterface::ParseSetLibraryLocation;
@@ -120,7 +115,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIChunkNameFormat]			= true ;
 	m_EchoMap[Commands::kCLICLog]						= true ;
 	m_EchoMap[Commands::kCLICommandToFile]				= true ;
-	m_EchoMap[Commands::kCLIDecay]                      = true ;
 	m_EchoMap[Commands::kCLIDefaultWMEDepth]			= true ;
 	m_EchoMap[Commands::kCLIEcho]						= true ;
 	m_EchoMap[Commands::kCLIEchoCommands]				= true ;
@@ -664,32 +658,6 @@ bool CommandLineInterface::IsInteger(const string& s) {
 		++iter;
 	}
 	return true;
-}
-
-bool CommandLineInterface::IsFloat(const string& s) {
-	string::const_iterator iter = s.begin();
-    bool bDecimal = false;
-	
-	// Allow negatives
-	if (s.length() > 1) {
-		if (*iter == '-') {
-			++iter;
-		}
-	}
-
-	while (iter != s.end()) {
-		if (!isdigit(*iter)) {
-            if ((*iter == '.') && (!bDecimal)) {
-                bDecimal = true;
-            }
-            else {
-                return false;
-            }
-		}
-		++iter;
-	}
-    
-	return bDecimal;
 }
 
 bool CommandLineInterface::RequireAgent(gSKI::IAgent* pAgent) {

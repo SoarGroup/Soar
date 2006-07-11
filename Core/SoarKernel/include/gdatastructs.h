@@ -142,7 +142,7 @@ typedef struct gds_struct {
 
 /* WARNING: preference types must be numbered 0..(NUM_PREFERENCE_TYPES-1),
    because the slot structure contains an array using these indices. */
-#define NUM_PREFERENCE_TYPES 15  /* number of different preference types */
+#define NUM_PREFERENCE_TYPES 13  /* number of different preference types */
 
 #define ACCEPTABLE_PREFERENCE_TYPE 0
 #define REQUIRE_PREFERENCE_TYPE 1
@@ -157,8 +157,7 @@ typedef struct gds_struct {
 #define BINARY_PARALLEL_PREFERENCE_TYPE 10
 #define BETTER_PREFERENCE_TYPE 11
 #define WORSE_PREFERENCE_TYPE 12
-#define NUMERIC_INDIFFERENT_PREFERENCE_TYPE 13 
- // #define TEMPLATE_PREFERENCE_TYPE 14
+#define NUM_PREFERENCE_TYPES 13
 
 #ifdef USE_MACROS
 
@@ -227,7 +226,7 @@ typedef struct preference_struct {
        what we really want from these changes.
      */
   int total_preferences_for_candidate;
-  float numeric_value;  /* RL.  snason */
+  double sum_of_probability;
     /* END: REW: 2003-01-08 */
   /////#endif
 
@@ -247,8 +246,7 @@ extern Bool remove_preference_from_clones (agent* thisAgent, preference *pref);
 #define CONFLICT_IMPASSE_TYPE 2
 #define TIE_IMPASSE_TYPE 3
 #define NO_CHANGE_IMPASSE_TYPE 4
-#define STATE_NO_CHANGE_IMPASSE_TYPE 5		/* for RL */
-#define OP_NO_CHANGE_IMPASSE_TYPE 6		/* for RL */
+
 /* ------------------------------------------------------------------------
                                 Slots
 
@@ -315,10 +313,6 @@ typedef struct slot_struct {
   dl_cons *acceptable_preference_changed; /* for context slots: either zero,
                                              or points to dl_cons if the slot
                                              has changed + or ! pref's */
-#ifdef SOAR_WMEM_ACTIVATION
-    int num_changes;
-#endif
-
 } slot;
 
 /* -------------------------------------------------------------------
@@ -461,7 +455,7 @@ enum ComplexTextTypes {
 #define INT_CONSTANT_SYMBOL_TYPE 3
 #define FLOAT_CONSTANT_SYMBOL_TYPE 4
 #define NUM_SYMBOL_TYPES 5
-#define NUM_PRODUCTION_TYPES 5
+#define NUM_PRODUCTION_TYPES 4
 
 
 /* -------------------------------------------------------------------

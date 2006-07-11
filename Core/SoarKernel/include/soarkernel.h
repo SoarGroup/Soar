@@ -81,7 +81,6 @@ struct node_varnames_struct;
 #include "trace.h"
 #include "callback.h"
 #include "io.h"
-#include "reinforcement_learning.h"
 
 /* ======================================================================= */
 

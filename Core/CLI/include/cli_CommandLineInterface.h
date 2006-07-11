@@ -187,7 +187,6 @@ protected:
 	bool ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseCLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseCommandToFile(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-        bool ParseDecay(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseDefaultWMEDepth(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseDirs(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseEcho(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -241,8 +240,6 @@ protected:
 	bool ParseWarnings(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseWatch(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseWatchWMEs(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseExploration(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseRL(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 
 	/*************************************************************
 	* @brief add-wme command
@@ -296,12 +293,6 @@ protected:
 	* @param pToAdd The string to add to the log, pass 0 (null) if not applicable to mode
 	*************************************************************/
 	bool DoCLog(gSKI::IAgent* pAgent, const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0);
-
-	/*************************************************************
-	* @brief decay command
-	* @param pAgent The pointer to the gSKI agent interface
-	*************************************************************/
-	bool DoDecay(gSKI::IAgent* pAgent, enum eDecayOptions setting, long arg);
 
 	/*************************************************************
 	* @brief default-wme-depth command
@@ -554,21 +545,6 @@ protected:
 	*************************************************************/
 	bool DoReteNet(gSKI::IAgent* pAgent, bool save, std::string filename);
 
-	/****************************************************************
-	* @brief RL command
-	* @param pConnection Pointer to connection
-	* @param pResponse Pointer to XML response
-	* @param pAgent The pointer to the gSKI agent interface
-	* @param RLSetting RL on/off
-	* @param Temp Assignment to the alpha parameter
-	* @param epsilon Assignment to the gamma parameter
-	*****************************************************************/
-
-	bool DoRL(gSKI::IAgent* pAgent, const int RLSetting, const int algSetting, const double alpha, const double gamma, const double lambda);
-
-	/*****************************************************************/
-	bool DoExploration(gSKI::IAgent* pAgent, const int mode, const double Temp, const double epsilon);
-
 	/*************************************************************
 	* @brief run command
 	* @param pAgent The pointer to the gSKI agent interface
@@ -746,26 +722,15 @@ protected:
 	*************************************************************/
 	int ParseLevelOptarg();
 	int ParseLearningOptarg();
-	int ParseExplorationOptarg();
 	bool CheckOptargRemoveOrZero();
 	bool ProcessWatchLevelSettings(const int level, WatchBitset& options, WatchBitset& settings, int& wmeSetting, int& learnSetting);
 
 	eRunInterleaveMode ParseRunInterleaveOptarg();
 
-	/************************************************************* 	 
-	* @brief Prints the current WM activation settings
-	*************************************************************/ 	 
-        void PrintCurrentDecaySettings(gSKI::IAgent* pAgent);
-
 	/*************************************************************
 	* @brief 
 	*************************************************************/
 	bool IsInteger(const std::string& s);
-
-	/*************************************************************
-	* @brief 
-	*************************************************************/
-	bool IsFloat(const std::string& s);
 
 	/*************************************************************
 	* @brief 

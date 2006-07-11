@@ -195,9 +195,6 @@
 			Name="Source files"
 			Filter=".cpp">
 			<File
-				RelativePath=".\src\activate.cpp">
-			</File>
-			<File
 				RelativePath=".\src\agent.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
@@ -576,9 +573,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\reinforcement_learning.cpp">
-			</File>
-			<File
 				RelativePath=".\src\reorder.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
@@ -775,9 +769,6 @@
 			Name="Header files"
 			Filter=".h">
 			<File
-				RelativePath=".\include\activate.h">
-			</File>
-			<File
 				RelativePath=".\include\agent.h">
 			</File>
 			<File
@@ -851,9 +842,6 @@
 			</File>
 			<File
 				RelativePath=".\include\recmem.h">
-			</File>
-			<File
-				RelativePath=".\include\reinforcement_learning.h">
 			</File>
 			<File
 				RelativePath=".\src\reorder.h">
