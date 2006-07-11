@@ -1250,6 +1250,14 @@ namespace gSKI {
       */
       virtual void SetNumericIndifferentMode(egSKINumericIndifferentMode m, Error* pErr = 0) = 0;
 
+	  virtual void SetExplorationMode(egSKIExplorationMode m, Error* pErr = 0) = 0;
+	  virtual egSKIExplorationMode GetExplorationMode(Error* pErr = 0) = 0;
+	  
+	  virtual void SetExplorationParameter(egSKIExplorationParameter m, double value, Error* pErr = 0) = 0;
+	  virtual double GetExplorationParameter(egSKIExplorationParameter m, Error* pErr = 0) = 0;
+	  virtual void SetRLParameter(egSKIRLParameter m, double value, Error* pErr = 0) = 0;
+	  virtual double GetRLParameter(egSKIRLParameter m, Error* pErr = 0) = 0;
+
 	  virtual bool GetOperand2Mode() = 0;
 	  virtual void SetOperand2Mode(bool mode) = 0;
 

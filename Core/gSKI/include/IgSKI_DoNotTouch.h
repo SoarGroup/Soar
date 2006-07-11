@@ -98,7 +98,15 @@ namespace gSKI
                                bool          internal,
                                bool          print_filename,
                                bool          full_prod,
-                               unsigned int  prodType) = 0;
+                               unsigned int  prodType) = 0; 
+		/**
+		* @brief
+		*/
+		virtual void PrintRL(IAgent*       thisAgent,
+	                         char*         arg,
+	                         bool          internal,
+	                         bool          print_filename,
+                                 bool          full_prod) = 0;
 
         /**
          * @brief 
@@ -150,9 +158,13 @@ namespace gSKI
 		virtual unsigned long GetChunkCount(IAgent* pIAgent) = 0;
 		virtual void SetChunkCount(IAgent* pIAgent, unsigned long count) = 0;
 
+		virtual void ResetRL(IAgent* pIAgent) = 0;
+
 		virtual void SeedRandomNumberGenerator(unsigned long int* pSeed) = 0;
-                virtual void DecayInit(IAgent* pIAgent) = 0;
-                virtual void DecayDeInit(IAgent* pIAgent) = 0;
+#ifdef SOAR_WMEM_ACTIVATION
+        virtual void DecayInit(IAgent* pIAgent) = 0;
+        virtual void DecayDeInit(IAgent* pIAgent) = 0;
+#endif
 	  };
    }
 }
@@ -175,8 +187,9 @@ namespace gSKI
 #define DEFAULT_PRODUCTION_TYPE 1
 #define CHUNK_PRODUCTION_TYPE 2
 #define JUSTIFICATION_PRODUCTION_TYPE 3
+#define TEMPLATE_PRODUCTION_TYPE 4           // added for RL
 
-#define NUM_PRODUCTION_TYPES 4
+#define NUM_PRODUCTION_TYPES 5
 
 /* ---------------------------------------
     Match Set print parameters
@@ -208,6 +221,7 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 
 /* ====== Sysparams for what to trace === */
 
+
 #define TRACE_CONTEXT_DECISIONS_SYSPARAM          1
 #define TRACE_PHASES_SYSPARAM                     2
 
@@ -217,83 +231,85 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 #define TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM   4
 #define TRACE_FIRINGS_OF_CHUNKS_SYSPARAM          5
 #define TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM  6
+#define TRACE_FIRINGS_OF_TEMPLATE_SYSPARAM        7
 
-#define TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM     7
-#define TRACE_FIRINGS_PREFERENCES_SYSPARAM        8
-#define TRACE_WM_CHANGES_SYSPARAM                 9
-#define TRACE_CHUNK_NAMES_SYSPARAM               10
-#define TRACE_JUSTIFICATION_NAMES_SYSPARAM       11
-#define TRACE_CHUNKS_SYSPARAM                    12
-#define TRACE_JUSTIFICATIONS_SYSPARAM            13
-#define TRACE_BACKTRACING_SYSPARAM               14
+#define TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM     8
+#define TRACE_FIRINGS_PREFERENCES_SYSPARAM        9
+#define TRACE_WM_CHANGES_SYSPARAM                10
+#define TRACE_CHUNK_NAMES_SYSPARAM               11
+#define TRACE_JUSTIFICATION_NAMES_SYSPARAM       12
+#define TRACE_CHUNKS_SYSPARAM                    13
+#define TRACE_JUSTIFICATIONS_SYSPARAM            14
+#define TRACE_BACKTRACING_SYSPARAM               15
 /* ===== watch loading flag =====  KJC 7/96 */
-#define TRACE_LOADING_SYSPARAM                   15
+#define TRACE_LOADING_SYSPARAM                   16
 
 /* ====== Max Elaborations === */
-#define MAX_ELABORATIONS_SYSPARAM                16
+#define MAX_ELABORATIONS_SYSPARAM                17
 
 /* ====== Max Chunks === */
-#define MAX_CHUNKS_SYSPARAM                      17
+#define MAX_CHUNKS_SYSPARAM                      18
 
-#define RESPOND_TO_LOAD_ERRORS_SYSPARAM          18
+#define RESPOND_TO_LOAD_ERRORS_SYSPARAM          19
 
 /* ====== Sysparams for control of learning === */
-#define LEARNING_ON_SYSPARAM                     19
-#define LEARNING_ONLY_SYSPARAM                   20
-#define LEARNING_EXCEPT_SYSPARAM                 21
-#define LEARNING_ALL_GOALS_SYSPARAM              22
+#define LEARNING_ON_SYSPARAM                     20
+#define LEARNING_ONLY_SYSPARAM                   21
+#define LEARNING_EXCEPT_SYSPARAM                 22
+#define LEARNING_ALL_GOALS_SYSPARAM              23
 
 /* ====== User Select === */
-#define USER_SELECT_MODE_SYSPARAM                23
+#define USER_SELECT_MODE_SYSPARAM                24
 
 /* ====== Print Warnings === */
-#define PRINT_WARNINGS_SYSPARAM                  24
+#define PRINT_WARNINGS_SYSPARAM                  25
 
 /* AGR 627 begin */
 /* ====== Whether to print out aliases as they're defined === */
-#define PRINT_ALIAS_SYSPARAM                     25
+#define PRINT_ALIAS_SYSPARAM                     26
 /* AGR 627 end */
 
 /* ===== explain_flag =====  KJC 7/96 */
-#define EXPLAIN_SYSPARAM                         26
+#define EXPLAIN_SYSPARAM                         27
 
 /* kjh(B14) */
-#define USE_LONG_CHUNK_NAMES                     27
+#define USE_LONG_CHUNK_NAMES                     28
 
 /* REW:  10.22.97 */
-#define TRACE_OPERAND2_REMOVALS_SYSPARAM         28
+#define TRACE_OPERAND2_REMOVALS_SYSPARAM         29
 
 /* RMJ */
-#define REAL_TIME_SYSPARAM         		          29
+#define REAL_TIME_SYSPARAM         		 30
 
 /* RMJ */
-#define ATTENTION_LAPSE_ON_SYSPARAM              30
+#define ATTENTION_LAPSE_ON_SYSPARAM              31
 
 /* KJC 3/01 limit number of cycles in run_til_output */
-#define MAX_NIL_OUTPUT_CYCLES_SYSPARAM           31
+#define MAX_NIL_OUTPUT_CYCLES_SYSPARAM           32
 
 /* SAN (??) */
 //NUMERIC_INDIFFERENCE
-#define TRACE_INDIFFERENT_SYSPARAM               32
+#define TRACE_INDIFFERENT_SYSPARAM               33
 
 /* rmarinie 11/04 */
-#define TIMERS_ENABLED                           33
+#define TIMERS_ENABLED                           34
 
-#define MAX_GOAL_DEPTH			       	 34
+#define MAX_GOAL_DEPTH			       			 35
 
-//The following constants are used by SOAR_WMEM_ACTIVATION
+#define WME_DECAY_SYSPARAM                       36
+#define WME_DECAY_EXPONENT_SYSPARAM              37
+#define WME_DECAY_WME_CRITERIA_SYSPARAM          38
+#define WME_DECAY_ALLOW_FORGETTING_SYSPARAM      39
+#define WME_DECAY_I_SUPPORT_MODE_SYSPARAM        40
+#define WME_DECAY_PERSISTENT_ACTIVATION_SYSPARAM 41
+#define WME_DECAY_PRECISION_SYSPARAM             42
+#define WME_DECAY_LOGGING_SYSPARAM               43
 
-#define WME_DECAY_SYSPARAM                       35
-#define WME_DECAY_EXPONENT_SYSPARAM              36
-#define WME_DECAY_WME_CRITERIA_SYSPARAM          37
-#define WME_DECAY_ALLOW_FORGETTING_SYSPARAM      38
-#define WME_DECAY_I_SUPPORT_MODE_SYSPARAM        39
-#define WME_DECAY_PERSISTENT_ACTIVATION_SYSPARAM 40
-#define WME_DECAY_PRECISION_SYSPARAM             41
-#define WME_DECAY_LOGGING_SYSPARAM               42
+ /* SAN: for Reinforcement Learning */
+#define RL_ON_SYSPARAM							 44
+#define RL_ONPOLICY_SYSPARAM					 45
 
-/* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  42
+#define HIGHEST_SYSPARAM_NUMBER                  45
 
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024   /* AGR 536  - from sys/param.h */

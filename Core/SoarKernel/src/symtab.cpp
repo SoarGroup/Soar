@@ -580,6 +580,9 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->type_symbol = make_sym_constant (thisAgent, "type");
   thisAgent->goal_symbol = make_sym_constant (thisAgent, "goal");
   thisAgent->name_symbol = make_sym_constant (thisAgent, "name");
+#ifdef NUMERIC_INDIFFERENCE
+  thisAgent->reward_symbol = make_sym_constant (thisAgent, "reward-link");
+#endif
 
   thisAgent->ts_context_variable = make_variable (thisAgent, "<ts>");
   thisAgent->to_context_variable = make_variable (thisAgent, "<to>");
@@ -623,6 +626,9 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper(thisAgent,&(thisAgent->type_symbol));
   release_helper(thisAgent,&(thisAgent->goal_symbol));
   release_helper(thisAgent,&(thisAgent->name_symbol));
+#ifdef NUMERIC_INDIFFERENCE
+  release_helper(thisAgent,&(thisAgent->reward_symbol));
+#endif
 
   release_helper(thisAgent,&(thisAgent->ts_context_variable));
   release_helper(thisAgent,&(thisAgent->to_context_variable));

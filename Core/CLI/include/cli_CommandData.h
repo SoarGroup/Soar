@@ -34,6 +34,7 @@ namespace cli {
 		EXCISE_DEFAULT,
 		EXCISE_TASK,
 		EXCISE_USER,
+		EXCISE_RL,
 		EXCISE_NUM_OPTIONS, // must be last
 	};
 
@@ -91,6 +92,13 @@ namespace cli {
 		NUMERIC_INDIFFERENT_SUM,
 	};
 
+	enum eExplorationMode {
+		EXPLORATION_QUERY,
+		BOLTZMANN_EXPLORATION,
+		EPSILON_GREEDY_EXPLORATION,
+		NO_EXPLORATION,
+	};
+
 	enum ePreferencesDetail {
 		PREFERENCES_ONLY,
 		PREFERENCES_NAMES,
@@ -112,6 +120,7 @@ namespace cli {
 		PRINT_STACK,
 		PRINT_STATES,
 		PRINT_USER,
+		PRINT_RL,
 		PRINT_VARPRINT,
 		PRINT_NUM_OPTIONS, // must be last
 	};
@@ -166,6 +175,7 @@ namespace cli {
 		WATCH_USER,
 		WATCH_CHUNKS,
 		WATCH_JUSTIFICATIONS,
+		WATCH_TEMPLATES,
 		WATCH_WMES,
 		WATCH_PREFERENCES,
 		WATCH_WME_DETAIL,

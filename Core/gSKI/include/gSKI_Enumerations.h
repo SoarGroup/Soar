@@ -735,7 +735,7 @@
       gSKI_DEFAULT,
       gSKI_JUSTIFICATION,
       gSKI_USER,
-
+      gSKI_TEMPLATE,
       gSKI_NUM_PRODUCTION_TYPES, /// End marker for iteration
    } egSKIProdType;
 
@@ -763,5 +763,25 @@
       gSKI_NUMERIC_INDIFFERENT_MODE_SUM,  /// do numeric indifference by summing all values asserted by the rules.  Indifferent prefferences with no explicit value are assigned the numeric weight of 0.
       gSKI_NUMERIC_INDIFFERENT_MODE_AVG,  /// do numeric indiffernce by averaging all values asserted by the rules.  Indifferent preferrences with no explicit value are assigned the numeric weight of 50.
    } egSKINumericIndifferentMode;
+
+      typedef enum
+   {
+   	   gSKI_BOLTZMANN_EXPLORATION,
+   	   gSKI_EPSILON_GREEDY_EXPLORATION,
+   	   gSKI_NO_EXPLORATION,
+   } egSKIExplorationMode;
+
+   typedef enum
+   {
+	   ALPHA,
+	   GAMMA,
+	   LAMBDA,
+   } egSKIRLParameter;
+
+   typedef enum
+   {
+	   EPSILON,
+	   TEMPERATURE,
+   } egSKIExplorationParameter;
 
 #endif

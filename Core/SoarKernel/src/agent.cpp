@@ -295,17 +295,37 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   newAgent->top_dir_stack->next = NIL;   /* AGR 568 */
   strcpy(newAgent->top_dir_stack->directory, cur_path);   /* AGR 568 */
 
-  /* changed all references of 'i', a var belonging to a previous for loop, to 'productionTypeCounter' to be unique 
-    stokesd Sept 10 2004*/
+  /* changed all references of 'i', a var belonging to a previous for loop,
+   *  to 'productionTypeCounter' to be unique   stokesd Sept 10 2004*/
   for (int productionTypeCounter=0; productionTypeCounter<NUM_PRODUCTION_TYPES; productionTypeCounter++) {  
     newAgent->all_productions_of_type[productionTypeCounter] = NIL;
     newAgent->num_productions_of_type[productionTypeCounter] = 0;
   }
 
   newAgent->o_support_calculation_type = 4; /* KJC 7/00 */ // changed from 3 to 4 by voigtjr  (/* bugzilla bug 339 */)
+
 #ifdef NUMERIC_INDIFFERENCE
-  newAgent->numeric_indifferent_mode = NUMERIC_INDIFFERENT_MODE_AVG;
-#endif
+  newAgent->numeric_indifferent_mode = NUMERIC_INDIFFERENT_MODE_SUM;
+  newAgent->exploration_mode = EPSILON_GREEDY_EXPLORATION;
+  newAgent->Temperature = 25.0;    /* used to keep summed indifferent preferences 
+                                    * within a reasonable range, since they will be used as
+				    * an exponent to the number 10, and must be stored 
+                                    * in a 64 bit double */
+  newAgent->epsilon = 0.1;     /* proportion of the time an exploratory action is taken */
+  newAgent->gamma = 0.9;       /* discount factor */
+  newAgent->alpha = 0.3;       /* learning rate */
+  /* Eligibility trace */
+  newAgent->lambda = 0;
+  if (newAgent->lambda == 0){
+	  newAgent->num_traces = 1;
+  } else {
+	  newAgent->num_traces = ceil( log(0.01) / log(newAgent->lambda) );
+  }
+  /* End Eligibility trace */
+  newAgent->RL_count = 1;
+#endif   // NUMERIC_INDIFFERENCE
+
+
   newAgent->attribute_preferences_mode = 0; /* RBD 4/17/95 */
 
    /* JC ADDED: Make sure that the RHS functions get initialized correctly */

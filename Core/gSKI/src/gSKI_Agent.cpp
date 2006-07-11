@@ -1815,6 +1815,120 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
       }
    }
 
+/*******************************************
+Exploration
+*********************************************/
+
+   void Agent::SetExplorationMode(egSKIExplorationMode m, Error* pErr) {
+	   switch(m) {
+		   case gSKI_BOLTZMANN_EXPLORATION:
+			   GetSoarAgent()->exploration_mode = BOLTZMANN_EXPLORATION;
+			   return;
+		   case gSKI_EPSILON_GREEDY_EXPLORATION:
+			   GetSoarAgent()->exploration_mode = EPSILON_GREEDY_EXPLORATION;
+			   return;
+		   case gSKI_NO_EXPLORATION:
+			   GetSoarAgent()->exploration_mode = NO_EXPLORATION;
+			   return;
+		   default:
+			   MegaAssert(false, "Invalid exploration mode");
+	   }
+   }
+
+
+   egSKIExplorationMode Agent::GetExplorationMode(Error* pErr/* = 0*/) {
+
+      egSKIExplorationMode m = gSKI_BOLTZMANN_EXPLORATION;
+
+      switch(GetSoarAgent()->exploration_mode) {
+         case BOLTZMANN_EXPLORATION:
+            m = gSKI_BOLTZMANN_EXPLORATION;
+            break;
+         case EPSILON_GREEDY_EXPLORATION:
+            m = gSKI_EPSILON_GREEDY_EXPLORATION;
+            break;
+		 case NO_EXPLORATION:
+			 m = gSKI_NO_EXPLORATION;
+			 break;
+         default:
+            MegaAssert(false, "Invalid exploration mode");
+            break;
+      }
+
+      return m;
+   }
+
+    void Agent::SetExplorationParameter(egSKIExplorationParameter m, double value, Error* pErr){
+	   switch(m) {
+		   case EPSILON:
+			   GetSoarAgent()->epsilon = value;
+			   break;
+		   case TEMPERATURE:
+			   GetSoarAgent()->Temperature = value;
+			   break;
+		   default:
+			   MegaAssert(false, "Invalid exploration parameter.");
+			   break;
+	   }
+   }
+
+	double Agent::GetExplorationParameter(egSKIExplorationParameter m, Error* pErr){
+	   switch(m) {
+		   case EPSILON:
+			   return GetSoarAgent()->epsilon;
+		   case TEMPERATURE:
+			   return GetSoarAgent()->Temperature;
+		   default:
+			   MegaAssert(false, "Invalid exploration parameter.");
+			   return 0;
+	   }
+   }
+
+
+
+   /****************************************************
+
+   Reinforcement Learning
+
+   ****************************************************/
+
+
+   void Agent::SetRLParameter(egSKIRLParameter m, double value, Error* pErr){
+	   switch(m) {
+		   case ALPHA:
+			   GetSoarAgent()->alpha = value;
+			   break;
+		   case GAMMA:
+			   GetSoarAgent()->gamma = value;
+			   break;
+		   case LAMBDA:
+			   GetSoarAgent()->lambda = value;
+			   if (value == 0){
+				   GetSoarAgent()->num_traces = 1;
+			   } else {
+				   GetSoarAgent()->num_traces = ceil( log(0.01) / log(value) );
+			   }
+			   break;
+		   default:
+			   MegaAssert(false, "Invalid RL parameter.");
+			   break;
+	   }
+   }
+
+   double Agent::GetRLParameter(egSKIRLParameter m, Error* pErr){
+	   switch(m) {
+		   case ALPHA:
+			   return GetSoarAgent()->alpha;
+		   case GAMMA:
+			   return GetSoarAgent()->gamma;
+		   case LAMBDA:
+			   return GetSoarAgent()->lambda;
+		   default:
+			   MegaAssert(false, "Invalid RL parameter.");
+			   return 0;
+	   }
+   }
+
    int Agent::GetAttributePreferencesMode(Error* err) 
    {
 	   return GetSoarAgent()->attribute_preferences_mode;

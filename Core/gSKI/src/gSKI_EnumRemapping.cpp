@@ -131,6 +131,7 @@ namespace gSKI
 
       ProductionTypeEnumMapping[JUSTIFICATION_PRODUCTION_TYPE] = gSKI_JUSTIFICATION;
       ProductionTypeEnumMapping[USER_PRODUCTION_TYPE] = gSKI_USER;
+	  ProductionTypeEnumMapping[TEMPLATE_PRODUCTION_TYPE] = gSKI_TEMPLATE;
       ProductionTypeEnumMapping[CHUNK_PRODUCTION_TYPE] = gSKI_CHUNK;
       ProductionTypeEnumMapping[DEFAULT_PRODUCTION_TYPE] = gSKI_DEFAULT;
       // Setting the initialized flags

@@ -45,6 +45,7 @@
 #include "rete.h"
 #include "gdatastructs.h"
 #include "kernel_struct.h"
+#include "reinforcement_learning.h"
 #include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
 #include "gski_event_system_functions.h" // support for triggering XML events
 
@@ -477,6 +478,11 @@ void init_sysparams (agent* thisAgent) {
   thisAgent->sysparams[USE_LONG_CHUNK_NAMES] = TRUE;  /* kjh(B14) */
   thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = FALSE;
   thisAgent->sysparams[TIMERS_ENABLED] = TRUE;
+
+#ifdef NUMERIC_INDIFFERENCE
+  thisAgent->sysparams[RL_ON_SYSPARAM] = TRUE;
+  thisAgent->sysparams[RL_ONPOLICY_SYSPARAM] = TRUE;
+#endif
 
 #ifdef SOAR_WMEM_ACTIVATION
   //Decay system toggle
@@ -1318,6 +1324,16 @@ void do_one_top_level_phase (agent* thisAgent)
 	  soar_invoke_callbacks(thisAgent, thisAgent, 
 		  AFTER_HALT_SOAR_CALLBACK,
 		  (soar_call_data) NULL);
+#ifdef NUMERIC_INDIFFERENCE
+	  if (thisAgent->sysparams[RL_ON_SYSPARAM]){
+	    for (Symbol* g = thisAgent->bottom_goal ; g ; g = g->id.higher_goal){
+	      //  tabulate_reward_value_for_goal(thisAgent,thisAgent->top_state);
+	      tabulate_reward_value_for_goal(thisAgent,g);
+	      // perform_Bellman_update(thisAgent, 0, thisAgent->top_state);
+	      perform_Bellman_update(thisAgent, 0, g);
+	    }
+	  }
+#endif
   }
   
   if (thisAgent->stop_soar) {
@@ -1658,6 +1674,10 @@ void init_agent_memory(agent* thisAgent)
   thisAgent->io_header_input = get_new_io_identifier (thisAgent, 'I');
   thisAgent->io_header_output = get_new_io_identifier (thisAgent, 'I');
 
+#ifdef NUMERIC_INDIFFERENCE
+  thisAgent->reward_header = get_new_io_identifier (thisAgent, 'R');
+#endif
+
   create_top_goal(thisAgent);
   if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM]) 
     {
@@ -1681,6 +1701,13 @@ void init_agent_memory(agent* thisAgent)
   add_input_wme (thisAgent, thisAgent->io_header,
                  make_sym_constant(thisAgent, "output-link"),
                  thisAgent->io_header_output);
+
+#ifdef NUMERIC_INDIFFERENCE
+   add_input_wme (thisAgent, thisAgent->top_state,
+ 	  thisAgent->reward_symbol,
+ 	  thisAgent->reward_header);
+   thisAgent->top_state->id.reward_header = thisAgent->reward_header;
+#endif
 
   do_buffered_wm_and_ownership_changes(thisAgent);
 

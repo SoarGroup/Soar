@@ -35,6 +35,7 @@
 #include "symtab.h"
 #include "init_soar.h"
 #include "rete.h"
+#include "reinforcement_learning.h"
 
 /* comment out the following line to supress compile-time o-support
    calculations */
@@ -1562,6 +1563,23 @@ production *make_production (agent* thisAgent,
   p->instantiations = NIL;
   p->interrupt = FALSE;
 
+#ifdef NUMERIC_INDIFFERENCE
+  p->copies_awaiting_updates = 0;
+  if (type == TEMPLATE_PRODUCTION_TYPE){
+    if (!check_template_for_RL(p)){
+      print (thisAgent, "Template rule must have single, potentially numeric, preference.\n");
+      return 0;
+    }
+    p->RL = FALSE;
+  }
+  else if (type == JUSTIFICATION_PRODUCTION_TYPE) {
+    p->RL = FALSE;
+  }
+  else {
+    check_prefs_for_RL(p);
+  }
+#endif
+
   return p;
 }
 
@@ -1585,6 +1603,9 @@ void deallocate_production (agent* thisAgent, production *prod) {
 void excise_production (agent* thisAgent, production *prod, Bool print_sharp_sign) {
   if (prod->trace_firings) remove_pwatch (thisAgent, prod);
   remove_from_dll (thisAgent->all_productions_of_type[prod->type], prod, next, prev);
+#ifdef NUMERIC_INDIFFERENCE
+  if (prod->copies_awaiting_updates) remove_update_refs_for_prod(thisAgent, prod); // SAN - could stop after finding copies_awaiting_updates number of copies
+#endif
   thisAgent->num_productions_of_type[prod->type]--;
   if (print_sharp_sign) print (thisAgent, "#");
   if (prod->p_node) excise_production_from_rete (thisAgent, prod);
@@ -1613,4 +1634,5 @@ void excise_all_productions(agent* thisAgent,
                                    i, 
                                    (bool)(print_sharp_sign&&thisAgent->sysparams[TRACE_LOADING_SYSPARAM]));
   }
+   thisAgent->RL_count = 1;
 }

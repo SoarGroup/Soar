@@ -62,6 +62,12 @@ namespace gSKI
                         bool          full_prod,
                         unsigned int  productionType);
                      
+         void PrintRL(IAgent*		thisAgent,
+		 			  char*			arg,
+		 			  bool			internal,
+		 			  bool			print_filename,
+					  bool			full_prod);
+
          bool Preferences(IAgent* thisAgent, int detail, const char* idString, const char* attrString);
 
          bool ProductionFind(IAgent*     thisAgent,
@@ -103,6 +109,8 @@ namespace gSKI
 
 		 unsigned long GetChunkCount(IAgent* pIAgent);
 		 void SetChunkCount(IAgent* pIAgent, unsigned long count);
+
+		 void ResetRL(IAgent* pIAgent);
 
 		 void SeedRandomNumberGenerator(unsigned long int* pSeed);
         

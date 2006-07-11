@@ -22,6 +22,8 @@
 #include "IgSKI_Kernel.h"
 #include "IgSKI_DoNotTouch.h"
 
+#ifdef SOAR_WMEM_ACTIVATION
+
 /*KLUDGE*KLUDGE*KLUDGE*KLUDGE*KLUDGE*KLUDGE*KLUDGE*KLUDGE*KLUDGE*
 
   These declarations are needed to print the decay settings.  I've
@@ -551,3 +553,4 @@ bool CommandLineInterface::DoDecay(gSKI::IAgent* pAgent,
 
     return true;
 }
+ #endif // SOAR_WMEM_ACTIVATION

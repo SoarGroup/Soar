@@ -576,6 +576,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\reinforcement_learning.cpp">
+			</File>
+			<File
 				RelativePath=".\src\reorder.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
@@ -848,6 +851,9 @@
 			</File>
 			<File
 				RelativePath=".\include\recmem.h">
+			</File>
+			<File
+				RelativePath=".\include\reinforcement_learning.h">
 			</File>
 			<File
 				RelativePath=".\src\reorder.h">

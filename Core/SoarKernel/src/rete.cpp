@@ -3532,7 +3532,10 @@ byte add_production_to_rete (agent* thisAgent,
   for (p_node=bottom_node->first_child; p_node!=NIL;
        p_node=p_node->next_sibling) {
     if (p_node->node_type != P_BNODE) continue;
-    if (! same_rhs (p_node->b.p.prod->action_list, p->action_list)) continue;
+    if (!p->RL || !p_node->b.p.prod->RL){
+      if (! same_rhs (p_node->b.p.prod->action_list, p->action_list)) continue;
+    }
+//    if (! same_rhs (p_node->b.p.prod->action_list, p->action_list)) continue;
     /* --- duplicate production found --- */
     if (warn_on_duplicates)
       print_with_symbols (thisAgent, "\nIgnoring %y because it is a duplicate of %y ",
@@ -7031,6 +7034,10 @@ void retesave_rete_node_and_children (agent* thisAgent, rete_node *node, FILE* f
     } else {
       retesave_one_byte (0,f);
     }
+#ifdef NUMERIC_INDIFFERENCE
+    if (prod->RL) retesave_one_byte (1,f);
+    else retesave_one_byte (0,f);
+#endif
     break;
 
   default:
@@ -7128,6 +7135,10 @@ void reteload_node_and_children (Kernel* thisKernel, agent* thisAgent, rete_node
     prod->filename = NIL;
     prod->p_node = NIL;
     
+#ifdef NUMERIC_INDIFFERENCE
+    prod->copies_awaiting_updates = 0;
+#endif
+
     sym = reteload_symbol_from_index (thisAgent,f);
     symbol_add_ref (sym);
     prod->name = sym;
@@ -7166,6 +7177,11 @@ void reteload_node_and_children (Kernel* thisKernel, agent* thisAgent, rete_node
 
     /* --- call new node's add_left routine with all the parent's tokens --- */
     update_node_with_matches_from_above (thisAgent, New);
+
+#ifdef NUMERIC_INDIFFERENCE
+    if (reteload_one_byte(f)) prod->RL = TRUE;
+    else prod->RL = FALSE;
+#endif
 
      /* --- invoke callback on the production --- */
     soar_invoke_callbacks (thisAgent, thisAgent, PRODUCTION_JUST_ADDED_CALLBACK,
