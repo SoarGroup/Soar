@@ -5,7 +5,7 @@ import java.util.logging.*;
 import utilities.*;
 
 public class Missile {
-	private static Logger logger = Logger.getLogger("tanksoar");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	private MapPoint location;
 	private int direction;

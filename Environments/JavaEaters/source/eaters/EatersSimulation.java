@@ -7,7 +7,7 @@ import sml.*;
 import utilities.*;
 
 public class EatersSimulation extends Simulation implements SimulationManager {
-	private static Logger logger = Logger.getLogger("eaters");
+	private static Logger logger = Logger.getLogger("simulation");
 	public static final int kMaxEaters = 7;	
 	public static final String kMapFilter = "*.emap";
 	

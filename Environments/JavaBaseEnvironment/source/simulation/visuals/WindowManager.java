@@ -60,7 +60,7 @@ public class WindowManager {
 		return null;
 	}
 
-	private static Logger logger = Logger.getLogger("simulation.visuals");
+	private static Logger logger = Logger.getLogger("simulation");
 	protected Display m_Display;
 	protected Shell m_Shell;
 

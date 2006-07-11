@@ -5,7 +5,7 @@ import java.util.logging.*;
 import simulation.WorldEntity;
 
 public class MoveInfo {
-	private static Logger logger = Logger.getLogger("tanksoar");
+	private static Logger logger = Logger.getLogger("simulation");
 	public boolean move;
 	public int moveDirection;
 	

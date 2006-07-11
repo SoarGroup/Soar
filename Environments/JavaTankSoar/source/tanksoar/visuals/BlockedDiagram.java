@@ -11,7 +11,7 @@ import tanksoar.*;
 
 public class BlockedDiagram extends Canvas implements PaintListener {
 
-	private static Logger logger = Logger.getLogger("tanksoar.visuals");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	private static Image kDiagram;
 	

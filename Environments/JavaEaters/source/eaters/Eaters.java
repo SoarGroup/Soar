@@ -11,7 +11,7 @@ import utilities.*;
 import eaters.visuals.EatersWindowManager;
 
 public class Eaters {
-	private static Logger logger = Logger.getLogger("eaters");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	public static final String kDefaultXMLSettingsFile = "eaters-default-settings.xml";
 	private final String kDefaultLogFilename = "EaterLog.txt";
@@ -22,8 +22,6 @@ public class Eaters {
 	private boolean appendSwitch;
 	private boolean notRandomSwitch;
 	
-	private static Logger rootLogger = Logger.getLogger("");
-
 	public Eaters(String[] args) {
 		
 		// Install default settings file
@@ -47,7 +45,7 @@ public class Eaters {
 		try {
 			FileHandler handler = new FileHandler(logFilename);
 			handler.setFormatter(new JonsFormatter());
-			rootLogger.addHandler(handler);
+			logger.addHandler(handler);
 		} catch (IOException e) {
 			System.err.println("Failed to create " + logFilename + ": " + e.getMessage());
 			System.exit(1);
@@ -58,6 +56,7 @@ public class Eaters {
 //		rootLogger.addHandler(handler);
 		
 		// TODO: set log level via command line
+		logger.setUseParentHandlers(false);
 		logger.setLevel(Level.ALL);
 		logger.info("Java Eaters started.");
 		

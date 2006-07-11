@@ -7,7 +7,7 @@ import simulation.visuals.*;
 import tanksoar.*;
 
 public class TankSoarSimulationButtons extends SimulationButtons {
-	private static Logger logger = Logger.getLogger("tanksoar.visuals");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	TankSoarSimulation m_Simulation;
 	

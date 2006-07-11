@@ -7,7 +7,7 @@ import sml.*;
 import utilities.*;
 
 public class Eater extends WorldEntity {
-	private static Logger logger = Logger.getLogger("eaters");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	public final static int kEaterVision = 2;
 	

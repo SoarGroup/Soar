@@ -7,7 +7,7 @@ import utilities.*;
 import sml.*;
 
 public class Tank  extends WorldEntity {
-	private static Logger logger = Logger.getLogger("tanksoar");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	private final static String kMoveID = "move";
 	private final static String kDirectionID = "direction";
@@ -630,7 +630,7 @@ public class Tank  extends WorldEntity {
 		} else if (m_Energy > kMaximumEnergy) {
 			m_Energy = kMaximumEnergy;
 		}			
-		logger.info(getName() + ": energy: " + Integer.toString(previous) + " -> " + Integer.toString(m_Energy) + "(" + comment + ")");
+		logger.info(getName() + ": energy: " + Integer.toString(previous) + " -> " + Integer.toString(m_Energy) + " (" + comment + ")");
 	}
 	
 	public void adjustHealth(int delta, String comment) {
@@ -641,7 +641,7 @@ public class Tank  extends WorldEntity {
 		} else if (m_Health > kMaximumHealth) {
 			m_Health = kMaximumHealth;
 		}
-		logger.info(getName() + ": health: " + Integer.toString(previous) + " -> " + Integer.toString(m_Health) + "(" + comment + ")");
+		logger.info(getName() + ": health: " + Integer.toString(previous) + " -> " + Integer.toString(m_Health) + " (" + comment + ")");
 	}
 	
 	public void collide() {

@@ -13,7 +13,7 @@ import simulation.visuals.*;
 
 public class TankSoarWindowManager extends WindowManager implements SimulationListener {
 	
-	private static Logger logger = Logger.getLogger("tanksoar.visuals");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	public static final String kFoodRemaining = "Food remaining: ";
 	public static final String kScoreRemaining = "Points remaining: ";

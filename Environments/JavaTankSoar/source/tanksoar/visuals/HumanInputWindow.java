@@ -12,7 +12,7 @@ import tanksoar.*;
 
 public class HumanInputWindow {
 	
-	private static Logger logger = Logger.getLogger("tanksoar.visuals");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	MoveInfo m_Move = new MoveInfo();
 	

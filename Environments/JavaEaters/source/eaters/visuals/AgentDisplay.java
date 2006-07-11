@@ -14,7 +14,7 @@ import simulation.visuals.*;
 import utilities.*;
 
 public class AgentDisplay extends Composite {
-	private static Logger logger = Logger.getLogger("eaters.visuals");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	public static final int kAgentMapCellSize = 20;
 	static final int kTableHeight = 120;

@@ -103,7 +103,7 @@ public class InputLinkManager {
 	private IntElement m_xWME;
 	private IntElement m_yWME;			
 
-	private static Logger logger = Logger.getLogger("tanksoar");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	private Identifier[][] radarCellIDs = new Identifier[Tank.kRadarWidth][Tank.kRadarHeight];
 	private StringElement[][] radarColors = new StringElement[Tank.kRadarWidth][Tank.kRadarHeight];

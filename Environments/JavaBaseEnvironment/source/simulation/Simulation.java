@@ -295,8 +295,6 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		m_WorldManager.update();
 		++m_WorldCount;
 		if (m_WorldCount % 250 == 0) {
-			logger.info("World count: " + Integer.toString(m_WorldCount));
-		} else {
 			logger.finest("World count: " + Integer.toString(m_WorldCount));
 		}
 		fireSimulationEvent(SimulationListener.kUpdateEvent);
@@ -400,8 +398,6 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
   		m_WorldManager.update();
 		++m_WorldCount;
 		if (m_WorldCount % 250 == 0) {
-			logger.info("World count: " + Integer.toString(m_WorldCount));
-		} else {
 			logger.finest("World count: " + Integer.toString(m_WorldCount));
 		}
 		fireSimulationEvent(SimulationListener.kUpdateEvent);
