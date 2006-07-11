@@ -328,6 +328,40 @@ public class TankSoarWorld extends World implements WorldManager {
 		return m_Simulation.getWorldCount();
 	}
 	
+	private void printEndingStats(int[] scores) {
+		if (m_PrintedStats) {
+			return;
+		}
+		m_PrintedStats = true;
+		
+		boolean draw = false;
+		if (scores.length > 1) {
+			if (scores[scores.length - 1] ==  scores[scores.length - 2]) {
+				logger.finer("Draw detected.");
+				draw = true;
+			}
+		}
+		
+		for (int j = 0; j < m_Tanks.length; ++j) {
+			String status = null;
+			if (m_Tanks[j].getPoints() == scores[scores.length - 1]) {
+				status = draw ? "draw" : "winner";
+			} else {
+				status = "loser";
+			}
+			logger.info(m_Tanks[j].getName() + ": " + m_Tanks[j].getPoints() + " (" + status + ").");
+		}
+	}
+	
+	private int[] getSortedScores() {
+		int[] scores = new int[m_Tanks.length];
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			scores[i] = m_Tanks[i].getPoints();
+		}
+		Arrays.sort(scores);
+		return scores;
+	}
+	
 	public void update() {
 		logger.finest("Resetting modified flags on map.");
 		for (int y = 0; y < m_World.length; ++y) {
@@ -340,73 +374,26 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 		}			
 
-		// Check for goal state
-		int[] scores = null;
-		boolean draw = false;
-		int highScore = (m_Tanks.length > 0) ? m_Tanks[0].getPoints() : 0;
-		
-		if (m_Tanks.length > 1) {
-			scores = new int[m_Tanks.length];
-			
-			for (int i = 0; i < m_Tanks.length; ++i) {
-				scores[i] = m_Tanks[i].getPoints();
-			}
-			Arrays.sort(scores);
-			highScore = scores[scores.length - 1];
-			if (scores[scores.length - 1] ==  scores[scores.length - 2]) {
-				draw = true;
-			}
-			
-			if (scores[scores.length - 1] >= m_Simulation.getWinningScore()) {
-				// We have a winner (or a draw)
-				if (draw) {
-					logger.finer("Draw detected.");
-				}
-				
-				if (!m_PrintedStats) {
-					m_Simulation.notificationMessage("At least one tank has achieved at least " + Integer.toString(m_Simulation.getWinningScore()) + " points.");
-					m_Simulation.stopSimulation();
-					m_PrintedStats = true;
-					for (int j = 0; j < m_Tanks.length; ++j) {
-						String status = null;
-						if (m_Tanks[j].getPoints() == highScore) {
-							status = draw ? "draw" : "winner";
-						} else {
-							status = "loser";
-						}
-						logger.info(m_Tanks[j].getName() + ": " + m_Tanks[j].getPoints() + " (" + status + ").");
-					}
-				}
-				return;
-			}
-		}
-		
-		// Check for max updates
-		if (m_Simulation.reachedMaxUpdates()) {
-			if (draw) {
-				logger.finer("Draw detected.");
-			}
-
-			if (!m_PrintedStats) {
-				m_Simulation.notificationMessage("Reached maximum updates, stopping.");
-				m_Simulation.stopSimulation();
-				m_PrintedStats = true;
-				for (int j = 0; j < m_Tanks.length; ++j) {
-					String status = null;
-					if (m_Tanks[j].getPoints() == highScore) {
-						status = draw ? "draw" : "winner";
-					} else {
-						status = "loser";
-					}
-					logger.info(m_Tanks[j].getName() + ": " + m_Tanks[j].getPoints() + " (" + status + ").");
-				}
-			}
+		// Sanity check, need tanks to make an update meaningful
+		if (m_Tanks == null || m_Tanks.length == 0) {
+			logger.warning("Update called with no tanks.");
 			return;
 		}
 		
-		// Sanity check, need tanks to make an update meaningful
-		if (m_Tanks == null) {
-			logger.warning("Update called with no tanks.");
+		// Check for goal state
+		int[] scores = getSortedScores();
+		if (scores[scores.length - 1] >= m_Simulation.getWinningScore()) {
+			// We have a winner (or a draw)
+			m_Simulation.notificationMessage("At least one tank has achieved at least " + Integer.toString(m_Simulation.getWinningScore()) + " points.");
+			m_Simulation.stopSimulation();
+			printEndingStats(scores);
+			return;
+		}
+		if (m_Simulation.reachedMaxUpdates()) {
+			// We have a winner (or a draw)
+			m_Simulation.notificationMessage("Reached maximum updates, stopping.");
+			m_Simulation.stopSimulation();
+			printEndingStats(scores);
 			return;
 		}
 		
@@ -620,6 +607,10 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 	
 	public void shutdown() {
+		if (m_Tanks != null && m_Tanks.length > 0) {
+			int[] scores = getSortedScores();
+			printEndingStats(scores);
+		}
 		while (m_Tanks != null) {
 			m_Simulation.destroyTank(m_Tanks[0]);
 		}
