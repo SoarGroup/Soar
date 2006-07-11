@@ -7,6 +7,7 @@ import cgitb; cgitb.enable()
 import sys
 import os
 sys.path.append(os.path.abspath('modules'))
+sys.path.append(os.path.abspath('modules/logintools'))
 
 from configobj import ConfigObj
 from pathutils import *
@@ -27,7 +28,8 @@ def get_userid(cursor, screwed=False):
 		if screwed:
 			raise RuntimeError("Username addition silently failed, preventing recursion.")
 		cursor.execute("INSERT INTO users (username) VALUES(%s)", (userconfig['username'],))
-		userid = get_userid(cursor, True)
+		return get_userid(cursor, True)
+		
 	result, = cursor.fetchone()
 	return int(result)
 
@@ -69,4 +71,7 @@ if action == "mirrormatch":
 	tankid = int(theform['tankid'].value)
 	mirrormatch_page(action, userid, cursor, tankid)
 
+if action == "resetstats":
+	resetstats(cursor)
+	welcome_page(action, userid, cursor)
 

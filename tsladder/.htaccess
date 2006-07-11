@@ -1,4 +1,3 @@
-<FilesMatch ^(.*\.py|.*\.pl|.*\.txt)$>
+<FilesMatch ^(.*\.py|.*\.pl|.*\.txt|.*\.ini)$>
   deny from all
 </FilesMatch>
-  

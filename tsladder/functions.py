@@ -22,7 +22,7 @@ def get_tank(tankid, cursor):
 def account_links(username):
 	ret = "<p>" + username + ": <a href='" + thisscript + "'>Home</a> | <a href='" + thisscript + "?action=managetanks'>Manage Tanks</a> | <a href='" + thisscript + "?login=logout'>Log out</a> | <a href='" + thisscript + "?login=editaccount'>Edit account</a>"
 	if username == "admin":
-        	ret += " | <a href='" + thisscript + "?login=admin'>Admin</a>"
+        	ret += " | <a href='" + thisscript + "?login=admin'>Admin</a> | <a href='" + thisscript + "?action=resetstats'>Reset Stats</a>"
 	ret += "</p>\n"
 	return ret
 	
@@ -35,8 +35,9 @@ def welcome_page(action, userid, cursor):
 	page += readfile('templates/footer.html')
 
 	stats = "<table border='1'>\n"
-	stats += "<tr><td>Tank</td><td>Wins</td><td>Losses</td><td>Draws</td><td>Points per Match</td></tr>\n"
-	cursor.execute("SELECT * FROM tanks")
+	stats += "<tr><td colspan='7'><center>Max updates: 10000, winning score: 100</center></td></tr>\n"
+	stats += "<tr><td>Tank</td><td>Wins</td><td>Losses</td><td>Draws</td><td>Unfinished</td><td>Points per Match</td><td>Ladder Points</td></tr>\n"
+	cursor.execute("SELECT * FROM tanks ORDER BY ladderpoints DESC")
 	for tank in cursor.fetchall():
 		username = get_username(tank[1], cursor)
 		stats += "<tr><td>"
@@ -49,6 +50,10 @@ def welcome_page(action, userid, cursor):
 		stats += str(tank[5])
 		stats += "</td><td>"
 		stats += str(tank[6])
+		stats += "</td><td>"
+		stats += str(tank[7])
+		stats += "</td><td>"
+		stats += str(tank[11])
 		stats += "</td></tr>\n"
 	stats += "</table>"
 	
@@ -74,7 +79,7 @@ def managetanks_page(action, userid, cursor):
 	else:
 		for tank in cursor.fetchall():
 			tanktable += "<tr><td>"
-			tanktable += tank[2] + " (" + tank[7] + ")"
+			tanktable += tank[2] + " (" + tank[8] + ")"
 			tanktable += "</td><td><a href='" + thisscript + "?action=mirrormatch&tankid=" + str(tank[0]) + "'>MirrorMatch</a></td><td><a href='" + thisscript + "?action=viewtank&tankid=" + str(tank[0]) + "'>View</a></td><td><a href='" + thisscript + "?action=deletetank&tankid=" + str(tank[0]) + "'>Delete</a></td></tr>\n"
 	tanktable += "\n</table>"
 
@@ -202,12 +207,12 @@ def mirrormatch_page(action, userid, cursor, tankid):
 	username = get_username(userid, cursor)
 	tank = get_tank(tankid, cursor)
 	
-	settings = readfile("templates/settings.xml")
+	settings = readfile("templates/settings-mirrormatch.xml")
 	
 	settings = settings.replace('**red tank name**', tank[2] + "-red")
 	settings = settings.replace('**blue tank name**', tank[2] + "-blue")
-	settings = settings.replace('**red tank source**', "tanks/" + username + "/" + tank[2] + "/" + tank[7])
-	settings = settings.replace('**blue tank source**', "tanks/" + username + "/" + tank[2] + "/" + tank[7])
+	settings = settings.replace('**red tank source**', "tanks/" + username + "/" + tank[2] + "/" + tank[8])
+	settings = settings.replace('**blue tank source**', "tanks/" + username + "/" + tank[2] + "/" + tank[8])
 
 	settingsfile = open("JavaTankSoar/tanksoar-default-settings.xml", 'w')
 	settingsfile.write(settings)
@@ -238,3 +243,8 @@ def mirrormatch_page(action, userid, cursor, tankid):
 	output.close()
 	os.chdir(cwd)
 	sys.exit()
+
+def resetstats(cursor):
+	cursor.execute("UPDATE tanks SET wins=0,losses=0,draws=0,pointspermatch=0,fighting=0,ladderpoints=0,unfinished=0")
+	cursor.execute("DELETE FROM matches")
+	return
