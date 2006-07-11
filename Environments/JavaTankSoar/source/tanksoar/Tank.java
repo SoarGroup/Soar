@@ -34,7 +34,7 @@ public class Tank  extends WorldEntity {
 	private TankSoarCell[][] radarCells = new TankSoarCell[kRadarWidth][kRadarHeight];
 
 	public final static int kRadarWidth = 3;
-	public final static int kRadarHeight = 14;
+	public final static int kRadarHeight = 15;
 	
 	private final static int kSheildEnergyUsage = 20;
 	private final static int kMissileHealthDamage = 400;
@@ -416,7 +416,7 @@ public class Tank  extends WorldEntity {
 		// Figure out desired radar power.
 		int desiredRadarPower = m_LastMove.radarPower ? m_LastMove.radarPowerSetting : m_RadarPower;
 		// Never exceed max power
-		desiredRadarPower = desiredRadarPower > Tank.kRadarHeight ? Tank.kRadarHeight : desiredRadarPower;
+		desiredRadarPower = desiredRadarPower >= Tank.kRadarHeight ? Tank.kRadarHeight - 1 : desiredRadarPower;
 		// Never exceed current energy usage
 		if (desiredRadarPower > m_Energy) {
 			logger.fine(getName() + ": Radar power limited by available energy: " + Integer.toString(m_Energy));
