@@ -637,11 +637,11 @@ public class EatersWorld extends World implements WorldManager {
 				}
 				m_Eaters[i].setLocation(newLocation);
 				if (move.jump) {
-					m_Eaters[i].adjustPoints(kJumpPenalty);
+					m_Eaters[i].adjustPoints(kJumpPenalty, "jump penalty");
 				}
 				m_Eaters[i].setMoved();
 			} else {
-				m_Eaters[i].adjustPoints(kWallPenalty);
+				m_Eaters[i].adjustPoints(kWallPenalty, "wall collision");
 			}
 		}
 	}
@@ -659,7 +659,7 @@ public class EatersWorld extends World implements WorldManager {
 			Food f = getCell(m_Eaters[i].getLocation()).setEater(m_Eaters[i]);
 			if (f != null) {
 				if (m_Eaters[i].isHungry()) {
-					m_Eaters[i].adjustPoints(f.getValue());
+					m_Eaters[i].adjustPoints(f.getValue(), "food");
 				} else {
 					getCell(m_Eaters[i].getLocation()).setFood(f);
 				}
@@ -800,7 +800,7 @@ public class EatersWorld extends World implements WorldManager {
 				collidees[i].setLocation(findStartingLocation());
 				Food f = getCell(collidees[i].getLocation()).setEater(collidees[i]);
 				if (f != null) {
-					collidees[i].adjustPoints(f.getValue());
+					collidees[i].adjustPoints(f.getValue(), "food");
 				}
 			}
 		}

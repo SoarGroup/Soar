@@ -394,12 +394,10 @@ public class Tank  extends WorldEntity {
 		// Chargers
 		if (m_Health > 0) {
 			if (cell.isEnergyRecharger()) {
-				logger.info(getName() + ": Recharging energy.");
-				adjustEnergy(250);
+				adjustEnergy(250, "energy recharger");
 			}
 			if (cell.isHealthRecharger()) {
-				logger.info(getName() + ": Recharging health.");
-				adjustEnergy(250);
+				adjustHealth(250, "health recharger");
 			}
 		}
 		
@@ -407,7 +405,7 @@ public class Tank  extends WorldEntity {
 		if (m_ShieldStatus) {
 			boolean enoughPowerForShields = m_Energy >= kSheildEnergyUsage;
 			if (enoughPowerForShields) {
-				adjustEnergy(kSheildEnergyUsage * -1);
+				adjustEnergy(kSheildEnergyUsage * -1, "shield usage");
 			} else {
 				logger.fine(getName() + ": Not enough power for shields.");
 				m_ShieldStatus = false;
@@ -446,7 +444,7 @@ public class Tank  extends WorldEntity {
 		}
 		// Consume radar energy.
 		if (m_RadarSwitch) {
-			adjustEnergy(m_RadarPower * -1);
+			adjustEnergy(m_RadarPower * -1, "radar usage");
 			m_RadarDistance = scan(m_RadarPower);
 		} else {
 			clearRadar();
@@ -585,30 +583,29 @@ public class Tank  extends WorldEntity {
 		String output = getName() + ": hit by missile(s): ";
 		for (int i = 0; i < missileIDs.length; ++i) {
 			owners[i] = m_World.getMissileByID(missileIDs[i].intValue()).getOwner();
-			output += missileIDs[i].toString() + " (" + owners[i].getName() + ") ";
-		}
-		
-		if (m_ShieldStatus) {
-			output += "(shields up)";
-			adjustEnergy(kMissileEnergyDamage * -1 * missileIDs.length);
-		} else {
-			adjustHealth(kMissileHealthDamage * -1 * missileIDs.length);
-			for (int i = 0; i < owners.length; ++i) {
-				assert !owners[i].equals(this);
-				owners[i].adjustPoints(kMissileHitAward);
-				adjustPoints(kMissileHitPenalty);
-			}
+			output += missileIDs[i].toString() + " (" + owners[i].getName() + ")";
 		}
 		logger.info(output);
 		
+		if (m_ShieldStatus) {
+			adjustEnergy(kMissileEnergyDamage * -1 * missileIDs.length, "hit with shields up");
+		} else {
+			adjustHealth(kMissileHealthDamage * -1 * missileIDs.length, "hit");
+			for (int i = 0; i < owners.length; ++i) {
+				assert !owners[i].equals(this);
+				owners[i].adjustPoints(kMissileHitAward, "hit award");
+				adjustPoints(kMissileHitPenalty, "hit penalty");
+			}
+		}
+		
 		if (m_World.getCell(getLocation()).isEnergyRecharger() || m_World.getCell(getLocation()).isHealthRecharger()) {
 			logger.info(getName() + ": hit on charger");
-			adjustHealth(m_Health * -1);
+			adjustHealth(m_Health * -1, "hit on charger");
 		}
 		
 		if (m_Health <= 0) {
 			logger.info(getName() + ": fragged");
-			adjustPoints(kKillPenalty);
+			adjustPoints(kKillPenalty, "kill penalty");
 			for (int i = 0; i < owners.length; ++i) {
 				assert !owners[i].equals(this);
 				boolean duplicate = false;
@@ -619,13 +616,13 @@ public class Tank  extends WorldEntity {
 					}
 				}
 				if (!duplicate) {
-					owners[i].adjustPoints(kKillAward);
+					owners[i].adjustPoints(kKillAward, "kill award");
 				}
 			}
 		}
 	}
 	
-	public void adjustEnergy(int delta) {
+	public void adjustEnergy(int delta, String comment) {
 		int previous = m_Energy;
 		m_Energy += delta;
 		if (m_Energy < 0) {
@@ -633,10 +630,10 @@ public class Tank  extends WorldEntity {
 		} else if (m_Energy > kMaximumEnergy) {
 			m_Energy = kMaximumEnergy;
 		}			
-		logger.info(getName() + ": energy: " + Integer.toString(previous) + " -> " + Integer.toString(m_Energy));
+		logger.info(getName() + ": energy: " + Integer.toString(previous) + " -> " + Integer.toString(m_Energy) + "(" + comment + ")");
 	}
 	
-	public void adjustHealth(int delta) {
+	public void adjustHealth(int delta, String comment) {
 		int previous = m_Health;
 		m_Health += delta;
 		if (m_Health < 0) {
@@ -644,12 +641,12 @@ public class Tank  extends WorldEntity {
 		} else if (m_Health > kMaximumHealth) {
 			m_Health = kMaximumHealth;
 		}
-		logger.info(getName() + ": health: " + Integer.toString(previous) + " -> " + Integer.toString(m_Health));
+		logger.info(getName() + ": health: " + Integer.toString(previous) + " -> " + Integer.toString(m_Health) + "(" + comment + ")");
 	}
 	
 	public void collide() {
 		// Collision damage
-		adjustHealth(kCollisionHealthDamage * -1);
+		adjustHealth(kCollisionHealthDamage * -1, "collision");
 		m_LastMove.move = false;
 	}
 	public int getEnergy() {
