@@ -7,7 +7,7 @@ import eaters.*;
 import simulation.visuals.*;
 
 public class EatersSimulationButtons extends SimulationButtons {
-	private static Logger logger = Logger.getLogger("eaters.visuals");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	EatersSimulation m_Simulation;
 	

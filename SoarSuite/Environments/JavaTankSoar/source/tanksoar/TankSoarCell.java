@@ -6,7 +6,7 @@ import simulation.*;
 import utilities.*;
 
 public class TankSoarCell extends Cell {
-	private static Logger logger = Logger.getLogger("tanksoar");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	// background
 	private static final int kWallInt = 0;

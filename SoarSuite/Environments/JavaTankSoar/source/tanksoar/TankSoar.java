@@ -18,8 +18,7 @@ public class TankSoar {
 	private boolean noLogSwitch;
 	private Level logLevel = Level.INFO;
 	
-	private static Logger logger = Logger.getLogger("tanksoar");
-	private static Logger rootLogger = Logger.getLogger("");
+	private static Logger logger = Logger.getLogger("simulation");
 
 	public TankSoar(String[] args) {
 		
@@ -35,12 +34,13 @@ public class TankSoar {
 			try {
 				FileHandler handler = new FileHandler(logFilename);
 				handler.setFormatter(new JonsFormatter());
-				rootLogger.addHandler(handler);
+				logger.addHandler(handler);
 			} catch (IOException e) {
 				System.err.println("Failed to create " + logFilename + ": " + e.getMessage());
 				System.exit(1);
 			}
 
+			logger.setUseParentHandlers(false);
 			logger.setLevel(logLevel);
 			logger.info("Java TankSoar started (logging " + logger.getLevel().getName() + " and up).");
 			String commandLine = new String();

@@ -12,7 +12,7 @@ import simulation.*;
 import simulation.visuals.*;
 
 public class EatersWindowManager extends WindowManager implements SimulationListener {
-	private static Logger logger = Logger.getLogger("eaters.visuals");
+	private static Logger logger = Logger.getLogger("simulation");
 	public static final int kMainMapCellSize = 20;
 	public static final String kFoodRemaining = "Food remaining: ";
 	public static final String kScoreRemaining = "Points remaining: ";

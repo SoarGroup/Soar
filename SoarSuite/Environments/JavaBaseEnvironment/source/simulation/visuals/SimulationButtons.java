@@ -15,7 +15,7 @@ public class SimulationButtons extends Composite {
 	protected Button m_StepButton;
 	protected Button m_ResetButton;
 //	protected Text m_RunsText;
-	private static Logger logger = Logger.getLogger("simulation.visuals");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	private Simulation m_Simulation;
 	

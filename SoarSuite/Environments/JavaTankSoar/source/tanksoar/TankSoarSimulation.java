@@ -8,7 +8,7 @@ import utilities.*;
 
 public class TankSoarSimulation extends Simulation implements SimulationManager {
 
-	private static Logger logger = Logger.getLogger("tanksoar");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	public static final int kMaxTanks = 7;
 	public static final String kMapFilter = "*.tmap";

@@ -25,7 +25,7 @@ public class VisualWorld extends Canvas {
 
 	public static boolean internalRepaint = false;
 	
-	private static Logger logger = Logger.getLogger("simulation.visuals");
+	private static Logger logger = Logger.getLogger("simulation");
 	protected Display m_Display;
 	protected int m_CellSize;
 	protected boolean m_Disabled = false;

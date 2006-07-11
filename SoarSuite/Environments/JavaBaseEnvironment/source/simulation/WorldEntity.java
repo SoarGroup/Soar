@@ -106,7 +106,7 @@ public class WorldEntity {
 	public void adjustPoints(int delta, String comment) {
 		int previous = m_Points;
 		m_Points += delta;
-		logger.info(getName() + " score: " + Integer.toString(previous) + " -> " + Integer.toString(m_Points) + "(" + comment + ")");
+		logger.info(getName() + " score: " + Integer.toString(previous) + " -> " + Integer.toString(m_Points) + " (" + comment + ")");
 	}
 	public void setLocation(MapPoint location) {
 		m_Location = location;

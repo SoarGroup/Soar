@@ -10,7 +10,7 @@ import org.eclipse.swt.widgets.*;
 import simulation.*;
 
 public class MapButtons extends Composite {
-	private static Logger logger = Logger.getLogger("simulation.visuals");
+	private static Logger logger = Logger.getLogger("simulation");
 	private Simulation m_Simulation;
 	private Button m_ChangeMapButton;
 	

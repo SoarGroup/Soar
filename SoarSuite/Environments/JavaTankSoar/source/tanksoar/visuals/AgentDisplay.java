@@ -23,7 +23,7 @@ public class AgentDisplay extends Composite {
 	static final int kHealthWidth = 58;
 	static final int kEnergyWidth = 60;
 	
-	private static Logger logger = Logger.getLogger("tanksoar.visuals");
+	private static Logger logger = Logger.getLogger("simulation");
 	TankSoarSimulation m_Simulation;
 	Table m_AgentTable;
 	WorldEntity m_SelectedEntity;

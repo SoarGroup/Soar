@@ -5,7 +5,7 @@ import java.util.logging.*;
 import simulation.WorldEntity;
 
 public class RelativeDirections {
-	private static Logger logger = Logger.getLogger("utilities");
+	private static Logger logger = Logger.getLogger("simulation");
 	public int forward;
 	public int backward;
 	public int left;

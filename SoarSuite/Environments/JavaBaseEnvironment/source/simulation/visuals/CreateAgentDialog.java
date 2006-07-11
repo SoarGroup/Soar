@@ -11,7 +11,7 @@ import simulation.*;
 
 public class CreateAgentDialog extends Dialog {
 
-	private static Logger logger = Logger.getLogger("simulation.visuals");
+	private static Logger logger = Logger.getLogger("simulation");
 	final int kNameCharacterLimit = 12;
 	SimulationManager m_Simulation;
 	String m_Productions;

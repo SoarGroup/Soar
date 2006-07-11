@@ -9,7 +9,7 @@ import utilities.*;
 
 public class TankSoarWorld extends World implements WorldManager {
 	
-	private static Logger logger = Logger.getLogger("tanksoar");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	private static final String kTagTankSoarWorld = "tanksoar-world";
 

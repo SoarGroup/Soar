@@ -13,7 +13,7 @@ import simulation.visuals.*;
 import utilities.*;
 
 public class EatersVisualWorld extends VisualWorld implements PaintListener {
-	private static Logger logger = Logger.getLogger("eaters.visuals");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	static HashMap m_FoodColors;
 	
