@@ -49,6 +49,14 @@
 
       OPERAND_which_assert_list: (need comment info from REW or RCHONG)
 
+      RL: Is this an RL rule? Only RL rules can be updated by the RL mechanism.
+        RL is not a production type, since user prods, chunks, or default rules
+	can be RL rules. A rule is an RL rule iff its RHS consists of single
+ 	numeric preference.
+ 
+      copies_awaiting_updates: Is this rule on a list of rules awaiting RL updates?
+	   If so, it must be removed if it is excised.
+
    Reference counts on productions:
       +1 if it's in production memory (i.e., hasn't been excised)
       +1 for each existing instantiation pointing to it
@@ -104,8 +112,11 @@ typedef struct production_struct {
   list *rhs_unbound_variables;            /* RHS vars not bound on LHS */
   struct instantiation_struct *instantiations; /* dll of inst's in MS */
   int OPERAND_which_assert_list;          /* RCHONG: 10.11 */
-  byte interrupt;						  /* SW: 7.31.03 */
-  bool already_fired;         /* RPM test workaround for bug #139 */
+  byte interrupt;			  /* SW: 7.31.03 */
+  bool already_fired;                     /* RPM test workaround for bug #139 */
+  Bool RL;                                /* is this an RL rule */
+  int copies_awaiting_updates;          /* how many copies of rule await Bellman updates */
+
 } production;
 
 /* ========================================================================

@@ -93,6 +93,11 @@
          of all preferences supported by this goal.  This is needed so
          we can remove o-supported preferences when the goal goes away.
 
+       RL_data: (RL) for goals, stores info between cycles
+         needed to perform Bellman update at this goal level
+       reward_header: (RL) for goals, pointer to reward-link identifier,
+ 	 used to find rewards placed in WM
+
        gds: pointer to a goal's dependency set
        saved_firing_type: the firing type that must be restored if
           Waterfall processing returns to this level. see consistency.c
@@ -224,6 +229,10 @@ typedef struct identifier_struct {
   union symbol_union *higher_goal, *lower_goal;
   struct slot_struct *operator_slot;
   struct preference_struct *preferences_from_goal;
+
+  /* --- fields used for reinforcement learning - only on goals --- */
+  struct RL_data_struct *RL_data;
+  union symbol_union *reward_header;
 
   /* REW: begin 09.15.96 */
   struct gds_struct *gds;    /* Pointer to a goal's dependency set */

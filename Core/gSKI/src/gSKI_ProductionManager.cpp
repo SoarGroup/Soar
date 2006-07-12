@@ -452,6 +452,38 @@ _|___/    __         _    _             ____  _               _
       return true;
    }
 
+   bool ProductionManager::RemoveAllRLProductions(int& exciseCount, Error* err) const
+   {
+     agent * a;
+     ClearError(err);
+     a = m_agent->GetSoarAgent();
+     
+     for (production* prod=a->all_productions_of_type[DEFAULT_PRODUCTION_TYPE]; prod != NIL; prod = prod->next)
+       {
+	 if (prod->RL){
+	   exciseCount++;
+	   excise_production (a, prod, a->sysparams[TRACE_LOADING_SYSPARAM]);
+	 }
+       }
+     for (production* prod=a->all_productions_of_type[USER_PRODUCTION_TYPE]; prod != NIL; prod = prod->next)
+       {
+	 if (prod->RL){
+	   exciseCount++;
+	   excise_production (a, prod,a->sysparams[TRACE_LOADING_SYSPARAM]);
+	 }
+       }
+     for (production* prod=a->all_productions_of_type[CHUNK_PRODUCTION_TYPE];	prod != NIL; prod = prod->next)
+       {
+	 if (prod->RL){
+	   exciseCount++;
+	   excise_production (a, prod,a->sysparams[TRACE_LOADING_SYSPARAM]);
+	 }
+       }
+     
+     a->RL_count = 1;
+     return true;
+   }
+
    bool ProductionManager::RemoveAllChunks(int& exciseCount, Error* err) const
    {
       agent * a;

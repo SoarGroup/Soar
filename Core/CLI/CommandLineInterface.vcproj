@@ -222,6 +222,9 @@
 					RelativePath=".\src\cli_explainbacktraces.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_exploration.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_firingcounts.cpp">
 				</File>
 				<File
@@ -301,6 +304,9 @@
 				</File>
 				<File
 					RelativePath=".\src\cli_retenet.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_RL.cpp">
 				</File>
 				<File
 					RelativePath=".\src\cli_run.cpp">

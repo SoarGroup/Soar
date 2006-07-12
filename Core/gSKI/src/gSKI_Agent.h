@@ -1193,8 +1193,15 @@ namespace gSKI
       virtual egSKINumericIndifferentMode GetNumericIndifferentMode(Error* pErr = 0);
       virtual void SetNumericIndifferentMode(egSKINumericIndifferentMode m, Error* pErr = 0);
 
-	  virtual bool GetOperand2Mode();
-	  virtual void SetOperand2Mode(bool mode);
+      virtual void SetExplorationMode(egSKIExplorationMode m, Error* pErr = 0);
+      virtual egSKIExplorationMode GetExplorationMode(Error* pErr = 0);
+      virtual void SetExplorationParameter(egSKIExplorationParameter m, double value, Error* pErr = 0);
+      virtual double GetExplorationParameter(egSKIExplorationParameter m, Error* pErr = 0);
+      virtual void SetRLParameter(egSKIRLParameter m, double value, Error* pErr = 0);
+      virtual double GetRLParameter(egSKIRLParameter m, Error* pErr = 0);
+
+      virtual bool GetOperand2Mode();
+      virtual void SetOperand2Mode(bool mode);
 
       ///////////////////////////////// NOT PART OF INTERFACE ///////////////////////////
 

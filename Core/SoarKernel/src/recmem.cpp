@@ -44,6 +44,7 @@
 #include "osupport.h"
 #include "recmem.h"
 #include "tempmem.h"
+#include "reinforcement_learning.h"
 
 /* JC ADDED: for gSKI events */
 #include "gski_event_system_functions.h"
@@ -649,6 +650,9 @@ void create_instantiation (agent* thisAgent, production *prod,
          pref->inst = inst;
          insert_at_head_of_dll (inst->preferences_generated, pref,
                inst_next, inst_prev);
+	 //     if ((inst->prod->type == TEMPLATE_PRODUCTION_TYPE)
+	 //          && (pref->type == NUMERIC_INDIFFERENT_PREFERENCE_TYPE))
+	 //	    pref->type = TEMPLATE_PREFERENCE_TYPE;
          if (inst->prod->declared_support==DECLARED_O_SUPPORT)
             pref->o_supported = TRUE;
          else if (inst->prod->declared_support==DECLARED_I_SUPPORT)

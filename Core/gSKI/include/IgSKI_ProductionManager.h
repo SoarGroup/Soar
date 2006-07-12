@@ -160,6 +160,9 @@ namespace gSKI {
        * @returns Success or failure of the operation.
        */
        virtual bool RemoveAllUserProductions(int& i, Error *pErr = 0) const = 0;
+	   /*********************************************/
+	   virtual bool RemoveAllRLProductions(int& i, Error *pErr = 0) const = 0;
+
 
 	  /**
        * @brief Remove all Chunks and Justifications

@@ -983,6 +983,13 @@ void print_production (agent* thisAgent, production *p, Bool internal) {
     print_string (thisAgent, "    :justification ;# not reloadable\n");
     gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kProductionType, kProductionTypeJustification);
     break;
+#ifdef NUMERIC_INDIFFERENCE
+
+  case TEMPLATE_PRODUCTION_TYPE:
+    print_string (thisAgent, "   :template\n");
+    gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kProductionType, kProductionTypeDefault);
+    break;
+#endif
   }
 
   if (p->declared_support==DECLARED_O_SUPPORT)
@@ -1075,6 +1082,10 @@ char preference_type_indicator (agent* thisAgent, byte type) {
   case BETTER_PREFERENCE_TYPE: return '>';
   case WORST_PREFERENCE_TYPE: return '<';
   case WORSE_PREFERENCE_TYPE: return '<';
+#ifdef NUMERIC_INDIFFERENCE
+  case NUMERIC_INDIFFERENT_PREFERENCE_TYPE: return '=';
+//  case TEMPLATE_PREFERENCE_TYPE: return '=';
+#endif
   default:
     { char msg[BUFFER_MSG_SIZE];
     strncpy(msg,

@@ -240,6 +240,8 @@ protected:
 	bool ParseWarnings(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseWatch(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseWatchWMEs(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	bool ParseExploration(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	bool ParseRL(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 
 	/*************************************************************
 	* @brief add-wme command
@@ -545,6 +547,21 @@ protected:
 	*************************************************************/
 	bool DoReteNet(gSKI::IAgent* pAgent, bool save, std::string filename);
 
+	/****************************************************************
+	* @brief RL command
+	* @param pConnection Pointer to connection
+	* @param pResponse Pointer to XML response
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param RLSetting RL on/off
+	* @param Temp Assignment to the alpha parameter
+	* @param epsilon Assignment to the gamma parameter
+	*****************************************************************/
+
+	bool DoRL(gSKI::IAgent* pAgent, const int RLSetting, const int algSetting, const double alpha, const double gamma, const double lambda);
+
+	/*****************************************************************/
+	bool DoExploration(gSKI::IAgent* pAgent, const int mode, const double Temp, const double epsilon);
+
 	/*************************************************************
 	* @brief run command
 	* @param pAgent The pointer to the gSKI agent interface
@@ -722,6 +739,7 @@ protected:
 	*************************************************************/
 	int ParseLevelOptarg();
 	int ParseLearningOptarg();
+	int ParseExplorationOptarg();
 	bool CheckOptargRemoveOrZero();
 	bool ProcessWatchLevelSettings(const int level, WatchBitset& options, WatchBitset& settings, int& wmeSetting, int& learnSetting);
 

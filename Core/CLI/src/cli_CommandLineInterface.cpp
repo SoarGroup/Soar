@@ -60,7 +60,8 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIEditProduction]				= &cli::CommandLineInterface::ParseEditProduction;
 	m_CommandMap[Commands::kCLIExcise]						= &cli::CommandLineInterface::ParseExcise;
 	m_CommandMap[Commands::kCLIExplainBacktraces]			= &cli::CommandLineInterface::ParseExplainBacktraces;
-	m_CommandMap[Commands::kCLIFiringCounts]				= &cli::CommandLineInterface::ParseFiringCounts;
+	m_CommandMap[Commands::kCLIExploration]			 	    = &cli::CommandLineInterface::ParseExploration;
+       	m_CommandMap[Commands::kCLIFiringCounts]				= &cli::CommandLineInterface::ParseFiringCounts;
 	m_CommandMap[Commands::kCLIGDSPrint]					= &cli::CommandLineInterface::ParseGDSPrint;
 	m_CommandMap[Commands::kCLIHelp]						= &cli::CommandLineInterface::ParseHelp;
 	m_CommandMap[Commands::kCLIIndifferentSelection]		= &cli::CommandLineInterface::ParseIndifferentSelection;
@@ -87,6 +88,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIQuit]						= &cli::CommandLineInterface::ParseQuit;
 	m_CommandMap[Commands::kCLIRemoveWME]					= &cli::CommandLineInterface::ParseRemoveWME;
 	m_CommandMap[Commands::kCLIReteNet]						= &cli::CommandLineInterface::ParseReteNet;
+	m_CommandMap[Commands::kCLIRL]						    = &cli::CommandLineInterface::ParseRL;
 	m_CommandMap[Commands::kCLIRun]							= &cli::CommandLineInterface::ParseRun;
 	m_CommandMap[Commands::kCLISaveBacktraces]				= &cli::CommandLineInterface::ParseSaveBacktraces;
 	m_CommandMap[Commands::kCLISetLibraryLocation]			= &cli::CommandLineInterface::ParseSetLibraryLocation;
@@ -119,6 +121,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIEcho]						= true ;
 	m_EchoMap[Commands::kCLIEchoCommands]				= true ;
 	m_EchoMap[Commands::kCLIExcise]						= true ;
+	m_EchoMap[Commands::kCLIExploration]					= true ;
 	m_EchoMap[Commands::kCLIIndifferentSelection]		= true ;
 	m_EchoMap[Commands::kCLIInitSoar]					= true ;
 	m_EchoMap[Commands::kCLIInputPeriod]				= true ;
@@ -134,6 +137,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIQuit]						= true ;
 	m_EchoMap[Commands::kCLIRemoveWME]					= true ;
 	m_EchoMap[Commands::kCLIReteNet]					= true ;
+	m_EchoMap[Commands::kCLIRL]						= true ;
 	m_EchoMap[Commands::kCLIRun]						= true ;
 	m_EchoMap[Commands::kCLISetLibraryLocation]			= true ;
 	m_EchoMap[Commands::kCLISoar8]						= true ;

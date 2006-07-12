@@ -103,6 +103,9 @@ extern byte run_preference_semantics_for_consistency_check (agent* thisAgent,
 /* These prototypes moved here from chunk.cpp -ajc (5/3/02) */
 extern byte type_of_existing_impasse (agent* thisAgent, Symbol *goal);
 
+  /* Added for RL.  snason */
+extern void compute_value_of_candidate(preference *cand, slot *s);
+
 #ifdef __cplusplus
 }
 #endif
