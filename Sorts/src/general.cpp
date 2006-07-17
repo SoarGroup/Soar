@@ -30,6 +30,9 @@
 #include "Vec2d.h"
 #include "Rectangle.h"
 
+
+#define dbg cout << "GENERAL "
+
 using namespace std;
 
 string catStrInt(const char* str, int x) {
@@ -232,4 +235,64 @@ int gobY(GameObj* gob) {
 bool damageTaken(int dir, uint4 dmg_vector) {
   uint4 mask = 1 << dir;
   return (mask & dmg_vector);
+}
+
+int getRelativeSector(int fromX, int fromY, int fromHeading, int toX, int toY) {
+  double adeg = GameConst::angle_from_dir(fromHeading, GameConst::HEADING_N);
+  double arad = adeg * PI / 180.0;
+  dbg << "between " << fromX << "," << fromY << " and " << toX << "," << toY << "\n";
+
+  dbg << "heading is " << arad << endl;
+  
+  
+  //   1 2       
+  //  0   3    
+  //  7   4    
+  //   5 6 
+
+  double angle = atan2(-1*(toY-fromY), (toX-fromX));
+  // -pi to pi
+  
+  dbg << "raw angle is " << angle << endl;
+  
+  angle -= arad; // normalized
+
+  dbg << "subtracted " << angle << endl;
+  if (angle < -1*PI) {
+    angle += 2*PI;
+  }
+  else if (angle > PI) {
+    angle -= 2*PI;
+  }
+
+  dbg << "corrected " << angle << endl;
+  
+
+  if (angle < -1*((7/8.0)*PI)) {
+    return 7;
+  }
+  else if (angle < -1*((5/8.0)*PI)) {
+    return 6;
+  }
+  else if (angle < -1*((3/8.0)*PI)) {
+    return 5;
+  }
+  else if (angle < -1*((1/8.0)*PI)) {
+    return 4;
+  }
+  else if (angle < ((1/8.0)*PI)) {
+    return 3;
+  }
+  else if (angle < ((3/8.0)*PI)) {
+    return 2;
+  }
+  else if (angle < ((5/8.0)*PI)) {
+    return 1;
+  }
+  else if (angle < ((7/8.0)*PI)) {
+    return 0;
+  }
+  else {
+    return 7;
+  }
 }

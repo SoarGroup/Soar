@@ -92,6 +92,10 @@ public:
 //  void removeTerrainContour(TerrainContour* c);
 //  void updateTerrainContour(TerrainContour* c);
 
+  // return a list of the N closest objects with the given type to
+  // coordinate.
+  list<GameObj*> getNClosest(coordinate point, int N, string type);
+
   int refCount;
 
 private: // functions

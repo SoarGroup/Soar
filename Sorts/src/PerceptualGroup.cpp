@@ -35,6 +35,8 @@
 #include "InfluenceERF.h"
 #include "Vec2d.h"
 
+#define CLUSTERING_ATTRIBUTES
+
 #ifdef USE_CANVAS
 #include "SortsCanvas.h"
 #define USE_CANVAS_GROUPS
@@ -168,7 +170,11 @@ void PerceptualGroup::generateData() {
   int shooting = 0;
   int damaged = 0;
 
+  int activePick = 0;
+
   Vec2d avg_heading;
+
+  int intAvgHeading = 0;
 
   moving = false;
   
@@ -183,6 +189,7 @@ void PerceptualGroup::generateData() {
 
     if (canMine) {
       mineralCount += gob->get_int("minerals");
+      activePick += gob->component("pickaxe")->get_int("active");
     }
     
     // not everything has health
@@ -201,6 +208,7 @@ void PerceptualGroup::generateData() {
     // average heading over those units that could move
     if (gob->has_attr("heading")) {
       avg_heading += getHeadingVector(gob->get_int("heading"));
+      intAvgHeading += gob->get_int("heading");
     }
 
     ScriptObj* weapon = gob->component("weapon");
@@ -233,6 +241,8 @@ void PerceptualGroup::generateData() {
   // average all attributes
   x /= size;
   y /= size;
+
+  intAvgHeading /= size;
 
   centerX = x;
   centerY = y;
@@ -274,6 +284,118 @@ void PerceptualGroup::generateData() {
 
   attribs.add("taking-damage", damaged);
 
+  attribs.add("heading", intAvgHeading);
+
+#ifdef CLUSTERING_ATTRIBUTES
+  if (friendly and canMine) {
+    msg << "CLUSTERING ATTRIBUTES:\n";
+    coordinate centerCoord;
+    centerCoord.x = centerX;
+    centerCoord.y = centerY;
+    int objDist, relSector;
+    int i = 0;
+    list<GameObj*> closest = Sorts::spatialDB->getNClosest(centerCoord, 3, "mineral");
+
+    for (list<GameObj*>::iterator it = closest.begin();
+        it != closest.end();
+        it++) {
+      if (*it != NULL) {
+        objDist = sqrt(squaredDistance(centerX, centerY, gobX(*it), gobY(*it)));
+        if (objDist <= 10) {
+          objDist = 0;
+        }
+        else if (objDist <= 20) {
+          objDist = 1;
+        }
+        else if (objDist <= 50) {
+          objDist = 2;
+        }
+        else if (objDist <= 100) {
+          objDist = 3;
+        }
+        else if (objDist <= 300) {
+          objDist = 4;
+        }
+        else {
+          objDist = 1000;
+        }
+
+        relSector = getRelativeSector(centerX, centerY, intAvgHeading, gobX(*it), gobY(*it));
+      }
+      else {
+        objDist = -1;
+        relSector = -1;
+      }
+      //attribs.add(catStrInt("CL_mineral-dist",i), objDist);
+      msg << "CL_mineral-dist" << i << " " << objDist << endl;
+      //attribs.add(catStrInt("CL_mineral-dir",i), relSector);
+      msg << "CL_mineral-dir" << i << " " <<  relSector << endl;
+      
+      i++;
+    }
+    
+    closest = Sorts::spatialDB->getNClosest(centerCoord, 1, "controlCenter");
+
+    for (list<GameObj*>::iterator it = closest.begin();
+        it != closest.end();
+        it++) {
+      if (*it != NULL) {
+        objDist = sqrt(squaredDistance(centerX, centerY, gobX(*it), gobY(*it)));
+        if (objDist <= 10) {
+          objDist = 0;
+        }
+        else if (objDist <= 20) {
+          objDist = 1;
+        }
+        else if (objDist <= 50) {
+          objDist = 2;
+        }
+        else if (objDist <= 100) {
+          objDist = 3;
+        }
+        else if (objDist <= 300) {
+          objDist = 4;
+        }
+        else {
+          objDist = 1000;
+        }
+
+        relSector = getRelativeSector(centerX, centerY, intAvgHeading, gobX(*it), gobY(*it));
+      }
+      else {
+        objDist = -1;
+        relSector = -1;
+      }
+      //attribs.add("CL_ccenter-dist", objDist);
+      //attribs.add("CL_ccenter-dir", relSector);
+      msg << "CL_ccenter-dist"  << " " << objDist << endl;
+      msg << "CL_ccenter-dir"  << " " <<  relSector << endl;
+      i++;
+    }
+
+    if (canMine) {
+      if (mineralCount >= 10) {
+        //attribs.add("CL_minerals", 10);
+        msg << "CL_minerals 1" << endl;
+      }
+      else {
+        //attribs.add("CL_minerals", 0);
+        msg << "CL_minerals 0" << endl;
+      }
+
+      msg << "CL_activepick " << activePick << endl;
+    }
+    if (speed >= 3) {
+      //attribs.add("CL_moving", 1);
+      msg << "CL_moving 1\n";
+    }
+    else {
+      //attribs.add("CL_moving", 0);
+      msg << "CL_moving 0\n";
+    }
+  }
+#endif
+  
 #if 0
 //// Heading info
   Vec2d normHeading = avg_heading.norm();
@@ -359,6 +481,7 @@ void PerceptualGroup::generateData() {
   }
   if (canMine) {
     attribs.add("minerals", mineralCount);
+    attribs.add("active-mining", activePick);
   }
   
   hasStaleProperties = true;

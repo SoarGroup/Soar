@@ -117,7 +117,9 @@ bool operator ==(const coordinate& c1, const coordinate& c2);
 ostream& operator << (ostream& os, const coordinate& c);
 
 
-/******************************************************
+int getRelativeSector(int fromX, int fromY, int fromHeading, int toX, int toY);
+
+  /******************************************************
  * WEAPON RELATED FUNCTIONS                           *
  ******************************************************/
 double weaponDamageRate(GameObj* gob);

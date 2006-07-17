@@ -30,7 +30,7 @@
 #define CROWD_MAX_WORKERS 2
 
 #define CLASS_TOKEN "SDB"
-#define DEBUG_OUTPUT false 
+#define DEBUG_OUTPUT true 
 #include "OutputDefinitionsUnique.h"
 
 inline int intDivC(int x, int y) {
@@ -833,4 +833,47 @@ bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
   return false;
 }
 
+struct ltGobDouble {
+  bool operator()(pair<GameObj*, double> p1, pair<GameObj*, double> p2) const {
+    return (p1.second < p2.second);
+  }
+};
 
+list<GameObj*> SpatialDB::getNClosest(coordinate point, int N, string type) {
+  // this is expensive, just iterate through the entire DB and calc all
+  // distances.
+  dbg << "getNClosest..\n";
+
+  set<pair<GameObj*, double>, ltGobDouble> found;
+  double dist;
+  pair<GameObj*, double> tempPair;
+  
+  for (int i=0; i<(int)(width*height); i++) {
+    for (set<GameObj*>::iterator it = gobMap[i].begin();
+        it != gobMap[i].end();
+        it++) {
+      if ((*it)->bp_name() == type) {
+        dist = squaredDistance(point.x, point.y, gobX(*it), gobY(*it));
+        tempPair.first = *it;
+        tempPair.second = dist;
+
+        found.insert(tempPair);
+      }
+    }
+  }
+
+  list<GameObj*> result;
+  set<pair<GameObj*, double> >::iterator it = found.begin();
+  for (int i=0; i<N; i++) {
+    if (it != found.end()) {
+      result.push_back(it->first);
+      it++;
+    }
+    else {
+      result.push_back(NULL);
+      dbg << "NULL pushed\n";
+    }
+  }
+
+  return result;
+}
