@@ -239,6 +239,25 @@ void PerceptualGroupManager::processVisionCommands() {
         Sorts::SoarIO->updateVisionState(visionParams); 
         break;
       case AA_MOVE_LOCATION:
+        assert(i->params.size() == 2);
+        it = i->params.begin();
+        visionParams.focusX = *it;
+        ++it;
+        visionParams.focusY = *it;
+        visionParams.centerX = visionParams.focusX;
+        visionParams.centerY = visionParams.focusY;
+        Sorts::featureMapManager->changeViewWindow(visionParams.centerX, 
+                                                   visionParams.centerY, 
+                                                   visionParams.viewWidth);
+
+        // recalc all center distances and rebuild the order of the groups
+        remakeGroupSet();
+        Sorts::featureMapManager->changeViewWindow(visionParams.centerX, 
+                                                   visionParams.centerY, 
+                                                   visionParams.viewWidth);
+        adjustAttention(true);   // re-update all the feature maps-
+                                 // changeViewWindow clears them out
+        Sorts::SoarIO->updateVisionState(visionParams); 
         break;
       case AA_MOVE_FEATURE:
         assert(i->params.size() == 1);
