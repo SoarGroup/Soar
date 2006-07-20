@@ -360,3 +360,121 @@ void SoarGameObject::endCommand() {
   assignedBehavior = NULL;
   status = OBJ_IDLE;
 }
+
+void SoarGameObject::printFeatures() {
+  if (friendly) {
+    msg << "CLUSTERING ATTRIBUTES:\n";
+    coordinate centerCoord = getLocation();
+    int objDist, relSector;
+    int i = 0;
+    list<GameObj*> closest = Sorts::spatialDB->getNClosest(centerCoord, 3, "mineral");
+
+    for (list<GameObj*>::iterator it = closest.begin();
+        it != closest.end();
+        it++) {
+      if (*it != NULL) {
+        objDist = sqrt(squaredDistance(gobX(gob), gobY(gob), gobX(*it), gobY(*it)));
+        if (objDist <= 10) {
+          objDist = 0;
+        }
+        else if (objDist <= 20) {
+          objDist = 1;
+        }
+        else if (objDist <= 50) {
+          objDist = 2;
+        }
+        else if (objDist <= 100) {
+          objDist = 3;
+        }
+        else if (objDist <= 300) {
+          objDist = 4;
+        }
+        else {
+          objDist = 1000;
+        }
+
+        relSector = getRelativeSector(gobX(gob), gobY(gob), gob->get_int("heading"), gobX(*it), gobY(*it));
+      }
+      else {
+        objDist = -1;
+        relSector = -1;
+      }
+      //attribs.add(catStrInt("CL_mineral-dist",i), objDist);
+      msg << "CL_mineral-dist" << i << " " << objDist << endl;
+      //attribs.add(catStrInt("CL_mineral-dir",i), relSector);
+      msg << "CL_mineral-dir" << i << " " <<  relSector << endl;
+      
+      i++;
+    }
+    
+    closest = Sorts::spatialDB->getNClosest(centerCoord, 1, "controlCenter");
+
+    for (list<GameObj*>::iterator it = closest.begin();
+        it != closest.end();
+        it++) {
+      if (*it != NULL) {
+        objDist = sqrt(squaredDistance(gobX(gob), gobY(gob), gobX(*it), gobY(*it)));
+        if (objDist <= 10) {
+          objDist = 0;
+        }
+        else if (objDist <= 20) {
+          objDist = 1;
+        }
+        else if (objDist <= 50) {
+          objDist = 2;
+        }
+        else if (objDist <= 100) {
+          objDist = 3;
+        }
+        else if (objDist <= 300) {
+          objDist = 4;
+        }
+        else {
+          objDist = 1000;
+        }
+
+        relSector = getRelativeSector(gobX(gob), gobY(gob), gob->get_int("heading"), gobX(*it), gobY(*it));
+      }
+      else {
+        objDist = -1;
+        relSector = -1;
+      }
+      //attribs.add("CL_ccenter-dist", objDist);
+      //attribs.add("CL_ccenter-dir", relSector);
+      msg << "CL_ccenter-dist"  << " " << objDist << endl;
+      msg << "CL_ccenter-dir"  << " " <<  relSector << endl;
+      i++;
+    }
+
+    if (name == "worker") {
+      if (gob->get_int("minerals") >= 10) {
+        //attribs.add("CL_minerals", 10);
+        msg << "CL_minerals 1" << endl;
+      }
+      else {
+        //attribs.add("CL_minerals", 0);
+        msg << "CL_minerals 0" << endl;
+      }
+
+      msg << "CL_activepick " << gob->component("pickaxe")->get_int("active") << endl;
+    }
+    if (*gob->sod.speed > 0) {
+      //attribs.add("CL_moving", 1);
+      msg << "CL_moving 1\n";
+    }
+    else {
+      //attribs.add("CL_moving", 0);
+      msg << "CL_moving 0\n";
+    }
+    
+    ScriptObj* weapon = gob->component("weapon");
+    if (weapon != NULL and weapon->get_int("shooting")) {
+      msg << "CL_shooting 1\n";
+    }
+    else{
+      msg << "CL_shooting 0\n";
+    }
+
+   // msg << "CL_name " << name << endl;
+  }
+}

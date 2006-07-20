@@ -5,7 +5,6 @@
 
 #include "general.h"
 #include "SoarGameObject.h"
-//#include "MineFSM.h"
 class MineFSM;
 class Sorts;
 /* 
@@ -74,7 +73,6 @@ struct MineralInfo {
   SoarGameObject* mineral;
   list<MiningRoute*> routes;
   bool stationsValid[4];
-  bool stationsFull[4];
   StationInfo* northStations[MINERAL_EDGE_STATIONS];
   StationInfo* southStations[MINERAL_EDGE_STATIONS];
   StationInfo* eastStations[MINERAL_EDGE_STATIONS];
@@ -85,7 +83,6 @@ struct CCenterInfo {
   SoarGameObject* cCenter;
   list <MiningRoute*> routes;
   bool stationsValid[4];
-  bool stationsFull[4];
   StationInfo* northStations[CC_EDGE_STATIONS];
   StationInfo* southStations[CC_EDGE_STATIONS];
   StationInfo* eastStations[CC_EDGE_STATIONS];
@@ -131,13 +128,6 @@ class MineManager {
     // reportMineTime.
     MiningRoute* getMiningRoute(MineFSM* fsm);
     
-    // called by MineFSM to report the time it took for one leg of its journey.
-    // if atBase is true, the MineManager should re-evaluate to determine if a
-    // better route is available, and return it if so. otherwise, NULL should
-    // be returned
-    MiningRoute* reportMiningResults(int time, MiningRoute* route, bool atBase,
-                                     MineFSM* fsm);
-
     MiningRoute* minerGivesUp(MiningRoute*, MineFSM*); 
 
     // called by OrtsInterface when minerals appear and disappear
@@ -178,7 +168,6 @@ class MineManager {
     list<MiningRoute*> invalidRoutes;
     
     void removeFromRoute(MiningRoute* route, MineFSM* fsm);
-    void removeFromRoute(MiningRoute* route, list<MineFSM*>::iterator it);
     void removeFromRouteNoErase(MiningRoute* route, list<MineFSM*>::iterator it);
     void addFSMToRoute(MiningRoute* route, MineFSM* fsm);
     void addCostToRoute(MiningRoute* route);
@@ -196,6 +185,5 @@ class MineManager {
     void allocateDropoffStations(CCenterInfo* m, Direction d);
     Direction getRelDirection(coordinate c1, coordinate c2);
     bool collision(StationInfo* station);
-    void addImaginaryObstacle(coordinate c);
 };
 #endif

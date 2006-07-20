@@ -287,6 +287,14 @@ void PerceptualGroup::generateData() {
   attribs.add("heading", intAvgHeading);
 
 #ifdef CLUSTERING_ATTRIBUTES
+
+  for( set<SoarGameObject*>::iterator 
+       currentObject =  members.begin();
+       currentObject != members.end();
+       currentObject++ ) {
+    (*currentObject)->printFeatures();
+  }
+  /*
   if (friendly and canMine) {
     msg << "CLUSTERING ATTRIBUTES:\n";
     coordinate centerCoord;
@@ -393,7 +401,7 @@ void PerceptualGroup::generateData() {
       //attribs.add("CL_moving", 0);
       msg << "CL_moving 0\n";
     }
-  }
+  }*/
 #endif
   
 #if 0

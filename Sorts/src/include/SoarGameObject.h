@@ -75,6 +75,8 @@ class SoarGameObject{
   int  getLastAttacked()       { return lastAttackedId; }
   string getName() { return name; }
 
+  void printFeatures();
+
   bool isMobile() { return mobile; }
   bool isRectangle() { return rectangle; }
   int getWidth() { return width; }

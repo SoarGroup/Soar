@@ -33,7 +33,7 @@ class MoveFSM: public FSM {
 	void init(std::vector<sint4>);
   void initNoPath(std::vector<sint4>);
 
-  bool getMoveVector(); //returns truee if there needs to be a change in direction, otherwise false
+  bool getMoveVector(); //returns true if there needs to be a change in direction, otherwise false
   TerrainBase::Loc getHeadingVector(sint4 , sint4);
   
 
