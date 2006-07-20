@@ -1,0 +1,51 @@
+\documentclass{report}
+
+\title{SORTS Tech Report}
+\author{James Irizarry, Sam Wintermute, Joseph Xu}
+
+\begin{document}
+\maketitle
+
+\section{ORTS Overview}
+
+The Open Real Time Strategy software is a highly configurable game
+engine used to play real time strategy (RTS) games. The main purpose for
+ORTS is to serve as an open source, open interface RTS game engine for
+RTS AI tournaments. ORTS is undergoing active development as of July
+2006 at the University of Alberta under the direction of Michael Buro.
+
+There are several reasons why ORTS is especially suitable for use in
+AI tournaments. It has a (relatively) straightforward C++ API, making
+interfacing with your favorite AI system easy. All the specific game
+mechanics, ranging from types of units, actions, and physics, are
+specified via C++ style scripts called blueprints. This means that ORTS
+can be easily configured to simulate a wide range of environments,
+from arbitrarily simple ones like Wumpus World to complex ones like
+Starcraft. Finally, ORTS has a client/server architecture in which
+the server maintains the state of the world and only report to the
+clients information they are supposed to have for a fair game. This
+is in contrast to most commercial RTS games, in which each client
+maintains the entire world state and prevents the player from accessing
+forbidden information such as other players' locations only by hiding
+them from the GUI. The result is that ORTS is impervious to "memory
+hack" cheats that are widespread in commercial RTS games. This feature
+is particularly important if tournaments are to be run across the
+Internet.
+
+\section{SORTS Overview}
+
+SORTS is a piece of software that allows the Soar cognitive architecture
+to act as a client to the ORTS game server, so that ORTS game playing
+agents can be written in and executed on Soar. SORTS is much more than
+an interface bridge in that it intentionally constrains the space of
+possible Soar agents in important ways and also handles aspects of
+low-level game control that are not suitable for Soar. In particular,
+SORTS heavily abstracts the world state information obtained from
+the ORTS API before feeding them into Soar as perceptions, and also
+interprets and executes high-level commands from Soar as low-level
+actions sent to the ORTS API.
+
+\bibliographystyle{plain}
+\bibliography{report}
+
+\end{document}
