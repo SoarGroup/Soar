@@ -32,7 +32,6 @@
 #include "SoarInterface.h"
 #include "OrtsInterface.h"
 #include "PerceptualGroupManager.h"
-#include "MapManager.h"
 #include "FeatureMapManager.h"
 #include "GameActionManager.h"
 class AttackManagerRegistry;
@@ -51,7 +50,6 @@ class Sorts {
     ( SoarInterface*          _SoarIO,
       OrtsInterface*          _OrtsIO,
       PerceptualGroupManager* _pGroupManager, 
-      MapManager*             _mapManager, 
       FeatureMapManager*      _featureMapManager,
       TerrainModule*          _tm,
       SpatialDB *             _spatialDB,
@@ -63,7 +61,6 @@ class Sorts {
       SoarIO = _SoarIO;
       OrtsIO = _OrtsIO;
       pGroupManager = _pGroupManager;
-      mapManager = _mapManager;
       featureMapManager = _featureMapManager;
       terrainModule = _tm;
       spatialDB = _spatialDB;
@@ -78,7 +75,6 @@ class Sorts {
     static SoarInterface*           SoarIO;
     static OrtsInterface*           OrtsIO;
     static PerceptualGroupManager*  pGroupManager;
-    static MapManager*              mapManager;
     static FeatureMapManager*       featureMapManager;
     static TerrainModule*           terrainModule;
     static SpatialDB*               spatialDB;
@@ -94,20 +90,5 @@ class Sorts {
     static SortsCanvas              canvas;
 #endif
 };
-
-
-
-/* The mutex in the Sorts object is now the mutex for everything. Previously, 
-   we used mutexes for the shared data structures and Soar IO, but this 
-   simplifies things by putting a single mutex that only allows either
-   the Soar-event code or the ORTS-event code to run at the same time. I'm
-   leaving the old mutexes in SoarInterface.cpp, but commented out- if we
-   ever can use actual multithreading, they will allow that (where this scheme
-   will not). If that is the case, a mutex needs to be added around the 
-   functions in PerceptualGroupManager, since both Soar and ORTS events call them.
-
-   -sw, 4/25/06
-*/
-   
 
 #endif

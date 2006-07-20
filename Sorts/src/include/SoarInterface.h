@@ -8,7 +8,6 @@
 
 #include "sml_Client.h"
 
-#include "MapRegion.h"
 #include "SoarAction.h"
 #include "general.h"
 #include "FeatureMap.h"
@@ -29,19 +28,7 @@ typedef struct {
   map<string, sml::IntElement*> intProperties;
   map<string, sml::FloatElement*> floatProperties;
   map<string, sml::StringElement*> stringProperties;
-  // a list of integers for the IDs of the regions its in
-  list<sml::IntElement*> regionWMEs;
 } InputLinkGroupRep;
-
-typedef struct {
-  sml::Identifier* identifierWME;
-  sml::IntElement* idWME;
-  sml::IntElement* xminWME;
-  sml::IntElement* xmaxWME; 
-  sml::IntElement* yminWME; 
-  sml::IntElement* ymaxWME; // bounding box
-  sml::IntElement* sizeWME;
-} InputLinkMapRegionRep;
 
 typedef struct {
   sml::Identifier* identifierWME;
@@ -111,10 +98,7 @@ that group is refreshed! Initially, the stats will not be set.
 class SoarInterface {
   public:
     SoarInterface
-    ( sml::Agent*      _agent,
-      pthread_mutex_t* _objectActionQueueMutex,
-      pthread_mutex_t* _attentionActionQueueMutex,
-      pthread_mutex_t* _soarMutex);
+    ( sml::Agent*      _agent);
 
     ~SoarInterface();
 
@@ -130,20 +114,10 @@ class SoarInterface {
     void refreshGroup(PerceptualGroup* group);
     int  groupId(PerceptualGroup* group);
 
-    // map commands
-    void addMapRegion(MapRegion* r);
-    void removeMapRegion(MapRegion* r);
-    void refreshMapRegion(MapRegion* r);
-    int  mapRegionId(MapRegion* r);
-
     // feature map commands
     void addFeatureMap(FeatureMap* m, string name);
-    //void removeFeatureMap(FeatureMap* m);
     void refreshFeatureMap(FeatureMap*, string name);
     
-    // commit all changes to Soar Input link
-    void commitInputLinkChanges();
-
     // update player info
     void updatePlayerGold(int amount);
     void updatePlayerUnits(int, int, int);
@@ -161,8 +135,6 @@ class SoarInterface {
     void updateVisionState(VisionParameterStruct& vps);
     bool getStale();
     void setStale(bool);
-    void lockSoarMutex();
-    void unlockSoarMutex();
 
     void stopSoar();
     void startSoar();
@@ -171,11 +143,6 @@ class SoarInterface {
     int getSoarID(PerceptualGroup* grp);
 
   private:
-
-    void lockObjectActionMutex();
-    void unlockObjectActionMutex();
-    void lockAttentionActionMutex();
-    void unlockAttentionActionMutex();
 
     void processObjectAction(ObjectActionType, sml::Identifier*);
     void processAttentionAction(AttentionActionType, sml::Identifier*);
@@ -210,14 +177,6 @@ class SoarInterface {
     map<int, PerceptualGroup*>               groupIdLookup;
    
   
-  /**************************************************
-   *                                                *
-   * Member variables for map maintanence           *
-   *                                                *
-   **************************************************/
-    sml::Identifier* mapIdWME;
-    map<MapRegion*, InputLinkMapRegionRep> mapRegionTable;
-    map<int, MapRegion*>                   mapRegionIdLookup;
 
   /**************************************************
    *                                                *
@@ -243,11 +202,6 @@ class SoarInterface {
     list<OAQueueStruct> objectActionQueue;
     list<AAQueueStruct> attentionActionQueue;
     list<GAQueueStruct> gameActionQueue;
-
-    // associated mutexes that protect them (no longer used)
-    pthread_mutex_t* objectActionQueueMutex;
-    pthread_mutex_t* attentionActionQueueMutex;
-    pthread_mutex_t* soarMutex;
 
     bool stale;
     bool soarRunning;

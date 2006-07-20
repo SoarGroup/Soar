@@ -27,7 +27,6 @@
 #include "AttributeSet.h"
 //#include "OrtsInterface.h"
 #include "general.h"
-#include "MapRegion.h"
 #include "Rectangle.h"
 
 class Sorts;
@@ -111,9 +110,6 @@ class PerceptualGroup {
     // this is set to false initially, set to true when generateData called.
     bool isOld();
     
-    void getRegionsOccupied(list<int>& regions);
-
-
     bool getHasCommand() { return hasCommand; }
   
     void setCommandString(string st) { currentCommand = st; }
@@ -121,7 +117,6 @@ class PerceptualGroup {
 
   private: // functions
     void updateBoundingBox();
-    void updateRegionsOccupied();
 
   private:
     set <SoarGameObject*> members;
@@ -157,9 +152,7 @@ class PerceptualGroup {
     Rectangle bbox;
 
     int centerX, centerY;
-
-    list<MapRegion*> regionsOccupied;
-
+    
     // sticky if grouped by Soar-
     // issuing a command makes it auto-sticky until command ends & Soar acks
     bool sticky;

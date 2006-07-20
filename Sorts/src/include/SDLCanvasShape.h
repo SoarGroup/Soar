@@ -117,6 +117,7 @@ public:
   // these must be overridden by the derived class if they are called!
   virtual void setShapeColor(Uint8 r, Uint8 g, Uint8 b) {
     assert(false);
+    cout << r << g << b;
   }
   virtual void setShapeColor(const SDLColor& c) {
     cout << "ERROR: can't set a color for this!:" << this << "\n";

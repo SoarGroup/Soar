@@ -46,16 +46,16 @@ FeatureMapManager::FeatureMapManager() {
   stringToFeatureMap[FMName] =FMPointer;
   fmList.push_back(FMPointer);
   
-  FMName = "terrain";
+/*  FMName = "terrain";
   FMPointer = new FeatureMap();
   stringToFeatureMap[FMName] =FMPointer;
   fmList.push_back(FMPointer);
-  
+*/  
   FMName = "minerals";
   FMPointer = new FeatureMap();
   stringToFeatureMap[FMName] =FMPointer;
   fmList.push_back(FMPointer);
-
+/*
   FMName = "air-units";
   FMPointer = new FeatureMap();
   stringToFeatureMap[FMName] =FMPointer;
@@ -65,7 +65,7 @@ FeatureMapManager::FeatureMapManager() {
   FMPointer = new FeatureMap();
   stringToFeatureMap[FMName] =FMPointer;
   fmList.push_back(FMPointer);
-  
+  */
   FMName = "moving-units";
   FMPointer = new FeatureMap();
   stringToFeatureMap[FMName] =FMPointer;
@@ -76,7 +76,6 @@ FeatureMapManager::FeatureMapManager() {
   stringToFeatureMap[FMName] =FMPointer;
   fmList.push_back(FMPointer);
   
-  //changeViewWindow(230,230,460);
   changeViewWindow(0,0,0);
 }
 
@@ -86,7 +85,7 @@ list<FeatureMap*> FeatureMapManager::identifyFeatures(PerceptualGroup* group) {
 
   list<FeatureMap*> relevantMaps;
   
-  assert(fmList.size() == 8);
+  assert(fmList.size() == 5);
 
   // see the constructor above for where the maps are named and put in the list
   
@@ -98,14 +97,14 @@ list<FeatureMap*> FeatureMapManager::identifyFeatures(PerceptualGroup* group) {
   if (not group->isFriendly() and not group->isWorld()) {
     relevantMaps.push_back(fmList[1]);
   }
-  // terrain
+  /*// terrain
   if (group->isWorld()) {
     relevantMaps.push_back(fmList[2]);
-  }
+  }*/
   // minerals
   if (group->isMinerals()) {
     relevantMaps.push_back(fmList[3]);
-  }
+  }/*
   // air_units
   if (group->isAirUnits()) {
     relevantMaps.push_back(fmList[4]);
@@ -113,7 +112,7 @@ list<FeatureMap*> FeatureMapManager::identifyFeatures(PerceptualGroup* group) {
   // land_units
   if (group->isLandUnits()) {
     relevantMaps.push_back(fmList[5]);
-  }
+  }*/
   // moving_units
   if (group->isMoving()) {
     relevantMaps.push_back(fmList[6]);

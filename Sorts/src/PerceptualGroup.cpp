@@ -92,13 +92,6 @@ PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
 }
 
 PerceptualGroup::~PerceptualGroup() {
-  for(list<MapRegion*>::iterator
-      i  = regionsOccupied.begin();
-      i != regionsOccupied.end();
-      i++)
-  {
-    (*i)->groupExit(this);
-  }
   dbg << "destroyed" << endl;
 }
 
@@ -248,7 +241,6 @@ void PerceptualGroup::generateData() {
   centerY = y;
 
   updateBoundingBox();
-  updateRegionsOccupied();
   
   health /= size;
   attribs.add("health", health);
@@ -553,59 +545,6 @@ void PerceptualGroup::updateCenterMember() {
   }
 
   return;
-}
-
-/**************************************************
- *                                                *
- * Update the regions the group occupies          *
- *                                                *
- **************************************************/
-void PerceptualGroup::updateRegionsOccupied() {
-  // for now, just leave all regions first and then recompute
-  // which ones it enters, even if this may mean exiting and
-  // entering the same region redundently
-  for( list<MapRegion*>::iterator 
-       i  = regionsOccupied.begin();
-       i != regionsOccupied.end();
-       i++ )
-  {
-    (*i)->groupExit(this);
-  }
-  regionsOccupied.clear();
-  Sorts::mapManager->getRegionsIntersecting(getBoundingBox(), regionsOccupied);
-
-  for( list<MapRegion*>::iterator
-       i  = regionsOccupied.begin();
-       i != regionsOccupied.end();
-       i++ )
-  {
-    list<MapRegion*>::iterator j = i;
-    j++;
-    for( ; j != regionsOccupied.end(); j++) {
-      if (*i == *j) {
-        assert(false);
-      }
-    }
-  }
-
-  for( list<MapRegion*>::iterator 
-       i  = regionsOccupied.begin();
-       i != regionsOccupied.end();
-       i++ )
-  {
-    (*i)->groupEnter(this);
-  }
-}
-
-void PerceptualGroup::getRegionsOccupied(list<int>& regions) {
-  regions.clear();
-  for( list<MapRegion*>::iterator 
-       i  = regionsOccupied.begin();
-       i != regionsOccupied.end();
-       i++ )
-  {
-    regions.push_back((*i)->getId());
-  }
 }
 
 void PerceptualGroup::mergeTo(PerceptualGroup* target) {

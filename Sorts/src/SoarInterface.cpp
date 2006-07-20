@@ -35,14 +35,8 @@
 using namespace std;
 
 SoarInterface::SoarInterface
-( sml::Agent*      _agent,
-  pthread_mutex_t* _objectActionQueueMutex,
-  pthread_mutex_t* _attentionActionQueueMutex,
-  pthread_mutex_t* _soarMutex )
-: agent(_agent),
-  objectActionQueueMutex(_objectActionQueueMutex),
-  attentionActionQueueMutex(_attentionActionQueueMutex),
-  soarMutex(_soarMutex)
+( sml::Agent*      _agent)
+: agent(_agent)
 {
   inputLink = agent->GetInputLink();
   groupIdCounter = 0;
@@ -87,7 +81,6 @@ void SoarInterface::removeGroup(PerceptualGroup* group) {
 }
 
 void SoarInterface::refreshGroup(PerceptualGroup* group) {
-  lockSoarMutex();
   stale = true;
 
   AttributeSet attribs = group->getAttributes();
@@ -185,28 +178,6 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
     }
   }
 
-  // in any case, remove all the region ids and put in new ones
-  for(list<sml::IntElement*>::iterator
-      i  = g.regionWMEs.begin();
-      i != g.regionWMEs.end();
-      i++)
-  {
-    agent->DestroyWME(*i);
-  }
-  g.regionWMEs.clear();
-
-  list<int> regions;
-  group->getRegionsOccupied(regions);
-
-  for(list<int>::iterator 
-      i  = regions.begin();
-      i != regions.end();
-      i++)
-  {
-    g.regionWMEs.push_back(agent->CreateIntWME(g.WMEptr, "in-region", *i));
-  }
-
-  unlockSoarMutex();
 }
 
 int SoarInterface::groupId(PerceptualGroup* group) {
@@ -214,57 +185,8 @@ int SoarInterface::groupId(PerceptualGroup* group) {
   return groupTable[group].groupId;
 }
 
-void SoarInterface::addMapRegion(MapRegion *r) {
-  lockSoarMutex();
-  assert(mapRegionTable.find(r) == mapRegionTable.end());
-
-  InputLinkMapRegionRep rep;
-  rep.identifierWME = agent->CreateIdWME(mapIdWME, "region");
-  Rectangle box = r->getBoundingBox();
-  rep.idWME   = agent->CreateIntWME(rep.identifierWME, "id", r->getId());
-  rep.xminWME = agent->CreateIntWME(rep.identifierWME, "xmin", box.xmin);
-  rep.xmaxWME = agent->CreateIntWME(rep.identifierWME, "xmax", box.xmax);
-  rep.yminWME = agent->CreateIntWME(rep.identifierWME, "ymin", box.ymin);
-  rep.ymaxWME = agent->CreateIntWME(rep.identifierWME, "ymax", box.ymax);
-
-  rep.sizeWME = agent->CreateIntWME(rep.identifierWME, "size", r->size());
-
-  mapRegionTable[r] = rep;
-  mapRegionIdLookup[r->getId()] = r;
-  unlockSoarMutex();
-}
-
-void SoarInterface::removeMapRegion(MapRegion *r) {
-  lockSoarMutex();
-  assert(mapRegionTable.find(r) != mapRegionTable.end());
-  
-  InputLinkMapRegionRep& rep = mapRegionTable[r];
-  agent->DestroyWME(rep.identifierWME);
-  mapRegionIdLookup.erase(r->getId());
-  mapRegionTable.erase(r);
-  unlockSoarMutex();
-}
-
-void SoarInterface::refreshMapRegion(MapRegion *r) {
-  lockSoarMutex();
-  stale = true;
-  
-  assert(mapRegionTable.find(r) != mapRegionTable.end());
-  
-  InputLinkMapRegionRep& rep = mapRegionTable[r];
-  Rectangle box = r->getBoundingBox();
-  agent->Update(rep.idWME, r->getId());
-  agent->Update(rep.xminWME, box.xmin);
-  agent->Update(rep.xmaxWME, box.xmax);
-  agent->Update(rep.yminWME, box.ymin);
-  agent->Update(rep.ymaxWME, box.ymax);
-  agent->Update(rep.sizeWME, r->size());
-
-  unlockSoarMutex();
-}
 
 void SoarInterface::addFeatureMap(FeatureMap *m, string name) {
-  lockSoarMutex();
   assert(featureMapTable.find(name) == featureMapTable.end());
 
   InputLinkFeatureMapRep rep;
@@ -289,23 +211,9 @@ void SoarInterface::addFeatureMap(FeatureMap *m, string name) {
                                        "sector8", m->getCount(8));
 
   featureMapTable[name] = rep;
-  unlockSoarMutex();
 }
-/* save for dynamic feature maps, if needed
-void SoarInterface::removeFeatureMap(FeatureMap *r) {
-  lockSoarMutex();
-  assert(featureMapTable.find(r) != featureMapTable.end());
-  
-  InputLinkFeatureMapRep& rep = featureMapTable[r];
-  agent->DestroyWME(rep.identifierWME);
-  featureMapIdLookup.erase(r->getId());
-  featureMapTable.erase(r);
-  unlockSoarMutex();
-}
-*/
 
 void SoarInterface::refreshFeatureMap(FeatureMap *m, string name) {
-  lockSoarMutex();
   stale = true;
   
   assert(featureMapTable.find(name) != featureMapTable.end());
@@ -321,14 +229,12 @@ void SoarInterface::refreshFeatureMap(FeatureMap *m, string name) {
   agent->Update(rep.sector7WME, m->getCount(7));
   agent->Update(rep.sector8WME, m->getCount(8));
 
-  unlockSoarMutex();
 }
 
 
 // called in soar event handler to take everything off the output
 // link and put onto the action queue each time soar generates output
 void SoarInterface::getNewSoarOutput() {
-  lockSoarMutex();
   
   int numberCommands = agent->GetNumberCommands();
   int oldCommandCount = 0;
@@ -383,7 +289,6 @@ void SoarInterface::getNewSoarOutput() {
 
   dbg << "old command count: " << oldCommandCount << endl;
 
-  unlockSoarMutex();
 }
 
 void SoarInterface::processObjectAction(ObjectActionType type, 
@@ -391,7 +296,6 @@ void SoarInterface::processObjectAction(ObjectActionType type,
   ObjectAction newAction;
   newAction.type = type;
   
-  lockObjectActionMutex();
   // append all the group parameters
   int groupCounter = 0;
   int groupId;
@@ -438,7 +342,6 @@ void SoarInterface::processObjectAction(ObjectActionType type,
     cmdPtr->AddStatusError();
   }
   
-  unlockObjectActionMutex();
 }
 
 void SoarInterface::processAttentionAction(AttentionActionType type, 
@@ -446,7 +349,6 @@ void SoarInterface::processAttentionAction(AttentionActionType type,
   AttentionAction newAction;
   newAction.type = type;
   
-  lockAttentionActionMutex();
   const char* paramValue;
   string paramString;
   
@@ -510,7 +412,6 @@ void SoarInterface::processAttentionAction(AttentionActionType type,
   aaqs.wme = cmdPtr;
   attentionActionQueue.push_back(aaqs);
 
-  unlockAttentionActionMutex();
 }
 
 void SoarInterface::processGameAction(GameActionType type, 
@@ -559,7 +460,6 @@ void SoarInterface::processGameAction(GameActionType type,
 
 // called by middleware to get queued Soar actions
 void SoarInterface::getNewObjectActions(list<ObjectAction>& newActions) {
-  lockObjectActionMutex();
   for(list<OAQueueStruct>::iterator i = objectActionQueue.begin(); 
                                   i != objectActionQueue.end(); 
                                   i++)
@@ -581,11 +481,9 @@ void SoarInterface::getNewObjectActions(list<ObjectAction>& newActions) {
     }
   }
   objectActionQueue.clear();
-  unlockObjectActionMutex();
 }
 
 void SoarInterface::getNewAttentionActions(list<AttentionAction>& newActions) {
-  lockAttentionActionMutex();
   for(list<AAQueueStruct>::iterator i = attentionActionQueue.begin(); 
                                   i != attentionActionQueue.end(); 
                                   i++)
@@ -594,7 +492,6 @@ void SoarInterface::getNewAttentionActions(list<AttentionAction>& newActions) {
     (*i).wme->AddStatusComplete();
   }
   attentionActionQueue.clear();
-  unlockAttentionActionMutex();
 }
 
 void SoarInterface::getNewGameActions(list<GameAction>& newActions) {
@@ -608,40 +505,31 @@ void SoarInterface::getNewGameActions(list<GameAction>& newActions) {
 }
 
 void SoarInterface::updatePlayerGold(int amount) {
-  lockSoarMutex();
   stale = true;
   msg << "updating mineral count: " << amount << endl;
   agent->Update(playerGoldWME, amount);
-  unlockSoarMutex();
 }
 
 void SoarInterface::updateMineralBuffer(int val) {
-  lockSoarMutex();
   stale = true;
   agent->Update(mineralBufferWME, val);
-  unlockSoarMutex();
 }
 
 void SoarInterface::updatePlayerUnits(int workers, int tanks, int marines) {
-  lockSoarMutex();
   stale = true;
   agent->Update(playerWorkersWME, workers);
   agent->Update(playerTanksWME, tanks);
   agent->Update(playerMarinesWME, marines);
-  unlockSoarMutex();
 }
 
 void SoarInterface::updateQueryResult(string name, int param0, int param1) {
-  lockSoarMutex();
   stale = true;
   agent->Update(queryResultRep.queryNameWME, name.c_str());
   agent->Update(queryResultRep.param0WME, param0);
   agent->Update(queryResultRep.param1WME, param1);
-  unlockSoarMutex();
 }
 
 void SoarInterface::updateVisionState(VisionParameterStruct& vps) {
-  lockSoarMutex();
 
   stale = true;
   agent->Update(visionParamRep.centerXWME, vps.centerX);
@@ -654,7 +542,6 @@ void SoarInterface::updateVisionState(VisionParameterStruct& vps) {
   agent->Update(visionParamRep.numObjectsWME, vps.numObjects);
   agent->Update(visionParamRep.groupingRadiusWME, vps.groupingRadius);
   
-  unlockSoarMutex();
 }
 
 void SoarInterface::initVisionState(VisionParameterStruct vps) {
@@ -662,9 +549,7 @@ void SoarInterface::initVisionState(VisionParameterStruct vps) {
 }
 
 void SoarInterface::initSoarInputLink() {
-  lockSoarMutex();
   groupsIdWME = agent->CreateIdWME(inputLink, "groups");
-  mapIdWME = agent->CreateIdWME(inputLink, "map");
   featureMapIdWME = agent->CreateIdWME(inputLink, "feature-maps");
   gameInfoIdWME = agent->CreateIdWME(inputLink, "game-info");
   playerGoldWME = agent->CreateIntWME(gameInfoIdWME, "my-minerals", 0);
@@ -735,15 +620,8 @@ void SoarInterface::initSoarInputLink() {
                           initialVisionParams.groupingRadius);
   
   agent->Commit();
-  unlockSoarMutex();
 }
 
-
-void SoarInterface::commitInputLinkChanges() {
-//  cout << "### COMMIT ABOUT TO BE CALLED ###" << endl;
-  //agent->Commit();
-//  cout << "### COMMIT FINISHED ###" << endl;
-}
 
 bool SoarInterface::getStale() {
   return stale;
@@ -753,42 +631,12 @@ void SoarInterface::setStale(bool _st) {
   stale = _st;
 }
 
-
-// See comment in Sorts.h regarding these disabled mutexes
-void SoarInterface::lockSoarMutex() { 
-//  msg << "Trying to grab the mutex" << endl;
-//  pthread_mutex_lock(soarMutex);
-//  msg << "Grabbed the mutex" << endl;
-}
-
-void SoarInterface::unlockSoarMutex() { 
-//  msg << "Releasing the mutex" << endl;
-//  pthread_mutex_unlock(soarMutex);
-}
-
-void SoarInterface::lockObjectActionMutex() { 
-//  pthread_mutex_lock(objectActionQueueMutex);
-}
- 
-void SoarInterface::unlockObjectActionMutex() { 
-//  pthread_mutex_unlock(objectActionQueueMutex);
-}
-void SoarInterface::lockAttentionActionMutex() { 
-//  pthread_mutex_lock(attentionActionQueueMutex);
-}
- 
-void SoarInterface::unlockAttentionActionMutex() { 
-//  pthread_mutex_unlock(attentionActionQueueMutex);
-}
-
 void SoarInterface::improperCommandError() {
   msg << "ERROR: Improperly formatted command!\n";
 }
 
 void SoarInterface::updateViewFrame(int frame) {
-  lockSoarMutex();
   agent->Update(viewFrameWME, frame);
-  unlockSoarMutex();
 }
 
 void SoarInterface::stopSoar() {

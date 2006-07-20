@@ -1108,7 +1108,7 @@ Direction MineManager::getRelDirection(coordinate first, coordinate second) {
 bool MineManager::collision(StationInfo* station) {
   // return true if the station collides with an object other than a worker,
   // sheep, or controlCenter
-  if (Sorts::spatialDB->hasMiningCollision(station->location, false)) {
+  if (Sorts::spatialDB->hasMiningCollision(station->location)) {
     dbg << "setting high opt: collision at " << (int)station << endl;
     station->optimality = UNUSABLE_OPTIMALITY;
     return true;

@@ -143,7 +143,6 @@ bool OrtsInterface::handle_event(const Event& e) {
 
       removeDeadObjects();
       Sorts::pGroupManager->assignActions();
-      updateMap();
       updateSoarGameObjects();
       changes.clear();
 
@@ -156,7 +155,6 @@ bool OrtsInterface::handle_event(const Event& e) {
       /* I'm assuming here that those update calls from above have already
        * updated the soar input link correctly, so commit everything
        */
-      Sorts::SoarIO->commitInputLinkChanges();
       Sorts::SoarIO->startSoar();
     }
     msg << "ORTS EVENT }" << endl;
@@ -175,6 +173,7 @@ bool OrtsInterface::handle_event(const Event& e) {
 }
 
 void OrtsInterface::addAppearedObject(const GameObj* gameObj) {
+  dbg << gameObj;
   assert(false);
 }
 
@@ -411,13 +410,7 @@ void OrtsInterface::updateSoarGameObjects() {
   
 }
 
-void OrtsInterface::updateMap() {
-//  Sorts::mapManager->addExploredTiles(changes.new_tile_indexes);
-//  Sorts::mapManager->addBoundaries(changes.new_boundaries);
-}
-
 void OrtsInterface::updateSoarPlayerInfo() {
-  
   // only know get gold for now
   if (gold != playerGameObj->get_int("minerals")) {
     gold = playerGameObj->get_int("minerals");

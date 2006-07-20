@@ -24,16 +24,13 @@
 
 #include <SDL/SDL.h>
 
-//#include "sml_Connection.h"
 #include "sml_Client.h"
 
 // our includes
 #include "SoarInterface.h"
 #include "OrtsInterface.h"
-#include "MapManager.h"
 #include "AttackManagerRegistry.h"
 #include "MineManager.h"
-#include "GridMapTileGrouper.h"
 #include "FeatureMapManager.h"
 #include "GameActionManager.h"
 #include "Sorts.h"
@@ -41,11 +38,9 @@
 #include "TerrainModule.H"
 #include "Demo_SimpleTerrain.H"
 
-#define msg cout << "MAIN: "
+#define msg std::cout << "MAIN: "
 
 #define MAX_SOAR_AHEAD_CYCLES 5
-
-#define SOAR_862
 
 using namespace sml;
 
@@ -59,6 +54,8 @@ void printOutput
 {
   std::cout << "SOARINT: " << pMessage << std::endl;
 #ifdef USE_CANVAS
+  // enable this block to print the soar decision in the canvas,
+  // which hurts performance a bit
  /* pthread_mutex_lock(Sorts::mutex);
   string s(pMessage);
   Sorts::canvas.setSoarStatus(s);
@@ -83,24 +80,19 @@ void printOutput
 */
 
 
-#ifdef SOAR_862
-
 void SoarStartRunEventHandler
 ( smlRunEventId id, 
   void*         pUserData, 
   Agent*        agent, 
-  smlPhase      phase )
-{
+  smlPhase      phase ) {
   pthread_mutex_unlock(Sorts::mutex);
-  //Sorts::SoarIO->unlockSoarMutex();  
 }
 
 void SoarAfterDecisionCycleEventHandler
 ( smlRunEventId id, 
   void*         pUserData, 
   Agent*        agent, 
-  smlPhase      phase )
-{
+  smlPhase      phase ) {
   if (useSoarStops) {
     if (!Sorts::SoarIO->isSoarRunning()) {
       agent->StopSelf();
@@ -112,8 +104,7 @@ void SoarOutputEventHandler
 ( smlRunEventId id, 
   void*         pUserData, 
   Agent*        agent, 
-  smlPhase      phase )
-{
+  smlPhase      phase ) {
   unsigned long st = gettime();
   if (Sorts::cyclesSoarAhead > 5) {
     Sorts::SoarIO->stopSoar();
@@ -121,10 +112,10 @@ void SoarOutputEventHandler
   Sorts::cyclesSoarAhead++;
 
   pthread_mutex_lock(Sorts::mutex);
-  cout << "SOAR EVENT {\n";
+  std::cout << "SOAR EVENT {\n";
   
   if (Sorts::catchup == true) {
-    cout << "ignoring Soar event, ORTS is behind.\n";
+    msg << "ignoring Soar event, ORTS is behind.\n";
     pthread_mutex_unlock(Sorts::mutex);
    // msg << "TIME " << (gettime() - st) / 1000 << endl;
     return;
@@ -140,51 +131,13 @@ void SoarOutputEventHandler
   Sorts::gameActionManager->processGameCommands();
 
   if (Sorts::SoarIO->getStale()) {
-    // why do we have these here?
-    //Sorts::SoarIO->lockSoarMutex();
     agent->Commit();
-    //Sorts::SoarIO->unlockSoarMutex();
     Sorts::SoarIO->setStale(false);
   }
   cout << "SOAR EVENT }" << endl;
  // msg << "TIME " << (gettime() - st) / 1000 << endl;
   pthread_mutex_unlock(Sorts::mutex);
 }
-#else
-void SoarUpdateEventHandler(smlUpdateEventId id, 
-                            void*                 pUserData,
-                            Kernel*          pKernel,
-                            smlRunFlags      runFlags) {
-  pthread_mutex_lock(Sorts::mutex);
-  std::cout << "SOAR EVENT {\n";
-  if (Sorts::catchup == true) {
-    std::cout << "ignoring Soar event, ORTS is behind.\n";
-    pthread_mutex_unlock(Sorts::mutex);
-    msg << "TIME " << (gettime() - st) / 1000 << endl;
-    return;
-  }
-  Agent *agent = pKernel->GetAgent("orts_agent");
-  
-  Sorts::SoarIO->getNewSoarOutput();
-
-  // vision commands must be processed here- these are swapping
-  // in and out the groups on the input link.
-  // if they were processed in the ORTS handler, the agent
-  // would have a delay from when it looked somewhere and when
-  // the objects there appeared.
-  Sorts::pGroupManager->processVisionCommands();
-  Sorts::mapQuery->processMapCommands();
-
-  if (Sorts::SoarIO->getStale()) {
-    Sorts::SoarIO->lockSoarMutex();
-    agent->Commit();
-    Sorts::SoarIO->unlockSoarMutex();
-    Sorts::SoarIO->setStale(false);
-  }
-  std::cout << "SOAR EVENT }\n";
-  pthread_mutex_unlock(Sorts::mutex);
-}
-#endif
 
 // the function that is executed by a separate thread to
 // run the Soar agent
@@ -196,15 +149,9 @@ void* RunSoar(void* ptr) {
 
   if (useSoarStops) {
     while (true) {
-#ifdef SOAR_862
       pthread_mutex_lock(Sorts::mutex);
-    //  Sorts::SoarIO->lockSoarMutex();
-      // to be unlocked upon the start event
       ((Agent*) ptr)->Commit();
       ((Agent*) ptr)->RunSelfForever();
-#else
-      ((Kernel*) ptr)->RunAllAgentsForever(sml_INTERLEAVE_DECISION);
-#endif
       // spin until Soar gets started again
       while (!Sorts::SoarIO->isSoarRunning()) {
         usleep(60000); // assuming 8 fps from server
@@ -212,14 +159,10 @@ void* RunSoar(void* ptr) {
     }
   }
   else {
-#ifdef SOAR_862
     pthread_mutex_lock(Sorts::mutex);
     // to be unlocked upon the start event
     ((Agent*) ptr)->Commit();
     ((Agent*) ptr)->RunSelfForever();
-#else
-    ((Kernel*) ptr)->RunAllAgentsForever(sml_INTERLEAVE_DECISION);
-#endif
   }
  
   // just to keep the compiler from warning
@@ -230,7 +173,6 @@ void* RunOrts(void* ptr) {
   GameStateModule* gsm = (GameStateModule*) ptr;
   msg << "Starting ORTS" << endl;
   while(1) {
-//  for(unsigned long i = 0; i < 1000; i++) {
     if (!gsm->recv_view()) {
       usleep(30000);
     }
@@ -287,15 +229,6 @@ int main(int argc, char *argv[]) {
 
   srand(seed);
   
-
-  /************************************
-   * Create mutexes for action queues *
-   ************************************/
-  pthread_mutex_t objectActionMutex = PTHREAD_MUTEX_INITIALIZER;
-  pthread_mutex_t attentionActionMutex = PTHREAD_MUTEX_INITIALIZER;
-  
-  pthread_mutex_t soarMutex = PTHREAD_MUTEX_INITIALIZER;
- 
   pthread_mutex_t sortsMutex = PTHREAD_MUTEX_INITIALIZER;
   std::cout << "about to init sml\n";
 
@@ -323,7 +256,6 @@ int main(int argc, char *argv[]) {
     std::cout << pKernel->GetLastErrorDescription() << std::endl ;
     return 1;
   }
-
 
   // Load some productions
   if (productions != NULL) {
@@ -354,35 +286,16 @@ int main(int argc, char *argv[]) {
 
   Terrain timp;
   TerrainModule tm(gsm, timp);
-  //gsm.add_handler(&tm);
   
   // connect to ORTS server
   if (!gsm.connect()) exit(10);
-  std::cout << "connected" << std::endl;
-  
-  Game& game = gsm.get_game();
-  const Map<GameTile>& m = game.get_map();
-  int gridSizeX = m.get_width() / 2;
-  int gridSizeY = m.get_height() / 2;
-
-
-  std::cout <<"calling..\n";
+  msg << "connected to ORTS server" << std::endl;
   
   SoarInterface soarInterface
-  ( pAgent,
-    &objectActionMutex,
-    &attentionActionMutex,
-    &soarMutex);
+  ( pAgent);
 
-  // map manager, using the grid tile grouping method
-  GridMapTileGrouper 
-    tileGrouper(game.get_map(), game.get_tile_points(), gridSizeX, gridSizeY);
-  MapManager mapManager
-    ( game.get_map(), game.get_tile_points(), tileGrouper);
- 
   FeatureMapManager featureMapManager;
   PerceptualGroupManager pgm;
-  //InternalGroupManager igm;
   OrtsInterface ortsInterface(&gsm);
 
   GameActionManager gaMan;
@@ -393,8 +306,6 @@ int main(int argc, char *argv[]) {
   Sorts sorts(&soarInterface, 
               &ortsInterface, 
               &pgm, 
-              //&igm,
-              &mapManager, 
               &featureMapManager,
               &tm,
               &spatialDB,
@@ -419,20 +330,15 @@ int main(int argc, char *argv[]) {
     ( ortsInterface.getMapXDim(), 
       ortsInterface.getMapYDim(),
       1.2 );
-     // 1.7 );
 #endif
 
 // register for all events
   gsm.add_handler(&ortsInterface);
 
-#ifdef SOAR_862
   pAgent->RegisterForRunEvent(smlEVENT_BEFORE_RUN_STARTS, SoarStartRunEventHandler, NULL);
   pAgent->RegisterForRunEvent(smlEVENT_AFTER_OUTPUT_PHASE, SoarOutputEventHandler, NULL);
   pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, SoarAfterDecisionCycleEventHandler, NULL);
  // pAgent->RegisterForRunEvent(smlEVENT_BEFORE_INPUT_PHASE, SoarInputEventHandler, &sorts);
-#else
-  pKernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateEventHandler, &sorts);
-#endif
 
   if (printSoar) {
     pAgent->RegisterForPrintEvent(smlEVENT_PRINT, printOutput, &sorts);  
@@ -443,19 +349,15 @@ int main(int argc, char *argv[]) {
   pthread_attr_init(&soarThreadAttribs);
   pthread_t soarThread;
   
-#ifdef SOAR_862
   pKernel->SetAutoCommit(false);
   pthread_create(&soarThread, &soarThreadAttribs, RunSoar, (void*) pAgent);
-#else
-  pthread_create(&soarThread, &soarThreadAttribs, RunSoar, (void*) pKernel);
-#endif
 
   // this drives the orts interrupt, which drives the middleware
   pthread_attr_t ortsThreadAttribs;
   pthread_attr_init(&ortsThreadAttribs);
   pthread_t ortsThread;
   pthread_create(&ortsThread, &ortsThreadAttribs, RunOrts, (void*) &gsm);
-  std::cout << "ORTS client is running" << std::endl;
+  msg << "ORTS client is running" << std::endl;
 
   pthread_join(soarThread, NULL);
   pthread_join(ortsThread, NULL);
