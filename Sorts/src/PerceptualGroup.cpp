@@ -158,7 +158,7 @@ void PerceptualGroup::generateData() {
   int success = 0;
   int failure = 0;
   int idle = 0;
-  int stuck = 0;
+  //int stuck = 0;
 
   int shooting = 0;
   int damaged = 0;
@@ -227,7 +227,7 @@ void PerceptualGroup::generateData() {
       idle++;
     }
     else if (objStatus == OBJ_STUCK) {
-      stuck++;
+     // stuck++;
     }
   } 
  
@@ -472,10 +472,11 @@ void PerceptualGroup::generateData() {
     attribs.add("command-running", running);
     attribs.add("command-success", success);
     attribs.add("command-failure", failure);
-    attribs.add("command-stuck", stuck);
+    //attribs.add("command-stuck", stuck);
     if (running > 0
         or success > 0
-        or failure > 0) {
+        or failure > 0
+        or stick > 0) {
       hasCommand = true;
     }
   }
