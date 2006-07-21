@@ -1598,6 +1598,25 @@ bool Kernel::CheckForIncomingCommands()
 }
 
 /*************************************************************
+* @brief See if there are any incoming messages waiting to
+*		 be dispatched to event handlers and if so process them.
+*
+*		 This call is intended to be used by remote connections that
+*		 have shut down the event thread and are taking over event handling directly.
+*		 (A common reason is to ensure the callbacks from events are on the main
+*		  execution thread of the caller).
+*
+*		 This is very similar to CheckForIncomingCommands()
+*		 but doesn't pass a command over to the kernel.
+*
+* @return True if processes at least one event
+*************************************************************/
+bool Kernel::CheckForIncomingEvents()
+{
+	return (GetConnection()->ReceiveMessages(true)) ;
+}
+
+/*************************************************************
 * @brief This is a utility wrapper to let us sleep the entire client process
 *		 for a period of time.
 *************************************************************/
