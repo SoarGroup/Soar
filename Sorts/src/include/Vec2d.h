@@ -19,6 +19,7 @@
 #ifndef Vec2d_H
 #define Vec2d_H
 
+#include <iostream>
 #include <assert.h>
 #include <math.h>
 
@@ -68,6 +69,10 @@ public:
     return i * v.i + j * v.j;
   }
   
+  Vec2d operator*(double m) const {
+    return Vec2d(m * i, m * j);
+  }
+
   Vec2d norm() const {
     double m = mag();
     return Vec2d(i / m, j / m);
@@ -98,6 +103,37 @@ public:
     return intVec;
   }
 
+  bool isZero() const {
+    return i == 0 && j == 0;
+  }
+
+  // project this vector onto v
+  Vec2d proj(const Vec2d& v) const {
+    double dp = operator*(v);
+    double dpDivVmagSq = dp / v.magSq();
+    return Vec2d(dpDivVmagSq * v.i, dpDivVmagSq * v.j);
+  }
+
+  Vec2d projUnit(const Vec2d& v) const {
+    double dp = operator*(v);
+    return Vec2d(dp * v.i, dp * v.j);
+  }
+
+  // get only one dimension of projection
+  double projUnit(const Vec2d& v, int d) const {
+    return operator*(v) * v(d);
+  }
+
+  // right-hand normal
+  Vec2d rhNormal() const {
+    return Vec2d(-j, i);
+  }
+
+  // left-hand normal
+  Vec2d lhNormal() const {
+    return Vec2d(j, -i);
+  }
+
   double operator()(int d) const {
     switch (d) {
       case 0:
@@ -121,6 +157,11 @@ public:
       default:
         assert(false);
     }
+  }
+
+  void setB(double _i, double _j) {
+    i = _i;
+    j = _j;
   }
 
 private:

@@ -62,6 +62,8 @@ public:
   int getActionFrame();
   int getNumPlayers();
 
+  const Map<GameTile>& getGameMap() { return gsm->get_game().get_map(); }
+
   int getMapXDim();
   int getMapYDim();
 

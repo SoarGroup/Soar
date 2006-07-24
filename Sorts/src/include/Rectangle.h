@@ -20,44 +20,41 @@
 #define Rectangle_H
 
 #include <iostream>
-
-#include "Circle.h"
-#include "general.h"
+#include "Vec2d.h"
 
 using namespace std;
 
 class Rectangle {
 public:
   Rectangle();
-  Rectangle(int x, int y);
-  Rectangle(int _xmin, int _xmax, int _ymin, int _ymax);
-  Rectangle(int x, int y, int width, int height, bool ugly);
+  Rectangle(double x, double y);
+  Rectangle(double _xmin, double _xmax, double _ymin, double _ymax);
+  Rectangle(double x, double y, double width, double height, bool ugly);
   Rectangle(const Rectangle& other);
 
-  void set(int _xmin, int _xmax, int _ymin, int _ymax);
-  void collapse(int x, int y);
-  void accomodate(int x, int y);
+  void set(double _xmin, double _xmax, double _ymin, double _ymax);
+  void collapse(double x, double y);
+  void accomodate(double x, double y);
   void accomodate(const Rectangle& other);
 
   bool intersects(const Rectangle& other);
-  bool intersects(const Circle& c);
-  bool intersects(Line& l);
-  bool contains(int x, int y);
+  //bool intersects(Line& l);
+  bool contains(double x, double y);
   bool contains(const Rectangle& r);
-  int  area();
+  double  area();
 
-  int getWidth();
-  int getHeight();
-  void getCenterPoint(int& x, int& y);
+  double getWidth();
+  double getHeight();
+  Vec2d getCenterPoint();
 
-  coordinate getClosestEdgePoint(coordinate& from);
+  Vec2d getClosestEdgePoint(const Vec2d& from);
 
-  Circle getCircumscribingCircle();
+  //Circle getCircumscribingCircle();
 
   Rectangle& operator=(const Rectangle& rhs);
   friend ostream& operator<<(ostream& os, const Rectangle& r);
 
-  int xmin, xmax, ymin, ymax;
+  double xmin, xmax, ymin, ymax;
 };
 
 ostream& operator<<(ostream& os, const Rectangle& r);

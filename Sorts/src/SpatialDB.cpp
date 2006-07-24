@@ -19,8 +19,10 @@
 #include "SpatialDB.h"
 #include "Sorts.h"
 #include "general.h"
+#include "SortsCollision.h"
 
 #include <map>
+#include <limits>
 
 #define WORKER_RADIUS 3
 #define IMAG_OBSTACLE_RADIUS 8 
@@ -32,6 +34,8 @@
 #define CLASS_TOKEN "SDB"
 #define DEBUG_OUTPUT true 
 #include "OutputDefinitionsUnique.h"
+
+enum { TILE_UNKNOWN=0, TILE_WATER=1, TILE_GROUND=2, TILE_CLIFF=3 };
 
 inline int intDivC(int x, int y) {
   return (int) ceilf(((float) x) / y);
@@ -51,12 +55,11 @@ void SpatialDB::init() {
   // Tilepoints define the granularity of the grid... 
   // The higher the tilepoints, the coarser the detail
   gobMap.resize(mapsize);
-  //contours.resize(mapsize);
-  terrainLineMap.resize(mapsize);
   imaginaryWorkerMap.resize(mapsize);
-  imaginaryObstacleMap.resize(mapsize);
   msg  << "initializing SpatialDB grid: (" << width<<"," << height
        << "," << (width*height) << ")\n";
+
+  gameMap = &Sorts::OrtsIO->getGameMap();
 }
 
 SpatialDB::~SpatialDB()
@@ -94,22 +97,6 @@ void SpatialDB::addImaginaryWorker(coordinate c) {
   imaginaryWorkerMap[cell].push_back(c); 
   dbg << "registered new imaginary worker.\n";
   dbg << "iw loc: " << c.x << "," << c.y << endl;
-}
-
-void SpatialDB::addImaginaryObstacle(coordinate c) {
-  // no need for removal/update support
-  int cell = getCellNumber(c.x, c.y);
-  if (cell >= gobMap.size()) {
-    msg << "ERROR: out of bounds, not adding: " << c.x << "," << c.y << endl;
-    return; 
-  }
-  
-  imaginaryObstacleMap[cell].push_back(c); 
-  dbg << "Registered new imaginary obstacle.\n";
-  dbg << "loc: " << c.x << "," << c.y << endl;
-#ifdef USE_CANVAS
-  Sorts::canvas.makeTempCircle(c.x,c.y,IMAG_OBSTACLE_RADIUS,9999999);
-#endif
 }
 
 int SpatialDB::getCellNumber(int x, int y) {
@@ -343,17 +330,17 @@ bool SpatialDB::hasObjectCollision
 
 bool SpatialDB::hasObjectCollision(coordinate c, int r, GameObj* gob) {
   // ignore collisions with gob
-  return hasObjectCollisionInt(c, r, false,  gob, false);
+  return hasObjectCollisionInt(c, r, false,  gob);
 }
 
 bool SpatialDB::hasObjectCollision(sint4 x, sint4 y, sint4 r) {
   coordinate c(x,y);
-  return hasObjectCollisionInt(c, r, false, NULL, false);
+  return hasObjectCollisionInt(c, r, false, NULL);
 }
 
 bool SpatialDB::hasMiningCollision(coordinate c) {
   return hasObjectCollisionInt(c, WORKER_RADIUS+1, true,
-                               NULL, false);
+                               NULL);
 }
 
 bool SpatialDB::hasObjectCollision(Rectangle* rect) {
@@ -362,18 +349,15 @@ bool SpatialDB::hasObjectCollision(Rectangle* rect) {
   c.x = (int)((rect->xmax + rect->xmin)/2.0);
   c.y = (int)((rect->ymax + rect->ymin)/2.0);
   int radius = (int)(sqrt(squaredDistance(c.x, c.y, rect->xmax, rect->ymax)));
-  return hasObjectCollisionInt(c, radius, false, NULL, false);
+  return hasObjectCollisionInt(c, radius, false, NULL);
 }
 
-bool SpatialDB::hasImaginaryObstacleCollision(sint4 x, sint4 y, sint4 r) {
-  coordinate c(x,y);
-  return hasObjectCollisionInt(c, r, false, NULL, true);
-}
-
-bool SpatialDB::hasObjectCollisionInt(coordinate c, 
-                                      int radius, bool forMining, 
-                                      GameObj* ignoreGob, 
-                                      bool justImaginaryObstacles) {
+bool SpatialDB::hasObjectCollisionInt
+( coordinate c, 
+  int        radius, 
+  bool       forMining, 
+  GameObj*   ignoreGob ) 
+{
   int cells[9];
   bool check[9] = {false};
 
@@ -450,359 +434,246 @@ bool SpatialDB::hasObjectCollisionInt(coordinate c,
     if(check[i]) {
   //    msg << "checking cell " << cells[i] << "\n";
       assert(cells[i] < gobMap.size());
-      if (not justImaginaryObstacles) {
-        for(it = gobMap[cells[i]].begin(); it != gobMap[cells[i]].end(); it++) {
-          obj.x =  (*(*it)->sod.x);
-          obj.y =  (*(*it)->sod.y);
-          objr =  (*(*it)->sod.radius);
-          if (*(*it)->sod.shape != SHAPE_RECTANGLE) {
-            if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
-            < (radius+objr) * (radius+objr))  {
-              // inside the circle
-              if (forMining) {
-                if (((*it)->bp_name() != "worker") 
-                    and
-                    ((*it)->bp_name() != "sheep")
-                    ) {
-                  //msg << "mining collision with " << (*it)->bp_name() << endl;
-                  //msg << "at loc " << obj.x << "," << obj.y << endl;
-                  return true;
-                }
-              }
-              else {
-                if ((*it) != ignoreGob) {
-                  //msg << "object collision with " << (*it)->bp_name() << endl;
-                  //msg << "at loc " << obj.x << "," << obj.y << endl;
-                  return true;
-                }
-              } 
-            }
-          }
-          else {
-            // rectangle
-            Rectangle r(*(*it)->sod.x1, *(*it)->sod.x2, 
-                        *(*it)->sod.y1, *(*it)->sod.y2);
+      for(it = gobMap[cells[i]].begin(); it != gobMap[cells[i]].end(); it++) {
+        obj.x =  (*(*it)->sod.x);
+        obj.y =  (*(*it)->sod.y);
+        objr =  (*(*it)->sod.radius);
+        if (*(*it)->sod.shape != SHAPE_RECTANGLE) {
+          if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
+          < (radius+objr) * (radius+objr))  {
+            // inside the circle
             if (forMining) {
-              if (r.intersects(circle) and (*it)->bp_name() != "controlCenter") {
+              if (((*it)->bp_name() != "worker") 
+                  and
+                  ((*it)->bp_name() != "sheep")
+                  ) {
+                //msg << "mining collision with " << (*it)->bp_name() << endl;
+                //msg << "at loc " << obj.x << "," << obj.y << endl;
                 return true;
               }
             }
-            else if (r.intersects(circle) and (*it) != ignoreGob) {
-             // msg << "object at " << c << " with radius " << radius 
-             //     << " has collision with " << (*it)->bp_name() << " at " <<
-             //   *(*it)->sod.x << "," << *(*it)->sod.y << endl;
-              return true;
-            }
-           
+            else {
+              if ((*it) != ignoreGob) {
+                //msg << "object collision with " << (*it)->bp_name() << endl;
+                //msg << "at loc " << obj.x << "," << obj.y << endl;
+                return true;
+              }
+            } 
           }
         }
-        if (forMining) {
-          for(iwit = imaginaryWorkerMap[cells[i]].begin(); 
-              iwit != imaginaryWorkerMap[cells[i]].end(); 
-              iwit++) {
-            obj.x = (*iwit).x;
-            obj.y = (*iwit).y;
-            objr = WORKER_RADIUS + 1; // radius of the imaginary worker
-            if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
-            < (radius+objr) * (radius+objr))  {
-              //Inside the circle
-              msg << "imaginary worker collision!\n";
+        else {
+          // rectangle
+          Rectangle r(*(*it)->sod.x1, *(*it)->sod.x2, 
+                      *(*it)->sod.y1, *(*it)->sod.y2);
+          if (forMining) {
+            if (rectangle_circle_intersect(r, circle) and 
+                (*it)->bp_name() != "controlCenter")
+            {
               return true;
             }
           }
+          else if (rectangle_circle_intersect(r, circle) and 
+                   (*it) != ignoreGob)
+          {
+            // msg << "object at " << c << " with radius " << radius 
+            //     << " has collision with " << (*it)->bp_name() << " at " <<
+            //   *(*it)->sod.x << "," << *(*it)->sod.y << endl;
+            return true;
+          }
+         
         }
-      } // end if not justImaginaryObstacles
-      
-      for(iwit = imaginaryObstacleMap[cells[i]].begin(); 
-          iwit != imaginaryObstacleMap[cells[i]].end(); 
-          iwit++) {
-        obj.x = (*iwit).x;
-        obj.y = (*iwit).y;
-        objr = IMAG_OBSTACLE_RADIUS;
-        if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
-        < (radius+objr) * (radius+objr))  {
-          //Inside the circle
-       //   msg << "object at " << c << " with radius " << radius 
-       //       << "has imaginary obstacle collision!\n";
-          return true;
+      }
+      if (forMining) {
+        for(iwit = imaginaryWorkerMap[cells[i]].begin(); 
+            iwit != imaginaryWorkerMap[cells[i]].end(); 
+            iwit++) {
+          obj.x = (*iwit).x;
+          obj.y = (*iwit).y;
+          objr = WORKER_RADIUS + 1; // radius of the imaginary worker
+          if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y) 
+          < (radius+objr) * (radius+objr))  {
+            //Inside the circle
+            msg << "imaginary worker collision!\n";
+            return true;
+          }
         }
       }
     }
   }
+
+  // check for terrain collisions
+  Circle cc(c.x, c.y, radius);
+  if (hasTerrainCollision(cc)) {
+    Sorts::canvas.makeTempCircle(c.x, c.y, radius, 9999)->setShapeColor(255, 255, 255);
+    return true;
+  }
+
  // msg << "object at " << c << " with radius " << radius 
  //     << " has no collisions\n"; 
   return false; // no collisions
 }
-/*
-void SpatialDB::addTerrainContour(TerrainContour* contour) {
-  cout << contour << " add xxxxxx" << endl;
-  assert(contourLocs.find(contour) == contourLocs.end());
-  
-  contourLocs.insert(pair<TerrainContour*, list<int> >(contour, list<int>()));
-
-  Rectangle bbox = contour->getBoundingBox();
-  int cellcmin = bbox.xmin / sdbTilePoints;
-  int cellcmax = bbox.xmax / sdbTilePoints;
-  int cellrmin = bbox.ymin / sdbTilePoints;
-  int cellrmax = bbox.ymax / sdbTilePoints;
-  
-  for(int r = cellrmin; r <= cellrmax; r++) {
-    for(int c = cellcmin; c <= cellcmax; c++) {
-      int cell = rowCol2cell(r, c);
-      int xmin = c * sdbTilePoints;
-      int xmax = (c + 1) * sdbTilePoints;
-      int ymin = r * sdbTilePoints;
-      int ymax = (r + 1) * sdbTilePoints;
-      if (contour->intersectsRectangle(xmin, ymin, xmax, ymax)) {
-        contourLocs[contour].push_back(cell);
-        contours[cell].push_back(contour);
-      }
-    }
-  }
-}
-
-void SpatialDB::removeTerrainContour(TerrainContour* contour) {
-  cout << contour << " remove xxxxxx" << endl;
-  assert(contourLocs.find(contour) != contourLocs.end());
-
-  list<int>& locs = contourLocs[contour];
-  for(list<int>::iterator i = locs.begin(); i != locs.end(); ++i) {
-    list<TerrainContour*>::iterator j =
-      find(contours[*i].begin(), contours[*i].end(), contour);
-
-    assert(j != contours[*i].end());
-    contours[*i].erase(j);
-  }
-
-  contourLocs.erase(contour);
-}
-
-// remember that a contour can only grow in size
-void SpatialDB::updateTerrainContour(TerrainContour* contour) {
-  cout << contour << " update xxxxxx" << endl;
-  assert(contourLocs.find(contour) != contourLocs.end());
- 
-  Rectangle bbox = contour->getBoundingBox();
-  int cellcmin = bbox.xmin / sdbTilePoints;
-  int cellcmax = bbox.xmax / sdbTilePoints;
-  int cellrmin = bbox.ymin / sdbTilePoints;
-  int cellrmax = bbox.ymax / sdbTilePoints;
-  
-  for(int c = cellcmin; c <= cellcmax; c++) {
-    for(int r = cellrmin; r <= cellrmax; r++) {
-      int cell = rowCol2cell(r, c);
-      if (find(contours[cell].begin(), contours[cell].end(), contour) ==
-          contours[cell].end()) 
-      {
-        int xmin = c * sdbTilePoints;
-        int xmax = (c + 1) * sdbTilePoints;
-        int ymin = r * sdbTilePoints;
-        int ymax = (r + 1) * sdbTilePoints;
-        if (contour->intersectsRectangle(xmin, ymin, xmax, ymax)) {
-          contourLocs[contour].push_back(cell);
-          contours[cell].push_back(contour);
-        }
-      }
-    }
-  }
-}*/
-/*
-bool SpatialDB::hasTerrainCollision(Rectangle& r) {
-  
-  int upperRightSector = getCellNumber(r.xmax, r.ymin);
-  int lowerLeftSector = getCellNumber(r.xmin, r.ymax);
-
-  int minCol = cell2column(lowerLeftSector);
-  int maxCol = cell2column(upperRightSector);
-  int minRow = cell2row(upperRightSector);
-  int maxRow = cell2row(lowerLeftSector);
-
-  assert (minCol <= maxCol && minRow <= maxRow);
-
-  int cellNum;
-  for (int i=minCol; i<=maxCol; i++) {
-    for (int j=minRow; j<=maxRow; j++) {
-      cellNum = rowCol2cell(i,j);
-      for(list<TerrainContour*>::iterator
-          c  = contours[cellNum].begin();
-          c != contours[cellNum].end();
-          ++c)
-      {
-        if ((*c)->intersectsRectangle(r.xmin, r.ymin, r.xmax, r.ymax)) {
-          return true;
-        }
-      }
-    }
-  }
-
-  return false;
-}
-*//*
-bool SpatialDB::hasTerrainCollision(int cx, int cy, int r) {
-
-  int minCol = (cx - r) / sdbTilePoints;
-  int maxCol = (cx + r) / sdbTilePoints;
-  int minRow = (cy - r) / sdbTilePoints;
-  int maxRow = (cy + r) / sdbTilePoints;
-
-  assert (minCol <= maxCol && minRow <= maxRow);
-
-  int cellNum;
-  for (int i=minCol; i<=maxCol; i++) {
-    for (int j=minRow; j<=maxRow; j++) {
-      cellNum = rowCol2cell(i,j);
-      for(list<TerrainContour*>::iterator
-          c  = contours[cellNum].begin();
-          c != contours[cellNum].end();
-          ++c)
-      {
-        if ((*c)->intersectsCircle(cx, cy, r)) {
-          return true;
-        }
-      }
-    }
-  }
-
-  return false;
-}
-
-void SpatialDB::getTerrainCollisions
-( Rectangle& r, 
-  list<TerrainContour*>& collisions ) 
-{
-  collisions.clear();
-  
-  int upperRightSector = getCellNumber(r.xmax, r.ymin);
-  int lowerLeftSector = getCellNumber(r.xmin, r.ymax);
-
-  int minCol = cell2column(lowerLeftSector);
-  int maxCol = cell2column(upperRightSector);
-  int minRow = cell2row(upperRightSector);
-  int maxRow = cell2row(lowerLeftSector);
-
-  assert (minCol <= maxCol && minRow <= maxRow);
-
-  int cellNum;
-  for (int i=minCol; i<=maxCol; i++) {
-    for (int j=minRow; j<=maxRow; j++) {
-      cellNum = rowCol2cell(i,j);
-      for(list<TerrainContour*>::iterator
-          c  = contours[cellNum].begin();
-          c != contours[cellNum].end();
-          ++c)
-      {
-        if ((*c)->intersectsRectangle(r.xmin, r.ymin, r.xmax, r.ymax)) {
-          collisions.push_back(*c);
-        }
-      }
-    }
-  }
-}
-
-void SpatialDB::getTerrainCollisions
-( int cx, 
-  int cy, 
-  int r,
-  list<TerrainContour*>& collisions) 
-{
-  collisions.clear();
-
-  int minCol = (cx - r) / sdbTilePoints;
-  int maxCol = (cx + r) / sdbTilePoints;
-  int minRow = (cy - r) / sdbTilePoints;
-  int maxRow = (cy + r) / sdbTilePoints;
-
-  assert (minCol <= maxCol && minRow <= maxRow);
-
-  int cellNum;
-  for (int i=minCol; i<=maxCol; i++) {
-    for (int j=minRow; j<=maxRow; j++) {
-      cellNum = rowCol2cell(i,j);
-      for(list<TerrainContour*>::iterator
-          c  = contours[cellNum].begin();
-          c != contours[cellNum].end();
-          ++c)
-      {
-        if ((*c)->intersectsCircle(cx, cy, r)) {
-          collisions.push_back(*c);
-        }
-      }
-    }
-  }
-}*/
-
-void SpatialDB::addTerrainLine(Line l) {
-  // no need for removal/update support
-  int cell1 = getCellNumber(l.a.x, l.a.y);
-  int cell2 = getCellNumber(l.b.x, l.b.y);
-  if (cell1 >= gobMap.size() || cell2 >= gobMap.size()) {
-    msg << "ERROR: out of bounds, not adding: " << l.a << " - " << l.b << endl;
-    return;
-  }
-  //msg << "adding terrain line from " << l.a << " to " << l.b << endl;
-  int col1 = cell2column(cell1);
-  int row1 = cell2row(cell1);
-  int col2 = cell2column(cell2);
-  int row2 = cell2row(cell2);
-
-  int count = 0;
-  int cellNum;
-
-  if (col1 > col2) {
-    int tmp = col1;
-    col1 = col2;
-    col2 = tmp;
-  }
-  if (row1 > row2) {
-    int tmp = row1;
-    row1 = row2;
-    row2 = tmp;
-  }
-
-  for (int i=col1; i<= col2; i++) {
-    for (int j=row1; j<= row2; j++) {
-      cellNum = rowCol2cell(i,j);
-    //  msg << "register in cell " << cellNum << endl;
-      terrainLineMap[cellNum].push_back(l);
-      count++;
-    }
-  }
-  //msg << "registered in " << count << " cells.\n";
-
-}
 
 bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
- // determine which sectors the gob is in
- // only supports rectangles (buildings) now!
+  int minCol = rect->xmin / GameConst::TILE_POINTS;
+  int maxCol = rect->xmax / GameConst::TILE_POINTS;
+  int minRow = rect->ymin / GameConst::TILE_POINTS;
+  int maxRow = rect->ymax / GameConst::TILE_POINTS;
 
-  int upperRightSector = getCellNumber(rect->xmax, rect->ymin);
-  int lowerLeftSector = getCellNumber(rect->xmin, rect->ymax);
+  if (minCol < 0 || 
+      maxCol >= Sorts::OrtsIO->getMapXDim() / GameConst::TILE_POINTS ||
+      minRow < 0 ||
+      maxRow >= Sorts::OrtsIO->getMapYDim() / GameConst::TILE_POINTS)
+  {
+    // collision with edge of map
+    return true;
+  }
 
-  int minCol = cell2column(lowerLeftSector);
-  int maxCol = cell2column(upperRightSector);
-  int minRow = cell2row(upperRightSector);
-  int maxRow = cell2row(lowerLeftSector);
+  for(int r = minRow; r <= maxRow; ++r) {
+    for(int c = minCol; c <= maxCol; ++c) {
 
-  assert (minCol <= maxCol && minRow <= maxRow);
+      const GameTile& t = (*gameMap)(c, r);
+      Tile::Split split = t.get_split();
+      Tile::Type typeN = t.get_typeN();
+      Tile::Type typeS = t.get_typeS();
+      Tile::Type typeW = t.get_typeW();
+      Tile::Type typeE = t.get_typeE();
 
-  int cellNum;
-  list<Line>::iterator it;
-  for (int i=minCol; i<=maxCol; i++) {
-    for (int j=minRow; j<=maxRow; j++) {
-      cellNum = rowCol2cell(i,j);
-      for (it = terrainLineMap[cellNum].begin();
-          it != terrainLineMap[cellNum].end();
-          it++) {
-        msg << "checking intersection\n";
-        if (rect->intersects(*it)) {
-          msg << "rect " << *rect << " intersects line " << (*it).a
-              << "-" << (*it).b << endl;
+      int xmin = c * GameConst::TILE_POINTS;
+      int xmax = xmin + GameConst::TILE_POINTS;
+      int ymin = r * GameConst::TILE_POINTS;
+      int ymax = ymin + GameConst::TILE_POINTS;
+
+      Vec2d rAngle;
+      int xoffset, yoffset;
+
+      switch (split) {
+        case Tile::NO_SPLIT:
+          // just check if entire tile is not passable
+          if (typeW != TILE_GROUND) {
+            return true;
+          }
+          else {
+            continue;
+          }
+        break;
+
+        case Tile::TB_SPLIT:
+          if (typeW != TILE_GROUND) {
+            rAngle.setB(xmin, ymax);
+            xoffset = xmax - xmin;
+            yoffset = ymin - ymax;
+          }
+          if (typeE != TILE_GROUND) {
+            rAngle.setB(xmax, ymin);
+            xoffset = xmin - xmax;
+            yoffset = ymax - ymin;
+          }
+        break;
+
+        case Tile::BT_SPLIT:
+          if (typeW != TILE_GROUND) {
+            rAngle.setB(xmin, ymin);
+            xoffset = xmax - xmin;
+            yoffset = ymax - ymin;
+          }
+          if (typeE != TILE_GROUND) {
+            rAngle.setB(xmax, ymax);
+            xoffset = xmin - xmax;
+            yoffset = ymin - ymax;
+          }
+        break;
+      }
+      if (rectangle_triangle_intersect(*rect, rAngle, xoffset, yoffset)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+
+bool SpatialDB::hasTerrainCollision(Circle& c) {
+  int minCol = ((int) (c.x - c.r)) / GameConst::TILE_POINTS;
+  int maxCol = ((int) (c.x + c.r)) / GameConst::TILE_POINTS;
+  int minRow = ((int) (c.y - c.r)) / GameConst::TILE_POINTS;
+  int maxRow = ((int) (c.y + c.r)) / GameConst::TILE_POINTS;
+
+  if (minCol < 0 || 
+      maxCol >= Sorts::OrtsIO->getMapXDim() / GameConst::TILE_POINTS ||
+      minRow < 0 ||
+      maxRow >= Sorts::OrtsIO->getMapYDim() / GameConst::TILE_POINTS)
+  {
+    // collision with edge of map
+    return true;
+  }
+
+  for(int row = minRow; row <= maxRow; ++row) {
+    for(int col = minCol; col <= maxCol; ++col) {
+      const GameTile& t = gameMap->get_tile(col, row);
+      int height        = t.get_min_h();
+      Tile::Split split = t.get_split();
+      Tile::Type typeN  = t.get_typeN();
+      Tile::Type typeS  = t.get_typeS();
+      Tile::Type typeW  = t.get_typeW();
+      Tile::Type typeE  = t.get_typeE();
+
+      int xmin = col * GameConst::TILE_POINTS;
+      int xmax = xmin + GameConst::TILE_POINTS;
+      int ymin = row * GameConst::TILE_POINTS;
+      int ymax = ymin + GameConst::TILE_POINTS;
+
+      Rectangle r(xmin, xmax, ymin, ymax);
+      
+      if (rectangle_circle_intersect(r, c)) {
+        if (height > 0) {
+          // assume all plateaus are closed. THIS IS DEFINITELY NOT THE CASE!
+          msg << "TERRAIN COLLISION" << endl;
+          return true;
+        }
+      }
+
+      Vec2d rAngle;
+      double xoffset, yoffset;
+      if(split == Tile::NO_SPLIT) {
+        if (typeW == TILE_GROUND) { 
+          continue; 
+        }
+        else {
+          if (rectangle_circle_intersect(r, c)) { return true; }
+        }
+      }
+      else {
+        if(split == Tile::TB_SPLIT) {
+          if (typeW != TILE_GROUND) {
+            rAngle.setB(xmin, ymax);
+            xoffset = xmax - xmin;
+            yoffset = ymin - ymax;
+          }
+          if (typeE != TILE_GROUND) {
+            rAngle.setB(xmax, ymin);
+            xoffset = xmin - xmax;
+            yoffset = ymax - ymin;
+          }
+        }
+        else { // BT_SPLIT
+          if (typeW != TILE_GROUND) {
+            rAngle.setB(xmin, ymin);
+            xoffset = xmax - xmin;
+            yoffset = ymax - ymin;
+          }
+          if (typeE != TILE_GROUND) {
+            rAngle.setB(xmax, ymax);
+            xoffset = xmin - xmax;
+            yoffset = ymin - ymax;
+          }
+        }
+        if (circle_triangle_intersect(c, rAngle, xoffset, yoffset)) {
           return true;
         }
       }
     }
   }
-
   return false;
 }
 

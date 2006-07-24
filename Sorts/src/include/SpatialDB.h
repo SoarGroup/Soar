@@ -28,10 +28,11 @@
 #include "GameTile.H"
 #include "Global.H"
 #include "Vector.H"
+#include "GameConst.H"
 
 #include "general.h"
 #include "Rectangle.h"
-//#include "TerrainContour.h"
+#include "Circle.h"
 #include "ERF.h"
 
 class Sorts;
@@ -70,14 +71,10 @@ public:
   bool hasObjectCollision(sint4 x, sint4 y, sint4 r, ERF* erf);
 
   bool hasMiningCollision(coordinate c);
-  bool hasImaginaryObstacleCollision(sint4 x, sint4 y, sint4 r);
 
   // used by building locator
-  //bool hasTerrainCollision(Rectangle& r);
-  bool hasTerrainCollision(int cx, int cy, int r);
- // void getTerrainCollisions(Rectangle&, list<TerrainContour*>&);
-//  void getTerrainCollisions(int, int,  int, list<TerrainContour*>&);
   bool hasTerrainCollision(Rectangle* r);
+  bool hasTerrainCollision(Circle& c);
   bool hasObjectCollision(Rectangle* r);
   bool hasObjectCollision(coordinate c, int r, GameObj* ignoreGob);
  
@@ -100,17 +97,14 @@ public:
 
 private: // functions
 
-  bool hasObjectCollisionInt(coordinate, int, bool, GameObj*, bool);
+  bool hasObjectCollisionInt(coordinate, int, bool, GameObj*);
   void calcBinning (sint4 x, sint4 y, sint4 r, ERF* erf, BinInfo& info);
 
 private:
-  vector<set<GameObj*> > gobMap;
+  vector<set<GameObj*> >    gobMap;
   vector<list<coordinate> > imaginaryWorkerMap; // used by MineManager
-  vector<list<coordinate> > imaginaryObstacleMap;
-  vector<list<Line> > terrainLineMap;
-//  map<TerrainContour*, list<int> > contourLocs;
-//  vector<list<TerrainContour*> > contours;
 
+  const Map<GameTile>* gameMap;
 
   int getCellNumber(int x, int y);
   int cell2row(int);

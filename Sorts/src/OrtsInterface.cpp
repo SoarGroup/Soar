@@ -345,18 +345,13 @@ void OrtsInterface::updateSoarGameObjects() {
 
   updateSoarPlayerInfo();
   
-  
+#ifdef USE_CANVAS
   FORALL(changes.new_boundaries, obj) {
     GameObj* gob = (*obj)->get_GameObj();
-    Line l (*gob->sod.x1, *gob->sod.y1, *gob->sod.x2, *gob->sod.y2);
-//    Sorts::terrainManager.addSegment
-//      (*gob->sod.x1, *gob->sod.y1, *gob->sod.x2, *gob->sod.y2);
-    Sorts::spatialDB->addTerrainLine(l);
-#ifdef USE_CANVAS
-    Sorts::canvas.drawLine(l.a.x, l.a.y, l.b.x, l.b.y);
+    Sorts::canvas.drawLine(*gob->sod.x1, *gob->sod.y1, *gob->sod.x2, *gob->sod.y2);
     Sorts::canvas.update();
-#endif
   }
+#endif
 
   // add new objects
   FORALL(changes.new_objs, obj) {

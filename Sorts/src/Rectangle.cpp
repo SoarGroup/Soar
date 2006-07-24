@@ -28,13 +28,13 @@ using namespace std;
 
 Rectangle::Rectangle() : xmin(0), xmax(0), ymin(0), ymax(0) {}
 
-Rectangle::Rectangle(int x, int y) : xmin(x), xmax(x), ymin(y), ymax(y) {}
+Rectangle::Rectangle(double x, double y) : xmin(x), xmax(x), ymin(y), ymax(y) {}
 
-Rectangle::Rectangle(int _xmin, int _xmax, int _ymin, int _ymax)
+Rectangle::Rectangle(double _xmin, double _xmax, double _ymin, double _ymax)
 : xmin(_xmin), xmax(_xmax), ymin(_ymin), ymax(_ymax)
 { }
 
-Rectangle::Rectangle(int x, int y, int width, int height, bool ugly) {
+Rectangle::Rectangle(double x, double y, double width, double height, bool ugly) {
   xmin = x - width / 2;
   xmax = x + width / 2;
   ymin = y - height / 2;
@@ -45,17 +45,17 @@ Rectangle::Rectangle(const Rectangle& other)
 : xmin(other.xmin), xmax(other.xmax), ymin(other.ymin), ymax(other.ymax)
 { }
 
-void Rectangle::set(int _xmin, int _xmax, int _ymin, int _ymax) {
+void Rectangle::set(double _xmin, double _xmax, double _ymin, double _ymax) {
   xmin = _xmin; xmax = _xmax;
   ymin = _ymin; ymax = _ymax;
 }
 
-void Rectangle::collapse(int x, int y) {
+void Rectangle::collapse(double x, double y) {
   xmin = x; xmax = x;
   ymin = y; ymax = y;
 }
 
-void Rectangle::accomodate(int x, int y) {
+void Rectangle::accomodate(double x, double y) {
   if (x < xmin) {
     xmin = x;
   }
@@ -95,27 +95,7 @@ bool Rectangle::intersects(const Rectangle& other) {
   return false;
 }
 
-bool Rectangle::intersects(const Circle& c) {
-  if (xmin <= c.x && c.x <= xmax) {
-    return (ymin - c.r <= c.y && c.y <= ymax + c.r);
-  }
-  if (ymin <= c.y && c.y <= ymax) {
-    return (xmin - c.r <= c.x && c.x <= xmax + c.r);
-  }
-  if (c.x < xmin) {
-    if (c.y < ymin) {
-      return c.contains(xmin, ymin);
-    }
-    return c.contains(xmin, ymax);
-  }
-  else { // c.x > xmax
-    if (c.y < ymin) {
-      return c.contains(xmax, ymin);
-    }
-    return c.contains(xmax, ymax);
-  }
-}
-
+/*
 bool Rectangle::intersects(Line& l) {
   
   // cases where line completely away from box (most common)
@@ -147,7 +127,7 @@ bool Rectangle::intersects(Line& l) {
       l.b = l.a;
     }
 
-    int slope = (l.b.y - l.a.y)/(l.b.x - l.a.x);
+    double slope = (l.b.y - l.a.y)/(l.b.x - l.a.x);
     // can't div by 0: l.b.x == l.a.x handled above
 
     bool above[4];
@@ -188,8 +168,9 @@ bool Rectangle::intersects(Line& l) {
     return true;
   }
 }
+*/
 
-bool Rectangle::contains(int x, int y) {
+bool Rectangle::contains(double x, double y) {
   return xmin <= x && xmax >= x && ymin <= y && ymax >= y;
 }
 
@@ -197,16 +178,18 @@ bool Rectangle::contains(const Rectangle& r) {
   return xmin <= r.xmin && xmax >= r.xmax && ymin <= r.ymin && ymax >= r.ymax;
 }
 
-int Rectangle::area() {
+double Rectangle::area() {
   return (xmax - xmin) * (ymax - ymin);
 }
 
+/*
 Circle Rectangle::getCircumscribingCircle() {
-  int dx = (xmax - xmin) / 2;
-  int dy = (ymax - ymin) / 2;
+  double dx = (xmax - xmin) / 2;
+  double dy = (ymax - ymin) / 2;
   double d  = sqrt((double)(dx * dx + dy * dy));
   return Circle(xmin + dx, ymin + dy, d);
 }
+*/
 
 Rectangle& Rectangle::operator=(const Rectangle& rhs) {
   xmin = rhs.xmin;
@@ -222,63 +205,62 @@ ostream& operator<<(ostream& os, const Rectangle& r) {
   return os;
 }
 
-coordinate Rectangle::getClosestEdgePoint(coordinate& from) {
+Vec2d Rectangle::getClosestEdgePoint(const Vec2d& from) {
   // assume coordinate is not in box!
-  coordinate result;
-  if (from.x >= xmin and from.x <= xmax) {
-    result.x = from.x;
-    if (from.y < ymin) {
-      result.y = ymin;
+  Vec2d result;
+  if (from(0) >= xmin and from(0) <= xmax) {
+    result.set(0, from(0));
+    if (from(1) < ymin) {
+      result.set(1, ymin);
     }
     else {
-      result.y = ymax;
+      result.set(1, ymax);
     }
     return result;
   }
   
-  if (from.y >= ymin and from.y <= ymax) {
-    result.y = from.y;
-    if (from.x < xmin) {
-      result.x = xmin;
+  if (from(1) >= ymin and from(1) <= ymax) {
+    result.set(1, from(1));
+    if (from(0) < xmin) {
+      result.set(0, xmin);
     }
     else {
-      result.x = xmax;
+      result.set(0, xmax);
     }
     return result;
   }
   
-  if (from.y <= ymin and from.x <= xmin) {
-    result.x = xmin;
-    result.y = ymin;
+  if (from(1) <= ymin and from(0) <= xmin) {
+    result.set(0, xmin);
+    result.set(1, ymin);
     return result;
   }
-  if (from.y >= ymax and from.x >= xmax) {
-    result.x = xmax;
-    result.y = ymax;
+  if (from(1) >= ymax and from(0) >= xmax) {
+    result.set(0, xmax);
+    result.set(1, ymax);
     return result;
   }
-  if (from.y <= ymin and from.x >= xmax) {
-    result.x = xmax;
-    result.y = ymin;
+  if (from(1) <= ymin and from(0) >= xmax) {
+    result.set(0, xmax);
+    result.set(1, ymin);
     return result;
   }
-  //if (from.y >= ymax and from.x <= xmin) {
+  //if (from(1) >= ymax and from(0) <= xmin) {
     // implied
-    result.x = xmin;
-    result.y = ymax;
+    result.set(0, xmin);
+    result.set(1, ymax);
     return result;
   //}
 }
   
-int Rectangle::getWidth() {
+double Rectangle::getWidth() {
   return xmax - xmin;
 }
 
-int Rectangle::getHeight() {
+double Rectangle::getHeight() {
   return ymax - ymin;
 }
 
-void Rectangle::getCenterPoint(int& x, int& y) {
-  x = (xmax + xmin) / 2; 
-  y = (ymax + ymin) / 2; 
+Vec2d Rectangle::getCenterPoint() {
+  return Vec2d((xmax + xmin) / 2, (ymax + ymin) / 2);
 }

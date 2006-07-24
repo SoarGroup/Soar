@@ -288,11 +288,14 @@ void MoveFSM::init(vector<sint4> p)
       << l.x << "," << l.y << endl;
 
   clearWPWorkers();
-  if (not forcePathfind and
-      Sorts::spatialDB->hasImaginaryObstacleCollision(l.x, l.y, 
-                                                      *gob->sod.radius)) {
-    msg << "imag obs. collision, not pathfinding, probably no-path.\n";
+  Circle targLoc(l.x, l.y, *gob->sod.radius);
+  bool terrainCollide = Sorts::spatialDB->hasTerrainCollision(targLoc);
+  if (not forcePathfind and terrainCollide) {
+    msg << "Terrain collision, not pathfinding.\n";
     state = UNREACHABLE;
+#ifdef USE_CANVAS
+    Sorts::canvas.makeTempCircle(l.x, l.y, *gob->sod.radius, 9999)->setShapeColor(255, 255, 255);
+#endif
   }
   else {
     Sorts::terrainModule->findPath(gob, l, path);
@@ -338,6 +341,9 @@ void MoveFSM::init(vector<sint4> p)
       state = ALREADY_THERE; 
     }
     else {
+      msg << "STUCK" << endl;
+      state = STUCK;
+      /* replaced with the above
       coordinate c(l.x,l.y);
       if (not isReachableFromBuilding(l)) { 
         msg << "adding unreachable location.\n";
@@ -348,6 +354,7 @@ void MoveFSM::init(vector<sint4> p)
         msg << "pathfind fails from my point only!\n";
         state = STUCK;
       }
+      */
     }
   }
 }

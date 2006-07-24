@@ -251,10 +251,10 @@ void PerceptualGroup::generateData() {
 
   attribs.add("x-pos", x);
   attribs.add("y-pos", y);
-  attribs.add("x-min", bbox.xmin);
-  attribs.add("x-max", bbox.xmax);
-  attribs.add("y-min", bbox.ymin);
-  attribs.add("y-max", bbox.ymax);
+  attribs.add("x-min", (int) bbox.xmin);
+  attribs.add("x-max", (int) bbox.xmax);
+  attribs.add("y-min", (int) bbox.ymin);
+  attribs.add("y-max", (int) bbox.ymax);
 
   attribs.add("dist-to-focus", (float)distToFocus);
 

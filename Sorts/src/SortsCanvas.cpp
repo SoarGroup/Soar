@@ -118,12 +118,11 @@ void SortsCanvas::unregisterSGO(SoarGameObject* sgo) {
 
 void SortsCanvas::registerGroup(PerceptualGroup* group) {
   assert(canvasGroups.find(group) == canvasGroups.end());
-  int x, y;
   Rectangle r = group->getBoundingBox();
 
   int width = r.getWidth();
   int height = r.getHeight();
-  r.getCenterPoint(x,y);
+  Vec2d c = r.getCenterPoint();
   
   stringstream ss;
   string label;
@@ -131,8 +130,8 @@ void SortsCanvas::registerGroup(PerceptualGroup* group) {
   label = ss.str();
   
   CanvasGroupInfo newObj;
-  newObj.compound = canvas.makeCompound(x,y);
-  newObj.mainRectangle = canvas.makeRectangle(x, y, width, height, 0);
+  newObj.compound = canvas.makeCompound(c(0),c(1));
+  newObj.mainRectangle = canvas.makeRectangle(c(0), c(1), width, height, 0);
   newObj.mainRectangle->setLabel(label);
   if (group->isFriendly()) {
     newObj.mainRectangle->setShapeColor(0,255,0);

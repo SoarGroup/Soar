@@ -18,6 +18,7 @@
 */
 #include "BuildFSM.h"
 #include "Rectangle.h"
+#include "SortsCollision.h"
 
 #define MIN_BUILD_UPDATES 10
 
@@ -118,7 +119,7 @@ int BuildFSM::update() {
         msg << "at the site, move done\n";
         nextState = START_BUILD;
       }
-      else if (buildingBounds.intersects(unitBounds)) {
+      else if (rectangle_circle_intersect(buildingBounds, unitBounds)) {
         msg << "at the site, stopping moving.\n";
         moveFSM->stop();
         nextState = START_BUILD;

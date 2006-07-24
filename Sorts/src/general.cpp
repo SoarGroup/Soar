@@ -16,7 +16,6 @@
     along with Sorts; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA    
 */
-#include "general.h"
 #include <cmath>
 #include <iostream>
 #include <sstream>
@@ -26,10 +25,11 @@
 #include "GameObj.H"
 #include "ScriptObj.H"
 
+#include "general.h"
 #include "Circle.h"
 #include "Vec2d.h"
 #include "Rectangle.h"
-
+#include "SortsCollision.h"
 
 #define dbg cout << "GENERAL "
 
@@ -123,7 +123,7 @@ bool canHit(GameObj *atk, GameObj *tgt) {
   if (*tgt->sod.shape == SHAPE_RECTANGLE) {
     Circle c(*atk->sod.x, *atk->sod.y, wr);
     Rectangle r(*tgt->sod.x1, *tgt->sod.x2, *tgt->sod.y1, *tgt->sod.y2);
-    return r.intersects(c);
+    return rectangle_circle_intersect(r, c);
   }
   else {
     double d = squaredDistance(*atk->sod.x, *atk->sod.y, *tgt->sod.x, *tgt->sod.y);
@@ -164,7 +164,7 @@ bool canHit(GameObj* atk, const Vec2d& loc, GameObj *tgt) {
   if (*tgt->sod.shape == SHAPE_RECTANGLE) {
     Circle c(loc(0), loc(1), wr);
     Rectangle r(*tgt->sod.x1, *tgt->sod.x2, *tgt->sod.y1, *tgt->sod.y2);
-    return r.intersects(c);
+    return rectangle_circle_intersect(r, c);
   }
   else {
     double d = squaredDistance((int) loc(0), (int) loc(1), *tgt->sod.x, *tgt->sod.y);
