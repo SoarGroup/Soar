@@ -46,7 +46,7 @@ AttentionActionType attentionActionTypeLookup(string actionName) {
   else if (not actionName.compare("grouping-radius"))  return AA_GROUPING_RADIUS;
   else if (not actionName.compare("num-objects"))  return AA_NUM_OBJECTS;
   else if (not actionName.compare("enable-owner-grouping"))  return AA_OWNER_GROUPING_ON;
-  else if (not actionName.compare("enable-owner-grouping"))  return AA_OWNER_GROUPING_OFF;
+  else if (not actionName.compare("disable-owner-grouping"))  return AA_OWNER_GROUPING_OFF;
   else                                       return AA_NO_SUCH_ACTION;
 }
 
