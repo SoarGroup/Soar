@@ -142,12 +142,13 @@ active-mining & friendly workers & The number of workers that are actively minin
 
 \subsection{The SORTS output-link}
 
-The output-link allows the Soar agent to act in the game world by issuing commands to groups of friendly units, directly to the middleware for actions such as querying,
-and adjust the parameters of the visual subsystem in the middleware. All structures on the output link are similar- the Soar agent creates an output-link.command object with a name (output-link.command.name) specified. Depending on the command name, different parameters are needed. Parameters are attached to the command structure, as in output-link.command.param0. All legal commands and their necessary parameters are detailed below.
+The output-link allows the Soar agent to act in the game world by issuing commands to groups of friendly units, communicate directly to the middleware for actions such as querying,
+and adjust the parameters of the visual subsystem in the middleware. All structures on the output link are similar- the Soar agent creates an output-link.command object with a name (\textbf{output-link.command.name}) specified. Depending on the command name, different parameters are needed. Parameters are attached to the command structure, as in \textbf{output-link.command.param0}. All legal commands and their necessary parameters are detailed below.
 
 
 \begin{center}
-\begin{tabular}{|l|l|p{3.5in}|}
+\begin{minipage}{6.5in}
+\begin{tabular}{|l|p{1.0in}|p{3.5in}|}
 \hline
 \multicolumn{3}{|c|}{\textbf{Soar output-link commands}}\\ 
 \hline
@@ -155,39 +156,52 @@ command name &  parameters & description \\
 \hline \hline
 \multicolumn{3}{|l|}{\textbf{Vision commands}}\\ 
 \hline
-grouping-radius & value & Change the grouping radius of the vision system. \\
+grouping-radius & $value$ & Change the grouping radius of the vision system. \\
 \hline
 enable-owner-grouping & (none) & Enable grouping-by-owner.\\
 \hline
 disable-owner-grouping & (none) & Disable grouping-by-owner.\\
 \hline
-change-view-width & value & Change the width of the agent's view to be \textit{value}.\\
+change-view-width & $value$ & Change the width of the agent's view to be $value$.\\
 \hline 
-look-at-location & x,y & Move the focus of attention to the given coordinate (which must be in the current view window.\\
+look-at-location & $x,y$ & Move the focus of attention to the given coordinate (which must be in the current view window.\\
 \hline
-move-to-location & x,y & Shift the view window to be centered at the given coordinate, and make that the focus of attention. \\
+move-to-location & $x,y$ & Shift the view window to be centered at the given coordinate, and make that the focus of attention. \\
 \hline
-look-at-feature & feature, sector & Move the focus of attention to a given feature in a given sector. The legal features are the names of the feature-map objects on the input link.\\
+look-at-feature & $feature$, $sector$ & Move the focus of attention to a given feature in a given sector. The legal features are the names of the feature-map objects on the input link.\\
 \hline
-move-to-feature & feature, sector & As above, but re-center the view window to the new location, also.\\
+move-to-feature & $feature$, $sector$ & As above, but re-center the view window to the new location, also.\\
 \hline
-num-objects & value & Change the maximum number of objects (groups) present on the input-link at once.\\
+num-objects & $value$ & Change the maximum number of objects (groups) present on the input-link at once.\\
 \hline
 \multicolumn{3}{|l|}{\textbf{General middleware commands}}\\ 
 \hline
-locate-building & building, x, y, distance & This command requests that the middleware attempt to find a location for a building of type \textit{building} approximately \textit{distance} units from the coordinate given. The resulting coordinate is returned through the query-result structure on the input-link. \\
+locate-building & $building$, $x,y$, $distance$ & This command requests that the middleware attempt to find a location for a building of type $building$ approximately $distance$ units from the coordinate given. The resulting coordinate is returned through the query-result structure on the input-link. \\
 \hline
-set-mineral-buffer & value & Set the mineral buffer to \textit{value} minerals.\\
+increase-mineral-buffer & $value$ & Increase the mineral buffer by $value$ minerals.\\
+\hline
+clear-mineral-buffer & (none) & Set the mineral buffer to 0.\\
 \hline
 \multicolumn{3}{|l|}{\textbf{Group commands}}\\
 \hline
-move & group0, param0, param1 & Move the group with ID \textit{group0} to the x,y location where \textit{param0} is x and \textit{param1} is y, using the default precision of 10 (allow units to complete successfully if they are within 10 of the target).\\
+move & $group0$, $param0$, $param1$ & Move the group with ID $group0$ to the x,y location where $param0$ is x and $param1$ is y, using the default precision of 10 (allow units to complete successfully if they are within 10 of the target).\\
 \hline
-move & group0, param0, param1, param2 & Move group \textit{group0} to the x,y location where \textit{param0} is x and \textit{param1} is y, using a precision of \textit{param2}.\\
+move & $group0$, $param0$, $param1$, $param2$ & Move group $group0$ to the x,y location where $param0$ is x and $param1$ is y, using a precision of $param2$.\\
 \hline
-build &group0, param0 .. param3 & Use group $group0$ to build a building of type \textit{param0} at the x,y location given by $param2, param3$.\\
-
-
+build & $group0$, $param0 .. param3$ & Use group $group0$ to build a building of type $param0$\footnote{Legal building types: 0=controlCenter, 1=barracks, 2=factory} at the x,y location given by $param1, param2$. If $param3$ is 1, the mineral buffer is used, otherwise it is not. \\
+\hline
+train & $group0$, $param0 .. param2$ & Use group $group0$ (a building) to train units of type $param1$\footnote{Legal unit types: 0=worker, 1=marine, 2=tank}. Train up to $param2$ units, and use the mineral buffer if $param3$ is 1. \\
+\hline
+attack & $group0$, $group1$ & Use the friendly group with ID $group0$ to attack $group1$.\\
+\hline
+mine & $group0$ & Assign $group0$ to mine minerals. The control center and mineral patch to use are automatically determined in the middleware. \\
+\hline
+stick & $group0$ & Set $group0$'s to be sticky- ensure it stays as one group, even if the members move apart. Assigning any of the above actions to a group does this by default. \\
+\hline
+free & $group0$ & Clear $group0$'s sticky status- allow the members to be split up and join other groups.\\
+\hline
+join &  $group0$, $group1$ & Force $group0$'s members to join $group1$. If $group1$ is not sticky, this may be automatically undone the next cycle.\\
 \hline
 \end{tabular}
+\end{minipage}
 \end{center}
