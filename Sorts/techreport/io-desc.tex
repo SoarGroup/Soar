@@ -1,0 +1,193 @@
+
+\section{Soar IO Description}
+
+\subsection{The SORTS input-link}
+
+There are five top-level attributes on the SORTS input link, "groups", "game-info", "feature-maps", "vision-info", and "query-results". The groups, feature-maps, and vision-info structures are all part of the main visual system (see XXX), while game-info contains higher-level information about the game world, and query-results is used to communicate the results of specialized queries from Soar to the middleware.
+
+The exact data structures are as follows:
+
+\begin{center}
+\begin{tabular}{|l|p{4.0in}|}
+\hline
+\multicolumn{2}{|c|}{\textbf{Attributes of io.input-link}}\\ 
+\hline
+attribute  &  description\\
+\hline \hline
+\multicolumn{2}{|l|}{\textbf{vision-info structure:}}\\ 
+\hline
+vision-info & Contains information on the current state of the vision system. \\
+\hline
+vision-info.center-x & The coordinate of the center of the region in view. \\
+vision-info.center-y & \\
+\hline
+vision-info.focus-x & The coordinate of the center of focus (spotlight of attention). \\
+vision-info.focus-y & \\
+\hline
+vision-info.num-objects-visible & The maximum number of objects (groups) present on the input-link. All other objects within the view window are present in feature maps. \\
+\hline
+vision-info.grouping-radius & All objects of the same type (except as below) and owner within this distance of each other are in the same group (set to 0 for individuals). \\
+\hline
+vision-info.owner-grouping & Ignore type when grouping, only group by owner (1 if enabled, 0 if disabled). \\
+\hline
+\multicolumn{2}{|l|}{\textbf{groups structure:}}\\ 
+\hline
+groups & The set of groups being attended to. \\
+\hline
+groups.group & Multi-valued, one instance for each group. Detailed below. \\
+\hline
+\multicolumn{2}{|l|}{\textbf{feature-maps structure:}}\\ 
+\hline
+feature-maps & Contains all feature maps- low-resolution information about certain features of unattended (but visible) objects. \\
+\hline
+feature-maps.friendly & Friendly feature map- each friendly unit (not group) results in one instance of this feature, marked in the sector of the group's center of gravity. \\
+\hline
+feature-maps.friendly-workers & A subset of the friendly feature map, showing only workers.\\
+\hline
+feature-maps.enemy & Similar to the above, but for enemy units.\\
+\hline
+feature-maps.minerals & Similar to the above, but for minerals.\\
+\hline
+feature-maps.moving-units & Moving units (if grouping is used, one moving object causes the whole group to be seen as moving).\\
+\hline
+feature-maps.(any).sector0 & Feature counts for each of the nine sectors. 0 is the upper left, 8 is the lower right.\\
+.. & \\
+feature-maps.(any).sector8 & \\
+\hline
+\multicolumn{2}{|l|}{\textbf{game-info structure:}}\\ 
+\hline
+game-info & General information about the game (non-visual information).\\
+\hline
+game-info.num-players & The number of players.\\
+\hline
+game-info.player-id & The ID number of the Soar player.\\
+\hline
+game-info.map-xdim & The dimensions of the game map. \\
+game-info.map-ydim & \\
+\hline
+game-info.view-frame & The last view frame handled by the middleware (the number of game cycles executed).\\
+\hline
+game-info.my-minerals & Minerals available to the player. \\
+\hline
+game-info.mineral-buffer & The number of minerals to reserve for certain tasks (see section XXX).\\
+\hline
+game-info.worker-count & The number of units of each type owned by the player. \\
+game-info.marine-count & \\
+game-info.tank-count & \\
+\hline
+\multicolumn{2}{|l|}{\textbf{query-results structure:}}\\ 
+\hline
+query-results & The result of the last query to the middleware.\\
+\hline
+query-results.query-name & The name of the last query executed.\\
+\hline
+query-results.param0 & Query return values- the meaning of these is dependant on the query-name. \\
+query-resutls.param1 & \\
+\hline
+
+\end{tabular}
+
+\begin{tabular}{|l|l|p{3.5in}|}
+\hline
+\multicolumn{3}{|c|}{\textbf{Attributes of io.input-link.groups.group objects}}\\ 
+\hline
+attribute  & which groups &  description\\
+\hline \hline
+num-members & all & The number of individuals comprising the group. \\
+\hline
+type & all &The type of the group (ex: worker, mineral). \\
+\hline
+x-pos & all &The x,y location of the center of gravity of the group.\\
+y-pos & & \\
+\hline
+x-min & all &The bounding box of the group.\\
+x-max & & \\
+y-min & & \\
+y-max & & \\
+\hline
+health & all &The sum of the health of all units in the group.\\
+\hline
+taking-damage & all &The number of members of the group currently taking damage (under attack). \\
+\hline
+shooting & all &The number of members of the group currently attacking an enemy. \\
+\hline
+speed & all &The average speed of the group. \\
+\hline
+heading & all &The average heading of the group. \\
+\hline
+dist-to-focus & all &The distance from the center of gravity of the group to the attentional focus point.\\
+\hline
+dist-to-query & all &The distance from the center of gravity of the group to the last query location.\\
+\hline
+owner & all &The player number of the group's owner.\\
+\hline
+enemy & all &1 if the group belongs to an enemy player, 0 otherwise.\\
+\hline
+sticky & friendly & 1 if the group is sticky- sticky groups remain together even if they are no longer spatially close.\\
+\hline
+command & friendly & The last command issued to the group ("none" if no command has been issued).\\
+\hline
+command-running & friendly & The number of members of the group currently executing a command.\\
+\hline
+command-success & friendly & The number of members of the group that successfully completed the last command.\\
+\hline
+command-failure & friendly & The number of members of the group that unsuccessfully completed the last command.\\
+\hline
+minerals & friendly workers & The total number of minerals possessed by the workers in the group.\\
+\hline
+active-mining & friendly workers & The number of workers that are actively mining.\\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{The SORTS output-link}
+
+The output-link allows the Soar agent to act in the game world by issuing commands to groups of friendly units, directly to the middleware for actions such as querying,
+and adjust the parameters of the visual subsystem in the middleware. All structures on the output link are similar- the Soar agent creates an output-link.command object with a name (output-link.command.name) specified. Depending on the command name, different parameters are needed. Parameters are attached to the command structure, as in output-link.command.param0. All legal commands and their necessary parameters are detailed below.
+
+
+\begin{center}
+\begin{tabular}{|l|l|p{3.5in}|}
+\hline
+\multicolumn{3}{|c|}{\textbf{Soar output-link commands}}\\ 
+\hline
+command name &  parameters & description \\
+\hline \hline
+\multicolumn{3}{|l|}{\textbf{Vision commands}}\\ 
+\hline
+grouping-radius & value & Change the grouping radius of the vision system. \\
+\hline
+enable-owner-grouping & (none) & Enable grouping-by-owner.\\
+\hline
+disable-owner-grouping & (none) & Disable grouping-by-owner.\\
+\hline
+change-view-width & value & Change the width of the agent's view to be \textit{value}.\\
+\hline 
+look-at-location & x,y & Move the focus of attention to the given coordinate (which must be in the current view window.\\
+\hline
+move-to-location & x,y & Shift the view window to be centered at the given coordinate, and make that the focus of attention. \\
+\hline
+look-at-feature & feature, sector & Move the focus of attention to a given feature in a given sector. The legal features are the names of the feature-map objects on the input link.\\
+\hline
+move-to-feature & feature, sector & As above, but re-center the view window to the new location, also.\\
+\hline
+num-objects & value & Change the maximum number of objects (groups) present on the input-link at once.\\
+\hline
+\multicolumn{3}{|l|}{\textbf{General middleware commands}}\\ 
+\hline
+locate-building & building, x, y, distance & This command requests that the middleware attempt to find a location for a building of type \textit{building} approximately \textit{distance} units from the coordinate given. The resulting coordinate is returned through the query-result structure on the input-link. \\
+\hline
+set-mineral-buffer & value & Set the mineral buffer to \textit{value} minerals.\\
+\hline
+\multicolumn{3}{|l|}{\textbf{Group commands}}\\
+\hline
+move & group0, param0, param1 & Move the group with ID \textit{group0} to the x,y location where \textit{param0} is x and \textit{param1} is y, using the default precision of 10 (allow units to complete successfully if they are within 10 of the target).\\
+\hline
+move & group0, param0, param1, param2 & Move group \textit{group0} to the x,y location where \textit{param0} is x and \textit{param1} is y, using a precision of \textit{param2}.\\
+\hline
+build &group0, param0 .. param3 & Use group $group0$ to build a building of type \textit{param0} at the x,y location given by $param2, param3$.\\
+
+
+\hline
+\end{tabular}
+\end{center}
