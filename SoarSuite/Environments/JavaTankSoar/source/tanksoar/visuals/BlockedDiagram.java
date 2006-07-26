@@ -69,7 +69,10 @@ public class BlockedDiagram extends Canvas implements PaintListener {
 	}
 
 	void disable() {
-		m_Forward = m_Backward = m_Left = m_Right = false;
+		m_Forward = false;
+		m_Backward = false;
+		m_Left = false;
+		m_Right = false;
 	}
 	
 	public void paintControl(PaintEvent e) {

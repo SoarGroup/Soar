@@ -180,7 +180,8 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	public void setWinningScore(int score) {
 		if (score <= 0) {
 			logger.warning("Invalid winning-score: " + Integer.toString(score) + ", resetting to 50.");
-			score = 50;
+			m_WinningScore = 50;
+			return;
 		}
 		m_WinningScore = score;
 	}
@@ -201,26 +202,30 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		m_HumanInput = humanInput;
 	}
 	
-    public void createEntity(String name, String productions, String color, java.awt.Point location, String facing,
+    public void createEntity(String name, String productionsIn, String color, java.awt.Point locationIn, String facing,
     		int energy, int health, int missiles) {
     	if (name == null || color == null) {
     		fireErrorMessageWarning("Failed to create agent, name or color null.");
     		return;
     	}
     	
-    	if (location != null) {
-    		if ((location.x == -1) || (location.y == -1)) {
-    			logger.finer("Ignoring non-null location " + location.toString());
-    			location = null;
+    	java.awt.Point location = null;
+    	if (locationIn != null) {
+    		if ((locationIn.x == -1) || (locationIn.y == -1)) {
+    			logger.finer("Ignoring non-null location " + locationIn.toString());
+    		} else {
+    			location = new java.awt.Point(locationIn);
     		}
     	}
     	
     	Agent agent = null;
-    	if (productions == null) {
+    	String productions = null;
+    	if (productionsIn == null) {
     		// Human agent
     		logger.finer("Creating human agent.");
-    		productions = name;
+    		productions = new String(name);
     	} else {
+    		productions = new String(productionsIn);
 			agent = createAgent(name, productions);
 			if (agent == null) {
 	    		fireErrorMessageWarning("Failed to create agent.");

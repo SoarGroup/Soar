@@ -97,9 +97,9 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 		}
 	}
 	
-	Tank getTankAtPixel(int x, int y) {
-		x /= m_CellSize;
-		y /= m_CellSize;
+	Tank getTankAtPixel(int xIn, int yIn) {
+		int x = xIn / m_CellSize;
+		int y = yIn / m_CellSize;
 		TankSoarCell cell = m_World.getCell(x, y);
 		if (cell.containsTank()) {
 			return cell.getTank();
@@ -190,6 +190,9 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 							dir = missiles[i].getDirection();
 							plus = true;
 							break;
+						default:
+							assert false;
+							break;
 						}
 						int mX = 0;
 						int mY = 0;
@@ -209,6 +212,9 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 						case Direction.kWestInt:
 							mX = plus ? -6 : 5;
 							mY = 10;
+							break;
+						default:
+							assert false;
 							break;
 						}
 						gc.drawImage(kMissile, (missiles[i].getLocation().x * m_CellSize) + mX, (missiles[i].getLocation().y * m_CellSize) + mY);
@@ -256,6 +262,9 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 								start = 90;
 								point = Direction.translate(point, tanks[i].getFacingInt());
 								point = Direction.translate(point, Direction.rightOf[tanks[i].getFacingInt()]);
+								break;
+							default:
+								assert false;
 								break;
 							}
 							for (int j = 0; j < setting; ++j) {
