@@ -1,6 +1,7 @@
 package simulation;
 
 import java.util.logging.*;
+import java.awt.Point;
 
 import utilities.*;
 
@@ -12,7 +13,7 @@ public class World {
 		return this.m_WorldSize;
 	}
 	
-	protected boolean isInBounds(MapPoint location) {
+	protected boolean isInBounds(Point location) {
 		return isInBounds(location.x, location.y);
 	}
 
