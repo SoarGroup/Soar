@@ -3,7 +3,6 @@ package simulation;
 import java.util.logging.*;
 
 import sml.*;
-import utilities.*;
 
 public class WorldEntity {
 	private static Logger logger = Logger.getLogger("simulation");

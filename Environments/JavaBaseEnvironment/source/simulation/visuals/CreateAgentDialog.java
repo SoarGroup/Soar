@@ -1,7 +1,5 @@
 package simulation.visuals;
 
-import java.util.logging.*;
-
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.*;
@@ -11,7 +9,6 @@ import simulation.*;
 
 public class CreateAgentDialog extends Dialog {
 
-	private static Logger logger = Logger.getLogger("simulation");
 	final int kNameCharacterLimit = 12;
 	SimulationManager m_Simulation;
 	String m_Productions;
