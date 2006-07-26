@@ -44,12 +44,12 @@ public class Eater extends WorldEntity {
 		boolean iterated = false;
 	}
 	
-	public Eater(Agent agent, String productions, String color, MapPoint location) {
+	public Eater(Agent agent, String productions, String color, java.awt.Point location) {
 		super(agent, productions, color, location);
 
 		Identifier eater = m_Agent.CreateIdWME(m_Agent.GetInputLink(), kEaterID);
 		
-		m_DirectionWME = m_Agent.CreateStringWME(eater, kDirectionID, kNorth);
+		m_DirectionWME = m_Agent.CreateStringWME(eater, kDirectionID, Direction.kNorthString);
 		m_Agent.CreateStringWME(eater, kNameID, getName());
 		m_ScoreWME = m_Agent.CreateIntWME(eater, kScoreID, getPoints());
 		m_xWME = m_Agent.CreateIntWME(eater, kxID, getLocation().x);
@@ -132,8 +132,8 @@ public class Eater extends WorldEntity {
 			m_Agent.Update(m_ScoreWME, getPoints());
 		}
 		
-		if (!m_DirectionWME.GetValue().equalsIgnoreCase(m_Facing)) {
-			m_Agent.Update(m_DirectionWME, m_Facing);
+		if (!m_DirectionWME.GetValue().equalsIgnoreCase(Direction.stringOf[m_FacingInt])) {
+			m_Agent.Update(m_DirectionWME, Direction.stringOf[m_FacingInt]);
 		}
 
 		if (m_Moved) {
@@ -183,8 +183,7 @@ public class Eater extends WorldEntity {
 		
 		move.direction = commandId.GetParameterValue(kDirectionID);
 		if (move.direction != null) {
-			m_Facing = move.direction;
-			setFacingInt();
+			m_FacingInt = Direction.getInt(move.direction);
 			commandId.AddStatusComplete();
 			m_Agent.ClearOutputLinkChanges();
 			m_Agent.Commit();

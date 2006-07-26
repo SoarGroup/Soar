@@ -36,7 +36,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		String [] initialNames = null;
 		String [] initialProductions = null;
 		String [] initialColors = null;
-		MapPoint [] initialLocations = null;
+		java.awt.Point [] initialLocations = null;
 		
 		// Load settings file
 		try {
@@ -68,7 +68,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 					initialNames = new String[child.getNumberChildren()];
 					initialProductions = new String[child.getNumberChildren()];
 					initialColors = new String[child.getNumberChildren()];
-					initialLocations = new MapPoint[child.getNumberChildren()];
+					initialLocations = new java.awt.Point[child.getNumberChildren()];
 
 					for (int j = 0; j < initialNames.length; ++j) {
 						JavaElementXML agent = child.getChild(j);
@@ -84,7 +84,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 						}
 						
 						initialColors[j] = agent.getAttribute(kParamColor);
-						initialLocations[j] = new MapPoint(agent.getAttributeIntDefault(kParamX, -1), agent.getAttributeIntDefault(kParamY, -1));
+						initialLocations[j] = new java.awt.Point(agent.getAttributeIntDefault(kParamX, -1), agent.getAttributeIntDefault(kParamY, -1));
 					}
 				} else {
 					// Throw during development, but really we should just ignore this
@@ -119,7 +119,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		}
 	}
 	
-    public void createEntity(String name, String productions, String color, MapPoint location, String facing, int energy, int health, int missiles) {
+    public void createEntity(String name, String productions, String color, java.awt.Point location, String facing, int energy, int health, int missiles) {
     	if (facing != null || energy != -1 || health != -1 || missiles != -1) {
     		logger.warning("An ignored parameter was given a non-default value!");
     	}

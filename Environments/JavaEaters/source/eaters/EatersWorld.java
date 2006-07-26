@@ -496,7 +496,7 @@ public class EatersWorld extends World implements WorldManager {
 			return;
 		}
 		for (int i = 0; i < m_Eaters.length; ++i) {
-			MapPoint location = findStartingLocation();
+			java.awt.Point location = findStartingLocation();
 			m_Eaters[i].setLocation(location);
 			m_Eaters[i].setMoved();
 			// Put eater on map, ignore food
@@ -511,7 +511,7 @@ public class EatersWorld extends World implements WorldManager {
 		createEater(agent, productions, color, null);
 	}
 
-	void createEater(Agent agent, String productions, String color, MapPoint location) {
+	void createEater(Agent agent, String productions, String color, java.awt.Point location) {
 		if (location != null) {
 			if (this.isInBounds(location)) {
 				if (getCell(location).isWall()) {
@@ -594,9 +594,9 @@ public class EatersWorld extends World implements WorldManager {
 		}
 	}
 
-	private MapPoint findStartingLocation() {
+	private java.awt.Point findStartingLocation() {
 		// set random starting location
-		MapPoint location = new MapPoint(Simulation.random.nextInt(m_WorldSize), Simulation.random.nextInt(m_WorldSize));
+		java.awt.Point location = new java.awt.Point(Simulation.random.nextInt(m_WorldSize), Simulation.random.nextInt(m_WorldSize));
 		while (getCell(location).isWall() || getCell(location).isEater()) {
 			location.x = Simulation.random.nextInt(m_WorldSize);
 			location.y = Simulation.random.nextInt(m_WorldSize);				
@@ -612,19 +612,19 @@ public class EatersWorld extends World implements WorldManager {
 				continue;
 			}
 
-			MapPoint oldLocation = m_Eaters[i].getLocation();
-			MapPoint newLocation;
+			java.awt.Point oldLocation = m_Eaters[i].getLocation();
+			java.awt.Point newLocation;
 			int distance = move.jump ? 2 : 1;
-			if (move.direction.equalsIgnoreCase(Eater.kNorth)) {
-				newLocation = new MapPoint(oldLocation.x, oldLocation.y - distance);
-			} else if (move.direction.equalsIgnoreCase(Eater.kEast)) {
-				newLocation = new MapPoint(oldLocation.x + distance, oldLocation.y);
+			if (move.direction.equalsIgnoreCase(Direction.kNorthString)) {
+				newLocation = new java.awt.Point(oldLocation.x, oldLocation.y - distance);
+			} else if (move.direction.equalsIgnoreCase(Direction.kEastString)) {
+				newLocation = new java.awt.Point(oldLocation.x + distance, oldLocation.y);
 				
-			} else if (move.direction.equalsIgnoreCase(Eater.kSouth)) {
-				newLocation = new MapPoint(oldLocation.x, oldLocation.y + distance);
+			} else if (move.direction.equalsIgnoreCase(Direction.kSouthString)) {
+				newLocation = new java.awt.Point(oldLocation.x, oldLocation.y + distance);
 				
-			} else if (move.direction.equalsIgnoreCase(Eater.kWest)) {
-				newLocation = new MapPoint(oldLocation.x - distance, oldLocation.y);
+			} else if (move.direction.equalsIgnoreCase(Direction.kWestString)) {
+				newLocation = new java.awt.Point(oldLocation.x - distance, oldLocation.y);
 				
 			} else {
 				logger.warning("Invalid move direction: " + move.direction);
@@ -646,7 +646,7 @@ public class EatersWorld extends World implements WorldManager {
 		}
 	}
 	
-	public EatersCell getCell(MapPoint location) {
+	public EatersCell getCell(java.awt.Point location) {
 		return m_World[location.y][location.x];
 	}
 	
