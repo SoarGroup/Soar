@@ -15,7 +15,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	public static final int kDebuggerTimeoutSeconds = 15;	
 	
 	private static Logger logger = Logger.getLogger("simulation");
-	public static Random random;
+	public static Random random = null;
 	
 	private String m_CurrentMap;
 	private String m_DefaultMap;
@@ -40,12 +40,8 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		
 		// Initialize Soar
 		// Create kernel
-		try {
-			m_Kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", 12121);
-		} catch (Exception e) {
-			fireErrorMessageSevere("Exception while creating kernel: " + e.getMessage());
-			System.exit(1);
-		}
+		m_Kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", 12121);
+		//m_Kernel = Kernel.CreateKernelInCurrentThread("SoarKernelSML", true);
 
 		if (m_Kernel.HadError()) {
 			fireErrorMessageSevere("Error creating kernel: " + m_Kernel.GetLastErrorDescription());
@@ -153,14 +149,16 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	
 	public void setRuns(int runs) {
 		if (runs < 0) {
-			runs = -1;
-		}
+			m_Runs = -1;
+			return;
+		} 
 		m_Runs = runs;
 	}
 	
 	public void setMaxUpdates(int updates) {
 		if (updates <= 0) {
-			updates = -1;
+			m_MaxUpdates = -1;
+			return;
 		}
 		m_MaxUpdates = updates;
 	}
@@ -193,8 +191,12 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	}
 	
 	public void spawnDebugger(String agentName) {
-		if (!m_Debuggers) return;
-		if (isDebuggerConnected()) return;
+		if (!m_Debuggers) {
+			return;
+		}
+		if (isDebuggerConnected()) {
+			return;
+		}
 		
 		// Figure out whether to use java or javaw
 		String os = System.getProperty("os.name");
@@ -240,7 +242,9 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 						}
 					}
 				}
-				if (ready) break;
+				if (ready) {
+					break;
+				}
 			}
 			try { 
 				logger.finest("Waiting for debugger.");
@@ -283,10 +287,9 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		
 		for (int x = 0; x < entities.length; ++x) {
 			Agent agent = entities[x].getAgent();
-			if (agent == null) {
-				continue;
+			if (agent != null) {
+				return true;
 			}
-			return true;
 		}
 		return false;
 	}
@@ -303,7 +306,14 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	public void startSimulation(boolean inNewThread) {
 		logger.info("Starting simulation.");
         m_StopSoar = false;
-		if (!hasSoarAgents()) {
+		if (hasSoarAgents()) {
+			if (inNewThread) {
+				m_RunThread = new Thread(this);
+		        m_RunThread.start();
+			} else {
+				run();
+			}
+		} else {
 			m_Running = true;
 			fireSimulationEvent(SimulationListener.kStartEvent);
 			while (!m_StopSoar) {
@@ -312,13 +322,6 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 			m_Running = false;
 			fireSimulationEvent(SimulationListener.kStopEvent);	
 			return;
-		} else {
-			if (inNewThread) {
-				m_RunThread = new Thread(this);
-		        m_RunThread.start();
-			} else {
-				run();
-			}
 		}
 	}
 	

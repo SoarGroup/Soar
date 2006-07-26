@@ -19,7 +19,7 @@ public class JonsFormatter extends Formatter {
 		output += record.getLevel().getName();
 		output += " ";
 		output += record.getMessage();
-		output += "\n";
+		output += java.lang.System.getProperty("line.separator");
 		return output;
 	}
 
