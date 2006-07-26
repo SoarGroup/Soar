@@ -19,7 +19,7 @@ public class Eaters {
 	private boolean quietSwitch;
 	private String settingsFilename;
 	private String logFilename;
-	private boolean appendSwitch;
+	//private boolean appendSwitch;
 	private boolean notRandomSwitch;
 	
 	public Eaters(String[] args) {
@@ -131,7 +131,7 @@ public class Eaters {
 		quietSwitch = hasOption(args, "-quiet");
 		settingsFilename = getOptionValue(args, "-settings");
 		logFilename = getOptionValue(args, "-log");
-		appendSwitch = hasOption(args, "-append");
+		//appendSwitch = hasOption(args, "-append");
 		notRandomSwitch = hasOption(args, "-notrandom");
 	
 		if (settingsFilename == null) {
@@ -144,7 +144,7 @@ public class Eaters {
 	protected void printCommandLineHelp() {
 		System.out.println("Java Eaters help");
 		System.out.println("\t-log: File name to log messages to (default: " + kDefaultLogFilename + ").");
-		System.out.println("\t-append: If logging to file, append.  Ignored if -console present.");
+		//System.out.println("\t-append: If logging to file, append.  Ignored if -console present.");
 		System.out.println("\t-quiet: Disables all windows, runs simulation quietly.");
 		System.out.println("\t-settings: XML file with with run settings.");
 		System.out.println("\t-notrandom: Disable randomness by seeding the generator with 0.");
