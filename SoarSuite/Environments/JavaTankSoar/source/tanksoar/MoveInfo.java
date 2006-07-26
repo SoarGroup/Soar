@@ -2,7 +2,8 @@ package tanksoar;
 
 import java.util.logging.*;
 
-import simulation.WorldEntity;
+import simulation.*;
+import utilities.*;
 
 public class MoveInfo {
 	private static Logger logger = Logger.getLogger("simulation");
@@ -34,7 +35,7 @@ public class MoveInfo {
 	public String toString() {
 		String output = "(";
 		if (move) {
-			output += "(move: " + WorldEntity.directionToString(moveDirection) + ")";
+			output += "(move: " + Direction.stringOf[moveDirection] + ")";
 		}
 		if (rotate) {
 			output += "(rotate: " + rotateDirection + ")";			

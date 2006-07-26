@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.*;
 
 import simulation.*;
 import tanksoar.*;
+import utilities.Direction;
 
 public class HumanInputWindow {
 	
@@ -99,7 +100,7 @@ public class HumanInputWindow {
 				east.setSelection(false);
 				south.setSelection(false);
 				m_Move.move = north.getSelection();
-				m_Move.moveDirection = WorldEntity.kNorthInt;
+				m_Move.moveDirection = Direction.kNorthInt;
 			}
 		});		
 		south.addSelectionListener(new SelectionAdapter() {
@@ -108,7 +109,7 @@ public class HumanInputWindow {
 				west.setSelection(false);
 				east.setSelection(false);
 				m_Move.move = south.getSelection();
-				m_Move.moveDirection = WorldEntity.kSouthInt;
+				m_Move.moveDirection = Direction.kSouthInt;
 			}
 		});		
 		west.addSelectionListener(new SelectionAdapter() {
@@ -117,7 +118,7 @@ public class HumanInputWindow {
 				east.setSelection(false);
 				south.setSelection(false);
 				m_Move.move = west.getSelection();
-				m_Move.moveDirection = WorldEntity.kWestInt;
+				m_Move.moveDirection = Direction.kWestInt;
 			}
 		});		
 		east.addSelectionListener(new SelectionAdapter() {
@@ -126,7 +127,7 @@ public class HumanInputWindow {
 				west.setSelection(false);
 				south.setSelection(false);
 				m_Move.move = east.getSelection();
-				m_Move.moveDirection = WorldEntity.kEastInt;
+				m_Move.moveDirection = Direction.kEastInt;
 			}
 		});		
 

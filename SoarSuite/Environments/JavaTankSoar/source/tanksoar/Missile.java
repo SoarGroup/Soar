@@ -7,7 +7,7 @@ import utilities.*;
 public class Missile {
 	private static Logger logger = Logger.getLogger("simulation");
 	
-	private MapPoint location;
+	private java.awt.Point location;
 	private int direction;
 	private Tank owner;
 
@@ -15,7 +15,7 @@ public class Missile {
 	private int id;
 	private int flightPhase; // 0, 1 == affects current location, 2 == affects current location + 1
 	
-	public Missile(MapPoint location, int direction, Tank owner) {
+	public Missile(java.awt.Point location, int direction, Tank owner) {
 		this.location = location;
 		this.direction = direction;
 		this.owner = owner;
@@ -34,27 +34,29 @@ public class Missile {
 	
 	void move() {
 		if (flightPhase == 2) {
-			location = location.travel(direction);
+			location = Direction.translate(location, direction);
 		}
-		location = location.travel(direction);
+		location = Direction.translate(location, direction);
 		
 		++flightPhase;
 		flightPhase %= 3;
 	}
 	
-	public MapPoint getLocation() {
+	public java.awt.Point getLocation() {
 		return location;
 	}
 	
-	MapPoint[] getThreatenedLocations() {
-		MapPoint[] threats;
+	java.awt.Point[] getThreatenedLocations() {
+		// FIXME: this is slow and cumbersome
+		java.awt.Point[] threats;
 		if (flightPhase == 2) {
-			threats = new MapPoint[2];
-			threats[0] = location;
-			threats[1] = location.travel(direction);
+			threats = new java.awt.Point[2];
+			threats[0] = new java.awt.Point(location);
+			threats[1] = new java.awt.Point(location);
+			threats[1] = Direction.translate(threats[1], direction);
 		} else {
-			threats = new MapPoint[1];
-			threats[0] = location;
+			threats = new java.awt.Point[1];
+			threats[0] = new java.awt.Point(location);
 		}
 		return threats;
 	}

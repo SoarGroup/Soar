@@ -32,9 +32,8 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 	
 	private TankSoarSimulation m_Simulation;
 	private TankSoarWorld m_World;
-	private MapPoint m_AgentLocation;
+	private Point m_AgentLocation;
 	private Image[][] m_Background;
-	RelativeDirections m_RD = new RelativeDirections();
 	
 	public TankSoarVisualWorld(Composite parent, int style, TankSoarSimulation simulation) {
 		super(parent, style, simulation, kCellSize);
@@ -47,10 +46,10 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 	}
 	
 	private void loadImages(Display display) {
-		kTanks.put(new Integer(WorldEntity.kSouthInt), new Image(display, TankSoar.class.getResourceAsStream("/images/tank_down.gif")));
-		kTanks.put(new Integer(WorldEntity.kNorthInt), new Image(display, TankSoar.class.getResourceAsStream("/images/tank_up.gif")));
-		kTanks.put(new Integer(WorldEntity.kEastInt), new Image(display, TankSoar.class.getResourceAsStream("/images/tank_right.gif")));
-		kTanks.put(new Integer(WorldEntity.kWestInt), new Image(display, TankSoar.class.getResourceAsStream("/images/tank_left.gif")));
+		kTanks.put(new Integer(Direction.kSouthInt), new Image(display, TankSoar.class.getResourceAsStream("/images/tank_down.gif")));
+		kTanks.put(new Integer(Direction.kNorthInt), new Image(display, TankSoar.class.getResourceAsStream("/images/tank_up.gif")));
+		kTanks.put(new Integer(Direction.kEastInt), new Image(display, TankSoar.class.getResourceAsStream("/images/tank_right.gif")));
+		kTanks.put(new Integer(Direction.kWestInt), new Image(display, TankSoar.class.getResourceAsStream("/images/tank_left.gif")));
 		
 		kRecharger = new Image(display, TankSoar.class.getResourceAsStream("/images/battery.gif"));
 		kHealth = new Image(display, TankSoar.class.getResourceAsStream("/images/health.gif"));
@@ -178,37 +177,36 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 				Missile[] missiles = m_World.getMissiles();
 				if (missiles != null) {
 					for (int i = 0; i < missiles.length; ++i) {
-						m_RD.calculate(missiles[i].getDirection());
 						boolean plus = false;
 						int dir = 0;
 						switch (missiles[i].getFlightPhase()) {
 						case 0:
-							dir = m_RD.backward;
+							dir = Direction.backwardOf[missiles[i].getDirection()];
 							break;
 						case 1:
-							dir = m_RD.forward;
+							dir = missiles[i].getDirection();
 							break;
 						case 2:
-							dir = m_RD.forward;
+							dir = missiles[i].getDirection();
 							plus = true;
 							break;
 						}
 						int mX = 0;
 						int mY = 0;
 						switch (dir) {
-						case WorldEntity.kNorthInt:
+						case Direction.kNorthInt:
 							mX = 10;
 							mY = plus ? -6 : 5;
 							break;
-						case WorldEntity.kEastInt:
+						case Direction.kEastInt:
 							mX = plus ? 26 : 15;
 							mY = 10;
 							break;
-						case WorldEntity.kSouthInt:
+						case Direction.kSouthInt:
 							mX = 10;
 							mY = plus ? 26 : 15;
 							break;
-						case WorldEntity.kWestInt:
+						case Direction.kWestInt:
 							mX = plus ? -6 : 5;
 							mY = 10;
 							break;
@@ -223,47 +221,46 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 					for (int i = 0; i < tanks.length; ++i) {
 						if (tanks[i].getRadarStatus()) {
 							int setting = tanks[i].getRadarDistance();
-							m_RD.calculate(tanks[i].getFacingInt());
-							MapPoint point = new MapPoint(tanks[i].getLocation());
+							java.awt.Point point = new java.awt.Point(tanks[i].getLocation());
 							setting -= 1;
 					        gc.setForeground(WindowManager.white);
 							//gc.setLineWidth(2);
 							int width = 0;
 							int height = 0;
 							int start = 0;
-							switch (m_RD.forward) {
-							case WorldEntity.kNorthInt:
+							switch (tanks[i].getFacingInt()) {
+							case Direction.kNorthInt:
 								width = m_CellSize*3;
 								height = m_CellSize;
 								start = 0;
-								point = point.travel(m_RD.forward);
-								point = point.travel(m_RD.left);
+								point = Direction.translate(point, tanks[i].getFacingInt());
+								point = Direction.translate(point, Direction.leftOf[tanks[i].getFacingInt()]);
 								break;
-							case WorldEntity.kSouthInt:
+							case Direction.kSouthInt:
 								width = m_CellSize*3;
 								height = m_CellSize;
 								start = 180;
-								point = point.travel(m_RD.forward);
-								point = point.travel(m_RD.right);
+								point = Direction.translate(point, tanks[i].getFacingInt());
+								point = Direction.translate(point, Direction.rightOf[tanks[i].getFacingInt()]);
 								break;
-							case WorldEntity.kEastInt:
+							case Direction.kEastInt:
 								width = m_CellSize;
 								height = m_CellSize*3;
 								start = -90;
-								point = point.travel(m_RD.forward);
-								point = point.travel(m_RD.left);
+								point = Direction.translate(point, tanks[i].getFacingInt());
+								point = Direction.translate(point, Direction.leftOf[tanks[i].getFacingInt()]);
 								break;
-							case WorldEntity.kWestInt:
+							case Direction.kWestInt:
 								width = m_CellSize;
 								height = m_CellSize*3;
 								start = 90;
-								point = point.travel(m_RD.forward);
-								point = point.travel(m_RD.right);
+								point = Direction.translate(point, tanks[i].getFacingInt());
+								point = Direction.translate(point, Direction.rightOf[tanks[i].getFacingInt()]);
 								break;
 							}
 							for (int j = 0; j < setting; ++j) {
 								gc.drawArc(point.x*m_CellSize,point.y*m_CellSize,width - 2,height - 2, start,180);
-								point = point.travel(m_RD.forward);
+								point = Direction.translate(point, tanks[i].getFacingInt());
 							}
 						}
 					}
