@@ -29,7 +29,12 @@ public class MoveInfo {
 	}
 	
 	public void reset() {
-		move = rotate = fire = radar = radarPower = shields = false;
+		move = false;
+		rotate = false;
+		fire = false;
+		radar = false;
+		radarPower = false;
+		shields = false;
 	}
 	
 	public String toString() {

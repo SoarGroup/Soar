@@ -222,23 +222,24 @@ public class TankSoarWorld extends World implements WorldManager {
 		createTank(agent, productions, color, location, null, -1, -1, -1);
 	}
 
-	void createTank(Agent agent, String productions, String color, java.awt.Point location, String facing, int energy, int health, int missiles) {
-		String name = new String();
+	void createTank(Agent agent, String productions, String color, java.awt.Point locationIn, String facing, int energy, int health, int missiles) {
+		String name;
 		if (agent == null) {
-			name = productions;
+			name = new String(productions);
 		} else {
-			name = agent.GetAgentName();
+			name = new String(agent.GetAgentName());
 		}
 		
-		if (location != null) {
+		java.awt.Point location = null;
+		if (locationIn != null) {
 			if (this.isInBounds(location)) {
 				if (getCell(location).isBlocked()) {
 					logger.warning(name + ": Initial location " + location + " is blocked, going random.");
-					location = null;
+				} else {
+					location = new java.awt.Point(locationIn);
 				}
 			} else {
 				logger.warning(name + ": Initial location " + location + " is out of bounds, going random.");
-				location = null;
 			}
 		}
 		
@@ -249,7 +250,6 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 		
 		tank.setLocation(location);
-		
 		getCell(location).setTank(tank);
 
 		logger.info(tank.getName() + ": Spawning at " + location.toString());
@@ -413,9 +413,17 @@ public class TankSoarWorld extends World implements WorldManager {
 				yTemp += Direction.yDelta[m_Tanks[i].getLastMoveDirection()];
 				TankSoarCell destinationCell = getCell(xTemp, yTemp);
 				
+				// Collide with walls OR non-moving tanks!
 				if (destinationCell.isWall()) {
 					logger.fine(m_Tanks[i].getName() + ": hit a wall.");
 					m_Tanks[i].collide();
+				} else if (destinationCell.containsTank()) {
+					Tank collidee = destinationCell.getTank();
+					if (collidee.recentlyMoved() == false) {
+						logger.fine(m_Tanks[i].getName() + ": hit a tank.");
+						m_Tanks[i].collide();
+						collidee.collide();
+					}
 				}
 			}
 		}

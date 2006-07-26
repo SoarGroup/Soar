@@ -74,10 +74,12 @@ public class Tank  extends WorldEntity {
 		
 		if (facing == null) {	
 			// FIXME: should be random
-			facing = Direction.kNorthString;
+			// FIXME: initial should be set to null if was null coming in
+			m_InitialFacing = Direction.getInt(Direction.kNorthString);
+		} else {
+			m_InitialFacing = Direction.getInt(facing);
 		}
-		// FIXME: should set to null if was null coming in
-		m_InitialFacing = Direction.getInt(facing);		
+				
 		m_InitialLocation = location;
 		
 		if (energy != -1) {

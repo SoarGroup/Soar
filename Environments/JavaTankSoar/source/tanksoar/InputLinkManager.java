@@ -123,7 +123,6 @@ public class InputLinkManager {
 	private void DestroyWME(WMElement wme) {
 		assert wme != null;
 		m_Agent.DestroyWME(wme);
-		wme = null;
 	}
 
 	private void Update(StringElement wme, String value) {
@@ -167,29 +166,72 @@ public class InputLinkManager {
 		}
 		
 		DestroyWME(m_BlockedWME);
+		m_BlockedWME = null;
+		
 		DestroyWME(m_ClockWME);
+		m_ClockWME = null;
+		
 		DestroyWME(m_DirectionWME);
+		m_DirectionWME = null;
+		
 		DestroyWME(m_EnergyWME);
+		m_EnergyWME = null;
+		
 		DestroyWME(m_EnergyRechargerWME);
+		m_EnergyRechargerWME = null;
+		
 		DestroyWME(m_HealthWME);
+		m_HealthWME = null;
+		
 		DestroyWME(m_HealthRechargerWME);
+		m_HealthRechargerWME = null;
+		
 		DestroyWME(m_IncomingWME);
+		m_IncomingWME = null;
+		
 		DestroyWME(m_MissilesWME);
+		m_MissilesWME = null;
+		
 		DestroyWME(m_MyColorWME);
+		m_MyColorWME = null;
+		
 		DestroyWME(m_RadarStatusWME);
+		m_RadarStatusWME = null;
+		
 		DestroyWME(m_RadarDistanceWME);
+		m_RadarDistanceWME = null;
+		
 		DestroyWME(m_RadarSettingWME);
+		m_RadarSettingWME = null;
+		
 		if (m_RadarWME != null) {
 			DestroyWME(m_RadarWME);
+			m_RadarWME = null;
 		}
 		DestroyWME(m_RandomWME);
+		m_RandomWME = null;
+		
 		DestroyWME(m_ResurrectWME);
+		m_ResurrectWME = null;
+		
 		DestroyWME(m_RWavesWME);
+		m_RWavesWME = null;
+		
 		DestroyWME(m_ShieldStatusWME);
+		m_ShieldStatusWME = null;
+		
 		DestroyWME(m_SmellWME);
+		m_SmellWME = null;
+		
 		DestroyWME(m_SoundWME);
+		m_SoundWME = null;
+		
 		DestroyWME(m_xWME);
+		m_xWME = null;
+		
 		DestroyWME(m_yWME);
+		m_yWME = null;
+		
 		m_Agent.Commit();
 
 		clearRadar();
@@ -513,7 +555,7 @@ public class InputLinkManager {
 //						outstring += "d";
 						done = true;
 						break;
-					} else {
+//					} else {
 //						outstring += ".";
 					}
 				} else {
@@ -524,7 +566,7 @@ public class InputLinkManager {
 					if (radarCells[i][j].containsTank()) {
 						radarColors[i][j] = CreateStringWME(radarCellIDs[i][j], kColorID, radarCells[i][j].getTank().getColor());
 //						outstring += "t";
-					} else {
+//					} else {
 //						outstring += "n";
 					}
 				}
@@ -554,7 +596,7 @@ public class InputLinkManager {
 						DestroyWME(radarCellIDs[i][j]);
 						radarCellIDs[i][j] = null;
 						radarColors[i][j] = null;
-					} else {
+//					} else {
 //						outstring += "-";
 					}
 					
@@ -568,7 +610,7 @@ public class InputLinkManager {
 						if (radarCells[i][j].containsTank()) {
 							radarColors[i][j] = CreateStringWME(radarCellIDs[i][j], kColorID, radarCells[i][j].getTank().getColor());
 //							outstring += "t";
-						} else {
+//						} else {
 //							outstring += "n";
 						}
 					} else {
@@ -583,10 +625,10 @@ public class InputLinkManager {
 								//tank.setRWaves(m_Tank.backward());
 								radarColors[i][j] = CreateStringWME(radarCellIDs[i][j], kColorID, radarCells[i][j].getTank().getColor());
 //								outstring += "U";
-							} else {
+//							} else {
 //								outstring += "u";								
 							}
-						} else {
+//						} else {
 //							outstring += ".";							
 						}
 					}
