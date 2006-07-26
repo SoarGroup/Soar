@@ -1,12 +1,8 @@
 package tanksoar;
 
-import java.util.logging.*;
-
 import utilities.*;
 
 public class Missile {
-	private static Logger logger = Logger.getLogger("simulation");
-	
 	private java.awt.Point location;
 	private int direction;
 	private Tank owner;
