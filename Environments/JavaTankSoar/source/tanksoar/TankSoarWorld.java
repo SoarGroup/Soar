@@ -108,7 +108,7 @@ public class TankSoarWorld extends World implements WorldManager {
 			p = findStartingLocation();
 			cell = getCell(p);
 		} while (cell.hasContents() || !cell.isOpen());
-		logger.info("Spawning missile pack at " + p);
+		logger.info("Spawning missile pack at (" + p.x + "," + p.y + ")");
 		cell.setMissilePack();
 		++m_NumMissilePacks;
 	}
@@ -163,7 +163,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			java.awt.Point location = m_Tanks[i].getInitialLocation();
 			if (location != null && getCell(location).isBlocked()) {
-				logger.warning(m_Tanks[i].getName() + ": Initial location " + location + " is blocked, going random.");
+				logger.warning(m_Tanks[i].getName() + ": Initial location (" + location.x + "," + location.y + ") is blocked, going random.");
 				location = null;
 			}
 			if (location == null) {
@@ -252,7 +252,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		tank.setLocation(location);
 		getCell(location).setTank(tank);
 
-		logger.info(tank.getName() + ": Spawning at " + location.toString());
+		logger.info(tank.getName() + ": Spawning at (" + location.x + "," + location.y + ")");
 		
 		if (m_Tanks == null) {
 			m_Tanks = new Tank[1];

@@ -365,7 +365,7 @@ public class Tank  extends WorldEntity {
 				m_LastMove.move = false;
 			}
 		}
-		logger.info(getName() + " at " + getLocation().toString() +", world count: " + Integer.toString(m_World.getWorldCount()) + ", move: " + m_LastMove.toString());
+		logger.info(getName() + " at (" + getLocation().x + "," + getLocation().y +"), world count: " + Integer.toString(m_World.getWorldCount()) + ", move: " + m_LastMove.toString());
 	}
 	
 	private void handleShields() {
