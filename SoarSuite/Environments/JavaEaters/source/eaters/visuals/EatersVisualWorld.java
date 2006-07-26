@@ -30,7 +30,7 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 	
 	EatersSimulation m_Simulation;
 	EatersWorld m_World;
-	MapPoint m_AgentLocation;
+	java.awt.Point m_AgentLocation;
 	
 	public EatersVisualWorld(Composite parent, int style, EatersSimulation simulation, int cellSize) {
 		super(parent, style, simulation, cellSize);
@@ -49,7 +49,7 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 		return m_CellSize * ((Eater.kEaterVision * 2) + 1);
 	}
 	
-	public void setAgentLocation(MapPoint location) {
+	public void setAgentLocation(java.awt.Point location) {
 		m_AgentLocation = location;
 	}
 	
@@ -128,16 +128,16 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 					
 					
 					switch (eater.getFacingInt()) {
-					case WorldEntity.kNorthInt:
+					case Direction.kNorthInt:
 						drawEaterMouth(xDraw, yDraw, 1, 0, 1, 1, gc);
 						break;
-					case WorldEntity.kEastInt:
+					case Direction.kEastInt:
 						drawEaterMouth(xDraw + 1, yDraw, 0, 1, -1, 1, gc);
 						break;
-					case WorldEntity.kSouthInt:
+					case Direction.kSouthInt:
 						drawEaterMouth(xDraw, yDraw + 1, 1, 0, 1, -1, gc);
 						break;
-					case WorldEntity.kWestInt:
+					case Direction.kWestInt:
 						drawEaterMouth(xDraw, yDraw, 0, 1, 1, 1, gc);
 						break;
 					default:
@@ -187,11 +187,11 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 		int yBase = m_CellSize*y;
 		int halfCell = m_CellSize/2;
 		
-		MapPoint center = new MapPoint(xBase + halfCell, yBase + halfCell);
-		MapPoint north = new MapPoint(center.x, yBase);
-		MapPoint east = new MapPoint(xBase + m_CellSize, center.y);
-		MapPoint south = new MapPoint(center.x, yBase + m_CellSize);
-		MapPoint west = new MapPoint(xBase, center.y);
+		java.awt.Point center = new java.awt.Point(xBase + halfCell, yBase + halfCell);
+		java.awt.Point north = new java.awt.Point(center.x, yBase);
+		java.awt.Point east = new java.awt.Point(xBase + m_CellSize, center.y);
+		java.awt.Point south = new java.awt.Point(center.x, yBase + m_CellSize);
+		java.awt.Point west = new java.awt.Point(xBase, center.y);
 		
 		gc.fillPolygon(new int[] {center.x, center.y, north.x, north.y, center.x + offCenter, center.y});
 		gc.fillPolygon(new int[] {center.x, center.y, east.x,  east.y,  center.x, center.y + offCenter});
