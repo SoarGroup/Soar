@@ -75,3 +75,10 @@ if action == "resetstats":
 	resetstats(cursor)
 	welcome_page(action, userid, cursor)
 
+if action == "viewmatches":
+	tankid = int(theform['tankid'].value)
+	view_matches_page(action, userid, cursor, tankid)
+
+if action == "viewmatchlog":
+	matchid = int(theform['matchid'].value)
+	view_match_log_page(action, userid, cursor, matchid)
