@@ -62,10 +62,10 @@ public class BlockedDiagram extends Canvas implements PaintListener {
 	}
 	
 	private void updateCombinedDirection(int directions, Tank tank) {
-		m_Forward = ((directions & tank.getFacingInt()) > 0);
-		m_Backward = ((directions & Direction.backwardOf[tank.getFacingInt()]) > 0);
-		m_Left = ((directions & Direction.leftOf[tank.getFacingInt()]) > 0);
-		m_Right = ((directions & Direction.rightOf[tank.getFacingInt()]) > 0);				
+		m_Forward = ((directions & Direction.indicators[tank.getFacingInt()]) > 0);
+		m_Backward = ((directions & Direction.indicators[Direction.backwardOf[tank.getFacingInt()]]) > 0);
+		m_Left = ((directions & Direction.indicators[Direction.leftOf[tank.getFacingInt()]]) > 0);
+		m_Right = ((directions & Direction.indicators[Direction.rightOf[tank.getFacingInt()]]) > 0);				
 	}
 
 	void disable() {
