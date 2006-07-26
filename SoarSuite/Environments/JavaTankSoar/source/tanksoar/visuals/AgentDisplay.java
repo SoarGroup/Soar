@@ -1,10 +1,7 @@
 package tanksoar.visuals;
 
-import java.util.logging.*;
-
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
@@ -12,7 +9,6 @@ import tanksoar.*;
 
 import simulation.*;
 import simulation.visuals.*;
-import utilities.*;
 
 public class AgentDisplay extends Composite {
 	public static final int kAgentMapCellSize = 20;
@@ -23,7 +19,6 @@ public class AgentDisplay extends Composite {
 	static final int kHealthWidth = 58;
 	static final int kEnergyWidth = 60;
 	
-	private static Logger logger = Logger.getLogger("simulation");
 	TankSoarSimulation m_Simulation;
 	Table m_AgentTable;
 	WorldEntity m_SelectedEntity;

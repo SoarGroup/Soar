@@ -1,12 +1,8 @@
 package tanksoar;
 
-import java.util.logging.*;
-
-import simulation.*;
 import utilities.*;
 
 public class MoveInfo {
-	private static Logger logger = Logger.getLogger("simulation");
 	public boolean move;
 	public int moveDirection;
 	

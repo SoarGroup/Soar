@@ -1,7 +1,5 @@
 package tanksoar.visuals;
 
-import java.util.logging.*;
-
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
@@ -12,8 +10,6 @@ import utilities.Direction;
 
 public class BlockedDiagram extends Canvas implements PaintListener {
 
-	private static Logger logger = Logger.getLogger("simulation");
-	
 	private static Image kDiagram;
 	
 	static final int kSquareWidth = 10;
