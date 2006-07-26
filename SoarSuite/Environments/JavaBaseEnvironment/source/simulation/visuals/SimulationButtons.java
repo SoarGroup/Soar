@@ -1,23 +1,17 @@
 package simulation.visuals;
 
-import java.util.logging.*;
-
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 import simulation.*;
-import utilities.*;
 
 public class SimulationButtons extends Composite {
 	protected Button m_RunButton;
 	protected Button m_StopButton;
 	protected Button m_StepButton;
 	protected Button m_ResetButton;
-//	protected Text m_RunsText;
-	private static Logger logger = Logger.getLogger("simulation");
-	
-	private Simulation m_Simulation;
+private Simulation m_Simulation;
 	
 	public SimulationButtons(Composite parent, Simulation simulation) {
 		super(parent, SWT.NONE);

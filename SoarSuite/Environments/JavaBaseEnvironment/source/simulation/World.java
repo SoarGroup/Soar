@@ -1,12 +1,8 @@
 package simulation;
 
-import java.util.logging.*;
 import java.awt.Point;
 
-import utilities.*;
-
 public class World {
-	private static Logger logger = Logger.getLogger("simulation");
 	protected int m_WorldSize;
 
 	public int getSize() {

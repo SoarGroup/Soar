@@ -1,7 +1,5 @@
 package simulation.visuals;
 
-import java.util.logging.*;
-
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.*;
@@ -10,7 +8,6 @@ import org.eclipse.swt.widgets.*;
 import simulation.*;
 
 public class MapButtons extends Composite {
-	private static Logger logger = Logger.getLogger("simulation");
 	private Simulation m_Simulation;
 	private Button m_ChangeMapButton;
 	

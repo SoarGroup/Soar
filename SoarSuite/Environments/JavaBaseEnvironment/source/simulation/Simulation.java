@@ -1,13 +1,10 @@
 package simulation;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.*;
 import java.util.logging.*;
 
 import sml.*;
-import utilities.*;
 
 public abstract class Simulation implements Runnable, Kernel.UpdateEventInterface, Kernel.SystemEventInterface {
 	public static final String kAgentFolder = "agents";
