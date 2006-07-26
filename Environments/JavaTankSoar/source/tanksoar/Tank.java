@@ -44,11 +44,10 @@ public class Tank  extends WorldEntity {
 	private final static int kMaximumEnergy = 1000;
 	private final static int kMaximumHealth = 1000;
 	
-	private RelativeDirections m_RD = new RelativeDirections();
 	private TankSoarWorld m_World;
 
-	private String m_InitialFacing;
-	private MapPoint m_InitialLocation;
+	private int m_InitialFacing;
+	private java.awt.Point m_InitialLocation;
 	
 	private InputLinkManager m_ILM;
 	private MoveInfo m_LastMove;
@@ -68,15 +67,17 @@ public class Tank  extends WorldEntity {
 	private int m_InitialMissiles = 15;
 	
 
-	public Tank(Agent agent, String productions, String color, MapPoint location, String facing, int energy, int health, int missiles, TankSoarWorld world) {
+	public Tank(Agent agent, String productions, String color, java.awt.Point location, String facing, int energy, int health, int missiles, TankSoarWorld world) {
 		super(agent, productions, color, location);
 		
 		m_World = world;
 		
-		if (facing == null) {			
-			facing = WorldEntity.kNorth;
+		if (facing == null) {	
+			// FIXME: should be random
+			facing = Direction.kNorthString;
 		}
-		m_InitialFacing = facing;		
+		// FIXME: should set to null if was null coming in
+		m_InitialFacing = Direction.getInt(facing);		
 		m_InitialLocation = location;
 		
 		if (energy != -1) {
@@ -106,7 +107,7 @@ public class Tank  extends WorldEntity {
 		return false;
 	}
 	
-	public MapPoint getInitialLocation() {
+	public java.awt.Point getInitialLocation() {
 		return m_InitialLocation;
 	}
 	
@@ -124,9 +125,7 @@ public class Tank  extends WorldEntity {
 				
 		m_LastMove.reset();	
 		
-		m_Facing = m_InitialFacing;
-		setFacingInt();
-		m_RD.calculate(getFacingInt());
+		m_FacingInt = m_InitialFacing;
 		
 		clearRadar();
 		
@@ -233,13 +232,13 @@ public class Tank  extends WorldEntity {
 				}
 				
 				if (moveDirection.equalsIgnoreCase(kForwardID)) {
-					m_LastMove.moveDirection = m_RD.forward;
+					m_LastMove.moveDirection = m_FacingInt;
 				} else if (moveDirection.equalsIgnoreCase(kBackwardID)) {
-					m_LastMove.moveDirection = m_RD.backward;
+					m_LastMove.moveDirection = Direction.backwardOf[this.m_FacingInt];
 				} else if (moveDirection.equalsIgnoreCase(kLeftID)) {
-					m_LastMove.moveDirection = m_RD.left;
+					m_LastMove.moveDirection = Direction.leftOf[this.m_FacingInt];
 				} else if (moveDirection.equalsIgnoreCase(kRightID)) {
-					m_LastMove.moveDirection = m_RD.right;
+					m_LastMove.moveDirection = Direction.rightOf[this.m_FacingInt];
 				} else {
 					logger.fine(getName() + ": illegal move direction: " + moveDirection);
 					commandId.AddStatusError();
@@ -467,70 +466,68 @@ public class Tank  extends WorldEntity {
 		}
 	}
 	
-	private int scan(int setting) {
-		MapPoint location = new MapPoint(getLocation());
-		
-		int distance = 0;
-		for (int i = 0; i <= setting; ++i) {
-			distance = i;
-			if (scanCells(i, location) == true) {
-				// Blocked
-				logger.fine(getName() + ": Radar scan blocked at distance " + Integer.toString(distance));
-				break;
-			}
-
-			// Update for next distance
-			location = location.travel(forward());
-		}
-		clearCells(distance, location);
-		return distance;
-	}
-	
 	static final int kRadarLeft = 0;
 	static final int kRadarCenter = 1;
 	static final int kRadarRight = 2;
 	
-	private boolean scanCells(int distance, MapPoint location) {
-		for (int i = 0; i < Tank.kRadarWidth; ++i) {
-			// Scan center then left then right
-			int position = 0;
-			int relativeDirection = 0;
-			
-			switch (i) {
-			case 0:
-				position = kRadarCenter;
-				relativeDirection = 0;
-				break;
-			default:
-			case 1:
-				position = kRadarLeft;
-				relativeDirection = left();
-				break;
-			case 2:
-				position = kRadarRight;
-				relativeDirection = right();
-				break;
-			}
-			
-			radarCells[position][distance] = m_World.getCell(location, relativeDirection);
-			if (!(position == 1 && distance == 0)) {
+	private int scan(int setting) {
+		int distance;
+		int scanX = this.getLocation().x;
+		int scanY = this.getLocation().y;
+		boolean stop = false;
+		
+		for (distance = 0; distance <= setting; ++distance, scanX += Direction.xDelta[m_FacingInt], scanY += Direction.yDelta[m_FacingInt]) {
+			for (int i = 0; i < Tank.kRadarWidth; ++i) {
+				// Scan center then left then right
+				int position = 0;
+				int relativeX = 0;
+				int relativeY = 0;
+				
+				switch (i) {
+				case 0:
+					if (distance == 0) {
+						continue;
+					}
+					position = kRadarCenter;
+					break;
+				default:
+				case 1:
+					position = kRadarLeft;
+					relativeX += Direction.xDelta[Direction.leftOf[m_FacingInt]];
+					relativeY += Direction.yDelta[Direction.leftOf[m_FacingInt]];
+					break;
+				case 2:
+					position = kRadarRight;
+					relativeX += Direction.xDelta[Direction.rightOf[m_FacingInt]];
+					relativeY += Direction.yDelta[Direction.rightOf[m_FacingInt]];
+					break;
+				}
+				
+				radarCells[position][distance] = m_World.getCell(scanX + relativeX, scanY + relativeY);
 				if (radarCells[position][distance].containsTank()) {
-					logger.fine(getName() + ": Radar waves from " + WorldEntity.directionToString(backward()) + " hitting tank " + radarCells[position][distance].getTank().getName());
-					radarCells[position][distance].getTank().setRWaves(backward());
+					logger.fine(getName() + ": Radar waves from " 
+							+ Direction.stringOf[Direction.backwardOf[this.m_FacingInt]] 
+							+ " hitting tank " + radarCells[position][distance].getTank().getName());
+					radarCells[position][distance].getTank().setRWaves(Direction.backwardOf[this.m_FacingInt]);
 				}
+				
+				if ((position == kRadarCenter) && radarCells[position][distance].isBlocked()) {
+					stop = true;
+					break;
+				}
+				radarCells[position][distance].setRadarTouch();
 			}
 			
-			if ((position == kRadarCenter) && radarCells[position][distance].isBlocked()) {
-				if ((position != kRadarCenter) || (distance != 0)) {
-					return true;
-				}
+			if (stop) {
+				logger.fine(getName() + ": Radar scan blocked at distance " + Integer.toString(distance));
+				break;
 			}
-			radarCells[position][distance].setRadarTouch();
 		}
-		return false;
+		clearCells(distance);
+		return distance;
 	}
 	
-	private void clearCells(int initialDistance, MapPoint location) {
+	private void clearCells(int initialDistance) {
 		for (int j = initialDistance; j < Tank.kRadarHeight; ++j) {
 			for (int i = 0; i < Tank.kRadarWidth; ++i) {
 				if ((i == 1) && (j == initialDistance)) {
@@ -546,22 +543,6 @@ public class Tank  extends WorldEntity {
 		if (m_Agent != null) {
 			m_ILM.write();
 		}
-	}
-	
-	public int forward() {
-		return m_RD.forward;
-	}
-	
-	public int backward() {
-		return m_RD.backward;
-	}
-	
-	public int left() {
-		return m_RD.left;
-	}
-	
-	public int right() {
-		return m_RD.right;
 	}
 	
 	public void addMissiles(int numberToAdd) {
@@ -673,32 +654,14 @@ public class Tank  extends WorldEntity {
 		return m_LastMove.moveDirection;
 	}
 	
-	private void rotate(String direction) {		
-		int facing = 0;
-		
+	private void rotate(String direction) {	
 		if (direction.equalsIgnoreCase(kLeftID)) {
-			facing = m_RD.left;
+			m_FacingInt = Direction.leftOf[m_FacingInt];
 		} else if (direction.equalsIgnoreCase(kRightID)) {
-			facing = m_RD.right;
+			m_FacingInt = Direction.rightOf[m_FacingInt];
+		} else {
+			assert false;
 		}
-		
-		switch (facing) {
-		case kNorthInt:
-			m_Facing = kNorth;
-			break;
-		case kSouthInt:
-			m_Facing = kSouth;
-			break;
-		case kEastInt:
-			m_Facing = kEast;
-			break;
-		case kWestInt:
-			m_Facing = kWest;
-			break;
-		}
-		
-		setFacingInt();
-		m_RD.calculate(getFacingInt());
 	}
 	
 	public boolean firedMissile() {

@@ -1,6 +1,5 @@
 package tanksoar;
 
-import java.util.Random;
 import java.util.logging.*;
 import simulation.Simulation;
 import sml.Agent;
@@ -9,7 +8,7 @@ import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
 import sml.WMElement;
-import utilities.MapPoint;
+import utilities.*;
 
 public class InputLinkManager {
 
@@ -199,7 +198,7 @@ public class InputLinkManager {
 	}
 	
 	void write() {
-		MapPoint location = m_Tank.getLocation();
+		java.awt.Point location = m_Tank.getLocation();
 		TankSoarCell cell = m_World.getCell(location);
 		
 		String energyRecharger = cell.isEnergyRecharger() ? kYes : kNo;
@@ -245,7 +244,7 @@ public class InputLinkManager {
 			}
 		}
 		
-		String facing = m_Tank.getFacing();
+		String facing = Direction.stringOf[m_Tank.getFacingInt()];
 		if (m_Reset) {
 			m_DirectionWME = CreateStringWME(m_InputLink, kDirectionID, facing);
 		} else {
@@ -256,10 +255,10 @@ public class InputLinkManager {
 				
 		int blocked = m_World.getBlockedByLocation(m_Tank);
 		
-		String blockedForward = ((blocked & m_Tank.forward()) > 0) ? kYes : kNo;
-		String blockedBackward = ((blocked & m_Tank.backward()) > 0) ? kYes : kNo;
-		String blockedLeft = ((blocked & m_Tank.left()) > 0) ? kYes : kNo;
-		String blockedRight = ((blocked & m_Tank.right()) > 0) ? kYes : kNo;
+		String blockedForward = ((blocked & Direction.indicators[m_Tank.getFacingInt()]) > 0) ? kYes : kNo;
+		String blockedBackward = ((blocked & Direction.indicators[Direction.backwardOf[m_Tank.getFacingInt()]]) > 0) ? kYes : kNo;
+		String blockedLeft = ((blocked & Direction.indicators[Direction.leftOf[m_Tank.getFacingInt()]]) > 0) ? kYes : kNo;
+		String blockedRight = ((blocked & Direction.indicators[Direction.rightOf[m_Tank.getFacingInt()]]) > 0) ? kYes : kNo;
 		
 		if (m_Reset) {
 			m_BlockedWME = m_Agent.CreateIdWME(m_InputLink, kBlockedID);
@@ -283,10 +282,10 @@ public class InputLinkManager {
 		}
 		
 		int incoming = m_World.getIncomingByLocation(location);
-		String incomingForward = ((incoming & m_Tank.forward()) > 0) ? kYes : kNo;
-		String incomingBackward = ((incoming & m_Tank.backward()) > 0) ? kYes : kNo;
-		String incomingLeft = ((incoming & m_Tank.left()) > 0) ? kYes : kNo;
-		String incomingRight = ((incoming & m_Tank.right()) > 0) ? kYes : kNo;
+		String incomingForward = ((incoming & Direction.indicators[m_Tank.getFacingInt()]) > 0) ? kYes : kNo;
+		String incomingBackward = ((incoming & Direction.indicators[Direction.backwardOf[m_Tank.getFacingInt()]]) > 0) ? kYes : kNo;
+		String incomingLeft = ((incoming & Direction.indicators[Direction.leftOf[m_Tank.getFacingInt()]]) > 0) ? kYes : kNo;
+		String incomingRight = ((incoming & Direction.indicators[Direction.rightOf[m_Tank.getFacingInt()]]) > 0) ? kYes : kNo;
 		
 		if (m_Reset) {
 			m_IncomingWME = m_Agent.CreateIdWME(m_InputLink, kIncomingID);
@@ -313,7 +312,7 @@ public class InputLinkManager {
 		// Smell
 		Tank closestTank = m_World.getStinkyTankNear(m_Tank);
 		String closestTankColor = (closestTank == null) ? kNone : closestTank.getColor();
-		int distance = (closestTank == null) ? 0 : location.getManhattanDistanceTo(closestTank.getLocation());
+		int distance = (closestTank == null) ? 0 : m_World.getManhattanDistanceTo(location, closestTank.getLocation());
 		m_Tank.setSmell(distance, distance == 0 ? null : closestTankColor);
 		if (m_Reset) {
 			m_SmellWME = m_Agent.CreateIdWME(m_InputLink, kSmellID);
@@ -356,17 +355,17 @@ public class InputLinkManager {
 		// if the closest tank is greater than 7 away, there is no
 		// possibility of hearing anything
 		int sound = 0;
-		if ((closestTank != null) && closestTank.getLocation().getManhattanDistanceTo(m_Tank.getLocation()) <= TankSoarWorld.kMaxSmellDistance) {
+		if ((closestTank != null) && m_World.getManhattanDistanceTo(closestTank.getLocation(), m_Tank.getLocation()) <= TankSoarWorld.kMaxSmellDistance) {
 			sound = m_World.getSoundNear(m_Tank);
 		}
 		String soundString;
-		if (sound == m_Tank.forward()) {
+		if (sound == m_Tank.getFacingInt()) {
 			soundString = kForwardID;
-		} else if (sound == m_Tank.backward()) {
+		} else if (sound == Direction.indicators[Direction.backwardOf[m_Tank.getFacingInt()]]) {
 			soundString = kBackwardID;
-		} else if (sound == m_Tank.left()) {
+		} else if (sound == Direction.indicators[Direction.leftOf[m_Tank.getFacingInt()]]) {
 			soundString = kLeftID;
-		} else if (sound == m_Tank.right()) {
+		} else if (sound == Direction.indicators[Direction.rightOf[m_Tank.getFacingInt()]]) {
 			soundString = kRightID;
 		} else {
 			if (sound > 0) {
@@ -465,10 +464,10 @@ public class InputLinkManager {
 
 		// RWaves
 		int rwaves = m_Tank.getRWaves();
-		String rwavesForward = (rwaves & m_Tank.forward()) > 0 ? kYes : kNo;
-		String rwavesBackward = (rwaves & m_Tank.backward()) > 0 ? kYes : kNo;;
-		String rwavesLeft = (rwaves & m_Tank.left()) > 0 ? kYes : kNo;
-		String rwavesRight = (rwaves & m_Tank.right()) > 0 ? kYes : kNo;
+		String rwavesForward = (rwaves & m_Tank.getFacingInt()) > 0 ? kYes : kNo;
+		String rwavesBackward = (rwaves & Direction.indicators[Direction.backwardOf[m_Tank.getFacingInt()]]) > 0 ? kYes : kNo;;
+		String rwavesLeft = (rwaves & Direction.indicators[Direction.leftOf[m_Tank.getFacingInt()]]) > 0 ? kYes : kNo;
+		String rwavesRight = (rwaves & Direction.indicators[Direction.rightOf[m_Tank.getFacingInt()]]) > 0 ? kYes : kNo;
 		
 		if (m_Reset) {
 			m_RWavesWME = m_Agent.CreateIdWME(m_InputLink, kRWavesID);

@@ -249,8 +249,11 @@ public class AgentDisplay extends Composite {
 	
 	void selectEntity(WorldEntity entity) {
 		m_SelectedEntity = entity;
+		if (m_SelectedEntity == null) {
+			return;
+		}
 		for (int i = 0; i < m_Tanks.length; ++i) {
-			if (m_SelectedEntity == m_Tanks[i]) {
+			if (m_SelectedEntity.equals(m_Tanks[i])) {
 				m_AgentTable.setSelection(i);
 				break;
 			}
@@ -333,7 +336,7 @@ public class AgentDisplay extends Composite {
 				m_Items[i].setText(2, Integer.toString(m_Tanks[i].getMissiles()));
 				m_Items[i].setText(3, Integer.toString(m_Tanks[i].getHealth()));
 				m_Items[i].setText(4, Integer.toString(m_Tanks[i].getEnergy()));
-				if (m_SelectedEntity == m_Tanks[i]) {
+				if (m_SelectedEntity != null && m_SelectedEntity.equals(m_Tanks[i])) {
 					foundSelected = true;
 					m_AgentTable.setSelection(i);
 				}

@@ -24,7 +24,7 @@ public class TankSoarCell extends Cell {
 	
 	// used in path searching
 	private boolean m_Explored = false;
-	private MapPoint m_Parent = null;
+	private java.awt.Point m_Parent = null;
 	
 	private boolean m_Explosion = false;
 	protected boolean m_RadarTouch = false;
@@ -60,11 +60,11 @@ public class TankSoarCell extends Cell {
 		m_Explored = setting;
 	}
 	
-	MapPoint getParent() {
+	java.awt.Point getParent() {
 		return m_Parent;
 	}
 	
-	void setParent(MapPoint parent) {
+	void setParent(java.awt.Point parent) {
 		m_Parent = parent;
 	}
 	

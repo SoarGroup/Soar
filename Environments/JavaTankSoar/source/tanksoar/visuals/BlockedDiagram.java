@@ -8,6 +8,7 @@ import org.eclipse.swt.widgets.*;
 
 import simulation.visuals.*;
 import tanksoar.*;
+import utilities.Direction;
 
 public class BlockedDiagram extends Canvas implements PaintListener {
 
@@ -50,10 +51,10 @@ public class BlockedDiagram extends Canvas implements PaintListener {
 	void updateSound(TankSoarWorld world, Tank tank) {
 		int sound = world.getSoundNear(tank);
 		
-		m_Forward = (sound == tank.forward());
-		m_Backward = (sound == tank.backward());
-		m_Left = (sound == tank.left());
-		m_Right = (sound == tank.right());		
+		m_Forward = (sound == tank.getFacingInt());
+		m_Backward = (sound == Direction.backwardOf[tank.getFacingInt()]);
+		m_Left = (sound == Direction.leftOf[tank.getFacingInt()]);
+		m_Right = (sound == Direction.rightOf[tank.getFacingInt()]);		
 	}
 
 	void updateRWaves(TankSoarWorld world, Tank tank) {
@@ -61,10 +62,10 @@ public class BlockedDiagram extends Canvas implements PaintListener {
 	}
 	
 	private void updateCombinedDirection(int directions, Tank tank) {
-		m_Forward = ((directions & tank.forward()) > 0);
-		m_Backward = ((directions & tank.backward()) > 0);
-		m_Left = ((directions & tank.left()) > 0);
-		m_Right = ((directions & tank.right()) > 0);				
+		m_Forward = ((directions & tank.getFacingInt()) > 0);
+		m_Backward = ((directions & Direction.backwardOf[tank.getFacingInt()]) > 0);
+		m_Left = ((directions & Direction.leftOf[tank.getFacingInt()]) > 0);
+		m_Right = ((directions & Direction.rightOf[tank.getFacingInt()]) > 0);				
 	}
 
 	void disable() {

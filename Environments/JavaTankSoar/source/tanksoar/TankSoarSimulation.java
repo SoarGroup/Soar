@@ -42,7 +42,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		String [] initialNames = null;
 		String [] initialProductions = null;
 		String [] initialColors = null;
-		MapPoint [] initialLocations = null;
+		java.awt.Point [] initialLocations = null;
 		String [] initialFacing = null;
 		int [] initialEnergy = null;
 		int [] initialHealth = null;
@@ -83,7 +83,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 					initialNames = new String[child.getNumberChildren()];
 					initialProductions = new String[child.getNumberChildren()];
 					initialColors = new String[child.getNumberChildren()];
-					initialLocations = new MapPoint[child.getNumberChildren()];
+					initialLocations = new java.awt.Point[child.getNumberChildren()];
 					initialFacing = new String[child.getNumberChildren()];
 					initialEnergy = new int[child.getNumberChildren()];
 					initialHealth = new int[child.getNumberChildren()];
@@ -105,7 +105,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 						}
 						
 						initialColors[j] = agent.getAttribute(kParamColor);
-						initialLocations[j] = new MapPoint(agent.getAttributeIntDefault(kParamX, -1), agent.getAttributeIntDefault(kParamY, -1));
+						initialLocations[j] = new java.awt.Point(agent.getAttributeIntDefault(kParamX, -1), agent.getAttributeIntDefault(kParamY, -1));
 						initialFacing[j] = agent.getAttribute(kParamFacing);
 						
 						initialEnergy[j] = agent.getAttributeIntDefault(kParamEnergy, -1);
@@ -136,7 +136,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		setCurrentMap(getMapPath() + getDefaultMap());
 
 		// Load default world
-		m_World = new TankSoarWorld(this);
+		m_World = new TankSoarWorld(this, quiet);
 		setWorldManager(m_World);
 		resetSimulation(false);
 		
@@ -201,7 +201,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		m_HumanInput = humanInput;
 	}
 	
-    public void createEntity(String name, String productions, String color, MapPoint location, String facing,
+    public void createEntity(String name, String productions, String color, java.awt.Point location, String facing,
     		int energy, int health, int missiles) {
     	if (name == null || color == null) {
     		fireErrorMessageWarning("Failed to create agent, name or color null.");
