@@ -8,7 +8,6 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 
 import eaters.*;
-import simulation.*;
 import simulation.visuals.*;
 import utilities.*;
 

@@ -1,7 +1,5 @@
 package eaters.visuals;
 
-import java.util.logging.Logger;
-
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.*;
@@ -11,10 +9,8 @@ import eaters.*;
 
 import simulation.*;
 import simulation.visuals.*;
-import utilities.*;
 
 public class AgentDisplay extends Composite {
-	private static Logger logger = Logger.getLogger("simulation");
 	
 	public static final int kAgentMapCellSize = 20;
 	static final int kTableHeight = 120;
