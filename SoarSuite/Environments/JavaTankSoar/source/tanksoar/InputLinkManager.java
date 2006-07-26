@@ -403,16 +403,13 @@ public class InputLinkManager {
 		String soundString;
 		if (sound == m_Tank.getFacingInt()) {
 			soundString = kForwardID;
-		} else if (sound == Direction.indicators[Direction.backwardOf[m_Tank.getFacingInt()]]) {
+		} else if (sound == Direction.backwardOf[m_Tank.getFacingInt()]) {
 			soundString = kBackwardID;
-		} else if (sound == Direction.indicators[Direction.leftOf[m_Tank.getFacingInt()]]) {
+		} else if (sound == Direction.leftOf[m_Tank.getFacingInt()]) {
 			soundString = kLeftID;
-		} else if (sound == Direction.indicators[Direction.rightOf[m_Tank.getFacingInt()]]) {
+		} else if (sound == Direction.rightOf[m_Tank.getFacingInt()]) {
 			soundString = kRightID;
 		} else {
-			if (sound > 0) {
-				logger.warning(m_Tank.getName() + ": sound reported as more than one direction.");
-			}
 			soundString = kSilentID;
 		}
 		if (m_Reset) {
