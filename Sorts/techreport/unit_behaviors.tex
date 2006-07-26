@@ -1,0 +1,108 @@
+\documentclass{report}
+
+\begin{document}
+
+\section{Low Level Control}
+
+The design philosophy of SORTS requires that Soar agents only issue high
+level commands comparable to those that would be expected from a human
+player. The reason human players of commercial RTS games do not have to
+worry (too much) about micromanagement is because much of it is handled
+for them by the game engine. Likewise, in SORTS, we handle low-level
+micromanagement with our middleware so that Soar does not have to. This
+is achieved by assigning each controllable unit a behavior specified
+as an finite state machine. Soar only has to specify which behavior a
+unit should take on, and the FSM will control the unit in predictable
+ways. We have already programmed a basic library of behaviors, listed in
+figure~\ref{fig:implementedBehaviors}.
+
+\subsection{Behaviors as Finite State Machines}
+
+The main functionality of a behavior resides in its \tt{update}
+function. This function is called for all living, controllable units
+whenever the higher level function \verb|updateGroups()| is called in
+the ORTS event handler (see section~\ref{sec:OrtsEventHandler}). This
+means that the \tt{update} function for every active behavior is called
+once everytime SORTS receives a viewframe from the ORTS server, which is
+the smallest unit of discernable state change.
+
+During the \tt{update} call, the behavior decides which low-level action
+provided by the ORTS API, or lack thereof, to execute for the game
+object which it controls. This decision is made based on the behavior's
+current state and also the state of the game object, which it as direct
+access to, unlike the Soar agent. The behavior also decides which state
+to transition to for the next \tt{update} call.
+
+\subsubsection{Coordination Managers}
+
+During preparations for the first ORTS tournament, it was decided that
+certain behaviors that required high levels of coordination amongst
+each other needed to have access to more information than just game
+object state if they were to perform well enough to be competitive in
+the tournament. Therefore, two behaviors, one that controls mining and
+one that controls attacking, were written to have access to a bigger
+picture of the overall game state via communication with coordinating
+mechanisms called we called "managers."
+
+The result was that the behaviors themselves were relatively simple.
+During every \tt{update} call, a managed behavior just asks the manager
+it was assigned to what it should do, and then does it. The advantage to
+using such an approach is that the manager can keep track of what each
+behavior it controls is doing, and coordinate sophisticated strategies
+such as optimal assignment of miners to mineral patches, or focusing the
+firepower of many units on one enemy at a time.
+
+\subsubsection{Default Behaviors}
+
+There are some actions that are always advantageous to do. For example,
+if an offensive unit passes within firing range of an enemy unit, it is
+almost always better to attack the enemy unit given that there is not a
+more important target to attack. We don't want to burden a Soar agent
+with having to detect every opportunity to perform such actions, so
+game units can be assigned default behaviors. The desired behavior in
+the situation described above is implemented by the \tt{AttackNearFSM}
+default behavior, which fires on nearby targets whenever they are in
+range and the controlled unit was not explicitly ordered to fire on
+something else.
+
+As opposed to assigned behaviors, default behaviors are specified
+when units are created rather than when they are first desired, and
+a single in-game unit can have several default behaviors at once.
+It is important that a default behavior not override the actions
+of an assigned behavior. For example, the default behavior for a
+unit to run away when being attacked should not be manifested if the
+unit was assigned the move behavior in the opposite direction of the
+retreat. However, there is no built-in mechanism to ensure this kind of
+suppression in SORTS yet, so it is the responsibility of the default
+behavior to make sure it doesn't obstruct assigned behaviors.
+
+\begin{figure}
+\begin{center}
+\begin{minipage}{5in}
+\begin{tabular}{|l|p{1.0in}|p{1.0in}|}
+Behavior name     & Parameters     & Description\\ 
+\hline\hline
+AttackFSM         & id             & Attack group with specified id \\ 
+\hline
+AttackNearFSM     &                & Attack any enemy target within range,
+                                     except when already attacking another
+                                     target                         \\
+\hline
+BuildFSM          & t, x, y        & Build a building of type t at (x, y) \\ 
+\hline
+MineFSM           &                & Mine for minerals              \\
+\hline
+MoveFSM           & x, y, speed    & Object tries to pathfind and move
+                                     to coordinate (x, y)           \\
+\hline
+TrainFSM          & t              & Train a unit of type t         \\
+\hline
+
+\end{tabular}
+\end{minipage}
+\end{center}
+\caption{A list of implemented behaviors.}
+\label{fig:implementedBehaviors}
+\end{figure}
+
+\end{document}

@@ -141,6 +141,7 @@ active-mining & friendly workers & The number of workers that are actively minin
 \end{center}
 
 \subsection{The SORTS output-link}
+\label{sec:output-link}
 
 The output-link allows the Soar agent to act in the game world by issuing commands to groups of friendly units, communicate directly to the middleware for actions such as querying,
 and adjust the parameters of the visual subsystem in the middleware. All structures on the output link are similar- the Soar agent creates an output-link.command object with a name (\textbf{output-link.command.name}) specified. Depending on the command name, different parameters are needed. Parameters are attached to the command structure, as in \textbf{output-link.command.param0}. All legal commands and their necessary parameters are detailed below.
