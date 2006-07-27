@@ -174,52 +174,52 @@ public class TankSoarVisualWorld extends VisualWorld implements PaintListener {
 				}
 				
 				// Draw flying missiles regardless
-				Missile[] missiles = m_World.getMissiles();
-				if (missiles != null) {
-					for (int i = 0; i < missiles.length; ++i) {
-						boolean plus = false;
-						int dir = 0;
-						switch (missiles[i].getFlightPhase()) {
-						case 0:
-							dir = Direction.backwardOf[missiles[i].getDirection()];
-							break;
-						case 1:
-							dir = missiles[i].getDirection();
-							break;
-						case 2:
-							dir = missiles[i].getDirection();
-							plus = true;
-							break;
-						default:
-							assert false;
-							break;
-						}
-						int mX = 0;
-						int mY = 0;
-						switch (dir) {
-						case Direction.kNorthInt:
-							mX = 10;
-							mY = plus ? -6 : 5;
-							break;
-						case Direction.kEastInt:
-							mX = plus ? 26 : 15;
-							mY = 10;
-							break;
-						case Direction.kSouthInt:
-							mX = 10;
-							mY = plus ? 26 : 15;
-							break;
-						case Direction.kWestInt:
-							mX = plus ? -6 : 5;
-							mY = 10;
-							break;
-						default:
-							assert false;
-							break;
-						}
-						gc.drawImage(kMissile, (missiles[i].getLocation().x * m_CellSize) + mX, (missiles[i].getLocation().y * m_CellSize) + mY);
+				LinkedList missiles = m_World.getMissiles();
+		  		ListIterator iter = missiles.listIterator();
+		   		while (iter.hasNext()) {
+		   			Missile missile = (Missile)iter.next();
+					boolean plus = false;
+					int dir = 0;
+					switch (missile.getFlightPhase()) {
+					case 0:
+						dir = Direction.backwardOf[missile.getDirection()];
+						break;
+					case 1:
+						dir = missile.getDirection();
+						break;
+					case 2:
+						dir = missile.getDirection();
+						plus = true;
+						break;
+					default:
+						assert false;
+						break;
 					}
-				}
+					int mX = 0;
+					int mY = 0;
+					switch (dir) {
+					case Direction.kNorthInt:
+						mX = 10;
+						mY = plus ? -6 : 5;
+						break;
+					case Direction.kEastInt:
+						mX = plus ? 26 : 15;
+						mY = 10;
+						break;
+					case Direction.kSouthInt:
+						mX = 10;
+						mY = plus ? 26 : 15;
+						break;
+					case Direction.kWestInt:
+						mX = plus ? -6 : 5;
+						mY = 10;
+						break;
+					default:
+						assert false;
+						break;
+					}
+					gc.drawImage(kMissile, (missile.getLocation().x * m_CellSize) + mX, (missile.getLocation().y * m_CellSize) + mY);
+		   		}
 				
 				// Draw radar trails
 				Tank[] tanks = m_World.getTanks();

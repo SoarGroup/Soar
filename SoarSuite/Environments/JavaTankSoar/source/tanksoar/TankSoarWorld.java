@@ -156,6 +156,12 @@ public class TankSoarWorld extends World implements WorldManager {
 		return getTanks();
 	}
 	
+	public void setStopping(boolean status) {
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			m_Tanks[i].setStopping(status);
+		}
+	}
+	
 	private void resetTanks() {
 		if (m_Tanks == null) {
 			return;
@@ -301,7 +307,7 @@ public class TankSoarWorld extends World implements WorldManager {
 						}
 					}
 				}
-				getCell(tank.getLocation()).removeTank();
+				getCell(tank.getLocation()).removeTank(tank);
 				if (m_Tanks == null) {
 					break;
 				}
@@ -349,6 +355,17 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 		Arrays.sort(scores);
 		return scores;
+	}
+	
+	public void handleSNC(Tank deadTank) {
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			if (!deadTank.equals(m_Tanks[i])) {
+				if (deadTank.getPoints() >= m_Tanks[i].getPoints()) {
+					deadTank.adjustPoints((m_Tanks[i].getPoints() - deadTank.getPoints()) - 1, "SNC penalty");
+				}
+			}
+		}
+		m_Simulation.stopSimulation();
 	}
 	
 	public void update() {
@@ -509,10 +526,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		logger.finest("Moving all tanks that move");
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].recentlyMoved()) {
-				if (!getCell(m_Tanks[i].getLocation()).removeTank()) {
-					assert false;
-					logger.warning("Moving tank " + m_Tanks[i].getName() + " not at old location " + m_Tanks[i].getLocation());
-				}
+				getCell(m_Tanks[i].getLocation()).removeTank(m_Tanks[i]);
 				java.awt.Point newLocation = new java.awt.Point(m_Tanks[i].getLocation());
 				newLocation = Direction.translate(newLocation, m_Tanks[i].getLastMoveDirection());
 				m_Tanks[i].setLocation(newLocation);
@@ -587,14 +601,19 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 		}
 		
+		// Tick resource drain 1 energy until 0 energy left, then 1 health until dead
+//		for (int i = 0; i < m_Tanks.length; ++i) {
+//			m_Tanks[i].resourceDrain();
+//		}
+
 		//  Respawn killed Tanks in safe squares
 		logger.finest("Respawning killed tanks");
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (m_Tanks[i].getHealth() <= 0) {
-				getCell(m_Tanks[i].getLocation()).removeTank();
+				getCell(m_Tanks[i].getLocation()).removeTank(m_Tanks[i]);
 				removeMissilesOwnedBy(m_Tanks[i]);
 				java.awt.Point location = findStartingLocation();
-				logger.info(m_Tanks[i].getName() + ": Spawning at " + location.toString());
+				logger.info(m_Tanks[i].getName() + ": spawning at (" + location.x + "," + location.y + ")");
 				m_Tanks[i].setLocation(location);
 				getCell(location).setTank(m_Tanks[i]);
 				m_Tanks[i].reset();
@@ -971,7 +990,7 @@ public class TankSoarWorld extends World implements WorldManager {
    		return incoming;
    	}
    	
-   	public Missile[] getMissiles() {
-   		return (Missile[])missiles.toArray(new Missile[0]);
+   	public LinkedList getMissiles() {
+  		return missiles;
    	}
 }

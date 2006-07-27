@@ -6,7 +6,7 @@ import simulation.*;
 import utilities.*;
 import sml.*;
 
-public class Tank  extends WorldEntity {
+public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 	private static Logger logger = Logger.getLogger("simulation");
 	
 	private final static String kMoveID = "move";
@@ -65,11 +65,16 @@ public class Tank  extends WorldEntity {
 	private int m_InitialEnergy = 1000;
 	private int m_InitialHealth = 1000;
 	private int m_InitialMissiles = 15;
+	private boolean stopping = false;
 	
 
 	public Tank(Agent agent, String productions, String color, java.awt.Point location, String facing, int energy, int health, int missiles, TankSoarWorld world) {
 		super(agent, productions, color, location);
 		
+		if (m_Agent != null) {
+			m_Agent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_INTERRUPT, this, null);
+		}
+
 		m_World = world;
 		
 		if (facing == null) {	
@@ -97,9 +102,35 @@ public class Tank  extends WorldEntity {
 			m_ILM = new InputLinkManager(m_World, this);
 		}
 		
-		logger.info("Created tank: " + getName());
+		logger.info(getName() + ": created");
 		
 		reset();
+	}
+
+	public void setStopping(boolean status) {
+		stopping = status;
+	}
+	
+	public void resourceDrain() {
+		if (m_Health > 0) {
+			if (m_Energy > 0) {
+				adjustEnergy(-1, "tick");
+			} else {
+				adjustHealth(-1, "tick");
+			}
+			if (m_Health <= 0) {
+				logger.info(getName() + ": fragged (out of gas)");
+				adjustPoints(kKillPenalty, "kill penalty");
+			}
+		}
+	}
+	
+	
+	public void runEventHandler(int eventID, Object data, Agent agent, int phase) {
+		if (!stopping) {
+			logger.warning(getName() + ": agent interrupted");
+			m_World.handleSNC(this);
+		}
 	}
 	
 	public boolean equals(Tank tank) {
@@ -135,11 +166,7 @@ public class Tank  extends WorldEntity {
 			m_ILM.clear();
 		}
 		
-		logger.info(getName() + ": reset: (facing: " + m_InitialFacing 
-				+ ")(missiles: " + Integer.toString(m_InitialMissiles)
-				+ ")(health: " + Integer.toString(m_InitialHealth)
-				+ ")(energy: " + Integer.toString(m_InitialEnergy)
-				+ ")");
+		logger.info(getName() + ": reset");
 	}
 	
 	public boolean getRadarStatus() {
@@ -182,7 +209,7 @@ public class Tank  extends WorldEntity {
 		// Must check missile count now
 		if (m_LastMove.fire) {
 			if (m_Missiles <= 0) {
-				logger.fine(getName() + ": Attempted to fire missle with no missiles.");	
+				logger.fine(getName() + ": fired with no missiles");	
 				m_LastMove.fire = false;
 			}
 		}
@@ -196,11 +223,11 @@ public class Tank  extends WorldEntity {
 			rotate(m_LastMove.rotateDirection);
 			// Do not allow a move if we rotated.
 			if (m_LastMove.move) {
-				logger.fine(getName() + ": Tried to move with a rotation, rotating only.");
+				logger.info(getName() + ": move ignored (rotating)");
 				m_LastMove.move = false;
 			}
 		}
-		logger.info(getName() + " (human) at " + getLocation().toString() +", world count: " + Integer.toString(m_World.getWorldCount()) + ", move: " + m_LastMove.toString());
+		logger.info(getName() + ": (" + getLocation().x + "," + getLocation().y +"): " + m_LastMove.toString());
 	}
 	
 	public void readOutputLink() {
@@ -210,7 +237,7 @@ public class Tank  extends WorldEntity {
 		assert m_Agent != null;
 		int numberOfCommands = m_Agent.GetNumberCommands();
 		if (numberOfCommands == 0) {
-			logger.fine(getName() + ": world count: " + Integer.toString(m_World.getWorldCount()) + ", issued no command.");
+			logger.fine(getName() + ": issued no command");
 			return;
 		}
 		Identifier moveId = null;
@@ -221,14 +248,14 @@ public class Tank  extends WorldEntity {
 
 			if (commandName.equalsIgnoreCase(kMoveID)) {
 				if (m_LastMove.move == true) {
-					logger.fine(getName() + ": Extra move commands detected.");
+					logger.fine(getName() + ": extra move commands");
 					commandId.AddStatusError();
 					continue;
 				}
 
 				String moveDirection = commandId.GetParameterValue(kDirectionID);
 				if (moveDirection == null) {
-					logger.fine(getName() + ": null move direction.");
+					logger.fine(getName() + ": null move direction");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -251,7 +278,7 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kFireID)) {
 				if (m_LastMove.fire == true) {
-					logger.fine(getName() + ": Extra fire commands detected.");
+					logger.fine(getName() + ": extra fire commands");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -259,7 +286,7 @@ public class Tank  extends WorldEntity {
 		 		if (m_Missiles > 0) {
 		 			m_LastMove.fire = true;
 		 		} else {
-					logger.fine(getName() + ": Attempted fire with no missles.");
+					logger.fine(getName() + ": fired with no missiles");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -267,14 +294,14 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kRadarID)) {
 				if (m_LastMove.radar == true) {
-					logger.fine(getName() + ": Extra radar commands detected.");
+					logger.fine(getName() + ": extra radar commands");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String radarSwitch = commandId.GetParameterValue(kSwitchID);
 				if (radarSwitch == null) {
-					logger.fine(getName() + ": null radar switch.");
+					logger.fine(getName() + ": null radar switch");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -283,14 +310,14 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kRadarPowerID)) {
 				if (m_LastMove.radarPower == true) {
-					logger.fine(getName() + ": Extra radar power commands detected.");
+					logger.fine(getName() + ": extra radar power commands");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String powerValue = commandId.GetParameterValue(kSettingID);
 				if (powerValue == null) {
-					logger.fine(getName() + ": null radar power value.");
+					logger.fine(getName() + ": null radar power");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -298,7 +325,7 @@ public class Tank  extends WorldEntity {
 				try {
 					m_LastMove.radarPowerSetting = Integer.decode(powerValue).intValue();
 				} catch (NumberFormatException e) {
-					logger.fine(getName() + ": Unable to parse radar power setting " + powerValue + ": " + e.getMessage());
+					logger.fine(getName() + ": unable to parse radar power setting " + powerValue + ": " + e.getMessage());
 					commandId.AddStatusError();
 					continue;
 				}
@@ -306,14 +333,14 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kShieldsID)) {
 				if (m_LastMove.shields == true) {
-					logger.fine(getName() + ": Extra shield commands detected.");
+					logger.fine(getName() + ": extra shield commands");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String shieldsSetting = commandId.GetParameterValue(kSwitchID);
 				if (shieldsSetting == null) {
-					logger.fine(getName() + ": null shields setting.");
+					logger.fine(getName() + ": null shields setting");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -325,14 +352,14 @@ public class Tank  extends WorldEntity {
 				
 			} else if (commandName.equalsIgnoreCase(kRotateID)) {
 				if (m_LastMove.rotate == true) {
-					logger.fine(getName() + ": Extra rotate commands detected.");
+					logger.fine(getName() + ": extra rotate commands");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				m_LastMove.rotateDirection = commandId.GetParameterValue(kDirectionID);
 				if (m_LastMove.rotateDirection == null) {
-					logger.fine(getName() + ": null rotation direction.");
+					logger.fine(getName() + ": null rotation direction");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -345,7 +372,7 @@ public class Tank  extends WorldEntity {
 				}
 				
 			} else {
-				logger.warning(getName() + ": Unknown command: " + commandName);
+				logger.warning(getName() + ": unknown command: " + commandName);
 				commandId.AddStatusError();
 				continue;
 			}
@@ -358,14 +385,14 @@ public class Tank  extends WorldEntity {
 		// Do not allow a move if we rotated.
 		if (m_LastMove.rotate) {
 			if (m_LastMove.move) {
-				logger.fine("Tried to move with a rotation, rotating only.");
+				logger.info(": move ignored (rotating)");
 				assert moveId != null;
 				moveId.AddStatusError();
 				moveId = null;
 				m_LastMove.move = false;
 			}
 		}
-		logger.info(getName() + " at (" + getLocation().x + "," + getLocation().y +"), world count: " + Integer.toString(m_World.getWorldCount()) + ", move: " + m_LastMove.toString());
+		logger.info(getName() + ": (" + getLocation().x + "," + getLocation().y +"): " + m_LastMove.toString());
 	}
 	
 	private void handleShields() {
@@ -548,7 +575,7 @@ public class Tank  extends WorldEntity {
 	}
 	
 	public void addMissiles(int numberToAdd) {
-		logger.info(getName() + ": picked up " + Integer.toString(numberToAdd) + " missiles.");
+		logger.info(getName() + ": picked up " + numberToAdd + " missiles");
 		m_Missiles += numberToAdd;
 	}
 	
@@ -613,7 +640,7 @@ public class Tank  extends WorldEntity {
 		} else if (m_Energy > kMaximumEnergy) {
 			m_Energy = kMaximumEnergy;
 		}			
-		logger.info(getName() + ": energy: " + Integer.toString(previous) + " -> " + Integer.toString(m_Energy) + " (" + comment + ")");
+		logger.info(getName() + ": energy: " + previous + " -> " + m_Energy + " (" + comment + ")");
 	}
 	
 	public void adjustHealth(int delta, String comment) {
@@ -624,7 +651,7 @@ public class Tank  extends WorldEntity {
 		} else if (m_Health > kMaximumHealth) {
 			m_Health = kMaximumHealth;
 		}
-		logger.info(getName() + ": health: " + Integer.toString(previous) + " -> " + Integer.toString(m_Health) + " (" + comment + ")");
+		logger.info(getName() + ": health: " + previous + " -> " + m_Health + " (" + comment + ")");
 	}
 	
 	public void collide() {
@@ -662,7 +689,7 @@ public class Tank  extends WorldEntity {
 		} else if (direction.equalsIgnoreCase(kRightID)) {
 			m_FacingInt = Direction.rightOf[m_FacingInt];
 		} else {
-			assert false;
+			logger.warning(getName() + ": invalid rotation direction: " + direction);
 		}
 	}
 	

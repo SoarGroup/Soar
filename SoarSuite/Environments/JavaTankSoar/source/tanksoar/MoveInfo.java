@@ -34,7 +34,7 @@ public class MoveInfo {
 	}
 	
 	public String toString() {
-		String output = "(";
+		String output = new String();
 		if (move) {
 			output += "(move: " + Direction.stringOf[moveDirection] + ")";
 		}
@@ -53,8 +53,6 @@ public class MoveInfo {
 		if (shields) {
 			output += "(shields: " + (shieldsSetting ? "on" : "off") + ")";
 		}
-		 
-		output += ")";
 		return output;
 	}
 }
