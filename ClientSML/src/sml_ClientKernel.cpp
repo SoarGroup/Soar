@@ -116,6 +116,15 @@ void Kernel::InitEvents()
 }
 
 /*************************************************************
+* @brief True if our connection to the kernel has been closed.
+*		 (Generally used for remote connections)
+*************************************************************/
+bool Kernel::IsConnectionClosed()
+{
+	return !GetConnection() || GetConnection()->IsClosed() ;
+}
+
+/*************************************************************
 * @brief Preparation for deleting the kernel.
 *		 Agents are destroyed at this point (if we own the kernel)
 *		 After calling shutdown the kernel cannot be restarted
