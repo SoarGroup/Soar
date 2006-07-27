@@ -7,4 +7,5 @@ public interface WorldManager {
 	public void shutdown();
 	public WorldEntity[] getEntities();
 	public void destroyEntity(WorldEntity entity);
+	public void setStopping(boolean status);
 }

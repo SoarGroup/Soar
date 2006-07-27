@@ -19,6 +19,7 @@ public class WorldEntity {
 
 	public WorldEntity(Agent agent, String productions, String color, java.awt.Point location) {
 		m_Agent = agent;
+		
 		if (location != null) {
 			m_Location.x = location.x;
 			m_Location.y = location.y;
