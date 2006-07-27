@@ -354,6 +354,12 @@ public:
 	bool IsAutoCommitEnabled()		{ return m_bAutoCommit ; }
 
 	/*************************************************************
+	* @brief True if our connection to the kernel has been closed.
+	*		 (Generally used for remote connections)
+	*************************************************************/
+	bool IsConnectionClosed() ;
+
+	/*************************************************************
 	* @brief Preparation for deleting the kernel.
 	*		 Agents are destroyed at this point (if we own the kernel)
 	*		 After calling shutdown the kernel cannot be restarted
