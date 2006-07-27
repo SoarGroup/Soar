@@ -1,6 +1,3 @@
-\documentclass{report}
-
-\begin{document}
 
 \section{Low Level Control}
 
@@ -18,20 +15,20 @@ figure~\ref{fig:implementedBehaviors}.
 
 \subsection{Behaviors as Finite State Machines}
 
-The main functionality of a behavior resides in its \tt{update}
+The main functionality of a behavior resides in its {\tt update}
 function. This function is called for all living, controllable units
 whenever the higher level function \verb|updateGroups()| is called in
 the ORTS event handler (see section~\ref{sec:OrtsEventHandler}). This
-means that the \tt{update} function for every active behavior is called
+means that the {\tt update} function for every active behavior is called
 once everytime SORTS receives a viewframe from the ORTS server, which is
 the smallest unit of discernable state change.
 
-During the \tt{update} call, the behavior decides which low-level action
+During the {\tt update} call, the behavior decides which low-level action
 provided by the ORTS API, or lack thereof, to execute for the game
 object which it controls. This decision is made based on the behavior's
 current state and also the state of the game object, which it as direct
 access to, unlike the Soar agent. The behavior also decides which state
-to transition to for the next \tt{update} call.
+to transition to for the next {\tt update} call.
 
 \subsubsection{Coordination Managers}
 
@@ -45,7 +42,7 @@ picture of the overall game state via communication with coordinating
 mechanisms called we called "managers."
 
 The result was that the behaviors themselves were relatively simple.
-During every \tt{update} call, a managed behavior just asks the manager
+During every {\tt update} call, a managed behavior just asks the manager
 it was assigned to what it should do, and then does it. The advantage to
 using such an approach is that the manager can keep track of what each
 behavior it controls is doing, and coordinate sophisticated strategies
@@ -60,7 +57,7 @@ almost always better to attack the enemy unit given that there is not a
 more important target to attack. We don't want to burden a Soar agent
 with having to detect every opportunity to perform such actions, so
 game units can be assigned default behaviors. The desired behavior in
-the situation described above is implemented by the \tt{AttackNearFSM}
+the situation described above is implemented by the {\tt AttackNearFSM}
 default behavior, which fires on nearby targets whenever they are in
 range and the controlled unit was not explicitly ordered to fire on
 something else.
@@ -105,4 +102,3 @@ TrainFSM          & t              & Train a unit of type t         \\
 \label{fig:implementedBehaviors}
 \end{figure}
 
-\end{document}

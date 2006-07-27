@@ -157,10 +157,7 @@ the function.
   coordinate, looking at a feature in the feature map, and changing the
   maximum number of objects allowed on the input-link at any time (for
   a complete list, see section~\ref{sec:output-link}. These commands
-  must be processed here rather than with in-game commands (which are
-  processed in the ORTS event handler) because Soar needs to have
-  feedback from the perceptual changes it requests in the very next
-  decision cycle. Any kind of lag may result in strange behavior.
+  are processed here rather than with the in-game commands because Soar decision cycles can occur much faster than ORTS events.
 
 \item \verb|processGameCommands()|
   Handles all commands that affect the way the middleware executes

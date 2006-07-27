@@ -3,11 +3,12 @@
 
 \subsection{The SORTS input-link}
 
-There are five top-level attributes on the SORTS input link, "groups", "game-info", "feature-maps", "vision-info", and "query-results". The groups, feature-maps, and vision-info structures are all part of the main visual system (see XXX), while game-info contains higher-level information about the game world, and query-results is used to communicate the results of specialized queries from Soar to the middleware.
+There are five top-level attributes on the SORTS input link, "groups", "game-info", "feature-maps", "vision-info", and "query-results". The groups, feature-maps, and vision-info structures are all part of the main visual system (see section \ref{section:perception}), while game-info contains higher-level information about the game world, and query-results is used to communicate the results of specialized queries from Soar to the middleware.
 
-The exact data structures are as follows:
+The exact data structures of the input-link are located in tables \ref{tb:input-link} and \ref{tb:groups}.
 
 \begin{center}
+\begin{table}
 \begin{tabular}{|l|p{4.0in}|}
 \hline
 \multicolumn{2}{|c|}{\textbf{Attributes of io.input-link}}\\ 
@@ -34,7 +35,7 @@ vision-info.owner-grouping & Ignore type when grouping, only group by owner (1 i
 \hline
 groups & The set of groups being attended to. \\
 \hline
-groups.group & Multi-valued, one instance for each group. Detailed below. \\
+groups.group & Multi-valued, one instance for each group. Detailed in table \ref{tb:groups}. \\
 \hline
 \multicolumn{2}{|l|}{\textbf{feature-maps structure:}}\\ 
 \hline
@@ -69,7 +70,7 @@ game-info.view-frame & The last view frame handled by the middleware (the number
 \hline
 game-info.my-minerals & Minerals available to the player. \\
 \hline
-game-info.mineral-buffer & The number of minerals to reserve for certain tasks (see section XXX).\\
+game-info.mineral-buffer & The number of minerals to reserve for certain tasks (see section \ref{section:mineral-buffer}.\\
 \hline
 game-info.worker-count & The number of units of each type owned by the player. \\
 game-info.marine-count & \\
@@ -84,9 +85,12 @@ query-results.query-name & The name of the last query executed.\\
 query-results.param0 & Query return values- the meaning of these is dependant on the query-name. \\
 query-resutls.param1 & \\
 \hline
-
 \end{tabular}
+\caption{The SORTS input-link}
+\label{tb:input-link}
+\end{table}
 
+\begin{table}[h]
 \begin{tabular}{|l|l|p{3.5in}|}
 \hline
 \multicolumn{3}{|c|}{\textbf{Attributes of io.input-link.groups.group objects}}\\ 
@@ -138,16 +142,19 @@ minerals & friendly workers & The total number of minerals possessed by the work
 active-mining & friendly workers & The number of workers that are actively mining.\\
 \hline
 \end{tabular}
+\caption{Detail of group objects.}
+\label{tb:groups}
+\end{table}
 \end{center}
 
 \subsection{The SORTS output-link}
 \label{sec:output-link}
 
 The output-link allows the Soar agent to act in the game world by issuing commands to groups of friendly units, communicate directly to the middleware for actions such as querying,
-and adjust the parameters of the visual subsystem in the middleware. All structures on the output link are similar- the Soar agent creates an output-link.command object with a name (\textbf{output-link.command.name}) specified. Depending on the command name, different parameters are needed. Parameters are attached to the command structure, as in \textbf{output-link.command.param0}. All legal commands and their necessary parameters are detailed below.
-
+and adjust the parameters of the visual subsystem in the middleware. All structures on the output link are similar- the Soar agent creates an output-link.command object with a name (\textbf{output-link.command.name}) specified. Depending on the command name, different parameters are needed. Parameters are attached to the command structure, as in \textbf{output-link.command.param0}. All legal commands and their necessary parameters are detailed in table \ref{tb:commands}.
 
 \begin{center}
+\begin{table}[h]
 \begin{minipage}{6.5in}
 \begin{tabular}{|l|p{1.0in}|p{3.5in}|}
 \hline
@@ -205,4 +212,7 @@ join &  $group0$, $group1$ & Force $group0$'s members to join $group1$. If $grou
 \hline
 \end{tabular}
 \end{minipage}
+\caption{SORTS output-link commands- see section \ref{sec:output-link} for details on common command structure.}
+\label{tb:commands}
+\end{table}
 \end{center}

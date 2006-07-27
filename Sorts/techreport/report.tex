@@ -1,16 +1,20 @@
-\documentclass{report}
+\documentclass{article}
 
 \oddsidemargin 0.0in
 \evensidemargin 0.0in
 \textwidth 6.5in
 
 \title{SORTS Tech Report}
-\author{James Irizarry, Sam Wintermute, Joseph Xu}
+\author{Sam Wintermute, Joseph Xu, James Irizarry}
 
 \begin{document}
 \maketitle
 
-\section{ORTS Overview}
+\section{Overview}
+
+The goal of this project is to interface Soar to a real-time strategy (RTS) game. RTS games, such as StarCraft, WarCraft, and Command and Conquer, are multi-player strategy games where a player needs to handle many different tasks- planning base layouts, managing economies, organizing attacks, responding to enemy attacks, and even diplomacy. This is all occuring in real time (as the name implies), presenting an extremely rich, challenging environment for an AI system. Making this environment accessible to Soar provides many opportunities for both utilizing existing capabilities and the development of new capabilities.
+
+\subsection{ORTS Overview}
 
 The Open Real Time Strategy software is a highly configurable game
 engine used to play real time strategy (RTS) games \cite{ORTS}. The main
@@ -37,20 +41,18 @@ hack" cheats that are widespread in commercial RTS games. This feature
 is particularly important if tournaments are to be run across the
 Internet.
 
-\section{SORTS Overview}
+\subsection{SORTS Overview}
 
-SORTS is a piece of software that allows the Soar cognitive architecture
-to act as a client to the ORTS game server, so that ORTS game playing
+SORTS is our middleware system that allows Soar to act as a client to the ORTS game server, so that ORTS game playing
 agents can be written in and executed on Soar. SORTS is much more than
-an interface bridge in that it intentionally constrains the space of
-possible Soar agents in important ways and also handles aspects of
-low-level game control that are not suitable for Soar. In particular,
-SORTS heavily abstracts the world state information obtained from
-the ORTS API before feeding them into Soar as perceptions, and also
-interprets and executes high-level commands from Soar as low-level
-actions sent to the ORTS API.
+an interface bridge, in that it provides fairly complex perception and action systems to the Soar agent.
+
+The low-level interface to ORTS is essentially a list of objects in the world, each of which has a set of attributes (like x,y position, health, owner, and size and shape information), and each of which can take any of several low-level commands (such as "move", "shoot", or "build"). The goal of our system is to build on this interface to give the Soar agent a similar interface to a human playing the game. Some of this entails adding fairly complex action controllers in the middleware, to replace what a GUI would provide a human. A person playing a commercial RTS such as StarCraft can command a unit to move to a location and build a building in one click, and can send large groups to attack the enemy semi-autonomously. Low-level behaviors like pathfinding and attack micromanagement should not be things the Soar agent is concerned with- the Soar agent should make decisions on the level of when and where to build and when and where to attack, not how to avoid an obstacle in a units path.
+
+Similarly, the agent's perceptions need not be on a very low level. Humans are rarely concerned with the exact x,y positions of the hundreds of units in their control, and neither should a Soar agent playing the same game. The SORTS perception system strives to give the Soar agent the same kind of information a human would recieve from the GUI.
 
 \input{visual-attention.tex}
+\input{unit_behaviors.tex}
 \input{interfaces.tex}
 \input{io-desc.tex}
 
