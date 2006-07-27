@@ -115,6 +115,10 @@ public class EatersWorld extends World implements WorldManager {
 		}
 	}
 	
+	public void setStopping(boolean status) {
+		// FIXME: not implemented (this is used to detect unforced interrupts)
+	}
+	
 	public class EatersCell extends Cell {
 
 		private static final int kWallInt = 0;
