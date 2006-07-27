@@ -291,12 +291,10 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		return false;
 	}
 	
-	private void manualStep() {
+	private void tick() {
+		logger.info("World count: " + m_WorldCount);
 		m_WorldManager.update();
 		++m_WorldCount;
-		if (m_WorldCount % 250 == 0) {
-			logger.finest("World count: " + Integer.toString(m_WorldCount));
-		}
 		fireSimulationEvent(SimulationListener.kUpdateEvent);
 	}
 	
@@ -314,7 +312,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 			m_Running = true;
 			fireSimulationEvent(SimulationListener.kStartEvent);
 			while (!m_StopSoar) {
-				manualStep();
+				tick();
 			}
 			m_Running = false;
 			fireSimulationEvent(SimulationListener.kStopEvent);	
@@ -327,7 +325,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		if (!hasSoarAgents()) {
 			m_Running = true;
 			fireSimulationEvent(SimulationListener.kStartEvent);
-			manualStep();
+			tick();
 			m_Running = false;
 			fireSimulationEvent(SimulationListener.kStopEvent);	
 			return;
@@ -341,6 +339,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	
 	public void stopSimulation() {
 		logger.info("Stopping simulation.");
+		this.m_WorldManager.setStopping(true);
 		if (m_Runs == 0) {
 			m_RunThread = null;
 		}
@@ -395,13 +394,8 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
     }
     
   	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
-  		m_WorldManager.update();
-		++m_WorldCount;
-		if (m_WorldCount % 250 == 0) {
-			logger.finest("World count: " + Integer.toString(m_WorldCount));
-		}
-		fireSimulationEvent(SimulationListener.kUpdateEvent);
-
+  		tick();
+  		
 		// Test this after the world has been updated, in case it's asking us to stop
 		if (m_StopSoar) {
   			m_StopSoar = false;
@@ -424,7 +418,8 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
   				m_RunThread = null;
   			}
   			fireSimulationEvent(SimulationListener.kStopEvent);	
- 		} else {
+  			this.m_WorldManager.setStopping(false);
+  		} else {
  			logger.warning("Unknown system event received from kernel, ignoring: " + eventID);
  		}
     }
