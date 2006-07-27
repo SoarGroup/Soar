@@ -111,15 +111,15 @@ public class TankSoarCell extends Cell {
 		return m_Tank;
 	}
 	
-	public boolean removeTank() {
-		if (m_Contents != kTankInt) {
-			return false;
+	public void removeTank(Tank tankToRemove) {
+		if ((m_Contents != kTankInt) || (!tankToRemove.equals(m_Tank))) {
+			return;
 		}
 		m_Redraw = true;
 		m_Contents = kNothingInt;
 		m_Tank = null;
 		setModified();
-		return true;
+		return;
 	}
 	
 	public boolean containsMissilePack() {
