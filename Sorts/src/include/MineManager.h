@@ -1,7 +1,6 @@
 #ifndef MINEMANAGER_H
 #define MINEMANAGER_H
 
-//#define NO_DOS
 
 #include "general.h"
 #include "SoarGameObject.h"
@@ -19,6 +18,20 @@ enum Direction {
   EAST=2,
   WEST=3
 };
+
+#define NO_DOS
+/* NO_DOS definition:
+   This defines "no dropoffs" mode. When this is not defined, each mining
+   route consists of two points, a mining location and a dropoff location.
+   With NO_DOS defined, the routes consist only of a mining location, and 
+   the location of the controlCenter to go to. The difference is that in the
+   first case, the worker has an exact coordinate to go to, while in the second
+   the worker simply moves towards the command center until it runs into it.
+   Using dropoff locations can make mining more efficient (and should be used if
+   that is all the agent is doing), but the calculation of the routes is much
+   more expensive. So, in most cases, NO_DOS should be defined.
+ */
+
 
 enum RouteHeuristicStage {
   // this is the heuristic used to determine path optimality

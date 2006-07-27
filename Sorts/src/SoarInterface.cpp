@@ -72,7 +72,7 @@ void SoarInterface::removeGroup(PerceptualGroup* group) {
   }
   
   InputLinkGroupRep &g = groupTable[group];
-  if (g.groupId >= 0) {
+  if (g.added and g.groupId >= 0) {
     msg << "ILNK remove id " << g.groupId << " ptr " << group << endl;
     agent->DestroyWME(g.WMEptr);
   }

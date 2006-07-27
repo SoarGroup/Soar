@@ -37,7 +37,7 @@
 #include "SortsCanvas.h"
 #endif
 
-#define NO_WORLD_GROUPS
+//#define NO_WORLD_GROUPS
 
 // how many frames behind can we be?
 // 10 used for competition,

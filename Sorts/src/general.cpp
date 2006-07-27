@@ -31,7 +31,7 @@
 #include "Rectangle.h"
 #include "SortsCollision.h"
 
-#define dbg cout << "GENERAL "
+#define dbg if(0) cout << "GENERAL "
 
 using namespace std;
 

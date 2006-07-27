@@ -136,10 +136,12 @@ void SortsCanvas::registerGroup(PerceptualGroup* group) {
   if (group->isFriendly()) {
     newObj.mainRectangle->setShapeColor(0,255,0);
   }
+  else if (group->isWorld()) {
+    newObj.mainRectangle->setShapeColor(255,255,0);
+  }
   else {
     newObj.mainRectangle->setShapeColor(255,0,0);
   }
-  // TODO: case for world objs
   newObj.compound->addShape(newObj.mainRectangle);
   canvasGroups[group] = newObj;
 }

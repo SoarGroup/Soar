@@ -103,7 +103,7 @@ list<FeatureMap*> FeatureMapManager::identifyFeatures(PerceptualGroup* group) {
   }*/
   // minerals
   if (group->isMinerals()) {
-    relevantMaps.push_back(fmList[3]);
+    relevantMaps.push_back(fmList[2]);
   }/*
   // air_units
   if (group->isAirUnits()) {
@@ -115,10 +115,10 @@ list<FeatureMap*> FeatureMapManager::identifyFeatures(PerceptualGroup* group) {
   }*/
   // moving_units
   if (group->isMoving()) {
-    relevantMaps.push_back(fmList[6]);
+    relevantMaps.push_back(fmList[3]);
   }
   if (group->isFriendlyWorker()) {
-    relevantMaps.push_back(fmList[7]);
+    relevantMaps.push_back(fmList[4]);
   }
   
   return relevantMaps;
