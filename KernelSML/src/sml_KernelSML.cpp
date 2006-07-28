@@ -94,6 +94,18 @@ KernelSML* KernelSML::GetKernelSML()
 	return s_pKernel ;
 }
 
+/*************************************************************
+* @brief	Return pointer to the class that handles the command
+*			line parsing and execution of commands.
+*************************************************************/
+cli::CommandLineInterface* KernelSML::GetCommandLineInterface()
+{
+	if (!s_pKernel)
+		return NULL ;
+
+	return &s_pKernel->m_CommandLineInterface ;
+}
+
 KernelSML::KernelSML(unsigned short portToListenOn)
 {
 	// Initalize the event map

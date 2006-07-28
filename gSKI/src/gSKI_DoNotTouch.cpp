@@ -106,6 +106,25 @@ namespace gSKI
 			print_match_set(internalAgent->GetSoarAgent(), wtt, mst);
 		}
 
+		void TgDWorkArounds::XMLPartialMatchInformation(IAgent* thisAgent, 
+		struct rete_node_struct *p_node,
+			wme_trace_type wtt)
+		{
+			Agent* internalAgent = (Agent*)(thisAgent);
+			MegaAssert(internalAgent != 0, "Bad agent pointer passed to xmlPartialMatchInformation.");
+
+			//xml_partial_match_information(internalAgent->GetSoarAgent(), p_node, wtt);
+		}
+
+		void TgDWorkArounds::XMLMatchSet(IAgent* thisAgent, wme_trace_type wtt, ms_trace_type  mst)
+		{
+			Agent* internalAgent = (Agent*)(thisAgent);
+			MegaAssert(internalAgent != 0, "Bad agent pointer passed to xmlMatchSet.");
+
+			xml_match_set(internalAgent->GetSoarAgent(), wtt, mst);
+		}
+
+
 		void TgDWorkArounds::PrintStackTrace(IAgent* thisAgent, bool print_states, bool print_operators)
 		{
 			Agent* internalAgent = (Agent*)(thisAgent);

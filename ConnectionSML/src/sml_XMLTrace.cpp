@@ -30,6 +30,15 @@ XMLTrace::XMLTrace()
 	m_pCurrentTag = NULL ;
 }
 
+// Alternative contstuctor where we specify the base tag name
+XMLTrace::XMLTrace(char const* pTagName)
+{
+	m_XML = new ElementXML() ;
+	m_XML->SetTagName(pTagName) ;
+
+	m_pCurrentTag = NULL ;
+}
+
 XMLTrace::~XMLTrace()
 {
 	delete m_pCurrentTag ;
