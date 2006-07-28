@@ -6,7 +6,7 @@ import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 public class JonsFormatter extends Formatter {
-	SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
+	SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss,SSS");
 	
 	public JonsFormatter() {
 		super();
