@@ -677,83 +677,80 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 		
 		// Set all cells unexplored.
-		for(int row = 0; row < m_WorldSize; ++row) {
+		for(int row = 1; row < m_WorldSize - 1; ++row) {
 			// String rowString = new String();
-			for (int col = 0; col < m_WorldSize; ++col) {
-				m_World[row][col].setExplored(false);
-				m_World[row][col].setParent(null);
+			for (int col = 1; col < m_WorldSize - 1; ++col) {
+				m_World[row][col].setDistance(-1);
 			}
 		}
 		
 		LinkedList searchList = new LinkedList();
 		searchList.addLast(new java.awt.Point(tank.getLocation()));
+		int distance = 0;
+		getCell(tank.getLocation()).setDistance(distance);
 		//logger.finest("Starting search at " + tank.getLocation());
 		int relativeDirection = -1;
-		
-		int x = 0;
-		int y = 0;
-		int distance;
-		java.awt.Point location;
+		int newCellX = 0;
+		int newCellY = 0;
+		java.awt.Point parentLocation;
+		TankSoarCell parentCell;
+		TankSoarCell newCell;
+
 		while (searchList.size() > 0) {
-			location = (java.awt.Point)searchList.getFirst();
+			parentLocation = (java.awt.Point)searchList.getFirst();
 			searchList.removeFirst();
-			getCell(location).setExplored(true);
+			parentCell = getCell(parentLocation);
+			distance = parentCell.getDistance();
+			if (distance >= kMaxSmellDistance) {
+				continue;
+			}
 
 			// Explore cell.
 			for (int i = 1; i < 5; ++i) {
-				x = location.x;
-				y = location.y;
-				x += Direction.xDelta[i];
-				y += Direction.yDelta[i];
-				//java.awt.Point newLocation = new java.awt.Point(location);
-				//newLocation = Direction.translate(newLocation, i);
+				newCellX = parentLocation.x;
+				newCellY = parentLocation.y;
+				newCellX += Direction.xDelta[i];
+				newCellY += Direction.yDelta[i];
 
-				if (!isInBounds(x, y)) {
+				if (!isInBounds(newCellX, newCellY)) {
 					continue;
 				}
-				//if (!isInBounds(newLocation)) {
-				//	continue;
-				//}
-				
-				//TankSoarCell newCell = getCell(newLocation);
-				TankSoarCell newCell = getCell(x, y);
-				if (newCell.isExplored()) {
-					continue;
-				}
-				newCell.setExplored(true);
-				
+
+				newCell = getCell(newCellX, newCellY);
 				if (newCell.isWall()) {
 					continue;
 				}
 							
+				if (newCell.getDistance() >= 0) {
+					continue;
+				}
+				newCell.setDistance(distance + 1);
+				
 				Tank targetTank = newCell.getTank();
 				if ((targetTank != null) && targetTank.recentlyMovedOrRotated()) {
-				//if (newCell.containsTank() && newCell.getTank().recentlyMovedOrRotated()) {
-					
-					//logger.finest("Found recently moved tank at " + newLocation);	
-					
-					distance = 1;
-					while(getCell(location).getParent() != null) {
-						++distance;
-						x = location.x;
-						y = location.y;
-						location = getCell(location).getParent();
+					// I'm its parent, so see if I'm the top here
+					while(parentCell.getParent() != null) {
+						// the new cell becomes me
+						newCellX = parentLocation.x;
+						newCellY = parentLocation.y;
+						
+						// I become my parent
+						parentLocation = getCell(parentLocation).getParent();
+						parentCell = getCell(parentLocation);
 					}
-					//logger.finest("Distance to loud tank is " + Integer.toString(distance));	
-					//logger.finest("First cell on path is " + newLocation);	
-					if (distance  <= kMaxSmellDistance) {
-						if (x < location.x) {
-							relativeDirection = Direction.kWestInt;
-						} else if (x > location.x) {
-							relativeDirection = Direction.kEastInt;
-						} else if (y < location.y) {
-							relativeDirection = Direction.kNorthInt;
-						} else if (y > location.y) {
-							relativeDirection = Direction.kSouthInt;
-						} else {
-							assert false;
-							relativeDirection = 0;
-						}
+					// location is now the top of the list, compare
+					// to find the direction to the new cell
+					if (newCellX < parentLocation.x) {
+						relativeDirection = Direction.kWestInt;
+					} else if (newCellX > parentLocation.x) {
+						relativeDirection = Direction.kEastInt;
+					} else if (newCellY < parentLocation.y) {
+						relativeDirection = Direction.kNorthInt;
+					} else if (newCellY > parentLocation.y) {
+						relativeDirection = Direction.kSouthInt;
+					} else {
+						assert false;
+						relativeDirection = 0;
 					}
 					break;
 				}
@@ -762,9 +759,10 @@ public class TankSoarWorld extends World implements WorldManager {
 					break;
 				}
 				
-				//logger.finest("Adding " + newLocation + " with parent " + location);				
-				newCell.setParent(location);
-				searchList.addLast(new java.awt.Point(x, y));
+				// add me as the new cell's parent				
+				newCell.setParent(parentLocation);
+				// add the new cell to the search list
+				searchList.addLast(new java.awt.Point(newCellX, newCellY));
 			}
 			
 			if (relativeDirection != -1) {
