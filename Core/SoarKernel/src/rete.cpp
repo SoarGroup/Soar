@@ -108,6 +108,11 @@
 /* JC ADDED: for gSKI events */
 #include "gski_event_system_functions.h"
 
+// So we can call directly to it to create XML output.
+// If you need a kernel w/o any external dependencies, removing this include
+// and methods starting with xml_ should do the trick.
+#include "cli_CommandLineInterface.h"	
+
 /* ----------- basic functionality switches ----------- */
 
 /* Set to FALSE to preserve variable names in chunks (takes extra space) */
@@ -7835,6 +7840,256 @@ void print_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
              ms_trace = tmp;
           }
         }
+      }
+
+      if (wtt == NONE_WME_TRACE) {
+         while (ms_trace) {
+           tmp = ms_trace; ms_trace = tmp->next;
+           print_with_symbols (thisAgent, "  %y ", tmp->sym);
+           /* REW: begin 08.20.97 */
+           /*  BUG: for now this will print the goal of the first
+               assertion inspected, even though there can be multiple
+               assertions at different levels. 
+               See 2.110 in the OPERAND-CHANGE-LOG. */
+           print_with_symbols(thisAgent, " [%y] ", tmp->goal);
+           /* REW: end  08.20.97 */
+           if (tmp->count > 1)
+             print(thisAgent, "(%d)\n", tmp->count);
+           else
+             print(thisAgent, "\n");
+           free_memory(thisAgent, (void *)tmp, MISCELLANEOUS_MEM_USAGE);
+        }
+      }
+    }
+
+     if (mst == MS_ASSERT_RETRACT || mst == MS_ASSERT) {
+       print (thisAgent, "I Assertions:\n");
+       for (msc=thisAgent->ms_i_assertions; msc!=NIL; msc=msc->next) {
+
+         if(wtt != NONE_WME_TRACE) {
+           print_with_symbols (thisAgent, "  %y ", msc->p_node->b.p.prod->name);
+           /* REW: begin 08.20.97 */
+           /* Add match goal to the print of the matching production */
+           print_with_symbols(thisAgent, " [%y] ", msc->goal);
+           /* REW: end   08.20.97 */
+           temp_token.parent = msc->tok;
+           temp_token.w = msc->w;
+           print_whole_token (thisAgent, &temp_token, wtt);
+           print (thisAgent, "\n");
+         }
+         else {
+           /* REW: begin 10.22.97 */
+           if((tmp = in_ms_trace_same_goal(msc->p_node->b.p.prod->name,
+                                           ms_trace, msc->goal))!=NIL) {
+             /* REW: end   10.22.97 */
+             tmp->count++;
+           }
+           else {
+             tmp = static_cast<match_set_trace *>(allocate_memory(thisAgent, sizeof(MS_trace), 
+                                                                                                                          MISCELLANEOUS_MEM_USAGE));
+             tmp->sym = msc->p_node->b.p.prod->name;
+             tmp->count = 1;
+             tmp->next = ms_trace;
+             /* REW: begin 08.20.97 */
+             /* Add match goal to the print of the matching production */
+             tmp->goal = msc->goal;
+             /* REW: end   08.20.97 */
+             ms_trace = tmp;
+          }
+        }
+      }
+
+      if (wtt == NONE_WME_TRACE) {
+         while (ms_trace) {
+           tmp = ms_trace; ms_trace = tmp->next;
+           print_with_symbols (thisAgent, "  %y ", tmp->sym);
+           /* REW: begin 08.20.97 */
+           /*  BUG: for now this will print the goal of the first
+               assertion inspected, even though there can be multiple
+               assertions at different levels. 
+               See 2.110 in the OPERAND-CHANGE-LOG. */
+           print_with_symbols(thisAgent, " [%y] ", tmp->goal);
+           /* REW: end  08.20.97 */
+           if (tmp->count > 1)
+             print(thisAgent, "(%d)\n", tmp->count);
+           else
+             print(thisAgent, "\n");
+           free_memory(thisAgent, (void *)tmp, MISCELLANEOUS_MEM_USAGE);
+        }
+      }
+    }
+
+  }
+  /* REW: end   09.15.96 */
+
+  else
+
+
+  if (mst == MS_ASSERT_RETRACT || mst == MS_ASSERT) {
+    print (thisAgent, "Assertions:\n");
+    for (msc=thisAgent->ms_assertions; msc!=NIL; msc=msc->next) {
+      if(wtt != NONE_WME_TRACE) {
+        print_with_symbols (thisAgent, "  %y\n ", msc->p_node->b.p.prod->name);
+        temp_token.parent = msc->tok;
+        temp_token.w = msc->w;
+        print_whole_token (thisAgent, &temp_token, wtt);
+        print (thisAgent, "\n");
+      } else {
+        if((tmp = in_ms_trace(msc->p_node->b.p.prod->name, ms_trace))!=NIL) {
+          tmp->count++;
+        } else {
+          tmp = static_cast<match_set_trace *>(allocate_memory(thisAgent, sizeof(MS_trace), 
+                                                                                                                           MISCELLANEOUS_MEM_USAGE));
+          tmp->sym = msc->p_node->b.p.prod->name;
+          tmp->count = 1;
+          tmp->next = ms_trace;
+          ms_trace = tmp;
+        }
+      }
+    }
+    if (wtt == NONE_WME_TRACE) {
+      while (ms_trace) {
+        tmp = ms_trace; ms_trace = tmp->next;
+        print_with_symbols (thisAgent, "  %y ", tmp->sym);
+        if (tmp->count > 1)
+          print(thisAgent, "(%d)\n", tmp->count);
+        else
+          print(thisAgent, "\n");
+        free_memory(thisAgent, (void *)tmp, MISCELLANEOUS_MEM_USAGE);
+      }
+    }
+  }
+
+  /* --- Print retractions --- */  
+  if (mst == MS_ASSERT_RETRACT || mst == MS_RETRACT) {
+    print (thisAgent, "Retractions:\n");
+    for (msc=thisAgent->ms_retractions; msc!=NIL; msc=msc->next) {
+      if(wtt != NONE_WME_TRACE) {
+        print (thisAgent, "  ");
+        print_instantiation_with_wmes (thisAgent, msc->inst, wtt, -1);
+        print (thisAgent, "\n");
+      } else {
+        if(msc->inst->prod) {
+          /* REW: begin 10.22.97 */
+          if((tmp = in_ms_trace_same_goal(msc->inst->prod->name,
+                                          ms_trace, msc->goal))!=NIL) {
+            /* REW: end   10.22.97 */
+            tmp->count++;
+          } else {
+            tmp = static_cast<match_set_trace *>(allocate_memory(thisAgent, sizeof(MS_trace), 
+                                                                                                                         MISCELLANEOUS_MEM_USAGE));
+            tmp->sym = msc->inst->prod->name;
+            tmp->count = 1;
+            tmp->next = ms_trace;
+             /* REW: begin 08.20.97 */
+             /* Add match goal to the print of the matching production */
+             tmp->goal = msc->goal;
+             /* REW: end   08.20.97 */
+            ms_trace = tmp;
+          }
+        }
+      }
+    }
+    if(wtt == NONE_WME_TRACE) {
+      while (ms_trace) {
+        tmp = ms_trace; ms_trace = tmp->next;
+        print_with_symbols (thisAgent, "  %y ", tmp->sym);
+           /* REW: begin 08.20.97 */
+           /*  BUG: for now this will print the goal of the first assertion
+               inspected, even though there can be multiple assertions at
+
+               different levels. 
+               See 2.110 in the OPERAND-CHANGE-LOG. */
+        if (tmp->goal)
+          print_with_symbols(thisAgent, " [%y] ", tmp->goal);
+        else
+          print(thisAgent, " [NIL] ");
+           /* REW: end  08.20.97 */
+        if(tmp->count > 1)
+          print(thisAgent, "(%d)\n", tmp->count);
+        else
+          print(thisAgent, "\n");
+        free_memory(thisAgent, (void *)tmp, MISCELLANEOUS_MEM_USAGE);
+      }
+    }
+  }
+}
+
+void xmlBeginTag(char const* pTag)
+{
+	cli::GetCLI()->XMLBeginTag(pTag) ;
+}
+
+void xmlEndTag(char const* pTag)
+{
+	cli::GetCLI()->XMLEndTag(pTag) ;
+}
+
+void xmlAddAttribute(char const* pAttribute, char const* pValue)
+{
+	cli::GetCLI()->XMLAddAttribute(pAttribute, pValue) ;
+}
+
+void xmlAddSimpleTag(char const* pTag)
+{
+	cli::GetCLI()->XMLBeginTag(pTag) ;
+	cli::GetCLI()->XMLEndTag(pTag) ;
+}
+
+void xmlAddSimpleTag(char const* pTag, char const* pAttribute, char const* pValue)
+{
+	cli::GetCLI()->XMLBeginTag(pTag) ;
+	cli::GetCLI()->XMLAddAttribute(pAttribute, pValue) ;
+	cli::GetCLI()->XMLEndTag(pTag) ;
+}
+
+void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
+  ms_change *msc;
+  token temp_token;
+  MS_trace *ms_trace = NIL, *tmp;
+
+  /* --- Print assertions --- */  
+
+  /* REW: begin 09.15.96 */
+  if (thisAgent->operand2_mode == TRUE) {
+
+    if (mst == MS_ASSERT_RETRACT || mst == MS_ASSERT) {
+       //print (thisAgent, "O Assertions:\n");
+		xmlBeginTag("O-assertions") ;
+
+       for (msc=thisAgent->ms_o_assertions; msc!=NIL; msc=msc->next) {
+
+         if(wtt != NONE_WME_TRACE) {
+           print_with_symbols (thisAgent, "  %y ", msc->p_node->b.p.prod->name);
+           /* REW: begin 08.20.97 */
+           /* Add match goal to the print of the matching production */
+           print_with_symbols(thisAgent, " [%y] ", msc->goal);
+           /* REW: end   08.20.97 */
+           temp_token.parent = msc->tok;
+           temp_token.w = msc->w;
+           print_whole_token (thisAgent, &temp_token, wtt);
+           print (thisAgent, "\n");
+         }
+         else {
+           /* REW: begin 10.22.97 */
+           if((tmp = in_ms_trace_same_goal(msc->p_node->b.p.prod->name,
+                                           ms_trace, msc->goal))!=NIL) {
+             /* REW: end   10.22.97 */
+             tmp->count++;
+           }
+           else {
+             tmp = static_cast<match_set_trace *>(allocate_memory(thisAgent, sizeof(MS_trace), MISCELLANEOUS_MEM_USAGE));
+             tmp->sym = msc->p_node->b.p.prod->name;
+             tmp->count = 1;
+             tmp->next = ms_trace;
+             /* REW: begin 08.20.97 */
+             /* Add match goal to the print of the matching production */
+             tmp->goal = msc->goal;
+             /* REW: end   08.20.97 */
+             ms_trace = tmp;
+          }
+        }
+	    xmlEndTag("O-assertions") ;
       }
 
       if (wtt == NONE_WME_TRACE) {

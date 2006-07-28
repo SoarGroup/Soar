@@ -117,6 +117,7 @@ extern void print_partial_match_information (agent* thisAgent, struct rete_node_
                                              wme_trace_type wtt);
 
 extern void print_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type  mst);
+extern void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type  mst);
 extern void print_rete_statistics (agent* thisAgent);
 extern void get_all_node_count_stats (agent* thisAgent);
 extern void print_node_count_statistics (agent* thisAgent);

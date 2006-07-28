@@ -166,6 +166,8 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_pAgentSML = 0 ;
 	m_CloseLogAfterOutput = false;
 	m_VarPrint = false;
+
+	m_XMLResult = new XMLTrace() ;
 }
 
 EXPORT CommandLineInterface::~CommandLineInterface() {
@@ -173,6 +175,9 @@ EXPORT CommandLineInterface::~CommandLineInterface() {
 		(*m_pLogFile) << "Log file closed due to shutdown." << std::endl;
 		delete m_pLogFile;
 	}
+
+	delete m_XMLResult ;
+	m_XMLResult = NULL ;
 }
 
 /*************************************************************
@@ -1071,3 +1076,49 @@ void CommandLineInterface::HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const c
 	}
 }
 
+CommandLineInterface* cli::GetCLI()
+{
+	return sml::KernelSML::GetKernelSML()->GetCommandLineInterface() ;
+}
+
+/*************************************************************
+* @brief Methods to create an XML element by starting a tag, adding attributes and
+*		 closing the tag.
+*		 These tags are automatically collected into the result of the current command.
+*	
+* NOTE: The attribute names must be compile time constants -- i.e. they remain in scope
+*		at all times (so we don't have to copy them).
+*************************************************************/
+void CommandLineInterface::XMLBeginTag(char const* pTagName)
+{
+	m_XMLResult->BeginTag(pTagName) ;
+}
+
+void CommandLineInterface::XMLAddAttribute(char const* pAttribute, char const* pValue)
+{
+	m_XMLResult->AddAttribute(pAttribute, pValue) ;
+}
+
+void CommandLineInterface::XMLEndTag(char const* pTagName)
+{
+	m_XMLResult->EndTag(pTagName) ;
+}
+
+// The copies over the m_XMLResult object to the response XML object and sets the
+// tag name to the command that was just executed.
+// The result is XML in this format (e.g. for matches):
+// <result><matches>...</matches></result>
+// where ... contains the XML specific to that command.
+void CommandLineInterface::XMLResultToResponse(char const* pCommandName)
+{
+	// Extract the XML object from the xmlTrace object and
+	// add it as a child of this message.  This is just moving a few pointers around, nothing is getting copied.
+	ElementXML_Handle xmlHandle = m_XMLResult->Detach() ;
+	ElementXML* pXMLResult = new ElementXML(xmlHandle) ;
+	pXMLResult->SetTagName(pCommandName) ;
+
+	m_ResponseTags.push_back(pXMLResult) ;
+
+	// Clear the XML result, so it's ready for use again.
+	m_XMLResult->Reset() ;
+}

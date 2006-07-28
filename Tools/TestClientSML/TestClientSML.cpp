@@ -509,6 +509,50 @@ bool StopTest()
 	return true ;
 }
 
+bool SimpleCommand()
+{
+	// Create the kernel instance
+	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread() ;
+
+	if (pKernel->HadError())
+	{
+		cout << pKernel->GetLastErrorDescription() << endl ;
+		return false ;
+	}
+
+	sml::Agent* pAgent = pKernel->CreateAgent("test") ;
+
+	// Register for the trace output
+	std::string trace ;	// We'll pass this into the handler and build up the output in it
+	int callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
+
+	std::string path = std::string(pKernel->GetLibraryLocation()) + "/Tests/testrun.soar" ;
+	bool ok = pAgent->LoadProductions(path.c_str()) ;
+
+	pAgent->ExecuteCommandLine("run 1") ;
+	cout << trace << endl ;
+
+	// This is the command being tested
+	std::string command = "matches" ;
+
+	// XML version
+	ClientAnalyzedXML response ;
+	ok = ok && pAgent->ExecuteCommandLineXML(command.c_str(), &response) ; 
+
+	char* pXML = response.GenerateXMLString(true) ;
+	cout << pXML << endl ;
+	response.DeleteString(pXML) ;
+
+	//std::string res = pAgent->ExecuteCommandLine(command.c_str()) ;
+
+	pAgent->UnregisterForPrintEvent(callbackp) ;
+
+	pKernel->Shutdown() ;
+	delete pKernel ;
+
+	return true ;
+}
+
 // Creates an agent that copies values from input link to output link
 // so we can test that this is OK.
 bool SimpleCopyAgent()
@@ -1940,6 +1984,7 @@ int main(int argc, char* argv[])
 	bool remoteIOTest = false ;
 	bool remoteIOListener = false ;
 	bool stopTest = false ;
+	bool simpleCommand = false ;
 	int  life      = 3000 ;	// Default is to live for 3000 seconds (5 mins) as a listener
 	int  decisions = 20000 ;
 
@@ -1956,6 +2001,7 @@ int main(int argc, char* argv[])
 	// -runlistener <decisions> : As above but runs for specified number of decisions.
 	// -remoteconnect : Connects to a running kernel (e.g. -runlistener above), grabs some output and then disconnects.
 	// -time : run a time trial on some functionality
+	// -simpleCommand : execute a single command (used to debug specific commands)
 	// Also -copyTest, -reteTest, -refCountTest and others to test specific calls and bugs.  I don't expect those to be used much but keeping them here
 	// so it's quicker to investigate similar problems in the future.
 	if (argc > 1)
@@ -1976,6 +2022,8 @@ int main(int argc, char* argv[])
 				remote = true ;
 			if (!stricmp(argv[i], "-listener"))
 				listener = true ;
+			if (!stricmp(argv[i], "-simpleCommand"))
+				simpleCommand = true ;
 			if (!stricmp(argv[i], "-refcounttest"))
 				refCountTest = true ;
 			if (!stricmp(argv[i], "-remoteIOTest"))
@@ -2023,6 +2071,8 @@ int main(int argc, char* argv[])
 		success = SimpleReteNetLoader() ;
 	else if (stopTest)
 		success = StopTest() ;
+	else if (simpleCommand)
+		success = SimpleCommand() ;
 	else if (remoteConnect)
 		SimpleRemoteConnect() ;
 	else if (remoteIOListener)
