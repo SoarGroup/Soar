@@ -109,21 +109,36 @@ bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, const eMatchesMode mo
 			return SetError(CLIError::kProductionNotFound);
 		}
 
-		AddListenerAndDisableCallbacks(pAgent);		
-		pKernelHack->PrintPartialMatchInformation(pAgent, prod, wtt);
-		RemoveListenerAndEnableCallbacks(pAgent);
+		if (m_RawOutput)
+		{
+			AddListenerAndDisableCallbacks(pAgent);		
+			pKernelHack->PrintPartialMatchInformation(pAgent, prod, wtt);
+			RemoveListenerAndEnableCallbacks(pAgent);
+		}
+		else
+		{
+			pKernelHack->XMLPartialMatchInformation(pAgent, prod, wtt) ;
+		}
 
 	} else {
 		ms_trace_type mst = MS_ASSERT_RETRACT;
 		if (mode == MATCHES_ASSERTIONS) mst = MS_ASSERT;
 		if (mode == MATCHES_RETRACTIONS) mst = MS_RETRACT;
 
-		AddListenerAndDisableCallbacks(pAgent);		
-		pKernelHack->PrintMatchSet(pAgent, wtt, mst);
-		RemoveListenerAndEnableCallbacks(pAgent);
+		if (m_RawOutput)
+		{
+			AddListenerAndDisableCallbacks(pAgent);		
+			pKernelHack->PrintMatchSet(pAgent, wtt, mst);
+			RemoveListenerAndEnableCallbacks(pAgent);
+		}
+		else
+		{
+			pKernelHack->XMLMatchSet(pAgent, wtt, mst) ;
+		}
 	}
 
-	// put the result into a message(string) arg tag
-	if (!m_RawOutput) ResultToArgTag();
+	// Transfer the result from m_XMLResult into pResponse
+	if (!m_RawOutput) XMLResultToResponse("matches") ;
+
 	return true;
 }

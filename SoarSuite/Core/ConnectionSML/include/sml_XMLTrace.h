@@ -46,6 +46,10 @@ private:
 
 public:
 	XMLTrace() ;
+
+	// Alternative contstuctor where we specify the base tag name
+	XMLTrace(char const* pTagName) ;
+
 	virtual ~XMLTrace() ;
 
 	/*************************************************************

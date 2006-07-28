@@ -185,6 +185,12 @@ public:
 	}
 
 	/*************************************************************
+	* @brief	Return pointer to the class that handles the command
+	*			line parsing and execution of commands.
+	*************************************************************/
+	static cli::CommandLineInterface* GetCommandLineInterface() ;
+
+	/*************************************************************
 	* @brief	The module handle (only set on Windows) can be
 	*			used to determine the path to this DLL.
 	*************************************************************/

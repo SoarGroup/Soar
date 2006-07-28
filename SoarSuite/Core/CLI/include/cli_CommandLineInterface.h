@@ -104,6 +104,8 @@ typedef struct {
 	int argument;
 } Options;
 
+CommandLineInterface* GetCLI() ;
+
 class CommandLineInterface : public gSKI::IPrintListener, public gSKI::IProductionListener, public gSKI::IXMLListener {
 public:
 
@@ -161,6 +163,18 @@ public:
 	* @param pExpandedLine The return value -- the expanded version of the command
 	*************************************************************/
 	bool ExpandCommandToString(const char* pCommandLine, std::string* pExpandedLine) ;
+
+	/*************************************************************
+	* @brief Methods to create an XML element by starting a tag, adding attributes and
+	*		 closing the tag.
+	*		 These tags are automatically collected into the result of the current command.
+	*	
+	* NOTE: The attribute names must be compile time constants -- i.e. they remain in scope
+	*		at all times (so we don't have to copy them).
+	*************************************************************/
+	void XMLBeginTag(char const* pTagName) ;
+	void XMLAddAttribute(char const* pAttribute, char const* pValue) ;
+	void XMLEndTag(char const* pTagName) ;
 
 protected:
 
@@ -800,6 +814,8 @@ protected:
 
 	void ResultToArgTag(); // clears result
 
+	void XMLResultToResponse(char const* pCommandName) ; // clears m_XMLResult
+
 	void LogQuery(); // for CLog command
 
 ////////////////////////////////////////////
@@ -841,6 +857,7 @@ protected:
 	EchoMap				m_EchoMap;				// If command appears in this map, always echo it.
 	bool				m_CloseLogAfterOutput;	// Used in command-to-file command ParseCommandToFile, closes log after output
 	bool				m_VarPrint;				// Used in print command to put <>'s around identifiers.
+	sml::XMLTrace*		m_XMLResult;			// Used to collect up XML output from commands that directly support that.
 
 	Aliases				m_Aliases;				// Alias management object
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers

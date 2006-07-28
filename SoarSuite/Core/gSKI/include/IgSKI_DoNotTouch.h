@@ -74,6 +74,17 @@ namespace gSKI
          */
         virtual void PrintMatchSet(IAgent* thisAgent, wme_trace_type wtt, ms_trace_type  mst) = 0;
 
+		 /**
+         * @brief
+         */
+		virtual void XMLPartialMatchInformation(IAgent* thisAgent, 
+                                                   struct rete_node_struct *p_node,
+                                                   wme_trace_type wtt) = 0;
+         /**
+         * @brief
+         */
+        virtual void XMLMatchSet(IAgent* thisAgent, wme_trace_type wtt, ms_trace_type  mst) = 0;
+
         /**
          * @brief 
          */
