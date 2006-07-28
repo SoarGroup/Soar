@@ -690,22 +690,33 @@ public class TankSoarWorld extends World implements WorldManager {
 		//logger.finest("Starting search at " + tank.getLocation());
 		int relativeDirection = -1;
 		
+		int x = 0;
+		int y = 0;
+		int distance;
+		java.awt.Point location;
 		while (searchList.size() > 0) {
-			java.awt.Point location = (java.awt.Point)searchList.getFirst();
+			location = (java.awt.Point)searchList.getFirst();
 			searchList.removeFirst();
-			TankSoarCell cell = getCell(location);
-			cell.setExplored(true);
+			getCell(location).setExplored(true);
 
 			// Explore cell.
 			for (int i = 1; i < 5; ++i) {
-				java.awt.Point newLocation = new java.awt.Point(location);
-				newLocation = Direction.translate(newLocation, i);
-				
-				if (!isInBounds(newLocation)) {
+				x = location.x;
+				y = location.y;
+				x += Direction.xDelta[i];
+				y += Direction.yDelta[i];
+				//java.awt.Point newLocation = new java.awt.Point(location);
+				//newLocation = Direction.translate(newLocation, i);
+
+				if (!isInBounds(x, y)) {
 					continue;
 				}
+				//if (!isInBounds(newLocation)) {
+				//	continue;
+				//}
 				
-				TankSoarCell newCell = getCell(newLocation);
+				//TankSoarCell newCell = getCell(newLocation);
+				TankSoarCell newCell = getCell(x, y);
 				if (newCell.isExplored()) {
 					continue;
 				}
@@ -715,29 +726,29 @@ public class TankSoarWorld extends World implements WorldManager {
 					continue;
 				}
 							
-				if (newCell.containsTank() && newCell.getTank().recentlyMovedOrRotated()) {
+				Tank targetTank = newCell.getTank();
+				if ((targetTank != null) && targetTank.recentlyMovedOrRotated()) {
+				//if (newCell.containsTank() && newCell.getTank().recentlyMovedOrRotated()) {
 					
 					//logger.finest("Found recently moved tank at " + newLocation);	
 					
-					int distance = 1;
+					distance = 1;
 					while(getCell(location).getParent() != null) {
 						++distance;
-						newLocation.x = location.x;
-						newLocation.y = location.y;
-						java.awt.Point parentLocation = getCell(location).getParent();
-						location.x = parentLocation.x;
-						location.y = parentLocation.y;
+						x = location.x;
+						y = location.y;
+						location = getCell(location).getParent();
 					}
 					//logger.finest("Distance to loud tank is " + Integer.toString(distance));	
 					//logger.finest("First cell on path is " + newLocation);	
 					if (distance  <= kMaxSmellDistance) {
-						if (newLocation.x < location.x) {
+						if (x < location.x) {
 							relativeDirection = Direction.kWestInt;
-						} else if (newLocation.x > location.x) {
+						} else if (x > location.x) {
 							relativeDirection = Direction.kEastInt;
-						} else if (newLocation.y < location.y) {
+						} else if (y < location.y) {
 							relativeDirection = Direction.kNorthInt;
-						} else if (newLocation.y > location.y) {
+						} else if (y > location.y) {
 							relativeDirection = Direction.kSouthInt;
 						} else {
 							assert false;
@@ -753,7 +764,7 @@ public class TankSoarWorld extends World implements WorldManager {
 				
 				//logger.finest("Adding " + newLocation + " with parent " + location);				
 				newCell.setParent(location);
-				searchList.addLast(newLocation);
+				searchList.addLast(new java.awt.Point(x, y));
 			}
 			
 			if (relativeDirection != -1) {
