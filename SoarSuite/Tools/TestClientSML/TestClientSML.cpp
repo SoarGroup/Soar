@@ -533,7 +533,7 @@ bool SimpleCommand()
 	cout << trace << endl ;
 
 	// This is the command being tested
-	std::string command = "matches" ;
+	std::string command = "matches -w" ;
 
 	// XML version
 	ClientAnalyzedXML response ;

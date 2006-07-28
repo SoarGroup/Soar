@@ -138,7 +138,9 @@ bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, const eMatchesMode mo
 	}
 
 	// Transfer the result from m_XMLResult into pResponse
-	if (!m_RawOutput) XMLResultToResponse("matches") ;
+	// We pass back the name of the command we just executed which becomes the tag name
+	// used in the resulting XML.
+	if (!m_RawOutput) XMLResultToResponse(Commands::kCLIMatches) ;
 
 	return true;
 }
