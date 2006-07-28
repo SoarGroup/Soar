@@ -2,7 +2,11 @@
     font-family: Verdana, Courier, sans-sarif;
 }
 
-a:link, a:visited {
-    color: #000;
+a:link {
+    color: blue;
+}
+
+a:visited {
+    color: blue;
 }
 

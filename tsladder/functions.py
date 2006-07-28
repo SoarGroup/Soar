@@ -22,10 +22,14 @@ def get_tank(tankid, cursor):
 def account_links(username):
 	ret = "<p>" + username + ": <a href='" + thisscript + "'>Home</a> | <a href='" + thisscript + "?action=managetanks'>Manage Tanks</a> | <a href='" + thisscript + "?login=logout'>Log out</a> | <a href='" + thisscript + "?login=editaccount'>Edit account</a>"
 	if username == "admin":
-        	ret += " | <a href='" + thisscript + "?login=admin'>Admin</a> | <a href='" + thisscript + "?action=resetstats'>Reset Stats</a>"
+        	ret += " | <a href='" + thisscript + "?login=admin'>Admin</a> | <a href='" + thisscript + "?action=resetstats'>Reset Stats</a> | <a href='" + thisscript + "?action=stopladder'>Stop Ladder</a>"
 	ret += "</p>\n"
 	return ret
 	
+def post_reset():
+	print "Content-type: text/html\n"
+	print "Stats reset. <a href='" + thisscript + "'>JTSL Home</a>"
+
 def welcome_page(action, userid, cursor):
 	username = get_username(userid, cursor)
 	
@@ -35,18 +39,28 @@ def welcome_page(action, userid, cursor):
 	page += readfile('templates/footer.html')
 
 	stats = "<table border='1'>\n"
-	stats += "<tr><td colspan='10'><center>Max updates: 10000, winning score: 100</center></td></tr>\n"
-	stats += "<tr align='center'><td>Tank</td><td>Total<br>Matches</td><td>Wins</td><td>Losses</td><td>Draws</td><td>Unfinished<br>Matches</td><td>Unfinished<br>%</td><td>Average<br>Points</td><td>Average<br>Ladder<br>Points</td><td>Rating</td></tr>\n"
+	cursor.execute("SELECT name,winningscore,maxupdates,matchcount FROM meta WHERE active='1'")
+	matchdata = cursor.fetchone()
+	if matchdata == None:
+		stats += "<tr><td colspan='12'><center><font color='red'>Ladder is paused.</font></center></td></tr>\n"
+	else:
+		stats += "<tr><td colspan='12'><center>%s, winning score: %d, max updates: %d</center></td></tr>\n" % (matchdata[0], matchdata[1], matchdata[2])
+	stats += "<tr align='center'><td>Tank</td><td>Total<br>Matches</td><td>Wins</td><td>Losses</td><td>Draws</td><td>Wimpy<br>Wins</td><td>Wimpy<br />Win<br />%</td><td>SNC<br />Losses</td><td>Average<br>Points</td><td>Average<br>Ladder<br>Points</td><td><strong>Rating</strong></td><td>Currently<br />Fighting</td></tr>\n"
 	cursor.execute("SELECT * FROM tanks ORDER BY rating DESC")
 	for tank in cursor.fetchall():
 		username = get_username(tank[1], cursor)
 		totalMatches = tank[3] + tank[4] + tank[5]
 		avgLadderPoints = 0
-		unfinishedPercent = 0
 		if totalMatches > 0:
 			avgLadderPoints = float(tank[11]) / totalMatches
-			unfinishedPercent = (float(tank[6]) / totalMatches) * 100
-		line = "<tr align='right'><td align='left'>%s</td><td><a href='%s?action=viewmatches&tankid=%d'>%d</a></td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%.1f%%</td><td>%.3f</td><td>%.3f</td><td>%d</td></tr>\n" % (username + "." + tank[2], thisscript, tank[0], totalMatches, tank[3], tank[4], tank[5], tank[6], unfinishedPercent, tank[7], avgLadderPoints, tank[12])
+		wimpywinpct = 0
+		if tank[3] > 0:
+			wimpywinpct = float(tank[6]) / tank[3]
+			wimpywinpct *= 100
+		fighting = "No"
+		if tank[10] > 0:
+			fighting = "<a href='%s?action=viewcurrentmatch&matchid=%d&matchname=%s'>Yes</a>" % (thisscript, matchdata[3], matchdata[0])
+		line = "<tr align='right'><td align='left'>%s</td><td><a href='%s?action=viewmatches&tankid=%d'>%d</a></td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%.1f%%</td><td>%d</td><td>%.3f</td><td>%.3f</td><td><strong>%d</strong></td><td>%s</td></tr>\n" % (username + "." + tank[2], thisscript, tank[0], totalMatches, tank[3], tank[4], tank[5], tank[6], wimpywinpct, tank[13], tank[7], avgLadderPoints, tank[12], fighting)
 		stats += line
 	stats += "</table>"
 	
@@ -60,58 +74,65 @@ def view_matches_page(action, userid, cursor, tankid):
 	
 	page = readfile('templates/header.html')
 	page += account_links(username)
-	page += readfile('templates/menu.html')
+	page += readfile('templates/matches.html')
 	page += readfile('templates/footer.html')
 
-	cursor.execute("SELECT tankname FROM tanks WHERE tankid=%s", (tankid,))
-	(tankname,) = cursor.fetchone()
-	selfname = username + "." + tankname
+	cursor.execute("SELECT tankname,userid FROM tanks WHERE tankid=%s", (tankid,))
+	(tankname,oppuserid,) = cursor.fetchone()
+	oppname = get_username(oppuserid, cursor)
+	selfname = oppname + "." + tankname
 
 	stats = "<table border='1'>\n"
-	stats += "<tr align='center'><td colspan='2'>Tank: %s</td></tr><tr align='center'><td>Opponent</td><td>Result</td></tr>\n" % (selfname,)
+	stats += "<tr align='center'><td colspan='4'>Tank: %s</td></tr><tr align='center'><td>Opponent</td><td>Result</td><td>Wimpy Win</td><td>SNC<br />Loss</td></tr>\n" % (selfname,)
 	haveMatch = False
 
-	cursor.execute("SELECT * FROM matches WHERE red=%s", (tankid,))
-	for match in cursor.fetchall():
-		haveMatch = True
-		opponentname = None
-		try:
-			opponenttank = get_tank(match[2], cursor)
-			opponentname = get_username(opponenttank[1], cursor) + "." + opponenttank[2]
-		except TypeError:
-			opponentname = "(deleted)"
+	cursor.execute("SELECT name FROM meta WHERE active='1'")
+	packedmatchname = cursor.fetchone()
+	matchname = None
+	if packedmatchname != None:
+		(matchname,) = packedmatchname
 
-		result = "Draw"
-		if match[3] != 0:
-			if match[3] == tankid:
-				result = "Win"
-			else:
-				result = "Loss"
-		line = "<tr align='left'><td>%s</td><td align='center'><a href='?action=viewmatchlog&matchid=%d'>%s</a></td></tr>\n" % (opponentname, match[0], result)
-		stats += line
-        
+	cursor.execute("SELECT * FROM matches WHERE red=%s", (tankid,))
+	allmatches = []
+	for match in cursor.fetchall():
+		allmatches.append(match)
 	cursor.execute("SELECT * FROM matches WHERE blue=%s", (tankid,))
 	for match in cursor.fetchall():
+		allmatches.append(match)
+	
+	for match in allmatches:
+		opponentid = match[1]
+		if opponentid == tankid:
+			opponentid = match[2]
 		haveMatch = True
 		opponentname = None
 		try:
-			opponenttank = get_tank(match[1], cursor)
+			opponenttank = get_tank(opponentid, cursor)
 			opponentname = get_username(opponenttank[1], cursor) + "." + opponenttank[2]
 		except TypeError:
 			opponentname = "(deleted)"
-			
+
 		result = "Draw"
 		if match[3] != 0:
 			if match[3] == tankid:
 				result = "Win"
 			else:
 				result = "Loss"
-		line = "<tr align='left'><td>%s</td><td align='center'><a href='?action=viewmatchlog&matchid=%d'>%s</a></td></tr>\n" % (opponentname, match[0], result)
-		stats += line
-	
-	if not haveMatch:
-		stats += "<tr align='center'><td colspan='2'>No matches</td></tr>\n"
+		wimpywin = "No"
+		if match[4] > 0:
+			wimpywin = "Yes"
 
+		sncloss = "No"
+		if match[5] > 0:
+			sncloss = "Yes"
+
+		line = "<tr align='left'><td>%s</td><td align='center'>" % opponentname
+		if matchname == None:
+			line += "%s" % result
+		else:
+			line += "<a href='?action=viewmatchlog&matchid=%d&matchname=%s'>%s</a>" % (match[0], matchname, result)
+		line += "</td><td><center>%s</center></td><td><center>%s</center></td></tr>\n" % (wimpywin, sncloss)
+		stats += line
 	stats += "</table>"
 					
 	page = page.replace('**stats table**', stats)
@@ -310,17 +331,42 @@ def mirrormatch_page(action, userid, cursor, tankid):
 	os.chdir(cwd)
 	sys.exit()
 
-import gzip
-def view_match_log_page(action, userid, cursor, matchid):
+import bz2
+def view_match_log_page(action, userid, cursor, matchid, matchname):
 	print "Content-type: text/plain\n"
 	# TODO: verify this is a number
-	matchlog = gzip.open("tsladder-logs/elo/" + str(matchid) + ".txt.gz")
+	matchlog = bz2.BZ2File("tsladder-logs/%s/%d.txt.bz2" % (matchname, matchid))
 	for line in matchlog.readlines():
 		sys.stdout.write(line)
 	matchlog.close()
 	sys.exit()
 
+def view_current(action, userid, cursor, matchid, matchname):
+	if os.path.exists("tsladder-logs/%s/%d.txt" % (matchname, matchid)):
+		print "Content-type: text/html\n"
+		print "<html><head><title>%d.txt</title></head><body>" % matchid
+		print "<h2><font color='red'>This is a snapshot. Refresh to update.</font></h2>"
+		# TODO: verify this is a number
+		matchlog = open("tsladder-logs/%s/%d.txt" % (matchname, matchid))
+		print "<pre>"
+		for line in matchlog.readlines():
+			sys.stdout.write(line)
+		print "</pre></body></html>"
+		matchlog.close()
+		sys.exit()
+
+	username = get_username(userid, cursor)
+	page = readfile('templates/header.html')
+	page += account_links(username)
+	print "Content-type: text/html\n"
+	print page
+	print "<p><font color='red'>The match ended, go back and find it in the tank matches page.</font></p></body></html>"
+	sys.exit()
+
 def resetstats(cursor):
-	cursor.execute("UPDATE tanks SET wins=0,losses=0,draws=0,pointspermatch=0,fighting=0,ladderpoints=0,unfinished=0,rating=1000")
+	cursor.execute("UPDATE tanks SET wins=0,losses=0,draws=0,pointspermatch=0,fighting=0,ladderpoints=0,unfinished=0,rating=1000,snclosses=0")
 	cursor.execute("DELETE FROM matches")
 	return
+
+def stop_ladder(cursor):
+	cursor.execute("UPDATE meta SET active=0")
