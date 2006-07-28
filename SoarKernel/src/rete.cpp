@@ -8025,9 +8025,30 @@ void xmlEndTag(char const* pTag)
 	cli::GetCLI()->XMLEndTag(pTag) ;
 }
 
-void xmlAddAttribute(char const* pAttribute, char const* pValue)
+void xmlString(char const* pAttribute, char const* pValue)
 {
 	cli::GetCLI()->XMLAddAttribute(pAttribute, pValue) ;
+}
+
+void xmlSymbol(agent* thisAgent, char const* pAttribute, Symbol* pSymbol)
+{
+	// Passing 0, 0 as buffer to symbol to string causes it to use internal, temporary buffers
+	// which is fine because we immediately copy that string in XMLAddAttribute.
+	cli::GetCLI()->XMLAddAttribute(pAttribute, symbol_to_string(thisAgent, pSymbol, true, 0, 0)) ;
+}
+
+void xmlULong(char const* pAttribute, unsigned long value)
+{
+	char buf[51];
+	snprintf(buf, 50, "%lu", value);
+	cli::GetCLI()->XMLAddAttribute(pAttribute, buf) ;
+}
+
+void xmlInt(char const* pAttribute, int value)
+{
+	char buf[51];
+	snprintf(buf, 50, "%d", value);
+	cli::GetCLI()->XMLAddAttribute(pAttribute, buf) ;
 }
 
 void xmlAddSimpleTag(char const* pTag)
@@ -8043,6 +8064,119 @@ void xmlAddSimpleTag(char const* pTag, char const* pAttribute, char const* pValu
 	cli::GetCLI()->XMLEndTag(pTag) ;
 }
 
+void xml_wme (agent* thisAgent, wme *w) {
+  // <wme tag="123" id="s1" attr="foo" attrtype="string" val="123" valtype="string"></wme>
+  xmlBeginTag(kTagWME) ;
+
+  xmlULong(kWME_TimeTag, w->timetag) ;
+  xmlSymbol(thisAgent, kWME_Id, w->id);
+  xmlSymbol(thisAgent, kWME_Attribute, w->attr) ;
+  xmlSymbol(thisAgent, kWME_Value, w->value) ;
+  xmlString(kWME_ValueType, symbol_to_typeString(thisAgent, w->value)) ;
+  if (w->acceptable) xmlString(kWMEPreference, "+");
+
+  xmlEndTag(kTagWME) ;
+}
+
+void xml_whole_token (agent* thisAgent, token *t, wme_trace_type wtt) {
+  if (t==thisAgent->dummy_top_token) return;
+  xml_whole_token (thisAgent, t->parent, wtt);
+  if (t->w) {
+    if (wtt==TIMETAG_WME_TRACE) xmlULong(kWME_TimeTag, t->w->timetag);
+    else if (wtt==FULL_WME_TRACE) xml_wme (thisAgent, t->w);
+    //if (wtt!=NONE_WME_TRACE) print (thisAgent, " ");
+  }
+}
+
+void xml_instantiation_with_wmes (agent* thisAgent, instantiation *inst, 
+									wme_trace_type wtt, int action) 
+{
+  int PRINTING = -1;
+  int FIRING = 0;
+  int RETRACTING = 1;
+  condition *cond;
+
+
+  if (action == PRINTING) {
+	  xmlBeginTag(kTagProduction);
+  } else if (action == FIRING) {
+	  xmlBeginTag(kTagProduction_Firing);
+	  xmlBeginTag(kTagProduction);
+  } else if (action == RETRACTING) {
+	  xmlBeginTag(kTagProduction_Retracting);
+	  xmlBeginTag(kTagProduction);
+  }
+
+  if (inst->prod) {
+      //print_with_symbols  (thisAgent, "%y", inst->prod->name);
+      xmlSymbol(thisAgent, kProduction_Name, inst->prod->name);
+  } else {
+      //print (thisAgent, "[dummy production]");
+	  xmlString(kProduction_Name, "[dummy_production]");
+
+  }
+
+  //print (thisAgent, "\n");
+
+  if (wtt==NONE_WME_TRACE) {
+	  if (action == PRINTING) {
+		  xmlEndTag(kTagProduction);
+	  } else if (action == FIRING) {
+		  xmlEndTag(kTagProduction);
+		  xmlEndTag(kTagProduction_Firing);
+	  } else if (action == RETRACTING) {
+		  xmlEndTag(kTagProduction);
+		  xmlEndTag(kTagProduction_Retracting);
+	  }
+	  return;
+  }
+
+  for (cond=inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next)
+    if (cond->type==POSITIVE_CONDITION) {
+      switch (wtt) {
+      case TIMETAG_WME_TRACE:
+        //print (thisAgent, " %lu", cond->bt.wme_->timetag);
+
+		xmlBeginTag(kTagWME);
+		xmlULong(kWME_TimeTag, cond->bt.wme_->timetag);
+		xmlEndTag(kTagWME);
+
+        break;
+      case FULL_WME_TRACE:	
+		  if (action != RETRACTING) {
+			  //print (thisAgent, " ");
+			  xml_wme (thisAgent, cond->bt.wme_);
+		  } else {
+			  // Not all conds available when retracting, depending on DO_TOP_LEVEL_REF_CTS
+			  #ifdef DO_TOP_LEVEL_REF_CTS
+			  //print (thisAgent, " ");
+			  xml_wme (thisAgent, cond->bt.wme_);
+              #else
+
+			  // Wmes that matched the LHS of a retraction may already be free'd; just print tt.
+			  //print (thisAgent, " %lu", cond->bt.wme_->timetag);
+
+			  xmlBeginTag(kTagWME);
+			  xmlULong(kWME_TimeTag, cond->bt.wme_->timetag);
+			  xmlEndTag(kTagWME);
+ 
+              #endif
+		  }
+        break;
+      }
+    }
+	
+	if (action == PRINTING) {
+		xmlEndTag(kTagProduction);
+	} else if (action == FIRING) {
+		xmlEndTag(kTagProduction);
+		xmlEndTag(kTagProduction_Firing);
+	} else if (action == RETRACTING) {
+		xmlEndTag(kTagProduction);
+		xmlEndTag(kTagProduction_Retracting);
+	}
+}
+
 void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
   ms_change *msc;
   token temp_token;
@@ -8055,20 +8189,25 @@ void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
 
     if (mst == MS_ASSERT_RETRACT || mst == MS_ASSERT) {
        //print (thisAgent, "O Assertions:\n");
-		xmlBeginTag("O-assertions") ;
+		xmlBeginTag(kOAssertions) ;
 
        for (msc=thisAgent->ms_o_assertions; msc!=NIL; msc=msc->next) {
 
          if(wtt != NONE_WME_TRACE) {
-           print_with_symbols (thisAgent, "  %y ", msc->p_node->b.p.prod->name);
+		   xmlBeginTag(kTagProduction) ;
+		   xmlSymbol(thisAgent, kName, msc->p_node->b.p.prod->name) ;
+		   xmlSymbol(thisAgent, kGoal, msc->goal) ;
+           //print_with_symbols (thisAgent, "  %y ", msc->p_node->b.p.prod->name);
            /* REW: begin 08.20.97 */
            /* Add match goal to the print of the matching production */
-           print_with_symbols(thisAgent, " [%y] ", msc->goal);
+           //print_with_symbols(thisAgent, " [%y] ", msc->goal);
+		   
            /* REW: end   08.20.97 */
            temp_token.parent = msc->tok;
            temp_token.w = msc->w;
-           print_whole_token (thisAgent, &temp_token, wtt);
-           print (thisAgent, "\n");
+           xml_whole_token (thisAgent, &temp_token, wtt);
+           //print (thisAgent, "\n");
+		   xmlEndTag(kTagProduction) ;
          }
          else {
            /* REW: begin 10.22.97 */
@@ -8089,43 +8228,55 @@ void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
              ms_trace = tmp;
           }
         }
-	    xmlEndTag("O-assertions") ;
       }
 
       if (wtt == NONE_WME_TRACE) {
          while (ms_trace) {
+		   xmlBeginTag(kTagProduction) ;
            tmp = ms_trace; ms_trace = tmp->next;
-           print_with_symbols (thisAgent, "  %y ", tmp->sym);
+		   xmlSymbol(thisAgent, kName, tmp->sym) ;
+		   xmlSymbol(thisAgent, kGoal, tmp->goal) ;
+           if (tmp->count > 1)
+			   xmlInt(kCount, tmp->count) ;	// DJP -- No idea what this count is
+           //print_with_symbols (thisAgent, "  %y ", tmp->sym);
            /* REW: begin 08.20.97 */
            /*  BUG: for now this will print the goal of the first
                assertion inspected, even though there can be multiple
                assertions at different levels. 
                See 2.110 in the OPERAND-CHANGE-LOG. */
-           print_with_symbols(thisAgent, " [%y] ", tmp->goal);
+           //print_with_symbols(thisAgent, " [%y] ", tmp->goal);
            /* REW: end  08.20.97 */
-           if (tmp->count > 1)
-             print(thisAgent, "(%d)\n", tmp->count);
-           else
-             print(thisAgent, "\n");
+           //if (tmp->count > 1)
+           //  print(thisAgent, "(%d)\n", tmp->count);
+           //else
+           //  print(thisAgent, "\n");
            free_memory(thisAgent, (void *)tmp, MISCELLANEOUS_MEM_USAGE);
+	       xmlEndTag(kTagProduction) ;
         }
       }
-    }
+	  xmlEndTag(kOAssertions) ;
+	}
 
      if (mst == MS_ASSERT_RETRACT || mst == MS_ASSERT) {
-       print (thisAgent, "I Assertions:\n");
+       //print (thisAgent, "I Assertions:\n");
+	   xmlBeginTag(kIAssertions) ;
        for (msc=thisAgent->ms_i_assertions; msc!=NIL; msc=msc->next) {
 
          if(wtt != NONE_WME_TRACE) {
-           print_with_symbols (thisAgent, "  %y ", msc->p_node->b.p.prod->name);
+           //print_with_symbols (thisAgent, "  %y ", msc->p_node->b.p.prod->name);
            /* REW: begin 08.20.97 */
            /* Add match goal to the print of the matching production */
-           print_with_symbols(thisAgent, " [%y] ", msc->goal);
+           //print_with_symbols(thisAgent, " [%y] ", msc->goal);
+		   xmlBeginTag(kTagProduction) ;
+		   xmlSymbol(thisAgent, kName, msc->p_node->b.p.prod->name) ;
+		   xmlSymbol(thisAgent, kGoal, msc->goal) ;
+
            /* REW: end   08.20.97 */
            temp_token.parent = msc->tok;
            temp_token.w = msc->w;
-           print_whole_token (thisAgent, &temp_token, wtt);
-           print (thisAgent, "\n");
+           xml_whole_token (thisAgent, &temp_token, wtt);
+           //print (thisAgent, "\n");
+	       xmlEndTag(kTagProduction) ;
          }
          else {
            /* REW: begin 10.22.97 */
@@ -8152,23 +8303,30 @@ void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
       if (wtt == NONE_WME_TRACE) {
          while (ms_trace) {
            tmp = ms_trace; ms_trace = tmp->next;
-           print_with_symbols (thisAgent, "  %y ", tmp->sym);
+		   xmlBeginTag(kTagProduction) ;
+		   xmlSymbol(thisAgent, kName, tmp->sym) ;
+		   xmlSymbol(thisAgent, kGoal, tmp->goal) ;
+           if (tmp->count > 1)
+			   xmlInt(kCount, tmp->count) ;	// DJP -- No idea what this count is
+           //print_with_symbols (thisAgent, "  %y ", tmp->sym);
            /* REW: begin 08.20.97 */
            /*  BUG: for now this will print the goal of the first
                assertion inspected, even though there can be multiple
                assertions at different levels. 
                See 2.110 in the OPERAND-CHANGE-LOG. */
-           print_with_symbols(thisAgent, " [%y] ", tmp->goal);
+           //print_with_symbols(thisAgent, " [%y] ", tmp->goal);
            /* REW: end  08.20.97 */
-           if (tmp->count > 1)
-             print(thisAgent, "(%d)\n", tmp->count);
-           else
-             print(thisAgent, "\n");
+           //if (tmp->count > 1)
+           //  print(thisAgent, "(%d)\n", tmp->count);
+           //else
+           //  print(thisAgent, "\n");
+
            free_memory(thisAgent, (void *)tmp, MISCELLANEOUS_MEM_USAGE);
+	       xmlEndTag(kTagProduction) ;
         }
       }
     }
-
+	xmlEndTag(kIAssertions) ;
   }
   /* REW: end   09.15.96 */
 
@@ -8176,14 +8334,18 @@ void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
 
 
   if (mst == MS_ASSERT_RETRACT || mst == MS_ASSERT) {
-    print (thisAgent, "Assertions:\n");
+    xmlBeginTag(kAssertions) ;
+    //print (thisAgent, "Assertions:\n");
     for (msc=thisAgent->ms_assertions; msc!=NIL; msc=msc->next) {
       if(wtt != NONE_WME_TRACE) {
-        print_with_symbols (thisAgent, "  %y\n ", msc->p_node->b.p.prod->name);
+	    xmlBeginTag(kTagProduction) ;
+	    xmlSymbol(thisAgent, kName, msc->p_node->b.p.prod->name) ;
+        //print_with_symbols (thisAgent, "  %y\n ", msc->p_node->b.p.prod->name);
         temp_token.parent = msc->tok;
         temp_token.w = msc->w;
-        print_whole_token (thisAgent, &temp_token, wtt);
-        print (thisAgent, "\n");
+        xml_whole_token (thisAgent, &temp_token, wtt);
+		xmlEndTag(kTagProduction) ;
+        //print (thisAgent, "\n");
       } else {
         if((tmp = in_ms_trace(msc->p_node->b.p.prod->name, ms_trace))!=NIL) {
           tmp->count++;
@@ -8200,24 +8362,32 @@ void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
     if (wtt == NONE_WME_TRACE) {
       while (ms_trace) {
         tmp = ms_trace; ms_trace = tmp->next;
-        print_with_symbols (thisAgent, "  %y ", tmp->sym);
+	    xmlBeginTag(kTagProduction) ;
+	    xmlSymbol(thisAgent, kName, tmp->sym) ;
+	    xmlSymbol(thisAgent, kGoal, tmp->goal) ;
         if (tmp->count > 1)
-          print(thisAgent, "(%d)\n", tmp->count);
-        else
-          print(thisAgent, "\n");
+		   xmlInt(kCount, tmp->count) ;	// DJP -- No idea what this count is
+        //print_with_symbols (thisAgent, "  %y ", tmp->sym);
+        //if (tmp->count > 1)
+        //  print(thisAgent, "(%d)\n", tmp->count);
+        //else
+        //  print(thisAgent, "\n");
         free_memory(thisAgent, (void *)tmp, MISCELLANEOUS_MEM_USAGE);
+	    xmlEndTag(kTagProduction) ;
       }
     }
+	xmlEndTag(kAssertions) ;
   }
 
   /* --- Print retractions --- */  
   if (mst == MS_ASSERT_RETRACT || mst == MS_RETRACT) {
-    print (thisAgent, "Retractions:\n");
+    xmlBeginTag(kRetractions) ;
+    //print (thisAgent, "Retractions:\n");
     for (msc=thisAgent->ms_retractions; msc!=NIL; msc=msc->next) {
       if(wtt != NONE_WME_TRACE) {
-        print (thisAgent, "  ");
-        print_instantiation_with_wmes (thisAgent, msc->inst, wtt, -1);
-        print (thisAgent, "\n");
+        //print (thisAgent, "  ");
+        xml_instantiation_with_wmes (thisAgent, msc->inst, wtt, -1);
+        //print (thisAgent, "\n");
       } else {
         if(msc->inst->prod) {
           /* REW: begin 10.22.97 */
@@ -8243,23 +8413,32 @@ void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
     if(wtt == NONE_WME_TRACE) {
       while (ms_trace) {
         tmp = ms_trace; ms_trace = tmp->next;
-        print_with_symbols (thisAgent, "  %y ", tmp->sym);
+	    xmlBeginTag(kTagProduction) ;
+	    xmlSymbol(thisAgent, kName, tmp->sym) ;
+        if (tmp->goal)
+			xmlSymbol(thisAgent, kGoal, tmp->goal) ;
+		else
+			xmlString(kGoal, "NIL") ;
+        if (tmp->count > 1)
+		   xmlInt(kCount, tmp->count) ;	// DJP -- No idea what this count is
+        //print_with_symbols (thisAgent, "  %y ", tmp->sym);
            /* REW: begin 08.20.97 */
            /*  BUG: for now this will print the goal of the first assertion
                inspected, even though there can be multiple assertions at
 
                different levels. 
                See 2.110 in the OPERAND-CHANGE-LOG. */
-        if (tmp->goal)
-          print_with_symbols(thisAgent, " [%y] ", tmp->goal);
-        else
-          print(thisAgent, " [NIL] ");
+        //if (tmp->goal)
+        //  print_with_symbols(thisAgent, " [%y] ", tmp->goal);
+        //else
+        //  print(thisAgent, " [NIL] ");
            /* REW: end  08.20.97 */
-        if(tmp->count > 1)
-          print(thisAgent, "(%d)\n", tmp->count);
-        else
-          print(thisAgent, "\n");
+        //if(tmp->count > 1)
+        //  print(thisAgent, "(%d)\n", tmp->count);
+        //else
+        //  print(thisAgent, "\n");
         free_memory(thisAgent, (void *)tmp, MISCELLANEOUS_MEM_USAGE);
+	    xmlEndTag(kTagProduction) ;
       }
     }
   }

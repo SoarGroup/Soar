@@ -173,6 +173,15 @@ namespace xmlTraceNames
 	static char const* const kTagMessage    = "message";
 	// Tag message has attribute kTypeString
 
+	// Values returned from commands
+	static char const* const kName			= "name" ;
+	static char const* const kGoal			= "goal" ;
+	static char const* const kCount			= "count" ;
+	static char const* const kOAssertions	= "O-assertions" ;
+	static char const* const kIAssertions	= "I-assertions" ;
+	static char const* const kAssertions	= "assertions" ;
+	static char const* const kRetractions	= "retractions" ;
+
 	// marker for showing beginning of action-side
 	static char const* const kTagActionSideMarker	= "actionsidemarker";
 
