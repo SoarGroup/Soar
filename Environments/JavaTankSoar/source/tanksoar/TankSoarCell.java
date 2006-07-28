@@ -18,8 +18,8 @@ public class TankSoarCell extends Cell {
 	private int m_Contents = 0;
 	
 	// used in path searching
-	private boolean m_Explored = false;
 	private java.awt.Point m_Parent = null;
+	private int distance = -1;
 	
 	private boolean m_Explosion = false;
 	protected boolean m_RadarTouch = false;
@@ -47,12 +47,15 @@ public class TankSoarCell extends Cell {
 		}
 	}
 
-	boolean isExplored() {
-		return m_Explored;
+	int getDistance() {
+		return distance;
 	}
 	
-	void setExplored(boolean setting) {
-		m_Explored = setting;
+	void setDistance(int distance) {
+		this.distance = distance;
+		if (distance < 0) {
+			m_Parent = null;
+		}
 	}
 	
 	java.awt.Point getParent() {
