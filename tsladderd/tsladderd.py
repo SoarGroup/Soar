@@ -32,6 +32,8 @@ class Ladder:
 		logging.info('Connected to database tsladder')
 		self.cursor.execute("SELECT name,matchcount,winningscore,maxupdates FROM meta WHERE ladderid=%s", (self.id,))
 		(self.laddername, self.matchcount, self.winningscore, self.maxupdates) = self.cursor.fetchone()
+		self.cursor.execute("UPDATE meta SET active=0")
+		self.cursor.execute("UPDATE meta SET active=1 WHERE ladderid=%s", (self.id,))
 		logging.info("Starting ladder %s", self.laddername)
 
 	def select_tanks(self):
@@ -64,13 +66,21 @@ class Ladder:
 		logging.debug("Selected first tank using bias, tank id %d", firsttankid) 
 		sqltanks = []
 		self.cursor.execute("SELECT * FROM tanks WHERE tankid=%s", (firsttankid,))
+		#self.cursor.execute("SELECT * FROM tanks WHERE tankid='47'") wchen
 		sqltanks.append(self.cursor.fetchone())
 		self.cursor.execute("SELECT * FROM tanks WHERE tankid!=%s ORDER BY RAND(NOW()) LIMIT 1", (firsttankid))
+		#self.cursor.execute("SELECT * FROM tanks WHERE tankid='27'") swhore
 		sqltanks.append(self.cursor.fetchone())
 		return sqltanks
 
 	def run(self):
 		while True:
+			self.cursor.execute("SELECT active FROM meta WHERE ladderid=%s", (self.id,))
+			(active,) = self.cursor.fetchone()
+			if active <= 0:
+				logging.info("Shutting down due to meta table.")
+				return
+				
 			self.cursor.execute('show index from tanks')
 			index = self.cursor.fetchone()
 			if index[6] < 2:
@@ -119,7 +129,7 @@ class Ladder:
 		os.chdir('JavaTankSoar')
 		if not os.path.exists("tsladder-logs/%s" % self.laddername):
 			os.mkdir("tsladder-logs/%s" % self.laddername)
-		os.system('java -jar JavaTankSoar.jar -quiet -notrandom -log tsladder-logs/%s/%d.txt' % (self.laddername, self.matchcount))
+		os.system('java -ea -jar JavaTankSoar.jar -quiet -log tsladder-logs/%s/%d.txt' % (self.laddername, self.matchcount))
 		
 		logging.info("Match %d complete", self.matchcount)
 		
@@ -127,64 +137,71 @@ class Ladder:
 			tank.set_fighting(False)
 
 		output = file("tsladder-logs/%s/%d.txt" % (self.laddername, self.matchcount))
+		
 		matched_something = False
-		finished = False
-		winningTank = None
+		wimpywin = 0
+		sncloss = 0
+		winning_tank = None
+		interrupted_tank = None
 		for line in output.readlines():
 			match = re.match(r".+ INFO (.+): (-?\d+) \((\w+)\)", line)
 			if match == None:
+				match = re.match(r".+ WARNING (.+): agent interrupted", line)
+				if match == None:
+					continue
+				interrupted_tank = match.group(1)
+				logging.debug("%s was interrupted" % interrupted_tank)
 				continue
-			#logging.debug("Matched this line: %s", line)
+			
 			tankname, score, status = match.groups()
+			score = int(score)
+			logging.info("%s: %d points (%s)" % (tankname, score, status))
 
 			tank = None
-			opponent = None
 			if tankname == tanks[self.RED].get_full_name():
-				tank = tanks[self.RED]
-				opponent = tanks[self.BLUE]
+				tank = self.RED
+				opponent = self.BLUE
 			elif tankname == tanks[self.BLUE].get_full_name():
-				tank = tanks[self.BLUE]
-				opponent = tanks[self.RED]
-			else:
-				logging.error("Did not match tankname: %s", tankname)
-				continue
+				tank = self.BLUE
+				opponent = self.RED
 
-			matched_something = True
+			interrupted = False
+			if interrupted_tank != None:
+				if tankname == interrupted_tank:
+					interrupted = True
+					sncloss = 1
 
-			score = int(score)
-			draw = False
-			winner = False
-			if status == "winner":
-				winningTank = tank
-				winner = True
-			elif status == "draw":
-				draw = True
-
-			iFinished = False
+			finished = False
 			if score >= self.winningscore:
 				finished = True
-				iFinished = True
 
-			tank.update_record(winner=winner, draw=draw, finished=iFinished, score=score, opponentrating=opponent.rating)
+			tanks[tank].set_last_match(score, finished, status, interrupted, tanks[opponent].rating)
 			
-			logging.info("%s scored %d points (%s)", tankname, score, status)
-			
+			matched_something = True
+
+			if status == "winner":
+				winning_tank = tank
+				if not finished:
+					wimpywin = 1
+
 		output.close()
 		os.chdir("tsladder-logs/%s" % self.laddername)
-		os.system("gzip -f %d.txt" % self.matchcount)
+		logging.info("Zipping match log...")
+		os.system("bzip2 -f %d.txt" % self.matchcount)
+		logging.info("Done zipping.")
 		os.chdir(cwd)
 
 		if not matched_something:
 			logging.error("Failed to match status lines! Ignoring match!")
 		else:
+			tanks[self.RED].update_record()
+			tanks[self.BLUE].update_record()
+			
 			winningid = 0
-			if winningTank != None:
-				winningid = winningTank.id
-			self.cursor.execute("INSERT INTO matches (matchid, red, blue, winner) VALUES(%s, %s, %s, %s)", (self.matchcount, tanks[self.RED].id, tanks[self.BLUE].id, winningid))
+			if winning_tank != None:
+				winningid = tanks[winning_tank].id
+			self.cursor.execute("INSERT INTO matches (matchid, red, blue, winner, wimpywin, sncloss) VALUES(%s, %s, %s, %s, %s, %s)", (self.matchcount, tanks[self.RED].id, tanks[self.BLUE].id, winningid, wimpywin, sncloss))
 			logging.info("Added match record %s", self.matchcount)
-			if not finished:
-				for tank in tanks:
-					tank.increment_unfinished()
 
 def usage():
 	print "tsladderd.py usage:"
