@@ -8015,6 +8015,14 @@ void print_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
   }
 }
 
+/////////////////////////////////////////////////////////////////
+//
+// XML Generation functions.
+// 
+// These are currently local to rete while I'm working on matches.
+// They should eventually move to their own file with a new header.
+//
+/////////////////////////////////////////////////////////////////
 void xmlBeginTag(char const* pTag)
 {
 	cli::GetCLI()->XMLBeginTag(pTag) ;
@@ -8177,6 +8185,13 @@ void xml_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
 	}
 }
 
+/////////////////////////////////////////////////////////////////
+//
+// XML version of print_match_set().
+//
+// Based on the print logic but generates XML directly.
+//
+/////////////////////////////////////////////////////////////////
 void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
   ms_change *msc;
   token temp_token;
