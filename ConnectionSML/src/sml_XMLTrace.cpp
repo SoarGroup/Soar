@@ -28,6 +28,7 @@ XMLTrace::XMLTrace()
 	m_XML->SetTagName(sml_Names::kTagTrace) ;
 
 	m_pCurrentTag = NULL ;
+	m_pLastTag = NULL ;
 }
 
 // Alternative contstuctor where we specify the base tag name
@@ -37,12 +38,16 @@ XMLTrace::XMLTrace(char const* pTagName)
 	m_XML->SetTagName(pTagName) ;
 
 	m_pCurrentTag = NULL ;
+	m_pLastTag = NULL ;
 }
 
 XMLTrace::~XMLTrace()
 {
 	delete m_pCurrentTag ;
 	m_pCurrentTag = NULL ;
+
+	delete m_pLastTag ;
+	m_pLastTag = NULL ;
 
 	delete m_XML ;
 	m_XML = NULL ;
@@ -103,6 +108,23 @@ void XMLTrace::BeginTag(char const* pTagName)
 }
 
 /*************************************************************
+* @brief	Occassionally it's helpful to be able to back up
+*			in the XML and add some extra elements.
+*			This command swaps the current marker with the last element closed.
+*			IT SHOULD ONLY BE CALLED AFTER EndTag() has just been called.
+*
+*			After swapping and making some additions, call here again to swap back.
+*************************************************************/
+bool XMLTrace::SwapCurrentWithLastTag()
+{
+	ElementXML* pTemp = m_pCurrentTag ;
+	m_pCurrentTag = m_pLastTag ;
+	m_pLastTag = pTemp ;
+
+	return m_pCurrentTag != NULL ;
+}
+
+/*************************************************************
 * @brief	Terminate the current tag.
 *
 * The tag name is just used for error checking to make sure
@@ -122,7 +144,15 @@ void XMLTrace::EndTag(char const* pTagName)
     unused(pTagName); // quell compiler warning in VS.NET
 #endif
 
+	delete m_pLastTag ;
+	if (m_pCurrentTag->GetXMLHandle())
+	{
+		m_pLastTag = new ElementXML(m_pCurrentTag->GetXMLHandle()) ;
+		m_pLastTag->AddRefOnHandle() ;
+	}
+
 	// Update the current tag to be its parent
+	// (Note: GetParent stores return value in parameter passed in)
 	bool hasParent = m_pCurrentTag->GetParent(m_pCurrentTag) ;
 
 	if (!hasParent)

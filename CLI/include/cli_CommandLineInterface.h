@@ -175,6 +175,7 @@ public:
 	void XMLBeginTag(char const* pTagName) ;
 	void XMLAddAttribute(char const* pAttribute, char const* pValue) ;
 	void XMLEndTag(char const* pTagName) ;
+	bool XMLSwapCurrentWithLastTag() ;
 
 protected:
 

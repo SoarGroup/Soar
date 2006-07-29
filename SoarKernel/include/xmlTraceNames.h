@@ -137,6 +137,8 @@ namespace xmlTraceNames
 	static char const* const kAction                            = "action" ;
 	static char const* const kActionFunction                    = "function" ;
 	static char const* const kActionId                          = "id" ;
+	static char const* const kValue                             = "value" ;
+	static char const* const kAttribute                         = "attribute" ;
 
 	//backtrace stuff
 	static char const* const kTagBacktrace              = "backtrace" ;
@@ -181,6 +183,8 @@ namespace xmlTraceNames
 	static char const* const kIAssertions	= "I-assertions" ;
 	static char const* const kAssertions	= "assertions" ;
 	static char const* const kRetractions	= "retractions" ;
+	static char const* const kMatches		= "matches" ;
+	static char const* const kMatchCount	= "matchcount" ;
 
 	// marker for showing beginning of action-side
 	static char const* const kTagActionSideMarker	= "actionsidemarker";

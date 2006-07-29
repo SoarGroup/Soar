@@ -1104,6 +1104,11 @@ void CommandLineInterface::XMLEndTag(char const* pTagName)
 	m_XMLResult->EndTag(pTagName) ;
 }
 
+bool CommandLineInterface::XMLSwapCurrentWithLastTag()
+{
+	return m_XMLResult->SwapCurrentWithLastTag() ;
+}
+
 // The copies over the m_XMLResult object to the response XML object and sets the
 // tag name to the command that was just executed.
 // The result is XML in this format (e.g. for matches):

@@ -8045,6 +8045,11 @@ void xmlSymbol(agent* thisAgent, char const* pAttribute, Symbol* pSymbol)
 	cli::GetCLI()->XMLAddAttribute(pAttribute, symbol_to_string(thisAgent, pSymbol, true, 0, 0)) ;
 }
 
+void xmlSwapCurrentWithLastTag()
+{
+	cli::GetCLI()->XMLSwapCurrentWithLastTag() ;
+}
+
 void xmlULong(char const* pAttribute, unsigned long value)
 {
 	char buf[51];
@@ -8094,6 +8099,300 @@ void xml_whole_token (agent* thisAgent, token *t, wme_trace_type wtt) {
     else if (wtt==FULL_WME_TRACE) xml_wme (thisAgent, t->w);
     //if (wtt!=NONE_WME_TRACE) print (thisAgent, " ");
   }
+}
+
+Bool xml_pick_conds_with_matching_id_test (dl_cons *dc, agent* thisAgent) {
+  condition *cond;
+  cond = static_cast<condition_struct *>(dc->item);
+  if (cond->type==CONJUNCTIVE_NEGATION_CONDITION) return FALSE;
+  return tests_are_equal (thisAgent->id_test_to_match, cond->data.tests.id_test);
+}
+
+#if 0
+// Not currently using
+// xml_test is based on test_to_string.
+void xml_test (agent* thisAgent, char const* pTag, test t) {
+	char *dest = 0 ;
+	size_t dest_size = 0 ;
+	cons *c;
+  complex_test *ct;
+  char *ch;
+
+  if (test_is_blank_test(t)) {
+    //if (!dest) dest=thisAgent->printed_output_string;
+    xmlString(pTag, "[BLANK TEST]") ;	// Using tag as attribute name
+    //strncpy (dest, "[BLANK TEST]", dest_size);  /* this should never get executed */
+	//dest[dest_size - 1] = 0; /* ensure null termination */
+    //return dest;
+	return ;
+  }
+
+  if (test_is_blank_or_equality_test(t)) {
+    xmlSymbol(thisAgent, pTag, referent_of_equality_test(t)) ;	// Using tag as attribute name
+	return ;
+    //return symbol_to_string (thisAgent, referent_of_equality_test(t), TRUE, dest, dest_size);
+  }
+
+  if (!dest) {
+ 	dest=thisAgent->printed_output_string;
+	dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
+  }
+  ch = dest;
+  ct = complex_test_from_test(t);
+  
+  switch (ct->type) {
+  case NOT_EQUAL_TEST:
+    strncpy (ch, "<> ", dest_size - (ch - dest)); 
+    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+	while (*ch) 
+		ch++;
+    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    break;
+  case LESS_TEST:
+    strncpy (ch, "< ", dest_size - (ch - dest)); 
+    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+	while (*ch) ch++;
+    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    break;
+  case GREATER_TEST:
+    strncpy (ch, "> ", dest_size - (ch - dest)); 
+    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+	while (*ch) ch++;
+    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    break;
+  case LESS_OR_EQUAL_TEST:
+    strncpy (ch, "<= ", dest_size - (ch - dest)); 
+    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+	while (*ch) ch++;
+    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    break;
+  case GREATER_OR_EQUAL_TEST:
+    strncpy (ch, ">= ", dest_size - (ch - dest)); 
+    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+	while (*ch) ch++;
+    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    break;
+  case SAME_TYPE_TEST:
+    strncpy (ch, "<=> ", dest_size - (ch - dest)); 
+    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+	while (*ch) ch++;
+    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    break;
+  case DISJUNCTION_TEST:
+    // BUGBUG: Need to think this through more carefully
+    xmlString(pTag, "BUGBUG--Adding disjunction in XML--not done yet") ;
+    strncpy (ch, "<< ", dest_size - (ch - dest)); 
+    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+	while (*ch) ch++;
+    for (c=ct->data.disjunction_list; c!=NIL; c=c->rest) {
+      symbol_to_string (thisAgent, static_cast<symbol_union *>(c->first), TRUE, ch, dest_size - (ch - dest)); 
+	  while (*ch) ch++;
+      *(ch++) = ' ';
+    }
+    strncpy (ch, ">>", dest_size - (ch - dest));
+    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+    break;
+  case CONJUNCTIVE_TEST:
+    // BUGBUG: Need to think this through more carefully
+    xmlString(pTag, "BUGBUG--Adding conjunction in XML--not done yet") ;
+    strncpy (ch, "{ ", dest_size - (ch - dest)); 
+    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+	while (*ch) ch++;
+    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest) {
+      xml_test (thisAgent, pTag, static_cast<char *>(c->first)) ; //, ch, dest_size - (ch - dest)); 
+	  while (*ch) ch++;
+      *(ch++) = ' ';
+    }
+    strncpy (ch, "}", dest_size - (ch - dest));
+    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+    break;
+  case GOAL_ID_TEST:
+    strncpy (dest, "[GOAL ID TEST]", dest_size - (ch - dest)); /* this should never get executed */
+    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+    break;
+  case IMPASSE_ID_TEST:
+    strncpy (dest, "[IMPASSE ID TEST]", dest_size - (ch - dest)); /* this should never get executed */
+    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+    break;
+  }
+
+  xmlString(pTag, dest) ;
+  return ;
+}
+#endif //0
+
+#define XML_CONDITION_LIST_TEMP_SIZE 10000
+void xml_condition_list (agent* thisAgent, condition *conds, 
+						   int indent, Bool internal) {
+   dl_list *conds_not_yet_printed, *tail_of_conds_not_yet_printed;
+   dl_list *conds_for_this_id;
+   dl_cons *dc;
+   condition *c;
+   Bool removed_goal_test, removed_impasse_test;
+   test id_test;  
+
+   if (!conds) return;
+
+   /* --- build dl_list of all the actions --- */
+   conds_not_yet_printed = NIL;
+   tail_of_conds_not_yet_printed = NIL;
+
+   for (c=conds; c!=NIL; c=c->next) 
+   {
+      allocate_with_pool (thisAgent, &thisAgent->dl_cons_pool, &dc);
+      dc->item = c;
+      if (conds_not_yet_printed) 
+      {
+         tail_of_conds_not_yet_printed->next = dc;
+      }
+      else 
+      {
+         conds_not_yet_printed = dc;
+      }
+      dc->prev = tail_of_conds_not_yet_printed;
+      tail_of_conds_not_yet_printed = dc;
+   }
+   tail_of_conds_not_yet_printed->next = NIL;
+
+   /* --- main loop: find all conds for first id, print them together --- */
+   Bool did_one_line_already = FALSE;
+   while (conds_not_yet_printed) 
+   {
+      if (did_one_line_already) 
+      {
+         //print (thisAgent, "\n");
+         //print_spaces (thisAgent, indent);
+      } 
+      else 
+      {
+         did_one_line_already = TRUE;
+      }
+
+      dc = conds_not_yet_printed;
+      remove_from_dll (conds_not_yet_printed, dc, next, prev);
+      c = static_cast<condition_struct *>(dc->item);
+      if (c->type==CONJUNCTIVE_NEGATION_CONDITION) 
+      {
+         free_with_pool (&thisAgent->dl_cons_pool, dc);
+         //print_string (thisAgent, "-{");
+         xmlBeginTag(kTagConjunctive_Negation_Condition);
+         xml_condition_list (thisAgent, c->data.ncc.top, indent+2, internal);
+         xmlEndTag(kTagConjunctive_Negation_Condition);
+         //print_string (thisAgent, "}");
+         continue;
+      }
+
+      /* --- normal pos/neg conditions --- */
+      removed_goal_test = removed_impasse_test = FALSE;
+      id_test = copy_test_removing_goal_impasse_tests(thisAgent, c->data.tests.id_test, 
+         &removed_goal_test, 
+         &removed_impasse_test);
+      thisAgent->id_test_to_match = copy_of_equality_test_found_in_test (thisAgent, id_test);
+
+      /* --- collect all cond's whose id test matches this one --- */
+      conds_for_this_id = dc;
+      dc->prev = NIL;
+      if (internal) 
+      {
+         dc->next = NIL;
+      } 
+      else 
+      {
+         dc->next = extract_dl_list_elements (thisAgent, &conds_not_yet_printed,
+                                               xml_pick_conds_with_matching_id_test);
+      }
+
+	  // DJP: Moved this loop out so we get a condition tag per condition on this id
+	  // rather than an id with a series of conditions.
+      while (conds_for_this_id) 
+      {
+		  /* --- print the collected cond's all together --- */
+		  //print_string (thisAgent, " (");
+		  xmlBeginTag(kTagCondition);
+
+		  if (removed_goal_test) 
+		  {
+			 //print_string (thisAgent, "state ");
+			 xmlString(kConditionTest, kConditionTestState);
+
+		  }
+
+		  if (removed_impasse_test) 
+		  {
+			 //print_string (thisAgent, "impasse ");
+			 xmlString(kConditionTest, kConditionTestImpasse);
+		  }
+
+		  //print_string (thisAgent, test_to_string (thisAgent, id_test, NULL, 0));
+		  //xml_test(thisAgent, kConditionId, id_test) ;
+		  xmlString(kConditionId, test_to_string(thisAgent, id_test, NULL, 0)) ;
+		  deallocate_test (thisAgent, thisAgent->id_test_to_match);
+		  deallocate_test (thisAgent, id_test);
+
+	      //growable_string gs = make_blank_growable_string(thisAgent);
+         dc = conds_for_this_id;
+         conds_for_this_id = conds_for_this_id->next;
+         c = static_cast<condition_struct *>(dc->item);
+         free_with_pool (&thisAgent->dl_cons_pool, dc);
+
+         { /* --- build and print attr/value test for condition c --- */
+            char temp[XML_CONDITION_LIST_TEMP_SIZE], *ch;
+
+			memset(temp,0,XML_CONDITION_LIST_TEMP_SIZE);
+            ch = temp;
+            //strncpy (ch, " ", XML_CONDITION_LIST_TEMP_SIZE - (ch - temp));
+            if (c->type==NEGATIVE_CONDITION) 
+            {
+               strncat (ch, "-", XML_CONDITION_LIST_TEMP_SIZE - (ch - temp));
+            }
+
+            //strncat (ch, "^", XML_CONDITION_LIST_TEMP_SIZE - (ch - temp));
+			while (*ch) ch++;
+            test_to_string (thisAgent, c->data.tests.attr_test, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
+			while (*ch) ch++;
+
+			*ch = 0 ; // Terminate
+			xmlString(kAttribute, temp) ;
+
+			// Reset the ch pointer
+			ch = temp ;
+            if (! test_is_blank_test(c->data.tests.value_test)) 
+            {
+               *(ch++) = ' ';
+               test_to_string (thisAgent, c->data.tests.value_test, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
+			   while (*ch) ch++;
+               if (c->test_for_acceptable_preference) 
+               {
+                  strncpy (ch, " +", XML_CONDITION_LIST_TEMP_SIZE - (ch - temp)); while (*ch) ch++;
+               }
+            }
+            *ch = 0;
+            if (thisAgent->printer_output_column + (ch - temp) >= COLUMNS_PER_LINE) 
+            {
+               //print_string (thisAgent, "\n");
+               //print_spaces (thisAgent, indent+6);
+            }
+            //print_string (thisAgent, temp);
+            //add_to_growable_string(thisAgent, &gs, temp);
+		    xmlString(kValue, temp);
+         }
+		 //free_growable_string(thisAgent, gs);
+      }
+      //print_string (thisAgent, ")");
+	  xmlEndTag(kTagCondition);
+   } /* end of while (conds_not_yet_printed) */
+}
+
+void xml_condition (agent* thisAgent, condition *cond) {
+  condition *old_next, *old_prev;
+
+  old_next = cond->next;
+  old_prev = cond->prev;
+  cond->next = NIL;
+  cond->prev = NIL;
+  xml_condition_list (thisAgent, cond, 0, TRUE);
+  cond->next = old_next;
+  cond->prev = old_prev;
 }
 
 void xml_instantiation_with_wmes (agent* thisAgent, instantiation *inst, 
@@ -8459,6 +8758,138 @@ void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
   }
 }
 
+/* --- Print stuff for given node and higher, up to but not including the
+       cutoff node.  Return number of matches at the given node/cond. --- */
+long xml_aux (agent* thisAgent,   /* current agent */
+                           rete_node *node,    /* current node */
+               rete_node *cutoff,  /* don't print cutoff node or any higher */
+               condition *cond,    /* cond for current node */
+               wme_trace_type wtt, /* what type of printout to use */
+               int indent) {       /* number of spaces indent */
+  token *tokens, *t, *parent_tokens;
+  right_mem *rm;
+  long matches_one_level_up;
+  long matches_at_this_level;
+  //#define MATCH_COUNT_STRING_BUFFER_SIZE 20
+  //char match_count_string[MATCH_COUNT_STRING_BUFFER_SIZE];
+  rete_node *parent;
+
+  /* --- find the number of matches for this condition --- */
+  tokens = get_all_left_tokens_emerging_from_node (thisAgent, node);
+  matches_at_this_level = 0;
+  for (t=tokens; t!=NIL; t=t->next_of_node) matches_at_this_level++;
+  deallocate_token_list (thisAgent, tokens);
+
+  /* --- if we're at the cutoff node, we're done --- */
+  if (node==cutoff) return matches_at_this_level;
+
+  /* --- do stuff higher up --- */
+  parent = real_parent_node(node);
+  matches_one_level_up = xml_aux (thisAgent, parent, cutoff,
+                                   cond->prev, wtt, indent);
+
+  /* --- Form string for current match count:  If an earlier cond had no
+     matches, just leave it blank; if this is the first 0, use ">>>>" --- */
+  if (! matches_one_level_up) {
+    //xmlInt(kMatchCount, 0) ;
+    //strncpy (match_count_string, "    ", MATCH_COUNT_STRING_BUFFER_SIZE);
+	//match_count_string[MATCH_COUNT_STRING_BUFFER_SIZE - 1] = 0; /* ensure null termination */
+  } else if (! matches_at_this_level) {
+    //xmlInt(kMatchCount, 0) ;
+    //strncpy (match_count_string, ">>>>", MATCH_COUNT_STRING_BUFFER_SIZE);
+	//match_count_string[MATCH_COUNT_STRING_BUFFER_SIZE - 1] = 0; /* ensure null termination */
+  } else {
+    //xmlInt(kMatchCount, matches_at_this_level) ;
+    //snprintf (match_count_string, MATCH_COUNT_STRING_BUFFER_SIZE, "%4ld", matches_at_this_level);
+	//match_count_string[MATCH_COUNT_STRING_BUFFER_SIZE - 1] = 0; /* ensure null termination */
+  }
+
+  /* --- print extra indentation spaces --- */
+  //print_spaces (thisAgent, indent);
+
+  if (cond->type==CONJUNCTIVE_NEGATION_CONDITION) {
+    /* --- recursively print match counts for the NCC subconditions --- */
+    xmlBeginTag(kTagConjunctive_Negation_Condition) ;
+    //print (thisAgent, "    -{\n");
+    xml_aux (thisAgent, real_parent_node(node->b.cn.partner),
+              parent,
+              cond->data.ncc.bottom,
+              wtt,
+              indent+5);
+    //print_spaces (thisAgent, indent);
+    //print (thisAgent, "%s }\n", match_count_string);
+	xmlEndTag(kTagConjunctive_Negation_Condition) ;
+  } else {
+    //print (thisAgent, "%s", match_count_string);
+    xml_condition (thisAgent, cond);
+
+	// DJP: This is a trick to let us insert more attributes into xml_condition().
+	// This swap call moves us back into the last tag created -- the condition in this case.
+	xmlSwapCurrentWithLastTag() ;
+    // DJP: Moved this test from earlier down to here as no longer building match_count_string
+    if (!matches_one_level_up)
+		xmlInt(kMatchCount, 0) ;
+	else
+	    xmlInt(kMatchCount, matches_at_this_level) ;
+	xmlSwapCurrentWithLastTag() ;
+
+
+    //print (thisAgent, "\n");
+    /* --- if this is the first match-failure (0 matches), print info on
+       matches for left and right --- */
+    if (matches_one_level_up && (!matches_at_this_level)) {
+      if (wtt!=NONE_WME_TRACE) {
+        print_spaces (thisAgent, indent);
+        print (thisAgent, "*** Matches For Left ***\n");
+        parent_tokens = get_all_left_tokens_emerging_from_node (thisAgent, parent);
+        for (t=parent_tokens; t!=NIL; t=t->next_of_node) {
+          print_spaces (thisAgent, indent);
+          print_whole_token (thisAgent, t, wtt);
+          print (thisAgent, "\n");
+        }
+        deallocate_token_list (thisAgent, parent_tokens);
+        print_spaces (thisAgent, indent);
+        print (thisAgent, "*** Matches for Right ***\n");
+        print_spaces (thisAgent, indent);
+        for (rm=node->b.posneg.alpha_mem_->right_mems; rm!=NIL;
+             rm=rm->next_in_am) {
+          if (wtt==TIMETAG_WME_TRACE) print (thisAgent, "%lu", rm->w->timetag);
+          else if (wtt==FULL_WME_TRACE) print_wme (thisAgent, rm->w);
+          print (thisAgent, " ");
+        }
+        print (thisAgent, "\n");
+      }
+    } /* end of if (matches_one_level_up ...) */
+  }
+
+  /* --- return result --- */  
+  return matches_at_this_level;
+}
+
+void xml_partial_match_information (agent* thisAgent, rete_node *p_node, wme_trace_type wtt) {
+  condition *top_cond, *bottom_cond;
+  long n;
+  token *tokens, *t;
+
+  xmlBeginTag(kTagProduction) ;
+  p_node_to_conditions_and_nots (thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
+                                 NIL, NIL);
+  n = xml_aux (thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,
+                wtt, 0);
+  xmlInt(kMatches, n) ;
+  //print (thisAgent, "\n%d complete matches.\n", n);
+  if (n && (wtt!=NONE_WME_TRACE)) {
+    print (thisAgent, "*** Complete Matches ***\n");
+    tokens = get_all_left_tokens_emerging_from_node (thisAgent, p_node->parent);
+    for (t=tokens; t!=NIL; t=t->next_of_node) {
+      xml_whole_token (thisAgent, t, wtt);
+      //print (thisAgent, "\n");
+    }
+    deallocate_token_list (thisAgent, tokens);
+  }
+  deallocate_condition_list (thisAgent, top_cond);
+  xmlEndTag(kTagProduction) ;
+}
 
 
 /* **********************************************************************
