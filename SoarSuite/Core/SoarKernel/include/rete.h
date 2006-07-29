@@ -115,6 +115,7 @@ extern Symbol *get_symbol_from_rete_loc (unsigned short levels_up,
 extern unsigned long count_rete_tokens_for_production (agent* thisAgent, production *prod);
 extern void print_partial_match_information (agent* thisAgent, struct rete_node_struct *p_node,
                                              wme_trace_type wtt);
+extern void xml_partial_match_information (agent* thisAgent, rete_node *p_node, wme_trace_type wtt) ;
 
 extern void print_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type  mst);
 extern void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type  mst);

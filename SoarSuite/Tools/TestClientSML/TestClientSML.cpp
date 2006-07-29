@@ -533,7 +533,8 @@ bool SimpleCommand()
 	cout << trace << endl ;
 
 	// This is the command being tested
-	std::string command = "matches -w" ;
+	//std::string command = "matches apply*init-count" ;
+	std::string command = "matches apply*count" ;
 
 	// XML version
 	ClientAnalyzedXML response ;

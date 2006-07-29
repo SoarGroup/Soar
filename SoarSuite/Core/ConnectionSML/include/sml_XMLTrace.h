@@ -44,6 +44,9 @@ private:
 	// The tag we're currently building
 	ElementXML*	m_pCurrentTag ;
 
+	// The tag we were just building.
+	ElementXML* m_pLastTag ;
+
 public:
 	XMLTrace() ;
 
@@ -91,6 +94,16 @@ public:
 	* Naturally, the value doesn't have this restriction.
 	*************************************************************/
 	void AddAttribute(char const* pAttributeName, char const* pValue) ;
+
+	/*************************************************************
+	* @brief	Occassionally it's helpful to be able to back up
+	*			in the XML and add some extra elements.
+	*			This command swaps the current marker with the last element closed.
+	*			IT SHOULD ONLY BE CALLED AFTER EndTag() has just been called.
+	*
+	*			After swapping and making some additions, call here again to swap back.
+	*************************************************************/
+	bool SwapCurrentWithLastTag() ;
 
 	/*************************************************************
     * @brief Releases ownership of the underlying XML object.

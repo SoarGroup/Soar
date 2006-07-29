@@ -113,7 +113,7 @@ namespace gSKI
 			Agent* internalAgent = (Agent*)(thisAgent);
 			MegaAssert(internalAgent != 0, "Bad agent pointer passed to xmlPartialMatchInformation.");
 
-			//xml_partial_match_information(internalAgent->GetSoarAgent(), p_node, wtt);
+			xml_partial_match_information(internalAgent->GetSoarAgent(), p_node, wtt);
 		}
 
 		void TgDWorkArounds::XMLMatchSet(IAgent* thisAgent, wme_trace_type wtt, ms_trace_type  mst)
