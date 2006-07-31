@@ -606,22 +606,24 @@ bool ElementXML::GetUseCData() const
 * @brief Converts the XML object to a string.
 *
 * @param includeChildren	Includes all children in the XML output.
+* @param insertNewlines		Add newlines to space out the tags to be more human-readable
 *
 * @returns The string form of the object.  Caller must delete with DeleteString().
 *************************************************************/
-char* ElementXML::GenerateXMLString(bool includeChildren) const
+char* ElementXML::GenerateXMLString(bool includeChildren, bool insertNewLines) const
 {
-	return ::sml_GenerateXMLString(m_hXML, includeChildren) ;
+	return ::sml_GenerateXMLString(m_hXML, includeChildren, insertNewLines) ;
 }
 
 /*************************************************************
 * @brief Returns the length of string needed to represent this object (does not include the trailing null, so add one for that)
 *	*
 * @param includeChildren	Includes all children in the XML output.
+* @param insertNewlines		Add newlines to space out the tags to be more human-readable
 *************************************************************/
-int ElementXML::DetermineXMLStringLength(bool includeChildren) const
+int ElementXML::DetermineXMLStringLength(bool includeChildren, bool insertNewLines) const
 {
-	return ::sml_DetermineXMLStringLength(m_hXML, includeChildren) ;
+	return ::sml_DetermineXMLStringLength(m_hXML, includeChildren, insertNewLines) ;
 }
 
 ////////////////////////////////////////////////////////////////

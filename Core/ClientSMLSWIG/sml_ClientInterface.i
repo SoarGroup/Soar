@@ -30,6 +30,11 @@
 %newobject sml::AnalyzeXML::GenerateXMLString(bool) const ;
 %newobject sml::ClientAnalyzedXML::GenerateXMLString(bool) const ;
 
+%newobject sml::ClientXML::GenerateXMLString(bool, bool) const ;
+%newobject sml::ElementXML::GenerateXMLString(bool, bool) const ;
+%newobject sml::AnalyzeXML::GenerateXMLString(bool, bool) const ;
+%newobject sml::ClientAnalyzedXML::GenerateXMLString(bool, bool) const ;
+
 %typemap(newfree) char* sml::ClientXML::GenerateXMLString {
     sml::ClientXML::DeleteString($1);
 }

@@ -402,22 +402,24 @@ bool sml_GetUseCData(ElementXML_Handle hXML)
 * @brief Converts the XML object to a string.
 *
 * @param includeChildren	Includes all children in the XML output.
+* @param insertNewlines		Add newlines to space out the tags to be more human-readable
 *
 * @returns The string form of the object.  Caller must delete with DeleteString().
 *************************************************************/
-char* sml_GenerateXMLString(ElementXML_Handle const hXML, bool includeChildren)
+char* sml_GenerateXMLString(ElementXML_Handle const hXML, bool includeChildren, bool insertNewLines)
 {
-	return GetElementFromHandle(hXML)->GenerateXMLString(includeChildren) ;
+	return GetElementFromHandle(hXML)->GenerateXMLString(includeChildren, insertNewLines) ;
 }
 
 /*************************************************************
 * @brief Returns the length of string needed to represent this object (does not include the trailing null, so add one for that)
-*	*
+*
 * @param includeChildren	Includes all children in the XML output.
+* @param insertNewlines		Add newlines to space out the tags to be more human-readable
 *************************************************************/
-int sml_DetermineXMLStringLength(ElementXML_Handle const hXML, bool includeChildren)
+int sml_DetermineXMLStringLength(ElementXML_Handle const hXML, bool includeChildren, bool insertNewLines)
 {
-	return GetElementFromHandle(hXML)->DetermineXMLStringLength(includeChildren);
+	return GetElementFromHandle(hXML)->DetermineXMLStringLength(0, includeChildren, insertNewLines);
 }
 
 ////////////////////////////////////////////////////////////////

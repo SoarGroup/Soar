@@ -526,21 +526,21 @@ bool SimpleCommand()
 	std::string trace ;	// We'll pass this into the handler and build up the output in it
 	int callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
 
-	std::string path = std::string(pKernel->GetLibraryLocation()) + "/Tests/testrun.soar" ;
+	std::string path = std::string(pKernel->GetLibraryLocation()) + "/Tests/testmatches.soar" ;
 	bool ok = pAgent->LoadProductions(path.c_str()) ;
 
-	pAgent->ExecuteCommandLine("run 1") ;
+	pAgent->ExecuteCommandLine("run 4") ;
 	cout << trace << endl ;
 
 	// This is the command being tested
 	//std::string command = "matches apply*init-count" ;
-	std::string command = "matches apply*count" ;
+	std::string command = "matches apply*matches -w" ;
 
 	// XML version
 	ClientAnalyzedXML response ;
 	ok = ok && pAgent->ExecuteCommandLineXML(command.c_str(), &response) ; 
 
-	char* pXML = response.GenerateXMLString(true) ;
+	char* pXML = response.GenerateXMLString(true, true) ;
 	cout << pXML << endl ;
 	response.DeleteString(pXML) ;
 

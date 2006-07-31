@@ -223,22 +223,24 @@ int	 ClientXML::GetCharacterDataLength() const
 * @brief Converts the XML object to a string.
 *
 * @param includeChildren	Includes all children in the XML output.
+* @param insertNewlines		Add newlines to space out the tags to be more human-readable
 *
 * @returns The string form of the object.
 *************************************************************/
-char* ClientXML::GenerateXMLString(bool includeChildren) const
+char* ClientXML::GenerateXMLString(bool includeChildren, bool insertNewLines) const
 {
-	return m_pElementXML->GenerateXMLString(includeChildren) ;
+	return m_pElementXML->GenerateXMLString(includeChildren, insertNewLines) ;
 }
 
 /*************************************************************
 * @brief Returns the length of string needed to represent this object (does not include the trailing null, so add one for that)
-*	*
+*
 * @param includeChildren	Includes all children in the XML output.
+* @param insertNewlines		Add newlines to space out the tags to be more human-readable
 *************************************************************/
-int ClientXML::DetermineXMLStringLength(bool includeChildren) const
+int ClientXML::DetermineXMLStringLength(bool includeChildren, bool insertNewLines) const
 {
-	return m_pElementXML->DetermineXMLStringLength(includeChildren) ;
+	return m_pElementXML->DetermineXMLStringLength(includeChildren, insertNewLines) ;
 }
 
 /*************************************************************

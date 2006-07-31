@@ -77,9 +77,9 @@ double ClientAnalyzedXML::GetResultFloat(double defaultValue) const
 }
 
 // Returns the string form of the XML.  Must be released with the static DeleteString method
-char* ClientAnalyzedXML::GenerateXMLString(bool includeChildren) const
+char* ClientAnalyzedXML::GenerateXMLString(bool includeChildren, bool insertNewLines) const
 {
-	return m_pAnalyzeXML->GenerateXMLString(includeChildren) ;
+	return m_pAnalyzeXML->GenerateXMLString(includeChildren, insertNewLines) ;
 }
 
 void ClientAnalyzedXML::DeleteString(char* pString)
