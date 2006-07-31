@@ -8045,9 +8045,21 @@ void xmlSymbol(agent* thisAgent, char const* pAttribute, Symbol* pSymbol)
 	cli::GetCLI()->XMLAddAttribute(pAttribute, symbol_to_string(thisAgent, pSymbol, true, 0, 0)) ;
 }
 
-void xmlSwapCurrentWithLastTag()
+// These "moveCurrent" methods allow us to move the entry point for new XML
+// around in the existing structure.  That's not often required but occassionally is helpful.
+void xmlMoveCurrentToParent()
 {
-	cli::GetCLI()->XMLSwapCurrentWithLastTag() ;
+	cli::GetCLI()->XMLMoveCurrentToParent() ;
+}
+
+void xmlMoveCurrentToChild(int index)
+{
+	cli::GetCLI()->XMLMoveCurrentToChild(index) ;
+}
+
+void xmlMoveCurrentToLastChild()
+{
+	cli::GetCLI()->XMLMoveCurrentToLastChild() ;
 }
 
 void xmlULong(char const* pAttribute, unsigned long value)
@@ -8824,40 +8836,46 @@ long xml_aux (agent* thisAgent,   /* current agent */
     xml_condition (thisAgent, cond);
 
 	// DJP: This is a trick to let us insert more attributes into xml_condition().
-	// This swap call moves us back into the last tag created -- the condition in this case.
-	xmlSwapCurrentWithLastTag() ;
+	xmlMoveCurrentToLastChild() ;
     // DJP: Moved this test from earlier down to here as no longer building match_count_string
     if (!matches_one_level_up)
 		xmlInt(kMatchCount, 0) ;
 	else
 	    xmlInt(kMatchCount, matches_at_this_level) ;
-	xmlSwapCurrentWithLastTag() ;
-
+	xmlMoveCurrentToParent() ;
 
     //print (thisAgent, "\n");
     /* --- if this is the first match-failure (0 matches), print info on
        matches for left and right --- */
     if (matches_one_level_up && (!matches_at_this_level)) {
       if (wtt!=NONE_WME_TRACE) {
-        print_spaces (thisAgent, indent);
-        print (thisAgent, "*** Matches For Left ***\n");
+        //print_spaces (thisAgent, indent);
+		xmlBeginTag(kTagLeftMatches) ;
+        //print (thisAgent, "*** Matches For Left ***\n");
         parent_tokens = get_all_left_tokens_emerging_from_node (thisAgent, parent);
         for (t=parent_tokens; t!=NIL; t=t->next_of_node) {
-          print_spaces (thisAgent, indent);
-          print_whole_token (thisAgent, t, wtt);
-          print (thisAgent, "\n");
+          //print_spaces (thisAgent, indent);
+		  xmlBeginTag("token") ;
+          xml_whole_token (thisAgent, t, wtt);
+		  xmlEndTag("token") ;
+          //print (thisAgent, "\n");
         }
         deallocate_token_list (thisAgent, parent_tokens);
-        print_spaces (thisAgent, indent);
-        print (thisAgent, "*** Matches for Right ***\n");
-        print_spaces (thisAgent, indent);
+		xmlEndTag(kTagLeftMatches) ;
+        //print_spaces (thisAgent, indent);
+        //print (thisAgent, "*** Matches for Right ***\n");
+		xmlBeginTag(kTagRightMatches) ;
+        //print_spaces (thisAgent, indent);
         for (rm=node->b.posneg.alpha_mem_->right_mems; rm!=NIL;
              rm=rm->next_in_am) {
-          if (wtt==TIMETAG_WME_TRACE) print (thisAgent, "%lu", rm->w->timetag);
-          else if (wtt==FULL_WME_TRACE) print_wme (thisAgent, rm->w);
-          print (thisAgent, " ");
+          //if (wtt==TIMETAG_WME_TRACE) print (thisAgent, "%lu", rm->w->timetag);
+          //else if (wtt==FULL_WME_TRACE) print_wme (thisAgent, rm->w);
+          //print (thisAgent, " ");
+          if (wtt==TIMETAG_WME_TRACE) xmlULong(kWME_TimeTag, rm->w->timetag);
+          else if (wtt==FULL_WME_TRACE) xml_wme (thisAgent, rm->w);
         }
-        print (thisAgent, "\n");
+		xmlEndTag(kTagRightMatches) ;
+        //print (thisAgent, "\n");
       }
     } /* end of if (matches_one_level_up ...) */
   }

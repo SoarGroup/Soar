@@ -1104,9 +1104,33 @@ void CommandLineInterface::XMLEndTag(char const* pTagName)
 	m_XMLResult->EndTag(pTagName) ;
 }
 
-bool CommandLineInterface::XMLSwapCurrentWithLastTag()
+/*************************************************************
+* @brief	Occassionally it's helpful to be able to back up
+*			in the XML and add some extra elements.
+*
+*			These calls should only be used once a tag has been completed,
+*			so the sequence is something like:
+*			beginTag() ;
+*			...
+*			endTag() ;
+*			moveToLastChild() ;	// Goes back to previous tag
+*			add an extra attribute() ;
+*			moveToParent() ;	// Go back to parent
+*			... continue on
+*************************************************************/
+bool CommandLineInterface::XMLMoveCurrentToParent()
 {
-	return m_XMLResult->SwapCurrentWithLastTag() ;
+	return m_XMLResult->MoveCurrentToParent() ;
+}
+
+bool CommandLineInterface::XMLMoveCurrentToChild(int index)
+{
+	return m_XMLResult->MoveCurrentToChild(index) ;
+}
+
+bool CommandLineInterface::XMLMoveCurrentToLastChild()
+{
+	return m_XMLResult->MoveCurrentToLastChild() ;
 }
 
 // The copies over the m_XMLResult object to the response XML object and sets the

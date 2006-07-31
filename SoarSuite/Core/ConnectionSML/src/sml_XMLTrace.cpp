@@ -27,8 +27,8 @@ XMLTrace::XMLTrace()
 	m_XML = new ElementXML() ;
 	m_XML->SetTagName(sml_Names::kTagTrace) ;
 
-	m_pCurrentTag = NULL ;
-	m_pLastTag = NULL ;
+	m_pCurrentTag = new ElementXML(m_XML->GetXMLHandle()) ;
+	m_pCurrentTag->AddRefOnHandle() ;
 }
 
 // Alternative contstuctor where we specify the base tag name
@@ -37,17 +37,14 @@ XMLTrace::XMLTrace(char const* pTagName)
 	m_XML = new ElementXML() ;
 	m_XML->SetTagName(pTagName) ;
 
-	m_pCurrentTag = NULL ;
-	m_pLastTag = NULL ;
+	m_pCurrentTag = new ElementXML(m_XML->GetXMLHandle()) ;
+	m_pCurrentTag->AddRefOnHandle() ;
 }
 
 XMLTrace::~XMLTrace()
 {
 	delete m_pCurrentTag ;
 	m_pCurrentTag = NULL ;
-
-	delete m_pLastTag ;
-	m_pLastTag = NULL ;
 
 	delete m_XML ;
 	m_XML = NULL ;
@@ -67,6 +64,9 @@ void XMLTrace::Reset()
 
 	m_XML = new ElementXML() ;
 	m_XML->SetTagName(sml_Names::kTagTrace) ;
+
+	m_pCurrentTag = new ElementXML(m_XML->GetXMLHandle()) ;
+	m_pCurrentTag->AddRefOnHandle() ;
 }
 
 /*************************************************************
@@ -97,9 +97,9 @@ void XMLTrace::BeginTag(char const* pTagName)
 	// The new tag is created as a child of the current tag (if we have one)
 	// or the root if we don't.  Adding the child deletes the pChild object
 	// normally, so we have to create a second one.  Perhaps we should redesign AddChild?
-	if (m_pCurrentTag == NULL)
-		hChild = m_XML->AddChild(pChild) ;
-	else
+//	if (m_pCurrentTag == NULL)
+//		hChild = m_XML->AddChild(pChild) ;
+//	else
 		hChild = m_pCurrentTag->AddChild(pChild) ;
 
 	delete m_pCurrentTag ;
@@ -110,18 +110,48 @@ void XMLTrace::BeginTag(char const* pTagName)
 /*************************************************************
 * @brief	Occassionally it's helpful to be able to back up
 *			in the XML and add some extra elements.
-*			This command swaps the current marker with the last element closed.
-*			IT SHOULD ONLY BE CALLED AFTER EndTag() has just been called.
 *
-*			After swapping and making some additions, call here again to swap back.
+*			These calls should only be used once a tag has been completed,
+*			so the sequence is something like:
+*			beginTag() ;
+*			...
+*			endTag() ;
+*			moveToLastChild() ;	// Goes back to previous tag
+*			add an extra attribute() ;
+*			moveToParent() ;	// Go back to parent
+*			... continue on
 *************************************************************/
-bool XMLTrace::SwapCurrentWithLastTag()
+bool XMLTrace::MoveCurrentToParent()
 {
-	ElementXML* pTemp = m_pCurrentTag ;
-	m_pCurrentTag = m_pLastTag ;
-	m_pLastTag = pTemp ;
+	assert(m_pCurrentTag) ;
+	if (!m_pCurrentTag)
+		return false ;
 
-	return m_pCurrentTag != NULL ;
+	// Update the current tag to be its parent
+	// (Note: GetParent stores return value in parameter passed in)
+	bool hasParent = m_pCurrentTag->GetParent(m_pCurrentTag) ;
+
+	assert (hasParent) ;
+
+	return hasParent ;
+}
+
+bool XMLTrace::MoveCurrentToChild(int index)
+{
+	assert(m_pCurrentTag) ;
+	if (!m_pCurrentTag)
+		return false ;
+
+	return m_pCurrentTag->GetChild(m_pCurrentTag, index) ;	
+}
+
+bool XMLTrace::MoveCurrentToLastChild()
+{
+	assert(m_pCurrentTag) ;
+	if (!m_pCurrentTag)
+		return false ;
+
+	return MoveCurrentToChild(m_pCurrentTag->GetNumberChildren()-1) ;
 }
 
 /*************************************************************
@@ -144,22 +174,7 @@ void XMLTrace::EndTag(char const* pTagName)
     unused(pTagName); // quell compiler warning in VS.NET
 #endif
 
-	delete m_pLastTag ;
-	if (m_pCurrentTag->GetXMLHandle())
-	{
-		m_pLastTag = new ElementXML(m_pCurrentTag->GetXMLHandle()) ;
-		m_pLastTag->AddRefOnHandle() ;
-	}
-
-	// Update the current tag to be its parent
-	// (Note: GetParent stores return value in parameter passed in)
-	bool hasParent = m_pCurrentTag->GetParent(m_pCurrentTag) ;
-
-	if (!hasParent)
-	{
-		delete m_pCurrentTag ;
-		m_pCurrentTag = NULL ;
-	}
+	MoveCurrentToParent() ;
 }
 
 /*************************************************************
