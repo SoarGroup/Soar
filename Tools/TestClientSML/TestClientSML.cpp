@@ -542,6 +542,11 @@ bool SimpleCommand()
 
 	char* pXML = response.GenerateXMLString(true, true) ;
 	cout << pXML << endl ;
+
+	FILE* pFile = fopen("c:\\matches.txt", "w") ;
+	fputs(pXML, pFile) ;
+	fclose(pFile) ;
+
 	response.DeleteString(pXML) ;
 
 	//std::string res = pAgent->ExecuteCommandLine(command.c_str()) ;
