@@ -437,17 +437,20 @@ public:
     * @brief Converts the XML object to a string.
 	*
 	* @param includeChildren	Includes all children in the XML output.
+	* @param insertNewlines		Add newlines to space out the tags to be more human-readable
 	*
 	* @returns The string form of the object.  Caller must delete with DeleteString().
 	*************************************************************/
-	char* GenerateXMLString(bool includeChildren) const ;
+	char* GenerateXMLString(bool includeChildren, bool insertNewLines) const ;
 
     /*************************************************************
     * @brief Returns the length of string needed to represent this object (does not include the trailing null, so add one for that)
-	*	*
+	*
+	* @param depth				How deep we are into the XML tree (can be used for indedentation)
 	* @param includeChildren	Includes all children in the XML output.
+	* @param insertNewlines		Add newlines to space out the tags to be more human-readable
 	*************************************************************/
-	int DetermineXMLStringLength(bool includeChildren) const ;
+	int DetermineXMLStringLength(int depth, bool includeChildren, bool insertNewLines) const ;
 
 	////////////////////////////////////////////////////////////////
 	//
@@ -559,12 +562,14 @@ protected:
 	*		it in the list of params, so we can make this safe later
 	*		if we wish (for security etc).
 	*
+	* @param depth				How deep we are into the XML tree (can be used for indedentation)
 	* @param pStr				The XML object is stored in this string.
 	* @param maxLength			The max length of the string (not counting trailing null)
 	* @param includeChildren	Includes all children in the XML output.
+	* @param insertNewlines		Add newlines to space out the tags to be more human-readable
 	* @returns	Pointer to the end of the string.
 	*************************************************************/
-	char* GenerateXMLString(char* pStr, int maxLength, bool includeChildren) const ;
+	char* GenerateXMLString(int depth, char* pStr, int maxLength, bool includeChildren, bool insertNewLines) const ;
 
 
 };

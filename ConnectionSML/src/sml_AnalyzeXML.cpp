@@ -50,9 +50,9 @@ AnalyzeXML::~AnalyzeXML(void)
 }
 
 // Returns the string form of the XML.  Must be released with the static DeleteString method
-char* AnalyzeXML::GenerateXMLString(bool includeChildren) const
+char* AnalyzeXML::GenerateXMLString(bool includeChildren, bool insertNewLines) const
 {
-	return ::sml_GenerateXMLString(m_hRootObject, includeChildren) ;
+	return ::sml_GenerateXMLString(m_hRootObject, includeChildren, insertNewLines) ;
 }
 
 void AnalyzeXML::DeleteString(char* pString)

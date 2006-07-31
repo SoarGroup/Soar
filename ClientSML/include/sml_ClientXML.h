@@ -177,17 +177,19 @@ public:
     * @brief Converts the XML object to a string.
 	*
 	* @param includeChildren	Includes all children in the XML output.
+	* @param insertNewlines		Add newlines to space out the tags to be more human-readable
 	*
 	* @returns The string form of the object.
 	*************************************************************/
-	char* GenerateXMLString(bool includeChildren) const ;
+	char* GenerateXMLString(bool includeChildren, bool insertNewLines = false) const ;
 
 	/*************************************************************
     * @brief Returns the length of string needed to represent this object (does not include the trailing null, so add one for that)
-	*	*
+	*
 	* @param includeChildren	Includes all children in the XML output.
+	* @param insertNewlines		Add newlines to space out the tags to be more human-readable
 	*************************************************************/
-	int DetermineXMLStringLength(bool includeChildren) const ;
+	int DetermineXMLStringLength(bool includeChildren, bool insertNewLines = false) const ;
 
     /*************************************************************
     * @brief Utility function to allocate memory that the client will pass to the other ElementXML functions.

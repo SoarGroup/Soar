@@ -58,6 +58,8 @@ static char const* kQuote		  = "\"" ;
 static char const* kCommentStartString	= "<!--" ;
 static char const* kCommentEndString	= "-->" ;
 
+static char const* kNewLine		  = "\n" ;
+
 static char const* kEncodeHex = "bin_encoding=\"hex\"" ;
 
 static const int kLenLT   = (int)strlen(kLT) ;
@@ -73,6 +75,8 @@ static const int kLenStartTagOpen  = (int)strlen(kStartTagOpen) ;
 static const int kLenStartTagClose = (int)strlen(kStartTagClose) ;
 static const int kLenEndTagOpen    = (int)strlen(kEndTagOpen) ;
 static const int kLenEndTagClose   = (int)strlen(kEndTagClose) ;
+
+static const int kLenNewLine	   = (int)strlen(kNewLine) ;
 
 static const int kLenEquals		   = (int)strlen(kEquals) ;
 static const int kLenSpace		   = (int)strlen(kSpace) ;
@@ -899,19 +903,20 @@ bool ElementXMLImpl::GetUseCData() const
 * @brief Converts the XML object to a string.
 *
 * @param includeChildren	Includes all children in the XML output.
+* @param insertNewlines		Add newlines to space out the tags to be more human-readable
 *
 * @returns The string form of the object.  Caller must delete with DeleteString().
 *************************************************************/
-char* ElementXMLImpl::GenerateXMLString(bool includeChildren) const
+char* ElementXMLImpl::GenerateXMLString(bool includeChildren, bool insertNewLines) const
 {
 	// Work out how much space we will need
-	int len = DetermineXMLStringLength(includeChildren) ;
+	int len = DetermineXMLStringLength(0, includeChildren, insertNewLines) ;
 
 	// Allocate a string that big
 	char* pStr = AllocateString(len) ;
 
 	// Fill it in
-	char* pEnd = GenerateXMLString(pStr, len, includeChildren) ;
+	char* pEnd = GenerateXMLString(0, pStr, len, includeChildren, insertNewLines) ;
 
 	// Terminate the string
 	*pEnd = NUL ;
@@ -923,9 +928,11 @@ char* ElementXMLImpl::GenerateXMLString(bool includeChildren) const
 /*************************************************************
 * @brief Returns the length of string needed to represent this object.
 *
+* @param depth				How deep into the XML tree we are (can be used to indent)
 * @param includeChildren	Includes all children in the XML output.
+* @param insertNewlines		Add newlines to space out the tags to be more human-readable
 *************************************************************/
-int ElementXMLImpl::DetermineXMLStringLength(bool includeChildren) const
+int ElementXMLImpl::DetermineXMLStringLength(int depth, bool includeChildren, bool insertNewLines) const
 {
 	int len = 0 ;
 
@@ -935,12 +942,15 @@ int ElementXMLImpl::DetermineXMLStringLength(bool includeChildren) const
 		len += kLenCommentStartString + (int)strlen(m_Comment) + kLenCommentEndString ;
 	}
 
+	if (insertNewLines)
+		len += depth ;
+
 	// The start tag
 	if (m_TagName)
 	{
 		len += kLenStartTagOpen + (int)strlen(this->m_TagName) + kLenStartTagClose ;
 	}
-	
+
 	// The character data
 	if (m_CharacterData)
 	{
@@ -979,6 +989,18 @@ int ElementXMLImpl::DetermineXMLStringLength(bool includeChildren) const
 		mapIter++ ;
 	}
 
+	bool addedNewLine = false ;
+	if (insertNewLines)
+	{
+		// Put a new line after the end of the opening tag if there are children
+		// to be added.
+		if (!includeChildren || (includeChildren && !m_Children.empty()))
+		{
+			addedNewLine = true ;
+			len += kLenNewLine ;
+		}
+	}
+
 	if (includeChildren)
 	{
 		xmlListConstIter iter = m_Children.begin() ;
@@ -986,11 +1008,15 @@ int ElementXMLImpl::DetermineXMLStringLength(bool includeChildren) const
 		while (iter != m_Children.end())
 		{
 			ElementXMLImpl const* pChild = *iter ;
-			len += pChild->DetermineXMLStringLength(includeChildren) ;
+			len += pChild->DetermineXMLStringLength(depth+1, includeChildren, insertNewLines) ;
 
 			iter++ ;
 		}
 	}
+
+	// If we added a new line before children, need to indent again after children
+	if (addedNewLine)
+		len += depth ;
 
 	// The end tag
 	if (m_TagName)
@@ -998,18 +1024,23 @@ int ElementXMLImpl::DetermineXMLStringLength(bool includeChildren) const
 		len += kLenEndTagOpen + (int)strlen(this->m_TagName) + kLenEndTagClose ;
 	}
 
+	if (insertNewLines)
+		len += kLenNewLine ;
+
 	return len ;
 }
 
 /*************************************************************
 * @brief Converts the XML object to a string.
 *
+* @param depth				How deep we are into the XML tree
 * @param pStr				The XML object is stored in this string.
 * @param maxLength			The max length of the string
 * @param includeChildren	Includes all children in the XML output.
+* @param insertNewlines		Add newlines to space out the tags to be more human-readable
 * @returns Pointer to the end of the string.
 *************************************************************/
-char* ElementXMLImpl::GenerateXMLString(char* pStart, int maxLength, bool includeChildren) const
+char* ElementXMLImpl::GenerateXMLString(int depth, char* pStart, int maxLength, bool includeChildren, bool insertNewLines) const
 {
 	// It's useful for debugging to keep pStart around so we can
 	// see the string being formed.
@@ -1022,6 +1053,13 @@ char* ElementXMLImpl::GenerateXMLString(char* pStart, int maxLength, bool includ
 		pStr = AddString(pStr, kCommentStartString) ;
 		pStr = AddString(pStr, m_Comment) ;
 		pStr = AddString(pStr, kCommentEndString) ;
+	}
+
+	if (insertNewLines)
+	{
+		// Indent by depth chars
+		for (int i = 0 ; i < depth ; i++)
+			pStr = AddString(pStr, " ") ;
 	}
 
 	pStr = AddString(pStr, kStartTagOpen) ;
@@ -1086,6 +1124,18 @@ char* ElementXMLImpl::GenerateXMLString(char* pStart, int maxLength, bool includ
 		}
 	}
 	
+	bool addedNewLine = false ;
+	if (insertNewLines)
+	{
+		// Put a new line after the end of the opening tag if there are children
+		// to be added.
+		if (!includeChildren || (includeChildren && !m_Children.empty()))
+		{
+			addedNewLine = true ;
+			pStr = AddString(pStr, kNewLine) ;
+		}
+	}
+
 	if (includeChildren)
 	{
 		xmlListConstIter iter = m_Children.begin() ;
@@ -1093,10 +1143,18 @@ char* ElementXMLImpl::GenerateXMLString(char* pStart, int maxLength, bool includ
 		while (iter != m_Children.end())
 		{
 			ElementXMLImpl const* pChild = *iter ;
-			pStr = pChild->GenerateXMLString(pStr, maxLength, includeChildren) ;
+			pStr = pChild->GenerateXMLString(depth+1, pStr, maxLength, includeChildren, insertNewLines) ;
 
 			iter++ ;
 		}
+	}
+
+	// If we added a new line before children, need to indent again after children
+	if (addedNewLine)
+	{
+		// Indent by depth chars
+		for (int i = 0 ; i < depth ; i++)
+			pStr = AddString(pStr, " ") ;
 	}
 
 	// The end tag
@@ -1106,6 +1164,9 @@ char* ElementXMLImpl::GenerateXMLString(char* pStart, int maxLength, bool includ
 		pStr = AddString(pStr, this->m_TagName) ;
 		pStr = AddString(pStr, kEndTagClose) ;
 	}
+
+	if (insertNewLines)
+		pStr = AddString(pStr, kNewLine) ;
 
 	return pStr ;
 }

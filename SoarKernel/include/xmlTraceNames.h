@@ -185,6 +185,8 @@ namespace xmlTraceNames
 	static char const* const kRetractions	= "retractions" ;
 	static char const* const kMatches		= "matches" ;
 	static char const* const kMatchCount	= "matchcount" ;
+	static char const* const kTagLeftMatches  = "left-matches" ;
+	static char const* const kTagRightMatches = "right-matches" ;
 
 	// marker for showing beginning of action-side
 	static char const* const kTagActionSideMarker	= "actionsidemarker";

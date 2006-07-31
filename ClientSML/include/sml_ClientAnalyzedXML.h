@@ -63,7 +63,7 @@ public:
 	double GetResultFloat(double defaultValue) const ;
 
 	// Returns the string form of the XML.  Must be released with the static DeleteString method
-	char* GenerateXMLString(bool includeChildren) const ;
+	char* GenerateXMLString(bool includeChildren, bool insertNewLines = false) const ;
 
 	static void DeleteString(char* pString) ;
 
