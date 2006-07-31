@@ -8855,9 +8855,9 @@ long xml_aux (agent* thisAgent,   /* current agent */
         parent_tokens = get_all_left_tokens_emerging_from_node (thisAgent, parent);
         for (t=parent_tokens; t!=NIL; t=t->next_of_node) {
           //print_spaces (thisAgent, indent);
-		  xmlBeginTag("token") ;
+		  xmlBeginTag(kTagToken) ;
           xml_whole_token (thisAgent, t, wtt);
-		  xmlEndTag("token") ;
+		  xmlEndTag(kTagToken) ;
           //print (thisAgent, "\n");
         }
         deallocate_token_list (thisAgent, parent_tokens);
