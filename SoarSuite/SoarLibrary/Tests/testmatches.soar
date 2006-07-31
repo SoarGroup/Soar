@@ -41,6 +41,8 @@ sp {apply*count*combo
 sp {apply*matches
 	(state <s> ^combo <c> ^operator <o>)
 	(<c> ^combo <combo>)
+	-{(<c> ^combo <combo1>)
+          (<combo1> ^total <count>)}
 	(<combo> ^count <count>)
 	(<o> ^name count ^count <count>)
 -->
