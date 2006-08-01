@@ -32,7 +32,7 @@ jni.h. You may point it to the location of your java installation using
 the following switch (along with the --prefix switch) on the configure
 command line:
 
-	--with-javainc=/path/to/java/include
+	--with-javaincl=/path/to/java/include
 
 Note that you provide the path to the "include" directory, not to the
 jni.h file itself. If you want to disable java (not recommended, many of
