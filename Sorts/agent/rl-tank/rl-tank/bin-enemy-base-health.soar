@@ -1,0 +1,110 @@
+########################################################################
+#                                                                      #
+#               This file was generated automatically                  #
+#                                                                      #
+########################################################################
+
+
+sp {propose*bin-enemy-base-health-dead
+   (state <s> ^name rl-tank
+              ^enemy-pid <pid>
+             -^enemy-base-health dead
+              ^io.input-link.groups <gs>)
+  -{(<gs> ^group <g>)
+    (<g> ^owner <pid>
+         ^type |controlCenter|)}
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name bin-enemy-base-health-dead)}
+
+sp {apply*bin-enemy-base-health-dead
+   (state <s> ^operator.name bin-enemy-base-health-dead
+              ^enemy-base-health { <h> <> dead })
+-->
+   (<s> ^enemy-base-health <h> -)
+   (<s> ^enemy-base-health dead)}
+
+sp {apply*bin-enemy-base-health-dead-alt
+   (state <s> ^operator.name bin-enemy-base-health-dead
+             -^enemy-base-health)
+-->
+   (<s> ^enemy-base-health dead)}
+
+
+sp {propose*bin-enemy-base-health-low
+   (state <s> ^name rl-tank
+              ^enemy-pid <pid>
+             -^enemy-base-health low
+              ^io.input-link.groups.group <g>)
+   (<g> ^owner <pid>
+        ^type |controlCenter|
+        ^health { > 0 < 250 } )
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name bin-enemy-base-health-low)}
+
+sp {apply*bin-enemy-base-health-low
+   (state <s> ^operator.name bin-enemy-base-health-low
+              ^enemy-base-health { <h> <> low })
+-->
+   (<s> ^enemy-base-health <h> -)
+   (<s> ^enemy-base-health low)}
+
+sp {apply*bin-enemy-base-health-low-alt
+   (state <s> ^operator.name bin-enemy-base-health-low
+             -^enemy-base-health)
+-->
+   (<s> ^enemy-base-health low)}
+
+
+sp {propose*bin-enemy-base-health-med
+   (state <s> ^name rl-tank
+              ^enemy-pid <pid>
+             -^enemy-base-health med
+              ^io.input-link.groups.group <g>)
+   (<g> ^owner <pid>
+        ^type |controlCenter|
+        ^health { >= 250 < 500 } )
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name bin-enemy-base-health-med)}
+
+sp {apply*bin-enemy-base-health-med
+   (state <s> ^operator.name bin-enemy-base-health-med
+              ^enemy-base-health { <h> <> med })
+-->
+   (<s> ^enemy-base-health <h> -)
+   (<s> ^enemy-base-health med)}
+
+sp {apply*bin-enemy-base-health-med-alt
+   (state <s> ^operator.name bin-enemy-base-health-med
+             -^enemy-base-health)
+-->
+   (<s> ^enemy-base-health med)}
+
+
+sp {propose*bin-enemy-base-health-high
+   (state <s> ^name rl-tank
+              ^enemy-pid <pid>
+             -^enemy-base-health high
+              ^io.input-link.groups.group <g>)
+   (<g> ^owner <pid>
+        ^type |controlCenter|
+        ^health { >= 500 <= 750 } )
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name bin-enemy-base-health-high)}
+
+sp {apply*bin-enemy-base-health-high
+   (state <s> ^operator.name bin-enemy-base-health-high
+              ^enemy-base-health { <h> <> high })
+-->
+   (<s> ^enemy-base-health <h> -)
+   (<s> ^enemy-base-health high)}
+
+sp {apply*bin-enemy-base-health-high-alt
+   (state <s> ^operator.name bin-enemy-base-health-high
+             -^enemy-base-health)
+-->
+   (<s> ^enemy-base-health high)}
+

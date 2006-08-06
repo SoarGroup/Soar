@@ -1,0 +1,26 @@
+source _firstload.soar
+pushd all
+source all_source.soar
+popd
+pushd elaborations
+source elaborations_source.soar
+popd
+source attack-base.soar
+pushd attack-base
+source attack-base_source.soar
+popd
+source attack-tank.soar
+pushd attack-tank
+source attack-tank_source.soar
+popd
+source bin-enemy-base-health.soar
+source bin-enemy-tank-health.soar
+source bin-my-base-health.soar
+source bin-my-tank-health.soar
+source halt.soar
+source identify-enemy.soar
+source identify-self.soar
+source initialize-rl-tank.soar
+source initialize-watches.soar
+source rl-templates.soar
+source wait.soar

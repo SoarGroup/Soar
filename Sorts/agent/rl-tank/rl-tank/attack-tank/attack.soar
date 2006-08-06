@@ -1,0 +1,32 @@
+sp {attack-tank*propose*attack
+   (state <s> ^name attack-tank
+              ^my-pid <mpid>
+              ^enemy-pid <epid>
+              ^io.input-link.groups <g>
+             -^command-sent)
+   (<g> ^group <g1>
+        ^group { <g2> <> <g1> })
+   (<g1> ^id <g1id>
+         ^type tank
+         ^owner <mpid>)
+   (<g2> ^id <g2id>
+         ^owner <epid>
+         ^type tank)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name attack-tank-effective
+        ^g1id <g1id>
+        ^g2id <g2id>)}
+
+sp {attack-tank*apply*attack
+   (state <s> ^name attack-tank
+              ^io.output-link.sorts <cmd>
+              ^operator <o>)
+   (<o> ^name attack-tank-effective
+        ^g1id <g1id>
+        ^g2id <g2id>)
+-->
+   (<s> ^command-sent 1)
+   (<cmd> ^attack <a>)
+   (<a> ^group0 <g1id>
+        ^group1 <g2id>)}

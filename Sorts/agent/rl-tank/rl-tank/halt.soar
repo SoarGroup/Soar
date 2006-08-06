@@ -1,0 +1,31 @@
+sp {halt-win
+   (state <s> ^name rl-tank
+              ^enemy-base-health dead
+              ^reward-link <r>)
+-->
+   (<r> ^reward.value 100)
+   (halt)}
+
+sp {halt-lose
+   (state <s> ^name rl-tank
+              ^my-base-health dead
+              ^reward-link <r>)
+-->
+   (<r> ^reward.value -100)
+   (halt)}
+
+sp {halt-lose-1
+   (state <s> ^name rl-tank
+              ^my-tank-health dead
+              ^enemy-tank-health { <> dead }
+              ^reward-link <r>)
+-->
+   (<r> ^reward.value -100)
+   (halt)}
+
+sp {halt-tie
+   (state <s> ^name rl-tank
+              ^my-tank-health dead
+              ^enemy-tank-health dead)
+-->
+   (halt)}

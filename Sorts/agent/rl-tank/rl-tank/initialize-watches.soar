@@ -1,0 +1,54 @@
+sp {propose*initialize-watches
+   (state <s> ^name rl-tank
+              ^my-pid <mpid>
+              ^enemy-pid <epid>
+              ^io.input-link.groups <gs>
+             -^io.output-link.watch)
+   (<gs> ^group <mytank>
+         ^group <mybase>
+         ^group <etank>
+         ^group <ebase>)
+   (<mytank> ^owner <mpid>
+             ^type tank)
+   (<mybase> ^owner <mpid>
+             ^type |controlCenter|)
+   (<etank> ^owner <epid>
+            ^type tank)
+   (<ebase> ^owner <epid>
+            ^type |controlCenter|)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name initialize-watches
+        ^mtid <mytank>
+        ^mbid <mybase>
+        ^etid <etank>
+        ^ebid <ebase>)}
+
+sp {apply*initialize-watches
+   (state <s> ^my-pid <mpid>
+              ^enemy-pid <epid>
+              ^io.output-link <out>
+              ^operator <o>)
+   (<o> ^name initialize-watches
+        ^mtid <mytank>
+        ^mbid <mybase>
+        ^etid <etank>
+        ^ebid <ebase>)
+-->
+   (<out> ^watch <w>)
+   (<w> ^item <mytank-watch>
+        ^item <mybase-watch>
+        ^item <etank-watch>
+        ^item <ebase-watch>)
+   (<mytank-watch> ^name mytank-watch
+                   ^id <mytank>
+                   ^attribute health)
+   (<mybase-watch> ^name mybase-watch
+                   ^id <mybase>
+                   ^attribute health)
+   (<etank-watch> ^name etank-watch
+                  ^id <etank>
+                  ^attribute health)
+   (<ebase-watch> ^name ebase-watch
+                  ^id <ebase>
+                  ^attribute health)}

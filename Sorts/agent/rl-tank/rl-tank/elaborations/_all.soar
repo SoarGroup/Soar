@@ -1,0 +1,18 @@
+sp {elaborate*state*name
+   (state <s> ^superstate <ss>)
+   (<ss> ^operator.name <name>
+         ^my-pid <mpid>
+         ^enemy-pid <epid>
+         ^io <io>)
+-->
+   (<s> ^name <name>
+        ^my-pid <mpid>
+        ^enemy-pid <epid>
+        ^io <io>)}
+
+sp {elaborate*state*top-state
+   (state <s> ^superstate.top-state <ts>)
+-->
+   (<s> ^top-state <ts>)
+}
+

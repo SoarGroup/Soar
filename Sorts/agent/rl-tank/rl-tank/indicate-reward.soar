@@ -1,0 +1,17 @@
+sp {elaborate*indicate-reward
+   (state <s> ^name rl-tank
+              ^reward-link.reward.value { <v> > 0 })
+-->
+   (write (crlf) |&&&&& REWARD &&&&| <v> (crlf))}
+
+sp {elaborate*indicate-tank-damage
+   (state <s> ^name rl-tank
+              ^io.input-link.watch.etank-watch { <v> > 0 })
+-->
+   (write (crlf) |&&&&& TANK DAMAGE &&&&| <v> (crlf))}
+
+sp {elaborate*indicate-base-damage
+   (state <s> ^name rl-tank
+              ^io.input-link.watch.ebase-watch { <v> > 0 })
+-->
+   (write (crlf) |&&&&& BASE DAMAGE &&&&| <v> (crlf))}
