@@ -1,0 +1,13 @@
+Soar and SML
+* added Python support
+* added CheckForIncomingEvents to help single-threaded applications
+* matches command can now generate XML output
+
+TankSoar and Eaters
+* lots of TankSoar and Eaters bugfixes
+* added ^status error support to TankSoar
+
+Other
+* cleaned up builds somewhat
+* Windows builds now done with Visual Studio 2005
+* updated to SWT 3.2.0
