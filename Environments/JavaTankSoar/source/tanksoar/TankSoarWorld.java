@@ -33,7 +33,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	private TankSoarSimulation m_Simulation;
 	private TankSoarCell[][] m_World;
 	private boolean m_PrintedStats;
-	private Tank[] m_Tanks;
+	private Tank[] m_Tanks = new Tank[0];
 	private boolean quiet;
 	
 	private LinkedList missiles = new LinkedList();
@@ -163,7 +163,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 	
 	private void resetTanks() {
-		if (m_Tanks == null) {
+		if (m_Tanks.length == 0) {
 			return;
 		}
 		for (int i = 0; i < m_Tanks.length; ++i) {
@@ -260,17 +260,12 @@ public class TankSoarWorld extends World implements WorldManager {
 
 		logger.info(tank.getName() + ": Spawning at (" + location.x + "," + location.y + ")");
 		
-		if (m_Tanks == null) {
-			m_Tanks = new Tank[1];
-			m_Tanks[0] = tank;
-		} else {
-			Tank[] original = m_Tanks;
-			m_Tanks = new Tank[original.length + 1];
-			for (int i = 0; i < original.length; ++i) {
-				m_Tanks[i] = original[i];
-			}
-			m_Tanks[original.length] = tank;
+		Tank[] original = m_Tanks;
+		m_Tanks = new Tank[original.length + 1];
+		for (int i = 0; i < original.length; ++i) {
+			m_Tanks[i] = original[i];
 		}
+		m_Tanks[original.length] = tank;
 
 		// Update all Tank sensors
 		for (int i = 0; i < m_Tanks.length; ++i) {
@@ -281,10 +276,15 @@ public class TankSoarWorld extends World implements WorldManager {
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			m_Tanks[i].writeInputLink();
 		}		
+		
+		// Clear points changed switch
+		for (int i = 0; i < m_Tanks.length; ++i) {
+			m_Tanks[i].clearPointsChanged();
+		}		
 	}
 	
 	void destroyTank(Tank tank) {
-		if (m_Tanks == null) {
+		if (m_Tanks.length == 0) {
 			logger.finer("Asked to destroy a tank when none exist.");
 			return;
 		}
@@ -294,23 +294,17 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 		for (int i = 0; i < m_Tanks.length; ++i) {
 			if (tank.equals(m_Tanks[i])) {
-				if (m_Tanks.length == 1) {
-					m_Tanks = null;
-				} else {
-					Tank[] original = m_Tanks;
-					m_Tanks = new Tank[original.length - 1];
-					for (int j = 0; j < m_Tanks.length; ++j) {
-						if (j < i) {
-							m_Tanks[j] = original[j];
-						} else {
-							m_Tanks[j] = original[j+1];
-						}
+				Tank[] original = m_Tanks;
+				m_Tanks = new Tank[original.length - 1];
+				for (int j = 0; j < m_Tanks.length; ++j) {
+					if (j < i) {
+						m_Tanks[j] = original[j];
+					} else {
+						m_Tanks[j] = original[j+1];
 					}
 				}
 				getCell(tank.getLocation()).removeTank(tank);
-				if (m_Tanks == null) {
-					break;
-				}
+				return;
 			}
 		}
 	}
@@ -384,7 +378,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		}
 
 		// Sanity check, need tanks to make an update meaningful
-		if (m_Tanks == null || m_Tanks.length == 0) {
+		if (m_Tanks.length == 0) {
 			logger.warning("Update called with no tanks.");
 			return;
 		}
@@ -638,12 +632,13 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 	
 	public void shutdown() {
-		if (m_Tanks != null && m_Tanks.length > 0) {
+		if (m_Tanks.length > 0) {
 			int[] scores = getSortedScores();
 			printEndingStats(scores);
-		}
-		while (m_Tanks != null) {
-			m_Simulation.destroyTank(m_Tanks[0]);
+
+			while (m_Tanks.length > 0) {
+				m_Simulation.destroyTank(m_Tanks[0]);
+			}
 		}
 	}
 	
@@ -672,7 +667,7 @@ public class TankSoarWorld extends World implements WorldManager {
 	}
 	
 	public int getSoundNear(Tank tank) {
-		if ((m_Tanks == null) || (m_Tanks.length <= 1)) {
+		if (m_Tanks.length <= 1) {
 			return 0;
 		}
 		
@@ -784,7 +779,7 @@ public class TankSoarWorld extends World implements WorldManager {
 
 	
 	public Tank getStinkyTankNear(Tank tank) {
-		if ((m_Tanks == null) || (tank == null) || (m_Tanks.length <= 1)) {
+		if ((tank == null) || (m_Tanks.length <= 1)) {
 			return null;
 		}
 
