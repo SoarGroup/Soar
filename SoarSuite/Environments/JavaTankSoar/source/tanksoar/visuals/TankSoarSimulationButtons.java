@@ -16,7 +16,7 @@ public class TankSoarSimulationButtons extends SimulationButtons {
 	void updateButtons() {
 		boolean running = m_Simulation.isRunning();
 		boolean done = m_Simulation.getTankSoarWorld().getVictoryCondition();
-		boolean tanks = (m_Simulation.getTankSoarWorld().getTanks() != null);
+		boolean tanks = (m_Simulation.getTankSoarWorld().getTanks().length != 0);
 		
         m_RunButton.setEnabled(!running && !done && tanks);
         m_StopButton.setEnabled(running);

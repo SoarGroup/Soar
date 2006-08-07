@@ -23,6 +23,7 @@ public class InputLinkManager {
 	private final static String kBlockedID = "blocked";
 	private final static String kClockID = "clock";
 	private final static String kColorID = "color";
+	private final static String kCurrentScoreID = "current-score";
 	private final static String kDirectionID = "direction";
 	private final static String kDistanceID = "distance";
 	private final static String kEnergyRechargerID = "energyrecharger";
@@ -70,6 +71,16 @@ public class InputLinkManager {
 	private StringElement m_BlockedLeftWME;
 	private StringElement m_BlockedRightWME;
 	private IntElement m_ClockWME;
+	private Identifier m_CurrentScoreWME;
+	
+	private IntElement m_BlueScore;
+	private IntElement m_RedScore;
+	private IntElement m_YellowScore;
+	private IntElement m_GreenScore;
+	private IntElement m_PurpleScore;
+	private IntElement m_OrangeScore;
+	private IntElement m_BlackScore;
+	
 	private StringElement m_DirectionWME;
 	private IntElement m_EnergyWME;
 	private StringElement m_EnergyRechargerWME;
@@ -171,6 +182,16 @@ public class InputLinkManager {
 		DestroyWME(m_ClockWME);
 		m_ClockWME = null;
 		
+		DestroyWME(m_CurrentScoreWME);
+		m_CurrentScoreWME = null;
+		m_BlueScore = null;
+		m_RedScore = null;
+		m_YellowScore = null;
+		m_GreenScore = null;
+		m_PurpleScore = null;
+		m_OrangeScore = null;
+		m_BlackScore = null;
+
 		DestroyWME(m_DirectionWME);
 		m_DirectionWME = null;
 		
@@ -237,6 +258,103 @@ public class InputLinkManager {
 		clearRadar();
 
 		m_Reset = true;
+	}
+	
+	void initScoreWMEs() {
+		if (m_CurrentScoreWME == null) {
+			return;
+		}
+		
+		boolean blueSeen = false;
+		boolean redSeen = false;
+		boolean yellowSeen = false;
+		boolean greenSeen = false;
+		boolean purpleSeen = false;
+		boolean orangeSeen = false;
+		boolean blackSeen = false;
+		
+		Tank[] tanks = m_World.getTanks();
+		for (int i = 0; i < tanks.length; ++i) {
+			if (tanks[i].getColor().equals("blue")) {
+				blueSeen = true;
+				if (m_BlueScore == null) {
+					m_BlueScore = m_Agent.CreateIntWME(m_CurrentScoreWME, "blue", tanks[i].getPoints());
+				}
+			} else if (tanks[i].getColor().equals("red")) {
+				redSeen = true;
+				if (m_RedScore == null) {
+					m_RedScore = m_Agent.CreateIntWME(m_CurrentScoreWME, "red", tanks[i].getPoints());
+				}
+			} else if (tanks[i].getColor().equals("yellow")) {
+				yellowSeen = true;
+				if (m_YellowScore == null) {
+					m_YellowScore = m_Agent.CreateIntWME(m_CurrentScoreWME, "yellow", tanks[i].getPoints());
+				}
+			} else if (tanks[i].getColor().equals("green")) {
+				greenSeen = true;
+				if (m_GreenScore == null) {
+					m_GreenScore = m_Agent.CreateIntWME(m_CurrentScoreWME, "green", tanks[i].getPoints());
+				}
+			} else if (tanks[i].getColor().equals("purple")) {
+				purpleSeen = true;
+				if (m_PurpleScore == null) {
+					m_PurpleScore = m_Agent.CreateIntWME(m_CurrentScoreWME, "purple", tanks[i].getPoints());
+				}
+			} else if (tanks[i].getColor().equals("orange")) {
+				orangeSeen = true;
+				if (m_OrangeScore == null) {
+					m_OrangeScore = m_Agent.CreateIntWME(m_CurrentScoreWME, "orange", tanks[i].getPoints());
+				}
+			} else if (tanks[i].getColor().equals("black")) {
+				blackSeen = true;
+				if (m_BlackScore == null) {
+					m_BlackScore = m_Agent.CreateIntWME(m_CurrentScoreWME, "black", tanks[i].getPoints());
+				}
+			}
+		}
+		
+		if (blueSeen == false) {
+			if (m_BlueScore != null) {
+				DestroyWME(m_BlueScore);
+				m_BlueScore = null;
+			}
+		}
+		if (redSeen == false) {
+			if (m_RedScore != null) {
+				DestroyWME(m_RedScore);
+				m_RedScore = null;
+			}
+		}
+		if (yellowSeen == false) {
+			if (m_YellowScore != null) {
+				DestroyWME(m_YellowScore);
+				m_YellowScore = null;
+			}
+		}
+		if (greenSeen == false) {
+			if (m_GreenScore != null) {
+				DestroyWME(m_GreenScore);
+				m_GreenScore = null;
+			}
+		}
+		if (purpleSeen == false) {
+			if (m_PurpleScore != null) {
+				DestroyWME(m_PurpleScore);
+				m_PurpleScore = null;
+			}
+		}
+		if (orangeSeen == false) {
+			if (m_OrangeScore != null) {
+				DestroyWME(m_OrangeScore);
+				m_OrangeScore = null;
+			}
+		}
+		if (blackSeen == false) {
+			if (m_BlackScore != null) {
+				DestroyWME(m_BlackScore);
+				m_BlackScore = null;
+			}
+		}
 	}
 	
 	void write() {
@@ -320,6 +438,33 @@ public class InputLinkManager {
 			}
 			if (m_Tank.recentlyMovedOrRotated() || !m_BlockedRightWME.GetValue().equalsIgnoreCase(blockedRight)) {
 				Update(m_BlockedRightWME, blockedRight);
+			}
+		}
+		
+		
+		if (m_Reset) {
+			m_CurrentScoreWME = m_Agent.CreateIdWME(m_InputLink, kCurrentScoreID);
+			initScoreWMEs();
+		} else {
+			Tank[] tanks = m_World.getTanks();
+			for (int i = 0; i < tanks.length; ++i) {
+				if (tanks[i].pointsChanged()) {
+					if (tanks[i].getColor().equals("blue")) {
+						Update(m_BlueScore, tanks[i].getPoints());
+					} else if (tanks[i].getColor().equals("red")) {
+						Update(m_RedScore, tanks[i].getPoints());
+					} else if (tanks[i].getColor().equals("yellow")) {
+						Update(m_YellowScore, tanks[i].getPoints());
+					} else if (tanks[i].getColor().equals("green")) {
+						Update(m_GreenScore, tanks[i].getPoints());
+					} else if (tanks[i].getColor().equals("purple")) {
+						Update(m_PurpleScore, tanks[i].getPoints());
+					} else if (tanks[i].getColor().equals("orange")) {
+						Update(m_OrangeScore, tanks[i].getPoints());
+					} else if (tanks[i].getColor().equals("black")) {
+						Update(m_BlackScore, tanks[i].getPoints());
+					}
+				}
 			}
 		}
 		

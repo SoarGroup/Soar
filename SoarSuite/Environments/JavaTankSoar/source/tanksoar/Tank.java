@@ -417,6 +417,9 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 	}
 	
 	public void updateSensors(TankSoarWorld world) {		
+		// List of tanks
+		m_ILM.initScoreWMEs();
+		
 		TankSoarCell cell = world.getCell(getLocation());
 		
 		// Chargers
