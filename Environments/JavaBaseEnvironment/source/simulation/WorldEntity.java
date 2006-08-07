@@ -12,6 +12,7 @@ public class WorldEntity {
 	
 	private String m_Name;
 	private int m_Points = 0;
+	private boolean m_PointsChanged = true;
 	private java.awt.Point m_Location = new java.awt.Point(-1,-1);
 	private String m_ColorString;
 	private String m_Productions;
@@ -50,11 +51,20 @@ public class WorldEntity {
 		return m_Name;
 	}
 	
+	public boolean pointsChanged() {
+		return m_PointsChanged;
+	}
+	
 	public int getPoints() {
 		return m_Points;
 	}
 	
+	public void clearPointsChanged() {
+		m_PointsChanged = false;
+	}
+	
 	public void setPoints(int score) {
+		m_PointsChanged = true;
 		m_Points = score;
 	}
 	
@@ -78,6 +88,7 @@ public class WorldEntity {
 	}
 	
 	public void adjustPoints(int delta, String comment) {
+		m_PointsChanged = true;
 		int previous = m_Points;
 		m_Points += delta;
 		logger.info(getName() + " score: " + Integer.toString(previous) + " -> " + Integer.toString(m_Points) + " (" + comment + ")");
