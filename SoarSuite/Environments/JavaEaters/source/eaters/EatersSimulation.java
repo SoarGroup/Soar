@@ -31,7 +31,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		super(notRandom, false);
 		
 		// Log the settings file
-		logger.fine("Settings file: " + settingsFile);
+		if (logger.isLoggable(Level.FINE)) logger.fine("Settings file: " + settingsFile);
 
 		String [] initialNames = null;
 		String [] initialProductions = null;
@@ -62,7 +62,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 					setRuns(child.getAttributeIntDefault(kParamRuns, 0));
 					setMaxUpdates(child.getAttributeIntDefault(kParamMaxUpdates, 0));
 					
-					logger.fine("Default map: " + defaultMap);
+					if (logger.isLoggable(Level.FINE)) logger.fine("Default map: " + defaultMap);
 					
 				} else if (tagName.equalsIgnoreCase(kTagAgents)) {
 					initialNames = new String[child.getNumberChildren()];
