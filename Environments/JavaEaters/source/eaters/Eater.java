@@ -153,12 +153,12 @@ public class Eater extends WorldEntity {
 	
 	public MoveInfo getMove() {
 		if (m_Agent.GetNumberCommands() == 0) {
-			logger.fine(getName() + " issued no command.");
+			if (logger.isLoggable(Level.FINE)) logger.fine(getName() + " issued no command.");
 			return null;
 		}
 		
 		if (m_Agent.GetNumberCommands() > 1) {
-			logger.fine(getName() + " issued more than one command, using first.");
+			if (logger.isLoggable(Level.FINE)) logger.fine(getName() + " issued more than one command, using first.");
 		}
 
 		Identifier commandId = m_Agent.GetCommand(0);

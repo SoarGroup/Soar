@@ -368,7 +368,7 @@ public class EatersWorld extends World implements WorldManager {
 					throw new Exception("Error (generateWallsFromXML) on row: " + row + ", column: " + col);
 				}
 			}
-			//logger.finest(rowString);
+			//if (logger.isLoggable(Level.FINEST)) logger.finest(rowString);
 		}
 	}
 	
@@ -458,7 +458,7 @@ public class EatersWorld extends World implements WorldManager {
 					}
 				}
 			}
-			//logger.finest(rowString);
+			//if (logger.isLoggable(Level.FINEST)) logger.finest(rowString);
 		}
 	}
 	
@@ -755,7 +755,7 @@ public class EatersWorld extends World implements WorldManager {
 						// Flip collision flag for cell
 						getCell(m_Eaters[i].getLocation()).setCollision(true);
 
-						logger.fine("Starting collision group at " + m_Eaters[i].getLocation());
+						if (logger.isLoggable(Level.FINE)) logger.fine("Starting collision group at " + m_Eaters[i].getLocation());
 					}
 					
 					// Add second agent to current collision
@@ -783,7 +783,7 @@ public class EatersWorld extends World implements WorldManager {
 			currentCollision = (ArrayList)m_Collisions.get(group);
 			Eater[] collidees = (Eater[])currentCollision.toArray(new Eater[0]);
 			
-			logger.fine("Processing collision group " + group + " with " + collidees.length + " collidees.");
+			if (logger.isLoggable(Level.FINE)) logger.fine("Processing collision group " + group + " with " + collidees.length + " collidees.");
 			
 			// Redistribute wealth
 			int cash = 0;			
@@ -791,7 +791,7 @@ public class EatersWorld extends World implements WorldManager {
 				cash += collidees[i].getPoints();
 			}			
 			cash /= collidees.length;
-			logger.fine("Cash to each: " + cash);
+			if (logger.isLoggable(Level.FINE)) logger.fine("Cash to each: " + cash);
 			for (int i = 0; i < collidees.length; ++i) {
 				collidees[i].setPoints(cash);
 			}

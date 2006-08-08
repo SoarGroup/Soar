@@ -61,7 +61,7 @@ public class Eaters {
 		logger.info("Java Eaters started.");
 		
 		// Initialize the simulation
-		logger.fine("Initializing simulation.");
+		if (logger.isLoggable(Level.FINE)) logger.fine("Initializing simulation.");
 		EatersSimulation simulation = new EatersSimulation(settingsFilename, quietSwitch, notRandomSwitch);
 		
 		// Initialize the window manager, if applicable.
