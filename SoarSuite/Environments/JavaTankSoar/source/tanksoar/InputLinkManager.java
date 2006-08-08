@@ -1,6 +1,7 @@
 package tanksoar;
 
 import java.util.logging.*;
+
 import simulation.Simulation;
 import sml.Agent;
 import sml.FloatElement;
@@ -680,7 +681,7 @@ public class InputLinkManager {
 	}
 	
 	private void generateNewRadar() {
-//		logger.finest("generateNewRadar()");
+//		if (logger.isLoggable(Level.FINEST)) logger.finest("generateNewRadar()");
 		TankSoarCell[][] radarCells = m_Tank.getRadarCells();
 		for (int j = 0; j < Tank.kRadarHeight; ++j) {
 			boolean done = false;
@@ -713,7 +714,7 @@ public class InputLinkManager {
 					}
 				}
 			}
-//			logger.finest(outstring);
+//			if (logger.isLoggable(Level.FINEST)) logger.finest(outstring);
 			if (done == true) {
 				break;
 			}
@@ -721,7 +722,7 @@ public class InputLinkManager {
 	}
 	
 	private void updateRadar() {
-//		logger.finest("updateRadar()");
+//		if (logger.isLoggable(Level.FINEST)) logger.finest("updateRadar()");
 		TankSoarCell[][] radarCells = m_Tank.getRadarCells();
 		for (int i = 0; i < Tank.kRadarWidth; ++i) {
 //			String outstring = new String();
@@ -776,7 +777,7 @@ public class InputLinkManager {
 					}
 				}
 			}
-//			logger.finest(outstring);
+//			if (logger.isLoggable(Level.FINEST)) logger.finest(outstring);
 		}
 	}
 

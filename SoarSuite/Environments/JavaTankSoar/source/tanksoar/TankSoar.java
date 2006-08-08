@@ -48,7 +48,7 @@ public class TankSoar {
 				commandLine += args[i];
 				commandLine += " ";
 			}
-			logger.finer("Command line: " + commandLine);
+			if (logger.isLoggable(Level.FINER)) logger.finer("Command line: " + commandLine);
 		}
 
 		// Install default settings file if it doesn't exist
@@ -61,16 +61,16 @@ public class TankSoar {
 		
 		
 		// Initialize the simulation
-		logger.finer("Initializing simulation.");
+		if (logger.isLoggable(Level.FINER)) logger.finer("Initializing simulation.");
 		TankSoarSimulation simulation = new TankSoarSimulation(settingsFilename, quietSwitch, notRandomSwitch);
 		
 		// Initialize the window manager, if applicable.
 		if(!quietSwitch) {
-			logger.finer("Initializing window manager.");
+			if (logger.isLoggable(Level.FINER)) logger.finer("Initializing window manager.");
 			new TankSoarWindowManager(simulation);
 		}
 		
-		logger.finer("Exiting.");
+		if (logger.isLoggable(Level.FINER)) logger.finer("Exiting.");
 		System.exit(0);
 	}
 
@@ -80,7 +80,7 @@ public class TankSoar {
 		File library = new File(file) ;
 
 		if (library.exists()) {
-			logger.finer(library + " already exists so not installing from the JAR file");
+			if (logger.isLoggable(Level.FINER)) logger.finer(library + " already exists so not installing from the JAR file");
 			return;
 		}
 		
@@ -120,7 +120,7 @@ public class TankSoar {
 		is.close() ;
 		os.close() ;
 		
-		logger.finer("Installed " + library + " onto the local disk from JAR file") ;
+		if (logger.isLoggable(Level.FINER)) logger.finer("Installed " + library + " onto the local disk from JAR file") ;
 	}
 
 	public void parseCommandLine(String[] args) {
