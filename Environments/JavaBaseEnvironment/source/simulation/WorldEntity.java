@@ -33,7 +33,7 @@ public class WorldEntity {
 		} else {
 			m_Name = m_Agent.GetAgentName();
 		}
-		logger.fine("Created agent: " + m_Name);
+		if (logger.isLoggable(Level.FINE)) logger.fine("Created agent: " + m_Name);
 	}
 	
 	public String getProductions() {

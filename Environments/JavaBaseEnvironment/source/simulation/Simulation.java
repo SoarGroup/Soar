@@ -46,17 +46,17 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		}
 		
 		// We want the most performance
-		logger.finest("Setting auto commit false.");
+		if (logger.isLoggable(Level.FINEST)) logger.finest("Setting auto commit false.");
 		m_Kernel.SetAutoCommit(false);
 
 		// Make all runs non-random if asked
 		// For debugging, set this to make all random calls follow the same sequence
 		if (noRandom) {
-			logger.finer("Seeding generator 0.");
+			if (logger.isLoggable(Level.FINER)) logger.finer("Seeding generator 0.");
 			m_Kernel.ExecuteCommandLine("srand 0", null) ;
 			random = new Random(0);
 		} else {
-			logger.finest("Not seeding generator.");
+			if (logger.isLoggable(Level.FINEST)) logger.finest("Not seeding generator.");
 			random = new Random();
 		}
 		
@@ -64,16 +64,16 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, null);
 		m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, this, null);
 		if (m_RunTilOutput) {
-			logger.finest("Registering for: smlEVENT_AFTER_ALL_GENERATED_OUTPUT");
+			if (logger.isLoggable(Level.FINEST)) logger.finest("Registering for: smlEVENT_AFTER_ALL_GENERATED_OUTPUT");
 			m_Kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_GENERATED_OUTPUT, this, null);
 		} else {
-			logger.finest("Registering for: smlEVENT_AFTER_ALL_OUTPUT_PHASES");
+			if (logger.isLoggable(Level.FINEST)) logger.finest("Registering for: smlEVENT_AFTER_ALL_OUTPUT_PHASES");
 			m_Kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null);
 		}
 		
 		// Generate base path
 		m_BasePath = System.getProperty("user.dir") + System.getProperty("file.separator");
-		logger.finer("Base path: " + m_BasePath);
+		if (logger.isLoggable(Level.FINER)) logger.finer("Base path: " + m_BasePath);
 	}
 	
 	protected void setWorldManager(WorldManager worldManager) {
@@ -165,7 +165,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	}
 	
 	public void changeMap(String map) {
-		logger.finer("Changing map.");
+		if (logger.isLoggable(Level.FINER)) logger.finer("Changing map.");
 		setCurrentMap(map);
 		resetSimulation(true);
 	}	
@@ -207,7 +207,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		}
 		
 		Runtime r = java.lang.Runtime.getRuntime();
-		logger.finer("Spawning debugger: " + commandLine);
+		if (logger.isLoggable(Level.FINER)) logger.finer("Spawning debugger: " + commandLine);
 
 		try {
 			// TODO: manage the returned process a bit better.
@@ -244,7 +244,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 				}
 			}
 			try { 
-				logger.finest("Waiting for debugger.");
+				if (logger.isLoggable(Level.FINEST)) logger.finest("Waiting for debugger.");
 				Thread.sleep(1000); 
 			} catch (InterruptedException ignored) {}
 		}
@@ -270,7 +270,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 			m_WorldManager.shutdown();
 		}
 		if (m_Kernel != null) {
-			logger.finer("Shutting down kernel.");
+			if (logger.isLoggable(Level.FINER)) logger.finer("Shutting down kernel.");
 			m_Kernel.Shutdown();
 			m_Kernel.delete();
 		}
@@ -292,14 +292,14 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	}
 	
 	private void tick() {
-		logger.info("World count: " + m_WorldCount);
+		logger.info("---");
 		m_WorldManager.update();
 		++m_WorldCount;
 		fireSimulationEvent(SimulationListener.kUpdateEvent);
 	}
 	
 	public void startSimulation(boolean inNewThread) {
-		logger.fine("Starting simulation.");
+		if (logger.isLoggable(Level.FINE)) logger.fine("Starting simulation.");
         m_StopSoar = false;
 		if (hasSoarAgents()) {
 			if (inNewThread) {
@@ -321,7 +321,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	}
 	
 	public void stepSimulation() {
-		logger.fine("Stepping simulation.");
+		if (logger.isLoggable(Level.FINE)) logger.fine("Stepping simulation.");
 		if (!hasSoarAgents()) {
 			m_Running = true;
 			fireSimulationEvent(SimulationListener.kStartEvent);
@@ -399,7 +399,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		// Test this after the world has been updated, in case it's asking us to stop
 		if (m_StopSoar) {
   			m_StopSoar = false;
-  			logger.finest("Stopping all agents.");
+  			if (logger.isLoggable(Level.FINEST)) logger.finest("Stopping all agents.");
   			m_Kernel.StopAllAgents();
   		}
   	}
@@ -407,12 +407,12 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
     public void systemEventHandler(int eventID, Object data, Kernel kernel) {
   		if (eventID == smlSystemEventId.smlEVENT_SYSTEM_START.swigValue()) {
   			// Start simulation
-  			logger.finer("Start event received from kernel.");
+  			if (logger.isLoggable(Level.FINER)) logger.finer("Start event received from kernel.");
   			m_Running = true;
   			fireSimulationEvent(SimulationListener.kStartEvent);
   		} else if (eventID == smlSystemEventId.smlEVENT_SYSTEM_STOP.swigValue()) {
   			// Stop simulation
-  			logger.finer("Stop event received from kernel.");
+  			if (logger.isLoggable(Level.FINER)) logger.finer("Stop event received from kernel.");
   			m_Running = false;
   			if (m_Runs == 0) {
   				m_RunThread = null;
@@ -446,12 +446,12 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	}
 	
 	public void addSimulationListener(SimulationListener listener) {
-		logger.finest("Adding a simulation listener.");
+		if (logger.isLoggable(Level.FINEST)) logger.finest("Adding a simulation listener.");
 		m_AddSimulationListeners.add(listener);
 	}
 	
 	public void removeSimulationListener(SimulationListener listener) {
-		logger.finest("Removing a simulation listener.");
+		if (logger.isLoggable(Level.FINEST)) logger.finest("Removing a simulation listener.");
 		m_RemoveSimulationListeners.add(listener);
 	}
 	
