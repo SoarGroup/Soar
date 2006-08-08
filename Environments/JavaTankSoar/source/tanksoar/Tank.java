@@ -209,7 +209,7 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 		// Must check missile count now
 		if (m_LastMove.fire) {
 			if (m_Missiles <= 0) {
-				logger.fine(getName() + ": fired with no missiles");	
+				if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": fired with no missiles");	
 				m_LastMove.fire = false;
 			}
 		}
@@ -237,7 +237,7 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 		assert m_Agent != null;
 		int numberOfCommands = m_Agent.GetNumberCommands();
 		if (numberOfCommands == 0) {
-			logger.fine(getName() + ": issued no command");
+			if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": issued no command");
 			return;
 		}
 		Identifier moveId = null;
@@ -248,14 +248,14 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 
 			if (commandName.equalsIgnoreCase(kMoveID)) {
 				if (m_LastMove.move == true) {
-					logger.fine(getName() + ": extra move commands");
+					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": extra move commands");
 					commandId.AddStatusError();
 					continue;
 				}
 
 				String moveDirection = commandId.GetParameterValue(kDirectionID);
 				if (moveDirection == null) {
-					logger.fine(getName() + ": null move direction");
+					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": null move direction");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -269,7 +269,7 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 				} else if (moveDirection.equalsIgnoreCase(kRightID)) {
 					m_LastMove.moveDirection = Direction.rightOf[this.m_FacingInt];
 				} else {
-					logger.fine(getName() + ": illegal move direction: " + moveDirection);
+					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": illegal move direction: " + moveDirection);
 					commandId.AddStatusError();
 					continue;
 				}
@@ -278,7 +278,7 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 				
 			} else if (commandName.equalsIgnoreCase(kFireID)) {
 				if (m_LastMove.fire == true) {
-					logger.fine(getName() + ": extra fire commands");
+					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": extra fire commands");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -286,7 +286,7 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 		 		if (m_Missiles > 0) {
 		 			m_LastMove.fire = true;
 		 		} else {
-					logger.fine(getName() + ": fired with no missiles");
+		 			if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": fired with no missiles");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -294,14 +294,14 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 				
 			} else if (commandName.equalsIgnoreCase(kRadarID)) {
 				if (m_LastMove.radar == true) {
-					logger.fine(getName() + ": extra radar commands");
+					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": extra radar commands");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String radarSwitch = commandId.GetParameterValue(kSwitchID);
 				if (radarSwitch == null) {
-					logger.fine(getName() + ": null radar switch");
+					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": null radar switch");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -310,14 +310,14 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 				
 			} else if (commandName.equalsIgnoreCase(kRadarPowerID)) {
 				if (m_LastMove.radarPower == true) {
-					logger.fine(getName() + ": extra radar power commands");
+					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": extra radar power commands");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String powerValue = commandId.GetParameterValue(kSettingID);
 				if (powerValue == null) {
-					logger.fine(getName() + ": null radar power");
+					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": null radar power");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -325,7 +325,7 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 				try {
 					m_LastMove.radarPowerSetting = Integer.decode(powerValue).intValue();
 				} catch (NumberFormatException e) {
-					logger.fine(getName() + ": unable to parse radar power setting " + powerValue + ": " + e.getMessage());
+					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": unable to parse radar power setting " + powerValue + ": " + e.getMessage());
 					commandId.AddStatusError();
 					continue;
 				}
@@ -333,14 +333,14 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 				
 			} else if (commandName.equalsIgnoreCase(kShieldsID)) {
 				if (m_LastMove.shields == true) {
-					logger.fine(getName() + ": extra shield commands");
+					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": extra shield commands");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String shieldsSetting = commandId.GetParameterValue(kSwitchID);
 				if (shieldsSetting == null) {
-					logger.fine(getName() + ": null shields setting");
+					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": null shields setting");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -352,14 +352,14 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 				
 			} else if (commandName.equalsIgnoreCase(kRotateID)) {
 				if (m_LastMove.rotate == true) {
-					logger.fine(getName() + ": extra rotate commands");
+					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": extra rotate commands");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				m_LastMove.rotateDirection = commandId.GetParameterValue(kDirectionID);
 				if (m_LastMove.rotateDirection == null) {
-					logger.fine(getName() + ": null rotation direction");
+					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": null rotation direction");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -411,7 +411,7 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 			// Turn the shield off.
 			m_ShieldStatus = false;
 			if (!enoughPowerForShields) {
-				logger.fine(getName() + ": Not enough power for shields.");
+				if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": Not enough power for shields.");
 			}
 		}
 	}
@@ -438,7 +438,7 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 			if (enoughPowerForShields) {
 				adjustEnergy(kSheildEnergyUsage * -1, "shield usage");
 			} else {
-				logger.fine(getName() + ": Not enough power for shields.");
+				if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": Not enough power for shields.");
 				m_ShieldStatus = false;
 			}
 		}
@@ -450,12 +450,12 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 		desiredRadarPower = desiredRadarPower >= Tank.kRadarHeight ? Tank.kRadarHeight - 1 : desiredRadarPower;
 		// Never exceed current energy usage
 		if (desiredRadarPower > m_Energy) {
-			logger.fine(getName() + ": Radar power limited by available energy: " + Integer.toString(m_Energy));
+			if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": Radar power limited by available energy: " + Integer.toString(m_Energy));
 			desiredRadarPower =  m_Energy;
 		}
 		// If the power setting changed, set it.
 		if (m_RadarPower != desiredRadarPower) {
-			logger.fine(getName() + " radar power: " + Integer.toString(m_RadarPower) + " -> " + Integer.toString(desiredRadarPower));
+			if (logger.isLoggable(Level.FINE)) logger.fine(getName() + " radar power: " + Integer.toString(m_RadarPower) + " -> " + Integer.toString(desiredRadarPower));
 			m_RadarPower = desiredRadarPower;
 		}
 		
@@ -484,7 +484,7 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 		
 		// Missiles
 		if (m_LastMove.fire) {
-			logger.fine(getName() + ": Consuming missile.");
+			if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": Consuming missile.");
 			m_Missiles -= 1;
 		}
 	
@@ -537,7 +537,7 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 				
 				radarCells[position][distance] = m_World.getCell(scanX + relativeX, scanY + relativeY);
 				if (radarCells[position][distance].containsTank()) {
-					logger.fine(getName() + ": Radar waves from " 
+					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": Radar waves from " 
 							+ Direction.stringOf[Direction.backwardOf[this.m_FacingInt]] 
 							+ " hitting tank " + radarCells[position][distance].getTank().getName());
 					radarCells[position][distance].getTank().setRWaves(Direction.backwardOf[this.m_FacingInt]);
@@ -551,7 +551,7 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 			}
 			
 			if (stop) {
-				logger.fine(getName() + ": Radar scan blocked at distance " + Integer.toString(distance));
+				if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": Radar scan blocked at distance " + Integer.toString(distance));
 				break;
 			}
 		}

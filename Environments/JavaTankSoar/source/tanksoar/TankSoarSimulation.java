@@ -50,7 +50,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	
 		// Load settings file
 		try {
-			logger.finer("Parsing settings file: " + settingsFile);
+			if (logger.isLoggable(Level.FINER)) logger.finer("Parsing settings file: " + settingsFile);
 			JavaElementXML root = JavaElementXML.ReadFromFile(settingsFile);
 			if (!root.getTagName().equalsIgnoreCase(kTagTankSoar)) {
 				throw new Exception("Top level tag not " + kTagTankSoar);
@@ -73,11 +73,13 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 					setMaxUpdates(child.getAttributeIntDefault(kParamMaxUpdates, 0));
 					setWinningScore(child.getAttributeIntDefault(kParamWinningScore, 50));
 										
-					logger.finest("Spawn debuggers: " + Boolean.toString(getSpawnDebuggers()));
-					logger.finest("Default map: " + defaultMap);
-					logger.finest("Runs: " + Integer.toString(getRuns()));
-					logger.finest("Max updates: " + Integer.toString(getMaxUpdates()));
-					logger.finest("Winning score: " + Integer.toString(getWinningScore()));
+					if (logger.isLoggable(Level.FINEST)) {
+						logger.finest("Spawn debuggers: " + Boolean.toString(getSpawnDebuggers()));
+						logger.finest("Default map: " + defaultMap);
+						logger.finest("Runs: " + Integer.toString(getRuns()));
+						logger.finest("Max updates: " + Integer.toString(getMaxUpdates()));
+						logger.finest("Winning score: " + Integer.toString(getWinningScore()));
+					}
 					
 				} else if (tagName.equalsIgnoreCase(kTagAgents)) {
 					initialNames = new String[child.getNumberChildren()];
@@ -112,14 +114,16 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 						initialHealth[j] = agent.getAttributeIntDefault(kParamHealth, -1);
 						initialMissiles[j] = agent.getAttributeIntDefault(kParamMissiles, -1);
 						
-						logger.finest("Name: " + initialNames[j]);
-						logger.finest("   Productions: " + initialProductions[j]);
-						logger.finest("   Color: " + initialColors[j]);
-						logger.finest("   Location: " + initialLocations[j].toString());
-						logger.finest("   Facing: " + initialFacing[j]);
-						logger.finest("   Energy: " + Integer.toString(initialEnergy[j]));
-						logger.finest("   Health: " + Integer.toString(initialHealth[j]));
-						logger.finest("   Missiles: " + Integer.toString(initialMissiles[j]));
+						if (logger.isLoggable(Level.FINEST)) {
+							logger.finest("Name: " + initialNames[j]);
+							logger.finest("   Productions: " + initialProductions[j]);
+							logger.finest("   Color: " + initialColors[j]);
+							logger.finest("   Location: " + initialLocations[j].toString());
+							logger.finest("   Facing: " + initialFacing[j]);
+							logger.finest("   Energy: " + Integer.toString(initialEnergy[j]));
+							logger.finest("   Health: " + Integer.toString(initialHealth[j]));
+							logger.finest("   Missiles: " + Integer.toString(initialMissiles[j]));
+						}
 					}
 				} else {
 					// Throw during development, but really we should just ignore this
@@ -167,7 +171,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 				shutdown();
 				return;
 			}
-			logger.finer("Quiet mode execution starting.");
+			if (logger.isLoggable(Level.FINER)) logger.finer("Quiet mode execution starting.");
 			startSimulation(false);
 			shutdown();
 		}
@@ -212,7 +216,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
     	java.awt.Point location = null;
     	if (locationIn != null) {
     		if ((locationIn.x == -1) || (locationIn.y == -1)) {
-    			logger.finer("Ignoring non-null location " + locationIn.toString());
+    			if (logger.isLoggable(Level.FINER)) logger.finer("Ignoring non-null location " + locationIn.toString());
     		} else {
     			location = new java.awt.Point(locationIn);
     		}
@@ -222,7 +226,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
     	String productions = null;
     	if (productionsIn == null) {
     		// Human agent
-    		logger.finer("Creating human agent.");
+    		if (logger.isLoggable(Level.FINER)) logger.finer("Creating human agent.");
     		productions = new String(name);
     	} else {
     		productions = new String(productionsIn);
@@ -231,7 +235,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	    		fireErrorMessageWarning("Failed to create agent.");
 				return;
 			}
-			logger.finer("Created Soar agent.");
+			if (logger.isLoggable(Level.FINER)) logger.finer("Created Soar agent.");
     	}
 		m_World.createTank(agent, productions, color, location, facing, energy, health, missiles);
 		spawnDebugger(name);		
