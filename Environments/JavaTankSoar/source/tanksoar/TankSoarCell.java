@@ -27,24 +27,25 @@ public class TankSoarCell extends Cell {
 	static boolean s_HealthChargerCreated = false;
 	private boolean m_Modified = false;
 
-	public TankSoarCell(String name) throws Exception {
+	public TankSoarCell() {
+		m_Type = kOpenInt;
+	}
+
+	public boolean setType(String name) {
 		if (name.equalsIgnoreCase(TankSoarWorld.kTypeWall)) {
 			m_Type = kWallInt;
-			return;
 		} else if (name.equalsIgnoreCase(TankSoarWorld.kTypeEmpty)) {
 			m_Type = kOpenInt;			
-			return;
 		} else if (name.equalsIgnoreCase(TankSoarWorld.kTypeEnergyRecharger)) {
 			m_Type = kEnergyInt;	
 			s_EnergyChargerCreated = true;
-			return;
 		} else if (name.equalsIgnoreCase(TankSoarWorld.kTypeHealthRecharger)) {
 			m_Type = kHealthInt;	
 			s_HealthChargerCreated = true;
-			return;
 		} else {	
-			throw new Exception("Invalid type name: " + name);
+			return false;
 		}
+		return true;
 	}
 
 	int getDistance() {
