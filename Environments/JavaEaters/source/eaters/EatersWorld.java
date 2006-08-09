@@ -25,10 +25,6 @@ public class EatersWorld extends World implements WorldManager {
 	private static final String kParamRandomFood = "random-food";
 	private static final String kParamType = "type";
 	
-	static final String kWallID = "wall";
-	static final String kEmptyID = "empty";
-	static final String kEaterID = "eater";
-	
 	private static final int kWallPenalty = -5;
 	private static final int kJumpPenalty = -5;
 
@@ -37,78 +33,28 @@ public class EatersWorld extends World implements WorldManager {
 	
 	private boolean m_Decay = false;
 	
-	public class Food {
-		public static final String kRound = "round";
-		public static final String kSquare = "square";
-			
-		public static final int kRoundInt = 0;
-		public static final int kSquareInt = 1;
-			
-		String m_Name;
-		int m_Value;
-		int m_Shape;
-		String m_ColorString;
-		
-		public Food(String name, int value, String shape, String color) {
-			m_Name = name;
-			m_Value = value;
-			if (shape.equalsIgnoreCase(kRound)) {
-				m_Shape = kRoundInt;
-			} else if (shape.equalsIgnoreCase(kSquare)) {
-				m_Shape = kSquareInt;
-			}
-			m_ColorString = color;
-		}
-		
-		public String getColor() {
-			return m_ColorString;
-		}
-		
-		public String getName() {
-			return m_Name;
-		}
-		
-		public int getValue() {
-			return m_Value;
-		}
-		
-		public int getShape() {
-			return m_Shape;
-		}
-		
-		public String getShapeName() {
-			switch (m_Shape) {
-			case kRoundInt:
-				return kRound;
-			case kSquareInt:
-				return kSquare;
-			}
-			return null;
-		}
-	}
-	
 	private void decayFood() {
 		// This function is called if decay=true (in map file) and if so, after
 		// each world update.
 		// Example food decay function:
 		// Remove one from the value of each type of food after each update.
-		for (int i = 0; i < m_Food.length; ++i) {
-			--m_Food[i].m_Value;
+		for (int i = 0; i < Food.food.length; ++i) {
+			--Food.food[i].m_Value;
 		}
 		
 		// If you change the value of a food type, you MUST recalculate the remaining
 		// food and remaining score member variables!  The following code does this for
 		// the entire map:
-		this.m_ScoreCount = 0;
-		this.m_FoodCount = 0;
+		EatersCell.scoreCount = 0;
+		EatersCell.foodCount = 0;
 		for (int y = 0; y < m_World.length; ++y) {
 			for (int x = 0; x < m_World[y].length; ++x) {
 				EatersCell cell = m_World[y][x];
 				if (cell.isFood()) {
 					Food f = m_World[y][x].getFood();
-					m_ScoreCount += f.getValue();
+					EatersCell.scoreCount += f.getValue();
 					if (f.getValue() > 0) {
-						++m_FoodCount;
+						++EatersCell.foodCount;
 					}
 				}
 			}
@@ -119,172 +65,8 @@ public class EatersWorld extends World implements WorldManager {
 		// FIXME: not implemented (this is used to detect unforced interrupts)
 	}
 	
-	public class EatersCell extends Cell {
-
-		private static final int kWallInt = 0;
-		private static final int kEmptyInt = 1;
-		private static final int kEaterInt = 2;
-		private static final int kReservedIDs = 3;		
-		
-		private Eater m_Eater;
-		
-		public EatersCell() {
-			m_Type = kEmptyInt;
-		}
-		
-		public EatersCell(int foodIndex) {
-			m_Type = kEmptyInt;
-			setFood(foodIndex);
-		}
-
-		public boolean setType(String name) {
-			if (name.equalsIgnoreCase(kWallID)) {
-				m_Type = kWallInt;
-			} else if (name.equalsIgnoreCase(kEmptyID)) {
-				m_Type = kEmptyInt;			
-			} else {	
-				int index = getFoodIndexByName(name);
-				if (index == -1) {
-					return false;
-				}
-				m_Type = index + kReservedIDs;
-				m_ScoreCount += m_Food[index].getValue();
-				if (m_Food[index].getValue() > 0) {
-					++m_FoodCount;					
-				}
-			}
-			return true;
-		}
-		
-		public boolean isWall() {
-			return m_Type == kWallInt;
-		}
-		
-		public void setWall() {
-			assert m_Eater == null;
-			m_Type = kWallInt;
-		}
-		
-		public boolean isEmpty() {
-			return m_Type == kEmptyInt;
-		}
-		
-		public boolean isEater() {
-			return (m_Type == kEaterInt) || (m_Eater != null);
-		}
-		
-		public boolean isFood() {
-			return m_Type >= kReservedIDs;
-		}
-		
-		public boolean removeEater() {
-			if (!isEater()) {
-				return false;
-			}
-			m_Redraw = true;
-			if (m_Type == kEaterInt) {
-				m_Type = kEmptyInt;
-			}
-			m_Eater = null;
-			return true;
-		}
-		
-		public Food setFood(Food newFood) {
-			Food oldFood = null;
-			if (isFood()) {
-				oldFood = removeFood();
-			}
-			m_Type = getFoodIndexByName(newFood.getName()) + kReservedIDs;
-			if (m_Type == -1) {
-				m_Type = kEmptyInt;
-			} else {
-				m_ScoreCount += newFood.getValue();
-				if (newFood.getValue() > 0) {
-					++m_FoodCount;					
-				}
-			}
-			return oldFood;
-		}
-		
-		void setFood(int foodIndex) {
-			if (isFood()) {
-				removeFood();
-			}
-			m_Type = foodIndex + kReservedIDs;
-			m_ScoreCount += m_Food[foodIndex].getValue();
-			if (m_Food[foodIndex].getValue() > 0) {
-				++m_FoodCount;
-			}
-		}
-		
-		public Food setEater(Eater eater) {
-			m_Redraw = true;
-			Food f = null;
-			if (isFood()) {
-				f = removeFood();
-			}
-			m_Type = kEaterInt;
-			m_Eater = eater;
-			return f;
-		}
-		
-		public Eater getEater() {
-			return m_Eater;
-		}
-		
-		public String getName() {
-			switch (m_Type) {
-			case kWallInt:
-				return kWallID;
-			case kEmptyInt:
-				return kEmptyID;
-			case kEaterInt:
-				return kEaterID;
-			default:
-				break;
-			}
-			
-			// TODO: risking null exception here
-			return getFood().getName();
-		}
-		
-		public Food getFood() {
-			if ((m_Type - kReservedIDs) < 0) return null;
-			return m_Food[(m_Type - kReservedIDs)];
-		}
-		
-		public Food removeFood() {
-			if (isFood()) {
-				m_Redraw = true;
-				Food f = getFood();
-				if (m_Eater == null) {
-					m_Type = kEmptyInt;
-				} else {
-					m_Type = kEaterInt;
-				}
-				m_ScoreCount -= f.getValue();
-				if (f.getValue() > 0) {
-					--m_FoodCount;
-				}
-				return f;
-			}
-			return null;
-		}
-	}
-
-	private int getFoodIndexByName(String name) {
-		for (int i = 0; i < m_Food.length; ++i) {
-			if (m_Food[i].getName().equalsIgnoreCase(name)) {
-				return i;
-			}
-		}
-		return -1;
-	}
 	
 	private EatersCell[][] m_World = null;
-	private Food[] m_Food;
-	private int m_FoodCount;
-	private int m_ScoreCount;
 	private EatersSimulation m_Simulation;
 	private Eater[] m_Eaters;
 	private boolean m_PrintedStats = false;
@@ -314,7 +96,7 @@ public class EatersWorld extends World implements WorldManager {
 				}
 				
 				if (mainTag.IsTag(kTagFood)) {
-					m_Food = new Food[mainTag.GetNumberChildren()];
+					Food.food = new Food[mainTag.GetNumberChildren()];
 					if (mainTag.GetNumberAttributes() > 0) {
 						if (mainTag.GetAttributeName(0).equalsIgnoreCase(kParamDecay)) {
 							if (mainTag.GetAttributeValue(0).equalsIgnoreCase("true")) {
@@ -365,7 +147,7 @@ public class EatersWorld extends World implements WorldManager {
 						}
 						
 						if ((foodName != null) || (foodShape != null) || (foodColor != null)) {
-							m_Food[foodTagIndex] = new Food(foodName, foodValue, foodShape, foodColor);
+							Food.food[foodTagIndex] = new Food(foodName, foodValue, foodShape, foodColor);
 						} else {
 							logger.warning("Ignoring food " + foodTagIndex + " because a required attribute is missing.");
 						}
@@ -415,8 +197,8 @@ public class EatersWorld extends World implements WorldManager {
 					m_World = new EatersCell[m_WorldSize][m_WorldSize];
 					
 					// Reset food
-					m_FoodCount = 0;
-					m_ScoreCount = 0;
+					EatersCell.foodCount = 0;
+					EatersCell.scoreCount = 0;
 
 					if (!randomWalls || !randomFood) {
 						if (!generateMapFromXML(mainTag)) {
@@ -440,7 +222,7 @@ public class EatersWorld extends World implements WorldManager {
 				mainTag = null;
 			}
 			
-			if (m_Food == null) {
+			if (Food.food == null) {
 				assert false;
 				m_Simulation.errorMessageWarning("No food tag.");
 				return false;
@@ -520,7 +302,7 @@ public class EatersWorld extends World implements WorldManager {
 		for (int row = 0; row < m_WorldSize; ++row) {
 			if (m_World[row][0] == null) {
 				m_World[row][0] = new EatersCell();
-				if (!m_World[row][0].setType(kWallID)) {
+				if (!m_World[row][0].setType(EatersCell.kWallID)) {
 					return false;
 				}
 			} else {
@@ -528,7 +310,7 @@ public class EatersWorld extends World implements WorldManager {
 			}
 			if (m_World[row][m_WorldSize - 1] == null) {
 				m_World[row][m_WorldSize - 1] = new EatersCell();
-				if (!m_World[row][m_WorldSize - 1].setType(kWallID)) {
+				if (!m_World[row][m_WorldSize - 1].setType(EatersCell.kWallID)) {
 					return false;
 				}
 			} else {
@@ -538,7 +320,7 @@ public class EatersWorld extends World implements WorldManager {
 		for (int col = 1; col < m_WorldSize - 1; ++col) {
 			if (m_World[0][col] == null) {
 				m_World[0][col] = new EatersCell();
-				if (!m_World[0][col].setType(kWallID)) {
+				if (!m_World[0][col].setType(EatersCell.kWallID)) {
 					return false;
 				}
 			} else {
@@ -546,7 +328,7 @@ public class EatersWorld extends World implements WorldManager {
 			}
 			if (m_World[m_WorldSize - 1][col] == null) {
 				m_World[m_WorldSize - 1][col] = new EatersCell();
-				if (!m_World[m_WorldSize - 1][col].setType(kWallID)) {
+				if (!m_World[m_WorldSize - 1][col].setType(EatersCell.kWallID)) {
 					return false;
 				}
 			} else {
@@ -564,7 +346,7 @@ public class EatersWorld extends World implements WorldManager {
 					if (Simulation.random.nextDouble() < probability) {
 						if (m_World[row][col] == null) {
 							m_World[row][col] = new EatersCell();
-							if (!m_World[row][col].setType(kWallID)) {
+							if (!m_World[row][col].setType(EatersCell.kWallID)) {
 								return false;
 							}
 						} else {
@@ -628,16 +410,16 @@ public class EatersWorld extends World implements WorldManager {
 		for (int row = 1; row < m_WorldSize - 1; ++row) {
 			for (int col = 1; col < m_WorldSize - 1; ++col) {
 				if (m_World[row][col] == null) {
-					m_World[row][col] = new EatersCell(Simulation.random.nextInt(m_Food.length));
+					m_World[row][col] = new EatersCell(Simulation.random.nextInt(Food.food.length));
 				} else if (!m_World[row][col].isWall()) {
-					m_World[row][col].setFood(Simulation.random.nextInt(m_Food.length));
+					m_World[row][col].setFood(Simulation.random.nextInt(Food.food.length));
 				}
 			}
 		}		
 	}
 	
 	public Food[] getFood() {
-		return m_Food;
+		return Food.food;
 	}
 	
 	public Food getFood(int x, int y) {
@@ -645,18 +427,18 @@ public class EatersWorld extends World implements WorldManager {
 	}
 	
 	public int getFoodCount() {
-		return m_FoodCount;
+		return EatersCell.foodCount;
 	}
 	
 	public int getScoreCount() {
-		return m_ScoreCount;
+		return EatersCell.scoreCount;
 	}
 	
 	public String getContentNameByLocation(int x, int y) {
 		if (this.isInBounds(x,y)) {
 			return getCell(x,y).getName();
 		}
-		return kEmptyID;
+		return EatersCell.kEmptyID;
 	}
 	
 	void resetEaters() {

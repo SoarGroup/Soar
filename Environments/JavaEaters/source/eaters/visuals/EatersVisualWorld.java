@@ -16,7 +16,7 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 	
 	static HashMap m_FoodColors;
 	
-	public static void remapFoodColors(EatersWorld.Food[] food) {
+	public static void remapFoodColors(Food[] food) {
 		if (food == null) {
 			m_FoodColors = null;
 			return;
@@ -55,7 +55,7 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 	Eater getEaterAtPixel(int x, int y) {
 		x /= m_CellSize;
 		y /= m_CellSize;
-		EatersWorld.EatersCell cell = m_World.getCell(x, y);
+		EatersCell cell = m_World.getCell(x, y);
 		if (cell.isEater()) {
 			return cell.getEater();
 		}
@@ -104,7 +104,7 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 					yDraw = y;
 				}
 				
-				EatersWorld.EatersCell cell = m_World.getCell(x, y);
+				EatersCell cell = m_World.getCell(x, y);
 				if (!cell.needsRedraw() && m_Painted) {
 					continue;
 				}
@@ -144,7 +144,7 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 					}
 				} else {
 				
-					EatersWorld.Food food = cell.getFood();
+					Food food = cell.getFood();
 					
 				    gc.setBackground(WindowManager.widget_background);
 				    gc.fillRectangle(m_CellSize*xDraw, m_CellSize*yDraw, m_CellSize, m_CellSize);
@@ -155,13 +155,13 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 					switch (food.getShape()) {
 					default:
 						logger.warning("Invalid food shape '" + food.getShapeName() + "', using round.");
-					case EatersWorld.Food.kRoundInt:
+					case Food.kRoundInt:
 						fill1 = (int)(m_CellSize/2.8);
 						fill2 = m_CellSize - fill1 + 1;
 						gc.fillOval(m_CellSize*xDraw + fill1, m_CellSize*yDraw + fill1, m_CellSize - fill2, m_CellSize - fill2);
 						gc.drawOval(m_CellSize*xDraw + fill1, m_CellSize*yDraw + fill1, m_CellSize - fill2 - 1, m_CellSize - fill2 - 1);
 						break;
-					case EatersWorld.Food.kSquareInt:
+					case Food.kSquareInt:
 						fill1 = (int)(m_CellSize/2.8);
 						fill2 = m_CellSize - fill1 + 1;
 						gc.fillRectangle(m_CellSize*xDraw + fill1, m_CellSize*yDraw + fill1, m_CellSize - fill2, m_CellSize - fill2);
