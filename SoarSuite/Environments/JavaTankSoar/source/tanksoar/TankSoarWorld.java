@@ -51,40 +51,87 @@ public class TankSoarWorld extends World implements WorldManager {
 
 		logger.info("Loading map: " + mapFile);
 		
-		try {
-			// Open file
-			JavaElementXML root = JavaElementXML.ReadFromFile(mapFile);
-			
-			if (!root.getTagName().equalsIgnoreCase(kTagTankSoarWorld)) {
-				throw new Exception("Not a TankSoar map!");
-			}
-			// TODO: Check version
-			
-			// Create map
-			JavaElementXML cells = root.findChildByNameThrows(kTagCells);
-			
-			// Get dimentions
-			m_WorldSize = cells.getAttributeIntThrows(kParamWorldSize);
-			
-			// Figure out maximum manhattan distance:
-			// Maximum manhattan distance to another tank:
-			// (Map width x 2) - 2
-			// but we can subtract 2 from the width because of the outer wall:
-			// ((Map width - 2) x 2) - 2
-			m_MaxManhattanDistance = ((m_WorldSize - 2) * 2) - 2;
-			
-			// Create map array
-			m_World = new TankSoarCell[m_WorldSize][m_WorldSize];
-			
-			// generate world
-			generateWorldFromXML(cells);
-
-		} catch (Exception e) {
-			assert false;
-			logger.warning("Error loading map: " + e.getMessage());
+		// Open file
+		////////////////////////////////////////////////////////////
+		ElementXML rootTag = ElementXML.ParseXMLFromFile(mapFile);
+		if (rootTag == null) {
+			m_Simulation.errorMessageWarning("Error parsing file: " + ElementXML.GetLastParseErrorDescription());
 			return false;
 		}
-		
+		if (rootTag.IsTag(kTagTankSoarWorld)) {
+			ElementXML mainTag = null;
+			for (int rootTagIndex = 0 ; rootTagIndex < rootTag.GetNumberChildren() ; ++rootTagIndex) {
+				mainTag = new ElementXML();
+				rootTag.GetChild(mainTag, rootTagIndex);
+				if (mainTag == null) {
+					assert false;
+					continue;
+				}
+				
+				if (mainTag.IsTag(kTagCells)) {
+					m_WorldSize = 0;
+					m_MaxManhattanDistance = 0;
+					
+					boolean randomWalls = true;
+					boolean randomFood = true;
+					
+					for (int attrIndex = 0; attrIndex < mainTag.GetNumberAttributes(); ++attrIndex) {
+						String attribute = mainTag.GetAttributeName(attrIndex);
+						if (attribute == null) {
+							assert false;
+							continue;
+						}
+						
+						String value = mainTag.GetAttributeValue(attrIndex);
+						if (value == null) {
+							assert false;
+							continue;
+						}
+						
+						if (attribute.equalsIgnoreCase(kParamWorldSize)) {
+							m_WorldSize = Integer.parseInt(value);
+							
+							// Figure out maximum manhattan distance:
+							// Maximum manhattan distance to another tank:
+							// (Map width x 2) - 2
+							// but we can subtract 2 from the width because of the outer wall:
+							// ((Map width - 2) x 2) - 2
+							m_MaxManhattanDistance = ((m_WorldSize - 2) * 2) - 2;
+						}
+					}
+					
+					if (m_WorldSize < 3) {
+						m_Simulation.errorMessageWarning("Illegal or missing world size.");
+						return false;
+					}
+					
+					// Create map array
+					m_World = new TankSoarCell[m_WorldSize][m_WorldSize];
+
+					if (!generateWorldFromXML(mainTag)) {
+						return false;
+					}
+				} else {
+					logger.warning("Unknown tag: " + mainTag.GetTagName());
+				}
+				mainTag.delete();
+				mainTag = null;
+			}
+			
+			if (m_World == null) {
+				assert false;
+				m_Simulation.errorMessageWarning("No cells tag.");
+				return false;
+			}
+			
+		} else {
+			logger.warning("Unknown tag: " + rootTag.GetTagName());
+			m_Simulation.errorMessageWarning("No root tanksoar-world tag.");
+			return false;
+		}			
+		rootTag.ReleaseRefOnHandle();
+		rootTag = null;
+
 		// Place rechargers
 		if (!TankSoarCell.s_HealthChargerCreated) {
 			getCell(findStartingLocation()).setHealth();
@@ -118,19 +165,54 @@ public class TankSoarWorld extends World implements WorldManager {
 		--m_NumMissilePacks;
 	}
 	
-	private void generateWorldFromXML(JavaElementXML cells) throws Exception {
-		for(int row = 0; row < m_WorldSize; ++row) {
-			String rowString = new String();
-			for (int col = 0; col < m_WorldSize; ++col) {
-				try {
-					m_World[row][col] = new TankSoarCell(cells.getChild(row).getChild(col).getAttributeThrows(kParamType));
-					rowString += m_World[row][col];
-				} catch (Exception e) {
-					throw new Exception("Error (generateWorldFromXML) on row: " + row + ", column: " + col);
-				}
-			}
-			if (logger.isLoggable(Level.FINEST)) logger.finest(rowString);
+	private boolean generateWorldFromXML(ElementXML cells) {
+		if (cells.GetNumberChildren() != m_WorldSize) {
+			assert false;
+			m_Simulation.errorMessageWarning("Row count different than world size.");
+			return false;
 		}
+		
+		ElementXML rowElement = new ElementXML();
+		for(int row = 0; row < m_WorldSize; ++row) {
+			cells.GetChild(rowElement, row);
+			if (rowElement == null) {
+				assert false;
+				m_Simulation.errorMessageWarning("Error with row " + row);
+				return false;
+			}
+			
+			if (rowElement.GetNumberChildren() != m_WorldSize) {
+				assert false;
+				m_Simulation.errorMessageWarning("Column count different than world size.");
+				return false;
+			}
+			
+			ElementXML cellElement = new ElementXML();
+			//String rowString = new String();
+			for (int col = 0; col < m_WorldSize; ++col) {
+				rowElement.GetChild(cellElement, col);
+				if (cellElement == null) {
+					assert false;
+					m_Simulation.errorMessageWarning("Error with row " + row + ", col " + col);
+					return false;
+				}
+
+				if (cellElement.GetNumberAttributes() > 0) {
+					if (cellElement.GetAttributeName(0).equalsIgnoreCase(kParamType)) {
+						m_World[row][col] = new TankSoarCell();
+						if (!m_World[row][col].setType(cellElement.GetAttributeValue(0))) {
+							return false;
+						}
+						//rowString += m_World[row][col];
+					} else {
+						m_Simulation.errorMessageWarning("Error with type of cell on row " + row + ", col " + col);
+						return false;
+					}
+				}
+				//if (logger.isLoggable(Level.FINEST)) logger.finest(rowString);
+			}
+		}
+		return true;
 	}
 	
 	public Tank[] getTanks() {
