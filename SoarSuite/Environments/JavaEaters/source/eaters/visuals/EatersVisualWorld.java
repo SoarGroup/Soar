@@ -1,8 +1,5 @@
 package eaters.visuals;
 
-import java.util.*;
-import java.util.logging.*;
-
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
@@ -12,7 +9,6 @@ import simulation.visuals.*;
 import utilities.*;
 
 public class EatersVisualWorld extends VisualWorld implements PaintListener {
-	private static Logger logger = Logger.getLogger("simulation");
 	
 	static Color[] foodColors = new Color[0];
 	
@@ -121,10 +117,9 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 				}
 				
 				EatersCell cell = m_World.getCell(x, y);
-				// FIXME
-				//if (!cell.needsRedraw() && m_Painted) {
-				//	continue;
-				//}
+				if (!cell.checkDraw() && m_Painted) {
+					continue;
+				}
 
 				if (cell.getEater() != null) {
 					

@@ -8,7 +8,7 @@ import sml.*;
 import utilities.*;
 
 public class EatersWorld extends World implements WorldManager {
-	private static Logger logger = Logger.getLogger("eaters");
+	private static Logger logger = Logger.getLogger("simulation");
 	
 	private static final String kTagEatersWorld = "eaters-world";
 
@@ -585,8 +585,7 @@ public class EatersWorld extends World implements WorldManager {
 		// reset modified flags
 		for (int y = 0; y < m_World.length; ++y) {
 			for (int x = 0; x < m_World[y].length; ++x) {
-				// FIXME
-				//m_World[y][x].clearRedraw();
+				m_World[y][x].clearDraw();
 				if (m_World[y][x].checkCollision()) {
 					m_World[y][x].setCollision(false);
 				}
