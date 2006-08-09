@@ -70,7 +70,7 @@ public class Eater extends WorldEntity {
 	void createView(int x, int y) {
 		if (x >= 0 && x <= 4 && y >=0 && y <= 4 && !m_Cells[x][y].iterated) {
 			m_Cells[x][y].iterated = true;
-			m_Cells[x][y].content = m_Agent.CreateStringWME(m_Cells[x][y].me, kContentID, EatersWorld.kEmptyID);
+			m_Cells[x][y].content = m_Agent.CreateStringWME(m_Cells[x][y].me, kContentID, EatersCell.kEmptyID);
 
 			if (x > 0) {
 				if (m_Cells[x - 1][y].me == null)
