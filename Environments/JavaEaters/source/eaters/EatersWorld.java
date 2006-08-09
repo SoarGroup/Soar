@@ -8,7 +8,7 @@ import sml.*;
 import utilities.*;
 
 public class EatersWorld extends World implements WorldManager {
-	private static Logger logger = Logger.getLogger("simulation");
+	private static Logger logger = Logger.getLogger("eaters");
 	
 	private static final String kTagEatersWorld = "eaters-world";
 
@@ -33,38 +33,11 @@ public class EatersWorld extends World implements WorldManager {
 	
 	private boolean m_Decay = false;
 	
-	private void decayFood() {
-		// This function is called if decay=true (in map file) and if so, after
-		// each world update.
-		// Example food decay function:
-		// Remove one from the value of each type of food after each update.
-		for (int i = 0; i < Food.food.length; ++i) {
-			--Food.food[i].m_Value;
-		}
-		
-		// If you change the value of a food type, you MUST recalculate the remaining
-		// food and remaining score member variables!  The following code does this for
-		// the entire map:
-		EatersCell.scoreCount = 0;
-		EatersCell.foodCount = 0;
-		for (int y = 0; y < m_World.length; ++y) {
-			for (int x = 0; x < m_World[y].length; ++x) {
-				EatersCell cell = m_World[y][x];
-				if (cell.isFood()) {
-					Food f = m_World[y][x].getFood();
-					EatersCell.scoreCount += f.getValue();
-					if (f.getValue() > 0) {
-						++EatersCell.foodCount;
-					}
-				}
-			}
-		}
-	}
+	private int scoreCount = 0;
 	
 	public void setStopping(boolean status) {
 		// FIXME: not implemented (this is used to detect unforced interrupts)
 	}
-	
 	
 	private EatersCell[][] m_World = null;
 	private EatersSimulation m_Simulation;
@@ -96,7 +69,6 @@ public class EatersWorld extends World implements WorldManager {
 				}
 				
 				if (mainTag.IsTag(kTagFood)) {
-					Food.food = new Food[mainTag.GetNumberChildren()];
 					if (mainTag.GetNumberAttributes() > 0) {
 						if (mainTag.GetAttributeName(0).equalsIgnoreCase(kParamDecay)) {
 							if (mainTag.GetAttributeValue(0).equalsIgnoreCase("true")) {
@@ -116,8 +88,8 @@ public class EatersWorld extends World implements WorldManager {
 						
 						String foodName = null;
 						int foodValue = 0;
-						String foodShape = null;
-						String foodColor = null;
+						Shape foodShape = Shape.ROUND;
+						String foodColor = "red";
 						
 						for (int attrIndex = 0; attrIndex < foodTypeTag.GetNumberAttributes(); ++attrIndex) {
 							String attribute = foodTypeTag.GetAttributeName(attrIndex);
@@ -139,17 +111,17 @@ public class EatersWorld extends World implements WorldManager {
 								foodValue = Integer.parseInt(value);
 								
 							} else if (attribute.equalsIgnoreCase(kParamShape)) {
-								foodShape = value;
+								foodShape = Shape.getShape(value);
 								
 							} else if (attribute.equalsIgnoreCase(kParamColor)) {
 								foodColor = value;
 							}
 						}
 						
-						if ((foodName != null) || (foodShape != null) || (foodColor != null)) {
-							Food.food[foodTagIndex] = new Food(foodName, foodValue, foodShape, foodColor);
+						if (foodName != null) {
+							Food.addFood(foodName, foodShape, foodColor, foodValue);
 						} else {
-							logger.warning("Ignoring food " + foodTagIndex + " because a required attribute is missing.");
+							logger.warning("Ignoring food " + foodTagIndex + " because a name attribute is missing.");
 						}
 						foodTypeTag.delete();
 						foodTypeTag = null;
@@ -197,9 +169,6 @@ public class EatersWorld extends World implements WorldManager {
 					m_World = new EatersCell[m_WorldSize][m_WorldSize];
 					
 					// Reset food
-					EatersCell.foodCount = 0;
-					EatersCell.scoreCount = 0;
-
 					if (!randomWalls || !randomFood) {
 						if (!generateMapFromXML(mainTag)) {
 							return false;
@@ -222,7 +191,7 @@ public class EatersWorld extends World implements WorldManager {
 				mainTag = null;
 			}
 			
-			if (Food.food == null) {
+			if (Food.foodTypeCount() <= 0) {
 				assert false;
 				m_Simulation.errorMessageWarning("No food tag.");
 				return false;
@@ -242,6 +211,7 @@ public class EatersWorld extends World implements WorldManager {
 		rootTag = null;
 		
 		resetEaters();
+		recalculateScoreCount();
 		
 		logger.info(mapFile + " loaded.");
 		return true;
@@ -282,9 +252,7 @@ public class EatersWorld extends World implements WorldManager {
 				if (cellElement.GetNumberAttributes() > 0) {
 					if (cellElement.GetAttributeName(0).equalsIgnoreCase(kParamType)) {
 						m_World[row][col] = new EatersCell();
-						if (!m_World[row][col].setType(cellElement.GetAttributeValue(0))) {
-							return false;
-						}
+						m_World[row][col].set(cellElement.GetAttributeValue(0));
 						//rowString += m_World[row][col];
 					} else {
 						m_Simulation.errorMessageWarning("Error with type of cell on row " + row + ", col " + col);
@@ -302,38 +270,22 @@ public class EatersWorld extends World implements WorldManager {
 		for (int row = 0; row < m_WorldSize; ++row) {
 			if (m_World[row][0] == null) {
 				m_World[row][0] = new EatersCell();
-				if (!m_World[row][0].setType(EatersCell.kWallID)) {
-					return false;
-				}
-			} else {
-				m_World[row][0].setWall();
 			}
+			m_World[row][0].setType(CellType.WALL);
 			if (m_World[row][m_WorldSize - 1] == null) {
 				m_World[row][m_WorldSize - 1] = new EatersCell();
-				if (!m_World[row][m_WorldSize - 1].setType(EatersCell.kWallID)) {
-					return false;
-				}
-			} else {
-				m_World[row][m_WorldSize - 1].setWall();
 			}
+			m_World[row][m_WorldSize - 1].setType(CellType.WALL);
 		}
 		for (int col = 1; col < m_WorldSize - 1; ++col) {
 			if (m_World[0][col] == null) {
 				m_World[0][col] = new EatersCell();
-				if (!m_World[0][col].setType(EatersCell.kWallID)) {
-					return false;
-				}
-			} else {
-				m_World[0][col].setWall();
 			}
+			m_World[0][col].setType(CellType.WALL);
 			if (m_World[m_WorldSize - 1][col] == null) {
 				m_World[m_WorldSize - 1][col] = new EatersCell();
-				if (!m_World[m_WorldSize - 1][col].setType(EatersCell.kWallID)) {
-					return false;
-				}
-			} else {
-				m_World[m_WorldSize - 1][col].setWall();
 			}
+			m_World[m_WorldSize - 1][col].setType(CellType.WALL);
 		}
 		
 		double probability = kLowProbability;
@@ -346,12 +298,8 @@ public class EatersWorld extends World implements WorldManager {
 					if (Simulation.random.nextDouble() < probability) {
 						if (m_World[row][col] == null) {
 							m_World[row][col] = new EatersCell();
-							if (!m_World[row][col].setType(EatersCell.kWallID)) {
-								return false;
-							}
-						} else {
-							m_World[row][col].setWall();
 						}
+						m_World[row][col].setType(CellType.WALL);
 					}
 					probability = kLowProbability;
 				}
@@ -383,6 +331,16 @@ public class EatersWorld extends World implements WorldManager {
 		return true;
 	}
 	
+	private void recalculateScoreCount() {
+		for (int i = 1; i < m_WorldSize - 1; ++i) {
+			for (int j = 1; j < m_WorldSize - 1; ++j) {
+				if (m_World[i][j].getFood() != null) {
+					scoreCount += m_World[i][j].getFood().value();
+				}
+			}
+		}
+	}
+	
 	private boolean wallOnAnySide(int row, int col) {
 		EatersCell cell = m_World[row + 1][col];
 		if (cell != null && cell.isWall()) {
@@ -410,35 +368,22 @@ public class EatersWorld extends World implements WorldManager {
 		for (int row = 1; row < m_WorldSize - 1; ++row) {
 			for (int col = 1; col < m_WorldSize - 1; ++col) {
 				if (m_World[row][col] == null) {
-					m_World[row][col] = new EatersCell(Simulation.random.nextInt(Food.food.length));
-				} else if (!m_World[row][col].isWall()) {
-					m_World[row][col].setFood(Simulation.random.nextInt(Food.food.length));
+					m_World[row][col] = new EatersCell();
+					
+				}
+				if (!m_World[row][col].isWall()) {
+					m_World[row][col].setFood(Food.getFood(Simulation.random.nextInt(Food.foodTypeCount())));
 				}
 			}
 		}		
-	}
-	
-	public Food[] getFood() {
-		return Food.food;
 	}
 	
 	public Food getFood(int x, int y) {
 		return getCell(x,y).getFood();
 	}
 	
-	public int getFoodCount() {
-		return EatersCell.foodCount;
-	}
-	
 	public int getScoreCount() {
-		return EatersCell.scoreCount;
-	}
-	
-	public String getContentNameByLocation(int x, int y) {
-		if (this.isInBounds(x,y)) {
-			return getCell(x,y).getName();
-		}
-		return EatersCell.kEmptyID;
+		return scoreCount;
 	}
 	
 	void resetEaters() {
@@ -479,8 +424,9 @@ public class EatersWorld extends World implements WorldManager {
 		}
 		
 		Eater eater = new Eater(agent, productions, color, location);
-		// Put eater on map, ignore food
+		// Put eater on map, remove food
 		getCell(location).setEater(eater);
+		getCell(location).setFood(null);
 
 		if (m_Eaters == null) {
 			m_Eaters = new Eater[1];
@@ -536,7 +482,7 @@ public class EatersWorld extends World implements WorldManager {
 						}
 					}
 				}
-				getCell(eater.getLocation()).removeEater();
+				getCell(eater.getLocation()).setEater(null);
 				if (m_Eaters == null) {
 					break;
 				}
@@ -547,7 +493,7 @@ public class EatersWorld extends World implements WorldManager {
 	private java.awt.Point findStartingLocation() {
 		// set random starting location
 		java.awt.Point location = new java.awt.Point(Simulation.random.nextInt(m_WorldSize), Simulation.random.nextInt(m_WorldSize));
-		while (getCell(location).isWall() || getCell(location).isEater()) {
+		while (getCell(location).isWall() || (getCell(location).getEater() != null)) {
 			location.x = Simulation.random.nextInt(m_WorldSize);
 			location.y = Simulation.random.nextInt(m_WorldSize);				
 		}
@@ -582,9 +528,8 @@ public class EatersWorld extends World implements WorldManager {
 			}
 			
 			if (isInBounds(newLocation) && !getCell(newLocation).isWall()) {
-				if (!getCell(oldLocation).removeEater()) {
-					logger.warning("Warning: moving eater " + m_Eaters[i].getName() + " not at old location " + oldLocation);
-				}
+				assert getCell(oldLocation).getEater() != null;
+				getCell(oldLocation).setEater(null);
 				m_Eaters[i].setLocation(newLocation);
 				if (move.jump) {
 					m_Eaters[i].adjustPoints(kJumpPenalty, "jump penalty");
@@ -597,21 +542,34 @@ public class EatersWorld extends World implements WorldManager {
 	}
 	
 	public EatersCell getCell(java.awt.Point location) {
+		assert location.x >= 0;
+		assert location.y >= 0;
+		assert location.x < m_WorldSize;
+		assert location.y < m_WorldSize;
 		return m_World[location.y][location.x];
 	}
 	
 	public EatersCell getCell(int x, int y) {
+		assert x >= 0;
+		assert y >= 0;
+		assert x < m_WorldSize;
+		assert y < m_WorldSize;
 		return m_World[y][x];
 	}
 	
+	public int getSize() {
+		return m_WorldSize;
+	}
+
 	private void updateMapAndEatFood() {
 		for (int i = 0; i < m_Eaters.length; ++i) {
-			Food f = getCell(m_Eaters[i].getLocation()).setEater(m_Eaters[i]);
+			
+			getCell(m_Eaters[i].getLocation()).setEater(m_Eaters[i]);
+			Food f = getCell(m_Eaters[i].getLocation()).getFood();
 			if (f != null) {
 				if (m_Eaters[i].isHungry()) {
-					m_Eaters[i].adjustPoints(f.getValue(), "food");
-				} else {
-					getCell(m_Eaters[i].getLocation()).setFood(f);
+					m_Eaters[i].adjustPoints(f.value(), f.name());
+					getCell(m_Eaters[i].getLocation()).setFood(null);
 				}
 			}
 		}
@@ -627,7 +585,8 @@ public class EatersWorld extends World implements WorldManager {
 		// reset modified flags
 		for (int y = 0; y < m_World.length; ++y) {
 			for (int x = 0; x < m_World[y].length; ++x) {
-				m_World[y][x].clearRedraw();
+				// FIXME
+				//m_World[y][x].clearRedraw();
 				if (m_World[y][x].checkCollision()) {
 					m_World[y][x].setCollision(false);
 				}
@@ -646,7 +605,7 @@ public class EatersWorld extends World implements WorldManager {
 			return;
 		}
 		
-		if (getFoodCount() <= 0) {
+		if (EatersCell.getFoodCount() <= 0) {
 			if (!m_PrintedStats) {
 				m_Simulation.stopSimulation();
 				m_PrintedStats = true;
@@ -669,7 +628,8 @@ public class EatersWorld extends World implements WorldManager {
 		updateEaterInput();
 		
 		if (m_Decay) {
-			decayFood();
+			Food.decay();
+			recalculateScoreCount();
 		}
 	}
 		
@@ -743,14 +703,16 @@ public class EatersWorld extends World implements WorldManager {
 			}
 			
 			// Remove from former location (only one of these for all eaters)
-			getCell(collidees[0].getLocation()).removeEater();
+			getCell(collidees[0].getLocation()).setEater(null);
 
 			// Find new locations, update map and consume as necessary
 			for (int i = 0; i < collidees.length; ++i) {
 				collidees[i].setLocation(findStartingLocation());
-				Food f = getCell(collidees[i].getLocation()).setEater(collidees[i]);
+				getCell(collidees[i].getLocation()).setEater(collidees[i]);
+				Food f = getCell(collidees[i].getLocation()).getFood();
 				if (f != null) {
-					collidees[i].adjustPoints(f.getValue(), "food");
+					collidees[i].adjustPoints(f.value(), f.name());
+					getCell(collidees[i].getLocation()).setFood(null);
 				}
 			}
 		}

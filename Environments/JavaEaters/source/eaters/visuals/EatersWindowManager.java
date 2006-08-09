@@ -94,7 +94,7 @@ public class EatersWindowManager extends WindowManager implements SimulationList
 		gd = new GridData();
 		m_AgentDisplay.setLayoutData(gd);
 		
-		EatersVisualWorld.remapFoodColors(m_Simulation.getEatersWorld().getFood());
+		EatersVisualWorld.remapFoodColors();
 		VisualWorld.remapEntityColors(m_Simulation.getEatersWorld().getEaters());
 
 		m_Simulation.addSimulationListener(this);
@@ -187,7 +187,7 @@ public class EatersWindowManager extends WindowManager implements SimulationList
 			
 		case SimulationListener.kResetEvent:
 			updateWorldGroup();
-			EatersVisualWorld.remapFoodColors(m_Simulation.getEatersWorld().getFood());
+			EatersVisualWorld.remapFoodColors();
 			m_VisualWorld.setRepaint();
 			m_VisualWorld.redraw();
 			updateFoodAndScoreCount();
@@ -219,7 +219,7 @@ public class EatersWindowManager extends WindowManager implements SimulationList
 	}
 	
 	void updateFoodAndScoreCount() {
-		m_FoodCount.setText(Integer.toString(m_Simulation.getEatersWorld().getFoodCount()));
+		m_FoodCount.setText(Integer.toString(EatersCell.getFoodCount()));
 		m_ScoreCount.setText(Integer.toString(m_Simulation.getEatersWorld().getScoreCount()));
 	}
 

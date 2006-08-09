@@ -23,6 +23,7 @@ public class Eater extends WorldEntity {
 	public final static String kJumpID = "jump";
 	public final static String kDontEatID = "dont-eat";
 	public final static String kTrue = "true";
+	public final static String kEater = "eater";
 
 	private StringElement m_DirectionWME;
 	private IntElement m_ScoreWME;
@@ -70,7 +71,7 @@ public class Eater extends WorldEntity {
 	void createView(int x, int y) {
 		if (x >= 0 && x <= 4 && y >=0 && y <= 4 && !m_Cells[x][y].iterated) {
 			m_Cells[x][y].iterated = true;
-			m_Cells[x][y].content = m_Agent.CreateStringWME(m_Cells[x][y].me, kContentID, EatersCell.kEmptyID);
+			m_Cells[x][y].content = m_Agent.CreateStringWME(m_Cells[x][y].me, kContentID, CellType.EMPTY.toString());
 
 			if (x > 0) {
 				if (m_Cells[x - 1][y].me == null)
@@ -117,11 +118,32 @@ public class Eater extends WorldEntity {
 		
 
 		int xView, yView;
+		int worldSize = world.getSize();
 		for (int x = 0; x < m_Cells.length; ++x) {
 			xView = x - Eater.kEaterVision + getLocation().x;
+			if (xView < 0) {
+				continue;
+			} else if (xView >= worldSize) {
+				break;
+			}
 			for (int y = 0; y < m_Cells[x].length; ++y) {
 				yView = y - Eater.kEaterVision + getLocation().y;
-				String content = world.getContentNameByLocation(xView, yView);
+				if (yView < 0) {
+					continue;
+				} else if (yView >= worldSize) {
+					break;
+				}
+				EatersCell cell = world.getCell(xView, yView);
+				String content = null;
+				if (cell.getEater() != null) {
+					content = kEater;
+					
+				} else if (cell.getFood() != null) {
+					content = cell.getFood().name();
+			
+				} else {
+					content = cell.getType().name();
+				}
 				if (m_Moved || !m_Cells[x][y].content.GetValue().equalsIgnoreCase(content)) {
 					m_Agent.Update(m_Cells[x][y].content, content);
 				}
