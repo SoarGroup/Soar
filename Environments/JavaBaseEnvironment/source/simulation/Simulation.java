@@ -16,7 +16,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	
 	private String m_CurrentMap;
 	private String m_DefaultMap;
-	private boolean m_Debuggers;	
+	private boolean m_Debuggers = true;	
 	private Kernel m_Kernel;
 	private boolean m_StopSoar = false;
 	private int m_WorldCount = 0;
@@ -93,7 +93,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
   	}
   	
   	public boolean reachedMaxUpdates() {
-  		return m_MaxUpdates >= 0 ? (m_WorldCount >= m_MaxUpdates): false;
+  		return m_MaxUpdates > 0 ? (m_WorldCount >= m_MaxUpdates): false;
   	}
   	
 	public void setCurrentMap(String map) {
