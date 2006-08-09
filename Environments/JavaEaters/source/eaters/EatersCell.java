@@ -10,6 +10,7 @@ public class EatersCell {
 	private CellType type;
 	private Food food = null;
 	private Eater eater = null;
+	private boolean draw = true;
 
 	public EatersCell() {
 		this.type = CellType.EMPTY;
@@ -21,6 +22,7 @@ public class EatersCell {
 	}
 	
 	public void setType(CellType type) {
+		draw = true;
 		if (type == null) {
 			type = CellType.EMPTY;
 			return;
@@ -44,6 +46,7 @@ public class EatersCell {
 	}
 	
 	public void setEater(Eater eater) {
+		draw = true;
 		this.eater = eater;
 	}
 	
@@ -52,6 +55,7 @@ public class EatersCell {
 	}
 	
 	public void setFood(Food food) {
+		draw = true;
 		if (this.food != null) {
 			--EatersCell.foodCount;
 		}
@@ -70,6 +74,7 @@ public class EatersCell {
 	private boolean collision = false;
 	
 	public void setCollision(boolean setting) {
+		draw = true;
 		collision = setting;
 	}
 	
@@ -77,4 +82,11 @@ public class EatersCell {
 		return collision;
 	}
 	
+	public boolean checkDraw() {
+		return draw;
+	}
+	
+	public void clearDraw() {
+		draw = false;
+	}
 }
