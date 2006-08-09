@@ -57,7 +57,7 @@ public class Eaters {
 		
 		// TODO: set log level via command line
 		logger.setUseParentHandlers(false);
-		logger.setLevel(Level.ALL);
+		logger.setLevel(Level.INFO);
 		logger.info("Java Eaters started.");
 		
 		// Initialize the simulation

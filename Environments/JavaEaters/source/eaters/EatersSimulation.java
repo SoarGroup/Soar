@@ -18,12 +18,15 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 	private static final String kParamRuns = "runs";
 	private static final String kParamMaxUpdates = "max-updates";
 	private static final String kTagAgents = "agents";
+	private static final String kTagAgent = "agent";
 	private static final String kParamName = "name";
 	private static final String kParamProductions = "productions";
 	private static final String kParamColor = "color";
-	private static final String kDefaultMap = "default.emap";
+	private static final String kDefaultMap = "random-walls.emap";
 	private static final String kParamX = "x";
 	private static final String kParamY = "y";
+	
+	private static final String kFalse = "false";
 
 	private EatersWorld m_EatersWorld;
 
@@ -33,70 +36,147 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		// Log the settings file
 		if (logger.isLoggable(Level.FINE)) logger.fine("Settings file: " + settingsFile);
 
-		String [] initialNames = null;
-		String [] initialProductions = null;
-		String [] initialColors = null;
-		java.awt.Point [] initialLocations = null;
+		String [] initialNames = new String[0];
+		String [] initialProductions = new String[0];
+		String [] initialColors = new String[0];
+		java.awt.Point [] initialLocations = new java.awt.Point[0];
+		
+		setDefaultMap(kDefaultMap);
 		
 		// Load settings file
 		try {
-			JavaElementXML root = JavaElementXML.ReadFromFile(settingsFile);
-			if (!root.getTagName().equalsIgnoreCase(kTagEaters)) {
-				throw new Exception("Top level tag not " + kTagEaters);
+			ElementXML rootTag = ElementXML.ParseXMLFromFile(settingsFile);
+			if (rootTag == null) {
+				throw new Exception("Error parsing file: " + ElementXML.GetLastParseErrorDescription());
 			}
-			// TODO: Version check
 			
-			for (int i = 0 ; i < root.getNumberChildren() ; ++i)
-			{
-				JavaElementXML child = root.getChild(i) ;
-
-				String tagName = child.getTagName() ;
-				
-				if (tagName.equalsIgnoreCase(kTagSimulation)) {
-					setSpawnDebuggers(child.getAttributeBooleanDefault(kParamDebuggers, true));
-					String defaultMap = child.getAttribute(kParamDefaultMap);
-					if (defaultMap == null) {
-						defaultMap = kDefaultMap;
+			if (rootTag.IsTag(kTagEaters)) {
+				ElementXML mainTag = null;
+				for (int rootTagIndex = 0 ; rootTagIndex < rootTag.GetNumberChildren() ; ++rootTagIndex) {
+					mainTag = new ElementXML();
+					rootTag.GetChild(mainTag, rootTagIndex);
+					if (mainTag == null) {
+						assert false;
+						continue;
 					}
-					setDefaultMap(defaultMap);
-					setRuns(child.getAttributeIntDefault(kParamRuns, 0));
-					setMaxUpdates(child.getAttributeIntDefault(kParamMaxUpdates, 0));
 					
-					if (logger.isLoggable(Level.FINE)) logger.fine("Default map: " + defaultMap);
-					
-				} else if (tagName.equalsIgnoreCase(kTagAgents)) {
-					initialNames = new String[child.getNumberChildren()];
-					initialProductions = new String[child.getNumberChildren()];
-					initialColors = new String[child.getNumberChildren()];
-					initialLocations = new java.awt.Point[child.getNumberChildren()];
+					if (mainTag.IsTag(kTagSimulation)) {
+						for (int attrIndex = 0; attrIndex < mainTag.GetNumberAttributes(); ++attrIndex) {
+							String attribute = mainTag.GetAttributeName(attrIndex);
+							if (attribute == null) {
+								assert false;
+								continue;
+							}
+							
+							String value = mainTag.GetAttributeValue(attrIndex);
+							if (value == null) {
+								assert false;
+								continue;
+							}
+							
+							if (attribute.equalsIgnoreCase(kParamDebuggers)) {
+								if (value.equalsIgnoreCase(kFalse)) {
+									setSpawnDebuggers(false);
+								}
+							
+							} else if (attribute.equalsIgnoreCase(kParamDefaultMap)) {
+								setDefaultMap(value);
+								if (logger.isLoggable(Level.FINE)) logger.fine("Default map: " + value);
+							
+							} else if (attribute.equalsIgnoreCase(kParamRuns)) {
+								setRuns(Integer.parseInt(value));
 
-					for (int j = 0; j < initialNames.length; ++j) {
-						JavaElementXML agent = child.getChild(j);
-						
-						initialNames[j] = agent.getAttribute(kParamName);
-						initialProductions[j] = agent.getAttribute(kParamProductions);
-						
-						// Next two lines kind of a hack.  Convert / to \\ on windows, and vice versa
-						if (System.getProperty("file.separator").equalsIgnoreCase("\\")) {
-							initialProductions[j] = initialProductions[j].replaceAll("/", "\\\\");
-						} else if (System.getProperty("file.separator").equalsIgnoreCase("/")) {
-							initialProductions[j] = initialProductions[j].replaceAll("\\\\", "/");
+							} else if (attribute.equalsIgnoreCase(kParamMaxUpdates)) {
+								setMaxUpdates(Integer.parseInt(value));
+							}
 						}
 						
-						initialColors[j] = agent.getAttribute(kParamColor);
-						initialLocations[j] = new java.awt.Point(agent.getAttributeIntDefault(kParamX, -1), agent.getAttributeIntDefault(kParamY, -1));
+					} else if (mainTag.IsTag(kTagAgents)) {
+						
+						ElementXML agentTag = null;
+						int children = mainTag.GetNumberChildren();
+						initialNames = new String[children];
+						initialProductions = new String[children];
+						initialColors = new String[children];
+						initialLocations = new java.awt.Point[children];
+	
+						for (int agentIndex = 0 ; agentIndex < children; ++agentIndex) {
+							agentTag = new ElementXML();
+							mainTag.GetChild(agentTag, agentIndex);
+							if (agentTag == null) {
+								assert false;
+								continue;
+							}
+														
+							if (agentTag.IsTag(kTagAgent)) {
+								int x = -1;
+								int y = -1;
+
+								for (int attrIndex = 0; attrIndex < agentTag.GetNumberAttributes(); ++attrIndex) {
+									String attribute = agentTag.GetAttributeName(attrIndex);
+									if (attribute == null) {
+										assert false;
+										continue;
+									}
+									
+									String value = agentTag.GetAttributeValue(attrIndex);
+									if (value == null) {
+										assert false;
+										continue;
+									}
+									
+									if (attribute.equalsIgnoreCase(kParamName)) {
+										initialNames[agentIndex] = value;
+										
+									} else if (attribute.equalsIgnoreCase(kParamProductions)) {
+										initialProductions[agentIndex] = value;
+										// Next two lines kind of a hack.  Convert / to \\ on windows, and vice versa
+										if (System.getProperty("file.separator").equalsIgnoreCase("\\")) {
+											initialProductions[agentIndex] = initialProductions[agentIndex].replaceAll("/", "\\\\");
+										} else if (System.getProperty("file.separator").equalsIgnoreCase("/")) {
+											initialProductions[agentIndex] = initialProductions[agentIndex].replaceAll("\\\\", "/");
+										}
+										
+										
+									} else if (attribute.equalsIgnoreCase(kParamColor)) {
+										initialColors[agentIndex] = value;
+										
+									} else if (attribute.equalsIgnoreCase(kParamX)) {
+										x = Integer.parseInt(value);
+										
+									} else if (attribute.equalsIgnoreCase(kParamY)) {
+										y = Integer.parseInt(value);
+										
+									}
+								}			
+								if (initialNames[agentIndex] == null) {
+									logger.warning("Required name attribute missing, ignoring agent");
+									continue;
+								}
+								initialLocations[agentIndex] = new java.awt.Point(x, y);
+							} else {
+								logger.warning("Unknown tag: " + agentTag.GetTagName());
+							}
+							agentTag.delete();
+							agentTag = null;
+						}
+					} else {
+						logger.warning("Unknown tag: " + mainTag.GetTagName());
 					}
-				} else {
-					// Throw during development, but really we should just ignore this
-					// when reading XML (in case we add tags later and load this into an earlier version)
-					throw new Exception("Unknown tag " + tagName) ;
+					mainTag.delete();
+					mainTag = null;
 				}
-			}				
+			} else {
+				logger.warning("Unknown tag: " + rootTag.GetTagName());
+				throw new Exception("No root eaters tag.");
+			}		
+			rootTag.ReleaseRefOnHandle();
+			rootTag = null;
 		} catch (Exception e) {
 			fireErrorMessageSevere("Error loading XML settings: " + e.getMessage());
 			shutdown();
 			System.exit(1);
-		}
+		} 
 
 		setCurrentMap(getMapPath() + getDefaultMap());
 
@@ -106,10 +186,15 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		resetSimulation(false);
 		
 		// add initial eaters
-		if (initialNames != null) {
-			for (int i = 0; i < initialNames.length; ++i) {
-				createEntity(initialNames[i], getAgentPath() + initialProductions[i], initialColors[i], initialLocations[i], null, -1, -1, -1);
+		for (int i = 0; i < initialNames.length; ++i) {
+			if (initialNames[i] == null) {
+				continue;
 			}
+			String productions = null;
+			if (initialProductions[i] != null) {
+				productions = getAgentPath() + initialProductions[i];
+			}
+			createEntity(initialNames[i], productions, initialColors[i], initialLocations[i], null, -1, -1, -1);
 		}
 		
 		// if in quiet mode, run!

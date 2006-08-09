@@ -1,4 +1,3 @@
-<?xml version="1.0"?>
 <eaters-world>
   <food>
     <food-type name="normalfood" value="5" shape="round" color="blue">
