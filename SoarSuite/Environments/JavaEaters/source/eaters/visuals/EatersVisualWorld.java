@@ -14,16 +14,32 @@ import utilities.*;
 public class EatersVisualWorld extends VisualWorld implements PaintListener {
 	private static Logger logger = Logger.getLogger("simulation");
 	
-	static HashMap m_FoodColors;
+	static Color[] foodColors = new Color[0];
 	
-	public static void remapFoodColors(Food[] food) {
-		if (food == null) {
-			m_FoodColors = null;
-			return;
-		}
-		m_FoodColors = new HashMap();
-		for (int i = 0; i < food.length; ++i) {
-			m_FoodColors.put(food[i], WindowManager.getColor(food[i].getColor()));
+	/**
+	* Reallocates an array with a new size, and copies the contents
+	* of the old array to the new array.
+	* @param oldArray  the old array, to be reallocated.
+	* @param newSize   the new array size.
+	* @return          A new array with the same contents.
+	*/
+	private static Object resizeArray(Object oldArray, int newSize) {
+	   int oldSize = java.lang.reflect.Array.getLength(oldArray);
+	   Class elementType = oldArray.getClass().getComponentType();
+	   Object newArray = java.lang.reflect.Array.newInstance(elementType,newSize);
+	   int preserveLength = Math.min(oldSize,newSize);
+	   if (preserveLength > 0) {
+	      System.arraycopy (oldArray,0,newArray,0,preserveLength);
+	   }
+	   return newArray; 
+	}
+	
+	public static void remapFoodColors() {
+		
+		foodColors = (Color[])resizeArray(foodColors, Food.foodTypeCount());
+		for (int i = 0; i < Food.foodTypeCount(); ++i) {
+			Food f = Food.getFood(i);
+			foodColors[i] = WindowManager.getColor(f.color());
 		}
 	}
 	
@@ -56,7 +72,7 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 		x /= m_CellSize;
 		y /= m_CellSize;
 		EatersCell cell = m_World.getCell(x, y);
-		if (cell.isEater()) {
+		if (cell.getEater() != null) {
 			return cell.getEater();
 		}
 		return null;
@@ -105,19 +121,12 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 				}
 				
 				EatersCell cell = m_World.getCell(x, y);
-				if (!cell.needsRedraw() && m_Painted) {
-					continue;
-				}
-				
-				if (cell.isWall()) {
-				    gc.setBackground(WindowManager.black);
-				    gc.fillRectangle(m_CellSize*xDraw + 1, m_CellSize*yDraw + 1, m_CellSize - 2, m_CellSize - 2);
-					
-				} else if (cell.isEmpty()) {
-					gc.setBackground(WindowManager.widget_background);
-					gc.fillRectangle(m_CellSize*xDraw, m_CellSize*yDraw, m_CellSize, m_CellSize);
-					
-				} else if (cell.isEater()) {
+				// FIXME
+				//if (!cell.needsRedraw() && m_Painted) {
+				//	continue;
+				//}
+
+				if (cell.getEater() != null) {
 					
 					Eater eater = cell.getEater();
 					
@@ -142,38 +151,38 @@ public class EatersVisualWorld extends VisualWorld implements PaintListener {
 					default:
 						break;
 					}
-				} else {
-				
+				} else if (cell.isWall()) {
+				    gc.setBackground(WindowManager.black);
+				    gc.fillRectangle(m_CellSize*xDraw + 1, m_CellSize*yDraw + 1, m_CellSize - 2, m_CellSize - 2);
+					
+				} else if (cell.getFood() != null) {
 					Food food = cell.getFood();
 					
 				    gc.setBackground(WindowManager.widget_background);
 				    gc.fillRectangle(m_CellSize*xDraw, m_CellSize*yDraw, m_CellSize, m_CellSize);
 				    
-					gc.setBackground((Color)m_FoodColors.get(food));
+					gc.setBackground(foodColors[food.id()]);
 					
-					// TODO: this is a lot of string compares, should be integer switch
-					switch (food.getShape()) {
-					default:
-						logger.warning("Invalid food shape '" + food.getShapeName() + "', using round.");
-					case Food.kRoundInt:
+					if (food.shape().equals(Shape.ROUND)) {
 						fill1 = (int)(m_CellSize/2.8);
 						fill2 = m_CellSize - fill1 + 1;
 						gc.fillOval(m_CellSize*xDraw + fill1, m_CellSize*yDraw + fill1, m_CellSize - fill2, m_CellSize - fill2);
 						gc.drawOval(m_CellSize*xDraw + fill1, m_CellSize*yDraw + fill1, m_CellSize - fill2 - 1, m_CellSize - fill2 - 1);
-						break;
-					case Food.kSquareInt:
+					} else if (food.shape().equals(Shape.SQUARE)) {
 						fill1 = (int)(m_CellSize/2.8);
 						fill2 = m_CellSize - fill1 + 1;
 						gc.fillRectangle(m_CellSize*xDraw + fill1, m_CellSize*yDraw + fill1, m_CellSize - fill2, m_CellSize - fill2);
 						gc.drawRectangle(m_CellSize*xDraw + fill1, m_CellSize*yDraw + fill1, m_CellSize - fill2, m_CellSize - fill2);
-						break;
 					}
+
+				} else {
+					gc.setBackground(WindowManager.widget_background);
+					gc.fillRectangle(m_CellSize*xDraw, m_CellSize*yDraw, m_CellSize, m_CellSize);
 				}
 				
 				if (cell.checkCollision()) {
 					drawExplosion(gc, xDraw, yDraw);
 				}
-				
 			}
 		}
 		m_Painted = true;
