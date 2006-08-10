@@ -163,6 +163,14 @@ void ParseXML::GetNextToken()
 			SetCurrentToken(kEndMarkerString, kSymbol) ;
 			GetNextChar() ;
 		}
+		// Special handling for end markers with close tags />
+		// BADBAD: A space between the / and > should be legal.
+		else if (!IsEOF() && currentChar == kEndMarkerChar && GetCurrentChar() == kCloseTagChar) {
+			SetCurrentToken(kSingleTagEndMarkerString, kSymbol);
+			GetNextChar();
+			return;
+		}
+
 		// If this is the beginning of a comment <! then handle it differently from a regular symbol
 		else if (IsCommentStart(GetCurrentChar()))
 		{
@@ -361,10 +369,21 @@ ElementXMLImpl* ParseXML::ParseElement()
 	// we just read to the next special char (like "<").
 	SetInCharData(true) ;
 
-	// After reading all of the attributes, we must be at the end of the tag.
-	MustBe(kCloseTagChar) ;
-	
+	// After reading all of the attributes, if there is no error and we 
+	// don't have the single tag end marker "/>", then we must have the 
+	// close tag character
 	bool endTag = false ;
+	bool singleEndTag = false;
+	if (!IsError() && !Have(kSingleTagEndMarkerString)) {
+		MustBe(kCloseTagChar) ;
+	}
+	else {
+		SetInCharData(false) ;	// Out of the char data now.
+		GetNextToken() ;		// Consume the end marker
+
+		endTag = true ;
+		singleEndTag = true;	// There will be no following identifier
+	}
 	
 	while (!IsError() && !endTag)
 	{
@@ -424,7 +443,7 @@ ElementXMLImpl* ParseXML::ParseElement()
 		RecordError("Looking for character data block, but failed to find it or tag marker") ;
 	}
 
-	if (!IsError())
+	if (!IsError() && !singleEndTag)
 	{
 		// Once we reach the end marker "</" we just need to finish up the stream.
 		MustBe(kIdentifier, tagName) ;
