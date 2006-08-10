@@ -7,6 +7,10 @@ public class EatersCell {
 		return foodCount;
 	}
 
+	public static void resetFoodCount() {
+		foodCount = 0;
+	}
+
 	private CellType type;
 	private Food food = null;
 	private Eater eater = null;
