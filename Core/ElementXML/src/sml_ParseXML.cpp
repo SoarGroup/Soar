@@ -299,7 +299,10 @@ ElementXMLImpl* ParseXML::ParseElement()
 		while (!IsError() && !Have(kCloseTagChar))
 			GetNextToken() ;
 		
-		return NULL ;
+		// We must start with an open tag marker
+		MustBe(kOpenTagChar) ;
+
+		//return NULL ;
 	}
 	
 	// Create the object we'll be returning
