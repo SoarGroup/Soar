@@ -52,6 +52,7 @@ public class EatersWorld extends World implements WorldManager {
 	public boolean load(String mapFile) {
 		
 		m_PrintedStats = false;
+		scoreCount = 0;
 		
 		ElementXML rootTag = ElementXML.ParseXMLFromFile(mapFile);
 		if (rootTag == null) {
@@ -165,10 +166,12 @@ public class EatersWorld extends World implements WorldManager {
 						return false;
 					}
 					
+					// Reset food
+					EatersCell.resetFoodCount();
+					
 					// Create map array
 					m_World = new EatersCell[m_WorldSize][m_WorldSize];
 					
-					// Reset food
 					if (!randomWalls || !randomFood) {
 						if (!generateMapFromXML(mainTag)) {
 							return false;
@@ -207,8 +210,13 @@ public class EatersWorld extends World implements WorldManager {
 			m_Simulation.errorMessageWarning("No root eaters-world tag.");
 			return false;
 		}			
+		
+		// BADBAD: voigtjr: don't even get me started on this:
+		assert rootTag.GetRefCount() == 1;
 		rootTag.ReleaseRefOnHandle();
 		rootTag = null;
+		System.gc();
+		// BADBAD: Yes, we just called the garbage collector.
 		
 		resetEaters();
 		recalculateScoreCount();
