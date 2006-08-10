@@ -374,7 +374,7 @@ ElementXMLImpl* ParseXML::ParseElement()
 	// close tag character
 	bool endTag = false ;
 	bool singleEndTag = false;
-	if (!IsError() && !Have(kSingleTagEndMarkerString)) {
+	if (!IsError() && !Have(kSingleTagEndMarkerString, false)) {
 		MustBe(kCloseTagChar) ;
 	}
 	else {
