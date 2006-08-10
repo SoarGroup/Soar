@@ -130,6 +130,6 @@ Known issues:
 
 If any other issues or bugs are found, please send mail to:
 
-soar-sml-list@lists.sourceforge.net (preferred)
+soar-sml-list@umich.edu (preferred)
 -or-
 soar-group@lists.sourceforge.net

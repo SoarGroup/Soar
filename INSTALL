@@ -85,7 +85,7 @@ mail to the Soar SML development list. The Soar Wiki can be found at:
 
 The Soar SML development list email address is:
 
-	soar-sml-list@lists.sourceforge.net
+	soar-sml-list@umich.edu
 
 Installing system-wide
 ======================
@@ -151,8 +151,8 @@ cache files.)
 
    If you need to do unusual things to compile the package, please try
 to figure out how `configure' could check whether to do them, and mail
-diffs or instructions to soar-sml-list@lists.sourceforge.net so they can
-be considered for the next release.  If you are using the cache, and at
+diffs or instructions to soar-sml-list@umich.edu so they can be 
+considered for the next release.  If you are using the cache, and at
 some point `config.cache' contains results you don't want to keep, you
 may remove or edit it.
 
