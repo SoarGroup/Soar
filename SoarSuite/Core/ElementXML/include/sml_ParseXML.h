@@ -40,6 +40,7 @@ typedef std::string	ParseString ;
 class ElementXMLImpl ;
 
 #define kEndMarkerString "</"
+#define kSingleTagEndMarkerString "/>"
 
 class ParseXML
 {
@@ -122,7 +123,7 @@ protected:
 	bool IsSymbol(char ch)
 	{
 		return (ch == kOpenTagChar || ch == kCloseTagChar ||
-				ch == kHeaderChar || ch == kEqualsChar) ;
+				ch == kEndMarkerChar || ch == kHeaderChar || ch == kEqualsChar) ;
 	}
 
 	/************************************************************************
