@@ -573,7 +573,8 @@ sp {build-building*propose*retry-failed
          ^worker <id>
          ^started-build true)
    (<g> ^id <id>
-        ^command-failure 1)
+        -^command-success 1
+        -^command-running 1)
 -->
    (<s> ^operator <o> +)
    (<o> ^name bb*retry-failed
