@@ -32,10 +32,11 @@
 #define DEBUG_OUTPUT true 
 #include "OutputDefinitionsUnique.h"
 
-using namespace std;
+using namespace sml;
+using std::cout;
+using std::endl;
 
-SoarInterface::SoarInterface
-( sml::Agent*      _agent)
+SoarInterface::SoarInterface(Agent* _agent)
 : agent(_agent)
 {
   inputLink = agent->GetInputLink();
@@ -115,8 +116,10 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
         i++) 
     {
       // create a new WME object for the property
-      g.intProperties[i->first] = 
-        agent->CreateIntWME(g.WMEptr, i->first.c_str(), i->second);
+      InputLinkIntAttribute attr;
+      attr.wme = agent->CreateIntWME(g.WMEptr, i->first.c_str(), i->second);
+      attr.lastVal = i->second;
+      g.intProperties[i->first] = attr;
       msg << "\tadd: " << (*i).first << " " << (*i).second << endl;
     }
 
@@ -125,8 +128,10 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
         i != floatAttribs.end();
         i++)
     {
-      g.floatProperties[i->first] = 
-        agent->CreateFloatWME(g.WMEptr, i->first.c_str(), i->second);
+      InputLinkFloatAttribute attr;
+      attr.wme = agent->CreateFloatWME(g.WMEptr, i->first.c_str(), i->second);
+      attr.lastVal = i->second;
+      g.floatProperties[i->first] = attr;
       msg << "\tadd: " << i->first << " " << i->second << endl;
     }
 
@@ -136,8 +141,10 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
         i++) 
     {
       // create a new WME object for the property
-      g.stringProperties[i->first] = 
-        agent->CreateStringWME(g.WMEptr,i->first.c_str(),i->second.c_str());
+      InputLinkStringAttribute attr;
+      attr.wme = agent->CreateStringWME(g.WMEptr,i->first.c_str(),i->second.c_str());
+      attr.lastVal = i->second;
+      g.stringProperties[i->first] = attr;
       msg << "\tadd: " << (*i).first << " " << (*i).second << endl;
     }
   }
@@ -153,8 +160,12 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
       // (added assertions to check this.. -sw)
       assert(g.intProperties.find((*i).first) 
              != g.intProperties.end());
-      agent->Update(g.intProperties[(*i).first], (*i).second);
-      msg << "\tupd: " << (*i).first << " " << (*i).second << endl;
+      InputLinkIntAttribute& attr = g.intProperties[i->first];
+      if (attr.lastVal != i->second) {
+        agent->Update(attr.wme, i->second);
+        attr.lastVal = i->second;
+        msg << "\tupd: " << i->first << " " << i->second << endl;
+      }
     }
 
     for(list<FloatAttribType>::iterator
@@ -163,8 +174,12 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
         i++)
     {
       assert(g.floatProperties.find(i->first) != g.floatProperties.end());
-      agent->Update(g.floatProperties[i->first], i->second); 
-      msg << "\tupd: " << i->first << " " << i->second << endl;
+      InputLinkFloatAttribute& attr = g.floatProperties[i->first];
+      if (attr.lastVal != i->second) {
+        agent->Update(attr.wme, i->second);
+        attr.lastVal = i->second;
+        msg << "\tupd: " << i->first << " " << i->second << endl;
+      }
     }
 
     for(list<StringAttribType>::iterator 
@@ -173,8 +188,12 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
         i++) 
     {
       assert(g.stringProperties.find(i->first) != g.stringProperties.end());
-      agent->Update(g.stringProperties[i->first], i->second.c_str());
-      msg << "\tupd: " << i->first << " " << i->second << endl;
+      InputLinkStringAttribute& attr = g.stringProperties[i->first];
+      if (attr.lastVal != i->second) {
+        agent->Update(attr.wme, i->second.c_str());
+        attr.lastVal = i->second;
+        msg << "\tupd: " << i->first << " " << i->second << endl;
+      }
     }
   }
 
@@ -235,14 +254,27 @@ void SoarInterface::refreshFeatureMap(FeatureMap *m, string name) {
 // called in soar event handler to take everything off the output
 // link and put onto the action queue each time soar generates output
 void SoarInterface::getNewSoarOutput() {
-  
-  int numberCommands = agent->GetNumberCommands();
+  assert(agent->GetOutputLink());
+
+  WMElement* scWME = agent->GetOutputLink()->FindByAttribute("sorts", 0);
+  if (!scWME || !scWME->IsIdentifier()) return;
+
+  Identifier* sortsCommands = scWME->ConvertToIdentifier();
+  int numberCommands = sortsCommands->GetNumberChildren();
   int oldCommandCount = 0;
 
   string name("");
   
   for (int i = 0 ; i < numberCommands ; i++) {
-    sml::Identifier* cmdPtr = agent->GetCommand(i);
+//  for (int i = 0 ; i < agent->GetNumberCommands() ; i++) {
+    WMElement* pWME = sortsCommands->GetChild(i);
+    if (!pWME->IsIdentifier() || !pWME->IsJustAdded()) {
+      continue;
+    }
+
+    Identifier* cmdPtr = pWME->ConvertToIdentifier();
+
+//    Identifier* cmdPtr = agent->GetCommand(i);
 
     // check if this command has already been encountered
     if (cmdPtr->GetParameterValue("added-to-queue") != NULL) {
@@ -291,8 +323,10 @@ void SoarInterface::getNewSoarOutput() {
 
 }
 
-void SoarInterface::processObjectAction(ObjectActionType type, 
-                                        sml::Identifier* cmdPtr) {
+void SoarInterface::processObjectAction
+( ObjectActionType type, 
+  Identifier* cmdPtr )
+{
   ObjectAction newAction;
   newAction.type = type;
   
@@ -344,8 +378,10 @@ void SoarInterface::processObjectAction(ObjectActionType type,
   
 }
 
-void SoarInterface::processAttentionAction(AttentionActionType type, 
-                                        sml::Identifier* cmdPtr) {
+void SoarInterface::processAttentionAction
+( AttentionActionType type, 
+  Identifier* cmdPtr) 
+{
   AttentionAction newAction;
   newAction.type = type;
   
@@ -414,8 +450,10 @@ void SoarInterface::processAttentionAction(AttentionActionType type,
 
 }
 
-void SoarInterface::processGameAction(GameActionType type, 
-                                        sml::Identifier* cmdPtr) {
+void SoarInterface::processGameAction
+( GameActionType type, 
+  Identifier* cmdPtr) 
+{
   GameAction newAction;
   newAction.type = type;
   const char* paramValue;

@@ -17,18 +17,37 @@ class Sorts;
 
 class PerceptualGroup;
 
-using namespace std;
+using namespace sml;
 
-typedef struct {
+// we need these attribute structs so we can remember the last value of the
+// attribute, so that the input-link won't blink
+
+struct InputLinkIntAttribute {
+  IntElement* wme;
+  int lastVal;
+};
+
+struct InputLinkFloatAttribute {
+  FloatElement* wme;
+  float lastVal;
+};
+
+
+struct InputLinkStringAttribute {
+  StringElement* wme;
+  string lastVal;
+};
+
+struct InputLinkGroupRep {
   int groupId;
   bool added;
   sml::Identifier* WMEptr;
   // change this later into hash_map<string, IntElement*> and write a hash
   // function for strings
-  map<string, sml::IntElement*> intProperties;
-  map<string, sml::FloatElement*> floatProperties;
-  map<string, sml::StringElement*> stringProperties;
-} InputLinkGroupRep;
+  map<string, InputLinkIntAttribute> intProperties;
+  map<string, InputLinkFloatAttribute> floatProperties;
+  map<string, InputLinkStringAttribute> stringProperties;
+};
 
 typedef struct {
   sml::Identifier* identifierWME;
