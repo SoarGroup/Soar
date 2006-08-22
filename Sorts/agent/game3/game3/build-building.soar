@@ -562,6 +562,36 @@ sp {build-building*apply*mark-started
    (<ol> ^command <fc> -)
 }
 
+sp {build-building*propose*mark-failed-build
+   (state <s> ^name build-building
+              ^task-id <tid>
+              ^top-state <ts>
+              ^io.input-link.groups.group <g>
+             -^io.output-link.command.task-id <tid>)
+   (<ts> ^build-building <bb>)
+   (<bb> ^task-id <tid>
+         ^worker <id>
+         ^started-build true
+        -^failed-build true)
+   (<g> ^id <id>
+        ^command-failure 1)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name bb*mark-failed-build
+        ^task-id <tid>)
+}
+
+sp {build-building*apply*mark-failed-build
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name bb*mark-failed-build
+        ^task-id <tid>)
+   (<ts> ^build-building <bb>)
+   (<bb> ^task-id <tid>)
+-->
+   (<bb> ^failed-build true)
+}
+
 sp {build-building*propose*retry-failed
    (state <s> ^name build-building
               ^task-id <tid>
@@ -571,10 +601,10 @@ sp {build-building*propose*retry-failed
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>
          ^worker <id>
-         ^started-build true)
+         ^failed-build true)
    (<g> ^id <id>
-        -^command-success 1
-        -^command-running 1)
+       -^command build
+       -^command build-started)
 -->
    (<s> ^operator <o> +)
    (<o> ^name bb*retry-failed
@@ -593,29 +623,9 @@ sp {build-building*apply*retry-failed
    (<ts> ^build-building <bb> -)
 }
 
-# workers that failed to build
-sp {build-building*propose*free-worker-nonbuilder
-   (state <s> ^name build-building
-              ^task-id <tid>
-              ^top-state <ts>
-              ^io.input-link.groups.group <g>
-             -^io.output-link.command.group0 <id>)
-   (<ts> ^build-building <bb>)
-   (<bb> ^task-id <tid>
-         ^started-build true
-        -^worker <id>)
-   (<g> ^id <id>
-        ^command-running 0
-        ^command build)
--->
-   (<s> ^operator <o> + > =)
-   (<o> ^name orts-free
-        ^group <id>
-        ^task-id <tid>)
-}
 
 # only do this if successful
-sp {build-building*propose*free-worker-builder
+sp {build-building*propose*free-worker-success
    (state <s> ^name build-building
               ^task-id <tid>
               ^top-state <ts>
@@ -627,6 +637,27 @@ sp {build-building*propose*free-worker-builder
          ^worker <id>)
    (<g> ^id <id>
         ^command-success 1)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name orts-free
+        ^group <id>
+        ^task-id <tid>)
+}
+
+# only do this if successful
+sp {build-building*propose*free-worker-failure
+   (state <s> ^name build-building
+              ^task-id <tid>
+              ^top-state <ts>
+              ^io.input-link.groups.group <g>
+             -^io.output-link.command.group0 <id>)
+   (<ts> ^build-building <bb>)
+   (<bb> ^task-id <tid>
+         ^started-build true
+         ^failed-build true
+         ^worker <id>)
+   (<g> ^id <id>
+        ^command-failure 1)
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name orts-free
