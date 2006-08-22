@@ -33,9 +33,7 @@
 #define WAIT_RATIO    0.5
 #define RESUME_RATIO  0.85
 
-#ifdef USE_CANVAS
 #define USE_CANVAS_ATTACK_MANAGER
-#endif
 
 #define NO_WAITING
   

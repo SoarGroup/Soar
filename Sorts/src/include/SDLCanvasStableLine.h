@@ -54,6 +54,9 @@ public:
   void setLineColor(Uint8 r, Uint8 g, Uint8 b) {
     lineColor = SDLColor(r, g, b);
   }
+  void setShapeColor(Uint8 r, Uint8 g, Uint8 b) {
+    lineColor = SDLColor(r,g,b);
+  }
 
 private:
   double x2;

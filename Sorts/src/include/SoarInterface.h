@@ -117,7 +117,8 @@ that group is refreshed! Initially, the stats will not be set.
 class SoarInterface {
   public:
     SoarInterface
-    ( sml::Agent*      _agent);
+    ( sml::Agent*      _agent,
+      bool _oldAgent);
 
     ~SoarInterface();
 
@@ -170,6 +171,7 @@ class SoarInterface {
 
     // SML pointers
     sml::Agent *agent;
+    bool oldAgent;
 
     sml::Identifier* inputLink;
     sml::Identifier* groupsIdWME;

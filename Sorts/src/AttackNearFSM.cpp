@@ -67,9 +67,7 @@ int AttackNearFSM::update() {
         *(*i)->sod.owner != Sorts::OrtsIO->getWorldId())
     {
       if (canHit(gob, *i)) {
-#ifdef USE_CANVAS
         //Sorts::canvas.flashColor(sgob, 255, 128, 0, 1); // orange
-#endif
         attackParams[0] = Sorts::OrtsIO->getGobId(*i);
         msg << "opportunistic attack!\n";
         weapon->set_action("attack", attackParams);

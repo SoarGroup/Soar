@@ -264,3 +264,13 @@ double Rectangle::getHeight() {
 Vec2d Rectangle::getCenterPoint() {
   return Vec2d((xmax + xmin) / 2, (ymax + ymin) / 2);
 }
+
+list<pair<double, double> > Rectangle::getPointList() {
+  list<pair<double, double> > points;
+  points.push_back(make_pair(xmin, ymax));
+  points.push_back(make_pair(xmax, ymax));
+  points.push_back(make_pair(xmax, ymin));
+  points.push_back(make_pair(xmin, ymin));
+
+  return points;
+}

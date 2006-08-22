@@ -34,6 +34,7 @@
 #include "FeatureMapManager.h"
 #include "GameActionManager.h"
 #include "Sorts.h"
+#include "SRS.h"
 
 #include "TerrainModule.H"
 #include "Demo_SimpleTerrain.H"
@@ -53,14 +54,12 @@ void printOutput
   const char*     pMessage)
 {
   std::cout << "SOARINT: " << pMessage << std::endl;
-#ifdef USE_CANVAS
   // enable this block to print the soar decision in the canvas,
   // which hurts performance a bit
  /* pthread_mutex_lock(Sorts::mutex);
   string s(pMessage);
   Sorts::canvas.setSoarStatus(s);
   pthread_mutex_unlock(Sorts::mutex);*/
-#endif
 }
 
 /* We have two different threads giving us events, Soar and ORTS.
@@ -185,9 +184,7 @@ void* RunOrts(void* ptr) {
 typedef Demo_SimpleTerrain::ST_Terrain Terrain;
 
 int main(int argc, char *argv[]) {
-#ifdef USE_CANVAS
   atexit(SDL_Quit);
-#endif
 
   int port = 7777;
   int soarPort = 12121;
@@ -198,6 +195,9 @@ int main(int argc, char *argv[]) {
   useSoarStops = true;
 
   bool printSoar = false;
+  bool srsCanvas = false;
+  bool noSortsCanvas = false;
+  bool oldAgent = false;
 
   for(int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-port") == 0) {
@@ -222,10 +222,21 @@ int main(int argc, char *argv[]) {
     else if (strcmp(argv[i], "-id") == 0) {
       id = argv[i+1];
     }
-    else if (strcmp(argv[i], "-print-soar") == 0) {
+/*else if (strcmp(argv[i], "-print-soar") == 0) {
       printSoar = true;
+    }*/
+    else if (strcmp(argv[i], "-srs-canvas") == 0) {
+      srsCanvas = true;
+    }
+    else if (strcmp(argv[i], "-no-canvas") == 0) {
+      noSortsCanvas = true;
+    }
+    else if (strcmp(argv[i], "-old-agent") == 0) {
+      oldAgent = true;
     }
   }
+
+  printSoar = true;
 
   srand(seed);
   
@@ -292,7 +303,7 @@ int main(int argc, char *argv[]) {
   msg << "connected to ORTS server" << std::endl;
   
   SoarInterface soarInterface
-  ( pAgent);
+  ( pAgent, oldAgent);
 
   FeatureMapManager featureMapManager;
   PerceptualGroupManager pgm;
@@ -302,6 +313,7 @@ int main(int argc, char *argv[]) {
   SpatialDB spatialDB;
   MineManager mineMan;
   AttackManagerRegistry amr;
+  SpatialReasoningSystem srs;
 
   Sorts sorts(&soarInterface, 
               &ortsInterface, 
@@ -312,6 +324,7 @@ int main(int argc, char *argv[]) {
               &amr,
               &mineMan,
               &gaMan,
+              &srs,
               &sortsMutex);
 
   spatialDB.init();
@@ -324,13 +337,20 @@ int main(int argc, char *argv[]) {
   pgm.initialize();
   soarInterface.initSoarInputLink();
 
-#ifdef USE_CANVAS
-  // initialize the canvas
-  Sorts::canvas.init
+  if (not noSortsCanvas) {
+    // initialize the canvas
+    Sorts::canvas.init
+      ( ortsInterface.getMapXDim(), 
+        ortsInterface.getMapYDim(),
+        1.2 );
+  }
+
+  if (srsCanvas) {
+    srs.initCanvas 
     ( ortsInterface.getMapXDim(), 
       ortsInterface.getMapYDim(),
       1.2 );
-#endif
+  }
 
 // register for all events
   gsm.add_handler(&ortsInterface);

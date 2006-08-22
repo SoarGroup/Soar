@@ -90,6 +90,8 @@ class PerceptualGroupManager {
 
     void setAllCategoriesStale();
 
+    int counter;
+
 };
 
 struct perceptualGroupingStruct {

@@ -37,10 +37,7 @@
 
 //#define CLUSTERING_ATTRIBUTES
 
-#ifdef USE_CANVAS
 #include "SortsCanvas.h"
-#define USE_CANVAS_GROUPS
-#endif
 
 #define CLASS_TOKEN "GROUP"
 #define DEBUG_OUTPUT true 
@@ -164,7 +161,7 @@ void PerceptualGroup::generateData() {
 
   int activePick = 0;
 
-  Vec2d avg_heading;
+  avgHeading.setB(0,0);
 
   int intAvgHeading = 0;
 
@@ -199,7 +196,7 @@ void PerceptualGroup::generateData() {
 
     // average heading over those units that could move
     if (gob->has_attr("heading")) {
-      avg_heading += getHeadingVector(gob->get_int("heading"));
+      avgHeading += getHeadingVector(gob->get_int("heading"));
       intAvgHeading += gob->get_int("heading");
     }
 

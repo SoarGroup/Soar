@@ -32,7 +32,7 @@
 #define CROWD_MAX_WORKERS 2
 
 #define CLASS_TOKEN "SDB"
-#define DEBUG_OUTPUT true 
+#define DEBUG_OUTPUT false 
 #include "OutputDefinitionsUnique.h"
 
 enum { TILE_UNKNOWN=0, TILE_WATER=1, TILE_GROUND=2, TILE_CLIFF=3 };
@@ -349,7 +349,14 @@ bool SpatialDB::hasObjectCollision(Rectangle* rect) {
   c.x = (int)((rect->xmax + rect->xmin)/2.0);
   c.y = (int)((rect->ymax + rect->ymin)/2.0);
   int radius = (int)(sqrt(squaredDistance(c.x, c.y, rect->xmax, rect->ymax)));
-  return hasObjectCollisionInt(c, radius, false, NULL);
+  if (hasObjectCollisionInt(c, radius, false, NULL)) {
+    dbg << "object collision!\n";
+    return true;
+  }
+  else {
+    dbg << "no object collision.\n";
+    return false;
+  }
 }
 
 bool SpatialDB::hasObjectCollisionInt
@@ -454,8 +461,8 @@ bool SpatialDB::hasObjectCollisionInt
             }
             else {
               if ((*it) != ignoreGob) {
-                //msg << "object collision with " << (*it)->bp_name() << endl;
-                //msg << "at loc " << obj.x << "," << obj.y << endl;
+                dbg << "object collision with " << (*it)->bp_name() << endl;
+                dbg << "at loc " << obj.x << "," << obj.y << endl;
                 return true;
               }
             } 
@@ -475,9 +482,9 @@ bool SpatialDB::hasObjectCollisionInt
           else if (rectangle_circle_intersect(r, circle) and 
                    (*it) != ignoreGob)
           {
-            // msg << "object at " << c << " with radius " << radius 
-            //     << " has collision with " << (*it)->bp_name() << " at " <<
-            //   *(*it)->sod.x << "," << *(*it)->sod.y << endl;
+            dbg << "object at " << c << " with radius " << radius 
+                 << " has collision with " << (*it)->bp_name() << " at " <<
+               *(*it)->sod.x << "," << *(*it)->sod.y << endl;
             return true;
           }
          
@@ -502,11 +509,12 @@ bool SpatialDB::hasObjectCollisionInt
   }
 
   // check for terrain collisions
+  /*
   Circle cc(c.x, c.y, radius);
   if (hasTerrainCollision(cc)) {
     Sorts::canvas.makeTempCircle(c.x, c.y, radius, 9999)->setShapeColor(255, 255, 255);
     return true;
-  }
+  }*/
 
  // msg << "object at " << c << " with radius " << radius 
  //     << " has no collisions\n"; 
@@ -525,6 +533,7 @@ bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
       maxRow >= Sorts::OrtsIO->getMapYDim() / GameConst::TILE_POINTS)
   {
     // collision with edge of map
+    dbg << "eom collision!\n";
     return true;
   }
 
@@ -549,7 +558,9 @@ bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
       switch (split) {
         case Tile::NO_SPLIT:
           // just check if entire tile is not passable
-          if (typeW != TILE_GROUND) {
+          if (typeW != TILE_GROUND and
+              typeW != TILE_UNKNOWN) {
+            dbg << "non-ground!\n";
             return true;
           }
           else {
@@ -584,11 +595,13 @@ bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
         break;
       }
       if (rectangle_triangle_intersect(*rect, rAngle, xoffset, yoffset)) {
+        dbg << "rti\n";
         return true;
       }
     }
   }
 
+  dbg << "no terrain collision.\n";
   return false;
 }
 
@@ -636,7 +649,7 @@ bool SpatialDB::hasTerrainCollision(Circle& c) {
       Vec2d rAngle;
       double xoffset, yoffset;
       if(split == Tile::NO_SPLIT) {
-        if (typeW == TILE_GROUND) { 
+        if (typeW == TILE_GROUND || typeW == TILE_UNKNOWN) { 
           continue; 
         }
         else {
@@ -645,24 +658,24 @@ bool SpatialDB::hasTerrainCollision(Circle& c) {
       }
       else {
         if(split == Tile::TB_SPLIT) {
-          if (typeW != TILE_GROUND) {
+          if (typeW != TILE_GROUND || typeW == TILE_UNKNOWN) {
             rAngle.setB(xmin, ymax);
             xoffset = xmax - xmin;
             yoffset = ymin - ymax;
           }
-          if (typeE != TILE_GROUND) {
+          if (typeE != TILE_GROUND || typeW == TILE_UNKNOWN) {
             rAngle.setB(xmax, ymin);
             xoffset = xmin - xmax;
             yoffset = ymax - ymin;
           }
         }
         else { // BT_SPLIT
-          if (typeW != TILE_GROUND) {
+          if (typeW != TILE_GROUND || typeW == TILE_UNKNOWN) {
             rAngle.setB(xmin, ymin);
             xoffset = xmax - xmin;
             yoffset = ymax - ymin;
           }
-          if (typeE != TILE_GROUND) {
+          if (typeE != TILE_GROUND || typeW == TILE_UNKNOWN) {
             rAngle.setB(xmax, ymax);
             xoffset = xmin - xmax;
             yoffset = ymin - ymax;

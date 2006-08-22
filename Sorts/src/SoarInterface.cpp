@@ -36,8 +36,8 @@ using namespace sml;
 using std::cout;
 using std::endl;
 
-SoarInterface::SoarInterface(Agent* _agent)
-: agent(_agent)
+SoarInterface::SoarInterface(Agent* _agent, bool _oldAgent)
+: agent(_agent), oldAgent(_oldAgent)
 {
   inputLink = agent->GetInputLink();
   groupIdCounter = 0;
@@ -256,7 +256,13 @@ void SoarInterface::refreshFeatureMap(FeatureMap *m, string name) {
 void SoarInterface::getNewSoarOutput() {
   assert(agent->GetOutputLink());
 
-  WMElement* scWME = agent->GetOutputLink()->FindByAttribute("sorts", 0);
+  WMElement* scWME;
+  if (oldAgent) {
+    scWME = agent->GetOutputLink();
+  }
+  else {
+    scWME = agent->GetOutputLink()->FindByAttribute("sorts", 0);
+  }
   if (!scWME || !scWME->IsIdentifier()) return;
 
   Identifier* sortsCommands = scWME->ConvertToIdentifier();
@@ -312,12 +318,10 @@ void SoarInterface::getNewSoarOutput() {
     }
     agent->CreateIntWME(cmdPtr, "added-to-queue", 1);
   }
-#ifdef USE_CANVAS
   if (name != "") {
     Sorts::canvas.setCommandStatus("last Soar command: " + name);
     // naturally, this misses multiple commands in the same cycle
   }
-#endif
 
   dbg << "old command count: " << oldCommandCount << endl;
 

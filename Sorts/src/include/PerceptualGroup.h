@@ -115,6 +115,9 @@ class PerceptualGroup {
     void setCommandString(string st) { currentCommand = st; }
     string getCommandString() { return currentCommand; }
 
+    string getName() { return typeName; }
+    Vec2d getHeading() { return avgHeading; }
+
   private: // functions
     void updateBoundingBox();
 
@@ -148,6 +151,8 @@ class PerceptualGroup {
     bool moving;
     bool friendlyWorker;
 
+    Vec2d avgHeading;
+    
     // bounding box of group dimensions
     Rectangle bbox;
 

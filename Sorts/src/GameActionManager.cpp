@@ -23,7 +23,7 @@
 #define MAX_BUILDING_PLACE_TRIES 70
 
 #define CLASS_TOKEN "GAMAN"
-#define DEBUG_OUTPUT false
+#define DEBUG_OUTPUT true 
 #include "OutputDefinitionsUnique.h"
 
 GameActionManager::GameActionManager() 
@@ -105,6 +105,7 @@ void GameActionManager::findBuildingLoc(BuildingType building, coordinate nearLo
     }
     else {
       dbg << "bad location: " << newLoc << endl;
+      dbg << "rect: " << rect << endl;
     }
     //found = true; break;
   }

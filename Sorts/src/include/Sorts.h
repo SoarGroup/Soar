@@ -27,22 +27,20 @@
    most lower-level objects should have a pointer to this
 */
 
-#define USE_CANVAS
 
 #include "SoarInterface.h"
 #include "OrtsInterface.h"
 #include "PerceptualGroupManager.h"
 #include "FeatureMapManager.h"
 #include "GameActionManager.h"
+class SpatialReasoningSystem;
 class AttackManagerRegistry;
 class MineManager;
 
 #include "SpatialDB.h"
 #include "TerrainModule.H"
 
-#ifdef USE_CANVAS
 #include "SortsCanvas.h"
-#endif
 
 class Sorts {
   public:
@@ -56,6 +54,7 @@ class Sorts {
       AttackManagerRegistry*  _amr,
       MineManager*            _mineMan,
       GameActionManager*      _gam,
+      SpatialReasoningSystem* _srs,
       pthread_mutex_t*        _mutex )
     {
       SoarIO = _SoarIO;
@@ -68,6 +67,7 @@ class Sorts {
       mineManager = _mineMan;
       gameActionManager = _gam;
       mutex = _mutex;
+      SRS = _srs;
       catchup = false;
       frame = -1;
     }
@@ -81,14 +81,13 @@ class Sorts {
     static AttackManagerRegistry*   amr;
     static MineManager*             mineManager;
     static GameActionManager*       gameActionManager;
+    static SpatialReasoningSystem* SRS;
  //   static TerrainManager           terrainManager;
     static pthread_mutex_t*         mutex;
     static bool                     catchup;
     static int                      cyclesSoarAhead;
     static int frame;
-#ifdef USE_CANVAS
     static SortsCanvas              canvas;
-#endif
 };
 
 #endif

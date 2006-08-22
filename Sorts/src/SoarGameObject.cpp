@@ -288,7 +288,6 @@ void SoarGameObject::update()
       lastAttackedId = -1;
     }
     else if (weapon->get_int("shooting") != 0) {
-#ifdef USE_CANVAS
       // flash different colors for opportunistic vs. assigned attacks
       if (not lastAttackOpportunistic) {
         Sorts::canvas.flashColor(this, 153, 50, 205, 1); // purple 
@@ -296,7 +295,6 @@ void SoarGameObject::update()
       else {
         Sorts::canvas.flashColor(this, 255, 128, 0, 1); // orange
       }
-#endif
     }
   }
 }

@@ -33,16 +33,14 @@
 #define DEBUG_OUTPUT false 
 #include "OutputDefinitionsUnique.h"
 
-#ifdef USE_CANVAS
 #include "SortsCanvas.h"
-#endif
 
 //#define NO_WORLD_GROUPS
 
 // how many frames behind can we be?
 // 10 used for competition,
 // but what can we really do if we're behind? most actions are set every cycle
-#define ALLOWED_LAG 0
+#define ALLOWED_LAG 3
 
 OrtsInterface::OrtsInterface(GameStateModule* _gsm)
 : gsm(_gsm)
@@ -111,26 +109,24 @@ bool OrtsInterface::handle_event(const Event& e) {
         Sorts::catchup = true;
         msg << "client is behind, skipping event. v: "
              << viewFrame << " a:" << lastActionFrame << "\n";
-#ifdef USE_CANVAS
         Sorts::canvas.setStatus("skipping event");
-#endif
         gsm->send_actions(); // empty, needed by server
         pthread_mutex_unlock(Sorts::mutex);
         Sorts::SoarIO->startSoar();
         dbg << "TIME " << (gettime() - st) / 1000 << endl; 
         return true;
       }
-#ifdef USE_CANVAS
-      stringstream ss;
-      string status;
-      ss << "ORTS Event " << viewFrame;
-      if (skippedActions) {
-        ss << " SKIPPED ACTIONS: " << skippedActions;
+      if (Sorts::canvas.initted()) { 
+        stringstream ss;
+        string status;
+        ss << "ORTS Event " << viewFrame;
+        if (skippedActions) {
+          ss << " SKIPPED ACTIONS: " << skippedActions;
+        }
+        status = ss.str();
+        Sorts::canvas.setStatus(status);
+        Sorts::canvas.update();
       }
-      status = ss.str();
-      Sorts::canvas.setStatus(status);
-      Sorts::canvas.update();
-#endif
       
       Sorts::SoarIO->updateViewFrame(viewFrame);
       Sorts::catchup = false;
@@ -157,10 +153,15 @@ bool OrtsInterface::handle_event(const Event& e) {
        */
       Sorts::SoarIO->startSoar();
     }
+    else if (e.get_what() == GameStateModule::FINISHED_MSG ||
+             e.get_what() == GameStateModule::STOP_MSG) {
+      // cleanly exit
+      msg << "recieved FINISHED_MSG or STOP_MSG.\n";
+      pthread_mutex_unlock(Sorts::mutex);
+      exit(0);
+    }
     msg << "ORTS EVENT }" << endl;
-#ifdef USE_CANVAS
     Sorts::canvas.clearStatus();
-#endif
     pthread_mutex_unlock(Sorts::mutex);
     msg << "TIME " << (gettime() - st) / 1000 << endl; 
     return true;
@@ -232,9 +233,7 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
     }
   }
 
-#ifdef USE_CANVAS
   Sorts::canvas.registerSGO(newObj);
-#endif
   
   
   msg << gameObj << " added, id " << id << endl;
@@ -284,9 +283,7 @@ void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
     }
   }
 
-#ifdef USE_CANVAS
   Sorts::canvas.unregisterSGO(sObject);
-#endif
 
   objectMap.erase(gameObj);
   msg << "deceased sgo: " << sObject << " id: " << id << endl;
@@ -345,14 +342,14 @@ void OrtsInterface::updateSoarGameObjects() {
 
   updateSoarPlayerInfo();
   
-#ifdef USE_CANVAS
-  FORALL(changes.new_boundaries, obj) {
-    GameObj* gob = (*obj)->get_GameObj();
-    Sorts::canvas.drawLine(*gob->sod.x1, *gob->sod.y1, *gob->sod.x2, *gob->sod.y2);
-    Sorts::canvas.update();
+  if (Sorts::canvas.initted()) {
+    FORALL(changes.new_boundaries, obj) {
+      GameObj* gob = (*obj)->get_GameObj();
+      Sorts::canvas.drawLine(*gob->sod.x1, *gob->sod.y1, *gob->sod.x2, *gob->sod.y2);
+      Sorts::canvas.update();
+    }
   }
-#endif
-
+    
   // add new objects
   FORALL(changes.new_objs, obj) {
     GameObj* gob = (*obj)->get_GameObj();

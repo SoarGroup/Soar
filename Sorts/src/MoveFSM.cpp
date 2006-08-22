@@ -293,9 +293,7 @@ void MoveFSM::init(vector<sint4> p)
   if (not forcePathfind and terrainCollide) {
     msg << "Terrain collision, not pathfinding.\n";
     state = UNREACHABLE;
-#ifdef USE_CANVAS
-    Sorts::canvas.makeTempCircle(l.x, l.y, *gob->sod.radius, 9999)->setShapeColor(255, 255, 255);
-#endif
+  //  Sorts::canvas.makeTempCircle(l.x, l.y, *gob->sod.radius, 9999)->setShapeColor(255, 255, 255);
   }
   else {
     Sorts::terrainModule->findPath(gob, l, path);

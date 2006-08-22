@@ -20,6 +20,7 @@
 #define Rectangle_H
 
 #include <iostream>
+#include <list>
 #include "Vec2d.h"
 
 using namespace std;
@@ -49,6 +50,7 @@ public:
 
   Vec2d getClosestEdgePoint(const Vec2d& from);
 
+  list<pair<double, double> > getPointList();
   //Circle getCircumscribingCircle();
 
   Rectangle& operator=(const Rectangle& rhs);

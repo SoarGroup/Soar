@@ -18,6 +18,11 @@
 */
 #include "SDLCanvas.h"
 #include <signal.h>
+#include <SDL/SDL.h>
+
+#define CLASS_TOKEN "SDLCANVAS"
+#define DEBUG_OUTPUT true 
+#include "OutputDefinitions.h"
 
 SDLCanvas::SDLCanvas()
 {
@@ -40,6 +45,8 @@ int SDLCanvas::init(double worldWidth, double worldHeight, double scale) {
   space = SDLCanvasSpace(scale);
   canvasw = space.toCS(worldw);
   canvash = space.toCS(worldh);
+
+  dbg << "initting.\n";
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     return 1;
@@ -163,7 +170,10 @@ void SDLCanvas::remove(SDLCanvasShape* shape) {
   if (p != shapes.end()) {
     shapes.erase(p);
     delete shape;
+    dbg << "shape removed.\n";
+    return;
   }
+  dbg << "shape not found!\n";
 }
 
 bool SDLCanvas::initted() {

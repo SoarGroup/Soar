@@ -62,6 +62,9 @@ void SortsCanvas::clear() {
 }
 
 void SortsCanvas::registerSGO(SoarGameObject* sgo) {
+  if (not canvas.initted()) {
+    return;
+  }
   assert(canvasObjs.find(sgo) == canvasObjs.end());
   CanvasObjInfo newObj;
   newObj.compound = canvas.makeCompound(sgo->getX(), sgo->getY());
@@ -96,6 +99,9 @@ void SortsCanvas::registerSGO(SoarGameObject* sgo) {
 }
 
 void SortsCanvas::unregisterSGO(SoarGameObject* sgo) {
+  if (not canvas.initted()) {
+    return;
+  }
   assert(canvasObjs.find(sgo) != canvasObjs.end());
   CanvasObjInfo& obj = canvasObjs[sgo];
   list<SDLCanvasShape*> elements;
@@ -117,6 +123,9 @@ void SortsCanvas::unregisterSGO(SoarGameObject* sgo) {
 }
 
 void SortsCanvas::registerGroup(PerceptualGroup* group) {
+  if (not canvas.initted()) {
+    return;
+  }
   assert(canvasGroups.find(group) == canvasGroups.end());
   Rectangle r = group->getBoundingBox();
 
@@ -147,6 +156,9 @@ void SortsCanvas::registerGroup(PerceptualGroup* group) {
 }
 
 void SortsCanvas::unregisterGroup(PerceptualGroup* group) {
+  if (not canvas.initted()) {
+    return;
+  }
   assert(canvasGroups.find(group) != canvasGroups.end());
   CanvasGroupInfo& obj = canvasGroups[group];
   list<SDLCanvasShape*> elements;
@@ -165,6 +177,9 @@ void SortsCanvas::unregisterGroup(PerceptualGroup* group) {
 }
 
 void SortsCanvas::resetSGO(SoarGameObject* sgo) {
+  if (not canvas.initted()) {
+    return;
+  }
   assert(canvasObjs.find(sgo) != canvasObjs.end());
   CanvasObjInfo& obj = canvasObjs[sgo];
   stopTracking(obj);
@@ -174,12 +189,18 @@ void SortsCanvas::resetSGO(SoarGameObject* sgo) {
 
 
 void SortsCanvas::setColor(SoarGameObject* sgo, Uint8 r, Uint8 g, Uint8 b) {
+  if (not canvas.initted()) {
+    return;
+  }
   assert(canvasObjs.find(sgo) != canvasObjs.end());
   canvasObjs[sgo].mainShape->setShapeColor(r, g, b);
   canvasObjs[sgo].origColor.set(r, g, b);
 }
 
 void SortsCanvas::flashColor(SoarGameObject* sgo, Uint8 r, Uint8 g, Uint8 b, int cycles) {
+  if (not canvas.initted()) {
+    return;
+  }
   assert(canvasObjs.find(sgo) != canvasObjs.end());
   CanvasObjInfo& canvasObj = canvasObjs.find(sgo)->second;
   canvasObj.flashColorCycles = cycles;
@@ -187,6 +208,9 @@ void SortsCanvas::flashColor(SoarGameObject* sgo, Uint8 r, Uint8 g, Uint8 b, int
 }
 
 void SortsCanvas::update() {
+  if (not canvas.initted()) {
+    return;
+  }
   if (updateCounter < REDRAW_PERIOD) {
     ++updateCounter;
     return;
@@ -223,6 +247,9 @@ void SortsCanvas::update() {
 }
 
 void SortsCanvas::trackDestination(SoarGameObject* sgo,double destx,double desty) {
+  if (not canvas.initted()) {
+    return;
+  }
   assert(canvasObjs.find(sgo) != canvasObjs.end());
   CanvasObjInfo& obj = canvasObjs[sgo];
   stopTracking(obj);
@@ -240,6 +267,9 @@ void SortsCanvas::trackDestination(SoarGameObject* sgo,double destx,double desty
 }
 
 void SortsCanvas::stopTracking(CanvasObjInfo& obj) {
+  if (not canvas.initted()) {
+    return;
+  }
   if (obj.tracker != NULL) {
     obj.compound->removeShape(obj.tracker);
     canvas.remove(obj.tracker);
@@ -250,26 +280,44 @@ void SortsCanvas::stopTracking(CanvasObjInfo& obj) {
 }
 
 bool SortsCanvas::sgoRegistered(SoarGameObject* sgo) {
+  if (not canvas.initted()) {
+    return true;
+  }
   return (canvasObjs.find(sgo) != canvasObjs.end());
 }
 
 void SortsCanvas::drawLine(double x1, double y1, double x2, double y2) {
+  if (not canvas.initted()) {
+    return;
+  }
   canvas.makeLine(x1, y1, x2, y2);
 }
 
 void SortsCanvas::setStatus(string status) {
+  if (not canvas.initted()) {
+    return;
+  }
   statusObj.mainShape->setLabel(status);
   canvas.redraw();
 }
 void SortsCanvas::clearStatus() {
+  if (not canvas.initted()) {
+    return;
+  }
   statusObj.mainShape->setLabel("");
   canvas.redraw();
 }
 void SortsCanvas::setSoarStatus(string status) {
+  if (not canvas.initted()) {
+    return;
+  }
   soarStatObj.mainShape->setLabel(status);
   canvas.redraw();
 }
 void SortsCanvas::setCommandStatus(string status) {
+  if (not canvas.initted()) {
+    return;
+  }
   commandStatObj.mainShape->setLabel(status);
   canvas.redraw();
 }

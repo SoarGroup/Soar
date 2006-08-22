@@ -64,7 +64,7 @@ double squaredDistance(int x1, int y1, int x2, int y2) {
 Vec2d getHeadingVector(int gameHeading) {
   double adeg = GameConst::angle_from_dir(gameHeading, GameConst::HEADING_N);
   double arad = adeg * PI / 180.0;
-  return Vec2d(-1 * cos(arad), sin(arad));
+  return Vec2d( cos(arad), -1*sin(arad));
 }
 
 Vec2d getDamageVector(int damageDir) {
