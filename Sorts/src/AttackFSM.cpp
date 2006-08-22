@@ -23,7 +23,7 @@
 #include "Sorts.h"
 
 #define CLASS_TOKEN "ATKFSM"
-#define DEBUG_OUTPUT false 
+#define DEBUG_OUTPUT true 
 #include "OutputDefinitions.h"
 
 using namespace std;
@@ -66,7 +66,7 @@ void AttackFSM::init(vector<sint4> params) {
   moving = false;
   disownedStatus = 0;
 
-  target = NULL;
+  setTarget(NULL);
   reassign = true;
   failCount = 0;
   waitingForCatchup = false;
@@ -259,4 +259,9 @@ void AttackFSM::stop() {
 int AttackFSM::getAvgDamage() {
   assert(Sorts::OrtsIO->isAlive(sgob->getID()));
   return (weapon->get_int("min_damage") + weapon->get_int("max_damage")) / 2;
+}
+
+void AttackFSM::setTarget(SoarGameObject* tar) {
+  dbg << "setting target to " << tar << endl;
+  target = tar;
 }

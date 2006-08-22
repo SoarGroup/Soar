@@ -19,7 +19,7 @@
 #include "AttackTargetInfo.h"
 
 #define CLASS_TOKEN "ATKTAR"
-#define DEBUG_OUTPUT false 
+#define DEBUG_OUTPUT true 
 #include "OutputDefinitions.h"
 
 AttackTargetInfo::AttackTargetInfo(SoarGameObject* _target)
@@ -27,6 +27,7 @@ AttackTargetInfo::AttackTargetInfo(SoarGameObject* _target)
 { 
   gob = target->getGob();
   volleyDamage = 0;
+  dbg << "created.\n";
 }
 
 void AttackTargetInfo::assignAttacker(AttackFSM* fsm) {
@@ -39,6 +40,8 @@ void AttackTargetInfo::assignAttacker(AttackFSM* fsm) {
 
 void AttackTargetInfo::unassignAttacker(AttackFSM* fsm) {
   attackers.erase(fsm);
+  assert(attackers.find(fsm) == attackers.end());
+  dbg << "unassigned fsm " << fsm << endl;
 //  volleyDamage -= avgDmg[fsm];
 //  avgDmg.erase(fsm);
 }

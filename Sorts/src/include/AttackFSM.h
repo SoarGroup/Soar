@@ -52,7 +52,7 @@ public:
   int getAvgDamage();
 
   SoarGameObject* getTarget() { return target; }
-  void setTarget(SoarGameObject* tar) { target = tar; }
+  void setTarget(SoarGameObject* tar);// { target = tar; }
   SoarGameObject* getSGO() { return sgob; }
 
   void setReassign(bool b) { reassign = b; }
