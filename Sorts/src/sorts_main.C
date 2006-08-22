@@ -17,6 +17,7 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA    
 */
 #include<iostream>
+#include<fstream>
 #include<stdio.h>
 #include<unistd.h>
 #include<stdlib.h>
@@ -44,8 +45,57 @@
 #define MAX_SOAR_AHEAD_CYCLES 5
 
 using namespace sml;
+using std::string;
+using std::ofstream;
 
 bool useSoarStops;
+bool soarHalted;
+bool useRL;
+
+string fileWrite
+( smlRhsEventId id, 
+  void*         pUserData, 
+  Agent*        pAgent,
+  char const*   pFunctionName, 
+  char const*   pArgument )
+{
+  bool append = false;
+  string arg = "";
+  string output = "";
+  int outputStart = 0;
+  ofstream f;
+  for(int i = 0; pArgument[i] != 0; ++i) {
+    if (pArgument[i] == ' ') {
+      if (arg == "-a") {
+        append = true;
+        arg = "";
+      }
+      else {
+        outputStart = i + 1;
+        if (append) {
+          f.open(arg.c_str(), ios::out | ios::app);
+        }
+        else {
+          f.open(arg.c_str(), ios::out);
+        }
+        break;
+      }
+    }
+    else {
+      arg += pArgument[i];
+    }
+  }
+
+  if (!f.is_open()) {
+    return "Cannot open file";
+  }
+  for(int i = outputStart; pArgument[i] != 0; ++i) {
+    f << pArgument[i];
+  }
+  f.close();
+  return "";
+}
+
 
 void printOutput
 ( smlPrintEventId id,
@@ -53,7 +103,9 @@ void printOutput
   Agent*          pAgent,
   const char*     pMessage)
 {
-  std::cout << "SOARINT: " << pMessage << std::endl;
+  ofstream& file = *((ofstream*) pUserData);
+  file << pMessage << endl;
+
   // enable this block to print the soar decision in the canvas,
   // which hurts performance a bit
  /* pthread_mutex_lock(Sorts::mutex);
@@ -91,11 +143,25 @@ void SoarAfterDecisionCycleEventHandler
 ( smlRunEventId id, 
   void*         pUserData, 
   Agent*        agent, 
-  smlPhase      phase ) {
+  smlPhase      phase )
+{
   if (useSoarStops) {
     if (!Sorts::SoarIO->isSoarRunning()) {
       agent->StopSelf();
     }
+  }
+}
+
+void SoarHaltEventHandler
+( smlRunEventId id, 
+  void*         pUserData, 
+  Agent*        agent, 
+  smlPhase      phase ) 
+{
+  if (useRL) {
+    agent->ExecuteCommandLine("command-to-file rl-rules print --RL --full");
+    agent->ExecuteCommandLine("command-to-file rl-scores print --RL");
+    soarHalted = true;
   }
 }
 
@@ -147,7 +213,7 @@ void* RunSoar(void* ptr) {
   sleep(1);
 
   if (useSoarStops) {
-    while (true) {
+    while (!soarHalted) {
       pthread_mutex_lock(Sorts::mutex);
       ((Agent*) ptr)->Commit();
       ((Agent*) ptr)->RunSelfForever();
@@ -163,22 +229,16 @@ void* RunSoar(void* ptr) {
     ((Agent*) ptr)->Commit();
     ((Agent*) ptr)->RunSelfForever();
   }
- 
-  // just to keep the compiler from warning
-  return NULL;
 }
 
 void* RunOrts(void* ptr) {
   GameStateModule* gsm = (GameStateModule*) ptr;
-  msg << "Starting ORTS" << endl;
-  while(1) {
+
+  while(!soarHalted) {
     if (!gsm->recv_view()) {
       usleep(30000);
     }
   }
-  exit(0);
-  // unreachable (what is this supposed to return, anyway?)
-  return NULL;
 }
 
 typedef Demo_SimpleTerrain::ST_Terrain Terrain;
@@ -193,7 +253,7 @@ int main(int argc, char *argv[]) {
   string id = "a";
   char* productions = NULL;
   useSoarStops = true;
-
+  useRL = false;
   bool printSoar = false;
   bool srsCanvas = false;
   bool noSortsCanvas = false;
@@ -222,11 +282,14 @@ int main(int argc, char *argv[]) {
     else if (strcmp(argv[i], "-id") == 0) {
       id = argv[i+1];
     }
-/*else if (strcmp(argv[i], "-print-soar") == 0) {
+    else if (strcmp(argv[i], "-print-soar") == 0) {
       printSoar = true;
-    }*/
+    }
     else if (strcmp(argv[i], "-srs-canvas") == 0) {
       srsCanvas = true;
+    }
+    else if (strcmp(argv[i], "-rl") == 0) {
+      useRL = true;
     }
     else if (strcmp(argv[i], "-no-canvas") == 0) {
       noSortsCanvas = true;
@@ -235,8 +298,6 @@ int main(int argc, char *argv[]) {
       oldAgent = true;
     }
   }
-
-  printSoar = true;
 
   srand(seed);
   
@@ -249,6 +310,7 @@ int main(int argc, char *argv[]) {
   Kernel* pKernel = Kernel::CreateKernelInNewThread("SoarKernelSML", soarPort) ;
   std::cout << "done\n";
 
+  pKernel->AddRhsFunction("filewrite", &fileWrite, NULL);
   // Check that nothing went wrong.  We will always get back a kernel object
   // even if something went wrong and we have to abort.
   if (pKernel->HadError()) {
@@ -282,6 +344,8 @@ int main(int argc, char *argv[]) {
     cout << pAgent->GetLastErrorDescription() << endl ;
     return 1;
   }
+
+  pKernel->SetAutoCommit(false);
 
   /*********************************
    * Set up the connection to ORTS *
@@ -357,30 +421,50 @@ int main(int argc, char *argv[]) {
 
   pAgent->RegisterForRunEvent(smlEVENT_BEFORE_RUN_STARTS, SoarStartRunEventHandler, NULL);
   pAgent->RegisterForRunEvent(smlEVENT_AFTER_OUTPUT_PHASE, SoarOutputEventHandler, NULL);
+  pAgent->RegisterForRunEvent(smlEVENT_AFTER_RUN_ENDS, SoarHaltEventHandler, NULL);
   pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, SoarAfterDecisionCycleEventHandler, NULL);
  // pAgent->RegisterForRunEvent(smlEVENT_BEFORE_INPUT_PHASE, SoarInputEventHandler, &sorts);
 
+  ofstream* soar_log = 0;
   if (printSoar) {
-    pAgent->RegisterForPrintEvent(smlEVENT_PRINT, printOutput, &sorts);  
+    soar_log = new ofstream("soar.log", ios::out);
+    if (soar_log && soar_log->is_open()) {
+      pAgent->RegisterForPrintEvent(smlEVENT_PRINT, printOutput, soar_log);  
+    }
+    else {
+      cout << "Failed to open soar.log for writing." << endl;
+      soar_log = 0;
+    }
   }
-    
+ 
   // start Soar in a different thread
+  soarHalted = false;
+
   pthread_attr_t soarThreadAttribs;
   pthread_attr_init(&soarThreadAttribs);
   pthread_t soarThread;
-  
-  pKernel->SetAutoCommit(false);
-  pthread_create(&soarThread, &soarThreadAttribs, RunSoar, (void*) pAgent);
+ 
+  //pthread_create(&soarThread, &soarThreadAttribs, RunSoar, (void*) pAgent);
+  pthread_create(&soarThread, NULL, RunSoar, (void*) pAgent);
+  msg << "Soar is running" << std::endl;
 
   // this drives the orts interrupt, which drives the middleware
   pthread_attr_t ortsThreadAttribs;
   pthread_attr_init(&ortsThreadAttribs);
   pthread_t ortsThread;
-  pthread_create(&ortsThread, &ortsThreadAttribs, RunOrts, (void*) &gsm);
+  //pthread_create(&ortsThread, &ortsThreadAttribs, RunOrts, (void*) &gsm);
+  pthread_create(&ortsThread, NULL, RunOrts, (void*) &gsm);
   msg << "ORTS client is running" << std::endl;
 
   pthread_join(soarThread, NULL);
+  msg << "Soar exited" << endl;
   pthread_join(ortsThread, NULL);
+  msg << "ORTS client exited" << endl;
 
-  return 0;
+  if (soar_log) {
+    soar_log->close();
+    delete soar_log;
+  }
+
+  exit(0);
 }
