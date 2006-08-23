@@ -246,7 +246,7 @@ sp {explore-attack*apply*remember-enemy-cc
 }
 
 sp {explore-attack*elaborate*dist-to-enemy-base
-   (state <s> ^name base-defend
+   (state <s> ^name explore-attack 
               ^top-state.explore-attack <ea>
               ^io.input-link.groups.group <g>
               ^task-id <tid>
