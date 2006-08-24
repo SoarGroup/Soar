@@ -80,6 +80,7 @@
 	  /* 	  */
       gSKIEVENT_BEFORE_DECISION_CYCLE,
       gSKIEVENT_AFTER_DECISION_CYCLE,
+	  gSKIEVENT_MAX_MEMORY_USAGE_EXCEEDED,  // Total memory usage exceeded sysparam value
       gSKIEVENT_AFTER_INTERRUPT,
 	  gSKIEVENT_BEFORE_RUN_STARTS,		// Before start a run
 	  gSKIEVENT_AFTER_RUN_ENDS,			// After run ends for any reason

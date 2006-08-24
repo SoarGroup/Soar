@@ -57,6 +57,7 @@ Events::Events()
 	RegisterEvent(smlEVENT_AFTER_PHASE_EXECUTED, "after-phase-executed") ;
 	RegisterEvent(smlEVENT_BEFORE_DECISION_CYCLE, "before-decision-cycle") ;
 	RegisterEvent(smlEVENT_AFTER_DECISION_CYCLE, "after-decision-cycle") ;
+	RegisterEvent(smlEVENT_MAX_MEMORY_USAGE_EXCEEDED, "memory-usage-exceeded") ;
 	RegisterEvent(smlEVENT_AFTER_INTERRUPT, "after-interrupt") ;
 	RegisterEvent(smlEVENT_BEFORE_RUN_STARTS, "before-run-starts") ;
 	RegisterEvent(smlEVENT_AFTER_RUN_ENDS, "after-run-ends") ;

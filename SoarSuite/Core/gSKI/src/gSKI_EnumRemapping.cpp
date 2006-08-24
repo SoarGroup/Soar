@@ -124,6 +124,7 @@ namespace gSKI
 	     RunEventEnumMapping[AFTER_ELABORATION_CYCLE_CALLBACK] = gSKIEVENT_AFTER_ELABORATION_CYCLE; */
 	  RunEventEnumMapping[BEFORE_DECISION_CYCLE_CALLBACK] = gSKIEVENT_BEFORE_DECISION_CYCLE;
 	  RunEventEnumMapping[AFTER_DECISION_CYCLE_CALLBACK]  = gSKIEVENT_AFTER_DECISION_CYCLE;
+	  RunEventEnumMapping[MAX_MEMORY_USAGE_CALLBACK] = gSKIEVENT_MAX_MEMORY_USAGE_EXCEEDED;
 
 	  PrintEventEnumMapping[gSKI_K_EVENT_PRINT_CALLBACK] = gSKIEVENT_PRINT;
 
@@ -304,7 +305,9 @@ namespace gSKI
 	  case gSKIEVENT_AFTER_OUTPUT_PHASE:			  return AFTER_OUTPUT_PHASE_CALLBACK;
 	  case gSKIEVENT_AFTER_PREFERENCE_PHASE:		  return AFTER_PREFERENCE_PHASE_CALLBACK; // Soar-7 mode only
 	  case gSKIEVENT_AFTER_WM_PHASE:				  return AFTER_WM_PHASE_CALLBACK; // Soar-7 mode only
-       default:
+	  case gSKIEVENT_MAX_MEMORY_USAGE_EXCEEDED:       return MAX_MEMORY_USAGE_CALLBACK;
+ 
+	  default:
          // Error condition
          MegaAssert(false, "Could not map to a kernel native callback");
          return static_cast<SOAR_CALLBACK_TYPE>(0);
