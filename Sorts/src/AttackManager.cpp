@@ -828,3 +828,9 @@ void AttackManager::addNewAttackers(int num) {
   
   numNewAttackers = num;
 }
+
+// need to be called when we try to add attackers that are already part of this
+// manager
+void AttackManager::decNewAttackers() {
+  numNewAttackers--;
+}

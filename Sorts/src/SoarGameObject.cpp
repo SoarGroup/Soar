@@ -161,12 +161,19 @@ void SoarGameObject::removeBehavior(ObjectActionType name)
   }
 }
 
-
-void SoarGameObject::assignAction(ObjectActionType cmd, Vector<sint4> prms)
+// returns false if this action was already assigned and will be ignored
+bool SoarGameObject::assignAction(ObjectActionType cmd, Vector<sint4> prms)
 {
   msg << "assigning action: " << (int)cmd << endl;
 
   if (assignedBehavior != NULL) {
+    // we don't want hiccups if the command is issued twice
+    map<ObjectActionType, FSM*>::iterator i = behaviors.find(cmd);
+    if (i->second == assignedBehavior && i->second->usingParams(prms)) {
+      msg << "Command Repeated, ignoring" << endl;
+      return false;
+    }
+    // otherwise stop the old command
     assignedBehavior->stop();
   }
   
@@ -181,6 +188,8 @@ void SoarGameObject::assignAction(ObjectActionType cmd, Vector<sint4> prms)
   }
   motionlessFrames = 0;
   update();
+
+  return true;
 }
 
 

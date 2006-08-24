@@ -40,3 +40,7 @@ ObjectActionType FSM::getName() {
 
 void FSM::panic(){
 }
+
+bool FSM::usingParams(const Vector<sint4>& otherParams) {
+  return otherParams == params;
+}

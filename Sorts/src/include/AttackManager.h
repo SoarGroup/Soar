@@ -42,6 +42,7 @@ public:
   ~AttackManager();
 
   void addNewAttackers(int num);
+  void decNewAttackers();
   void registerFSM(AttackFSM* fsm);
   void unregisterFSM(AttackFSM* fsm);
   int direct(AttackFSM* fsm);

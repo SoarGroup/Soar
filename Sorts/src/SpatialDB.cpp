@@ -607,10 +607,10 @@ bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
 
 
 bool SpatialDB::hasTerrainCollision(Circle& c) {
-  int minCol = ((int) (c.x - c.r)) / GameConst::TILE_POINTS;
-  int maxCol = ((int) (c.x + c.r)) / GameConst::TILE_POINTS;
-  int minRow = ((int) (c.y - c.r)) / GameConst::TILE_POINTS;
-  int maxRow = ((int) (c.y + c.r)) / GameConst::TILE_POINTS;
+  int minCol = (c.x - c.r) / GameConst::TILE_POINTS;
+  int maxCol = (c.x + c.r) / GameConst::TILE_POINTS;
+  int minRow = (c.y - c.r) / GameConst::TILE_POINTS;
+  int maxRow = (c.y + c.r) / GameConst::TILE_POINTS;
 
   if (minCol < 0 || 
       maxCol >= Sorts::OrtsIO->getMapXDim() / GameConst::TILE_POINTS ||

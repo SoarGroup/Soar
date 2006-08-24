@@ -43,6 +43,8 @@ public:
   virtual void panic();
   virtual void stop() { } // default stop behavior does nothing
 
+  bool usingParams(const Vector<sint4>& otherParams);
+
 protected:
   ObjectActionType name;
   GameObj *gob;
