@@ -33,19 +33,21 @@ public class CreateAgentDialog extends Dialog {
 		gl.numColumns = 3;
 		dialog.setLayout(gl);
 
-		GridData gd;
-		
 		final Label label2 = new Label(dialog, SWT.NONE);
-		gd = new GridData();
-		gd.horizontalAlignment = GridData.BEGINNING;
-		label2.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = GridData.BEGINNING;
+			label2.setLayoutData(gd);
+		}
 		label2.setText("Productions:");
 		
 		m_ProductionsLabel = new Label(dialog, SWT.NONE);
-		gd = new GridData();
-		gd.grabExcessHorizontalSpace = true;
-		gd.widthHint = 150;
-		m_ProductionsLabel.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			gd.grabExcessHorizontalSpace = true;
+			gd.widthHint = 150;
+			m_ProductionsLabel.setLayoutData(gd);
+		}
 		if (lastProductions == null) {
 			m_ProductionsLabel.setText("<choose productions>");
 		} else {
@@ -54,9 +56,11 @@ public class CreateAgentDialog extends Dialog {
 		}
 
 		final Button productionsBrowse = new Button(dialog, SWT.PUSH);
-		gd = new GridData();
-		gd.horizontalAlignment = GridData.BEGINNING;
-		productionsBrowse.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = GridData.BEGINNING;
+			productionsBrowse.setLayoutData(gd);
+		}
 		productionsBrowse.setText("...");
 		productionsBrowse.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -82,15 +86,19 @@ public class CreateAgentDialog extends Dialog {
 		});
 		
 		final Label label4 = new Label(dialog, SWT.NONE);
-		gd = new GridData();
-		gd.horizontalAlignment = GridData.BEGINNING;
-		label4.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = GridData.BEGINNING;
+			label4.setLayoutData(gd);
+		}
 		label4.setText("Color:");
 		
 		m_Color = new Combo(dialog, SWT.NONE);
-		gd = new GridData();
-		gd.horizontalSpan = 2;
-		m_Color.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 2;
+			m_Color.setLayoutData(gd);
+		}
 		m_Color.setItems(WindowManager.kColors);
 		// remove taken colors
 		WorldEntity[] entities = m_Simulation.getWorldManager().getEntities();
@@ -107,17 +115,21 @@ public class CreateAgentDialog extends Dialog {
 		});
 		
 		final Label label1 = new Label(dialog, SWT.NONE);
-		gd = new GridData();
-		gd.horizontalAlignment = GridData.BEGINNING;
-		label1.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = GridData.BEGINNING;
+			label1.setLayoutData(gd);
+		}
 		label1.setText("Name:");
 		
 		m_Name = new Text(dialog, SWT.SINGLE | SWT.BORDER);
-		gd = new GridData();
-		gd.horizontalSpan = 2;
-		gd.widthHint = 150;
-		gd.grabExcessHorizontalSpace = true;
-		m_Name.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 2;
+			gd.widthHint = 150;
+			gd.grabExcessHorizontalSpace = true;
+			m_Name.setLayoutData(gd);
+		}
 		m_Name.setTextLimit(kNameCharacterLimit);
 		m_Name.setText(m_Color.getText());
 		m_Name.addKeyListener(new KeyAdapter() {
@@ -130,10 +142,12 @@ public class CreateAgentDialog extends Dialog {
 		});
 		
 		m_SpawnDebuggerButton = new Button(dialog, SWT.CHECK);
-		gd = new GridData();
-		gd.horizontalAlignment = GridData.BEGINNING;
-		gd.horizontalSpan = 3;
-		m_SpawnDebuggerButton.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = GridData.BEGINNING;
+			gd.horizontalSpan = 3;
+			m_SpawnDebuggerButton.setLayoutData(gd);
+		}
 		m_SpawnDebuggerButton.setText("Spawn debugger");
 		m_SpawnDebuggerButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -144,10 +158,12 @@ public class CreateAgentDialog extends Dialog {
 		m_SpawnDebuggerButton.setEnabled(!m_Simulation.isDebuggerConnected());
 
 		Composite okCancel = new Composite(dialog, SWT.NONE);
-		gd = new GridData();
-		gd.horizontalAlignment = GridData.END;
-		gd.horizontalSpan = 3;
-		okCancel.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = GridData.END;
+			gd.horizontalSpan = 3;
+			okCancel.setLayoutData(gd);
+		}
 		okCancel.setLayout(new FillLayout());
 		m_CreateEntity = new Button(okCancel, SWT.PUSH);
 		m_CreateEntity.setText("Create Agent");
