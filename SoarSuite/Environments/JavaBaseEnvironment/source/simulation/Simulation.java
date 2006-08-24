@@ -394,6 +394,12 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
     }
     
   	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
+  		int dontUpdate = runFlags & smlRunFlags.sml_DONT_UPDATE_WORLD.swigValue();
+  		if (dontUpdate != 0) {
+  			logger.warning("Not updating world due to run flags!");
+  			return;
+  		}
+  		
   		tick();
   		
 		// Test this after the world has been updated, in case it's asking us to stop
