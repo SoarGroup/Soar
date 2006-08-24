@@ -62,10 +62,10 @@ char * soar_callback_names[] = {    /* Must match order of       */
   "after-output-phase",
   "before-decision-phase-cycle",
   "after-decision-phase-cycle",
-  "before-propose-phase-cycle"
-  "after-propose-phase-cycle"
-  "before-apply-phase-cycle"
-  "after-apply-phase-cycle"
+  "before-propose-phase-cycle",
+  "after-propose-phase-cycle",
+  "before-apply-phase-cycle",
+  "after-apply-phase-cycle",
   "wm-changes",
   "create-new-context",
   "pop-context-stack",
@@ -76,6 +76,7 @@ char * soar_callback_names[] = {    /* Must match order of       */
   "firing",
   "retraction",
   "system-parameter-changed",
+  "total-memory-usage-exceeded", 
   "print",
   "log",  
 //  "read",				/* kjh CUSP B10 */

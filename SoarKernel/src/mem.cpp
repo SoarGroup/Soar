@@ -222,7 +222,7 @@ void free_growable_string (agent* thisAgent, growable_string gs) {
 
 void add_block_to_memory_pool (agent* thisAgent, memory_pool *p) {
   char *new_block;
-  unsigned long size, i, item_num, interleave_factor;
+  unsigned long size, i, item_num, interleave_factor, total;
   char *item, *prev_item;
 
   /* --- allocate a new block for the pool --- */
@@ -231,6 +231,27 @@ void add_block_to_memory_pool (agent* thisAgent, memory_pool *p) {
   *(char * *)new_block = static_cast<char *>(p->first_block);
   p->first_block = new_block;
   p->num_blocks++;
+
+  /* somewhere in here, need to check if total mem usage exceeds limit set by user
+  we only check when increasing pools, because the other memories are small by comparison,
+  except maybe hash tables...could check there also, but they grow and shrink, whereas pools only grow
+  should we check for every block added to any pool?  
+  Or can we keep a block counter on the agent and check it modulo some function of the limit?
+   */
+ /*
+  total = 0;
+  for (i=0; i<NUM_MEM_USAGE_CODES; i++) total += thisAgent->memory_for_usage[i];
+  
+  if (total > thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]) {      
+	  soar_invoke_callbacks(thisAgent, thisAgent, 
+	                        MAX_MEMORY_USAGE_CALLBACK,
+							(soar_call_data) NULL);
+      print (thisAgent, "%8lu bytes total memory allocated\n", total);
+	  print (thisAgent, "exceeds total allowed for Soar: %8lu bytes \n", 
+	         thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]);
+	}
+ 
+ */
 
   /* --- link up the new entries onto the free list --- */
   interleave_factor = DEFAULT_INTERLEAVE_FACTOR;

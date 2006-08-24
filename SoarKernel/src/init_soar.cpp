@@ -452,6 +452,7 @@ void init_sysparams (agent* thisAgent) {
   thisAgent->sysparams[MAX_CHUNKS_SYSPARAM] = 50;
   thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM] = 15;
   thisAgent->sysparams[MAX_GOAL_DEPTH] = 100;  /* generate an interrupt so users can recover before exceed program stack*/
+  thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM] = 100000000; /* default to 100MB.  Event generated when exceeded*/
 
 //#ifdef USE_X_DISPLAY
 //  thisAgent->sysparams[RESPOND_TO_LOAD_ERRORS_SYSPARAM] = FALSE;
