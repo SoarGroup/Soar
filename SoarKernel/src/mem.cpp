@@ -234,9 +234,8 @@ void add_block_to_memory_pool (agent* thisAgent, memory_pool *p) {
 
   /* somewhere in here, need to check if total mem usage exceeds limit set by user
   we only check when increasing pools, because the other memories are small by comparison,
-  except maybe hash tables...could check there also, but they grow and shrink, whereas pools only grow
-  should we check for every block added to any pool?  
-  Or can we keep a block counter on the agent and check it modulo some function of the limit?
+  we shouldn't check for every block added to any pool, since that is unduly expensive 
+  can we keep a block counter on the agent and check it modulo some function of the limit?
    */
  /*
   total = 0;
