@@ -23,6 +23,7 @@ using namespace soar_thread ;
 // Windows Versions
 //////////////////////////////////////////////////////////////////////
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+#define _WIN32_WINNT 0x0400		// This is required since our target is NT4+
 #include <windows.h>
 #include <process.h>
 
@@ -41,17 +42,36 @@ bool soar_thread::SleepThread(long secs, long msecs)
 	return true ;
 }
 
+/* voigtjr:
+   I rewrote the WindowsMutex class to use "critical sections" rather than 
+   actual mutexes, the critical sections are faster for thread synchronization.
+   The tradeoff is that critical sections, unlike mutexes, cannot
+   be used among different processes, only different threads. Our usage of
+   this class WindowsMutex is confined only to different threads, so this
+   is the recommended, better performing way to do synchronization.
+ */
 class WindowsMutex : public OSSpecificMutex
 {
 protected:
-   HANDLE mutex;
+   CRITICAL_SECTION cs;
 
 public:
-	WindowsMutex()			{ mutex = CreateMutex(NULL, FALSE, NULL); }
-	virtual ~WindowsMutex() { CloseHandle(mutex); }
-	void Lock()				{ WaitForSingleObject(mutex, INFINITE); }
-	void Unlock()			{ ReleaseMutex(mutex) ; }
-	bool TryToLock()		{ DWORD res = WaitForSingleObject(mutex, 0) ; return (res == WAIT_OBJECT_0) ; }
+	WindowsMutex()			{ InitializeCriticalSection(&cs); }
+	virtual ~WindowsMutex() { DeleteCriticalSection(&cs); }
+	void Lock()				{ EnterCriticalSection(&cs); }
+	void Unlock()			{ LeaveCriticalSection(&cs); }
+	bool TryToLock()		{ return TryEnterCriticalSection(&cs) ? true : false; }
+
+// The old mutex code:
+//protected:
+//   HANDLE mutex;
+//
+//public:
+//	WindowsMutex()			{ mutex = CreateMutex(NULL, FALSE, NULL); }
+//	virtual ~WindowsMutex() { CloseHandle(mutex); }
+//	void Lock()				{ WaitForSingleObject(mutex, INFINITE); }
+//	void Unlock()			{ ReleaseMutex(mutex) ; }
+//	bool TryToLock()		{ DWORD res = WaitForSingleObject(mutex, 0) ; return (res == WAIT_OBJECT_0) ; }
 } ;
 
 OSSpecificMutex* soar_thread::MakeMutex()
