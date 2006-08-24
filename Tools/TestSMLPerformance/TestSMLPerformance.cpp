@@ -6,6 +6,8 @@
 // In the second subtest, the kernel is still registered for the same update event, but only the environment is updated during that event.
 // The agents are also registed for the smlEVENT_BEFORE_INPUT_PHASE event, which handles the agent updating.
 // Thus, in the first subtest, a total of 999 events fire, whereas in the second subtest 3999 events fire.
+//
+// The number of agents to create, wmes to update, and decision cycles to run can be changed at the beginning of the main function.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
