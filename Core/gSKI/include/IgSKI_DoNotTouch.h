@@ -290,8 +290,11 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 
 #define MAX_GOAL_DEPTH							 34
 
+/* KJC 8/06:  generate warning and event if memory usage exceeds this value */
+#define MAX_MEMORY_USAGE_SYSPARAM                35
+
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  34
+#define HIGHEST_SYSPARAM_NUMBER                  35
 
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024   /* AGR 536  - from sys/param.h */

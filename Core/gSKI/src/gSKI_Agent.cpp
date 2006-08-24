@@ -1496,7 +1496,8 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 			 
 			  break;
     	  case gSKIEVENT_BEFORE_DECISION_CYCLE:  
-		  case gSKIEVENT_AFTER_DECISION_CYCLE:			  
+		  case gSKIEVENT_AFTER_DECISION_CYCLE:	
+		  case gSKIEVENT_MAX_MEMORY_USAGE_EXCEEDED:
 			  { RunEventCallbackData * eventInfo = new RunEventCallbackData();
 			    eventInfo->a = this;
 		        eventInfo->eventId = eventId;
@@ -1567,6 +1568,7 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 			  break;
 		  case gSKIEVENT_BEFORE_DECISION_CYCLE:  
 		  case gSKIEVENT_AFTER_DECISION_CYCLE:
+		  case gSKIEVENT_MAX_MEMORY_USAGE_EXCEEDED:
 			  soar_remove_callback (GetSoarAgent(),static_cast<void*>(GetSoarAgent()),
 							     static_cast<SOAR_CALLBACK_TYPE>(EnumRemappings::KernelRunEventType(eventId)),
 								 soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(EnumRemappings::KernelRunEventType(eventId)), 1));
