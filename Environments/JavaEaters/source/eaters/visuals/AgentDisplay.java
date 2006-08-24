@@ -29,6 +29,7 @@ public class AgentDisplay extends Composite {
 	Button m_CloneAgentButton;
 	Button m_DestroyAgentButton;
 	Button m_ReloadProductionsButton;
+	Label location;
 
 	public AgentDisplay(final Composite parent, EatersSimulation simulation) {
 		super(parent, SWT.NONE);
@@ -38,19 +39,21 @@ public class AgentDisplay extends Composite {
 		
 		m_Group = new Group(this, SWT.NONE);
 		m_Group.setText("Agents");
-		GridLayout gl = new GridLayout();
-		gl.numColumns = 2;
-		m_Group.setLayout(gl);
+		{
+			GridLayout gl = new GridLayout();
+			gl.numColumns = 2;
+			m_Group.setLayout(gl);
+		}
 		
 		
-		GridData gd;
-
 		m_AgentButtons = new Composite(m_Group, SWT.NONE);
 		m_AgentButtons.setLayout(new FillLayout());
-		gd = new GridData();
-		gd.horizontalAlignment = GridData.BEGINNING;
-		gd.horizontalSpan = 2;
-		m_AgentButtons.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = GridData.BEGINNING;
+			gd.horizontalSpan = 2;
+			m_AgentButtons.setLayoutData(gd);
+		}
 		
 		m_NewAgentButton = new Button(m_AgentButtons, SWT.PUSH);
 		m_NewAgentButton.setText("New");
@@ -108,9 +111,11 @@ public class AgentDisplay extends Composite {
 		});
 				
 		m_AgentTable = new Table(m_Group, SWT.BORDER | SWT.FULL_SELECTION);
-		gd = new GridData();
-		gd.heightHint = kTableHeight;
-		m_AgentTable.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			gd.heightHint = kTableHeight;
+			m_AgentTable.setLayoutData(gd);
+		}
 		TableColumn tc1 = new TableColumn(m_AgentTable, SWT.CENTER);
 		TableColumn tc2 = new TableColumn(m_AgentTable, SWT.CENTER);
 		tc1.setText("Name");
@@ -129,11 +134,37 @@ public class AgentDisplay extends Composite {
 				updateButtons();
 			}
 		});
-		m_AgentWorld = new EatersVisualWorld(m_Group, SWT.BORDER, m_Simulation, kAgentMapCellSize);
-		gd = new GridData();
-		gd.heightHint = m_AgentWorld.getMiniHeight() + 4;
-		gd.widthHint = m_AgentWorld.getMiniWidth() + 4;		
-		m_AgentWorld.setLayoutData(gd);
+		
+		Composite worldGroup = new Composite(m_Group, SWT.NONE);
+		{
+			GridLayout gl = new GridLayout();
+			gl.numColumns = 2;
+			worldGroup.setLayout(gl);
+		}
+		
+		m_AgentWorld = new EatersVisualWorld(worldGroup, SWT.BORDER, m_Simulation, kAgentMapCellSize);
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 2;
+			gd.heightHint = m_AgentWorld.getMiniHeight() + 4;
+			gd.widthHint = m_AgentWorld.getMiniWidth() + 4;
+			m_AgentWorld.setLayoutData(gd);
+		}
+		
+		Label locationLabel = new Label(worldGroup, SWT.NONE);
+		locationLabel.setText("Location: ");
+		{
+			GridData gd = new GridData();
+			locationLabel.setLayoutData(gd);
+		}
+		
+		location = new Label(worldGroup, SWT.NONE);
+		location.setText("-");
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 35;
+			location.setLayoutData(gd);
+		}
 
 		updateEaterList();
 		updateButtons();		
@@ -150,6 +181,7 @@ public class AgentDisplay extends Composite {
 		m_AgentWorld.setAgentLocation(m_SelectedEntity.getLocation());
 		m_AgentWorld.enable();
 		m_AgentWorld.redraw();
+		location.setText("(" + m_SelectedEntity.getLocation().x + "," + m_SelectedEntity.getLocation().y + ")");
 	}
 	
 	void agentEvent() {
@@ -161,6 +193,7 @@ public class AgentDisplay extends Composite {
 		if (m_SelectedEntity != null) {
 			m_AgentWorld.setAgentLocation(m_SelectedEntity.getLocation());
 			m_AgentWorld.redraw();
+			location.setText("(" + m_SelectedEntity.getLocation().x + "," + m_SelectedEntity.getLocation().y + ")");
 		}
 		
 		if (m_Items != null) {
@@ -194,6 +227,7 @@ public class AgentDisplay extends Composite {
 			m_AgentTable.deselectAll();
 			m_AgentWorld.disable();
 			m_AgentWorld.redraw();
+			location.setText("-");
 		}
 	}
 	
