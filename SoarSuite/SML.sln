@@ -40,6 +40,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FilterC", "Tools\FilterC\Fi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLPython", "Core\ClientSMLSWIG\Python\ClientSMLPython.vcproj", "{E03209E8-6CF9-4460-B570-A28F3BFBB402}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestSMLPerformance", "Tools\TestSMLPerformance\TestSMLPerformance.vcproj", "{12397B1B-154F-4148-B7C3-1C839967B689}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug (Core)|Win32 = Debug (Core)|Win32
@@ -470,6 +472,28 @@ Global
 		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release|Win32.ActiveCfg = Release|Win32
 		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release|Win32.Build.0 = Release|Win32
 		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release-DLL|Win32.ActiveCfg = Release|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Debug (Core)|Win32.ActiveCfg = Debug|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Debug (Core)|Win32.Build.0 = Debug|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Debug (gSKI DLL)|Win32.ActiveCfg = Debug|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Debug (gSKI DLL)|Win32.Build.0 = Debug|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Debug (no SWIG)|Win32.ActiveCfg = Debug|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Debug (no SWIG)|Win32.Build.0 = Debug|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Debug|Win32.ActiveCfg = Debug|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Debug|Win32.Build.0 = Debug|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Debug-DLL|Win32.ActiveCfg = Debug|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Debug-DLL|Win32.Build.0 = Debug|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Distribution|Win32.ActiveCfg = Debug|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Distribution|Win32.Build.0 = Debug|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Release (Core)|Win32.ActiveCfg = Release|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Release (Core)|Win32.Build.0 = Release|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Release (gSKI DLL)|Win32.ActiveCfg = Release|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Release (gSKI DLL)|Win32.Build.0 = Release|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Release (no SWIG)|Win32.ActiveCfg = Release|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Release (no SWIG)|Win32.Build.0 = Release|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Release|Win32.ActiveCfg = Release|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Release|Win32.Build.0 = Release|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Release-DLL|Win32.ActiveCfg = Release|Win32
+		{12397B1B-154F-4148-B7C3-1C839967B689}.Release-DLL|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
