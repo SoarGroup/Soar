@@ -72,9 +72,6 @@ public class TankSoarWorld extends World implements WorldManager {
 					m_WorldSize = 0;
 					m_MaxManhattanDistance = 0;
 					
-					boolean randomWalls = true;
-					boolean randomFood = true;
-					
 					for (int attrIndex = 0; attrIndex < mainTag.GetNumberAttributes(); ++attrIndex) {
 						String attribute = mainTag.GetAttributeName(attrIndex);
 						if (attribute == null) {
