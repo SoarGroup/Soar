@@ -973,11 +973,8 @@ bool CommandLineInterface::Trim(std::string& line) {
 							// No newline encountered
 							line = line.substr(0, pos);
 						} else {
-							std::string temp = line;
-							// Newline encountered at nlpos
-							line = temp.substr(0, pos);
-							line += temp.substr(nlpos);
-							searchpos = nlpos;
+							line.erase(pos, nlpos - pos);
+							searchpos = pos;
 						}
 					}
 				}
