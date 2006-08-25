@@ -36,7 +36,6 @@ wmem.cpp\
 backtrace.h\
 consistency.h\
 osupport.h\
-portability.h\
 prefmem.h\
 reorder.h\
 ../include/agent.h\
@@ -73,6 +72,6 @@ reorder.h\
 ../include/xmlTraceNames.h
 
 
-INCLUDES = -I../include
+INCLUDES = -I../include -I../../CLI/include -I../../gSKI/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS) -fno-strict-aliasing
