@@ -99,7 +99,6 @@ gSKI_WMStaticView.h\
 gSKI_Wme.h\
 gSKI_WorkingMemory.h\
 gSKI_WorkingMemoryView.h\
-portability.h\
 ../include/ExportLibFiles.h\
 ../include/IgSKI_ActionElement.h\
 ../include/IgSKI_Agent.h\
