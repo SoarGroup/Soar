@@ -155,7 +155,7 @@ bool OrtsInterface::handle_event(const Event& e) {
     }
     else if (e.get_what() == GameStateModule::FINISHED_MSG ||
              e.get_what() == GameStateModule::STOP_MSG) {
-      // cleanly exit
+      // "cleanly" exit
       msg << "recieved FINISHED_MSG or STOP_MSG.\n";
       pthread_mutex_unlock(Sorts::mutex);
       exit(0);

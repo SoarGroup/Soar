@@ -57,6 +57,7 @@ PerceptualGroup::PerceptualGroup (SoarGameObject* unit) {
   inSoar = false;
   old = false;
   hasCommand = false;
+  speed = -1;
 
   fmSector = -1;
   soarID = -1;
@@ -148,7 +149,7 @@ void PerceptualGroup::generateData() {
   attribs.clear();
 
   int health = 0;
-  int speed = 0;
+  speed = 0;
   int size = members.size();
   int mineralCount = 0;
   int running = 0;
@@ -239,8 +240,9 @@ void PerceptualGroup::generateData() {
   updateBoundingBox();
   
   health /= size;
+  speed /= size;
   attribs.add("health", health);
-  attribs.add("speed", speed / size);
+  attribs.add("speed", (float)speed);
   attribs.add("num-members", size);
 
   attribs.add("enemy", ((not world) and (not friendly)));
@@ -587,6 +589,30 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
           intIt++) {
         tempVec.push_back(*intIt);
       }
+
+      currentCommand = "move";
+      sticky = true;
+      // this group is stuck together from now on,
+      // until Soar issues an unstick action
+      for (currentObject = members.begin();
+           currentObject != members.end();
+           currentObject++) {
+        (*currentObject)->assignAction(type, tempVec);
+      } 
+      break;
+    case OA_MOVE_MARK:
+      // just like move, except putting a mark on the canvas
+      type = OA_MOVE;
+      
+      // the third param is precision
+      assert(params.size() >= 2);
+      for (intIt = params.begin();
+          intIt != params.end();
+          intIt++) {
+        tempVec.push_back(*intIt);
+      }
+
+      Sorts::canvas.makeTempCircle(tempVec[0], tempVec[1], 10, 100000)->setShapeColor(255, 0, 0);
 
       currentCommand = "move";
       sticky = true;

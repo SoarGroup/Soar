@@ -6,6 +6,16 @@
 #include <sstream>
 
 SpatialReasoningSystem::SpatialReasoningSystem() {
+  worldIsPolygon = false;
+}
+
+void SpatialReasoningSystem::setWorldBounds(list<pair<double, double> > worldBounds) {
+  worldIsPolygon = true;
+  for (list<pair<double,double> >::iterator it = worldBounds.begin();
+        it != worldBounds.end();
+        it++) {
+    worldPolygon.push_back(CGALPoint(it->first, it->second));
+  }
 }
 
 void SpatialReasoningSystem::initCanvas(double ww, double wh, double scale) {
@@ -14,8 +24,9 @@ void SpatialReasoningSystem::initCanvas(double ww, double wh, double scale) {
 }
 
 void SpatialReasoningSystem::insertCircle(double x, double y, double radius, 
-                                          double i, double j, int id, string name) {
-  SRSShape* shape = new SRSShape(x, y, radius, i, j, name, &canvas);
+                                          double i, double j, double speed,
+                                          int id, string name) {
+  SRSShape* shape = new SRSShape(x, y, radius, i, j, speed, name, &canvas);
   shapes.insert(make_pair(id, shape));
   shape->draw();
   if (canvas.initted()) {
@@ -24,8 +35,9 @@ void SpatialReasoningSystem::insertCircle(double x, double y, double radius,
 }
 
 void SpatialReasoningSystem::insertPolygon(list<pair<double, double> >& points, 
-                                           double i, double j, int id, string name) {
-  SRSShape* shape = new SRSShape(points, i, j, name, &canvas);
+                                           double i, double j, double speed,
+                                           int id, string name) {
+  SRSShape* shape = new SRSShape(points, i, j, speed, name, &canvas);
   shapes.insert(make_pair(id, shape));
   shape->draw();
   if (canvas.initted()) {
@@ -61,10 +73,10 @@ void SpatialReasoningSystem::printAllRelativeOrientations() {
         int dir = it->second->getRelativeOrientationOf(it2->second);
         msg << "relative orientation of object " << it->first << " to object " << it2->first
             << " is " << dir << endl;
-        dir = it->second->getAllocentricRelativeOrientationOf(it2->second);
+    /*    dir = it->second->getAllocentricRelativeOrientationOf(it2->second);
         msg << "allocentric relative orientation of object " << it->first << " to object " << it2->first
             << " is " << dir << endl;
-        it2++;
+*/        it2++;
       }
     }
   }
@@ -114,6 +126,31 @@ int SpatialReasoningSystem::twoObjectQuery(twoObjectQueryType type, int referenc
   }
   
   return -1;
+}
+
+void SpatialReasoningSystem::objectProjectionQuery(int objID, double time, double& x, double& y) {
+  SRSShape* primaryObject;
+
+  map<int, SRSShape*>::iterator it;
+  it = shapes.find(objID);
+  if (it == shapes.end()) {
+    x = -1;
+    y = -1;
+    return;
+  }
+  primaryObject = it->second;
+  
+  CGALSegment centroidTranslation = primaryObject->translateCentroid(time);
+  if (worldIsPolygon) {
+    CGALPoint result = constrainEndpoint(&centroidTranslation, &worldPolygon);
+    x = result.x();
+    y = result.y();
+  }
+  else {
+    x = centroidTranslation.target().x();
+    y = centroidTranslation.target().y();
+  }
+  return;
 }
 
 string queryToString(twoObjectQueryType t){

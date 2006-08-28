@@ -611,7 +611,7 @@ bool SpatialDB::hasTerrainCollision(Circle& c) {
   int maxCol = (c.x + c.r) / GameConst::TILE_POINTS;
   int minRow = (c.y - c.r) / GameConst::TILE_POINTS;
   int maxRow = (c.y + c.r) / GameConst::TILE_POINTS;
-
+/*
   if (minCol < 0 || 
       maxCol >= Sorts::OrtsIO->getMapXDim() / GameConst::TILE_POINTS ||
       minRow < 0 ||
@@ -620,7 +620,14 @@ bool SpatialDB::hasTerrainCollision(Circle& c) {
     // collision with edge of map
     return true;
   }
-
+*/
+  if (c.x - c.r < 0 ||
+      c.y - c.r < 0 || 
+      c.x + c.r > Sorts::OrtsIO->getMapXDim() || 
+      c.y + c.r > Sorts::OrtsIO->getMapYDim()) {
+    dbg << "edge of map collision.\n";
+    return true;
+  }
   for(int row = minRow; row <= maxRow; ++row) {
     for(int col = minCol; col <= maxCol; ++col) {
       const GameTile& t = gameMap->get_tile(col, row);
@@ -641,7 +648,7 @@ bool SpatialDB::hasTerrainCollision(Circle& c) {
       if (rectangle_circle_intersect(r, c)) {
         if (height > 0) {
           // assume all plateaus are closed. THIS IS DEFINITELY NOT THE CASE!
-          msg << "TERRAIN COLLISION" << endl;
+          dbg << "TERRAIN COLLISION" << endl;
           return true;
         }
       }
@@ -682,6 +689,7 @@ bool SpatialDB::hasTerrainCollision(Circle& c) {
           }
         }
         if (circle_triangle_intersect(c, rAngle, xoffset, yoffset)) {
+          dbg << "split collision.\n";
           return true;
         }
       }

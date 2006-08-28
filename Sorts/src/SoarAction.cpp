@@ -26,6 +26,7 @@ using namespace std;
 ObjectActionType objectActionTypeLookup(string actionName) {
   if      (not actionName.compare("move"))     return OA_MOVE;
   else if (not actionName.compare("mine"))     return OA_MINE;
+  else if (not actionName.compare("move-mark"))     return OA_MOVE_MARK;
   else if (not actionName.compare("free"))     return OA_FREE;
   else if (not actionName.compare("attack"))   return OA_ATTACK;
   else if (not actionName.compare("sever"))    return OA_SEVER;

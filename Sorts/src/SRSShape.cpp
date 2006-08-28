@@ -1,14 +1,17 @@
 #include "SRSShape.h"
 
-#define CLASS_TOKEN "SRSShape"
+#define CLASS_TOKEN "SRSS"
 #define DEBUG_OUTPUT true 
 #include "OutputDefinitions.h"
 
 #include <CGAL/centroid.h>
 #include <sstream>
 
-SRSShape::SRSShape(double x, double y, double radius, double i, double j, string _name, SDLCanvas* _canvas) :
-  orientation(i,j), isCircle(true), polygon(NULL), name(_name), centroid(x,y), canvas(_canvas) {
+SRSShape::SRSShape(double x, double y, double radius, double i, double j, double _speed, string _name,
+                   SDLCanvas* _canvas) :
+  name(_name), isCircle(true), polygon(NULL), orientation(i,j), centroid(x,y), speed(_speed),
+  canvas(_canvas) {
+  
   if (orientation.dy() == 0) {
     orientation = CGALDirection(i,.00001);
   }
@@ -17,8 +20,10 @@ SRSShape::SRSShape(double x, double y, double radius, double i, double j, string
   dbg << "created a circle, name= " << name << endl;
 }
 
-SRSShape::SRSShape(list<pair<double, double> >& points, double i, double j, string _name, SDLCanvas* _canvas) :
-  orientation(i,j), isCircle(false), circle(NULL), name(_name), canvas(_canvas) {
+SRSShape::SRSShape(list<pair<double, double> >& points, 
+                   double i, double j, double _speed, string _name, SDLCanvas* _canvas) :
+  name(_name), isCircle(false), circle(NULL), orientation(i,j), speed(_speed),
+  canvas(_canvas) {
   if (orientation.dy() == 0) {
     orientation = CGALDirection(i,.00001);
   }
@@ -38,7 +43,8 @@ void SRSShape::draw() {
     return;
   }
   if (isCircle) {
-   SDLCanvasCircle* canvasCircle = canvas->makeCircle(centroid.x(), centroid.y(), sqrt(circle->squared_radius()));
+   SDLCanvasCircle* canvasCircle = 
+     canvas->makeCircle(centroid.x(), centroid.y(), sqrt(circle->squared_radius()));
    //canvasCircle->setLabel(name);
    canvasObjs.push_back(canvasCircle);
   }
@@ -67,7 +73,15 @@ void SRSShape::draw() {
   orientationMark->setShapeColor(0,255,0);
   orientationMark->setLabel(name);
   canvasObjs.push_back(orientationMark);
-  
+ /* 
+  double x, y;
+  centroidAtTime(-100, x, y); 
+  SDLCanvasShape* historyMark = canvas->makeLine(centroid.x(),
+                                                 centroid.y(),
+                                                 x, y);
+  historyMark->setShapeColor(0,0,255);
+  canvasObjs.push_back(historyMark);
+ */ 
 } 
 
 
@@ -408,7 +422,8 @@ bool SRSShape::RCC_PP(SRSShape* target) {
         for (CGALPolygon::Edge_const_iterator it = polygon->edges_begin();
              it != polygon->edges_end();
              it++) {
-          if (doIntersect(target->getCircle(), &(*it))) {
+          CGALSegment seg = *it;
+          if (doIntersect(target->getCircle(), &seg)) {
             return false;
           }
         }
@@ -419,6 +434,7 @@ bool SRSShape::RCC_PP(SRSShape* target) {
           return false;
         }
         // polygon is enclosed in polygon if each vertex of target is enclosed
+        // (assuming convex polygons)
         for (CGALPolygon::Vertex_const_iterator it = target->getPolygon()->vertices_begin();
              it != target->getPolygon()->vertices_end();
              it++) {
@@ -459,9 +475,54 @@ bool SRSShape::RCC_EQ(SRSShape* target) {
   }
 }
 
+CGALSegment SRSShape::translateCentroid(double deltaT) {
+  // project the centroid at the current speed and orientation
+  // deltaT units (in the past or future)
+
+  // I can't believe CGAL has no way of doing this..
+  double angle = atan2(orientation.dy(), orientation.dx());
+  double x,y;
+  x = centroid.x() + deltaT*speed*cos(angle);
+  y = centroid.y() + deltaT*speed*sin(angle);
+  dbg << "centroidAtTime " << deltaT << " is " << x << "," << y << " (speed " << speed << ")\n";
+  return CGALSegment(centroid, CGALPoint(x,y));
+}
+
+double SRSShape::getDistanceTo(SRSShape* target) {
+  if (isCircle && target->getIsCircle()) {
+    CGALSegment connector(centroid, target->getCentroid());
+    return (sqrt(connector.squared_length())
+            - sqrt(circle->squared_radius())
+            - sqrt(target->getCircle()->squared_radius()));
+  }
+  else if (not isCircle and not target->getIsCircle()) {
+    CGALPolytopeDistance pd(polygon->vertices_begin(), polygon->vertices_end(),
+                            target->getPolygon()->vertices_begin(), target->getPolygon()->vertices_end());
+    // this is smallest distance between the convex hulls of the vertices of
+    // the polygons, if they are non-convex, this could be inaccurate
+
+    return sqrt(pd.squared_distance());
+  }
+  else if (isCircle and not target->getIsCircle()) {
+    list<CGALPoint> circleCenter;
+    circleCenter.push_back(centroid);
+    CGALPolytopeDistance pd(circleCenter.begin(), circleCenter.end(),
+                            target->getPolygon()->vertices_begin(), target->getPolygon()->vertices_end());
+    return (sqrt(pd.squared_distance()) - sqrt(circle->squared_radius()));
+  }
+  else {
+    // poly and target circle
+    list<CGALPoint> circleCenter;
+    circleCenter.push_back(target->getCentroid());
+    CGALPolytopeDistance pd(circleCenter.begin(), circleCenter.end(),
+                            polygon->vertices_begin(), polygon->vertices_end());
+    return (sqrt(pd.squared_distance()) - sqrt(target->getCircle()->squared_radius()));
+  }
+}
+      
 string SRS_catStrInt(const char* str, int x) {
+  // copied from general.cpp so this file can be used outside sorts
   ostringstream sstr;
   sstr << str << x;
   return sstr.str();
 }
-

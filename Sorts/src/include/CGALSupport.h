@@ -8,6 +8,8 @@
 #include <CGAL/basic.h>
 #include <CGAL/MP_Float.h>
 #include <CGAL/Quotient.h>
+#include <CGAL/Polytope_distance_d.h>
+#include <CGAL/Optimisation_d_traits_2.h>
 
 #include <iostream>
 using namespace std;
@@ -24,6 +26,7 @@ typedef CGAL::Ray_2<CGALKernel> CGALRay;
 typedef CGAL::Vector_2<CGALKernel> CGALVector;
 typedef CGAL::Bbox_2  CGALBBox;
 typedef CGALKernel::Compute_squared_distance_2 CGALComputeSquaredDistance;
+typedef CGAL::Polytope_distance_d<CGAL::Optimisation_d_traits_2<CGALKernel> > CGALPolytopeDistance;
 
 /*ostream& operator << (ostream& os, const CGALPoint& c) {
    return os<< c.x() << "," << c.y();
@@ -55,5 +58,7 @@ bool doIntersect(CGALCircle* circle, CGALSegment* segment);
 bool doIntersect(CGALCircle* circle, CGALPoint* point);
 bool doIntersect(CGALCircle* circle, CGALPolygon* polygon);
 bool doIntersect(CGALCircle* circle, CGALCircle* circle2);
+
+CGALPoint constrainEndpoint(CGALSegment* segment, CGALPolygon* poly);
 
 #endif 

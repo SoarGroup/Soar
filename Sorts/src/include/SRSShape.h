@@ -9,9 +9,12 @@ using namespace std;
 class SRSShape {
   public:
     // create a circle at x,y with orientation i,j
-    SRSShape(double x, double y, double radius, double i, double j, string _name, SDLCanvas*);
+    SRSShape(double x, double y, double radius, double i, double j,
+             double, string, SDLCanvas*);
     // create a polygon with the list of points and orientation i,j
-    SRSShape(list<pair<double, double> >& points, double i, double j, string _name, SDLCanvas*);
+    SRSShape(list<pair<double, double> >& points, double i, double j,  
+             double, string, SDLCanvas*);
+
     void deleteShape();
     void draw();
 
@@ -22,13 +25,13 @@ class SRSShape {
     bool RCC_EQ(SRSShape*);
     bool RCC_PP(SRSShape*);
     bool RCC_PPi(SRSShape*);
-    int getDistanceTo(SRSShape*);
-    int getDistanceTo(double x, double y);
+    double getDistanceTo(SRSShape*);
+    double getDistanceTo(double x, double y);
     bool isBiggerThan(SRSShape*);
     bool isAdjacentTo(SRSShape*);
     bool isBetween(SRSShape*, SRSShape*);
+    CGALSegment translateCentroid(double deltaT);
 
-    
     CGALDirection getOrientation() { return orientation; }
     CGALPoint getCentroid() { return centroid; }
     CGALCircle* getCircle() { return circle; }
@@ -41,11 +44,13 @@ class SRSShape {
     CGALPolygon* polygon;
     CGALCircle* circle;
     CGALDirection orientation;
+    CGALPoint centroid;
+    double speed;
+    SDLCanvas* canvas;
+    
     list<CGALRay> acceptanceAreaRays;
     list<CGALRay> allocentricAcceptanceAreaRays;
-    CGALPoint centroid;
 
-    SDLCanvas* canvas;
     list<SDLCanvasShape*> canvasObjs;
 };
 

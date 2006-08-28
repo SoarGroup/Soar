@@ -117,6 +117,7 @@ class PerceptualGroup {
 
     string getName() { return typeName; }
     Vec2d getHeading() { return avgHeading; }
+    double getSpeed() { return speed; }
 
   private: // functions
     void updateBoundingBox();
@@ -152,6 +153,7 @@ class PerceptualGroup {
     bool friendlyWorker;
 
     Vec2d avgHeading;
+    double speed;
     
     // bounding box of group dimensions
     Rectangle bbox;

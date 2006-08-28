@@ -26,6 +26,8 @@
 #include "SoarAction.h"
 #include "Sorts.h"
 
+#include "SRS.h"
+
 #include "Game.H"
 
 #define CLASS_TOKEN "SOARIO"
@@ -147,6 +149,19 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
       g.stringProperties[i->first] = attr;
       msg << "\tadd: " << (*i).first << " " << (*i).second << endl;
     }
+    // TEMP FOR SRS TESTING
+    if (not group->isFriendly()) {
+      double x,y;
+      Sorts::SRS->objectProjectionQuery(g.groupId, -400, x, y);
+      InputLinkFloatAttribute attr;
+      
+      attr.wme = agent->CreateFloatWME(g.WMEptr, "old-x", x);
+      attr.lastVal = x;
+      g.floatProperties["old-x"] = attr;
+      attr.wme = agent->CreateFloatWME(g.WMEptr, "old-y", y);
+      attr.lastVal = y;
+      g.floatProperties["old-y"] = attr;
+    }
   }
   else {
     msg << "ILNK updating id " << g.groupId << " ptr " <<  group << endl;
@@ -180,6 +195,16 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
         attr.lastVal = i->second;
         msg << "\tupd: " << i->first << " " << i->second << endl;
       }
+    }
+    // TEMP FOR SRS TESTING
+    if (not group->isFriendly()) {
+      double x,y;
+      Sorts::SRS->objectProjectionQuery(g.groupId, -400, x, y);
+      //Sorts::canvas.makeTempCircle(x,y, 3, 999)->setShapeColor(255, 255, 255);
+      InputLinkFloatAttribute& attr = g.floatProperties["old-x"];
+      agent->Update(attr.wme, x);
+      attr = g.floatProperties["old-y"];
+      agent->Update(attr.wme, y);
     }
 
     for(list<StringAttribType>::iterator 
@@ -582,7 +607,7 @@ void SoarInterface::updateVisionState(VisionParameterStruct& vps) {
   agent->Update(visionParamRep.focusYWME, vps.focusY);
   agent->Update(visionParamRep.ownerGroupingWME, (int) vps.ownerGrouping);
   agent->Update(visionParamRep.numObjectsWME, vps.numObjects);
-  agent->Update(visionParamRep.groupingRadiusWME, vps.groupingRadius);
+  agent->Update(visionParamRep.groupingRadiusWME, sqrt(vps.groupingRadius));
   
 }
 

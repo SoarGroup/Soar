@@ -31,6 +31,7 @@ enum ObjectActionType {
   OA_NO_SUCH_ACTION,
   OA_MINE,
   OA_MOVE,
+  OA_MOVE_MARK,
   OA_MOVE_INTERNAL,
   OA_BUILD,
   OA_ATTACK,
@@ -69,7 +70,6 @@ struct AttentionAction {
     string fmName;
 };
 
-// TODO: change to GameAction
 enum GameActionType {
   GA_FIND_BUILDING_LOC,
   GA_SET_MINERAL_BUFFER,

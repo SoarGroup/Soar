@@ -254,7 +254,7 @@ int main(int argc, char *argv[]) {
   char* productions = NULL;
   useSoarStops = true;
   useRL = false;
-  bool printSoar = false;
+  bool printSoar = true;
   bool srsCanvas = false;
   bool noSortsCanvas = false;
   bool oldAgent = false;
@@ -282,8 +282,8 @@ int main(int argc, char *argv[]) {
     else if (strcmp(argv[i], "-id") == 0) {
       id = argv[i+1];
     }
-    else if (strcmp(argv[i], "-print-soar") == 0) {
-      printSoar = true;
+    else if (strcmp(argv[i], "-no-print-soar") == 0) {
+      printSoar = false;
     }
     else if (strcmp(argv[i], "-srs-canvas") == 0) {
       srsCanvas = true;
@@ -401,20 +401,29 @@ int main(int argc, char *argv[]) {
   pgm.initialize();
   soarInterface.initSoarInputLink();
 
+  double xDim = ortsInterface.getMapXDim();
+  double yDim = ortsInterface.getMapYDim();
   if (not noSortsCanvas) {
     // initialize the canvas
     Sorts::canvas.init
-      ( ortsInterface.getMapXDim(), 
-        ortsInterface.getMapYDim(),
+      ( xDim, 
+        yDim,
         1.2 );
   }
 
   if (srsCanvas) {
     srs.initCanvas 
-    ( ortsInterface.getMapXDim(), 
-      ortsInterface.getMapYDim(),
+    ( xDim, 
+      yDim,
       1.2 );
   }
+
+  list<pair<double, double> > worldBounds;
+  worldBounds.push_back(make_pair((double)10,(double)10));
+  worldBounds.push_back(make_pair(xDim-10,(double)10));
+  worldBounds.push_back(make_pair(xDim-10,yDim-10));
+  worldBounds.push_back(make_pair((double)10,yDim-10));
+  srs.setWorldBounds(worldBounds);
 
 // register for all events
   gsm.add_handler(&ortsInterface);
