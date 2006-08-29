@@ -6,6 +6,8 @@
 #include <string>
 using namespace std;
 
+#define PI 3.14159
+
 class SRSShape {
   public:
     // create a circle at x,y with orientation i,j
@@ -27,17 +29,23 @@ class SRSShape {
     bool RCC_PPi(SRSShape*);
     double getDistanceTo(SRSShape*);
     double getDistanceTo(double x, double y);
+    CGALSegment getShortestLineTo(SRSShape*);
+    CGALPolygon* getShortestDistanceRegionTo(SRSShape*);
     bool isBiggerThan(SRSShape*);
-    bool isAdjacentTo(SRSShape*);
-    bool isBetween(SRSShape*, SRSShape*);
     CGALSegment translateCentroid(double deltaT);
 
     CGALDirection getOrientation() { return orientation; }
+    double getArea();
     CGALPoint getCentroid() { return centroid; }
     CGALCircle* getCircle() { return circle; }
     CGALPolygon* getPolygon() { return polygon; }
     bool getIsCircle() { return isCircle; }
-
+    void setBox(CGALBox* b) { box = b; }
+    CGALBox* getBox() { return box; }
+    string getName() { return name; }
+    bool getIgnore() { return ignore; }
+    void setIgnore(bool b) { ignore = b; }
+    
   private:
     string name;
     bool isCircle;
@@ -50,8 +58,13 @@ class SRSShape {
     
     list<CGALRay> acceptanceAreaRays;
     list<CGALRay> allocentricAcceptanceAreaRays;
+    double area;
 
     list<SDLCanvasShape*> canvasObjs;
+    CGALBox* box;
+
+    void drawPolygon(CGALPolygon&, int,int,int);
+    bool ignore;
 };
 
 string SRS_catStrInt(const char* str, int x);

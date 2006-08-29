@@ -10,12 +10,13 @@
 SRSShape::SRSShape(double x, double y, double radius, double i, double j, double _speed, string _name,
                    SDLCanvas* _canvas) :
   name(_name), isCircle(true), polygon(NULL), orientation(i,j), centroid(x,y), speed(_speed),
-  canvas(_canvas) {
+  canvas(_canvas), ignore(false){
   
   if (orientation.dy() == 0) {
     orientation = CGALDirection(i,.00001);
   }
   circle = new CGALCircle(centroid, radius*radius);
+  area = -1;
   
   dbg << "created a circle, name= " << name << endl;
 }
@@ -23,7 +24,9 @@ SRSShape::SRSShape(double x, double y, double radius, double i, double j, double
 SRSShape::SRSShape(list<pair<double, double> >& points, 
                    double i, double j, double _speed, string _name, SDLCanvas* _canvas) :
   name(_name), isCircle(false), circle(NULL), orientation(i,j), speed(_speed),
-  canvas(_canvas) {
+  canvas(_canvas), ignore(false) {
+
+  area = -1;
   if (orientation.dy() == 0) {
     orientation = CGALDirection(i,.00001);
   }
@@ -33,6 +36,15 @@ SRSShape::SRSShape(list<pair<double, double> >& points,
         it++) {
     polygon->push_back(CGALPoint(it->first, it->second));
   }
+
+  if (not polygon->is_counterclockwise_oriented()) {
+    polygon->reverse_orientation();
+  }
+
+  // non-convex polygons break distance calculations (convex hull is used)
+  // area calculation also assumes non-negative area
+  
+  assert(polygon->is_convex());
 
   centroid = CGAL::centroid(polygon->vertices_begin(), polygon->vertices_end());
   dbg << "created a polygon,  name= " << name << " centroid " << centroid << endl;
@@ -491,15 +503,34 @@ CGALSegment SRSShape::translateCentroid(double deltaT) {
 double SRSShape::getDistanceTo(SRSShape* target) {
   if (isCircle && target->getIsCircle()) {
     CGALSegment connector(centroid, target->getCentroid());
-    return (sqrt(connector.squared_length())
+    double dist = (sqrt(connector.squared_length())
             - sqrt(circle->squared_radius())
             - sqrt(target->getCircle()->squared_radius()));
+    if (dist > 0) {
+      return dist;
+    }
+    else {
+      return 0;
+    }
   }
   else if (not isCircle and not target->getIsCircle()) {
     CGALPolytopeDistance pd(polygon->vertices_begin(), polygon->vertices_end(),
                             target->getPolygon()->vertices_begin(), target->getPolygon()->vertices_end());
     // this is smallest distance between the convex hulls of the vertices of
     // the polygons, if they are non-convex, this could be inaccurate
+    
+    // distance-point selection testing
+    //dbg << "making test poly\n";
+    //dbg << "sp p" << pd.number_of_support_points_p() << endl;
+    //dbg << "sp q" << pd.number_of_support_points_q() << endl;
+    //CGALPolygon poly(pd.support_points_q_begin(), pd.support_points_q_end());
+    //poly.insert(poly.vertices_begin(), pd.support_points_p_begin(), pd.support_points_p_end());
+    //drawPolygon(poly, 255,0,0);
+    CGALPolytopeDistance::Coordinate_iterator ci = pd.realizing_point_p_coordinates_begin();
+    CGALPolytopeDistance::Coordinate_iterator ci2 = pd.realizing_point_q_coordinates_begin();
+    //canvas->makeLine(((*ci)/(*(ci+2))), ((*(ci+1))/(*(ci+2))), ((*ci2)/(*(ci2+2))), ((*(ci2+1))/(*(ci2+2))));
+    
+    //canvas->redraw();
 
     return sqrt(pd.squared_distance());
   }
@@ -508,7 +539,14 @@ double SRSShape::getDistanceTo(SRSShape* target) {
     circleCenter.push_back(centroid);
     CGALPolytopeDistance pd(circleCenter.begin(), circleCenter.end(),
                             target->getPolygon()->vertices_begin(), target->getPolygon()->vertices_end());
-    return (sqrt(pd.squared_distance()) - sqrt(circle->squared_radius()));
+    
+    double dist = sqrt(pd.squared_distance()) - sqrt(circle->squared_radius());
+    if (dist > 0) {
+      return dist;
+    }
+    else {
+      return 0;
+    }
   }
   else {
     // poly and target circle
@@ -516,7 +554,129 @@ double SRSShape::getDistanceTo(SRSShape* target) {
     circleCenter.push_back(target->getCentroid());
     CGALPolytopeDistance pd(circleCenter.begin(), circleCenter.end(),
                             polygon->vertices_begin(), polygon->vertices_end());
-    return (sqrt(pd.squared_distance()) - sqrt(target->getCircle()->squared_radius()));
+    double dist = sqrt(pd.squared_distance()) - sqrt(target->getCircle()->squared_radius());
+    if (dist > 0) {
+      return dist;
+    }
+    else {
+      return 0;
+    }
+  }
+}
+
+CGALSegment SRSShape::getShortestLineTo(SRSShape* target) {
+  if (isCircle && target->getIsCircle()) {
+    CGALSegment connector(centroid, target->getCentroid());
+    connector = shrinkSegment(&connector, sqrt(circle->squared_radius()), true);
+    return shrinkSegment(&connector, sqrt(target->getCircle()->squared_radius()), false);
+  }
+  else if (not isCircle and not target->getIsCircle()) {
+    CGALPolytopeDistance pd(polygon->vertices_begin(), polygon->vertices_end(),
+                            target->getPolygon()->vertices_begin(), target->getPolygon()->vertices_end());
+    // this is smallest distance between the convex hulls of the vertices of
+    // the polygons, if they are non-convex, this could be inaccurate
+
+    // make a segment from a p-point to a q-point
+    assert(pd.points_p_begin() != pd.points_p_end());
+    assert(pd.points_q_begin() != pd.points_q_end());
+    return CGALSegment(*(pd.points_p_begin()), *(pd.points_q_begin()));
+  }
+  else if (isCircle and not target->getIsCircle()) {
+    list<CGALPoint> circleCenter;
+    circleCenter.push_back(centroid);
+    CGALPolytopeDistance pd(circleCenter.begin(), circleCenter.end(),
+                            target->getPolygon()->vertices_begin(), target->getPolygon()->vertices_end());
+    // make a segment from a p-point to a q-point
+    assert(pd.points_p_begin() != pd.points_p_end());
+    assert(pd.points_q_begin() != pd.points_q_end());
+    CGALSegment connector(*(pd.points_p_begin()), *(pd.points_q_begin()));
+    return shrinkSegment(&connector, sqrt(circle->squared_radius()), true);
+  }
+  else {
+    // poly and target circle
+    list<CGALPoint> circleCenter;
+    circleCenter.push_back(target->getCentroid());
+    CGALPolytopeDistance pd(circleCenter.begin(), circleCenter.end(),
+                            polygon->vertices_begin(), polygon->vertices_end());
+    // make a segment from a p-point to a q-point
+    assert(pd.points_p_begin() != pd.points_p_end());
+    assert(pd.points_q_begin() != pd.points_q_end());
+    CGALSegment connector(*(pd.points_p_begin()), *(pd.points_q_begin()));
+    return shrinkSegment(&connector, sqrt(target->getCircle()->squared_radius()), false);
+  }
+}
+
+CGALPolygon* SRSShape::getShortestDistanceRegionTo(SRSShape* target) {
+  if (isCircle && target->getIsCircle()) {
+    CGALSegment connector(centroid, target->getCentroid());
+    connector = shrinkSegment(&connector, sqrt(circle->squared_radius()), true);
+    return (newPolygonFromSegment(
+            shrinkSegment(&connector, sqrt(target->getCircle()->squared_radius()), false)));
+  }
+  else if (not isCircle and not target->getIsCircle()) {
+    // this is the interesting case, two polygons
+    // they can have many closest-distance connectors, and we need to return a
+    // region defining them. this region must be a rectangle, with two edges
+    // connecting vertices of one polygon to edges of the other
+    
+    // to get the region, rely on the behavior of CGALPolytopeDistance to return
+    // one of the extreme realizing lines with a given p and q, and the other
+    // if p and q switch places. if the realizing lines are the same, the
+    // result is a line, otherwise it is the region between the two lines 
+    CGALPolytopeDistance pd1(polygon->vertices_begin(), polygon->vertices_end(),
+                            target->getPolygon()->vertices_begin(), target->getPolygon()->vertices_end());
+    
+    CGALPolytopeDistance pd2(target->getPolygon()->vertices_begin(), target->getPolygon()->vertices_end(),
+                             polygon->vertices_begin(), polygon->vertices_end());
+    
+
+    if (pd1.realizing_point_p() == pd2.realizing_point_q() &&
+        pd1.realizing_point_q() == pd2.realizing_point_p()) {
+      dbg << "polygon distance is shortest at only one place.\n";
+      return newPolygonFromSegment(CGALSegment(pd1.realizing_point_p(), pd1.realizing_point_q()));
+    }
+    else {
+      dbg << "polygon distance is shortest in a region.\n";
+      list<CGALPoint> newPoly;
+      newPoly.push_back(pd1.realizing_point_p());
+      newPoly.push_back(pd1.realizing_point_q());
+      newPoly.push_back(pd2.realizing_point_p());
+      newPoly.push_back(pd2.realizing_point_q());
+
+      CGALPolygon* poly = new CGALPolygon(newPoly.begin(), newPoly.end());
+      if (poly->is_clockwise_oriented()) {
+        poly->reverse_orientation();
+      }
+      if (not poly->is_counterclockwise_oriented()) {
+        assert(false);
+      }
+      return poly;
+    }
+      
+  }
+  else if (isCircle and not target->getIsCircle()) {
+    list<CGALPoint> circleCenter;
+    circleCenter.push_back(centroid);
+    CGALPolytopeDistance pd(circleCenter.begin(), circleCenter.end(),
+                            target->getPolygon()->vertices_begin(), target->getPolygon()->vertices_end());
+    // make a segment from a p-point to a q-point
+    assert(pd.points_p_begin() != pd.points_p_end());
+    assert(pd.points_q_begin() != pd.points_q_end());
+    CGALSegment connector(*(pd.points_p_begin()), *(pd.points_q_begin()));
+    return newPolygonFromSegment(shrinkSegment(&connector, sqrt(circle->squared_radius()), true));
+  }
+  else {
+    // poly and target circle
+    list<CGALPoint> circleCenter;
+    circleCenter.push_back(target->getCentroid());
+    CGALPolytopeDistance pd(circleCenter.begin(), circleCenter.end(),
+                            polygon->vertices_begin(), polygon->vertices_end());
+    // make a segment from a p-point to a q-point
+    assert(pd.points_p_begin() != pd.points_p_end());
+    assert(pd.points_q_begin() != pd.points_q_end());
+    CGALSegment connector(*(pd.points_p_begin()), *(pd.points_q_begin()));
+    return newPolygonFromSegment(
+            shrinkSegment(&connector, sqrt(target->getCircle()->squared_radius()), false));
   }
 }
       
@@ -525,4 +685,36 @@ string SRS_catStrInt(const char* str, int x) {
   ostringstream sstr;
   sstr << str << x;
   return sstr.str();
+}
+
+double SRSShape::getArea() {
+  if (area == -1) {
+    if (isCircle) {
+      area = PI*(circle->squared_radius());
+    }
+    else {
+      // area is signed, negative if polygon is oriented clockwise
+      // we don't care about orientation, so abs it
+      area = abs(polygon->area());
+    }
+  }
+  return area;
+}
+
+bool SRSShape::isBiggerThan(SRSShape* target) {
+  return getArea() > target->getArea();
+}
+
+void SRSShape::drawPolygon(CGALPolygon& polygon, int r, int g, int b) {
+  dbg << "drawPoly\n";
+  // only for debugging, there is no way to erase!
+  SDLCanvasShape* line;
+  for (CGALPolygon::Edge_const_iterator it = polygon.edges_begin();
+        it != polygon.edges_end();
+        it++) {
+    dbg << "edge " << (*it).source() << " to " << (*it).target() << "\n";
+    line = canvas->makeLine((*it).source().x(), (*it).source().y(), (*it).target().x(), (*it).target().y());
+    line->setShapeColor(r,g,b);
+  }
+  canvas->redraw();
 }

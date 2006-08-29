@@ -5,7 +5,10 @@
 #include "OutputDefinitionsUnique.h"
 #include <sstream>
 
+SpatialReasoningSystem* theSRS;
+
 SpatialReasoningSystem::SpatialReasoningSystem() {
+  theSRS = this;
   worldIsPolygon = false;
 }
 
@@ -32,6 +35,10 @@ void SpatialReasoningSystem::insertCircle(double x, double y, double radius,
   if (canvas.initted()) {
     canvas.redraw();
   }
+  CGALBox* box = new CGALBox(shape->getCircle()->bbox());
+  boxes.push_back(box);
+  boxToShape[box] = shape;
+  shape->setBox(box);
 }
 
 void SpatialReasoningSystem::insertPolygon(list<pair<double, double> >& points, 
@@ -43,6 +50,10 @@ void SpatialReasoningSystem::insertPolygon(list<pair<double, double> >& points,
   if (canvas.initted()) {
     canvas.redraw();
   }
+  CGALBox* box = new CGALBox(shape->getPolygon()->bbox());
+  boxes.push_back(box);
+  boxToShape[box] = shape;
+  shape->setBox(box);
 }
 
 void SpatialReasoningSystem::removeShape(int id) {
@@ -52,6 +63,18 @@ void SpatialReasoningSystem::removeShape(int id) {
     assert(false);
   }
   else {
+    CGALBox* box = it->second->getBox();
+    boxToShape.erase(box);
+    //boxes.erase(box);
+    for (vector<CGALBox*>::iterator it2 = boxes.begin();
+        it2 != boxes.end();
+        it2++) {
+      if (*it2 == box) {
+        boxes.erase(it2);
+        break;
+      }
+    }
+    delete box;
     it->second->deleteShape();
     //delete it->second;
     shapes.erase(it);
@@ -82,7 +105,7 @@ void SpatialReasoningSystem::printAllRelativeOrientations() {
   }
 }
 
-int SpatialReasoningSystem::twoObjectQuery(twoObjectQueryType type, int referenceId, int primaryId) {
+double SpatialReasoningSystem::twoObjectQuery(twoObjectQueryType type, int referenceId, int primaryId) {
   SRSShape* referenceObject;
   SRSShape* primaryObject;
 
@@ -121,6 +144,13 @@ int SpatialReasoningSystem::twoObjectQuery(twoObjectQueryType type, int referenc
     case ALLOCENTRIC_ORIENTATION:
       return referenceObject->getAllocentricRelativeOrientationOf(primaryObject);
       break;
+    case DISTANCE:
+      return referenceObject->getDistanceTo(primaryObject);
+      break; 
+    case BIGGER:
+      return referenceObject->isBiggerThan(primaryObject);
+    case SHORTEST_DIST_CLEAR:
+      return shortestDistanceClearQuery(referenceObject, primaryObject);
     default:
       return -1;
   }
@@ -169,7 +199,121 @@ string queryToString(twoObjectQueryType t){
       return "Relative Orientation";
     case ALLOCENTRIC_ORIENTATION:
       return "Allocentric Orientation";
+    case DISTANCE:
+      return "distance";
+    case BIGGER:
+      return "bigger than";
+    case SHORTEST_DIST_CLEAR:
+      return "shortest distance clear";
     default:
       return "[unknown]";
   }
 } 
+
+void SpatialReasoningSystem::drawPolygon(CGALPolygon* polygon, int r, int g, int b) {
+  // only for debugging, there is no way to erase!
+  SDLCanvasShape* line;
+  for (CGALPolygon::Edge_const_iterator it = polygon->edges_begin();
+        it != polygon->edges_end();
+        it++) {
+    line = canvas.makeLine((*it).source().x(), (*it).source().y(), (*it).target().x(), (*it).target().y());
+    line->setShapeColor(r,g,b);
+  }
+  canvas.redraw();
+}
+
+bool SpatialReasoningSystem::polygonIntersect(CGALPolygon* poly) {
+  vector<CGALBox*> boxList;
+  boxList.push_back(new CGALBox(poly->bbox()));
+
+  lastIntersectPolygon = poly;
+  
+  lastIntersect = false;
+  // intersect callback will change this flag if needed
+  CGAL::box_intersection_d(boxes.begin(), boxes.end(), boxList.begin(), boxList.end(), 
+                          boxIntersectCallbackWrapper);
+  delete *boxList.begin();
+  
+  return lastIntersect;
+}
+
+void boxIntersectCallbackWrapper(const CGALBox* a, const CGALBox* b) {
+  theSRS->boxIntersectCallback(a,b);
+}
+
+void SpatialReasoningSystem::boxIntersectCallback(const CGALBox* ac, const CGALBox* bc) {
+  SRSShape* target;
+  CGALBox* a = const_cast<CGALBox*>(ac);
+
+  if (lastIntersect) {
+    dbg << "ignoring callback, something already intersected.\n";
+    return;
+  }
+
+  if (boxToShape.find(a) != boxToShape.end()) {
+    target = boxToShape.find(a)->second;
+  }
+  else {
+    assert(false);
+  }
+
+  if (target->getIgnore()) {
+    dbg << "target is ignored, no collision.\n";
+    return;
+  }
+  
+  dbg << "potential collision between " << target->getName() << " and box." << endl;
+
+  
+  if (lastIntersectPolygon->size() == 2) {
+    // its actually a line
+    CGALSegment seg(*(lastIntersectPolygon->vertices_begin()), *(lastIntersectPolygon->vertices_begin()+1));
+    if (target->getIsCircle()) {
+      if (doIntersect(target->getCircle(), &seg)) {
+        dbg << "collided!\n";
+        lastIntersect = true;
+      } 
+    }
+    else {
+      if (doIntersect(&seg, target->getPolygon())) {
+        dbg << "collided!\n";
+        lastIntersect = true;
+      } 
+    }
+  }
+  else {
+    if (target->getIsCircle()) {
+      if (doIntersect(target->getCircle(), lastIntersectPolygon)) {
+        dbg << "collided!\n";
+        lastIntersect = true;
+      } 
+    }
+    else {
+      if (CGAL::do_intersect(*lastIntersectPolygon, *(target->getPolygon()))) {
+        dbg << "collided!\n";
+        lastIntersect = true;
+      }
+    }
+  }
+  return;
+}
+
+bool SpatialReasoningSystem::shortestDistanceClearQuery(SRSShape* referenceObject, SRSShape* primaryObject) {
+
+  CGALPolygon* region = referenceObject->getShortestDistanceRegionTo(primaryObject);
+  drawPolygon(region, 0,0,255);
+
+  // intersections are tricky because the shapes directly touch, so ignore all
+  // collisions involving the two objects in question
+
+  bool oldRefIgnore = referenceObject->getIgnore();
+  bool oldPriIgnore = primaryObject->getIgnore();
+  referenceObject->setIgnore(true);
+  primaryObject->setIgnore(true);
+  bool retval = polygonIntersect(region);
+  referenceObject->setIgnore(oldRefIgnore);
+  primaryObject->setIgnore(oldPriIgnore);
+  delete region;
+  return not retval;
+}
+  
