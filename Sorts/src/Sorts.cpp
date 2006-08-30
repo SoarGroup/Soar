@@ -27,7 +27,6 @@ FeatureMapManager*      Sorts::featureMapManager = NULL;
 TerrainModule*          Sorts::terrainModule = NULL;
 SpatialDB*              Sorts::spatialDB = NULL;
 GameActionManager*      Sorts::gameActionManager = NULL;
-SpatialReasoningSystem*   Sorts::SRS = NULL;
 //TerrainManager          Sorts::terrainManager;
 pthread_mutex_t*        Sorts::mutex = NULL;
 int                     Sorts::cyclesSoarAhead = 0;

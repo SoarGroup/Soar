@@ -35,7 +35,6 @@
 #include "FeatureMapManager.h"
 #include "GameActionManager.h"
 #include "Sorts.h"
-#include "SRS.h"
 
 #include "TerrainModule.H"
 #include "Demo_SimpleTerrain.H"
@@ -255,7 +254,6 @@ int main(int argc, char *argv[]) {
   useSoarStops = true;
   useRL = false;
   bool printSoar = true;
-  bool srsCanvas = false;
   bool noSortsCanvas = false;
   bool oldAgent = false;
 
@@ -284,9 +282,6 @@ int main(int argc, char *argv[]) {
     }
     else if (strcmp(argv[i], "-no-print-soar") == 0) {
       printSoar = false;
-    }
-    else if (strcmp(argv[i], "-srs-canvas") == 0) {
-      srsCanvas = true;
     }
     else if (strcmp(argv[i], "-rl") == 0) {
       useRL = true;
@@ -377,7 +372,6 @@ int main(int argc, char *argv[]) {
   SpatialDB spatialDB;
   MineManager mineMan;
   AttackManagerRegistry amr;
-  SpatialReasoningSystem srs;
 
   Sorts sorts(&soarInterface, 
               &ortsInterface, 
@@ -388,7 +382,6 @@ int main(int argc, char *argv[]) {
               &amr,
               &mineMan,
               &gaMan,
-              &srs,
               &sortsMutex);
 
   spatialDB.init();
@@ -411,19 +404,11 @@ int main(int argc, char *argv[]) {
         1.2 );
   }
 
-  if (srsCanvas) {
-    srs.initCanvas 
-    ( xDim, 
-      yDim,
-      1.2 );
-  }
-
   list<pair<double, double> > worldBounds;
   worldBounds.push_back(make_pair((double)10,(double)10));
   worldBounds.push_back(make_pair(xDim-10,(double)10));
   worldBounds.push_back(make_pair(xDim-10,yDim-10));
   worldBounds.push_back(make_pair((double)10,yDim-10));
-  srs.setWorldBounds(worldBounds);
 
 // register for all events
   gsm.add_handler(&ortsInterface);

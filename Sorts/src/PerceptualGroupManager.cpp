@@ -23,7 +23,6 @@
 #include "PerceptualGroup.h"
 #include "Sorts.h"
 #include "SoarInterface.h"
-#include "SRS.h"
 
 #define CLASS_TOKEN "GRPMAN"
 #define DEBUG_OUTPUT true 
@@ -344,10 +343,6 @@ void PerceptualGroupManager::processVisionCommands() {
     }
   }
 
-  if (counter % 10 == 0) {
-    //Sorts::SRS->printAllRelativeOrientations();
-  }
-  counter++;
 
 }
 
@@ -643,7 +638,6 @@ void PerceptualGroupManager::reGroup() {
 void PerceptualGroupManager::removeGroup(PerceptualGroup* group) {
   if (group->getInSoar()) {
     Sorts::SoarIO->removeGroup(group);
-    Sorts::SRS->removeShape(group->getSoarID());
     Sorts::canvas.unregisterGroup(group);
   }
   Sorts::featureMapManager->removeGroup(group);
@@ -733,15 +727,6 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
       if (not (*groupIter)->getInSoar()) {
         Sorts::SoarIO->addGroup(*groupIter); 
         
-        list<pair<double, double> > points = (*groupIter)->getBoundingBox().getPointList(); 
-        msg << "adding to srs" << endl;
-        Sorts::SRS->insertPolygon(points, 
-                                  (*groupIter)->getHeading()(0), (*groupIter)->getHeading()(1), 
-                                  (*groupIter)->getSpeed(),
-                                  (*groupIter)->getSoarID(),
-                                  (*groupIter)->getName()); 
-        msg << "done adding to srs" << endl;
-        
         Sorts::SoarIO->refreshGroup(*groupIter);
         (*groupIter)->setInSoar(true);
         
@@ -752,13 +737,6 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
         Sorts::canvas.registerGroup(*groupIter);
       }
       else if ((*groupIter)->getHasStaleProperties()) {
-        Sorts::SRS->removeShape((*groupIter)->getSoarID());
-        list<pair<double, double> > points = (*groupIter)->getBoundingBox().getPointList(); 
-        Sorts::SRS->insertPolygon(points, 
-                                  (*groupIter)->getHeading()(0), (*groupIter)->getHeading()(1), 
-                                  (*groupIter)->getSpeed(),
-                                  (*groupIter)->getSoarID(),
-                                  (*groupIter)->getName()); 
         Sorts::SoarIO->refreshGroup(*groupIter);
         Sorts::canvas.unregisterGroup(*groupIter);
         Sorts::canvas.registerGroup(*groupIter);
@@ -779,19 +757,11 @@ void PerceptualGroupManager::adjustAttention(bool rebuildFeatureMaps) {
         if (not (*groupIter)->getHasCommand()) {
           (*groupIter)->setInSoar(false);
           Sorts::SoarIO->removeGroup(*groupIter);
-          Sorts::SRS->removeShape((*groupIter)->getSoarID());
           Sorts::canvas.unregisterGroup(*groupIter);
           (*groupIter)->setHasStaleProperties(true);
         }
         else if ((*groupIter)->getHasStaleProperties()) {
           dbg << "refresh due to command (out of normal range)\n";
-          Sorts::SRS->removeShape((*groupIter)->getSoarID());
-          list<pair<double, double> > points = (*groupIter)->getBoundingBox().getPointList(); 
-          Sorts::SRS->insertPolygon(points, 
-                                    (*groupIter)->getHeading()(0), (*groupIter)->getHeading()(1), 
-                                    (*groupIter)->getSpeed(),
-                                    (*groupIter)->getSoarID(),
-                                    (*groupIter)->getName()); 
           Sorts::SoarIO->refreshGroup(*groupIter);
           Sorts::canvas.unregisterGroup(*groupIter);
           Sorts::canvas.registerGroup(*groupIter);

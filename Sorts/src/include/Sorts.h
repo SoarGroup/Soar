@@ -33,7 +33,6 @@
 #include "PerceptualGroupManager.h"
 #include "FeatureMapManager.h"
 #include "GameActionManager.h"
-class SpatialReasoningSystem;
 class AttackManagerRegistry;
 class MineManager;
 
@@ -54,7 +53,6 @@ class Sorts {
       AttackManagerRegistry*  _amr,
       MineManager*            _mineMan,
       GameActionManager*      _gam,
-      SpatialReasoningSystem* _srs,
       pthread_mutex_t*        _mutex )
     {
       SoarIO = _SoarIO;
@@ -67,7 +65,6 @@ class Sorts {
       mineManager = _mineMan;
       gameActionManager = _gam;
       mutex = _mutex;
-      SRS = _srs;
       catchup = false;
       frame = -1;
     }
@@ -81,7 +78,6 @@ class Sorts {
     static AttackManagerRegistry*   amr;
     static MineManager*             mineManager;
     static GameActionManager*       gameActionManager;
-    static SpatialReasoningSystem* SRS;
  //   static TerrainManager           terrainManager;
     static pthread_mutex_t*         mutex;
     static bool                     catchup;
