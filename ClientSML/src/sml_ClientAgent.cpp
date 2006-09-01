@@ -1510,6 +1510,22 @@ int Agent::GetDecisionCycleCounter()
 }
 
 /*************************************************************
+* @brief Returns the current run state of the agent.
+*		 Mostly of use to determine if agent halted in last run.
+*************************************************************/
+smlRunState Agent::GetRunState()
+{
+	AnalyzeXML response ;
+
+	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetRunState, GetAgentName(), sml_Names::kParamValue, sml_Names::kParamRunState) ;
+
+	if (!ok)
+		return (smlRunState)0 ;
+
+	return (smlRunState)response.GetResultInt(0) ;
+}
+
+/*************************************************************
 * @brief Process a command line command
 *
 * @param pCommandLine Command line string to process.

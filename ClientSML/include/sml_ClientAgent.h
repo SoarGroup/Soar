@@ -686,6 +686,12 @@ public:
 	int GetDecisionCycleCounter() ;
 
 	/*************************************************************
+	* @brief Returns the current run state of the agent.
+	*		 Mostly of use to determine if agent halted in last run.
+	*************************************************************/
+	smlRunState GetRunState() ;
+
+	/*************************************************************
 	* @brief Process a command line command
 	*
 	* @param pCommandLine Command line string to process.
