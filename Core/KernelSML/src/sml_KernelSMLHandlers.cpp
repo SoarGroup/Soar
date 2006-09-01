@@ -159,6 +159,7 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_SendClientMessage] = &sml::KernelSML::HandleSendClientMessage ;
 	m_CommandMap[sml_Names::kCommand_WasAgentOnRunList] = &sml::KernelSML::HandleWasAgentOnRunList ;
 	m_CommandMap[sml_Names::kCommand_GetResultOfLastRun]= &sml::KernelSML::HandleGetResultOfLastRun ;
+	m_CommandMap[sml_Names::kCommand_GetInitialTimeTag]	= &sml::KernelSML::HandleGetInitialTimeTag ;
 }
 
 /*************************************************************
@@ -516,6 +517,11 @@ bool KernelSML::HandleGetRunState(gSKI::IAgent* pAgent, char const* pCommandName
 		// Report the current decision number of decisions that have been executed
 		buffer << pAgent->GetNumDecisionsExecuted(pError);
 	}
+	else if (strcmp(pValue, sml_Names::kParamRunState) == 0)
+	{
+		// Report the current run state
+		buffer << pAgent->GetRunState(pError) ;
+	}
 	else
 	{
 		return InvalidArg(pConnection, pResponse, pCommandName, "Didn't recognize the type of information requested in GetRunState().") ;
@@ -535,13 +541,63 @@ bool KernelSML::HandleWasAgentOnRunList(gSKI::IAgent* pAgent, char const* pComma
 	return this->ReturnBoolResult(pConnection, pResponse, wasRun) ;
 }
 
-// Return information about the current runtime state of the agent (e.g. phase, decision cycle count etc.)
+// Return the result code from the last run
 bool KernelSML::HandleGetResultOfLastRun(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
 {
 	unused(pCommandName) ; unused(pIncoming) ; unused(pError) ;
 
 	egSKIRunResult runResult = GetAgentSML(pAgent)->GetResultOfLastRun() ;
 	return this->ReturnIntResult(pConnection, pResponse, runResult) ;
+}
+
+// Return a starting value for client side time tags for this client to use
+bool KernelSML::HandleGetInitialTimeTag(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pCommandName) ; unused(pIncoming) ; unused(pError) ; unused(pAgent) ;
+
+	// We use negative values for client time tags (so we can tell they're client side not kernel side)
+	long timeTagStart = -1 ;
+
+	// Allow up to 8 simultaneous clients using different ids
+	int maxTries = 8 ;
+	bool done = false ;
+
+	while (maxTries > 0 && !done)
+	{
+		// Walk the list of connections and see if we can find an time tag start value that's not in use
+		// (We do this walking so if connections are made, broken and remade and we'll reuse the id space).
+		int index = 0 ;
+		Connection* connect = m_pConnectionManager->GetConnectionByIndex(index) ;
+
+		// See if any existing connection is using the timeTagStart value already
+		bool ok = true ;
+		while (connect && ok)
+		{
+			if (connect->GetInitialTimeTagCounter() == timeTagStart)
+			{
+				ok = false ;
+				timeTagStart -= (1<<27) ;	// 8 * (1<<27) is (1<<30) so won't overflow.  Allows (1<<27) values per client w/o collision or more than 100 million wmes each.
+			}
+
+			index++ ;
+			connect = m_pConnectionManager->GetConnectionByIndex(index) ;
+		}
+
+		// If this value's not already in use we're done
+		// Otherwise, we'll test the new value.
+		if (ok)
+			done = true ;
+
+		maxTries-- ;
+	}
+
+	// If we fail this it means we couldn't find a valid start value for the time tag counter.
+	// Either we have 8 existing connections or there's a bug in this code.
+	assert(maxTries >= 0) ;
+
+	// Record the value we picked and return it.
+	pConnection->SetInitialTimeTagCounter(timeTagStart) ;
+	return this->ReturnIntResult(pConnection, pResponse, timeTagStart) ;
 }
 
 // Returns true if the production name is currently loaded
