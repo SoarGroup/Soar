@@ -16,6 +16,7 @@
 #include <process.h>
 #include <windows.h>
 #include <direct.h>
+#include <errno.h>
 #endif
 
 using std::string; using std::make_pair; using std::cerr; using std::endl;
