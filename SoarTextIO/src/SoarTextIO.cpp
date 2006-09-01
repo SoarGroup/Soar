@@ -25,6 +25,7 @@
 #include <windows.h>
 #include <conio.h>
 #include <direct.h>
+#include <errno.h>
 #else
 #include <time.h>
 //#include <ncurses.h>
