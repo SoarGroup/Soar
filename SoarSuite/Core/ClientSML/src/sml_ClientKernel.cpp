@@ -691,6 +691,8 @@ Kernel* Kernel::CreateEmbeddedConnection(char const* pLibraryName, bool clientTh
 	{
 		pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
 
+		pKernel->InitializeTimeTagCounter() ;
+
 		pKernel->InitEvents() ;
 	}
 
@@ -742,6 +744,9 @@ Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPadd
 	// Register for important events
 	pKernel->InitEvents() ;
 
+	// Initialize our time tags
+	pKernel->InitializeTimeTagCounter() ;
+
 	// Get the current list of active agents
 	pKernel->UpdateAgentList() ;
 
@@ -754,6 +759,38 @@ Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPadd
 int Kernel::GetNumberAgents()
 {
 	return m_AgentMap.size() ;
+}
+
+/*************************************************************
+* @brief A client uses its own set of time tag values when it's
+*		 talking to the kernel.  This is more efficient than using the
+*		 kernel's timetags as that would require a timetag to be passed back
+*		 to the client for each addition of a wme.
+*
+*		 However, we're now allowing multiple clients to modify the input
+*		 link at the same time.  Because of this we need a way to ensure that
+*		 two clients don't use the same client side time tag...or they'll get
+*		 confused.  The current solution is to ask the kernel to assign a starting
+*		 point for the time tag counter--so we can keep each client in a separate part
+*		 of the time tag space (and a long still allows hundreds of millions of unique
+*		 wmes for each client before they'll start to run into each other).
+*************************************************************/
+void Kernel::InitializeTimeTagCounter()
+{
+	AnalyzeXML response ;
+	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetInitialTimeTag))
+	{
+		int initialTimeTag = response.GetResultInt(0) ;
+
+		// Client side time tags are negative (to distinguish them from kernel side ones)
+		assert(initialTimeTag <= 0) ;
+
+		// Start time tags from this value
+		m_TimeTagCounter = initialTimeTag ;
+
+		// Start IDs from this value too, so they don't collide
+		m_IdCounter = -initialTimeTag ;		
+	}
 }
 
 /*************************************************************

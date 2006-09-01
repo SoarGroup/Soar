@@ -183,6 +183,9 @@ protected:
 	std::string m_Status ;		// Status, optionally set by client from fixed set of values
 	std::string m_AgentStatus ;	// Agent status, referring to last created agent.  Similar to connection status above.
 
+	// The value to use for this connection's client side time tags (so each connection can have its own part of the id space)
+	long		m_InitialTimeTagCounter ;
+
 public:
 	Connection() ;
 	virtual ~Connection() ;
@@ -592,6 +595,9 @@ public:
 	* @param pResult	The result (as a text string)
 	*************************************************************/
 	virtual void AddSimpleResultToSMLResponse(ElementXML* pResponse, char const* pResult) ;
+
+	void SetInitialTimeTagCounter(long value)	{ m_InitialTimeTagCounter = value ; }
+	long GetInitialTimeTagCounter()				{ return m_InitialTimeTagCounter ; } 
 
 protected:
 	/*************************************************************
