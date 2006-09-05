@@ -18,8 +18,8 @@
 #include "sml_StringOps.h"
 #include "sml_Names.h"
 
-#include "IgSKI_Agent.h"
-#include "IgSKI_ProductionManager.h"
+#include "gSKI_Agent.h"
+#include "gSKI_ProductionManager.h"
 #include "IgSKI_Production.h"
 
 #include <assert.h>
@@ -27,7 +27,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseSource(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseSource(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'a', "all",			0},
 		{'d', "disable",		0},
@@ -80,7 +80,7 @@ bool CommandLineInterface::ParseSource(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoSource(pAgent, argv[argv.size() - 1]);
 }
 
-bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) {
+bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 	if (!RequireAgent(pAgent)) return false;
 
     StripQuotes(filename);
@@ -138,7 +138,7 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 	static int numTotalProductionsSourced;
 	static int numTotalProductionsExcised;
 
-	gSKI::IProductionManager* pProductionManager = pAgent->GetProductionManager();
+	gSKI::ProductionManager* pProductionManager = pAgent->GetProductionManager();
 
 	if (m_SourceDepth == 0) {				// Check for top-level source call
 		m_SourceDirDepth = 0;				// Set directory depth to zero on first call to source, even though it should be zero anyway
@@ -370,7 +370,7 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 	return true;
 }
 
-void CommandLineInterface::HandleSourceError(int errorLine, const std::string& filename, gSKI::IProductionManager* pProductionManager) {
+void CommandLineInterface::HandleSourceError(int errorLine, const std::string& filename, gSKI::ProductionManager* pProductionManager) {
 	if (!m_SourceError) {
 
 		// Remove listener
@@ -411,7 +411,7 @@ void CommandLineInterface::HandleSourceError(int errorLine, const std::string& f
 }
 
 // Production callback events go here
-void CommandLineInterface::HandleEvent(egSKIProductionEventId eventId, gSKI::IAgent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match) {
+void CommandLineInterface::HandleEvent(egSKIProductionEventId eventId, gSKI::Agent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match) {
 	unused(eventId);
 	unused(match);
 	unused(agentPtr);

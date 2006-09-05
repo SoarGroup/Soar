@@ -13,14 +13,14 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseInputPeriod(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseInputPeriod(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
 	if (argv.size() == 1) return DoInputPeriod(pAgent);
 
@@ -32,7 +32,7 @@ bool CommandLineInterface::ParseInputPeriod(gSKI::IAgent* pAgent, std::vector<st
 	return DoInputPeriod(pAgent, &period);
 }
 
-bool CommandLineInterface::DoInputPeriod(gSKI::IAgent* pAgent, int* pPeriod) {
+bool CommandLineInterface::DoInputPeriod(gSKI::Agent* pAgent, int* pPeriod) {
 	if (pAgent->GetOperand2Mode()) return SetError(CLIError::kSoar7Command);
 	
 	if (!pPeriod) {

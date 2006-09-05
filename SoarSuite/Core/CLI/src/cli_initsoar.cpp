@@ -14,16 +14,16 @@
 
 #include "cli_Commands.h"
 
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 
 using namespace cli;
 
-bool CommandLineInterface::ParseInitSoar(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseInitSoar(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	unused(argv);
 	return DoInitSoar(pAgent);
 }
 
-bool CommandLineInterface::DoInitSoar(gSKI::IAgent* pAgent) {
+bool CommandLineInterface::DoInitSoar(gSKI::Agent* pAgent) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 

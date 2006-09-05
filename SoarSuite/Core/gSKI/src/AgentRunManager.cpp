@@ -37,7 +37,7 @@ namespace gSKI
       Constructor for this inner class
    =============================
    */   
-   AgentRunManager::AgentRunData::AgentRunData(IAgent* _a, unsigned long _steps, unsigned long _maxSteps): 
+   AgentRunManager::AgentRunData::AgentRunData(Agent* _a, unsigned long _steps, unsigned long _maxSteps): 
       a(_a), steps(_steps), maxSteps(_maxSteps) { }
 
    /*
@@ -45,7 +45,7 @@ namespace gSKI
       
    =============================
    */   
-   void AgentRunManager::AddAgentToRunList(IAgent* a)
+   void AgentRunManager::AddAgentToRunList(Agent* a)
    {
       // We make sure we don't add it twice
       tAgentListIt it = std::find(m_addedAgents.begin(), m_addedAgents.end(), a);
@@ -66,7 +66,7 @@ namespace gSKI
       
    =============================
    */   
-   void AgentRunManager::RemoveAgentFromRunList(IAgent* a)
+   void AgentRunManager::RemoveAgentFromRunList(Agent* a)
    {
       // We make sure we don't remove it twice
       tAgentListIt it = std::find(m_removedAgents.begin(), m_removedAgents.end(), a);
@@ -87,7 +87,7 @@ namespace gSKI
       
    =============================
    */   
-   void AgentRunManager::HandleEvent(egSKIAgentEventId eventId, IAgent* agentPtr)
+   void AgentRunManager::HandleEvent(egSKIAgentEventId eventId, Agent* agentPtr)
    {
       if(eventId == gSKIEVENT_BEFORE_AGENT_DESTROYED)
          m_removedAgents.push_back(agentPtr);
@@ -98,7 +98,7 @@ namespace gSKI
       
    =============================
    */   
-   bool AgentRunManager::isValidAgent(IAgent* a)
+   bool AgentRunManager::isValidAgent(Agent* a)
    {
       if(m_removedAgents.size() > 0)
       {
@@ -170,7 +170,7 @@ namespace gSKI
       
    =============================
    */   
-   void AgentRunManager::addToRunList(IAgent* a, egSKIRunType runLength, unsigned long steps)
+   void AgentRunManager::addToRunList(Agent* a, egSKIRunType runLength, unsigned long steps)
    {
       // Iterate until we find the agent if it is in the list.
       tAgentRunListIt it = m_runningAgents.begin(); 
@@ -196,7 +196,7 @@ namespace gSKI
       
    =============================
    */   
-   void AgentRunManager::removeFromRunList(IAgent* a)
+   void AgentRunManager::removeFromRunList(Agent* a)
    {
       // Iterate until we find the agent
       tAgentRunListIt it = m_runningAgents.begin(); 
@@ -208,7 +208,7 @@ namespace gSKI
          m_runningAgents.erase(it);
    }
 
-   IKernel* AgentRunManager::getKernel()
+   Kernel* AgentRunManager::getKernel()
    {
 		return m_pKernel ;
    }
@@ -371,7 +371,7 @@ namespace gSKI
 
    =============================
    */
-   unsigned long AgentRunManager::getReleventStepCount(IAgent* a, egSKIRunType runType)
+   unsigned long AgentRunManager::getReleventStepCount(Agent* a, egSKIRunType runType)
    {
       switch(runType)
       {

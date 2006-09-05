@@ -454,16 +454,15 @@ Bool print_identifier_ref_info(agent* thisAgent, void* item, FILE* f) {
                   sym->common.reference_count);
 		 msg[255] = 0; /* ensure null termination */
          print (thisAgent, msg);
-		 GenerateWarningXML(thisAgent, msg);
 
 		 if (f)
 			 fprintf(f, msg) ;
       }
    } else {
       print (thisAgent, "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
-      return TRUE;
+      return FALSE;
    }
-   return FALSE;
+   return TRUE;
 }
 
 bool reset_id_counters (agent* thisAgent) {

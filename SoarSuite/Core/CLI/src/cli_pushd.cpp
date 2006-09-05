@@ -16,7 +16,7 @@
 
 using namespace cli;
 
-bool CommandLineInterface::ParsePushD(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParsePushD(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
 	// Only takes one argument, the directory to change into

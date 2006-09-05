@@ -13,29 +13,25 @@
 #ifndef GSKI_MATCH_H
 #define GSKI_MATCH_H
 
-#include "IgSKI_Match.h"
-
-//typedef struct agent_struct agent;
+typedef struct agent_struct agent;
 typedef struct condition_struct condition;
-struct agent;
 
 namespace gSKI {
 
    class ConditionSet;
-   typedef ConditionSet MatchSet;
 
    struct Error;
-   class ICondition;
+   class Condition;
    class IWme;
    /**
     * @brief Holds information about a specific condition match.
     *
-    * The reason we use this IMatch class, instead of just an IWme,
+    * The reason we use this Match class, instead of just an IWme,
     * is that we need to access, not only the Wme, but the condition
     * that it is matching.  This is just another layer allowing
     * condition access.
     */
-   class Match : public IMatch{
+   class Match {
    public:
 
       /**
@@ -64,7 +60,7 @@ namespace gSKI {
       *
       * @returns The Condition, or 0 on error.
       */
-     ICondition *GetCondition(Error *e) const;
+     Condition *GetCondition(Error *e) const;
 
 
       /**

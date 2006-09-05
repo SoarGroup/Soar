@@ -103,7 +103,7 @@ namespace gSKI
    ===============================
    ===============================
    */
-   IActionElement*  RhsAction::GetIdElement(Error* err)
+   ActionElement*  RhsAction::GetIdElement(Error* err)
    {
       ClearError(err);
       return &m_id;
@@ -114,7 +114,7 @@ namespace gSKI
    ===============================
    */
 
-   IActionElement*  RhsAction::GetAttrElement(Error* err)
+   ActionElement*  RhsAction::GetAttrElement(Error* err)
    {
       ClearError(err);
       return &m_attr;
@@ -125,7 +125,7 @@ namespace gSKI
    ===============================
    */
 
-   IActionElement*       RhsAction::GetValueElement(Error* err)
+   ActionElement*       RhsAction::GetValueElement(Error* err)
    {
       ClearError(err);
       return &m_value;
@@ -135,7 +135,7 @@ namespace gSKI
    ===============================
    ===============================
    */
-   IActionElement*       RhsAction::GetBinaryPreferenceElement(Error* err)
+   ActionElement*       RhsAction::GetBinaryPreferenceElement(Error* err)
    {
       if (m_binary)
       {

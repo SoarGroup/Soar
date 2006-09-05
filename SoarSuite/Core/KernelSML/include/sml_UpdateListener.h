@@ -15,7 +15,7 @@
 #include "gSKI_Events.h"
 #include "gSKI_Enumerations.h"
 #include "IgSKI_Iterator.h"
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 #include "sml_EventManager.h"
 
 #include <string>

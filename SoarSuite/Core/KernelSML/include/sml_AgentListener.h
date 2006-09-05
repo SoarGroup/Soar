@@ -22,8 +22,8 @@
 #include "gSKI_Events.h"
 #include "gSKI_Enumerations.h"
 #include "IgSKI_Iterator.h"
-#include "IgSKI_Agent.h"
-#include "IgSKI_Kernel.h"
+#include "gSKI_Agent.h"
+#include "gSKI_Kernel.h"
 #include "sml_EventManager.h"
 
 #include <string>
@@ -57,7 +57,7 @@ public:
 	virtual bool RemoveListener(egSKIAgentEventId eventID, Connection* pConnection) ;
 
 	// Called when an "AgentEvent" occurs in the kernel
-	virtual void HandleEvent(egSKIAgentEventId eventId, gSKI::IAgent* agentPtr) ;
+	virtual void HandleEvent(egSKIAgentEventId eventId, gSKI::Agent* agentPtr) ;
 } ;
 
 }

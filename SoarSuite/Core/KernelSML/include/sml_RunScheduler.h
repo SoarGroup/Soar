@@ -25,7 +25,7 @@
 #include "sml_Events.h"	// To get smlRunFlags
 
 namespace gSKI {
-	class IAgent ;
+	class Agent ;
 	struct Error ;
 }
 
@@ -137,16 +137,16 @@ protected:
 	bool			AreAllOutputPhasesComplete() ;
 	void            MoveTo_StopBeforePhase(egSKIRunType runStepSize) ;
 	void			FireBeforeRunStartsEvents() ;
-	unsigned long	GetStepCounter(gSKI::IAgent* pAgent, egSKIRunType runStepSize) ; //for old scheduler...
-    unsigned long   GetStepCounter(gSKI::IAgent* pAgent, egSKIInterleaveType stepSize) ;
-	unsigned long	GetRunCounter(gSKI::IAgent* pAgent, egSKIRunType runStepSize) ;
+	unsigned long	GetStepCounter(gSKI::Agent* pAgent, egSKIRunType runStepSize) ; //for old scheduler...
+    unsigned long   GetStepCounter(gSKI::Agent* pAgent, egSKIInterleaveType stepSize) ;
+	unsigned long	GetRunCounter(gSKI::Agent* pAgent, egSKIRunType runStepSize) ;
     egSKIRunResult  GetOverallRunResult() ;
-	void			HandleEvent(egSKIRunEventId eventID, gSKI::IAgent* pAgent, egSKIPhaseType phase) ;
+	void			HandleEvent(egSKIRunEventId eventID, gSKI::Agent* pAgent, egSKIPhaseType phase) ;
 	bool			HaveAllGeneratedOutput() ;
 	void            InitializeRunCounters(egSKIRunType runStepSize, egSKIInterleaveType stepSize) ;
     void            InitializeStepList() ;
 	void			InitializeUpdateWorldEvents(bool addListeners) ;
-	bool			IsAgentFinished(gSKI::IAgent* pAgent, AgentSML* pAgentSML, egSKIRunType runStepSize, unsigned long count) ;
+	bool			IsAgentFinished(gSKI::Agent* pAgent, AgentSML* pAgentSML, egSKIRunType runStepSize, unsigned long count) ;
  	void			RecordInitialRunCounters(egSKIRunType runStepSize) ;
  	void			ResetRunCounters(egSKIRunType runStepSize) ;
 	void			TerminateUpdateWorldEvents(bool removeListeners) ;

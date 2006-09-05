@@ -14,12 +14,12 @@
 #ifndef GSKI_RHS_ACTION_HEADER
 #define GSKI_RHS_ACTION_HEADER
 
-#include "IgSKI_RhsAction.h"
-
+#include "gSKI_RhsAction.h"
 #include "gSKI_ActionElement.h"
 #include "gSKI_ErrorIds.h"
 
 typedef struct action_struct action;
+typedef struct agent_struct agent;
 
 namespace gSKI {
 
@@ -53,7 +53,7 @@ namespace gSKI {
     * Internally, the kernel uses action triplets to create new
     *  WMEs when a production fires.
     */
-   class RhsAction: public IRhsAction
+   class RhsAction
    {
    public:
       
@@ -109,7 +109,7 @@ namespace gSKI {
        *          used to create the id for a wme. (Action elements for
        *          ids are NEVER functions)
        */
-     IActionElement*  GetIdElement(Error* err);
+     ActionElement*  GetIdElement(Error* err);
 
       /** 
        * @brief Gets the action element for creating the attribute
@@ -125,7 +125,7 @@ namespace gSKI {
        * @return A pointer to an action element representing the symbol or rhs
        *          function used to create the attribute for a wme.
        */
-     IActionElement*  GetAttrElement(Error* err);
+     ActionElement*  GetAttrElement(Error* err);
 
       /** 
        * @brief Gets the action element for creating the value
@@ -141,7 +141,7 @@ namespace gSKI {
        * @return A pointer to an action element representing the symbol or rhs
        *          function used to create the value for a wme.
        */
-      IActionElement*       GetValueElement(Error* err);
+      ActionElement*       GetValueElement(Error* err);
 
        /**
         * @brief Returns the element refered to by a binary preference.
@@ -164,7 +164,7 @@ namespace gSKI {
         *            referent.  This pointer will be 0 if this action does
         *            not create a binary preference.
         */
-      IActionElement*       GetBinaryPreferenceElement(Error* err);
+      ActionElement*       GetBinaryPreferenceElement(Error* err);
 
        /**
         * @brief Returns the type of preference created by this action

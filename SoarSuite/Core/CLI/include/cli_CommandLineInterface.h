@@ -35,8 +35,7 @@
 
 // gSKI includes
 #include "gSKI_Events.h"
-#include "../../gSKI/src/gSKI_Error.h"	// this is rediculous
-#include "IgSKI_KernelFactory.h"
+#include "gSKI_Structures.h"
 
 // For test
 //#define WIN_STATIC_LINK
@@ -50,9 +49,9 @@
 
 // Forward Declarations
 namespace gSKI {
-	class IAgent;
-	class IKernel;
-	class IProductionManager;
+	class Agent;
+	class Kernel;
+	class ProductionManager;
 }
 namespace sml {
 	class ElementXML;
@@ -69,7 +68,7 @@ class CommandLineInterface;
 class GetOpt;
 
 // Define the CommandFunction which we'll call to process commands
-typedef bool (CommandLineInterface::*CommandFunction)(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+typedef bool (CommandLineInterface::*CommandFunction)(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 
 // Used to store a map from command name to function handler for that command
 typedef std::map<std::string, CommandFunction>	CommandMap;
@@ -121,7 +120,7 @@ public:
 	* @param kernelVersion The gSKI version, available from the KernelFactory
 	* @param pKernelSML The pointer to the KernelSML object, optional, used to disable print callbacks
 	*************************************************************/
-	EXPORT void SetKernel(gSKI::IKernel* pKernel, gSKI::Version kernelVersion, sml::KernelSML* pKernelSML = 0);
+	EXPORT void SetKernel(gSKI::Kernel* pKernel, gSKI::Version kernelVersion, sml::KernelSML* pKernelSML = 0);
 
 	/*************************************************************
 	* @brief Set the output style to raw or structured.
@@ -138,7 +137,7 @@ public:
 	* @param echoResults If true send a copy of the result to the echo event
 	* @param pResponse Pointer to XML response object
 	*************************************************************/
-	EXPORT bool DoCommand(sml::Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, bool echoResults, sml::ElementXML* pResponse);
+	EXPORT bool DoCommand(sml::Connection* pConnection, gSKI::Agent* pAgent, const char* pCommandLine, bool echoResults, sml::ElementXML* pResponse);
 
 	/*************************************************************
 	* @brief Takes a command line and expands any aliases and returns
@@ -188,8 +187,8 @@ protected:
 	*		 to call to process the command.  DoCommand mainly does
 	*		 SML stuff.
 	*************************************************************/
-	bool DoCommandInternal(gSKI::IAgent* pAgent, const std::string& commandLine);
-	bool DoCommandInternal(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	bool DoCommandInternal(gSKI::Agent* pAgent, const std::string& commandLine);
+	bool DoCommandInternal(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 
 	/*************************************************************
 	* @brief A utility function, splits the command line into argument
@@ -198,66 +197,66 @@ protected:
 	int Tokenize(std::string commandLine, std::vector<std::string>& argumentVector);
 
 	// The internal Parse functions follow
-	bool ParseAddWME(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseAlias(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseAttributePreferencesMode(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseCD(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseCLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseCommandToFile(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseDefaultWMEDepth(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseDirs(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseEcho(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseEchoCommands(gSKI::IAgent* pAgent, std::vector<std::string>& argv) ;
-	bool ParseEditProduction(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseExcise(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseExplainBacktraces(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseFiringCounts(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseGDSPrint(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseHelp(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseIndifferentSelection(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseInitSoar(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseInputPeriod(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseInternalSymbols(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseLearn(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseLS(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseMatches(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseMaxChunks(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseMaxElaborations(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseMaxNilOutputCycles(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseMemories(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseMultiAttributes(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseNumericIndifferentMode(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseOSupportMode(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParsePopD(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParsePreferences(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParsePrint(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseProductionFind(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParsePushD(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParsePWatch(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParsePWD(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseQuit(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseRemoveWME(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseRun(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseSaveBacktraces(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseSetLibraryLocation(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseSoar8(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseSoarNews(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseSource(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseSP(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseSRand(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseStats(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseSetStopPhase(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseTimers(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseVerbose(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseVersion(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseWaitSNC(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseWarnings(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseWatch(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseWatchWMEs(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	bool ParseAddWME(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseAlias(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseAttributePreferencesMode(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseCD(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseChunkNameFormat(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseCLog(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseCommandToFile(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseDefaultWMEDepth(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseDirs(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseEcho(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseEchoCommands(gSKI::Agent* pAgent, std::vector<std::string>& argv) ;
+	bool ParseEditProduction(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseExcise(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseExplainBacktraces(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseFiringCounts(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseGDSPrint(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseHelp(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseIndifferentSelection(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseInitSoar(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseInputPeriod(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseInternalSymbols(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseLearn(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseLS(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseMatches(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseMaxChunks(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseMaxElaborations(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseMaxNilOutputCycles(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseMemories(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseMultiAttributes(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseNumericIndifferentMode(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseOSupportMode(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParsePopD(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParsePreferences(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParsePrint(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseProductionFind(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParsePushD(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParsePWatch(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParsePWD(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseQuit(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseRemoveWME(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseReteNet(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseRun(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseSaveBacktraces(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseSetLibraryLocation(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseSoar8(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseSoarNews(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseSource(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseSP(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseSRand(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseStats(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseSetStopPhase(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseStopSoar(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseTime(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseTimers(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseVerbose(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseVersion(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseWaitSNC(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseWarnings(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseWatch(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseWatchWMEs(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 
 	/*************************************************************
 	* @brief add-wme command
@@ -267,7 +266,7 @@ protected:
 	* @param value Value string for the new wme
 	* @param acceptable True to give wme acceptable preference
 	*************************************************************/
-	bool DoAddWME(gSKI::IAgent* pAgent, const std::string& id, const std::string& attribute, const std::string& value, bool acceptable);
+	bool DoAddWME(gSKI::Agent* pAgent, const std::string& id, const std::string& attribute, const std::string& value, bool acceptable);
 
 	/*************************************************************
 	* @brief alias command
@@ -283,7 +282,7 @@ protected:
 	* @param pMode Pointer to integer representing new attribute-preferences 
 	*		 mode, use null to query current mode
 	*************************************************************/
-	bool DoAttributePreferencesMode(gSKI::IAgent* pAgent, int* pMode = 0);
+	bool DoAttributePreferencesMode(gSKI::Agent* pAgent, int* pMode = 0);
 
 	/*************************************************************
 	* @brief cd command
@@ -301,7 +300,7 @@ protected:
 	* @param pPrefix Pointer to the new prefix, must not contain '*' character, 
 	*        null for query
 	*************************************************************/
-	bool DoChunkNameFormat(gSKI::IAgent* pAgent, const bool* pLongFormat = 0, const int* pCount = 0, const std::string* pPrefix = 0);
+	bool DoChunkNameFormat(gSKI::Agent* pAgent, const bool* pLongFormat = 0, const int* pCount = 0, const std::string* pPrefix = 0);
 
 	/*************************************************************
 	* @brief clog command
@@ -310,7 +309,7 @@ protected:
 	* @param pFilename The log filename, pass 0 (null) if not applicable to mode
 	* @param pToAdd The string to add to the log, pass 0 (null) if not applicable to mode
 	*************************************************************/
-	bool DoCLog(gSKI::IAgent* pAgent, const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0);
+	bool DoCLog(gSKI::Agent* pAgent, const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0);
 
 	/*************************************************************
 	* @brief default-wme-depth command
@@ -318,7 +317,7 @@ protected:
 	* @param pDepth The pointer to the new wme depth, a positive integer.  
 	*        Pass 0 (null) pointer for query.
 	*************************************************************/
-	bool DoDefaultWMEDepth(gSKI::IAgent* pAgent, const int* pDepth);
+	bool DoDefaultWMEDepth(gSKI::Agent* pAgent, const int* pDepth);
 
 	/*************************************************************
 	* @brief dirs command
@@ -352,7 +351,7 @@ protected:
 	*        cli_CommandData.h
 	* @param pProduction A production to excise, optional
 	*************************************************************/
-	bool DoExcise(gSKI::IAgent* pAgent, const ExciseBitset& options, const std::string* pProduction = 0);
+	bool DoExcise(gSKI::Agent* pAgent, const ExciseBitset& options, const std::string* pProduction = 0);
 
 	/*************************************************************
 	* @brief explain-backtraces command
@@ -363,7 +362,7 @@ protected:
 	*        0 for production name, -1 for full, 
 	*        this argument ignored if pProduction is 0 (null)
 	*************************************************************/
-	bool DoExplainBacktraces(gSKI::IAgent* pAgent, const std::string* pProduction = 0, const int condition = 0);
+	bool DoExplainBacktraces(gSKI::Agent* pAgent, const std::string* pProduction = 0, const int condition = 0);
 
 	/*************************************************************
 	* @brief firing-counts command
@@ -373,13 +372,13 @@ protected:
 	* @param pProduction The specific production to list, pass 0 (null) to list 
 	*        multiple productions
 	*************************************************************/
-	bool DoFiringCounts(gSKI::IAgent* pAgent, const int numberToList = -1, const std::string* pProduction = 0);
+	bool DoFiringCounts(gSKI::Agent* pAgent, const int numberToList = -1, const std::string* pProduction = 0);
 
 	/*************************************************************
 	* @brief gds-print command
 	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
-	bool DoGDSPrint(gSKI::IAgent* pAgent);
+	bool DoGDSPrint(gSKI::Agent* pAgent);
 
 	/*************************************************************
 	* @brief help command
@@ -393,26 +392,26 @@ protected:
 	* @param mode What mode to set indifferent selection to, or query.  
 	*        See eIndifferentMode
 	*************************************************************/
-	bool DoIndifferentSelection(gSKI::IAgent* pAgent, eIndifferentMode mode);
+	bool DoIndifferentSelection(gSKI::Agent* pAgent, eIndifferentMode mode);
 
 	/*************************************************************
 	* @brief init-soar command
 	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
-	bool DoInitSoar(gSKI::IAgent* pAgent);
+	bool DoInitSoar(gSKI::Agent* pAgent);
 
 	/*************************************************************
 	* @brief input-period command
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param pPeriod Pointer to the period argument, null for query
 	*************************************************************/
-	bool DoInputPeriod(gSKI::IAgent* pAgent, int* pPeriod = 0);
+	bool DoInputPeriod(gSKI::Agent* pAgent, int* pPeriod = 0);
 
 	/*************************************************************
 	* @brief internal-symbols command
 	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
-	bool DoInternalSymbols(gSKI::IAgent* pAgent);
+	bool DoInternalSymbols(gSKI::Agent* pAgent);
 
 	/*************************************************************
 	* @brief learn command
@@ -420,7 +419,7 @@ protected:
 	* @param options The various options set on the command line, 
 	*        see cli_CommandData.h
 	*************************************************************/
-	bool DoLearn(gSKI::IAgent* pAgent, const LearnBitset& options);
+	bool DoLearn(gSKI::Agent* pAgent, const LearnBitset& options);
 
 	/*************************************************************
 	* @brief ls command
@@ -434,28 +433,28 @@ protected:
 	* @param detail The WME detail, see cli_CommandData.h
 	* @param pProduction The production, pass 0 (null) if not applicable to mode
 	*************************************************************/
-	bool DoMatches(gSKI::IAgent* pAgent, const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0);
+	bool DoMatches(gSKI::Agent* pAgent, const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0);
 
 	/*************************************************************
 	* @brief max-chunks command
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param n The new max chunks value, use 0 to query
 	*************************************************************/
-	bool DoMaxChunks(gSKI::IAgent* pAgent, const int n = 0);
+	bool DoMaxChunks(gSKI::Agent* pAgent, const int n = 0);
 
 	/*************************************************************
 	* @brief max-elaborations command
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param n The new max elaborations value, use 0 to query
 	*************************************************************/
-	bool DoMaxElaborations(gSKI::IAgent* pAgent, const int n = 0);
+	bool DoMaxElaborations(gSKI::Agent* pAgent, const int n = 0);
 
 	/*************************************************************
 	* @brief max-nil-output-cycles command
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param n The new max nil output cycles value, use 0 to query
 	*************************************************************/
-	bool DoMaxNilOutputCycles(gSKI::IAgent* pAgent, const int n);
+	bool DoMaxNilOutputCycles(gSKI::Agent* pAgent, const int n);
 
 	/*************************************************************
 	* @brief memories command
@@ -465,7 +464,7 @@ protected:
 	* @param pProduction specific production to print, ignored if any 
 	*        options are set, pass 0 (null) if not applicable
 	*************************************************************/
-	bool DoMemories(gSKI::IAgent* pAgent, const MemoriesBitset options, int n = 0, const std::string* pProduction = 0);
+	bool DoMemories(gSKI::Agent* pAgent, const MemoriesBitset options, int n = 0, const std::string* pProduction = 0);
 
 	/*************************************************************
 	* @brief multi-attributes command
@@ -474,21 +473,21 @@ protected:
 	* @param n The count, pass 0 (null) for query if pAttribute is also null, 
 	*        otherwise this will default to 10
 	*************************************************************/
-	bool DoMultiAttributes(gSKI::IAgent* pAgent, const std::string* pAttribute = 0, int n = 0);
+	bool DoMultiAttributes(gSKI::Agent* pAgent, const std::string* pAttribute = 0, int n = 0);
 
 	/*************************************************************
 	* @brief numeric-indifferent mode command
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param mode The mode for this command, see cli_CommandData.h
 	*************************************************************/
-	bool DoNumericIndifferentMode(gSKI::IAgent* pAgent, const eNumericIndifferentMode mode);
+	bool DoNumericIndifferentMode(gSKI::Agent* pAgent, const eNumericIndifferentMode mode);
 
 	/*************************************************************
 	* @brief o-support-mode command
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param mode The new o-support mode.  Use -1 to query.
 	*************************************************************/
-	bool DoOSupportMode(gSKI::IAgent* pAgent, int mode = -1);
+	bool DoOSupportMode(gSKI::Agent* pAgent, int mode = -1);
 
 	/*************************************************************
 	* @brief popd command
@@ -502,7 +501,7 @@ protected:
 	* @param pId An existing soar identifier or 0 (null)
 	* @param pAttribute An existing soar attribute of the specified identifier or 0 (null)
 	*************************************************************/
-	bool DoPreferences(gSKI::IAgent* pAgent, const ePreferencesDetail detail, const std::string* pId = 0, const std::string* pAttribute = 0);
+	bool DoPreferences(gSKI::Agent* pAgent, const ePreferencesDetail detail, const std::string* pId = 0, const std::string* pAttribute = 0);
 
 	/*************************************************************
 	* @brief print command
@@ -512,7 +511,7 @@ protected:
 	* @param pArg The identifier/timetag/pattern/production name to print, 
 	*        or 0 (null) if not applicable
 	*************************************************************/
-	bool DoPrint(gSKI::IAgent* pAgent, PrintBitset options, int depth, const std::string* pArg = 0);
+	bool DoPrint(gSKI::Agent* pAgent, PrintBitset options, int depth, const std::string* pArg = 0);
 
 	/*************************************************************
 	* @brief production-find command
@@ -520,7 +519,7 @@ protected:
 	* @param options The options to the command, see cli_CommandData.h
 	* @param pattern Any pattern that can appear in productions.
 	*************************************************************/
-	bool DoProductionFind(gSKI::IAgent* pAgent, const ProductionFindBitset& options, const std::string& pattern);
+	bool DoProductionFind(gSKI::Agent* pAgent, const ProductionFindBitset& options, const std::string& pattern);
 
 	/*************************************************************
 	* @brief pushd command
@@ -536,7 +535,7 @@ protected:
 	*        to disable watching of all productions (setting ignored)
 	* @param setting True to watch the pProduction, false to stop watching it
 	*************************************************************/
-	bool DoPWatch(gSKI::IAgent* pAgent, bool query = true, const std::string* pProduction = 0, bool setting = false);
+	bool DoPWatch(gSKI::Agent* pAgent, bool query = true, const std::string* pProduction = 0, bool setting = false);
 
 	/*************************************************************
 	* @brief pwd command
@@ -553,7 +552,7 @@ protected:
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param timetag The timetag of the wme to remove
 	*************************************************************/
-	bool DoRemoveWME(gSKI::IAgent*, int timetag);
+	bool DoRemoveWME(gSKI::Agent*, int timetag);
 
 	/*************************************************************
 	* @brief rete-net command
@@ -561,7 +560,7 @@ protected:
 	* @param save true to save, false to load
 	* @param filename the rete-net file
 	*************************************************************/
-	bool DoReteNet(gSKI::IAgent* pAgent, bool save, std::string filename);
+	bool DoReteNet(gSKI::Agent* pAgent, bool save, std::string filename);
 
 	/*************************************************************
 	* @brief run command
@@ -571,14 +570,14 @@ protected:
 	* @param interleave Support for round robin execution across agents 
 	*		 at a finer grain than the run-size parameter.
 	*************************************************************/
-	bool DoRun(gSKI::IAgent* pAgent, const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT);
+	bool DoRun(gSKI::Agent* pAgent, const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT);
 
 	/*************************************************************
 	* @brief save-backtraces command
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param setting The new setting, pass 0 (null) for query
 	*************************************************************/
-	bool DoSaveBacktraces(gSKI::IAgent* pAgent, bool* pSetting = 0);
+	bool DoSaveBacktraces(gSKI::Agent* pAgent, bool* pSetting = 0);
 
 	/*************************************************************
 	* @brief set-library-location command
@@ -598,7 +597,7 @@ protected:
 	* @brief soar8 command
 	* @param pSoar8 True to enable Soar 8, false for Soar 7
 	*************************************************************/
-	bool DoSoar8(gSKI::IAgent* pAgent, bool* pSoar8);
+	bool DoSoar8(gSKI::Agent* pAgent, bool* pSoar8);
 
 	/*************************************************************
 	* @brief soarnews command
@@ -610,14 +609,14 @@ protected:
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param filename The file to source
 	*************************************************************/
-	bool DoSource(gSKI::IAgent* pAgent, std::string filename);
+	bool DoSource(gSKI::Agent* pAgent, std::string filename);
 
 	/*************************************************************
 	* @brief sp command
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param production The production to add to working memory
 	*************************************************************/
-	bool DoSP(gSKI::IAgent* pAgent, const std::string& production);
+	bool DoSP(gSKI::Agent* pAgent, const std::string& production);
 
 	/*************************************************************
 	* @brief srand command
@@ -631,7 +630,7 @@ protected:
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param options The options for the stats command, see cli_CommandData.h
 	*************************************************************/
-	bool DoStats(gSKI::IAgent* pAgent, const StatsBitset& options);
+	bool DoStats(gSKI::Agent* pAgent, const StatsBitset& options);
 
 	/*************************************************************
 	* @brief stop-soar command
@@ -639,14 +638,14 @@ protected:
 	* @param self Stop the only pAgent (false means stop all agents in kernel)
 	* @param reasonForStopping optional reason for stopping
 	*************************************************************/
-	bool DoStopSoar(gSKI::IAgent* pAgent, bool self, const std::string* reasonForStopping = 0);
+	bool DoStopSoar(gSKI::Agent* pAgent, bool self, const std::string* reasonForStopping = 0);
 
 	/*************************************************************
 	* @brief time command
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param argv The command line with the time arg removed
 	*************************************************************/
-	bool DoTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	bool DoTime(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 
 	/*************************************************************
 	* @brief timers command
@@ -654,7 +653,7 @@ protected:
 	* @param pSetting The timers setting, true to turn on, false to turn off, 
 	*        pass 0 (null) to query
 	*************************************************************/
-	bool DoTimers(gSKI::IAgent* pAgent, bool* pSetting = 0);
+	bool DoTimers(gSKI::Agent* pAgent, bool* pSetting = 0);
 
 	/*************************************************************
 	* @brief verbose command
@@ -662,7 +661,7 @@ protected:
 	* @param pSetting The verbose setting, true to turn on, false to turn off, 
 	*        pass 0 (null) to query
 	*************************************************************/
-	bool DoVerbose(gSKI::IAgent* pAgent, bool* pSetting = 0);
+	bool DoVerbose(gSKI::Agent* pAgent, bool* pSetting = 0);
 
 	/*************************************************************
 	* @brief version command
@@ -675,7 +674,7 @@ protected:
 	* @param pSetting The waitsnc setting, true to turn on, false to turn off, 
 	*        pass 0 (null) to query
 	*************************************************************/
-	bool DoWaitSNC(gSKI::IAgent* pAgent, bool* pSetting = 0);
+	bool DoWaitSNC(gSKI::Agent* pAgent, bool* pSetting = 0);
 
 	/*************************************************************
 	* @brief warnings command
@@ -683,7 +682,7 @@ protected:
 	* @param pSetting The warnings setting, true to turn on, false to turn off, 
 	*        pass 0 (null) to query
 	*************************************************************/
-	bool DoWarnings(gSKI::IAgent* pAgent, bool* pSetting = 0);
+	bool DoWarnings(gSKI::Agent* pAgent, bool* pSetting = 0);
 
 	/*************************************************************
 	* @brief watch command
@@ -694,22 +693,22 @@ protected:
 	* @param wmeSetting Setting for wme detail, not binary so it has its own arg
 	* @param learnSetting Setting for learn level, not binary so it has its own arg
 	*************************************************************/
-	bool DoWatch(gSKI::IAgent* pAgent, const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting);
+	bool DoWatch(gSKI::Agent* pAgent, const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting);
 
 	/*************************************************************
 	* @brief watch-wmes command
 	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
-	bool DoWatchWMEs(gSKI::IAgent* pAgent, const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
+	bool DoWatchWMEs(gSKI::Agent* pAgent, const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
 
 	// Print callback events go here
-	virtual void HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const char* msg);
+	virtual void HandleEvent(egSKIPrintEventId, gSKI::Agent*, const char* msg);
 
 	// XML callback events go here
-	virtual void HandleEvent(egSKIXMLEventId eventId, gSKI::IAgent* agentPtr, const char* funcType, const char* attOrTag, const char* value);
+	virtual void HandleEvent(egSKIXMLEventId eventId, gSKI::Agent* agentPtr, const char* funcType, const char* attOrTag, const char* value);
 
 	// Production callback events go here
-	virtual void HandleEvent(egSKIProductionEventId eventId, gSKI::IAgent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match);
+	virtual void HandleEvent(egSKIProductionEventId eventId, gSKI::Agent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match);
 
 	/*************************************************************
 	* @brief Trim comments off of a line
@@ -756,7 +755,7 @@ protected:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool RequireAgent(gSKI::IAgent* pAgent);
+	bool RequireAgent(gSKI::Agent* pAgent);
 
 	/*************************************************************
 	* @brief 
@@ -766,7 +765,7 @@ protected:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	void HandleSourceError(int errorLine, const std::string& filename, gSKI::IProductionManager* pProductionManager);
+	void HandleSourceError(int errorLine, const std::string& filename, gSKI::ProductionManager* pProductionManager);
 
 	/*************************************************************
 	* @brief 
@@ -806,11 +805,11 @@ protected:
 	*************************************************************/ 	 
 	bool StripQuotes(std::string& str); 	 
 
-	void AddListenerAndDisableCallbacks(gSKI::IAgent* pAgent);
-	void RemoveListenerAndEnableCallbacks(gSKI::IAgent* pAgent);
+	void AddListenerAndDisableCallbacks(gSKI::Agent* pAgent);
+	void RemoveListenerAndEnableCallbacks(gSKI::Agent* pAgent);
 
-	void AddXMLListenerAndDisableCallbacks(gSKI::IAgent* pAgent) ;
-	void RemoveXMLListenerAndEnableCallbacks(gSKI::IAgent* pAgent) ;
+	void AddXMLListenerAndDisableCallbacks(gSKI::Agent* pAgent) ;
+	void RemoveXMLListenerAndEnableCallbacks(gSKI::Agent* pAgent) ;
 
 	bool SetError(cli::ErrorCode code);				// always returns false
 	bool SetErrorDetail(const std::string detail);	// always returns false
@@ -864,7 +863,7 @@ protected:
 
 	Aliases				m_Aliases;				// Alias management object
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
-	gSKI::IKernel*		m_pKernel;				// Pointer to the current gSKI kernel
+	gSKI::Kernel*		m_pKernel;				// Pointer to the current gSKI kernel
 	sml::KernelSML*		m_pKernelSML;
 	sml::AgentSML*		m_pAgentSML;			// Agent we're currently working with
 	gSKI::Version		m_KernelVersion;		// Kernel version number

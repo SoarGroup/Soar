@@ -27,7 +27,7 @@ namespace gSKI
     *        in the forward direction, and the user cannot return to the beginning.
     */
    template<typename T, typename Tcon>
-   class Iterator : public SimpleReleaseImpl<IIterator<T>, true>
+   class Iterator : public SimpleReleaseImpl< IIterator<T> >
    {
    public:
       

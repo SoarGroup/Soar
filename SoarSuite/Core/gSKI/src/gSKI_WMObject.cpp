@@ -216,19 +216,6 @@ namespace gSKI
 
    /*
      ===============================
-
-     ===============================
-   */
-
-   bool WMObject::IsClientOwned(Error* err) const
-   {
-      ClearError(err);
-
-      return false;
-   }
-
-   /*
-     ===============================
     
      ===============================
    */

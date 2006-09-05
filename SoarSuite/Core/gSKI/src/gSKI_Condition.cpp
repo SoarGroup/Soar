@@ -147,7 +147,7 @@ namespace gSKI
  \____|\___|\__|___\__,_| |_|\___|___/\__|
    ==================================
    */
-   ITestSet* Condition::GetIdTest(Error* err)
+   TestSet* Condition::GetIdTest(Error* err)
    {
       return m_idTest;
    }
@@ -161,7 +161,7 @@ namespace gSKI
  \____|\___|\__/_/   \_\__|\__|_|   |_|\___|___/\__|
    ==================================
    */
-   ITestSet* Condition::GetAttrTest(Error* err)
+   TestSet* Condition::GetAttrTest(Error* err)
    {
       return m_attrTest;
    }
@@ -175,7 +175,7 @@ namespace gSKI
  \____|\___|\__| \_/ \__,_|_| |_|\___|___/\__|
    ==================================
    */
-   ITestSet* Condition::GetValTest(Error* err)
+   TestSet* Condition::GetValTest(Error* err)
    {
       return m_valTest;
    }

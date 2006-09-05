@@ -16,12 +16,12 @@
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseMaxNilOutputCycles(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseMaxNilOutputCycles(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	// n defaults to 0 (print current value)
 	int n = 0;
 
@@ -36,7 +36,7 @@ bool CommandLineInterface::ParseMaxNilOutputCycles(gSKI::IAgent* pAgent, std::ve
 	return DoMaxNilOutputCycles(pAgent, n);
 }
 
-bool CommandLineInterface::DoMaxNilOutputCycles(gSKI::IAgent* pAgent, const int n) {
+bool CommandLineInterface::DoMaxNilOutputCycles(gSKI::Agent* pAgent, const int n) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!n) {

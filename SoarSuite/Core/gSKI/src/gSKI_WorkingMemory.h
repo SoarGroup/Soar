@@ -67,7 +67,7 @@ namespace gSKI {
       * @return a pointer to the agent that owns the WorkingMemory 
       *          (this pointer can never be NULL)
       */
-    IAgent* GetAgent(Error * err = 0) const;
+    Agent* GetAgent(Error * err = 0) const;
 
      /**
       * @brief Adds a Wme using the old-style symbol syntax

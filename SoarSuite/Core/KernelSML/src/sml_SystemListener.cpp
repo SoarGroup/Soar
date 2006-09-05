@@ -27,7 +27,7 @@
 #include "sml_SystemListener.h"
 #include "sml_Connection.h"
 #include "sml_StringOps.h"
-#include "IgSKI_Kernel.h"
+#include "gSKI_Kernel.h"
 #include "sml_KernelSML.h"
 #include "sml_Events.h"
 
@@ -66,7 +66,7 @@ void SystemListener::Init(KernelSML* pKernel)
 }
 
 // Called when a "SystemEvent" occurs in the kernel
-void SystemListener::HandleEvent(egSKISystemEventId eventID, gSKI::IKernel* kernel)
+void SystemListener::HandleEvent(egSKISystemEventId eventID, gSKI::Kernel* kernel)
 {
 	// We don't send the kernel over because we only support a single kernel object in SML
 	unused(kernel) ;

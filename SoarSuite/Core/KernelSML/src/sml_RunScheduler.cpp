@@ -20,8 +20,8 @@
 #include "sml_AgentSML.h"
 #include "sml_Events.h"
 
-#include "../../gSKI/src/gSKI_Error.h"
-#include "IgSKI_AgentManager.h"
+#include "gSKI_Error.h"
+#include "gSKI_AgentManager.h"
 
 #include <assert.h>
 
@@ -122,7 +122,7 @@ bool RunScheduler::VerifyStepSizeForRunType(egSKIRunType runStepSize, egSKIInter
 *			decisions etc.) they have ever executed.
 *			We use these counters to determine when a run should stop.
 *********************************************************************/
-unsigned long RunScheduler::GetStepCounter(gSKI::IAgent* pAgent, egSKIRunType runStepSize)
+unsigned long RunScheduler::GetStepCounter(gSKI::Agent* pAgent, egSKIRunType runStepSize)
 {
 	switch(runStepSize)
 	{
@@ -140,7 +140,7 @@ unsigned long RunScheduler::GetStepCounter(gSKI::IAgent* pAgent, egSKIRunType ru
 		return 0;
 	}
 }
-unsigned long RunScheduler::GetStepCounter(gSKI::IAgent* pAgent, egSKIInterleaveType stepSize)
+unsigned long RunScheduler::GetStepCounter(gSKI::Agent* pAgent, egSKIInterleaveType stepSize)
 {
 	switch(stepSize)
 	{
@@ -164,7 +164,7 @@ unsigned long RunScheduler::GetStepCounter(gSKI::IAgent* pAgent, egSKIInterleave
 *			decisions etc.) they have ever executed.
 *			We use these counters to determine when a run should stop.
 *********************************************************************/
-unsigned long RunScheduler::GetRunCounter(gSKI::IAgent* pAgent, egSKIRunType runStepSize)
+unsigned long RunScheduler::GetRunCounter(gSKI::Agent* pAgent, egSKIRunType runStepSize)
 {
 	switch(runStepSize)
 	{
@@ -209,7 +209,7 @@ AgentSML* RunScheduler::GetAgentToSynchronizeWith()
 
 		if (pAgentSML->IsAgentScheduledToRun())
 		{
-			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
+			gSKI::Agent* pAgent = pAgentSML->GetIAgent() ;
 
 			// What this says is:
 			// If we don't have a current synch agent or
@@ -243,7 +243,7 @@ bool RunScheduler::AreAgentsSynchronized(AgentSML* pSynchAgent)
 
 		if (pAgentSML->IsAgentScheduledToRun())
 		{
-			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
+			gSKI::Agent* pAgent = pAgentSML->GetIAgent() ;
 
 			if (pAgent->GetCurrentPhase() != phase)
 				same = false ;
@@ -265,7 +265,7 @@ bool RunScheduler::AllAgentsAtStopBeforePhase()
 
 		if (pAgentSML->IsAgentScheduledToRun())
 		{
-			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
+			gSKI::Agent* pAgent = pAgentSML->GetIAgent() ;
 
 			if (pAgent->GetCurrentPhase() != m_StopBeforePhase)
 			{
@@ -282,7 +282,7 @@ bool RunScheduler::AllAgentsAtStopBeforePhase()
 /*************************************************************************
 * @brief	Returns true if the given agent has reached the end of its run
 **************************************************************************/
-bool RunScheduler::IsAgentFinished(gSKI::IAgent* pAgent, AgentSML* pAgentSML, egSKIRunType runStepSize, unsigned long count)
+bool RunScheduler::IsAgentFinished(gSKI::Agent* pAgent, AgentSML* pAgentSML, egSKIRunType runStepSize, unsigned long count)
 {
 	unsigned long current = GetRunCounter(pAgent, runStepSize) ;
 	unsigned long initial = pAgentSML->GetInitialRunCount() ;
@@ -361,7 +361,7 @@ void RunScheduler::FireBeforeRunStartsEvents()
 
 		if (pAgentSML->IsAgentScheduledToRun())
 		{
-			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
+			gSKI::Agent* pAgent = pAgentSML->GetIAgent() ;
 			pAgent->FireRunStartsEvent() ;
 		}
 	}
@@ -380,7 +380,7 @@ void RunScheduler::RecordInitialRunCounters(egSKIRunType runStepSize)
 
 		if (pAgentSML->IsAgentScheduledToRun())
 		{
- 			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
+ 			gSKI::Agent* pAgent = pAgentSML->GetIAgent() ;
 			unsigned long count = GetStepCounter(pAgent, runStepSize) ;  
 			pAgentSML->SetInitialStepCount(count) ; 
 		}
@@ -397,7 +397,7 @@ void RunScheduler::InitializeRunCounters(egSKIRunType runStepSize, egSKIInterlea
 
 		if (pAgentSML->IsAgentScheduledToRun())
 		{
- 			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
+ 			gSKI::Agent* pAgent = pAgentSML->GetIAgent() ;
 			pAgent->ResetNilOutputCounter();
 			unsigned long count = GetRunCounter(pAgent, runStepSize) ;
 			pAgentSML->SetInitialRunCount(count) ;
@@ -432,7 +432,7 @@ void RunScheduler::InitializeUpdateWorldEvents(bool addListeners)
 		// We register a listener so that the agent counters/flags get updated at the end of Output.
 		if (addListeners)
 		{
-			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
+			gSKI::Agent* pAgent = pAgentSML->GetIAgent() ;
 			pAgent->AddRunListener(gSKIEVENT_AFTER_OUTPUT_PHASE, this) ;
 		}
 	} 
@@ -545,7 +545,7 @@ void RunScheduler::MoveTo_StopBeforePhase(egSKIRunType runStepSize)
 			AgentSML* pAgentSML = iter->second ;		
 			if (pAgentSML->WasAgentOnRunList()) 
 			{
-				gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;			
+				gSKI::Agent* pAgent = pAgentSML->GetIAgent() ;			
 				egSKIPhaseType phase = pAgent->GetCurrentPhase() ;
 				egSKIRunResult runResult = pAgentSML->GetResultOfLastRun() ;
 				if (! pAgent->GetOperand2Mode()) continue;  // we don't support for agents in Soar7 mode...
@@ -588,7 +588,7 @@ void RunScheduler::MoveTo_StopBeforePhase(egSKIRunType runStepSize)
 			AgentSML* pAgentSML = iter->second ;				
 			if (pAgentSML->WasAgentOnRunList()) 
 			{
-				gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;			
+				gSKI::Agent* pAgent = pAgentSML->GetIAgent() ;			
 				egSKIPhaseType phase = pAgent->GetCurrentPhase() ;
 				egSKIRunResult runResult = pAgentSML->GetResultOfLastRun() ;
 				if (! pAgent->GetOperand2Mode()) continue;  // we don't support for agents in Soar7 mode...
@@ -616,7 +616,7 @@ void RunScheduler::MoveTo_StopBeforePhase(egSKIRunType runStepSize)
 *           1/7/06:  KJC registered runListener only on AFTER_OUTPUT_PHASE
 *			 
 *********************************************************************/
-void RunScheduler::HandleEvent(egSKIRunEventId eventID, gSKI::IAgent* pAgent, egSKIPhaseType phase)
+void RunScheduler::HandleEvent(egSKIRunEventId eventID, gSKI::Agent* pAgent, egSKIPhaseType phase)
 {
 	unused(phase) ;
 	AgentSML* pAgentSML = m_pKernelSML->GetAgentSML(pAgent) ;
@@ -683,7 +683,7 @@ void RunScheduler::TerminateUpdateWorldEvents(bool removeListeners)
 
 		if (removeListeners)
 		{
-			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
+			gSKI::Agent* pAgent = pAgentSML->GetIAgent() ;
 			pAgent->RemoveRunListener(gSKIEVENT_AFTER_OUTPUT_PHASE, this) ;
 		}
 	}
@@ -723,7 +723,7 @@ bool RunScheduler::AnAgentHaltedDuringRun()
 		AgentSML* pAgentSML = iter->second ;
 		if (pAgentSML->WasAgentOnRunList() )
 		{
-			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
+			gSKI::Agent* pAgent = pAgentSML->GetIAgent() ;
 			if (pAgent->GetRunState() == gSKI_RUNSTATE_HALTED) return true;
 		}
 	}
@@ -795,7 +795,7 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize,
 	// Record initial counts and zero the local "run" counter (that we're about to be incrementing)
  	InitializeRunCounters(runStepSize,interleaveStepSize) ;
 
- 	gSKI::IKernel* pKernel = m_pKernelSML->GetKernel() ;
+ 	gSKI::Kernel* pKernel = m_pKernelSML->GetKernel() ;
 
 	// Depending on RunType, set the stop location for gSKI_STOP_AFTER_DECISION_CYCLE interrupts
 	pKernel->SetStopPoint(runStepSize, m_StopBeforePhase);
@@ -891,7 +891,7 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize,
 				if (pAgentSML->IsAgentOnStepList())
 				{			
 					// Run all agents one "interleaveStepSize".		
-					gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;			
+					gSKI::Agent* pAgent = pAgentSML->GetIAgent() ;			
 					egSKIRunResult runResult = pAgent->StepInClientThread(interleaveStepSize, 1, pError) ;
 					// ?? pAgentSML->IncrementLocalStepCounter();
 

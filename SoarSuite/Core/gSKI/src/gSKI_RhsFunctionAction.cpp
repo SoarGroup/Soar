@@ -148,7 +148,7 @@ namespace gSKI
    tIActionElementIterator* RhsFunctionAction::GetParameterList(Error* err) 
    {
       // Create iterator and return it
-      return new Iterator<IActionElement*, tParamVec>(m_parameters);
+      return new Iterator<ActionElement*, tParamVec>(m_parameters);
    }
 
    /*

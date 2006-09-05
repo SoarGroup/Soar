@@ -22,7 +22,7 @@
 #include "gSKI_ProductionManager.h"
 #include "gSKI_Error.h"
 #include "gSKI_Enumerations.h"
-#include "gSKI_SetActiveAgent.h"
+//#include "gSKI_SetActiveAgent.h"
 #include "gSKI_Production.h"
 #include "IgSKI_Iterator.h"
 #include "gSKI_EnumRemapping.h"
@@ -43,7 +43,6 @@
 //
 // Utility Headers
 #include "MegaAssert.h"
-#include "Log.h"
 
 //
 // std Headers
@@ -543,60 +542,6 @@ _|___/    __         _    _             ____  _               _
    
       return true;
    }
-
-   /*
-   ===============================
-  ____      _   __  __       _       _              _
- / ___| ___| |_|  \/  | __ _| |_ ___| |__   ___  __| |
-| |  _ / _ \ __| |\/| |/ _` | __/ __| '_ \ / _ \/ _` |
-| |_| |  __/ |_| |  | | (_| | || (__| | | |  __/ (_| |
- \____|\___|\__|_|  |_|\__,_|\__\___|_| |_|\___|\__,_|
-|  _ \ _ __ ___   __| |_   _  ___| |_(_) ___  _ __  ___
-| |_) | '__/ _ \ / _` | | | |/ __| __| |/ _ \| '_ \/ __|
-|  __/| | | (_) | (_| | |_| | (__| |_| | (_) | | | \__ \
-|_|   |_|  \___/ \__,_|\__,_|\___|\__|_|\___/|_| |_|___/
-   ===============================
-   */
-   tIProductionMatchIterator *ProductionManager::GetMatchedProductions(Error* err) const
-   {
-   
-      return 0;
-   }
-
-   /*
-   ===============================
-  ____      _   __  __       _       _     ____       _
- / ___| ___| |_|  \/  | __ _| |_ ___| |__ / ___|  ___| |_ ___
-| |  _ / _ \ __| |\/| |/ _` | __/ __| '_ \\___ \ / _ \ __/ __|
-| |_| |  __/ |_| |  | | (_| | || (__| | | |___) |  __/ |_\__ \
- \____|\___|\__|_|  |_|\__,_|\__\___|_| |_|____/ \___|\__|___/
-   ===============================
-   */
-   IMatchSet* ProductionManager::GetMatchSets(const IProduction* prod, Error* err) const
-   {
-   
-      return 0;
-   }
-
-   /*
-   ===============================
-  ____      _    ____                _ _ _   _
- / ___| ___| |_ / ___|___  _ __   __| (_) |_(_) ___  _ __
-| |  _ / _ \ __| |   / _ \| '_ \ / _` | | __| |/ _ \| '_ \
-| |_| |  __/ |_| |__| (_) | | | | (_| | | |_| | (_) | | | |
- \____|\___|\__|\____\___/|_| |_|\__,_|_|\__|_|\___/|_| |_|
-|  \/  | __ _| |_ ___| |__   ___ ___ ___
-| |\/| |/ _` | __/ __| '_ \ / _ Y __/ __|
-| |  | | (_| | || (__| | | |  __|__ \__ \
-|_|  |_|\__,_|\__\___|_| |_|\___|___/___/
-   ===============================
-   */
-   tIWmeIterator* ProductionManager::GetConditionMatches(const ICondition* condition, Error* err) const
-   {
-   
-      return 0;
-   }
-
 
    /*
    ===============================
@@ -1192,19 +1137,19 @@ void prodTest(){
    out << "source \"../../test3.soar\""<<endl;
    out<<makeDummyProd("test4")<<endl;
    out.close();
-   IKernelFactory*      kF    = gSKI_CreateKernelFactory();
+   KernelFactory*      kF    = gSKI_CreateKernelFactory();
    VALIDATE(kF != 0);
 
-   IKernel*             k     = kF->Create();
+   Kernel*             k     = kF->Create();
    VALIDATE(k != 0);
 
-   IAgentManager*       IAM   = k->GetAgentManager();
+   AgentManager*       IAM   = k->GetAgentManager();
    VALIDATE(IAM != 0);
 
-   IAgent*              agent = IAM->AddAgent("ProductionTestAgent");
+   Agent*              agent = IAM->AddAgent("ProductionTestAgent");
    VALIDATE(agent != 0);
 
-   IProductionManager*  IPM   = agent->GetProductionManager();
+   ProductionManager*  IPM   = agent->GetProductionManager();
    VALIDATE(IPM != 0);
 
    VALIDATE(IPM->LoadSoarFile("test1.soar"));

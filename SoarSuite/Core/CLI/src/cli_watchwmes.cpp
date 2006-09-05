@@ -17,14 +17,13 @@
 #include "sml_StringOps.h"
 #include "sml_Names.h"
 
-#include "IgSKI_Agent.h"
-#include "IgSKI_Kernel.h"
-#include "IgSKI_DoNotTouch.h"
+#include "gSKI_Kernel.h"
+#include "gSKI_DoNotTouch.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseWatchWMEs(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseWatchWMEs(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'a', "add-filter",		0},
 		{'r', "remove-filter",	0},
@@ -93,12 +92,12 @@ bool CommandLineInterface::ParseWatchWMEs(gSKI::IAgent* pAgent, std::vector<std:
 	return DoWatchWMEs(pAgent, mode, type);
 }
 
-bool CommandLineInterface::DoWatchWMEs(gSKI::IAgent* pAgent, const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString, const std::string* pAttributeString, const std::string* pValueString) {
+bool CommandLineInterface::DoWatchWMEs(gSKI::Agent* pAgent, const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString, const std::string* pAttributeString, const std::string* pValueString) {
 
 	if (!RequireAgent(pAgent)) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD
-	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
 	int ret = 0;
 	bool retb = false;

@@ -22,8 +22,8 @@
 #include "gSKI_Events.h"
 #include "gSKI_Enumerations.h"
 #include "IgSKI_Iterator.h"
-#include "IgSKI_Agent.h"
-#include "IgSKI_Kernel.h"
+#include "gSKI_Agent.h"
+#include "gSKI_Kernel.h"
 #include "sml_EventManager.h"
 
 #include <string>
@@ -38,10 +38,10 @@ class ProductionListener : public gSKI::IProductionListener, public EventManager
 {
 protected:
 	KernelSML*		m_pKernelSML ;
-	gSKI::IAgent*	m_pAgent ;
+	gSKI::Agent*	m_pAgent ;
 
 public:
-	ProductionListener(KernelSML* pKernelSML, gSKI::IAgent* pAgent)
+	ProductionListener(KernelSML* pKernelSML, gSKI::Agent* pAgent)
 	{
 		m_pKernelSML = pKernelSML ;
 		m_pAgent	 = pAgent ;
@@ -59,7 +59,7 @@ public:
 	virtual bool RemoveListener(egSKIProductionEventId eventID, Connection* pConnection) ;
 
 	// Called when a "ProductionEvent" occurs in the kernel
-	virtual void HandleEvent(egSKIProductionEventId eventId, gSKI::IAgent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match) ;
+	virtual void HandleEvent(egSKIProductionEventId eventId, gSKI::Agent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match) ;
 } ;
 
 }

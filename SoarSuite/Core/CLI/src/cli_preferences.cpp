@@ -16,12 +16,13 @@
 
 #include "sml_Names.h"
 
-#include "IgSKI_Kernel.h"
+#include "gSKI_Kernel.h"
+#include "gSKI_DoNotTouch.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParsePreferences(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParsePreferences(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'0', "none",		0},
 		{'1', "names",		0},
@@ -74,11 +75,11 @@ bool CommandLineInterface::ParsePreferences(gSKI::IAgent* pAgent, std::vector<st
 	return DoPreferences(pAgent, detail);
 }
 
-bool CommandLineInterface::DoPreferences(gSKI::IAgent* pAgent, const ePreferencesDetail detail, const std::string* pId, const std::string* pAttribute) {
+bool CommandLineInterface::DoPreferences(gSKI::Agent* pAgent, const ePreferencesDetail detail, const std::string* pId, const std::string* pAttribute) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll need it
-	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
 	AddListenerAndDisableCallbacks(pAgent);
 	bool ret = pKernelHack->Preferences(pAgent, static_cast<int>(detail), pId ? pId->c_str() : 0, pAttribute ? pAttribute->c_str() : 0);

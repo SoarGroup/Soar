@@ -26,8 +26,8 @@
 #include "cli_Commands.h"
 #include "cli_Aliases.h"
 
-#include "../../gSKI/src/gSKI_Error.h"
-#include "IgSKI_Agent.h"
+#include "gSKI_Error.h"
+#include "gSKI_Agent.h"
 
 // SML includes
 #include "sml_Connection.h"
@@ -41,6 +41,7 @@
 
 using namespace cli;
 using namespace sml;
+using namespace std;
 
 std::ostringstream CommandLineInterface::m_Result;	
 
@@ -214,7 +215,7 @@ EXPORT bool CommandLineInterface::ShouldEchoCommand(char const* pCommandLine)
 * @param echoResults If true send a copy of the result to the echo event
 * @param pResponse Pointer to XML response object
 *************************************************************/
-EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, bool echoResults, ElementXML* pResponse) {
+EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::Agent* pAgent, const char* pCommandLine, bool echoResults, ElementXML* pResponse) {
 	// No way to return data
 	if (!pConnection) return false;
 	if (!pResponse) return false;
@@ -388,7 +389,7 @@ EXPORT bool CommandLineInterface::ExpandCommand(sml::Connection* pConnection, co
 	return ok ;
 }
 
-bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, const std::string& commandLine) {
+bool CommandLineInterface::DoCommandInternal(gSKI::Agent* pAgent, const std::string& commandLine) {
 	vector<string> argv;
 	// Parse command:
 	if (Tokenize(commandLine, argv) == -1)  return false;	// Parsing failed
@@ -397,7 +398,7 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, const std::st
 	return DoCommandInternal(pAgent, argv);
 }
 
-bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string>& argv) {
+bool CommandLineInterface::DoCommandInternal(gSKI::Agent* pAgent, vector<string>& argv) {
 	if (!argv.size()) return true;
 
 	// Check for help flags
@@ -606,7 +607,7 @@ bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv) {
 	return false;
 }
 
-EXPORT void CommandLineInterface::SetKernel(gSKI::IKernel* pKernel, gSKI::Version kernelVersion, sml::KernelSML* pKernelSML) {
+EXPORT void CommandLineInterface::SetKernel(gSKI::Kernel* pKernel, gSKI::Version kernelVersion, sml::KernelSML* pKernelSML) {
 	m_pKernel = pKernel;
 	m_KernelVersion = kernelVersion;
 	m_pKernelSML = pKernelSML;
@@ -668,7 +669,7 @@ bool CommandLineInterface::IsInteger(const string& s) {
 	return true;
 }
 
-bool CommandLineInterface::RequireAgent(gSKI::IAgent* pAgent) {
+bool CommandLineInterface::RequireAgent(gSKI::Agent* pAgent) {
 	// Requiring an agent implies requiring a kernel
 	if (!RequireKernel()) return false;
 	if (!pAgent) return SetError(CLIError::kAgentRequired);
@@ -712,25 +713,25 @@ void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pTy
 	m_ResponseTags.push_front(pTag);
 }
 
-void CommandLineInterface::AddListenerAndDisableCallbacks(gSKI::IAgent* pAgent) {
+void CommandLineInterface::AddListenerAndDisableCallbacks(gSKI::Agent* pAgent) {
 	if (m_pKernelSML) m_pKernelSML->DisablePrintCallback(pAgent);
 	m_PrintEventToResult = true;
 	if (!m_pLogFile && pAgent) pAgent->AddPrintListener(gSKIEVENT_PRINT, this);
 }
 
-void CommandLineInterface::RemoveListenerAndEnableCallbacks(gSKI::IAgent* pAgent) {
+void CommandLineInterface::RemoveListenerAndEnableCallbacks(gSKI::Agent* pAgent) {
 	if (!m_pLogFile && pAgent) pAgent->RemovePrintListener(gSKIEVENT_PRINT, this);
 	m_PrintEventToResult = false;
 	if (m_pKernelSML) m_pKernelSML->EnablePrintCallback(pAgent);
 }
 
-void CommandLineInterface::AddXMLListenerAndDisableCallbacks(gSKI::IAgent* pAgent) {
+void CommandLineInterface::AddXMLListenerAndDisableCallbacks(gSKI::Agent* pAgent) {
 	if (m_pKernelSML) m_pKernelSML->DisablePrintCallback(pAgent);
 	m_XMLEventToResult = true;
 	if (pAgent) pAgent->AddXMLListener(gSKIEVENT_XML_TRACE_OUTPUT, this);
 }
 
-void CommandLineInterface::RemoveXMLListenerAndEnableCallbacks(gSKI::IAgent* pAgent) {
+void CommandLineInterface::RemoveXMLListenerAndEnableCallbacks(gSKI::Agent* pAgent) {
 	if (pAgent) pAgent->RemoveXMLListener(gSKIEVENT_XML_TRACE_OUTPUT, this);
 	m_XMLEventToResult = false;
 	if (m_pKernelSML) m_pKernelSML->EnablePrintCallback(pAgent);
@@ -1002,7 +1003,7 @@ bool CommandLineInterface::Trim(std::string& line) {
 * @param attOrTag     Pointer to c-style string containing the tag to add or remove or the attribute to add
 * @param value		  Pointer to c-style string containing the value to add (may be NULL if just adding/ending a tag)
 */
-void CommandLineInterface::HandleEvent(egSKIXMLEventId eventId, gSKI::IAgent* agentPtr, const char* funcType, const char* attOrTag, const char* value) {
+void CommandLineInterface::HandleEvent(egSKIXMLEventId eventId, gSKI::Agent* agentPtr, const char* funcType, const char* attOrTag, const char* value) {
 	unused(eventId) ;
 	unused(agentPtr) ;
 
@@ -1041,7 +1042,7 @@ void CommandLineInterface::HandleEvent(egSKIXMLEventId eventId, gSKI::IAgent* ag
 	}
 }
 
-void CommandLineInterface::HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const char* msg) {
+void CommandLineInterface::HandleEvent(egSKIPrintEventId, gSKI::Agent*, const char* msg) {
 	if (m_PrintEventToResult || m_pLogFile) {
 		if (m_VarPrint) {
 			// Transform if varprint, see print command

@@ -281,7 +281,7 @@ namespace gSKI
    ===============================
    */
 
-   IConditionSet* Production::GetConditions(Error *err) const
+   ConditionSet* Production::GetConditions(Error *err) const
    {
       // If this is NULL, you should ask to includeConditions when building the production object.
       assert(m_conditionSet) ;
@@ -305,7 +305,7 @@ namespace gSKI
       assert(m_conditionSet) ;
 
 	  ClearError(err);
-      return new Iterator<IRhsAction*, tRhsActionVec>(m_actions);
+      return new Iterator<RhsAction*, tRhsActionVec>(m_actions);
    }
 
    /*
@@ -327,25 +327,8 @@ namespace gSKI
       assert(m_conditionSet) ;
 
       ClearError(err);
-      return new Iterator<IRhsFunctionAction*, tRhsFunctionVec>(m_functions);
+      return new Iterator<RhsFunctionAction*, tRhsFunctionVec>(m_functions);
    }
-
-   /*
-   ===============================
-  ____      _   __  __       _       _
- / ___| ___| |_|  \/  | __ _| |_ ___| |__   ___ ___
-| |  _ / _ \ __| |\/| |/ _` | __/ __| '_ \ / _ Y __|
-| |_| |  __/ |_| |  | | (_| | || (__| | | |  __|__ \
- \____|\___|\__|_|  |_|\__,_|\__\___|_| |_|\___|___/
-   ===============================
-   */
-
-   tIMatchIterator* Production::GetMatches(Error *err)
-   {
-      ClearError(err);
-      return 0;
-   }
-
 
    /*
    ==================================

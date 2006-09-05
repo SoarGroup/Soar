@@ -16,12 +16,12 @@
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseNumericIndifferentMode(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseNumericIndifferentMode(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 
 	Options optionsData[] = {
 		{'a', "average",	0},
@@ -54,7 +54,7 @@ bool CommandLineInterface::ParseNumericIndifferentMode(gSKI::IAgent* pAgent, std
 	return DoNumericIndifferentMode(pAgent, mode);
 }
 
-bool CommandLineInterface::DoNumericIndifferentMode(gSKI::IAgent* pAgent, const eNumericIndifferentMode mode) {
+bool CommandLineInterface::DoNumericIndifferentMode(gSKI::Agent* pAgent, const eNumericIndifferentMode mode) {
 	if (!RequireAgent(pAgent)) return false;
 
 	switch (mode) {

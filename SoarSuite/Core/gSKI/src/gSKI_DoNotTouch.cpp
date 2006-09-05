@@ -50,7 +50,7 @@ namespace gSKI
 			bool removes;
 		} wme_filter;
 
-		void TgDWorkArounds::SetSysparam (IAgent* agent, int param_number, long new_value) 
+		void TgDWorkArounds::SetSysparam (Agent* agent, int param_number, long new_value) 
 		{
 			//agnt->sysparams[param_number] = new_value;
 			Agent* internalAgent = (Agent*)(agent);
@@ -59,21 +59,21 @@ namespace gSKI
 			internalAgent->GetKernel()->FireSystemPropertyChangedEvent() ;
 		}
 
-		long TgDWorkArounds::GetSysparam(IAgent* agent, int param_number)
+		long TgDWorkArounds::GetSysparam(Agent* agent, int param_number)
 		{
 			Agent* internalAgent = (Agent*)(agent);
 			MegaAssert(internalAgent != 0, "Bad agent pointer passed to set_sysparams.");
 			return internalAgent->GetSoarAgent()->sysparams[param_number];
 		}
 
-		const long* TgDWorkArounds::GetSysparams(IAgent* agent)
+		const long* TgDWorkArounds::GetSysparams(Agent* agent)
 		{
 			Agent* internalAgent = (Agent*)(agent);
 			MegaAssert(internalAgent != 0, "Bad agent pointer passed to GetSysparams.");
 			return internalAgent->GetSoarAgent()->sysparams;
 		}
 
-		rete_node* TgDWorkArounds::NameToProduction (IAgent* agent, char* string_to_test)
+		rete_node* TgDWorkArounds::NameToProduction (Agent* agent, char* string_to_test)
 		{
 			Agent* internalAgent = (Agent*)(agent);
 			MegaAssert(internalAgent != 0, "Bad agent pointer passed to set_sysparams.");
@@ -88,7 +88,7 @@ namespace gSKI
 		}
 
 
-		void TgDWorkArounds::PrintPartialMatchInformation(IAgent* thisAgent, 
+		void TgDWorkArounds::PrintPartialMatchInformation(Agent* thisAgent, 
 		struct rete_node_struct *p_node,
 			wme_trace_type wtt)
 		{
@@ -98,7 +98,7 @@ namespace gSKI
 			print_partial_match_information(internalAgent->GetSoarAgent(), p_node, wtt);
 		}
 
-		void TgDWorkArounds::PrintMatchSet(IAgent* thisAgent, wme_trace_type wtt, ms_trace_type  mst)
+		void TgDWorkArounds::PrintMatchSet(Agent* thisAgent, wme_trace_type wtt, ms_trace_type  mst)
 		{
 			Agent* internalAgent = (Agent*)(thisAgent);
 			MegaAssert(internalAgent != 0, "Bad agent pointer passed to set_sysparams.");
@@ -106,7 +106,7 @@ namespace gSKI
 			print_match_set(internalAgent->GetSoarAgent(), wtt, mst);
 		}
 
-		void TgDWorkArounds::XMLPartialMatchInformation(IAgent* thisAgent, 
+		void TgDWorkArounds::XMLPartialMatchInformation(Agent* thisAgent, 
 		struct rete_node_struct *p_node,
 			wme_trace_type wtt)
 		{
@@ -116,7 +116,7 @@ namespace gSKI
 			xml_partial_match_information(internalAgent->GetSoarAgent(), p_node, wtt);
 		}
 
-		void TgDWorkArounds::XMLMatchSet(IAgent* thisAgent, wme_trace_type wtt, ms_trace_type  mst)
+		void TgDWorkArounds::XMLMatchSet(Agent* thisAgent, wme_trace_type wtt, ms_trace_type  mst)
 		{
 			Agent* internalAgent = (Agent*)(thisAgent);
 			MegaAssert(internalAgent != 0, "Bad agent pointer passed to xmlMatchSet.");
@@ -125,7 +125,7 @@ namespace gSKI
 		}
 
 
-		void TgDWorkArounds::PrintStackTrace(IAgent* thisAgent, bool print_states, bool print_operators)
+		void TgDWorkArounds::PrintStackTrace(Agent* thisAgent, bool print_states, bool print_operators)
 		{
 			Agent* internalAgent = (Agent*)(thisAgent);
 			MegaAssert(internalAgent != 0, "Bad agent pointer passed to set_sysparams.");
@@ -730,7 +730,7 @@ namespace gSKI
 		}
 
 
-		void TgDWorkArounds::PrintSymbol(IAgent*     thisAgent,
+		void TgDWorkArounds::PrintSymbol(Agent*     thisAgent,
 			char*       arg, 
 			bool        name_only, 
 			bool        print_filename, 
@@ -817,7 +817,7 @@ namespace gSKI
 			output_arg = true;  /* Soar-bugs #161 */
 		}
 
-		void TgDWorkArounds::PrintUser(IAgent*       thisAgent,
+		void TgDWorkArounds::PrintUser(Agent*       thisAgent,
 			char*         arg,
 			bool          internal,
 			bool          print_filename,
@@ -1134,7 +1134,7 @@ namespace gSKI
 			return 0;
 		}
 
-		bool TgDWorkArounds::Preferences(IAgent* thisAgent, int detail, const char* idString, const char* attrString)
+		bool TgDWorkArounds::Preferences(Agent* thisAgent, int detail, const char* idString, const char* attrString)
 		{
 			static const int PREFERENCES_BUFFER_SIZE = 128;
 
@@ -1680,9 +1680,9 @@ namespace gSKI
 					if (bindings) free_binding_list(agnt, bindings); /* DJP 4/3/96 -- To catch the last production */
 		}
 
-		bool TgDWorkArounds::ProductionFind(IAgent*     thisAgent,
+		bool TgDWorkArounds::ProductionFind(Agent*     thisAgent,
 			agent*      agnt2,
-			IKernel*    kernel,
+			Kernel*    kernel,
 			bool        lhs,
 			bool        rhs,
 			char*       arg,
@@ -1741,7 +1741,7 @@ namespace gSKI
 			return true;
 		} ////
 
-		bool TgDWorkArounds::GDSPrint(IAgent* thisAgent)
+		bool TgDWorkArounds::GDSPrint(Agent* thisAgent)
 		{
 			Agent* internalAgent = (Agent*)(thisAgent);
 			MegaAssert(internalAgent != 0, "Bad agent pointer passed to set_sysparams.");
@@ -1805,7 +1805,7 @@ namespace gSKI
 			return true;
 		}////
 
-		void TgDWorkArounds::GetForceLearnStates(IAgent* pIAgent, std::string& res) {
+		void TgDWorkArounds::GetForceLearnStates(Agent* pIAgent, std::string& res) {
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
 
@@ -1818,7 +1818,7 @@ namespace gSKI
 			}
 		}
 
-		void TgDWorkArounds::GetDontLearnStates(IAgent* pIAgent, std::string& res) {
+		void TgDWorkArounds::GetDontLearnStates(Agent* pIAgent, std::string& res) {
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
 
@@ -1831,7 +1831,7 @@ namespace gSKI
 			}
 		}
 
-		void TgDWorkArounds::SetVerbosity(IAgent* pIAgent, bool setting) {
+		void TgDWorkArounds::SetVerbosity(Agent* pIAgent, bool setting) {
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
 
@@ -1839,14 +1839,14 @@ namespace gSKI
 
 		}
 
-		bool TgDWorkArounds::GetVerbosity(IAgent* pIAgent) {
+		bool TgDWorkArounds::GetVerbosity(Agent* pIAgent) {
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
 
 			return pSoarAgent->soar_verbose_flag ? true : false;
 		}
 
-		bool TgDWorkArounds::BeginTracingProduction(IAgent* pIAgent, const char* pProductionName) {
+		bool TgDWorkArounds::BeginTracingProduction(Agent* pIAgent, const char* pProductionName) {
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
 
@@ -1860,7 +1860,7 @@ namespace gSKI
 			return true;
 		}
 
-		bool TgDWorkArounds::StopTracingProduction(IAgent* pIAgent, const char* pProductionName) {
+		bool TgDWorkArounds::StopTracingProduction(Agent* pIAgent, const char* pProductionName) {
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
 
@@ -1874,7 +1874,7 @@ namespace gSKI
 			return true;
 		}
 
-		long TgDWorkArounds::AddWme(IAgent* pIAgent, const char* pIdString, const char* pAttrString, const char* pValueString, bool acceptable) {
+		long TgDWorkArounds::AddWme(Agent* pIAgent, const char* pIdString, const char* pAttrString, const char* pValueString, bool acceptable) {
 
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
@@ -2142,7 +2142,7 @@ namespace gSKI
 			return 0;
 		}
 
-		int TgDWorkArounds::RemoveWmeByTimetag(IAgent* pIAgent, int num)
+		int TgDWorkArounds::RemoveWmeByTimetag(Agent* pIAgent, int num)
 		{
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
@@ -2158,7 +2158,7 @@ namespace gSKI
 			return -2;                  /* Unspecified Failure */
 		}
 
-		void TgDWorkArounds::PrintInternalSymbols(IAgent* pIAgent)
+		void TgDWorkArounds::PrintInternalSymbols(Agent* pIAgent)
 		{
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
@@ -2191,7 +2191,7 @@ namespace gSKI
 			return true;
 		}
 
-		int TgDWorkArounds::AddWMEFilter(IAgent* pIAgent, const char *pIdString, const char *pAttrString, const char *pValueString, bool adds, bool removes)
+		int TgDWorkArounds::AddWMEFilter(Agent* pIAgent, const char *pIdString, const char *pAttrString, const char *pValueString, bool adds, bool removes)
 		{
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
@@ -2251,7 +2251,7 @@ namespace gSKI
 			return 0;
 		}
 
-		int TgDWorkArounds::RemoveWMEFilter(IAgent* pIAgent, const char *pIdString, const char *pAttrString, const char *pValueString, bool adds, bool removes)
+		int TgDWorkArounds::RemoveWMEFilter(Agent* pIAgent, const char *pIdString, const char *pAttrString, const char *pValueString, bool adds, bool removes)
 		{
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
@@ -2303,7 +2303,7 @@ namespace gSKI
 			return -4;
 		}
 
-		bool TgDWorkArounds::ResetWMEFilters(IAgent* pIAgent, bool adds, bool removes)
+		bool TgDWorkArounds::ResetWMEFilters(Agent* pIAgent, bool adds, bool removes)
 		{
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
@@ -2330,7 +2330,7 @@ namespace gSKI
 			return didRemoveSome;
 		}
 
-		void TgDWorkArounds::ListWMEFilters(IAgent* pIAgent, bool adds, bool removes)
+		void TgDWorkArounds::ListWMEFilters(Agent* pIAgent, bool adds, bool removes)
 		{
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
@@ -2346,7 +2346,7 @@ namespace gSKI
 			}
 		}
 
-		void TgDWorkArounds::ExplainListChunks(IAgent* pIAgent)
+		void TgDWorkArounds::ExplainListChunks(Agent* pIAgent)
 		{
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
@@ -2366,7 +2366,7 @@ namespace gSKI
 			}
 		}
 
-		bool TgDWorkArounds::ExplainChunks(IAgent* pIAgent, const char* pProduction, int mode)
+		bool TgDWorkArounds::ExplainChunks(Agent* pIAgent, const char* pProduction, int mode)
 		{
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
@@ -2434,7 +2434,7 @@ namespace gSKI
 			return true;
 		}
 
-		const char* TgDWorkArounds::GetChunkNamePrefix(IAgent* pIAgent)
+		const char* TgDWorkArounds::GetChunkNamePrefix(Agent* pIAgent)
 		{
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
@@ -2442,7 +2442,7 @@ namespace gSKI
 			return pSoarAgent->chunk_name_prefix;
 		}
 
-		bool TgDWorkArounds::SetChunkNamePrefix(IAgent* pIAgent, const char* pPrefix)
+		bool TgDWorkArounds::SetChunkNamePrefix(Agent* pIAgent, const char* pPrefix)
 		{
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
@@ -2454,7 +2454,7 @@ namespace gSKI
 			return true;
 		}
 
-		unsigned long TgDWorkArounds::GetChunkCount(IAgent* pIAgent)
+		unsigned long TgDWorkArounds::GetChunkCount(Agent* pIAgent)
 		{
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
@@ -2462,7 +2462,7 @@ namespace gSKI
 			return pSoarAgent->chunk_count;
 		}
 
-		void TgDWorkArounds::SetChunkCount(IAgent* pIAgent, unsigned long count)
+		void TgDWorkArounds::SetChunkCount(Agent* pIAgent, unsigned long count)
 		{
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();

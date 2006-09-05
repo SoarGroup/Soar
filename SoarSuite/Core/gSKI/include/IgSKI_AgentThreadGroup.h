@@ -78,7 +78,7 @@ namespace gSKI {
        * @returns true if the agent is successfully added.  false if there is 
        *           an error (see err for extended error information).
        */
-      virtual bool AddAgent(IAgent* agent, Error* err = 0) = 0;
+      virtual bool AddAgent(Agent* agent, Error* err = 0) = 0;
 
       /**
        * @brief Remove an agent from this thread group
@@ -106,7 +106,7 @@ namespace gSKI {
        * @returns true if the agent could be removed, false if there
        *   was an error (see err for extended info).
        */
-      virtual bool RemoveAgent(IAgent* agent, Error* err = 0) = 0;
+      virtual bool RemoveAgent(Agent* agent, Error* err = 0) = 0;
 
       /**
       *  @brief Sets whether to destroy this thread group when its last agent is destroyed

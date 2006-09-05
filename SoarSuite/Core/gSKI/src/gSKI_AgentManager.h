@@ -14,7 +14,7 @@
 #define GSKI_AGENTMANGER_H
 
 #include "IgSKI_Iterator.h"
-#include "IgSKI_AgentManager.h"
+#include "gSKI_AgentManager.h"
 
 #include "gSKI_Enumerations.h"
 #include "EventManagementTemplates.h"
@@ -31,7 +31,7 @@
 namespace gSKI
 {
    struct Error;
-   class IAgent;
+   class Agent;
    class Agent;
    class Kernel;
    class IAgentThreadGroup;
@@ -50,7 +50,7 @@ namespace gSKI
    * @see IAgentRunControl
    * @see IAgentThreadGroup
    */
-   class AgentManager: public IAgentManager
+   class AgentManager
    {
    public:
       /**
@@ -78,7 +78,7 @@ namespace gSKI
       * Possible Errors:
       *   @li gSKIERR_INVALID_PTR if name is 0
       *   @li gSKIERR_AGENT_EXISTS if an agent by the given name already exists
-      *   @li Any error returned by IProductionManager::LoadSoarFile if a production filename
+      *   @li Any error returned by ProductionManager::LoadSoarFile if a production filename
       *         is supplied and the file doesn't exist or is somehow not usable (e.g. bad format)
       *
       * @param name Name of the Agent to add.  This name must be unique for this instance of the
@@ -101,7 +101,7 @@ namespace gSKI
       * @returns A pointer to the agent that was added.  This pointer will be 0 if
       *           the function fails.
       */
-      IAgent* AddAgent(const char*       name, 
+      Agent* AddAgent(const char*       name, 
                        const char*       prodFileName = 0, 
                        bool              learningOn   = false,
                        egSKIOSupportMode oSupportMode = gSKI_O_SUPPORT_MODE_4,
@@ -129,15 +129,15 @@ namespace gSKI
       *               information is not returned.
       *
       */
-      void RemoveAgent(IAgent* agent, Error* err = 0);
+      void RemoveAgent(Agent* agent, Error* err = 0);
 
       /**
       * @brief Removes an agent from this agent manager given the agent's name.
       *
       * Call this method to remove an agent from the agent manager using only 
-      *  its name.  See IAgentManager::RemoveAgent for details.
+      *  its name.  See AgentManager::RemoveAgent for details.
       *
-      * @see IAgentManager::RemoveAgent
+      * @see AgentManager::RemoveAgent
       *
       * @param  name Name of the agent to remove.  
       * @param  err Pointer to client-owned error structure.  If the pointer
@@ -168,7 +168,7 @@ namespace gSKI
       * @returns A pointer to the agent with the given name managed by this AgentManager.
       *           If such an agent doesn't exist, the pointer returned is 0.
       */
-      IAgent* GetAgent(const char* name, Error* err = 0);
+      Agent* GetAgent(const char* name, Error* err = 0);
 
       /**
       * @brief Retrieves an iterator to all of the agents currently managed by this AgentManager
@@ -190,7 +190,7 @@ namespace gSKI
        * @brief Adds an agent to the list of agents run when a RunXXX function is called
        *
        * Call this method to add an agent to the list of agents to run when
-       *  IAgentManager::RunInClientThread or IAgentManager::RunInSeparateThread 
+       *  AgentManager::RunInClientThread or AgentManager::RunInSeparateThread 
        *  are called.  
        *
        * If the agent manager is currently running agents in the run list, the
@@ -206,13 +206,13 @@ namespace gSKI
        *               information.  If it is 0 (the default) extended error
        *               information is not returned.
        */
-      void            AddAgentToRunList(IAgent* agentToAdd, Error* err = 0);
+      void            AddAgentToRunList(Agent* agentToAdd, Error* err = 0);
 
       /** 
        * @brief Adds all agents to the list of agents run when a RunXXX function is called
        *
        * Call this method to add all agents to the list of agents to run when
-       *  IAgentManager::RunInClientThread or IAgentManager::RunInSeparateThread 
+       *  AgentManager::RunInClientThread or AgentManager::RunInSeparateThread 
        *  are called.  
        *
        * If the agent manager is currently running agents in the run list, the
@@ -234,7 +234,7 @@ namespace gSKI
        * @brief Removes an agent from the list of agents run when a RunXXX function is called
        *
        * Call this method to remove an agent from the list of agents to run when
-       *  IAgentManager::RunInClientThread or IAgentManager::RunInSeparateThread 
+       *  AgentManager::RunInClientThread or AgentManager::RunInSeparateThread 
        *  are called.  Agents are automatically removed from the run list when
        *  they are removed from the agent manager.
        *
@@ -250,13 +250,13 @@ namespace gSKI
        *               information.  If it is 0 (the default) extended error
        *               information is not returned.
        */
-      void           RemoveAgentFromRunList(IAgent* agentToAdd, Error* err = 0);
+      void           RemoveAgentFromRunList(Agent* agentToAdd, Error* err = 0);
 
       /** 
        * @brief Removes all agents from this manager's run list
        *
        * Call this method to remove all agents from the list of agents to run when
-       *  IAgentManager::RunInClientThread or IAgentManager::RunInSeparateThread 
+       *  AgentManager::RunInClientThread or AgentManager::RunInSeparateThread 
        *  are called.  Agents are automatically removed from the run list when
        *  they are removed from the agent manager.
        *
@@ -291,9 +291,9 @@ namespace gSKI
        *                 does not contain any agents.
        *
        * @see egSKIRunType
-       * @see IAgentManager::AddAgentToRunList
-       * @see IAgentManager::AddAllAgentsToRunList
-       * @see IAgentManager::RemoveAgentFromRunList
+       * @see AgentManager::AddAgentToRunList
+       * @see AgentManager::AddAllAgentsToRunList
+       * @see AgentManager::RemoveAgentFromRunList
        *
        * @param runLength How long to run the system.  Choices are       
        *          gSKI_RUN_SMALLEST_STEP, gSKI_RUN_ELABORATION_PHASE, gSKI_RUNPHASE,
@@ -338,9 +338,9 @@ namespace gSKI
        *                 does not contain any agents.
        *
        * @see egSKIRunType
-       * @see IAgentManager::AddAgentToRunList
-       * @see IAgentManager::AddAllAgentsToRunList
-       * @see IAgentManager::RemoveAgentFromRunList
+       * @see AgentManager::AddAgentToRunList
+       * @see AgentManager::AddAllAgentsToRunList
+       * @see AgentManager::RemoveAgentFromRunList
        *
        * @param runLength How long to run the system.  Choices are       
        *          gSKI_RUN_SMALLEST_STEP, gSKI_RUN_ELABORATION_PHASE, gSKI_RUN_PHASE,
@@ -450,14 +450,14 @@ namespace gSKI
      /** 
       * @brief Initializes all of the agents managed by this object
       *
-      * This method calls the IAgent::ReinitializeWithOldSettings method on
+      * This method calls the Agent::ReinitializeWithOldSettings method on
       *  all of the agents managed by this object.  It will not return until
       *  all agents in this thread group have been reinitialized.
       *
       * This call will stop the entire thread group (if it is running)
       *  at the next valid stop time (see IAgentRunControl::Stop).  
       *
-      * @see IAgent::ReinitializeWithOldSettings
+      * @see Agent::ReinitializeWithOldSettings
       *
       * Possible Errors:
       *   @li Any errors that can be generated by ReinitializeWithOldSettings
@@ -553,8 +553,8 @@ namespace gSKI
        * @param Agent about to be intialized
        */
       //{
-      void FireBeforeAgentReinitialized(IAgent* a);
-      void FireAfterAgentReinitialized(IAgent* a);
+      void FireBeforeAgentReinitialized(Agent* a);
+      void FireAfterAgentReinitialized(Agent* a);
  	  void FireBeforeAgentsRunStepEvent() ;
      //}
  
@@ -572,13 +572,13 @@ namespace gSKI
          */
          class AgentNotifier {
          public:
-            AgentNotifier(IAgent* a): m_agent(a) {}
+            AgentNotifier(Agent* a): m_agent(a) {}
             void operator()(egSKIAgentEventId eventId, IAgentListener* listener)
             {
                listener->HandleEvent(eventId, m_agent);
             }
          private:
-            IAgent*           m_agent;
+            Agent*           m_agent;
          };
 
          /** 
@@ -601,7 +601,7 @@ namespace gSKI
             /** 
              * @brief The callback method for run events
              */
-            virtual void HandleEvent(egSKIRunEventId eventId, IAgent* agentPtr, egSKIPhaseType phase);
+            virtual void HandleEvent(egSKIRunEventId eventId, Agent* agentPtr, egSKIPhaseType phase);
          private:
             AgentManager* m_am;  /**< We will call agent manager */
          };
@@ -618,7 +618,7 @@ namespace gSKI
 
          AgentRunManager           m_runManager;             /**< Manages running agents */
 
-		typedef FwdContainerType< std::vector<IAgent*> >    tAgentVec;
+		typedef FwdContainerType< std::vector<Agent*> >    tAgentVec;
 		typedef Iterator<tAgentVec::V, tAgentVec::t>		tAgentIter;
    };
 

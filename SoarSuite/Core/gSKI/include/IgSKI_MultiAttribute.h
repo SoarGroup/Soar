@@ -25,7 +25,7 @@ namespace gSKI
 
       In particular the matching priority for a particular named
       multi-attribute can be accessed with this interface. To set the
-      value call IAgent::SetMultiAttribute()
+      value call Agent::SetMultiAttribute()
    */
    class IMultiAttribute : public IRelease
    {

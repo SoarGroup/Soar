@@ -55,6 +55,8 @@ sml_XMLListener.cpp\
 
 INCLUDES = \
 -I../include \
+-I../../SoarKernel/include\
+-I../../gSKI/src\
 -I../../ElementXML/include \
 -I../../ConnectionSML/include \
 -I../../gSKI/include \

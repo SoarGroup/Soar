@@ -10,7 +10,7 @@
 
 #include "gSKI_Events.h"
 #include "gSKI_Enumerations.h"
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 
 namespace sml {
 
@@ -20,7 +20,7 @@ class XMLListener ;
 class AgentOutputFlusher : public gSKI::IRunListener
 {
 protected:
-	gSKI::IAgent* m_pAgent;
+	gSKI::Agent* m_pAgent;
 	int m_EventID ;
 
 	// Only one listener will be filled in.
@@ -28,11 +28,11 @@ protected:
 	XMLListener*   m_pXMLListener;
 
 public:
-	AgentOutputFlusher(PrintListener* pPrintListener, gSKI::IAgent* pAgent, egSKIPrintEventId eventID);
-	AgentOutputFlusher(XMLListener* pXMLListener, gSKI::IAgent* pAgent, egSKIXMLEventId eventID);
+	AgentOutputFlusher(PrintListener* pPrintListener, gSKI::Agent* pAgent, egSKIPrintEventId eventID);
+	AgentOutputFlusher(XMLListener* pXMLListener, gSKI::Agent* pAgent, egSKIXMLEventId eventID);
 	virtual ~AgentOutputFlusher();
 
-	virtual void HandleEvent(egSKIRunEventId eventId, gSKI::IAgent* agentPtr, egSKIPhaseType phase);
+	virtual void HandleEvent(egSKIRunEventId eventId, gSKI::Agent* agentPtr, egSKIPhaseType phase);
 };
 
 }

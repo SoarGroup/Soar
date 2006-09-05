@@ -19,7 +19,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseAlias(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
 	Options optionsData[] = {

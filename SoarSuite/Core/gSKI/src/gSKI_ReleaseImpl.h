@@ -25,7 +25,7 @@ namespace gSKI
    void ReleaseImplDebugRemoveObject(IRelease* pRelease);
 #endif
 
-   template <typename T, bool clientOwned>
+   template <typename T>
    class SimpleReleaseImpl : public T
    {
    public:
@@ -62,11 +62,6 @@ namespace gSKI
 		 return true ;
       }
 
-      virtual bool IsClientOwned(Error* err = 0) const 
-      { 
-         ClearError(err);
-         return clientOwned; 
-      }
       //}
 
    private:
@@ -80,7 +75,7 @@ namespace gSKI
       virtual unsigned long GetRefCount() const = 0;
    };
 
-   template <typename T, bool clientOwned>
+   template <typename T>
    class RefCountedReleaseImpl : 
       public T, 
       public IRefCountedReleaseImpl
@@ -157,13 +152,6 @@ namespace gSKI
          }
 		 return false ;
       }
-
-      virtual bool IsClientOwned(Error* err = 0) const 
-      { 
-         ClearError(err);
-         return clientOwned; 
-      }
-      //}
 
    private:
       unsigned long m_count;  /// The reference count

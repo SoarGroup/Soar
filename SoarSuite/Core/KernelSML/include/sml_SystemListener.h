@@ -26,7 +26,7 @@
 #include "gSKI_Events.h"
 #include "gSKI_Enumerations.h"
 #include "IgSKI_Iterator.h"
-#include "IgSKI_Kernel.h"
+#include "gSKI_Kernel.h"
 #include "sml_EventManager.h"
 
 #include <string>
@@ -60,7 +60,7 @@ public:
 	virtual bool RemoveListener(egSKISystemEventId eventID, Connection* pConnection) ;
 
 	// Called when a "SystemEvent" occurs in the kernel
-	virtual void HandleEvent(egSKISystemEventId eventId, gSKI::IKernel* kernel) ;
+	virtual void HandleEvent(egSKISystemEventId eventId, gSKI::Kernel* kernel) ;
 
 } ;
 

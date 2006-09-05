@@ -13,7 +13,7 @@
 #ifndef GSKI_TESTSET_H
 #define GSKI_TESTSET_H
 
-#include "IgSKI_TestSet.h"
+#include "IgSKI_Iterator.h"
 
 typedef char * test;
 
@@ -27,7 +27,7 @@ namespace gSKI
    /**
    * @brief: This is used to represent a set of Tests
    */
-   class TestSet : public ITestSet
+   class TestSet
    {
    public:
 
@@ -101,8 +101,8 @@ namespace gSKI
        void AddTestSet(const test t);
 
    private:
-      typedef std::vector<ITest *> tTestVec;
-      typedef std::vector<ITestSet *> tTestSetVec;
+      typedef std::vector<Test *> tTestVec;
+      typedef std::vector<TestSet *> tTestSetVec;
 
       tTestVec     m_tests;
       tTestSetVec  m_testSets;

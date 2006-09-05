@@ -22,7 +22,7 @@ using namespace sml;
 const char* kTimestamp = __TIME__;
 const char* kDatestamp = __DATE__;
 
-bool CommandLineInterface::ParseVersion(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseVersion(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 	unused(argv);
 

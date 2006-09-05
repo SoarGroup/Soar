@@ -14,7 +14,7 @@
 #define GSKI_INSTANCEINFO_H
 
 #include "gSKI_Enumerations.h"
-#include "IgSKI_InstanceInfo.h"
+#include "gSKI_InstanceInfo.h"
 
 #include <string>
 
@@ -22,7 +22,7 @@ namespace gSKI
 {
    struct Error;
 
-   class InstanceInfo : public IInstanceInfo
+   class InstanceInfo
    {
    public:
       /**

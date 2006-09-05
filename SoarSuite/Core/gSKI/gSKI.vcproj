@@ -549,6 +549,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\gSKI_RhsFunction.h"
+					>
+				</File>
+				<File
 					RelativePath="src\gSKI_RhsFunctionAction.cpp"
 					>
 				</File>
@@ -648,22 +652,10 @@
 					RelativePath="src\InterruptRhsFunction.h"
 					>
 				</File>
-				<File
-					RelativePath="src\TestEvents.cpp"
-					>
-				</File>
 			</Filter>
 			<Filter
 				Name="Misc"
 				>
-				<File
-					RelativePath="src\gSKI.cpp"
-					>
-				</File>
-				<File
-					RelativePath="include\gSKI.h"
-					>
-				</File>
 				<File
 					RelativePath="src\gSKI_DoNotTouch.cpp"
 					>
@@ -710,10 +702,6 @@
 				</File>
 				<File
 					RelativePath=".\src\gSKI_ReleaseImpl.h"
-					>
-				</File>
-				<File
-					RelativePath="src\gSKI_SetActiveAgent.h"
 					>
 				</File>
 				<File
@@ -769,50 +757,6 @@
 			>
 		</Filter>
 		<Filter
-			Name="Documentation"
-			>
-			<File
-				RelativePath="..\..\Documentation\gSKI -- Design Document.doc"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Documentation\gSKI -- gSKI Summary Document.doc"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Documentation\gSki -- Use cases for gSKI core system design.doc"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Documentation\gSKI Build Types.doc"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Documentation\gSKI.doc"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Documentation\Requirements Document with Goals.doc"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Logger"
-			>
-			<File
-				RelativePath="src\ILog.h"
-				>
-			</File>
-			<File
-				RelativePath="src\Log.cpp"
-				>
-			</File>
-			<File
-				RelativePath="src\Log.h"
-				>
-			</File>
-		</Filter>
-		<Filter
 			Name="Abstract Interface"
 			>
 			<File
@@ -832,55 +776,11 @@
 				>
 			</File>
 			<File
-				RelativePath="include\IgSKI_Agent.h"
-				>
-			</File>
-			<File
-				RelativePath="include\IgSKI_AgentManager.h"
-				>
-			</File>
-			<File
-				RelativePath="include\IgSKI_Condition.h"
-				>
-			</File>
-			<File
-				RelativePath="include\IgSKI_ConditionSet.h"
-				>
-			</File>
-			<File
-				RelativePath="include\IgSKI_DoNotTouch.h"
-				>
-			</File>
-			<File
-				RelativePath="include\IgSKI_EventManager.h"
-				>
-			</File>
-			<File
 				RelativePath="include\IgSKI_InputLink.h"
 				>
 			</File>
 			<File
-				RelativePath="include\IgSKI_InstanceInfo.h"
-				>
-			</File>
-			<File
 				RelativePath="include\IgSKI_Iterator.h"
-				>
-			</File>
-			<File
-				RelativePath="include\IgSKI_Kernel.h"
-				>
-			</File>
-			<File
-				RelativePath="include\IgSKI_KernelFactory.h"
-				>
-			</File>
-			<File
-				RelativePath="include\IgSKI_Match.h"
-				>
-			</File>
-			<File
-				RelativePath="include\IgSKI_MatchSet.h"
 				>
 			</File>
 			<File
@@ -892,31 +792,11 @@
 				>
 			</File>
 			<File
-				RelativePath="include\IgSKI_Parser.h"
-				>
-			</File>
-			<File
-				RelativePath="include\IgSKI_PerformanceManager.h"
-				>
-			</File>
-			<File
 				RelativePath="include\IgSKI_Production.h"
 				>
 			</File>
 			<File
-				RelativePath="include\IgSKI_ProductionManager.h"
-				>
-			</File>
-			<File
-				RelativePath="include\IgSKI_ProductionMatch.h"
-				>
-			</File>
-			<File
 				RelativePath="include\IgSKI_Release.h"
-				>
-			</File>
-			<File
-				RelativePath="include\IgSKI_RhsFunction.h"
 				>
 			</File>
 			<File
@@ -925,14 +805,6 @@
 			</File>
 			<File
 				RelativePath="include\IgSKI_Symbol.h"
-				>
-			</File>
-			<File
-				RelativePath="include\IgSKI_Test.h"
-				>
-			</File>
-			<File
-				RelativePath="include\IgSKI_TestSet.h"
 				>
 			</File>
 			<File

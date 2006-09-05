@@ -65,7 +65,7 @@ namespace gSKI {
     *  should not cause memory bloat.
     *
     */
-   class InputWMObject: public RefCountedReleaseImpl<IWMObject, false> {
+   class InputWMObject: public RefCountedReleaseImpl<IWMObject> {
    public:
       
       /**
@@ -221,7 +221,7 @@ namespace gSKI {
        *  of working memory and need to do special processing when you reach
        *  a state.
        *
-       * @note Prefer to use the IAgent::GetTopState and IAgent::GetBottomState
+       * @note Prefer to use the Agent::GetTopState and Agent::GetBottomState
        *         to obtain state pointers over downcasting as it will be more
        *         efficient and less error prone than iterating over memory
        *         and downcasting.
