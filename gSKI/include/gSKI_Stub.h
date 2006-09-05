@@ -12,7 +12,7 @@
 *********************************************************************/
 #ifndef GSKI_STUB_H
 #define GSKI_STUB_H
-#include "IgSKI_KernelFactory.h"
+#include "gSKI_KernelFactory.h"
 
 #include "Win32LinuxDefines.h"
 /*
@@ -28,7 +28,7 @@
 */
 extern "C" 
 {
-   gSKI_EXPORT gSKI::IKernelFactory* gSKI_CreateKernelFactory(void);
+   gSKI_EXPORT gSKI::KernelFactory* gSKI_CreateKernelFactory(void);
 }
 
 

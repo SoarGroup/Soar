@@ -16,12 +16,12 @@
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseIndifferentSelection(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseIndifferentSelection(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'a', "ask",	0},
 		{'f', "first",	0},
@@ -61,7 +61,7 @@ bool CommandLineInterface::ParseIndifferentSelection(gSKI::IAgent* pAgent, std::
 	return DoIndifferentSelection(pAgent, mode);
 }
 
-bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, eIndifferentMode mode) {
+bool CommandLineInterface::DoIndifferentSelection(gSKI::Agent* pAgent, eIndifferentMode mode) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (mode == INDIFFERENT_QUERY) {

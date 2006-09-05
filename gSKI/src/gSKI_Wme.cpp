@@ -187,20 +187,6 @@ namespace gSKI
 	return false ;
   }
 
-  /*
-    ===============================
-
-    ===============================
-  */
-
-  bool Wme::IsClientOwned(Error* err) const
-  {
-    ClearError(err);
-
-    MegaAssert(false, "NOT IMPLEMENTED YET!");
-
-    return false;
-  }
 
   /*
     ===============================

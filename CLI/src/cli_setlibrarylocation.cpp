@@ -18,7 +18,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseSetLibraryLocation(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseSetLibraryLocation(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
 	if (argv.size() > 2) {

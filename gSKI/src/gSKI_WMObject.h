@@ -222,7 +222,7 @@ namespace gSKI {
        *  of working memory and need to do special processing when you reach
        *  a state.
        *
-       * @note Prefer to use the IAgent::GetTopState and IAgent::GetBottomState
+       * @note Prefer to use the Agent::GetTopState and Agent::GetBottomState
        *         to obtain state pointers over downcasting as it will be more
        *         efficient and less error prone than iterating over memory
        *         and downcasting.
@@ -301,7 +301,6 @@ namespace gSKI {
 
      // TODO: Document these methods
      bool Release(Error* err=0);
-     bool IsClientOwned(Error* err=0) const;
      
    private:
      gSymbol* m_gsym;

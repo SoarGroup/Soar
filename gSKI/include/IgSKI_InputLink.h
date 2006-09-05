@@ -20,7 +20,6 @@ namespace gSKI {
    // Forward Declarations
    class IWMObject;
    class IInputProducer;
-   class IWmeReplacementPolicy;
    class IWorkingMemory;
    struct Error;
 
@@ -144,50 +143,6 @@ namespace gSKI {
       virtual void RemoveInputProducer(IWMObject* object,
                                        IInputProducer* producer,
                                        Error* err = 0) = 0;
-
-      /**
-       * @brief Registers a WmeReplacementPolicy with a Wme on the agent's
-       *         input link.
-       *
-       * This method registers a WmeReplacementPolicy with a Wme on the 
-       * agent's input link. This WmeReplacmentPolicy is responsible for 
-       * rejecting or accepting the requests to replace a Wme made by
-       * the ReplaceWme() methods of the input link's IWorkingMemory object.
-       * If a Wme is replaced it passes its replacement policy on to 
-       * the newly created Wme. If the specified wme is invalid then an 
-       * error will be returned.
-       *
-       * @param wme The Wme with which to associate the replacment policy
-       * @param policy The replacement policy to associate with the wme
-       * @param err Pointer to client-owned error structure.  If the pointer
-       *        is not 0 this structure is filled with extended error
-       *        information.  If it is 0 (the default) extended error
-       *        information is not returned.
-       */
-      virtual void AddWmeReplacementPolicy(IWme* wme,
-                                        IWmeReplacementPolicy* policy,
-                                        Error* err = 0) = 0;
-      
-      /**
-       * @brief Unregisters a WmeReplacementPolicy with a Wme on the agent's
-       *         input link.
-       *
-       * This method unregisters a replacement policy from a Wme on the 
-       * agent's input link. Once the replacement policy is unregistered it
-       * is wholly owned by the SSI developer and should be cleaned up 
-       * appropriately. If the specified Wme is invalid or the specified
-       * replacement policy cannot be found, then an error will be returned.
-       *
-       * @param wme The Wme from which to unregister the replacement policy
-       * @param policy The replacement policy to unregister from the Wme
-       * @param err Pointer to client-owned error structure.  If the pointer
-       *        is not 0 this structure is filled with extended error
-       *        information.  If it is 0 (the default) extended error
-       *        information is not returned.
-       */
-      virtual void RemoveWmeReplacementPolicy(IWme* wme,
-                                          IWmeReplacementPolicy* policy,
-                                          Error* err = 0) = 0;
 
    };
 }

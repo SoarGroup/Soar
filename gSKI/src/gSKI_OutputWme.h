@@ -35,7 +35,7 @@ namespace gSKI {
     */
    // TODO: Is it appropriate to keep WME preferences inside the WME interface
    // or is this only needed when adding WME's.
-  class OutputWme: public RefCountedReleaseImpl<IWme, false> {
+  class OutputWme: public RefCountedReleaseImpl<IWme> {
   public:
 
      /**
@@ -203,7 +203,7 @@ namespace gSKI {
 
      // TODO: We've removed the ability to get support information from 
      // the WME's themselves. Does this functionality need to be added 
-     // or is it more appropriate in IWorkingMemory or IProductionManager?
+     // or is it more appropriate in IWorkingMemory or ProductionManager?
 
      /**
       * @brief

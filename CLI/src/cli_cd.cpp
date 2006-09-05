@@ -21,7 +21,7 @@ using namespace cli;
 #define chdir _chdir
 #endif // WIN32
 
-bool CommandLineInterface::ParseCD(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseCD(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
 	// Only takes one optional argument, the directory to change into

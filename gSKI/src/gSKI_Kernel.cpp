@@ -22,7 +22,6 @@
 #include "gSKI_EnumRemapping.h"
 #include "kernel_struct.h"
 #include "MegaAssert.h"
-#include "Log.h"
 
 //#include "MegaUnitTest.h"
 //DEF_EXPOSE(gSKI_Kernel);
@@ -43,7 +42,7 @@ namespace gSKI
 |_|\_\___|_|  |_| |_|\___|_|
    =========================
    */
-   Kernel::Kernel(const IKernelFactory* kf) : m_log(0), m_kF(kf)
+   Kernel::Kernel(const KernelFactory* kf) : m_kF(kf)
    {
       m_soarKernel   = create_kernel();
 	  m_InterruptCheckRate = 10 ;
@@ -64,7 +63,6 @@ namespace gSKI
    */
    Kernel::~Kernel()
    {
-      delete m_log; m_log = 0;
       delete m_agentMgr; m_agentMgr = 0;
       delete m_instanceInfo; m_instanceInfo = 0;
       destroy_kernel(m_soarKernel);
@@ -81,7 +79,7 @@ namespace gSKI
                        |___/                                         |___/
    =========================
    */
-   IAgentManager* Kernel::GetAgentManager(Error* err)
+   AgentManager* Kernel::GetAgentManager(Error* err)
    {
       ClearError(err);
 
@@ -99,7 +97,7 @@ namespace gSKI
                                                                         |___/
    =========================
    */
-   const IKernelFactory* Kernel::GetKernelFactory(Error* err) const
+   const KernelFactory* Kernel::GetKernelFactory(Error* err) const
    {
       return m_kF;
    }
@@ -138,7 +136,7 @@ namespace gSKI
 |___|_| |_|_|  \___/|_|  |_| |_| |_|\__,_|\__|_|\___/|_| |_|
       =========================
    */
-   IInstanceInfo* Kernel::GetInstanceInformation(Error* err)
+   InstanceInfo* Kernel::GetInstanceInformation(Error* err)
    {
       ClearError(err);
    
@@ -146,93 +144,6 @@ namespace gSKI
    }
 
 
-
-
-   /*
-   =========================
-  ____      _   ____       _                 _
- / ___| ___| |_|  _ \  ___| |__  _   _  __ _| |    ___   __ _
-| |  _ / _ \ __| | | |/ _ \ '_ \| | | |/ _` | |   / _ \ / _` |
-| |_| |  __/ |_| |_| |  __/ |_) | |_| | (_| | |__| (_) | (_| |
- \____|\___|\__|____/ \___|_.__/ \__,_|\__, |_____\___/ \__, |
-| |    ___   ___ __ _| |_(_) ___  _ __ |___/            |___/
-| |   / _ \ / __/ _` | __| |/ _ \| '_ \
-| |__| (_) | (_| (_| | |_| | (_) | | | |
-|_____\___/ \___\__,_|\__|_|\___/|_| |_|
-   =========================
-   */
-   const char* Kernel::GetLogLocation(Error* err) const
-   {
-      ClearError(err);
-
-      return 0;
-   }
-   
-   /*
-   =========================
- ____       _   ____       _                 _
-/ ___|  ___| |_|  _ \  ___| |__  _   _  __ _| |    ___   __ _
-\___ \ / _ \ __| | | |/ _ \ '_ \| | | |/ _` | |   / _ \ / _` |
- ___) |  __/ |_| |_| |  __/ |_) | |_| | (_| | |__| (_) | (_| |
-|____/ \___|\__|____/ \___|_.__/ \__,_|\__, |_____\___/ \__, |
-    _        _   _       _ _         _ |___/            |___/
-   / \   ___| |_(_)_   _(_) |_ _   _| |    _____   _____| |
-  / _ \ / __| __| \ \ / / | __| | | | |   / _ \ \ / / _ \ |
- / ___ \ (__| |_| |\ V /| | |_| |_| | |__|  __/\ V /  __/ |
-/_/   \_\___|\__|_| \_/ |_|\__|\__, |_____\___| \_/ \___|_|
-                               |___/
-   =========================
-   */
-   void Kernel::SetLogActivityLevel(egSKILogActivityLevel ALevel,
-                                         Error*                err)
-   {
-      ClearError(err);
-      
-      delete m_log; m_log = 0; // destroy old-log if any.
-
-      m_logLevel = ALevel;
-
-      unsigned char flags = 0;
-      switch(ALevel)
-      {
-      case gSKI_LOG_NONE:
-         flags = 0;
-         break;
-      case gSKI_LOG_ALL_EXCEPT_DEBUG:
-         flags = ILog::ERR_LOG + ILog::INFO_LOG + ILog::WARN_LOG;
-         break;
-      case gSKI_LOG_ERRORS:
-         flags = ILog::ERR_LOG;
-         break;
-      case gSKI_LOG_ALL:
-         flags = ILog::ERR_LOG + ILog::INFO_LOG + ILog::WARN_LOG + ILog::DEBUG_LOG;
-         break;
-      }
-      m_log = new Log("gSKI_Logs", flags, this );
-   }
-
-   /*
-   =========================
-  ____      _   ____       _                 _
- / ___| ___| |_|  _ \  ___| |__  _   _  __ _| |    ___   __ _
-| |  _ / _ \ __| | | |/ _ \ '_ \| | | |/ _` | |   / _ \ / _` |
-| |_| |  __/ |_| |_| |  __/ |_) | |_| | (_| | |__| (_) | (_| |
- \____|\___|\__|____/ \___|_.__/ \__,_|\__, |_____\___/ \__, |
-    _        _   _       _ _         _ |___/            |___/
-   / \   ___| |_(_)_   _(_) |_ _   _| |    _____   _____| |
-  / _ \ / __| __| \ \ / / | __| | | | |   / _ \ \ / / _ \ |
- / ___ \ (__| |_| |\ V /| | |_| |_| | |__|  __/\ V /  __/ |
-/_/   \_\___|\__|_| \_/ |_|\__|\__, |_____\___| \_/ \___|_|
-                               |___/
-   =========================
-   */
-   egSKILogActivityLevel Kernel::GetLogActivityLevel(Error* err) const
-   {
-      ClearError(err);
-
-
-      return m_logLevel;
-   }
 
 
    /*
@@ -316,7 +227,7 @@ namespace gSKI
 	   * rather than a generic user function that the user provides.
 	   *
 	   **************************************************/
-	  bool Kernel::FireRhsNotification(IAgent* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
+	  bool Kernel::FireRhsNotification(Agent* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
 									   int maxReturnValueLength, char* pReturnValue)
 	  {
 			RhsNotifier rhs(pAgent, commandLine, pFunctionName, pArgument, maxReturnValueLength, pReturnValue) ;
@@ -354,52 +265,6 @@ namespace gSKI
 		  SystemNotifier sys(this) ;
 		  m_systemListeners.Notify(gSKIEVENT_SYSTEM_PROPERTY_CHANGED, sys) ;
 	  }
-
-   /*
-   =========================
-    _       _     _ _                _     _     _
-   / \   __| | __| | |    ___   __ _| |   (_)___| |_ ___ _ __   ___ _ __
-  / _ \ / _` |/ _` | |   / _ \ / _` | |   | / __| __/ _ \ '_ \ / _ \ '__|
- / ___ \ (_| | (_| | |__| (_) | (_| | |___| \__ \ ||  __/ | | |  __/ |
-/_/   \_\__,_|\__,_|_____\___/ \__, |_____|_|___/\__\___|_| |_|\___|_|
-                               |___/
-      =========================
-      */
-      void Kernel::AddLogListener(egSKIPrintEventId         nEventId, 
-                                  ILogListener*             pListener, 
-                                  bool                      bAllowAsynch,
-                                  Error*                    err)
-      {
-         ClearError(err);
-
-         m_logListeners.AddListener(nEventId, pListener);
-         if(m_log != 0)
-         {
-            m_log->SetCallback(&m_logListeners);
-         } else {
-            SetErrorExtended(err, gSKIERR_INVALID_PTR, "Not Currently Logging");
-         }
-      }
-
-   /*
-   =========================
- ____                               _                _     _     _
-|  _ \ ___ _ __ ___   _____   _____| |    ___   __ _| |   (_)___| |_ ___ _ __   ___ _ __
-| |_) / _ \ '_ ` _ \ / _ \ \ / / _ \ |   / _ \ / _` | |   | / __| __/ _ \ '_ \ / _ \ '__|
-|  _ <  __/ | | | | | (_) \ V /  __/ |__| (_) | (_| | |___| \__ \ ||  __/ | | |  __/ |
-|_| \_\___|_| |_| |_|\___/ \_/ \___|_____\___/ \__, |_____|_|___/\__\___|_| |_|\___|_|
-                                               |___/
-      =========================
-      */
-   void Kernel::RemoveLogListener(egSKIPrintEventId     nEventId,
-                                    ILogListener*       pListener,
-                                    Error*              err)
-   {
-      ClearError(err);
-      m_logListeners.RemoveListener(nEventId, pListener);
-   }
-
-
 
 
    /*
@@ -460,19 +325,12 @@ namespace gSKI
       delete(this);
    }
 
-   // TODO: Properly implement this function
-   bool Kernel::IsClientOwned(Error* err) const
-   { 
-      MegaAssert(false, "Properly implement this function!");
-      return false;
-   }
-
    /*
    ==================================
    
    ==================================
    */
-  EvilBackDoor::ITgDWorkArounds* Kernel::getWorkaroundObject()
+  EvilBackDoor::TgDWorkArounds* Kernel::getWorkaroundObject()
   {
     static  EvilBackDoor::TgDWorkArounds evilBackDoor;
     return &evilBackDoor;

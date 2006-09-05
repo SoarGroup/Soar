@@ -21,7 +21,7 @@ using namespace sml ;
 #define unused(x) (void)(x)
 #endif
 
-AgentOutputFlusher::AgentOutputFlusher(PrintListener* pPrintListener, gSKI::IAgent* pAgent, egSKIPrintEventId eventID) : m_pAgent(pAgent), m_pPrintListener(pPrintListener)
+AgentOutputFlusher::AgentOutputFlusher(PrintListener* pPrintListener, gSKI::Agent* pAgent, egSKIPrintEventId eventID) : m_pAgent(pAgent), m_pPrintListener(pPrintListener)
 {
 	m_pXMLListener = NULL ;
 	m_EventID = eventID ;
@@ -29,7 +29,7 @@ AgentOutputFlusher::AgentOutputFlusher(PrintListener* pPrintListener, gSKI::IAge
 	m_pAgent->AddRunListener(gSKIEVENT_AFTER_RUNNING, this);
 }
 
-AgentOutputFlusher::AgentOutputFlusher(XMLListener* pXMLListener, gSKI::IAgent* pAgent, egSKIXMLEventId eventID) : m_pAgent(pAgent), m_pXMLListener(pXMLListener)
+AgentOutputFlusher::AgentOutputFlusher(XMLListener* pXMLListener, gSKI::Agent* pAgent, egSKIXMLEventId eventID) : m_pAgent(pAgent), m_pXMLListener(pXMLListener)
 {
 	m_pPrintListener = NULL ;
 	m_EventID = eventID ;
@@ -43,7 +43,7 @@ AgentOutputFlusher::~AgentOutputFlusher()
 	m_pAgent->RemoveRunListener(gSKIEVENT_AFTER_RUNNING, this);
 }
 
-void AgentOutputFlusher::HandleEvent(egSKIRunEventId eventId, gSKI::IAgent* agentPtr, egSKIPhaseType phase)
+void AgentOutputFlusher::HandleEvent(egSKIRunEventId eventId, gSKI::Agent* agentPtr, egSKIPhaseType phase)
 {
 	assert(eventId == gSKIEVENT_AFTER_DECISION_CYCLE || eventId == gSKIEVENT_AFTER_RUNNING);
 	assert(agentPtr == m_pAgent);

@@ -11,14 +11,16 @@
    A simple rhs function for concatenating symbols into a string symbol.
 */
 
-#include "IgSKI_RhsFunction.h"
+#include "gSKI_RhsAction.h"
+#include "gSKI_RhsFunction.h"
+#include "gSKI_RhsFunctionAction.h"
 #include "IgSKI_SymbolFactory.h"
 #include "IgSKI_Symbol.h"
 
 #include <sstream>
 #include <iostream>
 
-class ConcatRhsFunction: public gSKI::IRhsFunction
+class ConcatRhsFunction: public gSKI::RhsFunction
 {
  public:
    const char* GetName() const { return "concat"; }

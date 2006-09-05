@@ -15,13 +15,13 @@
 #include "cli_Commands.h"
 #include "sml_Names.h"
 
-#include "IgSKI_Agent.h"
-#include "IgSKI_ProductionManager.h"
+#include "gSKI_Agent.h"
+#include "gSKI_ProductionManager.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseSoar8(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseSoar8(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'e', "on",			0},
 		{'e', "enable",		0},
@@ -57,7 +57,7 @@ bool CommandLineInterface::ParseSoar8(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoSoar8(pAgent, query ? 0 : &soar8);
 }
 
-bool CommandLineInterface::DoSoar8(gSKI::IAgent* pAgent, bool* pSoar8) {
+bool CommandLineInterface::DoSoar8(gSKI::Agent* pAgent, bool* pSoar8) {
 
 	if (!RequireAgent(pAgent)) return false;
 
@@ -85,7 +85,7 @@ bool CommandLineInterface::DoSoar8(gSKI::IAgent* pAgent, bool* pSoar8) {
 	// }
 
 	// Check that production memory is empty
-	gSKI::IProductionManager* pProductionManager = pAgent->GetProductionManager(&m_gSKIError);
+	gSKI::ProductionManager* pProductionManager = pAgent->GetProductionManager(&m_gSKIError);
 	if (gSKI::isError(m_gSKIError)) {
 		SetErrorDetail("Unable to get production manager.");
 		return SetError(CLIError::kgSKIError);

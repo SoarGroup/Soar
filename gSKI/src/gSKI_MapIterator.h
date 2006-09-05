@@ -28,7 +28,7 @@ namespace gSKI
     *        change to the GetVal method.
     */
    template<typename T, typename Tcon>
-   class MapIterator : public SimpleReleaseImpl<IIterator<T>, true>
+   class MapIterator : public SimpleReleaseImpl< IIterator<T> >
    {
    public:
       /**

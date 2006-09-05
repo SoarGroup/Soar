@@ -18,8 +18,8 @@
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
-#include "IgSKI_Agent.h"
-#include "IgSKI_ProductionManager.h"
+#include "gSKI_Agent.h"
+#include "gSKI_ProductionManager.h"
 #include "IgSKI_Production.h"
 
 #ifdef _MSC_VER
@@ -35,7 +35,7 @@ struct MemoriesSort {
 	}
 };
 
-bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseMemories(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 
 	Options optionsData[] = {
 		{'c', "chunks",			0},
@@ -96,10 +96,10 @@ bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::
 	return DoMemories(pAgent, options, n);
 }
 
-bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, const MemoriesBitset options, int n, const std::string* pProduction) {
+bool CommandLineInterface::DoMemories(gSKI::Agent* pAgent, const MemoriesBitset options, int n, const std::string* pProduction) {
 	if (!RequireAgent(pAgent)) return false;
 
-	gSKI::IProductionManager* pProductionManager = pAgent->GetProductionManager();
+	gSKI::ProductionManager* pProductionManager = pAgent->GetProductionManager();
 	gSKI::tIProductionIterator* pIter = 0;
 	gSKI::IProduction* pProd = 0;
 	std::vector< std::pair< std::string, unsigned long > > memories;

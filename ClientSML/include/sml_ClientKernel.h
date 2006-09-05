@@ -279,8 +279,6 @@ protected:
 	*************************************************************/
 	Agent* IsXMLTraceEvent(ElementXML* pIncomingMsg) ;
 
-	void InitializeTimeTagCounter() ;
-
 public:
 	/*************************************************************
 	* @brief Creates a connection to the Soar kernel that is embedded

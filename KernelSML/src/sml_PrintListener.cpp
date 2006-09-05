@@ -63,7 +63,7 @@ bool PrintListener::RemoveListener(egSKIPrintEventId eventID, Connection* pConne
 }
 
 // Called when a "PrintEvent" occurs in the kernel
-void PrintListener::HandleEvent(egSKIPrintEventId eventID, gSKI::IAgent* agentPtr, const char* msg) 
+void PrintListener::HandleEvent(egSKIPrintEventId eventID, gSKI::Agent* agentPtr, const char* msg) 
 {
 	unused(eventID);
 	unused(agentPtr);

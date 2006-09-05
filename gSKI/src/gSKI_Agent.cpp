@@ -28,7 +28,7 @@
 #include "gSKI_SymbolFactory.h"
 #include "gSKI_Symbol.h"
 #include "gSKI_ObjectToPtrIterator.h"
-#include "IgSKI_RhsFunction.h"
+#include "gSKI_RhsFunction.h"
 #include "agent.h"
 #include "init_soar.h"
 #include "gski_event_system_functions.h"
@@ -50,7 +50,7 @@ namespace {
     * @brief Creates a Soar symbol based on a gSKI::ISymbol that is passed in
     *
     * This function is used as a helper for the function below to convert values
-    *   returned by the IRhsFunction object to Soar Symbols.
+    *   returned by the RhsFunction object to Soar Symbols.
     *
     * @param thisAgent Pointer to the Soar agent from which to allocate the soar symbol
     * @param sym       Pointer to the ISymbol object to convert
@@ -94,7 +94,7 @@ namespace {
       typedef gSKI::Iterator<gSKI::ISymbol*, std::vector<gSKI::gSymbol*> > tIterator;
 
       // Since we registered this callback, we know what the user data is.
-      gSKI::IRhsFunction* rhsFunction = static_cast<gSKI::IRhsFunction*>(user_data);
+      gSKI::RhsFunction* rhsFunction = static_cast<gSKI::RhsFunction*>(user_data);
 
       // Prepare arguments
 
@@ -396,20 +396,6 @@ namespace gSKI
 
    =============================
    */
-   egSKIRunResult Agent::RunInSeparateThread(egSKIRunType        runLength, 
-                                             unsigned long       count,
-                                             Error*              err)
-   {
-      MegaAssert(false, "Not implemented yet.");
-      SetError(err, gSKIERR_NOT_IMPLEMENTED);
-      return gSKI_RUN_ERROR;
-   }
-
-   /*
-   =============================
-
-   =============================
-   */
    egSKIRunResult Agent::RunInClientThread(egSKIRunType        runLength, 
                                            unsigned long       count,
                                            Error*              err)
@@ -618,7 +604,7 @@ namespace gSKI
 /_/   \_\__,_|\__,_|_| \_\_| |_|___/_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|
    =========================
    */
-   bool Agent::AddClientRhsFunction(IRhsFunction* rhsFunction, 
+   bool Agent::AddClientRhsFunction(RhsFunction* rhsFunction, 
                                     Error*        err)
    {
       ClearError(err);
@@ -754,7 +740,7 @@ namespace gSKI
                           |___/
    =============================
    */
-   IProductionManager* Agent::GetProductionManager(Error* err)
+   ProductionManager* Agent::GetProductionManager(Error* err)
    {
       ClearError(err);
 
@@ -1591,7 +1577,7 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
    }
 
 	// Called when a "RunEvent" occurs in the kernel
-   void Agent::HandleEvent(egSKIRunEventId eventId, gSKI::IAgent* agentPtr, egSKIPhaseType phase)
+   void Agent::HandleEvent(egSKIRunEventId eventId, gSKI::Agent* agentPtr, egSKIPhaseType phase)
    {
    }
 
@@ -2442,7 +2428,7 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
    //  KJC, June 05:  it's used all over in gSKI...
    ==================================
    */
-   extern agent* GetSoarAgentPtr(IAgent* agent)
+   extern agent* GetSoarAgentPtr(Agent* agent)
    {
       return ((Agent*)agent)->GetSoarAgent();
    }

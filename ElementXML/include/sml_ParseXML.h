@@ -26,8 +26,6 @@
 #include <string>
 #include <stdio.h>
 
-using namespace std ;
-
 namespace sml {
 
 // I think we'll want to implement our own parseString class

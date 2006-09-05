@@ -18,8 +18,8 @@
 #include "gSKI_Events.h"
 #include "gSKI_Enumerations.h"
 #include "IgSKI_Iterator.h"
-#include "IgSKI_Agent.h"
-#include "IgSKI_Kernel.h"
+#include "gSKI_Agent.h"
+#include "gSKI_Kernel.h"
 #include "sml_EventManager.h"
 #include "sml_AgentOutputFlusher.h"
 
@@ -36,7 +36,7 @@ class PrintListener : public gSKI::IPrintListener, public EventManager<egSKIPrin
 protected:
 	const static int kNumberPrintEvents = gSKIEVENT_LAST_PRINT_EVENT - gSKIEVENT_FIRST_PRINT_EVENT + 1 ;
 	KernelSML*		m_pKernelSML ;
-	gSKI::IAgent*	m_pAgent ;
+	gSKI::Agent*	m_pAgent ;
 	std::string		m_BufferedPrintOutput[kNumberPrintEvents];
 	AgentOutputFlusher* m_pAgentOutputFlusher[kNumberPrintEvents];
 
@@ -44,7 +44,7 @@ protected:
 	bool			m_EnablePrintCallback ;
 
 public:
-	PrintListener(KernelSML* pKernelSML, gSKI::IAgent* pAgent)
+	PrintListener(KernelSML* pKernelSML, gSKI::Agent* pAgent)
 	{
 		m_pKernelSML = pKernelSML ;
 		m_pAgent	 = pAgent ;
@@ -66,7 +66,7 @@ public:
 	virtual bool RemoveListener(egSKIPrintEventId eventID, Connection* pConnection) ;
 
 	// Called when a "PrintEvent" occurs in the kernel
-	virtual void HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const char* msg);
+	virtual void HandleEvent(egSKIPrintEventId, gSKI::Agent*, const char* msg);
 
 	// Allows us to temporarily stop forwarding print callback output from the kernel to the SML listeners
 	void EnablePrintCallback(bool enable) { m_EnablePrintCallback = enable ; }

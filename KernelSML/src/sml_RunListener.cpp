@@ -30,8 +30,8 @@
 #include "sml_Connection.h"
 #include "sml_StringOps.h"
 #include "IgSKI_Production.h"
-#include "IgSKI_ProductionManager.h"
-#include "IgSKI_Kernel.h"
+#include "gSKI_ProductionManager.h"
+#include "gSKI_Kernel.h"
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
 
@@ -66,7 +66,7 @@ bool RunListener::RemoveListener(egSKIRunEventId eventID, Connection* pConnectio
 }
 
 // Called when a "RunEvent" occurs in the kernel
-void RunListener::HandleEvent(egSKIRunEventId eventID, gSKI::IAgent* agentPtr, egSKIPhaseType phase)
+void RunListener::HandleEvent(egSKIRunEventId eventID, gSKI::Agent* agentPtr, egSKIPhaseType phase)
 {
 	// Get the first listener for this event (or return if there are none)
 	ConnectionListIter connectionIter ;

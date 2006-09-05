@@ -21,7 +21,7 @@
 
 // Forward declarations
 namespace gSKI {
-	class IAgent ;
+	class Agent ;
 	class IWme ;
 	class IInputProducer ;
 }
@@ -58,7 +58,7 @@ protected:
 	gSKI::IInputProducer* m_pInputProducer ;
 
 	// A reference to the underlying gSKI agent object
-	gSKI::IAgent*	m_pIAgent ;
+	gSKI::Agent*	m_pIAgent ;
 
 	// Pointer back to the owning kernel SML object
 	KernelSML*		m_pKernelSML ;
@@ -104,7 +104,7 @@ protected:
 	unsigned long m_OutputCounter ;
 
 public:
-	AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) ;
+	AgentSML(KernelSML* pKernelSML, gSKI::Agent* pAgent) ;
 
 	~AgentSML() ;
 
@@ -121,7 +121,7 @@ public:
 	// be removed (this should generally be correct so we'll default to true for it).
 	void ReleaseAllWmes(bool flushPendingRemoves = true) ;
 
-	gSKI::IAgent* GetIAgent() { return m_pIAgent ; }
+	gSKI::Agent* GetIAgent() { return m_pIAgent ; }
 
 	void SetInputLinkRoot(gSKI::IWMObject* pRoot)   { m_InputLinkRoot = pRoot ; }
 	gSKI::IWMObject* GetInputLinkRoot()				{ return m_InputLinkRoot ; }

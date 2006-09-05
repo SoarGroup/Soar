@@ -20,7 +20,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseSetStopPhase(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseSetStopPhase(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
 	Options optionsData[] = {

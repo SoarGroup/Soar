@@ -14,7 +14,7 @@
 #ifndef GSKI_KERNELFACTORY_H
 #define GSKI_KERNELFACTORY_H
 
-#include "IgSKI_KernelFactory.h"
+#include "gSKI_KernelFactory.h"
 #include "IterUtils.h"
 #include "gSKI_Iterator.h"
 
@@ -23,7 +23,11 @@
 
 namespace gSKI {
 
-   class IInstanceInfo;
+   const unsigned short MajorVersionNumber = 0;
+   const unsigned short MinorVersionNumber = 1;
+   const unsigned short MicroVersionNumber = 0;
+
+   class InstanceInfo;
    class Kernel;
 
    /**
@@ -33,7 +37,7 @@ namespace gSKI {
     * The interface provides methods for discovering what type of instance the kernel can
     * create or attach to, as well as the usual creation method and an attach method.
     */
-   class KernelFactory : public IKernelFactory
+   class KernelFactory
    {
    public:
 
@@ -229,7 +233,7 @@ namespace gSKI {
       *                            debug logs should be kept.  If this is 0, no debug log files are 
       *                            generated (though a client can still listen for log messages).  The
       *                            debug log location cannot be moved once the kernel is instantiated.
-      * @param eLogActivity       The types of errors to log.  See IKernel::SetLogActivity for possible
+      * @param eLogActivity       The types of errors to log.  See Kernel::SetLogActivity for possible
       *                            values.
       * @param  err Pointer to client-owned error structure.  If the pointer
       *               is not 0 this structure is filled with extended error
@@ -241,12 +245,11 @@ namespace gSKI {
 	   *           exists and the factory does not support multi-instance
 	   *           creation), the method returns 0.
       */
-      IKernel* Create(const char*           szInstanceName     = 0,
+      Kernel* Create(const char*           szInstanceName     = 0,
                       egSKIThreadingModel   eTModel            = gSKI_MULTI_THREAD, 
                       egSKIProcessType      ePType             = gSKI_ANY_PROCESS, 
                       const char*           szLocation         = 0, 
                       const char*           szLogLocation = 0,
-                      egSKILogActivityLevel eLogActivity       = gSKI_LOG_ERRORS,
                       Error*                err                = 0) const;
 
       /**
@@ -254,7 +257,7 @@ namespace gSKI {
        *
        * @param krnl The kernel to be destroyed.
        */
-      void DestroyKernel(IKernel *krnl, Error *err=0);
+      void DestroyKernel(Kernel *krnl, Error *err=0);
 
       /**
       * @brief Attaches this instance of gSKI to an existing instance
@@ -281,7 +284,7 @@ namespace gSKI {
 	   *           or if this factory does not support attaching to running
 	   *           instances, the return value is 0.
       */
-      IKernel* Attach(const IInstanceInfo* pInstanceInfo, Error* err = 0) const;
+      Kernel* Attach(const InstanceInfo* pInstanceInfo, Error* err = 0) const;
 
       
       /**
@@ -292,21 +295,15 @@ namespace gSKI {
       */
       bool Release(Error* err = 0);
 
-      /**
-       * @brief Required by the IRelease interface
-       */
-      // TODO: Properly implement and document this method
-      bool IsClientOwned(Error* err = 0) const;
-
    private:
       /**
-       * @brief: The Typedefs for a std vector of IInstanceInfo pointers.
+       * @brief: The Typedefs for a std vector of InstanceInfo pointers.
        */
-      typedef FwdContainerType< std::vector<IInstanceInfo * > >  tInstanceInfoVec;
-      typedef FwdContainerType< std::vector< const IKernel *> >          tKernelVec;
+      typedef FwdContainerType< std::vector<InstanceInfo * > >  tInstanceInfoVec;
+      typedef FwdContainerType< std::vector< const Kernel *> >          tKernelVec;
 
       /**
-       * @brief: The iterator that will hold the container of IInstanceInfo pointers.
+       * @brief: The iterator that will hold the container of InstanceInfo pointers.
        */
       typedef Iterator<tInstanceInfoVec::V, tInstanceInfoVec::t>  tInstanceInfoIter;
 

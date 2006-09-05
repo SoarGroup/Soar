@@ -16,12 +16,12 @@
 #include "sml_StringOps.h"
 #include "sml_Names.h"
 
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseOSupportMode(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseOSupportMode(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	
 	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
 
@@ -41,7 +41,7 @@ bool CommandLineInterface::ParseOSupportMode(gSKI::IAgent* pAgent, std::vector<s
 	return DoOSupportMode(pAgent, mode);
 }
 
-bool CommandLineInterface::DoOSupportMode(gSKI::IAgent* pAgent, int mode) {
+bool CommandLineInterface::DoOSupportMode(gSKI::Agent* pAgent, int mode) {
 
 	if (!RequireAgent(pAgent)) return false;
 

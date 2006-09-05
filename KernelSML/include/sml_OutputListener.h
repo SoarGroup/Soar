@@ -15,7 +15,7 @@
 #include "gSKI_Events.h"
 #include "gSKI_Enumerations.h"
 #include "IgSKI_Iterator.h"
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 #include "sml_EventManager.h"
 
 #include <map>
@@ -33,14 +33,14 @@ class OutputListener : public gSKI::IWorkingMemoryListener, public gSKI::IAgentL
 {
 protected:
 	KernelSML*		m_KernelSML ;
-	gSKI::IAgent*	m_Agent ;
+	gSKI::Agent*	m_Agent ;
 
 	// A list of the time tags of output wmes that we've already seen and sent to the client
 	// This allows us to only send changes over.
 	OutputTimeTagMap m_TimeTags ;
 
 public:
-	OutputListener(KernelSML* pKernelSML, gSKI::IAgent* pAgent)
+	OutputListener(KernelSML* pKernelSML, gSKI::Agent* pAgent)
 	{
 		m_KernelSML = pKernelSML ;
 		m_Agent		= pAgent ;
@@ -64,10 +64,10 @@ public:
 	virtual bool RemoveListener(egSKIWorkingMemoryEventId eventID, Connection* pConnection) ;
 
 	// Working memory event listener (called when the agent generates output)
-	virtual void HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::IAgent* agentPtr, egSKIWorkingMemoryChange change, gSKI::tIWmeIterator* wmelist) ;
+	virtual void HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::Agent* agentPtr, egSKIWorkingMemoryChange change, gSKI::tIWmeIterator* wmelist) ;
 
 	// Agent event listener (called when soar is re-initialized)
-	virtual void HandleEvent(egSKIAgentEventId eventId, gSKI::IAgent* agentPtr) ;
+	virtual void HandleEvent(egSKIAgentEventId eventId, gSKI::Agent* agentPtr) ;
 } ;
 
 }

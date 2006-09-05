@@ -14,7 +14,7 @@
 #define GSKI_CONDITIONSET_H
 
 #include "gSKI_Iterator.h"
-#include "IgSKI_ConditionSet.h"
+#include "gSKI_ConditionSet.h"
 #include "IterUtils.h"
 
 typedef struct condition_struct condition;
@@ -48,7 +48,7 @@ namespace gSKI {
     *
     * It is worth noting that all relevant sets are negated.
     */
-   class ConditionSet: public IConditionSet
+   class ConditionSet
   {
    public:
 
@@ -58,7 +58,7 @@ namespace gSKI {
       ConditionSet(agent* a);
 
       /**
-       * @brief Destructor for the IConditionSet
+       * @brief Destructor for the ConditionSet
        *
        * This function insures that the destructor in the most derived
        * class is called when it is destroyed.  This will always be 
@@ -149,12 +149,12 @@ namespace gSKI {
   private:
      agent*          m_agent;
 
-     typedef std::vector<ICondition*>    tConditionVec;
+     typedef std::vector<Condition*>    tConditionVec;
      typedef tConditionVec::iterator     tConditionVecIt;
 
-     //typedef std::vector<IConditionSet*> tConditionSetVec;
+     //typedef std::vector<ConditionSet*> tConditionSetVec;
      //typedef tConditionSetVec::iterator  tConditionSetVecIt;
-     typedef FwdContainerType< std::vector<IConditionSet *> >          tConditionSet;
+     typedef FwdContainerType< std::vector<ConditionSet *> >          tConditionSet;
      typedef Iterator<tConditionSet::V, tConditionSet::t>  tConditionSetIter;
 
      tConditionVec               m_conditions;

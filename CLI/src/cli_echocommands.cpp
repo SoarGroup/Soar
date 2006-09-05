@@ -20,7 +20,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseEchoCommands(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseEchoCommands(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
 	Options optionsData[] = {

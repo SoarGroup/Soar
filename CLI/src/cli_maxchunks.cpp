@@ -16,12 +16,12 @@
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseMaxChunks(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseMaxChunks(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 
 	// n defaults to 0 (print current value)
 	int n = 0;
@@ -37,7 +37,7 @@ bool CommandLineInterface::ParseMaxChunks(gSKI::IAgent* pAgent, std::vector<std:
 	return DoMaxChunks(pAgent, n);
 }
 
-bool CommandLineInterface::DoMaxChunks(gSKI::IAgent* pAgent, const int n) {
+bool CommandLineInterface::DoMaxChunks(gSKI::Agent* pAgent, const int n) {
 
 	if (!RequireAgent(pAgent)) return false;
 

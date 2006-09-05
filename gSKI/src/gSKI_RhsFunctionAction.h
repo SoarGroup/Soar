@@ -14,9 +14,9 @@
 #ifndef GSKI_RHS_FUNCTION_ACTION_HEADER
 #define GSKI_RHS_FUNCTION_ACTION_HEADER
 
-#include "IgSKI_RhsFunctionAction.h"
-
 #include "gSKI_ActionElement.h"
+#include "gSKI_Error.h"
+#include "IgSKI_Iterator.h"
 
 #include <string>
 #include <vector>
@@ -34,15 +34,15 @@ namespace gSKI {
     * Right hand side functions come in two major flavors:
     *  @li Stand alone functions - These do not return symbols and 
     *          do not create wme preferences.  They are not part
-    *          of IRhsAction objects.
+    *          of RhsAction objects.
     *  @li Nested functions - These are part of either the attribute
-    *          or value of IRhsAction objects and return a symbol
+    *          or value of RhsAction objects and return a symbol
     *          used to form a wme preference.
     *
     * Use this interface to get the name and parameters for a particular
     *   call to a rhs function in a production.
     */
-   class RhsFunctionAction: public IRhsFunctionAction
+   class RhsFunctionAction
    {
 
    public:
@@ -172,7 +172,7 @@ namespace gSKI {
       /** 
        * Iterator for parameters (external to class)
        */
-      //typedef gSKI::ObjectToPtrIterator<IActionElement*, tParamVec> tParamIterator; 
+      //typedef gSKI::ObjectToPtrIterator<ActionElement*, tParamVec> tParamIterator; 
 
       /** Name of the rhs function */
       std::string       m_name;

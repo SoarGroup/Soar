@@ -28,26 +28,26 @@
 #include "thread_Lock.h"
 #include "thread_Thread.h"
 
-#include "gSKI.h"
 #include <iostream>
 #include <fstream>
 #include <map>
 #include <stdlib.h>
 
-#include "IgSKI_KernelFactory.h"
+#include "gSKI_KernelFactory.h"
 #include "gSKI_Stub.h"
-#include "IgSKI_Kernel.h"
-#include "../../gSKI/src/gSKI_Error.h"
+#include "gSKI_Kernel.h"
+#include "gSKI_Error.h"
 #include "gSKI_ErrorIds.h"
 #include "gSKI_Enumerations.h"
 #include "gSKI_Events.h"
-#include "IgSKI_AgentManager.h"
-#include "IgSKI_Agent.h"
-#include "IgSKI_ProductionManager.h"
+#include "gSKI_AgentManager.h"
+#include "gSKI_Agent.h"
+#include "gSKI_ProductionManager.h"
 #include "IgSKI_OutputProcessor.h"
 #include "IgSKI_InputProducer.h"
 #include "IgSKI_Symbol.h"
 #include "IgSKI_Wme.h"
+#include "IgSKI_WorkingMemory.h"
 
 using namespace sml ;
 using namespace gSKI ;
@@ -223,7 +223,7 @@ void KernelSML::Shutdown()
 *			These messages are from one client to another--kernelSML is just
 *			facilitating the message passing process without knowing/caring what is being passed.
 *************************************************************/
-std::string KernelSML::SendClientMessage(gSKI::IAgent* pAgent, char const* pMessageType, char const* pMessage)
+std::string KernelSML::SendClientMessage(gSKI::Agent* pAgent, char const* pMessageType, char const* pMessage)
 {
 	char response[10000] ;
 	response[0] = 0 ;
@@ -244,7 +244,7 @@ std::string KernelSML::SendClientMessage(gSKI::IAgent* pAgent, char const* pMess
 *			version of the command line.
 *			Returns true if at least one filter was registered.
 *************************************************************/
-bool KernelSML::SendFilterMessage(gSKI::IAgent* pAgent, char const* pCommandLine, std::string* pResult)
+bool KernelSML::SendFilterMessage(gSKI::Agent* pAgent, char const* pCommandLine, std::string* pResult)
 {
 	char response[10000] ;
 	response[0] = 0 ;
@@ -363,14 +363,14 @@ bool KernelSML::IsTracingCommunications()
 * @brief	Look up our additional SML information for a specific agent.
 *
 *			This will always return an AgentSML object.
-*			If the IAgent* is new, this call will record a new AgentSML
+*			If the Agent* is new, this call will record a new AgentSML
 *			object in the m_AgentMap and return a pointer to it.
 *			We do this, so we can easily support connecting up to
 *			agents that were created before a connection is established
 *			through SML to the kernel (e.g. when attaching a debugger).
 *	
 *************************************************************/
-AgentSML* KernelSML::GetAgentSML(gSKI::IAgent* pAgent)
+AgentSML* KernelSML::GetAgentSML(gSKI::Agent* pAgent)
 {
 	if (!pAgent)
 		return NULL ;
@@ -427,7 +427,7 @@ void KernelSML::RemoveAllListeners(Connection* pConnection)
 /*************************************************************
 * @brief	Delete the agent sml object for this agent.
 *************************************************************/	
-bool KernelSML::DeleteAgentSML(gSKI::IAgent* pAgent)
+bool KernelSML::DeleteAgentSML(gSKI::Agent* pAgent)
 {
 	// See if we already have an object in our map
 	AgentMapIter iter = m_AgentMap.find(pAgent) ;
@@ -502,12 +502,12 @@ bool KernelSML::InvalidArg(Connection* pConnection, ElementXML* pResponse, char 
 /*************************************************************
 * @brief	Look up an agent from its name.
 *************************************************************/
-IAgent* KernelSML::GetAgent(char const* pAgentName)
+Agent* KernelSML::GetAgent(char const* pAgentName)
 {
 	if (!pAgentName)
 		return NULL ;
 
-	IAgent* pAgent = GetKernel()->GetAgentManager()->GetAgent(pAgentName) ;
+	Agent* pAgent = GetKernel()->GetAgentManager()->GetAgent(pAgentName) ;
 	return pAgent ;
 }
 
@@ -550,7 +550,7 @@ bool KernelSML::ProcessCommand(char const* pCommandName, Connection* pConnection
 	// Look up the agent name parameter (most commands have this)
 	char const* pAgentName = pIncoming->GetArgString(sml_Names::kParamAgent) ;
 
-	IAgent* pAgent = NULL ;
+	Agent* pAgent = NULL ;
 
 	if (pAgentName)
 	{
@@ -600,12 +600,12 @@ bool KernelSML::ProcessCommand(char const* pCommandName, Connection* pConnection
 *			kernel without forwarding that output to clients
 *			(useful for capturing the output from some commands).
 *************************************************************/
-void KernelSML::DisablePrintCallback(gSKI::IAgent* pAgent)
+void KernelSML::DisablePrintCallback(gSKI::Agent* pAgent)
 {
 	GetAgentSML(pAgent)->DisablePrintCallback() ;
 }
 
-void KernelSML::EnablePrintCallback(gSKI::IAgent* pAgent)
+void KernelSML::EnablePrintCallback(gSKI::Agent* pAgent)
 {
 	GetAgentSML(pAgent)->EnablePrintCallback() ;
 }
@@ -803,7 +803,7 @@ EXPORT Direct_WMObject_Handle sml_DirectGetThisWMObject(Direct_WorkingMemory_Han
 
 EXPORT Direct_WorkingMemory_Handle sml_DirectGetWorkingMemory(char const* pAgentName, bool input)
 {
-	IAgent* pAgent = KernelSML::GetKernelSML()->GetKernel()->GetAgentManager()->GetAgent(pAgentName) ;
+	Agent* pAgent = KernelSML::GetKernelSML()->GetKernel()->GetAgentManager()->GetAgent(pAgentName) ;
 
 	if (!pAgent)
 		return 0 ;
@@ -816,7 +816,7 @@ EXPORT Direct_WorkingMemory_Handle sml_DirectGetWorkingMemory(char const* pAgent
 
 EXPORT Direct_WMObject_Handle sml_DirectGetRoot(char const* pAgentName, bool input)
 {
-	IAgent* pAgent = KernelSML::GetKernelSML()->GetKernel()->GetAgentManager()->GetAgent(pAgentName) ;
+	Agent* pAgent = KernelSML::GetKernelSML()->GetKernel()->GetAgentManager()->GetAgent(pAgentName) ;
 
 	if (!pAgent)
 		return 0 ;
@@ -880,7 +880,7 @@ EXPORT void sml_DirectRun(char const* pAgentName, bool forever, int stepSize, in
 
 	if (pAgentName)
 	{
-		gSKI::IAgent* pAgent = pKernelSML->GetAgent(pAgentName) ;
+		gSKI::Agent* pAgent = pKernelSML->GetAgent(pAgentName) ;
 		
 		if (!pAgent)
 			return ;
@@ -927,7 +927,7 @@ EXPORT void sml_DirectReleaseWMObject(Direct_WMObject_Handle parent)
 /*
 EXPORT Direct_Agent_Handle sml_DirectGetAgent(char const* pAgentName)
 {
-	IAgent* pAgent = KernelSML::GetKernelSML()->GetKernel()->GetAgentManager()->GetAgent(pAgentName) ;
+	Agent* pAgent = KernelSML::GetKernelSML()->GetKernel()->GetAgentManager()->GetAgent(pAgentName) ;
 	return (Direct_Agent_Handle)pAgent ;
 }
 */

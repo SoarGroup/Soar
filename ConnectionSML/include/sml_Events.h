@@ -282,12 +282,6 @@ typedef enum {
     sml_RUN_COMPLETED_AND_INTERRUPTED	// Stop was requested but run completed before agent was interrupted.
 } smlRunResult;
 
-typedef enum {
-  sml_RUNSTATE_STOPPED,
-  sml_RUNSTATE_INTERRUPTED,
-  sml_RUNSTATE_RUNNING,
-  sml_RUNSTATE_HALTED
-} smlRunState;
 
 /////////////////////////////////////////////////////////////////
 // Map event ids to and from strings

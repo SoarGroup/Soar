@@ -19,14 +19,10 @@
 #include "sml_Events.h"
 #include "sml_RunScheduler.h"
 
-#include "IgSKI_Agent.h"
-#include "IgSKI_Kernel.h"
-#include "IgSKI_AgentManager.h"
-
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseRun(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'d', "decision",		0},
 		{'e', "elaboration",	0},
@@ -119,7 +115,7 @@ eRunInterleaveMode CommandLineInterface::ParseRunInterleaveOptarg() {
 	return RUN_INTERLEAVE_DEFAULT;
 }
 
-bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options, int count, eRunInterleaveMode interleaveIn) {
+bool CommandLineInterface::DoRun(gSKI::Agent* pAgent, const RunBitset& options, int count, eRunInterleaveMode interleaveIn) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// Default run type is forever

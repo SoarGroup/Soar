@@ -16,14 +16,13 @@
 
 #include "sml_Names.h"
 
-#include "IgSKI_Agent.h"
-#include "IgSKI_Kernel.h"
-#include "IgSKI_DoNotTouch.h"
+#include "gSKI_Kernel.h"
+#include "gSKI_DoNotTouch.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseVerbose(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseVerbose(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'d', "disable",	0},
 		{'e', "enable",		0},
@@ -58,12 +57,12 @@ bool CommandLineInterface::ParseVerbose(gSKI::IAgent* pAgent, std::vector<std::s
 	return DoVerbose(pAgent, query ? 0 : &setting);
 }
 
-bool CommandLineInterface::DoVerbose(gSKI::IAgent* pAgent, bool* pSetting) {
+bool CommandLineInterface::DoVerbose(gSKI::Agent* pAgent, bool* pSetting) {
 
 	if (!RequireAgent(pAgent)) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD
-	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
 	if (!pSetting) {
 		if (m_RawOutput) {

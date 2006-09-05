@@ -21,8 +21,6 @@
 #include <vector>
 #include "ElementXMLHandle.h"
 
-using namespace std ;
-
 namespace sml {
 
 // Forward declarations

@@ -78,7 +78,7 @@ namespace gSKI {
       * @return a pointer to the agent that owns the OutputWorkingMemory 
       *          (this pointer can never be NULL)
       */
-    IAgent* GetAgent(Error * err = 0) const;
+    Agent* GetAgent(Error * err = 0) const;
 
       /**
        * @brief Adds a Wme using the most type safe WMObject, ISymbol, ISymbol syntax
@@ -763,7 +763,7 @@ namespace gSKI {
          /**
           * @brief 
           */
-         WorkingMemoryNotifier(IAgent* a, egSKIWorkingMemoryChange c, tIWmeIterator* w) : 
+         WorkingMemoryNotifier(Agent* a, egSKIWorkingMemoryChange c, tIWmeIterator* w) : 
                                                                     m_agent(a), 
                                                                     m_change(c), 
                                                                     m_wmelist(w) 
@@ -779,7 +779,7 @@ namespace gSKI {
             listener->HandleEvent(eventId, m_agent, m_change, m_wmelist);
          }
       private:
-         IAgent*					m_agent;
+         Agent*					m_agent;
          egSKIWorkingMemoryChange   m_change;
          tIWmeIterator*				m_wmelist ;
       };

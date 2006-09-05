@@ -14,7 +14,6 @@
 #define GSKI_PRODUCTIONMANAGER_H
 
 #include "IgSKI_Iterator.h"
-#include "IgSKI_ProductionManager.h"
 #include "IterUtils.h"
 #include "gSKI_Iterator.h"
 
@@ -31,11 +30,11 @@ typedef std::set<std::string> tStringSet;
 namespace gSKI {
    
    class IProduction;
-   class IMatchSet;
+   class MatchSet;
    class IProductionMatch;
    class IProductionInstance;
    class IWME;
-   class ICondition;
+   class Condition;
    class Production;
    class Agent;
    struct Error;
@@ -57,7 +56,7 @@ namespace gSKI {
     *    These methods are not specific to a particular production at every
     *    point in time.
     */
-   class ProductionManager : public IProductionManager
+   class ProductionManager
    {
    public:
 
@@ -148,7 +147,7 @@ namespace gSKI {
        *
        * @returns Success or failure of the operation.
        */
-       bool RemoveAllProductions(int& i, Error *pErr ) const;
+       bool RemoveAllProductions(int& i, Error *pErr = 0 ) const;
 
 	  /**
        * @brief Remove all UserProductions
@@ -164,7 +163,7 @@ namespace gSKI {
        *
        * @returns Success or failure of the operation.
        */
-       bool RemoveAllUserProductions(int& i, Error *pErr ) const;
+       bool RemoveAllUserProductions(int& i, Error *pErr = 0) const;
 
 	  /**
        * @brief Remove all Chunks and Justifications
@@ -180,7 +179,7 @@ namespace gSKI {
        *
        * @returns Success or failure of the operation.
        */
-       bool RemoveAllChunks (int& i, Error *pErr ) const;
+       bool RemoveAllChunks (int& i, Error *pErr = 0) const;
 
 	  /**
        * @brief Remove all DefaultProductions
@@ -196,7 +195,7 @@ namespace gSKI {
        *
        * @returns Success or failure of the operation.
        */
-       bool RemoveAllDefaultProductions(int& i, Error *pErr ) const;
+       bool RemoveAllDefaultProductions(int& i, Error *pErr = 0 ) const;
 
       /**
        * @brief Deletes a set of Productions
@@ -254,72 +253,6 @@ namespace gSKI {
        * @returns Success or failure of the operation.
        */
      bool SaveRete(const char *fn, Error *err = 0) const;
-
-
-/////////////////////////////////////////////////////////////////////////////
-
-      /**
-       * @brief Gets the productions that are currently matched.
-       *
-       * @param  err Pointer to client-owned error structure.  If the pointer
-       *              is not NULL this structure is filled with extended error
-       *              information.  If it is NULL (the default) extended error
-       *              information is not returned.
-       *
-       * @returns An iterator to the set of currently matched Productions.
-       */
-     tIProductionMatchIterator *GetMatchedProductions(Error* err = 0) const;
-
-      /**
-       * @brief Gets match sets for the given production.
-       *
-       * This function is in the Production Manager instead of the production
-       * because matches have a temporal aspect.  The match set for a production
-       * will probably change from decision cycle to decision cycle.
-       *
-       * It is also worth noting that the value returned from this call is 
-       * always a MatchSet, even if there are no negated conditions at all.
-       * What this means is that the MatchSet returned will be a non-negated
-       * set.  The only one you will find in the list.
-       *
-       * <p>Errors Returned:
-       *    @li @c gSKI_INVALID_PTR
-       *
-       * @param prod This is the production we are looking for the
-       *             matches for.
-       * @param  err Pointer to client-owned error structure.  If the pointer
-       *              is not NULL this structure is filled with extended error
-       *              information.  If it is NULL (the default) extended error
-       *              information is not returned.
-       *
-       * @returns The set of matches to the given production.
-       */
-     IMatchSet* GetMatchSets(const IProduction* prod, Error* err = 0) const;
-
-
-      /**
-       *	@brief Get wmes that match a single condition
-       *
-       * Given a single condition, we find all of the WMEs that match it
-       * at the current point in time.  It is important to note that if 
-       * the condition is negated, it returns the list of wmes that match
-       * the un-negated condition.  This can be used to determine why the
-       * condition is not matching as exptected.
-       *
-       * <p>Errors Returned:
-       *    @li @c gSKI_INVALID_PTR
-       *
-       * @param condition The condition we are seeking the matches for.
-       * @param  err Pointer to client-owned error structure.  If the pointer
-       *              is not NULL this structure is filled with extended error
-       *              information.  If it is NULL (the default) extended error
-       *              information is not returned.
-       * 
-       * @returns A set of WMEs that match the given Condition
-       */
-     tIWmeIterator* GetConditionMatches(const ICondition* condition, Error* err = 0) const;
-
-/////////////////////////////////////////////////////////////////////////////
 
       // TODO: Determine and describe what a pattern is.
       /**
@@ -412,7 +345,7 @@ namespace gSKI {
        */
      tIProductionIterator* GetDefaultProductions(Error* err = 0) const;
 
-   private:
+   public:
       /**
        * @brief: Helper function to load in a Soar File without repeats
        *
@@ -508,7 +441,7 @@ namespace gSKI {
          /**
           * @brief 
           */
-         ProductionNotifier(IAgent* a, IProduction* p, IProductionInstance* m) : 
+         ProductionNotifier(Agent* a, IProduction* p, IProductionInstance* m) : 
                                                                     m_agent(a), 
                                                                     m_prod(p), 
                                                                     m_match(m) 
@@ -524,7 +457,7 @@ namespace gSKI {
             listener->HandleEvent(eventId, m_agent, m_prod, m_match);
          }
       private:
-         IAgent*               m_agent;
+         Agent*               m_agent;
          IProduction*          m_prod;
          IProductionInstance*  m_match;
       };
@@ -600,7 +533,7 @@ namespace gSKI {
      std::string getCurrentWorkingDirectory();
 
   
-   private:
+   public:
         /**
          * @brief: A vector of productions.
          */

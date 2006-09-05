@@ -13,9 +13,7 @@
 #ifndef GSKI_TEST_H
 #define GSKI_TEST_H
 
-#include "IgSKI_Test.h"
 #include "gSKI_Enumerations.h"
-
 #include "gdatastructs.h"
 
 #include <string>
@@ -25,6 +23,7 @@ typedef struct agent_struct agent;
 namespace gSKI
 {
    class gSymbol;
+   class ISymbol;
    struct Error;
 
    /**
@@ -40,7 +39,7 @@ namespace gSKI
     * A simple condition could be made up a three simple tests, a complicated
     * condition could be made up of dozens of simple tests.
     */
-   class Test : public ITest
+   class Test
    {
    public:
 

@@ -64,7 +64,7 @@ namespace gSKI
     ===============================
   */
 
-  IAgent* WorkingMemory::GetAgent(Error * err) const
+  Agent* WorkingMemory::GetAgent(Error * err) const
   {
     ClearError(err);
 

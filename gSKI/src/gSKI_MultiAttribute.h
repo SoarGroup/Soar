@@ -15,7 +15,7 @@ namespace gSKI
 {
    class Agent;
 
-   class MultiAttribute : public RefCountedReleaseImpl<IMultiAttribute, true>
+   class MultiAttribute : public RefCountedReleaseImpl<IMultiAttribute>
    {
    public:
       /** 

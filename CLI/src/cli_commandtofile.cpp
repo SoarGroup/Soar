@@ -21,12 +21,10 @@
 
 #include "sml_Names.h"
 
-#include "IgSKI_Agent.h"
-
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseCommandToFile(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseCommandToFile(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	// Not going to use normal option parsing in this case because I do not want to disturb the other command on the line
 	if (argv.size() < 3) {
 		return SetError(CLIError::kTooFewArgs);

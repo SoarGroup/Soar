@@ -13,14 +13,15 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
-#include "IgSKI_Agent.h"
 #include "sml_Names.h"
 #include "sml_StringOps.h"
+
+#include "gSKI_Agent.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseAttributePreferencesMode(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseAttributePreferencesMode(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
 	
 	// Display current mode if no args
@@ -34,7 +35,7 @@ bool CommandLineInterface::ParseAttributePreferencesMode(gSKI::IAgent* pAgent, s
 	return DoAttributePreferencesMode(pAgent, &mode);
 }
 
-bool CommandLineInterface::DoAttributePreferencesMode(gSKI::IAgent* pAgent, int* pMode) {
+bool CommandLineInterface::DoAttributePreferencesMode(gSKI::Agent* pAgent, int* pMode) {
 	if (pAgent->GetOperand2Mode()) return SetError(CLIError::kSoar7Command);
 
 	if (!pMode) {

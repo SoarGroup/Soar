@@ -183,36 +183,6 @@ namespace gSKI
     ===============================
    */
 
-   void InputLink::AddWmeReplacementPolicy(IWme* wme,
-                                        IWmeReplacementPolicy* policy,
-                                        Error* err)
-   {
-      ClearError(err);
-
-      MegaAssert(false, "NOT IMPLEMENTED YET!");
-   }
-
-   /*
-    ===============================
-    
-    ===============================
-   */
-
-   void InputLink::RemoveWmeReplacementPolicy(IWme* wme,
-                                          IWmeReplacementPolicy* policy,
-                                          Error* err)
-   {
-      ClearError(err);
-
-      MegaAssert(false, "NOT IMPLEMENTED YET!");    
-   }
-
-   /*
-    ===============================
-    
-    ===============================
-   */
-
   void InputLink::InputPhaseCallback( soar_callback_agent agent,
                                       soar_callback_data callbackdata,
                                       soar_call_data calldata )

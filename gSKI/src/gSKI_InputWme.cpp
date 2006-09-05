@@ -43,17 +43,6 @@
 
 namespace gSKI
 {
-   InputWme::InputWme(InputWorkingMemory* manager, wme* wme):
-     m_manager(manager),
-     m_owningobject(0),
-     m_attribute(0),
-     m_value(0),
-     m_rawwme(wme),
-     m_removeWme(false)
-   {
-      MegaAssert( false, "Not implemented yet!");
-   }
-
    InputWme::InputWme( InputWorkingMemory* manager, 
                        InputWMObject* iobj,
                        gSymbol* attribute,

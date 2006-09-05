@@ -18,14 +18,13 @@
 #include "sml_StringOps.h"
 
 #include "IgSKI_WorkingMemory.h"
-#include "IgSKI_Agent.h"
-#include "IgSKI_Kernel.h"
-#include "IgSKI_DoNotTouch.h"
+#include "gSKI_Kernel.h"
+#include "gSKI_DoNotTouch.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseRemoveWME(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseRemoveWME(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	// Exactly one argument
 	if (argv.size() < 2) {
 		SetErrorDetail("Please supply a timetag.");
@@ -42,12 +41,12 @@ bool CommandLineInterface::ParseRemoveWME(gSKI::IAgent* pAgent, std::vector<std:
 	return DoRemoveWME(pAgent, timetag);
 }
 
-bool CommandLineInterface::DoRemoveWME(gSKI::IAgent* pAgent, int timetag) {
+bool CommandLineInterface::DoRemoveWME(gSKI::Agent* pAgent, int timetag) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD
-	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
 	if (pKernelHack->RemoveWmeByTimetag(pAgent, timetag)) return SetError(CLIError::kRemoveWMEFailed);
 	return true;

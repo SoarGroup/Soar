@@ -58,7 +58,7 @@ namespace gSKI
       }
    }
 
-   IAgent* OutputWorkingMemory::GetAgent(Error * err) const
+   Agent* OutputWorkingMemory::GetAgent(Error * err) const
    {
       ClearError(err);
       return m_agent;

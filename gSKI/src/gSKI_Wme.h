@@ -201,11 +201,10 @@ namespace gSKI {
 
      // TODO: We've removed the ability to get support information from 
      // the WME's themselves. Does this functionality need to be added 
-     // or is it more appropriate in IWorkingMemory or IProductionManager?
+     // or is it more appropriate in IWorkingMemory or ProductionManager?
 
      bool Release(Error* err=0);
-     bool IsClientOwned(Error* err=0) const;
-     // TODO: Comment the above two functions
+     // TODO: Comment the above function
 
 
      /**

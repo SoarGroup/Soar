@@ -12,19 +12,19 @@
   where the implementation of the function is within the client (not gSKI or the kernel).
 */
 
-#include "IgSKI_RhsFunction.h"
-#include "IgSKI_Kernel.h"
+#include "gSKI_RhsFunction.h"
+#include "gSKI_Kernel.h"
 
-class ExecRhsFunction: public gSKI::IRhsFunction
+class ExecRhsFunction: public gSKI::RhsFunction
 {
 private:
-	gSKI::IKernel* m_Kernel ;
-	gSKI::IAgent*  m_Agent ;
+	gSKI::Kernel* m_Kernel ;
+	gSKI::Agent*  m_Agent ;
 
  public:
-	 ExecRhsFunction(gSKI::IKernel* kernel):m_Kernel(kernel), m_Agent(0) { }
+	 ExecRhsFunction(gSKI::Kernel* kernel):m_Kernel(kernel), m_Agent(0) { }
 
-   void SetAgent(gSKI::IAgent* pAgent) { m_Agent = pAgent ; }
+   void SetAgent(gSKI::Agent* pAgent) { m_Agent = pAgent ; }
    const char* GetName() const { return "exec"; }
    int GetNumExpectedParameters() const { return (gSKI_PARAM_NUM_VARIABLE); }
    bool IsValueReturned() const { return true; }

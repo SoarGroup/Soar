@@ -15,12 +15,12 @@
 #include "cli_Commands.h"
 #include "sml_Names.h"
 
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseWaitSNC(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseWaitSNC(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'d', "disable",	0},
 		{'e', "enable",		0},
@@ -56,7 +56,7 @@ bool CommandLineInterface::ParseWaitSNC(gSKI::IAgent* pAgent, std::vector<std::s
 	return DoWaitSNC(pAgent, query ? 0 : &enable);
 }
 
-bool CommandLineInterface::DoWaitSNC(gSKI::IAgent* pAgent, bool* pSetting) {
+bool CommandLineInterface::DoWaitSNC(gSKI::Agent* pAgent, bool* pSetting) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!pSetting) {
