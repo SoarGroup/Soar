@@ -19,7 +19,7 @@
 #include "sml_Connection.h"
 #include "sml_StringOps.h"
 #include "sml_KernelSML.h"
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 
 using namespace sml ;
 
@@ -113,7 +113,7 @@ void RhsListener::RemoveAllListeners(Connection* pConnection)
 	}
 }
 
-bool RhsListener::HandleFilterEvent(egSKIRhsEventId eventID, gSKI::IAgent* pAgent, char const* pArgument,
+bool RhsListener::HandleFilterEvent(egSKIRhsEventId eventID, gSKI::Agent* pAgent, char const* pArgument,
 						    int maxLengthReturnValue, char* pReturnValue)
 {
 	// Currently only supporting one event here, but that could change in time.
@@ -221,7 +221,7 @@ bool RhsListener::HandleFilterEvent(egSKIRhsEventId eventID, gSKI::IAgent* pAgen
 // pFunctionName and pArgument define the RHS function being called (the client may parse pArgument to extract other values)
 // pResultValue is a string allocated by the caller than is of size maxLengthReturnValue that should be filled in with the return value.
 // The bool return value should be "true" if a return value is filled in, otherwise return false.
-bool RhsListener::HandleEvent(egSKIRhsEventId eventID, gSKI::IAgent* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
+bool RhsListener::HandleEvent(egSKIRhsEventId eventID, gSKI::Agent* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
 						    int maxLengthReturnValue, char* pReturnValue)
 {
 	// If this should be handled by the command line processor do so now without going
@@ -332,7 +332,7 @@ bool RhsListener::HandleEvent(egSKIRhsEventId eventID, gSKI::IAgent* pAgent, boo
 }
 
 // Execute the command line by building up an XML message and submitting it to our regular command processor.
-bool RhsListener::ExecuteCommandLine(gSKI::IAgent* pAgent, char const* pFunctionName, char const* pArgument, int maxLengthReturnValue, char* pReturnValue)
+bool RhsListener::ExecuteCommandLine(gSKI::Agent* pAgent, char const* pFunctionName, char const* pArgument, int maxLengthReturnValue, char* pReturnValue)
 {
 	KernelSML* pKernel = m_pKernelSML ;
 

@@ -14,7 +14,9 @@
 #ifndef GSKI_ACTION_ELEMENT_HEADER
 #define GSKI_ACTION_ELEMENT_HEADER
 
-#include "IgSKI_ActionElement.h"
+#include "gSKI_Enumerations.h"
+#include "gSKI_Error.h"
+#include "IgSKI_Symbol.h"
 
 typedef struct agent_struct agent;
 
@@ -38,7 +40,7 @@ namespace gSKI {
     *  fires.
     *
     */
-   class ActionElement: public IActionElement
+   class ActionElement
    {
    public:
       
@@ -126,7 +128,7 @@ namespace gSKI {
        *          occurs (e.g. the type of this element is not 
        *          gSKI_ACTION_FUNCTION) 0 is returned.
        */
-     const IRhsFunctionAction*   GetFunction(Error* err) const;
+     const RhsFunctionAction*   GetFunction(Error* err) const;
 
       /** 
        * @brief Returns the value of this element as a symbol

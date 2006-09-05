@@ -152,7 +152,7 @@ namespace gSKI
 
    ===============================
    */
-   const IRhsFunctionAction*   ActionElement::GetFunction(Error* err) const
+   const RhsFunctionAction*   ActionElement::GetFunction(Error* err) const
    {
       MegaAssert(m_type == gSKI_ACTION_FUNCTION, "Cannot return a symbol as a function.");
 

@@ -21,12 +21,12 @@
 
 #include "sml_Names.h"
 
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseCLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseCLog(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'a', "add",		0},
 		{'A', "append",		0},
@@ -127,7 +127,7 @@ bool CommandLineInterface::ParseCLog(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoCLog(pAgent, mode);
 }
 
-bool CommandLineInterface::DoCLog(gSKI::IAgent* pAgent, const eLogMode mode, const std::string* pFilename, const std::string* pToAdd) {
+bool CommandLineInterface::DoCLog(gSKI::Agent* pAgent, const eLogMode mode, const std::string* pFilename, const std::string* pToAdd) {
 	if (!RequireAgent(pAgent)) return false;
 
 	std::ios_base::openmode openmode = std::ios_base::out;

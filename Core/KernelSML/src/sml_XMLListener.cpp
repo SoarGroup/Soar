@@ -61,7 +61,7 @@ bool XMLListener::RemoveListener(egSKIXMLEventId eventID, Connection* pConnectio
 }
 
 // Called when a "PrintEvent" occurs in the kernel
-void XMLListener::HandleEvent(egSKIXMLEventId eventId, gSKI::IAgent* agentPtr, const char* funcType, const char* attOrTag, const char* value)
+void XMLListener::HandleEvent(egSKIXMLEventId eventId, gSKI::Agent* agentPtr, const char* funcType, const char* attOrTag, const char* value)
 {
 	// We're assuming this is correct in the flush output function, so we should check it here
 	assert(agentPtr == m_pAgent);

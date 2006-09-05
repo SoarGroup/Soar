@@ -16,13 +16,13 @@
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
-#include "IgSKI_Agent.h"
-#include "IgSKI_AgentPerformanceMonitor.h"
+#include "gSKI_Agent.h"
+#include "gSKI_AgentPerformanceMonitor.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseStats(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseStats(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'m', "memory",	0},
 		{'r', "rete",	0},
@@ -60,11 +60,11 @@ bool CommandLineInterface::ParseStats(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoStats(pAgent, options);
 }
 
-bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent, const StatsBitset& options) {
+bool CommandLineInterface::DoStats(gSKI::Agent* pAgent, const StatsBitset& options) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
-	gSKI::IAgentPerformanceMonitor* pPerfMon = pAgent->GetPerformanceMonitor();
+	gSKI::AgentPerformanceMonitor* pPerfMon = pAgent->GetPerformanceMonitor();
 
 	if (m_RawOutput) {
 		const char* _stats = "stats";

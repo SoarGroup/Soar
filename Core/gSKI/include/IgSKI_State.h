@@ -200,34 +200,6 @@ namespace gSKI {
                                                              Error* err = 0) const = 0;
 
       /** 
-       * @brief Gets the types of preferences the given operator has in this state
-       *
-       * Preferences are meta information about the acceptability of a particular
-       *  WME.  This method returns the types of preferences this operator has
-       *  in this state (operators can have different preferences in different
-       *  states).  See egSKIUnaryPreferenceType for details on types of preferences
-       *  an operator can have.
-       *
-       * @see egSKIUnaryPreferenceType
-       *
-       * Possible Errors:
-       *   gSKIERR_INVALID_PTR if operatorObject is 0 or is detectably invalid
-       *
-       * @param operatorObject Pointer to an operator for which to get the current
-       *                         preferences.
-       * @param err Pointer to client-owned error structure.  If the pointer
-       *          is not 0 this structure is filled with extended error
-       *          information.  If it is 0 (the default) extended error
-       *          information is not returned.
-       *
-       * @return A pointer to an iterator referencing the the list of preference
-       *           types this operator has in this state.  This pointer is never 0.
-       */
-      virtual tPreferenceTypeIterator* 
-                GetOperatorPreferenceTypes(const IWMObject* operatorObject,
-                                           Error*           err = 0) const = 0;
-
-      /** 
        *  This may be dangerous, because productions should be
        *   i-supported, though it might be nice to have the ability to
        *   add an operator for debug purposes.

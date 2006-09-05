@@ -270,7 +270,6 @@ public:
 	static char const* const kParamWarningsSetting;
 	static char const* const kParamPhase ;
 	static char const* const kParamDecision ;
-	static char const* const kParamRunState ;
 	static char const* const kParamInstance ;
 	static char const* const kParamTimers;
 	static char const* const kParamMessage;
@@ -399,7 +398,6 @@ public:
 	static char const* const kCommand_SendClientMessage	;
 	static char const* const kCommand_WasAgentOnRunList	;
 	static char const* const kCommand_GetResultOfLastRun ;
-	static char const* const kCommand_GetInitialTimeTag ;
 
 	// Command line interface
 	static char const* const kCommand_CommandLine ;

@@ -26,7 +26,7 @@
 
 extern "C"
 {
-   gSKI::IKernelFactory* gSKI_CreateKernelFactory(void)
+   gSKI::KernelFactory* gSKI_CreateKernelFactory(void)
    {
       return new gSKI::KernelFactory();
    }

@@ -19,7 +19,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseSoarNews(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseSoarNews(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 	unused(argv);
 	return DoSoarNews();

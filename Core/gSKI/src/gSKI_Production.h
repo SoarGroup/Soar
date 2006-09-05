@@ -33,8 +33,8 @@ typedef struct agent_struct agent;
 namespace gSKI {
 
    class IAction;     /**< @see GetActions    */
-   class ICondition;  /**< @see GetConditions */
-   class IMatch;      /**< @see GetMatches    */
+   class Condition;  /**< @see GetConditions */
+   class Match;      /**< @see GetMatches    */
    struct Error;      /**< @see Error         */
    class ConditionSet;/**< @see ConditionSet  */
 
@@ -42,7 +42,7 @@ namespace gSKI {
     * @brief This is the interface definition for Productions.
     *
     */
-  class Production : public RefCountedReleaseImpl<IProduction, true>
+  class Production : public RefCountedReleaseImpl<IProduction>
    {
    public:
       /**
@@ -51,7 +51,7 @@ namespace gSKI {
       //{
       Production(production *prod, bool includeConditions, agent* agent);
       Production(const Production& old): 
-         RefCountedReleaseImpl<IProduction, true>(old),
+         RefCountedReleaseImpl<IProduction>(old),
          m_soarProduction(0), m_agent(0), m_conditionSet(0)
       {
          *this = old;
@@ -154,7 +154,7 @@ namespace gSKI {
        * @returns The conditions that make up the LHS of the
        *          production.
        */
-      IConditionSet* GetConditions(Error *pErr = 0) const; 
+      ConditionSet* GetConditions(Error *pErr = 0) const; 
 
       /**
        * @brief Get the actions for this production that make wme preferences.
@@ -165,7 +165,7 @@ namespace gSKI {
        *  wme preferences.  Call IProduction::GetStandAloneFunctions to get
        *  an iterator to all of the actions that are stand alone functions.
        *
-       * @see IRhsAction
+       * @see RhsAction
        *
        * @param  pErr Pointer to client-owned error structure.  If the pointer
        *              is not NULL this structure is filled with extended error
@@ -193,19 +193,6 @@ namespace gSKI {
       *            will never be 0.
       */
      tIRhsFunctionActionIterator* GetStandAloneFunctions(Error* err = 0);
-
-      /**
-       * @brief returns the matches for this production.  @see MatchSet
-       *
-       * @param  pErr Pointer to client-owned error structure.  If the pointer
-       *              is not NULL this structure is filled with extended error
-       *              information.  If it is NULL (the default) extended error
-       *              information is not returned.
-       *
-       * @brief returns an iterator to the list of matches.  This pointer will
-       *            never be 0.
-       */
-     tIMatchIterator* GetMatches(Error *pErr = 0);
 
       /**
        * @brief Removes this production from the kernel and then deletes this

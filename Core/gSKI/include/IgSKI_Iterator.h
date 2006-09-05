@@ -139,48 +139,36 @@ namespace gSKI {
    };
 
    /* Forward declarations for particular instantiations of the iterator */
-   class IProductionMatch;
-   class IConditionSet;
-   class IInstanceInfo;
+   class ActionElement;
+   class Agent;
+   class Condition;
+   class ConditionSet;
+   class IMultiAttribute;
+   class InstanceInfo;
    class IProduction;
-   class ICondition;
-   class IMatchSet;
-   class IRhsAction;
-   class IMatch;
-   class IProductionMatch;
+   class ISymbol;
    class IWme;
    class IWMObject;
-   class IInstanceInfo;
-   class ISymbol;
-   class IAction;
-   class IAgent;
-   class IAgentThreadGroup;
-   class IActionElement;
-   class IRhsFunctionAction;
-   class ITestSet;
-   class ITest;
-   class IMultiAttribute;
+   class RhsAction;
+   class RhsFunctionAction;
+   class Test;
+   class TestSet;
 
    /** Typedefs for iterator instantiations */
-   typedef IIterator<IRhsFunctionAction*>        tIRhsFunctionActionIterator;
-   typedef IIterator<IAgentThreadGroup*>         tIAgentThreadGroupIterator;
-   typedef IIterator<IProductionMatch *>         tIProductionMatchIterator;
-   typedef IIterator<IActionElement*>            tIActionElementIterator;
-   typedef IIterator<egSKIPreferenceType>        tPreferenceTypeIterator;
-   typedef IIterator<IInstanceInfo*>	         tIInstanceInfoIterator;
-   typedef IIterator<IConditionSet *>            tIConditionSetIterator;
-   typedef IIterator<IProduction *>              tIProductionIterator;
-   typedef IIterator<ICondition *>               tIConditionIterator;
-   typedef IIterator<IRhsAction *>               tIRhsActionIterator;
-   typedef IIterator<IWMObject *>                tIWMObjectIterator;
-   typedef IIterator<IMatchSet *>                tIMatchSetIterator;
-   typedef IIterator<ITestSet *>                 tITestSetIterator;
-   typedef IIterator<ISymbol*>                   tISymbolIterator;
-   typedef IIterator<IMatch *>                   tIMatchIterator;
-   typedef IIterator<IAgent*>                    tIAgentIterator;
-   typedef IIterator<ITest *>                    tITestIterator;
-   typedef IIterator<IWme *>                     tIWmeIterator;
+   typedef IIterator<ActionElement*>            tIActionElementIterator;
+   typedef IIterator<Agent*>                    tIAgentIterator;
+   typedef IIterator<Condition *>               tIConditionIterator;
+   typedef IIterator<ConditionSet *>            tIConditionSetIterator;
    typedef IIterator<IMultiAttribute *>          tIMultiAttributeIterator;
+   typedef IIterator<InstanceInfo*>				tIInstanceInfoIterator;
+   typedef IIterator<IProduction *>              tIProductionIterator;
+   typedef IIterator<ISymbol*>                   tISymbolIterator;
+   typedef IIterator<IWme *>                     tIWmeIterator;
+   typedef IIterator<IWMObject *>                tIWMObjectIterator;
+   typedef IIterator<RhsAction *>               tIRhsActionIterator;
+   typedef IIterator<RhsFunctionAction*>        tIRhsFunctionActionIterator;
+   typedef IIterator<TestSet *>                 tITestSetIterator;
+   typedef IIterator<Test *>                    tITestIterator;
 }
 
 #endif

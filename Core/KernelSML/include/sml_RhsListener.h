@@ -85,14 +85,14 @@ public:
 	ConnectionList* GetRhsListeners(char const* pFunctionName) ;
 
 	// Called for a filter event
-	bool HandleFilterEvent(egSKIRhsEventId eventID, gSKI::IAgent* pAgent, char const* pArgument,
+	bool HandleFilterEvent(egSKIRhsEventId eventID, gSKI::Agent* pAgent, char const* pArgument,
 						    int maxLengthReturnValue, char* pReturnValue) ;
 
 	// Called when a "RhsEvent" occurs in the kernel
-	virtual bool HandleEvent(egSKIRhsEventId eventId, gSKI::IAgent* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
+	virtual bool HandleEvent(egSKIRhsEventId eventId, gSKI::Agent* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
 						     int maxLengthReturnValue, char* pReturnValue) ;
 
-	virtual bool ExecuteCommandLine(gSKI::IAgent* pAgent, char const* pFunctionName, char const* pArgument, int maxLengthReturnValue, char* pReturnValue) ;
+	virtual bool ExecuteCommandLine(gSKI::Agent* pAgent, char const* pFunctionName, char const* pArgument, int maxLengthReturnValue, char* pReturnValue) ;
 } ;
 
 }

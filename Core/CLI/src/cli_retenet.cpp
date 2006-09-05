@@ -14,13 +14,13 @@
 
 #include "cli_Commands.h"
 
-#include "IgSKI_Agent.h"
-#include "IgSKI_ProductionManager.h"
+#include "gSKI_Agent.h"
+#include "gSKI_ProductionManager.h"
 #include "IgSKI_Production.h"
 
 using namespace cli;
 
-bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseReteNet(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'l', "load",		1},
 		{'r', "restore",	1},
@@ -60,12 +60,12 @@ bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::s
 	return DoReteNet(pAgent, save, filename);
 }
 
-bool CommandLineInterface::DoReteNet(gSKI::IAgent* pAgent, bool save, std::string filename) {
+bool CommandLineInterface::DoReteNet(gSKI::Agent* pAgent, bool save, std::string filename) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!filename.size()) return SetError(CLIError::kMissingFilenameArg);
 
-	gSKI::IProductionManager* pProductionManager = pAgent->GetProductionManager();
+	gSKI::ProductionManager* pProductionManager = pAgent->GetProductionManager();
 	gSKI::tIProductionIterator* pIter = 0;
 
 	pIter = save ? pProductionManager->GetJustifications() : pProductionManager->GetAllProductions();

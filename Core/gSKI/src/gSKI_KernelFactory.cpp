@@ -17,7 +17,6 @@
 *********************************************************************/
 #include "gSKI_KernelFactory.h"
 #include "gSKI_Error.h"
-#include "gSKI.h"
 #include "gSKI_Kernel.h"
 #include "gSKI_Iterator.h"
 
@@ -247,19 +246,18 @@ namespace gSKI {
  \____|_|  \___|\__,_|\__\___|
    =========================
    */
-   IKernel* KernelFactory::Create(const char*           szInstanceName,
+   Kernel* KernelFactory::Create(const char*           szInstanceName,
                                   egSKIThreadingModel   eTModel, 
                                   egSKIProcessType      ePType, 
                                   const char*           szLocation, 
                                   const char*           szLogLocation,
-                                  egSKILogActivityLevel eLogActivity,
                                   Error*                err) const
    {
       ClearError(err);
 
-      IKernel* newKernel = new Kernel(this);
+      Kernel* newKernel = new Kernel(this);
 
-      m_kernels.push_back(const_cast<const IKernel *>(newKernel));
+      m_kernels.push_back(const_cast<const Kernel *>(newKernel));
       m_instances.push_back(newKernel->GetInstanceInformation());
 
       return newKernel;
@@ -275,7 +273,7 @@ namespace gSKI {
                               |___/
    ==================================
    */
-   void KernelFactory::DestroyKernel(IKernel *krnl, Error *err)
+   void KernelFactory::DestroyKernel(Kernel *krnl, Error *err)
    {
       m_instances.erase(std::find(m_instances.begin(), m_instances.end(), krnl->GetInstanceInformation()));
       m_kernels.erase(std::find(m_kernels.begin(), m_kernels.end(), krnl));
@@ -301,7 +299,7 @@ namespace gSKI {
 /_/   \_\__|\__\__,_|\___|_| |_|
    =========================
    */
-   IKernel* KernelFactory::Attach(const IInstanceInfo* pInstanceInfo, 
+   Kernel* KernelFactory::Attach(const InstanceInfo* pInstanceInfo, 
                                   Error* err) const 
    {
       ClearError(err);
@@ -324,12 +322,4 @@ namespace gSKI {
       delete(this);
 	  return true ;
    }
-
-  // TODO: Implement this function properly
-  bool KernelFactory::IsClientOwned(Error* err) const
-  { 
-    MegaAssert(false, "Properly implement this method!");
-    return false;
-  }
-    
 }

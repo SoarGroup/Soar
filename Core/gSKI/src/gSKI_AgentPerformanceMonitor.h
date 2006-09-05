@@ -19,13 +19,80 @@
 
 #include <string>
 
-#include "IgSKI_AgentPerformanceMonitor.h"
-
 namespace gSKI {
+	typedef struct {
+		unsigned long productionCountDefault;
+		unsigned long productionCountUser;
+		unsigned long productionCountChunk;
+		unsigned long productionCountJustification;
+
+		unsigned long cycleCountDecision;
+		unsigned long cycleCountElaboration;
+
+		unsigned long productionFiringCount;
+
+		unsigned long wmeCountAddition;
+		unsigned long wmeCountRemoval;
+		unsigned long wmeCount;
+		double        wmeCountAverage;
+		unsigned long wmeCountMax;
+
+		double        kernelCPUTime;
+		double        totalCPUTime;
+
+		double		  inputFunctionTime;
+		double        outputFunctionTime;
+
+		double        phaseTimeInputPhase;
+		double        phaseTimePreferencePhase;
+		double        phaseTimeWorkingMemoryPhase;
+		double        phaseTimeOutputPhase;
+		double        phaseTimeDecisionPhase;
+		double        phaseTimeProposePhase;
+		double        phaseTimeApplyPhase;
+
+		double        monitorTimeInputPhase;
+		double        monitorTimePreferencePhase;
+		double        monitorTimeWorkingMemoryPhase;
+		double        monitorTimeOutputPhase;
+		double        monitorTimeDecisionPhase;
+		double        monitorTimeProposePhase;
+		double        monitorTimeApplyPhase;
+
+		double        matchTimeInputPhase;
+		double        matchTimePreferencePhase;
+		double        matchTimeWorkingMemoryPhase;
+		double        matchTimeOutputPhase;
+		double        matchTimeDecisionPhase;
+		double        matchTimeProposePhase;
+		double        matchTimeApplyPhase;
+
+		double        ownershipTimeInputPhase;
+		double        ownershipTimePreferencePhase;
+		double        ownershipTimeWorkingMemoryPhase;
+		double        ownershipTimeOutputPhase;
+		double        ownershipTimeDecisionPhase;
+		double        ownershipTimeProposePhase;
+		double        ownershipTimeApplyPhase;
+
+		double        chunkingTimeInputPhase;
+		double        chunkingTimePreferencePhase;
+		double        chunkingTimeWorkingMemoryPhase;
+		double        chunkingTimeOutputPhase;
+		double        chunkingTimeDecisionPhase;
+		double        chunkingTimeProposePhase;
+		double        chunkingTimeApplyPhase;
+
+		unsigned long memoryUsageMiscellaneous;
+		unsigned long memoryUsageHash;
+		unsigned long memoryUsageString;
+		unsigned long memoryUsagePool;
+		unsigned long memoryUsageStatsOverhead;
+	} AgentPerformanceData;
 
 	class Agent;
 
-	class AgentPerformanceMonitor : public IAgentPerformanceMonitor
+	class AgentPerformanceMonitor
 	{
 	public:
 

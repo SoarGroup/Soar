@@ -276,7 +276,6 @@ char const* const sml_Names::kParamWarningsSetting	= "warnings_setting";
 char const* const sml_Names::kParamEventID			= "eventid" ;
 char const* const sml_Names::kParamPhase			= "phase" ;
 char const* const sml_Names::kParamDecision			= "decision" ;
-char const* const sml_Names::kParamRunState			= "runstate" ;
 char const* const sml_Names::kParamInstance			= "instance" ;
 char const* const sml_Names::kParamTimers			= "timers";
 char const* const sml_Names::kParamMessage			= "message";
@@ -412,7 +411,7 @@ char const* const sml_Names::kCommand_IsProductionLoaded	= "is_production_loaded
 char const* const sml_Names::kCommand_SendClientMessage		= "send_client_message" ;
 char const* const sml_Names::kCommand_WasAgentOnRunList		= "on_run_list" ;
 char const* const sml_Names::kCommand_GetResultOfLastRun	= "last_run_result" ;
-char const* const sml_Names::kCommand_GetInitialTimeTag		= "initial_time_tag" ;
+
 
 // command line interface
 char const* const sml_Names::kCommand_CommandLine		 = "cmdline" ;

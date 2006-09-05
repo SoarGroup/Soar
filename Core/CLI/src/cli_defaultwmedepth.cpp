@@ -16,12 +16,12 @@
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseDefaultWMEDepth(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseDefaultWMEDepth(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	// n defaults to 0 (query)
 	int n = 0;
 
@@ -36,7 +36,7 @@ bool CommandLineInterface::ParseDefaultWMEDepth(gSKI::IAgent* pAgent, std::vecto
 	return DoDefaultWMEDepth(pAgent, n ? &n : 0);
 }
 
-bool CommandLineInterface::DoDefaultWMEDepth(gSKI::IAgent* pAgent, const int* pDepth) {
+bool CommandLineInterface::DoDefaultWMEDepth(gSKI::Agent* pAgent, const int* pDepth) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!pDepth) {

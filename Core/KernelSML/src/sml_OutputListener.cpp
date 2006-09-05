@@ -22,7 +22,7 @@
 #include "IgSKI_Symbol.h"
 #include "IgSKI_WMObject.h"
 #include "IgSKI_OutputLink.h"
-#include "IgSKI_AgentManager.h"
+#include "gSKI_AgentManager.h"
 #include "IgSKI_WorkingMemory.h"
 
 #ifdef _DEBUG
@@ -90,7 +90,7 @@ bool OutputListener::RemoveListener(egSKIWorkingMemoryEventId eventID, Connectio
 	return last ;
 }
 
-void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::IAgent* agentPtr, egSKIWorkingMemoryChange change, gSKI::tIWmeIterator* wmelist)
+void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::Agent* agentPtr, egSKIWorkingMemoryChange change, gSKI::tIWmeIterator* wmelist)
 {
 	unused(change) ;
 
@@ -227,7 +227,7 @@ void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::IAgent
 
 // Agent event listener (called when soar has been or is about to be re-initialized)
 // BADBAD: This shouldn't really be handled in a class called OutputListener.
-void OutputListener::HandleEvent(egSKIAgentEventId eventId, gSKI::IAgent* agentPtr)
+void OutputListener::HandleEvent(egSKIAgentEventId eventId, gSKI::Agent* agentPtr)
 {
 	// Before the kernel is re-initialized we have to release all input WMEs.
 	// If we don't do this, gSKI will fail to re-initialize the kernel correctly as it

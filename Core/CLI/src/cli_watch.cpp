@@ -17,14 +17,14 @@
 #include "sml_StringOps.h"
 #include "sml_Names.h"
 
-#include "IgSKI_Agent.h"
-#include "IgSKI_Kernel.h"
-#include "IgSKI_DoNotTouch.h"
+#include "gSKI_Kernel.h"
+#include "gSKI_DoNotTouch.h"
+#include "gsysparam.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseWatch(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'b',"backtracing",				2},
 		{'c',"chunks",					2},
@@ -311,12 +311,12 @@ bool CommandLineInterface::CheckOptargRemoveOrZero() {
 	return SetError(CLIError::kRemoveOrZeroExpected);
 }
 
-bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting) {
+bool CommandLineInterface::DoWatch(gSKI::Agent* pAgent, const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
-	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
 	if (options.none()) {
 		// Print watch settings.

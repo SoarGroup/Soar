@@ -17,16 +17,15 @@
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
-#include "IgSKI_Agent.h"
-#include "IgSKI_Kernel.h"
-#include "IgSKI_DoNotTouch.h"
-#include "IgSKI_ProductionManager.h"
+#include "gSKI_Kernel.h"
+#include "gSKI_ProductionManager.h"
 #include "IgSKI_Production.h"
+#include "gSKI_DoNotTouch.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseExplainBacktraces(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseExplainBacktraces(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'c', "condition",	1},
 		{'f', "full",		0},
@@ -70,14 +69,14 @@ bool CommandLineInterface::ParseExplainBacktraces(gSKI::IAgent* pAgent, std::vec
 	return DoExplainBacktraces(pAgent);
 }
 
-bool CommandLineInterface::DoExplainBacktraces(gSKI::IAgent* pAgent, const std::string* pProduction, const int condition) {
+bool CommandLineInterface::DoExplainBacktraces(gSKI::Agent* pAgent, const std::string* pProduction, const int condition) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// quick sanity check
 	if (condition < -1) return SetError(CLIError::kInvalidConditionNumber);
 
 	// Attain the evil back door of doom, even though we aren't the TgD
-	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
 	if (!pProduction) {
 		// no production means query, ignore other args

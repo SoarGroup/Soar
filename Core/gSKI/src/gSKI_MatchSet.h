@@ -15,9 +15,9 @@
 namespace gSKI {
 
    struct Error;
+   class IConditionSet;
    class tIMatchIterator;
    class tIMatchSetIterator;
-   class IConditionSet;
 
    /**
     * @brief Handles sets of matches.

@@ -18,8 +18,8 @@
 #include "gSKI_Events.h"
 #include "gSKI_Enumerations.h"
 #include "IgSKI_Iterator.h"
-#include "IgSKI_Agent.h"
-#include "IgSKI_Kernel.h"
+#include "gSKI_Agent.h"
+#include "gSKI_Kernel.h"
 #include "sml_EventManager.h"
 #include "sml_AgentOutputFlusher.h"
 #include "sml_XMLTrace.h"
@@ -37,7 +37,7 @@ class XMLListener : public gSKI::IXMLListener, public EventManager<egSKIXMLEvent
 protected:
 	const static int kNumberEvents = gSKIEVENT_LAST_XML_EVENT - gSKIEVENT_XML_TRACE_OUTPUT + 1 ;
 	KernelSML*		m_pKernelSML ;
-	gSKI::IAgent*	m_pAgent ;
+	gSKI::Agent*	m_pAgent ;
 	XMLTrace		m_BufferedXMLOutput[kNumberEvents];
 	AgentOutputFlusher* m_pAgentOutputFlusher[kNumberEvents];
 
@@ -45,7 +45,7 @@ protected:
 	bool			m_EnablePrintCallback ;
 
 public:
-	XMLListener(KernelSML* pKernelSML, gSKI::IAgent* pAgent)
+	XMLListener(KernelSML* pKernelSML, gSKI::Agent* pAgent)
 	{
 		m_pKernelSML = pKernelSML ;
 		m_pAgent	 = pAgent ;
@@ -77,7 +77,7 @@ public:
 	* @param attOrTag     Pointer to c-style string containing the tag to add or remove or the attribute to add
 	* @param value		  Pointer to c-style string containing the value to add (may be NULL if just adding/ending a tag)
 	*/
-	virtual void HandleEvent(egSKIXMLEventId eventId, gSKI::IAgent* agentPtr, const char* funcType, const char* attOrTag, const char* value);
+	virtual void HandleEvent(egSKIXMLEventId eventId, gSKI::Agent* agentPtr, const char* funcType, const char* attOrTag, const char* value);
 
 	// Allows us to temporarily stop forwarding print callback output from the kernel to the SML listeners
 	void EnablePrintCallback(bool enable) { m_EnablePrintCallback = enable ; }

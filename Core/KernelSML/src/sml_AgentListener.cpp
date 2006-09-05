@@ -24,7 +24,7 @@
 #include "sml_OutputListener.h"
 #include "sml_Connection.h"
 #include "sml_StringOps.h"
-#include "IgSKI_AgentManager.h"
+#include "gSKI_AgentManager.h"
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
 
@@ -74,7 +74,7 @@ bool AgentListener::RemoveListener(egSKIAgentEventId eventID, Connection* pConne
 }
 
 // Called when an "AgentEvent" occurs in the kernel
-void AgentListener::HandleEvent(egSKIAgentEventId eventID, gSKI::IAgent* agentPtr)
+void AgentListener::HandleEvent(egSKIAgentEventId eventID, gSKI::Agent* agentPtr)
 {
 	// Pass init-soar events over to the output listener so it can do some cleanup before and after the init-soar
 	// Then send them on to everyone else like normal.

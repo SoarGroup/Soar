@@ -270,7 +270,7 @@
       Types of processes in which the kernel can be housed.  
 
       Used as a paramter passed to the kernel factory's create method and as a return
-        type for IInstanceInfo::GetProcessType.
+        type for InstanceInfo::GetProcessType.
       
       @li IN_PROCESS:             In the client's process
       @li LOCAL_OUT_OF_PROCESS:   On the same machine, but different process than client
@@ -285,21 +285,6 @@
       gSKI_ANY_OUT_OF_PROCESS, 
       gSKI_ANY_PROCESS 
    } egSKIProcessType;
-
-   /**
-      Types of debug logging allowed.  
-     
-      @li LOG_NONE:             No debug logging occurs
-      @li LOG_ERRORS:           Only errors are logged
-      @li LOG_ALL_EXCEPT_DEBUG: Everything but pure debug messages logged
-      @li LOG_ALL:              Everything is logged
-   */
-   typedef enum  { 
-      gSKI_LOG_NONE,
-      gSKI_LOG_ERRORS,
-      gSKI_LOG_ALL,
-      gSKI_LOG_ALL_EXCEPT_DEBUG
-   } egSKILogActivityLevel;
 
    /**
     * Symbol types for the ISymbol interface.
@@ -542,7 +527,7 @@
     * @li RUNSTATE_HALTED  - the agent has completed execution and cannot
     *                           be run again until reinitialized.  This is
     *                           caused by the (halt) rhs function and by
-    *                           the IAgent::Halt method or the IAgentManager::HaltAll
+    *                           the Agent::Halt method or the AgentManager::HaltAll
     *                           method.
     */
    typedef enum {
@@ -642,7 +627,7 @@
     * Support types for IWME instances.
     *
     * Returned from IWME's GetSupportType() method, and from the
-    *  IRhsAction::GetSupportType() method, this defines the
+    *  RhsAction::GetSupportType() method, this defines the
     *  type of support that a WME (or a wme that will be created
     *  by an action) has. Currently the types of support are
     *  as follows:

@@ -77,6 +77,8 @@ cli_watchwmes.cpp\
 
 INCLUDES = \
 -I../include\
+-I../../SoarKernel/include\
+-I../../gSKI/src\
 -I../../gSKI/include\
 -I../../ElementXML/include\
 -I../../ConnectionSML/include\

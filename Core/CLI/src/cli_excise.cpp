@@ -17,14 +17,14 @@
 #include "sml_StringOps.h"
 #include "sml_Names.h"
 
-#include "IgSKI_Agent.h"
-#include "IgSKI_ProductionManager.h"
+#include "gSKI_Agent.h"
+#include "gSKI_ProductionManager.h"
 #include "IgSKI_Production.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseExcise(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'a', "all",		0},
 		{'c', "chunks",		0},
@@ -81,11 +81,11 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoExcise(pAgent, options, &(argv[m_Argument - m_NonOptionArguments]));
 }
 
-bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const ExciseBitset& options, const std::string* pProduction) {
+bool CommandLineInterface::DoExcise(gSKI::Agent* pAgent, const ExciseBitset& options, const std::string* pProduction) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// Acquire production manager
-	gSKI::IProductionManager *pProductionManager = pAgent->GetProductionManager();
+	gSKI::ProductionManager *pProductionManager = pAgent->GetProductionManager();
 	if (!pProductionManager) {
 		SetErrorDetail("Failed to get production manager.");
 		return SetError(CLIError::kgSKIError);

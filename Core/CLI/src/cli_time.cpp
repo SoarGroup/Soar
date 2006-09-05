@@ -25,12 +25,10 @@
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
-#include "IgSKI_Agent.h"
-
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseTime(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	// There must at least be a command
 	if (argv.size() < 2) {
 		SetErrorDetail("Please supply a command to time.");
@@ -43,7 +41,7 @@ bool CommandLineInterface::ParseTime(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoTime(pAgent, argv);
 }
 
-bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::DoTime(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 
 	// Look at clock
 #ifdef WIN32

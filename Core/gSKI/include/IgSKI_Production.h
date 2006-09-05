@@ -19,9 +19,9 @@
 namespace gSKI {
 
    class IAction;     /**< @see GetActions    */
-   class ICondition;  /**< @see GetConditions */
-   class IConditionSet;
-   class IMatch;      /**< @see GetMatches    */
+   class Condition;  /**< @see GetConditions */
+   class ConditionSet;
+   class Match;      /**< @see GetMatches    */
    struct Error;      /**< @see Error         */
 
    /** 
@@ -132,7 +132,7 @@ namespace gSKI {
        * @returns The conditions that make up the LHS of the
        *          production.
        */
-      virtual IConditionSet* GetConditions(Error *pErr = 0) const = 0; 
+      virtual ConditionSet* GetConditions(Error *pErr = 0) const = 0; 
 
       /**
        * @brief Get the actions for this production that make wme preferences.
@@ -143,7 +143,7 @@ namespace gSKI {
        *  wme preferences.  Call IProduction::GetStandAloneFunctions to get
        *  an iterator to all of the actions that are stand alone functions.
        *
-       * @see IRhsAction
+       * @see RhsAction
        *
        * @param  pErr Pointer to client-owned error structure.  If the pointer
        *              is not NULL this structure is filled with extended error
@@ -171,18 +171,6 @@ namespace gSKI {
        *            will never be 0.
        */
       virtual tIRhsFunctionActionIterator* GetStandAloneFunctions(Error* err = 0) = 0;
-
-      /**
-       * @brief returns the matches for this production.  @see MatchSet
-       *
-       * @param  pErr Pointer to client-owned error structure.  If the pointer
-       *              is not NULL this structure is filled with extended error
-       *              information.  If it is NULL (the default) extended error
-       *              information is not returned.
-       *
-       * @brief returns an iterator to the list of matches.
-       */
-      virtual tIMatchIterator* GetMatches(Error *pErr = 0) = 0;
 
       /**
        * @brief Removes this production from the kernel and then deletes this

@@ -19,7 +19,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseEcho(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseEcho(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 	Options optionsData[] = {
 		{'n', "no-newline", 0},

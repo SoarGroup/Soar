@@ -14,14 +14,14 @@
 
 #include "cli_Commands.h"
 
-#include "IgSKI_Agent.h"
-#include "IgSKI_AgentManager.h"
-#include "IgSKI_Kernel.h"
+#include "gSKI_Agent.h"
+#include "gSKI_AgentManager.h"
+#include "gSKI_Kernel.h"
 #include "sml_KernelSML.h"
 
 using namespace cli;
 
-bool CommandLineInterface::ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseStopSoar(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'s', "self",		0},
 		{0, 0, 0}
@@ -52,7 +52,7 @@ bool CommandLineInterface::ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::
 	return DoStopSoar(pAgent, self);
 }
 
-bool CommandLineInterface::DoStopSoar(gSKI::IAgent* pAgent, bool self, const std::string* reasonForStopping) {
+bool CommandLineInterface::DoStopSoar(gSKI::Agent* pAgent, bool self, const std::string* reasonForStopping) {
 
 	unused(reasonForStopping);
 

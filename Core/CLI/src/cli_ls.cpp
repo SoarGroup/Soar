@@ -28,7 +28,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseLS(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseLS(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
 	// No arguments

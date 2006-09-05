@@ -62,17 +62,6 @@ namespace gSKI {
       *
       */
       virtual bool Release(Error* err = 0) = 0;
-
-      /** 
-       * @brief Returns whether or not this  object is client owned.
-       *
-       * If the object is client-owned, you should call release on
-       *  it when you are done using it.
-       *
-       * @return true if the object is client owned, false if it is
-       *          system owned.
-       */
-      virtual bool IsClientOwned(Error* err = 0) const = 0;
    };
 
 }

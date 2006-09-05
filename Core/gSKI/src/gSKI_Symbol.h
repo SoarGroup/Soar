@@ -55,7 +55,7 @@ namespace gSKI {
     *   @li Using the GetAttribute(), or GetValue methods of IWme
     *   @li From an ISymbolFactory instance
     */
-   class gSymbol: public RefCountedReleaseImpl<ISymbol, false> {
+   class gSymbol: public RefCountedReleaseImpl<ISymbol> {
 
    public:
 

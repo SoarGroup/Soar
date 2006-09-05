@@ -19,7 +19,7 @@
 #include "gSKI_Error.h"
 #include "gSKI_Agent.h"
 #include "gSKI_Enumerations.h"
-#include "gSKI_SetActiveAgent.h"
+//#include "gSKI_SetActiveAgent.h"
 #include "gSKI_Kernel.h"
 #include "gSKI_ProductionManager.h"
 
@@ -70,7 +70,7 @@ namespace gSKI
 
    =============================
    */
-   void AgentManager::AddAgentToRunList(IAgent* agentToAdd, Error* err)
+   void AgentManager::AddAgentToRunList(Agent* agentToAdd, Error* err)
    {
       ClearError(err);
       m_runManager.AddAgentToRunList(agentToAdd);
@@ -81,7 +81,7 @@ namespace gSKI
 
    =============================
    */
-   void AgentManager::RemoveAgentFromRunList(IAgent* agentToAdd, Error* err)
+   void AgentManager::RemoveAgentFromRunList(Agent* agentToAdd, Error* err)
    {
       ClearError(err);
       m_runManager.RemoveAgentFromRunList(agentToAdd);
@@ -169,7 +169,7 @@ namespace gSKI
    bool AgentManager::InterruptAll(egSKIStopLocation    stopLoc, 
                                    Error*               err)
    {
-      IAgent* a;
+      Agent* a;
 
       // This type of stopping requires full threading
       MegaAssert(stopLoc  != gSKI_STOP_ON_CALLBACK_RETURN, "This mode is not implemented.");
@@ -210,7 +210,7 @@ namespace gSKI
    */
    void AgentManager::ClearAllInterrupts(Error* err)
    {
-      IAgent* a;
+      Agent* a;
 
       // Just in case there are no agents
       ClearError(err);
@@ -238,7 +238,7 @@ namespace gSKI
    */
    void AgentManager::HaltAll(Error* err)
    {
-      IAgent* a;
+      Agent* a;
 
       ClearError(err);
 
@@ -271,11 +271,11 @@ namespace gSKI
 
 		// I don't see a way to build a gSKI iterator from a map
 		// so copying the agents into a vector and creating an iterator for that.
-		std::vector<IAgent*> agents ;
+		std::vector<Agent*> agents ;
 
 		for(tAgentMap::It iter = m_agents.begin() ; iter != m_agents.end(); ++iter)
 		{
-			IAgent* pAgent = iter->second ;
+			Agent* pAgent = iter->second ;
 			agents.push_back(pAgent) ;
 		}
 
@@ -295,7 +295,7 @@ namespace gSKI
                        |___/
    =============================
    */
-   IAgent* AgentManager::GetAgent(const char* name, Error* err)
+   Agent* AgentManager::GetAgent(const char* name, Error* err)
    {
       ClearError(err);
 
@@ -304,7 +304,7 @@ namespace gSKI
 
       //
       // Search the map for this agent (by name) and
-      // return the IAgent pointer if it is in the list.
+      // return the Agent pointer if it is in the list.
       //
       tAgentMap::It agentIt = m_agents.find(name);
       if(agentIt == m_agents.end())
@@ -386,7 +386,7 @@ namespace gSKI
                                            |___/
    =============================
    */
-   void AgentManager::RemoveAgent(IAgent* agent, Error* err)
+   void AgentManager::RemoveAgent(Agent* agent, Error* err)
    {
       ClearError(err);
 
@@ -422,7 +422,7 @@ namespace gSKI
                            |___/
    =============================
    */
-   IAgent* AgentManager::AddAgent(const char*       name, 
+   Agent* AgentManager::AddAgent(const char*       name, 
                                   const char*       prodFileName, 
                                   bool              learningOn,
                                   egSKIOSupportMode oSupportMode,
@@ -489,7 +489,7 @@ namespace gSKI
 
    =============================
    */
-   void AgentManager::FireBeforeAgentReinitialized(IAgent* a)
+   void AgentManager::FireBeforeAgentReinitialized(Agent* a)
    {
       AgentNotifier nf(a);
       m_agentListeners.Notify(gSKIEVENT_BEFORE_AGENT_REINITIALIZED, nf);
@@ -500,7 +500,7 @@ namespace gSKI
 
    =============================
    */
-   void AgentManager::FireAfterAgentReinitialized(IAgent* a)
+   void AgentManager::FireAfterAgentReinitialized(Agent* a)
    {
       AgentNotifier nf(a);
       m_agentListeners.Notify(gSKIEVENT_AFTER_AGENT_REINITIALIZED, nf);
@@ -522,7 +522,7 @@ namespace gSKI
 
    =============================
    */
-   void AgentManager::AgentRunCompletedListener::HandleEvent(egSKIRunEventId eventId, IAgent* agentPtr, egSKIPhaseType phase)
+   void AgentManager::AgentRunCompletedListener::HandleEvent(egSKIRunEventId eventId, Agent* agentPtr, egSKIPhaseType phase)
    {
       MegaAssert(eventId == gSKIEVENT_AFTER_RUN_ENDS, "Getting an unexpected event in the agent removal listener.");
       m_am->RemoveAgentByName(agentPtr->GetName());

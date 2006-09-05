@@ -20,12 +20,12 @@
 
 #include "gSKI_Events.h"
 #include "IgSKI_Wme.h"
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 #include "IgSKI_InputProducer.h"
 #include "IgSKI_WMObject.h"
 #include "IgSKI_Symbol.h"
-#include "IgSKI_AgentManager.h"
-#include "IgSKI_Kernel.h"
+#include "gSKI_AgentManager.h"
+#include "gSKI_Kernel.h"
 #include "IgSKI_InputLink.h"
 #include "IgSKI_WorkingMemory.h"
 
@@ -42,7 +42,7 @@
 
 using namespace sml ;
 
-AgentSML::AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) : /*m_AgentListener(pKernelSML, pAgent)*/ m_ProductionListener(pKernelSML, pAgent), m_RunListener(pKernelSML, pAgent), m_PrintListener(pKernelSML, pAgent), m_XMLListener(pKernelSML, pAgent)
+AgentSML::AgentSML(KernelSML* pKernelSML, gSKI::Agent* pAgent) : /*m_AgentListener(pKernelSML, pAgent)*/ m_ProductionListener(pKernelSML, pAgent), m_RunListener(pKernelSML, pAgent), m_PrintListener(pKernelSML, pAgent), m_XMLListener(pKernelSML, pAgent)
 {
 	m_pKernelSML = pKernelSML ;
 	m_pIAgent = pAgent ;
@@ -81,8 +81,8 @@ AgentSML::~AgentSML()
 	Clear(true) ;
 
 	// If we have an output listener object, delete it now.
-	// NOTE: At this point we're assuming AgentSML objects live as long as the underlying gSKI IAgent object.
-	// If not, we need to unregister this listener, but we shouldn't do that here as the IAgent object may
+	// NOTE: At this point we're assuming AgentSML objects live as long as the underlying gSKI Agent object.
+	// If not, we need to unregister this listener, but we shouldn't do that here as the Agent object may
 	// be invalid by the time this destructor is called.
 	delete m_pOutputListener ;
 
@@ -181,7 +181,7 @@ class AgentSML::AgentBeforeDestroyedListener: public gSKI::IAgentListener
 public:
 	// This handler is called right before the agent is actually deleted
 	// inside gSKI.  We need to clean up any object we own now.
-	virtual void HandleEvent(egSKIAgentEventId, gSKI::IAgent* pAgent)
+	virtual void HandleEvent(egSKIAgentEventId, gSKI::Agent* pAgent)
 	{
 #ifdef DEBUG_UPDATE
 	PrintDebugFormat("AgentSML::AgentBeforeDestroyedListener start.") ;

@@ -20,7 +20,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseHelp(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseHelp(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
 	if (argv.size() > 2) {

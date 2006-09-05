@@ -18,14 +18,14 @@
 
 #include "sml_Names.h"
 
-#include "IgSKI_Agent.h"
-#include "IgSKI_Kernel.h"
-#include "IgSKI_DoNotTouch.h"
+#include "gSKI_Kernel.h"
+#include "gSKI_DoNotTouch.h"
+#include "gsysparam.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseMatches(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'a', "assertions",		0},
 		{'c', "count",			0},
@@ -79,7 +79,7 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 	return DoMatches(pAgent, mode, detail);
 }
 
-bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, const eMatchesMode mode, const eWMEDetail detail, const std::string* pProduction) {
+bool CommandLineInterface::DoMatches(gSKI::Agent* pAgent, const eMatchesMode mode, const eWMEDetail detail, const std::string* pProduction) {
 
 	if (!RequireAgent(pAgent)) return false;
 
@@ -99,7 +99,7 @@ bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, const eMatchesMode mo
 	}
 
 	// Attain the evil back door of doom, even though we aren't the TgD
-	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
 	if (mode == MATCHES_PRODUCTION) {
 		if (!pProduction) return SetError(CLIError::kProductionRequired);

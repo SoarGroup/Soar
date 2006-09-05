@@ -19,8 +19,8 @@
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
-#include "IgSKI_Agent.h"
-#include "IgSKI_ProductionManager.h"
+#include "gSKI_Agent.h"
+#include "gSKI_ProductionManager.h"
 #include "IgSKI_Production.h"
 
 #ifdef _MSC_VER
@@ -36,7 +36,7 @@ struct FiringsSort {
 	}
 };
 
-bool CommandLineInterface::ParseFiringCounts(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseFiringCounts(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 
 	// The number to list defaults to -1 (list all)
 	int numberToList = -1;
@@ -62,11 +62,11 @@ bool CommandLineInterface::ParseFiringCounts(gSKI::IAgent* pAgent, std::vector<s
 	return DoFiringCounts(pAgent, numberToList, pProduction);
 }
 
-bool CommandLineInterface::DoFiringCounts(gSKI::IAgent* pAgent, const int numberToList, const std::string* pProduction) {
+bool CommandLineInterface::DoFiringCounts(gSKI::Agent* pAgent, const int numberToList, const std::string* pProduction) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// get the production stuff
-	gSKI::IProductionManager* pProductionManager = pAgent->GetProductionManager();
+	gSKI::ProductionManager* pProductionManager = pAgent->GetProductionManager();
 	gSKI::tIProductionIterator* pIter = 0;
 	gSKI::IProduction* pProd = 0;
 	std::vector< std::pair< std::string, unsigned long > > firings;

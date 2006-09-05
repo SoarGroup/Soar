@@ -16,7 +16,7 @@
 
 using namespace cli;
 
-bool CommandLineInterface::ParsePopD(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParsePopD(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
 	// No arguments

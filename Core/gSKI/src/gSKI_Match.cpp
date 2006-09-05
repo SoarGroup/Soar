@@ -59,7 +59,7 @@ namespace gSKI
    ===============================
    */
 
-   ICondition *Match::GetCondition(Error *e) const
+   Condition *Match::GetCondition(Error *e) const
    {
 
       return 0;

@@ -58,7 +58,7 @@ namespace gSKI
    */
    TestSet::~TestSet()
    {
-      std::vector<ITest *>::iterator testIt = m_tests.begin();
+      std::vector<Test *>::iterator testIt = m_tests.begin();
       for( ; testIt != m_tests.end() ; ++testIt)
       {
          delete(*testIt);
@@ -66,7 +66,7 @@ namespace gSKI
       m_tests.clear();
 
 
-      std::vector<ITestSet *>::iterator djIt = m_testSets.begin();
+      std::vector<TestSet *>::iterator djIt = m_testSets.begin();
       for( ; djIt != m_testSets.end() ; ++djIt)
       {
          delete(*djIt);
@@ -86,7 +86,7 @@ namespace gSKI
    */
    tITestIterator *TestSet::GetTests(Error * /*err*/) const
    {
-      return new Iterator<ITest *, tTestVec>(m_tests);
+      return new Iterator<Test *, tTestVec>(m_tests);
    }
 
    /*
@@ -100,7 +100,7 @@ namespace gSKI
    */
    tITestSetIterator *TestSet::GetTestSets(Error * /*err*/) const
    {
-      return new Iterator<ITestSet *, tTestSetVec>(m_testSets);
+      return new Iterator<TestSet *, tTestSetVec>(m_testSets);
    }
 
    /*

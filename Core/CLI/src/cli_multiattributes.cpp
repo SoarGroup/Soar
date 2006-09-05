@@ -18,12 +18,12 @@
 #include "sml_StringOps.h"
 
 #include "IgSKI_MultiAttribute.h"
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseMultiAttributes(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseMultiAttributes(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	// No more than three arguments
 	if (argv.size() > 3) return SetError(CLIError::kTooManyArgs);
 
@@ -41,7 +41,7 @@ bool CommandLineInterface::ParseMultiAttributes(gSKI::IAgent* pAgent, std::vecto
 	return DoMultiAttributes(pAgent);
 }
 
-bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, const std::string* pAttribute, int n) {
+bool CommandLineInterface::DoMultiAttributes(gSKI::Agent* pAgent, const std::string* pAttribute, int n) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!pAttribute && !n) {

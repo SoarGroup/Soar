@@ -28,7 +28,7 @@
 #include "gSKI_Events.h"
 #include "gSKI_Enumerations.h"
 #include "IgSKI_Iterator.h"
-#include "IgSKI_Agent.h"
+#include "gSKI_Agent.h"
 #include "sml_EventManager.h"
 
 #include <string>
@@ -43,10 +43,10 @@ class RunListener : public gSKI::IRunListener, public EventManager<egSKIRunEvent
 {
 protected:
 	KernelSML*		m_pKernelSML ;
-	gSKI::IAgent*	m_pAgent ;
+	gSKI::Agent*	m_pAgent ;
 
 public:
-	RunListener(KernelSML* pKernelSML, gSKI::IAgent* pAgent)
+	RunListener(KernelSML* pKernelSML, gSKI::Agent* pAgent)
 	{
 		m_pKernelSML = pKernelSML ;
 		m_pAgent	 = pAgent ;
@@ -64,7 +64,7 @@ public:
 	virtual bool RemoveListener(egSKIRunEventId eventID, Connection* pConnection) ;
 
 	// Called when a "RunEvent" occurs in the kernel
-	virtual void HandleEvent(egSKIRunEventId eventId, gSKI::IAgent* agentPtr, egSKIPhaseType phase) ;
+	virtual void HandleEvent(egSKIRunEventId eventId, gSKI::Agent* agentPtr, egSKIPhaseType phase) ;
 } ;
 
 }
