@@ -250,7 +250,7 @@ class Generator:
         shutil.rmtree(os.path.join(self.config['core'], 'SoarLibrary\\lib'))
         
         logging.info('Copying working SoarLibrary\\bin\\tcl_sml_clientinterface\\pkgIndex.tcl to core')
-        os.makedirs(os.path.join(self.config['core'], 'SoarLibrary\\bin\\tcl_sml_clientinterface'))
+        #os.makedirs(os.path.join(self.config['core'], 'SoarLibrary\\bin\\tcl_sml_clientinterface'))
         shutil.copyfile('SoarLibrary\\bin\\tcl_sml_clientinterface\\pkgIndex.tcl',
                         os.path.join(self.config['core'], 'SoarLibrary\\bin\\tcl_sml_clientinterface\\pkgIndex.tcl'))
 
