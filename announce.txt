@@ -1,3 +1,5 @@
+Soar 8.6.3 updates
+
 Soar and SML
 * added Python support
 * added CheckForIncomingEvents to help single-threaded applications
