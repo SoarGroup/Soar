@@ -87,7 +87,7 @@ class Generator:
             
             for f in files:
                 nsioutput.write("\tFile \"%s\"\n" % os.path.join(root, f))
-                self.dirs_to_delete.append("$INSTDIR%s\\%s" % (outputdir, f))
+                self.files_to_delete.append("$INSTDIR%s\\%s" % (outputdir, f))
 
     def source(self):
         if os.path.exists(self.config['source']):
