@@ -116,6 +116,11 @@ class Generator:
             logging.debug('Removing old core tree: %s' % self.config['core'])
             shutil.rmtree(self.config['core'])
             
+        oldinstaller = '%s.exe' % self.config['namedashes']
+        if os.path.exists(oldinstaller):
+            logging.info('Removing old installer executable')
+            os.remove(oldinstaller)
+
         logging.info('Copying globs from working tree to core.')
         for root, dirs, files in os.walk('.'):
             for glob in self.config['copycoreglobs']:
