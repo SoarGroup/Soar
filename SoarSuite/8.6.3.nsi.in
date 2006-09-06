@@ -85,7 +85,6 @@ Section "Core Soar Components" Section1
 	CreateShortCut "$INSTDIR/TestConnectionSML.lnk" "$INSTDIR/SoarLibrary/bin/TestConnectionSML.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestMultiAgent.lnk" "$INSTDIR/SoarLibrary/bin/TestMultiAgent.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestSMLEvents.lnk" "$INSTDIR/SoarLibrary/bin/TestSMLEvents.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
-	CreateShortCut "$INSTDIR/TestCSharpSML.lnk" "$INSTDIR/SoarLibrary/bin/TestCSharpSML.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestSoarPerformance.lnk" "$INSTDIR/SoarLibrary/bin/TestSoarPerformance.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TOHSML.lnk" "$INSTDIR/SoarLibrary/bin/TOHSML.exe" "" "$INSTDIR/Resources/Icons/testapp.ico"
 	CreateShortCut "$INSTDIR/TestJavaSML.lnk" "$INSTDIR/SoarLibrary/bin/TestJavaSML.jar" "" "$INSTDIR/Resources/Icons/testapp.ico"
