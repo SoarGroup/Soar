@@ -1,4 +1,8 @@
 #!/usr/bin/python
+#
+# Author: Jonathan Voigt, University of Michigan
+# Date: September 2006
+
 
 ###
 # Variables
@@ -6,12 +10,12 @@
 # Using c as an alias to save typing
 c = generatorConfig = {}
 
-c['soarurl'] = 'https://winter.eecs.umich.edu/svn/soar/tags/SoarRL-8.6.2-alpha-2/SoarSuite'
+c['soarurl'] = 'https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite'
 
-c['nameandversion'] = 'Soar8.6.2RLa2'
+c['nameandversion'] = 'Soar Suite 8.6.3'
 
 # File globs to completely remove from the tree
-c['remove'] = ['Makefile.in', '8.6.2.nsi.in', 'INSTALL', 'README', '.project', 
+c['remove'] = ['Makefile.in', '*.nsi.in', 'INSTALL', 'README', '.project', 
                '.cvsignore', '.svn', '*.xcodeproj', '*.so', '*.so.1', '*.so.2', 
                '*.jnilib', 'java_swt', '*.sh', '*.plist', '*.doc', '*.ppt', '*.pl',
                '*.am', '*.ac', '*.m4', 'ManualSource', 'Old', '*.tex', 'Scripts',]
@@ -33,10 +37,10 @@ c['moveglobs'] = ['COPYING', 'Documentation', 'docs', 'Icons', 'SoarLibrary', 'a
                   'pkgIndex.tcl', 'mac.soar', 'FilterTcl', 'towers-of-hanoi-SML.soar',]
 
 # Nullsoft installer script input file
-c['nsiinput'] = "8.6.2.nsi.in"
+c['nsiinput'] = "8.6.3.nsi.in"
 
 # Nullsoft installer script output file
-c['nsioutput'] = "Soar-Suite-8.6.2.nsi"
+c['nsioutput'] = "Soar-Suite-8.6.3.nsi"
 
 # Location of NSIS executable (makensis.exe)
 c['makensis'] = "\"\Program Files (x86)\NSIS\makensis.exe\""
