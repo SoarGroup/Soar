@@ -37,5 +37,5 @@ clean:
 
 install-data-hook:
 if SWIGPYTHON
-	mv Python_sml_ClientInterface.py $(BINDIR)
+	cp Python_sml_ClientInterface.py $(BINDIR)
 endif
