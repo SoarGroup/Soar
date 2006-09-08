@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\Core\ClientSML\include;..\..\Core\ElementXML\include;..\..\Core\ConnectionSML\include"
+				AdditionalIncludeDirectories="..\..\Core\ClientSML\include;..\..\Core\ElementXML\include;..\..\Core\ConnectionSML\include;..\..\Core\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -127,7 +127,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\Core\ClientSML\include;..\..\Core\ElementXML\include;..\..\Core\ConnectionSML\include"
+				AdditionalIncludeDirectories="..\..\Core\ClientSML\include;..\..\Core\ElementXML\include;..\..\Core\ConnectionSML\include;..\..\Core\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
