@@ -821,7 +821,7 @@ namespace gSKI
 		/* virtual void HandleEvent(egSKIRunEventId eventId, 
 		gSKI::Agent*   agentPtr, 
 		egSKIPhaseType  phase,
-		Error*          err = 0);
+		Error*          err = 0);*/
 
 		/**
 		*  @brief Removes an agent running event listener
