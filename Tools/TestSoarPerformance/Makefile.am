@@ -24,6 +24,7 @@ endif
 INCLUDES = \
 -I$(BASEDIR_PREFIX)/Core/ClientSML/include \
 -I$(BASEDIR_PREFIX)/Core/ElementXML/include \
--I$(BASEDIR_PREFIX)/Core/ConnectionSML/include
+-I$(BASEDIR_PREFIX)/Core/ConnectionSML/include \
+-I$(BASEDIR_PREFIX)/Core/shared
 
 AM_CXXFLAGS = $(SOAR_CXXFLAGS)
