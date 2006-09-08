@@ -77,6 +77,27 @@ then
   SWIG_ENABLE_CXX
 fi
 
+AC_ARG_ENABLE(python,
+     [  --enable-python     Turn on python support],
+     [case "${enableval}" in
+        yes) python=true ;;
+        no)  python=false ;;
+        *) AC_MSG_ERROR(bad value ${enableval} for --enable-python) ;;
+     esac],
+     [python=false])
+AM_CONDITIONAL(SWIGPYTHON, test x$python = xtrue)
+if test "$python" = "true"
+then
+  if test "$enable_shared" = "no"
+  then
+    AC_MSG_ERROR([*** Shared libraries must be enabled for python support!])
+  fi
+  AC_PROG_SWIG(1.3.24)
+  AM_PATH_PYTHON
+  SWIG_ENABLE_CXX
+  SWIG_PYTHON
+fi
+
 # See comments in Core/ClientSML/src/sml_ClientKernel.cpp
 if test "$enable_shared" = "no"
 then
@@ -437,6 +458,7 @@ AC_OUTPUT([
 	Core/ClientSMLSWIG/Makefile
 	Core/ClientSMLSWIG/Java/Makefile
 	Core/ClientSMLSWIG/Tcl/Makefile
+	Core/ClientSMLSWIG/Python/Makefile
 	Core/KernelSML/Makefile
 	Core/KernelSML/src/Makefile
 	Environments/Makefile

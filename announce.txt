@@ -2,6 +2,7 @@ Soar 8.6.3 updates
 
 Soar and SML
 * added Python support
+** requires use of --enable-python configure flag on Linux
 * added CheckForIncomingEvents to help single-threaded applications
 * matches command can now generate XML output
 * fixed command-to-file command
