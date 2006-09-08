@@ -471,4 +471,5 @@ AC_OUTPUT([
 	Tools/TestMultiAgent/Makefile
 	Tools/TestSMLEvents/Makefile
 	Tools/TestSoarPerformance/Makefile
+	Tools/TestSMLPerformance/Makefile
 	])
