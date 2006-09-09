@@ -208,6 +208,8 @@ KernelSML::~KernelSML()
 	delete m_pKernelMutex ;
 
 	delete m_pEventMap ;
+
+	delete m_pRunScheduler;
 }
 
 /*************************************************************
