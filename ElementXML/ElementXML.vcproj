@@ -328,10 +328,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\shared\include\Export.h"
-				>
-			</File>
-			<File
 				RelativePath=".\include\sml_ElementXMLImpl.h"
 				>
 			</File>
