@@ -1,13 +1,5 @@
 %module Python_sml_ClientInterface
 
-// This works around a Python "feature" where it wants to link with python24_d.lib when building in debug mode
-// (unfortunately, this library is not distributed with the Windows release)
-%runtime %{
-#ifdef PY_WKAROUND_DEBUG
-#	define _DEBUG
-#endif
-%}
-
 %{
 	// helps quell warnings
 	#ifndef unused
