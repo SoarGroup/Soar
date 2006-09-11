@@ -375,10 +375,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\shared\include\Export.h"
-				>
-			</File>
-			<File
 				RelativePath=".\include\sml_AnalyzeXML.h"
 				>
 			</File>

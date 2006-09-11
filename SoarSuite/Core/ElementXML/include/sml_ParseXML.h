@@ -24,7 +24,6 @@
 #define PARSE_XML_H
 
 #include <string>
-#include <stdio.h>
 
 namespace sml {
 
