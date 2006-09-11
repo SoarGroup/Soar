@@ -15,7 +15,6 @@
 #define PARSE_XML_FILE_H
 
 #include <string>
-#include <stdio.h>
 #include "sml_ParseXML.h"
 
 namespace sml {

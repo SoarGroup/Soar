@@ -39,10 +39,6 @@
 #endif
 */
 
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h> // for size_t param in sml_ParseXMLFromStringSequence below
-#endif // HAVE_SYS_TYPES_H
-
 #ifdef __cplusplus
 extern "C" {
 #endif
