@@ -42,12 +42,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/U_DEBUG"
 				Optimization="0"
 				InlineFunctionExpansion="0"
 				OmitFramePointers="false"
 				AdditionalIncludeDirectories="&quot;$(PY_INCLUDE)&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
-				PreprocessorDefinitions="WIN32;PY_WKAROUND_DEBUG;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -70,8 +69,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="python24.lib"
-				OutputFile="..\..\..\SoarLibrary\bin\_Python_sml_ClientInterface.dll"
+				AdditionalDependencies="python24_d.lib"
+				OutputFile="..\..\..\SoarLibrary\bin\_Python_sml_ClientInterface_d.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(PY_LIB)&quot;"
 				GenerateDebugInformation="true"
