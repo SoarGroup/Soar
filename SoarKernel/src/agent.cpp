@@ -402,9 +402,14 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   */
   soar_remove_all_monitorable_callbacks(delete_agent, (void*) delete_agent);
 
+  /* Releasing rete hash tables */
+  for (int i=0; i<16; i++) {
+    free_memory(delete_agent, delete_agent->alpha_hash_tables[i]->buckets, HASH_TABLE_MEM_USAGE);
+    free_memory(delete_agent, delete_agent->alpha_hash_tables[i], HASH_TABLE_MEM_USAGE);
+  }
+
   /* KNOWN MEMORY LEAK! Need to track down and free ALL structures */
   /* pointed to be fields in the agent structure.                  */
-  
 
   /* Free soar agent structure */
   free((void *) delete_agent);
