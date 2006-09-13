@@ -406,9 +406,9 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
 
   /* Releasing memory allocated in init_rete */
   for (int i=0; i<16; i++) {
-    free_memory(delete_agent, delete_agent->alpha_hash_tables[i]->buckets, HASH_TABLE_MEM_USAGE);
-    free_memory(delete_agent, delete_agent->alpha_hash_tables[i], HASH_TABLE_MEM_USAGE);
+	  free_hash_table(delete_agent, delete_agent->alpha_hash_tables[i]);
   }
+
   free_memory(delete_agent, delete_agent->left_ht, HASH_TABLE_MEM_USAGE);
   free_memory(delete_agent, delete_agent->right_ht, HASH_TABLE_MEM_USAGE);
   free_memory(delete_agent, delete_agent->rhs_variable_bindings, MISCELLANEOUS_MEM_USAGE);
@@ -419,10 +419,8 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
 
   /* Releasing memory allocated in init_tracing */
   for (int i=0; i<3; i++) {
-    free_memory(delete_agent, delete_agent->object_tr_ht[i]->buckets, HASH_TABLE_MEM_USAGE);
-	free_memory(delete_agent, delete_agent->object_tr_ht[i], HASH_TABLE_MEM_USAGE);
-	free_memory(delete_agent, delete_agent->stack_tr_ht[i]->buckets, HASH_TABLE_MEM_USAGE);
-	free_memory(delete_agent, delete_agent->stack_tr_ht[i], HASH_TABLE_MEM_USAGE);
+	free_hash_table(delete_agent, delete_agent->object_tr_ht[i]);
+	free_hash_table(delete_agent, delete_agent->stack_tr_ht[i]);
   }
 
   /* Releasing trace formats */
@@ -435,16 +433,20 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   remove_trace_format (delete_agent, TRUE, FOR_OPERATORS_TF, NIL);
 
   /* Releasing hashtables */
-  free_memory(delete_agent, delete_agent->variable_hash_table->buckets, HASH_TABLE_MEM_USAGE);
-  free_memory(delete_agent, delete_agent->variable_hash_table, HASH_TABLE_MEM_USAGE);
-  free_memory(delete_agent, delete_agent->identifier_hash_table->buckets, HASH_TABLE_MEM_USAGE);
-  free_memory(delete_agent, delete_agent->identifier_hash_table, HASH_TABLE_MEM_USAGE);
-  free_memory(delete_agent, delete_agent->sym_constant_hash_table->buckets, HASH_TABLE_MEM_USAGE);
-  free_memory(delete_agent, delete_agent->sym_constant_hash_table, HASH_TABLE_MEM_USAGE);
-  free_memory(delete_agent, delete_agent->int_constant_hash_table->buckets, HASH_TABLE_MEM_USAGE);
-  free_memory(delete_agent, delete_agent->int_constant_hash_table, HASH_TABLE_MEM_USAGE);
-  free_memory(delete_agent, delete_agent->float_constant_hash_table->buckets, HASH_TABLE_MEM_USAGE);
-  free_memory(delete_agent, delete_agent->float_constant_hash_table, HASH_TABLE_MEM_USAGE);
+  free_hash_table(delete_agent, delete_agent->variable_hash_table);
+  free_hash_table(delete_agent, delete_agent->identifier_hash_table);
+  free_hash_table(delete_agent, delete_agent->sym_constant_hash_table);
+  free_hash_table(delete_agent, delete_agent->int_constant_hash_table);
+  free_hash_table(delete_agent, delete_agent->float_constant_hash_table);
+
+  /* Releasing memory pools */
+  memory_pool* cur_pool = delete_agent->memory_pools_in_use;
+  memory_pool* next_pool;
+  while(cur_pool != NIL) {
+	  next_pool = cur_pool->next;
+	  free_memory_pool(delete_agent, cur_pool);
+	  cur_pool = next_pool;
+  }
 
   /* RPM 9/06 end */
 
