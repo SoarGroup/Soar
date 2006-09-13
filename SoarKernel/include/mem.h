@@ -238,7 +238,7 @@ typedef struct memory_pool_struct {
 extern void add_block_to_memory_pool (agent* thisAgent, memory_pool *p);
 extern void init_memory_pool (agent* thisAgent, memory_pool *p, long item_size, char *name);
 extern void print_memory_pool_statistics (agent* thisAgent);
-extern void free_memory_pool (memory_pool *p);
+extern void free_memory_pool (agent*, memory_pool *p); /* RPM 6/09, with help from AMN */
 
 #ifdef MEMORY_POOL_STATS
 
@@ -482,6 +482,7 @@ typedef struct hash_table_struct {
 
 extern struct hash_table_struct *make_hash_table (agent* thisAgent, short minimum_log2size,
                                                   hash_function h);
+extern void free_hash_table(agent* thisAgent, struct hash_table_struct *ht); /* RPM 6/09 */
 extern void remove_from_hash_table (agent* thisAgent, struct hash_table_struct *ht, void *item);
 extern void add_to_hash_table (agent* thisAgent, struct hash_table_struct *ht, void *item);
 
