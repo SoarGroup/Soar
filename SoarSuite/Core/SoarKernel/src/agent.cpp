@@ -402,11 +402,51 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   */
   soar_remove_all_monitorable_callbacks(delete_agent, (void*) delete_agent);
 
-  /* Releasing rete hash tables */
+  /* RPM 9/06 begin */
+
+  /* Releasing memory allocated in init_rete */
   for (int i=0; i<16; i++) {
     free_memory(delete_agent, delete_agent->alpha_hash_tables[i]->buckets, HASH_TABLE_MEM_USAGE);
     free_memory(delete_agent, delete_agent->alpha_hash_tables[i], HASH_TABLE_MEM_USAGE);
   }
+  free_memory(delete_agent, delete_agent->left_ht, HASH_TABLE_MEM_USAGE);
+  free_memory(delete_agent, delete_agent->right_ht, HASH_TABLE_MEM_USAGE);
+  free_memory(delete_agent, delete_agent->rhs_variable_bindings, MISCELLANEOUS_MEM_USAGE);
+
+  /* Releasing memory allocated in inital call to start_lex_from_file from init_lexer */
+  free_memory_block_for_string(delete_agent, delete_agent->current_file->filename);
+  free_memory (delete_agent, delete_agent->current_file, MISCELLANEOUS_MEM_USAGE);
+
+  /* Releasing memory allocated in init_tracing */
+  for (int i=0; i<3; i++) {
+    free_memory(delete_agent, delete_agent->object_tr_ht[i]->buckets, HASH_TABLE_MEM_USAGE);
+	free_memory(delete_agent, delete_agent->object_tr_ht[i], HASH_TABLE_MEM_USAGE);
+	free_memory(delete_agent, delete_agent->stack_tr_ht[i]->buckets, HASH_TABLE_MEM_USAGE);
+	free_memory(delete_agent, delete_agent->stack_tr_ht[i], HASH_TABLE_MEM_USAGE);
+  }
+
+  /* Releasing trace formats */
+  remove_trace_format (delete_agent, FALSE, FOR_ANYTHING_TF, NIL);
+  remove_trace_format (delete_agent, FALSE, FOR_STATES_TF, NIL);
+  Symbol *evaluate_object_sym = find_sym_constant (delete_agent, "evaluate-object");
+  //remove_trace_format (delete_agent, FALSE, FOR_OPERATORS_TF, evaluate_object_sym);  //TODO: fix remove_trace_format
+  symbol_remove_ref (delete_agent, evaluate_object_sym); //shouldn't need this line if remove_trace_format works properly
+  remove_trace_format (delete_agent, TRUE, FOR_STATES_TF, NIL);
+  remove_trace_format (delete_agent, TRUE, FOR_OPERATORS_TF, NIL);
+
+  /* Releasing hashtables */
+  free_memory(delete_agent, delete_agent->variable_hash_table->buckets, HASH_TABLE_MEM_USAGE);
+  free_memory(delete_agent, delete_agent->variable_hash_table, HASH_TABLE_MEM_USAGE);
+  free_memory(delete_agent, delete_agent->identifier_hash_table->buckets, HASH_TABLE_MEM_USAGE);
+  free_memory(delete_agent, delete_agent->identifier_hash_table, HASH_TABLE_MEM_USAGE);
+  free_memory(delete_agent, delete_agent->sym_constant_hash_table->buckets, HASH_TABLE_MEM_USAGE);
+  free_memory(delete_agent, delete_agent->sym_constant_hash_table, HASH_TABLE_MEM_USAGE);
+  free_memory(delete_agent, delete_agent->int_constant_hash_table->buckets, HASH_TABLE_MEM_USAGE);
+  free_memory(delete_agent, delete_agent->int_constant_hash_table, HASH_TABLE_MEM_USAGE);
+  free_memory(delete_agent, delete_agent->float_constant_hash_table->buckets, HASH_TABLE_MEM_USAGE);
+  free_memory(delete_agent, delete_agent->float_constant_hash_table, HASH_TABLE_MEM_USAGE);
+
+  /* RPM 9/06 end */
 
   /* KNOWN MEMORY LEAK! Need to track down and free ALL structures */
   /* pointed to be fields in the agent structure.                  */
