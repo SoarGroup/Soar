@@ -264,6 +264,12 @@ namespace gSKI
    Agent::~Agent()
    {
 
+	   //remove the RhsFunctions we created (RPM 9/06)
+	   this->RemoveClientRhsFunction(m_InterruptRhs.GetName());
+	   this->RemoveClientRhsFunction(m_ConcatRhs.GetName());
+	   this->RemoveClientRhsFunction(m_ExecRhs.GetName());
+	   this->RemoveClientRhsFunction(m_CmdRhs.GetName());
+
 	   //remove the RunListeners we created for the counters
 	   this->RemoveRunListener(gSKIEVENT_AFTER_ELABORATION_CYCLE, this) ;
 	   this->RemoveRunListener(gSKIEVENT_AFTER_INPUT_PHASE, this) ;
@@ -677,7 +683,11 @@ namespace gSKI
 
       // Tell the kernel we are done listening.
       std::vector<char> tmpBuffer(szName, szName + strlen(szName) + 1);
-      remove_rhs_function(m_agent, make_sym_constant(m_agent, &tmpBuffer[0]));
+
+	  //RPM 9/06: removed symbol ref so symbol is released properly
+	  Symbol* tmp = make_sym_constant(m_agent, &tmpBuffer[0]);
+      remove_rhs_function(m_agent, tmp);
+	  symbol_remove_ref (m_agent, tmp);
 
       // Do our stuff
       m_rhsFunctions.erase(it);
