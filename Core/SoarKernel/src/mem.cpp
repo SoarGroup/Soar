@@ -269,6 +269,20 @@ void add_block_to_memory_pool (agent* thisAgent, memory_pool *p) {
   p->free_list = new_block + sizeof(char *);
 }
 
+/* RPM 6/09, with help from AMN */
+void free_memory_pool (agent* thisAgent, memory_pool *p) {
+
+	char *cur_block = static_cast<char*>(p->first_block);
+	char *next_block;
+	for(int i=0; i<p->num_blocks; i++) {
+		// the first 4 bytes point to the next block
+		next_block = *(char **)cur_block;
+		free_memory(thisAgent, cur_block, POOL_MEM_USAGE);
+		cur_block = next_block;
+	}
+	p->num_blocks = 0;
+}
+
 void init_memory_pool (agent* thisAgent, memory_pool *p, long item_size, char *name) {
   if (item_size < (long)sizeof(char *)) item_size = sizeof(char *);
   while (item_size & 3) item_size++; /* make sure item_size is multiple of 4 */
@@ -548,6 +562,12 @@ void resize_hash_table (agent* thisAgent, hash_table *ht, short new_log2size) {
   ht->buckets = new_buckets;
   ht->size = new_size;
   ht->log2size = new_log2size; 
+}
+
+/* RPM 6/09 */
+void free_hash_table(agent* thisAgent, struct hash_table_struct *ht) {
+	free_memory(thisAgent, ht->buckets, HASH_TABLE_MEM_USAGE);
+	free_memory(thisAgent, ht, HASH_TABLE_MEM_USAGE);
 }
 
 void remove_from_hash_table (agent* thisAgent, struct hash_table_struct *ht, 
