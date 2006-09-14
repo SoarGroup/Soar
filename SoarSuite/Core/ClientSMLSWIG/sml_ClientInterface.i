@@ -110,3 +110,28 @@
 %include "sml_ClientXML.h"
 %include "sml_ClientTraceXML.h"
 %include "sml_ClientAnalyzedXML.h"
+
+%{
+// Check for memory leaks
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#endif
+
+#ifdef _WIN32
+bool __stdcall DllMain( void * hModule, 
+                       unsigned long  ul_reason_for_call, 
+                       void * lpReserved
+					 )
+{
+	//_crtBreakAlloc = 1394;
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
+	unused(hModule) ;
+	unused(ul_reason_for_call) ;
+	unused(lpReserved) ;
+
+    return 1;
+}
+#endif
+%}

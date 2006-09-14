@@ -333,6 +333,7 @@ int main(int argc, char* argv[])
 	// the allocation number (e.g. 122) and then we'll break
 	// when that allocation occurs.
 	//_crtBreakAlloc = 550 ;
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
 	bool stopAtEnd = true ;
 
@@ -358,6 +359,7 @@ int main(int argc, char* argv[])
 	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
 	printf("\nIf no leaks appear here, but some appear in the output\nwindow in the debugger, they have been leaked from a DLL.\nWhich is reporting when it's unloaded.\n\n") ;
 
+	/*
 #ifdef _MSC_VER
 	// Set the memory checking output to go to Visual Studio's debug window (so we have a copy to keep)
 	// and to stdout so we can see it immediately.
@@ -379,4 +381,5 @@ int main(int argc, char* argv[])
 		unused(str);
 	}
 #endif // _MSC_VER
+	*/
 }
