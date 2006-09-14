@@ -62,6 +62,7 @@ cli_stats.cpp\
 cli_stopsoar.cpp\
 cli_time.cpp\
 cli_timers.cpp\
+cli_unalias.cpp\
 cli_verbose.cpp\
 cli_version.cpp\
 cli_waitsnc.cpp\

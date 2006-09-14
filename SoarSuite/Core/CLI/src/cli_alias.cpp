@@ -23,50 +23,20 @@ using namespace sml;
 bool CommandLineInterface::ParseAlias(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
-	Options optionsData[] = {
-		{'d', "disable",	1},
-		{'d', "off",		1},
-		{0, 0, 0}
-	};
-
-	bool disable = false;
-	std::string command;
-
-	for (;;) {
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) {
-			case 'd':
-				disable = true;
-				command = m_OptionArgument;
-				break;
-			default:
-				return SetError(CLIError::kGetOptError);
-		}
+	if (argv.size() == 1) {
+		// If no arguments, list aliases
+		return DoAlias();
 	}
-
-	// If disabling, no additional argument.
-	if (disable) {
-		if (m_NonOptionArguments) {
-			SetErrorDetail("When disabling, no additional arguments are required.");
-			return SetError(CLIError::kTooManyArgs);
-		}
-		return DoAlias(&command);
-	}
-	
-	// If not disabling and no arguments, list aliases
-	if (m_NonOptionArguments == 0) return DoAlias();
 
 	std::vector<std::string> substitution;
 	std::vector<std::string>::iterator iter = argv.begin();
 
-	command = *(++iter);
+	++iter;	// Skip first argument (too be aliased)
 	while (++iter != argv.end()) {
 		substitution.push_back(*iter);
 	}
 
-	return DoAlias(&command, &substitution);
+	return DoAlias(&(argv[1]), &substitution);
 }
 
 bool CommandLineInterface::DoAlias(const std::string* pCommand, const std::vector<std::string>* pSubstitution) {
