@@ -103,6 +103,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIStopSoar]					= &cli::CommandLineInterface::ParseStopSoar;
 	m_CommandMap[Commands::kCLITime]						= &cli::CommandLineInterface::ParseTime;
 	m_CommandMap[Commands::kCLITimers]						= &cli::CommandLineInterface::ParseTimers;
+	m_CommandMap[Commands::kCLIUnalias]						= &cli::CommandLineInterface::ParseUnalias;
 	m_CommandMap[Commands::kCLIVerbose]						= &cli::CommandLineInterface::ParseVerbose;
 	m_CommandMap[Commands::kCLIVersion]						= &cli::CommandLineInterface::ParseVersion;
 	m_CommandMap[Commands::kCLIWaitSNC]						= &cli::CommandLineInterface::ParseWaitSNC;

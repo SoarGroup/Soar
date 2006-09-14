@@ -36,14 +36,6 @@ Aliases::Aliases() {
 		substitution.push_back(string("alias"));
 		NewAlias(substitution, commandToSubstitute);
 	}
-	// alias -d unalias
-	{
-		string commandToSubstitute("unalias");
-		std::vector<std::string> substitution;
-		substitution.push_back(string("alias"));
-		substitution.push_back(string("-d"));
-		NewAlias(substitution, commandToSubstitute);
-	}
 	// cd chdir
 	{
 		string commandToSubstitute("chdir");
@@ -279,11 +271,11 @@ Aliases::Aliases() {
 		substitution.push_back(string("stop-soar"));
 		NewAlias(substitution, commandToSubstitute);
 	}
-	// alias -d un
+	// unalias un
 	{
-		string commandToSubstitute("w");
+		string commandToSubstitute("un");
 		std::vector<std::string> substitution;
-		substitution.push_back(string("watch"));
+		substitution.push_back(string("unalias"));
 		NewAlias(substitution, commandToSubstitute);
 	}
 	// watch w

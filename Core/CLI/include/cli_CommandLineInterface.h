@@ -251,6 +251,7 @@ protected:
 	bool ParseStopSoar(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseTime(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseTimers(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseUnalias(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseVerbose(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseVersion(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseWaitSNC(gSKI::Agent* pAgent, std::vector<std::string>& argv);

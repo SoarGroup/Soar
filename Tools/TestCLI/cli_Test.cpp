@@ -335,7 +335,7 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 // Main program
 int main(int argc, char** argv)
 {
-	_crtBreakAlloc = 2263;
+	//_crtBreakAlloc = 2263;
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
 
 	{ // create local scope to prevent scriptFile from being reported as a memory leak (occurs when script passed in as arg)
