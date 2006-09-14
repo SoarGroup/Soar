@@ -394,6 +394,11 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   /* Freeing all the productions owned by this agent */
   excise_all_productions(delete_agent, false);
 
+  /* RPM 9/06 Releasing IO wmes */
+  /* Note that just releasing the top one (S1 ^io I1) should get all the children, too */
+  remove_input_wme(delete_agent, delete_agent->io_header_link);
+  do_buffered_wm_and_ownership_changes(delete_agent);
+
   /* Releasing all the predefined symbols */
   release_predefined_symbols(delete_agent);
 
@@ -404,11 +409,6 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
 
   /* RPM 9/06 begin */
 
-  /* Releasing memory allocated in init_rete */
-  for (int i=0; i<16; i++) {
-	  free_hash_table(delete_agent, delete_agent->alpha_hash_tables[i]);
-  }
-
   free_memory(delete_agent, delete_agent->left_ht, HASH_TABLE_MEM_USAGE);
   free_memory(delete_agent, delete_agent->right_ht, HASH_TABLE_MEM_USAGE);
   free_memory(delete_agent, delete_agent->rhs_variable_bindings, MISCELLANEOUS_MEM_USAGE);
@@ -417,22 +417,26 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   free_memory_block_for_string(delete_agent, delete_agent->current_file->filename);
   free_memory (delete_agent, delete_agent->current_file, MISCELLANEOUS_MEM_USAGE);
 
-  /* Releasing memory allocated in init_tracing */
+  /* Releasing trace formats (needs to happen before tracing hashtables are released) */
+  remove_trace_format (delete_agent, FALSE, FOR_ANYTHING_TF, NIL);
+  remove_trace_format (delete_agent, FALSE, FOR_STATES_TF, NIL);
+  Symbol *evaluate_object_sym = find_sym_constant (delete_agent, "evaluate-object");
+  remove_trace_format (delete_agent, FALSE, FOR_OPERATORS_TF, evaluate_object_sym);
+  remove_trace_format (delete_agent, TRUE, FOR_STATES_TF, NIL);
+  remove_trace_format (delete_agent, TRUE, FOR_OPERATORS_TF, NIL);
+
+  /* Releasing hashtables allocated in init_tracing */
   for (int i=0; i<3; i++) {
 	free_hash_table(delete_agent, delete_agent->object_tr_ht[i]);
 	free_hash_table(delete_agent, delete_agent->stack_tr_ht[i]);
   }
 
-  /* Releasing trace formats */
-  remove_trace_format (delete_agent, FALSE, FOR_ANYTHING_TF, NIL);
-  remove_trace_format (delete_agent, FALSE, FOR_STATES_TF, NIL);
-  Symbol *evaluate_object_sym = find_sym_constant (delete_agent, "evaluate-object");
-  //remove_trace_format (delete_agent, FALSE, FOR_OPERATORS_TF, evaluate_object_sym);  //TODO: fix remove_trace_format
-  symbol_remove_ref (delete_agent, evaluate_object_sym); //shouldn't need this line if remove_trace_format works properly
-  remove_trace_format (delete_agent, TRUE, FOR_STATES_TF, NIL);
-  remove_trace_format (delete_agent, TRUE, FOR_OPERATORS_TF, NIL);
+  /* Releasing memory allocated in init_rete */
+  for (int i=0; i<16; i++) {
+	  free_hash_table(delete_agent, delete_agent->alpha_hash_tables[i]);
+  }
 
-  /* Releasing hashtables */
+  /* Releasing other hashtables */
   free_hash_table(delete_agent, delete_agent->variable_hash_table);
   free_hash_table(delete_agent, delete_agent->identifier_hash_table);
   free_hash_table(delete_agent, delete_agent->sym_constant_hash_table);
