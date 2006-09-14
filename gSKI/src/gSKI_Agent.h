@@ -1396,6 +1396,9 @@ namespace gSKI
 
 		//PhaseListener*       m_phaseListener;     /**< Listens for the BEFORE/AFTER phase events */
 
+		/* RPM 9/06 added to keep track of eventInfo's so they can be released */
+		std::map<egSKIRunEventId, RunEventCallbackData*> m_RunEvents;
+
 		InputLink*           m_inputlink;         /**< A pointer to this agent's input link. */
 
 		OutputLink*          m_outputlink;        /**< A pointer to this agent's output link. */

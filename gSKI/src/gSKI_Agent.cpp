@@ -1495,6 +1495,7 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 		  case gSKIEVENT_AFTER_DECISION_CYCLE:	
 		  case gSKIEVENT_MAX_MEMORY_USAGE_EXCEEDED:
 			  { RunEventCallbackData * eventInfo = new RunEventCallbackData();
+			  m_RunEvents[eventId] = eventInfo;  // RPM 9/06 track this eventInfo so we can release it later
 			    eventInfo->a = this;
 		        eventInfo->eventId = eventId;
 			  soar_add_callback (GetSoarAgent(),static_cast<void*>(GetSoarAgent()),
@@ -1511,6 +1512,7 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 		  if (IsPhaseEventID(eventId)) 
 		  {		 
 		      RunEventCallbackData * eventInfo = new RunEventCallbackData();
+			  m_RunEvents[eventId] = eventInfo;  // RPM 9/06 track this eventInfo so we can release it later
 			  eventInfo->a = this;
 		      eventInfo->eventId = eventId;
 			  soar_add_callback (GetSoarAgent(),static_cast<void*>(GetSoarAgent()),
@@ -1568,6 +1570,10 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 			  soar_remove_callback (GetSoarAgent(),static_cast<void*>(GetSoarAgent()),
 							     static_cast<SOAR_CALLBACK_TYPE>(EnumRemappings::KernelRunEventType(eventId)),
 								 soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(EnumRemappings::KernelRunEventType(eventId)), 1));
+			  // RPM 9/06 release the eventInfo and cleanup the map
+			  delete m_RunEvents.find(eventId)->second;
+			  m_RunEvents.erase(eventId);
+
 			  break; 
 		  default:
 			  ; // do nothing
@@ -1578,6 +1584,9 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 			  soar_remove_callback (GetSoarAgent(),static_cast<void*>(GetSoarAgent()),
 							     static_cast<SOAR_CALLBACK_TYPE>(EnumRemappings::KernelRunEventType(eventId)),
 								 soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(EnumRemappings::KernelRunEventType(eventId)), 1));
+			  // RPM 9/06 release the eventInfo and cleanup the map
+			  delete m_RunEvents.find(eventId)->second;
+			  m_RunEvents.erase(eventId);
 		  }
 
 		  //  We should probably do some checking to make sure the callbacks were indeed
