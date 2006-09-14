@@ -71,6 +71,7 @@ char const* Commands::kCLIStats						= "stats";
 char const* Commands::kCLIStopSoar					= "stop-soar";
 char const* Commands::kCLITime						= "time";
 char const* Commands::kCLITimers					= "timers";
+char const* Commands::kCLIUnalias					= "unalias";
 char const* Commands::kCLIVerbose					= "verbose";
 char const* Commands::kCLIVersion					= "version";
 char const* Commands::kCLIWaitSNC					= "waitsnc";
