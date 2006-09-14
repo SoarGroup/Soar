@@ -1975,6 +1975,7 @@ int main(int argc, char* argv[])
 	// the allocation number (e.g. 122) and then we'll break
 	// when that allocation occurs.
 	//_crtBreakAlloc = 1265 ;
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
 	//SimpleTimer timer ;
 
@@ -2106,6 +2107,7 @@ int main(int argc, char* argv[])
 	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
 	printf("\nIf no leaks appear here, but some appear in the output\nwindow in the debugger, they have been leaked from a DLL.\nWhich is reporting when it's unloaded.\n\n") ;
 
+	/*
 // Static linking means we're going to see leaks from anywhere (e.g. gSKI, kernel etc.) which is overkill.
 #ifndef STATIC_LINKED
 #ifdef _MSC_VER
@@ -2130,4 +2132,5 @@ int main(int argc, char* argv[])
 	}
 #endif // _MSC_VER
 #endif // STATIC_LINKED
+	*/
 }

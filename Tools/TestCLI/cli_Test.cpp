@@ -335,7 +335,9 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 // Main program
 int main(int argc, char** argv)
 {
-	//_crtBreakAlloc = 57;
+	_crtBreakAlloc = 2263;
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
+
 	{ // create local scope to prevent scriptFile from being reported as a memory leak (occurs when script passed in as arg)
 		if (argc > 2) {
 			cout << "Too many args." << endl;
@@ -427,7 +429,7 @@ int main(int argc, char** argv)
 		delete g_pCommandProcessor;
 		delete g_pInputQueue;
 	} // end local scope
-
+/*
 // Static linking means we're going to see leaks from anywhere (e.g. gSKI, kernel etc.) which is overkill.
 #ifndef STATIC_LINKED
 #ifdef _MSC_VER
@@ -446,7 +448,7 @@ int main(int argc, char** argv)
 	// This will only detect leaks in objects that we allocate within this executable and static libs.
 	// If we allocate something in a DLL then this call won't see it because it works by overriding the
 	// local implementation of malloc.
-	_CrtDumpMemoryLeaks();
+	//_CrtDumpMemoryLeaks();
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
 	printf("\n\nPress <return> to exit\n") ;
@@ -456,6 +458,6 @@ int main(int argc, char** argv)
 
 #endif // _MSC_VER
 #endif	// STATIC_LINKED
-
+*/
 	return 0;
 }

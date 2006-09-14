@@ -190,6 +190,7 @@ int main() {
 	// the allocation number (e.g. 122) and then we'll break
 	// when that allocation occurs.
 	//_crtBreakAlloc = 73 ;
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
 	{ // create local scope to allow for local memory cleanup before we check at end
 
@@ -249,7 +250,7 @@ int main() {
 		delete dataList;
 
 	} // end local scope
-
+/*
 #ifdef _MSC_VER
 	// Set the memory checking output to go to Visual Studio's debug window (so we have a copy to keep)
 	// and to stdout so we can see it immediately.
@@ -262,7 +263,7 @@ int main() {
 	// local implementation of malloc.
 	_CrtDumpMemoryLeaks();
 #endif // _MSC_VER
-	
+	*/
 	return 0;
 }
 

@@ -755,6 +755,8 @@ public:
 */
 int main(/*int argc, char* argv[]*/)
 {
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+
 	// Start off with some general tests of ElementXML
 	TestElementXML_1 test1 ;
 	TestElementXML_2 test2 ;
@@ -782,7 +784,7 @@ int main(/*int argc, char* argv[]*/)
 		printf("\n\nAll tests passed\n") ;
 	else
 		printf("\n\n*** Error: At least one test failed.  Stopped testing at that point.\n") ;
-
+/*
 #ifdef _MSC_VER
 //	A deliberate memory leak which I can use to test the memory checking code is working.
 //	char* pTest = new char[10] ;
@@ -806,6 +808,7 @@ int main(/*int argc, char* argv[]*/)
 	char line[100] ;
 	char* str = gets(line) ;
 #endif // _MSC_VER
+	*/
 
 	return 0;
 }
