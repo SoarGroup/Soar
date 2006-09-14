@@ -593,15 +593,25 @@ void create_predefined_symbols (agent* thisAgent) {
   /* REW: begin 10.24.97 */
   thisAgent->wait_symbol = make_variable (thisAgent, "wait");
   /* REW: end   10.24.97 */
+
+  /* RPM 9/06 begin */
+  thisAgent->input_link_symbol = make_sym_constant(thisAgent, "input-link");
+  thisAgent->output_link_symbol = make_sym_constant(thisAgent, "output-link");
+  /* RPM 9/06 end */
 }
 
 void release_helper(agent* thisAgent, Symbol** sym) {
    //BADBAD: RPM 9/06: removing excess reference counts
    // should find where they are coming from and release them properly
+   // currently will only release them in a debug build, so if this causes problems it will work in release
+#ifdef _DEBUG
    int numrefs = (*sym)->common.reference_count;
    for(int i=0; i<numrefs; i++) {
+#endif
 	 symbol_remove_ref(thisAgent,*sym);
+#ifdef _DEBUG
    }
+#endif
    *sym = 0;
 }
 
@@ -641,4 +651,9 @@ void release_predefined_symbols(agent* thisAgent) {
   /* REW: begin 10.24.97 */
   release_helper(thisAgent,&(thisAgent->wait_symbol));
   /* REW: end   10.24.97 */
+
+  /* RPM 9/06 begin */
+  release_helper(thisAgent,&(thisAgent->input_link_symbol));
+  release_helper(thisAgent,&(thisAgent->output_link_symbol));
+  /* RPM 9/06 end */
 }

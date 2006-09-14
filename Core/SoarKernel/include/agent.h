@@ -259,6 +259,11 @@ typedef struct agent_struct {
   Symbol            * ts_context_variable;
   Symbol            * type_symbol;
   Symbol            * wait_symbol;   /* REW:  10.24.97 */
+
+  /* RPM 9/06 begin */
+  Symbol			* input_link_symbol;
+  Symbol			* output_link_symbol;
+  /* RPM 9/06 end */
   
   /* ----------------------- Symbol table stuff -------------------------- */
 

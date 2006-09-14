@@ -1641,11 +1641,14 @@ void init_agent_memory(agent* thisAgent)
                                              thisAgent->io_symbol,
                                              thisAgent->io_header);
   // Creating the input and output header symbols and wmes
+  // RPM 9/06 changed to use thisAgent->input/output_link_symbol
+  // Note we don't have to save these wmes for later release since their parent
+  //  is already being saved (above), and when we release it they will automatically be released
   add_input_wme (thisAgent, thisAgent->io_header,
-                 make_sym_constant(thisAgent, "input-link"),
+                 thisAgent->input_link_symbol,
                  thisAgent->io_header_input);
   add_input_wme (thisAgent, thisAgent->io_header,
-                 make_sym_constant(thisAgent, "output-link"),
+                 thisAgent->output_link_symbol,
                  thisAgent->io_header_output);
 
   do_buffered_wm_and_ownership_changes(thisAgent);
