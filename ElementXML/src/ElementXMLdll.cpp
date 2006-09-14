@@ -21,6 +21,7 @@
 
 #include "ElementXMLdll.h"
 
+
 // Check for memory leaks
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
@@ -52,8 +53,8 @@ bool __stdcall DllMain( void * hModule,
 		_CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG );
 		_CrtSetReportFile( _CRT_WARN, _CRTDBG_FILE_STDOUT );
 
-		_CrtDbgReport(_CRT_WARN, NULL, NULL, "ElementXML", "Checking memory in ElementXML\n");
-		_CrtDumpMemoryLeaks();
+//		_CrtDbgReport(_CRT_WARN, NULL, NULL, "ElementXML", "Checking memory in ElementXML\n");
+//		_CrtDumpMemoryLeaks();
 	}
 #endif
 
