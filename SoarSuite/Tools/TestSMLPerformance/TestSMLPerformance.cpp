@@ -237,11 +237,13 @@ void RunTest2(int numAgents, int numWmes, int numCycles) {
 }
 
 int main() {
+#ifdef _MSC_VER
 	// When we have a memory leak, set this variable to
 	// the allocation number (e.g. 122) and then we'll break
 	// when that allocation occurs.
 	//_crtBreakAlloc = 1053 ;
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+#endif // _MSC_VER
 
 	{ // create local scope to allow for local memory cleanup before we check at end
 		int numAgents = 4;
