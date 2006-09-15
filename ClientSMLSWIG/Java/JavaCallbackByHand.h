@@ -115,6 +115,7 @@ int jUpdateCallback = pKernel.RegisterForSystemEvent(pKernel, smlEventId.smlEVEN
 // When a thread is attached to the VM, the context class loader is the bootstrap loader. 
 
 #include <string>
+#include <list>
 
 class JavaCallbackData
 {
@@ -172,6 +173,8 @@ public:
 	}
 } ;
 
+std::list<JavaCallbackData*> callbackdatas;
+
 // Collect the Java values into a single object which we'll register with our local event handler.
 // When this handler is called we'll unpack the Java data and make a callback to the Java process.
 static JavaCallbackData* CreateJavaCallbackData(bool storeAgent, JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jobject jarg3, jobject jarg4, char const* pMethodName, jobject jarg6)
@@ -202,6 +205,9 @@ static JavaCallbackData* CreateJavaCallbackData(bool storeAgent, JNIEnv *jenv, j
 	}
 
 	JavaCallbackData* pJavaData = new JavaCallbackData(pvm, jenv, storeAgent ? jglobal3 : 0, storeAgent ? 0 : jglobal3, jglobal4, pMethodName, jglobal6) ;
+
+	// Save the callback data so we can free it during shutdown if necessary
+	callbackdatas.push_back(pJavaData);
 
 	// Release the string we got from Java
 	//jenv->ReleaseStringUTFChars(jarg5, pMethodName);
@@ -277,6 +283,9 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForRunEvent(JNIEnv *jenv
 	// Unregister our handler.
 	bool result = arg1->UnregisterForRunEvent(pJavaData->m_CallbackID) ;
 
+	// Remove callback data from collection of those we need to remove at shutdown
+	callbackdatas.remove(pJavaData);
+
 	// Release the callback data
 	delete pJavaData ;
 
@@ -343,6 +352,9 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForOutputNotification(JN
 
 	// Unregister our handler.
 	bool result = arg1->UnregisterForOutputNotification(pJavaData->m_CallbackID) ;
+
+	// Remove callback data from collection of those we need to remove at shutdown
+	callbackdatas.remove(pJavaData);
 
 	// Release the callback data
 	delete pJavaData ;
@@ -422,6 +434,9 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForProductionEvent(JNIEn
 	// Unregister our handler.
 	bool result = arg1->UnregisterForProductionEvent(pJavaData->m_CallbackID) ;
 
+	// Remove callback data from collection of those we need to remove at shutdown
+	callbackdatas.remove(pJavaData);
+
 	// Release the callback data
 	delete pJavaData ;
 
@@ -497,6 +512,9 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForPrintEvent(JNIEnv *je
 
 	// Unregister our handler.
 	bool result = arg1->UnregisterForPrintEvent(pJavaData->m_CallbackID) ;
+
+	// Remove callback data from collection of those we need to remove at shutdown
+	callbackdatas.remove(pJavaData);
 
 	// Release the callback data
 	delete pJavaData ;
@@ -610,6 +628,9 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForXMLEvent(JNIEnv *jenv
 
 	// Unregister our handler.
 	bool result = arg1->UnregisterForXMLEvent(pJavaData->m_CallbackID) ;
+
+	// Remove callback data from collection of those we need to remove at shutdown
+	callbackdatas.remove(pJavaData);
 
 	// Release the callback data
 	delete pJavaData ;
@@ -728,6 +749,9 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1RemoveOutputHandler(JNIEnv *jenv, 
 	// Unregister our handler.
 	bool result = arg1->RemoveOutputHandler(pJavaData->m_CallbackID) ;
 
+	// Remove callback data from collection of those we need to remove at shutdown
+	callbackdatas.remove(pJavaData);
+
 	// Release the callback data
 	delete pJavaData ;
 
@@ -801,6 +825,9 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForSystemEvent(JNIEnv *
 	// Unregister our handler.
 	bool result = arg1->UnregisterForSystemEvent(pJavaData->m_CallbackID) ;
 
+	// Remove callback data from collection of those we need to remove at shutdown
+	callbackdatas.remove(pJavaData);
+
 	// Release the callback data
 	delete pJavaData ;
 
@@ -873,6 +900,9 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForUpdateEvent(JNIEnv *
 
 	// Unregister our handler.
 	bool result = arg1->UnregisterForUpdateEvent(pJavaData->m_CallbackID) ;
+
+	// Remove callback data from collection of those we need to remove at shutdown
+	callbackdatas.remove(pJavaData);
 
 	// Release the callback data
 	delete pJavaData ;
@@ -949,6 +979,9 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForStringEvent(JNIEnv *
 
 	// Unregister our handler.
 	bool result = arg1->UnregisterForStringEvent(pJavaData->m_CallbackID) ;
+
+	// Remove callback data from collection of those we need to remove at shutdown
+	callbackdatas.remove(pJavaData);
 
 	// Release the callback data
 	delete pJavaData ;
@@ -1130,6 +1163,9 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1RemoveRhsFunction(JNIEnv *jenv, j
 	// Unregister our handler.
 	bool result = arg1->RemoveRhsFunction(pJavaData->m_CallbackID) ;
 
+	// Remove callback data from collection of those we need to remove at shutdown
+	callbackdatas.remove(pJavaData);
+
 	// Release the callback data
 	delete pJavaData ;
 
@@ -1169,6 +1205,9 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForClientMessageEvent(J
 
 	// Unregister our handler.
 	bool result = arg1->UnregisterForClientMessageEvent(pJavaData->m_CallbackID) ;
+
+	// Remove callback data from collection of those we need to remove at shutdown
+	callbackdatas.remove(pJavaData);
 
 	// Release the callback data
 	delete pJavaData ;
@@ -1248,9 +1287,27 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForAgentEvent(JNIEnv *j
 	// Unregister our handler.
 	bool result = arg1->UnregisterForAgentEvent(pJavaData->m_CallbackID) ;
 
+	// Remove callback data from collection of those we need to remove at shutdown
+	callbackdatas.remove(pJavaData);
+
 	// Release the callback data
 	delete pJavaData ;
 
 	return result ;
 }
 
+JNIEXPORT void JNICALL Java_sml_smlJNI_Kernel_1ShutdownInternal(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+  sml::Kernel *arg1 = (sml::Kernel *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(sml::Kernel **)&jarg1; 
+  (arg1)->Shutdown();
+
+  // Release remaining JavaCallbackData's
+  std::list<JavaCallbackData*>::iterator itr;
+  for(itr=callbackdatas.begin(); itr!=callbackdatas.end(); itr++)
+  {
+	  delete (*itr);
+  }
+}
