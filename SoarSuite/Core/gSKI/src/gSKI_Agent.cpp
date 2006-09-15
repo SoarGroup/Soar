@@ -38,6 +38,8 @@
 #include "gSKI_AgentPerformanceMonitor.h"
 #include "gSKI_MultiAttribute.h"
 #include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
+#include "decide.h"
+#include "recmem.h"
 
 
 //#include "MegaUnitTest.h"
@@ -263,6 +265,13 @@ namespace gSKI
     */
    Agent::~Agent()
    {
+	   /* RPM 9/06 added code from reinitialize_soar to clean up stuff hanging from last run
+	               need to put it here instead of in destroy_soar_agent because gSKI is
+				    cleaning up too much stuff and thus it will crash if called later */
+	   clear_goal_stack (m_agent);
+	   m_agent->active_level = 0; /* Signal that everything should be retracted */
+	   m_agent->FIRING_TYPE = IE_PRODS;
+	   do_preference_phase (m_agent);   /* allow all i-instantiations to retract */
 
 	   //remove the RhsFunctions we created (RPM 9/06)
 	   this->RemoveClientRhsFunction(m_InterruptRhs.GetName());
