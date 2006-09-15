@@ -71,7 +71,8 @@
 %ignore sml::Kernel::UnregisterForClientMessageEvent(int);
 
 // We replace the SWIG generated shutdown with our own version which will call the SWIG generated one.
-%rename(ShutdownInternal) sml::Kernel::Shutdown();
+//%rename(ShutdownInternal) sml::Kernel::Shutdown();
+%ignore sml::Kernel::Shutdown();
 
 %pragma(java) jniclasscode=%{
   static {
@@ -108,6 +109,8 @@
   public final static native boolean Kernel_UnregisterForAgentEvent(long jarg1, int jarg2);
   public final static native boolean Kernel_RemoveRhsFunction(long jarg1, int jarg2);
   public final static native boolean Kernel_UnregisterForClientMessageEvent(long jarg1, int jarg2);
+  
+  public final static native void Kernel_ShutdownInternal(long jarg1);
 %}
 
 %typemap(javacode) sml::Agent %{
@@ -285,7 +288,23 @@
 
 // include Doug's custom JNI code for callbacks in the wrapper section
 //  so it's in the extern C block
-%wrapper %{
+%{
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include "JavaCallbackByHand.h"
+#ifdef __cplusplus
+}
+#endif
 %}
 
+/*
+
+  // Release remaining JavaCallbackData's
+  std::list<JavaCallbackData*>::iterator itr;
+  for(itr=callbackdatas.begin(); itr!=callbackdatas.end(); itr++)
+  {
+	  delete (*itr);
+  }
+
+*/
