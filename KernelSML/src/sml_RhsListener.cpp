@@ -91,6 +91,13 @@ void RhsListener::Init(KernelSML* pKernel)
 // Release memory
 void RhsListener::Clear()
 {
+
+	// Delete ConnectionList*'s
+	for(RhsMapIter mapIter = m_RhsMap.begin(); mapIter != m_RhsMap.end(); mapIter++)
+	{
+		delete mapIter->second;
+	}
+
 	// Release the RHS function lists
 	m_RhsMap.clear() ;
 
