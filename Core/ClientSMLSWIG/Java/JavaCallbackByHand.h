@@ -175,6 +175,24 @@ public:
 
 std::list<JavaCallbackData*> callbackdatas;
 
+void ReleaseCallbackData(JavaCallbackData* pJavaData) {
+	// Release callback data and remove from collection of those we need to release at shutdown
+	std::list<JavaCallbackData*>::iterator itr = find(callbackdatas.begin(), callbackdatas.end(), pJavaData);
+	if(itr != callbackdatas.end()) {
+		callbackdatas.erase(itr);
+		delete pJavaData;
+	}
+}
+
+bool IsValidCallbackData(JavaCallbackData* pJavaData) {
+	std::list<JavaCallbackData*>::iterator itr = find(callbackdatas.begin(), callbackdatas.end(), pJavaData);
+	if(itr == callbackdatas.end()) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
 // Collect the Java values into a single object which we'll register with our local event handler.
 // When this handler is called we'll unpack the Java data and make a callback to the Java process.
 static JavaCallbackData* CreateJavaCallbackData(bool storeAgent, JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jobject jarg3, jobject jarg4, char const* pMethodName, jobject jarg6)
@@ -280,14 +298,14 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForRunEvent(JNIEnv *jenv
 	// jarg2 is the callback data from the registration call
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pJavaData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForRunEvent(pJavaData->m_CallbackID) ;
 
-	// Remove callback data from collection of those we need to remove at shutdown
-	callbackdatas.remove(pJavaData);
-
-	// Release the callback data
-	delete pJavaData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pJavaData);
 
 	return result ;
 }
@@ -350,14 +368,14 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForOutputNotification(JN
 	// jarg2 is the callback data from the registration call
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pJavaData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForOutputNotification(pJavaData->m_CallbackID) ;
 
-	// Remove callback data from collection of those we need to remove at shutdown
-	callbackdatas.remove(pJavaData);
-
-	// Release the callback data
-	delete pJavaData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pJavaData);
 
 	return result ;
 }
@@ -431,14 +449,14 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForProductionEvent(JNIEn
 	// jarg2 is the callback data from the registration call
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pJavaData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForProductionEvent(pJavaData->m_CallbackID) ;
 
-	// Remove callback data from collection of those we need to remove at shutdown
-	callbackdatas.remove(pJavaData);
-
-	// Release the callback data
-	delete pJavaData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pJavaData);
 
 	return result ;
 }
@@ -510,14 +528,14 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForPrintEvent(JNIEnv *je
 	// jarg2 is the callback data from the registration call
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pJavaData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForPrintEvent(pJavaData->m_CallbackID) ;
 
 	// Remove callback data from collection of those we need to remove at shutdown
-	callbackdatas.remove(pJavaData);
-
-	// Release the callback data
-	delete pJavaData ;
+	ReleaseCallbackData(pJavaData);
 
 	return result ;
 }
@@ -626,14 +644,14 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForXMLEvent(JNIEnv *jenv
 	// jarg2 is the callback data from the registration call
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pJavaData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForXMLEvent(pJavaData->m_CallbackID) ;
 
-	// Remove callback data from collection of those we need to remove at shutdown
-	callbackdatas.remove(pJavaData);
-
-	// Release the callback data
-	delete pJavaData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pJavaData);
 
 	return result ;
 }
@@ -746,14 +764,14 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1RemoveOutputHandler(JNIEnv *jenv, 
 	// jarg2 is the callback data from the registration call
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pJavaData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->RemoveOutputHandler(pJavaData->m_CallbackID) ;
 
-	// Remove callback data from collection of those we need to remove at shutdown
-	callbackdatas.remove(pJavaData);
-
-	// Release the callback data
-	delete pJavaData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pJavaData);
 
 	return result ;
 }
@@ -822,14 +840,14 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForSystemEvent(JNIEnv *
 	// jarg2 is the callback data from the registration call
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pJavaData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForSystemEvent(pJavaData->m_CallbackID) ;
 
-	// Remove callback data from collection of those we need to remove at shutdown
-	callbackdatas.remove(pJavaData);
-
-	// Release the callback data
-	delete pJavaData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pJavaData);
 
 	return result ;
 }
@@ -898,14 +916,14 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForUpdateEvent(JNIEnv *
 	// jarg2 is the callback data from the registration call
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pJavaData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForUpdateEvent(pJavaData->m_CallbackID) ;
 
-	// Remove callback data from collection of those we need to remove at shutdown
-	callbackdatas.remove(pJavaData);
-
-	// Release the callback data
-	delete pJavaData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pJavaData);
 
 	return result ;
 }
@@ -977,14 +995,14 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForStringEvent(JNIEnv *
 	// jarg2 is the callback data from the registration call
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pJavaData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForStringEvent(pJavaData->m_CallbackID) ;
 
 	// Remove callback data from collection of those we need to remove at shutdown
-	callbackdatas.remove(pJavaData);
-
-	// Release the callback data
-	delete pJavaData ;
+	ReleaseCallbackData(pJavaData);
 
 	return result ;
 }
@@ -1160,14 +1178,14 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1RemoveRhsFunction(JNIEnv *jenv, j
 	// jarg2 is the callback data from the registration call
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pJavaData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->RemoveRhsFunction(pJavaData->m_CallbackID) ;
 
-	// Remove callback data from collection of those we need to remove at shutdown
-	callbackdatas.remove(pJavaData);
-
-	// Release the callback data
-	delete pJavaData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pJavaData);
 
 	return result ;
 }
@@ -1203,14 +1221,14 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForClientMessageEvent(J
 	// jarg2 is the callback data from the registration call
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pJavaData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForClientMessageEvent(pJavaData->m_CallbackID) ;
 
-	// Remove callback data from collection of those we need to remove at shutdown
-	callbackdatas.remove(pJavaData);
-
-	// Release the callback data
-	delete pJavaData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pJavaData);
 
 	return result ;
 }
@@ -1284,14 +1302,14 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForAgentEvent(JNIEnv *j
 	// jarg2 is the callback data from the registration call
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pJavaData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForAgentEvent(pJavaData->m_CallbackID) ;
 
-	// Remove callback data from collection of those we need to remove at shutdown
-	callbackdatas.remove(pJavaData);
-
-	// Release the callback data
-	delete pJavaData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pJavaData);
 
 	return result ;
 }
@@ -1310,4 +1328,5 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Kernel_1ShutdownInternal(JNIEnv *jenv, jc
   {
 	  delete (*itr);
   }
+  callbackdatas.clear();
 }
