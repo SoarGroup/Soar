@@ -297,14 +297,3 @@ extern "C" {
 }
 #endif
 %}
-
-/*
-
-  // Release remaining JavaCallbackData's
-  std::list<JavaCallbackData*>::iterator itr;
-  for(itr=callbackdatas.begin(); itr!=callbackdatas.end(); itr++)
-  {
-	  delete (*itr);
-  }
-
-*/
