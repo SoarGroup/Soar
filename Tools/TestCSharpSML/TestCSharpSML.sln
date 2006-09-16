@@ -1,24 +1,19 @@
-Microsoft Visual Studio Solution File, Format Version 8.00
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCSharpSML", "TestCSharpSML.csproj", "{29277D02-A002-439F-B3E7-C89C16A21818}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
 EndProject
 Global
-	GlobalSection(SolutionConfiguration) = preSolution
-		Debug = Debug
-		Distribution = Distribution
-		Release = Release
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(ProjectConfiguration) = postSolution
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug.ActiveCfg = Debug|.NET
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug.Build.0 = Debug|.NET
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Distribution.ActiveCfg = Distribution|.NET
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Distribution.Build.0 = Distribution|.NET
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Release.ActiveCfg = Release|.NET
-		{29277D02-A002-439F-B3E7-C89C16A21818}.Release.Build.0 = Release|.NET
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29277D02-A002-439F-B3E7-C89C16A21818}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-	EndGlobalSection
-	GlobalSection(ExtensibilityAddIns) = postSolution
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
