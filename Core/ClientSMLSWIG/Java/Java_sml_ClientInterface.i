@@ -72,7 +72,6 @@
 
 // We replace the SWIG generated shutdown with our own version which will call the SWIG generated one.
 %rename(ShutdownInternal) sml::Kernel::Shutdown();
-//%ignore sml::Kernel::Shutdown();
 
 %pragma(java) jniclasscode=%{
   static {
@@ -109,8 +108,6 @@
   public final static native boolean Kernel_UnregisterForAgentEvent(long jarg1, int jarg2);
   public final static native boolean Kernel_RemoveRhsFunction(long jarg1, int jarg2);
   public final static native boolean Kernel_UnregisterForClientMessageEvent(long jarg1, int jarg2);
-  
-  //public final static native void Kernel_ShutdownInternal(long jarg1);
 %}
 
 %typemap(javacode) sml::Agent %{
@@ -294,7 +291,6 @@
 //
 // End custom Java callback code
 //
-
 
 // include stuff common to all languages (i.e. Java and Tcl)
 %include "../sml_ClientInterface.i"
