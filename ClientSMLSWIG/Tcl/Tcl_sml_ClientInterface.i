@@ -4,22 +4,6 @@
 // this includes support for wrapping Tcl_Interp*, which we need for our custom callback code
 %include typemaps.i
 
-%ignore sml::Agent::UnregisterForRunEvent(int);
-%ignore sml::Agent::UnregisterForProductionEvent(int);
-%ignore sml::Agent::UnregisterForPrintEvent(int);
-%ignore sml::Agent::UnregisterForXMLEvent(int);
-%ignore sml::Agent::UnregisterForOutputNotification(int);
-%ignore sml::Agent::RemoveOutputHandler(int);
-%ignore sml::Kernel::UnregisterForSystemEvent(int);
-%ignore sml::Kernel::UnregisterForUpdateEvent(int);
-%ignore sml::Kernel::UnregisterForStringEvent(int);
-%ignore sml::Kernel::UnregisterForAgentEvent(int);
-%ignore sml::Kernel::RemoveRhsFunction(int);
-%ignore sml::Kernel::UnregisterForClientMessageEvent(int);
-
-%ignore sml::Kernel::Shutdown();
-
-
 // We need to include this stuff before we include sml_ClientInterface.i or else things will be in the wrong
 //  order in the generated code and it won't compile
 // However, this stuff requires some things that are in sml_ClientInterface.i (i.e. the definition of smlEventId and Agent)
@@ -497,8 +481,6 @@
     
 %}
 
-%include "../sml_ClientInterface.i"
-
 %extend sml::Agent {
 
 	int RegisterForRunEvent(Tcl_Interp* interp, sml::smlRunEventId id, char* proc, char* userData, bool addToBack = true) {
@@ -673,9 +655,11 @@
 		ReleaseCallbackData(tud);
 		return true;
     }
-    
-    void Shutdown(Tcl_Interp* interp) {
-		self->Shutdown();
+};
+
+// Add cleanup code to Shutdown
+%exception Shutdown {
+		$action
 		// Release remaining TclUserData's
 		std::list<TclUserData*>::iterator itr;
 		for(itr=callbackdatas.begin(); itr!=callbackdatas.end(); itr++)
@@ -683,6 +667,19 @@
 			delete (*itr);
 		}
 		callbackdatas.clear();
-    }
-};
+}
 
+%ignore sml::Agent::UnregisterForRunEvent(int);
+%ignore sml::Agent::UnregisterForProductionEvent(int);
+%ignore sml::Agent::UnregisterForPrintEvent(int);
+%ignore sml::Agent::UnregisterForXMLEvent(int);
+%ignore sml::Agent::UnregisterForOutputNotification(int);
+%ignore sml::Agent::RemoveOutputHandler(int);
+%ignore sml::Kernel::UnregisterForSystemEvent(int);
+%ignore sml::Kernel::UnregisterForUpdateEvent(int);
+%ignore sml::Kernel::UnregisterForStringEvent(int);
+%ignore sml::Kernel::UnregisterForAgentEvent(int);
+%ignore sml::Kernel::RemoveRhsFunction(int);
+%ignore sml::Kernel::UnregisterForClientMessageEvent(int);
+
+%include "../sml_ClientInterface.i"

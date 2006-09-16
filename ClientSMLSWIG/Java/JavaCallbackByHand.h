@@ -1313,20 +1313,3 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForAgentEvent(JNIEnv *j
 
 	return result ;
 }
-
-JNIEXPORT void JNICALL Java_sml_smlJNI_Kernel_1ShutdownInternal(JNIEnv *jenv, jclass jcls, jlong jarg1) {
-  sml::Kernel *arg1 = (sml::Kernel *) 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  arg1 = *(sml::Kernel **)&jarg1; 
-  (arg1)->Shutdown();
-
-  // Release remaining JavaCallbackData's
-  std::list<JavaCallbackData*>::iterator itr;
-  for(itr=callbackdatas.begin(); itr!=callbackdatas.end(); itr++)
-  {
-	  delete (*itr);
-  }
-  callbackdatas.clear();
-}
