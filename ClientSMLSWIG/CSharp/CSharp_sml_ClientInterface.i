@@ -512,12 +512,28 @@
 
 %}
 
+// Add cleanup code to Shutdown (which is actually renamed to ShutdownInternal)
+%exception sml::Kernel::Shutdown {
+		$action
+		// Release remaining CSharpCallbackData's
+		std::list<CSharpCallbackData*>::iterator itr;
+		for(itr=callbackdatas.begin(); itr!=callbackdatas.end(); itr++)
+		{
+			delete (*itr);
+		}
+		callbackdatas.clear();
+}
+
 // include stuff common to all languages (i.e. Java, Tcl, C#)
 %include "../sml_ClientInterface.i"
 
-// include Doug's custom custom code for callbacks in the wrapper section
-//  so it's in the extern C block
-%wrapper %{
+%{
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include "CSharpCallbackByHand.h"
+#ifdef __cplusplus
+}
+#endif
 %}
 
