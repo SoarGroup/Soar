@@ -21,26 +21,56 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLCSharp", "Core\ClientSMLSWIG\CSharp\ClientSMLCSharp.vcproj", "{ECE01FC0-7FF9-4C82-AAFF-47C704CBF4BF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCLI", "Tools\TestCLI\TestCommandLineInterface.vcproj", "{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4C6CC3DE-C022-4043-8E73-72FE1E1224C4} = {4C6CC3DE-C022-4043-8E73-72FE1E1224C4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestClientSML", "Tools\TestClientSML\TestClientSML.vcproj", "{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4C6CC3DE-C022-4043-8E73-72FE1E1224C4} = {4C6CC3DE-C022-4043-8E73-72FE1E1224C4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestConnectionSML", "Tools\TestConnectionSML\TestConnectionSML.vcproj", "{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4C6CC3DE-C022-4043-8E73-72FE1E1224C4} = {4C6CC3DE-C022-4043-8E73-72FE1E1224C4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestSMLEvents", "Tools\TestSMLEvents\TestSMLEvents.vcproj", "{8EF61FF7-214E-4955-9DBF-CCD164815E9C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4C6CC3DE-C022-4043-8E73-72FE1E1224C4} = {4C6CC3DE-C022-4043-8E73-72FE1E1224C4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestSoarPerformance", "Tools\TestSoarPerformance\TestSoarPerformance.vcproj", "{31E16893-F132-4371-A451-7BC936385453}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4C6CC3DE-C022-4043-8E73-72FE1E1224C4} = {4C6CC3DE-C022-4043-8E73-72FE1E1224C4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TOHSML", "Tools\TOHSML\towersSML.vcproj", "{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4C6CC3DE-C022-4043-8E73-72FE1E1224C4} = {4C6CC3DE-C022-4043-8E73-72FE1E1224C4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LoggerWinC", "Tools\LoggerWinC\LoggerWinC.vcproj", "{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4C6CC3DE-C022-4043-8E73-72FE1E1224C4} = {4C6CC3DE-C022-4043-8E73-72FE1E1224C4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestMultiAgent", "Tools\TestMultiAgent\TestMultiAgent.vcproj", "{390A5FB3-0667-442A-8579-152824C627FD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4C6CC3DE-C022-4043-8E73-72FE1E1224C4} = {4C6CC3DE-C022-4043-8E73-72FE1E1224C4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FilterC", "Tools\FilterC\FilterC.vcproj", "{2A0EC63B-FBCA-4983-BE3D-952F7A6E842A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4C6CC3DE-C022-4043-8E73-72FE1E1224C4} = {4C6CC3DE-C022-4043-8E73-72FE1E1224C4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLPython", "Core\ClientSMLSWIG\Python\ClientSMLPython.vcproj", "{E03209E8-6CF9-4460-B570-A28F3BFBB402}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestSMLPerformance", "Tools\TestSMLPerformance\TestSMLPerformance.vcproj", "{12397B1B-154F-4148-B7C3-1C839967B689}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4C6CC3DE-C022-4043-8E73-72FE1E1224C4} = {4C6CC3DE-C022-4043-8E73-72FE1E1224C4}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
