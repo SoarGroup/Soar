@@ -394,11 +394,6 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   /* Freeing all the productions owned by this agent */
   excise_all_productions(delete_agent, false);
 
-  /* RPM 9/06 Releasing IO wmes */
-  /* Note that just releasing the top one (S1 ^io I1) should get all the children, too */
-  remove_input_wme(delete_agent, delete_agent->io_header_link);
-  do_buffered_wm_and_ownership_changes(delete_agent);
-
   /* Releasing all the predefined symbols */
   release_predefined_symbols(delete_agent);
 

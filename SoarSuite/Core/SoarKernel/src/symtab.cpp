@@ -601,17 +601,7 @@ void create_predefined_symbols (agent* thisAgent) {
 }
 
 void release_helper(agent* thisAgent, Symbol** sym) {
-   //BADBAD: RPM 9/06: removing excess reference counts
-   // should find where they are coming from and release them properly
-   // currently will only release them in a debug build, so if this causes problems it will work in release
-#ifdef _DEBUG
-   int numrefs = (*sym)->common.reference_count;
-   for(int i=0; i<numrefs; i++) {
-#endif
-	 symbol_remove_ref(thisAgent,*sym);
-#ifdef _DEBUG
-   }
-#endif
+   symbol_remove_ref(thisAgent,*sym);
    *sym = 0;
 }
 
