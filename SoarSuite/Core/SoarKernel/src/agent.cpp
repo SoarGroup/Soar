@@ -449,9 +449,6 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
 
   /* RPM 9/06 end */
 
-  /* KNOWN MEMORY LEAK! Need to track down and free ALL structures */
-  /* pointed to be fields in the agent structure.                  */
-
   /* Free soar agent structure */
   free((void *) delete_agent);
  
