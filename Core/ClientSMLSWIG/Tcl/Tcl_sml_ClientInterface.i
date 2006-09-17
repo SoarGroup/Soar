@@ -29,6 +29,9 @@
 		Tcl_Interp* interp;
 		Tcl_Obj* script;
 		int callbackid;
+		~TclUserData() {
+			Tcl_DecrRefCount(script);
+		}
 	};
 	
 	std::list<TclUserData*> callbackdatas;
