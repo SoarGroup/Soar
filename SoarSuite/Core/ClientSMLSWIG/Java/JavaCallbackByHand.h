@@ -224,7 +224,7 @@ static JavaCallbackData* CreateJavaCallbackData(bool storeAgent, JNIEnv *jenv, j
 
 	JavaCallbackData* pJavaData = new JavaCallbackData(pvm, jenv, storeAgent ? jglobal3 : 0, storeAgent ? 0 : jglobal3, jglobal4, pMethodName, jglobal6) ;
 
-	// Save the callback data so we can free it during shutdown if necessary
+	// Save the callback data so we can free it later
 	callbackdatas.push_back(pJavaData);
 
 	// Release the string we got from Java

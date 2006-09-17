@@ -19,6 +19,9 @@
 		PyObject* func;
 		PyObject* userdata;
 		int callbackid;
+		~PythonUserData () {
+			Py_DECREF(userdata);
+		}
 	};
 	
 	std::list<PythonUserData*> callbackdatas;
