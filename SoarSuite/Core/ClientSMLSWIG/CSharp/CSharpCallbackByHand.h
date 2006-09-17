@@ -61,17 +61,51 @@ public:
 
 	~CSharpCallbackData()
 	{
+		// Free the GCHandles created when the callback was registered
+		if(m_Agent != NULL) SWIG_csharp_deletehandle_callback(m_Agent) ;
+		if(m_Kernel != NULL) SWIG_csharp_deletehandle_callback(m_Kernel) ;
+		SWIG_csharp_deletehandle_callback(m_CallbackData) ;
 	}
 } ;
 
+std::list<CSharpCallbackData*> callbackdatas;
+
+void ReleaseCallbackData(CSharpCallbackData* pData) {
+	// Release callback data and remove from collection of those we need to release at shutdown
+	std::list<CSharpCallbackData*>::iterator itr = find(callbackdatas.begin(), callbackdatas.end(), pData);
+	if(itr != callbackdatas.end()) {
+		callbackdatas.erase(itr);
+		delete pData;
+	}
+}
+
+bool IsValidCallbackData(CSharpCallbackData* pData) {
+	std::list<CSharpCallbackData*>::iterator itr = find(callbackdatas.begin(), callbackdatas.end(), pData);
+	if(itr == callbackdatas.end()) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
 static CSharpCallbackData* CreateCSharpCallbackDataAgent(agentPtr jagent, int eventID, unsigned int callbackFunction, CallbackDataPtr callbackData)
 {
-	return new CSharpCallbackData(jagent, NULL, eventID, (void *)callbackFunction, callbackData) ;
+	CSharpCallbackData* pData = new CSharpCallbackData(jagent, NULL, eventID, (void *)callbackFunction, callbackData) ;
+
+	// Save the callback data so we can free it later
+	callbackdatas.push_back(pData);
+
+	return pData;
 }
 
 static CSharpCallbackData* CreateCSharpCallbackDataKernel(kernelPtr jkernel, int eventID, unsigned int callbackFunction, CallbackDataPtr callbackData)
 {
-	return new CSharpCallbackData(NULL, jkernel, eventID, (void *)callbackFunction, callbackData) ;
+	CSharpCallbackData* pData = new CSharpCallbackData(NULL, jkernel, eventID, (void *)callbackFunction, callbackData) ;
+	
+	// Save the callback data so we can free it later
+	callbackdatas.push_back(pData);
+
+	return pData;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -127,15 +161,14 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForRunEvent(void* jarg1, int 
 	// jarg2 is the callback data from the registration call
 	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForRunEvent(pData->m_CallbackID) ;
 
-	// Free the GCHandles created when the callback was registered
-	SWIG_csharp_deletehandle_callback(pData->m_Agent) ;
-	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
-
-	// Release the callback data
-	delete pData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pData);
 
 	return result ;
 }
@@ -195,15 +228,14 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForOutputNotification(void* j
 	// jarg2 is the callback data from the registration call
 	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForOutputNotification(pData->m_CallbackID) ;
 
-	// Free the GCHandles created when the callback was registered
-	SWIG_csharp_deletehandle_callback(pData->m_Agent) ;
-	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
-
-	// Release the callback data
-	delete pData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pData);
 
 	return result ;
 }
@@ -275,15 +307,14 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_RemoveOutputHandler(void* jarg1, int ja
 	// jarg2 is the callback data from the registration call
 	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->RemoveOutputHandler(pData->m_CallbackID) ;
 
-	// Free the GCHandles created when the callback was registered
-	SWIG_csharp_deletehandle_callback(pData->m_Agent) ;
-	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
-
-	// Release the callback data
-	delete pData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pData);
 
 	return result ;
 }
@@ -353,15 +384,14 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForXMLEvent(void* jarg1, int 
 	// jarg2 is the callback data from the registration call
 	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForXMLEvent(pData->m_CallbackID) ;
 
-	// Free the GCHandles created when the callback was registered
-	SWIG_csharp_deletehandle_callback(pData->m_Agent) ;
-	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
-
-	// Release the callback data
-	delete pData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pData);
 
 	return result ;
 }
@@ -423,15 +453,14 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForProductionEvent(void* jarg
 	// jarg2 is the callback data from the registration call
 	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForProductionEvent(pData->m_CallbackID) ;
 
-	// Free the GCHandles created when the callback was registered
-	SWIG_csharp_deletehandle_callback(pData->m_Agent) ;
-	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
-
-	// Release the callback data
-	delete pData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pData);
 
 	return result ;
 }
@@ -493,15 +522,14 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForPrintEvent(void* jarg1, in
 	// jarg2 is the callback data from the registration call
 	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForPrintEvent(pData->m_CallbackID) ;
 
-	// Free the GCHandles created when the callback was registered
-	SWIG_csharp_deletehandle_callback(pData->m_Agent) ;
-	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
-
-	// Release the callback data
-	delete pData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pData);
 
 	return result ;
 }
@@ -560,15 +588,14 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForSystemEvent(void* jarg1, 
 	// jarg2 is the callback data from the registration call
 	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForSystemEvent(pData->m_CallbackID) ;
 
-	// Free the GCHandles created when the callback was registered
-	SWIG_csharp_deletehandle_callback(pData->m_Kernel) ;
-	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
-
-	// Release the callback data
-	delete pData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pData);
 
 	return result ;
 }
@@ -627,15 +654,14 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForUpdateEvent(void* jarg1, 
 	// jarg2 is the callback data from the registration call
 	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForUpdateEvent(pData->m_CallbackID) ;
 
-	// Free the GCHandles created when the callback was registered
-	SWIG_csharp_deletehandle_callback(pData->m_Kernel) ;
-	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
-
-	// Release the callback data
-	delete pData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pData);
 
 	return result ;
 }
@@ -693,15 +719,14 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForStringEvent(void* jarg1, 
 	// jarg2 is the callback data from the registration call
 	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForStringEvent(pData->m_CallbackID) ;
 
-	// Free the GCHandles created when the callback was registered
-	SWIG_csharp_deletehandle_callback(pData->m_Kernel) ;
-	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
-
-	// Release the callback data
-	delete pData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pData);
 
 	return result ;
 }
@@ -807,15 +832,14 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_RemoveRhsFunction(void* jarg1, int jar
 	// jarg2 is the callback data from the registration call
 	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->RemoveRhsFunction(pData->m_CallbackID) ;
 
-	// Free the GCHandles created when the callback was registered
-	SWIG_csharp_deletehandle_callback(pData->m_Kernel) ;
-	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
-
-	// Release the callback data
-	delete pData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pData);
 
 	return result ;
 }
@@ -848,15 +872,14 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForClientMessageEvent(void* 
 	// jarg2 is the callback data from the registration call
 	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForClientMessageEvent(pData->m_CallbackID) ;
 
-	// Free the GCHandles created when the callback was registered
-	SWIG_csharp_deletehandle_callback(pData->m_Kernel) ;
-	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
-
-	// Release the callback data
-	delete pData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pData);
 
 	return result ;
 }
@@ -918,15 +941,14 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForAgentEvent(void* jarg1, i
 	// jarg2 is the callback data from the registration call
 	CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
 
+	// Don't try to release invalid data
+	if(!IsValidCallbackData(pData)) return false;
+
 	// Unregister our handler.
 	bool result = arg1->UnregisterForAgentEvent(pData->m_CallbackID) ;
 
-	// Free the GCHandles created when the callback was registered
-	SWIG_csharp_deletehandle_callback(pData->m_Kernel) ;
-	SWIG_csharp_deletehandle_callback(pData->m_CallbackData) ;
-
-	// Release the callback data
-	delete pData ;
+	// Release callback data and remove from collection of those we need to remove at shutdown
+	ReleaseCallbackData(pData);
 
 	return result ;
 }
