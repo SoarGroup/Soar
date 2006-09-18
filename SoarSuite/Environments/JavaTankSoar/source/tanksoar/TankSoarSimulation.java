@@ -198,10 +198,6 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 									
 								}
 							}			
-							if (initialNames[agentIndex] == null) {
-								logger.warning("Required name attribute missing, ignoring agent");
-								continue;
-							}
 							initialLocations[agentIndex] = new java.awt.Point(x, y);
 						} else {
 							logger.warning("Unknown tag: " + agentTag.GetTagName());
@@ -231,9 +227,6 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		
 		// add initial tanks
 		for (int i = 0; i < initialNames.length; ++i) {
-			if (initialNames[i] == null) {
-				continue;
-			}
 			createEntity(initialNames[i], initialProductions[i], initialColors[i], initialLocations[i], initialFacing[i],
 					initialEnergy[i], initialHealth[i], initialMissiles[i]);
 		}
@@ -291,10 +284,25 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	
     public void createEntity(String name, String productionsIn, String color, java.awt.Point locationIn, String facing,
     		int energy, int health, int missiles) {
-    	if (name == null) {
-    		fireErrorMessageWarning("Failed to create agent, name null.");
-    		return;
-    	}
+		if (color == null) {
+			for (int i = 0; i < simulation.visuals.WindowManager.kColors.length; ++i) {
+				boolean skip = false;
+				for (int j = 0; j < m_World.getTanks().length; ++j) {
+					if (m_World.getTanks()[j].getColor().equalsIgnoreCase(simulation.visuals.WindowManager.kColors[i])) {
+						skip = true;
+					}
+				}
+				if (!skip) {
+					color = simulation.visuals.WindowManager.kColors[i];
+					break;
+				}
+			}
+		}
+		assert color != null;
+		
+		if (name == null) {
+			name = color;
+		}
     	
     	java.awt.Point location = null;
     	if (locationIn != null) {
