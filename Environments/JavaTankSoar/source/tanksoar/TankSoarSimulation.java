@@ -110,6 +110,12 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 					ElementXML agentTag = null;
 					
 					int children = mainTag.GetNumberChildren();
+					if (children > 7) {
+						// BADBAD: this is not the best way to deal with this.
+						fireErrorMessageSevere("Too many agents in settings file!");
+						shutdown();
+						System.exit(1);
+					}
 					initialNames = new String[children];
 					initialProductions = new String[children];
 					initialColors = new String[children];
@@ -285,8 +291,8 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	
     public void createEntity(String name, String productionsIn, String color, java.awt.Point locationIn, String facing,
     		int energy, int health, int missiles) {
-    	if (name == null || color == null) {
-    		fireErrorMessageWarning("Failed to create agent, name or color null.");
+    	if (name == null) {
+    		fireErrorMessageWarning("Failed to create agent, name null.");
     		return;
     	}
     	

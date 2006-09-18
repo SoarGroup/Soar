@@ -328,6 +328,22 @@ public class TankSoarWorld extends World implements WorldManager {
 			}
 		}
 		
+		if (color == null) {
+			for (int i = 0; i < simulation.visuals.WindowManager.kColors.length; ++i) {
+				boolean skip = false;
+				for (int j = 0; j < this.m_Tanks.length; ++j) {
+					if (m_Tanks[j].getColor().equalsIgnoreCase(simulation.visuals.WindowManager.kColors[i])) {
+						skip = true;
+					}
+				}
+				if (!skip) {
+					color = simulation.visuals.WindowManager.kColors[i];
+					break;
+				}
+			}
+		}
+		assert color != null;
+		
 		Tank tank = new Tank(agent, productions, color, location, facing, energy, health, missiles, this);
 
 		if (location == null) {
