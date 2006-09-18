@@ -24,14 +24,17 @@ public class Eater extends WorldEntity {
 	public final static String kDontEatID = "dont-eat";
 	public final static String kTrue = "true";
 	public final static String kEater = "eater";
+	public final static String kRandomID = "random";
 
 	private StringElement m_DirectionWME;
 	private IntElement m_ScoreWME;
 	private IntElement m_xWME;
 	private IntElement m_yWME;
+	private FloatElement m_RandomWME;
 	private SoarCell[][] m_Cells = new SoarCell[(kEaterVision * 2 ) + 1][(kEaterVision * 2 ) + 1];
 	private boolean m_Hungry = true;
 	private boolean m_Moved = true;
+	private float random = 0;
 
 	class SoarCell {
 		Identifier me;
@@ -64,6 +67,8 @@ public class Eater extends WorldEntity {
 		
 		m_Cells[kEaterVision][kEaterVision].me = m_Agent.CreateIdWME(m_Agent.GetInputLink(), kMyLocationID);
 		createView(kEaterVision, kEaterVision);
+		
+		m_RandomWME = m_Agent.CreateFloatWME(m_Agent.GetInputLink(), kRandomID, random);
 		
 		m_Agent.Commit();
 	}
@@ -162,6 +167,13 @@ public class Eater extends WorldEntity {
 			m_Agent.Update(m_xWME, getLocation().x);
 			m_Agent.Update(m_yWME, getLocation().y);
 		}
+		
+		// Random
+		float oldrandom = random;
+		do {
+			random = Simulation.random.nextFloat();
+		} while (random == oldrandom);
+		m_Agent.Update(m_RandomWME, random);
 		
 		m_Agent.Commit();
 

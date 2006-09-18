@@ -1,6 +1,6 @@
 package tanksoar;
 
-import java.util.logging.*;
+//import java.util.logging.*;
 
 import simulation.Simulation;
 import sml.Agent;
@@ -114,11 +114,12 @@ public class InputLinkManager {
 	private IntElement m_xWME;
 	private IntElement m_yWME;			
 
-	private static Logger logger = Logger.getLogger("simulation");
+	//private static Logger logger = Logger.getLogger("simulation");
 	
 	private Identifier[][] radarCellIDs = new Identifier[Tank.kRadarWidth][Tank.kRadarHeight];
 	private StringElement[][] radarColors = new StringElement[Tank.kRadarWidth][Tank.kRadarHeight];
 	
+	private float random = 0;
 	private Agent m_Agent;
 	private Tank m_Tank;
 	private TankSoarWorld m_World;
@@ -640,7 +641,11 @@ public class InputLinkManager {
 		}
 		
 		// Random
-		float random = Simulation.random.nextFloat();
+		float oldrandom = random;
+		do {
+			random = Simulation.random.nextFloat();
+		} while (random == oldrandom);
+		
 		if (m_Reset) {
 			m_RandomWME = CreateFloatWME(m_InputLink, kRandomID, random);
 		} else {
