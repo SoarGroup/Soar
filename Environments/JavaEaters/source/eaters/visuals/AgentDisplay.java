@@ -22,8 +22,8 @@ public class AgentDisplay extends Composite {
 	Table m_AgentTable;
 	EatersVisualWorld m_AgentWorld;
 	WorldEntity m_SelectedEntity;
-	TableItem[] m_Items;
-	WorldEntity[] m_Entities;
+	TableItem[] m_Items = new TableItem[0];
+	WorldEntity[] m_Entities = new WorldEntity[0];
 	Composite m_AgentButtons;
 	Button m_NewAgentButton;
 	Button m_CloneAgentButton;
@@ -125,9 +125,6 @@ public class AgentDisplay extends Composite {
 		m_AgentTable.setHeaderVisible(true);
 		m_AgentTable.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				if (m_Entities == null) {
-					return;
-				}
 				for (int i = 0; i < m_Entities.length; ++i) {
 					selectEntity(m_Entities[m_AgentTable.getSelectionIndex()]);
 				}
@@ -196,10 +193,8 @@ public class AgentDisplay extends Composite {
 			location.setText("(" + m_SelectedEntity.getLocation().x + "," + m_SelectedEntity.getLocation().y + ")");
 		}
 		
-		if (m_Items != null) {
-			for (int i = 0; i < m_Items.length; ++i) {
-				m_Items[i].setText(1, Integer.toString(m_Entities[i].getPoints()));
-			}
+		for (int i = 0; i < m_Items.length; ++i) {
+			m_Items[i].setText(1, Integer.toString(m_Entities[i].getPoints()));
 		}
 	}
 	
@@ -208,17 +203,13 @@ public class AgentDisplay extends Composite {
 		m_AgentTable.removeAll();
 		boolean foundSelected = false;
 		
-		if (m_Entities == null) {
-			m_Items = null;
-		} else {
-			m_Items = new TableItem[m_Entities.length];
-			for (int i = 0; i < m_Entities.length; ++i) {
-				m_Items[i] = new TableItem(m_AgentTable, SWT.NONE);
-				m_Items[i].setText(new String[] {m_Entities[i].getName(), Integer.toString(m_Entities[i].getPoints())});
-				if (m_SelectedEntity == m_Entities[i]) {
-					foundSelected = true;
-					m_AgentTable.setSelection(i);
-				}
+		m_Items = new TableItem[m_Entities.length];
+		for (int i = 0; i < m_Entities.length; ++i) {
+			m_Items[i] = new TableItem(m_AgentTable, SWT.NONE);
+			m_Items[i].setText(new String[] {m_Entities[i].getName(), Integer.toString(m_Entities[i].getPoints())});
+			if (m_SelectedEntity == m_Entities[i]) {
+				foundSelected = true;
+				m_AgentTable.setSelection(i);
 			}
 		}
 		
@@ -234,12 +225,8 @@ public class AgentDisplay extends Composite {
 	void updateButtons() {
 		boolean running = m_Simulation.isRunning();
 		boolean agentsFull = false;
-		boolean noAgents = false;
-		if (m_Entities != null) {
-			agentsFull = (m_Entities.length == EatersSimulation.kMaxEaters);
-		} else {
-			noAgents = true;
-		}
+		boolean noAgents = (m_Entities.length == 0);
+		agentsFull = (m_Entities.length == EatersSimulation.kMaxEaters);
 		boolean selectedEater = (m_SelectedEntity != null);
 		
 		m_NewAgentButton.setEnabled(!running && !agentsFull);

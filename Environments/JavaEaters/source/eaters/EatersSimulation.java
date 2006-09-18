@@ -212,12 +212,6 @@ public class EatersSimulation extends Simulation implements SimulationManager {
     		logger.warning("An ignored parameter was given a non-default value!");
     	}
     	
-    	if (location != null) {
-    		if ((location.x == -1) || (location.y == -1)) {
-    			location = null;
-    		}
-    	}
-    	
 		if (color == null) {
 			for (int i = 0; i < simulation.visuals.WindowManager.kColors.length; ++i) {
 				boolean skip = false;

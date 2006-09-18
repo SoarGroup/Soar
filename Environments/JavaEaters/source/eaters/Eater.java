@@ -48,8 +48,8 @@ public class Eater extends WorldEntity {
 		boolean iterated = false;
 	}
 	
-	public Eater(Agent agent, String productions, String color, java.awt.Point location) {
-		super(agent, productions, color, location);
+	public Eater(Agent agent, String productions, String color, java.awt.Point initialLocation) {
+		super(agent, productions, color, initialLocation);
 
 		Identifier eater = m_Agent.CreateIdWME(m_Agent.GetInputLink(), kEaterID);
 		

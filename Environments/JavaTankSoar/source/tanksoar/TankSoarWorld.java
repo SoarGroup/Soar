@@ -307,7 +307,7 @@ public class TankSoarWorld extends World implements WorldManager {
 		createTank(agent, productions, color, location, null, -1, -1, -1);
 	}
 
-	void createTank(Agent agent, String productions, String color, java.awt.Point locationIn, String facing, int energy, int health, int missiles) {
+	void createTank(Agent agent, String productions, String color, java.awt.Point location, String facing, int energy, int health, int missiles) {
 		String name;
 		if (agent == null) {
 			name = new String(productions);
@@ -315,16 +315,14 @@ public class TankSoarWorld extends World implements WorldManager {
 			name = new String(agent.GetAgentName());
 		}
 		
-		java.awt.Point location = null;
-		if (locationIn != null) {
+		if (location != null) {
 			if (this.isInBounds(location)) {
 				if (getCell(location).isBlocked()) {
 					logger.warning(name + ": Initial location " + location + " is blocked, going random.");
-				} else {
-					location = new java.awt.Point(locationIn);
+					location = null;
 				}
 			} else {
-				logger.warning(name + ": Initial location " + location + " is out of bounds, going random.");
+				location = null;
 			}
 		}
 		

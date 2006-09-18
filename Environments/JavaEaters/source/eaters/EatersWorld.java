@@ -41,7 +41,7 @@ public class EatersWorld extends World implements WorldManager {
 	
 	private EatersCell[][] m_World = null;
 	private EatersSimulation m_Simulation;
-	private Eater[] m_Eaters;
+	private Eater[] m_Eaters = new Eater[0];
 	private boolean m_PrintedStats = false;
 	private ArrayList m_Collisions;
 	
@@ -395,11 +395,18 @@ public class EatersWorld extends World implements WorldManager {
 	}
 	
 	void resetEaters() {
-		if (m_Eaters == null) {
+		if (m_Eaters.length == 0) {
 			return;
 		}
 		for (int i = 0; i < m_Eaters.length; ++i) {
-			java.awt.Point location = findStartingLocation();
+			java.awt.Point location = m_Eaters[i].getInitialLocation();
+			if (location != null && (getCell(location).isWall() || (getCell(location).getEater() != null))) {
+				logger.warning(m_Eaters[i].getName() + ": Initial location (" + location.x + "," + location.y + ") is blocked, going random.");
+				location = null;
+			}
+			if (location == null) {
+				location = findStartingLocation();
+			}
 			m_Eaters[i].setLocation(location);
 			m_Eaters[i].setMoved();
 			// Put eater on map, ignore food
@@ -422,41 +429,39 @@ public class EatersWorld extends World implements WorldManager {
 					location = null;
 				}
 			} else {
-				logger.warning("Initial location " + location + " is out of bounds, going random.");
 				location = null;
 			}
 		}
+
+		Eater eater = new Eater(agent, productions, color, location);
 
 		if (location == null) {
 			location = findStartingLocation();
 		}
 		
-		Eater eater = new Eater(agent, productions, color, location);
 		// Put eater on map, remove food
 		getCell(location).setEater(eater);
 		getCell(location).setFood(null);
 
-		if (m_Eaters == null) {
-			m_Eaters = new Eater[1];
-			m_Eaters[0] = eater;
-		} else {
-			Eater[] original = m_Eaters;
-			m_Eaters = new Eater[original.length + 1];
-			for (int i = 0; i < original.length; ++i) {
-				m_Eaters[i] = original[i];
-			}
-			m_Eaters[original.length] = eater;
+		logger.info(eater.getName() + ": Spawning at (" + location.x + "," + location.y + ")");
+		
+
+		Eater[] original = m_Eaters;
+		m_Eaters = new Eater[original.length + 1];
+		for (int i = 0; i < original.length; ++i) {
+			m_Eaters[i] = original[i];
 		}
+		m_Eaters[original.length] = eater;
 
 		updateEaterInput();
 	}
 	
 	public boolean noAgents() {
-		return (m_Eaters == null);
+		return (m_Eaters.length == 0);
 	}
 	
 	public void shutdown() {
-		while (m_Eaters != null) {
+		while (m_Eaters.length > 0) {
 			m_Simulation.destroyEntity(m_Eaters[0]);
 		}
 	}
@@ -472,28 +477,22 @@ public class EatersWorld extends World implements WorldManager {
 	}
 	
 	void destroyEater(Eater eater) {
-		if (m_Eaters == null) {
+		if (m_Eaters.length == 0) {
 			return;
 		}
 		for (int i = 0; i < m_Eaters.length; ++i) {
 			if (eater == m_Eaters[i]) {
-				if (m_Eaters.length == 1) {
-					m_Eaters = null;
-				} else {
-					Eater[] original = m_Eaters;
-					m_Eaters = new Eater[original.length - 1];
-					for (int j = 0; j < m_Eaters.length; ++j) {
-						if (j < i) {
-							m_Eaters[j] = original[j];
-						} else {
-							m_Eaters[j] = original[j+1];
-						}
+				Eater[] original = m_Eaters;
+				m_Eaters = new Eater[original.length - 1];
+				for (int j = 0; j < m_Eaters.length; ++j) {
+					if (j < i) {
+						m_Eaters[j] = original[j];
+					} else {
+						m_Eaters[j] = original[j+1];
 					}
 				}
 				getCell(eater.getLocation()).setEater(null);
-				if (m_Eaters == null) {
-					break;
-				}
+				return;
 			}
 		}
 	}
@@ -624,7 +623,7 @@ public class EatersWorld extends World implements WorldManager {
 			return;
 		}
 
-		if (m_Eaters == null) {
+		if (m_Eaters.length == 0) {
 			logger.warning("Update called with no eaters.");
 			return;
 		}

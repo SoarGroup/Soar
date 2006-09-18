@@ -10,10 +10,6 @@ public class VisualWorld extends Canvas {
 	public static HashMap m_EntityColors = null;
 	
 	public static void remapEntityColors(WorldEntity[] entities) {
-		if (entities == null) {
-			m_EntityColors = null;
-			return;
-		}
 		m_EntityColors = new HashMap();
 		for (int i = 0; i < entities.length; ++i) {
 			m_EntityColors.put(entities[i], WindowManager.getColor(entities[i].getColor()));
