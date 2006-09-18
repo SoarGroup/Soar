@@ -20,6 +20,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 	private static final String kTagAgent = "agent";
 	private static final String kParamName = "name";
 	private static final String kParamProductions = "productions";
+	private static final String kParamProductionsAbsolute = "productions-absolute";
 	private static final String kParamColor = "color";
 	private static final String kDefaultMap = "random-walls.emap";
 	private static final String kParamX = "x";
@@ -129,7 +130,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 									initialNames[agentIndex] = value;
 									
 								} else if (attribute.equalsIgnoreCase(kParamProductions)) {
-									initialProductions[agentIndex] = value;
+									initialProductions[agentIndex] = getAgentPath() + value;
 									// Next two lines kind of a hack.  Convert / to \\ on windows, and vice versa
 									if (System.getProperty("file.separator").equalsIgnoreCase("\\")) {
 										initialProductions[agentIndex] = initialProductions[agentIndex].replaceAll("/", "\\\\");
@@ -137,6 +138,14 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 										initialProductions[agentIndex] = initialProductions[agentIndex].replaceAll("\\\\", "/");
 									}
 									
+								} else if (attribute.equalsIgnoreCase(kParamProductionsAbsolute)) {
+									initialProductions[agentIndex] = value;
+									// Next two lines kind of a hack.  Convert / to \\ on windows, and vice versa
+									if (System.getProperty("file.separator").equalsIgnoreCase("\\")) {
+										initialProductions[agentIndex] = initialProductions[agentIndex].replaceAll("/", "\\\\");
+									} else if (System.getProperty("file.separator").equalsIgnoreCase("/")) {
+										initialProductions[agentIndex] = initialProductions[agentIndex].replaceAll("\\\\", "/");
+									}
 									
 								} else if (attribute.equalsIgnoreCase(kParamColor)) {
 									initialColors[agentIndex] = value;
@@ -185,11 +194,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 			if (initialNames[i] == null) {
 				continue;
 			}
-			String productions = null;
-			if (initialProductions[i] != null) {
-				productions = getAgentPath() + initialProductions[i];
-			}
-			createEntity(initialNames[i], productions, initialColors[i], initialLocations[i], null, -1, -1, -1);
+			createEntity(initialNames[i], initialProductions[i], initialColors[i], initialLocations[i], null, -1, -1, -1);
 		}
 		
 		// if in quiet mode, run!
