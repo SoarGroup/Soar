@@ -14,16 +14,16 @@ public class WorldEntity {
 	private int m_Points = 0;
 	private boolean m_PointsChanged = true;
 	private java.awt.Point m_Location = new java.awt.Point(-1,-1);
+	private java.awt.Point m_InitialLocation;
 	private String m_ColorString;
 	private String m_Productions;
 	private boolean m_Colliding = false;
 
-	public WorldEntity(Agent agent, String productions, String color, java.awt.Point location) {
+	public WorldEntity(Agent agent, String productions, String color, java.awt.Point initialLocation) {
 		m_Agent = agent;
 		
-		if (location != null) {
-			m_Location.x = location.x;
-			m_Location.y = location.y;
+		if (initialLocation != null) {
+			m_InitialLocation = initialLocation;
 		}
 		m_ColorString = color;
 		m_Productions = productions;
@@ -96,6 +96,10 @@ public class WorldEntity {
 	public void setLocation(java.awt.Point location) {
 		m_Location.x = location.x;
 		m_Location.y = location.y;
+	}
+	
+	public java.awt.Point getInitialLocation() {
+		return m_InitialLocation;
 	}
 	
 	public int getFacingInt() {

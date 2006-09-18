@@ -47,7 +47,6 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 	private TankSoarWorld m_World;
 
 	private int m_InitialFacing;
-	private java.awt.Point m_InitialLocation;
 	
 	private InputLinkManager m_ILM;
 	private MoveInfo m_LastMove;
@@ -68,8 +67,8 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 	private boolean stopping = false;
 	
 
-	public Tank(Agent agent, String productions, String color, java.awt.Point location, String facing, int energy, int health, int missiles, TankSoarWorld world) {
-		super(agent, productions, color, location);
+	public Tank(Agent agent, String productions, String color, java.awt.Point initialLocation, String facing, int energy, int health, int missiles, TankSoarWorld world) {
+		super(agent, productions, color, initialLocation);
 		
 		if (m_Agent != null) {
 			m_Agent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_INTERRUPT, this, null);
@@ -85,8 +84,6 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 			m_InitialFacing = Direction.getInt(facing);
 		}
 				
-		m_InitialLocation = location;
-		
 		if (energy != -1) {
 			m_InitialEnergy = energy;
 		}
@@ -138,10 +135,6 @@ public class Tank  extends WorldEntity implements Agent.RunEventInterface {
 			return true;
 		}
 		return false;
-	}
-	
-	public java.awt.Point getInitialLocation() {
-		return m_InitialLocation;
 	}
 	
 	public void reset() {

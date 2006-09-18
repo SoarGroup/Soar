@@ -282,7 +282,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		m_HumanInput = humanInput;
 	}
 	
-    public void createEntity(String name, String productionsIn, String color, java.awt.Point locationIn, String facing,
+    public void createEntity(String name, String productionsIn, String color, java.awt.Point location, String facing,
     		int energy, int health, int missiles) {
 		if (color == null) {
 			for (int i = 0; i < simulation.visuals.WindowManager.kColors.length; ++i) {
@@ -303,15 +303,6 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		if (name == null) {
 			name = color;
 		}
-    	
-    	java.awt.Point location = null;
-    	if (locationIn != null) {
-    		if ((locationIn.x == -1) || (locationIn.y == -1)) {
-    			if (logger.isLoggable(Level.FINER)) logger.finer("Ignoring non-null location " + locationIn.toString());
-    		} else {
-    			location = new java.awt.Point(locationIn);
-    		}
-    	}
     	
     	Agent agent = null;
     	String productions = null;
