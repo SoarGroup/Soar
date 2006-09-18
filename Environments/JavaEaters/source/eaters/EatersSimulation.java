@@ -164,10 +164,6 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 									
 								}
 							}			
-							if (initialNames[agentIndex] == null) {
-								logger.warning("Required name attribute missing, ignoring agent");
-								continue;
-							}
 							initialLocations[agentIndex] = new java.awt.Point(x, y);
 						} else {
 							logger.warning("Unknown tag: " + agentTag.GetTagName());
@@ -197,9 +193,6 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		
 		// add initial eaters
 		for (int i = 0; i < initialNames.length; ++i) {
-			if (initialNames[i] == null) {
-				continue;
-			}
 			createEntity(initialNames[i], initialProductions[i], initialColors[i], initialLocations[i], null, -1, -1, -1);
 		}
 		
@@ -224,6 +217,26 @@ public class EatersSimulation extends Simulation implements SimulationManager {
     			location = null;
     		}
     	}
+    	
+		if (color == null) {
+			for (int i = 0; i < simulation.visuals.WindowManager.kColors.length; ++i) {
+				boolean skip = false;
+				for (int j = 0; j < m_EatersWorld.getEaters().length; ++j) {
+					if (m_EatersWorld.getEaters()[j].getColor().equalsIgnoreCase(simulation.visuals.WindowManager.kColors[i])) {
+						skip = true;
+					}
+				}
+				if (!skip) {
+					color = simulation.visuals.WindowManager.kColors[i];
+					break;
+				}
+			}
+		}
+		assert color != null;
+		
+		if (name == null) {
+			name = color;
+		}
     	
     	if (name == null || productions == null) {
     		fireErrorMessageWarning("Failed to create agent, name, productions or color null.");
