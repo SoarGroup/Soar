@@ -98,6 +98,7 @@ int main()
 	// the allocation number (e.g. 122) and then we'll break
 	// when that allocation occurs.
 	//_crtBreakAlloc = 112;
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
 	// we put everything in its own scope so memory leak detection can be done
 	{
 #endif //MEM_LEAK_DEBUG
@@ -167,7 +168,7 @@ int main()
 		ql_interface.QL_Shutdown();
 #ifdef MEM_LEAK_DEBUG
 	}
-
+/*
 #ifdef _MSC_VER
 	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
 	printf("\nIf no leaks appear here, but some appear in the output\nwindow in the debugger, they have been leaked from a DLL.\nWhich is reporting when it's unloaded.\n\n") ;
@@ -182,7 +183,7 @@ int main()
 	// If we allocate something in a DLL then this call won't see it because it works by overriding the
 	// local implementation of malloc.
 	_CrtDumpMemoryLeaks();
-#endif // _MSC_VER
+#endif // _MSC_VER*/
 #endif //MEM_LEAK_DEBUG
 }
 
