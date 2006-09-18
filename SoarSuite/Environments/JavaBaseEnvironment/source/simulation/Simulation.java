@@ -122,6 +122,10 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	
     protected Agent createAgent(String name, String productions) {
     	Agent agent = m_Kernel.CreateAgent(name);
+    	if (agent == null) {
+			fireErrorMessageWarning("Failed to create agent " + name + " (" + productions + "): " + m_Kernel.GetLastErrorDescription());
+    		return null;
+    	}
     	boolean load = agent.LoadProductions(productions);
     	if (!load || agent.HadError()) {
 			fireErrorMessageWarning("Failed to create agent " + name + " (" + productions + "): " + agent.GetLastErrorDescription());

@@ -96,6 +96,12 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 					
 					ElementXML agentTag = null;
 					int children = mainTag.GetNumberChildren();
+					if (children > 7) {
+						// BADBAD: this is not the best way to deal with this.
+						fireErrorMessageSevere("Too many agents in settings file!");
+						shutdown();
+						System.exit(1);
+					}
 					initialNames = new String[children];
 					initialProductions = new String[children];
 					initialColors = new String[children];

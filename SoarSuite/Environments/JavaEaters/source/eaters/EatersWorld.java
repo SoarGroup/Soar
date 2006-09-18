@@ -431,6 +431,22 @@ public class EatersWorld extends World implements WorldManager {
 			location = findStartingLocation();
 		}
 		
+		if (color == null) {
+			for (int i = 0; i < simulation.visuals.WindowManager.kColors.length; ++i) {
+				boolean skip = false;
+				for (int j = 0; j < this.m_Eaters.length; ++j) {
+					if (m_Eaters[j].getColor().equalsIgnoreCase(simulation.visuals.WindowManager.kColors[i])) {
+						skip = true;
+					}
+				}
+				if (!skip) {
+					color = simulation.visuals.WindowManager.kColors[i];
+					break;
+				}
+			}
+		}
+		assert color != null;
+		
 		Eater eater = new Eater(agent, productions, color, location);
 		// Put eater on map, remove food
 		getCell(location).setEater(eater);
