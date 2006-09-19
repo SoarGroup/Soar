@@ -440,6 +440,7 @@ public class EatersWorld extends World implements WorldManager {
 		}
 		
 		// Put eater on map, remove food
+		eater.setLocation(location);
 		getCell(location).setEater(eater);
 		getCell(location).setFood(null);
 
