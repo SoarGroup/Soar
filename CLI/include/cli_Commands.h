@@ -39,6 +39,7 @@ namespace cli {
 		static char const* kCLIMatches;
 		static char const* kCLIMaxChunks;
 		static char const* kCLIMaxElaborations;
+		static char const* kCLIMaxMemoryUsage;
 		static char const* kCLIMaxNilOutputCycles;
 		static char const* kCLIMemories;
 		static char const* kCLIMultiAttributes;

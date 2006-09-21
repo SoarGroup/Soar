@@ -485,20 +485,20 @@ namespace gSKI
 		*/
 		void SetLearning(bool on, Error* err = 0);
 
-		virtual int GetMaxChunks(Error* err = 0);
-		virtual void SetMaxChunks(int maxChunks, Error* err = 0);
+		int GetMaxChunks(Error* err = 0);
+		void SetMaxChunks(int maxChunks, Error* err = 0);
 
-		virtual int GetMaxElaborations(Error* err = 0);
-		virtual void SetMaxElaborations(int maxElabs, Error* err = 0);
+		int GetMaxElaborations(Error* err = 0);
+		void SetMaxElaborations(int maxElabs, Error* err = 0);
 
-		virtual int GetMaxNilOutputCycles(Error* err = 0);
-		virtual void SetMaxNilOutputCycles(int maxNils, Error* err = 0);
+		int GetMaxNilOutputCycles(Error* err = 0);
+		void SetMaxNilOutputCycles(int maxNils, Error* err = 0);
 
-		virtual int GetAttributePreferencesMode(Error* err = 0);
-		virtual void SetAttributePreferencesMode(int mode, Error* err = 0);
+		int GetAttributePreferencesMode(Error* err = 0);
+		void SetAttributePreferencesMode(int mode, Error* err = 0);
 
-		virtual int GetInputPeriod(Error* err = 0);
-		virtual void SetInputPeriod(int period, Error* err = 0);
+		int GetInputPeriod(Error* err = 0);
+		void SetInputPeriod(int period, Error* err = 0);
 
 		/**
 		* @brief An accessor method for querying the current "Wait on state
@@ -512,7 +512,7 @@ namespace gSKI
 		*            information. If it is null (the default) extended error
 		*            information is not returned.
 		*/
-		virtual bool IsWaitingOnStateNoChange(Error* err = 0);
+		bool IsWaitingOnStateNoChange(Error* err = 0);
 
 		/**
 		* @brief Sets the current wait on state no change mode
@@ -529,7 +529,7 @@ namespace gSKI
 		*            information. If it is null (the default) extended error
 		*            information is not returned.
 		*/
-		virtual void SetWaitOnStateNoChange(bool on, Error* err = 0);
+		void SetWaitOnStateNoChange(bool on, Error* err = 0);
 
 		/**
 		* @brief Returns the o-support mode for this agent
@@ -550,14 +550,14 @@ namespace gSKI
 		* @returns The current o-support mode for this agent.
 		*/
 		/* TODO: O-Support mode investigations */
-		virtual egSKIOSupportMode GetOSupportMode(Error* err = 0);
-		virtual void SetOSupportMode(egSKIOSupportMode mode, Error* err = 0);
+		egSKIOSupportMode GetOSupportMode(Error* err = 0);
+		void SetOSupportMode(egSKIOSupportMode mode, Error* err = 0);
 
-		virtual egSKIUserSelectType GetIndifferentSelection(Error* err = 0);
-		virtual void SetIndifferentSelection(egSKIUserSelectType t, Error* err = 0);
+		egSKIUserSelectType GetIndifferentSelection(Error* err = 0);
+		void SetIndifferentSelection(egSKIUserSelectType t, Error* err = 0);
 
-		virtual int GetDefaultWMEDepth(Error* err = 0);
-		virtual void SetDefaultWMEDepth(int d, Error* err = 0);
+		int GetDefaultWMEDepth(Error* err = 0);
+		void SetDefaultWMEDepth(int d, Error* err = 0);
 
 		/**
 		* @brief Gets the current phase for this agent
@@ -691,7 +691,7 @@ namespace gSKI
 		void          ResetNumOutputsExecuted(Error* err = 0);
 		void          ResetNilOutputCounter(Error* err = 0);
 
-		virtual AgentPerformanceMonitor* GetPerformanceMonitor(Error* err = 0)
+		AgentPerformanceMonitor* GetPerformanceMonitor(Error* err = 0)
 		{ 
 			// unreferenced formal parameters
 			(void)(err);
@@ -735,7 +735,7 @@ namespace gSKI
 		* @returns true if the RHS function was added.  False if there is already a RHS function
 		*             with the given name or if there is another failure.
 		*/
-		virtual bool AddClientRhsFunction(RhsFunction* rhsFunction, 
+		bool AddClientRhsFunction(RhsFunction* rhsFunction, 
 			Error*        err = 0);
 
 		/**
@@ -757,7 +757,7 @@ namespace gSKI
 		*  @return true if the given RHS function was removed.  false otherwise.  If false is returned
 		*               check the value of err for extended error information.
 		*/
-		virtual bool RemoveClientRhsFunction(const char* name, Error* err = 0);
+		bool RemoveClientRhsFunction(const char* name, Error* err = 0);
 
 		/**
 		*  @brief Remove all client-defined RHS functions from this agent
@@ -770,7 +770,7 @@ namespace gSKI
 		*               information.  If it is 0 (the default) extended error
 		*               information is not returned.
 		*/
-		virtual void RemoveAllClientRhsFunctions(Error* err = 0);
+		void RemoveAllClientRhsFunctions(Error* err = 0);
 
 		/*************************** Listeners ****************************************/
 
@@ -818,7 +818,7 @@ namespace gSKI
 			bool                allowAsynch = false,
 			Error*              err         = 0);
 
-		/* virtual void HandleEvent(egSKIRunEventId eventId, 
+		/* void HandleEvent(egSKIRunEventId eventId, 
 		gSKI::Agent*   agentPtr, 
 		egSKIPhaseType  phase,
 		Error*          err = 0);*/
@@ -893,7 +893,7 @@ namespace gSKI
 		*               information.  If it is 0 (the default) extended error
 		*               information is not returned.
 		*/
-		virtual void AddRhsFunctionChangeListener(egSKISystemEventId           eventId, 
+		void AddRhsFunctionChangeListener(egSKISystemEventId           eventId, 
 			IRhsFunctionChangeListener*  listener, 
 			bool                         allowAsynch = false,
 			Error*                       err         = 0);
@@ -925,7 +925,7 @@ namespace gSKI
 		*               information.  If it is 0 (the default) extended error
 		*               information is not returned.
 		*/
-		virtual void RemoveRhsFunctionChangeListener(egSKISystemEventId           eventId,
+		void RemoveRhsFunctionChangeListener(egSKISystemEventId           eventId,
 			IRhsFunctionChangeListener*  listener,
 			Error*                       err = 0);
 
@@ -958,7 +958,7 @@ namespace gSKI
 		*               information.  If it is 0 (the default) extended error
 		*               information is not returned.
 		*/
-		virtual void AddRhsFunctionListener(egSKISystemEventId       eventId, 
+		void AddRhsFunctionListener(egSKISystemEventId       eventId, 
 			IRhsFunctionListener* listener, 
 			bool                  allowAsynch = false,
 			Error*                err         = 0);
@@ -1001,7 +1001,7 @@ namespace gSKI
 		*               information.  If it is 0 (the default) extended error
 		*               information is not returned.
 		*/
-		virtual void AddRhsFunctionListenerNameFilter(egSKISystemEventId    eventId,
+		void AddRhsFunctionListenerNameFilter(egSKISystemEventId    eventId,
 			IRhsFunctionListener* listener,
 			const char*           rhsFuncNamePattern,
 			bool                  negate      = false,
@@ -1030,7 +1030,7 @@ namespace gSKI
 		*               information.  If it is 0 (the default) extended error
 		*               information is not returned.
 		*/
-		virtual void RemoveRhsFunctionListener(egSKISystemEventId     eventId,
+		void RemoveRhsFunctionListener(egSKISystemEventId     eventId,
 			IRhsFunctionListener*  listener,
 			Error*                 err = 0);
 
@@ -1056,7 +1056,7 @@ namespace gSKI
 		*               information.  If it is 0 (the default) extended error
 		*               information is not returned.
 		*/
-		virtual void RemoveRhsFunctionListenerFilters(egSKISystemEventId    eventId,
+		void RemoveRhsFunctionListenerFilters(egSKISystemEventId    eventId,
 			IRhsFunctionListener* listener,
 			Error*                err = 0);
 
@@ -1090,7 +1090,7 @@ namespace gSKI
 		*               information.  If it is 0 (the default) extended error
 		*               information is not returned.
 		*/
-		virtual void AddXMLListener(egSKIXMLEventId	 eventId, 
+		void AddXMLListener(egSKIXMLEventId	 eventId, 
 			IXMLListener*            listener, 
 			bool                     allowAsynch = false,
 			Error*                   err         = 0);
@@ -1121,7 +1121,7 @@ namespace gSKI
 		*               information.  If it is 0 (the default) extended error
 		*               information is not returned.
 		*/
-		virtual void RemoveXMLListener(egSKIXMLEventId eventId,
+		void RemoveXMLListener(egSKIXMLEventId eventId,
 			IXMLListener*         listener,
 			Error*                err = 0);
 
@@ -1150,18 +1150,18 @@ namespace gSKI
 
 		/** Multi-attribute support */
 		//{
-		virtual tIMultiAttributeIterator* GetMultiAttributes(Error* pErr = 0);
-		virtual IMultiAttribute* GetMultiAttribute(const char* attribute, Error* pErr = 0);
-		virtual void SetMultiAttribute(const char* attribute, 
+		tIMultiAttributeIterator* GetMultiAttributes(Error* pErr = 0);
+		IMultiAttribute* GetMultiAttribute(const char* attribute, Error* pErr = 0);
+		void SetMultiAttribute(const char* attribute, 
 			int priority,
 			Error* pErr = 0);
 		//}
 
-		virtual egSKINumericIndifferentMode GetNumericIndifferentMode(Error* pErr = 0);
-		virtual void SetNumericIndifferentMode(egSKINumericIndifferentMode m, Error* pErr = 0);
+		egSKINumericIndifferentMode GetNumericIndifferentMode(Error* pErr = 0);
+		void SetNumericIndifferentMode(egSKINumericIndifferentMode m, Error* pErr = 0);
 
-		virtual bool GetOperand2Mode();
-		virtual void SetOperand2Mode(bool mode);
+		bool GetOperand2Mode();
+		void SetOperand2Mode(bool mode);
 
 		///////////////////////////////// NOT PART OF INTERFACE ///////////////////////////
 
@@ -1199,7 +1199,7 @@ namespace gSKI
 		class PhaseListener : public IRunListener
 		{
 		public:
-		virtual void HandleEvent(egSKIRunEventId eventId, Agent* agentPtr, egSKIPhaseType phase);
+		void HandleEvent(egSKIRunEventId eventId, Agent* agentPtr, egSKIPhaseType phase);
 		//??  { HandleKernelRunEvent ?}
 		private:
 		Agent* a;
@@ -1325,7 +1325,7 @@ namespace gSKI
 		//}
 
 		// Called when a "RunEvent" occurs in the kernel
-		virtual void HandleEvent(egSKIRunEventId eventId, gSKI::Agent* agentPtr, egSKIPhaseType phase) ;
+		void HandleEvent(egSKIRunEventId eventId, gSKI::Agent* agentPtr, egSKIPhaseType phase) ;
 
 	private:
 

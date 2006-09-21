@@ -287,6 +287,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\cli_maxmemoryusage.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\src\cli_maxniloutputcycles.cpp"
 					>
 				</File>
