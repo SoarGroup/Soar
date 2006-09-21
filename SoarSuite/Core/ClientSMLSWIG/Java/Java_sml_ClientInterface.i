@@ -56,20 +56,6 @@
 // Doug's custom Java code for registering/unregistering callbacks
 //
 
-// in the Java case, we will also provide custom code for unregistering from events
-%ignore sml::Agent::UnregisterForRunEvent(int);
-%ignore sml::Agent::UnregisterForProductionEvent(int);
-%ignore sml::Agent::UnregisterForPrintEvent(int);
-%ignore sml::Agent::UnregisterForXMLEvent(int);
-%ignore sml::Agent::UnregisterForOutputNotification(int);
-%ignore sml::Agent::RemoveOutputHandler(int);
-%ignore sml::Kernel::UnregisterForSystemEvent(int);
-%ignore sml::Kernel::UnregisterForUpdateEvent(int);
-%ignore sml::Kernel::UnregisterForStringEvent(int);
-%ignore sml::Kernel::UnregisterForAgentEvent(int);
-%ignore sml::Kernel::RemoveRhsFunction(int);
-%ignore sml::Kernel::UnregisterForClientMessageEvent(int);
-
 // We replace the SWIG generated shutdown with our own version which will call the SWIG generated one.
 %rename(ShutdownInternal) sml::Kernel::Shutdown();
 

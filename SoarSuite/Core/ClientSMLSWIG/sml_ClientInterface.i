@@ -69,6 +69,19 @@
 %ignore sml::Kernel::AddRhsFunction(char const*, RhsEventHandler, void*, bool addToBack = true);
 %ignore sml::Kernel::RegisterForClientMessageEvent(char const*, RhsEventHandler, void*, bool addToBack = true);
 
+%ignore sml::Agent::UnregisterForRunEvent(int);
+%ignore sml::Agent::UnregisterForProductionEvent(int);
+%ignore sml::Agent::UnregisterForPrintEvent(int);
+%ignore sml::Agent::UnregisterForXMLEvent(int);
+%ignore sml::Agent::UnregisterForOutputNotification(int);
+%ignore sml::Agent::RemoveOutputHandler(int);
+%ignore sml::Kernel::UnregisterForSystemEvent(int);
+%ignore sml::Kernel::UnregisterForUpdateEvent(int);
+%ignore sml::Kernel::UnregisterForStringEvent(int);
+%ignore sml::Kernel::UnregisterForAgentEvent(int);
+%ignore sml::Kernel::RemoveRhsFunction(int);
+%ignore sml::Kernel::UnregisterForClientMessageEvent(int);
+
 //
 // Tell SWIG to include these files in the generated wrapper code
 //
