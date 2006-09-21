@@ -6,6 +6,7 @@ Soar and SML
 * added CheckForIncomingEvents to help single-threaded applications
 * matches command can now generate XML output
 * fixed command-to-file command
+* added max-memory-usage command
 
 TankSoar and Eaters
 * lots of TankSoar and Eaters bugfixes
