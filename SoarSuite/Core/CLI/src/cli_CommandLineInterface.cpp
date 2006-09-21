@@ -39,6 +39,7 @@
 #include "sml_AgentSML.h"
 #include "sml_XMLTrace.h"
 
+#include "agent.h"
 
 using namespace cli;
 using namespace sml;
@@ -75,6 +76,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIMatches]						= &cli::CommandLineInterface::ParseMatches;
 	m_CommandMap[Commands::kCLIMaxChunks]					= &cli::CommandLineInterface::ParseMaxChunks;
 	m_CommandMap[Commands::kCLIMaxElaborations]				= &cli::CommandLineInterface::ParseMaxElaborations;
+	m_CommandMap[Commands::kCLIMaxMemoryUsage]				= &cli::CommandLineInterface::ParseMaxMemoryUsage;
 	m_CommandMap[Commands::kCLIMaxNilOutputCycles]			= &cli::CommandLineInterface::ParseMaxNilOutputCycles;
 	m_CommandMap[Commands::kCLIMemories]					= &cli::CommandLineInterface::ParseMemories;
 	m_CommandMap[Commands::kCLIMultiAttributes]				= &cli::CommandLineInterface::ParseMultiAttributes;
@@ -668,6 +670,13 @@ bool CommandLineInterface::IsInteger(const string& s) {
 		}
 		++iter;
 	}
+	return true;
+}
+
+bool CommandLineInterface::RequireAgent(agent* pAgent) {
+	// Requiring an agent implies requiring a kernel
+	if (!RequireKernel()) return false;
+	if (!pAgent) return SetError(CLIError::kAgentRequired);
 	return true;
 }
 

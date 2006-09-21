@@ -43,6 +43,7 @@ char const* Commands::kCLILS						= "ls";
 char const* Commands::kCLIMatches					= "matches";
 char const* Commands::kCLIMaxChunks					= "max-chunks";
 char const* Commands::kCLIMaxElaborations			= "max-elaborations";
+char const* Commands::kCLIMaxMemoryUsage			= "max-memory-usage";
 char const* Commands::kCLIMaxNilOutputCycles		= "max-nil-output-cycles";
 char const* Commands::kCLIMemories					= "memories";
 char const* Commands::kCLIMultiAttributes			= "multi-attributes";

@@ -48,6 +48,8 @@
 #endif
 
 // Forward Declarations
+typedef struct agent_struct agent;
+
 namespace gSKI {
 	class Agent;
 	class Kernel;
@@ -223,6 +225,7 @@ protected:
 	bool ParseMatches(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseMaxChunks(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseMaxElaborations(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseMaxMemoryUsage(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseMaxNilOutputCycles(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseMemories(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseMultiAttributes(gSKI::Agent* pAgent, std::vector<std::string>& argv);
@@ -449,6 +452,13 @@ protected:
 	* @param n The new max elaborations value, use 0 to query
 	*************************************************************/
 	bool DoMaxElaborations(gSKI::Agent* pAgent, const int n = 0);
+
+	/*************************************************************
+	* @brief max-memory-usage command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param n The new memory usage value, in bytes
+	*************************************************************/
+	bool DoMaxMemoryUsage(agent* pAgent, const int n = 0);
 
 	/*************************************************************
 	* @brief max-nil-output-cycles command
@@ -757,6 +767,7 @@ protected:
 	* @brief 
 	*************************************************************/
 	bool RequireAgent(gSKI::Agent* pAgent);
+	bool RequireAgent(agent* pAgent);
 
 	/*************************************************************
 	* @brief 
