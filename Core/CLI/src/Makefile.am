@@ -34,6 +34,7 @@ cli_ls.cpp\
 cli_matches.cpp\
 cli_maxchunks.cpp\
 cli_maxelaborations.cpp\
+cli_maxmemoryusage.cpp\
 cli_maxniloutputcycles.cpp\
 cli_memories.cpp\
 cli_multiattributes.cpp\
