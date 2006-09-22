@@ -1,0 +1,9 @@
+POST / HTTP/1.0
+Accept: text/delim
+Sender: GAMEMASTER
+Receiver: VOIGT
+Content-type: text/acl
+Content-length: 21
+
+(PLAY MATCH.1 (MOVE))
+

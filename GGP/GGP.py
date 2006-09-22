@@ -2,6 +2,70 @@
 
 import BaseHTTPServer
 import re
+import sys
+
+class Element:
+	children = None
+	
+	def create(self, string):
+		# Strip parens
+		if len(string) < 2 or string[0] != "(" or string[-1] != ")":
+			print "failed paren match from string", string[0], string[-1]
+			return
+		string = string[1:-1]
+
+		self.children = []
+		# remove surrounding whitespace
+		string = string.strip()
+		depth = 0
+		start = -1
+		current = None
+		for x in range(len(string)):
+			if string[x] == "(":
+				if depth == 0:
+					start = x
+				depth = depth + 1
+			elif string[x] == ")":
+				depth = depth - 1
+				if depth < 0:
+					print "depth fell below zero"
+					self.children = None
+					return
+				if depth == 0:
+					element = Element()
+					element.create(string[start:x+1])
+					if element.children == None:
+						print "failed to create sub-child from", string[start:x+1]
+						self.children = None
+						return
+					self.children.append(element)
+					start = -1
+			elif depth > 0:
+				continue
+			elif string[x] == ' ':
+				if current != None:
+					self.children.append(current)
+					current = None
+			else:
+				if current == None:
+					current = string[x]
+				else:
+					current = current + string[x]
+		if current != None:
+			self.children.append(current)
+			current = None
+	
+	def __str__(self):
+		str = "("
+		for element in self.children:
+			if isinstance(element, Element):
+				str = str + element.__str__() + " "
+			else:
+				str = str + element + " "
+		
+		str = str[:-1]
+		str = str + ")"
+		return str
 
 class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 	player_name = 'voigt'
@@ -37,13 +101,27 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 	def get_moves(self, rest):
 		match = re.match(r"^(?P<moves>.+)$", rest)
 		if match == None:
+			print "didn't match moves"
 			return None
 
-		print "moves", match.group("moves")
-		return match.group("moves")
+		moves_string = match.group("moves")
+		
+		# Return empty list on no moves
+		if moves_string == "NIL":
+			moves_element = Element()
+			moves_element.create("()")
+			print "moves_element:", moves_element
+			return element
+
+		moves_element = Element()
+		moves_element.create(moves_string)
+		if moves_element.children == None:
+			return None
+		print "moves_element:", moves_element
+		return moves_element
 
 	def handle_play(self, matchid, rest):
-		moves = get_moves(rest)
+		moves = self.get_moves(rest)
 		if moves == None:
 			self.bad_request("badly formed PLAY command")
 			return
@@ -51,7 +129,7 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		self.reply(200, 'MOVE')
 
 	def handle_stop(self, matchid, rest):
-		moves = get_moves(rest)
+		moves = self.get_moves(rest)
 		if moves == None:
 			self.bad_request("badly formed STOP command")
 			return
