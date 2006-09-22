@@ -70,7 +70,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="python24_d.lib"
-				OutputFile="..\..\..\SoarLibrary\bin\_Python_sml_ClientInterface_d.dll"
+				OutputFile="..\..\..\SoarLibrary\bin\_Python_sml_ClientInterface_d.pyd"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(PY_LIB)&quot;"
 				GenerateDebugInformation="true"
@@ -161,7 +161,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="python24.lib"
-				OutputFile="..\..\..\SoarLibrary\bin\_Python_sml_ClientInterface.dll"
+				OutputFile="..\..\..\SoarLibrary\bin\_Python_sml_ClientInterface.pyd"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(PY_LIB)&quot;"
 				GenerateDebugInformation="true"
