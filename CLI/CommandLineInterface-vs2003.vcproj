@@ -258,6 +258,9 @@
 					RelativePath=".\src\cli_maxelaborations.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_maxmemoryusage.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_maxniloutputcycles.cpp">
 				</File>
 				<File
@@ -340,6 +343,9 @@
 				</File>
 				<File
 					RelativePath=".\src\cli_timers.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_unalias.cpp">
 				</File>
 				<File
 					RelativePath=".\src\cli_verbose.cpp">
