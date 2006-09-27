@@ -103,14 +103,20 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		match = re.match(r"^(?P<role>\w+)\s+(?P<description>\(.*\))\s+(?P<startclock>\d+)\s+(?P<playclock>\d+)$", rest)
 		if match == None:
 			self.bad_request("badly formed START command")
-			return
+			return False
+		
+		description_element = Element()
+		if not description_element.create(match.group("description")):
+			return False
 
 		print "role", match.group("role")
-		print "description", match.group("description")
+		#print "description", match.group("description")
+		print "description", description_element
 		print "startclock", match.group("startclock")
 		print "playclock", match.group("playclock")
 
 		self.reply(200, 'READY')
+		return True
 
 	def get_moves(self, rest):
 		match = re.match(r"^(?P<moves>.+)$", rest)
