@@ -54,6 +54,7 @@ Connection::Connection()
 	m_MessageID = 100 * rand ;
 #endif
 
+	m_InitialTimeTagCounter = 0 ;
 	m_pUserData = NULL ;
 	m_bIsDirectConnection = false ;
 	m_bTraceCommunications = false ;
