@@ -502,6 +502,7 @@ protected:
 	bool HandleSendClientMessage(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool HandleWasAgentOnRunList(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool HandleGetResultOfLastRun(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
+	bool HandleGetInitialTimeTag(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 
 	// Note: Register and unregister are both sent to this one handler
 	bool HandleRegisterForEvent(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
