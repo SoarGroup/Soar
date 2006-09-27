@@ -196,6 +196,7 @@ Global
 		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release (no SWIG).ActiveCfg = Release|Win32
 		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release (no SWIG).Build.0 = Release|Win32
 		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug.ActiveCfg = Debug|Win32
+		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug.Build.0 = Debug|Win32
 		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug (Core).ActiveCfg = Debug|Win32
 		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug (Core).Build.0 = Debug|Win32
 		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug (no SWIG).ActiveCfg = Debug|Win32
@@ -203,6 +204,7 @@ Global
 		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Distribution.Build.0 = Distribution|Win32
 		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Distribution-libs.ActiveCfg = Distribution|Win32
 		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release.ActiveCfg = Release|Win32
+		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release.Build.0 = Release|Win32
 		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release (Core).ActiveCfg = Release|Win32
 		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release (Core).Build.0 = Release|Win32
 		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release (no SWIG).ActiveCfg = Release|Win32
