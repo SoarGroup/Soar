@@ -81,6 +81,8 @@ class Element:
 
 class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 	player_name = 'voigt'
+	move_responses = ['(u c a)', '(s b c)', '(s a b)', ]
+	move_count = 0
 	
 	def bad_request(self, message):
 		print "Warning:", message
@@ -138,8 +140,13 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		if moves == None:
 			self.bad_request("badly formed PLAY command")
 			return
-
-		self.reply(200, 'MOVE')
+		
+		if Responder.move_count < len(self.move_responses):
+			this_move = self.move_responses[Responder.move_count]
+			Responder.move_count = Responder.move_count + 1
+			self.reply(200, this_move)
+		else:
+			self.reply(200, 'NOOP')
 
 	def handle_stop(self, matchid, rest):
 		moves = self.get_moves(rest)
@@ -192,18 +199,18 @@ def print_callback(id, userData, agent, message):
 	print "soar>", message
 
 if __name__ == '__main__':
-	kernel = sml.Kernel.CreateKernelInNewThread()
-	agent = kernel.CreateAgent('ggp')
-	agent.RegisterForPrintEvent(sml.smlEVENT_PRINT, print_callback, None)
-	agent.LoadProductions('blocksworld.soar')
+	#kernel = sml.Kernel.CreateKernelInNewThread()
+	#agent = kernel.CreateAgent('ggp')
+	#agent.RegisterForPrintEvent(sml.smlEVENT_PRINT, print_callback, None)
+	#agent.LoadProductions('blocksworld.soar')
 	
 	server_address = ('', 41414)
 	httpd = BaseHTTPServer.HTTPServer(server_address, Responder)
 	try:
 		httpd.serve_forever()
 	except KeyboardInterrupt:
-		kernel.DestroyAgent(agent)
-		agent = None
-		kernel.Shutdown()
-		del kernel
+		#kernel.DestroyAgent(agent)
+		#agent = None
+		#kernel.Shutdown()
+		#del kernel
 		sys.exit(0)
