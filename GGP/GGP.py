@@ -3,15 +3,20 @@
 import BaseHTTPServer
 import re
 import sys
+import os
+import signal
+import imp
+import Python_sml_ClientInterface
+sml = Python_sml_ClientInterface
 
 class Element:
 	children = None
-	
+
 	def create(self, string):
 		# Strip parens
 		if len(string) < 2 or string[0] != "(" or string[-1] != ")":
 			print "failed paren match from string", string[0], string[-1]
-			return
+			return False
 		string = string[1:-1]
 
 		self.children = []
@@ -30,14 +35,14 @@ class Element:
 				if depth < 0:
 					print "depth fell below zero"
 					self.children = None
-					return
+					return False
 				if depth == 0:
 					element = Element()
 					element.create(string[start:x+1])
 					if element.children == None:
 						print "failed to create sub-child from", string[start:x+1]
 						self.children = None
-						return
+						return False
 					self.children.append(element)
 					start = -1
 			elif depth > 0:
@@ -54,8 +59,15 @@ class Element:
 		if current != None:
 			self.children.append(current)
 			current = None
+		return True
 	
 	def __str__(self):
+		if self.children == None:
+			return "Invalid element"
+		
+		if len(self.children) < 1:
+			return "()"
+		
 		str = "("
 		for element in self.children:
 			if isinstance(element, Element):
@@ -109,13 +121,14 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		# Return empty list on no moves
 		if moves_string == "NIL":
 			moves_element = Element()
-			moves_element.create("()")
-			print "moves_element:", moves_element
-			return element
+			if not moves_element.create("()"):
+				return None
+			else:
+				print "moves_element:", moves_element
+				return moves_element
 
 		moves_element = Element()
-		moves_element.create(moves_string)
-		if moves_element.children == None:
+		if not moves_element.create(moves_string):
 			return None
 		print "moves_element:", moves_element
 		return moves_element
@@ -175,8 +188,22 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 	def do_GET(self):
 		self.do_POST()
 
+def print_callback(id, userData, agent, message):
+	print "soar>", message
+
 if __name__ == '__main__':
+	kernel = sml.Kernel.CreateKernelInNewThread()
+	agent = kernel.CreateAgent('ggp')
+	agent.RegisterForPrintEvent(sml.smlEVENT_PRINT, print_callback, None)
+	agent.LoadProductions('blocksworld.soar')
+	
 	server_address = ('', 41414)
 	httpd = BaseHTTPServer.HTTPServer(server_address, Responder)
-	httpd.serve_forever()
-
+	try:
+		httpd.serve_forever()
+	except KeyboardInterrupt:
+		kernel.DestroyAgent(agent)
+		agent = None
+		kernel.Shutdown()
+		del kernel
+		sys.exit(0)
