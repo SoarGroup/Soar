@@ -226,13 +226,22 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 				return
 
 		if play:
+      
+      # Put the last move on the IL
+
+      # Run soar 1 till output
+
+      # Translate ol to command
+
+      # send the command
+      
 			# Scripted responses
-			if Responder.move_count < len(self.move_responses):
-				this_move = self.move_responses[Responder.move_count]
-				Responder.move_count = Responder.move_count + 1
-				self.reply(200, this_move)
-			else:
-				self.reply(200, 'NOOP')
+			#if Responder.move_count < len(self.move_responses):
+			#	this_move = self.move_responses[Responder.move_count]
+			#	Responder.move_count = Responder.move_count + 1
+			#	self.reply(200, this_move)
+			#else:
+			#	self.reply(200, 'NOOP')
 		else:
 			self.reply(200, 'DONE')
 
@@ -280,18 +289,18 @@ def print_callback(id, userData, agent, message):
 	print "soar>", message
 
 if __name__ == '__main__':
-	#kernel = sml.Kernel.CreateKernelInNewThread()
-	#agent = kernel.CreateAgent('ggp')
-	#agent.RegisterForPrintEvent(sml.smlEVENT_PRINT, print_callback, None)
-	#agent.LoadProductions('blocksworld.soar')
+	kernel = sml.Kernel.CreateKernelInNewThread()
+	agent = kernel.CreateAgent('ggp')
+	agent.RegisterForPrintEvent(sml.smlEVENT_PRINT, print_callback, None)
+	agent.LoadProductions('blocksworld_noframe.soar')
 	
 	server_address = ('', 41414)
 	httpd = BaseHTTPServer.HTTPServer(server_address, Responder)
 	try:
 		httpd.serve_forever()
 	except KeyboardInterrupt:
-		#kernel.DestroyAgent(agent)
-		#agent = None
-		#kernel.Shutdown()
-		#del kernel
+		kernel.DestroyAgent(agent)
+		agent = None
+		kernel.Shutdown()
+		del kernel
 		sys.exit(0)
