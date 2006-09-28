@@ -9,68 +9,91 @@ import imp
 import Python_sml_ClientInterface
 sml = Python_sml_ClientInterface
 
-class Element:
+class ElementGGP:
+	"""Used to represent the lisp-like code of GGP."""
+
 	children = None
 
-	def create(self, string):
-		# Strip parens
-		if len(string) < 2 or string[0] != "(" or string[-1] != ")":
-			print "failed paren match from string", string[0], string[-1]
-			return False
-		string = string[1:-1]
+	def __init__(self, string = None):
+		"""Create using an optional string of code. If no string
+		is given, an empty, valid element "()" is created. Throws
+		ValueError if there is a problem with the passed string."""
+		
+		if string == None:
+			return
 
-		self.children = []
-		# remove surrounding whitespace
-		string = string.strip()
 		depth = 0
 		start = -1
 		current = None
 		for x in range(len(string)):
-			if string[x] == "(":
-				if depth == 0:
-					start = x
-				depth = depth + 1
-			elif string[x] == ")":
-				depth = depth - 1
-				if depth < 0:
-					print "depth fell below zero"
-					self.children = None
-					return False
-				if depth == 0:
-					element = Element()
-					element.create(string[start:x+1])
-					if element.children == None:
-						print "failed to create sub-child from", string[start:x+1]
-						self.children = None
-						return False
-					self.children.append(element)
-					start = -1
-			elif depth > 0:
-				continue
-			elif string[x] == ' ':
-				if current != None:
-					self.children.append(current)
-					current = None
-			else:
-				if current == None:
-					current = string[x]
+			if depth == 0:
+				# At the top level
+				if string[x] == '(':
+					# Start of top level element
+					depth += 1
+					self.children = []
 				else:
-					current = current + string[x]
-		if current != None:
-			self.children.append(current)
-			current = None
-		return True
+					# Paren must start top level element
+					raise ValueError("No opening paren: %s" % string)
+			elif depth == 1:
+				# Inside the top level
+				if string[x] == '(':
+					# Start of sub element
+					start = x
+					depth += 1
+
+				elif string[x] == ')':
+					if current != None:
+						# Currently parsing a string, ends the string
+						self.children.append(current)
+						current = None
+						
+					# End of top level element
+					if not x == (len(string) - 1):
+						self.children = None
+						raise ValueError("Extra characters at end: %s" % string)
+
+				elif string[x] == ' ':
+					# Space inside top level
+					if current != None:
+						# Currently parsing a string, ends the string
+						self.children.append(current)
+						current = None
+						
+				else:
+					# Some other character inside top level
+					if current != None:
+						# Currently parsing a string, append it
+						current += string[x]
+					else:
+						# Not currently parsing a string, start one
+						current = string[x]
+
+			else:
+				# Inside sub element, keep track of parens
+				if string[x] == '(':
+					depth += 1
+				elif string[x] == ')':
+					depth -= 1
+					if depth == 1:
+						# End of sub element, append it
+						try:
+							self.children.append(ElementGGP(string[start:x+1]))
+						except ValueError:
+							self.children = None
+							raise
+						start = -1
 	
 	def __str__(self):
 		if self.children == None:
-			return "Invalid element"
+			raise ValueError("Invalid element")
 		
 		if len(self.children) < 1:
 			return "()"
 		
 		str = "("
 		for element in self.children:
-			if isinstance(element, Element):
+			if isinstance(element, ElementGGP):
 				str = str + element.__str__() + " "
 			else:
 				str = str + element + " "
@@ -102,51 +125,54 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 	def handle_start(self, matchid, rest):
 		match = re.match(r"^(?P<role>\w+)\s+(?P<description>\(.*\))\s+(?P<startclock>\d+)\s+(?P<playclock>\d+)$", rest)
 		if match == None:
-			self.bad_request("badly formed START command")
+			self.bad_request("Malformed START command")
 			return False
 		
-		description_element = Element()
-		if not description_element.create(match.group("description")):
+		description_element = None
+		try:
+			description_element = ElementGGP(match.group("description"))
+		except ValueError, v:
+			print "Failed to create description element:", v
 			return False
 
-		print "role", match.group("role")
-		#print "description", match.group("description")
-		print "description", description_element
-		print "startclock", match.group("startclock")
-		print "playclock", match.group("playclock")
+		print "role:", match.group("role")
+		print "description:", description_element
+		print "startclock:", match.group("startclock")
+		print "playclock:", match.group("playclock")
 
 		self.reply(200, 'READY')
 		return True
 
 	def get_moves(self, rest):
-		match = re.match(r"^(?P<moves>.+)$", rest)
-		if match == None:
-			print "didn't match moves"
-			return None
-
-		moves_string = match.group("moves")
-		
+		if rest == None or len(rest) < 1:
+			raise ValueError("No moves string")
+			
 		# Return empty list on no moves
-		if moves_string == "NIL":
-			moves_element = Element()
-			if not moves_element.create("()"):
-				return None
-			else:
-				print "moves_element:", moves_element
-				return moves_element
+		if rest == "NIL":
+			moves_element = ElementGGP()
+			print "moves_element:", moves_element
+			return moves_element
 
-		moves_element = Element()
-		if not moves_element.create(moves_string):
+		moves_element = None
+		try:
+			moves_element = ElementGGP(rest)
+		except ValueError, v:
+			print "Failed to create moves element:", v
 			return None
+			
 		print "moves_element:", moves_element
 		return moves_element
 
 	def handle_play(self, matchid, rest):
-		moves = self.get_moves(rest)
-		if moves == None:
-			self.bad_request("badly formed PLAY command")
+		if rest == None or len(rest) < 1:
+			raise ValueError("No rest on PLAY commmand")
+		
+		moves_element = self.get_moves(rest)
+		if moves_element == None:
+			self.bad_request("Malformed PLAY command")
 			return
 		
+		# Scripted responses
 		if Responder.move_count < len(self.move_responses):
 			this_move = self.move_responses[Responder.move_count]
 			Responder.move_count = Responder.move_count + 1
@@ -155,9 +181,12 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 			self.reply(200, 'NOOP')
 
 	def handle_stop(self, matchid, rest):
-		moves = self.get_moves(rest)
-		if moves == None:
-			self.bad_request("badly formed STOP command")
+		if rest == None or len(rest) < 1:
+			raise ValueError("No rest on STOP command")
+			
+		moves_element = self.get_moves(rest)
+		if moves_element == None:
+			self.bad_request("Malformed STOP command")
 			return
 
 		self.reply(200, 'DONE')
@@ -182,12 +211,13 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		
 		match = re.match(r"^\((?P<command>[A-Z]+)\s+?(?P<matchid>[^\s]+)\s+(?P<rest>.+)\)\s*$", content)
 		if match == None:
-			self.bad_request("didn't match command/matchid")
+			self.bad_request("Didn't match command/matchid")
 			return
 		
 		command = match.group('command')
 		matchid = match.group("matchid")
-		print "command:", command, "matchid:", matchid
+		print "command:", command
+		print "matchid:", matchid
 		
 		if command == 'START':
 			self.handle_start(matchid, match.group('rest'))
@@ -196,7 +226,7 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		elif command == 'STOP':
 			self.handle_stop(matchid, match.group('rest'))
 		else:
-			self.bad_request("invalid command")
+			self.bad_request("Invalid command: %s" % command)
 		
 	def do_GET(self):
 		self.do_POST()
