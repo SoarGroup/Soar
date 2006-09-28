@@ -150,6 +150,11 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 	player_name = 'voigt'
 	move_responses = ['(u c a)', '(s b c)', '(s a b)', ]
 	move_count = 0
+
+	my_role = None
+	roles = None
+	input_link = None
+	role_ids = None
 	
 	def bad_request(self, message):
 		print "Warning:", message
@@ -200,7 +205,26 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		if isinstance(playclock, ElementGGP):
 			self.bad_request("Malformed START command (playclock is element)")
 			return False
-			
+		
+		self.my_role = role
+		self.roles = []
+		for x in range(description_element.length()):
+			command = description_element.get(x).get(0)
+			if not isinstance(command, ElementGGP):
+				if command == "ROLE":
+					print "adding role:", description_element.get(x).get(1)
+					self.roles.append(description_element.get(x).get(1))
+		print "my role:", self.my_role
+
+		if self.my_role not in self.roles:
+			self.bad_request("Malformed START command (my role not in given roles)")
+			return False
+
+		self.input_link = agent.GetInputLink()
+		self.role_ids = {}
+		for a_role in self.roles
+			self.role_ids[a_role] = agent.CreateIdWME(self.input_link, a_role)
+
 		self.reply(200, 'READY')
 		return True
 
@@ -232,12 +256,21 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 				return
 
 		if play:
-			# Put the last move on the IL
+			# Put the last move on the il
+			# ^io.input-link.last-moves.role.action-name.p1
+			# ^io.input-link.last-moves.role.action-name.p2
+			# ...
+			# ^io.input-link.last-moves.role.action-name.pN
 
 			# Run soar 1 till output
 			agent.RunSelfTilOutput()
 
 			# Translate ol to command
+			# ^io.output-link.action-name.pi
+			# ^io.output-link.action-name.p2
+			# ...
+			# ^io.output-link.action-name.pN
+			
 
 			# send the command
 			self.reply(200, 'NOOP')
