@@ -12,11 +12,11 @@ sml = Python_sml_ClientInterface
 class ElementGGP:
 	"""Used to represent the lisp-like code of GGP."""
 
-	children = None
+	__children = None
 
 	def __init__(self, string = None):
 		"""Create using an optional string of code. If no string
-		is given, an empty, valid element "()" is created. Throws
+		is given, an empty, valid element "()" is created. Raises
 		ValueError if there is a problem with the passed string."""
 		
 		if string == None:
@@ -31,7 +31,7 @@ class ElementGGP:
 				if string[x] == '(':
 					# Start of top level element
 					depth += 1
-					self.children = []
+					self.__children = []
 				else:
 					# Paren must start top level element
 					raise ValueError("No opening paren: %s" % string)
@@ -45,19 +45,19 @@ class ElementGGP:
 				elif string[x] == ')':
 					if current != None:
 						# Currently parsing a string, ends the string
-						self.children.append(current)
+						self.__children.append(current)
 						current = None
 						
 					# End of top level element
 					if not x == (len(string) - 1):
-						self.children = None
+						self.__children = None
 						raise ValueError("Extra characters at end: %s" % string)
 
 				elif string[x] == ' ':
 					# Space inside top level
 					if current != None:
 						# Currently parsing a string, ends the string
-						self.children.append(current)
+						self.__children.append(current)
 						current = None
 						
 				else:
@@ -78,45 +78,59 @@ class ElementGGP:
 					if depth == 1:
 						# End of sub element, append it
 						try:
-							self.children.append(ElementGGP(string[start:x+1]))
+							self.__children.append(ElementGGP(string[start:x+1]))
 						except ValueError:
-							self.children = None
+							self.__children = None
 							raise
 						start = -1
 	
 	def get(self, index):
-		if self.children == None:
+		"""Retreives the child at index.
+		
+		Raises IndexError if the index is invalid.
+		Raises ValueError if the element is invalid."""
+		
+		if self.__children == None:
 			raise ValueError("Invalid element")
 			
-		if index < 0 or index >= len(self.children):
+		if index < 0 or index >= len(self.__children):
 			raise IndexError
 		
-		return self.children[index]
+		return self.__children[index]
 	
 	def remove(self, index):
-		if self.children == None:
+		"""Removes the child at index.
+		
+		Raises IndexError if the index is invalid.
+		Raises ValueError if the element is invalid."""
+		
+		if self.__children == None:
 			raise ValueError("Invalid element")
 			
-		if index < 0 or index >= len(self.children):
+		if index < 0 or index >= len(self.__children):
 			raise IndexError
 
-		self.children[index:1] = []
+		self.__children[index:1] = []
 	
 	def num_children(self):
-		if self.children == None:
+		"""Returns the number of children.
+		
+		Raises ValueError if the element is invalid."""
+		
+		if self.__children == None:
 			raise ValueError("Invalid element")
 
-		return len(self.children)
+		return len(self.__children)
 			
 	def __str__(self):
-		if self.children == None:
+		if self.__children == None:
 			raise ValueError("Invalid element")
 		
-		if len(self.children) < 1:
+		if len(self.__children) < 1:
 			return "()"
 		
 		str = "("
-		for element in self.children:
+		for element in self.__children:
 			if isinstance(element, ElementGGP):
 				str = str + element.__str__() + " "
 			else:
@@ -184,29 +198,43 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		self.reply(200, 'READY')
 		return True
 
-	def handle_play(self, matchid, moves_element):
-		if moves_element == None:
-			moves_element.self.bad_request("Malformed PLAY command (no moves)")
-			return
-		
-		print "moves_element:", moves_element
-		
-		# Scripted responses
-		if Responder.move_count < len(self.move_responses):
-			this_move = self.move_responses[Responder.move_count]
-			Responder.move_count = Responder.move_count + 1
-			self.reply(200, this_move)
+	def handle_play_stop(self, matchid, play, rest_element):
+		command = None
+		if play:
+			command = "PLAY"
 		else:
-			self.reply(200, 'NOOP')
-
-	def handle_stop(self, matchid, moves_element):
-		if moves_element == None:
-			moves_element.self.bad_request("Malformed STOP command (no moves)")
+			command = "STOP"
+			
+		if rest_element == None:
+			self.bad_request("Malformed %s command (no rest)" % command)
 			return
 
+		moves_element = None
+		try:
+			moves_element = rest_element.get(0)
+		except IndexError:
+			self.bad_request("Malformed %s command (no moves)" % command)
+			return
+		
 		print "moves_element:", moves_element
 
-		self.reply(200, 'DONE')
+		if not isinstance(moves_element, ElementGGP):
+			if moves_element == "NIL":
+				moves_element = ElementGGP("()")
+			else:
+				self.bad_request("Malformed %s command (moves string and not NIL)" % command)
+				return
+
+		if play:
+			# Scripted responses
+			if Responder.move_count < len(self.move_responses):
+				this_move = self.move_responses[Responder.move_count]
+				Responder.move_count = Responder.move_count + 1
+				self.reply(200, this_move)
+			else:
+				self.reply(200, 'NOOP')
+		else:
+			self.reply(200, 'DONE')
 
 	def do_POST(self):
 		if self.headers.has_key('receiver'):
@@ -239,9 +267,9 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		if command == 'START':
 			self.handle_start(matchid, message_element)
 		elif command == 'PLAY':
-			self.handle_play(matchid, message_element)
+			self.handle_play_stop(matchid, True, message_element)
 		elif command == 'STOP':
-			self.handle_stop(matchid, message_element)
+			self.handle_play_stop(matchid, False, message_element)
 		else:
 			self.bad_request("Invalid command: %s" % command)
 		
