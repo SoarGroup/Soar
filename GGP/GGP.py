@@ -206,24 +206,24 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 			self.bad_request("Malformed START command (playclock is element)")
 			return False
 		
-		self.my_role = role
-		self.roles = []
-		for x in range(description_element.length()):
+		Responder.my_role = role
+		Responder.roles = []
+		for x in range(description_element.num_children()):
 			command = description_element.get(x).get(0)
 			if not isinstance(command, ElementGGP):
 				if command == "ROLE":
 					print "adding role:", description_element.get(x).get(1)
-					self.roles.append(description_element.get(x).get(1))
-		print "my role:", self.my_role
+					Responder.roles.append(description_element.get(x).get(1))
+		print "my role:", Responder.my_role
 
-		if self.my_role not in self.roles:
+		if Responder.my_role not in Responder.roles:
 			self.bad_request("Malformed START command (my role not in given roles)")
 			return False
 
-		self.input_link = agent.GetInputLink()
-		self.role_ids = {}
-		for a_role in self.roles
-			self.role_ids[a_role] = agent.CreateIdWME(self.input_link, a_role)
+		Responder.input_link = agent.GetInputLink()
+		Responder.role_ids = {}
+		for a_role in Responder.roles:
+			Responder.role_ids[a_role] = agent.CreateIdWME(Responder.input_link, a_role)
 
 		self.reply(200, 'READY')
 		return True
@@ -256,11 +256,24 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 				return
 
 		if play:
-			# Put the last move on the il
-			# ^io.input-link.last-moves.role.action-name.p1
-			# ^io.input-link.last-moves.role.action-name.p2
-			# ...
-			# ^io.input-link.last-moves.role.action-name.pN
+			if moves_element.num_children() > 0:
+				# Put the last move on the il
+				# ^io.input-link.last-moves.role.action-name.p1
+				# ^io.input-link.last-moves.role.action-name.p2
+				# ...
+				# ^io.input-link.last-moves.role.action-name.pN
+				print repr(Responder.roles)
+				for x in range(len(Responder.roles)):
+					role = Responder.roles[x]
+					agent.DestroyWME(Responder.role_ids[role])
+					Responder.role_ids[role] = agent.CreateIdWME(Responder.input_link, role)
+					command = moves_element.get(x)
+					if isinstance(command, ElementGGP):
+						action_id = agent.CreateIdWME(Responder.role_ids[role], command.get(0))
+						for y in range(1, command.num_children()):
+							agent.CreateStringWME(action_id, "p%d" % y, command.get(y))
+					else:
+						action_id = agent.CreateIdWME(Responder.role_ids[role], command)
 
 			# Run soar 1 till output
 			agent.RunSelfTilOutput()
@@ -270,10 +283,18 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 			# ^io.output-link.action-name.p2
 			# ...
 			# ^io.output-link.action-name.pN
-			
+			output_link = agent.GetOutputLink()
+			command_string = ""
+			for x in range(agent.GetNumberCommands()):
+				command_id = agent.GetCommand(x)
+				command_string += command_id.GetAttribute()
+				for y in range(command_id.GetNumberChildren()):
+					value = command_id.GetParameterValue("p%d" % (y + 1))
+					command_string += " %s" % value
+				
 
 			# send the command
-			self.reply(200, 'NOOP')
+			self.reply(200, "(%s)" % command_string)
       
 			# Scripted responses
 			#if Responder.move_count < len(self.move_responses):

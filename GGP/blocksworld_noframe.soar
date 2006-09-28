@@ -6,7 +6,7 @@ sp {propose*init-blocksworld
    (<s> ^operator <o> + >)
    (<o> ^name init-blocksworld)}
 
-# (role robot)
+# (role ROBOT)
 # (init (clear b))
 # (init (clear c))
 # (init (on c a))
@@ -24,7 +24,7 @@ sp {apply*init-blocksworld
    (<s> ^name blocksworld
         ^gs <gs>
         ^facts <facts>)
-   (<gs> ^role robot
+   (<gs> ^role ROBOT
          ^clear <clear1>
          ^clear <clear2>
          ^on    <on1>
@@ -52,12 +52,12 @@ sp {apply*init-blocksworld
 
   
 #(<= (next (on ?x ?y))
-#    (does robot (s ?x ?y)))
+#    (does ROBOT (s ?x ?y)))
 sp {propose*change-state-stack
    (state <s> ^name blocksworld
               ^gs <gs>
-              ^io.input-link.last-moves.robot <move>)
-   (<move> ^s <stack-move>)
+              ^io.input-link.last-moves.ROBOT <move>)
+   (<move> ^S <stack-move>)
    (<stack-move> ^p1 <p1>
                  ^p2 <p2>)
   -{(<gs> ^on <on-relation>)
@@ -84,25 +84,25 @@ sp {apply*change-state-stack
 # Frame axioms for on:
 #
 #(<= (next (on ?x ?y))
-#    (does robot (u ?u ?v))
+#    (does ROBOT (u ?u ?v))
 #    (true (on ?x ?y))
 #    (distinct ?u ?x))
 #
 #(<= (next (on ?x ?y))
-#    (does robot (s ?u ?v))
+#    (does ROBOT (s ?u ?v))
 #    (true (on ?x ?y)))
 
 sp {propose*remove-on
    (state <s> ^name blocksworld
               ^gs <gs>
-              ^io.input-link.last-moves.robot <move>)
+              ^io.input-link.last-moves.ROBOT <move>)
    (<gs> ^on <on-relation>)
    (<on-relation> ^p1 <x>
                   ^p2 <y>)
-  -{(<move> ^u <unstack-move>)
+  -{(<move> ^U <unstack-move>)
     (<unstack-move> ^p1 { <u> <> <x> }
                     ^p2 <v>)}
-   (<move> -^s)
+   (<move> -^S)
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name remove-on
@@ -118,13 +118,13 @@ sp {apply*remove-on
    (<gs> ^on <on-relation> -)}
 
 #(<= (next (table ?x))
-#    (does robot (u ?x ?y)))
+#    (does ROBOT (u ?x ?y)))
 
 sp {propose*change-state-unstack-to-table
    (state <s> ^name blocksworld
               ^gs <gs>
-              ^io.input-link.last-moves.robot <move>)
-   (<move> ^u <unstack-move>)
+              ^io.input-link.last-moves.ROBOT <move>)
+   (<move> ^U <unstack-move>)
    (<unstack-move> ^p1 <x>
                    ^p2 <y>)
   -{(<gs> ^table <table-relation>)
@@ -147,25 +147,25 @@ sp {apply*change-state-unstack-to-table
 # Frame axioms for table:
 #
 #(<= (next (table ?x))
-#    (does robot (u ?u ?v))
+#    (does ROBOT (u ?u ?v))
 #    (true (table ?x)))
 #
 #(<= (next (table ?x))
-#    (does robot (s ?u ?v))
+#    (does ROBOT (s ?u ?v))
 #    (true (table ?x))
 #    (distinct ?u ?x))
 
 sp {propose*remove-table
    (state <s> ^name blocksworld
               ^gs <gs>
-              ^io.input-link.last-moves.robot <move>)
+              ^io.input-link.last-moves.ROBOT <move>)
    (<gs> ^table <table-relation>)
    (<table-relation> ^p1 <x>
                   ^p2 <y>)
-  -{(<move> ^s <stack-move>)
+  -{(<move> ^S <stack-move>)
     (<stack-move> ^p1 { <u> <> <x> }
                   ^p2 <v>)}
-   (<move> -^u)
+   (<move> -^U)
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name remove-table
@@ -182,13 +182,13 @@ sp {apply*remove-table
 
 
 #(<= (next (clear ?y))
-#    (does robot (u ?x ?y)))
+#    (does ROBOT (u ?x ?y)))
 
 sp {propose*change-state-clear
    (state <s> ^name blocksworld
               ^gs <gs>
-              ^io.input-link.last-moves.robot <move>)
-   (<move> ^u <unstack-move>)
+              ^io.input-link.last-moves.ROBOT <move>)
+   (<move> ^U <unstack-move>)
    (<unstack-move> ^p1 <x>
                    ^p2 <y>)
   -{(<gs> ^clear <clear-relation>)
@@ -211,24 +211,24 @@ sp {apply*change-state-clear
 # Frame axioms for clear:
 #
 #(<= (next (clear ?x))
-#    (does robot (u ?u ?v))
+#    (does ROBOT (u ?u ?v))
 #    (true (clear ?x)))
 #
 #(<= (next (clear ?y))
-#    (does robot (s ?u ?v))
+#    (does ROBOT (s ?u ?v))
 #    (true (clear ?y))
 #    (distinct ?v ?y))
 
 sp {propose*remove-clear
    (state <s> ^name blocksworld
               ^gs <gs>
-              ^io.input-link.last-moves.robot <move>)
+              ^io.input-link.last-moves.ROBOT <move>)
    (<gs> ^clear <clear-relation>)
    (<clear-relation> ^p1 <x>)
-  -{(<move> ^s <stack-move>)
+  -{(<move> ^S <stack-move>)
     (<stack-move> ^p1 <u> 
                   ^p2 { <v> <> <x> })}
-   (<move> -^u)
+   (<move> -^U)
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name remove-clear
@@ -278,7 +278,7 @@ sp {apply*change-state-increment-step
    (<s> ^increment-step-token <ist> -)}
 
 
-#(<= (legal robot (s ?x ?y))
+#(<= (legal ROBOT (s ?x ?y))
 #    (true (clear ?x))
 #    (true (table ?x))
 #    (true (clear ?y))
@@ -309,11 +309,11 @@ sp {apply*act-stack
         ^p1 <x>
         ^p2 <y>)
 -->
-   (<out> ^s <stack-action>)
+   (<out> ^S <stack-action>)
    (<stack-action> ^p1 <x>
                    ^p2 <y>)}
 
-#(<= (legal robot (u ?x ?y))
+#(<= (legal ROBOT (u ?x ?y))
 #    (true (clear ?x))
 #    (true (on ?x ?y)))
 
@@ -341,19 +341,19 @@ sp {apply*act-unstack
         ^p1 <x>
         ^p2 <y>)
 -->
-   (<out> ^u <unstack-action>)
+   (<out> ^U <unstack-action>)
    (<unstack-action> ^p1 <x>
                      ^p2 <y>)}
 
 
-#(<= (goal robot 100)
+#(<= (goal ROBOT 100)
 #    (true (on a b))
 #    (true (on b c)))
 
-#(<= (goal robot 0)
+#(<= (goal ROBOT 0)
 #    (not (true (on a b))))
 
-#(<= (goal robot 0)
+#(<= (goal ROBOT 0)
 #    (not (true (on b c))))
 
 #(<= terminal
@@ -430,7 +430,7 @@ sp {apply*progress-state
 ##..    (state <s> ^name blocksworld
 ##..               ^io.input-link.last-moves.player1 <p1-move>
 ##..               ^io.output-link <out>)
-##..    (<out> ^s <stack-cmd>)
+##..    (<out> ^S <stack-cmd>)
 ##..    (<stack-cmd> ^p1 <x>
 ##..                 ^p2 <y>)
 ##.. -->
@@ -444,7 +444,7 @@ sp {apply*progress-state
 ##..    (state <s> ^name blocksworld
 ##..               ^io.input-link.last-moves.player1 <p1-move>
 ##..               ^io.output-link <out>)
-##..    (<out> ^u <unstack-cmd>)
+##..    (<out> ^U <unstack-cmd>)
 ##..    (<unstack-cmd> ^p1 <x>
 ##..                   ^p2 <y>)
 ##.. -->

@@ -5,5 +5,5 @@ Receiver: VOIGT
 Content-type: text/acl
 Content-length: 42
 
-(START MATCH.1 ROBOT ((role robot)) 30 30)
+(START MATCH.1 ROBOT ((ROLE ROBOT)) 30 30)
 

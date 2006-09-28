@@ -3,7 +3,7 @@ Accept: text/delim
 Sender: GAMEMASTER
 Receiver: VOIGT
 Content-type: text/acl
-Content-length: 21
+Content-length: 24
 
-(PLAY MATCH.1 (MOVE))
+(PLAY MATCH.1 ((S b c)))
 
