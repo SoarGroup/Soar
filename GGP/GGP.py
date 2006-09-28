@@ -9,6 +9,12 @@ import imp
 import Python_sml_ClientInterface
 sml = Python_sml_ClientInterface
 
+global kernel
+global agent
+
+kernel = None
+agent = None
+
 class ElementGGP:
 	"""Used to represent the lisp-like code of GGP."""
 
@@ -226,14 +232,15 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 				return
 
 		if play:
-      
-      # Put the last move on the IL
+			# Put the last move on the IL
 
-      # Run soar 1 till output
+			# Run soar 1 till output
+			agent.RunSelfTilOutput()
 
-      # Translate ol to command
+			# Translate ol to command
 
-      # send the command
+			# send the command
+			self.reply(200, 'NOOP')
       
 			# Scripted responses
 			#if Responder.move_count < len(self.move_responses):
@@ -286,21 +293,42 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		self.do_POST()
 
 def print_callback(id, userData, agent, message):
-	print "soar>", message
+	print message
+
+def shutdown():
+	global kernel
+	global agent
+
+	if agent != None:
+		kernel.DestroyAgent(agent)
+		agent = None
+	kernel.Shutdown()
+	del kernel
 
 if __name__ == '__main__':
 	kernel = sml.Kernel.CreateKernelInNewThread()
+	if kernel == None:
+		print "Kernel creation failed."
+		sys.exit(1)
+	
 	agent = kernel.CreateAgent('ggp')
+	if agent == None:
+		print "Agent creation failed: %s" % kernel.GetLastErrorDescription()
+		shutdown()
+		sys.exit(1)
+
 	agent.RegisterForPrintEvent(sml.smlEVENT_PRINT, print_callback, None)
-	agent.LoadProductions('blocksworld_noframe.soar')
+	
+	print agent.ExecuteCommandLine("source blocksworld_noframe.soar")
+	if not agent.GetLastCommandLineResult():
+		print "Production load failed"
+		shutdown()
+		sys.exit(1)
 	
 	server_address = ('', 41414)
 	httpd = BaseHTTPServer.HTTPServer(server_address, Responder)
 	try:
 		httpd.serve_forever()
 	except KeyboardInterrupt:
-		kernel.DestroyAgent(agent)
-		agent = None
-		kernel.Shutdown()
-		del kernel
+		shutdown()
 		sys.exit(0)
