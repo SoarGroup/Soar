@@ -84,6 +84,30 @@ class ElementGGP:
 							raise
 						start = -1
 	
+	def get(self, index):
+		if self.children == None:
+			raise ValueError("Invalid element")
+			
+		if index < 0 or index >= len(self.children):
+			raise IndexError
+		
+		return self.children[index]
+	
+	def remove(self, index):
+		if self.children == None:
+			raise ValueError("Invalid element")
+			
+		if index < 0 or index >= len(self.children):
+			raise IndexError
+
+		self.children[index:1] = []
+	
+	def num_children(self):
+		if self.children == None:
+			raise ValueError("Invalid element")
+
+		return len(self.children)
+			
 	def __str__(self):
 		if self.children == None:
 			raise ValueError("Invalid element")
@@ -122,55 +146,50 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 			self.wfile.write('\n')
 		self.wfile.write('\n')
 
-	def handle_start(self, matchid, rest):
-		match = re.match(r"^(?P<role>\w+)\s+(?P<description>\(.*\))\s+(?P<startclock>\d+)\s+(?P<playclock>\d+)$", rest)
-		if match == None:
+	def handle_start(self, matchid, rest_element):
+		role = None
+		description_element = None
+		startclock = None
+		playclock = None
+		try:
+			role = rest_element.get(0)
+			description_element = rest_element.get(1)
+			startclock = rest_element.get(2)
+			playclock = rest_element.get(3)
+		except ValueError, IndexError:
 			self.bad_request("Malformed START command")
 			return False
-		
-		description_element = None
-		try:
-			description_element = ElementGGP(match.group("description"))
-		except ValueError, v:
-			print "Failed to create description element:", v
-			return False
-
-		print "role:", match.group("role")
+			
+		print "role:", role
 		print "description:", description_element
-		print "startclock:", match.group("startclock")
-		print "playclock:", match.group("playclock")
+		print "startclock:", startclock
+		print "playclock:", playclock
 
+		if isinstance(role, ElementGGP):
+			self.bad_request("Malformed START command (role is element)")
+			return False
+			
+		if not isinstance(description_element, ElementGGP):
+			self.bad_request("Malformed START command (description not element)")
+			return False
+			
+		if isinstance(startclock, ElementGGP):
+			self.bad_request("Malformed START command (startclock is element)")
+			return False
+			
+		if isinstance(playclock, ElementGGP):
+			self.bad_request("Malformed START command (playclock is element)")
+			return False
+			
 		self.reply(200, 'READY')
 		return True
 
-	def get_moves(self, rest):
-		if rest == None or len(rest) < 1:
-			raise ValueError("No moves string")
-			
-		# Return empty list on no moves
-		if rest == "NIL":
-			moves_element = ElementGGP()
-			print "moves_element:", moves_element
-			return moves_element
-
-		moves_element = None
-		try:
-			moves_element = ElementGGP(rest)
-		except ValueError, v:
-			print "Failed to create moves element:", v
-			return None
-			
-		print "moves_element:", moves_element
-		return moves_element
-
-	def handle_play(self, matchid, rest):
-		if rest == None or len(rest) < 1:
-			raise ValueError("No rest on PLAY commmand")
-		
-		moves_element = self.get_moves(rest)
+	def handle_play(self, matchid, moves_element):
 		if moves_element == None:
-			self.bad_request("Malformed PLAY command")
+			moves_element.self.bad_request("Malformed PLAY command (no moves)")
 			return
+		
+		print "moves_element:", moves_element
 		
 		# Scripted responses
 		if Responder.move_count < len(self.move_responses):
@@ -180,14 +199,12 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		else:
 			self.reply(200, 'NOOP')
 
-	def handle_stop(self, matchid, rest):
-		if rest == None or len(rest) < 1:
-			raise ValueError("No rest on STOP command")
-			
-		moves_element = self.get_moves(rest)
+	def handle_stop(self, matchid, moves_element):
 		if moves_element == None:
-			self.bad_request("Malformed STOP command")
+			moves_element.self.bad_request("Malformed STOP command (no moves)")
 			return
+
+		print "moves_element:", moves_element
 
 		self.reply(200, 'DONE')
 
@@ -208,23 +225,23 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		content = content.replace('\r', '')
 		content = content.replace('\n', '')
 		print len(content), repr(content)
+
+		message_element = ElementGGP(content)
 		
-		match = re.match(r"^\((?P<command>[A-Z]+)\s+?(?P<matchid>[^\s]+)\s+(?P<rest>.+)\)\s*$", content)
-		if match == None:
-			self.bad_request("Didn't match command/matchid")
-			return
-		
-		command = match.group('command')
-		matchid = match.group("matchid")
+		command = message_element.get(0)
+		matchid = message_element.get(1)
 		print "command:", command
 		print "matchid:", matchid
 		
+		message_element.remove(0)
+		message_element.remove(0)
+		
 		if command == 'START':
-			self.handle_start(matchid, match.group('rest'))
+			self.handle_start(matchid, message_element)
 		elif command == 'PLAY':
-			self.handle_play(matchid, match.group('rest'))
+			self.handle_play(matchid, message_element)
 		elif command == 'STOP':
-			self.handle_stop(matchid, match.group('rest'))
+			self.handle_stop(matchid, message_element)
 		else:
 			self.bad_request("Invalid command: %s" % command)
 		
