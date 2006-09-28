@@ -3,56 +3,44 @@ sp {propose*init-blocksworld
    (state <s> ^superstate nil
              -^name)
 -->
-   (<s> ^operator <o> +)
+   (<s> ^operator <o> + >)
    (<o> ^name init-blocksworld)}
 
 # (role robot)
-
-sp {apply*init-blocksworld
-   (state <s> ^operator <o>)
-   (<o> ^name init-blocksworld)
--->
-   (<s> ^name blocksworld
-        ^curr-gs <cgs>
-        ^next-gs <ngs>
-        ^facts <facts>)
-   (<cgs> ^role robot)}
-
-
 # (init (clear b))
 # (init (clear c))
 # (init (on c a))
 # (init (table a))
 # (init (table b))
 # (init (step 1))
-sp {apply*init-blocksworld-game-state
+#(succ 1 2)
+#(succ 2 3)
+#(succ 3 4)
+sp {apply*init-blocksworld
    (state <s> ^operator <o>
-              ^curr-gs <gs>)
+              ^io.input-link <in>)
    (<o> ^name init-blocksworld)
 -->
-   (<gs> ^clear <clear1>
-         ^clear <clear2>
-         ^on    <on1>
-         ^table <table1>
-         ^table <table2>
-         ^step  <step1>)
+   (<s> ^name blocksworld
+        ^curr-gs <cgs>
+        ^next-gs <ngs>
+        ^facts <facts>)
+   (<cgs> ^role robot
+          ^clear <clear1>
+          ^clear <clear2>
+          ^on    <on1>
+          ^table <table1>
+          ^table <table2>
+          ^step  <step1>)
+#   (<in> ^last-moves <last-moves>)
+#   (<last-moves> ^player1 <p1-move>)
    (<clear1> ^p1 b)
    (<clear2> ^p1 c)
    (<on1> ^p1 c
           ^p2 a)
    (<table1> ^p1 a)
    (<table2> ^p1 b)
-   (<step1> ^p1 1)}
-
-#(succ 1 2)
-#(succ 2 3)
-#(succ 3 4)
-sp {apply*init-blocksworld-game-facts
-   (state <s> ^name blocksworld
-              ^facts <facts>
-              ^operator <o>)
-   (<o> ^name init-blocksworld)
--->
+   (<step1> ^p1 1)
    (<facts> ^succ <succ-fact-1>
             ^succ <succ-fact-2>
             ^succ <succ-fact-3>)
@@ -108,9 +96,9 @@ sp {propose*change-state-preserve-on
    (<p1-move> ^name s
               ^p1 <u> 
               ^p2 <v>)
-  -{(<ngs> ^on <on-relation>)
-    (<on-relation> ^p1 <x>
-                   ^p2 <y>)}
+  -{(<ngs> ^on <on-relation-1>)
+    (<on-relation-1> ^p1 <x>
+                     ^p2 <y>)}
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name change-state-preserve-on
@@ -165,7 +153,7 @@ sp {apply*change-state-preserve-table
 #    (does robot (s ?u ?v))
 #    (true (clear ?y))
 #    (distinct ?v ?y))
-sp {propose*change-state-preserve-clear
+sp {propose*change-state-preserve-clear-stack
    (state <s> ^name blocksworld
               ^curr-gs <cgs>
               ^next-gs <ngs>
@@ -179,14 +167,14 @@ sp {propose*change-state-preserve-clear
     (<clear-relation-1> ^p1 <y>)}
 -->
    (<s> ^operator <o> + > =)
-   (<o> ^name change-state-preserve-clear
+   (<o> ^name change-state-preserve-clear-stack
         ^p1 <y>)}
 
-sp {apply*change-state-preserve-clear
+sp {apply*change-state-preserve-clear-stack
    (state <s> ^name blocksworld
               ^next-gs <gs>
               ^operator <o>)
-   (<o> ^name change-state-preserve-clear
+   (<o> ^name change-state-preserve-clear-stack
         ^p1 <y>)
 -->
    (<gs> ^clear <clear-relation>)
@@ -242,7 +230,7 @@ sp {propose*change-state-unstack-to-table
     (<table-relation> ^p1 <x>)}
 -->
    (<s> ^operator <o> + > =)
-   (<o> ^name change-state-preserve-table-unstack
+   (<o> ^name change-state-unstack-to-table
         ^p1 <x>)}
 
 sp {apply*change-state-unstack-to-table
@@ -300,7 +288,8 @@ sp {propose*change-state-clear
     (<clear-relation> ^p1 <y>)}
 -->
    (<s> ^operator <o> + > =)
-   (<o> ^name change-state-clear)}
+   (<o> ^name change-state-clear
+        ^p1 <y>)}
 
 sp {apply*change-state-clear
    (state <s> ^name blocksworld
@@ -383,13 +372,15 @@ sp {apply*change-state-increment-step
 
 sp {propose*act-stack
    (state <s> ^name blocksworld
-              ^curr-gs <cgs>)
+              ^curr-gs <cgs>
+              ^io.output-link <out>)
    (<cgs> ^clear <clear-relation>
           ^table <table-relation>
           ^clear <clear-relation-1>)
    (<clear-relation> ^p1 <x>)
    (<table-relation> ^p1 <x>)
    (<clear-relation-1> ^p1 { <y> <> <x> })
+  -(<out> ^<cmd-name> <cmd>)
 -->
    (<s> ^operator <o> + < =)
    (<o> ^name act-stack
@@ -414,12 +405,14 @@ sp {apply*act-stack
 
 sp {propose*act-unstack
    (state <s> ^name blocksworld
-              ^curr-gs <cgs>)
+              ^curr-gs <cgs>
+              ^io.output-link <out>)
    (<cgs> ^clear <clear-relation>
           ^on <on-relation>)
    (<clear-relation> ^p1 <x>)
    (<on-relation> ^p1 <x>
                   ^p2 <y>)
+  -(<out> ^<cmd-name> <cmd>)
 -->
    (<s> ^operator <o> + < =)
    (<o> ^name act-unstack
@@ -479,7 +472,9 @@ sp {halt*stacked
 sp {propose*switch
    (state <s> ^name blocksworld
               ^curr-gs <cgs>
-              ^next-gs <ngs>)
+              ^next-gs <ngs>
+              ^io.output-link <out>)
+   (<out> ^<cmd-name> <last-cmd>)
 -->
    (<s> ^operator <o> + =)
    (<o> ^name switch)}
@@ -488,9 +483,51 @@ sp {apply*switch
    (state <s> ^name blocksworld
               ^curr-gs <cgs>
               ^next-gs <ngs>
+              ^io.output-link <out>
               ^operator.name switch)
+   (<out> ^<cmd-name> <last-cmd>)
 -->
    (<s> ^curr-gs <ngs>)
    (<s> ^next-gs <new-ngs>)
    (<s> ^curr-gs <cgs> -)
-   (<s> ^next-gs <ngs> -)}
+   (<s> ^next-gs <ngs> -)
+   (<out> ^<cmd-name> <last-cmd> -)
+   (<out> ^reset-last-move <rlm>)}
+
+##.. sp {test-link-stack
+##..    (state <s> ^name blocksworld
+##..               ^io.input-link.last-moves.player1 <p1-move>
+##..               ^io.output-link <out>)
+##..    (<out> ^s <stack-cmd>)
+##..    (<stack-cmd> ^p1 <x>
+##..                 ^p2 <y>)
+##.. -->
+##..    (<stack-cmd> ^status complete)
+##..    (<p1-move> ^name s
+##..               ^p1 <x>
+##..               ^p2 <y>)}
+
+
+##.. sp {test-link-unstack
+##..    (state <s> ^name blocksworld
+##..               ^io.input-link.last-moves.player1 <p1-move>
+##..               ^io.output-link <out>)
+##..    (<out> ^u <unstack-cmd>)
+##..    (<unstack-cmd> ^p1 <x>
+##..                   ^p2 <y>)
+##.. -->
+##..    (<unstack-cmd> ^status complete)
+##..    (<p1-move> ^name u
+##..               ^p1 <x>
+##..               ^p2 <y>)}
+
+##.. sp {remove-last-command
+##..    (state <s> ^name blocksworld
+##..               ^io.output-link <out>
+##..               ^operator <o>)
+##..    (<out> ^<cmd-name> <last-cmd>)
+##..    (<last-cmd> ^status complete)
+##.. -->
+##..    (<out> ^<cmd-name> <last-cmd> -)}
+
+
