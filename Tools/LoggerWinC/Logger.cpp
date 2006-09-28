@@ -25,6 +25,7 @@
 /////////////////////////////////////////////////////////////////
 
 #include "sml_Client.h"
+#include "sml_Names.h"
 #include "Logger.h"
 #include <stdlib.h>
 #include <string>
@@ -66,37 +67,41 @@ void MyXMLEventHandler(smlXMLEventId id, void* pUserData, Agent* pAgent, ClientX
 	// The root object is just a <trace> tag.  The substance is in the children
 	// so we'll get the first child which should exist.
 	ClientTraceXML childXML ;
-	bool ok = pRootXML->GetChild(&childXML, 0) ;
-	ClientTraceXML* pTraceXML = &childXML ;
 
-	if (!ok)
-		return ;
-
-	// To figure out the format of the XML you can either look at the ClientTraceXML class
-	// (which has methods grouped appropriately) or you can look at the XML output directly.
-	// It's designed to be readable, so looking at a few packets you should quickly get the hang
-	// of what's going on and what attributes are available to be read.
-	// Here are a couple of examples.
-
-	// Check if this is a new state
-	if (pTraceXML->IsTagState())
+	for (int i = 0 ; i < pRootXML->GetNumberChildren() ; i++)
 	{
-		std::string count = pTraceXML->GetDecisionCycleCount() ;
-		std::string stateID = pTraceXML->GetStateID() ;
-		std::string impasseObject = pTraceXML->GetImpasseObject() ;
-		std::string impasseType = pTraceXML->GetImpasseType() ;
+		bool ok = pRootXML->GetChild(&childXML, i) ;
+		ClientTraceXML* pTraceXML = &childXML ;
 
-		fprintf(gOutputFile, "New state at decision %s was %s (%s %s)\n", count.c_str(), stateID.c_str(), impasseObject.c_str(), impasseType.c_str()) ;
-	}
+		if (!ok)
+			return ;
 
-	// Check if this is a new operator
-	if (pTraceXML->IsTagOperator())
-	{
-		std::string count = pTraceXML->GetDecisionCycleCount() ;
-		std::string operatorID = pTraceXML->GetOperatorID() ;
-		std::string operatorName = pTraceXML->GetOperatorName() ;
+		// To figure out the format of the XML you can either look at the ClientTraceXML class
+		// (which has methods grouped appropriately) or you can look at the XML output directly.
+		// It's designed to be readable, so looking at a few packets you should quickly get the hang
+		// of what's going on and what attributes are available to be read.
+		// Here are a couple of examples.
 
-		fprintf(gOutputFile, "Operator at decision %s was %s name %s\n", count.c_str(), operatorID.c_str(), operatorName.c_str()) ;
+		// Check if this is a new state
+		if (pTraceXML->IsTagState())
+		{
+			std::string count = pTraceXML->GetDecisionCycleCount() ;
+			std::string stateID = pTraceXML->GetStateID() ;
+			std::string impasseObject = pTraceXML->GetImpasseObject() ;
+			std::string impasseType = pTraceXML->GetImpasseType() ;
+
+			fprintf(gOutputFile, "New state at decision %s was %s (%s %s)\n", count.c_str(), stateID.c_str(), impasseObject.c_str(), impasseType.c_str()) ;
+		}
+
+		// Check if this is a new operator
+		if (pTraceXML->IsTagOperator())
+		{
+			std::string count = pTraceXML->GetDecisionCycleCount() ;
+			std::string operatorID = pTraceXML->GetOperatorID() ;
+			std::string operatorName = pTraceXML->GetOperatorName() ;
+
+			fprintf(gOutputFile, "Operator at decision %s was %s name %s\n", count.c_str(), operatorID.c_str(), operatorName.c_str()) ;
+		}
 	}
 
 	// Flushing the file means we can look at it while it's still being formed
@@ -159,10 +164,15 @@ bool StartLogging(char const* pFilename, bool append, std::string* pErrorMsg)
 	// Start listening for XML trace events.
 	pAgent->RegisterForXMLEvent(smlEVENT_XML_TRACE_OUTPUT, MyXMLEventHandler, NULL) ;
 
-	// We'll also explicitly set the watch level to level 1 here.  This determines how much
-	// output is sent out to the event handler.  This setting is for the agent, so if you change it in
+	// We'll also explicitly set the watch level to level 1 if the client's not already watching decisions.
+	// This determines how much output is sent out to the event handler.  This setting is for the agent, so if you change it in
 	// the debugger (e.g. to watch 0) it will affect what gets logged.  This is a limitation in the kernel.
-	pAgent->ExecuteCommandLine("watch 1") ;
+	ClientAnalyzedXML response ;
+	pAgent->ExecuteCommandLineXML("watch", &response) ;
+	if (!response.GetArgBool(sml_Names::kParamWatchDecisions, false))
+	{
+		pAgent->ExecuteCommandLine("watch 1") ;
+	}
 
 	return true ;
 }
