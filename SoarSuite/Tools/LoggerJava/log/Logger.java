@@ -57,53 +57,56 @@ public class Logger implements Agent.xmlEventInterface
 	
 			// The root object is just a <trace> tag.  The substance is in the children
 			// so we'll get the first child which should exist.
-			ClientTraceXML childXML = new ClientTraceXML() ;
-			boolean ok = pRootXML.GetChild(childXML, 0) ;
-			ClientTraceXML pTraceXML = childXML ;
-	
-			if (!ok)
+			for (int i = 0 ; i < pRootXML.GetNumberChildren() ; i++)
 			{
+				ClientTraceXML childXML = new ClientTraceXML() ;
+				boolean ok = pRootXML.GetChild(childXML, i) ;
+				ClientTraceXML pTraceXML = childXML ;
+		
+				if (!ok)
+				{
+					// In Java we must explicitly delete XML objects we create
+					// Otherwise, the underlying C++ object won't be reclaimed until the gc runs which
+					// may not happen before the app finishes, in which case it'll look like a memory leak even
+					// though technically that's not the case.
+					childXML.delete() ;
+					return ;
+				}
+				
+				// To figure out the format of the XML you can either look at the ClientTraceXML class
+				// (which has methods grouped appropriately) or you can look at the XML output directly.
+				// It's designed to be readable, so looking at a few packets you should quickly get the hang
+				// of what's going on and what attributes are available to be read.
+				// Here are a couple of examples.
+		
+				// Check if this is a new state
+				if (pTraceXML.IsTagState())
+				{
+					String count = pTraceXML.GetDecisionCycleCount() ;
+					String stateID = pTraceXML.GetStateID() ;
+					String impasseObject = pTraceXML.GetImpasseObject() ;
+					String impasseType = pTraceXML.GetImpasseType() ;
+		
+					m_OutputFile.write("New state at decision " + count + " was " + stateID + " (" + impasseObject + " " + impasseType + ")" + kLineSeparator) ;
+				}
+		
+				// Check if this is a new operator
+				if (pTraceXML.IsTagOperator())
+				{
+					String count = pTraceXML.GetDecisionCycleCount() ;
+					String operatorID = pTraceXML.GetOperatorID() ;
+					String operatorName = pTraceXML.GetOperatorName() ;
+		
+					m_OutputFile.write("Operator at decision " + count + " was " + operatorID + " name " + operatorName + kLineSeparator) ;
+				}
+	
 				// In Java we must explicitly delete XML objects we create
 				// Otherwise, the underlying C++ object won't be reclaimed until the gc runs which
 				// may not happen before the app finishes, in which case it'll look like a memory leak even
 				// though technically that's not the case.
 				childXML.delete() ;
-				return ;
 			}
 			
-			// To figure out the format of the XML you can either look at the ClientTraceXML class
-			// (which has methods grouped appropriately) or you can look at the XML output directly.
-			// It's designed to be readable, so looking at a few packets you should quickly get the hang
-			// of what's going on and what attributes are available to be read.
-			// Here are a couple of examples.
-	
-			// Check if this is a new state
-			if (pTraceXML.IsTagState())
-			{
-				String count = pTraceXML.GetDecisionCycleCount() ;
-				String stateID = pTraceXML.GetStateID() ;
-				String impasseObject = pTraceXML.GetImpasseObject() ;
-				String impasseType = pTraceXML.GetImpasseType() ;
-	
-				m_OutputFile.write("New state at decision " + count + " was " + stateID + " (" + impasseObject + " " + impasseType + ")" + kLineSeparator) ;
-			}
-	
-			// Check if this is a new operator
-			if (pTraceXML.IsTagOperator())
-			{
-				String count = pTraceXML.GetDecisionCycleCount() ;
-				String operatorID = pTraceXML.GetOperatorID() ;
-				String operatorName = pTraceXML.GetOperatorName() ;
-	
-				m_OutputFile.write("Operator at decision " + count + " was " + operatorID + " name " + operatorName + kLineSeparator) ;
-			}
-	
-			// In Java we must explicitly delete XML objects we create
-			// Otherwise, the underlying C++ object won't be reclaimed until the gc runs which
-			// may not happen before the app finishes, in which case it'll look like a memory leak even
-			// though technically that's not the case.
-			childXML.delete() ;
-	
 			// Flushing the file means we can look at it while it's still being formed
 			// at the cost of a small reduction in performance.
 			m_OutputFile.flush() ;
