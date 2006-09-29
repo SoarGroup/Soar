@@ -33,12 +33,12 @@ sp {apply*init-blocksworld
          ^step  <step1>)
 #   (<in> ^last-moves <last-moves>)
 #   (<last-moves> ^player1 <p1-move>)
-   (<clear1> ^p1 b)
-   (<clear2> ^p1 c)
-   (<on1> ^p1 c
-          ^p2 a)
-   (<table1> ^p1 a)
-   (<table2> ^p1 b)
+   (<clear1> ^p1 B)
+   (<clear2> ^p1 C)
+   (<on1> ^p1 C
+          ^p2 A)
+   (<table1> ^p1 A)
+   (<table2> ^p1 B)
    (<step1> ^p1 1)
    (<facts> ^succ <succ-fact-1>
             ^succ <succ-fact-2>
@@ -400,6 +400,7 @@ sp {apply*progress-state
    (<s> ^increment-step-token <ist>)
    (<out> ^<cmd-name> <cmd> -)}
 
+
 # switch the current game state with the next game state
 ##.. sp {propose*switch
 ##..    (state <s> ^name blocksworld
@@ -461,4 +462,5 @@ sp {apply*progress-state
 ##..    (<last-cmd> ^status complete)
 ##.. -->
 ##..    (<out> ^<cmd-name> <last-cmd> -)}
+
 

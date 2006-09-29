@@ -147,7 +147,7 @@ class ElementGGP:
 		return str
 
 class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
-	player_name = 'voigt'
+	player_name = 'jzxu'
 	move_responses = ['(u c a)', '(s b c)', '(s a b)', ]
 	move_count = 0
 
@@ -155,6 +155,8 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 	roles = None
 	input_link = None
 	role_ids = None
+
+	last_moves_id = None
 	
 	def bad_request(self, message):
 		print "Warning:", message
@@ -221,9 +223,10 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 			return False
 
 		Responder.input_link = agent.GetInputLink()
+		Responder.last_moves_id = agent.CreateIdWME(Responder.input_link, "last-moves")
 		Responder.role_ids = {}
 		for a_role in Responder.roles:
-			Responder.role_ids[a_role] = agent.CreateIdWME(Responder.input_link, a_role)
+			Responder.role_ids[a_role] = None
 
 		self.reply(200, 'READY')
 		return True
@@ -262,11 +265,11 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 				# ^io.input-link.last-moves.role.action-name.p2
 				# ...
 				# ^io.input-link.last-moves.role.action-name.pN
-				print repr(Responder.roles)
 				for x in range(len(Responder.roles)):
 					role = Responder.roles[x]
-					agent.DestroyWME(Responder.role_ids[role])
-					Responder.role_ids[role] = agent.CreateIdWME(Responder.input_link, role)
+					if Responder.role_ids[role] != None:
+						agent.DestroyWME(Responder.role_ids[role])
+					Responder.role_ids[role] = agent.CreateIdWME(Responder.last_moves_id, role)
 					command = moves_element.get(x)
 					if isinstance(command, ElementGGP):
 						action_id = agent.CreateIdWME(Responder.role_ids[role], command.get(0))
@@ -304,6 +307,8 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 			#else:
 			#	self.reply(200, 'NOOP')
 		else:
+			# Should keep running until the agent halts itself
+			agent.RunSelfForever()
 			self.reply(200, 'DONE')
 
 	def do_POST(self):
