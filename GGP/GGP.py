@@ -8,6 +8,7 @@ import signal
 import imp
 import Python_sml_ClientInterface
 sml = Python_sml_ClientInterface
+import ElementGGP
 
 global kernel
 global agent
@@ -15,141 +16,8 @@ global agent
 kernel = None
 agent = None
 
-class ElementGGP:
-	"""Used to represent the lisp-like code of GGP."""
-
-	__children = None
-
-	def __init__(self, string = None):
-		"""Create using an optional string of code. If no string
-		is given, an empty, valid element "()" is created. Raises
-		ValueError if there is a problem with the passed string."""
-		
-		if string == None:
-			return
-
-		depth = 0
-		start = -1
-		current = None
-		for x in range(len(string)):
-			if depth == 0:
-				# At the top level
-				if string[x] == '(':
-					# Start of top level element
-					depth += 1
-					self.__children = []
-				else:
-					# Paren must start top level element
-					raise ValueError("No opening paren: %s" % string)
-			elif depth == 1:
-				# Inside the top level
-				if string[x] == '(':
-					# Start of sub element
-					start = x
-					depth += 1
-
-				elif string[x] == ')':
-					if current != None:
-						# Currently parsing a string, ends the string
-						self.__children.append(current)
-						current = None
-						
-					# End of top level element
-					if not x == (len(string) - 1):
-						self.__children = None
-						raise ValueError("Extra characters at end: %s" % string)
-
-				elif string[x] == ' ':
-					# Space inside top level
-					if current != None:
-						# Currently parsing a string, ends the string
-						self.__children.append(current)
-						current = None
-						
-				else:
-					# Some other character inside top level
-					if current != None:
-						# Currently parsing a string, append it
-						current += string[x]
-					else:
-						# Not currently parsing a string, start one
-						current = string[x]
-
-			else:
-				# Inside sub element, keep track of parens
-				if string[x] == '(':
-					depth += 1
-				elif string[x] == ')':
-					depth -= 1
-					if depth == 1:
-						# End of sub element, append it
-						try:
-							self.__children.append(ElementGGP(string[start:x+1]))
-						except ValueError:
-							self.__children = None
-							raise
-						start = -1
-	
-	def get(self, index):
-		"""Retreives the child at index.
-		
-		Raises IndexError if the index is invalid.
-		Raises ValueError if the element is invalid."""
-		
-		if self.__children == None:
-			raise ValueError("Invalid element")
-			
-		if index < 0 or index >= len(self.__children):
-			raise IndexError
-		
-		return self.__children[index]
-	
-	def remove(self, index):
-		"""Removes the child at index.
-		
-		Raises IndexError if the index is invalid.
-		Raises ValueError if the element is invalid."""
-		
-		if self.__children == None:
-			raise ValueError("Invalid element")
-			
-		if index < 0 or index >= len(self.__children):
-			raise IndexError
-
-		self.__children[index:1] = []
-	
-	def num_children(self):
-		"""Returns the number of children.
-		
-		Raises ValueError if the element is invalid."""
-		
-		if self.__children == None:
-			raise ValueError("Invalid element")
-
-		return len(self.__children)
-			
-	def __str__(self):
-		if self.__children == None:
-			raise ValueError("Invalid element")
-		
-		if len(self.__children) < 1:
-			return "()"
-		
-		str = "("
-		for element in self.__children:
-			if isinstance(element, ElementGGP):
-				str = str + element.__str__() + " "
-			else:
-				str = str + element + " "
-		
-		str = str[:-1]
-		str = str + ")"
-		return str
-
 class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
-	player_name = 'jzxu'
-	move_responses = ['(u c a)', '(s b c)', '(s a b)', ]
-	move_count = 0
+	#player_name = 'jzxu'
 
 	my_role = None
 	roles = None
@@ -179,10 +47,10 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		startclock = None
 		playclock = None
 		try:
-			role = rest_element.get(0)
-			description_element = rest_element.get(1)
-			startclock = rest_element.get(2)
-			playclock = rest_element.get(3)
+			role = rest_element[0]
+			description_element = rest_element[1]
+			startclock = rest_element[2]
+			playclock = rest_element[3]
 		except ValueError, IndexError:
 			self.bad_request("Malformed START command")
 			return False
@@ -192,30 +60,37 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		print "startclock:", startclock
 		print "playclock:", playclock
 
-		if isinstance(role, ElementGGP):
-			self.bad_request("Malformed START command (role is element)")
+		if not isinstance(role, str):
+			self.bad_request("Malformed START command (role not string)")
 			return False
 			
-		if not isinstance(description_element, ElementGGP):
+		if not isinstance(description_element, ElementGGP.ElementGGP):
 			self.bad_request("Malformed START command (description not element)")
 			return False
 			
-		if isinstance(startclock, ElementGGP):
-			self.bad_request("Malformed START command (startclock is element)")
+		if not isinstance(startclock, str):
+			self.bad_request("Malformed START command (startclock not string)")
 			return False
 			
-		if isinstance(playclock, ElementGGP):
-			self.bad_request("Malformed START command (playclock is element)")
+		if not isinstance(playclock, str):
+			self.bad_request("Malformed START command (playclock not string)")
+			return False
+
+		try:
+			startclock = int(startclock)
+			playclock = int(playclock)
+		except ValueError:
+			self.bad_request("Malformed START command (startclock or playclock not integer)")
 			return False
 		
 		Responder.my_role = role
 		Responder.roles = []
-		for x in range(description_element.num_children()):
-			command = description_element.get(x).get(0)
-			if not isinstance(command, ElementGGP):
+		for x in range(len(description_element)):
+			command = description_element[x][0]
+			if not isinstance(command, ElementGGP.ElementGGP):
 				if command == "ROLE":
-					print "adding role:", description_element.get(x).get(1)
-					Responder.roles.append(description_element.get(x).get(1))
+					print "adding role:", description_element[x][1]
+					Responder.roles.append(description_element[x][1])
 		print "my role:", Responder.my_role
 
 		if Responder.my_role not in Responder.roles:
@@ -244,22 +119,22 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 
 		moves_element = None
 		try:
-			moves_element = rest_element.get(0)
+			moves_element = rest_element[0]
 		except IndexError:
 			self.bad_request("Malformed %s command (no moves)" % command)
 			return
 		
 		print "moves_element:", moves_element
 
-		if not isinstance(moves_element, ElementGGP):
+		if not isinstance(moves_element, ElementGGP.ElementGGP):
 			if moves_element == "NIL":
-				moves_element = ElementGGP("()")
+				moves_element = ElementGGP.ElementGGP()
 			else:
 				self.bad_request("Malformed %s command (moves string and not NIL)" % command)
 				return
 
 		if play:
-			if moves_element.num_children() > 0:
+			if len(moves_element) > 0:
 				# Put the last move on the il
 				# ^io.input-link.last-moves.role.action-name.p1
 				# ^io.input-link.last-moves.role.action-name.p2
@@ -270,11 +145,11 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 					if Responder.role_ids[role] != None:
 						agent.DestroyWME(Responder.role_ids[role])
 					Responder.role_ids[role] = agent.CreateIdWME(Responder.last_moves_id, role)
-					command = moves_element.get(x)
-					if isinstance(command, ElementGGP):
-						action_id = agent.CreateIdWME(Responder.role_ids[role], command.get(0))
-						for y in range(1, command.num_children()):
-							agent.CreateStringWME(action_id, "p%d" % y, command.get(y))
+					command = moves_element[x]
+					if isinstance(command, ElementGGP.ElementGGP):
+						action_id = agent.CreateIdWME(Responder.role_ids[role], command[0])
+						for y in range(1, len(command)):
+							agent.CreateStringWME(action_id, "p%d" % y, command[y])
 					else:
 						action_id = agent.CreateIdWME(Responder.role_ids[role], command)
 
@@ -294,29 +169,21 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 				for y in range(command_id.GetNumberChildren()):
 					value = command_id.GetParameterValue("p%d" % (y + 1))
 					command_string += " %s" % value
-				
 
 			# send the command
 			self.reply(200, "(%s)" % command_string)
-      
-			# Scripted responses
-			#if Responder.move_count < len(self.move_responses):
-			#	this_move = self.move_responses[Responder.move_count]
-			#	Responder.move_count = Responder.move_count + 1
-			#	self.reply(200, this_move)
-			#else:
-			#	self.reply(200, 'NOOP')
 		else:
 			# Should keep running until the agent halts itself
 			agent.RunSelfForever()
 			self.reply(200, 'DONE')
 
 	def do_POST(self):
-		if self.headers.has_key('receiver'):
-			receiver = self.headers.get('receiver')
-			if receiver.lower() != self.player_name:
-				self.bad_request('receiver name mismatch')
-				return
+		# Removed, not really necessary
+		#if self.headers.has_key('receiver'):
+		#	receiver = self.headers.get('receiver')
+		#	if receiver.lower() != self.player_name:
+		#		self.bad_request('receiver name mismatch')
+		#		return
 				
 		if not self.headers.has_key('content-length'):
 			self.bad_request('no content-length')
@@ -329,10 +196,10 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		content = content.replace('\n', '')
 		print len(content), repr(content)
 
-		message_element = ElementGGP(content)
+		message_element = ElementGGP.ElementGGP(content)
 		
-		command = message_element.get(0)
-		matchid = message_element.get(1)
+		command = message_element[0]
+		matchid = message_element[1]
 		print "command:", command
 		print "matchid:", matchid
 		
