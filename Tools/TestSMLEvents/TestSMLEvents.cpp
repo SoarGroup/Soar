@@ -108,7 +108,7 @@ void MySystemEventHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel)
 
 	// if you want to see where a particular event is coming from, set a breakpoint here
 	/*if(eventData->eventId == 123) {
-		cout << "Got event " << eventId << endl;
+		cout << "Got event " << eventData->eventId << endl;
 	}*/
 }
 
@@ -118,7 +118,7 @@ void MyRunEventHandler(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhas
 
 	// if you want to see where a particular event is coming from, set a breakpoint here
 	/*if(eventData->eventId == 123) {
-		cout << "Got event " << eventId << endl;
+		cout << "Got event " << eventData->eventId << endl;
 	}*/
 }
 
@@ -128,7 +128,7 @@ void MyProductionEventHandler(smlProductionEventId id, void* pUserData, Agent* p
 
 	// if you want to see where a particular event is coming from, set a breakpoint here
 	/*if(eventData->eventId == 123) {
-		cout << "Got event " << eventId << endl;
+		cout << "Got event " << eventData->eventId << endl;
 	}*/
 }
 
@@ -138,7 +138,7 @@ void MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent) {
 
 	// if you want to see where a particular event is coming from, set a breakpoint here
 	/*if(eventData->eventId == 123) {
-		cout << "Got event " << eventId << endl;
+		cout << "Got event " << eventData->eventId << endl;
 	}*/
 }
 
@@ -149,7 +149,7 @@ void MyPrintEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, cha
 	
 	// if you want to see where a particular event is coming from, set a breakpoint here
 	/*if(eventData->eventId == 123) {
-		cout << "Got event " << eventId << endl;
+		cout << "Got event " << eventData->eventId << endl;
 	}*/
 }
 
@@ -159,7 +159,7 @@ void MyXMLEventHandler(smlXMLEventId id, void* pUserData, Agent* pAgent, ClientX
 
 	// if you want to see where a particular event is coming from, set a breakpoint here
 	/*if(eventData->eventId == 123) {
-		cout << "Got event " << eventId << endl;
+		cout << "Got event " << eventData->eventId << endl;
 	}*/
 }
 
