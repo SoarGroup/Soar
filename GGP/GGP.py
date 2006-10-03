@@ -153,8 +153,11 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 					else:
 						action_id = agent.CreateIdWME(Responder.role_ids[role], command)
 
-			# Run soar 1 till output
-			agent.RunSelfTilOutput()
+			# Run soar 1 till some commands
+			num_commands = 0
+			while num_commands == 0:
+				agent.RunSelfTilOutput()
+				num_commands = agent.GetNumberCommands()
 
 			# Translate ol to command
 			# ^io.output-link.action-name.pi
@@ -163,15 +166,16 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 			# ^io.output-link.action-name.pN
 			output_link = agent.GetOutputLink()
 			command_string = ""
-			for x in range(agent.GetNumberCommands()):
+			for x in range(num_commands):
 				command_id = agent.GetCommand(x)
 				command_string += command_id.GetAttribute()
 				for y in range(command_id.GetNumberChildren()):
 					value = command_id.GetParameterValue("p%d" % (y + 1))
 					command_string += " %s" % value
 
-			# send the command
-			self.reply(200, "(%s)" % command_string)
+			# send the command only if there really is a command
+			if len(command_string) > 0:
+				self.reply(200, "(%s)" % command_string)
 		else:
 			# Should keep running until the agent halts itself
 			agent.RunSelfForever()
@@ -245,7 +249,7 @@ if __name__ == '__main__':
 
 	agent.RegisterForPrintEvent(sml.smlEVENT_PRINT, print_callback, None)
 	
-	print agent.ExecuteCommandLine("source blocksworld_noframe.soar")
+	print agent.ExecuteCommandLine("source blocksworld_sel.soar")
 	if not agent.GetLastCommandLineResult():
 		print "Production load failed"
 		shutdown()

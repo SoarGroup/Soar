@@ -24,7 +24,8 @@ sp {apply*init-blocksworld
 -->
    (<s> ^name blocksworld
         ^gs <gs>
-        ^facts <facts>)
+        ^facts <facts>
+        ^desired <d>)
    (<gs> ^role ROBOT
          ^clear <clear1>
          ^clear <clear2>
@@ -49,7 +50,14 @@ sp {apply*init-blocksworld
    (<succ-fact-2> ^p1 2
                   ^p2 3)
    (<succ-fact-3> ^p1 3
-                  ^p2 4)}
+                  ^p2 4)
+   (<d> ^gs <dgs>)
+   (<dgs> ^on <on2>
+          ^on <on3>)
+   (<on2> ^p1 A
+          ^p2 B)
+   (<on3> ^p1 B
+          ^p2 C)}
 
   
 #(<= (next (on ?x ?y))
@@ -264,7 +272,8 @@ sp {propose*change-state-increment-step
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name change-state-increment-step
-        ^p1 <y>)}
+        ^old-step <step-relation>
+        ^new-step <y>)}
 
 sp {apply*change-state-increment-step
    (state <s> ^name blocksworld
@@ -272,10 +281,12 @@ sp {apply*change-state-increment-step
               ^gs <gs>
               ^operator <o>)
    (<o> ^name change-state-increment-step
-        ^p1 <y>)
+        ^old-step <old-step>
+        ^new-step <ns>)
 -->
+   (<gs> ^step <old-step> -)
    (<gs> ^step <step-relation>)
-   (<step-relation> ^p1 <y>)
+   (<step-relation> ^p1 <ns>)
    (<s> ^increment-step-token <ist> -)}
 
 
@@ -297,7 +308,7 @@ sp {propose*act-stack
    (<clear-relation-1> ^p1 { <y> <> <x> })
   -(<out> ^<cmd-name> <cmd>)
 -->
-   (<s> ^operator <o> + < =)
+   (<s> ^operator <o> + <)
    (<o> ^name act-stack
         ^p1 <x>
         ^p2 <y>)}
@@ -329,7 +340,7 @@ sp {propose*act-unstack
                   ^p2 <y>)
   -(<out> ^<cmd-name> <cmd>)
 -->
-   (<s> ^operator <o> + < =)
+   (<s> ^operator <o> + <)
    (<o> ^name act-unstack
         ^p1 <x>
         ^p2 <y>)}
@@ -346,10 +357,41 @@ sp {apply*act-unstack
    (<unstack-action> ^p1 <x>
                      ^p2 <y>)}
 
+sp {blocksworld*elaborate*fake-io
+   (state <s> ^duplicate-of* <ds>)
+-->
+   (<s> ^io <fake-io>)
+   (<fake-io> ^input-link <il>
+              ^output-link <ol>)}
+
+sp {blocksworld*elaborate*fake-gamemaster-response
+   (state <s> ^duplicate-of* <ds>
+              ^io.input-link <in>
+              ^io.output-link <out>)
+   (<out> ^<action-name> <a>)
+   (<a> ^p1 <p1>
+        ^p2 <p2>)
+-->
+   (<in> ^last-moves <lm>)
+   (<lm> ^ROBOT <robot-move>)
+   (<robot-move> ^<action-name> <a1>)
+   (<a1> ^p1 <p1>
+         ^p2 <p2>)}
 
 #(<= (goal ROBOT 100)
 #    (true (on a b))
 #    (true (on b c)))
+sp {blocksworld*detect*state*success
+   (state <s> ^desired <d>
+              ^gs <gs>)
+   (<gs> ^on <on-relation-1>
+         ^on <on-relation-2>)
+   (<on-relation-1> ^p1 A
+                    ^p2 B)
+   (<on-relation-2> ^p1 B
+                    ^p2 C)
+-->
+   (<s> ^success <d>)}
 
 #(<= (goal ROBOT 0)
 #    (not (true (on a b))))
@@ -359,28 +401,50 @@ sp {apply*act-unstack
 
 #(<= terminal
 #    (true (step 4)))
-sp {halt*step-4
-   (state <s> ^name blocksworld
+##.. sp {halt*step-4
+##..    (state <s> ^name blocksworld
+##..               ^gs <gs>)
+##..    (<gs> ^step <step-relation>)
+##..    (<step-relation> ^p1 4)
+##.. -->
+##..    (halt)}
+
+sp {blocksworld*detect*state*failure
+   (state <s> ^desired <d>
               ^gs <gs>)
    (<gs> ^step <step-relation>)
    (<step-relation> ^p1 4)
+  -{(<gs> ^on <on-relation>)
+    (<on-relation> ^p1 a
+                   ^p2 b)}
 -->
-   (halt)}
-
+   (<s> ^failure <d>)}
+              
+sp {blocksworld*detect*state*failure-1
+   (state <s> ^desired <d>
+              ^gs <gs>)
+   (<gs> ^step <step-relation>)
+   (<step-relation> ^p1 4)
+  -{(<gs> ^on <on-relation>)
+    (<on-relation> ^p1 b
+                   ^p2 c)}
+-->
+   (<s> ^failure <d>)}
+ 
 #(<= terminal
 #    (true (on a b))
 #    (true (on b c)))
-sp {halt*stacked
-   (state <s> ^name blocksworld
-              ^gs <cgs>)
-   (<cgs> ^on <on-relation-1>
-          ^on <on-relation-2>)
-   (<on-relation-1> ^p1 a
-                    ^p2 b)
-   (<on-relation-2> ^p1 b
-                    ^p2 c)
--->
-   (halt)}
+##.. sp {halt*stacked
+##..    (state <s> ^name blocksworld
+##..               ^gs <gs>)
+##..    (<gs> ^on <on-relation-1>
+##..          ^on <on-relation-2>)
+##..    (<on-relation-1> ^p1 a
+##..                     ^p2 b)
+##..    (<on-relation-2> ^p1 b
+##..                     ^p2 c)
+##.. -->
+##..    (halt)}
 
 
 sp {propose*progress-state
