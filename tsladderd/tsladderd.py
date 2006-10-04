@@ -13,6 +13,9 @@ import getopt
 import os.path
 import tsladder
 import random
+import timeit
+import subprocess
+import resource
 
 class Ladder:
 	"A class representing the TankSoar ladder scheduling."
@@ -129,16 +132,27 @@ class Ladder:
 		os.chdir('JavaTankSoar')
 		if not os.path.exists("tsladder-logs/%s" % self.laddername):
 			os.mkdir("tsladder-logs/%s" % self.laddername)
-		os.system('java -ea -jar JavaTankSoar.jar -quiet -log tsladder-logs/%s/%d.txt' % (self.laddername, self.matchcount))
+		#t = timeit.Timer("os.system('java -ea -jar JavaTankSoar.jar -quiet -log tsladder-logs/%s/%d.txt' % (a, b))",
+		#	"import os; a = '%s'; b = %d" % (self.laddername, self.matchcount))
+		#elapsed = t.timeit(1)
+
+		p = subprocess.Popen("java -ea -jar JavaTankSoar.jar -quiet -log tsladder-logs/%s/%d.txt" % (self.laddername, self.matchcount), shell=True)
+		while p.poll() == None:
+			print 'self    : ', repr(resource.getrusage(resource.RUSAGE_SELF))
+			print 'children: ', repr(resource.getrusage(resource.RUSAGE_CHILDREN))
+			time.sleep(5)
+		elapsed = 0
+		if elapsed < 0:
+			elapsed = 0
 		
-		logging.info("Match %d complete", self.matchcount)
+		logging.info("Match %d complete (%.1f seconds)", self.matchcount, elapsed)
 		
 		for tank in tanks:
 			tank.set_fighting(False)
 
 		output = file("tsladder-logs/%s/%d.txt" % (self.laddername, self.matchcount))
 		
-		matched_something = False
+		matched_tanks = 0
 		wimpywin = 0
 		sncloss = 0
 		winning_tank = None
@@ -175,9 +189,12 @@ class Ladder:
 			if score >= self.winningscore:
 				finished = True
 
-			tanks[tank].set_last_match(score, finished, status, interrupted, tanks[opponent].rating)
+			if interrupted_tank != None:
+				if interrupted:
+					tanks[tank].increment_interrupted(elapsed)
+			tanks[tank].set_last_match(score, finished, status, tanks[opponent].rating, elapsed)
 			
-			matched_something = True
+			matched_tanks += 1
 
 			if status == "winner":
 				winning_tank = tank
@@ -191,16 +208,19 @@ class Ladder:
 		logging.info("Done zipping.")
 		os.chdir(cwd)
 
-		if not matched_something:
-			logging.error("Failed to match status lines! Ignoring match!")
+		if not matched_tanks >= 2:
+			logging.error("Failed to match all status lines! Ignoring match!")
 		else:
-			tanks[self.RED].update_record()
-			tanks[self.BLUE].update_record()
+			if sncloss != 0:
+				logging.info("An agent was interrupted, not updating tank records.")
+			else:
+				tanks[self.RED].update_record()
+				tanks[self.BLUE].update_record()
 			
 			winningid = 0
 			if winning_tank != None:
 				winningid = tanks[winning_tank].id
-			self.cursor.execute("INSERT INTO matches (matchid, red, blue, winner, wimpywin, sncloss) VALUES(%s, %s, %s, %s, %s, %s)", (self.matchcount, tanks[self.RED].id, tanks[self.BLUE].id, winningid, wimpywin, sncloss))
+			self.cursor.execute("INSERT INTO matches (matchid, red, blue, winner, wimpywin, sncloss, redscore, bluescore, time) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)", (self.matchcount, tanks[self.RED].id, tanks[self.BLUE].id, winningid, wimpywin, sncloss, tanks[self.RED].last_score, tanks[self.BLUE].last_score, elapsed))
 			logging.info("Added match record %s", self.matchcount)
 
 def usage():
