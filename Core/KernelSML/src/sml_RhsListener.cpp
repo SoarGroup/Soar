@@ -265,7 +265,7 @@ bool RhsListener::HandleEvent(egSKIRhsEventId eventID, gSKI::Agent* pAgent, bool
 	// Pass the agent in the "name" parameter not the "agent" parameter as this is a kernel
 	// level event, not an agent level one (because you need to register with the kernel to get "agent created").
 	ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamName, pAgent->GetName()) ;
+	if (pAgent) pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamName, pAgent->GetName()) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamFunction, pFunctionName) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamValue, pArgument) ;

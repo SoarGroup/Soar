@@ -587,7 +587,7 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
 	char const* pAgentName	  = pIncoming->GetArgString(sml_Names::kParamName) ;
 	int maxLength			  = pIncoming->GetArgInt(sml_Names::kParamLength, 0) ;
 
-	if (!pFunctionName || !pAgentName || maxLength == 0)
+	if (!pFunctionName || maxLength == 0)
 	{
 		// Should always include a function name
 		SetError(Error::kInvalidArgument) ;
@@ -601,7 +601,7 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
 		return ;
 
 	// Look up the agent
-	Agent* pAgent = GetAgent(pAgentName) ;
+	Agent* pAgent = pAgentName ? GetAgent(pAgentName) : NULL ;
 
 	// Go through the list of event handlers calling each in turn...except
 	// we only execute the first handler (registering multipler handlers for the same RHS function is not supported
