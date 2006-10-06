@@ -8,6 +8,7 @@ import Python_sml_ClientInterface
 import tempfile
 import os
 import shutil
+import urllib
 
 def print_callback(id, userData, agent, message):
 	print message
@@ -29,9 +30,24 @@ class TournamentThread(threading.Thread):
 		TournamentThread.event.clear()
 		print 'tournament started:', self.message
 		while True:
-			TournamentThread.event.wait()
-			if TournamentThread.stop:
-				break
+			# Get tanks
+			match_filename, headers = urllib.urlretrieve('http://tsladder:cdQdpjG@localhost:54424/TankSoarLadder/tournaments/%s/get_match' % self.message[1])
+			match_file = open(match_filename, 'r')
+			match_id = None
+			match_tanks = []
+			for line in match_file:
+				if match_id == None:
+					match_id = int(line)
+				else:
+					match_tanks.append(line.strip())
+
+			match_file.close()
+
+			
+
+			if TournamentThread.event.isSet():
+				if TournamentThread.stop:
+					break
 
 		print 'tournament stopped'
 		TournamentThread.running = False
