@@ -254,20 +254,28 @@ public class ParseSelectedText
 		return token.startsWith("^") ;
 	}
 	
-	protected boolean isID(String token)
+	protected String isID(String token)
 	{
 		if (token == null || token.length() == 0)
-			return false ;
+			return null ;
 
+		// There can be leading preference symbols in some cases
+		int startId = 0 ;
+		if (token.charAt(0) == '<' || token.charAt(0) == '>' || token.charAt(0) == '=' || token.charAt(0) == '+' || token.charAt(0) == '-')
+			startId = 1 ;
+
+		if (token.length() <= startId)
+			return null ;
+		
 		// ID's start with capital letters
-		if (token.charAt(0) < 'A' || token.charAt(0) > 'Z')
-			return false ;
+		if (token.charAt(startId) < 'A' || token.charAt(startId) > 'Z')
+			return null ;
 		
 		// ID's end with numbers
 		if (token.charAt(token.length()-1) < '0' || token.charAt(token.length()-1) > '9')
-			return false ;
+			return null ;
 		
-		return true ;
+		return token.substring(startId) ;
 	}
 	
 	/********************************************************************************************
@@ -315,17 +323,20 @@ public class ParseSelectedText
 			{
 				String id = m_FullText.substring(idPos, endSpace) ;
 				
-				if (isID(id))
-					return new SelectedWme(id, curr, m_Tokens[kNextToken]) ;
+				String foundId = isID(id) ;
+				
+				if (foundId != null)
+					return new SelectedWme(foundId, curr, m_Tokens[kNextToken]) ;
 			}
 			
 			// Couldn't find an ID to connect to this wme.
 			return new SelectedWme(null, curr, m_Tokens[kNextToken]) ;
 		}
 		
-		if (isID(curr))
+		String foundId = isID(curr) ;
+		if (foundId != null)
 		{
-			return new SelectedID(curr) ;
+			return new SelectedID(foundId) ;
 		}
 		
 		// As a final test check the string against the real list of production names in the kernel
