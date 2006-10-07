@@ -2226,7 +2226,8 @@ std::string Kernel::SendClientMessage(Agent* pAgent, char const* pClientName, ch
 
 	if (ok)
 	{
-		return response.GetResultString() ;
+		const char* pResponse = response.GetResultString() ;
+		return pResponse ? pResponse : "" ;
 	}
 
 	return GetLastErrorDescription() ;
