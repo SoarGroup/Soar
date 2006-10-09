@@ -1064,6 +1064,9 @@ void do_preference_phase (agent* thisAgent) {
   while (get_next_assertion (thisAgent, &prod, &tok, &w)) {
      if (thisAgent->max_chunks_reached) {
        thisAgent->system_halted = TRUE;
+	   	  soar_invoke_callbacks(thisAgent, thisAgent, 
+		  AFTER_HALT_SOAR_CALLBACK,
+		  (soar_call_data) NULL);
        return;
      }
      create_instantiation (thisAgent, prod, tok, w);
