@@ -94,6 +94,7 @@ typedef enum {
     smlEVENT_AFTER_DECISION_CYCLE,
 	smlEVENT_MAX_MEMORY_USAGE_EXCEEDED,
     smlEVENT_AFTER_INTERRUPT,
+	smlEVENT_AFTER_HALTED,
 	smlEVENT_BEFORE_RUN_STARTS,			// Before start of a run
 	smlEVENT_AFTER_RUN_ENDS,			// After run ends for any reason
     smlEVENT_BEFORE_RUNNING,			// Before running one step (phase)

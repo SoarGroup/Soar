@@ -346,6 +346,7 @@ NamedEventDataList* CreateRunEventData() {
 	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_DECISION_CYCLE, "smlEVENT_AFTER_DECISION_CYCLE"));
 	namedEventData->eventData.push_back(new EventData(smlEVENT_MAX_MEMORY_USAGE_EXCEEDED, "smlEVENT_MAX_MEMORY_USAGE_EXCEEDED"));
 	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_INTERRUPT, "smlEVENT_AFTER_INTERRUPT"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_HALTED, "smlEVENT_AFTER_HALTED"));
 	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_RUN_STARTS, "smlEVENT_BEFORE_RUN_STARTS"));
 	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_RUN_ENDS, "smlEVENT_AFTER_RUN_ENDS"));
 	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_RUNNING, "smlEVENT_BEFORE_RUNNING"));

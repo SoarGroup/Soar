@@ -581,6 +581,9 @@ namespace gSKI
 	  {
 		  m_runState = gSKI_RUNSTATE_HALTED;
 
+		   RunNotifier nfAfterHalt(this, m_lastPhase);
+           m_runListeners.Notify(gSKIEVENT_AFTER_HALTED, nfAfterHalt);
+
 		  // fix for BUG 514  01-12-06
 		  PrintNotifier nfHalted(this, "This Agent halted.");
 		  m_printListeners.Notify(gSKIEVENT_PRINT, nfHalted);
@@ -1959,6 +1962,9 @@ void Agent::IncrementgSKIStepCounter(egSKIInterleaveType interleaveStepSize)
 		   // If we halted, we completed and our state is halted
 		   m_runState    = gSKI_RUNSTATE_HALTED;
 		   retVal        = gSKI_RUN_COMPLETED;
+
+		   RunNotifier nfAfterHalt(this, m_lastPhase);
+           m_runListeners.Notify(gSKIEVENT_AFTER_HALTED, nfAfterHalt);
 
 		   // fix for BUG 514  01-12-06
 		   PrintNotifier nfHalted(this, "This Agent halted.");
