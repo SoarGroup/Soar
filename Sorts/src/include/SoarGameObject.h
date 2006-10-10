@@ -115,6 +115,8 @@ private:
 
   int lastAttackedId;
   bool lastAttackOpportunistic;
+
+  bool stopped;
 };
 
 #define OBJ_IDLE 0

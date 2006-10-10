@@ -99,6 +99,7 @@ SoarGameObject::SoarGameObject(
   friendly(_friendly), world(_world), id(_id)
 {
   name = gob->bp_name();
+  stopped = true;
   
   // this will error if sgos are created for start_loc objects
   // but we throw those out before here
@@ -178,9 +179,11 @@ bool SoarGameObject::assignAction(ObjectActionType cmd, Vector<sint4> prms)
   }
   
   if (cmd == OA_STOP) {
+    stopped = true;
     assignedBehavior = NULL;
   }
   else {
+    stopped = false;
     map<ObjectActionType, FSM*>::iterator i = behaviors.find(cmd);
     assert(i != behaviors.end());
     i->second->init(prms);
@@ -321,7 +324,12 @@ PerceptualGroup *SoarGameObject::getPerceptualGroup(void)
 
 int SoarGameObject::getStatus()
 {
-  return status;
+  if (stopped) {
+    return OBJ_IDLE;
+  }
+  else {
+    return status;
+  }
 }
 
 Rectangle SoarGameObject::getBoundingBox() {

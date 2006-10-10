@@ -767,6 +767,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
 
     case OA_STOP:
       sticky = false;
+      currentCommand = "none";
       tempVec.clear();
       for (currentObject  = members.begin();
            currentObject != members.end();
