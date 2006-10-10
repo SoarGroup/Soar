@@ -3,14 +3,24 @@ rem %2 is an optional command line argument specifying the java bin directory to
 rem NOTE: if this directory is specified, the trailing slash must be included!
 rem Also, if there are spaces in the path, it must be wrapped in quotes
 
-IF NOT EXIST ..\..\SoarLibrary\bin\swt.jar GOTO no_swt
-IF NOT EXIST ..\..\SoarLibrary\bin\sml.jar GOTO no_sml
+echo.
+echo ************* Building JavaBaseEnvironment ****************
+echo.
 
-IF NOT EXIST bin mkdir bin
-del /s /Q bin\*.class
-%2javac -source 1.4 -d bin -classpath ..\..\SoarLibrary\bin\swt.jar;..\..\SoarLibrary\bin\sml.jar -sourcepath source source\utilities\*.java source\simulation\*.java source\simulation\visuals\*.java
+set SOARBIN=..\..\SoarLibrary\bin
 
-%2jar cf ..\..\SoarLibrary\bin\JavaBaseEnvironment.jar -C bin .
+IF NOT EXIST %SOARBIN%\swt.jar GOTO no_swt
+IF NOT EXIST %SOARBIN%\sml.jar GOTO no_sml
+
+echo ----------=====Setting up tmp dir====----------
+IF EXIST tmp rmdir /S /Q tmp
+mkdir tmp
+
+@echo ----------=========Compiling=========----------
+%2javac -source 1.4 -d tmp -classpath %SOARBIN%\swt.jar;%SOARBIN%\sml.jar -sourcepath source source\utilities\*.java source\simulation\*.java source\simulation\visuals\*.java
+
+@echo ----------==========Jarring==========----------
+%2jar cf %SOARBIN%\JavaBaseEnvironment.jar -C tmp .
 @echo off
 
 GOTO success
