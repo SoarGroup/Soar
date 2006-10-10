@@ -5,9 +5,33 @@ rem Also, if there are spaces in the path, it must be wrapped in quotes
 
 @REM *** MAKE SURE CHANGES TO THIS FILE ARE REFLECTED IN THE .SH FILE
 
-set SOARLIB=..\..\SoarLibrary\bin
+echo.
+echo ************* Building TestJavaSML ****************
+echo.
 
-%2javac.exe -source 1.4 -classpath %SOARLIB%\sml.jar Application.java
-%2jar cfm %SOARLIB%\TestJavaSML.jar JarManifest .
+set SOARBIN=..\..\SoarLibrary\bin
 
-IF NOT "%1"=="--nopause" pause
+IF NOT EXIST %SOARBIN%\sml.jar GOTO no_sml
+
+echo ----------=====Setting up tmp dir====----------
+IF EXIST tmp rmdir /S /Q tmp
+mkdir tmp
+
+@echo ----------=========Compiling=========----------
+%2javac.exe -source 1.4 -d tmp -classpath %SOARBIN%\sml.jar Application.java
+
+@echo ----------==========Jarring==========----------
+%2jar cfm %SOARBIN%\TestJavaSML.jar JarManifest -C tmp .
+
+GOTO success
+
+:no_sml
+echo ERROR:  %SOARBIN%\sml.jar is missing.  
+echo Build Stopped
+goto end
+
+:success
+echo Build Complete
+
+:end
+IF NOT "%1" == "--nopause" pause
