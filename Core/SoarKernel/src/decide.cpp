@@ -1958,13 +1958,13 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
                  if (w->gds->goal != NIL)
                  {
                     /* If the goal pointer is non-NIL, then goal is in the stack */
-                    if (thisAgent->soar_verbose_flag) 
+                    if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM]) 
                     {
-                       print(thisAgent, "\n          Removing goal %d because element in GDS changed.", w->gds->goal->id.level);
+                       print(thisAgent, "\nRemoving state S%d because element in GDS changed.", w->gds->goal->id.level);
                        print(thisAgent, " WME: "); 
 
                        char buf[256];
-                       snprintf(buf, 254, "Removing goal %d because element in GDS changed.", w->gds->goal->id.level);
+                       snprintf(buf, 254, "Removing state S%d because element in GDS changed.", w->gds->goal->id.level);
                        gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagVerbose);
 	                   gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kTypeString, buf);
                        print_wme(thisAgent, w);
@@ -2888,7 +2888,19 @@ void add_wme_to_gds(agent* agentPtr, goal_dependency_set* gds, wme* wme_to_add)
    /* Set the correct GDS for this wme (wme's point to their gds) */
    wme_to_add->gds = gds;
    insert_at_head_of_dll(gds->wmes_in_gds, wme_to_add, gds_next, gds_prev);
-
+                
+   if (agentPtr->soar_verbose_flag || agentPtr->sysparams[TRACE_WM_CHANGES_SYSPARAM]) 
+   {                    
+	   print(agentPtr, "Adding to GDS for S%d", wme_to_add->gds->goal->id.level);    
+	   print(agentPtr, " WME: "); 
+	   char buf[256];
+	   snprintf(buf, 254, "Adding to GDS for S%d", wme_to_add->gds->goal->id.level);
+	   gSKI_MakeAgentCallbackXML(agentPtr, kFunctionBeginTag, kTagVerbose);
+	   gSKI_MakeAgentCallbackXML(agentPtr, kFunctionAddAttribute, kTypeString, buf);
+	   print_wme(agentPtr, wme_to_add);
+	   gSKI_MakeAgentCallbackXML(agentPtr, kFunctionEndTag, kTagVerbose);               
+   }
+ 
    /* Callback gSKI (AFTER) */
    gSKI_MakeAgentCallback(gSKI_K_EVENT_GDS_WME_ADDED, 1, 
                           agentPtr, static_cast<void*>(wme_to_add));
