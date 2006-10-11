@@ -2094,9 +2094,20 @@ namespace gSKI
 #endif // SOAR_8_ONLY
 				if (pWme->gds) {
 					if (pWme->gds->goal != NIL) {
+						if (pSoarAgent->soar_verbose_flag || pSoarAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+							{
+								print(pSoarAgent, "\nremove_input_wme: Removing state S%d because element in GDS changed.", pWme->gds->goal->id.level);
+								print(pSoarAgent, " WME: "); 
+
+								char buf[256];
+								snprintf(buf, 254, "remove_input_wme: Removing state S%d because element in GDS changed.", pWme->gds->goal->id.level);
+								gSKI_MakeAgentCallbackXML(pSoarAgent, kFunctionBeginTag, kTagVerbose);
+								gSKI_MakeAgentCallbackXML(pSoarAgent, kFunctionAddAttribute, kTypeString, buf);
+								print_wme(pSoarAgent, pWme);
+								gSKI_MakeAgentCallbackXML(pSoarAgent, kFunctionEndTag, kTagVerbose);
+							}
 
 						gds_invalid_so_remove_goal(pSoarAgent, pWme);
-
 						/* NOTE: the call to remove_wme_from_wm will take care of checking if
 						GDS should be removed */
 					}
