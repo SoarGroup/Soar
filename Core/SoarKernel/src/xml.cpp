@@ -64,6 +64,13 @@ using namespace xmlTraceNames ;
 /////////////////////////////////////////////////////////////////
 void xmlBeginTag(char const* pTag)
 {
+	// Should be using callbacks like this, so we don't need to link the CLI to the kernel in order for the kernel to compile correctly.
+	// This callback would remove the need for "cli::GetCLI()" calls
+	/*
+	soar_invoke_callbacks(thisAgent, thisAgent, 
+						XML_GENERATION_CALLBACK,
+						(soar_call_data) NULL);
+	*/
 	cli::GetCLI()->XMLBeginTag(pTag) ;
 }
 
