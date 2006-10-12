@@ -117,11 +117,19 @@ int SpatialDB::rowCol2cell(int row, int col) {
 
 sint4 SpatialDB::updateObject(GameObj *gob, sint4 sat_loc)
 {
- //return 0;
  sint4 x = *(gob->sod.x);
  sint4 y = *(gob->sod.y);
  sint4 new_sat_loc = getCellNumber(x,y);
 
+ if (x < 0 || y < 0) {
+   msg << "object is not on the map (this happens with under-construction builders)."
+       << "placing in cell 0.\n";
+   new_sat_loc = 0;
+ }
+
+ assert(new_sat_loc >= 0);
+ assert(new_sat_loc < gobMap.size());
+ 
  if(sat_loc != new_sat_loc)
  {
   gobMap[sat_loc].erase(gob);
