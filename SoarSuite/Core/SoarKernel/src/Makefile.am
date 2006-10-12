@@ -33,6 +33,7 @@ tempmem.cpp\
 trace.cpp\
 utilities.cpp\
 wmem.cpp\
+xml.cpp\
 backtrace.h\
 consistency.h\
 osupport.h\
@@ -69,6 +70,7 @@ reorder.h\
 ../include/trace.h\
 ../include/utilities.h\
 ../include/wmem.h\
+../include/xml.h\
 ../include/xmlTraceNames.h
 
 
