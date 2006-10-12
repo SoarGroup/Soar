@@ -728,6 +728,10 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\src\xml.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header files"
