@@ -103,7 +103,7 @@
 #include "instantiations.h"
 #include "rhsfun.h"
 #include "lexer.h"
-#include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
+#include "xml.h"
 
 /* JC ADDED: for gSKI events */
 #include "gski_event_system_functions.h"
@@ -8023,85 +8023,6 @@ void print_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
 // They should eventually move to their own file with a new header.
 //
 /////////////////////////////////////////////////////////////////
-void xmlBeginTag(char const* pTag)
-{
-	cli::GetCLI()->XMLBeginTag(pTag) ;
-}
-
-void xmlEndTag(char const* pTag)
-{
-	cli::GetCLI()->XMLEndTag(pTag) ;
-}
-
-void xmlString(char const* pAttribute, char const* pValue)
-{
-	cli::GetCLI()->XMLAddAttribute(pAttribute, pValue) ;
-}
-
-void xmlSymbol(agent* thisAgent, char const* pAttribute, Symbol* pSymbol)
-{
-	// Passing 0, 0 as buffer to symbol to string causes it to use internal, temporary buffers
-	// which is fine because we immediately copy that string in XMLAddAttribute.
-	cli::GetCLI()->XMLAddAttribute(pAttribute, symbol_to_string(thisAgent, pSymbol, true, 0, 0)) ;
-}
-
-// These "moveCurrent" methods allow us to move the entry point for new XML
-// around in the existing structure.  That's not often required but occassionally is helpful.
-void xmlMoveCurrentToParent()
-{
-	cli::GetCLI()->XMLMoveCurrentToParent() ;
-}
-
-void xmlMoveCurrentToChild(int index)
-{
-	cli::GetCLI()->XMLMoveCurrentToChild(index) ;
-}
-
-void xmlMoveCurrentToLastChild()
-{
-	cli::GetCLI()->XMLMoveCurrentToLastChild() ;
-}
-
-void xmlULong(char const* pAttribute, unsigned long value)
-{
-	char buf[51];
-	snprintf(buf, 50, "%lu", value);
-	cli::GetCLI()->XMLAddAttribute(pAttribute, buf) ;
-}
-
-void xmlInt(char const* pAttribute, int value)
-{
-	char buf[51];
-	snprintf(buf, 50, "%d", value);
-	cli::GetCLI()->XMLAddAttribute(pAttribute, buf) ;
-}
-
-void xmlAddSimpleTag(char const* pTag)
-{
-	cli::GetCLI()->XMLBeginTag(pTag) ;
-	cli::GetCLI()->XMLEndTag(pTag) ;
-}
-
-void xmlAddSimpleTag(char const* pTag, char const* pAttribute, char const* pValue)
-{
-	cli::GetCLI()->XMLBeginTag(pTag) ;
-	cli::GetCLI()->XMLAddAttribute(pAttribute, pValue) ;
-	cli::GetCLI()->XMLEndTag(pTag) ;
-}
-
-void xml_wme (agent* thisAgent, wme *w) {
-  // <wme tag="123" id="s1" attr="foo" attrtype="string" val="123" valtype="string"></wme>
-  xmlBeginTag(kTagWME) ;
-
-  xmlULong(kWME_TimeTag, w->timetag) ;
-  xmlSymbol(thisAgent, kWME_Id, w->id);
-  xmlSymbol(thisAgent, kWME_Attribute, w->attr) ;
-  xmlSymbol(thisAgent, kWME_Value, w->value) ;
-  xmlString(kWME_ValueType, symbol_to_typeString(thisAgent, w->value)) ;
-  if (w->acceptable) xmlString(kWMEPreference, "+");
-
-  xmlEndTag(kTagWME) ;
-}
 
 void xml_whole_token (agent* thisAgent, token *t, wme_trace_type wtt) {
   if (t==thisAgent->dummy_top_token) return;
