@@ -76,7 +76,8 @@ char * soar_callback_names[] = {    /* Must match order of       */
   "firing",
   "retraction",
   "system-parameter-changed",
-  "total-memory-usage-exceeded", 
+  "total-memory-usage-exceeded",
+  "xml-generated",
   "print",
   "log",  
 //  "read",				/* kjh CUSP B10 */
