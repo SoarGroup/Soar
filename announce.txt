@@ -39,7 +39,7 @@ Installation Requirements
   requires a rebuild of the ClientSMLPython project.
 
 
-Components of Soar 8.6.2
+Components of Soar 8.6.3
 ========================
 * pre-built libraries and executables for Windows (SoarLibrary/bin)
 * all source code, config files, and OS tools for automated Soar builds
