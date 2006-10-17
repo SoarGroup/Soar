@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import time
 import socket
 import threading
 import sys
@@ -9,6 +10,9 @@ import tempfile
 import os
 import shutil
 import urllib
+import urllib2
+import subprocess
+import re
 
 def print_callback(id, userData, agent, message):
 	print message
@@ -30,20 +34,139 @@ class TournamentThread(threading.Thread):
 		TournamentThread.event.clear()
 		print 'tournament started:', self.message
 		while True:
-			# Get tanks
-			match_filename, headers = urllib.urlretrieve('http://tsladder:cdQdpjG@localhost:54424/TankSoarLadder/tournaments/%s/get_match' % self.message[1])
-			match_file = open(match_filename, 'r')
-			match_id = None
-			match_tanks = []
-			for line in match_file:
-				if match_id == None:
-					match_id = int(line)
-				else:
-					match_tanks.append(line.strip())
-
+			# Get new match information
+			match_file = urllib.urlopen('http://tsladder:cdQdpjG@localhost:54424/TankSoarLadder/tournaments/get_match?tournament_name=%s' % self.message[1])
+			match_info = eval(match_file.read())
+			if type(match_info) == 'str':
+				print "match info is string:", match_info
+				print 'tournament stopped'
+				TournamentThread.running = False
+				match_file.close()
+				return
 			match_file.close()
 
+			topdir = None
+			oldcwd = None
+			results = {}
+
+			# do the following process in a try clause so it is cleaned up properly
+			try:
+				source_files = []
+				try:
+					# create a temporary folder
+					topdir = tempfile.mkdtemp()
+	
+					# change in to that temporary folder
+					oldcwd = os.getcwd()
+					os.chdir(topdir)
 			
+					# extract each tank
+					for tank_name, primary_file, tank_zip_data in match_info['match_tanks']:
+						# save the file
+						tank_zip_file = open("%s.zip" % tank_name, 'w')
+						tank_zip_file.write(tank_zip_data)
+						tank_zip_file.close()
+	
+						# unzip the file
+						os.system("/usr/bin/unzip %s.zip -d %s" % (tank_name, tank_name))
+	
+						# make everything readable
+						os.system("/bin/chmod -R u+w %s" % topdir)
+	
+						# Make sure the file exists
+						tank_source_file_name = os.path.join(tank_name, primary_file)
+						if not os.path.exists(tank_source_file_name):
+							raise ValueError("Failed to find primary file")
+				
+						# verify no bad commands
+						grepresult = os.system("/bin/grep -Rq cmd %s*" % tank_name)
+						if grepresult == 0:
+							raise ValueError("Found illegal commands")
+
+						# append the source file
+						source_files.append((tank_name, os.path.join(topdir, tank_source_file_name)))
+		
+				except ValueError, v:
+					print v
+					print 'tournament stopped'
+					TournamentThread.running = False
+					return
+
+				# back to the original (tanksoar) dir
+				os.chdir(oldcwd)
+
+				# save the match settings
+				match_settings_file = open("match-settings.xml", 'w')
+				match_settings = match_info['settings']
+
+				for x in range(len(source_files)):
+					match_settings = match_settings.replace('name%d' % x, source_files[x][0])
+					match_settings = match_settings.replace('productions%d' % x, source_files[x][1])
+				
+				match_settings_file.write(match_settings)
+				match_settings_file.close()
+				
+				print "starting match %d" % match_info['match_id']
+
+				# start tanksoar with the match settings
+				devnull = open("/dev/null", 'w')
+				start_time = time.time()
+				p = subprocess.Popen("java -ea -jar JavaTankSoar.jar -settings match-settings.xml -quiet -log match.txt", shell = True, stdout = devnull, stderr = devnull)
+				p.wait()
+				elapsed = time.time() - start_time
+				devnull.close()
+				print "match %d ended" % match_info['match_id']
+
+				# parse results
+				match_log = open("match.txt", 'r')
+
+				results['match_id'] = match_info['match_id']
+				results['elapsed_time'] = elapsed
+				results['tanknames'] = ""
+				results['tankscores'] = ""
+				results['tankstatuses'] = ""
+				results['interrupted_tanks'] = ""
+				for line in match_log.readlines():
+					match = re.match(r".+ INFO (.+): (-?\d+) \((\w+)\)", line)
+					if match == None:
+						match = re.match(r".+ WARNING (.+): agent interrupted", line)
+						if match == None:
+							continue
+						results['interrupted_tanks'] = results['interrupted_tanks'] + match.group(1) + " "
+						print "%s was interrupted" % match.group(1)
+						continue
+
+					tankname, score, status = match.groups()
+					print "%s: %s points (%s)" % (tankname, score, status)
+					results['tanknames'] = results['tanknames'] + tankname + " "
+					results['tankscores'] = results['tankscores'] + score + " "
+					results['tankstatuses'] = results['tankstatuses'] + status + " "
+
+				results['tanknames'] = results['tanknames'].strip()
+				results['tankscores'] = results['tankscores'].strip()
+				results['tankstatuses'] = results['tankstatuses'].strip()
+				results['interrupted_tanks'] = results['interrupted_tanks'].strip()
+				
+				match_log.close()
+				
+				os.system("bzip2 --best -f match.txt")
+
+				match_log_zipped = open("match.txt.bz2", 'r')
+				results['log'] = match_log_zipped.read()
+				match_log_zipped.close()
+
+				results['tournament_name'] = self.message[1]
+
+			finally:
+				# make sure we change back to original directory
+				os.chdir(oldcwd)
+					
+				# remove the temporary files
+				shutil.rmtree(topdir)
+
+			urllib.urlopen('http://tsladder:cdQdpjG@localhost:54424/TankSoarLadder/tournaments/update_results', urllib.urlencode(results))
+			
+			print 'results sent'
 
 			if TournamentThread.event.isSet():
 				if TournamentThread.stop:
@@ -88,89 +211,6 @@ class ListenerThread(threading.Thread):
 			TournamentThread.event.set()
 			self.channel.sendall(cPickle.dumps(self.responses['success']))
 
-	def ts_rete(self, message):
-		print 'rete message received'
-
-		tankdir = tempfile.mkdtemp()
-
-		#save the zip file
-		tankzip, tankzipfilename = tempfile.mkstemp(suffix=".zip", dir=tankdir)
-		os.write(tankzip, message[1])
-		os.close(tankzip)
-
-		#unzip the file
-		os.system("/usr/bin/unzip %s -d %s " % (tankzipfilename, tankdir))
-		os.system("/bin/chmod -R u+w %s" % tankdir)
-		grepresult = os.system("/bin/grep -Rq cmd %s*" % tankdir)
-	
-		# Make sure the file exists
-		tanksourcefilename = os.path.join(tankdir, message[2])
-		if not os.path.exists(tanksourcefilename):
-			shutil.rmtree(tankdir)
-			self.channel.sendall(cPickle.dumps(self.responses['no_primary_file']))
-			return
-			
-		# Make sure there are no illegal commands
-		if grepresult == 0:
-			shutil.rmtree(tankdir)
-			self.channel.sendall(cPickle.dumps(self.responses['illegal_commands']))
-			return
-			
-		sml = Python_sml_ClientInterface
-
-		kernel = sml.Kernel.CreateKernelInNewThread()
-
-		if kernel == None:
-			print 'kernel creation failed'
-			shutil.rmtree(tankdir)
-			self.channel.sendall(cPickle.dumps(self.responses['sml_error']))
-			return
-			
-		print 'kernel created'
-
-		agent = kernel.CreateAgent('ggp')
-		if agent == None:
-			print "agent creation failed: %s" % kernel.GetLastErrorDescription()
-			kernel.Shutdown()
-			del kernel
-			shutil.rmtree(tankdir)
-			self.channel.sendall(cPickle.dumps(self.responses['sml_error']))
-			return
-
-		print 'agent created'
-	
-		agent.RegisterForPrintEvent(sml.smlEVENT_PRINT, print_callback, None)
-
-		agent.ExecuteCommandLine("pushd %s" % tankdir)
-		agent.ExecuteCommandLine("source %s" % tanksourcefilename)
-		source_result = agent.GetLastCommandLineResult()
-		agent.ExecuteCommandLine("popd")
-		if not source_result:
-			print 'source failed:', tanksourcefilename
-			kernel.DestroyAgent(agent)
-			kernel.Shutdown()
-			del kernel
-			shutil.rmtree(tankdir)
-			self.channel.sendall(cPickle.dumps(self.responses['sml_error']))
-			return
-
-		retenetfile, retenetfilename = tempfile.mkstemp()
-		os.close(retenetfile)
-		agent.ExecuteCommandLine("rete-net -s %s" % retenetfilename)
-		if not agent.GetLastCommandLineResult():
-			print 'rete-net save failed'
-			kernel.DestroyAgent(agent)
-			kernel.Shutdown()
-			del kernel
-			shutil.rmtree(tankdir)
-			self.channel.sendall(cPickle.dumps(self.responses['rete_net_save_failed']))
-			return
-		
-		retenetfile = open(retenetfilename, 'rb')
-		response = ('success', retenetfile.read())
-		retenetfile.close()
-		shutil.rmtree(tankdir)
-		self.channel.sendall(cPickle.dumps(response))
 
 	def run(self):
 		print 'Received connection:', self.details[0]
@@ -197,6 +237,7 @@ class ListenerThread(threading.Thread):
 		print 'Closed connection:', self.details[0]
 
 if __name__ == '__main__':
+
 	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	server.bind(('', 54423))
 	server.listen(5)
