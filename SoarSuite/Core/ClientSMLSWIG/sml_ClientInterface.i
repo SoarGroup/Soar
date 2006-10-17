@@ -126,13 +126,11 @@
 
 %{
 // Check for memory leaks
-#ifdef _DEBUG
+#if defined(_DEBUG) && defined(_WIN32)
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>
-#endif
 
-#ifdef _WIN32
 bool __stdcall DllMain( void * hModule, 
                        unsigned long  ul_reason_for_call, 
                        void * lpReserved
