@@ -29,10 +29,6 @@ def send(message):
 	client.close()
 	return response
 
-def create_rete(soar_rules_zip, primary_file):
-	response = send(('rete', soar_rules_zip, primary_file))
-	return response
-
 def stop_tournament(tournament_name):
 	response = send(('stop', tournament_name))
 	return response
@@ -40,6 +36,14 @@ def stop_tournament(tournament_name):
 def start_tournament(tournament_name, max_duration):
 	response = send(('start', tournament_name, max_duration))
 	return response
+
+import bz2
+import urllib
+def decompress(url):
+	match_file = urllib.urlopen('http://tsladder:cdQdpjG@localhost:54424/%s' % url)
+	content = match_file.read()
+	match_file.close()
+	return bz2.decompress(content)
 
 if __name__ == '__main__':
 	print 'sending start'
