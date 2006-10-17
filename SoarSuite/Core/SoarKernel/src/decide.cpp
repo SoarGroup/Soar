@@ -2285,12 +2285,13 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
 	  p = goal->id.preferences_from_goal;
 	  while (p->all_of_goal_next) p = p->all_of_goal_next;
 	  while (p) {
+		  preference* p_next = p->all_of_goal_prev; // RPM 10/06 we need to save this because p may be freed by the end of the loop
 		  remove_from_dll (goal->id.preferences_from_goal, p,
                      all_of_goal_next, all_of_goal_prev);
 		  p->on_goal_list = FALSE;
 		  if (! remove_preference_from_clones (thisAgent, p))
 			  if (p->in_tm) remove_preference_from_tm (thisAgent, p);
-		  p = p->all_of_goal_prev;
+		  p = p_next;
 	  }
   }
 #endif
