@@ -764,6 +764,9 @@
 						ObjectFile="$(IntDir)/$(InputName)1.obj"/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\src\xml.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header files"
@@ -878,6 +881,9 @@
 			</File>
 			<File
 				RelativePath=".\include\wmem.h">
+			</File>
+			<File
+				RelativePath=".\include\xml.h">
 			</File>
 			<File
 				RelativePath=".\include\xmlTraceNames.h">
