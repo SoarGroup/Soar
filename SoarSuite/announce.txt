@@ -63,6 +63,8 @@ New in 8.6.3
   -- Added max-memory-usage command (not yet functional)
   -- Watching wmes (level 4 and higher) now reports GDS changes
   -- Added "after halted" event
+  -- Improved output of the "preferences" command for Soar8.  New arg
+     "--objects" added.  Invoke "help preferences" for usage.
   -- added TestSMLPerformance project
   -- Added ^status error support to TankSoar
   -- TankSoar can now be configured to stop after a specified number of
@@ -73,6 +75,11 @@ New in 8.6.3
 * Bug fixes
   -- Lots of TankSoar and Eaters bugfixes
   -- Fixed command-to-file command
+  -- Fixed alias command for adding flags to aliases; previously the
+     flags were sometimes interpreted as flags for the alias command
+     itself rather than the command for which an alias was being 
+     created.  "alias" no longer takes any flags.  use "unalias" to
+     remove defined aliases.
   -- An empty string can now be returned by a client message handler
   -- Fixed handling of comments by sp
   -- Fixed lots of memory leaks (including some very old ones in the
