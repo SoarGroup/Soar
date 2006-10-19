@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+import sys
+
+def Combine(children):
+	result = ElementGGP()
+	result._ElementGGP__children = children
+	return result
+
 class ElementGGPIterator:
 	__children = None
 	__index = None
@@ -139,6 +146,64 @@ class ElementGGP:
 
 	def __iter__(self):
 		return ElementGGPIterator(self.__children)
+
+	def __eq__(self, other):
+		if not isinstance(other, ElementGGP):
+			return False
+
+		if len(self.__children) != len(other.__children):
+			return False
+
+		for i in range(len(self.__children)):
+			if self.__children[i] != other.__children[i]:
+				return False
+
+		return True
+
+	def __ne__(self, other):
+		return not (self == other)
+
+	def __hash__(self):
+		if isinstance(self, str):
+			return self.__hash__()
+		else:
+			h = 0
+			for c in self.__children:
+				h ^= c.__hash__()
+			return h
+	
+	# not commutative
+	def __add__(a, b):
+		result = a.deep_copy()
+		result.__children.append(b)
+		return result
+
+	def __iadd__(self, other):
+		self.__children.append(other)
+
+	def __contains__(self, other):
+		return other in self.__children
+
+	def get_vars(self):
+		vars = set()
+		for c in self.__children:
+			if isinstance(c, str):
+				if c[0] == '?':
+					vars.add(c)
+			else:
+				# recurse
+				vars = vars.union(c.get_vars())
+		return vars
+
+	def deep_copy(self):
+		copy = ElementGGP()
+		for c in self.__children:
+			if isinstance(c, str):
+				copy.__children.append(c)
+			else:
+				copy.__children.append(c.deep_copy())
+		return copy
+
 
 if __name__ == '__main__':
 	tests = [None, '()', 

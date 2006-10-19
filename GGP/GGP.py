@@ -249,7 +249,8 @@ if __name__ == '__main__':
 
 	agent.RegisterForPrintEvent(sml.smlEVENT_PRINT, print_callback, None)
 	
-	print agent.ExecuteCommandLine("source blocksworld_sel.soar")
+	#print agent.ExecuteCommandLine("source blocksworld_sel.soar")
+	print agent.ExecuteCommandLine("source gen_rules.soar")
 	if not agent.GetLastCommandLineResult():
 		print "Production load failed"
 		shutdown()

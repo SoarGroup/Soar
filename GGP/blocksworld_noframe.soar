@@ -161,8 +161,7 @@ sp {propose*remove-table
               ^gs <gs>
               ^io.input-link.last-moves.ROBOT <move>)
    (<gs> ^table <table-relation>)
-   (<table-relation> ^p1 <x>
-                  ^p2 <y>)
+   (<table-relation> ^p1 <x>)
   -{(<move> ^S <stack-move>)
     (<stack-move> ^p1 { <u> <> <x> }
                   ^p2 <v>)}
