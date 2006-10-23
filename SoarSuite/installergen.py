@@ -2,7 +2,11 @@
 #
 # Author: Jonathan Voigt, University of Michigan
 # Date: September 2006
-
+#
+#"\t-a, --all: Do everything."
+#"\t-b, --build: Build everything."
+#"\t-s, --source: Check out source, generate -core and -source dirs."
+#"\t-n, --nsi: Generate NSI script and run NSIS."
 
 ###
 # Variables
