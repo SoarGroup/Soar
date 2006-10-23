@@ -32,13 +32,17 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	private ArrayList m_RemoveSimulationListeners = new ArrayList();
 	private boolean m_RunTilOutput = false;
 
-	protected Simulation(boolean noRandom, boolean runTilOutput) {
+	protected Simulation(boolean noRandom, boolean runTilOutput, boolean remote) {
 		m_RunTilOutput = runTilOutput;
 		
 		// Initialize Soar
-		// Create kernel
-		m_Kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", 12121);
-		//m_Kernel = Kernel.CreateKernelInCurrentThread("SoarKernelSML", true);
+		if (!remote) {
+			// Create kernel
+			m_Kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", 12121);
+			//m_Kernel = Kernel.CreateKernelInCurrentThread("SoarKernelSML", true);
+		} else {
+			m_Kernel = Kernel.CreateRemoteConnection(true);
+		}
 
 		if (m_Kernel.HadError()) {
 			fireErrorMessageSevere("Error creating kernel: " + m_Kernel.GetLastErrorDescription());
