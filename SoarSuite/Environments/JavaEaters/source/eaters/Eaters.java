@@ -21,6 +21,7 @@ public class Eaters {
 	private String logFilename;
 	//private boolean appendSwitch;
 	private boolean notRandomSwitch;
+	private boolean remoteSwitch;
 	
 	public Eaters(String[] args) {
 		
@@ -62,7 +63,7 @@ public class Eaters {
 		
 		// Initialize the simulation
 		if (logger.isLoggable(Level.FINE)) logger.fine("Initializing simulation.");
-		EatersSimulation simulation = new EatersSimulation(settingsFilename, quietSwitch, notRandomSwitch);
+		EatersSimulation simulation = new EatersSimulation(settingsFilename, quietSwitch, notRandomSwitch, remoteSwitch);
 		
 		// Initialize the window manager, if applicable.
 		if(!quietSwitch) {
@@ -133,6 +134,7 @@ public class Eaters {
 		logFilename = getOptionValue(args, "-log");
 		//appendSwitch = hasOption(args, "-append");
 		notRandomSwitch = hasOption(args, "-notrandom");
+		remoteSwitch = hasOption(args, "-remote");
 	
 		if (settingsFilename == null) {
 			settingsFilename = kDefaultXMLSettingsFile;
@@ -148,6 +150,7 @@ public class Eaters {
 		System.out.println("\t-quiet: Disables all windows, runs simulation quietly.");
 		System.out.println("\t-settings: XML file with with run settings.");
 		System.out.println("\t-notrandom: Disable randomness by seeding the generator with 0.");
+		System.out.println("\t-remote: Connect to remote kernel.");
 	}
 	
 	// Returns true if a given option appears in the list
