@@ -38,8 +38,8 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	private MoveInfo m_HumanInput;
 	private int m_WinningScore = 50;
 
-	public TankSoarSimulation(String settingsFile, boolean quiet, boolean noRandom) {		
-		super(noRandom, true);
+	public TankSoarSimulation(String settingsFile, boolean quiet, boolean noRandom, boolean remote) {		
+		super(noRandom, true, remote);
 		
 		String [] initialNames = new String[0];
 		String [] initialProductions = new String[0];
