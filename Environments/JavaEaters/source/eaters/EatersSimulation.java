@@ -30,8 +30,8 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 
 	private EatersWorld m_EatersWorld;
 
-	public EatersSimulation(String settingsFile, boolean quiet, boolean notRandom) {	
-		super(notRandom, false);
+	public EatersSimulation(String settingsFile, boolean quiet, boolean notRandom, boolean remote) {	
+		super(notRandom, false, remote);
 		
 		// Log the settings file
 		if (logger.isLoggable(Level.FINE)) logger.fine("Settings file: " + settingsFile);
