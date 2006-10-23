@@ -20,7 +20,10 @@
 		PyObject* userdata;
 		int callbackid;
 		~PythonUserData () {
+			PyGILState_STATE gstate;
+			gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
 			Py_DECREF(userdata);
+			PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 		}
 	};
 	
