@@ -32,7 +32,7 @@ UninstallIcon "Resources/Icons/un-soar.ico"
 !define MUI_FINISHPAGE_LINK "Visit the Soar home page for news and updates!"
 !define MUI_FINISHPAGE_LINK_LOCATION "http://sitemaker.umich.edu/soar"
 !define MUI_FINISHPAGE_SHOWREADME_TEXT "View Release Notes"
-!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR/Announce.txt"
+!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR/Documentation/Announce.txt"
 
 !insertmacro MUI_PAGE_FINISH
 
