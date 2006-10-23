@@ -17,6 +17,7 @@ public class TankSoar {
 	private boolean notRandomSwitch;
 	private boolean noLogSwitch;
 	private Level logLevel = Level.INFO;
+	private boolean remoteSwitch;
 	
 	private static Logger logger = Logger.getLogger("simulation");
 
@@ -62,7 +63,7 @@ public class TankSoar {
 		
 		// Initialize the simulation
 		if (logger.isLoggable(Level.FINER)) logger.finer("Initializing simulation.");
-		TankSoarSimulation simulation = new TankSoarSimulation(settingsFilename, quietSwitch, notRandomSwitch);
+		TankSoarSimulation simulation = new TankSoarSimulation(settingsFilename, quietSwitch, notRandomSwitch, remoteSwitch);
 		
 		// Initialize the window manager, if applicable.
 		if(!quietSwitch) {
@@ -134,6 +135,8 @@ public class TankSoar {
 		logFilename = getOptionValue(args, "-log", kDefaultLogFilename);
 		notRandomSwitch = hasOption(args, "-notrandom");
 		noLogSwitch = hasOption(args, "-nolog");
+		remoteSwitch = hasOption(args, "-remote");
+		
 		if (hasOption(args, "-fine")) {
 			logLevel = Level.FINE;
 		} 
@@ -156,6 +159,7 @@ public class TankSoar {
 		System.out.println("\t-fine: Log verbosely");
 		System.out.println("\t-finer: Log very verbosely");
 		System.out.println("\t-finest: Log extremely verbosely (use at own risk!)");
+		System.out.println("\t-remote: Connect to remote kernel.");
 	}
 	
 	// Returns true if a given option appears in the list
