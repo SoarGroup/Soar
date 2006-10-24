@@ -8,6 +8,19 @@
 #"\t-s, --source: Check out source, generate -core and -source dirs."
 #"\t-n, --nsi: Generate NSI script and run NSIS."
 
+import logging
+import getopt
+import sys
+import os
+import os.path
+import fnmatch
+import stat
+import shutil
+import time
+import distutils.file_util
+import distutils.dir_util
+import re
+
 ###
 # Variables
 # These should be in a separate configuration file in the future.
@@ -25,15 +38,18 @@ c['remove'] = ['Makefile.in', '*.nsi.in', 'INSTALL', 'README', '.project',
                '*.am', '*.ac', '*.m4', 'ManualSource', 'Old', '*.tex', 'Scripts',
                'installergen.py']
 
+# Specific directories to remove from source tree
+c['removedirs'] = [os.path.join('Tools', 'VisualSoar', 'Source', 'parser'), ]
+
 # Globs to copy from working copy to Core component
 # WORKING --copy-to-> CORE
-c['copycoreglobs'] = ['*.pdf', '*.dll', '*.exe', '*.jar',]
+c['copycoreglobs'] = ['*.pdf', '*.dll', '*.exe', '*.jar', 'Python_sml_ClientInterface.py', '*.pyd',]
 
 # Globs to copy from working copy to Source component
 # WORKING --copy-to-> SOURCE
 c['copysourceglobs'] = ['ClientSML.lib', 'ElementXML.lib', 'ConnectionSML.lib', 
                         'Tcl_sml_ClientInterface', 'Tcl_sml_ClientInterface_wrap.cxx', 
-                        'Java_sml_ClientInterface_wrap.cxx', 'CSharp_sml_ClientInterface_wrap.cxx',]
+                        'Java_sml_ClientInterface_wrap.cxx', 'CSharp_sml_ClientInterface_wrap.cxx', 'Python_sml_ClientInterface_wrap.cxx']
 
 # Globs to MOVE from Source component to Core component
 # SOURCE --move-to-> CORE
@@ -50,19 +66,6 @@ c['nsioutput'] = "Soar-Suite-8.6.3.nsi"
 # Location of NSIS executable (makensis.exe)
 c['makensis'] = "\"\Program Files (x86)\NSIS\makensis.exe\""
 ###
-
-import logging
-import getopt
-import sys
-import os
-import os.path
-import fnmatch
-import stat
-import shutil
-import time
-import distutils.file_util
-import distutils.dir_util
-import re
 
 class Generator:
     "This thing builds Soar installers."
@@ -115,7 +118,10 @@ class Generator:
                 for x in matched:
                     logging.debug('Removing %s' % os.path.join(root, x))
                     os.remove(os.path.join(root, x))
-            
+
+	for dir_to_remove in c['removedirs']:
+	    shutil.rmtree(os.path.join(self.config['source'], dir_to_remove))
+
         if os.path.exists(self.config['core']):
             logging.debug('Removing old core tree: %s' % self.config['core'])
             shutil.rmtree(self.config['core'])
