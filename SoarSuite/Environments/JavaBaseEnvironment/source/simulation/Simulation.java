@@ -9,7 +9,8 @@ import sml.*;
 public abstract class Simulation implements Runnable, Kernel.UpdateEventInterface, Kernel.SystemEventInterface {
 	public static final String kAgentFolder = "agents";
 	public static final String kMapFolder = "maps";
-	public static final int kDebuggerTimeoutSeconds = 15;	
+	public static final int kClientTimeoutSeconds = 15;	
+	public static final String kDebuggerName = "java-debugger";
 	
 	private static Logger logger = Logger.getLogger("simulation");
 	public static Random random = null;
@@ -195,14 +196,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		return m_Debuggers;
 	}
 	
-	public void spawnDebugger(String agentName) {
-		if (!m_Debuggers) {
-			return;
-		}
-		if (isDebuggerConnected()) {
-			return;
-		}
-		
+	public String getDebuggerCommand(String agentName) {
 		// Figure out whether to use java or javaw
 		String os = System.getProperty("os.name");
 		String commandLine;
@@ -214,33 +208,37 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 			+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -remote -agent " + agentName;
 		}
 		
+		return commandLine;
+	}
+	
+	public void spawnClient(String name, String command) {
 		Runtime r = java.lang.Runtime.getRuntime();
-		if (logger.isLoggable(Level.FINER)) logger.finer("Spawning debugger: " + commandLine);
+		if (logger.isLoggable(Level.FINER)) logger.finer("Spawning client: " + command);
 
 		try {
 			// TODO: manage the returned process a bit better.
-			Process p = r.exec(commandLine);
+			r.exec(command);
 			
-			if (!waitForDebugger(p)) {
-				fireErrorMessageWarning("Debugger spawn failed for agent: " + agentName);
+			if (!waitForClient(name)) {
+				fireErrorMessageWarning("Client spawn failed: " + name);
 				return;
 			}
 			
 		} catch (IOException e) {
-			fireErrorMessageSevere("IOException spawning debugger: " + e.getMessage());
+			fireErrorMessageSevere("IOException spawning client: " + name + ": " + e.getMessage());
 			shutdown();
 			System.exit(1);
 		}
 	}
 	
-	private boolean waitForDebugger(Process p) {
+	public boolean waitForClient(String name) {
 		boolean ready = false;
-		for (int tries = 0; tries < kDebuggerTimeoutSeconds; ++tries) {
+		for (int tries = 0; tries < kClientTimeoutSeconds; ++tries) {
 			m_Kernel.GetAllConnectionInfo();
 			if (m_Kernel.HasConnectionInfoChanged()) {
 				for (int i = 0; i < m_Kernel.GetNumberConnections(); ++i) {
 					ConnectionInfo info =  m_Kernel.GetConnectionInfo(i);
-					if (info.GetName().equalsIgnoreCase("java-debugger")) {
+					if (info.GetName().equalsIgnoreCase(name)) {
 						if (info.GetAgentStatus().equalsIgnoreCase(sml_Names.getKStatusReady())) {
 							ready = true;
 							break;
@@ -252,19 +250,19 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 				}
 			}
 			try { 
-				if (logger.isLoggable(Level.FINEST)) logger.finest("Waiting for debugger.");
+				if (logger.isLoggable(Level.FINEST)) logger.finest("Waiting for client: "+ name);
 				Thread.sleep(1000); 
 			} catch (InterruptedException ignored) {}
 		}
 		return ready;
 	}
 	
-	public boolean isDebuggerConnected() {
+	public boolean isClientConnected(String name) {
 		boolean connected = false;
 		m_Kernel.GetAllConnectionInfo();
 		for (int i = 0; i < m_Kernel.GetNumberConnections(); ++i) {
 			ConnectionInfo info =  m_Kernel.GetConnectionInfo(i);
-			if (info.GetName().equalsIgnoreCase("java-debugger")) {
+			if (info.GetName().equalsIgnoreCase(name)) {
 				connected = true;
 				break;
 			}

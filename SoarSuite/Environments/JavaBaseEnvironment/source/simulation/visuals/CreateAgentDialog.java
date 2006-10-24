@@ -155,7 +155,7 @@ public class CreateAgentDialog extends Dialog {
 			}
 		});		
 		m_SpawnDebuggerButton.setSelection(m_Simulation.getSpawnDebuggers());
-		m_SpawnDebuggerButton.setEnabled(!m_Simulation.isDebuggerConnected());
+		m_SpawnDebuggerButton.setEnabled(!m_Simulation.isClientConnected(Simulation.kDebuggerName));
 
 		Composite okCancel = new Composite(dialog, SWT.NONE);
 		{
