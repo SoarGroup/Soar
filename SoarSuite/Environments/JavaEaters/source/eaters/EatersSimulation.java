@@ -4,6 +4,7 @@ import java.util.logging.*;
 
 import simulation.*;
 import sml.*;
+import java.util.ArrayList;
 
 public class EatersSimulation extends Simulation implements SimulationManager {
 	private static Logger logger = Logger.getLogger("simulation");
@@ -16,9 +17,11 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 	private static final String kParamDefaultMap = "default-map";
 	private static final String kParamRuns = "runs";
 	private static final String kParamMaxUpdates = "max-updates";
+	private static final String kTagClient = "client";
 	private static final String kTagAgents = "agents";
 	private static final String kTagAgent = "agent";
 	private static final String kParamName = "name";
+	private static final String kParamCommand = "command";
 	private static final String kParamProductions = "productions";
 	private static final String kParamProductionsAbsolute = "productions-absolute";
 	private static final String kParamColor = "color";
@@ -30,6 +33,12 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 
 	private EatersWorld m_EatersWorld;
 
+	private class Client {
+		public String name;
+		public String command;
+	}
+	private ArrayList clients = new ArrayList();
+	
 	public EatersSimulation(String settingsFile, boolean quiet, boolean notRandom, boolean remote) {	
 		super(notRandom, false, remote);
 		
@@ -91,6 +100,36 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 							setMaxUpdates(Integer.parseInt(value));
 						}
 					}
+					
+				} else if (mainTag.IsTag(kTagClient)) {
+					Client c = new Client();
+					
+					for (int attrIndex = 0; attrIndex < mainTag.GetNumberAttributes(); ++attrIndex) {
+						String attribute = mainTag.GetAttributeName(attrIndex);
+						if (attribute == null) {
+							assert false;
+							continue;
+						}
+						
+						String value = mainTag.GetAttributeValue(attrIndex);
+						if (value == null) {
+							assert false;
+							continue;
+						}
+						
+						if (attribute.equalsIgnoreCase(kParamName)) {
+							c.name = value;
+						} else if (attribute.equalsIgnoreCase(kParamCommand)) {
+							c.command = value;
+						}
+					}
+					
+					if (c.name == null) {
+						fireErrorMessageSevere("Client tag missing name attribute");
+						shutdown();
+						System.exit(1);
+					}
+					clients.add(c);
 					
 				} else if (mainTag.IsTag(kTagAgents)) {
 					
@@ -196,6 +235,19 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 			createEntity(initialNames[i], initialProductions[i], initialColors[i], initialLocations[i], null, -1, -1, -1);
 		}
 		
+		// Start or wait for clients
+		for (int i = 0; i < clients.size(); ++i) {
+			Client c = (Client)clients.get(i);
+			if (c.command != null) {
+				spawnClient(c.name, c.command);
+			} else {
+				if (!waitForClient(c.name)) {
+					fireErrorMessageWarning("Client spawn failed: " + c.name);
+					return;
+				}
+			}
+		}
+		
 		// if in quiet mode, run!
 		if (quiet) {
 	    	startSimulation(false);
@@ -242,7 +294,9 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 			return;
 		}
 		m_EatersWorld.createEater(agent, productions, color, location);
-		spawnDebugger(name);		
+		if (getSpawnDebuggers() && !isClientConnected(kDebuggerName)) {
+			spawnClient(kDebuggerName, getDebuggerCommand(name));
+		}
 		fireSimulationEvent(SimulationListener.kAgentCreatedEvent);   	
     }
         
