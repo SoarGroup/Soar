@@ -8,5 +8,5 @@ public interface SimulationManager {
     public void createEntity(String name, String productions, String color, java.awt.Point location, String facing, int energy, int health, int missiles);
     public void setSpawnDebuggers(boolean setting);
     public boolean getSpawnDebuggers();
-    public boolean isDebuggerConnected();
+    public boolean isClientConnected(String name);
 }
