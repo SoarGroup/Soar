@@ -1,9 +1,11 @@
 package tanksoar;
 
+import java.util.ArrayList;
 import java.util.logging.*;
 
 import simulation.*;
 import sml.*;
+import java.util.ArrayList;
 
 public class TankSoarSimulation extends Simulation implements SimulationManager {
 
@@ -19,9 +21,11 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	private static final String kParamRuns = "runs";
 	private static final String kParamMaxUpdates = "max-updates";
 	private static final String kParamWinningScore = "winning-score";
+	private static final String kTagClient = "client";
 	private static final String kTagAgents = "agents";
 	private static final String kTagAgent = "agent";
 	private static final String kParamName = "name";
+	private static final String kParamCommand = "name";
 	private static final String kParamProductions = "productions";
 	private static final String kParamProductionsAbsolute = "productions-absolute";
 	private static final String kParamColor = "color";
@@ -38,6 +42,12 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	private MoveInfo m_HumanInput;
 	private int m_WinningScore = 50;
 
+	private class Client {
+		public String name;
+		public String command;
+	}
+	private ArrayList clients = new ArrayList();
+	
 	public TankSoarSimulation(String settingsFile, boolean quiet, boolean noRandom, boolean remote) {		
 		super(noRandom, true, remote);
 		
@@ -104,6 +114,36 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 							setWinningScore(Integer.parseInt(value));
 						}
 					}
+					
+				} else if (mainTag.IsTag(kTagClient)) {
+					Client c = new Client();
+					
+					for (int attrIndex = 0; attrIndex < mainTag.GetNumberAttributes(); ++attrIndex) {
+						String attribute = mainTag.GetAttributeName(attrIndex);
+						if (attribute == null) {
+							assert false;
+							continue;
+						}
+						
+						String value = mainTag.GetAttributeValue(attrIndex);
+						if (value == null) {
+							assert false;
+							continue;
+						}
+						
+						if (attribute.equalsIgnoreCase(kParamName)) {
+							c.name = value;
+						} else if (attribute.equalsIgnoreCase(kParamCommand)) {
+							c.command = value;
+						}
+					}
+					
+					if (c.name == null) {
+						fireErrorMessageSevere("Client tag missing name attribute");
+						shutdown();
+						System.exit(1);
+					}
+					clients.add(c);
 					
 				} else if (mainTag.IsTag(kTagAgents)) {
 					
@@ -231,6 +271,19 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 					initialEnergy[i], initialHealth[i], initialMissiles[i]);
 		}
 		
+		// Start or wait for clients
+		for (int i = 0; i < clients.size(); ++i) {
+			Client c = (Client)clients.get(i);
+			if (c.command != null) {
+				spawnClient(c.name, c.command);
+			} else {
+				if (!waitForClient(c.name)) {
+					fireErrorMessageWarning("Client spawn failed: " + c.name);
+					return;
+				}
+			}
+		}
+		
 		// if in quiet mode, run!
 		if (quiet) {
 			if (m_World.getTanks() == null || m_World.getTanks().length == 0) {
@@ -320,7 +373,9 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 			if (logger.isLoggable(Level.FINER)) logger.finer("Created Soar agent.");
     	}
 		m_World.createTank(agent, productions, color, location, facing, energy, health, missiles);
-		spawnDebugger(name);		
+		if (getSpawnDebuggers() && !isClientConnected(kDebuggerName)) {
+			spawnClient(kDebuggerName, getDebuggerCommand(name));
+		}
 		fireSimulationEvent(SimulationListener.kAgentCreatedEvent);   	
     }
         
