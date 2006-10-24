@@ -16,6 +16,7 @@ public class Eaters {
 	public static final String kDefaultXMLSettingsFile = "eaters-default-settings.xml";
 	private final String kDefaultLogFilename = "EaterLog.txt";
 
+	private Level logLevel = Level.INFO;
 	private boolean quietSwitch;
 	private String settingsFilename;
 	private String logFilename;
@@ -58,7 +59,7 @@ public class Eaters {
 		
 		// TODO: set log level via command line
 		logger.setUseParentHandlers(false);
-		logger.setLevel(Level.INFO);
+		logger.setLevel(logLevel);
 		logger.info("Java Eaters started.");
 		
 		// Initialize the simulation
@@ -136,6 +137,16 @@ public class Eaters {
 		notRandomSwitch = hasOption(args, "-notrandom");
 		remoteSwitch = hasOption(args, "-remote");
 	
+		if (hasOption(args, "-fine")) {
+			logLevel = Level.FINE;
+		} 
+		if (hasOption(args, "-finer")) {
+			logLevel = Level.FINER;
+		} 
+		if (hasOption(args, "-finest")) {
+			logLevel = Level.FINEST;
+		} 
+
 		if (settingsFilename == null) {
 			settingsFilename = kDefaultXMLSettingsFile;
 		}
