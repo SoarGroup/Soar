@@ -1,6 +1,9 @@
 package simulation;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.logging.*;
 
@@ -211,13 +214,42 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		return commandLine;
 	}
 	
+	private class Redirector extends Thread {
+		BufferedReader br;
+		public Redirector(BufferedReader br) {
+			this.br = br;
+		}
+		
+		public void run() {
+			String line;
+			try {
+				while ((line = br.readLine()) != null) {
+					System.out.println(line);
+				}
+			} catch (IOException e) {
+				System.err.println(e.getMessage());
+			}
+		}
+	}
+	
 	public void spawnClient(String name, String command) {
 		Runtime r = java.lang.Runtime.getRuntime();
 		if (logger.isLoggable(Level.FINER)) logger.finer("Spawning client: " + command);
 
 		try {
-			// TODO: manage the returned process a bit better.
-			r.exec(command);
+			Process p = r.exec(command);
+			
+			InputStream is = p.getInputStream();
+			InputStreamReader isr = new InputStreamReader(is);
+			BufferedReader br = new BufferedReader(isr);
+			Redirector rd = new Redirector(br);
+			rd.start();
+
+			is = p.getErrorStream();
+			isr = new InputStreamReader(is);
+			br = new BufferedReader(isr);
+			rd = new Redirector(br);
+			rd.start();
 			
 			if (!waitForClient(name)) {
 				fireErrorMessageWarning("Client spawn failed: " + name);
