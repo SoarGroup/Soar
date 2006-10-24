@@ -162,6 +162,9 @@ public class Eaters {
 		System.out.println("\t-settings: XML file with with run settings.");
 		System.out.println("\t-notrandom: Disable randomness by seeding the generator with 0.");
 		System.out.println("\t-remote: Connect to remote kernel.");
+		System.out.println("\t-fine: Log verbosely");
+		System.out.println("\t-finer: Log very verbosely");
+		System.out.println("\t-finest: Log extremely verbosely (use at own risk!)");
 	}
 	
 	// Returns true if a given option appears in the list
