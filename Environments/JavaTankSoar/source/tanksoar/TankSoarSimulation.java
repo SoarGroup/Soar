@@ -265,12 +265,6 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		setWorldManager(m_World);
 		resetSimulation(false);
 		
-		// add initial tanks
-		for (int i = 0; i < initialNames.length; ++i) {
-			createEntity(initialNames[i], initialProductions[i], initialColors[i], initialLocations[i], initialFacing[i],
-					initialEnergy[i], initialHealth[i], initialMissiles[i]);
-		}
-		
 		// Start or wait for clients
 		for (int i = 0; i < clients.size(); ++i) {
 			Client c = (Client)clients.get(i);
@@ -282,6 +276,12 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 					return;
 				}
 			}
+		}
+		
+		// add initial tanks
+		for (int i = 0; i < initialNames.length; ++i) {
+			createEntity(initialNames[i], initialProductions[i], initialColors[i], initialLocations[i], initialFacing[i],
+					initialEnergy[i], initialHealth[i], initialMissiles[i]);
 		}
 		
 		// if in quiet mode, run!
