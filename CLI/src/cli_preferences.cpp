@@ -29,10 +29,12 @@ bool CommandLineInterface::ParsePreferences(gSKI::Agent* pAgent, std::vector<std
 		{'1', "names",		0},
 		{'2', "timetags",	0},
 		{'3', "wmes",		0},
+		{'o', "objects",    0},
 		{0, 0, 0}
 	};
 
 	ePreferencesDetail detail = PREFERENCES_ONLY;
+	bool object = FALSE;
 
 	for (;;) {
 		if (!ProcessOptions(argv, optionsData)) return false;
@@ -55,6 +57,11 @@ bool CommandLineInterface::ParsePreferences(gSKI::Agent* pAgent, std::vector<std
 			case 'w':
 				detail = PREFERENCES_WMES;
 				break;
+				
+			case 'o':
+			case 'O':
+				object = TRUE;
+				break;
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
@@ -66,24 +73,25 @@ bool CommandLineInterface::ParsePreferences(gSKI::Agent* pAgent, std::vector<std
 	int optind = m_Argument - m_NonOptionArguments;
 	if (m_NonOptionArguments == 2) {
 		// id & attribute
-		return DoPreferences(pAgent, detail, &argv[optind], &argv[optind + 1]);
+		return DoPreferences(pAgent, detail, object, &argv[optind], &argv[optind + 1]);
 	}
 	if (m_NonOptionArguments == 1) {
 		// id
-		return DoPreferences(pAgent, detail, &argv[optind]);
+		return DoPreferences(pAgent, detail, object, &argv[optind]);
 	}
 
-	return DoPreferences(pAgent, detail);
+	return DoPreferences(pAgent, detail, object);
 }
 
-bool CommandLineInterface::DoPreferences(gSKI::Agent* pAgent, const ePreferencesDetail detail, const std::string* pId, const std::string* pAttribute) {
+bool CommandLineInterface::DoPreferences(gSKI::Agent* pAgent, const ePreferencesDetail detail, bool object, const std::string* pId, const std::string* pAttribute) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll need it
 	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
+	//bool object = 1;
 	AddListenerAndDisableCallbacks(pAgent);
-	bool ret = pKernelHack->Preferences(pAgent, static_cast<int>(detail), pId ? pId->c_str() : 0, pAttribute ? pAttribute->c_str() : 0);
+	bool ret = pKernelHack->Preferences(pAgent, static_cast<int>(detail), object, pId ? pId->c_str() : 0, pAttribute ? pAttribute->c_str() : 0);
 	RemoveListenerAndEnableCallbacks(pAgent);
 
 	// put the result into a message(string) arg tag
