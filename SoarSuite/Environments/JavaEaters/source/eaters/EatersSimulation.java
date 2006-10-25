@@ -230,11 +230,6 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		setWorldManager(m_EatersWorld);
 		resetSimulation(false);
 		
-		// add initial eaters
-		for (int i = 0; i < initialNames.length; ++i) {
-			createEntity(initialNames[i], initialProductions[i], initialColors[i], initialLocations[i], null, -1, -1, -1);
-		}
-		
 		// Start or wait for clients
 		for (int i = 0; i < clients.size(); ++i) {
 			Client c = (Client)clients.get(i);
@@ -246,6 +241,11 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 					return;
 				}
 			}
+		}
+		
+		// add initial eaters
+		for (int i = 0; i < initialNames.length; ++i) {
+			createEntity(initialNames[i], initialProductions[i], initialColors[i], initialLocations[i], null, -1, -1, -1);
 		}
 		
 		// if in quiet mode, run!
