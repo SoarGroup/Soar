@@ -921,10 +921,19 @@ namespace gSKI
 			wme_trace_type wtt) 
 		{
 			print_string (agnt, "  ");
-			print_object_trace (agnt, pref->value);
-			print (agnt, " %c", preference_type_indicator (agnt, pref->type));
+			if (pref->attr == agnt->operator_symbol) {
+				print_object_trace (agnt, pref->value);
+			} else {					
+				print_with_symbols (agnt, "(%y ^%y %y) ", pref->id, pref->attr, pref->value);
+			} 	
+			if (! agnt->operand2_mode || (pref->attr == agnt->operator_symbol)) {
+				print (agnt, " %c", preference_type_indicator (agnt, pref->type));
+			}
 			if (preference_is_binary(pref->type)) print_object_trace (agnt, pref->referent);
 			if (pref->o_supported) print (agnt, " :O ");
+			//   print (agnt, " :I ");
+			//   print (agnt, " :input");
+			//   print (agnt. " :arch");
 			print (agnt, "\n");
 			if (print_source) {
 				print (agnt, "    From ");
@@ -1097,29 +1106,103 @@ namespace gSKI
 				"worse" 
 		};
 
-		int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool print_prod, wme_trace_type wtt)
+		int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool object, bool print_prod, wme_trace_type wtt)
 		{
 
 			Symbol *id, *attr;
 			slot *s;
 			preference *p;
+			wme *w;
 			int i;
 
 			if (!read_id_or_context_var_from_string(soarAgent, szId, &id)) {
 				print(soarAgent, "Could not find the id '%s'\n", szId);
 				return -1;
 			}
-			if (!read_attribute_from_string(soarAgent, id, szAttr, &attr)) {
-				print(soarAgent, "Could not find the id,attribute pair: %s ^%s\n", szId, szAttr);
-				return -2;
+
+			/// This is badbad style using the literal string, but it all has to
+			/// change soon, so I'll cheat for now.  If we have an ID that isn't a
+			/// state (goal), then don't use the default ^operator.  Instead, search
+			/// for wmes with that ID as a value.  See below
+			if (!id->id.isa_goal && !strcmp(szAttr, "operator")) {
+				attr = NIL;
+			} else {
+			if ( szAttr && !object) { // default ^attr is ^operator, unless specified --object on cmdline
+				if (!read_attribute_from_string(soarAgent, id, szAttr, &attr)) {	
+					print(soarAgent, "Could not find prefs for the id,attribute pair: %s ^%s.\n  Possibly an architectural wme.\n", szId, szAttr);
+					return -2;
+				}			
+				s = find_slot(id, attr);
+				if (!s && !object) {
+					print(soarAgent, "Could not find preferences for %s ^%s.", szId, szAttr);
+					return -3;
+				}
+			}
 			}
 
-			s = find_slot(id, attr);
-			if (!s) {
-				print(soarAgent, "There are no preferences for %s ^%s.", szId, szAttr);
-				return -3;
+			// We have one of three cases now, as of v8.6.3
+			//     1.  --object is specified:  return prefs for all wmes comprising object ID
+			//                    (--depth not yet implemented...)
+			//     2.  non-state ID is given:  return prefs for wmes whose <val> is ID
+			//     3.  default (no args):  return prefs of slot (id, attr)  <s> ^operator
+
+			if (object) {
+				// step thru dll of slots for ID, printing prefs for each one
+				for (s = id->id.slots; s != NIL; s = s->next ) {		
+					print_with_symbols(soarAgent, "Preferences for %y ^%y:\n", s->id, s->attr);				
+					for (i = 0; i < NUM_PREFERENCE_TYPES; i++) {
+						if (s->preferences[i]) {
+							if (!soarAgent->operand2_mode || s->isa_context_slot) print(soarAgent, "\n%ss:\n", preference_name[i]);
+							for (p = s->preferences[i]; p; p = p->next) {
+								print_preference_and_source(soarAgent, p, print_prod, wtt);
+							}
+						}
+					}
+				}
+				if (id->id.impasse_wmes)
+					print_with_symbols(soarAgent, "Arch-created wmes for %y :\n", id);				
+				for (w=id->id.impasse_wmes; w!=NIL; w=w->next)   {
+					print_wme(soarAgent, w);
+				}
+				if (id->id.input_wmes)
+					print_with_symbols(soarAgent, "Input-link wmes for %y :\n", id);				
+				for (w=id->id.input_wmes; w!=NIL; w=w->next) {
+					print_wme(soarAgent, w);
+				}
+			
+				return 0;
+			} else if (!id->id.isa_goal && !attr ) {  
+				// find wme(s?) whose value is <ID> and print prefs if they exist
+				// ??? should write print_prefs_for_id(soarAgent, id, print_prod, wtt);
+				// return;					
+				for (w=soarAgent->all_wmes_in_rete; w!=NIL; w=w->rete_next) {				
+					if (w->value == id )  {				
+						print (soarAgent, "Preferences for (%lu: ", w->timetag);					
+						print_with_symbols (soarAgent, "%y ^%y %y)\n", w->id, w->attr, w->value);
+						if (w->preference) {
+							s = find_slot(w->id, w->attr);
+							if (!s) {
+								print (soarAgent, "    This is an arch-wme and has no prefs.\n");
+							} else {		
+								for (i = 0; i < NUM_PREFERENCE_TYPES; i++) {
+									if (s->preferences[i]) {			
+										// print(soarAgent, "\n%ss:\n", preference_name[i]);			
+										for (p = s->preferences[i]; p; p = p->next) {			
+											if (p->value == id) print_preference_and_source(soarAgent, p, print_prod, wtt);				
+										}			
+									}		
+								}
+							}
+							//print it
+						} else {
+							print (soarAgent, "    This is an input-wme and has no prefs.\n");
+						}
+					}
+				}
+				return 0;			
 			}
 
+			//print prefs for specified slot
 			print_with_symbols(soarAgent, "Preferences for %y ^%y:\n", id, attr);
 
 			for (i = 0; i < NUM_PREFERENCE_TYPES; i++) {
@@ -1134,7 +1217,7 @@ namespace gSKI
 			return 0;
 		}
 
-		bool TgDWorkArounds::Preferences(Agent* thisAgent, int detail, const char* idString, const char* attrString)
+		bool TgDWorkArounds::Preferences(Agent* thisAgent, int detail, bool object, const char* idString, const char* attrString)
 		{
 			static const int PREFERENCES_BUFFER_SIZE = 128;
 
@@ -1153,10 +1236,10 @@ namespace gSKI
 			if (idString) {
 				strncpy(id, idString, PREFERENCES_BUFFER_SIZE);
 
-				// Notice: attrString ignored if no idString passed
+				// Notice: attrString arg ignored if no idString passed
 				if (attrString) {
 					strncpy(attr, attrString, PREFERENCES_BUFFER_SIZE);
-				}
+				} 
 			}
 
 			bool print_productions = false;
@@ -1183,7 +1266,7 @@ namespace gSKI
 					MegaAssert(false, "Illegal detail level");
 			}
 
-			if (soar_ecPrintPreferences(soarAgent, id, attr, print_productions, wtt)) {
+			if (soar_ecPrintPreferences(soarAgent, id, attr, object, print_productions, wtt)) {
 				print(soarAgent, "An Error occured trying to print the prefs.");
 				return false;
 			}

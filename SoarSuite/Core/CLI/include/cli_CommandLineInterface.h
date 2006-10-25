@@ -512,7 +512,7 @@ protected:
 	* @param pId An existing soar identifier or 0 (null)
 	* @param pAttribute An existing soar attribute of the specified identifier or 0 (null)
 	*************************************************************/
-	bool DoPreferences(gSKI::Agent* pAgent, const ePreferencesDetail detail, const std::string* pId = 0, const std::string* pAttribute = 0);
+	bool DoPreferences(gSKI::Agent* pAgent, const ePreferencesDetail detail, const bool object, const std::string* pId = 0, const std::string* pAttribute = 0);
 
 	/*************************************************************
 	* @brief print command

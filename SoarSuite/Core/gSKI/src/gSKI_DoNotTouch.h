@@ -74,7 +74,7 @@ namespace gSKI
                         bool          full_prod,
                         unsigned int  productionType);
                      
-         bool Preferences(Agent* thisAgent, int detail, const char* idString, const char* attrString);
+         bool Preferences(Agent* thisAgent, int detail, bool object, const char* idString, const char* attrString);
 
          bool ProductionFind(Agent*     thisAgent,
                              agent*      agnt,
