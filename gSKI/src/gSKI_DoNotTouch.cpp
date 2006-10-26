@@ -1149,7 +1149,10 @@ namespace gSKI
 			if (object) {
 				// step thru dll of slots for ID, printing prefs for each one
 				for (s = id->id.slots; s != NIL; s = s->next ) {		
-					print_with_symbols(soarAgent, "Preferences for %y ^%y:\n", s->id, s->attr);				
+					if (s->attr == soarAgent->operator_symbol)
+						print_with_symbols(soarAgent, "Preferences for %y ^%y:", s->id, s->attr);				
+					else 
+						print_with_symbols(soarAgent, "Support for %y ^%y:\n", s->id, s->attr);				
 					for (i = 0; i < NUM_PREFERENCE_TYPES; i++) {
 						if (s->preferences[i]) {
 							if (!soarAgent->operand2_mode || s->isa_context_slot) print(soarAgent, "\n%ss:\n", preference_name[i]);
@@ -1165,7 +1168,7 @@ namespace gSKI
 					print_wme(soarAgent, w);
 				}
 				if (id->id.input_wmes)
-					print_with_symbols(soarAgent, "Input-link wmes for %y :\n", id);				
+					print_with_symbols(soarAgent, "Input (IO) wmes for %y :\n", id);				
 				for (w=id->id.input_wmes; w!=NIL; w=w->next) {
 					print_wme(soarAgent, w);
 				}
@@ -1177,7 +1180,10 @@ namespace gSKI
 				// return;					
 				for (w=soarAgent->all_wmes_in_rete; w!=NIL; w=w->rete_next) {				
 					if (w->value == id )  {				
-						print (soarAgent, "Preferences for (%lu: ", w->timetag);					
+						if (w->value == soarAgent->operator_symbol)
+							print (soarAgent, "Preferences for (%lu: ", w->timetag);					
+						else 
+							print (soarAgent, "Support for (%lu: ", w->timetag);					
 						print_with_symbols (soarAgent, "%y ^%y %y)\n", w->id, w->attr, w->value);
 						if (w->preference) {
 							s = find_slot(w->id, w->attr);
@@ -1203,7 +1209,7 @@ namespace gSKI
 			}
 
 			//print prefs for specified slot
-			print_with_symbols(soarAgent, "Preferences for %y ^%y:\n", id, attr);
+			print_with_symbols(soarAgent, "\nPreferences for %y ^%y:\n", id, attr);
 
 			for (i = 0; i < NUM_PREFERENCE_TYPES; i++) {
 				if (s->preferences[i]) {
