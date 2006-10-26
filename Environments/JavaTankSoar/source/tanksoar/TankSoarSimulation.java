@@ -26,6 +26,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	private static final String kTagAgent = "agent";
 	private static final String kParamName = "name";
 	private static final String kParamCommand = "name";
+	private static final String kParamTimeout = "timeout";
 	private static final String kParamProductions = "productions";
 	private static final String kParamProductionsAbsolute = "productions-absolute";
 	private static final String kParamColor = "color";
@@ -42,12 +43,6 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	private MoveInfo m_HumanInput;
 	private int m_WinningScore = 50;
 
-	private class Client {
-		public String name;
-		public String command;
-	}
-	private ArrayList clients = new ArrayList();
-	
 	public TankSoarSimulation(String settingsFile, boolean quiet, boolean noRandom, boolean remote) {		
 		super(noRandom, true, remote);
 		
@@ -135,6 +130,8 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 							c.name = value;
 						} else if (attribute.equalsIgnoreCase(kParamCommand)) {
 							c.command = value;
+						} else if (attribute.equalsIgnoreCase(kParamTimeout)) {
+							c.timeout = Integer.parseInt(value);
 						}
 					}
 					
@@ -269,9 +266,9 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		for (int i = 0; i < clients.size(); ++i) {
 			Client c = (Client)clients.get(i);
 			if (c.command != null) {
-				spawnClient(c.name, c.command);
+				spawnClient(c.name, c.command, c.timeout);
 			} else {
-				if (!waitForClient(c.name)) {
+				if (!waitForClient(c.name, c.timeout)) {
 					fireErrorMessageWarning("Client spawn failed: " + c.name);
 					return;
 				}
@@ -374,7 +371,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
     	}
 		m_World.createTank(agent, productions, color, location, facing, energy, health, missiles);
 		if (getSpawnDebuggers() && !isClientConnected(kDebuggerName)) {
-			spawnClient(kDebuggerName, getDebuggerCommand(name));
+			spawnClient(kDebuggerName, getDebuggerCommand(name), Simulation.kDebuggerTimeout);
 		}
 		fireSimulationEvent(SimulationListener.kAgentCreatedEvent);   	
     }
