@@ -12,8 +12,8 @@ import sml.*;
 public abstract class Simulation implements Runnable, Kernel.UpdateEventInterface, Kernel.SystemEventInterface {
 	public static final String kAgentFolder = "agents";
 	public static final String kMapFolder = "maps";
-	public static final int kClientTimeoutSeconds = 15;	
 	public static final String kDebuggerName = "java-debugger";
+	public static final int kDebuggerTimeout = 15;
 	
 	private static Logger logger = Logger.getLogger("simulation");
 	public static Random random = null;
@@ -36,6 +36,13 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	private ArrayList m_RemoveSimulationListeners = new ArrayList();
 	private boolean m_RunTilOutput = false;
 
+	public class Client {
+		public String name;
+		public String command;
+		public int timeout = kDebuggerTimeout;
+	}
+	public ArrayList clients = new ArrayList();
+	
 	protected Simulation(boolean noRandom, boolean runTilOutput, boolean remote) {
 		m_RunTilOutput = runTilOutput;
 		
@@ -232,7 +239,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		}
 	}
 	
-	public void spawnClient(String name, String command) {
+	public void spawnClient(String name, String command, int timeoutSeconds) {
 		Runtime r = java.lang.Runtime.getRuntime();
 		if (logger.isLoggable(Level.FINER)) logger.finer("Spawning client: " + command);
 
@@ -251,7 +258,7 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 			rd = new Redirector(br);
 			rd.start();
 			
-			if (!waitForClient(name)) {
+			if (!waitForClient(name, timeoutSeconds)) {
 				fireErrorMessageWarning("Client spawn failed: " + name);
 				return;
 			}
@@ -263,9 +270,9 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		}
 	}
 	
-	public boolean waitForClient(String name) {
+	public boolean waitForClient(String name, int timeoutSeconds) {
 		boolean ready = false;
-		for (int tries = 0; tries < kClientTimeoutSeconds; ++tries) {
+		for (int tries = 0; tries < timeoutSeconds; ++tries) {
 			m_Kernel.GetAllConnectionInfo();
 			if (m_Kernel.HasConnectionInfoChanged()) {
 				for (int i = 0; i < m_Kernel.GetNumberConnections(); ++i) {
