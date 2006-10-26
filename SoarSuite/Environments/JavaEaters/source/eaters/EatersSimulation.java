@@ -22,6 +22,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 	private static final String kTagAgent = "agent";
 	private static final String kParamName = "name";
 	private static final String kParamCommand = "command";
+	private static final String kParamTimeout = "timeout";
 	private static final String kParamProductions = "productions";
 	private static final String kParamProductionsAbsolute = "productions-absolute";
 	private static final String kParamColor = "color";
@@ -33,12 +34,6 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 
 	private EatersWorld m_EatersWorld;
 
-	private class Client {
-		public String name;
-		public String command;
-	}
-	private ArrayList clients = new ArrayList();
-	
 	public EatersSimulation(String settingsFile, boolean quiet, boolean notRandom, boolean remote) {	
 		super(notRandom, false, remote);
 		
@@ -102,7 +97,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 					}
 					
 				} else if (mainTag.IsTag(kTagClient)) {
-					Client c = new Client();
+					Client c = new Simulation.Client();
 					
 					for (int attrIndex = 0; attrIndex < mainTag.GetNumberAttributes(); ++attrIndex) {
 						String attribute = mainTag.GetAttributeName(attrIndex);
@@ -121,6 +116,8 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 							c.name = value;
 						} else if (attribute.equalsIgnoreCase(kParamCommand)) {
 							c.command = value;
+						} else if (attribute.equalsIgnoreCase(kParamTimeout)) {
+							c.timeout = Integer.parseInt(value);
 						}
 					}
 					
@@ -234,9 +231,9 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		for (int i = 0; i < clients.size(); ++i) {
 			Client c = (Client)clients.get(i);
 			if (c.command != null) {
-				spawnClient(c.name, c.command);
+				spawnClient(c.name, c.command, c.timeout);
 			} else {
-				if (!waitForClient(c.name)) {
+				if (!waitForClient(c.name, c.timeout)) {
 					fireErrorMessageWarning("Client spawn failed: " + c.name);
 					return;
 				}
@@ -295,7 +292,7 @@ public class EatersSimulation extends Simulation implements SimulationManager {
 		}
 		m_EatersWorld.createEater(agent, productions, color, location);
 		if (getSpawnDebuggers() && !isClientConnected(kDebuggerName)) {
-			spawnClient(kDebuggerName, getDebuggerCommand(name));
+			spawnClient(kDebuggerName, getDebuggerCommand(name), kDebuggerTimeout);
 		}
 		fireSimulationEvent(SimulationListener.kAgentCreatedEvent);   	
     }
