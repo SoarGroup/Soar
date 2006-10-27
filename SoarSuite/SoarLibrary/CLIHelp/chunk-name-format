@@ -49,5 +49,3 @@
    opnochange],
 
    dcChunknum is the number of the chunk within that specific decision cycle.
-
-   Categories: Command Line Interface

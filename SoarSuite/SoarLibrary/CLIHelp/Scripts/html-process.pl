@@ -52,6 +52,10 @@ while (my $element = $html->look_down("id","toc")) {
   $element->delete();
 }
 
+while (my $element = $html->look_down("id","catlinks")) {
+  $element->delete();
+}
+
 while (my $element = $html->look_down("class","editsection")) {
   $element->delete();
 }

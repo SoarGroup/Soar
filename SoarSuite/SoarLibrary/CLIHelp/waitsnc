@@ -27,5 +27,3 @@
    state-no-change impasse (and therefore no substate) will be generated.
 
    When issued with no arguments, waitsnc returns its current setting.
-
-   Categories: Command Line Interface

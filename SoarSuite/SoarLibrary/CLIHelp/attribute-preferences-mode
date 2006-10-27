@@ -36,5 +36,3 @@
 
    This command is obsolete for Soar 8. In Soar 8, the code automatically
    operates as if attribute-preferences-mode = 2.
-
-   Categories: Command Line Interface

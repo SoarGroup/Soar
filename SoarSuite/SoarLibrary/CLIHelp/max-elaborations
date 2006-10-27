@@ -52,5 +52,3 @@
    to set the maximum number of elaborations in one phase to 50:
 
  max-elaborations 50
-
-   Categories: Command Line Interface
