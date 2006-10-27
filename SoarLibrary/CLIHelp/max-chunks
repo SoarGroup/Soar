@@ -34,5 +34,3 @@
    continue execution of the Soar program in this situation; stop and
    determine whether your program needs to build more chunks or whether
    you've discovered a bug (in your program or in Soar itself).
-
-   Categories: Command Line Interface

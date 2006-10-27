@@ -48,5 +48,3 @@
    Once a value has been computed for each operator, the next operator is
    selected probabilistically, with each candidate operator's chance weighted
    by its computed value.
-
-   Categories: Command Line Interface
