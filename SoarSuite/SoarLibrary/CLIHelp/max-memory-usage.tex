@@ -1,0 +1,18 @@
+\subsection{\soarb{max-memory-usage}}
+\label{max-memory-usage}
+\index{max-memory-usage}
+Set the amount of bytes necessary to trigger the memory usage exceeded event. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+max-memory-usage [n]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline
+\soar{ n } & Size of limit in bytes.  \\
+\hline
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{max-memory-usage}
+ command is used to trigger the memory usage exceeded event. The initial value of this is 100MB (100,000,000); allowable settings are any integer greater than 0. 
+ Using the command with no arguments displays the current limit. 
