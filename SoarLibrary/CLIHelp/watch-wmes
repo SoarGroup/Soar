@@ -78,3 +78,5 @@ Types
    or watch any relationship between objects:
 
  soar> watch-wmes --add-filter -t both * ontop *
+
+   Categories: Command Line Interface

@@ -92,3 +92,5 @@ Notes
    This example prints the wme timetags for a single production.
 
  matches -t my*first*production
+
+   Categories: Command Line Interface

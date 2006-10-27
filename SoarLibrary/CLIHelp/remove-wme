@@ -47,3 +47,5 @@
    this command may have weird side effects (possibly even including system
    crashes). Removing input wmes or context/impasse wmes may have unexpected
    side effects. You've been warned.
+
+   Categories: Command Line Interface

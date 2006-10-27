@@ -1,5 +1,5 @@
 <html dir="ltr" lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"><head><title>Preferences - Soar Wiki</title></head><body class="ns-0"><div id="globalWrapper"><div id="column-content"><div id="content"><a id="contentTop" name="top"></a><h1 class="firstHeading">Preferences</h1><div id="bodyContent"><div id="contentSub"></div><a name="Name"></a><h1> Name </h1><p><b>preferences</b> - Examine details about the preferences that support the specified <i>id</i> and <i>attribute</i>. <a name="Synopsis"></a><h1> Synopsis </h1><pre>preferences [-0123nNtw] [[<u>id</u>] [[^]<u>attribute</u>]]
-</pre><a name="Options"></a><h1> Options </h1><table border=1 cellpadding=2><tr><td> -0, -n, --none </td><td> Print just the preferences themselves </td></tr><tr><td> -1, -N, --names </td><td> Print the preferences and the names of the productions that generated them </td></tr><tr><td> -2, -t, --timetags </td><td> Print the information for the --names option above plus the timetags of the wmes matched by the indicated productions </td></tr><tr><td> -3, -w, --wmes </td><td> Print the information for the --timetags option above plus the entire wme. </td></tr><tr><td><u>id</u></td><td> Must be an existing Soar object identifier. </td></tr><tr><td><u>attribute</u></td><td> Must be an existing <i>^attribute</i> of the specified identifier. </td></tr></table><a name="Description"></a><h1> Description </h1><p>The <b>preferences</b> command prints all the preferences for the given object id and attribute. If <u><i>id</i></u> and <u><i>attribute</i></u> are not specified, they default to the current state and the current operator. The '^' is optional when specifying the attribute. The optional arguments indicates the level of detail to print about each preference. <p>This command is useful for examining which candidate operators have been proposed and what relationships, if any, exist among them. If a preference has O-support, the string, &quot;:O&quot; will also be printed. <a name="Note"></a><h2>Note</h2><p>For the time being, <b>numeric-indifferent</b> preferences are listed under the heading &quot;binary indifferents:&quot;. <a name="Examples"></a><h1> Examples </h1><p>This example prints the preferences on (S1 ^operator) and the production names which created the preferences: <pre>soar&gt; preferences S1 operator --names
+</pre><a name="Options"></a><h1> Options </h1><table border=1 cellpadding=2><tr><td> -0, -n, --none </td><td> Print just the preferences themselves </td></tr><tr><td> -1, -N, --names </td><td> Print the preferences and the names of the productions that generated them </td></tr><tr><td> -2, -t, --timetags </td><td> Print the information for the --names option above plus the timetags of the wmes matched by the LHS of the indicated productions </td></tr><tr><td> -3, -w, --wmes </td><td> Print the information for the --timetags option above plus the entire wme matched on the LHS. </td></tr><tr><td> -o, --object </td><td> Print the support for all the wmes that comprise the object (the specified ID). </td></tr><tr><td><u>id</u></td><td> Must be an existing Soar object identifier. </td></tr><tr><td><u>attribute</u></td><td> Must be an existing <i>^attribute</i> of the specified identifier. </td></tr></table><a name="Description"></a><h1> Description </h1><p>The <b>preferences</b> command prints all the preferences for the given object id and attribute. If <u><i>id</i></u> and <u><i>attribute</i></u> are not specified, they default to the current state and the current operator. The '^' is optional when specifying the attribute. The optional arguments indicates the level of detail to print about each preference. <p>This command is useful for examining which candidate operators have been proposed and what relationships, if any, exist among them. If a preference has O-support, the string, &quot;:O&quot; will also be printed. <p>When only the ID is specified on the commandline, if the ID is a state, Soar uses the default attribute ^operator. If the ID is not a state, Soar prints the support information for all WMEs whose &lt;value&gt; is the ID. <p>When an ID and the --object flag are specified, Soar prints the preferences / wme support for all WMEs comprising the specified ID. <a name="Note"></a><h2>Note</h2><p>For the time being, <b>numeric-indifferent</b> preferences are listed under the heading &quot;binary indifferents:&quot;. <a name="Examples"></a><h1> Examples </h1><p>This example prints the preferences on (S1 ^operator) and the production names which created the preferences: <pre>soar&gt; preferences S1 operator --names
 Preferences for S1 ^operator:
 acceptables:
  O2 (fill) +
@@ -13,8 +13,41 @@ unary indifferents:
    From waterjug*propose*fill
 </pre><p>If the current state is S1, then the above syntax is equivalent to: <pre><code> preferences -n</code>
 </pre><p>This example shows the support for the WMEs with the ^jug attribute: <pre>soar&gt; preferences s1 jug
+ 
 Preferences for S1 ^jug:
+  
 acceptables:
- I5  +&nbsp;:O 
- J1  +&nbsp;:O
-</pre><a name="See_Also"></a><h1> See Also </h1><div class="visualClear"></div></div></div></div><div class="visualClear"></div></div></body></html>
+  (S1 ^jug I4) &nbsp;:O 
+  (S1 ^jug J1) &nbsp;:O 
+</pre><p><br> This example shows the support for the WMEs with &lt;value&gt; = J1, and the productions that generated them <pre>soar&gt; pref J1 -1
+
+ Support for (31: O3 ^jug J1)
+   (O3 ^jug J1) 
+     From water-jug*propose*fill
+
+ Support for (11: S1 ^jug J1)
+   (S1 ^jug J1) &nbsp;:O 
+     From water-jug*apply*initialize-water-jug-look-ahead
+</pre><p>This example shows the support for all WMEs that make up the object S1: <pre> soar&gt; pref -o s1
+ 
+ Support for S1 ^problem-space:
+   (S1 ^problem-space P1) 
+ Support for S1 ^name:
+   (S1 ^name water-jug) &nbsp;:O 
+ Support for S1 ^jug:
+   (S1 ^jug I4) &nbsp;:O 
+   (S1 ^jug J1) &nbsp;:O 
+ Support for S1 ^desired:
+   (S1 ^desired D1) &nbsp;:O 
+ Support for S1 ^superstate-set:
+   (S1 ^superstate-set nil) 
+ Preferences for S1 ^operator:
+ acceptables:
+   O2 (fill) +
+   O3 (fill) +
+ Arch-created wmes for S1&nbsp;:
+ (2: S1 ^superstate nil)
+ (1: S1 ^type state)
+ Input (IO) wmes for S1&nbsp;:
+ (3: S1 ^io I1)
+</pre><a name="See_Also"></a><h1> See Also </h1><div id="catlinks"><p class="catlinks"><a href="/soarwiki?title=Special:Categories&amp;article=Preferences" title="Special:Categories">Categories</a>: <a href="/soarwiki/Category:Command_Line_Interface" title="Category:Command Line Interface">Command Line Interface</a></div><div class="visualClear"></div></div></div></div><div class="visualClear"></div></div></body></html>

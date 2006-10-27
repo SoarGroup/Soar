@@ -2,7 +2,7 @@
 
                                       Name
 
-   stats - Print information on SoaraEUR(TM)s runtime statistics.
+   stats - Print information on SoarA-c-a*NOTa"-c-s runtime statistics.
 
                                     Synopsis
 
@@ -101,3 +101,5 @@
    performance cost of the timers, all the run time timing calculations can
    be compiled out of the code by defining NO_TIMING_STUFF (in soarkernel.h)
    before compilation.
+
+   Categories: Command Line Interface

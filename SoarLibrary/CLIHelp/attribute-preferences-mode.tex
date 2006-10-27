@@ -11,7 +11,7 @@ attribute-preferences-mode [0|1|2]
 \hline
 \soar{ 0 } & Handle preferences the normal (Soar 6) way.  \\
 \hline
-\soar{ 1 } & Handle them the normal (Soar 6) way, but print a warning message whenever a preference other than + or \^a€“ is created for a non-context slot.  \\
+\soar{ 1 } & Handle them the normal (Soar 6) way, but print a warning message whenever a preference other than + or \~A¢\^a‚$\neg$\^a€œ is created for a non-context slot.  \\
 \hline
 \soar{ 2 } & Whenever a preferences other than + or - is created for a non-context slot, print an error message and ignore (discard) that preference. For non-context slots, the set of values installed in working memory is always equal to the set of acceptable values minus the set of rejected values.  \\
 \hline
@@ -19,3 +19,4 @@ attribute-preferences-mode [0|1|2]
 \subsubsection*{Description}
  For Soar 7, this command sets and prints the attributes preferences mode to control the handling of preferences (other than acceptable and reject preferences) for non-context slots. The command issued with no arguments, returns the current mode. 
  This command is obsolete for Soar 8. In Soar 8, the code automatically operates as if attribute-preferences-mode = 2. 
+ Categories: Command Line Interface

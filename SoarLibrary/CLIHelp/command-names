@@ -24,6 +24,7 @@ ls
 matches
 max-chunks
 max-elaborations
+max-memory-usage
 max-nil-output-cycles
 memories
 multi-attributes
@@ -52,6 +53,7 @@ stats
 stop-soar
 time
 timers
+unalias
 verbose
 version
 waitsnc

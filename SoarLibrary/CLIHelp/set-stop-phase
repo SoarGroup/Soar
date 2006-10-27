@@ -48,7 +48,7 @@
    On initialization Soar defaults to stopping before the input phase (or
    after the output phase, however you like to think of it).
 
-   Setting the stop phase affects all agents.
+   Setting the stop phase applies to all agents.
 
                                     Examples
 
@@ -59,3 +59,5 @@
  set-stop-phase                     // reports the current stop phase
 
                                     See Also
+
+   Categories: Command Line Interface

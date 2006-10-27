@@ -2,7 +2,8 @@
 
                                       Name
 
-   learn - Set the parameters for chunking, SoaraEUR(TM)s learning mechanism.
+   learn - Set the parameters for chunking, SoarA-c-a*NOTa"-c-s learning
+   mechanism.
 
                                     Synopsis
 
@@ -90,3 +91,5 @@
                                     See Also
 
    watch, explain-backtraces, save-backtraces
+
+   Categories: Command Line Interface

@@ -17,7 +17,7 @@
    |0|Handle preferences the normal (Soar 6) way.                           |
    |-+----------------------------------------------------------------------|
    | |Handle them the normal (Soar 6) way, but print a warning message      |
-   |1|whenever a preference other than + or aEUR" is created for a          |
+   |1|whenever a preference other than + or A-c-a*NOTaEURoe is created for a|
    | |non-context slot.                                                     |
    |-+----------------------------------------------------------------------|
    | |Whenever a preferences other than + or - is created for a non-context |
@@ -36,3 +36,5 @@
 
    This command is obsolete for Soar 8. In Soar 8, the code automatically
    operates as if attribute-preferences-mode = 2.
+
+   Categories: Command Line Interface
