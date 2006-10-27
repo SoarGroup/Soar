@@ -17,7 +17,7 @@
                                   Description
 
    This command echos the args to the current output stream. This is normally
-   stdout but can be set to a variety of channels. If an arg is -nonewline
+   stdout but can be set to a variety of channels. If an arg is --nonewline
    then no newline is printed at the end of the printed strings. Otherwise a
    newline is printed after printing all the given args. Echo is the easiest
    way to add user comments or identification strings in a log file.
@@ -30,4 +30,6 @@
 
                                     See Also
 
-   log
+   clog
+
+   Categories: Command Line Interface

@@ -48,3 +48,5 @@
    If the graphical interface doesn't periodically do an "update" of flush
    the pending I/O, then it may not be possible to interrupt a Soar agent
    from the command line.
+
+   Categories: Command Line Interface

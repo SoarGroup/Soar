@@ -7,8 +7,8 @@
                                     Synopsis
 
  clog -[Ae] filename
- clog aEUR"a string
- clog [aEUR"cdoq]
+ clog A-c-a*NOTaEURoea string
+ clog [A-c-a*NOTaEURoecdoq]
 
                                     Options
 
@@ -60,3 +60,5 @@
                                     See also
 
    command-to-file
+
+   Categories: Command Line Interface

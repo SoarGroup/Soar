@@ -2,7 +2,8 @@
 
                                       Name
 
-   default-wme-depth - Set the level of detail used to print WMEaEUR(TM)s.
+   default-wme-depth - Set the level of detail used to print
+   WMEA-c-a*NOTa"-c-s.
 
                                     Synopsis
 
@@ -55,3 +56,5 @@
                                     See Also
 
    print
+
+   Categories: Command Line Interface

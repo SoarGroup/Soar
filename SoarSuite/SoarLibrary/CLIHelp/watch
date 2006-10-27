@@ -60,7 +60,7 @@ Basic Watch Settings
    Use of the --level (-l) flag is optional but recommended.
 
    +------------------------------------------------------------------------+
-   |0|watch nothing; equivalent to aEUR"N                                   |
+   |0|watch nothing; equivalent to A-c-a*NOTaEURoeN                         |
    |-+----------------------------------------------------------------------|
    |1|watch decisions; equivalent to -d                                     |
    |-+----------------------------------------------------------------------|
@@ -285,3 +285,5 @@ Watching other Functions
                                     See Also
 
    pwatch print run watch-wmes
+
+   Categories: Command Line Interface
