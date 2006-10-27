@@ -26,10 +26,15 @@ using namespace sml;
 bool CommandLineInterface::ParsePreferences(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'0', "none",		0},
+		{'n', "none",		0},
 		{'1', "names",		0},
+		{'N', "names",		0},
 		{'2', "timetags",	0},
+		{'t', "timetags",	0},
 		{'3', "wmes",		0},
+		{'w', "wmes",		0},
 		{'o', "objects",    0},
+		{'O', "objects",    0},
 		{0, 0, 0}
 	};
 
