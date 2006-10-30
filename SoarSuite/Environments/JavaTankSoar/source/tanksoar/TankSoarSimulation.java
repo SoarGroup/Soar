@@ -27,6 +27,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 	private static final String kParamName = "name";
 	private static final String kParamCommand = "name";
 	private static final String kParamTimeout = "timeout";
+	private static final String kParamAfter = "after";
 	private static final String kParamProductions = "productions";
 	private static final String kParamProductionsAbsolute = "productions-absolute";
 	private static final String kParamColor = "color";
@@ -112,6 +113,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 					
 				} else if (mainTag.IsTag(kTagClient)) {
 					Client c = new Client();
+					boolean after = false;
 					
 					for (int attrIndex = 0; attrIndex < mainTag.GetNumberAttributes(); ++attrIndex) {
 						String attribute = mainTag.GetAttributeName(attrIndex);
@@ -132,6 +134,8 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 							c.command = value;
 						} else if (attribute.equalsIgnoreCase(kParamTimeout)) {
 							c.timeout = Integer.parseInt(value);
+						} else if (attribute.equalsIgnoreCase(kParamAfter)) {
+							after = Boolean.parseBoolean(value);
 						}
 					}
 					
@@ -140,7 +144,12 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 						shutdown();
 						System.exit(1);
 					}
-					clients.add(c);
+					
+					if (after) {
+						afterClients.add(c);
+					} else {
+						beforeClients.add(c);
+					}
 					
 				} else if (mainTag.IsTag(kTagAgents)) {
 					
@@ -263,8 +272,8 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		resetSimulation(false);
 		
 		// Start or wait for clients
-		for (int i = 0; i < clients.size(); ++i) {
-			Client c = (Client)clients.get(i);
+		for (int i = 0; i < beforeClients.size(); ++i) {
+			Client c = (Client)beforeClients.get(i);
 			if (c.command != null) {
 				spawnClient(c.name, c.command, c.timeout);
 			} else {
@@ -279,6 +288,19 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 		for (int i = 0; i < initialNames.length; ++i) {
 			createEntity(initialNames[i], initialProductions[i], initialColors[i], initialLocations[i], initialFacing[i],
 					initialEnergy[i], initialHealth[i], initialMissiles[i]);
+		}
+		
+		// Start or wait for clients
+		for (int i = 0; i < afterClients.size(); ++i) {
+			Client c = (Client)afterClients.get(i);
+			if (c.command != null) {
+				spawnClient(c.name, c.command, c.timeout);
+			} else {
+				if (!waitForClient(c.name, c.timeout)) {
+					fireErrorMessageWarning("Client spawn failed: " + c.name);
+					return;
+				}
+			}
 		}
 		
 		// if in quiet mode, run!
