@@ -35,14 +35,14 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 	private static final String kConnectionName = "java-debugger" ;
 	
 	/** This version is used to name the settings files uniquely, so there's no collisions if you use an older debugger.  Should be bumped with every release (and add the current to the end of kPrevVersion) */
-	public static final String kVersion = "8_6_2" ;
+	public static final String kVersion = "8_6_3" ;
 	
 	/** This list of versions will be checked, in order from first to last, when looking for settings to copy.  This only comes into play on the first launch of a new version of the debugger */
 	/** There's no need to have this list get too long--3 versions should be plenty.  If we change the layout/properties in a way that's not backwards compatible, need to clear this list. **/
-	public static final String[] kPrevVersions = new String[] { "8_6_1" } ;
+	public static final String[] kPrevVersions = new String[] { } ;
 
 	/** This object is used to get strings for Soar commands in a version independent way */
-	private SoarCommands		m_SoarCommands = new SoarCommands(this, 8,6,2) ;
+	private SoarCommands		m_SoarCommands = new SoarCommands(this, 8,6,3) ;
 
 	/** The properties for this application (holds user preferences).  Version specific with debugger releases (or using an older version of debugger could conflict) */
 	protected AppProperties m_AppProperties ;

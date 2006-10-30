@@ -939,12 +939,12 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	}
 
 	// Record a client message handler
-	int clientCallback = pKernel->RegisterForClientMessageEvent("test-rhs", &MyClientMessageHandler, 0) ;
+	int clientCallback = pKernel->RegisterForClientMessageEvent("test-client", &MyClientMessageHandler, 0) ;
 
 	// This is a bit dopey--but we'll send a message to ourselves for this test
-	std::string response = pKernel->SendClientMessage(pAgent, "test-rhs", "test-message") ;
+	std::string response = pKernel->SendClientMessage(pAgent, "test-client", "test-message") ;
 
-	if (response.length() < 10)
+	if (response.length() < 20)
 	{
 		cout << "Error sending client message to myself" << endl ;
 		return false ;
