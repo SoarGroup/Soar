@@ -6,6 +6,7 @@ import java.util.logging.*;
 import simulation.*;
 import sml.*;
 import java.util.ArrayList;
+import java.lang.Boolean;
 
 public class TankSoarSimulation extends Simulation implements SimulationManager {
 
