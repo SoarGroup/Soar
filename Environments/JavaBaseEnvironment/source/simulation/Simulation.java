@@ -273,7 +273,8 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 	
 	public boolean waitForClient(String name, int timeoutSeconds) {
 		boolean ready = false;
-		for (int tries = 0; tries < timeoutSeconds; ++tries) {
+		// do this loop if timeout seconds is 0 (code for wait indefinitely) or if we have tries left
+		for (int tries = 0; (timeoutSeconds == 0) || (tries < timeoutSeconds); ++tries) {
 			m_Kernel.GetAllConnectionInfo();
 			if (m_Kernel.HasConnectionInfoChanged()) {
 				for (int i = 0; i < m_Kernel.GetNumberConnections(); ++i) {
