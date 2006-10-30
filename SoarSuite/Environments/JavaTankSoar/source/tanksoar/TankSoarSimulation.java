@@ -136,7 +136,7 @@ public class TankSoarSimulation extends Simulation implements SimulationManager 
 						} else if (attribute.equalsIgnoreCase(kParamTimeout)) {
 							c.timeout = Integer.parseInt(value);
 						} else if (attribute.equalsIgnoreCase(kParamAfter)) {
-							after = Boolean.parseBoolean(value);
+							after = Boolean.valueOf(value).booleanValue();
 						}
 					}
 					
