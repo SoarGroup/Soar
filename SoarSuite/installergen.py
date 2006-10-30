@@ -36,7 +36,7 @@ c['remove'] = ['Makefile.in', '*.nsi.in', 'INSTALL', 'README', '.project',
                '.cvsignore', '.svn', '*.xcodeproj', '*.so', '*.so.1', '*.so.2', 
                '*.jnilib', 'java_swt', '*.sh', '*.plist', '*.doc', '*.ppt', '*.pl',
                '*.am', '*.ac', '*.m4', 'ManualSource', 'Old', '*.tex', 'Scripts',
-               'installergen.py']
+               'installergen.py', 'obj']
 
 # Specific directories to remove from source tree
 c['removedirs'] = [os.path.join('Tools', 'VisualSoar', 'Source', 'parser'), ]
