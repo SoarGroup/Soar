@@ -914,6 +914,10 @@ namespace gSKI
 		* Side effects:
 		*	Prints the preference and its source production.
 		*
+		* NOTE:  The called of this routine should be stepping thru slots only, 
+		*        (not stepping thru WMEs) and therefore input wmes and arch-wmes
+		*        are already excluded and we can print :I when o_support is FALSE.
+		* 
 		===============================
 		*/
 		void print_preference_and_source (agent* agnt, preference *pref,
@@ -930,10 +934,7 @@ namespace gSKI
 				print (agnt, " %c", preference_type_indicator (agnt, pref->type));
 			}
 			if (preference_is_binary(pref->type)) print_object_trace (agnt, pref->referent);
-			if (pref->o_supported) print (agnt, " :O ");
-			//   print (agnt, " :I ");
-			//   print (agnt, " :input");
-			//   print (agnt. " :arch");
+			if (pref->o_supported) print (agnt, " :O "); else print (agnt, " :I ");
 			print (agnt, "\n");
 			if (print_source) {
 				print (agnt, "    From ");
@@ -1129,11 +1130,12 @@ namespace gSKI
 			} else {
 			if ( szAttr && !object) { // default ^attr is ^operator, unless specified --object on cmdline
 				if (!read_attribute_from_string(soarAgent, id, szAttr, &attr)) {	
-					print(soarAgent, "Could not find prefs for the id,attribute pair: %s ^%s.\n  Possibly an architectural wme.\n", szId, szAttr);
+					print(soarAgent, "Could not find prefs for the id,attribute pair: %s ^%s\n  Possibly an architectural wme.\n", szId, szAttr);
 					return -2;
 				}			
 				s = find_slot(id, attr);
 				if (!s && !object) {
+					// Should we check for input wmes and arch-wmes ?? ...helps novices
 					print(soarAgent, "Could not find preferences for %s ^%s.", szId, szAttr);
 					return -3;
 				}
