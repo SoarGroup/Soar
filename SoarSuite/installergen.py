@@ -39,7 +39,8 @@ c['remove'] = ['Makefile.in', '*.nsi.in', 'INSTALL', 'README', '.project',
                'installergen.py', 'obj']
 
 # Specific directories to remove from source tree
-c['removedirs'] = [os.path.join('Tools', 'VisualSoar', 'Source', 'parser'), ]
+c['removedirs'] = [os.path.join('Tools', 'VisualSoar', 'Source', 'parser'),
+                   os.path.join('Tools', 'TestCSharpSML', 'obj'), ]
 
 # Globs to copy from working copy to Core component
 # WORKING --copy-to-> CORE
