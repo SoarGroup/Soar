@@ -5,6 +5,7 @@ import java.util.logging.*;
 import simulation.*;
 import sml.*;
 import java.util.ArrayList;
+import java.lang.Boolean;
 
 public class EatersSimulation extends Simulation implements SimulationManager {
 	private static Logger logger = Logger.getLogger("simulation");
