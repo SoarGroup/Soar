@@ -41,7 +41,8 @@ public abstract class Simulation implements Runnable, Kernel.UpdateEventInterfac
 		public String command;
 		public int timeout = kDebuggerTimeout;
 	}
-	public ArrayList clients = new ArrayList();
+	public ArrayList beforeClients = new ArrayList();
+	public ArrayList afterClients = new ArrayList();
 	
 	protected Simulation(boolean noRandom, boolean runTilOutput, boolean remote) {
 		m_RunTilOutput = runTilOutput;
