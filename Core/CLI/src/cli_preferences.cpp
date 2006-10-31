@@ -33,8 +33,7 @@ bool CommandLineInterface::ParsePreferences(gSKI::Agent* pAgent, std::vector<std
 		{'t', "timetags",	0},
 		{'3', "wmes",		0},
 		{'w', "wmes",		0},
-		{'o', "objects",    0},
-		{'O', "objects",    0},
+		{'o', "object",    0},
 		{0, 0, 0}
 	};
 
