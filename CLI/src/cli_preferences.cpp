@@ -38,7 +38,7 @@ bool CommandLineInterface::ParsePreferences(gSKI::Agent* pAgent, std::vector<std
 	};
 
 	ePreferencesDetail detail = PREFERENCES_ONLY;
-	bool object = FALSE;
+	bool object = false;
 
 	for (;;) {
 		if (!ProcessOptions(argv, optionsData)) return false;
@@ -64,7 +64,7 @@ bool CommandLineInterface::ParsePreferences(gSKI::Agent* pAgent, std::vector<std
 				
 			case 'o':
 			case 'O':
-				object = TRUE;
+				object = true;
 				break;
 			default:
 				return SetError(CLIError::kGetOptError);
