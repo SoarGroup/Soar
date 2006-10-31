@@ -27,7 +27,7 @@ import re
 # Using c as an alias to save typing
 c = generatorConfig = {}
 
-c['soarurl'] = 'https://winter.eecs.umich.edu/svn/soar/trunk/SoarSuite'
+c['soarurl'] = 'https://winter.eecs.umich.edu/svn/soar/tags/Soar-Suite-8.6.3'
 
 c['nameandversion'] = 'Soar Suite 8.6.3'
 
