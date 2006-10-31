@@ -64,7 +64,10 @@ New in 8.6.3
   -- Watching wmes (level 4 and higher) now reports GDS changes
   -- Added "after halted" event
   -- Improved output of the "preferences" command for Soar8.  New arg
-     "--objects" added.  Invoke "help preferences" for usage.
+     "--objects" added.  Invoke "help preferences" for usage
+     -- New alias "support" added for "preferences"
+     -- Right-clicking on identifiers and attributes in debugger allows
+        "preferences" and "preferences --object" to be selected
   -- added TestSMLPerformance project
   -- Added ^status error support to TankSoar
   -- TankSoar can now be configured to stop after a specified number of
