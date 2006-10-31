@@ -1,0 +1,33 @@
+\subsection{\soarb{numeric-indifferent-mode}}
+\label{numeric-indifferent-mode}
+\index{numeric-indifferent-mode}
+Select method for combining numeric preferences. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+numeric-indifferent-mode [-as]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline
+\soar{ -a, --avg, --average } & Use average mode (default).  \\
+\hline
+\soar{ -s, --sum } & Use sum mode.  \\
+\hline
+\end{tabular}
+\subsubsection*{Description}
+ The numeric-indifferent-mode command is used to select the method for combining numeric preferences. This command is only meaningful in indifferent-selection --random  mode. 
+ The default procedure is \textbf{--avg}
+ (average) which assigns a final value to an operator according to the rule: \begin{itemize}
+\item  If the operator has at least one numeric preference, assign it the value that is the average of all of its numeric preferences. 
+\item  If the operator has no numeric preferences (but has been included in the indifferent selection through some combination of non-numeric preferences), assign it the value 50. 
+\end{itemize}
+ The intended range of numeric-preference values for \textbf{--avg}
+ mode is 0-100. 
+ The other combination option \textbf{--sum}
+ assigns a final value according to the rule: \begin{itemize}
+\item  Add together any numeric preferences for the operator (defaulting to 0 if there are none). 
+\item  Assign the operator the value e\^{}\{PreferenceSum / AgentTemperature\}, where AgentTemperature is a compile-time constant currently set at 25.0. 
+\end{itemize}
+ Any real-numbered preference may be used in \textbf{--sum}
+ mode. 
+ Once a value has been computed for each operator, the next operator is selected probabilistically, with each candidate operator's chance weighted by its computed value. 

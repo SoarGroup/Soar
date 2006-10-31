@@ -1,0 +1,21 @@
+sp {arithmetic*propose*next-column
+   (state <s> ^name arithmetic
+              ^arithmetic-problem.current-column <c>)
+   (<c> ^result
+        ^next-column <nc>)
+   (<nc> ^column t)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name next-column)
+}
+
+sp {arithmetic*apply*next-column
+   (state <s> ^operator.name next-column
+              ^arithmetic-problem <ap>)
+   (<ap> ^current-column <c>)
+   (<c> ^next-column <nc>)
+-->
+   (<ap> ^current-column <c> -
+                         <nc>)
+}
+

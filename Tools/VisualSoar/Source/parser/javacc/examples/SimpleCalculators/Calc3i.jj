@@ -1,0 +1,264 @@
+/*
+ * In this second modification to the Calc grammar, we now add
+ * "Identifiers" to the token list so that we can parse functions.
+ * Functions are specified in the function() production.
+ *
+ * Further, we've added some logical operations, &, |, and ^ to the
+ * existing mathematical ones.
+ *
+ * The grammar now supports the plus (+), minus (-)
+ * multiply (*), divide (/) and exponentiation operations.
+ *
+ * See Calc3.jj for the bare grammar (without embedded Java code)
+ *
+ * Example grammar written 11/1/96 by Chuck McManis (cmcmanis@netcom.com)
+ */
+
+options {
+    LOOKAHEAD=1;
+}
+
+PARSER_BEGIN(Calc3i)
+
+public class Calc3i {
+    static double total;
+    static java.util.Stack argStack = new java.util.Stack();
+
+    public static void main(String args[]) throws ParseException {
+	Calc3i parser = new Calc3i(System.in);
+	while (true) {
+	    System.out.print("Enter Expression: ");
+	    System.out.flush();
+	    try {
+		switch (parser.one_line()) {
+		    case -1:
+			System.exit(0);
+		    case 0:
+			break;
+		    case 1:
+			double x = ((Double) argStack.pop()).doubleValue();
+			System.out.println("Total = " + x);
+			break;
+		}
+	    } catch (ParseException x) {
+		System.out.println("Exiting.");
+		throw x;
+	    }
+	}
+    }
+}
+PARSER_END(Calc3i)
+
+SKIP :
+{
+ 	" "
+  |	"\r"
+  |	"\t"
+}
+
+
+
+TOKEN :
+{
+	< EOL: "\n" >
+}
+
+TOKEN : /* OPERATORS */
+{
+	< PLUS: "+" >
+  |	< MINUS: "-" >
+  |	< MULTIPLY: "*" >
+  |	< DIVIDE: "/" >
+  |	< EXP: "**" >
+  |	< AND: "&" >
+  |	< OR: "|" >
+  |	< XOR: "^" >
+}
+
+TOKEN : /* numeric constants */
+{
+	< CONSTANT: <FLOAT>
+	    | <FLOAT> ( ["e","E"] ([ "-","+"])? <INTEGER> )?
+    	>
+  | 	< #FLOAT: <INTEGER> 
+	    | <INTEGER> ( "." <INTEGER> )?
+	    | "." <INTEGER>
+    	>
+  | 	< #INTEGER: ( <DIGIT> )+ >
+  | 	< #DIGIT: ["0" - "9"] >
+}
+
+TOKEN : /* Function names */
+{
+	< ID: ( <LETTER> )+ ( <DIGIT> | <LETTER> )* >
+  | 	< #LETTER: ["a"-"z", "A"-"Z"] > 
+} 
+
+int one_line() :
+{}
+{
+    logical() <EOL>
+	{ return 1; }
+  |  <EOL>
+	{ return 0; }
+  |  <EOF>
+	{ return -1; }
+}
+
+void logical() :
+{Token x;}
+{
+    sum() (
+	( x = <AND> | x = <OR> | x = <XOR> ) sum()
+	{
+	    long a = ((Double) argStack.pop()).longValue();
+	    long b = ((Double) argStack.pop()).longValue();
+	    switch (x.kind) {
+		case AND:
+		    argStack.push(new Double(a & b));
+		    break;
+		case OR:
+		    argStack.push(new Double(a | b));
+		    break;
+		case XOR:
+		    argStack.push(new Double(a ^ b));
+		    break;
+	    }
+	}
+    )*
+}
+
+void sum() :
+{Token x;}
+{
+    term() ( 
+	( x = <PLUS> | x = <MINUS> ) term()
+	{
+	    double a = ((Double) argStack.pop()).doubleValue();
+	    double b = ((Double) argStack.pop()).doubleValue();
+	    if ( x.kind == PLUS )
+		argStack.push(new Double(b + a));
+	    else
+		argStack.push(new Double(b - a));
+	}
+    )*
+}
+
+void term() :
+{Token x;}
+{
+    exp() ( 
+	( x = <MULTIPLY> | x = <DIVIDE> ) exp()
+	{
+	    double a = ((Double) argStack.pop()).doubleValue();
+	    double b = ((Double) argStack.pop()).doubleValue();
+	    if ( x.kind == MULTIPLY )
+	        argStack.push(new Double(b * a));
+	    else
+		argStack.push(new Double(b / a));
+	}
+    )*
+}
+
+void exp() :
+{ }
+{
+    unary() ( LOOKAHEAD( <EXP> )
+	<EXP> exp()
+	{
+	    double a = ((Double) argStack.pop()).doubleValue();
+	    double b = ((Double) argStack.pop()).doubleValue();
+	    argStack.push(new Double(Math.pow(b, a)));
+	}
+    )*
+}
+
+void unary() :
+{ }
+{
+    <MINUS> element()
+	{
+	    double a = ((Double) argStack.pop()).doubleValue();
+	    argStack.push(new Double(- a));
+	}
+|
+    element()
+}
+
+void element() :
+{}
+{
+     <CONSTANT>
+	{   try {
+	    	argStack.push(Double.valueOf(token.image));
+	    } catch (NumberFormatException ee) {
+		argStack.push(new Double(Double.NaN));
+	    }
+	}
+  |  function()
+  |  "(" logical() ")"
+}
+
+void function() :
+{ String funcname;
+  double args = 0; }
+{
+    <ID> {funcname = token.image;} "(" [ logical() {args++;} ( "," logical() {args++;})* ] ")"
+    {
+	double a, b;
+	if (funcname.equalsIgnoreCase("sin")) {
+		if (args != 1) {
+			System.err.println("Too many arguments to sin()");
+			throw new ParseException();
+		}
+		a = ((Double) argStack.pop()).doubleValue();
+		argStack.push(new Double(Math.sin(a)));
+	} else if (funcname.equalsIgnoreCase("cos")) {
+		if (args != 1) {
+			System.err.println("Too many arguments to cos()");
+			throw new ParseException();
+		}
+		a = ((Double) argStack.pop()).doubleValue();
+		argStack.push(new Double(Math.cos(a)));
+	} else if (funcname.equalsIgnoreCase("tan")) {
+		if (args != 1) {
+			System.err.println("Too many arguments to tan()");
+			throw new ParseException();
+		}
+		a = ((Double) argStack.pop()).doubleValue();
+		argStack.push(new Double(Math.tan(a)));
+	} else if (funcname.equalsIgnoreCase("min")) {
+		if (args != 2) {
+			System.err.println("Wrong number of arguments to min()");
+			throw new ParseException();
+		}
+		a = ((Double) argStack.pop()).doubleValue();
+		b = ((Double) argStack.pop()).doubleValue();
+		argStack.push(new Double(Math.min(a, b)));
+	} else if (funcname.equalsIgnoreCase("max")) {
+		if (args != 2) {
+			System.err.println("Wrong number of arguments to max()");
+			throw new ParseException();
+		}
+		a = ((Double) argStack.pop()).doubleValue();
+		b = ((Double) argStack.pop()).doubleValue();
+		argStack.push(new Double(Math.max(a, b)));
+	} else {
+	    /* Note we have to reverse the order of the arguments */
+	    StringBuffer sb = new StringBuffer();
+	    System.out.print("Function "+funcname+"( ");
+	    for (int i = 0; i < args; i++) {
+	    	a = ((Double) argStack.pop()).doubleValue();
+		if (i == 0) {
+		    sb.insert(0, " "+a);
+		} else {
+		    sb.insert(0, " "+a+",");
+		}
+	    }
+	    System.out.println(sb+")");
+	    /* push back a bogus value */
+	    argStack.push(new Double(-1));
+	}
+    }
+}
+

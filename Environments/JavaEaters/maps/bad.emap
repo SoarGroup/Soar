@@ -1,0 +1,61 @@
+<eaters-world>
+  <food>
+    <food-type name="normalfood" value="5" shape="round" color="blue">
+    </food-type>
+    <food-type name="bonusfood" value="10" shape="square" color="red">
+    </food-type>
+  </food>
+  <cells world-size="17" random-walls="false" random-food="false">
+    <row>
+      <cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <error type="wall"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="normalfood"></cell><cell type="bonusfood"></cell><cell type="normalfood"></cell><cell type="wall"></cell>
+    </row>
+    <row>
+      <cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell><cell type="wall"></cell>
+    </row>
+  </cells>
+</eaters-world>

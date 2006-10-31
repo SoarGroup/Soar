@@ -1,0 +1,122 @@
+Soar 8.6.3 Release Notes
+========================
+
+Soar-8.6.3 includes all source code, many demo programs, and a 
+number of applications that serve as examples of how to interface 
+Soar to an external Environment.  There is support for integrating 
+Soar with C++, Java, Tcl, Python and C# applications.  Many Tools
+that aid in development of Soar programs are also included.
+
+These Release Notes describe the primary changes in this 
+latest release.  More detailed information can be obtained at 
+http://winter.eecs.umich.edu/soarwiki
+
+This release was generated for Windows and Linux systems.
+OS X support is pending a volunteer willing to work on it.
+
+Soar 8.6.3 can be downloaded from the Soar homepage at:
+
+        http://sitemaker.umich.edu/soar
+
+
+Installation Requirements
+=========================
+
+* On Windows, the 19MB download file expands to ~46MB when installed.  
+  Linux disk requirements are similar.
+
+* Java 1.4.2 or newer is required to use the SoarJavaDebugger, which is
+  required for most of the demos and applications.  (java must be 
+  available in the path). Get it at http://java.sun.com/. Most operating
+  systems probably already have Java installed.
+
+* If you want to run Tcl applications on Linux, Tcl 8.4.x or later is
+  required (note that the tutorial applications are now available in
+  Java).  Also note that we do not currently support threaded builds
+  of Tcl (e.g. ActiveTcl 8.4.11.2 or later).
+
+* The included Python libraries support Python 2.4.  Python 2.5 support
+  requires a rebuild of the ClientSMLPython project.
+
+
+Components of Soar 8.6.3
+========================
+* pre-built libraries and executables for Windows (SoarLibrary/bin)
+* all source code, config files, and OS tools for automated Soar builds
+* SoarJavaDebugger 
+* VisualSoar
+* JavaEaters, JavaTankSoar, TclEaters
+* Test and Demo programs
+* Documentation
+
+
+New in 8.6.3
+============
+
+* Components and Capabilities added
+  -- Added support for multiple clients modifying different parts of the
+     input link
+  -- Added Python support
+     -- Requires use of --enable-python configure flag on Linux
+  -- Added CheckForIncomingEvents to help single-threaded applications
+  -- Matches command can now generate XML output
+  -- Added max-memory-usage command (not yet functional)
+  -- Watching wmes (level 4 and higher) now reports GDS changes
+  -- Added "after halted" event
+  -- Improved output of the "preferences" command for Soar8.  New arg
+     "--objects" added.  Invoke "help preferences" for usage.
+  -- added TestSMLPerformance project
+  -- Added ^status error support to TankSoar
+  -- TankSoar can now be configured to stop after a specified number of
+     updates
+  -- Reset in TankSoar/Eaters now returns agents to starting locations
+     if specified
+
+* Bug fixes
+  -- Lots of TankSoar and Eaters bugfixes
+  -- Fixed command-to-file command
+  -- Fixed alias command for adding flags to aliases; previously the
+     flags were sometimes interpreted as flags for the alias command
+     itself rather than the command for which an alias was being 
+     created.  "alias" no longer takes any flags.  use "unalias" to
+     remove defined aliases.
+  -- An empty string can now be returned by a client message handler
+  -- Fixed handling of comments by sp
+  -- Fixed lots of memory leaks (including some very old ones in the
+     kernel)
+  -- Debugger bug fixes
+     -- properly handle right-clicks in horizontally-scrolled window
+     -- recognize identifiers in preferences command output for
+        right-click purposes
+  -- fixed up logging example apps (LoggerCWin, LoggerJava)
+  -- Several other minor fixes
+
+* Other updates
+  -- Minor performance improvements (~5%)
+  -- Windows builds now done with Visual Studio 2005
+     -- Now use Microsoft C library dlls
+     -- VS2003 solution/project files still available
+  -- Cleaned up Java build batch files on Windows
+  -- Cleaned up Linux builds somewhat
+  -- Updated to SWT 3.2.0
+
+
+Known issues:
+=============
+
+* TankSoar and Eaters have some redraw issues (forcing a redraw, e.g. by
+  moving the window, fixes this).
+* Remote connections on Linux can be slow.
+* ^status complete appears on the ^output-link immediately instead 
+  of during the next input phase.
+* The Soar 7 mode implementation currently relies on an ugly hack. If
+  you experience problems in this mode, please let us know.
+* In TankSoar, the obscure-bot sometimes generates a scary-looking
+  kernel error message.  It appears to be safe to ignore.
+* Many other minor issues (see bugzilla for details).
+
+If any other issues or bugs are found, please send mail to:
+
+soar-sml-list@umich.edu (preferred)
+-or-
+soar-group@lists.sourceforge.net

@@ -1,0 +1,51 @@
+                               Chunk-name-format
+
+                                      Name
+
+   chunk-name-format - Specify format of the name to use for new chunks.
+
+                                    Synopsis
+
+ chunk-name-format [-sl] -p [<prefix>]
+ chunk-name-format [-sl] -c [<count>]
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |-s, --short            |Use the short format for naming chunks          |
+   |-----------------------+------------------------------------------------|
+   |-l, --long             |Use the long format for naming chunks (default) |
+   |-----------------------+------------------------------------------------|
+   |                       |If <prefix> is given, use <prefix> as the prefix|
+   |-p, --prefix [<prefix>]|for naming chunks. Otherwise, return the current|
+   |                       |prefix. (defaults to "chunk")                   |
+   |-----------------------+------------------------------------------------|
+   |                       |If <count> is given, set the chunk counter for  |
+   |-c, --count [<count>]  |naming chunks to <count>. Otherwise, return the |
+   |                       |current value of the chunk counter.             |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   The short format for naming newly-created chunks is:
+
+   prefixChunknum
+
+   The long (default) format for naming chunks is:
+
+   prefix-Chunknum*ddc*impassetype*dcChunknum
+
+   where:
+
+   prefix is a user-definable prefix string; prefix defaults to "chunk" when
+   unspecified by the user. It many not contain the character *,
+
+   Chunknum is <count> for the first chunk created, <count>+1 for the second
+   chunk created, etc.
+
+   dc is the number of the decision cycle in which the chunk was formed,
+
+   impassetype is one of [tie | conflict | cfailure | snochange |
+   opnochange],
+
+   dcChunknum is the number of the chunk within that specific decision cycle.

@@ -1,0 +1,47 @@
+\subsection{\soarb{clog}}
+\label{clog}
+\index{clog}
+Record all user-interface input and output to a file. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+clog -[Ae] filename
+clog â€“a string
+clog [â€“cdoq]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline
+\soar{ filename } & Open filename and begin logging.  \\
+\hline
+\soar{ -c, --close, -o, --off, -d, --disable } & Stop logging, close the file.  \\
+\hline
+\soar{ -a, --add string } & Add the given string to the open log file.  \\
+\hline
+\soar{ -q, --query } & Returns \emph{open}
+ if logging is active or \emph{closed}
+ if logging is not active.  \\
+\hline
+\soar{ -A, --append, -e, --existing } & Opens existing log file named filename and logging is added at the end of the file.  \\
+\hline
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{clog}
+ command allows users to save all user-interface input and output to a file. When Soar is logging to a file, everything typed by the user and everything printed by Soar is written to the file (in addition to the screen). 
+ Invoke \textbf{clog}
+ with no arguments (or with \textbf{-q}
+) to query the current logging status. Pass a filename to start logging to that file (relative to the command line interface's home directory (see the home command)). Use the \textbf{close}
+ option to stop logging. 
+\subsubsection*{Examples}
+ To initiate logging and place the record in foo.log: \begin{verbatim}
+clog foo.log
+\end{verbatim}
+ To append log data to an existing foo.log file: \begin{verbatim}
+clog -A foo.log
+\end{verbatim}
+ To terminate logging and close the open log file: \begin{verbatim}
+clog -c
+\end{verbatim}
+\subsubsection*{Known Issues}
+ Does not log everything when structured output is selected. 
+\subsubsection*{See also}
+\hyperref[command-to-file]{command-to-file} 

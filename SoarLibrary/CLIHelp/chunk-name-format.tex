@@ -1,0 +1,45 @@
+\subsection{\soarb{chunk-name-format}}
+\label{chunk-name-format}
+\index{chunk-name-format}
+Specify format of the name to use for new chunks. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+chunk-name-format [-sl] -p [<prefix>]
+chunk-name-format [-sl] -c [<count>]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline
+\soar{ -s, --short } & Use the short format for naming chunks  \\
+\hline
+\soar{ -l, --long } & Use the long format for naming chunks (default)  \\
+\hline
+\soar{ -p, --prefix [$<$prefix$>$] } & If $<$prefix$>$ is given, use $<$prefix$>$ as the prefix for naming chunks. Otherwise, return the current \emph{prefix}
+. (defaults to ``\textbf{chunk}
+``)  \\
+\hline
+\soar{ -c, --count [$<$count$>$] } & If $<$count$>$ is given, set the chunk counter for naming chunks to $<$count$>$. Otherwise, return the current value of the chunk counter.  \\
+\hline
+\end{tabular}
+\subsubsection*{Description}
+ The short format for naming newly-created chunks is: 
+ \emph{prefixChunknum}
+ The long (default) format for naming chunks is: 
+ \emph{prefix-Chunknum}
+*d\emph{dc}
+*\emph{impassetype}
+*\emph{dcChunknum}
+ where: 
+ \emph{prefix}
+ is a user-definable prefix string; \emph{prefix}
+ defaults to ``\textbf{chunk}
+`` when unspecified by the user. It many not contain the character *, 
+ \emph{Chunknum}
+ is $<$count$>$ for the first chunk created, $<$count$>$+1 for the second chunk created, etc. 
+ \emph{dc}
+ is the number of the decision cycle in which the chunk was formed, 
+ \emph{impassetype}
+ is one of \textbf{[tie | conflict | cfailure | snochange | opnochange]}
+, 
+ \emph{dcChunknum}
+ is the number of the chunk within that specific decision cycle. 

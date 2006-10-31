@@ -1,0 +1,14 @@
+## Elaborate the state with the problem space 
+##   and information on how to make copies for look-ahead
+##   two-level-attributes are copy not just the jug, but also the substructure.
+##   This avoids have the substate modify the same jug structure as in the top state.
+##   Empty is not copied because it is computed via an elaboration
+
+sp {water-jug*elaborate*problem-space
+   (state <s> ^name water-jug)
+-->
+   (<s> ^problem-space <p>)
+   (<p> ^name water-jug
+        ^default-state-copy yes
+        ^two-level-attributes jug
+        ^dont-copy empty)} 
