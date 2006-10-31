@@ -1,4 +1,0 @@
-source empty.soar
-source goal-test.soar
-source monitor.soar
-source problem-space.soar

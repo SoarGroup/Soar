@@ -1,4 +1,0 @@
-sp {elaborations*elaborate*state
-   (state <s> ^superstate nil)
-   -->
-   (<s> ^name counter)}

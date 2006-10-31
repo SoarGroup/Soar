@@ -1,9 +1,0 @@
-VERSION 4
-\eater-default\eater-default.dm
-0	ROOT eater-default eater-default 1
-1	0	FOPERATOR _firstload _firstload.soar 3
-2	0	FOLDER all all 4
-3	0	FOLDER elaborations elaborations 2
-4	3	FOPERATOR _all _all.soar 5
-5	3	FOPERATOR top-state top-state.soar 6
-END

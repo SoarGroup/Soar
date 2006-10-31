@@ -1,5 +1,0 @@
-sp {testRhsFunction
-   (state <s> ^superstate nil)
--->
-   (<s> ^rhstest (exec RhsFunctionTest |this is a test|))
-}

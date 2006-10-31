@@ -1,8 +1,0 @@
-sp {monitor*move-mac-boat*evaluation
-   (state <s> ^operator <o>)
-   (<o> ^name evaluate-operator
-        ^operator <to>)
-   (<to> ^name move-boat
-        ^{ << cannibals missionaries >>  <type> } <number>)
-   -->
-   (write (crlf) | Evaluate move | <number> | | <type>)}

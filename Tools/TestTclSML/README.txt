@@ -1,1 +1,0 @@
-TestTclSML.tcl is located in SoarLibrary/bin.

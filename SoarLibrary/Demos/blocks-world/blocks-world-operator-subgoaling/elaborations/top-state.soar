@@ -1,5 +1,0 @@
-sp {blocks-world*elaborate*name
-   (state <s> ^superstate nil)
--->
-   (<s> ^name blocks-world)
-}

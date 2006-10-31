@@ -1,7 +1,0 @@
-sp {mac*elaborate*problem-space
-   (state <s> ^name mac)
--->
-   (<s> ^problem-space <p>)
-   (<p> ^name missionaries-and-cannibals
-        ^default-state-copy yes
-        ^two-level-attributes right-bank left-bank)}
