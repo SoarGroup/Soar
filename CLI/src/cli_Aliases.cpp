@@ -271,6 +271,14 @@ Aliases::Aliases() {
 		substitution.push_back(string("stop-soar"));
 		NewAlias(substitution, commandToSubstitute);
 	}
+		// preferences support
+	{
+		string commandToSubstitute("support");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("preferences"));
+		NewAlias(substitution, commandToSubstitute);
+	}
+
 	// unalias un
 	{
 		string commandToSubstitute("un");
