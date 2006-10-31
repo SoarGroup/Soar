@@ -64,6 +64,7 @@ public class SoarCommands
 	
 	public String getPreferencesCommand(String arg) 			{ return "preferences " + arg ; }
 	public String getPreferencesNameCommand(String arg)			{ return "preferences " + arg + " --names" ; }
+	public String getPreferencesObjectCommand(String arg)		{ return "preferences " + arg + " --object" ; }
 	public String getMatchesCommand(String arg)					{ return "matches " + arg ; }
 	public String getMatchesWmesCommand(String arg)				{ return "matches " + arg + " --wmes"; }
 	public String getInitSoarCommand()							{ return "init-soar" ; }

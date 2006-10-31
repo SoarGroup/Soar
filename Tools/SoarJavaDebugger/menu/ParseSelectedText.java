@@ -104,6 +104,9 @@ public class ParseSelectedText
 			addItem(outputView, menu, doc.getSoarCommands().getPrintDepthCommand(m_Name, 2)) ;
 			addItem(outputView, menu, doc.getSoarCommands().getPrintInternalCommand(m_Name)) ;
 			addItem(outputView, menu, doc.getSoarCommands().getPrintCommand("(* ^* " + m_Name + ")")) ;
+
+			addItem(outputView, menu, doc.getSoarCommands().getPreferencesCommand(m_Name)) ;
+			addItem(outputView, menu, doc.getSoarCommands().getPreferencesObjectCommand(m_Name)) ;
 			
 			addWindowSubMenu(owningView, menu) ;
 		}

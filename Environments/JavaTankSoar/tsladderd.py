@@ -15,11 +15,12 @@ import subprocess
 import re
 import logging
 
-def MemExceededHandler(id, self, agent, phase):
+def MemExceededHandler(id, pid, agent, phase):
 	logging.warning("Max memory usage exceeded: %s" % agent.GetAgentName())
+	os.kill(pid, 9)
 
-def AgentCreatedHandler(id, self, agent):
-	agent.RegisterForRunEvent(Python_sml_ClientInterface.smlEVENT_MAX_MEMORY_USAGE_EXCEEDED, MemExceededHandler, self)
+def AgentCreatedHandler(id, pid, agent):
+	agent.RegisterForRunEvent(Python_sml_ClientInterface.smlEVENT_MAX_MEMORY_USAGE_EXCEEDED, MemExceededHandler, pid)
 	logging.info("Registered handler for %s" % agent.GetAgentName())
 
 class TournamentThread(threading.Thread):
@@ -116,7 +117,7 @@ class TournamentThread(threading.Thread):
 			# Start tanksoar
 			p = subprocess.Popen("java -ea -jar JavaTankSoar.jar -settings match-settings.xml -quiet -log match.txt", shell = True, stdout = devnull, stderr = devnull)
 			
-			logging.info("Tanksoar started")
+			logging.info("Tanksoar started, pid %d" % p.pid)
 			
 			# connect to kernel
 			tries = 7
@@ -140,7 +141,7 @@ class TournamentThread(threading.Thread):
 			logging.info("Connected to kernel")
 				
 			# register for agent creation events
-			callback_id = kernel.RegisterForAgentEvent(Python_sml_ClientInterface.smlEVENT_AFTER_AGENT_CREATED, AgentCreatedHandler, self)
+			callback_id = kernel.RegisterForAgentEvent(Python_sml_ClientInterface.smlEVENT_AFTER_AGENT_CREATED, AgentCreatedHandler, p.pid)
 
 			logging.info("Registered for agent creation: %d" % callback_id)
 
@@ -160,6 +161,7 @@ class TournamentThread(threading.Thread):
 				return False
 				
 			elapsed = time.time() - start_time
+			kernel.Shutdown()
 			devnull.close()
 			
 			logging.info("Match %d ended (elapsed: %f)." % (match_info['match_id'], elapsed))
