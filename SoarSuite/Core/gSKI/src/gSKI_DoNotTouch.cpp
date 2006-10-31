@@ -898,7 +898,8 @@ namespace gSKI
 			if (s) {
 				*attr = attr_tmp;
 				return true;
-			} else
+			} else						
+				*attr = attr_tmp;
 				return false;
 		}
 
@@ -1129,13 +1130,21 @@ namespace gSKI
 				attr = NIL;
 			} else {
 			if ( szAttr && !object) { // default ^attr is ^operator, unless specified --object on cmdline
-				if (!read_attribute_from_string(soarAgent, id, szAttr, &attr)) {	
-					print(soarAgent, "Could not find prefs for the id,attribute pair: %s ^%s\n  Possibly an architectural wme.\n", szId, szAttr);
+				if (!read_attribute_from_string(soarAgent, id, szAttr, &attr)) {		
+					// NOT tested:  but here goes...
+					// This is code to determine whether ^attr arg is misspelled 
+					// or an arch-wme.  Had to modify read_attribute_from_string() to  
+					// always set the attr:  symbol exists but no slot, or attr = NIL.
+					if (attr) {
+						print (soarAgent,"  This is probably an io- or arch-wme and does not have preferences\n");							
+						return 0;										
+					}
+					print(soarAgent, "Could not find prefs for the id,attribute pair: %s %s\n", szId, szAttr);
 					return -2;
 				}			
 				s = find_slot(id, attr);
 				if (!s && !object) {
-					// Should we check for input wmes and arch-wmes ?? ...helps novices
+					// Should we check for input wmes and arch-wmes ?? ...covered above...
 					print(soarAgent, "Could not find preferences for %s ^%s.", szId, szAttr);
 					return -3;
 				}

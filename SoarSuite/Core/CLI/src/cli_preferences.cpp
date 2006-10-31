@@ -26,7 +26,7 @@ using namespace sml;
 bool CommandLineInterface::ParsePreferences(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'0', "none",		0},
-		{'n', "none",		0},
+		{'n', "names",		0},
 		{'1', "names",		0},
 		{'N', "names",		0},
 		{'2', "timetags",	0},
@@ -46,10 +46,10 @@ bool CommandLineInterface::ParsePreferences(gSKI::Agent* pAgent, std::vector<std
 
 		switch (m_Option) {
 			case '0':
-			case 'n':
 				detail = PREFERENCES_ONLY;
 				break;
 			case '1':
+			case 'n':
 			case 'N':
 				detail = PREFERENCES_NAMES;
 				break;
