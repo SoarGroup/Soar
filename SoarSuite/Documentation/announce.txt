@@ -65,7 +65,7 @@ New in 8.6.3
   -- Added "after halted" event
   -- Improved output of the "preferences" command for Soar8.  New arg
      "--objects" added.  Invoke "help preferences" for usage
-     -- New alias "support" added for "preferences"
+     -- New alias "support" added for "preferences --object"
      -- Right-clicking on identifiers and attributes in debugger allows
         "preferences" and "preferences --object" to be selected
   -- added TestSMLPerformance project
