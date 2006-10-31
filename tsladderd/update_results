@@ -1,0 +1,137 @@
+tournament_folder = container['tournaments'][tournament_name]
+if critical_error == 'True':
+	return
+
+tanknames = tanknames.split(" ")
+tankscores = tankscores.split(" ")
+tankstatuses = tankstatuses.split(" ")
+interrupted_tanks = interrupted_tanks.split(" ")
+
+# Compute match meta data
+# Needed: 
+# * Match ID
+# * Match log
+# * Elapsed Time
+# Per Tank:
+# * Tank Name
+# * Tank Score
+# * Boolean Win (did this tank win)
+# * Boolean Interrupted (was this tank interrupted)
+
+match_data = {}
+match_data['match_id'] = match_id
+match_data['elapsed_time'] = elapsed_time
+for x in range(tournament_folder.getProperty('tanks_per_match')):
+	# set the name, score
+	match_data['tank%d' % x] = tanknames[x]
+	match_data['tank%dscore' % x] = int(tankscores[x])
+	
+	# set the win bool
+	winner = False
+	if tankstatuses[x] == 'winner':
+		winner = True
+	match_data['tank%dwin' % x] = winner
+	
+	# set the interrupted bool
+	interrupted = False
+	if tanknames[x] in interrupted_tanks:
+		interrupted = True
+	match_data['tank%dinterrupted' % x] = interrupted
+
+# match data collected
+# save match log to file
+match_log_filename = "%s.txt.bz2" % match_data['match_id']
+tournament_folder.manage_addFile(id = match_log_filename, file = log, content_type="application/x-bzip2")
+match_file = tournament_folder[match_log_filename]
+
+# set match data as properties of this file
+match_file.manage_addProperty('elapsed_time', match_data['elapsed_time'], 'float')
+for x in range(tournament_folder.getProperty('tanks_per_match')):
+	match_file.manage_addProperty('tank%d' % x, match_data['tank%d' % x], 'string')
+	match_file.manage_addProperty('tank%dscore' % x, match_data['tank%dscore' % x], 'int')
+	match_file.manage_addProperty('tank%dwin' % x, match_data['tank%dwin' % x], 'boolean')
+	match_file.manage_addProperty('tank%dinterrupted' % x, match_data['tank%dinterrupted' % x], 'boolean')
+
+# Compute match tank data
+
+# For each tank:
+# wins (count of wins)
+# draws (count of draws)
+# losses (count of losses)
+# finished (count of times winning score achieved)
+# snc_losses (interrupts)
+# points_per_match (average points scored)
+# average_time
+# rating (elo rating)
+
+# Get current data
+tank_stats = {}
+class Stats:
+	pass
+	
+for x in range(len(tanknames)):
+	# wins, losses, draws, finished, points_per_match, rating, snc_losses, average_time
+	sql_stats = container.get_stats(tournament_name = tournament_name, tank_name = tanknames[x])[0]
+	tank_stats[tanknames[x]] = Stats()
+	tank_stats[tanknames[x]].wins = sql_stats.wins
+	tank_stats[tanknames[x]].draws = sql_stats.draws
+	tank_stats[tanknames[x]].losses = sql_stats.losses
+	tank_stats[tanknames[x]].finished = sql_stats.finished
+	tank_stats[tanknames[x]].snc_losses = sql_stats.snc_losses
+	tank_stats[tanknames[x]].points_per_match = sql_stats.points_per_match
+	tank_stats[tanknames[x]].rating = sql_stats.rating
+	tank_stats[tanknames[x]].old_rating = sql_stats.rating
+	tank_stats[tanknames[x]].average_time = sql_stats.average_time
+
+# Calculate new data
+for x in range(len(tanknames)):
+	# Win, lose, or draw
+	credit = float(0) # used in rating calculation
+	if tankstatuses[x] == 'winner':
+		tank_stats[tanknames[x]].wins = tank_stats[tanknames[x]].wins + 1
+		credit = float(1)
+	elif tankstatuses[x] == 'draw':
+		tank_stats[tanknames[x]].draws = tank_stats[tanknames[x]].draws + 1
+		credit = 0.5
+	else:
+		tank_stats[tanknames[x]].losses = tank_stats[tanknames[x]].losses + 1
+		#credit = float(0)
+	
+	# Finished?	
+	if int(tankscores[x]) >= tournament_folder.getProperty('winning_score'):
+		tank_stats[tanknames[x]].finished = tank_stats[tanknames[x]].finished + 1
+	
+	# State-no-change loss?
+	if tanknames[x] in interrupted_tanks:
+		tank_stats[tanknames[x]].snc_losses = tank_stats[tanknames[x]].snc_losses + 1
+	
+	# Points
+	total_matches = tank_stats[tanknames[x]].wins + tank_stats[tanknames[x]].draws + tank_stats[tanknames[x]].losses
+	tank_stats[tanknames[x]].points_per_match = ((tank_stats[tanknames[x]].points_per_match * (total_matches - 1)) + int(tankscores[x])) / total_matches
+	
+	# Rating
+	# TODO: multiple opponents!
+	opponent_name = ""
+	if x == 0:
+		opponent_name = tanknames[1]
+	else:
+		opponent_name = tanknames[0]
+	expectedcredit = 1 / (1 + (float(10)**((tank_stats[opponent_name].old_rating - tank_stats[tanknames[x]].old_rating)/float(400))))
+	tank_stats[tanknames[x]].rating = int(tank_stats[tanknames[x]].old_rating + 32 * (credit - expectedcredit))
+
+	# Average time
+	tank_stats[tanknames[x]].average_time = ((tank_stats[tanknames[x]].average_time * (total_matches - 1)) + float(elapsed_time)) / total_matches
+	
+
+# Set new data
+for x in range(len(tanknames)):
+	container.set_stats(tournament_name = tournament_name, tank_name = tanknames[x], 
+		wins = tank_stats[tanknames[x]].wins, 
+		draws = tank_stats[tanknames[x]].draws, 
+		losses = tank_stats[tanknames[x]].losses, 
+		finished = tank_stats[tanknames[x]].finished, 
+		snc_losses = tank_stats[tanknames[x]].snc_losses, 
+		points_per_match = tank_stats[tanknames[x]].points_per_match, 
+		rating = tank_stats[tanknames[x]].rating,
+		average_time = tank_stats[tanknames[x]].average_time)
+
