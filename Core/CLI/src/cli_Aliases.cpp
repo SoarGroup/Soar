@@ -276,6 +276,7 @@ Aliases::Aliases() {
 		string commandToSubstitute("support");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("preferences"));
+		substitution.push_back(string("--object"));
 		NewAlias(substitution, commandToSubstitute);
 	}
 
