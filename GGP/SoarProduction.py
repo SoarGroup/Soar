@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from ElementGGP import ElementGGP
 
 # generates variable names that are guaranteed to be unique
 class UniqueNameGenerator:
@@ -11,7 +12,9 @@ class UniqueNameGenerator:
 			
 		if self.var_indices.has_key(preferred):
 			self.var_indices[preferred] += 1
-			return preferred + str(self.var_indices[preferred])
+			name = preferred + str(self.var_indices[preferred])
+			self.var_indices[name] = 0
+			return name
 		else:
 			self.var_indices[preferred] = 0
 			return preferred
@@ -38,11 +41,16 @@ class SoarCondition:
 		return c
 	
 	def add_ground_predicate(self, attrib, predicate, negate=False):
+		if isinstance(predicate, ElementGGP):
+			raise Exception("Sorry, but you're a homo.")
 		self.ground_preds.append((negate, attrib, predicate))
 		
 	def add_id_predicate(self, attrib, negate=False, predicate = "", name = ""):
 		if name == "":
-			id = self.var_gen.get_name(attrib[0])
+			if attrib[0] == "<":
+				id = self.var_gen.get_name(attrib[1])
+			else:
+				id = self.var_gen.get_name(attrib[0])
 		else:
 			id = name
 
@@ -98,7 +106,10 @@ class SoarCondition:
 				s += " ^%s" % pred[1]
 				
 			if len(pred[3]) > 0 or len(ds) > 0:
-				s += " { <%s> %s %s}" % (pred[2], pred[3], ds)
+				if pred[3] == "+": # total hack
+					s += "  <%s> %s %s" % (pred[2], pred[3], ds)
+				else:
+					s += " { <%s> %s %s}" % (pred[2], pred[3], ds)
 			else:
 				s += " <" + pred[2] + ">"
 		
@@ -151,6 +162,9 @@ class SoarAction:
 		return l
 
 	def __str__(self):
+		if len(self.wme_actions) == 0 and len(self.op_props) == 0:
+			return ""
+
 		s = "<%s>" % self.head_var
 		
 		for a in self.wme_actions:

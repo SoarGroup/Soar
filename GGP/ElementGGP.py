@@ -155,7 +155,19 @@ class ElementGGP:
 			return False
 
 		for i in range(len(self.__children)):
-			if self.__children[i] != other.__children[i]:
+			if isinstance(self.__children[i], str):
+				# because rules are case-insensitive
+				c1 = self.__children[i].lower()
+			else:
+				c1 = self.__children[i]
+
+			if isinstance(other.__children[i], str):
+				# because rules are case-insensitive
+				c2 = other.__children[i].lower()
+			else:
+				c2 = other.__children[i]
+
+			if c1 != c2:
 				return False
 
 		return True
@@ -203,6 +215,23 @@ class ElementGGP:
 			else:
 				copy.__children.append(c.deep_copy())
 		return copy
+
+	def or_child(self):
+		for c in self.__children:
+			if isinstance(c, ElementGGP):
+				ret = c.or_child()
+				if ret != None:
+					return ret
+			elif c.lower() == "or":
+				return self
+		return None
+	
+	def max_depth(self):
+		cdepths = [c.max_depth() for c in self.__children if isinstance(c, ElementGGP)]
+		if len(cdepths) == 0:
+			return 1
+		else:
+			return sorted(cdepths).pop()
 
 
 if __name__ == '__main__':

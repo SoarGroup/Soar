@@ -27,7 +27,7 @@ class GDLSoarVarMapper:
 
 # makes a typical skeleton production for use in GGP
 def MakeTemplateProduction(name, game_name, gs = True, facts = True, move = True):
-	p = SoarProduction(name)
+	p = SoarProduction(name_gen.get_name(name))
 	s_cond = p.add_condition()
 	s_cond.add_ground_predicate("name", game_name)
 	if gs:
@@ -49,12 +49,14 @@ def ParseSentenceToAction(sentence, production, action):
 		attrib_name = "p%d" % i
 		id_action.add_ground_wme_action(attrib_name, sentence[i])
 
-def ParseSentenceToCondition(sentence, production, condition, var_mapper, negated = False):
-
-	if len(sentence) == 1:
+def ParseSentenceToCondition(sentence, production, condition, var_mapper, negated = False, check_new = False, match_new = False):
+	if (isinstance(sentence, str) or len(sentence) == 1) and not check_new:
 		# we don't have chained conditions, so we can just check for absence
 		# of attribute
-		id = condition.add_id_predicate(sentence[0], negated)
+		if isinstance(sentence, str):
+			id = condition.add_id_predicate(sentence, negated)
+		else:	
+			id = condition.add_id_predicate(sentence[0], negated)
 		id_cond = production.add_condition(id)
 	else:
 		# we have to check for absence of specific id match for attribute
@@ -62,40 +64,50 @@ def ParseSentenceToCondition(sentence, production, condition, var_mapper, negate
 		id_cond = production.add_condition(id)
 		if negated:
 			production.make_negative_conjunction([condition, id_cond])
-
-	for i in range(1, len(sentence)):
-		attrib_name = "p%d" % i
-		if sentence[i][0] == '?':
-			# match on a variable
-			id_cond.add_id_predicate(attrib_name, name=var_mapper.get_var(sentence[i]))
-
-		else:
-			# match a literal
-			id_cond.add_ground_predicate(attrib_name, sentence[i])
 	
-def ParseGDLBodyToCondition(body, prod, gs_cond, fact_cond, move_cond, var_mapper):
+	if check_new:
+		if match_new:
+			id_cond.add_id_predicate("new")
+		else:
+			id_cond.add_id_predicate("new", True)
+
+	if not isinstance(sentence, str):
+		for i in range(1, len(sentence)):
+			if not isinstance(sentence[i], str):
+				raise Exception(str(sentence))
+			attrib_name = "p%d" % i
+			if sentence[i][0] == '?':
+				# match on a variable
+				id_cond.add_id_predicate(attrib_name, name=var_mapper.get_var(sentence[i]))
+	
+			else:
+				# match a literal
+				id_cond.add_ground_predicate(attrib_name, sentence[i])
+	
+def ParseGDLBodyToCondition(body, prod, gs_cond, fact_cond, move_cond, var_mapper, check_new = True, match_new = False):
 	"""
 	Parse a set of literals and build the appropriate conditions on the
 	specified soar production
 	"""
+	
 	negate = False
 	for b in body:
-		if b[0] == "not":
+		if b[0].lower() == "not":
 			c = b[1]
 			negate = True
 		else:
 			c = b
-			
-		if c[0] == "true":
+		
+		if c[0].lower() == "true":
 			if negate and len(c[1]) > 1:
 				# we have to make a new ^gs condition for the negation
 				new_gs_cond = prod.add_condition(gs_cond.head_var)
 			else:
 				new_gs_cond = gs_cond
 
-			ParseSentenceToCondition(c[1], prod, new_gs_cond, var_mapper, negate)
+			ParseSentenceToCondition(c[1], prod, new_gs_cond, var_mapper, negate, check_new, match_new)
 
-		elif c[0] == "does":
+		elif c[0].lower() == "does":
 			role = c[1]
 			# there should always only be one last move for each role. If the condition
 			# for it already exists, use it. Otherwise create a new one
@@ -103,40 +115,58 @@ def ParseGDLBodyToCondition(body, prod, gs_cond, fact_cond, move_cond, var_mappe
 			if len(role_cond_list) == 0:
 				role_cond = prod.add_condition(move_cond.add_id_predicate(role))
 			else:
-				if negate and len(c[2]) > 0:
+				if negate and not isinstance(c[2], str):
 					# we want to use the same id, but create another condition
 					role_cond = prod.add_condition(role_cond_list[0].head_var)
 				else:
 					role_cond = role_cond_list[0]
 			ParseSentenceToCondition(c[2], prod, role_cond, var_mapper, negate)
 
-		elif c[0] != "distinct": # must be a fact
+		elif c[0].lower() != "distinct": # must be a fact
 			if negate and len(c) > 1:
 				new_fact_cond = prod.add_condition(fact_cond.head_var)
 			else:
 				new_fact_cond = fact_cond
 			ParseSentenceToCondition(c, prod, new_fact_cond, var_mapper, negate)
 
+def ParseGDLBodyToAction(body, prod, gs):
+	"""
+	Parse a set of literals and build the appropriate conditions on the
+	specified soar production
+	"""
+	negate = False
+	for b in body:
+		if b[0].lower() == "true": 
+			ParseSentenceToAction(b[1], prod, gs)
+		else:
+			# can't handle anything else right now
+			print "Warning: Can't handle desired condition"
+
 def ParseDistinctions(literals, prod, var_mapper):
 	for l in literals:
-		if l[0] == "distinct":
+		if l[0].lower() == "distinct":
 			v1 = var_mapper.get_var(l[1])
 			v2 = var_mapper.get_var(l[2])
 			prod.add_var_distinction(v1, v2)
 
 
-def MakeInitRule(game_name, role, init_conds, facts):
+def MakeInitRule(game_name, role, init_conds, facts, min_success_score, tokens):
 	sp = SoarProduction("propose*init-%s" % game_name);
 	c = sp.add_condition()
 	c.add_ground_predicate("superstate", "nil")
 	c.add_ground_predicate("name", "", True)
 	op = sp.add_action().add_op_proposal("+ >")
-	sp.add_action(op).add_ground_wme_action("name", "init-blocksworld")
+	sp.add_action(op).add_ground_wme_action("name", "init-%s" % game_name)
 
 	asp = sp.get_apply_rules(name_gen)[0]
 
 	state_action = asp.add_action()
 	state_action.add_ground_wme_action("name", game_name)
+#	state_action.add_ground_wme_action("score", "0")
+
+	d_var = state_action.add_id_wme_action("desired")
+	#asp.add_action(d_var).add_id_wme_action("achieved-score")
+
 	game_state_var = state_action.add_id_wme_action("gs")
 	game_facts_var = state_action.add_id_wme_action("facts")
 	gs_actions = asp.add_action(game_state_var)
@@ -148,6 +178,9 @@ def MakeInitRule(game_name, role, init_conds, facts):
 	fact_actions = asp.add_action(game_facts_var)
 	for f in facts:
 		ParseSentenceToAction(f, asp, fact_actions)
+	
+	for t in tokens:
+		state_action.add_id_wme_action(t)
 
 	return [sp, asp]
 
@@ -163,6 +196,28 @@ def SoarifyStr(s):
 	return "a"
 
 
+def FindNecessaryStructures(head, body):
+	use_move = False
+	use_gs = False
+	use_facts = False
+	for b in body:
+		if b[0].lower() == "not":
+			relation = b[1][0]
+		else:
+			relation = b[0]
+
+		if relation.lower() == "does":
+			use_move = True
+		elif relation.lower() == "true":
+			use_gs = True
+		else:
+			use_facts = True
+	
+	if head[0].lower() == "next":
+		use_gs = True # because we have to check for lack of it later
+	
+	return (use_gs, use_facts, use_move)
+
 # Process axioms of the form
 #
 # (<= (head)
@@ -170,27 +225,10 @@ def SoarifyStr(s):
 #     (body2)
 #     ...
 # )
-def TranslateImplication(game_name, head, body, tokens, remove):
-	prod_name = name_gen.get_name(SoarifyStr(head))
-
-	use_move = False
-	use_gs = False
-	use_facts = False
-	for b in body:
-		if b[0] == "not":
-			relation = b[1][0]
-		else:
-			relation = b[0]
-
-		if relation == "does":
-			use_move = True
-		elif relation == "true":
-			use_gs = True
-		else:
-			use_facts = True
+def TranslateImplication(game_name, head, body, tokens, remove, min_success_score):
+	prod_name = name_gen.get_name("propose-%s" % SoarifyStr(str(head)))
 	
-	if head[0] == "next":
-		use_gs = True # because we have to check for lack of it later
+	use_gs, use_facts, use_move = FindNecessaryStructures(head, body)
 
 	sp = MakeTemplateProduction(prod_name, game_name, use_gs, use_facts, use_move)
 	var_mapper = GDLSoarVarMapper(sp.var_gen)
@@ -209,52 +247,86 @@ def TranslateImplication(game_name, head, body, tokens, remove):
 	else:
 		move_cond = None
 
-	ParseGDLBodyToCondition(body, sp, gs_cond, fact_cond, move_cond, var_mapper)
-
 	if isinstance(head, str):
-		if head == "terminal":
+		if head.lower() == "terminal":
+			ParseGDLBodyToCondition(body, sp, gs_cond, fact_cond, move_cond, var_mapper)
 			ParseDistinctions(body, sp, var_mapper)
+#			sp_sel_success = sp.copy(name_gen.get_name(sp.name))
+#			sp_sel_success.first_state_cond.add_id_predicate("duplicate-of*")
+#			desired_var = sp_sel_success.first_state_cond.add_id_predicate("desired")
+#			sp_sel_failure = sp_sel_success.copy(name_gen.get_name(sp_sel_success.name))
+			
+			sp_sel = sp.copy(name_gen.get_name(sp.name))
+#			sp.first_state_cond.add_id_predicate("duplicate-of*", True)
+#			sp.add_halt()
+#			
+#			sp_sel_success.add_condition().add_ground_predicate("score", ">= %d" % min_success_score)
+#			sp_sel_success.add_action().add_id_wme_action("success", desired_var)
+#			
+#			sp_sel_failure.add_condition().add_ground_predicate("score", "< %d" % min_success_score)
+#			sp_sel_failure.add_action().add_id_wme_action("failure", desired_var)
+
+#			return [sp, sp_sel_success, sp_sel_failure]
+
+			sp_sel = sp.copy(name_gen.get_name(sp.name))
+			sp_sel.first_state_cond.add_id_predicate("duplicate-of*")
+			sp_sel.add_action().add_id_wme_action("terminal")
+			sp.first_state_cond.add_id_predicate("duplicate-of*", True)
 			sp.add_halt()
-			return [sp]
+			
+			return [sp, sp_sel]
 	else:
-		if head[0] == "legal":
+		if head[0].lower() == "legal":
+			ParseGDLBodyToCondition(body, sp, gs_cond, fact_cond, move_cond, var_mapper, check_new = False)
 			return TranslateLegal(game_name, sp, head, body, var_mapper)
-		elif head[0] == "next":
-			if not use_move:
-				# This is a special case, because normally, the presence of a move
-				# command on the input link maintains the progression of the state.
-				# If this axiom does not check for that, we have to add a token
-				# to the top state every time we progress one step (which is consumed
-				# when the rule associated with this axiom fires) so that we limit
-				# one firing of this rule per step
-				token_name = name_gen.get_name(SoarifyStr(head))
-				tokens.append(token_name)
-				return TranslateNext(game_name, sp, head, body, var_mapper, remove, token_name)
-			else:
-				return TranslateNext(game_name, sp, head, body, var_mapper, remove)
+		else:
+			ParseGDLBodyToCondition(body, sp, gs_cond, fact_cond, move_cond, var_mapper)
+			if head[0].lower() == "next":
+				if not use_move:
+					# This is a special case, because normally, the presence of a move
+					# command on the input link maintains the progression of the state.
+					# If this axiom does not check for that, we have to add a token
+					# to the top state every time we progress one step (which is consumed
+					# when the rule associated with this axiom fires) so that we limit
+					# one firing of this rule per step
+					token_name = name_gen.get_name(SoarifyStr(head))
+					tokens.append(token_name)
+					return TranslateNext(game_name, sp, head, body, var_mapper, remove, token_name)
+				else:
+					return TranslateNext(game_name, sp, head, body, var_mapper, remove)
+
+			elif head[0].lower() == "goal":
+				return TranslateGoal(game_name, sp, head, body, var_mapper, min_success_score)
 
 	# doesn't match anything
 	return []
 
-def TranslateLegal(game_name, sp, head, body, var_mapper):
+def TranslateLegal(game_name, sp, head, body, var_mapper = dict()):
 
 	# make sure there's no command
 	sp.get_ol_cond().add_id_predicate("<cmd-name>", negate=True, name="cmd")
 
-	params = list(head[2])[1:]
-	role = head[1]
-	move = head[2][0]
-	op_name = "%s-%s" % (role, move)
+	if isinstance(head[2], str):
+		params = list(head)[3:]
+		role = head[1]
+		move = head[2]
+	else:
+		params = list(head[2])[1:]
+		role = head[1]
+		move = head[2][0]
 
-	op_elab = sp.add_op_proposal("+ < =")
+	op_name = name_gen.get_name("%s-%s" % (role, move))
+
+	op_elab = sp.add_op_proposal("+ <")
 	op_elab.add_ground_wme_action("name", op_name)
 	for i in range(len(params)):
 		if params[i][0] == '?':
 			op_elab.add_id_wme_action("p%d" % (i+1), var_mapper.get_var(params[i]))
 		else:
 			op_elab.add_ground_wme_action("p%d" % (i+1), params[i])
-	
-	ParseDistinctions(body, sp, var_mapper)
+
+	if body != None:
+		ParseDistinctions(body, sp, var_mapper)
 	
 	# apply rule
 
@@ -273,20 +345,20 @@ def TranslateLegal(game_name, sp, head, body, var_mapper):
 	
 	return [sp, ap]
 
-def TranslateNext(game_name, sp, head, body, var_mapper, remove, token = ""):
+def TranslateNext(game_name, sp, head, body, var_mapper = dict(), remove = True, token = ""):
 	rel_name = head[1][0]
-	op_name = "next-%s" % rel_name
+	op_name = name_gen.get_name("next-%s" % rel_name)
 	params = list(head[1])[1:]
 
 	# have to add condition to check for lack of head relation to not have operator no change
 	negated_head = ElemGGP("(not)") + head.deep_copy()
 	negated_head[1][0] = "true"
-
 	gs_cond = sp.get_conditions("gs")[0]
-	ParseGDLBodyToCondition([negated_head], sp, gs_cond, None, None, var_mapper)
+	ParseGDLBodyToCondition([negated_head], sp, gs_cond, None, None, var_mapper, match_new = True)
 
 	op_elab = sp.add_op_proposal("+ > =")
 	op_elab.add_ground_wme_action("name", op_name)
+	op_elab.add_id_wme_action("add")
 	for i in range(len(params)):
 		if params[i][0] == '?':
 			op_elab.add_id_wme_action("p%d" % (i+1), var_mapper.get_var(params[i]))
@@ -296,7 +368,13 @@ def TranslateNext(game_name, sp, head, body, var_mapper, remove, token = ""):
 	if token != "":
 		sp.first_state_cond.add_id_predicate(token)
 
-	ParseDistinctions(body, sp, var_mapper)
+		# not only do we have to check for the presence of the token, we also have
+		# to make sure this rule doesn't fire until a move was made (i.e., check
+		# for existence of some move on the output link
+		sp.add_condition(sp.get_il_cond().add_id_predicate("last-moves")).add_id_predicate("<role>")
+
+	if body != None:
+		ParseDistinctions(body, sp, var_mapper)
 
 	# apply rule
 	ap = sp.get_apply_rules(name_gen)[0]
@@ -309,6 +387,10 @@ def TranslateNext(game_name, sp, head, body, var_mapper, remove, token = ""):
 		param_vars.append(op_cond.add_id_predicate("p%d" % (i+1)))
 
 	next_act = ap.add_action(ap.add_action(gs_var).add_id_wme_action(rel_name))
+	# we have to label newly added relations so they don't get deleted immediately
+	# The new label will be removed by the progress-state operator
+	next_act.add_id_wme_action("new")
+	
 	for i in range(len(param_vars)):
 		next_act.add_id_wme_action("p%d" % (i+1), param_vars[i])
 
@@ -316,15 +398,82 @@ def TranslateNext(game_name, sp, head, body, var_mapper, remove, token = ""):
 		token_var = ap.first_state_cond.add_id_predicate(token)
 		ap.add_action().remove_id_wme_action(token, token_var)
 	
+	# there are no frame axioms, so make productions that get rid of this after one
+	# step
 	if remove:
-		# we have to create another apply rule that removes the old instance
 		ap_copy = ap.copy(name_gen.get_name(ap.name))
 		ap.add_condition(gs_var).add_id_predicate(rel_name, negate=True)
 		old_rel_var = ap_copy.add_condition(gs_var).add_id_predicate(rel_name)
 		ap_copy.add_action(gs_var).remove_id_wme_action(rel_name, old_rel_var)
-		return [sp, ap, ap_copy]
+		
+		# an operator that removes the relation if it doesn't have a new label
+		op_name = name_gen.get_name("remove-%s" % rel_name)
+		remove_prod_name = name_gen.get_name("propose*%s" % op_name)
+		sp_remove = MakeTemplateProduction(remove_prod_name, game_name, facts = False, move = False)
+		gs_cond = sp_remove.get_conditions("gs")[0]
+		rel_var = gs_cond.add_id_predicate(rel_name)
+		sp_remove.add_condition(rel_var).add_id_predicate("new", True)
+		op_elab = sp_remove.add_op_proposal("> =")
+		op_elab.add_ground_wme_action("name", op_name)
+		op_elab.add_id_wme_action("remove")
+		op_elab.add_id_wme_action("relation", rel_var)
+		
+		ap_remove = sp_remove.get_apply_rules(name_gen)[0]
+		gs_var = ap_remove.add_condition().add_id_predicate("gs")
+		rel_var = ap_remove.get_conditions("operator")[0].add_id_predicate("relation")
+		ap_remove.add_action(gs_var).remove_id_wme_action(rel_name, rel_var)
+		
+		return [sp, ap, ap_copy, sp_remove, ap_remove]
 
 	return [sp, ap]
+
+
+def TranslateGoal(game_name, sp, head, body, var_mapper, score):
+	sp.first_state_cond.add_id_predicate("terminal")
+	desired_var = sp.first_state_cond.add_id_predicate("desired")
+	
+	if head[2][0] == '?':
+		# I don't know how to handle this right now. Does it even come up?
+		raise Exception("Variable Goal Score")
+	else:
+		if int(head[2]) >= score:
+			sp.add_action().add_id_wme_action("success", desired_var)
+		else:
+			sp.add_action().add_id_wme_action("failure", desired_var)
+
+		return [sp]
+
+def TranslateImplication(game_name, sp, head, body, var_mapper):
+	facts_cond = sp.get_conditions("facts")[0]
+	ParseSentenceToAction(head, sp, facts_cond)
+	
+	return [sp]
+
+#	sp.first_state_cond.add_id_predicate("score")
+#	
+#	op_name = name_gen.get_name("goal")
+#	op_elab = sp.add_op_proposal("+ > =")
+#	op_elab.add_ground_wme_action("name", op_name)
+#		
+#	if head[2][0] == '?':
+#		score_var = var_mapper.get_var(head[2])
+#		op_elab.add_id_wme_action("score", score_var)
+#	else:
+#		op_elab.add_ground_wme_action("score", head[2])
+#	
+#	if body != None:
+#		ParseDistinctions(body, sp, var_mapper)
+#	
+#	ap = sp.get_apply_rules(name_gen)[0]
+#	ap.first_state_cond.add_ground_predicate("name", game_name)
+#	op_cond = ap.get_conditions("operator")[0]
+#	orig_score_var = ap.first_state_cond.add_id_predicate("score")
+#	score_inc_var = op_cond.add_id_predicate("score")
+#	ap.add_action().remove_id_wme_action("score", orig_score_var)
+#	ap.add_action().add_ground_wme_action("score", "(+ <%s> <%s>)" % (orig_score_var, score_inc_var))
+#	
+#	return [sp, ap]
+
 
 def MangleVars(s, mangled, name_gen):
 	for i in range(len(s)):
@@ -369,11 +518,15 @@ def TranslateFrameAxioms(game_name, head, bodies):
 		newb = []
 		for c in b:
 			if c != frame_literal:
-				if c[0] == "distinct":
+				if c[0].lower() == "distinct":
 					# preserve distinct
 					newb.append(c)
 				else:
-					newb.append(ElemGGP("(not)") + c)
+					if c[0].lower() == "not":
+						# not not cancels to nothing
+						newb.append(c[1])
+					else:
+						newb.append(ElemGGP("(not)") + c)
 		new_bodies.append(newb)
 
 	# mangle variables in each body to prevent name collisions
@@ -388,7 +541,7 @@ def TranslateFrameAxioms(game_name, head, bodies):
 	for b in new_bodies:
 		i = 0
 		while i < len(b):
-			if b[i][0] == "distinct":
+			if b[i][0].lower() == "distinct":
 				distinct_literals.append(b[i])
 				b.pop(i)
 			else:
@@ -410,7 +563,7 @@ def TranslateFrameAxioms(game_name, head, bodies):
 
 		comb_body = ElementGGP.Combine(comb + distinct_literals)
 		
-		op_name = "remove-%s-%d" % (axiom_name,x)
+		op_name = name_gen.get_name("remove-%s-%d" % (axiom_name,x))
 		sp = MakeTemplateProduction("propose*%s" % op_name, game_name)
 		var_mapper = GDLSoarVarMapper(sp.var_gen)
 		gs_cond = sp.get_conditions("gs")[0]
@@ -419,8 +572,10 @@ def TranslateFrameAxioms(game_name, head, bodies):
 
 		# first, add the condition to check for presence of head relation
 		ParseGDLBodyToCondition([frame_literal], sp, gs_cond, fact_cond, move_cond, var_mapper)
-
-		head_relation_var = sp.get_conditions("gs.%s" % head[1][0])[0].head_var
+		
+		rel_name = frame_literal[1][0]
+		rel_cond = sp.get_conditions("gs.%s" % rel_name)[0]
+		rel_var = rel_cond.head_var
 
 		# now add the conditions sufficient for removing the head relation from the
 		# next state
@@ -429,7 +584,8 @@ def TranslateFrameAxioms(game_name, head, bodies):
 		# propose the operator
 		op_elab = sp.add_op_proposal("+ > =")
 		op_elab.add_ground_wme_action("name", op_name)
-		op_elab.add_id_wme_action("relation", head_relation_var)
+		op_elab.add_id_wme_action("remove")
+		op_elab.add_id_wme_action("relation", rel_var)
 
 		# set up the variable distinctions
 		ParseDistinctions(comb_body, sp, var_mapper)
@@ -450,6 +606,47 @@ def TranslateFrameAxioms(game_name, head, bodies):
 	return productions
 
 
+def MakeSelectionSpaceFakeResponseRule(game_name, role):
+	sp = SoarProduction(name_gen.get_name("%s*elaborate*fake-response" % game_name))
+	sp.add_condition().add_id_predicate("duplicate-of*")
+	act_var = sp.get_ol_cond().add_id_predicate("<action-name>")
+	sp.add_condition(act_var)
+	
+	il_var = sp.get_il_cond().head_var
+	lm_var = sp.add_action(il_var).add_id_wme_action("last-moves")
+	role_var = sp.add_action(lm_var).add_id_wme_action(role)
+	sp.add_action(role_var).add_id_wme_action("<action-name>", act_var)
+
+	return sp
+
+def MakeSelectionSpaceRules(game_name, tokens):
+	problem_space_sp = SoarProduction("%s*elaborate*problem-space" % game_name)
+	s_cond = problem_space_sp.add_condition()
+	s_cond.add_ground_predicate("name", game_name)
+
+	ps_var = problem_space_sp.add_action(s_cond.head_var).add_id_wme_action("problem-space")
+	ps_act = problem_space_sp.add_action(ps_var)
+	ps_act.add_ground_wme_action("name", game_name)
+	ps_act.add_ground_wme_action("default-state-copy", "yes")
+	ps_act.add_ground_wme_action("one-level-attributes", "facts")
+#	ps_act.add_ground_wme_action("one-level-attributes", "score")
+	ps_act.add_ground_wme_action("two-level-attributes", "gs")
+
+	for t in tokens:
+		ps_act.add_ground_wme_action("one-level-attributes", t)
+
+
+	fake_io_sp = SoarProduction("%s*elaborate*selection-space-fake-io" % game_name)
+	s_cond = fake_io_sp.add_condition()
+	s_cond.add_id_predicate("duplicate-of*")
+
+	fake_io_var = fake_io_sp.add_action(s_cond.head_var).add_id_wme_action("io")
+	io_act = fake_io_sp.add_action(fake_io_var)
+	io_act.add_id_wme_action("input-link")
+	io_act.add_id_wme_action("output-link")
+
+	return [problem_space_sp, fake_io_sp]
+
 def StandardizeVars(literal, prefix, map = dict(), count = 0):
 	for i in range(len(literal)):
 		c = literal[i]
@@ -464,7 +661,7 @@ def StandardizeVars(literal, prefix, map = dict(), count = 0):
 
 	return count
 
-def TranslateDescription(game_name, description):
+def TranslateDescription(game_name, description, filename):
 	productions = []
 	init_axioms = []
 	fact_axioms = []
@@ -473,15 +670,24 @@ def TranslateDescription(game_name, description):
 	rels_with_frame_axioms = set([])
 	role = ""
 
-	frame_axioms = [] # [(head, body)]
+	best_score = -99999
+
+	new_description = []
 	for axiom in description:
+		if axiom.or_child() != None:
+			new_description.extend(SplitOr(axiom))
+		else:
+			new_description.append(axiom)
+		
+	frame_axioms = [] # [(head, body)]
+	for axiom in new_description:
 
 		if axiom[0] == "<=":
 			head = axiom[1]
 			body = [axiom[i] for i in range(2, len(axiom))]
 
 			# check to see if this is a frame axiom
-			if head[0] == "next":
+			if head[0].lower() == "next":
 				frame_literal = head.deep_copy()
 				frame_literal[0] = "true"
 				if frame_literal in body:
@@ -489,27 +695,57 @@ def TranslateDescription(game_name, description):
 					frame_axioms.append((head, body))
 					rels_with_frame_axioms.add(frame_literal[1][0])
 					continue
-
+			
+			if head[0].lower() == "goal":
+				if head[2][0] != '?' and int(head[2]) > best_score:
+					best_score = int(head[2])
+			
+			# just a regular implication
 			implications.append(axiom)
 
-		elif axiom[0] == "role":
+		elif axiom[0].lower() == "role":
 			role = axiom[1]
-		elif axiom[0] == "init":
+		elif axiom[0].lower() == "init":
 			init_axioms.append(axiom[1])
+		elif axiom[0].lower() == "next":
+			head = axiom
+			name = name_gen.get_name(SoarifyStr(str(head)))
+			sp = MakeTemplateProduction(name, game_name, True, False, False)
+			productions.extend(TranslateNext(game_name, sp, head, None))
+
+		elif axiom[0].lower() == "legal":
+			head = axiom
+			name = name_gen.get_name(SoarifyStr(str(head)))
+			sp = MakeTemplateProduction(name, game_name, False, False, False)
+			productions.extend(TranslateLegal(game_name, sp, head, None))
+
 		else: # these should all be facts
 			fact_axioms.append(axiom)
 
+	# Since we can't really tell what the best possible score will be, rely on a
+	# heuristic that says that we've succeeded if we obtain a score higher than or equal
+	# to the single highest reward
+	if best_score == -99999:
+		raise Exception("There are no goal axioms")
+	
 	for axiom in implications:
 		head = axiom[1]
 		body = [axiom[i] for i in range(2, len(axiom))]
 		if head[1][0] in rels_with_frame_axioms:
-			productions.extend(TranslateImplication(game_name, head, body, tokens, False))
+			productions.extend(TranslateImplication(game_name, head, body, tokens, False, best_score))
 		else:
-			productions.extend(TranslateImplication(game_name, head, body, tokens, True))
+			productions.extend(TranslateImplication(game_name, head, body, tokens, True, best_score))
 
 	# get the init rules
-	productions.extend(MakeInitRule(game_name, role, init_axioms, fact_axioms))
-
+#	desired_sp = SoarProduction("%s*elaborate*goal-achieved" % game_name)
+#	s_cond = desired_sp.add_condition()
+#	s_cond.add_ground_predicate("name", game_name)
+#	s_cond.add_ground_predicate("score", ">= %d" % best_score)
+#	desired_sp.add_action().add_id_wme_action("achieved-score")
+#	productions.append(desired_sp)
+	productions.extend(MakeInitRule(game_name, role, init_axioms, fact_axioms, best_score, tokens))
+	
+	
 	# process the frame axioms
 
 	# First, we have to merge those frame axioms whose heads are identical except for variable names.
@@ -540,7 +776,7 @@ def TranslateDescription(game_name, description):
 		m = [[0] * count for i in range(count)]
 
 		for b in body:
-			if b[0] == "distinct":
+			if b[0].lower() == "distinct":
 				if var_map.has_key(b[1]) and var_map.has_key(b[2]):
 					m[var_map[b[1]]][var_map[b[2]]] = 1
 		
@@ -579,9 +815,12 @@ def TranslateDescription(game_name, description):
 
 	ap_cmd_remove = sp.get_apply_rules(name_gen)[0]
 	ap_cmd_remove.first_state_cond.add_ground_predicate("name", game_name)
-	cmd_var = ap_cmd_remove.get_ol_cond().add_id_predicate("<cmd-name>", name="cmd")
+	ol_cmd_var = ap_cmd_remove.get_ol_cond().add_id_predicate("<cmd-name>")
+#	last_move_var = ap_cmd_remove.get_il_cond().add_id_predicate("last-moves")
+#	il_cmd_var = ap_cmd_remove.add_condition(last_move_var).add_id_predicate("<last-cmd>")
 	remove_cmd = ap_cmd_remove.add_action(ap_cmd_remove.get_ol_cond().head_var)
-	remove_cmd.remove_id_wme_action("<cmd-name>", cmd_var)
+	remove_cmd.remove_id_wme_action("<cmd-name>", ol_cmd_var)
+#	ap_cmd_remove.add_action(last_move_var).remove_id_wme_action("<last-cmd>", il_cmd_var)
 	productions.append(ap_cmd_remove)
 
 	for t in tokens:
@@ -591,73 +830,65 @@ def TranslateDescription(game_name, description):
 		token_var = ap.first_state_cond.add_id_predicate(t, negate = True)
 		ap.add_action().add_id_wme_action(t, token_var)
 		productions.append(ap)
+	
+	ap_new_remove = sp.get_apply_rules(name_gen)[0]
+	gs_cond = ap_new_remove.add_condition(ap_new_remove.first_state_cond.add_id_predicate("gs"))
+	rel_var = gs_cond.add_id_predicate("<rel-name>")
+	new_var = ap_new_remove.add_condition(rel_var).add_id_predicate("new")
+	ap_new_remove.add_action(rel_var).remove_id_wme_action("new", new_var)
+	productions.append(ap_new_remove)
+
+	# create selection space rules
+	productions.append(MakeSelectionSpaceFakeResponseRule(game_name, role))
+	productions.extend(MakeSelectionSpaceRules(game_name, tokens))
+	
+	# create rule that makes soar prefer adding relations over removing them
+	# so that all relations will be added before any are removed
+	sp = SoarProduction("prefer-add-over-remove")
+	o1_var = sp.add_condition().add_id_predicate("operator", predicate="+")
+	o2_var = sp.add_condition().add_id_predicate("operator", predicate="+")
+	o1_cond = sp.add_condition(o1_var)
+	o2_cond = sp.add_condition(o2_var)
+	o1_cond.add_id_predicate("add")
+	o2_cond.add_id_predicate("remove")
+	
+	sp.add_action().add_ground_wme_action("operator", "<%s> > <%s>" % (o1_var, o2_var))
+	productions.append(sp)
+
+	f = open(filename, 'w')
+	f.write("pushd default\nsource selection.soar\npopd\n")
 
 	for p in productions:
-		print p
+		f.write(str(p) + '\n')
+	
 
+def DeleteOrOperands(axiom, keep):
+	if isinstance(axiom[0], str) and axiom[0].lower() == "or":
+		return axiom[keep]
 
-description="""(
-(role robot)
-(init (clear b))
-(init (clear c))
-(init (on c a))
-(init (table a))
-(init (table b))
-(init (step 1))
-(<= (next (on ?x ?y))
-    (does robot (s ?x ?y)))
-(<= (next (on ?x ?y))
-    (does robot (s ?u ?v))
-    (true (on ?x ?y)))
-(<= (next (table ?x))
-    (does robot (s ?u ?v))
-    (true (table ?x))
-    (distinct ?u ?x))
-(<= (next (clear ?y))
-    (does robot (s ?u ?v))
-    (true (clear ?y))
-    (distinct ?v ?y))
-(<= (next (on ?x ?y))
-    (does robot (u ?u ?v))
-    (true (on ?x ?y))
-    (distinct ?u ?x))
-(<= (next (table ?x))
-    (does robot (u ?x ?y)))
-(<= (next (table ?x))
-    (does robot (u ?u ?v))
-    (true (table ?x)))
-(<= (next (clear ?y))
-    (does robot (u ?x ?y)))
-(<= (next (clear ?x))
-    (does robot (u ?u ?v))
-    (true (clear ?x)))
-(<= (next (step ?y))
-    (true (step ?x))
-    (succ ?x ?y))
-(succ 1 2)
-(succ 2 3)
-(succ 3 4)
-(<= (legal robot (s ?x ?y))
-    (true (clear ?x))
-    (true (table ?x))
-    (true (clear ?y))
-    (distinct ?x ?y))
-(<= (legal robot (u ?x ?y))
-    (true (clear ?x))
-    (true (on ?x ?y)))
-(<= (goal robot 100)
-    (true (on a b))
-    (true (on b c)))
-(<= (goal robot 0)
-    (not (true (on a b))))
-(<= (goal robot 0)
-    (not (true (on b c))))
-(<= terminal
-    (true (step 4)))
-(<= terminal
-    (true (on a b))
-    (true (on b c)))
-)"""
+	for i in range(len(axiom)):
+		c = axiom[i]
+		if isinstance(c, ElemGGP):
+			ret = DeleteOrOperands(c, keep)
+			if ret != None:
+				axiom[i] = ret
+				return axiom
 
-TranslateDescription("blocksworld", ElemGGP(description.replace('\n', "")))
+	return None
 
+def SplitOr(axiom):
+	result = []
+	num_splits = len(axiom.or_child()) - 1
+	for i in range(num_splits):
+		a = axiom.deep_copy()
+		result.append(DeleteOrOperands(a, i + 1))
+
+	return result
+
+#d1="((ROLE ROBOT) (INIT (CLEAR B)) (INIT (CLEAR C)) (INIT (ON C A)) (INIT (TABLE A)) (INIT (TABLE B)) (INIT (STEP 1)) (<= (NEXT (ON ?X ?Y)) (DOES ROBOT (S ?X ?Y))) (<= (NEXT (ON ?X ?Y)) (DOES ROBOT (S ?U ?V)) (TRUE (ON ?X ?Y))) (<= (NEXT (TABLE ?X)) (DOES ROBOT (S ?U ?V)) (TRUE (TABLE ?X)) (DISTINCT ?U ?X)) (<= (NEXT (CLEAR ?Y)) (DOES ROBOT (S ?U ?V)) (TRUE (CLEAR ?Y)) (DISTINCT ?V ?Y)) (<= (NEXT (ON ?X ?Y)) (DOES ROBOT (U ?U ?V)) (TRUE (ON ?X ?Y)) (DISTINCT ?U ?X)) (<= (NEXT (TABLE ?X)) (DOES ROBOT (U ?X ?Y))) (<= (NEXT (TABLE ?X)) (DOES ROBOT (U ?U ?V)) (TRUE (TABLE ?X))) (<= (NEXT (CLEAR ?Y)) (DOES ROBOT (U ?X ?Y))) (<= (NEXT (CLEAR ?X)) (DOES ROBOT (U ?U ?V)) (TRUE (CLEAR ?X))) (<= (NEXT (STEP ?Y)) (TRUE (STEP ?X)) (SUCC ?X ?Y)) (SUCC 1 2) (SUCC 2 3) (SUCC 3 4) (<= (LEGAL ROBOT (S ?X ?Y)) (TRUE (CLEAR ?X)) (TRUE (TABLE ?X)) (TRUE (CLEAR ?Y)) (DISTINCT ?X ?Y)) (<= (LEGAL ROBOT (U ?X ?Y)) (TRUE (CLEAR ?X)) (TRUE (ON ?X ?Y))) (<= (GOAL ROBOT 100) (TRUE (ON A B)) (TRUE (ON B C))) (<= (GOAL ROBOT 0) (NOT (TRUE (ON A B)))) (<= (GOAL ROBOT 0) (NOT (TRUE (ON B C)))) (<= TERMINAL (TRUE (STEP 4))) (<= TERMINAL (TRUE (ON A B)) (TRUE (ON B C))))"
+#
+#d2="((ROLE ROBOT) (INIT (OFF P)) (INIT (OFF Q)) (INIT (OFF R)) (INIT (STEP 1)) (<= (NEXT (ON P)) (DOES ROBOT A) (TRUE (OFF P))) (<= (NEXT (ON Q)) (DOES ROBOT A) (TRUE (ON Q))) (<= (NEXT (ON R)) (DOES ROBOT A) (TRUE (ON R))) (<= (NEXT (OFF P)) (DOES ROBOT A) (TRUE (ON P))) (<= (NEXT (OFF Q)) (DOES ROBOT A) (TRUE (OFF Q))) (<= (NEXT (OFF R)) (DOES ROBOT A) (TRUE (OFF R))) (<= (NEXT (ON P)) (DOES ROBOT B) (TRUE (ON Q))) (<= (NEXT (ON Q)) (DOES ROBOT B) (TRUE (ON P))) (<= (NEXT (ON R)) (DOES ROBOT B) (TRUE (ON R))) (<= (NEXT (OFF P)) (DOES ROBOT B) (TRUE (OFF Q))) (<= (NEXT (OFF Q)) (DOES ROBOT B) (TRUE (OFF P))) (<= (NEXT (OFF R)) (DOES ROBOT B) (TRUE (OFF R))) (<= (NEXT (ON P)) (DOES ROBOT C) (TRUE (ON P))) (<= (NEXT (ON Q)) (DOES ROBOT C) (TRUE (ON R))) (<= (NEXT (ON R)) (DOES ROBOT C) (TRUE (ON Q))) (<= (NEXT (OFF P)) (DOES ROBOT C) (TRUE (OFF P))) (<= (NEXT (OFF Q)) (DOES ROBOT C) (TRUE (OFF R))) (<= (NEXT (OFF R)) (DOES ROBOT C) (TRUE (OFF Q))) (<= (NEXT (STEP ?Y)) (TRUE (STEP ?X)) (SUCC ?X ?Y)) (SUCC 1 2) (SUCC 2 3) (SUCC 3 4) (SUCC 4 5) (SUCC 5 6) (SUCC 6 7) (LEGAL ROBOT A) (LEGAL ROBOT B) (LEGAL ROBOT C) (<= (GOAL ROBOT 100) (TRUE (ON P)) (TRUE (ON Q)) (TRUE (ON R))) (<= (GOAL ROBOT 0) (OR (NOT (TRUE (ON P))) (NOT (TRUE (ON Q))) (NOT (TRUE (ON R))))) (<= TERMINAL (TRUE (STEP 7))) (<= TERMINAL (TRUE (ON P)) (TRUE (ON Q)) (TRUE (ON R))))"
+#
+#d3="((ROLE ROBOT) (INIT (CELL A)) (INIT (GOLD C)) (INIT (STEP 1)) (<= (NEXT (CELL ?Y)) (DOES ROBOT MOVE) (TRUE (CELL ?X)) (ADJACENT ?X ?Y)) (<= (NEXT (CELL ?X)) (DOES ROBOT GRAB) (TRUE (CELL ?X))) (<= (NEXT (CELL ?X)) (DOES ROBOT DROP) (TRUE (CELL ?X))) (<= (NEXT (GOLD ?X)) (DOES ROBOT MOVE) (TRUE (GOLD ?X))) (<= (NEXT (GOLD I)) (DOES ROBOT GRAB) (TRUE (CELL ?X)) (TRUE (GOLD ?X))) (<= (NEXT (GOLD I)) (DOES ROBOT GRAB) (TRUE (GOLD I))) (<= (NEXT (GOLD ?Y)) (DOES ROBOT GRAB) (TRUE (CELL ?X)) (TRUE (GOLD ?Y)) (DISTINCT ?X ?Y)) (<= (NEXT (GOLD ?X)) (DOES ROBOT DROP) (TRUE (CELL ?X)) (TRUE (GOLD I))) (<= (NEXT (GOLD ?X)) (DOES ROBOT DROP) (TRUE (GOLD ?X)) (DISTINCT ?X I)) (<= (NEXT (STEP ?Y)) (TRUE (STEP ?X)) (SUCC ?X ?Y)) (ADJACENT A B) (ADJACENT B C) (ADJACENT C D) (ADJACENT D A) (SUCC 1 2) (SUCC 2 3) (SUCC 3 4) (SUCC 4 5) (SUCC 5 6) (SUCC 6 7) (SUCC 7 8) (SUCC 8 9) (SUCC 9 10) (<= (LEGAL ROBOT MOVE)) (<= (LEGAL ROBOT GRAB) (TRUE (CELL ?X)) (TRUE (GOLD ?X))) (<= (LEGAL ROBOT DROP) (TRUE (GOLD I))) (<= (GOAL ROBOT 100) (TRUE (GOLD A))) (<= (GOAL ROBOT 0) (TRUE (GOLD ?X)) (DISTINCT ?X A)) (<= TERMINAL (TRUE (STEP 10))) (<= TERMINAL (TRUE (GOLD A))))"
+#
+#TranslateDescription("game", ElemGGP(d1), "tmp")

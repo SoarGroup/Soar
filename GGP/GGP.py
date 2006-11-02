@@ -9,6 +9,7 @@ import imp
 import Python_sml_ClientInterface
 sml = Python_sml_ClientInterface
 import ElementGGP
+import RuleParser
 
 global kernel
 global agent
@@ -25,6 +26,7 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 	role_ids = None
 
 	last_moves_id = None
+	ol_cmd_present = False
 	
 	def bad_request(self, message):
 		print "Warning:", message
@@ -60,6 +62,20 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		print "startclock:", startclock
 		print "playclock:", playclock
 
+		print str(description_element)
+
+		RuleParser.TranslateDescription("game", description_element, "tmp.soar")
+		
+		#agent.ExecuteCommandLine("watch 5")
+
+		print agent.ExecuteCommandLine("source tmp.soar")
+
+		if not agent.GetLastCommandLineResult():
+			print "Production load failed"
+			shutdown()
+			sys.exit(1)
+
+	
 		if not isinstance(role, str):
 			self.bad_request("Malformed START command (role not string)")
 			return False
@@ -134,6 +150,7 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 				return
 
 		if play:
+			print "PLAYING"
 			if len(moves_element) > 0:
 				# Put the last move on the il
 				# ^io.input-link.last-moves.role.action-name.p1
@@ -154,7 +171,22 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 						action_id = agent.CreateIdWME(Responder.role_ids[role], command)
 
 			# Run soar 1 till some commands
+			output_link = agent.GetOutputLink()
 			num_commands = 0
+			
+			while Responder.ol_cmd_present:
+				# have to check each step if the command is taken off
+				agent.RunSelf(1, sml.sml_PHASE)
+				print "CHECKING"
+				if output_link.GetNumberChildren() == 0:
+					print "REMOVING LAST MOVES"
+					for r in Responder.roles:
+						# the output command was taken away, destroy the input link
+						if Responder.role_ids[r] != None:
+							agent.DestroyWME(Responder.role_ids[r])
+							Responder.role_ids[r] = None
+					Responder.ol_cmd_present = False
+			
 			while num_commands == 0:
 				agent.RunSelfTilOutput()
 				num_commands = agent.GetNumberCommands()
@@ -164,7 +196,6 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 			# ^io.output-link.action-name.p2
 			# ...
 			# ^io.output-link.action-name.pN
-			output_link = agent.GetOutputLink()
 			command_string = ""
 			for x in range(num_commands):
 				command_id = agent.GetCommand(x)
@@ -175,7 +206,12 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 
 			# send the command only if there really is a command
 			if len(command_string) > 0:
-				self.reply(200, "(%s)" % command_string)
+				if command_string.find(' ') > 0:
+					self.reply(200, "(%s)" % command_string)
+					Responder.ol_cmd_present = True
+				else:
+					self.reply(200, command_string)
+					Responder.ol_cmd_present = True
 		else:
 			# Should keep running until the agent halts itself
 			agent.RunSelfForever()
@@ -223,7 +259,7 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 		self.do_POST()
 
 def print_callback(id, userData, agent, message):
-	print message
+	print message,
 
 def shutdown():
 	global kernel
@@ -250,12 +286,7 @@ if __name__ == '__main__':
 	agent.RegisterForPrintEvent(sml.smlEVENT_PRINT, print_callback, None)
 	
 	#print agent.ExecuteCommandLine("source blocksworld_sel.soar")
-	print agent.ExecuteCommandLine("source gen_rules.soar")
-	if not agent.GetLastCommandLineResult():
-		print "Production load failed"
-		shutdown()
-		sys.exit(1)
-	
+
 	server_address = ('', 41414)
 	httpd = BaseHTTPServer.HTTPServer(server_address, Responder)
 	try:
