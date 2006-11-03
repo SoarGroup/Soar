@@ -405,11 +405,13 @@ void update_for_top_state_wme_addition (agent* thisAgent, wme *w) {
        a snapshot of the empty output link, so Soar can detect any changes
        that might occur before the first output_phase. */
 
-    thisAgent->output_link_tc_num = get_new_tc_number(thisAgent);
-    ol->link_wme->value->id.tc_num = thisAgent->output_link_tc_num;
-    thisAgent->output_link_for_tc = ol;
-    /* --- add output_link to id's list --- */
-    push(thisAgent, thisAgent->output_link_for_tc, ol->link_wme->value->id.associated_output_links);
+  /* KJC & RPM 10/06 commenting out SW's change.
+     See near end of init_agent_memory for details  */
+    //thisAgent->output_link_tc_num = get_new_tc_number(thisAgent);
+    //ol->link_wme->value->id.tc_num = thisAgent->output_link_tc_num;
+    //thisAgent->output_link_for_tc = ol;
+    ///* --- add output_link to id's list --- */
+    //push(thisAgent, thisAgent->output_link_for_tc, ol->link_wme->value->id.associated_output_links);
 }
 
 void update_for_top_state_wme_removal (wme *w) {
