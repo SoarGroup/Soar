@@ -1651,7 +1651,28 @@ void init_agent_memory(agent* thisAgent)
                  thisAgent->output_link_symbol,
                  thisAgent->io_header_output);
 
-  do_buffered_wm_and_ownership_changes(thisAgent);
+  // KJC & RPM 10/06
+  // A lot of stuff isn't initialized properly until the input and output cycles are run the first time.
+  // Because of this, SW had to put in a hack to work around changes made to the output-link in the first
+  //   dc not being visible. (see comment near end of update_for_top_state_wme_addition).  This change added
+  //   an item to the associated_output_links list.
+  // But the ol->ids_in_tc is still not initialized until the first output phase, so if we exit before that,
+  //   remove_output_link_tc_info doesn't see it and doesn't clean up the associated_output_links list.
+  // If we do run an output phase, though, the same item is added to the associated_output_links list twice.
+  //   ol->ids_in_tc gets initialized, so remove_output_link_tc_info -- but it only cleans up the first copy
+  //   of the item.
+  // All of these problems come back to things not being initialized properly, so we run the input and output
+  //   phases here to force proper initialization (and have commented out SW's changes to
+  //   update_for_top_state_wme_addition).  This will cause somecallbacks to be triggered, but we don't think
+  //   this is a problem for two reasons:
+  //   1) these events are currently not exposed through SML, so no clients will see them
+  //   2) even if these events were exposed, they are being fired during agent creation.  Since the agent
+  //      hasn't been created yet, no client could have registered for the events anyway.
+  // Note that this change replaces the do_buffered_wm_and_ownership_changes call which attempted to do some
+  //   initialization (including triggering SW's changes).
+  do_input_cycle(thisAgent);
+  do_output_cycle(thisAgent);
+  //do_buffered_wm_and_ownership_changes(thisAgent);
 
   // This is an important part of the state of the agent for io purposes
   // (see io.cpp for details)
