@@ -80,7 +80,7 @@ class SoarCondition:
 	def is_empty(self):
 		return len(self.ground_preds) == 0 and len(self.id_preds) == 0
 
-	def to_str(self, distinctions = dict()):
+	def to_str(self, var_distinctions = dict(), val_distinctions = dict()):
 		s = "<%s>" % self.head_var
 		
 		for pred in self.ground_preds:
@@ -96,9 +96,13 @@ class SoarCondition:
 		
 		for pred in self.id_preds:
 			ds = ""
-			if distinctions.has_key(pred[2]):
-				for d in distinctions[pred[2]]:
+			if pred[2] in var_distinctions:
+				for d in var_distinctions[pred[2]]:
 					ds += "<> <%s> " % d
+			
+			if pred[2] in val_distinctions:
+				for d in val_distinctions[pred[2]]:
+					ds += "<> %s " % d
 			
 			if pred[0]:
 				s += " -^%s" % pred[1]
@@ -179,7 +183,8 @@ class SoarAction:
 		return "(%s)" % s
 
 class SoarProduction:
-	def __init__(self, name):
+	def __init__(self, name, type=""):
+		self.type = type
 		self.name = name
 		self.var_gen = UniqueNameGenerator()
 		self.state_id = self.var_gen.get_name("s")
@@ -192,6 +197,7 @@ class SoarProduction:
 		self.output_link = None
 		self.cond_paths = dict() # condition ref -> attrib
 		self.var_distinctions = dict()
+		self.value_distinctions = dict()
 
 	def copy(self, name):
 		c = SoarProduction(name)
@@ -303,8 +309,8 @@ class SoarProduction:
 		props = self.get_proposed_operators()
 		for p in props:
 			op_name = p[1]
-			prod_name = name_gen.get_name("apply*%s" % op_name)
-			r = SoarProduction(prod_name)
+			prod_name = name_gen.get_name(op_name)
+			r = SoarProduction(prod_name, "apply")
 			op_var = r.add_condition().add_id_predicate("operator")
 			r.add_condition(op_var).add_ground_predicate("name", op_name)
 			rules.append(r)
@@ -347,6 +353,12 @@ class SoarProduction:
 			self.var_distinctions[v2] = []
 		self.var_distinctions[v2].append(v1)
 
+	def add_value_distinction(self, var, value):
+		print var, value
+		if var not in self.value_distinctions:
+			self.value_distinctions[var] = []
+		self.value_distinctions[var].append(value)
+
 	def __calculate_distinctions(self, condition, bound_vars):
 		distinct = dict()
 		for v in condition.get_rhs_vars():
@@ -362,6 +374,7 @@ class SoarProduction:
 
 
 	def __str__(self):
+		val_distinct = dict(self.value_distinctions.items())
 		bound_vars = set([])
 		used = set([])
 		cond_str = "   (state %s" % self.first_state_cond.to_str()[1:]
@@ -371,20 +384,29 @@ class SoarProduction:
 				if self.neg_conjs.has_key(c):
 					cond_str += "\n   -{"
 					for nc in self.neg_conjs[c]:
-						distinct = self.__calculate_distinctions(nc, bound_vars)
-						cond_str += "\n     " + nc.to_str(distinct)
+						var_distinct = self.__calculate_distinctions(nc, bound_vars)
+						cond_str += "\n     " + nc.to_str(var_distinct, val_distinct)
 						used.add(nc)
 						bound_vars = bound_vars.union(nc.get_rhs_vars())
 					cond_str += "\n   }"
 				else:
-					distinct = self.__calculate_distinctions(c, bound_vars)
-					cond_str += "\n   " + c.to_str(distinct)
+					var_distinct = self.__calculate_distinctions(c, bound_vars)
+					cond_str += "\n   " + c.to_str(var_distinct, val_distinct)
 					used.add(c)
 					bound_vars = bound_vars.union(c.get_rhs_vars())
+				
+				for b in bound_vars:
+					if b in val_distinct:
+						val_distinct.pop(b)
 
 		act_str = ""
 		for a in self.actions:
 			act_str  += "\n   " + str(a)
 
-		return "sp {%s\n%s\n-->%s\n}" % (self.name, cond_str, act_str)
+		if self.type != "":
+			prod_name = "%s*%s" % (self.type, self.name)
+		else:
+			prod_name = self.name
+			
+		return "sp {%s\n%s\n-->%s\n}" % (prod_name, cond_str, act_str)
 

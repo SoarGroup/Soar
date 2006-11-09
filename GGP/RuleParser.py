@@ -26,8 +26,8 @@ class GDLSoarVarMapper:
 			return soar_var
 
 # makes a typical skeleton production for use in GGP
-def MakeTemplateProduction(name, game_name, gs = True, facts = True, move = True):
-	p = SoarProduction(name_gen.get_name(name))
+def MakeTemplateProduction(type, name, game_name, gs = True, facts = True, move = True):
+	p = SoarProduction(name_gen.get_name(name), type)
 	s_cond = p.add_condition()
 	s_cond.add_ground_predicate("name", game_name)
 	if gs:
@@ -42,12 +42,15 @@ def MakeTemplateProduction(name, game_name, gs = True, facts = True, move = True
 	return p
 
 
-def ParseSentenceToAction(sentence, production, action):
+def ParseSentenceToAction(sentence, production, action, var_mapper):
 	id = action.add_id_wme_action(sentence[0])
 	id_action = production.add_action(id)
-	for i in range(1, len(sentence)):
-		attrib_name = "p%d" % i
-		id_action.add_ground_wme_action(attrib_name, sentence[i])
+	for v, i in zip(list(sentence)[1:], range(1, len(sentence))):
+		if v[0] == '?':
+			# variable
+			id_action.add_id_wme_action("p%d" % i, var_mapper.get_var(v))
+		else:
+			id_action.add_ground_wme_action("p%d" % i, v)
 
 def ParseSentenceToCondition(sentence, production, condition, var_mapper, negated = False, check_new = False, match_new = False):
 	if (isinstance(sentence, str) or len(sentence) == 1) and not check_new:
@@ -146,12 +149,15 @@ def ParseDistinctions(literals, prod, var_mapper):
 	for l in literals:
 		if l[0].lower() == "distinct":
 			v1 = var_mapper.get_var(l[1])
-			v2 = var_mapper.get_var(l[2])
-			prod.add_var_distinction(v1, v2)
+			if l[2][0] == '?':
+				v2 = var_mapper.get_var(l[2])
+				prod.add_var_distinction(v1, v2)
+			else:
+				prod.add_value_distinction(v1, l[2])
 
 
 def MakeInitRule(game_name, role, init_conds, facts, min_success_score, tokens):
-	sp = SoarProduction("propose*init-%s" % game_name);
+	sp = SoarProduction("init-%s" % game_name, "propose");
 	c = sp.add_condition()
 	c.add_ground_predicate("superstate", "nil")
 	c.add_ground_predicate("name", "", True)
@@ -172,12 +178,13 @@ def MakeInitRule(game_name, role, init_conds, facts, min_success_score, tokens):
 	gs_actions = asp.add_action(game_state_var)
 	gs_actions.add_ground_wme_action("role", role)
 
+	var_map = GDLSoarVarMapper(UniqueNameGenerator())
 	for ic in init_conds:
-		ParseSentenceToAction(ic, asp, gs_actions)
+		ParseSentenceToAction(ic, asp, gs_actions, var_map)
 
 	fact_actions = asp.add_action(game_facts_var)
 	for f in facts:
-		ParseSentenceToAction(f, asp, fact_actions)
+		ParseSentenceToAction(f, asp, fact_actions, var_map)
 	
 	for t in tokens:
 		state_action.add_id_wme_action(t)
@@ -202,19 +209,27 @@ def FindNecessaryStructures(head, body):
 	use_facts = False
 	for b in body:
 		if b[0].lower() == "not":
-			relation = b[1][0]
+			relation = b[1][0].lower()
 		else:
-			relation = b[0]
+			relation = b[0].lower()
 
-		if relation.lower() == "does":
+		if relation == "does":
 			use_move = True
-		elif relation.lower() == "true":
+		elif relation == "true":
 			use_gs = True
 		else:
 			use_facts = True
 	
-	if head[0].lower() == "next":
+	if isinstance(head, str):
+		head_rel = head.lower()
+	else:
+		head_rel = head[0].lower()
+		
+	if head_rel == "next":
 		use_gs = True # because we have to check for lack of it later
+	elif head_rel != "legal" and head_rel != "goal" and head_rel != "terminal":
+		# an elaboration
+		use_facts = True
 	
 	return (use_gs, use_facts, use_move)
 
@@ -226,11 +241,11 @@ def FindNecessaryStructures(head, body):
 #     ...
 # )
 def TranslateImplication(game_name, head, body, tokens, remove, min_success_score):
-	prod_name = name_gen.get_name("propose-%s" % SoarifyStr(str(head)))
+	prod_name = name_gen.get_name(SoarifyStr(str(head)))
 	
 	use_gs, use_facts, use_move = FindNecessaryStructures(head, body)
 
-	sp = MakeTemplateProduction(prod_name, game_name, use_gs, use_facts, use_move)
+	sp = MakeTemplateProduction("propose", prod_name, game_name, use_gs, use_facts, use_move)
 	var_mapper = GDLSoarVarMapper(sp.var_gen)
 	if use_gs:
 		gs_cond = sp.get_conditions("gs")[0]
@@ -248,15 +263,22 @@ def TranslateImplication(game_name, head, body, tokens, remove, min_success_scor
 		move_cond = None
 
 	if isinstance(head, str):
-		if head.lower() == "terminal":
-			ParseGDLBodyToCondition(body, sp, gs_cond, fact_cond, move_cond, var_mapper)
-			ParseDistinctions(body, sp, var_mapper)
+		relation = head.lower()
+		params = []
+	else:
+		relation = head[0].lower()
+		params = list(head)[1:]
+
+	if relation == "terminal":
+		sp.type = "elaborate"
+		ParseGDLBodyToCondition(body, sp, gs_cond, fact_cond, move_cond, var_mapper)
+		ParseDistinctions(body, sp, var_mapper)
 #			sp_sel_success = sp.copy(name_gen.get_name(sp.name))
 #			sp_sel_success.first_state_cond.add_id_predicate("duplicate-of*")
 #			desired_var = sp_sel_success.first_state_cond.add_id_predicate("desired")
 #			sp_sel_failure = sp_sel_success.copy(name_gen.get_name(sp_sel_success.name))
-			
-			sp_sel = sp.copy(name_gen.get_name(sp.name))
+		
+		sp_sel = sp.copy(name_gen.get_name(sp.name))
 #			sp.first_state_cond.add_id_predicate("duplicate-of*", True)
 #			sp.add_halt()
 #			
@@ -268,38 +290,41 @@ def TranslateImplication(game_name, head, body, tokens, remove, min_success_scor
 
 #			return [sp, sp_sel_success, sp_sel_failure]
 
-			sp_sel = sp.copy(name_gen.get_name(sp.name))
-			sp_sel.first_state_cond.add_id_predicate("duplicate-of*")
-			sp_sel.add_action().add_id_wme_action("terminal")
-			sp.first_state_cond.add_id_predicate("duplicate-of*", True)
-			sp.add_halt()
-			
-			return [sp, sp_sel]
-	else:
-		if head[0].lower() == "legal":
-			ParseGDLBodyToCondition(body, sp, gs_cond, fact_cond, move_cond, var_mapper, check_new = False)
-			return TranslateLegal(game_name, sp, head, body, var_mapper)
+		sp_sel = sp.copy(name_gen.get_name(sp.name))
+		sp_sel.first_state_cond.add_id_predicate("duplicate-of*")
+		sp_sel.add_action().add_id_wme_action("terminal")
+		sp.first_state_cond.add_id_predicate("duplicate-of*", True)
+		sp.add_halt()
+		
+		return [sp, sp_sel]
+
+	elif relation == "legal":
+		ParseGDLBodyToCondition(body, sp, gs_cond, fact_cond, move_cond, var_mapper, check_new = False)
+		return TranslateLegal(game_name, sp, head, body, var_mapper)
+	elif relation == "next":
+		ParseGDLBodyToCondition(body, sp, gs_cond, fact_cond, move_cond, var_mapper)
+		if not use_move:
+			# This is a special case, because normally, the presence of a move
+			# command on the input link maintains the progression of the state.
+			# If this axiom does not check for that, we have to add a token
+			# to the top state every time we progress one step (which is consumed
+			# when the rule associated with this axiom fires) so that we limit
+			# one firing of this rule per step
+			token_name = name_gen.get_name(SoarifyStr(head))
+			tokens.append(token_name)
+			return TranslateNext(game_name, sp, head, body, var_mapper, remove, token_name)
 		else:
-			ParseGDLBodyToCondition(body, sp, gs_cond, fact_cond, move_cond, var_mapper)
-			if head[0].lower() == "next":
-				if not use_move:
-					# This is a special case, because normally, the presence of a move
-					# command on the input link maintains the progression of the state.
-					# If this axiom does not check for that, we have to add a token
-					# to the top state every time we progress one step (which is consumed
-					# when the rule associated with this axiom fires) so that we limit
-					# one firing of this rule per step
-					token_name = name_gen.get_name(SoarifyStr(head))
-					tokens.append(token_name)
-					return TranslateNext(game_name, sp, head, body, var_mapper, remove, token_name)
-				else:
-					return TranslateNext(game_name, sp, head, body, var_mapper, remove)
+			return TranslateNext(game_name, sp, head, body, var_mapper, remove)
 
-			elif head[0].lower() == "goal":
-				return TranslateGoal(game_name, sp, head, body, var_mapper, min_success_score)
+	elif relation == "goal":
+		ParseGDLBodyToCondition(body, sp, gs_cond, fact_cond, move_cond, var_mapper)
+		return TranslateGoal(game_name, sp, head, body, var_mapper, min_success_score)
 
-	# doesn't match anything
-	return []
+	else:
+		# this can only be some implied fact
+		ParseGDLBodyToCondition(body, sp, gs_cond, fact_cond, move_cond, var_mapper)
+		return TranslateElaboration(game_name, sp, head, body, var_mapper)
+		
 
 def TranslateLegal(game_name, sp, head, body, var_mapper = dict()):
 
@@ -408,8 +433,8 @@ def TranslateNext(game_name, sp, head, body, var_mapper = dict(), remove = True,
 		
 		# an operator that removes the relation if it doesn't have a new label
 		op_name = name_gen.get_name("remove-%s" % rel_name)
-		remove_prod_name = name_gen.get_name("propose*%s" % op_name)
-		sp_remove = MakeTemplateProduction(remove_prod_name, game_name, facts = False, move = False)
+		remove_prod_name = name_gen.get_name(op_name)
+		sp_remove = MakeTemplateProduction("propose", remove_prod_name, game_name, facts = False, move = False)
 		gs_cond = sp_remove.get_conditions("gs")[0]
 		rel_var = gs_cond.add_id_predicate(rel_name)
 		sp_remove.add_condition(rel_var).add_id_predicate("new", True)
@@ -429,8 +454,12 @@ def TranslateNext(game_name, sp, head, body, var_mapper = dict(), remove = True,
 
 
 def TranslateGoal(game_name, sp, head, body, var_mapper, score):
+	sp.type = "elaborate"
 	sp.first_state_cond.add_id_predicate("terminal")
 	desired_var = sp.first_state_cond.add_id_predicate("desired")
+	
+	if body != None:
+		ParseDistinctions(body, sp, var_mapper)
 	
 	if head[2][0] == '?':
 		# I don't know how to handle this right now. Does it even come up?
@@ -443,9 +472,14 @@ def TranslateGoal(game_name, sp, head, body, var_mapper, score):
 
 		return [sp]
 
-def TranslateImplication(game_name, sp, head, body, var_mapper):
+def TranslateElaboration(game_name, sp, head, body, var_mapper):
+	if body != None:
+		ParseDistinctions(body, sp, var_mapper)
+		
+	sp.type = "elaborate"
 	facts_cond = sp.get_conditions("facts")[0]
-	ParseSentenceToAction(head, sp, facts_cond)
+	facts_action = sp.add_action(facts_cond.head_var)
+	ParseSentenceToAction(head, sp, facts_action, var_mapper)
 	
 	return [sp]
 
@@ -555,6 +589,7 @@ def TranslateFrameAxioms(game_name, head, bodies):
 	x = 0
 	combinations = GenCombinations([len(b) for b in new_bodies])
 	props = []
+	op_name = name_gen.get_name("remove-%s" % axiom_name)
 	for ci in combinations:
 		x += 1
 		comb = []
@@ -562,9 +597,8 @@ def TranslateFrameAxioms(game_name, head, bodies):
 			comb.append(new_bodies[i][ci[i]])
 
 		comb_body = ElementGGP.Combine(comb + distinct_literals)
-		
-		op_name = name_gen.get_name("remove-%s-%d" % (axiom_name,x))
-		sp = MakeTemplateProduction("propose*%s" % op_name, game_name)
+		prod_name = name_gen.get_name("%s%d" % (op_name, x))
+		sp = MakeTemplateProduction("propose", prod_name, game_name)
 		var_mapper = GDLSoarVarMapper(sp.var_gen)
 		gs_cond = sp.get_conditions("gs")[0]
 		fact_cond = sp.get_conditions("facts")[0]
@@ -710,13 +744,13 @@ def TranslateDescription(game_name, description, filename):
 		elif axiom[0].lower() == "next":
 			head = axiom
 			name = name_gen.get_name(SoarifyStr(str(head)))
-			sp = MakeTemplateProduction(name, game_name, True, False, False)
+			sp = MakeTemplateProduction("propose", name, game_name, True, False, False)
 			productions.extend(TranslateNext(game_name, sp, head, None))
 
 		elif axiom[0].lower() == "legal":
 			head = axiom
 			name = name_gen.get_name(SoarifyStr(str(head)))
-			sp = MakeTemplateProduction(name, game_name, False, False, False)
+			sp = MakeTemplateProduction("propose", name, game_name, False, False, False)
 			productions.extend(TranslateLegal(game_name, sp, head, None))
 
 		else: # these should all be facts
@@ -808,7 +842,7 @@ def TranslateDescription(game_name, description, filename):
 		productions.extend(TranslateFrameAxioms(game_name, f[0], f[1]))
 
 	# make the progress state productions
-	sp = SoarProduction("propose*progress-state")
+	sp = SoarProduction("progress-state", "propose")
 	sp.get_ol_cond().add_id_predicate("<cmd-name>", name="cmd")
 	sp.add_op_proposal("+ <").add_ground_wme_action("name", "progress-state")
 	productions.append(sp)
@@ -885,10 +919,16 @@ def SplitOr(axiom):
 
 	return result
 
-#d1="((ROLE ROBOT) (INIT (CLEAR B)) (INIT (CLEAR C)) (INIT (ON C A)) (INIT (TABLE A)) (INIT (TABLE B)) (INIT (STEP 1)) (<= (NEXT (ON ?X ?Y)) (DOES ROBOT (S ?X ?Y))) (<= (NEXT (ON ?X ?Y)) (DOES ROBOT (S ?U ?V)) (TRUE (ON ?X ?Y))) (<= (NEXT (TABLE ?X)) (DOES ROBOT (S ?U ?V)) (TRUE (TABLE ?X)) (DISTINCT ?U ?X)) (<= (NEXT (CLEAR ?Y)) (DOES ROBOT (S ?U ?V)) (TRUE (CLEAR ?Y)) (DISTINCT ?V ?Y)) (<= (NEXT (ON ?X ?Y)) (DOES ROBOT (U ?U ?V)) (TRUE (ON ?X ?Y)) (DISTINCT ?U ?X)) (<= (NEXT (TABLE ?X)) (DOES ROBOT (U ?X ?Y))) (<= (NEXT (TABLE ?X)) (DOES ROBOT (U ?U ?V)) (TRUE (TABLE ?X))) (<= (NEXT (CLEAR ?Y)) (DOES ROBOT (U ?X ?Y))) (<= (NEXT (CLEAR ?X)) (DOES ROBOT (U ?U ?V)) (TRUE (CLEAR ?X))) (<= (NEXT (STEP ?Y)) (TRUE (STEP ?X)) (SUCC ?X ?Y)) (SUCC 1 2) (SUCC 2 3) (SUCC 3 4) (<= (LEGAL ROBOT (S ?X ?Y)) (TRUE (CLEAR ?X)) (TRUE (TABLE ?X)) (TRUE (CLEAR ?Y)) (DISTINCT ?X ?Y)) (<= (LEGAL ROBOT (U ?X ?Y)) (TRUE (CLEAR ?X)) (TRUE (ON ?X ?Y))) (<= (GOAL ROBOT 100) (TRUE (ON A B)) (TRUE (ON B C))) (<= (GOAL ROBOT 0) (NOT (TRUE (ON A B)))) (<= (GOAL ROBOT 0) (NOT (TRUE (ON B C)))) (<= TERMINAL (TRUE (STEP 4))) (<= TERMINAL (TRUE (ON A B)) (TRUE (ON B C))))"
-#
-#d2="((ROLE ROBOT) (INIT (OFF P)) (INIT (OFF Q)) (INIT (OFF R)) (INIT (STEP 1)) (<= (NEXT (ON P)) (DOES ROBOT A) (TRUE (OFF P))) (<= (NEXT (ON Q)) (DOES ROBOT A) (TRUE (ON Q))) (<= (NEXT (ON R)) (DOES ROBOT A) (TRUE (ON R))) (<= (NEXT (OFF P)) (DOES ROBOT A) (TRUE (ON P))) (<= (NEXT (OFF Q)) (DOES ROBOT A) (TRUE (OFF Q))) (<= (NEXT (OFF R)) (DOES ROBOT A) (TRUE (OFF R))) (<= (NEXT (ON P)) (DOES ROBOT B) (TRUE (ON Q))) (<= (NEXT (ON Q)) (DOES ROBOT B) (TRUE (ON P))) (<= (NEXT (ON R)) (DOES ROBOT B) (TRUE (ON R))) (<= (NEXT (OFF P)) (DOES ROBOT B) (TRUE (OFF Q))) (<= (NEXT (OFF Q)) (DOES ROBOT B) (TRUE (OFF P))) (<= (NEXT (OFF R)) (DOES ROBOT B) (TRUE (OFF R))) (<= (NEXT (ON P)) (DOES ROBOT C) (TRUE (ON P))) (<= (NEXT (ON Q)) (DOES ROBOT C) (TRUE (ON R))) (<= (NEXT (ON R)) (DOES ROBOT C) (TRUE (ON Q))) (<= (NEXT (OFF P)) (DOES ROBOT C) (TRUE (OFF P))) (<= (NEXT (OFF Q)) (DOES ROBOT C) (TRUE (OFF R))) (<= (NEXT (OFF R)) (DOES ROBOT C) (TRUE (OFF Q))) (<= (NEXT (STEP ?Y)) (TRUE (STEP ?X)) (SUCC ?X ?Y)) (SUCC 1 2) (SUCC 2 3) (SUCC 3 4) (SUCC 4 5) (SUCC 5 6) (SUCC 6 7) (LEGAL ROBOT A) (LEGAL ROBOT B) (LEGAL ROBOT C) (<= (GOAL ROBOT 100) (TRUE (ON P)) (TRUE (ON Q)) (TRUE (ON R))) (<= (GOAL ROBOT 0) (OR (NOT (TRUE (ON P))) (NOT (TRUE (ON Q))) (NOT (TRUE (ON R))))) (<= TERMINAL (TRUE (STEP 7))) (<= TERMINAL (TRUE (ON P)) (TRUE (ON Q)) (TRUE (ON R))))"
-#
-#d3="((ROLE ROBOT) (INIT (CELL A)) (INIT (GOLD C)) (INIT (STEP 1)) (<= (NEXT (CELL ?Y)) (DOES ROBOT MOVE) (TRUE (CELL ?X)) (ADJACENT ?X ?Y)) (<= (NEXT (CELL ?X)) (DOES ROBOT GRAB) (TRUE (CELL ?X))) (<= (NEXT (CELL ?X)) (DOES ROBOT DROP) (TRUE (CELL ?X))) (<= (NEXT (GOLD ?X)) (DOES ROBOT MOVE) (TRUE (GOLD ?X))) (<= (NEXT (GOLD I)) (DOES ROBOT GRAB) (TRUE (CELL ?X)) (TRUE (GOLD ?X))) (<= (NEXT (GOLD I)) (DOES ROBOT GRAB) (TRUE (GOLD I))) (<= (NEXT (GOLD ?Y)) (DOES ROBOT GRAB) (TRUE (CELL ?X)) (TRUE (GOLD ?Y)) (DISTINCT ?X ?Y)) (<= (NEXT (GOLD ?X)) (DOES ROBOT DROP) (TRUE (CELL ?X)) (TRUE (GOLD I))) (<= (NEXT (GOLD ?X)) (DOES ROBOT DROP) (TRUE (GOLD ?X)) (DISTINCT ?X I)) (<= (NEXT (STEP ?Y)) (TRUE (STEP ?X)) (SUCC ?X ?Y)) (ADJACENT A B) (ADJACENT B C) (ADJACENT C D) (ADJACENT D A) (SUCC 1 2) (SUCC 2 3) (SUCC 3 4) (SUCC 4 5) (SUCC 5 6) (SUCC 6 7) (SUCC 7 8) (SUCC 8 9) (SUCC 9 10) (<= (LEGAL ROBOT MOVE)) (<= (LEGAL ROBOT GRAB) (TRUE (CELL ?X)) (TRUE (GOLD ?X))) (<= (LEGAL ROBOT DROP) (TRUE (GOLD I))) (<= (GOAL ROBOT 100) (TRUE (GOLD A))) (<= (GOAL ROBOT 0) (TRUE (GOLD ?X)) (DISTINCT ?X A)) (<= TERMINAL (TRUE (STEP 10))) (<= TERMINAL (TRUE (GOLD A))))"
-#
-#TranslateDescription("game", ElemGGP(d1), "tmp")
+#blocksworld
+#d="((ROLE ROBOT) (INIT (CLEAR B)) (INIT (CLEAR C)) (INIT (ON C A)) (INIT (TABLE A)) (INIT (TABLE B)) (INIT (STEP 1)) (<= (NEXT (ON ?X ?Y)) (DOES ROBOT (S ?X ?Y))) (<= (NEXT (ON ?X ?Y)) (DOES ROBOT (S ?U ?V)) (TRUE (ON ?X ?Y))) (<= (NEXT (TABLE ?X)) (DOES ROBOT (S ?U ?V)) (TRUE (TABLE ?X)) (DISTINCT ?U ?X)) (<= (NEXT (CLEAR ?Y)) (DOES ROBOT (S ?U ?V)) (TRUE (CLEAR ?Y)) (DISTINCT ?V ?Y)) (<= (NEXT (ON ?X ?Y)) (DOES ROBOT (U ?U ?V)) (TRUE (ON ?X ?Y)) (DISTINCT ?U ?X)) (<= (NEXT (TABLE ?X)) (DOES ROBOT (U ?X ?Y))) (<= (NEXT (TABLE ?X)) (DOES ROBOT (U ?U ?V)) (TRUE (TABLE ?X))) (<= (NEXT (CLEAR ?Y)) (DOES ROBOT (U ?X ?Y))) (<= (NEXT (CLEAR ?X)) (DOES ROBOT (U ?U ?V)) (TRUE (CLEAR ?X))) (<= (NEXT (STEP ?Y)) (TRUE (STEP ?X)) (SUCC ?X ?Y)) (SUCC 1 2) (SUCC 2 3) (SUCC 3 4) (<= (LEGAL ROBOT (S ?X ?Y)) (TRUE (CLEAR ?X)) (TRUE (TABLE ?X)) (TRUE (CLEAR ?Y)) (DISTINCT ?X ?Y)) (<= (LEGAL ROBOT (U ?X ?Y)) (TRUE (CLEAR ?X)) (TRUE (ON ?X ?Y))) (<= (GOAL ROBOT 100) (TRUE (ON A B)) (TRUE (ON B C))) (<= (GOAL ROBOT 0) (NOT (TRUE (ON A B)))) (<= (GOAL ROBOT 0) (NOT (TRUE (ON B C)))) (<= TERMINAL (TRUE (STEP 4))) (<= TERMINAL (TRUE (ON A B)) (TRUE (ON B C))))"
+
+#buttons
+d="((ROLE ROBOT) (INIT (OFF P)) (INIT (OFF Q)) (INIT (OFF R)) (INIT (STEP 1)) (<= (NEXT (ON P)) (DOES ROBOT A) (TRUE (OFF P))) (<= (NEXT (ON Q)) (DOES ROBOT A) (TRUE (ON Q))) (<= (NEXT (ON R)) (DOES ROBOT A) (TRUE (ON R))) (<= (NEXT (OFF P)) (DOES ROBOT A) (TRUE (ON P))) (<= (NEXT (OFF Q)) (DOES ROBOT A) (TRUE (OFF Q))) (<= (NEXT (OFF R)) (DOES ROBOT A) (TRUE (OFF R))) (<= (NEXT (ON P)) (DOES ROBOT B) (TRUE (ON Q))) (<= (NEXT (ON Q)) (DOES ROBOT B) (TRUE (ON P))) (<= (NEXT (ON R)) (DOES ROBOT B) (TRUE (ON R))) (<= (NEXT (OFF P)) (DOES ROBOT B) (TRUE (OFF Q))) (<= (NEXT (OFF Q)) (DOES ROBOT B) (TRUE (OFF P))) (<= (NEXT (OFF R)) (DOES ROBOT B) (TRUE (OFF R))) (<= (NEXT (ON P)) (DOES ROBOT C) (TRUE (ON P))) (<= (NEXT (ON Q)) (DOES ROBOT C) (TRUE (ON R))) (<= (NEXT (ON R)) (DOES ROBOT C) (TRUE (ON Q))) (<= (NEXT (OFF P)) (DOES ROBOT C) (TRUE (OFF P))) (<= (NEXT (OFF Q)) (DOES ROBOT C) (TRUE (OFF R))) (<= (NEXT (OFF R)) (DOES ROBOT C) (TRUE (OFF Q))) (<= (NEXT (STEP ?Y)) (TRUE (STEP ?X)) (SUCC ?X ?Y)) (SUCC 1 2) (SUCC 2 3) (SUCC 3 4) (SUCC 4 5) (SUCC 5 6) (SUCC 6 7) (LEGAL ROBOT A) (LEGAL ROBOT B) (LEGAL ROBOT C) (<= (GOAL ROBOT 100) (TRUE (ON P)) (TRUE (ON Q)) (TRUE (ON R))) (<= (GOAL ROBOT 0) (OR (NOT (TRUE (ON P))) (NOT (TRUE (ON Q))) (NOT (TRUE (ON R))))) (<= TERMINAL (TRUE (STEP 7))) (<= TERMINAL (TRUE (ON P)) (TRUE (ON Q)) (TRUE (ON R))))"
+
+#maze
+#d="((ROLE ROBOT) (INIT (CELL A)) (INIT (GOLD C)) (INIT (STEP 1)) (<= (NEXT (CELL ?Y)) (DOES ROBOT MOVE) (TRUE (CELL ?X)) (ADJACENT ?X ?Y)) (<= (NEXT (CELL ?X)) (DOES ROBOT GRAB) (TRUE (CELL ?X))) (<= (NEXT (CELL ?X)) (DOES ROBOT DROP) (TRUE (CELL ?X))) (<= (NEXT (GOLD ?X)) (DOES ROBOT MOVE) (TRUE (GOLD ?X))) (<= (NEXT (GOLD I)) (DOES ROBOT GRAB) (TRUE (CELL ?X)) (TRUE (GOLD ?X))) (<= (NEXT (GOLD I)) (DOES ROBOT GRAB) (TRUE (GOLD I))) (<= (NEXT (GOLD ?Y)) (DOES ROBOT GRAB) (TRUE (CELL ?X)) (TRUE (GOLD ?Y)) (DISTINCT ?X ?Y)) (<= (NEXT (GOLD ?X)) (DOES ROBOT DROP) (TRUE (CELL ?X)) (TRUE (GOLD I))) (<= (NEXT (GOLD ?X)) (DOES ROBOT DROP) (TRUE (GOLD ?X)) (DISTINCT ?X I)) (<= (NEXT (STEP ?Y)) (TRUE (STEP ?X)) (SUCC ?X ?Y)) (ADJACENT A B) (ADJACENT B C) (ADJACENT C D) (ADJACENT D A) (SUCC 1 2) (SUCC 2 3) (SUCC 3 4) (SUCC 4 5) (SUCC 5 6) (SUCC 6 7) (SUCC 7 8) (SUCC 8 9) (SUCC 9 10) (<= (LEGAL ROBOT MOVE)) (<= (LEGAL ROBOT GRAB) (TRUE (CELL ?X)) (TRUE (GOLD ?X))) (<= (LEGAL ROBOT DROP) (TRUE (GOLD I))) (<= (GOAL ROBOT 100) (TRUE (GOLD A))) (<= (GOAL ROBOT 0) (TRUE (GOLD ?X)) (DISTINCT ?X A)) (<= TERMINAL (TRUE (STEP 10))) (<= TERMINAL (TRUE (GOLD A))))"
+
+#hanoi
+#d="((ROLE PLAYER) (INIT (ON DISC5 PILLAR1)) (INIT (ON DISC4 DISC5)) (INIT (ON DISC3 DISC4)) (INIT (ON DISC2 DISC3)) (INIT (ON DISC1 DISC2)) (INIT (CLEAR DISC1)) (INIT (CLEAR PILLAR2)) (INIT (CLEAR PILLAR3)) (INIT (STEP S0)) (<= (LEGAL PLAYER (PUTON ?X ?Y)) (TRUE (CLEAR ?X)) (TRUE (CLEAR ?Y)) (SMALLERDISC ?X ?Y)) (<= (NEXT (STEP ?Y)) (TRUE (STEP ?X)) (SUCCESSOR ?X ?Y)) (<= (NEXT (ON ?X ?Y)) (DOES PLAYER (PUTON ?X ?Y))) (<= (NEXT (ON ?X ?Y)) (TRUE (ON ?X ?Y)) (NOT (DOES PLAYER (PUTON ?X ?Y1))) (DISC ?Y1)) (<= (NEXT (CLEAR ?Y)) (TRUE (ON ?X ?Y)) (DOES PLAYER (PUTON ?X ?Y1))) (<= (NEXT (CLEAR ?Y)) (TRUE (CLEAR ?Y)) (NOT (DOES PLAYER (PUTON ?X ?Y))) (DISC ?X)) (<= (GOAL PLAYER 100) (TOWER PILLAR3 S5)) (<= (GOAL PLAYER 80) (TOWER PILLAR3 S4)) (<= (GOAL PLAYER 60) (TOWER PILLAR3 S3)) (<= (GOAL PLAYER 40) (TOWER PILLAR3 S2)) (<= (GOAL PLAYER 0) (TOWER PILLAR3 ?HEIGHT) (SMALLER ?HEIGHT S2)) (<= TERMINAL (TRUE (STEP S31))) (<= (TOWER ?X S0) (TRUE (CLEAR ?X))) (<= (TOWER ?X ?HEIGHT) (TRUE (ON ?Y ?X)) (DISC ?Y) (TOWER ?Y ?HEIGHT1) (SUCCESSOR ?HEIGHT1 ?HEIGHT)) (PILLAR PILLAR1) (PILLAR PILLAR2) (PILLAR PILLAR3) (NEXTSIZE DISC1 DISC2) (NEXTSIZE DISC2 DISC3) (NEXTSIZE DISC3 DISC4) (NEXTSIZE DISC4 DISC5) (DISC DISC1) (DISC DISC2) (DISC DISC3) (DISC DISC4) (DISC DISC5) (<= (NEXTSIZE DISC5 ?PILLAR) (PILLAR ?PILLAR)) (<= (SMALLERDISC ?A ?B) (NEXTSIZE ?A ?B)) (<= (SMALLERDISC ?A ?B) (NEXTSIZE ?A ?C) (SMALLERDISC ?C ?B)) (SUCCESSOR S0 S1) (SUCCESSOR S1 S2) (SUCCESSOR S2 S3) (SUCCESSOR S3 S4) (SUCCESSOR S4 S5) (SUCCESSOR S5 S6) (SUCCESSOR S6 S7) (SUCCESSOR S7 S8) (SUCCESSOR S8 S9) (SUCCESSOR S9 S10) (SUCCESSOR S10 S11) (SUCCESSOR S11 S12) (SUCCESSOR S12 S13) (SUCCESSOR S13 S14) (SUCCESSOR S14 S15) (SUCCESSOR S15 S16) (SUCCESSOR S16 S17) (SUCCESSOR S17 S18) (SUCCESSOR S18 S19) (SUCCESSOR S19 S20) (SUCCESSOR S20 S21) (SUCCESSOR S21 S22) (SUCCESSOR S22 S23) (SUCCESSOR S23 S24) (SUCCESSOR S24 S25) (SUCCESSOR S25 S26) (SUCCESSOR S26 S27) (SUCCESSOR S27 S28) (SUCCESSOR S28 S29) (SUCCESSOR S29 S30) (SUCCESSOR S30 S31) (<= (SMALLER ?X ?Y) (SUCCESSOR ?X ?Y)) (<= (SMALLER ?X ?Y) (SUCCESSOR ?X ?Z) (SMALLER ?Z ?Y)))"
+
+TranslateDescription("game", ElemGGP(d), "tmp")
