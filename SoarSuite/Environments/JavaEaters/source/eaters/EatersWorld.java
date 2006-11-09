@@ -228,7 +228,7 @@ public class EatersWorld extends World implements WorldManager {
 	private boolean generateMapFromXML(ElementXML cells) {
 		if (cells.GetNumberChildren() != m_WorldSize) {
 			assert false;
-			m_Simulation.errorMessageWarning("Row count different than world size.");
+			m_Simulation.errorMessageWarning("Row count (" + Integer.toString(cells.GetNumberChildren()) +  ") different than world size.");
 			return false;
 		}
 		
@@ -243,7 +243,7 @@ public class EatersWorld extends World implements WorldManager {
 			
 			if (rowElement.GetNumberChildren() != m_WorldSize) {
 				assert false;
-				m_Simulation.errorMessageWarning("Column count different than world size.");
+				m_Simulation.errorMessageWarning("Column count (" + Integer.toString(rowElement.GetNumberChildren()) +  ") in row " + row + " different than world size.");
 				return false;
 			}
 			
