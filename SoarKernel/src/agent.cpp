@@ -361,16 +361,17 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
 
   /* Splice agent structure out of global list of agents. */
   for (c = thisKernel->all_soar_agents; c != NIL; c = c->rest) {  
-    the_agent = (agent *) c->first;
-    if (the_agent == delete_agent) {
-      if (c == thisKernel->all_soar_agents) {
-	thisKernel->all_soar_agents = c->rest;
-      } else {
-	prev->rest = c->rest;
-      }
-      break;
-    }
-    prev = c;
+	  the_agent = (agent *) c->first;
+	  if (the_agent == delete_agent) {
+		  if (c == thisKernel->all_soar_agents) {
+			  thisKernel->all_soar_agents = c->rest;
+		  } else {
+			  prev->rest = c->rest;
+		  }
+		  free_cons(the_agent, c);  // RPM 11/06
+		  break;
+	  }
+	  prev = c;
   }
 
   /* Free structures stored in agent structure */
@@ -396,6 +397,10 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
 
   /* Releasing all the predefined symbols */
   release_predefined_symbols(delete_agent);
+
+  /* Releasing rete stuff RPM 11/06 */
+  free_with_pool(&delete_agent->rete_node_pool, delete_agent->dummy_top_node);
+  free_with_pool(&delete_agent->token_pool, delete_agent->dummy_top_token);
 
   /* Cleaning up the various callbacks 
      TODO: Not clear why callbacks need to take the agent pointer essentially twice.
