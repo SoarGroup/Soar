@@ -922,7 +922,7 @@ void chunk_instantiation (agent* thisAgent,
   
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  start_timer (&saved_start_tv);
+  start_timer (thisAgent, &saved_start_tv);
 #endif
 #endif
   
@@ -1316,8 +1316,7 @@ void chunk_instantiation (agent* thisAgent,
 	  
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-	  stop_timer (&saved_start_tv,
-		  &thisAgent->chunking_cpu_time[thisAgent->(current_phase)]);
+	  stop_timer(thisAgent, &saved_start_tv, &thisAgent->chunking_cpu_time[thisAgent->current_phase]);
 #endif
 #endif
 	  
@@ -1326,7 +1325,7 @@ void chunk_instantiation (agent* thisAgent,
 chunking_done: {}
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-			   stop_timer (&saved_start_tv, &thisAgent->chunking_cpu_time[thisAgent->current_phase]);
+			   stop_timer (thisAgent, &saved_start_tv, &thisAgent->chunking_cpu_time[thisAgent->current_phase]);
 #endif
 #endif
 }
