@@ -219,7 +219,7 @@ void do_buffered_wm_changes (agent* thisAgent)
   /* --- stuff wme changes through the rete net --- */
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  start_timer (&start_tv);
+  start_timer (thisAgent,  &start_tv);
 #endif
 #endif
   /* JC MODIFIED: Added callbacks before and after each wme addition */
@@ -237,7 +237,7 @@ void do_buffered_wm_changes (agent* thisAgent)
   }
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  stop_timer (&start_tv, &thisAgent->match_cpu_time[thisAgent->current_phase]);
+  stop_timer (thisAgent, &start_tv, &thisAgent->match_cpu_time[thisAgent->current_phase]);
 #endif
 #endif
   /* --- warn if watching wmes and same wme was added and removed -- */
