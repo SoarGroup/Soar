@@ -226,14 +226,14 @@
   // doesn't have to call ".delete()" on their Java object (or wait for the garbage collector to do it which may never run--leading to
   // reports of memory leaks on shutdown).  In C++ users expect to have to delete their kernel pointer but not in Java.
   public void Shutdown() {
-    smlJNI.Kernel_ShutdownInternal(swigCPtr);
+    smlJNI.Kernel_ShutdownInternal(swigCPtr, this);
     delete() ;
   }
   
   // Allow a user to avoid deleting the kernel object immediately, if they have some special reason.
   public void ShutdownNoDelete()
   {
-    smlJNI.Kernel_ShutdownInternal(swigCPtr);
+    smlJNI.Kernel_ShutdownInternal(swigCPtr, this);
   }
 %}
 
