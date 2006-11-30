@@ -1234,7 +1234,7 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
         {
 			// redo this a dialog should just pass back data to the main window for processing
 			NewAgentDialog newAgentDialog = new NewAgentDialog(MainFrame.this);
-			newAgentDialog.show();
+			newAgentDialog.setVisible(true);
 			if (newAgentDialog.wasApproved()) 
             {
                 //Verify that the path exists
@@ -1782,7 +1782,7 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
 			progressBar.setStringPainted(true);
 			progressDialog.setLocationRelativeTo(MainFrame.this);
 			progressDialog.pack();
-			progressDialog.show();
+			progressDialog.setVisible(true);
             progressBar.getMaximum();
             progressBar.getMinimum();
 				
@@ -2253,7 +2253,7 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
 			progressBar.setStringPainted(true);
 			progressDialog.setLocationRelativeTo(MainFrame.this);
 			progressDialog.pack();
-			progressDialog.show();
+			progressDialog.setVisible(true);
 			(new UpdateThread()).start();
 		}
 
@@ -2442,7 +2442,7 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
 		public void actionPerformed(ActionEvent e) 
         {
 			SaveProjectAsDialog spad = new SaveProjectAsDialog(MainFrame.getMainFrame());
-            spad.show();
+            spad.setVisible(true);
 
             OperatorRootNode orn = (OperatorRootNode)(operatorWindow.getModel().getRoot());
             File oldProjectFile = new File(orn.getProjectFile());
