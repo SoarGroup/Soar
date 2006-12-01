@@ -1,0 +1,4 @@
+<soar2d>
+  <logger level="finest" console="true"/>
+  <eaters />
+</soar2d>
