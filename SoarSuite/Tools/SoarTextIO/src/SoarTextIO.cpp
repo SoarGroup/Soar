@@ -225,7 +225,7 @@ MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 		if(STIO->LastSent.size() > 0)
 		{
 			//STIO->pAgent->DestroyWME(STIO->LastSent[0]->holder);
-			//STIO->LastSent.clear();
+			STIO->LastSent.clear();
 			
 		}
 	}
