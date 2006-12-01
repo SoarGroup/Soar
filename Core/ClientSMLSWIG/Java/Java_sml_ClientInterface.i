@@ -1,9 +1,8 @@
 /* File : sml_ClientInterface.i */
 %module sml
 
-// uncomment the following line if you're using Java 1.5/5.0 (or later) and want
-//	proper Java enums to be generated for the SML enums
-//%include "enums.swg"
+// generate proper Java enums (this means we require Java 1.5 or later)
+%include "enums.swg"
 
 %javaconst(1); // strongly recommended by SWIG manual section 19.3.5.1
 // the previous line causes problems for some enum values, so we have to set them manually here
@@ -29,28 +28,6 @@
 // I'm choosing to do the latter because the constructor won't change if we change which value is the "last" value in the enum,
 // while the javaconstvalue line would need to be updated each time the last changed (and avoiding this is the whole reason for
 // having a "last" value in the enum).
-
-// Add the constructors that SWIG misses
-// We do this by adding the constructor to one class and then copying the typemaps for that class to other classes
-// This could actually do too much since ALL typemaps are copied, not just the one we added, but it doesn't seem to cause any problems so far
-// SWIG should generate this constructor starting in 1.3.28, so at some point in the future we should be able to drop this code
-// (e.g. when SWIG 1.3.28 is available on Gentoo Linux)
-
-#if SWIG_VERSION < 0x010328
-%typemap(javacode) sml::smlPrintEventId %{
-   private $javaclassname(String swigName, $javaclassname enumValue) {
-      this.swigName = swigName ; this.swigValue = enumValue.swigValue ; swigNext = this.swigValue+1 ; } %}
-
-%apply sml::smlPrintEventId {	sml::smlSystemEventId,
-								sml::smlProductionEventId,
-								sml::smlRunEventId,
-								sml::smlAgentEventId,
-								sml::smlWorkingMemoryEventId,
-								sml::smlRhsEventId,
-								sml::smlXMLEventId,
-								sml::smlUpdateEventId,
-								sml::smlStringEventId }
-#endif
 
 //
 // Doug's custom Java code for registering/unregistering callbacks
