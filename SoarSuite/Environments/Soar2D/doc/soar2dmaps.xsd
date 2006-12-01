@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://tempuri.org/XMLSchema.xsd" elementFormDefault="qualified" xmlns="http://tempuri.org/XMLSchema.xsd" xmlns:mstns="http://tempuri.org/XMLSchema.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="map">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="cell-object">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="property">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="name" type="xs:string" />
+                    <xs:element name="value" type="xs:string" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="apply">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="property">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="name" type="xs:string" />
+                          <xs:element name="value" type="xs:string" />
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="points">
+                      <xs:complexType>
+                        <xs:sequence>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="energy">
+                      <xs:complexType>
+                        <xs:sequence />
+                        <xs:attribute name="property" type="xs:string" />
+                        <xs:attribute name="value" type="xs:integer" />
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="health">
+                      <xs:complexType>
+                        <xs:sequence />
+                        <xs:attribute name="property" type="xs:string" />
+                        <xs:attribute name="value" type="xs:integer" />
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="missiles">
+                      <xs:complexType>
+                        <xs:sequence />
+                        <xs:attribute name="property" type="xs:string" />
+                        <xs:attribute name="value" type="xs:integer" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="updatable" type="xs:boolean" />
+            <xs:attribute name="name" type="xs:string" />
+            <xs:attribute name="consumable" type="xs:boolean" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="cells">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="row">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="cell">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="object" type="xs:string" />
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="world-size" type="xs:integer" />
+            <xs:attribute name="random-walls" type="xs:boolean" />
+            <xs:attribute name="random-food" type="xs:boolean" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
