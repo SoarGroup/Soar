@@ -45,7 +45,7 @@
 				AdditionalIncludeDirectories="..\..\Core\ClientSML\include; include;..\..\Core\ConnectionSML\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="false"
-				BasicRuntimeChecks="0"
+				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				WarningLevel="3"
 				DebugInformationFormat="3"
