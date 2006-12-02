@@ -3,6 +3,7 @@ package soar2d.world;
 import java.util.*;
 
 import soar2d.*;
+import soar2d.player.Player;
 
 public class CellObject {
 	// Factory methods and members
@@ -32,6 +33,17 @@ public class CellObject {
 			return new CellObject(templates.get(name));
 		}
 		return null;
+	}
+	public static ArrayList<CellObject> getTemplatesWithProperty(String name) {
+		ArrayList<CellObject> ret = new ArrayList<CellObject>(templates.values());
+		Iterator<CellObject> iter = ret.iterator();
+		while (iter.hasNext()) {
+			CellObject obj = iter.next();
+			if (!obj.hasProperty(name)) {
+				iter.remove();
+			}
+		}
+		return ret;
 	}
 	// End factory methods and members
 	
@@ -75,9 +87,9 @@ public class CellObject {
 		pointsApply = setting;
 	}
 	
-	public boolean apply(Entity entity) {
+	public boolean apply(Player player) {
 		if (pointsApply) {
-			entity.adjustPoints(((Integer)properties.get(Names.kPropertyPoints)).intValue(), name);
+			player.adjustPoints(((Integer)properties.get(Names.kPropertyPoints)).intValue(), name);
 		}
 		return consumable;
 	}

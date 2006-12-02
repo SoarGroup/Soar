@@ -1,6 +1,7 @@
 package soar2d;
 
 import java.util.logging.*;
+
 import sml.*;
 
 public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface, Runnable {
@@ -24,6 +25,12 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 			}
 			Soar2D.wm.errorMessage(title, message);
 		}
+	}
+	
+	public void playerEvent() {
+		if (Soar2D.wm.using()) {
+			Soar2D.wm.agentEvent();
+		}		
 	}
 	
 	public void startSimulation(boolean inNewThread) {
@@ -141,13 +148,9 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		return running;
 	}
 
-	public void setSpawnDebuggers(boolean selection) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public boolean isClientConnected(String debuggerName) {
-		// TODO Auto-generated method stub
-		return false;
+	public void changeMap(String map) {
+		if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Changing map.");
+		Soar2D.config.map = map;
+		resetSimulation();
 	}
 }

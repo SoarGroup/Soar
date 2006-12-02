@@ -11,6 +11,7 @@ public class Names {
 	
 	public static final String kWall = "wall";
 	public static final String kEmpty = "empty";
+	public static final String kExplosion = "explosion";
 	
 	public static final String kTagAgent = "agent";
 	public static final String kTagApply = "apply";
@@ -92,7 +93,16 @@ public class Names {
 	public static final String kUnnamedCellObject = "Unnamed CellObject";
 	
 	public static final String kPropertyBlock = "block";
+	public static final String kPropertyColor = "color";
 	public static final String kPropertyEdible = "edible";
 	public static final String kPropertyPoints = "points";
-	
+	public static final String kPropertyShape = "shape";
+
+	public static final ClientConfig kDebuggerClient = new ClientConfig();
+	static {
+		kDebuggerClient.name = "java-debugger";
+		kDebuggerClient.after = true;
+		kDebuggerClient.command = null;
+		kDebuggerClient.timeout = Soar2D.config.kDefaultTimeout;
+	}
 }

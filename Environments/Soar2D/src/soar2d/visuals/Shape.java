@@ -1,4 +1,4 @@
-package soar2d;
+package soar2d.visuals;
 
 import java.util.HashMap;
 
@@ -9,7 +9,7 @@ public class Shape {
 	public static final Shape ROUND = new Shape(kRound);
 	public static final Shape SQUARE = new Shape(kSquare);
 	
-	private static HashMap shapeHash = new HashMap();
+	private static HashMap<String, Shape> shapeHash = new HashMap<String, Shape>();
 	
 	static {
 		shapeHash.put(kRound, ROUND);
@@ -21,7 +21,7 @@ public class Shape {
 	private final int id;
 	
 	public static Shape getShape(String name) {
-		return (Shape)shapeHash.get(name);
+		return shapeHash.get(name);
 	}
 	
 	private Shape(String name) {

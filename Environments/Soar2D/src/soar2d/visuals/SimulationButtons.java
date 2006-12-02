@@ -6,14 +6,12 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
-import soar2d.world.Cell;
 
 public class SimulationButtons extends Composite {
 	protected Button m_RunButton;
 	protected Button m_StopButton;
 	protected Button m_StepButton;
 	protected Button m_ResetButton;
-	Controller control = Soar2D.control;
 
 	public SimulationButtons(Composite parent) {
 		super(parent, SWT.NONE);
@@ -38,7 +36,7 @@ public class SimulationButtons extends Composite {
 //					input = -1;
 //				}
 //				m_Simulation.setRuns(input);
-				control.startSimulation(true);
+				Soar2D.control.startSimulation(true);
 			}
 		});
 		
@@ -46,7 +44,7 @@ public class SimulationButtons extends Composite {
 		m_StopButton.setText("Stop");
 		m_StopButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				control.stopSimulation();
+				Soar2D.control.stopSimulation();
 			}
 		});
 		
@@ -54,7 +52,7 @@ public class SimulationButtons extends Composite {
 		m_StepButton.setText("Step");
 		m_StepButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				control.stepSimulation();
+				Soar2D.control.stepSimulation();
 			}
 		});
 		
@@ -62,7 +60,7 @@ public class SimulationButtons extends Composite {
 		m_ResetButton.setText("Reset");
 		m_ResetButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				control.resetSimulation();
+				Soar2D.control.resetSimulation();
 			}
 		});
 		
@@ -85,9 +83,9 @@ public class SimulationButtons extends Composite {
 	}
 	
 	void updateButtons() {
-		boolean running = control.isRunning();
-		boolean done = (Cell.getFoodCount() == 0);
-		boolean eaters = control.hasEntities();
+		boolean running = Soar2D.control.isRunning();
+		boolean done = Soar2D.simulation.isDone();
+		boolean eaters = Soar2D.simulation.hasPlayers();
 		
         m_RunButton.setEnabled(!running && !done && eaters);
         m_StopButton.setEnabled(running);
