@@ -1,12 +1,12 @@
-package soar2d;
+package soar2d.player;
 
 public class MoveInfo {
-	boolean move = false;
-	int moveDirection;
+	public boolean move = false;
+	public int moveDirection = -1;
 	
-	boolean jump = false;
+	public boolean jump = false;
 	
-	boolean eat = false;
+	public boolean eat = false;
 	
 	public MoveInfo() {
 		

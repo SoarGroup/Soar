@@ -1,48 +1,26 @@
-package soar2d.world;
+package soar2d.xml;
 
 import sml.*;
 import soar2d.*;
+import soar2d.world.Cell;
+import soar2d.world.CellObject;
 
 import java.util.*;
 
-class MapLoaderException extends Throwable {
-	static final long serialVersionUID = 1;
-	private String message;
-	
-	public MapLoaderException(String message) {
-		this.message = "Path: ";
-		while (MapLoader.xmlPath.size() > 0) {
-			this.message += "<" + (String)MapLoader.xmlPath.pop() + ">";
-		}
-		this.message += "\nElementXML: " + ElementXML.GetLastParseErrorDescription() + "\n";
-		this.message += message;
-	}
-	
-	public String getMessage() {
-		return message;
-	}
-}
-
-class ParseException extends MapLoaderException {
-	static final long serialVersionUID = 2;
-	public ParseException(String message) {
-		super(message);
-	}
-}
-
-class SMLException extends MapLoaderException {
-	static final long serialVersionUID = 3;
-	public SMLException(String message) {
-		super(message);
-	}
-}
-
 public class MapLoader {
-	static Stack xmlPath;
-	private ArrayList foods;
+	private Stack<String> xmlPath;
+	private ArrayList<String> foods;
 	
 	private int size = 0;
 	private Cell[][] mapCells = null;
+	
+	private void throwSyntax(String message) throws SyntaxException {
+		throw new SyntaxException(xmlPath, message);
+	}
+	
+	private void throwSML(String message) throws SMLException {
+		throw new SMLException(xmlPath, message);
+	}
 	
 	public int getSize() {
 		return size;
@@ -53,7 +31,7 @@ public class MapLoader {
 	}
 	
 	public boolean load(String mapFile) {
-		xmlPath = new Stack();
+		xmlPath = new Stack<String>();
 		
 		ElementXML rootTag = ElementXML.ParseXMLFromFile(mapFile);
 		if (rootTag == null) {
@@ -64,12 +42,12 @@ public class MapLoader {
 		try {
 			if (rootTag.IsTag(Names.kTagMap)) {
 				xmlPath.push(Names.kTagMap);
-				parseMap(rootTag);
+				map(rootTag);
 				xmlPath.pop();
 			} else {
-				throw new ParseException("unrecognized tag " + rootTag.GetTagName());
+				throwSyntax("unrecognized tag " + rootTag.GetTagName());
 			}
-		} catch (ParseException p) {
+		} catch (SyntaxException p) {
 			this.mapCells = null;
 			Soar2D.control.severeError("Error parsing file: " + p.getMessage());
 			return false;
@@ -91,29 +69,29 @@ public class MapLoader {
 		// success
 		return true;
 	}
-	private void parseMap(ElementXML mapTag) throws SMLException, ParseException {
+	private void map(ElementXML mapTag) throws SMLException, SyntaxException {
 		ElementXML mainTag = null;
 		for (int mapTagIndex = 0 ; mapTagIndex < mapTag.GetNumberChildren() ; ++mapTagIndex) {
 
 			mainTag = new ElementXML();
-			if (mainTag == null) throw new SMLException("couldn't create mainTag");
+			if (mainTag == null) throwSML("couldn't create mainTag");
 
 			try {
 				mapTag.GetChild(mainTag, mapTagIndex);
-				if (mainTag == null) throw new SMLException("failed to get tag by index");
+				if (mainTag == null) throwSML("failed to get tag by index");
 				
 				if (mainTag.IsTag(Names.kTagCellObject)) {
 					xmlPath.push(Names.kTagCellObject);
-					parseCellObject(mainTag);
+					cellObject(mainTag);
 					xmlPath.pop();
 
 				} else if (mainTag.IsTag(Names.kTagCells)) {
-					xmlPath.push(Names.kTagCellObject);
-					parseCells(mainTag);
+					xmlPath.push(Names.kTagCells);
+					cells(mainTag);
 					xmlPath.pop();
 					
 				} else {
-					throw new ParseException("unrecognized tag " + mainTag.GetTagName());
+					throwSyntax("unrecognized tag " + mainTag.GetTagName());
 				}
 			} finally {
 				mainTag.delete();
@@ -122,7 +100,7 @@ public class MapLoader {
 		}
 	}
 	
-	private void parseCellObject(ElementXML cellObjectTag) throws SMLException, ParseException {
+	private void cellObject(ElementXML cellObjectTag) throws SMLException, SyntaxException {
 		String name = null;
 		boolean updatable = false;
 		boolean consumable = false;
@@ -131,10 +109,10 @@ public class MapLoader {
 		
 		attribute = cellObjectTag.GetAttribute(Names.kParamName);
 		if (attribute == null) {
-			throw new ParseException("cell-object must have name");
+			throwSyntax("cell-object must have name");
 		}
 		if (attribute.length() <= 0) {
-			throw new ParseException("cell-object name must not be zero-length");
+			throwSyntax("cell-object name must not be zero-length");
 		}
 		name = attribute;
 		
@@ -154,24 +132,24 @@ public class MapLoader {
 		for (int cellObjectSubTagIndex = 0; cellObjectSubTagIndex < cellObjectTag.GetNumberChildren(); ++cellObjectSubTagIndex) {
 			
 			cellObjectSubTag = new ElementXML();
-			if (cellObjectSubTag == null) throw new SMLException("couldn't create cellObjectSubTag tag");
+			if (cellObjectSubTag == null) throwSML("couldn't create cellObjectSubTag tag");
 
 			try {
 				cellObjectTag.GetChild(cellObjectSubTag, cellObjectSubTagIndex);
-				if (cellObjectSubTag == null) throw new SMLException("failed to get tag by index");
+				if (cellObjectSubTag == null) throwSML("failed to get tag by index");
 				
 				if (cellObjectSubTag.IsTag(Names.kTagProperty)) {
 					xmlPath.push(Names.kTagProperty);
-					parseProperty(cellObjectTemplate, cellObjectSubTag);
+					property(cellObjectTemplate, cellObjectSubTag);
 					xmlPath.pop();
 		
 				} else if (cellObjectSubTag.IsTag(Names.kTagApply)) {
 					xmlPath.push(Names.kTagApply);
-					parseApply(cellObjectTemplate, cellObjectSubTag);
+					apply(cellObjectTemplate, cellObjectSubTag);
 					xmlPath.pop();
 					
 				} else {
-					throw new ParseException("unrecognized tag " + cellObjectSubTag.GetTagName());
+					throwSyntax("unrecognized tag " + cellObjectSubTag.GetTagName());
 				}
 				
 				
@@ -182,7 +160,7 @@ public class MapLoader {
 		}
 	}
 	
-	private void parseProperty(CellObject cellObjectTemplate, ElementXML propertyTag) throws SMLException, ParseException {
+	private void property(CellObject cellObjectTemplate, ElementXML propertyTag) throws SMLException, SyntaxException {
 		String name = null;
 		String value = null;
 
@@ -190,19 +168,19 @@ public class MapLoader {
 		
 		attribute = propertyTag.GetAttribute(Names.kParamName);
 		if (attribute == null) {
-			throw new ParseException("property must have a name");
+			throwSyntax("property must have a name");
 		}
 		if (attribute.length() <= 0) {
-			throw new ParseException("property name must not be zero-length");
+			throwSyntax("property name must not be zero-length");
 		}
 		name = attribute;
 		
 		attribute = propertyTag.GetAttribute(Names.kParamValue);
 		if (attribute == null) {
-			throw new ParseException("property must have a value");
+			throwSyntax("property must have a value");
 		}
 		if (attribute.length() <= 0) {
-			throw new ParseException("property value must not be zero-length");
+			throwSyntax("property value must not be zero-length");
 		}
 		value = attribute;
 		
@@ -214,45 +192,45 @@ public class MapLoader {
 		}
 	}
 	
-	private void parseApply(CellObject cellObjectTemplate, ElementXML applyTag) throws SMLException, ParseException {
+	private void apply(CellObject cellObjectTemplate, ElementXML applyTag) throws SMLException, SyntaxException {
 		
 		ElementXML applySubTag = null;
 		for (int applySubTagIndex = 0; applySubTagIndex < applyTag.GetNumberChildren(); ++applySubTagIndex) {
 			
 			applySubTag = new ElementXML();
-			if (applySubTag == null) throw new SMLException("couldn't create applySubTag tag");
+			if (applySubTag == null) throwSML("couldn't create applySubTag tag");
 
 			try {
 				applyTag.GetChild(applySubTag, applySubTagIndex);
-				if (applySubTag == null) throw new SMLException("failed to get tag by index");
+				if (applySubTag == null) throwSML("failed to get tag by index");
 				
 				if (applySubTag.IsTag(Names.kTagPoints)) {
 					xmlPath.push(Names.kTagPoints);
-					cellObjectTemplate.setPointsApply();
+					cellObjectTemplate.setPointsApply(true);
 					xmlPath.pop();
 		
 				} else if (applySubTag.IsTag(Names.kTagProperty)) {
 					xmlPath.push(Names.kTagProperty);
-					throw new ParseException("tag not implemented");
+					throwSyntax("tag not implemented");
 					//xmlPath.pop();
 					
 				} else if (applySubTag.IsTag(Names.kTagEnergy)) {
 					xmlPath.push(Names.kTagEnergy);
-					throw new ParseException("tag not implemented");
+					throwSyntax("tag not implemented");
 					//xmlPath.pop();
 					
 				} else if (applySubTag.IsTag(Names.kTagHealth)) {
 					xmlPath.push(Names.kTagHealth);
-					throw new ParseException("tag not implemented");
+					throwSyntax("tag not implemented");
 					//xmlPath.pop();
 					
 				} else if (applySubTag.IsTag(Names.kTagMissiles)) {
 					xmlPath.push(Names.kTagMissiles);
-					throw new ParseException("tag not implemented");
+					throwSyntax("tag not implemented");
 					//xmlPath.pop();
 					
 				} else {
-					throw new ParseException("unrecognized tag " + applySubTag.GetTagName());
+					throwSyntax("unrecognized tag " + applySubTag.GetTagName());
 				}
 			} finally {
 				applySubTag.delete();
@@ -261,7 +239,7 @@ public class MapLoader {
 		}
 	}
 	
-	private void parseCells(ElementXML cellsTag) throws SMLException, ParseException {
+	private void cells(ElementXML cellsTag) throws SMLException, SyntaxException {
 		boolean randomWalls = false;
 		boolean randomFood = false;
 		
@@ -269,14 +247,14 @@ public class MapLoader {
 		
 		attribute = cellsTag.GetAttribute(Names.kParamWorldSize);
 		if (attribute == null) {
-			throw new ParseException("cells tag must have a world-size parameter");
+			throwSyntax("cells tag must have a world-size parameter");
 		}
 		if (attribute.length() <= 0) {
-			throw new ParseException("world-size parameter must not be zero-length");
+			throwSyntax("world-size parameter must not be zero-length");
 		}
 		this.size = Integer.parseInt(attribute);
 		if (size < 5) {
-			throw new ParseException("world-size must be 5 or greater");
+			throwSyntax("world-size must be 5 or greater");
 		}
 		
 		attribute = cellsTag.GetAttribute(Names.kParamRandomWalls);
@@ -305,9 +283,9 @@ public class MapLoader {
 		}
 	}
 	
-	private void generateMapFromXML(ElementXML cellsTag) throws SMLException, ParseException {
+	private void generateMapFromXML(ElementXML cellsTag) throws SMLException, SyntaxException {
 		if (cellsTag.GetNumberChildren() != this.size) {
-			throw new ParseException("there does not seem to be the " +
+			throwSyntax("there does not seem to be the " +
 					"correct amount of row tags (" + cellsTag.GetNumberChildren() +
 					") for the specified map size (" + this.size +
 					")");
@@ -319,22 +297,22 @@ public class MapLoader {
 		for (int rowTagIndex = 0; rowTagIndex < cellsTag.GetNumberChildren(); ++rowTagIndex) {
 			
 			rowTag = new ElementXML();
-			if (rowTag == null) throw new SMLException("couldn't create rowTag tag");
+			if (rowTag == null) throwSML("couldn't create rowTag tag");
 
 			try {
 				cellsTag.GetChild(rowTag, rowTagIndex);
-				if (rowTag == null) throw new SMLException("failed to get tag by index");
+				if (rowTag == null) throwSML("failed to get tag by index");
 				
 				if (rowTag.IsTag(Names.kTagRow)) {
 					
 					this.mapCells[rowTagIndex] = new Cell[this.size];
 
 					xmlPath.push(Names.kTagRow);
-					parseRow(rowTagIndex, rowTag);
+					row(rowTagIndex, rowTag);
 					xmlPath.pop();
 
 				} else {
-					throw new ParseException("unrecognized tag " + rowTag.GetTagName());
+					throwSyntax("unrecognized tag " + rowTag.GetTagName());
 				}
 			} finally {
 				rowTag.delete();
@@ -343,9 +321,9 @@ public class MapLoader {
 		}
 	}
 	
-	private void parseRow(int row, ElementXML rowTag) throws SMLException, ParseException {
+	private void row(int row, ElementXML rowTag) throws SMLException, SyntaxException {
 		if (rowTag.GetNumberChildren() != this.size) {
-			throw new ParseException("there does not seem to be the " +
+			throwSyntax("there does not seem to be the " +
 					"correct amount of cell tags (" + rowTag.GetNumberChildren() +
 					") for the specified map size (" + this.size +
 					") in row " + row);
@@ -355,21 +333,21 @@ public class MapLoader {
 		for (int cellTagIndex = 0; cellTagIndex < rowTag.GetNumberChildren(); ++cellTagIndex) {
 			
 			cellTag = new ElementXML();
-			if (cellTag == null) throw new SMLException("couldn't create cellTag tag");
+			if (cellTag == null) throwSML("couldn't create cellTag tag");
 
 			try {
 				rowTag.GetChild(cellTag, cellTagIndex);
-				if (cellTag == null) throw new SMLException("failed to get tag by index");
+				if (cellTag == null) throwSML("failed to get tag by index");
 				
 				if (cellTag.IsTag(Names.kTagCell)) {
 					mapCells[row][cellTagIndex] = new Cell();
 					
 					xmlPath.push(Names.kTagCell);
-					parseCell(mapCells[row][cellTagIndex], cellTag);
+					cell(mapCells[row][cellTagIndex], cellTag);
 					xmlPath.pop();
 
 				} else {
-					throw new ParseException("unrecognized tag " + cellTag.GetTagName());
+					throwSyntax("unrecognized tag " + cellTag.GetTagName());
 				}
 			} finally {
 				cellTag.delete();
@@ -378,24 +356,24 @@ public class MapLoader {
 		}
 	}
 	
-	private void parseCell(Cell cell, ElementXML cellTag) throws SMLException, ParseException {
+	private void cell(Cell cell, ElementXML cellTag) throws SMLException, SyntaxException {
 		ElementXML objectTag = null;
 		for (int cellTagIndex = 0; cellTagIndex < cellTag.GetNumberChildren(); ++cellTagIndex) {
 			
 			objectTag = new ElementXML();
-			if (objectTag == null) throw new SMLException("couldn't create cellTag tag");
+			if (objectTag == null) throwSML("couldn't create cellTag tag");
 
 			try {
 				cellTag.GetChild(objectTag, cellTagIndex);
-				if (objectTag == null) throw new SMLException("failed to get tag by index");
+				if (objectTag == null) throwSML("failed to get tag by index");
 				
 				if (objectTag.IsTag(Names.kTagObject)) {
 					xmlPath.push(Names.kTagObject);
-					parseObject(cell, objectTag);
+					object(cell, objectTag);
 					xmlPath.pop();
 
 				} else {
-					throw new ParseException("unrecognized tag " + objectTag.GetTagName());
+					throwSyntax("unrecognized tag " + objectTag.GetTagName());
 				}
 			} finally {
 				objectTag.delete();
@@ -404,18 +382,18 @@ public class MapLoader {
 		}
 	}
 	
-	private void parseObject(Cell cell, ElementXML objectTag) throws SMLException, ParseException {
+	private void object(Cell cell, ElementXML objectTag) throws SMLException, SyntaxException {
 		String name = objectTag.GetCharacterData();
 		if (!CellObject.hasTemplate(name)) {
-			throw new ParseException("object \"" + name + "\" does not map to a cell-object");
+			throwSyntax("object \"" + name + "\" does not map to a cell-object");
 		}
 		
 		cell.addCellObject(CellObject.createObject(name));
 	}
 
-	private void generateRandomWalls() throws ParseException {
+	private void generateRandomWalls() throws SyntaxException {
 		if (!CellObject.hasTemplate(Names.kWall)) {
-			throw new ParseException("tried to generate random walls with no wall type");
+			throwSyntax("tried to generate random walls with no wall type");
 		}
 		
 		if (mapCells == null) {
@@ -520,7 +498,7 @@ public class MapLoader {
 					
 				}
 				if (mapCells[row][col].enterable()) {
-					mapCells[row][col].addCellObject(CellObject.createObject((String)foods.get(Simulation.random.nextInt(foods.size()))));
+					mapCells[row][col].addCellObject(CellObject.createObject(foods.get(Simulation.random.nextInt(foods.size()))));
 				}
 			}
 		}		

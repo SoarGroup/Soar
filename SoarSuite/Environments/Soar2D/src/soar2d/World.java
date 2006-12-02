@@ -3,7 +3,11 @@ package soar2d;
 import java.awt.*;
 import java.util.*;
 import java.util.logging.*;
+
+import soar2d.player.Player;
+import soar2d.player.MoveInfo;
 import soar2d.world.*;
+import soar2d.xml.MapLoader;
 
 public class World {
 
@@ -15,7 +19,8 @@ public class World {
 	
 	int size;
 	private Cell[][] mapCells = null;
-	private ArrayList<Entity> entities = new ArrayList<Entity>();
+	
+	private ArrayList<Player> players = new ArrayList<Player>();
 	private HashMap<String, java.awt.Point> initialLocations = new HashMap<String, java.awt.Point>();
 	private HashMap<String, java.awt.Point> locations = new HashMap<String, java.awt.Point>();
 	private HashMap<String, MoveInfo> lastMoves = new HashMap<String, MoveInfo>();
@@ -33,7 +38,7 @@ public class World {
 		scoreCount = 0;
 		worldCount = 0;
 		
-		resetEntities();
+		resetPlayers();
 		recalculateScoreCount();
 		
 		logger.info(mapFile + " loaded, world reset.");
@@ -78,24 +83,24 @@ public class World {
 		return scoreCount;
 	}
 	
-	void resetEntities() {
-		if (entities.size() == 0) {
+	void resetPlayers() {
+		if (players.size() == 0) {
 			return;
 		}
-		Iterator<Entity> iter = entities.iterator();
+		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			// for each player
-			Entity entity = iter.next();
+			Player player = iter.next();
 			
-			resetEntity(entity);
+			resetPlayer(player);
 		}
 		
-		updateEntities();
+		updatePlayers();
 	}
 	
-	private void resetEntity(Entity entity) {
+	private void resetPlayer(Player player) {
 		// find a suitable starting location
-		Cell startingCell = putInStartingCell(entity);
+		Cell startingCell = putInStartingCell(player);
 		
 		// update score count
 		scoreCount -= foodCount(startingCell);
@@ -104,60 +109,54 @@ public class World {
 		startingCell.removeAllWithProperty(Names.kPropertyEdible);
 		
 		// set points to zero
-		entity.setPoints(0, "reset");
+		player.setPoints(0, "reset");
 		
 		// reset (init-soar)
-		entity.reset();
+		player.reset();
 	}
 	
-	private void updateEntities() {
-		Iterator<Entity> iter = entities.iterator();
+	private void updatePlayers() {
+		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
-			Entity entity = iter.next();
-			entity.update(this, locations.get(entity.getName()));
+			Player player = iter.next();
+			player.update(this, locations.get(player.getName()));
 		}
 	}
 	
 	public void shutdown() {
-		Iterator<Entity> iter = entities.iterator();
-		while (iter.hasNext()) {
-			Entity entity = iter.next();
-			entity.shutdown();
-		}
-		entities.clear();
+		players.clear();
 		initialLocations.clear();
 		locations.clear();
 		lastMoves.clear();
 		mapCells = null;
 	}
 	
-	public void destroyEntity(String name) {
-		ListIterator<Entity> iter = entities.listIterator();
+	public void removePlayer(String name) {
+		ListIterator<Player> iter = players.listIterator();
 		while (iter.hasNext()) {
-			Entity entity = iter.next();
-			if (entity.getName().equals(name)) {
+			Player player = iter.next();
+			if (player.getName().equals(name)) {
 				initialLocations.remove(name);
 				java.awt.Point location = locations.remove(name);
 				lastMoves.remove(name);
 				Cell cell = getCell(location);
-				cell.setEntity(null);
-				entity.shutdown();
+				cell.setPlayer(null);
 				iter.remove();
 				return;
 			}
 		}
-		logger.warning("destroyEntity: Couldn't find entity name match for " + name + ", ignoring.");
+		logger.warning("destroyPlayer: Couldn't find player name match for " + name + ", ignoring.");
 	}
 	
-	private Cell putInStartingCell(Entity entity) {
-		// FIXME: change algorithm to select from remaining starting locations
+	private Cell putInStartingCell(Player player) {
+		// TODO: change algorithm to select from remaining starting locations
 		
 		java.awt.Point initialLocation = null;
 		java.awt.Point location = null;
 		Cell cell;
 		
-		if (initialLocations.containsKey(entity.getName())) {
-			initialLocation = new java.awt.Point(initialLocations.get(entity.getName()));
+		if (initialLocations.containsKey(player.getName())) {
+			initialLocation = new java.awt.Point(initialLocations.get(player.getName()));
 			location = new java.awt.Point(initialLocation);
 			cell = getCell(location);
 		} else {
@@ -165,9 +164,9 @@ public class World {
 			cell = getCell(location);
 		}
 
-		while (!cell.enterable() || (cell.getEntity() != null)) {
+		while (!cell.enterable() || (cell.getPlayer() != null)) {
 			if (initialLocation != null) {
-				logger.warning(entity.getName() + ": Initial location (" + initialLocation.x + "," + initialLocation.y + ") is blocked, going random.");
+				logger.warning(player.getName() + ": Initial location (" + initialLocation.x + "," + initialLocation.y + ") is blocked, going random.");
 				initialLocation = null;
 			}
 			location.x = Simulation.random.nextInt(size);
@@ -175,41 +174,41 @@ public class World {
 			cell = getCell(location);
 		}
 		// put the player in it
-		locations.put(entity.getName(), location);
-		cell.setEntity(entity);
+		locations.put(player.getName(), location);
+		cell.setPlayer(player);
 		return cell;
 	}
 
-	public void createEntity(Entity entity, java.awt.Point initialLocation) {
-		assert !locations.containsKey(entity.getName());
+	public void addPlayer(Player player, java.awt.Point initialLocation) {
+		assert !locations.containsKey(player.getName());
 		
-		entities.add(entity);
+		players.add(player);
 		
 		if (initialLocation != null) {
-			initialLocations.put(entity.getName(), initialLocation);
+			initialLocations.put(player.getName(), initialLocation);
 		}
-		resetEntity(entity);
-		java.awt.Point location = locations.get(entity.getName());
+		resetPlayer(player);
+		java.awt.Point location = locations.get(player.getName());
 		
-		logger.info(entity.getName() + ": Spawning at (" + 
+		logger.info(player.getName() + ": Spawning at (" + 
 				location.x + "," + location.y + ")");
 
-		updateEntities();
+		updatePlayers();
 	}
 	
 	private void moveEaters() {
-		Iterator<Entity> iter = entities.iterator();
+		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
-			Entity entity = iter.next();
+			Player player = iter.next();
 			
-			MoveInfo move = entity.getMove();
-			lastMoves.put(entity.getName(), move);
+			MoveInfo move = player.getMove();
+			lastMoves.put(player.getName(), move);
 			if (move == null || !move.move) {
 				continue;
 			}
 
 			// Calculate new location
-			java.awt.Point oldLocation = locations.get(entity.getName());
+			java.awt.Point oldLocation = locations.get(player.getName());
 			java.awt.Point newLocation = Direction.translate(oldLocation, move.moveDirection);
 			if (move.jump) {
 				Direction.translate(newLocation, move.moveDirection);
@@ -217,15 +216,15 @@ public class World {
 			
 			// Verify legal move and commit move
 			if (isInBounds(newLocation) && getCell(newLocation).enterable()) {
-				assert getCell(oldLocation).getEntity() != null;
-				getCell(oldLocation).setEntity(null);
+				assert getCell(oldLocation).getPlayer() != null;
+				getCell(oldLocation).setPlayer(null);
 				if (move.jump) {
-					entity.adjustPoints(Soar2D.config.kJumpPenalty, "jump penalty");
+					player.adjustPoints(Soar2D.config.kJumpPenalty, "jump penalty");
 				}
-				locations.put(entity.getName(), newLocation);
+				locations.put(player.getName(), newLocation);
 				
 			} else {
-				entity.adjustPoints(Soar2D.config.kWallPenalty, "wall collision");
+				player.adjustPoints(Soar2D.config.kWallPenalty, "wall collision");
 			}
 		}
 	}
@@ -235,27 +234,27 @@ public class World {
 	}
 
 	private void updateMapAndEatFood() {
-		Iterator<Entity> iter = entities.iterator();
+		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
-			Entity entity = iter.next();
-			MoveInfo lastMove = lastMoves.get(entity.getName());
-			java.awt.Point location = locations.get(entity.getName());
+			Player player = iter.next();
+			MoveInfo lastMove = lastMoves.get(player.getName());
+			java.awt.Point location = locations.get(player.getName());
 			
 			Cell cell = getCell(location);
-			cell.setEntity(entity);
+			cell.setPlayer(player);
 			
 			if (lastMove.eat) {
-				eat(entity, cell);
+				eat(player, cell);
 			}
 		}
 	}
 	
-	private void eat(Entity entity, Cell cell) {
+	private void eat(Player player, Cell cell) {
 		ArrayList<CellObject> list = cell.getAllWithProperty(Names.kPropertyEdible);
 		Iterator<CellObject> foodIter = list.iterator();
 		while (foodIter.hasNext()) {
 			CellObject food = foodIter.next();
-			if (food.apply(entity)) {
+			if (food.apply(player)) {
 				// if this returns true, it is consumed
 				cell.removeObject(food);
 				scoreCount -= food.getIntProperty(Names.kPropertyEdible);
@@ -264,15 +263,15 @@ public class World {
 	}
 	
 	private void dumpStats() {
-		Iterator<Entity> iter = entities.iterator();
+		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
-			Entity entity = iter.next();
-			logger.info(entity.getName() + ": " + entity.getPoints());
+			Player player = iter.next();
+			logger.info(player.getName() + ": " + player.getPoints());
 		}
 	}
 	
 	public void update() {
-		if (Soar2D.simulation.reachedMaxUpdates()) {
+		if (worldCount >= Soar2D.config.maxUpdates) {
 			if (!printedStats) {
 				Soar2D.control.stopSimulation();
 				printedStats = true;
@@ -292,7 +291,7 @@ public class World {
 			return;
 		}
 
-		if (entities.size() == 0) {
+		if (players.size() == 0) {
 			logger.warning("Update called with no eaters.");
 			return;
 		}
@@ -300,35 +299,35 @@ public class World {
 		moveEaters();
 		updateMapAndEatFood();
 		handleCollisions();	
-		updateEntities();
+		updatePlayers();
 	}
 		
 	private void handleCollisions() {
 		// Make sure collisions are possible
-		if (entities.size() < 2) {
+		if (players.size() < 2) {
 			return;
 		}
 		
 		// Optimization to not check the same name twice
-		HashSet<Entity> colliding = new HashSet<Entity>(entities.size());
-		ArrayList<Entity> collision = new ArrayList<Entity>(entities.size());
-		ArrayList<ArrayList<Entity>> collisions = new ArrayList<ArrayList<Entity>>(entities.size() / 2);
+		HashSet<Player> colliding = new HashSet<Player>(players.size());
+		ArrayList<Player> collision = new ArrayList<Player>(players.size());
+		ArrayList<ArrayList<Player>> collisions = new ArrayList<ArrayList<Player>>(players.size() / 2);
 
-		ListIterator<Entity> leftIter = entities.listIterator();
+		ListIterator<Player> leftIter = players.listIterator();
 		while (leftIter.hasNext()) {
-			Entity left = leftIter.next();
+			Player left = leftIter.next();
 			
 			// Check to see if we're already colliding
 			if (colliding.contains(left)) {
 				continue;
 			}
 			
-			ListIterator<Entity> rightIter = entities.listIterator(leftIter.nextIndex());
+			ListIterator<Player> rightIter = players.listIterator(leftIter.nextIndex());
 			// Clear collision list now
 			collision.clear();
 			while (rightIter.hasNext()) {
-				// For each entity to my right (I've already checked to my left)
-				Entity right = rightIter.next();
+				// For each player to my right (I've already checked to my left)
+				Player right = rightIter.next();
 
 				// Check to see if we're already colliding
 				if (colliding.contains(right)) {
@@ -338,7 +337,7 @@ public class World {
 				// If the locations match, we have a collision
 				if (locations.get(left.getName()).equals(locations.get(right.getName()))) {
 					
-					// Add to this set to avoid checking same entity again
+					// Add to this set to avoid checking same player again
 					colliding.add(left);
 					colliding.add(right);
 					
@@ -346,6 +345,9 @@ public class World {
 					if (collision.size() == 0) {
 						collision.add(left);
 						if (logger.isLoggable(Level.FINE)) logger.fine("collision at " + locations.get(left.getName()));
+						
+						// Add a collision object the first time it is detected
+						getCell(locations.get(left.getName())).addCellObject(new CellObject(Names.kExplosion, false, true));
 					}
 					// Add each right as it is detected
 					collision.add(right);
@@ -363,7 +365,7 @@ public class World {
 			return;
 		}
 		
-		Iterator<ArrayList<Entity>> collisionIter = collisions.iterator();
+		Iterator<ArrayList<Player>> collisionIter = collisions.iterator();
 		while (collisionIter.hasNext()) {
 			collision = collisionIter.next();
 
@@ -371,7 +373,7 @@ public class World {
 
 			// Redistribute wealth
 			int cash = 0;			
-			ListIterator<Entity> collideeIter = collision.listIterator();
+			ListIterator<Player> collideeIter = collision.listIterator();
 			while (collideeIter.hasNext()) {
 				cash += collideeIter.next().getPoints();
 			}
@@ -382,16 +384,16 @@ public class World {
 				collideeIter.next().setPoints(cash, "collision");
 			}
 			
-			// Remove from former location (only one of these for all entities)
-			getCell(locations.get(collision.get(0).getName())).setEntity(null);
+			// Remove from former location (only one of these for all players)
+			getCell(locations.get(collision.get(0).getName())).setPlayer(null);
 			
 			// Move to new cell, consume food
 			collideeIter = collision.listIterator();
 			while (collideeIter.hasNext()) {
-				Entity entity = collideeIter.next();
-				Cell cell = putInStartingCell(entity);
-				if (lastMoves.get(entity.getName()).eat) {
-					eat(entity, cell);
+				Player player = collideeIter.next();
+				Cell cell = putInStartingCell(player);
+				if (lastMoves.get(player.getName()).eat) {
+					eat(player, cell);
 				}
 			}
 		}
@@ -407,7 +409,21 @@ public class World {
 
 	public void reset() {
 		worldCount = 0;
-		
-		//FIXME: ???
+	}
+	
+	public int getWorldCount() {
+		return worldCount;
+	}
+	
+	public boolean hasPlayers() {
+		return players.size() > 0;
+	}
+
+	public Point getLocation(Player player) {
+		return locations.get(player.getName());
+	}
+
+	public ArrayList<Player> getPlayers() {
+		return players;
 	}
 }

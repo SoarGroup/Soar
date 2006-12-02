@@ -1,12 +1,15 @@
-package soar2d;
+package soar2d.player;
 
 import java.util.logging.*;
 
-public class Eater extends Entity {
+import soar2d.Soar2D;
+import soar2d.World;
+
+public class Eater extends Player {
 	Logger logger = Soar2D.logger;
 	
-	public Eater(String name, int facingInt, int points, String color) {
-		super(name, facingInt, points, color);
+	public Eater(String name, PlayerConfig playerConfig) {
+		super(name, playerConfig);
 	}
 	
 	public void update(World world, java.awt.Point location) {

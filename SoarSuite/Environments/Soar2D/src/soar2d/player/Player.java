@@ -1,8 +1,11 @@
-package soar2d;
+package soar2d.player;
 
 import java.util.logging.*;
 
-public class Entity {
+import soar2d.Soar2D;
+import soar2d.World;
+
+public class Player {
 	Logger logger = Soar2D.logger;
 
 	private String name;
@@ -10,11 +13,11 @@ public class Entity {
 	private int points;
 	private String color;
 
-	public Entity(String name, int facingInt, int points, String color) {
+	public Player(String name, PlayerConfig playerConfig) {
 		this.name = name;
-		this.facingInt = facingInt;
-		this.points = points;
-		this.color = color;
+		this.facingInt = playerConfig.facing;
+		this.points = playerConfig.points;
+		this.color = playerConfig.color;
 	}
 	
 	public String getName() {
@@ -70,10 +73,6 @@ public class Entity {
 	public void reset() {
 		
 	}
-	public void shutdown() {
-		
-	}
-	
 	public MoveInfo getMove() {
 		return null;
 	}

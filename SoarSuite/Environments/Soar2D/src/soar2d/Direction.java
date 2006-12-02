@@ -27,7 +27,7 @@ public class Direction {
 	public final static int[] xDelta = new int[5];
 	public final static int[] yDelta = new int[5];
 
-	private final static HashMap ints = new HashMap(4);
+	private final static HashMap<String, Integer> ints = new HashMap<String, Integer>(4);
 	
 	static {
 		ints.put(Names.kNorth, kNorthInteger);	// string -> int
@@ -79,7 +79,7 @@ public class Direction {
 	}
 	
 	public static int getInt(String direction) {
-		Integer d = (Integer)ints.get(direction);
+		Integer d = ints.get(direction);
 		return d.intValue();
 	}
 	

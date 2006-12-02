@@ -1,16 +1,16 @@
 package soar2d.visuals;
 
+import java.util.ArrayList;
+
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
+import soar2d.player.*;
 
 public class CreateAgentDialog extends Dialog {
-	Controller control = Soar2D.control;
-	Configuration config = Soar2D.config;
-
 	final int kNameCharacterLimit = 12;
 	String m_Productions;
 	Label m_ProductionsLabel;
@@ -67,7 +67,7 @@ public class CreateAgentDialog extends Dialog {
 				FileDialog fd = new FileDialog(dialog, SWT.OPEN);
 				fd.setText("Open");
 				if (lastProductions == null) {
-					fd.setFilterPath(config.getAgentPath());
+					fd.setFilterPath(Soar2D.config.agentPath);
 				} else {
 					fd.setFileName(lastProductions);
 				}
@@ -99,20 +99,17 @@ public class CreateAgentDialog extends Dialog {
 			gd.horizontalSpan = 2;
 			m_Color.setLayoutData(gd);
 		}
-		m_Color.setItems(soar2d.visuals.WindowManager.kColors);
-		// remove taken colors
-		WorldEntity[] entities = control.getEntities();
-		if (entities != null) {
-			for (int i = 0; i < entities.length; ++i) {
-				m_Color.remove(entities[i].getColor());
-			}
+		ArrayList<String> unusedColors = Soar2D.simulation.getUnusedColors();
+		
+		m_Color.setItems(unusedColors.toArray(new String[0]));
+		if (unusedColors.size() > 0) {
+			m_Color.select(0);
+			m_Color.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					m_Name.setText(m_Color.getText());
+				}
+			});
 		}
-		m_Color.select(0);
-		m_Color.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				m_Name.setText(m_Color.getText());
-			}
-		});
 		
 		final Label label1 = new Label(dialog, SWT.NONE);
 		{
@@ -151,11 +148,11 @@ public class CreateAgentDialog extends Dialog {
 		m_SpawnDebuggerButton.setText("Spawn debugger");
 		m_SpawnDebuggerButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				control.setSpawnDebuggers(m_SpawnDebuggerButton.getSelection());
+				Soar2D.config.debuggers = m_SpawnDebuggerButton.getSelection();
 			}
 		});		
-		m_SpawnDebuggerButton.setSelection(config.getSpawnDebuggers());
-		m_SpawnDebuggerButton.setEnabled(!control.isClientConnected(config.getDebuggerName()));
+		m_SpawnDebuggerButton.setSelection(Soar2D.config.debuggers);
+		m_SpawnDebuggerButton.setEnabled(!Soar2D.simulation.isClientConnected(Names.kDebuggerClient));
 
 		Composite okCancel = new Composite(dialog, SWT.NONE);
 		{
@@ -170,7 +167,11 @@ public class CreateAgentDialog extends Dialog {
 		m_CreateEntity.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				m_CreateEntity.setEnabled(false);
-				control.createEntity(m_Name.getText(), m_Productions, m_Color.getText(), null, null, -1, -1, -1);
+				PlayerConfig playerConfig = new PlayerConfig();
+				playerConfig.name = m_Name.getText();
+				playerConfig.productions = m_Productions;
+				playerConfig.color = m_Color.getText();
+				Soar2D.simulation.createPlayer(playerConfig);
 				dialog.dispose();
 			}
 		});

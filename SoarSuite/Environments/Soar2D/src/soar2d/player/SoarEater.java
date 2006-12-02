@@ -1,8 +1,15 @@
-package soar2d;
+package soar2d.player;
 
+import java.util.ArrayList;
 import java.util.logging.*;
 import sml.*;
+import soar2d.Direction;
+import soar2d.Names;
+import soar2d.Simulation;
+import soar2d.Soar2D;
+import soar2d.World;
 import soar2d.world.Cell;
+import soar2d.world.CellObject;
 
 class SoarCell {
 	Identifier me;
@@ -30,8 +37,8 @@ public class SoarEater extends Eater {
 	private FloatElement randomWME;
 	private SoarCell[][] cells = new SoarCell[(Soar2D.config.kEaterVision * 2 ) + 1][(Soar2D.config.kEaterVision * 2 ) + 1];
 
-	public SoarEater(Agent agent, int facingInt, int points, String color) {
-		super(agent.GetAgentName(), facingInt, points, color);
+	public SoarEater(Agent agent, PlayerConfig playerConfig) {
+		super(agent.GetAgentName(), playerConfig);
 		
 		previousLocation = new java.awt.Point(-1, -1);
 		
@@ -62,7 +69,7 @@ public class SoarEater extends Eater {
 	private void createView(int x, int y) {
 		if (x >= 0 && x <= (Soar2D.config.kEaterVision * 2) && y >=0 && y <= (Soar2D.config.kEaterVision * 2) && !cells[x][y].iterated) {
 			cells[x][y].iterated = true;
-			cells[x][y].content = agent.CreateStringWME(cells[x][y].me, Names.kContentID, CellType.EMPTY.toString());
+			cells[x][y].content = agent.CreateStringWME(cells[x][y].me, Names.kContentID, Names.kEmpty);
 
 			if (x > 0) {
 				if (cells[x - 1][y].me == null)
@@ -128,15 +135,23 @@ public class SoarEater extends Eater {
 				}
 				Cell cell = world.getCell(xView, yView);
 				String content = null;
-				if (cell.getEater() != null) {
+				if (cell.getPlayer() != null) {
 					content = Names.kEater;
 					
-				} else if (cell.getFood() != null) {
-					content = cell.getFood().name();
-			
 				} else {
-					content = cell.getType().name();
+					ArrayList<CellObject> list = cell.getAllWithProperty(Names.kPropertyEdible);
+					if (list.size() > 0) {
+						// FIXME: deal with multiple foods
+						content = list.get(0).getName();
+					} else {
+						if (cell.enterable()) {
+							content = Names.kEmpty;
+						} else {
+							content = Names.kWall;
+						}
+					}
 				}
+				
 				if (moved || !cells[x][y].content.GetValue().equalsIgnoreCase(content)) {
 					agent.Update(cells[x][y].content, content);
 				}
@@ -167,9 +182,7 @@ public class SoarEater extends Eater {
 	}
 	
 	public void reset() {
-		// FIXME: init-soar
-	}
-	public void shutdown() {
-		// FIXME: kernel.DestroyAgent()
+		agent.InitSoar();
+		
 	}
 }

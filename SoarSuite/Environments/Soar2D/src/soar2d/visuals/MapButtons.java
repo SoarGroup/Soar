@@ -8,11 +8,9 @@ import org.eclipse.swt.widgets.*;
 import soar2d.*;
 
 public class MapButtons extends Composite {
-	Controller control = Soar2D.control;
 	private Button m_ChangeMapButton;
-	Configuration config = Soar2D.config;
 
-	public MapButtons(Composite parent, final String mapFilter) {
+	public MapButtons(Composite parent) {
 		super(parent, SWT.NONE);
 		
 		setLayout(new FillLayout());
@@ -23,13 +21,13 @@ public class MapButtons extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				FileDialog fd = new FileDialog(MapButtons.this.getShell(), SWT.OPEN);
 				fd.setText("Open");
-				fd.setFilterPath(config.getMapPath());
-				fd.setFilterExtensions(new String[] {mapFilter, "*.*"});
+				fd.setFilterPath(Soar2D.config.mapPath);
+				fd.setFilterExtensions(new String[] {Soar2D.config.kMapFilter, "*.*"});
 				VisualWorld.internalRepaint = true;
 				String map = fd.open();
 				VisualWorld.internalRepaint = false;
 				if (map != null) {
-					control.changeMap(map);
+					Soar2D.control.changeMap(map);
 				}
 			}
 		});
@@ -38,7 +36,7 @@ public class MapButtons extends Composite {
 	}
 	
 	public void updateButtons() {
-		boolean running = control.isRunning();
+		boolean running = Soar2D.control.isRunning();
 		
 		m_ChangeMapButton.setEnabled(!running);
 	}

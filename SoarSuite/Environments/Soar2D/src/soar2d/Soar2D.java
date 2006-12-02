@@ -4,12 +4,13 @@ import java.io.*;
 import java.util.logging.*;
 
 import soar2d.visuals.*;
+import soar2d.xml.ConfigurationLoader;
 
 public class Soar2D {
 	String configFile = null;
 
 	public static final Logger logger = Logger.getLogger("soar2d");
-	public static final Configuration config = new Configuration();
+	public static Configuration config = new Configuration();
 	public static final WindowManager wm = new WindowManager();
 	public static final Simulation simulation = new Simulation();
 	public static final Controller control = new Controller();
@@ -32,9 +33,11 @@ public class Soar2D {
 		}
 		
 		// Read config file
-		if (!config.analyze(configFile)) {
+		ConfigurationLoader configLoader = new ConfigurationLoader();
+		if (!configLoader.load(configFile)) {
 			System.exit(1);
 		}
+		config = configLoader.getConfig();
 		
 		// Start logger
 		if (config.logFile) {
