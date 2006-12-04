@@ -47,7 +47,7 @@ public class CellObject {
 	}
 	// End factory methods and members
 	
-	HashMap<String, Object> properties = new HashMap<String, Object>();
+	HashMap<String, String> properties = new HashMap<String, String>();
 	String name;
 	boolean updatable;
 	boolean consumable;
@@ -55,7 +55,7 @@ public class CellObject {
 	boolean pointsApply = false;
 	
 	public CellObject(CellObject cellObject) {
-		this.properties = new HashMap<String, Object>(cellObject.properties);
+		this.properties = new HashMap<String, String>(cellObject.properties);
 		this.name = new String(cellObject.name);
 		this.updatable = cellObject.updatable;
 		this.consumable = cellObject.consumable;
@@ -75,7 +75,7 @@ public class CellObject {
 		return updatable;
 	}
 	
-	public boolean addProperty(String name, Object value) {
+	public boolean addProperty(String name, String value) {
 		if (properties.containsKey(name)) {
 			return false;
 		}
@@ -89,7 +89,9 @@ public class CellObject {
 	
 	public boolean apply(Player player) {
 		if (pointsApply) {
-			player.adjustPoints(((Integer)properties.get(Names.kPropertyPoints)).intValue(), name);
+			assert properties.containsKey(Names.kPropertyPoints);
+			int points = Integer.parseInt(properties.get(Names.kPropertyPoints));
+			player.adjustPoints(points, name);
 		}
 		return consumable;
 	}

@@ -2,6 +2,7 @@ package soar2d.xml;
 
 import java.util.Stack;
 import java.util.logging.*;
+import java.io.*;
 
 import sml.ElementXML;
 import soar2d.*;
@@ -32,7 +33,6 @@ public class ConfigurationLoader {
 		
 		// Generate paths
 		c.basePath = System.getProperty("user.dir") + System.getProperty("file.separator");
-		if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Base path: " + c.basePath);
 		c.mapPath = c.basePath + c.kMapDir + System.getProperty("file.separator");
 		c.agentPath = c.basePath + c.kAgentDir + System.getProperty("file.separator");
 		
@@ -174,6 +174,11 @@ public class ConfigurationLoader {
 			throwSyntax("No log level attribute");
 		}
 
+		attribute = loggerTag.GetAttribute(Names.kParamConsole);
+		if (attribute != null) {
+			c.logConsole = Boolean.parseBoolean(attribute);
+		}
+		
 		attribute = loggerTag.GetAttribute(Names.kParamFile);
 		if (attribute != null) {
 			c.logFile = Boolean.parseBoolean(attribute);
@@ -228,10 +233,21 @@ public class ConfigurationLoader {
 	}
 
 	private void agent(ElementXML tag) {
-		PlayerConfig agent = new PlayerConfig();
-		agent.name = tag.GetAttribute(Names.kParamName);
-		agent.productions = tag.GetAttribute(Names.kParamProductions);
-		agent.color = tag.GetAttribute(Names.kParamColor);
+		PlayerConfig agentConfig = new PlayerConfig();
+		agentConfig.setName(tag.GetAttribute(Names.kParamName));
+		
+		String productions = tag.GetAttribute(Names.kParamProductions);
+		if (productions != null) {
+			File productionsFile = new File(productions);
+			if (!productionsFile.exists()) {
+				productionsFile = new File(c.agentPath + productions);
+				if (!productionsFile.exists()) {
+					Soar2D.logger.warning("Error finding prodcutions " + productions);
+				}
+			}
+			agentConfig.setProductions(productionsFile);
+		}
+		agentConfig.setColor(tag.GetAttribute(Names.kParamColor));
 		
 		String attribute;
 		attribute = tag.GetAttribute(Names.kParamX);
@@ -247,31 +263,31 @@ public class ConfigurationLoader {
 		}
 		
 		if ((x >= 0) && (y >= 0)) {
-			agent.initialLocation = new java.awt.Point(x, y);
+			agentConfig.setInitialLocation(new java.awt.Point(x, y));
 		}
 		
 		if (c.tanksoar) {
 			int facingInt = Integer.parseInt(tag.GetAttribute(Names.kParamFacing));
 			if ((facingInt > 0) && (facingInt < 5)) {
-				agent.facing = facingInt;
+				agentConfig.setFacing(facingInt);
 			}
 
 			attribute = tag.GetAttribute(Names.kParamEnergy);
 			if (attribute != null) {
-				agent.energy = Integer.parseInt(attribute);
+				agentConfig.setEnergy(Integer.parseInt(attribute));
 			}
 
 			attribute = tag.GetAttribute(Names.kParamHealth);
 			if (attribute != null) {
-				agent.health = Integer.parseInt(attribute);
+				agentConfig.setHealth(Integer.parseInt(attribute));
 			}
 
 			attribute = tag.GetAttribute(Names.kParamMissiles);
 			if (attribute != null) {
-				agent.missiles = Integer.parseInt(attribute);
+				agentConfig.setMissiles(Integer.parseInt(attribute));
 			}
 		}
-		c.players.add(agent);
+		c.players.add(agentConfig);
 	}
 	
 	private void display(ElementXML tag) {

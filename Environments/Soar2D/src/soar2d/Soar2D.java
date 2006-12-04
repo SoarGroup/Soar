@@ -16,10 +16,8 @@ public class Soar2D {
 	public static final Controller control = new Controller();
 
 	public Soar2D(String[] args) {
-		if (args != null) {
-			if (args.length > 0) {
-				configFile = args[0];
-			}
+		if (args.length > 0) {
+			configFile = args[0];
 		} else {
 			configFile = config.kDefaultXMLSettingsFile;
 

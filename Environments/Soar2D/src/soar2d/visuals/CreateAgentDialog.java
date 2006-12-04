@@ -1,6 +1,7 @@
 package soar2d.visuals;
 
 import java.util.ArrayList;
+import java.io.*;
 
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
@@ -12,12 +13,12 @@ import soar2d.player.*;
 
 public class CreateAgentDialog extends Dialog {
 	final int kNameCharacterLimit = 12;
-	String m_Productions;
+	File m_Productions;
 	Label m_ProductionsLabel;
 	Text m_Name;
 	Combo m_Color;
 	Button m_CreateEntity;
-	static String lastProductions = null;
+	static File lastProductions = null;
 	Button m_SpawnDebuggerButton;
 	
 	public CreateAgentDialog(Shell parent) {
@@ -52,7 +53,7 @@ public class CreateAgentDialog extends Dialog {
 			m_ProductionsLabel.setText("<choose productions>");
 		} else {
 			m_Productions = lastProductions;
-			m_ProductionsLabel.setText(lastProductions.substring(lastProductions.lastIndexOf(System.getProperty("file.separator")) + 1));
+			m_ProductionsLabel.setText(lastProductions.getName());
 		}
 
 		final Button productionsBrowse = new Button(dialog, SWT.PUSH);
@@ -69,7 +70,7 @@ public class CreateAgentDialog extends Dialog {
 				if (lastProductions == null) {
 					fd.setFilterPath(Soar2D.config.agentPath);
 				} else {
-					fd.setFileName(lastProductions);
+					fd.setFileName(lastProductions.getAbsolutePath());
 				}
 				fd.setFilterExtensions(new String[] {"*.soar", "*.*"});
 				// TODO: these next commented out lines are going to cause a bug to reappear
@@ -77,9 +78,10 @@ public class CreateAgentDialog extends Dialog {
 				String productions = fd.open();
 				VisualWorld.internalRepaint = false;
 				if (productions != null) {
-					m_Productions = productions;
-					lastProductions = productions;
-					m_ProductionsLabel.setText(m_Productions.substring(m_Productions.lastIndexOf(System.getProperty("file.separator")) + 1));
+					File file = new File(productions);
+					m_Productions = file;
+					lastProductions = file;
+					m_ProductionsLabel.setText(file.getName());
 				}
 				updateButtons();
 			}
@@ -168,9 +170,9 @@ public class CreateAgentDialog extends Dialog {
 			public void widgetSelected(SelectionEvent e) {
 				m_CreateEntity.setEnabled(false);
 				PlayerConfig playerConfig = new PlayerConfig();
-				playerConfig.name = m_Name.getText();
-				playerConfig.productions = m_Productions;
-				playerConfig.color = m_Color.getText();
+				playerConfig.setName(m_Name.getText());
+				playerConfig.setProductions(m_Productions);
+				playerConfig.setColor(m_Color.getText());
 				Soar2D.simulation.createPlayer(playerConfig);
 				dialog.dispose();
 			}

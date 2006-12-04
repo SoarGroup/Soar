@@ -32,6 +32,7 @@ public class MapLoader {
 	
 	public boolean load(String mapFile) {
 		xmlPath = new Stack<String>();
+		foods = new ArrayList<String>();
 		
 		ElementXML rootTag = ElementXML.ParseXMLFromFile(mapFile);
 		if (rootTag == null) {
@@ -158,6 +159,8 @@ public class MapLoader {
 				cellObjectSubTag = null;
 			}
 		}
+		
+		CellObject.registerTemplate(name, cellObjectTemplate);
 	}
 	
 	private void property(CellObject cellObjectTemplate, ElementXML propertyTag) throws SMLException, SyntaxException {

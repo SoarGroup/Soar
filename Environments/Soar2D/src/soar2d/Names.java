@@ -38,6 +38,7 @@ public class Names {
 	public static final String kParamAfter = "after";
 	public static final String kParamColor = "color";
 	public static final String kParamCommand = "command";
+	public static final String kParamConsole = "console";
 	public static final String kParamConsumable = "consumable";
 	public static final String kParamDebuggers = "debuggers";
 	public static final String kParamDecay = "decay";

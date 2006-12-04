@@ -2,8 +2,7 @@ package soar2d.player;
 
 import java.util.logging.*;
 
-import soar2d.Soar2D;
-import soar2d.World;
+import soar2d.*;
 
 public class Player {
 	Logger logger = Soar2D.logger;
@@ -15,9 +14,20 @@ public class Player {
 
 	public Player(String name, PlayerConfig playerConfig) {
 		this.name = name;
-		this.facingInt = playerConfig.facing;
-		this.points = playerConfig.points;
-		this.color = playerConfig.color;
+		if (playerConfig.hasFacing()) {
+			this.facingInt = playerConfig.getFacing();
+		} else {
+			this.facingInt = Simulation.random.nextInt(4) + 1;
+		}
+		
+		if (playerConfig.hasPoints()) {
+			this.points = playerConfig.getPoints();
+		} else {
+			this.points = Soar2D.config.kDefaultPoints;
+		}
+		
+		assert playerConfig.hasColor();
+		this.color = playerConfig.getColor();
 	}
 	
 	public String getName() {
