@@ -2,6 +2,7 @@ package soar2d.player;
 
 import java.util.ArrayList;
 import java.util.logging.*;
+
 import sml.*;
 import soar2d.Direction;
 import soar2d.Names;
@@ -39,6 +40,7 @@ public class SoarEater extends Eater {
 
 	public SoarEater(Agent agent, PlayerConfig playerConfig) {
 		super(agent.GetAgentName(), playerConfig);
+		this.agent = agent;
 		
 		previousLocation = new java.awt.Point(-1, -1);
 		
@@ -181,8 +183,53 @@ public class SoarEater extends Eater {
 		agent.Commit();
 	}
 	
+	public MoveInfo getMove() {
+		if (agent.GetNumberCommands() == 0) {
+			if (logger.isLoggable(Level.FINE)) logger.fine(getName() + " issued no command.");
+			return new MoveInfo();
+		}
+		
+		if (agent.GetNumberCommands() > 1) {
+			if (logger.isLoggable(Level.FINE)) logger.fine(getName() + " issued more than one command, using first.");
+		}
+
+		Identifier commandId = agent.GetCommand(0);
+		String commandName = commandId.GetAttribute();
+
+		MoveInfo move = new MoveInfo();
+		if (commandName.equalsIgnoreCase(Names.kMoveID)) {
+			move.move = true;
+			move.jump = false;
+		} else if (commandName.equalsIgnoreCase(Names.kJumpID)) {
+			move.move = true;
+			move.jump = true;
+		} else {
+			logger.warning("Unknown command: " + commandName);
+			return new MoveInfo();
+		}
+		
+		String donteat = commandId.GetParameterValue(Names.kDontEatID);
+		if (donteat == null) {
+			move.eat = true;
+		} else {
+			move.eat = donteat.equalsIgnoreCase(Names.kTrue) ? false : true;
+		}
+		
+		String direction = commandId.GetParameterValue(Names.kDirectionID);
+		if (direction != null) {
+			move.moveDirection = Direction.getInt(direction); 
+			this.setFacingInt(move.moveDirection);
+			commandId.AddStatusComplete();
+			agent.ClearOutputLinkChanges();
+			agent.Commit();
+			return move;
+		}
+		
+		logger.warning("Improperly formatted command: " + commandName);
+		return new MoveInfo();
+	}
+	
 	public void reset() {
 		agent.InitSoar();
-		
 	}
 }

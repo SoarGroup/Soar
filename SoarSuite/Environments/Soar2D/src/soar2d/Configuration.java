@@ -20,6 +20,7 @@ public class Configuration {
 	public final String kAgentDir = "agents";
 	public final String kMapFilter = "*.emap";
 
+	public final int kDefaultPoints = 0;
 	public final int kDefaultVersion = 1;
 	public final int kDefaultTimeout = 15; //seconds
 	public final Level kDefaultLogLevel = Level.INFO;

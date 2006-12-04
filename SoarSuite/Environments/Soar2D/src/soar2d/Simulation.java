@@ -73,8 +73,6 @@ public class Simulation {
 		currentMap = Soar2D.config.mapPath + Soar2D.config.map;
 		world.load(currentMap);
 		
-		reset();
-		
 		// Start or wait for clients (false: before agent creation)
 		if (!doClients(false)) {
 			return false;
@@ -136,56 +134,68 @@ public class Simulation {
 	}
 
 	public void createPlayer(PlayerConfig playerConfig) {
-		if (playerConfig.color != null) {
-			if (!unusedColors.contains(playerConfig.color)) {
-				Soar2D.control.severeError("Color used or not available: " + playerConfig.color);
+		if (playerConfig.hasColor()) {
+			if (!unusedColors.contains(playerConfig.getColor())) {
+				Soar2D.control.severeError("Color used or not available: " + playerConfig.getColor());
 				return;
 			}
-			useAColor(playerConfig.color);
+			useAColor(playerConfig.getColor());
 		} else {
-			playerConfig.color = useAColor(null);
-			if (playerConfig.color == null) {
+			String color = useAColor(null);
+			if (color == null) {
 				Soar2D.control.severeError("There are no more player slots available.");
 				return;
 			}
+			playerConfig.setColor(color);
 		}
 		
-		if (playerConfig.name == null) {
-			playerConfig.name = playerConfig.color;
+		if (!playerConfig.hasName()) {
+			playerConfig.setName(playerConfig.getColor());
 		}
 		
-		if (configs.containsKey(playerConfig.name)) {
-			freeAColor(playerConfig.color);
-			Soar2D.control.severeError("Failed to create player: " + playerConfig.name + " already exists.");
+		if (configs.containsKey(playerConfig.getName())) {
+			freeAColor(playerConfig.getColor());
+			Soar2D.control.severeError("Failed to create player: " + playerConfig.getName() + " already exists.");
 			return;
 		}
 		
-		if ((playerConfig.productions == null) || (playerConfig.productions.length() <= 0)) {
+		if (playerConfig.hasProductions() == false) {
 			// human player
-			freeAColor(playerConfig.color);
+			freeAColor(playerConfig.getColor());
 			Soar2D.control.severeError("Human player not yet supported.");
 			return;
 		}
-		Agent agent = kernel.CreateAgent(playerConfig.name);
+		Agent agent = kernel.CreateAgent(playerConfig.getName());
 		if (agent == null) {
-			freeAColor(playerConfig.color);
-			Soar2D.control.severeError("Agent " + playerConfig.name + " creation failed: " + kernel.GetLastErrorDescription());
+			freeAColor(playerConfig.getColor());
+			Soar2D.control.severeError("Agent " + playerConfig.getName() + " creation failed: " + kernel.GetLastErrorDescription());
 			return;
 		}
 		
+		
+		if (!agent.LoadProductions(playerConfig.getProductions().getAbsolutePath())) {
+			freeAColor(playerConfig.getColor());
+			Soar2D.control.severeError("Agent " + playerConfig.getName() + " production load failed: " + agent.GetLastErrorDescription());
+			return;
+		}
+
 		if (Soar2D.config.eaters) {
 			SoarEater eater = new SoarEater(agent, playerConfig); 
 			agents.put(eater.getName(), agent);
 			configs.put(eater.getName(), playerConfig);
-			world.addPlayer(eater, playerConfig.initialLocation);
+			java.awt.Point initialLocation = null;
+			if (playerConfig.hasInitialLocation()) {
+				initialLocation = playerConfig.getInitialLocation();
+			}
+			world.addPlayer(eater, initialLocation);
 			
-			Names.kDebuggerClient.name = getDebuggerCommand(eater.getName());
+			Names.kDebuggerClient.command = getDebuggerCommand(eater.getName());
 			if (Soar2D.config.debuggers && !isClientConnected(Names.kDebuggerClient)) {
 				spawnClient(Names.kDebuggerClient);
 			}
 
 		} else {
-			freeAColor(playerConfig.color);
+			freeAColor(playerConfig.getColor());
 			Soar2D.control.severeError("TankSoar player not yet supported.");
 			return;
 		}
@@ -237,13 +247,17 @@ public class Simulation {
 		if (agent == null) {
 			return;
 		}
-		agent.LoadProductions(configs.get(player.getName()).productions);
+		PlayerConfig config = configs.get(player.getName());
+		assert config != null;
+		assert config.hasProductions();
+		agent.LoadProductions(config.getProductions().getAbsolutePath());
 	}
 	
 	public void clonePlayer(String name, String newName) {
-		PlayerConfig playerConfig = configs.get(name);
-		playerConfig.name = newName;
-		createPlayer(playerConfig);
+		PlayerConfig config = configs.get(name);
+		assert config != null;
+		config.setName(newName);
+		createPlayer(config);
 	}
 
 	private boolean doClients(boolean after) {

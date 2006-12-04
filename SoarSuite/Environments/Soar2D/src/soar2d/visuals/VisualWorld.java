@@ -13,7 +13,7 @@ import soar2d.player.Player;
 import soar2d.world.*;
 
 public class VisualWorld extends Canvas implements PaintListener {
-	static HashMap<CellObject, Color> foodColors = new HashMap<CellObject, Color>();
+	static HashMap<String, Color> foodColors = new HashMap<String, Color>();
 	
 	public static void remapFoodColors() {
 		ArrayList<CellObject> foods = CellObject.getTemplatesWithProperty(Names.kPropertyEdible);
@@ -23,7 +23,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 			CellObject obj = iter.next();
 			String color = obj.getStringProperty(Names.kPropertyColor);
 			assert color != null;
-			foodColors.put(obj, WindowManager.getColor(color));
+			foodColors.put(obj.getName(), WindowManager.getColor(color));
 		}
 	}
 	
@@ -82,6 +82,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 	}
 
 	public void paintControl(PaintEvent e){
+		setRepaint();
 		if (m_AgentLocation != null || m_LastX != e.x || m_LastY != e.y || internalRepaint) {
 			m_LastX = e.x;
 			m_LastY = e.y;
@@ -169,8 +170,9 @@ public class VisualWorld extends Canvas implements PaintListener {
 				    gc.setBackground(WindowManager.widget_background);
 				    gc.fillRectangle(m_CellSize*xDraw, m_CellSize*yDraw, m_CellSize, m_CellSize);
 				    
-					gc.setBackground(foodColors.get(food));
-					String shape = food.getStringProperty(Names.kPropertyShape);
+					Color foodColor = foodColors.get(food.getName());
+					gc.setBackground(foodColor);
+					Shape shape = Shape.getShape(food.getStringProperty(Names.kPropertyShape));
 					if (shape.equals(Shape.ROUND)) {
 						fill1 = (int)(m_CellSize/2.8);
 						fill2 = m_CellSize - fill1 + 1;

@@ -203,13 +203,14 @@ public class World {
 			
 			MoveInfo move = player.getMove();
 			lastMoves.put(player.getName(), move);
-			if (move == null || !move.move) {
+			if (!move.move) {
 				continue;
 			}
 
 			// Calculate new location
 			java.awt.Point oldLocation = locations.get(player.getName());
-			java.awt.Point newLocation = Direction.translate(oldLocation, move.moveDirection);
+			java.awt.Point newLocation = new java.awt.Point(oldLocation);
+			Direction.translate(newLocation, move.moveDirection);
 			if (move.jump) {
 				Direction.translate(newLocation, move.moveDirection);
 			}
@@ -257,7 +258,7 @@ public class World {
 			if (food.apply(player)) {
 				// if this returns true, it is consumed
 				cell.removeObject(food);
-				scoreCount -= food.getIntProperty(Names.kPropertyEdible);
+				scoreCount -= food.getIntProperty(Names.kPropertyPoints);
 			}
 		}
 	}
@@ -271,14 +272,16 @@ public class World {
 	}
 	
 	public void update() {
-		if (worldCount >= Soar2D.config.maxUpdates) {
-			if (!printedStats) {
-				Soar2D.control.stopSimulation();
-				printedStats = true;
-				logger.info("Reached maximum updates, stopping.");
-				dumpStats();
+		if (Soar2D.config.maxUpdates > 0) {
+			if (worldCount >= Soar2D.config.maxUpdates) {
+				if (!printedStats) {
+					Soar2D.control.stopSimulation();
+					printedStats = true;
+					logger.info("Reached maximum updates, stopping.");
+					dumpStats();
+				}
+				return;
 			}
-			return;
 		}
 		
 		if (scoreCount <= 0) {

@@ -83,14 +83,12 @@ public class Direction {
 		return d.intValue();
 	}
 	
-	public static java.awt.Point translate(java.awt.Point p, int direction) {
+	public static void translate(java.awt.Point p, int direction) {
 		assert direction > 0;
 		assert direction < 5;
 		
 		p.x += xDelta[direction];
 		p.y += yDelta[direction];
-		
-		return p;
 	}
 	
 	private Direction() {

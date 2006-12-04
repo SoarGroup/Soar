@@ -222,54 +222,73 @@ public class WindowManager {
 		scoreCount.setText(Integer.toString(Soar2D.simulation.world.getScoreCount()));
 	}
 
-//	public void simulationEventHandler(final int type) {
-//		if (display.isDisposed() || shell.isDisposed()) {
-//			return;
-//		}
-//		display.syncExec(new Runnable() {
-//			public void run() {
-//				dispatchEvent(type);
-//			}
-//		});
-//	}
+	boolean isDisposed() {
+		return (display.isDisposed() || shell.isDisposed());
+	}
 
 	public void update() {
-		visualWorld.redraw();
-		updateFoodAndScoreCount();
-		agentDisplay.worldChangeEvent();
+		if (!isDisposed()) {
+			display.syncExec(new Runnable() {
+				public void run() {
+					visualWorld.redraw();
+					updateFoodAndScoreCount();
+					agentDisplay.worldChangeEvent();
+				}
+			});
+		}
 	}
 
 	public void start() {
-		simButtons.updateButtons();
-		mapButtons.updateButtons();
-		agentDisplay.updateButtons();
+		if (!isDisposed()) {
+			display.syncExec(new Runnable() {
+				public void run() {
+					simButtons.updateButtons();
+					mapButtons.updateButtons();
+					agentDisplay.updateButtons();
+				}
+			});
+		}
 	}
 
 	public void stop() {
-		visualWorld.setRepaint();
-		visualWorld.redraw();
-		simButtons.updateButtons();
-		mapButtons.updateButtons();
-		agentDisplay.updateButtons();
+		if (!isDisposed()) {
+			display.syncExec(new Runnable() {
+				public void run() {
+					visualWorld.setRepaint();
+					visualWorld.redraw();
+					simButtons.updateButtons();
+					mapButtons.updateButtons();
+					agentDisplay.updateButtons();
+				}
+			});
+		}
 	}
 	
 	public void agentEvent() {
-		visualWorld.setRepaint();
-		visualWorld.redraw();
-		VisualWorld.remapPlayerColors();
-		updateFoodAndScoreCount();
-		simButtons.updateButtons();
-		agentDisplay.agentEvent();
+		if (visualWorld != null) {
+			visualWorld.setRepaint();
+			visualWorld.redraw();
+			VisualWorld.remapPlayerColors();
+			updateFoodAndScoreCount();
+			simButtons.updateButtons();
+			agentDisplay.agentEvent();
+		}
 	}
 	
 	public void reset() {
-		updateWorldGroup();
-		VisualWorld.remapFoodColors();
-		visualWorld.setRepaint();
-		visualWorld.redraw();
-		updateFoodAndScoreCount();
-		simButtons.updateButtons();
-		agentDisplay.worldChangeEvent();
+		if (!isDisposed()) {
+			display.syncExec(new Runnable() {
+				public void run() {
+					updateWorldGroup();
+					VisualWorld.remapFoodColors();
+					visualWorld.setRepaint();
+					visualWorld.redraw();
+					updateFoodAndScoreCount();
+					simButtons.updateButtons();
+					agentDisplay.worldChangeEvent();
+				}
+			});
+		}
 	}
 
 	public void shutdown() {
