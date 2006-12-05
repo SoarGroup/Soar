@@ -945,6 +945,8 @@ public:
 	*************************************************************/
 	bool IsCommitRequired() ;
 
+	void LoadExternalLibrary(char const* pLibraryName);
+
 protected:
 	/*************************************************************
 	* @brief This function is called when we receive a "call" SML
