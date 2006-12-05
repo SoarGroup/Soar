@@ -1,8 +1,8 @@
 <soar2d>
   <logger level="finest" console="true"/>
   <display graphical="true" />
-  <eaters map="random.emap">
+  <eaters map="random-medium.emap">
     <agent productions="tutorial/advanced-move.soar" />
   </eaters>
-  <simulation debuggers="true" random="false" />
+  <simulation debuggers="false" random="false" />
 </soar2d>

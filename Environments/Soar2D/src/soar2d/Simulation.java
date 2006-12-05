@@ -233,6 +233,7 @@ public class Simulation {
 	public void destroyPlayer(Player player) {
 		world.removePlayer(player.getName());
 		configs.remove(player.getName());
+		freeAColor(player.getColor());
 		Agent agent = agents.remove(player.getName());
 		if (agent != null) {
 			if (!kernel.DestroyAgent(agent)) {
