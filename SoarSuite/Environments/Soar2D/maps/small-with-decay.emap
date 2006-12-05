@@ -10,6 +10,9 @@
     <apply>
       <points />
     </apply>
+    <update>
+      <decay />
+    </update>
   </cell-object>
   <cell-object name="bonusfood" consumable="true" updatable="true">
     <property name="points" value="10" />
@@ -19,6 +22,9 @@
     <apply>
       <points />
     </apply>
+    <update>
+      <decay />
+    </update>
   </cell-object>
   <cells world-size="10" random-walls="false" random-food="true">
     <row>

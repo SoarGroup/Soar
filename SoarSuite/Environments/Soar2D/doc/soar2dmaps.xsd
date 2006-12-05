@@ -55,6 +55,17 @@
                   </xs:sequence>
                 </xs:complexType>
               </xs:element>
+              <xs:element name="update">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="decay">
+                      <xs:complexType>
+                        <xs:sequence />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
             </xs:sequence>
             <xs:attribute name="updatable" type="xs:boolean" />
             <xs:attribute name="name" type="xs:string" />

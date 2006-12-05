@@ -13,8 +13,7 @@ public class MapLoader {
 	private int size = 0;
 	private Cell[][] mapCells = null;
 	private CellObjectManager cellObjectManager = null;
-	private ArrayList<CellObject> updatableObjects = new ArrayList<CellObject>();
-
+	
 	private void throwSyntax(String message) throws SyntaxException {
 		throw new SyntaxException(xmlPath, message);
 	}
@@ -35,15 +34,10 @@ public class MapLoader {
 		return cellObjectManager;
 	}
 	
-	public ArrayList<CellObject> getUpdatableObjects() {
-		return updatableObjects;
-	}
-	
 	public boolean load() {
 		xmlPath = new Stack<String>();
 		foods = new ArrayList<String>();
 		cellObjectManager = new CellObjectManager();
-		updatableObjects = new ArrayList<CellObject>();
 			
 		ElementXML rootTag = ElementXML.ParseXMLFromFile(Soar2D.config.map.getAbsolutePath());
 		if (rootTag == null) {
@@ -160,6 +154,11 @@ public class MapLoader {
 					apply(cellObjectTemplate, cellObjectSubTag);
 					xmlPath.pop();
 					
+				} else if (cellObjectSubTag.IsTag(Names.kTagUpdate)) {
+					xmlPath.push(Names.kTagUpdate);
+					update(cellObjectTemplate, cellObjectSubTag);
+					xmlPath.pop();
+					
 				} else {
 					throwSyntax("unrecognized tag " + cellObjectSubTag.GetTagName());
 				}
@@ -222,7 +221,7 @@ public class MapLoader {
 					xmlPath.push(Names.kTagPoints);
 					cellObjectTemplate.setPointsApply(true);
 					xmlPath.pop();
-		
+
 				} else if (applySubTag.IsTag(Names.kTagProperty)) {
 					xmlPath.push(Names.kTagProperty);
 					throwSyntax("tag not implemented");
@@ -249,6 +248,33 @@ public class MapLoader {
 			} finally {
 				applySubTag.delete();
 				applySubTag = null;
+			}
+		}
+	}
+	
+	private void update(CellObject cellObjectTemplate, ElementXML updateTag) throws SMLException, SyntaxException {
+		
+		ElementXML updateSubTag = null;
+		for (int updateSubTagIndex = 0; updateSubTagIndex < updateTag.GetNumberChildren(); ++updateSubTagIndex) {
+			
+			updateSubTag = new ElementXML();
+			if (updateSubTag == null) throwSML("couldn't create updateSubTag tag");
+
+			try {
+				updateTag.GetChild(updateSubTag, updateSubTagIndex);
+				if (updateSubTag == null) throwSML("failed to get tag by index");
+				
+				if (updateSubTag.IsTag(Names.kTagDecay)) {
+					xmlPath.push(Names.kTagDecay);
+					cellObjectTemplate.setDecayUpdate(true);
+					xmlPath.pop();
+					
+				} else {
+					throwSyntax("unrecognized tag " + updateSubTag.GetTagName());
+				}
+			} finally {
+				updateSubTag.delete();
+				updateSubTag = null;
 			}
 		}
 	}
@@ -403,11 +429,9 @@ public class MapLoader {
 		}
 		
 		CellObject cellObject = cellObjectManager.createObject(name);
-		if (cellObject.updatable()) {
-			this.updatableObjects.add(cellObject);
-		}
 		cell.addCellObject(cellObject);
 	}
+	
 
 	private void generateRandomWalls() throws SyntaxException {
 		if (!cellObjectManager.hasTemplate(Names.kWall)) {
@@ -428,17 +452,11 @@ public class MapLoader {
 				mapCells[row][0] = new Cell();
 			}
 			cellObject = cellObjectManager.createObject(Names.kWall);
-			if (cellObject.updatable()) {
-				this.updatableObjects.add(cellObject);
-			}
 			mapCells[row][0].addCellObject(cellObject);
 			if (mapCells[row][size - 1] == null) {
 				mapCells[row][size - 1] = new Cell();
 			}
 			cellObject = cellObjectManager.createObject(Names.kWall);
-			if (cellObject.updatable()) {
-				this.updatableObjects.add(cellObject);
-			}
 			mapCells[row][size - 1].addCellObject(cellObject);
 		}
 		for (int col = 1; col < size - 1; ++col) {
@@ -446,17 +464,11 @@ public class MapLoader {
 				mapCells[0][col] = new Cell();
 			}
 			cellObject = cellObjectManager.createObject(Names.kWall);
-			if (cellObject.updatable()) {
-				this.updatableObjects.add(cellObject);
-			}
 			mapCells[0][col].addCellObject(cellObject);
 			if (mapCells[size - 1][col] == null) {
 				mapCells[size - 1][col] = new Cell();
 			}
 			cellObject = cellObjectManager.createObject(Names.kWall);
-			if (cellObject.updatable()) {
-				this.updatableObjects.add(cellObject);
-			}
 			mapCells[size - 1][col].addCellObject(cellObject);
 		}
 		
@@ -472,9 +484,6 @@ public class MapLoader {
 							mapCells[row][col] = new Cell();
 						}
 						cellObject = cellObjectManager.createObject(Names.kWall);
-						if (cellObject.updatable()) {
-							this.updatableObjects.add(cellObject);
-						}
 						mapCells[row][col].addCellObject(cellObject);
 					}
 					probability = Soar2D.config.kLowProbability;
@@ -538,9 +547,6 @@ public class MapLoader {
 				}
 				if (mapCells[row][col].enterable()) {
 					CellObject cellObject = cellObjectManager.createObject(foods.get(Simulation.random.nextInt(foods.size())));
-					if (cellObject.updatable()) {
-						this.updatableObjects.add(cellObject);
-					}
 					mapCells[row][col].addCellObject(cellObject);
 				}
 			}
