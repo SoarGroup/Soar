@@ -12,6 +12,7 @@ public class CellObject {
 	boolean consumable;
 
 	boolean pointsApply = false;
+	boolean decayUpdate = false;
 	
 	public CellObject(CellObject cellObject) {
 		this.properties = new HashMap<String, String>(cellObject.properties);
@@ -19,6 +20,7 @@ public class CellObject {
 		this.updatable = cellObject.updatable;
 		this.consumable = cellObject.consumable;
 		this.pointsApply = cellObject.pointsApply;
+		this.decayUpdate = cellObject.decayUpdate;
 	}
 	
 	public CellObject(String name, boolean updatable, boolean consumable) {
@@ -46,15 +48,30 @@ public class CellObject {
 		pointsApply = setting;
 	}
 	
+	public void setDecayUpdate(boolean setting) {
+		decayUpdate = setting;
+	}
+	
 	public boolean apply(Player player) {
 		if (pointsApply) {
 			assert properties.containsKey(Names.kPropertyPoints);
 			int points = Integer.parseInt(properties.get(Names.kPropertyPoints));
 			player.adjustPoints(points, name);
 		}
-		return consumable;
+		return consumable;	// if this is true the object is removed from 
+							// the cell after the apply
 	}
-	public void update(World world, java.awt.Point location) {
+	public boolean update(World world, java.awt.Point location) {
+		if (decayUpdate) {
+			assert properties.containsKey(Names.kPropertyPoints);
+			int points = Integer.parseInt(properties.get(Names.kPropertyPoints));
+			points -= 1;
+			properties.put(Names.kPropertyPoints, Integer.toString(points));
+			if (points == 0) {
+				return true;	// this causes this object to be removed from the cell
+			}
+		}
+		return false; // this keeps this object around
 	}
 	
 	public boolean hasProperty(String name) {

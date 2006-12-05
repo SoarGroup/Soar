@@ -20,7 +20,6 @@ public class World {
 	int size;
 	private Cell[][] mapCells = null;
 	public CellObjectManager cellObjectManager = null;
-	private ArrayList<CellObject> updatableObjects = new ArrayList<CellObject>();
 	
 	private ArrayList<Player> players = new ArrayList<Player>();
 	private HashMap<String, java.awt.Point> initialLocations = new HashMap<String, java.awt.Point>();
@@ -37,7 +36,6 @@ public class World {
 		mapCells = loader.getCells();
 		size = loader.getSize();
 		cellObjectManager = loader.getCellObjectManager();
-		updatableObjects = loader.getUpdatableObjects();
 		
 		reset();
 		resetPlayers();
@@ -73,15 +71,6 @@ public class World {
 		return count;
 	}
 	
-	private void recalculateScoreCount() {
-		scoreCount = 0;
-		for (int i = 1; i < size - 1; ++i) {
-			for (int j = 1; j < size - 1; ++j) {
-				scoreCount += foodCount(mapCells[i][j]);
-			}
-		}
-	}
-
 	public int getScoreCount() {
 		return scoreCount;
 	}
@@ -344,13 +333,31 @@ public class World {
 		updateMapAndEatFood();
 		handleCollisions();	
 		updatePlayers();
-		updateObjects();
+		if (cellObjectManager.updatablesExist()) {
+			updateObjects();
+		}
 	}
 		
+	private void recalculateScoreCount() {
+		scoreCount = 0;
+		for (int i = 1; i < size - 1; ++i) {
+			for (int j = 1; j < size - 1; ++j) {
+				scoreCount += foodCount(mapCells[i][j]);
+			}
+		}
+	}
+
 	private void updateObjects() {
-		// TODO Auto-generated method stub
-		//updatableObjects;
-		
+		scoreCount = 0;
+		Cell cell;
+		java.awt.Point location = new java.awt.Point();
+		for (location.x = 0; location.x < size; ++location.x) {
+			for (location.y = 0; location.y < size; ++ location.y) {
+				cell = getCell(location);
+				cell.update(this, location);
+				scoreCount += foodCount(cell);
+			}
+		}
 	}
 
 	private void handleCollisions() {

@@ -20,6 +20,7 @@ public class Names {
 	public static final String kTagCell = "cell";
 	public static final String kTagCells = "cells";
 	public static final String kTagClient = "client";
+	public static final String kTagDecay = "decay";
 	public static final String kTagDisplay = "display";
 	public static final String kTagEaters = "eaters";
 	public static final String kTagEnergy = "energy";
@@ -35,6 +36,7 @@ public class Names {
 	public static final String kTagSimulation = "simulation";
 	public static final String kTagSoar2D = "soar2d";
 	public static final String kTagTankSoar = "tanksoar";
+	public static final String kTagUpdate = "update";
 
 	public static final String kParamAfter = "after";
 	public static final String kParamColor = "color";

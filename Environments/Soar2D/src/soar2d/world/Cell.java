@@ -3,6 +3,7 @@ package soar2d.world;
 import java.util.*;
 
 import soar2d.Names;
+import soar2d.World;
 import soar2d.player.Player;
 
 public class Cell {
@@ -23,7 +24,7 @@ public class Cell {
 		// Check to see if any contained objects have the block property
 		if (cellObjects.size() > 0) {
 			this.iter = cellObjects.values().iterator();
-			if (this.iter.hasNext()) {
+			while (this.iter.hasNext()) {
 				CellObject cellObject = this.iter.next();
 				if (cellObject.getBooleanProperty(Names.kPropertyBlock)) {
 					return false;
@@ -41,8 +42,9 @@ public class Cell {
 	public ArrayList<CellObject> getAllWithProperty(String name) {
 		ArrayList<CellObject> list = new ArrayList<CellObject>();
 		this.iter = cellObjects.values().iterator();
-		if (this.iter.hasNext()) {
-			CellObject cellObject = this.iter.next();
+		CellObject cellObject;
+		while (this.iter.hasNext()) {
+			cellObject = this.iter.next();
 			if (cellObject.hasProperty(name)) {
 				list.add(cellObject);
 			}
@@ -52,8 +54,9 @@ public class Cell {
 	
 	public void removeAllWithProperty(String name) {
 		this.iter = cellObjects.values().iterator();
-		if (this.iter.hasNext()) {
-			CellObject cellObject = this.iter.next();
+		CellObject cellObject;
+		while (this.iter.hasNext()) {
+			cellObject = this.iter.next();
 			if (cellObject.hasProperty(name)) {
 				iter.remove();
 			}
@@ -74,11 +77,31 @@ public class Cell {
 	
 	public void removeObject(CellObject cellObject) {
 		this.iter = cellObjects.values().iterator();
-		if (this.iter.hasNext()) {
-			CellObject object = this.iter.next();
+		CellObject object;
+		while (this.iter.hasNext()) {
+			object = this.iter.next();
 			if (cellObject.name.equals(object.name)) {
 				iter.remove();
 				return;
+			}
+		}
+	}
+	
+	public void update(World world, java.awt.Point location) {
+		this.iter = cellObjects.values().iterator();
+		CellObject object;
+		while (this.iter.hasNext()) {
+			object = this.iter.next();
+			if (object.updatable) {
+				if (object.update(world, location)) {
+					// remove the object
+					removeObject(object);
+					
+					// redraw this cell
+					if (!hasObject(Names.kRedraw)) {
+						addCellObject(new CellObject(Names.kRedraw, false, true));
+					}
+				}
 			}
 		}
 	}
