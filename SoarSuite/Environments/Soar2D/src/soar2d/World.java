@@ -35,9 +35,7 @@ public class World {
 		mapCells = loader.getCells();
 		size = loader.getSize();
 		
-		scoreCount = 0;
-		worldCount = 0;
-		
+		reset();
 		resetPlayers();
 		recalculateScoreCount();
 		
@@ -72,6 +70,7 @@ public class World {
 	}
 	
 	private void recalculateScoreCount() {
+		scoreCount = 0;
 		for (int i = 1; i < size - 1; ++i) {
 			for (int j = 1; j < size - 1; ++j) {
 				scoreCount += foodCount(mapCells[i][j]);
@@ -141,6 +140,9 @@ public class World {
 				lastMoves.remove(name);
 				Cell cell = getCell(location);
 				cell.setPlayer(null);
+				if (!cell.hasObject(Names.kRedraw)) {
+					cell.addCellObject(new CellObject(Names.kRedraw, false, true));
+				}
 				iter.remove();
 				return;
 			}
@@ -176,6 +178,9 @@ public class World {
 		// put the player in it
 		locations.put(player.getName(), location);
 		cell.setPlayer(player);
+		if (!cell.hasObject(Names.kRedraw)) {
+			cell.addCellObject(new CellObject(Names.kRedraw, false, true));
+		}
 		return cell;
 	}
 
@@ -217,8 +222,15 @@ public class World {
 			
 			// Verify legal move and commit move
 			if (isInBounds(newLocation) && getCell(newLocation).enterable()) {
-				assert getCell(oldLocation).getPlayer() != null;
-				getCell(oldLocation).setPlayer(null);
+				Cell oldCell = getCell(oldLocation);
+				assert oldCell.getPlayer() != null;
+				oldCell.setPlayer(null);
+				
+				// Add redraw object
+				if (!oldCell.hasObject(Names.kRedraw)) {
+					oldCell.addCellObject(new CellObject(Names.kRedraw, false, true));
+				}
+
 				if (move.jump) {
 					player.adjustPoints(Soar2D.config.kJumpPenalty, "jump penalty");
 				}
@@ -243,6 +255,9 @@ public class World {
 			
 			Cell cell = getCell(location);
 			cell.setPlayer(player);
+			if (!cell.hasObject(Names.kRedraw)) {
+				cell.addCellObject(new CellObject(Names.kRedraw, false, true));
+			}
 			
 			if (lastMove.eat) {
 				eat(player, cell);
@@ -350,7 +365,8 @@ public class World {
 						if (logger.isLoggable(Level.FINE)) logger.fine("collision at " + locations.get(left.getName()));
 						
 						// Add a collision object the first time it is detected
-						getCell(locations.get(left.getName())).addCellObject(new CellObject(Names.kExplosion, false, true));
+						Cell cell = getCell(locations.get(left.getName()));
+						cell.addCellObject(new CellObject(Names.kExplosion, false, true));
 					}
 					// Add each right as it is detected
 					collision.add(right);
@@ -359,7 +375,7 @@ public class World {
 			
 			// Add the collision to the total collisions if there is one
 			if (collision.size() > 0) {
-				collisions.add(collision);
+				collisions.add(new ArrayList<Player>(collision));
 			}
 		}
 		
@@ -372,6 +388,7 @@ public class World {
 		while (collisionIter.hasNext()) {
 			collision = collisionIter.next();
 
+			assert collision.size() > 0;
 			if (logger.isLoggable(Level.FINE)) logger.fine("Processing collision group with " + collision.size() + " collidees.");
 
 			// Redistribute wealth
@@ -380,7 +397,9 @@ public class World {
 			while (collideeIter.hasNext()) {
 				cash += collideeIter.next().getPoints();
 			}
-			cash /= collision.size();
+			if (cash > 0) {
+				cash /= collision.size();
+			}
 			if (logger.isLoggable(Level.FINE)) logger.fine("Cash to each: " + cash);
 			collideeIter = collision.listIterator();
 			while (collideeIter.hasNext()) {
@@ -412,6 +431,7 @@ public class World {
 
 	public void reset() {
 		worldCount = 0;
+		printedStats = false;
 	}
 	
 	public int getWorldCount() {

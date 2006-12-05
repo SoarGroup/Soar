@@ -9,9 +9,10 @@ public class Names {
 	public static final String kSouth = "south";
 	public static final String kWest = "west";
 	
-	public static final String kWall = "wall";
 	public static final String kEmpty = "empty";
 	public static final String kExplosion = "explosion";
+	public static final String kRedraw = "redraw";
+	public static final String kWall = "wall";
 	
 	public static final String kTagAgent = "agent";
 	public static final String kTagApply = "apply";

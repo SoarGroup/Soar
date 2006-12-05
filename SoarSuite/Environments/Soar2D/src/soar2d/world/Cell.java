@@ -64,6 +64,10 @@ public class Cell {
 		return cellObjects.get(name);
 	}
 	
+	public boolean hasObject(String name) {
+		return cellObjects.containsKey(name);
+	}
+	
 	public CellObject removeObject(String name) {
 		return cellObjects.remove(name);
 	}

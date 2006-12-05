@@ -82,7 +82,6 @@ public class VisualWorld extends Canvas implements PaintListener {
 	}
 
 	public void paintControl(PaintEvent e){
-		setRepaint();
 		if (m_AgentLocation != null || m_LastX != e.x || m_LastY != e.y || internalRepaint) {
 			m_LastX = e.x;
 			m_LastY = e.y;
@@ -125,9 +124,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 				}
 				
 				Cell cell = Soar2D.simulation.world.getCell(x, y);
-				// FIXME draw caching
-				//if (!cell.checkDraw() && m_Painted) {
-				if (m_Painted) {
+				if ((cell.removeObject(Names.kRedraw) == null) && m_Painted) {
 					continue;
 				}
 				
@@ -193,6 +190,9 @@ public class VisualWorld extends Canvas implements PaintListener {
 				
 				if (cell.removeObject(Names.kExplosion) != null) {
 					drawExplosion(gc, xDraw, yDraw);
+					if (!cell.hasObject(Names.kRedraw)) {
+						cell.addCellObject(new CellObject(Names.kRedraw, false, true));
+					}
 				}
 			}
 		}
