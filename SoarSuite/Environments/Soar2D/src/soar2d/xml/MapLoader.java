@@ -2,8 +2,7 @@ package soar2d.xml;
 
 import sml.*;
 import soar2d.*;
-import soar2d.world.Cell;
-import soar2d.world.CellObject;
+import soar2d.world.*;
 
 import java.util.*;
 
@@ -13,7 +12,9 @@ public class MapLoader {
 	
 	private int size = 0;
 	private Cell[][] mapCells = null;
-	
+	private CellObjectManager cellObjectManager = null;
+	private ArrayList<CellObject> updatableObjects = new ArrayList<CellObject>();
+
 	private void throwSyntax(String message) throws SyntaxException {
 		throw new SyntaxException(xmlPath, message);
 	}
@@ -30,11 +31,21 @@ public class MapLoader {
 		return mapCells;
 	}
 	
-	public boolean load(String mapFile) {
+	public CellObjectManager getCellObjectManager() {
+		return cellObjectManager;
+	}
+	
+	public ArrayList<CellObject> getUpdatableObjects() {
+		return updatableObjects;
+	}
+	
+	public boolean load() {
 		xmlPath = new Stack<String>();
 		foods = new ArrayList<String>();
-		
-		ElementXML rootTag = ElementXML.ParseXMLFromFile(mapFile);
+		cellObjectManager = new CellObjectManager();
+		updatableObjects = new ArrayList<CellObject>();
+			
+		ElementXML rootTag = ElementXML.ParseXMLFromFile(Soar2D.config.map.getAbsolutePath());
 		if (rootTag == null) {
 			Soar2D.control.severeError("Error parsing file: " + ElementXML.GetLastParseErrorDescription());
 			return false;
@@ -160,7 +171,7 @@ public class MapLoader {
 			}
 		}
 		
-		CellObject.registerTemplate(name, cellObjectTemplate);
+		cellObjectManager.registerTemplate(name, cellObjectTemplate);
 	}
 	
 	private void property(CellObject cellObjectTemplate, ElementXML propertyTag) throws SMLException, SyntaxException {
@@ -387,15 +398,19 @@ public class MapLoader {
 	
 	private void object(Cell cell, ElementXML objectTag) throws SMLException, SyntaxException {
 		String name = objectTag.GetCharacterData();
-		if (!CellObject.hasTemplate(name)) {
+		if (!cellObjectManager.hasTemplate(name)) {
 			throwSyntax("object \"" + name + "\" does not map to a cell-object");
 		}
 		
-		cell.addCellObject(CellObject.createObject(name));
+		CellObject cellObject = cellObjectManager.createObject(name);
+		if (cellObject.updatable()) {
+			this.updatableObjects.add(cellObject);
+		}
+		cell.addCellObject(cellObject);
 	}
 
 	private void generateRandomWalls() throws SyntaxException {
-		if (!CellObject.hasTemplate(Names.kWall)) {
+		if (!cellObjectManager.hasTemplate(Names.kWall)) {
 			throwSyntax("tried to generate random walls with no wall type");
 		}
 		
@@ -404,6 +419,7 @@ public class MapLoader {
 		}
 		
 		// Generate perimiter wall
+		CellObject cellObject;
 		for (int row = 0; row < size; ++row) {
 			if (mapCells[row] == null) {
 				mapCells[row] = new Cell[size];
@@ -411,21 +427,37 @@ public class MapLoader {
 			if (mapCells[row][0] == null) {
 				mapCells[row][0] = new Cell();
 			}
-			mapCells[row][0].addCellObject(CellObject.createObject(Names.kWall));
+			cellObject = cellObjectManager.createObject(Names.kWall);
+			if (cellObject.updatable()) {
+				this.updatableObjects.add(cellObject);
+			}
+			mapCells[row][0].addCellObject(cellObject);
 			if (mapCells[row][size - 1] == null) {
 				mapCells[row][size - 1] = new Cell();
 			}
-			mapCells[row][size - 1].addCellObject(CellObject.createObject(Names.kWall));
+			cellObject = cellObjectManager.createObject(Names.kWall);
+			if (cellObject.updatable()) {
+				this.updatableObjects.add(cellObject);
+			}
+			mapCells[row][size - 1].addCellObject(cellObject);
 		}
 		for (int col = 1; col < size - 1; ++col) {
 			if (mapCells[0][col] == null) {
 				mapCells[0][col] = new Cell();
 			}
-			mapCells[0][col].addCellObject(CellObject.createObject(Names.kWall));
+			cellObject = cellObjectManager.createObject(Names.kWall);
+			if (cellObject.updatable()) {
+				this.updatableObjects.add(cellObject);
+			}
+			mapCells[0][col].addCellObject(cellObject);
 			if (mapCells[size - 1][col] == null) {
 				mapCells[size - 1][col] = new Cell();
 			}
-			mapCells[size - 1][col].addCellObject(CellObject.createObject(Names.kWall));
+			cellObject = cellObjectManager.createObject(Names.kWall);
+			if (cellObject.updatable()) {
+				this.updatableObjects.add(cellObject);
+			}
+			mapCells[size - 1][col].addCellObject(cellObject);
 		}
 		
 		double probability = Soar2D.config.kLowProbability;
@@ -439,7 +471,11 @@ public class MapLoader {
 						if (mapCells[row][col] == null) {
 							mapCells[row][col] = new Cell();
 						}
-						mapCells[row][col].addCellObject(CellObject.createObject(Names.kWall));
+						cellObject = cellObjectManager.createObject(Names.kWall);
+						if (cellObject.updatable()) {
+							this.updatableObjects.add(cellObject);
+						}
+						mapCells[row][col].addCellObject(cellObject);
 					}
 					probability = Soar2D.config.kLowProbability;
 				}
@@ -501,7 +537,11 @@ public class MapLoader {
 					
 				}
 				if (mapCells[row][col].enterable()) {
-					mapCells[row][col].addCellObject(CellObject.createObject(foods.get(Simulation.random.nextInt(foods.size()))));
+					CellObject cellObject = cellObjectManager.createObject(foods.get(Simulation.random.nextInt(foods.size())));
+					if (cellObject.updatable()) {
+						this.updatableObjects.add(cellObject);
+					}
+					mapCells[row][col].addCellObject(cellObject);
 				}
 			}
 		}		

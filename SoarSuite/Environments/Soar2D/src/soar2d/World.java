@@ -19,27 +19,31 @@ public class World {
 	
 	int size;
 	private Cell[][] mapCells = null;
+	public CellObjectManager cellObjectManager = null;
+	private ArrayList<CellObject> updatableObjects = new ArrayList<CellObject>();
 	
 	private ArrayList<Player> players = new ArrayList<Player>();
 	private HashMap<String, java.awt.Point> initialLocations = new HashMap<String, java.awt.Point>();
 	private HashMap<String, java.awt.Point> locations = new HashMap<String, java.awt.Point>();
 	private HashMap<String, MoveInfo> lastMoves = new HashMap<String, MoveInfo>();
 	
-	public boolean load(String mapFile) {
+	public boolean load() {
 		
 		MapLoader loader = new MapLoader();
-		if (!loader.load(mapFile)) {
+		if (!loader.load()) {
 			return false;
 		}
 		
 		mapCells = loader.getCells();
 		size = loader.getSize();
+		cellObjectManager = loader.getCellObjectManager();
+		updatableObjects = loader.getUpdatableObjects();
 		
 		reset();
 		resetPlayers();
 		recalculateScoreCount();
 		
-		logger.info(mapFile + " loaded, world reset.");
+		logger.info("Map loaded, world reset.");
 		return true;
 	}
 	
@@ -97,9 +101,12 @@ public class World {
 		updatePlayers();
 	}
 	
-	private void resetPlayer(Player player) {
+	private boolean resetPlayer(Player player) {
 		// find a suitable starting location
 		Cell startingCell = putInStartingCell(player);
+		if (startingCell == null) {
+			return false;
+		}
 		
 		// update score count
 		scoreCount -= foodCount(startingCell);
@@ -112,6 +119,7 @@ public class World {
 		
 		// reset (init-soar)
 		player.reset();
+		return true;
 	}
 	
 	private void updatePlayers() {
@@ -151,40 +159,52 @@ public class World {
 	}
 	
 	private Cell putInStartingCell(Player player) {
-		// TODO: change algorithm to select from remaining starting locations
-		
-		java.awt.Point initialLocation = null;
-		java.awt.Point location = null;
-		Cell cell;
-		
-		if (initialLocations.containsKey(player.getName())) {
-			initialLocation = new java.awt.Point(initialLocations.get(player.getName()));
-			location = new java.awt.Point(initialLocation);
-			cell = getCell(location);
-		} else {
-			location = new java.awt.Point(Simulation.random.nextInt(size), Simulation.random.nextInt(size));
-			cell = getCell(location);
-		}
-
-		while (!cell.enterable() || (cell.getPlayer() != null)) {
-			if (initialLocation != null) {
-				logger.warning(player.getName() + ": Initial location (" + initialLocation.x + "," + initialLocation.y + ") is blocked, going random.");
-				initialLocation = null;
+		// Get available cells
+		ArrayList<java.awt.Point> availableLocations = new ArrayList<java.awt.Point>();
+		for (int x = 0; x < size; ++x) {
+			for (int y = 0; y < size; ++ y) {
+				java.awt.Point availableLocation = new java.awt.Point(x, y);
+				Cell cell = getCell(availableLocation);
+				if (cell.enterable() && (cell.getPlayer() == null)) {
+					availableLocations.add(availableLocation);
+				}
 			}
-			location.x = Simulation.random.nextInt(size);
-			location.y = Simulation.random.nextInt(size);
-			cell = getCell(location);
 		}
+		
+		// make sure there is an available cell
+		if (availableLocations.size() < 1) {
+			Soar2D.control.severeError("There are no suitable starting locations for " + player.getName() + ".");
+			return null;
+		}
+		
+		Cell cell;
+		java.awt.Point location = null;
+
+		if (initialLocations.containsKey(player.getName())) {
+			if (availableLocations.contains(initialLocations.get(player.getName()))) {
+				location = initialLocations.get(player.getName());
+			} else {
+				logger.warning(player.getName() + ": Initial location (" + location.x + "," + location.y + ") is blocked, going random.");
+			}
+		}
+		
+		if (location == null) {
+			location = availableLocations.get(Simulation.random.nextInt(availableLocations.size()));
+		}
+		
+		cell = getCell(location);
+		
 		// put the player in it
 		locations.put(player.getName(), location);
 		cell.setPlayer(player);
+		
 		if (!cell.hasObject(Names.kRedraw)) {
 			cell.addCellObject(new CellObject(Names.kRedraw, false, true));
 		}
 		return cell;
 	}
 
-	public void addPlayer(Player player, java.awt.Point initialLocation) {
+	public boolean addPlayer(Player player, java.awt.Point initialLocation) {
 		assert !locations.containsKey(player.getName());
 		
 		players.add(player);
@@ -192,13 +212,19 @@ public class World {
 		if (initialLocation != null) {
 			initialLocations.put(player.getName(), initialLocation);
 		}
-		resetPlayer(player);
+		
+		if (!resetPlayer(player)) {
+			initialLocations.remove(player.getName());
+			players.remove(player);
+			return false;
+		}
 		java.awt.Point location = locations.get(player.getName());
 		
 		logger.info(player.getName() + ": Spawning at (" + 
 				location.x + "," + location.y + ")");
 
 		updatePlayers();
+		return true;
 	}
 	
 	private void moveEaters() {
@@ -318,8 +344,15 @@ public class World {
 		updateMapAndEatFood();
 		handleCollisions();	
 		updatePlayers();
+		updateObjects();
 	}
 		
+	private void updateObjects() {
+		// TODO Auto-generated method stub
+		//updatableObjects;
+		
+	}
+
 	private void handleCollisions() {
 		// Make sure collisions are possible
 		if (players.size() < 2) {
@@ -414,6 +447,7 @@ public class World {
 			while (collideeIter.hasNext()) {
 				Player player = collideeIter.next();
 				Cell cell = putInStartingCell(player);
+				assert cell != null;
 				if (lastMoves.get(player.getName()).eat) {
 					eat(player, cell);
 				}
