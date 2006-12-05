@@ -199,13 +199,17 @@ public class ConfigurationLoader {
 		String attribute;
 		
 		attribute = gameTag.GetAttribute(Names.kParamMap);
-		if (attribute == null) {
-			throwSyntax("map not specified");
+		if ((attribute == null) || (attribute.length() <= 0)) {
+			throwSyntax("map not specified, is required");
 		}
-		if (attribute.length() <= 0) {
-			throwSyntax("zero length map");
+		File mapFile = new File(attribute);
+		if (!mapFile.exists()) {
+			mapFile = new File(c.mapPath + attribute);
+			if (!mapFile.exists()) {
+				throwSyntax("Error finding map " + attribute);
+			}
 		}
-		c.map = attribute;
+		c.map = mapFile;
 
 		ElementXML subTag = null;
 		for (int soar2dTagIndex = 0 ; soar2dTagIndex < gameTag.GetNumberChildren() ; ++soar2dTagIndex) {

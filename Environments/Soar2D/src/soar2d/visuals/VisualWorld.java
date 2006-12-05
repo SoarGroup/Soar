@@ -16,7 +16,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 	static HashMap<String, Color> foodColors = new HashMap<String, Color>();
 	
 	public static void remapFoodColors() {
-		ArrayList<CellObject> foods = CellObject.getTemplatesWithProperty(Names.kPropertyEdible);
+		ArrayList<CellObject> foods = Soar2D.simulation.world.cellObjectManager.getTemplatesWithProperty(Names.kPropertyEdible);
 		foodColors.clear();
 		Iterator<CellObject> iter = foods.iterator();
 		while (iter.hasNext()) {

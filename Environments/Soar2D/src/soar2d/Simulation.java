@@ -15,7 +15,6 @@ public class Simulation {
 	Kernel kernel = null;
 	public static Random random = null;
 	public World world = new World();
-	String currentMap = null;
 	private final String kColors[] = { "red", "blue", "purple", "yellow", "orange", "black", "green" };
 	private ArrayList<String> unusedColors = new ArrayList<String>(kColors.length);
 	HashMap<String, Agent> agents = new HashMap<String, Agent>();
@@ -70,8 +69,9 @@ public class Simulation {
 		}
 		
 		// Load the world
-		currentMap = Soar2D.config.mapPath + Soar2D.config.map;
-		world.load(currentMap);
+		if(!world.load()) {
+			return false;
+		}
 		
 		// Start or wait for clients (false: before agent creation)
 		if (!doClients(false)) {
@@ -174,8 +174,10 @@ public class Simulation {
 		
 		
 		if (!agent.LoadProductions(playerConfig.getProductions().getAbsolutePath())) {
-			freeAColor(playerConfig.getColor());
 			Soar2D.control.severeError("Agent " + playerConfig.getName() + " production load failed: " + agent.GetLastErrorDescription());
+			kernel.DestroyAgent(agent);
+			agent.delete();
+			freeAColor(playerConfig.getColor());
 			return;
 		}
 
@@ -187,7 +189,14 @@ public class Simulation {
 			if (playerConfig.hasInitialLocation()) {
 				initialLocation = playerConfig.getInitialLocation();
 			}
-			world.addPlayer(eater, initialLocation);
+			
+			// This can fail if there are no open squares on the map, message printed already
+			if (!world.addPlayer(eater, initialLocation)) {
+				kernel.DestroyAgent(agent);
+				agent.delete();
+				freeAColor(playerConfig.getColor());
+				return;
+			}
 			
 			Names.kDebuggerClient.command = getDebuggerCommand(eater.getName());
 			if (Soar2D.config.debuggers && !isClientConnected(Names.kDebuggerClient)) {
@@ -380,12 +389,14 @@ public class Simulation {
 		}
 	}
 
-	public void reset() {
+	public boolean reset() {
 		if (Soar2D.logger.isLoggable(Level.INFO)) Soar2D.logger.info("Resetting simulation.");
-		if (!world.load(currentMap)) {
-			Soar2D.control.severeError("Error loading map " + currentMap);
+		if (!world.load()) {
+			Soar2D.control.severeError("Error loading map " + Soar2D.config.map);
+			return false;
 		}
 		world.reset();
+		return true;
 	}
 
 	public void shutdown() {

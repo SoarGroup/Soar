@@ -2,6 +2,7 @@ package soar2d;
 
 import java.util.*;
 import java.util.logging.*;
+import java.io.*;
 
 import soar2d.player.*;
 
@@ -46,7 +47,7 @@ public class Configuration {
 	public boolean random = true;
 	public int maxUpdates = 0;
 	public int winningScore = 0;
-	public String map = null;
+	public File map = null;
 	public ArrayList<ClientConfig> clients = new ArrayList<ClientConfig>();
 	public ArrayList<PlayerConfig> players = new ArrayList<PlayerConfig>();
 	public String basePath = null;

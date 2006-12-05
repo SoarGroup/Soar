@@ -1,5 +1,6 @@
 package soar2d;
 
+import java.io.File;
 import java.util.logging.*;
 
 import sml.*;
@@ -67,11 +68,14 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		stopSoar = true;
 	}
 	
-	public void resetSimulation() {
-		Soar2D.simulation.reset();
+	public boolean resetSimulation() {
+		if (!Soar2D.simulation.reset()) {
+			return false;
+		}
 		if (Soar2D.wm.using()) {
 			Soar2D.wm.reset();
 		}
+		return true;
 	}
 	
 	public void run() {
@@ -149,8 +153,23 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	}
 
 	public void changeMap(String map) {
-		if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Changing map.");
-		Soar2D.config.map = map;
-		resetSimulation();
+		if ((map == null) || (map.length() <= 0)) {
+			severeError("map not specified, is required");
+		}
+		if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Changing map to " + map);
+		File mapFile = new File(map);
+		if (!mapFile.exists()) {
+			mapFile = new File(Soar2D.config.mapPath + map);
+			if (!mapFile.exists()) {
+				severeError("Error finding map " + map);
+				return;
+			}
+		}
+		File oldMap = Soar2D.config.map;
+		Soar2D.config.map = mapFile;
+
+		if (!resetSimulation()) {
+			Soar2D.config.map = oldMap;
+		}
 	}
 }

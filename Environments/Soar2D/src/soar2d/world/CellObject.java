@@ -6,47 +6,6 @@ import soar2d.*;
 import soar2d.player.Player;
 
 public class CellObject {
-	// Factory methods and members
-	private static HashMap<String, CellObject> templates = new HashMap<String, CellObject>();
-	public static boolean hasTemplate(String name) {
-		return templates.containsKey(name);
-	}
-	public static boolean removeTemplate(String name, CellObject cellObject) {
-		if (templates.containsKey(name)) {
-			templates.remove(name);
-			return true;
-		}
-		return false;
-	}
-	public static boolean registerTemplate(String name, CellObject cellObject) {
-		if (templates.containsKey(name)) {
-			return false;
-		}
-		if (cellObject == null) {
-			return false;
-		}
-		templates.put(name, cellObject);
-		return true;
-	}
-	public static CellObject createObject(String name) {
-		if (templates.containsKey(name)) {
-			return new CellObject(templates.get(name));
-		}
-		return null;
-	}
-	public static ArrayList<CellObject> getTemplatesWithProperty(String name) {
-		ArrayList<CellObject> ret = new ArrayList<CellObject>(templates.values());
-		Iterator<CellObject> iter = ret.iterator();
-		while (iter.hasNext()) {
-			CellObject obj = iter.next();
-			if (!obj.hasProperty(name)) {
-				iter.remove();
-			}
-		}
-		return ret;
-	}
-	// End factory methods and members
-	
 	HashMap<String, String> properties = new HashMap<String, String>();
 	String name;
 	boolean updatable;

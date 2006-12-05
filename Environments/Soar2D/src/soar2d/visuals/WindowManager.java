@@ -208,7 +208,7 @@ public class WindowManager {
 	}
 
 	void updateWorldGroup() {
-		worldGroup.setText(Soar2D.config.map);
+		worldGroup.setText(Soar2D.config.map.getName());
 		visualWorld.setSize(visualWorld.getWidth(), visualWorld.getHeight());
 		GridData gd = new GridData();
 		gd.widthHint = visualWorld.getWidth();
