@@ -2409,3 +2409,50 @@ std::string Kernel::GetSMLVersion()
 {
 	return sml_Names::kSMLVersionValue ;
 }
+
+#ifdef _WIN32
+#include "Windows.h"	// Needed for load library
+#undef SendMessage		// Windows defines this as a macro.  Yikes!
+
+#elif defined(HAVE_DLFCN_H)
+#include <dlfcn.h>      // Needed for dlopen and dlsym
+#define GetProcAddress dlsym
+
+#endif // _WIN32
+
+typedef void (*InitLibraryFunction)(Kernel*, void*);
+
+void Kernel::LoadExternalLibrary(const char *pLibraryName) {
+		// Make a copy of the library name so we can work on it.
+		std::string libraryName = pLibraryName ;
+
+		// We shouldn't be passed something with an extension
+		// but if we are, we'll try to strip the extension to be helpful
+		size_t pos = libraryName.find_last_of('.') ;
+		if (pos != std::string::npos)
+		{
+			libraryName.erase(pos) ;
+		}
+
+#ifdef _WIN32
+		// The windows shared library
+		libraryName = libraryName + ".dll";
+		
+		// Now load the library itself.
+		HMODULE hLibrary = LoadLibrary(libraryName.c_str()) ;
+
+#else
+		std::string newLibraryName = "lib" + libraryName + ".so";
+		void* hLibrary = 0;
+		hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
+		if (!hLibrary) {
+			// Try again with mac extention
+			newLibraryName = "lib" + libraryName + ".dylib";
+			hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
+		}
+		// FIXME error details can be returned by a call to dlerror()
+#endif
+		InitLibraryFunction pInitLibraryFunction = (InitLibraryFunction)GetProcAddress(hLibrary, "sml_InitLibrary") ;
+
+		pInitLibraryFunction(this, 0);
+}

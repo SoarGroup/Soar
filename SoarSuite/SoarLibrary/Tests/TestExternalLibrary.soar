@@ -1,0 +1,4 @@
+sp {test
+(state <s> ^superstate nil)
+-->
+(write |Success!|)}
