@@ -239,6 +239,8 @@ public class Simulation {
 				Soar2D.control.severeError("Failed to destroy soar agent " + player.getName() + ": " + kernel.GetLastErrorDescription());
 			}
 		}
+		agent.delete();
+		agent = null;
 		Soar2D.control.playerEvent();
 	}
 	
@@ -257,6 +259,7 @@ public class Simulation {
 		PlayerConfig config = configs.get(name);
 		assert config != null;
 		config.setName(newName);
+		config.setColor(null);
 		createPlayer(config);
 	}
 

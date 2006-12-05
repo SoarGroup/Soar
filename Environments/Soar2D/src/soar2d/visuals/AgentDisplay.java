@@ -157,6 +157,7 @@ public class AgentDisplay extends Composite {
 		m_AgentWorld.enable();
 		m_AgentWorld.redraw();
 		location.setText("(" + playerLocation.x + "," + playerLocation.y + ")");
+		updateButtons();
 	}
 	
 	void agentEvent() {
