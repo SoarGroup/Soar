@@ -76,12 +76,11 @@ public class WindowManager {
 	public boolean initialize() {
 		display = new Display();
 		if (display == null) {
-			System.err.println("Error creating display.");
 			return false;
 		}
 		shell = new Shell(display, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.TITLE);
 		if (shell == null) {
-			System.err.println("Error creating shell.");
+			display.dispose();
 			return false;
 		}
 		initColors(display);
@@ -292,6 +291,11 @@ public class WindowManager {
 	}
 
 	public void shutdown() {
+		if (display == null) {
+			return;
+		}
 		display.dispose();
+		display = null;
+		shell = null;
 	}
 }

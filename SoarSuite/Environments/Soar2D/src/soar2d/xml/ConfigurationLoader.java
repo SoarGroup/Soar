@@ -63,12 +63,10 @@ public class ConfigurationLoader {
 			return false;
 			
 		} finally {
-			// BADBAD: call garbage collector because something is lame and leaks
-			// and this is the only thing that fixes it
 			assert rootTag.GetRefCount() == 1;
 			rootTag.ReleaseRefOnHandle();
+			rootTag.delete();
 			rootTag = null;
-			System.gc();
 		}
 		
 		return c.eaters || c.tanksoar;

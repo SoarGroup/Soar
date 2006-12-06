@@ -462,11 +462,11 @@ public class World {
 		}
 	}
 	
-	protected boolean isInBounds(Point location) {
+	public boolean isInBounds(Point location) {
 		return isInBounds(location.x, location.y);
 	}
 
-	protected boolean isInBounds(int x, int y) {
+	public boolean isInBounds(int x, int y) {
 		return (x >= 0) && (y >= 0) && (x < size) && (y < size);
 	}
 
