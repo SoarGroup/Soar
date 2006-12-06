@@ -16,6 +16,9 @@ public class Soar2D {
 	public static final Controller control = new Controller();
 
 	public Soar2D(String[] args) {
+		// Fire up view
+		boolean wmSuccess = wm.initialize();
+
 		if (args.length > 0) {
 			configFile = args[0];
 		} else {
@@ -25,7 +28,8 @@ public class Soar2D {
 			try {
 				install(config.kDefaultXMLSettingsFile);
 			} catch (IOException e) {
-				System.err.println("IOException installing " + config.kDefaultXMLSettingsFile + ": " + e.getMessage());
+				control.severeError("IOException installing " + config.kDefaultXMLSettingsFile + ": " + e.getMessage());
+				wm.shutdown();
 				System.exit(1);
 			}
 		}
@@ -33,6 +37,7 @@ public class Soar2D {
 		// Read config file
 		ConfigurationLoader configLoader = new ConfigurationLoader();
 		if (!configLoader.load(configFile)) {
+			wm.shutdown();
 			System.exit(1);
 		}
 		config = configLoader.getConfig();
@@ -44,7 +49,8 @@ public class Soar2D {
 				handler.setFormatter(new TextFormatter());
 				logger.addHandler(handler);
 			} catch (IOException e) {
-				System.err.println("IOException creating " + config.logFile + ": " + e.getMessage());
+				control.severeError("IOException creating " + config.logFile + ": " + e.getMessage());
+				wm.shutdown();
 				System.exit(1);
 			}
 		}
@@ -62,11 +68,14 @@ public class Soar2D {
 			logger.setLevel(Level.OFF);
 		}
 		
-		// Fire up view
 		if (config.graphical) {
-			if (!wm.initialize()) {
+			if (!wmSuccess) {
+				control.severeError("Failed to initialize display.");
 				System.exit(1);
 			}
+		} else {
+			// shut down visuals
+			wm.shutdown();
 		}
 
 		// Initialize simulation

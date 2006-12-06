@@ -64,12 +64,10 @@ public class MapLoader {
 			return false;
 			
 		} finally {
-			// BADBAD: call garbage collector because something is lame and leaks
-			// and this is the only thing that fixes it
 			assert rootTag.GetRefCount() == 1;
 			rootTag.ReleaseRefOnHandle();
+			rootTag.delete();
 			rootTag = null;
-			System.gc();
 		}
 		
 		// success
@@ -443,7 +441,6 @@ public class MapLoader {
 		}
 		
 		// Generate perimiter wall
-		CellObject cellObject;
 		for (int row = 0; row < size; ++row) {
 			if (mapCells[row] == null) {
 				mapCells[row] = new Cell[size];
@@ -451,25 +448,21 @@ public class MapLoader {
 			if (mapCells[row][0] == null) {
 				mapCells[row][0] = new Cell();
 			}
-			cellObject = cellObjectManager.createObject(Names.kWall);
-			mapCells[row][0].addCellObject(cellObject);
+			addWall(mapCells[row][0]);
 			if (mapCells[row][size - 1] == null) {
 				mapCells[row][size - 1] = new Cell();
 			}
-			cellObject = cellObjectManager.createObject(Names.kWall);
-			mapCells[row][size - 1].addCellObject(cellObject);
+			addWall(mapCells[row][size - 1]);
 		}
 		for (int col = 1; col < size - 1; ++col) {
 			if (mapCells[0][col] == null) {
 				mapCells[0][col] = new Cell();
 			}
-			cellObject = cellObjectManager.createObject(Names.kWall);
-			mapCells[0][col].addCellObject(cellObject);
+			addWall(mapCells[0][col]);
 			if (mapCells[size - 1][col] == null) {
 				mapCells[size - 1][col] = new Cell();
 			}
-			cellObject = cellObjectManager.createObject(Names.kWall);
-			mapCells[size - 1][col].addCellObject(cellObject);
+			addWall(mapCells[size - 1][col]);
 		}
 		
 		double probability = Soar2D.config.kLowProbability;
@@ -483,12 +476,18 @@ public class MapLoader {
 						if (mapCells[row][col] == null) {
 							mapCells[row][col] = new Cell();
 						}
-						cellObject = cellObjectManager.createObject(Names.kWall);
-						mapCells[row][col].addCellObject(cellObject);
+						addWall(mapCells[row][col]);
 					}
 					probability = Soar2D.config.kLowProbability;
 				}
 			}
+		}
+	}
+	
+	private void addWall(Cell cell) {
+		if (!cell.hasObject(Names.kWall)) {
+			CellObject cellObject = cellObjectManager.createObject(Names.kWall);
+			cell.addCellObject(cellObject);
 		}
 	}
 	
@@ -546,6 +545,7 @@ public class MapLoader {
 					
 				}
 				if (mapCells[row][col].enterable()) {
+					mapCells[row][col].removeAllWithProperty(Names.kPropertyEdible);
 					CellObject cellObject = cellObjectManager.createObject(foods.get(Simulation.random.nextInt(foods.size())));
 					mapCells[row][col].addCellObject(cellObject);
 				}

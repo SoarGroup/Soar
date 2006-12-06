@@ -22,55 +22,905 @@
   </cell-object>
   <cells world-size="17" random-walls="true" random-food="false">
     <row>
-      <cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/>
+      <cell row="0" col="0">
+        <object>wall</object>
+      </cell>
+      <cell row="0" col="1">
+        <object>wall</object>
+      </cell>
+      <cell row="0" col="2">
+        <object>wall</object>
+      </cell>
+      <cell row="0" col="3">
+        <object>wall</object>
+      </cell>
+      <cell row="0" col="4">
+        <object>wall</object>
+      </cell>
+      <cell row="0" col="5">
+        <object>wall</object>
+      </cell>
+      <cell row="0" col="6">
+        <object>wall</object>
+      </cell>
+      <cell row="0" col="7">
+        <object>wall</object>
+      </cell>
+      <cell row="0" col="8">
+        <object>wall</object>
+      </cell>
+      <cell row="0" col="9">
+        <object>wall</object>
+      </cell>
+      <cell row="0" col="10">
+        <object>wall</object>
+      </cell>
+      <cell row="0" col="11">
+        <object>wall</object>
+      </cell>
+      <cell row="0" col="12">
+        <object>wall</object>
+      </cell>
+      <cell row="0" col="13">
+        <object>wall</object>
+      </cell>
+      <cell row="0" col="14">
+        <object>wall</object>
+      </cell>
+      <cell row="0" col="15">
+        <object>wall</object>
+      </cell>
+      <cell row="0" col="16">
+        <object>wall</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="wall"/>
+      <cell col="0">
+        <object>wall</object>
+      </cell>
+      <cell col="1">
+        <object>normalfood</object>
+      </cell>
+      <cell col="2">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="3">
+        <object>normalfood</object>
+      </cell>
+      <cell col="4">
+        <object>normalfood</object>
+      </cell>
+      <cell col="5">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="6">
+        <object>normalfood</object>
+      </cell>
+      <cell col="7">
+        <object>normalfood</object>
+      </cell>
+      <cell col="8">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="9">
+        <object>normalfood</object>
+      </cell>
+      <cell col="10">
+        <object>normalfood</object>
+      </cell>
+      <cell col="11">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="12">
+        <object>normalfood</object>
+      </cell>
+      <cell col="13">
+        <object>normalfood</object>
+      </cell>
+      <cell col="14">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="15">
+        <object>normalfood</object>
+      </cell>
+      <cell col="16">
+        <object>wall</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="wall"/>
+      <cell col="0">
+        <object>wall</object>
+      </cell>
+      <cell col="1">
+        <object>normalfood</object>
+      </cell>
+      <cell col="2">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="3">
+        <object>normalfood</object>
+      </cell>
+      <cell col="4">
+        <object>normalfood</object>
+      </cell>
+      <cell col="5">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="6">
+        <object>normalfood</object>
+      </cell>
+      <cell col="7">
+        <object>normalfood</object>
+      </cell>
+      <cell col="8">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="9">
+        <object>normalfood</object>
+      </cell>
+      <cell col="10">
+        <object>normalfood</object>
+      </cell>
+      <cell col="11">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="12">
+        <object>normalfood</object>
+      </cell>
+      <cell col="13">
+        <object>normalfood</object>
+      </cell>
+      <cell col="14">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="15">
+        <object>normalfood</object>
+      </cell>
+      <cell col="16">
+        <object>wall</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="wall"/>
+      <cell col="0">
+        <object>wall</object>
+      </cell>
+      <cell col="1">
+        <object>normalfood</object>
+      </cell>
+      <cell col="2">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="3">
+        <object>normalfood</object>
+      </cell>
+      <cell col="4">
+        <object>normalfood</object>
+      </cell>
+      <cell col="5">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="6">
+        <object>normalfood</object>
+      </cell>
+      <cell col="7">
+        <object>normalfood</object>
+      </cell>
+      <cell col="8">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="9">
+        <object>normalfood</object>
+      </cell>
+      <cell col="10">
+        <object>normalfood</object>
+      </cell>
+      <cell col="11">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="12">
+        <object>normalfood</object>
+      </cell>
+      <cell col="13">
+        <object>normalfood</object>
+      </cell>
+      <cell col="14">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="15">
+        <object>normalfood</object>
+      </cell>
+      <cell col="16">
+        <object>wall</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="wall"/>
+      <cell col="0">
+        <object>wall</object>
+      </cell>
+      <cell col="1">
+        <object>normalfood</object>
+      </cell>
+      <cell col="2">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="3">
+        <object>normalfood</object>
+      </cell>
+      <cell col="4">
+        <object>normalfood</object>
+      </cell>
+      <cell col="5">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="6">
+        <object>normalfood</object>
+      </cell>
+      <cell col="7">
+        <object>normalfood</object>
+      </cell>
+      <cell col="8">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="9">
+        <object>normalfood</object>
+      </cell>
+      <cell col="10">
+        <object>normalfood</object>
+      </cell>
+      <cell col="11">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="12">
+        <object>normalfood</object>
+      </cell>
+      <cell col="13">
+        <object>normalfood</object>
+      </cell>
+      <cell col="14">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="15">
+        <object>normalfood</object>
+      </cell>
+      <cell col="16">
+        <object>wall</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="wall"/>
+      <cell col="0">
+        <object>wall</object>
+      </cell>
+      <cell col="1">
+        <object>normalfood</object>
+      </cell>
+      <cell col="2">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="3">
+        <object>normalfood</object>
+      </cell>
+      <cell col="4">
+        <object>normalfood</object>
+      </cell>
+      <cell col="5">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="6">
+        <object>normalfood</object>
+      </cell>
+      <cell col="7">
+        <object>normalfood</object>
+      </cell>
+      <cell col="8">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="9">
+        <object>normalfood</object>
+      </cell>
+      <cell col="10">
+        <object>normalfood</object>
+      </cell>
+      <cell col="11">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="12">
+        <object>normalfood</object>
+      </cell>
+      <cell col="13">
+        <object>normalfood</object>
+      </cell>
+      <cell col="14">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="15">
+        <object>normalfood</object>
+      </cell>
+      <cell col="16">
+        <object>wall</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="wall"/>
+      <cell col="0">
+        <object>wall</object>
+      </cell>
+      <cell col="1">
+        <object>normalfood</object>
+      </cell>
+      <cell col="2">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="3">
+        <object>normalfood</object>
+      </cell>
+      <cell col="4">
+        <object>normalfood</object>
+      </cell>
+      <cell col="5">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="6">
+        <object>normalfood</object>
+      </cell>
+      <cell col="7">
+        <object>normalfood</object>
+      </cell>
+      <cell col="8">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="9">
+        <object>normalfood</object>
+      </cell>
+      <cell col="10">
+        <object>normalfood</object>
+      </cell>
+      <cell col="11">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="12">
+        <object>normalfood</object>
+      </cell>
+      <cell col="13">
+        <object>normalfood</object>
+      </cell>
+      <cell col="14">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="15">
+        <object>normalfood</object>
+      </cell>
+      <cell col="16">
+        <object>wall</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="wall"/>
+      <cell col="0">
+        <object>wall</object>
+      </cell>
+      <cell col="1">
+        <object>normalfood</object>
+      </cell>
+      <cell col="2">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="3">
+        <object>normalfood</object>
+      </cell>
+      <cell col="4">
+        <object>normalfood</object>
+      </cell>
+      <cell col="5">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="6">
+        <object>normalfood</object>
+      </cell>
+      <cell col="7">
+        <object>normalfood</object>
+      </cell>
+      <cell col="8">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="9">
+        <object>normalfood</object>
+      </cell>
+      <cell col="10">
+        <object>normalfood</object>
+      </cell>
+      <cell col="11">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="12">
+        <object>normalfood</object>
+      </cell>
+      <cell col="13">
+        <object>normalfood</object>
+      </cell>
+      <cell col="14">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="15">
+        <object>normalfood</object>
+      </cell>
+      <cell col="16">
+        <object>wall</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="wall"/>
+      <cell col="0">
+        <object>wall</object>
+      </cell>
+      <cell col="1">
+        <object>normalfood</object>
+      </cell>
+      <cell col="2">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="3">
+        <object>normalfood</object>
+      </cell>
+      <cell col="4">
+        <object>normalfood</object>
+      </cell>
+      <cell col="5">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="6">
+        <object>normalfood</object>
+      </cell>
+      <cell col="7">
+        <object>normalfood</object>
+      </cell>
+      <cell col="8">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="9">
+        <object>normalfood</object>
+      </cell>
+      <cell col="10">
+        <object>normalfood</object>
+      </cell>
+      <cell col="11">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="12">
+        <object>normalfood</object>
+      </cell>
+      <cell col="13">
+        <object>normalfood</object>
+      </cell>
+      <cell col="14">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="15">
+        <object>normalfood</object>
+      </cell>
+      <cell col="16">
+        <object>wall</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="wall"/>
+      <cell col="0">
+        <object>wall</object>
+      </cell>
+      <cell col="1">
+        <object>normalfood</object>
+      </cell>
+      <cell col="2">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="3">
+        <object>normalfood</object>
+      </cell>
+      <cell col="4">
+        <object>normalfood</object>
+      </cell>
+      <cell col="5">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="6">
+        <object>normalfood</object>
+      </cell>
+      <cell col="7">
+        <object>normalfood</object>
+      </cell>
+      <cell col="8">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="9">
+        <object>normalfood</object>
+      </cell>
+      <cell col="10">
+        <object>normalfood</object>
+      </cell>
+      <cell col="11">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="12">
+        <object>normalfood</object>
+      </cell>
+      <cell col="13">
+        <object>normalfood</object>
+      </cell>
+      <cell col="14">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="15">
+        <object>normalfood</object>
+      </cell>
+      <cell col="16">
+        <object>wall</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="wall"/>
+      <cell col="0">
+        <object>wall</object>
+      </cell>
+      <cell col="1">
+        <object>normalfood</object>
+      </cell>
+      <cell col="2">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="3">
+        <object>normalfood</object>
+      </cell>
+      <cell col="4">
+        <object>normalfood</object>
+      </cell>
+      <cell col="5">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="6">
+        <object>normalfood</object>
+      </cell>
+      <cell col="7">
+        <object>normalfood</object>
+      </cell>
+      <cell col="8">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="9">
+        <object>normalfood</object>
+      </cell>
+      <cell col="10">
+        <object>normalfood</object>
+      </cell>
+      <cell col="11">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="12">
+        <object>normalfood</object>
+      </cell>
+      <cell col="13">
+        <object>normalfood</object>
+      </cell>
+      <cell col="14">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="15">
+        <object>normalfood</object>
+      </cell>
+      <cell col="16">
+        <object>wall</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="wall"/>
+      <cell col="0">
+        <object>wall</object>
+      </cell>
+      <cell col="1">
+        <object>normalfood</object>
+      </cell>
+      <cell col="2">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="3">
+        <object>normalfood</object>
+      </cell>
+      <cell col="4">
+        <object>normalfood</object>
+      </cell>
+      <cell col="5">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="6">
+        <object>normalfood</object>
+      </cell>
+      <cell col="7">
+        <object>normalfood</object>
+      </cell>
+      <cell col="8">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="9">
+        <object>normalfood</object>
+      </cell>
+      <cell col="10">
+        <object>normalfood</object>
+      </cell>
+      <cell col="11">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="12">
+        <object>normalfood</object>
+      </cell>
+      <cell col="13">
+        <object>normalfood</object>
+      </cell>
+      <cell col="14">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="15">
+        <object>normalfood</object>
+      </cell>
+      <cell col="16">
+        <object>wall</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="wall"/>
+      <cell col="0">
+        <object>wall</object>
+      </cell>
+      <cell col="1">
+        <object>normalfood</object>
+      </cell>
+      <cell col="2">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="3">
+        <object>normalfood</object>
+      </cell>
+      <cell col="4">
+        <object>normalfood</object>
+      </cell>
+      <cell col="5">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="6">
+        <object>normalfood</object>
+      </cell>
+      <cell col="7">
+        <object>normalfood</object>
+      </cell>
+      <cell col="8">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="9">
+        <object>normalfood</object>
+      </cell>
+      <cell col="10">
+        <object>normalfood</object>
+      </cell>
+      <cell col="11">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="12">
+        <object>normalfood</object>
+      </cell>
+      <cell col="13">
+        <object>normalfood</object>
+      </cell>
+      <cell col="14">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="15">
+        <object>normalfood</object>
+      </cell>
+      <cell col="16">
+        <object>wall</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="wall"/>
+      <cell col="0">
+        <object>wall</object>
+      </cell>
+      <cell col="1">
+        <object>normalfood</object>
+      </cell>
+      <cell col="2">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="3">
+        <object>normalfood</object>
+      </cell>
+      <cell col="4">
+        <object>normalfood</object>
+      </cell>
+      <cell col="5">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="6">
+        <object>normalfood</object>
+      </cell>
+      <cell col="7">
+        <object>normalfood</object>
+      </cell>
+      <cell col="8">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="9">
+        <object>normalfood</object>
+      </cell>
+      <cell col="10">
+        <object>normalfood</object>
+      </cell>
+      <cell col="11">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="12">
+        <object>normalfood</object>
+      </cell>
+      <cell col="13">
+        <object>normalfood</object>
+      </cell>
+      <cell col="14">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="15">
+        <object>normalfood</object>
+      </cell>
+      <cell col="16">
+        <object>wall</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="wall"/>
+      <cell col="0">
+        <object>wall</object>
+      </cell>
+      <cell col="1">
+        <object>normalfood</object>
+      </cell>
+      <cell col="2">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="3">
+        <object>normalfood</object>
+      </cell>
+      <cell col="4">
+        <object>normalfood</object>
+      </cell>
+      <cell col="5">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="6">
+        <object>normalfood</object>
+      </cell>
+      <cell col="7">
+        <object>normalfood</object>
+      </cell>
+      <cell col="8">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="9">
+        <object>normalfood</object>
+      </cell>
+      <cell col="10">
+        <object>normalfood</object>
+      </cell>
+      <cell col="11">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="12">
+        <object>normalfood</object>
+      </cell>
+      <cell col="13">
+        <object>normalfood</object>
+      </cell>
+      <cell col="14">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="15">
+        <object>normalfood</object>
+      </cell>
+      <cell col="16">
+        <object>wall</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="normalfood"/><cell type="bonusfood"/><cell type="normalfood"/><cell type="wall"/>
+      <cell col="0">
+        <object>wall</object>
+      </cell>
+      <cell col="1">
+        <object>normalfood</object>
+      </cell>
+      <cell col="2">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="3">
+        <object>normalfood</object>
+      </cell>
+      <cell col="4">
+        <object>normalfood</object>
+      </cell>
+      <cell col="5">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="6">
+        <object>normalfood</object>
+      </cell>
+      <cell col="7">
+        <object>normalfood</object>
+      </cell>
+      <cell col="8">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="9">
+        <object>normalfood</object>
+      </cell>
+      <cell col="10">
+        <object>normalfood</object>
+      </cell>
+      <cell col="11">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="12">
+        <object>normalfood</object>
+      </cell>
+      <cell col="13">
+        <object>normalfood</object>
+      </cell>
+      <cell col="14">
+        <object>bonusfood</object>
+      </cell>
+      <cell col="15">
+        <object>normalfood</object>
+      </cell>
+      <cell col="16">
+        <object>wall</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/><cell type="wall"/>
+      <cell row="16" col="0">
+        <object>wall</object>
+      </cell>
+      <cell row="16" col="1">
+        <object>wall</object>
+      </cell>
+      <cell row="16" col="2">
+        <object>wall</object>
+      </cell>
+      <cell row="16" col="3">
+        <object>wall</object>
+      </cell>
+      <cell row="16" col="4">
+        <object>wall</object>
+      </cell>
+      <cell row="16" col="5">
+        <object>wall</object>
+      </cell>
+      <cell row="16" col="6">
+        <object>wall</object>
+      </cell>
+      <cell row="16" col="7">
+        <object>wall</object>
+      </cell>
+      <cell row="16" col="8">
+        <object>wall</object>
+      </cell>
+      <cell row="16" col="9">
+        <object>wall</object>
+      </cell>
+      <cell row="16" col="10">
+        <object>wall</object>
+      </cell>
+      <cell row="16" col="11">
+        <object>wall</object>
+      </cell>
+      <cell row="16" col="12">
+        <object>wall</object>
+      </cell>
+      <cell row="16" col="13">
+        <object>wall</object>
+      </cell>
+      <cell row="16" col="14">
+        <object>wall</object>
+      </cell>
+      <cell row="16" col="15">
+        <object>wall</object>
+      </cell>
+      <cell row="16" col="16">
+        <object>wall</object>
+      </cell>
     </row>
   </cells>
 </map>

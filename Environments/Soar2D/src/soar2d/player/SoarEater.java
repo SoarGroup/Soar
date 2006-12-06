@@ -115,27 +115,20 @@ public class SoarEater extends Eater {
 		} while (this.random == newRandom);
 		this.random = newRandom;
 	}
-
+	
 	public void update(World world, java.awt.Point location) {
 		boolean moved = (location.x != this.previousLocation.x) || (location.y != this.previousLocation.y);
 		
-		int xView, yView;
-		int worldSize = world.getSize();
+		java.awt.Point viewLocation = new java.awt.Point();
 		for (int x = 0; x < cells.length; ++x) {
-			xView = x - Soar2D.config.kEaterVision + location.x;
-			if (xView < 0) {
-				continue;
-			} else if (xView >= worldSize) {
-				break;
-			}
+			viewLocation.x = x - Soar2D.config.kEaterVision + location.x;
 			for (int y = 0; y < cells[x].length; ++y) {
-				yView = y - Soar2D.config.kEaterVision + location.y;
-				if (yView < 0) {
+				viewLocation.y = y - Soar2D.config.kEaterVision + location.y;
+				if (!world.isInBounds(viewLocation)) {
+					agent.Update(cells[x][y].content, Names.kWall);
 					continue;
-				} else if (yView >= worldSize) {
-					break;
 				}
-				Cell cell = world.getCell(xView, yView);
+				Cell cell = world.getCell(viewLocation.x, viewLocation.y);
 				String content = null;
 				if (cell.getPlayer() != null) {
 					content = Names.kEater;
