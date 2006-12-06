@@ -51,6 +51,7 @@
 //
 // This parsing method returns a new ElementXML object that should be destroyed later
 //
+%newobject sml::ElementXML::ParseXMLFromFile;
 %newobject sml::ElementXML::ParseXMLFromString;
 
 //
@@ -136,7 +137,7 @@ bool __stdcall DllMain( void * hModule,
                        void * lpReserved
 					 )
 {
-	//_crtBreakAlloc = 1397;
+	//_crtBreakAlloc = 2801;
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
 	unused(hModule) ;
 	unused(ul_reason_for_call) ;
