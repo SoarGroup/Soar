@@ -209,11 +209,37 @@ public class WindowManager {
 		}
 	}
 	
+	public static String popUpTitle;
+	public static String popUpMessage;
+	
+	public void infoMessage(String title, String message) {
+		popUpTitle = title;
+		popUpMessage = message;
+		if (!isDisposed()) {
+			display.syncExec(new Runnable() {
+				public void run() {
+					MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.WRAP);
+					mb.setMessage(WindowManager.popUpMessage);
+					mb.setText(WindowManager.popUpTitle);
+					mb.open();
+				}
+			});
+		}
+	}
+
 	public void errorMessage(String title, String message) {
-		MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR | SWT.WRAP);
-		mb.setMessage(message);
-		mb.setText(title);
-		mb.open();
+		popUpTitle = title;
+		popUpMessage = message;
+		if (!isDisposed()) {
+			display.syncExec(new Runnable() {
+				public void run() {
+					MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR | SWT.WRAP);
+					mb.setMessage(WindowManager.popUpMessage);
+					mb.setText(WindowManager.popUpTitle);
+					mb.open();
+				}
+			});
+		}
 	}
 
 	void updateWorldGroup() {

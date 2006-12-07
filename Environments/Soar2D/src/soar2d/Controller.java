@@ -28,6 +28,22 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		}
 	}
 	
+	public void infoPopUp(String message) {
+		Soar2D.logger.info(message);
+		
+		if (Soar2D.wm.using()) {
+			String title = null;
+			if (Soar2D.config.eaters) {
+				title = "Eaters";
+			} else if (Soar2D.config.tanksoar) {
+				title = "TankSoar";
+			} else {
+				title = "Information";
+			}
+			Soar2D.wm.infoMessage(title, message);
+		}
+	}
+	
 	public void playerEvent() {
 		if (Soar2D.wm.using()) {
 			Soar2D.wm.agentEvent();

@@ -237,7 +237,7 @@ public class World {
 					if (!printedStats) {
 						Soar2D.control.stopSimulation();
 						printedStats = true;
-						logger.info("Agent issued simulation stop command.");
+						Soar2D.control.infoPopUp("Agent issued simulation stop command.");
 						dumpStats();
 					}
 				}
@@ -341,7 +341,7 @@ public class World {
 				if (!printedStats) {
 					Soar2D.control.stopSimulation();
 					printedStats = true;
-					logger.info("Reached maximum updates, stopping.");
+					Soar2D.control.infoPopUp("Reached maximum updates, stopping.");
 					dumpStats();
 				}
 				return;
@@ -354,7 +354,7 @@ public class World {
 				if (!printedStats) {
 					Soar2D.control.stopSimulation();
 					printedStats = true;
-					logger.info("At least one player has achieved at least " + Soar2D.config.terminalWinningScore + " points.");
+					Soar2D.control.infoPopUp("At least one player has achieved at least " + Soar2D.config.terminalWinningScore + " points.");
 					dumpStats();
 				}
 				return;
@@ -366,7 +366,7 @@ public class World {
 				if (!printedStats) {
 					Soar2D.control.stopSimulation();
 					printedStats = true;
-					logger.info("There are no points remaining.");
+					Soar2D.control.infoPopUp("There are no points remaining.");
 					dumpStats();
 				}
 				return;
@@ -378,7 +378,7 @@ public class World {
 				if (!printedStats) {
 					Soar2D.control.stopSimulation();
 					printedStats = true;
-					logger.info("All of the food is gone.");
+					Soar2D.control.infoPopUp("All of the food is gone.");
 					dumpStats();
 				}
 				return;
