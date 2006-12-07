@@ -31,7 +31,7 @@ public class CreateAgentDialog extends Dialog {
 		dialog.setText("Create Agent");
 		
 		GridLayout gl = new GridLayout();
-		gl.numColumns = 3;
+		gl.numColumns = 4;
 		dialog.setLayout(gl);
 
 		final Label label2 = new Label(dialog, SWT.NONE);
@@ -50,7 +50,7 @@ public class CreateAgentDialog extends Dialog {
 			m_ProductionsLabel.setLayoutData(gd);
 		}
 		if (lastProductions == null) {
-			m_ProductionsLabel.setText("<choose productions>");
+			m_ProductionsLabel.setText(Names.kHumanProductions);
 		} else {
 			m_Productions = lastProductions;
 			m_ProductionsLabel.setText(lastProductions.getName());
@@ -62,7 +62,7 @@ public class CreateAgentDialog extends Dialog {
 			gd.horizontalAlignment = GridData.BEGINNING;
 			productionsBrowse.setLayoutData(gd);
 		}
-		productionsBrowse.setText("...");
+		productionsBrowse.setText("Soar");
 		productionsBrowse.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				FileDialog fd = new FileDialog(dialog, SWT.OPEN);
@@ -87,6 +87,23 @@ public class CreateAgentDialog extends Dialog {
 			}
 		});
 		
+		final Button human = new Button(dialog, SWT.PUSH);
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = GridData.BEGINNING;
+			human.setLayoutData(gd);
+		}
+		human.setText("Human");
+		human.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				lastProductions = null;
+				m_Productions = null;
+				m_ProductionsLabel.setText(Names.kHumanProductions);
+				Soar2D.config.debuggers = false;
+				updateButtons();
+			}
+		});
+		
 		final Label label4 = new Label(dialog, SWT.NONE);
 		{
 			GridData gd = new GridData();
@@ -98,7 +115,7 @@ public class CreateAgentDialog extends Dialog {
 		m_Color = new Combo(dialog, SWT.NONE);
 		{
 			GridData gd = new GridData();
-			gd.horizontalSpan = 2;
+			gd.horizontalSpan = 3;
 			m_Color.setLayoutData(gd);
 		}
 		ArrayList<String> unusedColors = Soar2D.simulation.getUnusedColors();
@@ -124,7 +141,7 @@ public class CreateAgentDialog extends Dialog {
 		m_Name = new Text(dialog, SWT.SINGLE | SWT.BORDER);
 		{
 			GridData gd = new GridData();
-			gd.horizontalSpan = 2;
+			gd.horizontalSpan = 3;
 			gd.widthHint = 150;
 			gd.grabExcessHorizontalSpace = true;
 			m_Name.setLayoutData(gd);
@@ -144,7 +161,7 @@ public class CreateAgentDialog extends Dialog {
 		{
 			GridData gd = new GridData();
 			gd.horizontalAlignment = GridData.BEGINNING;
-			gd.horizontalSpan = 3;
+			gd.horizontalSpan = 4;
 			m_SpawnDebuggerButton.setLayoutData(gd);
 		}
 		m_SpawnDebuggerButton.setText("Spawn debugger");
@@ -154,13 +171,12 @@ public class CreateAgentDialog extends Dialog {
 			}
 		});		
 		m_SpawnDebuggerButton.setSelection(Soar2D.config.debuggers);
-		m_SpawnDebuggerButton.setEnabled(!Soar2D.simulation.isClientConnected(Names.kDebuggerClient));
 
 		Composite okCancel = new Composite(dialog, SWT.NONE);
 		{
 			GridData gd = new GridData();
 			gd.horizontalAlignment = GridData.END;
-			gd.horizontalSpan = 3;
+			gd.horizontalSpan = 4;
 			okCancel.setLayoutData(gd);
 		}
 		okCancel.setLayout(new FillLayout());
@@ -171,7 +187,9 @@ public class CreateAgentDialog extends Dialog {
 				m_CreateEntity.setEnabled(false);
 				PlayerConfig playerConfig = new PlayerConfig();
 				playerConfig.setName(m_Name.getText());
-				playerConfig.setProductions(m_Productions);
+				if (m_Productions != null) {
+					playerConfig.setProductions(m_Productions);
+				}
 				playerConfig.setColor(m_Color.getText());
 				Soar2D.simulation.createPlayer(playerConfig);
 				dialog.dispose();
@@ -202,6 +220,7 @@ public class CreateAgentDialog extends Dialog {
 	void updateButtons() {
 		boolean productions = (m_Productions != null);
 		boolean name = false;
+		boolean debuggerConnected = Soar2D.simulation.isClientConnected(Names.kDebuggerClient);
 	
 		String nameText = m_Name.getText();
 		if (nameText != null) {
@@ -215,6 +234,7 @@ public class CreateAgentDialog extends Dialog {
 			}
 		}
 		
-		m_CreateEntity.setEnabled(productions && name);
+		m_SpawnDebuggerButton.setEnabled(!debuggerConnected && productions);
+		m_CreateEntity.setEnabled(name);
 	}
 }
