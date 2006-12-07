@@ -7,6 +7,7 @@ import soar2d.player.Player;
 
 public class CellObject {
 	HashMap<String, String> properties = new HashMap<String, String>();
+	HashMap<String, String> propertiesApply = new HashMap<String, String>();
 	String name;
 	boolean updatable;
 	boolean consumable;
@@ -36,6 +37,14 @@ public class CellObject {
 		return updatable;
 	}
 	
+	public boolean addPropertyApply(String name, String value) {
+		if (propertiesApply.containsKey(name)) {
+			return false;
+		}
+		propertiesApply.put(name, value);
+		return true;
+	}
+	
 	public boolean addProperty(String name, String value) {
 		if (properties.containsKey(name)) {
 			return false;
@@ -57,6 +66,16 @@ public class CellObject {
 			assert properties.containsKey(Names.kPropertyPoints);
 			int points = Integer.parseInt(properties.get(Names.kPropertyPoints));
 			player.adjustPoints(points, name);
+		}
+		
+		if (propertiesApply.size() > 0) {
+			Iterator<String> iter = propertiesApply.keySet().iterator();
+			while (iter.hasNext()) {
+				String key = iter.next();
+				String value = propertiesApply.get(key);
+				Soar2D.logger.info("Box opened, new property: " + key + " --> " + value);
+				properties.put(key, value);
+			}
 		}
 		return consumable;	// if this is true the object is removed from 
 							// the cell after the apply

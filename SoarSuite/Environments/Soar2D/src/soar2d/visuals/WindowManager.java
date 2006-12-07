@@ -52,6 +52,9 @@ public class WindowManager {
 	}
 	
 	public static Color getColor(String color) {
+		if (color == null) {
+			return null;
+		}
 		if (color.equalsIgnoreCase("white")) {
 			return white;
 		}
@@ -169,6 +172,13 @@ public class WindowManager {
 				case SWT.KEYPAD_DECIMAL:
 					humanMove.eat = !humanMove.eat;
 					break;
+				case SWT.KEYPAD_ADD:
+					humanMove.open = !humanMove.open;
+					break;
+				case SWT.KEYPAD_MULTIPLY:
+					humanMove.stop = !humanMove.stop;
+					break;
+					
 				}
 				if (go) {
 					synchronized(humanMove) {
@@ -234,7 +244,6 @@ public class WindowManager {
 		
 		updateWorldGroup();
 
-		VisualWorld.remapFoodColors();
 		VisualWorld.remapPlayerColors();
 
 		shell.setText("Java Eaters");
@@ -404,7 +413,6 @@ public class WindowManager {
 			display.syncExec(new Runnable() {
 				public void run() {
 					updateWorldGroup();
-					VisualWorld.remapFoodColors();
 					visualWorld.setRepaint();
 					visualWorld.redraw();
 					updateFoodAndScoreCount();

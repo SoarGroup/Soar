@@ -235,14 +235,16 @@ public class World {
 			}
 			lastMoves.put(player.getName(), move);
 			
-			if (Soar2D.config.terminalAgentCommand) {
-				if (move.stop) {
+			if (move.stop) {
+				if (Soar2D.config.terminalAgentCommand) {
 					if (!printedStats) {
 						Soar2D.control.stopSimulation();
 						printedStats = true;
-						Soar2D.control.infoPopUp("Agent issued simulation stop command.");
+						Soar2D.control.infoPopUp(player.getName() + " issued simulation stop command.");
 						dumpStats();
 					}
+				} else {
+					Soar2D.logger.warning(player.getName() + " issued ignored stop command.");
 				}
 			}
 			
@@ -290,15 +292,21 @@ public class World {
 			Player player = iter.next();
 			MoveInfo lastMove = lastMoves.get(player.getName());
 			java.awt.Point location = locations.get(player.getName());
-			
 			Cell cell = getCell(location);
-			cell.setPlayer(player);
-			if (!cell.hasObject(Names.kRedraw)) {
-				cell.addCellObject(new CellObject(Names.kRedraw, false, true));
+			
+			if (lastMove.move || lastMove.jump) {
+				cell.setPlayer(player);
+				if (!cell.hasObject(Names.kRedraw)) {
+					cell.addCellObject(new CellObject(Names.kRedraw, false, true));
+				}
 			}
 			
 			if (lastMove.eat) {
 				eat(player, cell);
+			}
+			
+			if (lastMove.open) {
+				open(player, cell);
 			}
 		}
 	}
@@ -314,6 +322,17 @@ public class World {
 				scoreCount -= food.getIntProperty(Names.kPropertyPoints);
 				foodCount -= 1;
 			}
+		}
+	}
+	
+	private void open(Player player, Cell cell) {
+		CellObject box = cell.getObject(Names.kBox);
+		if (box == null) {
+			Soar2D.logger.warning(player.getName() + " tried to open but there is no box.");
+			return;
+		}
+		if (box.apply(player)) {
+			cell.removeObject(Names.kBox);
 		}
 	}
 	

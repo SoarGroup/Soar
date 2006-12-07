@@ -144,7 +144,7 @@ public class MapLoader {
 				
 				if (cellObjectSubTag.IsTag(Names.kTagProperty)) {
 					xmlPath.push(Names.kTagProperty);
-					property(cellObjectTemplate, cellObjectSubTag);
+					property(cellObjectTemplate, cellObjectSubTag, false);
 					xmlPath.pop();
 		
 				} else if (cellObjectSubTag.IsTag(Names.kTagApply)) {
@@ -171,7 +171,7 @@ public class MapLoader {
 		cellObjectManager.registerTemplate(name, cellObjectTemplate);
 	}
 	
-	private void property(CellObject cellObjectTemplate, ElementXML propertyTag) throws SMLException, SyntaxException {
+	private void property(CellObject cellObjectTemplate, ElementXML propertyTag, boolean apply) throws SMLException, SyntaxException {
 		String name = null;
 		String value = null;
 
@@ -195,10 +195,14 @@ public class MapLoader {
 		}
 		value = attribute;
 		
-		cellObjectTemplate.addProperty(name, value);
-		if (name.equalsIgnoreCase(Names.kPropertyEdible)) {
-			if (Boolean.parseBoolean(value)) {
-				foods.add(cellObjectTemplate.getName());
+		if (apply) {
+			cellObjectTemplate.addPropertyApply(name, value);
+		} else {
+			cellObjectTemplate.addProperty(name, value);
+			if (name.equalsIgnoreCase(Names.kPropertyEdible)) {
+				if (Boolean.parseBoolean(value)) {
+					foods.add(cellObjectTemplate.getName());
+				}
 			}
 		}
 	}
@@ -222,8 +226,8 @@ public class MapLoader {
 
 				} else if (applySubTag.IsTag(Names.kTagProperty)) {
 					xmlPath.push(Names.kTagProperty);
-					throwSyntax("tag not implemented");
-					//xmlPath.pop();
+					property(cellObjectTemplate, applySubTag, true);
+					xmlPath.pop();
 					
 				} else if (applySubTag.IsTag(Names.kTagEnergy)) {
 					xmlPath.push(Names.kTagEnergy);

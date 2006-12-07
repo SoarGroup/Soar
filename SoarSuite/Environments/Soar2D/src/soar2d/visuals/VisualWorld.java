@@ -13,20 +13,6 @@ import soar2d.player.Player;
 import soar2d.world.*;
 
 public class VisualWorld extends Canvas implements PaintListener {
-	static HashMap<String, Color> foodColors = new HashMap<String, Color>();
-	
-	public static void remapFoodColors() {
-		ArrayList<CellObject> foods = Soar2D.simulation.world.cellObjectManager.getTemplatesWithProperty(Names.kPropertyEdible);
-		foodColors.clear();
-		Iterator<CellObject> iter = foods.iterator();
-		while (iter.hasNext()) {
-			CellObject obj = iter.next();
-			String color = obj.getStringProperty(Names.kPropertyColor);
-			assert color != null;
-			foodColors.put(obj.getName(), WindowManager.getColor(color));
-		}
-	}
-	
 	public static HashMap<Player, Color> playerColors = new HashMap<Player, Color>();
 	
 	public static void remapPlayerColors() {
@@ -128,9 +114,9 @@ public class VisualWorld extends Canvas implements PaintListener {
 					continue;
 				}
 				
-				ArrayList<CellObject> foodList = cell.getAllWithProperty(Names.kPropertyEdible);
-				// TODO: support multiple food
-				assert foodList.size() < 2;
+				ArrayList<CellObject> drawList = cell.getAllWithProperty(Names.kPropertyShape);
+				// TODO: support multiple objects
+				assert drawList.size() < 2;
 				
 				if (cell.getPlayer() != null) {
 					
@@ -161,15 +147,19 @@ public class VisualWorld extends Canvas implements PaintListener {
 				    gc.setBackground(WindowManager.black);
 				    gc.fillRectangle(m_CellSize*xDraw + 1, m_CellSize*yDraw + 1, m_CellSize - 2, m_CellSize - 2);
 					
-				} else if (foodList.size() > 0) {
-					CellObject food = foodList.get(0);
+				} else if (drawList.size() > 0) {
+					CellObject object = drawList.get(0);
 					
 				    gc.setBackground(WindowManager.widget_background);
 				    gc.fillRectangle(m_CellSize*xDraw, m_CellSize*yDraw, m_CellSize, m_CellSize);
 				    
-					Color foodColor = foodColors.get(food.getName());
-					gc.setBackground(foodColor);
-					Shape shape = Shape.getShape(food.getStringProperty(Names.kPropertyShape));
+				    Color color = WindowManager.getColor(object.getStringProperty(Names.kPropertyColor));
+				    if (color == null) {
+				    	//TODO: draw outline!
+				    }
+					gc.setBackground(color);
+					
+					Shape shape = Shape.getShape(object.getStringProperty(Names.kPropertyShape));
 					if (shape.equals(Shape.ROUND)) {
 						fill1 = (int)(m_CellSize/2.8);
 						fill2 = m_CellSize - fill1 + 1;
