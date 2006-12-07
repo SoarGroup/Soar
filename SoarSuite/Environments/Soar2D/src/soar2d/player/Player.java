@@ -12,8 +12,8 @@ public class Player {
 	private int points;
 	private String color;
 
-	public Player(String name, PlayerConfig playerConfig) {
-		this.name = name;
+	public Player(PlayerConfig playerConfig) {
+		this.name = playerConfig.getName();
 		if (playerConfig.hasFacing()) {
 			this.facingInt = playerConfig.getFacing();
 		} else {
@@ -84,6 +84,6 @@ public class Player {
 		
 	}
 	public MoveInfo getMove() {
-		return null;
+		return new MoveInfo();
 	}
 }

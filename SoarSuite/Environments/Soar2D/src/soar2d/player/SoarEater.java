@@ -39,7 +39,7 @@ public class SoarEater extends Eater {
 	private SoarCell[][] cells = new SoarCell[(Soar2D.config.kEaterVision * 2 ) + 1][(Soar2D.config.kEaterVision * 2 ) + 1];
 
 	public SoarEater(Agent agent, PlayerConfig playerConfig) {
-		super(agent.GetAgentName(), playerConfig);
+		super(playerConfig);
 		this.agent = agent;
 		
 		previousLocation = new java.awt.Point(-1, -1);

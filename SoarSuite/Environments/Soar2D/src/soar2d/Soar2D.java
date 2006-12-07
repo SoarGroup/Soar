@@ -88,7 +88,7 @@ public class Soar2D {
 			control.runGUI();
 		} else {
 			// Run simulation
-			control.startSimulation(false);
+			control.startSimulation(false, false);
 		}
 		
 		control.shutdown();

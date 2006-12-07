@@ -29,6 +29,11 @@ public class WindowManager {
 	VisualWorld visualWorld;
 	AgentDisplay agentDisplay;
 	Group worldGroup;
+	Label statusLine;
+	String popUpTitle;
+	String popUpMessage;
+	String statusMessage;
+	MoveInfo humanMove;
 
 	public static final int kMainMapCellSize = 20;
 	public static final String kFoodRemaining = "Food remaining: ";
@@ -79,11 +84,21 @@ public class WindowManager {
 		if (display == null) {
 			return false;
 		}
+
 		shell = new Shell(display, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.TITLE);
 		if (shell == null) {
 			display.dispose();
 			return false;
 		}
+//		shell.addDisposeListener(new DisposeListener() {
+//			public void widgetDisposed(DisposeEvent e) {
+//				if (humanMove != null) {
+//					synchronized(humanMove) {
+//						humanMove.notifyAll();
+//					}
+//				}
+//			}
+//		});
 		initColors(display);
 		return true;
 	}
@@ -102,7 +117,7 @@ public class WindowManager {
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
 		visualWorld = new VisualWorld(worldGroup, SWT.NONE, kMainMapCellSize);
-		updateWorldGroup();
+
 		gd = new GridData();
 		gd.widthHint = visualWorld.getWidth();
 		gd.heightHint = visualWorld.getHeight();
@@ -115,6 +130,51 @@ public class WindowManager {
 					return;
 				}
 				agentDisplay.selectPlayer(eater);
+			}
+		});
+		visualWorld.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent e) {
+				if (humanMove == null) {
+					return;
+				}
+				boolean go = false;
+				switch (e.keyCode) {
+				case SWT.KEYPAD_8:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kNorthInt;
+					go = true;
+					break;
+				case SWT.KEYPAD_6:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kEastInt;
+					go = true;
+					break;
+				case SWT.KEYPAD_2:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kSouthInt;
+					go = true;
+					break;
+				case SWT.KEYPAD_4:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kWestInt;
+					go = true;
+					break;
+				case SWT.KEYPAD_5:
+					humanMove.jump = false;
+					go = true;
+					break;
+				case SWT.KEYPAD_0:
+					humanMove.jump = !humanMove.jump;
+					break;
+				case SWT.KEYPAD_DECIMAL:
+					humanMove.eat = !humanMove.eat;
+					break;
+				}
+				if (go) {
+					synchronized(humanMove) {
+						humanMove.notify();
+					}
+				}
 			}
 		});
 
@@ -164,12 +224,21 @@ public class WindowManager {
 		gd = new GridData();
 		agentDisplay.setLayoutData(gd);
 		
+		statusLine = new Label(shell, SWT.BORDER);
+		statusLine.setText("Ready");
+		gd = new GridData();
+		gd.horizontalSpan = 2;
+		gd.widthHint = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).x - 20;
+		gd.heightHint = 16;
+		statusLine.setLayoutData(gd);
+		
+		updateWorldGroup();
+
 		VisualWorld.remapFoodColors();
 		VisualWorld.remapPlayerColors();
 
 		shell.setText("Java Eaters");
 		shell.setSize(shell.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-		
 		shell.addShellListener(new ShellAdapter() {
 			public void shellDeactivated(ShellEvent e) {
 				agentDisplay.worldChangeEvent();			
@@ -209,9 +278,6 @@ public class WindowManager {
 		}
 	}
 	
-	public static String popUpTitle;
-	public static String popUpMessage;
-	
 	public void infoMessage(String title, String message) {
 		popUpTitle = title;
 		popUpMessage = message;
@@ -219,8 +285,8 @@ public class WindowManager {
 			display.syncExec(new Runnable() {
 				public void run() {
 					MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.WRAP);
-					mb.setMessage(WindowManager.popUpMessage);
-					mb.setText(WindowManager.popUpTitle);
+					mb.setMessage(popUpMessage);
+					mb.setText(popUpTitle);
 					mb.open();
 				}
 			});
@@ -234,9 +300,23 @@ public class WindowManager {
 			display.syncExec(new Runnable() {
 				public void run() {
 					MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR | SWT.WRAP);
-					mb.setMessage(WindowManager.popUpMessage);
-					mb.setText(WindowManager.popUpTitle);
+					mb.setMessage(popUpMessage);
+					mb.setText(popUpTitle);
 					mb.open();
+				}
+			});
+		}
+	}
+	
+	public void setStatus(String status) {
+		if (!using()) {
+			return;
+		}
+		statusMessage = status;
+		if (!isDisposed()) {
+			display.syncExec(new Runnable() {
+				public void run() {
+					statusLine.setText(statusMessage);
 				}
 			});
 		}
@@ -250,6 +330,13 @@ public class WindowManager {
 		gd.heightHint = visualWorld.getHeight();
 		gd.verticalSpan = 3;
 		worldGroup.setLayoutData(gd);
+
+		gd = new GridData();
+		gd.horizontalSpan = 2;
+		gd.widthHint = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).x - 20;
+		gd.heightHint = 16;
+		statusLine.setLayoutData(gd);
+
 		shell.setSize(shell.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 	}
 	
@@ -278,6 +365,7 @@ public class WindowManager {
 		if (!isDisposed()) {
 			display.syncExec(new Runnable() {
 				public void run() {
+					visualWorld.setFocus();
 					simButtons.updateButtons();
 					mapButtons.updateButtons();
 					agentDisplay.updateButtons();
@@ -328,11 +416,36 @@ public class WindowManager {
 	}
 
 	public void shutdown() {
+		if (humanMove != null) {
+			synchronized(humanMove) {
+				humanMove.notifyAll();
+			}
+		}
+		
 		if (display == null) {
+			shell = null;
 			return;
 		}
-		display.dispose();
+		
+		if (!display.isDisposed()) {
+			display.dispose();
+		}
+		
 		display = null;
 		shell = null;
+	}
+
+	public MoveInfo getHumanEaterMove(String color) {
+		humanMove = new MoveInfo();
+		humanMove.eat = true;
+		setStatus("Enter move for " + color);
+		try {
+			synchronized(humanMove) {
+				humanMove.wait();
+			}
+		} catch (InterruptedException e) {
+		}
+		
+		return humanMove;
 	}
 }
