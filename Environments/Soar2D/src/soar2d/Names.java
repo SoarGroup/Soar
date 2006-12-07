@@ -11,6 +11,7 @@ public class Names {
 	
 	public static final String kHumanProductions = "<Human>";
 	
+	public static final String kBox = "box";
 	public static final String kEmpty = "empty";
 	public static final String kExplosion = "explosion";
 	public static final String kRedraw = "redraw";
@@ -96,6 +97,7 @@ public class Names {
 	public static final String kMoveID = "move";
 	public static final String kMyLocationID = "my-location";
 	public static final String kNameID = "name";
+	public static final String kOpenID = "open";
 	public static final String kRandomID = "random";
 	public static final String kScoreID = "score";
 	public static final String kStopID = "stop";

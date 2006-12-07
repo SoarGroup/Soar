@@ -147,6 +147,11 @@ public class SoarEater extends Eater {
 					}
 				}
 				
+				CellObject box = cell.getObject(Names.kBox);
+				if (box != null) {
+					// TODO!
+				}
+				
 				if (moved || !cells[x][y].content.GetValue().equalsIgnoreCase(content)) {
 					agent.Update(cells[x][y].content, content);
 				}
@@ -198,6 +203,8 @@ public class SoarEater extends Eater {
 			move.jump = true;
 		} else if (commandName.equalsIgnoreCase(Names.kStopID)) {
 			move.stop = true;
+		} else if (commandName.equalsIgnoreCase(Names.kOpenID)) {
+			move.open = true;
 		} else {
 			logger.warning("Unknown command: " + commandName);
 			return new MoveInfo();
