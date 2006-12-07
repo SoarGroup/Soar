@@ -14,6 +14,7 @@ public class World {
 	private static Logger logger = Logger.getLogger("soar2d");
 
 	private int scoreCount;
+	private int foodCount;
 	private int worldCount;
 	private boolean printedStats = false;
 	
@@ -39,7 +40,7 @@ public class World {
 		
 		reset();
 		resetPlayers();
-		recalculateScoreCount();
+		recalculateScoreAndFoodCount();
 		
 		logger.info("Map loaded, world reset.");
 		return true;
@@ -61,7 +62,7 @@ public class World {
 		return mapCells[y][x];
 	}
 	
-	private int foodCount(Cell cell) {
+	private int pointsCount(Cell cell) {
 		ArrayList list = cell.getAllWithProperty(Names.kPropertyEdible);
 		Iterator iter = list.iterator();
 		int count = 0;
@@ -73,6 +74,10 @@ public class World {
 	
 	public int getScoreCount() {
 		return scoreCount;
+	}
+	
+	public int getFoodCount() {
+		return foodCount;
 	}
 	
 	void resetPlayers() {
@@ -98,7 +103,10 @@ public class World {
 		}
 		
 		// update score count
-		scoreCount -= foodCount(startingCell);
+		scoreCount -= pointsCount(startingCell);
+		
+		// update food count
+		foodCount -= startingCell.getAllWithProperty(Names.kPropertyEdible).size();
 		
 		// remove food from it
 		startingCell.removeAllWithProperty(Names.kPropertyEdible);
@@ -223,6 +231,18 @@ public class World {
 			
 			MoveInfo move = player.getMove();
 			lastMoves.put(player.getName(), move);
+			
+			if (Soar2D.config.terminalAgentCommand) {
+				if (move.stop) {
+					if (!printedStats) {
+						Soar2D.control.stopSimulation();
+						printedStats = true;
+						logger.info("Agent issued simulation stop command.");
+						dumpStats();
+					}
+				}
+			}
+			
 			if (!move.move) {
 				continue;
 			}
@@ -289,6 +309,7 @@ public class World {
 				// if this returns true, it is consumed
 				cell.removeObject(food);
 				scoreCount -= food.getIntProperty(Names.kPropertyPoints);
+				foodCount -= 1;
 			}
 		}
 	}
@@ -301,9 +322,22 @@ public class World {
 		}
 	}
 	
+	private int[] getSortedScores() {
+		int[] scores = new int[players.size()];
+		Iterator<Player> iter = players.iterator();
+		int i = 0;
+		Player player;
+		while (iter.hasNext()) {
+			player = iter.next();
+			scores[i] = player.getPoints();
+		}
+		Arrays.sort(scores);
+		return scores;
+	}
+	
 	public void update() {
-		if (Soar2D.config.maxUpdates > 0) {
-			if (worldCount >= Soar2D.config.maxUpdates) {
+		if (Soar2D.config.terminalMaxUpdates > 0) {
+			if (worldCount >= Soar2D.config.terminalMaxUpdates) {
 				if (!printedStats) {
 					Soar2D.control.stopSimulation();
 					printedStats = true;
@@ -314,14 +348,41 @@ public class World {
 			}
 		}
 		
-		if (scoreCount <= 0) {
-			if (!printedStats) {
-				Soar2D.control.stopSimulation();
-				printedStats = true;
-				logger.info("All of the food is gone.");
-				dumpStats();
+		if (Soar2D.config.terminalWinningScore > 0) {
+			int[] scores = getSortedScores();
+			if (scores[scores.length - 1] >= Soar2D.config.terminalWinningScore) {
+				if (!printedStats) {
+					Soar2D.control.stopSimulation();
+					printedStats = true;
+					logger.info("At least one player has achieved at least " + Soar2D.config.terminalWinningScore + " points.");
+					dumpStats();
+				}
+				return;
 			}
-			return;
+		}
+		
+		if (Soar2D.config.terminalPointsRemaining) {
+			if (scoreCount <= 0) {
+				if (!printedStats) {
+					Soar2D.control.stopSimulation();
+					printedStats = true;
+					logger.info("There are no points remaining.");
+					dumpStats();
+				}
+				return;
+			}
+		}
+
+		if (Soar2D.config.terminalFoodRemaining) {
+			if (foodCount <= 0) {
+				if (!printedStats) {
+					Soar2D.control.stopSimulation();
+					printedStats = true;
+					logger.info("All of the food is gone.");
+					dumpStats();
+				}
+				return;
+			}
 		}
 
 		if (players.size() == 0) {
@@ -338,24 +399,30 @@ public class World {
 		}
 	}
 		
-	private void recalculateScoreCount() {
+	private void recalculateScoreAndFoodCount() {
 		scoreCount = 0;
+		foodCount = 0;
+		Cell cell;
 		for (int i = 1; i < size - 1; ++i) {
 			for (int j = 1; j < size - 1; ++j) {
-				scoreCount += foodCount(mapCells[i][j]);
+				cell = mapCells[i][j];
+				scoreCount += pointsCount(cell);
+				foodCount -= cell.getAllWithProperty(Names.kPropertyEdible).size();
 			}
 		}
 	}
 
 	private void updateObjects() {
 		scoreCount = 0;
+		foodCount = 0;
 		Cell cell;
 		java.awt.Point location = new java.awt.Point();
 		for (location.x = 0; location.x < size; ++location.x) {
 			for (location.y = 0; location.y < size; ++ location.y) {
 				cell = getCell(location);
 				cell.update(this, location);
-				scoreCount += foodCount(cell);
+				scoreCount += pointsCount(cell);
+				foodCount += cell.getAllWithProperty(Names.kPropertyEdible).size();
 			}
 		}
 	}

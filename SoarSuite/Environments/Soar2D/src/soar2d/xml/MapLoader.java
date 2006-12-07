@@ -448,21 +448,21 @@ public class MapLoader {
 			if (mapCells[row][0] == null) {
 				mapCells[row][0] = new Cell();
 			}
-			addWall(mapCells[row][0]);
+			addWallAndRemoveFood(mapCells[row][0]);
 			if (mapCells[row][size - 1] == null) {
 				mapCells[row][size - 1] = new Cell();
 			}
-			addWall(mapCells[row][size - 1]);
+			addWallAndRemoveFood(mapCells[row][size - 1]);
 		}
 		for (int col = 1; col < size - 1; ++col) {
 			if (mapCells[0][col] == null) {
 				mapCells[0][col] = new Cell();
 			}
-			addWall(mapCells[0][col]);
+			addWallAndRemoveFood(mapCells[0][col]);
 			if (mapCells[size - 1][col] == null) {
 				mapCells[size - 1][col] = new Cell();
 			}
-			addWall(mapCells[size - 1][col]);
+			addWallAndRemoveFood(mapCells[size - 1][col]);
 		}
 		
 		double probability = Soar2D.config.kLowProbability;
@@ -476,7 +476,7 @@ public class MapLoader {
 						if (mapCells[row][col] == null) {
 							mapCells[row][col] = new Cell();
 						}
-						addWall(mapCells[row][col]);
+						addWallAndRemoveFood(mapCells[row][col]);
 					}
 					probability = Soar2D.config.kLowProbability;
 				}
@@ -484,7 +484,9 @@ public class MapLoader {
 		}
 	}
 	
-	private void addWall(Cell cell) {
+	private void addWallAndRemoveFood(Cell cell) {
+		cell.removeAllWithProperty(Names.kPropertyEdible);
+		
 		if (!cell.hasObject(Names.kWall)) {
 			CellObject cellObject = cellObjectManager.createObject(Names.kWall);
 			cell.addCellObject(cellObject);

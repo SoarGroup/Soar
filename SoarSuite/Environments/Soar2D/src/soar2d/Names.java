@@ -36,6 +36,7 @@ public class Names {
 	public static final String kTagSimulation = "simulation";
 	public static final String kTagSoar2D = "soar2d";
 	public static final String kTagTankSoar = "tanksoar";
+	public static final String kTagTerminal = "terminal";
 	public static final String kTagUpdate = "update";
 
 	public static final String kParamAfter = "after";
@@ -53,7 +54,6 @@ public class Names {
 	public static final String kParamHealth = "health";
 	public static final String kParamLevel = "level";
 	public static final String kParamMap = "map";
-	public static final String kParamMaxUpdates = "max-updates";
 	public static final String kParamMissiles = "missiles";
 	public static final String kParamName = "name";
 	public static final String kParamProductions = "productions";
@@ -68,10 +68,15 @@ public class Names {
 	public static final String kParamUpdatable = "updatable";
 	public static final String kParamValue = "value";
 	public static final String kParamVersion = "version";
-	public static final String kParamWinningScore = "winning-score";
 	public static final String kParamWorldSize = "world-size";
 	public static final String kParamX = "x";
 	public static final String kParamY = "y";
+	
+	public static final String kTerminalMaxUpdates = "max-updates";
+	public static final String kTerminalAgentCommand = "agent-command";
+	public static final String kTerminalPointsRemaining = "points-remaining";
+	public static final String kTerminalWinningScore = "winning-score";
+	public static final String kTerminalFoodRemaining = "food-remaining";
 
 	public static final String kLevelSevere = "severe";
 	public static final String kLevelWarning = "warning";
@@ -91,6 +96,7 @@ public class Names {
 	public static final String kNameID = "name";
 	public static final String kRandomID = "random";
 	public static final String kScoreID = "score";
+	public static final String kStopID = "stop";
 	public static final String kxID = "x";
 	public static final String kyID = "y";
 	

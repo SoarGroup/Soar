@@ -62,10 +62,16 @@
         <xs:element name="simulation">
           <xs:complexType>
             <xs:sequence>
+              <xs:element name="terminal">
+                <xs:complexType>
+                  <xs:sequence>
+                  </xs:sequence>
+                  <xs:attribute name="type" type="xs:string" />
+                  <xs:attribute name="value" type="xs:integer" />
+                </xs:complexType>
+              </xs:element>
             </xs:sequence>
             <xs:attribute name="debuggers" type="xs:boolean" />
-            <xs:attribute name="max-updates" type="xs:integer" />
-            <xs:attribute name="winning-score" type="xs:integer" />
             <xs:attribute name="remote" type="xs:boolean" />
             <xs:attribute name="random" type="xs:boolean" />
           </xs:complexType>
@@ -99,6 +105,15 @@
       <xs:enumeration value="south" />
       <xs:enumeration value="east" />
       <xs:enumeration value="west" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="terminal-type">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="max-updates" />
+      <xs:enumeration value="agent-command" />
+      <xs:enumeration value="points-remaining" />
+      <xs:enumeration value="winning-score" />
+      <xs:enumeration value="food-remaining" />
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>

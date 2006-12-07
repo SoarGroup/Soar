@@ -134,16 +134,16 @@ public class SoarEater extends Eater {
 					content = Names.kEater;
 					
 				} else {
-					ArrayList<CellObject> list = cell.getAllWithProperty(Names.kPropertyEdible);
-					if (list.size() > 0) {
-						// FIXME: deal with multiple foods
-						content = list.get(0).getName();
-					} else {
-						if (cell.enterable()) {
-							content = Names.kEmpty;
+					if (cell.enterable()) {
+						ArrayList<CellObject> list = cell.getAllWithProperty(Names.kPropertyEdible);
+						if (list.size() > 0) {
+							// FIXME: deal with multiple foods
+							content = list.get(0).getName();
 						} else {
-							content = Names.kWall;
+							content = Names.kEmpty;
 						}
+					} else {
+						content = Names.kWall;
 					}
 				}
 				
@@ -196,6 +196,8 @@ public class SoarEater extends Eater {
 		} else if (commandName.equalsIgnoreCase(Names.kJumpID)) {
 			move.move = true;
 			move.jump = true;
+		} else if (commandName.equalsIgnoreCase(Names.kStopID)) {
+			move.stop = true;
 		} else {
 			logger.warning("Unknown command: " + commandName);
 			return new MoveInfo();
