@@ -407,7 +407,7 @@ public class World {
 			for (int j = 1; j < size - 1; ++j) {
 				cell = mapCells[i][j];
 				scoreCount += pointsCount(cell);
-				foodCount -= cell.getAllWithProperty(Names.kPropertyEdible).size();
+				foodCount += cell.getAllWithProperty(Names.kPropertyEdible).size();
 			}
 		}
 	}

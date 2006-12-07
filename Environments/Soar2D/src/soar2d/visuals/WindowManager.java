@@ -23,6 +23,7 @@ public class WindowManager {
 	protected Display display;
 	protected Shell shell;
 	Label scoreCount;
+	Label foodCount;
 	SimulationButtons simButtons;
 	MapButtons mapButtons;
 	VisualWorld visualWorld;
@@ -131,20 +132,29 @@ public class WindowManager {
 		gl = new GridLayout();
 		gl.numColumns = 2;
 		group2.setLayout(gl);
+		
 		Label foodLabel = new Label(group2, SWT.NONE);
 		gd = new GridData();
-		gd.horizontalSpan = 2;	// FIXME: should remove this row completely
 		foodLabel.setLayoutData(gd);
 		foodLabel.setText(kFoodRemaining);
+		
+		foodCount = new Label(group2, SWT.NONE);
+		gd = new GridData();
+		gd.widthHint = 50;
+		foodCount.setLayoutData(gd);
+		
 		Label scoreLabel = new Label(group2, SWT.NONE);
 		gd = new GridData();
 		scoreLabel.setLayoutData(gd);
 		scoreLabel.setText(kScoreRemaining);
+		
 		scoreCount = new Label(group2, SWT.NONE);
 		gd = new GridData();
 		gd.widthHint = 50;
 		scoreCount.setLayoutData(gd);
+		
 		updateFoodAndScoreCount();
+		
 		mapButtons = new MapButtons(group2);
 		gd = new GridData();
 		gd.horizontalSpan = 2;
@@ -218,6 +228,7 @@ public class WindowManager {
 	}
 	
 	void updateFoodAndScoreCount() {
+		foodCount.setText(Integer.toString(Soar2D.simulation.world.getFoodCount()));
 		scoreCount.setText(Integer.toString(Soar2D.simulation.world.getScoreCount()));
 	}
 
