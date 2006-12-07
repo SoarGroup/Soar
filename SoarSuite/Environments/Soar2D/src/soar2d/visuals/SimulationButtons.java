@@ -49,22 +49,7 @@ public class SimulationButtons extends Composite {
 				Soar2D.control.resetSimulation();
 			}
 		});
-		
-//		Label runsLabel = new Label(this, SWT.NONE);
-//		gd = new GridData();
-//		gd.horizontalSpan = 2;
-//		gd.horizontalAlignment = SWT.END;
-//		runsLabel.setLayoutData(gd);
-//		runsLabel.setText("Runs:");
-//		
-//		m_RunsText = new Text(this, SWT.BORDER);
-//		gd = new GridData();
-//		gd.horizontalSpan = 2;
-//		gd.horizontalSpan = 2;
-//		gd.widthHint = 67;
-//		m_RunsText.setLayoutData(gd);
-//		m_RunsText.setTextLimit(10);
-
+	
 		updateButtons();
 	}
 	
@@ -77,6 +62,5 @@ public class SimulationButtons extends Composite {
         m_StopButton.setEnabled(running);
         m_ResetButton.setEnabled(!running);
         m_StepButton.setEnabled(!running && !done && eaters);
-//        m_RunsText.setText(Integer.toString(m_Simulation.getRuns()));
 	}
 }

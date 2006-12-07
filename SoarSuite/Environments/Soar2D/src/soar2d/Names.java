@@ -9,6 +9,8 @@ public class Names {
 	public static final String kSouth = "south";
 	public static final String kWest = "west";
 	
+	public static final String kHumanProductions = "<Human>";
+	
 	public static final String kEmpty = "empty";
 	public static final String kExplosion = "explosion";
 	public static final String kRedraw = "redraw";
