@@ -22,21 +22,7 @@ public class SimulationButtons extends Composite {
 		m_RunButton.setText("Run");
 		m_RunButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-//				int input = 0;
-//				try {
-//					input = Integer.valueOf(m_RunsText.getText()).intValue();
-//				} catch (NumberFormatException exception) {
-//					if (m_RunsText.getText().equalsIgnoreCase("forever")) {
-//						m_RunsText.setText("-1");
-//						input = -1;
-//					}
-//					m_RunsText.setText("0");
-//				}
-//				if (input < 0) {
-//					input = -1;
-//				}
-//				m_Simulation.setRuns(input);
-				Soar2D.control.startSimulation(true);
+				Soar2D.control.startSimulation(false, true);
 			}
 		});
 		
@@ -52,7 +38,7 @@ public class SimulationButtons extends Composite {
 		m_StepButton.setText("Step");
 		m_StepButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				Soar2D.control.stepSimulation();
+				Soar2D.control.startSimulation(true, true);
 			}
 		});
 		

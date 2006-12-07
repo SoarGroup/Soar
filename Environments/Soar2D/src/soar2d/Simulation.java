@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.logging.*;
 
 import sml.*;
+import soar2d.player.Eater;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;
 import soar2d.player.SoarEater;
@@ -17,8 +18,8 @@ public class Simulation {
 	public World world = new World();
 	private final String kColors[] = { "red", "blue", "purple", "yellow", "orange", "black", "green" };
 	private ArrayList<String> unusedColors = new ArrayList<String>(kColors.length);
-	HashMap<String, Agent> agents = new HashMap<String, Agent>();
-	HashMap<String, PlayerConfig> configs = new HashMap<String, PlayerConfig>();
+	private HashMap<String, Agent> agents = new HashMap<String, Agent>();
+	private HashMap<String, PlayerConfig> configs = new HashMap<String, PlayerConfig>();
 	
 	public boolean initialize() {
 		for (int i = 0; i < kColors.length; ++i) {
@@ -133,6 +134,22 @@ public class Simulation {
 		return true;
 	}
 
+	class CreationException extends Throwable {
+		static final long serialVersionUID = 1;
+		private String message;
+		
+		public CreationException() {
+		}
+		
+		public CreationException(String message) {
+			this.message = message;
+		}
+		
+		public String getMessage() {
+			return message;
+		}
+	}
+
 	public void createPlayer(PlayerConfig playerConfig) {
 		if (playerConfig.hasColor()) {
 			if (!unusedColors.contains(playerConfig.getColor())) {
@@ -148,69 +165,86 @@ public class Simulation {
 			}
 			playerConfig.setColor(color);
 		}
-		
+
 		if (!playerConfig.hasName()) {
 			playerConfig.setName(playerConfig.getColor());
 		}
 		
-		if (configs.containsKey(playerConfig.getName())) {
-			freeAColor(playerConfig.getColor());
-			Soar2D.control.severeError("Failed to create player: " + playerConfig.getName() + " already exists.");
-			return;
-		}
-		
-		if (playerConfig.hasProductions() == false) {
-			// human player
-			freeAColor(playerConfig.getColor());
-			Soar2D.control.severeError("Human player not yet supported.");
-			return;
-		}
-		Agent agent = kernel.CreateAgent(playerConfig.getName());
-		if (agent == null) {
-			freeAColor(playerConfig.getColor());
-			Soar2D.control.severeError("Agent " + playerConfig.getName() + " creation failed: " + kernel.GetLastErrorDescription());
-			return;
-		}
-		
-		
-		if (!agent.LoadProductions(playerConfig.getProductions().getAbsolutePath())) {
-			Soar2D.control.severeError("Agent " + playerConfig.getName() + " production load failed: " + agent.GetLastErrorDescription());
-			kernel.DestroyAgent(agent);
-			agent.delete();
-			freeAColor(playerConfig.getColor());
-			return;
-		}
-
-		if (Soar2D.config.eaters) {
-			SoarEater eater = new SoarEater(agent, playerConfig); 
-			agents.put(eater.getName(), agent);
-			configs.put(eater.getName(), playerConfig);
-			java.awt.Point initialLocation = null;
-			if (playerConfig.hasInitialLocation()) {
-				initialLocation = playerConfig.getInitialLocation();
+		try {
+			if (configs.containsKey(playerConfig.getName())) {
+				throw new CreationException("Failed to create player: " + playerConfig.getName() + " already exists.");
 			}
 			
-			// This can fail if there are no open squares on the map, message printed already
-			if (!world.addPlayer(eater, initialLocation)) {
-				kernel.DestroyAgent(agent);
-				agent.delete();
-				freeAColor(playerConfig.getColor());
-				return;
-			}
-			
-			Names.kDebuggerClient.command = getDebuggerCommand(eater.getName());
-			if (Soar2D.config.debuggers && !isClientConnected(Names.kDebuggerClient)) {
-				spawnClient(Names.kDebuggerClient);
-			}
+			if (playerConfig.hasProductions() == false) {
+				if (Soar2D.config.eaters) {
+					Eater eater = new Eater(playerConfig);
+					
+					java.awt.Point initialLocation = null;
+					if (playerConfig.hasInitialLocation()) {
+						initialLocation = playerConfig.getInitialLocation();
+					}
 
-		} else {
+					// This can fail if there are no open squares on the map, message printed already
+					if (!world.addPlayer(eater, initialLocation)) {
+						throw new CreationException();
+					}
+
+					configs.put(eater.getName(), playerConfig);
+					
+				} else {
+					throw new CreationException("TankSoar player not yet supported.");
+				}
+
+			} else {
+				Agent agent = kernel.CreateAgent(playerConfig.getName());
+				if (agent == null) {
+					throw new CreationException("Agent " + playerConfig.getName() + " creation failed: " + kernel.GetLastErrorDescription());
+				}
+				
+				try {
+					if (!agent.LoadProductions(playerConfig.getProductions().getAbsolutePath())) {
+						throw new CreationException("Agent " + playerConfig.getName() + " production load failed: " + agent.GetLastErrorDescription());
+					}
+			
+					if (Soar2D.config.eaters) {
+						SoarEater eater = new SoarEater(agent, playerConfig); 
+						java.awt.Point initialLocation = null;
+						if (playerConfig.hasInitialLocation()) {
+							initialLocation = playerConfig.getInitialLocation();
+						}
+						
+						// This can fail if there are no open squares on the map, message printed already
+						if (!world.addPlayer(eater, initialLocation)) {
+							throw new CreationException();
+						}
+			
+						agents.put(eater.getName(), agent);
+						configs.put(eater.getName(), playerConfig);
+						
+						Names.kDebuggerClient.command = getDebuggerCommand(eater.getName());
+						if (Soar2D.config.debuggers && !isClientConnected(Names.kDebuggerClient)) {
+							spawnClient(Names.kDebuggerClient);
+						}
+			
+					} else {
+						throw new CreationException("TankSoar player not yet supported.");
+					}
+				} catch (CreationException e) {
+					kernel.DestroyAgent(agent);
+					agent.delete();
+					throw e;
+				}
+			}
+		} catch (CreationException e) {
 			freeAColor(playerConfig.getColor());
-			Soar2D.control.severeError("TankSoar player not yet supported.");
+			if (e.getMessage() != null) {
+				Soar2D.control.severeError(e.getMessage());
+			}
 			return;
 		}
 		Soar2D.control.playerEvent();
 	}
-	
+
 	public boolean isClientConnected(ClientConfig client) {
 		boolean connected = false;
 		kernel.GetAllConnectionInfo();
@@ -248,9 +282,9 @@ public class Simulation {
 			if (!kernel.DestroyAgent(agent)) {
 				Soar2D.control.severeError("Failed to destroy soar agent " + player.getName() + ": " + kernel.GetLastErrorDescription());
 			}
+			agent.delete();
+			agent = null;
 		}
-		agent.delete();
-		agent = null;
 		Soar2D.control.playerEvent();
 	}
 	

@@ -7,9 +7,11 @@ import sml.*;
 
 public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface, Runnable {
 	boolean stopSoar = false;
+	boolean step = false;
 	boolean running = false;
 	Thread runThread = null;
 	boolean stopRequested = false;
+	boolean shuttingDown = false;
 	
 	public void severeError(String message) {
 		System.err.println(message);
@@ -50,38 +52,28 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		}		
 	}
 	
-	public void startSimulation(boolean inNewThread) {
+	public void startSimulation(boolean step, boolean newThread) {
+		this.step = step;
+		if (step) {
+			Soar2D.wm.setStatus("Stepping");
+		} else {
+			Soar2D.wm.setStatus("Running");
+		}
 		stopRequested = false;
 		stopSoar = false;
-		if (Soar2D.simulation.hasSoarAgents()) {
-			if (inNewThread) {
-				runThread = new Thread(this);
-				runThread.start();
-			} else {
-				run();
-			}
+		step = false;
+		if (newThread) {
+			runThread = new Thread(this);
+			runThread.start();
 		} else {
-			startEvent();
-			while (!stopSoar) {
-				tickEvent();
-			}
-			stopEvent();
-		}
-	}
-	
-	public void stepSimulation() {
-		if (Soar2D.simulation.hasSoarAgents()) {
-			Soar2D.simulation.runStep();
-		} else {
-			startEvent();
-			tickEvent();
-			stopEvent();
+			run();
 		}
 	}
 	
 	public void stopSimulation() {
 		stopRequested = true;
 		stopSoar = true;
+		step = false;
 	}
 	
 	public boolean resetSimulation() {
@@ -95,8 +87,24 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	}
 	
 	public void run() {
-		stopSoar = false;
-		Soar2D.simulation.runForever();
+		if (Soar2D.simulation.hasSoarAgents()) {
+			if (step) {
+				Soar2D.simulation.runStep();
+			} else {
+				Soar2D.simulation.runForever();
+			}
+		} else {
+			startEvent();
+			if (!step) {
+				while (!stopSoar) {
+					tickEvent();
+				}
+			} else {
+				tickEvent();
+			}
+			stopEvent();
+		}
+		Soar2D.wm.setStatus("Ready");
 	}
 	
 	private void startEvent() {
@@ -156,7 +164,12 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		}
 	}
 
+	public boolean isShuttingDown() {
+		return shuttingDown;
+	}
 	public void shutdown() {
+		shuttingDown = true;
+		stopSimulation();
 		if (Soar2D.logger.isLoggable(Level.INFO)) Soar2D.logger.info("Shutdown called.");
 		if (Soar2D.wm.using()) {
 			Soar2D.wm.shutdown();

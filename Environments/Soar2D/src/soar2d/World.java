@@ -230,6 +230,9 @@ public class World {
 			Player player = iter.next();
 			
 			MoveInfo move = player.getMove();
+			if (Soar2D.control.isShuttingDown()) {
+				return;
+			}
 			lastMoves.put(player.getName(), move);
 			
 			if (Soar2D.config.terminalAgentCommand) {
@@ -391,6 +394,9 @@ public class World {
 		}
 		
 		moveEaters();
+		if (Soar2D.control.isShuttingDown()) {
+			return;
+		}
 		updateMapAndEatFood();
 		handleCollisions();	
 		updatePlayers();

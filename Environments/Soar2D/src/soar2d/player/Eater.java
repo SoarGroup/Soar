@@ -8,8 +8,8 @@ import soar2d.World;
 public class Eater extends Player {
 	Logger logger = Soar2D.logger;
 	
-	public Eater(String name, PlayerConfig playerConfig) {
-		super(name, playerConfig);
+	public Eater( PlayerConfig playerConfig) {
+		super(playerConfig);
 	}
 	
 	public void update(World world, java.awt.Point location) {
@@ -17,6 +17,11 @@ public class Eater extends Player {
 	}
 	
 	public MoveInfo getMove() {
-		return new MoveInfo();
+		if (Soar2D.config.graphical == false) {
+			return new MoveInfo();
+		}
+		MoveInfo move = Soar2D.wm.getHumanEaterMove(this.getColor());
+		this.setFacingInt(move.moveDirection);
+		return move;
 	}
 }
