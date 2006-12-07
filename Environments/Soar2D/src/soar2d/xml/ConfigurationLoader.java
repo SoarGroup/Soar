@@ -299,32 +299,82 @@ public class ConfigurationLoader {
 		}
 	}
 	
-	private void simulation(ElementXML tag) {
+	private void simulation(ElementXML simulationTag) throws SMLException, SyntaxException {
 		String attribute;
 		
-		attribute = tag.GetAttribute(Names.kParamDebuggers);
+		attribute = simulationTag.GetAttribute(Names.kParamDebuggers);
 		if (attribute != null) {
 			c.debuggers = Boolean.parseBoolean(attribute);
 		}
 		
-		attribute = tag.GetAttribute(Names.kParamMaxUpdates);
-		if (attribute != null) {
-			c.maxUpdates = Integer.parseInt(attribute);
-		}
-		
-		attribute = tag.GetAttribute(Names.kParamWinningScore);
-		if (attribute != null) {
-			c.winningScore = Integer.parseInt(attribute);
-		}
-		
-		attribute = tag.GetAttribute(Names.kParamRemote);
+		attribute = simulationTag.GetAttribute(Names.kParamRemote);
 		if (attribute != null) {
 			c.remote = Boolean.parseBoolean(attribute);
 		}
 		
-		attribute = tag.GetAttribute(Names.kParamRandom);
+		attribute = simulationTag.GetAttribute(Names.kParamRandom);
 		if (attribute != null) {
 			c.random = Boolean.parseBoolean(attribute);
+		}
+		
+		ElementXML subTag = null;
+		for (int subTagIndex = 0 ; subTagIndex < simulationTag.GetNumberChildren() ; ++subTagIndex) {
+
+			subTag = new ElementXML();
+			if (subTag == null) throwSML("couldn't create subTag");
+
+			try {
+				simulationTag.GetChild(subTag, subTagIndex);
+				if (subTag == null) throwSML("failed to get tag by index");
+				
+				if (subTag.IsTag(Names.kTagTerminal)) {
+					xmlPath.push(Names.kTagTerminal);
+					terminal(subTag);
+					xmlPath.pop();
+
+				} else {
+					throwSyntax("unrecognized tag " + subTag.GetTagName());
+				}
+			} finally {
+				subTag.delete();
+				subTag = null;
+			}
+		}
+	}
+
+	private void terminal(ElementXML terminalTag) throws SyntaxException {
+		String attribute;
+		
+		attribute = terminalTag.GetAttribute(Names.kParamType);
+		if ((attribute == null) || attribute.length() <= 0) {
+			throwSyntax("Terminal type is required.");
+		}
+		
+		if (attribute.equalsIgnoreCase(Names.kTerminalMaxUpdates)) {
+			attribute = terminalTag.GetAttribute(Names.kParamValue);
+			if ((attribute == null) || attribute.length() <= 0) {
+				throwSyntax("Value is required for terminal max-updates.");
+			}
+			c.terminalMaxUpdates = Integer.parseInt(attribute);
+			
+		} else if(attribute.equalsIgnoreCase(Names.kTerminalAgentCommand)) {
+			c.terminalAgentCommand = true;
+			
+		} else if(attribute.equalsIgnoreCase(Names.kTerminalPointsRemaining)) {
+			c.terminalPointsRemaining = true;
+			
+		} else if(attribute.equalsIgnoreCase(Names.kTerminalWinningScore)) {
+			attribute = terminalTag.GetAttribute(Names.kParamValue);
+			if ((attribute == null) || attribute.length() <= 0) {
+				throwSyntax("Value is required for terminal winning-score.");
+			}
+			c.terminalWinningScore = Integer.parseInt(attribute);
+			
+		} else if(attribute.equalsIgnoreCase(Names.kTerminalFoodRemaining)) {
+			c.terminalFoodRemaining = true;
+			
+		} else {
+			throwSyntax("Unknown terminal type: " + attribute);
 		}
 	}
 	

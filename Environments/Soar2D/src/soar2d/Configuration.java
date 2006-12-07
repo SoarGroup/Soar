@@ -45,12 +45,17 @@ public class Configuration {
 	public boolean debuggers = false;
 	public boolean remote = false;
 	public boolean random = true;
-	public int maxUpdates = 0;
-	public int winningScore = 0;
 	public File map = null;
 	public ArrayList<ClientConfig> clients = new ArrayList<ClientConfig>();
 	public ArrayList<PlayerConfig> players = new ArrayList<PlayerConfig>();
 	public String basePath = null;
 	public String mapPath = null;
 	public String agentPath = null;
+
+	public boolean terminalPointsRemaining = false;
+	public boolean terminalFoodRemaining = false;
+	public boolean terminalAgentCommand = false;
+	public int terminalMaxUpdates = 0;
+	public int terminalWinningScore = 0;
+
 }
