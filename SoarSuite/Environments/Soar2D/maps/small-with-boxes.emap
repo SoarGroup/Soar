@@ -26,7 +26,7 @@
     <property name="color" value="green" />
     <apply>
       <points />
-      <property name="soar" value="rocks" />
+      <property name="status" value="open" />
     </apply>
   </cell-object>
   <cells world-size="5" random-walls="false" random-food="false">
@@ -51,25 +51,8 @@
       <cell>
         <object>wall</object>
       </cell>
-      <cell>
-        <object>box</object>
-      </cell>
       <cell />
-      <cell>
-        <object>box</object>
-      </cell>
-      <cell>
-        <object>wall</object>
-      </cell>
-    </row>
-    <row>
-      <cell>
-        <object>wall</object>
-      </cell>
       <cell />
-      <cell>
-        <object>box</object>
-      </cell>
       <cell />
       <cell>
         <object>wall</object>
@@ -79,13 +62,22 @@
       <cell>
         <object>wall</object>
       </cell>
+      <cell />
       <cell>
         <object>box</object>
       </cell>
       <cell />
       <cell>
-        <object>box</object>
+        <object>wall</object>
       </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
       <cell>
         <object>wall</object>
       </cell>
