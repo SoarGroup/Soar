@@ -110,6 +110,7 @@ public class Names {
 	public static final String kPropertyBox = "box";
 	public static final String kPropertyColor = "color";
 	public static final String kPropertyEdible = "edible";
+	public static final String kPropertyMoveApply = "move-apply";
 	public static final String kPropertyPoints = "points";
 	public static final String kPropertyShape = "shape";
 

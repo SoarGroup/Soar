@@ -299,6 +299,17 @@ public class World {
 				if (!cell.hasObject(Names.kRedraw)) {
 					cell.addCellObject(new CellObject(Names.kRedraw, false, true));
 				}
+
+				ArrayList<CellObject> moveApply = cell.getAllWithProperty(Names.kPropertyMoveApply);
+				if (moveApply.size() > 0) {
+					Iterator<CellObject> maIter = moveApply.iterator();
+					while (maIter.hasNext()) {
+						CellObject object = maIter.next();
+						if (object.apply(player)) {
+							cell.removeObject(object.getName());
+						}
+					}
+				}
 			}
 			
 			if (lastMove.eat) {
