@@ -1,7 +1,7 @@
 <soar2d>
   <logger level="finest" console="true"/>
   <display graphical="true" />
-  <eaters map="random-medium.emap">
+  <eaters map="random-walls.emap">
     <agent productions="tutorial/advanced-move.soar" />
   </eaters>
   <simulation debuggers="false" random="false">

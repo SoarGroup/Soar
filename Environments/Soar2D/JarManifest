@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Main-Class: soar2d.Soar2D
+Class-Path: swt.jar sml.jar ../../SoarLibrary/bin/swt.jar ../../SoarLibrary/bin/sml.jar
+
+
