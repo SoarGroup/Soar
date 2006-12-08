@@ -88,6 +88,7 @@ public class Names {
 	public static final String kLevelFiner = "finer";
 	public static final String kLevelFinest = "finest";
 
+	public static final String kBoxID = "box";
 	public static final String kContentID = "content";
 	public static final String kEater = "eater";
 	public static final String kEaterID = "eater";
