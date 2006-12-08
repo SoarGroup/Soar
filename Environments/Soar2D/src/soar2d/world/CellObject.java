@@ -63,12 +63,6 @@ public class CellObject {
 	}
 	
 	public boolean apply(Player player) {
-		if (pointsApply) {
-			assert properties.containsKey(Names.kPropertyPoints);
-			int points = Integer.parseInt(properties.get(Names.kPropertyPoints));
-			player.adjustPoints(points, name);
-		}
-		
 		if (propertiesApply.size() > 0) {
 			Iterator<String> iter = propertiesApply.keySet().iterator();
 			while (iter.hasNext()) {
@@ -78,6 +72,13 @@ public class CellObject {
 				properties.put(key, value);
 			}
 		}
+		
+		if (pointsApply) {
+			assert properties.containsKey(Names.kPropertyPoints);
+			int points = Integer.parseInt(properties.get(Names.kPropertyPoints));
+			player.adjustPoints(points, name);
+		}
+		
 		return consumable;	// if this is true the object is removed from 
 							// the cell after the apply
 	}

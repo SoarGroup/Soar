@@ -170,15 +170,16 @@ public class SoarEater extends Eater {
 					}
 					
 					// box test
-					CellObject box = cell.getObject(Names.kBox);
-					if (box != null) {
-						createBox(soarCell, box);
+					ArrayList<CellObject> boxes = cell.getAllWithProperty(Names.kPropertyBox);
+					assert boxes.size() <= 1;
+					if (boxes.size() > 0) {
+						createBox(soarCell, boxes.get(0));
 					}
 					
 					// empty test
 					// a cell is empty if it doesn't have food, a player, or a box
 					// wall is implied since we can't get here if there is a wall
-					if(!hadFood && (player == null) && (box == null)) {
+					if(!hadFood && (player == null) && (boxes.size() == 0)) {
 						createContent(soarCell.content, soarCell, Names.kEmpty);
 					}
 				} else {
@@ -224,8 +225,10 @@ public class SoarEater extends Eater {
 					}
 					
 					// box test is a special case
-					CellObject box = cell.getObject(Names.kBox);
-					if (box != null) {
+					ArrayList<CellObject> boxes = cell.getAllWithProperty(Names.kPropertyBox);
+					assert boxes.size() <= 1;
+					if (boxes.size() > 0) {
+						CellObject box = boxes.get(0);
 						if (soarCell.box == null) {
 							assert soarCell.boxProperties.size() == 0;
 							createBox(soarCell, box);
@@ -252,7 +255,7 @@ public class SoarEater extends Eater {
 					// empty test
 					// a cell is empty if it doesn't have food, a player, or a box
 					// wall is implied since we can't get here if there is a wall
-					if(!hadFood && (player == null) && (box == null)) {
+					if(!hadFood && (player == null) && (boxes.size() == 0)) {
 						StringElement element = soarCell.content.remove(Names.kEmpty);
 						if (element == null) {
 							createContent(newContent, soarCell, Names.kEmpty);

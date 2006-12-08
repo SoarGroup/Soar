@@ -11,7 +11,6 @@ public class Names {
 	
 	public static final String kHumanProductions = "<Human>";
 	
-	public static final String kBox = "box";
 	public static final String kEmpty = "empty";
 	public static final String kExplosion = "explosion";
 	public static final String kRedraw = "redraw";
@@ -108,6 +107,7 @@ public class Names {
 	public static final String kUnnamedCellObject = "Unnamed CellObject";
 	
 	public static final String kPropertyBlock = "block";
+	public static final String kPropertyBox = "box";
 	public static final String kPropertyColor = "color";
 	public static final String kPropertyEdible = "edible";
 	public static final String kPropertyPoints = "points";
