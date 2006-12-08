@@ -17,6 +17,7 @@ public class CellObject {
 	
 	public CellObject(CellObject cellObject) {
 		this.properties = new HashMap<String, String>(cellObject.properties);
+		this.propertiesApply = new HashMap<String, String>(cellObject.propertiesApply);
 		this.name = new String(cellObject.name);
 		this.updatable = cellObject.updatable;
 		this.consumable = cellObject.consumable;

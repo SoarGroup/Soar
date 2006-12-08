@@ -93,15 +93,6 @@ public class WindowManager {
 			display.dispose();
 			return false;
 		}
-//		shell.addDisposeListener(new DisposeListener() {
-//			public void widgetDisposed(DisposeEvent e) {
-//				if (humanMove != null) {
-//					synchronized(humanMove) {
-//						humanMove.notifyAll();
-//					}
-//				}
-//			}
-//		});
 		initColors(display);
 		return true;
 	}
