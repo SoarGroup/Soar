@@ -326,13 +326,18 @@ public class World {
 	}
 	
 	private void open(Player player, Cell cell) {
-		CellObject box = cell.getObject(Names.kBox);
-		if (box == null) {
+		ArrayList<CellObject> boxes = cell.getAllWithProperty(Names.kPropertyBox);
+		if (boxes.size() <= 0) {
 			Soar2D.logger.warning(player.getName() + " tried to open but there is no box.");
 			return;
 		}
+
+		// TODO: multiple boxes
+		assert boxes.size() <= 1;
+		
+		CellObject box = boxes.get(0);
 		if (box.apply(player)) {
-			cell.removeObject(Names.kBox);
+			cell.removeObject(box.getName());
 		}
 	}
 	

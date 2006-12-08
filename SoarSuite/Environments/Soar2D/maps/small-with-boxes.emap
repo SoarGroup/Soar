@@ -20,13 +20,24 @@
       <points />
     </apply>
   </cell-object>
-  <cell-object name="box">
-    <property name="points" value="1" />
+  <cell-object name="box1">
+    <property name="box" value="true" />
     <property name="shape" value="square" />
     <property name="color" value="green" />
     <apply>
       <points />
       <property name="status" value="open" />
+      <property name="points" value="1" />
+    </apply>
+  </cell-object>
+  <cell-object name="box2">
+    <property name="box" value="true" />
+    <property name="shape" value="square" />
+    <property name="color" value="orange" />
+    <apply>
+      <points />
+      <property name="status" value="open" />
+      <property name="points" value="10" />
     </apply>
   </cell-object>
   <cells world-size="5" random-walls="false" random-food="false">
@@ -51,7 +62,9 @@
       <cell>
         <object>wall</object>
       </cell>
-      <cell />
+      <cell>
+        <object>box2</object>
+      </cell>
       <cell />
       <cell />
       <cell>
@@ -64,7 +77,7 @@
       </cell>
       <cell />
       <cell>
-        <object>box</object>
+        <object>box1</object>
       </cell>
       <cell />
       <cell>
@@ -77,7 +90,9 @@
       </cell>
       <cell />
       <cell />
-      <cell />
+      <cell>
+        <object>box2</object>
+      </cell>
       <cell>
         <object>wall</object>
       </cell>
