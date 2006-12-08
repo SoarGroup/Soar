@@ -16,7 +16,10 @@ import soar2d.world.CellObject;
 
 class SoarCell {
 	Identifier me;
-	HashMap<String, StringElement> content;
+	HashMap<String, StringElement> content = new HashMap<String, StringElement>();
+	
+	Identifier box;
+	HashMap<String, StringElement> boxProperties = new HashMap<String, StringElement>();
 
 	Identifier north;
 	Identifier south;
@@ -24,8 +27,6 @@ class SoarCell {
 	Identifier west;
 	
 	boolean iterated = false;
-
-//	HashMap<String, StringElement> boxProperties;
 }
 
 public class SoarEater extends Eater {
@@ -74,8 +75,6 @@ public class SoarEater extends Eater {
 	private void createView(int x, int y) {
 		if (x >= 0 && x <= (Soar2D.config.kEaterVision * 2) && y >=0 && y <= (Soar2D.config.kEaterVision * 2) && !cells[x][y].iterated) {
 			cells[x][y].iterated = true;
-			//cells[x][y].content = agent.CreateStringWME(cells[x][y].me, Names.kContentID, Names.kEmpty);
-			cells[x][y].content = new HashMap<String, StringElement>();
 
 			if (x > 0) {
 				if (cells[x - 1][y].me == null)
@@ -128,6 +127,8 @@ public class SoarEater extends Eater {
 			viewLocation.x = x - Soar2D.config.kEaterVision + location.x;
 			for (int y = 0; y < cells[x].length; ++y) {
 				viewLocation.y = y - Soar2D.config.kEaterVision + location.y;
+
+				SoarCell soarCell = cells[x][y];
 				
 				// Get cell if in bounds.
 				Cell cell = null;
@@ -137,18 +138,23 @@ public class SoarEater extends Eater {
 				
 				// Clear the content if we moved.
 				if (moved) {
-					clearContent(cells[x][y]);
+					destroyWMEsAndClear(soarCell.content);
+					if (soarCell.box != null) {
+						agent.DestroyWME(soarCell.box);
+						soarCell.box = null;
+						soarCell.boxProperties.clear();
+					}
 					
 					// If we're out of bounds or cell is a wall
 					if (cell == null || !cell.enterable()) {
-						createContent(cells[x][y].content, cells[x][y], Names.kWall);
+						createContent(soarCell.content, soarCell, Names.kWall);
 						continue;
 					}
 					
 					// player test
 					Player player = cell.getPlayer();
 					if (player != null) {
-						createContent(cells[x][y].content, cells[x][y], Names.kEater);
+						createContent(soarCell.content, soarCell, Names.kEater);
 					}
 					
 					// food test
@@ -159,39 +165,21 @@ public class SoarEater extends Eater {
 						CellObject food = objectIter.next();
 						if (cell.hasObject(food.getName())) {
 							hadFood = true;
-							createContent(cells[x][y].content, cells[x][y], food.getName());
+							createContent(soarCell.content, soarCell, food.getName());
 						}
 					}
 					
 					// box test
-//					box = cell.getObject(Names.kBox);
-					// TODO!
-//					if (cells[x][y].boxProperties == null) {
-//						cells[x][y].boxProperties = new HashMap<String, StringElement>();
-//					}
-//					
-//					Iterator<String> iter = box.getPropertyNames().iterator();
-//					String name;
-//					String value;
-//					StringElement wme;
-//					while (iter.hasNext()) {
-//						name = iter.next();
-//						value = box.getStringProperty(name);
-//						wme = cells[x][y].boxProperties.get(name);
-//						if (wme == null) {
-//							wme = agent.CreateStringWME(cells[x][y].me, name, value);
-//						} else {
-//							if (moved || !wme.GetValue().equalsIgnoreCase(value)) {
-//								agent.Update(wme, value);
-//							}
-//						}
-//					}
+					CellObject box = cell.getObject(Names.kBox);
+					if (box != null) {
+						createBox(soarCell, box);
+					}
 					
 					// empty test
 					// a cell is empty if it doesn't have food, a player, or a box
 					// wall is implied since we can't get here if there is a wall
-					if(!hadFood && (player == null)/* && (box == null)*/) {
-						createContent(cells[x][y].content, cells[x][y], Names.kEmpty);
+					if(!hadFood && (player == null) && (box == null)) {
+						createContent(soarCell.content, soarCell, Names.kEmpty);
 					}
 				} else {
 				
@@ -210,9 +198,9 @@ public class SoarEater extends Eater {
 	
 					Player player = cell.getPlayer();
 					if (player != null) {
-						StringElement element = cells[x][y].content.remove(Names.kEater);
+						StringElement element = soarCell.content.remove(Names.kEater);
 						if (element == null) {
-							createContent(newContent, cells[x][y], Names.kEater);
+							createContent(newContent, soarCell, Names.kEater);
 						} else {
 							newContent.put(Names.kEater, element);
 						}
@@ -226,32 +214,55 @@ public class SoarEater extends Eater {
 						CellObject food = objectIter.next();
 						if (cell.hasObject(food.getName())) {
 							hadFood = true;
-							StringElement element = cells[x][y].content.remove(food.getName());
+							StringElement element = soarCell.content.remove(food.getName());
 							if (element == null) {
-								createContent(newContent, cells[x][y], food.getName());
+								createContent(newContent, soarCell, food.getName());
 							} else {
 								newContent.put(food.getName(), element);
 							}
 						}
 					}
 					
-					// box test
-					// TODO!
+					// box test is a special case
+					CellObject box = cell.getObject(Names.kBox);
+					if (box != null) {
+						if (soarCell.box == null) {
+							assert soarCell.boxProperties.size() == 0;
+							createBox(soarCell, box);
+						} else {
+							
+							// Check the box properties using the same algorithm
+							HashMap<String, StringElement> newBoxProperties = new HashMap<String, StringElement>();
+							Iterator<String> iter = box.getPropertyNames().iterator();
+							while (iter.hasNext()) {
+								String name = iter.next();
+								StringElement element = soarCell.boxProperties.remove(name);
+								if (element == null) {
+									String value = box.getStringProperty(name);
+									element = agent.CreateStringWME(soarCell.box, name, value);
+								}
+								newBoxProperties.put(name, element);
+							}
+							
+							destroyWMEsAndClear(soarCell.boxProperties);
+							soarCell.boxProperties = newBoxProperties;
+						}
+					}
 					
 					// empty test
 					// a cell is empty if it doesn't have food, a player, or a box
 					// wall is implied since we can't get here if there is a wall
-					if(!hadFood && (player == null)/* && (box == null)*/) {
-						StringElement element = cells[x][y].content.remove(Names.kEmpty);
+					if(!hadFood && (player == null) && (box == null)) {
+						StringElement element = soarCell.content.remove(Names.kEmpty);
 						if (element == null) {
-							createContent(newContent, cells[x][y], Names.kEmpty);
+							createContent(newContent, soarCell, Names.kEmpty);
 						} else {
 							newContent.put(Names.kEmpty, element);
 						}
 					}
 					
-					clearContent(cells[x][y]);
-					cells[x][y].content = newContent;
+					destroyWMEsAndClear(soarCell.content);
+					soarCell.content = newContent;
 				} // if moved/didn't move
 			}
 		}
@@ -279,13 +290,25 @@ public class SoarEater extends Eater {
 		agent.Commit();
 	}
 	
-	private void clearContent(SoarCell soarCell) {
-		Iterator<StringElement> contentIter = soarCell.content.values().iterator();
+	private void createBox(SoarCell soarCell, CellObject box) {
+		soarCell.box = agent.CreateIdWME(soarCell.me, Names.kBoxID);
+		assert soarCell.box != null;
+		Iterator<String> iter = box.getPropertyNames().iterator();
+		while (iter.hasNext()) {
+			String name = iter.next();
+			String value = box.getStringProperty(name);
+			StringElement element = agent.CreateStringWME(soarCell.box, name, value);
+			soarCell.boxProperties.put(name, element);
+		}
+	}
+	
+	private void destroyWMEsAndClear(HashMap<String, StringElement> map) {
+		Iterator<StringElement> contentIter = map.values().iterator();
 		while (contentIter.hasNext()) {
 			StringElement element = contentIter.next();
 			agent.DestroyWME(element);
 		}
-		soarCell.content.clear();
+		map.clear();
 	}
 	
 	private void createContent(HashMap<String, StringElement> map, SoarCell soarCell, String name) {
@@ -347,18 +370,18 @@ public class SoarEater extends Eater {
 	public void reset() {
 		agent.InitSoar();
 		
-//		Iterator<StringElement> iter;
-//		for (int x = 0; x < cells.length; ++x) {
-//			for (int y = 0; y < cells[x].length; ++y) {
-//				if (cells[x][y].boxProperties != null) {
-//					iter = cells[x][y].boxProperties.values().iterator();
-//					while (iter.hasNext()) {
-//						StringElement name = iter.next();
-//						agent.DestroyWME(name);
-//					}
-//					cells[x][y].boxProperties = null;
-//				}
-//			}
-//		}
+		Iterator<StringElement> iter;
+		for (int x = 0; x < cells.length; ++x) {
+			for (int y = 0; y < cells[x].length; ++y) {
+				if (cells[x][y].boxProperties.size() > 0) {
+					iter = cells[x][y].boxProperties.values().iterator();
+					while (iter.hasNext()) {
+						StringElement name = iter.next();
+						agent.DestroyWME(name);
+					}
+					cells[x][y].boxProperties.clear();
+				}
+			}
+		}
 	}
 }
