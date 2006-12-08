@@ -11,6 +11,8 @@ public class Player {
 	private int facingInt;
 	private int points;
 	private String color;
+	protected java.awt.Point previousLocation = new java.awt.Point(-1, -1);
+	protected boolean moved = false;
 
 	public Player(PlayerConfig playerConfig) {
 		this.name = playerConfig.getName();
@@ -77,7 +79,11 @@ public class Player {
 	}
 	
 	public void update(World world, java.awt.Point location) {
-		
+		moved = (location.x != this.previousLocation.x) || (location.y != this.previousLocation.y);
+	}
+	
+	public boolean moved() {
+		return moved;
 	}
 	
 	public void reset() {

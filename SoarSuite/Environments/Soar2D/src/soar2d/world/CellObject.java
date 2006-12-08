@@ -100,6 +100,9 @@ public class CellObject {
 		return false;
 	}
 	
+	public Set<String> getPropertyNames() {
+		return properties.keySet();
+	}
 	public Object getProperty(String name) {
 		if (properties.containsKey(name)) {
 			return properties.get(name);
