@@ -67,7 +67,9 @@
         <object>wall</object>
       </cell>
       <cell />
-      <cell />
+      <cell>
+        <object>box</object>
+      </cell>
       <cell />
       <cell>
         <object>wall</object>

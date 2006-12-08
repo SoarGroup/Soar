@@ -13,7 +13,7 @@ public class Eater extends Player {
 	}
 	
 	public void update(World world, java.awt.Point location) {
-		
+		moved = (location.x != this.previousLocation.x) || (location.y != this.previousLocation.y);
 	}
 	
 	public MoveInfo getMove() {
