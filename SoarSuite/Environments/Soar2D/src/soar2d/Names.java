@@ -14,6 +14,7 @@ public class Names {
 	public static final String kEmpty = "empty";
 	public static final String kExplosion = "explosion";
 	public static final String kRedraw = "redraw";
+	public static final String kOpen = "open";
 	public static final String kWall = "wall";
 	
 	public static final String kTagAgent = "agent";
@@ -113,6 +114,7 @@ public class Names {
 	public static final String kPropertyMoveApply = "move-apply";
 	public static final String kPropertyPoints = "points";
 	public static final String kPropertyShape = "shape";
+	public static final String kPropertyStatus = "status";
 
 	public static final ClientConfig kDebuggerClient = new ClientConfig();
 	static {

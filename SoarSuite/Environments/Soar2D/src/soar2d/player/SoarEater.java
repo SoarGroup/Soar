@@ -174,8 +174,8 @@ public class SoarEater extends Eater {
 					assert boxes.size() <= 1;
 					if (boxes.size() > 0) {
 						createBox(soarCell, boxes.get(0));
-					}
 					
+					}
 					// empty test
 					// a cell is empty if it doesn't have food, a player, or a box
 					// wall is implied since we can't get here if there is a wall
