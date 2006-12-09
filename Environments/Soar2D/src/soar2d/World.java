@@ -347,6 +347,12 @@ public class World {
 		assert boxes.size() <= 1;
 		
 		CellObject box = boxes.get(0);
+		if (box.hasProperty(Names.kPropertyStatus)) {
+			if (box.getStringProperty(Names.kPropertyStatus).equalsIgnoreCase(Names.kOpen)) {
+				Soar2D.logger.warning(player.getName() + " tried to open an open box.");
+				return;
+			}
+		}
 		if (box.apply(player)) {
 			cell.removeObject(box.getName());
 		}
