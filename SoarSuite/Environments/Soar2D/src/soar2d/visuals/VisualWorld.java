@@ -118,64 +118,76 @@ public class VisualWorld extends Canvas implements PaintListener {
 				// TODO: support multiple objects
 				assert drawList.size() < 2;
 				
-				if (cell.getPlayer() != null) {
-					
-					Player eater = cell.getPlayer();
-					
-					gc.setBackground(playerColors.get(eater));
-					gc.fillOval(m_CellSize*xDraw, m_CellSize*yDraw, m_CellSize, m_CellSize);
-					gc.setBackground(WindowManager.widget_background);
-					
-					
-					switch (eater.getFacingInt()) {
-					case Direction.kNorthInt:
-						drawEaterMouth(xDraw, yDraw, 1, 0, 1, 1, gc);
-						break;
-					case Direction.kEastInt:
-						drawEaterMouth(xDraw + 1, yDraw, 0, 1, -1, 1, gc);
-						break;
-					case Direction.kSouthInt:
-						drawEaterMouth(xDraw, yDraw + 1, 1, 0, 1, -1, gc);
-						break;
-					case Direction.kWestInt:
-						drawEaterMouth(xDraw, yDraw, 0, 1, 1, 1, gc);
-						break;
-					default:
-						break;
-					}
-				} else if (!cell.enterable()) {
+				if (!cell.enterable()) {
 				    gc.setBackground(WindowManager.black);
 				    gc.fillRectangle(m_CellSize*xDraw + 1, m_CellSize*yDraw + 1, m_CellSize - 2, m_CellSize - 2);
 					
-				} else if (drawList.size() > 0) {
-					CellObject object = drawList.get(0);
-					
-				    gc.setBackground(WindowManager.widget_background);
-				    gc.fillRectangle(m_CellSize*xDraw, m_CellSize*yDraw, m_CellSize, m_CellSize);
-				    
-				    Color color = WindowManager.getColor(object.getStringProperty(Names.kPropertyColor));
-				    if (color == null) {
-				    	//TODO: draw outline!
-				    }
-					gc.setBackground(color);
-					
-					Shape shape = Shape.getShape(object.getStringProperty(Names.kPropertyShape));
-					if (shape.equals(Shape.ROUND)) {
-						fill1 = (int)(m_CellSize/2.8);
-						fill2 = m_CellSize - fill1 + 1;
-						gc.fillOval(m_CellSize*xDraw + fill1, m_CellSize*yDraw + fill1, m_CellSize - fill2, m_CellSize - fill2);
-						gc.drawOval(m_CellSize*xDraw + fill1, m_CellSize*yDraw + fill1, m_CellSize - fill2 - 1, m_CellSize - fill2 - 1);
-						
-					} else if (shape.equals(Shape.SQUARE)) {
-						fill1 = (int)(m_CellSize/2.8);
-						fill2 = m_CellSize - fill1 + 1;
-						gc.fillRectangle(m_CellSize*xDraw + fill1, m_CellSize*yDraw + fill1, m_CellSize - fill2, m_CellSize - fill2);
-						gc.drawRectangle(m_CellSize*xDraw + fill1, m_CellSize*yDraw + fill1, m_CellSize - fill2, m_CellSize - fill2);
-					}
-
 				} else {
-					gc.setBackground(WindowManager.widget_background);
-					gc.fillRectangle(m_CellSize*xDraw, m_CellSize*yDraw, m_CellSize, m_CellSize);
+					boolean empty = true;
+					
+					if (cell.getPlayer() != null) {
+						empty = false;
+						
+						Player eater = cell.getPlayer();
+						
+						gc.setBackground(playerColors.get(eater));
+						gc.fillOval(m_CellSize*xDraw, m_CellSize*yDraw, m_CellSize, m_CellSize);
+						gc.setBackground(WindowManager.widget_background);
+						
+						
+						switch (eater.getFacingInt()) {
+						case Direction.kNorthInt:
+							drawEaterMouth(xDraw, yDraw, 1, 0, 1, 1, gc);
+							break;
+						case Direction.kEastInt:
+							drawEaterMouth(xDraw + 1, yDraw, 0, 1, -1, 1, gc);
+							break;
+						case Direction.kSouthInt:
+							drawEaterMouth(xDraw, yDraw + 1, 1, 0, 1, -1, gc);
+							break;
+						case Direction.kWestInt:
+							drawEaterMouth(xDraw, yDraw, 0, 1, 1, 1, gc);
+							break;
+						default:
+							break;
+						}
+					}
+					
+					if (drawList.size() > 0) {
+
+						CellObject object = drawList.get(0);
+						
+						if (empty) {
+							gc.setBackground(WindowManager.widget_background);
+							gc.fillRectangle(m_CellSize*xDraw, m_CellSize*yDraw, m_CellSize, m_CellSize);
+						}
+						empty = false;
+					    
+					    Color color = WindowManager.getColor(object.getStringProperty(Names.kPropertyColor));
+					    if (color == null) {
+					    	//TODO: draw outline!
+					    }
+						gc.setBackground(color);
+						
+						Shape shape = Shape.getShape(object.getStringProperty(Names.kPropertyShape));
+						if (shape.equals(Shape.ROUND)) {
+							fill1 = (int)(m_CellSize/2.8);
+							fill2 = m_CellSize - fill1 + 1;
+							gc.fillOval(m_CellSize*xDraw + fill1, m_CellSize*yDraw + fill1, m_CellSize - fill2, m_CellSize - fill2);
+							gc.drawOval(m_CellSize*xDraw + fill1, m_CellSize*yDraw + fill1, m_CellSize - fill2 - 1, m_CellSize - fill2 - 1);
+							
+						} else if (shape.equals(Shape.SQUARE)) {
+							fill1 = (int)(m_CellSize/2.8);
+							fill2 = m_CellSize - fill1 + 1;
+							gc.fillRectangle(m_CellSize*xDraw + fill1, m_CellSize*yDraw + fill1, m_CellSize - fill2, m_CellSize - fill2);
+							gc.drawRectangle(m_CellSize*xDraw + fill1, m_CellSize*yDraw + fill1, m_CellSize - fill2, m_CellSize - fill2);
+						}
+					}
+					
+					if (empty) {
+						gc.setBackground(WindowManager.widget_background);
+						gc.fillRectangle(m_CellSize*xDraw, m_CellSize*yDraw, m_CellSize, m_CellSize);
+					}
 				}
 				
 				if (cell.removeObject(Names.kExplosion) != null) {
