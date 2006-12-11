@@ -15,7 +15,8 @@ class AnalyzeError extends Exception {
 
 public class Configuration {
 	
-	public final String kDefaultXMLSettingsFile = "soar2d.xml";
+	public final String kDefaultXMLEatersSettingsFile = "eaters.xml";
+	public final String kDefaultXMLTankSoarSettingsFile = "tanksoar.xml";
 	public final String kDefaultLogFilename = "soar2d.log";
 	public final String kMapDir = "maps";
 	public final String kAgentDir = "agents";
