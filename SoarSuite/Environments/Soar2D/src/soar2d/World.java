@@ -314,10 +314,16 @@ public class World {
 			
 			if (lastMove.eat) {
 				eat(player, cell);
+				if (!cell.hasObject(Names.kRedraw)) {
+					cell.addCellObject(new CellObject(Names.kRedraw, false, true));
+				}
 			}
 			
 			if (lastMove.open) {
 				open(player, cell);
+				if (!cell.hasObject(Names.kRedraw)) {
+					cell.addCellObject(new CellObject(Names.kRedraw, false, true));
+				}
 			}
 		}
 	}
