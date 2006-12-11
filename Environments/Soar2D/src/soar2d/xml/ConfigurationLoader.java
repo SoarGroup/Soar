@@ -238,20 +238,19 @@ public class ConfigurationLoader {
 		PlayerConfig agentConfig = new PlayerConfig();
 		agentConfig.setName(tag.GetAttribute(Names.kParamName));
 		
-		String productions = tag.GetAttribute(Names.kParamProductions);
-		if (productions != null) {
-			File productionsFile = new File(productions);
+		String attribute = tag.GetAttribute(Names.kParamProductions);
+		if (attribute != null) {
+			File productionsFile = new File(attribute);
 			if (!productionsFile.exists()) {
-				productionsFile = new File(c.agentPath + productions);
+				productionsFile = new File(c.agentPath + attribute);
 				if (!productionsFile.exists()) {
-					Soar2D.logger.warning("Error finding prodcutions " + productions);
+					Soar2D.logger.warning("Error finding prodcutions " + attribute);
 				}
 			}
 			agentConfig.setProductions(productionsFile);
 		}
 		agentConfig.setColor(tag.GetAttribute(Names.kParamColor));
 		
-		String attribute;
 		attribute = tag.GetAttribute(Names.kParamX);
 		int x = -1;
 		int y = -1;
@@ -266,6 +265,11 @@ public class ConfigurationLoader {
 		
 		if ((x >= 0) && (y >= 0)) {
 			agentConfig.setInitialLocation(new java.awt.Point(x, y));
+		}
+		
+		attribute = tag.GetAttribute(Names.kParamFacing);
+		if ((attribute != null) && (attribute.length() > 0)) {
+			agentConfig.setFacing(Direction.getInt(attribute));
 		}
 		
 		if (c.tanksoar) {

@@ -24,6 +24,7 @@
                   <xs:attribute name="color" type="xs:string" />
                   <xs:attribute name="x" type="xs:integer" />
                   <xs:attribute name="y" type="xs:integer" />
+                  <xs:attribute name="facing" type="facing" />
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
