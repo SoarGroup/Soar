@@ -19,26 +19,27 @@ public class Soar2D {
 		// Fire up view
 		boolean wmSuccess = wm.initialize();
 
+		// Try to install default config files
+		try {
+			install(config.kDefaultXMLEatersSettingsFile);
+		} catch (IOException e) {
+			control.severeError("IOException installing " + config.kDefaultXMLEatersSettingsFile + ": " + e.getMessage());
+			wm.shutdown();
+			System.exit(1);
+		}
+		try {
+			install(config.kDefaultXMLTankSoarSettingsFile);
+		} catch (IOException e) {
+			control.severeError("IOException installing " + config.kDefaultXMLTankSoarSettingsFile + ": " + e.getMessage());
+			wm.shutdown();
+			System.exit(1);
+		}
+
 		if (args.length > 0) {
 			configFile = args[0];
 		} else {
 			configFile = config.kDefaultXMLEatersSettingsFile;
 
-			// Try to install default config files
-			try {
-				install(config.kDefaultXMLEatersSettingsFile);
-			} catch (IOException e) {
-				control.severeError("IOException installing " + config.kDefaultXMLEatersSettingsFile + ": " + e.getMessage());
-				wm.shutdown();
-				System.exit(1);
-			}
-			try {
-				install(config.kDefaultXMLTankSoarSettingsFile);
-			} catch (IOException e) {
-				control.severeError("IOException installing " + config.kDefaultXMLTankSoarSettingsFile + ": " + e.getMessage());
-				wm.shutdown();
-				System.exit(1);
-			}
 		}
 		
 		// Read config file
