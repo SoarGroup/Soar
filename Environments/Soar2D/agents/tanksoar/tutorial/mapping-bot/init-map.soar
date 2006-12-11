@@ -1,0 +1,394 @@
+sp {propose*init-map
+   (state <s> ^name tanksoar)
+ -{(<s> ^map.square <sq>)
+   (<sq> ^x 0 ^y 0 ^east)}
+   -->
+   (<s> ^operator <o> + >)
+   (<o> ^name init-map)}
+
+sp {apply*init-map
+   (state <s> ^operator.name init-map)
+-->
+   (<s> ^map <map>)
+   (<map>
+   ^square <s0-0> ^square <s0-1> ^square <s0-2> ^square <s0-3> ^square <s0-4> ^square <s0-5> ^square <s0-6>
+   ^square <s0-7> ^square <s0-8> ^square <s0-9> ^square <s0-10> ^square <s0-11> ^square <s0-12>
+   ^square <s0-13> ^square <s0-14> ^square <s0-15>
+   ^square <s1-0> ^square <s1-1> ^square <s1-2> ^square <s1-3> ^square <s1-4> ^square <s1-5> ^square <s1-6>
+   ^square <s1-7> ^square <s1-8> ^square <s1-9> ^square <s1-10> ^square <s1-11> ^square <s1-12>
+   ^square <s1-13> ^square <s1-14> ^square <s1-15>
+   ^square <s2-0> ^square <s2-1> ^square <s2-2> ^square <s2-3> ^square <s2-4> ^square <s2-5> ^square <s2-6>
+   ^square <s2-7> ^square <s2-8> ^square <s2-9> ^square <s2-10> ^square <s2-11> ^square <s2-12>
+   ^square <s2-13> ^square <s2-14> ^square <s2-15>
+   ^square <s3-0> ^square <s3-1> ^square <s3-2> ^square <s3-3> ^square <s3-4> ^square <s3-5> ^square <s3-6>
+   ^square <s3-7> ^square <s3-8> ^square <s3-9> ^square <s3-10> ^square <s3-11> ^square <s3-12>
+   ^square <s3-13> ^square <s3-14> ^square <s3-15>
+   ^square <s4-0> ^square <s4-1> ^square <s4-2> ^square <s4-3> ^square <s4-4> ^square <s4-5> ^square <s4-6>
+   ^square <s4-7> ^square <s4-8> ^square <s4-9> ^square <s4-10> ^square <s4-11> ^square <s4-12>
+   ^square <s4-13> ^square <s4-14> ^square <s4-15>
+   ^square <s5-0> ^square <s5-1> ^square <s5-2> ^square <s5-3> ^square <s5-4> ^square <s5-5> ^square <s5-6>
+   ^square <s5-7> ^square <s5-8> ^square <s5-9> ^square <s5-10> ^square <s5-11> ^square <s5-12>
+   ^square <s5-13> ^square <s5-14> ^square <s5-15>
+   ^square <s6-0> ^square <s6-1> ^square <s6-2> ^square <s6-3> ^square <s6-4> ^square <s6-5> ^square <s6-6>
+   ^square <s6-7> ^square <s6-8> ^square <s6-9> ^square <s6-10> ^square <s6-11> ^square <s6-12>
+   ^square <s6-13> ^square <s6-14> ^square <s6-15>
+   ^square <s7-0> ^square <s7-1> ^square <s7-2> ^square <s7-3> ^square <s7-4> ^square <s7-5> ^square <s7-6>
+   ^square <s7-7> ^square <s7-8> ^square <s7-9> ^square <s7-10> ^square <s7-11> ^square <s7-12>
+   ^square <s7-13> ^square <s7-14> ^square <s7-15>
+   ^square <s8-0> ^square <s8-1> ^square <s8-2> ^square <s8-3> ^square <s8-4> ^square <s8-5> ^square <s8-6>
+   ^square <s8-7> ^square <s8-8> ^square <s8-9> ^square <s8-10> ^square <s8-11> ^square <s8-12>
+   ^square <s8-13> ^square <s8-14> ^square <s8-15>
+   ^square <s9-0> ^square <s9-1> ^square <s9-2> ^square <s9-3> ^square <s9-4> ^square <s9-5> ^square <s9-6>
+   ^square <s9-7> ^square <s9-8> ^square <s9-9> ^square <s9-10> ^square <s9-11> ^square <s9-12>
+   ^square <s9-13> ^square <s9-14> ^square <s9-15>
+   ^square <s10-0> ^square <s10-1> ^square <s10-2> ^square <s10-3> ^square <s10-4> ^square <s10-5> ^square <s10-6>
+   ^square <s10-7> ^square <s10-8> ^square <s10-9> ^square <s10-10> ^square <s10-11> ^square <s10-12>
+   ^square <s10-13> ^square <s10-14> ^square <s10-15>
+   ^square <s11-0> ^square <s11-1> ^square <s11-2> ^square <s11-3> ^square <s11-4> ^square <s11-5> ^square <s11-6>
+   ^square <s11-7> ^square <s11-8> ^square <s11-9> ^square <s11-10> ^square <s11-11> ^square <s11-12>
+   ^square <s11-13> ^square <s11-14> ^square <s11-15>
+   ^square <s12-0> ^square <s12-1> ^square <s12-2> ^square <s12-3> ^square <s12-4> ^square <s12-5> ^square <s12-6>
+   ^square <s12-7> ^square <s12-8> ^square <s12-9> ^square <s12-10> ^square <s12-11> ^square <s12-12>
+   ^square <s12-13> ^square <s12-14> ^square <s12-15>
+   ^square <s13-0> ^square <s13-1> ^square <s13-2> ^square <s13-3> ^square <s13-4> ^square <s13-5> ^square <s13-6>
+   ^square <s13-7> ^square <s13-8> ^square <s13-9> ^square <s13-10> ^square <s13-11> ^square <s13-12>
+   ^square <s13-13> ^square <s13-14> ^square <s13-15>
+   ^square <s14-0> ^square <s14-1> ^square <s14-2> ^square <s14-3> ^square <s14-4> ^square <s14-5> ^square <s14-6>
+   ^square <s14-7> ^square <s14-8> ^square <s14-9> ^square <s14-10> ^square <s14-11> ^square <s14-12>
+   ^square <s14-13> ^square <s14-14> ^square <s14-15>
+   ^square <s15-0> ^square <s15-1> ^square <s15-2> ^square <s15-3> ^square <s15-4> ^square <s15-5> ^square <s15-6>
+   ^square <s15-7> ^square <s15-8> ^square <s15-9> ^square <s15-10> ^square <s15-11> ^square <s15-12>
+   ^square <s15-13> ^square <s15-14> ^square <s15-15>)
+   (<s0-0> ^x 0 ^y 0)
+   (<s0-1> ^x 0 ^y 1)
+   (<s0-2> ^x 0 ^y 2)
+   (<s0-3> ^x 0 ^y 3)
+   (<s0-4> ^x 0 ^y 4)
+   (<s0-5> ^x 0 ^y 5)
+   (<s0-6> ^x 0 ^y 6)
+   (<s0-7> ^x 0 ^y 7)
+   (<s0-8> ^x 0 ^y 8)
+   (<s0-9> ^x 0 ^y 9)
+   (<s0-10> ^x 0 ^y 10)
+   (<s0-11> ^x 0 ^y 11)
+   (<s0-12> ^x 0 ^y 12)
+   (<s0-13> ^x 0 ^y 13)
+   (<s0-14> ^x 0 ^y 14)
+   (<s0-15> ^x 0 ^y 15)
+   
+   (<s1-0> ^x 1 ^y 0)
+   (<s1-1> ^x 1 ^y 1)
+   (<s1-2> ^x 1 ^y 2)
+   (<s1-3> ^x 1 ^y 3)
+   (<s1-4> ^x 1 ^y 4)
+   (<s1-5> ^x 1 ^y 5)
+   (<s1-6> ^x 1 ^y 6)
+   (<s1-7> ^x 1 ^y 7)
+   (<s1-8> ^x 1 ^y 8)
+   (<s1-9> ^x 1 ^y 9)
+   (<s1-10> ^x 1 ^y 10)
+   (<s1-11> ^x 1 ^y 11)
+   (<s1-12> ^x 1 ^y 12)
+   (<s1-13> ^x 1 ^y 13)
+   (<s1-14> ^x 1 ^y 14)
+   (<s1-15> ^x 1 ^y 15)
+   
+   (<s2-0> ^x 2 ^y 0)
+   (<s2-1> ^x 2 ^y 1)
+   (<s2-2> ^x 2 ^y 2)
+   (<s2-3> ^x 2 ^y 3)
+   (<s2-4> ^x 2 ^y 4)
+   (<s2-5> ^x 2 ^y 5)
+   (<s2-6> ^x 2 ^y 6)
+   (<s2-7> ^x 2 ^y 7)
+   (<s2-8> ^x 2 ^y 8)
+   (<s2-9> ^x 2 ^y 9)
+   (<s2-10> ^x 2 ^y 10)
+   (<s2-11> ^x 2 ^y 11)
+   (<s2-12> ^x 2 ^y 12)
+   (<s2-13> ^x 2 ^y 13)
+   (<s2-14> ^x 2 ^y 14)
+   (<s1-15> ^x 2 ^y 15)
+
+   (<s3-0> ^x 3 ^y 0)
+   (<s3-1> ^x 3 ^y 1)
+   (<s3-2> ^x 3 ^y 2)
+   (<s3-3> ^x 3 ^y 3)
+   (<s3-4> ^x 3 ^y 4)
+   (<s3-5> ^x 3 ^y 5)
+   (<s3-6> ^x 3 ^y 6)
+   (<s3-7> ^x 3 ^y 7)
+   (<s3-8> ^x 3 ^y 8)
+   (<s3-9> ^x 3 ^y 9)
+   (<s3-10> ^x 3 ^y 10)
+   (<s3-11> ^x 3 ^y 11)
+   (<s3-12> ^x 3 ^y 12)
+   (<s3-13> ^x 3 ^y 13)
+   (<s3-14> ^x 3 ^y 14)
+   (<s3-15> ^x 3 ^y 15)
+
+   (<s4-0> ^x 4 ^y 0)
+   (<s4-1> ^x 4 ^y 1)
+   (<s4-2> ^x 4 ^y 2)
+   (<s4-3> ^x 4 ^y 3)
+   (<s4-4> ^x 4 ^y 4)
+   (<s4-5> ^x 4 ^y 5)
+   (<s4-6> ^x 4 ^y 6)
+   (<s4-7> ^x 4 ^y 7)
+   (<s4-8> ^x 4 ^y 8)
+   (<s4-9> ^x 4 ^y 9)
+   (<s4-10> ^x 4 ^y 10)
+   (<s4-11> ^x 4 ^y 11)
+   (<s4-12> ^x 4 ^y 12)
+   (<s4-13> ^x 4 ^y 13)
+   (<s4-14> ^x 4 ^y 14)
+   (<s4-15> ^x 4 ^y 15)
+
+   (<s5-0> ^x 5 ^y 0)
+   (<s5-1> ^x 5 ^y 1)
+   (<s5-2> ^x 5 ^y 2)
+   (<s5-3> ^x 5 ^y 3)
+   (<s5-4> ^x 5 ^y 4)
+   (<s5-5> ^x 5 ^y 5)
+   (<s5-6> ^x 5 ^y 6)
+   (<s5-7> ^x 5 ^y 7)
+   (<s5-8> ^x 5 ^y 8)
+   (<s5-9> ^x 5 ^y 9)
+   (<s5-10> ^x 5 ^y 10)
+   (<s5-11> ^x 5 ^y 11)
+   (<s5-12> ^x 5 ^y 12)
+   (<s5-13> ^x 5 ^y 13)
+   (<s5-14> ^x 5 ^y 14)
+   (<s5-15> ^x 5 ^y 15)
+
+   (<s6-0> ^x 6 ^y 0)
+   (<s6-1> ^x 6 ^y 1)
+   (<s6-2> ^x 6 ^y 2)
+   (<s6-3> ^x 6 ^y 3)
+   (<s6-4> ^x 6 ^y 4)
+   (<s6-5> ^x 6 ^y 5)
+   (<s6-6> ^x 6 ^y 6)
+   (<s6-7> ^x 6 ^y 7)
+   (<s6-8> ^x 6 ^y 8)
+   (<s6-9> ^x 6 ^y 9)
+   (<s6-10> ^x 6 ^y 10)
+   (<s6-11> ^x 6 ^y 11)
+   (<s6-12> ^x 6 ^y 12)
+   (<s6-13> ^x 6 ^y 13)
+   (<s6-14> ^x 6 ^y 14)
+   (<s6-15> ^x 6 ^y 15)
+
+   (<s7-0> ^x 7 ^y 0)
+   (<s7-1> ^x 7 ^y 1)
+   (<s7-2> ^x 7 ^y 2)
+   (<s7-3> ^x 7 ^y 3)
+   (<s7-4> ^x 7 ^y 4)
+   (<s7-5> ^x 7 ^y 5)
+   (<s7-6> ^x 7 ^y 6)
+   (<s7-7> ^x 7 ^y 7)
+   (<s7-8> ^x 7 ^y 8)
+   (<s7-9> ^x 7 ^y 9)
+   (<s7-10> ^x 7 ^y 10)
+   (<s7-11> ^x 7 ^y 11)
+   (<s7-12> ^x 7 ^y 12)
+   (<s7-13> ^x 7 ^y 13)
+   (<s7-14> ^x 7 ^y 14)
+   (<s7-15> ^x 7 ^y 15)
+
+   (<s8-0> ^x 8 ^y 0)
+   (<s8-1> ^x 8 ^y 1)
+   (<s8-2> ^x 8 ^y 2)
+   (<s8-3> ^x 8 ^y 3)
+   (<s8-4> ^x 8 ^y 4)
+   (<s8-5> ^x 8 ^y 5)
+   (<s8-6> ^x 8 ^y 6)
+   (<s8-7> ^x 8 ^y 7)
+   (<s8-8> ^x 8 ^y 8)
+   (<s8-9> ^x 8 ^y 9)
+   (<s8-10> ^x 8 ^y 10)
+   (<s8-11> ^x 8 ^y 11)
+   (<s8-12> ^x 8 ^y 12)
+   (<s8-13> ^x 8 ^y 13)
+   (<s8-14> ^x 8 ^y 14)
+   (<s8-15> ^x 8 ^y 15)
+
+   (<s9-0> ^x 9 ^y 0)
+   (<s9-1> ^x 9 ^y 1)
+   (<s9-2> ^x 9 ^y 2)
+   (<s9-3> ^x 9 ^y 3)
+   (<s9-4> ^x 9 ^y 4)
+   (<s9-5> ^x 9 ^y 5)
+   (<s9-6> ^x 9 ^y 6)
+   (<s9-7> ^x 9 ^y 7)
+   (<s9-8> ^x 9 ^y 8)
+   (<s9-9> ^x 9 ^y 9)
+   (<s9-10> ^x 9 ^y 10)
+   (<s9-11> ^x 9 ^y 11)
+   (<s9-12> ^x 9 ^y 12)
+   (<s9-13> ^x 9 ^y 13)
+   (<s9-14> ^x 9 ^y 14)
+   (<s9-15> ^x 9 ^y 15)
+
+   (<s10-0> ^x 10 ^y 0)
+   (<s10-1> ^x 10 ^y 1)
+   (<s10-2> ^x 10 ^y 2)
+   (<s10-3> ^x 10 ^y 3)
+   (<s10-4> ^x 10 ^y 4)
+   (<s10-5> ^x 10 ^y 5)
+   (<s10-6> ^x 10 ^y 6)
+   (<s10-7> ^x 10 ^y 7)
+   (<s10-8> ^x 10 ^y 8)
+   (<s10-9> ^x 10 ^y 9)
+   (<s10-10> ^x 10 ^y 10)
+   (<s10-11> ^x 10 ^y 11)
+   (<s10-12> ^x 10 ^y 12)
+   (<s10-13> ^x 10 ^y 13)
+   (<s10-14> ^x 10 ^y 14)
+   (<s10-15> ^x 10 ^y 15)
+
+   (<s11-0> ^x 11 ^y 0)
+   (<s11-1> ^x 11 ^y 1)
+   (<s11-2> ^x 11 ^y 2)
+   (<s11-3> ^x 11 ^y 3)
+   (<s11-4> ^x 11 ^y 4)
+   (<s11-5> ^x 11 ^y 5)
+   (<s11-6> ^x 11 ^y 6)
+   (<s11-7> ^x 11 ^y 7)
+   (<s11-8> ^x 11 ^y 8)
+   (<s11-9> ^x 11 ^y 9)
+   (<s11-10> ^x 11 ^y 10)
+   (<s11-11> ^x 11 ^y 11)
+   (<s11-12> ^x 11 ^y 12)
+   (<s11-13> ^x 11 ^y 13)
+   (<s11-14> ^x 11 ^y 14)
+   (<s11-15> ^x 11 ^y 15)
+
+   (<s12-0> ^x 12 ^y 0)
+   (<s12-1> ^x 12 ^y 1)
+   (<s12-2> ^x 12 ^y 2)
+   (<s12-3> ^x 12 ^y 3)
+   (<s12-4> ^x 12 ^y 4)
+   (<s12-5> ^x 12 ^y 5)
+   (<s12-6> ^x 12 ^y 6)
+   (<s12-7> ^x 12 ^y 7)
+   (<s12-8> ^x 12 ^y 8)
+   (<s12-9> ^x 12 ^y 9)
+   (<s12-10> ^x 12 ^y 10)
+   (<s12-11> ^x 12 ^y 11)
+   (<s12-12> ^x 12 ^y 12)
+   (<s12-13> ^x 12 ^y 13)
+   (<s12-14> ^x 12 ^y 14)
+   (<s12-15> ^x 12 ^y 15)
+
+   (<s13-0> ^x 13 ^y 0)
+   (<s13-1> ^x 13 ^y 1)
+   (<s13-2> ^x 13 ^y 2)
+   (<s13-3> ^x 13 ^y 3)
+   (<s13-4> ^x 13 ^y 4)
+   (<s13-5> ^x 13 ^y 5)
+   (<s13-6> ^x 13 ^y 6)
+   (<s13-7> ^x 13 ^y 7)
+   (<s13-8> ^x 13 ^y 8)
+   (<s13-9> ^x 13 ^y 9)
+   (<s13-10> ^x 13 ^y 10)
+   (<s13-11> ^x 13 ^y 11)
+   (<s13-12> ^x 13 ^y 12)
+   (<s13-13> ^x 13 ^y 13)
+   (<s13-14> ^x 13 ^y 14)
+   (<s13-15> ^x 13 ^y 15)
+
+   (<s14-0> ^x 14 ^y 0)
+   (<s14-1> ^x 14 ^y 1)
+   (<s14-2> ^x 14 ^y 2)
+   (<s14-3> ^x 14 ^y 3)
+   (<s14-4> ^x 14 ^y 4)
+   (<s14-5> ^x 14 ^y 5)
+   (<s14-6> ^x 14 ^y 6)
+   (<s14-7> ^x 14 ^y 7)
+   (<s14-8> ^x 14 ^y 8)
+   (<s14-9> ^x 14 ^y 9)
+   (<s14-10> ^x 14 ^y 10)
+   (<s14-11> ^x 14 ^y 11)
+   (<s14-12> ^x 14 ^y 12)
+   (<s14-13> ^x 14 ^y 13)
+   (<s14-14> ^x 14 ^y 14)
+   (<s14-15> ^x 14 ^y 15)
+
+   (<s15-0> ^x 15 ^y 0)
+   (<s15-1> ^x 15 ^y 1)
+   (<s15-2> ^x 15 ^y 2)
+   (<s15-3> ^x 15 ^y 3)
+   (<s15-4> ^x 15 ^y 4)
+   (<s15-5> ^x 15 ^y 5)
+   (<s15-6> ^x 15 ^y 6)
+   (<s15-7> ^x 15 ^y 7)
+   (<s15-8> ^x 15 ^y 8)
+   (<s15-9> ^x 15 ^y 9)
+   (<s15-10> ^x 15 ^y 10)
+   (<s15-11> ^x 15 ^y 11)
+   (<s15-12> ^x 15 ^y 12)
+   (<s15-13> ^x 15 ^y 13)
+   (<s15-14> ^x 15 ^y 14)
+   (<s15-15> ^x 15 ^y 15)
+}
+
+sp {top-ps*apply*init-map*add-adjacencies*east
+   (state <s> ^operator.name init-map
+              ^map.square <sq>)
+   (<sq> ^x { < 15 <x> })
+   -->
+   (<sq> ^east-x (+ <x> 1))}
+   
+sp {top-ps*apply*init-map*add-adjacencies*north
+   (state <s> ^operator.name init-map
+              ^map.square <sq>)
+   (<sq> ^y { < 15 <y> })
+   -->
+   (<sq> ^south-y (+ <y> 1))}
+
+sp {top-ps*apply*init-map*add-adjacent*link*north
+   (state <s> ^operator.name init-map
+              ^map.square <sq1> <sq2>)
+   (<sq1> ^south-y <y> ^x <x>)
+   (<sq2> ^y <y> ^x <x>)
+   -->
+   (<sq1> ^south <sq2>)
+   (<sq2> ^north <sq1>)}
+
+sp {top-ps*apply*init-map*add-adjacent*link*east
+   (state <s> ^operator.name init-map
+              ^map.square <sq1> <sq2>)
+   (<sq1> ^y <y> ^east-x <x>)
+   (<sq2> ^y <y> ^x <x>)
+   -->
+   (<sq1> ^east <sq2>)
+   (<sq2> ^west <sq1>)}
+
+###############OBSTACLES##################
+sp {map*mark-obstacle*x0
+   (state <s> ^operator.name init-map
+              ^map.square <sq>)
+   (<sq> ^x 0)
+-->
+   (<sq> ^obstacle *yes*)}
+
+sp {map*mark-obstacle*y0
+   (state <s> ^operator.name init-map
+              ^map.square <sq>)
+   (<sq> ^y 0)
+-->
+   (<sq> ^obstacle *yes*)}
+
+sp {map*mark-obstacle*x15
+   (state <s> ^operator.name init-map
+              ^map.square <sq>)
+   (<sq> ^x 15)
+-->
+   (<sq> ^obstacle *yes*)}
+
+sp {map*mark-obstacle*y15
+   (state <s> ^operator.name init-map
+              ^map.square <sq>)
+   (<sq> ^y 15)
+-->
+   (<sq> ^obstacle *yes*)}

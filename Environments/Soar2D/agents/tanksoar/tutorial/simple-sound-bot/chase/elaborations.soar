@@ -1,0 +1,16 @@
+sp {chase*elaborate*state*sound-direction
+   (state <s> ^name chase
+              ^superstate <ss>)
+   (<ss> ^sound.absolute-direction <abs-sound>
+         ^direction-map.<direction>.<rel-sound> <abs-sound>
+         ^io.input-link.direction <direction>)
+   -->
+   (<s> ^sound-direction <rel-sound>)}
+
+sp {chase*elaborate*radar
+   (state <s> ^name chase
+              ^operator.actions <a>
+              ^io.input-link.radar-status off)
+   -->
+   (<a> ^radar.switch on
+        ^radar-power.setting 13)}
