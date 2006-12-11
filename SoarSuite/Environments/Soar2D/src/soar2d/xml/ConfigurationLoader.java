@@ -31,11 +31,6 @@ public class ConfigurationLoader {
 		
 		c = new Configuration();
 		
-		// Generate paths
-		c.basePath = System.getProperty("user.dir") + System.getProperty("file.separator");
-		c.mapPath = c.basePath + c.kMapDir + System.getProperty("file.separator");
-		c.agentPath = c.basePath + c.kAgentDir + System.getProperty("file.separator");
-		
 		xmlPath = new Stack<String>();
 		
 		ElementXML rootTag = ElementXML.ParseXMLFromFile(configFile);
@@ -194,6 +189,18 @@ public class ConfigurationLoader {
 	}
 	
 	private void game(ElementXML gameTag) throws SyntaxException, SMLException {
+		// Generate paths
+		c.basePath = System.getProperty("user.dir") + System.getProperty("file.separator");
+		c.mapPath = c.basePath + c.kMapDir + System.getProperty("file.separator");
+		c.agentPath = c.basePath + c.kAgentDir + System.getProperty("file.separator");
+		if (c.eaters) {
+			c.mapPath += "eaters" + System.getProperty("file.separator");
+			c.agentPath += "eaters" + System.getProperty("file.separator");
+		} else if (c.tanksoar) {
+			c.mapPath += "tanksoar" + System.getProperty("file.separator");
+			c.agentPath += "tanksoar" + System.getProperty("file.separator");
+		}
+		
 		String attribute;
 		
 		attribute = gameTag.GetAttribute(Names.kParamMap);
