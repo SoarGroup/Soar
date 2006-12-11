@@ -89,6 +89,9 @@ public class Player {
 	public void reset() {
 		
 	}
+	public void shutdown() {
+		
+	}
 	public MoveInfo getMove() {
 		return new MoveInfo();
 	}

@@ -117,8 +117,6 @@ public class VisualWorld extends Canvas implements PaintListener {
 				}
 				
 				ArrayList<CellObject> drawList = cell.getAllWithProperty(Names.kPropertyShape);
-				// TODO: support multiple objects
-				assert drawList.size() < 2;
 				
 				if (!cell.enterable()) {
 				    gc.setBackground(WindowManager.black);
@@ -155,9 +153,9 @@ public class VisualWorld extends Canvas implements PaintListener {
 						}
 					}
 					
-					if (drawList.size() > 0) {
-
-						CellObject object = drawList.get(0);
+					Iterator<CellObject> iter = drawList.iterator();
+					while (iter.hasNext()) {
+						CellObject object = iter.next();
 						
 						if (empty) {
 							gc.setBackground(WindowManager.widget_background);

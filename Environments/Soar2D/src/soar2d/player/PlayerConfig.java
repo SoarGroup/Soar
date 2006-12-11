@@ -1,6 +1,7 @@
 package soar2d.player;
 
 import java.io.*;
+import java.util.ArrayList;
 
 public class PlayerConfig {
 	private String name;
@@ -15,6 +16,8 @@ public class PlayerConfig {
 	private int energy = -1;
 	private int health = -1;
 	private int missiles = -1;
+	
+	private ArrayList<String> shutdownCommands;
 
 	public PlayerConfig() {
 		
@@ -134,6 +137,17 @@ public class PlayerConfig {
 
 	public void setMissiles(int missiles) {
 		this.missiles = missiles;
+	}
+	
+	public void addShutdownCommand(String command) {
+		if (shutdownCommands == null) {
+			shutdownCommands = new ArrayList<String>();
+		}
+		shutdownCommands.add(command);
+	}
+	
+	public ArrayList<String> getShutdownCommands() {
+		return shutdownCommands;
 	}
 }
 

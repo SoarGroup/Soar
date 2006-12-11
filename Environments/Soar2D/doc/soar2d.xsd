@@ -18,6 +18,12 @@
               <xs:element name="agent">
                 <xs:complexType>
                   <xs:sequence>
+                    <xs:element name="shutdown-command">
+                      <xs:complexType>
+                        <xs:sequence />
+                        <xs:attribute name="command" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
                   </xs:sequence>
                   <xs:attribute name="name" type="xs:string" />
                   <xs:attribute name="productions" type="xs:string" />

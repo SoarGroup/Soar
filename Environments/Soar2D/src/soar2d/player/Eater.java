@@ -24,4 +24,7 @@ public class Eater extends Player {
 		this.setFacingInt(move.moveDirection);
 		return move;
 	}
+	public void shutdown() {
+		
+	}
 }
