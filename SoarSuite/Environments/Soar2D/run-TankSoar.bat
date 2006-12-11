@@ -1,3 +1,3 @@
 set SOARLIB=../../SoarLibrary/bin
 set PATH=%SOARLIB%;%PATH%
-start javaw -jar Soar2D.jar eaters.xml
+start javaw -jar Soar2D.jar tanksoar.xml

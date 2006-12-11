@@ -22,13 +22,20 @@ public class Soar2D {
 		if (args.length > 0) {
 			configFile = args[0];
 		} else {
-			configFile = config.kDefaultXMLSettingsFile;
+			configFile = config.kDefaultXMLEatersSettingsFile;
 
-			// Try to install default config file
+			// Try to install default config files
 			try {
-				install(config.kDefaultXMLSettingsFile);
+				install(config.kDefaultXMLEatersSettingsFile);
 			} catch (IOException e) {
-				control.severeError("IOException installing " + config.kDefaultXMLSettingsFile + ": " + e.getMessage());
+				control.severeError("IOException installing " + config.kDefaultXMLEatersSettingsFile + ": " + e.getMessage());
+				wm.shutdown();
+				System.exit(1);
+			}
+			try {
+				install(config.kDefaultXMLTankSoarSettingsFile);
+			} catch (IOException e) {
+				control.severeError("IOException installing " + config.kDefaultXMLTankSoarSettingsFile + ": " + e.getMessage());
 				wm.shutdown();
 				System.exit(1);
 			}
