@@ -1,52 +1,145 @@
-<tanksoar-world>
-  <cells world-size="16">
+<map>
+  <cell-object name="rocks">
+    <property name="id" value="wall" />
+    <property name="block" value="true" />
+    <property name="image" value="rocks.gif" />
+    <property name="image-min" value="1" />
+    <property name="image-max" value="3" />
+    <property name="mini-image" value="trees-mini.gif" />
+  </cell-object>
+  <cell-object name="trees">
+    <property name="id" value="wall" />
+    <property name="block" value="true" />
+    <property name="image" value="trees.gif" />
+    <property name="image-min" value="1" />
+    <property name="image-max" value="3" />
+    <property name="mini-image" value="trees-mini.gif" />
+  </cell-object>
+  <cell-object name="energy">
+    <property name="id" value="energy" />
+    <property name="image" value="energy.gif" />
+    <property name="mini-image" value="energy-mini.gif" />
+    <property name="apply-image" value="energy-apply.gif" />
+  </cell-object>
+  <cell-object name="health">
+    <property name="id" value="health" />
+    <property name="image" value="health.gif" />
+    <property name="mini-image" value="health-mini.gif" />
+    <property name="apply-image" value="health-apply.gif" />
+  </cell-object>
+  <cell-object name="missiles">
+    <property name="id" value="missiles" />
+    <property name="image" value="missiles.gif" />
+    <property name="mini-image" value="missiles-mini.gif" />
+  </cell-object>
+  <cell-object name="explosion">
+    <property name="image" value="explosion.gif" />
+  </cell-object>
+  <cell-object name="ground">
+    <property name="image" value="ground.gif" />
+    <property name="image-min" value="1" />
+    <property name="image-max" value="3" />
+    <property name="mini-image" value="ground-mini.gif" />
+  </cell-object>
+  <free-object name="missile">
+    <property name="image" value="missile.gif" />
+  </free-object>
+  <cells world-size="6">
     <row>
-      <cell type="wall"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"> </cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell><cell type="wall"></cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>energy</object>
+      </cell>
+      <cell>
+        <object>health</object>
+      </cell>
+      <cell>
+        <object>missiles</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"> </cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"> </cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"> </cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
     </row>
     <row>
-      <cell type="wall"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"> </cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
-    </row>
-    <row>
-      <cell type="wall"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"> </cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell>
-    </row>
-    <row>
-      <cell type="wall"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="wall"> </cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell>
-    </row>
-    <row>
-      <cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"> </cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
-    </row>
-    <row>
-      <cell type="wall"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"> </cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
-    </row>
-    <row>
-      <cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
-    </row>
-    <row>
-      <cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
-    </row>
-    <row>
-      <cell type="wall"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell>
-    </row>
-    <row>
-      <cell type="wall"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"> </cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="wall"></cell>
-    </row>
-    <row>
-      <cell type="wall"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="empty"></cell><cell type="wall"></cell> <cell type="wall"></cell>
-    </row>
-    <row>
-      <cell type="wall"></cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"> </cell><cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell> <cell type="wall"></cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
     </row>
   </cells>
-</tanksoar-world>
+</map>

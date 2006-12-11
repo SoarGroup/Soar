@@ -39,9 +39,10 @@ public class MapLoader {
 		foods = new ArrayList<String>();
 		cellObjectManager = new CellObjectManager();
 			
-		ElementXML rootTag = ElementXML.ParseXMLFromFile(Soar2D.config.map.getAbsolutePath());
+		String mapFile = Soar2D.config.map.getAbsolutePath();
+		ElementXML rootTag = ElementXML.ParseXMLFromFile(mapFile);
 		if (rootTag == null) {
-			Soar2D.control.severeError("Error parsing file: " + ElementXML.GetLastParseErrorDescription());
+			Soar2D.control.severeError("Error parsing file " + mapFile + "\n" + ElementXML.GetLastParseErrorDescription());
 			return false;
 		}
 		
@@ -55,7 +56,7 @@ public class MapLoader {
 			}
 		} catch (SyntaxException p) {
 			this.mapCells = null;
-			Soar2D.control.severeError("Error parsing file: " + p.getMessage());
+			Soar2D.control.severeError("Error parsing file " + mapFile + "\n" + p.getMessage());
 			return false;
 			
 		} catch (SMLException s) {

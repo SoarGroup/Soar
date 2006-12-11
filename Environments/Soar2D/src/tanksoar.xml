@@ -1,10 +1,10 @@
 <soar2d>
   <logger level="finest" console="true"/>
   <display graphical="true" />
-  <eaters map="random-walls.emap">
-    <agent productions="tutorial/advanced-move.soar" />
-  </eaters>
+  <tanksoar map="default.tmap">
+    <agent productions="obscure-bot.soar" />
+  </tanksoar>
   <simulation debuggers="false" random="false">
-    <terminal type="food-remaining" />
+    <terminal type="winning-score" value="50" />
   </simulation>
 </soar2d>
