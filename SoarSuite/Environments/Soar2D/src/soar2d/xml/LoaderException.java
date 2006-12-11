@@ -9,10 +9,14 @@ class LoaderException extends Throwable {
 	public LoaderException(Stack<String> path, String message) {
 		if (path != null) {
 			this.message = "Path: ";
-			while (path.size() > 0) {
-				this.message += "<" + path.pop() + ">";
+			if (path.size() == 0) {
+				this.message += "empty\n";
+			} else {
+				while (path.size() > 0) {
+					this.message += "<" + path.pop() + ">";
+				}
+				this.message += "\n";
 			}
-			this.message += "\n";
 		}
 		this.message += message;
 	}
