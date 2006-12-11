@@ -128,6 +128,11 @@ public class World {
 	}
 	
 	public void shutdown() {
+		Iterator<Player> iter = players.iterator();
+		while (iter.hasNext()) {
+			Player player = iter.next();
+			player.shutdown();
+		}
 		players.clear();
 		initialLocations.clear();
 		locations.clear();

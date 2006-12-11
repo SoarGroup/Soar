@@ -234,7 +234,7 @@ public class ConfigurationLoader {
 		}
 	}
 
-	private void agent(ElementXML tag) {
+	private void agent(ElementXML tag) throws SMLException, SyntaxException {
 		PlayerConfig agentConfig = new PlayerConfig();
 		agentConfig.setName(tag.GetAttribute(Names.kParamName));
 		
@@ -273,11 +273,6 @@ public class ConfigurationLoader {
 		}
 		
 		if (c.tanksoar) {
-			int facingInt = Integer.parseInt(tag.GetAttribute(Names.kParamFacing));
-			if ((facingInt > 0) && (facingInt < 5)) {
-				agentConfig.setFacing(facingInt);
-			}
-
 			attribute = tag.GetAttribute(Names.kParamEnergy);
 			if (attribute != null) {
 				agentConfig.setEnergy(Integer.parseInt(attribute));
@@ -293,7 +288,41 @@ public class ConfigurationLoader {
 				agentConfig.setMissiles(Integer.parseInt(attribute));
 			}
 		}
+
+		ElementXML subTag = null;
+		for (int soar2dTagIndex = 0 ; soar2dTagIndex < tag.GetNumberChildren() ; ++soar2dTagIndex) {
+
+			subTag = new ElementXML();
+			if (subTag == null) throwSML("couldn't create subTag");
+
+			try {
+				tag.GetChild(subTag, soar2dTagIndex);
+				if (subTag == null) throwSML("failed to get tag by index");
+				
+				if (subTag.IsTag(Names.kTagShutdownCommand)) {
+					xmlPath.push(Names.kTagShutdownCommand);
+					shutdownCommand(agentConfig, subTag);
+					xmlPath.pop();
+
+				} else {
+					throwSyntax("unrecognized tag " + subTag.GetTagName());
+				}
+			} finally {
+				subTag.delete();
+				subTag = null;
+			}
+		}
+		
 		c.players.add(agentConfig);
+	}
+	
+	private void shutdownCommand(PlayerConfig config, ElementXML tag) throws SyntaxException {
+		String attribute = tag.GetAttribute(Names.kParamCommand);
+		if (attribute == null || attribute.length() <= 0) {
+			throwSyntax("command parameter must be present in shutdown-command");
+		}
+		
+		config.addShutdownCommand(attribute);
 	}
 	
 	private void display(ElementXML tag) {

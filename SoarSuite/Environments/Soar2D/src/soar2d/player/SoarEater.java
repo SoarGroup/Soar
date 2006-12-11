@@ -41,10 +41,12 @@ public class SoarEater extends Eater {
 	private IntElement yWME;
 	private FloatElement randomWME;
 	private SoarCell[][] cells = new SoarCell[(Soar2D.config.kEaterVision * 2 ) + 1][(Soar2D.config.kEaterVision * 2 ) + 1];
+	private ArrayList<String> shutdownCommands;
 
 	public SoarEater(Agent agent, PlayerConfig playerConfig) {
 		super(playerConfig);
 		this.agent = agent;
+		this.shutdownCommands = playerConfig.getShutdownCommands();
 		
 		previousLocation = new java.awt.Point(-1, -1);
 		
@@ -384,6 +386,23 @@ public class SoarEater extends Eater {
 					}
 					cells[x][y].boxProperties.clear();
 				}
+			}
+		}
+	}
+	public void shutdown() {
+		assert agent != null;
+		if (shutdownCommands == null) { 
+			return;
+		}
+		Iterator<String> iter = shutdownCommands.iterator();
+		while(iter.hasNext()) {
+			String command = iter.next();
+			String result = getName() + ": result: " + agent.ExecuteCommandLine(command, true);
+			Soar2D.logger.info(getName() + ": shutdown command: " + command);
+			if (agent.HadError()) {
+				Soar2D.control.severeError(result);
+			} else {
+				Soar2D.logger.info(getName() + ": result: " + result);
 			}
 		}
 	}

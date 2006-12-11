@@ -36,6 +36,7 @@ public class Names {
 	public static final String kTagPoints = "points";
 	public static final String kTagProperty = "property";
 	public static final String kTagRow = "row";
+	public static final String kTagShutdownCommand = "shutdown-command";
 	public static final String kTagSimulation = "simulation";
 	public static final String kTagSoar2D = "soar2d";
 	public static final String kTagTankSoar = "tanksoar";
