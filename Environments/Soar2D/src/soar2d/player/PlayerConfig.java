@@ -3,20 +3,64 @@ package soar2d.player;
 import java.io.*;
 import java.util.ArrayList;
 
+/**
+ * @author voigtjr
+ *
+ * Holds the information necessary to create a player
+ */
 public class PlayerConfig {
+	/**
+	 * Name of the player as reported in the log
+	 */
 	private String name;
+	/**
+	 * Productions, null indicates human player
+	 */
 	private File productions;
+	/**
+	 * Color of player, see Simulation.kColors for legal colors
+	 */
 	private String color;
+	/**
+	 * Initial location of player, use null for no initial location
+	 * Player should return to this point on reset
+	 */
 	private java.awt.Point initialLocation;
+	/**
+	 * Direction integer denoting where player is facing, see Direction.java
+	 */
 	private int facing = 0;
 
+	/**
+	 * If true, set the players points to the points member on reset
+	 * Boolean necessary since points can be zero or negative
+	 */
 	private boolean hasPoints = false;
+	/**
+	 * How many points to set the player to when reset
+	 */
 	private int points;
 	
+	/**
+	 * Initial energy to set the player to on reset. use negative to indicate
+	 * default.
+	 */
 	private int energy = -1;
+	/**
+	 * Initial health to set the player to on reset. use negative to indicate
+	 * default.
+	 */
 	private int health = -1;
+	/**
+	 * Initial missiles to set the player to on reset. use negative to indicate
+	 * default.
+	 */
 	private int missiles = -1;
 	
+	/**
+	 * Commands to run during shutdown before the agent is destroyed.
+	 * Great place to do things like save the rete, etc.
+	 */
 	private ArrayList<String> shutdownCommands;
 
 	public PlayerConfig() {

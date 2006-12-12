@@ -1,5 +1,10 @@
 package soar2d;
 
+/**
+ * @author voigtjr
+ *
+ * Useful constants
+ */
 public class Names {
 	public static final String kTrue = "true";
 	public static final String kFalse = "false";
