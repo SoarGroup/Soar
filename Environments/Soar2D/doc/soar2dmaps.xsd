@@ -34,22 +34,18 @@
                     <xs:element name="energy">
                       <xs:complexType>
                         <xs:sequence />
-                        <xs:attribute name="property" type="xs:string" />
-                        <xs:attribute name="value" type="xs:integer" />
+                        <xs:attribute name="shields" type="xs:boolean" />
                       </xs:complexType>
                     </xs:element>
                     <xs:element name="health">
                       <xs:complexType>
                         <xs:sequence />
-                        <xs:attribute name="property" type="xs:string" />
-                        <xs:attribute name="value" type="xs:integer" />
+                        <xs:attribute name="shields" type="xs:boolean" />
                       </xs:complexType>
                     </xs:element>
                     <xs:element name="missiles">
                       <xs:complexType>
                         <xs:sequence />
-                        <xs:attribute name="property" type="xs:string" />
-                        <xs:attribute name="value" type="xs:integer" />
                       </xs:complexType>
                     </xs:element>
                   </xs:sequence>

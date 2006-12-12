@@ -15,22 +15,37 @@
     <property name="image-max" value="3" />
     <property name="mini-image" value="trees-mini.gif" />
   </cell-object>
-  <cell-object name="energy">
+  <cell-object name="energy" updatable="false" consumable="false">
     <property name="id" value="energy" />
     <property name="image" value="energy.gif" />
     <property name="mini-image" value="energy-mini.gif" />
     <property name="apply-image" value="energy-apply.gif" />
+    <property name="energy" value="250" />
+    <property name="vulnerable" value="true" />
+    <apply>
+      <energy />
+    </apply>
   </cell-object>
-  <cell-object name="health">
+  <cell-object name="health" updatable="false" consumable="false">
     <property name="id" value="health" />
     <property name="image" value="health.gif" />
     <property name="mini-image" value="health-mini.gif" />
     <property name="apply-image" value="health-apply.gif" />
+    <property name="health" value="250" />
+    <property name="vulnerable" value="true" />
+    <apply>
+      <health />
+    </apply>
   </cell-object>
-  <cell-object name="missiles">
+  <cell-object name="missiles" updatable="false" consumable="true">
     <property name="id" value="missiles" />
     <property name="image" value="missiles.gif" />
     <property name="mini-image" value="missiles-mini.gif" />
+    <property name="missiles" value="7" />
+    <property name="max-exist" value="3" />
+    <apply>
+      <missiles />
+    </apply>
   </cell-object>
   <cell-object name="explosion">
     <property name="image" value="explosion.gif" />
@@ -41,9 +56,15 @@
     <property name="image-max" value="3" />
     <property name="mini-image" value="ground-mini.gif" />
   </cell-object>
-  <free-object name="missile">
+  <cell-object name="missile" updatable="true" consumable="true">
     <property name="image" value="missile.gif" />
-  </free-object>
+    <property name="health" value="-400" />
+    <property name="energy" value="-250" />
+    <apply>
+      <health shields="false" />
+      <energy shields="true" />
+    </apply>
+  </cell-object>
   <cells world-size="6">
     <row>
       <cell>

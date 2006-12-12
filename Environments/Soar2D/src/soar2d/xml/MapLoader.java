@@ -94,7 +94,7 @@ public class MapLoader {
 					xmlPath.push(Names.kTagCells);
 					cells(mainTag);
 					xmlPath.pop();
-					
+
 				} else {
 					throwSyntax("unrecognized tag " + mainTag.GetTagName());
 				}
@@ -171,7 +171,6 @@ public class MapLoader {
 		
 		cellObjectManager.registerTemplate(name, cellObjectTemplate);
 	}
-	
 	private void property(CellObject cellObjectTemplate, ElementXML propertyTag, boolean apply) throws SMLException, SyntaxException {
 		String name = null;
 		String value = null;
@@ -232,18 +231,18 @@ public class MapLoader {
 					
 				} else if (applySubTag.IsTag(Names.kTagEnergy)) {
 					xmlPath.push(Names.kTagEnergy);
-					throwSyntax("tag not implemented");
-					//xmlPath.pop();
+					energy(cellObjectTemplate, applySubTag);
+					xmlPath.pop();
 					
 				} else if (applySubTag.IsTag(Names.kTagHealth)) {
 					xmlPath.push(Names.kTagHealth);
-					throwSyntax("tag not implemented");
-					//xmlPath.pop();
+					health(cellObjectTemplate, applySubTag);
+					xmlPath.pop();
 					
 				} else if (applySubTag.IsTag(Names.kTagMissiles)) {
 					xmlPath.push(Names.kTagMissiles);
-					throwSyntax("tag not implemented");
-					//xmlPath.pop();
+					cellObjectTemplate.setMissilesApply(true);
+					xmlPath.pop();
 					
 				} else {
 					throwSyntax("unrecognized tag " + applySubTag.GetTagName());
@@ -253,6 +252,24 @@ public class MapLoader {
 				applySubTag = null;
 			}
 		}
+	}
+	
+	private void energy(CellObject cellObjectTemplate, ElementXML applyTag) {
+		String attribute = applyTag.GetAttribute(Names.kParamShields);
+		boolean shields = false;
+		if (attribute != null) {
+			shields = Boolean.parseBoolean(attribute);
+		}
+		cellObjectTemplate.setEnergyApply(true, shields);
+	}
+	
+	private void health(CellObject cellObjectTemplate, ElementXML applyTag) {
+		String attribute = applyTag.GetAttribute(Names.kParamShields);
+		boolean shields = false;
+		if (attribute != null) {
+			shields = Boolean.parseBoolean(attribute);
+		}
+		cellObjectTemplate.setHealthApply(true, shields);
 	}
 	
 	private void update(CellObject cellObjectTemplate, ElementXML updateTag) throws SMLException, SyntaxException {

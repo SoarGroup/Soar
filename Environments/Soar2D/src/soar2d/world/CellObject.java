@@ -13,6 +13,11 @@ public class CellObject {
 	boolean consumable;
 
 	boolean pointsApply = false;
+	boolean missilesApply = false;
+	boolean healthApply = false;
+	boolean healthApplyShields = false;
+	boolean energyApply = false;
+	boolean energyApplyShields = false;
 	boolean decayUpdate = false;
 	
 	public CellObject(CellObject cellObject) {
@@ -22,6 +27,11 @@ public class CellObject {
 		this.updatable = cellObject.updatable;
 		this.consumable = cellObject.consumable;
 		this.pointsApply = cellObject.pointsApply;
+		this.missilesApply = cellObject.missilesApply;
+		this.healthApply = cellObject.healthApply;
+		this.healthApplyShields = cellObject.healthApplyShields;
+		this.energyApply = cellObject.energyApply;
+		this.energyApplyShields = cellObject.energyApplyShields;
 		this.decayUpdate = cellObject.decayUpdate;
 	}
 	
@@ -58,6 +68,20 @@ public class CellObject {
 		pointsApply = setting;
 	}
 	
+	public void setMissilesApply(boolean setting) {
+		missilesApply = setting;
+	}
+	
+	public void setEnergyApply(boolean setting, boolean shields) {
+		this.energyApply = setting;
+		this.energyApplyShields = shields;
+	}
+	
+	public void setHealthApply(boolean setting, boolean shields) {
+		this.healthApply = setting;
+		this.healthApplyShields = shields;
+	}
+	
 	public void setDecayUpdate(boolean setting) {
 		decayUpdate = setting;
 	}
@@ -78,6 +102,13 @@ public class CellObject {
 			int points = Integer.parseInt(properties.get(Names.kPropertyPoints));
 			player.adjustPoints(points, name);
 		}
+		
+		// TODO: implement
+		assert missilesApply == false;
+		assert energyApply == false;
+		assert energyApplyShields == false;
+		assert healthApply == false;
+		assert healthApplyShields == false;
 		
 		return consumable;	// if this is true the object is removed from 
 							// the cell after the apply

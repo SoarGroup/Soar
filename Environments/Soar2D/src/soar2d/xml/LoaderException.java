@@ -12,10 +12,11 @@ class LoaderException extends Throwable {
 			if (path.size() == 0) {
 				this.message += "empty\n";
 			} else {
+				String pathString = "";
 				while (path.size() > 0) {
-					this.message += "<" + path.pop() + ">";
+					pathString = "<" + path.pop() + ">" + pathString;
 				}
-				this.message += "\n";
+				this.message += pathString + "\n";
 			}
 		}
 		this.message += message;
