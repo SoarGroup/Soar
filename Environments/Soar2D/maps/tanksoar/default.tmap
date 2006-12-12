@@ -21,7 +21,7 @@
     <property name="mini-image" value="energy-mini.gif" />
     <property name="apply-image" value="energy-apply.gif" />
     <property name="energy" value="250" />
-    <property name="vulnerable" value="true" />
+    <property name="charger" value="true" />
     <apply>
       <energy />
     </apply>
@@ -32,7 +32,7 @@
     <property name="mini-image" value="health-mini.gif" />
     <property name="apply-image" value="health-apply.gif" />
     <property name="health" value="250" />
-    <property name="vulnerable" value="true" />
+    <property name="charger" value="true" />
     <apply>
       <health />
     </apply>

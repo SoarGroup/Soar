@@ -14,7 +14,7 @@ public class World {
 
 	private int scoreCount;
 	private int foodCount;
-	private int worldCount;
+	private int worldCount = 0;
 	private boolean printedStats = false;
 	
 	public GridMap map;
@@ -434,6 +434,8 @@ public class World {
 		if (map.getObjectManager().updatablesExist()) {
 			updateObjects();
 		}
+		
+		++worldCount;
 	}
 		
 	private void recalculateScoreAndFoodCount() {

@@ -147,7 +147,7 @@ public class SoarEater extends Eater {
 					
 					// If we're out of bounds create a wall
 					if (cell == null) {
-						createContent(soarCell.content, soarCell, Names.kWall);
+						createContent(soarCell.content, soarCell, Names.kWallID);
 						continue;
 					}
 					
@@ -163,7 +163,7 @@ public class SoarEater extends Eater {
 					// player test
 					Player player = cell.getPlayer();
 					if (player != null) {
-						createContent(soarCell.content, soarCell, Names.kEater);
+						createContent(soarCell.content, soarCell, Names.kEaterID);
 					}
 					
 					// food test
@@ -208,11 +208,11 @@ public class SoarEater extends Eater {
 	
 					Player player = cell.getPlayer();
 					if (player != null) {
-						StringElement element = soarCell.content.remove(Names.kEater);
+						StringElement element = soarCell.content.remove(Names.kEaterID);
 						if (element == null) {
-							createContent(newContent, soarCell, Names.kEater);
+							createContent(newContent, soarCell, Names.kEaterID);
 						} else {
-							newContent.put(Names.kEater, element);
+							newContent.put(Names.kEaterID, element);
 						}
 					}
 					

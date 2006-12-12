@@ -116,7 +116,6 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	}
 	
 	private void tickEvent() {
-		Soar2D.logger.info("---");
 		Soar2D.simulation.update();
 		if (Soar2D.wm.using()) {
 			Soar2D.wm.update();

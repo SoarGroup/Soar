@@ -8,7 +8,6 @@ import java.util.*;
 
 public class MapLoader {
 	private Stack<String> xmlPath;
-	private ArrayList<String> foods;
 	
 	GridMap map;
 	
@@ -26,7 +25,6 @@ public class MapLoader {
 	
 	public boolean load() {
 		xmlPath = new Stack<String>();
-		foods = new ArrayList<String>();
 		map = new GridMap();
 			
 		String mapFile = Soar2D.config.map.getAbsolutePath();
@@ -189,11 +187,6 @@ public class MapLoader {
 			cellObjectTemplate.addPropertyApply(name, value);
 		} else {
 			cellObjectTemplate.addProperty(name, value);
-			if (name.equalsIgnoreCase(Names.kPropertyEdible)) {
-				if (Boolean.parseBoolean(value)) {
-					foods.add(cellObjectTemplate.getName());
-				}
-			}
 		}
 	}
 	
@@ -439,13 +432,24 @@ public class MapLoader {
 		}
 		
 		CellObject cellObject = map.cellObjectManager.createObject(name);
+		if (cellObject.hasProperty(Names.kPropertyCharger)) {
+			if (!map.health && cellObject.hasProperty(Names.kPropertyHealth)) {
+				map.health = true;
+			}
+			if (!map.energy && cellObject.hasProperty(Names.kPropertyEnergy)) {
+				map.energy = true;
+			}
+		}
+		if (cellObject.hasProperty(Names.kPropertyMissiles)) {
+			map.missilePacks += 1;
+		}
 		cell.addCellObject(cellObject);
 	}
 	
 
 	private void generateRandomWalls() throws SyntaxException {
-		if (!map.cellObjectManager.hasTemplate(Names.kWall)) {
-			throwSyntax("tried to generate random walls with no wall type");
+		if (!map.cellObjectManager.hasTemplatesWithProperty(Names.kPropertyBlock)) {
+			throwSyntax("tried to generate random walls with no blocking types");
 		}
 		
 		if (map.mapCells == null) {
@@ -499,8 +503,9 @@ public class MapLoader {
 	private void addWallAndRemoveFood(Cell cell) {
 		cell.removeAllWithProperty(Names.kPropertyEdible);
 		
-		if (!cell.hasObject(Names.kWall)) {
-			CellObject cellObject = map.cellObjectManager.createObject(Names.kWall);
+		ArrayList<CellObject> walls = cell.getAllWithProperty(Names.kPropertyBlock);
+		if (walls.size() <= 0) {
+			CellObject cellObject = map.cellObjectManager.createRandomObjectWithProperty(Names.kPropertyBlock);
 			cell.addCellObject(cellObject);
 		}
 	}
@@ -551,7 +556,11 @@ public class MapLoader {
 		return false;
 	}
 	
-	private void generateRandomFood() {
+	private void generateRandomFood() throws SyntaxException {
+		if (!map.cellObjectManager.hasTemplatesWithProperty(Names.kPropertyEdible)) {
+			throwSyntax("tried to generate random walls with no food types");
+		}
+		
 		for (int row = 1; row < map.size - 1; ++row) {
 			for (int col = 1; col < map.size - 1; ++col) {
 				if (map.mapCells[row][col] == null) {
@@ -560,7 +569,7 @@ public class MapLoader {
 				}
 				if (map.mapCells[row][col].enterable()) {
 					map.mapCells[row][col].removeAllWithProperty(Names.kPropertyEdible);
-					CellObject cellObject = map.cellObjectManager.createObject(foods.get(Simulation.random.nextInt(foods.size())));
+					CellObject cellObject = map.cellObjectManager.createRandomObjectWithProperty(Names.kPropertyEdible);
 					map.mapCells[row][col].addCellObject(cellObject);
 				}
 			}
