@@ -90,7 +90,6 @@ public class Names {
 	public static final String kLevelFiner = "finer";
 	public static final String kLevelFinest = "finest";
 
-	public static final String kBoxID = "box";
 	public static final String kContentID = "content";
 	public static final String kEater = "eater";
 	public static final String kEaterID = "eater";
@@ -113,6 +112,7 @@ public class Names {
 	public static final String kPropertyBox = "box";
 	public static final String kPropertyColor = "color";
 	public static final String kPropertyEdible = "edible";
+	public static final String kPropertyID = "id";
 	public static final String kPropertyMoveApply = "move-apply";
 	public static final String kPropertyPoints = "points";
 	public static final String kPropertyShape = "shape";
