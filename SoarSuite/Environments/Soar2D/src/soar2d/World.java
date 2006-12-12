@@ -4,10 +4,9 @@ import java.awt.*;
 import java.util.*;
 import java.util.logging.*;
 
-import soar2d.player.Player;
-import soar2d.player.MoveInfo;
+import soar2d.player.*;
 import soar2d.world.*;
-import soar2d.xml.MapLoader;
+import soar2d.xml.*;
 
 public class World {
 
@@ -18,9 +17,7 @@ public class World {
 	private int worldCount;
 	private boolean printedStats = false;
 	
-	int size;
-	private Cell[][] mapCells = null;
-	public CellObjectManager cellObjectManager = null;
+	public GridMap map;
 	
 	private ArrayList<Player> players = new ArrayList<Player>();
 	private HashMap<String, java.awt.Point> initialLocations = new HashMap<String, java.awt.Point>();
@@ -34,9 +31,7 @@ public class World {
 			return false;
 		}
 		
-		mapCells = loader.getCells();
-		size = loader.getSize();
-		cellObjectManager = loader.getCellObjectManager();
+		map = loader.getMap();
 		
 		reset();
 		resetPlayers();
@@ -44,22 +39,6 @@ public class World {
 		
 		logger.info("Map loaded, world reset.");
 		return true;
-	}
-	
-	public Cell getCell(java.awt.Point location) {
-		assert location.x >= 0;
-		assert location.y >= 0;
-		assert location.x < size;
-		assert location.y < size;
-		return mapCells[location.y][location.x];
-	}
-	
-	public Cell getCell(int x, int y) {
-		assert x >= 0;
-		assert y >= 0;
-		assert x < size;
-		assert y < size;
-		return mapCells[y][x];
 	}
 	
 	private int pointsCount(Cell cell) {
@@ -137,7 +116,7 @@ public class World {
 		initialLocations.clear();
 		locations.clear();
 		lastMoves.clear();
-		mapCells = null;
+		map.shutdown();
 	}
 	
 	public void removePlayer(String name) {
@@ -148,7 +127,7 @@ public class World {
 				initialLocations.remove(name);
 				java.awt.Point location = locations.remove(name);
 				lastMoves.remove(name);
-				Cell cell = getCell(location);
+				Cell cell = map.getCell(location);
 				cell.setPlayer(null);
 				if (!cell.hasObject(Names.kRedraw)) {
 					cell.addCellObject(new CellObject(Names.kRedraw, false, true));
@@ -163,10 +142,10 @@ public class World {
 	private Cell putInStartingCell(Player player) {
 		// Get available cells
 		ArrayList<java.awt.Point> availableLocations = new ArrayList<java.awt.Point>();
-		for (int x = 0; x < size; ++x) {
-			for (int y = 0; y < size; ++ y) {
+		for (int x = 0; x < map.getSize(); ++x) {
+			for (int y = 0; y < map.getSize(); ++ y) {
 				java.awt.Point availableLocation = new java.awt.Point(x, y);
-				Cell cell = getCell(availableLocation);
+				Cell cell = map.getCell(availableLocation);
 				if (cell.enterable() && (cell.getPlayer() == null)) {
 					availableLocations.add(availableLocation);
 				}
@@ -194,7 +173,7 @@ public class World {
 			location = availableLocations.get(Simulation.random.nextInt(availableLocations.size()));
 		}
 		
-		cell = getCell(location);
+		cell = map.getCell(location);
 		
 		// put the player in it
 		locations.put(player.getName(), location);
@@ -266,8 +245,8 @@ public class World {
 			}
 			
 			// Verify legal move and commit move
-			if (isInBounds(newLocation) && getCell(newLocation).enterable()) {
-				Cell oldCell = getCell(oldLocation);
+			if (isInBounds(newLocation) && map.getCell(newLocation).enterable()) {
+				Cell oldCell = map.getCell(oldLocation);
 				assert oldCell.getPlayer() != null;
 				oldCell.setPlayer(null);
 				
@@ -288,7 +267,7 @@ public class World {
 	}
 	
 	public int getSize() {
-		return size;
+		return map.getSize();
 	}
 
 	private void updateMapAndEatFood() {
@@ -297,7 +276,7 @@ public class World {
 			Player player = iter.next();
 			MoveInfo lastMove = lastMoves.get(player.getName());
 			java.awt.Point location = locations.get(player.getName());
-			Cell cell = getCell(location);
+			Cell cell = map.getCell(location);
 			
 			if (lastMove.move || lastMove.jump) {
 				cell.setPlayer(player);
@@ -452,7 +431,7 @@ public class World {
 		updateMapAndEatFood();
 		handleCollisions();	
 		updatePlayers();
-		if (cellObjectManager.updatablesExist()) {
+		if (map.getObjectManager().updatablesExist()) {
 			updateObjects();
 		}
 	}
@@ -461,9 +440,9 @@ public class World {
 		scoreCount = 0;
 		foodCount = 0;
 		Cell cell;
-		for (int i = 1; i < size - 1; ++i) {
-			for (int j = 1; j < size - 1; ++j) {
-				cell = mapCells[i][j];
+		for (int i = 1; i < map.getSize() - 1; ++i) {
+			for (int j = 1; j < map.getSize() - 1; ++j) {
+				cell = map.getCell(i, j);
 				scoreCount += pointsCount(cell);
 				foodCount += cell.getAllWithProperty(Names.kPropertyEdible).size();
 			}
@@ -475,9 +454,9 @@ public class World {
 		foodCount = 0;
 		Cell cell;
 		java.awt.Point location = new java.awt.Point();
-		for (location.x = 0; location.x < size; ++location.x) {
-			for (location.y = 0; location.y < size; ++ location.y) {
-				cell = getCell(location);
+		for (location.x = 0; location.x < map.getSize(); ++location.x) {
+			for (location.y = 0; location.y < map.getSize(); ++ location.y) {
+				cell = map.getCell(location);
 				cell.update(this, location);
 				scoreCount += pointsCount(cell);
 				foodCount += cell.getAllWithProperty(Names.kPropertyEdible).size();
@@ -530,7 +509,7 @@ public class World {
 						if (logger.isLoggable(Level.FINE)) logger.fine("collision at " + locations.get(left.getName()));
 						
 						// Add a collision object the first time it is detected
-						Cell cell = getCell(locations.get(left.getName()));
+						Cell cell = map.getCell(locations.get(left.getName()));
 						cell.addCellObject(new CellObject(Names.kExplosion, false, true));
 					}
 					// Add each right as it is detected
@@ -572,7 +551,7 @@ public class World {
 			}
 			
 			// Remove from former location (only one of these for all players)
-			getCell(locations.get(collision.get(0).getName())).setPlayer(null);
+			map.getCell(locations.get(collision.get(0).getName())).setPlayer(null);
 			
 			// Move to new cell, consume food
 			collideeIter = collision.listIterator();
@@ -592,7 +571,7 @@ public class World {
 	}
 
 	public boolean isInBounds(int x, int y) {
-		return (x >= 0) && (y >= 0) && (x < size) && (y < size);
+		return (x >= 0) && (y >= 0) && (x < map.getSize()) && (y < map.getSize());
 	}
 
 	public void reset() {

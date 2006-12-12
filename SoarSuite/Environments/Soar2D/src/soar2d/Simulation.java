@@ -5,10 +5,7 @@ import java.util.*;
 import java.util.logging.*;
 
 import sml.*;
-import soar2d.player.Eater;
-import soar2d.player.Player;
-import soar2d.player.PlayerConfig;
-import soar2d.player.SoarEater;
+import soar2d.player.*;
 
 public class Simulation {
 
@@ -176,25 +173,29 @@ public class Simulation {
 			}
 			
 			if (playerConfig.hasProductions() == false) {
+				Player player = null;
 				if (Soar2D.config.eaters) {
-					Eater eater = new Eater(playerConfig);
-					
-					java.awt.Point initialLocation = null;
-					if (playerConfig.hasInitialLocation()) {
-						initialLocation = playerConfig.getInitialLocation();
-					}
-
-					// This can fail if there are no open squares on the map, message printed already
-					if (!world.addPlayer(eater, initialLocation)) {
-						throw new CreationException();
-					}
-
-					configs.put(eater.getName(), playerConfig);
-					
+					player = new Eater(playerConfig);
+				} else if (Soar2D.config.tanksoar) {
+					player = new Tank(playerConfig);
 				} else {
-					throw new CreationException("TankSoar player not yet supported.");
+					throw new CreationException("Don't know how to create player for game type.");
+				}
+				
+				assert player != null;
+
+				java.awt.Point initialLocation = null;
+				if (playerConfig.hasInitialLocation()) {
+					initialLocation = playerConfig.getInitialLocation();
 				}
 
+				// This can fail if there are no open squares on the map, message printed already
+				if (!world.addPlayer(player, initialLocation)) {
+					throw new CreationException();
+				}
+
+				configs.put(player.getName(), playerConfig);
+				
 			} else {
 				Agent agent = kernel.CreateAgent(playerConfig.getName());
 				if (agent == null) {
@@ -206,29 +207,35 @@ public class Simulation {
 						throw new CreationException("Agent " + playerConfig.getName() + " production load failed: " + agent.GetLastErrorDescription());
 					}
 			
+					Player player = null;
 					if (Soar2D.config.eaters) {
-						SoarEater eater = new SoarEater(agent, playerConfig); 
-						java.awt.Point initialLocation = null;
-						if (playerConfig.hasInitialLocation()) {
-							initialLocation = playerConfig.getInitialLocation();
-						}
-						
-						// This can fail if there are no open squares on the map, message printed already
-						if (!world.addPlayer(eater, initialLocation)) {
-							throw new CreationException();
-						}
-			
-						agents.put(eater.getName(), agent);
-						configs.put(eater.getName(), playerConfig);
-						
-						Names.kDebuggerClient.command = getDebuggerCommand(eater.getName());
-						if (Soar2D.config.debuggers && !isClientConnected(Names.kDebuggerClient)) {
-							spawnClient(Names.kDebuggerClient);
-						}
-			
+						player = new SoarEater(agent, playerConfig); 
+					} else if (Soar2D.config.tanksoar) {
+						player = new SoarTank(agent, playerConfig); 
 					} else {
-						throw new CreationException("TankSoar player not yet supported.");
+						throw new CreationException("Don't know how to create player for game type.");
 					}
+					
+					assert player != null;
+					
+					java.awt.Point initialLocation = null;
+					if (playerConfig.hasInitialLocation()) {
+						initialLocation = playerConfig.getInitialLocation();
+					}
+					
+					// This can fail if there are no open squares on the map, message printed already
+					if (!world.addPlayer(player, initialLocation)) {
+						throw new CreationException();
+					}
+		
+					agents.put(player.getName(), agent);
+					configs.put(player.getName(), playerConfig);
+					
+					Names.kDebuggerClient.command = getDebuggerCommand(player.getName());
+					if (Soar2D.config.debuggers && !isClientConnected(Names.kDebuggerClient)) {
+						spawnClient(Names.kDebuggerClient);
+					}
+					
 				} catch (CreationException e) {
 					kernel.DestroyAgent(agent);
 					agent.delete();

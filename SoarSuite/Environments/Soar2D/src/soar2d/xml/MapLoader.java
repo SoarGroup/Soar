@@ -10,9 +10,7 @@ public class MapLoader {
 	private Stack<String> xmlPath;
 	private ArrayList<String> foods;
 	
-	private int size = 0;
-	private Cell[][] mapCells = null;
-	private CellObjectManager cellObjectManager = null;
+	GridMap map;
 	
 	private void throwSyntax(String message) throws SyntaxException {
 		throw new SyntaxException(xmlPath, message);
@@ -22,22 +20,14 @@ public class MapLoader {
 		throw new SMLException(xmlPath, message);
 	}
 	
-	public int getSize() {
-		return size;
-	}
-	
-	public Cell[][] getCells() {
-		return mapCells;
-	}
-	
-	public CellObjectManager getCellObjectManager() {
-		return cellObjectManager;
+	public GridMap getMap() {
+		return map;
 	}
 	
 	public boolean load() {
 		xmlPath = new Stack<String>();
 		foods = new ArrayList<String>();
-		cellObjectManager = new CellObjectManager();
+		map = new GridMap();
 			
 		String mapFile = Soar2D.config.map.getAbsolutePath();
 		ElementXML rootTag = ElementXML.ParseXMLFromFile(mapFile);
@@ -55,12 +45,12 @@ public class MapLoader {
 				throwSyntax("unrecognized tag " + rootTag.GetTagName());
 			}
 		} catch (SyntaxException p) {
-			this.mapCells = null;
+			this.map.mapCells = null;
 			Soar2D.control.severeError("Error parsing file " + mapFile + "\n" + p.getMessage());
 			return false;
 			
 		} catch (SMLException s) {
-			this.mapCells = null;
+			this.map.mapCells = null;
 			Soar2D.control.severeError("SML error during parsing: " + s.getMessage());
 			return false;
 			
@@ -169,7 +159,7 @@ public class MapLoader {
 			}
 		}
 		
-		cellObjectManager.registerTemplate(name, cellObjectTemplate);
+		map.cellObjectManager.registerTemplate(name, cellObjectTemplate);
 	}
 	private void property(CellObject cellObjectTemplate, ElementXML propertyTag, boolean apply) throws SMLException, SyntaxException {
 		String name = null;
@@ -312,8 +302,8 @@ public class MapLoader {
 		if (attribute.length() <= 0) {
 			throwSyntax("world-size parameter must not be zero-length");
 		}
-		this.size = Integer.parseInt(attribute);
-		if (size < 5) {
+		this.map.size = Integer.parseInt(attribute);
+		if (map.size < 5) {
 			throwSyntax("world-size must be 5 or greater");
 		}
 		
@@ -344,14 +334,14 @@ public class MapLoader {
 	}
 	
 	private void generateMapFromXML(ElementXML cellsTag) throws SMLException, SyntaxException {
-		if (cellsTag.GetNumberChildren() != this.size) {
+		if (cellsTag.GetNumberChildren() != this.map.size) {
 			throwSyntax("there does not seem to be the " +
 					"correct amount of row tags (" + cellsTag.GetNumberChildren() +
-					") for the specified map size (" + this.size +
+					") for the specified map size (" + this.map.size +
 					")");
 		}
 		
-		this.mapCells = new Cell[this.size][];
+		this.map.mapCells = new Cell[this.map.size][];
 		
 		ElementXML rowTag = null;
 		for (int rowTagIndex = 0; rowTagIndex < cellsTag.GetNumberChildren(); ++rowTagIndex) {
@@ -365,7 +355,7 @@ public class MapLoader {
 				
 				if (rowTag.IsTag(Names.kTagRow)) {
 					
-					this.mapCells[rowTagIndex] = new Cell[this.size];
+					this.map.mapCells[rowTagIndex] = new Cell[this.map.size];
 
 					xmlPath.push(Names.kTagRow);
 					row(rowTagIndex, rowTag);
@@ -382,10 +372,10 @@ public class MapLoader {
 	}
 	
 	private void row(int row, ElementXML rowTag) throws SMLException, SyntaxException {
-		if (rowTag.GetNumberChildren() != this.size) {
+		if (rowTag.GetNumberChildren() != this.map.size) {
 			throwSyntax("there does not seem to be the " +
 					"correct amount of cell tags (" + rowTag.GetNumberChildren() +
-					") for the specified map size (" + this.size +
+					") for the specified map size (" + this.map.size +
 					") in row " + row);
 		}
 		
@@ -400,10 +390,10 @@ public class MapLoader {
 				if (cellTag == null) throwSML("failed to get tag by index");
 				
 				if (cellTag.IsTag(Names.kTagCell)) {
-					mapCells[row][cellTagIndex] = new Cell();
+					map.mapCells[row][cellTagIndex] = new Cell();
 					
 					xmlPath.push(Names.kTagCell);
-					cell(mapCells[row][cellTagIndex], cellTag);
+					cell(map.mapCells[row][cellTagIndex], cellTag);
 					xmlPath.pop();
 
 				} else {
@@ -444,61 +434,61 @@ public class MapLoader {
 	
 	private void object(Cell cell, ElementXML objectTag) throws SMLException, SyntaxException {
 		String name = objectTag.GetCharacterData();
-		if (!cellObjectManager.hasTemplate(name)) {
+		if (!map.cellObjectManager.hasTemplate(name)) {
 			throwSyntax("object \"" + name + "\" does not map to a cell-object");
 		}
 		
-		CellObject cellObject = cellObjectManager.createObject(name);
+		CellObject cellObject = map.cellObjectManager.createObject(name);
 		cell.addCellObject(cellObject);
 	}
 	
 
 	private void generateRandomWalls() throws SyntaxException {
-		if (!cellObjectManager.hasTemplate(Names.kWall)) {
+		if (!map.cellObjectManager.hasTemplate(Names.kWall)) {
 			throwSyntax("tried to generate random walls with no wall type");
 		}
 		
-		if (mapCells == null) {
-			mapCells = new Cell[size][];
+		if (map.mapCells == null) {
+			map.mapCells = new Cell[map.size][];
 		}
 		
 		// Generate perimiter wall
-		for (int row = 0; row < size; ++row) {
-			if (mapCells[row] == null) {
-				mapCells[row] = new Cell[size];
+		for (int row = 0; row < map.size; ++row) {
+			if (map.mapCells[row] == null) {
+				map.mapCells[row] = new Cell[map.size];
 			}
-			if (mapCells[row][0] == null) {
-				mapCells[row][0] = new Cell();
+			if (map.mapCells[row][0] == null) {
+				map.mapCells[row][0] = new Cell();
 			}
-			addWallAndRemoveFood(mapCells[row][0]);
-			if (mapCells[row][size - 1] == null) {
-				mapCells[row][size - 1] = new Cell();
+			addWallAndRemoveFood(map.mapCells[row][0]);
+			if (map.mapCells[row][map.size - 1] == null) {
+				map.mapCells[row][map.size - 1] = new Cell();
 			}
-			addWallAndRemoveFood(mapCells[row][size - 1]);
+			addWallAndRemoveFood(map.mapCells[row][map.size - 1]);
 		}
-		for (int col = 1; col < size - 1; ++col) {
-			if (mapCells[0][col] == null) {
-				mapCells[0][col] = new Cell();
+		for (int col = 1; col < map.size - 1; ++col) {
+			if (map.mapCells[0][col] == null) {
+				map.mapCells[0][col] = new Cell();
 			}
-			addWallAndRemoveFood(mapCells[0][col]);
-			if (mapCells[size - 1][col] == null) {
-				mapCells[size - 1][col] = new Cell();
+			addWallAndRemoveFood(map.mapCells[0][col]);
+			if (map.mapCells[map.size - 1][col] == null) {
+				map.mapCells[map.size - 1][col] = new Cell();
 			}
-			addWallAndRemoveFood(mapCells[size - 1][col]);
+			addWallAndRemoveFood(map.mapCells[map.size - 1][col]);
 		}
 		
 		double probability = Soar2D.config.kLowProbability;
-		for (int row = 2; row < size - 2; ++row) {
-			for (int col = 2; col < size - 2; ++col) {
+		for (int row = 2; row < map.size - 2; ++row) {
+			for (int col = 2; col < map.size - 2; ++col) {
 				if (noWallsOnCorners(row, col)) {
 					if (wallOnAnySide(row, col)) {
 						probability = Soar2D.config.kHigherProbability;					
 					}
 					if (Simulation.random.nextDouble() < probability) {
-						if (mapCells[row][col] == null) {
-							mapCells[row][col] = new Cell();
+						if (map.mapCells[row][col] == null) {
+							map.mapCells[row][col] = new Cell();
 						}
-						addWallAndRemoveFood(mapCells[row][col]);
+						addWallAndRemoveFood(map.mapCells[row][col]);
 					}
 					probability = Soar2D.config.kLowProbability;
 				}
@@ -510,28 +500,28 @@ public class MapLoader {
 		cell.removeAllWithProperty(Names.kPropertyEdible);
 		
 		if (!cell.hasObject(Names.kWall)) {
-			CellObject cellObject = cellObjectManager.createObject(Names.kWall);
+			CellObject cellObject = map.cellObjectManager.createObject(Names.kWall);
 			cell.addCellObject(cellObject);
 		}
 	}
 	
 	private boolean noWallsOnCorners(int row, int col) {
-		Cell cell = mapCells[row + 1][col + 1];
+		Cell cell = map.mapCells[row + 1][col + 1];
 		if (cell != null && !cell.enterable()) {
 			return false;
 		}
 		
-		cell = mapCells[row - 1][col - 1];
+		cell = map.mapCells[row - 1][col - 1];
 		if (cell != null && !cell.enterable()) {
 			return false;
 		}
 		
-		cell = mapCells[row + 1][col - 1];
+		cell = map.mapCells[row + 1][col - 1];
 		if (cell != null && !cell.enterable()) {
 			return false;
 		}
 		
-		cell = mapCells[row - 1][col + 1];
+		cell = map.mapCells[row - 1][col + 1];
 		if (cell != null && !cell.enterable()) {
 			return false;
 		}
@@ -539,22 +529,22 @@ public class MapLoader {
 	}
 	
 	private boolean wallOnAnySide(int row, int col) {
-		Cell cell = mapCells[row + 1][col];
+		Cell cell = map.mapCells[row + 1][col];
 		if (cell != null && !cell.enterable()) {
 			return true;
 		}
 		
-		cell = mapCells[row][col + 1];
+		cell = map.mapCells[row][col + 1];
 		if (cell != null && !cell.enterable()) {
 			return true;
 		}
 		
-		cell = mapCells[row - 1][col];
+		cell = map.mapCells[row - 1][col];
 		if (cell != null && !cell.enterable()) {
 			return true;
 		}
 		
-		cell = mapCells[row][col - 1];
+		cell = map.mapCells[row][col - 1];
 		if (cell != null && !cell.enterable()) {
 			return true;
 		}
@@ -562,16 +552,16 @@ public class MapLoader {
 	}
 	
 	private void generateRandomFood() {
-		for (int row = 1; row < size - 1; ++row) {
-			for (int col = 1; col < size - 1; ++col) {
-				if (mapCells[row][col] == null) {
-					mapCells[row][col] = new Cell();
+		for (int row = 1; row < map.size - 1; ++row) {
+			for (int col = 1; col < map.size - 1; ++col) {
+				if (map.mapCells[row][col] == null) {
+					map.mapCells[row][col] = new Cell();
 					
 				}
-				if (mapCells[row][col].enterable()) {
-					mapCells[row][col].removeAllWithProperty(Names.kPropertyEdible);
-					CellObject cellObject = cellObjectManager.createObject(foods.get(Simulation.random.nextInt(foods.size())));
-					mapCells[row][col].addCellObject(cellObject);
+				if (map.mapCells[row][col].enterable()) {
+					map.mapCells[row][col].removeAllWithProperty(Names.kPropertyEdible);
+					CellObject cellObject = map.cellObjectManager.createObject(foods.get(Simulation.random.nextInt(foods.size())));
+					map.mapCells[row][col].addCellObject(cellObject);
 				}
 			}
 		}		

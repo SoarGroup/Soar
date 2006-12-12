@@ -5,7 +5,7 @@ import java.util.logging.*;
 import soar2d.*;
 
 public class Player {
-	Logger logger = Soar2D.logger;
+	protected Logger logger = Soar2D.logger;
 
 	private String name;
 	private int facingInt;
