@@ -1,5 +1,6 @@
 <map>
   <cell-object name="normalfood" consumable="true">
+    <property name="id" value="normalfood" />
     <property name="points" value="5" />
     <property name="shape" value="round" />
     <property name="color" value="blue" />
@@ -9,6 +10,7 @@
     </apply>
   </cell-object>
   <cell-object name="bonusfood" consumable="true">
+    <property name="id" value="bonusfood" />
     <property name="points" value="10" />
     <property name="shape" value="square" />
     <property name="color" value="red" />

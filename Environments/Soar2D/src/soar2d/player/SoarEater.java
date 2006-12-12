@@ -147,9 +147,18 @@ public class SoarEater extends Eater {
 						soarCell.boxProperties.clear();
 					}
 					
-					// If we're out of bounds or cell is a wall
-					if (cell == null || !cell.enterable()) {
+					// If we're out of bounds create a wall
+					if (cell == null) {
 						createContent(soarCell.content, soarCell, Names.kWall);
+						continue;
+					}
+					
+					// If cell is wall, do the wall
+					if (!cell.enterable()) {
+						ArrayList<CellObject> walls = cell.getAllWithProperty(Names.kPropertyBlock);
+						assert walls.size() == 1;
+						CellObject wall = walls.get(0);
+						createContent(soarCell.content, soarCell, wall.getStringProperty(Names.kPropertyID));
 						continue;
 					}
 					
@@ -167,7 +176,7 @@ public class SoarEater extends Eater {
 						CellObject food = objectIter.next();
 						if (cell.hasObject(food.getName())) {
 							hadFood = true;
-							createContent(soarCell.content, soarCell, food.getName());
+							createContent(soarCell.content, soarCell, food.getStringProperty(Names.kPropertyID));
 						}
 					}
 					
@@ -219,9 +228,9 @@ public class SoarEater extends Eater {
 							hadFood = true;
 							StringElement element = soarCell.content.remove(food.getName());
 							if (element == null) {
-								createContent(newContent, soarCell, food.getName());
+								createContent(newContent, soarCell, food.getStringProperty(Names.kPropertyID));
 							} else {
-								newContent.put(food.getName(), element);
+								newContent.put(food.getStringProperty(Names.kPropertyID), element);
 							}
 						}
 					}
@@ -296,7 +305,7 @@ public class SoarEater extends Eater {
 	}
 	
 	private void createBox(SoarCell soarCell, CellObject box) {
-		soarCell.box = agent.CreateIdWME(soarCell.me, Names.kBoxID);
+		soarCell.box = agent.CreateIdWME(soarCell.me, box.getStringProperty(Names.kPropertyID));
 		assert soarCell.box != null;
 		Iterator<String> iter = box.getPropertyNames().iterator();
 		while (iter.hasNext()) {
