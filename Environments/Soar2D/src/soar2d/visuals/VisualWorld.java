@@ -60,7 +60,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 	Player getPlayerAtPixel(int x, int y) {
 		x /= cellSize;
 		y /= cellSize;
-		Cell cell = Soar2D.simulation.world.getCell(x, y);
+		Cell cell = Soar2D.simulation.world.map.getCell(x, y);
 		if (cell.getPlayer() != null) {
 			return cell.getPlayer();
 		}
@@ -109,7 +109,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 					yDraw = y;
 				}
 				
-				Cell cell = Soar2D.simulation.world.getCell(x, y);
+				Cell cell = Soar2D.simulation.world.map.getCell(x, y);
 				if (agentLocation == null) {
 					if ((cell.removeObject(Names.kRedraw) == null) && painted) {
 						continue;

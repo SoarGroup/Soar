@@ -132,44 +132,80 @@ public class WindowManager {
 					return;
 				}
 				boolean go = false;
-				switch (e.keyCode) {
-				case SWT.KEYPAD_8:
-					humanMove.move = true;
-					humanMove.moveDirection = Direction.kNorthInt;
-					go = true;
-					break;
-				case SWT.KEYPAD_6:
-					humanMove.move = true;
-					humanMove.moveDirection = Direction.kEastInt;
-					go = true;
-					break;
-				case SWT.KEYPAD_2:
-					humanMove.move = true;
-					humanMove.moveDirection = Direction.kSouthInt;
-					go = true;
-					break;
-				case SWT.KEYPAD_4:
-					humanMove.move = true;
-					humanMove.moveDirection = Direction.kWestInt;
-					go = true;
-					break;
-				case SWT.KEYPAD_5:
-					humanMove.jump = false;
-					go = true;
-					break;
-				case SWT.KEYPAD_0:
-					humanMove.jump = !humanMove.jump;
-					break;
-				case SWT.KEYPAD_DECIMAL:
-					humanMove.eat = !humanMove.eat;
-					break;
-				case SWT.KEYPAD_ADD:
-					humanMove.open = !humanMove.open;
-					break;
-				case SWT.KEYPAD_MULTIPLY:
-					humanMove.stop = !humanMove.stop;
-					break;
-					
+				if (Soar2D.config.eaters) {
+					switch (e.keyCode) {
+					case SWT.KEYPAD_8:
+						humanMove.move = true;
+						humanMove.moveDirection = Direction.kNorthInt;
+						go = true;
+						break;
+					case SWT.KEYPAD_6:
+						humanMove.move = true;
+						humanMove.moveDirection = Direction.kEastInt;
+						go = true;
+						break;
+					case SWT.KEYPAD_2:
+						humanMove.move = true;
+						humanMove.moveDirection = Direction.kSouthInt;
+						go = true;
+						break;
+					case SWT.KEYPAD_4:
+						humanMove.move = true;
+						humanMove.moveDirection = Direction.kWestInt;
+						go = true;
+						break;
+					case SWT.KEYPAD_5:
+						humanMove.jump = false;
+						go = true;
+						break;
+					case SWT.KEYPAD_0:
+						humanMove.jump = !humanMove.jump;
+						break;
+					case SWT.KEYPAD_DECIMAL:
+						humanMove.eat = !humanMove.eat;
+						break;
+					case SWT.KEYPAD_ADD:
+						humanMove.open = !humanMove.open;
+						break;
+					case SWT.KEYPAD_MULTIPLY:
+						humanMove.stop = !humanMove.stop;
+						break;
+					default:
+						break;
+					}
+				} else if (Soar2D.config.tanksoar) {
+					switch (e.keyCode) {
+					case SWT.KEYPAD_8:
+						humanMove.move = true;
+						humanMove.moveDirection = Direction.kNorthInt;
+						go = true;
+						break;
+					case SWT.KEYPAD_6:
+						humanMove.move = true;
+						humanMove.moveDirection = Direction.kEastInt;
+						go = true;
+						break;
+					case SWT.KEYPAD_2:
+						humanMove.move = true;
+						humanMove.moveDirection = Direction.kSouthInt;
+						go = true;
+						break;
+					case SWT.KEYPAD_4:
+						humanMove.move = true;
+						humanMove.moveDirection = Direction.kWestInt;
+						go = true;
+						break;
+					case SWT.KEYPAD_5:
+						go = true;
+						break;
+					case SWT.KEYPAD_MULTIPLY:
+						humanMove.stop = !humanMove.stop;
+						break;
+					default:
+						break;
+					}
+				} else {
+					return;
 				}
 				if (go) {
 					synchronized(humanMove) {
@@ -434,9 +470,11 @@ public class WindowManager {
 		shell = null;
 	}
 
-	public MoveInfo getHumanEaterMove(String color) {
+	public MoveInfo getHumanMove(String color) {
 		humanMove = new MoveInfo();
-		humanMove.eat = true;
+		if (Soar2D.config.eaters) {
+			humanMove.eat = true;
+		}
 		setStatus("Enter move for " + color);
 		try {
 			synchronized(humanMove) {
@@ -444,7 +482,6 @@ public class WindowManager {
 			}
 		} catch (InterruptedException e) {
 		}
-		
 		return humanMove;
 	}
 }

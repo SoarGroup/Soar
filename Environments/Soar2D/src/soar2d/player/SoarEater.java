@@ -30,8 +30,6 @@ class SoarCell {
 }
 
 public class SoarEater extends Eater {
-	Logger logger = Soar2D.logger;
-	
 	private Agent agent;
 	private float random;
 	
@@ -135,7 +133,7 @@ public class SoarEater extends Eater {
 				// Get cell if in bounds.
 				Cell cell = null;
 				if (world.isInBounds(viewLocation)) {
-					cell = world.getCell(viewLocation.x, viewLocation.y);
+					cell = world.map.getCell(viewLocation.x, viewLocation.y);
 				}
 				
 				// Clear the content if we moved.
@@ -169,7 +167,7 @@ public class SoarEater extends Eater {
 					}
 					
 					// food test
-					ArrayList<CellObject> foodList = Soar2D.simulation.world.cellObjectManager.getTemplatesWithProperty(Names.kPropertyEdible);
+					ArrayList<CellObject> foodList = Soar2D.simulation.world.map.getObjectManager().getTemplatesWithProperty(Names.kPropertyEdible);
 					Iterator<CellObject> objectIter = foodList.iterator();
 					boolean hadFood = false;
 					while (objectIter.hasNext()) {
@@ -219,7 +217,7 @@ public class SoarEater extends Eater {
 					}
 					
 					// food test
-					ArrayList<CellObject> foodList = Soar2D.simulation.world.cellObjectManager.getTemplatesWithProperty(Names.kPropertyEdible);
+					ArrayList<CellObject> foodList = Soar2D.simulation.world.map.getObjectManager().getTemplatesWithProperty(Names.kPropertyEdible);
 					Iterator<CellObject> objectIter = foodList.iterator();
 					boolean hadFood = false;
 					while (objectIter.hasNext()) {

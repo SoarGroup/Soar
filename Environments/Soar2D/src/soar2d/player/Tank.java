@@ -3,8 +3,8 @@ package soar2d.player;
 import soar2d.Soar2D;
 import soar2d.World;
 
-public class Eater extends Player {	
-	public Eater( PlayerConfig playerConfig) {
+public class Tank extends Player {
+	public Tank( PlayerConfig playerConfig) {
 		super(playerConfig);
 	}
 	
@@ -17,7 +17,6 @@ public class Eater extends Player {
 			return new MoveInfo();
 		}
 		MoveInfo move = Soar2D.wm.getHumanMove(this.getColor());
-		this.setFacingInt(move.moveDirection);
 		return move;
 	}
 	public void shutdown() {
