@@ -16,6 +16,8 @@ public class TextFormatter extends Formatter {
 		Date d = new Date(record.getMillis());
 		String output = format.format(d);
 		output += " ";
+		output += Soar2D.simulation.world.getWorldCount();
+		output += " ";
 		output += record.getLevel().getName();
 		output += " ";
 		output += record.getMessage();

@@ -15,7 +15,6 @@ public class Names {
 	public static final String kExplosion = "explosion";
 	public static final String kRedraw = "redraw";
 	public static final String kOpen = "open";
-	public static final String kWall = "wall";
 	
 	public static final String kTagAgent = "agent";
 	public static final String kTagApply = "apply";
@@ -91,7 +90,6 @@ public class Names {
 	public static final String kLevelFinest = "finest";
 
 	public static final String kContentID = "content";
-	public static final String kEater = "eater";
 	public static final String kEaterID = "eater";
 	public static final String kDirectionID = "direction";
 	public static final String kDontEatID = "dont-eat";
@@ -103,6 +101,7 @@ public class Names {
 	public static final String kRandomID = "random";
 	public static final String kScoreID = "score";
 	public static final String kStopID = "stop";
+	public static final String kWallID = "wall";
 	public static final String kxID = "x";
 	public static final String kyID = "y";
 	
@@ -110,9 +109,13 @@ public class Names {
 	
 	public static final String kPropertyBlock = "block";
 	public static final String kPropertyBox = "box";
+	public static final String kPropertyCharger = "charger";
 	public static final String kPropertyColor = "color";
 	public static final String kPropertyEdible = "edible";
+	public static final String kPropertyEnergy = "energy";
+	public static final String kPropertyHealth = "health";
 	public static final String kPropertyID = "id";
+	public static final String kPropertyMissiles = "missiles";
 	public static final String kPropertyMoveApply = "move-apply";
 	public static final String kPropertyPoints = "points";
 	public static final String kPropertyShape = "shape";

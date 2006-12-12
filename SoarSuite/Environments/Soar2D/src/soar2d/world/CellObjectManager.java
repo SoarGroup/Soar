@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import soar2d.Simulation;
+
 public class CellObjectManager {
 	private HashMap<String, CellObject> templates = new HashMap<String, CellObject>();
 	private int updatableCount = 0;
@@ -65,5 +67,21 @@ public class CellObjectManager {
 			}
 		}
 		return ret;
+	}
+	
+	public boolean hasTemplatesWithProperty(String name) {
+		ArrayList<CellObject> all = getTemplatesWithProperty(name);
+		if (all.size() <= 0) {
+			return false;
+		}
+		return true;
+	}
+	
+	public CellObject createRandomObjectWithProperty(String name) {
+		ArrayList<CellObject> all = getTemplatesWithProperty(name);
+		if (all.size() <= 0) {
+			return null;
+		}
+		return all.get(Simulation.random.nextInt(all.size()));
 	}
 }

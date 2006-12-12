@@ -7,9 +7,24 @@ public class GridMap {
 	int size = 0;
 	Cell[][] mapCells = null;
 	CellObjectManager cellObjectManager = new CellObjectManager();
+	boolean health = false;
+	boolean energy = false;
+	int missilePacks = 0;
 	
 	public int getSize() {
 		return size;
+	}
+	
+	public int numberMissilePacks() {
+		return missilePacks;
+	}
+	
+	public boolean hasHealthCharger() {
+		return health;
+	}
+	
+	public boolean hasEnergyCharger() {
+		return energy;
 	}
 	
 	public CellObjectManager getObjectManager() {
