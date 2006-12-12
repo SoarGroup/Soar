@@ -7,18 +7,55 @@ import java.util.logging.*;
 import sml.*;
 import soar2d.player.*;
 
+/**
+ * @author voigtjr
+ *
+ * Keeps track of the meta simulation state. The world keeps track of more state and
+ * is the major member of this class. Creates the soar kernel and registers events.
+ */
 public class Simulation {
 
+	/**
+	 * True if we want to use the run-til-output feature
+	 */
 	boolean runTilOutput = false;
+	/**
+	 * The soar kernel
+	 */
 	Kernel kernel = null;
+	/**
+	 * The random number generator used throughout the program
+	 */
 	public static Random random = null;
+	/**
+	 * The world and everything associated with it
+	 */
 	public World world = new World();
+	/**
+	 * Legal colors (see PlayerConfig)
+	 */
 	private final String kColors[] = { "red", "blue", "purple", "yellow", "orange", "black", "green" };
+	/**
+	 * A list of colors not currently taken by a player
+	 */
 	private ArrayList<String> unusedColors = new ArrayList<String>(kColors.length);
+	/**
+	 * String agent name to agent mapping
+	 */
 	private HashMap<String, Agent> agents = new HashMap<String, Agent>();
+	/**
+	 * String agent name to player config mapping
+	 */
 	private HashMap<String, PlayerConfig> configs = new HashMap<String, PlayerConfig>();
 	
+	/**
+	 * @return true if there were no errors during initialization
+	 * 
+	 * sets everything up in preparation of execution. only called once per
+	 * program run (not once per soar run)
+	 */
 	public boolean initialize() {
+		 // keep track of colors
 		for (int i = 0; i < kColors.length; ++i) {
 			unusedColors.add(kColors[i]);
 		}
@@ -50,6 +87,7 @@ public class Simulation {
 			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Not seeding generator.");
 			random = new Random();
 		} else {
+			// seed the generators
 			if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Seeding generator 0.");
 			kernel.ExecuteCommandLine("srand 0", null) ;
 			random = new Random(0);
@@ -87,6 +125,7 @@ public class Simulation {
 			return false;
 		}
 		
+		// success
 		return true;
 	}
 	
@@ -94,6 +133,14 @@ public class Simulation {
 		return unusedColors;
 	}
 	
+	/**
+	 * @param color the color to use, or null if any will work
+	 * @return null if the color is not available for whatever reason
+	 * 
+	 * removes a color from the unused colors list (by random if necessary)
+	 * a return of null indicates failure, the color is taken or no more
+	 * are available
+	 */
 	public String useAColor(String color) {
 		if (unusedColors.size() < 1) {
 			return null;
@@ -114,7 +161,16 @@ public class Simulation {
 		return null;
 	}
 	
+	/**
+	 * @param color the color to free up, must be not null
+	 * @return false if the color wasn't freed up
+	 * 
+	 * The opposite of useAColor
+	 * a color wouldn't be freed up if it wasn't being used in the first place
+	 * or if it wasn't legal
+	 */
 	public boolean freeAColor(String color) {
+		assert color != null;
 		boolean legal = false;
 		for (int i = 0; i < kColors.length; ++i) {
 			if (color.equals(kColors[i])) {
@@ -131,6 +187,11 @@ public class Simulation {
 		return true;
 	}
 
+	/**
+	 * @author voigtjr
+	 *
+	 * exception class to keep things sane during player creation
+	 */
 	class CreationException extends Throwable {
 		static final long serialVersionUID = 1;
 		private String message;
@@ -147,33 +208,57 @@ public class Simulation {
 		}
 	}
 
+	/**
+	 * @param playerConfig configuration data for the future player
+	 * 
+	 * create a player and add it to the simulation and world
+	 */
 	public void createPlayer(PlayerConfig playerConfig) {
+		// if a color was specified
 		if (playerConfig.hasColor()) {
+			//make sure it is unused
 			if (!unusedColors.contains(playerConfig.getColor())) {
 				Soar2D.control.severeError("Color used or not available: " + playerConfig.getColor());
 				return;
 			}
+			// it is unused, so use it
 			useAColor(playerConfig.getColor());
 		} else {
+			
+			// no color specified, pick on at random
 			String color = useAColor(null);
+			
+			// make sure we got one
 			if (color == null) {
+				
+				// if we didn't then they are all gone
 				Soar2D.control.severeError("There are no more player slots available.");
 				return;
 			}
+			
+			// set it
 			playerConfig.setColor(color);
 		}
 
+		// if we don't have a name
 		if (!playerConfig.hasName()) {
+			// then use our color
 			playerConfig.setName(playerConfig.getColor());
 		}
 		
 		try {
+			// check for duplicate name
 			if (configs.containsKey(playerConfig.getName())) {
 				throw new CreationException("Failed to create player: " + playerConfig.getName() + " already exists.");
 			}
 			
+			// check for human agent
 			if (playerConfig.hasProductions() == false) {
+				
+				// create a human agent
 				Player player = null;
+				
+				// eater or tank depending on the setting
 				if (Soar2D.config.eaters) {
 					player = new Eater(playerConfig);
 				} else if (Soar2D.config.tanksoar) {
@@ -183,7 +268,8 @@ public class Simulation {
 				}
 				
 				assert player != null;
-
+				
+				// set its location if necessary
 				java.awt.Point initialLocation = null;
 				if (playerConfig.hasInitialLocation()) {
 					initialLocation = playerConfig.getInitialLocation();
@@ -194,20 +280,26 @@ public class Simulation {
 					throw new CreationException();
 				}
 
+				// save the player configuration
 				configs.put(player.getName(), playerConfig);
 				
 			} else {
+				
+				// we need to create a soar agent, do it
 				Agent agent = kernel.CreateAgent(playerConfig.getName());
 				if (agent == null) {
 					throw new CreationException("Agent " + playerConfig.getName() + " creation failed: " + kernel.GetLastErrorDescription());
 				}
 				
 				try {
+					// now load the productions
 					if (!agent.LoadProductions(playerConfig.getProductions().getAbsolutePath())) {
 						throw new CreationException("Agent " + playerConfig.getName() + " production load failed: " + agent.GetLastErrorDescription());
 					}
 			
 					Player player = null;
+					
+					// create the tank or eater, soar style
 					if (Soar2D.config.eaters) {
 						player = new SoarEater(agent, playerConfig); 
 					} else if (Soar2D.config.tanksoar) {
@@ -218,6 +310,7 @@ public class Simulation {
 					
 					assert player != null;
 					
+					// handle the initial location if necesary
 					java.awt.Point initialLocation = null;
 					if (playerConfig.hasInitialLocation()) {
 						initialLocation = playerConfig.getInitialLocation();
@@ -228,30 +321,44 @@ public class Simulation {
 						throw new CreationException();
 					}
 		
+					// save both the agent
 					agents.put(player.getName(), agent);
+					
+					// and the configuration
 					configs.put(player.getName(), playerConfig);
 					
+					// spawn the debugger if we're supposed to
 					Names.kDebuggerClient.command = getDebuggerCommand(player.getName());
 					if (Soar2D.config.debuggers && !isClientConnected(Names.kDebuggerClient)) {
 						spawnClient(Names.kDebuggerClient);
 					}
 					
 				} catch (CreationException e) {
+					// A problem in this block requires agent deletion
 					kernel.DestroyAgent(agent);
 					agent.delete();
 					throw e;
 				}
 			}
 		} catch (CreationException e) {
+			// a problem in this block requires us to free up the color
 			freeAColor(playerConfig.getColor());
 			if (e.getMessage() != null) {
 				Soar2D.control.severeError(e.getMessage());
 			}
 			return;
 		}
+		
+		// the agent list has changed, notify things that care
 		Soar2D.control.playerEvent();
 	}
 
+	/**
+	 * @param client the client in question
+	 * @return true if it is connected
+	 * 
+	 * check to see if the client specified by the client config is connected or not
+	 */
 	public boolean isClientConnected(ClientConfig client) {
 		boolean connected = false;
 		kernel.GetAllConnectionInfo();
@@ -265,6 +372,10 @@ public class Simulation {
 		return connected;
 	}
 	
+	/**
+	 * @param agentName tailor the command to this agent name
+	 * @return a string command line to execute to spawn the debugger
+	 */
 	public String getDebuggerCommand(String agentName) {
 		// Figure out whether to use java or javaw
 		String os = System.getProperty("os.name");
@@ -280,21 +391,43 @@ public class Simulation {
 		return commandLine;
 	}
 
+	/**
+	 * @param player the player to remove
+	 * 
+	 * removes the player from the world and blows away any associated data, 
+	 * frees up its color, etc.
+	 */
 	public void destroyPlayer(Player player) {
+		// remove it from the world, can't fail
 		world.removePlayer(player.getName());
+		
+		// remove it from the config list
 		configs.remove(player.getName());
+		
+		// free its color
 		freeAColor(player.getColor());
+		
+		// get the agent (human agents return null here)
 		Agent agent = agents.remove(player.getName());
 		if (agent != null) {
+			// there was an agent, destroy it
 			if (!kernel.DestroyAgent(agent)) {
 				Soar2D.control.severeError("Failed to destroy soar agent " + player.getName() + ": " + kernel.GetLastErrorDescription());
 			}
 			agent.delete();
 			agent = null;
 		}
+		
+		// the player list has changed, notify those who care
 		Soar2D.control.playerEvent();
 	}
 	
+	/**
+	 * @param player the player to reload
+	 * 
+	 * reload the player. only currently makes sense to reload a soar agent.
+	 * this re-loads the productions
+	 */
 	public void reloadPlayer(Player player) {
 		Agent agent = agents.get(player.getName());
 		if (agent == null) {
@@ -306,6 +439,14 @@ public class Simulation {
 		agent.LoadProductions(config.getProductions().getAbsolutePath());
 	}
 	
+	/**
+	 * @param name the name of the player to clone
+	 * @param newName the name of the new player
+	 * 
+	 * This creates a player similar to a current one. the name changes, the color
+	 * changes. This doesn't necessarily succeed. control playerEvent is 
+	 * called on success.
+	 */
 	public void clonePlayer(String name, String newName) {
 		PlayerConfig config = configs.get(name);
 		assert config != null;
@@ -314,6 +455,10 @@ public class Simulation {
 		createPlayer(config);
 	}
 
+	/**
+	 * @param after do the clients denoted as "after" agent creation
+	 * @return true if the clients all connected.
+	 */
 	private boolean doClients(boolean after) {
 		Iterator<ClientConfig> clientIter = Soar2D.config.clients.iterator();
 		while (clientIter.hasNext()) {
@@ -333,6 +478,11 @@ public class Simulation {
 		return true;
 	}
 
+	/**
+	 * @author voigtjr
+	 *
+	 * This handles some nitty gritty client spawn stuff
+	 */
 	private class Redirector extends Thread {
 		BufferedReader br;
 		public Redirector(BufferedReader br) {
@@ -351,6 +501,11 @@ public class Simulation {
 		}
 	}
 	
+	/**
+	 * @param client the client to spawn
+	 * 
+	 * spawns a client, waits for it to connect
+	 */
 	public void spawnClient(ClientConfig client) {
 		Runtime r = java.lang.Runtime.getRuntime();
 		if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Spawning client: " + client.command);
@@ -382,6 +537,12 @@ public class Simulation {
 		}
 	}
 	
+	/**
+	 * @param client the client to wait for
+	 * @return true if the client connected within the timeout
+	 * 
+	 * waits for a client to report ready
+	 */
 	public boolean waitForClient(ClientConfig client) {
 		boolean ready = false;
 		// do this loop if timeout seconds is 0 (code for wait indefinitely) or if we have tries left
@@ -409,10 +570,16 @@ public class Simulation {
 		return ready;
 	}
 	
+	/**
+	 * update the sim, or, in this case, the world
+	 */
 	public void update() {
 		world.update();
 	}
 
+	/**
+	 * run soar forever
+	 */
 	public void runForever() {
 		if (runTilOutput) {
 			kernel.RunAllAgentsForever(smlInterleaveStepSize.sml_INTERLEAVE_UNTIL_OUTPUT);
@@ -422,6 +589,9 @@ public class Simulation {
 		
 	}
 
+	/**
+	 * run soar one step
+	 */
 	public void runStep() {
 		if (runTilOutput) {
 			kernel.RunAllTilOutput();
@@ -430,6 +600,11 @@ public class Simulation {
 		}
 	}
 
+	/**
+	 * @return true if the map reset was successful
+	 * 
+	 * resets the world, ready for a new run
+	 */
 	public boolean reset() {
 		if (Soar2D.logger.isLoggable(Level.INFO)) Soar2D.logger.info("Resetting simulation.");
 		if (!world.load()) {
@@ -440,6 +615,9 @@ public class Simulation {
 		return true;
 	}
 
+	/**
+	 * shuts things down, including the kernel, in preparation for an exit to dos
+	 */
 	public void shutdown() {
 		if (world != null) {
 			world.shutdown();
@@ -451,14 +629,26 @@ public class Simulation {
 		}
 	}
 	
+	/**
+	 * @return true if there are soar agents present
+	 */
 	public boolean hasSoarAgents() {
 		return agents.size() > 0;
 	}
 	
+	/**
+	 * @return true if there are any players present (not necessarily soar agents)
+	 */
 	public boolean hasPlayers() {
 		return world.hasPlayers();
 	}
 
+	/**
+	 * TODO
+	 * @return true if the simulation has reached a terminal state
+	 * 
+	 * check to see if one of the terminal states has been reached
+	 */
 	public boolean isDone() {
 		// TODO This should test the goals. Controls whether Run and Step are available.
 		return false;

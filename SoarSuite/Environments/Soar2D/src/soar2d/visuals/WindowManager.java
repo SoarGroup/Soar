@@ -424,7 +424,7 @@ public class WindowManager {
 		}
 	}
 	
-	public void agentEvent() {
+	public void playerEvent() {
 		if (visualWorld != null) {
 			visualWorld.setRepaint();
 			visualWorld.redraw();
