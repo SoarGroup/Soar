@@ -67,6 +67,7 @@ public class Names {
 	public static final String kParamRandomWalls = "random-walls";
 	public static final String kParamRemote = "remote";
 	public static final String kParamShape = "shape";
+	public static final String kParamShields = "shields";
 	public static final String kParamTimeOut = "timeout";
 	public static final String kParamType = "type";
 	public static final String kParamUpdatable = "updatable";
