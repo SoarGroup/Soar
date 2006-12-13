@@ -203,9 +203,6 @@ public class CellObject {
 			}
 		}
 		
-		// TODO: implement
-		assert flyMissileUpdate == false;
-		
 		return consumable;	// if this is true the object is removed from 
 							// the cell after the apply
 	}
@@ -226,6 +223,10 @@ public class CellObject {
 				return true;	// this causes this object to be removed from the cell
 			}
 		}
+		
+		// TODO: implement
+		assert flyMissileUpdate == false;
+		
 		return false; // this keeps this object around
 	}
 	

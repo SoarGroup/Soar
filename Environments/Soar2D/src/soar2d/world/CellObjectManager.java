@@ -78,19 +78,6 @@ public class CellObjectManager {
 	}
 	
 	/**
-	 * @param name object name to create
-	 * @return the new object
-	 * 
-	 * Clones an object and returns the new copy
-	 */
-	public CellObject createObject(String name) {
-		if (templates.containsKey(name)) {
-			return new CellObject(templates.get(name));
-		}
-		return null;
-	}
-	
-	/**
 	 * @return true if there is at least one object that needs to be updated.
 	 */
 	public boolean updatablesExist() {
@@ -126,6 +113,19 @@ public class CellObjectManager {
 	}
 	
 	/**
+	 * @param name object name to create
+	 * @return the new object
+	 * 
+	 * Clones an object and returns the new copy
+	 */
+	public CellObject createObject(String name) {
+		if (templates.containsKey(name)) {
+			return new CellObject(templates.get(name));
+		}
+		return null;
+	}
+	
+	/**
 	 * @param name the property
 	 * @return an object with that property
 	 * 
@@ -137,7 +137,7 @@ public class CellObjectManager {
 		if (all.size() <= 0) {
 			return null;
 		}
-		return all.get(Simulation.random.nextInt(all.size()));
+		return new CellObject(all.get(Simulation.random.nextInt(all.size())));
 	}
 	/**
 	 * @param name1 a property
@@ -161,6 +161,6 @@ public class CellObjectManager {
 		if (all.size() <= 0) {
 			return null;
 		}
-		return all.get(Simulation.random.nextInt(all.size()));
+		return new CellObject(all.get(Simulation.random.nextInt(all.size())));
 	}
 }
