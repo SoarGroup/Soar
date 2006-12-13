@@ -23,6 +23,9 @@ public class Configuration {
 	public final String kTankSoarMapFilter = "*.emap";
 
 	public final int kDefaultPoints = 0;
+	public final int kDefaultMissiles = 0;
+	public final int kDefaultEnergy = 1000;
+	public final int kDefaultHealth = 1000;
 	public final int kDefaultVersion = 1;
 	public final int kDefaultTimeout = 15; //seconds
 	public final Level kDefaultLogLevel = Level.INFO;

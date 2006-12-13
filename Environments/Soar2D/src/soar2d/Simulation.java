@@ -407,6 +407,9 @@ public class Simulation {
 		// free its color
 		freeAColor(player.getColor());
 		
+		// call its shutdown
+		player.shutdown();
+		
 		// get the agent (human agents return null here)
 		Agent agent = agents.remove(player.getName());
 		if (agent != null) {

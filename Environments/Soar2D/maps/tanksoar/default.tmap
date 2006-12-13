@@ -64,6 +64,9 @@
       <health shields="false" />
       <energy shields="true" />
     </apply>
+    <update>
+      <fly-missile />
+    </update>
   </cell-object>
   <cells world-size="6">
     <row>

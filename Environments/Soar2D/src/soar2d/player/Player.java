@@ -93,7 +93,7 @@ public class Player {
 	 * @param comment why the change happened, keep it very brief
 	 * 
 	 * this is a handy function for changing points. puts a message in the log and 
-	 * why the change happenedm
+	 * why the change happened
 	 */
 	public void adjustPoints(int delta, String comment) {
 		int previous = this.points;
@@ -103,6 +103,55 @@ public class Player {
 		} else {
 			logger.info(this.name + " score: " + Integer.toString(previous) + " -> " + Integer.toString(this.points));
 		}
+	}
+	
+	public int getMissiles() {
+		return 0;
+	}
+	/**
+	 * see Tank
+	 */
+	public void setMissiles(int missiles, String comment) {
+	}
+	/**
+	 * see Tank
+	 */
+	public void adjustMissiles(int delta, String comment) {
+	}
+
+	public int getEnergy() {
+		return 0;
+	}
+	/**
+	 * see Tank
+	 */
+	public void setEnergy(int energy, String comment) {
+	}
+	/**
+	 * see Tank
+	 */
+	public void adjustEnergy(int delta, String comment) {
+	}
+
+	public int getHealth() {
+		return 0;
+	}
+	/**
+	 * see Tank
+	 */
+	public void setHealth(int health, String comment) {
+	}
+	/**
+	 * see Tank
+	 */
+	public void adjustHealth(int delta, String comment) {
+	}
+	
+	/**
+	 * see Tank
+	 */
+	public boolean shieldsUp() {
+		return false;
 	}
 
 	public int getFacingInt() {

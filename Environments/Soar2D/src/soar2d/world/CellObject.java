@@ -69,6 +69,10 @@ public class CellObject {
 	 * Apply the decay property to this cell's points on an update.
 	 */
 	boolean decayUpdate = false;
+	/**
+	 * Apply the fly missile code on an update.
+	 */
+	boolean flyMissileUpdate = false;
 	
 	public CellObject(CellObject cellObject) {
 		this.properties = new HashMap<String, String>(cellObject.properties);
@@ -83,6 +87,7 @@ public class CellObject {
 		this.energyApply = cellObject.energyApply;
 		this.energyApplyShieldsUp = cellObject.energyApplyShieldsUp;
 		this.decayUpdate = cellObject.decayUpdate;
+		this.flyMissileUpdate = cellObject.flyMissileUpdate;
 	}
 	
 	public CellObject(String name, boolean updatable, boolean consumable) {
@@ -151,6 +156,10 @@ public class CellObject {
 		decayUpdate = setting;
 	}
 	
+	public void setFlyMissileUpdate(boolean setting) {
+		flyMissileUpdate = setting;
+	}
+	
 	/**
 	 * @param player called when this player acted on this object for whatever reason
 	 * @return true if the object should be removed from the cell after the apply
@@ -172,12 +181,30 @@ public class CellObject {
 			player.adjustPoints(points, name);
 		}
 		
+		if (missilesApply) {
+			assert properties.containsKey(Names.kPropertyMissiles);
+			int missiles = Integer.parseInt(properties.get(Names.kPropertyMissiles));
+			player.adjustMissiles(missiles, name);
+		}
+		
+		if (energyApply) {
+			if (!energyApplyShieldsUp || player.shieldsUp()) {
+				assert properties.containsKey(Names.kPropertyEnergy);
+				int energy = Integer.parseInt(properties.get(Names.kPropertyEnergy));
+				player.adjustEnergy(energy, name);
+			}
+		}
+		
+		if (healthApply) {
+			if (!healthApplyShieldsDown || !player.shieldsUp()) {
+				assert properties.containsKey(Names.kPropertyHealth);
+				int health = Integer.parseInt(properties.get(Names.kPropertyHealth));
+				player.adjustEnergy(health, name);
+			}
+		}
+		
 		// TODO: implement
-		assert missilesApply == false;
-		assert energyApply == false;
-		assert energyApplyShieldsUp == false;
-		assert healthApply == false;
-		assert healthApplyShieldsDown == false;
+		assert flyMissileUpdate == false;
 		
 		return consumable;	// if this is true the object is removed from 
 							// the cell after the apply
