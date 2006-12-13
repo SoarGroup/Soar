@@ -24,8 +24,6 @@ public class World {
 	private HashMap<String, java.awt.Point> locations = new HashMap<String, java.awt.Point>();
 	private HashMap<String, MoveInfo> lastMoves = new HashMap<String, MoveInfo>();
 	
-	private boolean terminal = false;
-	
 	public boolean load() {
 		
 		MapLoader loader = new MapLoader();
@@ -260,7 +258,7 @@ public class World {
 			
 			if (move.stopSim) {
 				if (Soar2D.config.terminalAgentCommand) {
-					stopAndDumpStats(player.getName() + " issued simulation stop command.");
+					stopAndDumpStats(player.getName() + " issued simulation stop command.", getSortedScores());
 				} else {
 					Soar2D.logger.warning(player.getName() + " issued ignored stop command.");
 				}
@@ -300,15 +298,29 @@ public class World {
 		}
 	}
 	
-	private void stopAndDumpStats(String message) {
+	private void stopAndDumpStats(String message, int[] scores) {
 		if (!printedStats) {
 			printedStats = true;
 			Soar2D.control.infoPopUp(message);
 			Soar2D.control.stopSimulation();
+			boolean draw = false;
+			if (scores.length > 1) {
+				if (scores[scores.length - 1] ==  scores[scores.length - 2]) {
+					if (logger.isLoggable(Level.FINER)) logger.finer("Draw detected.");
+					draw = true;
+				}
+			}
+			
 			Iterator<Player> iter = players.iterator();
 			while (iter.hasNext()) {
+				String status = null;
 				Player player = iter.next();
-				logger.info(player.getName() + ": " + player.getPoints());
+				if (player.getPoints() == scores[scores.length - 1]) {
+					status = draw ? "draw" : "winner";
+				} else {
+					status = "loser";
+				}
+				logger.info(player.getName() + ": " + player.getPoints() + " (" + status + ").");
 			}
 		}
 	}
@@ -403,6 +415,7 @@ public class World {
 		while (iter.hasNext()) {
 			player = iter.next();
 			scores[i] = player.getPoints();
+			++i;
 		}
 		Arrays.sort(scores);
 		return scores;
@@ -411,7 +424,7 @@ public class World {
 	public void update() {
 		if (Soar2D.config.terminalMaxUpdates > 0) {
 			if (worldCount >= Soar2D.config.terminalMaxUpdates) {
-				stopAndDumpStats("Reached maximum updates, stopping.");
+				stopAndDumpStats("Reached maximum updates, stopping.", getSortedScores());
 				return;
 			}
 		}
@@ -419,21 +432,21 @@ public class World {
 		if (Soar2D.config.terminalWinningScore > 0) {
 			int[] scores = getSortedScores();
 			if (scores[scores.length - 1] >= Soar2D.config.terminalWinningScore) {
-				stopAndDumpStats("At least one player has achieved at least " + Soar2D.config.terminalWinningScore + " points.");
+				stopAndDumpStats("At least one player has achieved at least " + Soar2D.config.terminalWinningScore + " points.", scores);
 				return;
 			}
 		}
 		
 		if (Soar2D.config.terminalPointsRemaining) {
 			if (scoreCount <= 0) {
-				stopAndDumpStats("There are no points remaining.");
+				stopAndDumpStats("There are no points remaining.", getSortedScores());
 				return;
 			}
 		}
 
 		if (Soar2D.config.terminalFoodRemaining) {
 			if (foodCount <= 0) {
-				stopAndDumpStats("All of the food is gone.");
+				stopAndDumpStats("All of the food is gone.", getSortedScores());
 				return;
 			}
 		}
@@ -598,7 +611,6 @@ public class World {
 	public void reset() {
 		worldCount = 0;
 		printedStats = false;
-		terminal = false;
 	}
 	
 	public int getWorldCount() {
