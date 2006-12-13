@@ -260,13 +260,7 @@ public class World {
 			
 			if (move.stopSim) {
 				if (Soar2D.config.terminalAgentCommand) {
-					if (!printedStats) {
-						Soar2D.control.stopSimulation();
-						printedStats = true;
-						Soar2D.control.infoPopUp(player.getName() + " issued simulation stop command.");
-						dumpStats();
-						terminal = true;
-					}
+					stopAndDumpStats(player.getName() + " issued simulation stop command.");
 				} else {
 					Soar2D.logger.warning(player.getName() + " issued ignored stop command.");
 				}
@@ -302,6 +296,19 @@ public class World {
 				
 			} else {
 				player.adjustPoints(Soar2D.config.kWallPenalty, "wall collision");
+			}
+		}
+	}
+	
+	private void stopAndDumpStats(String message) {
+		if (!printedStats) {
+			printedStats = true;
+			Soar2D.control.infoPopUp(message);
+			Soar2D.control.stopSimulation();
+			Iterator<Player> iter = players.iterator();
+			while (iter.hasNext()) {
+				Player player = iter.next();
+				logger.info(player.getName() + ": " + player.getPoints());
 			}
 		}
 	}
@@ -388,14 +395,6 @@ public class World {
 		}
 	}
 	
-	private void dumpStats() {
-		Iterator<Player> iter = players.iterator();
-		while (iter.hasNext()) {
-			Player player = iter.next();
-			logger.info(player.getName() + ": " + player.getPoints());
-		}
-	}
-	
 	private int[] getSortedScores() {
 		int[] scores = new int[players.size()];
 		Iterator<Player> iter = players.iterator();
@@ -412,13 +411,7 @@ public class World {
 	public void update() {
 		if (Soar2D.config.terminalMaxUpdates > 0) {
 			if (worldCount >= Soar2D.config.terminalMaxUpdates) {
-				if (!printedStats) {
-					Soar2D.control.stopSimulation();
-					printedStats = true;
-					Soar2D.control.infoPopUp("Reached maximum updates, stopping.");
-					dumpStats();
-					terminal = true;
-				}
+				stopAndDumpStats("Reached maximum updates, stopping.");
 				return;
 			}
 		}
@@ -426,39 +419,21 @@ public class World {
 		if (Soar2D.config.terminalWinningScore > 0) {
 			int[] scores = getSortedScores();
 			if (scores[scores.length - 1] >= Soar2D.config.terminalWinningScore) {
-				if (!printedStats) {
-					Soar2D.control.stopSimulation();
-					printedStats = true;
-					Soar2D.control.infoPopUp("At least one player has achieved at least " + Soar2D.config.terminalWinningScore + " points.");
-					dumpStats();
-					terminal = true;
-				}
+				stopAndDumpStats("At least one player has achieved at least " + Soar2D.config.terminalWinningScore + " points.");
 				return;
 			}
 		}
 		
 		if (Soar2D.config.terminalPointsRemaining) {
 			if (scoreCount <= 0) {
-				if (!printedStats) {
-					Soar2D.control.stopSimulation();
-					printedStats = true;
-					Soar2D.control.infoPopUp("There are no points remaining.");
-					dumpStats();
-					terminal = true;
-				}
+				stopAndDumpStats("There are no points remaining.");
 				return;
 			}
 		}
 
 		if (Soar2D.config.terminalFoodRemaining) {
 			if (foodCount <= 0) {
-				if (!printedStats) {
-					Soar2D.control.stopSimulation();
-					printedStats = true;
-					Soar2D.control.infoPopUp("All of the food is gone.");
-					dumpStats();
-					terminal = true;
-				}
+				stopAndDumpStats("All of the food is gone.");
 				return;
 			}
 		}
@@ -643,6 +618,6 @@ public class World {
 	}
 	
 	boolean isTerminal() {
-		return terminal;
+		return printedStats;
 	}
 }
