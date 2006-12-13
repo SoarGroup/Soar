@@ -157,7 +157,7 @@ public class MapLoader {
 			}
 		}
 		
-		map.cellObjectManager.registerTemplate(name, cellObjectTemplate);
+		map.cellObjectManager.registerTemplate(cellObjectTemplate);
 	}
 	private void property(CellObject cellObjectTemplate, ElementXML propertyTag, boolean apply) throws SMLException, SyntaxException {
 		String name = null;
