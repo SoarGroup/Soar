@@ -272,6 +272,11 @@ public class MapLoader {
 					cellObjectTemplate.setDecayUpdate(true);
 					xmlPath.pop();
 					
+				} else if (updateSubTag.IsTag(Names.kTagFlyMissile)) {
+					xmlPath.push(Names.kTagFlyMissile);
+					cellObjectTemplate.setFlyMissileUpdate(true);
+					xmlPath.pop();
+					
 				} else {
 					throwSyntax("unrecognized tag " + updateSubTag.GetTagName());
 				}

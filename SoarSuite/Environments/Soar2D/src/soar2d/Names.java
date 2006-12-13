@@ -31,6 +31,7 @@ public class Names {
 	public static final String kTagDisplay = "display";
 	public static final String kTagEaters = "eaters";
 	public static final String kTagEnergy = "energy";
+	public static final String kTagFlyMissile = "fly-missile";
 	public static final String kTagFood = "food";
 	public static final String kTagHealth = "health";
 	public static final String kTagLogger = "logger";
@@ -105,7 +106,7 @@ public class Names {
 	public static final String kOpenID = "open";
 	public static final String kRandomID = "random";
 	public static final String kScoreID = "score";
-	public static final String kStopID = "stop";
+	public static final String kStopSimID = "stop-sim";
 	public static final String kWallID = "wall";
 	public static final String kxID = "x";
 	public static final String kyID = "y";

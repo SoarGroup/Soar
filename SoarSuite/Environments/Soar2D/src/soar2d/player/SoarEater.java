@@ -561,7 +561,7 @@ public class SoarEater extends Eater {
 					continue;
 				}
 
-			} else if (commandName.equalsIgnoreCase(Names.kStopID)) {
+			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
 				if (move.stop) {
 					logger.warning(getName() + "multiple stop commands detected, ignoring");
 					continue;
@@ -630,20 +630,18 @@ public class SoarEater extends Eater {
 	 */
 	public void shutdown() {
 		assert agent != null;
-		if (shutdownCommands == null) { 
-			return;
-		}
-		
-		// execute the pre-shutdown commands
-		Iterator<String> iter = shutdownCommands.iterator();
-		while(iter.hasNext()) {
-			String command = iter.next();
-			String result = getName() + ": result: " + agent.ExecuteCommandLine(command, true);
-			Soar2D.logger.info(getName() + ": shutdown command: " + command);
-			if (agent.HadError()) {
-				Soar2D.control.severeError(result);
-			} else {
-				Soar2D.logger.info(getName() + ": result: " + result);
+		if (shutdownCommands != null) { 
+			// execute the pre-shutdown commands
+			Iterator<String> iter = shutdownCommands.iterator();
+			while(iter.hasNext()) {
+				String command = iter.next();
+				String result = getName() + ": result: " + agent.ExecuteCommandLine(command, true);
+				Soar2D.logger.info(getName() + ": shutdown command: " + command);
+				if (agent.HadError()) {
+					Soar2D.control.severeError(result);
+				} else {
+					Soar2D.logger.info(getName() + ": result: " + result);
+				}
 			}
 		}
 	}
