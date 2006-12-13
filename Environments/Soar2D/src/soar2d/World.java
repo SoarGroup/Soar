@@ -31,13 +31,45 @@ public class World {
 			return false;
 		}
 		
-		map = loader.getMap();
+		GridMap newMap = loader.getMap();
+		
+		if (Soar2D.config.tanksoar) {
+			if (!newMap.hasEnergyCharger()) {
+				if (!addCharger(false, newMap)) {
+					return false;
+				}
+			}
+			if (!newMap.hasHealthCharger()) {
+				if (!addCharger(true, newMap)) {
+					return false;
+				}
+			}
+		}
+		
+		map = newMap;
 		
 		reset();
 		resetPlayers();
 		recalculateScoreAndFoodCount();
 		
 		logger.info("Map loaded, world reset.");
+		return true;
+	}
+	
+	private boolean addCharger(boolean health, GridMap newMap) {
+		ArrayList<java.awt.Point> location = this.getAvailableLocations(newMap);
+		if (location.size() <= 0) {
+			Soar2D.control.severeError("No place to put energy charger!");
+			return false;
+		}
+		Cell cell = newMap.getCell(location.get(Simulation.random.nextInt(location.size())));
+		assert cell != null;
+		CellObject charger = newMap.getObjectManager().createRandomObjectWithProperties(Names.kPropertyHealth, Names.kPropertyCharger);
+		if (charger == null) {
+			Soar2D.control.severeError("No energy charger in templates!");
+			return false;
+		}
+		cell.addCellObject(charger);
 		return true;
 	}
 	
@@ -139,18 +171,23 @@ public class World {
 		logger.warning("destroyPlayer: Couldn't find player name match for " + name + ", ignoring.");
 	}
 	
-	private Cell putInStartingCell(Player player) {
-		// Get available cells
+	private ArrayList<java.awt.Point> getAvailableLocations(GridMap theMap) {
 		ArrayList<java.awt.Point> availableLocations = new ArrayList<java.awt.Point>();
-		for (int x = 0; x < map.getSize(); ++x) {
-			for (int y = 0; y < map.getSize(); ++ y) {
+		for (int x = 0; x < theMap.getSize(); ++x) {
+			for (int y = 0; y < theMap.getSize(); ++ y) {
 				java.awt.Point availableLocation = new java.awt.Point(x, y);
-				Cell cell = map.getCell(availableLocation);
+				Cell cell = theMap.getCell(availableLocation);
 				if (cell.enterable() && (cell.getPlayer() == null)) {
 					availableLocations.add(availableLocation);
 				}
 			}
 		}
+		return availableLocations;
+	}
+	
+	private Cell putInStartingCell(Player player) {
+		// Get available cells
+		ArrayList<java.awt.Point> availableLocations = getAvailableLocations(map);
 		
 		// make sure there is an available cell
 		if (availableLocations.size() < 1) {
@@ -219,7 +256,7 @@ public class World {
 			}
 			lastMoves.put(player.getName(), move);
 			
-			if (move.stop) {
+			if (move.stopSim) {
 				if (Soar2D.config.terminalAgentCommand) {
 					if (!printedStats) {
 						Soar2D.control.stopSimulation();
@@ -296,7 +333,7 @@ public class World {
 				}
 			}
 			
-			if (lastMove.eat) {
+			if (!lastMove.dontEat) {
 				eat(player, cell);
 				if (!cell.hasObject(Names.kRedraw)) {
 					cell.addCellObject(new CellObject(Names.kRedraw, false, true));
@@ -561,7 +598,7 @@ public class World {
 				Player player = collideeIter.next();
 				Cell cell = putInStartingCell(player);
 				assert cell != null;
-				if (lastMoves.get(player.getName()).eat) {
+				if (!lastMoves.get(player.getName()).dontEat) {
 					eat(player, cell);
 				}
 			}

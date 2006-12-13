@@ -139,4 +139,28 @@ public class CellObjectManager {
 		}
 		return all.get(Simulation.random.nextInt(all.size()));
 	}
+	/**
+	 * @param name1 a property
+	 * @param name1 another property
+	 * @return an object with those properties
+	 * 
+	 * same as createRandomObjectWithProperty but with two properties
+	 */
+	public CellObject createRandomObjectWithProperties(String name1, String name2) {
+		ArrayList<CellObject> all = getTemplatesWithProperty(name1);
+		if (all.size() <= 0) {
+			return null;
+		}
+		Iterator<CellObject> iter = all.iterator();
+		while (iter.hasNext()) {
+			CellObject obj = iter.next();
+			if (!obj.hasProperty(name2)) {
+				iter.remove();
+			}
+		}
+		if (all.size() <= 0) {
+			return null;
+		}
+		return all.get(Simulation.random.nextInt(all.size()));
+	}
 }

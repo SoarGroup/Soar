@@ -525,7 +525,6 @@ public class SoarEater extends Eater {
 		// go through the commands
 		// see move info for details
 		MoveInfo move = new MoveInfo();
-		move.eat = true;
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
 			Identifier commandId = agent.GetCommand(i);
 			String commandName = commandId.GetAttribute();
@@ -562,11 +561,11 @@ public class SoarEater extends Eater {
 				}
 
 			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
-				if (move.stop) {
+				if (move.stopSim) {
 					logger.warning(getName() + "multiple stop commands detected, ignoring");
 					continue;
 				}
-				move.stop = true;
+				move.stopSim = true;
 				commandId.AddStatusComplete();
 				continue;
 				
@@ -580,11 +579,11 @@ public class SoarEater extends Eater {
 				continue;
 				
 			} else if (commandName.equalsIgnoreCase(Names.kDontEatID)) {
-				if (move.eat == false) {
+				if (move.dontEat) {
 					logger.warning(getName() + "multiple dont eat commands detected, ignoring");
 					continue;
 				}
-				move.eat = false;
+				move.dontEat = true;
 				commandId.AddStatusComplete();
 				continue;
 				

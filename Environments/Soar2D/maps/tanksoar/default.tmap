@@ -96,12 +96,8 @@
       <cell>
         <object>trees</object>
       </cell>
-      <cell>
-        <object>energy</object>
-      </cell>
-      <cell>
-        <object>health</object>
-      </cell>
+      <cell />
+      <cell />
       <cell>
         <object>missiles</object>
       </cell>
