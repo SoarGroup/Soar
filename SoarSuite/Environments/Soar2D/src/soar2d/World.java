@@ -319,7 +319,7 @@ public class World {
 			CellObject food = foodIter.next();
 			if (food.apply(player)) {
 				// if this returns true, it is consumed
-				cell.removeObject(food);
+				cell.removeObject(food.getName());
 				scoreCount -= food.getIntProperty(Names.kPropertyPoints);
 				foodCount -= 1;
 			}
@@ -338,7 +338,7 @@ public class World {
 		
 		CellObject box = boxes.get(0);
 		if (box.hasProperty(Names.kPropertyStatus)) {
-			if (box.getStringProperty(Names.kPropertyStatus).equalsIgnoreCase(Names.kOpen)) {
+			if (box.getProperty(Names.kPropertyStatus).equalsIgnoreCase(Names.kOpen)) {
 				Soar2D.logger.warning(player.getName() + " tried to open an open box.");
 				return;
 			}

@@ -25,7 +25,7 @@ class SoarCell {
 	 */
 	Identifier me;
 	/**
-	 * the list of crap in the cell
+	 * the list of stuff in the cell
 	 */
 	HashMap<String, StringElement> content = new HashMap<String, StringElement>();
 	
@@ -257,7 +257,8 @@ public class SoarEater extends Eater {
 						
 						// update the soarcell with the new content
 						// use the id property as its id on the input link
-						createContent(soarCell.content, soarCell, wall.getStringProperty(Names.kPropertyID));
+						assert wall.hasProperty(Names.kPropertyID);
+						createContent(soarCell.content, soarCell, wall.getProperty(Names.kPropertyID));
 						continue;
 					}
 					
@@ -283,7 +284,8 @@ public class SoarEater extends Eater {
 							// yes
 							hadFood = true;
 							// create it using its id property on the link
-							createContent(soarCell.content, soarCell, food.getStringProperty(Names.kPropertyID));
+							assert food.hasProperty(Names.kPropertyID);
+							createContent(soarCell.content, soarCell, food.getProperty(Names.kPropertyID));
 						}
 					}
 					
@@ -317,6 +319,11 @@ public class SoarEater extends Eater {
 
 					// create the new map
 					HashMap<String, StringElement> newContent = new HashMap<String, StringElement>();
+
+					// Anything out of bounds will not change
+					if (cell == null) {
+						continue;
+					}
 	
 					// check for a player
 					Player player = cell.getPlayer();
@@ -353,10 +360,12 @@ public class SoarEater extends Eater {
 							StringElement element = soarCell.content.remove(food.getName());
 							if (element == null) {
 								// no, create it
-								createContent(newContent, soarCell, food.getStringProperty(Names.kPropertyID));
+								assert food.hasProperty(Names.kPropertyID);
+								createContent(newContent, soarCell, food.getProperty(Names.kPropertyID));
 							} else {
 								// yes, save it
-								newContent.put(food.getStringProperty(Names.kPropertyID), element);
+								assert food.hasProperty(Names.kPropertyID);
+								newContent.put(food.getProperty(Names.kPropertyID), element);
 							}
 						}
 					}
@@ -392,7 +401,7 @@ public class SoarEater extends Eater {
 								StringElement element = soarCell.boxProperties.remove(name);
 								if (element == null) {
 									// no, add it
-									String value = box.getStringProperty(name);
+									String value = box.getProperty(name);
 									element = agent.CreateStringWME(soarCell.box, name, value);
 								}
 								// save it regardless
@@ -460,7 +469,8 @@ public class SoarEater extends Eater {
 	 */
 	private void createBox(SoarCell soarCell, CellObject box) {
 		// create the wme
-		soarCell.box = agent.CreateIdWME(soarCell.me, box.getStringProperty(Names.kPropertyID));
+		assert box.hasProperty(Names.kPropertyID);
+		soarCell.box = agent.CreateIdWME(soarCell.me, box.getProperty(Names.kPropertyID));
 		// make sure that happened
 		assert soarCell.box != null;
 		
@@ -468,7 +478,7 @@ public class SoarEater extends Eater {
 		Iterator<String> iter = box.getPropertyNames().iterator();
 		while (iter.hasNext()) {
 			String name = iter.next();
-			String value = box.getStringProperty(name);
+			String value = box.getProperty(name);
 			StringElement element = agent.CreateStringWME(soarCell.box, name, value);
 			soarCell.boxProperties.put(name, element);
 		}

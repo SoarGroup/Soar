@@ -163,24 +163,26 @@ public class VisualWorld extends Canvas implements PaintListener {
 						}
 						empty = false;
 					    
-					    Color color = WindowManager.getColor(object.getStringProperty(Names.kPropertyColor));
+					    Color color = WindowManager.getColor(object.getProperty(Names.kPropertyColor));
 					    if (color == null) {
 					    	//TODO: draw outline!
 					    }
 						gc.setBackground(color);
 						
-						Shape shape = Shape.getShape(object.getStringProperty(Names.kPropertyShape));
-						if (shape.equals(Shape.ROUND)) {
-							fill1 = (int)(cellSize/2.8);
-							fill2 = cellSize - fill1 + 1;
-							gc.fillOval(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2, cellSize - fill2);
-							gc.drawOval(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2 - 1, cellSize - fill2 - 1);
-							
-						} else if (shape.equals(Shape.SQUARE)) {
-							fill1 = (int)(cellSize/2.8);
-							fill2 = cellSize - fill1 + 1;
-							gc.fillRectangle(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2, cellSize - fill2);
-							gc.drawRectangle(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2, cellSize - fill2);
+						Shape shape = Shape.getShape(object.getProperty(Names.kPropertyShape));
+						if (shape != null) {
+							if (shape.equals(Shape.ROUND)) {
+								fill1 = (int)(cellSize/2.8);
+								fill2 = cellSize - fill1 + 1;
+								gc.fillOval(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2, cellSize - fill2);
+								gc.drawOval(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2 - 1, cellSize - fill2 - 1);
+								
+							} else if (shape.equals(Shape.SQUARE)) {
+								fill1 = (int)(cellSize/2.8);
+								fill2 = cellSize - fill1 + 1;
+								gc.fillRectangle(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2, cellSize - fill2);
+								gc.drawRectangle(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2, cellSize - fill2);
+							}
 						}
 					}
 					
