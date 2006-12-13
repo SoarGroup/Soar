@@ -24,6 +24,8 @@ public class World {
 	private HashMap<String, java.awt.Point> locations = new HashMap<String, java.awt.Point>();
 	private HashMap<String, MoveInfo> lastMoves = new HashMap<String, MoveInfo>();
 	
+	private boolean terminal = false;
+	
 	public boolean load() {
 		
 		MapLoader loader = new MapLoader();
@@ -263,6 +265,7 @@ public class World {
 						printedStats = true;
 						Soar2D.control.infoPopUp(player.getName() + " issued simulation stop command.");
 						dumpStats();
+						terminal = true;
 					}
 				} else {
 					Soar2D.logger.warning(player.getName() + " issued ignored stop command.");
@@ -414,6 +417,7 @@ public class World {
 					printedStats = true;
 					Soar2D.control.infoPopUp("Reached maximum updates, stopping.");
 					dumpStats();
+					terminal = true;
 				}
 				return;
 			}
@@ -427,6 +431,7 @@ public class World {
 					printedStats = true;
 					Soar2D.control.infoPopUp("At least one player has achieved at least " + Soar2D.config.terminalWinningScore + " points.");
 					dumpStats();
+					terminal = true;
 				}
 				return;
 			}
@@ -439,6 +444,7 @@ public class World {
 					printedStats = true;
 					Soar2D.control.infoPopUp("There are no points remaining.");
 					dumpStats();
+					terminal = true;
 				}
 				return;
 			}
@@ -451,6 +457,7 @@ public class World {
 					printedStats = true;
 					Soar2D.control.infoPopUp("All of the food is gone.");
 					dumpStats();
+					terminal = true;
 				}
 				return;
 			}
@@ -616,6 +623,7 @@ public class World {
 	public void reset() {
 		worldCount = 0;
 		printedStats = false;
+		terminal = false;
 	}
 	
 	public int getWorldCount() {
@@ -632,5 +640,9 @@ public class World {
 
 	public ArrayList<Player> getPlayers() {
 		return players;
+	}
+	
+	boolean isTerminal() {
+		return terminal;
 	}
 }

@@ -652,7 +652,6 @@ public class Simulation {
 	 * check to see if one of the terminal states has been reached
 	 */
 	public boolean isDone() {
-		// TODO This should test the goals. Controls whether Run and Step are available.
-		return false;
+		return world.isTerminal();
 	}
 }
