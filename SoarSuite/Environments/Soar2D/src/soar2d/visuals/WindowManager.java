@@ -162,13 +162,13 @@ public class WindowManager {
 						humanMove.jump = !humanMove.jump;
 						break;
 					case SWT.KEYPAD_DECIMAL:
-						humanMove.eat = !humanMove.eat;
+						humanMove.dontEat = !humanMove.dontEat;
 						break;
 					case SWT.KEYPAD_ADD:
 						humanMove.open = !humanMove.open;
 						break;
 					case SWT.KEYPAD_MULTIPLY:
-						humanMove.stop = !humanMove.stop;
+						humanMove.stopSim = !humanMove.stopSim;
 						break;
 					default:
 						break;
@@ -199,7 +199,7 @@ public class WindowManager {
 						go = true;
 						break;
 					case SWT.KEYPAD_MULTIPLY:
-						humanMove.stop = !humanMove.stop;
+						humanMove.stopSim = !humanMove.stopSim;
 						break;
 					default:
 						break;
@@ -472,9 +472,6 @@ public class WindowManager {
 
 	public MoveInfo getHumanMove(String color) {
 		humanMove = new MoveInfo();
-		if (Soar2D.config.eaters) {
-			humanMove.eat = true;
-		}
 		setStatus("Enter move for " + color);
 		try {
 			synchronized(humanMove) {

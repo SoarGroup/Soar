@@ -614,7 +614,6 @@ public class Simulation {
 			Soar2D.control.severeError("Error loading map " + Soar2D.config.map);
 			return false;
 		}
-		world.reset();
 		return true;
 	}
 
