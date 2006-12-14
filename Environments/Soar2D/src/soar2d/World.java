@@ -161,9 +161,7 @@ public class World {
 				lastMoves.remove(name);
 				Cell cell = map.getCell(location);
 				cell.setPlayer(null);
-				if (!cell.hasObject(Names.kRedraw)) {
-					cell.addCellObject(new CellObject(Names.kRedraw, false, true));
-				}
+				setRedraw(cell);
 				iter.remove();
 				return;
 			}
@@ -177,7 +175,11 @@ public class World {
 			for (int y = 0; y < theMap.getSize(); ++ y) {
 				java.awt.Point availableLocation = new java.awt.Point(x, y);
 				Cell cell = theMap.getCell(availableLocation);
-				if (cell.enterable() && (cell.getPlayer() == null)) {
+				boolean enterable = cell.enterable();
+				boolean noPlayer = cell.getPlayer() == null;
+				boolean noMissilePack = cell.getAllWithProperty(Names.kPropertyMissiles).size() <= 0;
+				boolean noCharger = cell.getAllWithProperty(Names.kPropertyCharger).size() <= 0;
+				if (enterable && noPlayer && noMissilePack && noCharger) {
 					availableLocations.add(availableLocation);
 				}
 			}
@@ -199,10 +201,10 @@ public class World {
 		java.awt.Point location = null;
 
 		if (initialLocations.containsKey(player.getName())) {
-			if (availableLocations.contains(initialLocations.get(player.getName()))) {
-				location = initialLocations.get(player.getName());
-			} else {
+			location = initialLocations.get(player.getName());
+			if (!availableLocations.contains(location)) {
 				logger.warning(player.getName() + ": Initial location (" + location.x + "," + location.y + ") is blocked, going random.");
+				location = null;
 			}
 		}
 		
@@ -215,10 +217,7 @@ public class World {
 		// put the player in it
 		locations.put(player.getName(), location);
 		cell.setPlayer(player);
-		
-		if (!cell.hasObject(Names.kRedraw)) {
-			cell.addCellObject(new CellObject(Names.kRedraw, false, true));
-		}
+		setRedraw(cell);
 		return cell;
 	}
 
@@ -249,21 +248,11 @@ public class World {
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player player = iter.next();
-			
-			MoveInfo move = player.getMove();
-			if (Soar2D.control.isShuttingDown()) {
+			MoveInfo move = getAndStoreMove(player);			
+			if (move == null) {
 				return;
 			}
-			lastMoves.put(player.getName(), move);
-			
-			if (move.stopSim) {
-				if (Soar2D.config.terminalAgentCommand) {
-					stopAndDumpStats(player.getName() + " issued simulation stop command.", getSortedScores());
-				} else {
-					Soar2D.logger.warning(player.getName() + " issued ignored stop command.");
-				}
-			}
-			
+
 			if (!move.move) {
 				continue;
 			}
@@ -283,9 +272,7 @@ public class World {
 				oldCell.setPlayer(null);
 				
 				// Add redraw object
-				if (!oldCell.hasObject(Names.kRedraw)) {
-					oldCell.addCellObject(new CellObject(Names.kRedraw, false, true));
-				}
+				setRedraw(oldCell);
 
 				if (move.jump) {
 					player.adjustPoints(Soar2D.config.kJumpPenalty, "jump penalty");
@@ -339,9 +326,7 @@ public class World {
 			
 			if (lastMove.move || lastMove.jump) {
 				cell.setPlayer(player);
-				if (!cell.hasObject(Names.kRedraw)) {
-					cell.addCellObject(new CellObject(Names.kRedraw, false, true));
-				}
+				setRedraw(cell);
 
 				ArrayList<CellObject> moveApply = cell.getAllWithProperty(Names.kPropertyMoveApply);
 				if (moveApply.size() > 0) {
@@ -357,17 +342,18 @@ public class World {
 			
 			if (!lastMove.dontEat) {
 				eat(player, cell);
-				if (!cell.hasObject(Names.kRedraw)) {
-					cell.addCellObject(new CellObject(Names.kRedraw, false, true));
-				}
+				setRedraw(cell);
 			}
 			
 			if (lastMove.open) {
 				open(player, cell);
-				if (!cell.hasObject(Names.kRedraw)) {
-					cell.addCellObject(new CellObject(Names.kRedraw, false, true));
-				}
+				setRedraw(cell);
 			}
+		}
+	}
+	private void setRedraw(Cell cell) {
+		if (!cell.hasObject(Names.kRedraw)) {
+			cell.addCellObject(new CellObject(Names.kRedraw, false, true));
 		}
 	}
 	
@@ -452,24 +438,370 @@ public class World {
 		}
 
 		if (players.size() == 0) {
-			logger.warning("Update called with no eaters.");
+			logger.warning("Update called with no players.");
 			return;
 		}
 		
-		moveEaters();
-		if (Soar2D.control.isShuttingDown()) {
-			return;
-		}
-		updateMapAndEatFood();
-		handleCollisions();	
-		updatePlayers();
-		if (map.getObjectManager().updatablesExist()) {
-			updateObjects();
+		if (Soar2D.config.eaters) {
+			moveEaters();
+			if (Soar2D.control.isShuttingDown()) {
+				return;
+			}
+			updateMapAndEatFood();
+			handleCollisions();	
+			updatePlayers();
+			if (map.getObjectManager().updatablesExist()) {
+				updateObjects();
+			}
+			
+		} else if (Soar2D.config.tanksoar) {
+			
+			// Read Tank output links
+			getTankMoves();
+			
+			// We'll cache the tank new locations
+			HashMap<String, java.awt.Point> newLocations = new HashMap<String, java.awt.Point>();
+			
+			// We'll cache tanks we need to respawn
+			ArrayList<Player> killedTanks = new ArrayList<Player>();
+			
+			// And we'll cache tanks that moved
+			ArrayList<Player> movedTanks = new ArrayList<Player>();
+			
+			// Do cross checks (and only cross checks) first
+			// Cross-check:
+			// If moving in to a cell with a tank, check that tank for 
+			// a move in the opposite direction
+			Iterator<Player> playerIter = players.iterator();
+			while (playerIter.hasNext()) {
+				Player player = playerIter.next();
+				
+				// if we exist in the new locations, we can skip ourselves
+				if (newLocations.containsKey(player.getName())) {
+					continue;
+				}
+				
+				MoveInfo playerMove = lastMoves.get(player.getName());
+
+				// Calculate new location if I moved, or just use the old location
+				java.awt.Point oldLocation = locations.get(player.getName());
+				
+				if (!playerMove.move) {
+					// No move, cross collision impossible
+					newLocations.put(player.getName(), oldLocation);
+					continue;
+				}
+				
+				// we moved, calcuate new location
+				java.awt.Point newLocation = new java.awt.Point(oldLocation);
+				Direction.translate(newLocation, playerMove.moveDirection);
+				
+				Cell dest = map.getCell(newLocation);
+				
+				Player other = dest.getPlayer();
+				if (other == null) {
+					// No tank, cross collision impossible
+					newLocations.put(player.getName(), newLocation);
+					movedTanks.add(player);
+					continue;
+				}
+				
+				MoveInfo otherMove = lastMoves.get(other.getName());
+				if (!otherMove.move) {
+					// they didn't move, cross collision impossible
+					newLocations.put(player.getName(), newLocation);
+					movedTanks.add(player);
+					continue;
+				}
+				
+				if (playerMove.moveDirection != Direction.backwardOf[otherMove.moveDirection]) {
+					// we moved but not toward each other, cross collision impossible
+					newLocations.put(player.getName(), newLocation);
+					movedTanks.add(player);
+					continue;
+				}
+
+				// Cross collision detected
+				
+				// take damage
+				player.adjustHealth(Soar2D.config.kTankCollisionPenalty, "cross collision " + other.getName());
+				other.adjustHealth(Soar2D.config.kTankCollisionPenalty, "cross collision " + player.getName());
+				
+				// TODO: check for kills
+				//killedTanks.add(player);
+				//killedTanks.add(other);
+				
+				// cancel moves
+				playerMove.move = false;
+				otherMove.move = false;
+				
+				// store new locations
+				newLocations.put(player.getName(), locations.get(player.getName()));
+				newLocations.put(other.getName(), locations.get(other.getName()));
+			}
+			
+			// We'll need to save where people move, indexed by location
+			HashMap<java.awt.Point, Player> collisionMap = new HashMap<java.awt.Point, Player>();
+			HashMap<java.awt.Point, ArrayList<Player> > damageMap = new HashMap<java.awt.Point, ArrayList<Player> >(); 
+			
+			playerIter = players.iterator();
+			while (playerIter.hasNext()) {
+				Player player = playerIter.next();
+				MoveInfo playerMove = lastMoves.get(player.getName());
+				
+				doMoveCollisions(player, playerMove, newLocations, collisionMap, damageMap, movedTanks);
+			}			
+			
+			// figure out collision damage
+			Iterator<ArrayList<Player> > locIter = damageMap.values().iterator();
+			while (locIter.hasNext()) {
+				
+				ArrayList<Player> collision = locIter.next();
+				ListIterator<Player> leftIter = collision.listIterator();
+				while (leftIter.hasNext()) {
+					
+					Player left = leftIter.next();
+				
+					ListIterator<Player> rightIter = collision.listIterator(leftIter.nextIndex());
+					while (rightIter.hasNext()) {
+						
+						Player right = rightIter.next();
+						left.adjustHealth(Soar2D.config.kTankCollisionPenalty, right.getName());
+						right.adjustHealth(Soar2D.config.kTankCollisionPenalty, left.getName());
+					}
+					
+					// TODO: check for kills
+					//killedTanks.add()
+				}
+			}
+			
+			// Commit tank moves in two steps, remove from old, place in new
+			playerIter = movedTanks.iterator();
+			while (playerIter.hasNext()) {
+				Player player = playerIter.next();
+				
+				// remove from past cell
+				Cell cell = map.getCell(locations.remove(player.getName()));
+				cell.setPlayer(null);
+				setRedraw(cell);
+			}
+			
+			playerIter = movedTanks.iterator();
+			while (playerIter.hasNext()) {
+				Player player = playerIter.next();
+				// put in new cell
+				locations.put(player.getName(), newLocations.get(player.getName()));
+				Cell cell = map.getCell(locations.get(player.getName()));
+				cell.setPlayer(player);
+				setRedraw(cell);
+			}
+			
+			// Move all Missiles
+//			if (missiles.size() > 0) {
+//				if (logger.isLoggable(Level.FINEST)) logger.finest("Moving all missiles");
+//				moveMissiles();
+//				
+//				// Check for Missile-Tank special collisions
+//				if (logger.isLoggable(Level.FINEST)) logger.finest("Checking for missile-tank special collisions");
+//				for (int i = 0; i < m_Tanks.length; ++i) {
+//					if (m_Tanks[i].recentlyMoved()) {
+//						//   Tank and Missile swapping spaces
+//						Integer[] ids = checkMissilePassThreat(m_Tanks[i]);
+//						if (ids != null) {
+//							if (logger.isLoggable(Level.FINE)) logger.fine(m_Tanks[i].getName() + ": moved through " + Integer.toString(ids.length) + " missile(s).");
+//							//   Assign penalties and awards
+//							m_Tanks[i].hitBy(ids);
+//							removeMissilesByID(ids);
+//							if (!m_Tanks[i].getShieldStatus()) {
+//								getCell(m_Tanks[i].getLocation()).setExplosion();
+//							}
+//						}
+//					}
+//				}
+//			} else {
+//				if (logger.isLoggable(Level.FINEST)) logger.finest("Skipping missile movement, no missiles");
+//			}
+//
+//			//   Spawn new Missiles in front of Tanks
+//			if (logger.isLoggable(Level.FINEST)) logger.finest("Spawning newly fired missiles");
+//			for (int i = 0; i < m_Tanks.length; ++i) {
+//				if (m_Tanks[i].firedMissile()) {
+//					addMissile(m_Tanks[i]);
+//				}
+//			}
+//			
+//			// Check for Missile-Tank collisions
+//			if (missiles.size() > 0) {
+//				if (logger.isLoggable(Level.FINEST)) logger.finest("Checking for missile-tank collisions");
+//				for (int i = 0; i < m_Tanks.length; ++i) {
+//					Integer[] ids = checkForMissileThreat(m_Tanks[i].getLocation());
+//					if (ids != null) {
+//						if (logger.isLoggable(Level.FINE)) logger.fine(m_Tanks[i].getName() + ": hit by " + Integer.toString(ids.length) + " missile(s).");
+//						//   Assign penalties and awards
+//						m_Tanks[i].hitBy(ids);
+//						removeMissilesByID(ids);
+//						if (!m_Tanks[i].getShieldStatus()) {
+//							getCell(m_Tanks[i].getLocation()).setExplosion();
+//						}
+//					}
+//				}
+//			} else {
+//				if (logger.isLoggable(Level.FINEST)) logger.finest("Skipping missile-tank collision check, no missiles");
+//			}
+//
+			
+			// Spawn missile packs
+			if (map.numberMissilePacks() < Soar2D.config.kMaxMissilePacks) {
+				if (Simulation.random.nextInt(100) < Soar2D.config.kMissilePackRespawnChance) {
+					// Create a pack
+					CellObject missiles = map.getObjectManager().createRandomObjectWithProperty(Names.kPropertyMissiles);
+					assert missiles != null;
+
+					// Get available spots
+					ArrayList<java.awt.Point> spots = getAvailableLocations(map);
+					assert locations.size() > 0;
+					
+					// pick one and get the cell
+					Cell cell = map.getCell(spots.get(Simulation.random.nextInt(spots.size())));
+					assert cell != null;
+					
+					// add it 
+					cell.addCellObject(missiles);
+					setRedraw(cell);
+
+					// update the count
+					map.incrementMissilePacks();
+				}
+			}
+			
+			//  Respawn killed Tanks in safe squares
+			playerIter = killedTanks.iterator();
+			while (playerIter.hasNext()) {
+				Player player = playerIter.next();
+				
+				// Get available spots
+				ArrayList<java.awt.Point> spots = getAvailableLocations(map);
+				assert locations.size() > 0;
+				
+				// pick one and get the cell
+				java.awt.Point location = spots.get(Simulation.random.nextInt(spots.size()));
+				Cell cell = map.getCell(location);
+				assert cell != null;
+				
+				// put them in the cell
+				cell.setPlayer(player);
+				setRedraw(cell);
+
+				// save the location
+				locations.put(player.getName(), location);
+			}
+			
+			// Update tanks
+			playerIter = players.iterator();
+			while (playerIter.hasNext()) {
+				Player player = playerIter.next();
+				player.update(this, locations.get(player.getName()));
+			}
+			
+			// Commit input
+			playerIter = players.iterator();
+			while (playerIter.hasNext()) {
+				Player player = playerIter.next();
+				player.commit();
+			}
+			
+		} else {
+			Soar2D.control.severeError("Update called, unknown game type.");
 		}
 		
 		++worldCount;
 	}
+	
+	private void doMoveCollisions(Player player, MoveInfo playerMove, 
+			HashMap<String, java.awt.Point> newLocations, HashMap<java.awt.Point, Player> collisionMap, 
+			HashMap<java.awt.Point, ArrayList<Player> > damageMap, ArrayList<Player> movedTanks) {
+		java.awt.Point newLocation = newLocations.get(player.getName());
 		
+		// If I moved, check to see if new location is valid
+		if (playerMove.move) {
+			Cell dest = map.getCell(newLocation);
+			if (!dest.enterable()) {
+				// it is not valid
+				
+				// cancel my move
+				newLocations.put(player.getName(), locations.get(player.getName()));
+				playerMove.move = false;
+				movedTanks.remove(player);
+	
+				// take damage
+				String name = dest.getAllWithProperty(Names.kPropertyBlock).get(0).getName();
+				player.adjustHealth(Soar2D.config.kTankCollisionPenalty, name);
+				
+				// TODO: check for kills
+				//killedTanks.add(player);
+			}
+		}
+		
+		// Check to see if new location is taken
+		Player other = collisionMap.remove(newLocation);
+		if (other != null) {
+			// it is taken
+
+			// cancel my move
+			playerMove.move = false;
+			movedTanks.remove(player);
+			newLocations.put(player.getName(), locations.get(player.getName()));
+			
+			// cancel other's move
+			MoveInfo otherMove = lastMoves.get(other.getName());
+			otherMove.move = false;
+			movedTanks.remove(other);
+			newLocations.put(other.getName(), locations.get(other.getName()));
+			
+			// record damage
+			ArrayList<Player> collision = damageMap.get(newLocation);
+			if (collision == null) {
+				collision = new ArrayList<Player>();
+			}
+			if (!collision.contains(player)) {
+				collision.add(player);
+			}
+			if (!collision.contains(other)) {
+				collision.add(other);
+			}
+			damageMap.put(newLocation, collision);
+			
+			// reprocess other
+			doMoveCollisions(other, otherMove, newLocations, collisionMap, damageMap, movedTanks);
+		}
+		
+		collisionMap.put(newLocation, player);
+	}
+	
+	private MoveInfo getAndStoreMove(Player player) {
+		MoveInfo move = player.getMove();
+		if (Soar2D.control.isShuttingDown()) {
+			return null;
+		}
+		lastMoves.put(player.getName(), move);
+		
+		if (move.stopSim) {
+			if (Soar2D.config.terminalAgentCommand) {
+				stopAndDumpStats(player.getName() + " issued simulation stop command.", getSortedScores());
+			} else {
+				Soar2D.logger.warning(player.getName() + " issued ignored stop command.");
+			}
+		}
+		return move;
+	}
+		
+	private void getTankMoves() {
+		Iterator<Player> iter = players.iterator();
+		while (iter.hasNext()) {
+			getAndStoreMove(iter.next());
+		}
+	}
+
 	private void recalculateScoreAndFoodCount() {
 		scoreCount = 0;
 		foodCount = 0;

@@ -34,6 +34,9 @@ public class Configuration {
 	public final int kJumpPenalty = -5;	// eaters scoring penalty
 	public final double kLowProbability = .15;		// eaters wall generation
 	public final double kHigherProbability = .65;	// eaters wall generation
+	public final int kTankCollisionPenalty = -100;	// tanksoar
+	public final int kMaxMissilePacks = 3;
+	public final int kMissilePackRespawnChance = 5;	// percent chance per update that a missile pack will respawn
 
 	public final boolean kDefaultPropertyBoolean = false;	// if a bool property doesn't exist
 	public final float kDefaultPropertyFloat = 0;			// if a float property doesn't exist
@@ -128,5 +131,4 @@ public class Configuration {
 	 * Must be positive for this terminal condition to work
 	 */
 	public int terminalWinningScore = 0;
-
 }

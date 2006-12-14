@@ -190,6 +190,12 @@ public class Player {
 	}
 	
 	/**
+	 * called to write sensor data to the input link
+	 */
+	public void commit() {
+	}
+	
+	/**
 	 * @return true if the player moved since the last update
 	 */
 	public boolean moved() {
