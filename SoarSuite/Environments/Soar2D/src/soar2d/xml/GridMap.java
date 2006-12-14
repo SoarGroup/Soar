@@ -42,6 +42,10 @@ public class GridMap {
 		return missilePacks;
 	}
 	
+	public void incrementMissilePacks() {
+		++missilePacks;
+	}
+	
 	public boolean hasHealthCharger() {
 		return health;
 	}
