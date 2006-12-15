@@ -106,6 +106,9 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		}
 		
 		stop = false;
+
+		// TOSCA patch -- try a call to tosca code
+		//soar2d.tosca2d.Tosca.test() ;
 		
 		// spawn a thread or just run it in this one
 		if (newThread) {
