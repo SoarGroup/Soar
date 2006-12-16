@@ -112,7 +112,7 @@ public class SoarEater extends Eater {
 	 * @param playerConfig the rest of the player config
 	 */
 	public SoarEater(Agent agent, PlayerConfig playerConfig) {
-		super(playerConfig);
+		super(playerConfig, false);
 		this.agent = agent;
 		this.shutdownCommands = playerConfig.getShutdownCommands();
 		

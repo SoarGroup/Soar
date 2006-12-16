@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import soar2d.Soar2D;
 import soar2d.World;
+import soar2d.tosca2d.ToscaInterface;
 
 /**
  * @author doug
@@ -13,14 +14,18 @@ import soar2d.World;
 public class ToscaEater {
 	protected Logger logger = Soar2D.logger;
 
+	protected soar2d.tosca2d.ToscaInterface m_ToscaInterface ;
 	protected Eater m_Eater ;
 	protected Eater getEater() { return m_Eater ; }
 	
 	/** This boolean switches tosca integration on and off.  When off, no Tosca code should run and we're back to regular Soar Eaters */
-	public static final boolean kToscaEnabled = true ;
+	public static final boolean kToscaEnabled = false ;
 	
 	public ToscaEater( Eater eater ) {
 		m_Eater = eater ;
+		
+		// Establish a link to the C++ library code
+		m_ToscaInterface = ToscaInterface.getTosca() ;
 	}
 	
 	/* (non-Javadoc)
