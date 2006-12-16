@@ -260,7 +260,7 @@ public class Simulation {
 				
 				// eater or tank depending on the setting
 				if (Soar2D.config.eaters) {
-					player = new Eater(playerConfig);
+					player = new Eater(playerConfig, true);
 				} else if (Soar2D.config.tanksoar) {
 					player = new Tank(playerConfig);
 				} else {

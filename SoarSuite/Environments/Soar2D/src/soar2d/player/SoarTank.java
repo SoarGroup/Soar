@@ -11,7 +11,7 @@ public class SoarTank extends Eater {
 	private ArrayList<String> shutdownCommands;
 
 	public SoarTank(Agent agent, PlayerConfig playerConfig) {
-		super(playerConfig);
+		super(playerConfig, false);
 		this.agent = agent;
 		this.shutdownCommands = playerConfig.getShutdownCommands();
 		

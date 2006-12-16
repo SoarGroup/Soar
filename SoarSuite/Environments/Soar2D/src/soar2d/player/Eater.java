@@ -13,10 +13,10 @@ import soar2d.World;
 public class Eater extends Player {	
 	protected ToscaEater m_ToscaEater = null ;
 	
-	public Eater( PlayerConfig playerConfig) {
-		super(playerConfig);
-		
-		if (ToscaEater.kToscaEnabled)
+	public Eater( PlayerConfig playerConfig, boolean isHuman ) {
+		super(playerConfig) ;
+
+		if (isHuman && ToscaEater.kToscaEnabled)
 			m_ToscaEater = new ToscaEater(this) ;
 	}
 	
