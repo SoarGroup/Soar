@@ -17,27 +17,43 @@ import tosca.Vector;
  * The specific agent I/O happens in ToscaEater.
  */
 public class Tosca {
+	// Test code -- remove once things are working
 	private static Tosca s_Tosca = null ;
 	private LoaderJNI m_Loader = null ;
-	private Value	  m_Value = null ;
+	private tosca.Library   m_EatersLibrary = null ;
 	
-	public static void test() {
-		// Only do this once for now
-		if (s_Tosca != null)
-			return ;
-		
-		Tosca tosca = new Tosca() ;
-		s_Tosca = tosca ;
-		
-		try {
-			tosca.testGroup() ;
+	public static Tosca getTosca() {
+		if (s_Tosca == null)
+		{
+			s_Tosca = new Tosca() ;
+			s_Tosca.loadLibrary() ;
 		}
-		catch (Exception ex) {
-			ex.printStackTrace() ;
-		}
+		
+		return s_Tosca ;
 	}
 	
-	public void testGroup() {
+	protected void loadLibrary() {
+		LoaderJNI loader = new LoaderJNI("EatersDLL") ;
+		long rawLibrarian = loader.Librarian_GetExistingLibrarian() ;
+		m_Loader = loader ;
+		
+	    //tosca.Librarian librarian = tosca.Librarian.GetLibrarian() ;
+		tosca.Librarian librarian = tosca.Librarian.UseExistingLibrarian(rawLibrarian) ;
+	    int libs = librarian.GetNumberLibraries() ;
+	    System.out.println("Number of libraries is " + libs) ;
+	    tosca.Library library = librarian.GetLibraryByName("eaters") ;
+	    if (library == null)
+	    	System.out.println("Failed to find C++ library") ;
+	    else
+	    	System.out.println("Found C++ library") ;
+
+	    m_EatersLibrary = library ;
+	    
+	    if (m_EatersLibrary == null)
+	    	throw new IllegalStateException("Failed to load C++ Tosca library for eaters") ;
+	}
+	
+	public void testCode() {
 		// Loads our test C++ code and gets a pointer to it
 		LoaderJNI loader = new LoaderJNI("EatersDLL") ;
 		long rawLibrarian = loader.Librarian_GetExistingLibrarian() ;
