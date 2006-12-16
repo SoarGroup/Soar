@@ -16,16 +16,16 @@ import tosca.Vector;
  * This class handles startup, shutdown etc.
  * The specific agent I/O happens in ToscaEater.
  */
-public class Tosca {
+public class ToscaInterface {
 	// Test code -- remove once things are working
-	private static Tosca s_Tosca = null ;
+	private static ToscaInterface s_Tosca = null ;
 	private LoaderJNI m_Loader = null ;
 	private tosca.Library   m_EatersLibrary = null ;
 	
-	public static Tosca getTosca() {
+	public static ToscaInterface getTosca() {
 		if (s_Tosca == null)
 		{
-			s_Tosca = new Tosca() ;
+			s_Tosca = new ToscaInterface() ;
 			s_Tosca.loadLibrary() ;
 		}
 		
