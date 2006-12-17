@@ -4,7 +4,8 @@ import java.util.logging.Logger;
 
 import soar2d.Soar2D;
 import soar2d.World;
-import soar2d.tosca2d.ToscaInterface;
+import soar2d.tosca2d.*;
+import tosca.*;
 
 /**
  * @author doug
@@ -14,9 +15,12 @@ import soar2d.tosca2d.ToscaInterface;
 public class ToscaEater {
 	protected Logger logger = Soar2D.logger;
 
-	protected soar2d.tosca2d.ToscaInterface m_ToscaInterface ;
+	protected ToscaInterface m_ToscaInterface ;
+	protected Library		 m_Library ;
 	protected Eater m_Eater ;
 	protected Eater getEater() { return m_Eater ; }
+	protected EatersInputStateVariable m_InputVar ;
+	protected int	m_EaterNumber ;
 	
 	/** This boolean switches tosca integration on and off.  When off, no Tosca code should run and we're back to regular Soar Eaters */
 	public static final boolean kToscaEnabled = false ;
@@ -26,6 +30,17 @@ public class ToscaEater {
 		
 		// Establish a link to the C++ library code
 		m_ToscaInterface = ToscaInterface.getTosca() ;
+		m_Library = m_ToscaInterface.getToscaLibrary() ;
+		
+		// Create an input state variable.
+		// BADBAD: The agent number should really be owned by the eater object, but since it's not an existing
+		// Eater's concept for now it's easier to have our interface object track this.
+		m_EaterNumber = m_ToscaInterface.generateNewAgentNumber() ;
+		
+		// Input var is named "agent-1-input" etc.  We use this rather than agent name so we can write generic code
+		// on the Tosca side to handle these agents.
+		m_InputVar = new EatersInputStateVariable("agent-" + m_EaterNumber + "-input") ;
+		m_Library.AddStateVariable(m_InputVar) ;
 	}
 	
 	/* (non-Javadoc)
@@ -37,6 +52,12 @@ public class ToscaEater {
 		if (getEater().moved) {
 			getEater().previousLocation = new java.awt.Point(location);
 		}
+		
+		Clock clock = m_Library.GetClock() ;
+		clock.HoldClock() ;
+		int time = clock.GetTime() ;
+		m_InputVar.update(time, world, location) ;
+		clock.ReleaseClock() ;
 	}
 	
 	/* (non-Javadoc)
