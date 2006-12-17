@@ -4,6 +4,7 @@
 package soar2d.tosca2d;
 
 import tosca.FunctionModule;
+import tosca.Library;
 import tosca.StateVariable;
 import tosca.Value;
 import tosca.Vector;
@@ -19,8 +20,9 @@ import tosca.Vector;
 public class ToscaInterface {
 	// Test code -- remove once things are working
 	private static ToscaInterface s_Tosca = null ;
-	private LoaderJNI m_Loader = null ;
+	private LoaderJNI 		m_Loader = null ;
 	private tosca.Library   m_EatersLibrary = null ;
+	private int				m_AgentNumber = 0 ;
 	
 	public static ToscaInterface getTosca() {
 		if (s_Tosca == null)
@@ -30,6 +32,11 @@ public class ToscaInterface {
 		}
 		
 		return s_Tosca ;
+	}
+	
+	public int generateNewAgentNumber() {
+		m_AgentNumber++ ;
+		return m_AgentNumber ;
 	}
 	
 	protected void loadLibrary() {
@@ -51,6 +58,32 @@ public class ToscaInterface {
 	    
 	    if (m_EatersLibrary == null)
 	    	throw new IllegalStateException("Failed to load C++ Tosca library for eaters") ;
+	    
+	    // Initialize the input for the clustering code.
+	    // This is unrelated to Eaters, but provides a test for now.
+	    int size = 5 ;
+	    Vector inputVector = new Vector(size) ;
+	    for (int i = 0 ; i < size ; i++)
+	    	inputVector.Set(i, 1.0) ;
+	    Value inputValue = new Value(inputVector) ;
+	    
+	    final StateVariable input = library.GetStateVariable("Input") ;
+	    input.SetValue(inputValue, 1) ;	    
+	}
+	
+	public Library getToscaLibrary() {
+		return m_EatersLibrary ;
+	}
+	
+	public void start() {
+		tosca.Clock clock = getToscaLibrary().GetClock() ;
+		clock.SetTimeLimit(100) ;
+
+		getToscaLibrary().StartAllThreads(true) ;
+	}
+	
+	public void stop() {
+		getToscaLibrary().StopAllThreads(true, true) ;
 	}
 	
 	public void testCode() {

@@ -188,6 +188,12 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	private void startEvent() {
 		if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Start event.");
 		running = true;
+
+		if (soar2d.player.ToscaEater.kToscaEnabled)
+		{
+			soar2d.tosca2d.ToscaInterface.getTosca().start() ;
+		}
+		
 		if (Soar2D.wm.using()) {
 			// this updates buttons and what-not
 			Soar2D.wm.start();
@@ -215,6 +221,12 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	private void stopEvent() {
 		if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Stop event.");
 		running = false;
+		
+		if (soar2d.player.ToscaEater.kToscaEnabled)
+		{
+			soar2d.tosca2d.ToscaInterface.getTosca().stop() ;
+		}
+
 		if (Soar2D.wm.using()) {
 //			 this updates buttons and what-not
 			Soar2D.wm.stop();
