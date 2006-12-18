@@ -157,6 +157,12 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 			} else {
 				Soar2D.simulation.runForever();
 			}
+		} else if (soar2d.player.ToscaEater.kToscaEnabled)
+		{
+			if (step)
+				soar2d.tosca2d.ToscaInterface.getTosca().runStep() ;
+			else
+				soar2d.tosca2d.ToscaInterface.getTosca().runForever() ;
 		} else {
 			
 			// there are no soar agents, call the start event
@@ -185,15 +191,10 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 * If soar is not controlling things, this gets called by run() before
 	 * starting the sim.
 	 */
-	private void startEvent() {
+	public void startEvent() {
 		if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Start event.");
 		running = true;
 
-		if (soar2d.player.ToscaEater.kToscaEnabled)
-		{
-			soar2d.tosca2d.ToscaInterface.getTosca().start() ;
-		}
-		
 		if (Soar2D.wm.using()) {
 			// this updates buttons and what-not
 			Soar2D.wm.start();
@@ -205,7 +206,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 * output callback. If soar is not running things, this is called by run() in 
 	 * a loop if necessary.
 	 */
-	private void tickEvent() {
+	public void tickEvent() {
 		Soar2D.simulation.update();
 		if (Soar2D.wm.using()) {
 //			 this updates buttons and what-not
@@ -218,15 +219,10 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 * by soar during the system stop event. Otherwise, this gets called by run
 	 * after a stop is requested.
 	 */
-	private void stopEvent() {
+	public void stopEvent() {
 		if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Stop event.");
 		running = false;
 		
-		if (soar2d.player.ToscaEater.kToscaEnabled)
-		{
-			soar2d.tosca2d.ToscaInterface.getTosca().stop() ;
-		}
-
 		if (Soar2D.wm.using()) {
 //			 this updates buttons and what-not
 			Soar2D.wm.stop();
