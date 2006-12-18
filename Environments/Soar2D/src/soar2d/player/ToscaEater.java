@@ -24,7 +24,7 @@ public class ToscaEater {
 	protected int	m_EaterNumber ;
 	
 	/** This boolean switches tosca integration on and off.  When off, no Tosca code should run and we're back to regular Soar Eaters */
-	public static final boolean kToscaEnabled = true ;
+	public static final boolean kToscaEnabled = false ;
 	
 	public ToscaEater( Eater eater ) {
 		m_Eater = eater ;
