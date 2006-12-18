@@ -42,6 +42,12 @@ public class ToscaEater {
 		// on the Tosca side to handle these agents.
 		m_InputVar = new EatersInputStateVariable("agent-" + m_EaterNumber + "-input") ;
 		m_Library.AddStateVariable(m_InputVar) ;
+		
+		// Note: Had to hold off on this until the input variable has been created
+		// so the other C++ modules can find it and hook up to it successfully.
+		// BADBAD: Calling it here won't work if we create multiple eaters.
+		// It looks like the initalization logic needs some rethinking
+		m_Library.InitializeAll() ;
 	}
 	
 	/* (non-Javadoc)
@@ -59,7 +65,7 @@ public class ToscaEater {
 		logger.info("Calling update on input var at time " + time+1) ;
 		
 		// Need to set the new value in the future (so choosing time+1)
-		m_InputVar.update(time+1, world, location) ;
+		m_InputVar.update(time+1, this, world, location) ;
 	}
 	
 	/* (non-Javadoc)

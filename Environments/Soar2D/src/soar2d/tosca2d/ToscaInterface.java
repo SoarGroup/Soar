@@ -67,6 +67,7 @@ public class ToscaInterface {
 	    m_InputModule = inputModule ;	// Prevent garbage collection.  BUGBUG: Should inform SWIG of how this works
 	    library.AddFunctionModule(inputModule) ;
 	    
+	    /*
 	    // Initialize the input for the clustering code.
 	    // This is unrelated to Eaters, but provides a test for now.
 	    int size = 5 ;
@@ -76,7 +77,8 @@ public class ToscaInterface {
 	    Value inputValue = new Value(inputVector) ;
 	    
 	    final StateVariable input = library.GetStateVariable("Input") ;
-	    input.SetValue(inputValue, 1) ;	    
+	    input.SetValue(inputValue, 1) ;	  
+	    */  
 	}
 	
 	public Library getToscaLibrary() {
