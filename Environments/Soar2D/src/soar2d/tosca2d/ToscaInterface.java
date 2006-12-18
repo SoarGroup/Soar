@@ -3,6 +3,7 @@
  */
 package soar2d.tosca2d;
 
+import soar2d.Soar2D;
 import tosca.FunctionModule;
 import tosca.Library;
 import tosca.StateVariable;
@@ -23,6 +24,7 @@ public class ToscaInterface {
 	private LoaderJNI 		m_Loader = null ;
 	private tosca.Library   m_EatersLibrary = null ;
 	private int				m_AgentNumber = 0 ;
+	private EatersInputFunctionModule m_InputModule ;	// BADBAD: I think we have to stop this from being garbage collected.  In C++ we pass it to Library and it takes ownership--that's not clear to SWIG.
 	
 	public static ToscaInterface getTosca() {
 		if (s_Tosca == null)
@@ -59,6 +61,12 @@ public class ToscaInterface {
 	    if (m_EatersLibrary == null)
 	    	throw new IllegalStateException("Failed to load C++ Tosca library for eaters") ;
 	    
+	    // Add in our EatersInputFunctionModule
+		// BUGBUG: Shouldn't be per agent
+	    EatersInputFunctionModule inputModule = new EatersInputFunctionModule("inputModule") ;
+	    m_InputModule = inputModule ;	// Prevent garbage collection.  BUGBUG: Should inform SWIG of how this works
+	    library.AddFunctionModule(inputModule) ;
+	    
 	    // Initialize the input for the clustering code.
 	    // This is unrelated to Eaters, but provides a test for now.
 	    int size = 5 ;
@@ -75,17 +83,52 @@ public class ToscaInterface {
 		return m_EatersLibrary ;
 	}
 	
-	public void start() {
+	public void runStep() { 
 		tosca.Clock clock = getToscaLibrary().GetClock() ;
-		clock.SetTimeLimit(100) ;
+		int time = clock.GetTime() ;
+		clock.SetTimeLimit(time+10) ;
 
 		getToscaLibrary().StartAllThreads(true) ;
+		
+		// Sleep for 2 secs, 0ms
+		try { Thread.sleep(2000) ; } catch (InterruptedException ex) { }
+		
+		getToscaLibrary().StopAllThreads(true, true) ;				
 	}
 	
-	public void stop() {
-		getToscaLibrary().StopAllThreads(true, true) ;
+	public void runForever() {
+		tosca.Clock clock = getToscaLibrary().GetClock() ;
+		
+		Soar2D.control.startEvent() ;
+		
+		// BADBAD: For now make sure we don't really run forever
+		int time = clock.GetTime() ;
+		clock.SetTimeLimit(time + 2000) ;
+
+		boolean start = true ;
+		if (start)
+		{
+			//m_InputModule.startJavaThread() ;
+			//clock.StartOwnThread() ;
+			getToscaLibrary().StartAllThreads(true) ;
+			
+			// BADBAD: For now just sleep for a fixed amount of time.
+			// Should really be waking up to check if the clock has been shutdown by someone
+			// at which point forever ends and we'd return control up the tree.
+			// But that's difficult to get right when debugging.
+			try { Thread.sleep(2000) ; } catch (InterruptedException ex) { }
+			
+			System.out.println("**** Stopping threads") ;
+			//clock.Shutdown() ;
+			//clock.StopOwnThread(true) ;
+			//m_InputModule.stopJavaThread(true) ;
+			getToscaLibrary().StopAllThreads(true, true) ;
+			System.out.println("**** Stopped all threads") ;
+		}
+		
+		Soar2D.control.stopEvent() ;		
 	}
-	
+		
 	public void testCode() {
 		// Loads our test C++ code and gets a pointer to it
 		LoaderJNI loader = new LoaderJNI("EatersDLL") ;

@@ -2,6 +2,7 @@ package soar2d.player;
 
 import java.util.logging.Logger;
 
+import soar2d.Direction;
 import soar2d.Soar2D;
 import soar2d.World;
 import soar2d.tosca2d.*;
@@ -54,10 +55,11 @@ public class ToscaEater {
 		}
 		
 		Clock clock = m_Library.GetClock() ;
-		clock.HoldClock() ;
 		int time = clock.GetTime() ;
-		m_InputVar.update(time, world, location) ;
-		clock.ReleaseClock() ;
+		logger.info("Calling update on input var at time " + time+1) ;
+		
+		// Need to set the new value in the future (so choosing time+1)
+		m_InputVar.update(time+1, world, location) ;
 	}
 	
 	/* (non-Javadoc)
@@ -69,7 +71,33 @@ public class ToscaEater {
 		if (Soar2D.config.graphical == false) {
 			return new MoveInfo();
 		}
-		MoveInfo move = Soar2D.wm.getHumanMove(getEater().getColor());
+		// Switching to have tosca eater auto generate a direction so the eater
+		// moves w/o my having to enter something.
+		MoveInfo move = new MoveInfo() ;
+		java.awt.Point oldLocation = getEater().previousLocation ;
+
+		// Find a direction to move that is open
+		for (int dir = 0 ; dir < 4 ; dir++)
+		{
+			move.move = true;
+			
+			// Tend to keep moving in the same direction as before
+			move.moveDirection = getEater().getFacingInt() + dir ;
+			if (move.moveDirection > 4)
+				move.moveDirection = 1 ;
+			
+			// Calculate new location
+			java.awt.Point newLocation = new java.awt.Point(oldLocation);
+			Direction.translate(newLocation, move.moveDirection);
+			// Verify legal move and commit move
+			if (Soar2D.simulation.world.isInBounds(newLocation) && Soar2D.simulation.world.map.getCell(newLocation).enterable())
+				break ;
+		}
+
+		// Just make things move slow enough that I can see what's happening
+		try { java.lang.Thread.sleep(100) ; } catch (Exception ex) { }
+		
+		//MoveInfo move = Soar2D.wm.getHumanMove(getEater().getColor());
 		// the facing depends on the move
 		getEater().setFacingInt(move.moveDirection);
 		logger.info("Tosca agent move direction " + move.moveDirection);
