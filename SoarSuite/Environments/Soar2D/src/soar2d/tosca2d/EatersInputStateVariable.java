@@ -8,14 +8,20 @@ package soar2d.tosca2d;
  *
  */
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
 import soar2d.*;
+import soar2d.player.ToscaEater;
+import soar2d.world.Cell;
 import tosca.Double;
 import tosca.Group;
+import tosca.Integer;
+import tosca.RefValue;
 import tosca.Value;
+import tosca.Vector;
 
 public class EatersInputStateVariable extends JavaStateVariable {
 	protected Value m_Value = new Value() ;
@@ -30,12 +36,56 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		GetCurrentValue().TakeGroup(init) ;
 	}
 
+	private RefValue createMapCell(ToscaEater eater, World world, Point viewLocation, Point location)
+	{
+		// We're using a vector (array of doubles) to indicate properties.
+		// This is to set us up for Tosca style clustering and learning which (currently) starts from
+		// an input vector of doubles.
+		// For boolean properties 0.0 indicates false.  1.0 indicates true.
+		int maxProperties = 20 ;
+		Vector mapCell = new Vector(maxProperties) ;
+		
+		mapCell.Set(0,0.0) ;	// Property 0 is whether this location is valid or not
+		
+		if (world.isInBounds(viewLocation)) {
+			mapCell.Set(0, 1.0) ;	// Property 0 is whether this location is valid or not
+			Cell cell = world.map.getCell(viewLocation.x, viewLocation.y);
+			
+			if (!cell.enterable())
+				mapCell.Set(1, 1.0) ;	// Property 1 is whether it's a wall
+		}
+
+		return mapCell ;
+	}
+	
 	public void update(int time, soar2d.player.ToscaEater eater, World world, java.awt.Point location) {
 		// The value is stored as a group containing some named values and
 		// then a map group which contains all of the cells around this eater
 		Group main = new Group() ;
 		main.AddNamedValue("x", new tosca.Integer(location.x)) ;
 		main.AddNamedValue("y", new tosca.Integer(location.y)) ;
+		
+		Group map = new Group() ;
+		
+		java.awt.Point viewLocation = new java.awt.Point();
+		int visionRange = Soar2D.config.kEaterVision ;
+		visionRange = 2 ; 
+		for (int x = location.x - visionRange; x <= location.x + visionRange; ++x) {
+			for (int y = location.y - visionRange; y <= location.y + visionRange; ++y) {
+				viewLocation.x = x ;
+				viewLocation.y = y ;
+
+				RefValue mapCell = createMapCell(eater, world, viewLocation, location) ;				
+				
+				// We'll name the map entries "cell00" to "cell55" so we can pull them out by name if we wish.
+				int indexX = x - (location.x - visionRange) ;
+				int indexY = y - (location.y - visionRange) ;
+				
+				String name = "cell" + indexX + indexY ;
+				map.AddNamedValue(name, mapCell) ;
+			}
+		}
+		main.AddNamedValue("map", map) ;
 		
 		/*
 		// update the 5x5
