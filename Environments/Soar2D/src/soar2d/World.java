@@ -481,6 +481,8 @@ public class World {
 					continue;
 				}
 				
+				// we haven't been checked yet
+				
 				MoveInfo playerMove = lastMoves.get(player.getName());
 
 				// Calculate new location if I moved, or just use the old location
@@ -498,6 +500,25 @@ public class World {
 				
 				Cell dest = map.getCell(newLocation);
 				
+				// Check for wall collision
+				if (!dest.enterable()) {
+					// Moving in to wall, there will be no player in that cell
+
+					// Cancel the move
+					playerMove.move = false;
+					newLocations.put(player.getName(), locations.get(player.getName()));
+					
+					// take damage
+					String name = dest.getAllWithProperty(Names.kPropertyBlock).get(0).getName();
+					player.adjustHealth(Soar2D.config.kTankCollisionPenalty, name);
+					
+					// TODO: check for kills
+					//killedTanks.add(player);
+					continue;
+				}
+				
+				// The cell is enterable, check for player
+				
 				Player other = dest.getPlayer();
 				if (other == null) {
 					// No tank, cross collision impossible
@@ -506,6 +527,8 @@ public class World {
 					continue;
 				}
 				
+				// There is another player, check its move
+				
 				MoveInfo otherMove = lastMoves.get(other.getName());
 				if (!otherMove.move) {
 					// they didn't move, cross collision impossible
@@ -513,6 +536,8 @@ public class World {
 					movedTanks.add(player);
 					continue;
 				}
+				
+				// the other player is moving, check its direction
 				
 				if (playerMove.moveDirection != Direction.backwardOf[otherMove.moveDirection]) {
 					// we moved but not toward each other, cross collision impossible
@@ -540,34 +565,38 @@ public class World {
 				newLocations.put(other.getName(), locations.get(other.getName()));
 			}
 			
-			// We'll need to save where people move, indexed by location
-			HashMap<java.awt.Point, Player> collisionMap = new HashMap<java.awt.Point, Player>();
-			HashMap<java.awt.Point, ArrayList<Player> > damageMap = new HashMap<java.awt.Point, ArrayList<Player> >(); 
+			// We've eliminated all cross collisions and walls
 			
+			// We'll need to save where people move, indexed by location
+			HashMap<java.awt.Point, ArrayList<Player> > collisionMap = new HashMap<java.awt.Point, ArrayList<Player> >();
+			
+			// Iterate through players, checking for all other types of collisions
 			playerIter = players.iterator();
 			while (playerIter.hasNext()) {
 				Player player = playerIter.next();
 				MoveInfo playerMove = lastMoves.get(player.getName());
 				
-				doMoveCollisions(player, playerMove, newLocations, collisionMap, damageMap, movedTanks);
+				doMoveCollisions(player, playerMove, newLocations, collisionMap, movedTanks);
 			}			
 			
 			// figure out collision damage
-			Iterator<ArrayList<Player> > locIter = damageMap.values().iterator();
+			Iterator<ArrayList<Player> > locIter = collisionMap.values().iterator();
 			while (locIter.hasNext()) {
 				
 				ArrayList<Player> collision = locIter.next();
-				ListIterator<Player> leftIter = collision.listIterator();
-				while (leftIter.hasNext()) {
-					
-					Player left = leftIter.next();
 				
-					ListIterator<Player> rightIter = collision.listIterator(leftIter.nextIndex());
-					while (rightIter.hasNext()) {
-						
-						Player right = rightIter.next();
-						left.adjustHealth(Soar2D.config.kTankCollisionPenalty, right.getName());
-						right.adjustHealth(Soar2D.config.kTankCollisionPenalty, left.getName());
+				// if there is more than one player, have them all take damage
+				if (collision.size() > 1) {
+					
+					int damage = collision.size() - 1;
+					damage *= Soar2D.config.kTankCollisionPenalty;
+					
+					logger.info("Collision, " + damage + ":");
+					
+					playerIter = collision.iterator();
+					while (playerIter.hasNext()) {
+						Player player = playerIter.next();
+						player.adjustHealth(damage, "collision");
 					}
 					
 					// TODO: check for kills
@@ -718,64 +747,57 @@ public class World {
 	}
 	
 	private void doMoveCollisions(Player player, MoveInfo playerMove, 
-			HashMap<String, java.awt.Point> newLocations, HashMap<java.awt.Point, Player> collisionMap, 
-			HashMap<java.awt.Point, ArrayList<Player> > damageMap, ArrayList<Player> movedTanks) {
+			HashMap<String, java.awt.Point> newLocations, 
+			HashMap<java.awt.Point, ArrayList<Player> > collisionMap, 
+			ArrayList<Player> movedTanks) {
+		
+		// Get destination location
 		java.awt.Point newLocation = newLocations.get(player.getName());
 		
-		// If I moved, check to see if new location is valid
-		if (playerMove.move) {
-			Cell dest = map.getCell(newLocation);
-			if (!dest.enterable()) {
-				// it is not valid
-				
-				// cancel my move
-				newLocations.put(player.getName(), locations.get(player.getName()));
+		// Wall collisions checked for earlier
+		
+		// is there a collision in the cell
+		ArrayList<Player> collision = collisionMap.get(newLocation);
+		if (collision != null) {
+			
+			// there is a collision, save location of collision
+			java.awt.Point collisionLocation = new java.awt.Point(newLocation);
+
+			// if there is only one player here, cancel its move
+			if (collision.size() == 1) {
+				Player other = collision.get(0);
+				MoveInfo otherMove = lastMoves.get(other.getName());
+				if (otherMove.move) {
+					otherMove.move = false;
+					movedTanks.remove(other);
+					newLocations.put(other.getName(), locations.get(other.getName()));
+					doMoveCollisions(other, otherMove, newLocations, collisionMap, movedTanks);
+				}
+			} 
+
+			// If there is more than one guy here, they've already been cancelled
+			
+			
+			// Add ourselves to this collision's list
+			collision.add(player);
+			collisionMap.put(collisionLocation, collision);
+			
+			// cancel my move
+			if (playerMove.move) {
 				playerMove.move = false;
 				movedTanks.remove(player);
-	
-				// take damage
-				String name = dest.getAllWithProperty(Names.kPropertyBlock).get(0).getName();
-				player.adjustHealth(Soar2D.config.kTankCollisionPenalty, name);
-				
-				// TODO: check for kills
-				//killedTanks.add(player);
+				newLocations.put(player.getName(), locations.get(player.getName()));
+				newLocation = locations.get(player.getName());
+				doMoveCollisions(player, playerMove, newLocations, collisionMap, movedTanks);
 			}
-		}
-		
-		// Check to see if new location is taken
-		Player other = collisionMap.remove(newLocation);
-		if (other != null) {
-			// it is taken
+			return;
 
-			// cancel my move
-			playerMove.move = false;
-			movedTanks.remove(player);
-			newLocations.put(player.getName(), locations.get(player.getName()));
-			
-			// cancel other's move
-			MoveInfo otherMove = lastMoves.get(other.getName());
-			otherMove.move = false;
-			movedTanks.remove(other);
-			newLocations.put(other.getName(), locations.get(other.getName()));
-			
-			// record damage
-			ArrayList<Player> collision = damageMap.get(newLocation);
-			if (collision == null) {
-				collision = new ArrayList<Player>();
-			}
-			if (!collision.contains(player)) {
-				collision.add(player);
-			}
-			if (!collision.contains(other)) {
-				collision.add(other);
-			}
-			damageMap.put(newLocation, collision);
-			
-			// reprocess other
-			doMoveCollisions(other, otherMove, newLocations, collisionMap, damageMap, movedTanks);
 		}
-		
-		collisionMap.put(newLocation, player);
+
+		// There is nothing in this cell, create a new list and add ourselves
+		collision = new ArrayList<Player>();
+		collision.add(player);
+		collisionMap.put(newLocation, collision);
 	}
 	
 	private MoveInfo getAndStoreMove(Player player) {
