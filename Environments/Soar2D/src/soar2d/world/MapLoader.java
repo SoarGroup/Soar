@@ -407,6 +407,7 @@ public class MapLoader {
 	
 	private void cell(java.awt.Point location, ElementXML cellTag) throws SMLException, SyntaxException {
 		ElementXML objectTag = null;
+		boolean background = false;
 		for (int cellTagIndex = 0; cellTagIndex < cellTag.GetNumberChildren(); ++cellTagIndex) {
 			
 			objectTag = new ElementXML();
@@ -418,7 +419,7 @@ public class MapLoader {
 				
 				if (objectTag.IsTag(Names.kTagObject)) {
 					xmlPath.push(Names.kTagObject);
-					object(location, objectTag);
+					background = object(location, objectTag);
 					xmlPath.pop();
 
 				} else {
@@ -429,16 +430,32 @@ public class MapLoader {
 				objectTag = null;
 			}
 		}
+
+		if (Soar2D.config.tanksoar && !background) {
+			// add ground
+			CellObject cellObject = map.cellObjectManager.createObject(Names.kGround);
+			map.addObjectToCell(location, cellObject);
+			return;
+		}
 	}
 	
-	private void object(java.awt.Point location, ElementXML objectTag) throws SMLException, SyntaxException {
+	private boolean object(java.awt.Point location, ElementXML objectTag) throws SMLException, SyntaxException {
 		String name = objectTag.GetCharacterData();
 		if (!map.cellObjectManager.hasTemplate(name)) {
 			throwSyntax("object \"" + name + "\" does not map to a cell-object");
 		}
 		
 		CellObject cellObject = map.cellObjectManager.createObject(name);
+		boolean background = false;
+		if (Soar2D.config.tanksoar) {
+			if (cellObject.hasProperty(Names.kPropertyBlock) 
+					|| (cellObject.getName() == Names.kGround)
+					|| (cellObject.hasProperty(Names.kPropertyCharger))) {
+				background = true;
+			}
+		}
 		map.addObjectToCell(location, cellObject);
+		return background;
 	}
 	
 

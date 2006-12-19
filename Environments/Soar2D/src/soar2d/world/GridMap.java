@@ -177,6 +177,11 @@ public class GridMap {
 		return cell.hasObject(name);
 	}
 	
+	public CellObject getObject(java.awt.Point location, String name) {
+		Cell cell = getCell(location);
+		return cell.getObject(name);
+	}
+	
 	public void updateObjects(World world) {
 		if (updatables.isEmpty()) {
 			return;
