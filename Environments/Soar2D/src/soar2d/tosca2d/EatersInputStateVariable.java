@@ -69,7 +69,6 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		
 		java.awt.Point viewLocation = new java.awt.Point();
 		int visionRange = Soar2D.config.kEaterVision ;
-		visionRange = 2 ; 
 		for (int x = location.x - visionRange; x <= location.x + visionRange; ++x) {
 			for (int y = location.y - visionRange; y <= location.y + visionRange; ++y) {
 				viewLocation.x = x ;
