@@ -42,12 +42,6 @@ public class ToscaEater {
 		// on the Tosca side to handle these agents.
 		m_InputVar = new EatersInputStateVariable("agent-" + m_EaterNumber + "-input") ;
 		m_Library.AddStateVariable(m_InputVar) ;
-		
-		// Note: Had to hold off on this until the input variable has been created
-		// so the other C++ modules can find it and hook up to it successfully.
-		// BADBAD: Calling it here won't work if we create multiple eaters.
-		// It looks like the initalization logic needs some rethinking
-		m_Library.InitializeAll() ;
 	}
 	
 	/* (non-Javadoc)
