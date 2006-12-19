@@ -11,7 +11,6 @@ import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.World;
-import soar2d.world.Cell;
 import soar2d.world.CellObject;
 
 /**
@@ -221,12 +220,6 @@ public class SoarEater extends Eater {
 				// get the current soarcell to update
 				SoarCell soarCell = cells[x][y];
 				
-				// Get real cell if in bounds.
-				Cell cell = null;
-				if (world.isInBounds(viewLocation)) {
-					cell = world.map.getCell(viewLocation.x, viewLocation.y);
-				}
-				
 				// Clear the content if we moved.
 				if (moved) {
 					
@@ -239,15 +232,15 @@ public class SoarEater extends Eater {
 					}
 					
 					// If we're out of bounds create a wall
-					if (cell == null) {
+					if (!world.isInBounds(viewLocation)) {
 						createContent(soarCell.content, soarCell, Names.kWallID);
 						continue;
 					}
 					
 					// If cell is wall, do the wall
-					if (!cell.enterable()) {
+					if (!world.map.enterable(viewLocation)) {
 						// get all things that block
-						ArrayList<CellObject> walls = cell.getAllWithProperty(Names.kPropertyBlock);
+						ArrayList<CellObject> walls = world.map.getAllWithProperty(viewLocation, Names.kPropertyBlock);
 						
 						// we must have at least one
 						assert walls.size() == 1;
@@ -265,7 +258,7 @@ public class SoarEater extends Eater {
 					// if we get to this point, the cell is not a wall
 					
 					// player test
-					Player player = cell.getPlayer();
+					Player player = world.map.getPlayer(viewLocation);
 					if (player != null) {
 						// ther is a player in the cell, use the eaterid
 						createContent(soarCell.content, soarCell, Names.kEaterID);
@@ -273,14 +266,14 @@ public class SoarEater extends Eater {
 					
 					// food test
 					// get all foods
-					ArrayList<CellObject> foodList = Soar2D.simulation.world.map.getObjectManager().getTemplatesWithProperty(Names.kPropertyEdible);
+					ArrayList<CellObject> foodList = world.map.getObjectManager().getTemplatesWithProperty(Names.kPropertyEdible);
 					Iterator<CellObject> objectIter = foodList.iterator();
 					boolean hadFood = false;
 					while (objectIter.hasNext()) {
 						// for each food
 						CellObject food = objectIter.next();
 						// see if it is in the cell
-						if (cell.hasObject(food.getName())) {
+						if (world.map.hasObject(viewLocation, food.getName())) {
 							// yes
 							hadFood = true;
 							// create it using its id property on the link
@@ -291,7 +284,7 @@ public class SoarEater extends Eater {
 					
 					// box test
 					// get all boxes
-					ArrayList<CellObject> boxes = cell.getAllWithProperty(Names.kPropertyBox);
+					ArrayList<CellObject> boxes = world.map.getAllWithProperty(viewLocation, Names.kPropertyBox);
 					assert boxes.size() <= 1;
 					if (boxes.size() > 0) {
 						// create them if necessary
@@ -321,12 +314,12 @@ public class SoarEater extends Eater {
 					HashMap<String, StringElement> newContent = new HashMap<String, StringElement>();
 
 					// Anything out of bounds will not change
-					if (cell == null) {
+					if (!world.isInBounds(viewLocation)) {
 						continue;
 					}
 	
 					// check for a player
-					Player player = cell.getPlayer();
+					Player player = world.map.getPlayer(viewLocation);
 					if (player != null) {
 						
 						// there is a player, see if there was one there before
@@ -352,7 +345,7 @@ public class SoarEater extends Eater {
 						// for each food
 						CellObject food = objectIter.next();
 						// does the cell have one
-						if (cell.hasObject(food.getName())) {
+						if (world.map.hasObject(viewLocation, food.getName())) {
 							// yes
 							hadFood = true;
 							
@@ -372,7 +365,7 @@ public class SoarEater extends Eater {
 					
 					// box test is a special case
 					// get all boxes
-					ArrayList<CellObject> boxes = cell.getAllWithProperty(Names.kPropertyBox);
+					ArrayList<CellObject> boxes = world.map.getAllWithProperty(viewLocation, Names.kPropertyBox);
 					
 					// TODO: there can only be one (as of right now)
 					assert boxes.size() <= 1;

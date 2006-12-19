@@ -6,14 +6,11 @@ import java.util.logging.*;
 
 import soar2d.player.*;
 import soar2d.world.*;
-import soar2d.xml.*;
 
 public class World {
 
 	private static Logger logger = Logger.getLogger("soar2d");
 
-	private int scoreCount;
-	private int foodCount;
 	private int worldCount = 0;
 	private boolean printedStats = false;
 	
@@ -50,45 +47,25 @@ public class World {
 		
 		reset();
 		resetPlayers();
-		recalculateScoreAndFoodCount();
 		
 		logger.info("Map loaded, world reset.");
 		return true;
 	}
 	
 	private boolean addCharger(boolean health, GridMap newMap) {
-		ArrayList<java.awt.Point> location = this.getAvailableLocations(newMap);
-		if (location.size() <= 0) {
+		ArrayList<java.awt.Point> locations = this.getAvailableLocations(newMap);
+		if (locations.size() <= 0) {
 			Soar2D.control.severeError("No place to put energy charger!");
 			return false;
 		}
-		Cell cell = newMap.getCell(location.get(Simulation.random.nextInt(location.size())));
-		assert cell != null;
-		CellObject charger = newMap.getObjectManager().createRandomObjectWithProperties(Names.kPropertyHealth, Names.kPropertyCharger);
-		if (charger == null) {
-			Soar2D.control.severeError("No energy charger in templates!");
+		
+		java.awt.Point location = locations.get(Simulation.random.nextInt(locations.size()));
+		if (!map.addRandomObjectWithProperties(location, Names.kPropertyHealth, Names.kPropertyCharger)) {
+			Soar2D.control.severeError("Couldn't add charger to map!");
 			return false;
 		}
-		cell.addCellObject(charger);
+		
 		return true;
-	}
-	
-	private int pointsCount(Cell cell) {
-		ArrayList list = cell.getAllWithProperty(Names.kPropertyEdible);
-		Iterator iter = list.iterator();
-		int count = 0;
-		while (iter.hasNext()) {
-			count += ((CellObject)iter.next()).getIntProperty(Names.kPropertyPoints);
-		}
-		return count;
-	}
-	
-	public int getScoreCount() {
-		return scoreCount;
-	}
-	
-	public int getFoodCount() {
-		return foodCount;
 	}
 	
 	void resetPlayers() {
@@ -108,19 +85,13 @@ public class World {
 	
 	private boolean resetPlayer(Player player) {
 		// find a suitable starting location
-		Cell startingCell = putInStartingCell(player);
-		if (startingCell == null) {
+		java.awt.Point startingLocation = putInStartingLocation(player);
+		if (startingLocation == null) {
 			return false;
 		}
 		
-		// update score count
-		scoreCount -= pointsCount(startingCell);
-		
-		// update food count
-		foodCount -= startingCell.getAllWithProperty(Names.kPropertyEdible).size();
-		
 		// remove food from it
-		startingCell.removeAllWithProperty(Names.kPropertyEdible);
+		map.removeAllWithProperty(startingLocation, Names.kPropertyEdible);
 		
 		// set points to zero
 		player.setPoints(0, "reset");
@@ -159,9 +130,7 @@ public class World {
 				initialLocations.remove(name);
 				java.awt.Point location = locations.remove(name);
 				lastMoves.remove(name);
-				Cell cell = map.getCell(location);
-				cell.setPlayer(null);
-				setRedraw(cell);
+				map.setPlayer(location, null);
 				iter.remove();
 				return;
 			}
@@ -173,31 +142,33 @@ public class World {
 		ArrayList<java.awt.Point> availableLocations = new ArrayList<java.awt.Point>();
 		for (int x = 0; x < theMap.getSize(); ++x) {
 			for (int y = 0; y < theMap.getSize(); ++ y) {
-				java.awt.Point availableLocation = new java.awt.Point(x, y);
-				Cell cell = theMap.getCell(availableLocation);
-				boolean enterable = cell.enterable();
-				boolean noPlayer = cell.getPlayer() == null;
-				boolean noMissilePack = cell.getAllWithProperty(Names.kPropertyMissiles).size() <= 0;
-				boolean noCharger = cell.getAllWithProperty(Names.kPropertyCharger).size() <= 0;
-				if (enterable && noPlayer && noMissilePack && noCharger) {
-					availableLocations.add(availableLocation);
+				java.awt.Point potentialLocation = new java.awt.Point(x, y);
+				if (map.isAvailable(potentialLocation)) {
+					availableLocations.add(potentialLocation);
 				}
 			}
 		}
 		return availableLocations;
 	}
 	
-	private Cell putInStartingCell(Player player) {
+	private java.awt.Point putInStartingLocation(Player player) {
 		// Get available cells
 		ArrayList<java.awt.Point> availableLocations = getAvailableLocations(map);
 		
 		// make sure there is an available cell
-		if (availableLocations.size() < 1) {
-			Soar2D.control.severeError("There are no suitable starting locations for " + player.getName() + ".");
-			return null;
+		if (Soar2D.config.tanksoar) {
+			// There must be enough room for all tank and missile packs
+			if (availableLocations.size() < Soar2D.config.kMaxMissilePacks + 1) {
+				Soar2D.control.severeError("There are no suitable starting locations for " + player.getName() + ".");
+				return null;
+			}
+		} else {
+			if (availableLocations.size() < 1) {
+				Soar2D.control.severeError("There are no suitable starting locations for " + player.getName() + ".");
+				return null;
+			}
 		}
 		
-		Cell cell;
 		java.awt.Point location = null;
 
 		if (initialLocations.containsKey(player.getName())) {
@@ -212,13 +183,10 @@ public class World {
 			location = availableLocations.get(Simulation.random.nextInt(availableLocations.size()));
 		}
 		
-		cell = map.getCell(location);
-		
 		// put the player in it
+		map.setPlayer(location, player);
 		locations.put(player.getName(), location);
-		cell.setPlayer(player);
-		setRedraw(cell);
-		return cell;
+		return location;
 	}
 
 	public boolean addPlayer(Player player, java.awt.Point initialLocation) {
@@ -266,14 +234,10 @@ public class World {
 			}
 			
 			// Verify legal move and commit move
-			if (isInBounds(newLocation) && map.getCell(newLocation).enterable()) {
-				Cell oldCell = map.getCell(oldLocation);
-				assert oldCell.getPlayer() != null;
-				oldCell.setPlayer(null);
+			if (isInBounds(newLocation) && map.enterable(newLocation)) {
+				// remove from cell
+				map.setPlayer(oldLocation, null);
 				
-				// Add redraw object
-				setRedraw(oldCell);
-
 				if (move.jump) {
 					player.adjustPoints(Soar2D.config.kJumpPenalty, "jump penalty");
 				}
@@ -322,57 +286,46 @@ public class World {
 			Player player = iter.next();
 			MoveInfo lastMove = lastMoves.get(player.getName());
 			java.awt.Point location = locations.get(player.getName());
-			Cell cell = map.getCell(location);
 			
 			if (lastMove.move || lastMove.jump) {
-				cell.setPlayer(player);
-				setRedraw(cell);
+				map.setPlayer(location, player);
 
-				ArrayList<CellObject> moveApply = cell.getAllWithProperty(Names.kPropertyMoveApply);
+				ArrayList<CellObject> moveApply = map.getAllWithProperty(location, Names.kPropertyMoveApply);
 				if (moveApply.size() > 0) {
 					Iterator<CellObject> maIter = moveApply.iterator();
 					while (maIter.hasNext()) {
 						CellObject object = maIter.next();
 						if (object.apply(player)) {
-							cell.removeObject(object.getName());
+							map.removeObject(location, object.getName());
 						}
 					}
 				}
 			}
 			
 			if (!lastMove.dontEat) {
-				eat(player, cell);
-				setRedraw(cell);
+				eat(player, location);
 			}
 			
 			if (lastMove.open) {
-				open(player, cell);
-				setRedraw(cell);
+				open(player, location);
 			}
 		}
 	}
-	private void setRedraw(Cell cell) {
-		if (!cell.hasObject(Names.kRedraw)) {
-			cell.addCellObject(new CellObject(Names.kRedraw, false, true));
-		}
-	}
 	
-	private void eat(Player player, Cell cell) {
-		ArrayList<CellObject> list = cell.getAllWithProperty(Names.kPropertyEdible);
+	private void eat(Player player, java.awt.Point location) {
+		ArrayList<CellObject> list = map.getAllWithProperty(location, Names.kPropertyEdible);
 		Iterator<CellObject> foodIter = list.iterator();
 		while (foodIter.hasNext()) {
 			CellObject food = foodIter.next();
 			if (food.apply(player)) {
 				// if this returns true, it is consumed
-				cell.removeObject(food.getName());
-				scoreCount -= food.getIntProperty(Names.kPropertyPoints);
-				foodCount -= 1;
+				map.removeObject(location, food.getName());
 			}
 		}
 	}
 	
-	private void open(Player player, Cell cell) {
-		ArrayList<CellObject> boxes = cell.getAllWithProperty(Names.kPropertyBox);
+	private void open(Player player, java.awt.Point location) {
+		ArrayList<CellObject> boxes = map.getAllWithProperty(location, Names.kPropertyBox);
 		if (boxes.size() <= 0) {
 			Soar2D.logger.warning(player.getName() + " tried to open but there is no box.");
 			return;
@@ -389,7 +342,7 @@ public class World {
 			}
 		}
 		if (box.apply(player)) {
-			cell.removeObject(box.getName());
+			map.removeObject(location, box.getName());
 		}
 	}
 	
@@ -424,14 +377,14 @@ public class World {
 		}
 		
 		if (Soar2D.config.terminalPointsRemaining) {
-			if (scoreCount <= 0) {
+			if (map.getScoreCount() <= 0) {
 				stopAndDumpStats("There are no points remaining.", getSortedScores());
 				return;
 			}
 		}
 
 		if (Soar2D.config.terminalFoodRemaining) {
-			if (foodCount <= 0) {
+			if (map.getFoodCount() <= 0) {
 				stopAndDumpStats("All of the food is gone.", getSortedScores());
 				return;
 			}
@@ -450,9 +403,7 @@ public class World {
 			updateMapAndEatFood();
 			handleCollisions();	
 			updatePlayers();
-			if (map.getObjectManager().updatablesExist()) {
-				updateObjects();
-			}
+			updateObjects();
 			
 		} else if (Soar2D.config.tanksoar) {
 			
@@ -498,10 +449,10 @@ public class World {
 				java.awt.Point newLocation = new java.awt.Point(oldLocation);
 				Direction.translate(newLocation, playerMove.moveDirection);
 				
-				Cell dest = map.getCell(newLocation);
+				//Cell dest = map.getCell(newLocation);
 				
 				// Check for wall collision
-				if (!dest.enterable()) {
+				if (!map.enterable(newLocation)) {
 					// Moving in to wall, there will be no player in that cell
 
 					// Cancel the move
@@ -509,7 +460,7 @@ public class World {
 					newLocations.put(player.getName(), locations.get(player.getName()));
 					
 					// take damage
-					String name = dest.getAllWithProperty(Names.kPropertyBlock).get(0).getName();
+					String name = map.getAllWithProperty(newLocation, Names.kPropertyBlock).get(0).getName();
 					player.adjustHealth(Soar2D.config.kTankCollisionPenalty, name);
 					
 					// TODO: check for kills
@@ -519,7 +470,7 @@ public class World {
 				
 				// The cell is enterable, check for player
 				
-				Player other = dest.getPlayer();
+				Player other = map.getPlayer(newLocation);
 				if (other == null) {
 					// No tank, cross collision impossible
 					newLocations.put(player.getName(), newLocation);
@@ -591,7 +542,7 @@ public class World {
 					int damage = collision.size() - 1;
 					damage *= Soar2D.config.kTankCollisionPenalty;
 					
-					logger.info("Collision, " + damage + ":");
+					logger.info("Collision, " + (damage * -1) + " damage:");
 					
 					playerIter = collision.iterator();
 					while (playerIter.hasNext()) {
@@ -610,9 +561,7 @@ public class World {
 				Player player = playerIter.next();
 				
 				// remove from past cell
-				Cell cell = map.getCell(locations.remove(player.getName()));
-				cell.setPlayer(null);
-				setRedraw(cell);
+				map.setPlayer(locations.remove(player.getName()), null);
 			}
 			
 			playerIter = movedTanks.iterator();
@@ -620,9 +569,7 @@ public class World {
 				Player player = playerIter.next();
 				// put in new cell
 				locations.put(player.getName(), newLocations.get(player.getName()));
-				Cell cell = map.getCell(locations.get(player.getName()));
-				cell.setPlayer(player);
-				setRedraw(cell);
+				map.setPlayer(locations.get(player.getName()), player);
 			}
 			
 			// Move all Missiles
@@ -682,24 +629,13 @@ public class World {
 			// Spawn missile packs
 			if (map.numberMissilePacks() < Soar2D.config.kMaxMissilePacks) {
 				if (Simulation.random.nextInt(100) < Soar2D.config.kMissilePackRespawnChance) {
-					// Create a pack
-					CellObject missiles = map.getObjectManager().createRandomObjectWithProperty(Names.kPropertyMissiles);
-					assert missiles != null;
-
 					// Get available spots
 					ArrayList<java.awt.Point> spots = getAvailableLocations(map);
 					assert locations.size() > 0;
 					
-					// pick one and get the cell
-					Cell cell = map.getCell(spots.get(Simulation.random.nextInt(spots.size())));
-					assert cell != null;
-					
-					// add it 
-					cell.addCellObject(missiles);
-					setRedraw(cell);
-
-					// update the count
-					map.incrementMissilePacks();
+					// Add a missile pack to a spot
+					boolean ret = map.addRandomObjectWithProperty(spots.get(Simulation.random.nextInt(spots.size())), Names.kPropertyMissiles);
+					assert ret;
 				}
 			}
 			
@@ -712,14 +648,9 @@ public class World {
 				ArrayList<java.awt.Point> spots = getAvailableLocations(map);
 				assert locations.size() > 0;
 				
-				// pick one and get the cell
+				// pick one and put the player in it
 				java.awt.Point location = spots.get(Simulation.random.nextInt(spots.size()));
-				Cell cell = map.getCell(location);
-				assert cell != null;
-				
-				// put them in the cell
-				cell.setPlayer(player);
-				setRedraw(cell);
+				map.setPlayer(location, player);
 
 				// save the location
 				locations.put(player.getName(), location);
@@ -760,17 +691,14 @@ public class World {
 		ArrayList<Player> collision = collisionMap.get(newLocation);
 		if (collision != null) {
 			
-			// there is a collision, save location of collision
-			java.awt.Point collisionLocation = new java.awt.Point(newLocation);
+			// there is a collision
 
 			// if there is only one player here, cancel its move
 			if (collision.size() == 1) {
 				Player other = collision.get(0);
 				MoveInfo otherMove = lastMoves.get(other.getName());
 				if (otherMove.move) {
-					otherMove.move = false;
-					movedTanks.remove(other);
-					newLocations.put(other.getName(), locations.get(other.getName()));
+					cancelMove(other, otherMove, newLocations, movedTanks);
 					doMoveCollisions(other, otherMove, newLocations, collisionMap, movedTanks);
 				}
 			} 
@@ -778,16 +706,13 @@ public class World {
 			// If there is more than one guy here, they've already been cancelled
 			
 			
-			// Add ourselves to this collision's list
+			// Add ourselves to this cell's collision list
 			collision.add(player);
-			collisionMap.put(collisionLocation, collision);
+			collisionMap.put(newLocation, collision);
 			
 			// cancel my move
 			if (playerMove.move) {
-				playerMove.move = false;
-				movedTanks.remove(player);
-				newLocations.put(player.getName(), locations.get(player.getName()));
-				newLocation = locations.get(player.getName());
+				cancelMove(player, playerMove, newLocations, movedTanks);
 				doMoveCollisions(player, playerMove, newLocations, collisionMap, movedTanks);
 			}
 			return;
@@ -798,6 +723,14 @@ public class World {
 		collision = new ArrayList<Player>();
 		collision.add(player);
 		collisionMap.put(newLocation, collision);
+	}
+	
+	private void cancelMove(Player player, MoveInfo move, 
+			HashMap<String, java.awt.Point> newLocations, 
+			ArrayList<Player> movedTanks) {
+		move.move = false;
+		movedTanks.remove(player);
+		newLocations.put(player.getName(), locations.get(player.getName()));
 	}
 	
 	private MoveInfo getAndStoreMove(Player player) {
@@ -824,32 +757,8 @@ public class World {
 		}
 	}
 
-	private void recalculateScoreAndFoodCount() {
-		scoreCount = 0;
-		foodCount = 0;
-		Cell cell;
-		for (int i = 1; i < map.getSize() - 1; ++i) {
-			for (int j = 1; j < map.getSize() - 1; ++j) {
-				cell = map.getCell(i, j);
-				scoreCount += pointsCount(cell);
-				foodCount += cell.getAllWithProperty(Names.kPropertyEdible).size();
-			}
-		}
-	}
-
 	private void updateObjects() {
-		scoreCount = 0;
-		foodCount = 0;
-		Cell cell;
-		java.awt.Point location = new java.awt.Point();
-		for (location.x = 0; location.x < map.getSize(); ++location.x) {
-			for (location.y = 0; location.y < map.getSize(); ++ location.y) {
-				cell = map.getCell(location);
-				cell.update(this, location);
-				scoreCount += pointsCount(cell);
-				foodCount += cell.getAllWithProperty(Names.kPropertyEdible).size();
-			}
-		}
+		map.updateObjects(this);
 	}
 
 	private void handleCollisions() {
@@ -895,10 +804,6 @@ public class World {
 					if (collision.size() == 0) {
 						collision.add(left);
 						if (logger.isLoggable(Level.FINE)) logger.fine("collision at " + locations.get(left.getName()));
-						
-						// Add a collision object the first time it is detected
-						Cell cell = map.getCell(locations.get(left.getName()));
-						cell.addCellObject(new CellObject(Names.kExplosion, false, true));
 					}
 					// Add each right as it is detected
 					collision.add(right);
@@ -939,16 +844,16 @@ public class World {
 			}
 			
 			// Remove from former location (only one of these for all players)
-			map.getCell(locations.get(collision.get(0).getName())).setPlayer(null);
+			map.setPlayer(locations.get(collision.get(0).getName()), null);
 			
 			// Move to new cell, consume food
 			collideeIter = collision.listIterator();
 			while (collideeIter.hasNext()) {
 				Player player = collideeIter.next();
-				Cell cell = putInStartingCell(player);
-				assert cell != null;
+				java.awt.Point location = putInStartingLocation(player);
+				assert location != null;
 				if (!lastMoves.get(player.getName()).dontEat) {
-					eat(player, cell);
+					eat(player, location);
 				}
 			}
 		}

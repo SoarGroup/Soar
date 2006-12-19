@@ -2,7 +2,7 @@ package soar2d.xml;
 
 import java.util.Stack;
 
-class LoaderException extends Throwable {
+public class LoaderException extends Throwable {
 	static final long serialVersionUID = 1;
 	protected String message;
 	

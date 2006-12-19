@@ -1,8 +1,9 @@
-package soar2d.xml;
+package soar2d.world;
 
 import sml.*;
 import soar2d.*;
-import soar2d.world.*;
+import soar2d.xml.SMLException;
+import soar2d.xml.SyntaxException;
 
 import java.util.*;
 
@@ -391,7 +392,7 @@ public class MapLoader {
 					map.mapCells[row][cellTagIndex] = new Cell();
 					
 					xmlPath.push(Names.kTagCell);
-					cell(map.mapCells[row][cellTagIndex], cellTag);
+					cell(new java.awt.Point(cellTagIndex, row), cellTag);
 					xmlPath.pop();
 
 				} else {
@@ -404,7 +405,7 @@ public class MapLoader {
 		}
 	}
 	
-	private void cell(Cell cell, ElementXML cellTag) throws SMLException, SyntaxException {
+	private void cell(java.awt.Point location, ElementXML cellTag) throws SMLException, SyntaxException {
 		ElementXML objectTag = null;
 		for (int cellTagIndex = 0; cellTagIndex < cellTag.GetNumberChildren(); ++cellTagIndex) {
 			
@@ -417,7 +418,7 @@ public class MapLoader {
 				
 				if (objectTag.IsTag(Names.kTagObject)) {
 					xmlPath.push(Names.kTagObject);
-					object(cell, objectTag);
+					object(location, objectTag);
 					xmlPath.pop();
 
 				} else {
@@ -430,25 +431,14 @@ public class MapLoader {
 		}
 	}
 	
-	private void object(Cell cell, ElementXML objectTag) throws SMLException, SyntaxException {
+	private void object(java.awt.Point location, ElementXML objectTag) throws SMLException, SyntaxException {
 		String name = objectTag.GetCharacterData();
 		if (!map.cellObjectManager.hasTemplate(name)) {
 			throwSyntax("object \"" + name + "\" does not map to a cell-object");
 		}
 		
 		CellObject cellObject = map.cellObjectManager.createObject(name);
-		if (cellObject.hasProperty(Names.kPropertyCharger)) {
-			if (!map.health && cellObject.hasProperty(Names.kPropertyHealth)) {
-				map.health = true;
-			}
-			if (!map.energy && cellObject.hasProperty(Names.kPropertyEnergy)) {
-				map.energy = true;
-			}
-		}
-		if (cellObject.hasProperty(Names.kPropertyMissiles)) {
-			map.missilePacks += 1;
-		}
-		cell.addCellObject(cellObject);
+		map.addObjectToCell(location, cellObject);
 	}
 	
 
@@ -469,21 +459,21 @@ public class MapLoader {
 			if (map.mapCells[row][0] == null) {
 				map.mapCells[row][0] = new Cell();
 			}
-			addWallAndRemoveFood(map.mapCells[row][0]);
+			addWallAndRemoveFood(new java.awt.Point(0, row));
 			if (map.mapCells[row][map.size - 1] == null) {
 				map.mapCells[row][map.size - 1] = new Cell();
 			}
-			addWallAndRemoveFood(map.mapCells[row][map.size - 1]);
+			addWallAndRemoveFood(new java.awt.Point(map.size - 1, row));
 		}
 		for (int col = 1; col < map.size - 1; ++col) {
 			if (map.mapCells[0][col] == null) {
 				map.mapCells[0][col] = new Cell();
 			}
-			addWallAndRemoveFood(map.mapCells[0][col]);
+			addWallAndRemoveFood(new java.awt.Point(col, 0));
 			if (map.mapCells[map.size - 1][col] == null) {
 				map.mapCells[map.size - 1][col] = new Cell();
 			}
-			addWallAndRemoveFood(map.mapCells[map.size - 1][col]);
+			addWallAndRemoveFood(new java.awt.Point(col, map.size - 1));
 		}
 		
 		double probability = Soar2D.config.kLowProbability;
@@ -497,7 +487,7 @@ public class MapLoader {
 						if (map.mapCells[row][col] == null) {
 							map.mapCells[row][col] = new Cell();
 						}
-						addWallAndRemoveFood(map.mapCells[row][col]);
+						addWallAndRemoveFood(new java.awt.Point(col, row));
 					}
 					probability = Soar2D.config.kLowProbability;
 				}
@@ -505,13 +495,12 @@ public class MapLoader {
 		}
 	}
 	
-	private void addWallAndRemoveFood(Cell cell) {
-		cell.removeAllWithProperty(Names.kPropertyEdible);
+	private void addWallAndRemoveFood(java.awt.Point location) {
+		map.removeAllWithProperty(location, Names.kPropertyEdible);
 		
-		ArrayList<CellObject> walls = cell.getAllWithProperty(Names.kPropertyBlock);
+		ArrayList<CellObject> walls = map.getAllWithProperty(location, Names.kPropertyBlock);
 		if (walls.size() <= 0) {
-			CellObject cellObject = map.cellObjectManager.createRandomObjectWithProperty(Names.kPropertyBlock);
-			cell.addCellObject(cellObject);
+			map.addRandomObjectWithProperty(location, Names.kPropertyBlock);
 		}
 	}
 	
@@ -573,9 +562,9 @@ public class MapLoader {
 					
 				}
 				if (map.mapCells[row][col].enterable()) {
-					map.mapCells[row][col].removeAllWithProperty(Names.kPropertyEdible);
-					CellObject cellObject = map.cellObjectManager.createRandomObjectWithProperty(Names.kPropertyEdible);
-					map.mapCells[row][col].addCellObject(cellObject);
+					java.awt.Point location = new java.awt.Point(col, row);
+					map.removeAllWithProperty(location, Names.kPropertyEdible);
+					map.addRandomObjectWithProperty(location, Names.kPropertyEdible);
 				}
 			}
 		}		
