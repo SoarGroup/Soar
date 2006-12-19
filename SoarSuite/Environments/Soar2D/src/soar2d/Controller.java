@@ -34,6 +34,11 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	private boolean shuttingDown = false;
 	
 	/**
+	 * Set to true when a stop is requested
+	 */
+	public synchronized boolean isStopped() { return this.stop ; }
+	
+	/**
 	 * @param message The message to display to the screen, console and/or log
 	 * 
 	 * Call whenever there is a severe error. An attempt will be made to dump the

@@ -25,6 +25,7 @@ public class ToscaInterface {
 	private tosca.Library   m_EatersLibrary = null ;
 	private int				m_AgentNumber = 0 ;
 	private EatersInputFunctionModule m_InputModule ;	// BADBAD: I think we have to stop this from being garbage collected.  In C++ we pass it to Library and it takes ownership--that's not clear to SWIG.
+	private boolean			m_ThreadsRunning = false ;
 	
 	public static ToscaInterface getTosca() {
 		if (s_Tosca == null)
@@ -86,47 +87,55 @@ public class ToscaInterface {
 	}
 	
 	public void runStep() { 
-		tosca.Clock clock = getToscaLibrary().GetClock() ;
-		int time = clock.GetTime() ;
-		clock.SetTimeLimit(time+10) ;
-
-		getToscaLibrary().StartAllThreads(true) ;
-		
-		// Sleep for 2 secs, 0ms
-		try { Thread.sleep(2000) ; } catch (InterruptedException ex) { }
-		
-		getToscaLibrary().StopAllThreads(true, true) ;				
+		runTosca(true) ;
 	}
 	
 	public void runForever() {
+		runTosca(false) ;
+	}
+	
+	protected void runTosca(boolean step) {
 		tosca.Clock clock = getToscaLibrary().GetClock() ;
 		
 		Soar2D.control.startEvent() ;
 		
 		// BADBAD: For now make sure we don't really run forever
-		int time = clock.GetTime() ;
-		clock.SetTimeLimit(time + 2000) ;
-
-		boolean start = true ;
-		if (start)
+		if (step)
 		{
-			//m_InputModule.startJavaThread() ;
-			//clock.StartOwnThread() ;
+			int time = clock.GetTime() ;
+			clock.SetTimeLimit(time + 20) ;
+		}
+		else
+		{
+			// Run forever
+			clock.SetTimeLimit(-1) ;
+		}
+		
+		clock.ReleaseClock() ;
+
+		if (!m_ThreadsRunning)
+		{
+			m_ThreadsRunning = true ;
 			getToscaLibrary().StartAllThreads(true) ;
-			
-			// BADBAD: For now just sleep for a fixed amount of time.
-			// Should really be waking up to check if the clock has been shutdown by someone
-			// at which point forever ends and we'd return control up the tree.
-			// But that's difficult to get right when debugging.
-			try { Thread.sleep(2000) ; } catch (InterruptedException ex) { }
-			
+		}
+
+		// Wait until we're stopped.
+		while (!Soar2D.control.isStopped() && !clock.IsHolding())
+		{
+			try { Thread.sleep(50) ; } catch (InterruptedException ex) { }
+		}
+		
+		// Stop the run if we get here.
+		clock.HoldClock() ;
+
+		/*
 			System.out.println("**** Stopping threads") ;
 			//clock.Shutdown() ;
 			//clock.StopOwnThread(true) ;
 			//m_InputModule.stopJavaThread(true) ;
 			getToscaLibrary().StopAllThreads(true, true) ;
 			System.out.println("**** Stopped all threads") ;
-		}
+		*/
 		
 		Soar2D.control.stopEvent() ;		
 	}
