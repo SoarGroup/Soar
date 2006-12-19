@@ -118,6 +118,10 @@ public class ToscaInterface {
 		if (!m_ThreadsRunning)
 		{
 			m_ThreadsRunning = true ;
+
+			// Note: Had to hold off on this until the input variable has been created
+			// so the other C++ modules can find it and hook up to it successfully.
+			getToscaLibrary().InitializeAll() ;
 			getToscaLibrary().StartAllThreads(true) ;
 		}
 
