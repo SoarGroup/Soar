@@ -155,6 +155,9 @@ public class Soar2D {
 
 	public static void main(String[] args) {
 		new Soar2D(args);
+		
+		// Ensure all threads clean up properly.  This is a bit heavy handed but helps ensure we are completely stopped.
+		System.exit(0) ;
 	}
 
 }
