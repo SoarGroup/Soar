@@ -156,6 +156,10 @@ public class CellObject {
 		decayUpdate = setting;
 	}
 	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
 	public void setFlyMissileUpdate(boolean setting) {
 		flyMissileUpdate = setting;
 	}
@@ -199,7 +203,7 @@ public class CellObject {
 			if (!healthApplyShieldsDown || !player.shieldsUp()) {
 				assert properties.containsKey(Names.kPropertyHealth);
 				int health = Integer.parseInt(properties.get(Names.kPropertyHealth));
-				player.adjustEnergy(health, name);
+				player.adjustHealth(health, name);
 			}
 		}
 		
@@ -224,8 +228,13 @@ public class CellObject {
 			}
 		}
 		
-		// TODO: implement
-		assert flyMissileUpdate == false;
+		if (flyMissileUpdate) {
+			int phase = this.getIntProperty(Names.kPropertyFlyPhase);
+			phase += 1;
+			phase %= 4;
+			this.addProperty(Names.kPropertyFlyPhase, Integer.toString(phase));
+			return true;
+		}
 		
 		return false; // this keeps this object around
 	}

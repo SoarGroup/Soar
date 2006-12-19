@@ -88,13 +88,17 @@ public class GridMap {
 		return mapCells[y][x];
 	}
 	
-	public boolean addRandomObjectWithProperty(java.awt.Point location, String name) {
-		CellObject object = cellObjectManager.createRandomObjectWithProperty(name);
+	public boolean addRandomObjectWithProperty(java.awt.Point location, String property) {
+		CellObject object = cellObjectManager.createRandomObjectWithProperty(property);
 		if (object == null) {
 			return false;
 		}
 		addObjectToCell(location, object);
 		return true;
+	}
+
+	public CellObject createRandomObjectWithProperty(String property) {
+		return cellObjectManager.createRandomObjectWithProperty(property);
 	}
 
 	public boolean addRandomObjectWithProperties(java.awt.Point location, String property1, String property2) {
@@ -154,6 +158,15 @@ public class GridMap {
 		return object;
 	}
 	
+	void addObjectByName(java.awt.Point location, String name) {
+		CellObject object = cellObjectManager.createObject(name);
+		if (object == null) {
+			Soar2D.control.severeError("Tried to create object " + name + "but no template exists");
+			return;
+		}
+		this.addObjectToCell(location, object);
+	}
+	
 	public Player getPlayer(java.awt.Point location) {
 		Cell cell = getCell(location);
 		return cell.getPlayer();
@@ -185,9 +198,15 @@ public class GridMap {
 				cellObject = cell.removeObject(cellObject.getName());
 				assert cellObject != null;
 				
-				iter.remove();
-				updatablesLocations.remove(cellObject);
-				removalStateUpdate(cellObject);
+				setRedraw(cell);
+				
+				// if it is not tanksoar or if the cell is not a missle or if shouldRemoveMissile returns true
+				if (!Soar2D.config.tanksoar || !cellObject.hasProperty(Names.kPropertyMissile) 
+						|| shouldRemoveMissile(world, location, cell, cellObject)) {
+					iter.remove();
+					updatablesLocations.remove(cellObject);
+					removalStateUpdate(cellObject);
+				}
 			}
 			if (Soar2D.config.eaters) {
 				if (cellObject.hasProperty(Names.kPropertyPoints)) {
@@ -197,6 +216,50 @@ public class GridMap {
 		}
 	}
 	
+	private boolean shouldRemoveMissile(World world, java.awt.Point location, Cell cell, CellObject cellObject) {
+		// instead of removing missiles, move them
+
+		// what direction is it going
+		int missileDir = cellObject.getIntProperty(Names.kPropertyDirection);
+		
+		while (true) {
+			// move it
+			Direction.translate(location, missileDir);
+			
+			// check destination
+			cell = getCell(location);
+			
+			if (!cell.enterable()) {
+				// missile is destroyed
+				return true;
+			}
+			
+			Player player = cell.getPlayer();
+			
+			if (player != null) {
+				// player is hit
+				cellObject.apply(player);
+				
+				// TODO: check for kills
+		
+				// missile is destroyed
+				return true;
+			}
+	
+			// missile didn't hit anything
+			
+			// if the missile is not in phase 2, return
+			if (cellObject.getIntProperty(Names.kPropertyFlyPhase) != 2) {
+				cell.addCellObject(cellObject);
+				updatablesLocations.put(cellObject, location);
+				return false;
+			}
+			
+			// we are in phase 2, call update again, this will move us out of phase 2 to phase 3
+			cellObject.update(world, location);
+		}
+	}
+		
 	private void removalStateUpdate(CellObject object) {
 		if (Soar2D.config.tanksoar) {
 			if (object.hasProperty(Names.kPropertyCharger)) {
@@ -243,7 +306,7 @@ public class GridMap {
 		}
 	}
 	
-	void addObjectToCell(java.awt.Point location, CellObject object) {
+	public void addObjectToCell(java.awt.Point location, CellObject object) {
 		if (object.updatable()) {
 			updatables.add(object);
 			updatablesLocations.put(object, location);
@@ -276,6 +339,13 @@ public class GridMap {
 	private void setRedraw(Cell cell) {
 		if (!cell.hasObject(Names.kRedraw)) {
 			cell.addCellObject(new CellObject(Names.kRedraw, false, true));
+		}
+	}
+	
+	public void setExplosion(java.awt.Point location) {
+		Cell cell = getCell(location);
+		if (!cell.hasObject(Names.kExplosion)) {
+			cell.addCellObject(new CellObject(Names.kExplosion, false, true));
 		}
 	}
 	

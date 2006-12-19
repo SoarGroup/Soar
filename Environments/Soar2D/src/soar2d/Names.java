@@ -117,12 +117,16 @@ public class Names {
 	public static final String kPropertyBox = "box";
 	public static final String kPropertyCharger = "charger";
 	public static final String kPropertyColor = "color";
+	public static final String kPropertyDirection = "direction";
 	public static final String kPropertyEdible = "edible";
 	public static final String kPropertyEnergy = "energy";
+	public static final String kPropertyFlyPhase = "fly-phase";
 	public static final String kPropertyHealth = "health";
 	public static final String kPropertyID = "id";
+	public static final String kPropertyMissile = "missile";
 	public static final String kPropertyMissiles = "missiles";
 	public static final String kPropertyMoveApply = "move-apply";
+	public static final String kPropertyOwner = "owner";
 	public static final String kPropertyPoints = "points";
 	public static final String kPropertyShape = "shape";
 	public static final String kPropertyStatus = "status";

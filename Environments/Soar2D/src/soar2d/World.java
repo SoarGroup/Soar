@@ -16,10 +16,11 @@ public class World {
 	
 	public GridMap map;
 	
-	private ArrayList<Player> players = new ArrayList<Player>();
+	private ArrayList<Player> players = new ArrayList<Player>(7);
 	private HashMap<String, java.awt.Point> initialLocations = new HashMap<String, java.awt.Point>();
 	private HashMap<String, java.awt.Point> locations = new HashMap<String, java.awt.Point>();
 	private HashMap<String, MoveInfo> lastMoves = new HashMap<String, MoveInfo>();
+	private int missileID = 0;
 	
 	public boolean load() {
 		
@@ -60,7 +61,7 @@ public class World {
 		}
 		
 		java.awt.Point location = locations.get(Simulation.random.nextInt(locations.size()));
-		if (!map.addRandomObjectWithProperties(location, Names.kPropertyHealth, Names.kPropertyCharger)) {
+		if (!newMap.addRandomObjectWithProperties(location, Names.kPropertyHealth, Names.kPropertyCharger)) {
 			Soar2D.control.severeError("Couldn't add charger to map!");
 			return false;
 		}
@@ -143,7 +144,7 @@ public class World {
 		for (int x = 0; x < theMap.getSize(); ++x) {
 			for (int y = 0; y < theMap.getSize(); ++ y) {
 				java.awt.Point potentialLocation = new java.awt.Point(x, y);
-				if (map.isAvailable(potentialLocation)) {
+				if (theMap.isAvailable(potentialLocation)) {
 					availableLocations.add(potentialLocation);
 				}
 			}
@@ -413,11 +414,11 @@ public class World {
 			// We'll cache the tank new locations
 			HashMap<String, java.awt.Point> newLocations = new HashMap<String, java.awt.Point>();
 			
-			// We'll cache tanks we need to respawn
-			ArrayList<Player> killedTanks = new ArrayList<Player>();
-			
 			// And we'll cache tanks that moved
-			ArrayList<Player> movedTanks = new ArrayList<Player>();
+			ArrayList<Player> movedTanks = new ArrayList<Player>(players.size());
+			
+			// And we'll cache tanks that fired
+			ArrayList<Player> firedTanks = new ArrayList<Player>(players.size());
 			
 			// Do cross checks (and only cross checks) first
 			// Cross-check:
@@ -427,6 +428,13 @@ public class World {
 			while (playerIter.hasNext()) {
 				Player player = playerIter.next();
 				
+				MoveInfo playerMove = lastMoves.get(player.getName());
+				
+				// Check for fire
+				if (playerMove.fire) {
+					firedTanks.add(player);
+				}
+				
 				// if we exist in the new locations, we can skip ourselves
 				if (newLocations.containsKey(player.getName())) {
 					continue;
@@ -434,8 +442,6 @@ public class World {
 				
 				// we haven't been checked yet
 				
-				MoveInfo playerMove = lastMoves.get(player.getName());
-
 				// Calculate new location if I moved, or just use the old location
 				java.awt.Point oldLocation = locations.get(player.getName());
 				
@@ -568,63 +574,64 @@ public class World {
 			while (playerIter.hasNext()) {
 				Player player = playerIter.next();
 				// put in new cell
-				locations.put(player.getName(), newLocations.get(player.getName()));
-				map.setPlayer(locations.get(player.getName()), player);
+				java.awt.Point location = newLocations.get(player.getName());
+				locations.put(player.getName(), location);
+				map.setPlayer(location, player);
+				
+				// is there a missile in the cell?
+				ArrayList<CellObject> missiles = map.getAllWithProperty(location, Names.kPropertyMissile);
+				if (missiles.size() == 0) {
+					// No, can't collide
+					continue;
+				}
+
+				// are any flying toward me?
+				Iterator<CellObject> iter = missiles.iterator();
+				MoveInfo move = lastMoves.get(player.getName());
+				while (iter.hasNext()) {
+					CellObject missile = iter.next();
+					if (move.moveDirection == Direction.backwardOf[missile.getIntProperty(Names.kPropertyDirection)]) {
+						// Yes, I'm hit
+						missile.apply(player);
+						map.removeObject(location, missile.getName());
+						
+						// TODO: check for kills
+					}
+				}
 			}
 			
-			// Move all Missiles
-//			if (missiles.size() > 0) {
-//				if (logger.isLoggable(Level.FINEST)) logger.finest("Moving all missiles");
-//				moveMissiles();
-//				
-//				// Check for Missile-Tank special collisions
-//				if (logger.isLoggable(Level.FINEST)) logger.finest("Checking for missile-tank special collisions");
-//				for (int i = 0; i < m_Tanks.length; ++i) {
-//					if (m_Tanks[i].recentlyMoved()) {
-//						//   Tank and Missile swapping spaces
-//						Integer[] ids = checkMissilePassThreat(m_Tanks[i]);
-//						if (ids != null) {
-//							if (logger.isLoggable(Level.FINE)) logger.fine(m_Tanks[i].getName() + ": moved through " + Integer.toString(ids.length) + " missile(s).");
-//							//   Assign penalties and awards
-//							m_Tanks[i].hitBy(ids);
-//							removeMissilesByID(ids);
-//							if (!m_Tanks[i].getShieldStatus()) {
-//								getCell(m_Tanks[i].getLocation()).setExplosion();
-//							}
-//						}
-//					}
-//				}
-//			} else {
-//				if (logger.isLoggable(Level.FINEST)) logger.finest("Skipping missile movement, no missiles");
-//			}
-//
-//			//   Spawn new Missiles in front of Tanks
-//			if (logger.isLoggable(Level.FINEST)) logger.finest("Spawning newly fired missiles");
-//			for (int i = 0; i < m_Tanks.length; ++i) {
-//				if (m_Tanks[i].firedMissile()) {
-//					addMissile(m_Tanks[i]);
-//				}
-//			}
-//			
-//			// Check for Missile-Tank collisions
-//			if (missiles.size() > 0) {
-//				if (logger.isLoggable(Level.FINEST)) logger.finest("Checking for missile-tank collisions");
-//				for (int i = 0; i < m_Tanks.length; ++i) {
-//					Integer[] ids = checkForMissileThreat(m_Tanks[i].getLocation());
-//					if (ids != null) {
-//						if (logger.isLoggable(Level.FINE)) logger.fine(m_Tanks[i].getName() + ": hit by " + Integer.toString(ids.length) + " missile(s).");
-//						//   Assign penalties and awards
-//						m_Tanks[i].hitBy(ids);
-//						removeMissilesByID(ids);
-//						if (!m_Tanks[i].getShieldStatus()) {
-//							getCell(m_Tanks[i].getLocation()).setExplosion();
-//						}
-//					}
-//				}
-//			} else {
-//				if (logger.isLoggable(Level.FINEST)) logger.finest("Skipping missile-tank collision check, no missiles");
-//			}
-//
+			// move missiles to new cells, checking for new victims
+			updateObjects();
+			
+			// Spawn new Missiles in front of Tanks
+			playerIter = firedTanks.iterator();
+			while (playerIter.hasNext()) {
+				Player player = playerIter.next();
+				java.awt.Point missileLoc = new java.awt.Point(locations.get(player.getName()));
+				
+				int direction = player.getFacingInt();
+				Direction.translate(missileLoc, direction);
+				
+				if (!isInBounds(missileLoc)) {
+					continue;
+				}
+				
+				CellObject missile = map.createRandomObjectWithProperty(Names.kPropertyMissile);
+				missile.setName(player.getName() + "-" + missileID++);
+				missile.addProperty(Names.kPropertyDirection, Integer.toString(direction));
+				missile.addProperty(Names.kPropertyFlyPhase, "0");
+				missile.addProperty(Names.kPropertyOwner, player.getName());
+
+				// If there is a tank there, it is hit
+				Player other = map.getPlayer(missileLoc);
+				if (other != null) {
+					missile.apply(player);
+					
+					// TODO: check for kills
+				} else {
+					map.addObjectToCell(missileLoc, missile);
+				}
+			}
 			
 			// Spawn missile packs
 			if (map.numberMissilePacks() < Soar2D.config.kMaxMissilePacks) {
@@ -640,21 +647,21 @@ public class World {
 			}
 			
 			//  Respawn killed Tanks in safe squares
-			playerIter = killedTanks.iterator();
-			while (playerIter.hasNext()) {
-				Player player = playerIter.next();
-				
-				// Get available spots
-				ArrayList<java.awt.Point> spots = getAvailableLocations(map);
-				assert locations.size() > 0;
-				
-				// pick one and put the player in it
-				java.awt.Point location = spots.get(Simulation.random.nextInt(spots.size()));
-				map.setPlayer(location, player);
-
-				// save the location
-				locations.put(player.getName(), location);
-			}
+//			playerIter = killedTanks.iterator();
+//			while (playerIter.hasNext()) {
+//				Player player = playerIter.next();
+//				
+//				// Get available spots
+//				ArrayList<java.awt.Point> spots = getAvailableLocations(map);
+//				assert locations.size() > 0;
+//				
+//				// pick one and put the player in it
+//				java.awt.Point location = spots.get(Simulation.random.nextInt(spots.size()));
+//				map.setPlayer(location, player);
+//
+//				// save the location
+//				locations.put(player.getName(), location);
+//			}
 			
 			// Update tanks
 			playerIter = players.iterator();
@@ -720,7 +727,7 @@ public class World {
 		}
 
 		// There is nothing in this cell, create a new list and add ourselves
-		collision = new ArrayList<Player>();
+		collision = new ArrayList<Player>(4);
 		collision.add(player);
 		collisionMap.put(newLocation, collision);
 	}
@@ -803,6 +810,10 @@ public class World {
 					// Add the left the first time a collision is detected
 					if (collision.size() == 0) {
 						collision.add(left);
+						
+						// Add the boom on the map
+						map.setExplosion(locations.get(left.getName()));
+						
 						if (logger.isLoggable(Level.FINE)) logger.fine("collision at " + locations.get(left.getName()));
 					}
 					// Add each right as it is detected
@@ -870,6 +881,7 @@ public class World {
 	public void reset() {
 		worldCount = 0;
 		printedStats = false;
+		missileID = 0;
 	}
 	
 	public int getWorldCount() {

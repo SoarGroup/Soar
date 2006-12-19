@@ -112,6 +112,10 @@ public class VisualWorld extends Canvas implements PaintListener {
 					if ((world.map.removeObject(location, Names.kRedraw) == null) && painted) {
 						continue;
 					}
+				} else {
+					if (!world.map.hasObject(location, Names.kRedraw) && painted) {
+						continue;
+					}
 				}
 				
 				ArrayList<CellObject> drawList = world.map.getAllWithProperty(location, Names.kPropertyShape);
@@ -190,8 +194,14 @@ public class VisualWorld extends Canvas implements PaintListener {
 					}
 				}
 				
-				if (world.map.removeObject(location, Names.kExplosion) != null) {
-					drawExplosion(gc, xDraw, yDraw);
+				if (agentLocation == null) {
+					if (world.map.removeObject(location, Names.kExplosion) != null) {
+						drawExplosion(gc, xDraw, yDraw);
+					}
+				} else {
+					if (world.map.hasObject(location, Names.kExplosion)) {
+						drawExplosion(gc, xDraw, yDraw);
+					}
 				}
 			}
 		}
