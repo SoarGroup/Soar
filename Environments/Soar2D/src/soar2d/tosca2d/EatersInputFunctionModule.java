@@ -20,29 +20,8 @@ public class EatersInputFunctionModule extends JavaFunctionModule {
 		super(name) ;
 	}
 	
-	public void startJavaThread() {
-		// This works for Java created objects.  Using StartOwnThread the
-		// thread doesn't terminate cleanly.  Odd.
-		Runnable inputRunnable = new Runnable() {
-			public void run()
-			{
-				EatersInputFunctionModule.this.Run() ;
-			}
-		} ;
-		m_JavaThread = new Thread(inputRunnable) ;
-		m_JavaThread.start() ;		
-	}
-	
-	public void stopJavaThread(boolean waitTilStopped) {
-		
-		// Signal the thread to stop
-		this.Shutdown() ;
-		
-		// Wait for stop (if requested)
-		while (waitTilStopped && m_JavaThread.isAlive())
-		{
-			try { Thread.sleep(10) ; } catch (Exception ex) { }
-		}
+	public int getStepSize() {
+		return 10 ;
 	}
 
 	@Override
@@ -62,7 +41,7 @@ public class EatersInputFunctionModule extends JavaFunctionModule {
 		Soar2D.control.tickEvent() ;
 
 		// Next wakeup
-		GetClock().RegisterWakeup(this, time+10, true) ;
+		GetClock().RegisterWakeup(this, time+getStepSize(), true) ;
 	}
 
 }

@@ -103,7 +103,9 @@ public class ToscaInterface {
 		if (step)
 		{
 			int time = clock.GetTime() ;
-			clock.SetTimeLimit(time + 20) ;
+
+			int stepSize = m_InputModule.getStepSize() ;
+			clock.SetTimeLimit(time + stepSize) ;
 		}
 		else
 		{
