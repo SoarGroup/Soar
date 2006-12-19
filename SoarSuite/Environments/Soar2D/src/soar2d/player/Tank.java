@@ -85,6 +85,8 @@ public class Tank extends Player {
 	 * set the energy to a specific value, the comment goes in the log
 	 */
 	public void setEnergy(int energy, String comment) {
+		// Bring down shields if out of energy
+
 		this.energy = energy;
 		if (comment != null) {
 			logger.info(getName() + " energy set to: " + Integer.toString(this.energy) + " (" + comment + ")");
@@ -100,6 +102,8 @@ public class Tank extends Player {
 	 * why the change happened
 	 */
 	public void adjustEnergy(int delta, String comment) {
+		// Bring down shields if out of energy
+
 		int previous = this.energy;
 		this.energy += delta;
 		if (comment != null) {

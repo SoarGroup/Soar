@@ -57,6 +57,7 @@
     <property name="mini-image" value="ground-mini.gif" />
   </cell-object>
   <cell-object name="missile" updatable="true" consumable="true">
+    <property name="missile" value="true" />
     <property name="image" value="missile.gif" />
     <property name="health" value="-400" />
     <property name="energy" value="-250" />

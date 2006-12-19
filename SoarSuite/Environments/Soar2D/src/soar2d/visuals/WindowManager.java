@@ -198,6 +198,9 @@ public class WindowManager {
 					case SWT.KEYPAD_5:
 						go = true;
 						break;
+					case SWT.KEYPAD_0:
+						humanMove.fire = !humanMove.fire;
+						break;
 					case SWT.KEYPAD_MULTIPLY:
 						humanMove.stopSim = !humanMove.stopSim;
 						break;
