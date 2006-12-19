@@ -20,6 +20,7 @@ public class Names {
 	public static final String kExplosion = "explosion";
 	public static final String kRedraw = "redraw";
 	public static final String kOpen = "open";
+	public static final String kGround = "ground";
 	
 	public static final String kTagAgent = "agent";
 	public static final String kTagApply = "apply";
@@ -123,6 +124,9 @@ public class Names {
 	public static final String kPropertyFlyPhase = "fly-phase";
 	public static final String kPropertyHealth = "health";
 	public static final String kPropertyID = "id";
+	public static final String kPropertyImage = "image";
+	public static final String kPropertyImageMin = "image-min";
+	public static final String kPropertyImageMax = "image-max";
 	public static final String kPropertyMissile = "missile";
 	public static final String kPropertyMissiles = "missiles";
 	public static final String kPropertyMoveApply = "move-apply";

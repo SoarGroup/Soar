@@ -20,7 +20,7 @@ public class WindowManager {
 	public static Color green = null;
 	public static Color purple = null;
 
-	protected Display display;
+	static Display display;
 	protected Shell shell;
 	Label scoreCount;
 	Label foodCount;
@@ -35,7 +35,8 @@ public class WindowManager {
 	String statusMessage;
 	MoveInfo humanMove;
 
-	public static final int kMainMapCellSize = 20;
+	public static final int kEatersMainMapCellSize = 20;
+	public static final int kTanksoarMainMapCellSize = 32;
 	public static final String kFoodRemaining = "Food remaining: ";
 	public static final String kScoreRemaining = "Points remaining: ";
 
@@ -91,6 +92,7 @@ public class WindowManager {
 		shell = new Shell(display, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.TITLE);
 		if (shell == null) {
 			display.dispose();
+			display = null;
 			return false;
 		}
 		initColors(display);
@@ -110,7 +112,11 @@ public class WindowManager {
 		
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
-		visualWorld = new VisualWorld(worldGroup, SWT.NONE, kMainMapCellSize);
+		if (Soar2D.config.eaters) {
+			visualWorld = new VisualWorld(worldGroup, SWT.NONE, kEatersMainMapCellSize);
+		} else {
+			visualWorld = new VisualWorld(worldGroup, SWT.NONE, kTanksoarMainMapCellSize);
+		}
 
 		gd = new GridData();
 		gd.widthHint = visualWorld.getWidth();
@@ -119,11 +125,11 @@ public class WindowManager {
 		worldGroup.setLayoutData(gd);
 		visualWorld.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
-				Player eater = visualWorld.getPlayerAtPixel(e.x, e.y);
-				if (eater == null) {
+				Player player = visualWorld.getPlayerAtPixel(e.x, e.y);
+				if (player == null) {
 					return;
 				}
-				agentDisplay.selectPlayer(eater);
+				agentDisplay.selectPlayer(player);
 			}
 		});
 		visualWorld.addKeyListener(new KeyAdapter() {
@@ -276,7 +282,13 @@ public class WindowManager {
 
 		VisualWorld.remapPlayerColors();
 
-		shell.setText("Java Eaters");
+		if (Soar2D.config.eaters) {
+			shell.setText("Eaters");
+		} else if (Soar2D.config.tanksoar) {
+			shell.setText("TankSoar");
+		} else {
+			shell.setText("Soar 2D");
+		}
 		shell.setSize(shell.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		shell.addShellListener(new ShellAdapter() {
 			public void shellDeactivated(ShellEvent e) {
