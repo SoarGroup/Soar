@@ -60,11 +60,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 	Player getPlayerAtPixel(int x, int y) {
 		x /= cellSize;
 		y /= cellSize;
-		Cell cell = Soar2D.simulation.world.map.getCell(x, y);
-		if (cell.getPlayer() != null) {
-			return cell.getPlayer();
-		}
-		return null;
+		return Soar2D.simulation.world.map.getPlayer(new java.awt.Point(x, y));
 	}
 
 	public void paintControl(PaintEvent e){
@@ -87,48 +83,50 @@ public class VisualWorld extends Canvas implements PaintListener {
 			}
 		}
 		
+		World world = Soar2D.simulation.world;
+		
 		// Draw world
 		int fill1, fill2, xDraw, yDraw;
-		for(int x = 0; x < Soar2D.simulation.world.getSize(); ++x){
+		java.awt.Point location = new java.awt.Point();
+		for(location.x = 0; location.x < world.getSize(); ++location.x){
 			if (agentLocation != null) {
-				if ((x < agentLocation.x - Soar2D.config.kEaterVision) || (x > agentLocation.x + Soar2D.config.kEaterVision)) {
+				if ((location.x < agentLocation.x - Soar2D.config.kEaterVision) || (location.x > agentLocation.x + Soar2D.config.kEaterVision)) {
 					continue;
 				} 
-				xDraw = x + Soar2D.config.kEaterVision - agentLocation.x;
+				xDraw = location.x + Soar2D.config.kEaterVision - agentLocation.x;
 			} else {
-				xDraw = x;
+				xDraw = location.x;
 			}
 			
-			for(int y = 0; y < Soar2D.simulation.world.getSize(); ++y){
+			for(location.y = 0; location.y < world.getSize(); ++location.y){
 				if (agentLocation != null) {
-					if ((y < agentLocation.y - Soar2D.config.kEaterVision) || (y > agentLocation.y + Soar2D.config.kEaterVision)) {
+					if ((location.y < agentLocation.y - Soar2D.config.kEaterVision) || (location.y > agentLocation.y + Soar2D.config.kEaterVision)) {
 						continue;
 					} 
-					yDraw = y + Soar2D.config.kEaterVision - agentLocation.y;
+					yDraw = location.y + Soar2D.config.kEaterVision - agentLocation.y;
 				} else {
-					yDraw = y;
+					yDraw = location.y;
 				}
 				
-				Cell cell = Soar2D.simulation.world.map.getCell(x, y);
 				if (agentLocation == null) {
-					if ((cell.removeObject(Names.kRedraw) == null) && painted) {
+					if ((world.map.removeObject(location, Names.kRedraw) == null) && painted) {
 						continue;
 					}
 				}
 				
-				ArrayList<CellObject> drawList = cell.getAllWithProperty(Names.kPropertyShape);
+				ArrayList<CellObject> drawList = world.map.getAllWithProperty(location, Names.kPropertyShape);
 				
-				if (!cell.enterable()) {
+				if (!world.map.enterable(location)) {
 				    gc.setBackground(WindowManager.black);
 				    gc.fillRectangle(cellSize*xDraw + 1, cellSize*yDraw + 1, cellSize - 2, cellSize - 2);
 					
 				} else {
 					boolean empty = true;
 					
-					if (cell.getPlayer() != null) {
+					Player eater = world.map.getPlayer(location);
+					
+					if (eater != null) {
 						empty = false;
-						
-						Player eater = cell.getPlayer();
 						
 						gc.setBackground(playerColors.get(eater));
 						gc.fillOval(cellSize*xDraw, cellSize*yDraw, cellSize, cellSize);
@@ -192,11 +190,8 @@ public class VisualWorld extends Canvas implements PaintListener {
 					}
 				}
 				
-				if (cell.removeObject(Names.kExplosion) != null) {
+				if (world.map.removeObject(location, Names.kExplosion) != null) {
 					drawExplosion(gc, xDraw, yDraw);
-					if (!cell.hasObject(Names.kRedraw)) {
-						cell.addCellObject(new CellObject(Names.kRedraw, false, true));
-					}
 				}
 			}
 		}

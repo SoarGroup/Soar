@@ -377,8 +377,8 @@ public class WindowManager {
 	}
 	
 	void updateFoodAndScoreCount() {
-		foodCount.setText(Integer.toString(Soar2D.simulation.world.getFoodCount()));
-		scoreCount.setText(Integer.toString(Soar2D.simulation.world.getScoreCount()));
+		foodCount.setText(Integer.toString(Soar2D.simulation.world.map.getFoodCount()));
+		scoreCount.setText(Integer.toString(Soar2D.simulation.world.map.getScoreCount()));
 	}
 
 	boolean isDisposed() {

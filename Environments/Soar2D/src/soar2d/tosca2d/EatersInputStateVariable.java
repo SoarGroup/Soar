@@ -15,7 +15,6 @@ import java.util.Iterator;
 
 import soar2d.*;
 import soar2d.player.ToscaEater;
-import soar2d.world.Cell;
 import tosca.Double;
 import tosca.Group;
 import tosca.Integer;
@@ -49,9 +48,8 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		
 		if (world.isInBounds(viewLocation)) {
 			mapCell.Set(0, 1.0) ;	// Property 0 is whether this location is valid or not
-			Cell cell = world.map.getCell(viewLocation.x, viewLocation.y);
 			
-			if (!cell.enterable())
+			if (!world.map.enterable(viewLocation))
 				mapCell.Set(1, 1.0) ;	// Property 1 is whether it's a wall
 		}
 

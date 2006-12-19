@@ -74,7 +74,7 @@ public class CellObject {
 	 */
 	boolean flyMissileUpdate = false;
 	
-	public CellObject(CellObject cellObject) {
+	CellObject(CellObject cellObject) {
 		this.properties = new HashMap<String, String>(cellObject.properties);
 		this.propertiesApply = new HashMap<String, String>(cellObject.propertiesApply);
 		this.name = new String(cellObject.name);
@@ -90,7 +90,7 @@ public class CellObject {
 		this.flyMissileUpdate = cellObject.flyMissileUpdate;
 	}
 	
-	public CellObject(String name, boolean updatable, boolean consumable) {
+	CellObject(String name, boolean updatable, boolean consumable) {
 		this.name = name;
 		this.updatable = updatable;
 		this.consumable = consumable;
