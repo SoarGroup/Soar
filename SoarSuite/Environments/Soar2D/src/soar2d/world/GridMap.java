@@ -337,7 +337,7 @@ public class GridMap {
 	}
 	
 	public void setExplosion(java.awt.Point location) {
-		addObjectToCell(location, new CellObject(Names.kExplosion, true));
+		//addObjectToCell(location, new CellObject(Names.kExplosion, true));
 	}
 	
 	public void shutdown() {
