@@ -333,12 +333,11 @@ public class GridMap {
 	}
 	
 	private void setRedraw(Cell cell) {
-		cell.addCellObject(new CellObject(Names.kRedraw, false, true));
+		cell.addCellObject(new CellObject(Names.kRedraw, false));
 	}
 	
 	public void setExplosion(java.awt.Point location) {
-		Cell cell = getCell(location);
-		cell.addCellObject(new CellObject(Names.kExplosion, false, true));
+		addObjectToCell(location, new CellObject(Names.kExplosion, true));
 	}
 	
 	public void shutdown() {

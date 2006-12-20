@@ -404,9 +404,9 @@ public class WindowManager {
 		if (!isDisposed()) {
 			display.syncExec(new Runnable() {
 				public void run() {
+					agentDisplay.worldChangeEvent();
 					visualWorld.redraw();
 					updateFoodAndScoreCount();
-					agentDisplay.worldChangeEvent();
 				}
 			});
 		}
@@ -429,6 +429,7 @@ public class WindowManager {
 		if (!isDisposed()) {
 			display.syncExec(new Runnable() {
 				public void run() {
+					visualWorld.setFocus();
 					visualWorld.setRepaint();
 					visualWorld.redraw();
 					simButtons.updateButtons();
@@ -456,10 +457,10 @@ public class WindowManager {
 				public void run() {
 					updateWorldGroup();
 					visualWorld.setRepaint();
+					agentDisplay.worldChangeEvent();
 					visualWorld.redraw();
 					updateFoodAndScoreCount();
 					simButtons.updateButtons();
-					agentDisplay.worldChangeEvent();
 				}
 			});
 		}

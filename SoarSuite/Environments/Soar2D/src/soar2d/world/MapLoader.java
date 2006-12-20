@@ -97,7 +97,6 @@ public class MapLoader {
 	private void cellObject(ElementXML cellObjectTag) throws SMLException, SyntaxException {
 		String name = null;
 		boolean updatable = false;
-		boolean consumable = false;
 
 		String attribute = null;
 		
@@ -115,12 +114,7 @@ public class MapLoader {
 			updatable = Boolean.parseBoolean(attribute);
 		}
 		
-		attribute = cellObjectTag.GetAttribute(Names.kParamConsumable);
-		if (attribute != null) {
-			consumable = Boolean.parseBoolean(attribute);
-		}
-		
-		CellObject cellObjectTemplate = new CellObject(name, updatable, consumable);
+		CellObject cellObjectTemplate = new CellObject(name, updatable);
 
 		ElementXML cellObjectSubTag = null;
 		for (int cellObjectSubTagIndex = 0; cellObjectSubTagIndex < cellObjectTag.GetNumberChildren(); ++cellObjectSubTagIndex) {
@@ -226,6 +220,11 @@ public class MapLoader {
 				} else if (applySubTag.IsTag(Names.kTagMissiles)) {
 					xmlPath.push(Names.kTagMissiles);
 					cellObjectTemplate.setMissilesApply(true);
+					xmlPath.pop();
+					
+				} else if (applySubTag.IsTag(Names.kTagRemove)) {
+					xmlPath.push(Names.kTagRemove);
+					cellObjectTemplate.setApplyRemove(true);
 					xmlPath.pop();
 					
 				} else {

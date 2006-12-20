@@ -41,6 +41,7 @@ public class Names {
 	public static final String kTagObject = "object";
 	public static final String kTagPoints = "points";
 	public static final String kTagProperty = "property";
+	public static final String kTagRemove = "remove";
 	public static final String kTagRow = "row";
 	public static final String kTagShutdownCommand = "shutdown-command";
 	public static final String kTagSimulation = "simulation";
