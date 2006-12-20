@@ -319,7 +319,7 @@ public class SoarEater extends Eater {
 					}
 	
 					// check for a player
-					Player player = world.map.getPlayer(viewLocation);
+ 					Player player = world.map.getPlayer(viewLocation);
 					if (player != null) {
 						
 						// there is a player, see if there was one there before

@@ -30,11 +30,11 @@ public class CellObject {
 	 * If this object should be updated.
 	 */
 	boolean updatable;
-	/**
-	 * If this object should be consumed after an update.
-	 */
-	boolean consumable;
 
+	/**
+	 * remove the object after the apply
+	 */
+	boolean applyRemove = false;
 	/**
 	 * add the points property to the player during the apply.
 	 * Points can be negative or zero.
@@ -79,7 +79,7 @@ public class CellObject {
 		this.propertiesApply = new HashMap<String, String>(cellObject.propertiesApply);
 		this.name = new String(cellObject.name);
 		this.updatable = cellObject.updatable;
-		this.consumable = cellObject.consumable;
+		this.applyRemove = cellObject.applyRemove;
 		this.pointsApply = cellObject.pointsApply;
 		this.missilesApply = cellObject.missilesApply;
 		this.healthApply = cellObject.healthApply;
@@ -90,10 +90,9 @@ public class CellObject {
 		this.flyMissileUpdate = cellObject.flyMissileUpdate;
 	}
 	
-	CellObject(String name, boolean updatable, boolean consumable) {
+	CellObject(String name, boolean updatable) {
 		this.name = name;
 		this.updatable = updatable;
-		this.consumable = consumable;
 	}
 	
 	public String getName() {
@@ -124,6 +123,10 @@ public class CellObject {
 	 */
 	public void addProperty(String name, String value) {
 		properties.put(name, value);
+	}
+	
+	public void setApplyRemove(boolean setting) {
+		applyRemove = setting;
 	}
 	
 	public void setPointsApply(boolean setting) {
@@ -207,8 +210,10 @@ public class CellObject {
 			}
 		}
 		
-		return consumable;	// if this is true the object is removed from 
-							// the cell after the apply
+		if (applyRemove) {
+			return true;
+		}
+		return false;
 	}
 	/**
 	 * @param world the world 
@@ -236,7 +241,7 @@ public class CellObject {
 			return true;
 		}
 		
-		return false; // this keeps this object around
+		return false;
 	}
 	
 	/**

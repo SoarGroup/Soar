@@ -3,7 +3,7 @@
     <property name="id" value="wall" />
     <property name="block" value="true" />
   </cell-object>
-  <cell-object name="normalfood" consumable="true">
+  <cell-object name="normalfood">
     <property name="id" value="normalfood" />
     <property name="points" value="5" />
     <property name="shape" value="round" />
@@ -11,9 +11,10 @@
     <property name="edible" value="true" />
     <apply>
       <points />
+      <remove />
     </apply>
   </cell-object>
-  <cell-object name="bonusfood" consumable="true">
+  <cell-object name="bonusfood">
     <property name="id" value="bonusfood" />
     <property name="points" value="10" />
     <property name="shape" value="square" />
@@ -21,6 +22,7 @@
     <property name="edible" value="true" />
     <apply>
       <points />
+      <remove />
     </apply>
   </cell-object>
   <cells world-size="6" random-walls="true" random-food="true" />

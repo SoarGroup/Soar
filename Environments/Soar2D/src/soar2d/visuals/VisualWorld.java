@@ -205,14 +205,8 @@ public class VisualWorld extends Canvas implements PaintListener {
 						}
 					}
 					
-					if (agentLocation == null) {
-						if (world.map.removeObject(location, Names.kExplosion) != null) {
-							drawExplosion(gc, xDraw, yDraw);
-						}
-					} else {
-						if (world.map.hasObject(location, Names.kExplosion)) {
-							drawExplosion(gc, xDraw, yDraw);
-						}
+					if (world.map.hasObject(location, Names.kExplosion)) {
+						drawExplosion(gc, xDraw, yDraw);
 					}
 				} else if (Soar2D.config.tanksoar) {
 					
