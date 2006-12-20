@@ -128,6 +128,7 @@ public class Names {
 	public static final String kPropertyImage = "image";
 	public static final String kPropertyImageMin = "image-min";
 	public static final String kPropertyImageMax = "image-max";
+	public static final String kPropertyLinger = "linger";
 	public static final String kPropertyMissile = "missile";
 	public static final String kPropertyMissiles = "missiles";
 	public static final String kPropertyMoveApply = "move-apply";
