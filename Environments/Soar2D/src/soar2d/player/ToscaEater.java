@@ -16,15 +16,20 @@ import tosca.*;
 public class ToscaEater {
 	protected Logger logger = Soar2D.logger;
 
-	protected ToscaInterface m_ToscaInterface ;
-	protected Library		 m_Library ;
-	protected Eater m_Eater ;
-	protected Eater getEater() { return m_Eater ; }
+	protected ToscaInterface 	m_ToscaInterface ;
+	protected Library		 	m_Library ;
+	protected Eater 			m_Eater ;
 	protected EatersInputStateVariable m_InputVar ;
-	protected int	m_EaterNumber ;
-	
+	protected EatersOutputStateVariable m_OutputVar ;
+	protected int				m_EaterNumber ;
+
 	/** This boolean switches tosca integration on and off.  When off, no Tosca code should run and we're back to regular Soar Eaters */
 	public static final boolean kToscaEnabled = false ;
+	
+	/** If true the agent will just walk forward until hitting an obstacle and then turn right.  If false, calls to Tosca code to reason about the move. */
+	private static final boolean kSimulatedOutput = false ;
+
+	public Eater getEater() 	{ return m_Eater ; }
 	
 	public ToscaEater( Eater eater ) {
 		m_Eater = eater ;
@@ -42,6 +47,9 @@ public class ToscaEater {
 		// on the Tosca side to handle these agents.
 		m_InputVar = new EatersInputStateVariable("agent-" + m_EaterNumber + "-input") ;
 		m_Library.AddStateVariable(m_InputVar) ;
+		
+		m_OutputVar = new EatersOutputStateVariable("agent-" + m_EaterNumber + "-output") ;
+		m_Library.AddStateVariable(m_OutputVar) ;
 	}
 	
 	/* (non-Javadoc)
@@ -66,37 +74,40 @@ public class ToscaEater {
 	 * @see soar2d.player.Player#getMove()
 	 */
 	public MoveInfo getMove() {
-		// if we're not graphical, the human agent can't enter input.
-		// maybe we should support this in the future.
-		if (Soar2D.config.graphical == false) {
-			return new MoveInfo();
-		}
 		// Switching to have tosca eater auto generate a direction so the eater
 		// moves w/o my having to enter something.
 		MoveInfo move = new MoveInfo() ;
 		java.awt.Point oldLocation = getEater().previousLocation ;
-
-		// Find a direction to move that is open
-		for (int dir = 0 ; dir < 4 ; dir++)
+		
+		if (kSimulatedOutput)
 		{
-			move.move = true;
+			// Find a direction to move that is open
+			for (int dir = 0 ; dir < 4 ; dir++)
+			{
+				move.move = true;
+				
+				// Tend to keep moving in the same direction as before
+				move.moveDirection = getEater().getFacingInt() + dir ;
+				if (move.moveDirection > 4)
+					move.moveDirection = 1 ;
+				
+				// Calculate new location
+				java.awt.Point newLocation = new java.awt.Point(oldLocation);
+				Direction.translate(newLocation, move.moveDirection);
+				// Verify legal move and commit move
+				if (Soar2D.simulation.world.isInBounds(newLocation) && Soar2D.simulation.world.map.enterable(newLocation))
+					break ;
+			}
+		}
+		else
+		{
+			move.move = true ;
+			move.moveDirection = this.m_OutputVar.GetDirection() ;
 			
-			// Tend to keep moving in the same direction as before
-			move.moveDirection = getEater().getFacingInt() + dir ;
-			if (move.moveDirection > 4)
-				move.moveDirection = 1 ;
-			
-			// Calculate new location
-			java.awt.Point newLocation = new java.awt.Point(oldLocation);
-			Direction.translate(newLocation, move.moveDirection);
-			// Verify legal move and commit move
-			if (Soar2D.simulation.world.isInBounds(newLocation) && Soar2D.simulation.world.map.enterable(newLocation))
-				break ;
+			if (move.moveDirection == 0)
+				move.move = false ;
 		}
 
-		// Just make things move slow enough that I can see what's happening
-		try { java.lang.Thread.sleep(100) ; } catch (Exception ex) { }
-		
 		//MoveInfo move = Soar2D.wm.getHumanMove(getEater().getColor());
 		// the facing depends on the move
 		getEater().setFacingInt(move.moveDirection);
