@@ -73,6 +73,7 @@ public class CellObject {
 	 * Apply the fly missile code on an update.
 	 */
 	boolean flyMissileUpdate = false;
+	boolean lingerUpdate = false;
 	
 	CellObject(CellObject cellObject) {
 		this.properties = new HashMap<String, String>(cellObject.properties);
@@ -88,6 +89,7 @@ public class CellObject {
 		this.energyApplyShieldsUp = cellObject.energyApplyShieldsUp;
 		this.decayUpdate = cellObject.decayUpdate;
 		this.flyMissileUpdate = cellObject.flyMissileUpdate;
+		this.lingerUpdate = cellObject.lingerUpdate;
 	}
 	
 	CellObject(String name, boolean updatable) {
@@ -135,6 +137,10 @@ public class CellObject {
 	
 	public void setMissilesApply(boolean setting) {
 		missilesApply = setting;
+	}
+	
+	public void setLingerUpdate(boolean setting) {
+		lingerUpdate = setting;
 	}
 	
 	/**
@@ -239,6 +245,16 @@ public class CellObject {
 			phase %= 4;
 			this.addProperty(Names.kPropertyFlyPhase, Integer.toString(phase));
 			return true;
+		}
+		
+		if (lingerUpdate) {
+			assert properties.containsKey(Names.kPropertyLinger);
+			int remaining = Integer.parseInt(properties.get(Names.kPropertyLinger));
+			remaining -= 1;
+			properties.put(Names.kPropertyLinger, Integer.toString(remaining));
+			if (remaining == 0) {
+				return true;
+			}
 		}
 		
 		return false;
