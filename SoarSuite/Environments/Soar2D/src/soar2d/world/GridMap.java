@@ -42,7 +42,7 @@ public class GridMap {
 
 	
 	HashSet<CellObject> updatables = new HashSet<CellObject>();
-	IdentityHashMap<CellObject, java.awt.Point> updatablesLocations = new IdentityHashMap<CellObject, java.awt.Point>();
+	HashMap<CellObject, java.awt.Point> updatablesLocations = new HashMap<CellObject, java.awt.Point>();
 	
 	public int getSize() {
 		return size;
@@ -177,11 +177,12 @@ public class GridMap {
 		if (updatables.isEmpty()) {
 			return;
 		}
-		
+
 		Iterator<CellObject> iter = updatables.iterator();
 		while (iter.hasNext()) {
 			CellObject cellObject = iter.next();
 			java.awt.Point location = updatablesLocations.get(cellObject);
+			assert location != null;
 			int previousScore = 0;
 			if (Soar2D.config.eaters) {
 				if (cellObject.hasProperty(Names.kPropertyPoints)) {
@@ -303,6 +304,13 @@ public class GridMap {
 	}
 	
 	public void addObjectToCell(java.awt.Point location, CellObject object) {
+		Cell cell = getCell(location);
+		if (cell.hasObject(object.getName())) {
+			CellObject old = cell.removeObject(object.getName());
+			assert old != null;
+			updatables.remove(old);
+			updatablesLocations.remove(old);
+		}
 		if (object.updatable()) {
 			updatables.add(object);
 			updatablesLocations.put(object, location);
@@ -327,7 +335,6 @@ public class GridMap {
 				scoreCount += object.getIntProperty(Names.kPropertyPoints);
 			}
 		}
-		Cell cell = getCell(location);
 		cell.addCellObject(object);
 		setRedraw(cell);
 	}

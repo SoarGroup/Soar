@@ -14,6 +14,7 @@ import soar2d.player.Player;
 import soar2d.world.*;
 
 public class VisualWorld extends Canvas implements PaintListener {
+	
 	public static HashMap<Player, Color> playerColors = new HashMap<Player, Color>();
 	
 	public static void remapPlayerColors() {

@@ -846,12 +846,15 @@ public class World {
 				cash += collideeIter.next().getPoints();
 			}
 			if (cash > 0) {
+				int trash = cash % collision.size();
 				cash /= collision.size();
-			}
-			if (logger.isLoggable(Level.FINE)) logger.fine("Cash to each: " + cash);
-			collideeIter = collision.listIterator();
-			while (collideeIter.hasNext()) {
-				collideeIter.next().setPoints(cash, "collision");
+				if (logger.isLoggable(Level.FINE)) logger.fine("Cash to each: " + cash + " (" + trash + " lost in division)");
+				collideeIter = collision.listIterator();
+				while (collideeIter.hasNext()) {
+					collideeIter.next().setPoints(cash, "collision");
+				}
+			} else {
+				if (logger.isLoggable(Level.FINE)) logger.fine("Sum of cash is negative.");
 			}
 			
 			// Remove from former location (only one of these for all players)
