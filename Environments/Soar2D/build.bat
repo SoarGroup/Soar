@@ -20,7 +20,7 @@ xcopy /q /y src\* tmp
 xcopy /q /y /s source\images\* tmp\images\
 
 @echo ----------=========Compiling=========----------
-%2javac -source 1.5 -d tmp -classpath %SOARBIN%\swt.jar;%SOARBIN%\sml.jar -sourcepath src src\soar2d\Soar2D.java
+%2javac -source 1.5 -d tmp -classpath %SOARBIN%\swt.jar;%SOARBIN%\sml.jar;%SOARBIN%\tosca.jar -sourcepath src src\soar2d\Soar2D.java
 
 @echo ----------==========Jarring==========----------
 %2jar cfm Soar2D.jar JarManifest -C tmp .
