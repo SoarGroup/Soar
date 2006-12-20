@@ -256,6 +256,7 @@ public class SoarEater extends Eater {
 					}
 					
 					// if we get to this point, the cell is not a wall
+					assert world.map.enterable(viewLocation);
 					
 					// player test
 					Player player = world.map.getPlayer(viewLocation);
@@ -315,6 +316,11 @@ public class SoarEater extends Eater {
 
 					// Anything out of bounds will not change
 					if (!world.isInBounds(viewLocation)) {
+						continue;
+					}
+					
+					// Walls do not change
+					if (!world.map.enterable(viewLocation)) {
 						continue;
 					}
 	
@@ -412,6 +418,9 @@ public class SoarEater extends Eater {
 					// a cell is empty if it doesn't have food, a player, or a box
 					// wall is implied since we can't get here if there is a wall
 					if(!hadFood && (player == null) && (boxes.size() == 0)) {
+						// if we get to this point, the cell is not a wall
+						assert world.map.enterable(viewLocation);
+						
 						StringElement element = soarCell.content.remove(Names.kEmpty);
 						if (element == null) {
 							createContent(newContent, soarCell, Names.kEmpty);

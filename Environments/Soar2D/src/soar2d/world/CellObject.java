@@ -75,7 +75,11 @@ public class CellObject {
 	boolean flyMissileUpdate = false;
 	boolean lingerUpdate = false;
 	
+	private static int idCount = 0;
+	private Integer id;
+	
 	CellObject(CellObject cellObject) {
+		this.id = new Integer(idCount++);
 		this.properties = new HashMap<String, String>(cellObject.properties);
 		this.propertiesApply = new HashMap<String, String>(cellObject.propertiesApply);
 		this.name = new String(cellObject.name);
@@ -93,8 +97,17 @@ public class CellObject {
 	}
 	
 	CellObject(String name, boolean updatable) {
+		this.id = new Integer(idCount++);
 		this.name = name;
 		this.updatable = updatable;
+	}
+	
+	public Integer getId() {
+		return id;
+	}
+	
+	public boolean equals(CellObject other) {
+		return id == other.id;
 	}
 	
 	public String getName() {
