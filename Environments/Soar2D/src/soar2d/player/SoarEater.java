@@ -243,7 +243,7 @@ public class SoarEater extends Eater {
 						ArrayList<CellObject> walls = world.map.getAllWithProperty(viewLocation, Names.kPropertyBlock);
 						
 						// we must have at least one
-						assert walls.size() == 1;
+						assert walls.size() >= 1;
 						
 						// get the object
 						CellObject wall = walls.get(0);

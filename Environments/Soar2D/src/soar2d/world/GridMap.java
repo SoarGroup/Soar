@@ -158,15 +158,6 @@ public class GridMap {
 		return object;
 	}
 	
-	void addObjectByName(java.awt.Point location, String name) {
-		CellObject object = cellObjectManager.createObject(name);
-		if (object == null) {
-			Soar2D.control.severeError("Tried to create object " + name + "but no template exists");
-			return;
-		}
-		this.addObjectToCell(location, object);
-	}
-	
 	public Player getPlayer(java.awt.Point location) {
 		Cell cell = getCell(location);
 		return cell.getPlayer();
@@ -342,16 +333,12 @@ public class GridMap {
 	}
 	
 	private void setRedraw(Cell cell) {
-		if (!cell.hasObject(Names.kRedraw)) {
-			cell.addCellObject(new CellObject(Names.kRedraw, false, true));
-		}
+		cell.addCellObject(new CellObject(Names.kRedraw, false, true));
 	}
 	
 	public void setExplosion(java.awt.Point location) {
 		Cell cell = getCell(location);
-		if (!cell.hasObject(Names.kExplosion)) {
-			cell.addCellObject(new CellObject(Names.kExplosion, false, true));
-		}
+		cell.addCellObject(new CellObject(Names.kExplosion, false, true));
 	}
 	
 	public void shutdown() {

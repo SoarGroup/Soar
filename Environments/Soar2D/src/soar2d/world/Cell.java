@@ -1,6 +1,7 @@
 package soar2d.world;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import soar2d.Names;
 import soar2d.player.Player;
@@ -22,7 +23,7 @@ class Cell {
 	 * The list of objects in the cell, mapped by object name. The names must be
 	 * unique.
 	 */
-	HashMap<String, CellObject> cellObjects = new HashMap<String, CellObject>();
+	ConcurrentHashMap<String, CellObject> cellObjects = new ConcurrentHashMap<String, CellObject>();
 	/**
 	 * An iterator reference so we don't have to create it each time.
 	 */
@@ -61,7 +62,6 @@ class Cell {
 	 * Adds a cell object to the object list.
 	 */
 	void addCellObject(CellObject cellObject) {
-		assert !cellObjects.containsKey(cellObject.getName());
 		cellObjects.put(cellObject.getName(), cellObject);
 	}
 	
