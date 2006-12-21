@@ -456,6 +456,7 @@ public class WindowManager {
 			display.syncExec(new Runnable() {
 				public void run() {
 					updateWorldGroup();
+					visualWorld.resetBackground();
 					visualWorld.setRepaint();
 					agentDisplay.worldChangeEvent();
 					visualWorld.redraw();

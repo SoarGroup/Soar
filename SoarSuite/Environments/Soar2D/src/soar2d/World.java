@@ -56,14 +56,21 @@ public class World {
 	private boolean addCharger(boolean health, GridMap newMap) {
 		ArrayList<java.awt.Point> locations = this.getAvailableLocations(newMap);
 		if (locations.size() <= 0) {
-			Soar2D.control.severeError("No place to put energy charger!");
+			Soar2D.control.severeError("No place to put charger!");
 			return false;
 		}
 		
 		java.awt.Point location = locations.get(Simulation.random.nextInt(locations.size()));
-		if (!newMap.addRandomObjectWithProperties(location, Names.kPropertyHealth, Names.kPropertyCharger)) {
-			Soar2D.control.severeError("Couldn't add charger to map!");
-			return false;
+		if (health) {
+			if (!newMap.addRandomObjectWithProperties(location, Names.kPropertyHealth, Names.kPropertyCharger)) {
+				Soar2D.control.severeError("Couldn't add charger to map!");
+				return false;
+			}
+		} else {			
+			if (!newMap.addRandomObjectWithProperties(location, Names.kPropertyEnergy, Names.kPropertyCharger)) {
+				Soar2D.control.severeError("Couldn't add charger to map!");
+				return false;
+			}
 		}
 		
 		return true;
