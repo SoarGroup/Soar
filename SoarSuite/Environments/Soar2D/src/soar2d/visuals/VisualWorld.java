@@ -1,6 +1,7 @@
 package soar2d.visuals;
 
 import java.util.*;
+
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
@@ -267,6 +268,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 					ArrayList<CellObject> drawList = world.map.getAllWithProperty(location, Names.kPropertyImage);
 					CellObject explosion = null;
 					CellObject object = null;
+					ArrayList<CellObject> missiles = new ArrayList<CellObject>();
 					
 					Iterator<CellObject> iter = drawList.iterator();
 					while (iter.hasNext()) {
@@ -276,7 +278,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 						} else if (cellObject.hasProperty(Names.kPropertyMissiles)) {
 							object = cellObject;
 						} else if (cellObject.hasProperty(Names.kPropertyMissile)) {
-							object = cellObject;
+							missiles.add(cellObject);
 						}
 					}
 					
@@ -295,7 +297,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 						gc.drawImage(image, location.x*cellSize, location.y*cellSize);
 					}
 					
-					// draw the missile packs or tanks or missiles
+					// draw the missile packs or tanks
 					if (object != null) {
 						String imageName = object.getProperty(Names.kPropertyImage);
 						Image image = images.get(imageName);
@@ -323,6 +325,54 @@ public class VisualWorld extends Canvas implements PaintListener {
 								cellSize*location.y + cellSize/2 - kDotSize/2, 
 								kDotSize, kDotSize);
 					}
+
+					// draw the missiles
+					iter = missiles.iterator();
+					while (iter.hasNext()) {
+						CellObject missile = iter.next();
+						
+						String imageName = missile.getProperty(Names.kPropertyImage);
+						Image image = images.get(imageName);
+						if (image == null) {
+							image = bootstrapImage(imageName);
+						}
+						
+						int flightPhase = missile.getIntProperty(Names.kPropertyFlyPhase);
+						int direction = missile.getIntProperty(Names.kPropertyDirection);
+
+						if (flightPhase == 0) {
+							direction = Direction.backwardOf[direction];
+						}
+						
+						boolean thirdPhase = (flightPhase == 3);
+
+						int mX = 0;
+						int mY = 0;
+						switch (direction) {
+						case Direction.kNorthInt:
+							mX = 10;
+							mY = thirdPhase ? 26 : 5;
+							break;
+						case Direction.kEastInt:
+							mX = thirdPhase ? -6 : 15;
+							mY = 10;
+							break;
+						case Direction.kSouthInt:
+							mX = 10;
+							mY = thirdPhase ? -6 : 15;
+							break;
+						case Direction.kWestInt:
+							mX = thirdPhase ? 26 : 5;
+							mY = 10;
+							break;
+						default:
+							assert false;
+							break;
+						}
+						
+						gc.drawImage(image, (location.x * cellSize) + mX, (location.y * cellSize) + mY);						
+					}
+					
 				} else {
 					Soar2D.control.severeError("I don't know how to draw the world!");
 				}

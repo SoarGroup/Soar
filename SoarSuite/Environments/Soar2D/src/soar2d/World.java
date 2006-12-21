@@ -626,7 +626,7 @@ public class World {
 				int direction = player.getFacingInt();
 				Direction.translate(missileLoc, direction);
 				
-				if (!isInBounds(missileLoc)) {
+				if (!isInBounds(missileLoc) || !map.enterable(missileLoc)) {
 					continue;
 				}
 				

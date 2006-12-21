@@ -69,8 +69,17 @@
       <fly-missile />
     </update>
   </cell-object>
-  <cells world-size="6">
+  <cells world-size="9">
     <row>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
       <cell>
         <object>rocks</object>
       </cell>
@@ -99,6 +108,9 @@
       </cell>
       <cell />
       <cell />
+      <cell />
+      <cell />
+      <cell />
       <cell>
         <object>missiles</object>
       </cell>
@@ -114,15 +126,6 @@
       <cell />
       <cell />
       <cell />
-      <cell>
-        <object>rocks</object>
-      </cell>
-    </row>
-    <row>
-      <cell>
-        <object>rocks</object>
-      </cell>
-      <cell />
       <cell />
       <cell />
       <cell />
@@ -138,11 +141,83 @@
       <cell />
       <cell />
       <cell />
+      <cell />
+      <cell />
+      <cell />
       <cell>
         <object>rocks</object>
       </cell>
     </row>
     <row>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
       <cell>
         <object>rocks</object>
       </cell>
