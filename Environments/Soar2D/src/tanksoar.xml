@@ -1,10 +1,10 @@
 <soar2d>
-  <logger level="finest" console="true"/>
+  <logger level="info" console="false" file="true" />
   <display graphical="true" />
   <tanksoar map="default.tmap">
-    <agent productions="obscure-bot.soar" />
   </tanksoar>
   <simulation debuggers="false" random="false">
     <terminal type="winning-score" value="50" />
+    <terminal type="max-updates" value="3000" />
   </simulation>
 </soar2d>
