@@ -47,8 +47,12 @@
       <missiles />
     </apply>
   </cell-object>
-  <cell-object name="explosion">
+  <cell-object name="explosion" updatable="true" >
     <property name="image" value="explosion.gif" />
+    <property name="linger" value="1" />
+    <update>
+      <linger />
+    </update>
   </cell-object>
   <cell-object name="ground">
     <property name="image" value="ground.gif" />
@@ -62,7 +66,7 @@
     <property name="health" value="-400" />
     <property name="energy" value="-250" />
     <apply>
-      <health shields="false" />
+      <health shields-down="true" />
       <energy shields="true" />
     </apply>
     <update>

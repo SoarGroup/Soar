@@ -37,6 +37,7 @@ public class Configuration {
 	public final int kTankCollisionPenalty = -100;	// tanksoar
 	public final int kMaxMissilePacks = 3;
 	public final int kMissilePackRespawnChance = 5;	// percent chance per update that a missile pack will respawn
+	public final static int kSheildEnergyUsage = -20;
 
 	public final boolean kDefaultPropertyBoolean = false;	// if a bool property doesn't exist
 	public final float kDefaultPropertyFloat = 0;			// if a float property doesn't exist

@@ -38,6 +38,7 @@ public class Names {
 	public static final String kTagFlyMissile = "fly-missile";
 	public static final String kTagFood = "food";
 	public static final String kTagHealth = "health";
+	public static final String kTagLinger = "linger";
 	public static final String kTagLogger = "logger";
 	public static final String kTagMap = "map";
 	public static final String kTagMissiles = "missiles";
@@ -78,6 +79,7 @@ public class Names {
 	public static final String kParamRemote = "remote";
 	public static final String kParamShape = "shape";
 	public static final String kParamShields = "shields";
+	public static final String kParamShieldsDown = "shields-down";
 	public static final String kParamTimeOut = "timeout";
 	public static final String kParamType = "type";
 	public static final String kParamUpdatable = "updatable";
@@ -105,13 +107,18 @@ public class Names {
 	public static final String kEaterID = "eater";
 	public static final String kDirectionID = "direction";
 	public static final String kDontEatID = "dont-eat";
+	public static final String kFireID = "fire";
 	public static final String kJumpID = "jump";
 	public static final String kMoveID = "move";
 	public static final String kMyLocationID = "my-location";
 	public static final String kNameID = "name";
 	public static final String kOpenID = "open";
+	public static final String kRadarID = "radar";
+	public static final String kRadarPowerID = "radar-power";
 	public static final String kRandomID = "random";
+	public static final String kRotateID = "rotate";
 	public static final String kScoreID = "score";
+	public static final String kShieldsID = "shields";
 	public static final String kStopSimID = "stop-sim";
 	public static final String kWallID = "wall";
 	public static final String kxID = "x";
@@ -142,6 +149,7 @@ public class Names {
 	public static final String kPropertyStatus = "status";
 
 	public static final ClientConfig kDebuggerClient = new ClientConfig();
+
 	static {
 		kDebuggerClient.name = "java-debugger";
 		kDebuggerClient.after = true;

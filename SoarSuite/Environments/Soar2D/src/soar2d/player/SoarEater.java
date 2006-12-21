@@ -438,16 +438,10 @@ public class SoarEater extends Eater {
 			}
 		}
 
-		// update the score if it changed
-		if (scoreWME.GetValue() != getPoints()) {
-			agent.Update(scoreWME, getPoints());
-		}
+		updateScoreWME();
 		
-		// update the facing if it changed
-		if (!directionWME.GetValue().equalsIgnoreCase(Direction.stringOf[getFacingInt()])) {
-			agent.Update(directionWME, Direction.stringOf[getFacingInt()]);
-		}
-
+		updateFacingWME();
+		
 		// if we moved, update the location
 		if (moved) {
 			agent.Update(xWME, location.x);
@@ -463,6 +457,20 @@ public class SoarEater extends Eater {
 		
 		// commit everything
 		agent.Commit();
+	}
+	
+	private void updateFacingWME() {
+		// update the facing if it changed
+		if (!directionWME.GetValue().equalsIgnoreCase(Direction.stringOf[getFacingInt()])) {
+			agent.Update(directionWME, Direction.stringOf[getFacingInt()]);
+		}
+	}
+	
+	private void updateScoreWME() {
+		// update the score if it changed
+		if (scoreWME.GetValue() != getPoints()) {
+			agent.Update(scoreWME, getPoints());
+		}
 	}
 	
 	/**
@@ -605,8 +613,7 @@ public class SoarEater extends Eater {
 	 * @see soar2d.player.Player#reset()
 	 */
 	public void reset() {
-		
-		previousLocation = new java.awt.Point(-1, -1);
+		super.reset();
 		
 		// clear the 5x5
 		Iterator<StringElement> iter;
@@ -622,6 +629,10 @@ public class SoarEater extends Eater {
 				}
 			}
 		}
+		
+		updateFacingWME();
+		updateScoreWME();
+		agent.Commit();
 
 		agent.InitSoar();
 	}

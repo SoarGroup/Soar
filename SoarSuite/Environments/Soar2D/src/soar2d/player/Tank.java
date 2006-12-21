@@ -23,22 +23,8 @@ public class Tank extends Player {
 
 	public Tank( PlayerConfig playerConfig) {
 		super(playerConfig);
-
-		if (playerConfig.hasMissiles()) {
-			this.missiles = playerConfig.getMissiles();
-		} else {
-			this.missiles = Soar2D.config.kDefaultMissiles;
-		}
-		if (playerConfig.hasHealth()) {
-			this.health = playerConfig.getHealth();
-		} else {
-			this.health = Soar2D.config.kDefaultHealth;
-		}
-		if (playerConfig.hasEnergy()) {
-			this.energy = playerConfig.getEnergy();
-		} else {
-			this.energy = Soar2D.config.kDefaultEnergy;
-		}
+		
+		reset();
 	}
 	
 	public int getMissiles() {
@@ -162,6 +148,33 @@ public class Tank extends Player {
 		MoveInfo move = Soar2D.wm.getHumanMove(this.getColor());
 		return move;
 	}
+	
+	public void reset() {
+		super.reset();
+		
+		if (playerConfig.hasMissiles()) {
+			this.missiles = playerConfig.getMissiles();
+		} else {
+			this.missiles = Soar2D.config.kDefaultMissiles;
+		}
+		if (playerConfig.hasHealth()) {
+			this.health = playerConfig.getHealth();
+		} else {
+			this.health = Soar2D.config.kDefaultHealth;
+		}
+		if (playerConfig.hasEnergy()) {
+			this.energy = playerConfig.getEnergy();
+		} else {
+			this.energy = Soar2D.config.kDefaultEnergy;
+		}
+		
+		shieldsUp = false;
+	}
+	
+	public void setShields(boolean setting) {
+		shieldsUp = setting;
+	}
+	
 	public void shutdown() {
 		
 	}
