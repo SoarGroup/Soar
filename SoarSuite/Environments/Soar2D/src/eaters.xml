@@ -1,5 +1,5 @@
 <soar2d>
-  <logger level="finest" console="true"/>
+  <logger level="info" console="false" file="true" />
   <display graphical="true" />
   <eaters map="random-walls.emap">
     <agent productions="tutorial/advanced-move.soar" />
