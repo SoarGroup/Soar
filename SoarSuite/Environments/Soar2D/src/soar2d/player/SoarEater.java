@@ -615,6 +615,10 @@ public class SoarEater extends Eater {
 	public void reset() {
 		super.reset();
 		
+		if (agent == null) {
+			return;
+		}
+
 		// clear the 5x5
 		Iterator<StringElement> iter;
 		for (int x = 0; x < cells.length; ++x) {
