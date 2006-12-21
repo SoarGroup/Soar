@@ -413,6 +413,9 @@ public class ConfigurationLoader {
 		} else if(attribute.equalsIgnoreCase(Names.kTerminalFoodRemaining)) {
 			c.terminalFoodRemaining = true;
 			
+		} else if(attribute.equalsIgnoreCase(Names.kTerminalUnopenedBoxes)) {
+			c.terminalUnopenedBoxes = true;
+			
 		} else {
 			throwSyntax("Unknown terminal type: " + attribute);
 		}

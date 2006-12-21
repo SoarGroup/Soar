@@ -116,6 +116,10 @@ public class Configuration {
 	 */
 	public boolean terminalFoodRemaining = false;
 	/**
+	 * Stop the simulation when no boxes are closed
+	 */
+	public boolean terminalUnopenedBoxes = false;
+	/**
 	 * Stop the simulation when an agent issues a stop command.
 	 * Note that a similar but slightly different effect can be achieved with 
 	 * right hand side "cmd stop-soar"

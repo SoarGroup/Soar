@@ -84,11 +84,12 @@ public class Names {
 	public static final String kParamX = "x";
 	public static final String kParamY = "y";
 	
-	public static final String kTerminalMaxUpdates = "max-updates";
 	public static final String kTerminalAgentCommand = "agent-command";
-	public static final String kTerminalPointsRemaining = "points-remaining";
-	public static final String kTerminalWinningScore = "winning-score";
 	public static final String kTerminalFoodRemaining = "food-remaining";
+	public static final String kTerminalMaxUpdates = "max-updates";
+	public static final String kTerminalPointsRemaining = "points-remaining";
+	public static final String kTerminalUnopenedBoxes = "unopened-boxes";
+	public static final String kTerminalWinningScore = "winning-score";
 
 	public static final String kLevelSevere = "severe";
 	public static final String kLevelWarning = "warning";

@@ -391,6 +391,13 @@ public class World {
 			}
 		}
 
+		if (Soar2D.config.terminalUnopenedBoxes) {
+			if (map.getUnopenedBoxCount() <= 0) {
+				stopAndDumpStats("All of the boxes are open.", getSortedScores());
+				return;
+			}
+		}
+
 		if (players.size() == 0) {
 			logger.warning("Update called with no players.");
 			return;

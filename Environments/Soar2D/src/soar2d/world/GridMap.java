@@ -39,10 +39,10 @@ public class GridMap {
 
 	private int scoreCount = 0;
 	private int foodCount = 0;
-
 	
 	HashSet<CellObject> updatables = new HashSet<CellObject>();
 	HashMap<CellObject, java.awt.Point> updatablesLocations = new HashMap<CellObject, java.awt.Point>();
+	HashSet<CellObject> unopenedBoxes = new HashSet<CellObject>();
 	
 	public int getSize() {
 		return size;
@@ -54,6 +54,10 @@ public class GridMap {
 	
 	public int getFoodCount() {
 		return foodCount;
+	}
+	
+	public int getUnopenedBoxCount() {
+		return unopenedBoxes.size();
 	}
 	
 	public int numberMissilePacks() {
@@ -174,40 +178,49 @@ public class GridMap {
 	}
 	
 	public void updateObjects(World world) {
-		if (updatables.isEmpty()) {
-			return;
+		if (!updatables.isEmpty()) {
+			Iterator<CellObject> iter = updatables.iterator();
+			while (iter.hasNext()) {
+				CellObject cellObject = iter.next();
+				java.awt.Point location = updatablesLocations.get(cellObject);
+				assert location != null;
+				int previousScore = 0;
+				if (Soar2D.config.eaters) {
+					if (cellObject.hasProperty(Names.kPropertyPoints)) {
+						previousScore = cellObject.getIntProperty(Names.kPropertyPoints);
+					}
+				}
+				if (cellObject.update(world, location)) {
+					Cell cell = getCell(location);
+					
+					cellObject = cell.removeObject(cellObject.getName());
+					assert cellObject != null;
+					
+					setRedraw(cell);
+					
+					// if it is not tanksoar or if the cell is not a missle or if shouldRemoveMissile returns true
+					if (!Soar2D.config.tanksoar || !cellObject.hasProperty(Names.kPropertyMissile) 
+							|| shouldRemoveMissile(world, location, cell, cellObject)) {
+						iter.remove();
+						updatablesLocations.remove(cellObject);
+						removalStateUpdate(cellObject);
+					}
+				}
+				if (Soar2D.config.eaters) {
+					if (cellObject.hasProperty(Names.kPropertyPoints)) {
+						scoreCount += cellObject.getIntProperty(Names.kPropertyPoints) - previousScore;
+					}
+				}
+			}
 		}
-
-		Iterator<CellObject> iter = updatables.iterator();
-		while (iter.hasNext()) {
-			CellObject cellObject = iter.next();
-			java.awt.Point location = updatablesLocations.get(cellObject);
-			assert location != null;
-			int previousScore = 0;
-			if (Soar2D.config.eaters) {
-				if (cellObject.hasProperty(Names.kPropertyPoints)) {
-					previousScore = cellObject.getIntProperty(Names.kPropertyPoints);
-				}
-			}
-			if (cellObject.update(world, location)) {
-				Cell cell = getCell(location);
-				
-				cellObject = cell.removeObject(cellObject.getName());
-				assert cellObject != null;
-				
-				setRedraw(cell);
-				
-				// if it is not tanksoar or if the cell is not a missle or if shouldRemoveMissile returns true
-				if (!Soar2D.config.tanksoar || !cellObject.hasProperty(Names.kPropertyMissile) 
-						|| shouldRemoveMissile(world, location, cell, cellObject)) {
+		
+		if (Soar2D.config.terminalUnopenedBoxes) {
+			Iterator<CellObject> iter = unopenedBoxes.iterator();
+			while (iter.hasNext()) {
+				CellObject box = iter.next();
+				if (!isUnopenedBox(box)) {
+					Soar2D.logger.info("Removed box from unopened list.");
 					iter.remove();
-					updatablesLocations.remove(cellObject);
-					removalStateUpdate(cellObject);
-				}
-			}
-			if (Soar2D.config.eaters) {
-				if (cellObject.hasProperty(Names.kPropertyPoints)) {
-					scoreCount += cellObject.getIntProperty(Names.kPropertyPoints) - previousScore;
 				}
 			}
 		}
@@ -278,6 +291,12 @@ public class GridMap {
 				scoreCount -= object.getIntProperty(Names.kPropertyPoints);
 			}
 		}
+		if (Soar2D.config.terminalUnopenedBoxes) {
+			if (isUnopenedBox(object)) {
+				Soar2D.logger.info("Removed box from unopened list.");
+				unopenedBoxes.remove(object);
+			}
+		}
 	}
 	
 	public ArrayList<CellObject> getAllWithProperty(java.awt.Point location, String name) {
@@ -303,6 +322,16 @@ public class GridMap {
 		}
 	}
 	
+	private boolean isUnopenedBox(CellObject object) {
+		if (object.hasProperty(Names.kPropertyBox)) {
+			String status = object.getProperty(Names.kPropertyStatus);
+			if (status == null || !status.equals(Names.kOpen)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public void addObjectToCell(java.awt.Point location, CellObject object) {
 		Cell cell = getCell(location);
 		if (cell.hasObject(object.getName())) {
@@ -310,10 +339,17 @@ public class GridMap {
 			assert old != null;
 			updatables.remove(old);
 			updatablesLocations.remove(old);
+			removalStateUpdate(old);
 		}
 		if (object.updatable()) {
 			updatables.add(object);
 			updatablesLocations.put(object, location);
+		}
+		if (Soar2D.config.terminalUnopenedBoxes) {
+			if (isUnopenedBox(object)) {
+				Soar2D.logger.info("Added box to unopened list.");
+				unopenedBoxes.add(object);
+			}
 		}
 		if (Soar2D.config.tanksoar) {
 			if (object.hasProperty(Names.kPropertyCharger)) {
