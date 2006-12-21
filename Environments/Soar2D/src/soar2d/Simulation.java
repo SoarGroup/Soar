@@ -352,7 +352,7 @@ public class Simulation {
 		// the agent list has changed, notify things that care
 		Soar2D.control.playerEvent();
 	}
-
+	
 	/**
 	 * @param client the client in question
 	 * @return true if it is connected

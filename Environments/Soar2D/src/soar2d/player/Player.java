@@ -40,23 +40,17 @@ public class Player {
 	 * if I moved since last update
 	 */
 	protected boolean moved = false;
+	protected PlayerConfig playerConfig;
 
 	/**
 	 * @param playerConfig configuration params
 	 */
 	public Player(PlayerConfig playerConfig) {
-		this.name = playerConfig.getName();
-		if (playerConfig.hasFacing()) {
-			this.facingInt = playerConfig.getFacing();
-		} else {
-			this.facingInt = Simulation.random.nextInt(4) + 1;
-		}
+		this.playerConfig = playerConfig;
 		
-		if (playerConfig.hasPoints()) {
-			this.points = playerConfig.getPoints();
-		} else {
-			this.points = Soar2D.config.kDefaultPoints;
-		}
+		this.name = playerConfig.getName();
+		
+		reset();
 		
 		assert playerConfig.hasColor();
 		this.color = playerConfig.getColor();
@@ -203,10 +197,22 @@ public class Player {
 	}
 	
 	/**
-	 * called to reset player state
+	 * called to reset player state between runs
 	 */
 	public void reset() {
 		previousLocation = new java.awt.Point(-1, -1);
+		
+		if (playerConfig.hasFacing()) {
+			this.facingInt = playerConfig.getFacing();
+		} else {
+			this.facingInt = Simulation.random.nextInt(4) + 1;
+		}
+		
+		if (playerConfig.hasPoints()) {
+			this.points = playerConfig.getPoints();
+		} else {
+			this.points = Soar2D.config.kDefaultPoints;
+		}
 	}
 	/**
 	 * called when things are shutting down
@@ -221,5 +227,8 @@ public class Player {
 	 */
 	public MoveInfo getMove() {
 		return new MoveInfo();
+	}
+
+	public void setShields(boolean setting) {
 	}
 }

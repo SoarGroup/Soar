@@ -247,12 +247,12 @@ public class MapLoader {
 	}
 	
 	private void health(CellObject cellObjectTemplate, ElementXML applyTag) {
-		String attribute = applyTag.GetAttribute(Names.kParamShields);
-		boolean shields = false;
+		String attribute = applyTag.GetAttribute(Names.kParamShieldsDown);
+		boolean shieldsDown = false;
 		if (attribute != null) {
-			shields = Boolean.parseBoolean(attribute);
+			shieldsDown = Boolean.parseBoolean(attribute);
 		}
-		cellObjectTemplate.setHealthApply(true, shields);
+		cellObjectTemplate.setHealthApply(true, shieldsDown);
 	}
 	
 	private void update(CellObject cellObjectTemplate, ElementXML updateTag) throws SMLException, SyntaxException {
@@ -275,6 +275,11 @@ public class MapLoader {
 				} else if (updateSubTag.IsTag(Names.kTagFlyMissile)) {
 					xmlPath.push(Names.kTagFlyMissile);
 					cellObjectTemplate.setFlyMissileUpdate(true);
+					xmlPath.pop();
+					
+				} else if (updateSubTag.IsTag(Names.kTagLinger)) {
+					xmlPath.push(Names.kTagLinger);
+					cellObjectTemplate.setLingerUpdate(true);
 					xmlPath.pop();
 					
 				} else {

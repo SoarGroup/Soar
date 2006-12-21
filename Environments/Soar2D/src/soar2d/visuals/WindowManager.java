@@ -34,6 +34,7 @@ public class WindowManager {
 	String popUpMessage;
 	String statusMessage;
 	MoveInfo humanMove;
+	String humanMoveColor;
 
 	public static final int kEatersMainMapCellSize = 20;
 	public static final int kTanksoarMainMapCellSize = 32;
@@ -184,22 +185,18 @@ public class WindowManager {
 					case SWT.KEYPAD_8:
 						humanMove.move = true;
 						humanMove.moveDirection = Direction.kNorthInt;
-						go = true;
 						break;
 					case SWT.KEYPAD_6:
 						humanMove.move = true;
 						humanMove.moveDirection = Direction.kEastInt;
-						go = true;
 						break;
 					case SWT.KEYPAD_2:
 						humanMove.move = true;
 						humanMove.moveDirection = Direction.kSouthInt;
-						go = true;
 						break;
 					case SWT.KEYPAD_4:
 						humanMove.move = true;
 						humanMove.moveDirection = Direction.kWestInt;
-						go = true;
 						break;
 					case SWT.KEYPAD_1:
 						humanMove.rotate = !humanMove.rotate;
@@ -210,13 +207,24 @@ public class WindowManager {
 						humanMove.rotateDirection = Names.kRotateRight;
 						break;
 					case SWT.KEYPAD_5:
-						go = true;
+						humanMove.move = false;
 						break;
 					case SWT.KEYPAD_0:
 						humanMove.fire = !humanMove.fire;
 						break;
+					case SWT.KEYPAD_7:
+						humanMove.shields = !humanMove.shields;
+						humanMove.shieldsSetting = true;
+						break;
+					case SWT.KEYPAD_9:
+						humanMove.shields = !humanMove.shields;
+						humanMove.shieldsSetting = false;
+						break;
 					case SWT.KEYPAD_MULTIPLY:
 						humanMove.stopSim = !humanMove.stopSim;
+						break;
+					case SWT.KEYPAD_CR:
+						go = true;
 						break;
 					default:
 						break;
@@ -224,6 +232,9 @@ public class WindowManager {
 				} else {
 					return;
 				}
+				
+				Soar2D.wm.setStatus(humanMoveColor + ": " + humanMove.toString());
+				
 				if (go) {
 					synchronized(humanMove) {
 						humanMove.notify();
@@ -424,7 +435,6 @@ public class WindowManager {
 		if (!isDisposed()) {
 			display.syncExec(new Runnable() {
 				public void run() {
-					visualWorld.setFocus();
 					simButtons.updateButtons();
 					mapButtons.updateButtons();
 					agentDisplay.updateButtons();
@@ -437,7 +447,6 @@ public class WindowManager {
 		if (!isDisposed()) {
 			display.syncExec(new Runnable() {
 				public void run() {
-					visualWorld.setFocus();
 					visualWorld.setRepaint();
 					visualWorld.redraw();
 					simButtons.updateButtons();
@@ -494,15 +503,27 @@ public class WindowManager {
 		display = null;
 		shell = null;
 	}
+	
+	void setVisualWorldFocus() {
+		display.syncExec(new Runnable() {
+			public void run() {
+				visualWorld.setFocus();
+			}
+		});
+	}
 
 	public MoveInfo getHumanMove(String color) {
 		humanMove = new MoveInfo();
-		setStatus("Enter move for " + color);
-		try {
-			synchronized(humanMove) {
-				humanMove.wait();
+		if (!isDisposed()) {
+			humanMoveColor = color;
+			setStatus("Enter move for " + color);
+			setVisualWorldFocus();
+			try {
+				synchronized(humanMove) {
+					humanMove.wait();
+				}
+			} catch (InterruptedException e) {
 			}
-		} catch (InterruptedException e) {
 		}
 		return humanMove;
 	}

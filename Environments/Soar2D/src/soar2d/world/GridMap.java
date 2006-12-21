@@ -180,6 +180,8 @@ public class GridMap {
 	public void updateObjects(World world) {
 		if (!updatables.isEmpty()) {
 			Iterator<CellObject> iter = updatables.iterator();
+			
+			ArrayList<java.awt.Point> explosions = new ArrayList<java.awt.Point>();
 			while (iter.hasNext()) {
 				CellObject cellObject = iter.next();
 				java.awt.Point location = updatablesLocations.get(cellObject);
@@ -201,6 +203,11 @@ public class GridMap {
 					// if it is not tanksoar or if the cell is not a missle or if shouldRemoveMissile returns true
 					if (!Soar2D.config.tanksoar || !cellObject.hasProperty(Names.kPropertyMissile) 
 							|| shouldRemoveMissile(world, location, cell, cellObject)) {
+						
+						// we need an explosion if it was a tanksoar missile
+						if (Soar2D.config.tanksoar && cellObject.hasProperty(Names.kPropertyMissile)) {
+							explosions.add(location);
+						}
 						iter.remove();
 						updatablesLocations.remove(cellObject);
 						removalStateUpdate(cellObject);
@@ -211,6 +218,11 @@ public class GridMap {
 						scoreCount += cellObject.getIntProperty(Names.kPropertyPoints) - previousScore;
 					}
 				}
+			}
+			
+			Iterator<java.awt.Point> explosion = explosions.iterator();
+			while (explosion.hasNext()) {
+				setExplosion(explosion.next());
 			}
 		}
 		
@@ -226,11 +238,11 @@ public class GridMap {
 		}
 	}
 	
-	private boolean shouldRemoveMissile(World world, java.awt.Point location, Cell cell, CellObject cellObject) {
+	private boolean shouldRemoveMissile(World world, java.awt.Point location, Cell cell, CellObject missile) {
 		// instead of removing missiles, move them
 
 		// what direction is it going
-		int missileDir = cellObject.getIntProperty(Names.kPropertyDirection);
+		int missileDir = missile.getIntProperty(Names.kPropertyDirection);
 		
 		while (true) {
 			// move it
@@ -247,11 +259,7 @@ public class GridMap {
 			Player player = cell.getPlayer();
 			
 			if (player != null) {
-				// player is hit
-				cellObject.apply(player);
-				
-				// TODO: check for kills
-		
+				world.missileHit(player, location, missile);
 				// missile is destroyed
 				return true;
 			}
@@ -259,14 +267,14 @@ public class GridMap {
 			// missile didn't hit anything
 			
 			// if the missile is not in phase 2, return
-			if (cellObject.getIntProperty(Names.kPropertyFlyPhase) != 2) {
-				cell.addCellObject(cellObject);
-				updatablesLocations.put(cellObject, location);
+			if (missile.getIntProperty(Names.kPropertyFlyPhase) != 2) {
+				cell.addCellObject(missile);
+				updatablesLocations.put(missile, location);
 				return false;
 			}
 			
 			// we are in phase 2, call update again, this will move us out of phase 2 to phase 3
-			cellObject.update(world, location);
+			missile.update(world, location);
 		}
 	}
 		
@@ -380,9 +388,14 @@ public class GridMap {
 	}
 	
 	public void setExplosion(java.awt.Point location) {
-		CellObject explosion = new CellObject(Names.kExplosion, true);
-		explosion.addProperty(Names.kPropertyLinger, "2");
-		explosion.setLingerUpdate(true);
+		CellObject explosion = null;
+		if (Soar2D.config.tanksoar) {
+			explosion = cellObjectManager.createObject(Names.kExplosion);
+		} else {
+			explosion = new CellObject(Names.kExplosion, true);
+			explosion.addProperty(Names.kPropertyLinger, "2");
+			explosion.setLingerUpdate(true);
+		}
 		addObjectToCell(location, explosion);
 	}
 	

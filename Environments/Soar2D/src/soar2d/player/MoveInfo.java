@@ -96,22 +96,21 @@ public class MoveInfo {
 			output += "(" + Names.kStopSimID + ")";
 		}
 		
-		// TODO
-//		if (rotate) {
-//			output += "(" + Names.kRotateID + ": " + rotateDirection + ")";			
-//		}
-//		if (fire) {
-//			output += "(" + Names.kFireID + ")";
-//		}
-//		if (radar) {
-//			output += "(" + Names.kRadarID + ": " + (radarSwitch ? "on" : "off") + ")";
-//		}
-//		if (radarPower) {
-//			output += "(" + Names.kRadarPowerID + ": " + Integer.toString(radarPowerSetting) + ")";
-//		}
-//		if (shields) {
-//			output += "(" + Names.kShieldsID + ": " + (shieldsSetting ? "on" : "off") + ")";
-//		}
+		if (rotate) {
+			output += "(" + Names.kRotateID + ": " + rotateDirection + ")";			
+		}
+		if (fire) {
+			output += "(" + Names.kFireID + ")";
+		}
+		if (radar) {
+			output += "(" + Names.kRadarID + ": " + (radarSwitch ? "on" : "off") + ")";
+		}
+		if (radarPower) {
+			output += "(" + Names.kRadarPowerID + ": " + Integer.toString(radarPowerSetting) + ")";
+		}
+		if (shields) {
+			output += "(" + Names.kShieldsID + ": " + (shieldsSetting ? "on" : "off") + ")";
+		}
 		return output;
 	}
 

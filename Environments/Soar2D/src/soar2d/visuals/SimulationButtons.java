@@ -30,6 +30,7 @@ public class SimulationButtons extends Composite {
 		m_StopButton.setText("Stop");
 		m_StopButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
+				Soar2D.wm.setVisualWorldFocus();
 				Soar2D.control.stopSimulation();
 			}
 		});
