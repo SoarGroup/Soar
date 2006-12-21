@@ -35,6 +35,8 @@ public class VisualWorld extends Canvas implements PaintListener {
 	
 	java.awt.Point agentLocation;
 	
+	Image[][] background = null;
+	
 	protected Display display;
 	protected int cellSize;
 	private static final int kDotSize = 7;
@@ -73,6 +75,51 @@ public class VisualWorld extends Canvas implements PaintListener {
 		y /= cellSize;
 		return Soar2D.simulation.world.map.getPlayer(new java.awt.Point(x, y));
 	}
+	
+	void resetBackground() {
+		background = null;
+	}
+	
+	private void generateBackground(World world) {
+		background = new Image[world.getSize()][world.getSize()];
+		java.awt.Point location = new java.awt.Point();
+		for(location.x = 0; location.x < world.getSize(); ++location.x){
+			for(location.y = 0; location.y < world.getSize(); ++location.y){
+				ArrayList<CellObject> drawList = world.map.getAllWithProperty(location, Names.kPropertyImage);
+				
+				Iterator<CellObject> iter = drawList.iterator();
+				CellObject backgroundObject = null;
+				while (iter.hasNext()) {
+					CellObject cellObject = iter.next();
+					if (cellObject.hasProperty(Names.kPropertyBlock)) {
+						backgroundObject = cellObject;
+					} else if (cellObject.getName().equals(Names.kGround)) {
+						backgroundObject = cellObject;
+					} else if (cellObject.hasProperty(Names.kPropertyCharger)) {
+						backgroundObject = cellObject;
+						break;
+					}
+				}
+				// FIXME: handle gracefully
+				assert backgroundObject != null;
+				
+				String imageName = backgroundObject.getProperty(Names.kPropertyImage);
+				if (backgroundObject.hasProperty(Names.kPropertyImageMin)) {
+					int min = backgroundObject.getIntProperty(Names.kPropertyImageMin);
+					int max = backgroundObject.getIntProperty(Names.kPropertyImageMax);
+					int pick = Simulation.random.nextInt(max - min + 1);
+					pick += min;
+					imageName = imageName.substring(0, imageName.indexOf(".")) + pick + imageName.substring(imageName.indexOf("."));
+				}
+
+				Image image = images.get(imageName);
+				if (image == null) {
+					image = bootstrapImage(imageName);
+				}
+				background[location.x][location.y] = image;
+			}
+		}
+	}
 
 	public void paintControl(PaintEvent e){
 		if (agentLocation != null || lastX != e.x || lastY != e.y || internalRepaint) {
@@ -95,6 +142,12 @@ public class VisualWorld extends Canvas implements PaintListener {
 		}
 		
 		World world = Soar2D.simulation.world;
+		
+		if (Soar2D.config.tanksoar) {
+			if (background == null) {
+				generateBackground(world);
+			}
+		}
 		
 		// Draw world
 		int fill1, fill2, xDraw, yDraw;
@@ -212,20 +265,13 @@ public class VisualWorld extends Canvas implements PaintListener {
 				} else if (Soar2D.config.tanksoar) {
 					
 					ArrayList<CellObject> drawList = world.map.getAllWithProperty(location, Names.kPropertyImage);
-					CellObject background = null;
 					CellObject explosion = null;
 					CellObject object = null;
 					
 					Iterator<CellObject> iter = drawList.iterator();
 					while (iter.hasNext()) {
 						CellObject cellObject = iter.next();
-						if (cellObject.hasProperty(Names.kPropertyBlock)) {
-							background = cellObject;
-						} else if (cellObject.hasProperty(Names.kPropertyCharger)) {
-							background = cellObject;
-						} else if (cellObject.getName().equals(Names.kGround)) {
-							background = cellObject;
-						} else if (cellObject.getName().equals(Names.kExplosion)) {
+						if (cellObject.getName().equals(Names.kExplosion)) {
 							explosion = cellObject;
 						} else if (cellObject.hasProperty(Names.kPropertyMissiles)) {
 							object = cellObject;
@@ -237,25 +283,12 @@ public class VisualWorld extends Canvas implements PaintListener {
 					Player player = world.map.getPlayer(location);
 					
 					// draw the wall or ground or energy charger or health charger
-					assert background != null;
-					String imageName = background.getProperty(Names.kPropertyImage);
-					if (background.hasProperty(Names.kPropertyImageMin)) {
-						int min = background.getIntProperty(Names.kPropertyImageMin);
-						int max = background.getIntProperty(Names.kPropertyImageMax);
-						int pick = Simulation.random.nextInt(max - min + 1);
-						pick += min;
-						imageName = imageName.substring(0, imageName.indexOf(".")) + pick + imageName.substring(imageName.indexOf("."));
-					}
-					Image image = images.get(imageName);
-					if (image == null) {
-						image = bootstrapImage(imageName);
-					}
-					gc.drawImage(image, location.x*cellSize, location.y*cellSize);
+					gc.drawImage(background[location.x][location.y], location.x*cellSize, location.y*cellSize);
 					
 					// draw the explosion
 					if (explosion != null) {
-						imageName = explosion.getProperty(Names.kPropertyImage);
-						image = images.get(imageName);
+						String imageName = explosion.getProperty(Names.kPropertyImage);
+						Image image = images.get(imageName);
 						if (image == null) {
 							image = bootstrapImage(imageName);
 						}
@@ -264,14 +297,14 @@ public class VisualWorld extends Canvas implements PaintListener {
 					
 					// draw the missile packs or tanks or missiles
 					if (object != null) {
-						imageName = object.getProperty(Names.kPropertyImage);
-						image = images.get(imageName);
+						String imageName = object.getProperty(Names.kPropertyImage);
+						Image image = images.get(imageName);
 						if (image == null) {
 							image = bootstrapImage(imageName);
 						}
 						gc.drawImage(image, location.x*cellSize, location.y*cellSize);
 					} else if (player != null) {
-						image = tanks.get(new Integer(player.getFacingInt()));
+						Image image = tanks.get(new Integer(player.getFacingInt()));
 						assert image != null;
 
 						gc.drawImage(image, location.x*cellSize, location.y*cellSize);
