@@ -50,7 +50,7 @@ public class Player {
 		
 		this.name = playerConfig.getName();
 		
-		reset();
+		this.reset();
 		
 		assert playerConfig.hasColor();
 		this.color = playerConfig.getColor();
