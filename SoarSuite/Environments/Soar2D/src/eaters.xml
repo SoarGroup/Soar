@@ -2,7 +2,6 @@
   <logger level="info" console="false" file="true" />
   <display graphical="true" />
   <eaters map="random-walls.emap">
-    <agent productions="tutorial/advanced-move.soar" />
   </eaters>
   <simulation debuggers="false" random="false">
     <terminal type="food-remaining" />
