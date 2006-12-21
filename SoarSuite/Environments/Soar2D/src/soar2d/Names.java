@@ -14,6 +14,9 @@ public class Names {
 	public static final String kSouth = "south";
 	public static final String kWest = "west";
 	
+	public static final String kRotateLeft = "left";
+	public static final String kRotateRight = "right";
+	
 	public static final String kHumanProductions = "<Human>";
 	
 	public static final String kEmpty = "empty";

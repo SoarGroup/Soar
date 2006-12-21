@@ -434,6 +434,8 @@ public class World {
 			// And we'll cache tanks that fired
 			ArrayList<Player> firedTanks = new ArrayList<Player>(players.size());
 			
+			// Cache players who fire (never fails)
+			// Rotate players (never fails)
 			// Do cross checks (and only cross checks) first
 			// Cross-check:
 			// If moving in to a cell with a tank, check that tank for 
@@ -447,6 +449,19 @@ public class World {
 				// Check for fire
 				if (playerMove.fire) {
 					firedTanks.add(player);
+				}
+				
+				// Check for rotate
+				if (playerMove.rotate) {
+					int facing = player.getFacingInt();
+					if (playerMove.rotateDirection.equals(Names.kRotateLeft)) {
+						facing = Direction.leftOf[facing];
+					} else if (playerMove.rotateDirection.equals(Names.kRotateRight)) {
+						facing = Direction.rightOf[facing];
+					} else {
+						// TODO: WARNING
+					}
+					player.setFacingInt(facing);
 				}
 				
 				// if we exist in the new locations, we can skip ourselves
