@@ -20,11 +20,49 @@ public class Tank extends Player {
 	 * true if shields up
 	 */
 	protected boolean shieldsUp;
+	/**
+	 * radar switch
+	 */
+	protected boolean radarSwitch;
+	/**
+	 * radar power setting
+	 */
+	protected int radarPower;
 
 	public Tank( PlayerConfig playerConfig) {
 		super(playerConfig);
 		
 		reset();
+	}
+	
+	public boolean getRadarSwitch() {
+		return radarSwitch;
+	}
+	
+	public void setRadarSwitch(boolean setting) {
+		if (radarSwitch == setting ) {
+			return;
+		}
+		radarSwitch = setting;
+		logger.info(getName() + " radar switched " + (setting ? "on" : "off"));
+	}
+	
+	public int getRadarPower() {
+		return radarPower;
+	}
+	
+	public void setRadarPower(int setting) {
+		if (setting < 0) {
+			setting = 0;
+		}
+		if (setting > Soar2D.config.kRadarHeight) {
+			setting = Soar2D.config.kRadarHeight;
+		}
+		if (radarPower == setting) {
+			return;
+		}
+		radarPower = setting;
+		logger.info(getName() + " radar power set to: " + Integer.toString(this.radarPower));
 	}
 	
 	public int getMissiles() {
@@ -197,6 +235,10 @@ public class Tank extends Player {
 	}
 	
 	public void setShields(boolean setting) {
+		if (shieldsUp == setting) {
+			return;
+		}
+		logger.info(getName() + " shields switched " + (setting ? "on" : "off"));
 		shieldsUp = setting;
 	}
 	

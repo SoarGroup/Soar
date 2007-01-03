@@ -44,9 +44,17 @@ public class World {
 					return false;
 				}
 			}
+			
 		}
 		
 		map = newMap;
+		
+		if (Soar2D.config.tanksoar) {
+			// Spawn missile packs
+			while (map.numberMissilePacks() < Soar2D.config.kMaxMissilePacks) {
+				spawnMissilePack(true);
+			}
+		}
 		
 		reset();
 		resetPlayers();
@@ -480,6 +488,7 @@ public class World {
 		// Cache players who fire (never fails)
 		// Rotate players (never fails)
 		// Update shields & consume shield energy
+		// Update radar & consume radar energy
 		// Do cross checks (and only cross checks) first
 		// Cross-check:
 		// If moving in to a cell with a tank, check that tank for 
@@ -516,6 +525,14 @@ public class World {
 			// Check shields
 			if (playerMove.shields) {
 				player.setShields(playerMove.shieldsSetting);
+			}
+			
+			// Radar
+			if (playerMove.radar) {
+				player.setRadarSwitch(playerMove.radarSwitch);
+			}
+			if (playerMove.radarPower) {
+				player.setRadarPower(playerMove.radarPowerSetting);
 			}
 
 			// if we exist in the new locations, we can skip ourselves
@@ -632,7 +649,7 @@ public class World {
 		// Iterate through players, checking for all other types of collisions
 		// Also, moves are committed at this point and they won't respawn on
 		// a charger, so do charging here too
-		// and shields
+		// and shields and radar
 		playerIter = players.iterator();
 		while (playerIter.hasNext()) {
 			Player player = playerIter.next();
@@ -651,6 +668,11 @@ public class World {
 					logger.info(player.getName() + ": shields ran out of energy");
 					player.setShields(false);
 				}
+			}
+			
+			// radar
+			if (player.getRadarSwitch()) {
+				handleRadarEnergy(player);
 			}
 		}			
 		
@@ -786,15 +808,7 @@ public class World {
 		
 		// Spawn missile packs
 		if (map.numberMissilePacks() < Soar2D.config.kMaxMissilePacks) {
-			if (Simulation.random.nextInt(100) < Soar2D.config.kMissilePackRespawnChance) {
-				// Get available spots
-				ArrayList<java.awt.Point> spots = getAvailableLocations(map);
-				assert locations.size() > 0;
-				
-				// Add a missile pack to a spot
-				boolean ret = map.addRandomObjectWithProperty(spots.get(Simulation.random.nextInt(spots.size())), Names.kPropertyMissiles);
-				assert ret;
-			}
+			spawnMissilePack(false);
 		}
 		
 		//  Respawn killed Tanks in safe squares
@@ -849,6 +863,33 @@ public class World {
 		while (playerIter.hasNext()) {
 			Player player = playerIter.next();
 			player.commit();
+		}
+	}
+	
+	private void handleRadarEnergy(Player player) {
+		int available = player.getEnergy();
+		if (available < player.getRadarPower()) {
+			if (available > 0) {
+				logger.info(player.getName() + ": reducing radar power due to energy shortage");
+				player.setRadarPower(available);
+			} else {
+				logger.info(player.getName() + ": radar switched off due to energy shortage");
+				player.setRadarSwitch(false);
+				return;
+			}
+		}
+		player.adjustEnergy(player.getRadarPower() * -1, "radar");
+	}
+	
+	private void spawnMissilePack(boolean force) {
+		if (force || (Simulation.random.nextInt(100) < Soar2D.config.kMissilePackRespawnChance)) {
+			// Get available spots
+			ArrayList<java.awt.Point> spots = getAvailableLocations(map);
+			assert spots.size() > 0;
+			
+			// Add a missile pack to a spot
+			boolean ret = map.addRandomObjectWithProperty(spots.get(Simulation.random.nextInt(spots.size())), Names.kPropertyMissiles);
+			assert ret;
 		}
 	}
 	

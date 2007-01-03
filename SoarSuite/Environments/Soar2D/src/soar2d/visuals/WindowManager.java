@@ -24,6 +24,7 @@ public class WindowManager {
 	protected Shell shell;
 	Label scoreCount;
 	Label foodCount;
+	Label worldCount;
 	SimulationButtons simButtons;
 	MapButtons mapButtons;
 	VisualWorld visualWorld;
@@ -40,6 +41,7 @@ public class WindowManager {
 	public static final int kTanksoarMainMapCellSize = 32;
 	public static final String kFoodRemaining = "Food remaining: ";
 	public static final String kScoreRemaining = "Points remaining: ";
+	public static final String kWorldCount = "World count: ";
 
 	private static void initColors(Display d) {
 	    white = d.getSystemColor(SWT.COLOR_WHITE);
@@ -104,7 +106,7 @@ public class WindowManager {
 		return shell != null;
 	}
 	
-	public void run() {
+	public void setupEaters() {
 		GridLayout gl = new GridLayout();
 		gl.numColumns = 2;
 		shell.setLayout(gl);
@@ -113,17 +115,8 @@ public class WindowManager {
 		
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
-		if (Soar2D.config.eaters) {
-			visualWorld = new VisualWorld(worldGroup, SWT.NONE, kEatersMainMapCellSize);
-		} else {
-			visualWorld = new VisualWorld(worldGroup, SWT.NONE, kTanksoarMainMapCellSize);
-		}
+		visualWorld = new VisualWorld(worldGroup, SWT.NONE, kEatersMainMapCellSize);
 
-		gd = new GridData();
-		gd.widthHint = visualWorld.getWidth();
-		gd.heightHint = visualWorld.getHeight();
-		gd.verticalSpan = 3;
-		worldGroup.setLayoutData(gd);
 		visualWorld.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
 				Player player = visualWorld.getPlayerAtPixel(e.x, e.y);
@@ -139,98 +132,45 @@ public class WindowManager {
 					return;
 				}
 				boolean go = false;
-				if (Soar2D.config.eaters) {
-					switch (e.keyCode) {
-					case SWT.KEYPAD_8:
-						humanMove.move = true;
-						humanMove.moveDirection = Direction.kNorthInt;
-						go = true;
-						break;
-					case SWT.KEYPAD_6:
-						humanMove.move = true;
-						humanMove.moveDirection = Direction.kEastInt;
-						go = true;
-						break;
-					case SWT.KEYPAD_2:
-						humanMove.move = true;
-						humanMove.moveDirection = Direction.kSouthInt;
-						go = true;
-						break;
-					case SWT.KEYPAD_4:
-						humanMove.move = true;
-						humanMove.moveDirection = Direction.kWestInt;
-						go = true;
-						break;
-					case SWT.KEYPAD_5:
-						humanMove.jump = false;
-						go = true;
-						break;
-					case SWT.KEYPAD_0:
-						humanMove.jump = !humanMove.jump;
-						break;
-					case SWT.KEYPAD_DECIMAL:
-						humanMove.dontEat = !humanMove.dontEat;
-						break;
-					case SWT.KEYPAD_ADD:
-						humanMove.open = !humanMove.open;
-						break;
-					case SWT.KEYPAD_MULTIPLY:
-						humanMove.stopSim = !humanMove.stopSim;
-						break;
-					default:
-						break;
-					}
-				} else if (Soar2D.config.tanksoar) {
-					switch (e.keyCode) {
-					case SWT.KEYPAD_8:
-						humanMove.move = true;
-						humanMove.moveDirection = Direction.kNorthInt;
-						break;
-					case SWT.KEYPAD_6:
-						humanMove.move = true;
-						humanMove.moveDirection = Direction.kEastInt;
-						break;
-					case SWT.KEYPAD_2:
-						humanMove.move = true;
-						humanMove.moveDirection = Direction.kSouthInt;
-						break;
-					case SWT.KEYPAD_4:
-						humanMove.move = true;
-						humanMove.moveDirection = Direction.kWestInt;
-						break;
-					case SWT.KEYPAD_1:
-						humanMove.rotate = !humanMove.rotate;
-						humanMove.rotateDirection = Names.kRotateLeft;
-						break;
-					case SWT.KEYPAD_3:
-						humanMove.rotate = !humanMove.rotate;
-						humanMove.rotateDirection = Names.kRotateRight;
-						break;
-					case SWT.KEYPAD_5:
-						humanMove.move = false;
-						break;
-					case SWT.KEYPAD_0:
-						humanMove.fire = !humanMove.fire;
-						break;
-					case SWT.KEYPAD_7:
-						humanMove.shields = !humanMove.shields;
-						humanMove.shieldsSetting = true;
-						break;
-					case SWT.KEYPAD_9:
-						humanMove.shields = !humanMove.shields;
-						humanMove.shieldsSetting = false;
-						break;
-					case SWT.KEYPAD_MULTIPLY:
-						humanMove.stopSim = !humanMove.stopSim;
-						break;
-					case SWT.KEYPAD_CR:
-						go = true;
-						break;
-					default:
-						break;
-					}
-				} else {
-					return;
+				switch (e.keyCode) {
+				case SWT.KEYPAD_8:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kNorthInt;
+					go = true;
+					break;
+				case SWT.KEYPAD_6:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kEastInt;
+					go = true;
+					break;
+				case SWT.KEYPAD_2:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kSouthInt;
+					go = true;
+					break;
+				case SWT.KEYPAD_4:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kWestInt;
+					go = true;
+					break;
+				case SWT.KEYPAD_5:
+					humanMove.jump = false;
+					go = true;
+					break;
+				case SWT.KEYPAD_0:
+					humanMove.jump = !humanMove.jump;
+					break;
+				case SWT.KEYPAD_DECIMAL:
+					humanMove.dontEat = !humanMove.dontEat;
+					break;
+				case SWT.KEYPAD_ADD:
+					humanMove.open = !humanMove.open;
+					break;
+				case SWT.KEYPAD_MULTIPLY:
+					humanMove.stopSim = !humanMove.stopSim;
+					break;
+				default:
+					break;
 				}
 				
 				Soar2D.wm.setStatus(humanMoveColor + ": " + humanMove.toString());
@@ -278,37 +218,190 @@ public class WindowManager {
 		gd.widthHint = 50;
 		scoreCount.setLayoutData(gd);
 		
-		updateFoodAndScoreCount();
+		updateCounts();
 		
 		mapButtons = new MapButtons(group2);
 		gd = new GridData();
 		gd.horizontalSpan = 2;
 		mapButtons.setLayoutData(gd);
 
-		agentDisplay = new AgentDisplay(shell);
+		agentDisplay = new EatersAgentDisplay(shell);
 		gd = new GridData();
 		agentDisplay.setLayoutData(gd);
 		
 		statusLine = new Label(shell, SWT.BORDER);
 		statusLine.setText("Ready");
+
+		shell.setText("Eaters");
+	}
+	
+	public void setupTankSoar() {
+		GridLayout gl = new GridLayout();
+		gl.numColumns = 3;
+		shell.setLayout(gl);
+		
+		GridData gd;
+		
+		worldGroup = new Group(shell, SWT.NONE);
+		worldGroup.setLayout(new FillLayout());
+		visualWorld = new VisualWorld(worldGroup, SWT.NONE, kTanksoarMainMapCellSize);
+
+		visualWorld.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent e) {
+				if (humanMove == null) {
+					return;
+				}
+				boolean go = false;
+				switch (e.keyCode) {
+				case SWT.KEYPAD_8:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kNorthInt;
+					break;
+				case SWT.KEYPAD_6:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kEastInt;
+					break;
+				case SWT.KEYPAD_2:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kSouthInt;
+					break;
+				case SWT.KEYPAD_4:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kWestInt;
+					break;
+				case SWT.KEYPAD_1:
+					humanMove.rotate = !humanMove.rotate;
+					humanMove.rotateDirection = Names.kRotateLeft;
+					break;
+				case SWT.KEYPAD_3:
+					humanMove.rotate = !humanMove.rotate;
+					humanMove.rotateDirection = Names.kRotateRight;
+					break;
+				case SWT.KEYPAD_5:
+					humanMove.move = false;
+					break;
+				case SWT.KEYPAD_0:
+					humanMove.fire = !humanMove.fire;
+					break;
+				case SWT.KEYPAD_7:
+					humanMove.shields = !humanMove.shields;
+					humanMove.shieldsSetting = true;
+					break;
+				case SWT.KEYPAD_9:
+					humanMove.shields = !humanMove.shields;
+					humanMove.shieldsSetting = false;
+					break;
+				case SWT.KEYPAD_MULTIPLY:
+					humanMove.stopSim = !humanMove.stopSim;
+					break;
+				case SWT.KEYPAD_ADD:
+					humanMove.radar = true;
+					humanMove.radarSwitch = true;
+					humanMove.radarPower = true;
+					if (humanMove.radarPowerSetting <= 0) {
+						humanMove.radarPowerSetting = 1;
+					} else {
+						humanMove.radarPowerSetting += 1;
+					}
+					break;
+				case SWT.KEYPAD_SUBTRACT:
+					humanMove.radar = true;
+					humanMove.radarPower = true;
+					humanMove.radarPowerSetting -= 1;
+					if (humanMove.radarPowerSetting <= 0) {
+						humanMove.radarPowerSetting = 0;
+						humanMove.radarSwitch = false;
+					} else {
+						humanMove.radarSwitch = true;
+					}
+					break;
+				case SWT.KEYPAD_CR:
+					go = true;
+					break;
+				default:
+					break;
+				}
+				
+				Soar2D.wm.setStatus(humanMoveColor + ": " + humanMove.toString());
+				
+				if (go) {
+					synchronized(humanMove) {
+						humanMove.notify();
+					}
+				}
+			}
+		});
+
+		Group group1 = new Group(shell, SWT.NONE);
+		gd = new GridData();
+		group1.setLayoutData(gd);
+		group1.setText("Simulation");
+		group1.setLayout(new FillLayout());
+		simButtons = new SimulationButtons(group1);
+		
+		Group group2 = new Group(shell, SWT.NONE);
+		gd = new GridData();
+		group2.setLayoutData(gd);
+		group2.setText("Map");
+		group2.setLayout(new FillLayout());
+		mapButtons = new MapButtons(group2);
+
+		Composite comp1 = new Composite(shell, SWT.NONE);
 		gd = new GridData();
 		gd.horizontalSpan = 2;
-		gd.widthHint = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).x - 20;
-		gd.heightHint = 16;
-		statusLine.setLayoutData(gd);
+		comp1.setLayoutData(gd);
+
+		gl = new GridLayout();
+		gl.numColumns = 2;
+		comp1.setLayout(gl);
+
+		Label worldCountLabel = new Label(comp1, SWT.NONE);
+		worldCountLabel.setText(kWorldCount);
+		gd = new GridData();
+		worldCountLabel.setLayoutData(gd);
+		
+		worldCount = new Label(comp1, SWT.NONE);
+		gd = new GridData();
+		gd.widthHint = 50;
+		worldCount.setLayoutData(gd);
+		
+		updateCounts();
+		
+		agentDisplay = new TankSoarAgentDisplay(shell);
+		gd = new GridData();
+		gd.horizontalSpan = 2;
+		agentDisplay.setLayoutData(gd);
+		
+		statusLine = new Label(shell, SWT.BORDER);
+		statusLine.setText("Ready");
+		
+		shell.setText("TankSoar");
+	}
+	
+	public void run() {
+		if (Soar2D.config.eaters) {
+			setupEaters();
+		} else if (Soar2D.config.tanksoar) {
+			setupTankSoar();
+		} else {
+			Soar2D.control.severeError("Window manager requires eaters or tanksoar");
+			return;
+		}
+		
+		visualWorld.addMouseListener(new MouseAdapter() {
+			public void mouseDown(MouseEvent e) {
+				Player player = visualWorld.getPlayerAtPixel(e.x, e.y);
+				if (player == null) {
+					return;
+				}
+				agentDisplay.selectPlayer(player);
+			}
+		});
 		
 		updateWorldGroup();
 
 		VisualWorld.remapPlayerColors();
 
-		if (Soar2D.config.eaters) {
-			shell.setText("Eaters");
-		} else if (Soar2D.config.tanksoar) {
-			shell.setText("TankSoar");
-		} else {
-			shell.setText("Soar 2D");
-		}
-		shell.setSize(shell.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		shell.addShellListener(new ShellAdapter() {
 			public void shellDeactivated(ShellEvent e) {
 				agentDisplay.worldChangeEvent();			
@@ -393,7 +486,7 @@ public class WindowManager {
 	}
 
 	void updateWorldGroup() {
-		worldGroup.setText(Soar2D.config.map.getName());
+		worldGroup.setText("Map: " + Soar2D.config.map.getName());
 		visualWorld.setSize(visualWorld.getWidth(), visualWorld.getHeight());
 		GridData gd = new GridData();
 		gd.widthHint = visualWorld.getWidth();
@@ -402,7 +495,11 @@ public class WindowManager {
 		worldGroup.setLayoutData(gd);
 
 		gd = new GridData();
-		gd.horizontalSpan = 2;
+		if (Soar2D.config.eaters) {
+			gd.horizontalSpan = 2;
+		} else {
+			gd.horizontalSpan = 3;
+		}
 		gd.widthHint = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).x - 20;
 		gd.heightHint = 16;
 		statusLine.setLayoutData(gd);
@@ -410,9 +507,13 @@ public class WindowManager {
 		shell.setSize(shell.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 	}
 	
-	void updateFoodAndScoreCount() {
-		foodCount.setText(Integer.toString(Soar2D.simulation.world.map.getFoodCount()));
-		scoreCount.setText(Integer.toString(Soar2D.simulation.world.map.getScoreCount()));
+	void updateCounts() {
+		if (Soar2D.config.eaters) {
+			foodCount.setText(Integer.toString(Soar2D.simulation.world.map.getFoodCount()));
+			scoreCount.setText(Integer.toString(Soar2D.simulation.world.map.getScoreCount()));
+		} else {
+			worldCount.setText(Integer.toString(Soar2D.simulation.world.getWorldCount()));
+		}
 	}
 
 	boolean isDisposed() {
@@ -425,7 +526,7 @@ public class WindowManager {
 				public void run() {
 					agentDisplay.worldChangeEvent();
 					visualWorld.redraw();
-					updateFoodAndScoreCount();
+					updateCounts();
 				}
 			});
 		}
@@ -462,7 +563,7 @@ public class WindowManager {
 			visualWorld.setRepaint();
 			visualWorld.redraw();
 			VisualWorld.remapPlayerColors();
-			updateFoodAndScoreCount();
+			updateCounts();
 			simButtons.updateButtons();
 			agentDisplay.agentEvent();
 		}
@@ -477,7 +578,7 @@ public class WindowManager {
 					visualWorld.setRepaint();
 					agentDisplay.worldChangeEvent();
 					visualWorld.redraw();
-					updateFoodAndScoreCount();
+					updateCounts();
 					simButtons.updateButtons();
 				}
 			});

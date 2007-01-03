@@ -231,4 +231,19 @@ public class Player {
 
 	public void setShields(boolean setting) {
 	}
+
+	public boolean getRadarSwitch() {
+		return false;
+	}
+	
+	public void setRadarSwitch(boolean setting) {
+	}
+	
+	public int getRadarPower() {
+		return 0;
+	}
+	
+	public void setRadarPower(int setting) {
+	}
+	
 }
