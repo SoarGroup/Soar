@@ -20,10 +20,10 @@ public class Configuration {
 	public final String kMapDir = "maps";
 	public final String kAgentDir = "agents";
 	public final String kEatersMapFilter = "*.emap";
-	public final String kTankSoarMapFilter = "*.emap";
+	public final String kTankSoarMapFilter = "*.tmap";
 
 	public final int kDefaultPoints = 0;
-	public final int kDefaultMissiles = 0;
+	public final int kDefaultMissiles = 15;
 	public final int kDefaultEnergy = 1000;
 	public final int kDefaultHealth = 1000;
 	public final int kDefaultVersion = 1;
@@ -37,7 +37,11 @@ public class Configuration {
 	public final int kTankCollisionPenalty = -100;	// tanksoar
 	public final int kMaxMissilePacks = 3;
 	public final int kMissilePackRespawnChance = 5;	// percent chance per update that a missile pack will respawn
-	public final static int kSheildEnergyUsage = -20;
+	public final int kSheildEnergyUsage = -20;
+	public final int kMissileHitAward = 2;
+	public final int kMissileHitPenalty = -1;
+	public final int kKillAward = 3;
+	public final int kKillPenalty = -2;
 
 	public final boolean kDefaultPropertyBoolean = false;	// if a bool property doesn't exist
 	public final float kDefaultPropertyFloat = 0;			// if a float property doesn't exist

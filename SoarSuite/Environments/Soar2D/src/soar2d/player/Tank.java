@@ -54,6 +54,13 @@ public class Tank extends Player {
 	public void adjustMissiles(int delta, String comment) {
 		int previous = this.missiles;
 		this.missiles += delta;
+		if (missiles < 0) {
+			logger.warning(getName() + ": missiles adjusted to negative value");
+			missiles = 0;
+		}
+		if (missiles == previous) {
+			return;
+		}
 		if (comment != null) {
 			logger.info(getName() + " missiles: " + Integer.toString(previous) + " -> " + Integer.toString(this.missiles) + " (" + comment + ")");
 		} else {
@@ -92,6 +99,12 @@ public class Tank extends Player {
 
 		int previous = this.energy;
 		this.energy += delta;
+		if (energy < 0) {
+			energy = 0;
+		}
+		if (energy == previous) {
+			return;
+		}
 		if (comment != null) {
 			logger.info(getName() + " energy: " + Integer.toString(previous) + " -> " + Integer.toString(this.energy) + " (" + comment + ")");
 		} else {
@@ -126,6 +139,12 @@ public class Tank extends Player {
 	public void adjustHealth(int delta, String comment) {
 		int previous = this.health;
 		this.health += delta;
+		if (health < 0) {
+			health = 0;
+		}
+		if (health == previous) {
+			return;
+		}
 		if (comment != null) {
 			logger.info(getName() + " health: " + Integer.toString(previous) + " -> " + Integer.toString(this.health) + " (" + comment + ")");
 		} else {

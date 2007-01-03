@@ -17,9 +17,11 @@ public class World {
 	public GridMap map;
 	
 	private ArrayList<Player> players = new ArrayList<Player>(7);
-	private HashMap<String, java.awt.Point> initialLocations = new HashMap<String, java.awt.Point>();
-	private HashMap<String, java.awt.Point> locations = new HashMap<String, java.awt.Point>();
-	private HashMap<String, MoveInfo> lastMoves = new HashMap<String, MoveInfo>();
+	private HashMap<String, Player> playersMap = new HashMap<String, Player>(7);
+	private HashMap<String, java.awt.Point> initialLocations = new HashMap<String, java.awt.Point>(7);
+	private HashMap<String, java.awt.Point> locations = new HashMap<String, java.awt.Point>(7);
+	private HashMap<String, MoveInfo> lastMoves = new HashMap<String, MoveInfo>(7);
+	HashMap<String, HashSet<Player> > killedTanks = new HashMap<String, HashSet<Player> >(7);
 	private int missileID = 0;
 	
 	public boolean load() {
@@ -126,6 +128,7 @@ public class World {
 			player.shutdown();
 		}
 		players.clear();
+		playersMap.clear();
 		initialLocations.clear();
 		locations.clear();
 		lastMoves.clear();
@@ -137,6 +140,7 @@ public class World {
 		while (iter.hasNext()) {
 			Player player = iter.next();
 			if (player.getName().equals(name)) {
+				playersMap.remove(name);
 				initialLocations.remove(name);
 				java.awt.Point location = locations.remove(name);
 				lastMoves.remove(name);
@@ -203,6 +207,7 @@ public class World {
 		assert !locations.containsKey(player.getName());
 		
 		players.add(player);
+		playersMap.put(player.getName(), player);
 		
 		if (initialLocation != null) {
 			initialLocations.put(player.getName(), initialLocation);
@@ -211,6 +216,7 @@ public class World {
 		if (!resetPlayer(player)) {
 			initialLocations.remove(player.getName());
 			players.remove(player);
+			playersMap.remove(player.getName());
 			return false;
 		}
 		java.awt.Point location = locations.get(player.getName());
@@ -338,7 +344,20 @@ public class World {
 		// Yes, I'm hit
 		missile.apply(player);
 		
-		// TODO: check for kills
+		// apply points
+		player.adjustPoints(Soar2D.config.kMissileHitPenalty, missile.getName());
+		Player other = playersMap.get(missile.getProperty(Names.kPropertyOwner));
+		other.adjustPoints(Soar2D.config.kMissileHitAward, missile.getName());
+		
+		// check for kill
+		if (player.getHealth() <= 0) {
+			HashSet<Player> assailants = killedTanks.get(player.getName());
+			if (assailants == null) {
+				assailants = new HashSet<Player>();
+			}
+			assailants.add(other);
+			killedTanks.put(player.getName(), assailants);
+		}
 	}
 	
 	private void open(Player player, java.awt.Point location) {
@@ -455,6 +474,9 @@ public class World {
 		// And we'll cache tanks that fired
 		ArrayList<Player> firedTanks = new ArrayList<Player>(players.size());
 		
+		// We need to keep track of killed tanks, reset the list
+		killedTanks.clear();
+		
 		// Cache players who fire (never fails)
 		// Rotate players (never fails)
 		// Update shields & consume shield energy
@@ -481,7 +503,7 @@ public class World {
 				} else if (playerMove.rotateDirection.equals(Names.kRotateRight)) {
 					facing = Direction.rightOf[facing];
 				} else {
-					// TODO: WARNING
+					logger.warning(player.getName() + ": unknown rotation command: " + playerMove.rotateDirection);
 				}
 				player.setFacingInt(facing);
 			}
@@ -525,8 +547,14 @@ public class World {
 				String name = map.getAllWithProperty(newLocation, Names.kPropertyBlock).get(0).getName();
 				player.adjustHealth(Soar2D.config.kTankCollisionPenalty, name);
 				
-				// TODO: check for kills
-				//killedTanks.add(player);
+				if (player.getHealth() <= 0) {
+					HashSet<Player> assailants = killedTanks.get(player.getName());
+					if (assailants == null) {
+						assailants = new HashSet<Player>();
+					}
+					assailants.add(player);
+					killedTanks.put(player.getName(), assailants);
+				}
 				continue;
 			}
 			
@@ -565,9 +593,22 @@ public class World {
 			player.adjustHealth(Soar2D.config.kTankCollisionPenalty, "cross collision " + other.getName());
 			other.adjustHealth(Soar2D.config.kTankCollisionPenalty, "cross collision " + player.getName());
 			
-			// TODO: check for kills
-			//killedTanks.add(player);
-			//killedTanks.add(other);
+			if (player.getHealth() <= 0) {
+				HashSet<Player> assailants = killedTanks.get(player.getName());
+				if (assailants == null) {
+					assailants = new HashSet<Player>();
+				}
+				assailants.add(other);
+				killedTanks.put(player.getName(), assailants);
+			}
+			if (other.getHealth() <= 0) {
+				HashSet<Player> assailants = killedTanks.get(other.getName());
+				if (assailants == null) {
+					assailants = new HashSet<Player>();
+				}
+				assailants.add(player);
+				killedTanks.put(other.getName(), assailants);
+			}
 			
 			// cancel moves
 			playerMove.move = false;
@@ -600,9 +641,9 @@ public class World {
 			// Shields
 			if (player.shieldsUp()) {
 				if (player.getEnergy() > 0) {
-					player.adjustEnergy(Configuration.kSheildEnergyUsage, "shields");
+					player.adjustEnergy(Soar2D.config.kSheildEnergyUsage, "shields");
 				} else {
-					// TODO: warning
+					logger.info(player.getName() + ": shields ran out of energy");
 					player.setShields(false);
 				}
 			}
@@ -626,10 +667,25 @@ public class World {
 				while (playerIter.hasNext()) {
 					Player player = playerIter.next();
 					player.adjustHealth(damage, "collision");
+					
+					// check for kill
+					if (player.getHealth() <= 0) {
+						HashSet<Player> assailants = killedTanks.get(player.getName());
+						if (assailants == null) {
+							assailants = new HashSet<Player>();
+						}
+						// give everyone else involved credit for the kill
+						Iterator<Player> killIter = collision.iterator();
+						while (killIter.hasNext()) {
+							Player other = killIter.next();
+							if (other.getName().equals(player.getName())) {
+								continue;
+							}
+							assailants.add(other);
+						}
+						killedTanks.put(player.getName(), assailants);
+					}
 				}
-				
-				// TODO: check for kills
-				//killedTanks.add()
 			}
 		}
 		
@@ -727,21 +783,44 @@ public class World {
 		}
 		
 		//  Respawn killed Tanks in safe squares
-//		playerIter = killedTanks.iterator();
-//		while (playerIter.hasNext()) {
-//			Player player = playerIter.next();
-//			
-//			// Get available spots
-//			ArrayList<java.awt.Point> spots = getAvailableLocations(map);
-//			assert locations.size() > 0;
-//			
-//			// pick one and put the player in it
-//			java.awt.Point location = spots.get(Simulation.random.nextInt(spots.size()));
-//			map.setPlayer(location, player);
-//
-//			// save the location
-//			locations.put(player.getName(), location);
-//		}
+		Iterator<String> playerNameIter = killedTanks.keySet().iterator();
+		while (playerNameIter.hasNext()) {
+			
+			// apply points
+			String playerName = playerNameIter.next();
+			Player player = playersMap.get(playerName);
+			
+			player.adjustPoints(Soar2D.config.kKillPenalty, "fragged");
+			assert killedTanks.containsKey(playerName);
+			playerIter = killedTanks.get(playerName).iterator();
+			while (playerIter.hasNext()) {
+				Player assailant = playerIter.next();
+				if (assailant.getName().equals(player.getName())) {
+					continue;
+				}
+				assailant.adjustPoints(Soar2D.config.kKillAward, "fragged " + player.getName());
+			}
+			
+			// remove from past cell
+			map.setPlayer(locations.remove(player.getName()), null);
+
+			// Get available spots
+			ArrayList<java.awt.Point> spots = getAvailableLocations(map);
+			assert spots.size() > 0;
+			
+			// pick one and put the player in it
+			java.awt.Point location = spots.get(Simulation.random.nextInt(spots.size()));
+			map.setPlayer(location, player);
+			
+			// save the location
+			locations.put(player.getName(), location);
+			
+			// reset the player state
+			player.setEnergy(Soar2D.config.kDefaultEnergy, "respawn");
+			player.setHealth(Soar2D.config.kDefaultHealth, "respawn");
+			player.setMissiles(Soar2D.config.kDefaultMissiles, "respawn");
+			player.setFacingInt(Simulation.random.nextInt(4) + 1);
+		}
 		
 		// Update tanks
 		playerIter = players.iterator();
@@ -765,10 +844,14 @@ public class World {
 		while (iter.hasNext()) {
 			CellObject charger = iter.next();
 			if (charger.hasProperty(Names.kPropertyHealth)) {
-				player.adjustHealth(charger.getIntProperty(Names.kPropertyHealth), "charger");
+				if (player.getHealth() < Soar2D.config.kDefaultHealth) {
+					player.adjustHealth(charger.getIntProperty(Names.kPropertyHealth), "charger");
+				}
 			}
 			if (charger.hasProperty(Names.kPropertyEnergy)) {
-				player.adjustEnergy(charger.getIntProperty(Names.kPropertyEnergy), "charger");
+				if (player.getEnergy() < Soar2D.config.kDefaultEnergy) {
+					player.adjustEnergy(charger.getIntProperty(Names.kPropertyEnergy), "charger");
+				}
 			}
 		}
 	}
