@@ -240,9 +240,7 @@
         <object>trees</object>
       </cell>
       <cell />
-      <cell>
-        <object>trees</object>
-      </cell>
+      <cell />
       <cell />
       <cell>
         <object>rocks</object>
@@ -342,10 +340,10 @@
       <cell />
       <cell />
       <cell />
-      <cell />
       <cell>
         <object>trees</object>
       </cell>
+      <cell />
       <cell>
         <object>rocks</object>
       </cell>
