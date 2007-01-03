@@ -492,7 +492,12 @@ public class World {
 			
 			// Check for fire
 			if (playerMove.fire) {
-				firedTanks.add(player);
+				if (player.getMissiles() > 0) {
+					player.adjustMissiles(-1, "fire");
+					firedTanks.add(player);
+				} else {
+					logger.info(player.getName() + ": fired with no ammo");
+				}
 			}
 			
 			// Check for rotate
@@ -698,7 +703,7 @@ public class World {
 			map.setPlayer(locations.remove(player.getName()), null);
 		}
 		
-		// When we commit the new move, do the chargers and shields
+		// commit the new move, grabbing the missile pack if applicable
 		playerIter = movedTanks.iterator();
 		while (playerIter.hasNext()) {
 			Player player = playerIter.next();
@@ -706,6 +711,16 @@ public class World {
 			java.awt.Point location = newLocations.get(player.getName());
 			locations.put(player.getName(), location);
 			map.setPlayer(location, player);
+			
+			// get missile pack
+			ArrayList<CellObject> missilePacks = map.getAllWithProperty(location, Names.kPropertyMissiles);
+			if (missilePacks.size() > 0) {
+				assert missilePacks.size() == 1;
+				CellObject pack = missilePacks.get(0);
+				pack.apply(player);
+				map.removeAllWithProperty(location, Names.kPropertyMissiles);
+			}
+			
 			
 			// is there a missile in the cell?
 			ArrayList<CellObject> missiles = map.getAllWithProperty(location, Names.kPropertyMissile);
@@ -741,7 +756,7 @@ public class World {
 			int direction = player.getFacingInt();
 			Direction.translate(missileLoc, direction);
 			
-			if (!isInBounds(missileLoc) || !map.enterable(missileLoc)) {
+			if (!isInBounds(missileLoc)) {
 				continue;
 			}
 			if (!map.enterable(missileLoc)) {

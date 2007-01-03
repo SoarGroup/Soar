@@ -102,6 +102,9 @@ public class Tank extends Player {
 		if (energy < 0) {
 			energy = 0;
 		}
+		if (energy > Soar2D.config.kDefaultEnergy) {
+			energy = Soar2D.config.kDefaultEnergy;
+		}
 		if (energy == previous) {
 			return;
 		}
@@ -141,6 +144,9 @@ public class Tank extends Player {
 		this.health += delta;
 		if (health < 0) {
 			health = 0;
+		}
+		if (health > Soar2D.config.kDefaultHealth) {
+			health = Soar2D.config.kDefaultHealth;
 		}
 		if (health == previous) {
 			return;
