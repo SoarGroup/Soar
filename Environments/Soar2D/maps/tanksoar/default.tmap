@@ -73,8 +73,29 @@
       <fly-missile />
     </update>
   </cell-object>
-  <cells world-size="9">
-    <row>
+  <cells world-size="16">
+    <row id="0">
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
       <cell>
         <object>rocks</object>
       </cell>
@@ -103,9 +124,215 @@
         <object>rocks</object>
       </cell>
     </row>
-    <row>
+    <row id="1">
       <cell>
         <object>rocks</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
+    </row>
+    <row id="2">
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
+    </row>
+    <row id="3">
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
+    </row>
+    <row id="4">
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
+    </row>
+    <row id="5">
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
+    </row>
+    <row id="6">
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
+    </row>
+    <row id="7">
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>trees</object>
       </cell>
       <cell>
         <object>trees</object>
@@ -115,14 +342,15 @@
       <cell />
       <cell />
       <cell />
+      <cell />
       <cell>
-        <object>missiles</object>
+        <object>trees</object>
       </cell>
       <cell>
         <object>rocks</object>
       </cell>
     </row>
-    <row>
+    <row id="8">
       <cell>
         <object>rocks</object>
       </cell>
@@ -132,87 +360,238 @@
       <cell />
       <cell />
       <cell />
-      <cell />
       <cell>
-        <object>rocks</object>
-      </cell>
-    </row>
-    <row>
-      <cell>
-        <object>rocks</object>
+        <object>trees</object>
       </cell>
       <cell />
       <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
       <cell>
-        <object>rocks</object>
-      </cell>
-    </row>
-    <row>
-      <cell>
-        <object>rocks</object>
+        <object>trees</object>
       </cell>
       <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
       <cell />
       <cell />
       <cell>
         <object>rocks</object>
       </cell>
     </row>
-    <row>
+    <row id="9">
       <cell>
         <object>rocks</object>
       </cell>
       <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
       <cell>
-        <object>rocks</object>
+        <object>trees</object>
       </cell>
-    </row>
-    <row>
       <cell>
-        <object>rocks</object>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
       </cell>
       <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
       <cell>
-        <object>rocks</object>
+        <object>trees</object>
       </cell>
-    </row>
-    <row>
       <cell>
-        <object>rocks</object>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
       </cell>
       <cell />
       <cell />
-      <cell />
-      <cell />
-      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
       <cell />
       <cell />
       <cell>
         <object>rocks</object>
       </cell>
     </row>
-    <row>
+    <row id="10">
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
+    </row>
+    <row id="11">
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
+    </row>
+    <row id="12">
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
+    </row>
+    <row id="13">
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>trees</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+    </row>
+    <row id="14">
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+    </row>
+    <row id="15">
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
+      <cell>
+        <object>rocks</object>
+      </cell>
       <cell>
         <object>rocks</object>
       </cell>
