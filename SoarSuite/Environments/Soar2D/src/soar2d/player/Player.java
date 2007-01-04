@@ -261,4 +261,30 @@ public class Player {
 		return null;
 	}
 	
+	public int getRWaves() {
+		return 0;
+	}
+
+	public int getBlocked() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	public int hashCode() {
+		return name.hashCode();
+	}
+
+	public void setIncoming(int i) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public int getIncoming() {
+		return 0;
+	}
+
+	public void resetSensors() {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -1,10 +1,8 @@
 package soar2d.player;
 
-import java.util.ArrayList;
-
+import soar2d.Direction;
 import soar2d.Soar2D;
 import soar2d.World;
-import soar2d.world.CellObject;
 
 public class Tank extends Player {
 	/**
@@ -35,6 +33,10 @@ public class Tank extends Player {
 	protected int observedPower;
 
 	RadarCell[][] radar = new RadarCell[Soar2D.config.kRadarWidth][Soar2D.config.kRadarHeight];
+	
+	protected int rwaves;
+	protected int blocked;
+	protected int incoming;
 
 	public Tank( PlayerConfig playerConfig) {
 		super(playerConfig);
@@ -221,9 +223,22 @@ public class Tank extends Player {
 		if (radarSwitch) {
 			observedPower = world.map.getRadar(radar, location, getFacingInt(), radarPower);
 		}
+		
+		blocked = world.map.getBlocked(location);
+	}
+	
+	public int getBlocked() {
+		return blocked;
+	}
+	
+	public int getIncoming() {
+		System.out.println(getName() + ": incoming reported " + incoming);
+		return incoming;
 	}
 	
 	public MoveInfo getMove() {
+		resetSensors();
+		
 		if (Soar2D.config.graphical == false) {
 			return new MoveInfo();
 		}
@@ -261,6 +276,24 @@ public class Tank extends Player {
 		shieldsUp = setting;
 	}
 	
+	public void radarTouch(int fromDirection) {
+		rwaves |= Direction.indicators[fromDirection];
+	}
+	
+	public void setIncoming(int fromDirection) {
+		incoming |= Direction.indicators[fromDirection];
+		System.out.println(getName() + ": incoming set " + incoming);
+	}
+	public int getRWaves() {
+		return rwaves;
+	}
+
+	public void resetSensors() {
+		rwaves = 0;
+		incoming = 0;
+		blocked = 0;
+	}
+
 	public void shutdown() {
 		
 	}

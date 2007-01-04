@@ -5,7 +5,6 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
-import soar2d.player.*;
 
 public class BlockedDiagram extends Canvas implements PaintListener {
 
@@ -35,36 +34,12 @@ public class BlockedDiagram extends Canvas implements PaintListener {
 		addPaintListener(this);		
 	}
 	
-	void updateBlocked(World world, Player tank) {
-		//TODO
-		//updateCombinedDirection(world.getBlockedByLocation(tank), tank);
-	}
-
-	void updateIncoming(World world, Tank tank) {
-		//TODO
-		//updateCombinedDirection(world.getIncomingByLocation(tank.getLocation()), tank);
-	}
-
-	void updateSound(World world, Tank tank) {
-		//TODO
-		//int sound = world.getSoundNear(tank);
-		int sound = 0;
-		
-		m_Forward = (sound == tank.getFacingInt());
-		m_Backward = (sound == Direction.backwardOf[tank.getFacingInt()]);
-		m_Left = (sound == Direction.leftOf[tank.getFacingInt()]);
-		m_Right = (sound == Direction.rightOf[tank.getFacingInt()]);		
-	}
-
-	void updateRWaves(World world, Tank tank) {
-		//updateCombinedDirection(tank.getRWaves(), tank);
-	}
-	
-	private void updateCombinedDirection(int directions, Tank tank) {
-		m_Forward = ((directions & Direction.indicators[tank.getFacingInt()]) > 0);
-		m_Backward = ((directions & Direction.indicators[Direction.backwardOf[tank.getFacingInt()]]) > 0);
-		m_Left = ((directions & Direction.indicators[Direction.leftOf[tank.getFacingInt()]]) > 0);
-		m_Right = ((directions & Direction.indicators[Direction.rightOf[tank.getFacingInt()]]) > 0);				
+	void set(int directions, int facing) {
+		m_Forward = ((directions & Direction.indicators[facing]) > 0);
+		m_Backward = ((directions & Direction.indicators[Direction.backwardOf[facing]]) > 0);
+		m_Left = ((directions & Direction.indicators[Direction.leftOf[facing]]) > 0);
+		m_Right = ((directions & Direction.indicators[Direction.rightOf[facing]]) > 0);		
+		this.redraw();
 	}
 
 	void disable() {
@@ -72,6 +47,7 @@ public class BlockedDiagram extends Canvas implements PaintListener {
 		m_Backward = false;
 		m_Left = false;
 		m_Right = false;
+		this.redraw();
 	}
 	
 	public void paintControl(PaintEvent e) {
