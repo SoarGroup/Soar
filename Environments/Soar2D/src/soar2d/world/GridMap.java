@@ -1,5 +1,6 @@
 package soar2d.world;
 
+import java.awt.Point;
 import java.util.*;
 
 import soar2d.*;
@@ -253,6 +254,7 @@ public class GridMap {
 			
 			if (!cell.enterable()) {
 				// missile is destroyed
+				world.destroyMissile(missile.getName());
 				return true;
 			}
 			
@@ -261,6 +263,7 @@ public class GridMap {
 			if (player != null) {
 				world.missileHit(player, location, missile);
 				// missile is destroyed
+				world.destroyMissile(missile.getName());
 				return true;
 			}
 	
@@ -487,5 +490,28 @@ public class GridMap {
 			return radarProbe(radar, location, facing, distance, maxDistance);
 		}
 		return distance;
+	}
+
+	public int getBlocked(Point location) {
+		Cell cell;
+		int blocked = 0;
+		
+		cell = getCell(location.x+1, location.y);
+		if (!cell.enterable() || cell.getPlayer() != null) {
+			blocked |= Direction.kEastIndicator;
+		}
+		cell = getCell(location.x-1, location.y);
+		if (!cell.enterable() || cell.getPlayer() != null) {
+			blocked |= Direction.kWestIndicator;
+		}
+		cell = getCell(location.x, location.y+1);
+		if (!cell.enterable() || cell.getPlayer() != null) {
+			blocked |= Direction.kSouthIndicator;
+		}
+		cell = getCell(location.x, location.y-1);
+		if (!cell.enterable() || cell.getPlayer() != null) {
+			blocked |= Direction.kNorthIndicator;
+		}
+		return blocked;
 	}
 }

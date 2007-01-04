@@ -7,6 +7,11 @@ import java.util.logging.*;
 import soar2d.player.*;
 import soar2d.world.*;
 
+class MissileInfo {
+	java.awt.Point location;
+	int direction;
+}
+
 public class World {
 
 	private static Logger logger = Logger.getLogger("soar2d");
@@ -22,6 +27,8 @@ public class World {
 	private HashMap<String, java.awt.Point> locations = new HashMap<String, java.awt.Point>(7);
 	private HashMap<String, MoveInfo> lastMoves = new HashMap<String, MoveInfo>(7);
 	HashMap<String, HashSet<Player> > killedTanks = new HashMap<String, HashSet<Player> >(7);
+	HashMap<String, MissileInfo> missiles = new HashMap<String, MissileInfo>();
+	
 	private int missileID = 0;
 	
 	public boolean load() {
@@ -792,7 +799,7 @@ public class World {
 			missile.addProperty(Names.kPropertyDirection, Integer.toString(direction));
 			missile.addProperty(Names.kPropertyFlyPhase, "0");
 			missile.addProperty(Names.kPropertyOwner, player.getName());
-
+			
 			// If there is a tank there, it is hit
 			Player other = map.getPlayer(missileLoc);
 			if (other != null) {
@@ -802,9 +809,17 @@ public class World {
 				map.setExplosion(missileLoc);
 				
 			} else {
+				MissileInfo missileInfo = new MissileInfo();
+				missileInfo.direction = direction;
+				missileInfo.location = new java.awt.Point(missileLoc);
+				missiles.put(missile.getName(), missileInfo);
+
 				map.addObjectToCell(missileLoc, missile);
 			}
 		}
+		
+		// Handle incoming sensors now that all missiles are flying
+		handleIncoming();
 		
 		// Spawn missile packs
 		if (map.numberMissilePacks() < Soar2D.config.kMaxMissilePacks) {
@@ -849,6 +864,7 @@ public class World {
 			player.setHealth(Soar2D.config.kDefaultHealth, "respawn");
 			player.setMissiles(Soar2D.config.kDefaultMissiles, "respawn");
 			player.setFacingInt(Simulation.random.nextInt(4) + 1);
+			player.resetSensors();
 		}
 		
 		// Update tanks
@@ -863,6 +879,30 @@ public class World {
 		while (playerIter.hasNext()) {
 			Player player = playerIter.next();
 			player.commit();
+		}
+	}
+	
+	private void handleIncoming() {
+		// TODO: a couple of optimizations possible here
+		// like marking cells that have been checked, depends on direction though
+		// probably more work than it is worth as this should only be slow when there are
+		// a ton of missiles flying
+		
+		Iterator<MissileInfo> iter = missiles.values().iterator();
+		while (iter.hasNext()) {
+			MissileInfo missile = iter.next();
+			java.awt.Point newLocation = new java.awt.Point(missile.location);
+			while (true) {
+				Direction.translate(newLocation, missile.direction);
+				if (!map.enterable(newLocation)) {
+					break;
+				}
+				Player player = map.getPlayer(newLocation);
+				if (player != null) {
+					player.setIncoming(Direction.backwardOf[missile.direction]);
+					break;
+				}
+			}
 		}
 	}
 	
@@ -1113,6 +1153,7 @@ public class World {
 		worldCount = 0;
 		printedStats = false;
 		missileID = 0;
+		missiles.clear();
 	}
 	
 	public int getWorldCount() {
@@ -1133,5 +1174,9 @@ public class World {
 	
 	boolean isTerminal() {
 		return printedStats;
+	}
+
+	public void destroyMissile(String name) {
+		missiles.remove(name);
 	}
 }

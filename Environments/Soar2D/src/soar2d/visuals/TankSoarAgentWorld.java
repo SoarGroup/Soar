@@ -73,6 +73,8 @@ public class TankSoarAgentWorld extends Canvas implements PaintListener {
 			blank = true;
 			return;
 		}
+		
+		blank = false;
 
 		RadarCell[][] tankRadar = tank.getRadar();
 		int distance = tank.getObservedDistance();

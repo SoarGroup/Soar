@@ -250,15 +250,22 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 	
 	void selectPlayer(Player player) {
 		selectedPlayer = player;
+		m_AgentTable.setSelection(players.indexOf(selectedPlayer));
+		m_AgentWorld.enable();
+		updateSensors();
+		updateButtons();
+	}
+	
+	private void updateSensors() {
 		m_AgentWorld.update(selectedPlayer);
 		m_Radar.setSelection(selectedPlayer.getRadarPower());
 		m_Radar.setToolTipText(Integer.toString(selectedPlayer.getRadarPower()));
-		m_AgentTable.setSelection(players.indexOf(player));
+		m_RWaves.set(selectedPlayer.getRWaves(), selectedPlayer.getFacingInt());
+		m_Blocked.set(selectedPlayer.getBlocked(), selectedPlayer.getFacingInt());
+		m_Incoming.set(selectedPlayer.getIncoming(), selectedPlayer.getFacingInt());
 		java.awt.Point playerLocation = Soar2D.simulation.world.getLocation(selectedPlayer);
-		m_AgentWorld.enable();
-		m_AgentWorld.redraw();
 		location.setText("(" + playerLocation.x + "," + playerLocation.y + ")");
-		updateButtons();
+		m_AgentWorld.redraw();
 	}
 	
 	void agentEvent() {
@@ -268,12 +275,7 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 
 	void worldChangeEvent() {
 		if (selectedPlayer != null) {
-			m_AgentWorld.update(selectedPlayer);
-			m_Radar.setSelection(selectedPlayer.getRadarPower());
-			m_Radar.setToolTipText(Integer.toString(selectedPlayer.getRadarPower()));
-			java.awt.Point playerLocation = Soar2D.simulation.world.getLocation(selectedPlayer);
-			m_AgentWorld.redraw();
-			location.setText("(" + playerLocation.x + "," + playerLocation.y + ")");
+			updateSensors();
 		}
 		
 		for (int i = 0; i < m_Items.length; ++i) {
@@ -301,6 +303,7 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 			m_AgentTable.deselectAll();
 			m_AgentWorld.disable();
 			m_AgentWorld.redraw();
+			m_RWaves.disable();
 			location.setText("-");
 		}
 	}
