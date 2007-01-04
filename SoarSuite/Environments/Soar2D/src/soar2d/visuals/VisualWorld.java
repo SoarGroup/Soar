@@ -11,7 +11,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
-import soar2d.player.Player;
+import soar2d.player.*;
 import soar2d.world.*;
 
 public class VisualWorld extends Canvas implements PaintListener {
@@ -55,7 +55,26 @@ public class VisualWorld extends Canvas implements PaintListener {
 		tanks.put(new Integer(Direction.kNorthInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tank_up.gif")));
 		tanks.put(new Integer(Direction.kEastInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tank_right.gif")));
 		tanks.put(new Integer(Direction.kWestInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tank_left.gif")));
-
+		
+		CellObjectManager manager = Soar2D.simulation.world.map.getObjectManager();
+		Iterator<CellObject> iter = manager.getTemplatesWithProperty(Names.kPropertyMiniImage).iterator();
+		while (iter.hasNext()) {
+			CellObject obj = iter.next();
+			Image image = new Image(WindowManager.display, Soar2D.class.getResourceAsStream("/images/" + obj.getProperty(Names.kPropertyMiniImage)));
+			assert image != null;
+			if (obj.getName().equals(Names.kEnergy)) {
+				RadarCell.energyImage = image;
+			} else if (obj.getName().equals(Names.kHealth)) {
+				RadarCell.healthImage = image;
+			} else if (obj.getName().equals(Names.kMissiles)) {
+				RadarCell.missilesImage = image;
+			} else if (obj.hasProperty(Names.kPropertyBlock)) {
+				RadarCell.obstacleImage = image;
+			} else if (obj.getName().equals(Names.kGround)) {
+				RadarCell.openImage = image;
+			}
+		}
+		
 		addPaintListener(this);		
 	}
 

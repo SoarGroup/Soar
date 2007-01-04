@@ -404,4 +404,88 @@ public class GridMap {
 		cellObjectManager = null;
 		size = 0;
 	}
+
+	public int getRadar(RadarCell[][] radar, java.awt.Point location, int facing, int radarPower) {
+		assert radar.length == 3;
+
+		int distance = 0;
+		
+		distance = radarProbe(radar, location, facing, distance, radarPower);
+		
+		return distance;
+	}
+	
+	private RadarCell getRadarCell(java.awt.Point location) {
+		// TODO: cache these each frame!!
+		
+		Cell cell;
+		Iterator<CellObject> iter;
+		RadarCell radarCell;
+
+		cell = getCell(location);
+		radarCell = new RadarCell();
+		radarCell.player = cell.getPlayer();
+		if (cell.enterable()) {
+			iter = cell.getAllWithProperty(Names.kPropertyMiniImage).iterator();
+			while (iter.hasNext()) {
+				CellObject object = iter.next();
+				if (object.getName().equals(Names.kEnergy)) {
+					radarCell.energy = true;
+				} else if (object.getName().equals(Names.kHealth)) {
+					radarCell.health = true;
+				} else if (object.getName().equals(Names.kMissiles)) {
+					radarCell.missiles = true;
+				} 
+			}
+		} else {
+			radarCell.obstacle = true;
+		}
+		return radarCell;
+	}
+	
+	private int radarProbe(RadarCell[][] radar, java.awt.Point myLocation, int facing, int distance, int maxDistance) {
+		assert maxDistance < radar[1].length;
+		assert distance >= 0;
+		assert distance + 1 < radar[1].length;
+		assert distance < maxDistance;
+		assert facing > 0;
+		assert facing < 5;
+		
+		java.awt.Point location;
+		
+		location = new java.awt.Point(myLocation);
+		Direction.translate(location, Direction.leftOf[facing]);
+		radar[0][distance] = getRadarCell(location);
+		if (radar[0][distance].player != null) {
+			radar[0][distance].player.radarTouch(Direction.backwardOf[facing]);
+		}
+		
+		location = new java.awt.Point(myLocation);
+		Direction.translate(location, Direction.rightOf[facing]);
+		radar[2][distance] = getRadarCell(location);
+		if (radar[2][distance].player != null) {
+			radar[2][distance].player.radarTouch(Direction.backwardOf[facing]);
+		}
+
+		distance += 1;
+
+		location = new java.awt.Point(myLocation);
+		Direction.translate(location, facing);
+		radar[1][distance] = getRadarCell(location);
+		if (radar[1][distance].player != null) {
+			radar[1][distance].player.radarTouch(Direction.backwardOf[facing]);
+		}
+
+		if (distance == maxDistance) {
+			return distance;
+		}
+		
+		boolean enterable = radar[1][distance].obstacle == false;
+		boolean noPlayer = radar[1][distance].player == null;
+		
+		if (enterable && noPlayer) {
+			return radarProbe(radar, location, facing, distance, maxDistance);
+		}
+		return distance;
+	}
 }

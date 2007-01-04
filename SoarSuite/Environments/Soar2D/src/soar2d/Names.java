@@ -20,10 +20,13 @@ public class Names {
 	public static final String kHumanProductions = "<Human>";
 	
 	public static final String kEmpty = "empty";
+	public static final String kEnergy = "energy";
 	public static final String kExplosion = "explosion";
-	public static final String kRedraw = "redraw";
-	public static final String kOpen = "open";
 	public static final String kGround = "ground";
+	public static final String kHealth = "health";
+	public static final String kMissiles = "missiles";
+	public static final String kOpen = "open";
+	public static final String kRedraw = "redraw";
 	
 	public static final String kTagAgent = "agent";
 	public static final String kTagApply = "apply";
@@ -140,6 +143,7 @@ public class Names {
 	public static final String kPropertyImageMin = "image-min";
 	public static final String kPropertyImageMax = "image-max";
 	public static final String kPropertyLinger = "linger";
+	public static final String kPropertyMiniImage = "mini-image";
 	public static final String kPropertyMissile = "missile";
 	public static final String kPropertyMissiles = "missiles";
 	public static final String kPropertyMoveApply = "move-apply";

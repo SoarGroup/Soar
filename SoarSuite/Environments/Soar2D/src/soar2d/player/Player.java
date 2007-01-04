@@ -245,5 +245,20 @@ public class Player {
 	
 	public void setRadarPower(int setting) {
 	}
+
+	public void radarTouch(int i) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public int getObservedDistance() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public RadarCell[][] getRadar() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 }

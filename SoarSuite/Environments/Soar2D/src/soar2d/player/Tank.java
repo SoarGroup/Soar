@@ -1,7 +1,10 @@
 package soar2d.player;
 
+import java.util.ArrayList;
+
 import soar2d.Soar2D;
 import soar2d.World;
+import soar2d.world.CellObject;
 
 public class Tank extends Player {
 	/**
@@ -28,6 +31,10 @@ public class Tank extends Player {
 	 * radar power setting
 	 */
 	protected int radarPower;
+	
+	protected int observedPower;
+
+	RadarCell[][] radar = new RadarCell[Soar2D.config.kRadarWidth][Soar2D.config.kRadarHeight];
 
 	public Tank( PlayerConfig playerConfig) {
 		super(playerConfig);
@@ -37,6 +44,14 @@ public class Tank extends Player {
 	
 	public boolean getRadarSwitch() {
 		return radarSwitch;
+	}
+	
+	public RadarCell[][] getRadar() {
+		return radar;
+	}
+	
+	public int getObservedDistance() {
+		return observedPower;
 	}
 	
 	public void setRadarSwitch(boolean setting) {
@@ -55,8 +70,8 @@ public class Tank extends Player {
 		if (setting < 0) {
 			setting = 0;
 		}
-		if (setting > Soar2D.config.kRadarHeight) {
-			setting = Soar2D.config.kRadarHeight;
+		if (setting >= Soar2D.config.kRadarHeight) {
+			setting = Soar2D.config.kRadarHeight - 1;
 		}
 		if (radarPower == setting) {
 			return;
@@ -202,6 +217,10 @@ public class Tank extends Player {
 
 	public void update(World world, java.awt.Point location) {
 		moved = (location.x != this.previousLocation.x) || (location.y != this.previousLocation.y);
+		
+		if (radarSwitch) {
+			observedPower = world.map.getRadar(radar, location, getFacingInt(), radarPower);
+		}
 	}
 	
 	public MoveInfo getMove() {
