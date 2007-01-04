@@ -274,9 +274,18 @@ public class Player {
 		return name.hashCode();
 	}
 
+	public boolean equals(Object other) {
+		Player player = null;
+		try {
+			player = (Player)other;
+		} catch (ClassCastException c) {
+			return false;
+		}
+		return name.equals(player.name);
+	}
+
 	public void setIncoming(int i) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	public int getIncoming() {
@@ -286,5 +295,10 @@ public class Player {
 	public void resetSensors() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public boolean getHumanMove() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

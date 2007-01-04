@@ -37,6 +37,8 @@ public class Tank extends Player {
 	protected int rwaves;
 	protected int blocked;
 	protected int incoming;
+	
+	MoveInfo move;
 
 	public Tank( PlayerConfig playerConfig) {
 		super(playerConfig);
@@ -236,13 +238,24 @@ public class Tank extends Player {
 		return incoming;
 	}
 	
+	public boolean getHumanMove() {
+		if (Soar2D.config.graphical == false) {
+			move = new MoveInfo();
+			return true;
+		}
+		
+		move = Soar2D.wm.getHumanMove(this.getColor());
+
+		if (move == null) {
+			return false;
+		}
+		
+		return true;
+	}
+
 	public MoveInfo getMove() {
 		resetSensors();
 		
-		if (Soar2D.config.graphical == false) {
-			return new MoveInfo();
-		}
-		MoveInfo move = Soar2D.wm.getHumanMove(this.getColor());
 		return move;
 	}
 	
