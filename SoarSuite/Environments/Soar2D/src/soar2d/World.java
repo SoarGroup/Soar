@@ -22,6 +22,7 @@ public class World {
 	public GridMap map;
 	
 	private ArrayList<Player> players = new ArrayList<Player>(7);
+	private ArrayList<Player> humanPlayers = new ArrayList<Player>(7);
 	private HashMap<String, Player> playersMap = new HashMap<String, Player>(7);
 	private HashMap<String, java.awt.Point> initialLocations = new HashMap<String, java.awt.Point>(7);
 	private HashMap<String, java.awt.Point> locations = new HashMap<String, java.awt.Point>(7);
@@ -151,20 +152,18 @@ public class World {
 	}
 	
 	public void removePlayer(String name) {
-		ListIterator<Player> iter = players.listIterator();
-		while (iter.hasNext()) {
-			Player player = iter.next();
-			if (player.getName().equals(name)) {
-				playersMap.remove(name);
-				initialLocations.remove(name);
-				java.awt.Point location = locations.remove(name);
-				lastMoves.remove(name);
-				map.setPlayer(location, null);
-				iter.remove();
-				return;
-			}
+		Player player = playersMap.get(name);
+		if (player == null) {
+			logger.warning("destroyPlayer: Couldn't find player name match for " + name + ", ignoring.");
+			return;
 		}
-		logger.warning("destroyPlayer: Couldn't find player name match for " + name + ", ignoring.");
+		players.remove(player);
+		humanPlayers.remove(player);
+		playersMap.remove(name);
+		initialLocations.remove(name);
+		java.awt.Point location = locations.remove(name);
+		lastMoves.remove(name);
+		map.setPlayer(location, null);
 	}
 	
 	private ArrayList<java.awt.Point> getAvailableLocations(GridMap theMap) {
@@ -218,7 +217,7 @@ public class World {
 		return location;
 	}
 
-	public boolean addPlayer(Player player, java.awt.Point initialLocation) {
+	public boolean addPlayer(Player player, java.awt.Point initialLocation, boolean human) {
 		assert !locations.containsKey(player.getName());
 		
 		players.add(player);
@@ -238,6 +237,10 @@ public class World {
 		
 		logger.info(player.getName() + ": Spawning at (" + 
 				location.x + "," + location.y + ")");
+		
+		if (human) {
+			humanPlayers.add(player);
+		}
 
 		updatePlayers();
 		return true;
@@ -412,6 +415,15 @@ public class World {
 	}
 	
 	public void update() {
+		// Collect human input
+		Iterator<Player> humanPlayerIter = humanPlayers.iterator();
+		while (humanPlayerIter.hasNext()) {
+			Player human = humanPlayerIter.next();
+			if (!human.getHumanMove()) {
+				return;
+			}
+		}
+		
 		if (Soar2D.config.terminalMaxUpdates > 0) {
 			if (worldCount >= Soar2D.config.terminalMaxUpdates) {
 				stopAndDumpStats("Reached maximum updates, stopping.", getSortedScores());

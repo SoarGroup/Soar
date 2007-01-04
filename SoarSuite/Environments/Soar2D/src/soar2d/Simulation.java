@@ -276,7 +276,7 @@ public class Simulation {
 				}
 
 				// This can fail if there are no open squares on the map, message printed already
-				if (!world.addPlayer(player, initialLocation)) {
+				if (!world.addPlayer(player, initialLocation, true)) {
 					throw new CreationException();
 				}
 
@@ -317,7 +317,7 @@ public class Simulation {
 					}
 					
 					// This can fail if there are no open squares on the map, message printed already
-					if (!world.addPlayer(player, initialLocation)) {
+					if (!world.addPlayer(player, initialLocation, false)) {
 						throw new CreationException();
 					}
 		

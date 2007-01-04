@@ -624,6 +624,8 @@ public class WindowManager {
 					humanMove.wait();
 				}
 			} catch (InterruptedException e) {
+				System.out.println("interrupt");
+				return null;
 			}
 		}
 		return humanMove;
