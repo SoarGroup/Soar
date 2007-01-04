@@ -237,7 +237,7 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 
 		m_Radar = new ProgressBar(row5, SWT.NONE);
 		m_Radar.setMinimum(0);
-		m_Radar.setMaximum(13);
+		m_Radar.setMaximum(Soar2D.config.kRadarHeight);
 		{
 			GridData gd = new GridData();
 			gd.widthHint = m_AgentWorld.getWidth();
@@ -250,6 +250,9 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 	
 	void selectPlayer(Player player) {
 		selectedPlayer = player;
+		m_AgentWorld.update(selectedPlayer);
+		m_Radar.setSelection(selectedPlayer.getRadarPower());
+		m_Radar.setToolTipText(Integer.toString(selectedPlayer.getRadarPower()));
 		m_AgentTable.setSelection(players.indexOf(player));
 		java.awt.Point playerLocation = Soar2D.simulation.world.getLocation(selectedPlayer);
 		m_AgentWorld.enable();
@@ -265,6 +268,9 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 
 	void worldChangeEvent() {
 		if (selectedPlayer != null) {
+			m_AgentWorld.update(selectedPlayer);
+			m_Radar.setSelection(selectedPlayer.getRadarPower());
+			m_Radar.setToolTipText(Integer.toString(selectedPlayer.getRadarPower()));
 			java.awt.Point playerLocation = Soar2D.simulation.world.getLocation(selectedPlayer);
 			m_AgentWorld.redraw();
 			location.setText("(" + playerLocation.x + "," + playerLocation.y + ")");
