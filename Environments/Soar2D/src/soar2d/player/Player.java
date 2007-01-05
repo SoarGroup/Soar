@@ -42,6 +42,8 @@ public class Player {
 	protected boolean moved = false;
 	protected PlayerConfig playerConfig;
 
+	private boolean pointsChanged = false;
+	
 	/**
 	 * @param playerConfig configuration params
 	 */
@@ -75,6 +77,8 @@ public class Player {
 	 * set the points to a specific value, the comment goes in the log
 	 */
 	public void setPoints(int points, String comment) {
+		pointsChanged = true;
+		
 		this.points = points;
 		if (comment != null) {
 			logger.info(this.name + " score set to: " + Integer.toString(this.points) + " (" + comment + ")");
@@ -90,6 +94,7 @@ public class Player {
 	 * why the change happened
 	 */
 	public void adjustPoints(int delta, String comment) {
+		pointsChanged = (delta != 0);
 		int previous = this.points;
 		this.points += delta;
 		if (comment != null) {
@@ -186,7 +191,7 @@ public class Player {
 	/**
 	 * called to write sensor data to the input link
 	 */
-	public void commit() {
+	public void commit(java.awt.Point location) {
 	}
 	
 	/**
@@ -213,6 +218,7 @@ public class Player {
 		} else {
 			this.points = Soar2D.config.kDefaultPoints;
 		}
+		pointsChanged = true;
 	}
 	/**
 	 * called when things are shutting down
@@ -327,4 +333,21 @@ public class Player {
 		return 0;
 	}
 	
+	public void fragged() {
+		
+	}
+
+	public void setOnHealthCharger(boolean b) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setOnEnergyCharger(boolean b) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public boolean pointsChanged() {
+		return pointsChanged;
+	}
 }

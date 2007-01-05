@@ -1,6 +1,7 @@
 package soar2d.player;
 
 import soar2d.Direction;
+import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.World;
 
@@ -41,8 +42,11 @@ public class Tank extends Player {
 	int smellDistance;
 	String smellColor;
 	
-	MoveInfo move;
+	private MoveInfo move;
 	int sound;
+	protected boolean onHealthCharger;
+	protected boolean onEnergyCharger;
+	protected boolean recentlyMoved;
 
 	public Tank( PlayerConfig playerConfig) {
 		super(playerConfig);
@@ -253,13 +257,30 @@ public class Tank extends Player {
 			return false;
 		}
 		
+		// Do not allow a move if we rotated.
+		if (move.rotate) {
+			if (move.move) {
+				logger.info(": move ignored (rotating)");
+				move.move = false;
+			}
+		}
 		return true;
 	}
 
 	public MoveInfo getMove() {
 		resetSensors();
 		
+		recentlyMoved = move.move || move.rotate;
+		
 		return move;
+	}
+	
+	public void fragged() {
+		energy = Soar2D.config.kDefaultEnergy;
+		health = Soar2D.config.kDefaultHealth;
+		missiles = Soar2D.config.kDefaultMissiles;
+		setFacingInt(Simulation.random.nextInt(4) + 1);
+		resetSensors();
 	}
 	
 	public void reset() {
@@ -314,6 +335,9 @@ public class Tank extends Player {
 		smellDistance = 0;
 		smellColor = null;
 		sound = 0;
+		onHealthCharger = false;
+		onEnergyCharger = false;
+		recentlyMoved = false;
 	}
 
 	public void setSmell(int distance, String smellColor) {
@@ -337,7 +361,12 @@ public class Tank extends Player {
 		return sound;
 	}
 	
-	public void shutdown() {
+	public void setOnHealthCharger(boolean b) {
+		this.onHealthCharger = b;
 		
+	}
+
+	public void setOnEnergyCharger(boolean b) {
+		this.onEnergyCharger = b;
 	}
 }
