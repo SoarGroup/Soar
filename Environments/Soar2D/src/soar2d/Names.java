@@ -149,6 +149,7 @@ public class Names {
 	public static final String kPropertyMoveApply = "move-apply";
 	public static final String kPropertyOwner = "owner";
 	public static final String kPropertyPoints = "points";
+	public static final String kPropertyRadarWaves = "radar-waves";
 	public static final String kPropertyShape = "shape";
 	public static final String kPropertyStatus = "status";
 

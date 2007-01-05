@@ -282,6 +282,9 @@ public class Tank extends Player {
 		}
 		
 		shieldsUp = false;
+		radarSwitch = false;
+		radarPower = 0;
+		resetSensors();
 	}
 	
 	public void setShields(boolean setting) {
@@ -298,7 +301,7 @@ public class Tank extends Player {
 	
 	public void setIncoming(int fromDirection) {
 		incoming |= Direction.indicators[fromDirection];
-		System.out.println(getName() + ": incoming set " + incoming);
+		//System.out.println(getName() + ": incoming set " + incoming);
 	}
 	public int getRWaves() {
 		return rwaves;

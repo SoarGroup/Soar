@@ -301,7 +301,13 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 		}
 		
 		for (int i = 0; i < m_Items.length; ++i) {
-			m_Items[i].setText(1, Integer.toString(players.get(i).getPoints()));
+			m_Items[i].setText(new String[] {
+					players.get(i).getName(), 
+					Integer.toString(players.get(i).getPoints()),
+					Integer.toString(players.get(i).getMissiles()),
+					Integer.toString(players.get(i).getHealth()),
+					Integer.toString(players.get(i).getEnergy())					
+					});
 		}
 	}
 	

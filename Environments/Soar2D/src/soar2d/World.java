@@ -1219,6 +1219,9 @@ public class World {
 
 	public boolean recentlyMovedOrRotated(Player targetPlayer) {
 		MoveInfo move = lastMoves.get(targetPlayer.getName());
+		if (move == null) {
+			return false;
+		}
 		return move.move || move.rotate;
 	}
 }

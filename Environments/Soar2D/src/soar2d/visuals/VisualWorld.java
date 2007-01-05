@@ -392,6 +392,40 @@ public class VisualWorld extends Canvas implements PaintListener {
 						gc.drawImage(image, (location.x * cellSize) + mX, (location.y * cellSize) + mY);						
 					}
 					
+					// Finally, draw the radar waves
+					ArrayList<CellObject> radarWaves = world.map.getAllWithProperty(location, Names.kPropertyRadarWaves);
+					iter = radarWaves.iterator();
+					gc.setForeground(WindowManager.getColor("white"));
+					while (iter.hasNext()) {
+						CellObject cellObject = iter.next();
+						int direction = cellObject.getIntProperty(Names.kPropertyDirection);
+						int start = 0;
+						int xMod = 0;
+						int yMod = 0;
+						switch (direction) {
+						case Direction.kNorthInt:
+							start = 0;
+							yMod = cellSize / 4;
+							break;
+						case Direction.kSouthInt:
+							start = -180;
+							yMod = cellSize / -4;
+							break;
+						case Direction.kEastInt:
+							start = -90;
+							xMod = cellSize / -4;
+							break;
+						case Direction.kWestInt:
+							start = 90;
+							xMod = cellSize / 4;
+							break;
+						default:
+							// TODO: warn
+							assert false;
+							break;
+						}
+						gc.drawArc((location.x * cellSize) + xMod, (location.y * cellSize) + yMod, cellSize - 1, cellSize - 1, start, 180);
+					}
 				} else {
 					Soar2D.control.severeError("I don't know how to draw the world!");
 				}
