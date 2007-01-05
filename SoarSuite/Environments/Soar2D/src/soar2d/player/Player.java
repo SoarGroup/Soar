@@ -301,4 +301,30 @@ public class Player {
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+	public void setSmell(int distance, String color) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public int getSmellDistance() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public String getSmellColor() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setSound(int soundNear) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	public int getSound() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
 }

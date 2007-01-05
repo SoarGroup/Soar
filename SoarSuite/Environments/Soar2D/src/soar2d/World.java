@@ -27,8 +27,8 @@ public class World {
 	private HashMap<String, java.awt.Point> initialLocations = new HashMap<String, java.awt.Point>(7);
 	private HashMap<String, java.awt.Point> locations = new HashMap<String, java.awt.Point>(7);
 	private HashMap<String, MoveInfo> lastMoves = new HashMap<String, MoveInfo>(7);
-	HashMap<String, HashSet<Player> > killedTanks = new HashMap<String, HashSet<Player> >(7);
-	HashMap<String, MissileInfo> missiles = new HashMap<String, MissileInfo>();
+	private HashMap<String, HashSet<Player> > killedTanks = new HashMap<String, HashSet<Player> >(7);
+	private HashMap<String, MissileInfo> missiles = new HashMap<String, MissileInfo>();
 	
 	private int missileID = 0;
 	
@@ -133,6 +133,41 @@ public class World {
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player player = iter.next();
+			if (Soar2D.config.tanksoar) {
+				if (players.size() < 2) {
+					player.setSmell(0, null);
+				} else {
+					int distance = 99;
+					String color = null;
+					
+					Iterator<Player> smellIter = players.iterator();
+					while (smellIter.hasNext()) {
+						
+						Player other = smellIter.next();
+						if (other.equals(player)) {
+							continue;
+						}
+						
+						java.awt.Point playerLoc = locations.get(player.getName());
+						java.awt.Point otherLoc = locations.get(other.getName());
+						int newDistance = Math.abs(playerLoc.x - otherLoc.x) + Math.abs(playerLoc.y - otherLoc.y);
+						
+						if (newDistance < distance) {
+							distance = newDistance;
+							color = other.getColor();
+						} else if (newDistance == distance) {
+							if (Simulation.random.nextBoolean()) {
+								distance = newDistance;
+								color = other.getColor();
+							}
+						}
+					}
+					player.setSmell(distance, color);
+				}
+				
+				//System.out.println("sound for " + player.getName());
+				player.setSound(map.getSoundNear(locations.get(player.getName())));
+			}
 			player.update(this, locations.get(player.getName()));
 		}
 	}
@@ -164,6 +199,8 @@ public class World {
 		java.awt.Point location = locations.remove(name);
 		lastMoves.remove(name);
 		map.setPlayer(location, null);
+		
+		updatePlayers();
 	}
 	
 	private ArrayList<java.awt.Point> getAvailableLocations(GridMap theMap) {
@@ -268,7 +305,7 @@ public class World {
 			}
 			
 			// Verify legal move and commit move
-			if (isInBounds(newLocation) && map.enterable(newLocation)) {
+			if (map.isInBounds(newLocation) && map.enterable(newLocation)) {
 				// remove from cell
 				map.setPlayer(oldLocation, null);
 				
@@ -797,7 +834,7 @@ public class World {
 			int direction = player.getFacingInt();
 			Direction.translate(missileLoc, direction);
 			
-			if (!isInBounds(missileLoc)) {
+			if (!map.isInBounds(missileLoc)) {
 				continue;
 			}
 			if (!map.enterable(missileLoc)) {
@@ -880,11 +917,7 @@ public class World {
 		}
 		
 		// Update tanks
-		playerIter = players.iterator();
-		while (playerIter.hasNext()) {
-			Player player = playerIter.next();
-			player.update(this, locations.get(player.getName()));
-		}
+		updatePlayers();
 		
 		// Commit input
 		playerIter = players.iterator();
@@ -1153,14 +1186,6 @@ public class World {
 		}
 	}
 	
-	public boolean isInBounds(Point location) {
-		return isInBounds(location.x, location.y);
-	}
-
-	public boolean isInBounds(int x, int y) {
-		return (x >= 0) && (y >= 0) && (x < map.getSize()) && (y < map.getSize());
-	}
-
 	public void reset() {
 		worldCount = 0;
 		printedStats = false;
@@ -1190,5 +1215,10 @@ public class World {
 
 	public void destroyMissile(String name) {
 		missiles.remove(name);
+	}
+
+	public boolean recentlyMovedOrRotated(Player targetPlayer) {
+		MoveInfo move = lastMoves.get(targetPlayer.getName());
+		return move.move || move.rotate;
 	}
 }

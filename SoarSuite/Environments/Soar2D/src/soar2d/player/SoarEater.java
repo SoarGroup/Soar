@@ -232,7 +232,7 @@ public class SoarEater extends Eater {
 					}
 					
 					// If we're out of bounds create a wall
-					if (!world.isInBounds(viewLocation)) {
+					if (!world.map.isInBounds(viewLocation)) {
 						createContent(soarCell.content, soarCell, Names.kWallID);
 						continue;
 					}
@@ -315,7 +315,7 @@ public class SoarEater extends Eater {
 					HashMap<String, StringElement> newContent = new HashMap<String, StringElement>();
 
 					// Anything out of bounds will not change
-					if (!world.isInBounds(viewLocation)) {
+					if (!world.map.isInBounds(viewLocation)) {
 						continue;
 					}
 					

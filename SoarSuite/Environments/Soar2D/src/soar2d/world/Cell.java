@@ -115,4 +115,8 @@ class Cell {
 	CellObject removeObject(String name) {
 		return cellObjects.remove(name);
 	}
+
+	// for sound algorithm
+	int distance = -1;
+	java.awt.Point parent;
 }
