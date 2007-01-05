@@ -313,7 +313,13 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 		m_Items = new TableItem[players.size()];
 		for (int i = 0; i < players.size(); ++i) {
 			m_Items[i] = new TableItem(m_AgentTable, SWT.NONE);
-			m_Items[i].setText(new String[] {players.get(i).getName(), Integer.toString(players.get(i).getPoints())});
+			m_Items[i].setText(new String[] {
+					players.get(i).getName(), 
+					Integer.toString(players.get(i).getPoints()),
+					Integer.toString(players.get(i).getMissiles()),
+					Integer.toString(players.get(i).getHealth()),
+					Integer.toString(players.get(i).getEnergy())					
+					});
 			if (selectedPlayer == players.get(i)) {
 				foundSelected = true;
 				m_AgentTable.setSelection(i);
