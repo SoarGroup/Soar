@@ -479,16 +479,27 @@ public class GridMap {
 			radar[1][distance].player.radarTouch(Direction.backwardOf[facing]);
 		}
 
-		if (distance == maxDistance) {
-			return distance;
-		}
-		
 		boolean enterable = radar[1][distance].obstacle == false;
 		boolean noPlayer = radar[1][distance].player == null;
 		
 		if (enterable && noPlayer) {
+			CellObject radarWaves = new CellObject("radar-" + facing, true);
+			radarWaves.addProperty(Names.kPropertyRadarWaves, "true");
+			radarWaves.addProperty(Names.kPropertyDirection, Integer.toString(facing));
+			radarWaves.addProperty(Names.kPropertyLinger, "1");
+			radarWaves.setLingerUpdate(true);
+			//System.out.println("Adding radar waves to " + location);
+			addObjectToCell(location, radarWaves);
+		}
+
+		if (distance == maxDistance) {
+			return distance;
+		}
+		
+		if (enterable && noPlayer) {
 			return radarProbe(radar, location, facing, distance, maxDistance);
 		}
+		
 		return distance;
 	}
 
