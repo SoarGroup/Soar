@@ -136,6 +136,7 @@ public class World {
 			if (Soar2D.config.tanksoar) {
 				if (players.size() < 2) {
 					player.setSmell(0, null);
+					player.setSound(0);
 				} else {
 					int distance = 99;
 					String color = null;
@@ -163,12 +164,20 @@ public class World {
 						}
 					}
 					player.setSmell(distance, color);
+					// TODO: can eliminate sound check if smell is greater than max sound distance 
+					player.setSound(map.getSoundNear(locations.get(player.getName())));
 				}
 				
-				//System.out.println("sound for " + player.getName());
-				player.setSound(map.getSoundNear(locations.get(player.getName())));
 			}
 			player.update(this, locations.get(player.getName()));
+		}
+		
+		if (Soar2D.config.tanksoar) {
+			Iterator<Player> playerIter = players.iterator();
+			while (playerIter.hasNext()) {
+				Player player = playerIter.next();
+				player.commit(locations.get(player.getName()));
+			}
 		}
 	}
 	
@@ -909,22 +918,11 @@ public class World {
 			locations.put(player.getName(), location);
 			
 			// reset the player state
-			player.setEnergy(Soar2D.config.kDefaultEnergy, "respawn");
-			player.setHealth(Soar2D.config.kDefaultHealth, "respawn");
-			player.setMissiles(Soar2D.config.kDefaultMissiles, "respawn");
-			player.setFacingInt(Simulation.random.nextInt(4) + 1);
-			player.resetSensors();
+			player.fragged();
 		}
 		
 		// Update tanks
 		updatePlayers();
-		
-		// Commit input
-		playerIter = players.iterator();
-		while (playerIter.hasNext()) {
-			Player player = playerIter.next();
-			player.commit();
-		}
 	}
 	
 	private void handleIncoming() {
@@ -985,11 +983,13 @@ public class World {
 		while (iter.hasNext()) {
 			CellObject charger = iter.next();
 			if (charger.hasProperty(Names.kPropertyHealth)) {
+				player.setOnHealthCharger(true);
 				if (player.getHealth() < Soar2D.config.kDefaultHealth) {
 					player.adjustHealth(charger.getIntProperty(Names.kPropertyHealth), "charger");
 				}
 			}
 			if (charger.hasProperty(Names.kPropertyEnergy)) {
+				player.setOnEnergyCharger(true);
 				if (player.getEnergy() < Soar2D.config.kDefaultEnergy) {
 					player.adjustEnergy(charger.getIntProperty(Names.kPropertyEnergy), "charger");
 				}

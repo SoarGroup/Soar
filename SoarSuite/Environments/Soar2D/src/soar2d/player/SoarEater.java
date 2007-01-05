@@ -122,8 +122,8 @@ public class SoarEater extends Eater {
 		directionWME = agent.CreateStringWME(eater, Names.kDirectionID, Names.kNorth);
 		agent.CreateStringWME(eater, Names.kNameID, getName());
 		scoreWME = agent.CreateIntWME(eater, Names.kScoreID, getPoints());
-		xWME = agent.CreateIntWME(eater, Names.kxID, 0);
-		yWME = agent.CreateIntWME(eater, Names.kyID, 0);
+		xWME = agent.CreateIntWME(eater, Names.kXID, 0);
+		yWME = agent.CreateIntWME(eater, Names.kYID, 0);
 		
 		for (int i = 0; i < cells.length; ++i) {
 			for (int j = 0; j < cells.length; ++j) {
