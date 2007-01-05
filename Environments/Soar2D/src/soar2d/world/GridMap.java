@@ -514,4 +514,122 @@ public class GridMap {
 		}
 		return blocked;
 	}
+	
+	public int getSoundNear(java.awt.Point location) {
+		if (Soar2D.simulation.world.getPlayers().size() < 2) {
+			return 0;
+		}
+		
+		// Set all cells unexplored.
+		for(int y = 1; y < mapCells.length - 1; ++y) {
+			for (int x = 1; x < mapCells.length - 1; ++x) {
+				mapCells[y][x].distance = -1;
+			}
+		}
+		
+		LinkedList<java.awt.Point> searchList = new LinkedList<java.awt.Point>();
+		searchList.addLast(new java.awt.Point(location));
+		int distance = 0;
+		getCell(location).distance = distance;
+		getCell(location).parent = null;
+
+		int relativeDirection = -1;
+		int newCellX = 0;
+		int newCellY = 0;
+		java.awt.Point parentLocation;
+		Cell parentCell;
+		Cell newCell;
+
+		while (searchList.size() > 0) {
+			parentLocation = searchList.getFirst();
+			searchList.removeFirst();
+			parentCell = getCell(parentLocation);
+			distance = parentCell.distance;
+			if (distance >= Soar2D.config.kMaxSmellDistance) {
+				//System.out.println(parentCell + " too far");
+				continue;
+			}
+
+			// Explore cell.
+			for (int i = 1; i < 5; ++i) {
+				newCellX = parentLocation.x;
+				newCellY = parentLocation.y;
+				newCellX += Direction.xDelta[i];
+				newCellY += Direction.yDelta[i];
+
+				if (!isInBounds(newCellX, newCellY)) {
+					continue;
+				}
+
+				newCell = getCell(newCellX, newCellY);
+				if (!newCell.enterable()) {
+					//System.out.println(parentCell + " not enterable");
+					continue;
+				}
+							
+				if (newCell.distance >= 0) {
+					//System.out.println(parentCell + " already explored");
+					continue;
+				}
+				newCell.distance = distance + 1;
+				
+				Player targetPlayer = newCell.getPlayer();
+				if ((targetPlayer != null) && Soar2D.simulation.world.recentlyMovedOrRotated(targetPlayer)) {
+					// I'm its parent, so see if I'm the top here
+					while(parentCell.parent != null) {
+						// the new cell becomes me
+						newCellX = parentLocation.x;
+						newCellY = parentLocation.y;
+						
+						// I become my parent
+						parentLocation = getCell(parentLocation).parent;
+						parentCell = getCell(parentLocation);
+					}
+					// location is now the top of the list, compare
+					// to find the direction to the new cell
+					if (newCellX < parentLocation.x) {
+						relativeDirection = Direction.kWestIndicator;
+					} else if (newCellX > parentLocation.x) {
+						relativeDirection = Direction.kEastIndicator;
+					} else if (newCellY < parentLocation.y) {
+						relativeDirection = Direction.kNorthIndicator;
+					} else if (newCellY > parentLocation.y) {
+						relativeDirection = Direction.kSouthIndicator;
+					} else {
+						assert false;
+						relativeDirection = 0;
+					}
+					break;
+				}
+				
+				if (relativeDirection != -1) {
+					break;
+				}
+				
+				// add me as the new cell's parent				
+				newCell.parent = parentLocation;
+				// add the new cell to the search list
+				searchList.addLast(new java.awt.Point(newCellX, newCellY));
+			}
+			
+			if (relativeDirection != -1) {
+				break;
+			}
+		}
+		
+		//if (logger.isLoggable(Level.FINEST)) logger.finest("Finished search.");
+		
+		if (relativeDirection == -1) {
+			relativeDirection = 0;
+		}
+		return relativeDirection;
+	}
+
+	public boolean isInBounds(int x, int y) {
+		return (x >= 0) && (y >= 0) && (x < getSize()) && (y < getSize());
+	}
+
+	public boolean isInBounds(Point location) {
+		return isInBounds(location.x, location.y);
+	}
 }

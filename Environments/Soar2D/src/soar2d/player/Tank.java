@@ -38,7 +38,11 @@ public class Tank extends Player {
 	protected int blocked;
 	protected int incoming;
 	
+	int smellDistance;
+	String smellColor;
+	
 	MoveInfo move;
+	int sound;
 
 	public Tank( PlayerConfig playerConfig) {
 		super(playerConfig);
@@ -227,14 +231,13 @@ public class Tank extends Player {
 		}
 		
 		blocked = world.map.getBlocked(location);
-	}
+}
 	
 	public int getBlocked() {
 		return blocked;
 	}
 	
 	public int getIncoming() {
-		System.out.println(getName() + ": incoming reported " + incoming);
 		return incoming;
 	}
 	
@@ -305,8 +308,32 @@ public class Tank extends Player {
 		rwaves = 0;
 		incoming = 0;
 		blocked = 0;
+		smellDistance = 0;
+		smellColor = null;
+		sound = 0;
 	}
 
+	public void setSmell(int distance, String smellColor) {
+		smellDistance = distance;
+		this.smellColor = smellColor;
+	}
+	
+	public int getSmellDistance() {
+		return smellDistance;
+	}
+
+	public String getSmellColor() {
+		return smellColor;
+	}
+
+	public void setSound(int soundNear) {
+		this.sound = soundNear;
+	}
+
+	public int getSound() {
+		return sound;
+	}
+	
 	public void shutdown() {
 		
 	}

@@ -44,6 +44,7 @@ public class Configuration {
 	public final int kKillPenalty = -2;
 	public final int kRadarWidth = 3;
 	public final int kRadarHeight = 15;
+	public final int kMaxSmellDistance = 7;
 	
 
 	public final boolean kDefaultPropertyBoolean = false;	// if a bool property doesn't exist

@@ -46,7 +46,7 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		
 		mapCell.Set(0,0.0) ;	// Property 0 is whether this location is valid or not
 		
-		if (world.isInBounds(viewLocation)) {
+		if (world.map.isInBounds(viewLocation)) {
 			mapCell.Set(0, 1.0) ;	// Property 0 is whether this location is valid or not
 			
 			if (!world.map.enterable(viewLocation))

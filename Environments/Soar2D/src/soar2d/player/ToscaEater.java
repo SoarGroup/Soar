@@ -95,7 +95,7 @@ public class ToscaEater {
 				java.awt.Point newLocation = new java.awt.Point(oldLocation);
 				Direction.translate(newLocation, move.moveDirection);
 				// Verify legal move and commit move
-				if (Soar2D.simulation.world.isInBounds(newLocation) && Soar2D.simulation.world.map.enterable(newLocation))
+				if (Soar2D.simulation.world.map.isInBounds(newLocation) && Soar2D.simulation.world.map.enterable(newLocation))
 					break ;
 			}
 		}

@@ -263,9 +263,31 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 		m_RWaves.set(selectedPlayer.getRWaves(), selectedPlayer.getFacingInt());
 		m_Blocked.set(selectedPlayer.getBlocked(), selectedPlayer.getFacingInt());
 		m_Incoming.set(selectedPlayer.getIncoming(), selectedPlayer.getFacingInt());
+		m_Sound.set(selectedPlayer.getSound(), selectedPlayer.getFacingInt());
+		m_Smell.setSelection(selectedPlayer.getSmellDistance());
+		if (selectedPlayer.getSmellColor() != null) {
+			m_Smell.setToolTipText(selectedPlayer.getSmellColor() + " is " + Integer.toString(selectedPlayer.getSmellDistance()) + " away");
+		} else {
+			m_Smell.setToolTipText("no smell");
+		}
 		java.awt.Point playerLocation = Soar2D.simulation.world.getLocation(selectedPlayer);
 		location.setText("(" + playerLocation.x + "," + playerLocation.y + ")");
 		m_AgentWorld.redraw();
+	}
+	
+	private void disableSensors() {
+		m_AgentTable.deselectAll();
+		m_AgentWorld.disable();
+		m_AgentWorld.redraw();
+		m_RWaves.disable();
+		m_Blocked.disable();
+		m_Incoming.disable();
+		m_Sound.disable();
+		m_Radar.setSelection(0);
+		m_Radar.setToolTipText("0");
+		m_Smell.setSelection(0);
+		m_Smell.setToolTipText("no smell");
+		location.setText("-");
 	}
 	
 	void agentEvent() {
@@ -300,11 +322,7 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 		
 		if (!foundSelected) {
 			selectedPlayer = null;			
-			m_AgentTable.deselectAll();
-			m_AgentWorld.disable();
-			m_AgentWorld.redraw();
-			m_RWaves.disable();
-			location.setText("-");
+			disableSensors();
 		}
 	}
 	
