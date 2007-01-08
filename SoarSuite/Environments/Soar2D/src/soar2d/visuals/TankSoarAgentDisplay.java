@@ -48,10 +48,40 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 		m_Group.setText("Agents");
 		{
 			GridLayout gl = new GridLayout();
-			gl.numColumns = 2;
+			gl.numColumns = 3;
 			m_Group.setLayout(gl);
 		}
 		
+		
+		m_AgentTable = new Table(m_Group, SWT.BORDER | SWT.FULL_SELECTION);
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 3;
+			gd.heightHint = kTableHeight;
+			m_AgentTable.setLayoutData(gd);
+		}
+		TableColumn tc1 = new TableColumn(m_AgentTable, SWT.CENTER);
+		TableColumn tc2 = new TableColumn(m_AgentTable, SWT.CENTER);
+		TableColumn tc3 = new TableColumn(m_AgentTable, SWT.CENTER);
+		TableColumn tc4 = new TableColumn(m_AgentTable, SWT.CENTER);
+		TableColumn tc5 = new TableColumn(m_AgentTable, SWT.CENTER);
+		tc1.setText("Name");
+		tc1.setWidth(kNameWidth);
+		tc2.setText("Score");
+		tc2.setWidth(kScoreWidth);
+		tc3.setText("Missiles");
+		tc3.setWidth(kMissilesWidth);
+		tc4.setText("Health");
+		tc4.setWidth(kHealthWidth);
+		tc5.setText("Energy");
+		tc5.setWidth(kEnergyWidth);
+		m_AgentTable.setHeaderVisible(true);
+		m_AgentTable.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				selectPlayer(players.get(m_AgentTable.getSelectionIndex()));
+				updateButtons();
+			}
+		});
 		
 		m_AgentButtons = new Composite(m_Group, SWT.NONE);
 		m_AgentButtons.setLayout(new FillLayout());
@@ -100,49 +130,40 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 			}
 		});
 		
-		m_AgentTable = new Table(m_Group, SWT.BORDER | SWT.FULL_SELECTION);
+		Group row5 = new Group(m_Group, SWT.NONE);
+		row5.setText("Radar");
 		{
 			GridData gd = new GridData();
-			gd.horizontalSpan = 2;
-			gd.heightHint = kTableHeight;
-			m_AgentTable.setLayoutData(gd);
-		}
-		TableColumn tc1 = new TableColumn(m_AgentTable, SWT.CENTER);
-		TableColumn tc2 = new TableColumn(m_AgentTable, SWT.CENTER);
-		TableColumn tc3 = new TableColumn(m_AgentTable, SWT.CENTER);
-		TableColumn tc4 = new TableColumn(m_AgentTable, SWT.CENTER);
-		TableColumn tc5 = new TableColumn(m_AgentTable, SWT.CENTER);
-		tc1.setText("Name");
-		tc1.setWidth(kNameWidth);
-		tc2.setText("Score");
-		tc2.setWidth(kScoreWidth);
-		tc3.setText("Missiles");
-		tc3.setWidth(kMissilesWidth);
-		tc4.setText("Health");
-		tc4.setWidth(kHealthWidth);
-		tc5.setText("Energy");
-		tc5.setWidth(kEnergyWidth);
-		m_AgentTable.setHeaderVisible(true);
-		m_AgentTable.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				selectPlayer(players.get(m_AgentTable.getSelectionIndex()));
-				updateButtons();
-			}
-		});
-		
-		Composite row3 = new Composite(m_Group, SWT.NONE);
-		{
-			GridData gd = new GridData();
-			gd.horizontalSpan = 2;
-			row3.setLayoutData(gd);
-			
+			gd.verticalSpan = 5;
+			gd.horizontalAlignment = SWT.END;
+			row5.setLayoutData(gd);
+
 			GridLayout gl = new GridLayout();
-			gl.numColumns = 4;
-			row3.setLayout(gl);
+			gl.numColumns = 2;
+			row5.setLayout(gl);
 		}
 		
-		Group blockedGroup = new Group(row3, SWT.NONE);
+		m_AgentWorld = new TankSoarAgentWorld(row5, SWT.BORDER);
+		{
+			GridData gd = new GridData();
+			gd.heightHint = m_AgentWorld.getHeight();
+			gd.widthHint = m_AgentWorld.getWidth();		
+			m_AgentWorld.setLayoutData(gd);
+		}
+		
+
+		m_Radar = new ProgressBar(row5, SWT.NONE | SWT.VERTICAL);
+		m_Radar.setMinimum(0);
+		m_Radar.setMaximum(Soar2D.config.kRadarHeight);
+		{
+			GridData gd = new GridData();
+			gd.heightHint = m_AgentWorld.getHeight();
+			m_Radar.setLayoutData(gd);
+		}
+		
+		Group blockedGroup = new Group(m_Group, SWT.NONE);
 		blockedGroup.setText("Blocked");
+		blockedGroup.setLayoutData(new GridData());
 		blockedGroup.setLayout(new FillLayout());
 		m_Blocked = new BlockedDiagram(blockedGroup, SWT.NONE);
 		{
@@ -152,8 +173,9 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 			blockedGroup.setLayoutData(gd);
 		}
 		
-		Group rwavesGroup = new Group(row3, SWT.NONE);
+		Group rwavesGroup = new Group(m_Group, SWT.NONE);
 		rwavesGroup.setText("RWaves");
+		rwavesGroup.setLayoutData(new GridData());
 		rwavesGroup.setLayout(new FillLayout());
 		m_RWaves = new BlockedDiagram(rwavesGroup, SWT.NONE);
 		{
@@ -163,8 +185,9 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 			rwavesGroup.setLayoutData(gd);
 		}
 		
-		Group soundGroup = new Group(row3, SWT.NONE);
+		Group soundGroup = new Group(m_Group, SWT.NONE);
 		soundGroup.setText("Sound");
+		soundGroup.setLayoutData(new GridData());
 		soundGroup.setLayout(new FillLayout());
 		m_Sound = new BlockedDiagram(soundGroup, SWT.NONE);
 		{
@@ -174,8 +197,9 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 			soundGroup.setLayoutData(gd);
 		}
 		
-		Group incomingGroup = new Group(row3, SWT.NONE);
+		Group incomingGroup = new Group(m_Group, SWT.NONE);
 		incomingGroup.setText("Incoming");
+		incomingGroup.setLayoutData(new GridData());
 		incomingGroup.setLayout(new FillLayout());
 		m_Incoming = new BlockedDiagram(incomingGroup, SWT.NONE);
 		{
@@ -215,35 +239,6 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 			location.setLayoutData(gd);
 		}
 
-		Group row5 = new Group(m_Group, SWT.NONE);
-		row5.setText("Radar data and setting");
-		{
-			GridData gd = new GridData();
-			gd.horizontalSpan = 2;
-			row5.setLayoutData(gd);
-
-			GridLayout gl = new GridLayout();
-			row5.setLayout(gl);
-		}
-		
-		m_AgentWorld = new TankSoarAgentWorld(row5, SWT.BORDER);
-		{
-			GridData gd = new GridData();
-			gd.heightHint = m_AgentWorld.getHeight();
-			gd.widthHint = m_AgentWorld.getWidth();		
-			m_AgentWorld.setLayoutData(gd);
-		}
-		
-
-		m_Radar = new ProgressBar(row5, SWT.NONE);
-		m_Radar.setMinimum(0);
-		m_Radar.setMaximum(Soar2D.config.kRadarHeight);
-		{
-			GridData gd = new GridData();
-			gd.widthHint = m_AgentWorld.getWidth();
-			m_Radar.setLayoutData(gd);
-		}
-		
 		updatePlayerList();
 		updateButtons();		
 	}

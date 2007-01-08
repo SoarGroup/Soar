@@ -92,6 +92,10 @@ public class Configuration {
 	 */
 	public boolean random = true;
 	/**
+	 * If true, do not display the world map
+	 */
+	public boolean noWorld = true;
+	/**
 	 * The current map file
 	 */
 	public File map = null;

@@ -35,7 +35,7 @@ public class WindowManager {
 	String popUpMessage;
 	String statusMessage;
 	MoveInfo humanMove;
-	String humanMoveColor;
+	Player human;
 
 	public static final int kEatersMainMapCellSize = 20;
 	public static final int kTanksoarMainMapCellSize = 32;
@@ -173,7 +173,7 @@ public class WindowManager {
 					break;
 				}
 				
-				Soar2D.wm.setStatus(humanMoveColor + ": " + humanMove.toString());
+				Soar2D.wm.setStatus(human.getColor() + ": " + humanMove.toString());
 				
 				if (go) {
 					synchronized(humanMove) {
@@ -252,22 +252,23 @@ public class WindowManager {
 					return;
 				}
 				boolean go = false;
+				int facing = human.getFacingInt();
 				switch (e.keyCode) {
 				case SWT.KEYPAD_8:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.kNorthInt;
+					humanMove.moveDirection = facing;
 					break;
 				case SWT.KEYPAD_6:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.kEastInt;
+					humanMove.moveDirection = Direction.rightOf[facing];
 					break;
 				case SWT.KEYPAD_2:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.kSouthInt;
+					humanMove.moveDirection = Direction.backwardOf[facing];
 					break;
 				case SWT.KEYPAD_4:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.kWestInt;
+					humanMove.moveDirection = Direction.leftOf[facing];
 					break;
 				case SWT.KEYPAD_1:
 					humanMove.rotate = !humanMove.rotate;
@@ -322,7 +323,7 @@ public class WindowManager {
 					break;
 				}
 				
-				Soar2D.wm.setStatus(humanMoveColor + ": " + humanMove.toString());
+				Soar2D.wm.setStatus(human.getColor() + ": " + humanMove.toString());
 				
 				if (go) {
 					synchronized(humanMove) {
@@ -613,11 +614,11 @@ public class WindowManager {
 		});
 	}
 
-	public MoveInfo getHumanMove(String color) {
+	public MoveInfo getHumanMove(Player player) {
 		humanMove = new MoveInfo();
 		if (!isDisposed()) {
-			humanMoveColor = color;
-			setStatus("Enter move for " + color);
+			human = player;
+			setStatus("Enter move for " + player.getColor());
 			setVisualWorldFocus();
 			try {
 				synchronized(humanMove) {

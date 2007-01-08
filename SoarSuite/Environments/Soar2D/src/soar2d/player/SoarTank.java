@@ -66,6 +66,8 @@ public class SoarTank extends Tank {
 	private boolean m_Reset = true;
 	private int m_ResurrectFrame = 0;
 	
+	private boolean playersChanged = true;
+	
 	public SoarTank(Agent agent, PlayerConfig playerConfig) {
 		super(playerConfig);
 		this.agent = agent;
@@ -474,8 +476,14 @@ public class SoarTank extends Tank {
 				m_BlackScore = null;
 			}
 		}
+		
+		playersChanged = false;
 	}
-	
+
+	public void playersChanged() {
+		playersChanged = true;
+	}
+
 	public void commit(java.awt.Point location) {
 		World world = Soar2D.simulation.world;
 		
@@ -560,6 +568,9 @@ public class SoarTank extends Tank {
 			m_CurrentScoreWME = agent.CreateIdWME(m_InputLink, Names.kCurrentScoreID);
 			initScoreWMEs();
 		} else {
+			if (playersChanged) {
+				initScoreWMEs();
+			}
 			Iterator<Player> playerIter = world.getPlayers().iterator();
 			while (playerIter.hasNext()) {
 				Player player = playerIter.next();

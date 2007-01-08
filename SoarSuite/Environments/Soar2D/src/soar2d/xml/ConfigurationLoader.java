@@ -357,6 +357,11 @@ public class ConfigurationLoader {
 			c.random = Boolean.parseBoolean(attribute);
 		}
 		
+		attribute = simulationTag.GetAttribute(Names.kParamNoWorld);
+		if (attribute != null) {
+			c.noWorld = Boolean.parseBoolean(attribute);
+		}
+		
 		ElementXML subTag = null;
 		for (int subTagIndex = 0 ; subTagIndex < simulationTag.GetNumberChildren() ; ++subTagIndex) {
 

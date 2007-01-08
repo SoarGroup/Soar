@@ -350,4 +350,7 @@ public class Player {
 	public boolean pointsChanged() {
 		return pointsChanged;
 	}
+	
+	public void playersChanged() {
+	}
 }
