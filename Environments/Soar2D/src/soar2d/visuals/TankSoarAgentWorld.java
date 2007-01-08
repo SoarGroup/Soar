@@ -122,15 +122,17 @@ public class TankSoarAgentWorld extends Canvas implements PaintListener {
 		
 		// Draw world
 		for (int x = 0; x < radar.length; ++x) {
+			int drawHeight = radar[x].length * kCellSize;
 			for (int y = 0; y < radar[x].length; ++y) {
+				drawHeight -= kCellSize;
 				if (radar[x][y] == null) {
-					gc.drawImage(question, y*kCellSize, x*kCellSize);
+					gc.drawImage(question, x*kCellSize, drawHeight);
 				} else {
-					gc.drawImage(radar[x][y], y*kCellSize, x*kCellSize);
+					gc.drawImage(radar[x][y], x*kCellSize, drawHeight);
 				}
 				if (tanks[x][y] != null) {
 					gc.setBackground(tanks[x][y]);
-					gc.fillOval(kCellSize*y + kCellSize/2 - kDotSize/2, kCellSize*x + kCellSize/2 - kDotSize/2, kDotSize, kDotSize);
+					gc.fillOval(kCellSize*x + kCellSize/2 - kDotSize/2, drawHeight + kCellSize/2 - kDotSize/2, kDotSize, kDotSize);
 					gc.setBackground(WindowManager.widget_background);
 				}
 			}
@@ -140,11 +142,11 @@ public class TankSoarAgentWorld extends Canvas implements PaintListener {
 	}
 
 	public int getWidth() {
-		return kCellSize * Soar2D.config.kRadarHeight;
+		return kCellSize * Soar2D.config.kRadarWidth;
 	}
 	
 	public int getHeight() {
-		return kCellSize * Soar2D.config.kRadarWidth;
+		return kCellSize * Soar2D.config.kRadarHeight;
 	}
 
 	public void enable() {

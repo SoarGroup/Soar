@@ -106,7 +106,7 @@ public class World {
 			resetPlayer(player);
 		}
 		
-		updatePlayers();
+		updatePlayers(false);
 	}
 	
 	private boolean resetPlayer(Player player) {
@@ -129,11 +129,15 @@ public class World {
 		return true;
 	}
 	
-	private void updatePlayers() {
+	private void updatePlayers(boolean playersChanged) {
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player player = iter.next();
+			
 			if (Soar2D.config.tanksoar) {
+				if (playersChanged) {
+					player.playersChanged();
+				}
 				if (players.size() < 2) {
 					player.setSmell(0, null);
 					player.setSound(0);
@@ -209,7 +213,7 @@ public class World {
 		lastMoves.remove(name);
 		map.setPlayer(location, null);
 		
-		updatePlayers();
+		updatePlayers(true);
 	}
 	
 	private ArrayList<java.awt.Point> getAvailableLocations(GridMap theMap) {
@@ -288,7 +292,7 @@ public class World {
 			humanPlayers.add(player);
 		}
 
-		updatePlayers();
+		updatePlayers(true);
 		return true;
 	}
 	
@@ -529,7 +533,7 @@ public class World {
 		}
 		updateMapAndEatFood();
 		handleCollisions();	
-		updatePlayers();
+		updatePlayers(false);
 		updateObjects();
 	}
 	
@@ -922,7 +926,7 @@ public class World {
 		}
 		
 		// Update tanks
-		updatePlayers();
+		updatePlayers(false);
 	}
 	
 	private void handleIncoming() {

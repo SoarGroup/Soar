@@ -152,10 +152,10 @@ public class VisualWorld extends Canvas implements PaintListener {
         gc.setForeground(WindowManager.black);
 		gc.setLineWidth(1);
 
-		if (disabled || !painted) {
+		if (Soar2D.config.noWorld || disabled || !painted) {
 			gc.setBackground(WindowManager.widget_background);
 			gc.fillRectangle(0,0, this.getWidth(), this.getHeight());
-			if (disabled) {
+			if (disabled || Soar2D.config.noWorld) {
 				painted = true;
 				return;
 			}

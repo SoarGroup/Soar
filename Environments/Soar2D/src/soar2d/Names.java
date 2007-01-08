@@ -79,6 +79,7 @@ public class Names {
 	public static final String kParamMap = "map";
 	public static final String kParamMissiles = "missiles";
 	public static final String kParamName = "name";
+	public static final String kParamNoWorld = "no-world";
 	public static final String kParamProductions = "productions";
 	public static final String kParamProperty = "property";
 	public static final String kParamRandom = "random";

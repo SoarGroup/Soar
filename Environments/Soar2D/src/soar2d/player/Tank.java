@@ -251,7 +251,7 @@ public class Tank extends Player {
 			return true;
 		}
 		
-		move = Soar2D.wm.getHumanMove(this.getColor());
+		move = Soar2D.wm.getHumanMove(this);
 
 		if (move == null) {
 			return false;

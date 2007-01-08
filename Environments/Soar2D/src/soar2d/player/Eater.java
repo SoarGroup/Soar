@@ -51,7 +51,7 @@ public class Eater extends Player {
 		if (Soar2D.config.graphical == false) {
 			return new MoveInfo();
 		}
-		MoveInfo move = Soar2D.wm.getHumanMove(this.getColor());
+		MoveInfo move = Soar2D.wm.getHumanMove(this);
 		// the facing depends on the move
 		this.setFacingInt(move.moveDirection);
 		return move;
