@@ -195,13 +195,6 @@ public class Player {
 	}
 	
 	/**
-	 * @return true if the player moved since the last update
-	 */
-	public boolean moved() {
-		return moved;
-	}
-	
-	/**
 	 * called to reset player state between runs
 	 */
 	public void reset() {
@@ -349,6 +342,10 @@ public class Player {
 
 	public boolean pointsChanged() {
 		return pointsChanged;
+	}
+	
+	public void resetPointsChanged() {
+		pointsChanged = false;
 	}
 	
 	public void playersChanged() {

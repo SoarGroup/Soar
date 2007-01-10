@@ -616,6 +616,14 @@ public class WindowManager {
 
 	public MoveInfo getHumanMove(Player player) {
 		humanMove = new MoveInfo();
+		if (player.getRadarSwitch()) {
+			humanMove.radar = true;
+			humanMove.radarSwitch = true;
+		}
+		if (player.getRadarPower() > 0) {
+			humanMove.radarPower = true;
+			humanMove.radarPowerSetting = player.getRadarPower();
+		}
 		if (!isDisposed()) {
 			human = player;
 			setStatus("Enter move for " + player.getColor());

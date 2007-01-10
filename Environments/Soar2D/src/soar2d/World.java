@@ -465,6 +465,9 @@ public class World {
 	}
 	
 	public void update() {
+		
+		++worldCount;
+
 		// Collect human input
 		Iterator<Player> humanPlayerIter = humanPlayers.iterator();
 		while (humanPlayerIter.hasNext()) {
@@ -522,8 +525,6 @@ public class World {
 		} else {
 			Soar2D.control.severeError("Update called, unknown game type.");
 		}
-		
-		++worldCount;
 	}
 	
 	private void eatersUpdate() {

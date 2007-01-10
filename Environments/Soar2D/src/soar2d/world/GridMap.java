@@ -460,14 +460,22 @@ public class GridMap {
 		Direction.translate(location, Direction.leftOf[facing]);
 		radar[0][distance] = getRadarCell(location);
 		if (radar[0][distance].player != null) {
-			radar[0][distance].player.radarTouch(Direction.backwardOf[facing]);
+			if (distance != 0) {
+				radar[0][distance].player.radarTouch(Direction.backwardOf[facing]);
+			} else {
+				radar[0][distance].player.radarTouch(Direction.rightOf[facing]);
+			}
 		}
 		
 		location = new java.awt.Point(myLocation);
 		Direction.translate(location, Direction.rightOf[facing]);
 		radar[2][distance] = getRadarCell(location);
 		if (radar[2][distance].player != null) {
-			radar[2][distance].player.radarTouch(Direction.backwardOf[facing]);
+			if (distance != 0) {
+				radar[2][distance].player.radarTouch(Direction.backwardOf[facing]);
+			} else {
+				radar[2][distance].player.radarTouch(Direction.leftOf[facing]);
+			}
 		}
 
 		distance += 1;
@@ -599,13 +607,13 @@ public class GridMap {
 					// location is now the top of the list, compare
 					// to find the direction to the new cell
 					if (newCellX < parentLocation.x) {
-						relativeDirection = Direction.kWestIndicator;
+						relativeDirection = Direction.kWestInt;
 					} else if (newCellX > parentLocation.x) {
-						relativeDirection = Direction.kEastIndicator;
+						relativeDirection = Direction.kEastInt;
 					} else if (newCellY < parentLocation.y) {
-						relativeDirection = Direction.kNorthIndicator;
+						relativeDirection = Direction.kNorthInt;
 					} else if (newCellY > parentLocation.y) {
-						relativeDirection = Direction.kSouthIndicator;
+						relativeDirection = Direction.kSouthInt;
 					} else {
 						assert false;
 						relativeDirection = 0;
