@@ -271,8 +271,6 @@ public class SoarTank extends Tank {
 				move.move = false;
 			}
 		}
-		
-		recentlyMoved = move.move || move.rotate;
 
 		return move;
 	}
@@ -432,6 +430,7 @@ public class SoarTank extends Tank {
 					m_BlackScore = agent.CreateIntWME(m_CurrentScoreWME, "black", player.getPoints());
 				}
 			}
+			player.resetPointsChanged();
 		}
 		
 		if (blueSeen == false) {
@@ -485,89 +484,184 @@ public class SoarTank extends Tank {
 	}
 
 	public void commit(java.awt.Point location) {
-		World world = Soar2D.simulation.world;
 		
-		String energyRecharger = onEnergyCharger ? Names.kYes : Names.kNo;
-		String healthRecharger = onHealthCharger ? Names.kYes : Names.kNo;
+		int facing = getFacingInt();
+		String facingString = Direction.stringOf[facing];
+		World world = Soar2D.simulation.world;
+		String shieldStatus = shieldsUp ? Names.kOn : Names.kOff;
+		String blockedForward = ((blocked & Direction.indicators[facing]) > 0) ? Names.kYes : Names.kNo;
+		String blockedBackward = ((blocked & Direction.indicators[Direction.backwardOf[facing]]) > 0) ? Names.kYes : Names.kNo;
+		String blockedLeft = ((blocked & Direction.indicators[Direction.leftOf[facing]]) > 0) ? Names.kYes : Names.kNo;
+		String blockedRight = ((blocked & Direction.indicators[Direction.rightOf[facing]]) > 0) ? Names.kYes : Names.kNo;
+		String incomingForward = ((incoming & Direction.indicators[facing]) > 0) ? Names.kYes : Names.kNo;
+		String incomingBackward = ((incoming & Direction.indicators[Direction.backwardOf[facing]]) > 0) ? Names.kYes : Names.kNo;
+		String incomingLeft = ((incoming & Direction.indicators[Direction.leftOf[facing]]) > 0) ? Names.kYes : Names.kNo;
+		String incomingRight = ((incoming & Direction.indicators[Direction.rightOf[facing]]) > 0) ? Names.kYes : Names.kNo;
+		String smellColorString = (smellColor == null) ? Names.kNone : smellColor;
+		String soundString;
+		if (sound == facing) {
+			soundString = Names.kForwardID;
+		} else if (sound == Direction.backwardOf[facing]) {
+			soundString = Names.kBackwardID;
+		} else if (sound == Direction.leftOf[facing]) {
+			soundString = Names.kLeftID;
+		} else if (sound == Direction.rightOf[facing]) {
+			soundString = Names.kRightID;
+		} else {
+			soundString = Names.kSilentID;
+		}
+		int worldCount = world.getWorldCount();
+		String radarStatus = radarSwitch ? Names.kOn : Names.kOff;
+		float oldrandom = random;
+		do {
+			random = Simulation.random.nextFloat();
+		} while (random == oldrandom);
+		String rwavesForward = (rwaves & facing) > 0 ? Names.kYes : Names.kNo;
+		String rwavesBackward = (rwaves & Direction.indicators[Direction.backwardOf[facing]]) > 0 ? Names.kYes : Names.kNo;;
+		String rwavesLeft = (rwaves & Direction.indicators[Direction.leftOf[facing]]) > 0 ? Names.kYes : Names.kNo;
+		String rwavesRight = (rwaves & Direction.indicators[Direction.rightOf[facing]]) > 0 ? Names.kYes : Names.kNo;
 
 		if (m_Reset) {
-			m_EnergyRechargerWME = CreateStringWME(m_InputLink, Names.kEnergyRechargerID, energyRecharger);
-			m_HealthRechargerWME = CreateStringWME(m_InputLink, Names.kHealthRechargerID, healthRecharger);
-
+			// location
 			m_xWME = CreateIntWME(m_InputLink, Names.kXID, location.x);
 			m_yWME = CreateIntWME(m_InputLink, Names.kYID, location.y);
 			
-		} else {
-			if (recentlyMoved) {
-				Update(m_EnergyRechargerWME, energyRecharger);
-				Update(m_HealthRechargerWME, healthRecharger);
-				
-				Update(m_xWME, location.x);
-				Update(m_yWME, location.y);
-			}
-		}
+			// charger detection
+			String energyRecharger = onEnergyCharger ? Names.kYes : Names.kNo;
+			m_EnergyRechargerWME = CreateStringWME(m_InputLink, Names.kEnergyRechargerID, energyRecharger);
 
-		if (m_Reset) {
+			String healthRecharger = onHealthCharger ? Names.kYes : Names.kNo;
+			m_HealthRechargerWME = CreateStringWME(m_InputLink, Names.kHealthRechargerID, healthRecharger);
+
+			// facing
+			m_DirectionWME = CreateStringWME(m_InputLink, Names.kDirectionID, facingString);
+
+			// energy and health status
 			m_EnergyWME = CreateIntWME(m_InputLink, Names.kEnergyID, energy);
 			m_HealthWME = CreateIntWME(m_InputLink, Names.kHealthID, health);
+
+			// shield status
+			m_ShieldStatusWME = CreateStringWME(m_InputLink, Names.kShieldStatusID, shieldStatus);
+
+			// blocked sensor
+			m_BlockedWME = agent.CreateIdWME(m_InputLink, Names.kBlockedID);
+			m_BlockedForwardWME = CreateStringWME(m_BlockedWME, Names.kForwardID, blockedForward);
+			m_BlockedBackwardWME = CreateStringWME(m_BlockedWME, Names.kBackwardID, blockedBackward);
+			m_BlockedLeftWME = CreateStringWME(m_BlockedWME, Names.kLeftID, blockedLeft);
+			m_BlockedRightWME = CreateStringWME(m_BlockedWME, Names.kRightID, blockedRight);				
+
+			// score status
+			m_CurrentScoreWME = agent.CreateIdWME(m_InputLink, Names.kCurrentScoreID);
+			initScoreWMEs();
+
+			// incoming sensor
+			m_IncomingWME = agent.CreateIdWME(m_InputLink, Names.kIncomingID);
+			m_IncomingBackwardWME = CreateStringWME(m_IncomingWME, Names.kBackwardID, incomingForward);
+			m_IncomingForwardWME = CreateStringWME(m_IncomingWME, Names.kForwardID, incomingBackward);
+			m_IncomingLeftWME = CreateStringWME(m_IncomingWME, Names.kLeftID, incomingLeft);
+			m_IncomingRightWME = CreateStringWME(m_IncomingWME, Names.kRightID, incomingRight);
+			
+			// smell sensor
+			m_SmellWME = agent.CreateIdWME(m_InputLink, Names.kSmellID);
+			m_SmellColorWME = CreateStringWME(m_SmellWME, Names.kColorID, smellColorString);
+			if (smellColor == null) {
+				m_SmellDistanceWME = null;
+				m_SmellDistanceStringWME = CreateStringWME(m_SmellWME, Names.kDistanceID, Names.kNone);
+			} else {
+				m_SmellDistanceWME = CreateIntWME(m_SmellWME, Names.kDistanceID, smellDistance);
+				m_SmellDistanceStringWME = null;
+			}
+
+			// sound sensor
+			m_SoundWME = CreateStringWME(m_InputLink, Names.kSoundID, soundString);			
+
+			// missile quantity indicator
+			m_MissilesWME = CreateIntWME(m_InputLink, Names.kMissilesID, missiles);
+
+			// my color
+			m_MyColorWME = CreateStringWME(m_InputLink, Names.kMyColorID, getColor());
+
+			// clock (world count)
+			m_ClockWME = CreateIntWME(m_InputLink, Names.kClockID, worldCount);
+
+			// resurrect sensor
+			m_ResurrectFrame = worldCount;
+			m_ResurrectWME = CreateStringWME(m_InputLink, Names.kResurrectID, Names.kYes);
+
+			// radar sensors
+			m_RadarStatusWME = CreateStringWME(m_InputLink, Names.kRadarStatusID, radarStatus);
+			if (radarSwitch) {
+				m_RadarWME = agent.CreateIdWME(m_InputLink, Names.kRadarID);
+				generateNewRadar();
+			} else {
+				m_RadarWME = null;
+			}
+			m_RadarDistanceWME = CreateIntWME(m_InputLink, Names.kRadarDistanceID, observedPower);
+			m_RadarSettingWME = CreateIntWME(m_InputLink, Names.kRadarSettingID, radarPower);
+
+			// random indicator
+			m_RandomWME = CreateFloatWME(m_InputLink, Names.kRandomID, random);
+
+			// rwaves sensor
+			m_RWavesWME = agent.CreateIdWME(m_InputLink, Names.kRWavesID);
+			m_RWavesForwardWME = CreateStringWME(m_RWavesWME, Names.kForwardID, rwavesBackward);
+			m_RWavesBackwardWME = CreateStringWME(m_RWavesWME, Names.kBackwardID, rwavesForward);
+			m_RWavesLeftWME = CreateStringWME(m_RWavesWME, Names.kLeftID, rwavesLeft);
+			m_RWavesRightWME = CreateStringWME(m_RWavesWME, Names.kRightID, rwavesRight);
+
 		} else {
+			if (moved) {
+				// location
+				if (location.x != m_xWME.GetValue()) {
+					Update(m_xWME, location.x);
+				}
+				
+				if (location.y != m_yWME.GetValue()) {
+					Update(m_yWME, location.y);
+				}
+				
+				// charger detection
+				String energyRecharger = onEnergyCharger ? Names.kYes : Names.kNo;
+				Update(m_EnergyRechargerWME, energyRecharger);
+
+				String healthRecharger = onHealthCharger ? Names.kYes : Names.kNo;
+				Update(m_HealthRechargerWME, healthRecharger);
+			}
+			
+			boolean rotated = !m_DirectionWME.GetValue().equalsIgnoreCase(facingString);
+			if (rotated) {
+				// facing
+				Update(m_DirectionWME, facingString);
+			}
+
+			// charger detection
 			if (m_EnergyWME.GetValue() != energy) {
 				Update(m_EnergyWME, energy);
 			}
 			if (m_HealthWME.GetValue() != health) {
 				Update(m_HealthWME, health);
 			}			
-		}
 
-		String shieldStatus = shieldsUp ? Names.kOn : Names.kOff;
-		if (m_Reset) {
-			m_ShieldStatusWME = CreateStringWME(m_InputLink, Names.kShieldStatusID, shieldStatus);
-		} else {
+			// shield status
 			if (!m_ShieldStatusWME.GetValue().equalsIgnoreCase(shieldStatus)) {
 				Update(m_ShieldStatusWME, shieldStatus);
 			}
-		}
-		
-		int facing = getFacingInt();
-		String facingString = Direction.stringOf[getFacingInt()];
-		if (m_Reset) {
-			m_DirectionWME = CreateStringWME(m_InputLink, Names.kDirectionID, facingString);
-		} else {
-			if (!m_DirectionWME.GetValue().equalsIgnoreCase(facingString)) {
-				Update(m_DirectionWME, facingString);
-			}
-		}
-				
-		String blockedForward = ((blocked & Direction.indicators[facing]) > 0) ? Names.kYes : Names.kNo;
-		String blockedBackward = ((blocked & Direction.indicators[Direction.backwardOf[facing]]) > 0) ? Names.kYes : Names.kNo;
-		String blockedLeft = ((blocked & Direction.indicators[Direction.leftOf[facing]]) > 0) ? Names.kYes : Names.kNo;
-		String blockedRight = ((blocked & Direction.indicators[Direction.rightOf[facing]]) > 0) ? Names.kYes : Names.kNo;
-		
-		if (m_Reset) {
-			m_BlockedWME = agent.CreateIdWME(m_InputLink, Names.kBlockedID);
-			m_BlockedForwardWME = CreateStringWME(m_BlockedWME, Names.kForwardID, blockedForward);
-			m_BlockedBackwardWME = CreateStringWME(m_BlockedWME, Names.kBackwardID, blockedBackward);
-			m_BlockedLeftWME = CreateStringWME(m_BlockedWME, Names.kLeftID, blockedLeft);
-			m_BlockedRightWME = CreateStringWME(m_BlockedWME, Names.kRightID, blockedRight);				
-		} else {
-			if (recentlyMoved || !m_BlockedForwardWME.GetValue().equalsIgnoreCase(blockedForward)) {
+			
+			// blocked sensor
+			if (moved || rotated || !m_BlockedForwardWME.GetValue().equalsIgnoreCase(blockedForward)) {
 				Update(m_BlockedForwardWME, blockedForward);
 			}
-			if (recentlyMoved || !m_BlockedBackwardWME.GetValue().equalsIgnoreCase(blockedBackward)) {
+			if (moved || rotated || !m_BlockedBackwardWME.GetValue().equalsIgnoreCase(blockedBackward)) {
 				Update(m_BlockedBackwardWME, blockedBackward);
 			}
-			if (recentlyMoved || !m_BlockedLeftWME.GetValue().equalsIgnoreCase(blockedLeft)) {
+			if (moved || rotated || !m_BlockedLeftWME.GetValue().equalsIgnoreCase(blockedLeft)) {
 				Update(m_BlockedLeftWME, blockedLeft);
 			}
-			if (recentlyMoved || !m_BlockedRightWME.GetValue().equalsIgnoreCase(blockedRight)) {
+			if (moved || rotated || !m_BlockedRightWME.GetValue().equalsIgnoreCase(blockedRight)) {
 				Update(m_BlockedRightWME, blockedRight);
 			}
-		}
-		
-		if (m_Reset) {
-			m_CurrentScoreWME = agent.CreateIdWME(m_InputLink, Names.kCurrentScoreID);
-			initScoreWMEs();
-		} else {
+
+			// scores
 			if (playersChanged) {
 				initScoreWMEs();
 			}
@@ -590,23 +684,11 @@ public class SoarTank extends Tank {
 					} else if (player.getColor().equals("black")) {
 						Update(m_BlackScore, player.getPoints());
 					}
+					player.resetPointsChanged();
 				}
 			}
-		}
-		
-		String incomingForward = ((incoming & Direction.indicators[facing]) > 0) ? Names.kYes : Names.kNo;
-		String incomingBackward = ((incoming & Direction.indicators[Direction.backwardOf[facing]]) > 0) ? Names.kYes : Names.kNo;
-		String incomingLeft = ((incoming & Direction.indicators[Direction.leftOf[facing]]) > 0) ? Names.kYes : Names.kNo;
-		String incomingRight = ((incoming & Direction.indicators[Direction.rightOf[facing]]) > 0) ? Names.kYes : Names.kNo;
-		
-		if (m_Reset) {
-			m_IncomingWME = agent.CreateIdWME(m_InputLink, Names.kIncomingID);
-			m_IncomingBackwardWME = CreateStringWME(m_IncomingWME, Names.kBackwardID, incomingForward);
-			m_IncomingForwardWME = CreateStringWME(m_IncomingWME, Names.kForwardID, incomingBackward);
-			m_IncomingLeftWME = CreateStringWME(m_IncomingWME, Names.kLeftID, incomingLeft);
-			m_IncomingRightWME = CreateStringWME(m_IncomingWME, Names.kRightID, incomingRight);
-			
-		} else {
+
+			// incoming sensor
 			if (!m_IncomingForwardWME.GetValue().equalsIgnoreCase(incomingForward)) {
 				Update(m_IncomingForwardWME, incomingForward);
 			}
@@ -619,21 +701,8 @@ public class SoarTank extends Tank {
 			if (!m_IncomingRightWME.GetValue().equalsIgnoreCase(incomingRight)) {
 				Update(m_IncomingRightWME, incomingRight);
 			}
-		}
 
-		// Smell
-		String smellColorString = (smellColor == null) ? Names.kNone : smellColor;
-		if (m_Reset) {
-			m_SmellWME = agent.CreateIdWME(m_InputLink, Names.kSmellID);
-			m_SmellColorWME = CreateStringWME(m_SmellWME, Names.kColorID, smellColorString);
-			if (smellColor == null) {
-				m_SmellDistanceWME = null;
-				m_SmellDistanceStringWME = CreateStringWME(m_SmellWME, Names.kDistanceID, Names.kNone);
-			} else {
-				m_SmellDistanceWME = CreateIntWME(m_SmellWME, Names.kDistanceID, smellDistance);
-				m_SmellDistanceStringWME = null;
-			}
-		} else {
+			// smell sensor
 			if (!m_SmellColorWME.GetValue().equalsIgnoreCase(smellColorString)) {
 				Update(m_SmellColorWME, smellColorString);
 			}
@@ -658,76 +727,28 @@ public class SoarTank extends Tank {
 					m_SmellDistanceStringWME = null;
 				}
 			}
-		}
 
-		// Sound
-		String soundString;
-		if (sound == facing) {
-			soundString = Names.kForwardID;
-		} else if (sound == Direction.backwardOf[facing]) {
-			soundString = Names.kBackwardID;
-		} else if (sound == Direction.leftOf[facing]) {
-			soundString = Names.kLeftID;
-		} else if (sound == Direction.rightOf[facing]) {
-			soundString = Names.kRightID;
-		} else {
-			soundString = Names.kSilentID;
-		}
-		if (m_Reset) {
-			m_SoundWME = CreateStringWME(m_InputLink, Names.kSoundID, soundString);			
-		} else {
+			// sound sensor
 			if (!m_SoundWME.GetValue().equalsIgnoreCase(soundString)) {
 				Update(m_SoundWME, soundString);
 			}
-		}
-		
-		// Missiles
-		if (m_Reset) {
-			m_MissilesWME = CreateIntWME(m_InputLink, Names.kMissilesID, missiles);
-		} else {
+
+			// missile quantity indicator
 			if (m_MissilesWME.GetValue() != missiles) {
 				Update(m_MissilesWME, missiles);
 			}
-		}
-		
-		// Color
-		if (m_Reset) {
-			m_MyColorWME = CreateStringWME(m_InputLink, Names.kMyColorID, getColor());
-		}
-		
-		int worldCount = world.getWorldCount();
-		if (m_Reset) {
-			m_ClockWME = CreateIntWME(m_InputLink, Names.kClockID, worldCount);
-		} else {
+
+			// clock (world count)
 			Update(m_ClockWME, worldCount);
-		}
-		
-		// Resurrect
-		if (m_Reset) {
-			m_ResurrectFrame = worldCount;
-			m_ResurrectWME = CreateStringWME(m_InputLink, Names.kResurrectID, Names.kYes);
-		} else {
+
+			// resurrect sensor
 			if (worldCount != m_ResurrectFrame) {
 				if (!m_ResurrectWME.GetValue().equalsIgnoreCase(Names.kNo)) {
 					Update(m_ResurrectWME, Names.kNo);
 				}
 			}
-		}
-		
-		// Radar
-		String radarStatus = radarSwitch ? Names.kOn : Names.kOff;
-		if (m_Reset) {
-			m_RadarStatusWME = CreateStringWME(m_InputLink, Names.kRadarStatusID, radarStatus);
-			if (radarSwitch) {
-				m_RadarWME = agent.CreateIdWME(m_InputLink, Names.kRadarID);
-				generateNewRadar();
-			} else {
-				m_RadarWME = null;
-			}
-			m_RadarDistanceWME = CreateIntWME(m_InputLink, Names.kRadarDistanceID, observedPower);
-			m_RadarSettingWME = CreateIntWME(m_InputLink, Names.kRadarSettingID, radarPower);
-			
-		} else {
+
+			// radar sensors
 			if (!m_RadarStatusWME.GetValue().equalsIgnoreCase(radarStatus)) {
 				Update(m_RadarStatusWME, radarStatus);
 			}
@@ -736,7 +757,7 @@ public class SoarTank extends Tank {
 					m_RadarWME = agent.CreateIdWME(m_InputLink, Names.kRadarID);
 					generateNewRadar();
 				} else {
-					updateRadar();
+					updateRadar(moved || rotated);
 				}
 			} else {
 				if (m_RadarWME != null) {
@@ -751,33 +772,11 @@ public class SoarTank extends Tank {
 			if (m_RadarSettingWME.GetValue() != radarPower) {
 				Update(m_RadarSettingWME, radarPower);
 			}
-		}
-		
-		// Random
-		float oldrandom = random;
-		do {
-			random = Simulation.random.nextFloat();
-		} while (random == oldrandom);
-		
-		if (m_Reset) {
-			m_RandomWME = CreateFloatWME(m_InputLink, Names.kRandomID, random);
-		} else {
-			Update(m_RandomWME, random);
-		}
 
-		// RWaves
-		String rwavesForward = (rwaves & facing) > 0 ? Names.kYes : Names.kNo;
-		String rwavesBackward = (rwaves & Direction.indicators[Direction.backwardOf[facing]]) > 0 ? Names.kYes : Names.kNo;;
-		String rwavesLeft = (rwaves & Direction.indicators[Direction.leftOf[facing]]) > 0 ? Names.kYes : Names.kNo;
-		String rwavesRight = (rwaves & Direction.indicators[Direction.rightOf[facing]]) > 0 ? Names.kYes : Names.kNo;
-		
-		if (m_Reset) {
-			m_RWavesWME = agent.CreateIdWME(m_InputLink, Names.kRWavesID);
-			m_RWavesForwardWME = CreateStringWME(m_RWavesWME, Names.kForwardID, rwavesBackward);
-			m_RWavesBackwardWME = CreateStringWME(m_RWavesWME, Names.kBackwardID, rwavesForward);
-			m_RWavesLeftWME = CreateStringWME(m_RWavesWME, Names.kLeftID, rwavesLeft);
-			m_RWavesRightWME = CreateStringWME(m_RWavesWME, Names.kRightID, rwavesRight);
-		} else {
+			// random indicator
+			Update(m_RandomWME, random);
+
+			// rwaves sensor
 			if (!m_RWavesForwardWME.GetValue().equalsIgnoreCase(rwavesForward)) {
 				Update(m_RWavesForwardWME, rwavesForward);
 			}
@@ -790,8 +789,7 @@ public class SoarTank extends Tank {
 			if (!m_RWavesRightWME.GetValue().equalsIgnoreCase(rwavesRight)) {
 				Update(m_RWavesRightWME, rwavesRight);
 			}
-			
-		}	
+		}
 		
 		m_Reset = false;
 		agent.Commit();
@@ -827,14 +825,14 @@ public class SoarTank extends Tank {
 		}
 	}
 	
-	private void updateRadar() {
+	private void updateRadar(boolean movedOrRotated) {
 		for (int i = 0; i < Soar2D.config.kRadarWidth; ++i) {
 			for (int j = 0; j < Soar2D.config.kRadarHeight; ++j) {
 				// Always skip self, this screws up the tanks.
 				if (i == 1 && j == 0) {
 					continue;
 				}
-				if (radar[i][j] == null) {
+				if (radar[i][j] == null || (j > observedPower) || ((j == observedPower) && (i != 1))) {
 					// Unconditionally delete the WME
 					if (radarCellIDs[i][j] != null) {
 						DestroyWME(radarCellIDs[i][j]);
@@ -856,7 +854,7 @@ public class SoarTank extends Tank {
 						// Update if relevant change
 						// FIXME: need to update when modified
 						//if (recentlyMoved || radar[i][j].isModified()) {
-						if (recentlyMoved) {
+						if (movedOrRotated) {
 							DestroyWME(radarCellIDs[i][j]);
 							radarCellIDs[i][j] = agent.CreateIdWME(m_RadarWME, getCellID(radar[i][j]));
 							CreateIntWME(radarCellIDs[i][j], Names.kDistanceID, j);

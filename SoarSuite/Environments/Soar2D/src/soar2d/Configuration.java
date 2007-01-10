@@ -94,7 +94,7 @@ public class Configuration {
 	/**
 	 * If true, do not display the world map
 	 */
-	public boolean noWorld = true;
+	public boolean noWorld = false;
 	/**
 	 * The current map file
 	 */

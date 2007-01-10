@@ -46,7 +46,6 @@ public class Tank extends Player {
 	int sound;
 	protected boolean onHealthCharger;
 	protected boolean onEnergyCharger;
-	protected boolean recentlyMoved;
 
 	public Tank( PlayerConfig playerConfig) {
 		super(playerConfig);
@@ -270,8 +269,6 @@ public class Tank extends Player {
 	public MoveInfo getMove() {
 		resetSensors();
 		
-		recentlyMoved = move.move || move.rotate;
-		
 		return move;
 	}
 	
@@ -337,7 +334,6 @@ public class Tank extends Player {
 		sound = 0;
 		onHealthCharger = false;
 		onEnergyCharger = false;
-		recentlyMoved = false;
 	}
 
 	public void setSmell(int distance, String smellColor) {

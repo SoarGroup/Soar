@@ -134,8 +134,8 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 		row5.setText("Radar");
 		{
 			GridData gd = new GridData();
-			gd.verticalSpan = 5;
-			gd.horizontalAlignment = SWT.END;
+			gd.verticalSpan = 6;
+			gd.verticalAlignment = SWT.BOTTOM;
 			row5.setLayoutData(gd);
 
 			GridLayout gl = new GridLayout();
@@ -161,54 +161,6 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 			m_Radar.setLayoutData(gd);
 		}
 		
-		Group blockedGroup = new Group(m_Group, SWT.NONE);
-		blockedGroup.setText("Blocked");
-		blockedGroup.setLayoutData(new GridData());
-		blockedGroup.setLayout(new FillLayout());
-		m_Blocked = new BlockedDiagram(blockedGroup, SWT.NONE);
-		{
-			GridData gd = new GridData();
-			gd.heightHint = 50;
-			gd.widthHint = 50;
-			blockedGroup.setLayoutData(gd);
-		}
-		
-		Group rwavesGroup = new Group(m_Group, SWT.NONE);
-		rwavesGroup.setText("RWaves");
-		rwavesGroup.setLayoutData(new GridData());
-		rwavesGroup.setLayout(new FillLayout());
-		m_RWaves = new BlockedDiagram(rwavesGroup, SWT.NONE);
-		{
-			GridData gd = new GridData();
-			gd.heightHint = 50;
-			gd.widthHint = 50;
-			rwavesGroup.setLayoutData(gd);
-		}
-		
-		Group soundGroup = new Group(m_Group, SWT.NONE);
-		soundGroup.setText("Sound");
-		soundGroup.setLayoutData(new GridData());
-		soundGroup.setLayout(new FillLayout());
-		m_Sound = new BlockedDiagram(soundGroup, SWT.NONE);
-		{
-			GridData gd = new GridData();
-			gd.heightHint = 50;
-			gd.widthHint = 50;
-			soundGroup.setLayoutData(gd);
-		}
-		
-		Group incomingGroup = new Group(m_Group, SWT.NONE);
-		incomingGroup.setText("Incoming");
-		incomingGroup.setLayoutData(new GridData());
-		incomingGroup.setLayout(new FillLayout());
-		m_Incoming = new BlockedDiagram(incomingGroup, SWT.NONE);
-		{
-			GridData gd = new GridData();
-			gd.heightHint = 50;
-			gd.widthHint = 50;
-			incomingGroup.setLayoutData(gd);
-		}
-		
 		Group smellGroup = new Group(m_Group, SWT.NONE);
 		smellGroup.setText("Smell distance");
 		smellGroup.setLayout(new FillLayout());
@@ -224,21 +176,79 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 			smellGroup.setLayoutData(gd);
 		}
 
-		Label locationLabel = new Label(m_Group, SWT.NONE);
-		locationLabel.setText("Location: ");
+		Group blockedGroup = new Group(m_Group, SWT.NONE);
+		blockedGroup.setText("Blocked");
+		blockedGroup.setLayoutData(new GridData());
+		blockedGroup.setLayout(new FillLayout());
+		m_Blocked = new BlockedDiagram(blockedGroup, SWT.NONE);
 		{
 			GridData gd = new GridData();
-			locationLabel.setLayoutData(gd);
+			gd.heightHint = 50;
+			gd.widthHint = 55;
+			gd.horizontalAlignment = SWT.END;
+			gd.verticalAlignment = SWT.BOTTOM;
+			gd.grabExcessVerticalSpace = true;
+			gd.horizontalSpan = 2;
+			blockedGroup.setLayoutData(gd);
 		}
-
+		
+		Group rwavesGroup = new Group(m_Group, SWT.NONE);
+		rwavesGroup.setText("RWaves");
+		rwavesGroup.setLayoutData(new GridData());
+		rwavesGroup.setLayout(new FillLayout());
+		m_RWaves = new BlockedDiagram(rwavesGroup, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			gd.heightHint = 50;
+			gd.widthHint = 55;
+			gd.horizontalAlignment = SWT.END;
+			gd.verticalAlignment = SWT.BOTTOM;
+			gd.grabExcessVerticalSpace = true;
+			gd.horizontalSpan = 2;
+			rwavesGroup.setLayoutData(gd);
+		}
+		
+		Group soundGroup = new Group(m_Group, SWT.NONE);
+		soundGroup.setText("Sound");
+		soundGroup.setLayoutData(new GridData());
+		soundGroup.setLayout(new FillLayout());
+		m_Sound = new BlockedDiagram(soundGroup, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			gd.heightHint = 50;
+			gd.widthHint = 55;
+			gd.horizontalAlignment = SWT.END;
+			gd.verticalAlignment = SWT.BOTTOM;
+			gd.grabExcessVerticalSpace = true;
+			gd.horizontalSpan = 2;
+			soundGroup.setLayoutData(gd);
+		}
+		
 		location = new Label(m_Group, SWT.NONE);
 		location.setText("-");
 		{
 			GridData gd = new GridData();
 			gd.widthHint = 35;
+			gd.verticalAlignment = SWT.BOTTOM;
+			gd.horizontalAlignment = SWT.END;
 			location.setLayoutData(gd);
 		}
 
+		Group incomingGroup = new Group(m_Group, SWT.NONE);
+		incomingGroup.setText("Incoming");
+		incomingGroup.setLayoutData(new GridData());
+		incomingGroup.setLayout(new FillLayout());
+		m_Incoming = new BlockedDiagram(incomingGroup, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			gd.heightHint = 50;
+			gd.widthHint = 55;
+			gd.horizontalAlignment = SWT.END;
+			gd.verticalAlignment = SWT.BOTTOM;
+			gd.grabExcessVerticalSpace = true;
+			incomingGroup.setLayoutData(gd);
+		}
+		
 		updatePlayerList();
 		updateButtons();		
 	}
@@ -258,7 +268,22 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 		m_RWaves.set(selectedPlayer.getRWaves(), selectedPlayer.getFacingInt());
 		m_Blocked.set(selectedPlayer.getBlocked(), selectedPlayer.getFacingInt());
 		m_Incoming.set(selectedPlayer.getIncoming(), selectedPlayer.getFacingInt());
-		m_Sound.set(selectedPlayer.getSound(), selectedPlayer.getFacingInt());
+		switch (selectedPlayer.getSound()) {
+		case Direction.kNorthInt:
+			m_Sound.set(Direction.kNorthIndicator, selectedPlayer.getFacingInt());
+			break;
+		case Direction.kSouthInt:
+			m_Sound.set(Direction.kSouthIndicator, selectedPlayer.getFacingInt());
+			break;
+		case Direction.kEastInt:
+			m_Sound.set(Direction.kEastIndicator, selectedPlayer.getFacingInt());
+			break;
+		case Direction.kWestInt:
+			m_Sound.set(Direction.kWestIndicator, selectedPlayer.getFacingInt());
+			break;
+		default:
+			m_Sound.set(0, selectedPlayer.getFacingInt());
+		}
 		m_Smell.setSelection(selectedPlayer.getSmellDistance());
 		if (selectedPlayer.getSmellColor() != null) {
 			m_Smell.setToolTipText(selectedPlayer.getSmellColor() + " is " + Integer.toString(selectedPlayer.getSmellDistance()) + " away");
