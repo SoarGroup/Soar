@@ -205,10 +205,7 @@ public class SoarEater extends Eater {
 	 */
 	public void update(World world, java.awt.Point location) {
 		// check to see if we've moved
-		moved = (location.x != this.previousLocation.x) || (location.y != this.previousLocation.y);
-		if (moved) {
-			this.previousLocation = new java.awt.Point(location);
-		}
+		super.update(world, location);
 		
 		// update the 5x5
 		java.awt.Point viewLocation = new java.awt.Point();
