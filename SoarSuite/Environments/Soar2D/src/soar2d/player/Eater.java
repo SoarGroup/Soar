@@ -24,16 +24,12 @@ public class Eater extends Player {
 	 * @see soar2d.player.Player#update(soar2d.World, java.awt.Point)
 	 */
 	public void update(World world, java.awt.Point location) {
+		super.update(world, location);
+		
 		if (ToscaEater.kToscaEnabled)
 		{
 			m_ToscaEater.update(world, location) ;
 			return ;
-		}
-		
-		// check to see if we've moved.
-		moved = (location.x != this.previousLocation.x) || (location.y != this.previousLocation.y);
-		if (moved) {
-			this.previousLocation = new java.awt.Point(location);
 		}
 	}
 	

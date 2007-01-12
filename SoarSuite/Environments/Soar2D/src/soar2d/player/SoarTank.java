@@ -62,6 +62,8 @@ public class SoarTank extends Tank {
 	private Identifier[][] radarCellIDs = new Identifier[Soar2D.config.kRadarWidth][Soar2D.config.kRadarHeight];
 	private StringElement[][] radarColors = new StringElement[Soar2D.config.kRadarWidth][Soar2D.config.kRadarHeight];
 
+	private HashMap<String, Identifier> tankRadarIDs = new HashMap<String, Identifier>();
+
 	private float random = 0;
 	private boolean m_Reset = true;
 	private int m_ResurrectFrame = 0;
@@ -484,7 +486,6 @@ public class SoarTank extends Tank {
 	}
 
 	public void commit(java.awt.Point location) {
-		
 		int facing = getFacingInt();
 		String facingString = Direction.stringOf[facing];
 		World world = Soar2D.simulation.world;
@@ -826,6 +827,7 @@ public class SoarTank extends Tank {
 	}
 	
 	private void updateRadar(boolean movedOrRotated) {
+		// FIXME: use tankRadarIDs
 		for (int i = 0; i < Soar2D.config.kRadarWidth; ++i) {
 			for (int j = 0; j < Soar2D.config.kRadarHeight; ++j) {
 				// Always skip self, this screws up the tanks.
@@ -843,7 +845,6 @@ public class SoarTank extends Tank {
 				} else {
 					
 					if (radarCellIDs[i][j] == null) {
-						// Unconditionally create the WME
 						radarCellIDs[i][j] = agent.CreateIdWME(m_RadarWME, getCellID(radar[i][j]));
 						CreateIntWME(radarCellIDs[i][j], Names.kDistanceID, j);
 						CreateStringWME(radarCellIDs[i][j], Names.kPositionID, getPositionID(i));
@@ -851,10 +852,10 @@ public class SoarTank extends Tank {
 							radarColors[i][j] = CreateStringWME(radarCellIDs[i][j], Names.kColorID, radar[i][j].player.getColor());
 						}
 					} else {
+						boolean changed = !radarCellIDs[i][j].GetAttribute().equals(getCellID(radar[i][j]));
+
 						// Update if relevant change
-						// FIXME: need to update when modified
-						//if (recentlyMoved || radar[i][j].isModified()) {
-						if (movedOrRotated) {
+						if (movedOrRotated || changed) {
 							DestroyWME(radarCellIDs[i][j]);
 							radarCellIDs[i][j] = agent.CreateIdWME(m_RadarWME, getCellID(radar[i][j]));
 							CreateIntWME(radarCellIDs[i][j], Names.kDistanceID, j);
@@ -870,6 +871,7 @@ public class SoarTank extends Tank {
 	}
 
 	private void clearRadar() {
+		tankRadarIDs.clear();
 		for (int i = 0; i < Soar2D.config.kRadarWidth; ++i) {
 			for (int j = 0; j < Soar2D.config.kRadarHeight; ++j) {
 				radarCellIDs[i][j] = null;

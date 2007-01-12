@@ -227,7 +227,7 @@ public class Tank extends Player {
 	}
 
 	public void update(World world, java.awt.Point location) {
-		moved = (location.x != this.previousLocation.x) || (location.y != this.previousLocation.y);
+		super.update(world, location);
 		
 		if (radarSwitch) {
 			observedPower = world.map.getRadar(radar, location, getFacingInt(), radarPower);
