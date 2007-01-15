@@ -62,13 +62,12 @@ public class SoarTank extends Tank {
 	private Identifier[][] radarCellIDs = new Identifier[Soar2D.config.kRadarWidth][Soar2D.config.kRadarHeight];
 	private StringElement[][] radarColors = new StringElement[Soar2D.config.kRadarWidth][Soar2D.config.kRadarHeight];
 
-	private HashMap<String, Identifier> tankRadarIDs = new HashMap<String, Identifier>();
-
 	private float random = 0;
 	private boolean m_Reset = true;
 	private int m_ResurrectFrame = 0;
 	
 	private boolean playersChanged = true;
+	private boolean attemptedMove = false;
 	
 	public SoarTank(Agent agent, PlayerConfig playerConfig) {
 		super(playerConfig);
@@ -127,6 +126,8 @@ public class SoarTank extends Tank {
 	public MoveInfo getMove() {
 		resetSensors();
 
+		attemptedMove = false;
+
 		assert agent != null;
 		int numberOfCommands = agent.GetNumberCommands();
 		if (numberOfCommands == 0) {
@@ -170,6 +171,7 @@ public class SoarTank extends Tank {
 				}
 				moveId = commandId;
 				move.move = true;
+				attemptedMove = true;
 				
 			} else if (commandName.equalsIgnoreCase(Names.kFireID)) {
 				if (move.fire == true) {
@@ -649,16 +651,16 @@ public class SoarTank extends Tank {
 			}
 			
 			// blocked sensor
-			if (moved || rotated || !m_BlockedForwardWME.GetValue().equalsIgnoreCase(blockedForward)) {
+			if (attemptedMove || rotated || !m_BlockedForwardWME.GetValue().equalsIgnoreCase(blockedForward)) {
 				Update(m_BlockedForwardWME, blockedForward);
 			}
-			if (moved || rotated || !m_BlockedBackwardWME.GetValue().equalsIgnoreCase(blockedBackward)) {
+			if (attemptedMove || rotated || !m_BlockedBackwardWME.GetValue().equalsIgnoreCase(blockedBackward)) {
 				Update(m_BlockedBackwardWME, blockedBackward);
 			}
-			if (moved || rotated || !m_BlockedLeftWME.GetValue().equalsIgnoreCase(blockedLeft)) {
+			if (attemptedMove || rotated || !m_BlockedLeftWME.GetValue().equalsIgnoreCase(blockedLeft)) {
 				Update(m_BlockedLeftWME, blockedLeft);
 			}
-			if (moved || rotated || !m_BlockedRightWME.GetValue().equalsIgnoreCase(blockedRight)) {
+			if (attemptedMove || rotated || !m_BlockedRightWME.GetValue().equalsIgnoreCase(blockedRight)) {
 				Update(m_BlockedRightWME, blockedRight);
 			}
 
@@ -730,7 +732,7 @@ public class SoarTank extends Tank {
 			}
 
 			// sound sensor
-			if (!m_SoundWME.GetValue().equalsIgnoreCase(soundString)) {
+			if (moved || rotated || !m_SoundWME.GetValue().equalsIgnoreCase(soundString)) {
 				Update(m_SoundWME, soundString);
 			}
 
@@ -827,7 +829,6 @@ public class SoarTank extends Tank {
 	}
 	
 	private void updateRadar(boolean movedOrRotated) {
-		// FIXME: use tankRadarIDs
 		for (int i = 0; i < Soar2D.config.kRadarWidth; ++i) {
 			for (int j = 0; j < Soar2D.config.kRadarHeight; ++j) {
 				// Always skip self, this screws up the tanks.
@@ -871,7 +872,6 @@ public class SoarTank extends Tank {
 	}
 
 	private void clearRadar() {
-		tankRadarIDs.clear();
 		for (int i = 0; i < Soar2D.config.kRadarWidth; ++i) {
 			for (int j = 0; j < Soar2D.config.kRadarHeight; ++j) {
 				radarCellIDs[i][j] = null;
