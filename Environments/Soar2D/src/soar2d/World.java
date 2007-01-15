@@ -764,6 +764,7 @@ public class World {
 				while (playerIter.hasNext()) {
 					Player player = playerIter.next();
 					player.adjustHealth(damage, "collision");
+
 					
 					// check for kill
 					if (player.getHealth() <= 0) {
@@ -909,7 +910,9 @@ public class World {
 			}
 			
 			// remove from past cell
-			map.setPlayer(locations.remove(player.getName()), null);
+			java.awt.Point oldLocation = locations.remove(player.getName());
+			map.setExplosion(oldLocation);
+			map.setPlayer(oldLocation, null);
 
 			// Get available spots
 			ArrayList<java.awt.Point> spots = getAvailableLocations(map);
