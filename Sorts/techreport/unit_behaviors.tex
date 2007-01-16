@@ -1,5 +1,6 @@
 
 \section{Low Level Control}
+\label{sec:behaviors}
 
 The design philosophy of SORTS requires that Soar agents only issue high
 level commands comparable to those that would be expected from a human
@@ -48,6 +49,14 @@ using such an approach is that the manager can keep track of what each
 behavior it controls is doing, and coordinate sophisticated strategies
 such as optimal assignment of miners to mineral patches, or focusing the
 firepower of many units on one enemy at a time.
+
+There are currently two such coordination managers. One of them is
+the mine manager, which calculates mining paths between a base and
+surrounding resource patches in such a way as to maxmize resource income
+and commands the appropriate worker units to harvest those resources.
+The other is the attack manager, which, given a group of targets and a
+group of attackers, controls the attackers to eliminate the target group
+while trying to minimize damage done to themselves. 
 
 \subsubsection{Default Behaviors}
 

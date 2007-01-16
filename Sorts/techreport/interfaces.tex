@@ -1,6 +1,9 @@
 \section{Updating the Game State}
 
-The ORTS API provides game state updates in the form of 6 lists:
+\subsection{Raw State Information}
+
+The ORTS API provides complete game state update information in the form
+of 6 lists:
 
 \begin{itemize}
   \item \verb|new_tile_indexes| New game tiles encountered via
@@ -30,7 +33,17 @@ in the future as agents use more sophisticated reasoning.
 All game state updates, both internal to the middleware and to the Soar
 input link, are performed in the ORTS event handler, which is triggered
 everytime the middleware receives a new viewframe from the ORTS server.
-The event handler is described below.
+An overview of the flow of control among the various functions is shown
+in figure~\ref{fig:flow}. Detailed descriptions of the two event
+handlers are provided below.
+
+\begin{figure}
+\includegraphics[width=\textwidth]{graphics/flow.eps}
+\caption{Overview of how control is passed through Sorts. Note that the
+two gray regions represent two different threads executing
+asynchronously.}
+\label{fig:flow}
+\end{figure}
 
 \subsection{The ORTS Event Handler}
 \label{sec:OrtsEventHandler}
