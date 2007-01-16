@@ -830,9 +830,15 @@ public class SoarTank extends Tank {
 	
 	private void updateRadar(boolean movedOrRotated) {
 		for (int i = 0; i < Soar2D.config.kRadarWidth; ++i) {
+			// debug
+			java.awt.Point trackedLocation = new java.awt.Point(Soar2D.simulation.world.getLocation(this));
+			// end debug
 			for (int j = 0; j < Soar2D.config.kRadarHeight; ++j) {
 				// Always skip self, this screws up the tanks.
 				if (i == 1 && j == 0) {
+					// debug
+					Direction.translate(trackedLocation, getFacingInt());
+					// end debug
 					continue;
 				}
 				if (radar[i][j] == null || (j > observedPower) || ((j == observedPower) && (i != 1))) {
@@ -850,6 +856,20 @@ public class SoarTank extends Tank {
 						CreateIntWME(radarCellIDs[i][j], Names.kDistanceID, j);
 						CreateStringWME(radarCellIDs[i][j], Names.kPositionID, getPositionID(i));
 						if (radar[i][j].player != null) {
+							// debug
+							java.awt.Point playerLocation = Soar2D.simulation.world.getLocation(radar[i][j].player);
+							java.awt.Point allegedLocation = new java.awt.Point(trackedLocation);
+
+							if (i == 0) {
+								// translate left
+								Direction.translate(allegedLocation, Direction.leftOf[this.getFacingInt()]);
+							}
+							if (i == 2) {
+								// translate right
+								Direction.translate(allegedLocation, Direction.rightOf[this.getFacingInt()]);
+							}
+							assert allegedLocation.equals(playerLocation);
+							// end debug
 							radarColors[i][j] = CreateStringWME(radarCellIDs[i][j], Names.kColorID, radar[i][j].player.getColor());
 						}
 					} else {
@@ -862,11 +882,29 @@ public class SoarTank extends Tank {
 							CreateIntWME(radarCellIDs[i][j], Names.kDistanceID, j);
 							CreateStringWME(radarCellIDs[i][j], Names.kPositionID, getPositionID(i));
 							if (radar[i][j].player != null) {
+								// debug
+								java.awt.Point playerLocation = Soar2D.simulation.world.getLocation(radar[i][j].player);
+								java.awt.Point allegedLocation = new java.awt.Point(trackedLocation);
+
+								if (i == 0) {
+									// translate left
+									Direction.translate(allegedLocation, Direction.leftOf[this.getFacingInt()]);
+								}
+								if (i == 2) {
+									// translate right
+									Direction.translate(allegedLocation, Direction.rightOf[this.getFacingInt()]);
+								}
+								assert allegedLocation.equals(playerLocation);
+								// end debug
 								radarColors[i][j] = CreateStringWME(radarCellIDs[i][j], Names.kColorID, radar[i][j].player.getColor());
 							}
 						}
 					}
 				}
+				
+				// debug
+				Direction.translate(trackedLocation, getFacingInt());
+				// end debug
 			}
 		}
 	}

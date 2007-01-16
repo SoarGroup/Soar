@@ -215,7 +215,16 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		Soar2D.simulation.update();
 		if (Soar2D.wm.using()) {
 //			 this updates buttons and what-not
-			Soar2D.wm.update();
+			try {
+				synchronized(this) {
+					Soar2D.wm.update();
+					this.wait();
+				}
+			} catch (InterruptedException e) {
+				// FIXME: figure out what to do here
+				System.out.println("ignored interrupt");
+				assert false;
+			}
 		}
 	}
 	
