@@ -211,19 +211,18 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 * output callback. If soar is not running things, this is called by run() in 
 	 * a loop if necessary.
 	 */
+	public boolean stale;
 	public void tickEvent() {
 		Soar2D.simulation.update();
 		if (Soar2D.wm.using()) {
-//			 this updates buttons and what-not
-			try {
-				synchronized(this) {
+			synchronized(this) {
+				stale = true;
+				while (stale == true) {
 					Soar2D.wm.update();
-					this.wait();
+					try {
+						this.wait();
+					} catch (InterruptedException ignored) {}
 				}
-			} catch (InterruptedException e) {
-				// FIXME: figure out what to do here
-				System.out.println("ignored interrupt");
-				assert false;
 			}
 		}
 	}

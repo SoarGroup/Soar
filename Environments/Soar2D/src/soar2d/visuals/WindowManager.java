@@ -523,7 +523,7 @@ public class WindowManager {
 
 	public void update() {
 		if (!isDisposed()) {
-			display.syncExec(new Runnable() {
+			display.asyncExec(new Runnable() {
 				public void run() {
 					agentDisplay.worldChangeEvent();
 					visualWorld.redraw();
@@ -628,13 +628,10 @@ public class WindowManager {
 			human = player;
 			setStatus("Enter move for " + player.getColor());
 			setVisualWorldFocus();
-			try {
-				synchronized(humanMove) {
+			synchronized(humanMove) {
+				try {
 					humanMove.wait();
-				}
-			} catch (InterruptedException e) {
-				System.out.println("interrupt");
-				return null;
+				} catch (InterruptedException e) {}
 			}
 		}
 		return humanMove;
