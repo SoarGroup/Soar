@@ -1,4 +1,4 @@
-96
+98
 SOAR_ID 0
 ENUMERATION 1 1 nil
 SOAR_ID 2
@@ -95,7 +95,9 @@ ENUMERATION 92 1 move
 SOAR_ID 93
 ENUMERATION 94 1 turn
 SOAR_ID 95
-137
+ENUMERATION 96 1 radar
+SOAR_ID 97
+139
 0 attribute 55
 0 choices 56
 0 impasse 57
@@ -207,6 +209,7 @@ SOAR_ID 95
 62 io 3
 62 name 67
 62 operator 68
+62 operator 97
 62 sound-direction 36
 62 superstate 0
 62 top-state 0
@@ -233,3 +236,4 @@ SOAR_ID 95
 89 random 91
 93 name 92
 95 name 94
+97 name 96

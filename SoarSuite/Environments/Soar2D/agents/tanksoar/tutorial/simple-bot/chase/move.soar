@@ -10,3 +10,4 @@ sp {chase*propose*move
    (<s> ^operator <o> +)
    (<o> ^name move
         ^actions.move.direction forward)}
+
