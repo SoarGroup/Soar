@@ -31,6 +31,7 @@ public class World {
 	private HashMap<String, MissileInfo> missiles = new HashMap<String, MissileInfo>();
 	
 	private int missileID = 0;
+	private int missileReset = 0;
 	
 	public boolean load() {
 		
@@ -416,6 +417,11 @@ public class World {
 		player.adjustPoints(Soar2D.config.kMissileHitPenalty, missile.getName());
 		Player other = playersMap.get(missile.getProperty(Names.kPropertyOwner));
 		other.adjustPoints(Soar2D.config.kMissileHitAward, missile.getName());
+		
+		// charger insta-kill
+		if (map.getAllWithProperty(location, Names.kPropertyCharger).size() > 0) {
+			player.adjustHealth(player.getHealth() * -1, "hit on charger");
+		}
 		
 		// check for kill
 		if (player.getHealth() <= 0) {
@@ -840,9 +846,18 @@ public class World {
 		// move missiles to new cells, checking for new victims
 		updateObjects();
 		
+		// If there is more than one player out there, keep track of how
+		// many updates go by before resetting everything to prevent oscillations
+		if (players.size() > 1) {
+			missileReset += 1;
+		}
 		// Spawn new Missiles in front of Tanks
 		playerIter = firedTanks.iterator();
 		while (playerIter.hasNext()) {
+			// at least one player has fired a missile, reset the 
+			// missle reset counter to zero
+			missileReset = 0;
+			
 			Player player = playerIter.next();
 			java.awt.Point missileLoc = new java.awt.Point(locations.get(player.getName()));
 			
@@ -890,7 +905,7 @@ public class World {
 			spawnMissilePack(false);
 		}
 		
-		//  Respawn killed Tanks in safe squares
+		// Respawn killed Tanks in safe squares
 		Iterator<String> playerNameIter = killedTanks.keySet().iterator();
 		while (playerNameIter.hasNext()) {
 			
@@ -909,28 +924,47 @@ public class World {
 				assailant.adjustPoints(Soar2D.config.kKillAward, "fragged " + player.getName());
 			}
 			
-			// remove from past cell
-			java.awt.Point oldLocation = locations.remove(player.getName());
-			map.setExplosion(oldLocation);
-			map.setPlayer(oldLocation, null);
-
-			// Get available spots
-			ArrayList<java.awt.Point> spots = getAvailableLocations(map);
-			assert spots.size() > 0;
-			
-			// pick one and put the player in it
-			java.awt.Point location = spots.get(Simulation.random.nextInt(spots.size()));
-			map.setPlayer(location, player);
-			
-			// save the location
-			locations.put(player.getName(), location);
-			
-			// reset the player state
-			player.fragged();
+			fragPlayer(player);
+		}
+		
+		// if the missile reset counter is 100 and there were no killed tanks
+		// this turn, reset all tanks
+		if ((missileReset >= Soar2D.config.missileResetThreshold) && (killedTanks.size() == 0)) {
+			logger.info("missile reset threshold exceeded, resetting all tanks");
+			playerIter = players.iterator();
+			while (playerIter.hasNext()) {
+				Player player = playerIter.next();
+				
+				fragPlayer(player);
+			}
 		}
 		
 		// Update tanks
 		updatePlayers(false);
+	}
+	
+	private void fragPlayer(Player player) {
+		// remove from past cell
+		java.awt.Point oldLocation = locations.remove(player.getName());
+		map.setExplosion(oldLocation);
+		map.setPlayer(oldLocation, null);
+
+		// Get available spots
+		ArrayList<java.awt.Point> spots = getAvailableLocations(map);
+		assert spots.size() > 0;
+		
+		// pick one and put the player in it
+		java.awt.Point location = spots.get(Simulation.random.nextInt(spots.size()));
+		map.setPlayer(location, player);
+		
+		// save the location
+		locations.put(player.getName(), location);
+		
+		// reset the player state
+		player.fragged();
+
+		logger.info(player.getName() + ": Spawning at (" + 
+				location.x + "," + location.y + ")");
 	}
 	
 	private void handleIncoming() {
@@ -1198,6 +1232,7 @@ public class World {
 		worldCount = 0;
 		printedStats = false;
 		missileID = 0;
+		missileReset = 0;
 		missiles.clear();
 	}
 	

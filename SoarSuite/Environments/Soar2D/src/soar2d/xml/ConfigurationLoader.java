@@ -362,6 +362,13 @@ public class ConfigurationLoader {
 			c.noWorld = Boolean.parseBoolean(attribute);
 		}
 		
+		attribute = simulationTag.GetAttribute(Names.kParamMissileResetThreshold);
+		if (attribute != null) {
+			c.missileResetThreshold = Integer.parseInt(attribute);
+		}
+		
+		
+		
 		ElementXML subTag = null;
 		for (int subTagIndex = 0 ; subTagIndex < simulationTag.GetNumberChildren() ; ++subTagIndex) {
 

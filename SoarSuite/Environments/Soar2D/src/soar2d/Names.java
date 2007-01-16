@@ -78,6 +78,7 @@ public class Names {
 	public static final String kParamLevel = "level";
 	public static final String kParamMap = "map";
 	public static final String kParamMissiles = "missiles";
+	public static final String kParamMissileResetThreshold = "missile-reset-threshold";
 	public static final String kParamName = "name";
 	public static final String kParamNoWorld = "no-world";
 	public static final String kParamProductions = "productions";
