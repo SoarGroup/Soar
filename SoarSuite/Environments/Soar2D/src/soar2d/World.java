@@ -836,6 +836,7 @@ public class World {
 				if (move.moveDirection == Direction.backwardOf[missile.getIntProperty(Names.kPropertyDirection)]) {
 					missileHit(player, location, missile);
 					map.removeObject(location, missile.getName());
+					destroyMissile(missile.getName());
 
 					// explosion
 					map.setExplosion(location);
@@ -851,13 +852,16 @@ public class World {
 		if (players.size() > 1) {
 			missileReset += 1;
 		}
-		// Spawn new Missiles in front of Tanks
-		playerIter = firedTanks.iterator();
-		while (playerIter.hasNext()) {
+		
+		if (firedTanks.size() > 0) {
 			// at least one player has fired a missile, reset the 
 			// missle reset counter to zero
 			missileReset = 0;
-			
+		}
+		
+		// Spawn new Missiles in front of Tanks
+		playerIter = firedTanks.iterator();
+		while (playerIter.hasNext()) {
 			Player player = playerIter.next();
 			java.awt.Point missileLoc = new java.awt.Point(locations.get(player.getName()));
 			
@@ -931,6 +935,7 @@ public class World {
 		// this turn, reset all tanks
 		if ((missileReset >= Soar2D.config.missileResetThreshold) && (killedTanks.size() == 0)) {
 			logger.info("missile reset threshold exceeded, resetting all tanks");
+			missileReset = 0;
 			playerIter = players.iterator();
 			while (playerIter.hasNext()) {
 				Player player = playerIter.next();

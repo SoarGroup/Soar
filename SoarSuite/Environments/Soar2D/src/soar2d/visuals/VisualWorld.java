@@ -432,6 +432,9 @@ public class VisualWorld extends Canvas implements PaintListener {
 			}
 		}
 		painted = true;
+		synchronized(Soar2D.control) {
+			Soar2D.control.notify();
+		}
 	}
 	
 	Image bootstrapImage(String imageName) {
