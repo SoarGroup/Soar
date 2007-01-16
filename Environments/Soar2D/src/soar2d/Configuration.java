@@ -148,4 +148,6 @@ public class Configuration {
 	 * Must be positive for this terminal condition to work
 	 */
 	public int terminalWinningScore = 0;
+	
+	public int missileResetThreshold = 100;
 }
