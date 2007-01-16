@@ -141,23 +141,37 @@ public class VisualWorld extends Canvas implements PaintListener {
 		}
 	}
 
+	public boolean drawing = false;
 	public void paintControl(PaintEvent e){
-		if (agentLocation != null || lastX != e.x || lastY != e.y || internalRepaint) {
-			lastX = e.x;
-			lastY = e.y;
-			setRepaint();
-		}
-		
 		GC gc = e.gc;		
         gc.setForeground(WindowManager.black);
 		gc.setLineWidth(1);
 
-		if (Soar2D.config.noWorld || disabled || !painted) {
-			gc.setBackground(WindowManager.widget_background);
-			gc.fillRectangle(0,0, this.getWidth(), this.getHeight());
-			if (disabled || Soar2D.config.noWorld) {
-				painted = true;
-				return;
+		if (Soar2D.control.isRunning()) {
+			synchronized(Soar2D.control) {
+				if (drawing) {
+					return;
+				}
+				if (!Soar2D.control.stale) {
+					return;
+				}
+				drawing = true;
+			}
+			
+		} else {
+			if (agentLocation != null || lastX != e.x || lastY != e.y || internalRepaint) {
+				lastX = e.x;
+				lastY = e.y;
+				setRepaint();
+			}
+
+			if (Soar2D.config.noWorld || disabled || !painted) {
+				gc.setBackground(WindowManager.widget_background);
+				gc.fillRectangle(0,0, this.getWidth(), this.getHeight());
+				if (disabled || Soar2D.config.noWorld) {
+					painted = true;
+					return;
+				}
 			}
 		}
 		
@@ -432,8 +446,12 @@ public class VisualWorld extends Canvas implements PaintListener {
 			}
 		}
 		painted = true;
-		synchronized(Soar2D.control) {
-			Soar2D.control.notify();
+		if (Soar2D.control.isRunning()) {
+			synchronized(Soar2D.control) {
+				Soar2D.control.stale = false;
+				drawing = false;
+				Soar2D.control.notify();
+			}
 		}
 	}
 	
