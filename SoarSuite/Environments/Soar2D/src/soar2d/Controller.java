@@ -251,7 +251,6 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		// Test this after the world has been updated, in case it's asking us to stop
 		if (stop) {
 			// the world has asked us to kindly stop running
-  			stop = false;
   			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Stop requested during update.");
   			
   			// note that soar actually controls when we stop

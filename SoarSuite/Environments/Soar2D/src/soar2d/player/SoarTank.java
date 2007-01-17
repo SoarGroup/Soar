@@ -6,7 +6,7 @@ import java.util.logging.*;
 import sml.*;
 import soar2d.*;
 
-public class SoarTank extends Tank {
+public class SoarTank extends Tank implements Agent.RunEventInterface {
 	private Agent agent;
 	private ArrayList<String> shutdownCommands;
 
@@ -74,9 +74,19 @@ public class SoarTank extends Tank {
 		this.agent = agent;
 		this.shutdownCommands = playerConfig.getShutdownCommands();
 
+		assert agent != null;
+		
+		agent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_INTERRUPT, this, null);
 		m_InputLink = agent.GetInputLink();
 
 		previousLocation = new java.awt.Point(-1, -1);
+	}
+	
+	public void runEventHandler(int eventID, Object data, Agent agent, int phase) {
+		assert eventID == smlRunEventId.smlEVENT_AFTER_INTERRUPT.swigValue();
+		if (!Soar2D.control.isStopped()) {
+			logger.warning(getName() + ": agent interrupted");
+		}
 	}
 	
 	private void DestroyWME(WMElement wme) {
