@@ -13,6 +13,8 @@ cd ..\JavaTankSoar
 call build.bat --nopause %1
 cd ..\JavaTOH
 call build.bat --nopause %1
+cd ..\Soar2D
+call build.bat --nopause %1
 cd ..\..\Tools\LoggerJava
 call build.bat --nopause %1
 cd ..\SoarJavaDebugger
