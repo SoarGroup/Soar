@@ -15,6 +15,7 @@ if SWIGJAVA
 	Environments/JavaMissionaries/build.sh
 	Environments/JavaTOH/build.sh
 	Environments/JavaTankSoar/build.sh
+	Environments/Soar2D/build.sh
 else
 endif
 
@@ -48,3 +49,7 @@ install-data-am:
 	$(INSTALL) SoarLibrary/bin/libswt-pi-carbon-3232.jnilib $(libdir)
 	$(INSTALL) SoarLibrary/bin/libswt-pi-gtk-3232.so $(libdir)
 	$(INSTALL) SoarLibrary/bin/libswt-webkit-carbon-3232.jnilib $(libdir)
+if SWIGPYTHON
+	rm $(bindir)/Python_sml_ClientInterface.pyd
+	ln -s $(libdir)/libPython_sml_ClientInterface.so $(bindir)/Python_sml_ClientInterface.pyd
+endif
