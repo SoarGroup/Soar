@@ -140,8 +140,25 @@ public class VisualWorld extends Canvas implements PaintListener {
 			}
 		}
 	}
-
-	public boolean drawing = false;
+	
+	class DrawMissile {
+		private GC gc;
+		private Image image;
+		private int x;
+		private int y;
+		
+		public DrawMissile(GC gc, Image image, int x, int y) {
+			this.gc = gc;
+			this.image = image;
+			this.x = x;
+			this.y = y;
+		}
+		
+		public void draw() {
+			gc.drawImage(image, x, y);
+		}
+	}
+	
 	public void paintControl(PaintEvent e){
 		GC gc = e.gc;		
         gc.setForeground(WindowManager.black);
@@ -179,6 +196,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 		
 		// Draw world
 		int fill1, fill2, xDraw, yDraw;
+		ArrayList<DrawMissile> drawMissiles = new ArrayList<DrawMissile>();
 		java.awt.Point location = new java.awt.Point();
 		for(location.x = 0; location.x < world.getSize(); ++location.x){
 			if (agentLocation != null) {
@@ -353,7 +371,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 								kDotSize, kDotSize);
 					}
 
-					// draw the missiles
+					// cache all the missiles
 					iter = missiles.iterator();
 					while (iter.hasNext()) {
 						CellObject missile = iter.next();
@@ -396,8 +414,8 @@ public class VisualWorld extends Canvas implements PaintListener {
 							assert false;
 							break;
 						}
-						
-						gc.drawImage(image, (location.x * cellSize) + mX, (location.y * cellSize) + mY);						
+						//gc.drawImage(image, (location.x * cellSize) + mX, (location.y * cellSize) + mY);						
+						drawMissiles.add(new DrawMissile(gc, image, (location.x * cellSize) + mX, (location.y * cellSize) + mY));
 					}
 					
 					// Finally, draw the radar waves
@@ -439,6 +457,13 @@ public class VisualWorld extends Canvas implements PaintListener {
 				}
 			}
 		}
+		
+		// actually draw the missiles now (so they appear on top of everything)
+		Iterator<DrawMissile> drawMissileIter = drawMissiles.iterator();
+		while (drawMissileIter.hasNext()) {
+			drawMissileIter.next().draw();
+		}
+		
 		painted = true;
 		if (Soar2D.control.isRunning()) {
 			if (agentLocation != null) {
