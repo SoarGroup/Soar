@@ -521,15 +521,28 @@ public class WindowManager {
 		return (display.isDisposed() || shell.isDisposed());
 	}
 
+	boolean agentDisplayUpdated;
+	boolean worldDisplayUpdated;
 	public void update() {
 		if (!isDisposed()) {
-			display.asyncExec(new Runnable() {
+			synchronized(this) {
+				agentDisplayUpdated = false;
+				worldDisplayUpdated = false;
+			}
+			display.syncExec(new Runnable() {
 				public void run() {
 					agentDisplay.worldChangeEvent();
 					visualWorld.redraw();
 					updateCounts();
 				}
 			});
+			synchronized(this) {
+				while (!agentDisplayUpdated || !worldDisplayUpdated) {
+					try {
+						this.wait();
+					} catch (InterruptedException ignored) {}
+				}
+			}
 		}
 	}
 

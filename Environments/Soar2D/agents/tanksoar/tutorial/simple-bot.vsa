@@ -18,14 +18,14 @@ VERSION 4
 15	0	HLOPERATOR chase chase.soar chase 62 16
 16	15	FOPERATOR elaborations elaborations.soar 17
 17	15	OPERATOR move move.soar 18
-18	15	OPERATOR radar radar.soar 28
-19	15	OPERATOR turn turn.soar 19
-20	0	HLOPERATOR retreat retreat.soar retreat 63 20
-21	20	FOPERATOR elaborations elaborations.soar 21
-22	20	OPERATOR move move.soar 22
-23	20	OPERATOR wait wait.soar 23
-24	0	HLOPERATOR wander wander.soar wander 6 24
-25	24	FOPERATOR elaborations elaborations.soar 25
-26	24	OPERATOR move move.soar 26
-27	24	OPERATOR turn turn.soar 27
+18	15	OPERATOR radar radar.soar 19
+19	15	OPERATOR turn turn.soar 20
+20	0	HLOPERATOR retreat retreat.soar retreat 63 21
+21	20	FOPERATOR elaborations elaborations.soar 22
+22	20	OPERATOR move move.soar 23
+23	20	OPERATOR wait wait.soar 24
+24	0	HLOPERATOR wander wander.soar wander 6 25
+25	24	FOPERATOR elaborations elaborations.soar 26
+26	24	OPERATOR move move.soar 27
+27	24	OPERATOR turn turn.soar 28
 END

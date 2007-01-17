@@ -168,6 +168,11 @@ public class EatersAgentDisplay extends AgentDisplay {
 			m_AgentWorld.setAgentLocation(playerLocation);
 			m_AgentWorld.redraw();
 			location.setText("(" + playerLocation.x + "," + playerLocation.y + ")");
+		} else {
+			synchronized(Soar2D.wm) {
+				Soar2D.wm.agentDisplayUpdated = true;
+				Soar2D.wm.notify();
+			}
 		}
 		
 		for (int i = 0; i < m_Items.length; ++i) {
