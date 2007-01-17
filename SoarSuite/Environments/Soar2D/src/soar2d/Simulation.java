@@ -624,6 +624,10 @@ public class Simulation {
 		if (world != null) {
 			world.shutdown();
 		}
+		
+		assert this.agents.size() == 0;
+		assert this.configs.size() == 0;
+		
 		if (kernel != null) {
 			if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Shutting down kernel.");
 			kernel.Shutdown();

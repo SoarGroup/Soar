@@ -306,6 +306,12 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 			return;
 		}
 		
+		clearWMEs();
+		
+		m_Reset = true;
+	}
+	
+	void clearWMEs() {
 		DestroyWME(m_BlockedWME);
 		m_BlockedWME = null;
 		
@@ -386,8 +392,6 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		agent.Commit();
 
 		clearRadar();
-
-		m_Reset = true;
 	}
 	
 	void initScoreWMEs() {
@@ -840,15 +844,9 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	
 	private void updateRadar(boolean movedOrRotated) {
 		for (int i = 0; i < Soar2D.config.kRadarWidth; ++i) {
-			// debug
-			java.awt.Point trackedLocation = new java.awt.Point(Soar2D.simulation.world.getLocation(this));
-			// end debug
 			for (int j = 0; j < Soar2D.config.kRadarHeight; ++j) {
 				// Always skip self, this screws up the tanks.
 				if (i == 1 && j == 0) {
-					// debug
-					Direction.translate(trackedLocation, getFacingInt());
-					// end debug
 					continue;
 				}
 				if (radar[i][j] == null || (j > observedPower) || ((j == observedPower) && (i != 1))) {
@@ -866,20 +864,6 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 						CreateIntWME(radarCellIDs[i][j], Names.kDistanceID, j);
 						CreateStringWME(radarCellIDs[i][j], Names.kPositionID, getPositionID(i));
 						if (radar[i][j].player != null) {
-							// debug
-							java.awt.Point playerLocation = Soar2D.simulation.world.getLocation(radar[i][j].player);
-							java.awt.Point allegedLocation = new java.awt.Point(trackedLocation);
-
-							if (i == 0) {
-								// translate left
-								Direction.translate(allegedLocation, Direction.leftOf[this.getFacingInt()]);
-							}
-							if (i == 2) {
-								// translate right
-								Direction.translate(allegedLocation, Direction.rightOf[this.getFacingInt()]);
-							}
-							assert allegedLocation.equals(playerLocation);
-							// end debug
 							radarColors[i][j] = CreateStringWME(radarCellIDs[i][j], Names.kColorID, radar[i][j].player.getColor());
 						}
 					} else {
@@ -892,29 +876,11 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 							CreateIntWME(radarCellIDs[i][j], Names.kDistanceID, j);
 							CreateStringWME(radarCellIDs[i][j], Names.kPositionID, getPositionID(i));
 							if (radar[i][j].player != null) {
-								// debug
-								java.awt.Point playerLocation = Soar2D.simulation.world.getLocation(radar[i][j].player);
-								java.awt.Point allegedLocation = new java.awt.Point(trackedLocation);
-
-								if (i == 0) {
-									// translate left
-									Direction.translate(allegedLocation, Direction.leftOf[this.getFacingInt()]);
-								}
-								if (i == 2) {
-									// translate right
-									Direction.translate(allegedLocation, Direction.rightOf[this.getFacingInt()]);
-								}
-								assert allegedLocation.equals(playerLocation);
-								// end debug
 								radarColors[i][j] = CreateStringWME(radarCellIDs[i][j], Names.kColorID, radar[i][j].player.getColor());
 							}
 						}
 					}
 				}
-				
-				// debug
-				Direction.translate(trackedLocation, getFacingInt());
-				// end debug
 			}
 		}
 	}
@@ -961,20 +927,20 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 
 	public void shutdown() {
 		assert agent != null;
-		if (shutdownCommands == null) { 
-			return;
-		}
-		
-		Iterator<String> iter = shutdownCommands.iterator();
-		while(iter.hasNext()) {
-			String command = iter.next();
-			String result = getName() + ": result: " + agent.ExecuteCommandLine(command, true);
-			Soar2D.logger.info(getName() + ": shutdown command: " + command);
-			if (agent.HadError()) {
-				Soar2D.control.severeError(result);
-			} else {
-				Soar2D.logger.info(getName() + ": result: " + result);
+		if (shutdownCommands != null) { 
+			Iterator<String> iter = shutdownCommands.iterator();
+			while(iter.hasNext()) {
+				String command = iter.next();
+				String result = getName() + ": result: " + agent.ExecuteCommandLine(command, true);
+				Soar2D.logger.info(getName() + ": shutdown command: " + command);
+				if (agent.HadError()) {
+					Soar2D.control.severeError(result);
+				} else {
+					Soar2D.logger.info(getName() + ": result: " + result);
+				}
 			}
 		}
+
+		clearWMEs();
 	}
 }

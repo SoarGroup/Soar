@@ -189,14 +189,15 @@ public class World {
 	public void shutdown() {
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
-			Player player = iter.next();
-			player.shutdown();
+			Soar2D.simulation.destroyPlayer(iter.next());
+			iter = players.iterator();
 		}
-		players.clear();
-		playersMap.clear();
-		initialLocations.clear();
-		locations.clear();
-		lastMoves.clear();
+		assert this.players.size() == 0;
+		assert this.humanPlayers.size() == 0;
+		assert this.playersMap.size() == 0;
+		assert this.initialLocations.size() == 0;
+		assert this.locations.size() == 0;
+		assert this.lastMoves.size() == 0;
 		map.shutdown();
 	}
 	
