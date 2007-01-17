@@ -148,14 +148,8 @@ public class VisualWorld extends Canvas implements PaintListener {
 		gc.setLineWidth(1);
 
 		if (Soar2D.control.isRunning()) {
-			synchronized(Soar2D.control) {
-				if (drawing) {
-					return;
-				}
-				if (!Soar2D.control.stale) {
-					return;
-				}
-				drawing = true;
+			if (agentLocation != null) {
+				setRepaint();
 			}
 			
 		} else {
@@ -447,10 +441,16 @@ public class VisualWorld extends Canvas implements PaintListener {
 		}
 		painted = true;
 		if (Soar2D.control.isRunning()) {
-			synchronized(Soar2D.control) {
-				Soar2D.control.stale = false;
-				drawing = false;
-				Soar2D.control.notify();
+			if (agentLocation != null) {
+				synchronized(Soar2D.wm) {
+					Soar2D.wm.agentDisplayUpdated = true;
+					Soar2D.wm.notify();
+				}
+			} else {
+				synchronized(Soar2D.wm) {
+					Soar2D.wm.worldDisplayUpdated = true;
+					Soar2D.wm.notify();
+				}
 			}
 		}
 	}
