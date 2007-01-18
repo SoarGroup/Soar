@@ -1226,6 +1226,7 @@ public class World {
 			while (collideeIter.hasNext()) {
 				Player player = collideeIter.next();
 				java.awt.Point location = putInStartingLocation(player);
+				player.fragged();
 				assert location != null;
 				if (!lastMoves.get(player.getName()).dontEat) {
 					eat(player, location);

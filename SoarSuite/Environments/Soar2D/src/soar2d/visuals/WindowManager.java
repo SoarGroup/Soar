@@ -218,6 +218,16 @@ public class WindowManager {
 		gd.widthHint = 50;
 		scoreCount.setLayoutData(gd);
 		
+		Label worldCountLabel = new Label(group2, SWT.NONE);
+		worldCountLabel.setText(kWorldCount);
+		gd = new GridData();
+		worldCountLabel.setLayoutData(gd);
+		
+		worldCount = new Label(group2, SWT.NONE);
+		gd = new GridData();
+		gd.widthHint = 50;
+		worldCount.setLayoutData(gd);
+		
 		updateCounts();
 		
 		mapButtons = new MapButtons(group2);
@@ -512,9 +522,8 @@ public class WindowManager {
 		if (Soar2D.config.eaters) {
 			foodCount.setText(Integer.toString(Soar2D.simulation.world.map.getFoodCount()));
 			scoreCount.setText(Integer.toString(Soar2D.simulation.world.map.getScoreCount()));
-		} else {
-			worldCount.setText(Integer.toString(Soar2D.simulation.world.getWorldCount()));
 		}
+		worldCount.setText(Integer.toString(Soar2D.simulation.world.getWorldCount()));
 	}
 
 	boolean isDisposed() {

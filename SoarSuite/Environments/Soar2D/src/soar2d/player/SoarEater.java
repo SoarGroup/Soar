@@ -58,6 +58,7 @@ class SoarCell {
 	 * used during initialization
 	 */
 	boolean iterated = false;
+	
 }
 
 /**
@@ -105,6 +106,12 @@ public class SoarEater extends Eater {
 	 * soar commands to run before this agent is destroyed
 	 */
 	private ArrayList<String> shutdownCommands;
+
+	/**
+	 *  Set to true when the eater collides with someone and is teleported (to possibly
+	 *  the same location)
+	 */
+	boolean fragged = false;
 
 	/**
 	 * @param agent a valid soar agent
@@ -206,6 +213,11 @@ public class SoarEater extends Eater {
 	public void update(World world, java.awt.Point location) {
 		// check to see if we've moved
 		super.update(world, location);
+		
+		// if we've been fragged, set move to true
+		if (fragged) {
+			moved = true;
+		}
 		
 		// update the 5x5
 		java.awt.Point viewLocation = new java.awt.Point();
@@ -611,6 +623,7 @@ public class SoarEater extends Eater {
 	 */
 	public void reset() {
 		super.reset();
+		fragged = false;
 		
 		if (agent == null) {
 			return;
@@ -637,7 +650,11 @@ public class SoarEater extends Eater {
 
 		agent.InitSoar();
 	}
-	
+
+	public void fragged() {
+		fragged = true;
+	}
+
 	/* (non-Javadoc)
 	 * @see soar2d.player.Eater#shutdown()
 	 */
