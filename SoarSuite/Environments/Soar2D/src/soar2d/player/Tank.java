@@ -33,7 +33,7 @@ public class Tank extends Player {
 	
 	protected int observedPower;
 
-	RadarCell[][] radar = new RadarCell[Soar2D.config.kRadarWidth][Soar2D.config.kRadarHeight];
+	RadarCell[][] radar;
 	
 	protected int rwaves;
 	protected int blocked;
@@ -49,7 +49,7 @@ public class Tank extends Player {
 
 	public Tank( PlayerConfig playerConfig) {
 		super(playerConfig);
-		
+		clearRadar(); // creates the radar structure
 		reset();
 	}
 	
@@ -231,6 +231,9 @@ public class Tank extends Player {
 		
 		if (radarSwitch) {
 			observedPower = world.map.getRadar(radar, location, getFacingInt(), radarPower);
+		} else {
+			clearRadar();
+			observedPower = 0;
 		}
 		
 		blocked = world.map.getBlocked(location);
@@ -277,6 +280,7 @@ public class Tank extends Player {
 		health = Soar2D.config.kDefaultHealth;
 		missiles = Soar2D.config.kDefaultMissiles;
 		setFacingInt(Simulation.random.nextInt(4) + 1);
+		clearRadar();
 		resetSensors();
 	}
 	
@@ -302,6 +306,7 @@ public class Tank extends Player {
 		shieldsUp = false;
 		radarSwitch = false;
 		radarPower = 0;
+		clearRadar();
 		resetSensors();
 	}
 	
@@ -364,5 +369,9 @@ public class Tank extends Player {
 
 	public void setOnEnergyCharger(boolean b) {
 		this.onEnergyCharger = b;
+	}
+	
+	private void clearRadar() {
+		radar = new RadarCell[Soar2D.config.kRadarWidth][Soar2D.config.kRadarHeight];
 	}
 }

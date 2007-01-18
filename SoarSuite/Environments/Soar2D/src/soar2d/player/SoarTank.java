@@ -778,9 +778,9 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 				}
 			} else {
 				if (m_RadarWME != null) {
+					clearRadar();
 					DestroyWME(m_RadarWME);
 					m_RadarWME = null;
-					clearRadar();
 				}
 			}
 			if (m_RadarDistanceWME.GetValue() != observedPower) {
@@ -813,26 +813,27 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	}
 	
 	private void generateNewRadar() {
-		for (int j = 0; j < Soar2D.config.kRadarHeight; ++j) {
+		int height;
+		for (height = 0; height < Soar2D.config.kRadarHeight; ++height) {
 			boolean done = false;
-			for (int i = 0; i < Soar2D.config.kRadarWidth; ++i) {
+			for (int width = 0; width < Soar2D.config.kRadarWidth; ++width) {
 				// Always skip self, this screws up the tanks.
-				if (i == 1 && j == 0) {
+				if (width == 1 && height == 0) {
 					continue;
 				}
-				if (radar[i][j] == null) {
+				if (radar[width][height] == null) {
 					// if center is null, we're done
-					if (i == 1) {
+					if (width == 1) {
 						done = true;
 						break;
 					}
 				} else {
 					// Create a new WME
-					radarCellIDs[i][j] = agent.CreateIdWME(m_RadarWME, getCellID(radar[i][j]));
-					CreateIntWME(radarCellIDs[i][j], Names.kDistanceID, j);
-					CreateStringWME(radarCellIDs[i][j], Names.kPositionID, getPositionID(i));
-					if (radar[i][j].player != null) {
-						radarColors[i][j] = CreateStringWME(radarCellIDs[i][j], Names.kColorID, radar[i][j].player.getColor());
+					radarCellIDs[width][height] = agent.CreateIdWME(m_RadarWME, getCellID(radar[width][height]));
+					CreateIntWME(radarCellIDs[width][height], Names.kDistanceID, height);
+					CreateStringWME(radarCellIDs[width][height], Names.kPositionID, getPositionID(width));
+					if (radar[width][height].player != null) {
+						radarColors[width][height] = CreateStringWME(radarCellIDs[width][height], Names.kColorID, radar[width][height].player.getColor());
 					}
 				}
 			}
@@ -840,43 +841,44 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 				break;
 			}
 		}
+		assert (height - 1) == this.observedPower;
 	}
 	
 	private void updateRadar(boolean movedOrRotated) {
-		for (int i = 0; i < Soar2D.config.kRadarWidth; ++i) {
-			for (int j = 0; j < Soar2D.config.kRadarHeight; ++j) {
+		for (int width = 0; width < Soar2D.config.kRadarWidth; ++width) {
+			for (int height = 0; height < Soar2D.config.kRadarHeight; ++height) {
 				// Always skip self, this screws up the tanks.
-				if (i == 1 && j == 0) {
+				if (width == 1 && height == 0) {
 					continue;
 				}
-				if (radar[i][j] == null || (j > observedPower) || ((j == observedPower) && (i != 1))) {
+				if (radar[width][height] == null || (height > observedPower) || ((height == observedPower) && (width != 1))) {
 					// Unconditionally delete the WME
-					if (radarCellIDs[i][j] != null) {
-						DestroyWME(radarCellIDs[i][j]);
-						radarCellIDs[i][j] = null;
-						radarColors[i][j] = null;
+					if (radarCellIDs[width][height] != null) {
+						DestroyWME(radarCellIDs[width][height]);
+						radarCellIDs[width][height] = null;
+						radarColors[width][height] = null;
 					}
 					
 				} else {
 					
-					if (radarCellIDs[i][j] == null) {
-						radarCellIDs[i][j] = agent.CreateIdWME(m_RadarWME, getCellID(radar[i][j]));
-						CreateIntWME(radarCellIDs[i][j], Names.kDistanceID, j);
-						CreateStringWME(radarCellIDs[i][j], Names.kPositionID, getPositionID(i));
-						if (radar[i][j].player != null) {
-							radarColors[i][j] = CreateStringWME(radarCellIDs[i][j], Names.kColorID, radar[i][j].player.getColor());
+					if (radarCellIDs[width][height] == null) {
+						radarCellIDs[width][height] = agent.CreateIdWME(m_RadarWME, getCellID(radar[width][height]));
+						CreateIntWME(radarCellIDs[width][height], Names.kDistanceID, height);
+						CreateStringWME(radarCellIDs[width][height], Names.kPositionID, getPositionID(width));
+						if (radar[width][height].player != null) {
+							radarColors[width][height] = CreateStringWME(radarCellIDs[width][height], Names.kColorID, radar[width][height].player.getColor());
 						}
 					} else {
-						boolean changed = !radarCellIDs[i][j].GetAttribute().equals(getCellID(radar[i][j]));
+						boolean changed = !radarCellIDs[width][height].GetAttribute().equals(getCellID(radar[width][height]));
 
 						// Update if relevant change
 						if (movedOrRotated || changed) {
-							DestroyWME(radarCellIDs[i][j]);
-							radarCellIDs[i][j] = agent.CreateIdWME(m_RadarWME, getCellID(radar[i][j]));
-							CreateIntWME(radarCellIDs[i][j], Names.kDistanceID, j);
-							CreateStringWME(radarCellIDs[i][j], Names.kPositionID, getPositionID(i));
-							if (radar[i][j].player != null) {
-								radarColors[i][j] = CreateStringWME(radarCellIDs[i][j], Names.kColorID, radar[i][j].player.getColor());
+							DestroyWME(radarCellIDs[width][height]);
+							radarCellIDs[width][height] = agent.CreateIdWME(m_RadarWME, getCellID(radar[width][height]));
+							CreateIntWME(radarCellIDs[width][height], Names.kDistanceID, height);
+							CreateStringWME(radarCellIDs[width][height], Names.kPositionID, getPositionID(width));
+							if (radar[width][height].player != null) {
+								radarColors[width][height] = CreateStringWME(radarCellIDs[width][height], Names.kColorID, radar[width][height].player.getColor());
 							}
 						}
 					}
@@ -886,10 +888,10 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	}
 
 	private void clearRadar() {
-		for (int i = 0; i < Soar2D.config.kRadarWidth; ++i) {
-			for (int j = 0; j < Soar2D.config.kRadarHeight; ++j) {
-				radarCellIDs[i][j] = null;
-				radarColors[i][j] = null;
+		for (int width = 0; width < Soar2D.config.kRadarWidth; ++width) {
+			for (int height = 0; height < Soar2D.config.kRadarHeight; ++height) {
+				radarCellIDs[width][height] = null;
+				radarColors[width][height] = null;
 			}
 		}
 	}

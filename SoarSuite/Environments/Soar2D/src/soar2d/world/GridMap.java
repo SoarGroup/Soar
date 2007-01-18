@@ -409,6 +409,10 @@ public class GridMap {
 	}
 
 	public int getRadar(RadarCell[][] radar, java.awt.Point location, int facing, int radarPower) {
+		if (radarPower == 0) {
+			return 0;
+		}
+		
 		assert radar.length == 3;
 
 		int distance = 0;
