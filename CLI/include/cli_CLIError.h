@@ -40,7 +40,7 @@ namespace cli {
 			kAgentRequired						= 21,
 			kKernelRequired						= 22,
 			kAliasNotFound						= 23,
-			kAliasExists						= 24,
+			//kAliasExists						= 24,
 			kNoHelpFile							= 27,
 			kIntegerExpected					= 28,
 			kIntegerMustBePositive				= 29,
@@ -124,7 +124,7 @@ namespace cli {
 				case kAgentRequired:					return "An agent is required for this command.";
 				case kKernelRequired:					return "A kernel is required for this command.";
 				case kAliasNotFound:					return "Alias not found.";
-				case kAliasExists:						return "Alias exists, remove to overwrite.";
+				//case kAliasExists:						return "Alias exists, remove to overwrite.";
 				case kNoHelpFile:						return "Could not find help files.  Check the library location using the 'set-library-location' command.  The library location should be set to SoarLibrary.";
 				case kIntegerExpected:					return "Integer argument expected.";
 				case kIntegerMustBePositive:			return "Integer argument must be positive.";
