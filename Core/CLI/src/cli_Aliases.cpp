@@ -318,10 +318,11 @@ bool Aliases::IsAlias(const std::string& command) {
 	return m_AliasMap.find(command) != m_AliasMap.end();
 }
 
-bool Aliases::NewAlias(const std::vector<std::string>& substitution, const std::string& commandToSubstitute) {
-	if (IsAlias(commandToSubstitute)) return false;
+void Aliases::NewAlias(const std::vector<std::string>& substitution, const std::string& commandToSubstitute) {
+	if (IsAlias(commandToSubstitute)) {
+		RemoveAlias(commandToSubstitute);
+	}
 	m_AliasMap[commandToSubstitute] = substitution;
-	return true;
 }
 
 bool Aliases::RemoveAlias(const std::string& command) {

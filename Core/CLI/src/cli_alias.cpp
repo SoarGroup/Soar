@@ -120,7 +120,7 @@ bool CommandLineInterface::DoAlias(const std::string* pCommand, const std::vecto
 	}
 
 	// new alias
-	if (!m_Aliases.NewAlias((*pSubstitution), *pCommand)) return SetError(CLIError::kAliasExists);
+	m_Aliases.NewAlias((*pSubstitution), *pCommand);
 	return true;
 }
 
