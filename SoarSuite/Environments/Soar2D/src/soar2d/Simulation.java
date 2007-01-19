@@ -47,7 +47,9 @@ public class Simulation {
 	 * String agent name to player config mapping
 	 */
 	private HashMap<String, PlayerConfig> configs = new HashMap<String, PlayerConfig>();
-	
+
+	private static Logger logger = Logger.getLogger("soar2d");
+
 	/**
 	 * @return true if there were no errors during initialization
 	 * 
@@ -55,7 +57,9 @@ public class Simulation {
 	 * program run (not once per soar run)
 	 */
 	public boolean initialize() {
-		 // keep track of colors
+		assert logger.isLoggable(Soar2D.config.logLevel);
+
+		// keep track of colors
 		for (int i = 0; i < kColors.length; ++i) {
 			unusedColors.add(kColors[i]);
 		}
@@ -88,7 +92,7 @@ public class Simulation {
 			random = new Random();
 		} else {
 			// seed the generators
-			if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Seeding generator 0.");
+			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Seeding generator 0.");
 			kernel.ExecuteCommandLine("srand 0", null) ;
 			random = new Random(0);
 		}
@@ -609,7 +613,7 @@ public class Simulation {
 	 * resets the world, ready for a new run
 	 */
 	public boolean reset() {
-		if (Soar2D.logger.isLoggable(Level.INFO)) Soar2D.logger.info("Resetting simulation.");
+		Soar2D.logger.info("Resetting simulation.");
 		if (!world.load()) {
 			Soar2D.control.severeError("Error loading map " + Soar2D.config.map);
 			return false;
@@ -629,7 +633,7 @@ public class Simulation {
 		assert this.configs.size() == 0;
 		
 		if (kernel != null) {
-			if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Shutting down kernel.");
+			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Shutting down kernel.");
 			kernel.Shutdown();
 			kernel.delete();
 		}

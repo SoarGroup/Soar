@@ -232,7 +232,6 @@ public class GridMap {
 			while (iter.hasNext()) {
 				CellObject box = iter.next();
 				if (!isUnopenedBox(box)) {
-					Soar2D.logger.info("Removed box from unopened list.");
 					iter.remove();
 				}
 			}
@@ -304,7 +303,6 @@ public class GridMap {
 		}
 		if (Soar2D.config.terminalUnopenedBoxes) {
 			if (isUnopenedBox(object)) {
-				Soar2D.logger.info("Removed box from unopened list.");
 				unopenedBoxes.remove(object);
 			}
 		}
@@ -358,7 +356,6 @@ public class GridMap {
 		}
 		if (Soar2D.config.terminalUnopenedBoxes) {
 			if (isUnopenedBox(object)) {
-				Soar2D.logger.info("Added box to unopened list.");
 				unopenedBoxes.add(object);
 			}
 		}
@@ -639,8 +636,6 @@ public class GridMap {
 				break;
 			}
 		}
-		
-		//if (logger.isLoggable(Level.FINEST)) logger.finest("Finished search.");
 		
 		if (relativeDirection == -1) {
 			relativeDirection = 0;

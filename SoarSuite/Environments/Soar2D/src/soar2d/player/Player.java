@@ -64,7 +64,7 @@ public class Player {
 	public void setName(String name) {
 		String previous = this.name;
 		this.name = name;
-		logger.info(previous + " name changed to: " + this.name);
+		logger.warning(previous + " name changed to: " + this.name);
 	}
 	
 	public int getPoints() {
@@ -172,7 +172,7 @@ public class Player {
 	public void setColor(String color) {
 		String previous = this.color;
 		this.color = color;
-		logger.info(this.name + " (" + previous + ") color changed to: " + this.name);
+		logger.warning(this.name + " (" + previous + ") color changed to: " + this.name);
 	}
 	
 	/**

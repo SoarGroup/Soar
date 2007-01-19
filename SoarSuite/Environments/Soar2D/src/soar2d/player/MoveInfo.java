@@ -80,37 +80,45 @@ public class MoveInfo {
 	
 	public String toString() {
 		String output = new String();
-		if (jump) {
-			output += "(" + Names.kJumpID + ": " + Direction.stringOf[moveDirection] + ")";
-		} else if (move) {
-			output += "(" + Names.kMoveID + ": " + Direction.stringOf[moveDirection] + ")";
+		
+		if (Soar2D.config.eaters) {
+			if (jump) {
+				output += "(" + Names.kJumpID + ": " + Direction.stringOf[moveDirection] + ")";
+			} else if (move) {
+				output += "(" + Names.kMoveID + ": " + Direction.stringOf[moveDirection] + ")";
+			}
+			
+			if (dontEat) {
+				output += "(" + Names.kDontEatID + ")";
+			}
+			if (open) {
+				output += "(" + Names.kOpenID + ")";
+			}
+		} else {
+			if (move) {
+				output += "(" + Names.kMoveID + ": " + Direction.stringOf[moveDirection] + ")";
+			}
+			if (rotate) {
+				output += "(" + Names.kRotateID + ": " + rotateDirection + ")";			
+			}
+			if (fire) {
+				output += "(" + Names.kFireID + ")";
+			}
+			if (radar) {
+				output += "(" + Names.kRadarID + ": " + (radarSwitch ? "on" : "off") + ")";
+			}
+			if (radarPower) {
+				output += "(" + Names.kRadarPowerID + ": " + Integer.toString(radarPowerSetting) + ")";
+			}
+			if (shields) {
+				output += "(" + Names.kShieldsID + ": " + (shieldsSetting ? "on" : "off") + ")";
+			}
 		}
 		
-		if (dontEat) {
-			output += "(" + Names.kDontEatID + ")";
-		}
-		if (open) {
-			output += "(" + Names.kOpenID + ")";
-		}
 		if (stopSim) {
 			output += "(" + Names.kStopSimID + ")";
 		}
 		
-		if (rotate) {
-			output += "(" + Names.kRotateID + ": " + rotateDirection + ")";			
-		}
-		if (fire) {
-			output += "(" + Names.kFireID + ")";
-		}
-		if (radar) {
-			output += "(" + Names.kRadarID + ": " + (radarSwitch ? "on" : "off") + ")";
-		}
-		if (radarPower) {
-			output += "(" + Names.kRadarPowerID + ": " + Integer.toString(radarPowerSetting) + ")";
-		}
-		if (shields) {
-			output += "(" + Names.kShieldsID + ": " + (shieldsSetting ? "on" : "off") + ")";
-		}
 		return output;
 	}
 

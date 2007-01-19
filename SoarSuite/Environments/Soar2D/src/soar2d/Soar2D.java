@@ -5,7 +5,30 @@ import java.util.logging.*;
 
 import soar2d.visuals.*;
 import soar2d.xml.ConfigurationLoader;
-
+/*
+ * A note about log levels:
+ * 
+ * severe:
+ * critical errors that impede the running of the program
+ * 
+ * warning:
+ * stuff that should not happen, malfunctioning agents, etc.
+ * 
+ * info:
+ * all information necessary to accurately reproduce a run, plus a minimal
+ * amount of status data (score)
+ * includes: score, moves, spawns, terminal messages
+ * 
+ * fine:
+ * more information regarding the current state, more information on agent behavior
+ * helpful for debugging agents
+ * 
+ * finer:
+ * another step of information possibly helpful with agent debugging
+ * 
+ * finest:
+ * usually only useful for debugging  Soar2D
+ */
 public class Soar2D {
 	String configFile = null;
 
@@ -50,10 +73,12 @@ public class Soar2D {
 		}
 		config = configLoader.getConfig();
 		
+		logger.setLevel(config.logLevel);
 		// Start logger
 		if (config.logFile) {
 			try {
 				FileHandler handler = new FileHandler(config.logFileName);
+				handler.setLevel(config.logLevel);
 				handler.setFormatter(new TextFormatter());
 				logger.addHandler(handler);
 			} catch (IOException e) {
@@ -65,12 +90,12 @@ public class Soar2D {
 		if (config.logConsole) {
 			// Console handler
 			ConsoleHandler handler = new ConsoleHandler();
+			handler.setLevel(config.logLevel);
 			handler.setFormatter(new TextFormatter());
 			logger.addHandler(handler);
 		}
 		if (config.logFile || config.logConsole) {
 			logger.setUseParentHandlers(false);
-			logger.setLevel(config.logLevel);
 		} else {
 			System.out.println("Warning: not logging anything");
 			logger.setLevel(Level.OFF);

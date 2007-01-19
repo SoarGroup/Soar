@@ -1,5 +1,7 @@
 package soar2d.player;
 
+import java.util.logging.Level;
+
 import soar2d.Direction;
 import soar2d.Simulation;
 import soar2d.Soar2D;
@@ -70,7 +72,7 @@ public class Tank extends Player {
 			return;
 		}
 		radarSwitch = setting;
-		logger.info(getName() + " radar switched " + (setting ? "on" : "off"));
+		if (Soar2D.logger.isLoggable(Level.FINER)) logger.finer(getName() + " radar switched " + (setting ? "on" : "off"));
 	}
 	
 	public int getRadarPower() {
@@ -88,7 +90,7 @@ public class Tank extends Player {
 			return;
 		}
 		radarPower = setting;
-		logger.info(getName() + " radar power set to: " + Integer.toString(this.radarPower));
+		if (Soar2D.logger.isLoggable(Level.FINER)) logger.finer(getName() + " radar power set to: " + Integer.toString(this.radarPower));
 	}
 	
 	public int getMissiles() {
@@ -102,10 +104,12 @@ public class Tank extends Player {
 	 */
 	public void setMissiles(int missiles, String comment) {
 		this.missiles = missiles;
-		if (comment != null) {
-			logger.info(getName() + " missiles set to: " + Integer.toString(this.missiles) + " (" + comment + ")");
-		} else {
-			logger.info(getName() + " missiles set to: " + Integer.toString(this.missiles));
+		if (Soar2D.logger.isLoggable(Level.FINE)) {
+			if (comment != null) {
+				logger.fine(getName() + " missiles set to: " + Integer.toString(this.missiles) + " (" + comment + ")");
+			} else {
+				logger.fine(getName() + " missiles set to: " + Integer.toString(this.missiles));
+			}
 		}
 	}
 	/**
@@ -125,10 +129,12 @@ public class Tank extends Player {
 		if (missiles == previous) {
 			return;
 		}
-		if (comment != null) {
-			logger.info(getName() + " missiles: " + Integer.toString(previous) + " -> " + Integer.toString(this.missiles) + " (" + comment + ")");
-		} else {
-			logger.info(getName() + " missiles: " + Integer.toString(previous) + " -> " + Integer.toString(this.missiles));
+		if (Soar2D.logger.isLoggable(Level.FINE)) {
+			if (comment != null) {
+				logger.fine(getName() + " missiles: " + Integer.toString(previous) + " -> " + Integer.toString(this.missiles) + " (" + comment + ")");
+			} else {
+				logger.fine(getName() + " missiles: " + Integer.toString(previous) + " -> " + Integer.toString(this.missiles));
+			}
 		}
 	}
 
@@ -145,10 +151,12 @@ public class Tank extends Player {
 		// Bring down shields if out of energy
 
 		this.energy = energy;
-		if (comment != null) {
-			logger.info(getName() + " energy set to: " + Integer.toString(this.energy) + " (" + comment + ")");
-		} else {
-			logger.info(getName() + " energy set to: " + Integer.toString(this.energy));
+		if (Soar2D.logger.isLoggable(Level.FINE)) {
+			if (comment != null) {
+				logger.fine(getName() + " energy set to: " + Integer.toString(this.energy) + " (" + comment + ")");
+			} else {
+				logger.fine(getName() + " energy set to: " + Integer.toString(this.energy));
+			}
 		}
 	}
 	/**
@@ -172,10 +180,12 @@ public class Tank extends Player {
 		if (energy == previous) {
 			return;
 		}
-		if (comment != null) {
-			logger.info(getName() + " energy: " + Integer.toString(previous) + " -> " + Integer.toString(this.energy) + " (" + comment + ")");
-		} else {
-			logger.info(getName() + " energy: " + Integer.toString(previous) + " -> " + Integer.toString(this.energy));
+		if (Soar2D.logger.isLoggable(Level.FINE)) {
+			if (comment != null) {
+				logger.fine(getName() + " energy: " + Integer.toString(previous) + " -> " + Integer.toString(this.energy) + " (" + comment + ")");
+			} else {
+				logger.fine(getName() + " energy: " + Integer.toString(previous) + " -> " + Integer.toString(this.energy));
+			}
 		}
 	}
 
@@ -190,10 +200,12 @@ public class Tank extends Player {
 	 */
 	public void setHealth(int health, String comment) {
 		this.health = health;
-		if (comment != null) {
-			logger.info(getName() + " health set to: " + Integer.toString(this.health) + " (" + comment + ")");
-		} else {
-			logger.info(getName() + " health set to: " + Integer.toString(this.health));
+		if (Soar2D.logger.isLoggable(Level.FINE)) {
+			if (comment != null) {
+				logger.fine(getName() + " health set to: " + Integer.toString(this.health) + " (" + comment + ")");
+			} else {
+				logger.fine(getName() + " health set to: " + Integer.toString(this.health));
+			}
 		}
 	}
 	/**
@@ -215,10 +227,12 @@ public class Tank extends Player {
 		if (health == previous) {
 			return;
 		}
-		if (comment != null) {
-			logger.info(getName() + " health: " + Integer.toString(previous) + " -> " + Integer.toString(this.health) + " (" + comment + ")");
-		} else {
-			logger.info(getName() + " health: " + Integer.toString(previous) + " -> " + Integer.toString(this.health));
+		if (Soar2D.logger.isLoggable(Level.FINE)) {
+			if (comment != null) {
+				logger.fine(getName() + " health: " + Integer.toString(previous) + " -> " + Integer.toString(this.health) + " (" + comment + ")");
+			} else {
+				logger.fine(getName() + " health: " + Integer.toString(previous) + " -> " + Integer.toString(this.health));
+			}
 		}
 	}
 	
@@ -262,7 +276,7 @@ public class Tank extends Player {
 		// Do not allow a move if we rotated.
 		if (move.rotate) {
 			if (move.move) {
-				logger.info(": move ignored (rotating)");
+				if (Soar2D.logger.isLoggable(Level.FINER)) logger.finer(": move ignored (rotating)");
 				move.move = false;
 			}
 		}
@@ -314,7 +328,7 @@ public class Tank extends Player {
 		if (shieldsUp == setting) {
 			return;
 		}
-		logger.info(getName() + " shields switched " + (setting ? "on" : "off"));
+		if (Soar2D.logger.isLoggable(Level.FINER)) logger.finer(getName() + " shields switched " + (setting ? "on" : "off"));
 		shieldsUp = setting;
 	}
 	
