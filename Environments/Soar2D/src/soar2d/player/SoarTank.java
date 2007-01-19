@@ -141,27 +141,27 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		assert agent != null;
 		int numberOfCommands = agent.GetNumberCommands();
 		if (numberOfCommands == 0) {
-			if (logger.isLoggable(Level.FINE)) logger.fine(getName() + " issued no command.");
+			if (logger.isLoggable(Level.FINER)) logger.finer(getName() + " issued no command.");
 			return new MoveInfo();
 		}
 		
 		Identifier moveId = null;
 		MoveInfo move = new MoveInfo();
-		
+		boolean moveWait = false;
 		for (int i = 0; i < numberOfCommands; ++i) {
 			Identifier commandId = agent.GetCommand(i);
 			String commandName = commandId.GetAttribute();
 
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
-				if (move.move == true) {
-					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": extra move commands");
+				if (move.move || moveWait) {
+					logger.warning(getName() + ": extra move commands");
 					commandId.AddStatusError();
 					continue;
 				}
 
 				String moveDirection = commandId.GetParameterValue(Names.kDirectionID);
 				if (moveDirection == null) {
-					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": null move direction");
+					logger.warning(getName() + ": null move direction");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -174,8 +174,13 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 					move.moveDirection = Direction.leftOf[this.getFacingInt()];
 				} else if (moveDirection.equalsIgnoreCase(Names.kRightID)) {
 					move.moveDirection = Direction.rightOf[this.getFacingInt()];
+				} else if (moveDirection.equalsIgnoreCase(Names.kNone)) {
+					// legal wait
+					moveWait = true;
+					commandId.AddStatusComplete();
+					continue;
 				} else {
-					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": illegal move direction: " + moveDirection);
+					logger.warning(getName() + ": illegal move direction: " + moveDirection);
 					commandId.AddStatusError();
 					continue;
 				}
@@ -185,7 +190,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kFireID)) {
 				if (move.fire == true) {
-					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": extra fire commands");
+					logger.warning(getName() + ": extra fire commands");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -195,14 +200,14 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kRadarID)) {
 				if (move.radar == true) {
-					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": extra radar commands");
+					logger.warning(getName() + ": extra radar commands");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String radarSwitch = commandId.GetParameterValue(Names.kSwitchID);
 				if (radarSwitch == null) {
-					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": null radar switch");
+					logger.warning(getName() + ": null radar switch");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -211,14 +216,14 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kRadarPowerID)) {
 				if (move.radarPower == true) {
-					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": extra radar power commands");
+					logger.warning(getName() + ": extra radar power commands");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String powerValue = commandId.GetParameterValue(Names.kSettingID);
 				if (powerValue == null) {
-					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": null radar power");
+					logger.warning(getName() + ": null radar power");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -226,7 +231,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 				try {
 					move.radarPowerSetting = Integer.decode(powerValue).intValue();
 				} catch (NumberFormatException e) {
-					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": unable to parse radar power setting " + powerValue + ": " + e.getMessage());
+					logger.warning(getName() + ": unable to parse radar power setting " + powerValue + ": " + e.getMessage());
 					commandId.AddStatusError();
 					continue;
 				}
@@ -234,14 +239,14 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kShieldsID)) {
 				if (move.shields == true) {
-					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": extra shield commands");
+					logger.warning(getName() + ": extra shield commands");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String shieldsSetting = commandId.GetParameterValue(Names.kSwitchID);
 				if (shieldsSetting == null) {
-					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": null shields setting");
+					logger.warning(getName() + ": null shields setting");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -250,14 +255,14 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kRotateID)) {
 				if (move.rotate == true) {
-					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": extra rotate commands");
+					logger.warning(getName() + ": extra rotate commands");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				move.rotateDirection = commandId.GetParameterValue(Names.kDirectionID);
 				if (move.rotateDirection == null) {
-					if (logger.isLoggable(Level.FINE)) logger.fine(getName() + ": null rotation direction");
+					logger.warning(getName() + ": null rotation direction");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -278,7 +283,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		// Do not allow a move if we rotated.
 		if (move.rotate) {
 			if (move.move) {
-				logger.info(": move ignored (rotating)");
+				if (Soar2D.logger.isLoggable(Level.FINER)) logger.finer(": move ignored (rotating)");
 				assert moveId != null;
 				moveId.AddStatusError();
 				moveId = null;

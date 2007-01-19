@@ -197,7 +197,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 * starting the sim.
 	 */
 	public void startEvent() {
-		if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Start event.");
+		if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Start event.");
 		running = true;
 
 		if (Soar2D.wm.using()) {
@@ -224,7 +224,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 * after a stop is requested.
 	 */
 	public void stopEvent() {
-		if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Stop event.");
+		if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Stop event.");
 		running = false;
 		
 		if (Soar2D.wm.using()) {
@@ -301,7 +301,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		
 		// make sure things are stopped, doesn't hurt to call this when stopped
 		stopSimulation();
-		if (Soar2D.logger.isLoggable(Level.INFO)) Soar2D.logger.info("Shutdown called.");
+		Soar2D.logger.info("Shutdown called.");
 		if (Soar2D.wm.using()) {
 			// closes out the window manager
 			Soar2D.wm.shutdown();

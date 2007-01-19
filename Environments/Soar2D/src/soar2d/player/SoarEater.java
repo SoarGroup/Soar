@@ -537,19 +537,20 @@ public class SoarEater extends Eater {
 	public MoveInfo getMove() {
 		// if there was no command issued, that is kind of strange
 		if (agent.GetNumberCommands() == 0) {
-			if (logger.isLoggable(Level.FINE)) logger.fine(getName() + " issued no command.");
+			if (logger.isLoggable(Level.FINER)) logger.finer(getName() + " issued no command.");
 			return new MoveInfo();
 		}
 
 		// go through the commands
 		// see move info for details
 		MoveInfo move = new MoveInfo();
+		boolean moveWait = false;
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
 			Identifier commandId = agent.GetCommand(i);
 			String commandName = commandId.GetAttribute();
 			
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
-				if (move.move) {
+				if (move.move || moveWait) {
 					logger.warning(getName() + "multiple move/jump commands detected (move)");
 					continue;
 				}
@@ -558,10 +559,18 @@ public class SoarEater extends Eater {
 				
 				String direction = commandId.GetParameterValue(Names.kDirectionID);
 				if (direction != null) {
-					move.moveDirection = Direction.getInt(direction); 
-					this.setFacingInt(move.moveDirection);
-					commandId.AddStatusComplete();
-					continue;
+					if (direction.equals(Names.kNone)) {
+						// legal wait
+						move.move = false;
+						moveWait = true;
+						commandId.AddStatusComplete();
+						continue;
+					} else {
+						move.moveDirection = Direction.getInt(direction); 
+						this.setFacingInt(move.moveDirection);
+						commandId.AddStatusComplete();
+						continue;
+					}
 				}
 				
 			} else if (commandName.equalsIgnoreCase(Names.kJumpID)) {

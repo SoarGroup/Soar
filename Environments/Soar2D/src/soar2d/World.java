@@ -34,7 +34,8 @@ public class World {
 	private int missileReset = 0;
 	
 	public boolean load() {
-		
+		assert logger.isLoggable(Soar2D.config.logLevel); 
+
 		MapLoader loader = new MapLoader();
 		if (!loader.load()) {
 			return false;
@@ -81,11 +82,13 @@ public class World {
 		
 		java.awt.Point location = locations.get(Simulation.random.nextInt(locations.size()));
 		if (health) {
+			logger.info("spawning health charger at (" + location.x + "," + location.y + ")");
 			if (!newMap.addRandomObjectWithProperties(location, Names.kPropertyHealth, Names.kPropertyCharger)) {
 				Soar2D.control.severeError("Couldn't add charger to map!");
 				return false;
 			}
 		} else {			
+			logger.info("spawning energy charger at (" + location.x + "," + location.y + ")");
 			if (!newMap.addRandomObjectWithProperties(location, Names.kPropertyEnergy, Names.kPropertyCharger)) {
 				Soar2D.control.severeError("Couldn't add charger to map!");
 				return false;
@@ -582,7 +585,7 @@ public class World {
 					player.adjustMissiles(-1, "fire");
 					firedTanks.add(player);
 				} else {
-					logger.info(player.getName() + ": fired with no ammo");
+					if (Soar2D.logger.isLoggable(Level.FINER)) logger.finer(player.getName() + ": fired with no ammo");
 				}
 			}
 			
@@ -742,7 +745,7 @@ public class World {
 				if (player.getEnergy() > 0) {
 					player.adjustEnergy(Soar2D.config.kSheildEnergyUsage, "shields");
 				} else {
-					logger.info(player.getName() + ": shields ran out of energy");
+					if (Soar2D.logger.isLoggable(Level.FINER)) logger.finer(player.getName() + ": shields ran out of energy");
 					player.setShields(false);
 				}
 			}
@@ -765,7 +768,7 @@ public class World {
 				int damage = collision.size() - 1;
 				damage *= Soar2D.config.kTankCollisionPenalty;
 				
-				logger.info("Collision, " + (damage * -1) + " damage:");
+				if (Soar2D.logger.isLoggable(Level.FINE)) logger.fine("Collision, " + (damage * -1) + " damage:");
 				
 				playerIter = collision.iterator();
 				while (playerIter.hasNext()) {
@@ -1001,10 +1004,10 @@ public class World {
 		int available = player.getEnergy();
 		if (available < player.getRadarPower()) {
 			if (available > 0) {
-				logger.info(player.getName() + ": reducing radar power due to energy shortage");
+				if (Soar2D.logger.isLoggable(Level.FINER)) logger.finer(player.getName() + ": reducing radar power due to energy shortage");
 				player.setRadarPower(available);
 			} else {
-				logger.info(player.getName() + ": radar switched off due to energy shortage");
+				if (Soar2D.logger.isLoggable(Level.FINER)) logger.finer(player.getName() + ": radar switched off due to energy shortage");
 				player.setRadarSwitch(false);
 				return;
 			}
@@ -1019,7 +1022,9 @@ public class World {
 			assert spots.size() > 0;
 			
 			// Add a missile pack to a spot
-			boolean ret = map.addRandomObjectWithProperty(spots.get(Simulation.random.nextInt(spots.size())), Names.kPropertyMissiles);
+			java.awt.Point spot = spots.get(Simulation.random.nextInt(spots.size()));
+			logger.info("spawning missile pack at (" + spot.x + "," + spot.y + ")");
+			boolean ret = map.addRandomObjectWithProperty(spot, Names.kPropertyMissiles);
 			assert ret;
 		}
 	}
@@ -1106,6 +1111,11 @@ public class World {
 		if (Soar2D.control.isShuttingDown()) {
 			return null;
 		}
+		assert move != null;
+		String moveString = move.toString();
+		if (moveString.length() > 0) {
+			logger.info(player.getName() + ": " + moveString);
+		}
 		lastMoves.put(player.getName(), move);
 		
 		if (move.stopSim) {
@@ -1175,7 +1185,7 @@ public class World {
 						// Add the boom on the map
 						map.setExplosion(locations.get(left.getName()));
 						
-						if (logger.isLoggable(Level.FINE)) logger.fine("collision at " + locations.get(left.getName()));
+						if (logger.isLoggable(Level.FINER)) logger.finer("collision at " + locations.get(left.getName()));
 					}
 					// Add each right as it is detected
 					collision.add(right);
@@ -1198,7 +1208,7 @@ public class World {
 			collision = collisionIter.next();
 
 			assert collision.size() > 0;
-			if (logger.isLoggable(Level.FINE)) logger.fine("Processing collision group with " + collision.size() + " collidees.");
+			if (logger.isLoggable(Level.FINER)) logger.finer("Processing collision group with " + collision.size() + " collidees.");
 
 			// Redistribute wealth
 			int cash = 0;			
@@ -1209,13 +1219,13 @@ public class World {
 			if (cash > 0) {
 				int trash = cash % collision.size();
 				cash /= collision.size();
-				if (logger.isLoggable(Level.FINE)) logger.fine("Cash to each: " + cash + " (" + trash + " lost in division)");
+				if (logger.isLoggable(Level.FINER)) logger.finer("Cash to each: " + cash + " (" + trash + " lost in division)");
 				collideeIter = collision.listIterator();
 				while (collideeIter.hasNext()) {
 					collideeIter.next().setPoints(cash, "collision");
 				}
 			} else {
-				if (logger.isLoggable(Level.FINE)) logger.fine("Sum of cash is negative.");
+				if (logger.isLoggable(Level.FINER)) logger.finer("Sum of cash is negative.");
 			}
 			
 			// Remove from former location (only one of these for all players)
