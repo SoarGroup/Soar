@@ -288,8 +288,7 @@ public class Player {
 	}
 
 	public int getIncoming() {
-		return 0;
-	}
+		return 0;	}
 
 	public void resetSensors() {
 		// TODO Auto-generated method stub
@@ -349,5 +348,17 @@ public class Player {
 	}
 	
 	public void playersChanged() {
+	}
+
+	public boolean getOnHealthCharger() {
+		return false;
+	}
+
+	public boolean getOnEnergyCharger() {
+		return false;
+	}
+	
+	public boolean getResurrect() {
+		return false;
 	}
 }

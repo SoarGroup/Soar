@@ -64,7 +64,6 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 
 	private float random = 0;
 	private boolean m_Reset = true;
-	private int m_ResurrectFrame = 0;
 	
 	private boolean playersChanged = true;
 	private boolean attemptedMove = false;
@@ -607,7 +606,6 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 			m_ClockWME = CreateIntWME(m_InputLink, Names.kClockID, worldCount);
 
 			// resurrect sensor
-			m_ResurrectFrame = worldCount;
 			m_ResurrectWME = CreateStringWME(m_InputLink, Names.kResurrectID, Names.kYes);
 
 			// radar sensors
@@ -764,7 +762,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 			Update(m_ClockWME, worldCount);
 
 			// resurrect sensor
-			if (worldCount != m_ResurrectFrame) {
+			if (!getResurrect()) {
 				if (!m_ResurrectWME.GetValue().equalsIgnoreCase(Names.kNo)) {
 					Update(m_ResurrectWME, Names.kNo);
 				}
