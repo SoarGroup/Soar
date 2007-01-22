@@ -40,6 +40,7 @@ public class Tank extends Player {
 	protected int rwaves;
 	protected int blocked;
 	protected int incoming;
+	private int resurrectFrame = 0;
 	
 	int smellDistance;
 	String smellColor;
@@ -293,6 +294,7 @@ public class Tank extends Player {
 		energy = Soar2D.config.kDefaultEnergy;
 		health = Soar2D.config.kDefaultHealth;
 		missiles = Soar2D.config.kDefaultMissiles;
+		resurrectFrame = Soar2D.simulation.world.getWorldCount(); 
 		setFacingInt(Simulation.random.nextInt(4) + 1);
 		clearRadar();
 		resetSensors();
@@ -320,6 +322,7 @@ public class Tank extends Player {
 		shieldsUp = false;
 		radarSwitch = false;
 		radarPower = 0;
+		resurrectFrame = Soar2D.simulation.world.getWorldCount();
 		clearRadar();
 		resetSensors();
 	}
@@ -385,6 +388,19 @@ public class Tank extends Player {
 		this.onEnergyCharger = b;
 	}
 	
+	public boolean getOnHealthCharger() {
+		return this.onHealthCharger;
+		
+	}
+
+	public boolean getOnEnergyCharger() {
+		return this.onEnergyCharger;
+	}
+	
+	public boolean getResurrect() {
+		return Soar2D.simulation.world.getWorldCount() == resurrectFrame;
+	}
+
 	private void clearRadar() {
 		radar = new RadarCell[Soar2D.config.kRadarWidth][Soar2D.config.kRadarHeight];
 	}
