@@ -1,4 +1,4 @@
-126
+128
 SOAR_ID 0
 ENUMERATION 1 1 nil
 SOAR_ID 2
@@ -125,7 +125,9 @@ ENUMERATION 122 1 *yes*
 ENUMERATION 123 1 *yes*
 ENUMERATION 124 1 *yes*
 ENUMERATION 125 1 *yes*
-200
+ENUMERATION 126 1 radar
+SOAR_ID 127
+202
 0 attribute 55
 0 choices 56
 0 direction-map 101
@@ -249,6 +251,7 @@ ENUMERATION 125 1 *yes*
 62 io 3
 62 name 67
 62 operator 68
+62 operator 127
 62 sound-direction 36
 62 superstate 0
 62 top-state 0
@@ -326,3 +329,4 @@ ENUMERATION 125 1 *yes*
 116 right 117
 119 x 109
 119 y 109
+127 name 126
