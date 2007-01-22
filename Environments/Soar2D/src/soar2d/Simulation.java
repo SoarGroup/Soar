@@ -386,10 +386,10 @@ public class Simulation {
 		String commandLine;
 		if (os.matches(".+indows.*") || os.matches("INDOWS")) {
 			commandLine = "javaw -jar \"" + Soar2D.config.basePath 
-			+ "..\\..\\SoarLibrary\\bin\\SoarJavaDebugger.jar\" -remote -agent " + agentName;
+			+ "..\\..\\SoarLibrary\\bin\\SoarJavaDebugger.jar\" -cascade -remote -agent " + agentName;
 		} else {
 			commandLine = System.getProperty("java.home") + "/bin/java -jar " + Soar2D.config.basePath
-			+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -remote -agent " + agentName;
+			+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -cascade -remote -agent " + agentName;
 		}
 		
 		return commandLine;
