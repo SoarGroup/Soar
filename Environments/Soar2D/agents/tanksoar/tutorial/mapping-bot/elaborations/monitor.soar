@@ -5,8 +5,8 @@ sp {all*monitor*impasse*state-no-change
               ^choices none)
 -->
    (write (crlf) | State no-change impasse detected.|)
-   (cmd |stop-soar --self|)
-}
+#   (cmd |stop-soar|)}
+   (interrupt)}
 
 sp {all*monitor*operator*tie*impasse
    (state <s> ^attribute operator
@@ -16,7 +16,8 @@ sp {all*monitor*operator*tie*impasse
    (<i2> ^name <name2>)
 -->
    (write (crlf) | Operator tie between | <name1> | & | <name2>)
-   (cmd |stop-soar --self|)}
+#   (cmd |stop-soar|)}
+   (interrupt)}
 #
 #sp {all*operator*impasse*tie*break
 #   (state <s> ^attribute operator

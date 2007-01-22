@@ -8,7 +8,7 @@ sp {attack*propose*fire-missile
    (<il> ^radar.tank.position center
          ^missiles > 0)
    -->
-   (<s> ^operator <o> +)
+   (<s> ^operator <o> + =)
    (<o> ^name fire-missile
         ^actions.fire.weapon missile)}
 

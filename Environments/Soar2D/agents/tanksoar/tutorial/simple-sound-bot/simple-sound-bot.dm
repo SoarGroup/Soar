@@ -1,4 +1,4 @@
-107
+109
 SOAR_ID 0
 ENUMERATION 1 1 nil
 SOAR_ID 2
@@ -106,7 +106,9 @@ ENUMERATION 103 4 east north south west
 ENUMERATION 104 4 attack chase retreat wander
 SOAR_ID 105
 ENUMERATION 106 1 remove-sound
-150
+ENUMERATION 107 1 radar
+SOAR_ID 108
+152
 0 attribute 55
 0 choices 56
 0 direction-map 101
@@ -222,6 +224,7 @@ ENUMERATION 106 1 remove-sound
 62 io 3
 62 name 67
 62 operator 68
+62 operator 108
 62 sound-direction 36
 62 superstate 0
 62 top-state 0
@@ -257,3 +260,4 @@ ENUMERATION 106 1 remove-sound
 102 left 103
 102 right 103
 105 name 106
+108 name 107
