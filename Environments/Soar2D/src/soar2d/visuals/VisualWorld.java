@@ -146,16 +146,20 @@ public class VisualWorld extends Canvas implements PaintListener {
 		private Image image;
 		private int x;
 		private int y;
+		private Color color;
 		
-		public DrawMissile(GC gc, Image image, int x, int y) {
+		public DrawMissile(GC gc, Image image, int x, int y, Color color) {
 			this.gc = gc;
 			this.image = image;
 			this.x = x;
 			this.y = y;
+			this.color = color;
 		}
 		
 		public void draw() {
 			gc.drawImage(image, x, y);
+			gc.setBackground(color);
+			gc.fillOval(x+3, y+3, kDotSize, kDotSize);
 		}
 	}
 	
@@ -400,6 +404,12 @@ public class VisualWorld extends Canvas implements PaintListener {
 							image = bootstrapImage(imageName);
 						}
 						
+						String playerName = missile.getProperty(Names.kPropertyOwner);
+						assert playerName !=  null;
+						
+						Player missileOwner = world.getPlayer(playerName);
+						Color missileColor = WindowManager.getColor(missileOwner.getColor());
+						
 						int flightPhase = missile.getIntProperty(Names.kPropertyFlyPhase);
 						int direction = missile.getIntProperty(Names.kPropertyDirection);
 
@@ -433,7 +443,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 							break;
 						}
 						//gc.drawImage(image, (location.x * cellSize) + mX, (location.y * cellSize) + mY);						
-						drawMissiles.add(new DrawMissile(gc, image, (location.x * cellSize) + mX, (location.y * cellSize) + mY));
+						drawMissiles.add(new DrawMissile(gc, image, (location.x * cellSize) + mX, (location.y * cellSize) + mY, missileColor));
 					}
 					
 					// Finally, draw the radar waves
