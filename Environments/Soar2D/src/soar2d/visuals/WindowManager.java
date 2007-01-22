@@ -389,7 +389,73 @@ public class WindowManager {
 		shell.setText("TankSoar");
 	}
 	
+	Menu menuBar;
+	Menu fileMenu;
+	Menu helpMenu;
+	
+	MenuItem fileMenuHeader;
+	MenuItem helpMenuHeader;
+	
+	MenuItem fileConfigurationItem;
+	MenuItem fileExitItem;
+	
+	MenuItem helpAboutItem;
+	
 	public void run() {
+		
+		menuBar = new Menu(shell, SWT.BAR);
+		fileMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
+		fileMenuHeader.setText("&File");
+		
+		fileMenu = new Menu(shell, SWT.DROP_DOWN);
+		fileMenuHeader.setMenu(fileMenu);
+		
+		fileConfigurationItem = new MenuItem(fileMenu, SWT.PUSH);
+		fileConfigurationItem.setText("&Configuration");
+		fileConfigurationItem.addSelectionListener(new SelectionListener() {
+		    public void widgetSelected(SelectionEvent event) {
+		        infoMessage("Not implemented", "Not implemented");
+			}
+			
+			public void widgetDefaultSelected(SelectionEvent event) {
+				infoMessage("Not implemented", "Not implemented");
+			}
+		});
+
+		fileExitItem = new MenuItem(fileMenu, SWT.PUSH);
+		fileExitItem.setText("&Exit");
+		fileExitItem.addSelectionListener(new SelectionListener() {
+		    public void widgetSelected(SelectionEvent event) {
+		        shell.close();
+		        display.dispose();
+		    }
+
+		    public void widgetDefaultSelected(SelectionEvent event) {
+		        shell.close();
+		        display.dispose();
+		    }
+		});
+
+		helpMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
+		helpMenuHeader.setText("&Help");
+
+		helpMenu = new Menu(shell, SWT.DROP_DOWN);
+		helpMenuHeader.setMenu(helpMenu);
+		
+		helpAboutItem = new MenuItem(helpMenu, SWT.PUSH);
+		helpAboutItem.setText("&About");
+		helpAboutItem.addSelectionListener(new SelectionListener() {
+		    public void widgetSelected(SelectionEvent event) {
+		        infoMessage("About", "Soar2D version x.x\nby Jonathan Voigt\nvoigtjr@gmail.com");
+			}
+			
+			public void widgetDefaultSelected(SelectionEvent event) {
+				infoMessage("About", "Soar2D version x.x\nby Jonathan Voigt\nvoigtjr@gmail.com");
+			}
+		});
+		
+		shell.setMenuBar(menuBar);
+
 		if (Soar2D.config.eaters) {
 			setupEaters();
 		} else if (Soar2D.config.tanksoar) {
