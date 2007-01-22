@@ -1284,4 +1284,8 @@ public class World {
 		}
 		return move.move || move.rotate;
 	}
+
+	public Player getPlayer(String playerName) {
+		return playersMap.get(playerName);
+	}
 }
