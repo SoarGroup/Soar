@@ -476,8 +476,6 @@ public class World {
 	
 	public void update() {
 		
-		++worldCount;
-
 		// Collect human input
 		Iterator<Player> humanPlayerIter = humanPlayers.iterator();
 		while (humanPlayerIter.hasNext()) {
@@ -487,6 +485,8 @@ public class World {
 			}
 		}
 		
+		++worldCount;
+
 		if (Soar2D.config.terminalMaxUpdates > 0) {
 			if (worldCount >= Soar2D.config.terminalMaxUpdates) {
 				stopAndDumpStats("Reached maximum updates, stopping.", getSortedScores());
