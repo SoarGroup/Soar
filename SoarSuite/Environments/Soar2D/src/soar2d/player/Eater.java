@@ -1,5 +1,7 @@
 package soar2d.player;
 
+import java.util.logging.Level;
+
 import soar2d.Soar2D;
 import soar2d.World;
 
@@ -12,7 +14,8 @@ import soar2d.World;
  */
 public class Eater extends Player {	
 	protected ToscaEater m_ToscaEater = null ;
-	
+	private MoveInfo move;
+
 	public Eater( PlayerConfig playerConfig, boolean isHuman ) {
 		super(playerConfig) ;
 
@@ -42,16 +45,27 @@ public class Eater extends Player {
 			return m_ToscaEater.getMove() ;
 		}
 
-		// if we're not graphical, the human agent can't enter input.
-		// maybe we should support this in the future.
-		if (Soar2D.config.graphical == false) {
-			return new MoveInfo();
-		}
-		MoveInfo move = Soar2D.wm.getHumanMove(this);
 		// the facing depends on the move
 		this.setFacingInt(move.moveDirection);
 		return move;
 	}
+
+	public boolean getHumanMove() {
+		if (Soar2D.config.graphical == false) {
+			move = new MoveInfo();
+			return true;
+		}
+		
+		move = Soar2D.wm.getHumanMove(this);
+
+		if (move == null) {
+			return false;
+		}
+		
+		return true;
+	}
+
+	
 	/* (non-Javadoc)
 	 * @see soar2d.player.Player#shutdown()
 	 */
