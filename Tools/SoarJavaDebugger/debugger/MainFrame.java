@@ -713,6 +713,16 @@ public class MainFrame
 			int xPos = this.getAppIntegerProperty("Window.x");
 			int yPos = this.getAppIntegerProperty("Window.y");
 
+			// Can't see why we'd ever not want this so I'm turning it on at all times now.
+			boolean cascade = this.getAppBooleanProperty("Window.Cascade", true) ;
+			cascade = true ;
+			if (cascade)
+			{
+				int offset = (m_Document.getNumberFrames()-1) * 20 ;
+				xPos += offset ;
+				yPos += offset ;
+			}
+			
 			if (width > 0 && width < Integer.MAX_VALUE && height > 0 && height < Integer.MAX_VALUE)
 				getShell().setSize(width, height);
 

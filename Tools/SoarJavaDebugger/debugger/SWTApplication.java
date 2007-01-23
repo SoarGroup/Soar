@@ -122,6 +122,7 @@ public class SWTApplication
 	// -width <width>   => start with this window width
 	// -height <height> => start with this window height
 	// -x <x> -y <y>    => start with this window position
+	// -cascade			=> cascade each window that starts (offseting from the -x <x> -y <y> if given).  This option now always on.
 	// (Providing width/height/x/y => not a maximized window)
 	public void startApp(String[] args) throws Exception
 	{
@@ -136,6 +137,7 @@ public class SWTApplication
 		String source = getOptionValue(args, "-source") ;
 		boolean quitOnFinish = hasOption(args, "-quitonfinish") ;
 		String listen = getOptionValue(args, "-listen") ;
+		boolean cascade = hasOption(args, "-cascade") ;
 		
 		// quitOnFinish is only valid if sourcing a file
 		if (source == null)
@@ -182,6 +184,8 @@ public class SWTApplication
 		if (maximize)
 			m_Document.getAppProperties().setAppProperty("Window.Max", maximize) ;
 
+		m_Document.getAppProperties().setAppProperty("Window.Cascade", cascade) ;
+		
 		String[] options = new String[] { "-width", "-height", "-x", "-y" } ;
 		String[] props = new String[] { "Window.width", "Window.height", "Window.x", "Window.y" } ;
 		
