@@ -1,5 +1,16 @@
 #!/usr/bin/python
 from ElementGGP import ElementGGP
+import re
+
+def SoarifyStr(s):
+	p = re.compile('(\s|\?|\(|\))')
+	result = p.sub('_', str(s))
+	for i in range(len(result)):
+		if result[i] != '_':
+			return result[i:]
+	
+	# all underscores?
+	return "a"
 
 # generates variable names that are guaranteed to be unique
 class UniqueNameGenerator:
@@ -41,8 +52,7 @@ class SoarCondition:
 		return c
 	
 	def add_ground_predicate(self, attrib, predicate, negate=False):
-		if isinstance(predicate, ElementGGP):
-			raise Exception("Sorry, but you're a homo.")
+		assert isinstance(predicate, str), "Predicate is not a string"
 		self.ground_preds.append((negate, attrib, predicate))
 		
 	def add_id_predicate(self, attrib, negate=False, predicate = "", name = ""):
@@ -199,6 +209,11 @@ class SoarProduction:
 		self.var_distinctions = dict()
 		self.value_distinctions = dict()
 
+	def state_cond(self):
+		if self.first_state_cond == None:
+			self.add_condition(self.state_id)
+		return self.first_state_cond
+		
 	def copy(self, name):
 		c = SoarProduction(name)
 		c.var_gen = self.var_gen.copy()
@@ -274,6 +289,15 @@ class SoarProduction:
 	def add_op_proposal(self, prefs, name =""):
 		return self.add_action(self.add_action().add_op_proposal(prefs))
 
+	def add_op_cond(self, name):
+		op_cond = self.add_condition(self.state_cond().add_id_predicate("operator"))
+		op_cond.add_ground_predicate("name", name)
+	
+	def add_context_cond(self, name):
+		if self.first_state_cond == None:
+			self.first_state_cond = SoarCondition(self.state_id, self.var_gen)
+		self.first_state_cond.add_ground_predicate("name", name)
+		
 	def get_conditions(self, attrib_path):
 		l = []
 		for c in self.cond_paths:

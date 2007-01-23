@@ -1,5 +1,5 @@
 
-sp {propose*init-blocksworld
+sp   { propose*init-blocksworld
    (state <s> ^superstate nil
              -^name)
 -->
