@@ -323,13 +323,13 @@ public class ConfigurationLoader {
 		c.players.add(agentConfig);
 	}
 	
-	private void shutdownCommand(PlayerConfig config, ElementXML tag) throws SyntaxException {
+	private void shutdownCommand(PlayerConfig playerConfig, ElementXML tag) throws SyntaxException {
 		String attribute = tag.GetAttribute(Names.kParamCommand);
 		if (attribute == null || attribute.length() <= 0) {
 			throwSyntax("command parameter must be present in shutdown-command");
 		}
 		
-		config.addShutdownCommand(attribute);
+		playerConfig.addShutdownCommand(attribute);
 	}
 	
 	private void display(ElementXML tag) {
@@ -366,8 +366,6 @@ public class ConfigurationLoader {
 		if (attribute != null) {
 			c.missileResetThreshold = Integer.parseInt(attribute);
 		}
-		
-		
 		
 		ElementXML subTag = null;
 		for (int subTagIndex = 0 ; subTagIndex < simulationTag.GetNumberChildren() ; ++subTagIndex) {

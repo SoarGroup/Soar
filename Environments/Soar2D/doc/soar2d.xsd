@@ -43,6 +43,13 @@
               <xs:element name="agent">
                 <xs:complexType>
                   <xs:sequence>
+                    <xs:element name="shutdown-command">
+                      <xs:complexType>
+                        <xs:sequence>
+                        </xs:sequence>
+                        <xs:attribute name="command" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
                   </xs:sequence>
                   <xs:attribute name="name" type="xs:string" />
                   <xs:attribute name="productions" type="xs:string" />
@@ -81,6 +88,8 @@
             <xs:attribute name="debuggers" type="xs:boolean" />
             <xs:attribute name="remote" type="xs:boolean" />
             <xs:attribute name="random" type="xs:boolean" />
+            <xs:attribute name="no-world" type="xs:boolean" />
+            <xs:attribute name="missile-reset-threshold" type="xs:integer" />
           </xs:complexType>
         </xs:element>
         <xs:element name="client">
@@ -121,6 +130,7 @@
       <xs:enumeration value="points-remaining" />
       <xs:enumeration value="winning-score" />
       <xs:enumeration value="food-remaining" />
+      <xs:enumeration value="unopened-boxes" />
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>
