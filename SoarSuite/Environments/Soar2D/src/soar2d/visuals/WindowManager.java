@@ -414,11 +414,13 @@ public class WindowManager {
 		fileConfigurationItem.setText("&Configuration");
 		fileConfigurationItem.addSelectionListener(new SelectionListener() {
 		    public void widgetSelected(SelectionEvent event) {
-		        infoMessage("Not implemented", "Not implemented");
-			}
+		    	ConfigurationEditor ce = new ConfigurationEditor(shell);
+		    	ce.open();
+		    }
 			
 			public void widgetDefaultSelected(SelectionEvent event) {
-				infoMessage("Not implemented", "Not implemented");
+		    	ConfigurationEditor ce = new ConfigurationEditor(shell);
+		    	ce.open();
 			}
 		});
 
