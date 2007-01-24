@@ -76,6 +76,7 @@ public class Names {
 	public static final String kParamGraphical = "graphical";
 	public static final String kParamHealth = "health";
 	public static final String kParamLevel = "level";
+	public static final String kParamLogTime = "log-time";
 	public static final String kParamMap = "map";
 	public static final String kParamMissiles = "missiles";
 	public static final String kParamMissileResetThreshold = "missile-reset-threshold";
@@ -84,6 +85,7 @@ public class Names {
 	public static final String kParamProductions = "productions";
 	public static final String kParamProperty = "property";
 	public static final String kParamRandom = "random";
+	public static final String kParamRandomSeed = "random-seed";
 	public static final String kParamRandomFood = "random-food";
 	public static final String kParamRandomWalls = "random-walls";
 	public static final String kParamRemote = "remote";

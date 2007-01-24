@@ -57,8 +57,6 @@ public class Simulation {
 	 * program run (not once per soar run)
 	 */
 	public boolean initialize() {
-		assert logger.isLoggable(Soar2D.config.logLevel);
-
 		// keep track of colors
 		for (int i = 0; i < kColors.length; ++i) {
 			unusedColors.add(kColors[i]);
@@ -72,8 +70,8 @@ public class Simulation {
 			kernel = Kernel.CreateRemoteConnection(true);
 		} else {
 			// Create kernel
-			kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", 12121);
-			//kernel = Kernel.CreateKernelInCurrentThread("SoarKernelSML", true);
+			//kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", 12121);
+			kernel = Kernel.CreateKernelInCurrentThread("SoarKernelSML", true);
 		}
 
 		if (kernel.HadError()) {
@@ -88,13 +86,13 @@ public class Simulation {
 		// Make all runs non-random if asked
 		// For debugging, set this to make all random calls follow the same sequence
 		if (Soar2D.config.random) {
-			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Not seeding generator.");
+			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Not seeding generators.");
 			random = new Random();
 		} else {
 			// seed the generators
-			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Seeding generator 0.");
-			kernel.ExecuteCommandLine("srand 0", null) ;
-			random = new Random(0);
+			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Seeding generators with " + Soar2D.config.randomSeed);
+			kernel.ExecuteCommandLine("srand " + Soar2D.config.randomSeed, null) ;
+			random = new Random(Soar2D.config.randomSeed);
 		}
 		
 		// Register for events

@@ -79,7 +79,11 @@ public class Soar2D {
 			try {
 				FileHandler handler = new FileHandler(config.logFileName);
 				handler.setLevel(config.logLevel);
-				handler.setFormatter(new TextFormatter());
+				if (config.logTime) {
+					handler.setFormatter(new TextFormatter());
+				} else {
+					handler.setFormatter(new NoTimeTextFormatter());
+				}
 				logger.addHandler(handler);
 			} catch (IOException e) {
 				control.severeError("IOException creating " + config.logFile + ": " + e.getMessage());
@@ -91,7 +95,11 @@ public class Soar2D {
 			// Console handler
 			ConsoleHandler handler = new ConsoleHandler();
 			handler.setLevel(config.logLevel);
-			handler.setFormatter(new TextFormatter());
+			if (config.logTime) {
+				handler.setFormatter(new TextFormatter());
+			} else {
+				handler.setFormatter(new NoTimeTextFormatter());
+			}
 			logger.addHandler(handler);
 		}
 		if (config.logFile || config.logConsole) {

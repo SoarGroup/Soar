@@ -63,10 +63,16 @@ public class Configuration {
 	 * File to log to, only valid if logFile true
 	 */
 	public String logFileName = null;
+	
+	public boolean logTime = true;
+	
 	/**
 	 * If true, log to console
 	 */
 	public boolean logConsole = false;
+	
+	public int randomSeed = 0;
+	
 	/**
 	 * If true, run eaters-specific code, mutually exclusive with tanksoar
 	 */

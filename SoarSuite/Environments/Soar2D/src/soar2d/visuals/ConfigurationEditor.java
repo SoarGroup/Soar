@@ -124,7 +124,10 @@ public class ConfigurationEditor extends Dialog {
 			currentPage.dispose();
 		}
 		currentPage = new Composite(rhs, SWT.NONE);
-		currentPage.setLayout(new FillLayout());
+		{
+			GridLayout gl = new GridLayout();
+			currentPage.setLayout(gl);
+		}
 		
 		Label currentLabel = new Label(currentPage, SWT.NONE);
 		currentLabel.setText("General!");
@@ -137,13 +140,17 @@ public class ConfigurationEditor extends Dialog {
 		// log level
 		// log to file and/or console
 		// log filename
+		// log time or not
 		System.out.println("Logging!");
 	
 		if (currentPage != null) {
 			currentPage.dispose();
 		}
 		currentPage = new Composite(rhs, SWT.NONE);
-		currentPage.setLayout(new FillLayout());
+		{
+			GridLayout gl = new GridLayout();
+			currentPage.setLayout(gl);
+		}
 		
 		Label currentLabel = new Label(currentPage, SWT.NONE);
 		currentLabel.setText("Logging!");
