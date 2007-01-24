@@ -5,11 +5,13 @@
       <xs:sequence>
         <xs:element name="logger">
           <xs:complexType>
-            <xs:sequence />
+            <xs:sequence>
+            </xs:sequence>
             <xs:attribute name="level" type="log-levels" />
             <xs:attribute name="file" type="xs:boolean" />
             <xs:attribute name="console" type="xs:boolean" />
             <xs:attribute name="filename" type="xs:string" />
+            <xs:attribute name="log-time" type="xs:boolean" />
           </xs:complexType>
         </xs:element>
         <xs:element name="eaters">
@@ -90,6 +92,7 @@
             <xs:attribute name="random" type="xs:boolean" />
             <xs:attribute name="no-world" type="xs:boolean" />
             <xs:attribute name="missile-reset-threshold" type="xs:integer" />
+            <xs:attribute name="random-seed" type="xs:integer" />
           </xs:complexType>
         </xs:element>
         <xs:element name="client">

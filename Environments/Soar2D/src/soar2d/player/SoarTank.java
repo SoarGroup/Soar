@@ -542,6 +542,40 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		String rwavesLeft = (rwaves & Direction.indicators[Direction.leftOf[facing]]) > 0 ? Names.kYes : Names.kNo;
 		String rwavesRight = (rwaves & Direction.indicators[Direction.rightOf[facing]]) > 0 ? Names.kYes : Names.kNo;
 
+		if (Soar2D.logger.isLoggable(Level.FINEST)) {
+			logger.finest(this.getName() + " input dump: ");
+			logger.finest(this.getName() + ": x,y: " + location.x + "," + location.y);
+			logger.finest(this.getName() + ": " + Names.kEnergyRechargerID + ": " + (onEnergyCharger ? Names.kYes : Names.kNo));
+			logger.finest(this.getName() + ": " + Names.kHealthRechargerID + ": " + (onHealthCharger ? Names.kYes : Names.kNo));
+			logger.finest(this.getName() + ": " + Names.kDirectionID + ": " + facingString);
+			logger.finest(this.getName() + ": " + Names.kEnergyID + ": " + energy);
+			logger.finest(this.getName() + ": " + Names.kHealthID + ": " + health);
+			logger.finest(this.getName() + ": " + Names.kShieldStatusID + ": " + shieldStatus);
+			logger.finest(this.getName() + ": blocked (forward): " + blockedForward);
+			logger.finest(this.getName() + ": blocked (backward): " + blockedBackward);
+			logger.finest(this.getName() + ": blocked (left): " + blockedLeft);
+			logger.finest(this.getName() + ": blocked (right): " + blockedRight);
+			logger.finest(this.getName() + ": " + Names.kCurrentScoreID + ": TODO: dump");
+			logger.finest(this.getName() + ": incoming (forward): " + incomingForward);
+			logger.finest(this.getName() + ": incoming (backward): " + incomingBackward);
+			logger.finest(this.getName() + ": incoming (left): " + incomingLeft);
+			logger.finest(this.getName() + ": incoming (right): " + incomingRight);
+			logger.finest(this.getName() + ": smell (color): " + smellColorString);
+			logger.finest(this.getName() + ": smell (distance): " + smellDistance);
+			logger.finest(this.getName() + ": " + Names.kSoundID + ": " + soundString);
+			logger.finest(this.getName() + ": " + Names.kMissilesID + ": " + missiles);
+			logger.finest(this.getName() + ": " + Names.kMyColorID + ": " + getColor());
+			logger.finest(this.getName() + ": " + Names.kClockID + ": " + worldCount);
+			logger.finest(this.getName() + ": " + Names.kRadarStatusID + ": " + radarStatus);
+			logger.finest(this.getName() + ": " + Names.kRadarDistanceID + ": " + observedPower);
+			logger.finest(this.getName() + ": " + Names.kRadarSettingID + ": " + radarPower);
+			logger.finest(this.getName() + ": " + Names.kRandomID + "random: " + random);
+			logger.finest(this.getName() + ": rwaves (forward): " + rwavesForward);
+			logger.finest(this.getName() + ": rwaves (backward): " + rwavesBackward);
+			logger.finest(this.getName() + ": rwaves (left): " + rwavesLeft);
+			logger.finest(this.getName() + ": rwaves (right): " + rwavesRight);
+		}
+
 		if (m_Reset) {
 			// location
 			m_xWME = CreateIntWME(m_InputLink, Names.kXID, location.x);
@@ -817,17 +851,26 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	
 	private void generateNewRadar() {
 		int height;
+		if (Soar2D.logger.isLoggable(Level.FINEST)) {
+			logger.finest(this.getName() + ": radar data: generating new"); 
+		}
 		for (height = 0; height < Soar2D.config.kRadarHeight; ++height) {
 			boolean done = false;
 			for (int width = 0; width < Soar2D.config.kRadarWidth; ++width) {
 				// Always skip self, this screws up the tanks.
 				if (width == 1 && height == 0) {
+					if (Soar2D.logger.isLoggable(Level.FINEST)) {
+						logger.finest(this.getName() + ": " + height + "," + width + ": skip self"); 
+					}
 					continue;
 				}
 				if (radar[width][height] == null) {
 					// if center is null, we're done
 					if (width == 1) {
 						done = true;
+						if (Soar2D.logger.isLoggable(Level.FINEST)) {
+							logger.finest(this.getName() + ": " + height + "," + width + ": done (center null)"); 
+						}
 						break;
 					}
 				} else {
@@ -837,6 +880,13 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 					CreateStringWME(radarCellIDs[width][height], Names.kPositionID, getPositionID(width));
 					if (radar[width][height].player != null) {
 						radarColors[width][height] = CreateStringWME(radarCellIDs[width][height], Names.kColorID, radar[width][height].player.getColor());
+						if (Soar2D.logger.isLoggable(Level.FINEST)) {
+							logger.finest(this.getName() + ": " + height + "," + width + ": " + getCellID(radar[width][height]) + " " + radar[width][height].player.getColor()); 
+						}
+					} else {
+						if (Soar2D.logger.isLoggable(Level.FINEST)) {
+							logger.finest(this.getName() + ": " + height + "," + width + ": " + getCellID(radar[width][height])); 
+						}
 					}
 				}
 			}
@@ -848,10 +898,16 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	}
 	
 	private void updateRadar(boolean movedOrRotated) {
+		if (Soar2D.logger.isLoggable(Level.FINEST)) {
+			logger.finest(this.getName() + ": radar data: updating"); 
+		}
 		for (int width = 0; width < Soar2D.config.kRadarWidth; ++width) {
 			for (int height = 0; height < Soar2D.config.kRadarHeight; ++height) {
 				// Always skip self, this screws up the tanks.
 				if (width == 1 && height == 0) {
+					if (Soar2D.logger.isLoggable(Level.FINEST)) {
+						logger.finest(this.getName() + ": " + height + "," + width + ": skip self"); 
+					}
 					continue;
 				}
 				if (radar[width][height] == null || (height > observedPower) || ((height == observedPower) && (width != 1))) {
@@ -860,6 +916,13 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 						DestroyWME(radarCellIDs[width][height]);
 						radarCellIDs[width][height] = null;
 						radarColors[width][height] = null;
+						if (Soar2D.logger.isLoggable(Level.FINEST)) {
+							logger.finest(this.getName() + ": " + height + "," + width + ": (deleted)"); 
+						}
+					} else {
+						if (Soar2D.logger.isLoggable(Level.FINEST)) {
+							logger.finest(this.getName() + ": " + height + "," + width + ": (null)"); 
+						}
 					}
 					
 				} else {
@@ -870,6 +933,13 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 						CreateStringWME(radarCellIDs[width][height], Names.kPositionID, getPositionID(width));
 						if (radar[width][height].player != null) {
 							radarColors[width][height] = CreateStringWME(radarCellIDs[width][height], Names.kColorID, radar[width][height].player.getColor());
+							if (Soar2D.logger.isLoggable(Level.FINEST)) {
+								logger.finest(this.getName() + ": " + height + "," + width + ": " + getCellID(radar[width][height]) + " " + radar[width][height].player.getColor() + " (created)"); 
+							}
+						} else {
+							if (Soar2D.logger.isLoggable(Level.FINEST)) {
+								logger.finest(this.getName() + ": " + height + "," + width + ": " + getCellID(radar[width][height]) + " (created)"); 
+							}
 						}
 					} else {
 						boolean changed = !radarCellIDs[width][height].GetAttribute().equals(getCellID(radar[width][height]));
@@ -882,6 +952,13 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 							CreateStringWME(radarCellIDs[width][height], Names.kPositionID, getPositionID(width));
 							if (radar[width][height].player != null) {
 								radarColors[width][height] = CreateStringWME(radarCellIDs[width][height], Names.kColorID, radar[width][height].player.getColor());
+								if (Soar2D.logger.isLoggable(Level.FINEST)) {
+									logger.finest(this.getName() + ": " + height + "," + width + ": " + getCellID(radar[width][height]) + " " + radar[width][height].player.getColor()); 
+								}
+							} else {
+								if (Soar2D.logger.isLoggable(Level.FINEST)) {
+									logger.finest(this.getName() + ": " + height + "," + width + ": " + getCellID(radar[width][height])); 
+								}
 							}
 						}
 					}

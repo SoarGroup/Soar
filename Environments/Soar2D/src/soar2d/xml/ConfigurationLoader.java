@@ -178,7 +178,7 @@ public class ConfigurationLoader {
 		}
 		
 		attribute = loggerTag.GetAttribute(Names.kParamFileName);
-		if (c.logFileName == null) {
+		if (attribute == null) {
 			c.logFileName = c.kDefaultLogFilename;
 		} else {
 			if (attribute.length() <= 0) {
@@ -186,6 +186,12 @@ public class ConfigurationLoader {
 			}
 			c.logFileName = attribute;
 		}
+		
+		attribute = loggerTag.GetAttribute(Names.kParamLogTime);
+		if (attribute != null) {
+			c.logTime = Boolean.parseBoolean(attribute);
+		}
+		
 	}
 	
 	private void game(ElementXML gameTag) throws SyntaxException, SMLException {
@@ -365,6 +371,11 @@ public class ConfigurationLoader {
 		attribute = simulationTag.GetAttribute(Names.kParamMissileResetThreshold);
 		if (attribute != null) {
 			c.missileResetThreshold = Integer.parseInt(attribute);
+		}
+		
+		attribute = simulationTag.GetAttribute(Names.kParamRandomSeed);
+		if (attribute != null) {
+			c.randomSeed = Integer.parseInt(attribute);
 		}
 		
 		ElementXML subTag = null;

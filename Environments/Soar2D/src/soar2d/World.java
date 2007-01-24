@@ -34,8 +34,6 @@ public class World {
 	private int missileReset = 0;
 	
 	public boolean load() {
-		assert logger.isLoggable(Soar2D.config.logLevel); 
-
 		MapLoader loader = new MapLoader();
 		if (!loader.load()) {
 			return false;
