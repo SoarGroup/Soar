@@ -369,6 +369,9 @@ class SoarProduction:
 		for c in conjs:
 			self.neg_conjs[c] = conjs
 	
+	def is_negated(self, c):
+		return c in self.neg_conjs
+	
 	def add_var_distinction(self, v1, v2):
 		if not self.var_distinctions.has_key(v1):
 			self.var_distinctions[v1] = []

@@ -355,6 +355,7 @@ class GGPSentence:
 			
 			if self.__negated:
 				if self.__terms[0].type() == "function":
+					gs_cond = sp.add_condition(gs_cond.head_var)
 					fcond = self.__terms[0].make_soar_cond(sp, gs_cond, 0, var_map)
 					sp.make_negative_conjunction([gs_cond, fcond])
 				else:
@@ -395,16 +396,18 @@ class GGPSentence:
 				else:
 					rel_cond = rel_conds[0]
 					
-			my_rel_cond = sp.add_condition(rel_cond.add_id_predicate(self.__name))
-			if self.__negated:
+			if self.__negated and len(self.__terms) > 0:
+				rel_cond = sp.add_condition(rel_cond.head_var)
+				my_rel_cond = sp.add_condition(rel_cond.add_id_predicate(self.__name))
 				fconds = []
 				for t, i in zip(self.__terms, range(len(self.__terms))):
-					fconds.append(t.make_soar_cond(sp, my_rel_cond, i + 1, var_map, True))
-				if len(fconds) > 0:
-					sp.make_negative_conjunction(fconds[:] + [my_rel_cond])
-				else:
-					sp.make_negative_conjunction([my_rel_cond])
+					if t.type() == "function":
+						fconds.append(t.make_soar_cond(sp, my_rel_cond, i + 1, var_map, True))
+					else:
+						t.make_soar_cond(sp, my_rel_cond, i + 1, var_map, True)
+				sp.make_negative_conjunction([rel_cond, my_rel_cond] + fconds)
 			else:
+				my_rel_cond = sp.add_condition(rel_cond.add_id_predicate(self.__name))
 				for t, i in zip(self.__terms, range(len(self.__terms))):
 					t.make_soar_cond(sp, my_rel_cond, i + 1, var_map)
 	
@@ -413,9 +416,8 @@ class GGPSentence:
 			# next is a one place relation whose single argument is a function
 			if self.__name == "next":
 				gs_conds = sp.get_conditions("gs")
-				assert len(gs_conds) <= 1, "More than one game state condition??"
 				if len(gs_conds) == 0:
-					gs_cond = sp.add_condition(sp.first_state_cond.add_id_predicate("gs"))
+					gs_cond = sp.add_condition(sp.state_cond().add_id_predicate("gs"))
 				else:
 					gs_cond = gs_conds[0]
 				act = sp.add_action(gs_cond.head_var)
