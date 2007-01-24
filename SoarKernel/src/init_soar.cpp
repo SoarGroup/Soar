@@ -592,6 +592,11 @@ void reinitialize_all_agents ( Kernel* thisKernel ) {
 
     // Adds the top state and io symbols and wmes
     init_agent_memory( curagent );
+	 
+	// reset_statistics is called inside reintialize_soar, but it needs to be called here
+	// again to ensure that timers and other counters are reset after init_agent_memory 
+	reset_statistics ( curagent );   
+
   }
 
 }
