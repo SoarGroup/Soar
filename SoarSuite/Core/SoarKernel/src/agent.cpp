@@ -116,6 +116,12 @@ void init_soar_agent(Kernel* thisKernel, agent* thisAgent) {
   /* RDF: For gSKI */
   init_agent_memory(thisAgent);
   /* END */
+
+  // reset_statistics is called inside reintialize_soar, but it needs to be called here
+  // again to ensure that timers and other counters are reset after init_agent_memory 
+  reset_statistics ( thisAgent );   
+
+
 }
 
 

@@ -7293,6 +7293,10 @@ Bool load_rete_net (Kernel* thisKernel, agent* thisAgent, FILE *source_file) {
   /* RDF: 20020814 Now adding the top state and io symbols and wmes */
   init_agent_memory(thisAgent);
 
+  // reset_statistics is called inside reintialize_soar, but it needs to be called here
+  // again to ensure that timers and other counters are reset after init_agent_memory 
+  reset_statistics ( thisAgent );   
+
   return TRUE;
 }
 
