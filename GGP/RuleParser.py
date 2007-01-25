@@ -48,6 +48,7 @@ def ParseGDLBodyToCondition(body, prod, var_map):
 
 
 def ParseDistinctions(body, sp, var_map):
+	x = 0
 	for sentence in body:
 		if sentence.name() == "distinct":
 			v1 = var_map.get_var(str(sentence.term(0)))
@@ -118,6 +119,7 @@ def TranslateImpliedRelation(game_name, head, body):
 	var_map = GDLSoarVarMapper(sp.var_gen)
 	if len(body) > 0:
 		ParseGDLBodyToCondition(body, sp, var_map)
+		ParseDistinctions(body, sp, var_map)
 	head.make_soar_actions(sp, var_map)
 	return [sp]
 	
@@ -360,7 +362,7 @@ def TranslateDescription(game_name, description, filename):
 	cond_elabs = set([]) 
 	uncond_elabs = dict() # rel_name -> [rules]
 	implications = []
-	funcs_with_frame_rules = set([])
+	funcs_with_frame_rules = []
 	role = ""
 
 	best_score = -99999
@@ -400,7 +402,7 @@ def TranslateDescription(game_name, description, filename):
 				# this is a frame rule, process it differently later
 				frame_rules.append(rule)
 				# we also remember that this function constant is supported by frame rules
-				funcs_with_frame_rules.add(frame_term.term(0).name())
+				funcs_with_frame_rules.append(frame_term.term(0))
 			else:
 				# normal implications, to be processed in the next step
 				implications.append(rule)
@@ -453,15 +455,22 @@ def TranslateDescription(game_name, description, filename):
 	
 	# here we process all normal rules
 	
-	# the set of function constants we already have removal rules for
-	covered_funcs = set(funcs_with_frame_rules) 
 	for rule in implications:
-		if rule.head().name() == "next" and rule.head().term(0).name() not in covered_funcs:
-			# if a "next" relation isn't supported by frame rules, we have to make
-			# a rule that explicitly removes it every time it's been on the game state
-			# for one step
-			productions.extend(TranslateImplication(game_name, rule, best_score, make_remove_rule = True))
-			covered_funcs.add(rule.head().term(0).name())
+		if rule.head().name() == "next":
+			have_removal_rule = False
+			for f in funcs_with_frame_rules:
+				if f.covers(rule.head().term(0)):
+					have_removal_rule = True
+					break
+				
+			if have_removal_rule:
+				productions.extend(TranslateImplication(game_name, rule, best_score, make_remove_rule = False))
+			else:
+				# if a "next" relation isn't supported by frame rules, we have to make
+				# a rule that explicitly removes it every time it's been on the game state
+				# for one step
+				productions.extend(TranslateImplication(game_name, rule, best_score, make_remove_rule = True))
+				funcs_with_frame_rules.append(rule.head().term(0))
 		else:
 			productions.extend(TranslateImplication(game_name, rule, best_score, make_remove_rule = False))
 
@@ -584,17 +593,3 @@ def SplitOr(axiom):
 		result.append(DeleteOrOperands(a, i + 1))
 
 	return result
-
-#blocksworld
-#d="((ROLE ROBOT) (INIT (CLEAR B)) (INIT (CLEAR C)) (INIT (ON C A)) (INIT (TABLE A)) (INIT (TABLE B)) (INIT (STEP 1)) (<= (NEXT (ON ?X ?Y)) (DOES ROBOT (S ?X ?Y))) (<= (NEXT (ON ?X ?Y)) (DOES ROBOT (S ?U ?V)) (TRUE (ON ?X ?Y))) (<= (NEXT (TABLE ?X)) (DOES ROBOT (S ?U ?V)) (TRUE (TABLE ?X)) (DISTINCT ?U ?X)) (<= (NEXT (CLEAR ?Y)) (DOES ROBOT (S ?U ?V)) (TRUE (CLEAR ?Y)) (DISTINCT ?V ?Y)) (<= (NEXT (ON ?X ?Y)) (DOES ROBOT (U ?U ?V)) (TRUE (ON ?X ?Y)) (DISTINCT ?U ?X)) (<= (NEXT (TABLE ?X)) (DOES ROBOT (U ?X ?Y))) (<= (NEXT (TABLE ?X)) (DOES ROBOT (U ?U ?V)) (TRUE (TABLE ?X))) (<= (NEXT (CLEAR ?Y)) (DOES ROBOT (U ?X ?Y))) (<= (NEXT (CLEAR ?X)) (DOES ROBOT (U ?U ?V)) (TRUE (CLEAR ?X))) (<= (NEXT (STEP ?Y)) (TRUE (STEP ?X)) (SUCC ?X ?Y)) (SUCC 1 2) (SUCC 2 3) (SUCC 3 4) (<= (LEGAL ROBOT (S ?X ?Y)) (TRUE (CLEAR ?X)) (TRUE (TABLE ?X)) (TRUE (CLEAR ?Y)) (DISTINCT ?X ?Y)) (<= (LEGAL ROBOT (U ?X ?Y)) (TRUE (CLEAR ?X)) (TRUE (ON ?X ?Y))) (<= (GOAL ROBOT 100) (TRUE (ON A B)) (TRUE (ON B C))) (<= (GOAL ROBOT 0) (NOT (TRUE (ON A B)))) (<= (GOAL ROBOT 0) (NOT (TRUE (ON B C)))) (<= TERMINAL (TRUE (STEP 4))) (<= TERMINAL (TRUE (ON A B)) (TRUE (ON B C))))"
-
-#buttons
-d="((ROLE ROBOT) (INIT (OFF P)) (INIT (OFF Q)) (INIT (OFF R)) (INIT (STEP 1)) (<= (NEXT (ON P)) (DOES ROBOT A) (TRUE (OFF P))) (<= (NEXT (ON Q)) (DOES ROBOT A) (TRUE (ON Q))) (<= (NEXT (ON R)) (DOES ROBOT A) (TRUE (ON R))) (<= (NEXT (OFF P)) (DOES ROBOT A) (TRUE (ON P))) (<= (NEXT (OFF Q)) (DOES ROBOT A) (TRUE (OFF Q))) (<= (NEXT (OFF R)) (DOES ROBOT A) (TRUE (OFF R))) (<= (NEXT (ON P)) (DOES ROBOT B) (TRUE (ON Q))) (<= (NEXT (ON Q)) (DOES ROBOT B) (TRUE (ON P))) (<= (NEXT (ON R)) (DOES ROBOT B) (TRUE (ON R))) (<= (NEXT (OFF P)) (DOES ROBOT B) (TRUE (OFF Q))) (<= (NEXT (OFF Q)) (DOES ROBOT B) (TRUE (OFF P))) (<= (NEXT (OFF R)) (DOES ROBOT B) (TRUE (OFF R))) (<= (NEXT (ON P)) (DOES ROBOT C) (TRUE (ON P))) (<= (NEXT (ON Q)) (DOES ROBOT C) (TRUE (ON R))) (<= (NEXT (ON R)) (DOES ROBOT C) (TRUE (ON Q))) (<= (NEXT (OFF P)) (DOES ROBOT C) (TRUE (OFF P))) (<= (NEXT (OFF Q)) (DOES ROBOT C) (TRUE (OFF R))) (<= (NEXT (OFF R)) (DOES ROBOT C) (TRUE (OFF Q))) (<= (NEXT (STEP ?Y)) (TRUE (STEP ?X)) (SUCC ?X ?Y)) (SUCC 1 2) (SUCC 2 3) (SUCC 3 4) (SUCC 4 5) (SUCC 5 6) (SUCC 6 7) (LEGAL ROBOT A) (LEGAL ROBOT B) (LEGAL ROBOT C) (<= (GOAL ROBOT 100) (TRUE (ON P)) (TRUE (ON Q)) (TRUE (ON R))) (<= (GOAL ROBOT 0) (OR (NOT (TRUE (ON P))) (NOT (TRUE (ON Q))) (NOT (TRUE (ON R))))) (<= TERMINAL (TRUE (STEP 7))) (<= TERMINAL (TRUE (ON P)) (TRUE (ON Q)) (TRUE (ON R))))"
-
-#maze
-#d="((ROLE ROBOT) (INIT (CELL A)) (INIT (GOLD C)) (INIT (STEP 1)) (<= (NEXT (CELL ?Y)) (DOES ROBOT MOVE) (TRUE (CELL ?X)) (ADJACENT ?X ?Y)) (<= (NEXT (CELL ?X)) (DOES ROBOT GRAB) (TRUE (CELL ?X))) (<= (NEXT (CELL ?X)) (DOES ROBOT DROP) (TRUE (CELL ?X))) (<= (NEXT (GOLD ?X)) (DOES ROBOT MOVE) (TRUE (GOLD ?X))) (<= (NEXT (GOLD I)) (DOES ROBOT GRAB) (TRUE (CELL ?X)) (TRUE (GOLD ?X))) (<= (NEXT (GOLD I)) (DOES ROBOT GRAB) (TRUE (GOLD I))) (<= (NEXT (GOLD ?Y)) (DOES ROBOT GRAB) (TRUE (CELL ?X)) (TRUE (GOLD ?Y)) (DISTINCT ?X ?Y)) (<= (NEXT (GOLD ?X)) (DOES ROBOT DROP) (TRUE (CELL ?X)) (TRUE (GOLD I))) (<= (NEXT (GOLD ?X)) (DOES ROBOT DROP) (TRUE (GOLD ?X)) (DISTINCT ?X I)) (<= (NEXT (STEP ?Y)) (TRUE (STEP ?X)) (SUCC ?X ?Y)) (ADJACENT A B) (ADJACENT B C) (ADJACENT C D) (ADJACENT D A) (SUCC 1 2) (SUCC 2 3) (SUCC 3 4) (SUCC 4 5) (SUCC 5 6) (SUCC 6 7) (SUCC 7 8) (SUCC 8 9) (SUCC 9 10) (<= (LEGAL ROBOT MOVE)) (<= (LEGAL ROBOT GRAB) (TRUE (CELL ?X)) (TRUE (GOLD ?X))) (<= (LEGAL ROBOT DROP) (TRUE (GOLD I))) (<= (GOAL ROBOT 100) (TRUE (GOLD A))) (<= (GOAL ROBOT 0) (TRUE (GOLD ?X)) (DISTINCT ?X A)) (<= TERMINAL (TRUE (STEP 10))) (<= TERMINAL (TRUE (GOLD A))))"
-
-#hanoi
-#d="((ROLE PLAYER) (INIT (ON DISC5 PILLAR1)) (INIT (ON DISC4 DISC5)) (INIT (ON DISC3 DISC4)) (INIT (ON DISC2 DISC3)) (INIT (ON DISC1 DISC2)) (INIT (CLEAR DISC1)) (INIT (CLEAR PILLAR2)) (INIT (CLEAR PILLAR3)) (INIT (STEP S0)) (<= (LEGAL PLAYER (PUTON ?X ?Y)) (TRUE (CLEAR ?X)) (TRUE (CLEAR ?Y)) (SMALLERDISC ?X ?Y)) (<= (NEXT (STEP ?Y)) (TRUE (STEP ?X)) (SUCCESSOR ?X ?Y)) (<= (NEXT (ON ?X ?Y)) (DOES PLAYER (PUTON ?X ?Y))) (<= (NEXT (ON ?X ?Y)) (TRUE (ON ?X ?Y)) (NOT (DOES PLAYER (PUTON ?X ?Y1))) (DISC ?Y1)) (<= (NEXT (CLEAR ?Y)) (TRUE (ON ?X ?Y)) (DOES PLAYER (PUTON ?X ?Y1))) (<= (NEXT (CLEAR ?Y)) (TRUE (CLEAR ?Y)) (NOT (DOES PLAYER (PUTON ?X ?Y))) (DISC ?X)) (<= (GOAL PLAYER 100) (TOWER PILLAR3 S5)) (<= (GOAL PLAYER 80) (TOWER PILLAR3 S4)) (<= (GOAL PLAYER 60) (TOWER PILLAR3 S3)) (<= (GOAL PLAYER 40) (TOWER PILLAR3 S2)) (<= (GOAL PLAYER 0) (TOWER PILLAR3 ?HEIGHT) (SMALLER ?HEIGHT S2)) (<= TERMINAL (TRUE (STEP S31))) (<= (TOWER ?X S0) (TRUE (CLEAR ?X))) (<= (TOWER ?X ?HEIGHT) (TRUE (ON ?Y ?X)) (DISC ?Y) (TOWER ?Y ?HEIGHT1) (SUCCESSOR ?HEIGHT1 ?HEIGHT)) (PILLAR PILLAR1) (PILLAR PILLAR2) (PILLAR PILLAR3) (NEXTSIZE DISC1 DISC2) (NEXTSIZE DISC2 DISC3) (NEXTSIZE DISC3 DISC4) (NEXTSIZE DISC4 DISC5) (DISC DISC1) (DISC DISC2) (DISC DISC3) (DISC DISC4) (DISC DISC5) (<= (NEXTSIZE DISC5 ?PILLAR) (PILLAR ?PILLAR)) (<= (SMALLERDISC ?A ?B) (NEXTSIZE ?A ?B)) (<= (SMALLERDISC ?A ?B) (NEXTSIZE ?A ?C) (SMALLERDISC ?C ?B)) (SUCCESSOR S0 S1) (SUCCESSOR S1 S2) (SUCCESSOR S2 S3) (SUCCESSOR S3 S4) (SUCCESSOR S4 S5) (SUCCESSOR S5 S6) (SUCCESSOR S6 S7) (SUCCESSOR S7 S8) (SUCCESSOR S8 S9) (SUCCESSOR S9 S10) (SUCCESSOR S10 S11) (SUCCESSOR S11 S12) (SUCCESSOR S12 S13) (SUCCESSOR S13 S14) (SUCCESSOR S14 S15) (SUCCESSOR S15 S16) (SUCCESSOR S16 S17) (SUCCESSOR S17 S18) (SUCCESSOR S18 S19) (SUCCESSOR S19 S20) (SUCCESSOR S20 S21) (SUCCESSOR S21 S22) (SUCCESSOR S22 S23) (SUCCESSOR S23 S24) (SUCCESSOR S24 S25) (SUCCESSOR S25 S26) (SUCCESSOR S26 S27) (SUCCESSOR S27 S28) (SUCCESSOR S28 S29) (SUCCESSOR S29 S30) (SUCCESSOR S30 S31) (<= (SMALLER ?X ?Y) (SUCCESSOR ?X ?Y)) (<= (SMALLER ?X ?Y) (SUCCESSOR ?X ?Z) (SMALLER ?Z ?Y)))"
-
-TranslateDescription("game", ElemGGP(d), "generated.soar")

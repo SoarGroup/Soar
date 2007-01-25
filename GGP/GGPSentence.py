@@ -63,6 +63,9 @@ class GGPConstant(GGPTerm):
 	def mangle(self, mangled, name_gen):
 		# can't mangle constants
 		return
+	
+	def covers(self, other):
+		return self == other
 
 class GGPVariable(GGPTerm):
 	def __init__(self, elementGGP):
@@ -109,6 +112,9 @@ class GGPVariable(GGPTerm):
 			new_var = name_gen.get_name(self.__name)
 			mangled[self.__name] = new_var
 			self.__name = new_var
+	
+	def covers(self, other):
+		return isinstance(other, GGPVariable) or isinstance(other, GGPConstant)
 
 # functions can appear in two forms in soar rules
 #
@@ -217,14 +223,31 @@ class GGPFunction(GGPTerm):
 		if self.__name != other.__name or len(self.__terms) != len(other.__terms):
 			return False
 		
-		for i in range(len(self.__terms)):
-			if self.__terms[i] != other.__terms[i]:
+		for i, j in zip(self.__terms, other.__terms):
+			if i != j:
 				return False
 		
 		return True
 	
 	def __ne__(self, other):
 		return not self == other
+	
+	# The concept of "covers" is only approximate. Specifically, whether one variable
+	# covers another variable or constant is dependent on the constraints put on that
+	# variable by the conditions in the body of a GGP rule. There's no way to figure
+	# that out from just looking at the function.
+	def covers(self, other):
+		if not isinstance(other, GGPFunction):
+			return False
+		
+		if self.__name != other.__name:
+			return False
+		
+		for st, ot in zip(self.__terms, other.__terms):
+			if not st.covers(ot):
+				return False
+		
+		return True
 
 class GGPSentence:
 	
@@ -407,7 +430,7 @@ class GGPSentence:
 						t.make_soar_cond(sp, my_rel_cond, i + 1, var_map, True)
 				sp.make_negative_conjunction([rel_cond, my_rel_cond] + fconds)
 			else:
-				my_rel_cond = sp.add_condition(rel_cond.add_id_predicate(self.__name))
+				my_rel_cond = sp.add_condition(rel_cond.add_id_predicate(self.__name, self.__negated))
 				for t, i in zip(self.__terms, range(len(self.__terms))):
 					t.make_soar_cond(sp, my_rel_cond, i + 1, var_map)
 	

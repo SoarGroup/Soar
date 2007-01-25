@@ -1,7 +1,10 @@
 import RuleParser
 from ElementGGP import ElementGGP
 
-kif = open("mummymaze1p-horiz.kif")
+kifdir = "..\\kif"
+#kiffile = "mummymaze1p-horiz.kif"
+kiffile = "buttons.kif"
+kif = open("%s\\%s" % (kifdir, kiffile))
 
 description = ""
 line = kif.readline()
