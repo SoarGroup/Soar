@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.logging.*;
 
 import sml.*;
+import soar2d.Configuration.SimType;
 import soar2d.player.*;
 
 /**
@@ -34,7 +35,7 @@ public class Simulation {
 	/**
 	 * Legal colors (see PlayerConfig)
 	 */
-	private final String kColors[] = { "red", "blue", "purple", "yellow", "orange", "black", "green" };
+	public final String kColors[] = { "red", "blue", "purple", "yellow", "orange", "black", "green" };
 	/**
 	 * A list of colors not currently taken by a player
 	 */
@@ -47,8 +48,6 @@ public class Simulation {
 	 * String agent name to player config mapping
 	 */
 	private HashMap<String, PlayerConfig> configs = new HashMap<String, PlayerConfig>();
-
-	private static Logger logger = Logger.getLogger("soar2d");
 
 	/**
 	 * @return true if there were no errors during initialization
@@ -63,15 +62,15 @@ public class Simulation {
 		}
 		
 		// Tanksoar uses run til output
-		runTilOutput = Soar2D.config.tanksoar;
+		runTilOutput = (Soar2D.config.getType() == SimType.kTankSoar);
 		
 		// Initialize Soar
 		if (Soar2D.config.remote) {
 			kernel = Kernel.CreateRemoteConnection(true);
 		} else {
 			// Create kernel
-			//kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", 12121);
-			kernel = Kernel.CreateKernelInCurrentThread("SoarKernelSML", true);
+			kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", 12121);
+			//kernel = Kernel.CreateKernelInCurrentThread("SoarKernelSML", true);
 		}
 
 		if (kernel.HadError()) {
@@ -261,12 +260,13 @@ public class Simulation {
 				Player player = null;
 				
 				// eater or tank depending on the setting
-				if (Soar2D.config.eaters) {
+				switch(Soar2D.config.getType()) {
+				case kEaters:
 					player = new Eater(playerConfig, true);
-				} else if (Soar2D.config.tanksoar) {
+					break;
+				case kTankSoar:
 					player = new Tank(playerConfig);
-				} else {
-					throw new CreationException("Don't know how to create player for game type.");
+					break;
 				}
 				
 				assert player != null;
@@ -302,12 +302,13 @@ public class Simulation {
 					Player player = null;
 					
 					// create the tank or eater, soar style
-					if (Soar2D.config.eaters) {
+					switch(Soar2D.config.getType()) {
+					case kEaters:
 						player = new SoarEater(agent, playerConfig); 
-					} else if (Soar2D.config.tanksoar) {
-						player = new SoarTank(agent, playerConfig); 
-					} else {
-						throw new CreationException("Don't know how to create player for game type.");
+						break;
+					case kTankSoar:
+						player = new SoarTank(agent, playerConfig);
+						break;
 					}
 					
 					assert player != null;
@@ -383,10 +384,10 @@ public class Simulation {
 		String os = System.getProperty("os.name");
 		String commandLine;
 		if (os.matches(".+indows.*") || os.matches("INDOWS")) {
-			commandLine = "javaw -jar \"" + Soar2D.config.basePath 
+			commandLine = "javaw -jar \"" + Soar2D.config.getBasePath() 
 			+ "..\\..\\SoarLibrary\\bin\\SoarJavaDebugger.jar\" -cascade -remote -agent " + agentName;
 		} else {
-			commandLine = System.getProperty("java.home") + "/bin/java -jar " + Soar2D.config.basePath
+			commandLine = System.getProperty("java.home") + "/bin/java -jar " + Soar2D.config.getBasePath() 
 			+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -cascade -remote -agent " + agentName;
 		}
 		

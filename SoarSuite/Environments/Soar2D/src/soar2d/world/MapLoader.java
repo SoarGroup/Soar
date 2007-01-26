@@ -2,6 +2,7 @@ package soar2d.world;
 
 import sml.*;
 import soar2d.*;
+import soar2d.Configuration.SimType;
 import soar2d.xml.SMLException;
 import soar2d.xml.SyntaxException;
 
@@ -435,7 +436,7 @@ public class MapLoader {
 			}
 		}
 
-		if (Soar2D.config.tanksoar && !background) {
+		if (Soar2D.config.getType() == SimType.kTankSoar && !background) {
 			// add ground
 			CellObject cellObject = map.cellObjectManager.createObject(Names.kGround);
 			map.addObjectToCell(location, cellObject);
@@ -451,7 +452,7 @@ public class MapLoader {
 		
 		CellObject cellObject = map.cellObjectManager.createObject(name);
 		boolean background = false;
-		if (Soar2D.config.tanksoar) {
+		if (Soar2D.config.getType() == SimType.kTankSoar) {
 			if (cellObject.hasProperty(Names.kPropertyBlock) 
 					|| (cellObject.getName() == Names.kGround)
 					|| (cellObject.hasProperty(Names.kPropertyCharger))) {
@@ -497,12 +498,12 @@ public class MapLoader {
 			addWallAndRemoveFood(new java.awt.Point(col, map.size - 1));
 		}
 		
-		double probability = Soar2D.config.kLowProbability;
+		double probability = Soar2D.config.lowProbability;
 		for (int row = 2; row < map.size - 2; ++row) {
 			for (int col = 2; col < map.size - 2; ++col) {
 				if (noWallsOnCorners(row, col)) {
 					if (wallOnAnySide(row, col)) {
-						probability = Soar2D.config.kHigherProbability;					
+						probability = Soar2D.config.higherProbability;					
 					}
 					if (Simulation.random.nextDouble() < probability) {
 						if (map.mapCells[row][col] == null) {
@@ -510,7 +511,7 @@ public class MapLoader {
 						}
 						addWallAndRemoveFood(new java.awt.Point(col, row));
 					}
-					probability = Soar2D.config.kLowProbability;
+					probability = Soar2D.config.lowProbability;
 				}
 			}
 		}

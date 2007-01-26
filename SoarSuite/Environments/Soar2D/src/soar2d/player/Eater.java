@@ -1,7 +1,5 @@
 package soar2d.player;
 
-import java.util.logging.Level;
-
 import soar2d.Soar2D;
 import soar2d.World;
 

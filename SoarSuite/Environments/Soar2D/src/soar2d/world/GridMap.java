@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.util.*;
 
 import soar2d.*;
+import soar2d.Configuration.SimType;
 import soar2d.player.*;
 
 /**
@@ -188,7 +189,7 @@ public class GridMap {
 				java.awt.Point location = updatablesLocations.get(cellObject);
 				assert location != null;
 				int previousScore = 0;
-				if (Soar2D.config.eaters) {
+				if (Soar2D.config.getType() == SimType.kEaters) {
 					if (cellObject.hasProperty(Names.kPropertyPoints)) {
 						previousScore = cellObject.getIntProperty(Names.kPropertyPoints);
 					}
@@ -202,11 +203,11 @@ public class GridMap {
 					setRedraw(cell);
 					
 					// if it is not tanksoar or if the cell is not a missle or if shouldRemoveMissile returns true
-					if (!Soar2D.config.tanksoar || !cellObject.hasProperty(Names.kPropertyMissile) 
+					if ((Soar2D.config.getType() != SimType.kTankSoar) || !cellObject.hasProperty(Names.kPropertyMissile) 
 							|| shouldRemoveMissile(world, location, cell, cellObject)) {
 						
 						// we need an explosion if it was a tanksoar missile
-						if (Soar2D.config.tanksoar && cellObject.hasProperty(Names.kPropertyMissile)) {
+						if ((Soar2D.config.getType() == SimType.kTankSoar) && cellObject.hasProperty(Names.kPropertyMissile)) {
 							explosions.add(location);
 						}
 						iter.remove();
@@ -214,7 +215,7 @@ public class GridMap {
 						removalStateUpdate(cellObject);
 					}
 				}
-				if (Soar2D.config.eaters) {
+				if (Soar2D.config.getType() == SimType.kEaters) {
 					if (cellObject.hasProperty(Names.kPropertyPoints)) {
 						scoreCount += cellObject.getIntProperty(Names.kPropertyPoints) - previousScore;
 					}
@@ -281,7 +282,8 @@ public class GridMap {
 	}
 		
 	private void removalStateUpdate(CellObject object) {
-		if (Soar2D.config.tanksoar) {
+		switch (Soar2D.config.getType()) {
+		case kTankSoar:
 			if (object.hasProperty(Names.kPropertyCharger)) {
 				if (health && object.hasProperty(Names.kPropertyHealth)) {
 					health = false;
@@ -293,13 +295,15 @@ public class GridMap {
 			if (object.hasProperty(Names.kPropertyMissiles)) {
 				missilePacks -= 1;
 			}
-		} else if (Soar2D.config.eaters) {
+			break;
+		case kEaters:
 			if (object.hasProperty(Names.kPropertyEdible)) {
 				foodCount -= 1;
 			}
 			if (object.hasProperty(Names.kPropertyPoints)) {
 				scoreCount -= object.getIntProperty(Names.kPropertyPoints);
 			}
+			break;
 		}
 		if (Soar2D.config.terminalUnopenedBoxes) {
 			if (isUnopenedBox(object)) {
@@ -359,7 +363,9 @@ public class GridMap {
 				unopenedBoxes.add(object);
 			}
 		}
-		if (Soar2D.config.tanksoar) {
+		
+		switch (Soar2D.config.getType()) {
+		case kTankSoar:
 			if (object.hasProperty(Names.kPropertyCharger)) {
 				if (!health && object.hasProperty(Names.kPropertyHealth)) {
 					health = true;
@@ -371,13 +377,15 @@ public class GridMap {
 			if (object.hasProperty(Names.kPropertyMissiles)) {
 				missilePacks += 1;
 			}
-		} else if (Soar2D.config.eaters) {
+			break;
+		case kEaters:
 			if (object.hasProperty(Names.kPropertyEdible)) {
 				foodCount += 1;
 			}
 			if (object.hasProperty(Names.kPropertyPoints)) {
 				scoreCount += object.getIntProperty(Names.kPropertyPoints);
 			}
+			break;
 		}
 		cell.addCellObject(object);
 		setRedraw(cell);
@@ -389,12 +397,16 @@ public class GridMap {
 	
 	public void setExplosion(java.awt.Point location) {
 		CellObject explosion = null;
-		if (Soar2D.config.tanksoar) {
+		switch (Soar2D.config.getType()) {
+		case kTankSoar:
 			explosion = cellObjectManager.createObject(Names.kExplosion);
-		} else {
+			break;
+			
+		case kEaters:
 			explosion = new CellObject(Names.kExplosion, true);
 			explosion.addProperty(Names.kPropertyLinger, "2");
 			explosion.setLingerUpdate(true);
+			break;
 		}
 		addObjectToCell(location, explosion);
 	}
@@ -565,7 +577,7 @@ public class GridMap {
 			searchList.removeFirst();
 			parentCell = getCell(parentLocation);
 			distance = parentCell.distance;
-			if (distance >= Soar2D.config.kMaxSmellDistance) {
+			if (distance >= Soar2D.config.maxSmellDistance) {
 				//System.out.println(parentCell + " too far");
 				continue;
 			}

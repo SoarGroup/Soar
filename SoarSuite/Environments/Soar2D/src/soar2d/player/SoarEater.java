@@ -101,7 +101,7 @@ public class SoarEater extends Eater {
 	/**
 	 * the 5x5 vision grid
 	 */
-	private SoarCell[][] cells = new SoarCell[(Soar2D.config.kEaterVision * 2 ) + 1][(Soar2D.config.kEaterVision * 2 ) + 1];
+	private SoarCell[][] cells = new SoarCell[(Soar2D.config.eaterVision * 2 ) + 1][(Soar2D.config.eaterVision * 2 ) + 1];
 	/**
 	 * soar commands to run before this agent is destroyed
 	 */
@@ -139,8 +139,8 @@ public class SoarEater extends Eater {
 		}
 
 		// bootstrap the 5x5 grid
-		cells[Soar2D.config.kEaterVision][Soar2D.config.kEaterVision].me = agent.CreateIdWME(agent.GetInputLink(), Names.kMyLocationID);
-		createView(Soar2D.config.kEaterVision, Soar2D.config.kEaterVision);
+		cells[Soar2D.config.eaterVision][Soar2D.config.eaterVision].me = agent.CreateIdWME(agent.GetInputLink(), Names.kMyLocationID);
+		createView(Soar2D.config.eaterVision, Soar2D.config.eaterVision);
 		
 		random = 0;
 		generateNewRandom();
@@ -157,7 +157,7 @@ public class SoarEater extends Eater {
 	 * each cell's iterated bool gets set true if it is initialized.
 	 */
 	private void createView(int x, int y) {
-		if (x >= 0 && x <= (Soar2D.config.kEaterVision * 2) && y >=0 && y <= (Soar2D.config.kEaterVision * 2) && !cells[x][y].iterated) {
+		if (x >= 0 && x <= (Soar2D.config.eaterVision * 2) && y >=0 && y <= (Soar2D.config.eaterVision * 2) && !cells[x][y].iterated) {
 			cells[x][y].iterated = true;
 
 			if (x > 0) {
@@ -167,7 +167,7 @@ public class SoarEater extends Eater {
 					cells[x][y].west = agent.CreateSharedIdWME(cells[x][y].me, Names.kWest, cells[x - 1][y].me);
 			}
 			
-			if (x < (Soar2D.config.kEaterVision * 2)) {
+			if (x < (Soar2D.config.eaterVision * 2)) {
 				if (cells[x + 1][y].me == null)
 					cells[x + 1][y].me = agent.CreateIdWME(cells[x][y].me, Names.kEast);
 				else
@@ -181,7 +181,7 @@ public class SoarEater extends Eater {
 					cells[x][y].north = agent.CreateSharedIdWME(cells[x][y].me, Names.kNorth, cells[x][y - 1].me);
 			}
 			
-			if (y < (Soar2D.config.kEaterVision * 2)) {
+			if (y < (Soar2D.config.eaterVision * 2)) {
 				if (cells[x][y + 1].me == null)
 					cells[x][y + 1].me = agent.CreateIdWME(cells[x][y].me, Names.kSouth);
 				else
@@ -222,9 +222,9 @@ public class SoarEater extends Eater {
 		// update the 5x5
 		java.awt.Point viewLocation = new java.awt.Point();
 		for (int x = 0; x < cells.length; ++x) {
-			viewLocation.x = x - Soar2D.config.kEaterVision + location.x;
+			viewLocation.x = x - Soar2D.config.eaterVision + location.x;
 			for (int y = 0; y < cells[x].length; ++y) {
-				viewLocation.y = y - Soar2D.config.kEaterVision + location.y;
+				viewLocation.y = y - Soar2D.config.eaterVision + location.y;
 
 				// get the current soarcell to update
 				SoarCell soarCell = cells[x][y];

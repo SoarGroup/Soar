@@ -4,6 +4,7 @@ import java.awt.*;
 import java.util.*;
 import java.util.logging.*;
 
+import soar2d.Configuration.SimType;
 import soar2d.player.*;
 import soar2d.world.*;
 
@@ -41,7 +42,7 @@ public class World {
 		
 		GridMap newMap = loader.getMap();
 		
-		if (Soar2D.config.tanksoar) {
+		if (Soar2D.config.getType() == SimType.kTankSoar) {
 			if (!newMap.hasEnergyCharger()) {
 				if (!addCharger(false, newMap)) {
 					return false;
@@ -52,14 +53,13 @@ public class World {
 					return false;
 				}
 			}
-			
 		}
 		
 		map = newMap;
 		
-		if (Soar2D.config.tanksoar) {
+		if (Soar2D.config.getType() == SimType.kTankSoar) {
 			// Spawn missile packs
-			while (map.numberMissilePacks() < Soar2D.config.kMaxMissilePacks) {
+			while (map.numberMissilePacks() < Soar2D.config.maxMissilePacks) {
 				spawnMissilePack(true);
 			}
 		}
@@ -118,15 +118,18 @@ public class World {
 			return false;
 		}
 		
-		if (Soar2D.config.eaters) {
+		switch (Soar2D.config.getType()) {
+		case kEaters:
 			// remove food from it
 			map.removeAllWithProperty(startingLocation, Names.kPropertyEdible);
 			
 			// reset (init-soar)
 			player.reset();
+			break;
 			
-		} else if (Soar2D.config.tanksoar) {
+		case kTankSoar:
 			player.reset();
+			break;
 		}
 		return true;
 	}
@@ -136,7 +139,7 @@ public class World {
 		while (iter.hasNext()) {
 			Player player = iter.next();
 			
-			if (Soar2D.config.tanksoar) {
+			if (Soar2D.config.getType() == SimType.kTankSoar) {
 				if (playersChanged) {
 					player.playersChanged();
 				}
@@ -178,7 +181,7 @@ public class World {
 			player.update(this, locations.get(player.getName()));
 		}
 		
-		if (Soar2D.config.tanksoar) {
+		if (Soar2D.config.getType() == SimType.kTankSoar) {
 			Iterator<Player> playerIter = players.iterator();
 			while (playerIter.hasNext()) {
 				Player player = playerIter.next();
@@ -237,17 +240,20 @@ public class World {
 		
 		ArrayList<java.awt.Point> availableLocations = getAvailableLocations(map);
 		// make sure there is an available cell
-		if (Soar2D.config.tanksoar) {
+		switch (Soar2D.config.getType()) {
+		case kTankSoar:
 			// There must be enough room for all tank and missile packs
-			if (availableLocations.size() < Soar2D.config.kMaxMissilePacks + 1) {
+			if (availableLocations.size() < Soar2D.config.maxMissilePacks + 1) {
 				Soar2D.control.severeError("There are no suitable starting locations for " + player.getName() + ".");
 				return null;
 			}
-		} else {
+			break;
+		case kEaters:
 			if (availableLocations.size() < 1) {
 				Soar2D.control.severeError("There are no suitable starting locations for " + player.getName() + ".");
 				return null;
 			}
+			break;
 		}
 		
 		java.awt.Point location = null;
@@ -326,12 +332,12 @@ public class World {
 				map.setPlayer(oldLocation, null);
 				
 				if (move.jump) {
-					player.adjustPoints(Soar2D.config.kJumpPenalty, "jump penalty");
+					player.adjustPoints(Soar2D.config.jumpPenalty, "jump penalty");
 				}
 				locations.put(player.getName(), newLocation);
 				
 			} else {
-				player.adjustPoints(Soar2D.config.kWallPenalty, "wall collision");
+				player.adjustPoints(Soar2D.config.wallPenalty, "wall collision");
 			}
 		}
 	}
@@ -416,9 +422,9 @@ public class World {
 		missile.apply(player);
 		
 		// apply points
-		player.adjustPoints(Soar2D.config.kMissileHitPenalty, missile.getName());
+		player.adjustPoints(Soar2D.config.missileHitPenalty, missile.getName());
 		Player other = playersMap.get(missile.getProperty(Names.kPropertyOwner));
-		other.adjustPoints(Soar2D.config.kMissileHitAward, missile.getName());
+		other.adjustPoints(Soar2D.config.missileHitAward, missile.getName());
 		
 		// charger insta-kill
 		if (map.getAllWithProperty(location, Names.kPropertyCharger).size() > 0) {
@@ -526,12 +532,13 @@ public class World {
 			return;
 		}
 		
-		if (Soar2D.config.eaters) {
+		switch (Soar2D.config.getType()) {
+		case kEaters:
 			eatersUpdate();
-		} else if (Soar2D.config.tanksoar) {
+			break;
+		case kTankSoar:
 			tankSoarUpdate();
-		} else {
-			Soar2D.control.severeError("Update called, unknown game type.");
+			break;
 		}
 	}
 	
@@ -645,7 +652,7 @@ public class World {
 				
 				// take damage
 				String name = map.getAllWithProperty(newLocation, Names.kPropertyBlock).get(0).getName();
-				player.adjustHealth(Soar2D.config.kTankCollisionPenalty, name);
+				player.adjustHealth(Soar2D.config.tankCollisionPenalty, name);
 				
 				if (player.getHealth() <= 0) {
 					HashSet<Player> assailants = killedTanks.get(player.getName());
@@ -690,8 +697,8 @@ public class World {
 			// Cross collision detected
 			
 			// take damage
-			player.adjustHealth(Soar2D.config.kTankCollisionPenalty, "cross collision " + other.getName());
-			other.adjustHealth(Soar2D.config.kTankCollisionPenalty, "cross collision " + player.getName());
+			player.adjustHealth(Soar2D.config.tankCollisionPenalty, "cross collision " + other.getName());
+			other.adjustHealth(Soar2D.config.tankCollisionPenalty, "cross collision " + player.getName());
 			
 			if (player.getHealth() <= 0) {
 				HashSet<Player> assailants = killedTanks.get(player.getName());
@@ -741,7 +748,7 @@ public class World {
 			// Shields
 			if (player.shieldsUp()) {
 				if (player.getEnergy() > 0) {
-					player.adjustEnergy(Soar2D.config.kSheildEnergyUsage, "shields");
+					player.adjustEnergy(Soar2D.config.sheildEnergyUsage, "shields");
 				} else {
 					if (Soar2D.logger.isLoggable(Level.FINER)) logger.finer(player.getName() + ": shields ran out of energy");
 					player.setShields(false);
@@ -764,7 +771,7 @@ public class World {
 			if (collision.size() > 1) {
 				
 				int damage = collision.size() - 1;
-				damage *= Soar2D.config.kTankCollisionPenalty;
+				damage *= Soar2D.config.tankCollisionPenalty;
 				
 				if (Soar2D.logger.isLoggable(Level.FINE)) logger.fine("Collision, " + (damage * -1) + " damage:");
 				
@@ -907,7 +914,7 @@ public class World {
 		handleIncoming();
 		
 		// Spawn missile packs
-		if (map.numberMissilePacks() < Soar2D.config.kMaxMissilePacks) {
+		if (map.numberMissilePacks() < Soar2D.config.maxMissilePacks) {
 			spawnMissilePack(false);
 		}
 		
@@ -919,7 +926,7 @@ public class World {
 			String playerName = playerNameIter.next();
 			Player player = playersMap.get(playerName);
 			
-			player.adjustPoints(Soar2D.config.kKillPenalty, "fragged");
+			player.adjustPoints(Soar2D.config.killPenalty, "fragged");
 			assert killedTanks.containsKey(playerName);
 			playerIter = killedTanks.get(playerName).iterator();
 			while (playerIter.hasNext()) {
@@ -927,7 +934,7 @@ public class World {
 				if (assailant.getName().equals(player.getName())) {
 					continue;
 				}
-				assailant.adjustPoints(Soar2D.config.kKillAward, "fragged " + player.getName());
+				assailant.adjustPoints(Soar2D.config.killAward, "fragged " + player.getName());
 			}
 			
 			fragPlayer(player);
@@ -1014,7 +1021,7 @@ public class World {
 	}
 	
 	private void spawnMissilePack(boolean force) {
-		if (force || (Simulation.random.nextInt(100) < Soar2D.config.kMissilePackRespawnChance)) {
+		if (force || (Simulation.random.nextInt(100) < Soar2D.config.missilePackRespawnChance)) {
 			// Get available spots
 			ArrayList<java.awt.Point> spots = getAvailableLocations(map);
 			assert spots.size() > 0;
@@ -1035,13 +1042,13 @@ public class World {
 			CellObject charger = iter.next();
 			if (charger.hasProperty(Names.kPropertyHealth)) {
 				player.setOnHealthCharger(true);
-				if (player.getHealth() < Soar2D.config.kDefaultHealth) {
+				if (player.getHealth() < Soar2D.config.defaultHealth) {
 					player.adjustHealth(charger.getIntProperty(Names.kPropertyHealth), "charger");
 				}
 			}
 			if (charger.hasProperty(Names.kPropertyEnergy)) {
 				player.setOnEnergyCharger(true);
-				if (player.getEnergy() < Soar2D.config.kDefaultEnergy) {
+				if (player.getEnergy() < Soar2D.config.defaultEnergy) {
 					player.adjustEnergy(charger.getIntProperty(Names.kPropertyEnergy), "charger");
 				}
 			}

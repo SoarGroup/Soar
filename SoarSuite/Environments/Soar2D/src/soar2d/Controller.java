@@ -53,12 +53,13 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		
 		if (Soar2D.wm.using()) {
 			String title = null;
-			if (Soar2D.config.eaters) {
+			switch(Soar2D.config.getType()) {
+			case kEaters:
 				title = "Eaters";
-			} else if (Soar2D.config.tanksoar) {
+				break;
+			case kTankSoar:
 				title = "TankSoar";
-			} else {
-				title = "Error";
+				break;
 			}
 			Soar2D.wm.errorMessage(title, message);
 		}
@@ -74,12 +75,13 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		
 		if (Soar2D.wm.using()) {
 			String title = null;
-			if (Soar2D.config.eaters) {
+			switch(Soar2D.config.getType()) {
+			case kEaters:
 				title = "Eaters";
-			} else if (Soar2D.config.tanksoar) {
+				break;
+			case kTankSoar:
 				title = "TankSoar";
-			} else {
-				title = "Information";
+				break;
 			}
 			Soar2D.wm.infoMessage(title, message);
 		}
@@ -335,7 +337,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		if (!mapFile.exists()) {
 			
 			// doesn't exist as absolute, check relative to map dir
-			mapFile = new File(Soar2D.config.mapPath + map);
+			mapFile = new File(Soar2D.config.getMapPath() + map);
 			if (!mapFile.exists()) {
 				
 				// doesn't exist there either

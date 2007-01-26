@@ -11,6 +11,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
+import soar2d.Configuration.SimType;
 import soar2d.player.*;
 import soar2d.world.*;
 
@@ -79,11 +80,11 @@ public class VisualWorld extends Canvas implements PaintListener {
 	}
 
 	public int getMiniWidth() {
-		return cellSize * ((Soar2D.config.kEaterVision * 2) + 1);
+		return cellSize * ((Soar2D.config.eaterVision * 2) + 1);
 	}
 	
 	public int getMiniHeight() {
-		return cellSize * ((Soar2D.config.kEaterVision * 2) + 1);
+		return cellSize * ((Soar2D.config.eaterVision * 2) + 1);
 	}
 	
 	public void setAgentLocation(java.awt.Point location) {
@@ -210,7 +211,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 		
 		World world = Soar2D.simulation.world;
 		
-		if (Soar2D.config.tanksoar) {
+		if (Soar2D.config.getType() == SimType.kTankSoar) {
 			if (background == null) {
 				generateBackground(world);
 			}
@@ -222,20 +223,20 @@ public class VisualWorld extends Canvas implements PaintListener {
 		java.awt.Point location = new java.awt.Point();
 		for(location.x = 0; location.x < world.getSize(); ++location.x){
 			if (agentLocation != null) {
-				if ((location.x < agentLocation.x - Soar2D.config.kEaterVision) || (location.x > agentLocation.x + Soar2D.config.kEaterVision)) {
+				if ((location.x < agentLocation.x - Soar2D.config.eaterVision) || (location.x > agentLocation.x + Soar2D.config.eaterVision)) {
 					continue;
 				} 
-				xDraw = location.x + Soar2D.config.kEaterVision - agentLocation.x;
+				xDraw = location.x + Soar2D.config.eaterVision - agentLocation.x;
 			} else {
 				xDraw = location.x;
 			}
 			
 			for(location.y = 0; location.y < world.getSize(); ++location.y){
 				if (agentLocation != null) {
-					if ((location.y < agentLocation.y - Soar2D.config.kEaterVision) || (location.y > agentLocation.y + Soar2D.config.kEaterVision)) {
+					if ((location.y < agentLocation.y - Soar2D.config.eaterVision) || (location.y > agentLocation.y + Soar2D.config.eaterVision)) {
 						continue;
 					} 
-					yDraw = location.y + Soar2D.config.kEaterVision - agentLocation.y;
+					yDraw = location.y + Soar2D.config.eaterVision - agentLocation.y;
 				} else {
 					yDraw = location.y;
 				}
@@ -250,8 +251,10 @@ public class VisualWorld extends Canvas implements PaintListener {
 					}
 				}
 				
-				if (Soar2D.config.eaters) {
-					ArrayList<CellObject> drawList = world.map.getAllWithProperty(location, Names.kPropertyShape);
+				ArrayList<CellObject> drawList;
+				switch (Soar2D.config.getType()) {
+				case kEaters:
+					drawList = world.map.getAllWithProperty(location, Names.kPropertyShape);
 					
 					if (!world.map.enterable(location)) {
 					    gc.setBackground(WindowManager.black);
@@ -330,9 +333,10 @@ public class VisualWorld extends Canvas implements PaintListener {
 					if (world.map.hasObject(location, Names.kExplosion)) {
 						drawExplosion(gc, xDraw, yDraw);
 					}
-				} else if (Soar2D.config.tanksoar) {
+					break;
 					
-					ArrayList<CellObject> drawList = world.map.getAllWithProperty(location, Names.kPropertyImage);
+				case kTankSoar:
+					drawList = world.map.getAllWithProperty(location, Names.kPropertyImage);
 					CellObject explosion = null;
 					CellObject object = null;
 					ArrayList<CellObject> missiles = new ArrayList<CellObject>();
@@ -480,8 +484,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 						}
 						gc.drawArc((location.x * cellSize) + xMod, (location.y * cellSize) + yMod, cellSize - 1, cellSize - 1, start, 180);
 					}
-				} else {
-					Soar2D.control.severeError("I don't know how to draw the world!");
+					break;
 				}
 			}
 		}

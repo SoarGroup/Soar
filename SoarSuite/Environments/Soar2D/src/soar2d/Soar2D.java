@@ -75,9 +75,9 @@ public class Soar2D {
 		
 		logger.setLevel(config.logLevel);
 		// Start logger
-		if (config.logFile) {
+		if (config.logToFile) {
 			try {
-				FileHandler handler = new FileHandler(config.logFileName);
+				FileHandler handler = new FileHandler(config.logFile.getAbsolutePath());
 				handler.setLevel(config.logLevel);
 				if (config.logTime) {
 					handler.setFormatter(new TextFormatter());
@@ -86,7 +86,7 @@ public class Soar2D {
 				}
 				logger.addHandler(handler);
 			} catch (IOException e) {
-				control.severeError("IOException creating " + config.logFile + ": " + e.getMessage());
+				control.severeError("IOException creating " + config.logToFile + ": " + e.getMessage());
 				wm.shutdown();
 				System.exit(1);
 			}
@@ -102,7 +102,7 @@ public class Soar2D {
 			}
 			logger.addHandler(handler);
 		}
-		if (config.logFile || config.logConsole) {
+		if (config.logToFile || config.logConsole) {
 			logger.setUseParentHandlers(false);
 		} else {
 			System.out.println("Warning: not logging anything");
