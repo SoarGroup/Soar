@@ -82,6 +82,7 @@ public class Names {
 	public static final String kParamMissileResetThreshold = "missile-reset-threshold";
 	public static final String kParamName = "name";
 	public static final String kParamNoWorld = "no-world";
+	public static final String kParamPoints = "points";
 	public static final String kParamProductions = "productions";
 	public static final String kParamProperty = "property";
 	public static final String kParamRandom = "random";

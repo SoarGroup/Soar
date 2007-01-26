@@ -270,6 +270,12 @@ public class ConfigurationLoader {
 			agentConfig.setInitialLocation(new java.awt.Point(x, y));
 		}
 		
+		attribute = tag.GetAttribute(Names.kParamPoints);
+		if (attribute != null) {
+			agentConfig.setPoints(Integer.parseInt(attribute));
+			agentConfig.setPoints(true);
+		}
+		
 		attribute = tag.GetAttribute(Names.kParamFacing);
 		if ((attribute != null) && (attribute.length() > 0)) {
 			agentConfig.setFacing(Direction.getInt(attribute));

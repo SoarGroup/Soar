@@ -149,11 +149,13 @@ public class CreateAgentDialog extends Dialog {
 		m_Name.setTextLimit(kNameCharacterLimit);
 		m_Name.setText(m_Color.getText());
 		m_Name.addKeyListener(new KeyAdapter() {
-			public void keyReleased(KeyEvent e) {
-				updateButtons();
+			public void keyPressed(KeyEvent e) {
 				if (Character.isWhitespace(e.character)) {
 					e.doit = false;
 				}
+			}
+			public void keyReleased(KeyEvent e) {
+				updateButtons();
 			}
 		});
 		

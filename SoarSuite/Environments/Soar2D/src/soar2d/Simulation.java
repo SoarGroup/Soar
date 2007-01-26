@@ -214,7 +214,10 @@ public class Simulation {
 	 * 
 	 * create a player and add it to the simulation and world
 	 */
-	public void createPlayer(PlayerConfig playerConfig) {
+	public void createPlayer(PlayerConfig playerConfigIn) {
+		
+		PlayerConfig playerConfig = new PlayerConfig(playerConfigIn);
+		
 		// if a color was specified
 		if (playerConfig.hasColor()) {
 			//make sure it is unused

@@ -33,6 +33,7 @@
                   <xs:attribute name="x" type="xs:integer" />
                   <xs:attribute name="y" type="xs:integer" />
                   <xs:attribute name="facing" type="facing" />
+                  <xs:attribute name="points" type="xs:integer" />
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
@@ -62,6 +63,7 @@
                   <xs:attribute name="energy" type="xs:integer" />
                   <xs:attribute name="health" type="xs:integer" />
                   <xs:attribute name="missiles" type="xs:integer" />
+                  <xs:attribute name="points" type="xs:integer" />
                 </xs:complexType>
               </xs:element>
             </xs:sequence>

@@ -67,6 +67,30 @@ public class PlayerConfig {
 		
 	}
 
+	public PlayerConfig(PlayerConfig config) {
+		if (config.color != null) {
+			this.color = new String(config.color);
+		}
+		this.energy = config.energy;
+		this.facing = config.facing;
+		this.hasPoints = config.hasPoints;
+		this.health = config.health;
+		if (config.initialLocation != null) {
+			this.initialLocation = new java.awt.Point(config.initialLocation);
+		}
+		this.missiles = config.missiles;
+		if (config.name != null) {
+			this.name = new String(config.name);
+		}
+		this.points = config.points;
+		if (config.productions != null) {
+			this.productions = config.productions.getAbsoluteFile();
+		}
+		if (config.shutdownCommands != null) {
+			this.shutdownCommands = new ArrayList<String>(config.shutdownCommands);
+		}
+	}
+
 	public boolean hasName() {
 		return name != null;
 	}
