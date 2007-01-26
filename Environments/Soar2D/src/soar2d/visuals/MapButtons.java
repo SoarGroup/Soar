@@ -21,7 +21,7 @@ public class MapButtons extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				FileDialog fd = new FileDialog(MapButtons.this.getShell(), SWT.OPEN);
 				fd.setText("Open");
-				fd.setFilterPath(Soar2D.config.mapPath);
+				fd.setFilterPath(Soar2D.config.getMapPath());
 				fd.setFilterExtensions(new String[] {Soar2D.config.kEatersMapFilter, "*.*"});
 				VisualWorld.internalRepaint = true;
 				String map = fd.open();

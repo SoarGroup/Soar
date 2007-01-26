@@ -68,7 +68,7 @@ public class CreateAgentDialog extends Dialog {
 				FileDialog fd = new FileDialog(dialog, SWT.OPEN);
 				fd.setText("Open");
 				if (lastProductions == null) {
-					fd.setFilterPath(Soar2D.config.agentPath);
+					fd.setFilterPath(Soar2D.config.getAgentPath());
 				} else {
 					fd.setFileName(lastProductions.getAbsolutePath());
 				}

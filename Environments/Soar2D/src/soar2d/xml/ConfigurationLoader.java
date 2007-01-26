@@ -6,6 +6,7 @@ import java.io.*;
 
 import sml.ElementXML;
 import soar2d.*;
+import soar2d.Configuration.SimType;
 import soar2d.player.*;
 
 public class ConfigurationLoader {
@@ -14,6 +15,7 @@ public class ConfigurationLoader {
 	static final int kVersion = 1;
 	int version = kVersion;
 	Configuration c;
+	boolean hasType = false;
 	
 	private void throwSyntax(String message) throws SyntaxException {
 		throw new SyntaxException(xmlPath, message);
@@ -64,7 +66,7 @@ public class ConfigurationLoader {
 			rootTag = null;
 		}
 		
-		return c.eaters || c.tanksoar;
+		return hasType;
 	}
 	
 	private void soar2d(ElementXML soar2dTag) throws SyntaxException, SMLException {
@@ -99,19 +101,21 @@ public class ConfigurationLoader {
 					xmlPath.pop();
 					
 				} else if (subTag.IsTag(Names.kTagEaters)) {
-					if (c.tanksoar) {
+					if (hasType) {
 						throwSyntax("tanksoar and eaters tags cannot co-exist");
 					}
-					c.eaters = true;
+					hasType = true;
+					c.setType(SimType.kEaters);
 					xmlPath.push(Names.kTagEaters);
 					game(subTag);
 					xmlPath.pop();
 					
-				} else if (subTag.IsTag(Names.kTagTankSoar) && !c.eaters) {
-					if (c.eaters) {
+				} else if (subTag.IsTag(Names.kTagTankSoar)) {
+					if (hasType) {
 						throwSyntax("tanksoar and eaters tags cannot co-exist");
 					}
-					c.tanksoar = true;
+					hasType = true;
+					c.setType(SimType.kTankSoar);
 					xmlPath.push(Names.kTagTankSoar);
 					game(subTag);
 					xmlPath.pop();
@@ -174,17 +178,15 @@ public class ConfigurationLoader {
 		
 		attribute = loggerTag.GetAttribute(Names.kParamFile);
 		if (attribute != null) {
-			c.logFile = Boolean.parseBoolean(attribute);
+			c.logToFile = Boolean.parseBoolean(attribute);
 		}
 		
 		attribute = loggerTag.GetAttribute(Names.kParamFileName);
-		if (attribute == null) {
-			c.logFileName = c.kDefaultLogFilename;
-		} else {
+		if (attribute != null) {
 			if (attribute.length() <= 0) {
 				throwSyntax("zero length log filename specified");
 			}
-			c.logFileName = attribute;
+			c.logFile = new File(attribute);
 		}
 		
 		attribute = loggerTag.GetAttribute(Names.kParamLogTime);
@@ -195,18 +197,6 @@ public class ConfigurationLoader {
 	}
 	
 	private void game(ElementXML gameTag) throws SyntaxException, SMLException {
-		// Generate paths
-		c.basePath = System.getProperty("user.dir") + System.getProperty("file.separator");
-		c.mapPath = c.basePath + c.kMapDir + System.getProperty("file.separator");
-		c.agentPath = c.basePath + c.kAgentDir + System.getProperty("file.separator");
-		if (c.eaters) {
-			c.mapPath += "eaters" + System.getProperty("file.separator");
-			c.agentPath += "eaters" + System.getProperty("file.separator");
-		} else if (c.tanksoar) {
-			c.mapPath += "tanksoar" + System.getProperty("file.separator");
-			c.agentPath += "tanksoar" + System.getProperty("file.separator");
-		}
-		
 		String attribute;
 		
 		attribute = gameTag.GetAttribute(Names.kParamMap);
@@ -215,7 +205,7 @@ public class ConfigurationLoader {
 		}
 		File mapFile = new File(attribute);
 		if (!mapFile.exists()) {
-			mapFile = new File(c.mapPath + attribute);
+			mapFile = new File(c.getMapPath() + attribute);
 			if (!mapFile.exists()) {
 				throwSyntax("Error finding map " + attribute);
 			}
@@ -255,7 +245,7 @@ public class ConfigurationLoader {
 		if (attribute != null) {
 			File productionsFile = new File(attribute);
 			if (!productionsFile.exists()) {
-				productionsFile = new File(c.agentPath + attribute);
+				productionsFile = new File(c.getAgentPath() + attribute);
 				if (!productionsFile.exists()) {
 					Soar2D.logger.warning("Error finding prodcutions " + attribute);
 				}
@@ -285,7 +275,7 @@ public class ConfigurationLoader {
 			agentConfig.setFacing(Direction.getInt(attribute));
 		}
 		
-		if (c.tanksoar) {
+		if (c.getType() == SimType.kTankSoar) {
 			attribute = tag.GetAttribute(Names.kParamEnergy);
 			if (attribute != null) {
 				agentConfig.setEnergy(Integer.parseInt(attribute));

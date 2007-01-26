@@ -19,113 +19,65 @@ public class Configuration {
 	public final String kDefaultLogFilename = "soar2d.log";
 	public final String kMapDir = "maps";
 	public final String kAgentDir = "agents";
+	public final String kDefaultEatersMap = "random-walls.emap";
+	public final String kDefaultTanksoarMap = "default.emap";
 	public final String kEatersMapFilter = "*.emap";
 	public final String kTankSoarMapFilter = "*.tmap";
-
-	public final int kDefaultPoints = 0;
-	public final int kDefaultMissiles = 15;
-	public final int kDefaultEnergy = 1000;
-	public final int kDefaultHealth = 1000;
-	public final int kDefaultVersion = 1;
 	public final int kDefaultTimeout = 15; //seconds
-	public final Level kDefaultLogLevel = Level.INFO;
-	public final int kEaterVision = 2;	// distance that eater can see
-	public final int kWallPenalty = -5;	// eaters scoring penalty
-	public final int kJumpPenalty = -5;	// eaters scoring penalty
-	public final double kLowProbability = .15;		// eaters wall generation
-	public final double kHigherProbability = .65;	// eaters wall generation
-	public final int kTankCollisionPenalty = -100;	// tanksoar
-	public final int kMaxMissilePacks = 3;
-	public final int kMissilePackRespawnChance = 5;	// percent chance per update that a missile pack will respawn
-	public final int kSheildEnergyUsage = -20;
-	public final int kMissileHitAward = 2;
-	public final int kMissileHitPenalty = -1;
-	public final int kKillAward = 3;
-	public final int kKillPenalty = -2;
-	public final int kRadarWidth = 3;
-	public final int kRadarHeight = 15;
-	public final int kMaxSmellDistance = 7;
-	
-
+	public final int kDefaultVersion = 1;
 	public final boolean kDefaultPropertyBoolean = false;	// if a bool property doesn't exist
 	public final float kDefaultPropertyFloat = 0;			// if a float property doesn't exist
 	public final int kDefaultPropertyInt = 0;				// if an int property doesn't exist
-	
-	/**
-	 * Current log level, see java.util.logging
-	 */
-	public Level logLevel = kDefaultLogLevel;
-	/**
-	 * If true, log to file logFileName
-	 */
-	public boolean logFile = false;
-	/**
-	 * File to log to, only valid if logFile true
-	 */
-	public String logFileName = null;
-	
-	public boolean logTime = true;
-	
-	/**
-	 * If true, log to console
-	 */
-	public boolean logConsole = false;
-	
-	public int randomSeed = 0;
-	
-	/**
-	 * If true, run eaters-specific code, mutually exclusive with tanksoar
-	 */
-	public boolean eaters = false;
-	/**
-	 * If true, run tanksoar-specific code, mutually exclusive with eaters
-	 */
-	public boolean tanksoar = false;
-	/**
-	 * If true, use the window manager.
-	 */
-	public boolean graphical = true;
-	/**
-	 * If true, spawn debuggers
-	 */
-	public boolean debuggers = false;
-	/**
-	 * If true, connect to remote kernel
-	 */
-	public boolean remote = false;
-	/**
-	 * If true, use random numbers (don't seed generators)
-	 */
-	public boolean random = true;
-	/**
-	 * If true, do not display the world map
-	 */
-	public boolean noWorld = false;
-	/**
-	 * The current map file
-	 */
-	public File map = null;
-	/**
-	 * List of clients that will connect to the simulation
-	 */
-	public ArrayList<ClientConfig> clients = new ArrayList<ClientConfig>();
-	/**
-	 * List of information required to create players
-	 */
-	public ArrayList<PlayerConfig> players = new ArrayList<PlayerConfig>();
-	/**
-	 * Path to Soar2D folder
-	 */
-	public String basePath = null;
-	/**
-	 * Path to maps
-	 */
-	public String mapPath = null;
-	/**
-	 * Path to agents
-	 */
-	public String agentPath = null;
 
+	// private data:
+	private String basePath = null; // Path to Soar2D folder
+	private String mapPath = null; // Path to maps
+	private String agentPath = null; // Path to agents
+	private SimType simType = SimType.kEaters;
+	public enum SimType { kEaters, kTankSoar }
+	
+	// common
+	public int defaultPoints = 0;
+	public Level logLevel = Level.INFO; // Current log level, see java.util.logging
+	public boolean logToFile = false; //
+	public File logFile = new File(kDefaultLogFilename); // File to log to, only valid if logFile true
+	public boolean logTime = true;
+	public boolean logConsole = false; // If true, log to console
+	public int randomSeed = 0;
+	public boolean graphical = true; // If true, use the window manager.
+	public boolean debuggers = false; // If true, spawn debuggers
+	public boolean remote = false; // If true, connect to remote kernel
+	public boolean random = true; // If true, use random numbers (don't seed generators)
+	public boolean noWorld = false; // If true, do not display the world map
+	public File map = null; // The current map file
+	public ArrayList<ClientConfig> clients = new ArrayList<ClientConfig>(); // List of clients that will connect to the simulation
+	public ArrayList<PlayerConfig> players = new ArrayList<PlayerConfig>(); // List of information required to create players
+	
+	// eaters-specific
+	public int eaterVision = 2;	// distance that eater can see
+	public int wallPenalty = -5;	// eaters scoring penalty
+	public int jumpPenalty = -5;	// eaters scoring penalty
+	public double lowProbability = .15;		// eaters wall generation
+	public double higherProbability = .65;	// eaters wall generation
+	
+	// tanksoar-specific
+	public int defaultMissiles = 15;
+	public int defaultEnergy = 1000;
+	public int defaultHealth = 1000;
+	public int tankCollisionPenalty = -100;	// tanksoar
+	public int maxMissilePacks = 3;
+	public int missilePackRespawnChance = 5;	// percent chance per update that a missile pack will respawn
+	public int sheildEnergyUsage = -20;
+	public int missileHitAward = 2;
+	public int missileHitPenalty = -1;
+	public int killAward = 3;
+	public int killPenalty = -2;
+	public int radarWidth = 3;
+	public int radarHeight = 15;
+	public int maxSmellDistance = 7;
+	public int missileResetThreshold = 100;
+	
+	// Terminal triggers
 	/**
 	 * Stop the simulation when no points remain
 	 */
@@ -155,5 +107,104 @@ public class Configuration {
 	 */
 	public int terminalWinningScore = 0;
 	
-	public int missileResetThreshold = 100;
+	public Configuration() {}
+	
+	public void setType(SimType simType) {
+		this.simType = simType;
+		generatePaths();
+	}
+	public SimType getType() {
+		return this.simType;
+	}
+	public String getBasePath() {
+		assert basePath != null;
+		return new String(basePath);
+	}
+	public String getMapPath() {
+		assert mapPath != null;
+		return new String(mapPath);
+	}
+	public String getAgentPath() {
+		assert agentPath != null;
+		return new String(agentPath);
+	}
+
+	private void generatePaths() {
+		
+		this.basePath = System.getProperty("user.dir") + System.getProperty("file.separator");
+		this.mapPath = this.basePath + this.kMapDir + System.getProperty("file.separator");
+		this.agentPath = this.basePath + this.kAgentDir + System.getProperty("file.separator");
+		switch (simType) {
+		case kEaters:
+			this.mapPath += "eaters" + System.getProperty("file.separator");
+			this.agentPath += "eaters" + System.getProperty("file.separator");
+			if (this.map == null) {
+				this.map = new File(this.kDefaultEatersMap);
+			}
+			break;
+		case kTankSoar:
+			this.mapPath += "tanksoar" + System.getProperty("file.separator");
+			this.agentPath += "tanksoar" + System.getProperty("file.separator");
+			if (this.map == null) {
+				this.map = new File(this.kDefaultTanksoarMap);
+			}
+			break;
+		}
+		
+	}
+	
+	public Configuration(Configuration config) {
+		this.simType = config.simType;
+
+		// common
+		this.defaultPoints = config.defaultPoints;
+		this.logLevel = Level.parse(config.logLevel.getName());
+		this.logToFile = config.logToFile;
+		this.logFile = config.logFile.getAbsoluteFile();
+		this.logTime = config.logTime;
+		this.logConsole = config.logConsole;
+		this.randomSeed = config.randomSeed;
+		this.graphical = config.graphical;
+		this.debuggers = config.debuggers;
+		this.remote = config.remote;
+		this.random = config.random;
+		this.noWorld = config.noWorld;
+		this.map = config.map.getAbsoluteFile();
+		this.clients = new ArrayList<ClientConfig>(config.clients);
+		this.players = new ArrayList<PlayerConfig>(config.players);
+		this.basePath = new String(config.basePath);
+		this.mapPath = new String(config.mapPath);
+		this.agentPath = new String(config.agentPath);
+		
+		// eaters-specific
+		this.eaterVision = config.eaterVision;
+		this.wallPenalty = config.wallPenalty;
+		this.jumpPenalty = config.jumpPenalty;
+		this.lowProbability = config.lowProbability;
+		this.higherProbability = config.higherProbability;
+		
+		// tanksoar-specific
+		this.defaultMissiles = config.defaultMissiles;
+		this.defaultEnergy = config.defaultEnergy;
+		this.defaultHealth = config.defaultHealth;
+		this.tankCollisionPenalty = config.tankCollisionPenalty;
+		this.maxMissilePacks = config.maxMissilePacks;
+		this.missilePackRespawnChance = config.missilePackRespawnChance;
+		this.sheildEnergyUsage = config.sheildEnergyUsage;
+		this.missileHitAward = config.missileHitAward;
+		this.missileHitPenalty = config.missileHitPenalty;
+		this.killAward = config.killAward;
+		this.killPenalty = config.killPenalty;
+		this.radarWidth = config.radarWidth;
+		this.radarHeight = config.radarHeight;
+		this.maxSmellDistance = config.maxSmellDistance;
+		this.missileResetThreshold = config.missileResetThreshold;
+		
+		this.terminalPointsRemaining = config.terminalPointsRemaining;
+		this.terminalFoodRemaining = config.terminalFoodRemaining;
+		this.terminalUnopenedBoxes = config.terminalUnopenedBoxes;
+		this.terminalAgentCommand = config.terminalAgentCommand;
+		this.terminalMaxUpdates = config.terminalMaxUpdates;
+		this.terminalWinningScore = config.terminalWinningScore;
+	}
 }

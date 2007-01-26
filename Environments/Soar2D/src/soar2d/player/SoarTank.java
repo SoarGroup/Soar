@@ -59,8 +59,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	private IntElement m_xWME;
 	private IntElement m_yWME;			
 
-	private Identifier[][] radarCellIDs = new Identifier[Soar2D.config.kRadarWidth][Soar2D.config.kRadarHeight];
-	private StringElement[][] radarColors = new StringElement[Soar2D.config.kRadarWidth][Soar2D.config.kRadarHeight];
+	private Identifier[][] radarCellIDs = new Identifier[Soar2D.config.radarWidth][Soar2D.config.radarHeight];
+	private StringElement[][] radarColors = new StringElement[Soar2D.config.radarWidth][Soar2D.config.radarHeight];
 
 	private float random = 0;
 	private boolean m_Reset = true;
@@ -854,9 +854,9 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		if (Soar2D.logger.isLoggable(Level.FINEST)) {
 			logger.finest(this.getName() + ": radar data: generating new"); 
 		}
-		for (height = 0; height < Soar2D.config.kRadarHeight; ++height) {
+		for (height = 0; height < Soar2D.config.radarHeight; ++height) {
 			boolean done = false;
-			for (int width = 0; width < Soar2D.config.kRadarWidth; ++width) {
+			for (int width = 0; width < Soar2D.config.radarWidth; ++width) {
 				// Always skip self, this screws up the tanks.
 				if (width == 1 && height == 0) {
 					if (Soar2D.logger.isLoggable(Level.FINEST)) {
@@ -901,8 +901,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		if (Soar2D.logger.isLoggable(Level.FINEST)) {
 			logger.finest(this.getName() + ": radar data: updating"); 
 		}
-		for (int width = 0; width < Soar2D.config.kRadarWidth; ++width) {
-			for (int height = 0; height < Soar2D.config.kRadarHeight; ++height) {
+		for (int width = 0; width < Soar2D.config.radarWidth; ++width) {
+			for (int height = 0; height < Soar2D.config.radarHeight; ++height) {
 				// Always skip self, this screws up the tanks.
 				if (width == 1 && height == 0) {
 					if (Soar2D.logger.isLoggable(Level.FINEST)) {
@@ -968,8 +968,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	}
 
 	private void clearRadar() {
-		for (int width = 0; width < Soar2D.config.kRadarWidth; ++width) {
-			for (int height = 0; height < Soar2D.config.kRadarHeight; ++height) {
+		for (int width = 0; width < Soar2D.config.radarWidth; ++width) {
+			for (int height = 0; height < Soar2D.config.radarHeight; ++height) {
 				radarCellIDs[width][height] = null;
 				radarColors[width][height] = null;
 			}

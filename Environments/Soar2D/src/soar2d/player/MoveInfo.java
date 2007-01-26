@@ -81,7 +81,8 @@ public class MoveInfo {
 	public String toString() {
 		String output = new String();
 		
-		if (Soar2D.config.eaters) {
+		switch(Soar2D.config.getType()) {
+		case kEaters:
 			if (jump) {
 				output += "(" + Names.kJumpID + ": " + Direction.stringOf[moveDirection] + ")";
 			} else if (move) {
@@ -94,7 +95,9 @@ public class MoveInfo {
 			if (open) {
 				output += "(" + Names.kOpenID + ")";
 			}
-		} else {
+			break;
+			
+		case kTankSoar:
 			if (move) {
 				output += "(" + Names.kMoveID + ": " + Direction.stringOf[moveDirection] + ")";
 			}
@@ -113,6 +116,7 @@ public class MoveInfo {
 			if (shields) {
 				output += "(" + Names.kShieldsID + ": " + (shieldsSetting ? "on" : "off") + ")";
 			}
+			break;
 		}
 		
 		if (stopSim) {

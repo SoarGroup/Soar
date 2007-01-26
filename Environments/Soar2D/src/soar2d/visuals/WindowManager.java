@@ -7,6 +7,7 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
+import soar2d.Configuration.SimType;
 import soar2d.player.*;
 
 public class WindowManager {
@@ -458,13 +459,13 @@ public class WindowManager {
 		
 		shell.setMenuBar(menuBar);
 
-		if (Soar2D.config.eaters) {
+		switch (Soar2D.config.getType()) {
+		case kEaters:
 			setupEaters();
-		} else if (Soar2D.config.tanksoar) {
+			break;
+		case kTankSoar:
 			setupTankSoar();
-		} else {
-			Soar2D.control.severeError("Window manager requires eaters or tanksoar");
-			return;
+			break;
 		}
 		
 		visualWorld.addMouseListener(new MouseAdapter() {
@@ -574,10 +575,13 @@ public class WindowManager {
 		worldGroup.setLayoutData(gd);
 
 		gd = new GridData();
-		if (Soar2D.config.eaters) {
+		switch (Soar2D.config.getType()) {
+		case kEaters:
 			gd.horizontalSpan = 2;
-		} else {
+			break;
+		case kTankSoar:
 			gd.horizontalSpan = 3;
+			break;
 		}
 		gd.widthHint = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).x - 20;
 		gd.heightHint = 16;
@@ -587,7 +591,7 @@ public class WindowManager {
 	}
 	
 	void updateCounts() {
-		if (Soar2D.config.eaters) {
+		if (Soar2D.config.getType() == SimType.kEaters) {
 			foodCount.setText(Integer.toString(Soar2D.simulation.world.map.getFoodCount()));
 			scoreCount.setText(Integer.toString(Soar2D.simulation.world.map.getScoreCount()));
 		}
