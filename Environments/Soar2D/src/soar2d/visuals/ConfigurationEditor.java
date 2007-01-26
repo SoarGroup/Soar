@@ -20,10 +20,9 @@ public class ConfigurationEditor extends Dialog {
 	Composite rhs;
 	Composite currentPage;
 	Shell dialog;
-
+	
 	// general
 	Button useSeed;
-	Label seedLabel;
 	Text seedText;
 	Button tanksoarButton;
 	Button eatersButton;
@@ -34,7 +33,6 @@ public class ConfigurationEditor extends Dialog {
 	// logging
 	Combo loggingLevelCombo;
 	Button loggingFileButton;
-	Label loggingNameLabel;
 	Text loggingNameText;
 	Button loggingConsoleButton;
 	Button loggingTimeButton;
@@ -45,13 +43,30 @@ public class ConfigurationEditor extends Dialog {
 	Combo agentsColorCombo;
 	Button agentsDebuggersButton;
 	PlayerConfig playerConfig;
-	
-	
+	int playerConfigIndex;
+	Button agentsNameButton;
+	Button agentsProductions;
+	Button agentsColor;
+	Button agentCoordinates;
+	Text agentCoordinatesX;
+	Text agentCoordinatesY;
+	Button agentFacing;
+	Combo agentFacingCombo;
+	Button agentPoints;
+	Text agentPointsText;
+	Button agentHealth;
+	Text agentHealthText;
+	Button agentEnergy;
+	Text agentEnergyText;
+	Button agentMissiles;
+	Text agentMissilesText;
+	Button createAgentButton;
+	Button productionsBrowse;
+	Button removeAgentButton;
 
 	public ConfigurationEditor(Shell parent) {
 		super(parent);
 		config = new Configuration(Soar2D.config);
-		playerConfig = new PlayerConfig();
 	}
 
 	public void open() {
@@ -96,7 +111,11 @@ public class ConfigurationEditor extends Dialog {
 		Iterator<PlayerConfig> iter = config.players.iterator();
 		while (iter.hasNext()) {
 			TreeItem agent = new TreeItem(agents, SWT.NONE);
-			agent.setText(iter.next().getName());
+			String name = iter.next().getName();
+			if (name == null) {
+				name = "<unnamed>";
+			}
+			agent.setText(name);
 		}
 
 		TreeItem terminals = new TreeItem(tree, SWT.NONE);
@@ -169,9 +188,12 @@ public class ConfigurationEditor extends Dialog {
 		if (tree.getSelectionCount() > 0) {
 			TreeItem selectedItem = tree.getSelection()[0];
 			TreeItem parentItem = selectedItem.getParentItem();
+			int index = -1;
 			if (parentItem == null) {
 				parentItem = selectedItem;
 				selectedItem = null;
+			} else {
+				index = parentItem.indexOf(selectedItem);
 			}
 			switch (tree.indexOf(parentItem)) {
 			case 0:
@@ -181,13 +203,13 @@ public class ConfigurationEditor extends Dialog {
 				loggingPage();
 				break;
 			case 2:
-				agentsPage(selectedItem);
+				agentsPage(selectedItem, index);
 				break;
 			case 3:
 				terminalsPage();
 				break;
 			case 4:
-				clientsPage(selectedItem);
+				clientsPage(selectedItem, index);
 				break;
 			}
 		}		
@@ -354,7 +376,7 @@ public class ConfigurationEditor extends Dialog {
 			useSeed.setLayoutData(gd);
 		}
 			
-		seedLabel = new Label(currentPage, SWT.NONE);
+		Label seedLabel = new Label(currentPage, SWT.NONE);
 		seedLabel.setText("Random seed:");
 		{
 			GridData gd = new GridData();
@@ -420,7 +442,6 @@ public class ConfigurationEditor extends Dialog {
 		mapText.setText(config.map.getAbsolutePath());
 		hide.setSelection(config.noWorld);
 		useSeed.setSelection(!config.random);
-		seedLabel.setEnabled(useSeed.getSelection());
 		seedText.setEnabled(useSeed.getSelection());
 		seedText.setText(Integer.toString(config.randomSeed));
 		remote.setSelection(config.remote);
@@ -496,7 +517,7 @@ public class ConfigurationEditor extends Dialog {
 				loggingFileButton.setLayoutData(gd);
 			}
 			
-			loggingNameLabel = new Label(targetsGroup, SWT.NONE);
+			Label loggingNameLabel = new Label(targetsGroup, SWT.NONE);
 			loggingNameLabel.setText("Log file:");
 			{
 				GridData gd = new GridData();
@@ -569,13 +590,12 @@ public class ConfigurationEditor extends Dialog {
 	
 	public void loggingUpdate() {
 		loggingFileButton.setSelection(config.logToFile);
-		loggingNameLabel.setEnabled(config.logToFile);
 		loggingNameText.setEnabled(config.logToFile);
 		loggingNameText.setText(config.logFile.getAbsolutePath());
 		loggingConsoleButton.setSelection(config.logConsole);
 	}
 	
-	public void agentsPage(TreeItem selectedItem) {
+	public void agentsPage(final TreeItem selectedItem, int selectedIndex) {
 		
 		// lists all intended agents
 		// create new agent, setting its properties
@@ -585,144 +605,25 @@ public class ConfigurationEditor extends Dialog {
 			currentPage.dispose();
 		}
 		
+		currentPage = new Composite(rhs, SWT.NONE);
+		{
+			GridLayout gl = new GridLayout();
+			gl.marginHeight = 0;
+			gl.marginWidth = 0;
+			gl.numColumns = 1;
+			currentPage.setLayout(gl);
+			
+			GridData gd = new GridData();
+			gd.grabExcessHorizontalSpace = true;
+			gd.grabExcessVerticalSpace = true;
+			gd.horizontalAlignment = SWT.FILL;
+			gd.verticalAlignment = SWT.FILL;
+			currentPage.setLayoutData(gd);
+		}
+		
 		if (selectedItem == null) {
-			
-			currentPage = new Composite(rhs, SWT.NONE);
-			{
-				GridLayout gl = new GridLayout();
-				gl.marginHeight = 0;
-				gl.marginWidth = 0;
-				gl.numColumns = 1;
-				currentPage.setLayout(gl);
-				
-				GridData gd = new GridData();
-				gd.grabExcessHorizontalSpace = true;
-				gd.grabExcessVerticalSpace = true;
-				gd.horizontalAlignment = SWT.FILL;
-				gd.verticalAlignment = SWT.FILL;
-				currentPage.setLayoutData(gd);
-			}
-			
-			{
-				Group newAgentGroup = new Group(currentPage, SWT.NONE);
-				newAgentGroup.setText("Create a new default agent");
-				{
-					GridData gd = new GridData();
-					gd.grabExcessHorizontalSpace = true;
-					gd.horizontalAlignment = SWT.FILL;
-					gd.verticalAlignment = SWT.TOP;
-					newAgentGroup.setLayoutData(gd);
-					
-					GridLayout gl = new GridLayout();
-					gl.numColumns = 2;
-					newAgentGroup.setLayout(gl);
-				}
-				
-				Label nameLabel = new Label(newAgentGroup, SWT.NONE);
-				nameLabel.setText("Name:");
-				{
-					GridData gd = new GridData();
-					gd.horizontalSpan = 2;
-					nameLabel.setLayoutData(gd);
-				}
-				
-				agentsNameText = new Text(newAgentGroup, SWT.SINGLE | SWT.BORDER);
-				agentsNameText.addFocusListener(new FocusAdapter() {
-					public void focusLost(FocusEvent e) {
-						playerConfig.setName(agentsNameText.getText());
-						agentsUpdate();
-					}
-				});
-				{
-					GridData gd = new GridData();
-					gd.horizontalAlignment = GridData.FILL;
-					gd.grabExcessHorizontalSpace = true;
-					gd.horizontalSpan = 2;
-					agentsNameText.setLayoutData(gd);
-				}
-				
-				Label productionsLabel = new Label(newAgentGroup, SWT.NONE);
-				productionsLabel.setText("Productions:");
-				{
-					GridData gd = new GridData();
-					gd.horizontalSpan = 2;
-					productionsLabel.setLayoutData(gd);
-				}
-				
-				agentsProductionsText = new Text(newAgentGroup, SWT.SINGLE | SWT.BORDER);
-				agentsProductionsText.addFocusListener(new FocusAdapter() {
-					public void focusLost(FocusEvent e) {
-						File productionsFile = null;
-						if (agentsProductionsText.getText() != null) {
-							if (agentsProductionsText.getText().length() > 0) {
-								productionsFile = new File(agentsProductionsText.getText());
-							}
-						}
-						playerConfig.setProductions(productionsFile);
-						
-						agentsUpdate();
-					}
-				});
-				{
-					GridData gd = new GridData();
-					gd.horizontalAlignment = GridData.FILL;
-					gd.grabExcessHorizontalSpace = true;
-					agentsProductionsText.setLayoutData(gd);
-				}
-				
-				Button productionsBrowse = new Button(newAgentGroup, SWT.PUSH);
-				productionsBrowse.setText("Browse...");
-				{
-					GridData gd = new GridData();
-					gd.horizontalAlignment = GridData.END;
-					productionsBrowse.setLayoutData(gd);
-				}
-				productionsBrowse.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(SelectionEvent e) {
-						FileDialog fd = new FileDialog(dialog, SWT.OPEN);
-						fd.setText("Choose");
-						fd.setFilterPath(config.getBasePath());
-						fd.setFileName(config.logFile.getName());
-						fd.setFilterExtensions(new String[] {"*.*"});
-						String productionsString = fd.open();
-						File productionsFile = null;
-						if (productionsString != null) {
-							productionsFile = new File(productionsString);
-						}
-						playerConfig.setProductions(productionsFile);
-						
-						agentsUpdate();
-					}
-				});
-				
-				Label colorLabel = new Label(newAgentGroup, SWT.NONE);
-				colorLabel.setText("Color:");
-				{
-					GridData gd = new GridData();
-					gd.horizontalSpan = 2;
-					colorLabel.setLayoutData(gd);
-				}
-				
-				agentsColorCombo = new Combo(newAgentGroup, SWT.READ_ONLY);
-				{
-					GridData gd = new GridData();
-					gd.horizontalSpan = 2;
-					gd.horizontalAlignment = GridData.FILL;
-					gd.grabExcessHorizontalSpace = true;
-					agentsColorCombo.setLayoutData(gd);
-				}
-				agentsColorCombo.setItems(Soar2D.simulation.kColors);
-				agentsColorCombo.setVisibleItemCount(Soar2D.simulation.kColors.length);
-				agentsColorCombo.select(0);
-				// TODO: only make unused colors available
-				agentsColorCombo.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(SelectionEvent e) {
-						playerConfig.setColor(Soar2D.simulation.kColors[agentsColorCombo.getSelectionIndex()]);
-						
-						agentsUpdate();
-					}
-				});
-			}
+			playerConfig = new PlayerConfig();
+			playerConfigIndex = -1;
 			
 			// spawn debuggers
 			agentsDebuggersButton = new Button(currentPage, SWT.CHECK);
@@ -730,7 +631,7 @@ public class ConfigurationEditor extends Dialog {
 			agentsDebuggersButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
 					config.debuggers = !config.debuggers;
-					agentsUpdate();
+					agentsUpdate(selectedItem);
 				}
 			});
 			{
@@ -739,17 +640,646 @@ public class ConfigurationEditor extends Dialog {
 				agentsDebuggersButton.setLayoutData(gd);
 			}
 		} else {
-			
+			playerConfigIndex = selectedIndex;
+			playerConfig = config.players.get(playerConfigIndex);
 		}
-	
-		agentsUpdate();
+		
+		{
+			Group newAgentGroup = new Group(currentPage, SWT.NONE);
+			if (selectedItem == null) {
+				newAgentGroup.setText("Create a new default agent");
+			} else {
+				newAgentGroup.setText("Agent settings");
+			}
+			{
+				GridData gd = new GridData();
+				gd.grabExcessHorizontalSpace = true;
+				gd.horizontalAlignment = SWT.FILL;
+				gd.verticalAlignment = SWT.TOP;
+				newAgentGroup.setLayoutData(gd);
+				
+				GridLayout gl = new GridLayout();
+				gl.numColumns = 5;
+				newAgentGroup.setLayout(gl);
+			}
+			
+			agentsNameButton = new Button(newAgentGroup, SWT.CHECK);
+			agentsNameButton.setText("Specify name (default is color):");
+			agentsNameButton.setSelection(playerConfig.hasName());
+			agentsNameButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					if (!agentsNameButton.getSelection()) {
+						playerConfig.setName(null);
+						if (selectedItem != null) {
+							String name = "<unnamed>";
+							selectedItem.setText(name);
+						}
+					}
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalSpan = 5;
+				agentsNameButton.setLayoutData(gd);
+			}
+			
+			agentsNameText = new Text(newAgentGroup, SWT.SINGLE | SWT.BORDER);
+			if (playerConfig.hasName()) {
+				agentsNameText.setText(playerConfig.getName());
+			}
+			agentsNameText.addFocusListener(new FocusAdapter() {
+				public void focusLost(FocusEvent e) {
+					playerConfig.setName(agentsNameText.getText());
+					if (selectedItem != null) {
+						String name = playerConfig.getName();
+						if (name == null || name.length() < 1) {
+							name = "<unnamed>";
+						}
+						selectedItem.setText(name);
+					}
+					agentsUpdate(selectedItem);
+				}
+			});
+			agentsNameText.addKeyListener(new KeyAdapter() {
+				public void keyPressed(KeyEvent e) {
+					if (Character.isWhitespace(e.character)) {
+						e.doit = false;
+					}
+				}
+				public void keyReleased(KeyEvent e) {
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.FILL;
+				gd.horizontalIndent = 20;
+				gd.grabExcessHorizontalSpace = true;
+				gd.horizontalSpan = 5;
+				agentsNameText.setLayoutData(gd);
+			}
+			
+			agentsProductions = new Button(newAgentGroup, SWT.CHECK);
+			agentsProductions.setText("Specify productions (leave unspecified for human control):");
+			agentsProductions.setSelection(playerConfig.hasProductions());
+			agentsProductions.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					if (!agentsProductions.getSelection()) {
+						playerConfig.setProductions(null);
+					}
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalSpan = 5;
+				agentsProductions.setLayoutData(gd);
+			}
+			
+			agentsProductionsText = new Text(newAgentGroup, SWT.SINGLE | SWT.BORDER);
+			agentsProductionsText.addFocusListener(new FocusAdapter() {
+				public void focusLost(FocusEvent e) {
+					File productionsFile = null;
+					if (agentsProductionsText.getText() != null) {
+						if (agentsProductionsText.getText().length() > 0) {
+							productionsFile = new File(agentsProductionsText.getText());
+						}
+					}
+					playerConfig.setProductions(productionsFile);
+					
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.FILL;
+				gd.grabExcessHorizontalSpace = true;
+				gd.horizontalIndent = 20;
+				gd.horizontalSpan = 4;
+				agentsProductionsText.setLayoutData(gd);
+			}
+			
+			productionsBrowse = new Button(newAgentGroup, SWT.PUSH);
+			productionsBrowse.setText("Browse...");
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.END;
+				productionsBrowse.setLayoutData(gd);
+			}
+			productionsBrowse.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					FileDialog fd = new FileDialog(dialog, SWT.OPEN);
+					fd.setText("Choose");
+					fd.setFilterPath(config.getAgentPath());
+					fd.setFileName(config.logFile.getName());
+					fd.setFilterExtensions(new String[] {"*.soar", "*.*"});
+					String productionsString = fd.open();
+					File productionsFile = null;
+					if (productionsString != null) {
+						productionsFile = new File(productionsString);
+					}
+					playerConfig.setProductions(productionsFile);
+					
+					agentsUpdate(selectedItem);
+				}
+			});
+			
+			agentsColor = new Button(newAgentGroup, SWT.CHECK);
+			agentsColor.setText("Specify color (default is random):");
+			agentsColor.setSelection(playerConfig.hasColor());
+			agentsColor.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					if (!agentsColor.getSelection()) {
+						playerConfig.setColor(null);
+					}
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalSpan = 5;
+				agentsColor.setLayoutData(gd);
+			}
+			
+			agentsColorCombo = new Combo(newAgentGroup, SWT.READ_ONLY);
+			{
+				GridData gd = new GridData();
+				gd.horizontalSpan = 5;
+				gd.horizontalIndent = 20;
+				gd.horizontalAlignment = GridData.FILL;
+				gd.grabExcessHorizontalSpace = true;
+				agentsColorCombo.setLayoutData(gd);
+			}
+			agentsColorCombo.setItems(Soar2D.simulation.kColors);
+			agentsColorCombo.setVisibleItemCount(Soar2D.simulation.kColors.length);
+			// TODO: only make unused colors available
+			if (playerConfig.hasColor()) {
+				int index;
+				for (index = 0; index < Soar2D.simulation.kColors.length; ++index) {
+					if (Soar2D.simulation.kColors[index].equals(playerConfig.getColor())) {
+						break;
+					}
+				}
+				assert index < Soar2D.simulation.kColors.length;
+				agentsColorCombo.select(index);
+			} else {
+				agentsColorCombo.select(0);
+			}
+			agentsColorCombo.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					playerConfig.setColor(Soar2D.simulation.kColors[agentsColorCombo.getSelectionIndex()]);
+					
+					agentsUpdate(selectedItem);
+				}
+			});
+			
+			agentCoordinates = new Button(newAgentGroup, SWT.CHECK);
+			agentCoordinates.setText("Specify coordinates (default is random):");
+			agentCoordinates.setSelection(playerConfig.hasInitialLocation());
+			agentCoordinates.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					if (!agentCoordinates.getSelection()) {
+						playerConfig.setInitialLocation(null);
+					}
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalSpan = 5;
+				agentCoordinates.setLayoutData(gd);
+			}
+			
+			Label xLabel = new Label(newAgentGroup, SWT.NONE);
+			xLabel.setText("X:");
+			{
+				GridData gd = new GridData();
+				gd.horizontalIndent = 20;
+				xLabel.setLayoutData(gd);
+			}
+			
+			agentCoordinatesX = new Text(newAgentGroup, SWT.SINGLE | SWT.BORDER);
+			agentCoordinatesX.addFocusListener(new FocusAdapter() {
+				public void focusLost(FocusEvent e) {
+					java.awt.Point il;
+					if (playerConfig.hasInitialLocation()) {
+						il = playerConfig.getInitialLocation();
+					} else {
+						il = new java.awt.Point(-1, -1);
+					}
+					try {
+						il.x = Integer.parseInt(agentCoordinatesX.getText());
+					} catch (NumberFormatException exception) {
+						il.x = -1;
+					}
+					playerConfig.setInitialLocation(il);
+					
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.widthHint = 20;
+				agentCoordinatesX.setLayoutData(gd);
+			}
+			
+			Label yLabel = new Label(newAgentGroup, SWT.NONE);
+			yLabel.setText("Y:");
+			{
+				GridData gd = new GridData();
+				yLabel.setLayoutData(gd);
+			}
+
+			agentCoordinatesY = new Text(newAgentGroup, SWT.SINGLE | SWT.BORDER);
+			agentCoordinatesY.addFocusListener(new FocusAdapter() {
+				public void focusLost(FocusEvent e) {
+					java.awt.Point il;
+					if (playerConfig.hasInitialLocation()) {
+						il = playerConfig.getInitialLocation();
+					} else {
+						il = new java.awt.Point(-1, -1);
+					}
+					try {
+						il.y = Integer.parseInt(agentCoordinatesY.getText());
+					} catch (NumberFormatException exception) {
+						il.y = -1;
+					}
+					playerConfig.setInitialLocation(il);
+
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+					gd.widthHint = 20;
+				gd.horizontalSpan = 2;
+				agentCoordinatesY.setLayoutData(gd);
+			}
+
+			Composite nittyGritty = new Composite(newAgentGroup, SWT.NONE);
+			{
+				GridLayout gl = new GridLayout();
+				gl.marginHeight = 0;
+				gl.marginWidth = 0;
+				gl.numColumns = 2;
+				nittyGritty.setLayout(gl);
+				
+				GridData gd = new GridData();
+				gd.grabExcessHorizontalSpace = true;
+				gd.grabExcessVerticalSpace = true;
+				gd.horizontalSpan = 5;
+				gd.horizontalAlignment = SWT.FILL;
+				gd.verticalAlignment = SWT.FILL;
+				nittyGritty.setLayoutData(gd);
+			}
+			
+			agentFacing = new Button(nittyGritty, SWT.CHECK);
+			agentFacing.setText("Specify initial facing (default is random):");
+			agentFacing.setSelection(playerConfig.hasFacing());
+			agentFacing.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					if (!agentFacing.getSelection()) {
+						playerConfig.setFacing(0);
+					}
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				agentFacing.setLayoutData(gd);
+			}
+			
+			agentFacingCombo = new Combo(nittyGritty, SWT.READ_ONLY);
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.FILL;
+				gd.grabExcessHorizontalSpace = true;
+				agentFacingCombo.setLayoutData(gd);
+			}
+			agentFacingCombo.setItems(new String [] {
+					Direction.stringOf[Direction.kNorthInt], 
+					Direction.stringOf[Direction.kEastInt], 
+					Direction.stringOf[Direction.kSouthInt], 
+					Direction.stringOf[Direction.kWestInt]});
+			agentFacingCombo.setVisibleItemCount(4);
+			agentFacingCombo.select(0);
+			agentFacingCombo.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					playerConfig.setFacing(Direction.getInt(agentFacingCombo.getText()));
+					agentsUpdate(selectedItem);
+				}
+			});
+			
+			agentPoints = new Button(nittyGritty, SWT.CHECK);
+			agentPoints.setText("Specify initial points:");
+			agentPoints.setSelection(playerConfig.hasPoints());
+			agentPoints.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					if (!agentPoints.getSelection()) {
+						playerConfig.setPoints(false);
+					}
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				agentPoints.setLayoutData(gd);
+			}
+
+			agentPointsText = new Text(nittyGritty, SWT.SINGLE | SWT.BORDER);
+			agentPointsText.addFocusListener(new FocusAdapter() {
+				public void focusLost(FocusEvent e) {
+					try {
+						int newPoints = Integer.parseInt(agentPointsText.getText());
+						playerConfig.setPoints(newPoints);
+						playerConfig.setPoints(true);
+					} catch (NumberFormatException exception) {}
+					
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.FILL;
+				gd.grabExcessHorizontalSpace = true;
+				agentPointsText.setLayoutData(gd);
+			}
+			
+			agentHealth = new Button(nittyGritty, SWT.CHECK);
+			agentHealth.setText("Specify initial health (TankSoar only):");
+			agentHealth.setSelection(playerConfig.hasHealth());
+			agentHealth.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					if (!agentHealth.getSelection()) {
+						playerConfig.setHealth(-1);
+					}
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				agentHealth.setLayoutData(gd);
+			}
+			
+			agentHealthText = new Text(nittyGritty, SWT.SINGLE | SWT.BORDER);
+			agentHealthText.addFocusListener(new FocusAdapter() {
+				public void focusLost(FocusEvent e) {
+					try {
+						int newHealth = Integer.parseInt(agentHealthText.getText());
+						playerConfig.setHealth(newHealth);
+					} catch (NumberFormatException exception) {}
+					
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.FILL;
+				gd.grabExcessHorizontalSpace = true;
+				agentHealthText.setLayoutData(gd);
+			}
+			
+			agentEnergy = new Button(nittyGritty, SWT.CHECK);
+			agentEnergy.setText("Specify initial energy (TankSoar only):");
+			agentEnergy.setSelection(playerConfig.hasEnergy());
+			agentEnergy.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					if (!agentEnergy.getSelection()) {
+						playerConfig.setEnergy(-1);
+					}
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				agentEnergy.setLayoutData(gd);
+			}
+			
+			agentEnergyText = new Text(nittyGritty, SWT.SINGLE | SWT.BORDER);
+			agentEnergyText.addFocusListener(new FocusAdapter() {
+				public void focusLost(FocusEvent e) {
+					try {
+						int newEnergy = Integer.parseInt(agentEnergyText.getText());
+						playerConfig.setEnergy(newEnergy);
+					} catch (NumberFormatException exception) {}
+					
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.FILL;
+				gd.grabExcessHorizontalSpace = true;
+				agentEnergyText.setLayoutData(gd);
+			}
+			
+			agentMissiles = new Button(nittyGritty, SWT.CHECK);
+			agentMissiles.setText("Specify initial missiles (TankSoar only):");
+			agentMissiles.setSelection(playerConfig.hasMissiles());
+			agentMissiles.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					if (!agentMissiles.getSelection()) {
+						playerConfig.setMissiles(-1);
+					}
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				agentMissiles.setLayoutData(gd);
+			}
+			
+			agentMissilesText = new Text(nittyGritty, SWT.SINGLE | SWT.BORDER);
+			agentMissilesText.addFocusListener(new FocusAdapter() {
+				public void focusLost(FocusEvent e) {
+					try {
+						int newMissiles = Integer.parseInt(agentMissilesText.getText());
+						playerConfig.setMissiles(newMissiles);
+					} catch (NumberFormatException exception) {}
+					
+					agentsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.FILL;
+				gd.grabExcessHorizontalSpace = true;
+				agentMissilesText.setLayoutData(gd);
+			}
+			
+			if (selectedItem == null) {
+				createAgentButton = new Button(newAgentGroup, SWT.PUSH);
+				createAgentButton.setText("Create new agent");
+				createAgentButton.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(SelectionEvent e) {
+						config.players.add(playerConfig);
+						TreeItem agents = tree.getItem(2);
+						TreeItem newAgent = new TreeItem(agents, SWT.NONE);
+						String name;
+						if (playerConfig.hasName()) {
+							name = playerConfig.getName();
+						} else {
+							name = "<unnamed>";
+						}
+						newAgent.setText(name);
+						tree.redraw();
+						agentsUpdate(selectedItem);
+					}
+				});
+			{
+					GridData gd = new GridData();
+					gd.horizontalAlignment = GridData.END;
+					gd.horizontalSpan = 5;
+					createAgentButton.setLayoutData(gd);
+				}
+			} else {
+				createAgentButton = null;
+			}
+		}
+		
+		if (selectedItem != null) {
+			removeAgentButton = new Button(currentPage, SWT.PUSH);
+			removeAgentButton.setText("Remove this agent");
+			removeAgentButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					config.players.remove(playerConfigIndex);
+					playerConfigIndex = -1;
+					playerConfig = null;
+					selectedItem.dispose();
+					tree.redraw();
+					TreeItem newSelection = tree.getItem(2);
+					tree.setSelection(newSelection);
+					agentsPage(null, -1);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.END;
+				gd.horizontalSpan = 5;
+				removeAgentButton.setLayoutData(gd);
+			}
+		}
+
+		agentsUpdate(selectedItem);
 
 		rhs.layout(true);
 		dialog.layout(true);
 	}
 	
-	public void agentsUpdate() {
+	public void agentsUpdate(TreeItem selectedItem) {
 		
+		boolean createReady = true;
+		boolean allDisabled = false;
+		
+		if ((selectedItem == null) 
+				&& (config.players.size() >= Soar2D.simulation.kColors.length)) {
+			allDisabled = true;
+			agentsNameButton.setEnabled(false);
+			agentsProductions.setEnabled(false);
+			agentsColor.setEnabled(false);
+			agentCoordinates.setEnabled(false);
+			agentFacing.setEnabled(false);
+			agentPoints.setEnabled(false);
+			agentHealth.setEnabled(false);
+			agentEnergy.setEnabled(false);
+			agentMissiles.setEnabled(false);
+		} else {
+			agentsNameButton.setEnabled(true);
+			agentsProductions.setEnabled(true);
+			agentsColor.setEnabled(true);
+			agentCoordinates.setEnabled(true);
+			agentFacing.setEnabled(true);
+			agentPoints.setEnabled(true);
+			agentHealth.setEnabled(true);
+			agentEnergy.setEnabled(true);
+			agentMissiles.setEnabled(true);
+		}
+		
+		if (agentsNameButton.getSelection() && !allDisabled) {
+			agentsNameText.setEnabled(true);
+			if (agentsNameText.getText().length() < 1) {
+				createReady = false;
+			}
+		} else {
+			agentsNameText.setEnabled(false);
+			agentsNameText.setText("");
+		}
+		
+		if (agentsProductions.getSelection() && !allDisabled) {
+			agentsProductionsText.setEnabled(true);
+			productionsBrowse.setEnabled(true);
+			if (playerConfig.getProductions() == null) {
+				createReady = false;
+				agentsProductionsText.setText("");
+			} else {
+				agentsProductionsText.setText(playerConfig.getProductions().getAbsolutePath());
+			}
+		} else {
+			agentsProductionsText.setEnabled(false);
+			productionsBrowse.setEnabled(false);
+			agentsProductionsText.setText("");
+		}
+
+		agentsColorCombo.setEnabled(agentsColor.getSelection() && !allDisabled);
+
+		if (agentCoordinates.getSelection() && !allDisabled) {
+			agentCoordinatesX.setEnabled(true);
+			agentCoordinatesY.setEnabled(true);
+			
+			java.awt.Point loc = playerConfig.getInitialLocation();
+			if (loc == null) {
+				agentCoordinatesX.setText("-1");
+				agentCoordinatesY.setText("-1");
+			} else {
+				agentCoordinatesX.setText(Integer.toString(loc.x));
+				agentCoordinatesY.setText(Integer.toString(loc.y));
+			}
+			
+		} else {
+			agentCoordinatesX.setEnabled(false);
+			agentCoordinatesY.setEnabled(false);
+			agentCoordinatesX.setText("");
+			agentCoordinatesY.setText("");
+		}
+
+		agentFacingCombo.setEnabled(agentFacing.getSelection() && !allDisabled);
+
+		if (agentPoints.getSelection() && !allDisabled) {
+			agentPointsText.setEnabled(true);
+			agentPointsText.setText(Integer.toString(playerConfig.getPoints()));
+		} else {
+			agentPointsText.setEnabled(false);
+			agentPointsText.setText("");
+		}
+
+		if (agentHealth.getSelection() && !allDisabled) {
+			agentHealthText.setEnabled(true);
+			agentHealthText.setText(Integer.toString(playerConfig.getHealth()));
+		} else {
+			agentHealthText.setEnabled(false);
+			agentHealthText.setText("");
+		}
+
+		if (agentEnergy.getSelection() && !allDisabled) {
+			agentEnergyText.setEnabled(true);
+			agentEnergyText.setText(Integer.toString(playerConfig.getEnergy()));
+		} else {
+			agentEnergyText.setEnabled(false);
+			agentEnergyText.setText("");
+		}
+
+		if (agentMissiles.getSelection() && !allDisabled) {
+			agentMissilesText.setEnabled(true);
+			agentMissilesText.setText(Integer.toString(playerConfig.getMissiles()));
+		} else {
+			agentMissilesText.setEnabled(false);
+			agentMissilesText.setText("");
+		}
+		
+		if (createAgentButton != null) {	
+			createAgentButton.setEnabled(createReady && !allDisabled);
+		}
 	}
 	
 	public void terminalsPage() {
@@ -779,7 +1309,7 @@ public class ConfigurationEditor extends Dialog {
 		dialog.layout(true);
 	}
 	
-	public void clientsPage(TreeItem selectedItem) {
+	public void clientsPage(TreeItem selectedItem, int selectedIndex) {
 		// lists all intended clients
 		// create new clients, setting its properties
 
