@@ -1,9 +1,12 @@
 import RuleParser
+import tempfile
 from ElementGGP import ElementGGP
 
 kifdir = "..\\kif"
-#kiffile = "mummymaze1p-horiz.kif"
-kiffile = "buttons.kif"
+kiffile = "mummymaze1p-horiz.kif"
+#kiffile = "buttons.kif"
+soarfile = tempfile.mkstemp(".soar", kiffile[:-3], ".")[1]
+print soarfile
 kif = open("%s\\%s" % (kifdir, kiffile))
 
 description = ""
@@ -14,4 +17,4 @@ while line != "":
 	line = kif.readline()
 
 
-RuleParser.TranslateDescription("game", ElementGGP("(%s)" % description), "generated.soar")
+RuleParser.TranslateDescription("game", ElementGGP("(%s)" % description), soarfile)

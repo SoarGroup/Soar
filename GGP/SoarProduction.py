@@ -20,15 +20,13 @@ class UniqueNameGenerator:
 	def get_name(self, preferred):
 		if len(preferred) == 0:
 			preferred = "a"
-			
-		if self.var_indices.has_key(preferred):
-			self.var_indices[preferred] += 1
-			name = preferred + str(self.var_indices[preferred])
-			self.var_indices[name] = 0
-			return name
-		else:
-			self.var_indices[preferred] = 0
-			return preferred
+		
+		name = preferred
+		while self.var_indices.has_key(name):
+			self.var_indices[name] += 1
+			name = name + str(self.var_indices[name])
+		self.var_indices[name] = 0
+		return name
 	
 	def copy(self):
 		c = UniqueNameGenerator()
