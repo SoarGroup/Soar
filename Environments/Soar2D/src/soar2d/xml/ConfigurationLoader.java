@@ -426,8 +426,8 @@ public class ConfigurationLoader {
 				throwSyntax("Value is required for terminal winning-score.");
 			}
 			c.terminalWinningScore = Integer.parseInt(attribute);
-			
 		} else if(attribute.equalsIgnoreCase(Names.kTerminalFoodRemaining)) {
+			
 			c.terminalFoodRemaining = true;
 			
 		} else if(attribute.equalsIgnoreCase(Names.kTerminalUnopenedBoxes)) {
@@ -438,10 +438,13 @@ public class ConfigurationLoader {
 		}
 	}
 	
-	private void client(ElementXML tag) {
+	private void client(ElementXML tag) throws SyntaxException {
 		ClientConfig client = new ClientConfig();
 		
 		client.name = tag.GetAttribute(Names.kParamName);
+		if (client.name == null || client.name.length() < 1) {
+			throwSyntax("Client name is required.");
+		}
 		
 		client.command = tag.GetAttribute(Names.kParamCommand);
 		
