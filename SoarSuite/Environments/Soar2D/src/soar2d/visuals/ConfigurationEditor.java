@@ -29,6 +29,7 @@ public class ConfigurationEditor extends Dialog {
 	Text mapText;
 	Button remote;
 	Button hide;
+	Button gui;
 
 	// logging
 	Combo loggingLevelCombo;
@@ -63,6 +64,28 @@ public class ConfigurationEditor extends Dialog {
 	Button createAgentButton;
 	Button productionsBrowse;
 	Button removeAgentButton;
+	
+	// terminals
+	Button terminalMaxUpdates;
+	Text maxUpdates;
+	Button terminalAgentCommand;
+	Button terminalPointsRemaining;
+	Button terminalWinningScore;
+	Text winningScore;
+	Button terminalFoodRemaining;
+	Button terminalUnopenedBoxes;
+	
+	// clients
+	ClientConfig clientConfig;
+	int clientConfigIndex;
+	Text clientName;
+	Button clientCommandButton;
+	Text clientCommand;
+	Button clientTimeoutButton;
+	Text clientTimeout;
+	Button clientAfter;
+	Button createClientButton;
+	Button removeClientButton;
 
 	public ConfigurationEditor(Shell parent) {
 		super(parent);
@@ -108,10 +131,10 @@ public class ConfigurationEditor extends Dialog {
 		TreeItem agents = new TreeItem(tree, SWT.NONE);
 		agents.setText(kAgents);
 		
-		Iterator<PlayerConfig> iter = config.players.iterator();
-		while (iter.hasNext()) {
+		Iterator<PlayerConfig> playerIter = config.players.iterator();
+		while (playerIter.hasNext()) {
 			TreeItem agent = new TreeItem(agents, SWT.NONE);
-			String name = iter.next().getName();
+			String name = playerIter.next().getName();
 			if (name == null) {
 				name = "<unnamed>";
 			}
@@ -123,6 +146,17 @@ public class ConfigurationEditor extends Dialog {
 		
 		TreeItem clients = new TreeItem(tree, SWT.NONE);
 		clients.setText(kClients);
+
+		Iterator<ClientConfig> clientIter = config.clients.iterator();
+		while (clientIter.hasNext()) {
+			TreeItem client = new TreeItem(clients, SWT.NONE);
+			String name = clientIter.next().name;
+			if (name == null) {
+				//TODO: warn
+				continue;
+			}
+			client.setText(name);
+		}
 
 		rhs = new Composite(dialog, SWT.NONE);
 		{
@@ -333,15 +367,13 @@ public class ConfigurationEditor extends Dialog {
 		}
 		
 		// graphical
+		gui = new Button(currentPage, SWT.CHECK);
+		gui.setText("Use GUI");
 		{
-			Button gui = new Button(currentPage, SWT.CHECK);
-			gui.setText("Use GUI");
-			{
-				GridData gd = new GridData();
-				gd.horizontalAlignment = SWT.BEGINNING;
-				gd.horizontalSpan = 3;
-				gui.setLayoutData(gd);
-			}
+			GridData gd = new GridData();
+			gd.horizontalAlignment = SWT.BEGINNING;
+			gd.horizontalSpan = 3;
+			gui.setLayoutData(gd);
 		}
 
 		// world display
@@ -440,6 +472,7 @@ public class ConfigurationEditor extends Dialog {
 			break;
 		}
 		mapText.setText(config.map.getAbsolutePath());
+		gui.setSelection(config.graphical);
 		hide.setSelection(config.noWorld);
 		useSeed.setSelection(!config.random);
 		seedText.setEnabled(useSeed.getSelection());
@@ -1113,7 +1146,7 @@ public class ConfigurationEditor extends Dialog {
 				createAgentButton.setText("Create new agent");
 				createAgentButton.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(SelectionEvent e) {
-						config.players.add(playerConfig);
+						config.players.add(new PlayerConfig(playerConfig));
 						TreeItem agents = tree.getItem(2);
 						TreeItem newAgent = new TreeItem(agents, SWT.NONE);
 						String name;
@@ -1283,8 +1316,6 @@ public class ConfigurationEditor extends Dialog {
 	}
 	
 	public void terminalsPage() {
-		// select terminal states to use
-		// adjust parameters
 		if (currentPage != null) {
 			currentPage.dispose();
 		}
@@ -1293,7 +1324,7 @@ public class ConfigurationEditor extends Dialog {
 			GridLayout gl = new GridLayout();
 			gl.marginHeight = 0;
 			gl.marginWidth = 0;
-			gl.numColumns = 3;
+			gl.numColumns = 1;
 			currentPage.setLayout(gl);
 			
 			GridData gd = new GridData();
@@ -1304,24 +1335,178 @@ public class ConfigurationEditor extends Dialog {
 			currentPage.setLayoutData(gd);
 		}
 		
+		terminalMaxUpdates = new Button(currentPage, SWT.CHECK);
+		terminalMaxUpdates.setText("Stop on update count");
+		terminalMaxUpdates.setSelection(config.terminalMaxUpdates > 0);
+		terminalMaxUpdates.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				terminalsUpdate();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			terminalMaxUpdates.setLayoutData(gd);
+		}
+		
+		// max updates requires a number of updates
+		maxUpdates = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		maxUpdates.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				try {
+					config.terminalMaxUpdates = Integer.parseInt(maxUpdates.getText());
+				} catch (NumberFormatException exeption) {}
+				terminalsUpdate();
+			}
+		});
+		maxUpdates.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent e) {
+				if (!Character.isDigit(e.character)) {
+					e.doit = false;
+				}
+			}
+			public void keyReleased(KeyEvent e) {
+				terminalsUpdate();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = GridData.FILL;
+			gd.horizontalIndent = 20;
+			gd.grabExcessHorizontalSpace = true;
+			maxUpdates.setLayoutData(gd);
+		}
+
+		terminalAgentCommand = new Button(currentPage, SWT.CHECK);
+		terminalAgentCommand.setText("Stop on agent command");
+		terminalAgentCommand.setSelection(config.terminalAgentCommand);
+		terminalAgentCommand.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.terminalAgentCommand = terminalAgentCommand.getSelection();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			terminalAgentCommand.setLayoutData(gd);
+		}
+
+		terminalWinningScore = new Button(currentPage, SWT.CHECK);
+		terminalWinningScore.setText("Stop when a score is achieved");
+		terminalWinningScore.setSelection(config.terminalWinningScore > 0);
+		terminalWinningScore.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				terminalsUpdate();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			terminalWinningScore.setLayoutData(gd);
+		}
+
+		// winning score requires a score
+		winningScore = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		winningScore.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				try {
+					config.terminalWinningScore = Integer.parseInt(winningScore.getText());
+				} catch (NumberFormatException exeption) {}
+				terminalsUpdate();
+			}
+		});
+		winningScore.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent e) {
+				if (!Character.isDigit(e.character)) {
+					e.doit = false;
+				}
+			}
+			public void keyReleased(KeyEvent e) {
+				terminalsUpdate();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = GridData.FILL;
+			gd.horizontalIndent = 20;
+			gd.grabExcessHorizontalSpace = true;
+			winningScore.setLayoutData(gd);
+		}
+
+		terminalPointsRemaining = new Button(currentPage, SWT.CHECK);
+		terminalPointsRemaining.setText("Stop when there are no more points available (Eaters)");
+		terminalPointsRemaining.setSelection(config.terminalPointsRemaining);
+		terminalPointsRemaining.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.terminalPointsRemaining = terminalPointsRemaining.getSelection();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			terminalPointsRemaining.setLayoutData(gd);
+		}
+
+		terminalFoodRemaining = new Button(currentPage, SWT.CHECK);
+		terminalFoodRemaining.setText("Stop when there is no food remaining (Eaters)");
+		terminalFoodRemaining.setSelection(config.terminalFoodRemaining);
+		terminalFoodRemaining.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.terminalFoodRemaining = terminalFoodRemaining.getSelection();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			terminalFoodRemaining.setLayoutData(gd);
+		}
+
+		terminalUnopenedBoxes = new Button(currentPage, SWT.CHECK);
+		terminalUnopenedBoxes.setText("Stop when there are no unopened boxes (Eaters)");
+		terminalUnopenedBoxes.setSelection(config.terminalUnopenedBoxes);
+		terminalUnopenedBoxes.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.terminalUnopenedBoxes = terminalUnopenedBoxes.getSelection();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			terminalUnopenedBoxes.setLayoutData(gd);
+		}
+
+		terminalsUpdate();
 		
 		rhs.layout(true);
 		dialog.layout(true);
 	}
 	
-	public void clientsPage(TreeItem selectedItem, int selectedIndex) {
+	public void terminalsUpdate() {
+		if (terminalMaxUpdates.getSelection()) {
+			maxUpdates.setEnabled(true);
+			maxUpdates.setText(Integer.toString(config.terminalMaxUpdates));
+		} else {
+			maxUpdates.setEnabled(false);
+			maxUpdates.setText("");
+		}
+		
+		if (terminalWinningScore.getSelection()) {
+			winningScore.setEnabled(true);
+			winningScore.setText(Integer.toString(config.terminalWinningScore));
+		} else {
+			winningScore.setEnabled(false);
+			winningScore.setText("");
+		}
+	}
+	
+	public void clientsPage(final TreeItem selectedItem, int selectedIndex) {
 		// lists all intended clients
 		// create new clients, setting its properties
 
 		if (currentPage != null) {
 			currentPage.dispose();
 		}
+		
 		currentPage = new Composite(rhs, SWT.NONE);
 		{
 			GridLayout gl = new GridLayout();
 			gl.marginHeight = 0;
 			gl.marginWidth = 0;
-			gl.numColumns = 3;
+			gl.numColumns = 1;
 			currentPage.setLayout(gl);
 			
 			GridData gd = new GridData();
@@ -1332,9 +1517,265 @@ public class ConfigurationEditor extends Dialog {
 			currentPage.setLayoutData(gd);
 		}
 		
+		if (selectedItem == null) {
+			clientConfigIndex = -1;
+			clientConfig = new ClientConfig();
+			
+		} else {
+			clientConfigIndex = selectedIndex;
+			clientConfig = config.clients.get(clientConfigIndex);
+		}
 		
+		Label notice = new Label(currentPage, SWT.NONE);
+		notice.setText("Note: debugger clients are handled in agent configuration.");
+		{
+			GridData gd = new GridData();
+			notice.setLayoutData(gd);
+		}
+		
+		{
+			Group newClientGroup = new Group(currentPage, SWT.NONE);
+			if (selectedItem == null) {
+				newClientGroup.setText("Create a new client");
+			} else {
+				newClientGroup.setText("Client settings");
+			}
+			{
+				GridData gd = new GridData();
+				gd.grabExcessHorizontalSpace = true;
+				gd.horizontalAlignment = SWT.FILL;
+				gd.verticalAlignment = SWT.TOP;
+				newClientGroup.setLayoutData(gd);
+				
+				GridLayout gl = new GridLayout();
+				gl.numColumns = 1;
+				newClientGroup.setLayout(gl);
+			}
+			
+			Label clientNameLabel = new Label(newClientGroup, SWT.NONE);
+			clientNameLabel.setText("Client name:");
+			{
+				GridData gd = new GridData();
+				clientNameLabel.setLayoutData(gd);
+			}
+		
+			clientName = new Text(newClientGroup, SWT.SINGLE | SWT.BORDER);
+			clientName.setText(clientConfig.name);
+			clientName.addFocusListener(new FocusAdapter() {
+				public void focusLost(FocusEvent e) {
+					clientConfig.name = clientName.getText();
+					if (selectedItem != null) {
+						String name = clientConfig.name;
+						selectedItem.setText(name);
+					}
+					clientsUpdate(selectedItem);
+				}
+			});
+			clientName.addKeyListener(new KeyAdapter() {
+				public void keyPressed(KeyEvent e) {
+					if (Character.isWhitespace(e.character)) {
+						e.doit = false;
+					}
+				}
+				public void keyReleased(KeyEvent e) {
+					clientsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.FILL;
+				gd.grabExcessHorizontalSpace = true;
+				clientName.setLayoutData(gd);
+			}
+			
+			clientCommandButton = new Button(newClientGroup, SWT.CHECK);
+			clientCommandButton.setText("Soar2D launches client:");
+			clientCommandButton.setSelection(clientConfig.command != null);
+			clientCommandButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					if (!clientCommandButton.getSelection()) {
+						clientConfig.command = null;
+					}
+					
+					clientsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				clientCommandButton.setLayoutData(gd);
+			}
+			
+			Label clientCommandLabel = new Label(newClientGroup, SWT.NONE);
+			clientCommandLabel.setText("Command:");
+			{
+				GridData gd = new GridData();
+				clientCommandLabel.setLayoutData(gd);
+			}
+		
+			clientCommand = new Text(newClientGroup, SWT.SINGLE | SWT.BORDER);
+			if (clientConfig.command != null) {
+				clientCommand.setText(clientConfig.command);
+			}
+			clientCommand.addFocusListener(new FocusAdapter() {
+				public void focusLost(FocusEvent e) {
+					clientConfig.command = clientCommand.getText();
+					if (clientConfig.command.length() < 1) {
+						clientConfig.command = null;
+					}
+					
+					clientsUpdate(selectedItem);
+				}
+			});
+			clientCommand.addKeyListener(new KeyAdapter() {
+				public void keyReleased(KeyEvent e) {
+					clientsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.FILL;
+				gd.horizontalIndent = 20;
+				gd.grabExcessHorizontalSpace = true;
+				clientCommand.setLayoutData(gd);
+			}
+			
+			clientTimeoutButton = new Button(newClientGroup, SWT.CHECK);
+			clientTimeoutButton.setText("Do not use default timeout:");
+			clientTimeoutButton.setSelection(clientConfig.timeout != Soar2D.config.kDefaultTimeout);
+			clientTimeoutButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					if (!clientCommandButton.getSelection()) {
+						clientConfig.timeout = Soar2D.config.kDefaultTimeout;
+					}
+					clientsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				clientTimeoutButton.setLayoutData(gd);
+			}
+			
+			Label clientTimeoutLabel = new Label(newClientGroup, SWT.NONE);
+			clientTimeoutLabel.setText("Timeout (seconds):");
+			{
+				GridData gd = new GridData();
+				clientTimeoutLabel.setLayoutData(gd);
+			}
+		
+			clientTimeout = new Text(newClientGroup, SWT.SINGLE | SWT.BORDER);
+			clientTimeout.addFocusListener(new FocusAdapter() {
+				public void focusLost(FocusEvent e) {
+					try {
+						clientConfig.timeout = Integer.parseInt(clientTimeout.getText());
+					} catch (NumberFormatException exception) {}
+					
+					clientsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.FILL;
+				gd.horizontalIndent = 20;
+				gd.grabExcessHorizontalSpace = true;
+				clientTimeout.setLayoutData(gd);
+			}
+			
+			clientAfter = new Button(newClientGroup, SWT.CHECK);
+			clientAfter.setText("Spawn client after agent creation (unchecked means spawn before)");
+			clientAfter.setSelection(clientConfig.after);
+			clientAfter.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					clientConfig.after = clientAfter.getSelection();
+
+					clientsUpdate(selectedItem);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				clientAfter.setLayoutData(gd);
+			}
+			
+			if (selectedItem == null) {
+				createClientButton = new Button(newClientGroup, SWT.PUSH);
+				createClientButton.setText("Create new client");
+				createClientButton.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(SelectionEvent e) {
+						config.clients.add(new ClientConfig(clientConfig));
+						TreeItem clients = tree.getItem(4);
+						TreeItem newClient = new TreeItem(clients, SWT.NONE);
+						String name = clientConfig.name;
+						newClient.setText(name);
+						tree.redraw();
+						clientsUpdate(selectedItem);
+					}
+				});
+				{
+					GridData gd = new GridData();
+					gd.horizontalAlignment = GridData.END;
+					createClientButton.setLayoutData(gd);
+				}
+			} else {
+				createClientButton = null;
+			}
+		}
+		
+		if (selectedItem != null) {
+			removeClientButton = new Button(currentPage, SWT.PUSH);
+			removeClientButton.setText("Remove this Client");
+			removeClientButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					config.clients.remove(clientConfigIndex);
+					clientConfigIndex = -1;
+					clientConfig = null;
+					selectedItem.dispose();
+					tree.redraw();
+					TreeItem newSelection = tree.getItem(4);
+					tree.setSelection(newSelection);
+					clientsPage(null, -1);
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.END;
+				removeClientButton.setLayoutData(gd);
+			}
+		}
+
+		clientsUpdate(selectedItem);
+
 		rhs.layout(true);
 		dialog.layout(true);
+	}
+	
+	public void clientsUpdate(TreeItem selectedItem) {
+		
+		boolean createReady = true;
+		
+		if (clientName.getText().length() < 1) {
+			createReady = false;
+		}
+		
+		if (clientCommandButton.getSelection()) {
+			clientCommand.setEnabled(true);
+			if (clientCommand.getText().length() < 1) {
+				createReady = false;
+			}
+		} else {
+			clientCommand.setEnabled(false);
+			clientCommand.setText("");
+		}
+		
+		if (clientTimeoutButton.getSelection()) {
+			clientTimeout.setEnabled(true);
+			clientTimeout.setText(Integer.toString(clientConfig.timeout));
+		} else {
+			clientTimeout.setEnabled(false);
+			clientTimeout.setText("");
+		}
+		
+		if (createClientButton != null) {	
+			createClientButton.setEnabled(createReady);
+		}
 		
 	}
 }

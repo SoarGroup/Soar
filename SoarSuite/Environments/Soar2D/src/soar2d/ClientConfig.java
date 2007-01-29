@@ -7,10 +7,22 @@ package soar2d;
  * going to connect to the simulation.
  */
 public class ClientConfig {
+	
+	public ClientConfig() {}
+	
+	public ClientConfig(ClientConfig config) {
+		this.name = new String(config.name);
+		if (config.command != null) {
+			this.command = new String(config.command);
+		}
+		
+		this.timeout = config.timeout;
+		this.after = config.after;
+	}
 	/**
 	 * The name the client will report itself as.
 	 */
-	public String name = null;
+	public String name = new String();
 	/**
 	 * The command used to start the client. If not present, the client
 	 * is started externally.
