@@ -1,10 +1,11 @@
 package soar2d.xml;
 
+import java.util.Iterator;
 import java.util.Stack;
 import java.util.logging.*;
 import java.io.*;
 
-import sml.ElementXML;
+import sml.*;
 import soar2d.*;
 import soar2d.Configuration.SimType;
 import soar2d.player.*;
@@ -69,10 +70,86 @@ public class ConfigurationLoader {
 		return hasType;
 	}
 	
+	public void generateXMLString_NO_CRASH() {
+		ElementXML soar2dTag = new ElementXML();
+		ElementXML loggerTag = new ElementXML();
+		soar2dTag.AddChild(loggerTag);
+		soar2dTag = null;
+		
+		System.gc();
+		try { Thread.sleep(5); } catch (Exception ignored) {}
+	}
+	
+	public void generateXMLString_CRASH_MINIMAL() {
+		ElementXML soar2dTag = new ElementXML();
+		crashCall(soar2dTag);
+		soar2dTag = null;
+		
+		// BUGBUG: calling the garbage collector forces the crash to happen right away
+		System.gc();
+		try { Thread.sleep(5); } catch (Exception ignored) {}
+	}
+	
+	public void crashCall(ElementXML soar2dTag) {
+		ElementXML loggerTag = new ElementXML();
+		soar2dTag.AddChild(loggerTag);
+		loggerTag.AddRefOnHandle();
+	}
+
+	public String generateXMLString(Configuration config) {
+		c = config;
+		
+		ElementXML soar2dTag = new ElementXML();
+		soar2dTag.SetTagName(Names.kTagSoar2D);
+		soar2dSave(soar2dTag);
+
+		return soar2dTag.GenerateXMLString(true, true);
+	}
+	
+	private void soar2dSave(ElementXML soar2dTag) {
+		
+		soar2dTag.AddAttributeConstConst(Names.kParamVersion, Integer.toString(version));
+		
+		ElementXML loggerTag = new ElementXML();
+		loggerTag.SetTagName(Names.kTagLogger);
+		loggerSave(loggerTag);
+		soar2dTag.AddChild(loggerTag);
+		
+		ElementXML gameTag = new ElementXML();
+		switch (c.getType()) {
+		case kTankSoar:
+			gameTag.SetTagName(Names.kTagTankSoar);
+			break;
+
+		case kEaters:
+			gameTag.SetTagName(Names.kTagEaters);
+			break;
+		}
+		gameSave(gameTag);
+		soar2dTag.AddChild(gameTag);
+		
+		ElementXML displayTag = new ElementXML();
+		displayTag.SetTagName(Names.kTagDisplay);
+		displaySave(displayTag);
+		soar2dTag.AddChild(displayTag);
+		
+		ElementXML simTag = new ElementXML();
+		simTag.SetTagName(Names.kTagSimulation);
+		simulationSave(simTag);
+		soar2dTag.AddChild(simTag);
+		
+		Iterator<ClientConfig> iter = c.clients.iterator();
+		while (iter.hasNext()) {
+			ElementXML clientTag = new ElementXML();
+			clientTag.SetTagName(Names.kTagClient);
+			clientSave(clientTag, iter.next());
+			soar2dTag.AddChild(clientTag);
+		}
+	}
+	
 	private void soar2d(ElementXML soar2dTag) throws SyntaxException, SMLException {
-		
 		String attribute = null;
-		
+
 		attribute = soar2dTag.GetAttribute(Names.kParamVersion);
 		if (attribute == null) {
 			System.out.println("No configuration file version specified, assuming " + kVersion);
@@ -145,6 +222,35 @@ public class ConfigurationLoader {
 		}
 	}
 	
+	private void loggerSave(ElementXML loggerTag) {
+		if (c.logLevel.equals(Level.SEVERE)) {
+			loggerTag.AddAttributeConstConst(Names.kParamLevel, Names.kLevelSevere);
+			
+		} else if (c.logLevel.equals(Level.WARNING)) {
+			loggerTag.AddAttributeConstConst(Names.kParamLevel, Names.kLevelWarning);
+			
+		} else if (c.logLevel.equals(Level.INFO)) {
+			loggerTag.AddAttributeConstConst(Names.kParamLevel, Names.kLevelInfo);
+			
+		} else if (c.logLevel.equals(Level.FINE)) {
+			loggerTag.AddAttributeConstConst(Names.kParamLevel, Names.kLevelFine);
+			
+		} else if (c.logLevel.equals(Level.FINER)) {
+			loggerTag.AddAttributeConstConst(Names.kParamLevel, Names.kLevelFiner);
+			
+		} else if (c.logLevel.equals(Level.FINEST)) {
+			loggerTag.AddAttributeConstConst(Names.kParamLevel, Names.kLevelFinest);
+			
+		} else {
+			assert false;
+		}
+		
+		loggerTag.AddAttributeConstConst(Names.kParamConsole, c.logConsole ? Names.kTrue : Names.kFalse);
+		loggerTag.AddAttributeConstConst(Names.kParamFile, c.logToFile ? Names.kTrue : Names.kFalse);
+		loggerTag.AddAttributeConstConst(Names.kParamFileName, c.logFile.getAbsolutePath());
+		loggerTag.AddAttributeConstConst(Names.kParamLogTime, c.logTime ? Names.kTrue : Names.kFalse);
+	}
+	
 	private void logger(ElementXML loggerTag) throws SyntaxException {
 		
 		String attribute;
@@ -193,8 +299,20 @@ public class ConfigurationLoader {
 		if (attribute != null) {
 			c.logTime = Boolean.parseBoolean(attribute);
 		}
-		
 	}
+	
+	private void gameSave(ElementXML gameTag) {
+		gameTag.AddAttributeConstConst(Names.kParamMap, c.map.getAbsolutePath());
+		
+		Iterator<PlayerConfig> iter = c.players.iterator();
+		while (iter.hasNext()) {
+			PlayerConfig player = iter.next();
+			ElementXML agentTag = new ElementXML();
+			agentTag.SetTagName(Names.kTagAgent);
+			agentSave(agentTag, player);
+			gameTag.AddChild(agentTag);
+		}
+	}	
 	
 	private void game(ElementXML gameTag) throws SyntaxException, SMLException {
 		String attribute;
@@ -237,6 +355,55 @@ public class ConfigurationLoader {
 		}
 	}
 
+	private void agentSave(ElementXML agentTag, PlayerConfig player) {
+		if (player.hasName()) {
+			agentTag.AddAttributeConstConst(Names.kParamName, player.getName());
+		}
+		
+		if (player.hasProductions()) {
+			agentTag.AddAttributeConstConst(Names.kParamProductions, player.getProductions().getAbsolutePath());
+		}
+		
+		if (player.hasColor()) {
+			agentTag.AddAttributeConstConst(Names.kParamColor, player.getColor());
+		}
+		
+		if (player.hasInitialLocation()) {
+			agentTag.AddAttributeConstConst(Names.kParamX, Integer.toString(player.getInitialLocation().x));
+			agentTag.AddAttributeConstConst(Names.kParamY, Integer.toString(player.getInitialLocation().y));
+		}
+		
+		if (player.hasPoints()) {
+			agentTag.AddAttributeConstConst(Names.kParamPoints, Integer.toString(player.getPoints()));
+		}
+		
+		if (player.hasFacing()) {
+			String facing = Direction.stringOf[player.getFacing()];
+			agentTag.AddAttributeConstConst(Names.kParamFacing, facing);
+		}
+		
+		if (player.hasEnergy()) {
+			agentTag.AddAttributeConstConst(Names.kParamEnergy, Integer.toString(player.getEnergy()));
+		}
+		
+		if (player.hasHealth()) {
+			agentTag.AddAttributeConstConst(Names.kParamHealth, Integer.toString(player.getHealth()));
+		}
+		
+		if (player.hasMissiles()) {
+			agentTag.AddAttributeConstConst(Names.kParamMissiles, Integer.toString(player.getMissiles()));
+		}
+		
+		Iterator<String> iter = player.getShutdownCommands().iterator();
+		while (iter.hasNext()) {
+			String command = iter.next();
+			ElementXML shutdownTag = new ElementXML();
+			shutdownTag.SetTagName(Names.kTagShutdownCommand);
+			shutdownCommandSave(shutdownTag, command);
+			agentTag.AddChild(shutdownTag);
+		}
+	}
+	
 	private void agent(ElementXML tag) throws SMLException, SyntaxException {
 		PlayerConfig agentConfig = new PlayerConfig();
 		agentConfig.setName(tag.GetAttribute(Names.kParamName));
@@ -325,6 +492,10 @@ public class ConfigurationLoader {
 		c.players.add(agentConfig);
 	}
 	
+	private void shutdownCommandSave(ElementXML shutdownTag, String command) {
+		shutdownTag.AddAttributeConstConst(Names.kParamCommand, command);
+	}
+	
 	private void shutdownCommand(PlayerConfig playerConfig, ElementXML tag) throws SyntaxException {
 		String attribute = tag.GetAttribute(Names.kParamCommand);
 		if (attribute == null || attribute.length() <= 0) {
@@ -334,10 +505,68 @@ public class ConfigurationLoader {
 		playerConfig.addShutdownCommand(attribute);
 	}
 	
+	private void displaySave(ElementXML displayTag) {
+		displayTag.AddAttributeConstConst(Names.kParamGraphical, c.graphical ? Names.kTrue : Names.kFalse);
+	}
+	
 	private void display(ElementXML tag) {
 		String attribute = tag.GetAttribute(Names.kParamGraphical);
 		if (attribute != null) {
 			c.graphical = Boolean.parseBoolean(attribute);
+		}
+	}
+
+	private void simulationSave(ElementXML simulationTag) {
+		simulationTag.AddAttributeConstConst(Names.kParamDebuggers, c.debuggers ? Names.kTrue : Names.kFalse);
+		simulationTag.AddAttributeConstConst(Names.kParamRemote, c.remote ? Names.kTrue : Names.kFalse);
+		simulationTag.AddAttributeConstConst(Names.kParamRandom, c.random ? Names.kTrue : Names.kFalse);
+		simulationTag.AddAttributeConstConst(Names.kParamNoWorld, c.noWorld ? Names.kTrue : Names.kFalse);
+		simulationTag.AddAttributeConstConst(Names.kParamMissileResetThreshold, Integer.toString(c.missileResetThreshold));
+		simulationTag.AddAttributeConstConst(Names.kParamRandomSeed, Integer.toString(c.randomSeed));
+
+		ElementXML terminalTag;
+		if (c.terminalAgentCommand) {
+			terminalTag = new ElementXML();
+			terminalTag.SetTagName(Names.kTagTerminal);
+			terminalTag.AddAttributeConstConst(Names.kParamType, Names.kTerminalAgentCommand);
+			simulationTag.AddChild(terminalTag);
+		}
+		
+		if (c.terminalFoodRemaining) {
+			terminalTag = new ElementXML();
+			terminalTag.SetTagName(Names.kTagTerminal);
+			terminalTag.AddAttributeConstConst(Names.kParamType, Names.kTerminalFoodRemaining);
+			simulationTag.AddChild(terminalTag);
+		}
+		
+		if (c.terminalMaxUpdates > 0) {
+			terminalTag = new ElementXML();
+			terminalTag.SetTagName(Names.kTagTerminal);
+			terminalTag.AddAttributeConstConst(Names.kParamType, Names.kTerminalMaxUpdates);
+			terminalTag.AddAttributeConstConst(Names.kParamValue, Integer.toString(c.terminalMaxUpdates));
+			simulationTag.AddChild(terminalTag);
+		}
+		
+		if (c.terminalPointsRemaining) {
+			terminalTag = new ElementXML();
+			terminalTag.SetTagName(Names.kTagTerminal);
+			terminalTag.AddAttributeConstConst(Names.kParamType, Names.kTerminalPointsRemaining);
+			simulationTag.AddChild(terminalTag);
+		}
+		
+		if (c.terminalUnopenedBoxes) {
+			terminalTag = new ElementXML();
+			terminalTag.SetTagName(Names.kTagTerminal);
+			terminalTag.AddAttributeConstConst(Names.kParamType, Names.kTerminalUnopenedBoxes);
+			simulationTag.AddChild(terminalTag);
+		}
+		
+		if (c.terminalWinningScore > 0) {
+			terminalTag = new ElementXML();
+			terminalTag.SetTagName(Names.kTagTerminal);
+			terminalTag.AddAttributeConstConst(Names.kParamType, Names.kTerminalWinningScore);
+			terminalTag.AddAttributeConstConst(Names.kParamValue, Integer.toString(c.terminalWinningScore));
+			simulationTag.AddChild(terminalTag);
 		}
 	}
 	
@@ -436,6 +665,19 @@ public class ConfigurationLoader {
 		} else {
 			throwSyntax("Unknown terminal type: " + attribute);
 		}
+	}
+	
+	private void clientSave(ElementXML clientTag, ClientConfig client) {
+
+		clientTag.AddAttributeConstConst(Names.kParamName, client.name);
+		
+		if (client.command != null) {
+			clientTag.AddAttributeConstConst(Names.kParamCommand, client.command);
+		}
+		
+		clientTag.AddAttributeConstConst(Names.kParamTimeOut, Integer.toString(client.timeout));
+
+		clientTag.AddAttributeConstConst(Names.kParamAfter, client.after ? Names.kTrue : Names.kFalse);
 	}
 	
 	private void client(ElementXML tag) throws SyntaxException {
