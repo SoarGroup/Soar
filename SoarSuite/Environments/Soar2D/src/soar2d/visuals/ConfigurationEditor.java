@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.*;
 import soar2d.*;
 import soar2d.Configuration.*;
 import soar2d.player.*;
+import soar2d.xml.ConfigurationLoader;
 
 public class ConfigurationEditor extends Dialog {
 
@@ -195,6 +196,29 @@ public class ConfigurationEditor extends Dialog {
 		saveAs.setText("Save as...");
 		saveAs.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
+				ConfigurationLoader loader = new ConfigurationLoader();
+				String output = loader.generateXMLString(config);
+				System.out.println(output);
+				dialog.dispose();
+			}
+		});
+		
+		Button crashMinimal = new Button(bottomButtons, SWT.PUSH);
+		crashMinimal.setText("crash minimal");
+		crashMinimal.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				ConfigurationLoader loader = new ConfigurationLoader();
+				loader.generateXMLString_CRASH_MINIMAL();
+				dialog.dispose();
+			}
+		});
+		
+		Button noCrash = new Button(bottomButtons, SWT.PUSH);
+		noCrash.setText("no crash");
+		noCrash.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				ConfigurationLoader loader = new ConfigurationLoader();
+				loader.generateXMLString_NO_CRASH();
 				dialog.dispose();
 			}
 		});
