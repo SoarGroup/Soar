@@ -61,8 +61,17 @@ public class Soar2D {
 		if (args.length > 0) {
 			configFile = args[0];
 		} else {
-			configFile = config.kDefaultXMLEatersSettingsFile;
-
+			if (wmSuccess) {
+				String file = wm.promptForConfig();
+				if (file != null) {
+					configFile = file;
+				} else {
+					configFile = config.kDefaultXMLEatersSettingsFile;
+				}
+			} else {
+				System.out.println("No configuration file specified, using " + config.kDefaultXMLEatersSettingsFile);
+				configFile = config.kDefaultXMLEatersSettingsFile;
+			}
 		}
 		
 		// Read config file
