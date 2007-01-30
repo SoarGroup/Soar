@@ -28,13 +28,16 @@
 (mummy-type mummyv vertical)
 (mummy-type mummyh horizontal)
 
+(explorer-type explorerv vertical)
+(explorer-type explorerh horizontal)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;; INITIAL STATE (Configuration) ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (init (location mummyh 1 8))
 (init (location mummyv 8 8))
 
-(init (location explorer 1 1))
-(init (location explorer 5 1))
+(init (location explorerh 1 1))
+(init (location explorerv 5 1))
 
 (init (location exit 4 1))
 (init (location exit 8 1))
@@ -152,7 +155,7 @@
 ;;;;    (index ?y))
 (<= (pick-one horizontal ?x ?y none nowhere)
     (mummy-type ?mummy horizontal)
-    (next-explorer-loc ?x ?y)
+    (next-explorer-loc ?x ?y horizontal)
     (or (true (location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy)))
 
 ; no horizontal component
@@ -216,7 +219,7 @@
 ;;;;    (index ?y))
 (<= (pick-one vertical ?x ?y none nowhere)
     (mummy-type ?mummy vertical)
-    (next-explorer-loc ?x ?y)
+    (next-explorer-loc ?x ?y vertical)
     (or (true (location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy)))
 
 ; no horiz component
@@ -285,13 +288,13 @@
 (<= (horiz-direction-from ?mx ?ex east)
     (mummy-type ?mummy ?type)
     (true (location ?mummy ?mx ?my))
-    (next-explorer-loc ?ex ?ey)
+    (next-explorer-loc ?ex ?ey ?type)
     (lessthan ?mx ?ex))
 (<= (horiz-direction-from ?x1 ?x2 east)
     (mummy-type ?mummy ?type)
     (true (location ?mummy ?mx ?my))
     (close-to-mummy ?cmx ?my ?mummy)
-    (next-explorer-loc ?ex ?ey)
+    (next-explorer-loc ?ex ?ey ?type)
     (lessthan ?cmx ?ex))
 
 ;;;;(<= (horiz-direction-from ?x1 ?x2 west)
@@ -299,13 +302,13 @@
 (<= (horiz-direction-from ?mx ?ex west)
     (mummy-type ?mummy ?type)
     (true (location ?mummy ?mx ?my))
-    (next-explorer-loc ?ex ?ey)
+    (next-explorer-loc ?ex ?ey ?type)
     (lessthan ?ex ?mx))
 (<= (horiz-direction-from ?cmx ?ex west)
     (mummy-type ?mummy ?type)
     (true (location ?mummy ?mx ?my))
     (close-to-mummy ?cmx ?my ?mummy)
-    (next-explorer-loc ?ex ?ey)
+    (next-explorer-loc ?ex ?ey ?type)
     (lessthan ?ex ?cmx))
 
 ;;;;(<= (horiz-direction-from ?x1 ?x2 none)
@@ -316,14 +319,14 @@
 (<= (horiz-direction-from ?mx ?ex none)
     (mummy-type ?mummy ?type)
     (true (location ?mummy ?mx ?my))
-    (next-explorer-loc ?ex ?ey)
+    (next-explorer-loc ?ex ?ey ?type)
     (not (lessthan ?mx ?ex))
     (not (lessthan ?ex ?mx)))
 (<= (horiz-direction-from ?cmx ?ex none)
     (mummy-type ?mummy ?type)
     (true (location ?mummy ?mx ?my)) 
     (close-to-mummy ?cmx ?my ?mummy)
-    (next-explorer-loc ?ex ?ey)
+    (next-explorer-loc ?ex ?ey ?type)
     (not (lessthan ?cmx ?ex))
     (not (lessthan ?ex ?cmx)))
 
@@ -332,13 +335,13 @@
 (<= (vert-direction-from ?my ?ey north)
     (mummy-type ?mummy ?type)
     (true (location ?mummy ?mx ?my))
-    (next-explorer-loc ?ex ?ey)
+    (next-explorer-loc ?ex ?ey ?type)
     (lessthan ?my ?ey))
 (<= (vert-direction-from ?cmy ?ey north)
     (mummy-type ?mummy ?type)
     (true (location ?mummy ?mx ?my))
     (close-to-mummy ?mx ?cmy ?mummy)
-    (next-explorer-loc ?ex ?ey)
+    (next-explorer-loc ?ex ?ey ?type)
     (lessthan ?cmy ?ey))
 
 ;;;;(<= (vert-direction-from ?y1 ?y2 south)
@@ -346,13 +349,13 @@
 (<= (vert-direction-from ?my ?ey south)
     (mummy-type ?mummy ?type)
     (true (location ?mummy ?mx ?my))
-    (next-explorer-loc ?ex ?ey)
+    (next-explorer-loc ?ex ?ey ?type)
     (lessthan ?ey ?my))
 (<= (vert-direction-from ?cmy ?ey south)
     (mummy-type ?mummy ?type)
     (true (location ?mummy ?mx ?my))
     (close-to-mummy ?mx ?cmy ?mummy)
-    (next-explorer-loc ?ex ?ey)
+    (next-explorer-loc ?ex ?ey ?type)
     (lessthan ?ey ?cmy))
 
 ;;;;(<= (vert-direction-from ?y1 ?y2 none)
@@ -363,14 +366,14 @@
 (<= (vert-direction-from ?my ?ey none)
     (mummy-type ?mummy ?type)
     (true (location ?mummy ?mx ?my))
-    (next-explorer-loc ?ex ?ey)
+    (next-explorer-loc ?ex ?ey ?type)
     (not (lessthan ?my ?ey))
     (not (lessthan ?ey ?my)))
 (<= (vert-direction-from ?cmy ?ey none)
     (mummy-type ?mummy ?type)
     (true (location ?mummy ?mx ?my))
     (close-to-mummy ?mx ?cmy ?mummy)
-    (next-explorer-loc ?ex ?ey)
+    (next-explorer-loc ?ex ?ey ?type)
     (not (lessthan ?cmy ?ey))
     (not (lessthan ?ey ?cmy)))
 
@@ -391,18 +394,28 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;; DYNAMICS ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Update location for explorer left of partition
-(<= (next (location explorer ?x2 ?y2))
-    (true (location explorer ?x1 ?y1))
-    (lessthan ?x1 5)
-    (does explorer (move ?dirl ?dirr))
-    (newlocation1 ?x1 ?y1 ?dirl ?x2 ?y2 explorer))
+;;;;(<= (next (location explorer ?x2 ?y2))
+;;;;    (true (location explorer ?x1 ?y1))
+;;;;    (lessthan ?x1 5)
+;;;;    (does explorer (move ?dirl ?dirr))
+;;;;    (newlocation1 ?x1 ?y1 ?dirl ?x2 ?y2 explorer))
+(<= (next (location ?explorer ?x2 ?y2))
+    (explorer-type ?explorer horizontal)
+    (true (location ?explorer ?x1 ?y1))
+    (does ?explorer (move ?dirl ?dirr))
+    (newlocation1 ?x1 ?y1 ?dirl ?x2 ?y2 ?explorer))
 
 ;; Update location for explorer right of partition
-(<= (next (location explorer ?x2 ?y2))
-    (true (location explorer ?x1 ?y1))
-    (lessthan 4 ?x1)
-    (does explorer (move ?dirl ?dirr))
-    (newlocation1 ?x1 ?y1 ?dirr ?x2 ?y2 explorer))
+;;;;(<= (next (location explorer ?x2 ?y2))
+;;;;    (true (location explorer ?x1 ?y1))
+;;;;    (lessthan 4 ?x1)
+;;;;    (does explorer (move ?dirl ?dirr))
+;;;;    (newlocation1 ?x1 ?y1 ?dirr ?x2 ?y2 explorer))
+(<= (next (location ?explorer ?x2 ?y2))
+    (explorer-type ?explorer vertical)
+    (true (location ?explorer ?x1 ?y1))
+    (does ?explorer (move ?dirl ?dirr))
+    (newlocation1 ?x1 ?y1 ?dirr ?x2 ?y2 ?explorer))
 
 (<= (next (location ?mummy ?x2 ?y2))
     (mummy-type ?mummy ?type)
@@ -425,13 +438,24 @@
 	
 ;;;;;;;;;;;;;;;;;;;;;;;;;; VIEW RELATIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;(<= eaten
+;;;;    (true (location explorer ?x ?y))
+;;;;    (true (location ?mummy ?x ?y))
+;;;;    (mummy-type ?mummy ?type))
 (<= eaten
-    (true (location explorer ?x ?y))
+    (explorer-type ?explorer ?type)
+    (true (location ?explorer ?x ?y))
     (true (location ?mummy ?x ?y))
     (mummy-type ?mummy ?type))
+
+;;;;(<= atexit
+;;;;    (true (location explorer ?x ?y))
+;;;;    (true (location exit ?x ?y)))
 (<= atexit
-    (true (location explorer ?x ?y))
+    (explorer-type ?explorer ?type)
+    (true (location ?explorer ?x ?y))
     (true (location exit ?x ?y)))
+
 (<= laststep
     (true (step 50)))
 
@@ -852,10 +876,17 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;; ADDITIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(<= (next-explorer-loc ?ex ?ey)
-    (true (location explorer ?ex1 ?ey1))
-    (does explorer (move ?em))
-    (newlocation1 ?ex1 ?ey1 ?em ?ex ?ey explorer))
+(<= (next-explorer-loc ?ex ?ey horizontal)
+    (explorer-type ?explorer horizontal)
+    (true (location ?explorer ?ex1 ?ey1))
+    (does explorer (move ?dirl ?dirr))
+    (newlocation1 ?ex1 ?ey1 ?dirl ?ex ?ey ?explorer))
+
+(<= (next-explorer-loc ?ex ?ey vertical)
+    (explorer-type ?explorer vertical)
+    (true (location ?explorer ?ex1 ?ey1))
+    (does explorer (move ?dirl ?dirr))
+    (newlocation1 ?ex1 ?ey1 ?dirr ?ex ?ey ?explorer))
 
 (<= (close-to-mummy ?x ?y1 ?mummy)
     (mummy-type ?mummy ?type)
