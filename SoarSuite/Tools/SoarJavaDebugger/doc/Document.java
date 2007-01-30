@@ -11,6 +11,8 @@
 ********************************************************************************************/
 package doc;
 
+import doc.DocumentThread2.CommandExecCommandLine;
+import doc.DocumentThread2.CommandExecCommandLineXML;
 import doc.events.*;
 import sml.* ;
 import debugger.* ;
@@ -89,7 +91,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 	 * We can certainly reverse this choice later if we wish.
 	 */
 	public static final boolean kDocInOwnThread = true ;
-	private DocumentThread 		m_DocumentThread = null ;
+	private DocumentThread2 	m_DocumentThread = null ;
 	
 	public static final boolean kShutdownInSeparateThread = true ;
 	
@@ -129,7 +131,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		
 		if (Document.kDocInOwnThread)
 		{
-			m_DocumentThread = new DocumentThread(this) ;
+			m_DocumentThread = new DocumentThread2(this) ;
 			m_DocumentThread.start() ;
 		}
 		
@@ -239,12 +241,24 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		return m_Kernel.ExpandCommandLine(commandLine) ;
 	}
 	
-	public boolean isProductionLoaded(Agent agent, String productionName)
+	public boolean isProductionLoaded(Agent agent, final String productionName)
 	{
 		if (agent == null || !this.isConnected())
 			return false ;
-		
-		return agent.IsProductionLoaded(productionName) ;
+
+		// Can't call directly to the kernel (agent) or we'll deadlock if Soar is running
+		// So instead create a command object and execute that.
+		//return agent.IsProductionLoaded(productionName) ;
+
+		DocumentThread2.Command command = new DocumentThread2.Command(agent) {
+			protected void execute() {
+				boolean res = m_Agent.IsProductionLoaded(productionName) ;
+				recordResult(Boolean.valueOf(res)) ;
+			} ;
+		} ;
+
+		Boolean result = (Boolean)this.sendAgentCommandGeneral(command) ;
+		return result.booleanValue() ;
 	}
 	
 	/********************************************************************************************
@@ -905,19 +919,28 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 
 	public String sendAgentCommand(Agent agent, String commandLine)
 	{
-		return sendAgentCommandGeneral(agent, commandLine, null) ;
+		DocumentThread2.Command command = new CommandExecCommandLine(agent, commandLine) ;
+		return (String)sendAgentCommandGeneral(command) ;
 	}
 
 	public boolean sendAgentCommandXML(Agent agent, String commandLine, ClientAnalyzedXML response)
 	{
 		if (response == null)
 			throw new IllegalArgumentException("Must provide an XML object to receive the response") ;
-		
-		String result = sendAgentCommandGeneral(agent, commandLine, response) ;
+
+		DocumentThread2.Command command = new CommandExecCommandLineXML(agent, commandLine, response) ;		
+		String result = (String)sendAgentCommandGeneral(command) ;
 
 		boolean res = (result != null && result.equals("true")) ;
 		return res ;
 	}
+	/*
+	protected String sendAgentCommandLine(Agent agent, String commandLine, ClientAnalyzedXML response)
+	{
+		DocumentThread2.Command command = DocumentThread2.createCommandToExecute(agent, commandLine, response) ;
+		return sendAgentCommandGeneral(command) ;
+	}
+	*/
 	
 	 /*******************************************************************************************
 	 * 
@@ -931,45 +954,35 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 	 * @return
 	*******************************************************************************************
 	 */
-	protected String sendAgentCommandGeneral(Agent agent, String commandLine, ClientAnalyzedXML response)
+	protected Object sendAgentCommandGeneral(DocumentThread2.Command command)
 	{
 		if (!isConnected())
 			return "Error: No Soar kernel is running.  Need to start one before executing commands." ;
 		
-		if (agent == null)
+		if (command.getAgent() == null)
 			return "Error: Agent is missing.  Need to create one before executing commands" ;
-
-		if (Document.kDocInOwnThread)
+		
+		// If Soar commands run in their own thread we issue the command and then pump the UI thread for messages
+		// while waiting for a response.  We do this so that folks calling here can see this as a synchronous call
+		// when really it's asynchronous.
+		// We also need to pump the document thread in response to an "agents_run_step" event to allow interruptions
+		// so that a Soar "run" command can be interrupted.
+		m_DocumentThread.scheduleCommandToExecute(command) ;
+		//DocumentThread2.Command command = m_DocumentThread.scheduleCommandLineToExecute(agent, commandLine, response) ;
+		
+		while (m_DocumentThread.isAlive() && !m_DocumentThread.isExecutedCommand(command))
 		{
-			// If Soar commands run in their own thread we issue the command and then pump the UI thread for messages
-			// while waiting for a response.  We do this so that folks calling here can see this as a synchronous call
-			// when really it's asynchronous.
-			// We also need to pump the document thread in response to an "agents_run_step" event to allow interruptions
-			// so that a Soar "run" command can be interrupted.
-			DocumentThread.Command command = m_DocumentThread.scheduleCommandToExecute(agent, commandLine, response) ;
+			pumpMessagesOneStep() ;
 			
-			while (m_DocumentThread.isAlive() && !m_DocumentThread.isExecutedCommand(command))
-			{
-				pumpMessagesOneStep() ;
-				
-				// The pause as we sleep here is just how quickly we respond to commands finishing (or UI events).
-				// It won't affect the speed Soar executes.
-				try { Thread.sleep(10) ; } catch (InterruptedException e) { } 
-			}
+			// The pause as we sleep here is just how quickly we respond to commands finishing (or UI events).
+			// It won't affect the speed Soar executes.
+			try { Thread.sleep(10) ; } catch (InterruptedException e) { } 
+		}
 
-			if (!m_DocumentThread.isAlive())
-				return "System shutdown" ;
-			
-			String result = m_DocumentThread.getExecutedCommandResult(command) ;
-			return result ;
-		}
-		else
-		{
-			// If we're running commands in the UI thread we can just execute it.
-			// If it's a run we need to pump messages in response to an "agents_run_step" event
-			// to keep the UI alive and allow folks to interrupt Soar.
-			String result = agent.ExecuteCommandLine(commandLine) ;			
-			return result ;
-		}
+		if (!m_DocumentThread.isAlive())
+			return "System shutdown" ;
+		
+		Object result = m_DocumentThread.getExecutedCommandResult(command) ;
+		return result ;
 	}
 }
