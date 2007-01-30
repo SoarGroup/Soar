@@ -124,7 +124,7 @@ def TranslateImpliedRelation(game_name, head, body):
 	return [sp]
 	
 def TranslateTerminal(game_name, head, body):
-	sp = MakeTemplateProduction("elaborate", name_gen.get_name(SoarifyStr(str(head))), game_name)
+	sp = SoarProduction(name_gen.get_name(SoarifyStr(str(head))), "elaborate")
 	var_map = GDLSoarVarMapper(sp.var_gen)
 	ParseGDLBodyToCondition(body, sp, var_map)
 	ParseDistinctions(body, sp, var_map)
@@ -176,7 +176,7 @@ def TranslateNext(game_name, head, body, make_remove_rule = True):
 	ap = MakeTemplateProduction("apply", name_gen.get_name(SoarifyStr(str(head))), game_name, False, False)
 	var_map = GDLSoarVarMapper(ap.var_gen)
 	ap.add_context_cond(game_name)
-	ap.add_op_cond("progress-state")
+	ap.add_op_cond("update-state")
 	
 	for sentence in body:
 		if sentence.name() != "distinct":
@@ -191,7 +191,7 @@ def TranslateNext(game_name, head, body, make_remove_rule = True):
 		rap = SoarProduction(name_gen.get_name("remove*%s" % SoarifyStr(str(head))), "apply")
 		var_map = GDLSoarVarMapper(rap.var_gen)
 		rap.add_context_cond(game_name)
-		rap.add_op_cond("progress-state")
+		rap.add_op_cond("update-state")
 		head.make_soar_actions(rap, var_map, remove = True)
 		return [ap, rap]
 	else:
@@ -286,7 +286,7 @@ def TranslateFrameAxioms(game_name, head, bodies):
 		comb_body = ElementGGP.Combine(list(comb) + distinct_literals)
 		prod_name = name_gen.get_name("%s%d" % (op_name, x))
 		sp = MakeTemplateProduction("apply", prod_name, game_name)
-		sp.add_op_cond("progress-state")
+		sp.add_op_cond("update-state")
 		var_mapper = GDLSoarVarMapper(sp.var_gen)
 
 		# first, add the condition to check for presence of head relation
@@ -540,9 +540,9 @@ def TranslateDescription(game_name, description, filename):
 		productions.extend(TranslateFrameAxioms(game_name, f[0], f[1]))
 
 	# make the progress state productions
-	sp = SoarProduction("progress-state", "propose")
+	sp = SoarProduction("update-state", "propose")
 	sp.get_ol_cond().add_id_predicate("<cmd-name>", name="cmd")
-	sp.add_op_proposal("+ <").add_ground_wme_action("name", "progress-state")
+	sp.add_op_proposal("+ <").add_ground_wme_action("name", "update-state")
 	productions.append(sp)
 
 	ap_cmd_remove = sp.get_apply_rules(name_gen)[0]

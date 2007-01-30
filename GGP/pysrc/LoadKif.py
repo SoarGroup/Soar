@@ -2,12 +2,13 @@ import RuleParser
 import tempfile
 from ElementGGP import ElementGGP
 
-kifdir = "..\\kif"
-kiffile = "mummymaze1p-horiz.kif"
+kifdir = "../kif"
+#kiffile = "mummymaze1p-horiz.kif"
+kiffile = "mummymaze1p-separate.kif"
 #kiffile = "buttons.kif"
-soarfile = tempfile.mkstemp(".soar", kiffile[:-3], ".")[1]
+soarfile = tempfile.mkstemp(".soar", kiffile[:-3], "..")[1]
 print soarfile
-kif = open("%s\\%s" % (kifdir, kiffile))
+kif = open("%s/%s" % (kifdir, kiffile))
 
 description = ""
 line = kif.readline()

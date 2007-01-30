@@ -278,7 +278,7 @@ class GGPSentence:
 
 				if self.__name in ["true", "next", "init"]:
 					# these are all one place relations where the only arg is a function
-					assert len(relElem) == 2, "%s applied to wrong arity of %d" % (self.__name, len(relElem) - 1)
+					assert len(relElem) == 2, "%s applied to wrong arity of %d in %s" % (self.__name, len(relElem) - 1, relElem[2])
 					# next and init cannot be negated
 					assert self.__name == "true" or not self.__negated, "%s cannot be negated" % self.__name
 					self.__terms = [GGPFunction(relElem[1])]

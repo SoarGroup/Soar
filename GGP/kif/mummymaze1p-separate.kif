@@ -1,9 +1,10 @@
 ;;
-;; 1 player mummy maze where mummy moves horizontally
+;; 2 simultaneous instances of 1 player mummy maze;
+;;  One game involves a horizontal mummy; the other, a vertical
+;;
 ;;  Tim Hinrichs, Tyler Hicks-Wright, Eric Schkufza
 ;;  December 2006
 ;;
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; OBJECTS (Components) ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -24,43 +25,23 @@
 (direction nowhere)	
 
 (role explorer)
-(mummy-type mummy horizontal)
+(mummy-type mummyv vertical)
+(mummy-type mummyh horizontal)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; INITIAL STATE (Configuration) ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(init (location mummy 5 1))
-(init (location explorer 3 3))
-(init (location exit 1 2))
+(init (location mummyh 1 8))
+(init (location mummyv 8 8))
+
+(init (location explorer 1 1))
+(init (location explorer 5 1))
+
+(init (location exit 4 1))
+(init (location exit 8 1))
+
 (init (step 0))
 
-(init (wall 4 1 east))
-(init (wall 4 1 north))
-(init (wall 1 2 north))
-(init (wall 2 2 north))
-(init (wall 1 3 east))
-(init (wall 3 3 east))
-(init (wall 2 4 east))
-(init (wall 3 4 east))
-(init (wall 3 5 east))
-(init (wall 3 5 north))
-(init (wall 2 5 north))
-(init (wall 2 6 east))
-(init (wall 3 6 north))
-(init (wall 2 8 east))
-(init (wall 4 6 north))
-(init (wall 4 7 east))
-(init (wall 5 7 east))
-(init (wall 4 4 east))
-(init (wall 5 4 east))
-(init (wall 8 7 north))
-(init (wall 6 1 north))
-(init (wall 6 2 north))
-(init (wall 6 2 east))
-(init (wall 6 3 east))
-(init (wall 6 4 east))
-(init (wall 6 6 north))
-(init (wall 7 4 north))
-(init (wall 7 3 east))
+; Bounding Walls
 
 (init (wall 1 0 north))
 (init (wall 2 0 north))
@@ -95,12 +76,24 @@
 (init (wall 8 7 east))
 (init (wall 8 8 east))
 
+;; Partition walls
+
+(init (wall 4 1 east))
+(init (wall 4 2 east))
+(init (wall 4 3 east))
+(init (wall 4 4 east))
+(init (wall 4 5 east))
+(init (wall 4 6 east))
+(init (wall 4 7 east))
+(init (wall 4 8 east))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; ACTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; legality
-(<= (legal explorer (move ?dir))
-    (direction ?dir))
+
+(<= (legal explorer (move ?dirl ?dirr))
+    (direction ?dirl)
+    (direction ?dirr))
 
 ; built in object actions: doesprime
 
@@ -108,22 +101,36 @@
 (<= (doesprime ?mummy (move2 ?mv1 ?mv2))
     (simplemove ?mummy (move2 ?mv1 ?mv2)))
 
-
 ;;; Where the mummy would move by itself
 
-;;;; Since we have already constrained the calculations
-;;;; at the lower levels, we should only get one match of this
-;;;; rule even without location constraints.
-;;;;
+;; Dynamics for mummies on left side of partition
 ;;;;(<= (simplemove ?mummy (move2 ?m1 ?m2))
 ;;;;    (mummy-type ?mummy ?type)
+;;;;    (lessthan ?x 5)
 ;;;;    (true (location ?mummy ?x ?y))
+;;;;    (lessthan ?ex1 5)
 ;;;;    (true (location explorer ?ex1 ?ey1))
-;;;;    (does explorer (move ?em))
-;;;;    (newlocation1 ?ex1 ?ey1 ?em ?ex ?ey)
+;;;;    (does explorer (move ?eml ?emr))
+;;;;    (newlocation1 ?ex1 ?ey1 ?eml ?ex ?ey)
 ;;;;    (two-steps-toward ?type ?x ?y ?ex ?ey ?m1 ?m2))
 (<= (simplemove ?mummy (move2 ?m1 ?m2))
     (mummy-type ?mummy ?type)
+    (lessthan ?x 5)
+    (two-steps-toward ?type ?x ?y ?ex ?ey ?m1 ?m2))
+
+;; Dynamics for mummies on right side of partition
+;;;;(<= (simplemove ?mummy (move2 ?m1 ?m2))
+;;;;    (mummy-type ?mummy ?type)
+;;;;    (lessthan 4 ?x)
+;;;;    (true (location ?mummy ?x ?y))
+;;;;    (lessthan 4 ?ex1)
+;;;;    (true (location explorer ?ex1 ?ey1))
+;;;;    (does explorer (move ?eml ?emr))
+;;;;    (newlocation1 ?ex1 ?ey1 ?emr ?ex ?ey)
+;;;;    (two-steps-toward ?type ?x ?y ?ex ?ey ?m1 ?m2))
+(<= (simplemove ?mummy (move2 ?m1 ?m2))
+    (mummy-type ?mummy ?type)
+    (lessthan 4 ?x)
     (two-steps-toward ?type ?x ?y ?ex ?ey ?m1 ?m2))
 
 (<= (two-steps-toward ?type ?x ?y ?ex ?ey ?m1 ?m2)
@@ -273,13 +280,6 @@
     (vert-direction-from ?y1 ?y2 ?dir2)
     (combine-directions ?dir2 ?dir1 ?dir))
 
-;;;; we want horiz-direction for the three x coords
-;;;; mx - 1, mx, mx + 1, where mx is the mummy x coord, unless
-;;;; they are blocked by walls
-;;;; but we have to restrict the y coord to my, otherwise the
-;;;; close-to-mummy structures with mx as the x coord will match
-;;;; 3 times
-
 ;;;;(<= (horiz-direction-from ?x1 ?x2 east)
 ;;;;    (lessthan ?x1 ?x2))
 (<= (horiz-direction-from ?mx ?ex east)
@@ -326,8 +326,6 @@
     (next-explorer-loc ?ex ?ey)
     (not (lessthan ?cmx ?ex))
     (not (lessthan ?ex ?cmx)))
-
-;;;; same as for the horizontal versions
 
 ;;;;(<= (vert-direction-from ?y1 ?y2 north)
 ;;;;    (lessthan ?y1 ?y2))
@@ -392,11 +390,19 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; DYNAMICS ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+;; Update location for explorer left of partition
 (<= (next (location explorer ?x2 ?y2))
     (true (location explorer ?x1 ?y1))
-    (does explorer (move ?dir))
-    (newlocation1 ?x1 ?y1 ?dir ?x2 ?y2 explorer))
+    (lessthan ?x1 5)
+    (does explorer (move ?dirl ?dirr))
+    (newlocation1 ?x1 ?y1 ?dirl ?x2 ?y2 explorer))
+
+;; Update location for explorer right of partition
+(<= (next (location explorer ?x2 ?y2))
+    (true (location explorer ?x1 ?y1))
+    (lessthan 4 ?x1)
+    (does explorer (move ?dirl ?dirr))
+    (newlocation1 ?x1 ?y1 ?dirr ?x2 ?y2 explorer))
 
 (<= (next (location ?mummy ?x2 ?y2))
     (mummy-type ?mummy ?type)
