@@ -93,7 +93,6 @@ public class ConfigurationLoader {
 	public void crashCall(ElementXML soar2dTag) {
 		ElementXML loggerTag = new ElementXML();
 		soar2dTag.AddChild(loggerTag);
-		loggerTag.AddRefOnHandle();
 	}
 
 	public String generateXMLString(Configuration config) {
