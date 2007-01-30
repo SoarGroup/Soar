@@ -61,7 +61,7 @@ public class PlayerConfig {
 	 * Commands to run during shutdown before the agent is destroyed.
 	 * Great place to do things like save the rete, etc.
 	 */
-	private ArrayList<String> shutdownCommands;
+	private ArrayList<String> shutdownCommands = new ArrayList<String>();;
 
 	public PlayerConfig() {
 		
@@ -86,9 +86,7 @@ public class PlayerConfig {
 		if (config.productions != null) {
 			this.productions = config.productions.getAbsoluteFile();
 		}
-		if (config.shutdownCommands != null) {
-			this.shutdownCommands = new ArrayList<String>(config.shutdownCommands);
-		}
+		this.shutdownCommands = new ArrayList<String>(config.shutdownCommands);
 	}
 
 	public boolean hasName() {
@@ -208,9 +206,6 @@ public class PlayerConfig {
 	}
 	
 	public void addShutdownCommand(String command) {
-		if (shutdownCommands == null) {
-			shutdownCommands = new ArrayList<String>();
-		}
 		shutdownCommands.add(command);
 	}
 	

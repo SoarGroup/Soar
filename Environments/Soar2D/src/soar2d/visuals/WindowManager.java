@@ -730,4 +730,13 @@ public class WindowManager {
 		}
 		return humanMove;
 	}
+
+	public String promptForConfig() {
+		FileDialog fd = new FileDialog(shell, SWT.OPEN);
+		fd.setText("Select configuration file");
+		fd.setFilterPath(System.getProperty("user.dir") + System.getProperty("file.separator"));
+		fd.setFileName(Soar2D.config.kDefaultXMLEatersSettingsFile);
+		fd.setFilterExtensions(new String[] {"*.xml", "*.*"});
+		return fd.open();
+	}
 }

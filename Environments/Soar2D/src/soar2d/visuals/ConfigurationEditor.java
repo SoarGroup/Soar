@@ -2,6 +2,7 @@ package soar2d.visuals;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
@@ -14,6 +15,8 @@ import soar2d.player.*;
 import soar2d.xml.ConfigurationLoader;
 
 public class ConfigurationEditor extends Dialog {
+
+	static Logger logger = Logger.getLogger("soar2d");
 
 	Configuration config;
 	
@@ -197,9 +200,37 @@ public class ConfigurationEditor extends Dialog {
 		saveAs.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				ConfigurationLoader loader = new ConfigurationLoader();
+
 				String output = loader.generateXMLString(config);
-				System.out.println(output);
-				dialog.dispose();
+				if (output == null) {
+					Soar2D.control.severeError("Couldn't generate configuration.");
+					return;
+				}
+				
+				FileDialog fd = new FileDialog(dialog, SWT.SAVE);
+				fd.setText("Save as...");
+				fd.setFilterPath(Soar2D.config.getBasePath());
+				fd.setFilterExtensions(new String[] {"*.xml", "*.*"});
+				String settingsFileString = fd.open();
+				if (settingsFileString != null) {
+					if (!settingsFileString.matches(".*\\..+")) {
+						settingsFileString += ".xml";
+					}
+					File configFile = new File(settingsFileString);
+					if (configFile.exists() && !configFile.canWrite()) {
+						Soar2D.control.severeError("Cannot write to file.");
+						return;
+					}
+					try {
+						FileWriter out = new FileWriter(configFile);
+						out.write(output);
+						out.close();
+					} catch (IOException exception) {
+						Soar2D.control.severeError("Error writing file: " + exception.getMessage());
+						return;
+					}
+					dialog.dispose();
+				}
 			}
 		});
 		
