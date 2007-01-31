@@ -36,6 +36,9 @@
 // We replace the SWIG generated shutdown with our own version which will call the SWIG generated one.
 %rename(ShutdownInternal) sml::Kernel::Shutdown();
 
+// Workaround for the object deletion bug (?)
+%rename(AddChildInternal) sml::ElementXML::AddChild;
+
 %pragma(java) jniclasscode=%{
   static {
     try {
@@ -236,6 +239,11 @@
 		String val = getAttributeThrows(name) ;
 		int intVal = Integer.parseInt(val) ;
 		return intVal ;
+	}
+	
+	public SWIGTYPE_p_ElementXML_InterfaceStructTag AddChild(ElementXML pChild) {
+		pChild.swigCMemOwn = false;
+		return AddChildInternal(pChild);
 	}
 %}
 

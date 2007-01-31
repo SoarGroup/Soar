@@ -55,6 +55,11 @@
 %newobject sml::ElementXML::ParseXMLFromString;
 
 //
+// This deletes the passed object so it is a destructor of sorts
+//
+%delobject sml::ElementXML::AddChild;
+
+//
 // Don't wrap the code for registering callbacks because we need to provide some custom code to make it work
 //
 %ignore sml::Agent::RegisterForProductionEvent(smlProductionEventId, ProductionEventHandler, void*, bool addToBack = true);
