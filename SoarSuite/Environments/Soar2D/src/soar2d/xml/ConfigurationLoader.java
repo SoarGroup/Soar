@@ -70,39 +70,45 @@ public class ConfigurationLoader {
 		return hasType;
 	}
 	
-	public void generateXMLString_NO_CRASH() {
-		ElementXML soar2dTag = new ElementXML();
-		ElementXML loggerTag = new ElementXML();
-		soar2dTag.AddChild(loggerTag);
-		soar2dTag = null;
-		
-		System.gc();
-		try { Thread.sleep(5); } catch (Exception ignored) {}
-	}
-	
-	public void generateXMLString_CRASH_MINIMAL() {
-		ElementXML soar2dTag = new ElementXML();
-		crashCall(soar2dTag);
-		soar2dTag = null;
-		
-		// BUGBUG: calling the garbage collector forces the crash to happen right away
-		System.gc();
-		try { Thread.sleep(5); } catch (Exception ignored) {}
-	}
-	
-	public void crashCall(ElementXML soar2dTag) {
-		ElementXML loggerTag = new ElementXML();
-		soar2dTag.AddChild(loggerTag);
-	}
-
+//	public void generateXMLString_NO_CRASH() {
+//		ElementXML soar2dTag = new ElementXML();
+//		ElementXML loggerTag = new ElementXML();
+//		soar2dTag.AddChild(loggerTag);
+//		soar2dTag = null;
+//		
+//		System.gc();
+//		try { Thread.sleep(5); } catch (Exception ignored) {}
+//	}
+//	
+//	public void generateXMLString_CRASH_MINIMAL() {
+//		ElementXML soar2dTag = new ElementXML();
+//		crashCall(soar2dTag);
+//		soar2dTag = null;
+//		
+//		// BUGBUG: calling the garbage collector forces the crash to happen right away
+//		System.gc();
+//		try { Thread.sleep(5); } catch (Exception ignored) {}
+//	}
+//	
+//	public void crashCall(ElementXML soar2dTag) {
+//		ElementXML loggerTag = new ElementXML();
+//		soar2dTag.AddChild(loggerTag);
+//	}
+//
 	public String generateXMLString(Configuration config) {
 		c = config;
 		
 		ElementXML soar2dTag = new ElementXML();
 		soar2dTag.SetTagName(Names.kTagSoar2D);
 		soar2dSave(soar2dTag);
-
-		return soar2dTag.GenerateXMLString(true, true);
+		String output = soar2dTag.GenerateXMLString(true, true);
+		
+		// at least part of this is required to avoid a memory leak
+		soar2dTag.ReleaseRefOnHandle();
+		soar2dTag.delete();
+		soar2dTag = null;
+		
+		return output;
 	}
 	
 	private void soar2dSave(ElementXML soar2dTag) {
