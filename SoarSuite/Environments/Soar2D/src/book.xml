@@ -1,0 +1,8 @@
+<soar2d>
+  <logger level="info" console="false" file="true" />
+  <display graphical="true" />
+  <book map="default.bmap">
+  </book>
+  <simulation debuggers="false" random="false">
+  </simulation>
+</soar2d>

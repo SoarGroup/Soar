@@ -57,6 +57,13 @@ public class Soar2D {
 			wm.shutdown();
 			System.exit(1);
 		}
+		try {
+			install(config.kDefaultXMLBookSettingsFile);
+		} catch (IOException e) {
+			control.severeError("IOException installing " + config.kDefaultXMLBookSettingsFile + ": " + e.getMessage());
+			wm.shutdown();
+			System.exit(1);
+		}
 
 		if (args.length > 0) {
 			configFile = args[0];

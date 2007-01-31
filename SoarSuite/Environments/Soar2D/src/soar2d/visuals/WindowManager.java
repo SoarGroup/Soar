@@ -246,6 +246,10 @@ public class WindowManager {
 		shell.setText("Eaters");
 	}
 	
+	public void setupBook() {
+		assert false;
+	}
+	
 	public void setupTankSoar() {
 		GridLayout gl = new GridLayout();
 		gl.numColumns = 3;
@@ -466,6 +470,10 @@ public class WindowManager {
 		case kTankSoar:
 			setupTankSoar();
 			break;
+			
+		case kBook:
+			setupBook();
+			break;
 		}
 		
 		visualWorld.addMouseListener(new MouseAdapter() {
@@ -581,6 +589,9 @@ public class WindowManager {
 			break;
 		case kTankSoar:
 			gd.horizontalSpan = 3;
+			break;
+		case kBook:
+			assert false;
 			break;
 		}
 		gd.widthHint = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).x - 20;

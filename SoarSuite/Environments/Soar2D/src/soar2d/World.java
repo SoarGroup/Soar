@@ -8,11 +8,6 @@ import soar2d.Configuration.SimType;
 import soar2d.player.*;
 import soar2d.world.*;
 
-class MissileInfo {
-	java.awt.Point location;
-	int direction;
-}
-
 public class World {
 
 	private static Logger logger = Logger.getLogger("soar2d");
@@ -29,7 +24,6 @@ public class World {
 	private HashMap<String, java.awt.Point> locations = new HashMap<String, java.awt.Point>(7);
 	private HashMap<String, MoveInfo> lastMoves = new HashMap<String, MoveInfo>(7);
 	private HashMap<String, HashSet<Player> > killedTanks = new HashMap<String, HashSet<Player> >(7);
-	private HashMap<String, MissileInfo> missiles = new HashMap<String, MissileInfo>();
 	
 	private int missileID = 0;
 	private int missileReset = 0;
@@ -123,11 +117,11 @@ public class World {
 			// remove food from it
 			map.removeAllWithProperty(startingLocation, Names.kPropertyEdible);
 			
-			// reset (init-soar)
-			player.reset();
-			break;
+			// falls through
 			
 		case kTankSoar:
+		case kBook:
+			// reset (init-soar)
 			player.reset();
 			break;
 		}
@@ -206,6 +200,7 @@ public class World {
 	}
 	
 	public void removePlayer(String name) {
+		logger.info("Removing player " + name);
 		Player player = playersMap.get(name);
 		if (player == null) {
 			logger.warning("destroyPlayer: Couldn't find player name match for " + name + ", ignoring.");
@@ -254,6 +249,9 @@ public class World {
 				return null;
 			}
 			break;
+		case kBook:
+			assert false;
+			break;
 		}
 		
 		java.awt.Point location = null;
@@ -278,7 +276,8 @@ public class World {
 
 	public boolean addPlayer(Player player, java.awt.Point initialLocation, boolean human) {
 		assert !locations.containsKey(player.getName());
-		
+		logger.info("Adding player " + player.getName());
+
 		players.add(player);
 		playersMap.put(player.getName(), player);
 		
@@ -424,7 +423,10 @@ public class World {
 		// apply points
 		player.adjustPoints(Soar2D.config.missileHitPenalty, missile.getName());
 		Player other = playersMap.get(missile.getProperty(Names.kPropertyOwner));
-		other.adjustPoints(Soar2D.config.missileHitAward, missile.getName());
+		// can be null if the player was deleted after he fired but before the missile hit
+		if (other != null) {
+			other.adjustPoints(Soar2D.config.missileHitAward, missile.getName());
+		}
 		
 		// charger insta-kill
 		if (map.getAllWithProperty(location, Names.kPropertyCharger).size() > 0) {
@@ -437,7 +439,9 @@ public class World {
 			if (assailants == null) {
 				assailants = new HashSet<Player>();
 			}
-			assailants.add(other);
+			if (other != null) {
+				assailants.add(other);
+			}
 			killedTanks.put(player.getName(), assailants);
 		}
 	}
@@ -479,6 +483,7 @@ public class World {
 	}
 	
 	public void update() {
+		Soar2D.config.noWorld = false;
 		
 		// Collect human input
 		Iterator<Player> humanPlayerIter = humanPlayers.iterator();
@@ -539,7 +544,13 @@ public class World {
 		case kTankSoar:
 			tankSoarUpdate();
 			break;
+		case kBook:
+			bookUpdate();
+			break;
 		}
+	}
+	
+	private void bookUpdate() {
 	}
 	
 	private void eatersUpdate() {
@@ -550,7 +561,7 @@ public class World {
 		updateMapAndEatFood();
 		handleCollisions();	
 		updatePlayers(false);
-		updateObjects();
+		map.updateObjects(this);
 	}
 	
 	private void tankSoarUpdate() {
@@ -845,7 +856,6 @@ public class World {
 				if (move.moveDirection == Direction.backwardOf[missile.getIntProperty(Names.kPropertyDirection)]) {
 					missileHit(player, location, missile);
 					map.removeObject(location, missile.getName());
-					destroyMissile(missile.getName());
 
 					// explosion
 					map.setExplosion(location);
@@ -854,7 +864,7 @@ public class World {
 		}
 		
 		// move missiles to new cells, checking for new victims
-		updateObjects();
+		map.updateObjects(this);
 		
 		// If there is more than one player out there, keep track of how
 		// many updates go by before resetting everything to prevent oscillations
@@ -901,17 +911,12 @@ public class World {
 				map.setExplosion(missileLoc);
 				
 			} else {
-				MissileInfo missileInfo = new MissileInfo();
-				missileInfo.direction = direction;
-				missileInfo.location = new java.awt.Point(missileLoc);
-				missiles.put(missile.getName(), missileInfo);
-
 				map.addObjectToCell(missileLoc, missile);
 			}
 		}
 		
 		// Handle incoming sensors now that all missiles are flying
-		handleIncoming();
+		map.handleIncoming();
 		
 		// Spawn missile packs
 		if (map.numberMissilePacks() < Soar2D.config.maxMissilePacks) {
@@ -979,30 +984,6 @@ public class World {
 
 		logger.info(player.getName() + ": Spawning at (" + 
 				location.x + "," + location.y + ")");
-	}
-	
-	private void handleIncoming() {
-		// TODO: a couple of optimizations possible here
-		// like marking cells that have been checked, depends on direction though
-		// probably more work than it is worth as this should only be slow when there are
-		// a ton of missiles flying
-		
-		Iterator<MissileInfo> iter = missiles.values().iterator();
-		while (iter.hasNext()) {
-			MissileInfo missile = iter.next();
-			java.awt.Point newLocation = new java.awt.Point(missile.location);
-			while (true) {
-				Direction.translate(newLocation, missile.direction);
-				if (!map.enterable(newLocation)) {
-					break;
-				}
-				Player player = map.getPlayer(newLocation);
-				if (player != null) {
-					player.setIncoming(Direction.backwardOf[missile.direction]);
-					break;
-				}
-			}
-		}
 	}
 	
 	private void handleRadarEnergy(Player player) {
@@ -1140,10 +1121,6 @@ public class World {
 		}
 	}
 
-	private void updateObjects() {
-		map.updateObjects(this);
-	}
-
 	private void handleCollisions() {
 		// Make sure collisions are possible
 		if (players.size() < 2) {
@@ -1255,7 +1232,6 @@ public class World {
 		printedStats = false;
 		missileID = 0;
 		missileReset = 0;
-		missiles.clear();
 	}
 	
 	public int getWorldCount() {
@@ -1276,10 +1252,6 @@ public class World {
 	
 	boolean isTerminal() {
 		return printedStats;
-	}
-
-	public void destroyMissile(String name) {
-		missiles.remove(name);
 	}
 
 	public boolean recentlyMovedOrRotated(Player targetPlayer) {

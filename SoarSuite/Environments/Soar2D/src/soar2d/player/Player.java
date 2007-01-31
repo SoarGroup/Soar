@@ -283,8 +283,8 @@ public class Player {
 		return name.equals(player.name);
 	}
 
-	public void setIncoming(int i) {
 		// TODO Auto-generated method stub
+	public void setIncoming(int i) {
 	}
 
 	public int getIncoming() {
