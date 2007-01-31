@@ -16,6 +16,7 @@ public class Configuration {
 	
 	public final String kDefaultXMLEatersSettingsFile = "eaters.xml";
 	public final String kDefaultXMLTankSoarSettingsFile = "tanksoar.xml";
+	public final String kDefaultXMLBookSettingsFile = "book.xml";
 	public final String kDefaultLogFilename = "soar2d.log";
 	public final String kMapDir = "maps";
 	public final String kAgentDir = "agents";
@@ -34,7 +35,7 @@ public class Configuration {
 	private String mapPath = null; // Path to maps
 	private String agentPath = null; // Path to agents
 	private SimType simType = SimType.kEaters;
-	public enum SimType { kEaters, kTankSoar }
+	public enum SimType { kEaters, kTankSoar, kBook }
 	
 	// common
 	public int defaultPoints = 0;

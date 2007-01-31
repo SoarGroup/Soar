@@ -254,16 +254,14 @@ public class GridMap {
 			
 			if (!cell.enterable()) {
 				// missile is destroyed
-				world.destroyMissile(missile.getName());
 				return true;
 			}
 			
 			Player player = cell.getPlayer();
 			
 			if (player != null) {
-				world.missileHit(player, location, missile);
 				// missile is destroyed
-				world.destroyMissile(missile.getName());
+				world.missileHit(player, location, missile);
 				return true;
 			}
 	
@@ -281,6 +279,35 @@ public class GridMap {
 		}
 	}
 		
+	public void handleIncoming() {
+		// TODO: a couple of optimizations possible here
+		// like marking cells that have been checked, depends on direction though
+		// probably more work than it is worth as this should only be slow when there are
+		// a ton of missiles flying
+		
+		Iterator<CellObject> iter = updatables.iterator();
+		while (iter.hasNext()) {
+			CellObject missile = iter.next();
+			if (!missile.hasProperty(Names.kPropertyMissile)) {
+				continue;
+			}
+	
+			java.awt.Point threatenedLocation = new java.awt.Point(updatablesLocations.get(missile));
+			while (true) {
+				int direction = missile.getIntProperty(Names.kPropertyDirection);
+				Direction.translate(threatenedLocation, direction);
+				if (!enterable(threatenedLocation)) {
+					break;
+				}
+				Player player = getPlayer(threatenedLocation);
+				if (player != null) {
+					player.setIncoming(Direction.backwardOf[direction]);
+					break;
+				}
+			}
+		}
+	}
+	
 	private void removalStateUpdate(CellObject object) {
 		switch (Soar2D.config.getType()) {
 		case kTankSoar:
@@ -385,6 +412,10 @@ public class GridMap {
 			if (object.hasProperty(Names.kPropertyPoints)) {
 				scoreCount += object.getIntProperty(Names.kPropertyPoints);
 			}
+			break;
+			
+		case kBook:
+			assert false;
 			break;
 		}
 		cell.addCellObject(object);

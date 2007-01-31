@@ -123,6 +123,10 @@ public class ConfigurationLoader {
 		case kEaters:
 			gameTag.SetTagName(Names.kTagEaters);
 			break;
+			
+		case kBook:
+			gameTag.SetTagName(Names.kTagBook);
+			break;
 		}
 		gameSave(gameTag);
 		soar2dTag.AddChild(gameTag);
@@ -178,7 +182,7 @@ public class ConfigurationLoader {
 					
 				} else if (subTag.IsTag(Names.kTagEaters)) {
 					if (hasType) {
-						throwSyntax("tanksoar and eaters tags cannot co-exist");
+						throwSyntax("multiple game tags cannot co-exist");
 					}
 					hasType = true;
 					c.setType(SimType.kEaters);
@@ -188,11 +192,21 @@ public class ConfigurationLoader {
 					
 				} else if (subTag.IsTag(Names.kTagTankSoar)) {
 					if (hasType) {
-						throwSyntax("tanksoar and eaters tags cannot co-exist");
+						throwSyntax("multiple game tags cannot co-exist");
 					}
 					hasType = true;
 					c.setType(SimType.kTankSoar);
 					xmlPath.push(Names.kTagTankSoar);
+					game(subTag);
+					xmlPath.pop();
+					
+				} else if (subTag.IsTag(Names.kTagBook)) {
+					if (hasType) {
+						throwSyntax("multiple game tags cannot co-exist");
+					}
+					hasType = true;
+					c.setType(SimType.kBook);
+					xmlPath.push(Names.kTagBook);
 					game(subTag);
 					xmlPath.pop();
 					

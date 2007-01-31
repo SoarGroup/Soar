@@ -159,8 +159,10 @@ public class VisualWorld extends Canvas implements PaintListener {
 		
 		public void draw() {
 			gc.drawImage(image, x, y);
-			gc.setBackground(color);
-			gc.fillOval(x+3, y+3, kDotSize, kDotSize);
+			if (color != null) {
+				gc.setBackground(color);
+				gc.fillOval(x+3, y+3, kDotSize, kDotSize);
+			}
 		}
 	}
 	
@@ -412,7 +414,11 @@ public class VisualWorld extends Canvas implements PaintListener {
 						assert playerName !=  null;
 						
 						Player missileOwner = world.getPlayer(playerName);
-						Color missileColor = WindowManager.getColor(missileOwner.getColor());
+						Color missileColor = null;
+						// can be null if the player was deleted after he fired but before the missile hit
+						if (missileOwner != null) {
+							missileColor = WindowManager.getColor(missileOwner.getColor());
+						}
 						
 						int flightPhase = missile.getIntProperty(Names.kPropertyFlyPhase);
 						int direction = missile.getIntProperty(Names.kPropertyDirection);
@@ -484,6 +490,10 @@ public class VisualWorld extends Canvas implements PaintListener {
 						}
 						gc.drawArc((location.x * cellSize) + xMod, (location.y * cellSize) + yMod, cellSize - 1, cellSize - 1, start, 180);
 					}
+					break;
+					
+				case kBook:
+					assert false;
 					break;
 				}
 			}

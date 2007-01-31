@@ -35,6 +35,7 @@ public class Names {
 	
 	public static final String kTagAgent = "agent";
 	public static final String kTagApply = "apply";
+	public static final String kTagBook = "book";
 	public static final String kTagCellObject = "cell-object";
 	public static final String kTagCell = "cell";
 	public static final String kTagCells = "cells";

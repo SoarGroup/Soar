@@ -30,6 +30,7 @@ public class ConfigurationEditor extends Dialog {
 	Text seedText;
 	Button tanksoarButton;
 	Button eatersButton;
+	Button bookButton;
 	Text mapText;
 	Button remote;
 	Button hide;
@@ -67,6 +68,7 @@ public class ConfigurationEditor extends Dialog {
 	Text agentMissilesText;
 	Button createAgentButton;
 	Button productionsBrowse;
+	Button manageShutdownCommandsButton;
 	Button removeAgentButton;
 	
 	// terminals
@@ -144,6 +146,8 @@ public class ConfigurationEditor extends Dialog {
 			}
 			agent.setText(name);
 		}
+		
+		agents.setExpanded(true);
 
 		TreeItem terminals = new TreeItem(tree, SWT.NONE);
 		terminals.setText(kTerminals);
@@ -191,6 +195,17 @@ public class ConfigurationEditor extends Dialog {
 			public void widgetSelected(SelectionEvent e) {
 				config = new Configuration();
 				config.setType(Soar2D.config.getType());
+				switch(config.getType()) {
+				case kEaters:
+					eatersButton.setSelection(true);
+					break;
+				case kTankSoar:
+					tanksoarButton.setSelection(true);
+					break;
+				case kBook:
+					bookButton.setSelection(true);
+					break;
+				}
 				updateCurrentPage();
 			}
 		});
@@ -342,6 +357,7 @@ public class ConfigurationEditor extends Dialog {
 			
 			tanksoarButton = new Button(simGroup, SWT.RADIO);
 			tanksoarButton.setText("TankSoar");
+			tanksoarButton.setSelection(config.getType() == SimType.kTankSoar);
 			tanksoarButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
 					config.setType(SimType.kTankSoar);
@@ -356,6 +372,7 @@ public class ConfigurationEditor extends Dialog {
 
 			eatersButton = new Button(simGroup, SWT.RADIO);
 			eatersButton.setText("Eaters");
+			eatersButton.setSelection(config.getType() == SimType.kEaters);
 			eatersButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
 					config.setType(SimType.kEaters);
@@ -366,6 +383,21 @@ public class ConfigurationEditor extends Dialog {
 				GridData gd = new GridData();
 				gd.horizontalAlignment = SWT.BEGINNING;
 				eatersButton.setLayoutData(gd);
+			}
+			
+			bookButton = new Button(simGroup, SWT.RADIO);
+			bookButton.setText("Book");
+			bookButton.setSelection(config.getType() == SimType.kBook);
+			bookButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					config.setType(SimType.kBook);
+					generalUpdate();
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = SWT.BEGINNING;
+				bookButton.setLayoutData(gd);
 			}
 		}
 		
@@ -516,16 +548,6 @@ public class ConfigurationEditor extends Dialog {
 	}
 	
 	public void generalUpdate() {
-		switch (config.getType()) {
-		case kEaters:
-			tanksoarButton.setSelection(false);
-			eatersButton.setSelection(true);
-			break;
-		case kTankSoar:
-			tanksoarButton.setSelection(true);
-			eatersButton.setSelection(false);
-			break;
-		}
 		mapText.setText(config.map.getAbsolutePath());
 		gui.setSelection(config.graphical);
 		hide.setSelection(config.noWorld);
@@ -1211,6 +1233,7 @@ public class ConfigurationEditor extends Dialog {
 							name = "<unnamed>";
 						}
 						newAgent.setText(name);
+						agents.setExpanded(true);
 						tree.redraw();
 						agentsUpdate(selectedItem);
 					}
@@ -1227,6 +1250,21 @@ public class ConfigurationEditor extends Dialog {
 		}
 		
 		if (selectedItem != null) {
+			manageShutdownCommandsButton = new Button(currentPage, SWT.PUSH);
+			manageShutdownCommandsButton.setText("Manage shutdown commands");
+			manageShutdownCommandsButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					ShutdownCommandManager m = new ShutdownCommandManager(dialog, playerConfig);
+					m.open();
+				}			
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.END;
+				gd.horizontalSpan = 5;
+				manageShutdownCommandsButton.setLayoutData(gd);
+			}
+			
 			removeAgentButton = new Button(currentPage, SWT.PUSH);
 			removeAgentButton.setText("Remove this agent");
 			removeAgentButton.addSelectionListener(new SelectionAdapter() {
@@ -1832,5 +1870,233 @@ public class ConfigurationEditor extends Dialog {
 			createClientButton.setEnabled(createReady);
 		}
 		
+	}
+}
+
+class ShutdownCommandManager extends Dialog {
+	Shell dialog;
+	Composite rhs;
+	Text commandText;
+	Button add;
+	Button moveUp;
+	Button moveDown;
+	Button remove;
+	PlayerConfig player;
+	Table table;
+	
+	public ShutdownCommandManager(Shell parent, PlayerConfig player) {
+		super(parent);
+		this.player = player;
+	}
+	
+	public void open() {
+		Shell parent = getParent();
+		dialog = new Shell(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+		dialog.setText("Shutdown Commands");
+		{ 
+			GridLayout gl = new GridLayout();
+			gl.numColumns = 2;
+			dialog.setLayout(gl);
+		}
+		
+		table = new Table (dialog, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
+		Iterator<String> iter = player.getShutdownCommands().iterator();
+		while (iter.hasNext()) {
+			String command = iter.next();
+			TableItem item = new TableItem(table, SWT.NONE);
+			item.setText(command);
+		}
+		table.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				update();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 150;
+			gd.heightHint = 150;
+			table.setLayoutData(gd);
+		}
+		
+		rhs = new Composite(dialog, SWT.NONE);
+		{
+			GridLayout gl = new GridLayout();
+			gl.marginHeight = 0;
+			gl.marginWidth = 0;
+			gl.numColumns = 2;
+			rhs.setLayout(gl);
+
+			GridData gd = new GridData();
+			gd.widthHint = 150;
+			gd.horizontalAlignment = SWT.FILL;
+			gd.verticalAlignment = SWT.FILL;
+			rhs.setLayoutData(gd);
+		}
+
+		Label newCommand = new Label(rhs, SWT.NONE);
+		newCommand.setText("New Command:");
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 2;
+			newCommand.setLayoutData(gd);
+		}
+
+		commandText = new Text(rhs, SWT.SINGLE | SWT.BORDER);
+		commandText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				update();
+			}
+		});
+		commandText.addKeyListener(new KeyAdapter() {
+			public void keyReleased(KeyEvent e) {
+				update();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = GridData.FILL;
+			gd.grabExcessHorizontalSpace = true;
+			commandText.setLayoutData(gd);
+		}
+
+		add = new Button(rhs, SWT.PUSH);
+		add.setText("Add");
+		add.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				TableItem item = new TableItem(table, SWT.NONE);
+				item.setText(commandText.getText());
+				player.addShutdownCommand(commandText.getText());
+				update();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = SWT.END;
+			add.setLayoutData(gd);
+		}
+
+		moveUp = new Button(rhs, SWT.PUSH);
+		moveUp.setText("Move up");
+		moveUp.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				int index = table.getSelectionIndex();
+				ArrayList<String> commands = player.getShutdownCommands();
+				String selected = commands.remove(index);
+				index -= 1;
+				commands.add(index, selected);
+				
+				table.removeAll();
+				Iterator<String> iter = commands.iterator();
+				while (iter.hasNext()) {
+					String command = iter.next();
+					TableItem item = new TableItem(table, SWT.NONE);
+					item.setText(command);
+				}
+				table.setSelection(index);
+				update();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 2;
+			gd.horizontalAlignment = SWT.BEGINNING;
+			moveUp.setLayoutData(gd);
+		}
+
+		remove = new Button(rhs, SWT.PUSH);
+		remove.setText("Remove");
+		remove.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				player.getShutdownCommands().remove(table.getSelectionIndex());
+				table.remove(table.getSelectionIndex());
+				update();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 2;
+			gd.horizontalAlignment = SWT.BEGINNING;
+			remove.setLayoutData(gd);
+		}
+
+		moveDown = new Button(rhs, SWT.PUSH);
+		moveDown.setText("Move down");
+		moveDown.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				int index = table.getSelectionIndex();
+				ArrayList<String> commands = player.getShutdownCommands();
+				String selected = commands.remove(index);
+				index += 1;
+				commands.add(index, selected);
+				
+				table.removeAll();
+				Iterator<String> iter = commands.iterator();
+				while (iter.hasNext()) {
+					String command = iter.next();
+					TableItem item = new TableItem(table, SWT.NONE);
+					item.setText(command);
+				}
+				table.setSelection(index);
+				update();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 2;
+			gd.horizontalAlignment = SWT.BEGINNING;
+			moveDown.setLayoutData(gd);
+		}
+
+		Button ok = new Button(dialog, SWT.PUSH);
+		ok.setText("OK");
+		ok.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				dialog.dispose();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 2;
+			gd.horizontalAlignment = SWT.END;
+			ok.setLayoutData(gd);
+		}
+
+		update();
+		
+		dialog.setSize(dialog.computeSize(SWT.DEFAULT, SWT.DEFAULT, false));
+		dialog.open ();
+	}
+	
+	private void update() {
+		if (commandText.getText().length() > 0) {
+			add.setEnabled(true);
+		} else {
+			add.setEnabled(false);
+		}
+		
+		if (table.getSelectionIndex() < 0) {
+			remove.setEnabled(false);
+		} else {
+			remove.setEnabled(true);
+		}
+		
+		if (table.getItemCount() < 2) {
+			moveUp.setEnabled(false);
+			moveDown.setEnabled(false);
+		} else {
+			if (table.getSelectionIndex() < 0) {
+				moveUp.setEnabled(false);
+				moveDown.setEnabled(false);
+			} else if (table.getSelectionIndex() == 0) {
+				moveUp.setEnabled(false);
+				moveDown.setEnabled(true);
+			} else if (table.getSelectionIndex() == (table.getItemCount() - 1)) {
+				moveUp.setEnabled(true);
+				moveDown.setEnabled(false);
+			} else {
+				moveUp.setEnabled(true);
+				moveDown.setEnabled(true);
+			}
+		}
 	}
 }

@@ -117,6 +117,10 @@ public class MoveInfo {
 				output += "(" + Names.kShieldsID + ": " + (shieldsSetting ? "on" : "off") + ")";
 			}
 			break;
+			
+		case kBook:
+			assert false;
+			break;
 		}
 		
 		if (stopSim) {

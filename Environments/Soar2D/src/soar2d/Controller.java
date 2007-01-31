@@ -60,6 +60,9 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 			case kTankSoar:
 				title = "TankSoar";
 				break;
+			case kBook:
+				title = "Book";
+				break;
 			}
 			Soar2D.wm.errorMessage(title, message);
 		}
@@ -81,6 +84,9 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 				break;
 			case kTankSoar:
 				title = "TankSoar";
+				break;
+			case kBook:
+				title = "Book";
 				break;
 			}
 			Soar2D.wm.infoMessage(title, message);

@@ -270,6 +270,9 @@ public class Simulation {
 				case kTankSoar:
 					player = new Tank(playerConfig);
 					break;
+				case kBook:
+					assert false;
+					break;
 				}
 				
 				assert player != null;
@@ -311,6 +314,9 @@ public class Simulation {
 						break;
 					case kTankSoar:
 						player = new SoarTank(agent, playerConfig);
+						break;
+					case kBook:
+						assert false;
 						break;
 					}
 					
