@@ -195,17 +195,7 @@ public class ConfigurationEditor extends Dialog {
 			public void widgetSelected(SelectionEvent e) {
 				config = new Configuration();
 				config.setType(Soar2D.config.getType());
-				switch(config.getType()) {
-				case kEaters:
-					eatersButton.setSelection(true);
-					break;
-				case kTankSoar:
-					tanksoarButton.setSelection(true);
-					break;
-				case kBook:
-					bookButton.setSelection(true);
-					break;
-				}
+				config.setDefaultTerminals();
 				updateCurrentPage();
 			}
 		});
@@ -249,26 +239,26 @@ public class ConfigurationEditor extends Dialog {
 			}
 		});
 		
-		Button crashMinimal = new Button(bottomButtons, SWT.PUSH);
-		crashMinimal.setText("crash minimal");
-		crashMinimal.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				ConfigurationLoader loader = new ConfigurationLoader();
-				loader.generateXMLString_CRASH_MINIMAL();
-				dialog.dispose();
-			}
-		});
-		
-		Button noCrash = new Button(bottomButtons, SWT.PUSH);
-		noCrash.setText("no crash");
-		noCrash.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				ConfigurationLoader loader = new ConfigurationLoader();
-				loader.generateXMLString_NO_CRASH();
-				dialog.dispose();
-			}
-		});
-		
+//		Button crashMinimal = new Button(bottomButtons, SWT.PUSH);
+//		crashMinimal.setText("crash minimal");
+//		crashMinimal.addSelectionListener(new SelectionAdapter() {
+//			public void widgetSelected(SelectionEvent e) {
+//				ConfigurationLoader loader = new ConfigurationLoader();
+//				loader.generateXMLString_CRASH_MINIMAL();
+//				dialog.dispose();
+//			}
+//		});
+//		
+//		Button noCrash = new Button(bottomButtons, SWT.PUSH);
+//		noCrash.setText("no crash");
+//		noCrash.addSelectionListener(new SelectionAdapter() {
+//			public void widgetSelected(SelectionEvent e) {
+//				ConfigurationLoader loader = new ConfigurationLoader();
+//				loader.generateXMLString_NO_CRASH();
+//				dialog.dispose();
+//			}
+//		});
+//		
 		Button cancel = new Button(bottomButtons, SWT.PUSH);
 		cancel.setText("Cancel");
 		cancel.addSelectionListener(new SelectionAdapter() {
@@ -361,6 +351,7 @@ public class ConfigurationEditor extends Dialog {
 			tanksoarButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
 					config.setType(SimType.kTankSoar);
+					config.setDefaultTerminals();
 					generalUpdate();
 				}
 			});
@@ -376,6 +367,7 @@ public class ConfigurationEditor extends Dialog {
 			eatersButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
 					config.setType(SimType.kEaters);
+					config.setDefaultTerminals();
 					generalUpdate();
 				}
 			});
@@ -387,10 +379,13 @@ public class ConfigurationEditor extends Dialog {
 			
 			bookButton = new Button(simGroup, SWT.RADIO);
 			bookButton.setText("Book");
+			// FIXME: enable
+			bookButton.setEnabled(false);
 			bookButton.setSelection(config.getType() == SimType.kBook);
 			bookButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
 					config.setType(SimType.kBook);
+					config.setDefaultTerminals();
 					generalUpdate();
 				}
 			});
@@ -548,6 +543,23 @@ public class ConfigurationEditor extends Dialog {
 	}
 	
 	public void generalUpdate() {
+		switch(config.getType()) {
+		case kEaters:
+			eatersButton.setSelection(true);
+			tanksoarButton.setSelection(false);
+			bookButton.setSelection(false);
+			break;
+		case kTankSoar:
+			eatersButton.setSelection(false);
+			tanksoarButton.setSelection(true);
+			bookButton.setSelection(false);
+			break;
+		case kBook:
+			eatersButton.setSelection(false);
+			tanksoarButton.setSelection(false);
+			bookButton.setSelection(true);
+			break;
+		}
 		mapText.setText(config.map.getAbsolutePath());
 		gui.setSelection(config.graphical);
 		hide.setSelection(config.noWorld);
@@ -1294,6 +1306,10 @@ public class ConfigurationEditor extends Dialog {
 	}
 	
 	public void agentsUpdate(TreeItem selectedItem) {
+		
+		if (selectedItem == null) {	
+			agentsDebuggersButton.setSelection(config.debuggers);
+		}
 		
 		boolean createReady = true;
 		boolean allDisabled = false;

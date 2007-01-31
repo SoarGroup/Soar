@@ -21,7 +21,8 @@ public class Configuration {
 	public final String kMapDir = "maps";
 	public final String kAgentDir = "agents";
 	public final String kDefaultEatersMap = "random-walls.emap";
-	public final String kDefaultTanksoarMap = "default.emap";
+	public final String kDefaultTanksoarMap = "default.tmap";
+	public final String kDefaultBookMap = "default.bmap";
 	public final String kEatersMapFilter = "*.emap";
 	public final String kTankSoarMapFilter = "*.tmap";
 	public final int kDefaultTimeout = 15; //seconds
@@ -129,6 +130,24 @@ public class Configuration {
 		assert agentPath != null;
 		return new String(agentPath);
 	}
+	
+	public void setDefaultTerminals() {
+		switch (simType) {
+		case kEaters:
+			this.terminalWinningScore = 0;
+			this.terminalFoodRemaining = true;
+			break;
+		case kTankSoar:
+			this.terminalWinningScore = 50;
+			this.terminalFoodRemaining = false;
+			break;
+		case kBook:
+			assert false;
+			this.terminalWinningScore = 0;
+			this.terminalFoodRemaining = false;
+			break;
+		}
+	}
 
 	private void generatePaths() {
 		
@@ -139,19 +158,19 @@ public class Configuration {
 		case kEaters:
 			this.mapPath += "eaters" + System.getProperty("file.separator");
 			this.agentPath += "eaters" + System.getProperty("file.separator");
-			if (this.map == null) {
-				this.map = new File(this.kDefaultEatersMap);
-			}
+			this.map = new File(this.mapPath + this.kDefaultEatersMap);
 			break;
 		case kTankSoar:
 			this.mapPath += "tanksoar" + System.getProperty("file.separator");
 			this.agentPath += "tanksoar" + System.getProperty("file.separator");
-			if (this.map == null) {
-				this.map = new File(this.kDefaultTanksoarMap);
-			}
+			this.map = new File(this.mapPath + this.kDefaultTanksoarMap);
+			break;
+		case kBook:
+			this.mapPath += "book" + System.getProperty("file.separator");
+			this.agentPath += "book" + System.getProperty("file.separator");
+			this.map = new File(this.mapPath + this.kDefaultBookMap);
 			break;
 		}
-		
 	}
 	
 	public Configuration(Configuration config) {
