@@ -84,8 +84,9 @@ public class MoveInfo {
 		switch(Soar2D.config.getType()) {
 		case kEaters:
 			if (jump) {
-				output += "(" + Names.kJumpID + ": " + Direction.stringOf[moveDirection] + ")";
-			} else if (move) {
+				output += "(" + Names.kJumpID + ")";
+			} 
+			if (move) {
 				output += "(" + Names.kMoveID + ": " + Direction.stringOf[moveDirection] + ")";
 			}
 			

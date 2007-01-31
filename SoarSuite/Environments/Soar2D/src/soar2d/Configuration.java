@@ -41,13 +41,13 @@ public class Configuration {
 	// common
 	public int defaultPoints = 0;
 	public Level logLevel = Level.INFO; // Current log level, see java.util.logging
-	public boolean logToFile = false; //
+	public boolean logToFile = true; //
 	public File logFile = new File(kDefaultLogFilename); // File to log to, only valid if logFile true
-	public boolean logTime = true;
+	public boolean logTime = false;
 	public boolean logConsole = false; // If true, log to console
 	public int randomSeed = 0;
 	public boolean graphical = true; // If true, use the window manager.
-	public boolean debuggers = false; // If true, spawn debuggers
+	public boolean debuggers = true; // If true, spawn debuggers
 	public boolean remote = false; // If true, connect to remote kernel
 	public boolean random = true; // If true, use random numbers (don't seed generators)
 	public boolean noWorld = false; // If true, do not display the world map

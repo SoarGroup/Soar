@@ -174,7 +174,7 @@ public class WindowManager {
 					break;
 				}
 				
-				Soar2D.wm.setStatus(human.getColor() + ": " + humanMove.toString());
+				Soar2D.wm.setStatus(human.getColor() + ": " + humanMove.toString(), black);
 				
 				if (go) {
 					synchronized(humanMove) {
@@ -338,7 +338,7 @@ public class WindowManager {
 					break;
 				}
 				
-				Soar2D.wm.setStatus(human.getColor() + ": " + humanMove.toString());
+				Soar2D.wm.setStatus(human.getColor() + ": " + humanMove.toString(), black);
 				
 				if (go) {
 					synchronized(humanMove) {
@@ -559,7 +559,7 @@ public class WindowManager {
 		}
 	}
 	
-	public void setStatus(String status) {
+	public void setStatus(String status, final Color color) {
 		if (!using()) {
 			return;
 		}
@@ -568,6 +568,9 @@ public class WindowManager {
 			display.syncExec(new Runnable() {
 				public void run() {
 					statusLine.setText(statusMessage);
+					if (color != null) {
+						statusLine.setForeground(color);
+					}
 				}
 			});
 		}
@@ -731,7 +734,7 @@ public class WindowManager {
 		}
 		if (!isDisposed()) {
 			human = player;
-			setStatus("Enter move for " + player.getColor());
+			setStatus("Enter move for " + player.getColor(), red);
 			setVisualWorldFocus();
 			synchronized(humanMove) {
 				try {
@@ -739,7 +742,9 @@ public class WindowManager {
 				} catch (InterruptedException e) {}
 			}
 		}
-		return humanMove;
+		MoveInfo theMove = humanMove;
+		humanMove = null;
+		return theMove;
 	}
 
 	public String promptForConfig() {
