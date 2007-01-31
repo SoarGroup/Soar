@@ -715,6 +715,7 @@ public class ConfigurationEditor extends Dialog {
 		loggingNameText.setEnabled(config.logToFile);
 		loggingNameText.setText(config.logFile.getAbsolutePath());
 		loggingConsoleButton.setSelection(config.logConsole);
+		loggingTimeButton.setSelection(config.logTime);
 	}
 	
 	public void agentsPage(final TreeItem selectedItem, int selectedIndex) {
