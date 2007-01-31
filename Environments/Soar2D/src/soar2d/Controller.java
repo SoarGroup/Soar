@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.logging.*;
 
 import sml.*;
+import soar2d.visuals.WindowManager;
 
 /**
  * @author voigtjr
@@ -113,9 +114,9 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		
 		// update the status line in the gui
 		if (step) {
-			Soar2D.wm.setStatus("Stepping");
+			Soar2D.wm.setStatus("Stepping", WindowManager.black);
 		} else {
-			Soar2D.wm.setStatus("Running");
+			Soar2D.wm.setStatus("Running", WindowManager.black);
 		}
 		
 		stop = false;
@@ -195,7 +196,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		}
 		
 		// reset the status message
-		Soar2D.wm.setStatus("Ready");
+		Soar2D.wm.setStatus("Ready", WindowManager.black);
 	}
 	
 	/**
