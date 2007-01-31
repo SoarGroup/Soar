@@ -1,5 +1,5 @@
 <soar2d version="1">
- <logger console="false" file="true" filename="C:\soar\SoarSuite\Environments\Soar2D\soar2d.log" level="info" log-time="true"></logger>
+ <logger console="false" file="true" filename="C:\soar\SoarSuite\Environments\Soar2D\soar2d.log" level="info" log-time="false"></logger>
  <eaters map="C:\soar\SoarSuite\Environments\Soar2D\maps\eaters\random-walls.emap"></eaters>
  <display graphical="true"></display>
  <simulation debuggers="true" missile-reset-threshold="100" no-world="false" random="true" random-seed="0" remote="false">

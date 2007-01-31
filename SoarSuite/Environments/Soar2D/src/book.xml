@@ -1,5 +1,5 @@
 <soar2d>
-  <logger level="info" console="false" file="true" />
+  <logger level="info" console="false" file="false" />
   <display graphical="true" />
   <book map="default.bmap">
   </book>
