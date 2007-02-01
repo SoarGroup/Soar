@@ -312,8 +312,9 @@ protected:
 	* @param mode The mode for the log command, see cli_CommandData.h
 	* @param pFilename The log filename, pass 0 (null) if not applicable to mode
 	* @param pToAdd The string to add to the log, pass 0 (null) if not applicable to mode
+	* @param silent Supress query messages (log file open/closed).
 	*************************************************************/
-	bool DoCLog(gSKI::Agent* pAgent, const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0);
+	bool DoCLog(gSKI::Agent* pAgent, const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false);
 
 	/*************************************************************
 	* @brief default-wme-depth command
