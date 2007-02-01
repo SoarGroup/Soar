@@ -1,10 +1,13 @@
 ;;
-;; 2 simultaneous instances of 1 player mummy maze;
-;;  One game involves a horizontal mummy; the other, a vertical
-;;
+;; 1 player mummy maze where mummy moves horizontally, reformulated
+;;   (location ?obj ?x ?y) has become
+;;   (mummy-location ?x ?y)
+;;   (explorer-location ?x ?y)
+;;   (exit-location ?x ?y)
 ;;  Tim Hinrichs, Tyler Hicks-Wright, Eric Schkufza
 ;;  December 2006
 ;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; OBJECTS (Components) ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -25,26 +28,43 @@
 (direction nowhere)	
 
 (role explorer)
-(mummy-type mummyv vertical)
-(mummy-type mummyh horizontal)
-
-(explorer-type explorerv vertical)
-(explorer-type explorerh horizontal)
+(mummy-type mummy horizontal)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; INITIAL STATE (Configuration) ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(init (location mummyh 1 8))
-(init (location mummyv 8 8))
-
-(init (location explorerh 1 1))
-(init (location explorerv 5 1))
-
-(init (location exit 4 1))
-(init (location exit 8 1))
-
+(init (mummy-location mummy 5 1))
+(init (explorer-location 3 3))
+(init (exit-location 1 2))
 (init (step 0))
 
-; Bounding Walls
+(init (wall 4 1 east))
+(init (wall 4 1 north))
+(init (wall 1 2 north))
+(init (wall 2 2 north))
+(init (wall 1 3 east))
+(init (wall 3 3 east))
+(init (wall 2 4 east))
+(init (wall 3 4 east))
+(init (wall 3 5 east))
+(init (wall 3 5 north))
+(init (wall 2 5 north))
+(init (wall 2 6 east))
+(init (wall 3 6 north))
+(init (wall 2 8 east))
+(init (wall 4 6 north))
+(init (wall 4 7 east))
+(init (wall 5 7 east))
+(init (wall 4 4 east))
+(init (wall 5 4 east))
+(init (wall 8 7 north))
+(init (wall 6 1 north))
+(init (wall 6 2 north))
+(init (wall 6 2 east))
+(init (wall 6 3 east))
+(init (wall 6 4 east))
+(init (wall 6 6 north))
+(init (wall 7 4 north))
+(init (wall 7 3 east))
 
 (init (wall 1 0 north))
 (init (wall 2 0 north))
@@ -79,24 +99,12 @@
 (init (wall 8 7 east))
 (init (wall 8 8 east))
 
-;; Partition walls
-
-(init (wall 4 1 east))
-(init (wall 4 2 east))
-(init (wall 4 3 east))
-(init (wall 4 4 east))
-(init (wall 4 5 east))
-(init (wall 4 6 east))
-(init (wall 4 7 east))
-(init (wall 4 8 east))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; ACTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; legality
-
-(<= (legal explorer (move ?dirl ?dirr))
-    (direction ?dirl)
-    (direction ?dirr))
+(<= (legal explorer (move ?dir))
+    (direction ?dir))
 
 ; built in object actions: doesprime
 
@@ -104,47 +112,33 @@
 (<= (doesprime ?mummy (move2 ?mv1 ?mv2))
     (simplemove ?mummy (move2 ?mv1 ?mv2)))
 
+
 ;;; Where the mummy would move by itself
 
-;; Dynamics for mummies on left side of partition
+;;;; Since we have already constrained the calculations
+;;;; at the lower levels, we should only get one match of this
+;;;; rule even without location constraints.
+;;;;
 ;;;;(<= (simplemove ?mummy (move2 ?m1 ?m2))
 ;;;;    (mummy-type ?mummy ?type)
-;;;;    (lessthan ?x 5)
-;;;;    (true (location ?mummy ?x ?y))
-;;;;    (lessthan ?ex1 5)
-;;;;    (true (location explorer ?ex1 ?ey1))
-;;;;    (does explorer (move ?eml ?emr))
-;;;;    (newlocation1 ?ex1 ?ey1 ?eml ?ex ?ey)
+;;;;    (true (mummy-location ?mummy ?x ?y))
+;;;;    (true (explorer-location ?ex1 ?ey1))
+;;;;    (does explorer (move ?em))
+;;;;    (newlocation1 ?ex1 ?ey1 ?em ?ex ?ey)
 ;;;;    (two-steps-toward ?type ?x ?y ?ex ?ey ?m1 ?m2))
 (<= (simplemove ?mummy (move2 ?m1 ?m2))
     (mummy-type ?mummy ?type)
-    (lessthan ?x 5)
-    (two-steps-toward ?type ?x ?y ?ex ?ey ?m1 ?m2))
-
-;; Dynamics for mummies on right side of partition
-;;;;(<= (simplemove ?mummy (move2 ?m1 ?m2))
-;;;;    (mummy-type ?mummy ?type)
-;;;;    (lessthan 4 ?x)
-;;;;    (true (location ?mummy ?x ?y))
-;;;;    (lessthan 4 ?ex1)
-;;;;    (true (location explorer ?ex1 ?ey1))
-;;;;    (does explorer (move ?eml ?emr))
-;;;;    (newlocation1 ?ex1 ?ey1 ?emr ?ex ?ey)
-;;;;    (two-steps-toward ?type ?x ?y ?ex ?ey ?m1 ?m2))
-(<= (simplemove ?mummy (move2 ?m1 ?m2))
-    (mummy-type ?mummy ?type)
-    (lessthan 4 ?x)
     (two-steps-toward ?type ?x ?y ?ex ?ey ?m1 ?m2))
 
 (<= (two-steps-toward ?type ?x ?y ?ex ?ey ?m1 ?m2)
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?x ?y))
+    (true (mummy-location ?mummy ?x ?y))
     (movetoward ?type ?x ?y ?ex ?ey ?m1)
     (newlocation1 ?x ?y ?m1 ?x1 ?y1 ?mummy)
     (movetoward ?type ?x1 ?y1 ?ex ?ey ?m2))
   	  
 (<= (movetoward ?type ?x ?y ?ex ?ey ?card)
-    (direction-from ?x ?y ?ex ?ey ?dir ?type)
+    (direction-from ?x ?y ?ex ?ey ?dir)
     (pick-one ?type ?x ?y ?dir ?card))
 
 ;;; Horizontal mummy movement
@@ -155,8 +149,8 @@
 ;;;;    (index ?y))
 (<= (pick-one horizontal ?x ?y none nowhere)
     (mummy-type ?mummy horizontal)
-    (next-explorer-loc ?x ?y horizontal)
-    (or (true (location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy)))
+    (next-explorer-loc ?x ?y)
+    (or (true (mummy-location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy)))
 
 ; no horizontal component
 ;;;;(<= (pick-one horizontal ?x ?y ?dir ?v)
@@ -166,8 +160,8 @@
 ;;;;    (vert-component ?dir ?v))
 (<= (pick-one horizontal ?x ?y ?dir ?v)
     (mummy-type ?mummy horizontal)
-    (or (true (location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy))
-    (direction-from ?x ?y ?ex ?ey ?dir horizontal)
+    (or (true (mummy-location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy))
+    (direction-from ?x ?y ?ex ?ey ?dir)
     (not (some-horiz-component ?dir))
     (vert-component ?dir ?v))
 
@@ -179,8 +173,8 @@
 ;;;;    (horiz-component ?dir ?h))
 (<= (pick-one horizontal ?x ?y ?dir ?h)
     (mummy-type ?mummy horizontal)
-    (or (true (location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy))
-    (direction-from ?x ?y ?ex ?ey ?dir horizontal)
+    (or (true (mummy-location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy))
+    (direction-from ?x ?y ?ex ?ey ?dir)
     (not (some-vert-component ?dir))
     (horiz-component ?dir ?h))
 
@@ -192,8 +186,8 @@
 ;;;;    (distinct ?x ?xnew))
 (<= (pick-one horizontal ?x ?y ?dir ?h)
     (mummy-type ?mummy horizontal)
-    (or (true (location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy))
-    (direction-from ?x ?y ?ex ?ey ?dir horizontal)
+    (or (true (mummy-location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy))
+    (direction-from ?x ?y ?ex ?ey ?dir)
     (horiz-component ?dir ?h)
     (vert-component ?dir ?v)
     (newlocation1 ?x ?y ?h ?xnew ?y ?mummy)
@@ -204,8 +198,8 @@
 ;     either way, pick the vertical.
 (<= (pick-one horizontal ?x ?y ?dir ?v)
     (mummy-type ?mummy horizontal)
-    (or (true (location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy))
-    (direction-from ?x ?y ?ex ?ey ?dir horizontal)
+    (or (true (mummy-location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy))
+    (direction-from ?x ?y ?ex ?ey ?dir)
     (horiz-component ?dir ?h)
     (vert-component ?dir ?v)
     (newlocation1 ?x ?y ?h ?x ?y ?mummy))
@@ -219,8 +213,8 @@
 ;;;;    (index ?y))
 (<= (pick-one vertical ?x ?y none nowhere)
     (mummy-type ?mummy vertical)
-    (next-explorer-loc ?x ?y vertical)
-    (or (true (location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy)))
+    (next-explorer-loc ?x ?y)
+    (or (true (mummy-location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy)))
 
 ; no horiz component
 ;;;;(<= (pick-one vertical ?x ?y ?dir ?v)
@@ -230,8 +224,8 @@
 ;;;;    (vert-component ?dir ?v))
 (<= (pick-one vertical ?x ?y ?dir ?v)
     (mummy-type ?mummy vertical)
-    (or (true (location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy))
-    (direction-from ?x ?y ?ex ?ey ?dir vertical)
+    (or (true (mummy-location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy))
+    (direction-from ?x ?y ?ex ?ey ?dir)
     (not (some-horiz-component ?dir))
     (vert-component ?dir ?v))
 
@@ -243,8 +237,8 @@
 ;;;;    (horiz-component ?dir ?h))
 (<= (pick-one vertical ?x ?y ?dir ?h)
     (mummy-type ?mummy vertical)
-    (or (true (location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy))
-    (direction-from ?x ?y ?ex ?ey ?dir vertical)
+    (or (true (mummy-location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy))
+    (direction-from ?x ?y ?ex ?ey ?dir)
     (not (some-vert-component ?dir))
     (horiz-component ?dir ?h))
 
@@ -256,8 +250,8 @@
 ;;;;    (distinct ?y ?ynew))
 (<= (pick-one vertical ?x ?y ?dir ?v)
     (mummy-type ?mummy vertical)
-    (or (true (location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy))
-    (direction-from ?x ?y ?ex ?ey ?dir vertical)
+    (or (true (mummy-location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy))
+    (direction-from ?x ?y ?ex ?ey ?dir)
     (horiz-component ?dir ?h)
     (vert-component ?dir ?v)
     (newlocation1 ?x ?y ?v ?x ?ynew ?mummy)
@@ -268,8 +262,8 @@
 ;     either way, pick the horizontal.
 (<= (pick-one vertical ?x ?y ?dir ?h)
     (mummy-type ?mummy vertical)
-    (or (true (location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy))
-    (direction-from ?x ?y ?ex ?ey ?dir vertical)
+    (or (true (mummy-location ?mummy ?x ?y)) (close-to-mummy ?x ?y ?mummy))
+    (direction-from ?x ?y ?ex ?ey ?dir)
     (horiz-component ?dir ?h)
     (vert-component ?dir ?v)
     (newlocation1 ?x ?y ?v ?x ?y ?mummy))
@@ -278,37 +272,44 @@
 ;;; direction-from computes the direction, (n, nw, ne, s, ...) one would travel if starting
 ;;;    at ?x1 ?y1 to arrive at ?x2 ?y2
 
-(<= (direction-from ?x1 ?y1 ?x2 ?y2 ?dir ?type)
-    (horiz-direction-from ?x1 ?x2 ?dir1 ?type)
-    (vert-direction-from ?y1 ?y2 ?dir2 ?type)
+(<= (direction-from ?x1 ?y1 ?x2 ?y2 ?dir)
+    (horiz-direction-from ?x1 ?x2 ?dir1)
+    (vert-direction-from ?y1 ?y2 ?dir2)
     (combine-directions ?dir2 ?dir1 ?dir))
+
+;;;; we want horiz-direction for the three x coords
+;;;; mx - 1, mx, mx + 1, where mx is the mummy x coord, unless
+;;;; they are blocked by walls
+;;;; but we have to restrict the y coord to my, otherwise the
+;;;; close-to-mummy structures with mx as the x coord will match
+;;;; 3 times
 
 ;;;;(<= (horiz-direction-from ?x1 ?x2 east)
 ;;;;    (lessthan ?x1 ?x2))
-(<= (horiz-direction-from ?mx ?ex east ?type)
+(<= (horiz-direction-from ?mx ?ex east)
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?mx ?my))
-    (next-explorer-loc ?ex ?ey ?type)
+    (true (mummy-location ?mummy ?mx ?my))
+    (next-explorer-loc ?ex ?ey)
     (lessthan ?mx ?ex))
-(<= (horiz-direction-from ?cmx ?ex east ?type)
+(<= (horiz-direction-from ?cmx ?ex east)
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?mx ?my))
+    (true (mummy-location ?mummy ?mx ?my))
     (close-to-mummy ?cmx ?my ?mummy)
-    (next-explorer-loc ?ex ?ey ?type)
+    (next-explorer-loc ?ex ?ey)
     (lessthan ?cmx ?ex))
 
 ;;;;(<= (horiz-direction-from ?x1 ?x2 west)
 ;;;;    (lessthan ?x2 ?x1))
-(<= (horiz-direction-from ?mx ?ex west ?type)
+(<= (horiz-direction-from ?mx ?ex west)
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?mx ?my))
-    (next-explorer-loc ?ex ?ey ?type)
+    (true (mummy-location ?mummy ?mx ?my))
+    (next-explorer-loc ?ex ?ey)
     (lessthan ?ex ?mx))
-(<= (horiz-direction-from ?cmx ?ex west ?type)
+(<= (horiz-direction-from ?cmx ?ex west)
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?mx ?my))
+    (true (mummy-location ?mummy ?mx ?my))
     (close-to-mummy ?cmx ?my ?mummy)
-    (next-explorer-loc ?ex ?ey ?type)
+    (next-explorer-loc ?ex ?ey)
     (lessthan ?ex ?cmx))
 
 ;;;;(<= (horiz-direction-from ?x1 ?x2 none)
@@ -316,46 +317,48 @@
 ;;;;    (index ?x2)
 ;;;;    (not (lessthan ?x1 ?x2))
 ;;;;    (not (lessthan ?x2 ?x1)))
-(<= (horiz-direction-from ?mx ?ex none ?type)
+(<= (horiz-direction-from ?mx ?ex none)
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?mx ?my))
-    (next-explorer-loc ?ex ?ey ?type)
+    (true (mummy-location ?mummy ?mx ?my))
+    (next-explorer-loc ?ex ?ey)
     (not (lessthan ?mx ?ex))
     (not (lessthan ?ex ?mx)))
-(<= (horiz-direction-from ?cmx ?ex none ?type)
+(<= (horiz-direction-from ?cmx ?ex none)
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?mx ?my)) 
+    (true (mummy-location ?mummy ?mx ?my)) 
     (close-to-mummy ?cmx ?my ?mummy)
-    (next-explorer-loc ?ex ?ey ?type)
+    (next-explorer-loc ?ex ?ey)
     (not (lessthan ?cmx ?ex))
     (not (lessthan ?ex ?cmx)))
 
+;;;; same as for the horizontal versions
+
 ;;;;(<= (vert-direction-from ?y1 ?y2 north)
 ;;;;    (lessthan ?y1 ?y2))
-(<= (vert-direction-from ?my ?ey north ?type)
+(<= (vert-direction-from ?my ?ey north)
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?mx ?my))
-    (next-explorer-loc ?ex ?ey ?type)
+    (true (mummy-location ?mummy ?mx ?my))
+    (next-explorer-loc ?ex ?ey)
     (lessthan ?my ?ey))
-(<= (vert-direction-from ?cmy ?ey north ?type)
+(<= (vert-direction-from ?cmy ?ey north)
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?mx ?my))
+    (true (mummy-location ?mummy ?mx ?my))
     (close-to-mummy ?mx ?cmy ?mummy)
-    (next-explorer-loc ?ex ?ey ?type)
+    (next-explorer-loc ?ex ?ey)
     (lessthan ?cmy ?ey))
 
 ;;;;(<= (vert-direction-from ?y1 ?y2 south)
 ;;;;    (lessthan ?y2 ?y1))
-(<= (vert-direction-from ?my ?ey south ?type)
+(<= (vert-direction-from ?my ?ey south)
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?mx ?my))
-    (next-explorer-loc ?ex ?ey ?type)
+    (true (mummy-location ?mummy ?mx ?my))
+    (next-explorer-loc ?ex ?ey)
     (lessthan ?ey ?my))
-(<= (vert-direction-from ?cmy ?ey south ?type)
+(<= (vert-direction-from ?cmy ?ey south)
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?mx ?my))
+    (true (mummy-location ?mummy ?mx ?my))
     (close-to-mummy ?mx ?cmy ?mummy)
-    (next-explorer-loc ?ex ?ey ?type)
+    (next-explorer-loc ?ex ?ey)
     (lessthan ?ey ?cmy))
 
 ;;;;(<= (vert-direction-from ?y1 ?y2 none)
@@ -363,17 +366,17 @@
 ;;;;    (index ?y2)
 ;;;;    (not (lessthan ?y1 ?y2))
 ;;;;    (not (lessthan ?y2 ?y1)))
-(<= (vert-direction-from ?my ?ey none ?type)
+(<= (vert-direction-from ?my ?ey none)
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?mx ?my))
-    (next-explorer-loc ?ex ?ey ?type)
+    (true (mummy-location ?mummy ?mx ?my))
+    (next-explorer-loc ?ex ?ey)
     (not (lessthan ?my ?ey))
     (not (lessthan ?ey ?my)))
-(<= (vert-direction-from ?cmy ?ey none ?type)
+(<= (vert-direction-from ?cmy ?ey none)
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?mx ?my))
+    (true (mummy-location ?mummy ?mx ?my))
     (close-to-mummy ?mx ?cmy ?mummy)
-    (next-explorer-loc ?ex ?ey ?type)
+    (next-explorer-loc ?ex ?ey)
     (not (lessthan ?cmy ?ey))
     (not (lessthan ?ey ?cmy)))
 
@@ -393,40 +396,22 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; DYNAMICS ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Update location for explorer left of partition
-;;;;(<= (next (location explorer ?x2 ?y2))
-;;;;    (true (location explorer ?x1 ?y1))
-;;;;    (lessthan ?x1 5)
-;;;;    (does explorer (move ?dirl ?dirr))
-;;;;    (newlocation1 ?x1 ?y1 ?dirl ?x2 ?y2 explorer))
-(<= (next (location ?explorer ?x2 ?y2))
-    (explorer-type ?explorer horizontal)
-    (true (location ?explorer ?x1 ?y1))
-    (does ?explorer (move ?dirl ?dirr))
-    (newlocation1 ?x1 ?y1 ?dirl ?x2 ?y2 ?explorer))
 
-;; Update location for explorer right of partition
-;;;;(<= (next (location explorer ?x2 ?y2))
-;;;;    (true (location explorer ?x1 ?y1))
-;;;;    (lessthan 4 ?x1)
-;;;;    (does explorer (move ?dirl ?dirr))
-;;;;    (newlocation1 ?x1 ?y1 ?dirr ?x2 ?y2 explorer))
-(<= (next (location ?explorer ?x2 ?y2))
-    (explorer-type ?explorer vertical)
-    (true (location ?explorer ?x1 ?y1))
-    (does ?explorer (move ?dirl ?dirr))
-    (newlocation1 ?x1 ?y1 ?dirr ?x2 ?y2 ?explorer))
+(<= (next (explorer-location explorer ?x2 ?y2))
+    (true (explorer-location explorer ?x1 ?y1))
+    (does explorer (move ?dir))
+    (newlocation1 ?x1 ?y1 ?dir ?x2 ?y2 explorer))
 
-(<= (next (location ?mummy ?x2 ?y2))
+(<= (next (mummy-location ?mummy ?x2 ?y2))
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?x1 ?y1))
+    (true (mummy-location ?mummy ?x1 ?y1))
     (doesprime ?mummy (move2 ?dir1 ?dir2))
     (newlocation2 ?x1 ?y1 ?dir1 ?dir2 ?x2 ?y2))
 
 ;; FRAME AXIOMS
 
-(<= (next (location exit ?x ?y))
-    (true (location exit ?x ?y)))
+(<= (next (exit-location ?x ?y))
+    (true (exit-location ?x ?y)))
 (<= (next (wall ?x ?y ?z))
     (true (wall ?x ?y ?z))) 
 
@@ -438,24 +423,13 @@
 	
 ;;;;;;;;;;;;;;;;;;;;;;;;;; VIEW RELATIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;(<= eaten
-;;;;    (true (location explorer ?x ?y))
-;;;;    (true (location ?mummy ?x ?y))
-;;;;    (mummy-type ?mummy ?type))
 (<= eaten
-    (explorer-type ?explorer ?type)
-    (true (location ?explorer ?x ?y))
-    (true (location ?mummy ?x ?y))
+    (true (explorer-location ?x ?y))
+    (true (mummy-location ?mummy ?x ?y))
     (mummy-type ?mummy ?type))
-
-;;;;(<= atexit
-;;;;    (true (location explorer ?x ?y))
-;;;;    (true (location exit ?x ?y)))
 (<= atexit
-    (explorer-type ?explorer ?type)
-    (true (location ?explorer ?x ?y))
-    (true (location exit ?x ?y)))
-
+    (true (explorer-location ?x ?y))
+    (true (exit-location ?x ?y)))
 (<= laststep
     (true (step 50)))
 
@@ -466,9 +440,10 @@
 ;;;;(<= (newlocation1 ?x ?y nowhere ?x ?y)
 ;;;;    (index ?x)
 ;;;;    (index ?y))
-(<= (newlocation1 ?x ?y nowhere ?x ?y ?obj)
-    (true (location ?obj ?x ?y))
-    (distinct ?obj exit))
+(<= (newlocation1 ?x ?y nowhere ?x ?y ?mummy)
+    (true (mummy-location ?mummy ?x ?y)))
+(<= (newlocation1 ?x ?y nowhere ?x ?y explorer)
+    (true (explorer-location ?x ?y)))
 (<= (newlocation1 ?x ?y nowhere ?x ?y ?mummy)
     (close-to-mummy ?x ?y ?mummy))
 
@@ -477,10 +452,12 @@
 ;;;;
 ;;;;(<= (newlocation1 ?x ?y north ?x ?y)
 ;;;;    (true (wall ?x ?y north)))
-(<= (newlocation1 ?x ?y north ?x ?y ?obj)
-    (true (location ?obj ?x ?y))
-    (true (wall ?x ?y north))
-    (distinct ?obj exit))
+(<= (newlocation1 ?x ?y north ?x ?y ?mummy)
+    (true (mummy-location ?mummy ?x ?y))
+    (true (wall ?x ?y north)))
+(<= (newlocation1 ?x ?y north ?x ?y explorer)
+    (true (explorer-location ?x ?y))
+    (true (wall ?x ?y north)))
 (<= (newlocation1 ?x ?y north ?x ?y ?mummy)
     (close-to-mummy ?x ?y ?mummy)
     (true (wall ?x ?y north)))
@@ -492,11 +469,14 @@
 ;;;;(<= (newlocation1 ?x ?y south ?x ?y)
 ;;;;    (succ ?down ?y)
 ;;;;    (true (wall ?x ?down north)))
-(<= (newlocation1 ?x ?y south ?x ?y ?obj)
-    (true (location ?obj ?x ?y))
+(<= (newlocation1 ?x ?y south ?x ?y ?mummy)
+    (true (mummy-location ?mummy ?x ?y))
     (succ ?down ?y)
-    (true (wall ?x ?down north))
-    (distinct ?obj exit))
+    (true (wall ?x ?down north)))
+(<= (newlocation1 ?x ?y south ?x ?y explorer)
+    (true (explorer-location ?x ?y))
+    (succ ?down ?y)
+    (true (wall ?x ?down north)))
 (<= (newlocation1 ?x ?y south ?x ?y ?mummy)
     (close-to-mummy ?x ?y ?mummy)
     (succ ?down ?y)
@@ -506,10 +486,12 @@
 ;;;;
 ;;;;(<= (newlocation1 ?x ?y east ?x ?y)
 ;;;;    (true (wall ?x ?y east)))
-(<= (newlocation1 ?x ?y east ?x ?y ?obj)
-    (true (location ?obj ?x ?y))
-    (true (wall ?x ?y east))
-    (distinct ?obj exit))
+(<= (newlocation1 ?x ?y east ?x ?y ?mummy)
+    (true (mummy-location ?mummy ?x ?y))
+    (true (wall ?x ?y east)))
+(<= (newlocation1 ?x ?y east ?x ?y explorer)
+    (true (explorer-location ?x ?y))
+    (true (wall ?x ?y east)))
 (<= (newlocation1 ?x ?y east ?x ?y ?mummy)
     (close-to-mummy ?x ?y ?mummy)
     (true (wall ?x ?y east)))
@@ -520,11 +502,14 @@
 ;;;;(<= (newlocation1 ?x ?y west ?x ?y)
 ;;;;    (succ ?left ?x)
 ;;;;    (true (wall ?left ?y east)))
-(<= (newlocation1 ?x ?y west ?x ?y ?obj)
-    (true (location ?obj ?x ?y))
+(<= (newlocation1 ?x ?y west ?x ?y ?mummy)
+    (true (mummy-location ?mummy ?x ?y))
     (succ ?left ?x)
-    (true (wall ?left ?y east))
-    (distinct ?obj exit))
+    (true (wall ?left ?y east)))
+(<= (newlocation1 ?x ?y west ?x ?y explorer)
+    (true (explorer-location ?x ?y))
+    (succ ?left ?x)
+    (true (wall ?left ?y east)))
 (<= (newlocation1 ?x ?y west ?x ?y ?mummy)
     (close-to-mummy ?x ?y ?mummy)
     (succ ?left ?x)
@@ -536,11 +521,14 @@
 ;;;;    (succ ?y1 ?y2)
 ;;;;    (index ?x)
 ;;;;    (not (true (wall ?x ?y1 north))))
-(<= (newlocation1 ?x ?y1 north ?x ?y2 ?obj)
-    (true (location ?obj ?x ?y1))
+(<= (newlocation1 ?x ?y1 north ?x ?y2 ?mummy)
+    (true (mummy-location ?mummy ?x ?y1))
     (succ ?y1 ?y2)
-    (not (true (wall ?x ?y1 north)))
-    (distinct ?obj exit))
+    (not (true (wall ?x ?y1 north))))
+(<= (newlocation1 ?x ?y1 north ?x ?y2 explorer)
+    (true (explorer-location ?x ?y1))
+    (succ ?y1 ?y2)
+    (not (true (wall ?x ?y1 north))))
 (<= (newlocation1 ?x ?y1 north ?x ?y2 ?mummy)
     (close-to-mummy ?x ?y1 ?mummy)
     (succ ?y1 ?y2)
@@ -553,11 +541,14 @@
 ;;;;    (succ ?y2 ?y1)
 ;;;;    (index ?x)
 ;;;;    (not (true (wall ?x ?y2 north))))
-(<= (newlocation1 ?x ?y1 south ?x ?y2 ?obj)
-    (true (location ?obj ?x ?y1))
+(<= (newlocation1 ?x ?y1 south ?x ?y2 ?mummy)
+    (true (mummy-location ?mummy ?x ?y1))
     (succ ?y2 ?y1)
-    (not (true (wall ?x ?y2 north)))
-    (distinct ?obj exit))
+    (not (true (wall ?x ?y2 north))))
+(<= (newlocation1 ?x ?y1 south ?x ?y2 explorer)
+    (true (explorer-location ?x ?y1))
+    (succ ?y2 ?y1)
+    (not (true (wall ?x ?y2 north))))
 (<= (newlocation1 ?x ?y1 south ?x ?y2 ?mummy)
     (close-to-mummy ?x ?y1 ?mummy)
     (succ ?y2 ?y1)
@@ -569,11 +560,14 @@
 ;;;;    (succ ?x1 ?x2)
 ;;;;    (index ?y)
 ;;;;    (not (true (wall ?x1 ?y east))))
-(<= (newlocation1 ?x1 ?y east ?x2 ?y ?obj)
-    (true (location ?obj ?x1 ?y))
+(<= (newlocation1 ?x1 ?y east ?x2 ?y ?mummy)
+    (true (mummy-location ?mummy ?x1 ?y))
     (succ ?x1 ?x2)
-    (not (true (wall ?x1 ?y east)))
-    (distinct ?obj exit))
+    (not (true (wall ?x1 ?y east))))
+(<= (newlocation1 ?x1 ?y east ?x2 ?y explorer)
+    (true (explorer-location ?x1 ?y))
+    (succ ?x1 ?x2)
+    (not (true (wall ?x1 ?y east))))
 (<= (newlocation1 ?x1 ?y east ?x2 ?y ?mummy)
     (close-to-mummy ?x1 ?y ?mummy)
     (succ ?x1 ?x2)
@@ -585,11 +579,14 @@
 ;;;;    (succ ?x2 ?x1)
 ;;;;    (index ?y)
 ;;;;    (not (true (wall ?x2 ?y east))))
-(<= (newlocation1 ?x1 ?y west ?x2 ?y ?obj)
-    (true (location ?obj ?x1 ?y)) 
+(<= (newlocation1 ?x1 ?y west ?x2 ?y ?mummy)
+    (true (mummy-location ?mummy ?x1 ?y))
     (succ ?x2 ?x1)
-    (not (true (wall ?x2 ?y east)))
-    (distinct ?obj exit))
+    (not (true (wall ?x2 ?y east))))
+(<= (newlocation1 ?x1 ?y west ?x2 ?y explorer)
+    (true (explorer-location ?x1 ?y))
+    (succ ?x2 ?x1)
+    (not (true (wall ?x2 ?y east))))
 (<= (newlocation1 ?x1 ?y west ?x2 ?y ?mummy)
     (close-to-mummy ?x1 ?y ?mummy)
     (succ ?x2 ?x1)
@@ -603,9 +600,9 @@
 ;;;;    (newlocation1 ?x2 ?y2 ?dir2 ?x3 ?y3))	
 (<= (newlocation2 ?x1 ?y1 ?dir1 ?dir2 ?x3 ?y3)
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?x1 ?y1))
+    (true (mummy-location ?mummy ?x1 ?y1))
     (newlocation1 ?x1 ?y1 ?dir1 ?x2 ?y2 ?mummy)
-    (newlocation1 ?x2 ?y2 ?dir2 ?x3 ?y3 ?mummy))	
+    (newlocation1 ?x2 ?y2 ?dir2 ?x3 ?y3 ?mummy))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; STATIC RELATIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -876,27 +873,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;; ADDITIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(<= (next-explorer-loc ?ex ?ey horizontal)
-    (explorer-type ?explorer horizontal)
-    (true (location ?explorer ?ex1 ?ey1))
-    (does explorer (move ?dirl ?dirr))
-    (newlocation1 ?ex1 ?ey1 ?dirl ?ex ?ey ?explorer))
-
-(<= (next-explorer-loc ?ex ?ey vertical)
-    (explorer-type ?explorer vertical)
-    (true (location ?explorer ?ex1 ?ey1))
-    (does explorer (move ?dirl ?dirr))
-    (newlocation1 ?ex1 ?ey1 ?dirr ?ex ?ey ?explorer))
+(<= (next-explorer-loc ?ex ?ey)
+    (true (explorer-location ?ex1 ?ey1))
+    (does explorer (move ?em))
+    (newlocation1 ?ex1 ?ey1 ?em ?ex ?ey explorer))
 
 (<= (close-to-mummy ?x ?y1 ?mummy)
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?x ?y))
+    (true (mummy-location ?mummy ?x ?y))
     (newlocation1 ?x ?y ?dir ?x ?y1 ?mummy)
     (distinct ?y ?y1))
 
 (<= (close-to-mummy ?x1 ?y ?mummy)
     (mummy-type ?mummy ?type)
-    (true (location ?mummy ?x ?y))
+    (true (mummy-location ?mummy ?x ?y))
     (newlocation1 ?x ?y ?dir ?x1 ?y ?mummy)
     (distinct ?x ?x1))
 
