@@ -61,10 +61,12 @@ void InputThread::Run() {
 		// unlock queue
 		delete lock;
 
+		Sleep(0,10);
 		g_pWaitForInput->WaitForEventForever();
+		Sleep(0,10);
 	}
 
-	if (cin.bad()) {
+ 	if (cin.bad()) {
 		// BAD BAD BAD
 		cout << "cin.get() failed!  Aborting." << endl;
 		exit(1);
@@ -274,8 +276,11 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 		string expandedCommandLine = pKernel->ExpandCommandLine(commandLine.c_str());
 		if (expandedCommandLine == "quit") {
 			g_pInputThread->Stop(false);
+			g_pWaitForInput->TriggerEvent();
+			g_pInputThread->Stop(true);
+		} else {
+			g_pWaitForInput->TriggerEvent();
 		}
-		g_pWaitForInput->TriggerEvent();
 	}
 
 	// Process command line differently depending on the type of output
