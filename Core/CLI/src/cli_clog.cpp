@@ -128,7 +128,7 @@ bool CommandLineInterface::ParseCLog(gSKI::Agent* pAgent, std::vector<std::strin
 	return DoCLog(pAgent, mode);
 }
 
-bool CommandLineInterface::DoCLog(gSKI::Agent* pAgent, const eLogMode mode, const std::string* pFilename, const std::string* pToAdd) {
+bool CommandLineInterface::DoCLog(gSKI::Agent* pAgent, const eLogMode mode, const std::string* pFilename, const std::string* pToAdd, bool silent) {
 	if (!RequireAgent(pAgent)) return false;
 
 	std::ios_base::openmode openmode = std::ios_base::out;
@@ -181,7 +181,9 @@ bool CommandLineInterface::DoCLog(gSKI::Agent* pAgent, const eLogMode mode, cons
 		default: assert(false);
 	}
 
-	LogQuery();
+	if (!silent) {
+		LogQuery();
+	}
 	return true;
 }
 

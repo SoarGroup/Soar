@@ -85,7 +85,7 @@ bool CommandLineInterface::ParseCommandToFile(gSKI::Agent* pAgent, std::vector<s
 	}
 
 	// Open log
-	if (!DoCLog(pAgent, mode, &filename)) {
+	if (!DoCLog(pAgent, mode, &filename, 0, true)) {
 		return false;
 	}
 
