@@ -1,5 +1,0 @@
-<h2>Delete or Edit Users</h2>
-
-<p>Accounts are shown in alphabetical order. You cannot edit or delete yourself, or the main administrator. To edit yourself use the normal 'edit account' option.</p>
-
-**account table**
