@@ -1,0 +1,11 @@
+<soar2d version="1">
+ <logger console="true" file="false" filename="soar2d.log" level="info" log-time="false"></logger>
+ <tanksoar map="default.tmap">
+  <agent productions="tutorial/simple-bot.soar" />
+  <agent productions="tutorial/simple-bot.soar" />
+ </tanksoar>
+ <display graphical="false"></display>
+ <simulation debuggers="false" missile-reset-threshold="100" no-world="false" random="true" random-seed="0" remote="false">
+  <terminal type="winning-score" value="50"></terminal>
+ </simulation>
+</soar2d>

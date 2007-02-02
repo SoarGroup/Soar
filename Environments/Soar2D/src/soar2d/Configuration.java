@@ -16,6 +16,8 @@ public class Configuration {
 	
 	public final String kDefaultXMLEatersSettingsFile = "eaters.xml";
 	public final String kDefaultXMLTankSoarSettingsFile = "tanksoar.xml";
+	public final String kDefaultXMLEatersConsoleSettingsFile = "eaters-console.xml";
+	public final String kDefaultXMLTankSoarConsoleSettingsFile = "tanksoar-console.xml";
 	public final String kDefaultXMLBookSettingsFile = "book.xml";
 	public final String kDefaultLogFilename = "soar2d.log";
 	public final String kMapDir = "maps";

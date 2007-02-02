@@ -58,6 +58,20 @@ public class Soar2D {
 			System.exit(1);
 		}
 		try {
+			install(config.kDefaultXMLEatersConsoleSettingsFile);
+		} catch (IOException e) {
+			control.severeError("IOException installing " + config.kDefaultXMLEatersConsoleSettingsFile + ": " + e.getMessage());
+			wm.shutdown();
+			System.exit(1);
+		}
+		try {
+			install(config.kDefaultXMLTankSoarConsoleSettingsFile);
+		} catch (IOException e) {
+			control.severeError("IOException installing " + config.kDefaultXMLTankSoarConsoleSettingsFile + ": " + e.getMessage());
+			wm.shutdown();
+			System.exit(1);
+		}
+		try {
 			install(config.kDefaultXMLBookSettingsFile);
 		} catch (IOException e) {
 			control.severeError("IOException installing " + config.kDefaultXMLBookSettingsFile + ": " + e.getMessage());
