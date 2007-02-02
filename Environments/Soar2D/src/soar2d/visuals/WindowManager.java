@@ -1,5 +1,7 @@
 package soar2d.visuals;
 
+import java.util.logging.*;
+
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
@@ -11,6 +13,8 @@ import soar2d.Configuration.SimType;
 import soar2d.player.*;
 
 public class WindowManager {
+	private static Logger logger = Logger.getLogger("soar2d");
+	
 	public static Color white = null;
 	public static Color blue = null;
 	public static Color red = null;
@@ -88,10 +92,13 @@ public class WindowManager {
 	}
 
 	public boolean initialize() {
-		display = new Display();
-		if (display == null) {
+		try {
+			display = new Display();
+		} catch (java.lang.UnsatisfiedLinkError e) {
+			logger.info("Failed to create display (java.lang.UnsatisfiedLinkError), this is normal on systems that do not have a window manager.");
 			return false;
 		}
+		assert display != null;
 
 		shell = new Shell(display, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.TITLE);
 		if (shell == null) {
