@@ -97,6 +97,9 @@ public class WindowManager {
 		} catch (java.lang.UnsatisfiedLinkError e) {
 			logger.info("Failed to create display (java.lang.UnsatisfiedLinkError), this is normal on systems that do not have a window manager.");
 			return false;
+		} catch (org.eclipse.swt.SWTError e) {
+			logger.info("Failed to create display (org.eclipse.swt.SWTError), this is expected if there is no window manager available.");
+			return false;
 		}
 		assert display != null;
 
