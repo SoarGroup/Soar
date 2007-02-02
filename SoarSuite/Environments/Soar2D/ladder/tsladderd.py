@@ -15,6 +15,7 @@ import subprocess
 import re
 import logging
 import Queue
+import types
 
 def MemExceededHandler(id, pid, agent, phase):
 	tank_name = agent.GetAgentName()
@@ -175,7 +176,8 @@ class Tourney(threading.Thread):
 			
 		match_file.close()
 
-		if type(match_info) == 'str':
+		if type(match_info) == types.StringType:
+			match_info = match_info.strip()
 			logging.warning("Error getting match: %s" % (match_info))
 			return False
 
@@ -209,7 +211,7 @@ class Tourney(threading.Thread):
 		os.chdir(oldcwd)
 
 		# save the match settings
-		match_settings_file = open("match-settings.xml", 'w')
+		match_settings_file = open("ladder.xml", 'w')
 
 		for x in range(len(source_files)):
 			self.status.settings = self.status.settings.replace('name%d' % x, source_files[x][0])
@@ -224,7 +226,7 @@ class Tourney(threading.Thread):
 		# Start tanksoar
 		self.status_lock.acquire()
 		self.status.process = subprocess.Popen(
-				"java -ea -jar Soar2D.jar match-settings.xml", 
+				"java -ea -jar Soar2D.jar ladder.xml", 
 				shell = True, 
 				stdout = devnull, 
 				stderr = devnull)
@@ -233,40 +235,42 @@ class Tourney(threading.Thread):
 		logging.info("Soar2D TankSoar started, pid %d" % self.status.process.pid)
 		
 		# connect to kernel
-		tries = 7
-		kernel = None
-		while tries > 0:
-			kernel = Python_sml_ClientInterface.Kernel.CreateRemoteConnection()
-			if not kernel.HadError():
-				break
-			time.sleep(2)
-			if self.stop_event.isSet():
-				tries = 0
-			tries = tries - 1
+		#TODO: this code removed because it is insanely slow
+		#tries = 7
+		#kernel = None
+		#while tries > 0:
+		#	logging.info("trying to connect");
+		#	kernel = Python_sml_ClientInterface.Kernel.CreateRemoteConnection()
+		#	if not kernel.HadError():
+		#		break
+		#	time.sleep(2)
+		#	if self.stop_event.isSet():
+		#		tries = 0
+		#	tries = tries - 1
 
-		if tries <= 0:
-			error_message = "Failed to connect to kernel, too many tries or interrupted, gave up."
-			logging.warning(error_message)
-			self.status.error = True
-			self.status.error_message = error_message
-			try:
-				os.kill(self.status.process.pid, 9)
-			except OSError, e:
-				logging.warning("Failed to kill process:" % e)
-			return False
-		
-		logging.info("Connected to kernel")
+		#if tries <= 0:
+		#	error_message = "Failed to connect to kernel, too many tries or interrupted, gave up."
+		#	logging.warning(error_message)
+		#	self.status.error = True
+		#	self.status.error_message = error_message
+		#	try:
+		#		os.kill(self.status.process.pid, 9)
+		#	except OSError, e:
+		#		logging.warning("Failed to kill process:" % e)
+		#	return False
+		#
+		#logging.info("Connected to kernel")
 			
 		# register for agent creation events
-		kernel.RegisterForAgentEvent(
-				Python_sml_ClientInterface.smlEVENT_AFTER_AGENT_CREATED,
-				AgentCreatedHandler, 
-				self.status.process.pid)
+		#kernel.RegisterForAgentEvent(
+		#		Python_sml_ClientInterface.smlEVENT_AFTER_AGENT_CREATED,
+		#		AgentCreatedHandler, 
+		#		self.status.process.pid)
 
 		# set connection info to ready
-		kernel.SetConnectionInfo("tsladderd", "ready", "ready")
+		#kernel.SetConnectionInfo("tsladderd", "ready", "ready")
 
-		logging.info("Connection set to ready")
+		#logging.info("Connection set to ready")
 
 		logging.info("Match %d started." % self.status.match_id)
 		
@@ -297,7 +301,7 @@ class Tourney(threading.Thread):
 		self.status.elapsed_time = time.time() - self.status.start_time
 		
 		logging.info("Match %d ended (elapsed: %.1fs)." % (self.status.match_id, self.status.elapsed_time))
-		kernel.Shutdown()
+		#kernel.Shutdown()
 		devnull.close()
 		return True
 
@@ -367,6 +371,7 @@ class Tourney(threading.Thread):
 		return True
 
 	def run(self):
+
 		self.start_condition.acquire()
 
 		while not self.shutdown:
@@ -494,6 +499,8 @@ def ts_kill(tournament, message):
 if __name__ == '__main__':
 
 	logging.basicConfig(level=logging.INFO,format='%(asctime)s %(levelname)s %(message)s')
+
+	os.chdir("..")
 	
 	tournament = Tourney()
 	tournament.start()
