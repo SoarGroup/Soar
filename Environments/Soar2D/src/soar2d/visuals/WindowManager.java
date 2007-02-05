@@ -1,5 +1,6 @@
 package soar2d.visuals;
 
+import java.util.Iterator;
 import java.util.logging.*;
 
 import org.eclipse.swt.*;
@@ -11,6 +12,7 @@ import org.eclipse.swt.widgets.*;
 import soar2d.*;
 import soar2d.Configuration.SimType;
 import soar2d.player.*;
+import soar2d.world.CellObject;
 
 public class WindowManager {
 	private static Logger logger = Logger.getLogger("soar2d");
@@ -41,6 +43,8 @@ public class WindowManager {
 	String statusMessage;
 	MoveInfo humanMove;
 	Player human;
+	Composite rhs;
+	Composite currentSide;
 
 	public static final int kEatersMainMapCellSize = 20;
 	public static final int kTanksoarMainMapCellSize = 32;
@@ -118,10 +122,6 @@ public class WindowManager {
 	}
 	
 	public void setupEaters() {
-		GridLayout gl = new GridLayout();
-		gl.numColumns = 2;
-		shell.setLayout(gl);
-		
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
 		visualWorld = new VisualWorld(worldGroup, SWT.NONE, kEatersMainMapCellSize);
@@ -192,16 +192,39 @@ public class WindowManager {
 			}
 		});
 		
+		createRHS();
 		createEatersSide();
-
-		statusLine = new Label(shell, SWT.BORDER);
-		statusLine.setText("Ready");
 
 		shell.setText("Eaters");
 	}
 	
-	public void createEatersSide() {
-		Group group1 = new Group(shell, SWT.NONE);
+	private void createRHS() {
+		rhs = new Composite(shell, SWT.NONE);
+		{
+			GridLayout gl = new GridLayout();
+			gl.marginHeight = 0;
+			gl.marginWidth = 0;
+			rhs.setLayout(gl);
+
+			GridData gd = new GridData();
+			rhs.setLayoutData(gd);
+		}
+	}
+	
+	private void createEatersSide() {
+		
+		currentSide = new Composite(rhs, SWT.NONE);
+		{
+			GridLayout gl = new GridLayout();
+			gl.marginHeight = 0;
+			gl.marginWidth = 0;
+			currentSide.setLayout(gl);
+			
+			GridData gd = new GridData();
+			currentSide.setLayoutData(gd);
+		}
+		
+		Group group1 = new Group(currentSide, SWT.NONE);
 		{
 			GridData gd = new GridData();
 			group1.setLayoutData(gd);
@@ -210,7 +233,7 @@ public class WindowManager {
 		group1.setLayout(new FillLayout());
 		simButtons = new SimulationButtons(group1);
 		
-		Group group2 = new Group(shell, SWT.NONE);
+		Group group2 = new Group(currentSide, SWT.NONE);
 		{
 			GridData gd = new GridData();
 			group2.setLayoutData(gd);
@@ -273,7 +296,7 @@ public class WindowManager {
 			mapButtons.setLayoutData(gd);
 		}
 
-		agentDisplay = new EatersAgentDisplay(shell);
+		agentDisplay = new EatersAgentDisplay(currentSide);
 		{
 			GridData gd = new GridData();
 			agentDisplay.setLayoutData(gd);
@@ -285,10 +308,6 @@ public class WindowManager {
 	}
 	
 	public void setupTankSoar() {
-		GridLayout gl = new GridLayout();
-		gl.numColumns = 3;
-		shell.setLayout(gl);
-		
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
 		visualWorld = new VisualWorld(worldGroup, SWT.NONE, kTanksoarMainMapCellSize);
@@ -380,16 +399,26 @@ public class WindowManager {
 			}
 		});
 		
+		createRHS();
 		createTankSoarSide();
 
-		statusLine = new Label(shell, SWT.BORDER);
-		statusLine.setText("Ready");
-		
 		shell.setText("TankSoar");
 	}
 	
 	private void createTankSoarSide() {
-		Group group1 = new Group(shell, SWT.NONE);
+		currentSide = new Composite(rhs, SWT.NONE);
+		{
+			GridLayout gl = new GridLayout();
+			gl.marginHeight = 0;
+			gl.marginWidth = 0;
+			gl.numColumns = 2;
+			currentSide.setLayout(gl);
+			
+			GridData gd = new GridData();
+			currentSide.setLayoutData(gd);
+		}
+		
+		Group group1 = new Group(currentSide, SWT.NONE);
 		{
 			GridData gd = new GridData();
 			group1.setLayoutData(gd);
@@ -398,7 +427,7 @@ public class WindowManager {
 		group1.setLayout(new FillLayout());
 		simButtons = new SimulationButtons(group1);
 		
-		Group group2 = new Group(shell, SWT.NONE);
+		Group group2 = new Group(currentSide, SWT.NONE);
 		{
 			GridData gd = new GridData();
 			group2.setLayoutData(gd);
@@ -407,7 +436,7 @@ public class WindowManager {
 		group2.setLayout(new FillLayout());
 		mapButtons = new MapButtons(group2);
 
-		Composite comp1 = new Composite(shell, SWT.NONE);
+		Composite comp1 = new Composite(currentSide, SWT.NONE);
 		{
 			GridData gd = new GridData();
 			gd.horizontalSpan = 2;
@@ -435,12 +464,57 @@ public class WindowManager {
 		
 		updateCounts();
 		
-		agentDisplay = new TankSoarAgentDisplay(shell);
+		agentDisplay = new TankSoarAgentDisplay(currentSide);
 		{
 			GridData gd = new GridData();
 			gd.horizontalSpan = 2;
 			agentDisplay.setLayoutData(gd);
 		}
+	}
+	
+	private void createEditSide() {
+		currentSide = new Composite(rhs, SWT.NONE);
+		{
+			GridLayout gl = new GridLayout();
+			gl.marginHeight = 0;
+			gl.marginWidth = 0;
+			currentSide.setLayout(gl);
+			
+			GridData gd = new GridData();
+			currentSide.setLayoutData(gd);
+		}
+		
+		Label templatesLabel = new Label(currentSide, SWT.NONE);
+		templatesLabel.setText("Templates:");
+		
+		Table templatesTable = new Table(currentSide, SWT.BORDER | SWT.V_SCROLL);
+		{
+			TableItem item = new TableItem(templatesTable, SWT.NONE);
+			item.setText("<empty>");
+		}
+		Iterator<CellObject> templateIter = Soar2D.simulation.world.map.getObjectManager().getTemplates().iterator();
+		while(templateIter.hasNext()) {
+			CellObject template = templateIter.next();
+			String templateName = template.getName();
+			
+			if (templateName.equals(Names.kPropertyMissile)
+					|| templateName.equals(Names.kExplosion)
+					|| templateName.equals(Names.kGround)) {
+				continue;
+			}
+			
+			TableItem item = new TableItem(templatesTable, SWT.NONE);
+			item.setText(template.getName());
+		}
+		
+		Button editTemplateButton = new Button(currentSide, SWT.PUSH);
+		editTemplateButton.setText("Edit Selected Template");
+
+		Button destroyTemplateButton = new Button(currentSide, SWT.PUSH);
+		destroyTemplateButton.setText("Destroy Selected Template");
+
+		Button newTemplateButton = new Button(currentSide, SWT.PUSH);
+		newTemplateButton.setText("Create New Template");
 	}
 	
 	Menu menuBar;
@@ -475,10 +549,19 @@ public class WindowManager {
     	mapEditMode = !mapEditMode;
     	
     	if (mapEditMode) {
-    		// we're going in to edit mode, destroy normal side, create edit side
+    		// we're going in to edit mode, destroy current side, create edit side
+    		// TODO: just testing
+    		currentSide.dispose();
+   			createEditSide();
     		
+    		updateWorldGroup();
+    		
+    		rhs.layout(true);
+    		shell.layout(true);
+
     	} else {	
-    		// we're going in to normal mode, destroy edit side, create normal side
+    		// we're going in to normal mode, destroy current side, create normal side
+    		currentSide.dispose();
     		switch (Soar2D.config.getType()) {
     		case kEaters:
     			createEatersSide();
@@ -489,6 +572,11 @@ public class WindowManager {
     		case kBook:
     			assert false;
     		}
+    		
+    		updateWorldGroup();
+    		
+    		rhs.layout(true);
+    		shell.layout(true);
     	}
 	}
 	
@@ -530,7 +618,7 @@ public class WindowManager {
 		});
 		
 		mapMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
-		mapMenuHeader.setText("&Menu");
+		mapMenuHeader.setText("&Map");
 		
 		mapMenu = new Menu(shell, SWT.DROP_DOWN);
 		mapMenuHeader.setMenu(mapMenu);
@@ -566,6 +654,10 @@ public class WindowManager {
 		});
 		
 		shell.setMenuBar(menuBar);
+		
+		GridLayout gl = new GridLayout();
+		gl.numColumns = 2;
+		shell.setLayout(gl);
 
 		switch (Soar2D.config.getType()) {
 		case kEaters:
@@ -578,6 +670,17 @@ public class WindowManager {
 		case kBook:
 			setupBook();
 			break;
+		}
+		
+		statusLine = new Label(shell, SWT.BORDER);
+		statusLine.setText("Ready");
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 2;
+			gd.grabExcessHorizontalSpace = true;
+			gd.horizontalAlignment = SWT.FILL;
+			gd.heightHint = 16;
+			statusLine.setLayoutData(gd);
 		}
 		
 		visualWorld.addMouseListener(new MouseAdapter() {
@@ -623,6 +726,9 @@ public class WindowManager {
 				visualWorld.redraw();			
 			}
 		});
+		
+		rhs.layout(true);
+		shell.layout(true);
 		
 		shell.open();
 
@@ -688,22 +794,6 @@ public class WindowManager {
 		gd.heightHint = visualWorld.getHeight();
 		gd.verticalSpan = 3;
 		worldGroup.setLayoutData(gd);
-
-		gd = new GridData();
-		switch (Soar2D.config.getType()) {
-		case kEaters:
-			gd.horizontalSpan = 2;
-			break;
-		case kTankSoar:
-			gd.horizontalSpan = 3;
-			break;
-		case kBook:
-			assert false;
-			break;
-		}
-		gd.widthHint = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).x - 20;
-		gd.heightHint = 16;
-		statusLine.setLayoutData(gd);
 
 		shell.setSize(shell.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 	}
