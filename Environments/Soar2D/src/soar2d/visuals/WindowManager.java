@@ -122,8 +122,6 @@ public class WindowManager {
 		gl.numColumns = 2;
 		shell.setLayout(gl);
 		
-		GridData gd;
-		
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
 		visualWorld = new VisualWorld(worldGroup, SWT.NONE, kEatersMainMapCellSize);
@@ -193,67 +191,93 @@ public class WindowManager {
 				}
 			}
 		});
+		
+		createEatersSide();
 
+		statusLine = new Label(shell, SWT.BORDER);
+		statusLine.setText("Ready");
+
+		shell.setText("Eaters");
+	}
+	
+	public void createEatersSide() {
 		Group group1 = new Group(shell, SWT.NONE);
-		gd = new GridData();
-		group1.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			group1.setLayoutData(gd);
+		}
 		group1.setText("Simulation");
 		group1.setLayout(new FillLayout());
 		simButtons = new SimulationButtons(group1);
 		
 		Group group2 = new Group(shell, SWT.NONE);
-		gd = new GridData();
-		group2.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			group2.setLayoutData(gd);
+		}
 		group2.setText("Map");
-		gl = new GridLayout();
-		gl.numColumns = 2;
-		group2.setLayout(gl);
+		{
+			GridLayout gl = new GridLayout();
+			gl.numColumns = 2;
+			group2.setLayout(gl);
+		}
 		
 		Label foodLabel = new Label(group2, SWT.NONE);
-		gd = new GridData();
-		foodLabel.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			foodLabel.setLayoutData(gd);
+		}
 		foodLabel.setText(kFoodRemaining);
 		
 		foodCount = new Label(group2, SWT.NONE);
-		gd = new GridData();
-		gd.widthHint = 50;
-		foodCount.setLayoutData(gd);
+		{ 
+			GridData gd = new GridData();
+			gd.widthHint = 50;
+			foodCount.setLayoutData(gd);
+		}
 		
 		Label scoreLabel = new Label(group2, SWT.NONE);
-		gd = new GridData();
-		scoreLabel.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			scoreLabel.setLayoutData(gd);
+		}
 		scoreLabel.setText(kScoreRemaining);
 		
 		scoreCount = new Label(group2, SWT.NONE);
-		gd = new GridData();
-		gd.widthHint = 50;
-		scoreCount.setLayoutData(gd);
+		{ 
+			GridData gd = new GridData();
+			gd.widthHint = 50;
+			scoreCount.setLayoutData(gd);
+		}
 		
 		Label worldCountLabel = new Label(group2, SWT.NONE);
 		worldCountLabel.setText(kWorldCount);
-		gd = new GridData();
-		worldCountLabel.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			worldCountLabel.setLayoutData(gd);
+		}
 		
 		worldCount = new Label(group2, SWT.NONE);
-		gd = new GridData();
-		gd.widthHint = 50;
-		worldCount.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 50;
+			worldCount.setLayoutData(gd);
+		}
 		
 		updateCounts();
 		
 		mapButtons = new MapButtons(group2);
-		gd = new GridData();
-		gd.horizontalSpan = 2;
-		mapButtons.setLayoutData(gd);
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 2;
+			mapButtons.setLayoutData(gd);
+		}
 
 		agentDisplay = new EatersAgentDisplay(shell);
-		gd = new GridData();
-		agentDisplay.setLayoutData(gd);
-		
-		statusLine = new Label(shell, SWT.BORDER);
-		statusLine.setText("Ready");
-
-		shell.setText("Eaters");
+		{
+			GridData gd = new GridData();
+			agentDisplay.setLayoutData(gd);
+		}
 	}
 	
 	public void setupBook() {
@@ -264,8 +288,6 @@ public class WindowManager {
 		GridLayout gl = new GridLayout();
 		gl.numColumns = 3;
 		shell.setLayout(gl);
-		
-		GridData gd;
 		
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
@@ -357,64 +379,118 @@ public class WindowManager {
 				}
 			}
 		});
+		
+		createTankSoarSide();
 
-		Group group1 = new Group(shell, SWT.NONE);
-		gd = new GridData();
-		group1.setLayoutData(gd);
-		group1.setText("Simulation");
-		group1.setLayout(new FillLayout());
-		simButtons = new SimulationButtons(group1);
-		
-		Group group2 = new Group(shell, SWT.NONE);
-		gd = new GridData();
-		group2.setLayoutData(gd);
-		group2.setText("Map");
-		group2.setLayout(new FillLayout());
-		mapButtons = new MapButtons(group2);
-
-		Composite comp1 = new Composite(shell, SWT.NONE);
-		gd = new GridData();
-		gd.horizontalSpan = 2;
-		comp1.setLayoutData(gd);
-
-		gl = new GridLayout();
-		gl.numColumns = 2;
-		comp1.setLayout(gl);
-
-		Label worldCountLabel = new Label(comp1, SWT.NONE);
-		worldCountLabel.setText(kWorldCount);
-		gd = new GridData();
-		worldCountLabel.setLayoutData(gd);
-		
-		worldCount = new Label(comp1, SWT.NONE);
-		gd = new GridData();
-		gd.widthHint = 50;
-		worldCount.setLayoutData(gd);
-		
-		updateCounts();
-		
-		agentDisplay = new TankSoarAgentDisplay(shell);
-		gd = new GridData();
-		gd.horizontalSpan = 2;
-		agentDisplay.setLayoutData(gd);
-		
 		statusLine = new Label(shell, SWT.BORDER);
 		statusLine.setText("Ready");
 		
 		shell.setText("TankSoar");
 	}
 	
+	private void createTankSoarSide() {
+		Group group1 = new Group(shell, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			group1.setLayoutData(gd);
+		}
+		group1.setText("Simulation");
+		group1.setLayout(new FillLayout());
+		simButtons = new SimulationButtons(group1);
+		
+		Group group2 = new Group(shell, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			group2.setLayoutData(gd);
+		}
+		group2.setText("Map");
+		group2.setLayout(new FillLayout());
+		mapButtons = new MapButtons(group2);
+
+		Composite comp1 = new Composite(shell, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 2;
+			comp1.setLayoutData(gd);
+		}
+		{
+			GridLayout gl = new GridLayout();
+			gl.numColumns = 2;
+			comp1.setLayout(gl);
+		}
+
+		Label worldCountLabel = new Label(comp1, SWT.NONE);
+		worldCountLabel.setText(kWorldCount);
+		{
+			GridData gd = new GridData();
+			worldCountLabel.setLayoutData(gd);
+		}
+		
+		worldCount = new Label(comp1, SWT.NONE);
+		{ 
+			GridData gd = new GridData();
+			gd.widthHint = 50;
+			worldCount.setLayoutData(gd);
+		}
+		
+		updateCounts();
+		
+		agentDisplay = new TankSoarAgentDisplay(shell);
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 2;
+			agentDisplay.setLayoutData(gd);
+		}
+	}
+	
 	Menu menuBar;
 	Menu fileMenu;
+	Menu mapMenu;
 	Menu helpMenu;
 	
 	MenuItem fileMenuHeader;
+	MenuItem mapMenuHeader;
 	MenuItem helpMenuHeader;
 	
 	MenuItem fileConfigurationItem;
 	MenuItem fileExitItem;
 	
+	MenuItem mapEditItem;
+	
 	MenuItem helpAboutItem;
+
+	boolean mapEditMode = false;
+	
+	private void mapEditModeChange() {
+		// if we're going in to edit mode, the agent list must be empty
+		if (mapEditMode == false) {
+			// we're going in to edit mode
+			if (Soar2D.simulation.world.getPlayers().size() > 0) {
+				Soar2D.control.infoPopUp("Destroy all agents before editing the map.");
+				return;
+			}
+		}
+		
+		// flip the bit
+    	mapEditMode = !mapEditMode;
+    	
+    	if (mapEditMode) {
+    		// we're going in to edit mode, destroy normal side, create edit side
+    		
+    	} else {	
+    		// we're going in to normal mode, destroy edit side, create normal side
+    		switch (Soar2D.config.getType()) {
+    		case kEaters:
+    			createEatersSide();
+    			break;
+    		case kTankSoar:
+        		createTankSoarSide();
+        		break;
+    		case kBook:
+    			assert false;
+    		}
+    	}
+	}
 	
 	public void run() {
 		
@@ -450,6 +526,24 @@ public class WindowManager {
 		    public void widgetDefaultSelected(SelectionEvent event) {
 		        shell.close();
 		        display.dispose();
+		    }
+		});
+		
+		mapMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
+		mapMenuHeader.setText("&Menu");
+		
+		mapMenu = new Menu(shell, SWT.DROP_DOWN);
+		mapMenuHeader.setMenu(mapMenu);
+		
+		mapEditItem = new MenuItem(mapMenu, SWT.PUSH);
+		mapEditItem.setText("&Edit Map");
+		mapEditItem.addSelectionListener(new SelectionListener() {
+		    public void widgetSelected(SelectionEvent event) {
+		    	mapEditModeChange();
+		    }
+
+		    public void widgetDefaultSelected(SelectionEvent event) {
+		    	mapEditModeChange();
 		    }
 		});
 

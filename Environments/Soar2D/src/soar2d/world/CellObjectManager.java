@@ -1,6 +1,7 @@
 package soar2d.world;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -57,6 +58,10 @@ public class CellObjectManager {
 		}
 		templates.put(cellObject.getName(), cellObject);
 		return true;
+	}
+	
+	public Collection<CellObject> getTemplates() {
+		return templates.values();
 	}
 	
 	/**
