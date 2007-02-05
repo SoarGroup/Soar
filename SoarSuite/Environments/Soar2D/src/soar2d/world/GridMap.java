@@ -423,7 +423,7 @@ public class GridMap {
 	}
 	
 	private void setRedraw(Cell cell) {
-		cell.addCellObject(new CellObject(Names.kRedraw, false));
+		cell.addCellObject(new CellObject(Names.kRedraw));
 	}
 	
 	public void setExplosion(java.awt.Point location) {
@@ -434,7 +434,7 @@ public class GridMap {
 			break;
 			
 		case kEaters:
-			explosion = new CellObject(Names.kExplosion, true);
+			explosion = new CellObject(Names.kExplosion);
 			explosion.addProperty(Names.kPropertyLinger, "2");
 			explosion.setLingerUpdate(true);
 			break;
@@ -535,7 +535,7 @@ public class GridMap {
 		boolean noPlayer = radar[1][distance].player == null;
 		
 		if (enterable && noPlayer) {
-			CellObject radarWaves = new CellObject("radar-" + facing, true);
+			CellObject radarWaves = new CellObject("radar-" + facing);
 			radarWaves.addProperty(Names.kPropertyRadarWaves, "true");
 			radarWaves.addProperty(Names.kPropertyDirection, Integer.toString(facing));
 			radarWaves.addProperty(Names.kPropertyLinger, "1");

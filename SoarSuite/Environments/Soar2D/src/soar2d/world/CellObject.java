@@ -26,15 +26,11 @@ public class CellObject {
 	 * The name of this cell object.
 	 */
 	String name;
-	/**
-	 * If this object should be updated.
-	 */
-	boolean updatable;
 
 	/**
 	 * remove the object after the apply
 	 */
-	boolean applyRemove = false;
+	boolean removeApply = false;
 	/**
 	 * add the points property to the player during the apply.
 	 * Points can be negative or zero.
@@ -83,8 +79,7 @@ public class CellObject {
 		this.properties = new HashMap<String, String>(cellObject.properties);
 		this.propertiesApply = new HashMap<String, String>(cellObject.propertiesApply);
 		this.name = new String(cellObject.name);
-		this.updatable = cellObject.updatable;
-		this.applyRemove = cellObject.applyRemove;
+		this.removeApply = cellObject.removeApply;
 		this.pointsApply = cellObject.pointsApply;
 		this.missilesApply = cellObject.missilesApply;
 		this.healthApply = cellObject.healthApply;
@@ -96,10 +91,9 @@ public class CellObject {
 		this.lingerUpdate = cellObject.lingerUpdate;
 	}
 	
-	CellObject(String name, boolean updatable) {
+	CellObject(String name) {
 		this.id = new Integer(idCount++);
 		this.name = name;
-		this.updatable = updatable;
 	}
 	
 	public Integer getId() {
@@ -114,7 +108,18 @@ public class CellObject {
 		return name;
 	}
 	public boolean updatable() {
-		return updatable;
+		return this.decayUpdate
+			|| this.flyMissileUpdate
+			|| this.lingerUpdate;
+	}
+	
+	public boolean applyable() {
+		return (propertiesApply.size() > 0) 
+			|| this.pointsApply 
+			|| this.energyApply 
+			|| this.healthApply 
+			|| this.missilesApply 
+			|| this.removeApply;
 	}
 	
 	/**
@@ -140,8 +145,8 @@ public class CellObject {
 		properties.put(name, value);
 	}
 	
-	public void setApplyRemove(boolean setting) {
-		applyRemove = setting;
+	public void setRemoveApply(boolean setting) {
+		removeApply = setting;
 	}
 	
 	public void setPointsApply(boolean setting) {
@@ -229,7 +234,7 @@ public class CellObject {
 			}
 		}
 		
-		if (applyRemove) {
+		if (removeApply) {
 			return true;
 		}
 		return false;

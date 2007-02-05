@@ -40,10 +40,15 @@
                     <xs:element name="health">
                       <xs:complexType>
                         <xs:sequence />
-                        <xs:attribute name="shields" type="xs:boolean" />
+                        <xs:attribute name="shields-down" type="xs:boolean" />
                       </xs:complexType>
                     </xs:element>
                     <xs:element name="missiles">
+                      <xs:complexType>
+                        <xs:sequence />
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="remove">
                       <xs:complexType>
                         <xs:sequence />
                       </xs:complexType>
@@ -59,13 +64,21 @@
                         <xs:sequence />
                       </xs:complexType>
                     </xs:element>
+                    <xs:element name="fly-missile">
+                      <xs:complexType>
+                        <xs:sequence />
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="linger">
+                      <xs:complexType>
+                        <xs:sequence />
+                      </xs:complexType>
+                    </xs:element>
                   </xs:sequence>
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
-            <xs:attribute name="updatable" type="xs:boolean" />
             <xs:attribute name="name" type="xs:string" />
-            <xs:attribute name="consumable" type="xs:boolean" />
           </xs:complexType>
         </xs:element>
         <xs:element name="cells">

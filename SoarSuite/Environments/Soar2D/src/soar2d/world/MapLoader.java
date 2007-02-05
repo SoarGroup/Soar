@@ -64,6 +64,32 @@ public class MapLoader {
 		// success
 		return true;
 	}
+	
+	public String generateXMLString(GridMap map) {
+		this.map = map;
+		
+		ElementXML mapTag = new ElementXML();
+		mapTag.SetTagName(Names.kTagMap);
+		mapSave(mapTag);
+		String output = mapTag.GenerateXMLString(true, true);
+		
+		// at least part of this is required to avoid a memory leak
+		mapTag.ReleaseRefOnHandle();
+		mapTag.delete();
+		mapTag = null;
+		
+		return output;
+	}
+	
+	private void mapSave(ElementXML mapTag) {
+		Iterator<CellObject> templateIter = map.cellObjectManager.getTemplates().iterator();
+		while (templateIter.hasNext()) {
+			cellObjectSave(mapTag, templateIter.next());
+		}
+		
+		cellsSave(mapTag);
+	}
+	
 	private void map(ElementXML mapTag) throws SMLException, SyntaxException {
 		ElementXML mainTag = null;
 		for (int mapTagIndex = 0 ; mapTagIndex < mapTag.GetNumberChildren() ; ++mapTagIndex) {
@@ -95,9 +121,40 @@ public class MapLoader {
 		}
 	}
 	
+	private void cellObjectSave(ElementXML mapTag, CellObject template) {
+		String name = template.getName();
+		boolean updatable = template.updatable();
+		
+		ElementXML templateTag = new ElementXML();
+		templateTag.SetTagName(Names.kTagCellObject);
+		templateTag.AddAttributeConstConst(Names.kParamName, name);
+		templateTag.AddAttributeConstConst(Names.kParamUpdatable, updatable ? Names.kTrue : Names.kFalse);
+		
+		Iterator<String> propertyNamesIter = template.getPropertyNames().iterator();
+		while (propertyNamesIter.hasNext()) {
+			String propertyName = propertyNamesIter.next();
+			String propertyValue = template.getProperty(propertyName);
+			
+			ElementXML propertyTag = new ElementXML();
+			propertyTag.SetTagName(Names.kTagProperty);
+			propertyTag.AddAttributeConstConst(Names.kParamName, propertyName);
+			propertyTag.AddAttributeConstConst(Names.kParamValue, propertyValue);
+			templateTag.AddChild(propertyTag);
+		}
+		
+		if (template.applyable()) {
+			applySave(templateTag, template);
+		}
+		
+		if (template.updatable()) {
+			updateSave(templateTag, template);
+		}
+		
+		mapTag.AddChild(templateTag);
+	}
+	
 	private void cellObject(ElementXML cellObjectTag) throws SMLException, SyntaxException {
 		String name = null;
-		boolean updatable = false;
 
 		String attribute = null;
 		
@@ -110,12 +167,7 @@ public class MapLoader {
 		}
 		name = attribute;
 		
-		attribute = cellObjectTag.GetAttribute(Names.kParamUpdatable);
-		if (attribute != null) {
-			updatable = Boolean.parseBoolean(attribute);
-		}
-		
-		CellObject cellObjectTemplate = new CellObject(name, updatable);
+		CellObject cellObjectTemplate = new CellObject(name);
 
 		ElementXML cellObjectSubTag = null;
 		for (int cellObjectSubTagIndex = 0; cellObjectSubTagIndex < cellObjectTag.GetNumberChildren(); ++cellObjectSubTagIndex) {
@@ -186,6 +238,56 @@ public class MapLoader {
 		}
 	}
 	
+	private void applySave(ElementXML templateTag, CellObject template) {
+		ElementXML applyTag = new ElementXML();
+		applyTag.SetTagName(Names.kTagApply);
+		
+		Iterator<String> propertyIter = template.propertiesApply.keySet().iterator();
+		while (propertyIter.hasNext()) {
+			String propertyName = propertyIter.next();
+			String propertyValue = template.propertiesApply.get(propertyName);
+			assert propertyValue != null;
+			
+			ElementXML propertyApplyTag = new ElementXML();
+			propertyApplyTag.SetTagName(Names.kTagProperty);
+			propertyApplyTag.AddAttributeConstConst(Names.kParamName, propertyName);
+			propertyApplyTag.AddAttributeConstConst(Names.kParamValue, propertyValue);
+			applyTag.AddChild(propertyApplyTag);
+		}
+		
+		if (template.pointsApply) {
+			ElementXML pointsTag = new ElementXML();
+			pointsTag.SetTagName(Names.kTagPoints);
+			applyTag.AddChild(pointsTag);
+		}
+		
+		if (template.energyApply) {
+			ElementXML energyTag = new ElementXML();
+			energyTag.SetTagName(Names.kTagEnergy);
+			energyTag.AddAttributeConstConst(Names.kParamShields, template.energyApplyShieldsUp ? Names.kTrue : Names.kFalse);
+			applyTag.AddChild(energyTag);
+		}
+		
+		if (template.healthApply) {
+			ElementXML healthTag = new ElementXML();
+			healthTag.SetTagName(Names.kTagHealth);
+			healthTag.AddAttributeConstConst(Names.kParamShieldsDown, template.healthApplyShieldsDown ? Names.kTrue : Names.kFalse);
+			applyTag.AddChild(healthTag);
+		}
+		
+		if (template.missilesApply) {
+			ElementXML missilesTag = new ElementXML();
+			missilesTag.SetTagName(Names.kTagMissiles);
+			applyTag.AddChild(missilesTag);
+		}
+		
+		if (template.removeApply) {
+			ElementXML removeTag = new ElementXML();
+			removeTag.SetTagName(Names.kTagRemove);
+			applyTag.AddChild(removeTag);
+		}
+	}
+	
 	private void apply(CellObject cellObjectTemplate, ElementXML applyTag) throws SMLException, SyntaxException {
 		
 		ElementXML applySubTag = null;
@@ -225,7 +327,7 @@ public class MapLoader {
 					
 				} else if (applySubTag.IsTag(Names.kTagRemove)) {
 					xmlPath.push(Names.kTagRemove);
-					cellObjectTemplate.setApplyRemove(true);
+					cellObjectTemplate.setRemoveApply(true);
 					xmlPath.pop();
 					
 				} else {
@@ -256,6 +358,29 @@ public class MapLoader {
 		cellObjectTemplate.setHealthApply(true, shieldsDown);
 	}
 	
+	private void updateSave(ElementXML templateTag, CellObject template) {
+		ElementXML updateTag = new ElementXML();
+		updateTag.SetTagName(Names.kTagUpdate);
+		
+		if (template.decayUpdate) {
+			ElementXML decayTag = new ElementXML();
+			decayTag.SetTagName(Names.kTagDecay);
+			updateTag.AddChild(decayTag);
+		}
+		
+		if (template.flyMissileUpdate) {
+			ElementXML flyMissileTag = new ElementXML();
+			flyMissileTag.SetTagName(Names.kTagFlyMissile);
+			updateTag.AddChild(flyMissileTag);
+		}
+		
+		if (template.lingerUpdate) {
+			ElementXML lingerTag = new ElementXML();
+			lingerTag.SetTagName(Names.kTagLinger);
+			updateTag.AddChild(lingerTag);
+		}
+	}
+
 	private void update(CellObject cellObjectTemplate, ElementXML updateTag) throws SMLException, SyntaxException {
 		
 		ElementXML updateSubTag = null;
@@ -291,6 +416,32 @@ public class MapLoader {
 				updateSubTag = null;
 			}
 		}
+	}
+	
+	private void cellsSave(ElementXML mapTag) {
+		ElementXML cellsTag = new ElementXML();
+		cellsTag.SetTagName(Names.kTagCells);
+		cellsTag.AddAttributeConstConst(Names.kParamWorldSize, Integer.toString(map.getSize()));
+		// TODO: support kParamRandomWalls
+		cellsTag.AddAttributeConstConst(Names.kParamRandomWalls, Names.kFalse);
+		// TODO: support kParamRandomFood
+		cellsTag.AddAttributeConstConst(Names.kParamRandomFood, Names.kFalse);
+		
+		assert map.mapCells.length == map.getSize();
+		for (int row = 0; row < map.mapCells.length; ++row) {
+			assert map.mapCells[row].length == map.getSize();
+
+			ElementXML rowTag = new ElementXML();
+			rowTag.SetTagName(Names.kTagRow);
+
+			for (int col = 0; col < map.mapCells[row].length; ++col) {
+				cellSave(rowTag, map.mapCells[row][col]);
+			}
+			
+			cellsTag.AddChild(rowTag);
+		}
+		
+		mapTag.AddChild(cellsTag);
 	}
 	
 	private void cells(ElementXML cellsTag) throws SMLException, SyntaxException {
@@ -409,6 +560,24 @@ public class MapLoader {
 			}
 		}
 	}
+	
+	private void cellSave(ElementXML rowTag, Cell cell) {
+		ElementXML cellTag = new ElementXML();
+		cellTag.SetTagName(Names.kTagCell);
+		
+		Iterator<String> objectIter = cell.cellObjects.keySet().iterator();
+		while (objectIter.hasNext()) {
+			String objectName = objectIter.next();
+			
+			ElementXML objectTag = new ElementXML();
+			objectTag.SetTagName(Names.kTagObject);
+			objectTag.SetCharacterData(objectName);
+			cellTag.AddChild(objectTag);
+		}
+		
+		rowTag.AddChild(cellTag);
+	}
+	
 	
 	private void cell(java.awt.Point location, ElementXML cellTag) throws SMLException, SyntaxException {
 		ElementXML objectTag = null;
