@@ -126,6 +126,7 @@ public class EatersAgentDisplay extends AgentDisplay {
 			gd.widthHint = m_AgentWorld.getMiniWidth() + 4;
 			m_AgentWorld.setLayoutData(gd);
 		}
+		m_AgentWorld.setMap(Soar2D.simulation.world.getMap());
 		
 		Label locationLabel = new Label(worldGroup, SWT.NONE);
 		locationLabel.setText("Location: ");

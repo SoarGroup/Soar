@@ -245,13 +245,13 @@ public class Tank extends Player {
 		super.update(world, location);
 		
 		if (radarSwitch) {
-			observedPower = world.map.getRadar(radar, location, getFacingInt(), radarPower);
+			observedPower = world.getMap().getRadar(radar, location, getFacingInt(), radarPower);
 		} else {
 			clearRadar();
 			observedPower = 0;
 		}
 		
-		blocked = world.map.getBlocked(location);
+		blocked = world.getMap().getBlocked(location);
 }
 	
 	public int getBlocked() {

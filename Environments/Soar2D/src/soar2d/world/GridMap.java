@@ -102,6 +102,16 @@ public class GridMap {
 		addObjectToCell(location, object);
 		return true;
 	}
+	
+	public boolean addObjectByName(java.awt.Point location, String name) {
+		CellObject object = cellObjectManager.createObject(name);
+		if (object == null) {
+			return false;
+		}
+
+		addObjectToCell(location, object);
+		return true;
+	}
 
 	public CellObject createRandomObjectWithProperty(String property) {
 		return cellObjectManager.createRandomObjectWithProperty(property);
@@ -344,6 +354,11 @@ public class GridMap {
 		return cell.getAllWithProperty(name);
 	}
 	
+	public void removeAll(java.awt.Point location) {
+		removeAllWithProperty(location, null);
+		
+	}
+	
 	public void removeAllWithProperty(java.awt.Point location, String name) {
 		Cell cell = getCell(location);
 		
@@ -351,7 +366,7 @@ public class GridMap {
 		CellObject cellObject;
 		while (cell.iter.hasNext()) {
 			cellObject = cell.iter.next();
-			if (cellObject.hasProperty(name)) {
+			if (name == null || cellObject.hasProperty(name)) {
 				if (cellObject.updatable()) {
 					updatables.remove(cellObject);
 					updatablesLocations.remove(cellObject);
