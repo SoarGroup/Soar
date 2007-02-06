@@ -121,14 +121,15 @@ sp {apply*set-grouping-huge-groups
         ^task-id <tid>)
 }
 
+# removing task-id requirements- deadlocking since some tasks never come back
 sp {propose*clean-grouping-command
    (state <s> ^io.output-link <ol>
               ^top-state <ts>
               ^task-id <tid>)
    (<ol> ^command <c>)
    (<c> ^name grouping-radius
-        ^status complete
-        ^task-id <tid>)
+        ^status complete)
+#        ^task-id <tid>)
    (<ts> ^grouping-level change-pending
          ^pending-grouping-level <pgl>)
 -->

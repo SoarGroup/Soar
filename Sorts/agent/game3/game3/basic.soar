@@ -1,3 +1,5 @@
+w 5
+
 sp {elaborate*io
    (state <s> ^superstate.io <io>)
 -->

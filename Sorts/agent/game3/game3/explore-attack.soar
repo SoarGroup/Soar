@@ -246,7 +246,7 @@ sp {explore-attack*apply*remember-enemy-cc
 }
 
 sp {explore-attack*elaborate*dist-to-enemy-base
-   (state <s> ^name explore-attack 
+   (state <s> ^name explore-attack
               ^top-state.explore-attack <ea>
               ^io.input-link.groups.group <g>
               ^task-id <tid>
@@ -273,20 +273,20 @@ sp {explore-attack*propose*forget-enemy-cc
               ^top-state.explore-attack <ea>
               ^task-id <tid>
               ^enemy-base <eb2>)
-# we don't see a cc  
--{(<gs> ^group <g>)
-   (<g> ^enemy 1
-        ^type controlCenter
-        ^x-pos <x>
-        ^y-pos <y>)}
+# we don't see a cc
+  -{(<gs> ^group <g>)
+    (<g> ^enemy 1
+         ^type controlCenter
+         ^x-pos <x>
+         ^y-pos <y>)}
    (<ea> ^task-id <tid>)
    # but are close to where it should be
-  (<ea> ^enemy-base <eb>)
-    (<eb> ^x <x>
-          ^y <y>)
-    (<eb2> ^x <x>
-           ^y <y>
-           ^dist < 100)
+   (<ea> ^enemy-base <eb>)
+   (<eb> ^x <x>
+         ^y <y>)
+   (<eb2> ^x <x>
+          ^y <y>
+          ^dist < 100)
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name ea*forget-enemy-cc
@@ -303,12 +303,11 @@ sp {explore-attack*apply*forget-enemy-cc
         ^x <x>
         ^y <y>)
    (<ea> ^task-id <tid>
-        ^enemy-base <eb>)
+         ^enemy-base <eb>)
    (<eb> ^x <x>
-         ^y <y>) 
+         ^y <y>)
 -->
    (<ea> ^enemy-base <eb> -)
-
 }
 
 
@@ -320,8 +319,8 @@ sp {explore-attack*propose*change-grouping-level1
              -^top-state.io.output-link.command.task-id <tid>
              -^enemy-group
              -^eligible-explorer)
-  (<ts> -^grouping-level individuals
-        -^grouping-level change-pending)
+   (<ts> -^grouping-level individuals
+         -^grouping-level change-pending)
    (<ts> ^explore-attack <ea>)
    (<ea> ^task-id <tid>)
 -->
@@ -337,8 +336,8 @@ sp {explore-attack*propose*change-grouping-level2
               ^top-state <ts>
              -^top-state.io.output-link.command.task-id <tid>
               ^enemy-group)
-  (<ts> -^grouping-level large-groups
-        -^grouping-level change-pending)
+   (<ts> -^grouping-level large-groups
+         -^grouping-level change-pending)
    (<ts> ^explore-attack <ea>)
    (<ea> ^task-id <tid>)
 -->
@@ -386,50 +385,6 @@ sp {explore-attack*prefer*already-attacking
 }
 
 
-sp {explore-attack*prefer*worker
-   (state <s> ^operator <o1> +
-              ^operator <o2> +
-              ^name explore-attack
-              ^task-id <tid>
-              ^top-state.explore-attack <ea>
-              ^io.input-link.groups.group <g1>
-              ^io.input-link.groups.group <g2>)
-   (<ea> ^task-id <tid>)
-   (<g1> ^id <e1>
-        -^type worker)
-   (<g2> ^id <e2>
-         ^type worker)
-   (<o1> ^name orts-attack
-         ^enemy-group <e1>)
-   (<o2> ^name orts-attack
-         ^enemy-group <e2>)
--->
-   (<s> ^operator <o1> < <o2>)
-}
-
-sp {explore-attack*prefer*marine-or-tank
-   (state <s> ^operator <o1> +
-              ^operator <o2> +
-              ^name explore-attack
-              ^task-id <tid>
-              ^top-state.explore-attack <ea>
-              ^io.input-link.groups.group <g1>
-              ^io.input-link.groups.group <g2>)
-   (<ea> ^task-id <tid>)
-   (<g1> ^id <e1>
-        -^type marine
-        -^type tank
-        -^type worker)
-   (<g2> ^id <e2>
-         ^type << marine tank >>)
-   (<o1> ^name orts-attack
-         ^enemy-group <e1>)
-   (<o2> ^name orts-attack
-         ^enemy-group <e2>)
--->
-   (<s> ^operator <o1> < <o2>)
-}
-
 sp {explore-attack*prefer*barracks
    (state <s> ^operator <o1> +
               ^operator <o2> +
@@ -440,18 +395,37 @@ sp {explore-attack*prefer*barracks
               ^io.input-link.groups.group <g2>)
    (<ea> ^task-id <tid>)
    (<g1> ^id <e1>
-         ^type barracks)
+        -^type barracks)
    (<g2> ^id <e2>
-        -^type barracks
-        -^type worker
-        -^type marine
-        -^type tank)
+         ^type barracks)
    (<o1> ^name orts-attack
          ^enemy-group <e1>)
    (<o2> ^name orts-attack
          ^enemy-group <e2>)
 -->
-   (<s> ^operator <o1> > <o2>)
+   (<s> ^operator <o1> < <o2>)
+}
+
+sp {explore-attack*prefer*ccenter
+   (state <s> ^operator <o1> +
+              ^operator <o2> +
+              ^name explore-attack
+              ^task-id <tid>
+              ^top-state.explore-attack <ea>
+              ^io.input-link.groups.group <g1>
+              ^io.input-link.groups.group <g2>)
+   (<ea> ^task-id <tid>)
+   (<g1> ^id <e1>
+        -^type barracks
+        -^type controlCenter)
+   (<g2> ^id <e2>
+         ^type controlCenter)
+   (<o1> ^name orts-attack
+         ^enemy-group <e1>)
+   (<o2> ^name orts-attack
+         ^enemy-group <e2>)
+-->
+   (<s> ^operator <o1> < <o2>)
 }
 
 sp {explore-attack*propose*clean-attack-command
@@ -480,6 +454,35 @@ sp {explore-attack*apply*clean-attack-command
    (<ol> ^command <c> -)
 }
          
+sp {explore-attack*propose*clean-move-command
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+              ^io.output-link <ol>)
+   (<ol> ^command <c>)
+   (<c> ^name move
+        ^task-id <tid>
+        ^status complete)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name clean-command
+        ^command <c>)
+}
+
+sp {explore-attack*propose*clean-move-mark-command
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+              ^io.output-link <ol>)
+   (<ol> ^command <c>)
+   (<c> ^name move-mark
+        ^task-id <tid>
+        ^status complete)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name clean-command
+        ^command <c>)
+}
+
+
 sp {explore-attack*propose*explore-unknown
    (state <s> ^name explore-attack
               ^task-id <tid>
@@ -497,7 +500,7 @@ sp {explore-attack*propose*explore-unknown
    (<g> ^id <id>
         ^command-running 0)
 -->
-   (<s> ^operator <o> + =)
+   (<s> ^operator <o> + < =)
    (<o> ^name orts-move
         ^group <id>
         ^x <x>
@@ -533,6 +536,35 @@ sp {explore-attack*propose*explore-enemybase
         ^task-id <tid>
                  )
 }
+
+sp {explore-attack*propose*explore-enemysource
+   (state <s> ^name explore-attack
+              ^task-id <tid>
+              ^comment out
+              ^top-state.explore-attack <ea>
+              ^top-state.first-enemy-source <fes>
+             -^enemy-group
+             -^enemy-feature
+             -^io.output-link.command.group0 <id>
+              ^top-state.grouping-level individuals
+              ^io.input-link.groups.group <g>)
+   (<ea> ^task-id <tid>
+         ^explorer <id>)
+   (<fes> ^x <x>
+          ^y <y>)
+   (<g> ^id <id>
+        ^command-running 0)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name orts-move-mark
+        ^group <id>
+        ^x <x>
+        ^y <y>
+        ^precision 50
+        ^task-id <tid>
+                 )
+}
+
 
 sp {build-building*prefer-less-explored
    (state <s> ^operator <o1> +
@@ -630,7 +662,7 @@ sp {explore-attack*apply*handle-explore-start2
               ^top-state <ts>)
    (<o> ^name ea*handle-explore-start
         ^task-id <tid>
-        -^explore-dir)
+       -^explore-dir)
    (<ts> ^io.output-link <ol>)
    (<ol> ^command <fc>)
    (<fc> ^task-id <tid>

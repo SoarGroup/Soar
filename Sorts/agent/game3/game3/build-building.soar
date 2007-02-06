@@ -193,8 +193,8 @@ sp {build-building*propose*change-grouping-level
          ^owner <me>
          ^command-running 0
          ^num-members 1)}
-  (<ts> -^grouping-level individuals
-        -^grouping-level change-pending)
+   (<ts> -^grouping-level individuals
+         -^grouping-level change-pending)
    (<ts> ^build-building <bb>)
    (<bb> ^task-id <tid>
          ^location <l>
@@ -278,10 +278,10 @@ sp {build-building*propose*sever-worker
         ^owner <me>
         ^command mine
         ^id <gid>)
-   -{(<gs> ^group <g1>)
-   (<g1> ^type worker
-        ^owner <me>
-        ^command severed)}
+  -{(<gs> ^group <g1>)
+    (<g1> ^type worker
+          ^owner <me>
+          ^command severed)}
 -->
    (<s> ^operator <o> + > =)
    (<o> ^name orts-sever
@@ -606,7 +606,7 @@ sp {build-building*propose*retry-failed
        -^command build
        -^command build-started)
 -->
-   (<s> ^operator <o> +)
+   (<s> ^operator <o> + >)
    (<o> ^name bb*retry-failed
         ^task-id <tid>)
 }

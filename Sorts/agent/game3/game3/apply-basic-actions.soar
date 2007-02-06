@@ -56,7 +56,24 @@ sp {apply*orts-move2
         ^name move
         ^task-id <tid>)
 }
-
+sp {apply*orts-mark-move
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name orts-move-mark
+        ^group <g>
+        ^x <x>
+        ^y <y>
+        ^precision <pr>
+        ^task-id <tid>)
+-->
+   (<ol> ^command <m>)
+   (<m> ^group0 <g>
+        ^param0 <x>
+        ^param1 <y>
+        ^param2 <pr>
+        ^name move-mark
+        ^task-id <tid>)
+}
 sp {apply*orts-attack
    (state <s> ^operator <o>
               ^io.output-link <ol>)
@@ -229,3 +246,22 @@ sp {apply*orts-increase-mineral-buffer
 }
 
 
+sp {apply*clean-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name clean-command
+        ^command <c>)
+   (<ol> ^command <c>)
+-->
+   (<ol> ^command <c> -)
+}
+
+sp {elaborate*print-clean-command
+   (state <s> ^operator <o>
+              ^io.output-link.command <c>)
+   (<o> ^name clean-command
+        ^command <c>)
+   (<c> ^name <nm>)
+-->
+   (write |cleaning command from output-link: | <nm> (crlf))
+}
