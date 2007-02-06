@@ -15,7 +15,10 @@ public class World {
 	private int worldCount = 0;
 	private boolean printedStats = false;
 	
-	public GridMap map;
+	private GridMap map;
+	public GridMap getMap() {
+		return map;
+	}
 	
 	private ArrayList<Player> players = new ArrayList<Player>(7);
 	private ArrayList<Player> humanPlayers = new ArrayList<Player>(7);
@@ -34,7 +37,10 @@ public class World {
 			return false;
 		}
 		
-		GridMap newMap = loader.getMap();
+		return this.load(loader.getMap());
+	}
+
+	public boolean load(GridMap newMap) {
 		
 		if (Soar2D.config.getType() == SimType.kTankSoar) {
 			if (!newMap.hasEnergyCharger()) {
@@ -368,10 +374,6 @@ public class World {
 		}
 	}
 	
-	public int getSize() {
-		return map.getSize();
-	}
-
 	private void updateMapAndEatFood() {
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
@@ -901,6 +903,7 @@ public class World {
 			missile.addProperty(Names.kPropertyDirection, Integer.toString(direction));
 			missile.addProperty(Names.kPropertyFlyPhase, "0");
 			missile.addProperty(Names.kPropertyOwner, player.getName());
+			missile.addProperty(Names.kPropertyColor, player.getColor());
 			
 			// If there is a tank there, it is hit
 			Player other = map.getPlayer(missileLoc);

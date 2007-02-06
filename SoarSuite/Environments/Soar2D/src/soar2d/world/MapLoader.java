@@ -123,12 +123,11 @@ public class MapLoader {
 	
 	private void cellObjectSave(ElementXML mapTag, CellObject template) {
 		String name = template.getName();
-		boolean updatable = template.updatable();
 		
 		ElementXML templateTag = new ElementXML();
 		templateTag.SetTagName(Names.kTagCellObject);
 		templateTag.AddAttributeConstConst(Names.kParamName, name);
-		templateTag.AddAttributeConstConst(Names.kParamUpdatable, updatable ? Names.kTrue : Names.kFalse);
+		templateTag.AddAttributeConstConst(Names.kParamUpdatable, template.updatable() ? Names.kTrue : Names.kFalse);
 		
 		Iterator<String> propertyNamesIter = template.getPropertyNames().iterator();
 		while (propertyNamesIter.hasNext()) {
@@ -286,6 +285,8 @@ public class MapLoader {
 			removeTag.SetTagName(Names.kTagRemove);
 			applyTag.AddChild(removeTag);
 		}
+		
+		templateTag.AddChild(applyTag);
 	}
 	
 	private void apply(CellObject cellObjectTemplate, ElementXML applyTag) throws SMLException, SyntaxException {
@@ -379,6 +380,8 @@ public class MapLoader {
 			lingerTag.SetTagName(Names.kTagLinger);
 			updateTag.AddChild(lingerTag);
 		}
+		
+		templateTag.AddChild(updateTag);
 	}
 
 	private void update(CellObject cellObjectTemplate, ElementXML updateTag) throws SMLException, SyntaxException {
