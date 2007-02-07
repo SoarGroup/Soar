@@ -35,6 +35,7 @@ public class ConfigurationEditor extends Dialog {
 	Button remote;
 	Button hide;
 	Button gui;
+	Button async;
 
 	// logging
 	Combo loggingLevelCombo;
@@ -451,11 +452,33 @@ public class ConfigurationEditor extends Dialog {
 		// graphical
 		gui = new Button(currentPage, SWT.CHECK);
 		gui.setText("Use GUI");
+		gui.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.graphical = !config.graphical;
+				generalUpdate();
+			}
+		});
 		{
 			GridData gd = new GridData();
 			gd.horizontalAlignment = SWT.BEGINNING;
 			gd.horizontalSpan = 3;
 			gui.setLayoutData(gd);
+		}
+
+		// graphical
+		async = new Button(currentPage, SWT.CHECK);
+		async.setText("Run asynchronously (TODO: TIMESTAMP)");
+		async.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.async = !config.async;
+				generalUpdate();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = SWT.BEGINNING;
+			gd.horizontalSpan = 3;
+			async.setLayoutData(gd);
 		}
 
 		// world display
@@ -562,6 +585,7 @@ public class ConfigurationEditor extends Dialog {
 		}
 		mapText.setText(config.map.getAbsolutePath());
 		gui.setSelection(config.graphical);
+		async.setSelection(config.async);
 		hide.setSelection(config.noWorld);
 		useSeed.setSelection(!config.random);
 		seedText.setEnabled(useSeed.getSelection());

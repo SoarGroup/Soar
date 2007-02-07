@@ -1,6 +1,7 @@
 package soar2d;
 
 import java.io.File;
+import java.util.Date;
 import java.util.logging.*;
 
 import sml.*;
@@ -33,6 +34,9 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 * This is true when things are in the process of shutting down
 	 */
 	private boolean shuttingDown = false;
+	
+	private int timeSlice = 100; 
+	private long timeStamp; 
 	
 	/**
 	 * Set to true when a stop is requested
@@ -116,7 +120,12 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		if (step) {
 			Soar2D.wm.setStatus("Stepping", WindowManager.black);
 		} else {
-			Soar2D.wm.setStatus("Running", WindowManager.black);
+			//if (timeSlice > 0) {Soar2D.config.async
+			if (Soar2D.config.async) {
+				Soar2D.wm.setStatus("Running Async", WindowManager.black);
+			} else {
+				Soar2D.wm.setStatus("Running", WindowManager.black);
+			}
 		}
 		
 		stop = false;
@@ -124,6 +133,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		// TOSCA patch -- try a call to tosca code
 		//soar2d.tosca2d.Tosca.test() ;
 		
+		// the old style
 		// spawn a thread or just run it in this one
 		if (newThread) {
 			runThread = new Thread(this);
@@ -161,6 +171,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 * The thread, do not call directly!
 	 */
 	public void run() {
+		
 		// if there are soar agents
 		if (Soar2D.simulation.hasSoarAgents()) {
 			
@@ -169,6 +180,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 			if (step) {
 				Soar2D.simulation.runStep();
 			} else {
+				timeStamp = new Date().getTime();
 				Soar2D.simulation.runForever();
 			}
 		} else if (soar2d.player.ToscaEater.kToscaEnabled)
@@ -194,7 +206,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 			// call the stop event
 			stopEvent();
 		}
-		
+
 		// reset the status message
 		Soar2D.wm.setStatus("Ready", WindowManager.black);
 	}
@@ -246,6 +258,14 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
   	 * Handle an update event from Soar, do not call directly.
   	 */
   	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
+
+  		if (Soar2D.config.async && !step) {
+  			Date date = new Date();
+  			if ((timeStamp + timeSlice) >= date.getTime()) {
+  				return;
+  			}
+  			timeStamp = date.getTime();
+  		}
   		
   		// check for override
   		int dontUpdate = runFlags & smlRunFlags.sml_DONT_UPDATE_WORLD.swigValue();
