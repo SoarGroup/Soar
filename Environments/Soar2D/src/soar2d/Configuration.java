@@ -25,8 +25,8 @@ public class Configuration {
 	public final String kDefaultEatersMap = "random-walls.emap";
 	public final String kDefaultTanksoarMap = "default.tmap";
 	public final String kDefaultBookMap = "default.bmap";
-	public final String kEatersMapFilter = "*.emap";
-	public final String kTankSoarMapFilter = "*.tmap";
+	public final String kEatersMapExt = "emap";
+	public final String kTankSoarMapExt = "tmap";
 	public final int kDefaultTimeout = 15; //seconds
 	public final int kDefaultVersion = 1;
 	public final boolean kDefaultPropertyBoolean = false;	// if a bool property doesn't exist
