@@ -648,6 +648,13 @@ public class Simulation {
 	}
 	
 	/**
+	 * @return true if there are human agents present
+	 */
+	public boolean hasHumanAgents() {
+		return agents.size() < this.configs.size();
+	}
+	
+	/**
 	 * @return true if there are soar agents present
 	 */
 	public boolean hasSoarAgents() {

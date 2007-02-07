@@ -64,6 +64,7 @@ public class Names {
 	public static final String kTagUpdate = "update";
 
 	public static final String kParamAfter = "after";
+	public static final String kParamAsync = "async";
 	public static final String kParamColor = "color";
 	public static final String kParamCommand = "command";
 	public static final String kParamConsole = "console";
