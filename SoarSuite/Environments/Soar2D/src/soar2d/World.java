@@ -37,10 +37,7 @@ public class World {
 			return false;
 		}
 		
-		return this.load(loader.getMap());
-	}
-
-	public boolean load(GridMap newMap) {
+		GridMap newMap = loader.getMap();
 		
 		if (Soar2D.config.getType() == SimType.kTankSoar) {
 			if (!newMap.hasEnergyCharger()) {

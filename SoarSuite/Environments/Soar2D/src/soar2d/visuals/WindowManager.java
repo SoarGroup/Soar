@@ -507,7 +507,7 @@ public class WindowManager {
 	}
 	
 	Table templatesTable;
-	
+
 	private void createEditSide() {
 		currentSide = new Composite(rhs, SWT.NONE);
 		{
@@ -544,14 +544,31 @@ public class WindowManager {
 			item.setText(template.getName());
 		}
 		
-		Button editTemplateButton = new Button(currentSide, SWT.PUSH);
-		editTemplateButton.setText("Edit Selected Template");
+//		Button editTemplateButton = new Button(currentSide, SWT.PUSH);
+//		editTemplateButton.setText("Edit Selected Template");
+//
+//		Button destroyTemplateButton = new Button(currentSide, SWT.PUSH);
+//		destroyTemplateButton.setText("Destroy Selected Template");
+//
+//		Button newTemplateButton = new Button(currentSide, SWT.PUSH);
+//		newTemplateButton.setText("Create New Template");
+		
+		Button saveAsButton = new Button(currentSide, SWT.PUSH);
+		saveAsButton.setText("Save as...");
+		saveAsButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				exitEditMode(true);
+			}
+		});
+		
+		Button cancelButton = new Button(currentSide, SWT.PUSH);
+		cancelButton.setText("Cancel");
+		cancelButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				exitEditMode(false);
+			}
+		});
 
-		Button destroyTemplateButton = new Button(currentSide, SWT.PUSH);
-		destroyTemplateButton.setText("Destroy Selected Template");
-
-		Button newTemplateButton = new Button(currentSide, SWT.PUSH);
-		newTemplateButton.setText("Create New Template");
 	}
 	
 	Menu menuBar;
@@ -574,81 +591,94 @@ public class WindowManager {
 
 	private GridMap editMap;
 	
-	private void mapEditModeChange() {
-		// if we're going in to edit mode, the agent list must be empty
-		if (mapEditMode == false) {
-			// we're going in to edit mode
-			
-			if (Soar2D.config.getType() != SimType.kTankSoar) {
-				Soar2D.control.infoPopUp("Map editor only works in TankSoar right now.");
+	private void exitEditMode(boolean save) {
+		assert mapEditMode == true;
+
+		// we're going in to normal mode, destroy current side, create normal side
+		assert this.editMap != null;
+
+		if (save) {
+	   		File mapFile = saveMap();
+			if (mapFile == null) {
 				return;
 			}
-			if (Soar2D.simulation.world.getPlayers().size() > 0) {
-				Soar2D.control.infoPopUp("Destroy all agents before editing the map.");
-				return;
-			}
+			Soar2D.config.map = mapFile;
+		}
+		
+   		Soar2D.logger.info("Exiting map editor.");
+   		mapEditMode = false;
+   		
+   		mapMenuHeader.setEnabled(true);
+
+ 		Soar2D.simulation.world.load();
+		this.editMap = null;
+		
+		currentSide.dispose();
+		switch (Soar2D.config.getType()) {
+		case kEaters:
+			createEatersSide();
+			break;
+		case kTankSoar:
+    		createTankSoarSide();
+    		break;
+		case kBook:
+			assert false;
+		}
+		
+		this.reset();
+		
+		rhs.layout(true);
+		shell.layout(true);
+	}
+	
+	private void enterEditMode() {
+		assert mapEditMode == false;
+		
+		if (Soar2D.config.getType() != SimType.kTankSoar) {
+			Soar2D.control.infoPopUp("Map editor only works in TankSoar right now.");
+			return;
+		}
+		if (Soar2D.simulation.world.getPlayers().size() > 0) {
+			Soar2D.control.infoPopUp("Destroy all agents before editing the map.");
+			return;
 		}
 		
 		// flip the bit
-    	mapEditMode = !mapEditMode;
+    	mapEditMode = true;
     	
-    	if (mapEditMode) {
-    		// we're going in to edit mode, destroy current side, create edit side
-    		
-    		MapLoader loader = new MapLoader();
-    		assert loader.load();
-    		assert this.editMap == null;
-   			this.editMap = loader.getMap();
-   			this.visualWorld.setMap(loader.getMap());
-    		
-    		currentSide.dispose();
-   			createEditSide();
-    		
-    		updateWorldGroup();
-    		
-    		rhs.layout(true);
-    		shell.layout(true);
+		// we're going in to edit mode, destroy current side, create edit side
 
-    	} else {	
-    		// we're going in to normal mode, destroy current side, create normal side
-    		assert this.editMap != null;
+		Soar2D.logger.info("Entering map editor.");
+	
+		mapMenuHeader.setEnabled(false);
+		
+		MapLoader loader = new MapLoader();
+		assert loader.load();
+		assert this.editMap == null;
+		this.editMap = loader.getMap();
+		this.visualWorld.setMap(loader.getMap());
+		
+		currentSide.dispose();
+		createEditSide();
+		
+		updateWorldGroup();
+		
+		rhs.layout(true);
+		shell.layout(true);
 
-    		saveMap();
-    		
-    		Soar2D.logger.info("Resetting simulation.");
-    		Soar2D.simulation.world.load(this.editMap);
-    		this.editMap = null;
-    		
-    		currentSide.dispose();
-    		switch (Soar2D.config.getType()) {
-    		case kEaters:
-    			createEatersSide();
-    			break;
-    		case kTankSoar:
-        		createTankSoarSide();
-        		break;
-    		case kBook:
-    			assert false;
-    		}
-    		
-    		this.reset();
-    		
-    		rhs.layout(true);
-    		shell.layout(true);
-    	}
 	}
 	
-	private void saveMap() {
+	private File saveMap() {
 		MapLoader loader = new MapLoader();
 		String output = loader.generateXMLString(this.editMap);
 
 		if (output == null) {
 			Soar2D.control.severeError("Couldn't generate map file.");
-			return;
+			return null;
 		}
 		
 		FileDialog fd = new FileDialog(shell, SWT.SAVE);
-		fd.setText("Save as...");
+		fd.setText("Map must be saved to continue...");
 		fd.setFilterPath(Soar2D.config.getMapPath());
 		
 		switch (Soar2D.config.getType()) {
@@ -658,7 +688,7 @@ public class WindowManager {
 			break;
 			
 		case kTankSoar:
-			fd.setFilterExtensions(new String[] {Soar2D.config.kTankSoarMapFilter, "*.*"});
+			fd.setFilterExtensions(new String[] {"*." + Soar2D.config.kTankSoarMapExt, "*.*"});
 			break;
 		}
 		
@@ -667,12 +697,15 @@ public class WindowManager {
 			if (!mapFileString.matches(".*\\..+")) {
 				switch (Soar2D.config.getType()) {
 				case kBook:
-				case kEaters:
 					assert false;
 					break;
 					
+				case kEaters:
+					mapFileString += "." + Soar2D.config.kEatersMapExt;
+					break;
+					
 				case kTankSoar:
-					mapFileString += ".tmap";
+					mapFileString += "." + Soar2D.config.kTankSoarMapExt;
 					break;
 				}
 			}
@@ -680,7 +713,7 @@ public class WindowManager {
 			File mapFile = new File(mapFileString);
 			if (mapFile.exists() && !mapFile.canWrite()) {
 				Soar2D.control.severeError("Cannot write to file.");
-				return;
+				return null;
 			}
 			try {
 				FileWriter out = new FileWriter(mapFile);
@@ -688,9 +721,11 @@ public class WindowManager {
 				out.close();
 			} catch (IOException exception) {
 				Soar2D.control.severeError("Error writing file: " + exception.getMessage());
-				return;
+				return null;
 			}
+			return mapFile;
 		}
+		return null;
 	}
 	
 	public void run() {
@@ -740,11 +775,11 @@ public class WindowManager {
 		mapEditItem.setText("&Edit Map");
 		mapEditItem.addSelectionListener(new SelectionListener() {
 		    public void widgetSelected(SelectionEvent event) {
-		    	mapEditModeChange();
+		    	enterEditMode();
 		    }
 
 		    public void widgetDefaultSelected(SelectionEvent event) {
-		    	mapEditModeChange();
+		    	enterEditMode();
 		    }
 		});
 

@@ -1,7 +1,18 @@
 <map>
+ <cell-object name="energy" updatable="false">
+  <property name="apply-image" value="energy-apply.gif"></property>
+  <property name="energy" value="250"></property>
+  <property name="image" value="energy.gif"></property>
+  <property name="mini-image" value="energy-mini.gif"></property>
+  <property name="charger" value="true"></property>
+  <property name="id" value="energy"></property>
+  <apply>
+   <energy shields="false"></energy>
+  </apply>
+ </cell-object>
  <cell-object name="missile" updatable="true">
-  <property name="energy" value="-250"></property>
   <property name="missile" value="true"></property>
+  <property name="energy" value="-250"></property>
   <property name="image" value="missile.gif"></property>
   <property name="health" value="-400"></property>
   <apply>
@@ -12,32 +23,21 @@
    <fly-missile></fly-missile>
   </update>
  </cell-object>
- <cell-object name="energy" updatable="false">
-  <property name="apply-image" value="energy-apply.gif"></property>
-  <property name="energy" value="250"></property>
-  <property name="image" value="energy.gif"></property>
-  <property name="charger" value="true"></property>
-  <property name="mini-image" value="energy-mini.gif"></property>
-  <property name="id" value="energy"></property>
-  <apply>
-   <energy shields="false"></energy>
-  </apply>
- </cell-object>
  <cell-object name="trees" updatable="false">
   <property name="image-max" value="3"></property>
   <property name="image" value="trees.gif"></property>
   <property name="mini-image" value="trees-mini.gif"></property>
   <property name="image-min" value="1"></property>
-  <property name="block" value="true"></property>
   <property name="id" value="wall"></property>
+  <property name="block" value="true"></property>
  </cell-object>
  <cell-object name="rocks" updatable="false">
   <property name="image-max" value="3"></property>
   <property name="image" value="rocks.gif"></property>
   <property name="mini-image" value="trees-mini.gif"></property>
   <property name="image-min" value="1"></property>
-  <property name="block" value="true"></property>
   <property name="id" value="wall"></property>
+  <property name="block" value="true"></property>
  </cell-object>
  <cell-object name="ground" updatable="false">
   <property name="image-max" value="3"></property>
@@ -45,12 +45,16 @@
   <property name="mini-image" value="ground-mini.gif"></property>
   <property name="image-min" value="1"></property>
  </cell-object>
- <cell-object name="explosion" updatable="true">
-  <property name="linger" value="1"></property>
-  <property name="image" value="explosion.gif"></property>
-  <update>
-   <linger></linger>
-  </update>
+ <cell-object name="health" updatable="false">
+  <property name="apply-image" value="health-apply.gif"></property>
+  <property name="image" value="health.gif"></property>
+  <property name="mini-image" value="health-mini.gif"></property>
+  <property name="charger" value="true"></property>
+  <property name="id" value="health"></property>
+  <property name="health" value="250"></property>
+  <apply>
+   <health shields-down="false"></health>
+  </apply>
  </cell-object>
  <cell-object name="missiles" updatable="false">
   <property name="image" value="missiles.gif"></property>
@@ -62,16 +66,12 @@
    <missiles></missiles>
   </apply>
  </cell-object>
- <cell-object name="health" updatable="false">
-  <property name="apply-image" value="health-apply.gif"></property>
-  <property name="image" value="health.gif"></property>
-  <property name="charger" value="true"></property>
-  <property name="mini-image" value="health-mini.gif"></property>
-  <property name="id" value="health"></property>
-  <property name="health" value="250"></property>
-  <apply>
-   <health shields-down="false"></health>
-  </apply>
+ <cell-object name="explosion" updatable="true">
+  <property name="linger" value="1"></property>
+  <property name="image" value="explosion.gif"></property>
+  <update>
+   <linger></linger>
+  </update>
  </cell-object>
  <cells random-food="false" random-walls="false" world-size="16">
   <row>
