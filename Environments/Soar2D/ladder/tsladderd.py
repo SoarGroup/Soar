@@ -17,20 +17,8 @@ import logging
 import Queue
 import types
 
-def MemExceededHandler(id, pid, agent, phase):
-	tank_name = agent.GetAgentName()
-	logging.warning("Max memory usage exceeded: %s" % tank_name)
-	Tourney.status.mem_killed_tanks.append(tank_name)
-	try:
-		os.kill(pid, 9)
-	except OSError, e:
-		logging.warning("Failed to kill process:" % e)
-	
-	urllib.urlopen('http://tsladder:vx0beeHH@localhost:54424/TankSoarLadder/disable_participant?tournament_name=%s&tank_name=%s&reason=mem_exceeded' % (Tourney.status.tournament_name, tank_name))
-
-def AgentCreatedHandler(id, pid, agent):
-	agent.ExecuteCommandLine("watch 0")
-	agent.RegisterForRunEvent(Python_sml_ClientInterface.smlEVENT_MAX_MEMORY_USAGE_EXCEEDED, MemExceededHandler, pid)
+# old disable command
+#urllib.urlopen('http://tsladder:vx0beeHH@localhost:54424/TankSoarLadder/disable_participant?tournament_name=%s&tank_name=%s&reason=mem_exceeded' % (Tourney.status.tournament_name, tank_name))
 
 class MatchStatus:
 	def __init__(self, name):
@@ -234,44 +222,6 @@ class Tourney(threading.Thread):
 		
 		logging.info("Soar2D TankSoar started, pid %d" % self.status.process.pid)
 		
-		# connect to kernel
-		#TODO: this code removed because it is insanely slow
-		#tries = 7
-		#kernel = None
-		#while tries > 0:
-		#	logging.info("trying to connect");
-		#	kernel = Python_sml_ClientInterface.Kernel.CreateRemoteConnection()
-		#	if not kernel.HadError():
-		#		break
-		#	time.sleep(2)
-		#	if self.stop_event.isSet():
-		#		tries = 0
-		#	tries = tries - 1
-
-		#if tries <= 0:
-		#	error_message = "Failed to connect to kernel, too many tries or interrupted, gave up."
-		#	logging.warning(error_message)
-		#	self.status.error = True
-		#	self.status.error_message = error_message
-		#	try:
-		#		os.kill(self.status.process.pid, 9)
-		#	except OSError, e:
-		#		logging.warning("Failed to kill process:" % e)
-		#	return False
-		#
-		#logging.info("Connected to kernel")
-			
-		# register for agent creation events
-		#kernel.RegisterForAgentEvent(
-		#		Python_sml_ClientInterface.smlEVENT_AFTER_AGENT_CREATED,
-		#		AgentCreatedHandler, 
-		#		self.status.process.pid)
-
-		# set connection info to ready
-		#kernel.SetConnectionInfo("tsladderd", "ready", "ready")
-
-		#logging.info("Connection set to ready")
-
 		logging.info("Match %d started." % self.status.match_id)
 		
 		self.status_lock.acquire()
@@ -316,6 +266,11 @@ class Tourney(threading.Thread):
 			if match == None:
 				match = re.match(r"\d+ WARNING (.+): agent interrupted", line)
 				if match == None:
+					match = re.match(r"\d+ WARNING (.+): agent exceeded maximum memory usage", line)
+					if match == None:
+						continue
+					self.status.mem_killed_tanks.append(match.group(1))
+					logging.info("%s exceeded maximum memory usage." % match.group(1))
 					continue
 				self.status.interrupted_tanks.append(match.group(1))
 				logging.info("%s was interrupted." % match.group(1))
