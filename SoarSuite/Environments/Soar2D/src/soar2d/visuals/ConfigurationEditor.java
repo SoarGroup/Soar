@@ -2,7 +2,7 @@ package soar2d.visuals;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
@@ -35,7 +35,7 @@ public class ConfigurationEditor extends Dialog {
 	Button remote;
 	Button hide;
 	Button gui;
-	Button async;
+	Text async;
 
 	// logging
 	Combo loggingLevelCombo;
@@ -466,20 +466,35 @@ public class ConfigurationEditor extends Dialog {
 		}
 
 		// graphical
-		async = new Button(currentPage, SWT.CHECK);
-		async.setText("Run asynchronously (TODO: TIMESTAMP)");
-		async.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				config.async = !config.async;
+		Label asyncLabel = new Label(currentPage, SWT.NONE);
+		asyncLabel.setText("Asynchronous time slice, milliseconds (0: run synchronously (recommended)):");
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = SWT.BEGINNING;
+			gd.horizontalSpan = 3;
+			asyncLabel.setLayoutData(gd);
+		}
+		
+		async = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		async.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int newSlice;
+				try {
+					newSlice = Integer.parseInt(async.getText());
+				} catch (NumberFormatException exception) {
+					newSlice = Soar2D.config.asyncTimeSlice;
+				}
+				config.asyncTimeSlice = newSlice;
 				generalUpdate();
 			}
 		});
 		{
 			GridData gd = new GridData();
-			gd.horizontalAlignment = SWT.BEGINNING;
+			gd.horizontalAlignment = GridData.FILL;
 			gd.horizontalSpan = 3;
 			async.setLayoutData(gd);
 		}
+		
 
 		// world display
 		hide = new Button(currentPage, SWT.CHECK);
@@ -585,7 +600,7 @@ public class ConfigurationEditor extends Dialog {
 		}
 		mapText.setText(config.map.getAbsolutePath());
 		gui.setSelection(config.graphical);
-		async.setSelection(config.async);
+		async.setText(Integer.toString(config.asyncTimeSlice));
 		hide.setSelection(config.noWorld);
 		useSeed.setSelection(!config.random);
 		seedText.setEnabled(useSeed.getSelection());
@@ -727,6 +742,66 @@ public class ConfigurationEditor extends Dialog {
 			gd.horizontalAlignment = SWT.BEGINNING;
 			loggingTimeButton.setLayoutData(gd);
 		}
+		
+		Label loggingLevelLabel = new Label(currentPage, SWT.NONE);
+		loggingLevelLabel.setText("Log detail level:");
+		{
+			GridData gd = new GridData();
+			loggingLevelLabel.setLayoutData(gd);
+		}
+		
+		loggingLevelCombo = new Combo(currentPage, SWT.READ_ONLY);
+		{
+			GridData gd = new GridData();
+			gd.horizontalIndent = 20;
+			gd.horizontalAlignment = GridData.FILL;
+			gd.grabExcessHorizontalSpace = true;
+			loggingLevelCombo.setLayoutData(gd);
+		}
+		loggingLevelCombo.setItems(new String[] { "Severe", "Warning", "Info", "Fine", "Finer", "Finest" });
+		loggingLevelCombo.setVisibleItemCount(6);
+		if (config.logLevel == Level.SEVERE) {
+			loggingLevelCombo.select(0);
+		} else if (config.logLevel == Level.WARNING) {
+			loggingLevelCombo.select(1);
+		} else if (config.logLevel == Level.INFO) {
+			loggingLevelCombo.select(2);
+		} else if (config.logLevel == Level.FINE) {
+			loggingLevelCombo.select(3);
+		} else if (config.logLevel == Level.FINER) {
+			loggingLevelCombo.select(4);
+		} else if (config.logLevel == Level.FINEST) {
+			loggingLevelCombo.select(5);
+		} else {
+			loggingLevelCombo.select(2);
+		}
+		loggingLevelCombo.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				switch (loggingLevelCombo.getSelectionIndex()) {
+				case 0:
+					config.logLevel = Level.SEVERE;
+					break;
+				case 1:
+					config.logLevel = Level.WARNING;
+					break;
+				default:
+				case 2:
+					config.logLevel = Level.INFO;
+					break;
+				case 3:
+					config.logLevel = Level.FINE;
+					break;
+				case 4:
+					config.logLevel = Level.FINER;
+					break;
+				case 5:
+					config.logLevel = Level.FINEST;
+					break;
+				}
+				loggingUpdate();
+			}
+		});
+		
 
 		loggingUpdate();
 
