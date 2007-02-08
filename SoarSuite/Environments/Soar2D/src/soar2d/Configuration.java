@@ -189,6 +189,7 @@ public class Configuration {
 		this.randomSeed = config.randomSeed;
 		this.graphical = config.graphical;
 		this.debuggers = config.debuggers;
+		this.asyncTimeSlice = config.asyncTimeSlice;
 		this.remote = config.remote;
 		this.random = config.random;
 		this.noWorld = config.noWorld;
