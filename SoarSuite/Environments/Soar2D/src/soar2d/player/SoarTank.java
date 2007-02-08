@@ -67,6 +67,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	
 	private boolean playersChanged = true;
 	private boolean attemptedMove = false;
+	private boolean mem_exceeded = false;
 	
 	public SoarTank(Agent agent, PlayerConfig playerConfig) {
 		super(playerConfig);
@@ -87,9 +88,10 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 			if (!Soar2D.control.isStopped()) {
 				logger.warning(getName() + ": agent interrupted");
 			}
-		} else if (eventID == smlRunEventId.smlEVENT_MAX_MEMORY_USAGE_EXCEEDED.swigValue()) {
+		} else if (!mem_exceeded && eventID == smlRunEventId.smlEVENT_MAX_MEMORY_USAGE_EXCEEDED.swigValue()) {
 			logger.warning(getName() + ": agent exceeded maximum memory usage");
 			Soar2D.control.stopSimulation();
+			mem_exceeded = true;
 		} else {
 			assert false;
 		}
@@ -302,6 +304,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	
 	public void reset() {
 		super.reset();
+		
+		mem_exceeded = false;
 		
 		if (agent == null) {
 			return;
