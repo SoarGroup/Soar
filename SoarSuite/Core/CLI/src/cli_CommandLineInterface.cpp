@@ -241,7 +241,7 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::Agent
 	// Close log if asked to
 	if (m_CloseLogAfterOutput) {
 		m_CloseLogAfterOutput = false;
-		DoCLog(pAgent, LOG_CLOSE);
+		DoCLog(pAgent, LOG_CLOSE, 0, 0, true);
 	}
 
 	// Always returns true to indicate that we've generated any needed error message already
