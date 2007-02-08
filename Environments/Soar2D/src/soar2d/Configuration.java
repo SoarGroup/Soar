@@ -49,7 +49,7 @@ public class Configuration {
 	public boolean logConsole = false; // If true, log to console
 	public int randomSeed = 0;
 	public boolean graphical = true; // If true, use the window manager.
-	public boolean async = false; // If true, run soar using timeslices.
+	public int asyncTimeSlice = 0; // If positive, run soar asynchronously
 	public boolean debuggers = true; // If true, spawn debuggers
 	public boolean remote = false; // If true, connect to remote kernel
 	public boolean random = true; // If true, use random numbers (don't seed generators)

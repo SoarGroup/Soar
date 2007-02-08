@@ -35,7 +35,6 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 */
 	private boolean shuttingDown = false;
 	
-	private int timeSlice = 100; 
 	private long timeStamp; 
 	
 	/**
@@ -120,8 +119,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		if (step) {
 			Soar2D.wm.setStatus("Stepping", WindowManager.black);
 		} else {
-			//if (timeSlice > 0) {Soar2D.config.async
-			if (Soar2D.config.async) {
+			if (Soar2D.config.asyncTimeSlice > 0) {
 				Soar2D.wm.setStatus("Running Async", WindowManager.black);
 			} else {
 				Soar2D.wm.setStatus("Running", WindowManager.black);
@@ -259,9 +257,9 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
   	 */
   	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
 
-  		if (Soar2D.config.async && !step) {
+  		if (Soar2D.config.asyncTimeSlice > 0 && !step) {
   			Date date = new Date();
-  			if ((timeStamp + timeSlice) >= date.getTime()) {
+  			if ((timeStamp + Soar2D.config.asyncTimeSlice) >= date.getTime()) {
   				return;
   			}
   			timeStamp = date.getTime();

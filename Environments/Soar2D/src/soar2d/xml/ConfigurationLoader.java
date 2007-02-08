@@ -542,7 +542,7 @@ public class ConfigurationLoader {
 		simulationTag.AddAttributeConstConst(Names.kParamNoWorld, c.noWorld ? Names.kTrue : Names.kFalse);
 		simulationTag.AddAttributeConstConst(Names.kParamMissileResetThreshold, Integer.toString(c.missileResetThreshold));
 		simulationTag.AddAttributeConstConst(Names.kParamRandomSeed, Integer.toString(c.randomSeed));
-		simulationTag.AddAttributeConstConst(Names.kParamAsync, c.async ? Names.kTrue : Names.kFalse);
+		simulationTag.AddAttributeConstConst(Names.kParamAsync, Integer.toString(c.asyncTimeSlice));
 
 		ElementXML terminalTag;
 		if (c.terminalAgentCommand) {
@@ -625,7 +625,7 @@ public class ConfigurationLoader {
 		
 		attribute = simulationTag.GetAttribute(Names.kParamAsync);
 		if (attribute != null) {
-			c.async = Boolean.parseBoolean(attribute);
+			c.asyncTimeSlice = Integer.parseInt(attribute);
 		}
 		
 		ElementXML subTag = null;
