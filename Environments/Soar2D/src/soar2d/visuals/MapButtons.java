@@ -31,7 +31,7 @@ public class MapButtons extends Composite {
 					ext = Soar2D.config.kEatersMapExt;
 					break;
 				case kBook:
-					assert false;
+					ext = Soar2D.config.kBookMapExt;
 					break;
 				}
 				fd.setFilterExtensions(new String[] {"*." + ext, "*.*"});

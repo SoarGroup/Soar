@@ -35,7 +35,7 @@ public class Simulation {
 	/**
 	 * Legal colors (see PlayerConfig)
 	 */
-	public final String kColors[] = { "red", "blue", "purple", "yellow", "orange", "black", "green" };
+	public final String kColors[] = { "red", "blue", "purple", "yellow", "orange", "green", "black",  };
 	/**
 	 * A list of colors not currently taken by a player
 	 */

@@ -128,6 +128,7 @@ public class Names {
 	public static final String kDirectionID = "direction";
 	public static final String kDistanceID = "distance";
 	public static final String kDontEatID = "dont-eat";
+	public static final String kDoorID = "door";
 	public static final String kEaterID = "eater";
 	public static final String kEnergyID = "energy";
 	public static final String kEnergyRechargerID = "energyrecharger";
@@ -156,6 +157,7 @@ public class Names {
 	public static final String kRadarStatusID = "radar-status";
 	public static final String kResurrectID = "resurrect";
 	public static final String kRightID = "right";
+	public static final String kRoomID = "room";
 	public static final String kRotateID = "rotate";
 	public static final String kRWavesID = "rwaves";
 	public static final String kScoreID = "score";
@@ -193,9 +195,11 @@ public class Names {
 	public static final String kPropertyMissile = "missile";
 	public static final String kPropertyMissiles = "missiles";
 	public static final String kPropertyMoveApply = "move-apply";
+	public static final String kPropertyNumber = "number";
 	public static final String kPropertyOwner = "owner";
 	public static final String kPropertyPoints = "points";
 	public static final String kPropertyRadarWaves = "radar-waves";
+	public static final String kPropertyRoom = "room";
 	public static final String kPropertyShape = "shape";
 	public static final String kPropertyStatus = "status";
 
