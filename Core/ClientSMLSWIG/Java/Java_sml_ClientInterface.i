@@ -36,8 +36,8 @@
 // We replace the SWIG generated shutdown with our own version which will call the SWIG generated one.
 %rename(ShutdownInternal) sml::Kernel::Shutdown();
 
-// Workaround for the object deletion bug (?)
-%rename(AddChildInternal) sml::ElementXML::AddChild;
+// Workaround since SWIG doesn't support %delobj in Java (definition of GetCPtrAndDisown is below)
+%typemap(javain) sml::ElementXML* pChild "GetCPtrAndDisown($javainput)"
 
 %pragma(java) jniclasscode=%{
   static {
@@ -241,9 +241,9 @@
 		return intVal ;
 	}
 	
-	public SWIGTYPE_p_ElementXML_InterfaceStructTag AddChild(ElementXML pChild) {
+	private long GetCPtrAndDisown(ElementXML pChild) {
 		pChild.swigCMemOwn = false;
-		return AddChildInternal(pChild);
+		return ElementXML.getCPtr(pChild);
 	}
 %}
 
