@@ -61,8 +61,6 @@ public class VisualWorld extends Canvas implements PaintListener {
 			tanks.put(new Integer(Direction.kWestInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tank_left.gif")));
 		}
 		
-		// FIXME: need call to resetMap
-		
 		addPaintListener(this);		
 	}
 	
@@ -108,7 +106,10 @@ public class VisualWorld extends Canvas implements PaintListener {
 	java.awt.Point getCellAtPixel(int x, int y) {
 		x /= cellSize;
 		y /= cellSize;
-		return new java.awt.Point(x, y);
+		if (map.isInBounds(x, y)) {
+			return new java.awt.Point(x, y);
+		}
+		return null;
 	}
 	
 	Player getPlayerAtPixel(int x, int y) {
@@ -504,7 +505,19 @@ public class VisualWorld extends Canvas implements PaintListener {
 					break;
 					
 				case kBook:
-					assert false;
+					if (!this.map.enterable(location)) {
+					    gc.setBackground(WindowManager.black);
+					    gc.fillRectangle(cellSize*xDraw, cellSize*yDraw, cellSize, cellSize);
+						
+					} else {
+						
+						if (map.getAllWithProperty(location, Names.kPropertyDoor).size() == 0) {
+							gc.setBackground(WindowManager.widget_background);
+						} else {
+							gc.setBackground(WindowManager.white);
+						}
+						gc.fillRectangle(cellSize*xDraw, cellSize*yDraw, cellSize, cellSize);
+					}
 					break;
 				}
 			}

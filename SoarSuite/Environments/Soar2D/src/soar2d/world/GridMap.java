@@ -79,6 +79,7 @@ public class GridMap {
 	}
 	
 	Cell getCell(java.awt.Point location) {
+		if (location == null) return null;
 		assert location.x >= 0;
 		assert location.y >= 0;
 		assert location.x < size;
@@ -175,16 +176,19 @@ public class GridMap {
 	}
 	
 	public Player getPlayer(java.awt.Point location) {
+		if (location == null) return null;
 		Cell cell = getCell(location);
 		return cell.getPlayer();
 	}
 	
 	public boolean hasObject(java.awt.Point location, String name) {
+		if (location == null) return false;
 		Cell cell = getCell(location);
 		return cell.hasObject(name);
 	}
 	
 	public CellObject getObject(java.awt.Point location, String name) {
+		if (location == null) return null;
 		Cell cell = getCell(location);
 		return cell.getObject(name);
 	}
@@ -406,6 +410,7 @@ public class GridMap {
 			}
 		}
 		
+		// Update state we keep track of specific to game type
 		switch (Soar2D.config.getType()) {
 		case kTankSoar:
 			if (object.hasProperty(Names.kPropertyCharger)) {
@@ -430,7 +435,6 @@ public class GridMap {
 			break;
 			
 		case kBook:
-			assert false;
 			break;
 		}
 		cell.addCellObject(object);

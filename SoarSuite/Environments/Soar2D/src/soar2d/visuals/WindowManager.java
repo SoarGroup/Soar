@@ -51,6 +51,7 @@ public class WindowManager {
 	Composite rhs;
 	Composite currentSide;
 
+	public static final int kBookMainMapCellSize = 16;
 	public static final int kEatersMainMapCellSize = 20;
 	public static final int kTanksoarMainMapCellSize = 32;
 	public static final String kFoodRemaining = "Food remaining: ";
@@ -309,10 +310,98 @@ public class WindowManager {
 		}
 	}
 	
-	public void setupBook() {
-		assert false;
+	private void createBookSide() {
+		
+		currentSide = new Composite(rhs, SWT.NONE);
+		{
+			GridLayout gl = new GridLayout();
+			gl.marginHeight = 0;
+			gl.marginWidth = 0;
+			currentSide.setLayout(gl);
+			
+			GridData gd = new GridData();
+			currentSide.setLayoutData(gd);
+		}
+		
+		Group group1 = new Group(currentSide, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			group1.setLayoutData(gd);
+		}
+		group1.setText("Simulation");
+		group1.setLayout(new FillLayout());
+		simButtons = new SimulationButtons(group1);
+		
+		Group group2 = new Group(currentSide, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			group2.setLayoutData(gd);
+		}
+		group2.setText("Map");
+		{
+			GridLayout gl = new GridLayout();
+			gl.numColumns = 2;
+			group2.setLayout(gl);
+		}
+		
+		Label worldCountLabel = new Label(group2, SWT.NONE);
+		worldCountLabel.setText(kWorldCount);
+		{
+			GridData gd = new GridData();
+			worldCountLabel.setLayoutData(gd);
+		}
+		
+		worldCount = new Label(group2, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 50;
+			worldCount.setLayoutData(gd);
+		}
+		
+		updateCounts();
+		
+		mapButtons = new MapButtons(group2);
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 2;
+			mapButtons.setLayoutData(gd);
+		}
+
+		agentDisplay = new BookAgentDisplay(currentSide);
+		{
+			GridData gd = new GridData();
+			agentDisplay.setLayoutData(gd);
+		}
 	}
 	
+	public void setupBook() {
+		worldGroup = new Group(shell, SWT.NONE);
+		worldGroup.setLayout(new FillLayout());
+		visualWorld = new VisualWorld(worldGroup, SWT.NONE, kBookMainMapCellSize);
+		visualWorld.setMap(Soar2D.simulation.world.getMap());
+
+		visualWorld.addMouseListener(new MouseAdapter() {
+			public void mouseDown(MouseEvent e) {
+				Player player = visualWorld.getPlayerAtPixel(e.x, e.y);
+				if (player == null) {
+					return;
+				}
+				agentDisplay.selectPlayer(player);
+			}
+		});
+		visualWorld.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent e) {
+				// TODO: human input
+				return;
+			}
+		});
+		
+		createRHS();
+		createBookSide();
+
+		shell.setText("Book");
+	
+	}
 	public void setupTankSoar() {
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
@@ -501,7 +590,9 @@ public class WindowManager {
 			this.editMap.addObjectByName(location, newContent);
 		}
 
-		visualWorld.updateBackground(location);
+		if (Soar2D.config.getType() == SimType.kTankSoar) {
+			visualWorld.updateBackground(location);
+		}
 		visualWorld.redraw();
 		return;
 	}
@@ -622,7 +713,8 @@ public class WindowManager {
     		createTankSoarSide();
     		break;
 		case kBook:
-			assert false;
+    		createBookSide();
+    		break;
 		}
 		
 		this.reset();
@@ -634,8 +726,8 @@ public class WindowManager {
 	private void enterEditMode() {
 		assert mapEditMode == false;
 		
-		if (Soar2D.config.getType() != SimType.kTankSoar) {
-			Soar2D.control.infoPopUp("Map editor only works in TankSoar right now.");
+		if (Soar2D.config.getType() == SimType.kEaters) {
+			Soar2D.control.infoPopUp("Map editor doesn't work in Eaters yet.");
 			return;
 		}
 		if (Soar2D.simulation.world.getPlayers().size() > 0) {
@@ -683,8 +775,11 @@ public class WindowManager {
 		
 		switch (Soar2D.config.getType()) {
 		case kBook:
+			fd.setFilterExtensions(new String[] {"*." + Soar2D.config.kBookMapExt, "*.*"});
+			break;
+			
 		case kEaters:
-			assert false;
+			fd.setFilterExtensions(new String[] {"*." + Soar2D.config.kEatersMapExt, "*.*"});
 			break;
 			
 		case kTankSoar:
@@ -697,7 +792,7 @@ public class WindowManager {
 			if (!mapFileString.matches(".*\\..+")) {
 				switch (Soar2D.config.getType()) {
 				case kBook:
-					assert false;
+					mapFileString += "." + Soar2D.config.kBookMapExt;
 					break;
 					
 				case kEaters:

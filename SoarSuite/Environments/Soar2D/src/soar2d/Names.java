@@ -179,6 +179,7 @@ public class Names {
 	public static final String kPropertyCharger = "charger";
 	public static final String kPropertyColor = "color";
 	public static final String kPropertyDirection = "direction";
+	public static final String kPropertyDoor = "door";
 	public static final String kPropertyEdible = "edible";
 	public static final String kPropertyEnergy = "energy";
 	public static final String kPropertyFlyPhase = "fly-phase";
