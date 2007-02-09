@@ -1,16 +1,16 @@
 <map>
+ <cell-object name="room" updatable="false">
+  <property name="room" value="true"></property>
+  <property name="id" value="room"></property>
+ </cell-object>
  <cell-object name="wall" updatable="false">
+  <property name="wall" value="true"></property>
   <property name="id" value="wall"></property>
-  <property name="wall" value="true" />
   <property name="block" value="true"></property>
  </cell-object>
  <cell-object name="door" updatable="false">
+  <property name="door" value="true"></property>
   <property name="id" value="door"></property>
-  <property name="door" value="true" />
- </cell-object>
- <cell-object name="room" updatable="false">
-  <property name="id" value="room"></property>
-  <property name="room" value="true" />
  </cell-object>
  <cells random-food="false" random-walls="false" world-size="25">
   <row>
@@ -102,249 +102,9 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
    <cell>
     <object>wall</object>
    </cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-  </row>
-  <row>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-  </row>
-  <row>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-  </row>
-  <row>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-  </row>
-  <row>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-  </row>
-  <row>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>door</object>
-   </cell>
-   <cell>
-    <object>door</object>
-   </cell>
-   <cell>
-    <object>door</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>door</object>
-   </cell>
-   <cell>
-    <object>door</object>
-   </cell>
-   <cell>
-    <object>door</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-  </row>
-  <row>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -375,7 +135,9 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -406,7 +168,9 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -437,7 +201,9 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -468,17 +234,39 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -509,7 +297,9 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -540,7 +330,9 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -571,7 +363,9 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -602,7 +396,9 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -623,10 +419,21 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -634,9 +441,6 @@
    <cell></cell>
    <cell>
     <object>wall</object>
-   </cell>
-   <cell>
-    <object>door</object>
    </cell>
    <cell>
     <object>door</object>
@@ -666,7 +470,35 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
    <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+  </row>
+  <row>
+   <cell>
+    <object>wall</object>
+   </cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -678,6 +510,140 @@
    <cell>
     <object>wall</object>
    </cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+  </row>
+  <row>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+  </row>
+  <row>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+  </row>
+  <row>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -708,52 +674,7 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
    <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-  </row>
-  <row>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell>
-    <object>wall</object>
-   </cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -771,9 +692,6 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -786,9 +704,8 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
+   <cell></cell>
+   <cell></cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -806,9 +723,6 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -821,9 +735,8 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
+   <cell></cell>
+   <cell></cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -841,9 +754,6 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -856,9 +766,8 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
-   <cell>
-    <object>wall</object>
-   </cell>
+   <cell></cell>
+   <cell></cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>
@@ -876,6 +785,30 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+  </row>
+  <row>
    <cell>
     <object>wall</object>
    </cell>
@@ -891,9 +824,74 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
    <cell>
     <object>wall</object>
    </cell>
+  </row>
+  <row>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+  </row>
+  <row>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>

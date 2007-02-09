@@ -712,4 +712,216 @@ public class GridMap {
 	public boolean isInBounds(Point location) {
 		return isInBounds(location.x, location.y);
 	}
+
+	int roomCount = 0;
+	int doorCount = 0;
+	
+	public boolean generateRoomStructure() {
+		// Start in upper-left corner
+		// if cell is enterable, flood fill to find boundaries of room
+		// Go from left to right, then to the start of the next line
+		roomCount = 0;
+		LinkedList<java.awt.Point> floodQueue = new LinkedList<java.awt.Point>();
+		HashSet<java.awt.Point> explored = new HashSet<java.awt.Point>((this.size-2)*2);
+
+		java.awt.Point location = new java.awt.Point();
+		for (location.y = 1; location.y < (this.size - 1); ++location.y) {
+			for (location.x = 1; location.x < (this.size - 1); ++location.x) {
+				if (explored.contains(location)) {
+					continue;
+				}
+				explored.add(location);
+				
+				Cell cell = getCell(location);
+				if (!cell.enterable() || cell.hasObject(Names.kPropertyDoor)) {
+					continue;
+				}
+				
+				assert cell.getObject(Names.kRoomID) == null;
+
+				// cell is enterable, we have a room
+				int roomNumber = roomCount;
+				roomCount += 1;
+				
+				CellObject roomObject = cellObjectManager.createObject(Names.kRoomID);
+				roomObject.addProperty(Names.kPropertyNumber, Integer.toString(roomNumber));
+
+				HashSet<java.awt.Point> floodExplored = new HashSet<java.awt.Point>((this.size-2)*2);
+				floodExplored.add(location);
+				cell.addCellObject(roomObject);
+				System.out.print("Room " + roomNumber + ": (" + location.x + "," + location.y + ") ");
+				
+				// add the surrounding cells to the queue 
+				floodQueue.add(new java.awt.Point(location.x+1,location.y));
+				floodQueue.add(new java.awt.Point(location.x,location.y+1));
+				floodQueue.add(new java.awt.Point(location.x-1,location.y));
+				floodQueue.add(new java.awt.Point(location.x,location.y-1));
+				
+				// flood and mark all room cells and save walls
+				HashSet<java.awt.Point> walls = new HashSet<java.awt.Point>();
+				while(floodQueue.size() > 0) {
+					java.awt.Point floodLocation = floodQueue.removeFirst();
+
+					if (floodExplored.contains(floodLocation)) {
+						continue;
+					}
+					floodExplored.add(floodLocation);
+					
+					cell = getCell(floodLocation);
+					if (!cell.enterable() || cell.hasObject(Names.kPropertyDoor)) {
+						walls.add(floodLocation);
+						continue;
+					}
+
+					explored.add(floodLocation);
+
+					cell.addCellObject(new CellObject(roomObject));
+					System.out.print("(" + floodLocation.x + "," + floodLocation.y + ") ");
+
+					// add the four surrounding cells to the queue
+					floodQueue.add(new java.awt.Point(floodLocation.x+1,floodLocation.y));
+					floodQueue.add(new java.awt.Point(floodLocation.x-1,floodLocation.y));
+					floodQueue.add(new java.awt.Point(floodLocation.x,floodLocation.y+1));
+					floodQueue.add(new java.awt.Point(floodLocation.x,floodLocation.y-1));
+				}
+				
+				// figure out walls going clockwise starting with the wall north of the first square in the room
+				int wallCount = 0;
+				
+				int direction = Direction.kEastInt;
+				java.awt.Point startingWall = new java.awt.Point(location.x, location.y-1);
+				java.awt.Point next = new java.awt.Point(startingWall);
+				
+				boolean door = false;
+				int doorNumber = 0;
+				
+				boolean wall = false;
+				int wallNumber = 0;
+				
+				while (true) {
+					java.awt.Point previous = new java.awt.Point(next);
+					cell = getCell(next);
+					CellObject wallObject = cell.getObject(Names.kWallID);
+					if (wallObject == null) {
+						// Door!
+						wall = false;
+						
+						CellObject doorObject = cell.getObject(Names.kDoorID);
+						if (door == false) {
+							door = true;
+							if (doorObject.hasProperty(Names.kPropertyNumber)) {
+								doorNumber = doorObject.getIntProperty(Names.kPropertyNumber);
+							} else {
+								doorNumber = doorCount;
+								doorCount += 1;
+							}
+							System.out.println();
+							System.out.print("  Door " + doorNumber + ": ");
+						} 
+						doorObject.addProperty(Names.kPropertyNumber, Integer.toString(doorNumber));
+						
+						System.out.print("(" + next.x + "," + next.y + ") ");
+						Direction.translate(next, direction);
+						
+						java.awt.Point rightOfNext = new java.awt.Point(next);
+						Direction.translate(rightOfNext, Direction.rightOf[direction]);
+
+						if (walls.contains(next) && !walls.contains(rightOfNext)) {
+							continue;
+						}
+					} else {
+					
+						if (wall == false) {
+							wall = true;
+							wallNumber = wallCount;
+							wallCount += 1;
+							System.out.println();
+							System.out.print("  Wall " + wallNumber + " (" + Direction.stringOf[Direction.leftOf[direction]] + "): ");
+						}
+						
+						if (door) {
+							door = false;
+						}
+						
+						wallObject.addProperty(Direction.stringOf[Direction.leftOf[direction]], Integer.toString(wallNumber));
+	
+						System.out.print("(" + next.x + "," + next.y + ") ");
+						Direction.translate(next, direction);
+						
+						java.awt.Point rightOfNext = new java.awt.Point(next);
+						Direction.translate(rightOfNext, Direction.rightOf[direction]);
+		
+						if (walls.contains(next) && !walls.contains(rightOfNext)) {
+							continue;
+						}
+					}
+					
+					// door or wall stops here
+					wall = false;
+					door = false;
+					System.out.print("terminated");
+					
+					// when going clockwise, when we turn right, we go to the cell adjacent to "next",
+					// when we turn left, we go to the cell adjacent to "previous"
+					//
+					//  going east
+					// +---+---+---+  Direction travelling along wall: east
+					// |   | L |   |  W = wall we've seen
+					// +---+---+---+  P = "previous"
+					// | W | P | N |  N = "next" (we just tested this and it isn't a wall)
+					// +---+---+---+  L = possible next, indicates left turn (P included on the new wall)
+					// |   |   | R |  R = possible next, indicates right turn
+					// +---+---+---+    = irrelevant cell
+					
+					// this seems confusing, more examples:
+					
+					//  going west    going north
+					// +---+---+---+ +---+---+---+
+					// | R |   |   | |   | N | R |
+					// +---+---+---+ +---+---+---+
+					// | N | P | W | | L | P |   |
+					// +---+---+---+ +---+---+---+
+					// |   | L |   | |   | W |   |
+					// +---+---+---+ +---+---+---+
+					
+					// try turning right
+					Direction.translate(next, Direction.rightOf[direction]);
+					if (walls.contains(next)) {
+						// right worked
+						direction = Direction.rightOf[direction];
+
+					} else {
+						// try turning left
+						next = new java.awt.Point(previous);
+						Direction.translate(next, Direction.leftOf[direction]);
+						
+						if (walls.contains(next)) {
+							// left worked
+							direction = Direction.leftOf[direction];
+							
+							// need to stay on previous because it is included on the new wall
+							next = previous;
+							// the remove will silently fail and that's ok
+							
+						} else {
+							// single length wall (left turn)
+							direction = Direction.leftOf[direction];
+
+							// need to stay on previous because it is included on the new wall
+							next = previous;
+							// the remove will silently fail and that's ok
+						}
+					}
+					
+					// See if our turn leads us home
+					if (next.equals(startingWall)) {
+						break;
+					}
+				}
+				System.out.println();
+			}
+		}
+		
+		return true;
+	}
 }

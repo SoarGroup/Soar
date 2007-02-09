@@ -512,7 +512,18 @@ public class VisualWorld extends Canvas implements PaintListener {
 					} else {
 						
 						if (map.getAllWithProperty(location, Names.kPropertyDoor).size() == 0) {
-							gc.setBackground(WindowManager.widget_background);
+							// normal:
+							//gc.setBackground(WindowManager.widget_background);
+							
+							// colored rooms:
+							CellObject roomObject = map.getObject(location, Names.kRoomID);
+							if (roomObject == null)  {
+								gc.setBackground(WindowManager.widget_background);
+							} else {
+								int roomID = roomObject.getIntProperty(Names.kPropertyNumber);
+								roomID %= Soar2D.simulation.kColors.length - 1; // the one off eliminates black
+								gc.setBackground(WindowManager.getColor(Soar2D.simulation.kColors[roomID]));
+							}
 						} else {
 							gc.setBackground(WindowManager.white);
 						}

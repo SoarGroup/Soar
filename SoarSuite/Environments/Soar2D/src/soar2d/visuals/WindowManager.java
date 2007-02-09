@@ -23,9 +23,9 @@ public class WindowManager {
 	private static Logger logger = Logger.getLogger("soar2d");
 	
 	public static Color white = null;
+	public static Color widget_background = null;
 	public static Color blue = null;
 	public static Color red = null;
-	public static Color widget_background = null;
 	public static Color yellow = null;
 	public static Color orange = null;
 	public static Color black = null;
@@ -745,7 +745,7 @@ public class WindowManager {
 		mapMenuHeader.setEnabled(false);
 		
 		MapLoader loader = new MapLoader();
-		assert loader.load();
+		loader.load();
 		assert this.editMap == null;
 		this.editMap = loader.getMap();
 		this.visualWorld.setMap(loader.getMap());

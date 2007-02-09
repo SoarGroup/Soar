@@ -39,7 +39,9 @@ public class World {
 		
 		GridMap newMap = loader.getMap();
 		
-		if (Soar2D.config.getType() == SimType.kTankSoar) {
+		// Map post-processing
+		switch (Soar2D.config.getType()) {
+		case kTankSoar:
 			if (!newMap.hasEnergyCharger()) {
 				if (!addCharger(false, newMap)) {
 					return false;
@@ -50,6 +52,17 @@ public class World {
 					return false;
 				}
 			}
+			break;
+			
+		case kEaters:
+			break;
+			
+		case kBook:
+			if (newMap.generateRoomStructure() == false) {
+				return false;
+			}
+			break;
+		
 		}
 		
 		map = newMap;
