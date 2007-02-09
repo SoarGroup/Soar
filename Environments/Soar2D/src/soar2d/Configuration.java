@@ -25,6 +25,7 @@ public class Configuration {
 	public final String kDefaultEatersMap = "random-walls.emap";
 	public final String kDefaultTanksoarMap = "default.tmap";
 	public final String kDefaultBookMap = "default.bmap";
+	public final String kBookMapExt = "bmap";
 	public final String kEatersMapExt = "emap";
 	public final String kTankSoarMapExt = "tmap";
 	public final int kDefaultTimeout = 15; //seconds
