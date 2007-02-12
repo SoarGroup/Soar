@@ -261,6 +261,11 @@ public:
 	void FireEditProductionEvent(char const* pProduction) { m_StringListener.HandleEvent(gSKIEVENT_EDIT_PRODUCTION, pProduction) ; }
 
 	/*************************************************************
+	* @brief	Notify listeners that this event has occured.
+	*************************************************************/
+	void FireLoadLibraryEvent(char const* pLibraryName) { m_StringListener.HandleEvent(gSKIEVENT_LOAD_LIBRARY, pLibraryName) ; }
+
+	/*************************************************************
 	* @brief	Add or remove a connection from the list implementing
 	*			a particular rhs function in the kernel.
 	*************************************************************/
