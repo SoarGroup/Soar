@@ -221,6 +221,7 @@ protected:
 	bool ParseInputPeriod(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseInternalSymbols(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseLearn(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseLoadLibrary(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseLS(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseMatches(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseMaxChunks(gSKI::Agent* pAgent, std::vector<std::string>& argv);
@@ -425,6 +426,12 @@ protected:
 	*        see cli_CommandData.h
 	*************************************************************/
 	bool DoLearn(gSKI::Agent* pAgent, const LearnBitset& options);
+
+	/*************************************************************
+	* @brief load-library command
+	* @param libraryName The name of the library to load.
+	*************************************************************/
+	bool DoLoadLibrary(const std::string& libraryName);
 
 	/*************************************************************
 	* @brief ls command

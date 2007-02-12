@@ -39,6 +39,7 @@ char const* Commands::kCLIInitSoar					= "init-soar";
 char const* Commands::kCLIInputPeriod				= "input-period";
 char const* Commands::kCLIInternalSymbols			= "internal-symbols";
 char const* Commands::kCLILearn						= "learn";
+char const* Commands::kCLILoadLibrary				= "load-library";
 char const* Commands::kCLILS						= "ls";
 char const* Commands::kCLIMatches					= "matches";
 char const* Commands::kCLIMaxChunks					= "max-chunks";

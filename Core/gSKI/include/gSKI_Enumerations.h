@@ -229,12 +229,14 @@
 
 	// Events that pass a string as parameter
 	typedef enum {
-		gSKIEVENT_EDIT_PRODUCTION = gSKIEVENT_AFTER_ALL_GENERATED_OUTPUT + 1,	// Arg is "char const*".
+		gSKIEVENT_EDIT_PRODUCTION = gSKIEVENT_LAST_UPDATE_EVENT + 1,	// Arg is "char const*".
+		gSKIEVENT_LOAD_LIBRARY,											// Arg is "char const*"
+		gSKIEVENT_LAST_STRING_EVENT = gSKIEVENT_LOAD_LIBRARY,
 	} egSKIStringEventId ;
 
 	static inline bool IsStringEventID(int id)
 	{
-		return (id >= gSKIEVENT_EDIT_PRODUCTION && id <= gSKIEVENT_EDIT_PRODUCTION) ;
+		return (id >= gSKIEVENT_EDIT_PRODUCTION && id <= gSKIEVENT_LAST_STRING_EVENT) ;
 	}
 
     typedef enum {
@@ -242,7 +244,7 @@
        gSKIEVENT_INVALID_EVENT              = 0,
        // Marker for end of gSKI event list
        // Must always be at the end of the enum
-       gSKIEVENT_LAST = gSKIEVENT_EDIT_PRODUCTION + 1
+       gSKIEVENT_LAST = gSKIEVENT_LAST_STRING_EVENT + 1
     } egSKIGenericEventId;
 
    /** End of Event Id enumerations.  **/

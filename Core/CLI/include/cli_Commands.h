@@ -35,6 +35,7 @@ namespace cli {
 		static char const* kCLIInputPeriod;
 		static char const* kCLIInternalSymbols;
 		static char const* kCLILearn;
+		static char const* kCLILoadLibrary;
 		static char const* kCLILS;
 		static char const* kCLIMatches;
 		static char const* kCLIMaxChunks;
