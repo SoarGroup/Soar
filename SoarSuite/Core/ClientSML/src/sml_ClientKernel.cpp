@@ -110,10 +110,25 @@ static void InitSoarHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 	pAgent->Refresh() ;
 }
 
+/*************************************************************
+* @brief Called when an init-soar event happens so we know
+*		 to refresh the input/output links.
+*************************************************************/
+static void LoadLibraryHandler(smlStringEventId id, void* pUserData, Kernel* pKernel, char const* pString)
+{
+	unused(pUserData) ;
+	unused(id) ;
+
+	pKernel->LoadExternalLibrary(pString);
+}
+
 void Kernel::InitEvents()
 {
 	// Register for init-soar events
 	RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, &InitSoarHandler, NULL) ;
+
+	// Register for load-library events
+	RegisterForStringEvent(smlEVENT_LOAD_LIBRARY, &LoadLibraryHandler, NULL);
 }
 
 /*************************************************************

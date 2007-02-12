@@ -166,7 +166,8 @@ typedef enum {
 // Events that pass a string as an argument
 typedef enum {
 	smlEVENT_EDIT_PRODUCTION = smlEVENT_LAST_UPDATE_EVENT + 1,	// Arg is "char const*" -- the name of the production to edit
-	smlEVENT_LAST_STRING_EVENT = smlEVENT_EDIT_PRODUCTION
+	smlEVENT_LOAD_LIBRARY,
+	smlEVENT_LAST_STRING_EVENT = smlEVENT_LOAD_LIBRARY,
 } smlStringEventId ;
 
 typedef enum {
