@@ -14,6 +14,9 @@
 #ifndef STRING_OPS_H
 #define STRING_OPS_H
 
+#include <string>
+#include <vector>
+
 namespace sml {
 
 /*************************************************************
@@ -49,6 +52,18 @@ char* StringCopy(char const* pStr) ;
 * @brief Deletes copied strings
 *************************************************************/
 void StringDelete(char* pStr) ;
+
+/*************************************************************
+* @brief A utility function, splits a command line into argument
+*		 tokens and stores them in the argumentVector string.
+*************************************************************/
+int Tokenize(std::string cmdline, std::vector<std::string>& argumentVector);
+
+/*************************************************************
+* @brief Trim comments off of a line (for command parsing)
+* @return true on success, false if there is a new-line before a pipe quotation ends
+*************************************************************/
+bool Trim(std::string& line);
 
 }
 

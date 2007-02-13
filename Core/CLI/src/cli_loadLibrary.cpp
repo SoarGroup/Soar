@@ -25,24 +25,25 @@ bool CommandLineInterface::ParseLoadLibrary(gSKI::Agent* pAgent, std::vector<std
 	unused(pAgent);
 
 	// command-name library-name [library-args ...]
-	// TODO: library-args not implemented yet, currently an error
 
 	if (argv.size() < 2) {
-		SetErrorDetail("Library name expected.");
+		SetErrorDetail("Library command expected.");
 		return SetError(CLIError::kTooFewArgs);
-	} else if (argv.size() > 2) {
-		// TODO: this shouldn't be an error in the future (should be library args)
-		SetErrorDetail("Library arguments not implemented yet.");
-		return SetError(CLIError::kTooManyArgs);
 	}
 
-	return DoLoadLibrary(argv[1]);
+	// strip the command name, combine the rest
+	std::string libraryCommand(argv[1]);
+	for(std::string::size_type i = 2; i < argv.size(); ++i) {
+		libraryCommand += " ";
+		libraryCommand += argv[i];
+	}
+
+	return DoLoadLibrary(libraryCommand);
 }
 
-bool CommandLineInterface::DoLoadLibrary(const std::string& argv) {
+bool CommandLineInterface::DoLoadLibrary(const std::string& libraryCommand) {
 
-	this->m_pKernelSML->FireLoadLibraryEvent(argv.c_str());
-
+	this->m_pKernelSML->FireLoadLibraryEvent(libraryCommand.c_str());
 	return true;
 }
 
