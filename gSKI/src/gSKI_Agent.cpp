@@ -373,9 +373,6 @@ namespace gSKI
       // other misc. objects and wmes.
       bool ok = reinitialize_soar( m_agent );
       init_agent_memory( m_agent );
-	  // reset_statistics is called inside reintialize_soar, but it needs to be called here
-	  // again to ensure that timers and other counters are reset after init_agent_memory 
-	  reset_statistics ( m_agent );   
 
       // Tell listeners it is over
       am->FireAfterAgentReinitialized(this);
