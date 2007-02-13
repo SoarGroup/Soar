@@ -945,6 +945,11 @@ public:
 	*************************************************************/
 	bool IsCommitRequired() ;
 
+	/*************************************************************
+	* @brief Loads an external library (dll/so/dylib) in the local client for the
+	* purpose of event or RHS function registration. This can boost performance over
+	* using a remote client for purposes such as logging.
+	*************************************************************/
 	void LoadExternalLibrary(char const* pLibraryName);
 
 protected:
