@@ -192,12 +192,6 @@ protected:
 	bool DoCommandInternal(gSKI::Agent* pAgent, const std::string& commandLine);
 	bool DoCommandInternal(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 
-	/*************************************************************
-	* @brief A utility function, splits the command line into argument
-	*		 tokens and stores them in the argumentVector string.
-	*************************************************************/
-	int Tokenize(std::string commandLine, std::vector<std::string>& argumentVector);
-
 	// The internal Parse functions follow
 	bool ParseAddWME(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseAlias(gSKI::Agent* pAgent, std::vector<std::string>& argv);
@@ -429,9 +423,10 @@ protected:
 
 	/*************************************************************
 	* @brief load-library command
-	* @param libraryName The name of the library to load.
+	* @param libraryCommand The name of the library to load 
+	* WITHOUT the .so/.dll/etc plus its arguments.
 	*************************************************************/
-	bool DoLoadLibrary(const std::string& libraryName);
+	bool DoLoadLibrary(const std::string& libraryCommand);
 
 	/*************************************************************
 	* @brief ls command
@@ -729,11 +724,9 @@ protected:
 	// Production callback events go here
 	virtual void HandleEvent(egSKIProductionEventId eventId, gSKI::Agent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match);
 
-	/*************************************************************
-	* @brief Trim comments off of a line
-	*************************************************************/
-	bool Trim(std::string& line);
-	
+	// Wrapped to handle errors more easily
+	int CLITokenize(std::string cmdline, std::vector<std::string>& argumentVector);
+
 	/*************************************************************
 	* @brief Standard parsing of -h and --help flags.  Returns
 	*		 true if the flag is present.
