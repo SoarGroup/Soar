@@ -592,11 +592,6 @@ void reinitialize_all_agents ( Kernel* thisKernel ) {
 
     // Adds the top state and io symbols and wmes
     init_agent_memory( curagent );
-	 
-	// reset_statistics is called inside reintialize_soar, but it needs to be called here
-	// again to ensure that timers and other counters are reset after init_agent_memory 
-	reset_statistics ( curagent );   
-
   }
 
 }
@@ -1678,6 +1673,29 @@ void init_agent_memory(agent* thisAgent)
   do_input_cycle(thisAgent);
   do_output_cycle(thisAgent);
   //do_buffered_wm_and_ownership_changes(thisAgent);
+
+  /* executing the IO cycles above, increments the timers, so reset */
+  /* Initializing all the timer structures */
+  reset_timer (&thisAgent->start_total_tv);
+  reset_timer (&thisAgent->total_cpu_time);
+  reset_timer (&thisAgent->start_kernel_tv);
+  reset_timer (&thisAgent->start_phase_tv);
+  reset_timer (&thisAgent->total_kernel_time);
+
+  reset_timer (&thisAgent->input_function_cpu_time);
+  reset_timer (&thisAgent->output_function_cpu_time);
+
+  reset_timer (&thisAgent->start_gds_tv);
+  reset_timer (&thisAgent->total_gds_time);
+
+  for (int ii=0;ii < NUM_PHASE_TYPES; ii++) {
+     reset_timer (&thisAgent->decision_cycle_phase_timers[ii]);
+     reset_timer (&thisAgent->monitors_cpu_time[ii]);
+     reset_timer (&thisAgent->ownership_cpu_time[ii]);
+     reset_timer (&thisAgent->chunking_cpu_time[ii]);
+     reset_timer (&thisAgent->match_cpu_time[ii]);
+     reset_timer (&thisAgent->gds_cpu_time[ii]);
+  }
 
   // This is an important part of the state of the agent for io purposes
   // (see io.cpp for details)
