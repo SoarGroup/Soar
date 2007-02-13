@@ -2425,6 +2425,8 @@ std::string Kernel::GetSMLVersion()
 	return sml_Names::kSMLVersionValue ;
 }
 
+// The below stuff is to support LoadExternalLibrary
+
 #ifdef _WIN32
 #include "Windows.h"	// Needed for load library
 #undef SendMessage		// Windows defines this as a macro.  Yikes!
@@ -2435,7 +2437,13 @@ std::string Kernel::GetSMLVersion()
 
 #endif // _WIN32
 
-typedef void (*InitLibraryFunction)(Kernel*, void*);
+typedef void (*InitLibraryFunction)(Kernel*, void* pUserData);
+
+/*************************************************************
+* @brief Loads an external library (dll/so/dylib) in the local client for the
+* purpose of event or RHS function registration. This can boost performance over
+* using a remote client for purposes such as logging.
+*************************************************************/
 
 void Kernel::LoadExternalLibrary(const char *pLibraryName) {
 		// Make a copy of the library name so we can work on it.
@@ -2467,7 +2475,11 @@ void Kernel::LoadExternalLibrary(const char *pLibraryName) {
 		}
 		// FIXME error details can be returned by a call to dlerror()
 #endif
-		InitLibraryFunction pInitLibraryFunction = (InitLibraryFunction)GetProcAddress(hLibrary, "sml_InitLibrary") ;
-
-		pInitLibraryFunction(this, 0);
+		if(hLibrary) {
+			InitLibraryFunction pInitLibraryFunction = (InitLibraryFunction)GetProcAddress(hLibrary, "sml_InitLibrary") ;
+			//char** args;
+			//args[0] = (char*)pLibraryName;
+			//pInitLibraryFunction(this, 1, args);
+			pInitLibraryFunction(this, 0);
+		}
 }
