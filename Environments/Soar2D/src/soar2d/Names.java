@@ -97,7 +97,6 @@ public class Names {
 	public static final String kParamShieldsDown = "shields-down";
 	public static final String kParamTimeOut = "timeout";
 	public static final String kParamType = "type";
-	public static final String kParamUpdatable = "updatable";
 	public static final String kParamValue = "value";
 	public static final String kParamVersion = "version";
 	public static final String kParamWorldSize = "world-size";
