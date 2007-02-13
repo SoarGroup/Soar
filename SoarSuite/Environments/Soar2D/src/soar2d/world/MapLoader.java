@@ -127,7 +127,6 @@ public class MapLoader {
 		ElementXML templateTag = new ElementXML();
 		templateTag.SetTagName(Names.kTagCellObject);
 		templateTag.AddAttributeConstConst(Names.kParamName, name);
-		templateTag.AddAttributeConstConst(Names.kParamUpdatable, template.updatable() ? Names.kTrue : Names.kFalse);
 		
 		Iterator<String> propertyNamesIter = template.getPropertyNames().iterator();
 		while (propertyNamesIter.hasNext()) {
