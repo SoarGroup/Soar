@@ -165,6 +165,7 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 
 		// Trim whitespace and comments
 		if (!Trim(line)) {
+			SetError(CLIError::kNewlineBeforePipe);
 			HandleSourceError(lineCount, filename, pProductionManager);
 			if (path.length()) DoPopD();
 			return false;

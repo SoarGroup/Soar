@@ -357,7 +357,7 @@ bool CommandLineInterface::ExpandCommandToString(const char* pCommandLine, std::
 	vector<string> argv;
 
 	// 1) Parse command
-	if (Tokenize(pCommandLine, argv) == -1)
+	if (CLITokenize(pCommandLine, argv) == -1)
 		return false ;
 
 	// 2) Translate aliases
@@ -398,7 +398,7 @@ EXPORT bool CommandLineInterface::ExpandCommand(sml::Connection* pConnection, co
 bool CommandLineInterface::DoCommandInternal(gSKI::Agent* pAgent, const std::string& commandLine) {
 	vector<string> argv;
 	// Parse command:
-	if (Tokenize(commandLine, argv) == -1)  return false;	// Parsing failed
+	if (CLITokenize(commandLine, argv) == -1)  return false;	// Parsing failed
 
 	// Execute the command
 	return DoCommandInternal(pAgent, argv);
@@ -505,100 +505,6 @@ bool CommandLineInterface::DoCommandInternal(gSKI::Agent* pAgent, vector<string>
 
 	// Make the Parse call
 	return (this->*pFunction)(pAgent, argv);
-}
-
-int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVector) {
-	int argc = 0;
-	string::iterator iter;
-	string arg;
-	bool quotes = false;
-	int brackets = 0;
-	int parens = 0;
-
-	// Trim leading whitespace and comments from line
-	if (!Trim(cmdline)) return -1;
-
-	for (;;) {
-
-		// Is there anything to work with?
-		if(cmdline.empty()) break;
-
-		// Remove leading whitespace
-		iter = cmdline.begin();
-		while (isspace(*iter)) {
-			cmdline.erase(iter);
-
-			if (!cmdline.length()) break; //Nothing but space left
-			
-			// Next character
-			iter = cmdline.begin();
-		}
-
-		// Was it actually trailing whitespace?
-		if (!cmdline.length()) break;// Nothing left to do
-
-		// We have an argument
-		++argc;
-		arg.clear();
-		// Use space as a delimiter unless inside quotes or brackets (nestable)
-		while (!isspace(*iter) || quotes || brackets || parens) {
-			if (*iter == '"') {
-				// Flip the quotes flag
-				quotes = !quotes;
-
-			} else {
-				if (*iter == '{') {
-					++brackets;
-				} else if (*iter == '}') {
-					--brackets;
-					if (brackets < 0) {
-						SetErrorDetail("An extra '}' was found.");
-						SetError(CLIError::kExtraClosingParen);
-						return -1;
-					}
-				}
-				if (*iter == '(') {
-					++parens;
-				} else if (*iter == ')') {
-					--parens;
-					if (parens < 0) {
-						SetErrorDetail("An extra ')' was found.");
-						SetError(CLIError::kExtraClosingParen);
-						return -1;
-					}
-				}
-			}
-
-			// Add to argument (if we eat quotes, this has to be moved into the else above
-			arg += (*iter);
-
-			// Delete the character and move on on
-			cmdline.erase(iter);
-			iter = cmdline.begin();
-
-			// Are we at the end of the string?
-			if (iter == cmdline.end()) {
-
-				// Did they close their quotes or brackets?
-				if (quotes || brackets || parens) {
-					std::string errorDetail = "These quoting characters were not closed: ";
-					if (quotes) errorDetail += "\"";
-					if (brackets) errorDetail += "{";
-					if (parens) errorDetail += "(";
-					SetErrorDetail(errorDetail);
-					SetError(CLIError::kUnmatchedBracketOrQuote);
-					return -1;
-				}
-				break;
-			}
-		}
-
-		// Store the arg
-		argumentVector.push_back(arg);
-	}
-
-	// Return the number of args found
-	return argc;
 }
 
 bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv) {
@@ -960,51 +866,6 @@ bool CommandLineInterface::HandleOptionArgument(std::vector<std::string>& argv, 
 	return true;
 }
 
-bool CommandLineInterface::Trim(std::string& line) {
-	// trim whitespace and comments from line
-	if (!line.size()) return true; // nothing on the line
-
-	// remove leading whitespace
-	std::string::size_type pos = line.find_first_not_of(" \t");
-	if (pos != std::string::npos) line = line.substr(pos);
-
-	bool pipe = false;
-	std::string::size_type searchpos = 0;
-
-	for (pos = line.find_first_of("\\#|", searchpos); pos != std::string::npos; pos = line.find_first_of("\\#|", searchpos)) {
-		switch (line[pos]) {
-			case '\\': // skip backslashes
-				searchpos = pos + 2;
-				break;
-
-			case '#': // if not inside pipe, erase from pound to end or newline encountered
-				if (pipe) {
-					searchpos = pos + 1;
-				} else {
-					{
-						std::string::size_type nlpos = line.find('\n', pos + 1);
-						if (nlpos == std::string::npos) {
-							// No newline encountered
-							line = line.substr(0, pos);
-						} else {
-							line.erase(pos, nlpos - pos);
-							searchpos = pos;
-						}
-					}
-				}
-				break;
-
-			case '|': // note pipe
-				pipe = !pipe;
-				searchpos = pos + 1;
-				break;
-		}
-	}
-
-	if (pipe) return SetError(CLIError::kNewlineBeforePipe);
-	return true;
-}
-
 /** 
 * @brief Event callback function
 *
@@ -1162,3 +1023,62 @@ void CommandLineInterface::XMLResultToResponse(char const* pCommandName)
 	// Clear the XML result, so it's ready for use again.
 	m_XMLResult->Reset() ;
 }
+
+int CommandLineInterface::CLITokenize(string cmdline, vector<string>& argumentVector) {
+
+	int ret = Tokenize(cmdline, argumentVector);
+	
+	if (ret >= 0) {
+		return ret; // no error
+	}
+
+	// there is an error
+
+	// handle easy errors with a switch
+	switch (ret) {
+		case -1:
+			SetError(CLIError::kNewlineBeforePipe);
+			break;
+
+		case -2:
+			SetErrorDetail("An extra '}' was found.");
+			SetError(CLIError::kExtraClosingParen);
+			break;
+
+		case -3:
+			SetErrorDetail("An extra ')' was found.");
+			SetError(CLIError::kExtraClosingParen);
+			break;
+
+		default:
+			{
+				int errorCode = abs(ret);
+
+				const int QUOTES_MASK = 4;
+				const int BRACKETS_MASK = 8;
+				const int PARENS_MASK = 16;
+
+				std::string errorDetail = "These quoting characters were not closed: ";
+				bool foundError = false;
+				if (QUOTES_MASK & errorCode) {
+					foundError = true;
+					errorDetail += "\"";
+				}
+				if (BRACKETS_MASK & errorCode) {
+					foundError = true;
+					errorDetail += "{";
+				}
+				if (PARENS_MASK & errorCode) {
+					foundError = true;
+					errorDetail += "(";
+				}
+				assert(foundError);
+				SetErrorDetail(errorDetail);
+			}
+			SetError(CLIError::kUnmatchedBracketOrQuote);
+			break;
+	}
+
+	return ret;
+}
+
