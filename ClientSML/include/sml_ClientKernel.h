@@ -949,8 +949,10 @@ public:
 	* @brief Loads an external library (dll/so/dylib) in the local client for the
 	* purpose of event or RHS function registration. This can boost performance over
 	* using a remote client for purposes such as logging.
+	* @param pLibraryCommand the library name and args as passed to the
+	*		 load-library command (works kind of like echo)
 	*************************************************************/
-	void LoadExternalLibrary(char const* pLibraryName);
+	void LoadExternalLibrary(char const* pLibraryCommand);
 
 protected:
 	/*************************************************************
