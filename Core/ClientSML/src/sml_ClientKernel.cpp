@@ -2437,6 +2437,11 @@ std::string Kernel::GetSMLVersion()
 
 #endif // _WIN32
 
+// how will we report errors from this?
+// -- numeric code (bad because codes will be different for each library, or library can fail in ways not covered by pre-defined codes)
+// -- string message (zero-length string means no error)
+// -- error object (passed in?)
+// Any error should get passed back to caller of LoadExternalLibrary
 typedef void (*InitLibraryFunction)(Kernel*, void* pUserData);
 
 /*************************************************************
