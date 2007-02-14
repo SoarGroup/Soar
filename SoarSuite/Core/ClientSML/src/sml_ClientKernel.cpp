@@ -2442,49 +2442,83 @@ std::string Kernel::GetSMLVersion()
 // -- string message (zero-length string means no error)
 // -- error object (passed in?)
 // Any error should get passed back to caller of LoadExternalLibrary
-typedef void (*InitLibraryFunction)(Kernel*, void* pUserData);
+typedef void (*InitLibraryFunction)(Kernel*, int argc, char** argv);
 
-/*************************************************************
-* @brief Loads an external library (dll/so/dylib) in the local client for the
-* purpose of event or RHS function registration. This can boost performance over
-* using a remote client for purposes such as logging.
-*************************************************************/
+	/*************************************************************
+	* @brief Loads an external library (dll/so/dylib) in the local client for the
+	* purpose of event or RHS function registration. This can boost performance over
+	* using a remote client for purposes such as logging.
+	* @param pLibraryCommand the library name and args as passed to the
+	*		 load-library command (works kind of like echo)
+	*************************************************************/
 
-void Kernel::LoadExternalLibrary(const char *pLibraryName) {
-		// Make a copy of the library name so we can work on it.
-		std::string libraryName = pLibraryName ;
+void Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 
-		// We shouldn't be passed something with an extension
-		// but if we are, we'll try to strip the extension to be helpful
-		size_t pos = libraryName.find_last_of('.') ;
-		if (pos != std::string::npos)
-		{
-			libraryName.erase(pos) ;
-		}
+	// We'll break up the command in to this argv array
+	std::vector<std::string> vectorArgv;
+	Tokenize(pLibraryCommand, vectorArgv);
+
+	// TODO: handle error better than this
+	assert(vectorArgv.size() > 0);
+
+	// The first index of the argv is the library name
+	// Make a copy of the library name so we can work on it.
+	std::string libraryName = vectorArgv[0];	
+		
+	// We shouldn't be passed something with an extension
+	// but if we are, we'll try to strip the extension to be helpful
+	size_t pos = libraryName.find_last_of('.') ;
+	if (pos != std::string::npos)
+	{
+		libraryName.erase(pos) ;
+	}
 
 #ifdef _WIN32
-		// The windows shared library
-		libraryName = libraryName + ".dll";
-		
-		// Now load the library itself.
-		HMODULE hLibrary = LoadLibrary(libraryName.c_str()) ;
+	// The windows shared library
+	libraryName = libraryName + ".dll";
+	
+	// Now load the library itself.
+	HMODULE hLibrary = LoadLibrary(libraryName.c_str()) ;
 
 #else
-		std::string newLibraryName = "lib" + libraryName + ".so";
-		void* hLibrary = 0;
+	std::string newLibraryName = "lib" + libraryName + ".so";
+	void* hLibrary = 0;
+	hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
+	if (!hLibrary) {
+		// Try again with mac extention
+		newLibraryName = "lib" + libraryName + ".dylib";
 		hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
-		if (!hLibrary) {
-			// Try again with mac extention
-			newLibraryName = "lib" + libraryName + ".dylib";
-			hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
-		}
-		// FIXME error details can be returned by a call to dlerror()
+	}
+	// FIXME error details can be returned by a call to dlerror()
 #endif
-		if(hLibrary) {
-			InitLibraryFunction pInitLibraryFunction = (InitLibraryFunction)GetProcAddress(hLibrary, "sml_InitLibrary") ;
-			//char** args;
-			//args[0] = (char*)pLibraryName;
-			//pInitLibraryFunction(this, 1, args);
-			pInitLibraryFunction(this, 0);
+	if(hLibrary) {
+		InitLibraryFunction pInitLibraryFunction = (InitLibraryFunction)GetProcAddress(hLibrary, "sml_InitLibrary") ;
+
+		// Create main-style argc/argv (argv is null-terminated);
+		int argc = static_cast<int>(vectorArgv.size());
+
+		char** charArgv = new char*[vectorArgv.size() + 1]; // plus 1 for null-termination
+		for (std::vector<std::string>::size_type index = 0; index < vectorArgv.size(); ++index) {
+
+			// copy (StringCopy requires a null terminated string. c_str guarantees this)
+			// StringCopy allocates the string for us
+			charArgv[index] = StringCopy( vectorArgv[index].c_str() );
+
+			// verify it is null-terminated
+			assert(charArgv[index][ vectorArgv[index].size() ] == 0);
 		}
+
+		// Null-terminate the whole array
+		charArgv[vectorArgv.size()] = 0;
+
+		pInitLibraryFunction(this, argc, charArgv);
+
+		// First delete the leaves
+		for (std::vector<std::string>::size_type index = 0; index < vectorArgv.size(); ++index) {
+			StringDelete(charArgv[index]);
+		}
+
+		// finally, delete the whole array
+		delete [] charArgv;
+	}
 }
