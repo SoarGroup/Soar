@@ -22,7 +22,7 @@ string myRHSTest(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* p
 extern "C" {
 #endif
 
-EXPORT void sml_InitLibrary(Kernel* pKernel, void* pUserData) {
+EXPORT void sml_InitLibrary(Kernel* pKernel, int argc, char** argv) {
 	int callbackId = pKernel->AddRhsFunction("test", myRHSTest, 0);
 }
 
@@ -61,7 +61,7 @@ void MyShutdownHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel) {
 
 int main(int argc, char** argv) {
 	sml::Kernel* pKernel = sml::Kernel::CreateRemoteConnection();
-	sml_InitLibrary(pKernel, 0);
+	sml_InitLibrary(pKernel, 0, 0);
 
 	assert(pKernel);
 	if(pKernel->HadError()) {
