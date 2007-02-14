@@ -132,10 +132,10 @@ def TranslateTerminal(game_name, head, body):
 	# different actions depending on if we're in the selection space
 	# or operating for real
 	sp_sel = sp.copy(name_gen.get_name(sp.name))
-	sp_sel.first_state_cond.add_id_predicate("duplicate-of*")
+	sp_sel.first_state_cond.add_id_predicate("duplicate-of")
 	sp_sel.add_action().add_id_wme_action("terminal")
 	
-	sp.first_state_cond.add_id_predicate("duplicate-of*", negate = True)
+	sp.first_state_cond.add_id_predicate("duplicate-of", negate = True)
 	sp.add_halt()
 	
 	return [sp, sp_sel]
@@ -308,7 +308,7 @@ def TranslateFrameAxioms(game_name, head, bodies):
 
 def MakeSelectionSpaceFakeResponseRule(game_name, role):
 	sp = SoarProduction(name_gen.get_name("%s*elaborate*fake-response" % game_name))
-#	sp.add_condition().add_id_predicate("duplicate-of*")
+#	sp.add_condition().add_id_predicate("duplicate-of")
 	act_var = sp.get_ol_cond().add_id_predicate("<action-name>")
 	sp.add_condition(act_var)
 	
@@ -334,7 +334,7 @@ def MakeSelectionSpaceRules(game_name):
 
 	fake_io_sp = SoarProduction("%s*elaborate*selection-space-fake-io" % game_name)
 	s_cond = fake_io_sp.add_condition()
-	s_cond.add_id_predicate("duplicate-of*")
+	s_cond.add_id_predicate("duplicate-of")
 
 	fake_io_var = fake_io_sp.add_action(s_cond.head_var).add_id_wme_action("io")
 	io_act = fake_io_sp.add_action(fake_io_var)
@@ -565,12 +565,11 @@ def TranslateDescription(game_name, description, filename):
 	productions.append(sp)
 	
 	f = open(filename, 'w')
-	f.write("pushd default\nsource selection.soar\npopd\n")
+	f.write("source header.soar\n")
 
 	for p in productions:
 		f.write(str(p) + '\n')
 	
-
 def DeleteOrOperands(axiom, keep):
 	if isinstance(axiom[0], str) and axiom[0].lower() == "or":
 		return axiom[keep]

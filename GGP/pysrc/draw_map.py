@@ -1,4 +1,4 @@
-import sys, re
+import sys, re, kif
 import xml.dom.minidom as dom
 import xml.dom.ext
 
@@ -59,22 +59,7 @@ def TransformCoords(x, y, y_max, horiz_offset, vert_offset, htweak=0, vtweak=0):
 	return (nx, ny)
 
 if __name__ == '__main__':
-
-	wall_pat = re.compile('\\(init\\s+\\(wall\\s+(\\d+)\\s+(\\d+)\\s+(\\w+)\\s*\\)\\s*\\)')
-	index_pat = re.compile('\\(index\\s+(\\d+)\\s*\\)')
-	loc_pat = re.compile('\\(init\\s+\\(location\\s+([-\\w]+)\\s+(\\d+)\\s+(\\d+)\\s*\\)\\s*\\)')
-
-	# find the largest index
-	file = open(sys.argv[1], 'r')
-	indexes = []
-	for line in file.readlines():
-		m = index_pat.match(line)
-		if m != None:
-			indexes.append(int(m.group(1)))
-	file.close()
-
-	indexes.sort()
-	max_index = indexes[-1]
+	max_index = kif.GetMapSize(sys.argv[1])
 
 	# create the document with the correct scale
 	lower_right = TransformCoords(max_index, 0, max_index, 'r', 'l')
@@ -92,30 +77,23 @@ if __name__ == '__main__':
 		DrawLine(doc, layer, bot[0], bot[1], top[0], top[1])
 
 	# go through the kif again and draw the walls
-	file = open(sys.argv[1], 'r')
-	for line in file.readlines():
-		m = wall_pat.match(line)
-		if m != None:
-			x = int(m.group(1))
-			y = int(m.group(2))
-			dir = m.group(3)
-			if dir == 'north':
-				coord1 = TransformCoords(x, y, max_index, 'l', 'h')
-				coord2 = TransformCoords(x, y, max_index, 'r', 'h')
-			else:
-				coord1 = TransformCoords(x, y, max_index, 'r', 'l')
-				coord2 = TransformCoords(x, y, max_index, 'r', 'h')
+	walls = kif.GetWalls(sys.argv[1])
+	for w in walls:
+		if w[2] == 'north':
+			coord1 = TransformCoords(w[0], w[1], max_index, 'l', 'h')
+			coord2 = TransformCoords(w[0], w[1], max_index, 'r', 'h')
+		else:
+			coord1 = TransformCoords(w[0], w[1], max_index, 'r', 'l')
+			coord2 = TransformCoords(w[0], w[1], max_index, 'r', 'h')
 
-			DrawLine(doc, layer, coord1[0], coord1[1], coord2[0], coord2[1], width=7)
-			continue
-
-		m = loc_pat.match(line)
-		if m != None:
-			obj = m.group(1)
-			x = int(m.group(2))
-			y = int(m.group(3))
-			coord = TransformCoords(x, y, max_index, 'l', 'h', 5, 15)
-			#DrawCircle(doc, layer, coord[0], coord[1], 10, 'none', 'red')
-			DrawText(doc, layer, coord[0], coord[1], obj)
+		DrawLine(doc, layer, coord1[0], coord1[1], coord2[0], coord2[1], width=7)
+	
+	locs = kif.GetLocations(sys.argv[1])
+	for obj in locs:
+		x = locs[obj][0]
+		y = locs[obj][1]
+		coord = TransformCoords(x, y, max_index, 'l', 'h', 5, 15)
+		#DrawCircle(doc, layer, coord[0], coord[1], 10, 'none', 'red')
+		DrawText(doc, layer, coord[0], coord[1], obj)
 
 	xml.dom.ext.PrettyPrint(doc)
