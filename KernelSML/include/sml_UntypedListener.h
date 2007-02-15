@@ -52,7 +52,7 @@ public:
 	virtual bool RemoveListener(egSKIStringEventId eventID, Connection* pConnection) ;
 
 	// Called when an "StringEvent" occurs in the kernel
-	virtual void HandleEvent(egSKIStringEventId eventId, char const* data) ;
+	virtual bool HandleEvent(egSKIStringEventId eventId, char const* data, int maxLengthReturnValue, char* pReturnValue) ;
 } ;
 
 }

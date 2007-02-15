@@ -366,7 +366,7 @@
 //		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
 	
-	void TclStringEventCallback(sml::smlStringEventId id, void* pUserData, sml::Kernel* kernel, char const* pData)
+	std::string TclStringEventCallback(sml::smlStringEventId id, void* pUserData, sml::Kernel* kernel, char const* pData)
 	{
 		// we can ignore these parameters because they're already in the script (from when we registered it)
 		unused(kernel);
@@ -386,6 +386,10 @@
 		
 		// Send the event to the given interpreter using the given thread
 //		tcl_thread_send(tud->interp, tud->threadId, tud->script) ;
+
+		Tcl_Obj* res = Tcl_GetObjResult(tud->interp);
+		
+		return Tcl_GetString(res);
 	}
 	
 	TclUserData* CreateTclUserData(int id, const char* proc, const char* userData, Tcl_Interp* interp) {
