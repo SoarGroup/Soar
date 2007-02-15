@@ -120,7 +120,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\SoarLibrary\bin\$(ProjectName).exe"
+				OutputFile="..\..\SoarLibrary\bin\$(ProjectName).dll"
 			/>
 			<Tool
 				Name="VCALinkTool"
