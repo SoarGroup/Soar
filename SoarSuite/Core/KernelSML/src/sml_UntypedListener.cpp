@@ -44,12 +44,14 @@ bool StringListener::RemoveListener(egSKIStringEventId eventID, Connection* pCon
 }
 
 // Called when a event occurs in the kernel
-void StringListener::HandleEvent(egSKIStringEventId eventID, char const* pData)
+bool StringListener::HandleEvent(egSKIStringEventId eventID, char const* pData, int maxLengthReturnValue, char* pReturnValue)
 {
+	bool result = false ;
+
 	// Get the first listener for this event (or return if there are none)
 	ConnectionListIter connectionIter ;
 	if (!EventManager<egSKIStringEventId>::GetBegin(eventID, &connectionIter))
-		return ;
+		return result;
 
 	// We need the first connection for when we're building the message.  Perhaps this is a sign that
 	// we shouldn't have rolled these methods into Connection.
@@ -65,10 +67,29 @@ void StringListener::HandleEvent(egSKIStringEventId eventID, char const* pData)
 	if (pData)
 		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamValue, pData) ;
 
+	// Note: we should be telling the client the maximum length of the result,
+	// however, we're planning on changing this so there is no maximum length
+	// so we're not implementing this.
+
 	// Send the message out
 	AnalyzeXML response ;
 	SendEvent(pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
 
+	char const* pResult = response.GetResultString() ;
+
+	if (pResult != NULL)
+	{
+		// If the listener returns a result then take that
+		// value and return it in "pReturnValue" to the caller.
+		// If the client returns a longer string than the caller allowed we just truncate it.
+		// (In practice this shouldn't be a problem--just need to make sure nobody crashes on a super long return string).
+		strncpy(pReturnValue, pResult, maxLengthReturnValue) ;
+		pReturnValue[maxLengthReturnValue-1] = 0 ;	// Make sure it's NULL terminated
+		result = true ;
+	}
+
 	// Clean up
 	delete pMsg ;
+
+	return result;
 }

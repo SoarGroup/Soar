@@ -676,11 +676,19 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForUpdateEvent(void* jarg1, 
 // typedef void (*StringEventHandler)(smlStringEventId id, void* pUserData, Kernel* pKernel, char const* pString) ;
 
 // The C# callback equivalent that we'll eventually call 
-typedef void (__stdcall *StringEventCallback)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, char const* pString) ;
+typedef char const* (__stdcall *StringEventCallback)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, char const* pString) ;
+
+// This is a bit ugly.  We compile this header with extern "C" around it so that the public methods can be
+// exposed in a DLL with C naming (not C++ mangled names).  However, StringEventHandler (below) returns a std::string
+// which won't compile under "C"...even though it's a static function and hence won't appear in the DLL anyway.
+// The solution is to turn off extern "C" for this method and turn it back on afterwards.  Here is where we turn off extern "C".
+#ifdef __cplusplus
+}
+#endif
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
-static void StringEventHandler(sml::smlStringEventId id, void* pUserData, sml::Kernel* pKernel, char const* pString)
+static std::string StringEventHandler(sml::smlStringEventId id, void* pUserData, sml::Kernel* pKernel, char const* pString)
 {
 	// The user data is the class we declared above, where we store the Java data to use in the callback.
 	CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
@@ -688,8 +696,17 @@ static void StringEventHandler(sml::smlStringEventId id, void* pUserData, sml::K
 	StringEventCallback callback = (StringEventCallback)pData->m_CallbackFunction ;
 
 	// Now try to call back to CSharp
-	callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, pString) ;
+	return callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, pString) ;
 }
+
+// This is a bit ugly.  We compile this header with extern "C" around it so that the public methods can be
+// exposed in a DLL with C naming (not C++ mangled names).  However, StringEventHandler (above) returns a std::string
+// which won't compile under "C"...even though it's a static function and hence won't appear in the DLL anyway.
+// The solution is to turn off extern "C" for this method and turn it back on afterwards.  Here is where we turn extern "C" back on.
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 SWIGEXPORT int SWIGSTDCALL CSharp_Kernel_RegisterForStringEvent(void * jarg1, int jarg2, kernelPtr jkernel, unsigned int jarg3, CallbackDataPtr jdata)
 {

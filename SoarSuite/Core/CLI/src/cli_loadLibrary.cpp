@@ -43,7 +43,14 @@ bool CommandLineInterface::ParseLoadLibrary(gSKI::Agent* pAgent, std::vector<std
 
 bool CommandLineInterface::DoLoadLibrary(const std::string& libraryCommand) {
 
-	this->m_pKernelSML->FireLoadLibraryEvent(libraryCommand.c_str());
-	return true;
+	std::string result = this->m_pKernelSML->FireLoadLibraryEvent(libraryCommand.c_str());
+
+	// zero length is success
+	if (result.size() == 0) {
+		return true;
+	}
+
+	SetErrorDetail(result);
+	return SetError(CLIError::kLoadLibraryError);
 }
 

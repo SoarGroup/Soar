@@ -16,6 +16,7 @@ void PrintCallbackHandler(sml::smlPrintEventId id, void* pUserData, sml::Agent* 
 
 void main() {
 
+	// test 1, the original test
 	bSuccess = false;
 
 	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
@@ -26,7 +27,7 @@ void main() {
 		exit(1);
 	}
 
-	pKernel->LoadExternalLibrary("TestExternalLibraryLib");
+	cout << "load-library command returned: \"" << pKernel->LoadExternalLibrary("TestExternalLibraryLib \"Parsing and load-library error message test successful!\"") << "\"" << endl;
 
 	sml::Agent* pAgent;
 	pAgent = pKernel->CreateAgent("soar1") ;
@@ -45,5 +46,4 @@ void main() {
 
 	pKernel->Shutdown();
 	delete pKernel ;
-
 }

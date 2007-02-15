@@ -928,9 +928,17 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForUpdateEvent(JNIEnv *
 	return result ;
 }
 
+// This is a bit ugly.  We compile this header with extern "C" around it so that the public methods can be
+// exposed in a DLL with C naming (not C++ mangled names).  However, StringEventHandler (below) returns a std::string
+// which won't compile under "C"...even though it's a static function and hence won't appear in the DLL anyway.
+// The solution is to turn off extern "C" for this method and turn it back on afterwards.
+#ifdef __cplusplus
+}
+#endif
+
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to Java to pass back the message.
-static void StringEventHandler(sml::smlStringEventId id, void* pUserData, sml::Kernel* pKernel, char const* pData)
+static std::string StringEventHandler(sml::smlStringEventId id, void* pUserData, sml::Kernel* pKernel, char const* pData)
 {
 	// The user data is the class we declared above, where we store the Java data to use in the callback.
 	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
@@ -945,7 +953,7 @@ static void StringEventHandler(sml::smlStringEventId id, void* pUserData, sml::K
 	if (cls == 0)
 	{
 		printf("Failed to get Java class\n") ;
-		return ;
+		return "Error -- failed to get Java class";
 	}
 
 	// Look up the Java method we want to call.
@@ -957,15 +965,42 @@ static void StringEventHandler(sml::smlStringEventId id, void* pUserData, sml::K
 	if (mid == 0)
 	{
 		printf("Failed to get Java method\n") ;
-		return ;
+		return "Error -- failed to get Java method";
 	}
 
 	// Create the string to return to the caller
 	jstring data = pData != NULL ? jenv->NewStringUTF(pData) : 0 ;
 
 	// Make the method call.
-	jenv->CallVoidMethod(jobj, mid, (int)id, pJavaData->m_CallbackData, pJavaData->m_KernelObject, data);
+	jstring result = (jstring)jenv->CallObjectMethod(jobj, mid, (int)id, pJavaData->m_CallbackData, pJavaData->m_KernelObject, data);
+
+		// Get the returned string
+	std::string resultStr = "" ;
+
+	if (result != 0)
+	{
+		// Get the C string
+		char const* pResult = jenv->GetStringUTFChars(result, 0);
+
+		// Copy it into our std::string
+		resultStr = pResult ;
+
+		// Release the Java string
+		jenv->ReleaseStringUTFChars(result, pResult);
+	}
+
+	// Return the result
+	return resultStr ;
+
 }
+
+// This is a bit ugly.  We compile this header with extern "C" around it so that the public methods can be
+// exposed in a DLL with C naming (not C++ mangled names).  However, StringEventHandler (above) returns a std::string
+// which won't compile under "C"...even though it's a static function and hence won't appear in the DLL anyway.
+// The solution is to turn off extern "C" for this method and turn it back on afterwards.
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // This is the hand-written JNI method for registering a callback.
 // I'm going to model it after the existing SWIG JNI methods so hopefully it'll be easier to patch this into SWIG eventually.

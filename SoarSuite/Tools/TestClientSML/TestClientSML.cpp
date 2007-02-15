@@ -714,7 +714,7 @@ void MyOutputEventHandler(void* pUserData, Agent* pAgent, char const* pAttribute
 	cout << "Received wme " << pWme->GetValueAsString() << endl ;
 }
 
-void MyStringEventHandler(smlStringEventId id, void* pUserData, Kernel* pKernel, char const* pData)
+std::string MyStringEventHandler(smlStringEventId id, void* pUserData, Kernel* pKernel, char const* pData)
 {
 	switch (id)
 	{
@@ -723,9 +723,15 @@ void MyStringEventHandler(smlStringEventId id, void* pUserData, Kernel* pKernel,
 			cout << "Edit production " << pData << endl ;
 			break ;
 		}
+	//TODO
+	//case smlEVENT_LOAD_LIBRARY:
+		//break;
 	default:
 		break ;
 	}
+
+	// new: string events need to return empty string on success
+	return "";
 }
 
 void MyProductionHandler(smlProductionEventId id, void* pUserData, Agent* pAgent, char const* pProdName, char const* pInstantiation)
