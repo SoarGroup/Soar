@@ -221,6 +221,43 @@ void KernelSML::Shutdown()
 	m_pConnectionManager->Shutdown() ;
 }
 
+//////////////////////////////////////
+/*************************************************************
+* @brief	Notify listeners that this event has occured.
+*************************************************************/
+std::string KernelSML::FireEditProductionEvent(char const* pProduction) { 
+
+	char response[10000] ;
+	response[0] = 0 ;
+
+	bool ok = m_StringListener.HandleEvent(gSKIEVENT_EDIT_PRODUCTION, pProduction, sizeof(response), response) ;
+	if (!ok)
+	{
+		// return zero length string for success
+		strcpy(response, "") ;
+	}
+
+	return response ;
+}
+
+/*************************************************************
+* @brief	Notify listeners that this event has occured.
+*************************************************************/
+std::string KernelSML::FireLoadLibraryEvent(char const* pLibraryCommand) { 
+	char response[10000] ;
+	response[0] = 0 ;
+
+	bool ok = m_StringListener.HandleEvent(gSKIEVENT_LOAD_LIBRARY, pLibraryCommand, sizeof(response), response) ;
+	if (!ok)
+	{
+		// return zero length string for success
+		strcpy(response, "") ;
+	}
+
+	return response ;
+}
+//////////////////////////////////////
+
 /*************************************************************
 * @brief	Send this message out to any clients that are listening.
 *			These messages are from one client to another--kernelSML is just

@@ -258,12 +258,12 @@ public:
 	/*************************************************************
 	* @brief	Notify listeners that this event has occured.
 	*************************************************************/
-	void FireEditProductionEvent(char const* pProduction) { m_StringListener.HandleEvent(gSKIEVENT_EDIT_PRODUCTION, pProduction) ; }
+	std::string FireEditProductionEvent(char const* pProduction);
 
 	/*************************************************************
 	* @brief	Notify listeners that this event has occured.
 	*************************************************************/
-	void FireLoadLibraryEvent(char const* pLibraryName) { m_StringListener.HandleEvent(gSKIEVENT_LOAD_LIBRARY, pLibraryName) ; }
+	std::string FireLoadLibraryEvent(char const* pLibraryCommand);
 
 	/*************************************************************
 	* @brief	Add or remove a connection from the list implementing

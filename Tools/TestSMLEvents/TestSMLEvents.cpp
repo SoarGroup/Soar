@@ -173,7 +173,7 @@ void MyUpdateEventHandler(smlUpdateEventId id, void* pUserData, Kernel* pKernel,
 	}*/
 }
 
-void MyStringEventHandler(smlStringEventId id, void* pUserData, Kernel* pKernel, char const* pData) {
+std::string MyStringEventHandler(smlStringEventId id, void* pUserData, Kernel* pKernel, char const* pData) {
 	EventData* eventData = static_cast<EventData*>(pUserData);
 	eventData->count++;
 
@@ -181,6 +181,9 @@ void MyStringEventHandler(smlStringEventId id, void* pUserData, Kernel* pKernel,
 	/*if(eventData->eventId == 123) {
 		cout << "Got event " << eventId << endl;
 	}*/
+
+	// empty string indicates success
+	return "";
 }
 
 

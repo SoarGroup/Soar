@@ -157,7 +157,7 @@
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 	}
 	
-	void PythonStringEventCallback(sml::smlStringEventId id, void* pUserData, sml::Kernel* pKernel, char const* pData)
+	std::string PythonStringEventCallback(sml::smlStringEventId id, void* pUserData, sml::Kernel* pKernel, char const* pData)
 	{	
 		PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
@@ -168,9 +168,15 @@
 		PyObject* result = PyEval_CallObject(pud->func, args);
 		
 		Py_DECREF(args);
-		if(result!=0) Py_DECREF(result);
+		if(result==0 || !PyString_Check(result))
+			return "";
+		
+		std::string res = PyString_AsString(result);
+		Py_DECREF(result);
 		
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
+
+		return res;
 	}
 	
 	void PythonAgentEventCallback(sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent)

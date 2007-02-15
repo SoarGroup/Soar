@@ -22,8 +22,12 @@ string myRHSTest(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* p
 extern "C" {
 #endif
 
-EXPORT void sml_InitLibrary(Kernel* pKernel, int argc, char** argv) {
+EXPORT char* sml_InitLibrary(Kernel* pKernel, int argc, char** argv) {
+	char* result;
 	int callbackId = pKernel->AddRhsFunction("test", myRHSTest, 0);
+	if (argc > 1) 
+		return argv[1];
+	return "";
 }
 
 #ifdef __cplusplus

@@ -951,8 +951,9 @@ public:
 	* using a remote client for purposes such as logging.
 	* @param pLibraryCommand the library name and args as passed to the
 	*		 load-library command (works kind of like echo)
+	* @return error message or empty string for no error
 	*************************************************************/
-	void LoadExternalLibrary(char const* pLibraryCommand);
+	std::string LoadExternalLibrary(char const* pLibraryCommand);
 
 protected:
 	/*************************************************************

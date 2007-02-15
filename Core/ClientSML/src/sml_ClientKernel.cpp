@@ -114,12 +114,12 @@ static void InitSoarHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 * @brief Called when an init-soar event happens so we know
 *		 to refresh the input/output links.
 *************************************************************/
-static void LoadLibraryHandler(smlStringEventId id, void* pUserData, Kernel* pKernel, char const* pString)
+static std::string LoadLibraryHandler(smlStringEventId id, void* pUserData, Kernel* pKernel, char const* pString)
 {
 	unused(pUserData) ;
 	unused(id) ;
 
-	pKernel->LoadExternalLibrary(pString);
+	return pKernel->LoadExternalLibrary(pString);
 }
 
 void Kernel::InitEvents()
@@ -520,8 +520,6 @@ void Kernel::ReceivedUpdateEvent(smlUpdateEventId id, AnalyzeXML* pIncoming, Ele
 *************************************************************/
 void Kernel::ReceivedStringEvent(smlStringEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
-	unused(pResponse) ;
-
 	char const* pValue = pIncoming->GetArgString(sml_Names::kParamValue) ;
 
 	// Look up the handler(s) from the map
@@ -540,7 +538,10 @@ void Kernel::ReceivedStringEvent(smlStringEventId id, AnalyzeXML* pIncoming, Ele
 		void* pUserData = handlerWithData.getUserData() ;
 
 		// Call the handler
-		handler(id, pUserData, this, pValue) ;
+		std::string result = handler(id, pUserData, this, pValue) ;
+
+		// If we got back a result then fill in the value in the response message.
+		GetConnection()->AddSimpleResultToSMLResponse(pResponse, result.c_str()) ;
 	}
 }
 
@@ -2444,7 +2445,7 @@ std::string Kernel::GetSMLVersion()
 // -- string message (zero-length string means no error)
 // -- error object (passed in?)
 // Any error should get passed back to caller of LoadExternalLibrary
-typedef void (*InitLibraryFunction)(Kernel*, int argc, char** argv);
+typedef char* (*InitLibraryFunction)(Kernel*, int argc, char** argv);
 
 	/*************************************************************
 	* @brief Loads an external library (dll/so/dylib) in the local client for the
@@ -2454,14 +2455,15 @@ typedef void (*InitLibraryFunction)(Kernel*, int argc, char** argv);
 	*		 load-library command (works kind of like echo)
 	*************************************************************/
 
-void Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
+std::string Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 
 	// We'll break up the command in to this argv array
 	std::vector<std::string> vectorArgv;
 	Tokenize(pLibraryCommand, vectorArgv);
 
-	// TODO: handle error better than this
-	assert(vectorArgv.size() > 0);
+	if (vectorArgv.size() == 0) {
+		return "No library name.";
+	}
 
 	// The first index of the argv is the library name
 	// Make a copy of the library name so we can work on it.
@@ -2493,6 +2495,8 @@ void Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 	}
 	// FIXME error details can be returned by a call to dlerror()
 #endif
+	std::string resultString;
+
 	if(hLibrary) {
 		InitLibraryFunction pInitLibraryFunction = (InitLibraryFunction)GetProcAddress(hLibrary, "sml_InitLibrary") ;
 
@@ -2513,7 +2517,10 @@ void Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 		// Null-terminate the whole array
 		charArgv[vectorArgv.size()] = 0;
 
-		pInitLibraryFunction(this, argc, charArgv);
+		char* result = pInitLibraryFunction(this, argc, charArgv);
+		if (result != 0) {
+			resultString = result;
+		}
 
 		// First delete the leaves
 		for (std::vector<std::string>::size_type index = 0; index < vectorArgv.size(); ++index) {
@@ -2523,4 +2530,6 @@ void Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 		// finally, delete the whole array
 		delete [] charArgv;
 	}
+	
+	return resultString;
 }
