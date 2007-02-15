@@ -127,8 +127,10 @@ void Kernel::InitEvents()
 	// Register for init-soar events
 	RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, &InitSoarHandler, NULL) ;
 
-	// Register for load-library events
-	RegisterForStringEvent(smlEVENT_LOAD_LIBRARY, &LoadLibraryHandler, NULL);
+	// Register for load-library events (local client only)
+	if(!this->GetConnection()->IsRemoteConnection()) {
+		RegisterForStringEvent(smlEVENT_LOAD_LIBRARY, &LoadLibraryHandler, NULL);
+	}
 }
 
 /*************************************************************
