@@ -2497,7 +2497,9 @@ std::string Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 #endif
 	std::string resultString;
 
-	if(hLibrary) {
+	if(!hLibrary) {
+		return "Library not found.";
+	} else {
 		InitLibraryFunction pInitLibraryFunction = (InitLibraryFunction)GetProcAddress(hLibrary, "sml_InitLibrary") ;
 
 		// Create main-style argc/argv (argv is null-terminated);
@@ -2530,6 +2532,6 @@ std::string Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 		// finally, delete the whole array
 		delete [] charArgv;
 	}
-	
+
 	return resultString;
 }
