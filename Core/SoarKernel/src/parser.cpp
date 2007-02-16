@@ -1814,7 +1814,7 @@ action *destructively_reverse_action_list (action *a) {
    the rest of the body of the sp).
 ================================================================= */
 
-production *parse_production (agent* thisAgent) {
+production *parse_production (agent* thisAgent, byte* rete_addition_result) {
   Symbol *name;
   char *documentation;
   condition *lhs, *lhs_top, *lhs_bottom;
@@ -1822,7 +1822,10 @@ production *parse_production (agent* thisAgent) {
   production *p;
   byte declared_support;
   byte prod_type;
-  byte rete_addition_result;
+
+  // voigtjr: added to parameter list so that CLI can ignore the error 
+  // of a duplicate production with a different name
+  //byte rete_addition_result;
   Bool rhs_okay;
   Bool interrupt_on_match;
 
@@ -1957,10 +1960,10 @@ production *parse_production (agent* thisAgent) {
   p->documentation = documentation;
   p->declared_support = declared_support;
   p->interrupt = interrupt_on_match;
-  rete_addition_result = add_production_to_rete (thisAgent, p, lhs_top, NIL, TRUE);
+  *rete_addition_result = add_production_to_rete (thisAgent, p, lhs_top, NIL, TRUE);
   deallocate_condition_list (thisAgent, lhs_top);
 
-  if (rete_addition_result==DUPLICATE_PRODUCTION) {
+  if (*rete_addition_result==DUPLICATE_PRODUCTION) {
     excise_production (thisAgent, p, FALSE);
     p = NIL;
   }
