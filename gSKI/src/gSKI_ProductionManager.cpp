@@ -784,12 +784,18 @@ with the production names).
       get_lexeme(a);
       
       production* p;
-      p = parse_production(a);
+	  byte rete_addition_result = 0;
+      p = parse_production(a, &rete_addition_result);
 
 	  set_lexer_allow_ids (a, true);
       soarAlternateInput( a, 0, 0, true); 
 
 	  if (!p) { // added by voigtjr
+		  // let's distinguish this error so we can ignore it in the CLI during a source command
+		  if (rete_addition_result == DUPLICATE_PRODUCTION) {
+			  SetError(err, gSKIERR_IGNORED_DUPLICATE_PRODUCTION);
+			  return;
+		  }
 		  SetError(err, gSKIERR_UNABLE_TO_ADD_PRODUCTION);
 		  return;
 	  }
