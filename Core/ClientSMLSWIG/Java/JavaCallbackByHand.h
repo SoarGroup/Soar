@@ -960,7 +960,7 @@ static std::string StringEventHandler(sml::smlStringEventId id, void* pUserData,
 	// The method name is passed in by the user (and needs to match exactly, including case).
 	// The method should be owned by the m_HandlerObject that the user also passed in.
 	// Any slip here and you get a NoSuchMethod exception and my Java VM shuts down.
-	jmethodID mid = jenv->GetMethodID(cls, pJavaData->m_HandlerMethod.c_str(), "(ILjava/lang/Object;Lsml/Kernel;Ljava/lang/String;)V") ;
+	jmethodID mid = jenv->GetMethodID(cls, pJavaData->m_HandlerMethod.c_str(), "(ILjava/lang/Object;Lsml/Kernel;Ljava/lang/String;)Ljava/lang/String;") ;
 
 	if (mid == 0)
 	{
