@@ -1,14 +1,27 @@
+import os
 import RuleParser
-import tempfile
 from ElementGGP import ElementGGP
 
-kifdir = "../kif"
+kifdir = os.path.join('..', 'kif', 'R02_mod')
+agentdir = os.path.join('..', 'agents')
+
 #kiffile = "mummymaze1p-horiz.kif"
-kiffile = "mummymaze1p-separate.kif"
+kiffile = "mummymaze1p-horiz-easy.kif"
+#kiffile = "mummymaze1p-vert.kif"
+#kiffile = "mummymaze1p-hv.kif"
+#kiffile = "mummymaze1p-nosouth.kif"
+#kiffile = "mummymaze1p-unreachable.kif"
+#kiffile = "mummymaze1p-separate.kif"
 #kiffile = "buttons.kif"
-soarfile = tempfile.mkstemp(".soar", kiffile[:-3], "..")[1]
+
+soarfile = os.path.join(agentdir, '%s.soar' % (kiffile[:-4]))
+n = 0
+while os.path.exists(soarfile):
+	soarfile = os.path.join(agentdir, '%s.%d.soar' % (kiffile[:-4], n))
+	n += 1
+
 print soarfile
-kif = open("%s/%s" % (kifdir, kiffile))
+kif = open(os.path.join(kifdir, kiffile))
 
 description = ""
 line = kif.readline()

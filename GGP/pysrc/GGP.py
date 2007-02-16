@@ -64,11 +64,10 @@ class Responder(BaseHTTPServer.BaseHTTPRequestHandler):
 
 		print str(description_element)
 
-		RuleParser.TranslateDescription("game", description_element, "tmp.soar")
-		
-		#agent.ExecuteCommandLine("watch 5")
+		#RuleParser.TranslateDescription("game", description_element, "tmp.soar")
 
-		print agent.ExecuteCommandLine("source tmp.soar")
+		#print agent.ExecuteCommandLine("source tmp.soar")
+		print agent.ExecuteCommandLine("source mummymaze1p-horiz.qWxtW_lt.soar")
 
 		if not agent.GetLastCommandLineResult():
 			print "Production load failed"
