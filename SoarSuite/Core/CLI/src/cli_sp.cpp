@@ -51,8 +51,13 @@ bool CommandLineInterface::DoSP(gSKI::Agent* pAgent, const std::string& producti
 	this->RemoveListenerAndEnableCallbacks(pAgent);
 
 	if (gSKI::isError(m_gSKIError)) {
-		SetErrorDetail("Error adding production.");
-		return SetError(CLIError::kgSKIError);
+		if (m_gSKIError.Id == gSKI::gSKIERR_IGNORED_DUPLICATE_PRODUCTION) {
+			// gSKI prints the error message.
+			return true;
+		} else {
+			SetErrorDetail("Error adding production.");
+			return SetError(CLIError::kgSKIError);
+		}
 	}
 
 	++m_NumProductionsSourced;

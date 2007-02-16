@@ -51,6 +51,7 @@ namespace gSKI {
       "Agent is halted. You need to reinitialize before it can run again.",
       "There are no agents in the run list to run.  Add at least one agent to the manager's run list first.",
       "Unable to add the given production",
+	  "A duplicate production already exists",
       "A RHS function with the given name already exists. Remove the old one first before adding the new one.",
       "The given RHS function is not currently registered with this agent; therefore, it cannot be removed."
    };
