@@ -1533,15 +1533,18 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
 		}	
 	}
 
-	public void stringEventHandler(int eventID, Object userData, Kernel kernel, String callbackData)
+	public String stringEventHandler(int eventID, Object userData, Kernel kernel, String callbackData)
 	{
 		if (eventID == smlStringEventId.smlEVENT_EDIT_PRODUCTION.swigValue())
 		{
 			String prod = callbackData ;
 	
 			if (prod != null)
+			{
 				EditProductionByName(prod) ;
+			}
 		}
+		return "" ;
 	}
 
     /**
