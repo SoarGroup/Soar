@@ -151,7 +151,7 @@
   }
 
   public interface StringEventInterface {  
-  	public void stringEventHandler(int eventID, Object userData, Kernel kernel, String callbackData) ;
+  	public String stringEventHandler(int eventID, Object userData, Kernel kernel, String callbackData) ;
   }
 
   public interface AgentEventInterface {  
