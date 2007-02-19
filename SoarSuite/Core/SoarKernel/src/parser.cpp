@@ -1814,7 +1814,7 @@ action *destructively_reverse_action_list (action *a) {
    the rest of the body of the sp).
 ================================================================= */
 
-production *parse_production (agent* thisAgent, byte* rete_addition_result) {
+production *parse_production (agent* thisAgent, unsigned char* rete_addition_result) {
   Symbol *name;
   char *documentation;
   condition *lhs, *lhs_top, *lhs_bottom;

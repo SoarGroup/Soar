@@ -35,7 +35,7 @@ extern "C"
    extern void init_parser (void);
    extern condition *parse_lhs (agent* thisAgent);
    extern Bool parse_rhs (agent* thisAgent, action **dest_rhs);
-   extern struct production_struct *parse_production (agent* thisAgent, byte* rete_addition_result);
+   extern struct production_struct *parse_production (agent* thisAgent, unsigned char* rete_addition_result);
    extern Symbol *make_symbol_for_current_lexeme (agent* thisAgent);
 
 #ifdef __cplusplus
