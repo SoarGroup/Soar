@@ -784,7 +784,7 @@ with the production names).
       get_lexeme(a);
       
       production* p;
-	  byte rete_addition_result = 0;
+	  unsigned char rete_addition_result = 0;
       p = parse_production(a, &rete_addition_result);
 
 	  set_lexer_allow_ids (a, true);
