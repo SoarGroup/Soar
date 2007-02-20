@@ -286,7 +286,10 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		}
 		
     	agent.ClearOutputLinkChanges();
-		agent.Commit();
+		if (!agent.Commit()) {
+			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			Soar2D.control.stopSimulation();
+		}
 		
 		// Do not allow a move if we rotated.
 		if (move.rotate) {
@@ -404,7 +407,10 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		DestroyWME(m_yWME);
 		m_yWME = null;
 		
-		agent.Commit();
+		if (!agent.Commit()) {
+			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			Soar2D.control.stopSimulation();
+		}
 
 		clearRadar();
 	}
@@ -857,7 +863,10 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		}
 		
 		m_Reset = false;
-		agent.Commit();
+		if (!agent.Commit()) {
+			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			Soar2D.control.stopSimulation();
+		}
 	}
 	
 	private void generateNewRadar() {

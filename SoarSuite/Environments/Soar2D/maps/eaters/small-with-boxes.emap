@@ -1,59 +1,59 @@
 <map>
-  <cell-object name="wall">
-    <property name="id" value="wall" />
-    <property name="block" value="true" />
-  </cell-object>
-  <cell-object name="normalfood">
-    <property name="id" value="normalfood" />
-    <property name="points" value="5" />
-    <property name="shape" value="round" />
-    <property name="color" value="blue" />
-    <property name="edible" value="true" />
-    <apply>
-      <points />
-      <remove />
-    </apply>
-  </cell-object>
   <cell-object name="bonusfood">
-    <property name="id" value="bonusfood" />
-    <property name="points" value="10" />
-    <property name="shape" value="square" />
-    <property name="color" value="red" />
     <property name="edible" value="true" />
+    <property name="color" value="red" />
+    <property name="shape" value="square" />
+    <property name="points" value="10" />
+    <property name="id" value="bonusfood" />
     <apply>
       <points />
       <remove />
     </apply>
   </cell-object>
-  <cell-object name="permafood">
-    <property name="points" value="1" />
-    <property name="shape" value="round" />
-    <property name="color" value="purple" />
-    <property name="move-apply" value="true" />
+  <cell-object name="box2">
+    <property name="color" value="orange" />
+    <property name="shape" value="square" />
+    <property name="box" value="true" />
+    <property name="id" value="box" />
     <apply>
+      <property name="status" value="open" />
+      <property name="points" value="10" />
       <points />
     </apply>
   </cell-object>
   <cell-object name="box1">
-    <property name="id" value="box" />
-    <property name="box" value="true" />
-    <property name="shape" value="square" />
     <property name="color" value="green" />
+    <property name="shape" value="square" />
+    <property name="box" value="true" />
+    <property name="id" value="box" />
     <apply>
-      <points />
       <property name="status" value="open" />
       <property name="points" value="20" />
+      <points />
     </apply>
   </cell-object>
-  <cell-object name="box2">
-    <property name="id" value="box" />
-    <property name="box" value="true" />
-    <property name="shape" value="square" />
-    <property name="color" value="orange" />
+  <cell-object name="normalfood">
+    <property name="edible" value="true" />
+    <property name="color" value="blue" />
+    <property name="shape" value="round" />
+    <property name="points" value="5" />
+    <property name="id" value="normalfood" />
     <apply>
       <points />
-      <property name="status" value="open" />
-      <property name="points" value="10" />
+      <remove />
+    </apply>
+  </cell-object>
+  <cell-object name="wall">
+    <property name="block" value="true" />
+    <property name="id" value="wall" />
+  </cell-object>
+  <cell-object name="permafood">
+    <property name="color" value="purple" />
+    <property name="shape" value="round" />
+    <property name="move-apply" value="true" />
+    <property name="points" value="1" />
+    <apply>
+      <points />
     </apply>
   </cell-object>
   <cells world-size="5" random-walls="false" random-food="false">

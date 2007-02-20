@@ -1,28 +1,10 @@
 <map>
-  <cell-object name="wall">
-    <property name="id" value="wall" />
-    <property name="block" value="true" />
-  </cell-object>
-  <cell-object name="normalfood" updatable="true">
-    <property name="id" value="normalfood" />
-    <property name="points" value="5" />
-    <property name="shape" value="round" />
-    <property name="color" value="blue" />
+  <cell-object name="bonusfood">
     <property name="edible" value="true" />
-    <apply>
-      <points />
-      <remove />
-    </apply>
-    <update>
-      <decay />
-    </update>
-  </cell-object>
-  <cell-object name="bonusfood" updatable="true">
-    <property name="id" value="bonusfood" />
-    <property name="points" value="10" />
-    <property name="shape" value="square" />
     <property name="color" value="red" />
-    <property name="edible" value="true" />
+    <property name="shape" value="square" />
+    <property name="points" value="10" />
+    <property name="id" value="bonusfood" />
     <apply>
       <points />
       <remove />
@@ -30,6 +12,24 @@
     <update>
       <decay />
     </update>
+  </cell-object>
+  <cell-object name="normalfood">
+    <property name="edible" value="true" />
+    <property name="color" value="blue" />
+    <property name="shape" value="round" />
+    <property name="points" value="5" />
+    <property name="id" value="normalfood" />
+    <apply>
+      <points />
+      <remove />
+    </apply>
+    <update>
+      <decay />
+    </update>
+  </cell-object>
+  <cell-object name="wall">
+    <property name="block" value="true" />
+    <property name="id" value="wall" />
   </cell-object>
   <cells world-size="10" random-walls="false" random-food="true">
     <row>
@@ -68,14 +68,30 @@
       <cell>
         <object>wall</object>
       </cell>
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
       <cell>
         <object>wall</object>
       </cell>
@@ -84,14 +100,30 @@
       <cell>
         <object>wall</object>
       </cell>
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
       <cell>
         <object>wall</object>
       </cell>
@@ -100,14 +132,30 @@
       <cell>
         <object>wall</object>
       </cell>
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
       <cell>
         <object>wall</object>
       </cell>
@@ -116,14 +164,30 @@
       <cell>
         <object>wall</object>
       </cell>
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
       <cell>
         <object>wall</object>
       </cell>
@@ -132,14 +196,30 @@
       <cell>
         <object>wall</object>
       </cell>
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
       <cell>
         <object>wall</object>
       </cell>
@@ -148,14 +228,30 @@
       <cell>
         <object>wall</object>
       </cell>
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
       <cell>
         <object>wall</object>
       </cell>
@@ -164,14 +260,30 @@
       <cell>
         <object>wall</object>
       </cell>
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
       <cell>
         <object>wall</object>
       </cell>
@@ -180,14 +292,30 @@
       <cell>
         <object>wall</object>
       </cell>
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
-      <cell />
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>bonusfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
+      <cell>
+        <object>normalfood</object>
+      </cell>
       <cell>
         <object>wall</object>
       </cell>

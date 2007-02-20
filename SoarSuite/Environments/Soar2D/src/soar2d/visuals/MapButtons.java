@@ -19,32 +19,36 @@ public class MapButtons extends Composite {
 		m_ChangeMapButton.setText("Change Map");
 		m_ChangeMapButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				FileDialog fd = new FileDialog(MapButtons.this.getShell(), SWT.OPEN);
-				fd.setText("Open");
-				fd.setFilterPath(Soar2D.config.getMapPath());
-				String ext = null;
-				switch (Soar2D.config.getType()) {
-				case kTankSoar:
-					ext = Configuration.kTankSoarMapExt;
-					break;
-				case kEaters:
-					ext = Configuration.kEatersMapExt;
-					break;
-				case kBook:
-					ext = Configuration.kBookMapExt;
-					break;
-				}
-				fd.setFilterExtensions(new String[] {"*." + ext, "*.*"});
-				VisualWorld.internalRepaint = true;
-				String map = fd.open();
-				VisualWorld.internalRepaint = false;
-				if (map != null) {
-					Soar2D.control.changeMap(map);
-				}
+				MapButtons.this.changeMap();
 			}
 		});
 		
 		updateButtons();
+	}
+	
+	void changeMap() {
+		FileDialog fd = new FileDialog(getShell(), SWT.OPEN);
+		fd.setText("Open");
+		fd.setFilterPath(Soar2D.config.getMapPath());
+		String ext = null;
+		switch (Soar2D.config.getType()) {
+		case kTankSoar:
+			ext = Configuration.kTankSoarMapExt;
+			break;
+		case kEaters:
+			ext = Configuration.kEatersMapExt;
+			break;
+		case kBook:
+			ext = Configuration.kBookMapExt;
+			break;
+		}
+		fd.setFilterExtensions(new String[] {"*." + ext, "*.*"});
+		VisualWorld.internalRepaint = true;
+		String map = fd.open();
+		VisualWorld.internalRepaint = false;
+		if (map != null) {
+			Soar2D.control.changeMap(map);
+		}
 	}
 	
 	public void updateButtons() {
