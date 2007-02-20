@@ -1,7 +1,7 @@
 <soar2d version="2">
   <general>
     <game>tanksoar</game>
-    <map>C:\soar\SoarSuite\Environments\Soar2D\maps\tanksoar\default.tmap</map>
+    <map>maps/tanksoar/default.tmap</map>
     <seed>0</seed>
     <no-gui />
     <rules>
@@ -26,15 +26,15 @@
   </general>
   <logging>
     <level>INFO</level>
-    <file>C:\soar\SoarSuite\Environments\Soar2D\soar2d.log</file>
+    <file>soar2d.log</file>
     <console />
   </logging>
   <players>
     <player>
-      <productions>C:\soar\SoarSuite\Environments\Soar2D\agents\tanksoar\tutorial\simple-bot.soar</productions>
+      <productions>agents/tanksoar/tutorial/simple-bot.soar</productions>
     </player>
     <player>
-      <productions>C:\soar\SoarSuite\Environments\Soar2D\agents\tanksoar\tutorial\simple-bot.soar</productions>
+      <productions>agents/tanksoar/tutorial/simple-bot.soar</productions>
     </player>
   </players>
   <terminals>

@@ -1,12 +1,12 @@
 <soar2d version="2">
   <general>
     <game>book</game>
-    <map>C:\soar\SoarSuite\Environments\Soar2D\maps\book\default.bmap</map>
+    <map>maps/book/default.bmap</map>
     <seed>0</seed>
   </general>
   <logging>
     <level>INFO</level>
-    <file>C:\soar\SoarSuite\Environments\Soar2D\soar2d.log</file>
+    <file>soar2d.log</file>
     <console />
   </logging>
   <players />

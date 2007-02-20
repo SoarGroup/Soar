@@ -326,7 +326,7 @@ public class Configuration {
 		}
 		general.addContent(new Element(kTagGame).setText(gameText));
 		
-		general.addContent(new Element(kTagMap).setText(this.map.getAbsolutePath()));
+		general.addContent(new Element(kTagMap).setText(this.map.getPath()));
 		
 		if (this.hasRandomSeed()) {
 			general.addContent(new Element(kTagSeed).setText(Integer.toString(this.getRandomSeed())));
@@ -891,7 +891,7 @@ public class Configuration {
 	private void loggingSave(Element logging) {
 		logging.addContent(new Element(kTagLevel).setText(logLevel.toString()));
 		if (logFile != null) {
-			logging.addContent(new Element(kTagFile).setText(logFile.getAbsolutePath()));
+			logging.addContent(new Element(kTagFile).setText(logFile.getPath()));
 		}
 		
 		if (this.getLogConsole()) {
@@ -1012,7 +1012,7 @@ public class Configuration {
 		}
 		
 		if (config.hasProductions()) {
-			player.addContent(new Element(kTagProductions).setText(config.getProductions().getAbsolutePath()));
+			player.addContent(new Element(kTagProductions).setText(config.getProductions().getPath()));
 		}
 		
 		if (config.hasColor()) {
