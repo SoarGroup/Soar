@@ -1,7 +1,7 @@
 <soar2d version="2">
   <general>
     <game>tanksoar</game>
-    <map>C:\soar\SoarSuite\Environments\Soar2D\maps\tanksoar\default.tmap</map>
+    <map>maps/tanksoar/default.tmap</map>
     <seed>0</seed>
     <rules>
       <tanksoar>
@@ -25,7 +25,7 @@
   </general>
   <logging>
     <level>INFO</level>
-    <file>C:\soar\SoarSuite\Environments\Soar2D\soar2d.log</file>
+    <file>soar2d.log</file>
     <console />
   </logging>
   <players />

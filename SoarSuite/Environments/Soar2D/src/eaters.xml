@@ -1,7 +1,7 @@
 <soar2d version="2">
   <general>
     <game>eaters</game>
-    <map>C:\soar\SoarSuite\Environments\Soar2D\maps\eaters\random-walls.emap</map>
+    <map>maps/eaters/random-walls.emap</map>
     <seed>0</seed>
     <rules>
       <eaters>
@@ -15,7 +15,7 @@
   </general>
   <logging>
     <level>INFO</level>
-    <file>C:\soar\SoarSuite\Environments\Soar2D\soar2d.log</file>
+    <file>soar2d.log</file>
     <console />
   </logging>
   <players />
