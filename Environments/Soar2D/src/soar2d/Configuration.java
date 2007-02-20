@@ -952,6 +952,10 @@ public class Configuration {
 	// players
 	private static final String kTagPlayer = "player";
 	private void playersSave(Element players) {
+		if (this.getDebuggers()) {
+			players.addContent(new Element(kTagDebuggers));
+		}
+		
 		Iterator<PlayerConfig> iter = this.players.iterator();
 		while (iter.hasNext()) {
 			PlayerConfig config = iter.next();

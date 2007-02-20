@@ -323,6 +323,8 @@ public class GridMap {
 		this.size = size;
 	}
 	
+	private boolean randomWalls = false;
+	private boolean randomFood = false;
 	private Cell[][] mapCells = null;	// the cells
 	Cell getCell(java.awt.Point location) {
 		if (location == null) return null;
@@ -350,9 +352,12 @@ public class GridMap {
 	
 	private void cellsSave(Element cells) {
 		cells.setAttribute(kAttrWorldSize, Integer.toString(this.size));
-		// TODO: handle randomness
-		//cells.setAttribute(kAttrRandomWalls, Boolean.toString(false));
-		//cells.setAttribute(kAttrRandomFood, Boolean.toString(false));
+		cells.setAttribute(kAttrRandomWalls, Boolean.toString(randomWalls));
+		cells.setAttribute(kAttrRandomFood, Boolean.toString(randomFood));
+		
+		if (randomWalls && randomFood) {
+			return;
+		}
 		
 		for(int rowIndex = 0; rowIndex < this.size; ++rowIndex) {
 			Element row = new Element(kTagRow);
@@ -378,8 +383,8 @@ public class GridMap {
 			throw new LoadError("error parsing world-size");
 		}
 		
-		boolean randomWalls = Boolean.parseBoolean(cells.getAttributeValue(kAttrRandomWalls, "false"));
-		boolean randomFood = Boolean.parseBoolean(cells.getAttributeValue(kAttrRandomFood, "false"));
+		randomWalls = Boolean.parseBoolean(cells.getAttributeValue(kAttrRandomWalls, "false"));
+		randomFood = Boolean.parseBoolean(cells.getAttributeValue(kAttrRandomFood, "false"));
 		
 		// Generate map from XML unless both are true
 		if (!randomWalls || !randomFood) {
