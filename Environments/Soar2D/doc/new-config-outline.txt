@@ -1,0 +1,106 @@
+<soar2d version="2">
+	<general>
+		<game>
+			enum { tanksoar, eaters, book }
+		<map>
+			string filename
+		?<seed>
+			int seed
+		?<remote>
+		?<hide>
+		?<gui>
+		?<async>
+			int millisecondDelay
+		?<rules>
+			?<eaters>
+				?<vision>
+					int cells
+				?<wall-penalty>
+					int points (negative)
+				?<jump-penalty>
+					int points (negative)
+				?<low-probability>
+					float prob
+				?<high-probability>
+					float prob
+			?<tanksoar>
+				?<default-missiles>
+					int count
+				?<default-energy>
+					int amount
+				?<default-health>
+					int amount
+				?<collision-penalty>
+					int amount (negative)
+				?<max-missile-packs>
+					int count
+				?<missile-pack-respawn-chance>
+					int percent
+				?<shield-energy-usage>
+					int amount (negative)
+				?<missile-hit-award>
+					int points
+				?<missile-hit-penalty>
+					int points (negative)
+				?<kill-award>
+					int points
+				?<kill-penalty>
+					int points (negative)
+				?<radar-width>
+					int cells
+				?<radar-height>
+					int cells
+				?<max-smell-distance>
+					int cells
+				?<missile-reset-threshold>
+					int updates
+	?<logging>
+		?<level>
+			enum { severe, warning, info, fine, finer, finest }
+		?<file>
+			string filename
+		?<console>
+		?<time>
+	?<players>
+		?<debuggers>
+		?<default-points>
+		*<player>
+			?<name>
+				string name
+			?<productions>
+				string filename
+			?<color>
+				enum { (available colors) }
+			?<x>
+				int x
+			?<y>
+				int y
+			?<facing>
+				enum { north, south, east, west }
+			?<points>
+				int points
+			?<energy>
+				int energy
+			?<health>
+				int health
+			?<missiles>
+				int missiles
+	?<terminals>
+		?<max-updates>
+			int updateCount
+		?<agent-command>
+		?<points-remaining>
+		?<winning-score>
+			int theScore
+		?<food-remaining>
+		?<unopened-boxes>
+	?<clients>
+		*<client>
+			<name>
+				string name
+			?<command>
+				string command
+			?<timeout>
+				int timeout
+			?<after>
+		

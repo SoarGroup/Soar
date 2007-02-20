@@ -205,9 +205,12 @@ public class GridMap {
 		while (iter.hasNext()) {
 			
 			String name = iter.next();
-			String value = template.getProperty(name);
+			String value = template.getPropertyApply(name);
 
-			Element property = new Element(kTagProperty).setAttribute(name, value);
+			Element property = new Element(kTagProperty);
+			property.setAttribute(kAttrName, name);
+			property.setAttribute(kAttrValue, value);
+			
 			apply.addContent(property);
 		}
 		
@@ -324,7 +327,21 @@ public class GridMap {
 	}
 	
 	private boolean randomWalls = false;
+	public boolean getRandomWalls() {
+		return randomWalls;
+	}
+	public void setRandomWalls(boolean randomWalls) {
+		this.randomWalls = randomWalls;
+	}
+
 	private boolean randomFood = false;
+	public boolean getRandomFood() {
+		return randomFood;
+	}
+	public void setRandomFood(boolean randomFood) {
+		this.randomFood = randomFood;
+	}
+
 	private Cell[][] mapCells = null;	// the cells
 	Cell getCell(java.awt.Point location) {
 		if (location == null) return null;

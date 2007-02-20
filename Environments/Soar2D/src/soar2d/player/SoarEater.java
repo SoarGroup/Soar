@@ -122,6 +122,9 @@ public class SoarEater extends Eater {
 		this.agent = agent;
 		this.shutdownCommands = playerConfig.getShutdownCommands();
 		
+		// BUGBUG remove
+		debugInputLink();
+
 		previousLocation = new java.awt.Point(-1, -1);
 		
 		Identifier eater = agent.CreateIdWME(agent.GetInputLink(), Names.kEaterID);
@@ -146,7 +149,10 @@ public class SoarEater extends Eater {
 		generateNewRandom();
 		randomWME = agent.CreateFloatWME(agent.GetInputLink(), Names.kRandomID, random);
 		
-		agent.Commit();
+		if (!agent.Commit()) {
+			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			Soar2D.control.stopSimulation();
+		}
 	}
 	
 	/**
@@ -207,10 +213,26 @@ public class SoarEater extends Eater {
 		this.random = newRandom;
 	}
 	
+	private void debugInputLink() {
+		Identifier il = agent.GetInputLink();
+		assert il != null;
+		
+		String in = il.GetIdentifierName();
+		assert in != null;
+		
+		System.out.println("Input link info, agent " + this.getName() 
+				+ ": " + in
+				+ " " + agent.GetInputLink().GetTimeTag());
+	}
+	
 	/* (non-Javadoc)
 	 * @see soar2d.player.Eater#update(soar2d.World, java.awt.Point)
 	 */
 	public void update(World world, java.awt.Point location) {
+		
+		// BUGBUG remove
+		debugInputLink();
+
 		// check to see if we've moved
 		super.update(world, location);
 		
@@ -465,7 +487,10 @@ public class SoarEater extends Eater {
 		agent.Update(randomWME, random);
 		
 		// commit everything
-		agent.Commit();
+		if (!agent.Commit()) {
+			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			Soar2D.control.stopSimulation();
+		}
 	}
 	
 	private void updateFacingWME() {
@@ -623,7 +648,10 @@ public class SoarEater extends Eater {
 			logger.warning("Improperly formatted command: " + commandName);
 		}
 		agent.ClearOutputLinkChanges();
-		agent.Commit();
+		if (!agent.Commit()) {
+			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			Soar2D.control.stopSimulation();
+		}
 		return move;
 	}
 	
@@ -655,7 +683,10 @@ public class SoarEater extends Eater {
 		
 		updateFacingWME();
 		updateScoreWME();
-		agent.Commit();
+		if (!agent.Commit()) {
+			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			Soar2D.control.stopSimulation();
+		}
 
 		agent.InitSoar();
 	}

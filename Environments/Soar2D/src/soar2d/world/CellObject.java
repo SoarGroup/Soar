@@ -137,6 +137,9 @@ public class CellObject {
 	public void addPropertyApply(String name, String value) {
 		propertiesApply.put(name, value);
 	}
+	public String getPropertyApply(String name) {
+		return propertiesApply.get(name);
+	}
 	
 	/**
 	 * @param name property name

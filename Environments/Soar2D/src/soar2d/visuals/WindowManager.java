@@ -643,6 +643,26 @@ public class WindowManager {
 //		Button newTemplateButton = new Button(currentSide, SWT.PUSH);
 //		newTemplateButton.setText("Create New Template");
 		
+		if (Soar2D.config.getType() == SimType.kEaters) {
+			final Button randomFoodButton = new Button(currentSide, SWT.CHECK);
+			randomFoodButton.setText("Random food");
+			randomFoodButton.setSelection(Soar2D.simulation.world.getMap().getRandomFood());
+			randomFoodButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					Soar2D.simulation.world.getMap().setRandomFood(randomFoodButton.getSelection());
+				}
+			});
+			
+			final Button randomWallsButton = new Button(currentSide, SWT.CHECK);
+			randomWallsButton.setText("Random walls");
+			randomWallsButton.setSelection(Soar2D.simulation.world.getMap().getRandomWalls());
+			randomWallsButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					Soar2D.simulation.world.getMap().setRandomWalls(randomWallsButton.getSelection());
+				}
+			});
+		}
+		
 		Button saveAsButton = new Button(currentSide, SWT.PUSH);
 		saveAsButton.setText("Save as...");
 		saveAsButton.addSelectionListener(new SelectionAdapter() {
@@ -673,6 +693,7 @@ public class WindowManager {
 	MenuItem fileConfigurationItem;
 	MenuItem fileExitItem;
 	
+	MenuItem mapChangeItem;
 	MenuItem mapEditItem;
 	
 	MenuItem helpAboutItem;
@@ -725,10 +746,6 @@ public class WindowManager {
 	private void enterEditMode() {
 		assert mapEditMode == false;
 		
-		if (Soar2D.config.getType() == SimType.kEaters) {
-			Soar2D.control.infoPopUp("Map editor doesn't work in Eaters yet.");
-			return;
-		}
 		if (Soar2D.simulation.world.getPlayers().size() > 0) {
 			Soar2D.control.infoPopUp("Destroy all agents before editing the map.");
 			return;
@@ -867,6 +884,18 @@ public class WindowManager {
 		mapMenu = new Menu(shell, SWT.DROP_DOWN);
 		mapMenuHeader.setMenu(mapMenu);
 		
+		mapChangeItem = new MenuItem(mapMenu, SWT.PUSH);
+		mapChangeItem.setText("&Change Map");
+		mapChangeItem.addSelectionListener(new SelectionListener() {
+		    public void widgetSelected(SelectionEvent event) {
+		    	mapButtons.changeMap();
+		    }
+
+		    public void widgetDefaultSelected(SelectionEvent event) {
+		    	mapButtons.changeMap();
+		    }
+		});
+
 		mapEditItem = new MenuItem(mapMenu, SWT.PUSH);
 		mapEditItem.setText("&Edit Map");
 		mapEditItem.addSelectionListener(new SelectionListener() {
