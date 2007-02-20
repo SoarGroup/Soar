@@ -22,7 +22,7 @@ else
 	mkdir tmp/images
 fi
 
-javac -source 1.5 -d tmp -classpath ${SOARBIN}/swt.jar:${SOARBIN}/sml.jar:${SOARBIN}/tosca.jar -sourcepath src src/soar2d/Soar2D.java
+javac -source 1.5 -d tmp -classpath jdom.jar:${SOARBIN}/swt.jar:${SOARBIN}/sml.jar:${SOARBIN}/tosca.jar -sourcepath src src/soar2d/Soar2D.java
 RET=$?
 if [[ $RET = 0 ]]
   then cp -f src/*.xml tmp
