@@ -1,5 +1,7 @@
 package soar2d;
 
+import soar2d.ClientConfig;
+
 /**
  * @author voigtjr
  *
@@ -33,90 +35,6 @@ public class Names {
 	public static final String kOpen = "open";
 	public static final String kRedraw = "redraw";
 	
-	public static final String kTagAgent = "agent";
-	public static final String kTagApply = "apply";
-	public static final String kTagBook = "book";
-	public static final String kTagCellObject = "cell-object";
-	public static final String kTagCell = "cell";
-	public static final String kTagCells = "cells";
-	public static final String kTagClient = "client";
-	public static final String kTagDecay = "decay";
-	public static final String kTagDisplay = "display";
-	public static final String kTagEaters = "eaters";
-	public static final String kTagEnergy = "energy";
-	public static final String kTagFlyMissile = "fly-missile";
-	public static final String kTagFood = "food";
-	public static final String kTagHealth = "health";
-	public static final String kTagLinger = "linger";
-	public static final String kTagLogger = "logger";
-	public static final String kTagMap = "map";
-	public static final String kTagMissiles = "missiles";
-	public static final String kTagObject = "object";
-	public static final String kTagPoints = "points";
-	public static final String kTagProperty = "property";
-	public static final String kTagRemove = "remove";
-	public static final String kTagRow = "row";
-	public static final String kTagShutdownCommand = "shutdown-command";
-	public static final String kTagSimulation = "simulation";
-	public static final String kTagSoar2D = "soar2d";
-	public static final String kTagTankSoar = "tanksoar";
-	public static final String kTagTerminal = "terminal";
-	public static final String kTagUpdate = "update";
-
-	public static final String kParamAfter = "after";
-	public static final String kParamAsync = "async";
-	public static final String kParamColor = "color";
-	public static final String kParamCommand = "command";
-	public static final String kParamConsole = "console";
-	public static final String kParamConsumable = "consumable";
-	public static final String kParamDebuggers = "debuggers";
-	public static final String kParamDecay = "decay";
-	public static final String kParamEnergy = "energy";
-	public static final String kParamFacing = "facing";
-	public static final String kParamFile = "file";
-	public static final String kParamFileName = "filename";
-	public static final String kParamGraphical = "graphical";
-	public static final String kParamHealth = "health";
-	public static final String kParamLevel = "level";
-	public static final String kParamLogTime = "log-time";
-	public static final String kParamMap = "map";
-	public static final String kParamMissiles = "missiles";
-	public static final String kParamMissileResetThreshold = "missile-reset-threshold";
-	public static final String kParamName = "name";
-	public static final String kParamNoWorld = "no-world";
-	public static final String kParamPoints = "points";
-	public static final String kParamProductions = "productions";
-	public static final String kParamProperty = "property";
-	public static final String kParamRandom = "random";
-	public static final String kParamRandomSeed = "random-seed";
-	public static final String kParamRandomFood = "random-food";
-	public static final String kParamRandomWalls = "random-walls";
-	public static final String kParamRemote = "remote";
-	public static final String kParamShape = "shape";
-	public static final String kParamShields = "shields";
-	public static final String kParamShieldsDown = "shields-down";
-	public static final String kParamTimeOut = "timeout";
-	public static final String kParamType = "type";
-	public static final String kParamValue = "value";
-	public static final String kParamVersion = "version";
-	public static final String kParamWorldSize = "world-size";
-	public static final String kParamX = "x";
-	public static final String kParamY = "y";
-	
-	public static final String kTerminalAgentCommand = "agent-command";
-	public static final String kTerminalFoodRemaining = "food-remaining";
-	public static final String kTerminalMaxUpdates = "max-updates";
-	public static final String kTerminalPointsRemaining = "points-remaining";
-	public static final String kTerminalUnopenedBoxes = "unopened-boxes";
-	public static final String kTerminalWinningScore = "winning-score";
-
-	public static final String kLevelSevere = "severe";
-	public static final String kLevelWarning = "warning";
-	public static final String kLevelInfo = "info";
-	public static final String kLevelFine = "fine";
-	public static final String kLevelFiner = "finer";
-	public static final String kLevelFinest = "finest";
-
 	public static final String kBackwardID = "backward";
 	public static final String kBlockedID = "blocked";
 	public static final String kCenterID = "center";
@@ -208,6 +126,6 @@ public class Names {
 		kDebuggerClient.name = "java-debugger";
 		kDebuggerClient.after = true;
 		kDebuggerClient.command = null;
-		kDebuggerClient.timeout = Soar2D.config.kDefaultTimeout;
+		kDebuggerClient.timeout = ClientConfig.kDefaultTimeout;
 	}
 }

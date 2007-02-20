@@ -49,7 +49,7 @@ public class Eater extends Player {
 	}
 
 	public boolean getHumanMove() {
-		if (Soar2D.config.graphical == false) {
+		if (Soar2D.config.getNoGUI()) {
 			move = new MoveInfo();
 			return true;
 		}

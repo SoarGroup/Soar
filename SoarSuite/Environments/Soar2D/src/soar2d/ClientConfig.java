@@ -8,6 +8,8 @@ package soar2d;
  */
 public class ClientConfig {
 	
+	public static final int kDefaultTimeout = 15; //seconds
+
 	public ClientConfig() {}
 	
 	public ClientConfig(ClientConfig config) {
@@ -31,7 +33,7 @@ public class ClientConfig {
 	/**
 	 * Seconds to wait for the client before timing out and giving up.
 	 */
-	public int timeout = Soar2D.config.kDefaultTimeout;
+	public int timeout = kDefaultTimeout;
 	/**
 	 * If true, the client is expected (or spawned) after agent creation.
 	 * If false, the client is expected (or spawned) before agent creation. 

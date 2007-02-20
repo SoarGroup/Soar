@@ -17,7 +17,6 @@ import soar2d.Configuration.SimType;
 import soar2d.player.*;
 import soar2d.world.CellObject;
 import soar2d.world.GridMap;
-import soar2d.world.MapLoader;
 
 public class WindowManager {
 	private static Logger logger = Logger.getLogger("soar2d");
@@ -693,7 +692,7 @@ public class WindowManager {
 			if (mapFile == null) {
 				return;
 			}
-			Soar2D.config.map = mapFile;
+			Soar2D.config.setMap(mapFile);
 		}
 		
    		Soar2D.logger.info("Exiting map editor.");
@@ -744,11 +743,14 @@ public class WindowManager {
 	
 		mapMenuHeader.setEnabled(false);
 		
-		MapLoader loader = new MapLoader();
-		loader.load();
-		assert this.editMap == null;
-		this.editMap = loader.getMap();
-		this.visualWorld.setMap(loader.getMap());
+		this.editMap = new GridMap(Soar2D.config);
+		try {
+			this.editMap.load();
+		} catch (GridMap.LoadError e) {
+			// TODO: handle gracefully
+			assert false;
+		}
+		this.visualWorld.setMap(this.editMap);
 		
 		currentSide.dispose();
 		createEditSide();
@@ -761,8 +763,7 @@ public class WindowManager {
 	}
 	
 	private File saveMap() {
-		MapLoader loader = new MapLoader();
-		String output = loader.generateXMLString(this.editMap);
+		String output = this.editMap.generateXMLString();
 
 		if (output == null) {
 			Soar2D.control.severeError("Couldn't generate map file.");
@@ -775,15 +776,15 @@ public class WindowManager {
 		
 		switch (Soar2D.config.getType()) {
 		case kBook:
-			fd.setFilterExtensions(new String[] {"*." + Soar2D.config.kBookMapExt, "*.*"});
+			fd.setFilterExtensions(new String[] {"*." + Configuration.kBookMapExt, "*.*"});
 			break;
 			
 		case kEaters:
-			fd.setFilterExtensions(new String[] {"*." + Soar2D.config.kEatersMapExt, "*.*"});
+			fd.setFilterExtensions(new String[] {"*." + Configuration.kEatersMapExt, "*.*"});
 			break;
 			
 		case kTankSoar:
-			fd.setFilterExtensions(new String[] {"*." + Soar2D.config.kTankSoarMapExt, "*.*"});
+			fd.setFilterExtensions(new String[] {"*." + Configuration.kTankSoarMapExt, "*.*"});
 			break;
 		}
 		
@@ -792,15 +793,15 @@ public class WindowManager {
 			if (!mapFileString.matches(".*\\..+")) {
 				switch (Soar2D.config.getType()) {
 				case kBook:
-					mapFileString += "." + Soar2D.config.kBookMapExt;
+					mapFileString += "." + Configuration.kBookMapExt;
 					break;
 					
 				case kEaters:
-					mapFileString += "." + Soar2D.config.kEatersMapExt;
+					mapFileString += "." + Configuration.kEatersMapExt;
 					break;
 					
 				case kTankSoar:
-					mapFileString += "." + Soar2D.config.kTankSoarMapExt;
+					mapFileString += "." + Configuration.kTankSoarMapExt;
 					break;
 				}
 			}
@@ -888,11 +889,11 @@ public class WindowManager {
 		helpAboutItem.setText("&About");
 		helpAboutItem.addSelectionListener(new SelectionListener() {
 		    public void widgetSelected(SelectionEvent event) {
-		        infoMessage("About", "Soar2D version x.x\nby Jonathan Voigt\nvoigtjr@gmail.com");
+		        infoMessage("About", "Soar2D\nby Jonathan Voigt\nvoigtjr@gmail.com");
 			}
 			
 			public void widgetDefaultSelected(SelectionEvent event) {
-				infoMessage("About", "Soar2D version x.x\nby Jonathan Voigt\nvoigtjr@gmail.com");
+				infoMessage("About", "Soar2D\nby Jonathan Voigt\nvoigtjr@gmail.com");
 			}
 		});
 		
@@ -1035,7 +1036,7 @@ public class WindowManager {
 	}
 
 	void updateWorldGroup() {
-		worldGroup.setText("Map: " + Soar2D.config.map.getName());
+		worldGroup.setText("Map: " + Soar2D.config.getMap().getName());
 		visualWorld.setSize(visualWorld.getWidth(), visualWorld.getHeight());
 		GridData gd = new GridData();
 		gd.widthHint = visualWorld.getWidth();
@@ -1124,8 +1125,8 @@ public class WindowManager {
 		if (!isDisposed()) {
 			display.syncExec(new Runnable() {
 				public void run() {
-					updateWorldGroup();
 					visualWorld.setMap(Soar2D.simulation.world.getMap());
+					updateWorldGroup();
 					agentDisplay.worldChangeEvent();
 					visualWorld.redraw();
 					updateCounts();
@@ -1175,7 +1176,10 @@ public class WindowManager {
 		}
 		if (!isDisposed()) {
 			human = player;
-			setStatus("Enter move for " + player.getColor(), red);
+			if (player == null) {
+				return null;
+			}
+			setStatus("Enter move for " + player.getColor(), WindowManager.getColor(player.getColor()));
 			setVisualWorldFocus();
 			synchronized(humanMove) {
 				try {
@@ -1192,7 +1196,7 @@ public class WindowManager {
 		FileDialog fd = new FileDialog(shell, SWT.OPEN);
 		fd.setText("Select configuration file");
 		fd.setFilterPath(System.getProperty("user.dir") + System.getProperty("file.separator"));
-		fd.setFileName(Soar2D.config.kDefaultXMLEatersSettingsFile);
+		fd.setFileName(Soar2D.kDefaultXMLEatersSettingsFile);
 		fd.setFilterExtensions(new String[] {"*.xml", "*.*"});
 		return fd.open();
 	}

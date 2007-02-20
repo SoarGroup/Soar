@@ -1,8 +1,36 @@
-<soar2d version="1">
- <logger console="false" file="true" filename="soar2d.log" level="info" log-time="false"></logger>
- <tanksoar map="default.tmap"></tanksoar>
- <display graphical="true"></display>
- <simulation debuggers="true" missile-reset-threshold="100" no-world="false" random="true" random-seed="0" remote="false">
-  <terminal type="winning-score" value="50"></terminal>
- </simulation>
+<soar2d version="2">
+  <general>
+    <game>tanksoar</game>
+    <map>C:\soar\SoarSuite\Environments\Soar2D\maps\tanksoar\default.tmap</map>
+    <seed>0</seed>
+    <rules>
+      <tanksoar>
+        <default-missiles>15</default-missiles>
+        <default-energy>1000</default-energy>
+        <default-health>1000</default-health>
+        <collision-penalty>-100</collision-penalty>
+        <max-missile-packs>3</max-missile-packs>
+        <missile-pack-respawn-chance>5</missile-pack-respawn-chance>
+        <shield-energy-usage>-20</shield-energy-usage>
+        <missile-hit-award>2</missile-hit-award>
+        <missile-hit-penalty>-1</missile-hit-penalty>
+        <kill-award>3</kill-award>
+        <kill-penalty>-2</kill-penalty>
+        <radar-width>3</radar-width>
+        <radar-height>15</radar-height>
+        <max-smell-distance>7</max-smell-distance>
+        <missile-reset-threshold>100</missile-reset-threshold>
+      </tanksoar>
+    </rules>
+  </general>
+  <logging>
+    <level>INFO</level>
+    <file>C:\soar\SoarSuite\Environments\Soar2D\soar2d.log</file>
+    <console />
+  </logging>
+  <players />
+  <terminals>
+    <winning-score>50</winning-score>
+  </terminals>
+  <clients />
 </soar2d>

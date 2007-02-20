@@ -59,8 +59,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	private IntElement m_xWME;
 	private IntElement m_yWME;			
 
-	private Identifier[][] radarCellIDs = new Identifier[Soar2D.config.radarWidth][Soar2D.config.radarHeight];
-	private StringElement[][] radarColors = new StringElement[Soar2D.config.radarWidth][Soar2D.config.radarHeight];
+	private Identifier[][] radarCellIDs = new Identifier[Soar2D.config.getRadarWidth()][Soar2D.config.getRadarHeight()];
+	private StringElement[][] radarColors = new StringElement[Soar2D.config.getRadarWidth()][Soar2D.config.getRadarHeight()];
 
 	private float random = 0;
 	private boolean m_Reset = true;
@@ -865,9 +865,9 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		if (Soar2D.logger.isLoggable(Level.FINEST)) {
 			logger.finest(this.getName() + ": radar data: generating new"); 
 		}
-		for (height = 0; height < Soar2D.config.radarHeight; ++height) {
+		for (height = 0; height < Soar2D.config.getRadarHeight(); ++height) {
 			boolean done = false;
-			for (int width = 0; width < Soar2D.config.radarWidth; ++width) {
+			for (int width = 0; width < Soar2D.config.getRadarWidth(); ++width) {
 				// Always skip self, this screws up the tanks.
 				if (width == 1 && height == 0) {
 					if (Soar2D.logger.isLoggable(Level.FINEST)) {
@@ -912,8 +912,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		if (Soar2D.logger.isLoggable(Level.FINEST)) {
 			logger.finest(this.getName() + ": radar data: updating"); 
 		}
-		for (int width = 0; width < Soar2D.config.radarWidth; ++width) {
-			for (int height = 0; height < Soar2D.config.radarHeight; ++height) {
+		for (int width = 0; width < Soar2D.config.getRadarWidth(); ++width) {
+			for (int height = 0; height < Soar2D.config.getRadarHeight(); ++height) {
 				// Always skip self, this screws up the tanks.
 				if (width == 1 && height == 0) {
 					if (Soar2D.logger.isLoggable(Level.FINEST)) {
@@ -979,8 +979,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	}
 
 	private void clearRadar() {
-		for (int width = 0; width < Soar2D.config.radarWidth; ++width) {
-			for (int height = 0; height < Soar2D.config.radarHeight; ++height) {
+		for (int width = 0; width < Soar2D.config.getRadarWidth(); ++width) {
+			for (int height = 0; height < Soar2D.config.getRadarHeight(); ++height) {
 				radarCellIDs[width][height] = null;
 				radarColors[width][height] = null;
 			}

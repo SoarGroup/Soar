@@ -1,7 +1,15 @@
 package soar2d.world;
 
 import java.awt.Point;
+import java.io.IOException;
 import java.util.*;
+
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.input.SAXBuilder;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 
 import soar2d.*;
 import soar2d.Configuration.SimType;
@@ -14,70 +22,308 @@ import soar2d.player.*;
  */
 public class GridMap {
 	
-	/**
-	 * the maps are square, this is the number of row/columns
-	 */
-	int size = 0;
-	/**
-	 * the cells
-	 */
-	Cell[][] mapCells = null;
-	/**
-	 * the types of objects on this map
-	 */
-	CellObjectManager cellObjectManager = new CellObjectManager();
-	/**
-	 * true if there is a health charger
-	 */
-	private boolean health = false;
-	/**
-	 * true if there is an energy charger
-	 */
-	private boolean energy = false;
-	/**
-	 * returns the number of missile packs on the map
-	 */
-	private int missilePacks = 0;
+	private Configuration config;
+	
+	public GridMap(Configuration config) {
+		this.config = config;
+	}
+	
+	public GridMap(GridMap in) {
+		this.size = in.size;
+	}
+	
+	private static final String kTagMap = "map";
+	private static final String kTagCellObject = "cell-object";
+	private static final String kTagCells = "cells";
+	
+	public class LoadError extends Exception {
+		static final long serialVersionUID = 1;
+		
+		public LoadError(String message) {
+			super(message);
+		}
+	}
+	
+	public void load() throws LoadError {
+		if (config == null) {
+			throw new LoadError("Configuration not set");
+		}
+		
+		if (!config.getMap().exists()) {
+			throw new LoadError("Map file doesn't exist: " + config.getMap().getAbsolutePath());
+		}
+		
+		try {
+			SAXBuilder builder = new SAXBuilder();
+			Document doc = builder.build(config.getMap());
+			Element root = doc.getRootElement();
+			if (root == null || !root.getName().equalsIgnoreCase(kTagMap)) {
+				throw new LoadError("Couldn't find map tag in map file.");
+			}
+			
+			List children = root.getChildren();
+			Iterator iter = children.iterator();
+			while (iter.hasNext()) {
+				Element child = (Element)iter.next();
+				
+				if (child.getName().equalsIgnoreCase(kTagCellObject)) {
+					cellObject(child);
+				} else if (child.getName().equalsIgnoreCase(kTagCells)) {
+					cells(child);
+				} else {
+					throw new LoadError("unrecognized tag: " + child.getName());
+				}
+			}
+			
+			
+			
+		} catch (IOException e) {
+			throw new LoadError("I/O exception: " + e.getMessage());
+		} catch (JDOMException e) {
+			throw new LoadError("Error during parsing: " + e.getMessage());
+		} catch (IllegalStateException e) {
+			throw new LoadError("Illegal state: " + e.getMessage());
+		}
+	}
+	
+	public String generateXMLString() {
+		Element root = new Element(kTagMap);
+		
+		Iterator<CellObject> iter = this.cellObjectManager.getTemplates().iterator();
+		while (iter.hasNext()) {
+			CellObject template = iter.next();
 
-	private int scoreCount = 0;
-	private int foodCount = 0;
-	
-	HashSet<CellObject> updatables = new HashSet<CellObject>();
-	HashMap<CellObject, java.awt.Point> updatablesLocations = new HashMap<CellObject, java.awt.Point>();
-	HashSet<CellObject> unopenedBoxes = new HashSet<CellObject>();
-	
-	public int getSize() {
-		return size;
+			Element cellObject = new Element(kTagCellObject);
+			cellObjectSave(cellObject, template);
+			root.addContent(cellObject);
+		}
+		
+		Element cells = new Element(kTagCells);
+		cellsSave(cells);
+		root.addContent(cells);
+		
+		XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
+		return out.outputString(root);
 	}
 	
-	public int getScoreCount() {
-		return scoreCount;
-	}
+	private static final String kTagProperty = "property";
+	private static final String kTagApply = "apply";
+	private static final String kTagUpdate = "update";
 	
-	public int getFoodCount() {
-		return foodCount;
-	}
+	private static final String kAttrName = "name";
+	private static final String kAttrValue = "value";
 	
-	public int getUnopenedBoxCount() {
-		return unopenedBoxes.size();
-	}
-	
-	public int numberMissilePacks() {
-		return missilePacks;
-	}
-	
-	public boolean hasHealthCharger() {
-		return health;
-	}
-	
-	public boolean hasEnergyCharger() {
-		return energy;
-	}
-	
+	CellObjectManager cellObjectManager = new CellObjectManager(); // the types of objects on this map
 	public CellObjectManager getObjectManager() {
 		return cellObjectManager;
 	}
+
+	private void cellObjectSave(Element cellObject, CellObject template) {
+		cellObject.setAttribute(kAttrName, template.getName());
+		
+		Iterator<String> iter = template.getPropertyNames().iterator();
+		while (iter.hasNext()) {
+			String name = iter.next();
+			String value = template.getProperty(name);
+			
+			Element property = new Element(kTagProperty);
+			property.setAttribute(kAttrName, name);
+			property.setAttribute(kAttrValue, value);
+
+			cellObject.addContent(property);
+		}
+		
+		if (template.applyable()) {
+			Element apply = new Element(kTagApply);
+			applySave(apply, template);
+			cellObject.addContent(apply);
+		}
+		
+		if (template.updatable()) {
+			Element update = new Element(kTagUpdate);
+			updateSave(update, template);
+			cellObject.addContent(update);
+		}
+	}
 	
+	private void cellObject(Element cellObject) throws LoadError {
+		String name = cellObject.getAttributeValue(kAttrName);
+		if (name == null || name.length() <= 0) {
+			throw new LoadError("cell-object must have name");
+		}
+		
+		CellObject template = new CellObject(name);
+
+		List children = cellObject.getChildren();
+		Iterator iter = children.iterator();
+		while (iter.hasNext()) {
+			Element child = (Element)iter.next();
+			
+			if (child.getName().equalsIgnoreCase(kTagProperty)) {
+				property(child, template, false);
+				
+			} else if (child.getName().equalsIgnoreCase(kTagApply)) {
+				apply(child, template);
+
+			} else if (child.getName().equalsIgnoreCase(kTagUpdate)) {
+				update(child, template);
+
+			} else {
+				throw new LoadError("Unrecognized tag: " + child.getName());
+			}
+		}		
+		
+		cellObjectManager.registerTemplate(template);
+	}
+	
+	private void property(Element property, CellObject template, boolean apply) throws LoadError {
+		String name = property.getAttributeValue(kAttrName);
+		if (name == null || name.length() <= 0) {
+			throw new LoadError("property must have name");
+		}
+		
+		String value = property.getAttributeValue(kAttrValue);
+		if (value == null || value.length() <= 0) {
+			throw new LoadError("property must have value");
+		}
+		
+		if (apply) {
+			template.addPropertyApply(name, value);
+		} else {
+			template.addProperty(name, value);
+		}
+	}
+	
+	private static final String kTagPoints = "points";
+	private static final String kTagEnergy = "energy";
+	private static final String kTagHealth = "health";
+	private static final String kTagMissiles = "missiles";
+	private static final String kTagRemove = "remove";
+
+	private void applySave(Element apply, CellObject template) {
+		Iterator<String> iter = template.propertiesApply.keySet().iterator();
+		while (iter.hasNext()) {
+			
+			String name = iter.next();
+			String value = template.getProperty(name);
+
+			Element property = new Element(kTagProperty).setAttribute(name, value);
+			apply.addContent(property);
+		}
+		
+		if (template.pointsApply) {
+			apply.addContent(new Element(kTagPoints));
+		}
+
+		if (template.energyApply) {
+			apply.addContent(new Element(kTagEnergy)).setAttribute(kAttrShields, Boolean.toString(template.energyApplyShieldsUp));
+		}
+
+		if (template.healthApply) {
+			apply.addContent(new Element(kTagHealth)).setAttribute(kAttrShieldsDown, Boolean.toString(template.healthApplyShieldsDown));
+		}
+
+		if (template.missilesApply) {
+			apply.addContent(new Element(kTagMissiles));
+		}
+
+		if (template.removeApply) {
+			apply.addContent(new Element(kTagRemove));
+		}
+	}
+
+	private void apply(Element apply, CellObject template) throws LoadError {
+		List children = apply.getChildren();
+		Iterator iter = children.iterator();
+		while (iter.hasNext()) {
+			Element child = (Element)iter.next();
+			
+			if (child.getName().equalsIgnoreCase(kTagProperty)) {
+				property(child, template, true);
+				
+			} else if (child.getName().equalsIgnoreCase(kTagPoints)) {
+				template.setPointsApply(true);
+
+			} else if (child.getName().equalsIgnoreCase(kTagEnergy)) {
+				energy(child, template);
+
+			} else if (child.getName().equalsIgnoreCase(kTagHealth)) {
+				health(child, template);
+				
+			} else if (child.getName().equalsIgnoreCase(kTagMissiles)) {
+				template.setMissilesApply(true);
+
+			} else if (child.getName().equalsIgnoreCase(kTagRemove)) {
+				template.setRemoveApply(true);
+
+			} else {
+				throw new LoadError("Unrecognized tag: " + child.getName());
+			}
+		}		
+	}
+	
+	private static final String kAttrShields = "shields";
+	
+	private void energy(Element energy, CellObject template) throws LoadError {
+		boolean shields = Boolean.parseBoolean(energy.getAttributeValue(kAttrShields, "false"));
+		template.setEnergyApply(true, shields);
+	}
+
+	private static final String kAttrShieldsDown = "shields-down";
+
+	private void health(Element health, CellObject template) throws LoadError {
+		boolean shieldsDown = Boolean.parseBoolean(health.getAttributeValue(kAttrShieldsDown, "false"));
+		template.setHealthApply(true, shieldsDown);
+	}
+
+	private static final String kTagDecay = "decay";
+	private static final String kTagFlyMissile = "fly-missile";
+	private static final String kTagLinger = "linger";
+
+	private void updateSave(Element update, CellObject template) {
+		if (template.decayUpdate) {
+			update.addContent(new Element(kTagDecay));
+		}
+		
+		if (template.flyMissileUpdate) {
+			update.addContent(new Element(kTagFlyMissile));
+		}
+		
+		if (template.lingerUpdate) {
+			update.addContent(new Element(kTagLinger));
+		}
+	}
+
+	private void update(Element update, CellObject template) throws LoadError {
+		List children = update.getChildren();
+		Iterator iter = children.iterator();
+		while (iter.hasNext()) {
+			Element child = (Element)iter.next();
+			
+			if (child.getName().equalsIgnoreCase(kTagDecay)) {
+				template.setDecayUpdate(true);
+				
+			} else if (child.getName().equalsIgnoreCase(kTagFlyMissile)) {
+				template.setFlyMissileUpdate(true);
+
+			} else if (child.getName().equalsIgnoreCase(kTagLinger)) {
+				template.setLingerUpdate(true);
+
+			} else {
+				throw new LoadError("Unrecognized tag: " + child.getName());
+			}
+		}		
+	}
+
+	private int size = 0;	// the maps are square, this is the number of row/columns
+	public int getSize() {
+		return this.size;
+	}
+	public void setSize(int size) {
+		this.size = size;
+	}
+	
+	private Cell[][] mapCells = null;	// the cells
 	Cell getCell(java.awt.Point location) {
 		if (location == null) return null;
 		assert location.x >= 0;
@@ -93,6 +339,376 @@ public class GridMap {
 		assert x < size;
 		assert y < size;
 		return mapCells[y][x];
+	}
+	
+	private static final String kTagRow = "row";
+	private static final String kTagCell = "cell";
+	
+	private static final String kAttrWorldSize = "world-size";
+	private static final String kAttrRandomWalls = "random-walls";
+	private static final String kAttrRandomFood = "random-food";
+	
+	private void cellsSave(Element cells) {
+		cells.setAttribute(kAttrWorldSize, Integer.toString(this.size));
+		// TODO: handle randomness
+		//cells.setAttribute(kAttrRandomWalls, Boolean.toString(false));
+		//cells.setAttribute(kAttrRandomFood, Boolean.toString(false));
+		
+		for(int rowIndex = 0; rowIndex < this.size; ++rowIndex) {
+			Element row = new Element(kTagRow);
+			
+			for (int colIndex = 0; colIndex < this.size; ++colIndex) {
+				Element cell = new Element(kTagCell);
+				cellSave(cell, this.mapCells[rowIndex][colIndex]);
+				row.addContent(cell);
+			}
+			cells.addContent(row);
+		}
+	}
+	
+	private void cells(Element cells) throws LoadError {
+		String sizeString = cells.getAttributeValue(kAttrWorldSize);
+		if (sizeString == null || sizeString.length() <= 0) {
+			throw new LoadError("world-size required with cells tag");
+		}
+		
+		try {
+			this.size = Integer.parseInt(sizeString);
+		} catch (NumberFormatException e) {
+			throw new LoadError("error parsing world-size");
+		}
+		
+		boolean randomWalls = Boolean.parseBoolean(cells.getAttributeValue(kAttrRandomWalls, "false"));
+		boolean randomFood = Boolean.parseBoolean(cells.getAttributeValue(kAttrRandomFood, "false"));
+		
+		// Generate map from XML unless both are true
+		if (!randomWalls || !randomFood) {
+			if (cells.getChildren().size() != this.size) {
+				throw new LoadError("there does not seem to be the " +
+						"correct amount of row tags (" + cells.getChildren().size() +
+						") for the specified map size (" + this.size + ")");
+			}
+			
+			this.mapCells = new Cell[this.size][];
+			
+			List children = cells.getChildren();
+			Iterator iter = children.iterator();
+			int rowIndex = 0;
+			while (iter.hasNext()) {
+				Element child = (Element)iter.next();
+
+				if (!child.getName().equalsIgnoreCase(kTagRow)) {
+					throw new LoadError("unrecognized tag: " + child.getName());
+				}
+				
+				this.mapCells[rowIndex] = new Cell[this.size];
+				row(child, rowIndex);
+				
+				rowIndex += 1;
+			}
+		}
+		
+		// override walls if necessary
+		if (randomWalls) {
+			generateRandomWalls();
+		}
+		
+		// override food if necessary
+		if (randomFood) {
+			generateRandomFood();
+		}
+		
+	}
+	
+	private void row(Element row, int rowIndex) throws LoadError {
+		if (row.getChildren().size() != this.size) {
+			throw new LoadError("there does not seem to be the " +
+					"correct amount of cell tags (" + row.getChildren().size() +
+					") for the specified map size (" + this.size + ")");
+		}
+		
+		
+		List children = row.getChildren();
+		Iterator iter = children.iterator();
+		int colIndex = 0;
+		while (iter.hasNext()) {
+			Element child = (Element)iter.next();
+
+			if (!child.getName().equalsIgnoreCase(kTagCell)) {
+				throw new LoadError("unrecognized tag: " + child.getName());
+			}
+			
+			this.mapCells[rowIndex][colIndex] = new Cell();
+			cell(child, new java.awt.Point(colIndex, rowIndex));
+			
+			colIndex += 1;
+		}
+	}
+	
+	private static final String kTagObject = "object";
+	
+	private void cellSave(Element cell, Cell theCell) {
+		Iterator<String> iter = theCell.cellObjects.keySet().iterator();
+		while (iter.hasNext()) {
+			cell.addContent(new Element(kTagObject).setText(iter.next()));
+		}
+	}
+	
+	private void cell(Element cell, java.awt.Point location) throws LoadError {
+		boolean background = false;
+		
+		List children = cell.getChildren();
+		Iterator iter = children.iterator();
+		while (iter.hasNext()) {
+			Element child = (Element)iter.next();
+			
+			if (!child.getName().equalsIgnoreCase(kTagObject)) {
+				throw new LoadError("unrecognized tag: " + child.getName());
+			}
+			
+			background = object(child, location);
+		}
+		
+		if (config.getType() == SimType.kTankSoar && !background) {
+			// add ground
+			CellObject cellObject = cellObjectManager.createObject(Names.kGround);
+			addObjectToCell(location, cellObject);
+			return;
+		}
+	}
+	
+	private boolean object(Element object, java.awt.Point location) throws LoadError {
+		String name = object.getTextTrim();
+		if (name.length() <= 0) {
+			throw new LoadError("object doesn't have name");
+		}
+		
+		if (!cellObjectManager.hasTemplate(name)) {
+			throw new LoadError("object \"" + name + "\" does not map to a cell object");
+		}
+		
+		CellObject cellObject = cellObjectManager.createObject(name);
+		boolean background = false;
+		if (config.getType() == SimType.kTankSoar) {
+			if (cellObject.hasProperty(Names.kPropertyBlock) 
+					|| (cellObject.getName() == Names.kGround)
+					|| (cellObject.hasProperty(Names.kPropertyCharger))) {
+				background = true;
+			}
+		}
+		addObjectToCell(location, cellObject);
+		return background;
+	}
+
+	private void generateRandomWalls() throws LoadError {
+		if (!cellObjectManager.hasTemplatesWithProperty(Names.kPropertyBlock)) {
+			throw new LoadError("tried to generate random walls with no blocking types");
+		}
+		
+		if (mapCells == null) {
+			mapCells = new Cell[size][];
+		}
+		
+		// Generate perimiter wall
+		for (int row = 0; row < size; ++row) {
+			if (mapCells[row] == null) {
+				mapCells[row] = new Cell[size];
+			}
+			if (mapCells[row][0] == null) {
+				mapCells[row][0] = new Cell();
+			}
+			addWallAndRemoveFood(new java.awt.Point(0, row));
+			if (mapCells[row][size - 1] == null) {
+				mapCells[row][size - 1] = new Cell();
+			}
+			addWallAndRemoveFood(new java.awt.Point(size - 1, row));
+		}
+		for (int col = 1; col < size - 1; ++col) {
+			if (mapCells[0][col] == null) {
+				mapCells[0][col] = new Cell();
+			}
+			addWallAndRemoveFood(new java.awt.Point(col, 0));
+			if (mapCells[size - 1][col] == null) {
+				mapCells[size - 1][col] = new Cell();
+			}
+			addWallAndRemoveFood(new java.awt.Point(col, size - 1));
+		}
+		
+		double probability = config.getLowProbability();
+		for (int row = 2; row < size - 2; ++row) {
+			for (int col = 2; col < size - 2; ++col) {
+				if (noWallsOnCorners(row, col)) {
+					if (wallOnAnySide(row, col)) {
+						probability = config.getHighProbability();					
+					}
+					if (Simulation.random.nextDouble() < probability) {
+						if (mapCells[row][col] == null) {
+							mapCells[row][col] = new Cell();
+						}
+						addWallAndRemoveFood(new java.awt.Point(col, row));
+					}
+					probability = config.getLowProbability();
+				}
+			}
+		}
+	}
+	
+	private void addWallAndRemoveFood(java.awt.Point location) {
+		removeAllWithProperty(location, Names.kPropertyEdible);
+		
+		ArrayList<CellObject> walls = getAllWithProperty(location, Names.kPropertyBlock);
+		if (walls.size() <= 0) {
+			addRandomObjectWithProperty(location, Names.kPropertyBlock);
+		}
+	}
+	
+	private boolean noWallsOnCorners(int row, int col) {
+		Cell cell = mapCells[row + 1][col + 1];
+		if (cell != null && !cell.enterable()) {
+			return false;
+		}
+		
+		cell = mapCells[row - 1][col - 1];
+		if (cell != null && !cell.enterable()) {
+			return false;
+		}
+		
+		cell = mapCells[row + 1][col - 1];
+		if (cell != null && !cell.enterable()) {
+			return false;
+		}
+		
+		cell = mapCells[row - 1][col + 1];
+		if (cell != null && !cell.enterable()) {
+			return false;
+		}
+		return true;
+	}
+	
+	private boolean wallOnAnySide(int row, int col) {
+		Cell cell = mapCells[row + 1][col];
+		if (cell != null && !cell.enterable()) {
+			return true;
+		}
+		
+		cell = mapCells[row][col + 1];
+		if (cell != null && !cell.enterable()) {
+			return true;
+		}
+		
+		cell = mapCells[row - 1][col];
+		if (cell != null && !cell.enterable()) {
+			return true;
+		}
+		
+		cell = mapCells[row][col - 1];
+		if (cell != null && !cell.enterable()) {
+			return true;
+		}
+		return false;
+	}
+	
+	private void generateRandomFood() throws LoadError {
+		if (!cellObjectManager.hasTemplatesWithProperty(Names.kPropertyEdible)) {
+			throw new LoadError("tried to generate random walls with no food types");
+		}
+		
+		for (int row = 1; row < size - 1; ++row) {
+			for (int col = 1; col < size - 1; ++col) {
+				if (mapCells[row][col] == null) {
+					mapCells[row][col] = new Cell();
+					
+				}
+				if (mapCells[row][col].enterable()) {
+					java.awt.Point location = new java.awt.Point(col, row);
+					removeAllWithProperty(location, Names.kPropertyEdible);
+					addRandomObjectWithProperty(location, Names.kPropertyEdible);
+				}
+			}
+		}		
+	}
+
+	private int scoreCount = 0;
+	public int getScoreCount() {
+		return scoreCount;
+	}
+	
+	private int foodCount = 0;
+	public int getFoodCount() {
+		return foodCount;
+	}
+	
+	private int missilePacks = 0;	// returns the number of missile packs on the map
+	public int numberMissilePacks() {
+		return missilePacks;
+	}
+	
+	private boolean health = false;	// true if there is a health charger
+	public boolean hasHealthCharger() {
+		return health;
+	}
+	
+	private boolean energy = false;	// true if there is an energy charger
+	public boolean hasEnergyCharger() {
+		return energy;
+	}
+	
+	HashSet<CellObject> unopenedBoxes = new HashSet<CellObject>();
+	public int getUnopenedBoxCount() {
+		return unopenedBoxes.size();
+	}
+	
+	HashSet<CellObject> updatables = new HashSet<CellObject>();
+	HashMap<CellObject, java.awt.Point> updatablesLocations = new HashMap<CellObject, java.awt.Point>();
+	
+	public void addObjectToCell(java.awt.Point location, CellObject object) {
+		Cell cell = getCell(location);
+		if (cell.hasObject(object.getName())) {
+			CellObject old = cell.removeObject(object.getName());
+			assert old != null;
+			updatables.remove(old);
+			updatablesLocations.remove(old);
+			removalStateUpdate(old);
+		}
+		if (object.updatable()) {
+			updatables.add(object);
+			updatablesLocations.put(object, location);
+		}
+		if (config.getTerminalUnopenedBoxes()) {
+			if (isUnopenedBox(object)) {
+				unopenedBoxes.add(object);
+			}
+		}
+		
+		// Update state we keep track of specific to game type
+		switch (config.getType()) {
+		case kTankSoar:
+			if (object.hasProperty(Names.kPropertyCharger)) {
+				if (!health && object.hasProperty(Names.kPropertyHealth)) {
+					health = true;
+				}
+				if (!energy && object.hasProperty(Names.kPropertyEnergy)) {
+					energy = true;
+				}
+			}
+			if (object.hasProperty(Names.kPropertyMissiles)) {
+				missilePacks += 1;
+			}
+			break;
+		case kEaters:
+			if (object.hasProperty(Names.kPropertyEdible)) {
+				foodCount += 1;
+			}
+			if (object.hasProperty(Names.kPropertyPoints)) {
+				scoreCount += object.getIntProperty(Names.kPropertyPoints);
+			}
+			break;
+			
+		case kBook:
+			break;
+		}
+		cell.addCellObject(object);
+		setRedraw(cell);
 	}
 	
 	public boolean addRandomObjectWithProperty(java.awt.Point location, String property) {
@@ -125,6 +741,66 @@ public class GridMap {
 		}
 		addObjectToCell(location, object);
 		return true;
+	}
+	
+	public void updateObjects(World world) {
+		if (!updatables.isEmpty()) {
+			Iterator<CellObject> iter = updatables.iterator();
+			
+			ArrayList<java.awt.Point> explosions = new ArrayList<java.awt.Point>();
+			while (iter.hasNext()) {
+				CellObject cellObject = iter.next();
+				java.awt.Point location = updatablesLocations.get(cellObject);
+				assert location != null;
+				int previousScore = 0;
+				if (config.getType() == SimType.kEaters) {
+					if (cellObject.hasProperty(Names.kPropertyPoints)) {
+						previousScore = cellObject.getIntProperty(Names.kPropertyPoints);
+					}
+				}
+				if (cellObject.update(world, location)) {
+					Cell cell = getCell(location);
+					
+					cellObject = cell.removeObject(cellObject.getName());
+					assert cellObject != null;
+					
+					setRedraw(cell);
+					
+					// if it is not tanksoar or if the cell is not a missle or if shouldRemoveMissile returns true
+					if ((config.getType() != SimType.kTankSoar) || !cellObject.hasProperty(Names.kPropertyMissile) 
+							|| shouldRemoveMissile(world, location, cell, cellObject)) {
+						
+						// we need an explosion if it was a tanksoar missile
+						if ((config.getType() == SimType.kTankSoar) && cellObject.hasProperty(Names.kPropertyMissile)) {
+							explosions.add(location);
+						}
+						iter.remove();
+						updatablesLocations.remove(cellObject);
+						removalStateUpdate(cellObject);
+					}
+				}
+				if (config.getType() == SimType.kEaters) {
+					if (cellObject.hasProperty(Names.kPropertyPoints)) {
+						scoreCount += cellObject.getIntProperty(Names.kPropertyPoints) - previousScore;
+					}
+				}
+			}
+			
+			Iterator<java.awt.Point> explosion = explosions.iterator();
+			while (explosion.hasNext()) {
+				setExplosion(explosion.next());
+			}
+		}
+		
+		if (config.getTerminalUnopenedBoxes()) {
+			Iterator<CellObject> iter = unopenedBoxes.iterator();
+			while (iter.hasNext()) {
+				CellObject box = iter.next();
+				if (!isUnopenedBox(box)) {
+					iter.remove();
+				}
+			}
+		}
 	}
 	
 	public void setPlayer(java.awt.Point location, Player player) {
@@ -191,66 +867,6 @@ public class GridMap {
 		if (location == null) return null;
 		Cell cell = getCell(location);
 		return cell.getObject(name);
-	}
-	
-	public void updateObjects(World world) {
-		if (!updatables.isEmpty()) {
-			Iterator<CellObject> iter = updatables.iterator();
-			
-			ArrayList<java.awt.Point> explosions = new ArrayList<java.awt.Point>();
-			while (iter.hasNext()) {
-				CellObject cellObject = iter.next();
-				java.awt.Point location = updatablesLocations.get(cellObject);
-				assert location != null;
-				int previousScore = 0;
-				if (Soar2D.config.getType() == SimType.kEaters) {
-					if (cellObject.hasProperty(Names.kPropertyPoints)) {
-						previousScore = cellObject.getIntProperty(Names.kPropertyPoints);
-					}
-				}
-				if (cellObject.update(world, location)) {
-					Cell cell = getCell(location);
-					
-					cellObject = cell.removeObject(cellObject.getName());
-					assert cellObject != null;
-					
-					setRedraw(cell);
-					
-					// if it is not tanksoar or if the cell is not a missle or if shouldRemoveMissile returns true
-					if ((Soar2D.config.getType() != SimType.kTankSoar) || !cellObject.hasProperty(Names.kPropertyMissile) 
-							|| shouldRemoveMissile(world, location, cell, cellObject)) {
-						
-						// we need an explosion if it was a tanksoar missile
-						if ((Soar2D.config.getType() == SimType.kTankSoar) && cellObject.hasProperty(Names.kPropertyMissile)) {
-							explosions.add(location);
-						}
-						iter.remove();
-						updatablesLocations.remove(cellObject);
-						removalStateUpdate(cellObject);
-					}
-				}
-				if (Soar2D.config.getType() == SimType.kEaters) {
-					if (cellObject.hasProperty(Names.kPropertyPoints)) {
-						scoreCount += cellObject.getIntProperty(Names.kPropertyPoints) - previousScore;
-					}
-				}
-			}
-			
-			Iterator<java.awt.Point> explosion = explosions.iterator();
-			while (explosion.hasNext()) {
-				setExplosion(explosion.next());
-			}
-		}
-		
-		if (Soar2D.config.terminalUnopenedBoxes) {
-			Iterator<CellObject> iter = unopenedBoxes.iterator();
-			while (iter.hasNext()) {
-				CellObject box = iter.next();
-				if (!isUnopenedBox(box)) {
-					iter.remove();
-				}
-			}
-		}
 	}
 	
 	private boolean shouldRemoveMissile(World world, java.awt.Point location, Cell cell, CellObject missile) {
@@ -323,7 +939,7 @@ public class GridMap {
 	}
 	
 	private void removalStateUpdate(CellObject object) {
-		switch (Soar2D.config.getType()) {
+		switch (config.getType()) {
 		case kTankSoar:
 			if (object.hasProperty(Names.kPropertyCharger)) {
 				if (health && object.hasProperty(Names.kPropertyHealth)) {
@@ -346,7 +962,7 @@ public class GridMap {
 			}
 			break;
 		}
-		if (Soar2D.config.terminalUnopenedBoxes) {
+		if (config.getTerminalUnopenedBoxes()) {
 			if (isUnopenedBox(object)) {
 				unopenedBoxes.remove(object);
 			}
@@ -391,63 +1007,13 @@ public class GridMap {
 		return false;
 	}
 	
-	public void addObjectToCell(java.awt.Point location, CellObject object) {
-		Cell cell = getCell(location);
-		if (cell.hasObject(object.getName())) {
-			CellObject old = cell.removeObject(object.getName());
-			assert old != null;
-			updatables.remove(old);
-			updatablesLocations.remove(old);
-			removalStateUpdate(old);
-		}
-		if (object.updatable()) {
-			updatables.add(object);
-			updatablesLocations.put(object, location);
-		}
-		if (Soar2D.config.terminalUnopenedBoxes) {
-			if (isUnopenedBox(object)) {
-				unopenedBoxes.add(object);
-			}
-		}
-		
-		// Update state we keep track of specific to game type
-		switch (Soar2D.config.getType()) {
-		case kTankSoar:
-			if (object.hasProperty(Names.kPropertyCharger)) {
-				if (!health && object.hasProperty(Names.kPropertyHealth)) {
-					health = true;
-				}
-				if (!energy && object.hasProperty(Names.kPropertyEnergy)) {
-					energy = true;
-				}
-			}
-			if (object.hasProperty(Names.kPropertyMissiles)) {
-				missilePacks += 1;
-			}
-			break;
-		case kEaters:
-			if (object.hasProperty(Names.kPropertyEdible)) {
-				foodCount += 1;
-			}
-			if (object.hasProperty(Names.kPropertyPoints)) {
-				scoreCount += object.getIntProperty(Names.kPropertyPoints);
-			}
-			break;
-			
-		case kBook:
-			break;
-		}
-		cell.addCellObject(object);
-		setRedraw(cell);
-	}
-	
 	private void setRedraw(Cell cell) {
 		cell.addCellObject(new CellObject(Names.kRedraw));
 	}
 	
 	public void setExplosion(java.awt.Point location) {
 		CellObject explosion = null;
-		switch (Soar2D.config.getType()) {
+		switch (config.getType()) {
 		case kTankSoar:
 			explosion = cellObjectManager.createObject(Names.kExplosion);
 			break;
@@ -627,7 +1193,7 @@ public class GridMap {
 			searchList.removeFirst();
 			parentCell = getCell(parentLocation);
 			distance = parentCell.distance;
-			if (distance >= Soar2D.config.maxSmellDistance) {
+			if (distance >= config.getMaxSmellDistance()) {
 				//System.out.println(parentCell + " too far");
 				continue;
 			}

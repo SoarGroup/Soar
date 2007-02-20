@@ -65,7 +65,7 @@ public class Simulation {
 		runTilOutput = (Soar2D.config.getType() == SimType.kTankSoar);
 		
 		// Initialize Soar
-		if (Soar2D.config.remote) {
+		if (Soar2D.config.getRemote()) {
 			kernel = Kernel.CreateRemoteConnection(true);
 		} else {
 			// Create kernel
@@ -84,14 +84,14 @@ public class Simulation {
 
 		// Make all runs non-random if asked
 		// For debugging, set this to make all random calls follow the same sequence
-		if (Soar2D.config.random) {
+		if (Soar2D.config.hasRandomSeed()) {
 			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Not seeding generators.");
 			random = new Random();
 		} else {
 			// seed the generators
-			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Seeding generators with " + Soar2D.config.randomSeed);
-			kernel.ExecuteCommandLine("srand " + Soar2D.config.randomSeed, null) ;
-			random = new Random(Soar2D.config.randomSeed);
+			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Seeding generators with " + Soar2D.config.getRandomSeed());
+			kernel.ExecuteCommandLine("srand " + Soar2D.config.getRandomSeed(), null) ;
+			random = new Random(Soar2D.config.getRandomSeed());
 		}
 		
 		// Register for events
@@ -116,7 +116,7 @@ public class Simulation {
 		}
 		
 		// add initial players
-		Iterator<PlayerConfig> iter = Soar2D.config.players.iterator();
+		Iterator<PlayerConfig> iter = Soar2D.config.getPlayers().iterator();
 		while (iter.hasNext()) {
 			createPlayer(iter.next());
 		}
@@ -341,7 +341,7 @@ public class Simulation {
 					
 					// spawn the debugger if we're supposed to
 					Names.kDebuggerClient.command = getDebuggerCommand(player.getName());
-					if (Soar2D.config.debuggers && !isClientConnected(Names.kDebuggerClient)) {
+					if (Soar2D.config.getDebuggers() && !isClientConnected(Names.kDebuggerClient)) {
 						spawnClient(Names.kDebuggerClient);
 					}
 					
@@ -623,7 +623,7 @@ public class Simulation {
 	public boolean reset() {
 		Soar2D.logger.info("Resetting simulation.");
 		if (!world.load()) {
-			Soar2D.control.severeError("Error loading map " + Soar2D.config.map);
+			Soar2D.control.severeError("Error loading map " + Soar2D.config.getMap().getAbsolutePath());
 			return false;
 		}
 		return true;

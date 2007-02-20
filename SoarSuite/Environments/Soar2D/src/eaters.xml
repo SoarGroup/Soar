@@ -1,8 +1,26 @@
-<soar2d version="1">
- <logger console="false" file="true" filename="soar2d.log" level="info" log-time="false"></logger>
- <eaters map="random-walls.emap"></eaters>
- <display graphical="true"></display>
- <simulation debuggers="true" missile-reset-threshold="100" no-world="false" random="true" random-seed="0" remote="false">
-  <terminal type="food-remaining"></terminal>
- </simulation>
+<soar2d version="2">
+  <general>
+    <game>eaters</game>
+    <map>C:\soar\SoarSuite\Environments\Soar2D\maps\eaters\random-walls.emap</map>
+    <seed>0</seed>
+    <rules>
+      <eaters>
+        <vision>2</vision>
+        <wall-penalty>-5</wall-penalty>
+        <jump-penalty>-5</jump-penalty>
+        <low-probability>0.15</low-probability>
+        <high-probability>0.65</high-probability>
+      </eaters>
+    </rules>
+  </general>
+  <logging>
+    <level>INFO</level>
+    <file>C:\soar\SoarSuite\Environments\Soar2D\soar2d.log</file>
+    <console />
+  </logging>
+  <players />
+  <terminals>
+    <food-remaining />
+  </terminals>
+  <clients />
 </soar2d>

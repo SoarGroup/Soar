@@ -119,7 +119,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		if (step) {
 			Soar2D.wm.setStatus("Stepping", WindowManager.black);
 		} else {
-			if (Soar2D.config.asyncTimeSlice > 0) {
+			if (Soar2D.config.getASyncDelay() > 0) {
 				Soar2D.wm.setStatus("Running Async", WindowManager.black);
 			} else {
 				Soar2D.wm.setStatus("Running", WindowManager.black);
@@ -257,9 +257,9 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
   	 */
   	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
 
-  		if (Soar2D.config.asyncTimeSlice > 0 && !step) {
+  		if (Soar2D.config.getASyncDelay() > 0 && !step) {
   			Date date = new Date();
-  			if ((timeStamp + Soar2D.config.asyncTimeSlice) >= date.getTime()) {
+  			if ((timeStamp + Soar2D.config.getASyncDelay()) >= date.getTime()) {
   				return;
   			}
   			timeStamp = date.getTime();
@@ -372,14 +372,14 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		}
 		
 		// save the old map in case the new one is screwed up
-		File oldMap = Soar2D.config.map;
-		Soar2D.config.map = mapFile;
+		File oldMap = Soar2D.config.getMap();
+		Soar2D.config.setMap(mapFile);
 
 		// the reset will fail if the map fails to load
 		if (!resetSimulation()) {
 			
 			// and if it fails the map will remain unchanged, set it back
-			Soar2D.config.map = oldMap;
+			Soar2D.config.setMap(oldMap);
 		}
 	}
 }

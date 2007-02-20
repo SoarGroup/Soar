@@ -209,7 +209,7 @@ public class Player {
 		if (playerConfig.hasPoints()) {
 			this.points = playerConfig.getPoints();
 		} else {
-			this.points = Soar2D.config.defaultPoints;
+			this.points = Soar2D.config.getDefaultPoints();
 		}
 		pointsChanged = true;
 	}
