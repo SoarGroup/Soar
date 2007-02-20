@@ -13,6 +13,10 @@ import soar2d.player.Player;
  * an explosion object to trigger the drawing of an explosion.
  */
 public class CellObject {
+	private static final boolean kDefaultPropertyBoolean = false;	// if a bool property doesn't exist
+	private static final float kDefaultPropertyFloat = 0;			// if a float property doesn't exist
+	private static final int kDefaultPropertyInt = 0;				// if an int property doesn't exist
+
 	/**
 	 * Property list, name to value, both strings for simplicity
 	 */
@@ -319,7 +323,7 @@ public class CellObject {
 		if (properties.containsKey(name)) {
 			return Boolean.parseBoolean((String)properties.get(name));
 		}
-		return Soar2D.config.kDefaultPropertyBoolean;
+		return kDefaultPropertyBoolean;
 	}
 	/**
 	 * @param name the property
@@ -332,7 +336,7 @@ public class CellObject {
 		if (properties.containsKey(name)) {
 			return Integer.parseInt((String)properties.get(name));
 		}
-		return Soar2D.config.kDefaultPropertyInt;
+		return kDefaultPropertyInt;
 	}
 	/**
 	 * @param name the property
@@ -345,6 +349,6 @@ public class CellObject {
 		if (properties.containsKey(name)) {
 			return Float.parseFloat((String)properties.get(name));
 		}
-		return Soar2D.config.kDefaultPropertyFloat;
+		return kDefaultPropertyFloat;
 	}
 }

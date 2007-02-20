@@ -92,11 +92,11 @@ public class VisualWorld extends Canvas implements PaintListener {
 	}
 
 	public int getMiniWidth() {
-		return cellSize * ((Soar2D.config.eaterVision * 2) + 1);
+		return cellSize * ((Soar2D.config.getEaterVision() * 2) + 1);
 	}
 	
 	public int getMiniHeight() {
-		return cellSize * ((Soar2D.config.eaterVision * 2) + 1);
+		return cellSize * ((Soar2D.config.getEaterVision() * 2) + 1);
 	}
 	
 	public void setAgentLocation(java.awt.Point location) {
@@ -195,7 +195,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 				painted = false;
 			}
 			
-			if (Soar2D.config.noWorld) {
+			if (Soar2D.config.getHide()) {
 				painted = true;
 				if (Soar2D.control.isRunning()) {
 					if (agentLocation != null) {
@@ -220,10 +220,10 @@ public class VisualWorld extends Canvas implements PaintListener {
 				painted = false;
 			}
 
-			if (Soar2D.config.noWorld || disabled || !painted) {
+			if (Soar2D.config.getHide() || disabled || !painted) {
 				gc.setBackground(WindowManager.widget_background);
 				gc.fillRectangle(0,0, this.getWidth(), this.getHeight());
-				if (disabled || Soar2D.config.noWorld) {
+				if (disabled || Soar2D.config.getHide()) {
 					painted = true;
 					return;
 				}
@@ -242,20 +242,20 @@ public class VisualWorld extends Canvas implements PaintListener {
 		java.awt.Point location = new java.awt.Point();
 		for(location.x = 0; location.x < map.getSize(); ++location.x){
 			if (agentLocation != null) {
-				if ((location.x < agentLocation.x - Soar2D.config.eaterVision) || (location.x > agentLocation.x + Soar2D.config.eaterVision)) {
+				if ((location.x < agentLocation.x - Soar2D.config.getEaterVision()) || (location.x > agentLocation.x + Soar2D.config.getEaterVision())) {
 					continue;
 				} 
-				xDraw = location.x + Soar2D.config.eaterVision - agentLocation.x;
+				xDraw = location.x + Soar2D.config.getEaterVision() - agentLocation.x;
 			} else {
 				xDraw = location.x;
 			}
 			
 			for(location.y = 0; location.y < map.getSize(); ++location.y){
 				if (agentLocation != null) {
-					if ((location.y < agentLocation.y - Soar2D.config.eaterVision) || (location.y > agentLocation.y + Soar2D.config.eaterVision)) {
+					if ((location.y < agentLocation.y - Soar2D.config.getEaterVision()) || (location.y > agentLocation.y + Soar2D.config.getEaterVision())) {
 						continue;
 					} 
-					yDraw = location.y + Soar2D.config.eaterVision - agentLocation.y;
+					yDraw = location.y + Soar2D.config.getEaterVision() - agentLocation.y;
 				} else {
 					yDraw = location.y;
 				}

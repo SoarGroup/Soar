@@ -84,8 +84,8 @@ public class Tank extends Player {
 		if (setting < 0) {
 			setting = 0;
 		}
-		if (setting >= Soar2D.config.radarHeight) {
-			setting = Soar2D.config.radarHeight - 1;
+		if (setting >= Soar2D.config.getRadarHeight()) {
+			setting = Soar2D.config.getRadarHeight() - 1;
 		}
 		if (radarPower == setting) {
 			return;
@@ -175,8 +175,8 @@ public class Tank extends Player {
 		if (energy < 0) {
 			energy = 0;
 		}
-		if (energy > Soar2D.config.defaultEnergy) {
-			energy = Soar2D.config.defaultEnergy;
+		if (energy > Soar2D.config.getDefaultEnergy()) {
+			energy = Soar2D.config.getDefaultEnergy();
 		}
 		if (energy == previous) {
 			return;
@@ -222,8 +222,8 @@ public class Tank extends Player {
 		if (health < 0) {
 			health = 0;
 		}
-		if (health > Soar2D.config.defaultHealth) {
-			health = Soar2D.config.defaultHealth;
+		if (health > Soar2D.config.getDefaultHealth()) {
+			health = Soar2D.config.getDefaultHealth();
 		}
 		if (health == previous) {
 			return;
@@ -263,7 +263,7 @@ public class Tank extends Player {
 	}
 	
 	public boolean getHumanMove() {
-		if (Soar2D.config.graphical == false) {
+		if (Soar2D.config.getNoGUI()) {
 			move = new MoveInfo();
 			return true;
 		}
@@ -291,9 +291,9 @@ public class Tank extends Player {
 	}
 	
 	public void fragged() {
-		energy = Soar2D.config.defaultEnergy;
-		health = Soar2D.config.defaultHealth;
-		missiles = Soar2D.config.defaultMissiles;
+		energy = Soar2D.config.getDefaultEnergy();
+		health = Soar2D.config.getDefaultHealth();
+		missiles = Soar2D.config.getDefaultMissiles();
 		resurrectFrame = Soar2D.simulation.world.getWorldCount(); 
 		setFacingInt(Simulation.random.nextInt(4) + 1);
 		clearRadar();
@@ -306,17 +306,17 @@ public class Tank extends Player {
 		if (playerConfig.hasMissiles()) {
 			this.missiles = playerConfig.getMissiles();
 		} else {
-			this.missiles = Soar2D.config.defaultMissiles;
+			this.missiles = Soar2D.config.getDefaultMissiles();
 		}
 		if (playerConfig.hasHealth()) {
 			this.health = playerConfig.getHealth();
 		} else {
-			this.health = Soar2D.config.defaultHealth;
+			this.health = Soar2D.config.getDefaultHealth();
 		}
 		if (playerConfig.hasEnergy()) {
 			this.energy = playerConfig.getEnergy();
 		} else {
-			this.energy = Soar2D.config.defaultEnergy;
+			this.energy = Soar2D.config.getDefaultEnergy();
 		}
 		
 		shieldsUp = false;
@@ -402,6 +402,6 @@ public class Tank extends Player {
 	}
 
 	private void clearRadar() {
-		radar = new RadarCell[Soar2D.config.radarWidth][Soar2D.config.radarHeight];
+		radar = new RadarCell[Soar2D.config.getRadarWidth()][Soar2D.config.getRadarHeight()];
 	}
 }

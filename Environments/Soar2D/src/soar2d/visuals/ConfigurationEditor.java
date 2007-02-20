@@ -12,7 +12,6 @@ import org.eclipse.swt.widgets.*;
 import soar2d.*;
 import soar2d.Configuration.*;
 import soar2d.player.*;
-import soar2d.xml.ConfigurationLoader;
 
 public class ConfigurationEditor extends Dialog {
 
@@ -34,7 +33,7 @@ public class ConfigurationEditor extends Dialog {
 	Text mapText;
 	Button remote;
 	Button hide;
-	Button gui;
+	Button nogui;
 	Text async;
 
 	// logging
@@ -138,7 +137,7 @@ public class ConfigurationEditor extends Dialog {
 		TreeItem agents = new TreeItem(tree, SWT.NONE);
 		agents.setText(kAgents);
 		
-		Iterator<PlayerConfig> playerIter = config.players.iterator();
+		Iterator<PlayerConfig> playerIter = config.getPlayers().iterator();
 		while (playerIter.hasNext()) {
 			TreeItem agent = new TreeItem(agents, SWT.NONE);
 			String name = playerIter.next().getName();
@@ -205,9 +204,8 @@ public class ConfigurationEditor extends Dialog {
 		saveAs.setText("Save as...");
 		saveAs.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				ConfigurationLoader loader = new ConfigurationLoader();
+				String output = config.generateXMLString();
 
-				String output = loader.generateXMLString(config);
 				if (output == null) {
 					Soar2D.control.severeError("Couldn't generate configuration.");
 					return;
@@ -413,7 +411,7 @@ public class ConfigurationEditor extends Dialog {
 				public void focusLost(FocusEvent e) {
 					String mapFileString = mapText.getText();
 					if (mapFileString != null) {
-						config.map = new File(mapFileString);
+						config.setMap(new File(mapFileString));
 					}
 					generalUpdate();
 				}
@@ -437,12 +435,12 @@ public class ConfigurationEditor extends Dialog {
 				public void widgetSelected(SelectionEvent e) {
 					FileDialog fd = new FileDialog(dialog, SWT.OPEN);
 					fd.setText("Open");
-					fd.setFilterPath(config.map.getPath());
-					fd.setFileName(config.map.getName());
+					fd.setFilterPath(config.getMap().getPath());
+					fd.setFileName(config.getMap().getName());
 					fd.setFilterExtensions(new String[] {"*.*"});
 					String mapFileString = fd.open();
 					if (mapFileString != null) {
-						config.map = new File(mapFileString);
+						config.setMap(new File(mapFileString));
 					}
 					generalUpdate();
 				}
@@ -450,11 +448,11 @@ public class ConfigurationEditor extends Dialog {
 		}
 		
 		// graphical
-		gui = new Button(currentPage, SWT.CHECK);
-		gui.setText("Use GUI");
-		gui.addSelectionListener(new SelectionAdapter() {
+		nogui = new Button(currentPage, SWT.CHECK);
+		nogui.setText("Do not use GUI");
+		nogui.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.graphical = !config.graphical;
+				config.setNoGUI(config.getNoGUI());
 				generalUpdate();
 			}
 		});
@@ -462,7 +460,7 @@ public class ConfigurationEditor extends Dialog {
 			GridData gd = new GridData();
 			gd.horizontalAlignment = SWT.BEGINNING;
 			gd.horizontalSpan = 3;
-			gui.setLayoutData(gd);
+			nogui.setLayoutData(gd);
 		}
 
 		// graphical
@@ -482,9 +480,9 @@ public class ConfigurationEditor extends Dialog {
 				try {
 					newSlice = Integer.parseInt(async.getText());
 				} catch (NumberFormatException exception) {
-					newSlice = Soar2D.config.asyncTimeSlice;
+					newSlice = Soar2D.config.getASyncDelay();
 				}
-				config.asyncTimeSlice = newSlice;
+				config.setASyncDelay(newSlice);
 				generalUpdate();
 			}
 		});
@@ -501,7 +499,7 @@ public class ConfigurationEditor extends Dialog {
 		hide.setText("Hide world");
 		hide.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.noWorld = !config.noWorld;
+				config.setHide(config.getHide());
 				generalUpdate();
 			}
 		});
@@ -517,7 +515,7 @@ public class ConfigurationEditor extends Dialog {
 		useSeed.setText("Use random seed");
 		useSeed.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.random = !config.random;
+				config.setRandomSeed(0);
 				generalUpdate();
 			}
 		});
@@ -544,9 +542,9 @@ public class ConfigurationEditor extends Dialog {
 				try {
 					newSeed = Integer.parseInt(seedText.getText());
 				} catch (NumberFormatException exception) {
-					newSeed = Soar2D.config.randomSeed;
+					newSeed = Soar2D.config.getRandomSeed();
 				}
-				config.randomSeed = newSeed;
+				config.setRandomSeed(newSeed);
 				generalUpdate();
 			}
 		});
@@ -563,7 +561,7 @@ public class ConfigurationEditor extends Dialog {
 		remote.setText("Remote kernel");
 		remote.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.remote = !config.remote;
+				config.setRemote(!config.getRemote());
 				generalUpdate();
 			}
 		});
@@ -598,14 +596,14 @@ public class ConfigurationEditor extends Dialog {
 			bookButton.setSelection(true);
 			break;
 		}
-		mapText.setText(config.map.getAbsolutePath());
-		gui.setSelection(config.graphical);
-		async.setText(Integer.toString(config.asyncTimeSlice));
-		hide.setSelection(config.noWorld);
-		useSeed.setSelection(!config.random);
+		mapText.setText(config.getMap().getAbsolutePath());
+		nogui.setSelection(config.getNoGUI());
+		async.setText(Integer.toString(config.getASyncDelay()));
+		hide.setSelection(config.getHide());
+		useSeed.setSelection(!config.hasRandomSeed());
 		seedText.setEnabled(useSeed.getSelection());
-		seedText.setText(Integer.toString(config.randomSeed));
-		remote.setSelection(config.remote);
+		seedText.setText(Integer.toString(config.getRandomSeed()));
+		remote.setSelection(config.getRemote());
 	}
 
 	public void loggingPage() {
@@ -652,7 +650,7 @@ public class ConfigurationEditor extends Dialog {
 			loggingConsoleButton.setText("Console");
 			loggingConsoleButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
-					config.logConsole = !config.logConsole;
+					config.setLogConsole(!config.getLogConsole());
 					loggingUpdate();
 				}
 			});
@@ -667,7 +665,12 @@ public class ConfigurationEditor extends Dialog {
 			loggingFileButton.setText("File");
 			loggingFileButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
-					config.logToFile = !config.logToFile;
+					File logFile = config.getLogFile();
+					if (logFile == null) {
+						config.setLogFile(Configuration.kDefaultLogFile);
+					} else {
+						config.setLogFile(null);
+					}
 					loggingUpdate();
 				}
 			});
@@ -692,7 +695,7 @@ public class ConfigurationEditor extends Dialog {
 			loggingNameText.addFocusListener(new FocusAdapter() {
 				public void focusLost(FocusEvent e) {
 					if (loggingNameText.getText() != null) {
-						config.logFile = new File(loggingNameText.getText());
+						config.setLogFile(new File(loggingNameText.getText()));
 					}
 					loggingUpdate();
 				}
@@ -717,11 +720,11 @@ public class ConfigurationEditor extends Dialog {
 					FileDialog fd = new FileDialog(dialog, SWT.OPEN);
 					fd.setText("Choose");
 					fd.setFilterPath(config.getBasePath());
-					fd.setFileName(config.logFile.getName());
+					fd.setFileName(config.getLogFile().getName());
 					fd.setFilterExtensions(new String[] {"*.*"});
 					String logFileString = fd.open();
 					if (logFileString != null) {
-						config.logFile = new File(logFileString);
+						config.setLogFile(new File(logFileString));
 					}
 					loggingUpdate();
 				}
@@ -733,7 +736,7 @@ public class ConfigurationEditor extends Dialog {
 		loggingTimeButton.setText("Print a time stamp with each message");
 		loggingTimeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.logTime = !config.logTime;
+				config.setLogTime(config.getLogTime());
 				loggingUpdate();
 			}
 		});
@@ -758,50 +761,30 @@ public class ConfigurationEditor extends Dialog {
 			gd.grabExcessHorizontalSpace = true;
 			loggingLevelCombo.setLayoutData(gd);
 		}
-		loggingLevelCombo.setItems(new String[] { "Severe", "Warning", "Info", "Fine", "Finer", "Finest" });
+		loggingLevelCombo.setItems(Configuration.kLogLevels);
 		loggingLevelCombo.setVisibleItemCount(6);
-		if (config.logLevel == Level.SEVERE) {
+		Level logLevel = config.getLogLevel();
+		if (logLevel == Level.SEVERE) {
 			loggingLevelCombo.select(0);
-		} else if (config.logLevel == Level.WARNING) {
+		} else if (logLevel == Level.WARNING) {
 			loggingLevelCombo.select(1);
-		} else if (config.logLevel == Level.INFO) {
+		} else if (logLevel == Level.INFO) {
 			loggingLevelCombo.select(2);
-		} else if (config.logLevel == Level.FINE) {
+		} else if (logLevel == Level.FINE) {
 			loggingLevelCombo.select(3);
-		} else if (config.logLevel == Level.FINER) {
+		} else if (logLevel == Level.FINER) {
 			loggingLevelCombo.select(4);
-		} else if (config.logLevel == Level.FINEST) {
+		} else if (logLevel == Level.FINEST) {
 			loggingLevelCombo.select(5);
 		} else {
 			loggingLevelCombo.select(2);
 		}
 		loggingLevelCombo.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				switch (loggingLevelCombo.getSelectionIndex()) {
-				case 0:
-					config.logLevel = Level.SEVERE;
-					break;
-				case 1:
-					config.logLevel = Level.WARNING;
-					break;
-				default:
-				case 2:
-					config.logLevel = Level.INFO;
-					break;
-				case 3:
-					config.logLevel = Level.FINE;
-					break;
-				case 4:
-					config.logLevel = Level.FINER;
-					break;
-				case 5:
-					config.logLevel = Level.FINEST;
-					break;
-				}
+				config.setLogLevel(Configuration.kLogLevels[loggingLevelCombo.getSelectionIndex()]);
 				loggingUpdate();
 			}
 		});
-		
 
 		loggingUpdate();
 
@@ -810,11 +793,16 @@ public class ConfigurationEditor extends Dialog {
 	}
 	
 	public void loggingUpdate() {
-		loggingFileButton.setSelection(config.logToFile);
-		loggingNameText.setEnabled(config.logToFile);
-		loggingNameText.setText(config.logFile.getAbsolutePath());
-		loggingConsoleButton.setSelection(config.logConsole);
-		loggingTimeButton.setSelection(config.logTime);
+		if (config.getLogFile() != null) {
+			loggingFileButton.setSelection(true);
+			loggingNameText.setEnabled(true);
+			loggingNameText.setText(config.getLogFile().getAbsolutePath());
+		} else {
+			loggingFileButton.setSelection(false);
+			loggingNameText.setEnabled(false);
+		}
+		loggingConsoleButton.setSelection(config.getLogConsole());
+		loggingTimeButton.setSelection(config.getLogTime());
 	}
 	
 	public void agentsPage(final TreeItem selectedItem, int selectedIndex) {
@@ -852,7 +840,7 @@ public class ConfigurationEditor extends Dialog {
 			agentsDebuggersButton.setText("Spawn debuggers on agent creation");
 			agentsDebuggersButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
-					config.debuggers = !config.debuggers;
+					config.setDebuggers(!config.getDebuggers());
 					agentsUpdate(selectedItem);
 				}
 			});
@@ -863,7 +851,7 @@ public class ConfigurationEditor extends Dialog {
 			}
 		} else {
 			playerConfigIndex = selectedIndex;
-			playerConfig = config.players.get(playerConfigIndex);
+			playerConfig = config.getPlayers().get(playerConfigIndex);
 		}
 		
 		{
@@ -994,7 +982,6 @@ public class ConfigurationEditor extends Dialog {
 					FileDialog fd = new FileDialog(dialog, SWT.OPEN);
 					fd.setText("Choose");
 					fd.setFilterPath(config.getAgentPath());
-					fd.setFileName(config.logFile.getName());
 					fd.setFilterExtensions(new String[] {"*.soar", "*.*"});
 					String productionsString = fd.open();
 					File productionsFile = null;
@@ -1335,7 +1322,7 @@ public class ConfigurationEditor extends Dialog {
 				createAgentButton.setText("Create new agent");
 				createAgentButton.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(SelectionEvent e) {
-						config.players.add(new PlayerConfig(playerConfig));
+						config.getPlayers().add(new PlayerConfig(playerConfig));
 						TreeItem agents = tree.getItem(2);
 						TreeItem newAgent = new TreeItem(agents, SWT.NONE);
 						String name;
@@ -1381,7 +1368,7 @@ public class ConfigurationEditor extends Dialog {
 			removeAgentButton.setText("Remove this agent");
 			removeAgentButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
-					config.players.remove(playerConfigIndex);
+					config.getPlayers().remove(playerConfigIndex);
 					playerConfigIndex = -1;
 					playerConfig = null;
 					selectedItem.dispose();
@@ -1408,14 +1395,14 @@ public class ConfigurationEditor extends Dialog {
 	public void agentsUpdate(TreeItem selectedItem) {
 		
 		if (selectedItem == null) {	
-			agentsDebuggersButton.setSelection(config.debuggers);
+			agentsDebuggersButton.setSelection(config.getDebuggers());
 		}
 		
 		boolean createReady = true;
 		boolean allDisabled = false;
 		
 		if ((selectedItem == null) 
-				&& (config.players.size() >= Soar2D.simulation.kColors.length)) {
+				&& (config.getPlayers().size() >= Soar2D.simulation.kColors.length)) {
 			allDisabled = true;
 			agentsNameButton.setEnabled(false);
 			agentsProductions.setEnabled(false);
@@ -1546,7 +1533,7 @@ public class ConfigurationEditor extends Dialog {
 		
 		terminalMaxUpdates = new Button(currentPage, SWT.CHECK);
 		terminalMaxUpdates.setText("Stop on update count");
-		terminalMaxUpdates.setSelection(config.terminalMaxUpdates > 0);
+		terminalMaxUpdates.setSelection(config.getTerminalMaxUpdates() > 0);
 		terminalMaxUpdates.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				terminalsUpdate();
@@ -1562,7 +1549,7 @@ public class ConfigurationEditor extends Dialog {
 		maxUpdates.addFocusListener(new FocusAdapter() {
 			public void focusLost(FocusEvent e) {
 				try {
-					config.terminalMaxUpdates = Integer.parseInt(maxUpdates.getText());
+					config.setTerminalMaxUpdates(Integer.parseInt(maxUpdates.getText()));
 				} catch (NumberFormatException exeption) {}
 				terminalsUpdate();
 			}
@@ -1587,10 +1574,10 @@ public class ConfigurationEditor extends Dialog {
 
 		terminalAgentCommand = new Button(currentPage, SWT.CHECK);
 		terminalAgentCommand.setText("Stop on agent command");
-		terminalAgentCommand.setSelection(config.terminalAgentCommand);
+		terminalAgentCommand.setSelection(config.getTerminalAgentCommand());
 		terminalAgentCommand.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.terminalAgentCommand = terminalAgentCommand.getSelection();
+				config.setTerminalAgentCommand(terminalAgentCommand.getSelection());
 			}
 		});
 		{
@@ -1600,7 +1587,7 @@ public class ConfigurationEditor extends Dialog {
 
 		terminalWinningScore = new Button(currentPage, SWT.CHECK);
 		terminalWinningScore.setText("Stop when a score is achieved");
-		terminalWinningScore.setSelection(config.terminalWinningScore > 0);
+		terminalWinningScore.setSelection(config.getTerminalWinningScore() > 0);
 		terminalWinningScore.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				terminalsUpdate();
@@ -1616,7 +1603,7 @@ public class ConfigurationEditor extends Dialog {
 		winningScore.addFocusListener(new FocusAdapter() {
 			public void focusLost(FocusEvent e) {
 				try {
-					config.terminalWinningScore = Integer.parseInt(winningScore.getText());
+					config.setTerminalWinningScore(Integer.parseInt(winningScore.getText()));
 				} catch (NumberFormatException exeption) {}
 				terminalsUpdate();
 			}
@@ -1626,9 +1613,6 @@ public class ConfigurationEditor extends Dialog {
 				if (!Character.isDigit(e.character)) {
 					e.doit = false;
 				}
-			}
-			public void keyReleased(KeyEvent e) {
-				terminalsUpdate();
 			}
 		});
 		{
@@ -1641,10 +1625,10 @@ public class ConfigurationEditor extends Dialog {
 
 		terminalPointsRemaining = new Button(currentPage, SWT.CHECK);
 		terminalPointsRemaining.setText("Stop when there are no more points available (Eaters)");
-		terminalPointsRemaining.setSelection(config.terminalPointsRemaining);
+		terminalPointsRemaining.setSelection(config.getTerminalPointsRemaining());
 		terminalPointsRemaining.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.terminalPointsRemaining = terminalPointsRemaining.getSelection();
+				config.setTerminalPointsRemaining(terminalPointsRemaining.getSelection());
 			}
 		});
 		{
@@ -1654,10 +1638,10 @@ public class ConfigurationEditor extends Dialog {
 
 		terminalFoodRemaining = new Button(currentPage, SWT.CHECK);
 		terminalFoodRemaining.setText("Stop when there is no food remaining (Eaters)");
-		terminalFoodRemaining.setSelection(config.terminalFoodRemaining);
+		terminalFoodRemaining.setSelection(config.getTerminalFoodRemaining());
 		terminalFoodRemaining.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.terminalFoodRemaining = terminalFoodRemaining.getSelection();
+				config.setTerminalFoodRemaining(terminalFoodRemaining.getSelection());
 			}
 		});
 		{
@@ -1667,10 +1651,10 @@ public class ConfigurationEditor extends Dialog {
 
 		terminalUnopenedBoxes = new Button(currentPage, SWT.CHECK);
 		terminalUnopenedBoxes.setText("Stop when there are no unopened boxes (Eaters)");
-		terminalUnopenedBoxes.setSelection(config.terminalUnopenedBoxes);
+		terminalUnopenedBoxes.setSelection(config.getTerminalUnopenedBoxes());
 		terminalUnopenedBoxes.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.terminalUnopenedBoxes = terminalUnopenedBoxes.getSelection();
+				config.setTerminalUnopenedBoxes(terminalUnopenedBoxes.getSelection());
 			}
 		});
 		{
@@ -1687,7 +1671,7 @@ public class ConfigurationEditor extends Dialog {
 	public void terminalsUpdate() {
 		if (terminalMaxUpdates.getSelection()) {
 			maxUpdates.setEnabled(true);
-			maxUpdates.setText(Integer.toString(config.terminalMaxUpdates));
+			maxUpdates.setText(Integer.toString(config.getTerminalMaxUpdates()));
 		} else {
 			maxUpdates.setEnabled(false);
 			maxUpdates.setText("");
@@ -1695,7 +1679,7 @@ public class ConfigurationEditor extends Dialog {
 		
 		if (terminalWinningScore.getSelection()) {
 			winningScore.setEnabled(true);
-			winningScore.setText(Integer.toString(config.terminalWinningScore));
+			winningScore.setText(Integer.toString(config.getTerminalWinningScore()));
 		} else {
 			winningScore.setEnabled(false);
 			winningScore.setText("");
@@ -1850,11 +1834,11 @@ public class ConfigurationEditor extends Dialog {
 			
 			clientTimeoutButton = new Button(newClientGroup, SWT.CHECK);
 			clientTimeoutButton.setText("Do not use default timeout:");
-			clientTimeoutButton.setSelection(clientConfig.timeout != Soar2D.config.kDefaultTimeout);
+			clientTimeoutButton.setSelection(clientConfig.timeout != ClientConfig.kDefaultTimeout);
 			clientTimeoutButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
 					if (!clientCommandButton.getSelection()) {
-						clientConfig.timeout = Soar2D.config.kDefaultTimeout;
+						clientConfig.timeout = ClientConfig.kDefaultTimeout;
 					}
 					clientsUpdate(selectedItem);
 				}
