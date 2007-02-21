@@ -50,7 +50,6 @@ public class WindowManager {
 	Composite rhs;
 	Composite currentSide;
 
-	public static final int kBookMainMapCellSize = 16;
 	public static final int kEatersMainMapCellSize = 20;
 	public static final int kTanksoarMainMapCellSize = 32;
 	public static final String kFoodRemaining = "Food remaining: ";
@@ -376,7 +375,7 @@ public class WindowManager {
 	public void setupBook() {
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
-		visualWorld = new VisualWorld(worldGroup, SWT.NONE, kBookMainMapCellSize);
+		visualWorld = new VisualWorld(worldGroup, SWT.NONE, Soar2D.config.getBookCellSize());
 		visualWorld.setMap(Soar2D.simulation.world.getMap());
 
 		visualWorld.addMouseListener(new MouseAdapter() {
@@ -390,8 +389,39 @@ public class WindowManager {
 		});
 		visualWorld.addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
-				// TODO: human input
-				return;
+				if (humanMove == null) {
+					return;
+				}
+				boolean go = false;
+				switch (e.keyCode) {
+				case SWT.KEYPAD_8:
+					humanMove.forward = true;
+					break;
+				case SWT.KEYPAD_4:
+					humanMove.rotate = true;
+					humanMove.rotateDirection = Names.kRotateLeft;
+					break;
+				case SWT.KEYPAD_6:
+					humanMove.rotate = true;
+					humanMove.rotateDirection = Names.kRotateRight;
+					break;
+				case SWT.KEYPAD_MULTIPLY:
+					humanMove.stopSim = true;
+					break;
+				case SWT.KEYPAD_CR:
+					go = true;
+					break;
+				default:
+					break;
+				}
+				
+				Soar2D.wm.setStatus(human.getColor() + ": " + humanMove.toString(), black);
+				
+				if (go) {
+					synchronized(humanMove) {
+						humanMove.notify();
+					}
+				}
 			}
 		});
 		

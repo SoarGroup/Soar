@@ -13,7 +13,11 @@
     <file>soar2d.log</file>
     <console />
   </logging>
-  <players />
+  <players>
+    <player>
+      <name>cat</name>
+    </player>
+  </players>
   <terminals />
   <clients />
 </soar2d>

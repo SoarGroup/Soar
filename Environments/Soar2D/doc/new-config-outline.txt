@@ -56,6 +56,10 @@
 					int updates
 			?<book>
 				?<colored-rooms>
+				?<speed>
+					int pixelsPerSec
+				?<book-cell-size>
+					int pixels
 	?<logging>
 		?<level>
 			enum { severe, warning, info, fine, finer, finest }

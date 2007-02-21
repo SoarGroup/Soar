@@ -22,6 +22,14 @@ public class Player {
 	protected PlayerConfig playerConfig;
 
 	private boolean pointsChanged = false;
+
+	private float heading = 0;	// heading in radians
+	public float getHeading() {
+		return heading;
+	}
+	public void setHeading(float heading) {
+		this.heading = heading;
+	}
 	
 	/**
 	 * @param playerConfig configuration params
