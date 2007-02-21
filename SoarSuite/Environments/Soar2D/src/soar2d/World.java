@@ -1,8 +1,10 @@
 package soar2d;
 
-import java.awt.*;
+import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.util.*;
 import java.util.logging.*;
+import java.lang.Math;
 
 import soar2d.Configuration.SimType;
 import soar2d.player.*;
@@ -23,8 +25,9 @@ public class World {
 	private ArrayList<Player> players = new ArrayList<Player>(7);
 	private ArrayList<Player> humanPlayers = new ArrayList<Player>(7);
 	private HashMap<String, Player> playersMap = new HashMap<String, Player>(7);
-	private HashMap<String, java.awt.Point> initialLocations = new HashMap<String, java.awt.Point>(7);
-	private HashMap<String, java.awt.Point> locations = new HashMap<String, java.awt.Point>(7);
+	private HashMap<String, Point> initialLocations = new HashMap<String, Point>(7);
+	private HashMap<String, Point> locations = new HashMap<String, Point>(7);
+	private HashMap<String, Point2D.Float> floatLocations = new HashMap<String, Point2D.Float>(7);
 	private HashMap<String, MoveInfo> lastMoves = new HashMap<String, MoveInfo>(7);
 	private HashMap<String, HashSet<Player> > killedTanks = new HashMap<String, HashSet<Player> >(7);
 	
@@ -84,13 +87,13 @@ public class World {
 	}
 	
 	private boolean addCharger(boolean health, GridMap newMap) {
-		ArrayList<java.awt.Point> locations = this.getAvailableLocations(newMap);
+		ArrayList<Point> locations = this.getAvailableLocations(newMap);
 		if (locations.size() <= 0) {
 			Soar2D.control.severeError("No place to put charger!");
 			return false;
 		}
 		
-		java.awt.Point location = locations.get(Simulation.random.nextInt(locations.size()));
+		Point location = locations.get(Simulation.random.nextInt(locations.size()));
 		if (health) {
 			logger.info("spawning health charger at (" + location.x + "," + location.y + ")");
 			if (!newMap.addRandomObjectWithProperties(location, Names.kPropertyHealth, Names.kPropertyCharger)) {
@@ -125,7 +128,7 @@ public class World {
 	
 	private boolean resetPlayer(Player player) {
 		// find a suitable starting location
-		java.awt.Point startingLocation = putInStartingLocation(player);
+		Point startingLocation = putInStartingLocation(player);
 		if (startingLocation == null) {
 			return false;
 		}
@@ -170,8 +173,8 @@ public class World {
 							continue;
 						}
 						
-						java.awt.Point playerLoc = locations.get(player.getName());
-						java.awt.Point otherLoc = locations.get(other.getName());
+						Point playerLoc = locations.get(player.getName());
+						Point otherLoc = locations.get(other.getName());
 						int newDistance = Math.abs(playerLoc.x - otherLoc.x) + Math.abs(playerLoc.y - otherLoc.y);
 						
 						if (newDistance < distance) {
@@ -213,6 +216,7 @@ public class World {
 		assert this.playersMap.size() == 0;
 		assert this.initialLocations.size() == 0;
 		assert this.locations.size() == 0;
+		assert this.floatLocations.size() == 0;
 		assert this.lastMoves.size() == 0;
 		map.shutdown();
 	}
@@ -228,18 +232,19 @@ public class World {
 		humanPlayers.remove(player);
 		playersMap.remove(name);
 		initialLocations.remove(name);
-		java.awt.Point location = locations.remove(name);
+		Point location = locations.remove(name);
+		floatLocations.remove(name);
 		lastMoves.remove(name);
 		map.setPlayer(location, null);
 		
 		updatePlayers(true);
 	}
 	
-	private ArrayList<java.awt.Point> getAvailableLocations(GridMap theMap) {
-		ArrayList<java.awt.Point> availableLocations = new ArrayList<java.awt.Point>();
+	private ArrayList<Point> getAvailableLocations(GridMap theMap) {
+		ArrayList<Point> availableLocations = new ArrayList<Point>();
 		for (int x = 0; x < theMap.getSize(); ++x) {
 			for (int y = 0; y < theMap.getSize(); ++ y) {
-				java.awt.Point potentialLocation = new java.awt.Point(x, y);
+				Point potentialLocation = new Point(x, y);
 				if (theMap.isAvailable(potentialLocation)) {
 					availableLocations.add(potentialLocation);
 				}
@@ -248,10 +253,10 @@ public class World {
 		return availableLocations;
 	}
 	
-	private java.awt.Point putInStartingLocation(Player player) {
+	private Point putInStartingLocation(Player player) {
 		// Get available cells
 		
-		ArrayList<java.awt.Point> availableLocations = getAvailableLocations(map);
+		ArrayList<Point> availableLocations = getAvailableLocations(map);
 		// make sure there is an available cell
 		switch (Soar2D.config.getType()) {
 		case kTankSoar:
@@ -270,7 +275,7 @@ public class World {
 			break;
 		}
 		
-		java.awt.Point location = null;
+		Point location = null;
 
 		if (initialLocations.containsKey(player.getName())) {
 			location = initialLocations.get(player.getName());
@@ -287,10 +292,13 @@ public class World {
 		// put the player in it
 		map.setPlayer(location, player);
 		locations.put(player.getName(), location);
+		if (Soar2D.config.getType() == SimType.kBook) {
+			floatLocations.put(player.getName(), defaultFloatLocation(location));
+		}
 		return location;
 	}
 
-	public boolean addPlayer(Player player, java.awt.Point initialLocation, boolean human) {
+	public boolean addPlayer(Player player, Point initialLocation, boolean human) {
 		assert !locations.containsKey(player.getName());
 		logger.info("Adding player " + player.getName());
 
@@ -307,7 +315,7 @@ public class World {
 			playersMap.remove(player.getName());
 			return false;
 		}
-		java.awt.Point location = locations.get(player.getName());
+		Point location = locations.get(player.getName());
 		
 		logger.info(player.getName() + ": Spawning at (" + 
 				location.x + "," + location.y + ")");
@@ -334,8 +342,8 @@ public class World {
 			}
 
 			// Calculate new location
-			java.awt.Point oldLocation = locations.get(player.getName());
-			java.awt.Point newLocation = new java.awt.Point(oldLocation);
+			Point oldLocation = locations.get(player.getName());
+			Point newLocation = new Point(oldLocation);
 			Direction.translate(newLocation, move.moveDirection);
 			if (move.jump) {
 				Direction.translate(newLocation, move.moveDirection);
@@ -389,7 +397,7 @@ public class World {
 		while (iter.hasNext()) {
 			Player player = iter.next();
 			MoveInfo lastMove = lastMoves.get(player.getName());
-			java.awt.Point location = locations.get(player.getName());
+			Point location = locations.get(player.getName());
 			
 			if (lastMove.move || lastMove.jump) {
 				map.setPlayer(location, player);
@@ -416,7 +424,7 @@ public class World {
 		}
 	}
 	
-	private void eat(Player player, java.awt.Point location) {
+	private void eat(Player player, Point location) {
 		ArrayList<CellObject> list = map.getAllWithProperty(location, Names.kPropertyEdible);
 		Iterator<CellObject> foodIter = list.iterator();
 		while (foodIter.hasNext()) {
@@ -428,7 +436,7 @@ public class World {
 		}
 	}
 	
-	public void missileHit(Player player, java.awt.Point location, CellObject missile) {
+	public void missileHit(Player player, Point location, CellObject missile) {
 		// Yes, I'm hit
 		missile.apply(player);
 		
@@ -458,7 +466,7 @@ public class World {
 		}
 	}
 	
-	private void open(Player player, java.awt.Point location) {
+	private void open(Player player, Point location) {
 		ArrayList<CellObject> boxes = map.getAllWithProperty(location, Names.kPropertyBox);
 		if (boxes.size() <= 0) {
 			Soar2D.logger.warning(player.getName() + " tried to open but there is no box.");
@@ -564,6 +572,112 @@ public class World {
 	}
 	
 	private void bookUpdate() {
+		System.out.println("bookUpdate");
+		
+		final float time = (float)Soar2D.config.getASyncDelay() / 1000.0f;
+
+		Iterator<Player> iter = players.iterator();
+		while (iter.hasNext()) {
+			Player player = iter.next();
+			MoveInfo move = getAndStoreMove(player);			
+			if (move == null) {
+				return;
+			}
+			
+			if (!move.forward) {
+				continue;
+			}
+			
+			final int speed = Soar2D.config.getSpeed();
+			final int cellSize = Soar2D.config.getBookCellSize();
+			final float heading = player.getHeading();
+			
+			Point oldLocation = locations.get(player.getName());
+			Point newLocation = new Point(oldLocation);
+			
+			Point2D.Float oldFloatLocation = floatLocations.get(player.getName());
+			Point2D.Float newFloatLocation = new Point2D.Float(oldFloatLocation.x, oldFloatLocation.y);
+
+			/*
+			 * x-axis: cosine
+			 * y-axis: sine
+			 * 
+			 * east:    0   0
+			 * south:  90  pi/2
+			 * west:  180  pi
+			 * north: 270 3pi/2
+			 */
+			
+			newFloatLocation.x += Math.cos(heading) * speed * time;
+			newFloatLocation.y += Math.sin(heading) * speed * time;
+			
+			
+			newLocation.x = (int)newFloatLocation.x / cellSize;
+			newLocation.y = (int)newFloatLocation.y / cellSize;
+			
+			System.out.println(newFloatLocation);
+			System.out.println(newLocation);
+
+			floatLocations.put(player.getName(), newFloatLocation);
+			locations.put(player.getName(), newLocation);
+		}
+		
+		iter = players.iterator();
+		while (iter.hasNext()) {
+			Player player = iter.next();
+			MoveInfo lastMove = lastMoves.get(player.getName());
+			Point location = locations.get(player.getName());
+			
+			if (lastMove.forward) {
+				map.setPlayer(location, player);
+			}
+		}
+
+		handleBookCollisions(findCollisions());
+
+	}
+	
+	private Point2D.Float defaultFloatLocation(Point location) {
+		Point2D.Float floatLocation = new Point2D.Float();
+		final int cellSize = Soar2D.config.getBookCellSize();
+		
+		// default to center of square
+		floatLocation.x = (location.x * cellSize) + (cellSize / 2); 
+		floatLocation.y = (location.y * cellSize) + (cellSize / 2); 
+
+		return floatLocation;
+	}
+	
+	private void handleBookCollisions(ArrayList<ArrayList<Player>> collisions) {
+		
+		// TODO: this is very similar to eaters code, consider combining to reduce redundancy
+		
+		// if there are no total collisions, we're done
+		if (collisions.size() < 1) {
+			return;
+		}
+
+		ArrayList<Player> collision = new ArrayList<Player>(players.size());
+		
+		Iterator<ArrayList<Player>> collisionIter = collisions.iterator();
+		while (collisionIter.hasNext()) {
+			collision = collisionIter.next();
+
+			assert collision.size() > 0;
+			if (logger.isLoggable(Level.FINER)) logger.finer("Processing collision group with " + collision.size() + " collidees.");
+
+			// Remove from former location (only one of these for all players)
+			map.setPlayer(locations.get(collision.get(0).getName()), null);
+			
+			// Move to new cell
+			ListIterator<Player> collideeIter = collision.listIterator();
+			while (collideeIter.hasNext()) {
+				Player player = collideeIter.next();
+				Point location = putInStartingLocation(player);
+				assert location != null;
+				player.fragged();
+			}
+		}
 	}
 	
 	private void eatersUpdate() {
@@ -572,7 +686,7 @@ public class World {
 			return;
 		}
 		updateMapAndEatFood();
-		handleCollisions();	
+		handleEatersCollisions(findCollisions());	
 		updatePlayers(false);
 		map.updateObjects(this);
 	}
@@ -583,7 +697,7 @@ public class World {
 		getTankMoves();
 		
 		// We'll cache the tank new locations
-		HashMap<String, java.awt.Point> newLocations = new HashMap<String, java.awt.Point>();
+		HashMap<String, Point> newLocations = new HashMap<String, Point>();
 		
 		// And we'll cache tanks that moved
 		ArrayList<Player> movedTanks = new ArrayList<Player>(players.size());
@@ -652,7 +766,7 @@ public class World {
 			// we haven't been checked yet
 			
 			// Calculate new location if I moved, or just use the old location
-			java.awt.Point oldLocation = locations.get(player.getName());
+			Point oldLocation = locations.get(player.getName());
 			
 			if (!playerMove.move) {
 				// No move, cross collision impossible
@@ -661,7 +775,7 @@ public class World {
 			}
 			
 			// we moved, calcuate new location
-			java.awt.Point newLocation = new java.awt.Point(oldLocation);
+			Point newLocation = new Point(oldLocation);
 			Direction.translate(newLocation, playerMove.moveDirection);
 			
 			//Cell dest = map.getCell(newLocation);
@@ -764,7 +878,7 @@ public class World {
 		// We've eliminated all cross collisions and walls
 		
 		// We'll need to save where people move, indexed by location
-		HashMap<java.awt.Point, ArrayList<Player> > collisionMap = new HashMap<java.awt.Point, ArrayList<Player> >();
+		HashMap<Point, ArrayList<Player> > collisionMap = new HashMap<Point, ArrayList<Player> >();
 		
 		// Iterate through players, checking for all other types of collisions
 		// Also, moves are committed at this point and they won't respawn on
@@ -855,7 +969,7 @@ public class World {
 		while (playerIter.hasNext()) {
 			Player player = playerIter.next();
 			// put in new cell
-			java.awt.Point location = newLocations.get(player.getName());
+			Point location = newLocations.get(player.getName());
 			locations.put(player.getName(), location);
 			map.setPlayer(location, player);
 			
@@ -910,7 +1024,7 @@ public class World {
 		playerIter = firedTanks.iterator();
 		while (playerIter.hasNext()) {
 			Player player = playerIter.next();
-			java.awt.Point missileLoc = new java.awt.Point(locations.get(player.getName()));
+			Point missileLoc = new Point(locations.get(player.getName()));
 			
 			int direction = player.getFacingInt();
 			Direction.translate(missileLoc, direction);
@@ -993,20 +1107,26 @@ public class World {
 	
 	private void fragPlayer(Player player) {
 		// remove from past cell
-		java.awt.Point oldLocation = locations.remove(player.getName());
+		Point oldLocation = locations.remove(player.getName());
+		if (Soar2D.config.getType() == SimType.kBook) {
+			floatLocations.remove(player.getName());
+		}
 		map.setExplosion(oldLocation);
 		map.setPlayer(oldLocation, null);
 
 		// Get available spots
-		ArrayList<java.awt.Point> spots = getAvailableLocations(map);
+		ArrayList<Point> spots = getAvailableLocations(map);
 		assert spots.size() > 0;
 		
 		// pick one and put the player in it
-		java.awt.Point location = spots.get(Simulation.random.nextInt(spots.size()));
+		Point location = spots.get(Simulation.random.nextInt(spots.size()));
 		map.setPlayer(location, player);
 		
 		// save the location
 		locations.put(player.getName(), location);
+		if (Soar2D.config.getType() == SimType.kBook) {
+			floatLocations.put(player.getName(), defaultFloatLocation(location));
+		}
 		
 		// reset the player state
 		player.fragged();
@@ -1033,18 +1153,18 @@ public class World {
 	private void spawnMissilePack(boolean force) {
 		if (force || (Simulation.random.nextInt(100) < Soar2D.config.getMissilePackRespawnChance())) {
 			// Get available spots
-			ArrayList<java.awt.Point> spots = getAvailableLocations(map);
+			ArrayList<Point> spots = getAvailableLocations(map);
 			assert spots.size() > 0;
 			
 			// Add a missile pack to a spot
-			java.awt.Point spot = spots.get(Simulation.random.nextInt(spots.size()));
+			Point spot = spots.get(Simulation.random.nextInt(spots.size()));
 			logger.info("spawning missile pack at (" + spot.x + "," + spot.y + ")");
 			boolean ret = map.addRandomObjectWithProperty(spot, Names.kPropertyMissiles);
 			assert ret;
 		}
 	}
 	
-	private void chargeUp(Player player, java.awt.Point location) {
+	private void chargeUp(Player player, Point location) {
 		// Charge up
 		ArrayList<CellObject> chargers = map.getAllWithProperty(location, Names.kPropertyCharger);
 		Iterator<CellObject> iter = chargers.iterator();
@@ -1066,12 +1186,12 @@ public class World {
 	}
 	
 	private void doMoveCollisions(Player player, MoveInfo playerMove, 
-			HashMap<String, java.awt.Point> newLocations, 
-			HashMap<java.awt.Point, ArrayList<Player> > collisionMap, 
+			HashMap<String, Point> newLocations, 
+			HashMap<Point, ArrayList<Player> > collisionMap, 
 			ArrayList<Player> movedTanks) {
 		
 		// Get destination location
-		java.awt.Point newLocation = newLocations.get(player.getName());
+		Point newLocation = newLocations.get(player.getName());
 		
 		// Wall collisions checked for earlier
 		
@@ -1114,7 +1234,7 @@ public class World {
 	}
 	
 	private void cancelMove(Player player, MoveInfo move, 
-			HashMap<String, java.awt.Point> newLocations, 
+			HashMap<String, Point> newLocations, 
 			ArrayList<Player> movedTanks) {
 		move.move = false;
 		movedTanks.remove(player);
@@ -1150,16 +1270,17 @@ public class World {
 		}
 	}
 
-	private void handleCollisions() {
+	private ArrayList<ArrayList<Player>> findCollisions() {
+		ArrayList<ArrayList<Player>> collisions = new ArrayList<ArrayList<Player>>(players.size() / 2);
+
 		// Make sure collisions are possible
 		if (players.size() < 2) {
-			return;
+			return collisions;
 		}
 		
 		// Optimization to not check the same name twice
 		HashSet<Player> colliding = new HashSet<Player>(players.size());
 		ArrayList<Player> collision = new ArrayList<Player>(players.size());
-		ArrayList<ArrayList<Player>> collisions = new ArrayList<ArrayList<Player>>(players.size() / 2);
 
 		ListIterator<Player> leftIter = players.listIterator();
 		while (leftIter.hasNext()) {
@@ -1208,11 +1329,18 @@ public class World {
 				collisions.add(new ArrayList<Player>(collision));
 			}
 		}
+
+		return collisions;
+	}
+		
+	private void handleEatersCollisions(ArrayList<ArrayList<Player>> collisions) {
 		
 		// if there are no total collisions, we're done
 		if (collisions.size() < 1) {
 			return;
 		}
+
+		ArrayList<Player> collision = new ArrayList<Player>(players.size());
 		
 		Iterator<ArrayList<Player>> collisionIter = collisions.iterator();
 		while (collisionIter.hasNext()) {
@@ -1246,9 +1374,9 @@ public class World {
 			collideeIter = collision.listIterator();
 			while (collideeIter.hasNext()) {
 				Player player = collideeIter.next();
-				java.awt.Point location = putInStartingLocation(player);
-				player.fragged();
+				Point location = putInStartingLocation(player);
 				assert location != null;
+				player.fragged();
 				if (!lastMoves.get(player.getName()).dontEat) {
 					eat(player, location);
 				}
@@ -1273,6 +1401,10 @@ public class World {
 
 	public Point getLocation(Player player) {
 		return locations.get(player.getName());
+	}
+	
+	public Point2D.Float getFloatLocation(Player player) {
+		return floatLocations.get(player.getName());
 	}
 
 	public ArrayList<Player> getPlayers() {

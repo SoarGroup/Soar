@@ -65,6 +65,8 @@ public class Configuration {
 
 		// book-specific
 		this.coloredRooms = config.coloredRooms;
+		this.speed = config.speed;
+		this.bookCellSize = config.bookCellSize;
 		
 		// logging
 		this.logLevel = Level.parse(config.logLevel.getName());
@@ -465,6 +467,8 @@ public class Configuration {
 			if (this.getColoredRooms()) {
 				book.addContent(new Element(kTagColoredRooms));
 			}
+			book.addContent(new Element(kTagSpeed).setText(Integer.toString(this.getSpeed())));
+			book.addContent(new Element(kTagBookCellSize).setText(Integer.toString(this.getBookCellSize())));
 			rules.addContent(book);
 			break;
 		}
@@ -850,6 +854,24 @@ public class Configuration {
 		this.coloredRooms = coloredRooms;
 	}
 	
+	private static final String kTagSpeed = "speed";
+	private int speed = 16;
+	public int getSpeed() {
+		return this.speed;
+	}
+	public void setSpeed(int speed) {
+		this.speed = speed;
+	}
+	
+	private static final String kTagBookCellSize = "book-cell-size";
+	private int bookCellSize = 16;
+	public int getBookCellSize() {
+		return this.bookCellSize;
+	}
+	public void setBookCellSize(int bookCellSize) {
+		this.bookCellSize = bookCellSize;
+	}
+	
 	private void book(Element book) throws LoadError {
 		List children = book.getChildren();
 		Iterator iter = children.iterator();
@@ -858,6 +880,20 @@ public class Configuration {
 			
 			if (child.getName().equalsIgnoreCase(kTagColoredRooms)) {
 				this.setColoredRooms(true);
+				
+			} else if (child.getName().equalsIgnoreCase(kTagSpeed)) {
+				try {
+					this.setSpeed(Integer.parseInt(child.getTextTrim()));
+				} catch (NumberFormatException e) {
+					throw new LoadError("Error parsing " + kTagSpeed);
+				}
+				
+			} else if (child.getName().equalsIgnoreCase(kTagBookCellSize)) {
+				try {
+					this.setBookCellSize(Integer.parseInt(child.getTextTrim()));
+				} catch (NumberFormatException e) {
+					throw new LoadError("Error parsing " + kTagBookCellSize);
+				}
 				
 			} else {
 				throw new LoadError("Unrecognized tag: " + child.getName());
