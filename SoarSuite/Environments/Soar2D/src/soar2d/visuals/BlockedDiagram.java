@@ -29,7 +29,7 @@ public class BlockedDiagram extends Canvas implements PaintListener {
 	
 	public BlockedDiagram(Composite parent, int style) {
 		super(parent, style);
-		kDiagram = new Image(parent.getDisplay(), Soar2D.class.getResourceAsStream("/images/blocked-diagram.gif"));
+		kDiagram = new Image(parent.getDisplay(), Soar2D.class.getResourceAsStream("/images/tanksoar/blocked-diagram.gif"));
 		disable();
 		addPaintListener(this);		
 	}

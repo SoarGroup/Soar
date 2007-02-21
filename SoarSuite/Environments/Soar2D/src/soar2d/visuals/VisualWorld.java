@@ -32,6 +32,9 @@ public class VisualWorld extends Canvas implements PaintListener {
 	
 	private static HashMap<String, Image> images = new HashMap<String, Image>();
 	private static HashMap<Integer, Image> tanks = new HashMap<Integer, Image>();
+	private static Image dog;
+	private static Image cat;
+	private static Image mouse;
 
 	public static boolean internalRepaint = false;
 	
@@ -54,11 +57,22 @@ public class VisualWorld extends Canvas implements PaintListener {
 		display = parent.getDisplay();
 		this.cellSize = cellSize;
 
-		if (Soar2D.config.getType() == SimType.kTankSoar) {
-			tanks.put(new Integer(Direction.kSouthInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tank_down.gif")));
-			tanks.put(new Integer(Direction.kNorthInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tank_up.gif")));
-			tanks.put(new Integer(Direction.kEastInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tank_right.gif")));
-			tanks.put(new Integer(Direction.kWestInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tank_left.gif")));
+		switch(Soar2D.config.getType()) {
+		case kTankSoar:
+			tanks.put(new Integer(Direction.kSouthInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank_down.gif")));
+			tanks.put(new Integer(Direction.kNorthInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank_up.gif")));
+			tanks.put(new Integer(Direction.kEastInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank_right.gif")));
+			tanks.put(new Integer(Direction.kWestInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank_left.gif")));
+			break;
+			
+		case kEaters:
+			break;
+			
+		case kBook:
+			dog = new Image(display, Soar2D.class.getResourceAsStream("/images/book/dog.gif"));
+			cat = new Image(display, Soar2D.class.getResourceAsStream("/images/book/cat.gif"));
+			mouse = new Image(display, Soar2D.class.getResourceAsStream("/images/book/mouse.gif"));
+			break;
 		}
 		
 		addPaintListener(this);		
@@ -75,7 +89,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 		Iterator<CellObject> iter = manager.getTemplatesWithProperty(Names.kPropertyMiniImage).iterator();
 		while (iter.hasNext()) {
 			CellObject obj = iter.next();
-			Image image = new Image(WindowManager.display, Soar2D.class.getResourceAsStream("/images/" + obj.getProperty(Names.kPropertyMiniImage)));
+			Image image = new Image(WindowManager.display, Soar2D.class.getResourceAsStream("/images/tanksoar/" + obj.getProperty(Names.kPropertyMiniImage)));
 			assert image != null;
 			if (obj.getName().equals(Names.kEnergy)) {
 				RadarCell.energyImage = image;
@@ -372,7 +386,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 						}
 					}
 					
-					Player player = this.map.getPlayer(location);
+					Player tank = this.map.getPlayer(location);
 					
 					// draw the wall or ground or energy charger or health charger
 					gc.drawImage(background[location.x][location.y], location.x*cellSize, location.y*cellSize);
@@ -395,14 +409,14 @@ public class VisualWorld extends Canvas implements PaintListener {
 							image = bootstrapImage(imageName);
 						}
 						gc.drawImage(image, location.x*cellSize, location.y*cellSize);
-					} else if (player != null) {
-						Image image = tanks.get(new Integer(player.getFacingInt()));
+					} else if (tank != null) {
+						Image image = tanks.get(new Integer(tank.getFacingInt()));
 						assert image != null;
 
 						gc.drawImage(image, location.x*cellSize, location.y*cellSize);
 
-						if (player.shieldsUp()) {
-					        gc.setForeground(WindowManager.getColor(player.getColor()));
+						if (tank.shieldsUp()) {
+					        gc.setForeground(WindowManager.getColor(tank.getColor()));
 							gc.setLineWidth(3);
 							gc.drawOval(cellSize*location.x+2, cellSize*location.y+2, cellSize-5, cellSize-5);
 					        gc.setForeground(WindowManager.black);
@@ -410,7 +424,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 						}
 
 						// draw the player color
-						gc.setBackground(WindowManager.getColor(player.getColor()));
+						gc.setBackground(WindowManager.getColor(tank.getColor()));
 						gc.fillOval(cellSize*location.x + cellSize/2 - kDotSize/2, 
 								cellSize*location.y + cellSize/2 - kDotSize/2, 
 								kDotSize, kDotSize);
@@ -512,23 +526,51 @@ public class VisualWorld extends Canvas implements PaintListener {
 					} else {
 						
 						if (map.getAllWithProperty(location, Names.kPropertyDoor).size() == 0) {
-							// normal:
-							//gc.setBackground(WindowManager.widget_background);
 							
-							// colored rooms:
-							CellObject roomObject = map.getObject(location, Names.kRoomID);
-							if (roomObject == null)  {
+							if (!Soar2D.config.getColoredRooms()) {
+								// normal:
 								gc.setBackground(WindowManager.widget_background);
 							} else {
-								int roomID = roomObject.getIntProperty(Names.kPropertyNumber);
-								roomID %= Soar2D.simulation.kColors.length - 1; // the one off eliminates black
-								gc.setBackground(WindowManager.getColor(Soar2D.simulation.kColors[roomID]));
+								// colored rooms:
+								CellObject roomObject = map.getObject(location, Names.kRoomID);
+								if (roomObject == null)  {
+									gc.setBackground(WindowManager.widget_background);
+								} else {
+									int roomID = roomObject.getIntProperty(Names.kPropertyNumber);
+									roomID %= Soar2D.simulation.kColors.length - 1; // the one off eliminates black
+									gc.setBackground(WindowManager.getColor(Soar2D.simulation.kColors[roomID]));
+								}
 							}
 						} else {
 							gc.setBackground(WindowManager.white);
 						}
 						gc.fillRectangle(cellSize*xDraw, cellSize*yDraw, cellSize, cellSize);
 					}
+					
+					Player player = this.map.getPlayer(location);
+					if (player != null) {
+						boolean drawDot = false;
+						Image image = null;
+						if (player.getName().equalsIgnoreCase("dog")) {
+							image = VisualWorld.dog;
+						} else if (player.getName().equalsIgnoreCase("mouse")) {
+							image = VisualWorld.mouse;
+						} else {
+							image = VisualWorld.cat;
+							drawDot = true;
+						}
+						
+						gc.drawImage(image, location.x*cellSize, location.y*cellSize);
+
+						// draw the player color
+						if (drawDot) {
+							gc.setBackground(WindowManager.getColor(player.getColor()));
+							gc.fillOval(cellSize*location.x + cellSize/2 - kDotSize/2, 
+									cellSize*location.y + cellSize/2 - kDotSize/2, 
+									kDotSize, kDotSize);
+						}
+					}
+
 					break;
 				}
 			}
@@ -557,7 +599,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 	}
 	
 	Image bootstrapImage(String imageName) {
-		Image image = new Image(WindowManager.display, Soar2D.class.getResourceAsStream("/images/" + imageName));
+		Image image = new Image(WindowManager.display, Soar2D.class.getResourceAsStream("/images/tanksoar/" + imageName));
 		assert image != null;
 		images.put(imageName, image);
 		return image;

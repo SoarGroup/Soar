@@ -54,6 +54,8 @@
 					int cells
 				?<missile-reset-threshold>
 					int updates
+			?<book>
+				?<colored-rooms>
 	?<logging>
 		?<level>
 			enum { severe, warning, info, fine, finer, finest }
