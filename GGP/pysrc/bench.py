@@ -1,7 +1,7 @@
 from PyRunSoar import RunSoar
 import tempfile, re, sys, random, os
 
-base_dir = 'C:\\home\\jzxu\\workspace\\GGP'
+base_dir = '/home/swinterm/GGP'
 
 kif_dir = os.path.join(base_dir, 'kif','R02_mod')
 agent_dir = os.path.join(base_dir, 'agents')

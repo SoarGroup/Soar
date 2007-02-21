@@ -1,8 +1,8 @@
 import os, kif, tempfile, subprocess
 
-solver_path = '/home/jzxu/workspace/GGP/solver'
+solver_path = '/home/swinterm/GGP/cppsrc/a.out'
 log_file = 'log.txt'
-kif_dir = '/home/jzxu/workspace/GGP/kif/R02_mod'
+kif_dir = '/home/swinterm/GGP/kif/R02_mod'
 kifs = [ 'mummymaze1p-horiz.kif' ]
 
 def self_cross_product(array):
@@ -33,7 +33,7 @@ for f in ['%s/%s' % (kif_dir, k) for k in kifs]:
 		print loc_pair[0], loc_pair[1]
 		res = 'depth'
 		depth = 50
-		res = run_search(loc_pair[0], loc_pair[1], exit_loc, 'h', f, depth)
+		res = run_search(loc_pair[0], loc_pair[1], exit_loc, 'v', f, depth)
 		
 		if res == 'eaten':
 			log.write('%s %d %d %d %d - unsolvable\n' % ((f,) + loc_pair[0] + loc_pair[1]))
