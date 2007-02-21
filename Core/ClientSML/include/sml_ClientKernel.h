@@ -362,6 +362,12 @@ public:
 	bool IsConnectionClosed() ;
 
 	/*************************************************************
+	* @brief True if this is a remote connection to the kernel
+	*		 (i.e. connected over a socket rather than by loading a library)
+	*************************************************************/
+	bool IsRemoteConnection() ;
+
+	/*************************************************************
 	* @brief Preparation for deleting the kernel.
 	*		 Agents are destroyed at this point (if we own the kernel)
 	*		 After calling shutdown the kernel cannot be restarted
