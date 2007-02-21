@@ -262,13 +262,11 @@ public class World {
 			}
 			break;
 		case kEaters:
+		case kBook:
 			if (availableLocations.size() < 1) {
 				Soar2D.control.severeError("There are no suitable starting locations for " + player.getName() + ".");
 				return null;
 			}
-			break;
-		case kBook:
-			assert false;
 			break;
 		}
 		

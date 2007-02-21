@@ -3,6 +3,10 @@
     <game>book</game>
     <map>maps/book/default.bmap</map>
     <seed>0</seed>
+    <async>500</async>
+    <rules>
+      <book />
+    </rules>
   </general>
   <logging>
     <level>INFO</level>

@@ -8,72 +8,34 @@ import soar2d.*;
  * output required for interaction with the world
  */
 public class MoveInfo {
-	/**
-	 * true indicates a directional move has been made
-	 */
-	public boolean move = false;
-	/**
-	 * must be valid if move is true, indicates direction to move
-	 */
-	public int moveDirection = -1;
-	/**
-	 * eaters: indicates if a jump is made, move must be true if this is true,
-	 * and by implication, moveDirection must be valid
-	 */
-	public boolean jump = false;
-	/**
-	 * eaters: eat the food encountered during this update. does not eat food
-	 * on the current cell unless we don't actually move
-	 */
-	public boolean dontEat = false;
-	/**
-	 * stop the simulation by command
-	 */
-	public boolean stopSim = false;
-	/**
-	 * open the box on the current cell
-	 */
-	public boolean open = false;
-	/**
-	 * rotate tank
-	 */
-	public boolean rotate = false;
-	/**
-	 * Which way to rotate, must be valid if rotate true
-	 */
-	public String rotateDirection;
 	
-	/**
-	 * fire the tank cannon
-	 */
-	public boolean fire = false;
+	// all
+	public boolean stopSim = false;	// stop the simulation by command
 	
-	/**
-	 * change radar status
-	 */
-	public boolean radar = false;
-	/**
-	 * status to change radar to
-	 */
-	public boolean radarSwitch = false;
+	// eaters + tanksoar
+	public boolean move = false;	// move
+	public int moveDirection = -1;	// direction to move
 	
-	/**
-	 * change radar power setting
-	 */
-	public boolean radarPower = false;
-	/**
-	 * setting to change radar power to
-	 */
-	public int radarPowerSetting = -1;
+	// eaters
+	public boolean open = false;	// open the box on the current cell
+	public boolean jump = false;	// jump if we move
+	public boolean dontEat = false;	// don't eat food
 	
-	/**
-	 * change shields status
-	 */
-	public boolean shields = false;
-	/**
-	 * setting to change shields to
-	 */
-	public boolean shieldsSetting = false;
+	// tanksoar + book
+	public boolean rotate = false;	// rotate tank
+	public String rotateDirection;	// Which way to rotate, must be valid if rotate true
+	
+	// tanksoar
+	public boolean fire = false;	// fire the tank cannon
+	public boolean radar = false;	// change radar status
+	public boolean radarSwitch = false;	// status to change radar to
+	public boolean radarPower = false;	// change radar power setting
+	public int radarPowerSetting = -1;	// setting to change radar power to
+	public boolean shields = false;	// change shields status
+	public boolean shieldsSetting = false;	// setting to change shields to
+	
+	// book
+	public boolean forward = false;	// move forward
 	
 	public MoveInfo() {
 	}
@@ -120,7 +82,12 @@ public class MoveInfo {
 			break;
 			
 		case kBook:
-			assert false;
+			if (forward) {
+				output += "(" + Names.kForwardID + ")";
+			}
+			if (rotate) {
+				output += "(" + Names.kRotateID + ": " + rotateDirection + ")";			
+			}
 			break;
 		}
 		

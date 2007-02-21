@@ -26,8 +26,8 @@ public class TankSoarAgentWorld extends Canvas implements PaintListener {
 
 	public TankSoarAgentWorld(Composite parent, int style) {
 		super(parent, style);
-		question = new Image(WindowManager.display, Soar2D.class.getResourceAsStream("/images/question.gif"));
-		tankImage = new Image(WindowManager.display, Soar2D.class.getResourceAsStream("/images/tank-mini.gif"));
+		question = new Image(WindowManager.display, Soar2D.class.getResourceAsStream("/images/tanksoar/question.gif"));
+		tankImage = new Image(WindowManager.display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank-mini.gif"));
 		addPaintListener(this);		
 	}
 	

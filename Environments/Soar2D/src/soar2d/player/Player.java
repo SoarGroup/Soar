@@ -11,35 +11,14 @@ import soar2d.*;
  * can be a Tank, Eater, whatever.
  */
 public class Player {
-	/**
-	 * handy java logger
-	 */
-	protected Logger logger = Soar2D.logger;
+	protected Logger logger = Soar2D.logger;	// handy java logger
 
-	/**
-	 * player name
-	 */
-	private String name;
-	/**
-	 * what direction I'm currently facing
-	 */
-	private int facingInt;
-	/**
-	 * current point count
-	 */
-	private int points;
-	/**
-	 * valid color string
-	 */
-	private String color;
-	/**
-	 * where i was last update
-	 */
-	protected java.awt.Point previousLocation = new java.awt.Point(-1, -1);
-	/**
-	 * if I moved since last update
-	 */
-	protected boolean moved = false;
+	private String name;	// player name
+	private int facingInt;	// what direction I'm currently facing
+	private int points;	// current point count
+	private String color;	// valid color string
+	protected java.awt.Point previousLocation = new java.awt.Point(-1, -1);	// where i was last update
+	protected boolean moved = false;	// if I moved since last update
 	protected PlayerConfig playerConfig;
 
 	private boolean pointsChanged = false;

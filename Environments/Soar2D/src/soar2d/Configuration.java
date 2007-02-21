@@ -63,6 +63,9 @@ public class Configuration {
 		this.maxSmellDistance = config.maxSmellDistance;
 		this.missileResetThreshold = config.missileResetThreshold;
 
+		// book-specific
+		this.coloredRooms = config.coloredRooms;
+		
 		// logging
 		this.logLevel = Level.parse(config.logLevel.getName());
 		this.logFile = config.logFile.getAbsoluteFile();
@@ -458,7 +461,11 @@ public class Configuration {
 			rules.addContent(tanksoar);
 			break;
 		case kBook:
-			assert false;
+			Element book = new Element(kTagBook);
+			if (this.getColoredRooms()) {
+				book.addContent(new Element(kTagColoredRooms));
+			}
+			rules.addContent(book);
 			break;
 		}
 	}
@@ -474,6 +481,9 @@ public class Configuration {
 				
 			} else if (child.getName().equalsIgnoreCase(kTagTankSoar)) {
 				tanksoar(child);
+
+			} else if (child.getName().equalsIgnoreCase(kTagBook)) {
+				book(child);
 
 			} else {
 				throw new LoadError("Unrecognized tag: " + child.getName());
@@ -711,7 +721,7 @@ public class Configuration {
 	public int getMissileResetThreshold() {
 		return this.missileResetThreshold;
 	}
-
+	
 	private void tanksoar(Element tanksoar) throws LoadError {
 		List children = tanksoar.getChildren();
 		Iterator iter = children.iterator();
@@ -831,6 +841,30 @@ public class Configuration {
 
 	private static final String kTagBook = "book";
 	
+	private static final String kTagColoredRooms = "colored-rooms";
+	private boolean coloredRooms = false;
+	public boolean getColoredRooms() {
+		return this.coloredRooms;
+	}
+	public void setColoredRooms(boolean coloredRooms) {
+		this.coloredRooms = coloredRooms;
+	}
+	
+	private void book(Element book) throws LoadError {
+		List children = book.getChildren();
+		Iterator iter = children.iterator();
+		while (iter.hasNext()) {
+			Element child = (Element)iter.next();
+			
+			if (child.getName().equalsIgnoreCase(kTagColoredRooms)) {
+				this.setColoredRooms(true);
+				
+			} else {
+				throw new LoadError("Unrecognized tag: " + child.getName());
+			}
+		}		
+	}
+
 	// log level
 	private Level logLevel = Level.INFO; // Current log level, see java.util.logging
 	private static final String kTagLevel = "level";
@@ -1137,7 +1171,6 @@ public class Configuration {
 			this.terminalFoodRemaining = false;
 			break;
 		case kBook:
-			assert false;
 			this.terminalWinningScore = 0;
 			this.terminalFoodRemaining = false;
 			break;

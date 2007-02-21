@@ -49,6 +49,9 @@ public class Simulation {
 	 */
 	private HashMap<String, PlayerConfig> configs = new HashMap<String, PlayerConfig>();
 
+	private static final String kDog = "dog";
+	private static final String kMouse = "mouse";
+	
 	/**
 	 * @return true if there were no errors during initialization
 	 * 
@@ -113,6 +116,18 @@ public class Simulation {
 		// Start or wait for clients (false: before agent creation)
 		if (!doClients(false)) {
 			return false;
+		}
+		
+		// add dog and mouse (book)
+		// TODO: this could happen in the config file
+		if (Soar2D.config.getType() == SimType.kBook) {
+			PlayerConfig dogConfig = new PlayerConfig();
+			dogConfig.setName(kDog);
+			createPlayer(dogConfig);
+			
+			PlayerConfig mouseConfig = new PlayerConfig();
+			mouseConfig.setName(kMouse);
+			createPlayer(mouseConfig);
 		}
 		
 		// add initial players
@@ -271,7 +286,13 @@ public class Simulation {
 					player = new Tank(playerConfig);
 					break;
 				case kBook:
-					assert false;
+					if (playerConfig.getName().equals(kDog)) {
+						player = new Dog(playerConfig);
+					} else if (playerConfig.getName().equals(kMouse)) {
+						player = new Mouse(playerConfig);
+					} else {
+						player = new Cat(playerConfig);
+					}
 					break;
 				}
 				
