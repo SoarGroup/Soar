@@ -8,7 +8,7 @@
 			int seed
 		?<remote>
 		?<hide>
-		?<gui>
+		?<no-gui>
 		?<async>
 			int millisecondDelay
 		?<rules>
