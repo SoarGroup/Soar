@@ -1,14 +1,15 @@
 #!/usr/bin/perl
 
-die "args: gets random problems that have solutions from the output of genProbs.py, where the problem is solved in both file1 and file2, and has a length of at least min_length.\nparams:file1 file2 min_length num_problems" 
-unless ($#ARGV == 3);
+die "args: gets random problems that have solutions from the output of genProbs.py, where the problem is solved in both file1 and file2, and has a length of at least min_length.\nparams:file1 file2 min_length max_length num_problems" 
+unless ($#ARGV == 4);
 
 $randomizelines = "/home/swinterm/GGP/pysrc/randomize-lines";
 
 $file1 = $ARGV[0];
 $file2 = $ARGV[1];
 $minLength = $ARGV[2];
-$numProblems = $ARGV[3];
+$maxLength = $ARGV[3];
+$numProblems = $ARGV[4];
 
 die unless (-e $file1);
 die unless (-e $file2);
@@ -32,7 +33,7 @@ foreach $line (<$IN>) {
   $line =~ s/^\S* // or die;
   $line =~ /\d+ \d+ \d+ \d+ - (\d+)/ or die;
 
-  if ($1 >= $minLength) {
+  if ($1 >= $minLength and $1 <= $maxLength) {
     print $OUT $line;
   }
 }

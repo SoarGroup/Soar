@@ -4,13 +4,20 @@ die unless ($#ARGV == 1);
 $name = $ARGV[0];
 $baseSoarFile = $ARGV[1];
 
+our $baseDir = "/home/swinterm/GGP";
+
 our $scriptDir = "./pysrc"; 
 die "$baseSoarFile does not exist" unless (-e $baseSoarFile);
 $probFile = "$name\_probs";
 
+our $soarInPipe = "/tmp/scld_in";
+our $soarOutPipe = "/tmp/scld_out";
+
+die "run sclc -k first" unless (-e $soarInPipe);
+
 if (not -e $probFile) {
   print "generating problems..\n";
-  print `$scriptDir/getRandomProblemsWithSolutions.pl $scriptDir/locs-h $scriptDir/locs-v 6 20 > $probFile`;
+  print `$scriptDir/getRandomProblemsWithSolutions.pl $scriptDir/locs-h $scriptDir/locs-v 10 20 20 > $probFile`;
 }
 else {
   print "using existing problems: $probFile\n";
@@ -28,6 +35,7 @@ print "will store results in directory $dirName\n";
 
 print `mkdir $dirName`;
 print `cd $dirName; ln -s ../common`;
+print `touch $dirName/empty.soar`;
 
 @probs = `cat $probFile`;
 
@@ -57,11 +65,11 @@ foreach $prob (@probs) {
   setSoarFileFields($soarFile, "mummy_location", $mummyX, $mummyY);
   setSoarFileFields($soarFile, "chunk_file", "empty");
 
-  $postRunCommand = "command-to-file $trialPrefix\_chunks.soar print --chunks --full";
+  $postRunCommand = "command-to-file $baseDir/$trialPrefix\_chunks.soar print --chunks --full";
   runTrial($soarFile, "$trialPrefix\_$probType.log", $postRunCommand);
 
   # target w/o chunks
-  $probType = "nosource_target";
+  $probType = "plain_target";
   $soarFile = "$trialPrefix\_$probType.soar";
   print `cp $baseSoarFile $soarFile`;
 
@@ -73,7 +81,7 @@ foreach $prob (@probs) {
   runTrial($soarFile, "$trialPrefix\_$probType.log", "");
 
   # target w/chunks
-  $probType = "target";
+  $probType = "transfer_target";
   $soarFile = "$trialPrefix\_$probType.soar";
   print `cp $baseSoarFile $soarFile`;
     
@@ -81,7 +89,7 @@ foreach $prob (@probs) {
   setSoarFileFields($soarFile, "mummy_type", "vertical");
   setSoarFileFields($soarFile, "explorer_location", $explorerX, $explorerY);
   setSoarFileFields($soarFile, "mummy_location", $mummyX, $mummyY);
-  setSoarFileFields($soarFile, "chunk_file", "$trialPrefix\_chunks");
+  setSoarFileFields($soarFile, "chunk_file", "$baseDir/$trialPrefix\_chunks");
 
   runTrial($soarFile, "$trialPrefix\_$probType.log", "");
 }
@@ -106,13 +114,29 @@ sub processChunks {
   die "no chunk file: $chunkFile" unless (-e $chunkFile);
 
   print `$scriptDir/removeMummy.pl $chunkFile > tmp_pc`;
-  print `$scriptDir/con
+  print `$scriptDir/conditionOnHypothetical.pl tmp_pc > $chunkFile`;
+  print `$scriptDir/removeDepthInfo.pl $chunkFile > tmp_pc`;
+  print `mv tmp_pc $chunkFile`;
+}
 
 sub runTrial {
   $agent = shift;
   $log = shift;
   die unless (-e $agent);
-  $cmd = shift;
-  print `echo "$cmd" > $log`;
+  
+  @afterSoarCommands = @_;
+  print `echo "excise --all" >> $soarInPipe ; cat $soarOutPipe`;
+  print `echo "init soar" >> $soarInPipe ; cat $soarOutPipe`;
+  print `echo "source $baseDir/$agent" >> $soarInPipe ; cat $soarOutPipe`;
+  print `echo "run" >> $soarInPipe`;
+  print "agent running..\n";
+  print `$scriptDir/soarPipeToFile.pl $soarOutPipe $log`;
+
+  print `echo "stats" >> $soarInPipe ; cat $soarOutPipe >> $log`;
+
+  foreach $command (@afterSoarCommands) {
+    print "$command\n";
+    print `echo "$command" >> $soarInPipe ; cat $soarOutPipe >> $log`;
+  }
 }
 
