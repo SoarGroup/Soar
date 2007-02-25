@@ -154,7 +154,7 @@ public class HelpMenu {
 				return ;
 			}
 			
-			URL url = file.toURL() ;
+			URL url = file.toURI().toURL() ;
 			String urlString = url.toString() ;
 			open(urlString) ;
 		}
