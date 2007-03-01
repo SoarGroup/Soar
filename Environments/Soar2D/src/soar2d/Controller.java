@@ -126,8 +126,6 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 			}
 		}
 		
-		stop = false;
-
 		// TOSCA patch -- try a call to tosca code
 		//soar2d.tosca2d.Tosca.test() ;
 		
@@ -217,6 +215,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 */
 	public void startEvent() {
 		if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Start event.");
+		stop = false;
 		running = true;
 
 		if (Soar2D.wm.using()) {
