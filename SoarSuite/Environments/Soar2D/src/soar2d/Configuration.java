@@ -127,7 +127,7 @@ public class Configuration {
 			
 			String versionString = root.getAttributeValue(kAttrVersion);
 			if (versionString == null || Integer.parseInt(versionString) != kConfigVersion) {
-				throw new LoadError("Configuration version 2 required.");
+				throw new LoadError("Configuration version 2 required, try removing the xml files from Soar2D.");
 			}
 			
 			general(root.getChild(kTagGeneral));
