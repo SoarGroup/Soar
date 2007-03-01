@@ -30,6 +30,7 @@ cli_initsoar.cpp\
 cli_inputperiod.cpp\
 cli_internalsymbols.cpp\
 cli_learn.cpp\
+cli_loadLibrary.cpp\
 cli_ls.cpp\
 cli_matches.cpp\
 cli_maxchunks.cpp\
