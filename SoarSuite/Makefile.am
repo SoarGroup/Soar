@@ -10,11 +10,8 @@ if SWIGJAVA
 	Tools/SoarJavaDebugger/build.sh
 	Tools/TestJavaSML/build.sh
 	Tools/VisualSoar/build.sh
-	Environments/JavaBaseEnvironment/build.sh
-	Environments/JavaEaters/build.sh
 	Environments/JavaMissionaries/build.sh
 	Environments/JavaTOH/build.sh
-	Environments/JavaTankSoar/build.sh
 	Environments/Soar2D/build.sh
 else
 endif
