@@ -211,11 +211,17 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	void* hLibrary = 0;
 	hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
 	if (!hLibrary) {
+		printf("dlopen failed for %s: %s\n", newLibraryName.c_str(), dlerror());
 		// Try again with mac extention
 		newLibraryName = "lib" + libraryName + ".dylib";
 		hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
+		if (!hLibrary)
+		{
+			printf("dlopen failed for %s: %s\n", newLibraryName.c_str(), dlerror());
+		}
 	}
 	// FIXME error details can be returned by a call to dlerror()
+	// (voigtjr Mar2007) I'm just dumping dlerror to stdout for debugging
 #endif
 
 #if defined(LINUX_SHARED) || defined(WINDOWS_SHARED)
