@@ -53,9 +53,18 @@ public class Eater extends Player {
 			move = new MoveInfo();
 			return true;
 		}
-		
-		move = Soar2D.wm.getHumanMove(this);
 
+		// If this is really a Tosca eater rather than a human
+		// have Tosca handle the move.  Maybe the getMove() Tosca case above can come out now?
+		if (ToscaEater.kToscaEnabled)
+		{
+			move = m_ToscaEater.getMove() ;
+		}
+		else
+		{
+			move = Soar2D.wm.getHumanMove(this);
+		}
+		
 		if (move == null) {
 			return false;
 		}
