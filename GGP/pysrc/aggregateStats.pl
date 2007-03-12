@@ -22,7 +22,7 @@ foreach $log (@logs) {
     $line = `grep decisions $log`;
     chomp $line;
 
-    $line =~ /^(\d+) decisions/ or die;
+    $line =~ /^(\d+) decisions/ or die "can't find number of decisions in $log";
     push @baseDecisions, $1;
 
     $line = `grep "CPU Time" $log | grep Total`;

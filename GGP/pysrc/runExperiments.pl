@@ -60,14 +60,19 @@ foreach $prob (@probs) {
   $soarFile = "$trialPrefix\_$probType.soar";
   print `cp $baseSoarFile $soarFile`;
 
-  setSoarFileFields($soarFile, "mummy_type", "horizontal");
+  setSoarFileFields($soarFile, "mummy_type", "vertical"); ### horiz..
   setSoarFileFields($soarFile, "explorer_location", $explorerX, $explorerY);
   setSoarFileFields($soarFile, "mummy_location", $mummyX, $mummyY);
-  setSoarFileFields($soarFile, "chunk_file", "empty");
+  setSoarFileFields($soarFile, "achunk_file", "empty");
+  setSoarFileFields($soarFile, "tchunk_file", "empty");
 
   $postRunCommand = "command-to-file $baseDir/$trialPrefix\_chunks.soar print --chunks --full";
   runTrial($soarFile, "$trialPrefix\_$probType.log", $postRunCommand);
 
+#####
+#
+
+  next;
   # target w/o chunks
   $probType = "plain_target";
   $soarFile = "$trialPrefix\_$probType.soar";
@@ -76,12 +81,13 @@ foreach $prob (@probs) {
   setSoarFileFields($soarFile, "mummy_type", "vertical");
   setSoarFileFields($soarFile, "explorer_location", $explorerX, $explorerY);
   setSoarFileFields($soarFile, "mummy_location", $mummyX, $mummyY);
-  setSoarFileFields($soarFile, "chunk_file", "empty");
+  setSoarFileFields($soarFile, "achunk_file", "$baseDir/$trialPrefix\_chunks");
+  setSoarFileFields($soarFile, "tchunk_file", "empty");
 
   runTrial($soarFile, "$trialPrefix\_$probType.log", "");
 
   # target w/chunks
-  $probType = "transfer_target";
+  $probType = "a_transfer_target";
   $soarFile = "$trialPrefix\_$probType.soar";
   print `cp $baseSoarFile $soarFile`;
     
@@ -89,7 +95,22 @@ foreach $prob (@probs) {
   setSoarFileFields($soarFile, "mummy_type", "vertical");
   setSoarFileFields($soarFile, "explorer_location", $explorerX, $explorerY);
   setSoarFileFields($soarFile, "mummy_location", $mummyX, $mummyY);
-  setSoarFileFields($soarFile, "chunk_file", "$baseDir/$trialPrefix\_chunks");
+  setSoarFileFields($soarFile, "achunk_file", "$baseDir/$trialPrefix\_chunks");
+  setSoarFileFields($soarFile, "tchunk_file", "$baseDir/$trialPrefix\_chunks_transfer");
+
+  runTrial($soarFile, "$trialPrefix\_$probType.log", "");
+  
+  # target w/only transfer chunks
+  $probType = "b_transfer_target";
+  $soarFile = "$trialPrefix\_$probType.soar";
+  print `cp $baseSoarFile $soarFile`;
+    
+  processChunks("$trialPrefix\_chunks.soar");
+  setSoarFileFields($soarFile, "mummy_type", "vertical");
+  setSoarFileFields($soarFile, "explorer_location", $explorerX, $explorerY);
+  setSoarFileFields($soarFile, "mummy_location", $mummyX, $mummyY);
+  setSoarFileFields($soarFile, "achunk_file", "empty");
+  setSoarFileFields($soarFile, "tchunk_file", "$baseDir/$trialPrefix\_chunks_transfer");
 
   runTrial($soarFile, "$trialPrefix\_$probType.log", "");
 }
@@ -110,13 +131,17 @@ sub setSoarFileFields {
 
 sub processChunks {
   $chunkFile = shift;
+  $tChunkFile = $chunkFile;
+  $tChunkFile =~ s/\.soar//;
+  $tChunkFile = "$tChunkFile\_transfer.soar";
+
 
   die "no chunk file: $chunkFile" unless (-e $chunkFile);
 
   print `$scriptDir/removeMummy.pl $chunkFile > tmp_pc`;
-  print `$scriptDir/conditionOnHypothetical.pl tmp_pc > $chunkFile`;
-  print `$scriptDir/removeDepthInfo.pl $chunkFile > tmp_pc`;
-  print `mv tmp_pc $chunkFile`;
+  print `$scriptDir/conditionOnHypothetical.pl tmp_pc > $tChunkFile`;
+  print `$scriptDir/removeDepthInfo.pl $tChunkFile > tmp_pc`;
+  print `mv tmp_pc $tChunkFile`;
 }
 
 sub runTrial {

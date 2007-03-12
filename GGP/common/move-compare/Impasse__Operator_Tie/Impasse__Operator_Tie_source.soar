@@ -1,0 +1,4 @@
+source elaborations.soar
+source evaluate-operator.soar
+source select.soar
+source transfer-operator.soar

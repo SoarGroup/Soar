@@ -1,0 +1,17 @@
+sp {selection*propose*init-remaining-operators
+   (state <s> ^name selection
+              #^top-selection true
+             -^remaining-operators 
+              ^tied-operator-count <toc>)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name init-remaining-operators
+         ^value <toc>)
+}
+sp {apply*init-remaining-operators
+   (state <s> ^operator <op>)
+   (<op> ^name init-remaining-operators
+         ^value <toc>)
+-->
+   (<s> ^remaining-operators <toc>)
+}

@@ -1,0 +1,10 @@
+source elaborations.soar
+source achieved-max-depth.soar
+source decrement-remaining-operators.soar
+source evaluate-operator.soar
+pushd evaluate-operator
+source evaluate-operator_source.soar
+popd
+source increment-current-evaluation-depth.soar
+source init-current-evaluation-depth.soar
+source init-remaining-operators.soar

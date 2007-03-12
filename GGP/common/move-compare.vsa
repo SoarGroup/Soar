@@ -1,0 +1,13 @@
+VERSION 4
+/move-compare/move-compare.dm
+0	ROOT move-compare move-compare 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR elaborations elaborations.soar 5
+5	0	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 9 6
+6	5	FOPERATOR elaborations elaborations.soar 7
+7	5	OPERATOR evaluate-operator evaluate-operator.soar 10
+8	5	OPERATOR select select.soar 8
+9	5	OPERATOR transfer-operator transfer-operator.soar 9
+END

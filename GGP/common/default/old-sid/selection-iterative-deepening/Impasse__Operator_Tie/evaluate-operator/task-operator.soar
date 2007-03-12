@@ -1,0 +1,18 @@
+
+sp {evalaute-operator*propose*init-current-evaluation-depth*progress-state
+   (state <s> ^superstate.operator.name evaluate-operator
+              ^elaborations.two-steps-toward
+              ^current-evaluation-depth <ced>
+              ^operator.name progress-state)
+-->
+   (<s> ^current-evaluation-depth (- <ced> 1)
+                                  <ced> -)}
+
+sp {evalaute-operator*propose*init-current-evaluation-depth*update-state
+   (state <s> ^superstate.operator.name evaluate-operator
+              ^elaborations.two-steps-toward
+              ^current-evaluation-depth <ced>
+              ^operator.name update-state)
+-->
+   (<s> ^current-evaluation-depth (- <ced> 1)
+                                  <ced> -)}

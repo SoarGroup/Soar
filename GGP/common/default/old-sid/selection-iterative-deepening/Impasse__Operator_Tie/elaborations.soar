@@ -1,0 +1,74 @@
+### Mark top-selection-space
+sp {selection*elaboration*top-selection
+   (state <s> ^name selection
+             -^superstate.superstate.name selection)
+-->
+   (<s> ^top-selection true)
+}
+
+########## Computer tied-operator-count the hard way ################
+
+sp {Impasse__Operator_Tie*elaborate*state*2
+   (state <s> ^name selection
+              ^item <i1> { <> <i1> <i2> }
+             -^item { <> <i1> <> <i2> })
+-->
+   (<s> ^tied-operator-count 2)
+}
+
+sp {Impasse__Operator_Tie*elaborate*state*3
+   (state <s> ^name selection
+              ^item <i1> { <> <i1> <i2> } { <> <i1> <> <i2> <i3> }
+             -^item { <> <i1> <> <i2> <> <i3> })
+-->
+   (<s> ^tied-operator-count 3)
+}
+sp {Impasse__Operator_Tie*elaborate*state*4
+   (state <s> ^name selection
+              ^item <i1> { <> <i1> <i2> } { <> <i1> <> <i2> <i3> } { <> <i1> <> <i2> <> <i3> <i4>}
+             -^item { <> <i1> <> <i2> <> <i3> <> <i4>})
+-->
+   (<s> ^tied-operator-count 4)
+}
+sp {Impasse__Operator_Tie*elaborate*state*5
+   (state <s> ^name selection
+              ^item <i1> { <> <i1> <i2> } { <> <i1> <> <i2> <i3> } { <> <i1> <> <i2> <> <i3> <i4>}
+                    { <> <i1> <> <i2> <> <i3> <> <i4> <i5>}
+             -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5>})
+-->
+   (<s> ^tied-operator-count 5)
+}
+sp {Impasse__Operator_Tie*elaborate*state*6
+   (state <s> ^name selection
+              ^item <i1> { <> <i1> <i2> } { <> <i1> <> <i2> <i3> } { <> <i1> <> <i2> <> <i3> <i4>}
+                    { <> <i1> <> <i2> <> <i3> <> <i4> <i5>} { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5> <i6>}
+             -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5> <> <i6>})
+-->
+   (<s> ^tied-operator-count 6)
+}
+
+sp {selection*compare*same-symbolic-evaluations-are-indifferent
+   :default
+   (state <s> ^name selection 
+              ^superstate <ss>
+              ^evaluation <e1>  { <> <e1> <e2> })
+   (<ss> ^desired <d>)
+   (<e1> ^superoperator <x> 
+         ^symbolic-value { <> partial-success <> depth-exceeded <v> }
+         ^desired <d>)
+   (<e2> ^superoperator <y> 
+         ^symbolic-value <v>
+         ^desired <d>)
+   -->
+   (<ss> ^operator <x> = <y>)}  
+
+
+sp {selection*monitor*depth
+   (state <s> ^top-selection true
+              ^name selection
+              ^current-evaluation-depth <ced>
+              ^remaining-operators <ro>)
+-->
+   (write (crlf) |Depth: | <ced> |, | <ro>)
+}
+
