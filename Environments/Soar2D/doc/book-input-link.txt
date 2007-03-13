@@ -1,0 +1,71 @@
+Book input link description
+
+^room (present when in a room)
+	^id	
+		<integer> (room unique id number, 0 to n)
+		
+	^wall (first visible wall)
+		^id
+			<integer> (wall unique id number, 0 to n, unique per room only)
+		^direction
+			<string> (the direction you look to see the wall)
+		^end (cell containing one end of the wall, limited by vision)
+			^x
+				<integer>
+			^y
+				<integer>
+		^end (cell containing the other end of the wall, limited by vision)
+			^x
+				<integer>
+			^y
+				<integer>
+	^wall (next visibile wall)
+		...
+		
+	^door (first visible door)
+		^id
+			<integer> (door unique id number, 0 to n, unique across whole map)
+		^direction
+			<string> (the direction you look to see the door)
+		^to (first room this door leads to)
+			<integer> (unique room id that this door leads to)
+		^to (next room this door borders)
+			...
+		^end (cell containing one end of the door, limited by vision)
+			^x
+				<integer>
+			^y
+				<integer>
+		^end (cell containing the other end of the door, limited by vision)
+			^x
+				<integer>
+			^y
+				<integer>
+	^door (next visible door)
+		...
+		
+^door (present when inside a door)
+	^id	
+		<integer> (door unique id number, 0 to n, unique across whole map)
+	^to (first room this door leads to)
+		<integer> (unique room id that this door leads to)
+	^to (next room this door borders)
+		...
+		
+	^end (cell containing one end of the door, always contains the full door length)
+		^x
+			<integer>
+		^y
+			<integer>
+	^end (cell containing the other end of the door, always contains the full door length)
+		^x
+			<integer>
+		^y
+			<integer>
+			
+^heading (heading in degrees)
+^clock (as tanksoar/eaters)
+^my-color (as tanksoar/eaters)
+^random (as tanksoar/eaters)
+^x (location, as tanksoar/eaters)
+^y (location, as tanksoar/eaters)

@@ -625,14 +625,15 @@ public class World {
 			newLocation.y = (int)newFloatLocation.y / cellSize;
 			
 			if (map.getAllWithProperty(newLocation, Names.kPropertyBlock).size() > 0) {
-				System.out.println("blocked");
+//				System.out.println("blocked");
 				move.forward = false;
 				map.setPlayer(oldLocation, player);
 
 			} else {
-				System.out.println("       heading: " + heading);
-				System.out.println("float location: " + newFloatLocation);
-				System.out.println("      location: " + newLocation);
+				
+//				System.out.println("       heading: " + heading);
+//				System.out.println("float location: " + newFloatLocation);
+//				System.out.println("      location: " + newLocation);
 
 				floatLocations.put(player.getName(), newFloatLocation);
 				locations.put(player.getName(), newLocation);
