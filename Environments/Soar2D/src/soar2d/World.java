@@ -1331,9 +1331,6 @@ public class World {
 					if (collision.size() == 0) {
 						collision.add(left);
 						
-						// Add the boom on the map
-						map.setExplosion(locations.get(left.getName()));
-						
 						if (logger.isLoggable(Level.FINER)) logger.finer("collision at " + locations.get(left.getName()));
 					}
 					// Add each right as it is detected
@@ -1384,8 +1381,13 @@ public class World {
 				if (logger.isLoggable(Level.FINER)) logger.finer("Sum of cash is negative.");
 			}
 			
+			Point collisionLocation = locations.get(collision.get(0).getName());
+
+			// Add the boom on the map
+			map.setExplosion(collisionLocation);
+
 			// Remove from former location (only one of these for all players)
-			map.setPlayer(locations.get(collision.get(0).getName()), null);
+			map.setPlayer(collisionLocation, null);
 			
 			// Move to new cell, consume food
 			collideeIter = collision.listIterator();
