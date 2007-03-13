@@ -468,6 +468,7 @@ public class Configuration {
 				book.addContent(new Element(kTagColoredRooms));
 			}
 			book.addContent(new Element(kTagSpeed).setText(Integer.toString(this.getSpeed())));
+			book.addContent(new Element(kTagRotateSpeed).setText(Float.toString(this.getRotateSpeed())));
 			book.addContent(new Element(kTagBookCellSize).setText(Integer.toString(this.getBookCellSize())));
 			rules.addContent(book);
 			break;
@@ -863,6 +864,15 @@ public class Configuration {
 		this.speed = speed;
 	}
 	
+	private static final String kTagRotateSpeed = "rotate-speed";
+	private float rotateSpeed = (float)java.lang.Math.PI / 4;
+	public float getRotateSpeed() {
+		return this.rotateSpeed;
+	}
+	public void setRotateSpeed(float rotateSpeed) {
+		this.rotateSpeed = rotateSpeed;
+	}
+	
 	private static final String kTagBookCellSize = "book-cell-size";
 	private int bookCellSize = 16;
 	public int getBookCellSize() {
@@ -886,6 +896,13 @@ public class Configuration {
 					this.setSpeed(Integer.parseInt(child.getTextTrim()));
 				} catch (NumberFormatException e) {
 					throw new LoadError("Error parsing " + kTagSpeed);
+				}
+				
+			} else if (child.getName().equalsIgnoreCase(kTagRotateSpeed)) {
+				try {
+					this.setRotateSpeed(Float.parseFloat(child.getTextTrim()));
+				} catch (NumberFormatException e) {
+					throw new LoadError("Error parsing " + kTagRotateSpeed);
 				}
 				
 			} else if (child.getName().equalsIgnoreCase(kTagBookCellSize)) {

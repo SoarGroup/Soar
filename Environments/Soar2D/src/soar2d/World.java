@@ -572,8 +572,6 @@ public class World {
 	}
 	
 	private void bookUpdate() {
-		System.out.println("bookUpdate");
-		
 		final float time = (float)Soar2D.config.getASyncDelay() / 1000.0f;
 
 		Iterator<Player> iter = players.iterator();
@@ -584,17 +582,29 @@ public class World {
 				return;
 			}
 			
+			if (move.rotate) {
+				final float rotateSpeed = Soar2D.config.getRotateSpeed();
+				
+				if (move.rotateDirection.equals(Names.kRotateLeft)) {
+					player.setHeading(player.getHeading() - (rotateSpeed * time));
+				} else if (move.rotateDirection.equals(Names.kRotateRight)) {
+					player.setHeading(player.getHeading() + (rotateSpeed * time));
+				}
+			}
+			
 			if (!move.forward) {
 				continue;
 			}
 			
-			final int speed = Soar2D.config.getSpeed();
+			final float rate = Soar2D.config.getSpeed() * time;
 			final int cellSize = Soar2D.config.getBookCellSize();
 			final float heading = player.getHeading();
 			
 			Point oldLocation = locations.get(player.getName());
 			Point newLocation = new Point(oldLocation);
-			
+
+			map.setPlayer(oldLocation, null);
+
 			Point2D.Float oldFloatLocation = floatLocations.get(player.getName());
 			Point2D.Float newFloatLocation = new Point2D.Float(oldFloatLocation.x, oldFloatLocation.y);
 
@@ -608,18 +618,25 @@ public class World {
 			 * north: 270 3pi/2
 			 */
 			
-			newFloatLocation.x += Math.cos(heading) * speed * time;
-			newFloatLocation.y += Math.sin(heading) * speed * time;
-			
+			newFloatLocation.x += Math.cos(heading) * rate;
+			newFloatLocation.y += Math.sin(heading) * rate;
 			
 			newLocation.x = (int)newFloatLocation.x / cellSize;
 			newLocation.y = (int)newFloatLocation.y / cellSize;
 			
-			System.out.println(newFloatLocation);
-			System.out.println(newLocation);
+			if (map.getAllWithProperty(newLocation, Names.kPropertyBlock).size() > 0) {
+				System.out.println("blocked");
+				move.forward = false;
+				map.setPlayer(oldLocation, player);
 
-			floatLocations.put(player.getName(), newFloatLocation);
-			locations.put(player.getName(), newLocation);
+			} else {
+				System.out.println("       heading: " + heading);
+				System.out.println("float location: " + newFloatLocation);
+				System.out.println("      location: " + newLocation);
+
+				floatLocations.put(player.getName(), newFloatLocation);
+				locations.put(player.getName(), newLocation);
+			}
 		}
 		
 		iter = players.iterator();
