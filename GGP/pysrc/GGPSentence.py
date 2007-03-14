@@ -143,6 +143,9 @@ class GGPFunction(GGPTerm):
 		if elementGGP == None:
 			self.__name = ""
 			self.__terms = []
+		elif isinstance(elementGGP, str):
+			self.__name = elementGGP
+			self.__terms = []
 		else:
 			self.__name = elementGGP[0]
 			self.__terms = [ClassifyTerm(e) for e in list(elementGGP)[1:]]
@@ -175,8 +178,8 @@ class GGPFunction(GGPTerm):
 	def make_soar_cond(self, sp, cond, place, var_map, negate = False):
 		if place == 0:
 			if len(self.__terms) == 0:
-				cond.add_id_predicate(self.__name, negate = negate)
-				return None
+				var = cond.add_id_predicate(self.__name, negate = negate)
+				return var
 			else:
 				fcond = sp.add_condition(cond.add_id_predicate(self.__name, negate = negate))
 					
@@ -370,14 +373,14 @@ class GGPSentence:
 	def make_soar_conditions(self, sp, var_map):
 		if self.__name  == "true":
 			gs_conds = sp.get_conditions("gs")
-			assert len(gs_conds) <= 1, "More than one game state condition??"
+			#assert len(gs_conds) <= 1, "More than one game state condition??"
 			if len(gs_conds) == 0:
 				gs_cond = sp.add_condition(sp.state_cond().add_id_predicate("gs"))
 			else:
 				gs_cond = gs_conds[0]
 			
 			if self.__negated:
-				if self.__terms[0].type() == "function":
+				if self.__terms[0].type() == "function" and self.__terms[0].num_terms() > 0:
 					gs_cond = sp.add_condition(gs_cond.head_var)
 					fcond = self.__terms[0].make_soar_cond(sp, gs_cond, 0, var_map)
 					sp.make_negative_conjunction([gs_cond, fcond])
@@ -455,7 +458,10 @@ class GGPSentence:
 				assert self.__name == "next" # we would never move an init fact
 				func_name = self.__terms[0].name()
 				fcond = self.__terms[0].make_soar_cond(sp, gs_cond, 0, var_map)
-				act.remove_id_wme_action(func_name, fcond.head_var)
+				if isinstance(fcond, str):
+					act.remove_id_wme_action(func_name, fcond)
+				else:
+					act.remove_id_wme_action(func_name, fcond.head_var)
 			else:
 				self.__terms[0].make_soar_action(sp, act, 0, var_map)
 				

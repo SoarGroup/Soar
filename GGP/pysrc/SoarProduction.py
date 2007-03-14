@@ -365,6 +365,7 @@ class SoarProduction:
 
 	def make_negative_conjunction(self, conjs):
 		for c in conjs:
+			assert c != None, str(conjs)
 			self.neg_conjs[c] = conjs
 	
 	def is_negated(self, c):
