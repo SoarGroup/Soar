@@ -45,6 +45,9 @@ public class GridMap {
 	}
 	
 	public void load() throws LoadError {
+		// one load call per object
+		assert mapCells == null;
+		
 		if (config == null) {
 			throw new LoadError("Configuration not set");
 		}
@@ -1301,14 +1304,14 @@ public class GridMap {
 		return isInBounds(location.x, location.y);
 	}
 
-	int roomCount = 0;
-	int doorCount = 0;
+	private int roomCount = 0;
+	private int doorCount = 0;
+	private int wallCount = 0;
 	
 	public boolean generateRoomStructure() {
 		// Start in upper-left corner
 		// if cell is enterable, flood fill to find boundaries of room
 		// Go from left to right, then to the start of the next line
-		roomCount = 0;
 		LinkedList<java.awt.Point> floodQueue = new LinkedList<java.awt.Point>();
 		HashSet<java.awt.Point> explored = new HashSet<java.awt.Point>((this.size-2)*2);
 
@@ -1328,7 +1331,7 @@ public class GridMap {
 				assert cell.getObject(Names.kRoomID) == null;
 
 				// cell is enterable, we have a room
-				int roomNumber = roomCount;
+				int roomNumber = roomCount + doorCount + wallCount;
 				roomCount += 1;
 				
 				CellObject roomObject = cellObjectManager.createObject(Names.kRoomID);
@@ -1374,8 +1377,6 @@ public class GridMap {
 				}
 				
 				// figure out walls going clockwise starting with the wall north of the first square in the room
-				int wallCount = 0;
-				
 				int direction = Direction.kEastInt;
 				java.awt.Point startingWall = new java.awt.Point(location.x, location.y-1);
 				java.awt.Point next = new java.awt.Point(startingWall);
@@ -1400,7 +1401,7 @@ public class GridMap {
 							if (doorObject.hasProperty(Names.kPropertyNumber)) {
 								doorNumber = doorObject.getIntProperty(Names.kPropertyNumber);
 							} else {
-								doorNumber = doorCount;
+								doorNumber = roomCount + doorCount + wallCount;
 								doorCount += 1;
 							}
 							System.out.println();
@@ -1421,10 +1422,10 @@ public class GridMap {
 					
 						if (wall == false) {
 							wall = true;
-							wallNumber = wallCount;
+							wallNumber = roomCount + doorCount + wallCount;
 							wallCount += 1;
 							System.out.println();
-							System.out.print("  Wall " + wallNumber + " (" + Direction.stringOf[Direction.leftOf[direction]] + "): ");
+							System.out.print("  Wall " + wallNumber + ": (" + Direction.stringOf[Direction.leftOf[direction]] + "): ");
 						}
 						
 						if (door) {
