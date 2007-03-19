@@ -1513,4 +1513,20 @@ public class GridMap {
 		
 		return true;
 	}
+	
+	public CellObject getInObject(Point location) {
+		if (!this.isInBounds(location)) {
+			return null;
+		}
+		
+		CellObject cellObject = getObject(location, Names.kRoomID);
+		if (cellObject == null) {
+			cellObject = getObject(location, Names.kDoorID);
+			if (cellObject == null) {
+				return null;
+			}
+		}
+		
+		return cellObject;
+	}
 }
