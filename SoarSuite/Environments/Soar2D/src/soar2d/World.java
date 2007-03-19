@@ -652,7 +652,8 @@ public class World {
 		}
 
 		handleBookCollisions(findCollisions());
-
+		
+		updatePlayers(false);
 	}
 	
 	private Point2D.Float defaultFloatLocation(Point location) {

@@ -1,6 +1,8 @@
 package soar2d.player;
 
 import soar2d.*;
+import soar2d.world.CellObject;
+import soar2d.world.GridMap;
 
 public class Cat extends Player {
 	private MoveInfo move;
@@ -10,8 +12,6 @@ public class Cat extends Player {
 	}
 	
 	public MoveInfo getMove() {
-		// the facing depends on the move
-		this.setFacingInt(move.moveDirection);
 		return move;
 	}
 
@@ -28,5 +28,18 @@ public class Cat extends Player {
 		}
 		
 		return true;
+	}
+	
+	int inId = -1;
+	String inType = null;
+	
+	public void update(World world, java.awt.Point location) {
+		GridMap map = world.getMap();
+		CellObject obj = map.getInObject(location);
+		
+		inId = obj.getIntProperty(Names.kPropertyNumber);
+		inType = new String(obj.getProperty(Names.kPropertyID));
+		
+		//System.out.println("Type: " + inType + ", ID: " + inId);
 	}
 }

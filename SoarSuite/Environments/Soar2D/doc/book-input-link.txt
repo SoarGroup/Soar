@@ -1,71 +1,64 @@
 Book input link description
 
-^room (present when in a room)
+^in
+	<integer> (id of room or door currently in)		
+^x 
+	<integer> (location on grid, as tanksoar/eaters)
+^y
+	<integer> (location on grid, as tanksoar/eaters)
+^floatx
+	<float> (absolute location)
+^floaty
+	<float> (absolute location)
+^heading
+	<integer> (heading in degrees)
+^clock
+	<integer> (as tanksoar/eaters)
+^my-color
+	<string> (as tanksoar/eaters)
+^random
+	<float> (as tanksoar/eaters)
+
+^room (each visible room)
 	^id	
-		<integer> (room unique id number, 0 to n)
-		
+		<integer> (unique id number, 0 to n)
 	^wall (first visible wall)
 		^id
-			<integer> (wall unique id number, 0 to n, unique per room only)
+			<integer> (unique id number, 0 to n)
 		^direction
 			<string> (the direction you look to see the wall)
-		^end (cell containing one end of the wall, limited by vision)
+		^left (cell containing start of the wall, limited by vision)
 			^x
 				<integer>
 			^y
 				<integer>
-		^end (cell containing the other end of the wall, limited by vision)
+		^right (cell containing end of the wall, limited by vision)
 			^x
 				<integer>
 			^y
 				<integer>
 	^wall (next visibile wall)
 		...
-		
 	^door (first visible door)
 		^id
-			<integer> (door unique id number, 0 to n, unique across whole map)
-		^direction
-			<string> (the direction you look to see the door)
-		^to (first room this door leads to)
-			<integer> (unique room id that this door leads to)
-		^to (next room this door borders)
-			...
-		^end (cell containing one end of the door, limited by vision)
-			^x
-				<integer>
-			^y
-				<integer>
-		^end (cell containing the other end of the door, limited by vision)
-			^x
-				<integer>
-			^y
-				<integer>
+			<integer> (unique id number, 0 to n)
 	^door (next visible door)
 		...
 		
-^door (present when inside a door)
+^door (each visible door)
 	^id	
-		<integer> (door unique id number, 0 to n, unique across whole map)
-	^to (first room this door leads to)
-		<integer> (unique room id that this door leads to)
-	^to (next room this door borders)
-		...
-		
-	^end (cell containing one end of the door, always contains the full door length)
+		<integer> (unique id number, 0 to n)
+	^direction
+		<string> (the direction you look to see the door)
+	^to (room this door leads to)
+		<integer> (room this door leads to)
+	^left (cell containing start of the door, limited by vision)
 		^x
 			<integer>
 		^y
 			<integer>
-	^end (cell containing the other end of the door, always contains the full door length)
+	^right (cell containing end of the door, limited by vision)
 		^x
 			<integer>
 		^y
 			<integer>
-			
-^heading (heading in degrees)
-^clock (as tanksoar/eaters)
-^my-color (as tanksoar/eaters)
-^random (as tanksoar/eaters)
-^x (location, as tanksoar/eaters)
-^y (location, as tanksoar/eaters)
