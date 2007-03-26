@@ -99,12 +99,7 @@
 		?<winning-score>
 			int theScore
 		?<food-remaining>
-TODO:
-			?<reset>
-				boolean
 			?<continue>
-				boolean
-END TODO
 		?<unopened-boxes>
 
 	?<clients>

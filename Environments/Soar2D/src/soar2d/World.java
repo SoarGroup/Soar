@@ -540,8 +540,34 @@ public class World {
 
 		if (Soar2D.config.getTerminalFoodRemaining()) {
 			if (map.getFoodCount() <= 0) {
-				stopAndDumpStats("All of the food is gone.", getSortedScores());
-				return;
+				if (Soar2D.config.getTerminalFoodRemainingContinue()) {
+					int[] scores = getSortedScores();
+					boolean draw = false;
+					if (scores.length > 1) {
+						if (scores[scores.length - 1] ==  scores[scores.length - 2]) {
+							if (logger.isLoggable(Level.FINER)) logger.finer("Draw detected.");
+							draw = true;
+						}
+					}
+					
+					Iterator<Player> iter = players.iterator();
+					while (iter.hasNext()) {
+						String status = null;
+						Player player = iter.next();
+						if (player.getPoints() == scores[scores.length - 1]) {
+							status = draw ? "draw" : "winner";
+						} else {
+							status = "loser";
+						}
+						logger.info(player.getName() + ": " + player.getPoints() + " (" + status + ").");
+					}
+					
+					Soar2D.control.resetSimulation();
+					return;
+				} else {
+					stopAndDumpStats("All of the food is gone.", getSortedScores());
+					return;
+				}
 			}
 		}
 
