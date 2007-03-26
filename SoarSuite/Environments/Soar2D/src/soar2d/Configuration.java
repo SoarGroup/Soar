@@ -82,6 +82,7 @@ public class Configuration {
 		// terminals
 		this.terminalPointsRemaining = config.terminalPointsRemaining;
 		this.terminalFoodRemaining = config.terminalFoodRemaining;
+		this.terminalFoodRemainingContinue = config.terminalFoodRemainingContinue;
 		this.terminalUnopenedBoxes = config.terminalUnopenedBoxes;
 		this.terminalAgentCommand = config.terminalAgentCommand;
 		this.terminalMaxUpdates = config.terminalMaxUpdates;
@@ -1249,6 +1250,14 @@ public class Configuration {
 	public boolean getTerminalFoodRemaining() {
 		return this.terminalFoodRemaining;
 	}
+	private boolean terminalFoodRemainingContinue = false;	// Reset and restart the simulation after this terminal is reached
+	private static final String kTagFoodRemainingContinue = "continue";
+	public void setTerminalFoodRemainingContinue(boolean setting) {
+		this.terminalFoodRemainingContinue = setting;
+	}
+	public boolean getTerminalFoodRemainingContinue() {
+		return this.terminalFoodRemainingContinue;
+	}
 	
 	// terminal agent command
 	private boolean terminalUnopenedBoxes = false;	// Stop the simulation when no boxes are closed
@@ -1306,7 +1315,11 @@ public class Configuration {
 		}
 		
 		if (this.getTerminalFoodRemaining()) {
-			terminals.addContent(new Element(kTagFoodRemaining));
+			if (this.getTerminalFoodRemainingContinue()) {
+				terminals.addContent(new Element(kTagFoodRemaining).addContent(new Element(kTagFoodRemainingContinue)));
+			} else {
+				terminals.addContent(new Element(kTagFoodRemaining));
+			}
 		}
 		
 		if (this.getTerminalUnopenedBoxes()) {
@@ -1343,6 +1356,10 @@ public class Configuration {
 
 			} else if (child.getName().equalsIgnoreCase(kTagFoodRemaining)) {
 				this.setTerminalFoodRemaining(true);
+				
+				if (child.getChild(kTagFoodRemainingContinue) != null) {
+					this.setTerminalFoodRemainingContinue(true);
+				}
 				
 			} else if (child.getName().equalsIgnoreCase(kTagUnopenedBoxes)) {
 				this.setTerminalUnopenedBoxes(true);
