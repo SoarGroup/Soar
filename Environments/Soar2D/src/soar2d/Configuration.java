@@ -1250,12 +1250,12 @@ public class Configuration {
 	public boolean getTerminalFoodRemaining() {
 		return this.terminalFoodRemaining;
 	}
-	private boolean terminalFoodRemainingContinue = false;	// Reset and restart the simulation after this terminal is reached
+	private int terminalFoodRemainingContinue = -1;	// Reset and restart the simulation after this terminal is reached
 	private static final String kTagFoodRemainingContinue = "continue";
-	public void setTerminalFoodRemainingContinue(boolean setting) {
-		this.terminalFoodRemainingContinue = setting;
+	public void setTerminalFoodRemainingContinue(int runs) {
+		this.terminalFoodRemainingContinue = runs;
 	}
-	public boolean getTerminalFoodRemainingContinue() {
+	public int getTerminalFoodRemainingContinue() {
 		return this.terminalFoodRemainingContinue;
 	}
 	
@@ -1315,8 +1315,14 @@ public class Configuration {
 		}
 		
 		if (this.getTerminalFoodRemaining()) {
-			if (this.getTerminalFoodRemainingContinue()) {
-				terminals.addContent(new Element(kTagFoodRemaining).addContent(new Element(kTagFoodRemainingContinue)));
+			if (this.getTerminalFoodRemainingContinue() > 0) {
+				// <food-remaining>
+				//   <continue>
+				//     int maxRuns
+				Element cont = new Element(kTagFoodRemainingContinue);
+				cont.setText(Integer.toString(this.getTerminalFoodRemainingContinue()));
+				Element foodRem = new Element(kTagFoodRemaining).addContent(cont);
+				terminals.addContent(foodRem);
 			} else {
 				terminals.addContent(new Element(kTagFoodRemaining));
 			}
@@ -1357,8 +1363,13 @@ public class Configuration {
 			} else if (child.getName().equalsIgnoreCase(kTagFoodRemaining)) {
 				this.setTerminalFoodRemaining(true);
 				
-				if (child.getChild(kTagFoodRemainingContinue) != null) {
-					this.setTerminalFoodRemainingContinue(true);
+				Element cont = child.getChild(kTagFoodRemainingContinue);
+				if (cont != null) {
+					try {
+						this.setTerminalFoodRemainingContinue(Integer.parseInt(cont.getTextTrim()));
+					} catch (NumberFormatException e) {
+						throw new LoadError("Error parsing food-remaining continue max runs");
+					}
 				}
 				
 			} else if (child.getName().equalsIgnoreCase(kTagUnopenedBoxes)) {

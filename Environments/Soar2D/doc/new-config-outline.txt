@@ -100,6 +100,7 @@
 			int theScore
 		?<food-remaining>
 			?<continue>
+				int maxRuns
 		?<unopened-boxes>
 
 	?<clients>
