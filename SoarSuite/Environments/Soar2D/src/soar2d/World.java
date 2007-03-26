@@ -15,7 +15,7 @@ public class World {
 	private static Logger logger = Logger.getLogger("soar2d");
 
 	private int worldCount = 0;
-	private int runs = -1;
+	private int runs = 0;
 	private boolean printedStats = false;
 	
 	private GridMap map;
@@ -552,8 +552,14 @@ public class World {
 		if (Soar2D.config.getTerminalFoodRemaining()) {
 			if (map.getFoodCount() <= 0) {
 				boolean stopNow = true;
-				if (Soar2D.config.getTerminalFoodRemainingContinue() >= 0) {
+				if (Soar2D.config.getTerminalFoodRemainingContinue() != 0) {
+					// reduce continues by one if it is positive
 					if (runs > 0) {
+						runs -= 1;
+					}
+
+					// we only stop if continues is zero
+					if (runs != 0) {
 						stopNow = false;
 					}
 				}
@@ -616,7 +622,9 @@ public class World {
 		
 		if (restartAfterUpdate) {
 			loadInternal(true);
-			Soar2D.wm.reset();
+			if (Soar2D.wm.using()) {
+				Soar2D.wm.reset();
+			}
 		}
 	}
 	
@@ -1455,9 +1463,6 @@ public class World {
 	}
 	
 	public void reset() {
-		if (runs > 0) {
-			runs -= 1;
-		}
 		worldCount = 0;
 		printedStats = false;
 		missileID = 0;

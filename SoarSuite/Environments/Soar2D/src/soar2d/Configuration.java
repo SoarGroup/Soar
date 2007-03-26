@@ -1250,7 +1250,11 @@ public class Configuration {
 	public boolean getTerminalFoodRemaining() {
 		return this.terminalFoodRemaining;
 	}
-	private int terminalFoodRemainingContinue = -1;	// Reset and restart the simulation after this terminal is reached
+	// Reset and restart the simulation after this terminal is reached
+	// int is the number of times to run before a forced stop
+	// 0 or 1 is equivalent to not having this tag
+	// negative values indicate run forever
+	private int terminalFoodRemainingContinue = 0;	
 	private static final String kTagFoodRemainingContinue = "continue";
 	public void setTerminalFoodRemainingContinue(int runs) {
 		this.terminalFoodRemainingContinue = runs;
