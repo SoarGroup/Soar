@@ -35,6 +35,10 @@ public class World {
 	private int missileReset = 0;
 	
 	public boolean load() {
+		return loadInternal(false);
+	}
+
+	private boolean loadInternal(boolean frag) {
 		GridMap newMap = new GridMap(Soar2D.config);
 		
 		try {
@@ -80,7 +84,7 @@ public class World {
 		}
 		
 		reset();
-		resetPlayers();
+		resetPlayers(frag);
 		
 		logger.info("Map loaded, world reset.");
 		return true;
@@ -111,7 +115,7 @@ public class World {
 		return true;
 	}
 	
-	void resetPlayers() {
+	void resetPlayers(boolean frag) {
 		if (players.size() == 0) {
 			return;
 		}
@@ -120,13 +124,13 @@ public class World {
 			// for each player
 			Player player = iter.next();
 			
-			resetPlayer(player);
+			resetPlayer(player, frag);
 		}
 		
 		updatePlayers(false);
 	}
 	
-	private boolean resetPlayer(Player player) {
+	private boolean resetPlayer(Player player, boolean frag) {
 		// find a suitable starting location
 		Point startingLocation = putInStartingLocation(player);
 		if (startingLocation == null) {
@@ -142,8 +146,12 @@ public class World {
 			
 		case kTankSoar:
 		case kBook:
-			// reset (init-soar)
-			player.reset();
+			if (frag) {
+				player.fragged();
+			} else {
+				// reset (init-soar)
+				player.reset();
+			}
 			break;
 		}
 		return true;
@@ -309,7 +317,7 @@ public class World {
 			initialLocations.put(player.getName(), initialLocation);
 		}
 		
-		if (!resetPlayer(player)) {
+		if (!resetPlayer(player, false)) {
 			initialLocations.remove(player.getName());
 			players.remove(player);
 			playersMap.remove(player.getName());
@@ -538,6 +546,7 @@ public class World {
 			}
 		}
 
+		boolean restartAfterUpdate = false;
 		if (Soar2D.config.getTerminalFoodRemaining()) {
 			if (map.getFoodCount() <= 0) {
 				if (Soar2D.config.getTerminalFoodRemainingContinue()) {
@@ -562,8 +571,7 @@ public class World {
 						logger.info(player.getName() + ": " + player.getPoints() + " (" + status + ").");
 					}
 					
-					Soar2D.control.resetSimulation();
-					return;
+					restartAfterUpdate = true;
 				} else {
 					stopAndDumpStats("All of the food is gone.", getSortedScores());
 					return;
@@ -594,6 +602,11 @@ public class World {
 		case kBook:
 			bookUpdate();
 			break;
+		}
+		
+		if (restartAfterUpdate) {
+			loadInternal(true);
+			Soar2D.wm.reset();
 		}
 	}
 	
