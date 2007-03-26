@@ -15,6 +15,7 @@ public class World {
 	private static Logger logger = Logger.getLogger("soar2d");
 
 	private int worldCount = 0;
+	private int runs = -1;
 	private boolean printedStats = false;
 	
 	private GridMap map;
@@ -35,6 +36,7 @@ public class World {
 	private int missileReset = 0;
 	
 	public boolean load() {
+		this.runs = Soar2D.config.getTerminalFoodRemainingContinue();
 		return loadInternal(false);
 	}
 
@@ -549,7 +551,20 @@ public class World {
 		boolean restartAfterUpdate = false;
 		if (Soar2D.config.getTerminalFoodRemaining()) {
 			if (map.getFoodCount() <= 0) {
-				if (Soar2D.config.getTerminalFoodRemainingContinue()) {
+				boolean stopNow = true;
+				if (Soar2D.config.getTerminalFoodRemainingContinue() >= 0) {
+					if (runs > 0) {
+						stopNow = false;
+					}
+				}
+				
+				if (stopNow) {
+					stopAndDumpStats("All of the food is gone.", getSortedScores());
+					return;
+					
+				} else {
+					restartAfterUpdate = true;
+					
 					int[] scores = getSortedScores();
 					boolean draw = false;
 					if (scores.length > 1) {
@@ -570,11 +585,6 @@ public class World {
 						}
 						logger.info(player.getName() + ": " + player.getPoints() + " (" + status + ").");
 					}
-					
-					restartAfterUpdate = true;
-				} else {
-					stopAndDumpStats("All of the food is gone.", getSortedScores());
-					return;
 				}
 			}
 		}
@@ -1445,6 +1455,9 @@ public class World {
 	}
 	
 	public void reset() {
+		if (runs > 0) {
+			runs -= 1;
+		}
 		worldCount = 0;
 		printedStats = false;
 		missileID = 0;
