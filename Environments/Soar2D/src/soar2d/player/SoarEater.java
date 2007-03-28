@@ -123,7 +123,7 @@ public class SoarEater extends Eater {
 		this.shutdownCommands = playerConfig.getShutdownCommands();
 		
 		// BUGBUG remove
-		debugInputLink();
+		//debugInputLink();
 
 		previousLocation = new java.awt.Point(-1, -1);
 		
@@ -213,26 +213,11 @@ public class SoarEater extends Eater {
 		this.random = newRandom;
 	}
 	
-	private void debugInputLink() {
-		Identifier il = agent.GetInputLink();
-		assert il != null;
-		
-		String in = il.GetIdentifierName();
-		assert in != null;
-		
-		System.out.println("Input link info, agent " + this.getName() 
-				+ ": " + in
-				+ " " + agent.GetInputLink().GetTimeTag());
-	}
-	
 	/* (non-Javadoc)
 	 * @see soar2d.player.Eater#update(soar2d.World, java.awt.Point)
 	 */
 	public void update(World world, java.awt.Point location) {
 		
-		// BUGBUG remove
-		debugInputLink();
-
 		// check to see if we've moved
 		super.update(world, location);
 		

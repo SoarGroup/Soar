@@ -36,6 +36,7 @@ public class MoveInfo {
 	
 	// book
 	public boolean forward = false;	// move forward
+	public boolean backward = false;	// move backward
 	
 	public MoveInfo() {
 	}
@@ -84,6 +85,9 @@ public class MoveInfo {
 		case kBook:
 			if (forward) {
 				output += "(" + Names.kForwardID + ")";
+			}
+			if (backward) {
+				output += "(" + Names.kBackwardID + ")";
 			}
 			if (rotate) {
 				output += "(" + Names.kRotateID + ": " + rotateDirection + ")";			

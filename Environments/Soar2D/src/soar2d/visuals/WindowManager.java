@@ -405,6 +405,9 @@ public class WindowManager {
 					humanMove.rotate = true;
 					humanMove.rotateDirection = Names.kRotateRight;
 					break;
+				case SWT.KEYPAD_2:
+					humanMove.backward = true;
+					break;
 				case SWT.KEYPAD_MULTIPLY:
 					humanMove.stopSim = true;
 					break;

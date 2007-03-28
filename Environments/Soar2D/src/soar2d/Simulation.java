@@ -291,7 +291,7 @@ public class Simulation {
 					} else if (playerConfig.getName().equals(kMouse)) {
 						player = new Mouse(playerConfig);
 					} else {
-						player = new Cat(playerConfig);
+						player = new Robot(playerConfig);
 					}
 					break;
 				}

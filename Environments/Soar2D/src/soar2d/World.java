@@ -649,11 +649,16 @@ public class World {
 				}
 			}
 			
-			if (!move.forward) {
+			if (!move.forward && !move.backward) {
 				continue;
 			}
 			
-			final float rate = Soar2D.config.getSpeed() * time;
+			float rate = Soar2D.config.getSpeed() * time;
+			if (move.forward && move.backward) {
+				rate = 0;
+			} else if (move.backward) {
+				rate *= -1;
+			}
 			final int cellSize = Soar2D.config.getBookCellSize();
 			final float heading = player.getHeading();
 			

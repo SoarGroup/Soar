@@ -4,10 +4,10 @@ import soar2d.*;
 import soar2d.world.CellObject;
 import soar2d.world.GridMap;
 
-public class Cat extends Player {
+public class Robot extends Player {
 	private MoveInfo move;
 
-	public Cat(PlayerConfig playerConfig) {
+	public Robot(PlayerConfig playerConfig) {
 		super(playerConfig);
 	}
 	
