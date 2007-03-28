@@ -1057,6 +1057,7 @@ int CommandLineInterface::CLITokenize(string cmdline, vector<string>& argumentVe
 				const int QUOTES_MASK = 4;
 				const int BRACKETS_MASK = 8;
 				const int PARENS_MASK = 16;
+				const int PIPES_MASK = 32;
 
 				std::string errorDetail = "These quoting characters were not closed: ";
 				bool foundError = false;
@@ -1071,6 +1072,10 @@ int CommandLineInterface::CLITokenize(string cmdline, vector<string>& argumentVe
 				if (PARENS_MASK & errorCode) {
 					foundError = true;
 					errorDetail += "(";
+				}
+				if (PIPES_MASK & errorCode) {
+					foundError = true;
+					errorDetail += "|";
 				}
 				assert(foundError);
 				SetErrorDetail(errorDetail);
