@@ -114,19 +114,30 @@ void sml::StringDelete(char* pStr)
 *			-1 Newline detected before pipe (Trim failed)
 *			-2 An extra (unmatched) '}' was found.
 *			-3 An extra (unmatched) ')' was found.
+*         the rest of the error codes are a mask:
 *			-4 Unmatched "
 *			-8 Unmatched {
-*			-12 Unmatched " and {
 *			-16 Unmatched (
+*			-32 Unmatched |
+*         the combinations:
+*			-12 Unmatched " and {
 *			-20 Unmatched " and (
 *			-24 Unmatched { and (
 *			-28 Unmatched ", { and (
+*			-36 Unmatched | and "
+*			-40 Unmatched | and {
+*			-44 Unmatched | and { and "
+*			-48 Unmatched | and (
+*			-52 Unmatched | and ( and "
+*			-56 Unmatched | and ( and {
+*			-60 Unmatched | and ( and { and "
 *************************************************************/
 int sml::Tokenize(std::string cmdline, std::vector<std::string>& argumentVector) {
 	int argc = 0;
 	std::string::iterator iter;
 	std::string arg;
 	bool quotes = false;
+	bool pipes = false;
 	int brackets = 0;
 	int parens = 0;
 
@@ -156,10 +167,14 @@ int sml::Tokenize(std::string cmdline, std::vector<std::string>& argumentVector)
 		++argc;
 		arg.clear();
 		// Use space as a delimiter unless inside quotes or brackets (nestable)
-		while (!isspace(*iter) || quotes || brackets || parens) {
+		while (!isspace(*iter) || quotes || pipes || brackets || parens) {
 			if (*iter == '"') {
 				// Flip the quotes flag
 				quotes = !quotes;
+
+			} else if (*iter == '|') {
+				// Flip the pipes flag
+				pipes = !pipes;
 
 			} else {
 				if (*iter == '{') {
@@ -191,12 +206,15 @@ int sml::Tokenize(std::string cmdline, std::vector<std::string>& argumentVector)
 			if (iter == cmdline.end()) {
 
 				// Did they close their quotes or brackets?
-				if (quotes || brackets || parens) {
+				if (quotes || pipes || brackets || parens) {
+					// FIXME: note that Trim will fail with bad pipes before parsing gets here,
+					// so I don't think pipes will ever be true at this point.
 					int code = 0;
 					if (quotes) code += -4;
+					if (pipes) code += -32;
 					if (brackets) code += -8;
 					if (parens) code += -16;
-					return -1;
+					return code;
 				}
 				break;
 			}
