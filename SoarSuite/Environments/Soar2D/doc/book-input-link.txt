@@ -19,6 +19,39 @@ Book input link description
 ^random
 	<float> (as tanksoar/eaters)
 
+^location
+	^id	
+		<integer> (unique id number, 0 to n)
+	^wall (first visible wall)
+		^id
+			<integer> (unique id number, 0 to n)
+		^direction
+			<string> (the direction you look to see the wall)
+		^left (cell containing start of the wall, limited by vision)
+			^x
+				<integer>
+			^y
+				<integer>
+		^right (cell containing end of the wall, limited by vision)
+			^x
+				<integer>
+			^y
+				<integer>
+	^wall (next visibile wall)
+		...
+	^door (first visible door)
+		^id
+			<integer> (unique id number, 0 to n)
+	^door (next visible door)
+		...
+
+
+Book commands:
+move.direction: forward, backward, none
+rotate.direction: left, right
+stop-sim
+
+--- Original idea below ---
 ^room (each visible room)
 	^id	
 		<integer> (unique id number, 0 to n)
@@ -62,3 +95,4 @@ Book input link description
 			<integer>
 		^y
 			<integer>
+
