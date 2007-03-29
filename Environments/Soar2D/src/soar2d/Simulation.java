@@ -630,7 +630,7 @@ public class Simulation {
 	 */
 	public void runStep() {
 		if (runTilOutput) {
-			kernel.RunAllTilOutput();
+			kernel.RunAllTilOutput(smlInterleaveStepSize.sml_INTERLEAVE_UNTIL_OUTPUT);
 		} else {
 			kernel.RunAllAgents(1);
 		}
