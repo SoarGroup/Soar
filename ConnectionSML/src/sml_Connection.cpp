@@ -955,7 +955,18 @@ void Connection::AddErrorToSMLResponse(ElementXML* pResponse, char const* pError
 		return ;
 	}
 #endif
-	// Create the arg tag
+	// Create a result tag so if you only
+	// check for results you still get an error message.
+	// Also add an error tag, so we can distinguish between
+	// errors and success based on message structure.
+	TagResult* pTag = new TagResult() ;
+
+	pTag->SetCharacterData(pErrorMsg) ;
+	pTag->AddAttributeFastFast(sml_Names::kCommandOutput, sml_Names::kRawOutput) ;
+
+	pResponse->AddChild(pTag) ;
+
+	// Create the error tag
 	TagError* pError = new TagError() ;
 
 	pError->SetDescription(pErrorMsg) ;
