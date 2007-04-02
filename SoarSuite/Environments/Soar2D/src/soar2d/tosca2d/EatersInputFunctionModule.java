@@ -21,7 +21,7 @@ public class EatersInputFunctionModule extends JavaFunctionModule {
 	}
 	
 	public int getStepSize() {
-		return 10 ;
+		return 20 ;
 	}
 
 	@Override
