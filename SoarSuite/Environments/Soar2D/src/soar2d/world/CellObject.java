@@ -36,6 +36,20 @@ public class CellObject {
 	 */
 	boolean removeApply = false;
 	/**
+	 * do reward logic during the apply, the amount is the reward
+	 * one positive reward per reward set, the rest are negative
+	 * info box contains box-id of positive reward
+	 */
+	int rewardApply = 0;
+	/**
+	 * do reward information logic during the apply
+	 */
+	boolean rewardInfoApply = false;
+	/**
+	 * perform a reset after this update, just like a terminal
+	 */
+	boolean resetApply = false;
+	/**
 	 * add the points property to the player during the apply.
 	 * Points can be negative or zero.
 	 */
@@ -84,6 +98,9 @@ public class CellObject {
 		this.propertiesApply = new HashMap<String, String>(cellObject.propertiesApply);
 		this.name = new String(cellObject.name);
 		this.removeApply = cellObject.removeApply;
+		this.rewardApply = cellObject.rewardApply;
+		this.rewardInfoApply = cellObject.rewardInfoApply;
+		this.resetApply = cellObject.resetApply;
 		this.pointsApply = cellObject.pointsApply;
 		this.missilesApply = cellObject.missilesApply;
 		this.healthApply = cellObject.healthApply;
@@ -123,7 +140,10 @@ public class CellObject {
 			|| this.energyApply 
 			|| this.healthApply 
 			|| this.missilesApply 
-			|| this.removeApply;
+			|| this.removeApply
+			|| (this.rewardApply > 0)
+			|| this.rewardInfoApply
+			|| this.resetApply;
 	}
 	
 	/**
@@ -141,6 +161,10 @@ public class CellObject {
 		return propertiesApply.get(name);
 	}
 	
+	public boolean getResetApply() {
+		return this.resetApply;
+	}
+	
 	/**
 	 * @param name property name
 	 * @param value property value
@@ -154,6 +178,19 @@ public class CellObject {
 	
 	public void setRemoveApply(boolean setting) {
 		removeApply = setting;
+	}
+	
+	public void setRewardApply(int setting) {
+		assert setting >= 0;
+		rewardApply = setting;
+	}
+	
+	public void setRewardInfoApply(boolean setting) {
+		rewardInfoApply = setting;
+	}
+	
+	public void setResetApply(boolean setting) {
+		resetApply = setting;
 	}
 	
 	public void setPointsApply(boolean setting) {
@@ -202,13 +239,13 @@ public class CellObject {
 	 * @param player called when this player acted on this object for whatever reason
 	 * @return true if the object should be removed from the cell after the apply
 	 */
-	public boolean apply(Player player) {
+	public boolean apply(World world, Player player) {
 		if (propertiesApply.size() > 0) {
 			Iterator<String> iter = propertiesApply.keySet().iterator();
 			while (iter.hasNext()) {
 				String key = iter.next();
 				String value = propertiesApply.get(key);
-				Soar2D.logger.info("Box opened, new property: " + key + " --> " + value);
+				Soar2D.logger.info("New property: " + key + " --> " + value);
 				properties.put(key, value);
 			}
 		}
@@ -241,9 +278,23 @@ public class CellObject {
 			}
 		}
 		
+		if (rewardApply > 0) {
+			assert properties.containsKey(Names.kPropertyBoxID);
+			int myID = Integer.parseInt(properties.get(Names.kPropertyBoxID));
+			// if I am the positive box
+			if (myID == world.getMap().positiveRewardID) {
+				// reward positively
+				player.adjustPoints(rewardApply, "positive reward");
+			} else {
+				// reward negatively
+				player.adjustPoints(rewardApply * -1, "negative reward");
+			}
+		}
+		
 		if (removeApply) {
 			return true;
 		}
+		
 		return false;
 	}
 	/**

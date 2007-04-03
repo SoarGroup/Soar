@@ -5,7 +5,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import soar2d.Names;
 import soar2d.Simulation;
+import soar2d.Soar2D;
 
 /**
  * @author voigtjr
@@ -92,6 +94,7 @@ public class CellObjectManager {
 		return true;
 	}
 	
+	int numberOfRewardObjects = 0;
 	/**
 	 * @param name object name to create
 	 * @return the new object
@@ -100,7 +103,20 @@ public class CellObjectManager {
 	 */
 	CellObject createObject(String name) {
 		if (templates.containsKey(name)) {
-			return new CellObject(templates.get(name));
+			CellObject newObject = new CellObject(templates.get(name));
+			if (newObject.rewardApply > 0) {
+				// keep track of how many exist
+				numberOfRewardObjects += 1;
+				
+				// assign identification properties
+				newObject.addProperty(Names.kPropertyColor, Soar2D.simulation.kColors[numberOfRewardObjects]);
+				newObject.addProperty(Names.kPropertyBoxID, Integer.toString(numberOfRewardObjects));
+			} else if (newObject.rewardInfoApply) {
+				// assign identification properties
+				newObject.addProperty(Names.kPropertyColor, Soar2D.simulation.kColors[0]);
+				newObject.addProperty(Names.kPropertyBoxID, "0");
+			}
+			return newObject;
 		}
 		return null;
 	}

@@ -95,6 +95,7 @@ public class Names {
 	
 	public static final String kPropertyBlock = "block";
 	public static final String kPropertyBox = "box";
+	public static final String kPropertyBoxID = "box-id";
 	public static final String kPropertyCharger = "charger";
 	public static final String kPropertyColor = "color";
 	public static final String kPropertyDirection = "direction";
@@ -115,6 +116,7 @@ public class Names {
 	public static final String kPropertyNumber = "number";
 	public static final String kPropertyOwner = "owner";
 	public static final String kPropertyPoints = "points";
+	public static final String kPropertyPositiveBoxID = "positive-box-id";
 	public static final String kPropertyRadarWaves = "radar-waves";
 	public static final String kPropertyRoom = "room";
 	public static final String kPropertyShape = "shape";

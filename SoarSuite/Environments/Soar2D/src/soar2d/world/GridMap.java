@@ -202,6 +202,9 @@ public class GridMap {
 	private static final String kTagHealth = "health";
 	private static final String kTagMissiles = "missiles";
 	private static final String kTagRemove = "remove";
+	private static final String kTagReward = "reward";
+	private static final String kTagRewardInfo = "reward-info";
+	private static final String kTagReset = "reset";
 
 	private void applySave(Element apply, CellObject template) {
 		Iterator<String> iter = template.propertiesApply.keySet().iterator();
@@ -236,6 +239,18 @@ public class GridMap {
 		if (template.removeApply) {
 			apply.addContent(new Element(kTagRemove));
 		}
+		
+		if (template.rewardApply > 0) {
+			apply.addContent(new Element(kTagReward)).setAttribute(kAttrQuantity, Integer.toString(template.rewardApply));
+		}
+		
+		if (template.rewardInfoApply) {
+			apply.addContent(new Element(kTagRewardInfo));
+		}
+		
+		if (template.resetApply) {
+			apply.addContent(new Element(kTagReset));
+		}
 	}
 
 	private void apply(Element apply, CellObject template) throws LoadError {
@@ -262,6 +277,15 @@ public class GridMap {
 			} else if (child.getName().equalsIgnoreCase(kTagRemove)) {
 				template.setRemoveApply(true);
 
+			} else if (child.getName().equalsIgnoreCase(kTagRewardInfo)) {
+				template.setRewardInfoApply(true);
+
+			} else if (child.getName().equalsIgnoreCase(kTagReward)) {
+				reward(child, template);
+
+			} else if (child.getName().equalsIgnoreCase(kTagReset)) {
+				template.setResetApply(true);
+
 			} else {
 				throw new LoadError("Unrecognized tag: " + child.getName());
 			}
@@ -270,16 +294,30 @@ public class GridMap {
 	
 	private static final String kAttrShields = "shields";
 	
-	private void energy(Element energy, CellObject template) throws LoadError {
+	private void energy(Element energy, CellObject template) {
 		boolean shields = Boolean.parseBoolean(energy.getAttributeValue(kAttrShields, "false"));
 		template.setEnergyApply(true, shields);
 	}
 
 	private static final String kAttrShieldsDown = "shields-down";
 
-	private void health(Element health, CellObject template) throws LoadError {
+	private void health(Element health, CellObject template) {
 		boolean shieldsDown = Boolean.parseBoolean(health.getAttributeValue(kAttrShieldsDown, "false"));
 		template.setHealthApply(true, shieldsDown);
+	}
+
+	private static final String kAttrQuantity = "quantity";
+
+	private void reward(Element reward, CellObject template) throws LoadError {
+		String quantityString = reward.getAttributeValue(kAttrQuantity);
+		if (quantityString == null) {
+			throw new LoadError("No reward quantity specified.");
+		}
+		try {
+			template.setRewardApply(Integer.parseInt(quantityString));
+		} catch (NumberFormatException e) {
+			throw new LoadError("Invalid reward quantity specified.");
+		}
 	}
 
 	private static final String kTagDecay = "decay";
@@ -391,6 +429,9 @@ public class GridMap {
 		}
 	}
 	
+	CellObject rewardInfoObject = null;
+	int positiveRewardID = 0;
+	
 	private void cells(Element cells) throws LoadError {
 		String sizeString = cells.getAttributeValue(kAttrWorldSize);
 		if (sizeString == null || sizeString.length() <= 0) {
@@ -443,6 +484,13 @@ public class GridMap {
 			generateRandomFood();
 		}
 		
+		// pick reward box
+		if (rewardInfoObject != null) {
+			assert positiveRewardID == 0;
+			positiveRewardID = Simulation.random.nextInt(cellObjectManager.numberOfRewardObjects);
+			positiveRewardID += 1;
+			rewardInfoObject.addPropertyApply(Names.kPropertyPositiveBoxID, Integer.toString(positiveRewardID));
+		}
 	}
 	
 	private void row(Element row, int rowIndex) throws LoadError {
@@ -522,6 +570,12 @@ public class GridMap {
 			}
 		}
 		addObjectToCell(location, cellObject);
+
+		if (cellObject.rewardInfoApply) {
+			assert rewardInfoObject == null;
+			rewardInfoObject = cellObject;
+		}
+		
 		return background;
 	}
 
