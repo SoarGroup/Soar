@@ -417,7 +417,7 @@ public class World {
 					Iterator<CellObject> maIter = moveApply.iterator();
 					while (maIter.hasNext()) {
 						CellObject object = maIter.next();
-						if (object.apply(player)) {
+						if (object.apply(this, player)) {
 							map.removeObject(location, object.getName());
 						}
 					}
@@ -439,7 +439,7 @@ public class World {
 		Iterator<CellObject> foodIter = list.iterator();
 		while (foodIter.hasNext()) {
 			CellObject food = foodIter.next();
-			if (food.apply(player)) {
+			if (food.apply(this, player)) {
 				// if this returns true, it is consumed
 				map.removeObject(location, food.getName());
 			}
@@ -448,7 +448,7 @@ public class World {
 	
 	public void missileHit(Player player, Point location, CellObject missile) {
 		// Yes, I'm hit
-		missile.apply(player);
+		missile.apply(this, player);
 		
 		// apply points
 		player.adjustPoints(Soar2D.config.getMissileHitPenalty(), missile.getName());
@@ -493,8 +493,12 @@ public class World {
 				return;
 			}
 		}
-		if (box.apply(player)) {
+		if (box.apply(this, player)) {
 			map.removeObject(location, box.getName());
+		}
+		
+		if (box.getResetApply()) {
+			doRestartAfterUpdate();
 		}
 	}
 	
@@ -512,6 +516,8 @@ public class World {
 		return scores;
 	}
 	
+	boolean restartAfterUpdate = false;
+
 	public void update() {
 		Soar2D.config.setHide(false);
 		
@@ -548,7 +554,6 @@ public class World {
 			}
 		}
 
-		boolean restartAfterUpdate = false;
 		if (Soar2D.config.getTerminalFoodRemaining()) {
 			if (map.getFoodCount() <= 0) {
 				boolean stopNow = true;
@@ -569,28 +574,7 @@ public class World {
 					return;
 					
 				} else {
-					restartAfterUpdate = true;
-					
-					int[] scores = getSortedScores();
-					boolean draw = false;
-					if (scores.length > 1) {
-						if (scores[scores.length - 1] ==  scores[scores.length - 2]) {
-							if (logger.isLoggable(Level.FINER)) logger.finer("Draw detected.");
-							draw = true;
-						}
-					}
-					
-					Iterator<Player> iter = players.iterator();
-					while (iter.hasNext()) {
-						String status = null;
-						Player player = iter.next();
-						if (player.getPoints() == scores[scores.length - 1]) {
-							status = draw ? "draw" : "winner";
-						} else {
-							status = "loser";
-						}
-						logger.info(player.getName() + ": " + player.getPoints() + " (" + status + ").");
-					}
+					doRestartAfterUpdate();
 				}
 			}
 		}
@@ -625,6 +609,31 @@ public class World {
 			if (Soar2D.wm.using()) {
 				Soar2D.wm.reset();
 			}
+		}
+	}
+	
+	private void doRestartAfterUpdate() {
+		restartAfterUpdate = true;
+		
+		int[] scores = getSortedScores();
+		boolean draw = false;
+		if (scores.length > 1) {
+			if (scores[scores.length - 1] ==  scores[scores.length - 2]) {
+				if (logger.isLoggable(Level.FINER)) logger.finer("Draw detected.");
+				draw = true;
+			}
+		}
+		
+		Iterator<Player> iter = players.iterator();
+		while (iter.hasNext()) {
+			String status = null;
+			Player player = iter.next();
+			if (player.getPoints() == scores[scores.length - 1]) {
+				status = draw ? "draw" : "winner";
+			} else {
+				status = "loser";
+			}
+			logger.info(player.getName() + ": " + player.getPoints() + " (" + status + ").");
 		}
 	}
 	
@@ -1059,7 +1068,7 @@ public class World {
 			if (missilePacks.size() > 0) {
 				assert missilePacks.size() == 1;
 				CellObject pack = missilePacks.get(0);
-				pack.apply(player);
+				pack.apply(this, player);
 				map.removeAllWithProperty(location, Names.kPropertyMissiles);
 			}
 			
@@ -1472,6 +1481,7 @@ public class World {
 		printedStats = false;
 		missileID = 0;
 		missileReset = 0;
+		restartAfterUpdate = false;
 	}
 	
 	public int getWorldCount() {
