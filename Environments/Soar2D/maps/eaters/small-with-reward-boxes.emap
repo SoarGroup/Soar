@@ -1,0 +1,144 @@
+<map>
+  <cell-object name="infobox">
+    <property name="shape" value="square" />
+    <property name="box" value="true" />
+    <property name="id" value="info-box" />
+    <apply>
+      <property name="status" value="open" />
+      <reward-info />
+    </apply>
+  </cell-object>
+  <cell-object name="rewardbox">
+    <property name="shape" value="square" />
+    <property name="box" value="true" />
+    <property name="id" value="box" />
+    <apply>
+      <property name="status" value="open" />
+      <reward quantity="10" />
+      <reset />
+    </apply>
+  </cell-object>
+  <cell-object name="wall">
+    <property name="block" value="true" />
+    <property name="id" value="wall" />
+  </cell-object>
+  <cells world-size="7" random-walls="false" random-food="false">
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>rewardbox</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>infobox</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>rewardbox</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+  </cells>
+</map>
