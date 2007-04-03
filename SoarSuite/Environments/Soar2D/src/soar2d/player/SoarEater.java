@@ -561,7 +561,7 @@ public class SoarEater extends Eater {
 			
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
 				if (move.move || moveWait) {
-					logger.warning(getName() + "multiple move/jump commands detected (move)");
+					logger.warning(getName() + ": multiple move/jump commands detected (move)");
 					continue;
 				}
 				move.move = true;
@@ -585,7 +585,7 @@ public class SoarEater extends Eater {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kJumpID)) {
 				if (move.move) {
-					logger.warning(getName() + "multiple move/jump commands detected, ignoring (jump)");
+					logger.warning(getName() + ": multiple move/jump commands detected, ignoring (jump)");
 					continue;
 				}
 				move.move = true;
@@ -600,7 +600,7 @@ public class SoarEater extends Eater {
 
 			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
 				if (move.stopSim) {
-					logger.warning(getName() + "multiple stop commands detected, ignoring");
+					logger.warning(getName() + ": multiple stop commands detected, ignoring");
 					continue;
 				}
 				move.stopSim = true;
@@ -609,16 +609,27 @@ public class SoarEater extends Eater {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kOpenID)) {
 				if (move.open) {
-					logger.warning(getName() + "multiple open commands detected, ignoring");
+					logger.warning(getName() + ": multiple open commands detected, ignoring");
 					continue;
 				}
 				move.open = true;
 				commandId.AddStatusComplete();
+
+				String openCode = commandId.GetParameterValue(Names.kOpenCodeID);
+				if (openCode != null) {
+					try {
+						move.openCode = Integer.parseInt(openCode);
+					} catch (NumberFormatException e) {	
+						logger.warning(getName() + ": invalid open code");
+						continue;
+					}
+					continue;
+				}
 				continue;
 				
 			} else if (commandName.equalsIgnoreCase(Names.kDontEatID)) {
 				if (move.dontEat) {
-					logger.warning(getName() + "multiple dont eat commands detected, ignoring");
+					logger.warning(getName() + ": multiple dont eat commands detected, ignoring");
 					continue;
 				}
 				move.dontEat = true;

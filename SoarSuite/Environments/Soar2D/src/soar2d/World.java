@@ -89,6 +89,8 @@ public class World {
 		resetPlayers(frag);
 		
 		logger.info("Map loaded, world reset.");
+		// TODO: remove or make permenant
+		map.debugLogRewardStuff();
 		return true;
 	}
 	
@@ -429,7 +431,7 @@ public class World {
 			}
 			
 			if (lastMove.open) {
-				open(player, location);
+				open(player, location, lastMove.openCode);
 			}
 		}
 	}
@@ -476,7 +478,7 @@ public class World {
 		}
 	}
 	
-	private void open(Player player, Point location) {
+	private void open(Player player, Point location, int openCode) {
 		ArrayList<CellObject> boxes = map.getAllWithProperty(location, Names.kPropertyBox);
 		if (boxes.size() <= 0) {
 			Soar2D.logger.warning(player.getName() + " tried to open but there is no box.");
@@ -492,6 +494,9 @@ public class World {
 				Soar2D.logger.warning(player.getName() + " tried to open an open box.");
 				return;
 			}
+		}
+		if (openCode != 0) {
+			box.addPropertyApply(Names.kPropertyOpenCode, Integer.toString(openCode));
 		}
 		if (box.apply(this, player)) {
 			map.removeObject(location, box.getName());
