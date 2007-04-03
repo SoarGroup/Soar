@@ -18,6 +18,7 @@ public class MoveInfo {
 	
 	// eaters
 	public boolean open = false;	// open the box on the current cell
+	public int openCode = 0;		// the open code to use (only used with reward system)
 	public boolean jump = false;	// jump if we move
 	public boolean dontEat = false;	// don't eat food
 	
@@ -58,6 +59,9 @@ public class MoveInfo {
 			}
 			if (open) {
 				output += "(" + Names.kOpenID + ")";
+				if (openCode != 0) {
+					output += "(" + Names.kOpenCodeID + ": "+ Integer.toString(openCode) + ")";
+				}
 			}
 			break;
 			

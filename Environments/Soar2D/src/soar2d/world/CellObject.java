@@ -46,6 +46,11 @@ public class CellObject {
 	 */
 	boolean rewardInfoApply = false;
 	/**
+	 * require a correct open code (open parameter) when opening boxes
+	 * depends on rewardInfoApply
+	 */
+	boolean useOpenCode = false;
+	/**
 	 * perform a reset after this update, just like a terminal
 	 */
 	boolean resetApply = false;
@@ -100,6 +105,7 @@ public class CellObject {
 		this.removeApply = cellObject.removeApply;
 		this.rewardApply = cellObject.rewardApply;
 		this.rewardInfoApply = cellObject.rewardInfoApply;
+		this.useOpenCode = cellObject.useOpenCode;
 		this.resetApply = cellObject.resetApply;
 		this.pointsApply = cellObject.pointsApply;
 		this.missilesApply = cellObject.missilesApply;
@@ -187,6 +193,10 @@ public class CellObject {
 	
 	public void setRewardInfoApply(boolean setting) {
 		rewardInfoApply = setting;
+	}
+	
+	public void setUseOpenCode(boolean setting) {
+		useOpenCode = setting;
 	}
 	
 	public void setResetApply(boolean setting) {
@@ -281,8 +291,15 @@ public class CellObject {
 		if (rewardApply > 0) {
 			assert properties.containsKey(Names.kPropertyBoxID);
 			int myID = Integer.parseInt(properties.get(Names.kPropertyBoxID));
-			// if I am the positive box
-			if (myID == world.getMap().positiveRewardID) {
+			
+			// if we're not using an open code, the correct code is 0
+			int usedOpenCode = 0;
+			if (properties.containsKey(Names.kPropertyOpenCode)) {
+				usedOpenCode = Integer.parseInt(properties.get(Names.kPropertyOpenCode));
+			}
+
+			// if I am the positive box and we used the correct open code
+			if ((myID == world.getMap().positiveRewardID) && (usedOpenCode == world.getMap().openCode)) {
 				// reward positively
 				player.adjustPoints(rewardApply, "positive reward");
 			} else {

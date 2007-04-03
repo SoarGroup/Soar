@@ -9,6 +9,7 @@
 				?<missiles>
 				?<remove>
 				?<reward-info>
+					?<use-open-code>
 				?<reward quantity="int">
 				?<reset>
 			?<update>

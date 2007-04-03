@@ -204,6 +204,7 @@ public class GridMap {
 	private static final String kTagRemove = "remove";
 	private static final String kTagReward = "reward";
 	private static final String kTagRewardInfo = "reward-info";
+	private static final String kTagUseOpenCode = "use-open-code";
 	private static final String kTagReset = "reset";
 
 	private void applySave(Element apply, CellObject template) {
@@ -245,7 +246,11 @@ public class GridMap {
 		}
 		
 		if (template.rewardInfoApply) {
-			apply.addContent(new Element(kTagRewardInfo));
+			if (template.useOpenCode) {
+				apply.addContent(new Element(kTagRewardInfo).addContent(new Element(kTagUseOpenCode)));
+			} else {
+				apply.addContent(new Element(kTagRewardInfo));
+			}
 		}
 		
 		if (template.resetApply) {
@@ -279,6 +284,9 @@ public class GridMap {
 
 			} else if (child.getName().equalsIgnoreCase(kTagRewardInfo)) {
 				template.setRewardInfoApply(true);
+				if (child.getChild(kTagUseOpenCode) != null) {
+					template.setUseOpenCode(true);
+				}
 
 			} else if (child.getName().equalsIgnoreCase(kTagReward)) {
 				reward(child, template);
@@ -319,7 +327,7 @@ public class GridMap {
 			throw new LoadError("Invalid reward quantity specified.");
 		}
 	}
-
+	
 	private static final String kTagDecay = "decay";
 	private static final String kTagFlyMissile = "fly-missile";
 	private static final String kTagLinger = "linger";
@@ -430,6 +438,8 @@ public class GridMap {
 	}
 	
 	CellObject rewardInfoObject = null;
+	static final int kOpenCodeRange = 2; // 1..kOpenCodeRange (alternatively expressed as: 0..(kOpenCodeRange - 1) + 1
+	int openCode = 0;
 	int positiveRewardID = 0;
 	
 	private void cells(Element cells) throws LoadError {
@@ -490,6 +500,15 @@ public class GridMap {
 			positiveRewardID = Simulation.random.nextInt(cellObjectManager.numberOfRewardObjects);
 			positiveRewardID += 1;
 			rewardInfoObject.addPropertyApply(Names.kPropertyPositiveBoxID, Integer.toString(positiveRewardID));
+		}
+	}
+	
+	public void debugLogRewardStuff() {
+		if (positiveRewardID > 0) {
+			Soar2D.logger.info("Reward ID: " + positiveRewardID);
+			if (openCode > 0) {
+				Soar2D.logger.info("Open Code: " + openCode);
+			}
 		}
 	}
 	
@@ -574,6 +593,10 @@ public class GridMap {
 		if (cellObject.rewardInfoApply) {
 			assert rewardInfoObject == null;
 			rewardInfoObject = cellObject;
+			
+			if (cellObject.useOpenCode) {
+				openCode = Simulation.random.nextInt(kOpenCodeRange) + 1;
+			}
 		}
 		
 		return background;
