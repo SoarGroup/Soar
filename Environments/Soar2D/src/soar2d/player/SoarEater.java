@@ -476,6 +476,8 @@ public class SoarEater extends Eater {
 			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
 			Soar2D.control.stopSimulation();
 		}
+		this.resetPointsChanged();
+
 	}
 	
 	private void updateFacingWME() {
@@ -487,7 +489,7 @@ public class SoarEater extends Eater {
 	
 	private void updateScoreWME() {
 		// update the score if it changed
-		if (scoreWME.GetValue() != getPoints()) {
+		if (this.pointsChanged()) {
 			agent.Update(scoreWME, getPoints());
 		}
 	}

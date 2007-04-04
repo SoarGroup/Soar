@@ -22,6 +22,7 @@ public class Player {
 	protected PlayerConfig playerConfig;
 
 	private boolean pointsChanged = false;
+	private int pointsDelta = 0;
 
 	private float heading = 0;	// heading in radians
 	public float getHeading() {
@@ -65,6 +66,7 @@ public class Player {
 	 */
 	public void setPoints(int points, String comment) {
 		pointsChanged = true;
+		pointsDelta = this.points - points;
 		
 		this.points = points;
 		if (comment != null) {
@@ -82,6 +84,8 @@ public class Player {
 	 */
 	public void adjustPoints(int delta, String comment) {
 		pointsChanged = (delta != 0);
+		pointsDelta = delta;
+		
 		int previous = this.points;
 		this.points += delta;
 		if (comment != null) {
@@ -199,6 +203,7 @@ public class Player {
 			this.points = Soar2D.config.getDefaultPoints();
 		}
 		pointsChanged = true;
+		pointsDelta = 0;
 	}
 	/**
 	 * called when things are shutting down
@@ -330,8 +335,13 @@ public class Player {
 		return pointsChanged;
 	}
 	
+	public int getPointsDelta() {
+		return pointsDelta;
+	}
+	
 	public void resetPointsChanged() {
 		pointsChanged = false;
+		pointsDelta = 0;
 	}
 	
 	public void playersChanged() {
