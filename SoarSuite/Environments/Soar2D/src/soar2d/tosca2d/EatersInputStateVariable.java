@@ -15,6 +15,7 @@ import java.util.Iterator;
 
 import soar2d.*;
 import soar2d.player.ToscaEater;
+import soar2d.world.CellObject;
 import tosca.Double;
 import tosca.Group;
 import tosca.Integer;
@@ -24,6 +25,8 @@ import tosca.Vector;
 
 public class EatersInputStateVariable extends JavaStateVariable {
 	protected Value m_Value = new Value() ;
+	
+	private static final int kInfoBoxID = 0;
 
 	public EatersInputStateVariable(String name) {
 		super(name) ;
@@ -49,9 +52,76 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		if (world.getMap().isInBounds(viewLocation)) {
 			mapCell.Set(0, 1.0) ;	// Property 0 is whether this location is valid or not
 			
-			if (!world.getMap().enterable(viewLocation))
+			if (!world.getMap().enterable(viewLocation)) {
 				mapCell.Set(1, 1.0) ;	// Property 1 is whether it's a wall
+			}
 		}
+		
+		// Setting property 2 reward
+		if (eater.getEater().pointsChanged()) {
+			// casting int to double
+			mapCell.Set(2, eater.getEater().getPointsDelta());
+		} else {
+			// using -1 for every step that no other reward is issued
+			mapCell.Set(2, -1.0);
+		}
+		
+		// Property 3: is there a box in the cell
+		// box test
+		// get all boxes
+		ArrayList<CellObject> boxes = world.getMap().getAllWithProperty(viewLocation, Names.kPropertyBox);
+		// max one box per cell, we're not prepared to handle more
+		assert boxes.size() <= 1;
+		if (boxes.size() > 0) {
+			// there is a box
+			mapCell.Set(3, 1.0);
+
+			// Property 4: box id
+			// box id 0 is the info box (kInfoBoxID)
+			// box id 1..<number of boxes> are reward boxes
+
+			// id the box
+			CellObject box = boxes.get(0);
+			assert box.hasProperty(Names.kPropertyBoxID);
+			int boxID = box.getIntProperty(Names.kPropertyBoxID);
+			
+			// box should never be negative
+			assert boxID >= 0;
+			mapCell.Set(4, boxID);
+
+			// Property 5 is the symbol of the box (the target box) from the info box
+			// Property 6 is the action (open-code)
+			// Both of these only set if they exist
+
+			// if we're on the info box
+			if (boxID == kInfoBoxID) {
+				// if the target box property exists
+				if (box.hasProperty(Names.kPropertyPositiveBoxID)) {
+					// set property 5 to the target
+					mapCell.Set(5, box.getIntProperty(Names.kPropertyPositiveBoxID));
+				} else {
+					mapCell.Set(5, 0);
+				}
+				
+				// if the action (open) code exists
+				if (box.hasProperty(Names.kPropertyOpenCode)) {
+					// set property 6 to the code
+					mapCell.Set(6, box.getIntProperty(Names.kPropertyOpenCode));
+				} else {
+					mapCell.Set(6, 0);
+				}
+			}
+
+		} else {
+			// there is no box
+			mapCell.Set(3, 0);
+			mapCell.Set(4, 0);
+			mapCell.Set(5, 0);
+			mapCell.Set(6, 0);
+		}
+		
+		
+		
 
 		return mapCell ;
 	}

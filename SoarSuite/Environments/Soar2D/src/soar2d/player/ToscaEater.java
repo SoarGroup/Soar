@@ -68,6 +68,7 @@ public class ToscaEater {
 		
 		// Need to set the new value in the future (so choosing time+1)
 		m_InputVar.update(time+1, this, world, location) ;
+		m_Eater.resetPointsChanged();
 	}
 	
 	/* (non-Javadoc)
