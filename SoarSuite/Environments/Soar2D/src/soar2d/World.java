@@ -524,6 +524,16 @@ public class World {
 	boolean restartAfterUpdate = false;
 
 	public void update() {
+		
+		// TODO: Rename this so it makes sense
+		if (restartAfterUpdate) {
+			loadInternal(true);
+			if (Soar2D.wm.using()) {
+				Soar2D.wm.reset();
+			}
+			return;
+		}
+
 		Soar2D.config.setHide(false);
 		
 		// Collect human input
@@ -607,13 +617,6 @@ public class World {
 		case kBook:
 			bookUpdate();
 			break;
-		}
-		
-		if (restartAfterUpdate) {
-			loadInternal(true);
-			if (Soar2D.wm.using()) {
-				Soar2D.wm.reset();
-			}
 		}
 	}
 	
