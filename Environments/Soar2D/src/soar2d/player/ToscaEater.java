@@ -24,7 +24,7 @@ public class ToscaEater {
 	protected int				m_EaterNumber ;
 
 	/** This boolean switches tosca integration on and off.  When off, no Tosca code should run and we're back to regular Soar Eaters */
-	public static final boolean kToscaEnabled = false ;
+	public static final boolean kToscaEnabled = true ;
 	
 	/** If true the agent will just walk forward until hitting an obstacle and then turn right.  If false, calls to Tosca code to reason about the move. */
 	private static final boolean kSimulatedOutput = false ;
@@ -102,11 +102,15 @@ public class ToscaEater {
 		}
 		else
 		{
-			move.move = true ;
-			move.moveDirection = this.m_OutputVar.GetDirection() ;
-			
-			if (move.moveDirection == 0)
-				move.move = false ;
+			if (this.m_OutputVar.IsOpening()) {
+				move.open = true;
+			} else {
+				move.move = true ;
+				move.moveDirection = this.m_OutputVar.GetDirection() ;
+				
+				if (move.moveDirection == 0)
+					move.move = false ;
+			}
 		}
 
 		//MoveInfo move = Soar2D.wm.getHumanMove(getEater().getColor());
