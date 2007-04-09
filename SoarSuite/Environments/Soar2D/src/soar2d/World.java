@@ -15,7 +15,8 @@ public class World {
 	private static Logger logger = Logger.getLogger("soar2d");
 
 	private int worldCount = 0;
-	private int runs = 0;
+	private int runsFoodRemaining = 0;
+	private int runsTerminal = 0;
 	private boolean printedStats = false;
 	
 	private GridMap map;
@@ -36,7 +37,8 @@ public class World {
 	private int missileReset = 0;
 	
 	public boolean load() {
-		this.runs = Soar2D.config.getTerminalFoodRemainingContinue();
+		this.runsFoodRemaining = Soar2D.config.getTerminalFoodRemainingContinue();
+		this.runsTerminal = Soar2D.config.getTerminalMaxRuns();
 		return loadInternal(false);
 	}
 
@@ -503,7 +505,20 @@ public class World {
 		}
 		
 		if (box.getResetApply()) {
-			doRestartAfterUpdate();
+			boolean stopNow = false;
+			
+			if (this.runsTerminal > 0) {
+				this.runsTerminal -= 1;
+				if (this.runsTerminal == 0) {
+					stopNow = true;
+				}
+			}
+
+			if (stopNow) {
+				this.stopAndDumpStats("Max resets achieved.", getSortedScores());
+			} else {
+				doRestartAfterUpdate();
+			}
 		}
 	}
 	
@@ -572,14 +587,15 @@ public class World {
 		if (Soar2D.config.getTerminalFoodRemaining()) {
 			if (map.getFoodCount() <= 0) {
 				boolean stopNow = true;
+				
 				if (Soar2D.config.getTerminalFoodRemainingContinue() != 0) {
 					// reduce continues by one if it is positive
-					if (runs > 0) {
-						runs -= 1;
+					if (runsFoodRemaining > 0) {
+						runsFoodRemaining -= 1;
 					}
 
 					// we only stop if continues is zero
-					if (runs != 0) {
+					if (runsFoodRemaining != 0) {
 						stopNow = false;
 					}
 				}

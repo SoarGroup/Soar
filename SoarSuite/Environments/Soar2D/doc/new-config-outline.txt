@@ -100,8 +100,10 @@
 			int theScore
 		?<food-remaining>
 			?<continue>
-				int maxRuns
+				int maxRuns		# note that this and max-runs's maxRuns are independent
 		?<unopened-boxes>
+		?<max-runs>
+			int maxRuns 		# note that this and food-remaining's maxRuns are independent
 
 	?<clients>
 		*<client>

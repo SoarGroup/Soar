@@ -1301,6 +1301,15 @@ public class Configuration {
 		return this.terminalWinningScore;
 	}
 	
+	private int terminalMaxRuns = 0;				// 0 means no limit 
+	private static final String kTagMaxRuns = "max-runs";
+	public void setTerminalMaxRuns(int maxRuns) {
+		this.terminalMaxRuns = maxRuns;
+	}
+	public int getTerminalMaxRuns() {
+		return this.terminalMaxRuns;
+	}
+	
 	private void terminalsSave(Element terminals) {
 		if (this.getTerminalMaxUpdates() > 0) {
 			terminals.addContent(new Element(kTagMaxUpdates).setText(Integer.toString(this.getTerminalMaxUpdates())));
@@ -1334,6 +1343,10 @@ public class Configuration {
 		
 		if (this.getTerminalUnopenedBoxes()) {
 			terminals.addContent(new Element(kTagUnopenedBoxes));
+		}
+
+		if (this.getTerminalMaxRuns() > 0) {
+			terminals.addContent(new Element(kTagMaxRuns).setText(Integer.toString(this.terminalMaxRuns)));
 		}
 	}
 	
@@ -1379,6 +1392,13 @@ public class Configuration {
 			} else if (child.getName().equalsIgnoreCase(kTagUnopenedBoxes)) {
 				this.setTerminalUnopenedBoxes(true);
 				
+			} else if (child.getName().equalsIgnoreCase(kTagMaxRuns)) {
+				try {
+					this.setTerminalMaxRuns(Integer.parseInt(child.getTextTrim()));
+				} catch (NumberFormatException e) {
+					throw new LoadError("Error parsing max runs");
+				}
+
 			} else {
 				throw new LoadError("Unrecognized tag: " + child.getName());
 			}
