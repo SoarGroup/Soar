@@ -564,8 +564,21 @@ public class World {
 
 		if (Soar2D.config.getTerminalMaxUpdates() > 0) {
 			if (worldCount >= Soar2D.config.getTerminalMaxUpdates()) {
-				stopAndDumpStats("Reached maximum updates, stopping.", getSortedScores());
-				return;
+				boolean stopNow = true;
+				
+				if (this.runsTerminal > 0) {
+					this.runsTerminal -= 1;
+					if (this.runsTerminal > 0) {
+						stopNow = false;
+					}
+				}
+
+				if (stopNow) {
+					stopAndDumpStats("Reached maximum updates, stopping.", getSortedScores());
+					return;
+				} else {
+					doRestartAfterUpdate();
+				}
 			}
 		}
 		

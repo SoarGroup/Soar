@@ -94,6 +94,7 @@
 	?<terminals>
 		?<max-updates>
 			int updateCount
+			?<continue>
 		?<agent-command>
 		?<points-remaining>
 		?<winning-score>
