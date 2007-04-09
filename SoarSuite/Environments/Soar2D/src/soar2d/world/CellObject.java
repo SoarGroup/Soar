@@ -298,8 +298,12 @@ public class CellObject {
 				usedOpenCode = Integer.parseInt(properties.get(Names.kPropertyOpenCode));
 			}
 
-			// if I am the positive box and we used the correct open code
-			if ((myID == world.getMap().positiveRewardID) && (usedOpenCode == world.getMap().openCode)) {
+			// Set the reset if I'm the positive box
+			this.resetApply = (myID == world.getMap().positiveRewardID);
+			
+			
+			// if I am the positive box (resetApply == true, above) and we used the correct open code
+			if (this.resetApply && (usedOpenCode == world.getMap().openCode)) {
 				// reward positively
 				player.adjustPoints(rewardApply, "positive reward");
 			} else {
