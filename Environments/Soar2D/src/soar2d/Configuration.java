@@ -1291,6 +1291,14 @@ public class Configuration {
 	public int getTerminalMaxUpdates() {
 		return this.terminalMaxUpdates;
 	}
+	private boolean terminalMaxUpdatesContinue = false;	
+	private static final String kTagMaxUpdatesContinue = "continue";
+	public void setTerminalMaxUpdatesContinue(boolean setting) {
+		this.terminalMaxUpdatesContinue = setting;
+	}
+	public boolean getTerminalMaxUpdatesContinue() {
+		return this.terminalMaxUpdatesContinue;
+	}
 	
 	private int terminalWinningScore = 0;			// Stop the simulation when a certain number of world updates have completed.
 	private static final String kTagWinningScore = "winning-score";
@@ -1312,7 +1320,11 @@ public class Configuration {
 	
 	private void terminalsSave(Element terminals) {
 		if (this.getTerminalMaxUpdates() > 0) {
-			terminals.addContent(new Element(kTagMaxUpdates).setText(Integer.toString(this.getTerminalMaxUpdates())));
+			Element maxUpdates = new Element(kTagMaxUpdates).setText(Integer.toString(this.getTerminalMaxUpdates()));
+			if (this.getTerminalMaxUpdatesContinue()) {
+				maxUpdates.addContent(new Element(kTagMaxUpdatesContinue));
+			}
+			terminals.addContent(maxUpdates);
 		}
 		
 		if (this.getTerminalAgentCommand()) {
@@ -1362,6 +1374,10 @@ public class Configuration {
 					this.setTerminalMaxUpdates(Integer.parseInt(child.getTextTrim()));
 				} catch (NumberFormatException e) {
 					throw new LoadError("Error parsing max updates");
+				}
+				Element cont = child.getChild(kTagMaxUpdatesContinue);
+				if (cont != null) {
+					this.setTerminalMaxUpdatesContinue(true);
 				}
 
 			} else if (child.getName().equalsIgnoreCase(kTagAgentCommand)) {
