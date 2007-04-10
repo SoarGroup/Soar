@@ -134,6 +134,7 @@ public:
 	char const* GetCandidateName() const ;
 	char const* GetCandidateType() const ;
 	char const* GetCandidateValue() const ;
+	char const* GetCandidateExpValue() const ;
 
 	// Warnings, errors, messages and other tags
 	bool IsTagError() const	;

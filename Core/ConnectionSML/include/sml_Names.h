@@ -209,6 +209,7 @@ public:
     static char const* const kCandidateTypeSum;
     static char const* const kCandidateTypeAvg;
     static char const* const kCandidateValue;
+	static char const* const kCandidateExpValue;
 
     // output for the verbose command
     static char const* const kTagVerbose;

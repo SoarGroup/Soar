@@ -231,6 +231,7 @@ bool ClientTraceXML::IsTagCandidate() const				{ return IsTag(sml_Names::kTagCan
 char const* ClientTraceXML::GetCandidateName() const	{ return GetAttribute(sml_Names::kCandidateName) ; }
 char const* ClientTraceXML::GetCandidateType() const	{ return GetAttribute(sml_Names::kCandidateType) ; }
 char const* ClientTraceXML::GetCandidateValue() const	{ return GetAttribute(sml_Names::kCandidateValue) ; }
+char const* ClientTraceXML::GetCandidateExpValue() const	{ return GetAttribute(sml_Names::kCandidateExpValue) ; }
 
 // Warnings, errors, messages and other tags
 bool ClientTraceXML::IsTagError() const				{ return IsTag(sml_Names::kTagError) ; }

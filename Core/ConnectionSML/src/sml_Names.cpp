@@ -211,6 +211,7 @@ char const* const sml_Names::kCandidateType     = "type";
 char const* const sml_Names::kCandidateTypeSum  = "sum";
 char const* const sml_Names::kCandidateTypeAvg  = "avg";
 char const* const sml_Names::kCandidateValue    = "value";
+char const* const sml_Names::kCandidateExpValue	= "exp";
 
 // output for the verbose command
 char const* const sml_Names::kTagVerbose    = "verbose";
