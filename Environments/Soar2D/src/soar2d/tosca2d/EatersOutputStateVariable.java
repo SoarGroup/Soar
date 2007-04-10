@@ -15,6 +15,7 @@ public class EatersOutputStateVariable extends JavaStateVariable {
 
 	public EatersOutputStateVariable(String name) {
 		super(name) ;
+		this.SetLogChanges(true);
 	}
 	
 	public void Initialize() {
