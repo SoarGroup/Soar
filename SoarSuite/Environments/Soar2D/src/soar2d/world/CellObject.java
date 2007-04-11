@@ -293,7 +293,7 @@ public class CellObject {
 			int myID = Integer.parseInt(properties.get(Names.kPropertyBoxID));
 			
 			// if this box is the info box or we're not using an open code, use the correct code
-			int usedOpenCode = world.getMap().positiveRewardID;
+			int usedOpenCode = world.getMap().openCode;
 			if ((myID != 0) || properties.containsKey(Names.kPropertyOpenCode)) {
 				usedOpenCode = Integer.parseInt(properties.get(Names.kPropertyOpenCode));
 			}
