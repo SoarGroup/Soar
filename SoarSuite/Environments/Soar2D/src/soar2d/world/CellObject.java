@@ -292,9 +292,9 @@ public class CellObject {
 			assert properties.containsKey(Names.kPropertyBoxID);
 			int myID = Integer.parseInt(properties.get(Names.kPropertyBoxID));
 			
-			// if we're not using an open code, the correct code is 0
-			int usedOpenCode = 0;
-			if (properties.containsKey(Names.kPropertyOpenCode)) {
+			// if this box is the info box or we're not using an open code, use the correct code
+			int usedOpenCode = world.getMap().positiveRewardID;
+			if ((myID != 0) || properties.containsKey(Names.kPropertyOpenCode)) {
 				usedOpenCode = Integer.parseInt(properties.get(Names.kPropertyOpenCode));
 			}
 
