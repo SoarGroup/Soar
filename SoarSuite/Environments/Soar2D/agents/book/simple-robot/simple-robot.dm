@@ -1,4 +1,4 @@
-61
+67
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -12,7 +12,7 @@ FLOAT_RANGE 9 0.0 Infinity
 INTEGER_RANGE 10 0 359
 INTEGER_RANGE 11 0 2147483647
 FLOAT_RANGE 12 0.0 0.9990000128746033
-INTEGER_RANGE 13 0 2147483647
+INTEGER_RANGE 13 -1 2147483647
 SOAR_ID 14
 INTEGER_RANGE 15 0 2147483647
 SOAR_ID 16
@@ -60,7 +60,13 @@ SOAR_ID 57
 SOAR_ID 58
 SOAR_ID 59
 ENUMERATION 60 1 forward
-63
+SOAR_ID 61
+SOAR_ID 62
+INTEGER_RANGE 63 0 359
+INTEGER_RANGE 64 0 359
+FLOAT_RANGE 65 0.0 Infinity
+FLOAT_RANGE 66 0.0 Infinity
+69
 0 attribute 49
 0 choices 50
 0 impasse 51
@@ -75,12 +81,14 @@ ENUMERATION 60 1 forward
 1 input-link 2
 1 output-link 3
 2 clock 11
+2 dog 61
 2 floatx 8
 2 floaty 9
 2 heading 10
 2 in 13
-2 location 14
+2 mouse 62
 2 random 12
+2 room 14
 2 x 6
 2 y 7
 3 move 34
@@ -97,10 +105,10 @@ ENUMERATION 60 1 forward
 19 y 21
 22 x 23
 22 y 24
+25 left 28
+25 right 31
 25 to 26
 26 id 27
-26 left 28
-26 right 31
 28 x 29
 28 y 30
 31 x 32
@@ -124,3 +132,7 @@ ENUMERATION 60 1 forward
 56 name 57
 58 move 59
 59 direction 60
+61 bearing 63
+61 distance 65
+62 bearing 64
+62 distance 66

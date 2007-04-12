@@ -1386,10 +1386,10 @@ public class GridMap {
 	private int wallCount = 0;
 	
 	public class Barrier {
-		int id = -1;
-		java.awt.Point left;
-		java.awt.Point right;
-		String direction; 		// null == door
+		public int id = -1;
+		public java.awt.Point left;
+		public java.awt.Point right;
+		public String direction; 		// null == door
 		
 		public String toString() {
 			String output = new String(Integer.toString(id));
@@ -1404,6 +1404,9 @@ public class GridMap {
 		}
 	}
 	private HashMap<Integer, ArrayList<Barrier> > roomBarrierMap = new HashMap<Integer, ArrayList<Barrier> >();
+	public ArrayList<Barrier> getRoomBarrierList(int roomID) {
+		return roomBarrierMap.get(roomID);
+	}
 	
 	public boolean generateRoomStructure() {
 		// Start in upper-left corner

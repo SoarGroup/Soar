@@ -56,6 +56,7 @@ public class Names {
 	public static final String kHeadingID = "heading";
 	public static final String kHealthID = "health";
 	public static final String kHealthRechargerID = "healthrecharger";
+	public static final String kIdID = "id";
 	public static final String kInID = "in";
 	public static final String kIncomingID = "incoming";
 	public static final String kJumpID = "jump";

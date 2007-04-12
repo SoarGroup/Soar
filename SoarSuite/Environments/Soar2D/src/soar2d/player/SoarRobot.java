@@ -17,11 +17,12 @@ import soar2d.Soar2D;
 import soar2d.World;
 import soar2d.world.CellObject;
 import soar2d.world.GridMap;
+import soar2d.world.GridMap.Barrier;
 
 public class SoarRobot extends Robot {
 	private Agent agent;	// the soar agent
 	private float random;	// a random number, guaranteed to change every frame
-	private boolean fragged = false;
+	private boolean fragged = true;
 	
 	private IntElement xWME;	// our current x location
 	private IntElement yWME;	// our current y location
@@ -31,6 +32,11 @@ public class SoarRobot extends Robot {
 	private IntElement clockWME;	// the world count
 	private IntElement headingWME;	// current heading, degrees
 	private IntElement inWME;		// ID of current room
+	
+	private Identifier roomWME; // location identifier
+	//private ArrayList<Identifier> barrierWMEs; // location identifier
+
+	
 	private ArrayList<String> shutdownCommands;	// soar commands to run before this agent is destroyed
 
 	private int locationId = -1;
@@ -80,6 +86,16 @@ public class SoarRobot extends Robot {
 		this.random = newRandom;
 	}
 	
+	private void destroyLocation() {
+		if (roomWME == null) {
+			return;
+		}
+		agent.DestroyWME(roomWME);
+		
+		roomWME = null;
+		//barrierWMEs = null;
+	}
+	
 	/* (non-Javadoc)
 	 * @see soar2d.player.Eater#update(soar2d.World, java.awt.Point)
 	 */
@@ -101,7 +117,7 @@ public class SoarRobot extends Robot {
 			ArrayList<CellObject> locationObjects = map.getAllWithProperty(location, Names.kPropertyNumber);
 			if (locationObjects.size() != 1) {
 				locationId = -1;
-				// DESTROY OLD LOCATION INFO
+				destroyLocation();
 
 				agent.Update(inWME, locationId);
 
@@ -109,10 +125,44 @@ public class SoarRobot extends Robot {
 				int newLocationId = locationObjects.get(0).getIntProperty(Names.kPropertyNumber);
 
 				if (newLocationId != locationId) {
-					// DESTROY OLD LOCATION INFO
 					locationId = newLocationId;
-					
+
+					destroyLocation();
+
 					// CREATE/UPDATE NEW LOCATION INFO
+					ArrayList<Barrier> barrierList = world.getMap().getRoomBarrierList(locationId);
+					if (barrierList.size() > 0) {
+						// this is, in fact, a room
+						roomWME = agent.CreateIdWME(agent.GetInputLink(), Names.kRoomID);
+						//barrierWMEs = new ArrayList<Identifier>();
+						
+						agent.CreateIntWME(roomWME, Names.kIdID, locationId);
+						Iterator<Barrier> iter = barrierList.iterator();
+						while(iter.hasNext()) {
+							Barrier barrier = iter.next();
+							Identifier barrierWME = null;
+							if (barrier.direction == null) {
+								// door
+								barrierWME = agent.CreateIdWME(roomWME, Names.kDoorID);
+								
+							} else {
+								// wall
+								barrierWME = agent.CreateIdWME(roomWME, Names.kWallID);
+								agent.CreateStringWME(barrierWME, Names.kDirectionID, barrier.direction);
+							}
+							agent.CreateIntWME(barrierWME, Names.kIdID, barrier.id);
+							Identifier leftWME = agent.CreateIdWME(barrierWME, Names.kLeftID);
+							agent.CreateIntWME(leftWME, Names.kXID, barrier.left.x);
+							agent.CreateIntWME(leftWME, Names.kYID, barrier.left.y);
+							Identifier rightWME = agent.CreateIdWME(barrierWME, Names.kRightID);
+							agent.CreateIntWME(rightWME, Names.kXID, barrier.right.x);
+							agent.CreateIntWME(rightWME, Names.kYID, barrier.right.y);
+							
+							//barrierWMEs.add(barrierWME);
+						}
+					} else {
+						// we're in a door
+					}
 
 					agent.Update(inWME, locationId);
 				}
@@ -251,6 +301,7 @@ public class SoarRobot extends Robot {
 	public void reset() {
 		super.reset();
 		fragged = false;
+		moved = true;
 		
 		if (agent == null) {
 			return;
