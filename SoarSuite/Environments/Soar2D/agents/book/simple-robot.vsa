@@ -1,0 +1,15 @@
+VERSION 4
+\simple-robot\simple-robot.dm
+0	ROOT simple-robot simple-robot 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	2	OPERATOR wait wait.soar 5
+4	0	FOLDER elaborations elaborations 6
+5	4	FOPERATOR _all _all.soar 7
+6	4	FOPERATOR monitor monitor.soar 8
+7	4	FOPERATOR output output.soar 15
+8	4	FOPERATOR top-state top-state.soar 9
+9	0	HLOPERATOR wander wander.soar wander 44 12
+10	9	FOPERATOR elaborations elaborations.soar 13
+11	9	OPERATOR move move.soar 14
+END

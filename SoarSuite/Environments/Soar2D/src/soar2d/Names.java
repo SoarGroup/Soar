@@ -50,9 +50,13 @@ public class Names {
 	public static final String kEnergyID = "energy";
 	public static final String kEnergyRechargerID = "energyrecharger";
 	public static final String kFireID = "fire";
+	public static final String kFloatXID = "floatx";
+	public static final String kFloatYID = "floaty";
 	public static final String kForwardID = "forward";
+	public static final String kHeadingID = "heading";
 	public static final String kHealthID = "health";
 	public static final String kHealthRechargerID = "healthrecharger";
+	public static final String kInID = "in";
 	public static final String kIncomingID = "incoming";
 	public static final String kJumpID = "jump";
 	public static final String kLeftID = "left";

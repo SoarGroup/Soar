@@ -1,0 +1,6 @@
+sp {wander*propose*move
+   (state <s> ^name wander)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name move
+        ^actions.move.direction forward)}

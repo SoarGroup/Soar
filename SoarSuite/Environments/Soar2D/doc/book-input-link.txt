@@ -14,8 +14,6 @@ Book input link description
 	<integer> (heading in degrees)
 ^clock
 	<integer> (as tanksoar/eaters)
-^my-color
-	<string> (as tanksoar/eaters)
 ^random
 	<float> (as tanksoar/eaters)
 

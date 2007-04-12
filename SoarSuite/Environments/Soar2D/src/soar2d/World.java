@@ -689,9 +689,9 @@ public class World {
 				final float rotateSpeed = Soar2D.config.getRotateSpeed();
 				
 				if (move.rotateDirection.equals(Names.kRotateLeft)) {
-					player.setHeading(player.getHeading() - (rotateSpeed * time));
+					player.setHeadingRadians(player.getHeadingRadians() - (rotateSpeed * time));
 				} else if (move.rotateDirection.equals(Names.kRotateRight)) {
-					player.setHeading(player.getHeading() + (rotateSpeed * time));
+					player.setHeadingRadians(player.getHeadingRadians() + (rotateSpeed * time));
 				}
 			}
 			
@@ -706,7 +706,7 @@ public class World {
 				rate *= -1;
 			}
 			final int cellSize = Soar2D.config.getBookCellSize();
-			final float heading = player.getHeading();
+			final float heading = player.getHeadingRadians();
 			
 			Point oldLocation = locations.get(player.getName());
 			Point newLocation = new Point(oldLocation);
