@@ -337,7 +337,7 @@ public class Simulation {
 						player = new SoarTank(agent, playerConfig);
 						break;
 					case kBook:
-						assert false;
+						player = new SoarRobot(agent, playerConfig);
 						break;
 					}
 					

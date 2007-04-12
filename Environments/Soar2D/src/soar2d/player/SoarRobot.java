@@ -1,8 +1,10 @@
 package soar2d.player;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
+import java.lang.Math;
 
 import sml.Agent;
 import sml.FloatElement;
@@ -23,7 +25,12 @@ public class SoarRobot extends Robot {
 	
 	private IntElement xWME;	// our current x location
 	private IntElement yWME;	// our current y location
+	private FloatElement floatxWME;	// our current x exact location
+	private FloatElement floatyWME;	// our current y exact location
 	private FloatElement randomWME;	// the wme for the random number
+	private IntElement clockWME;	// the world count
+	private IntElement headingWME;	// current heading, degrees
+	private IntElement inWME;		// ID of current room
 	private ArrayList<String> shutdownCommands;	// soar commands to run before this agent is destroyed
 
 	private int locationId = -1;
@@ -44,6 +51,12 @@ public class SoarRobot extends Robot {
 		agent.CreateStringWME(il, Names.kNameID, getName());
 		xWME = agent.CreateIntWME(il, Names.kXID, 0);
 		yWME = agent.CreateIntWME(il, Names.kYID, 0);
+		floatxWME = agent.CreateFloatWME(il, Names.kFloatXID, 0);
+		floatyWME = agent.CreateFloatWME(il, Names.kFloatYID, 0);
+		headingWME = agent.CreateIntWME(il, Names.kHeadingID, 0);
+		inWME = agent.CreateIntWME(il, Names.kInID, -1);
+		
+		clockWME = agent.CreateIntWME(il, Names.kClockID, 0);
 		
 		random = 0;
 		generateNewRandom();
@@ -89,6 +102,9 @@ public class SoarRobot extends Robot {
 			if (locationObjects.size() != 1) {
 				locationId = -1;
 				// DESTROY OLD LOCATION INFO
+
+				agent.Update(inWME, locationId);
+
 			} else {
 				int newLocationId = locationObjects.get(0).getIntProperty(Names.kPropertyNumber);
 
@@ -97,12 +113,26 @@ public class SoarRobot extends Robot {
 					locationId = newLocationId;
 					
 					// CREATE/UPDATE NEW LOCATION INFO
+
+					agent.Update(inWME, locationId);
 				}
 			}
-			
+
 			// update the location
 			agent.Update(xWME, location.x);
 			agent.Update(yWME, location.y);
+			
+			Point2D.Float floatLocation = world.getFloatLocation(this);
+			agent.Update(floatxWME, floatLocation.x);
+			agent.Update(floatyWME, floatLocation.y);
+			
+			// and heading
+			double heading = Math.toDegrees(getHeadingRadians());
+			int headingInt = (int)heading;
+			agent.Update(headingWME, headingInt);
+			
+			// update the clock
+			agent.Update(clockWME, world.getWorldCount());
 		}
 		
 		// update the random no matter what

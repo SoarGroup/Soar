@@ -24,12 +24,12 @@ public class Player {
 	private boolean pointsChanged = false;
 	private int pointsDelta = 0;
 
-	private float heading = 0;	// heading in radians
-	public float getHeading() {
-		return heading;
+	private float headingRadians = 0;	// heading in radians
+	public float getHeadingRadians() {
+		return headingRadians;
 	}
-	public void setHeading(float heading) {
-		this.heading = heading;
+	public void setHeadingRadians(float heading) {
+		this.headingRadians = heading;
 	}
 	
 	/**

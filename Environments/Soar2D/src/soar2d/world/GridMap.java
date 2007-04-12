@@ -1385,6 +1385,26 @@ public class GridMap {
 	private int doorCount = 0;
 	private int wallCount = 0;
 	
+	public class Barrier {
+		int id = -1;
+		java.awt.Point left;
+		java.awt.Point right;
+		String direction; 		// null == door
+		
+		public String toString() {
+			String output = new String(Integer.toString(id));
+			if (direction == null) {
+				output += " (door)";
+			} else {
+				output += " (" + direction + ")";
+			}
+			output += "(" + Integer.toString(left.x) + "," + Integer.toString(left.y) + ")-(" 
+					+ Integer.toString(right.x) + "," + Integer.toString(right.y) + ")";
+			return output;
+		}
+	}
+	private HashMap<Integer, ArrayList<Barrier> > roomBarrierMap = new HashMap<Integer, ArrayList<Barrier> >();
+	
 	public boolean generateRoomStructure() {
 		// Start in upper-left corner
 		// if cell is enterable, flood fill to find boundaries of room
@@ -1417,7 +1437,7 @@ public class GridMap {
 				HashSet<java.awt.Point> floodExplored = new HashSet<java.awt.Point>((this.size-2)*2);
 				floodExplored.add(location);
 				cell.addCellObject(roomObject);
-				System.out.print("Room " + roomNumber + ": (" + location.x + "," + location.y + ") ");
+				//System.out.print("Room " + roomNumber + ": (" + location.x + "," + location.y + ") ");
 				
 				// add the surrounding cells to the queue 
 				floodQueue.add(new java.awt.Point(location.x+1,location.y));
@@ -1444,7 +1464,7 @@ public class GridMap {
 					explored.add(floodLocation);
 
 					cell.addCellObject(new CellObject(roomObject));
-					System.out.print("(" + floodLocation.x + "," + floodLocation.y + ") ");
+					//System.out.print("(" + floodLocation.x + "," + floodLocation.y + ") ");
 
 					// add the four surrounding cells to the queue
 					floodQueue.add(new java.awt.Point(floodLocation.x+1,floodLocation.y));
@@ -1458,74 +1478,133 @@ public class GridMap {
 				java.awt.Point startingWall = new java.awt.Point(location.x, location.y-1);
 				java.awt.Point next = new java.awt.Point(startingWall);
 				
-				boolean door = false;
-				int doorNumber = 0;
+				// Keep track of the current barrier information. When the wall ends, simply add it to the the room
+				// barrier map.
+				Barrier currentBarrier = null;
 				
-				boolean wall = false;
-				int wallNumber = 0;
+				// Keep track of barrier information
+				ArrayList<Barrier> barrierList = new ArrayList<Barrier>();
+				
+				// I probably should have commented this more when I wrote it.
+				// The comments have been inserted after the initial writing so they may be slightly wrong.
 				
 				while (true) {
+					
+					// This is used to figure out how to turn corners when walking along walls.
+					// Also used with figuring out barrier endpoints.
 					java.awt.Point previous = new java.awt.Point(next);
+					
+					// next is actually the location we're examining now
 					cell = getCell(next);
+					
+					// used to detect turns
+					java.awt.Point rightOfNext = null;
+					
+					// Get the wall and door objects. The can't both exist.
+					CellObject doorObject = cell.getObject(Names.kDoorID);
 					CellObject wallObject = cell.getObject(Names.kWallID);
-					if (wallObject == null) {
-						// Door!
-						wall = false;
+					
+					// One must exist, but not both
+					assert ((doorObject == null) && (wallObject != null)) || ((doorObject != null) && (wallObject == null));
+
+					if (doorObject != null) {
+						if (currentBarrier != null) {
+							// If we were just walking a wall, end and add the barrier
+							if (currentBarrier.direction != null) {
+								barrierList.add(currentBarrier);
+								currentBarrier = null;
+							}
+						}
 						
-						CellObject doorObject = cell.getObject(Names.kDoorID);
-						if (door == false) {
-							door = true;
+						// At this point, the currentBarrier, if it exists, is the door we're walking
+						if (currentBarrier == null) {
+							
+							// getting here means we're starting a new section of door
+							currentBarrier = new Barrier();
+							currentBarrier.left = new java.awt.Point(next);
+							
+							// get and reuse this door's id number
+							// doors that border two rooms use only the one id number
 							if (doorObject.hasProperty(Names.kPropertyNumber)) {
-								doorNumber = doorObject.getIntProperty(Names.kPropertyNumber);
+								currentBarrier.id = doorObject.getIntProperty(Names.kPropertyNumber);
 							} else {
-								doorNumber = roomCount + doorCount + wallCount;
+								
+								// we haven't seen this door yet so create a new id number
+								currentBarrier.id = roomCount + doorCount + wallCount;
 								doorCount += 1;
 							}
-							System.out.println();
-							System.out.print("  Door " + doorNumber + ": ");
-						} 
-						doorObject.addProperty(Names.kPropertyNumber, Integer.toString(doorNumber));
-						
-						System.out.print("(" + next.x + "," + next.y + ") ");
-						Direction.translate(next, direction);
-						
-						java.awt.Point rightOfNext = new java.awt.Point(next);
-						Direction.translate(rightOfNext, Direction.rightOf[direction]);
+							//System.out.println();
+							//System.out.print("  Door " + currentBarrier.id + ": ");
+						}
 
-						if (walls.contains(next) && !walls.contains(rightOfNext)) {
-							continue;
+						// if the door doesn't have a number, add it now.
+						if (!doorObject.hasProperty(Names.kPropertyNumber)) {
+							doorObject.addProperty(Names.kPropertyNumber, Integer.toString(currentBarrier.id));
 						}
-					} else {
+						
+					} else if (wallObject != null) /*redundant*/ {
 					
-						if (wall == false) {
-							wall = true;
-							wallNumber = roomCount + doorCount + wallCount;
+						if (currentBarrier != null) {
+							// If we were just walking a door, end and add the barrier
+							if (currentBarrier.direction == null) {
+								barrierList.add(currentBarrier);
+								currentBarrier = null;
+							}
+						}
+						
+						// At this point, the currentBarrier, if it exists, is the wall we're walking
+						if (currentBarrier == null) {
+							
+							// getting here means we're starting a new section of wall
+							currentBarrier = new Barrier();
+							currentBarrier.left = new java.awt.Point(next);
+							currentBarrier.direction = new String(Direction.stringOf[Direction.leftOf[direction]]);
+							
+							// we don't have the complications of doors sharing ids, so this must
+							// be a new wall, create a new id
+							currentBarrier.id = roomCount + doorCount + wallCount;
 							wallCount += 1;
-							System.out.println();
-							System.out.print("  Wall " + wallNumber + ": (" + Direction.stringOf[Direction.leftOf[direction]] + "): ");
+							
+							//System.out.println();
+							//System.out.print("  Wall " + currentBarrier.id + ": (" + currentBarrier.direction + "): ");
 						}
 						
-						if (door) {
-							door = false;
-						}
-						
-						wallObject.addProperty(Direction.stringOf[Direction.leftOf[direction]], Integer.toString(wallNumber));
-	
-						System.out.print("(" + next.x + "," + next.y + ") ");
-						Direction.translate(next, direction);
-						
-						java.awt.Point rightOfNext = new java.awt.Point(next);
-						Direction.translate(rightOfNext, Direction.rightOf[direction]);
-		
-						if (walls.contains(next) && !walls.contains(rightOfNext)) {
-							continue;
-						}
+						// walls don't share ids, they are noted by the direction of the wall
+						wallObject.addProperty(currentBarrier.direction, Integer.toString(currentBarrier.id));
+
+					} else {
+						// the world is ending, check the asserts
+						assert false;
 					}
 					
+					//System.out.print("(" + next.x + "," + next.y + ") ");
+
+					// since current barrier is the door we're walking, update it's endpoint before we translate it
+					currentBarrier.right = new java.awt.Point(next);
+
+					// walk to the next section of wall
+					Direction.translate(next, direction);
+					
+					// we get the right of next here because if there is a next and
+					// a wall to the right of it, that means next is a door but there is
+					// a wall in the way so that door doesn't technically border our room,
+					// so, the door ends and we continue on the next segment of wall.
+					rightOfNext = new java.awt.Point(next);
+					Direction.translate(rightOfNext, Direction.rightOf[direction]);
+
+					// if there isn't a next, we're done anyway.
+					// continue if we're moving on with this section of wall, or fall
+					// through to terminate the wall.
+					if (walls.contains(next) && !walls.contains(rightOfNext)) {
+						continue;
+					}
+
 					// door or wall stops here
-					wall = false;
-					door = false;
-					System.out.print("terminated");
+					//System.out.print("(turn)");
+
+					// and the barrier to the list
+					barrierList.add(currentBarrier);
+					currentBarrier = null;
 					
 					// when going clockwise, when we turn right, we go to the cell adjacent to "next",
 					// when we turn left, we go to the cell adjacent to "previous"
@@ -1539,25 +1618,23 @@ public class GridMap {
 					// |   |   | R |  R = possible next, indicates right turn
 					// +---+---+---+    = irrelevant cell
 					
-					// this seems confusing, more examples:
+					//  going west    going north   going south
+					// +---+---+---+ +---+---+---+ +---+---+---+
+					// | R |   |   | |   | N | R | |   | W |   |
+					// +---+---+---+ +---+---+---+ +---+---+---+
+					// | N | P | W | | L | P |   | |   | P | L |
+					// +---+---+---+ +---+---+---+ +---+---+---+
+					// |   | L |   | |   | W |   | | R | N |   |
+					// +---+---+---+ +---+---+---+ +---+---+---+
 					
-					//  going west    going north
-					// +---+---+---+ +---+---+---+
-					// | R |   |   | |   | N | R |
-					// +---+---+---+ +---+---+---+
-					// | N | P | W | | L | P |   |
-					// +---+---+---+ +---+---+---+
-					// |   | L |   | |   | W |   |
-					// +---+---+---+ +---+---+---+
-					
-					// try turning right
+					// try turning right first
 					Direction.translate(next, Direction.rightOf[direction]);
 					if (walls.contains(next)) {
 						// right worked
 						direction = Direction.rightOf[direction];
 
 					} else {
-						// try turning left
+						// try turning left next
 						next = new java.awt.Point(previous);
 						Direction.translate(next, Direction.leftOf[direction]);
 						
@@ -1570,7 +1647,7 @@ public class GridMap {
 							// the remove will silently fail and that's ok
 							
 						} else {
-							// single length wall (left turn)
+							// single length wall (perform "left" turn)
 							direction = Direction.leftOf[direction];
 
 							// need to stay on previous because it is included on the new wall
@@ -1584,7 +1661,16 @@ public class GridMap {
 						break;
 					}
 				}
-				System.out.println();
+				//System.out.println();
+				
+				// Store room information
+				System.out.println("Room " + roomNumber + ":");
+				Iterator<Barrier> iter = barrierList.iterator();
+				while (iter.hasNext()) {
+					Barrier barrier = iter.next();
+					System.out.println(barrier);
+				}
+				this.roomBarrierMap.put(roomNumber, barrierList);
 			}
 		}
 		
