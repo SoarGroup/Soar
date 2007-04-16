@@ -1,8 +1,29 @@
-# Stolen from http://www.scons.org/wiki/JavaNativeInterface
-
 import os
 import sys
 import string
+
+def CheckVisibilityFlag(context):
+	"""Checks to see if the compiler will build using the visibility flag"""
+	context.Message('Checking support for -fvisibility=hidden... ')
+
+	# save old flags
+	lastCPPFLAGS = context.env['CPPFLAGS']
+	
+	# add new flag
+	context.env.Append(CPPFLAGS = ' -fvisibility=hidden')
+
+	# try compiling simple file with new flag
+	result = context.TryCompile("char foo;", '.c')
+
+	# restore old flags
+	context.env.Replace(CPPFLAGS = lastCPPFLAGS)
+
+	# print status message and return
+	context.Result(result)
+	return result
+
+# ConfigureJNI and tolen from http://www.scons.org/wiki/JavaNativeInterface
+# Modified from its original format
 
 def walkDirs(path):
     """helper function to get a list of all subdirectories"""
