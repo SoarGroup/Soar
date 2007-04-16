@@ -47,6 +47,6 @@ install-data-am:
 	$(INSTALL) SoarLibrary/bin/libswt-pi-gtk-3236.so $(libdir)
 	$(INSTALL) SoarLibrary/bin/libswt-webkit-carbon-3236.jnilib $(libdir)
 if SWIGPYTHON
-	rm $(bindir)/Python_sml_ClientInterface.pyd
-	ln -s $(libdir)/libPython_sml_ClientInterface.so $(bindir)/Python_sml_ClientInterface.pyd
+	rm $(bindir)/_Python_sml_ClientInterface.so
+	ln -s $(libdir)/libPython_sml_ClientInterface.so $(bindir)/_Python_sml_ClientInterface.so
 endif
