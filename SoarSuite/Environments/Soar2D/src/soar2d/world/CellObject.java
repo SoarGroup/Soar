@@ -293,9 +293,12 @@ public class CellObject {
 			int myID = Integer.parseInt(properties.get(Names.kPropertyBoxID));
 			
 			// if this box is the info box or we're not using an open code, use the correct code
-			int usedOpenCode = world.getMap().openCode;
-			if ((myID != 0) || properties.containsKey(Names.kPropertyOpenCode)) {
-				usedOpenCode = Integer.parseInt(properties.get(Names.kPropertyOpenCode));
+			int suppliedOpenCode = world.getMap().openCode;
+			
+			if ((myID != 0) && this.useOpenCode) {
+				if (properties.containsKey(Names.kPropertyOpenCode)) {
+					suppliedOpenCode = Integer.parseInt(properties.get(Names.kPropertyOpenCode));
+				}
 			}
 
 			// Set the reset if I'm the positive box
@@ -303,7 +306,7 @@ public class CellObject {
 			
 			
 			// if I am the positive box (resetApply == true, above) and we used the correct open code
-			if (this.resetApply && (usedOpenCode == world.getMap().openCode)) {
+			if (this.resetApply && (suppliedOpenCode == world.getMap().openCode)) {
 				// reward positively
 				player.adjustPoints(rewardApply, "positive reward");
 			} else {

@@ -42,7 +42,7 @@ public class World {
 		return loadInternal(false);
 	}
 
-	private boolean loadInternal(boolean frag) {
+	private boolean loadInternal(boolean resetDuringRun) {
 		GridMap newMap = new GridMap(Soar2D.config);
 		
 		try {
@@ -88,7 +88,7 @@ public class World {
 		}
 		
 		reset();
-		resetPlayers(frag);
+		resetPlayers(resetDuringRun);
 		
 		logger.info("Map loaded, world reset.");
 		// TODO: remove or make permenant
@@ -121,7 +121,7 @@ public class World {
 		return true;
 	}
 	
-	void resetPlayers(boolean frag) {
+	void resetPlayers(boolean resetDuringRun) {
 		if (players.size() == 0) {
 			return;
 		}
@@ -130,13 +130,13 @@ public class World {
 			// for each player
 			Player player = iter.next();
 			
-			resetPlayer(player, frag);
+			resetPlayer(player, resetDuringRun);
 		}
 		
 		updatePlayers(false);
 	}
 	
-	private boolean resetPlayer(Player player, boolean frag) {
+	private boolean resetPlayer(Player player, boolean resetDuringRun) {
 		// find a suitable starting location
 		Point startingLocation = putInStartingLocation(player);
 		if (startingLocation == null) {
@@ -148,11 +148,18 @@ public class World {
 			// remove food from it
 			map.removeAllWithProperty(startingLocation, Names.kPropertyEdible);
 			
+			// This is here because the TOSCA stuff wants to keep around the reward
+			// in the beginning of the next phase
+			
+			if (resetDuringRun) {
+				player.mapReset();
+			}
+			
 			// falls through
 			
 		case kTankSoar:
 		case kBook:
-			if (frag) {
+			if (resetDuringRun) {
 				player.fragged();
 			} else {
 				// reset (init-soar)
@@ -540,15 +547,6 @@ public class World {
 
 	public void update() {
 		
-		// TODO: Rename this so it makes sense
-		if (restartAfterUpdate) {
-			loadInternal(true);
-			if (Soar2D.wm.using()) {
-				Soar2D.wm.reset();
-			}
-			return;
-		}
-
 		Soar2D.config.setHide(false);
 		
 		// Collect human input
@@ -646,6 +644,13 @@ public class World {
 		case kBook:
 			bookUpdate();
 			break;
+		}
+
+		if (restartAfterUpdate) {
+			loadInternal(true);
+			if (Soar2D.wm.using()) {
+				Soar2D.wm.reset();
+			}
 		}
 	}
 	

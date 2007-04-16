@@ -68,6 +68,7 @@ public class ToscaEater {
 		
 		// Need to set the new value in the future (so choosing time+1)
 		m_InputVar.update(time+1, this, world, location) ;
+		
 		m_Eater.resetPointsChanged();
 	}
 	
@@ -119,6 +120,12 @@ public class ToscaEater {
 		logger.info("Tosca agent move direction " + move.moveDirection);
 		return move;
 	}
+	
+	// see comments in input var, search for recentMapReset
+	public void mapReset() {
+		this.m_InputVar.mapReset();
+	}
+	
 	/* (non-Javadoc)
 	 * @see soar2d.player.Player#shutdown()
 	 */

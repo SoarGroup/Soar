@@ -358,4 +358,8 @@ public class Player {
 	public boolean getResurrect() {
 		return false;
 	}
+	
+	public void mapReset() {
+		// this is for tosca's reward system
+	}
 }
