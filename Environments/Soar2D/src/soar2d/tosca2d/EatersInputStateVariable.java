@@ -110,6 +110,13 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		return mapCell ;
 	}
 	
+	// See comments where recentMapReset is tested.
+	double cachedReward = 0;
+	boolean recentMapReset = false;
+	public void mapReset() {
+		recentMapReset = true;
+	}
+	
 	public void update(int time, soar2d.player.ToscaEater eater, World world, java.awt.Point location) {
 		// The value is stored as a group containing some named values and
 		// then a map group which contains all of the cells around this eater
@@ -119,9 +126,20 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		main.AddNamedValue("facing", new tosca.Integer(eater.getEater().getFacingInt())) ;
 		
 		double reward = -1.0;
-		if (eater.getEater().pointsChanged()) {
+
+		// The reward must appear on the same cycle as the map reset.
+		// Unfortunately, the reward (points delta) gets reset right after
+		// it is read. Therefore, we must cache the reward value and detect
+		// when to repost the value on the input link.
+		// recentMapReset is set to true when this case happens (the map is reset
+		// and we should save the reward value)
+		if (recentMapReset) {
+			reward = cachedReward;
+			recentMapReset = false;
+		} else if (eater.getEater().pointsChanged()) {
 			reward = eater.getEater().getPointsDelta();
 		}
+		cachedReward = reward;
 		main.AddNamedValue("reward", new tosca.Double(reward));
 		
 		main.AddNamedValue("world-count", new tosca.Integer(world.getWorldCount()));

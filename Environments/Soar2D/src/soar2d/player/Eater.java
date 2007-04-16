@@ -33,6 +33,13 @@ public class Eater extends Player {
 			return ;
 		}
 	}
+
+	public void mapReset() {
+		// this is for tosca's reward system
+		if (ToscaEater.kToscaEnabled) {
+			m_ToscaEater.mapReset();
+		}		
+	}
 	
 	/* (non-Javadoc)
 	 * @see soar2d.player.Player#getMove()
