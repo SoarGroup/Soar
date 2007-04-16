@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import os
 import sys
-from ConfigureJNI import ConfigureJNI
+import SoarSCons
 
 # Custom test for GCC visibility flag
 def CheckAndAddVisibilityFlag(context):
@@ -42,7 +42,7 @@ else:
 	Exit(0)
 print
 
-if not ConfigureJNI(conf.env):
+if not SoarSCons.ConfigureJNI(conf.env):
 	print "Java Native Interface is required... Exiting"
 	Exit(0)
 
