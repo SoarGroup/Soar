@@ -25,21 +25,6 @@ import tosca.Vector;
 
 public class EatersInputStateVariable extends JavaStateVariable {
 	protected Value m_Value = new Value() ;
-            
-        // This is a total hack; at some point I'll have Voigt look at Eaters again.
-        // It solves the following problem:
-        //    step n      agent opens correct box, eaters puts positive reward on input link but agent doesn't move
-        //         n + 1  agent issues a command, observes -1 reward
-        //         n + 2  eaters resets
-        // this isn't the learning problem that we want to solve!
-        // Instead, when the agent gets a positive reward and a reset is going to take place, the input variable
-        // "hiccups" and doesn't update on that cycle of eaters. On the next cycle, when it resets, the agent sees
-        // the positive reward and our learning problem is fine.
-        //
-        // This is terrible though, and should be fixed at the earliest opportunity (in eaters). We'll move the reset
-        // and save the positive reward for after the reset.  So, agent opens box, eaters resets but buffers positive
-        // reward, then agent gets as input a positive reward and reset environment.
-	protected double m_PreservedReward = 0.0;
 	
 	private static final int kInfoBoxID = 0;
 
@@ -133,20 +118,11 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		main.AddNamedValue("y", new tosca.Integer(location.y)) ;
 		main.AddNamedValue("facing", new tosca.Integer(eater.getEater().getFacingInt())) ;
 		
-                // HACK BUG BUG : see comment at m_PreservedReward decl.
 		double reward = -1.0;
-		if (m_PreservedReward == 10.0)
-		{
-			reward = 10.0;
-			m_PreservedReward = 0.0;
-		}
-		else if (eater.getEater().pointsChanged()) {
+		if (eater.getEater().pointsChanged()) {
 			reward = eater.getEater().getPointsDelta();
-			if (reward == 10.0)
-				m_PreservedReward = 10.0;
 		}
 		main.AddNamedValue("reward", new tosca.Double(reward));
-
 		
 		main.AddNamedValue("world-count", new tosca.Integer(world.getWorldCount()));
 		
@@ -425,8 +401,7 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		//val.SetFromDouble(time) ;
 		
 		Value value = new Value(main) ;
-		if (m_PreservedReward != 10.0)
-			SetValue(value, time) ;
+		SetValue(value, time) ;
 	}
 	
 	protected Value GetCurrentValue() { return m_Value ; }
