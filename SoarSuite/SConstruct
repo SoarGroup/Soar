@@ -3,52 +3,37 @@ import os
 import sys
 import SoarSCons
 
-# Custom test for GCC visibility flag
-def CheckAndAddVisibilityFlag(context):
-	context.Message('Checking support for -fvisibility=hidden... ')
+if os.name != "posix":
+	print "Unsupported platform:", os.name
+	Exit(1)
 
-	lastCPPFLAGS = context.env['CPPFLAGS']
-	context.env.Append(CPPFLAGS = " -fvisibility=hidden")
+opts = Options()
+opts.BoolOption('java', 'Set to 0 to not build the Soar Java interface', 1)
+opts.BoolOption('python', 'Set to 0 to not build the Soar Python interface', 1)
+opts.BoolOption('static', 'Set to 1 to statically link things when possible', 0)
+
+env = Environment(options = opts,)
 	
-	# 0 is failure (!)
-	result = context.TryCompile("char foo;", '.c')
-	if result == 0:
-		context.env.Replace(CPPFLAGS = lastCPPFLAGS)
+Help(opts.GenerateHelpText(env))
+	
+conf = Configure(
+	env, 
+	custom_tests = {'CheckVisibilityFlag' : SoarSCons.CheckVisibilityFlag})
 
-	context.Result(result)
-	return result
+conf.env.Append(CXXFLAGS = ['-Wall -g'])
+conf.env.Append(CPPPATH = ['#Core/shared']
+conf.env.Append(CPPFLAGS = ['-DSCONS'])
+conf.env.Append(ENV = {'PATH' : os.environ['PATH']})
 
-env = Environment(CXXFLAGS = "-Wall -g", CPPPATH = ["#Core/shared",])
-conf = Configure(env, custom_tests = {'CheckAndAddVisibilityFlag' : CheckAndAddVisibilityFlag})
-
-def addSymbol(symbol):
-	print "Adding symbol", symbol
-	conf.env.Append(CPPFLAGS = ' -D%s' % symbol)
-
-# What platform are we on?
-print "Detected", os.name, "platform."
-if os.name == 'posix':
-	addSymbol("SCONS_POSIX")
-	# we need the path to find java
-	conf.env.Append(ENV = {'PATH' : os.environ['PATH']})
-elif os.name == 'nt':
-	# TODO: finish windows platform
-	addSymbol("SCONS_NT")
-	print "Platform unsupported."
-	Exit(0)
-else:
-	# TODO: do osx platform if it isn't 'posix'
-	print "Platform unsupported."
-	Exit(0)
-print
-
-if not SoarSCons.ConfigureJNI(conf.env):
-	print "Java Native Interface is required... Exiting"
-	Exit(0)
+if opts['java']:
+	if not SoarSCons.ConfigureJNI(conf.env):
+		print "Java Native Interface is required... Exiting"
+		print "It is possible to build without Java, see help."
+		Exit(1)
 
 # check if the compiler supports -fvisibility=hidden (GCC >= 4)
-if conf.env['CC'] == 'gcc':
-	conf.CheckAndAddVisibilityFlag()
+if conf.CheckVisibilityFlag():
+	conf.env.Append(CPPFLAGS = ['-fvisibility=hidden'])
 		
 # Require functions
 def require(header):
@@ -103,40 +88,34 @@ if os.name == 'posix':
 	requireLib('m')
 	requireLib('pthread')
 
-elif os.name == 'nt':
-	# TODO: Many more things go here
-	require('direct.h')
-	require('windows.h')
-print
-
 env = conf.Finish()
 Export('env')
 
 # Core
 SConscript('#Core/SoarKernel/SConscript')
-SConscript('#Core/gSKI/SConscript')
-SConscript('#Core/ConnectionSML/SConscript')
-SConscript('#Core/ElementXML/SConscript')
-SConscript('#Core/CLI/SConscript')
-SConscript('#Core/ClientSML/SConscript')
-SConscript('#Core/KernelSML/SConscript')
-SConscript('#Core/ClientSMLSWIG/Java/SConscript')
-SConscript('#Core/ClientSMLSWIG/Python/SConscript')
+#SConscript('#Core/gSKI/SConscript')
+#SConscript('#Core/ConnectionSML/SConscript')
+#SConscript('#Core/ElementXML/SConscript')
+#SConscript('#Core/CLI/SConscript')
+#SConscript('#Core/ClientSML/SConscript')
+#SConscript('#Core/KernelSML/SConscript')
+#SConscript('#Core/ClientSMLSWIG/Java/SConscript')
+#SConscript('#Core/ClientSMLSWIG/Python/SConscript')
 
 # Test Apps
-SConscript('#Tools/FilterC/SConscript')
+#SConscript('#Tools/FilterC/SConscript')
 # This needs some portability work before it can be added (malloc.h on osx)
 ##SConscript('#Tools/LoggerWinC/SConscript')
-SConscript('#Tools/QuickLink/SConscript')
-SConscript('#Tools/SoarJavaDebugger/SConscript')
-SConscript('#Tools/SoarTextIO/SConscript')
-SConscript('#Tools/TOHSML/SConscript')
-SConscript('#Tools/TestCLI/SConscript')
-SConscript('#Tools/TestClientSML/SConscript')
-SConscript('#Tools/TestConnectionSML/SConscript')
-SConscript('#Tools/TestJavaSML/SConscript')
-SConscript('#Tools/TestMultiAgent/SConscript')
-SConscript('#Tools/TestSMLEvents/SConscript')
-SConscript('#Tools/TestSMLPerformance/SConscript')
-SConscript('#Tools/TestSoarPerformance/SConscript')
+#SConscript('#Tools/QuickLink/SConscript')
+#SConscript('#Tools/SoarJavaDebugger/SConscript')
+#SConscript('#Tools/SoarTextIO/SConscript')
+#SConscript('#Tools/TOHSML/SConscript')
+#SConscript('#Tools/TestCLI/SConscript')
+#SConscript('#Tools/TestClientSML/SConscript')
+#SConscript('#Tools/TestConnectionSML/SConscript')
+#SConscript('#Tools/TestJavaSML/SConscript')
+#SConscript('#Tools/TestMultiAgent/SConscript')
+#SConscript('#Tools/TestSMLEvents/SConscript')
+#SConscript('#Tools/TestSMLPerformance/SConscript')
+#SConscript('#Tools/TestSoarPerformance/SConscript')
 
