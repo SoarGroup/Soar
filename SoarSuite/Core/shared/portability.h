@@ -178,6 +178,7 @@ typedef void assert;
 // Visual Studio 2005 requires these:
 #define getcwd _getcwd
 #define chdir _chdir
+#define strcasecmp stricmp
 
 #endif // not HAVE_CONFIG_H
 /*
