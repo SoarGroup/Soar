@@ -1364,7 +1364,7 @@ bool KernelSML::HandleCommandLine(gSKI::Agent* pAgent, char const* pCommandName,
 			pFilteredLine    = pFilteredXML->GetAttribute(sml_Names::kFilterCommand) ;
 			char const* pFilteredOutput  = pFilteredXML->GetAttribute(sml_Names::kFilterOutput) ;
 			char const* pErr = pFilteredXML->GetAttribute(sml_Names::kFilterError) ;
-			filteredError    = (pErr && stricmp(pErr, "true") == 0) ;
+			filteredError    = (pErr && strcasecmp(pErr, "true") == 0) ;
 
 			// See if the filter consumed the command.  If so, we just need to return the output.
 			if (!pFilteredLine || strlen(pFilteredLine) == 0)
