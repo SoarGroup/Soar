@@ -1,0 +1,37 @@
+#!/usr/bin/python
+import glob
+
+Import('env')
+env = env.Copy()
+env.Prepend(CPPPATH = [
+			'#Core/ClientSML/include',
+			'#Core/ElementXML/include',
+			'#Core/ConnectionSML/include'
+			])
+
+if env['CPPFLAGS'].find('fvisibility') >= 0:
+	env.Append(CPPFLAGS = ' -Wno-unused -fno-strict-aliasing -fvisibility=default')
+else:
+	env.Append(CPPFLAGS = ' -Wno-unused -fno-strict-aliasing')
+
+libadd = [
+	   'ClientSML',
+	   'ConnectionSML',
+	   'ElementXML',
+	   ]
+
+libpath = [ 
+	    '#Core/ClientSML',
+	    '#Core/ConnectionSML',
+	    '#Core/ElementXML', 
+	    ]
+
+swigflags = '-c++ -java -Wall -package sml -ICore/ClientSML/include -ICore/ElementXML/include -ICore/ConnectionSML/include -outdir Core/ClientSMLSWIG/Java/build'
+Java_sml_ClientInterface = env.SharedLibrary('Java_sml_ClientInterface', glob.glob('*.i'), LIBS = libadd, LIBPATH = libpath, SWIGFLAGS = swigflags, SWIGCXXFILESUFFIX = "_wrap.cpp")
+env.Install('#SoarLibrary/lib', Java_sml_ClientInterface)
+
+env.Java(target = 'classes', source = 'build')
+env.Append(JARCHDIR = 'Core/ClientSMLSWIG/Java/classes')
+
+sml_jar = env.Jar(target = 'sml.jar', source = 'classes')
+env.Install('#SoarLibrary/bin', sml_jar)

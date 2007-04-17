@@ -87,7 +87,10 @@ SConscript('#Core/ElementXML/SConscript')
 SConscript('#Core/CLI/SConscript')
 SConscript('#Core/ClientSML/SConscript')
 SConscript('#Core/KernelSML/SConscript')
-#SConscript('#Core/ClientSMLSWIG/Java/SConscript')
+
+if env['java']:
+	SConscript('#Core/ClientSMLSWIG/Java/SConscript')
+
 #SConscript('#Core/ClientSMLSWIG/Python/SConscript')
 
 # Test Apps
