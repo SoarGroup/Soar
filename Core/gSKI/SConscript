@@ -1,0 +1,15 @@
+#!/usr/bin/python
+import glob
+import os
+
+Import('env')
+env = env.Copy()
+env.Prepend(CPPPATH = ['src', 'include', '../SoarKernel/include',])
+env.Append(CPPFLAGS = ' -DNO_MEGA_UNIT_TESTS -DVALIDATE')
+
+if os.name == 'posix':
+	env.Append(CPPFLAGS = ' -DUNIX')
+
+
+gSKI = env.Library('gSKI', glob.glob('src/*.cpp'))
+env.Install('#SoarLibrary/lib', gSKI)
