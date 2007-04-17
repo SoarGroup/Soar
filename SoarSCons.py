@@ -1,6 +1,10 @@
+#
+# This file is a bunch of utility functions for the SConstruct file.
+
 import os
 import sys
 import string
+import re
 
 def CheckVisibilityFlag(context):
 	"""Checks to see if the compiler will build using the visibility flag"""
@@ -22,6 +26,25 @@ def CheckVisibilityFlag(context):
 	context.Result(result)
 	return result
 
+def CheckSWIG(context):
+	"""Checks to make sure we're using a compatible version of SWIG"""
+	for line in os.popen("swig -version").readlines():
+		m = re.search(r"([0-9])\.([0-9])\.([0-9]?[0-9])", line)
+		if m:
+			major = int(m.group(1))
+			minor = int(m.group(2))
+			micro = int(m.group(3))
+
+			ret = 1
+			status = 'ok'
+			if major < 1 or minor < 3 or micro < 31:
+				ret = 0
+				status = 'incompatible'
+			print "Found SWIG version %d.%d.%d... %s" % (major, minor, micro, status)
+			return ret
+	print "Didn't find SWIG, make sure SWIG is in the path and rebuild."
+	return 0
+	
 # ConfigureJNI and tolen from http://www.scons.org/wiki/JavaNativeInterface
 # Modified from its original format
 
