@@ -91,8 +91,6 @@ public class World {
 		resetPlayers(resetDuringRun);
 		
 		logger.info("Map loaded, world reset.");
-		// TODO: remove or make permenant
-		map.debugLogRewardStuff();
 		return true;
 	}
 	

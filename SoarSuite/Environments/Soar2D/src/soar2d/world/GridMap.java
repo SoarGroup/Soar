@@ -246,7 +246,7 @@ public class GridMap {
 		}
 		
 		if (template.rewardInfoApply) {
-			if (template.useOpenCode) {
+			if (this.openCode != 0) {
 				apply.addContent(new Element(kTagRewardInfo).addContent(new Element(kTagUseOpenCode)));
 			} else {
 				apply.addContent(new Element(kTagRewardInfo));
@@ -285,7 +285,7 @@ public class GridMap {
 			} else if (child.getName().equalsIgnoreCase(kTagRewardInfo)) {
 				template.setRewardInfoApply(true);
 				if (child.getChild(kTagUseOpenCode) != null) {
-					template.setUseOpenCode(true);
+					openCode = Simulation.random.nextInt(kOpenCodeRange) + 1;
 				}
 
 			} else if (child.getName().equalsIgnoreCase(kTagReward)) {
@@ -439,6 +439,7 @@ public class GridMap {
 	
 	CellObject rewardInfoObject = null;
 	static final int kOpenCodeRange = 2; // 1..kOpenCodeRange (alternatively expressed as: 0..(kOpenCodeRange - 1) + 1
+	// If this is not zero, we are requiring an open code.
 	int openCode = 0;
 	int positiveRewardID = 0;
 	
@@ -494,20 +495,16 @@ public class GridMap {
 			generateRandomFood();
 		}
 		
-		// pick reward box
+		// pick positive box
 		if (rewardInfoObject != null) {
 			assert positiveRewardID == 0;
 			positiveRewardID = Simulation.random.nextInt(cellObjectManager.numberOfRewardObjects);
 			positiveRewardID += 1;
 			rewardInfoObject.addPropertyApply(Names.kPropertyPositiveBoxID, Integer.toString(positiveRewardID));
-		}
-	}
-	
-	public void debugLogRewardStuff() {
-		if (positiveRewardID > 0) {
-			Soar2D.logger.info("Reward ID: " + positiveRewardID);
-			if (openCode > 0) {
-				Soar2D.logger.info("Open Code: " + openCode);
+			
+			// if using an open code, assign that
+			if (this.openCode != 0) {
+				rewardInfoObject.addPropertyApply(Names.kPropertyOpenCode, Integer.toString(openCode));
 			}
 		}
 	}
@@ -593,10 +590,6 @@ public class GridMap {
 		if (cellObject.rewardInfoApply) {
 			assert rewardInfoObject == null;
 			rewardInfoObject = cellObject;
-			
-			if (cellObject.useOpenCode) {
-				openCode = Simulation.random.nextInt(kOpenCodeRange) + 1;
-			}
 		}
 		
 		return background;

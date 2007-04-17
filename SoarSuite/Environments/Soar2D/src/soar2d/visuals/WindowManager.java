@@ -180,6 +180,12 @@ public class WindowManager {
 				case SWT.KEYPAD_ADD:
 					humanMove.open = !humanMove.open;
 					break;
+				case SWT.KEYPAD_1:
+					humanMove.openCode = 1;
+					break;
+				case SWT.KEYPAD_3:
+					humanMove.openCode = 2;
+					break;
 				case SWT.KEYPAD_MULTIPLY:
 					humanMove.stopSim = !humanMove.stopSim;
 					break;
