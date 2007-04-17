@@ -50,11 +50,31 @@ public class EatersOutputStateVariable extends JavaStateVariable {
 		Value value = new Value() ;
 		this.GetValue(value, time) ;
 		
-		if (value.CastToInteger().GetInteger() == 5) {
+		if (value.CastToInteger().GetInteger() >= 5) {
 			return true;
 		} else {
 			return false;
 		}
+	}
+	
+	public int GetOpenCode()
+	{
+		int time = GetClock().GetTime() ;
+		
+		Value value = new Value() ;
+		this.GetValue(value, time) ;
+		
+		tosca.Integer direction = value.CastToInteger() ;
+		int action = direction.GetInteger();
+		
+		if (action == 5)
+			return 0;
+		else if (action == 6)
+			return 1;
+		else if (action == 7)
+			return 2;
+		else
+			return -1;
 	}
 	
 	protected Value GetCurrentValue() { return m_Value ; }
