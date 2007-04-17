@@ -2443,11 +2443,11 @@ std::string Kernel::GetSMLVersion()
 #include "Windows.h"	// Needed for load library
 #undef SendMessage		// Windows defines this as a macro.  Yikes!
 
-#elif defined(HAVE_DLFCN_H)
+#else // _WIN32
 #include <dlfcn.h>      // Needed for dlopen and dlsym
 #define GetProcAddress dlsym
 
-#endif // _WIN32
+#endif // not _WIN32
 
 // how will we report errors from this?
 // -- numeric code (bad because codes will be different for each library, or library can fail in ways not covered by pre-defined codes)
