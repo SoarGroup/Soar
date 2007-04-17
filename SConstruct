@@ -91,7 +91,8 @@ SConscript('#Core/KernelSML/SConscript')
 if env['java']:
 	SConscript('#Core/ClientSMLSWIG/Java/SConscript')
 
-#SConscript('#Core/ClientSMLSWIG/Python/SConscript')
+if env['python']:
+	SConscript('#Core/ClientSMLSWIG/Python/SConscript')
 
 # Test Apps
 #SConscript('#Tools/FilterC/SConscript')
