@@ -105,6 +105,7 @@ public class ToscaEater {
 		{
 			if (this.m_OutputVar.IsOpening()) {
 				move.open = true;
+				move.openCode = this.m_OutputVar.GetOpenCode();
 			} else {
 				move.move = true ;
 				move.moveDirection = this.m_OutputVar.GetDirection() ;
