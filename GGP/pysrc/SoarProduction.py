@@ -296,11 +296,12 @@ class SoarProduction:
 			self.first_state_cond = SoarCondition(self.state_id, self.var_gen)
 		self.first_state_cond.add_ground_predicate("name", name)
 		
-	def get_conditions(self, attrib_path):
+	def get_conditions(self, attrib_path, negated = False):
 		l = []
 		for c in self.cond_paths:
 			if self.cond_paths[c] == attrib_path:
-				l.append(c)
+				if (negated and self.neg_conjs.has_key(c)) or (not negated and not self.neg_conjs.has_key(c)):
+					l.append(c)
 		return l
 
 	def get_actions(self, head_var):

@@ -56,7 +56,7 @@ def ParseDistinctions(body, sp, var_map):
 				v2 = var_map.get_var(str(sentence.term(1)))
 				sp.add_var_distinction(v1, v2)
 			else:
-				sp.add_var_distinction(v1, str(sentence.term(1)))
+				sp.add_value_distinction(v1, str(sentence.term(1)))
 
 
 def MakeInitRule(game_name, role, init_conds, fact_rules, min_success_score):

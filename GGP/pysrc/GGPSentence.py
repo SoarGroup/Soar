@@ -404,13 +404,14 @@ class GGPSentence:
 				fcond = self.__terms[1].make_soar_cond(sp, role_cond, 0, var_map, self.__negated)
 			else:
 				fcond = self.__terms[1].make_soar_cond(sp, role_cond, 0, var_map)
-			if self.__negated and fcond != None:
-				sp.make_negative_conjunction([role_cond, fcond])
+				if self.__negated and fcond != None:
+					assert not isinstance(fcond, str), [str(t) for t in self.__terms] + [self.__terms[1].num_terms(), self.__terms[1].type()]
+					sp.make_negative_conjunction([role_cond, fcond])
 		
 		else:
 			assert self.__name not in GGPSentence.DEFINED_RELS
 			if self.__name not in GGPSentence.fact_rels:
-				rel_conds = sp.get_conditions("elaborations")
+				rel_conds = sp.get_conditions("elaborations", self.__negated)
 				if len(rel_conds) == 0:
 					rel_cond = sp.add_condition(sp.state_cond().add_id_predicate("elaborations"))
 				else:
