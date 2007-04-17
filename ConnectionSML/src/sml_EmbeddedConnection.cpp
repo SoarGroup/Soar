@@ -30,11 +30,11 @@
 #include "Windows.h"	// Needed for load library
 #undef SendMessage		// Windows defines this as a macro.  Yikes!
 
-#elif defined(HAVE_DLFCN_H)
+#else // _WIN32
 #include <dlfcn.h>      // Needed for dlopen and dlsym
 #define GetProcAddress dlsym
 
-#endif // _WIN32
+#endif // not _WIN32
 
 using namespace sml ;
 
@@ -191,10 +191,10 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 #  endif
 #endif
 
-#ifdef HAVE_CONFIG_H //to test for Linux/OS X
+#ifdef SCONS // scons has detected a posix environment
 #  ifdef STATIC_LINKED
 #    define LINUX_STATIC
-#  elif defined(HAVE_DLFCN_H) //if we don't have this, then we're implicitly doing a static build
+#  else
 #    define LINUX_SHARED
 #  endif
 #endif
@@ -213,7 +213,7 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	if (!hLibrary) {
 		printf("dlopen failed for %s: %s\n", newLibraryName.c_str(), dlerror());
 		// Try again with mac extention
-		newLibraryName = "lib" + libraryName + ".dylib";
+		newLibraryName = "lib" + libraryName + ".jnilib";
 		hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
 		if (!hLibrary)
 		{
@@ -279,7 +279,7 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	m_pProcessMessageFunction = &sml_ProcessMessage;
 	m_pCreateEmbeddedFunction = &sml_CreateEmbeddedConnection;
 
-#endif // defined(LINUX_SHARED) || defined(WINDOWS_SHARED)
+#endif // not (defined(LINUX_SHARED) || defined(WINDOWS_SHARED))
 
 	// We only use the creation function once to create a connection object (which we'll pass back
 	// with each call).
