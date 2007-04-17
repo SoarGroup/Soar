@@ -217,9 +217,7 @@ void reset_timer (struct timeval *tv_to_reset) {
 
 #ifndef NO_TIMING_STUFF
 
-// voigtjr 11/2005
-// This HAVE_CONFIG_H not defined implies that we are in MSVC on Windows
-#ifndef HAVE_CONFIG_H
+#ifdef WIN32
 
 /* A fake implementation of rusage for WIN32. Taken from cygwin. */
 #define RUSAGE_SELF 0
@@ -266,7 +264,7 @@ int getrusage(int who, struct rusage* r)
    totimeval (&r->ru_utime, &user_time, 0, 0);
    return 0;
 }
-#endif // not HAVE_CONFIG_H
+#endif // WIN32
 
 void get_cputime_from_rusage (struct rusage *r, struct timeval *dest_tv) {
   dest_tv->tv_sec = r->ru_utime.tv_sec + r->ru_stime.tv_sec;
