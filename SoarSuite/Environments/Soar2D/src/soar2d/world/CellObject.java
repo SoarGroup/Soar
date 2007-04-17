@@ -282,14 +282,9 @@ public class CellObject {
 		if (rewardApply > 0) {
 			assert properties.containsKey(Names.kPropertyBoxID);
 			int myID = Integer.parseInt(properties.get(Names.kPropertyBoxID));
-			
-			
+
 			// am I the positive box
 			if (myID == world.getMap().positiveRewardID) {
-				// set the reset no matter what since the positive box was
-				// at least attempted open
-				this.resetApply = true;
-				
 				// if the open code is not zero, get an open code
 				int suppliedOpenCode = 0;
 				if (world.getMap().openCode != 0) {
@@ -308,6 +303,9 @@ public class CellObject {
 					player.adjustPoints(rewardApply * -1, "negative reward (wrong open code)");
 				}
 			} else {
+				// I'm  not the positive box, set resetApply false
+				resetApply = false;
+				
 				// reward negatively
 				player.adjustPoints(rewardApply * -1, "negative reward (wrong box)");
 			}
