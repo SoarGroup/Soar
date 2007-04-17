@@ -1,6 +1,42 @@
 #ifndef PORTABILITY_H
 #define PORTABILITY_H
 
+#ifdef SCONS
+/* New SCons section */
+
+/* unconditional includes */
+#include <stdio.h>
+#include <ctype.h>
+#include <math.h>
+#include <signal.h>
+
+/* posix includes */
+#include <errno.h>
+#include <inttypes.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+#include <sys/resource.h>
+#include <sys/stat.h>
+#include <sys/syscall.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <utime.h>
+
+/* unconditional includes */
+#include <assert.h>
+#include <time.h>
+
+/* this needs to be defined */
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 1024   /* AGR 536  - from sys/param.h */
+#endif // MAXPATHLEN
+
+#else // SCONS
+
 /* portability.h
  * Author: Jonathan Voigt (voigtjr@gmail.com)
  * Date: November 2005
@@ -155,5 +191,8 @@ typedef void assert;
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024   /* AGR 536  - from sys/param.h */
 #endif
+
+#endif // not SCONS
+
 
 #endif // PORTABILITY_H
