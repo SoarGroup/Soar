@@ -498,10 +498,27 @@ public class GridMap {
 		// pick positive box
 		if (rewardInfoObject != null) {
 			assert positiveRewardID == 0;
-			positiveRewardID = Simulation.random.nextInt(cellObjectManager.numberOfRewardObjects);
+			positiveRewardID = Simulation.random.nextInt(cellObjectManager.rewardObjects.size());
 			positiveRewardID += 1;
 			rewardInfoObject.addPropertyApply(Names.kPropertyPositiveBoxID, Integer.toString(positiveRewardID));
 			
+			// assigning colors like this helps us see the task happen
+			// colors[0] = info box (already assigned)
+			// colors[1] = positive reward box
+			// colors[2..n] = negative reward boxes
+			Iterator<CellObject> iter = cellObjectManager.rewardObjects.iterator();
+			int negativeColor = 2;
+			while (iter.hasNext()) {
+				CellObject aBox = iter.next();
+				if (aBox.getIntProperty(Names.kPropertyBoxID) == positiveRewardID) {
+					aBox.addProperty(Names.kPropertyColor, Soar2D.simulation.kColors[1]);
+				} else {
+					aBox.addProperty(Names.kPropertyColor, Soar2D.simulation.kColors[negativeColor]);
+					negativeColor += 1;
+					assert negativeColor < Soar2D.simulation.kColors.length;
+				}
+			}
+
 			// if using an open code, assign that
 			if (this.openCode != 0) {
 				rewardInfoObject.addPropertyApply(Names.kPropertyOpenCode, Integer.toString(openCode));

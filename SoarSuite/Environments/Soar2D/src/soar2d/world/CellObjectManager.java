@@ -94,7 +94,7 @@ public class CellObjectManager {
 		return true;
 	}
 	
-	int numberOfRewardObjects = 0;
+	ArrayList<CellObject> rewardObjects = new ArrayList<CellObject>();
 	/**
 	 * @param name object name to create
 	 * @return the new object
@@ -105,12 +105,12 @@ public class CellObjectManager {
 		if (templates.containsKey(name)) {
 			CellObject newObject = new CellObject(templates.get(name));
 			if (newObject.rewardApply > 0) {
-				// keep track of how many exist
-				numberOfRewardObjects += 1;
+				// assign identification number
+				newObject.addProperty(Names.kPropertyBoxID, Integer.toString(rewardObjects.size() + 1));
+
+				// keep track of reward objects
+				rewardObjects.add(newObject);
 				
-				// assign identification properties
-				newObject.addProperty(Names.kPropertyColor, Soar2D.simulation.kColors[numberOfRewardObjects]);
-				newObject.addProperty(Names.kPropertyBoxID, Integer.toString(numberOfRewardObjects));
 			} else if (newObject.rewardInfoApply) {
 				// assign identification properties
 				newObject.addProperty(Names.kPropertyColor, Soar2D.simulation.kColors[0]);
