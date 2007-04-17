@@ -96,13 +96,12 @@ if env['python']:
 
 # Test Apps
 #SConscript('#Tools/FilterC/SConscript')
-# This needs some portability work before it can be added (malloc.h on osx)
-##SConscript('#Tools/LoggerWinC/SConscript')
+#SConscript('#Tools/LoggerWinC/SConscript')
 #SConscript('#Tools/QuickLink/SConscript')
 #SConscript('#Tools/SoarJavaDebugger/SConscript')
 #SConscript('#Tools/SoarTextIO/SConscript')
 #SConscript('#Tools/TOHSML/SConscript')
-#SConscript('#Tools/TestCLI/SConscript')
+SConscript('#Tools/TestCLI/SConscript')
 #SConscript('#Tools/TestClientSML/SConscript')
 #SConscript('#Tools/TestConnectionSML/SConscript')
 #SConscript('#Tools/TestJavaSML/SConscript')
