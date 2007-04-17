@@ -1,0 +1,35 @@
+#!/usr/bin/python
+import glob
+
+Import('env')
+env = env.Copy()
+env.Prepend(CPPPATH = ['src', 
+		       'include', 
+		       '../SoarKernel/include',
+		       '../gSKI/src',
+		       '../gSKI/include',
+		       '../CLI/include',
+		       '../ElementXML/include',
+		       '../ConnectionSML/include'])
+
+libadd = [
+	   'ElementXML',
+	   'ConnectionSML',
+	   'CommandLineInterface',
+	   'gSKI',
+	   'SoarKernel', 
+	   ]
+
+libpath = [ 
+	    '../SoarKernel',
+	    '../gSKI',
+	    '../CLI',
+	    '../ConnectionSML',
+	    '../ElementXML', 
+	    ]
+
+SoarKernelSML = env.SharedLibrary('SoarKernelSML', glob.glob('src/*.cpp'), LIBS = libadd, LIBPATH = libpath)
+env.Install('#SoarLibrary/lib', SoarKernelSML)
+
+SoarKernelSMLStatic = env.StaticLibrary('SoarKernelSML', glob.glob('src/*.cpp'), LIBS = libadd, LIBPATH = libpath)
+env.Install('#SoarLibrary/lib', SoarKernelSMLStatic)
