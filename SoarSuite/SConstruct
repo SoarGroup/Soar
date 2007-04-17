@@ -8,85 +8,73 @@ if os.name != "posix":
 	Exit(1)
 
 opts = Options()
-opts.BoolOption('java', 'Set to 0 to not build the Soar Java interface', 1)
-opts.BoolOption('python', 'Set to 0 to not build the Soar Python interface', 1)
-opts.BoolOption('static', 'Set to 1 to statically link things when possible', 0)
+opts.AddOptions(
+	BoolOption('java', 'Build the Soar Java interface', 'yes'), 
+	BoolOption('python', 'Build the Soar Python interface', 'yes'), 
+	BoolOption('static', 'Use static linking when possible', 'no'), 
+	BoolOption('debug', 'Build with debugging symbols', 'yes'),
+	BoolOption('warnings', 'Build with warnings', 'yes'),
+	BoolOption('csharp', 'Build the Soar CSharp interface', 'no'), 
+	BoolOption('tcl', 'Build the Soar Tcl interface', 'no'), 
+)
 
-env = Environment(options = opts,)
-	
+env = Environment(options = opts)
 Help(opts.GenerateHelpText(env))
-	
-conf = Configure(
-	env, 
-	custom_tests = {'CheckVisibilityFlag' : SoarSCons.CheckVisibilityFlag})
 
-conf.env.Append(CXXFLAGS = ['-Wall -g'])
-conf.env.Append(CPPPATH = ['#Core/shared']
-conf.env.Append(CPPFLAGS = ['-DSCONS'])
-conf.env.Append(ENV = {'PATH' : os.environ['PATH']})
+env.Append(CPPPATH = ['#Core/shared'])
+env.Append(CPPFLAGS = ' -DSCONS')
+env.Append(ENV = {'PATH' : os.environ['PATH']})
 
-if opts['java']:
-	if not SoarSCons.ConfigureJNI(conf.env):
-		print "Java Native Interface is required... Exiting"
-		print "It is possible to build without Java, see help."
-		Exit(1)
+# Create configure context to configure the environment
+custom_tests = {
+	'CheckVisibilityFlag' : SoarSCons.CheckVisibilityFlag,
+}
+conf = Configure(env, custom_tests = custom_tests)
 
 # check if the compiler supports -fvisibility=hidden (GCC >= 4)
 if conf.CheckVisibilityFlag():
-	conf.env.Append(CPPFLAGS = ['-fvisibility=hidden'])
-		
-# Require functions
-def require(header):
-	if not conf.CheckCXXHeader(header):
-		print "Couldn't find required header", header
-		Exit(0)
-def requireLib(lib):
-	if not conf.CheckLib(lib):
-		print "Couldn't find required lib", lib
-		Exit(0)
+	conf.env.Append(CPPFLAGS = ' -fvisibility=hidden')
 
-require('assert.h')
-require('ctype.h')
-require('math.h')
-require('signal.h')
-require('stdio.h')
-require('time.h')
+# configure misc command line options
+if conf.env['debug']:
+	conf.env.Append(CPPFLAGS = ' -g')
+if conf.env['warnings']:
+	conf.env.Append(CPPFLAGS = ' -Wall')
 
-if os.name == 'posix':
-	require('arpa/inet.h')
-	require('ctype.h')
-	require('dlfcn.h')
-	require('errno.h')
-	require('fcntl.h')
-	require('inttypes.h')
-	require('limits.h')
-	require('locale.h')
-	# Not on mac osx, associated functions are in stdlib.h
-	#require('malloc.h')
-	require('math.h')
-	require('memory.h')
-	require('netdb.h')
-	require('netinet/in.h')
-	require('pthread.h')
-	require('signal.h')
-	require('stddef.h')
-	require('stdint.h')
-	require('stdlib.h')
-	require('string.h')
-	require('strings.h')
-	require('sys/param.h')
-	require('sys/resource.h')
-	require('sys/socket.h')
-	require('sys/stat.h')
-	require('sys/syscall.h')
-	require('sys/time.h')
-	require('sys/types.h')
-	require('unistd.h')
-	require('utime.h')
+# configure java
+if conf.env['java']:
+	if not SoarSCons.ConfigureJNI(conf.env):
+		print "Could not configure Java. If you know where java is on your system,"
+		print "set environment variable JAVA_HOME to point to the directory containing"
+		print "the Java include, bin, and lib directories."
+		print "Java Native Interface is required... Exiting"
+		Exit(1)
 
-	requireLib('dl')
-	requireLib('m')
-	requireLib('pthread')
+# check SWIG version if necessary
+if conf.env['java'] or conf.env['python'] or conf.env['csharp'] or conf.env['tcl']:
+	if not SoarSCons.CheckSWIG(conf.env):
+		explainSWIG = ""
+		if conf.env['java']:
+			explainSWIG += "java=1, "
+		if conf.env['python']:
+			explainSWIG += "python=1, "
+		if conf.env['csharp']:
+			explainSWIG += "csharp=1, "
+		if conf.env['tcl']:
+			explainSWIG += "tcl=1, "
+
+		print "SWIG is required because", explainSWIG[:-2]
+		Exit(1)
+
+# check for required libraries
+if not conf.CheckLib('dl'):
+	Exit(1)
+	
+if not conf.CheckLib('m'):
+	Exit(1)
+
+if not conf.CheckLib('pthread'):
+	Exit(1)
 
 env = conf.Finish()
 Export('env')
