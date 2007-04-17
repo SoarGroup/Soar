@@ -300,7 +300,7 @@ public class CellObject {
 					player.adjustPoints(rewardApply, "positive reward");
 				} else {
 					// reward negatively
-					player.adjustPoints(rewardApply * -1, "negative reward (wrong open code)");
+					player.adjustPoints(rewardApply / 10, "small reward (wrong open code)");
 				}
 			} else {
 				// I'm  not the positive box, set resetApply false
