@@ -1,7 +1,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif // HAVE_CONFIG_H
-//FIXME: #include <portability.h>
+#include <portability.h>
 
 /////////////////////////////////////////////////////////////////
 // StringOps
@@ -14,16 +14,6 @@
 // in the way we expect.
 //
 /////////////////////////////////////////////////////////////////
-
-#ifdef HAVE_STRINGS_H
-#include <strings.h>  // strcasecmp
-#endif
-
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-
-#include <assert.h>
 
 #include "sml_StringOps.h"
 
@@ -51,11 +41,7 @@ bool sml::IsStringEqualIgnoreCase(char const* pStr1, char const* pStr2)
 	if (pStr1 == NULL || pStr2 == NULL)
 		return false ;
 
-#ifdef HAVE_STRINGS_H
-		return (strcasecmp(pStr1, pStr2) == 0);
-#else
-		return (stricmp(pStr1, pStr2) == 0) ;
-#endif
+		return (strcasecmp(pStr1, pStr2) == 0) ;
 }
 
 /*************************************************************

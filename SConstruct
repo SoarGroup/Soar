@@ -82,7 +82,7 @@ Export('env')
 # Core
 SConscript('#Core/SoarKernel/SConscript')
 SConscript('#Core/gSKI/SConscript')
-#SConscript('#Core/ConnectionSML/SConscript')
+SConscript('#Core/ConnectionSML/SConscript')
 #SConscript('#Core/ElementXML/SConscript')
 #SConscript('#Core/CLI/SConscript')
 #SConscript('#Core/ClientSML/SConscript')

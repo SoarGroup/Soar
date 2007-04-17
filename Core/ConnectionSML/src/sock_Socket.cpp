@@ -536,11 +536,7 @@ void Socket::CloseSocket()
 	if (m_hSocket)
 	{
 		// Let the other side know we're shutting down
-#ifdef HAVE_SYS_SOCKET_H
-		shutdown(m_hSocket,SHUT_RDWR);
-#else
-		shutdown(m_hSocket,SD_BOTH);
-#endif
+		shutdown(m_hSocket,SHUT_RDWR); // possibly SD_BOTH
 
 		NET_CLOSESOCKET(m_hSocket) ;
 		m_hSocket = NO_CONNECTION ;
