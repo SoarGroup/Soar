@@ -24,14 +24,17 @@ sp {evaluate-operator*elaborate*state
 #
 sp {evaluate-operator*elaborate*state*tried-tied-operator
    :default
-   (state <s> ^look-ahead-operator <o> ^operator <o> ^elaborations.two-steps-toward)
+   (state <s> ^look-ahead-operator <o> 
+              ^operator <o> 
+   #           ^elaborations.two-steps-toward)
+              ^elaborations.nextmummylocation)
 -->
    (<s> ^tried-tied-operator <o> +)
 }
 
 sp {evaluate-operator*elaborate*state*tried-tied-operator-1
    :default
-   (state <s> ^look-ahead-operator <o> ^operator <o> ^gs <gs> ^facts.mummy-type.p1 <mummy>)
+   (state <s> ^look-ahead-operator <o> ^operator <o> ^gs <gs> ^facts.mummytype.p1 <mummy>)
   -{(<gs> ^location <l>)
     (<l> ^p1 <mummy>)}
 -->

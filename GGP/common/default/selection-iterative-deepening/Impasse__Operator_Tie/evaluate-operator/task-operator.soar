@@ -1,7 +1,8 @@
 
 sp {evalaute-operator*propose*init-current-evaluation-depth*progress-state
    (state <s> ^superstate.operator.name evaluate-operator
-              ^elaborations.two-steps-toward
+       #       ^elaborations.two-steps-toward
+              ^elaborations.nextmummylocation
               ^current-evaluation-depth <ced>
               ^operator.name progress-state)
 -->
@@ -10,7 +11,7 @@ sp {evalaute-operator*propose*init-current-evaluation-depth*progress-state
 
 sp {evalaute-operator*propose*init-current-evaluation-depth*progress-state-1
    (state <s> ^superstate.operator.name evaluate-operator
-              ^gs <gs> ^facts.mummy-type.p1 <mummy>
+              ^gs <gs> ^facts.mummytype.p1 <mummy>
               ^current-evaluation-depth <ced>
               ^operator.name progress-state)
    -{(<gs> ^location <l>)
@@ -21,7 +22,8 @@ sp {evalaute-operator*propose*init-current-evaluation-depth*progress-state-1
 
 sp {evalaute-operator*propose*init-current-evaluation-depth*update-state
    (state <s> ^superstate.operator.name evaluate-operator
-              ^elaborations.two-steps-toward
+              #^elaborations.two-steps-toward
+              ^elaborations.nextmummylocation
               ^current-evaluation-depth <ced>
               ^operator.name update-state)
 -->
@@ -30,7 +32,7 @@ sp {evalaute-operator*propose*init-current-evaluation-depth*update-state
 
 sp {evalaute-operator*propose*init-current-evaluation-depth*update-state-1
    (state <s> ^superstate.operator.name evaluate-operator
-              ^gs <gs> ^facts.mummy-type.p1 <mummy>
+              ^gs <gs> ^facts.mummytype.p1 <mummy>
               ^current-evaluation-depth <ced>
               ^operator.name update-state)
   -{(<gs> ^location <l>)
