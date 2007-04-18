@@ -116,6 +116,7 @@ SConscript('#Core/KernelSML/SConscript')
 if env['java']:
 	SConscript('#Core/ClientSMLSWIG/Java/SConscript')
 	SConscript('#Tools/TestJavaSML/SConscript')
+	SConscript('#Tools/VisualSoar/SConscript')
 	if env['swt']:
 		SConscript('#Tools/SoarJavaDebugger/SConscript')
 		SConscript('#Environments/Soar2D/SConscript')
