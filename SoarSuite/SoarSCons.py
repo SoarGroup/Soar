@@ -6,6 +6,11 @@ import sys
 import string
 import re
 
+def CheckForSWTJar(env):
+	if not os.path.exists(os.path.join('SoarLibrary', 'bin', 'swt.jar')):
+		return False
+	return True
+
 def osx_copy(dest, source, env):
 	from macostools import copy
 	copy(source, dest)
