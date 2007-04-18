@@ -6,6 +6,10 @@ import sys
 import string
 import re
 
+def osx_copy(dest, source, env):
+	from macostools import copy
+	copy(source, dest)
+
 def CheckVisibilityFlag(context):
 	"""Checks to see if the compiler will build using the visibility flag"""
 	context.Message('Checking support for -fvisibility=hidden... ')

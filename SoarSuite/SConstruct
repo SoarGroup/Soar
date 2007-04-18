@@ -7,7 +7,13 @@ if os.name != "posix":
 	print "Unsupported platform:", os.name
 	Exit(1)
 if sys.platform == "darwin":
+	# Optimization crashes the mac stuff.
 	optimizationDefault = 'no'
+
+	# From scons.org/wiki/MacOSX
+	env['INSTALL'] = SoarSCons.osx_copy
+	env['SHLINKFLAGS'] = '$LINKFLAGS -dynamic'
+	env['SHLIBSUFFIX'] = '.dylib'
 else:
 	optimizationDefault = 'partial'
 
