@@ -298,8 +298,8 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
   			// soar says something we weren't expecting
   			Soar2D.logger.warning("Unknown system event received from kernel, ignoring: " + eventID);
  		}
-    }
-
+   }
+   
 	/**
 	 * Create the GUI and show it, and run its loop. Does not return until the 
 	 * GUI is disposed. 
@@ -381,4 +381,47 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 			Soar2D.config.setMap(oldMap);
 		}
 	}
+	
+	
+	/**
+	 * Logger for Kernel print events
+	 * @author Scott Lathrop
+	 *
+	 */
+	public Logger getLogger() { return Logger.getLogger(); }
+	
+	
+	public static class Logger implements Agent.PrintEventInterface
+	{
+		protected static Logger m_Logger = null;
+		
+		public static Logger getLogger() 
+		{
+			if (m_Logger == null) {
+				m_Logger = new Logger();
+			}
+			
+			return m_Logger;
+		}
+		
+		/**
+		 * @brief - callback from SoarKernel for print events
+		 */
+		public void printEventHandler (int eventID, Object data, Agent agent, String message) 
+		{
+			if (eventID == smlPrintEventId.smlEVENT_PRINT.swigValue()) {
+				Soar2D.logger.info(message);
+			}
+				
+		} // SoarAgentprintEventHandler	
+		
+		private Logger () {}
+		
+	} // Logger
+	
+	/**
+	 * End Logger for Kernel print events
+	 * @author Scott Lathrop
+	 *
+	 */
 }
