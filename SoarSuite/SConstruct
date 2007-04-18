@@ -133,5 +133,5 @@ SConscript('#Tools/TestCLI/SConscript')
 #SConscript('#Tools/TestMultiAgent/SConscript')
 #SConscript('#Tools/TestSMLEvents/SConscript')
 #SConscript('#Tools/TestSMLPerformance/SConscript')
-#SConscript('#Tools/TestSoarPerformance/SConscript')
+SConscript('#Tools/TestSoarPerformance/SConscript')
 
