@@ -355,7 +355,9 @@ public class Simulation {
 					}
 		
 					// Scott Lathrop --  register for print events
-					agent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, Soar2D.control.getLogger(), null,true);
+					if (Soar2D.config.getLogSoarPrint()) {
+						agent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, Soar2D.control.getLogger(), null,true);
+					}
 					
 					// save both the agent
 					agents.put(player.getName(), agent);

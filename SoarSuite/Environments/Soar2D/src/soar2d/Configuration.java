@@ -966,6 +966,16 @@ public class Configuration {
 		return this.logConsole;
 	}
 	
+	// log soar-print
+	private boolean logSoarPrint = false; // If true, register for and log soar print events
+	private static final String kTagSoarPrint = "soar-print";
+	public void setLogSoarPrint(boolean logSoarPrint) {
+		this.logSoarPrint = logSoarPrint;
+	}
+	public boolean getLogSoarPrint() {
+		return this.logSoarPrint;
+	}
+	
 	// log time
 	private boolean logTime = false;	// if true, put a time stamp with each log entry
 	private static final String kTagTime = "time";
@@ -984,6 +994,10 @@ public class Configuration {
 		
 		if (this.getLogConsole()) {
 			logging.addContent(new Element(kTagConsole));
+		}
+		
+		if (this.getLogSoarPrint()) {
+			logging.addContent(new Element(kTagSoarPrint));
 		}
 		
 		if (this.getLogTime()) {
@@ -1007,6 +1021,9 @@ public class Configuration {
 				
 			} else if (child.getName().equalsIgnoreCase(kTagConsole)) {
 				setLogConsole(true);
+				
+			} else if (child.getName().equalsIgnoreCase(kTagSoarPrint)) {
+				setLogSoarPrint(true);
 				
 			} else if (child.getName().equalsIgnoreCase(kTagTime)) {
 				setLogTime(true);
