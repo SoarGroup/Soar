@@ -1,23 +1,12 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif // HAVE_CONFIG_H
-//FIXME: #include <portability.h>
+#include <portability.h>
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <time.h>
-
-#if HAVE_STRINGS_H
-#include <strings.h>
-#if HAVE_STRCASECMP
-#define stricmp strcasecmp
-#endif // HAVE_STRCASECMP
-#endif // HAVE_STRINGS_H
-
-#ifdef _MSC_VER
-#define stricmp _stricmp
-#endif
 
 //#include <crtdbg.h>
 
@@ -104,11 +93,11 @@ int main(int argc, char* argv[])
 	{
 		for (int i = 1 ; i < argc ; i++)
 		{
-			if (!stricmp(argv[i], "-nostop"))
+			if (!strcasecmp(argv[i], "-nostop"))
 				stopAtEnd = false ;
-			if (!stricmp(argv[i], "-remote"))
+			if (!strcasecmp(argv[i], "-remote"))
 				remoteConnection = true ;
-			if (!stricmp(argv[1], "true"))
+			if (!strcasecmp(argv[1], "true"))
 				doPrinting = true;
 		}
 	}
