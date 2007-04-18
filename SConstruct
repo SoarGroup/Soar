@@ -90,21 +90,20 @@ SConscript('#Core/KernelSML/SConscript')
 
 if env['java']:
 	SConscript('#Core/ClientSMLSWIG/Java/SConscript')
+	#SConscript('#Tools/SoarJavaDebugger/SConscript')
+	SConscript('#Tools/TestJavaSML/SConscript')
 
 if env['python']:
 	SConscript('#Core/ClientSMLSWIG/Python/SConscript')
 
-# Test Apps
+SConscript('#Tools/TestCLI/SConscript')
 #SConscript('#Tools/FilterC/SConscript')
 #SConscript('#Tools/LoggerWinC/SConscript')
 #SConscript('#Tools/QuickLink/SConscript')
-#SConscript('#Tools/SoarJavaDebugger/SConscript')
 #SConscript('#Tools/SoarTextIO/SConscript')
 #SConscript('#Tools/TOHSML/SConscript')
-SConscript('#Tools/TestCLI/SConscript')
 #SConscript('#Tools/TestClientSML/SConscript')
 #SConscript('#Tools/TestConnectionSML/SConscript')
-#SConscript('#Tools/TestJavaSML/SConscript')
 #SConscript('#Tools/TestMultiAgent/SConscript')
 #SConscript('#Tools/TestSMLEvents/SConscript')
 #SConscript('#Tools/TestSMLPerformance/SConscript')

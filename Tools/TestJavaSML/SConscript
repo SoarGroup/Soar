@@ -1,0 +1,15 @@
+#!/usr/bin/python
+import glob
+
+Import('env')
+env = env.Copy()
+
+# $JAVAC $JAVACFLAGS -d ${TARGET.attributes.java_classdir} -sourcepath ${SOURCE.dir.rdir()} $SOURCES
+env.Replace(JAVACCOM = '$JAVAC $JAVACFLAGS -d ${TARGET.attributes.java_classdir} -classpath Core/ClientSMLSWIG/Java/sml.jar:SoarLibrary/bin/swt.jar -sourcepath ${SOURCE.dir.rdir()} $SOURCES')
+
+env.Java(target = 'classes', source = '.')
+
+env.Append(JARCHDIR = 'Tools/TestJavaSML/classes')
+TestJavaSML = env.Jar(target = 'TestJavaSML.jar', source = ['classes', 'JarManifest', ])
+
+env.Install('#SoarLibrary/bin', TestJavaSML)
