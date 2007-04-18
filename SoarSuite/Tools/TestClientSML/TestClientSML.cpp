@@ -61,8 +61,6 @@ void SLEEP(long secs, long msecs)
 #include <fstream>
 #include <string>
 
-#include <strings.h>
-
 using namespace sml ;
 
 using std::cout;

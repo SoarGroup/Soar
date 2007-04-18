@@ -54,9 +54,7 @@ void SLEEP(long secs, long msecs)
 
 #include <iostream>
 #include <fstream>
-#include <string>
-
-#include <strings.h>
+#include <string.h>
 
 using namespace sml ;
 
