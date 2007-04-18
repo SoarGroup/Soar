@@ -1106,6 +1106,7 @@ public class Configuration {
 	private static final String kTagEnergy = "energy";
 	private static final String kTagHealth = "health";
 	private static final String kTagMissiles = "missiles";
+	private static final String kTagShutdownCommand = "shutdown-command";
 	private ArrayList<PlayerConfig> players = new ArrayList<PlayerConfig>(); // List of information required to create players
 	public ArrayList<PlayerConfig> getPlayers() {
 		return this.players;
@@ -1217,6 +1218,9 @@ public class Configuration {
 				} catch (NumberFormatException e) {
 					throw new LoadError("Error parsing missiles");
 				}
+				
+			} else if (child.getName().equalsIgnoreCase(kTagShutdownCommand)) {
+				playerConfig.addShutdownCommand(child.getTextTrim());
 
 			} else {
 				throw new LoadError("Unrecognized tag: " + child.getName());

@@ -7,7 +7,7 @@
 		?<seed>
 			int seed
 		?<remote>
-		?<hide>
+		?<hide> (this is to hide the map, useful for tanksoar)
 		?<no-gui>
 		?<async>
 			int millisecondDelay
@@ -67,6 +67,7 @@
 			string filename
 		?<console>
 		?<time>
+		?<soar-print>
 	?<players>
 		?<debuggers>
 		?<default-points>
@@ -91,6 +92,8 @@
 				int health
 			?<missiles>
 				int missiles
+			*<shutdown-command>
+				string command
 	?<terminals>
 		?<max-updates>
 			int updateCount
