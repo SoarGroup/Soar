@@ -6,6 +6,10 @@ import SoarSCons
 if os.name != "posix":
 	print "Unsupported platform:", os.name
 	Exit(1)
+if sys.platform == "darwin":
+	optimizationDefault = 'no'
+else:
+	optimizationDefault = 'partial'
 
 opts = Options()
 opts.AddOptions(
@@ -16,6 +20,7 @@ opts.AddOptions(
 	BoolOption('warnings', 'Build with warnings', 'yes'),
 	BoolOption('csharp', 'Build the Soar CSharp interface', 'no'), 
 	BoolOption('tcl', 'Build the Soar Tcl interface', 'no'), 
+	EnumOption('optimization', 'Build with optimization (May cause run-time errors!)', optimizationDefault, ['no','partial','full'], {}, 1)
 )
 
 env = Environment(options = opts)
@@ -40,6 +45,10 @@ if conf.env['debug']:
 	conf.env.Append(CPPFLAGS = ' -g')
 if conf.env['warnings']:
 	conf.env.Append(CPPFLAGS = ' -Wall')
+if conf.env['optimization'] == 'partial':
+	conf.env.Append(CPPFLAGS = ' -O2')
+if conf.env['optimization'] == 'full':
+	conf.env.Append(CPPFLAGS = ' -O3')
 
 # configure java
 if conf.env['java']:
