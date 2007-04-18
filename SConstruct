@@ -9,11 +9,6 @@ if os.name != "posix":
 if sys.platform == "darwin":
 	# Optimization crashes the mac stuff.
 	optimizationDefault = 'no'
-
-	# From scons.org/wiki/MacOSX
-	env['INSTALL'] = SoarSCons.osx_copy
-	env['SHLINKFLAGS'] = '$LINKFLAGS -dynamic'
-	env['SHLIBSUFFIX'] = '.dylib'
 else:
 	optimizationDefault = 'partial'
 
@@ -31,6 +26,12 @@ opts.AddOptions(
 
 env = Environment(options = opts)
 Help(opts.GenerateHelpText(env))
+
+if sys.platform == "darwin":
+	# From scons.org/wiki/MacOSX
+	env['INSTALL'] = SoarSCons.osx_copy
+	env['SHLINKFLAGS'] = '$LINKFLAGS -dynamic '
+	env['SHLIBSUFFIX'] = '.dylib'
 
 env.Append(CPPPATH = ['#Core/shared'])
 env.Append(CPPFLAGS = ' -DSCONS')
