@@ -56,16 +56,7 @@ void SLEEP(long secs, long msecs)
 #include <fstream>
 #include <string>
 
-#if HAVE_STRINGS_H
 #include <strings.h>
-#if HAVE_STRCASECMP
-#define stricmp strcasecmp
-#endif // HAVE_STRCASECMP
-#endif // HAVE_STRINGS_H
-
-#ifdef _MSC_VER
-#define stricmp _stricmp
-#endif
 
 using namespace sml ;
 
@@ -349,7 +340,7 @@ int main(int argc, char* argv[])
 	{
 		for (int i = 1 ; i < argc ; i++)
 		{
-			if (!stricmp(argv[i], "-nostop"))
+			if (!strcasecmp(argv[i], "-nostop"))
 				stopAtEnd = false ;
 		}
 	}

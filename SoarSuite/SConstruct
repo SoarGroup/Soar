@@ -10,7 +10,7 @@ if sys.platform == "darwin":
 	# Optimization crashes the mac stuff.
 	optimizationDefault = 'no'
 else:
-	optimizationDefault = 'partial'
+	optimizationDefault = 'full'
 
 opts = Options()
 opts.AddOptions(
@@ -128,10 +128,10 @@ SConscript('#Tools/TestCLI/SConscript')
 #SConscript('#Tools/QuickLink/SConscript')
 #SConscript('#Tools/SoarTextIO/SConscript')
 #SConscript('#Tools/TOHSML/SConscript')
-#SConscript('#Tools/TestClientSML/SConscript')
-#SConscript('#Tools/TestConnectionSML/SConscript')
-#SConscript('#Tools/TestMultiAgent/SConscript')
-#SConscript('#Tools/TestSMLEvents/SConscript')
-#SConscript('#Tools/TestSMLPerformance/SConscript')
+SConscript('#Tools/TestClientSML/SConscript')
+SConscript('#Tools/TestConnectionSML/SConscript')
+SConscript('#Tools/TestMultiAgent/SConscript')
+SConscript('#Tools/TestSMLEvents/SConscript')
+SConscript('#Tools/TestSMLPerformance/SConscript')
 SConscript('#Tools/TestSoarPerformance/SConscript')
 

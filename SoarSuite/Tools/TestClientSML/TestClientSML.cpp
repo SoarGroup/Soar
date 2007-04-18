@@ -61,16 +61,7 @@ void SLEEP(long secs, long msecs)
 #include <fstream>
 #include <string>
 
-#if HAVE_STRINGS_H
 #include <strings.h>
-#if HAVE_STRCASECMP
-#define stricmp strcasecmp
-#endif // HAVE_STRCASECMP
-#endif // HAVE_STRINGS_H
-
-#ifdef _MSC_VER
-#define stricmp _stricmp
-#endif
 
 using namespace sml ;
 
@@ -2024,29 +2015,29 @@ int main(int argc, char* argv[])
 	{
 		for (int i = 1 ; i < argc ; i++)
 		{
-			if (!stricmp(argv[i], "-nostop"))
+			if (!strcasecmp(argv[i], "-nostop"))
 				stopAtEnd = false ;
-			if (!stricmp(argv[i], "-copy"))
+			if (!strcasecmp(argv[i], "-copy"))
 				copyTest = true ;
-			if (!stricmp(argv[i], "-retetest"))
+			if (!strcasecmp(argv[i], "-retetest"))
 				reteTest = true ;
-			if (!stricmp(argv[i], "-synch"))
+			if (!strcasecmp(argv[i], "-synch"))
 				synchTest = true ;
-			if (!stricmp(argv[i], "-stoptest"))
+			if (!strcasecmp(argv[i], "-stoptest"))
 				stopTest = true ;
-			if (!stricmp(argv[i], "-remote"))
+			if (!strcasecmp(argv[i], "-remote"))
 				remote = true ;
-			if (!stricmp(argv[i], "-listener"))
+			if (!strcasecmp(argv[i], "-listener"))
 				listener = true ;
-			if (!stricmp(argv[i], "-simpleCommand"))
+			if (!strcasecmp(argv[i], "-simpleCommand"))
 				simpleCommand = true ;
-			if (!stricmp(argv[i], "-refcounttest"))
+			if (!strcasecmp(argv[i], "-refcounttest"))
 				refCountTest = true ;
-			if (!stricmp(argv[i], "-remoteIOTest"))
+			if (!strcasecmp(argv[i], "-remoteIOTest"))
 				remoteIOTest = true ;
-			if (!stricmp(argv[i], "-remoteIOListener"))
+			if (!strcasecmp(argv[i], "-remoteIOListener"))
 				remoteIOListener = true ;
-			if (!stricmp(argv[i], "-runlistener"))
+			if (!strcasecmp(argv[i], "-runlistener"))
 			{
 				runlistener = true ;
 
@@ -2061,11 +2052,11 @@ int main(int argc, char* argv[])
 				}
 
 			}
-			if (!stricmp(argv[i], "-remoteconnect"))
+			if (!strcasecmp(argv[i], "-remoteconnect"))
 				remoteConnect = true ;
-			if (!stricmp(argv[i], "-time"))
+			if (!strcasecmp(argv[i], "-time"))
 				timeTest = true ;
-			if (!stricmp(argv[i], "-shortlistener"))
+			if (!strcasecmp(argv[i], "-shortlistener"))
 			{
 				listener = true ;
 				life = 150 ; // Live for 15 secs only
