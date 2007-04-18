@@ -1006,6 +1006,9 @@ public class Configuration {
 	}
 	
 	private void logging(Element logging) throws LoadError {
+		if (logging == null) {
+			return;
+		}
 		List children = logging.getChildren();
 		Iterator iter = children.iterator();
 		while (iter.hasNext()) {
@@ -1072,6 +1075,9 @@ public class Configuration {
 	}
 	
 	private void players(Element players) throws LoadError {
+		if (players == null) {
+			return;
+		}
 		List children = players.getChildren();
 		Iterator iter = children.iterator();
 		while (iter.hasNext()) {
@@ -1384,6 +1390,9 @@ public class Configuration {
 	}
 	
 	private void terminals(Element terminals) throws LoadError {
+		if (terminals == null) {
+			return;
+		}
 		List children = terminals.getChildren();
 		Iterator iter = children.iterator();
 		
@@ -1457,6 +1466,9 @@ public class Configuration {
 	}
 	
 	private void clients(Element clients) throws LoadError {
+		if (clients == null) {
+			return;
+		}
 		List children = clients.getChildren();
 		Iterator iter = children.iterator();
 		while (iter.hasNext()) {
