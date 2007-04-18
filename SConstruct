@@ -30,7 +30,7 @@ Help(opts.GenerateHelpText(env))
 
 if sys.platform == "darwin":
 	# From scons.org/wiki/MacOSX
-	env['INSTALL'] = SoarSCons.osx_copy
+	#env['INSTALL'] = SoarSCons.osx_copy
 	env['SHLINKFLAGS'] = '$LINKFLAGS -dynamic '
 	env['SHLIBSUFFIX'] = '.dylib'
 
