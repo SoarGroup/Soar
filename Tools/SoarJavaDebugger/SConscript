@@ -1,0 +1,51 @@
+#!/usr/bin/python
+import glob
+import shutil
+
+Import('env')
+env = env.Copy()
+
+# $JAVAC $JAVACFLAGS -d ${TARGET.attributes.java_classdir} -sourcepath ${SOURCE.dir.rdir()} $SOURCES
+env.Replace(JAVACCOM = '$JAVAC $JAVACFLAGS -d ${TARGET.attributes.java_classdir} -classpath Core/ClientSMLSWIG/Java/sml.jar:SoarLibrary/bin/swt.jar -sourcepath ${SOURCE.dir.rdir()} $SOURCES')
+
+javacStep = env.Java(target = 'classes', source = '.')
+
+# The usual jar command does not work. It only finds and jars class files and we need a bunch of other junk.
+# If you list files specifically, it includes a full path with them.
+#env.Append(JARCHDIR = 'Tools/SoarJavaDebugger/classes')
+#SoarJavaDebugger = env.Jar(target = 'SoarJavaDebugger.jar', source = ['classes', 'JarManifest', ])
+
+copySources = [
+	       'JarDescription.jardesc',
+	       'SoarDebugger.plist',
+	       'debugger.html',
+	       'default-text.dlf',
+	       glob.glob('images/*'),
+	       glob.glob('altimages/*'),
+	      ]
+
+def copyFiles(target, source, env):
+	prefix = 'Tools/SoarJavaDebugger/'
+
+	#cp JarDescription.jardesc SoarDebugger.plist debugger.html default-text.dlf classes
+	shutil.copyfile(prefix + 'JarDescription.jardesc', prefix + 'classes/JarDescription.jardesc')
+	shutil.copyfile(prefix + 'SoarDebugger.plist', prefix + 'classes/SoarDebugger.plist')
+	shutil.copyfile(prefix + 'debugger.html', prefix + 'classes/debugger.html')
+	shutil.copyfile(prefix + 'default-layout.dlf', prefix + 'classes/default-layout.dlf')
+	shutil.copyfile(prefix + 'default-text.dlf', prefix + 'classes/default-text.dlf')
+
+	#cp -a images classes
+	shutil.copytree(prefix + 'images', prefix + 'classes/images')
+	
+	#cp -a altimages classes
+	shutil.copytree(prefix + 'altimages', prefix + 'classes/altimages')
+
+copyStep = env.Command('classes/default-layout.dlf', copySources, copyFiles)
+jarStep = env.Command('#Tools/SoarJavaDebugger/SoarJavaDebugger.jar', [copySources, 'classes'], 'jar cfm Tools/SoarJavaDebugger/SoarJavaDebugger.jar Tools/SoarJavaDebugger/JarManifest -C Tools/SoarJavaDebugger/classes .')
+
+env.Depends(jarStep, copyStep)
+env.Depends(copyStep, javacStep)
+
+env.Install('#SoarLibrary/bin', '#Tools/SoarJavaDebugger/SoarJavaDebugger.jar')
+
+env.Clean('classes', 'classes')

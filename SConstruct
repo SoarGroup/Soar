@@ -106,7 +106,7 @@ SConscript('#Core/KernelSML/SConscript')
 
 if env['java']:
 	SConscript('#Core/ClientSMLSWIG/Java/SConscript')
-	#SConscript('#Tools/SoarJavaDebugger/SConscript')
+	SConscript('#Tools/SoarJavaDebugger/SConscript')
 	SConscript('#Tools/TestJavaSML/SConscript')
 
 if env['python']:
