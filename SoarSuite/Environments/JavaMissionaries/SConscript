@@ -1,0 +1,32 @@
+#!/usr/bin/python
+import glob
+import shutil
+
+Import('env')
+env = env.Copy()
+
+# $JAVAC $JAVACFLAGS -d ${TARGET.attributes.java_classdir} -sourcepath ${SOURCE.dir.rdir()} $SOURCES
+env.Replace(JAVACCOM = '$JAVAC $JAVACFLAGS -d ${TARGET.attributes.java_classdir} -classpath Core/ClientSMLSWIG/Java/sml.jar:SoarLibrary/bin/swt.jar -sourcepath ${SOURCE.dir.rdir()} $SOURCES')
+
+javacStep = env.Java(target = 'classes', source = 'src')
+
+# The usual jar command does not work. It only finds and jars class files and we need a bunch of other junk.
+# If you list files specifically, it includes a full path with them.
+
+copySources = [
+	       glob.glob('src/mac/*'),
+	      ]
+
+def copyFiles(target, source, env):
+	prefix = 'Environments/JavaMissionaries/'
+
+	for file in glob.glob(prefix + 'src/mac/*'):
+		shutil.copyfile(file, file.replace('/src/','/classes/'))
+	
+copyStep = env.Command('classes/mac/boat.gif', copySources, copyFiles)
+jarStep = env.Command('#Environments/JavaMissionaries/JavaMissionaries.jar', [copySources, 'classes'], 'jar cfm Environments/JavaMissionaries/JavaMissionaries.jar Environments/JavaMissionaries/JarManifest -C Environments/JavaMissionaries/classes .')
+
+env.Depends(jarStep, copyStep)
+env.Depends(copyStep, javacStep)
+
+env.Clean('classes', 'classes')
