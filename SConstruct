@@ -118,6 +118,7 @@ if env['java']:
 	SConscript('#Tools/TestJavaSML/SConscript')
 	if env['swt']:
 		SConscript('#Tools/SoarJavaDebugger/SConscript')
+		SConscript('#Environments/Soar2D/SConscript')
 
 if env['python']:
 	SConscript('#Core/ClientSMLSWIG/Python/SConscript')
