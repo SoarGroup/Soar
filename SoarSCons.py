@@ -5,6 +5,27 @@ import os
 import sys
 import string
 import re
+import shutil
+
+def DoCopy(target, source, env):
+	target_files = map(lambda x: str(x), target)
+	source_files = map(lambda x: str(x), source)
+
+	for target, source in zip(target_files, source_files):
+		shutil.copyfile(source, target)
+
+def SetJavaPaths(env, classpath, sourcepath = None):
+	if sourcepath == None:
+		# use the default
+		sourcepath = '${SOURCE.dir.rdir()}'
+
+	# Set up java command to use classpath and sourcepath
+	env['JAVACCOM'] = '$JAVAC $JAVACFLAGS -d ${TARGET.attributes.java_classdir} -classpath $CLASSPATH -sourcepath ' + sourcepath + ' $SOURCES'
+
+	if os.name == 'nt':
+		classpath = classpath.replace('/', '\\')
+		classpath = classpath.replace(':', ';')
+	env['CLASSPATH'] = classpath
 
 def CheckForSWTJar(env):
 	if not os.path.exists(os.path.join('SoarLibrary', 'bin', 'swt.jar')):

@@ -1,39 +1,23 @@
 #!/usr/bin/python
 import glob
 import shutil
-import os
+import SoarSCons
 
 Import('env')
 env = env.Copy()
 
-# $JAVAC $JAVACFLAGS -d ${TARGET.attributes.java_classdir} -sourcepath ${SOURCE.dir.rdir()} $SOURCES
-javaCommandString = '$JAVAC $JAVACFLAGS -d ${TARGET.attributes.java_classdir} -classpath Core/ClientSMLSWIG/Java/sml.jar:SoarLibrary/bin/swt.jar:SoarLibrary/bin/tosca.jar:Environments/Soar2D/jdom.jar -sourcepath ${SOURCE.dir.rdir()} $SOURCES'
-if os.name == 'nt':
-	javaCommandString = javaCommandString.replace(':', ';')
-	javaCommandString = javaCommandString.replace('/', '\\')
-env.Replace(JAVACCOM = javaCommandString)
+SoarSCons.SetJavaPaths(env, 'Core/ClientSMLSWIG/Java/sml.jar:SoarLibrary/bin/swt.jar:SoarLibrary/bin/tosca.jar:Environments/Soar2D/jdom.jar')
 
 javacStep = env.Java(target = 'classes', source = 'src')
 
-# The usual jar command does not work. It only finds and jars class files and we need a bunch of other junk.
-# If you list files specifically, it includes a full path with them.
+copySources = []
+copySources.extend(glob.glob('src/*.xml'))
+copySources.extend(glob.glob('src/images/book/*'))
+copySources.extend(glob.glob('src/images/tanksoar/*'))
 
-copySources = [
-	       glob.glob('src/*.xml'),
-	       glob.glob('src/images/book/*'),
-	       glob.glob('src/images/tanksoar/*'),
-	      ]
-
-def copyFiles(target, source, env):
-	prefix = 'Environments/Soar2D/'
-
-	for file in glob.glob(prefix + 'src/*.xml'):
-		shutil.copyfile(file, file.replace('src','classes'))
-
-	shutil.rmtree(prefix + 'classes/images', True)
-	shutil.copytree(prefix + 'src/images', prefix + 'classes/images')
+copyTargets = map(lambda x: x.replace('src', 'classes'), copySources)
 	
-copyStep = env.Command('classes/eaters.xml', copySources, copyFiles)
+copyStep = env.Command(copyTargets, copySources, SoarSCons.DoCopy)
 jarStep = env.Command('#Environments/Soar2D/Soar2D.jar', [copySources, 'classes'], 'jar cfm Environments/Soar2D/Soar2D.jar Environments/Soar2D/JarManifest -C Environments/Soar2D/classes .')
 
 env.Depends(jarStep, copyStep)

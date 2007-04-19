@@ -43,7 +43,7 @@ env.SharedLibrary('Python_sml_ClientInterface',
 
 #libPython_sml_ClientInterface.so is not the correct naming convention for python dynamic code
 #it must be named, in this case, _Python_sml_ClientInterface.so
-env.InstallAs('#SoarLibrary/bin/_Python_sml_ClientInterface.so', 'libPython_sml_ClientInterface.so')
+env.InstallAs('#SoarLibrary/lib/_Python_sml_ClientInterface.so', 'libPython_sml_ClientInterface.so')
 
-env.Install('#SoarLibrary/bin', 'Python_sml_ClientInterface.py')
+env.Install('#SoarLibrary/lib', 'Python_sml_ClientInterface.py')
 
