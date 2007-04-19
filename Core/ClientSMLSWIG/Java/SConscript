@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import glob
+import os
 
 Import('env')
 env = env.Copy()
@@ -9,10 +10,11 @@ env.Prepend(CPPPATH = [
 			'#Core/ConnectionSML/include'
 			])
 
-if env['CPPFLAGS'].find('fvisibility') >= 0:
-	env.Append(CPPFLAGS = ' -Wno-unused -fno-strict-aliasing -fvisibility=default')
-else:
-	env.Append(CPPFLAGS = ' -Wno-unused -fno-strict-aliasing')
+if os.name == 'posix':
+	if env['CPPFLAGS'].find('fvisibility') >= 0:
+		env.Append(CPPFLAGS = ' -Wno-unused -fno-strict-aliasing -fvisibility=default')
+	else:
+		env.Append(CPPFLAGS = ' -Wno-unused -fno-strict-aliasing')
 
 libadd = [
 	   'ClientSML',

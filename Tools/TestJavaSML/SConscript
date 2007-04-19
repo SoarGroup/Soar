@@ -1,11 +1,16 @@
 #!/usr/bin/python
 import glob
+import os
 
 Import('env')
 env = env.Copy()
 
 # $JAVAC $JAVACFLAGS -d ${TARGET.attributes.java_classdir} -sourcepath ${SOURCE.dir.rdir()} $SOURCES
-env.Replace(JAVACCOM = '$JAVAC $JAVACFLAGS -d ${TARGET.attributes.java_classdir} -classpath Core/ClientSMLSWIG/Java/sml.jar:SoarLibrary/bin/swt.jar -sourcepath ${SOURCE.dir.rdir()} $SOURCES')
+javaCommandString = '$JAVAC $JAVACFLAGS -d ${TARGET.attributes.java_classdir} -classpath Core/ClientSMLSWIG/Java/sml.jar:SoarLibrary/bin/swt.jar -sourcepath ${SOURCE.dir.rdir()} $SOURCES'
+if os.name == 'nt':
+	javaCommandString = javaCommandString.replace(':', ';')
+	javaCommandString = javaCommandString.replace('/', '\\')
+env.Replace(JAVACCOM = javaCommandString)
 
 env.Java(target = 'classes', source = '.')
 

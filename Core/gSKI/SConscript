@@ -10,6 +10,17 @@ env.Append(CPPFLAGS = ' -DNO_MEGA_UNIT_TESTS -DVALIDATE')
 if os.name == 'posix':
 	env.Append(CPPFLAGS = ' -DUNIX')
 
+sources = glob.glob('src/*.cpp')
+if os.name == 'nt':
+	pcreSources = [
+		'lib_src/pcre-4.5/chartables.c',
+		'lib_src/pcre-4.5/get.c',
+		'lib_src/pcre-4.5/maketables.c',
+		'lib_src/pcre-4.5/pcre.c',
+		'lib_src/pcre-4.5/pcreposix.c',
+		'lib_src/pcre-4.5/study.c',
+	]
+	sources.append(pcreSources)
 
-gSKI = env.Library('gSKI', glob.glob('src/*.cpp'))
+gSKI = env.Library('gSKI', sources)
 env.Install('#SoarLibrary/lib', gSKI)
