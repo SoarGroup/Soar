@@ -8,5 +8,5 @@ env.Prepend(CPPPATH = ['src', 'include',])
 ElementXML = env.SharedLibrary('ElementXML', glob.glob('src/*.cpp'))
 env.Install('#SoarLibrary/lib', ElementXML)
 
-ElementXMLStatic = env.StaticLibrary('ElementXML', glob.glob('src/*.cpp'))
-env.Install('#SoarLibrary/lib', ElementXMLStatic)
+#ElementXMLStatic = env.StaticLibrary('ElementXML', glob.glob('src/*.cpp'))
+#env.Install('#SoarLibrary/lib', ElementXMLStatic)
