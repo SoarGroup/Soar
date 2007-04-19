@@ -2,6 +2,7 @@
 import glob
 import distutils.sysconfig
 import sys
+import os
 
 Import('env')
 env = env.Copy()
@@ -11,7 +12,9 @@ env.Prepend(CPPPATH = [
 			'#Core/ConnectionSML/include',
 			distutils.sysconfig.get_python_inc()
 			])
-env.Append(CXXFLAGS = ' -Wno-unused -fno-strict-aliasing')
+
+if os.name == 'posix':
+	env.Append(CXXFLAGS = ' -Wno-unused -fno-strict-aliasing')
 
 libadd = [
 	   'ClientSML',

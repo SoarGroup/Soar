@@ -10,6 +10,18 @@
 #include <math.h>
 #include <signal.h>
 
+#ifdef WIN32
+#include <windows.h>
+#include <direct.h>
+#include <time.h>
+#include <assert.h>
+
+// Visual Studio 2005 requires these:
+#define getcwd _getcwd
+#define chdir _chdir
+#define strcasecmp _stricmp
+
+#else // WIN32
 /* posix includes */
 #include <errno.h>
 #include <inttypes.h>
@@ -25,6 +37,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <utime.h>
+
+#endif // not WIN32
 
 /* unconditional includes */
 #include <assert.h>
