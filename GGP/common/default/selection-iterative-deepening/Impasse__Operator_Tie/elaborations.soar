@@ -103,7 +103,7 @@ sp {selection*compare*same-symbolic-evaluations-are-indifferent
 
 
 sp {selection*monitor*depth
-   (state <s> ^top-selection true
+   (state <s> #^top-selection true
               ^name selection
               ^current-evaluation-depth <ced>
               ^remaining-operators <ro>)
