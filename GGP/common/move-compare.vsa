@@ -7,7 +7,7 @@ VERSION 4
 4	3	FOPERATOR elaborations elaborations.soar 5
 5	0	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 9 6
 6	5	FOPERATOR elaborations elaborations.soar 7
-7	5	OPERATOR evaluate-operator evaluate-operator.soar 10
-8	5	OPERATOR select select.soar 8
-9	5	OPERATOR transfer-operator transfer-operator.soar 9
+7	5	OPERATOR evaluate-operator evaluate-operator.soar 8
+8	5	OPERATOR select select.soar 9
+9	5	OPERATOR transfer-operator transfer-operator.soar 10
 END
