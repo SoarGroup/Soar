@@ -25,6 +25,7 @@ def copyFiles(target, source, env):
 	for file in glob.glob(prefix + 'src/*.xml'):
 		shutil.copyfile(file, file.replace('/src/','/classes/'))
 
+	shutil.rmtree(prefix + 'classes/images', True)
 	shutil.copytree(prefix + 'src/images', prefix + 'classes/images')
 	
 copyStep = env.Command('classes/eaters.xml', copySources, copyFiles)
