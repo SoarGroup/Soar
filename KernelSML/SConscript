@@ -31,5 +31,5 @@ libpath = [
 SoarKernelSML = env.SharedLibrary('SoarKernelSML', glob.glob('src/*.cpp'), LIBS = libadd, LIBPATH = libpath)
 env.Install('#SoarLibrary/lib', SoarKernelSML)
 
-#SoarKernelSMLStatic = env.StaticLibrary('SoarKernelSML', glob.glob('src/*.cpp'), LIBS = libadd, LIBPATH = libpath)
-#env.Install('#SoarLibrary/lib', SoarKernelSMLStatic)
+SoarKernelSMLStatic = env.StaticLibrary('SoarKernelSML', glob.glob('src/*.cpp'), LIBS = libadd, LIBPATH = libpath)
+env.Install('#SoarLibrary/lib', SoarKernelSMLStatic)
