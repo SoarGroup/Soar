@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # This is a test script which tests several aspects of the Python SML interface
 #  including kernel and agent creation, running, registering and unregistering
