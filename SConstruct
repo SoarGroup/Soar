@@ -32,7 +32,7 @@ opts.AddOptions(
 	BoolOption('csharp', 'Build the Soar CSharp interface', 'no'), 
 	BoolOption('tcl', 'Build the Soar Tcl interface', 'no'), 
 	EnumOption('optimization', 'Build with optimization (May cause run-time errors!)', optimizationDefault, ['no','partial','full'], {}, 1),
-	BoolOption('swt', 'Build Java SWT projects', 'yes'), 
+	BoolOption('swt', 'Build Java SWT projects (e.g. debugger)', 'yes'), 
 )
 
 env = Environment(options = opts)
