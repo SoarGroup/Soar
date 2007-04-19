@@ -4,15 +4,15 @@ sp {canvas*init
    (exec set_scale | 0 20 0 20 |)}
 
 sp {canvas*draw_wall_north
-   (state <s> ^gs.wall <wall> -^duplicate-of)
-   (<wall> ^p1 <x> ^p2 <y> ^p3 north)
+   (state <s> ^gs.blocked <wall> -^duplicate-of)
+   (<wall> ^p2 <x> ^p3 <y> ^p1 south)
 -->
-   (exec draw_line | static | (* <x> 2) | | (- 20 (* (+ <y> 1) 2)) | |
+   (exec draw_line | static | (*  <x> 2) | | (- 20 (* (+ <y> 1) 2)) | |
 (* (+ <x> 1) 2) | | (- 20 (* (+ <y> 1) 2)) | black|)}
 
 sp {canvas*draw_wall_east
-   (state <s> ^gs.wall <wall> -^duplicate-of)
-   (<wall> ^p1 <x> ^p2 <y> ^p3 east)
+   (state <s> ^gs.blocked <wall> -^duplicate-of)
+   (<wall> ^p2 <x> ^p3 <y> ^p1 east)
 -->
    (exec draw_line | static | (* (+ <x> 1) 2) | | (- 20 (* 2 <y>)) | |
 (* (+ <x> 1) 2) | | (- 20 (* (+ <y> 1) 2)) | black|)}
@@ -34,6 +34,13 @@ sp {canvas*draw_mummy
    (<l> ^p1 mummy ^p2 <x> ^p3 <y>)
 -->
    (exec draw_point | update 1 | (+ (* <x> 2) 1) | | (- 20 (+ (* <y> 2) 1)) | red |) 
+}
+
+sp {canvas*draw_gun
+   (state <s> ^gs.location <l>)
+   (<l> ^p1 gun ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_point | static | (+ (* <x> 2) 1) | | (- 20 (+ (* <y> 2) 1)) | yellow |) 
 }
 
 sp {canvas*draw_exit
