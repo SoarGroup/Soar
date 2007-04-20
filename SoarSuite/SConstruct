@@ -1,12 +1,30 @@
 #!/usr/bin/python
+#################
+# Soar SCons build configuration file
+# Author: Jonathan Voigt <voigtjr@gmail.com>
+# Date: April 2007
+#
+# For information on SCons, see http://www.scons.org/
+# For Soar-specific SCons information, see the Soar Wiki:
+#   http://winter.eecs.umich.edu/soarwiki/Soar_SCons_build_information
+#
+
 import os
 import sys
 import SoarSCons
 
+# Although 'nt' (windows) is supported, it doesn't work yet
 if os.name != "posix" and os.name != "nt":
 	print "Unsupported platform:", os.name
 	Exit(1)
 	
+#################
+# Command line options
+
+# OSX is identified as os.name 'posix' and sys.platform 'darwin'
+# For now we're assuming other 'posix' platforms are linux
+# and will deal with portability issues as they appear.
+
 # Optimization on the mac (posix) crashes things
 if sys.platform == 'darwin':
 	optimizationDefault = 'no'
@@ -24,31 +42,42 @@ else:
 
 opts = Options()
 opts.AddOptions(
-	BoolOption('java', 'Build the Soar Java interface', 'yes'), 
+	BoolOption('java', 'Build the Soar Java interface (required for debugger)', 'yes'), 
+	BoolOption('swt', 'Build Java SWT projects (required for debugger)', 'yes'), 
 	BoolOption('python', 'Build the Soar Python interface', pythonDefault), 
+	BoolOption('csharp', 'Build the Soar CSharp interface', 'no'), 
+	BoolOption('tcl', 'Build the Soar Tcl interface', 'no'), 
 	BoolOption('static', 'Use static linking when possible', 'no'), 
 	BoolOption('debug', 'Build with debugging symbols', debugDefault),
 	BoolOption('warnings', 'Build with warnings', 'yes'),
-	BoolOption('csharp', 'Build the Soar CSharp interface', 'no'), 
-	BoolOption('tcl', 'Build the Soar Tcl interface', 'no'), 
 	EnumOption('optimization', 'Build with optimization (May cause run-time errors!)', optimizationDefault, ['no','partial','full'], {}, 1),
-	BoolOption('swt', 'Build Java SWT projects (e.g. debugger)', 'yes'), 
 )
 
+# Create the environment using the options
 env = Environment(options = opts)
 Help(opts.GenerateHelpText(env))
 
+#################
 # Create configure context to configure the environment
+
 custom_tests = {
+	# A check to see if the -fvisibility flag works on this system.
 	'CheckVisibilityFlag' : SoarSCons.CheckVisibilityFlag,
 }
 conf = Configure(env, custom_tests = custom_tests)
+
+# We define SCONS to indicate to the source that SCONS is controlling the build.
 conf.env.Append(CPPFLAGS = ' -DSCONS')
+
+# All C/C++ modules rely or should rely on this include path (houses portability.h)
 conf.env.Append(CPPPATH = ['#Core/shared'])
+
+# This allows us to use Java and SWIG if they are in the path.
 conf.env.Append(ENV = {'PATH' : os.environ['PATH']})
 
-# configure java
+# configure java if requested
 if conf.env['java']:
+	# This sets up the jni include files
 	if not SoarSCons.ConfigureJNI(conf.env):
 		print "Could not configure Java. If you know where java is on your system,"
 		print "set environment variable JAVA_HOME to point to the directory containing"
@@ -56,6 +85,8 @@ if conf.env['java']:
 		print "You may disable java, see help (scons -h)"
 		print "Java Native Interface is required... Exiting"
 		Exit(1)
+
+	# This checks for the swt.jar and attempts to download it if it doesn't exist
 	if env['swt'] and not SoarSCons.CheckForSWTJar(conf.env):
 		print "Could not find swt.jar. You can obtain the jar here:"
 		print "\thttp://winter.eecs.umich.edu/jars"
@@ -65,6 +96,7 @@ if conf.env['java']:
 		Exit(1)
 
 # check SWIG version if necessary
+# SWIG is necessary if one of the swig projects is going to be built
 if conf.env['java'] or conf.env['python'] or conf.env['csharp'] or conf.env['tcl']:
 	if not SoarSCons.CheckSWIG(conf.env):
 		explainSWIG = ""
@@ -81,13 +113,6 @@ if conf.env['java'] or conf.env['python'] or conf.env['csharp'] or conf.env['tcl
 		Exit(1)
 	
 if os.name == 'posix':
-	if sys.platform == "darwin":
-		# From scons.org/wiki/MacOSX
-		#conf.env['INSTALL'] = SoarSCons.osx_copy
-		#conf.env['SHLINKFLAGS'] = '$LINKFLAGS -dynamic '
-		#conf.env['SHLIBSUFFIX'] = '.dylib'
-		pass
-	
 	# check if the compiler supports -fvisibility=hidden (GCC >= 4)
 	if conf.CheckVisibilityFlag():
 		conf.env.Append(CPPFLAGS = ' -fvisibility=hidden')
@@ -119,11 +144,15 @@ elif os.name == 'nt':
 	else:
 		conf.env.Append(CPPFLAGS = ' /O2 /Ob2 /Oy /GL /D "NDEBUG" /FD /MD /Zi')
 else:
+	# This should never happen
 	print "Unknown os.name... Exiting"
 	Exit(1)
 
 env = conf.Finish()
 Export('env')
+
+#################
+# Build modules
 
 # Core
 SConscript('#Core/SoarKernel/SConscript')
