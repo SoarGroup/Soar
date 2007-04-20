@@ -3,6 +3,7 @@ import glob
 import distutils.sysconfig
 import sys
 import os
+import SCons.Script
 
 Import('env')
 env = env.Copy()
@@ -12,6 +13,15 @@ env.Prepend(CPPPATH = [
 			'#Core/ConnectionSML/include',
 			distutils.sysconfig.get_python_inc()
 			])
+
+SWIGScanner = SCons.Scanner.ClassicCPP(
+	"SWIGScan",
+	".i",
+	"CPPPATH",
+	'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")'
+)
+
+env.Append(SCANNERS=[SWIGScanner])
 
 if os.name == 'posix':
 	env.Append(CXXFLAGS = ' -Wno-unused -fno-strict-aliasing')
