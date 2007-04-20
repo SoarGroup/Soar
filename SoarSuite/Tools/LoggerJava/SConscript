@@ -1,0 +1,17 @@
+#!/usr/bin/python
+import glob
+import SoarSCons
+
+Import('env')
+env = env.Copy()
+
+SoarSCons.SetJavaPaths(env, 'Core/ClientSMLSWIG/Java/sml.jar:SoarLibrary/bin/swt.jar')
+
+env.Java(target = 'classes', source = 'log')
+
+env.Append(JARCHDIR = 'Tools/LoggerJava/classes')
+LoggerJava = env.Jar(target = 'LoggerJava.jar', source = ['classes', 'JarManifest', ])
+
+env.Install('#SoarLibrary/bin', LoggerJava)
+
+env.Clean('classes', 'classes')

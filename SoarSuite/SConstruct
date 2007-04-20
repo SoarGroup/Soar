@@ -84,8 +84,9 @@ if os.name == 'posix':
 	if sys.platform == "darwin":
 		# From scons.org/wiki/MacOSX
 		#conf.env['INSTALL'] = SoarSCons.osx_copy
-		conf.env['SHLINKFLAGS'] = '$LINKFLAGS -dynamic '
-		conf.env['SHLIBSUFFIX'] = '.dylib'
+		#conf.env['SHLINKFLAGS'] = '$LINKFLAGS -dynamic '
+		#conf.env['SHLIBSUFFIX'] = '.dylib'
+		pass
 	
 	# check if the compiler supports -fvisibility=hidden (GCC >= 4)
 	if conf.CheckVisibilityFlag():
@@ -135,6 +136,7 @@ SConscript('#Core/KernelSML/SConscript')
 
 if env['java']:
 	SConscript('#Core/ClientSMLSWIG/Java/SConscript')
+	SConscript('#Tools/LoggerJava/SConscript')
 	SConscript('#Tools/TestJavaSML/SConscript')
 	
 	# FIXME: VisualSoar's build command line is too long on windows
