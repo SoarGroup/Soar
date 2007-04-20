@@ -241,6 +241,8 @@ typedef struct identifier_struct {
   /* --- fields used for Soar I/O stuff --- */
   list *associated_output_links;
   struct wme_struct *input_wmes;
+
+  int depth; /* used to track depth of print (bug 988) RPM 4/07 */
 } identifier;
 
 typedef union symbol_union {
