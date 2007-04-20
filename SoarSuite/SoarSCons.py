@@ -6,6 +6,7 @@ import sys
 import string
 import re
 import shutil
+import urllib
 
 def DoCopy(target, source, env):
 	target_files = map(lambda x: str(x), target)
@@ -29,7 +30,19 @@ def SetJavaPaths(env, classpath, sourcepath = None):
 
 def CheckForSWTJar(env):
 	if not os.path.exists(os.path.join('SoarLibrary', 'bin', 'swt.jar')):
-		return False
+		ret = True
+		try:
+			if sys.platform == 'darwin':
+				urllib.urlretrieve('http://winter.eecs.umich.edu/jars/osx/swt.jar', 'SoarLibrary/bin/swt.jar')
+			else:
+				urllib.urlretrieve('http://winter.eecs.umich.edu/jars/gtk/swt.jar', 'SoarLibrary/bin/swt.jar')
+		except IOError:
+			ret = False
+		except ContentTooShortError:
+			ret = False
+		if ret:
+			print "Successfully downloaded swt.jar to SoarLibrary/bin."
+		return ret
 	return True
 
 def osx_copy(dest, source, env):
