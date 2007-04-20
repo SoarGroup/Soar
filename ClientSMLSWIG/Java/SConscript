@@ -42,13 +42,11 @@ swigflags = '-c++ -java -Wall -package sml -ICore/ClientSML/include -ICore/Eleme
 
 Java_sml_ClientInterface = env.SharedLibrary('Java_sml_ClientInterface', glob.glob('*.i'), LIBS = libadd, LIBPATH = libpath, SWIGFLAGS = swigflags, SWIGCXXFILESUFFIX = "_wrap.cpp")
 
-sml_interface_install = env.Install('#SoarLibrary/lib', Java_sml_ClientInterface)
+env.Install('#SoarLibrary/lib', Java_sml_ClientInterface)
 
 sml_jar_javac = env.Java('classes', 'build')
 
 env['JARCHDIR'] = 'Core/ClientSMLSWIG/Java/classes'
 sml_jar = env.Jar(target = 'sml.jar', source = 'classes')
-
-env.Depends(sml_jar, sml_interface_install)
 
 env.Install('#SoarLibrary/bin', sml_jar)
