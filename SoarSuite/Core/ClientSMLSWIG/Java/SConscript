@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import glob
 import os
+import SCons.Script
 
 Import('env')
 env = env.Copy()
@@ -9,6 +10,15 @@ env.Prepend(CPPPATH = [
 			'#Core/ElementXML/include',
 			'#Core/ConnectionSML/include'
 			])
+
+SWIGScanner = SCons.Scanner.ClassicCPP(
+	"SWIGScan",
+	".i",
+	"CPPPATH",
+	'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")'
+)
+
+env.Append(SCANNERS=[SWIGScanner])
 
 if os.name == 'posix':
 	if env['CPPFLAGS'].find('fvisibility') >= 0:
