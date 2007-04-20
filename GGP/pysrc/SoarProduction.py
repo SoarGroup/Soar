@@ -5,12 +5,10 @@ import re
 def SoarifyStr(s):
 	p = re.compile('(\s|\?|\(|\))')
 	result = p.sub('_', str(s))
-	for i in range(len(result)):
-		if result[i] != '_':
-			return result[i:]
-	
-	# all underscores?
-	return "a"
+	if len(result.strip()) == 0:
+		return 'a'
+		
+	return result.strip()
 
 # generates variable names that are guaranteed to be unique
 class UniqueNameGenerator:
@@ -56,6 +54,7 @@ class SoarCondition:
 	def add_id_predicate(self, attrib, negate=False, predicate = "", name = ""):
 		if name == "":
 			if attrib[0] == "<":
+				# variable attribute
 				id = self.var_gen.get_name(attrib[1])
 			else:
 				id = self.var_gen.get_name(attrib[0])
@@ -71,7 +70,10 @@ class SoarCondition:
 		return id
 
 	def get_ids(self, attrib):
-		return self.attrib_ids[attrib]
+		if attrib in self.attrib_ids:
+			return self.attrib_ids[attrib]
+		else:
+			return []
 
 	def get_attrib(self, id):
 		for i in self.id_preds:
@@ -206,6 +208,9 @@ class SoarProduction:
 		self.cond_paths = dict() # condition ref -> attrib
 		self.var_distinctions = dict()
 		self.value_distinctions = dict()
+		
+		if name.find("remove-_next__health__std_soar_var1__std_soar_var2__0") >= 0:
+			print name
 
 	def state_cond(self):
 		if self.first_state_cond == None:

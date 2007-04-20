@@ -458,11 +458,25 @@ class GGPSentence:
 			if remove:
 				assert self.__name == "next" # we would never move an init fact
 				func_name = self.__terms[0].name()
-				fcond = self.__terms[0].make_soar_cond(sp, gs_cond, 0, var_map)
-				if isinstance(fcond, str):
-					act.remove_id_wme_action(func_name, fcond)
+				#fcond = self.__terms[0].make_soar_cond(sp, gs_cond, 0, var_map)
+				# of course we only want to remove variables that are already bound, right?
+				# so we shouldn't create a new condition if it exists
+				existing_ids = gs_cond.get_ids(func_name)
+				if len(existing_ids) == 0:
+					# okay, so create a binding here, since there weren't any before
+					# but this is suspicious
+					fcond = self.__terms[0].make_soar_cond(sp, gs_cond, 0, var_map)
+					if isinstance(fcond, str):
+						id_to_remove = fcond
+					else:
+						id_to_remove = fcond.head_var
+					
+					print "&&& WARNING &&&: Adding action to remove an unbound variable"
 				else:
-					act.remove_id_wme_action(func_name, fcond.head_var)
+					assert len(existing_ids) == 1, "More than one bound variable, don't know which to pick"
+					id_to_remove = existing_ids[0]
+					
+				act.remove_id_wme_action(func_name, id_to_remove)
 			else:
 				self.__terms[0].make_soar_action(sp, act, 0, var_map)
 				
