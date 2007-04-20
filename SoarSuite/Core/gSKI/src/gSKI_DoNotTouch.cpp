@@ -393,61 +393,65 @@ namespace gSKI
 			Then we qsort the array and print it out.  94.12.13 */
 
 			if (id->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) return;
-			if (id->id.tc_num==tc) return;
-			id->id.tc_num = tc;
+			if (id->id.tc_num==tc && id->id.depth >= depth) return;  // this has already been printed at an equal-or-lower depth, RPM 4/07 bug 988
+			
+			id->id.depth = depth; // set the depth of this id
 
-			/* --- first, count all direct augmentations of this id --- */
-			num_attr = 0;
-			for (w=id->id.impasse_wmes; w!=NIL; w=w->next) num_attr++;
-			for (w=id->id.input_wmes; w!=NIL; w=w->next) num_attr++;
-			for (s=id->id.slots; s!=NIL; s=s->next) {
-				for (w=s->wmes; w!=NIL; w=w->next) num_attr++;
-				for (w=s->acceptable_preference_wmes; w!=NIL; w=w->next) num_attr++;
-			}
+			if(id->id.tc_num != tc) { // if we haven't printed this id yet, then print it, RPM 4/07 bug 988
+				id->id.tc_num = tc;
 
-			/* --- next, construct the array of wme pointers and sort them --- */
-			list = (wme**)allocate_memory(agnt, num_attr*sizeof(wme *), MISCELLANEOUS_MEM_USAGE);
-			attr = 0;
-			for (w=id->id.impasse_wmes; w!=NIL; w=w->next)
-				list[attr++] = w;
-			for (w=id->id.input_wmes; w!=NIL; w=w->next)
-				list[attr++] = w;
-			for (s=id->id.slots; s!=NIL; s=s->next) {
-				for (w=s->wmes; w!=NIL; w=w->next)
+				/* --- first, count all direct augmentations of this id --- */
+				num_attr = 0;
+				for (w=id->id.impasse_wmes; w!=NIL; w=w->next) num_attr++;
+				for (w=id->id.input_wmes; w!=NIL; w=w->next) num_attr++;
+				for (s=id->id.slots; s!=NIL; s=s->next) {
+					for (w=s->wmes; w!=NIL; w=w->next) num_attr++;
+					for (w=s->acceptable_preference_wmes; w!=NIL; w=w->next) num_attr++;
+				}
+
+				/* --- next, construct the array of wme pointers and sort them --- */
+				list = (wme**)allocate_memory(agnt, num_attr*sizeof(wme *), MISCELLANEOUS_MEM_USAGE);
+				attr = 0;
+				for (w=id->id.impasse_wmes; w!=NIL; w=w->next)
 					list[attr++] = w;
-				for (w=s->acceptable_preference_wmes; w!=NIL; w=w->next)
+				for (w=id->id.input_wmes; w!=NIL; w=w->next)
 					list[attr++] = w;
-			}
-			qsort (list, num_attr, sizeof (wme *), compare_attr); 
+				for (s=id->id.slots; s!=NIL; s=s->next) {
+					for (w=s->wmes; w!=NIL; w=w->next)
+						list[attr++] = w;
+					for (w=s->acceptable_preference_wmes; w!=NIL; w=w->next)
+						list[attr++] = w;
+				}
+				qsort (list, num_attr, sizeof (wme *), compare_attr); 
 
-			/* --- finally, print the sorted wmes and deallocate the array --- */
-			if (internal) {
-				for (attr=0; attr < num_attr; attr++) {
-					w = list[attr];
+				/* --- finally, print the sorted wmes and deallocate the array --- */
+				if (internal) {
+					for (attr=0; attr < num_attr; attr++) {
+						w = list[attr];
+						print_spaces (agnt, indent);
+						print_wme (agnt, w);
+					}
+				} else {
 					print_spaces (agnt, indent);
-					print_wme (agnt, w);
+					print_with_symbols (agnt, "(%y", id);
+
+					// XML format of an <id> followed by a series of <wmes> each of which shares the original ID.
+					// <id id="s1"><wme tag="123" attr="foo" attrtype="string" val="123" valtype="string"></wme><wme attr="bar" ...></wme></id>
+					gSKI_MakeAgentCallbackXML(agnt, kFunctionBeginTag, kWME_Id);
+					gSKI_MakeAgentCallbackXML(agnt, kFunctionAddAttribute, kWME_Id, symbol_to_string (agnt, id, true, 0, 0));
+
+					for (attr=0; attr < num_attr; attr++) {
+						w = list[attr];
+						neatly_print_wme_augmentation_of_id (agnt, w, indent);
+					}
+					
+					gSKI_MakeAgentCallbackXML(agnt, kFunctionEndTag, kWME_Id);
+
+					print (agnt, ")\n");
 				}
-			} else {
-				print_spaces (agnt, indent);
-				print_with_symbols (agnt, "(%y", id);
-
-				// XML format of an <id> followed by a series of <wmes> each of which shares the original ID.
-				// <id id="s1"><wme tag="123" attr="foo" attrtype="string" val="123" valtype="string"></wme><wme attr="bar" ...></wme></id>
-				gSKI_MakeAgentCallbackXML(agnt, kFunctionBeginTag, kWME_Id);
-				gSKI_MakeAgentCallbackXML(agnt, kFunctionAddAttribute, kWME_Id, symbol_to_string (agnt, id, true, 0, 0));
-
-				for (attr=0; attr < num_attr; attr++) {
-					w = list[attr];
-					neatly_print_wme_augmentation_of_id (agnt, w, indent);
-				}
-				
-				gSKI_MakeAgentCallbackXML(agnt, kFunctionEndTag, kWME_Id);
-
-				print (agnt, ")\n");
+				free_memory(agnt, list, MISCELLANEOUS_MEM_USAGE);
+				/* AGR 652 end */
 			}
-			free_memory(agnt, list, MISCELLANEOUS_MEM_USAGE);
-			/* AGR 652 end */
-
 			/* --- if depth<=1, we're done --- */
 			if (depth<=1) return;
 
