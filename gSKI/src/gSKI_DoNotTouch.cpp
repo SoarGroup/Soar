@@ -625,6 +625,118 @@ namespace gSKI
 			}
 		}
 
+		void print_augs_of_id3 (agent* agnt,
+			Symbol *id, 
+			int depth,
+			int maxdepth,
+			bool internal,
+			tc_number tc) 
+		{
+			slot *s;
+			wme *w;
+
+			wme **list;    /* array of WME pointers, AGR 652 */
+			int num_attr;  /* number of attributes, AGR 652 */
+			int attr;      /* attribute index, AGR 652 */
+
+			/* AGR 652  The plan is to go through the list of WMEs and find out how
+			many there are.  Then we malloc an array of that many pointers.
+			Then we go through the list again and copy all the pointers to that array.
+			Then we qsort the array and print it out.  94.12.13 */
+
+			if (id->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) return;
+			if (id->id.tc_num==tc) return;  // this has already been printed, so return RPM 4/07 bug 988
+			if (id->id.depth > depth) return;  // this can be reached via an equal or shorter path, so return without printing RPM 4/07 bug 988
+
+			// if we're here, then we haven't printed this id yet, so print it
+
+			depth = id->id.depth; // set the depth to the depth via the shallowest path, RPM 4/07 bug 988
+			int indent = (maxdepth-depth)*2; // set the indent based on how deep we are, RPM 4/07 bug 988
+
+			id->id.tc_num = tc;  // mark id as printed
+
+			/* --- first, count all direct augmentations of this id --- */
+			num_attr = 0;
+			for (w=id->id.impasse_wmes; w!=NIL; w=w->next) num_attr++;
+			for (w=id->id.input_wmes; w!=NIL; w=w->next) num_attr++;
+			for (s=id->id.slots; s!=NIL; s=s->next) {
+				for (w=s->wmes; w!=NIL; w=w->next) num_attr++;
+				for (w=s->acceptable_preference_wmes; w!=NIL; w=w->next) num_attr++;
+			}
+
+			/* --- next, construct the array of wme pointers and sort them --- */
+			list = (wme**)allocate_memory(agnt, num_attr*sizeof(wme *), MISCELLANEOUS_MEM_USAGE);
+			attr = 0;
+			for (w=id->id.impasse_wmes; w!=NIL; w=w->next)
+				list[attr++] = w;
+			for (w=id->id.input_wmes; w!=NIL; w=w->next)
+				list[attr++] = w;
+			for (s=id->id.slots; s!=NIL; s=s->next) {
+				for (w=s->wmes; w!=NIL; w=w->next)
+					list[attr++] = w;
+				for (w=s->acceptable_preference_wmes; w!=NIL; w=w->next)
+					list[attr++] = w;
+			}
+			qsort (list, num_attr, sizeof (wme *), compare_attr); 
+
+			/* --- finally, print the sorted wmes and deallocate the array --- */
+			if (internal) {
+				for (attr=0; attr < num_attr; attr++) {
+					w = list[attr];
+					print_spaces (agnt, indent);
+					print_wme (agnt, w);
+
+					/* --- call this routine recursively --- */
+					print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tc);
+					print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tc);
+				}
+
+			} else {
+				print_spaces (agnt, indent);
+				print_with_symbols (agnt, "(%y", id);
+
+				// XML format of an <id> followed by a series of <wmes> each of which shares the original ID.
+				// <id id="s1"><wme tag="123" attr="foo" attrtype="string" val="123" valtype="string"></wme><wme attr="bar" ...></wme></id>
+				gSKI_MakeAgentCallbackXML(agnt, kFunctionBeginTag, kWME_Id);
+				gSKI_MakeAgentCallbackXML(agnt, kFunctionAddAttribute, kWME_Id, symbol_to_string (agnt, id, true, 0, 0));
+
+				for (attr=0; attr < num_attr; attr++) {
+					w = list[attr];
+					neatly_print_wme_augmentation_of_id (agnt, w, indent);
+				}
+				
+				gSKI_MakeAgentCallbackXML(agnt, kFunctionEndTag, kWME_Id);
+
+				print (agnt, ")\n");
+			
+				free_memory(agnt, list, MISCELLANEOUS_MEM_USAGE);
+				/* AGR 652 end */
+
+				/* --- if depth<=1, we're done --- */
+				if (depth<=1) return;
+
+				/* --- call this routine recursively --- */
+				for (w=id->id.input_wmes; w!=NIL; w=w->next) {
+					print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tc);
+					print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tc);
+				}
+				for (w=id->id.impasse_wmes; w!=NIL; w=w->next) {
+					print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tc);
+					print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tc);
+				}
+				for (s=id->id.slots; s!=NIL; s=s->next) {
+					for (w=s->wmes; w!=NIL; w=w->next) {
+						print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tc);
+						print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tc);
+					}
+					for (w=s->acceptable_preference_wmes; w!=NIL; w=w->next) {
+						print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tc);
+						print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tc);
+					}
+				}
+			}
+		}
+
 		void do_print_for_identifier (agent* agnt, Symbol *id, int depth, bool internal) {
 			tc_number tc;
 
