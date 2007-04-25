@@ -78,10 +78,13 @@ class EnumPanel extends JPanel {
 			return false;
 		}
 		if (s.indexOf(' ') != -1) {
-			JOptionPane.showMessageDialog(this,
-				"Spaces are not allowed in enumeration values",
-				"Invalid Enumeration Data", JOptionPane.ERROR_MESSAGE);
-			return false;
+			// voigtjr: bug 986: Spaces are now allowed in enumeration values provided the string starts and ends with a pipe.
+			if (!(s.startsWith("|") && s.endsWith("|"))) {
+				JOptionPane.showMessageDialog(this,
+					"Spaces are not allowed in enumeration values",
+					"Invalid Enumeration Data", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
 		}
 		theStrings.add(s);
 		theList.setListData(theStrings);
