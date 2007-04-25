@@ -476,7 +476,13 @@ namespace gSKI
 			}
 		}
 
-		void mark_augs_of_id (agent* agnt,
+		/* RPM 4/07 bug 988
+			This function traverses the ids we are going to print and marks each with its shallowest depth
+			That is, if an id can be reached by multiple paths, this will find the shortest one and save
+				the depth of that path on the id.  Thus, when we print, the wmes will be indented properly,
+				making it much easier to read, and avoiding bugs (see bug 988).
+		*/
+		void mark_depths_augs_of_id (agent* agnt,
 			Symbol *id, 
 			int depth,
 			tc_number tc) 
@@ -500,21 +506,21 @@ namespace gSKI
 
 			/* --- call this routine recursively --- */
 			for (w=id->id.input_wmes; w!=NIL; w=w->next) {
-				mark_augs_of_id (agnt, w->attr, depth-1, tc);
-				mark_augs_of_id (agnt, w->value, depth-1, tc);
+				mark_depths_augs_of_id (agnt, w->attr, depth-1, tc);
+				mark_depths_augs_of_id (agnt, w->value, depth-1, tc);
 			}
 			for (w=id->id.impasse_wmes; w!=NIL; w=w->next) {
-				mark_augs_of_id (agnt, w->attr, depth-1, tc);
-				mark_augs_of_id (agnt, w->value, depth-1, tc);
+				mark_depths_augs_of_id (agnt, w->attr, depth-1, tc);
+				mark_depths_augs_of_id (agnt, w->value, depth-1, tc);
 			}
 			for (s=id->id.slots; s!=NIL; s=s->next) {
 				for (w=s->wmes; w!=NIL; w=w->next) {
-					mark_augs_of_id (agnt, w->attr, depth-1, tc);
-					mark_augs_of_id (agnt, w->value, depth-1, tc);
+					mark_depths_augs_of_id (agnt, w->attr, depth-1, tc);
+					mark_depths_augs_of_id (agnt, w->value, depth-1, tc);
 				}
 				for (w=s->acceptable_preference_wmes; w!=NIL; w=w->next) {
-					mark_augs_of_id (agnt, w->attr, depth-1, tc);
-					mark_augs_of_id (agnt, w->value, depth-1, tc);
+					mark_depths_augs_of_id (agnt, w->attr, depth-1, tc);
+					mark_depths_augs_of_id (agnt, w->value, depth-1, tc);
 				}
 			}
 		}
@@ -630,6 +636,7 @@ namespace gSKI
 			int depth,
 			int maxdepth,
 			bool internal,
+			bool tree,
 			tc_number tc) 
 		{
 			slot *s;
@@ -680,20 +687,29 @@ namespace gSKI
 			qsort (list, num_attr, sizeof (wme *), compare_attr); 
 
 			/* --- finally, print the sorted wmes and deallocate the array --- */
-			if (internal) {
+			if (tree) {
+				for (attr=0; attr < num_attr; attr++) {
+					w = list[attr];
+					print_spaces (agnt, indent);
+					if (internal) print_wme (agnt, w);
+					else print_wme_without_timetag (agnt, w);
+
+					if (depth>1) { // we're not done yet
+						/* --- call this routine recursively --- */
+						print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tree, tc);
+						print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
+					}
+				}
+				free_memory(agnt, list, MISCELLANEOUS_MEM_USAGE);
+				return;
+			}
+			
+			if (internal && !tree) {
 				for (attr=0; attr < num_attr; attr++) {
 					w = list[attr];
 					print_spaces (agnt, indent);
 					print_wme (agnt, w);
-
-					if (depth>1) {
-					/* --- call this routine recursively --- */
-					print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tc);
-					print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tc);
-					}
 				}
-				free_memory(agnt, list, MISCELLANEOUS_MEM_USAGE);
-
 			} else {
 				print_spaces (agnt, indent);
 				print_with_symbols (agnt, "(%y", id);
@@ -711,44 +727,53 @@ namespace gSKI
 				gSKI_MakeAgentCallbackXML(agnt, kFunctionEndTag, kWME_Id);
 
 				print (agnt, ")\n");
-			
-				free_memory(agnt, list, MISCELLANEOUS_MEM_USAGE);
-				/* AGR 652 end */
+			}
 
-				/* --- if depth<=1, we're done --- */
-				if (depth<=1) return;
+			//if (depth > 1) {
+			//	for (attr=0; attr < num_attr; attr++) {
+			//		w = list[attr];
+			//		/* --- call this routine recursively --- */
+			//		print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tree, tc);
+			//		print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
+			//	}
+			//}
 
-				/* --- call this routine recursively --- */
-				for (w=id->id.input_wmes; w!=NIL; w=w->next) {
-					print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tc);
-					print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tc);
+			free_memory(agnt, list, MISCELLANEOUS_MEM_USAGE);
+			/* AGR 652 end */
+
+			/* --- if depth<=1, we're done --- */
+			if (depth<=1) return;
+
+			/* --- call this routine recursively --- */
+			for (w=id->id.input_wmes; w!=NIL; w=w->next) {
+				print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tree, tc);
+				print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
+			}
+			for (w=id->id.impasse_wmes; w!=NIL; w=w->next) {
+				print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tree, tc);
+				print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
+			}
+			for (s=id->id.slots; s!=NIL; s=s->next) {
+				for (w=s->wmes; w!=NIL; w=w->next) {
+					print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tree, tc);
+					print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
 				}
-				for (w=id->id.impasse_wmes; w!=NIL; w=w->next) {
-					print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tc);
-					print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tc);
-				}
-				for (s=id->id.slots; s!=NIL; s=s->next) {
-					for (w=s->wmes; w!=NIL; w=w->next) {
-						print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tc);
-						print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tc);
-					}
-					for (w=s->acceptable_preference_wmes; w!=NIL; w=w->next) {
-						print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tc);
-						print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tc);
-					}
+				for (w=s->acceptable_preference_wmes; w!=NIL; w=w->next) {
+					print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tree, tc);
+					print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
 				}
 			}
 		}
 
-		void do_print_for_identifier (agent* agnt, Symbol *id, int depth, bool internal) {
+		void do_print_for_identifier (agent* agnt, Symbol *id, int depth, bool internal, bool tree) {
 			tc_number tc;
 
 			// RPM 4/07: first mark the nodes with their shallowest depth
 			//           then print them at their shallowest depth
 			tc = get_new_tc_number(agnt);
-			mark_augs_of_id (agnt, id, depth, tc);
+			mark_depths_augs_of_id (agnt, id, depth, tc);
 			tc = get_new_tc_number(agnt);
-			print_augs_of_id3 (agnt, id, depth, depth, internal, tc);
+			print_augs_of_id3 (agnt, id, depth, depth, internal, tree, tc);
 		}
 
 
@@ -1014,6 +1039,7 @@ namespace gSKI
 			bool        name_only, 
 			bool        print_filename, 
 			bool        internal,
+			bool		tree,
 			bool        full_prod,
 			int         depth)
 		{
@@ -1067,7 +1093,7 @@ namespace gSKI
 				output_arg = true; /* Soar-Bugs #161 */
 				id = read_identifier_or_context_variable(agnt);
 				if (id) 
-					do_print_for_identifier (agnt, id, depth, internal);
+					do_print_for_identifier (agnt, id, depth, internal, tree);
 				break;
 
 			case QUOTED_STRING_LEXEME:

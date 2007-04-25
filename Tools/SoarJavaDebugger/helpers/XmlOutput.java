@@ -617,8 +617,12 @@ declared-support="[:i-support|:o-support]">
 		StringBuffer text = new StringBuffer() ;
 		
 		text.append("(") ;
-		text.append(wme.GetWmeTimeTag()) ;
-		text.append(": ") ;
+		String timetag = wme.GetWmeTimeTag();
+		if(timetag != null) {
+			text.append(wme.GetWmeTimeTag()) ;
+			text.append(": ") ;
+		}
+		
 		text.append(wme.GetWmeID()) ;
 		text.append(" ^") ;
 		text.append(wme.GetWmeAttribute()) ;
