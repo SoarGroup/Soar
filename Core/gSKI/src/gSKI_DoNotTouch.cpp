@@ -686,10 +686,13 @@ namespace gSKI
 					print_spaces (agnt, indent);
 					print_wme (agnt, w);
 
+					if (depth>1) {
 					/* --- call this routine recursively --- */
 					print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tc);
 					print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tc);
+					}
 				}
+				free_memory(agnt, list, MISCELLANEOUS_MEM_USAGE);
 
 			} else {
 				print_spaces (agnt, indent);
@@ -745,7 +748,7 @@ namespace gSKI
 			tc = get_new_tc_number(agnt);
 			mark_augs_of_id (agnt, id, depth, tc);
 			tc = get_new_tc_number(agnt);
-			print_augs_of_id2 (agnt, id, depth, depth, internal, tc);
+			print_augs_of_id3 (agnt, id, depth, depth, internal, tc);
 		}
 
 
