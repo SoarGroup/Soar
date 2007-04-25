@@ -53,24 +53,37 @@ sp {selection*elaborate*instance-counter
    (<s> ^instance-counter <ic>)
 }
 
-sp {selection*elaborate*add-to-ic
+sp {selection*elaborate*add-to-ic*two-attribute
    (state <s> ^name selection
               ^item <it>
               ^instance-counter <ic>)
    (<it> ^name <n>
-         ^p1 <p1>) # this prevents chunks that specify only that N operators of a given name are present,
+         ^p1 <p1>
+         ^p2 <p2>) # this prevents chunks that specify only that N operators of a given name are present,
 # instead the chunks need to be a bit overspecific, since there is a huge number of matches otherwise
 -->
    (<ic> ^include <it>)
 }
 
+sp {selection*elaborate*add-to-ic*one-attribute
+   (state <s> ^name selection
+              ^item <it>
+              ^instance-counter <ic>)
+   (<it> ^name <n>
+         ^p1 <p1>
+        -^p2 <p2>) # this prevents chunks that specify only that N operators of a given name are present,
+# instead the chunks need to be a bit overspecific, since there is a huge number of matches otherwise
+-->
+   (<ic> ^include <it>)
+}
 
 sp {selection*elaborate*add-to-ic*no-substructure
    (state <s> ^name selection
               ^item <it>
               ^instance-counter <ic>)
    (<it> ^name <n>
-         -^p1 <p1>)
+         -^p1 <p1>
+         -^p2 <p2>)
 -->
    (<ic> ^include <it>)
 }
