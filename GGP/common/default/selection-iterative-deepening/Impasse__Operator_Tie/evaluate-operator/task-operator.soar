@@ -2,7 +2,7 @@
 sp {evalaute-operator*propose*init-current-evaluation-depth*progress-state
    (state <s> ^superstate.operator.name evaluate-operator
        #       ^elaborations.two-steps-toward
-              ^elaborations.move-finished
+              ^move-finished
               ^current-evaluation-depth <ced>
               ^operator.name progress-state)
 -->
@@ -23,7 +23,7 @@ sp {evalaute-operator*propose*init-current-evaluation-depth*progress-state
 sp {evaluate-operator*propose*init-current-evaluation-depth*update-state
    (state <s> ^superstate.operator.name evaluate-operator
               #^elaborations.two-steps-toward
-              ^elaborations.move-finished
+              ^move-finished
               ^current-evaluation-depth <ced>
               ^operator.name update-state)
 -->

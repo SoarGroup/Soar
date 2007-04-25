@@ -26,7 +26,7 @@ sp {evaluate-operator*elaborate*state*tried-tied-operator
    :default
    (state <s> ^look-ahead-operator <o> 
               ^operator <o>
-              ^elaborations.move-finished)
+              ^move-finished)
 -->
    (<s> ^tried-tied-operator <o> +)
 }
