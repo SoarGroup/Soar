@@ -818,6 +818,7 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
         try
         {
             dm.setSelected(true);
+            dm.setIcon(false);
             dm.moveToFront();
         }
 		catch (java.beans.PropertyVetoException pve)
