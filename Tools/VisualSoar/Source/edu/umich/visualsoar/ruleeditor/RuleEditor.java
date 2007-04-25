@@ -2021,7 +2021,8 @@ public class RuleEditor extends CustomInternalFrame
             }
             else 
             {
-                getToolkit().beep();
+            	// voigtjr: see bug 374
+                //getToolkit().beep();
             }
         } // end of actionPerformed()
 
