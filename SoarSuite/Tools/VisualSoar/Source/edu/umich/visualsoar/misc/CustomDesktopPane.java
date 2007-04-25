@@ -319,10 +319,6 @@ public class CustomDesktopPane extends JDesktopPane {
 		}
 	} // verticalTile
 
-    /**
-     *  Checks to see if a datamap is already open within the desktop
-     *  @param id the id that denotes the correct datamap.
-     */
     public DataMap dmGetDataMap(int id) {
         return (DataMap) dataMaps.get( new Integer(id) );
     }
@@ -333,18 +329,21 @@ public class CustomDesktopPane extends JDesktopPane {
      */
     public boolean hasDataMap(DataMap dm)
     {
-        //Make sure this datamap isn't already there
-        JInternalFrame[] jif = getAllFrames();
-        for(int i = 0; i < jif.length; ++i) 
-        {
-            if ( (jif[i] instanceof DataMap)
-                 && (((DataMap)jif[i]).getId() == dm.getId()) )
-            {
-                return true;
-            }
-        }
-
-        return false;
+        // Make sure this datamap isn't already there
+    	return dataMaps.containsKey(new Integer(dm.getId()));
+    	
+    	
+//        JInternalFrame[] jif = getAllFrames();
+//        for(int i = 0; i < jif.length; ++i) 
+//        {
+//            if ( (jif[i] instanceof DataMap)
+//                 && (((DataMap)jif[i]).getId() == dm.getId()) )
+//            {
+//                return true;
+//            }
+//        }
+//
+//        return false;
     }
     
   /**
