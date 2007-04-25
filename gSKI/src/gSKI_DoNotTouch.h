@@ -65,6 +65,7 @@ namespace gSKI
                           bool        name_only, 
                           bool        print_filename, 
                           bool        internal,
+						  bool		  tree,
                           bool        full_prod,
                           int         depth);
          void PrintUser(Agent*       thisAgent,
