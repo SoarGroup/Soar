@@ -42,7 +42,7 @@ class Cell {
 	 * 
 	 * Checks to see if the cell has no blocking cell objects.
 	 */
-	boolean enterable() {
+	synchronized boolean enterable() {
 		// Check to see if any contained objects have the block property
 		if (cellObjects.size() > 0) {
 			this.iter = cellObjects.values().iterator();
@@ -61,7 +61,7 @@ class Cell {
 	 * 
 	 * Adds a cell object to the object list.
 	 */
-	void addCellObject(CellObject cellObject) {
+	synchronized void addCellObject(CellObject cellObject) {
 		cellObjects.put(cellObject.getName(), cellObject);
 	}
 	
@@ -72,7 +72,7 @@ class Cell {
 	 * Returns all objects in the cell with the specified property.
 	 * The returned list is never null but could be length zero.
 	 */
-	ArrayList<CellObject> getAllWithProperty(String name) {
+	synchronized ArrayList<CellObject> getAllWithProperty(String name) {
 		ArrayList<CellObject> list = new ArrayList<CellObject>();
 		this.iter = cellObjects.values().iterator();
 		CellObject cellObject;
@@ -112,7 +112,7 @@ class Cell {
 	 * If the specified object exists in the cell, it is removed and returned.
 	 * Null is returned if the object isn't in the cell.
 	 */
-	CellObject removeObject(String name) {
+	synchronized CellObject removeObject(String name) {
 		return cellObjects.remove(name);
 	}
 

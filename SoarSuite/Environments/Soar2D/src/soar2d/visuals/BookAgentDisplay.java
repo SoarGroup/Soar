@@ -124,13 +124,6 @@ public class BookAgentDisplay extends AgentDisplay {
 	}
 
 	void worldChangeEvent() {
-		if (selectedPlayer == null) {
-			synchronized(Soar2D.wm) {
-				Soar2D.wm.agentDisplayUpdated = true;
-				Soar2D.wm.notify();
-			}
-		}
-		
 		for (int i = 0; i < m_Items.length; ++i) {
 			m_Items[i].setText(1, Integer.toString(players.get(i).getPoints()));
 		}

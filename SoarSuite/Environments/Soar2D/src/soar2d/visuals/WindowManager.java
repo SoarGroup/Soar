@@ -1127,36 +1127,15 @@ public class WindowManager {
 		return (display.isDisposed() || shell.isDisposed());
 	}
 
-	boolean agentDisplayUpdated;
-	boolean worldDisplayUpdated;
 	public void update() {
 		if (!isDisposed()) {
-			synchronized(this) {
-				agentDisplayUpdated = true;
-				worldDisplayUpdated = true;
-			}
 			display.syncExec(new Runnable() {
 				public void run() {
 					agentDisplay.worldChangeEvent();
 					visualWorld.redraw();
 					updateCounts();
-					
-					if (!visualWorld.isVisible()) {
-						synchronized(Soar2D.wm) {
-							agentDisplayUpdated = true;
-							worldDisplayUpdated = true;
-							Soar2D.wm.notify();
-						}
-					}
 				}
 			});
-			synchronized(this) {
-				while (!agentDisplayUpdated || !worldDisplayUpdated) {
-					try {
-						this.wait();
-					} catch (InterruptedException ignored) {}
-				}
-			}
 		}
 	}
 
