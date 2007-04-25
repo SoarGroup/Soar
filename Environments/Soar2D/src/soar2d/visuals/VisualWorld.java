@@ -212,19 +212,6 @@ public class VisualWorld extends Canvas implements PaintListener {
 			
 			if (Soar2D.config.getHide()) {
 				painted = true;
-				if (Soar2D.control.isRunning()) {
-					if (agentLocation != null) {
-						synchronized(Soar2D.wm) {
-							Soar2D.wm.agentDisplayUpdated = true;
-							Soar2D.wm.notify();
-						}
-					} else {
-						synchronized(Soar2D.wm) {
-							Soar2D.wm.worldDisplayUpdated = true;
-							Soar2D.wm.notify();
-						}
-					}
-				}
 				return;
 			}
 			
@@ -591,19 +578,6 @@ public class VisualWorld extends Canvas implements PaintListener {
 		}
 		
 		painted = true;
-		if (Soar2D.control.isRunning()) {
-			if (agentLocation != null) {
-				synchronized(Soar2D.wm) {
-					Soar2D.wm.agentDisplayUpdated = true;
-					Soar2D.wm.notify();
-				}
-			} else {
-				synchronized(Soar2D.wm) {
-					Soar2D.wm.worldDisplayUpdated = true;
-					Soar2D.wm.notify();
-				}
-			}
-		}
 	}
 	
 	Image bootstrapImage(String imageName) {

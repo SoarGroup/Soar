@@ -465,11 +465,6 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 			updateSensors();
 		}
 		
-		synchronized(Soar2D.wm) {
-			Soar2D.wm.agentDisplayUpdated = true;
-			Soar2D.wm.notify();
-		}
-		
 		for (int i = 0; i < m_Items.length; ++i) {
 			m_Items[i].setText(new String[] {
 					players.get(i).getName(), 
