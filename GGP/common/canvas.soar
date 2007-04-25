@@ -1,54 +1,85 @@
 sp {canvas*init
    (state <s> ^name game -^duplicate-of)
 -->
-   (exec set_scale | 0 20 0 20 |)}
+   (exec set_scale | 0 40 0 40 |)}
 
 sp {canvas*draw_wall_north
    (state <s> ^gs.blocked <wall> -^duplicate-of)
    (<wall> ^p2 <x> ^p3 <y> ^p1 south)
 -->
-   (exec draw_line | static | (*  <x> 2) | | (- 20 (* (+ <y> 1) 2)) | |
-(* (+ <x> 1) 2) | | (- 20 (* (+ <y> 1) 2)) | black|)}
+   (exec draw_line | static | (*  <x> 4) | | (* (+ <y> 1) 4) | |
+(* (+ <x> 1) 4) | | (* (+ <y> 1) 4) | black|)}
 
 sp {canvas*draw_wall_east
    (state <s> ^gs.blocked <wall> -^duplicate-of)
    (<wall> ^p2 <x> ^p3 <y> ^p1 east)
 -->
-   (exec draw_line | static | (* (+ <x> 1) 2) | | (- 20 (* 2 <y>)) | |
-(* (+ <x> 1) 2) | | (- 20 (* (+ <y> 1) 2)) | black|)}
+   (exec draw_line | static | (* (+ <x> 1) 4) | | (* 4 <y>) | |
+(* (+ <x> 1) 4) | | (* (+ <y> 1) 4) | black|)}
 
 sp {canvas*draw_explorergreen
    (state <s> ^gs.location <l>)
    (<l> ^p1 explorer ^p2 <x> ^p3 <y>)
 -->
-   (exec draw_point | update 2 | (+ (* <x> 2) 1) | | (- 20 (+ (* <y> 2) 1)) | green|)}
+   (exec draw_point | update 2 | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | green|)}
 
 sp {canvas*draw_explorer
    (state <s> ^superstate nil ^gs.location <l>)
    (<l> ^p1 explorer ^p2 <x> ^p3 <y>)
 -->
-   (exec draw_point | static | (+ (* <x> 2) 1) | | (- 20 (+ (* <y> 2) 1)) | blue|)}
+   (exec draw_point | static | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | blue|)}
 
 sp {canvas*draw_mummy
    (state <s> ^gs.location <l>)
    (<l> ^p1 mummy ^p2 <x> ^p3 <y>)
 -->
-   (exec draw_point | update 1 | (+ (* <x> 2) 1) | | (- 20 (+ (* <y> 2) 1)) | red |) 
+   (exec draw_point | update 1 | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | red |) 
 }
 
 sp {canvas*draw_gun
    (state <s> ^gs.location <l>)
    (<l> ^p1 gun ^p2 <x> ^p3 <y>)
+   -{(state <s2> ^superstate <s>)}
 -->
-   (exec draw_point | static | (+ (* <x> 2) 1) | | (- 20 (+ (* <y> 2) 1)) | yellow |) 
+   (exec draw_point | static | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | yellow |) 
+}
+
+sp {canvas*draw_hammer
+   (state <s> ^gs.location <l>
+    ^facts.hammertype.p1 <obj>)
+   (<l> ^p1 <obj> ^p2 <x> ^p3 <y>)
+   -{(state <s2> ^superstate <s>)}
+-->
+   (exec draw_point | update 3 | (+ (* <x> 4) 1) | | (+ (* <y> 4) 1) | purple |) 
+}
+
+
+sp {canvas*draw_rock
+   (state <s> ^gs.location <l>
+              ^facts.rocktype.p1 <obj>)
+   (<l> ^p1 <obj> ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_rectangle | static | (+ 1 (* <x> 4)) | | (+ 1 (* <y> 4))
+| | (- (* (+ <x> 1) 4) 1) | | (- (* (+ <y> 1) 4) 1) | purple |)
+}
+
+sp {canvas*draw_spikepit
+   (state <s> ^gs.location <l>
+              ^facts.spikepittype.p1 <obj>)
+   (<l> ^p1 <obj> ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_rectangle | static | (+ 1 (* <x> 4)) | | (+ 1 (* <y> 4))
+| | (- (* (+ <x> 1) 4) 1) | | (- (* (+ <y> 1) 4) 1) | red |)
+   #(exec draw_circle | static | (+ (* <x> 2) 1) | | (+ (* <y> 2) 1)
+   #| | 1 | blue |) 
 }
 
 sp {canvas*draw_exit
    (state <s> ^gs.location <l>)
    (<l> ^p1 exit ^p2 <x> ^p3 <y>)
 -->
-   (exec draw_rectangle | static | (* <x> 2) | | (- 20 (* (+ <y> 1) 2))
-| | (* (+ <x> 1) 2) | | (- 20 (* <y> 2)) | blue |)}
+   (exec draw_rectangle | static | (* <x> 4) | | (* <y> 4)
+| | (* (+ <x> 1) 4) | | (* (+ <y> 1) 4) | blue |)}
 
 #   (exec draw_circle | update 3 | (+ (* <x> 2) 1) | | (- 20 (+ (* <y> 2) 1))  1 | red |)
 
