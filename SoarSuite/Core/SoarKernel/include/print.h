@@ -176,6 +176,7 @@ extern void print_action (agent* thisAgent, action *a);
 extern char preference_type_indicator (agent* thisAgent, byte type);
 extern void print_preference (agent* thisAgent, preference *pref);
 extern void print_wme (agent* thisAgent, wme *w);
+extern void print_wme_without_timetag (agent* thisAgent, wme *w);
 extern void print_wme_for_tcl (wme *w);
 extern void print_instantiation_with_wmes (agent* thisAgent, 
 										   instantiation *inst,

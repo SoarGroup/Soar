@@ -803,7 +803,7 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
 		    // TODO: generate warning XML: I think we need to get a string for "do_print_for_identifier" and append it
 		    // but this seems low priority since it's not even included in a normal build
             print ("Warning: Failed to find ^attribute impasse wme.\n");
-            do_print_for_identifier(goal->id.lower_goal, 1, 0);
+            do_print_for_identifier(goal->id.lower_goal, 1, 0, 0);
             #endif
             strncpy(impass_name,"unknownimpasse",BUFFER_IMPASS_NAME_SIZE);
           } else if (sym == thisAgent->operator_symbol) {

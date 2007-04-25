@@ -1183,6 +1183,23 @@ void print_wme (agent* thisAgent, wme *w) {
 
 }
 
+void print_wme_without_timetag (agent* thisAgent, wme *w) {
+  print_with_symbols (thisAgent, "(%y ^%y %y", w->id, w->attr, w->value);
+  if (w->acceptable) print_string (thisAgent, " +");
+  print_string (thisAgent, ")");
+  print (thisAgent, "\n");
+
+  // <wme id="s1" attr="foo" attrtype="string" val="123" valtype="string"></wme>
+  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagWME);
+  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kWME_Id, symbol_to_string (thisAgent, w->id, true, 0, 0));
+  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kWME_Attribute, symbol_to_string (thisAgent, w->attr, true, 0, 0));
+  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kWME_Value, symbol_to_string (thisAgent, w->value, true, 0, 0));
+  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kWME_ValueType, symbol_to_typeString(thisAgent, w->value));
+  if (w->acceptable) gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kWMEPreference, "+");
+  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagWME);
+
+}
+
 //#ifdef USE_TCL
 void print_wme_for_tcl (agent* thisAgent, wme *w) 
 {
