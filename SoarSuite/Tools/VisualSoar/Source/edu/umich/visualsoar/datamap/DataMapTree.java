@@ -72,6 +72,8 @@ public class DataMapTree extends JTree implements ClipboardOwner
     private static JMenuItem ChangeToFloatItem = new JMenuItem("to Float");
     private static JMenuItem ChangeToStringItem = new JMenuItem("to String");
 
+    public static TreePath OriginalSelectionPath;
+    
     static 
     {
 
@@ -1737,12 +1739,15 @@ class DMTDragGestureListener implements DragGestureListener
         {
             DragSource.getDefaultDragSource().startDrag(dge, DragSource.DefaultMoveNoDrop, t, new DMTDragSourceListener());
         }
+        
+        OriginalSelectionPath = path;
     }   
 }
     
 class DMTDropTargetListener implements DropTargetListener 
 {
-    public void dragEnter(DropTargetDragEvent dtde) {}
+    public void dragEnter(DropTargetDragEvent dtde) {
+    }
     public void dragExit(DropTargetEvent dte) 
     {
         // reset cursor back to normal
@@ -1752,12 +1757,13 @@ class DMTDropTargetListener implements DropTargetListener
 
     public void dragOver(DropTargetDragEvent dtde) 
     {
+    	
         int action = dtde.getDropAction();
         Point loc = dtde.getLocation();
         int x = (int)loc.getX(), y = (int)loc.getY();
         TreePath path = getPathForLocation(x, y);
         if (path != null) 
-        {
+        {   
             clearSelection();
             setSelectionPath(path);
             if(isDropOK(x,y,action)) 
@@ -1783,7 +1789,19 @@ class DMTDropTargetListener implements DropTargetListener
             }   // if drop ok
             else 
             {
-                Cursor cursor = DragSource.DefaultCopyNoDrop;
+                Cursor cursor;
+                if(action == DnDConstants.ACTION_LINK) 
+                {
+                    cursor = DragSource.DefaultLinkNoDrop;
+                }
+                else if(action == DnDConstants.ACTION_COPY) 
+                {
+                    cursor = DragSource.DefaultCopyNoDrop;
+                }
+                else 
+                {
+                    cursor = DragSource.DefaultMoveNoDrop;
+                }
                 DataMapTree.getDataMapTree().setCursor(cursor);
                 dtde.rejectDrag();
             }
@@ -1796,7 +1814,8 @@ class DMTDropTargetListener implements DropTargetListener
         }
     }
 
-    public void dropActionChanged(DropTargetDragEvent dtde) {}
+    public void dropActionChanged(DropTargetDragEvent dtde) {
+    }
         
     public void drop(DropTargetDropEvent e) 
     {
@@ -1874,7 +1893,13 @@ class DMTDropTargetListener implements DropTargetListener
     boolean isDropOK(int x, int y, int action) 
     {
         TreePath path = getPathForLocation(x, y);
-        if (path == null) return false;
+        if (path == null) {
+        	return false;
+        }
+        if (path.equals(OriginalSelectionPath)) {
+        	return false;
+        }
+        
         if (action == DnDConstants.ACTION_LINK || action == DnDConstants.ACTION_MOVE || action == DnDConstants.ACTION_COPY) 
         {
             FakeTreeNode ftn = (FakeTreeNode)path.getLastPathComponent();
@@ -1882,7 +1907,6 @@ class DMTDropTargetListener implements DropTargetListener
             {
                 return false;
             }
-            
             return true;
         }
         return false;
@@ -1895,29 +1919,34 @@ class DMTDragSourceListener implements DragSourceListener
 
     public void dragEnter(DragSourceDragEvent e) 
     {
-        DragSourceContext context = e.getDragSourceContext();
+        //DragSourceContext context = e.getDragSourceContext();
 
         //intersection of the users selected action, and the source and target actions
 
         int myaction = e.getDropAction();
-
+        
+        Cursor cursor;
         if( (myaction & DnDConstants.ACTION_COPY) != 0) 
         {
-            context.setCursor(DragSource.DefaultCopyDrop);
+        	//context.setCursor(DragSource.DefaultCopyDrop);
+        	cursor = DragSource.DefaultCopyDrop;
         }
         else if( (myaction & DnDConstants.ACTION_LINK) != 0) 
         {
-            context.setCursor(DragSource.DefaultLinkDrop);
+            //context.setCursor(DragSource.DefaultLinkDrop);
+        	cursor = DragSource.DefaultLinkDrop;
         }
         else if( (myaction & DnDConstants.ACTION_MOVE) != 0) 
         {
-            context.setCursor(DragSource.DefaultMoveDrop);
+            //context.setCursor(DragSource.DefaultMoveDrop);
+        	cursor = DragSource.DefaultMoveDrop;
         }
         else 
         {
-            context.setCursor(DragSource.DefaultMoveNoDrop);
+            //context.setCursor(DragSource.DefaultMoveNoDrop);
+        	cursor = DragSource.DefaultMoveNoDrop;
         }
-
+    	DataMapTree.getDataMapTree().setCursor(cursor);
     }
 
 
@@ -1927,9 +1956,15 @@ class DMTDragSourceListener implements DragSourceListener
     }
 
 
-    public void dragExit(DragSourceEvent e) {}
-    public void dragDropEnd(DragSourceDropEvent e) {}
-    public void dropActionChanged(DragSourceDragEvent e) {}
+    public void dragExit(DragSourceEvent e) {
+
+    }
+    public void dragDropEnd(DragSourceDropEvent e) {
+    	
+    }
+    public void dropActionChanged(DragSourceDragEvent e) {
+    	
+    }
 }
     
 /*  Too Dangerous, see cut()
