@@ -1,0 +1,1641 @@
+multi-attribute greaterthan 90
+multi-attribute index 9
+multi-attribute direction 4
+multi-attribute wall 40
+multi-attribute combine-direction 12
+multi-attribute horiz-component 8
+multi-attribute vert-component 8
+multi-attribute diff 100
+multi-attribute diff 50
+multi-attribute sum 100
+
+pushd common
+source old-canvas.soar
+pushd default
+source selection.soar
+source selection-iterative-deepening.soar
+popd 
+popd
+
+sp {evaluate-operator*elaborate*state*tried-tied-operator-HACK
+   :default
+   (state <s> ^look-ahead-operator <o> ^operator <o> ^elaborations.two-steps-toward)
+-->
+   (<s> ^move-finished <o> +)
+}
+sp {evaluate-operator*elaborate*state*tried-tied-operator-HACK2
+   :default
+   (state <s> ^look-ahead-operator <o> ^operator <o> ^gs <gs> ^facts.mummy-type.p1 <mummy>)
+  -{(<gs> ^location <l>)
+    (<l> ^p1 <mummy>)}
+-->
+   (<s> ^move-finished <o> +)
+}
+
+sp {propose*legal_explorer__move__dir__1
+   (state <s> ^name game ^facts <f> ^io <i> -^hypothetical true)
+   (<f> ^direction <d>)
+   (<d> ^p1 <dir>)
+   (<i> ^output-link <o>)
+   (<o> -^<cmd-name> <c>)
+-->
+   (<s> ^operator <o1> +)
+   (<o1> ^name move__dir_ ^p1 <dir>)
+}
+sp {apply*move__dir_
+   (state <s> ^name game ^operator <o> ^io <i>)
+   (<o> ^name move__dir_ ^p1 <dir>)
+   (<i> ^output-link <o1>)
+-->
+   (<o1> ^move <move>)
+   (<move> ^p1 <dir>)
+}
+sp {elaborate*doesprime__mummy__move2__mv1__mv2__
+   (state <s> ^elaborations <e>)
+   (<e> ^simplemove <s1>)
+   (<s1> ^p1 <mummy> ^p2 <p>)
+   (<p> ^name move2 ^p1 <mv1> ^p2 <mv2>)
+-->
+   (<e> ^doesprime <doesprime>)
+   (<doesprime> ^p1 <mummy> ^p2 <p2>)
+   (<p2> ^name move2 ^p1 <mv1> ^p2 <mv2>)
+}
+sp {elaborate*simplemove__mummy__move2__m1__m2__
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^mummy-type <m>)
+   (<m> ^p1 <mummy> ^p2 <type>)
+   (<e> ^two-steps-toward <t>)
+   (<t> ^p1 <type> ^p2 <x> ^p3 <y> ^p4 <ex> ^p5 <ey> ^p6 <m1> ^p7 <m2>)
+-->
+   (<e> ^simplemove <simplemove>)
+   (<simplemove> ^p1 <mummy> ^p2 <p2>)
+   (<p2> ^name move2 ^p1 <m1> ^p2 <m2>)
+}
+sp {elaborate*two-steps-toward__type__x__y__ex__ey__m1__m2_
+   (state <s> ^gs <g> ^elaborations <e>)
+   (<g> ^location <l>)
+   (<l> ^p1 mummy ^p2 <x> ^p3 <y>)
+   (<e> ^movetoward <m> ^newlocation1 <n> ^movetoward <m11>)
+   (<m> ^p1 <type> ^p2 <x> ^p3 <y> ^p4 <ex> ^p5 <ey> ^p6 <m1>)
+   (<n> ^p6 mummy ^p1 <x> ^p2 <y> ^p3 <m1> ^p4 <x1> ^p5 <y1>)
+   (<m11> ^p1 <type> ^p2 <x1> ^p3 <y1> ^p4 <ex> ^p5 <ey> ^p6 <m2>)
+-->
+   (<e> ^two-steps-toward <two-steps-toward>)
+   (<two-steps-toward> ^p1 <type> ^p2 <x> ^p3 <y> ^p4 <ex> ^p5 <ey> ^p6 <m1> ^p7 <m2>)
+}
+
+sp {elaborate*movetoward__type__x__y__ex__ey__card_
+   (state <s> ^elaborations <e>)
+   (<e> ^direction-from <d> ^pick-one <p>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   (<p> ^p1 <type> ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <card>)
+-->
+   (<e> ^movetoward <movetoward>)
+   (<movetoward> ^p1 <type> ^p2 <x> ^p3 <y> ^p4 <ex> ^p5 <ey> ^p6 <card>)
+}
+sp {elaborate*pick-one_horizontal__x__y_none_nowhere_
+   (state <s> ^facts <f> ^elaborations <e> ^gs <g>)
+   (<f> ^mummy-type <m>)
+   (<m> ^p2 horizontal ^p1 <mummy>)
+   (<e> ^next-explorer-loc <n>)
+   (<n> ^p1 <x> ^p2 <y>)
+   (<g> ^location <l>)
+   (<l> ^p1 <mummy> ^p2 <x> ^p3 <y>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 horizontal ^p2 <x> ^p3 <y> ^p4 none ^p5 nowhere)
+}
+sp {elaborate*pick-one_horizontal__x__y_none_nowhere_1
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^mummy-type <m>)
+   (<m> ^p2 horizontal ^p1 <mummy>)
+   (<e> ^next-explorer-loc <n> ^close-to-mummy <c>)
+   (<n> ^p1 <x> ^p2 <y>)
+   (<c> ^p1 <x> ^p2 <y>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 horizontal ^p2 <x> ^p3 <y> ^p4 none ^p5 nowhere)
+}
+sp {elaborate*pick-one_horizontal__x__y__dir__v_
+   (state <s> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<f> ^mummy-type <m> ^vert-component <v>)
+   (<m> ^p2 horizontal ^p1 <mummy>)
+   (<g> ^location <l>)
+   (<l> ^p1 <mummy> ^p2 <x> ^p3 <y>)
+   (<e> ^direction-from <d>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   -{
+     (<e> ^some-horiz-component <s1>)
+     (<s1> ^p1 <dir>)
+   }
+   (<v> ^p1 <dir> ^p2 <v1>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 horizontal ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <v1>)
+}
+sp {elaborate*pick-one_horizontal__x__y__dir__v_1
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^mummy-type <m> ^vert-component <v>)
+   (<m> ^p2 horizontal ^p1 <mummy>)
+   (<e> ^close-to-mummy <c> ^direction-from <d>)
+   (<c> ^p1 <x> ^p2 <y>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   -{
+     (<e> ^some-horiz-component <s1>)
+     (<s1> ^p1 <dir>)
+   }
+   (<v> ^p1 <dir> ^p2 <v1>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 horizontal ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <v1>)
+}
+sp {elaborate*pick-one_horizontal__x__y__dir__h_
+   (state <s> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<f> ^mummy-type <m> ^horiz-component <h>)
+   (<m> ^p2 horizontal ^p1 <mummy>)
+   (<g> ^location <l>)
+   (<l> ^p1 <mummy> ^p2 <x> ^p3 <y>)
+   (<e> ^direction-from <d>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   -{
+     (<e> ^some-vert-component <s1>)
+     (<s1> ^p1 <dir>)
+   }
+   (<h> ^p1 <dir> ^p2 <h1>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 horizontal ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <h1>)
+}
+sp {elaborate*pick-one_horizontal__x__y__dir__h_1
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^mummy-type <m> ^horiz-component <h>)
+   (<m> ^p2 horizontal ^p1 <mummy>)
+   (<e> ^close-to-mummy <c> ^direction-from <d>)
+   (<c> ^p1 <x> ^p2 <y>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   -{
+     (<e> ^some-vert-component <s1>)
+     (<s1> ^p1 <dir>)
+   }
+   (<h> ^p1 <dir> ^p2 <h1>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 horizontal ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <h1>)
+}
+sp {elaborate*pick-one_horizontal__x__y__dir__h_2
+   (state <s> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<f> ^mummy-type <m> ^horiz-component <h> ^vert-component <v>)
+   (<m> ^p2 horizontal ^p1 <mummy>)
+   (<g> ^location <l>)
+   (<l> ^p1 <mummy> ^p2 <x> ^p3 <y>)
+   (<e> ^direction-from <d> ^newlocation1 <n>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   (<h> ^p1 <dir> ^p2 <h1>)
+   (<v> ^p1 <dir> ^p2 <v1>)
+   (<n> ^p6 mummy ^p1 <x> ^p2 <y> ^p3 <h1> ^p4 { <xnew>  <> <x> } ^p5 <y>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 horizontal ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <h1>)
+}
+sp {elaborate*pick-one_horizontal__x__y__dir__h_3
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^mummy-type <m> ^horiz-component <h> ^vert-component <v>)
+   (<m> ^p2 horizontal ^p1 <mummy>)
+   (<e> ^close-to-mummy <c> ^direction-from <d> ^newlocation1 <n>)
+   (<c> ^p1 <x> ^p2 <y>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   (<h> ^p1 <dir> ^p2 <h1>)
+   (<v> ^p1 <dir> ^p2 <v1>)
+   (<n> ^p6 mummy ^p1 <x> ^p2 <y> ^p3 <h1> ^p4 { <xnew>  <> <x> } ^p5 <y>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 horizontal ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <h1>)
+}
+sp {elaborate*pick-one_horizontal__x__y__dir__v_2
+   (state <s> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<f> ^mummy-type <m> ^horiz-component <h> ^vert-component <v>)
+   (<m> ^p2 horizontal ^p1 <mummy>)
+   (<g> ^location <l>)
+   (<l> ^p1 <mummy> ^p2 <x> ^p3 <y>)
+   (<e> ^direction-from <d> ^newlocation1 <n>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   (<h> ^p1 <dir> ^p2 <h1>)
+   (<v> ^p1 <dir> ^p2 <v1>)
+   (<n> ^p6 mummy ^p1 <x> ^p2 <y> ^p3 <h1> ^p4 <x> ^p5 <y>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 horizontal ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <v1>)
+}
+sp {elaborate*pick-one_horizontal__x__y__dir__v_3
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^mummy-type <m> ^horiz-component <h> ^vert-component <v>)
+   (<m> ^p2 horizontal ^p1 <mummy>)
+   (<e> ^close-to-mummy <c> ^direction-from <d> ^newlocation1 <n>)
+   (<c> ^p1 <x> ^p2 <y>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   (<h> ^p1 <dir> ^p2 <h1>)
+   (<v> ^p1 <dir> ^p2 <v1>)
+   (<n> ^p6 mummy ^p1 <x> ^p2 <y> ^p3 <h1> ^p4 <x> ^p5 <y>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 horizontal ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <v1>)
+}
+sp {elaborate*pick-one_vertical__x__y_none_nowhere_
+   (state <s> ^facts <f> ^elaborations <e> ^gs <g>)
+   (<f> ^mummy-type <m>)
+   (<m> ^p2 vertical ^p1 <mummy>)
+   (<e> ^next-explorer-loc <n>)
+   (<n> ^p1 <x> ^p2 <y>)
+   (<g> ^location <l>)
+   (<l> ^p1 <mummy> ^p2 <x> ^p3 <y>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 vertical ^p2 <x> ^p3 <y> ^p4 none ^p5 nowhere)
+}
+sp {elaborate*pick-one_vertical__x__y_none_nowhere_1
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^mummy-type <m>)
+   (<m> ^p2 vertical ^p1 <mummy>)
+   (<e> ^next-explorer-loc <n> ^close-to-mummy <c>)
+   (<n> ^p1 <x> ^p2 <y>)
+   (<c> ^p1 <x> ^p2 <y>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 vertical ^p2 <x> ^p3 <y> ^p4 none ^p5 nowhere)
+}
+sp {elaborate*pick-one_vertical__x__y__dir__v_
+   (state <s> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<f> ^mummy-type <m> ^vert-component <v>)
+   (<m> ^p2 vertical ^p1 <mummy>)
+   (<g> ^location <l>)
+   (<l> ^p1 <mummy> ^p2 <x> ^p3 <y>)
+   (<e> ^direction-from <d>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   -{
+     (<e> ^some-horiz-component <s1>)
+     (<s1> ^p1 <dir>)
+   }
+   (<v> ^p1 <dir> ^p2 <v1>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 vertical ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <v1>)
+}
+sp {elaborate*pick-one_vertical__x__y__dir__v_1
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^mummy-type <m> ^vert-component <v>)
+   (<m> ^p2 vertical ^p1 <mummy>)
+   (<e> ^close-to-mummy <c> ^direction-from <d>)
+   (<c> ^p1 <x> ^p2 <y>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   -{
+     (<e> ^some-horiz-component <s1>)
+     (<s1> ^p1 <dir>)
+   }
+   (<v> ^p1 <dir> ^p2 <v1>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 vertical ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <v1>)
+}
+sp {elaborate*pick-one_vertical__x__y__dir__h_
+   (state <s> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<f> ^mummy-type <m> ^horiz-component <h>)
+   (<m> ^p2 vertical ^p1 <mummy>)
+   (<g> ^location <l>)
+   (<l> ^p1 <mummy> ^p2 <x> ^p3 <y>)
+   (<e> ^direction-from <d>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   -{
+     (<e> ^some-vert-component <s1>)
+     (<s1> ^p1 <dir>)
+   }
+   (<h> ^p1 <dir> ^p2 <h1>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 vertical ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <h1>)
+}
+sp {elaborate*pick-one_vertical__x__y__dir__h_1
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^mummy-type <m> ^horiz-component <h>)
+   (<m> ^p2 vertical ^p1 <mummy>)
+   (<e> ^close-to-mummy <c> ^direction-from <d>)
+   (<c> ^p1 <x> ^p2 <y>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   -{
+     (<e> ^some-vert-component <s1>)
+     (<s1> ^p1 <dir>)
+   }
+   (<h> ^p1 <dir> ^p2 <h1>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 vertical ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <h1>)
+}
+sp {elaborate*pick-one_vertical__x__y__dir__v_2
+   (state <s> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<f> ^mummy-type <m> ^horiz-component <h> ^vert-component <v>)
+   (<m> ^p2 vertical ^p1 <mummy>)
+   (<g> ^location <l>)
+   (<l> ^p1 <mummy> ^p2 <x> ^p3 <y>)
+   (<e> ^direction-from <d> ^newlocation1 <n>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   (<h> ^p1 <dir> ^p2 <h1>)
+   (<v> ^p1 <dir> ^p2 <v1>)
+   (<n> ^p6 mummy ^p1 <x> ^p2 <y> ^p3 <v1> ^p4 <x> ^p5 { <ynew>  <> <y> })
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 vertical ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <v1>)
+}
+sp {elaborate*pick-one_vertical__x__y__dir__v_3
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^mummy-type <m> ^horiz-component <h> ^vert-component <v>)
+   (<m> ^p2 vertical ^p1 <mummy>)
+   (<e> ^close-to-mummy <c> ^direction-from <d> ^newlocation1 <n>)
+   (<c> ^p1 <x> ^p2 <y>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   (<h> ^p1 <dir> ^p2 <h1>)
+   (<v> ^p1 <dir> ^p2 <v1>)
+   (<n> ^p6 mummy ^p1 <x> ^p2 <y> ^p3 <v1> ^p4 <x> ^p5 { <ynew>  <> <y> })
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 vertical ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <v1>)
+}
+sp {elaborate*pick-one_vertical__x__y__dir__h_2
+   (state <s> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<f> ^mummy-type <m> ^horiz-component <h> ^vert-component <v>)
+   (<m> ^p2 vertical ^p1 <mummy>)
+   (<g> ^location <l>)
+   (<l> ^p1 <mummy> ^p2 <x> ^p3 <y>)
+   (<e> ^direction-from <d> ^newlocation1 <n>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   (<h> ^p1 <dir> ^p2 <h1>)
+   (<v> ^p1 <dir> ^p2 <v1>)
+   (<n> ^p6 mummy ^p1 <x> ^p2 <y> ^p3 <v1> ^p4 <x> ^p5 <y>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 vertical ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <h1>)
+}
+sp {elaborate*pick-one_vertical__x__y__dir__h_3
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^mummy-type <m> ^horiz-component <h> ^vert-component <v>)
+   (<m> ^p2 vertical ^p1 <mummy>)
+   (<e> ^close-to-mummy <c> ^direction-from <d> ^newlocation1 <n>)
+   (<c> ^p1 <x> ^p2 <y>)
+   (<d> ^p1 <x> ^p2 <y> ^p3 <ex> ^p4 <ey> ^p5 <dir>)
+   (<h> ^p1 <dir> ^p2 <h1>)
+   (<v> ^p1 <dir> ^p2 <v1>)
+   (<n> ^p6 mummy ^p1 <x> ^p2 <y> ^p3 <v1> ^p4 <x> ^p5 <y>)
+-->
+   (<e> ^pick-one <pick-one>)
+   (<pick-one> ^p1 vertical ^p2 <x> ^p3 <y> ^p4 <dir> ^p5 <h1>)
+}
+sp {elaborate*direction-from__x1__y1__x2__y2__dir_
+   (state <s> ^elaborations <e>)
+   (<e> ^horiz-direction-from <h> ^vert-direction-from <v> ^combine-directions <c>)
+   (<h> ^p1 <x1> ^p2 <x2> ^p3 <dir1>)
+   (<v> ^p1 <y1> ^p2 <y2> ^p3 <dir2>)
+   (<c> ^p1 <dir2> ^p2 <dir1> ^p3 <dir>)
+-->
+   (<e> ^direction-from <direction-from>)
+   (<direction-from> ^p1 <x1> ^p2 <y1> ^p3 <x2> ^p4 <y2> ^p5 <dir>)
+}
+sp {elaborate*horiz-direction-from__mx__ex_east_
+   (state <s> ^gs <g> ^elaborations <e> ^facts <f>)
+   (<g> ^location <l>)
+   (<l> ^p1 mummy ^p2 { < <ex> <mx> } ^p3 <my>)
+   (<e> ^next-explorer-loc <n>)
+   (<n> ^p1 <ex> ^p2 <ey>)
+-->
+   (<e> ^horiz-direction-from <horiz-direction-from>)
+   (<horiz-direction-from> ^p1 <mx> ^p2 <ex> ^p3 east)
+}
+sp {elaborate*horiz-direction-from__x1__x2_east_
+   (state <s> ^gs <g> ^elaborations <e> ^facts <f>)
+   (<g> ^location <l>)
+   (<l> ^p1 mummy ^p2 <mx> ^p3 <my>)
+   (<e> ^close-to-mummy <c> ^next-explorer-loc <n>)
+   (<c> ^p1 { < <ex> <cmx> } ^p2 <my>)
+   (<n> ^p1 <ex> ^p2 <ey>)
+-->
+   (<e> ^horiz-direction-from <horiz-direction-from>)
+   (<horiz-direction-from> ^p1 <cmx> ^p2 <ex> ^p3 east)
+}
+sp {elaborate*horiz-direction-from__mx__ex_west_
+   (state <s> ^gs <g> ^elaborations <e> ^facts <f>)
+   (<g> ^location <l>)
+   (<l> ^p1 mummy ^p2  <mx> ^p3 <my>)
+   (<e> ^next-explorer-loc <n>)
+   (<n> ^p1 { < <mx> <ex> } ^p2 <ey>)
+-->
+   (<e> ^horiz-direction-from <horiz-direction-from>)
+   (<horiz-direction-from> ^p1 <mx> ^p2 <ex> ^p3 west)
+}
+sp {elaborate*horiz-direction-from__cmx__ex_west_
+   (state <s> ^gs <g> ^elaborations <e> ^facts <f>)
+   (<g> ^location <l>)
+   (<l> ^p1 mummy ^p2 <mx> ^p3 <my>)
+   (<e> ^close-to-mummy <c> ^next-explorer-loc <n>)
+   (<c> ^p1 <cmx> ^p2 <my>)
+   (<n> ^p1 { < <cmx> <ex> } ^p2 <ey>)
+-->
+   (<e> ^horiz-direction-from <horiz-direction-from>)
+   (<horiz-direction-from> ^p1 <cmx> ^p2 <ex> ^p3 west)
+}
+sp {elaborate*horiz-direction-from__mx__ex_none_
+   (state <s> ^gs <g> ^elaborations <e> ^facts <f>)
+   (<g> ^location <l>)
+   (<l> ^p1 mummy ^p2 { <ex> <mx> } ^p3 <my>)
+   (<e> ^next-explorer-loc <n>)
+   (<n> ^p1 <ex> ^p2 <ey>)
+-->
+   (<e> ^horiz-direction-from <horiz-direction-from>)
+   (<horiz-direction-from> ^p1 <mx> ^p2 <ex> ^p3 none)
+}
+sp {elaborate*horiz-direction-from__cmx__ex_none_
+   (state <s> ^gs <g> ^elaborations <e> ^facts <f>)
+   (<g> ^location <l>)
+   (<l> ^p1 mummy ^p2 <mx> ^p3 <my>)
+   (<e> ^close-to-mummy <c> ^next-explorer-loc <n>)
+   (<c> ^p1 { <ex> <cmx> } ^p2 <my>)
+   (<n> ^p1 <ex> ^p2 <ey>)
+-->
+   (<e> ^horiz-direction-from <horiz-direction-from>)
+   (<horiz-direction-from> ^p1 <cmx> ^p2 <ex> ^p3 none)
+}
+sp {elaborate*vert-direction-from__my__ey_north_
+   (state <s> ^gs <g> ^elaborations <e> ^facts <f>)
+   (<g> ^location <l>)
+   (<l> ^p1 mummy ^p2 <mx> ^p3 { < <ey> <my> })
+   (<e> ^next-explorer-loc <n>)
+   (<n> ^p1 <ex> ^p2 <ey>)
+-->
+   (<e> ^vert-direction-from <vert-direction-from>)
+   (<vert-direction-from> ^p1 <my> ^p2 <ey> ^p3 north)
+}
+sp {elaborate*vert-direction-from__cmy__ey_north_
+   (state <s> ^gs <g> ^elaborations <e> ^facts <f>)
+   (<g> ^location <l>)
+   (<l> ^p1 mummy ^p2 <mx> ^p3 <my>)
+   (<e> ^close-to-mummy <c> ^next-explorer-loc <n>)
+   (<c> ^p1 <mx> ^p2 { < <ey> <cmy> })
+   (<n> ^p1 <ex> ^p2 <ey>)
+-->
+   (<e> ^vert-direction-from <vert-direction-from>)
+   (<vert-direction-from> ^p1 <cmy> ^p2 <ey> ^p3 north)
+}
+sp {elaborate*vert-direction-from__my__ey_south_
+   (state <s> ^gs <g> ^elaborations <e> ^facts <f>)
+   (<g> ^location <l>)
+   (<l> ^p1 mummy ^p2 <mx> ^p3 <my>)
+   (<e> ^next-explorer-loc <n>)
+   (<n> ^p1 <ex> ^p2 { < <my> <ey> })
+-->
+   (<e> ^vert-direction-from <vert-direction-from>)
+   (<vert-direction-from> ^p1 <my> ^p2 <ey> ^p3 south)
+}
+sp {elaborate*vert-direction-from__cmy__ey_south_
+   (state <s> ^gs <g> ^elaborations <e> ^facts <f>)
+   (<g> ^location <l>)
+   (<l> ^p1 mummy ^p2 <mx> ^p3 <my>)
+   (<e> ^close-to-mummy <c> ^next-explorer-loc <n>)
+   (<c> ^p1 <mx> ^p2 <cmy>)
+   (<n> ^p1 <ex> ^p2 { < <cmy> <ey> })
+-->
+   (<e> ^vert-direction-from <vert-direction-from>)
+   (<vert-direction-from> ^p1 <cmy> ^p2 <ey> ^p3 south)
+}
+sp {elaborate*vert-direction-from__my__ey_none_
+   (state <s> ^gs <g> ^elaborations <e> ^facts <f>)
+   (<g> ^location <l>)
+   (<l> ^p1 mummy ^p2 <mx> ^p3 { <ey> <my> })
+   (<e> ^next-explorer-loc <n>)
+   (<n> ^p1 <ex> ^p2 <ey>)
+-->
+   (<e> ^vert-direction-from <vert-direction-from>)
+   (<vert-direction-from> ^p1 <my> ^p2 <ey> ^p3 none)
+}
+sp {elaborate*vert-direction-from__cmy__ey_none_
+   (state <s> ^gs <g> ^elaborations <e> ^facts <f>)
+   (<g> ^location <l>)
+   (<l> ^p1 mummy ^p2 <mx> ^p3 <my>)
+   (<e> ^close-to-mummy <c> ^next-explorer-loc <n>)
+   (<c> ^p1 <mx> ^p2 { <ey> <cmy> })
+   (<n> ^p1 <ex> ^p2 <ey>)
+-->
+   (<e> ^vert-direction-from <vert-direction-from>)
+   (<vert-direction-from> ^p1 <cmy> ^p2 <ey> ^p3 none)
+}
+sp {elaborate*combine-directions_none_none_none_
+   (state <s> ^elaborations <e>)
+-->
+   (<e> ^combine-directions <combine-directions>)
+   (<combine-directions> ^p1 none ^p2 none ^p3 none)
+}
+sp {elaborate*combine-directions_none__x__x_
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^direction <d>)
+   (<d> ^p1 <x>)
+-->
+   (<e> ^combine-directions <combine-directions>)
+   (<combine-directions> ^p1 none ^p2 <x> ^p3 <x>)
+}
+sp {elaborate*combine-directions__x_none__x_
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^direction <d>)
+   (<d> ^p1 <x>)
+-->
+   (<e> ^combine-directions <combine-directions>)
+   (<combine-directions> ^p1 <x> ^p2 none ^p3 <x>)
+}
+sp {elaborate*combine-directions_north_east_ne_
+   (state <s> ^elaborations <e>)
+-->
+   (<e> ^combine-directions <combine-directions>)
+   (<combine-directions> ^p1 north ^p2 east ^p3 ne)
+}
+sp {elaborate*combine-directions_north_west_nw_
+   (state <s> ^elaborations <e>)
+-->
+   (<e> ^combine-directions <combine-directions>)
+   (<combine-directions> ^p1 north ^p2 west ^p3 nw)
+}
+sp {elaborate*combine-directions_south_east_se_
+   (state <s> ^elaborations <e>)
+-->
+   (<e> ^combine-directions <combine-directions>)
+   (<combine-directions> ^p1 south ^p2 east ^p3 se)
+}
+sp {elaborate*combine-directions_south_west_sw_
+   (state <s> ^elaborations <e>)
+-->
+   (<e> ^combine-directions <combine-directions>)
+   (<combine-directions> ^p1 south ^p2 west ^p3 sw)
+}
+sp {apply*next__location_explorer__x2__y2__1
+   (state <s> ^name game ^name game ^operator <o> ^gs <g> ^io <i> ^elaborations <e1>)
+   (<o> ^name progress-state)
+   (<g> ^location <l>)
+   (<l> ^p1 explorer ^p2 <x1> ^p3 <y1>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l1>)
+   (<l1> ^explorer <e>)
+   (<e> ^move <m>)
+   (<m> ^p1 <dir>)
+   (<e1> ^newlocation1 <n>)
+   (<n> ^p6 explorer ^p1 <x1> ^p2 <y1> ^p3 <dir> ^p4 <x2> ^p5 <y2>)
+-->
+   (<g> ^location <location>)
+   (<location> ^p1 explorer ^p2 <x2> ^p3 <y2>)
+}
+sp {apply*remove*next__location_explorer__x2__y2__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name progress-state)
+   (<g> ^location <l>)
+   (<l> ^p1 explorer ^p2 <x2> ^p3 <y2>)
+-->
+   (<g> ^location <l> -)
+}
+sp {apply*next__location__mummy__x2__y2__1
+   (state <s> ^name game ^name game ^operator <o> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<o> ^name progress-state)
+   (<f> ^mummy-type <m>)
+   (<m> ^p1 <mummy> ^p2 <type>)
+   (<g> ^location <l>)
+   (<l> ^p1 <mummy> ^p2 <x1> ^p3 <y1>)
+   (<e> ^doesprime <d> ^newlocation2 <n>)
+   (<d> ^p1 <mummy> ^p2 <p>)
+   (<p> ^name move2 ^p1 <dir1> ^p2 <dir2>)
+   (<n> ^p1 <x1> ^p2 <y1> ^p3 <dir1> ^p4 <dir2> ^p5 <x2> ^p6 <y2>)
+-->
+   (<g> ^location <location>)
+   (<location> ^p1 <mummy> ^p2 <x2> ^p3 <y2>)
+}
+sp {apply*remove*next__location__mummy__x2__y2__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name progress-state)
+   (<g> ^location <l>)
+   (<l> ^p1 mummy ^p2 <x2> ^p3 <y2>)
+-->
+   (<g> ^location <l> -)
+}
+sp {apply*next__step__x__1
+   (state <s> ^name game ^name game ^operator <o> ^gs <g> ^facts <f>)
+   (<o> ^name progress-state)
+   (<g> ^step <s1>)
+   (<s1> ^p1 <y>)
+   (<f> ^succ <s2>)
+   (<s2> ^p1 <y> ^p2 <x>)
+-->
+   (<g> ^step <step>)
+   (<step> ^p1 <x>)
+}
+sp {apply*remove*next__step__x__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name progress-state)
+   (<g> ^step <s1>)
+   (<s1> ^p1 <x>)
+-->
+   (<g> ^step <s1> -)
+}
+sp {elaborate*eaten_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l> ^location <l1>)
+   (<l> ^p1 explorer ^p2 <x> ^p3 <y>)
+   (<l1> ^p1 <mummy> ^p2 <x> ^p3 <y>)
+   (<f> ^mummy-type <m>)
+   (<m> ^p1 <mummy> ^p2 <type>)
+-->
+   (<e> ^eaten <eaten>)}
+
+sp {elaborate*safe*x
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l> ^location <l1>)
+   (<l> ^p1 explorer ^p2 <x1>)
+   (<l1> ^p1 <mummy> ^p2 <x2> <> <x1>)
+   (<f> ^mummy-type <m>)
+   (<m> ^p1 <mummy> ^p2 <type>)
+-->
+   (<e> ^safe <safe>)
+ }  
+sp {elaborate*safe*y
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l> ^location <l1>)
+   (<l> ^p1 explorer ^p3 <y1>)
+   (<l1> ^p1 <mummy> ^p3 <y2> <> <y1>)
+   (<f> ^mummy-type <m>)
+   (<m> ^p1 <mummy> ^p2 <type>)
+-->
+   (<e> ^safe <safe>)
+   
+}
+sp {elaborate*atexit_
+   (state <s> ^gs <g> ^elaborations <e>)
+   (<g> ^location <l> ^location <l1>)
+   (<l> ^p1 explorer ^p2 <x> ^p3 <y>)
+   (<l1> ^p1 exit ^p2 <x> ^p3 <y>)
+-->
+   (<e> ^atexit <atexit>)
+   
+}
+sp {elaborate*laststep_
+   (state <s> ^gs <g> ^elaborations <e>)
+   (<g> ^step <s1>)
+   (<s1> ^p1 50)
+-->
+   (<e> ^laststep <laststep>)
+   
+}
+sp {elaborate*newlocation1__x__y_nowhere__x__y__obj_
+   (state <s> ^gs <g> ^elaborations <e>)
+   (<g> ^location <l>)
+   (<l> ^p1 <obj> ^p2 <x> ^p3 <y>)
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x> ^p2 <y> ^p3 nowhere ^p4 <x> ^p5 <y> ^p6 <obj>)
+}
+sp {elaborate*newlocation1__x__y_nowhere__x__y_mummy_
+   (state <s> ^elaborations <e>)
+   (<e> ^close-to-mummy <c>)
+   (<c> ^p1 <x> ^p2 <y>)
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x> ^p2 <y> ^p3 nowhere ^p4 <x> ^p5 <y> ^p6 mummy)
+}
+sp {elaborate*newlocation1__x__y_north__x__y__obj_
+   (state <s> ^gs <g> ^elaborations <e>)
+   (<g> ^location <l> ^wall <w>)
+   (<l> ^p1 <obj> ^p2 <x> ^p3 <y>)
+   (<w> ^p3 north ^p1 <x> ^p2 <y>)
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x> ^p2 <y> ^p3 north ^p4 <x> ^p5 <y> ^p6 <obj>)
+}
+sp {elaborate*newlocation1__x__y_north__x__y_mummy_
+   (state <s> ^elaborations <e> ^gs <g>)
+   (<e> ^close-to-mummy <c>)
+   (<c> ^p1 <x> ^p2 <y>)
+   (<g> ^wall <w>)
+   (<w> ^p3 north ^p1 <x> ^p2 <y>)
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x> ^p2 <y> ^p3 north ^p4 <x> ^p5 <y> ^p6 mummy)
+}
+sp {elaborate*newlocation1__x__y_south__x__y__obj_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l> ^wall <w>)
+   (<l> ^p1 <obj> ^p2 <x> ^p3 <y>)
+   (<f> ^succ <s1>)
+   (<s1> ^p1 <down> ^p2 <y>)
+   (<w> ^p3 north ^p1 <x> ^p2 <down>)
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x> ^p2 <y> ^p3 south ^p4 <x> ^p5 <y> ^p6 <obj>)
+}
+sp {elaborate*newlocation1__x__y_south__x__y_mummy_
+   (state <s> ^elaborations <e> ^facts <f> ^gs <g>)
+   (<e> ^close-to-mummy <c>)
+   (<c> ^p1 <x> ^p2 <y>)
+   (<f> ^succ <s1>)
+   (<s1> ^p1 <down> ^p2 <y>)
+   (<g> ^wall <w>)
+   (<w> ^p3 north ^p1 <x> ^p2 <down>)
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x> ^p2 <y> ^p3 south ^p4 <x> ^p5 <y> ^p6 mummy)
+}
+sp {elaborate*newlocation1__x__y_east__x__y__obj_
+   (state <s> ^gs <g> ^elaborations <e>)
+   (<g> ^location <l> ^wall <w>)
+   (<l> ^p1 <obj> ^p2 <x> ^p3 <y>)
+   (<w> ^p3 east ^p1 <x> ^p2 <y>)
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x> ^p2 <y> ^p3 east ^p4 <x> ^p5 <y> ^p6 <obj>)
+}
+sp {elaborate*newlocation1__x__y_east__x__y_mummy_
+   (state <s> ^elaborations <e> ^gs <g>)
+   (<e> ^close-to-mummy <c>)
+   (<c> ^p1 <x> ^p2 <y>)
+   (<g> ^wall <w>)
+   (<w> ^p3 east ^p1 <x> ^p2 <y>)
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x> ^p2 <y> ^p3 east ^p4 <x> ^p5 <y> ^p6 mummy)
+}
+sp {elaborate*newlocation1__x__y_west__x__y__obj_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l> ^wall <w>)
+   (<l> ^p1 <obj> ^p2 <x> ^p3 <y>)
+   (<f> ^succ <s1>)
+   (<s1> ^p1 <left> ^p2 <x>)
+   (<w> ^p3 east ^p1 <left> ^p2 <y>)
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x> ^p2 <y> ^p3 west ^p4 <x> ^p5 <y> ^p6 <obj>)
+}
+sp {elaborate*newlocation1__x__y_west__x__y_mummy_
+   (state <s> ^elaborations <e> ^facts <f> ^gs <g>)
+   (<e> ^close-to-mummy <c>)
+   (<c> ^p1 <x> ^p2 <y>)
+   (<f> ^succ <s1>)
+   (<s1> ^p1 <left> ^p2 <x>)
+   (<g> ^wall <w>)
+   (<w> ^p3 east ^p1 <left> ^p2 <y>)
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x> ^p2 <y> ^p3 west ^p4 <x> ^p5 <y> ^p6 mummy)
+}
+sp {elaborate*newlocation1__x__y1_north__x__y2__obj_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l>)
+   (<l> ^p1 <obj> ^p2 <x> ^p3 <y1>)
+   (<f> ^succ <s1>)
+   (<s1> ^p1 <y1> ^p2 <y2>)
+   -{
+     (<g> ^wall <w>)
+     (<w> ^p3 north ^p1 <x> ^p2 <y1>)
+   }
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x> ^p2 <y1> ^p3 north ^p4 <x> ^p5 <y2> ^p6 <obj>)
+}
+sp {elaborate*newlocation1__x__y1_north__x__y2_mummy_
+   (state <s> ^elaborations <e> ^facts <f> ^gs <g>)
+   (<e> ^close-to-mummy <c>)
+   (<c> ^p1 <x> ^p2 <y1>)
+   (<f> ^succ <s1>)
+   (<s1> ^p1 <y1> ^p2 <y2>)
+   -{
+     (<g> ^wall <w>)
+     (<w> ^p3 north ^p1 <x> ^p2 <y1>)
+   }
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x> ^p2 <y1> ^p3 north ^p4 <x> ^p5 <y2> ^p6 mummy)
+}
+sp {elaborate*newlocation1__x__y1_south__x__y2__obj_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l>)
+   (<l> ^p1 <obj> ^p2 <x> ^p3 <y1>)
+   (<f> ^succ <s1>)
+   (<s1> ^p1 <y2> ^p2 <y1>)
+   -{
+     (<g> ^wall <w>)
+     (<w> ^p3 north ^p1 <x> ^p2 <y2>)
+   }
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x> ^p2 <y1> ^p3 south ^p4 <x> ^p5 <y2> ^p6 <obj>)
+}
+sp {elaborate*newlocation1__x__y1_south__x__y2_mummy_
+   (state <s> ^elaborations <e> ^facts <f> ^gs <g>)
+   (<e> ^close-to-mummy <c>)
+   (<c> ^p1 <x> ^p2 <y1>)
+   (<f> ^succ <s1>)
+   (<s1> ^p1 <y2> ^p2 <y1>)
+   -{
+     (<g> ^wall <w>)
+     (<w> ^p3 north ^p1 <x> ^p2 <y2>)
+   }
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x> ^p2 <y1> ^p3 south ^p4 <x> ^p5 <y2> ^p6 mummy)
+}
+sp {elaborate*newlocation1__x1__y_east__x2__y__obj_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l>)
+   (<l> ^p1 <obj> ^p2 <x1> ^p3 <y>)
+   (<f> ^succ <s1>)
+   (<s1> ^p1 <x1> ^p2 <x2>)
+   -{
+     (<g> ^wall <w>)
+     (<w> ^p3 east ^p1 <x1> ^p2 <y>)
+   }
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x1> ^p2 <y> ^p3 east ^p4 <x2> ^p5 <y> ^p6 <obj>)
+}
+sp {elaborate*newlocation1__x1__y_east__x2__y_mummy_
+   (state <s> ^elaborations <e> ^facts <f> ^gs <g>)
+   (<e> ^close-to-mummy <c>)
+   (<c> ^p1 <x1> ^p2 <y>)
+   (<f> ^succ <s1>)
+   (<s1> ^p1 <x1> ^p2 <x2>)
+   -{
+     (<g> ^wall <w>)
+     (<w> ^p3 east ^p1 <x1> ^p2 <y>)
+   }
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x1> ^p2 <y> ^p3 east ^p4 <x2> ^p5 <y> ^p6 mummy)
+}
+sp {elaborate*newlocation1__x1__y_west__x2__y__obj_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l>)
+   (<l> ^p1 <obj> ^p2 <x1> ^p3 <y>)
+   (<f> ^succ <s1>)
+   (<s1> ^p1 <x2> ^p2 <x1>)
+   -{
+     (<g> ^wall <w>)
+     (<w> ^p3 east ^p1 <x2> ^p2 <y>)
+   }
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x1> ^p2 <y> ^p3 west ^p4 <x2> ^p5 <y> ^p6 <obj>)
+}
+sp {elaborate*newlocation1__x1__y_west__x2__y_mummy_
+   (state <s> ^elaborations <e> ^facts <f> ^gs <g>)
+   (<e> ^close-to-mummy <c>)
+   (<c> ^p1 <x1> ^p2 <y>)
+   (<f> ^succ <s1>)
+   (<s1> ^p1 <x2> ^p2 <x1>)
+   -{
+     (<g> ^wall <w>)
+     (<w> ^p3 east ^p1 <x2> ^p2 <y>)
+   }
+-->
+   (<e> ^newlocation1 <newlocation1>)
+   (<newlocation1> ^p1 <x1> ^p2 <y> ^p3 west ^p4 <x2> ^p5 <y> ^p6 mummy)
+}
+sp {elaborate*newlocation2__x1__y1__dir1__dir2__x3__y3_
+   (state <s> ^gs <g> ^elaborations <e>)
+   (<g> ^location <l>)
+   (<l> ^p1 mummy ^p2 <x1> ^p3 <y1>)
+   (<e> ^newlocation1 <n> ^newlocation1 <n1>)
+   (<n> ^p6 mummy ^p1 <x1> ^p2 <y1> ^p3 <dir1> ^p4 <x2> ^p5 <y2>)
+   (<n1> ^p6 mummy ^p1 <x2> ^p2 <y2> ^p3 <dir2> ^p4 <x3> ^p5 <y3>)
+-->
+   (<e> ^newlocation2 <newlocation2>)
+   (<newlocation2> ^p1 <x1> ^p2 <y1> ^p3 <dir1> ^p4 <dir2> ^p5 <x3> ^p6 <y3>)
+}
+sp {elaborate*some-vert-component__dir_
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^vert-component <v>)
+   (<v> ^p1 <dir> ^p2 <x>)
+-->
+   (<e> ^some-vert-component <some-vert-component>)
+   (<some-vert-component> ^p1 <dir>)
+}
+sp {elaborate*some-horiz-component__dir_
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^horiz-component <h>)
+   (<h> ^p1 <dir> ^p2 <x>)
+-->
+   (<e> ^some-horiz-component <some-horiz-component>)
+   (<some-horiz-component> ^p1 <dir>)
+}
+sp {elaborate*terminal_
+   (state <s> ^elaborations <e> -^duplicate-of <d>)
+   (<e> ^laststep <l>)
+-->
+   (halt)
+}
+sp {terminal_1
+   (state <s> ^elaborations <e> ^duplicate-of <d>)
+   (<e> ^laststep <l>)
+-->
+   (<s> ^terminal <terminal>)
+}
+sp {elaborate*terminal_2
+   (state <s> ^elaborations <e> -^duplicate-of <d>)
+   (<e> ^eaten <e1>)
+-->
+   (halt)
+}
+sp {terminal_21
+   (state <s> ^elaborations <e> ^duplicate-of <d>)
+   (<e> ^eaten <e1>)
+-->
+   (<s> ^terminal <terminal>)
+}
+sp {elaborate*terminal_3
+   (state <s> ^elaborations <e> -^duplicate-of <d>)
+   (<e> ^atexit <a>)
+-->
+   (halt)
+}
+sp {terminal_31
+   (state <s> ^elaborations <e> ^duplicate-of <d>)
+   (<e> ^atexit <a>)
+-->
+   (<s> ^terminal <terminal>)
+}
+sp {elaborate*goal_explorer_100_1
+   (state <s> ^name game ^terminal <t> ^desired <d> ^elaborations <e>)
+   #(<e> ^atexit <a> -^eaten <e1>)
+   (<e> ^atexit <a> ^safe <s1>)
+-->
+   (<s> ^success <d>)
+   (write |!!!FOUND EXIT!!!|)
+}
+sp {elaborate*goal_explorer_50_1
+   (state <s> ^name game ^terminal <t> ^desired <d> ^elaborations <e>)
+   #(<e> -^atexit <a> -^eaten <e1>)
+   (<e> -^atexit <a> ^safe <s1>)
+-->
+   (<s> ^failure <d>)
+}
+sp {elaborate*goal_explorer_0_1
+   (state <s> ^name game ^terminal <t> ^desired <d> ^elaborations <e>)
+   (<e> ^eaten <e1>)
+-->
+   (<s> ^failure <d>)
+   (write |%%%EATEN%%%|)
+}
+sp {elaborate*next-explorer-loc__ex__ey_
+   (state <s> ^gs <g> ^io <i> ^elaborations <e1>)
+   (<g> ^location <l>)
+   (<l> ^p1 explorer ^p2 <ex1> ^p3 <ey1>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l1>)
+   (<l1> ^explorer <e>)
+   (<e> ^move <m>)
+   (<m> ^p1 <em>)
+   (<e1> ^newlocation1 <n>)
+   (<n> ^p6 explorer ^p1 <ex1> ^p2 <ey1> ^p3 <em> ^p4 <ex> ^p5 <ey>)
+-->
+   (<e1> ^next-explorer-loc <next-explorer-loc>)
+   (<next-explorer-loc> ^p1 <ex> ^p2 <ey>)
+}
+sp {elaborate*close-to-mummy__x__y1_
+   (state <s> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<f> ^mummy-type <m>)
+   (<m> ^p1 <mummy> ^p2 <type>)
+   (<g> ^location <l>)
+   (<l> ^p1 <mummy> ^p2 <x> ^p3 <y>)
+   (<e> ^newlocation1 <n>)
+   (<n> ^p6 mummy ^p1 <x> ^p2 <y> ^p3 <dir> ^p4 <x> ^p5 { <y1>  <> <y> })
+-->
+   (<e> ^close-to-mummy <close-to-mummy>)
+   (<close-to-mummy> ^p1 <x> ^p2 <y1>)
+}
+sp {elaborate*close-to-mummy__x1__y_
+   (state <s> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<f> ^mummy-type <m>)
+   (<m> ^p1 <mummy> ^p2 <type>)
+   (<g> ^location <l>)
+   (<l> ^p1 <mummy> ^p2 <x> ^p3 <y>)
+   (<e> ^newlocation1 <n>)
+   (<n> ^p6 mummy ^p1 <x> ^p2 <y> ^p3 <dir> ^p4 { <x1>  <> <x> } ^p5 <y>)
+-->
+   (<e> ^close-to-mummy <close-to-mummy>)
+   (<close-to-mummy> ^p1 <x1> ^p2 <y>)
+}
+sp {propose*init-game
+   (state <s> ^superstate nil -^name )
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name init-game)
+}
+sp {apply*init-game
+   (state <s> ^operator <o>)
+   (<o> ^name init-game)
+-->
+   (<s> ^name game ^desired <desired> ^gs <gs> ^facts <facts>)
+   (<gs> ^role explorer)
+   (<gs> ^location <location>)
+   (<gs> ^location <location1>)
+
+## Explorer
+ #  (<location1> ^p1 explorer ^p2 5 ^p3 2) 
+ #  (<location1> ^p1 explorer ^p2 3 ^p3 2) #3) 
+   (<location1> ^p1 explorer ^p2 2 ^p3 3) 
+
+##Mummy
+ #  (<location> ^p1 mummy ^p2 5 ^p3 6) 
+   (<location> ^p1 mummy ^p2 5 ^p3 4) 
+   (<gs> ^location <location2>)
+   (<location2> ^p1 exit ^p2 1 ^p3 2)
+   (<gs> ^step <step>)
+   (<step> ^p1 0)
+   (<gs> ^wall <wall>)
+   (<wall> ^p1 4 ^p2 1 ^p3 east)
+   (<gs> ^wall <wall1>)
+   (<wall1> ^p1 4 ^p2 1 ^p3 north)
+   (<gs> ^wall <wall2>)
+   (<wall2> ^p1 1 ^p2 2 ^p3 north)
+   (<gs> ^wall <wall3>)
+   (<wall3> ^p1 2 ^p2 2 ^p3 north)
+   (<gs> ^wall <wall4>)
+   (<wall4> ^p1 1 ^p2 3 ^p3 east)
+   (<gs> ^wall <wall5>)
+   (<wall5> ^p1 3 ^p2 3 ^p3 east)
+   (<gs> ^wall <wall6>)
+   (<wall6> ^p1 2 ^p2 4 ^p3 east)
+   (<gs> ^wall <wall7>)
+   (<wall7> ^p1 3 ^p2 4 ^p3 east)
+   (<gs> ^wall <wall8>)
+   (<wall8> ^p1 3 ^p2 5 ^p3 east)
+   (<gs> ^wall <wall9>)
+   (<wall9> ^p1 3 ^p2 5 ^p3 north)
+   (<gs> ^wall <wall10>)
+   (<wall10> ^p1 2 ^p2 5 ^p3 north)
+   (<gs> ^wall <wall11>)
+   (<wall11> ^p1 2 ^p2 6 ^p3 east)
+   (<gs> ^wall <wall12>)
+   (<wall12> ^p1 3 ^p2 6 ^p3 north)
+   (<gs> ^wall <wall13>)
+   (<wall13> ^p1 2 ^p2 8 ^p3 east)
+   (<gs> ^wall <wall14>)
+   (<wall14> ^p1 4 ^p2 6 ^p3 north)
+   (<gs> ^wall <wall15>)
+   (<wall15> ^p1 4 ^p2 7 ^p3 east)
+   (<gs> ^wall <wall16>)
+   (<wall16> ^p1 5 ^p2 7 ^p3 east)
+   (<gs> ^wall <wall17>)
+   (<wall17> ^p1 4 ^p2 4 ^p3 east)
+   (<gs> ^wall <wall18>)
+   (<wall18> ^p1 5 ^p2 4 ^p3 east)
+   (<gs> ^wall <wall19>)
+   (<wall19> ^p1 8 ^p2 7 ^p3 north)
+   (<gs> ^wall <wall20>)
+   (<wall20> ^p1 6 ^p2 1 ^p3 north)
+   (<gs> ^wall <wall21>)
+   (<wall21> ^p1 6 ^p2 2 ^p3 north)
+   (<gs> ^wall <wall22>)
+   (<wall22> ^p1 6 ^p2 2 ^p3 east)
+   (<gs> ^wall <wall23>)
+   (<wall23> ^p1 6 ^p2 3 ^p3 east)
+   (<gs> ^wall <wall24>)
+   (<wall24> ^p1 6 ^p2 4 ^p3 east)
+   (<gs> ^wall <wall25>)
+   (<wall25> ^p1 6 ^p2 6 ^p3 north)
+   (<gs> ^wall <wall26>)
+   (<wall26> ^p1 7 ^p2 4 ^p3 north)
+   (<gs> ^wall <wall27>)
+   (<wall27> ^p1 7 ^p2 3 ^p3 east)
+   (<gs> ^wall <wall28>)
+   (<wall28> ^p1 1 ^p2 0 ^p3 north)
+   (<gs> ^wall <wall29>)
+   (<wall29> ^p1 2 ^p2 0 ^p3 north)
+   (<gs> ^wall <wall30>)
+   (<wall30> ^p1 3 ^p2 0 ^p3 north)
+   (<gs> ^wall <wall31>)
+   (<wall31> ^p1 4 ^p2 0 ^p3 north)
+   (<gs> ^wall <wall32>)
+   (<wall32> ^p1 5 ^p2 0 ^p3 north)
+   (<gs> ^wall <wall33>)
+   (<wall33> ^p1 6 ^p2 0 ^p3 north)
+   (<gs> ^wall <wall34>)
+   (<wall34> ^p1 7 ^p2 0 ^p3 north)
+   (<gs> ^wall <wall35>)
+   (<wall35> ^p1 8 ^p2 0 ^p3 north)
+   (<gs> ^wall <wall36>)
+   (<wall36> ^p1 1 ^p2 8 ^p3 north)
+   (<gs> ^wall <wall37>)
+   (<wall37> ^p1 2 ^p2 8 ^p3 north)
+   (<gs> ^wall <wall38>)
+   (<wall38> ^p1 3 ^p2 8 ^p3 north)
+   (<gs> ^wall <wall39>)
+   (<wall39> ^p1 4 ^p2 8 ^p3 north)
+   (<gs> ^wall <wall40>)
+   (<wall40> ^p1 5 ^p2 8 ^p3 north)
+   (<gs> ^wall <wall41>)
+   (<wall41> ^p1 6 ^p2 8 ^p3 north)
+   (<gs> ^wall <wall42>)
+   (<wall42> ^p1 7 ^p2 8 ^p3 north)
+   (<gs> ^wall <wall43>)
+   (<wall43> ^p1 8 ^p2 8 ^p3 north)
+   (<gs> ^wall <wall44>)
+   (<wall44> ^p1 0 ^p2 1 ^p3 east)
+   (<gs> ^wall <wall45>)
+   (<wall45> ^p1 0 ^p2 2 ^p3 east)
+   (<gs> ^wall <wall46>)
+   (<wall46> ^p1 0 ^p2 3 ^p3 east)
+   (<gs> ^wall <wall47>)
+   (<wall47> ^p1 0 ^p2 4 ^p3 east)
+   (<gs> ^wall <wall48>)
+   (<wall48> ^p1 0 ^p2 5 ^p3 east)
+   (<gs> ^wall <wall49>)
+   (<wall49> ^p1 0 ^p2 6 ^p3 east)
+   (<gs> ^wall <wall50>)
+   (<wall50> ^p1 0 ^p2 7 ^p3 east)
+   (<gs> ^wall <wall51>)
+   (<wall51> ^p1 0 ^p2 8 ^p3 east)
+   (<gs> ^wall <wall52>)
+   (<wall52> ^p1 8 ^p2 1 ^p3 east)
+   (<gs> ^wall <wall53>)
+   (<wall53> ^p1 8 ^p2 2 ^p3 east)
+   (<gs> ^wall <wall54>)
+   (<wall54> ^p1 8 ^p2 3 ^p3 east)
+   (<gs> ^wall <wall55>)
+   (<wall55> ^p1 8 ^p2 4 ^p3 east)
+   (<gs> ^wall <wall56>)
+   (<wall56> ^p1 8 ^p2 5 ^p3 east)
+   (<gs> ^wall <wall57>)
+   (<wall57> ^p1 8 ^p2 6 ^p3 east)
+   (<gs> ^wall <wall58>)
+   (<wall58> ^p1 8 ^p2 7 ^p3 east)
+   (<gs> ^wall <wall59>)
+   (<wall59> ^p1 8 ^p2 8 ^p3 east)
+   (<facts> ^mummy-type <mummy-type>)
+   # MUMMYTYPE
+  # (<mummy-type> ^p1 mummy ^p2 vertical)
+   (<mummy-type> ^p1 mummy ^p2 horizontal)
+   (<facts> ^index <index>)
+   (<index> ^p1 0)
+   (<facts> ^index <index1>)
+   (<index1> ^p1 1)
+   (<facts> ^index <index2>)
+   (<index2> ^p1 2)
+   (<facts> ^index <index3>)
+   (<index3> ^p1 3)
+   (<facts> ^index <index4>)
+   (<index4> ^p1 4)
+   (<facts> ^index <index5>)
+   (<index5> ^p1 5)
+   (<facts> ^index <index6>)
+   (<index6> ^p1 6)
+   (<facts> ^index <index7>)
+   (<index7> ^p1 7)
+   (<facts> ^index <index8>)
+   (<index8> ^p1 8)
+   (<facts> ^direction <direction>)
+   (<direction> ^p1 north)
+   (<facts> ^direction <direction1>)
+   (<direction1> ^p1 south)
+   (<facts> ^direction <direction2>)
+   (<direction2> ^p1 east)
+   (<facts> ^direction <direction3>)
+   (<direction3> ^p1 west)
+   (<facts> ^direction <direction4>)
+   (<direction4> ^p1 nowhere)
+   
+   (<facts> ^vert-component <vert-component>)
+   (<vert-component> ^p1 nw ^p2 north)
+   (<facts> ^vert-component <vert-component1>)
+   (<vert-component1> ^p1 ne ^p2 north)
+   (<facts> ^vert-component <vert-component2>)
+   (<vert-component2> ^p1 sw ^p2 south)
+   (<facts> ^vert-component <vert-component3>)
+   (<vert-component3> ^p1 se ^p2 south)
+   (<facts> ^vert-component <vert-component4>)
+   (<vert-component4> ^p1 north ^p2 north)
+   (<facts> ^vert-component <vert-component5>)
+   (<vert-component5> ^p1 south ^p2 south)
+   (<facts> ^succ <succ>)
+   (<succ> ^p1 0 ^p2 1)
+   (<facts> ^succ <succ1>)
+   (<succ1> ^p1 1 ^p2 2)
+   (<facts> ^succ <succ2>)
+   (<succ2> ^p1 2 ^p2 3)
+   (<facts> ^succ <succ3>)
+   (<succ3> ^p1 3 ^p2 4)
+   (<facts> ^succ <succ4>)
+   (<succ4> ^p1 4 ^p2 5)
+   (<facts> ^succ <succ5>)
+   (<succ5> ^p1 5 ^p2 6)
+   (<facts> ^succ <succ6>)
+   (<succ6> ^p1 6 ^p2 7)
+   (<facts> ^succ <succ7>)
+   (<succ7> ^p1 7 ^p2 8)
+   (<facts> ^succ <succ8>)
+   (<succ8> ^p1 8 ^p2 9)
+   (<facts> ^succ <succ9>)
+   (<succ9> ^p1 9 ^p2 10)
+   (<facts> ^succ <succ10>)
+   (<succ10> ^p1 10 ^p2 11)
+   (<facts> ^succ <succ11>)
+   (<succ11> ^p1 11 ^p2 12)
+   (<facts> ^succ <succ12>)
+   (<succ12> ^p1 12 ^p2 13)
+   (<facts> ^succ <succ13>)
+   (<succ13> ^p1 13 ^p2 14)
+   (<facts> ^succ <succ14>)
+   (<succ14> ^p1 14 ^p2 15)
+   (<facts> ^succ <succ15>)
+   (<succ15> ^p1 15 ^p2 16)
+   (<facts> ^succ <succ16>)
+   (<succ16> ^p1 16 ^p2 17)
+   (<facts> ^succ <succ17>)
+   (<succ17> ^p1 17 ^p2 18)
+   (<facts> ^succ <succ18>)
+   (<succ18> ^p1 18 ^p2 19)
+   (<facts> ^succ <succ19>)
+   (<succ19> ^p1 19 ^p2 20)
+   (<facts> ^succ <succ20>)
+   (<succ20> ^p1 20 ^p2 21)
+   (<facts> ^succ <succ21>)
+   (<succ21> ^p1 21 ^p2 22)
+   (<facts> ^succ <succ22>)
+   (<succ22> ^p1 22 ^p2 23)
+   (<facts> ^succ <succ23>)
+   (<succ23> ^p1 23 ^p2 24)
+   (<facts> ^succ <succ24>)
+   (<succ24> ^p1 24 ^p2 25)
+   (<facts> ^succ <succ25>)
+   (<succ25> ^p1 25 ^p2 26)
+   (<facts> ^succ <succ26>)
+   (<succ26> ^p1 26 ^p2 27)
+   (<facts> ^succ <succ27>)
+   (<succ27> ^p1 27 ^p2 28)
+   (<facts> ^succ <succ28>)
+   (<succ28> ^p1 28 ^p2 29)
+   (<facts> ^succ <succ29>)
+   (<succ29> ^p1 29 ^p2 30)
+   (<facts> ^succ <succ30>)
+   (<succ30> ^p1 30 ^p2 31)
+   (<facts> ^succ <succ31>)
+   (<succ31> ^p1 31 ^p2 32)
+   (<facts> ^succ <succ32>)
+   (<succ32> ^p1 32 ^p2 33)
+   (<facts> ^succ <succ33>)
+   (<succ33> ^p1 33 ^p2 34)
+   (<facts> ^succ <succ34>)
+   (<succ34> ^p1 34 ^p2 35)
+   (<facts> ^succ <succ35>)
+   (<succ35> ^p1 35 ^p2 36)
+   (<facts> ^succ <succ36>)
+   (<succ36> ^p1 36 ^p2 37)
+   (<facts> ^succ <succ37>)
+   (<succ37> ^p1 37 ^p2 38)
+   (<facts> ^succ <succ38>)
+   (<succ38> ^p1 38 ^p2 39)
+   (<facts> ^succ <succ39>)
+   (<succ39> ^p1 39 ^p2 40)
+   (<facts> ^succ <succ40>)
+   (<succ40> ^p1 40 ^p2 41)
+   (<facts> ^succ <succ41>)
+   (<succ41> ^p1 41 ^p2 42)
+   (<facts> ^succ <succ42>)
+   (<succ42> ^p1 42 ^p2 43)
+   (<facts> ^succ <succ43>)
+   (<succ43> ^p1 43 ^p2 44)
+   (<facts> ^succ <succ44>)
+   (<succ44> ^p1 44 ^p2 45)
+   (<facts> ^succ <succ45>)
+   (<succ45> ^p1 45 ^p2 46)
+   (<facts> ^succ <succ46>)
+   (<succ46> ^p1 46 ^p2 47)
+   (<facts> ^succ <succ47>)
+   (<succ47> ^p1 47 ^p2 48)
+   (<facts> ^succ <succ48>)
+   (<succ48> ^p1 48 ^p2 49)
+   (<facts> ^succ <succ49>)
+   (<succ49> ^p1 49 ^p2 50)
+   (<facts> ^diff <diff>)
+   (<diff> ^p1 1 ^p2 1 ^p3 0)
+   (<facts> ^diff <diff1>)
+   (<diff1> ^p1 1 ^p2 2 ^p3 1)
+   (<facts> ^diff <diff2>)
+   (<diff2> ^p1 1 ^p2 3 ^p3 2)
+   (<facts> ^diff <diff3>)
+   (<diff3> ^p1 1 ^p2 4 ^p3 3)
+   (<facts> ^diff <diff4>)
+   (<diff4> ^p1 1 ^p2 5 ^p3 4)
+   (<facts> ^diff <diff5>)
+   (<diff5> ^p1 1 ^p2 6 ^p3 5)
+   (<facts> ^diff <diff6>)
+   (<diff6> ^p1 1 ^p2 7 ^p3 6)
+   (<facts> ^diff <diff7>)
+   (<diff7> ^p1 1 ^p2 8 ^p3 7)
+   (<facts> ^diff <diff8>)
+   (<diff8> ^p1 2 ^p2 1 ^p3 1)
+   (<facts> ^diff <diff9>)
+   (<diff9> ^p1 2 ^p2 2 ^p3 0)
+   (<facts> ^diff <diff10>)
+   (<diff10> ^p1 2 ^p2 3 ^p3 1)
+   (<facts> ^diff <diff11>)
+   (<diff11> ^p1 2 ^p2 4 ^p3 2)
+   (<facts> ^diff <diff12>)
+   (<diff12> ^p1 2 ^p2 5 ^p3 3)
+   (<facts> ^diff <diff13>)
+   (<diff13> ^p1 2 ^p2 6 ^p3 4)
+   (<facts> ^diff <diff14>)
+   (<diff14> ^p1 2 ^p2 7 ^p3 5)
+   (<facts> ^diff <diff15>)
+   (<diff15> ^p1 2 ^p2 8 ^p3 6)
+   (<facts> ^diff <diff16>)
+   (<diff16> ^p1 3 ^p2 1 ^p3 2)
+   (<facts> ^diff <diff17>)
+   (<diff17> ^p1 3 ^p2 2 ^p3 1)
+   (<facts> ^diff <diff18>)
+   (<diff18> ^p1 3 ^p2 3 ^p3 0)
+   (<facts> ^diff <diff19>)
+   (<diff19> ^p1 3 ^p2 4 ^p3 1)
+   (<facts> ^diff <diff20>)
+   (<diff20> ^p1 3 ^p2 5 ^p3 2)
+   (<facts> ^diff <diff21>)
+   (<diff21> ^p1 3 ^p2 6 ^p3 3)
+   (<facts> ^diff <diff22>)
+   (<diff22> ^p1 3 ^p2 7 ^p3 4)
+   (<facts> ^diff <diff23>)
+   (<diff23> ^p1 3 ^p2 8 ^p3 5)
+   (<facts> ^diff <diff24>)
+   (<diff24> ^p1 4 ^p2 1 ^p3 3)
+   (<facts> ^diff <diff25>)
+   (<diff25> ^p1 4 ^p2 2 ^p3 2)
+   (<facts> ^diff <diff26>)
+   (<diff26> ^p1 4 ^p2 3 ^p3 1)
+   (<facts> ^diff <diff27>)
+   (<diff27> ^p1 4 ^p2 4 ^p3 0)
+   (<facts> ^diff <diff28>)
+   (<diff28> ^p1 4 ^p2 5 ^p3 1)
+   (<facts> ^diff <diff29>)
+   (<diff29> ^p1 4 ^p2 6 ^p3 2)
+   (<facts> ^diff <diff30>)
+   (<diff30> ^p1 4 ^p2 7 ^p3 3)
+   (<facts> ^diff <diff31>)
+   (<diff31> ^p1 4 ^p2 8 ^p3 4)
+   (<facts> ^diff <diff32>)
+   (<diff32> ^p1 5 ^p2 1 ^p3 4)
+   (<facts> ^diff <diff33>)
+   (<diff33> ^p1 5 ^p2 2 ^p3 3)
+   (<facts> ^diff <diff34>)
+   (<diff34> ^p1 5 ^p2 3 ^p3 2)
+   (<facts> ^diff <diff35>)
+   (<diff35> ^p1 5 ^p2 4 ^p3 1)
+   (<facts> ^diff <diff36>)
+   (<diff36> ^p1 5 ^p2 5 ^p3 0)
+   (<facts> ^diff <diff37>)
+   (<diff37> ^p1 5 ^p2 6 ^p3 1)
+   (<facts> ^diff <diff38>)
+   (<diff38> ^p1 5 ^p2 7 ^p3 2)
+   (<facts> ^diff <diff39>)
+   (<diff39> ^p1 5 ^p2 8 ^p3 3)
+   (<facts> ^diff <diff40>)
+   (<diff40> ^p1 6 ^p2 1 ^p3 5)
+   (<facts> ^diff <diff41>)
+   (<diff41> ^p1 6 ^p2 2 ^p3 4)
+   (<facts> ^diff <diff42>)
+   (<diff42> ^p1 6 ^p2 3 ^p3 3)
+   (<facts> ^diff <diff43>)
+   (<diff43> ^p1 6 ^p2 4 ^p3 2)
+   (<facts> ^diff <diff44>)
+   (<diff44> ^p1 6 ^p2 5 ^p3 1)
+   (<facts> ^diff <diff45>)
+   (<diff45> ^p1 6 ^p2 6 ^p3 0)
+   (<facts> ^diff <diff46>)
+   (<diff46> ^p1 6 ^p2 7 ^p3 1)
+   (<facts> ^diff <diff47>)
+   (<diff47> ^p1 6 ^p2 8 ^p3 2)
+   (<facts> ^diff <diff48>)
+   (<diff48> ^p1 7 ^p2 1 ^p3 6)
+   (<facts> ^diff <diff49>)
+   (<diff49> ^p1 7 ^p2 2 ^p3 5)
+   (<facts> ^diff <diff50>)
+   (<diff50> ^p1 7 ^p2 3 ^p3 4)
+   (<facts> ^diff <diff51>)
+   (<diff51> ^p1 7 ^p2 4 ^p3 3)
+   (<facts> ^diff <diff52>)
+   (<diff52> ^p1 7 ^p2 5 ^p3 2)
+   (<facts> ^diff <diff53>)
+   (<diff53> ^p1 7 ^p2 6 ^p3 1)
+   (<facts> ^diff <diff54>)
+   (<diff54> ^p1 7 ^p2 7 ^p3 0)
+   (<facts> ^diff <diff55>)
+   (<diff55> ^p1 7 ^p2 8 ^p3 1)
+   (<facts> ^diff <diff56>)
+   (<diff56> ^p1 8 ^p2 1 ^p3 7)
+   (<facts> ^diff <diff57>)
+   (<diff57> ^p1 8 ^p2 2 ^p3 6)
+   (<facts> ^diff <diff58>)
+   (<diff58> ^p1 8 ^p2 3 ^p3 5)
+   (<facts> ^diff <diff59>)
+   (<diff59> ^p1 8 ^p2 4 ^p3 4)
+   (<facts> ^diff <diff60>)
+   (<diff60> ^p1 8 ^p2 5 ^p3 3)
+   (<facts> ^diff <diff61>)
+   (<diff61> ^p1 8 ^p2 6 ^p3 2)
+   (<facts> ^diff <diff62>)
+   (<diff62> ^p1 8 ^p2 7 ^p3 1)
+   (<facts> ^diff <diff63>)
+   (<diff63> ^p1 8 ^p2 8 ^p3 0)
+   (<facts> ^sum <sum>)
+   (<sum> ^p1 0 ^p2 1 ^p3 1)
+   (<facts> ^sum <sum1>)
+   (<sum1> ^p1 0 ^p2 2 ^p3 2)
+   (<facts> ^sum <sum2>)
+   (<sum2> ^p1 0 ^p2 3 ^p3 3)
+   (<facts> ^sum <sum3>)
+   (<sum3> ^p1 0 ^p2 4 ^p3 4)
+   (<facts> ^sum <sum4>)
+   (<sum4> ^p1 0 ^p2 5 ^p3 5)
+   (<facts> ^sum <sum5>)
+   (<sum5> ^p1 0 ^p2 6 ^p3 6)
+   (<facts> ^sum <sum6>)
+   (<sum6> ^p1 0 ^p2 7 ^p3 7)
+   (<facts> ^sum <sum7>)
+   (<sum7> ^p1 0 ^p2 8 ^p3 8)
+   (<facts> ^sum <sum8>)
+   (<sum8> ^p1 1 ^p2 1 ^p3 2)
+   (<facts> ^sum <sum9>)
+   (<sum9> ^p1 1 ^p2 2 ^p3 3)
+   (<facts> ^sum <sum10>)
+   (<sum10> ^p1 1 ^p2 3 ^p3 4)
+   (<facts> ^sum <sum11>)
+   (<sum11> ^p1 1 ^p2 4 ^p3 5)
+   (<facts> ^sum <sum12>)
+   (<sum12> ^p1 1 ^p2 5 ^p3 6)
+   (<facts> ^sum <sum13>)
+   (<sum13> ^p1 1 ^p2 6 ^p3 7)
+   (<facts> ^sum <sum14>)
+   (<sum14> ^p1 1 ^p2 7 ^p3 8)
+   (<facts> ^sum <sum15>)
+   (<sum15> ^p1 1 ^p2 8 ^p3 9)
+   (<facts> ^sum <sum16>)
+   (<sum16> ^p1 2 ^p2 1 ^p3 3)
+   (<facts> ^sum <sum17>)
+   (<sum17> ^p1 2 ^p2 2 ^p3 4)
+   (<facts> ^sum <sum18>)
+   (<sum18> ^p1 2 ^p2 3 ^p3 5)
+   (<facts> ^sum <sum19>)
+   (<sum19> ^p1 2 ^p2 4 ^p3 6)
+   (<facts> ^sum <sum20>)
+   (<sum20> ^p1 2 ^p2 5 ^p3 7)
+   (<facts> ^sum <sum21>)
+   (<sum21> ^p1 2 ^p2 6 ^p3 8)
+   (<facts> ^sum <sum22>)
+   (<sum22> ^p1 2 ^p2 7 ^p3 9)
+   (<facts> ^sum <sum23>)
+   (<sum23> ^p1 2 ^p2 8 ^p3 10)
+   (<facts> ^sum <sum24>)
+   (<sum24> ^p1 3 ^p2 1 ^p3 4)
+   (<facts> ^sum <sum25>)
+   (<sum25> ^p1 3 ^p2 2 ^p3 5)
+   (<facts> ^sum <sum26>)
+   (<sum26> ^p1 3 ^p2 3 ^p3 6)
+   (<facts> ^sum <sum27>)
+   (<sum27> ^p1 3 ^p2 4 ^p3 7)
+   (<facts> ^sum <sum28>)
+   (<sum28> ^p1 3 ^p2 5 ^p3 8)
+   (<facts> ^sum <sum29>)
+   (<sum29> ^p1 3 ^p2 6 ^p3 9)
+   (<facts> ^sum <sum30>)
+   (<sum30> ^p1 3 ^p2 7 ^p3 10)
+   (<facts> ^sum <sum31>)
+   (<sum31> ^p1 3 ^p2 8 ^p3 11)
+   (<facts> ^sum <sum32>)
+   (<sum32> ^p1 4 ^p2 1 ^p3 5)
+   (<facts> ^sum <sum33>)
+   (<sum33> ^p1 4 ^p2 2 ^p3 6)
+   (<facts> ^sum <sum34>)
+   (<sum34> ^p1 4 ^p2 3 ^p3 7)
+   (<facts> ^sum <sum35>)
+   (<sum35> ^p1 4 ^p2 4 ^p3 8)
+   (<facts> ^sum <sum36>)
+   (<sum36> ^p1 4 ^p2 5 ^p3 9)
+   (<facts> ^sum <sum37>)
+   (<sum37> ^p1 4 ^p2 6 ^p3 10)
+   (<facts> ^sum <sum38>)
+   (<sum38> ^p1 4 ^p2 7 ^p3 11)
+   (<facts> ^sum <sum39>)
+   (<sum39> ^p1 4 ^p2 8 ^p3 12)
+   (<facts> ^sum <sum40>)
+   (<sum40> ^p1 5 ^p2 1 ^p3 6)
+   (<facts> ^sum <sum41>)
+   (<sum41> ^p1 5 ^p2 2 ^p3 7)
+   (<facts> ^sum <sum42>)
+   (<sum42> ^p1 5 ^p2 3 ^p3 8)
+   (<facts> ^sum <sum43>)
+   (<sum43> ^p1 5 ^p2 4 ^p3 9)
+   (<facts> ^sum <sum44>)
+   (<sum44> ^p1 5 ^p2 5 ^p3 10)
+   (<facts> ^sum <sum45>)
+   (<sum45> ^p1 5 ^p2 6 ^p3 11)
+   (<facts> ^sum <sum46>)
+   (<sum46> ^p1 5 ^p2 7 ^p3 12)
+   (<facts> ^sum <sum47>)
+   (<sum47> ^p1 5 ^p2 8 ^p3 13)
+   (<facts> ^sum <sum48>)
+   (<sum48> ^p1 6 ^p2 1 ^p3 7)
+   (<facts> ^sum <sum49>)
+   (<sum49> ^p1 6 ^p2 2 ^p3 8)
+   (<facts> ^sum <sum50>)
+   (<sum50> ^p1 6 ^p2 3 ^p3 9)
+   (<facts> ^sum <sum51>)
+   (<sum51> ^p1 6 ^p2 4 ^p3 10)
+   (<facts> ^sum <sum52>)
+   (<sum52> ^p1 6 ^p2 5 ^p3 11)
+   (<facts> ^sum <sum53>)
+   (<sum53> ^p1 6 ^p2 6 ^p3 12)
+   (<facts> ^sum <sum54>)
+   (<sum54> ^p1 6 ^p2 7 ^p3 13)
+   (<facts> ^sum <sum55>)
+   (<sum55> ^p1 6 ^p2 8 ^p3 14)
+   (<facts> ^sum <sum56>)
+   (<sum56> ^p1 7 ^p2 1 ^p3 8)
+   (<facts> ^sum <sum57>)
+   (<sum57> ^p1 7 ^p2 2 ^p3 9)
+   (<facts> ^sum <sum58>)
+   (<sum58> ^p1 7 ^p2 3 ^p3 10)
+   (<facts> ^sum <sum59>)
+   (<sum59> ^p1 7 ^p2 4 ^p3 11)
+   (<facts> ^sum <sum60>)
+   (<sum60> ^p1 7 ^p2 5 ^p3 12)
+   (<facts> ^sum <sum61>)
+   (<sum61> ^p1 7 ^p2 6 ^p3 13)
+   (<facts> ^sum <sum62>)
+   (<sum62> ^p1 7 ^p2 7 ^p3 14)
+   (<facts> ^sum <sum63>)
+   (<sum63> ^p1 7 ^p2 8 ^p3 15)
+   (<facts> ^sum <sum64>)
+   (<sum64> ^p1 8 ^p2 1 ^p3 9)
+   (<facts> ^sum <sum65>)
+   (<sum65> ^p1 8 ^p2 2 ^p3 10)
+   (<facts> ^sum <sum66>)
+   (<sum66> ^p1 8 ^p2 3 ^p3 11)
+   (<facts> ^sum <sum67>)
+   (<sum67> ^p1 8 ^p2 4 ^p3 12)
+   (<facts> ^sum <sum68>)
+   (<sum68> ^p1 8 ^p2 5 ^p3 13)
+   (<facts> ^sum <sum69>)
+   (<sum69> ^p1 8 ^p2 6 ^p3 14)
+   (<facts> ^sum <sum70>)
+   (<sum70> ^p1 8 ^p2 7 ^p3 15)
+   (<facts> ^sum <sum71>)
+   (<sum71> ^p1 8 ^p2 8 ^p3 16)
+   (<facts> ^horiz-component <horiz-component>)
+   (<horiz-component> ^p1 nw ^p2 west)
+   (<facts> ^horiz-component <horiz-component1>)
+   (<horiz-component1> ^p1 ne ^p2 east)
+   (<facts> ^horiz-component <horiz-component2>)
+   (<horiz-component2> ^p1 sw ^p2 west)
+   (<facts> ^horiz-component <horiz-component3>)
+   (<horiz-component3> ^p1 se ^p2 east)
+   (<facts> ^horiz-component <horiz-component4>)
+   (<horiz-component4> ^p1 west ^p2 west)
+   (<facts> ^horiz-component <horiz-component5>)
+   (<horiz-component5> ^p1 east ^p2 east)
+}
+sp {propose*progress-state
+   (state <s> ^io <i>)
+   (<i> ^output-link <o>)
+   (<o> ^<cmd-name> <cmd>)
+-->
+   (<s> ^operator <o1> + <)
+   (<o1> ^name progress-state)
+}
+sp {apply*progress-state
+   (state <s> ^name game ^operator <o> ^io <i>)
+   (<o> ^name progress-state)
+   (<i> ^output-link <o1>)
+   (<o1> ^<cmd-name> <c>)
+-->
+   (<o1> ^<cmd-name> <c> -)
+}
+sp {game*elaborate*fake-response
+   (state <s> ^io <i>)
+#   (state <s> ^io <i> ^duplicate-of <ss>)
+   (<i> ^output-link <o> ^input-link <i1>)
+   (<o> ^<action-name> <a>)
+-->
+   (<i1> ^last-moves <last-moves>)
+   (<last-moves> ^explorer <explorer>)
+   (<explorer> ^<action-name> <a>)
+}
+sp {game*elaborate*problem-space
+   (state <s> ^name game)
+-->
+   (<s> ^problem-space <problem-space>)
+   (<problem-space> ^name game ^default-state-copy yes ^one-level-attributes facts ^two-level-attributes gs)
+}
+sp {game*elaborate*selection-space-fake-io
+   (state <s> ^duplicate-of <d>)
+-->
+   (<s> ^io <io>)
+   (<io> ^input-link <input-link> ^output-link <output-link>)
+}
+sp {elaborate*elab-link
+   (state <s> ^type state)
+-->
+   (<s> ^elaborations <elaborations>)
+}

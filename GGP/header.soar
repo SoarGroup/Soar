@@ -1,13 +1,6 @@
-multi-attribute greaterthan 90
-multi-attribute index 9
-multi-attribute direction 4
-multi-attribute wall 40
-multi-attribute combine-direction 12
-multi-attribute horiz-component 8
-multi-attribute vert-component 8
-multi-attribute diff 100
-multi-attribute diff 50
-multi-attribute sum 100
+multi-attributes rest 600
+multi-attributes 2d 64
+
 learn --on
 #decay --on
 indifferent-selection --first
@@ -19,7 +12,7 @@ source selection.soar
 source selection-iterative-deepening.soar
 popd 
 
-#source move-compare.soar
+#source selection-plan.soar
 popd
 #source chunks.soar # tchunk_file source
 #source chunks.soar # achunk_file source

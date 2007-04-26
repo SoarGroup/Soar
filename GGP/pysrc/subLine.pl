@@ -9,13 +9,27 @@ if ($#ARGV < 2) {
   print "if token is explorer_location and words are 5 and 6, the line becomes\n";
   
   print "(<location1> ^p1 explorer ^p2 5 ^p3 6) # explorer_location p2 p3 \n";
-  print "usage: subLine.pl file token word1 word2..\n";
+  print "usage: subLine.pl [-i] file token word1 word2..\n";
+  print "-i for in-place substitution\n";
 }
 
+$inplace = 0;
 $file = shift @ARGV;
+if ($file =~ /^-i$/) {
+  $inplace = 1;
+  $file = shift @ARGV;
+}
+
+$ipfile = "tmp_sli";
+
 $token = shift @ARGV;
 
 open $IN, "<$file" or die;
+
+if ($inplace) {
+  die if (-e $ipfile);
+  open $OUT, ">$ipfile" or die;
+}
 
 foreach $line (<$IN>) {
   if ($line =~ /$token/) {
@@ -37,9 +51,24 @@ foreach $line (<$IN>) {
 
     $line =~ s/^.*($token.*)/$content$1/;
 
-    print $line;
+    if ($inplace) {
+      print $OUT $line;
+    }
+    else {
+      print $line;
+    }
   }
   else {
-    print $line;
+    if ($inplace) {
+      print $OUT $line;
+    }
+    else {
+      print $line;
+    }
   }
+}
+
+if ($inplace) {
+  close $OUT;
+  print `mv $ipfile $file`;
 }
