@@ -52,8 +52,8 @@ Context menus - all windows in VisualSoar have context menus that
 Datamap:
     Double Click       | Expand the current tree node
     Drag & Drop        | Move a subtree to a new location
-    Ctrl + D&D         | Link a subtree to a new location
-    Ctrl + Shift + D&D | Copy a subtree to a new location
+    Ctrl + D&D         | Copy a subtree to a new location
+    Ctrl + Shift + D&D | Link a subtree to a new location
 
 ==>What is "Drag and Drop"?
 It's a common method for manipulating objects under a graphical user
