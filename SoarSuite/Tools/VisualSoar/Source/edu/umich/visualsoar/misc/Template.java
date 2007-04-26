@@ -19,7 +19,7 @@ import edu.umich.visualsoar.ruleeditor.RuleEditor;
  * (detectable by isDirectory method). Directory templates contain a set of
  * sub templates and directories.
  *
- * The hierarchy of templates mirrors the hierarchy of directories and .vst
+ * The hierarchy of templates mirrors the hierarchy of directories and .vsoart
  * files in the templates directory.
  *  
  * Here are the macros:
@@ -63,14 +63,14 @@ public class Template {
    private static SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
    
    /**
-    * Constructor for a .vst template
+    * Constructor for a .vsoart template
     * 
-    * @param f Path to the .vst file
+    * @param f Path to the .vsoart file
     */
    public Template(File f) {
       file = f;
       String n = f.getName();
-      name = n.substring(0, n.lastIndexOf('.')); // strip off .vst extension
+      name = n.substring(0, n.lastIndexOf('.')); // strip off .vsoart extension
    }
    
    /**
@@ -78,7 +78,7 @@ public class Template {
     *
     * @param dir Path of directory
     * @param childDirs List of child directory Templates
-    * @param childTemplates List of child .vst Templates
+    * @param childTemplates List of child .vsoart Templates
     */
    public Template(File dir, List childDirs, List childTemplates){
       file = dir;
@@ -102,7 +102,7 @@ public class Template {
       return directories.iterator();
    }
    
-   /** Iterator over child .vst templates */
+   /** Iterator over child .vsoart templates */
    public Iterator getChildTemplates() {
       return templates.iterator();
    }
@@ -216,7 +216,7 @@ public class Template {
             if(t != null){
                childDirs.add(t);
             }
-         } else if(f.isFile() && f.getName().endsWith(".vst")) {
+         } else if(f.isFile() && f.getName().endsWith(".vsoart")) {
             childFiles.add(new Template(f));
          }
       }
