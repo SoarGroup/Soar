@@ -686,8 +686,11 @@ namespace gSKI
 			}
 			qsort (list, num_attr, sizeof (wme *), compare_attr); 
 
+
 			/* --- finally, print the sorted wmes and deallocate the array --- */
-			if (tree) {
+
+			// RPM 4/07 If this is a tree print, then for each wme in the list, print it and its children
+			if(tree) {
 				for (attr=0; attr < num_attr; attr++) {
 					w = list[attr];
 					print_spaces (agnt, indent);
@@ -700,34 +703,93 @@ namespace gSKI
 						print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
 					}
 				}
-				free_memory(agnt, list, MISCELLANEOUS_MEM_USAGE);
-				return;
-			}
-			
-			if (internal && !tree) {
+			// RPM 4/07 This is not a tree print, so for each wme in the list, print it
+			// Then, after all wmes have been printed, print the children
+			} else {
 				for (attr=0; attr < num_attr; attr++) {
 					w = list[attr];
 					print_spaces (agnt, indent);
-					print_wme (agnt, w);
+
+					if(internal) {
+						print_wme (agnt, w);
+					} else {
+						print_with_symbols (agnt, "(%y", id);
+
+						// XML format of an <id> followed by a series of <wmes> each of which shares the original ID.
+						// <id id="s1"><wme tag="123" attr="foo" attrtype="string" val="123" valtype="string"></wme><wme attr="bar" ...></wme></id>
+						gSKI_MakeAgentCallbackXML(agnt, kFunctionBeginTag, kWME_Id);
+						gSKI_MakeAgentCallbackXML(agnt, kFunctionAddAttribute, kWME_Id, symbol_to_string (agnt, id, true, 0, 0));
+
+						for (attr=0; attr < num_attr; attr++) {
+							w = list[attr];
+							neatly_print_wme_augmentation_of_id (agnt, w, indent);
+						}
+						
+						gSKI_MakeAgentCallbackXML(agnt, kFunctionEndTag, kWME_Id);
+
+						print (agnt, ")\n");
+					}
 				}
-			} else {
-				print_spaces (agnt, indent);
-				print_with_symbols (agnt, "(%y", id);
 
-				// XML format of an <id> followed by a series of <wmes> each of which shares the original ID.
-				// <id id="s1"><wme tag="123" attr="foo" attrtype="string" val="123" valtype="string"></wme><wme attr="bar" ...></wme></id>
-				gSKI_MakeAgentCallbackXML(agnt, kFunctionBeginTag, kWME_Id);
-				gSKI_MakeAgentCallbackXML(agnt, kFunctionAddAttribute, kWME_Id, symbol_to_string (agnt, id, true, 0, 0));
-
-				for (attr=0; attr < num_attr; attr++) {
-					w = list[attr];
-					neatly_print_wme_augmentation_of_id (agnt, w, indent);
+				// If there is still depth left, recurse
+				if (depth > 1) {
+					for (attr=0; attr < num_attr; attr++) {
+						w = list[attr];
+						/* --- call this routine recursively --- */
+						print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tree, tc);
+						print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
+					}
 				}
-				
-				gSKI_MakeAgentCallbackXML(agnt, kFunctionEndTag, kWME_Id);
-
-				print (agnt, ")\n");
 			}
+
+			// deallocate the array
+			free_memory(agnt, list, MISCELLANEOUS_MEM_USAGE);
+
+
+
+
+			/* --- finally, print the sorted wmes and deallocate the array --- */
+			//if (tree) {
+			//	for (attr=0; attr < num_attr; attr++) {
+			//		w = list[attr];
+			//		print_spaces (agnt, indent);
+			//		if (internal) print_wme (agnt, w);
+			//		else print_wme_without_timetag (agnt, w);
+
+			//		if (depth>1) { // we're not done yet
+			//			/* --- call this routine recursively --- */
+			//			print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tree, tc);
+			//			print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
+			//		}
+			//	}
+			//	free_memory(agnt, list, MISCELLANEOUS_MEM_USAGE);
+			//	return;
+			//}
+			//
+			//if (internal && !tree) {
+			//	for (attr=0; attr < num_attr; attr++) {
+			//		w = list[attr];
+			//		print_spaces (agnt, indent);
+			//		print_wme (agnt, w);
+			//	}
+			//} else {
+			//	print_spaces (agnt, indent);
+			//	print_with_symbols (agnt, "(%y", id);
+
+			//	// XML format of an <id> followed by a series of <wmes> each of which shares the original ID.
+			//	// <id id="s1"><wme tag="123" attr="foo" attrtype="string" val="123" valtype="string"></wme><wme attr="bar" ...></wme></id>
+			//	gSKI_MakeAgentCallbackXML(agnt, kFunctionBeginTag, kWME_Id);
+			//	gSKI_MakeAgentCallbackXML(agnt, kFunctionAddAttribute, kWME_Id, symbol_to_string (agnt, id, true, 0, 0));
+
+			//	for (attr=0; attr < num_attr; attr++) {
+			//		w = list[attr];
+			//		neatly_print_wme_augmentation_of_id (agnt, w, indent);
+			//	}
+			//	
+			//	gSKI_MakeAgentCallbackXML(agnt, kFunctionEndTag, kWME_Id);
+
+			//	print (agnt, ")\n");
+			//}
 
 			//if (depth > 1) {
 			//	for (attr=0; attr < num_attr; attr++) {
@@ -738,31 +800,34 @@ namespace gSKI
 			//	}
 			//}
 
-			free_memory(agnt, list, MISCELLANEOUS_MEM_USAGE);
-			/* AGR 652 end */
+			//free_memory(agnt, list, MISCELLANEOUS_MEM_USAGE);
 
-			/* --- if depth<=1, we're done --- */
-			if (depth<=1) return;
 
-			/* --- call this routine recursively --- */
-			for (w=id->id.input_wmes; w!=NIL; w=w->next) {
-				print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tree, tc);
-				print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
-			}
-			for (w=id->id.impasse_wmes; w!=NIL; w=w->next) {
-				print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tree, tc);
-				print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
-			}
-			for (s=id->id.slots; s!=NIL; s=s->next) {
-				for (w=s->wmes; w!=NIL; w=w->next) {
-					print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tree, tc);
-					print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
-				}
-				for (w=s->acceptable_preference_wmes; w!=NIL; w=w->next) {
-					print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tree, tc);
-					print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
-				}
-			}
+
+			///* AGR 652 end */
+
+			///* --- if depth<=1, we're done --- */
+			//if (depth<=1) return;
+
+			///* --- call this routine recursively --- */
+			//for (w=id->id.input_wmes; w!=NIL; w=w->next) {
+			//	print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tree, tc);
+			//	print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
+			//}
+			//for (w=id->id.impasse_wmes; w!=NIL; w=w->next) {
+			//	print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tree, tc);
+			//	print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
+			//}
+			//for (s=id->id.slots; s!=NIL; s=s->next) {
+			//	for (w=s->wmes; w!=NIL; w=w->next) {
+			//		print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tree, tc);
+			//		print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
+			//	}
+			//	for (w=s->acceptable_preference_wmes; w!=NIL; w=w->next) {
+			//		print_augs_of_id3 (agnt, w->attr, depth-1, maxdepth, internal, tree, tc);
+			//		print_augs_of_id3 (agnt, w->value, depth-1, maxdepth, internal, tree, tc);
+			//	}
+			//}
 		}
 
 		void do_print_for_identifier (agent* agnt, Symbol *id, int depth, bool internal, bool tree) {
