@@ -207,12 +207,16 @@
     (combining ?item1 ?item ?comboName))
 
 
-;; player is allowed to apply items in any direction at any time,
-;; not just when there's something in that direction to interact with
-;; it
+;; player is allowed to apply items only in directions that are not
+;; blocked, and only when there's an obstacle there
 (<= (legal explorer (apply ?item ?dir))
     (true (holding ?item))
-    (direction ?dir))
+    (direction ?dir)
+    (true (location explorer ?x ?y))
+    (not (true (blocked ?dir ?x ?y)))
+    (nCell 1 ?dir ?x ?y ?x1 ?y1)
+    (obstacleType ?obstacle ?class)
+    (true (location ?obstacle ?x ?y)))
 
 ;; a more general version for destroying things
 (<= (doDestroy ?obstacle ?item ?expend)
