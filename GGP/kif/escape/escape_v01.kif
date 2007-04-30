@@ -101,7 +101,8 @@
 
 ;; a list of which properties can compromise which obstacle classes,
 ;; and if the item is expended in the process
-(canCompromise supportsWeight water yes)
+(canCompromise canFloat water yes)
+(canCompromise canBridge water yes)
 
 ;; a list of which properties can destroy which obstacle classes
 ;; and if the item is expended in the process
@@ -109,10 +110,16 @@
 
 ;; legal combinations
 (<= (legal explorer (combine ?item1 ?item2))
+    (true (holding ?item))
+    (true (holding ?item1))
+    (true (holding ?item2))
+    (true (property ?item hammer))
     (true (property ?item1 nailable))
     (true (property ?item2 nailable)))
 
 (<= (legal explorer (combine ?item1 ?item2))
+    (true (holding ?item1))
+    (true (holding ?item2))
     (true (property ?item1 tieable))
     (true (property ?item2 tieable)))
 
@@ -303,7 +310,7 @@
 ;;; pickedUp is true of an item if the explorer will be standing on top of it
 ;;;  at the end of the current time-step
 (<= (pickedUp ?item)
-    (true (itemType ?item))
+    (itemType ?item)
     (nextExplorerLocation ?x ?y)
     (true (location ?item ?x ?y)))
 
@@ -358,14 +365,14 @@
 
 ;;; Items remain on the ground until they are picked up
 (<= (next (location ?item ?x ?y))
-    (true (itemType ?item))
+    (itemType ?item)
     (true (location ?item ?x ?y))
     (not (pickedUp ?item)))
 
 ;;; Items remain in the explorer's inventory from when they are picked up
 ;;;  until they are used to perform an action
 (<= (next (holding ?item))
-    (true (itemType ?item))
+    (itemType ?item)
     (pickedUp ?item))
 (<= (next (holding ?item))
     (true (holding ?item))

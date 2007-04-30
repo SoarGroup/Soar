@@ -7,10 +7,10 @@
 ;; here's the level setup:
 ;;
 ;; 0|E|
-;; 1|W|
-;; 2|L|
+;; 1|R|
+;; 2|W|
 ;; 3|L|
-;; 4|R|
+;; 4|L|
 ;; 5|H|
 ;; 6|e|
 ;;
@@ -36,25 +36,22 @@
 (init (blocked south 0 6))
 
 (init (location exit     0 0))
-(init (location water1   0 1))
-(init (location log1     0 2))
-(init (location log2     0 3))
-(init (location rock1    0 4))
+(init (location rock1    0 1))
+(init (location water1   0 2))
+(init (location log1     0 3))
+(init (location log2     0 4))
 (init (location hammer1  0 5))
 (init (location explorer 0 6))
 
 (init (health explorer 2))
-
+(init (holding nails1))
 
 ;; we're ignoring item types (see discussion on types)
 (itemType hammer1)  ; (hammerType hammer)
-; sw-- are we keeping nails? I think we should just keep the hammer needed (and no rope) 
-;(itemType nails1)  ; (nailType nails1)
+(itemType nails1)  ; (nailType nails1)
 (itemType log1)    ; (woodType log1)
 (itemType log2)    ; (woodType log2)
-; sw-- these show up on elaborations, instead of facts, for some reason
 ; also, the lack of more specific item types makes it difficult to show them in the canvas, all we can show is that an item exists
-
 
 ;; obstacles
 ;; (obstacleType ?name ?class)
@@ -73,7 +70,7 @@
 (init (property hammer1 hammer))
 
 ;; nail properties
-; sw-- see above (init (property nails doesNail))
+(init (property nails1 doesNail))
 
 ;; log properties
 (init (property log1 buoyant))
@@ -95,13 +92,10 @@
 (propertyCombine tieable        tieable        tieable)
 (propertyCombine supportsWeight supportsWeight canBridge)
 
-;; special keyword any matches any property
-(propertyCombine supportsWeight any            supportsWeight)
-
-;; have to specify both orderings here
 (propertyCombine supportsWeight buoyant        canFloat)
-(propertyCombine buoyant        supportsWeight canFloat)
 
+;; inherited properties
+(propertyInherit supportsWeight)
 
 ;; a list of which properties can compromise which obstacle classes,
 ;; and if the item is expended in the process
@@ -114,21 +108,25 @@
 (canDestroy hammer rock yes)
 
 ;; legal combinations
-; sw-- edited this, presumedly the agent must be holding the items to combine, and I don't see that checked anywhere
-;  also, you need a hammer to nail
-(<= (legal explorer (combine ?item1 ?item2))
+(<= (legal explorer (combine ?item1 ?item2 ?nails))
     (true (holding ?item))
+    (true (holding ?nails))
     (true (holding ?item1))
     (true (holding ?item2))
     (true (property ?item hammer))
+    (true (property ?nails doesNail))
     (true (property ?item1 nailable))
-    (true (property ?item2 nailable)))
+    (true (property ?item2 nailable))
+    (distinct ?item1 ?item2))
 
-(<= (legal explorer (combine ?item1 ?item2))
+(<= (legal explorer (combine ?item1 ?item2 ?tie))
     (true (holding ?item1))
     (true (holding ?item2))
+    (true (holding ?tie))
+    (true (property ?tie doesTie))
     (true (property ?item1 tieable))
-    (true (property ?item2 tieable)))
+    (true (property ?item2 tieable))
+    (distinct ?item1 ?item2))
 
 ;; combining properties
 (<= (next (property ?comboName ?cprop))
@@ -137,21 +135,25 @@
     (propertyCombine ?prop1 ?prop2 ?cprop)
     (combining ?item1 ?item2 ?comboName))
 
-;; these next two are for matching the any property keyword
+;; ordering of item in combination doesn't matter
 (<= (next (property ?comboName ?cprop))
-    (true (property ?item1 ?prop))
-    (propertyCombine ?prop any ?cprop)
+    (true (property ?item2 ?prop1))
+    (true (property ?item1 ?prop2))
+    (propertyCombine ?prop1 ?prop2 ?cprop)
     (combining ?item1 ?item2 ?comboName))
 
-(<= (next (property ?comboName ?cprop))
-    (true (property ?item2 ?prop))
-    (propertyCombine ?prop any ?cprop)
+;; inherit properties
+(<= (next (property ?comboName ?prop))
+    (or (true (property ?item1 ?prop)) (true (property ?item2 ?prop)))
+    (propertyInherit ?prop)
     (combining ?item1 ?item2 ?comboName))
 
 ;; properties stay forever once they are calculated
 (<= (next (property ?item ?prop))
     (true (property ?item ?prop)))
 
+(<= (used ?glue)
+    (does explorer (combine ?item1 ?item2 ?glue)))
 
 ;; a "linked list" of symbol names
 
@@ -180,14 +182,22 @@
 ;; the combine action
 (<= (combining ?item1 ?item2 ?comboName)
     (does explorer (combine ?item1 ?item2))
-    (true (currSymbol ?combo)))
+    (true (currSymbol ?comboName)))
 
 (<= (next (comboType ?comboName ?item1 ?item2))
     (combining ?item1 ?item2 ?comboName))
 
+;; once a combination, always a combination
+(<= (next (comboType ?comboName ?item1 ?item2))
+    (true (comboTYpe ?comboName ?item1 ?item2)))
+
 ;; all combinations are items
 (<= (itemType ?comboName)
     (true (comboType ?comboName ?item1 ?item2)))
+
+;; the explorer holds the item after he makes it
+(<= (next (holding ?comboName))
+    (combining ?item1 ?item2 ?comboName))
 
 ;; items get used up once they are combined
 (<= (used ?item)
@@ -212,14 +222,14 @@
     (not (true (destroyed ?obstacle)))
     (true (location ?obstacle ?ox ?oy))
     (nCell 1 ?dir ?ex ?ey ?ox ?oy)
-    (property ?item ?property)
+    (true (property ?item ?property))
     (canDestroy ?property ?class ?expend))
 
 (<= (next (destroyed ?obstacle))
     (doDestroy ?obstacle ?item ?expend))
 
 (<= (used ?item)
-    (doDestroy ?rock ?hammer yes))
+    (doDestroy ?obstacle ?item yes))
 
 ;; destroyed obstacles remain destroyed
 (<= (next (destroyed ?obstacle))
@@ -234,7 +244,7 @@
     (not (true (destroyed ?obstacle)))
     (true (location ?obstacle ?ox ?oy))
     (nCell 1 ?dir ?ex ?ey ?ox ?oy)
-    (property ?item ?property)
+    (true (property ?item ?property))
     (canCompromise ?property ?class ?expend))
 
 (<= (next (compromised ?obstacle))
@@ -255,7 +265,7 @@
 ;; if a player is in a cell with an undestroyed and uncompromised obstacle, 
 ;; he loses one health
 (<= damaged
-    (true (location explorer ?x ?y))
+    (nextExplorerLocation ?x ?y)
     (obstacleType ?obstacle ?class)
     (not (true (compromised ?obstacle)))
     (not (true (destroyed ?obstacle)))
@@ -317,7 +327,6 @@
 ;;; pickedUp is true of an item if the explorer will be standing on top of it
 ;;;  at the end of the current time-step
 (<= (pickedUp ?item)
-    ;(true (itemType ?item))
     (itemType ?item)
     (nextExplorerLocation ?x ?y)
     (true (location ?item ?x ?y)))
@@ -330,14 +339,11 @@
 
 ;;; The explorer may move anywhere on the map along the cardinal 
 ;;;  directions so long as there are no walls in his way
-(<= (legal explorer (move north))
-    ;(direction ?dir)
-    ; DEBUG
+(<= (legal explorer (move ?dir))
+    (direction ?dir)
     (true (location explorer ?xOld ?yOld))
-    ;(not (true (blocked ?dir ?xOld ?yOld)))
-    (not (true (blocked north ?xOld ?yOld)))
-    ;(nCell 1 ?dir ?xOld ?yOld ?xNew ?yNew)
-    (nCell 1 north ?xOld ?yOld ?xNew ?yNew)
+    (not (true (blocked ?dir ?xOld ?yOld)))
+    (nCell 1 ?dir ?xOld ?yOld ?xNew ?yNew)
     (2d ?xNew ?yNew))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -376,7 +382,6 @@
 
 ;;; Items remain on the ground until they are picked up
 (<= (next (location ?item ?x ?y))
-  ;  (true (itemType ?item))
     (itemType ?item)
     (true (location ?item ?x ?y))
     (not (pickedUp ?item)))
@@ -384,7 +389,6 @@
 ;;; Items remain in the explorer's inventory from when they are picked up
 ;;;  until they are used to perform an action
 (<= (next (holding ?item))
-    ;(true (itemType ?item))
     (itemType ?item)
     (pickedUp ?item))
 (<= (next (holding ?item))
