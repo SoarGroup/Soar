@@ -419,7 +419,7 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		//val.SetFromDouble(time) ;
 		
 		Value value = new Value(main) ;
-		SetValue(value, time + 10) ;
+		SetValue(value, time) ;
 	}
 	
 	protected Value GetCurrentValue() { return m_Value ; }
