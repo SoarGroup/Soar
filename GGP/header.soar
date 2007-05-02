@@ -1,7 +1,7 @@
 multi-attributes rest 600
 multi-attributes 2d 64
 
-learn --on
+#learn --on
 #decay --on
 indifferent-selection --first
 
