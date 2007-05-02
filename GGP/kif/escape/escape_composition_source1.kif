@@ -1,20 +1,39 @@
-;; Added rules to support properties, combining objects, compromising obstacles,
-;; basically everything we need for the full Escape game
+;; Escape v0.1 Composition source 1
+;;
+;; Explorer has to pick up hammer, nails, and logs to make a bridge across
+;; the water obstacles to reach the exit
+;;
+;; here's the level setup:
+;;
+;; 0|E       |
+;; 1|        |
+;; 2|        |
+;; 3|WWWWWWWW|
+;; 4|        |
+;; 5|        |
+;; 6|        |
+;; 7|e HNLL  |
+;;   01234567
+;; where E = exit, W = water, L = log, N = nails, H = hammer, e = explorer
 
 (role explorer)
 (exitType exit)
 
-;; here's the level setup:
-;;
-;; 0|E|
-;; 1|R|
-;; 2|W|
-;; 3|L|
-;; 4|L|
-;; 5|H|
-;; 6|e|
-;;
-;; where E = exit, W = water, L = log, R = rock, H = hammer, e = explorer
+;; declare items
+(itemType hammer1)
+(itemType nails1)
+(itemType log1)
+(itemType log2)
+
+;; declare obstacles
+(obstacleType water0 water)
+(obstacleType water1 water)
+(obstacleType water2 water)
+(obstacleType water3 water)
+(obstacleType water4 water)
+(obstacleType water5 water)
+(obstacleType water6 water)
+(obstacleType water7 water)
 
 (init (blocked east 0 0))
 (init (blocked east 0 1))
@@ -23,48 +42,56 @@
 (init (blocked east 0 4))
 (init (blocked east 0 5))
 (init (blocked east 0 6))
+(init (blocked east 0 7))
 
-(init (blocked west 0 0))
-(init (blocked west 0 1))
-(init (blocked west 0 2))
-(init (blocked west 0 3))
-(init (blocked west 0 4))
-(init (blocked west 0 5))
-(init (blocked west 0 6))
+(init (blocked west 7 0))
+(init (blocked west 7 1))
+(init (blocked west 7 2))
+(init (blocked west 7 3))
+(init (blocked west 7 4))
+(init (blocked west 7 5))
+(init (blocked west 7 6))
+(init (blocked west 7 7))
 
 (init (blocked north 0 0))
-(init (blocked south 0 6))
+(init (blocked north 1 0))
+(init (blocked north 2 0))
+(init (blocked north 3 0))
+(init (blocked north 4 0))
+(init (blocked north 5 0))
+(init (blocked north 6 0))
+(init (blocked north 7 0))
+
+(init (blocked south 0 7))
+(init (blocked south 1 7))
+(init (blocked south 2 7))
+(init (blocked south 3 7))
+(init (blocked south 4 7))
+(init (blocked south 5 7))
+(init (blocked south 6 7))
+(init (blocked south 7 7))
 
 (init (location exit     0 0))
-(init (location rock1    0 1))
-(init (location water1   0 2))
-(init (location log1     0 3))
-(init (location log2     0 4))
-(init (location hammer1  0 5))
-(init (location explorer 0 6))
 
-(init (health explorer 2))
-(init (holding nails1))
+(init (location water0   0 3))
+(init (location water1   1 3))
+(init (location water2   2 3))
+(init (location water3   3 3))
+(init (location water4   4 3))
+(init (location water5   5 3))
+(init (location water6   6 3))
+(init (location water7   7 3))
 
-;; we're ignoring item types (see discussion on types)
-(itemType hammer1)  ; (hammerType hammer)
-(itemType nails1)  ; (nailType nails1)
-(itemType log1)    ; (woodType log1)
-(itemType log2)    ; (woodType log2)
-; also, the lack of more specific item types makes it difficult to show them in the canvas, all we can show is that an item exists
+(init (location hammer1  2 7))
+(init (location nails1   3 7))
+(init (location log1     4 7))
+(init (location log2     5 7))
 
-;; obstacles
-;; (obstacleType ?name ?class)
-(obstacleType rock1  rock)
-(obstacleType water1 water)
+(init (location explorer 0 7))
+
+(init (health explorer 1))
 
 ;; PROPERTIES
-;;
-;; see the type discussion for justification of why I'm attaching
-;; properties to items rather than types. Also, we have to put
-;; properties on the game state as they have to be created during
-;; combination (as opposed to facts (immutable) or elaborations (not
-;; persistent))
 
 ;; hammer properties
 (init (property hammer1 hammer))
@@ -215,7 +242,7 @@
     (not (true (blocked ?dir ?x ?y)))
     (nCell 1 ?dir ?x ?y ?x1 ?y1)
     (obstacleType ?obstacle ?class)
-    (true (location ?obstacle ?x1 ?y1)))
+    (true (location ?obstacle ?x ?y)))
 
 ;; a more general version for destroying things
 (<= (doDestroy ?obstacle ?item ?expend)
@@ -257,26 +284,13 @@
     (doCompromise ?obstacle ?item yes))
 
 ;; as long as the explorer doesn't move onto the obstacle while it's
-;; compromised, the obstacle remains compromised
+;; compromised, the obstacle remains compromised. This rule is sufficient
+;; for removing the compromised state of the obstacle once the explorer
+;; moves over it
 (<= (next (compromised ?obstacle))
     (true (compromised ?obstacle))
     (true (location ?obstacle ?ox ?oy))
-;    (not (true (compromiseExpired ?obstacle))))
     (not (true (location explorer ?ox ?oy))))
-
-;; once the explorer moves onto the obstacle, the compromise expires.
-;; But the explorer doesn't take damage until he gets off of the obstacle and
-;; then gets back on.
-(<= (next (compromiseExpired ?obstacle))
-    (true (compromised ?obstacle))
-;    (not (true (compromiseExpired ?obstacle)))
-    (true (location ?obstacle ?ox ?oy))
-    (true (location explorer ?ox ?oy)))
-
-(<= (next (compromiseExpired ?obstacle))
-    (true (compromiseExpired ?obstacle))
-    (true (location ?obstacle ?ox ?oy))
-    (true (location explorer ?ox ?oy)))
 
 ;; if a player is in a cell with an undestroyed and uncompromised obstacle, 
 ;; he loses one health
@@ -284,7 +298,6 @@
     (nextExplorerLocation ?x ?y)
     (obstacleType ?obstacle ?class)
     (not (true (compromised ?obstacle)))
-    (not (true (compromiseExpired ?obstacle)))
     (not (true (destroyed ?obstacle)))
     (true (location ?obstacle ?x ?y)))
 
@@ -567,56 +580,6 @@
 	(true (step ?current))
 	(succ ?current ?next))
 
-(<= (occupiedcell ?obj ?x ?y)
-    (true (location ?obj ?x ?y)))
-
-;;;; only the cells horizontal or vertical to occupied cells are relevant
-(<= (relevantcell ?obj ?x ?y)
-    (occupiedcell ?obj ?x ?y))
-
-(<= (relevantcell ?obj ?x1 ?y)
-    (occupiedcell ?obj ?x ?y)
-    (minus ?d ?x ?x1)
-    (distinct ?d 0)
-    (lessthan ?d 3))
-
-(<= (relevantcell ?obj ?x1 ?y)
-    (occupiedcell ?obj ?x ?y)
-    (plus ?d ?x ?x1)
-    (distinct ?d 0)
-    (lessthan ?d 3))
-
-(<= (relevantcell ?obj ?x ?y1)
-    (occupiedcell ?obj ?x ?y)
-    (minus ?d ?y ?y1)
-    (distinct ?d 0)
-    (lessthan ?d 3))
-
-(<= (relevantcell ?obj ?x ?y1)
-    (occupiedcell ?obj ?x ?y)
-    (plus ?d ?y ?y1)
-    (distinct ?d 0)
-    (lessthan ?d 3))
-
-; kind of a hack
-(<= (relevantcell ?mummy ?dx ?dy)
-    (mummyType ?mummy)
-    (occupiedcell ?mummy ?x ?y)
-    (diag ?x ?y ?dx ?dy))
-
-;;;;(<= (relevantcell ?x1 ?y)
-;;;;    (relevantcell ?x ?y)
-;;;;    (lessthan ?x1 ?x))
-;;;;(<= (relevantcell ?x1 ?y)
-;;;;    (relevantcell ?x ?y)
-;;;;    (lessthan ?x ?x1))
-;;;;
-;;;;(<= (relevantcell ?x ?y1)
-;;;;    (relevantcell ?x ?y)
-;;;;    (lessthan ?y1 ?y))
-;;;;(<= (relevantcell ?x ?y1)
-;;;;    (relevantcell ?x ?y)
-;;;;    (lessthan ?y ?y1))
 (nCell 1 east 0 0 1 0)
 (nCell 2 east 0 0 2 0)
 (nCell 3 east 0 0 3 0)
