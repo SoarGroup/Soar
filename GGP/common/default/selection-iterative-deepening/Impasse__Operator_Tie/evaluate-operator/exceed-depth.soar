@@ -1,5 +1,5 @@
 sp {evaluate-operator*propose*exceed-depth*meed
-   (state <s> ^current-evaluation-depth < <meed>
+   (state <s> ^current-evaluation-depth < <meed> 
               ^elaborations.minimum-explorer-exit-distance <meed>
               ^look-ahead-operator <o>
               ^tried-tied-operator <o>)

@@ -56,6 +56,7 @@ sp {selection*elaborate*instance-counter
 sp {selection*elaborate*add-to-ic*two-attribute
    (state <s> ^name selection
               ^item <it>
+             -^evaluate-reject <it>
               ^instance-counter <ic>)
    (<it> ^name <n>
          ^p1 <p1>
@@ -68,6 +69,7 @@ sp {selection*elaborate*add-to-ic*two-attribute
 sp {selection*elaborate*add-to-ic*one-attribute
    (state <s> ^name selection
               ^item <it>
+             -^evaluate-reject <it>
               ^instance-counter <ic>)
    (<it> ^name <n>
          ^p1 <p1>
@@ -80,6 +82,7 @@ sp {selection*elaborate*add-to-ic*one-attribute
 sp {selection*elaborate*add-to-ic*no-substructure
    (state <s> ^name selection
               ^item <it>
+             -^evaluate-reject <it>
               ^instance-counter <ic>)
    (<it> ^name <n>
          -^p1 <p1>
