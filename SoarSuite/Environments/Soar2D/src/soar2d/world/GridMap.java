@@ -3,6 +3,7 @@ package soar2d.world;
 import java.awt.Point;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Logger;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -21,7 +22,8 @@ import soar2d.player.*;
  * houses the map and associated meta-data. used for grid worlds.
  */
 public class GridMap {
-	
+	public static final Logger logger = Logger.getLogger("soar2d");
+
 	private Configuration config;
 	
 	public GridMap(Configuration config) {
@@ -441,6 +443,9 @@ public class GridMap {
 	static final int kOpenCodeRange = 2; // 1..kOpenCodeRange (alternatively expressed as: 0..(kOpenCodeRange - 1) + 1
 	// If this is not zero, we are requiring an open code.
 	int openCode = 0;
+	public int getOpenCode() {
+		return openCode;
+	}
 	int positiveRewardID = 0;
 	
 	private void cells(Element cells) throws LoadError {

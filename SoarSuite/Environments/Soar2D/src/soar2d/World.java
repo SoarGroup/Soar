@@ -91,6 +91,9 @@ public class World {
 		resetPlayers(resetDuringRun);
 		
 		logger.info("Map loaded, world reset.");
+		if (map.getOpenCode() != 0) {
+			logger.info("The correct open code is: " + map.getOpenCode());
+		}
 		return true;
 	}
 	
@@ -503,7 +506,7 @@ public class World {
 			}
 		}
 		if (openCode != 0) {
-			box.addPropertyApply(Names.kPropertyOpenCode, Integer.toString(openCode));
+			box.addProperty(Names.kPropertyOpenCode, Integer.toString(openCode));
 		}
 		if (box.apply(this, player)) {
 			map.removeObject(location, box.getName());
