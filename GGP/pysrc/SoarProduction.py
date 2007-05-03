@@ -3,7 +3,7 @@ from ElementGGP import ElementGGP
 import re
 
 def SoarifyStr(s):
-	p = re.compile('(\s|\?|\(|\))')
+	p = re.compile('(\s|\?|\(|\)|\.)')
 	result = p.sub('_', str(s))
 	if len(result.strip()) == 0:
 		return 'a'

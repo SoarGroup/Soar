@@ -9,23 +9,7 @@ def ClassifyTerm(elementGGP):
 	else:
 		return GGPFunction(elementGGP)
 
-class GGPTerm:
-	def make_soar_cond(self, sp, cond, place, var_map, negate = False):
-		raise NotImplementedError
-	
-	def make_soar_action(self, sp, action, place, var_map):
-		raise NotImplementedError
-	
-	def type(self):
-		raise NotImplementedError
-	
-	def mangle(self, mangled, name_gen):
-		raise NotImplementedError
-	
-	def name(self):
-		raise NotImplementedError
-
-class GGPConstant(GGPTerm):
+class GGPConstant:
 	def __init__(self, elementGGP):
 		self.__name = elementGGP
 	
@@ -67,7 +51,7 @@ class GGPConstant(GGPTerm):
 	def covers(self, other):
 		return self == other
 
-class GGPVariable(GGPTerm):
+class GGPVariable:
 	def __init__(self, elementGGP):
 		self.__name = elementGGP[1:]
 	
@@ -137,7 +121,7 @@ class GGPVariable(GGPTerm):
 # (<f> ^p1 a
 #      ^p2 b)
 
-class GGPFunction(GGPTerm):
+class GGPFunction:
 
 	def __init__(self, elementGGP = None):
 		if elementGGP == None:
