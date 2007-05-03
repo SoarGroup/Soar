@@ -307,7 +307,6 @@
 (<= (next (compromised ?obstacle))
     (true (compromised ?obstacle))
     (true (location ?obstacle ?ox ?oy))
-;    (not (true (compromiseExpired ?obstacle))))
     (not (true (location explorer ?ox ?oy))))
 
 ;; once the explorer moves onto the obstacle, the compromise expires.
@@ -315,7 +314,6 @@
 ;; then gets back on.
 (<= (next (compromiseExpired ?obstacle))
     (true (compromised ?obstacle))
-;    (not (true (compromiseExpired ?obstacle)))
     (true (location ?obstacle ?ox ?oy))
     (true (location explorer ?ox ?oy)))
 
