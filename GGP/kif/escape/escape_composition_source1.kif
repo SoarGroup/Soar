@@ -35,23 +35,23 @@
 (obstacleType water6 water)
 (obstacleType water7 water)
 
-(init (blocked east 0 0))
-(init (blocked east 0 1))
-(init (blocked east 0 2))
-(init (blocked east 0 3))
-(init (blocked east 0 4))
-(init (blocked east 0 5))
-(init (blocked east 0 6))
-(init (blocked east 0 7))
+(init (blocked west 0 0))
+(init (blocked west 0 1))
+(init (blocked west 0 2))
+(init (blocked west 0 3))
+(init (blocked west 0 4))
+(init (blocked west 0 5))
+(init (blocked west 0 6))
+(init (blocked west 0 7))
 
-(init (blocked west 7 0))
-(init (blocked west 7 1))
-(init (blocked west 7 2))
-(init (blocked west 7 3))
-(init (blocked west 7 4))
-(init (blocked west 7 5))
-(init (blocked west 7 6))
-(init (blocked west 7 7))
+(init (blocked east 7 0))
+(init (blocked east 7 1))
+(init (blocked east 7 2))
+(init (blocked east 7 3))
+(init (blocked east 7 4))
+(init (blocked east 7 5))
+(init (blocked east 7 6))
+(init (blocked east 7 7))
 
 (init (blocked north 0 0))
 (init (blocked north 1 0))
@@ -215,7 +215,7 @@
 
 ;; once a combination, always a combination
 (<= (next (comboType ?comboName ?item1 ?item2))
-    (true (comboTYpe ?comboName ?item1 ?item2)))
+    (true (comboType ?comboName ?item1 ?item2)))
 
 ;; all combinations are items
 (<= (itemType ?comboName)
@@ -242,7 +242,7 @@
     (not (true (blocked ?dir ?x ?y)))
     (nCell 1 ?dir ?x ?y ?x1 ?y1)
     (obstacleType ?obstacle ?class)
-    (true (location ?obstacle ?x ?y)))
+    (true (location ?obstacle ?x1 ?y1)))
 
 ;; a more general version for destroying things
 (<= (doDestroy ?obstacle ?item ?expend)
@@ -284,13 +284,26 @@
     (doCompromise ?obstacle ?item yes))
 
 ;; as long as the explorer doesn't move onto the obstacle while it's
-;; compromised, the obstacle remains compromised. This rule is sufficient
-;; for removing the compromised state of the obstacle once the explorer
-;; moves over it
+;; compromised, the obstacle remains compromised
 (<= (next (compromised ?obstacle))
     (true (compromised ?obstacle))
     (true (location ?obstacle ?ox ?oy))
+;    (not (true (compromiseExpired ?obstacle))))
     (not (true (location explorer ?ox ?oy))))
+
+;; once the explorer moves onto the obstacle, the compromise expires.
+;; But the explorer doesn't take damage until he gets off of the obstacle and
+;; then gets back on.
+(<= (next (compromiseExpired ?obstacle))
+    (true (compromised ?obstacle))
+;    (not (true (compromiseExpired ?obstacle)))
+    (true (location ?obstacle ?ox ?oy))
+    (true (location explorer ?ox ?oy)))
+
+(<= (next (compromiseExpired ?obstacle))
+    (true (compromiseExpired ?obstacle))
+    (true (location ?obstacle ?ox ?oy))
+    (true (location explorer ?ox ?oy)))
 
 ;; if a player is in a cell with an undestroyed and uncompromised obstacle, 
 ;; he loses one health
@@ -298,6 +311,7 @@
     (nextExplorerLocation ?x ?y)
     (obstacleType ?obstacle ?class)
     (not (true (compromised ?obstacle)))
+    (not (true (compromiseExpired ?obstacle)))
     (not (true (destroyed ?obstacle)))
     (true (location ?obstacle ?x ?y)))
 
