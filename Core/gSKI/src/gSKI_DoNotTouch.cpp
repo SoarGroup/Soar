@@ -423,6 +423,7 @@ namespace gSKI
 		}
 
 		// RPM 4/07: Note, mark_depths_augs_of_id must be called before the root call to print_augs_of_id
+		//           Thus, this should probably only be called from do_print_for_identifier
 		void print_augs_of_id (agent* agnt,
 			Symbol *id, 
 			int depth,
@@ -577,16 +578,11 @@ namespace gSKI
 		}
 
 		void do_print_for_wme (agent* agnt, wme *w, int depth, bool internal, bool tree) {
-			tc_number tc;
-
 			if (internal && (depth==0)) {
 				print_wme (agnt, w);
 				print (agnt, "\n");
 			} else {
-				tc = get_new_tc_number(agnt);
-				mark_depths_augs_of_id (agnt, w->id, depth, tc);
-				tc = get_new_tc_number(agnt);
-				print_augs_of_id (agnt, w->id, depth, depth, internal, tree, tc);
+				do_print_for_identifier(agnt, w->id, depth, internal, tree);
 			}
 		}
 
