@@ -3,12 +3,20 @@ sp {canvas*init
 -->
    (exec set_scale | 0 40 0 40 |)}
 
-sp {canvas*draw_wall_north
+sp {canvas*draw_wall_south
    (state <s> ^gs.blocked <wall> -^duplicate-of)
    (<wall> ^p2 <x> ^p3 <y> ^p1 south)
 -->
    (exec draw_line | static | (*  <x> 4) | | (* (+ <y> 1) 4) | |
 (* (+ <x> 1) 4) | | (* (+ <y> 1) 4) | black|)}
+
+sp {canvas*draw_wall_north
+   (state <s> ^gs.blocked <wall> -^duplicate-of)
+   (<wall> ^p2 <x> ^p3 <y> ^p1 north)
+-->
+   (exec draw_line | static | (*  <x> 4) | | (* <y> 4) | |
+(* (+ <x> 1) 4) | | (* <y> 4) | black|)}
+
 
 sp {canvas*draw_wall_east
    (state <s> ^gs.blocked <wall> -^duplicate-of)
@@ -16,6 +24,14 @@ sp {canvas*draw_wall_east
 -->
    (exec draw_line | static | (* (+ <x> 1) 4) | | (* 4 <y>) | |
 (* (+ <x> 1) 4) | | (* (+ <y> 1) 4) | black|)}
+
+sp {canvas*draw_wall_west
+   (state <s> ^gs.blocked <wall> -^duplicate-of)
+   (<wall> ^p2 <x> ^p3 <y> ^p1 west)
+-->
+   (exec draw_line | static | (* <x> 4) | | (* 4 <y>) | |
+(* <x> 4) | | (* (+ <y> 1) 4) | black|)}
+
 
 sp {canvas*draw_explorergreen
    (state <s> ^gs.location <l>)
