@@ -125,24 +125,29 @@ bool CommandLineInterface::DoMemories(gSKI::Agent* pAgent, const MemoriesBitset 
 
 		pProd = pIter->GetVal();
 
-		switch (pProd->GetType()) {
-			case gSKI_CHUNK:
-				if (!options.test(MEMORIES_CHUNKS)) continue;
-				break;
-			case gSKI_DEFAULT:
-				if (!options.test(MEMORIES_DEFAULT)) continue;
-				break;
-			case gSKI_JUSTIFICATION:
-				if (!options.test(MEMORIES_JUSTIFICATIONS)) continue;
-				break;
-			case gSKI_USER:
-				if (!options.test(MEMORIES_USER)) continue;
-				break;
+		// voigtjr: bug 998: only check flags if any were given.
+		// previously, these flags were checked with the memories <prod_name> invocation
+		// where none were set therefore it always failed to find the production
+		if (!options.none()) {
+			switch (pProd->GetType()) {
+				case gSKI_CHUNK:
+					if (!options.test(MEMORIES_CHUNKS)) continue;
+					break;
+				case gSKI_DEFAULT:
+					if (!options.test(MEMORIES_DEFAULT)) continue;
+					break;
+				case gSKI_JUSTIFICATION:
+					if (!options.test(MEMORIES_JUSTIFICATIONS)) continue;
+					break;
+				case gSKI_USER:
+					if (!options.test(MEMORIES_USER)) continue;
+					break;
 
-			default:
-				pProd->Release();
-				pIter->Release();
-				return SetError(CLIError::kInvalidProductionType);
+				default:
+					pProd->Release();
+					pIter->Release();
+					return SetError(CLIError::kInvalidProductionType);
+			}
 		}
 
 		foundProduction = true;
