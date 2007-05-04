@@ -54,7 +54,7 @@ opts.AddOptions(
 )
 
 # Create the environment using the options
-env = Environment(options = opts)
+env = Environment(options = opts, ENV = os.environ)
 Help(opts.GenerateHelpText(env))
 
 #################
