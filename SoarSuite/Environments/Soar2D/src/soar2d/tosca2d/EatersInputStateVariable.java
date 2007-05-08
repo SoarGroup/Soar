@@ -16,6 +16,7 @@ import java.util.Iterator;
 import soar2d.*;
 import soar2d.player.ToscaEater;
 import soar2d.world.CellObject;
+import tosca.Boolean;
 import tosca.Double;
 import tosca.Group;
 import tosca.Integer;
@@ -35,6 +36,8 @@ public class EatersInputStateVariable extends JavaStateVariable {
 	public void Initialize() {
 		// For the moment, initialize as an empty group
 		Group init = new Group() ;
+        Boolean b = new Boolean(false);
+        init.AddNamedValue("_initialized", b);
 		GetCurrentValue().TakeGroup(init) ;
 	}
 
@@ -418,6 +421,9 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		//Double val = new Double() ;
 		//val.SetFromDouble(time) ;
 		
+        Boolean b = new Boolean(true);
+        main.AddNamedValue("_initialized", b);
+        
 		Value value = new Value(main) ;
 		SetValue(value, time) ;
 	}
