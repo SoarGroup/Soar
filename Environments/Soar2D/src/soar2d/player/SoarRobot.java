@@ -145,6 +145,11 @@ class DoorInputLink extends WallInputLink {
 	void initialize(int idInt, Point leftPoint, Point rightPoint) {
 		super.initialize(idInt, leftPoint, rightPoint);
 	}
+	
+	void addDest(int id) {
+		IntElement dest = robot.agent.CreateIntWME(parent, "to", id);
+		toList.add(dest);
+	}
 }
 
 //class ObjectInputLink {
@@ -279,6 +284,14 @@ public class SoarRobot extends Robot {
 								// door
 								DoorInputLink door = new DoorInputLink(this, selfIL.createDoorId());
 								door.initialize(barrier.id, barrier.left, barrier.right);
+								
+								// add destinations
+								ArrayList<Integer> doorDestList = world.getMap().getDoorDestinationList(barrier.id);
+								Iterator<Integer> destIter = doorDestList.iterator();
+								while(destIter.hasNext()) {
+									door.addDest(destIter.next().intValue());
+								}
+								
 								selfIL.addDoor(door);
 								
 							} else {
@@ -433,6 +446,7 @@ public class SoarRobot extends Robot {
 		super.reset();
 		fragged = false;
 		moved = true;
+		locationId = -1;
 		
 		if (agent == null) {
 			return;

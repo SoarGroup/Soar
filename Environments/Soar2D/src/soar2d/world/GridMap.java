@@ -1422,6 +1422,10 @@ public class GridMap {
 	public ArrayList<Barrier> getRoomBarrierList(int roomID) {
 		return roomBarrierMap.get(roomID);
 	}
+	private HashMap<Integer, ArrayList<Integer> > doorDestinationMap = new HashMap<Integer, ArrayList<Integer> >();
+	public ArrayList<Integer> getDoorDestinationList(int doorID) {
+		return doorDestinationMap.get(doorID);
+	}
 	
 	public boolean generateRoomStructure() {
 		// Start in upper-left corner
@@ -1538,6 +1542,8 @@ public class GridMap {
 						if (currentBarrier == null) {
 							
 							// getting here means we're starting a new section of door
+							
+							// create a barrier
 							currentBarrier = new Barrier();
 							currentBarrier.left = new java.awt.Point(next);
 							
@@ -1553,13 +1559,21 @@ public class GridMap {
 							}
 							//System.out.println();
 							//System.out.print("  Door " + currentBarrier.id + ": ");
+							
+							// add the current room to the door destination list
+							ArrayList<Integer> doorDestinations = doorDestinationMap.get(new Integer(currentBarrier.id));
+							if (doorDestinations == null) {
+								doorDestinations = new ArrayList<Integer>();
+							}
+							doorDestinations.add(new Integer(roomNumber));
+							doorDestinationMap.put(new Integer(currentBarrier.id), doorDestinations);
 						}
 
 						// if the door doesn't have a number, add it now.
 						if (!doorObject.hasProperty(Names.kPropertyNumber)) {
 							doorObject.addProperty(Names.kPropertyNumber, Integer.toString(currentBarrier.id));
 						}
-						
+
 					} else if (wallObject != null) /*redundant*/ {
 					
 						if (currentBarrier != null) {
@@ -1690,6 +1704,18 @@ public class GridMap {
 				}
 				this.roomBarrierMap.put(roomNumber, barrierList);
 			}
+		}
+		
+		// print door information
+		Iterator<Integer> doorKeyIter = doorDestinationMap.keySet().iterator();
+		while (doorKeyIter.hasNext()) {
+			Integer doorId = doorKeyIter.next();
+			String toList = "";
+			Iterator<Integer> doorDestIter = doorDestinationMap.get(doorId).iterator();
+			while (doorDestIter.hasNext()) {
+				toList += doorDestIter.next() + " ";
+			}
+			System.out.println("Door " + doorId + ": " + toList);
 		}
 		
 		return true;
