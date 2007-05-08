@@ -114,13 +114,14 @@ class WallInputLink {
 	IntElement id;
 	Identifier parent, left, right;
 	IntElement leftRow, leftCol, rightRow, rightCol;
+	StringElement direction;
 	
 	WallInputLink(SoarRobot robot, Identifier parent) {
 		this.robot = robot;
 		this.parent = parent;
 	}
 	
-	void initialize(int idInt, Point leftPoint, Point rightPoint) {
+	void initialize(int idInt, Point leftPoint, Point rightPoint, String directionString) {
 		id = robot.agent.CreateIntWME(parent, "id", idInt);
 		left = robot.agent.CreateIdWME(parent, "left");
 		{
@@ -131,6 +132,9 @@ class WallInputLink {
 		{
 			rightRow = robot.agent.CreateIntWME(right, "row", rightPoint.y);
 			rightCol = robot.agent.CreateIntWME(right, "col", rightPoint.x);
+		}
+		if (directionString != null) {
+			direction = robot.agent.CreateStringWME(parent, "direction", directionString);
 		}
 	}
 }
@@ -143,7 +147,7 @@ class DoorInputLink extends WallInputLink {
 	}
 	
 	void initialize(int idInt, Point leftPoint, Point rightPoint) {
-		super.initialize(idInt, leftPoint, rightPoint);
+		super.initialize(idInt, leftPoint, rightPoint, null);
 	}
 	
 	void addDest(int id) {
@@ -270,12 +274,13 @@ public class SoarRobot extends Robot {
 						selfIL.areaDescription = null;
 					}
 					
-					selfIL.createAreaDescription("room");
-
 					// create new area information
 					ArrayList<Barrier> barrierList = world.getMap().getRoomBarrierList(locationId);
-					if (barrierList.size() > 0) {
+					if (barrierList != null) {
+						assert barrierList.size() > 0;
+						
 						// this is, in fact, a room
+						selfIL.createAreaDescription("room");
 						
 						Iterator<Barrier> iter = barrierList.iterator();
 						while(iter.hasNext()) {
@@ -297,16 +302,16 @@ public class SoarRobot extends Robot {
 							} else {
 								// wall
 								WallInputLink wall = new WallInputLink(this, selfIL.createWallId());
-								wall.initialize(barrier.id, barrier.left, barrier.right);
-								//agent.CreateStringWME(barrierWME, Names.kDirectionID, barrier.direction);
+								wall.initialize(barrier.id, barrier.left, barrier.right, barrier.direction);
 								selfIL.addWall(wall);
 							}
 						}
 
 					} else {
 						// we're in a door
-						// TODO: create door and pass it
 						selfIL.createAreaDescription("door");
+						
+						// TODO: door information
 					}
 					
 				}

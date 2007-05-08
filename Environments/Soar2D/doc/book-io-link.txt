@@ -15,6 +15,7 @@ current implementation:
 				^right location of other end
 					^row <int>
 					^col <int>
+				^direction [north south east west] direction to turn to face the wall
 			*^door one for each door segment
 				^id <int> unique identification number of segment
 				^left location of one end
@@ -67,6 +68,7 @@ full implementation:
 				^right location of other end
 					^row <int>
 					^col <int>
+				^direction [north south east west] direction to turn to face the wall
 			*^door one for each door segment
 				^id <int> unique identification number of segment
 				^left location of one end

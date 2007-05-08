@@ -204,6 +204,7 @@ public class Player {
 		}
 		pointsChanged = true;
 		pointsDelta = 0;
+		headingRadians = 0;
 	}
 	/**
 	 * called when things are shutting down

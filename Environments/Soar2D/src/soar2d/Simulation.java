@@ -120,15 +120,15 @@ public class Simulation {
 		
 		// add dog and mouse (book)
 		// TODO: this could happen in the config file
-		if (Soar2D.config.getType() == SimType.kBook) {
-			PlayerConfig dogConfig = new PlayerConfig();
-			dogConfig.setName(kDog);
-			createPlayer(dogConfig);
-			
-			PlayerConfig mouseConfig = new PlayerConfig();
-			mouseConfig.setName(kMouse);
-			createPlayer(mouseConfig);
-		}
+//		if (Soar2D.config.getType() == SimType.kBook) {
+//			PlayerConfig dogConfig = new PlayerConfig();
+//			dogConfig.setName(kDog);
+//			createPlayer(dogConfig);
+//			
+//			PlayerConfig mouseConfig = new PlayerConfig();
+//			mouseConfig.setName(kMouse);
+//			createPlayer(mouseConfig);
+//		}
 		
 		// add initial players
 		Iterator<PlayerConfig> iter = Soar2D.config.getPlayers().iterator();
