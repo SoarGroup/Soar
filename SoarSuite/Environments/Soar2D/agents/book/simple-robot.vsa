@@ -12,4 +12,5 @@ VERSION 4
 9	0	HLOPERATOR wander wander.soar wander 44 10
 10	9	FOPERATOR elaborations elaborations.soar 11
 11	9	OPERATOR move move.soar 12
+12	9	OPERATOR rotate rotate.soar 13
 END

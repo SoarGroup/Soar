@@ -236,6 +236,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 		// Draw world
 		int fill1, fill2, xDraw, yDraw;
 		ArrayList<DrawMissile> drawMissiles = new ArrayList<DrawMissile>();
+		ArrayList<java.awt.Point> playerLocs = new ArrayList<java.awt.Point>();
 		java.awt.Point location = new java.awt.Point();
 		for(location.x = 0; location.x < map.getSize(); ++location.x){
 			if (agentLocation != null) {
@@ -528,54 +529,69 @@ public class VisualWorld extends Canvas implements PaintListener {
 							gc.setBackground(WindowManager.white);
 						}
 						gc.fillRectangle(cellSize*xDraw, cellSize*yDraw, cellSize, cellSize);
-					}
-					
-					Player player = this.map.getPlayer(location);
-					if (player != null) {
-						
-						Point2D.Float center = new Point2D.Float(Soar2D.simulation.world.getFloatLocation(player).x, Soar2D.simulation.world.getFloatLocation(player).y);
-						Point2D.Float offset = new Point2D.Float(0,0);
-						
-						Path path = new Path(gc.getDevice());
 
-						// first, move to the point representing the tip of the chevron
-						offset.y = (float)kDotSize * (float)Math.sin((double)player.getHeadingRadians());
-						offset.x = (float)kDotSize * (float)Math.cos((double)player.getHeadingRadians());
-						Point2D.Float original = new Point2D.Float(offset.x, offset.y);
-						path.moveTo(center.x + offset.x, center.y + offset.y);
-						System.out.println("First: " + offset);
-
-						// next draw a line to the corner
-						offset.y = kDotSize/2.0f * (float)Math.sin(player.getHeadingRadians() + (3*Math.PI)/4);
-						offset.x = kDotSize/2.0f * (float)Math.cos(player.getHeadingRadians() + (3*Math.PI)/4);
-						path.lineTo(center.x + offset.x, center.y + offset.y);
-						System.out.println("Second: " + offset);
-
-						// next draw a line to the other corner
-						offset.y = kDotSize/2.0f * (float)Math.sin(player.getHeadingRadians() - (3*Math.PI)/4);
-						offset.x = kDotSize/2.0f * (float)Math.cos(player.getHeadingRadians() - (3*Math.PI)/4);
-						path.lineTo(center.x + offset.x, center.y + offset.y);
-						System.out.println("Third: " + offset);
-
-						// finally a line back to the original
-						path.lineTo(center.x + original.x, center.y + original.y);
-						
-						gc.setForeground(WindowManager.getColor(player.getColor()));
-						gc.drawPath(path);
-						
+						if (this.map.getPlayer(location) != null) {
+							playerLocs.add(new java.awt.Point(location));
+						}
 					}
 					break;
 				}
 			}
 		}
 		
-		// actually draw the missiles now (so they appear on top of everything)
-		Iterator<DrawMissile> drawMissileIter = drawMissiles.iterator();
-		while (drawMissileIter.hasNext()) {
-			drawMissileIter.next().draw();
+		switch (Soar2D.config.getType()) {
+		case kTankSoar:
+			// actually draw the missiles now (so they appear on top of everything)
+			Iterator<DrawMissile> drawMissileIter = drawMissiles.iterator();
+			while (drawMissileIter.hasNext()) {
+				drawMissileIter.next().draw();
+			}
+			
+			painted = true;
+			break;
+			
+		case kEaters:
+			break;
+			
+		case kBook:
+			// draw entities now so they appear on top
+			Iterator<java.awt.Point> playerLocIter = playerLocs.iterator();
+			while (playerLocIter.hasNext()) {
+				Player player = this.map.getPlayer(playerLocIter.next());
+				assert player != null;
+
+				Point2D.Float center = new Point2D.Float(Soar2D.simulation.world.getFloatLocation(player).x, Soar2D.simulation.world.getFloatLocation(player).y);
+				Point2D.Float offset = new Point2D.Float(0,0);
+				
+				Path path = new Path(gc.getDevice());
+
+				// first, move to the point representing the tip of the chevron
+				offset.y = (float)kDotSize * (float)Math.sin((double)player.getHeadingRadians());
+				offset.x = (float)kDotSize * (float)Math.cos((double)player.getHeadingRadians());
+				Point2D.Float original = new Point2D.Float(offset.x, offset.y);
+				path.moveTo(center.x + offset.x, center.y + offset.y);
+				System.out.println("First: " + offset);
+
+				// next draw a line to the corner
+				offset.y = kDotSize/2.0f * (float)Math.sin(player.getHeadingRadians() + (3*Math.PI)/4);
+				offset.x = kDotSize/2.0f * (float)Math.cos(player.getHeadingRadians() + (3*Math.PI)/4);
+				path.lineTo(center.x + offset.x, center.y + offset.y);
+				System.out.println("Second: " + offset);
+
+				// next draw a line to the other corner
+				offset.y = kDotSize/2.0f * (float)Math.sin(player.getHeadingRadians() - (3*Math.PI)/4);
+				offset.x = kDotSize/2.0f * (float)Math.cos(player.getHeadingRadians() - (3*Math.PI)/4);
+				path.lineTo(center.x + offset.x, center.y + offset.y);
+				System.out.println("Third: " + offset);
+
+				// finally a line back to the original
+				path.lineTo(center.x + original.x, center.y + original.y);
+				
+				gc.setForeground(WindowManager.getColor(player.getColor()));
+				gc.drawPath(path);
+			}
+			break;
 		}
-		
-		painted = true;
 	}
 	
 	Image bootstrapImage(String imageName) {

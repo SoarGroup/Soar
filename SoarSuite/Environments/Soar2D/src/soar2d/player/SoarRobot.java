@@ -43,7 +43,7 @@ class SelfInputLink {
 		self = robot.agent.CreateIdWME(il, "self");
 		angle = robot.agent.CreateIdWME(self, "angle");
 		{
-			yaw = robot.agent.CreateFloatWME(angle, "yaw", 0.0);
+			yaw = robot.agent.CreateFloatWME(angle, "yaw", robot.getHeadingRadians());
 		}
 		area = robot.agent.CreateIntWME(self, "area", -1);
 		cycle = robot.agent.CreateIntWME(self, "cycle", 0);
@@ -326,9 +326,7 @@ public class SoarRobot extends Robot {
 			agent.Update(selfIL.y, floatLocation.y);
 			
 			// and heading
-			double heading = Math.toDegrees(getHeadingRadians());
-			int headingInt = (int)heading;
-			agent.Update(selfIL.yaw, headingInt);
+			agent.Update(selfIL.yaw, getHeadingRadians());
 			
 			// update the clock
 			agent.Update(selfIL.cycle, world.getWorldCount());
