@@ -1,43 +1,108 @@
-input-link
-	self
-		angle
-			yaw
-		area
-		cycle
-		score
-		name
-		position
-			x
-			y
-			z
-		random
-		time
-		velocity
-			speed
-			x
-			y
-			z
-	object
-		angle-off
-		area
-		class
-		name
-		position
-			x
-			y
-			z
-		range
-		visible
-	agent
-		angle-off
-		area
-		aspect
-		health
-		name
-		type
-		velocity
-			speed
-			x
-			y
-			z
-		visible
+current implementation:
+-----------------------
+^input-link
+	^self
+		^angle 
+			^yaw <float> direction I am facing
+		^area <int> unique id number for the area (door or room) I am in
+		^area-description details for the area I am in
+			^type <string> [door room] door if I'm in a door, room if a room
+			+^wall one for each wall segment
+				^id <int> unique identification number of segment
+				^left location of one end
+					^row <int> 
+					^col <int>
+				^right location of other end
+					^row <int>
+					^col <int>
+			*^door one for each door segment
+				^id <int> unique identification number of segment
+				^left location of one end
+					^row <int>
+					^col <int>
+				^right location of other end
+					^row <int>
+					^col <int>
+				+^to <int> id of room this door leads to
+		^cycle <int> world update count
+		^score <int> my score
+		^position
+			^x <float> my exact position in pixels
+			^y <float> my exact position in pixels
+			^row <int> what row I'm in
+			^col <int> what column I'm in
+		^random <float> [0..1) random number
+		^velocity
+			^speed <float> magnitude
+			^x <float> component
+			^y <float> component
+	+^object
+		^angle-off <float> relative to direction I'm facing
+		^area <int> unique id number
+		^type <string> [cat dog door]
+		^position
+			^x <float> exact position in pixels
+			^y <float> exact position in pixels
+			^row <int> current row
+			^col <int> current row
+		^range <float>
+		^visible <string> [yes no] objects stay on input link for 2 seconds after they disappear
+
+
+full implementation:
+--------------------
+^input-link
+	^self
+		^angle 
+			^yaw <float> direction I am facing
+			^pitch <int> zero for no height change, 1 indicates climbing, -1 is descending
+		^area <int> unique id number for the area (door or room) I am in
+		^area-description details for the area I am in
+			^type <string> [door room] door if I'm in a door, room if a room
+			+^wall one for each wall segment
+				^id <int> unique identification number of segment
+				^left location of one end
+					^row <int> 
+					^col <int>
+				^right location of other end
+					^row <int>
+					^col <int>
+			*^door one for each door segment
+				^id <int> unique identification number of segment
+				^left location of one end
+					^row <int>
+					^col <int>
+				^right location of other end
+					^row <int>
+					^col <int>
+				+^to <int> id of room this door leads to
+		^cycle <int> world update count
+		^score <int> my score
+		^position
+			^x <float> my exact position in pixels
+			^y <float> my exact position in pixels
+			^z <float> exact height, 0 indicating on floor, 1 is one block up, 2 is 2 blocks up, etc.
+			^row <int> what row I'm in
+			^col <int> what column I'm in
+			^height <int> how many blocks I'm up
+		^random <float> [0..1) random number
+		^time <float> seconds since simulation started
+		^velocity
+			^speed <float> magnitude
+			^x <float> component
+			^y <float> component
+			^z <float> component
+	+^object
+		^angle-off <float> relative to direction I'm facing
+		^area <int> unique id number
+		^type <string> [block ramp cat dog door]
+		?^up-direction <float> direction to pass through the ramp to go up
+		^position
+			^x <float> exact position in pixels
+			^y <float> exact position in pixels
+			^z <float> current exact height
+			^row <int> current row
+			^col <int> current row
+			^height <int> how many blocks up
+		^range <float>
+		^visible <string> [yes no] objects stay on input link for 2 seconds after they disappear

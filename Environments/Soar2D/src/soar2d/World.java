@@ -653,6 +653,8 @@ public class World {
 				Soar2D.wm.reset();
 			}
 		}
+		
+		//System.out.println(map);
 	}
 	
 	private void doRestartAfterUpdate() {
@@ -1525,6 +1527,7 @@ public class World {
 		missileID = 0;
 		missileReset = 0;
 		restartAfterUpdate = false;
+		//System.out.println(map);
 	}
 	
 	public int getWorldCount() {
