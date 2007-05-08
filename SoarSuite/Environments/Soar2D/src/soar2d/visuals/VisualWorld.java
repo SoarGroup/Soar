@@ -9,6 +9,7 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Path;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
@@ -33,9 +34,6 @@ public class VisualWorld extends Canvas implements PaintListener {
 	
 	private static HashMap<String, Image> images = new HashMap<String, Image>();
 	private static HashMap<Integer, Image> tanks = new HashMap<Integer, Image>();
-	private static Image dog;
-	private static Image cat;
-	private static Image mouse;
 
 	public static boolean internalRepaint = false;
 	
@@ -70,9 +68,6 @@ public class VisualWorld extends Canvas implements PaintListener {
 			break;
 			
 		case kBook:
-			dog = new Image(display, Soar2D.class.getResourceAsStream("/images/book/dog.gif"));
-			cat = new Image(display, Soar2D.class.getResourceAsStream("/images/book/cat.gif"));
-			mouse = new Image(display, Soar2D.class.getResourceAsStream("/images/book/mouse.gif"));
 			break;
 		}
 		
@@ -537,35 +532,38 @@ public class VisualWorld extends Canvas implements PaintListener {
 					
 					Player player = this.map.getPlayer(location);
 					if (player != null) {
-						boolean drawDot = false;
-						Image image = null;
-						if (player.getName().equalsIgnoreCase("dog")) {
-							image = VisualWorld.dog;
-						} else if (player.getName().equalsIgnoreCase("mouse")) {
-							image = VisualWorld.mouse;
-						} else {
-							image = VisualWorld.cat;
-							drawDot = true;
-						}
 						
-						// draw the player color
-						if (drawDot) {
-							// image using float location then dot
-							Point2D.Float floatLocation = new Point2D.Float(Soar2D.simulation.world.getFloatLocation(player).x, Soar2D.simulation.world.getFloatLocation(player).y);
-							floatLocation.x -= cellSize/2;
-							floatLocation.y -= cellSize/2;
-							gc.drawImage(image, (int)floatLocation.x, (int)floatLocation.y);
-							
-							gc.setBackground(WindowManager.getColor(player.getColor()));
-							gc.fillOval(cellSize*location.x + cellSize/2 - kDotSize/2, 
-									cellSize*location.y + cellSize/2 - kDotSize/2, 
-									kDotSize, kDotSize);
-						} else {
-							// only the image
-							gc.drawImage(image, location.x*cellSize, location.y*cellSize);
-						}
-					}
+						Point2D.Float center = new Point2D.Float(Soar2D.simulation.world.getFloatLocation(player).x, Soar2D.simulation.world.getFloatLocation(player).y);
+						Point2D.Float offset = new Point2D.Float(0,0);
+						
+						Path path = new Path(gc.getDevice());
 
+						// first, move to the point representing the tip of the chevron
+						offset.y = (float)kDotSize * (float)Math.sin((double)player.getHeadingRadians());
+						offset.x = (float)kDotSize * (float)Math.cos((double)player.getHeadingRadians());
+						Point2D.Float original = new Point2D.Float(offset.x, offset.y);
+						path.moveTo(center.x + offset.x, center.y + offset.y);
+						System.out.println("First: " + offset);
+
+						// next draw a line to the corner
+						offset.y = kDotSize/2.0f * (float)Math.sin(player.getHeadingRadians() + (3*Math.PI)/4);
+						offset.x = kDotSize/2.0f * (float)Math.cos(player.getHeadingRadians() + (3*Math.PI)/4);
+						path.lineTo(center.x + offset.x, center.y + offset.y);
+						System.out.println("Second: " + offset);
+
+						// next draw a line to the other corner
+						offset.y = kDotSize/2.0f * (float)Math.sin(player.getHeadingRadians() - (3*Math.PI)/4);
+						offset.x = kDotSize/2.0f * (float)Math.cos(player.getHeadingRadians() - (3*Math.PI)/4);
+						path.lineTo(center.x + offset.x, center.y + offset.y);
+						System.out.println("Third: " + offset);
+
+						// finally a line back to the original
+						path.lineTo(center.x + original.x, center.y + original.y);
+						
+						gc.setForeground(WindowManager.getColor(player.getColor()));
+						gc.drawPath(path);
+						
+					}
 					break;
 				}
 			}
