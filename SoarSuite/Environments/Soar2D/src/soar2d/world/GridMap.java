@@ -1710,4 +1710,28 @@ public class GridMap {
 		
 		return cellObject;
 	}
+	
+	public String toString() {
+		String output = "";
+		for (int y = 0; y < mapCells.length; ++y) {
+			for (int x = 0; x < mapCells[y].length; ++x) {
+				String cellString = y + "," + x + ":\n";
+				Cell cell = mapCells[y][x];
+				Iterator<CellObject> iter = cell.cellObjects.values().iterator();
+				while (iter.hasNext()) {
+					CellObject object = iter.next();
+					cellString += "\t" + object.getName() + ": ";
+					
+					Iterator<String> propIter = object.properties.keySet().iterator();
+					while (propIter.hasNext()) {
+						String key = propIter.next();
+						cellString += key + ":" + object.properties.get(key) + ", ";
+					}
+					cellString += "\n";
+				}
+				output += cellString;
+			}
+		}
+		return output;
+	}
 }

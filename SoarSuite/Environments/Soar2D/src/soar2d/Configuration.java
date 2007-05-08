@@ -261,15 +261,15 @@ public class Configuration {
 	private int randomSeed = 0;		// if random is false, this is the seed
 	private static final String kTagSeed = "seed";
 	public void setRandomSeed(int seed) {
-		this.random = true;
+		this.random = false;
 		this.randomSeed = seed;
 	}
 	public void unsetRandomSeed() {
-		this.random = false;
+		this.random = true;
 		this.randomSeed = 0;
 	}
 	public boolean hasRandomSeed() {
-		return this.random;
+		return !this.random;
 	}
 	public int getRandomSeed() {
 		return this.randomSeed;

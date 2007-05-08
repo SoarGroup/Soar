@@ -1,6 +1,7 @@
 package soar2d.player;
 
 import java.awt.geom.Point2D;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -19,23 +20,170 @@ import soar2d.world.CellObject;
 import soar2d.world.GridMap;
 import soar2d.world.GridMap.Barrier;
 
+class SelfInputLink {
+	SoarRobot robot;
+	Identifier self, angle, areaDescription, position, velocity;
+	FloatElement yaw, x, y, random, speed, dx, dy;
+	IntElement area, cycle, score, row, col;
+	StringElement name, type;
+	
+	ArrayList<WallInputLink> walls = new ArrayList<WallInputLink>();
+	ArrayList<DoorInputLink> doors = new ArrayList<DoorInputLink>();
+	
+	SelfInputLink(SoarRobot robot) {
+		this.robot = robot;
+	}
+	
+	void initialize() {
+		Identifier il = robot.agent.GetInputLink();
+
+		assert il != null;
+		assert self == null;
+
+		self = robot.agent.CreateIdWME(il, "self");
+		angle = robot.agent.CreateIdWME(self, "angle");
+		{
+			yaw = robot.agent.CreateFloatWME(angle, "yaw", 0.0);
+		}
+		area = robot.agent.CreateIntWME(self, "area", -1);
+		cycle = robot.agent.CreateIntWME(self, "cycle", 0);
+		score = robot.agent.CreateIntWME(self, "score", 0);
+		name = robot.agent.CreateStringWME(self, "name", robot.agent.GetAgentName());
+		position = robot.agent.CreateIdWME(self, "position");
+		{
+			x = robot.agent.CreateFloatWME(position, "x", 0);
+			y = robot.agent.CreateFloatWME(position, "y", 0);
+			row = robot.agent.CreateIntWME(position, "row", 0);
+			col = robot.agent.CreateIntWME(position, "col", 0);
+		}
+		random = robot.agent.CreateFloatWME(self, "random", robot.random);
+		velocity = robot.agent.CreateIdWME(self, "velocity");
+		{
+			speed = robot.agent.CreateFloatWME(velocity, "speed", 0.0);
+			dx = robot.agent.CreateFloatWME(velocity, "dx", 0.0);
+			dy = robot.agent.CreateFloatWME(velocity, "dy", 0.0);
+		}
+	}
+	
+	void createAreaDescription(String typeString) {
+		assert areaDescription == null;
+		areaDescription = robot.agent.CreateIdWME(self, "area-description");
+		type = robot.agent.CreateStringWME(areaDescription, "type", typeString);
+	}
+	
+	Identifier createWallId() {
+		assert areaDescription != null;
+		return robot.agent.CreateIdWME(areaDescription, "wall");
+	}
+	
+	Identifier createDoorId() {
+		assert areaDescription != null;
+		return robot.agent.CreateIdWME(areaDescription, "door");
+	}
+	
+	void addWall(WallInputLink wall) {
+		walls.add(wall);
+	}
+	
+	void addDoor(DoorInputLink door) {
+		doors.add(door);
+	}
+	
+	void destroyAreaDescription() {
+		walls = new ArrayList<WallInputLink>();
+		doors = new ArrayList<DoorInputLink>();
+
+		if (areaDescription == null) {
+			return;
+		}
+		robot.agent.DestroyWME(areaDescription);
+		areaDescription = null;
+		
+	}
+	
+	void destroy() {
+		assert self != null;
+		robot.agent.DestroyWME(self);
+		self = areaDescription = null;
+		destroyAreaDescription();
+	}
+}
+
+class WallInputLink {
+	SoarRobot robot;
+	IntElement id;
+	Identifier parent, left, right;
+	IntElement leftRow, leftCol, rightRow, rightCol;
+	
+	WallInputLink(SoarRobot robot, Identifier parent) {
+		this.robot = robot;
+		this.parent = parent;
+	}
+	
+	void initialize(int idInt, Point leftPoint, Point rightPoint) {
+		id = robot.agent.CreateIntWME(parent, "id", idInt);
+		left = robot.agent.CreateIdWME(parent, "left");
+		{
+			leftRow = robot.agent.CreateIntWME(left, "row", leftPoint.y);
+			leftCol = robot.agent.CreateIntWME(left, "col", leftPoint.x);
+		}
+		right = robot.agent.CreateIdWME(parent, "right");
+		{
+			rightRow = robot.agent.CreateIntWME(right, "row", rightPoint.y);
+			rightCol = robot.agent.CreateIntWME(right, "col", rightPoint.x);
+		}
+	}
+}
+
+class DoorInputLink extends WallInputLink {
+	ArrayList<IntElement> toList = new ArrayList<IntElement>();
+	
+	DoorInputLink(SoarRobot robot, Identifier parent) {
+		super(robot, parent);
+	}
+	
+	void initialize(int idInt, Point leftPoint, Point rightPoint) {
+		super.initialize(idInt, leftPoint, rightPoint);
+	}
+}
+
+//class ObjectInputLink {
+//	SoarRobot robot;
+//	Identifier object, position;
+//	FloatElement angleOff, x, y, range;
+//	IntElement area, row, col;
+//	StringElement type, visible;
+//
+//	ObjectInputLink(SoarRobot robot) {
+//		this.robot = robot;
+//	}
+//	
+//	void initialize() {
+//		Identifier il = robot.agent.GetInputLink();
+//		assert il != null;
+//		
+//		object = robot.agent.CreateIdWME(il, "object");
+//		angleOff = robot.agent.CreateFloatWME(object, "angle-off", 0.0);
+//		area = robot.agent.CreateIntWME(object, "area", -1);
+//		type = robot.agent.CreateStringWME(object, "type", "None");
+//		position = robot.agent.CreateIdWME(object, "position");
+//		{
+//			x = robot.agent.CreateFloatWME(position, "x", 0);
+//			y = robot.agent.CreateFloatWME(position, "y", 0);
+//			row = robot.agent.CreateIntWME(position, "row", 0);
+//			col = robot.agent.CreateIntWME(position, "col", 0);
+//		}
+//		range = robot.agent.CreateFloatWME(object, "range", 0.0);
+//		visible = robot.agent.CreateStringWME(object, "visible", "false");
+//	}
+//}
+
 public class SoarRobot extends Robot {
-	private Agent agent;	// the soar agent
-	private float random;	// a random number, guaranteed to change every frame
+	Agent agent;	// the soar agent
+	float random;	// a random number, guaranteed to change every frame
 	private boolean fragged = true;
 	
-	private IntElement xWME;	// our current x location
-	private IntElement yWME;	// our current y location
-	private FloatElement floatxWME;	// our current x exact location
-	private FloatElement floatyWME;	// our current y exact location
-	private FloatElement randomWME;	// the wme for the random number
-	private IntElement clockWME;	// the world count
-	private IntElement headingWME;	// current heading, degrees
-	private IntElement inWME;		// ID of current room
-	
-	private Identifier roomWME; // location identifier
-	//private ArrayList<Identifier> barrierWMEs; // location identifier
-
+	SelfInputLink selfIL;
 	
 	private ArrayList<String> shutdownCommands;	// soar commands to run before this agent is destroyed
 
@@ -52,21 +200,12 @@ public class SoarRobot extends Robot {
 		
 		previousLocation = new java.awt.Point(-1, -1);
 		
-		Identifier il = agent.GetInputLink();
-		
-		agent.CreateStringWME(il, Names.kNameID, getName());
-		xWME = agent.CreateIntWME(il, Names.kXID, 0);
-		yWME = agent.CreateIntWME(il, Names.kYID, 0);
-		floatxWME = agent.CreateFloatWME(il, Names.kFloatXID, 0);
-		floatyWME = agent.CreateFloatWME(il, Names.kFloatYID, 0);
-		headingWME = agent.CreateIntWME(il, Names.kHeadingID, 0);
-		inWME = agent.CreateIntWME(il, Names.kInID, -1);
-		
-		clockWME = agent.CreateIntWME(il, Names.kClockID, 0);
-		
 		random = 0;
 		generateNewRandom();
-		randomWME = agent.CreateFloatWME(agent.GetInputLink(), Names.kRandomID, random);
+
+		// create and initialize self input link
+		selfIL = new SelfInputLink(this);
+		selfIL.initialize();
 		
 		if (!agent.Commit()) {
 			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
@@ -86,19 +225,6 @@ public class SoarRobot extends Robot {
 		this.random = newRandom;
 	}
 	
-	private void destroyLocation() {
-		if (roomWME == null) {
-			return;
-		}
-		agent.DestroyWME(roomWME);
-		
-		roomWME = null;
-		//barrierWMEs = null;
-	}
-	
-	/* (non-Javadoc)
-	 * @see soar2d.player.Eater#update(soar2d.World, java.awt.Point)
-	 */
 	public void update(World world, java.awt.Point location) {
 		
 		// check to see if we've moved
@@ -116,73 +242,78 @@ public class SoarRobot extends Robot {
 			// check if we're in a new location
 			ArrayList<CellObject> locationObjects = map.getAllWithProperty(location, Names.kPropertyNumber);
 			if (locationObjects.size() != 1) {
+				logger.warning("Location objects greater or less than 1");
 				locationId = -1;
-				destroyLocation();
+				agent.Update(selfIL.area, locationId);
 
-				agent.Update(inWME, locationId);
+				// destroy old area information
+				if (selfIL.areaDescription != null) {
+					agent.DestroyWME(selfIL.areaDescription);
+					selfIL.areaDescription = null;
+				}
 
 			} else {
 				int newLocationId = locationObjects.get(0).getIntProperty(Names.kPropertyNumber);
 
 				if (newLocationId != locationId) {
 					locationId = newLocationId;
+					agent.Update(selfIL.area, locationId);
 
-					destroyLocation();
+					// destroy old area information
+					if (selfIL.areaDescription != null) {
+						agent.DestroyWME(selfIL.areaDescription);
+						selfIL.areaDescription = null;
+					}
+					
+					selfIL.createAreaDescription("room");
 
-					// CREATE/UPDATE NEW LOCATION INFO
+					// create new area information
 					ArrayList<Barrier> barrierList = world.getMap().getRoomBarrierList(locationId);
 					if (barrierList.size() > 0) {
 						// this is, in fact, a room
-						roomWME = agent.CreateIdWME(agent.GetInputLink(), Names.kRoomID);
-						//barrierWMEs = new ArrayList<Identifier>();
 						
-						agent.CreateIntWME(roomWME, Names.kIdID, locationId);
 						Iterator<Barrier> iter = barrierList.iterator();
 						while(iter.hasNext()) {
 							Barrier barrier = iter.next();
-							Identifier barrierWME = null;
 							if (barrier.direction == null) {
 								// door
-								barrierWME = agent.CreateIdWME(roomWME, Names.kDoorID);
+								DoorInputLink door = new DoorInputLink(this, selfIL.createDoorId());
+								door.initialize(barrier.id, barrier.left, barrier.right);
+								selfIL.addDoor(door);
 								
 							} else {
 								// wall
-								barrierWME = agent.CreateIdWME(roomWME, Names.kWallID);
-								agent.CreateStringWME(barrierWME, Names.kDirectionID, barrier.direction);
+								WallInputLink wall = new WallInputLink(this, selfIL.createWallId());
+								wall.initialize(barrier.id, barrier.left, barrier.right);
+								//agent.CreateStringWME(barrierWME, Names.kDirectionID, barrier.direction);
+								selfIL.addWall(wall);
 							}
-							agent.CreateIntWME(barrierWME, Names.kIdID, barrier.id);
-							Identifier leftWME = agent.CreateIdWME(barrierWME, Names.kLeftID);
-							agent.CreateIntWME(leftWME, Names.kXID, barrier.left.x);
-							agent.CreateIntWME(leftWME, Names.kYID, barrier.left.y);
-							Identifier rightWME = agent.CreateIdWME(barrierWME, Names.kRightID);
-							agent.CreateIntWME(rightWME, Names.kXID, barrier.right.x);
-							agent.CreateIntWME(rightWME, Names.kYID, barrier.right.y);
-							
-							//barrierWMEs.add(barrierWME);
 						}
+
 					} else {
 						// we're in a door
+						// TODO: create door and pass it
+						selfIL.createAreaDescription("door");
 					}
-
-					agent.Update(inWME, locationId);
+					
 				}
 			}
 
 			// update the location
-			agent.Update(xWME, location.x);
-			agent.Update(yWME, location.y);
+			agent.Update(selfIL.col, location.x);
+			agent.Update(selfIL.row, location.y);
 			
 			Point2D.Float floatLocation = world.getFloatLocation(this);
-			agent.Update(floatxWME, floatLocation.x);
-			agent.Update(floatyWME, floatLocation.y);
+			agent.Update(selfIL.x, floatLocation.x);
+			agent.Update(selfIL.y, floatLocation.y);
 			
 			// and heading
 			double heading = Math.toDegrees(getHeadingRadians());
 			int headingInt = (int)heading;
-			agent.Update(headingWME, headingInt);
+			agent.Update(selfIL.yaw, headingInt);
 			
 			// update the clock
-			agent.Update(clockWME, world.getWorldCount());
+			agent.Update(selfIL.cycle, world.getWorldCount());
 		}
 		
 		// update the random no matter what
@@ -190,7 +321,7 @@ public class SoarRobot extends Robot {
 		do {
 			random = Simulation.random.nextFloat();
 		} while (random == oldrandom);
-		agent.Update(randomWME, random);
+		agent.Update(selfIL.random, random);
 		
 		// commit everything
 		if (!agent.Commit()) {
@@ -306,6 +437,8 @@ public class SoarRobot extends Robot {
 		if (agent == null) {
 			return;
 		}
+		
+		selfIL.destroy();
 
 		if (!agent.Commit()) {
 			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
@@ -313,6 +446,14 @@ public class SoarRobot extends Robot {
 		}
 
 		agent.InitSoar();
+
+		selfIL.initialize();
+		agent.ClearOutputLinkChanges();
+		if (!agent.Commit()) {
+			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			Soar2D.control.stopSimulation();
+		}
+		
 	}
 
 	public void fragged() {

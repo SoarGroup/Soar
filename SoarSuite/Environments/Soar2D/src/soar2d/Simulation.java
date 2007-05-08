@@ -88,13 +88,13 @@ public class Simulation {
 		// Make all runs non-random if asked
 		// For debugging, set this to make all random calls follow the same sequence
 		if (Soar2D.config.hasRandomSeed()) {
-			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Not seeding generators.");
-			random = new Random();
-		} else {
 			// seed the generators
 			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Seeding generators with " + Soar2D.config.getRandomSeed());
 			kernel.ExecuteCommandLine("srand " + Soar2D.config.getRandomSeed(), null) ;
 			random = new Random(Soar2D.config.getRandomSeed());
+		} else {
+			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Not seeding generators.");
+			random = new Random();
 		}
 		
 		// Register for events
