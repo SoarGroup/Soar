@@ -1,5 +1,7 @@
 package soar2d.player;
 
+import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Float;
 import java.util.logging.*;
 
 import soar2d.*;
@@ -362,5 +364,14 @@ public class Player {
 	
 	public void mapReset() {
 		// this is for tosca's reward system
+	}
+	
+	private Point2D.Float velocity = new Point2D.Float(0,0);
+	public void setVelocity(Point2D.Float velocity) {
+		assert velocity != null;
+		this.velocity = velocity;
+	}
+	public Point2D.Float getVelocity() {
+		return this.velocity;
 	}
 }
