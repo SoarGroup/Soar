@@ -688,6 +688,7 @@ public class World {
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player player = iter.next();
+			player.setVelocity(new Point2D.Float(0,0));
 			MoveInfo move = getAndStoreMove(player);			
 			if (move == null) {
 				return;
@@ -713,6 +714,7 @@ public class World {
 			} else if (move.backward) {
 				rate *= -1;
 			}
+			
 			final int cellSize = Soar2D.config.getBookCellSize();
 			final float heading = player.getHeadingRadians();
 			
@@ -734,8 +736,10 @@ public class World {
 			 * north: 270 3pi/2
 			 */
 			
-			newFloatLocation.x += Math.cos(heading) * rate;
-			newFloatLocation.y += Math.sin(heading) * rate;
+			Point2D.Float velocity = new Point2D.Float((float)Math.cos(heading) * rate, (float)Math.sin(heading) * rate);
+			
+			newFloatLocation.x += velocity.x;
+			newFloatLocation.y += velocity.y;
 			
 			newLocation.x = (int)newFloatLocation.x / cellSize;
 			newLocation.y = (int)newFloatLocation.y / cellSize;
@@ -753,6 +757,7 @@ public class World {
 
 				floatLocations.put(player.getName(), newFloatLocation);
 				locations.put(player.getName(), newLocation);
+				player.setVelocity(velocity);
 			}
 		}
 		
