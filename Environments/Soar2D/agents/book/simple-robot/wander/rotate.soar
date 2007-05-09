@@ -1,7 +1,7 @@
-#sp {wander*propose*rotate
-#   (state <s> ^name wander)
-#-->
-#   (<s> ^operator <o> + =)
-#   (<o> ^name rotate
-#        ^actions.rotate.direction right)}
-#
+sp {wander*propose*rotate
+   (state <s> ^name wander)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name rotate
+        ^actions.rotate.direction right)}
+
