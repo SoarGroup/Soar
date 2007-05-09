@@ -3199,7 +3199,8 @@ sp {game*elaborate*problem-space
    (state <s> ^name game)
 -->
    (<s> ^problem-space <problem-space>)
-   (<problem-space> ^name game ^default-state-copy yes ^one-level-attributes facts ^two-level-attributes gs)
+   (<problem-space> ^name game ^default-state-copy yes ^one-level-attributes facts ^two-level-attributes gs 
+                    ^no-local-negations true ^default-operator-copy yes)
 }
 sp {game*elaborate*selection-space-fake-io
    (state <s> ^duplicate-of <d>)
