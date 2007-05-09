@@ -321,7 +321,7 @@ public class SoarRobot extends Robot {
 			agent.Update(selfIL.col, location.x);
 			agent.Update(selfIL.row, location.y);
 			
-			Point2D.Float floatLocation = world.getFloatLocation(this);
+			Point2D.Double floatLocation = world.getFloatLocation(this);
 			agent.Update(selfIL.x, floatLocation.x);
 			agent.Update(selfIL.y, floatLocation.y);
 			
