@@ -1,0 +1,86 @@
+sp {propose*instance-counter*init
+   (state <s> ^instance-counter <ic>)
+   (<ic> -^total <t>)
+-->
+   (<s> ^operator <o> + < =)
+   (<o> ^name init-instance-counter
+        ^counter <ic>
+        ^type instance-counter)
+}
+
+sp {apply-se*instance-counter*init
+   (state <s> ^operator <o>)
+   (<o> ^name init-instance-counter
+        ^counter <ic>)
+   (<ic> -^total)
+-->
+   (<ic> ^total 0)
+}
+
+sp {propose*instance-counter*increment
+   (state <s> ^instance-counter <ic>)
+   (<ic> ^total <t>
+         ^include <x>
+         -^included <x>)
+-->
+   (<s> ^operator <o> + < =)
+   (<o> ^name increment-instance-counter
+        ^counter <ic>
+        ^type instance-counter
+        ^instance <x>)
+}
+
+
+sp {propose*instance-counter*decrement
+   (state <s> ^instance-counter <ic>)
+   (<ic> ^total <t>
+        -^include <x>
+         ^included <x>)
+-->
+   (<s> ^operator <o> + < =)
+   (<o> ^name decrement-instance-counter
+        ^counter <ic>
+        ^type instance-counter
+        ^instance <x>)
+}
+
+# instance is not included-> increment and include
+sp {apply*instance-counter*increment
+   (state <s> ^operator <o>)
+   (<o> ^name increment-instance-counter
+        ^counter <ic>
+        ^instance <x>)
+   (<ic> ^total <t>
+         ^include <x>
+        -^included <x>)
+-->
+   (<ic> ^total <t> -)
+   (<ic> ^total (+ <t> 1))
+   (<ic> ^included <x>)
+}
+
+
+# instance is no longer included-> decrement and remove inclusion
+sp {apply*instance-counter*decrement
+   (state <s> ^operator <o>)
+   (<o> ^name decrement-instance-counter
+        ^counter <ic>
+        ^instance <x>)
+   (<ic> ^total <t>
+        -^include <x>
+         ^included <x>)
+-->
+   (<ic> ^total <t> -)
+   (<ic> ^total (- <t> 1))
+   (<ic> ^included <x> -)
+}
+
+sp {elaborate*instance-counter*up-to-date
+   (state <s> ^instance-counter <ic>)
+  -{(<ic> ^include <x>
+         -^included <x>)}
+  -{(<ic> ^included <y>          
+         -^include <y>)}
+-->
+   (<ic> ^up-to-date true)
+}

@@ -1,0 +1,57 @@
+sp {selection*propose*increment-current-evaluation-depth
+   (state <s> ^name selection
+              ^top-selection true
+              ^remaining-operators 0
+              ^current-evaluation-depth <ced>
+              ^tied-operator-count <toc>)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name increment-current-evaluation-depth
+              ^current-evaluation-depth <ced>)
+}
+sp {apply*increment-current-evaluation-depth
+   (state <s> ^operator <op>
+              ^tied-operator-count <toc>
+              ^remaining-operators 0
+              ^current-evaluation-depth <ced>)
+   (<op> ^name increment-current-evaluation-depth)
+-->
+   (<s> ^remaining-operators 0 -
+                             <toc>
+        ^current-evaluation-depth <ced> -
+                                  (+ 1 <ced>))
+}
+
+sp {selection*propose*increment-current-evaluation-depth*item-count
+   (state <s> ^name selection
+              ^top-selection true
+              ^remaining-operators 0
+              ^current-evaluation-depth <ced>
+              ^item-count <toc>)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name increment-current-evaluation-depth
+              ^current-evaluation-depth <ced>)
+}
+sp {apply*increment-current-evaluation-depth*item-count
+   (state <s> ^operator <op>
+              ^item-count <toc>
+              ^remaining-operators 0
+              ^current-evaluation-depth <ced>)
+   (<op> ^name increment-current-evaluation-depth)
+-->
+   (<s> ^remaining-operators 0 -
+                             <toc>
+        ^current-evaluation-depth <ced> -
+                                  (+ 1 <ced>))
+}
+
+sp {apply*increment-current-evalaution*clean-up-evaluations
+   (state <s> ^operator <op>
+              ^evaluation <e2>)
+   (<op> ^name increment-current-evaluation-depth
+         ^current-evaluation-depth <ced>)
+   (<e2> ^value true)
+-->
+   (<s> ^evaluation <e2> -)
+}
