@@ -241,17 +241,14 @@ public class Player {
 	}
 
 	public void radarTouch(int i) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	public int getObservedDistance() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	public RadarCell[][] getRadar() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	
@@ -260,7 +257,6 @@ public class Player {
 	}
 
 	public int getBlocked() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 	
@@ -278,7 +274,6 @@ public class Player {
 		return name.equals(player.name);
 	}
 
-		// TODO Auto-generated method stub
 	public void setIncoming(int i) {
 	}
 
@@ -286,37 +281,30 @@ public class Player {
 		return 0;	}
 
 	public void resetSensors() {
-		// TODO Auto-generated method stub
 		
 	}
 
 	public boolean getHumanMove() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	public void setSmell(int distance, String color) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	public int getSmellDistance() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	public String getSmellColor() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public void setSound(int soundNear) {
-		// TODO Auto-generated method stub
 		
 	}
 	
 	public int getSound() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 	
@@ -325,12 +313,10 @@ public class Player {
 	}
 
 	public void setOnHealthCharger(boolean b) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	public void setOnEnergyCharger(boolean b) {
-		// TODO Auto-generated method stub
 		
 	}
 
