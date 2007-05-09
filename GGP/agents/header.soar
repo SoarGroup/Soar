@@ -5,7 +5,7 @@ multi-attributes 2d 64
 #decay --on
 indifferent-selection --first
 
-pushd common2
+pushd common
 source canvas.soar
 source status.soar
 pushd default
