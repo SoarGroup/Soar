@@ -1,0 +1,202 @@
+### Mark top-selection-space
+sp {selection*elaboration*top-selection
+   (state <s> ^name selection
+             -^superstate.superstate.name selection)
+-->
+   (<s> ^top-selection true)
+}
+
+########### Computer tied-operator-count the hard way ################
+#
+#sp {Impasse__Operator_Tie*elaborate*state*2
+#   (state <s> ^name selection
+#              ^item <i1> { <> <i1> <i2> }
+#             -^item { <> <i1> <> <i2> })
+#-->
+#   (<s> ^tied-operator-count 2)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*3
+#   (state <s> ^name selection
+#              ^item <i1> { <> <i1> <i2> } { <> <i1> <> <i2> <i3> }
+#             -^item { <> <i1> <> <i2> <> <i3> })
+#-->
+#   (<s> ^tied-operator-count 3)
+#}
+#sp {Impasse__Operator_Tie*elaborate*state*4
+#   (state <s> ^name selection
+#              ^item <i1> { <> <i1> <i2> } { <> <i1> <> <i2> <i3> } { <> <i1> <> <i2> <> <i3> <i4>}
+#             -^item { <> <i1> <> <i2> <> <i3> <> <i4>})
+#-->
+#   (<s> ^tied-operator-count 4)
+#}
+#sp {Impasse__Operator_Tie*elaborate*state*5
+#   (state <s> ^name selection
+#              ^item <i1> { <> <i1> <i2> } { <> <i1> <> <i2> <i3> } { <> <i1> <> <i2> <> <i3> <i4>}
+#                    { <> <i1> <> <i2> <> <i3> <> <i4> <i5>}
+#             -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5>})
+#-->
+#   (<s> ^tied-operator-count 5)
+#}
+#sp {Impasse__Operator_Tie*elaborate*state*6
+#   (state <s> ^name selection
+#              ^item <i1> { <> <i1> <i2> } { <> <i1> <> <i2> <i3> } { <> <i1> <> <i2> <> <i3> <i4>}
+#                    { <> <i1> <> <i2> <> <i3> <> <i4> <i5>} { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5> <i6>}
+#             -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5> <> <i6>})
+#-->
+#   (<s> ^tied-operator-count 6)
+#}
+
+sp {selection*elaborate*instance-counter
+   (state <s> ^name selection)
+-->
+   (<s> ^instance-counter <ic>)
+}
+
+sp {selection*elaborate*add-to-ic*two-attribute
+   (state <s> ^name selection
+              ^item <it>
+             -^evaluate-reject <it>
+              ^instance-counter <ic>)
+   (<it> ^name <n>
+         ^p1 <p1>
+         ^p2 <p2>) # this prevents chunks that specify only that N operators of a given name are present,
+# instead the chunks need to be a bit overspecific, since there is a huge number of matches otherwise
+-->
+   (<ic> ^include <it>)
+}
+
+sp {selection*elaborate*add-to-ic*one-attribute
+   (state <s> ^name selection
+              ^item <it>
+             -^evaluate-reject <it>
+              ^instance-counter <ic>)
+   (<it> ^name <n>
+         ^p1 <p1>
+        -^p2 <p2>) # this prevents chunks that specify only that N operators of a given name are present,
+# instead the chunks need to be a bit overspecific, since there is a huge number of matches otherwise
+-->
+   (<ic> ^include <it>)
+}
+
+sp {selection*elaborate*add-to-ic*no-substructure
+   (state <s> ^name selection
+              ^item <it>
+             -^evaluate-reject <it>
+              ^instance-counter <ic>)
+   (<it> ^name <n>
+         -^p1 <p1>
+         -^p2 <p2>)
+-->
+   (<ic> ^include <it>)
+}
+
+
+sp {selection*elaborate*tied-operator-count
+   (state <s> ^name selection
+              ^instance-counter <ic>)
+   (<ic> ^up-to-date true
+         ^total <t>)
+-->
+   (<s> ^tied-operator-count <t>)
+}
+
+
+sp {selection*compare*same-symbolic-evaluations-are-indifferent
+   :default
+   (state <s> ^name selection 
+              ^superstate <ss>
+              ^evaluation <e1>  { <> <e1> <e2> })
+   (<ss> ^desired <d>)
+   (<e1> ^superoperator <x> 
+         ^symbolic-value { <> partial-success <> depth-exceeded <v> }
+         ^desired <d>)
+   (<e2> ^superoperator <y> 
+         ^symbolic-value <v>
+         ^desired <d>)
+   -->
+   (<ss> ^operator <x> = <y>)}  
+
+
+sp {selection*monitor*depth
+   (state <s> #^top-selection true
+              ^name selection
+              ^current-evaluation-depth <ced>
+              ^remaining-operators <ro>)
+-->
+   (write (crlf) |Depth: | <ced> |, | <ro>)
+}
+#
+## I have a script to generate these.. -Sam
+#sp {Impasse__Operator_Tie*elaborate*state*2
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} 
+#    -^item { <> <i1> <> <i2>})
+#-->
+#  (<s> ^tied-operator-count 2)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*3
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} { <> <i2> <> <i1> <i3>} 
+#    -^item { <> <i1> <> <i2> <> <i3>})
+#-->
+#  (<s> ^tied-operator-count 3)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*4
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} { <> <i2> <> <i1> <i3>} { <> <i3> <> <i2> <> <i1> <i4>} 
+#    -^item { <> <i1> <> <i2> <> <i3> <> <i4>})
+#-->
+#  (<s> ^tied-operator-count 4)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*5
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} { <> <i2> <> <i1> <i3>} { <> <i3> <> <i2> <> <i1> <i4>} { <> <i4> <> <i3> <> <i2> <> <i1> <i5>} 
+#    -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5>})
+#-->
+#  (<s> ^tied-operator-count 5)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*6
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} { <> <i2> <> <i1> <i3>} { <> <i3> <> <i2> <> <i1> <i4>} { <> <i4> <> <i3> <> <i2> <> <i1> <i5>} { <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i6>} 
+#    -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5> <> <i6>})
+#-->
+#  (<s> ^tied-operator-count 6)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*7
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} { <> <i2> <> <i1> <i3>} { <> <i3> <> <i2> <> <i1> <i4>} { <> <i4> <> <i3> <> <i2> <> <i1> <i5>} { <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i6>} { <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i7>} 
+#    -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5> <> <i6> <> <i7>})
+#-->
+#  (<s> ^tied-operator-count 7)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*8
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} { <> <i2> <> <i1> <i3>} { <> <i3> <> <i2> <> <i1> <i4>} { <> <i4> <> <i3> <> <i2> <> <i1> <i5>} { <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i6>} { <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i7>} { <> <i7> <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i8>} 
+#    -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5> <> <i6> <> <i7> <> <i8>})
+#-->
+#  (<s> ^tied-operator-count 8)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*9
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} { <> <i2> <> <i1> <i3>} { <> <i3> <> <i2> <> <i1> <i4>} { <> <i4> <> <i3> <> <i2> <> <i1> <i5>} { <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i6>} { <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i7>} { <> <i7> <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i8>} { <> <i8> <> <i7> <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i9>} 
+#    -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5> <> <i6> <> <i7> <> <i8> <> <i9>})
+#-->
+#  (<s> ^tied-operator-count 9)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*10
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} { <> <i2> <> <i1> <i3>} { <> <i3> <> <i2> <> <i1> <i4>} { <> <i4> <> <i3> <> <i2> <> <i1> <i5>} { <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i6>} { <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i7>} { <> <i7> <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i8>} { <> <i8> <> <i7> <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i9>} { <> <i9> <> <i8> <> <i7> <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i10>} 
+#    -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5> <> <i6> <> <i7> <> <i8> <> <i9> <> <i10>})
+#-->
+#  (<s> ^tied-operator-count 10)
+#}
+#

@@ -1,0 +1,176 @@
+sp {canvas*init
+   (state <s> ^name game -^duplicate-of)
+-->
+   (exec set_scale | 0 40 0 40 |)}
+
+sp {canvas*draw_wall_south
+   (state <s> ^gs.blocked <wall> -^duplicate-of)
+   (<wall> ^p2 <x> ^p3 <y> ^p1 south)
+-->
+   (exec draw_line | static | (*  <x> 4) | | (* (+ <y> 1) 4) | |
+(* (+ <x> 1) 4) | | (* (+ <y> 1) 4) | black|)}
+
+sp {canvas*draw_wall_north
+   (state <s> ^gs.blocked <wall> -^duplicate-of)
+   (<wall> ^p2 <x> ^p3 <y> ^p1 north)
+-->
+   (exec draw_line | static | (*  <x> 4) | | (* <y> 4) | |
+(* (+ <x> 1) 4) | | (* <y> 4) | black|)}
+
+
+sp {canvas*draw_wall_east
+   (state <s> ^gs.blocked <wall> -^duplicate-of)
+   (<wall> ^p2 <x> ^p3 <y> ^p1 east)
+-->
+   (exec draw_line | static | (* (+ <x> 1) 4) | | (* 4 <y>) | |
+(* (+ <x> 1) 4) | | (* (+ <y> 1) 4) | black|)}
+
+sp {canvas*draw_wall_west
+   (state <s> ^gs.blocked <wall> -^duplicate-of)
+   (<wall> ^p2 <x> ^p3 <y> ^p1 west)
+-->
+   (exec draw_line | static | (* <x> 4) | | (* 4 <y>) | |
+(* <x> 4) | | (* (+ <y> 1) 4) | black|)}
+
+
+sp {canvas*draw_explorergreen
+   (state <s> ^gs.location <l>)
+   (<l> ^p1 explorer ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_point | update 2 | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | green|)}
+
+sp {canvas*draw_explorer
+   (state <s> ^superstate nil ^gs.location <l>)
+   (<l> ^p1 explorer ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_point | static | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | blue|)}
+
+sp {canvas*draw_mummy
+   (state <s> ^gs.location <l>)
+   (<l> ^p1 mummy ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_point | update 1 | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | red |) 
+}
+
+#sp {canvas*draw_destroyed
+#   (state <s> ^gs <gs>) 
+#   (<gs> ^location <l>
+#         ^destroyed <d>)
+#   (<d> ^p1 <obs>)
+#   (<l> ^p1 <obs> ^p2 <x> ^p3 <y>)
+#-->
+#   (exec draw_point | update 4 | (+ (* <x> 4) 3) | | (+ (* <y> 4) 3) | red |) 
+#}
+
+
+sp {canvas*draw_gun
+   (state <s> ^gs.location <l>)
+   (<l> ^p1 gun ^p2 <x> ^p3 <y>)
+   -{(state <s2> ^superstate <s>)}
+-->
+   (exec draw_point | static | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | yellow |) 
+}
+
+#sp {canvas*hack*item-id
+#   (state <s> ^elaborations.itemtype <item>
+#             -^superstate.elaborations.itemtype.p1 <i>)
+#   (<item>  ^p1 <i>) 
+#-->
+#   (<item> ^canvas-id (make-constant-symbol 1))
+#}
+
+#sp {canvas*hack*propagate-item-id
+#   (state <s> ^elaborations.itemtype <item>)
+#   (<item>  ^p1 <i>) 
+#   (<s> ^superstate.elaborations.itemtype <item2>)
+#   (<item2> ^p1 <i> ^canvas-id <cid>)
+#-->
+#   (<item> ^canvas-id <cid>)
+#}
+
+#sp {canvas*draw_item
+#   (state <s> ^gs.location <l>
+#              ^elaborations.itemtype <it>)
+#   (<it> ^p1 <obj> ^canvas-id <id>)
+#   (<l> ^p1 <obj> ^p2 <x> ^p3 <y>)
+#   -{(state <s2> ^superstate <s>)}
+#-->
+#   (exec draw_point | update <id> | (+ (* <x> 4) 1) | | (+ (* <y> 4) 1) | purple |) 
+#}
+
+#sp {canvas*dont_draw_item
+#   (state <s> ^superstate <ss>) # the deepest state
+#   (<ss>      ^gs.location <l>
+#              ^elaborations.itemtype <it>) # item exists in level above
+#   (<it> ^p1 <obj> ^canvas-id <id>)
+#   (<l> ^p1 <obj> ^p2 <x> ^p3 <y>)
+#   -{(state <s3> ^superstate <s>)} # s is the deepest state
+#   (<s> -^elaborations.itemtype <it>)  # s does not have the item
+#-->
+#   (exec draw_point | delete <id> |) 
+#}
+
+
+sp {canvas*draw_item*static
+   (state <s> ^gs.location <l>
+              ^elaborations.itemtype <it>)
+   (<it> ^p1 <obj>)
+   (<l> ^p1 <obj> ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_point | static | (+ (* <x> 4) 1) | | (+ (* <y> 4) 1) | brown |) 
+}
+
+
+sp {canvas*draw_hammer
+   (state <s> ^gs.location <l>
+              ^facts.itemtype <it>)
+   (<it> ^p1 <obj> ^p2 hammer)
+   (<l> ^p1 <obj> ^p2 <x> ^p3 <y>)
+   -{(state <s2> ^superstate <s>)}
+-->
+   (exec draw_point | update 3 | (+ (* <x> 4) 1) | | (+ (* <y> 4) 1) | purple |) 
+}
+
+
+sp {canvas*draw_rock
+   (state <s> ^gs.location <l>
+              ^facts.obstacletype <obs>)
+   (<obs> ^p1 <obj> ^p2 rock)
+   (<l> ^p1 <obj> ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_rectangle | static | (+ 1 (* <x> 4)) | | (+ 1 (* <y> 4))
+| | (- (* (+ <x> 1) 4) 1) | | (- (* (+ <y> 1) 4) 1) | purple |)
+}
+
+sp {canvas*draw_water
+   (state <s> ^gs.location <l>
+              ^facts.obstacletype <obs>)
+   (<obs> ^p1 <obj> ^p2 water)
+   (<l> ^p1 <obj> ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_rectangle | static | (+ 1 (* <x> 4)) | | (+ 1 (* <y> 4))
+| | (- (* (+ <x> 1) 4) 1) | | (- (* (+ <y> 1) 4) 1) | blue |)
+}
+
+
+sp {canvas*draw_spikepit
+   (state <s> ^gs.location <l>
+              ^facts.obstacletype <obs>)
+   (<obs> ^p1 <obj> ^p2 spikepit)
+   (<l> ^p1 <obj> ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_rectangle | static | (+ 1 (* <x> 4)) | | (+ 1 (* <y> 4))
+| | (- (* (+ <x> 1) 4) 1) | | (- (* (+ <y> 1) 4) 1) | red |)
+   #(exec draw_circle | static | (+ (* <x> 2) 1) | | (+ (* <y> 2) 1)
+   #| | 1 | blue |) 
+}
+
+sp {canvas*draw_exit
+   (state <s> ^gs.location <l>)
+   (<l> ^p1 exit ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_rectangle | static | (* <x> 4) | | (* <y> 4)
+| | (* (+ <x> 1) 4) | | (* (+ <y> 1) 4) | blue |)}
+
+#   (exec draw_circle | update 3 | (+ (* <x> 2) 1) | | (- 20 (+ (* <y> 2) 1))  1 | red |)
+

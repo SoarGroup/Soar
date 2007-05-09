@@ -1,0 +1,741 @@
+
+## condense.pl: extracting from file selection-iterative-deepening_source.soar
+
+## condense.pl: extracting from file _firstload.soar
+## 
+##
+############################# -*- Mode: Soar -*- #############################
+## 
+## File            : default/selection-iterative deepening.soar
+## Author          : John Laird
+## Created on      : January 25, 2007  
+## Last Modified On: 25 January, 2007
+## 
+## Contents:     Default productions for selection problem space for Soar 8.6 with iterative deepening
+##                  !!!! Only works for look-ahead over operators that execute in single cycle - no operator-no-change
+######################################################################
+### Changes for Iterative Deepening
+###    0. Add count of number of tied operators - necessary to ensure all operators - up to 6
+###       and tested before incrementing current-evaluation-depth
+###    1. Maintain current depth on evaluation (current-evaluation-depth)
+###       A. add operator to initiatilize if none on task state
+###       B. add operator to increment if no more evaluations at current level
+###    2. Move (current-evaluation-depth - 1) to substate (current-evaluation-depth)
+###    5. Terminate search when current-evaluation-depth = 0
+###    6. Modify evaluation structure on state so associates depth with evaluation
+###
+
+## condense.pl: extracting from file all_source.soar
+
+## condense.pl: extracting from file elaborations_source.soar
+
+## condense.pl: extracting from file Impasse__Operator_Tie.soar
+
+## condense.pl: extracting from file Impasse__Operator_Tie_source.soar
+
+## condense.pl: extracting from file elaborations.soar
+### Mark top-selection-space
+sp {selection*elaboration*top-selection
+   (state <s> ^name selection
+             -^superstate.superstate.name selection)
+-->
+   (<s> ^top-selection true)
+}
+
+########### Computer tied-operator-count the hard way ################
+#
+#sp {Impasse__Operator_Tie*elaborate*state*2
+#   (state <s> ^name selection
+#              ^item <i1> { <> <i1> <i2> }
+#             -^item { <> <i1> <> <i2> })
+#-->
+#   (<s> ^tied-operator-count 2)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*3
+#   (state <s> ^name selection
+#              ^item <i1> { <> <i1> <i2> } { <> <i1> <> <i2> <i3> }
+#             -^item { <> <i1> <> <i2> <> <i3> })
+#-->
+#   (<s> ^tied-operator-count 3)
+#}
+#sp {Impasse__Operator_Tie*elaborate*state*4
+#   (state <s> ^name selection
+#              ^item <i1> { <> <i1> <i2> } { <> <i1> <> <i2> <i3> } { <> <i1> <> <i2> <> <i3> <i4>}
+#             -^item { <> <i1> <> <i2> <> <i3> <> <i4>})
+#-->
+#   (<s> ^tied-operator-count 4)
+#}
+#sp {Impasse__Operator_Tie*elaborate*state*5
+#   (state <s> ^name selection
+#              ^item <i1> { <> <i1> <i2> } { <> <i1> <> <i2> <i3> } { <> <i1> <> <i2> <> <i3> <i4>}
+#                    { <> <i1> <> <i2> <> <i3> <> <i4> <i5>}
+#             -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5>})
+#-->
+#   (<s> ^tied-operator-count 5)
+#}
+#sp {Impasse__Operator_Tie*elaborate*state*6
+#   (state <s> ^name selection
+#              ^item <i1> { <> <i1> <i2> } { <> <i1> <> <i2> <i3> } { <> <i1> <> <i2> <> <i3> <i4>}
+#                    { <> <i1> <> <i2> <> <i3> <> <i4> <i5>} { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5> <i6>}
+#             -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5> <> <i6>})
+#-->
+#   (<s> ^tied-operator-count 6)
+#}
+
+sp {selection*elaborate*instance-counter
+   (state <s> ^name selection)
+-->
+   (<s> ^instance-counter <ic>)
+}
+
+sp {selection*elaborate*add-to-ic
+   (state <s> ^name selection
+              ^item <it>
+              ^instance-counter <ic>)
+   (<it> ^name <n>
+         ^p1 <p1>)
+-->
+   (<ic> ^include <it>)
+}
+
+
+sp {selection*elaborate*tied-operator-count
+   (state <s> ^name selection
+              ^instance-counter <ic>)
+   (<ic> ^up-to-date true
+         ^total <t>)
+-->
+   (<s> ^tied-operator-count <t>)
+}
+
+
+sp {selection*compare*same-symbolic-evaluations-are-indifferent
+   :default
+   (state <s> ^name selection 
+              ^superstate <ss>
+              ^evaluation <e1>  { <> <e1> <e2> })
+   (<ss> ^desired <d>)
+   (<e1> ^superoperator <x> 
+         ^symbolic-value { <> partial-success <> depth-exceeded <v> }
+         ^desired <d>)
+   (<e2> ^superoperator <y> 
+         ^symbolic-value <v>
+         ^desired <d>)
+   -->
+   (<ss> ^operator <x> = <y>)}  
+
+
+sp {selection*monitor*depth
+   (state <s> ^top-selection true
+              ^name selection
+              ^current-evaluation-depth <ced>
+              ^remaining-operators <ro>)
+-->
+   (write (crlf) |Depth: | <ced> |, | <ro>)
+}
+#
+## I have a script to generate these.. -Sam
+#sp {Impasse__Operator_Tie*elaborate*state*2
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} 
+#    -^item { <> <i1> <> <i2>})
+#-->
+#  (<s> ^tied-operator-count 2)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*3
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} { <> <i2> <> <i1> <i3>} 
+#    -^item { <> <i1> <> <i2> <> <i3>})
+#-->
+#  (<s> ^tied-operator-count 3)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*4
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} { <> <i2> <> <i1> <i3>} { <> <i3> <> <i2> <> <i1> <i4>} 
+#    -^item { <> <i1> <> <i2> <> <i3> <> <i4>})
+#-->
+#  (<s> ^tied-operator-count 4)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*5
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} { <> <i2> <> <i1> <i3>} { <> <i3> <> <i2> <> <i1> <i4>} { <> <i4> <> <i3> <> <i2> <> <i1> <i5>} 
+#    -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5>})
+#-->
+#  (<s> ^tied-operator-count 5)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*6
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} { <> <i2> <> <i1> <i3>} { <> <i3> <> <i2> <> <i1> <i4>} { <> <i4> <> <i3> <> <i2> <> <i1> <i5>} { <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i6>} 
+#    -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5> <> <i6>})
+#-->
+#  (<s> ^tied-operator-count 6)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*7
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} { <> <i2> <> <i1> <i3>} { <> <i3> <> <i2> <> <i1> <i4>} { <> <i4> <> <i3> <> <i2> <> <i1> <i5>} { <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i6>} { <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i7>} 
+#    -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5> <> <i6> <> <i7>})
+#-->
+#  (<s> ^tied-operator-count 7)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*8
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} { <> <i2> <> <i1> <i3>} { <> <i3> <> <i2> <> <i1> <i4>} { <> <i4> <> <i3> <> <i2> <> <i1> <i5>} { <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i6>} { <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i7>} { <> <i7> <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i8>} 
+#    -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5> <> <i6> <> <i7> <> <i8>})
+#-->
+#  (<s> ^tied-operator-count 8)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*9
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} { <> <i2> <> <i1> <i3>} { <> <i3> <> <i2> <> <i1> <i4>} { <> <i4> <> <i3> <> <i2> <> <i1> <i5>} { <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i6>} { <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i7>} { <> <i7> <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i8>} { <> <i8> <> <i7> <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i9>} 
+#    -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5> <> <i6> <> <i7> <> <i8> <> <i9>})
+#-->
+#  (<s> ^tied-operator-count 9)
+#}
+#
+#sp {Impasse__Operator_Tie*elaborate*state*10
+#  (state <s> ^name selection
+#    ^item <i1> { <> <i1> <i2>} { <> <i2> <> <i1> <i3>} { <> <i3> <> <i2> <> <i1> <i4>} { <> <i4> <> <i3> <> <i2> <> <i1> <i5>} { <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i6>} { <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i7>} { <> <i7> <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i8>} { <> <i8> <> <i7> <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i9>} { <> <i9> <> <i8> <> <i7> <> <i6> <> <i5> <> <i4> <> <i3> <> <i2> <> <i1> <i10>} 
+#    -^item { <> <i1> <> <i2> <> <i3> <> <i4> <> <i5> <> <i6> <> <i7> <> <i8> <> <i9> <> <i10>})
+#-->
+#  (<s> ^tied-operator-count 10)
+#}
+#
+
+## condense.pl: extracting from file achieved-max-depth.soar
+sp {selection*propose*achieved-max-depth
+   (state <s> ^name selection
+              ^max-evaluation-depth <med>
+              ^current-evaluation-depth <med>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name achieved-max-depth)
+}
+
+## Make all operators indifferent
+
+sp {apply*achieved-max-depth
+   (state <s> ^operator <op>
+              ^item <o>
+              ^superstate <ss>)
+   (<op> ^name achieved-max-depth)
+-->
+   (<ss> ^operator <o> =)
+}
+
+## condense.pl: extracting from file decrement-remaining-operators.soar
+sp {selection*propose*decrement-remaining-operators
+   (state <s> ^name selection
+            #  ^top-selection true
+              ^current-evaluation-depth <ced>
+              ^remaining-operators <ro>
+              ^evaluation <e>)
+   (<e> ^current-evaluation-depth <ced>
+        ^remaining-operators <ro>
+        ^value true)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name decrement-remaining-operators)
+}
+sp {apply*decrement-remaining-operators
+   (state <s> ^operator <op>
+              ^remaining-operators <ro>)
+   (<op> ^name decrement-remaining-operators)
+-->
+   (<s> ^remaining-operators (- <ro> 1)
+                             <ro> -)
+}
+
+## condense.pl: extracting from file evaluate-operator.soar
+#Modification of original
+# Add test for current-evaluation-depth and instantiate operator with it
+#
+#sp {selection*propose*evaluate-operator*ced
+#   :default
+#   (state <s> ^name selection
+#              ^operator <o> +
+#              ^current-evaluation-depth <ced>
+#              ^remaining-operators <ro>)
+#   (<o> ^name evaluate-operator)
+#-->
+#   (<o> ^current-evaluation-depth <ced>
+#        ^remaining-operators <ro>)}
+#
+sp {selection*propose*evaluate-operator
+   :default
+   (state <s> ^name selection
+              ^item <i>
+              ^current-evaluation-depth <ced>
+              ^remaining-operators <ro>)
+  -{(state <s> ^evaluation <e>)
+    (<e> ^superoperator <i>
+         ^current-evaluation-depth <ced>
+         ^value true)}
+               -{(state <s> ^evaluation <e>)
+                 (<e> ^remaining-operators <ro>
+                      ^current-evaluation-depth <ced>
+                      ^value true)}
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name evaluate-operator
+        ^superoperator <i>
+        ^current-evaluation-depth <ced>
+        ^remaining-operators <ro>)}
+
+sp {apply*evaluate-operator*clean-up-evaluations
+   (state <s> ^operator <op>
+              ^evaluation <e2>)
+   (<op> ^name evaluate-operator
+         ^current-evaluation-depth <ced>
+         ^remaining-operators <ro>)
+   (<e2> ^value true)
+  -(<e2> ^current-evaluation-depth <ced>)
+-->
+   (<s> ^evaluation <e2> -)
+}
+
+
+
+sp {selection*elaborate*evaluate-operator*remaining-operators*current-evaluation-depth
+   :default
+   (state <s> ^name selection
+              ^current-evaluation-depth <ced>
+              ^remaining-operators <ro>
+              ^operator <o>
+              ^evaluation <e>)
+   (<o> ^name evaluate-operator
+        ^evaluation <e>)
+-->
+   (<e> ^remaining-operators <ro>
+        ^current-evaluation-depth <ced>)}
+
+
+
+## condense.pl: extracting from file evaluate-operator_source.soar
+
+## condense.pl: extracting from file elaborations.soar
+sp {evaluate-operator*elaborate*state
+   (state <s> ^superstate.operator <o>)
+   (<o> ^name evaluate-operator
+        ^evaluation.current-evaluation-depth <ced>)
+-->
+   (<s> ^current-evaluation-depth <ced>)
+}
+#
+#sp {evaluate-operator*elaborate*evaluate-operator*current-evaluation-depth*0
+#   :default
+#   (state <s> ^superstate.operator <o>
+#              ^desired <d>
+#              ^gs <g>
+#              ^current-evaluation-depth <= 0)
+#   (<s> ^elaborations.two-steps-toward)
+#   (<g> ^location <l1> <l2>)
+#   (<l1> ^p1 mummy ^p2 <x1> ^p3 <x2>)
+#   (<l2> ^p1 explorer ^p2 <x3> ^p3 <x4>)
+#   (<o> ^name evaluate-operator
+#        ^evaluation <e>)
+#-->
+#   (write (crlf) |Max evaluation depth hit.|)
+#   (<s> ^depth-exceeded <d>)}
+#
+sp {evaluate-operator*elaborate*state*tried-tied-operator
+   :default
+   (state <s> ^look-ahead-operator <o> 
+              ^operator <o> 
+   #           ^elaborations.two-steps-toward)
+              ^elaborations.nextmummylocation)
+-->
+   (<s> ^tried-tied-operator <o> +)
+}
+
+sp {evaluate-operator*elaborate*state*tried-tied-operator-1
+   :default
+   (state <s> ^look-ahead-operator <o> ^operator <o> ^gs <gs> ^facts.mummytype.p1 <mummy>)
+  -{(<gs> ^location <l>)
+    (<l> ^p1 <mummy>)}
+-->
+   (<s> ^tried-tied-operator <o> +)
+}
+
+sp {evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*depth-exceeded
+   :default
+   (state <ss> ^superstate <s>
+             # ^quiescence t
+               ^depth-exceeded <eb>)
+   (<s> ^operator <so>
+        ^evaluation <e>)
+   (<so> ^name evaluate-operator
+         ^evaluation <e>
+         ^evaluation.desired <eb>)
+-->
+   (<e> ^symbolic-value depth-exceeded)}
+
+sp {evaluate-operator*elaborate*symbolic-evaluation*from-subgoal
+   :default
+   (state <ss> ^superstate <s>
+               ^ { << required-success success partial-success
+                   indifferent partial-failure failure prohibit-failure
+                   >> <svalue> } <eb>)
+   (<s> ^operator <so>
+        ^evaluation <e>)
+   (<so> ^name evaluate-operator
+         ^evaluation <e>
+         ^evaluation.desired <eb>)
+-->
+   (<e> ^symbolic-value <svalue>)}
+
+## condense.pl: extracting from file Impasse__Operator_Tie.soar
+
+## condense.pl: extracting from file Impasse__Operator_Tie_source.soar
+
+## condense.pl: extracting from file elaborations.soar
+
+sp {selection*pass-back-success*iterative
+   :default
+   (state <s> ^superstate.superstate.operator <sso>
+              ^evaluation.symbolic-value << required-success success >>)
+   (<sso> ^name evaluate-operator
+          ^evaluation <e2>
+          ^superoperator.name)
+-->
+   (write (crlf) |Success | <e2> )
+   (<e2> ^symbolic-value success)}
+##############################
+
+### Should be part of operator application
+sp {selection*propose*init-current-evaluation-depth*middle-selection
+   (state <s> ^name selection
+             -^top-selection true
+              ^superstate.current-evaluation-depth <ced>)
+-->
+   (<s> ^current-evaluation-depth <ced>)
+}
+
+
+## condense.pl: extracting from file no-more-evaluations.soar
+sp {selection*propose*no-more-evaluations
+   (state <s> ^name selection
+             # ^quiescence t
+             -^top-selection true
+              ^remaining-operators 0)
+-->
+  # (dont-learn <s>)
+   (<s> ^operator <op> + =)
+   (<op> ^name no-more-evaluations)
+}
+sp {apply*increment-no-more-evaluations
+   (state <s> ^operator <op>
+            #  ^quiescence t
+              ^superstate.superstate.operator <o>)
+   (<o> ^name evaluate-operator
+        ^evaluation <e>)
+   (<op> ^name no-more-evaluations)
+-->
+   (<e> ^symbolic-value depth-exceeded)
+}
+
+## condense.pl: extracting from file exceed-depth.soar
+sp {evaluate-operator*propose*exceed-depth*meed
+   (state <s> ^current-evaluation-depth < <meed>
+              ^elaborations.minimum-explorer-exit-distance <meed>
+              ^look-ahead-operator <o>
+              ^tried-tied-operator <o>)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name exceed-depth)
+}
+
+sp {evaluate-operator*propose*exceed-depth
+   (state <s> ^current-evaluation-depth <= 0
+          #    ^quiescence t
+              ^look-ahead-operator <o>
+              ^tried-tied-operator <o>)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name exceed-depth)
+}
+
+sp {evaluate-operator*compare*exceed-depth
+   (state <s> ^name evaluate-operator
+              ^look-ahead-operator <op2>
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name exceed-depth)
+-->
+   (<s> ^operator <op1> < <op2>)
+}
+
+sp {apply*exceed-depth
+   (state <s> ^operator <op>
+              ^desired <d>)
+   (<op> ^name exceed-depth)
+-->
+   (<s> ^depth-exceeded <d>)
+}
+
+
+## condense.pl: extracting from file task-operator.soar
+
+sp {evalaute-operator*propose*init-current-evaluation-depth*progress-state
+   (state <s> ^superstate.operator.name evaluate-operator
+       #       ^elaborations.two-steps-toward
+              ^elaborations.nextmummylocation
+              ^current-evaluation-depth <ced>
+              ^operator.name progress-state)
+-->
+   (<s> ^current-evaluation-depth (- <ced> 1)
+                                  <ced> -)}
+
+sp {evalaute-operator*propose*init-current-evaluation-depth*progress-state-1
+   (state <s> ^superstate.operator.name evaluate-operator
+              ^gs <gs> ^facts.mummytype.p1 <mummy>
+              ^current-evaluation-depth <ced>
+              ^operator.name progress-state)
+   -{(<gs> ^location <l>)
+    (<l> ^p1 <mummy>)}
+-->
+   (<s> ^current-evaluation-depth (- <ced> 1)
+                                  <ced> -)}
+
+sp {evalaute-operator*propose*init-current-evaluation-depth*update-state
+   (state <s> ^superstate.operator.name evaluate-operator
+              #^elaborations.two-steps-toward
+              ^elaborations.nextmummylocation
+              ^current-evaluation-depth <ced>
+              ^operator.name update-state)
+-->
+   (<s> ^current-evaluation-depth (- <ced> 1)
+                                  <ced> -)}
+
+sp {evalaute-operator*propose*init-current-evaluation-depth*update-state-1
+   (state <s> ^superstate.operator.name evaluate-operator
+              ^gs <gs> ^facts.mummytype.p1 <mummy>
+              ^current-evaluation-depth <ced>
+              ^operator.name update-state)
+  -{(<gs> ^location <l>)
+    (<l> ^p1 <mummy>)}
+-->
+   (<s> ^current-evaluation-depth (- <ced> 1)
+                                  <ced> -)}
+
+## condense.pl: extracting from file increment-current-evaluation-depth.soar
+sp {selection*propose*increment-current-evaluation-depth
+   (state <s> ^name selection
+              ^top-selection true
+              ^remaining-operators 0
+              ^current-evaluation-depth <ced>
+              ^tied-operator-count <toc>)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name increment-current-evaluation-depth
+              ^current-evaluation-depth <ced>)
+}
+sp {apply*increment-current-evaluation-depth
+   (state <s> ^operator <op>
+              ^tied-operator-count <toc>
+              ^remaining-operators 0
+              ^current-evaluation-depth <ced>)
+   (<op> ^name increment-current-evaluation-depth)
+-->
+   (<s> ^remaining-operators 0 -
+                             <toc>
+        ^current-evaluation-depth <ced> -
+                                  (+ 1 <ced>))
+}
+sp {apply*increment-current-evalaution*clean-up-evaluations
+   (state <s> ^operator <op>
+              ^evaluation <e2>)
+   (<op> ^name increment-current-evaluation-depth
+         ^current-evaluation-depth <ced>)
+   (<e2> ^value true)
+-->
+   (<s> ^evaluation <e2> -)
+}
+## condense.pl: extracting from file init-current-evaluation-depth.soar
+### For top-level selection space
+
+sp {selection*propose*init-current-evaluation-depth*top-selection
+   (state <s> ^name selection
+              ^top-selection true
+             -^current-evaluation-depth
+             -^superstate.elaborations.minimum-explorer-exit-distance)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name init-current-evaluation-depth
+         ^value 1)
+}
+sp {selection*propose*init-current-evaluation-depth*top-selection*minimum-distance
+   (state <s> ^name selection
+              ^top-selection true
+             -^current-evaluation-depth
+              ^superstate.elaborations.minimum-explorer-exit-distance <meed>)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name init-current-evaluation-depth
+         ^value <meed>)
+}
+
+sp {apply*init-current-evaluation-depth
+   (state <s> ^operator <op>)
+   (<op> ^name init-current-evaluation-depth
+         ^value <v>)
+-->
+   (<s> ^current-evaluation-depth <v>)
+}
+
+sp {apply*init-current-evaluation-depth*max
+   (state <s> ^top-selection true
+              ^operator <op>)
+   (<op> ^name init-current-evaluation-depth)
+-->
+   (<s> ^max-evaluation-depth 50)
+}
+
+### For top-level selection space
+
+## condense.pl: extracting from file init-remaining-operators.soar
+sp {selection*propose*init-remaining-operators
+   (state <s> ^name selection
+              #^top-selection true
+             -^remaining-operators 
+              ^tied-operator-count <toc>)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name init-remaining-operators
+         ^value <toc>)
+}
+sp {apply*init-remaining-operators
+   (state <s> ^operator <op>)
+   (<op> ^name init-remaining-operators
+         ^value <toc>)
+-->
+   (<s> ^remaining-operators <toc>)
+}
+
+## condense.pl: extracting from file instance-counter.soar
+sp {propose*instance-counter*init
+   (state <s> ^instance-counter <ic>)
+   (<ic> -^total <t>)
+-->
+   (<s> ^operator <o> + < =)
+   (<o> ^name init-instance-counter
+        ^counter <ic>
+        ^type instance-counter)
+}
+
+sp {apply-se*instance-counter*init
+   (state <s> ^operator <o>)
+   (<o> ^name init-instance-counter
+        ^counter <ic>)
+   (<ic> -^total)
+-->
+   (<ic> ^total 0)
+}
+
+sp {propose*instance-counter*increment
+   (state <s> ^instance-counter <ic>)
+   (<ic> ^total <t>
+         ^include <x>
+         -^included <x>)
+-->
+   (<s> ^operator <o> + < =)
+   (<o> ^name increment-instance-counter
+        ^counter <ic>
+        ^type instance-counter
+        ^instance <x>)
+}
+
+
+sp {propose*instance-counter*decrement
+   (state <s> ^instance-counter <ic>)
+   (<ic> ^total <t>
+        -^include <x>
+         ^included <x>)
+-->
+   (<s> ^operator <o> + < =)
+   (<o> ^name decrement-instance-counter
+        ^counter <ic>
+        ^type instance-counter
+        ^instance <x>)
+}
+
+# instance is not included-> increment and include
+sp {apply*instance-counter*increment
+   (state <s> ^operator <o>)
+   (<o> ^name increment-instance-counter
+        ^counter <ic>
+        ^instance <x>)
+   (<ic> ^total <t>
+         ^include <x>
+        -^included <x>)
+-->
+   (<ic> ^total <t> -)
+   (<ic> ^total (+ <t> 1))
+   (<ic> ^included <x>)
+}
+
+
+# instance is no longer included-> decrement and remove inclusion
+sp {apply*instance-counter*decrement
+   (state <s> ^operator <o>)
+   (<o> ^name decrement-instance-counter
+        ^counter <ic>
+        ^instance <x>)
+   (<ic> ^total <t>
+        -^include <x>
+         ^included <x>)
+-->
+   (<ic> ^total <t> -)
+   (<ic> ^total (- <t> 1))
+   (<ic> ^included <x> -)
+}
+
+sp {elaborate*instance-counter*up-to-date
+   (state <s> ^instance-counter <ic>)
+  -{(<ic> ^include <x>
+         -^included <x>)}
+  -{(<ic> ^included <y>          
+         -^include <y>)}
+-->
+   (<ic> ^up-to-date true)
+}
+
+## condense.pl: extracting from file mummy.soar
+
+############ Mummies
+
+sp {mummy*elaborate*state*minimum-depth
+   (state <s> ^gs.location <l1> <l2>
+              ^elaborations <e>)
+   (<l1> ^p1 explorer ^p2 <x1> ^p3 <y1>)
+   (<l2> ^p1 exit ^p2 <x2> ^p3 <y2>)
+-->
+   (<e> ^minimum-explorer-exit-distance (+ (abs (- <x1> <x2>)) (abs (- <y1> <y2>))))
+}
+##set warnings off
+#warnings --off
+#sp {mummy*evaluate*state*failure*duplicate
+#   (state <s1> ^desired <d>
+#               ^gs <gs>)
+#   (<gs> ^location <l1> <l2>)
+#   (<l1> ^p1 explorer ^p2 <x1> ^p3 <y1>)
+#   (<l2> ^p1 mummy ^p2 <x2> ^p3 <y2>)
+#   ( { <> <s1> <s2> } ^tried-tied-operator
+#                      ^gs <gs2>)
+#   (<gs2> ^location { <> <l1> <l12> } { <> <l2> <l22> })
+#   (<l12> ^p1 explorer ^p2 <x1> ^p3 <y1>)
+#   (<l22> ^p1 mummy ^p2 <x2> ^p3 <y2>)
+#  -(state <s3> ^superstate <s2>)
+#-->
+#   (write (crlf) |Duplicate State Detected.|)
+#   (<s2> ^failure <d>)}
+##set warnings on
+#warnings --on
+#

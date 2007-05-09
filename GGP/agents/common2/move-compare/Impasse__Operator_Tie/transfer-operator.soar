@@ -1,0 +1,187 @@
+sp {selection*propose*transfer-operator
+   (state <s> ^name selection
+              ^item <it>
+            #  ^COMMENT OUT
+              ^unknown-evaluation-preference <it>
+              ^current-evaluation-depth <ced>)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name transfer-operator
+         ^item <it>
+         ^current-evaluation-depth <ced>)
+}
+
+sp {transfer-operator*elaborate*state-name
+   (state <s> ^superstate.operator <o>)
+   (<o> ^name transfer-operator
+        ^item <item>
+        ^current-evaluation-depth <ced>)
+-->
+   (<s> ^name transfer-operator
+        ^hypothetical true
+        ^item <item>
+        ^current-evaluation-depth <ced>)
+}
+
+
+
+#begin section copied from selection space
+sp {transfer-operator*propose*evaluate-operator
+   (state <s> ^name transfer-operator
+              ^item <i>)
+  -{(state <s> ^evaluation <e>)
+    (<e> ^superoperator <i>
+         ^value true)}
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name evaluate-operator
+        ^superoperator <i>)}
+
+
+### Create evaluation once the eval operator is selected.
+ 
+sp {transfer-operator*apply*state*evaluation
+   :default
+   (state <s> ^name transfer-operator
+              ^operator <o>)
+   (<o> ^name evaluate-operator
+        ^superoperator <ob>)
+-->
+   (<s> ^evaluation <e>)
+   (<e> ^superoperator <ob>)}
+
+sp {transfer-operator*elaborate*evaluate-operator*evaluation
+   :default
+   (state <s> ^name transfer-operator
+              ^operator <o>
+              ^evaluation <e>)
+   (<o> ^name evaluate-operator
+        ^superoperator <ob>)
+   (<e> ^superoperator <ob>)
+-->
+   (<o> ^evaluation <e>)}
+
+sp {transfer-operator*elaborate*evaluate-operator*superproblem-space
+   :default
+   (state <s> ^name transfer-operator
+              ^operator <o>
+              ^superstate.superstate.problem-space <p2>) # get the problem-space from the state that brought about the original tie
+   (<o> ^name evaluate-operator)
+-->
+   (<o> ^superproblem-space <p2>)}
+
+sp {transfer-operator*elaborate*evaluate-operator*superstate
+   :default
+   :i-support # Soar doesn't like deep structure on the operator
+   (state <s> ^name transfer-operator
+              ^operator <o>
+              ^superstate.superstate <ss>) 
+   (<o> ^name evaluate-operator)
+ #  (<ss> ^gs <gs>
+ #        ^name <name>)
+-->
+   (<o> ^superstate <ss>) # this needs to be the state of the game (where the tie is)
+ #  (<fake-ss> ^gs <gs>
+ #             ^facts <fake-facts>
+ #             ^name <name>)
+}
+
+sp {transfer-operator*elaborate*evaluate-operator*fake-facts
+   (state <s> ^name  transfer-operator
+              ^comment out
+              ^operator <o>
+              ^superstate.superstate <ss>) 
+   (<o> ^name evaluate-operator
+        ^superstate <fake-ss>)
+   (<ss> ^facts <real-facts>)
+   (<fake-ss> ^facts <fake-facts>)
+   (<real-facts> ^{<attrib> <> mummy-type} <value>)
+-->
+   (<fake-facts> ^<attrib> <value>)
+}
+
+sp {transfer-operator*elaborate*evaluate-operator*fake-mummy
+   (state <s> ^name  transfer-operator
+              ^operator <o>
+              ^comment out
+              ^superstate.superstate <ss>) 
+   (<o> ^name evaluate-operator
+        ^superstate.facts <fake-facts>)
+-->
+   (<fake-facts> ^mummy-type <mm>)
+   (<mm> ^p1 mummy
+         ^p2 vertical)
+}              
+
+
+
+sp {transfer-operator*elaborate*evaluation*desired
+   :default
+   (state <s> ^superstate.superstate.desired <d>
+              ^name transfer-operator
+              ^evaluation <e>)
+-->
+   (<e> ^desired <d>)}
+
+
+sp {transfer-operator*elaborate*evaluation*ced
+   :default
+   (state <s> ^current-evaluation-depth <d>
+              ^name transfer-operator
+              ^evaluation <e>)
+-->
+   (<e> ^current-evaluation-depth <d>)}
+
+
+
+# end section adapted from selection space
+
+# if we are in a state that is a substate of an evaluate-operator inside transfer-operator,
+# it must mean there was no chunk for the evaluation in the source problem (an o-n-c occurred)
+# therefore, the evaluate-operator operator we are transferring gets an =
+
+# this is an evaluation of a fake evaluation-operator to find the preference of an evaluation-operator for an operator in the super super state
+sp {transfer-operator*elaborate*no-chunk
+   (state <s> ^superstate <ss>) 
+   (<ss> ^name transfer-operator
+         ^quiescence t # prevent overgeneral chunks
+         ^operator.name evaluate-operator
+         ^item <it>
+         ^superstate <sss>)
+-->
+   (<sss> ^evaluate-indifferent <it>)
+   (write |no relevant chunks to transfer.|)
+}
+
+sp {transfer-operator*elaborate*transfer-success
+   (state <s> ^superstate <ss>
+              ^name transfer-operator
+              ^evaluation <e>
+              ^item <it>)
+   (<e> ^symbolic-value success)
+-->
+   (<ss> ^evaluate-best <it>)
+   (write |transferring chunk: success|)
+}
+
+sp {transfer-operator*elaborate*transfer-failure
+   (state <s> ^superstate <ss>
+              ^name transfer-operator
+              ^evaluation <e>
+              ^item <it>)
+   (<e> ^symbolic-value failure)
+-->
+   (<ss> ^evaluate-worst <it>)
+   (write |transferring chunk: failure|)
+}
+
+sp {transfer-operator*elaborate*transfer-de
+   (state <s> ^superstate <ss>
+              ^name transfer-operator
+              ^evaluation <e>
+              ^item <it>)
+   (<e> ^symbolic-value depth-exceeded)
+-->
+   (<ss> ^evaluate-worst <it>)
+   (write |transferring chunk: d-e|)
+}

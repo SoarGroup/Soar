@@ -1,0 +1,78 @@
+
+# this is the relevant production from the selection code:
+#sp {selection*select*evaluate-operator*indifferent
+#  :default
+#   (state <s> ^name selection
+#             -^operator-selection not-indifferent
+#              ^operator <o> +)
+#   (<o> ^name evaluate-operator)
+#-->
+#  (<s> ^operator <o> =)}
+
+sp {selection*select*not-indifferent
+   (state <s> ^name selection)
+-->
+   (<s> ^operator-selection not-indifferent)}
+
+
+sp {selection*elaborate*unknown-preference
+   (state <s> ^name selection
+              ^item <it>
+             -^evaluate-best <it>
+             -^evaluate-worst <it>
+             -^evaluate-indifferent <it>)
+-->
+   (<s> ^unknown-evaluation-preference <it>)
+}
+
+
+sp {selection*elaborate*pre-eval-to-pref*best
+   (state <s> ^name selection
+              ^operator <o> +
+              ^evaluate-best <it>)
+   (<o> ^name evaluate-operator
+        ^superoperator <it>)
+-->
+   (<s> ^operator <o> + > =)
+}
+
+sp {selection*elaborate*pre-eval-to-pref*indifferent
+   (state <s> ^name selection
+              ^operator <o> +
+              ^evaluate-indifferent <it>)
+   (<o> ^name evaluate-operator
+        ^superoperator <it>)
+-->
+   (<s> ^operator <o> + =)
+}
+
+sp {selection*elaborate*pre-eval-to-pref*worst
+   (state <s> ^name selection
+              ^operator <o> +
+              ^evaluate-worst <it>)
+   (<o> ^name evaluate-operator
+        ^superoperator <it>)
+-->
+   (<s> ^operator <o> + < =)
+}
+
+
+sp {selection*elaborate*pre-eval-to-pref*reject
+   (state <s> ^name selection
+              ^operator <o> +
+              ^evaluate-reject <it>)
+   (<o> ^name evaluate-operator
+        ^superoperator <it>)
+-->
+   (<s> ^operator <o> -)
+}
+
+sp {selection*prefer*check-plan
+   :default
+   (state <s> ^name selection
+              ^operator <trans> +
+              ^operator <other> +)
+   (<trans> ^name check-plan)
+   (<other> -^name check-plan)
+   -->
+   (<s> ^operator <other> -)}

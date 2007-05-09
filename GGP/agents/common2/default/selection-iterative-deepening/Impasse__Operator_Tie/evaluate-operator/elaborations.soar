@@ -1,0 +1,68 @@
+sp {evaluate-operator*elaborate*state
+   (state <s> ^superstate.operator <o>)
+   (<o> ^name evaluate-operator
+        ^evaluation.current-evaluation-depth <ced>)
+-->
+   (<s> ^current-evaluation-depth <ced>)
+}
+#
+#sp {evaluate-operator*elaborate*evaluate-operator*current-evaluation-depth*0
+#   :default
+#   (state <s> ^superstate.operator <o>
+#              ^desired <d>
+#              ^gs <g>
+#              ^current-evaluation-depth <= 0)
+#   (<s> ^elaborations.two-steps-toward)
+#   (<g> ^location <l1> <l2>)
+#   (<l1> ^p1 mummy ^p2 <x1> ^p3 <x2>)
+#   (<l2> ^p1 explorer ^p2 <x3> ^p3 <x4>)
+#   (<o> ^name evaluate-operator
+#        ^evaluation <e>)
+#-->
+#   (write (crlf) |Max evaluation depth hit.|)
+#   (<s> ^depth-exceeded <d>)}
+#
+sp {evaluate-operator*elaborate*state*tried-tied-operator
+   :default
+   (state <s> ^look-ahead-operator <o> 
+              ^operator <o>
+              ^move-finished)
+-->
+   (<s> ^tried-tied-operator <o> +)
+}
+
+#sp {evaluate-operator*elaborate*state*tried-tied-operator-1
+#   :default
+#   (state <s> ^look-ahead-operator <o> ^operator <o> ^gs <gs> ^facts.mummytype.p1 <mummy>)
+#  -{(<gs> ^location <l>)
+#    (<l> ^p1 <mummy>)}
+#-->
+#   (<s> ^tried-tied-operator <o> +)
+#}
+
+sp {evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*depth-exceeded
+   :default
+   (state <ss> ^superstate <s>
+             # ^quiescence t
+               ^depth-exceeded <eb>)
+   (<s> ^operator <so>
+        ^evaluation <e>)
+   (<so> ^name evaluate-operator
+         ^evaluation <e>
+         ^evaluation.desired <eb>)
+-->
+   (<e> ^symbolic-value depth-exceeded)}
+
+sp {evaluate-operator*elaborate*symbolic-evaluation*from-subgoal
+   :default
+   (state <ss> ^superstate <s>
+               ^ { << required-success success partial-success
+                   indifferent partial-failure failure prohibit-failure
+                   >> <svalue> } <eb>)
+   (<s> ^operator <so>
+        ^evaluation <e>)
+   (<so> ^name evaluate-operator
+         ^evaluation <e>
+         ^evaluation.desired <eb>)
+-->
+   (<e> ^symbolic-value <svalue>)}

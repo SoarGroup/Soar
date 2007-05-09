@@ -1,0 +1,3 @@
+pushd selection-plan
+source selection-plan_source.soar
+popd

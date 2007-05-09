@@ -1,0 +1,15 @@
+sp {propose*initialize-move-compare
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-move-compare)
+}
+
+sp {apply*initialize-move-compare
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-move-compare)
+-->
+   (<s> ^name move-compare)
+}
+

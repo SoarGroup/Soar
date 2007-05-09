@@ -1,0 +1,14 @@
+VERSION 4
+/selection-plan/selection-plan.dm
+0	ROOT selection-plan selection-plan 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR top-state top-state.soar 6
+6	0	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 9 7
+7	6	FOPERATOR elaborations elaborations.soar 8
+8	6	OPERATOR check-plan check-plan.soar 9
+9	6	OPERATOR evaluate-operator evaluate-operator.soar 10
+10	6	OPERATOR select select.soar 11
+END
