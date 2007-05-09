@@ -1,13 +1,13 @@
 #### Monitor impasses I don't expect to get
 
-sp {all*monitor*impasse*state-no-change
-   (state <s> ^attribute state
-              ^choices none)
--->
-   (write (crlf) | State no-change impasse detected.|)
-   (interrupt)
-}
-
+#sp {all*monitor*impasse*state-no-change
+#   (state <s> ^attribute state
+#              ^choices none)
+#-->
+#   (write (crlf) | State no-change impasse detected.|)
+#   (interrupt)
+#}
+#
 sp {all*monitor*operator*tie*impasse
    (state <s> ^attribute operator
               ^impasse tie
