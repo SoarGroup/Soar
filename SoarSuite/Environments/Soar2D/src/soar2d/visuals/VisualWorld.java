@@ -560,32 +560,32 @@ public class VisualWorld extends Canvas implements PaintListener {
 				Player player = this.map.getPlayer(playerLocIter.next());
 				assert player != null;
 
-				Point2D.Float center = new Point2D.Float(Soar2D.simulation.world.getFloatLocation(player).x, Soar2D.simulation.world.getFloatLocation(player).y);
-				Point2D.Float offset = new Point2D.Float(0,0);
+				Point2D.Double center = new Point2D.Double(Soar2D.simulation.world.getFloatLocation(player).x, Soar2D.simulation.world.getFloatLocation(player).y);
+				Point2D.Double offset = new Point2D.Double(0,0);
 				
 				Path path = new Path(gc.getDevice());
 
 				// first, move to the point representing the tip of the chevron
 				offset.y = (float)kDotSize * (float)Math.sin((double)player.getHeadingRadians());
 				offset.x = (float)kDotSize * (float)Math.cos((double)player.getHeadingRadians());
-				Point2D.Float original = new Point2D.Float(offset.x, offset.y);
-				path.moveTo(center.x + offset.x, center.y + offset.y);
+				Point2D.Double original = new Point2D.Double(offset.x, offset.y);
+				path.moveTo((float)(center.x + offset.x), (float)(center.y + offset.y));
 				System.out.println("First: " + offset);
 
 				// next draw a line to the corner
 				offset.y = kDotSize/2.0f * (float)Math.sin(player.getHeadingRadians() + (3*Math.PI)/4);
 				offset.x = kDotSize/2.0f * (float)Math.cos(player.getHeadingRadians() + (3*Math.PI)/4);
-				path.lineTo(center.x + offset.x, center.y + offset.y);
+				path.lineTo((float)(center.x + offset.x), (float)(center.y + offset.y));
 				System.out.println("Second: " + offset);
 
 				// next draw a line to the other corner
 				offset.y = kDotSize/2.0f * (float)Math.sin(player.getHeadingRadians() - (3*Math.PI)/4);
 				offset.x = kDotSize/2.0f * (float)Math.cos(player.getHeadingRadians() - (3*Math.PI)/4);
-				path.lineTo(center.x + offset.x, center.y + offset.y);
+				path.lineTo((float)(center.x + offset.x), (float)(center.y + offset.y));				
 				System.out.println("Third: " + offset);
 
 				// finally a line back to the original
-				path.lineTo(center.x + original.x, center.y + original.y);
+				path.lineTo((float)(center.x + original.x), (float)(center.y + original.y));
 				
 				gc.setForeground(WindowManager.getColor(player.getColor()));
 				gc.drawPath(path);

@@ -29,7 +29,7 @@ public class World {
 	private HashMap<String, Player> playersMap = new HashMap<String, Player>(7);
 	private HashMap<String, Point> initialLocations = new HashMap<String, Point>(7);
 	private HashMap<String, Point> locations = new HashMap<String, Point>(7);
-	private HashMap<String, Point2D.Float> floatLocations = new HashMap<String, Point2D.Float>(7);
+	private HashMap<String, Point2D.Double> floatLocations = new HashMap<String, Point2D.Double>(7);
 	private HashMap<String, MoveInfo> lastMoves = new HashMap<String, MoveInfo>(7);
 	private HashMap<String, HashSet<Player> > killedTanks = new HashMap<String, HashSet<Player> >(7);
 	
@@ -682,13 +682,59 @@ public class World {
 		}
 	}
 	
+	private void bookMovePlayer(Player player) {
+		final int cellSize = Soar2D.config.getBookCellSize();
+		
+		Point oldLocation = locations.get(player.getName());
+		Point newLocation = new Point(oldLocation);
+
+		map.setPlayer(oldLocation, null);
+
+		Point2D.Double oldFloatLocation = floatLocations.get(player.getName());
+		Point2D.Double newFloatLocation = new Point2D.Double(oldFloatLocation.x, oldFloatLocation.y);
+
+		/*
+		 * x-axis: cosine
+		 * y-axis: sine
+		 * 
+		 * east:    0   0
+		 * south:  90  pi/2
+		 * west:  180  pi
+		 * north: 270 3pi/2
+		 */
+		
+		
+		newFloatLocation.x += player.getVelocity().x;
+		newFloatLocation.y += player.getVelocity().y;
+		
+		newLocation.x = (int)newFloatLocation.x / cellSize;
+		newLocation.y = (int)newFloatLocation.y / cellSize;
+		
+		if (map.getAllWithProperty(newLocation, Names.kPropertyBlock).size() > 0) {
+//			System.out.println("blocked");
+			lastMoves.get(player.getName()).forward = false;
+			lastMoves.get(player.getName()).backward = false;
+			map.setPlayer(oldLocation, player);
+			player.setVelocity(new Point2D.Double(0,0));
+
+		} else {
+			
+//			System.out.println("       heading: " + heading);
+//			System.out.println("float location: " + newFloatLocation);
+//			System.out.println("      location: " + newLocation);
+
+			floatLocations.put(player.getName(), newFloatLocation);
+			locations.put(player.getName(), newLocation);
+		}
+		
+	}
+	
 	private void bookUpdate() {
 		final float time = (float)Soar2D.config.getASyncDelay() / 1000.0f;
 
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player player = iter.next();
-			player.setVelocity(new Point2D.Float(0,0));
 			MoveInfo move = getAndStoreMove(player);			
 			if (move == null) {
 				return;
@@ -705,6 +751,7 @@ public class World {
 			}
 			
 			if (!move.forward && !move.backward) {
+				bookMovePlayer(player);
 				continue;
 			}
 			
@@ -714,60 +761,22 @@ public class World {
 			} else if (move.backward) {
 				rate *= -1;
 			}
-			
-			final int cellSize = Soar2D.config.getBookCellSize();
+
 			final float heading = player.getHeadingRadians();
-			
-			Point oldLocation = locations.get(player.getName());
-			Point newLocation = new Point(oldLocation);
 
-			map.setPlayer(oldLocation, null);
+			Point2D.Double velocity = new Point2D.Double((float)Math.cos(heading) * rate, (float)Math.sin(heading) * rate);
+			player.setVelocity(velocity);
 
-			Point2D.Float oldFloatLocation = floatLocations.get(player.getName());
-			Point2D.Float newFloatLocation = new Point2D.Float(oldFloatLocation.x, oldFloatLocation.y);
-
-			/*
-			 * x-axis: cosine
-			 * y-axis: sine
-			 * 
-			 * east:    0   0
-			 * south:  90  pi/2
-			 * west:  180  pi
-			 * north: 270 3pi/2
-			 */
+			bookMovePlayer(player);
 			
-			Point2D.Float velocity = new Point2D.Float((float)Math.cos(heading) * rate, (float)Math.sin(heading) * rate);
-			
-			newFloatLocation.x += velocity.x;
-			newFloatLocation.y += velocity.y;
-			
-			newLocation.x = (int)newFloatLocation.x / cellSize;
-			newLocation.y = (int)newFloatLocation.y / cellSize;
-			
-			if (map.getAllWithProperty(newLocation, Names.kPropertyBlock).size() > 0) {
-//				System.out.println("blocked");
-				move.forward = false;
-				map.setPlayer(oldLocation, player);
-
-			} else {
-				
-//				System.out.println("       heading: " + heading);
-//				System.out.println("float location: " + newFloatLocation);
-//				System.out.println("      location: " + newLocation);
-
-				floatLocations.put(player.getName(), newFloatLocation);
-				locations.put(player.getName(), newLocation);
-				player.setVelocity(velocity);
-			}
 		}
 		
 		iter = players.iterator();
 		while (iter.hasNext()) {
 			Player player = iter.next();
-			MoveInfo lastMove = lastMoves.get(player.getName());
 			Point location = locations.get(player.getName());
 			
-			if (lastMove.forward) {
+			if ((player.getVelocity().x + player.getVelocity().y) > 0.1) {
 				map.setPlayer(location, player);
 			}
 		}
@@ -777,8 +786,8 @@ public class World {
 		updatePlayers(false);
 	}
 	
-	private Point2D.Float defaultFloatLocation(Point location) {
-		Point2D.Float floatLocation = new Point2D.Float();
+	private Point2D.Double defaultFloatLocation(Point location) {
+		Point2D.Double floatLocation = new Point2D.Double();
 		final int cellSize = Soar2D.config.getBookCellSize();
 		
 		// default to center of square
@@ -1547,7 +1556,7 @@ public class World {
 		return locations.get(player.getName());
 	}
 	
-	public Point2D.Float getFloatLocation(Player player) {
+	public Point2D.Double getFloatLocation(Player player) {
 		return floatLocations.get(player.getName());
 	}
 
