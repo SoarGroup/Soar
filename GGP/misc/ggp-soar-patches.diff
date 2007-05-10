@@ -1,0 +1,176 @@
+Index: Core/SoarKernel/include/agent.h
+===================================================================
+--- Core/SoarKernel/include/agent.h	(revision 6855)
++++ Core/SoarKernel/include/agent.h	(working copy)
+@@ -260,6 +260,8 @@
+   Symbol            * type_symbol;
+   Symbol            * wait_symbol;   /* REW:  10.24.97 */
+ 
++  Symbol            * item_count_symbol; // SBW 5/07
++
+   /* RPM 9/06 begin */
+   Symbol			* input_link_symbol;
+   Symbol			* output_link_symbol;
+Index: Core/SoarKernel/include/decide.h
+===================================================================
+--- Core/SoarKernel/include/decide.h	(revision 6855)
++++ Core/SoarKernel/include/decide.h	(working copy)
+@@ -103,6 +103,9 @@
+ /* These prototypes moved here from chunk.cpp -ajc (5/3/02) */
+ extern byte type_of_existing_impasse (agent* thisAgent, Symbol *goal);
+ 
++// SBW 5/07 added prototype
++unsigned int count_candidates(preference * candidates);
++
+ #ifdef __cplusplus
+ }
+ #endif
+Index: Core/SoarKernel/src/chunk.cpp
+===================================================================
+--- Core/SoarKernel/src/chunk.cpp	(revision 6855)
++++ Core/SoarKernel/src/chunk.cpp	(working copy)
+@@ -471,6 +471,16 @@
+       prev_cc = cc;
+     } else {
+       /* --- not in TC, so discard the condition --- */
++
++      // this chunk will be overgeneral! don't create it
++      
++      // SBW 5/07
++      // report what local negations are preventing the chunk,
++      // and set flags like we saw a ^quiescence t so it won't be created
++      report_local_negation (thisAgent, cc->cond); // in backtrace.cpp
++      thisAgent->quiescence_t_flag = TRUE;
++      thisAgent->variablize_this_chunk = FALSE;
++
+       free_with_pool (&thisAgent->chunk_cond_pool, cc);
+     }
+   }
+Index: Core/SoarKernel/src/backtrace.h
+===================================================================
+--- Core/SoarKernel/src/backtrace.h	(revision 6855)
++++ Core/SoarKernel/src/backtrace.h	(working copy)
+@@ -53,6 +53,8 @@
+                                              condition *trace_cond,
+                                              int indent);
+ 
++void report_local_negation (agent* thisAgent, condition* c);
++
+ #ifdef __cplusplus
+ }
+ #endif
+Index: Core/SoarKernel/src/symtab.cpp
+===================================================================
+--- Core/SoarKernel/src/symtab.cpp	(revision 6855)
++++ Core/SoarKernel/src/symtab.cpp	(working copy)
+@@ -572,6 +572,10 @@
+   thisAgent->constraint_failure_symbol = make_sym_constant (thisAgent, "constraint-failure");
+   thisAgent->no_change_symbol = make_sym_constant (thisAgent, "no-change");
+   thisAgent->multiple_symbol = make_sym_constant (thisAgent, "multiple");
++  
++  // SBW 5/07
++  thisAgent->item_count_symbol = make_sym_constant (thisAgent, "item-count");
++
+   thisAgent->conflict_symbol = make_sym_constant (thisAgent, "conflict");
+   thisAgent->tie_symbol = make_sym_constant (thisAgent, "tie");
+   thisAgent->item_symbol = make_sym_constant (thisAgent, "item");
+@@ -639,6 +643,9 @@
+   release_helper(thisAgent,&(thisAgent->s_context_variable));
+   release_helper(thisAgent,&(thisAgent->o_context_variable));
+ 
++  // SBW 5/07
++  release_helper(thisAgent,&(thisAgent->item_count_symbol));
++
+   /* REW: begin 10.24.97 */
+   release_helper(thisAgent,&(thisAgent->wait_symbol));
+   /* REW: end   10.24.97 */
+Index: Core/SoarKernel/src/decide.cpp
+===================================================================
+--- Core/SoarKernel/src/decide.cpp	(revision 6855)
++++ Core/SoarKernel/src/decide.cpp	(working copy)
+@@ -1887,6 +1887,15 @@
+         remove_wme_from_wm (thisAgent, w);
+       }
+     }
++
++    // SBW 5/07
++    // remove item-count WME if it exists
++    else if (w->attr==thisAgent->item_count_symbol) {
++      remove_from_dll (id->id.impasse_wmes, w, next, prev);
++      symbol_remove_ref (thisAgent, w->value); // remove the reference to the integer constant
++      remove_wme_from_wm (thisAgent, w);
++    }
++
+     w = next_w;
+   }
+ 
+@@ -1904,6 +1913,14 @@
+       add_impasse_wme (thisAgent, id, thisAgent->item_symbol, cand->value, bt_pref);
+     }
+   }
++
++  // SBW 5/07
++  // update the item-count WME
++  add_impasse_wme (thisAgent, id, thisAgent->item_count_symbol, 
++                   make_int_constant(thisAgent, count_candidates(items)), NIL);
++  // TODO does the int constant get its reference removed when the impasse goes
++  // away?
++
+ }
+ 
+ /* ------------------------------------------------------------------
+Index: Core/SoarKernel/src/backtrace.cpp
+===================================================================
+--- Core/SoarKernel/src/backtrace.cpp	(revision 6855)
++++ Core/SoarKernel/src/backtrace.cpp	(working copy)
+@@ -21,7 +21,6 @@
+                         Backtracing routines
+    ==================================================================== */
+ 
+-
+ #include "backtrace.h"
+ #include "mem.h"
+ #include "kernel.h"
+@@ -691,3 +690,21 @@
+ 
+   return TRUE;
+ }
++
++// sbw 5/4/07
++// fuction to report negated conditions that are overgeneral
++// this is here (as opposed to chunk.cpp) since this file has all the right
++// includes for correct output
++
++void report_local_negation (agent* thisAgent, condition* c) {
++    // use the same code as the backtracing above
++    list* negated_to_print = NIL;
++	  push (thisAgent, c, negated_to_print);
++    
++    print_string (thisAgent, "\nLocal negation found:\n");
++    gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagNegated);
++    print_consed_list_of_conditions (thisAgent, negated_to_print, 2);
++    gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagNegated);
++  
++    free_list (thisAgent, negated_to_print);
++}
+Index: Tools/SoarJavaDebugger/doc/Document.java
+===================================================================
+--- Tools/SoarJavaDebugger/doc/Document.java	(revision 6855)
++++ Tools/SoarJavaDebugger/doc/Document.java	(working copy)
+@@ -144,7 +144,7 @@
+ 		Module phase 	 = new Module("Phase Diagram", "A view that shows Soar's phases of execution", modules.PhaseView.class) ;
+ 		Module edit 	 = new Module("Edit Production Window", "A window used to edit a production and then load it into Soar", modules.EditorView.class) ;
+ 		Module fold 	 = new Module("Tree Trace Window", "Output from commands and trace output from runs is shown in a tree window.", FoldingTextView.class) ;
+-
++    Module canvas = new Module("Canvas Window", "Canvas Window", CanvasView.class);
+ 		m_ModuleList.add(fold) ;
+ 		m_ModuleList.add(textTrace) ;
+ 		m_ModuleList.add(update) ;
+@@ -152,6 +152,7 @@
+ 		m_ModuleList.add(button) ;
+ 		m_ModuleList.add(phase) ;
+ 		m_ModuleList.add(edit) ;
++    m_ModuleList.add(canvas);
+ 	}
+ 	
+ 	/** Gives us a frame to work with */
