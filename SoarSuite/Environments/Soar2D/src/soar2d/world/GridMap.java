@@ -1635,6 +1635,9 @@ public class GridMap {
 						if (!doorObject.hasProperty(Names.kPropertyNumber)) {
 							doorObject.addProperty(Names.kPropertyNumber, Integer.toString(currentBarrier.id));
 						}
+						
+						// tell the door it should be drawn
+						doorObject.addProperty(Names.kPropertyDoorRender, Names.kTrue);
 
 					} else if (wallObject != null) /*redundant*/ {
 					
