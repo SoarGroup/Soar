@@ -13,4 +13,5 @@ VERSION 4
 10	9	FOPERATOR elaborations elaborations.soar 11
 11	9	OPERATOR move move.soar 12
 12	9	OPERATOR rotate rotate.soar 13
+13	9	OPERATOR stop stop.soar 14
 END

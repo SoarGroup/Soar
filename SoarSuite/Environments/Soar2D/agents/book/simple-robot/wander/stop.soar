@@ -1,7 +1,9 @@
-sp {wander*propose*move
+sp {wander*propose*stop
    (state <s> ^name wander)
    (<s> ^top-state.io.input-link.self.cycle <c>)
 -->
    (<s> ^operator <o> + =)
    (<o> ^name move
-        ^actions.move.direction forward)}
+        ^actions.move.direction stop)}
+
+

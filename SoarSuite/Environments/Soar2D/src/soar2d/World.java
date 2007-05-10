@@ -710,10 +710,22 @@ public class World {
 		
 		if (map.getAllWithProperty(newLocation, Names.kPropertyBlock).size() > 0) {
 //			System.out.println("blocked");
-
+			
 			lastMoves.get(player.getName()).forward = false;
 			lastMoves.get(player.getName()).backward = false;
 			player.setVelocity(new Point2D.Double(0,0));
+			
+//			if (newLocation.x > oldLocation.x) {
+//				
+//			} else if (newLocation.x < oldLocation.x) {
+//				
+//			}
+//			
+//			if (newLocation.y > oldLocation.y) {
+//				
+//			} else if (newLocation.y < oldLocation.y) {
+//				
+//			}
 
 		} else {
 			
@@ -763,7 +775,6 @@ public class World {
 				} else if (move.backward) {
 					rate *= -1;
 				}
-	
 			}
 			
 			// update velocity
