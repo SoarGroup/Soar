@@ -1,6 +1,7 @@
 package soar2d.world;
 
 import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -1406,6 +1407,50 @@ public class GridMap {
 		public java.awt.Point right;
 		public String direction; 		// null == door
 		
+		public Point2D.Double centerpoint() {
+			int m, n;
+			Point2D.Double center = new Point2D.Double(0,0);
+			double halfCell = Soar2D.config.getBookCellSize() / 2.0;
+			
+			if (left.x == right.x) {
+				// vertical
+				m = left.y;
+				n = right.y;
+				center.x = left.x * Soar2D.config.getBookCellSize();
+				center.x += halfCell;
+			} else {
+				// horizontal
+				m = left.x;
+				n = right.x;
+				center.y = left.y * Soar2D.config.getBookCellSize();
+				center.y += halfCell;
+			}
+			
+			int numberOfBlocks = n - m;
+			java.awt.Point upperLeft = left;
+			// take abs, also note that if negative then we need to calculate center from the upper-left block
+			// which this case is the "right"
+			if (numberOfBlocks < 0) {
+				numberOfBlocks *= -1;
+				upperLeft = right;
+			}
+			numberOfBlocks += 1; // endpoints 0,0 and 0,3 represent 4 blocks
+			
+			if (left.x == right.x) {
+				// vertical
+				// add half to y
+				center.y = upperLeft.y * Soar2D.config.getBookCellSize();
+				center.y += (numberOfBlocks / 2.0) * Soar2D.config.getBookCellSize();
+				
+			} else {
+				// horizontal
+				// add half to x
+				center.x = upperLeft.x * Soar2D.config.getBookCellSize();
+				center.x += (numberOfBlocks / 2.0) * Soar2D.config.getBookCellSize();
+			}
+			return center;
+		}
+		
 		public String toString() {
 			String output = new String(Integer.toString(id));
 			if (direction == null) {
@@ -1613,6 +1658,9 @@ public class GridMap {
 
 					// since current barrier is the door we're walking, update it's endpoint before we translate it
 					currentBarrier.right = new java.awt.Point(next);
+					
+					// DEBUG: check centerpoint
+					//currentBarrier.centerpoint();
 
 					// walk to the next section of wall
 					Direction.translate(next, direction);
