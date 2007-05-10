@@ -63,7 +63,7 @@ full implementation:
 		^direction [forward stop backward]
 		^status [executing complete error]
 	^turn
-		^direction [left right]
+		^direction [left stop right] direction to turn
 		^status [executing complete error]
 	^turn-absolute
 		^yaw <float> desired yaw in radians
