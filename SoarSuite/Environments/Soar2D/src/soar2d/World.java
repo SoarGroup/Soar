@@ -688,8 +688,6 @@ public class World {
 		Point oldLocation = locations.get(player.getName());
 		Point newLocation = new Point(oldLocation);
 
-		map.setPlayer(oldLocation, null);
-
 		Point2D.Double oldFloatLocation = floatLocations.get(player.getName());
 		Point2D.Double newFloatLocation = new Point2D.Double(oldFloatLocation.x, oldFloatLocation.y);
 
@@ -712,19 +710,21 @@ public class World {
 		
 		if (map.getAllWithProperty(newLocation, Names.kPropertyBlock).size() > 0) {
 //			System.out.println("blocked");
+
 			lastMoves.get(player.getName()).forward = false;
 			lastMoves.get(player.getName()).backward = false;
-			map.setPlayer(oldLocation, player);
 			player.setVelocity(new Point2D.Double(0,0));
 
 		} else {
 			
-//			System.out.println("       heading: " + heading);
+//			System.out.println("       heading: " + player.getHeadingRadians());
 //			System.out.println("float location: " + newFloatLocation);
 //			System.out.println("      location: " + newLocation);
 
-			floatLocations.put(player.getName(), newFloatLocation);
+			map.setPlayer(oldLocation, null);
 			locations.put(player.getName(), newLocation);
+			floatLocations.put(player.getName(), newFloatLocation);
+			map.setPlayer(newLocation, player);
 		}
 		
 	}
@@ -735,11 +735,15 @@ public class World {
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player player = iter.next();
-			MoveInfo move = getAndStoreMove(player);			
+
+			// get each move
+			MoveInfo move = getAndStoreMove(player);
+			// null move indicates shutdown
 			if (move == null) {
 				return;
 			}
 			
+			// update heading if we rotate
 			if (move.rotate) {
 				final float rotateSpeed = Soar2D.config.getRotateSpeed();
 				
@@ -750,37 +754,31 @@ public class World {
 				}
 			}
 			
-			if (!move.forward && !move.backward) {
-				bookMovePlayer(player);
-				continue;
+			// update rate if transitional move
+			double rate = player.getSpeed();
+			if (move.forward || move.backward) {
+				rate = Soar2D.config.getSpeed() * time;
+				if (move.forward && move.backward) {
+					rate = 0;
+				} else if (move.backward) {
+					rate *= -1;
+				}
+	
 			}
 			
-			float rate = Soar2D.config.getSpeed() * time;
-			if (move.forward && move.backward) {
-				rate = 0;
-			} else if (move.backward) {
-				rate *= -1;
-			}
-
+			// update velocity
 			final float heading = player.getHeadingRadians();
-
 			Point2D.Double velocity = new Point2D.Double((float)Math.cos(heading) * rate, (float)Math.sin(heading) * rate);
 			player.setVelocity(velocity);
 
-			bookMovePlayer(player);
 			
-		}
-		
-		iter = players.iterator();
-		while (iter.hasNext()) {
-			Player player = iter.next();
-			Point location = locations.get(player.getName());
-			
-			if ((player.getVelocity().x + player.getVelocity().y) > 0.1) {
-				map.setPlayer(location, player);
+			// if we have velocity, process move
+			if (player.getSpeed() > 0) {
+				System.out.println("Moving player");
+				bookMovePlayer(player);
 			}
 		}
-
+		
 		handleBookCollisions(findCollisions());
 		
 		updatePlayers(false);
