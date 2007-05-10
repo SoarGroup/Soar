@@ -1755,7 +1755,7 @@ public class GridMap {
 					Barrier barrier = iter.next();
 					
 					// generate centerpoint
-					currentBarrier.centerpoint();
+					barrier.centerpoint();
 
 					System.out.println(barrier);
 				}
