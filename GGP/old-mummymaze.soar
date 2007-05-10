@@ -11,7 +11,7 @@ multi-attribute sum 100
 
 pushd common
 source old-canvas.soar
-pushd default
+pushd default_lessneg
 source selection.soar
 source selection-iterative-deepening.soar
 popd 
@@ -1041,7 +1041,7 @@ sp {apply*init-game
 
 ##Mummy
  #  (<location> ^p1 mummy ^p2 5 ^p3 6) 
-   (<location> ^p1 mummy ^p2 5 ^p3 4) 
+   (<location> ^p1 mummy ^p2 5 ^p3 5) 
    (<gs> ^location <location2>)
    (<location2> ^p1 exit ^p2 1 ^p3 2)
    (<gs> ^step <step>)
