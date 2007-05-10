@@ -15,6 +15,10 @@ full implementation:
 				^right location of other end
 					^row <int>
 					^col <int>
+				^center
+					^x <float> center of wall in x dimention
+					^y <float> center of wall in y dimention
+					^angle-off <float> angle to center of wall
 				^direction [north south east west] direction to turn to face the wall
 			*^door one for each door segment
 				^id <int> unique identification number of segment
@@ -27,6 +31,7 @@ full implementation:
 				^center
 					^x <float> center of door in x dimention
 					^y <float> center of door in y dimention
+					^angle-off <float> angle to center of door
 				+^to <int> id of room this door leads to
 		^collision
 			^x [true false] currently colliding on the x component of the velocity vector
