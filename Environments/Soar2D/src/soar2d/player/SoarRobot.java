@@ -333,7 +333,7 @@ public class SoarRobot extends Robot {
 		}
 		
 		// velocity
-		agent.Update(selfIL.speed, Math.sqrt(Math.pow(getVelocity().x, 2) + Math.pow(getVelocity().y, 2)));
+		agent.Update(selfIL.speed, getSpeed());
 		agent.Update(selfIL.dx, getVelocity().x);
 		agent.Update(selfIL.dy, getVelocity().y);
 		

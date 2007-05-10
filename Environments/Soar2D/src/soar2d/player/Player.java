@@ -354,9 +354,13 @@ public class Player {
 	private Point2D.Double velocity = new Point2D.Double(0,0);
 	public void setVelocity(Point2D.Double velocity) {
 		assert velocity != null;
+		System.out.println("Velocity to " + velocity);
 		this.velocity = velocity;
 	}
 	public Point2D.Double getVelocity() {
 		return this.velocity;
+	}
+	public double getSpeed() {
+		return Math.sqrt(Math.pow(velocity.x, 2) + Math.pow(velocity.y, 2));	
 	}
 }

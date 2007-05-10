@@ -570,19 +570,19 @@ public class VisualWorld extends Canvas implements PaintListener {
 				offset.x = (float)kDotSize * (float)Math.cos((double)player.getHeadingRadians());
 				Point2D.Double original = new Point2D.Double(offset.x, offset.y);
 				path.moveTo((float)(center.x + offset.x), (float)(center.y + offset.y));
-				System.out.println("First: " + offset);
+				//System.out.println("First: " + offset);
 
 				// next draw a line to the corner
 				offset.y = kDotSize/2.0f * (float)Math.sin(player.getHeadingRadians() + (3*Math.PI)/4);
 				offset.x = kDotSize/2.0f * (float)Math.cos(player.getHeadingRadians() + (3*Math.PI)/4);
 				path.lineTo((float)(center.x + offset.x), (float)(center.y + offset.y));
-				System.out.println("Second: " + offset);
+				//System.out.println("Second: " + offset);
 
 				// next draw a line to the other corner
 				offset.y = kDotSize/2.0f * (float)Math.sin(player.getHeadingRadians() - (3*Math.PI)/4);
 				offset.x = kDotSize/2.0f * (float)Math.cos(player.getHeadingRadians() - (3*Math.PI)/4);
 				path.lineTo((float)(center.x + offset.x), (float)(center.y + offset.y));				
-				System.out.println("Third: " + offset);
+				//System.out.println("Third: " + offset);
 
 				// finally a line back to the original
 				path.lineTo((float)(center.x + original.x), (float)(center.y + original.y));
