@@ -71,3 +71,55 @@ full implementation:
 	^turn-relative
 		^amount <float> desired change in radians, negative for left turn
 		^status [executing complete error]
+		
+Output command "states"
+-----------------------
+
+Edge descriptions:
+	1. takes more than one cycle
+	2. command completes
+	3. any other turn command
+	4. any other move command
+	5. syntax error or conflicting simultaneous commands
+
+State descriptions:
+	Is: initial state
+	Ex: executing
+	Co: complete
+	Er: error
+
+turn-absolute
+turn-relative
+	Is -1-> Ex
+	Ex -2,3-> Co
+	Is -2-> Co
+	Is -5-> Er
+
+turn.direction left
+turn.direction right
+	Is -1-> Ex
+	Ex -3-> Co
+	Is -5-> Er
+
+turn.direction stop
+move.direction stop
+	Is -2-> Co
+	Is -5-> Er
+
+move.direction forward
+move.direction backward
+	Is -1-> Ex
+	Ex -4-> Co
+	Is -5-> Er
+
+
+
+
+
+
+
+
+
+
+
+
