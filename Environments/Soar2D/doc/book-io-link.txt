@@ -28,6 +28,9 @@ full implementation:
 					^x <float> center of door in x dimention
 					^y <float> center of door in y dimention
 				+^to <int> id of room this door leads to
+		^collision
+			^x [true false] currently colliding on the x component of the velocity vector
+			^y [true false] currently colliding on the y component of the velocity vector
 		^cycle <int> world update count
 		^score <int> my score
 		^position
