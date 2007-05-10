@@ -1,4 +1,4 @@
-69
+71
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -68,7 +68,9 @@ FLOAT_RANGE 65 0.0 Infinity
 FLOAT_RANGE 66 0.0 Infinity
 ENUMERATION 67 1 rotate
 SOAR_ID 68
-71
+ENUMERATION 69 1 stop
+SOAR_ID 70
+73
 0 attribute 49
 0 choices 50
 0 impasse 51
@@ -125,6 +127,7 @@ SOAR_ID 68
 44 name 46
 44 operator 48
 44 operator 68
+44 operator 70
 44 superstate 0
 44 top-state 0
 44 type 45
@@ -140,3 +143,4 @@ SOAR_ID 68
 62 bearing 64
 62 distance 66
 68 name 67
+70 name 69

@@ -1,7 +1,17 @@
-sp {wander*propose*rotate
+sp {wander*propose*rotate*right
    (state <s> ^name wander)
+   (<s> ^top-state.io.input-link.self.cycle <c>)
 -->
    (<s> ^operator <o> + =)
    (<o> ^name rotate
         ^actions.rotate.direction right)}
+
+sp {wander*propose*rotate*left
+   (state <s> ^name wander)
+   (<s> ^top-state.io.input-link.self.cycle <c>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name rotate
+        ^actions.rotate.direction left)}
+
 

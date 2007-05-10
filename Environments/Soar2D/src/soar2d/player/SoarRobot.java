@@ -389,6 +389,10 @@ public class SoarRobot extends Robot {
 						} else if (direction.equalsIgnoreCase(Names.kBackwardID)) {
 							move.backward = true;
 						
+						} else if (direction.equalsIgnoreCase(Names.kStopID)) {
+							move.forward = true;
+							move.backward = true;
+						
 						} else {
 							logger.warning(getName() + "unknown move direction: " + direction);
 							continue;

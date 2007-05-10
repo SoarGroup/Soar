@@ -90,6 +90,7 @@ public class Names {
 	public static final String kSilentID = "silent";
 	public static final String kSmellID = "smell";
 	public static final String kSoundID = "sound";
+	public static final String kStopID = "stop";
 	public static final String kStopSimID = "stop-sim";
 	public static final String kSwitchID = "switch";
 	public static final String kTankID = "tank";
