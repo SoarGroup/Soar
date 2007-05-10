@@ -1407,23 +1407,29 @@ public class GridMap {
 		public java.awt.Point right;
 		public String direction; 		// null == door
 		
+		private Point2D.Double centerpoint;
 		public Point2D.Double centerpoint() {
+			// IMPORTANT! caching assumes left and right never change!
+			if (centerpoint != null) {
+				return centerpoint;
+			}
+			
 			int m, n;
-			Point2D.Double center = new Point2D.Double(0,0);
+			centerpoint = new Point2D.Double(0,0);
 			double halfCell = Soar2D.config.getBookCellSize() / 2.0;
 			
 			if (left.x == right.x) {
 				// vertical
 				m = left.y;
 				n = right.y;
-				center.x = left.x * Soar2D.config.getBookCellSize();
-				center.x += halfCell;
+				centerpoint.x = left.x * Soar2D.config.getBookCellSize();
+				centerpoint.x += halfCell;
 			} else {
 				// horizontal
 				m = left.x;
 				n = right.x;
-				center.y = left.y * Soar2D.config.getBookCellSize();
-				center.y += halfCell;
+				centerpoint.y = left.y * Soar2D.config.getBookCellSize();
+				centerpoint.y += halfCell;
 			}
 			
 			int numberOfBlocks = n - m;
@@ -1439,16 +1445,16 @@ public class GridMap {
 			if (left.x == right.x) {
 				// vertical
 				// add half to y
-				center.y = upperLeft.y * Soar2D.config.getBookCellSize();
-				center.y += (numberOfBlocks / 2.0) * Soar2D.config.getBookCellSize();
+				centerpoint.y = upperLeft.y * Soar2D.config.getBookCellSize();
+				centerpoint.y += (numberOfBlocks / 2.0) * Soar2D.config.getBookCellSize();
 				
 			} else {
 				// horizontal
 				// add half to x
-				center.x = upperLeft.x * Soar2D.config.getBookCellSize();
-				center.x += (numberOfBlocks / 2.0) * Soar2D.config.getBookCellSize();
+				centerpoint.x = upperLeft.x * Soar2D.config.getBookCellSize();
+				centerpoint.x += (numberOfBlocks / 2.0) * Soar2D.config.getBookCellSize();
 			}
-			return center;
+			return centerpoint;
 		}
 		
 		public String toString() {
@@ -1458,7 +1464,9 @@ public class GridMap {
 			} else {
 				output += " (" + direction + ")";
 			}
+			Point2D.Double center = centerpoint();
 			output += "(" + Integer.toString(left.x) + "," + Integer.toString(left.y) + ")-(" 
+					+ Double.toString(center.x) + "," + Double.toString(center.y) + ")-(" 
 					+ Integer.toString(right.x) + "," + Integer.toString(right.y) + ")";
 			return output;
 		}
@@ -1659,9 +1667,6 @@ public class GridMap {
 					// since current barrier is the door we're walking, update it's endpoint before we translate it
 					currentBarrier.right = new java.awt.Point(next);
 					
-					// DEBUG: check centerpoint
-					//currentBarrier.centerpoint();
-
 					// walk to the next section of wall
 					Direction.translate(next, direction);
 					
@@ -1748,6 +1753,10 @@ public class GridMap {
 				Iterator<Barrier> iter = barrierList.iterator();
 				while (iter.hasNext()) {
 					Barrier barrier = iter.next();
+					
+					// generate centerpoint
+					currentBarrier.centerpoint();
+
 					System.out.println(barrier);
 				}
 				this.roomBarrierMap.put(roomNumber, barrierList);
