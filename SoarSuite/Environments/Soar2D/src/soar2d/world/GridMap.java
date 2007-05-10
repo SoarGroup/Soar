@@ -1792,6 +1792,7 @@ public class GridMap {
 	
 	public void doorsToAreasStep(HashMap<Integer, Barrier> doorBarriers) {
 		// make the door also a room
+		// add new room to current door destination list
 		// create new barrier list for this new room: 2 walls and 2 doors
 		// update door destination list for new doors
 		
@@ -1802,6 +1803,14 @@ public class GridMap {
 			// get a new room id
 			int roomNumber = roomCount + doorCount + wallCount;
 			roomCount += 1;
+			
+			// add new id to current door destination list
+			{
+				ArrayList<Integer> doorDestinations = doorDestinationMap.get(new Integer(doorBarrier.id));
+				assert doorDestinations != null;
+				doorDestinations.add(new Integer(roomNumber));
+				doorDestinationMap.put(new Integer(doorBarrier.id), doorDestinations);
+			}
 			
 			CellObject theNewRoomObject = cellObjectManager.createObject(Names.kRoomID);
 			theNewRoomObject.addProperty(Names.kPropertyNumber, Integer.toString(roomNumber));
@@ -1925,7 +1934,6 @@ public class GridMap {
 					// increment and loop
 					currentBarrier.right.x += Direction.xDelta[incrementDirection];
 					currentBarrier.right.y += Direction.yDelta[incrementDirection];
-	
 				}
 
 				// store the barrier
@@ -2007,7 +2015,6 @@ public class GridMap {
 					// increment and loop
 					currentBarrier.right.x += Direction.xDelta[Direction.backwardOf[incrementDirection]];
 					currentBarrier.right.y += Direction.yDelta[Direction.backwardOf[incrementDirection]];
-	
 				}
 
 				// store the barrier
