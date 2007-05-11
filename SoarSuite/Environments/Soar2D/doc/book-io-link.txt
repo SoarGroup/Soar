@@ -32,6 +32,7 @@ full implementation:
 					^x <float> center of door in x dimention
 					^y <float> center of door in y dimention
 					^angle-off <float> angle to center of door
+				^direction [north south east west] direction to turn to face the door
 				+^to <int> id of room this door leads to
 		^collision
 			^x [true false] currently colliding on the x component of the velocity vector
