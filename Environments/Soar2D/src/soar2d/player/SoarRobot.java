@@ -285,7 +285,7 @@ public class SoarRobot extends Robot {
 						Iterator<Barrier> iter = barrierList.iterator();
 						while(iter.hasNext()) {
 							Barrier barrier = iter.next();
-							if (barrier.direction == null) {
+							if (barrier.door) {
 								// door
 								DoorInputLink door = new DoorInputLink(this, selfIL.createDoorId());
 								door.initialize(barrier.id, barrier.left, barrier.right);
@@ -302,7 +302,7 @@ public class SoarRobot extends Robot {
 							} else {
 								// wall
 								WallInputLink wall = new WallInputLink(this, selfIL.createWallId());
-								wall.initialize(barrier.id, barrier.left, barrier.right, barrier.direction);
+								wall.initialize(barrier.id, barrier.left, barrier.right, barrier.getDirection());
 								selfIL.addWall(wall);
 							}
 						}
