@@ -71,13 +71,13 @@ full implementation:
 	^move
 		^direction [forward stop backward]
 		^status [executing complete error]
-	^turn
+	^rotate
 		^direction [left stop right] direction to turn
 		^status [executing complete error]
-	^turn-absolute
+	^rotate-absolute
 		^yaw <float> desired yaw in radians
 		^status [executing complete error]
-	^turn-relative
+	^rotate-relative
 		^amount <float> desired change in radians, negative for left turn
 		^status [executing complete error]
 		
@@ -97,20 +97,20 @@ State descriptions:
 	Co: complete
 	Er: error
 
-turn-absolute
-turn-relative
+rotate-absolute
+rotate-relative
 	Is -1-> Ex
 	Ex -2,3-> Co
 	Is -2-> Co
 	Is -5-> Er
 
-turn.direction left
-turn.direction right
+rotate.direction left
+rotate.direction right
 	Is -1-> Ex
 	Ex -3-> Co
 	Is -5-> Er
 
-turn.direction stop
+rotate.direction stop
 move.direction stop
 	Is -2-> Co
 	Is -5-> Er

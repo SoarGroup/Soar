@@ -374,86 +374,139 @@ public class SoarRobot extends Robot {
 		}
 
 		// go through the commands
-		// see move info for details
 		MoveInfo move = new MoveInfo();
-		boolean moveWait = false;
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
 			Identifier commandId = agent.GetCommand(i);
 			String commandName = commandId.GetAttribute();
 			
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
-				if (move.move || moveWait) {
-					logger.warning(getName() + "multiple move commands detected");
+				if (move.move) {
+					logger.warning(getName() + " multiple move commands issued");
+					commandId.AddStatusError();
 					continue;
 				}
 				
 				String direction = commandId.GetParameterValue(Names.kDirectionID);
-				if (direction != null) {
-					if (direction.equals(Names.kNone)) {
-						// legal wait
-						moveWait = true;
-						commandId.AddStatusComplete();
-						continue;
-					} else {
-						if (direction.equalsIgnoreCase(Names.kForwardID)) {
-							move.forward = true;
-							
-						} else if (direction.equalsIgnoreCase(Names.kBackwardID)) {
-							move.backward = true;
-						
-						} else if (direction.equalsIgnoreCase(Names.kStopID)) {
-							move.forward = true;
-							move.backward = true;
-						
-						} else {
-							logger.warning(getName() + "unknown move direction: " + direction);
-							continue;
-							
-						}
-						commandId.AddStatusComplete();
-						continue;
-					}
+				
+				if (direction == null) {
+					logger.warning(getName() + " move command missing direction parameter");
+					commandId.AddStatusError();
+					continue;
 				}
 				
+				if (direction.equalsIgnoreCase(Names.kForwardID)) {
+					move.forward = true;
+					
+				} else if (direction.equalsIgnoreCase(Names.kBackwardID)) {
+					move.backward = true;
+				
+				} else if (direction.equalsIgnoreCase(Names.kStopID)) {
+					move.forward = true;
+					move.backward = true;
+				
+				} else {
+					logger.warning(getName() + "unrecognized move direction: " + direction);
+					commandId.AddStatusError();
+					continue;
+				}
+				move.move = true;
+
 			} else if (commandName.equalsIgnoreCase(Names.kRotateID)) {
 				if (move.rotate) {
-					logger.warning(getName() + "multiple rotate commands detected, ignoring");
+					logger.warning(getName() + " multiple rotate commands issued");
+					commandId.AddStatusError();
 					continue;
 				}
-				move.rotate = true;
-
+				
 				String direction = commandId.GetParameterValue(Names.kDirectionID);
-				if (direction != null) {
-					if (direction.equalsIgnoreCase(Names.kLeftID)) {
-						move.rotateDirection = Names.kRotateLeft;
-						
-					} else if (direction.equalsIgnoreCase(Names.kRightID)) {
-						move.rotateDirection = Names.kRotateRight;
-					
-					} else {
-						logger.warning(getName() + "unknown move direction: " + direction);
-						continue;
-						
-					}
-					commandId.AddStatusComplete();
+				
+				if (direction == null) {
+					logger.warning(getName() + " rotate command missing direction parameter");
+					commandId.AddStatusError();
 					continue;
 				}
+				
+				if (direction.equalsIgnoreCase(Names.kLeftID)) {
+					move.rotateDirection = Names.kRotateLeft;
+					
+				} else if (direction.equalsIgnoreCase(Names.kRightID)) {
+					move.rotateDirection = Names.kRotateRight;
+				
+				} else if (direction.equalsIgnoreCase(Names.kStopID)) {
+					move.rotateDirection = Names.kRotateStop;
+				
+				} else {
+					logger.warning(getName() + "unrecognized rotate direction: " + direction);
+					commandId.AddStatusError();
+					continue;
+					
+				}
+
+				move.rotate = true;
 
 			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
 				if (move.stopSim) {
-					logger.warning(getName() + "multiple stop commands detected, ignoring");
+					logger.warning(getName() + " multiple stop-sim commands issued");
+					commandId.AddStatusError();
 					continue;
 				}
 				move.stopSim = true;
-				commandId.AddStatusComplete();
-				continue;
+				
+			} else if (commandName.equalsIgnoreCase(Names.kRotateAbsoluteID)) {
+				if (move.rotateAbsolute) {
+					logger.warning(getName() + " multiple rotate-absolute commands issued");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				String yawString = commandId.GetParameterValue("yaw");
+				if (yawString == null) {
+					logger.warning(getName() + " rotate-absolute command missing yaw parameter");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				try {
+					move.rotateAbsoluteHeading = Double.parseDouble(yawString);
+				} catch (NumberFormatException e) {
+					logger.warning(getName() + " rotate-absolute yaw parameter improperly formatted");
+					commandId.AddStatusError();
+					continue;
+				}
+
+				move.rotateAbsolute = true;
+				
+			} else if (commandName.equalsIgnoreCase(Names.kRotateRelativeID)) {
+				if (move.rotateRelative) {
+					logger.warning(getName() + " multiple rotate-relative commands issued");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				String amountString = commandId.GetParameterValue("amount");
+				if (amountString == null) {
+					logger.warning(getName() + " rotate-relative command missing amount parameter");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				try {
+					move.rotateRelativeAmount = Double.parseDouble(amountString);
+				} catch (NumberFormatException e) {
+					logger.warning(getName() + " rotate-relative amount parameter improperly formatted");
+					commandId.AddStatusError();
+					continue;
+				}
+
+				move.rotateRelative = true;
 				
 			} else {
 				logger.warning("Unknown command: " + commandName);
 				continue;
 			}
 			
-			logger.warning("Improperly formatted command: " + commandName);
+			commandId.AddStatusComplete();
+
 		}
 		agent.ClearOutputLinkChanges();
 		if (!agent.Commit()) {

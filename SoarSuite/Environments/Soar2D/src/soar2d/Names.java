@@ -23,6 +23,7 @@ public class Names {
 	
 	public static final String kRotateLeft = "left";
 	public static final String kRotateRight = "right";
+	public static final String kRotateStop = "stop";
 	
 	public static final String kHumanProductions = "<Human>";
 	
@@ -82,6 +83,8 @@ public class Names {
 	public static final String kRightID = "right";
 	public static final String kRoomID = "room";
 	public static final String kRotateID = "rotate";
+	public static final String kRotateAbsoluteID = "rotate-absolute";
+	public static final String kRotateRelativeID = "rotate-relative";
 	public static final String kRWavesID = "rwaves";
 	public static final String kScoreID = "score";
 	public static final String kSettingID = "setting";
