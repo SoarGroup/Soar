@@ -363,4 +363,12 @@ public class Player {
 	public double getSpeed() {
 		return Math.sqrt(Math.pow(velocity.x, 2) + Math.pow(velocity.y, 2));	
 	}
+	
+	private boolean reverse = false;
+	public void setReverse(boolean reverse) {
+		this.reverse = reverse;
+	}
+	public boolean getReverse() {
+		return this.reverse;
+	}
 }

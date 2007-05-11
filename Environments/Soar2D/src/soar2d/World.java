@@ -766,22 +766,28 @@ public class World {
 				}
 			}
 			
-			// update rate if transitional move
-			double rate = player.getSpeed();
+			// update reverse
 			if (move.forward || move.backward) {
-				rate = Soar2D.config.getSpeed() * time;
-				if (move.forward && move.backward) {
-					rate = 0;
-				} else if (move.backward) {
-					rate *= -1;
+				if (move.backward) {
+					player.setReverse(true);
+				} else {
+					player.setReverse(false);
 				}
-			}
+			}			
 			
 			// update velocity
-			final float heading = player.getHeadingRadians();
-			Point2D.Double velocity = new Point2D.Double((float)Math.cos(heading) * rate, (float)Math.sin(heading) * rate);
-			player.setVelocity(velocity);
-
+			double heading = player.getHeadingRadians();
+			if (move.forward && move.backward) {
+				player.setVelocity(new Point2D.Double(0,0));
+				
+			} else { 
+				if (player.getReverse()) {
+					// effectively turn around
+					heading += Math.PI;
+				}
+				Point2D.Double velocity = new Point2D.Double((float)Math.cos(heading) * Soar2D.config.getSpeed() * time, (float)Math.sin(heading) * Soar2D.config.getSpeed() * time);
+				player.setVelocity(velocity);
+			}			
 			
 			// if we have velocity, process move
 			if (player.getSpeed() > 0) {
