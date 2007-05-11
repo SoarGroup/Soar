@@ -11,8 +11,9 @@ These Release Notes describe the primary changes in this
 latest release.  More detailed information can be obtained at 
 http://winter.eecs.umich.edu/soarwiki
 
-This release was generated for Windows and Linux systems.
-OS X support is pending a volunteer willing to work on it.
+This release was generated for Windows and Linux systems.  Windows Vista
+is also supported.  OS X support is pending a volunteer willing to work 
+on it.
 
 Soar 8.6.4 can be downloaded from the Soar homepage at:
 
@@ -41,7 +42,7 @@ Installation Requirements
 
 Components of Soar 8.6.4
 ========================
-* pre-built libraries and executables for Windows (SoarLibrary/bin)
+* Pre-built libraries and executables for Windows (SoarLibrary/bin)
 * all source code, config files, and OS tools for automated Soar builds
 * SoarJavaDebugger 
 * VisualSoar
@@ -59,6 +60,8 @@ New in 8.6.4
   -- New command: load-library. See manual for details.
   -- Extended preferences command to print wme support (see manual for
      details).
+  -- Extended print command to support printing tree structures (see
+     manual for details).
   -- Added IsRemoteConnection() to client Kernel interface.
   -- Modified StringEventCallback to return a string.
   -- Now generate proper Java enums for SML Java interface.
@@ -69,6 +72,7 @@ New in 8.6.4
   -- Fixed command-to-file command
   -- Fixed more memory leaks.
   -- Fixed stats bug.
+  -- Fixed print depth/indentation bug.
   -- Several other minor fixes
 
 * Other updates
