@@ -1403,13 +1403,19 @@ public class GridMap {
 	
 	public class Barrier {
 		public int id = -1;
+		public boolean door = false;
+		
 		public java.awt.Point left;
 		public java.awt.Point right;
-		public String direction; 		// null == door
 		
+		private String direction; 	// null barrier no longer means it is a door
+		public String getDirection() {
+			return direction;
+		}
+
 		private Point2D.Double centerpoint;
 		public Point2D.Double centerpoint() {
-			// IMPORTANT! caching assumes left and right never change!
+			//  IMPORTANT! Assumes left/right won't change
 			if (centerpoint != null) {
 				return centerpoint;
 			}
@@ -1459,10 +1465,9 @@ public class GridMap {
 		
 		public String toString() {
 			String output = new String(Integer.toString(id));
-			if (direction == null) {
+			output += " (" + direction + ")";
+			if (door) {
 				output += " (door)";
-			} else {
-				output += " (" + direction + ")";
 			}
 			Point2D.Double center = centerpoint();
 			output += "(" + Integer.toString(left.x) + "," + Integer.toString(left.y) + ")-(" 
@@ -1491,10 +1496,11 @@ public class GridMap {
 		LinkedList<java.awt.Point> floodQueue = new LinkedList<java.awt.Point>();
 		HashSet<java.awt.Point> explored = new HashSet<java.awt.Point>((this.size-2)*2);
 		
-		// this is where we will store door barriers for conversion to rooms in the second phase
-		// of map structure generation. 
-		// Using a map instead of a list to automatically remove duplicates
-		HashMap<Integer, Barrier> doorBarriers = new HashMap<Integer, Barrier>();
+		// this is where we will store door barriers for conversion to rooms 
+		// in the second phase of map structure generation. 
+		// this will contain duplicates since two different doors can 
+		// be represented by the same squares
+		ArrayList<Barrier> doorBarriers = new ArrayList<Barrier>();
 
 		java.awt.Point location = new java.awt.Point();
 		for (location.y = 1; location.y < (this.size - 1); ++location.y) {
@@ -1594,7 +1600,7 @@ public class GridMap {
 					if (doorObject != null) {
 						if (currentBarrier != null) {
 							// If we were just walking a wall, end and add the barrier
-							if (currentBarrier.direction != null) {
+							if (currentBarrier.door == false) {
 								barrierList.add(currentBarrier);
 								currentBarrier = null;
 							}
@@ -1607,18 +1613,14 @@ public class GridMap {
 							
 							// create a barrier
 							currentBarrier = new Barrier();
+							currentBarrier.door = true;
 							currentBarrier.left = new java.awt.Point(next);
+							currentBarrier.direction = new String(Direction.stringOf[Direction.leftOf[direction]]);
 							
-							// get and reuse this door's id number
-							// doors that border two rooms use only the one id number
-							if (doorObject.hasProperty(Names.kPropertyNumber)) {
-								currentBarrier.id = doorObject.getIntProperty(Names.kPropertyNumber);
-							} else {
-								
-								// we haven't seen this door yet so create a new id number
-								currentBarrier.id = roomCount + doorCount + wallCount;
-								doorCount += 1;
-							}
+							// create a new door id
+							currentBarrier.id = roomCount + doorCount + wallCount;
+							doorCount += 1;
+
 							//System.out.println();
 							//System.out.print("  Door " + currentBarrier.id + ": ");
 							
@@ -1631,10 +1633,8 @@ public class GridMap {
 							doorDestinationMap.put(new Integer(currentBarrier.id), doorDestinations);
 						}
 
-						// if the door doesn't have a number, add it now.
-						if (!doorObject.hasProperty(Names.kPropertyNumber)) {
-							doorObject.addProperty(Names.kPropertyNumber, Integer.toString(currentBarrier.id));
-						}
+						// is are noted by the direction of the wall
+						doorObject.addProperty(currentBarrier.direction, Integer.toString(currentBarrier.id));
 						
 						// tell the door it should be drawn
 						doorObject.addProperty(Names.kPropertyDoorRender, Names.kTrue);
@@ -1643,10 +1643,9 @@ public class GridMap {
 					
 						if (currentBarrier != null) {
 							// If we were just walking a door, end and add the barrier
-							if (currentBarrier.direction == null) {
+							if (currentBarrier.door) {
 								// keep track of door barriers
-								doorBarriers.put(new Integer(currentBarrier.id), currentBarrier);
-								
+								doorBarriers.add(currentBarrier);
 								barrierList.add(currentBarrier);
 								currentBarrier = null;
 							}
@@ -1660,8 +1659,7 @@ public class GridMap {
 							currentBarrier.left = new java.awt.Point(next);
 							currentBarrier.direction = new String(Direction.stringOf[Direction.leftOf[direction]]);
 							
-							// we don't have the complications of doors sharing ids, so this must
-							// be a new wall, create a new id
+							// create a new id
 							currentBarrier.id = roomCount + doorCount + wallCount;
 							wallCount += 1;
 							
@@ -1669,7 +1667,7 @@ public class GridMap {
 							//System.out.print("  Wall " + currentBarrier.id + ": (" + currentBarrier.direction + "): ");
 						}
 						
-						// walls don't share ids, they are noted by the direction of the wall
+						// is are noted by the direction of the wall
 						wallObject.addProperty(currentBarrier.direction, Integer.toString(currentBarrier.id));
 
 					} else {
@@ -1704,9 +1702,9 @@ public class GridMap {
 
 					// and the barrier to the list
 					
-					if (currentBarrier.direction == null) {
+					if (currentBarrier.door) {
 						// keep track of door barriers
-						doorBarriers.put(new Integer(currentBarrier.id), currentBarrier);
+						doorBarriers.add(currentBarrier);
 					}
 					
 					barrierList.add(currentBarrier);
@@ -1792,28 +1790,138 @@ public class GridMap {
 		
 		return true;
 	}
+
+	private void addDestinationToDoor(int roomNumber, int doorId) {
+		ArrayList<Integer> doorDestinations = doorDestinationMap.get(new Integer(doorId));
+		assert doorDestinations != null;
+		doorDestinations.add(new Integer(roomNumber));
+		doorDestinationMap.put(new Integer(doorId), doorDestinations);
+	}
 	
-	public void doorsToAreasStep(HashMap<Integer, Barrier> doorBarriers) {
+	/**
+	 * Create a wall for the new rooms created by the initial doors.
+	 * 
+	 * @param endPoint The square representing the side of the room butting up to this wall
+	 * @param direction The direction to go to reach the wall
+	 * @param barrierList The barrier list for our new room
+	 */
+	private void doNewWall(java.awt.Point endPoint, int direction, ArrayList<Barrier> barrierList) {
+		Barrier currentBarrier = new Barrier();
+		currentBarrier.left = new java.awt.Point(endPoint);
+		currentBarrier.left.x += Direction.xDelta[direction];
+		currentBarrier.left.y += Direction.yDelta[direction];
+
+		// this is a wall and is only size 1
+		currentBarrier.right = new java.awt.Point(currentBarrier.left);
+		
+		// get a new wall id
+		currentBarrier.id = roomCount + doorCount + wallCount;
+		wallCount += 1;
+		// the direction is the direction we just traveled to get to the wall
+		currentBarrier.direction = Direction.stringOf[direction];
+		
+		// get the wall object
+		Cell cell = getCell(currentBarrier.left);
+		CellObject wallObject = cell.getObject(Names.kWallID);
+		
+		// walls don't share ids, they are noted by the direction of the wall
+		wallObject.addProperty(currentBarrier.direction, Integer.toString(currentBarrier.id));
+
+		// store the barrier
+		barrierList.add(currentBarrier);
+	}
+	
+	/**
+	 * Creates a door for the new rooms created by the initial doors.
+	 * 
+	 * @param startPoint Travelling clockwise around the room, this is the end of the room adjacent to the start door we're creating
+	 * @param endPoint This is the end of the room adjacent to the end of the door.
+	 * @param direction This is the side of the room the door is on, or (alternatively), what direction we have to turn to face the door.
+	 * @param walkDirection This is the direction we go to walk down the door (parallel to the room)
+	 * @param roomNumber This is the id number of the room we're in
+	 * @param barrierList This is the list of barriers for the room we're in
+	 */
+	private void doNewDoor(java.awt.Point startPoint, java.awt.Point endPoint, int direction, int walkDirection, int roomNumber, ArrayList<Barrier> barrierList) {
+		// next is the door to the left of our left endpoint
+		Barrier currentBarrier = new Barrier();
+		currentBarrier.door = true;
+		currentBarrier.left = new java.awt.Point(startPoint);
+		currentBarrier.left.x += Direction.xDelta[direction];
+		currentBarrier.left.y += Direction.yDelta[direction];
+
+		// get a new door id
+		currentBarrier.id = roomCount + doorCount + wallCount;
+		doorCount += 1;
+		// the direction is the direction we just traveled to get to the door
+		currentBarrier.direction = Direction.stringOf[direction];
+
+		// this is a door of unknown size
+		currentBarrier.right = new java.awt.Point(currentBarrier.left);
+		
+		// we know it ends left of the right endpoint
+		java.awt.Point endOfDoor = new java.awt.Point(endPoint);
+		endOfDoor.x += Direction.xDelta[direction];
+		endOfDoor.y += Direction.yDelta[direction];
+		
+		while (true) {
+			// create the door object
+			CellObject doorObject = cellObjectManager.createObject(Names.kDoorID);
+
+			// door don't share ids, they are noted by the direction of the door
+			doorObject.addProperty(currentBarrier.direction, Integer.toString(currentBarrier.id));
+
+			// put the object in the cell
+			Cell cell = getCell(currentBarrier.right);
+			cell.addCellObject(doorObject);
+			
+			// record the destinations which is the new room and the room the door is sitting on
+			// add the current room to the door destination list
+			ArrayList<Integer> doorDestinations = new ArrayList<Integer>();
+			doorDestinations.add(new Integer(roomNumber));
+			doorDestinations.add(new Integer(cell.getObject(Names.kRoomID).getIntProperty(Names.kPropertyNumber)));
+			doorDestinationMap.put(new Integer(currentBarrier.id), doorDestinations);
+			
+			if (currentBarrier.right.equals(endOfDoor)) {
+				break;
+			}
+			
+			// increment and loop
+			currentBarrier.right.x += Direction.xDelta[walkDirection];
+			currentBarrier.right.y += Direction.yDelta[walkDirection];
+		}
+
+		// store the barrier
+		barrierList.add(currentBarrier);
+	}	
+
+	
+	private void doorsToAreasStep(ArrayList<Barrier> doorBarriers) {
 		// make the door also a room
 		// add new room to current door destination list
 		// create new barrier list for this new room: 2 walls and 2 doors
 		// update door destination list for new doors
 		
-		Iterator<Barrier> iter = doorBarriers.values().iterator();
+		Iterator<Barrier> iter = doorBarriers.iterator();
 		while (iter.hasNext()) {
 			Barrier doorBarrier = iter.next();
+			
+			// duplicates exist in this list, check to see if we're already a room
+			{
+				Cell cell = getCell(doorBarrier.left);
+				if (cell.hasObject(Names.kRoomID)) {
+					// we have already processed this room, just need to add the room id
+					// to the door's destination list
+					addDestinationToDoor(cell.getObject(Names.kRoomID).getIntProperty(Names.kPropertyNumber), doorBarrier.id);
+					continue;
+				}
+			}
 			
 			// get a new room id
 			int roomNumber = roomCount + doorCount + wallCount;
 			roomCount += 1;
 			
 			// add new id to current door destination list
-			{
-				ArrayList<Integer> doorDestinations = doorDestinationMap.get(new Integer(doorBarrier.id));
-				assert doorDestinations != null;
-				doorDestinations.add(new Integer(roomNumber));
-				doorDestinationMap.put(new Integer(doorBarrier.id), doorDestinations);
-			}
+			addDestinationToDoor(roomNumber, doorBarrier.id);
 			
 			CellObject theNewRoomObject = cellObjectManager.createObject(Names.kRoomID);
 			theNewRoomObject.addProperty(Names.kPropertyNumber, Integer.toString(roomNumber));
@@ -1864,165 +1972,23 @@ public class GridMap {
 			ArrayList<Barrier> barrierList = new ArrayList<Barrier>();
 			
 			////////////////////
-			{
-				// we can start by walking the wrong direction off the left endpoint
-				Barrier currentBarrier = new Barrier();
-				currentBarrier.left = new java.awt.Point(doorBarrier.left);
-				currentBarrier.left.x += Direction.xDelta[Direction.backwardOf[incrementDirection]];
-				currentBarrier.left.y += Direction.yDelta[Direction.backwardOf[incrementDirection]];
-	
-				// this is a wall and is only size 1
-				currentBarrier.right = new java.awt.Point(currentBarrier.left);
-				
-				// get a new wall id
-				currentBarrier.id = roomCount + doorCount + wallCount;
-				wallCount += 1;
-				// the direction is the direction we just traveled to get to the wall
-				currentBarrier.direction = Direction.stringOf[Direction.backwardOf[incrementDirection]];
-				
-				// get the wall object
-				Cell cell = getCell(currentBarrier.left);
-				CellObject wallObject = cell.getObject(Names.kWallID);
-				
-				// walls don't share ids, they are noted by the direction of the wall
-				wallObject.addProperty(currentBarrier.direction, Integer.toString(currentBarrier.id));
-
-				// store the barrier
-				barrierList.add(currentBarrier);
-			}
+			// we can start by walking the wrong direction off the left endpoint
+			doNewWall(doorBarrier.left, Direction.backwardOf[incrementDirection], barrierList);
 			////////////////////
 			
 			////////////////////
-			{
-				// next is the door to the left of our left endpoint
-				Barrier currentBarrier = new Barrier();
-				currentBarrier.left = new java.awt.Point(doorBarrier.left);
-				currentBarrier.left.x += Direction.xDelta[Direction.leftOf[incrementDirection]];
-				currentBarrier.left.y += Direction.yDelta[Direction.leftOf[incrementDirection]];
-	
-				// get a new door id
-				currentBarrier.id = roomCount + doorCount + wallCount;
-				doorCount += 1;
-	
-				// this is a door of unknown size
-				currentBarrier.right = new java.awt.Point(currentBarrier.left);
-				
-				// we know it ends left of the right endpoint
-				java.awt.Point endOfDoor = new java.awt.Point(doorBarrier.right);
-				endOfDoor.x += Direction.xDelta[Direction.leftOf[incrementDirection]];
-				endOfDoor.y += Direction.yDelta[Direction.leftOf[incrementDirection]];
-				
-				while (true) {
-					// create the door object
-					CellObject doorObject = cellObjectManager.createObject(Names.kDoorID);
-	
-					// set the door id
-					doorObject.addProperty(Names.kPropertyNumber, Integer.toString(currentBarrier.id));
-	
-					// put the object in the cell
-					Cell cell = getCell(currentBarrier.right);
-					cell.addCellObject(doorObject);
-					
-					// record the destinations which is the new room and the room the door is sitting on
-					// add the current room to the door destination list
-					ArrayList<Integer> doorDestinations = new ArrayList<Integer>();
-					doorDestinations.add(new Integer(roomNumber));
-					doorDestinations.add(new Integer(cell.getObject(Names.kRoomID).getIntProperty(Names.kPropertyNumber)));
-					doorDestinationMap.put(new Integer(currentBarrier.id), doorDestinations);
-					
-					if (currentBarrier.right.equals(endOfDoor)) {
-						break;
-					}
-					
-					// increment and loop
-					currentBarrier.right.x += Direction.xDelta[incrementDirection];
-					currentBarrier.right.y += Direction.yDelta[incrementDirection];
-				}
-
-				// store the barrier
-				barrierList.add(currentBarrier);
-			}	
+			// then to the left of our left endpoint, and walk down the door to the left of the right endpoint
+			doNewDoor(doorBarrier.left, doorBarrier.right, Direction.leftOf[incrementDirection], incrementDirection, roomNumber, barrierList);
 			////////////////////
 			
 			////////////////////
-			{
-				// next is just off the right endpoint
-				Barrier currentBarrier = new Barrier();
-				currentBarrier.left = new java.awt.Point(doorBarrier.right);
-				currentBarrier.left.x += Direction.xDelta[incrementDirection];
-				currentBarrier.left.y += Direction.yDelta[incrementDirection];
-	
-				// this is a wall and is only size 1
-				currentBarrier.right = new java.awt.Point(currentBarrier.left);
-				
-				// get a new wall id
-				currentBarrier.id = roomCount + doorCount + wallCount;
-				wallCount += 1;
-				// the direction is the direction we just traveled to get to the wall
-				currentBarrier.direction = Direction.stringOf[incrementDirection];
-				
-				// get the wall object
-				Cell cell = getCell(currentBarrier.left);
-				CellObject wallObject = cell.getObject(Names.kWallID);
-				
-				// walls don't share ids, they are noted by the direction of the wall
-				wallObject.addProperty(currentBarrier.direction, Integer.toString(currentBarrier.id));
-
-				// store the barrier
-				barrierList.add(currentBarrier);
-			}
+			// next is just off the right endpoint
+			doNewWall(doorBarrier.right, incrementDirection, barrierList);
 			////////////////////
 
 			////////////////////
-			{
-				// next is the door to the right of our right endpoint
-				Barrier currentBarrier = new Barrier();
-				currentBarrier.left = new java.awt.Point(doorBarrier.right);
-				currentBarrier.left.x += Direction.xDelta[Direction.rightOf[incrementDirection]];
-				currentBarrier.left.y += Direction.yDelta[Direction.rightOf[incrementDirection]];
-	
-				// get a new door id
-				currentBarrier.id = roomCount + doorCount + wallCount;
-				doorCount += 1;
-	
-				// this is a door of unknown size
-				currentBarrier.right = new java.awt.Point(currentBarrier.left);
-				
-				// we know it ends right of the left endpoint
-				java.awt.Point endOfDoor = new java.awt.Point(doorBarrier.left);
-				endOfDoor.x += Direction.xDelta[Direction.rightOf[incrementDirection]];
-				endOfDoor.y += Direction.yDelta[Direction.rightOf[incrementDirection]];
-				
-				while (true) {
-					// create the door object
-					CellObject doorObject = cellObjectManager.createObject(Names.kDoorID);
-	
-					// set the door id
-					doorObject.addProperty(Names.kPropertyNumber, Integer.toString(currentBarrier.id));
-	
-					// put the object in the cell
-					Cell cell = getCell(currentBarrier.right);
-					cell.addCellObject(doorObject);
-					
-					// record the destinations which is the new room and the room the door is sitting on
-					// add the current room to the door destination list
-					ArrayList<Integer> doorDestinations = new ArrayList<Integer>();
-					doorDestinations.add(new Integer(roomNumber));
-					doorDestinations.add(new Integer(cell.getObject(Names.kRoomID).getIntProperty(Names.kPropertyNumber)));
-					doorDestinationMap.put(new Integer(currentBarrier.id), doorDestinations);
-					
-					if (currentBarrier.right.equals(endOfDoor)) {
-						break;
-					}
-					
-					// increment and loop
-					currentBarrier.right.x += Direction.xDelta[Direction.backwardOf[incrementDirection]];
-					currentBarrier.right.y += Direction.yDelta[Direction.backwardOf[incrementDirection]];
-				}
-
-				// store the barrier
-				barrierList.add(currentBarrier);
-			}	
+			// then to the right of our right endpoint, and walk backwards down the door to the right of the left endpoint
+			doNewDoor(doorBarrier.right, doorBarrier.left, Direction.rightOf[incrementDirection], Direction.backwardOf[incrementDirection], roomNumber, barrierList);
 			////////////////////
 
 			// Generate centerpoints and store room information
