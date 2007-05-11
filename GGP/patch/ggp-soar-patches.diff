@@ -25,6 +25,19 @@ Index: Core/SoarKernel/include/decide.h
  #ifdef __cplusplus
  }
  #endif
+Index: Core/SoarKernel/include/xmlTraceNames.h
+===================================================================
+--- Core/SoarKernel/include/xmlTraceNames.h	(revision 6855)
++++ Core/SoarKernel/include/xmlTraceNames.h	(working copy)
+@@ -158,6 +158,8 @@
+ 	static char const* const kBacktracedAlready         = "already-backtraced";
+ 	static char const* const kBacktraceSymbol1          = "symbol1";
+ 	static char const* const kBacktraceSymbol2          = "symbol2";
++	
++  static char const* const kTagLocalNegation          = "local-negation" ; // SBW 5/07
+ 
+ 	// numeric indifference stuff
+ 	static char const* const kTagCandidate      = "candidate";
 Index: Core/SoarKernel/src/chunk.cpp
 ===================================================================
 --- Core/SoarKernel/src/chunk.cpp	(revision 6855)
@@ -147,12 +160,85 @@ Index: Core/SoarKernel/src/backtrace.cpp
 +	  push (thisAgent, c, negated_to_print);
 +    
 +    print_string (thisAgent, "\nLocal negation found:\n");
-+    gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagNegated);
++    gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagLocalNegation);
 +    print_consed_list_of_conditions (thisAgent, negated_to_print, 2);
-+    gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagNegated);
++    gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagLocalNegation);
 +  
 +    free_list (thisAgent, negated_to_print);
 +}
+Index: Core/ClientSML/include/sml_ClientTraceXML.h
+===================================================================
+--- Core/ClientSML/include/sml_ClientTraceXML.h	(revision 6855)
++++ Core/ClientSML/include/sml_ClientTraceXML.h	(working copy)
+@@ -124,6 +124,8 @@
+ 	bool IsTagAddToPotentials() const ;
+ 	bool IsTagProhibitPreference() const ;
+ 	bool IsTagBacktraceResult() const ;
++	
++  bool IsTagLocalNegation() const	; // SBW 5/07
+ 
+ 	char const* GetBacktraceAlreadyBacktraced() const ;
+ 	char const* GetBacktraceSymbol1() const	;
+Index: Core/ClientSML/src/sml_ClientTraceXML.cpp
+===================================================================
+--- Core/ClientSML/src/sml_ClientTraceXML.cpp	(revision 6855)
++++ Core/ClientSML/src/sml_ClientTraceXML.cpp	(working copy)
+@@ -219,6 +219,8 @@
+ bool ClientTraceXML::IsTagProhibitPreference() const	{ return IsTag(sml_Names::kTagProhibitPreference) ; }
+ bool ClientTraceXML::IsTagBacktraceResult() const		{ return IsTag(sml_Names::kTagBacktraceResult) ; }
+ 
++bool ClientTraceXML::IsTagLocalNegation() const				{ return IsTag(sml_Names::kTagLocalNegation) ; }
++
+ char const* ClientTraceXML::GetBacktraceAlreadyBacktraced() const { return GetAttribute(sml_Names::kBacktracedAlready) ; }
+ char const* ClientTraceXML::GetBacktraceSymbol1() const			  { return GetAttribute(sml_Names::kBacktraceSymbol1) ; }
+ char const* ClientTraceXML::GetBacktraceSymbol2() const			  { return GetAttribute(sml_Names::kBacktraceSymbol2) ; }
+Index: Core/ConnectionSML/include/sml_Names.h
+===================================================================
+--- Core/ConnectionSML/include/sml_Names.h	(revision 6855)
++++ Core/ConnectionSML/include/sml_Names.h	(working copy)
+@@ -201,6 +201,8 @@
+     static char const* const kBacktracedAlready;
+     static char const* const kBacktraceSymbol1;
+     static char const* const kBacktraceSymbol2;
++    
++    static char const* const kTagLocalNegation; // SBW 5/07
+ 
+     // numeric indifference stuff
+     static char const* const kTagCandidate;
+Index: Core/ConnectionSML/src/sml_Names.cpp
+===================================================================
+--- Core/ConnectionSML/src/sml_Names.cpp	(revision 6855)
++++ Core/ConnectionSML/src/sml_Names.cpp	(working copy)
+@@ -204,6 +204,8 @@
+ char const* const sml_Names::kBacktraceSymbol1          = "symbol1";
+ char const* const sml_Names::kBacktraceSymbol2          = "symbol2";
+ 
++char const* const sml_Names::kTagLocalNegation          = "local-negation"; // SBW 5/07
++
+ // numeric indifference stuff
+ char const* const sml_Names::kTagCandidate      = "candidate";
+ char const* const sml_Names::kCandidateName     = "name";
+Index: Tools/SoarJavaDebugger/helpers/XmlOutput.java
+===================================================================
+--- Tools/SoarJavaDebugger/helpers/XmlOutput.java	(revision 6855)
++++ Tools/SoarJavaDebugger/helpers/XmlOutput.java	(working copy)
+@@ -435,6 +435,16 @@
+ 		return text.toString() ;
+ 	}
+ 	
++  // SBW 5/07
++	public static String getLocalNegationText(Agent agent, ClientTraceXML xml, String parentTagName) {
++		StringBuffer text = new StringBuffer() ;
++	  text.append("*** Chunk won't be formed due to local negation in backtrace ***") ;
++    String output = getConditionsText(agent, xml) ;
++	  text.append(output) ;
++	  text.append(kLineSeparator) ;
++		return text.toString() ;
++  }
++	
+ 	public static String getActionText(Agent agent, ClientTraceXML action)
+ 	{
+ 		StringBuffer text = new StringBuffer() ;
 Index: Tools/SoarJavaDebugger/doc/Document.java
 ===================================================================
 --- Tools/SoarJavaDebugger/doc/Document.java	(revision 6855)
@@ -174,3 +260,22 @@ Index: Tools/SoarJavaDebugger/doc/Document.java
  	}
  	
  	/** Gives us a frame to work with */
+Index: Tools/SoarJavaDebugger/modules/FoldingTextView.java
+===================================================================
+--- Tools/SoarJavaDebugger/modules/FoldingTextView.java	(revision 6855)
++++ Tools/SoarJavaDebugger/modules/FoldingTextView.java	(working copy)
+@@ -863,6 +863,14 @@
+ 				if (output.length() != 0)
+ 					this.appendSubText(output, TraceType.kFullLearning) ;
+ 			}
++      // SBW 5/07
++			else if (xmlTrace.IsTagLocalNegation())
++			{
++				String output = XmlOutput.getLocalNegationText(agent, xmlTrace, xmlTrace.GetTagName()) ;
++				
++				if (output.length() != 0)
++					this.appendSubText(output, TraceType.kFullLearning) ;
++			}
+ 			else if (xmlTrace.IsTagMessage() || xmlTrace.IsTagWarning() || xmlTrace.IsTagError() || xmlTrace.IsTagVerbose())
+ 			{
+ 				StringBuffer text = new StringBuffer() ;
