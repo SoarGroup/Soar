@@ -1408,10 +1408,7 @@ public class GridMap {
 		public java.awt.Point left;
 		public java.awt.Point right;
 		
-		private String direction; 	// null barrier no longer means it is a door
-		public String getDirection() {
-			return direction;
-		}
+		public int direction;
 
 		private Point2D.Double centerpoint;
 		public Point2D.Double centerpoint() {
@@ -1420,22 +1417,25 @@ public class GridMap {
 				return centerpoint;
 			}
 			
-			int m, n;
+			int m = 0;
+			int n = 0;
 			centerpoint = new Point2D.Double(0,0);
-			double halfCell = Soar2D.config.getBookCellSize() / 2.0;
 			
-			if (left.x == right.x) {
-				// vertical
-				m = left.y;
-				n = right.y;
-				centerpoint.x = left.x * Soar2D.config.getBookCellSize();
-				centerpoint.x += halfCell;
-			} else {
+			switch (direction) {
+			case Direction.kNorthInt:
+			case Direction.kSouthInt:
 				// horizontal
 				m = left.x;
 				n = right.x;
 				centerpoint.y = left.y * Soar2D.config.getBookCellSize();
-				centerpoint.y += halfCell;
+				break;
+			case Direction.kEastInt:
+			case Direction.kWestInt:
+				// vertical
+				m = left.y;
+				n = right.y;
+				centerpoint.x = left.x * Soar2D.config.getBookCellSize();
+				break;
 			}
 			
 			int numberOfBlocks = n - m;
@@ -1454,25 +1454,35 @@ public class GridMap {
 				centerpoint.y = upperLeft.y * Soar2D.config.getBookCellSize();
 				centerpoint.y += (numberOfBlocks / 2.0) * Soar2D.config.getBookCellSize();
 				
+				// if west, we gotta add a cell size to x
+				if (direction == Direction.kWestInt) {
+					centerpoint.x += Soar2D.config.getBookCellSize();
+				}
+				
 			} else {
 				// horizontal
 				// add half to x
 				centerpoint.x = upperLeft.x * Soar2D.config.getBookCellSize();
 				centerpoint.x += (numberOfBlocks / 2.0) * Soar2D.config.getBookCellSize();
+
+				// if north, we gotta add a cell size to y
+				if (direction == Direction.kNorthInt) {
+					centerpoint.y += Soar2D.config.getBookCellSize();
+				}
 			}
 			return centerpoint;
 		}
 		
 		public String toString() {
 			String output = new String(Integer.toString(id));
-			output += " (" + direction + ")";
+			output += " (" + Direction.stringOf[direction] + ")";
+			Point2D.Double center = centerpoint();
+			output += " (" + Integer.toString(left.x) + "," + Integer.toString(left.y) + ")-(" 
+					+ Double.toString(center.x) + "," + Double.toString(center.y) + ")-(" 
+					+ Integer.toString(right.x) + "," + Integer.toString(right.y) + ")";
 			if (door) {
 				output += " (door)";
 			}
-			Point2D.Double center = centerpoint();
-			output += "(" + Integer.toString(left.x) + "," + Integer.toString(left.y) + ")-(" 
-					+ Double.toString(center.x) + "," + Double.toString(center.y) + ")-(" 
-					+ Integer.toString(right.x) + "," + Integer.toString(right.y) + ")";
 			return output;
 		}
 	}
@@ -1615,7 +1625,7 @@ public class GridMap {
 							currentBarrier = new Barrier();
 							currentBarrier.door = true;
 							currentBarrier.left = new java.awt.Point(next);
-							currentBarrier.direction = new String(Direction.stringOf[Direction.leftOf[direction]]);
+							currentBarrier.direction = Direction.leftOf[direction];
 							
 							// create a new door id
 							currentBarrier.id = roomCount + doorCount + wallCount;
@@ -1634,7 +1644,7 @@ public class GridMap {
 						}
 
 						// is are noted by the direction of the wall
-						doorObject.addProperty(currentBarrier.direction, Integer.toString(currentBarrier.id));
+						doorObject.addProperty(Direction.stringOf[currentBarrier.direction], Integer.toString(currentBarrier.id));
 						
 						// tell the door it should be drawn
 						doorObject.addProperty(Names.kPropertyDoorRender, Names.kTrue);
@@ -1657,7 +1667,7 @@ public class GridMap {
 							// getting here means we're starting a new section of wall
 							currentBarrier = new Barrier();
 							currentBarrier.left = new java.awt.Point(next);
-							currentBarrier.direction = new String(Direction.stringOf[Direction.leftOf[direction]]);
+							currentBarrier.direction = Direction.leftOf[direction];
 							
 							// create a new id
 							currentBarrier.id = roomCount + doorCount + wallCount;
@@ -1668,7 +1678,7 @@ public class GridMap {
 						}
 						
 						// is are noted by the direction of the wall
-						wallObject.addProperty(currentBarrier.direction, Integer.toString(currentBarrier.id));
+						wallObject.addProperty(Direction.stringOf[currentBarrier.direction], Integer.toString(currentBarrier.id));
 
 					} else {
 						// the world is ending, check the asserts
@@ -1818,14 +1828,14 @@ public class GridMap {
 		currentBarrier.id = roomCount + doorCount + wallCount;
 		wallCount += 1;
 		// the direction is the direction we just traveled to get to the wall
-		currentBarrier.direction = Direction.stringOf[direction];
+		currentBarrier.direction = direction;
 		
 		// get the wall object
 		Cell cell = getCell(currentBarrier.left);
 		CellObject wallObject = cell.getObject(Names.kWallID);
 		
 		// walls don't share ids, they are noted by the direction of the wall
-		wallObject.addProperty(currentBarrier.direction, Integer.toString(currentBarrier.id));
+		wallObject.addProperty(Direction.stringOf[currentBarrier.direction], Integer.toString(currentBarrier.id));
 
 		// store the barrier
 		barrierList.add(currentBarrier);
@@ -1853,7 +1863,7 @@ public class GridMap {
 		currentBarrier.id = roomCount + doorCount + wallCount;
 		doorCount += 1;
 		// the direction is the direction we just traveled to get to the door
-		currentBarrier.direction = Direction.stringOf[direction];
+		currentBarrier.direction = direction;
 
 		// this is a door of unknown size
 		currentBarrier.right = new java.awt.Point(currentBarrier.left);
@@ -1868,7 +1878,7 @@ public class GridMap {
 			CellObject doorObject = cellObjectManager.createObject(Names.kDoorID);
 
 			// door don't share ids, they are noted by the direction of the door
-			doorObject.addProperty(currentBarrier.direction, Integer.toString(currentBarrier.id));
+			doorObject.addProperty(Direction.stringOf[currentBarrier.direction], Integer.toString(currentBarrier.id));
 
 			// put the object in the cell
 			Cell cell = getCell(currentBarrier.right);

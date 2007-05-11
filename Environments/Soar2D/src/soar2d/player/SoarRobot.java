@@ -12,6 +12,7 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
+import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
@@ -22,13 +23,29 @@ import soar2d.world.GridMap.Barrier;
 
 class SelfInputLink {
 	SoarRobot robot;
-	Identifier self, angle, areaDescription, position, velocity;
-	FloatElement yaw, x, y, random, speed, dx, dy;
-	IntElement area, cycle, score, row, col;
-	StringElement name, type;
-	
+	Identifier self;
+	Identifier angle;
+	FloatElement yaw;
+	IntElement area;
+	Identifier areaDescription;
 	ArrayList<WallInputLink> walls = new ArrayList<WallInputLink>();
 	ArrayList<DoorInputLink> doors = new ArrayList<DoorInputLink>();
+	Identifier collision;
+	StringElement collisionX;
+	StringElement collisionY;
+	IntElement cycle;
+	IntElement score;
+	Identifier position;
+	FloatElement x;
+	FloatElement y;
+	IntElement row;
+	IntElement col;
+	FloatElement random;
+	FloatElement time;
+	Identifier velocity;
+	FloatElement speed;
+	FloatElement dx;
+	FloatElement dy;
 	
 	SelfInputLink(SoarRobot robot) {
 		this.robot = robot;
@@ -46,9 +63,11 @@ class SelfInputLink {
 			yaw = robot.agent.CreateFloatWME(angle, "yaw", robot.getHeadingRadians());
 		}
 		area = robot.agent.CreateIntWME(self, "area", -1);
+		collision = robot.agent.CreateIdWME(self, "collision");
+		collisionX = robot.agent.CreateStringWME(self, "collision", "false");
+		collisionY = robot.agent.CreateStringWME(self, "collision", "false");
 		cycle = robot.agent.CreateIntWME(self, "cycle", 0);
 		score = robot.agent.CreateIntWME(self, "score", 0);
-		name = robot.agent.CreateStringWME(self, "name", robot.agent.GetAgentName());
 		position = robot.agent.CreateIdWME(self, "position");
 		{
 			x = robot.agent.CreateFloatWME(position, "x", 0);
@@ -57,18 +76,18 @@ class SelfInputLink {
 			col = robot.agent.CreateIntWME(position, "col", 0);
 		}
 		random = robot.agent.CreateFloatWME(self, "random", robot.random);
+		time = robot.agent.CreateFloatWME(self, "time", 0);
 		velocity = robot.agent.CreateIdWME(self, "velocity");
 		{
-			speed = robot.agent.CreateFloatWME(velocity, "speed", 0.0);
-			dx = robot.agent.CreateFloatWME(velocity, "dx", 0.0);
-			dy = robot.agent.CreateFloatWME(velocity, "dy", 0.0);
+			speed = robot.agent.CreateFloatWME(velocity, "speed", 0);
+			dx = robot.agent.CreateFloatWME(velocity, "dx", 0);
+			dy = robot.agent.CreateFloatWME(velocity, "dy", 0);
 		}
 	}
 	
-	void createAreaDescription(String typeString) {
+	void createAreaDescription() {
 		assert areaDescription == null;
 		areaDescription = robot.agent.CreateIdWME(self, "area-description");
-		type = robot.agent.CreateStringWME(areaDescription, "type", typeString);
 	}
 	
 	Identifier createWallId() {
@@ -112,8 +131,9 @@ class SelfInputLink {
 class WallInputLink {
 	SoarRobot robot;
 	IntElement id;
-	Identifier parent, left, right;
+	Identifier parent, left, right, center;
 	IntElement leftRow, leftCol, rightRow, rightCol;
+	FloatElement x, y, angleOff;
 	StringElement direction;
 	
 	WallInputLink(SoarRobot robot, Identifier parent) {
@@ -121,21 +141,25 @@ class WallInputLink {
 		this.parent = parent;
 	}
 	
-	void initialize(int idInt, Point leftPoint, Point rightPoint, String directionString) {
-		id = robot.agent.CreateIntWME(parent, "id", idInt);
+	void initialize(Barrier barrier) {
+		id = robot.agent.CreateIntWME(parent, "id", barrier.id);
 		left = robot.agent.CreateIdWME(parent, "left");
 		{
-			leftRow = robot.agent.CreateIntWME(left, "row", leftPoint.y);
-			leftCol = robot.agent.CreateIntWME(left, "col", leftPoint.x);
+			leftRow = robot.agent.CreateIntWME(left, "row", barrier.left.y);
+			leftCol = robot.agent.CreateIntWME(left, "col", barrier.left.x);
 		}
 		right = robot.agent.CreateIdWME(parent, "right");
 		{
-			rightRow = robot.agent.CreateIntWME(right, "row", rightPoint.y);
-			rightCol = robot.agent.CreateIntWME(right, "col", rightPoint.x);
+			rightRow = robot.agent.CreateIntWME(right, "row", barrier.right.y);
+			rightCol = robot.agent.CreateIntWME(right, "col", barrier.right.x);
 		}
-		if (directionString != null) {
-			direction = robot.agent.CreateStringWME(parent, "direction", directionString);
+		center = robot.agent.CreateIdWME(parent, "center");
+		{
+			x = robot.agent.CreateFloatWME(center, "x", barrier.centerpoint().x);
+			y = robot.agent.CreateFloatWME(center, "y", barrier.centerpoint().y);
+			angleOff = robot.agent.CreateFloatWME(center, "angle-off", 0);
 		}
+		direction = robot.agent.CreateStringWME(parent, "direction", Direction.stringOf[barrier.direction]);
 	}
 }
 
@@ -144,10 +168,6 @@ class DoorInputLink extends WallInputLink {
 	
 	DoorInputLink(SoarRobot robot, Identifier parent) {
 		super(robot, parent);
-	}
-	
-	void initialize(int idInt, Point leftPoint, Point rightPoint) {
-		super.initialize(idInt, leftPoint, rightPoint, null);
 	}
 	
 	void addDest(int id) {
@@ -276,44 +296,36 @@ public class SoarRobot extends Robot {
 					
 					// create new area information
 					ArrayList<Barrier> barrierList = world.getMap().getRoomBarrierList(locationId);
-					if (barrierList != null) {
-						assert barrierList.size() > 0;
-						
-						// this is, in fact, a room
-						selfIL.createAreaDescription("room");
-						
-						Iterator<Barrier> iter = barrierList.iterator();
-						while(iter.hasNext()) {
-							Barrier barrier = iter.next();
-							if (barrier.door) {
-								// door
-								DoorInputLink door = new DoorInputLink(this, selfIL.createDoorId());
-								door.initialize(barrier.id, barrier.left, barrier.right);
-								
-								// add destinations
-								ArrayList<Integer> doorDestList = world.getMap().getDoorDestinationList(barrier.id);
-								Iterator<Integer> destIter = doorDestList.iterator();
-								while(destIter.hasNext()) {
-									door.addDest(destIter.next().intValue());
-								}
-								
-								selfIL.addDoor(door);
-								
-							} else {
-								// wall
-								WallInputLink wall = new WallInputLink(this, selfIL.createWallId());
-								wall.initialize(barrier.id, barrier.left, barrier.right, barrier.getDirection());
-								selfIL.addWall(wall);
-							}
-						}
-
-					} else {
-						// we're in a door
-						selfIL.createAreaDescription("door");
-						
-						// TODO: door information
-					}
+					assert barrierList != null;
+					assert barrierList.size() > 0;
 					
+					// this is, in fact, a room
+					selfIL.createAreaDescription();
+					
+					Iterator<Barrier> iter = barrierList.iterator();
+					while(iter.hasNext()) {
+						Barrier barrier = iter.next();
+						if (barrier.door) {
+							// door
+							DoorInputLink door = new DoorInputLink(this, selfIL.createDoorId());
+							door.initialize(barrier);
+							
+							// add destinations
+							ArrayList<Integer> doorDestList = world.getMap().getDoorDestinationList(barrier.id);
+							Iterator<Integer> destIter = doorDestList.iterator();
+							while(destIter.hasNext()) {
+								door.addDest(destIter.next().intValue());
+							}
+							
+							selfIL.addDoor(door);
+							
+						} else {
+							// wall
+							WallInputLink wall = new WallInputLink(this, selfIL.createWallId());
+							wall.initialize(barrier);
+							selfIL.addWall(wall);
+						}
+					}
 				}
 			}
 
