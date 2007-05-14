@@ -74,7 +74,9 @@ def tsladderd_score():
 	return response
 
 def decompress(url):
-	match_file = urllib.urlopen('http://tsladder:vx0beeHH@localhost:54424/%s' % url)
+	full_url = 'http://tsladder:vx0beeHH@winter.eecs.umich.edu/tsladder/%s' % url
+#	return full_url;
+	match_file = urllib.urlopen(full_url)
 	content = match_file.read()
 	match_file.close()
 	return bz2.decompress(content)

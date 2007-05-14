@@ -18,7 +18,6 @@ import Queue
 import types
 
 # old disable command
-#urllib.urlopen('http://tsladder:vx0beeHH@localhost:54424/TankSoarLadder/disable_participant?tournament_name=%s&tank_name=%s&reason=mem_exceeded' % (Tourney.status.tournament_name, tank_name))
 
 class MatchStatus:
 	def __init__(self, name):
@@ -271,6 +270,7 @@ class Tourney(threading.Thread):
 						continue
 					self.status.mem_killed_tanks.append(match.group(1))
 					logging.info("%s exceeded maximum memory usage." % match.group(1))
+					urllib.urlopen('http://tsladder:vx0beeHH@localhost:54424/TankSoarLadder/disable_participant?tournament_name=%s&tank_name=%s&reason=mem_exceeded' % (Tourney.status.tournament_name, tank_name))
 					continue
 				self.status.interrupted_tanks.append(match.group(1))
 				logging.info("%s was interrupted." % match.group(1))
