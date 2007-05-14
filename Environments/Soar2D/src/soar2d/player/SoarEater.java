@@ -575,12 +575,12 @@ public class SoarEater extends Eater {
 						// legal wait
 						move.move = false;
 						moveWait = true;
-						commandId.AddStatusComplete();
+						IOLinkUtility.CreateOrAddStatus(agent, commandId, "complete");
 						continue;
 					} else {
 						move.moveDirection = Direction.getInt(direction); 
 						this.setFacingInt(move.moveDirection);
-						commandId.AddStatusComplete();
+						IOLinkUtility.CreateOrAddStatus(agent, commandId, "complete");
 						continue;
 					}
 				}
@@ -596,7 +596,7 @@ public class SoarEater extends Eater {
 				if (direction != null) {
 					move.moveDirection = Direction.getInt(direction); 
 					this.setFacingInt(move.moveDirection);
-					commandId.AddStatusComplete();
+					IOLinkUtility.CreateOrAddStatus(agent, commandId, "complete");
 					continue;
 				}
 
@@ -606,7 +606,7 @@ public class SoarEater extends Eater {
 					continue;
 				}
 				move.stopSim = true;
-				commandId.AddStatusComplete();
+				IOLinkUtility.CreateOrAddStatus(agent, commandId, "complete");
 				continue;
 				
 			} else if (commandName.equalsIgnoreCase(Names.kOpenID)) {
@@ -615,7 +615,7 @@ public class SoarEater extends Eater {
 					continue;
 				}
 				move.open = true;
-				commandId.AddStatusComplete();
+				IOLinkUtility.CreateOrAddStatus(agent, commandId, "complete");
 
 				String openCode = commandId.GetParameterValue(Names.kOpenCodeID);
 				if (openCode != null) {
@@ -635,7 +635,7 @@ public class SoarEater extends Eater {
 					continue;
 				}
 				move.dontEat = true;
-				commandId.AddStatusComplete();
+				IOLinkUtility.CreateOrAddStatus(agent, commandId, "complete");
 				continue;
 				
 			} else {
