@@ -1,0 +1,3 @@
+To apply patch:
+go to SoarSuite
+patch -p0 < patch_file
