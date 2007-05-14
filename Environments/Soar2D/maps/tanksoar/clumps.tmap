@@ -6,8 +6,8 @@
     <property name="mini-image" value="energy-mini.gif" />
     <property name="charger" value="true" />
     <property name="id" value="energy" />
-    <apply shields="false">
-      <energy />
+    <apply>
+      <energy shields="false" />
     </apply>
   </cell-object>
   <cell-object name="missile">
@@ -15,9 +15,9 @@
     <property name="energy" value="-250" />
     <property name="image" value="missile.gif" />
     <property name="health" value="-400" />
-    <apply shields="true" shields-down="true">
-      <energy />
-      <health />
+    <apply>
+      <energy shields="true" />
+      <health shields-down="true" />
     </apply>
     <update>
       <fly-missile />
@@ -52,8 +52,8 @@
     <property name="charger" value="true" />
     <property name="id" value="health" />
     <property name="health" value="250" />
-    <apply shields-down="false">
-      <health />
+    <apply>
+      <health shields-down="false" />
     </apply>
   </cell-object>
   <cell-object name="missiles">
