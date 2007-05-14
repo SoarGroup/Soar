@@ -382,7 +382,7 @@ public class SoarRobot extends Robot {
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
 				if (move.move) {
 					logger.warning(getName() + " multiple move commands issued");
-					commandId.AddStatusError();
+					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
 					continue;
 				}
 				
@@ -390,7 +390,7 @@ public class SoarRobot extends Robot {
 				
 				if (direction == null) {
 					logger.warning(getName() + " move command missing direction parameter");
-					commandId.AddStatusError();
+					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
 					continue;
 				}
 				
@@ -406,7 +406,7 @@ public class SoarRobot extends Robot {
 				
 				} else {
 					logger.warning(getName() + "unrecognized move direction: " + direction);
-					commandId.AddStatusError();
+					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
 					continue;
 				}
 				move.move = true;
@@ -414,7 +414,7 @@ public class SoarRobot extends Robot {
 			} else if (commandName.equalsIgnoreCase(Names.kRotateID)) {
 				if (move.rotate) {
 					logger.warning(getName() + " multiple rotate commands issued");
-					commandId.AddStatusError();
+					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
 					continue;
 				}
 				
@@ -422,7 +422,7 @@ public class SoarRobot extends Robot {
 				
 				if (direction == null) {
 					logger.warning(getName() + " rotate command missing direction parameter");
-					commandId.AddStatusError();
+					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
 					continue;
 				}
 				
@@ -437,7 +437,7 @@ public class SoarRobot extends Robot {
 				
 				} else {
 					logger.warning(getName() + "unrecognized rotate direction: " + direction);
-					commandId.AddStatusError();
+					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
 					continue;
 					
 				}
@@ -447,7 +447,7 @@ public class SoarRobot extends Robot {
 			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
 				if (move.stopSim) {
 					logger.warning(getName() + " multiple stop-sim commands issued");
-					commandId.AddStatusError();
+					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
 					continue;
 				}
 				move.stopSim = true;
@@ -455,14 +455,14 @@ public class SoarRobot extends Robot {
 			} else if (commandName.equalsIgnoreCase(Names.kRotateAbsoluteID)) {
 				if (move.rotateAbsolute) {
 					logger.warning(getName() + " multiple rotate-absolute commands issued");
-					commandId.AddStatusError();
+					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
 					continue;
 				}
 				
 				String yawString = commandId.GetParameterValue("yaw");
 				if (yawString == null) {
 					logger.warning(getName() + " rotate-absolute command missing yaw parameter");
-					commandId.AddStatusError();
+					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
 					continue;
 				}
 				
@@ -470,7 +470,7 @@ public class SoarRobot extends Robot {
 					move.rotateAbsoluteHeading = Double.parseDouble(yawString);
 				} catch (NumberFormatException e) {
 					logger.warning(getName() + " rotate-absolute yaw parameter improperly formatted");
-					commandId.AddStatusError();
+					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
 					continue;
 				}
 
@@ -479,14 +479,14 @@ public class SoarRobot extends Robot {
 			} else if (commandName.equalsIgnoreCase(Names.kRotateRelativeID)) {
 				if (move.rotateRelative) {
 					logger.warning(getName() + " multiple rotate-relative commands issued");
-					commandId.AddStatusError();
+					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
 					continue;
 				}
 				
 				String amountString = commandId.GetParameterValue("amount");
 				if (amountString == null) {
 					logger.warning(getName() + " rotate-relative command missing amount parameter");
-					commandId.AddStatusError();
+					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
 					continue;
 				}
 				
@@ -494,7 +494,7 @@ public class SoarRobot extends Robot {
 					move.rotateRelativeAmount = Double.parseDouble(amountString);
 				} catch (NumberFormatException e) {
 					logger.warning(getName() + " rotate-relative amount parameter improperly formatted");
-					commandId.AddStatusError();
+					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
 					continue;
 				}
 
@@ -502,10 +502,11 @@ public class SoarRobot extends Robot {
 				
 			} else {
 				logger.warning("Unknown command: " + commandName);
+				IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
 				continue;
 			}
 			
-			commandId.AddStatusComplete();
+			IOLinkUtility.CreateOrAddStatus(agent, commandId, "complete");
 
 		}
 		agent.ClearOutputLinkChanges();
