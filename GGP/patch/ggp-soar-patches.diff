@@ -1,6 +1,6 @@
 Index: Core/SoarKernel/include/agent.h
 ===================================================================
---- Core/SoarKernel/include/agent.h	(revision 6855)
+--- Core/SoarKernel/include/agent.h	(revision 6899)
 +++ Core/SoarKernel/include/agent.h	(working copy)
 @@ -260,6 +260,8 @@
    Symbol            * type_symbol;
@@ -13,7 +13,7 @@ Index: Core/SoarKernel/include/agent.h
    Symbol			* output_link_symbol;
 Index: Core/SoarKernel/include/decide.h
 ===================================================================
---- Core/SoarKernel/include/decide.h	(revision 6855)
+--- Core/SoarKernel/include/decide.h	(revision 6899)
 +++ Core/SoarKernel/include/decide.h	(working copy)
 @@ -103,6 +103,9 @@
  /* These prototypes moved here from chunk.cpp -ajc (5/3/02) */
@@ -27,7 +27,7 @@ Index: Core/SoarKernel/include/decide.h
  #endif
 Index: Core/SoarKernel/include/xmlTraceNames.h
 ===================================================================
---- Core/SoarKernel/include/xmlTraceNames.h	(revision 6855)
+--- Core/SoarKernel/include/xmlTraceNames.h	(revision 6899)
 +++ Core/SoarKernel/include/xmlTraceNames.h	(working copy)
 @@ -158,6 +158,8 @@
  	static char const* const kBacktracedAlready         = "already-backtraced";
@@ -40,7 +40,7 @@ Index: Core/SoarKernel/include/xmlTraceNames.h
  	static char const* const kTagCandidate      = "candidate";
 Index: Core/SoarKernel/src/chunk.cpp
 ===================================================================
---- Core/SoarKernel/src/chunk.cpp	(revision 6855)
+--- Core/SoarKernel/src/chunk.cpp	(revision 6899)
 +++ Core/SoarKernel/src/chunk.cpp	(working copy)
 @@ -471,6 +471,16 @@
        prev_cc = cc;
@@ -61,7 +61,7 @@ Index: Core/SoarKernel/src/chunk.cpp
    }
 Index: Core/SoarKernel/src/backtrace.h
 ===================================================================
---- Core/SoarKernel/src/backtrace.h	(revision 6855)
+--- Core/SoarKernel/src/backtrace.h	(revision 6899)
 +++ Core/SoarKernel/src/backtrace.h	(working copy)
 @@ -53,6 +53,8 @@
                                               condition *trace_cond,
@@ -74,7 +74,7 @@ Index: Core/SoarKernel/src/backtrace.h
  #endif
 Index: Core/SoarKernel/src/symtab.cpp
 ===================================================================
---- Core/SoarKernel/src/symtab.cpp	(revision 6855)
+--- Core/SoarKernel/src/symtab.cpp	(revision 6899)
 +++ Core/SoarKernel/src/symtab.cpp	(working copy)
 @@ -572,6 +572,10 @@
    thisAgent->constraint_failure_symbol = make_sym_constant (thisAgent, "constraint-failure");
@@ -99,9 +99,17 @@ Index: Core/SoarKernel/src/symtab.cpp
    /* REW: end   10.24.97 */
 Index: Core/SoarKernel/src/decide.cpp
 ===================================================================
---- Core/SoarKernel/src/decide.cpp	(revision 6855)
+--- Core/SoarKernel/src/decide.cpp	(revision 6899)
 +++ Core/SoarKernel/src/decide.cpp	(working copy)
-@@ -1887,6 +1887,15 @@
+@@ -1861,6 +1861,7 @@
+   wme *w, *next_w;
+   preference *cand;
+   preference *bt_pref;
++  unsigned int item_count = count_candidates(items); // SBW 5/07
+ 
+   /* --- reset flags on existing items to "NOTHING" --- */
+   for (w=id->id.impasse_wmes; w!=NIL; w=w->next)
+@@ -1887,6 +1888,15 @@
          remove_wme_from_wm (thisAgent, w);
        }
      }
@@ -117,15 +125,18 @@ Index: Core/SoarKernel/src/decide.cpp
      w = next_w;
    }
  
-@@ -1904,6 +1913,14 @@
+@@ -1904,6 +1914,17 @@
        add_impasse_wme (thisAgent, id, thisAgent->item_symbol, cand->value, bt_pref);
      }
    }
 +
 +  // SBW 5/07
 +  // update the item-count WME
-+  add_impasse_wme (thisAgent, id, thisAgent->item_count_symbol, 
-+                   make_int_constant(thisAgent, count_candidates(items)), NIL);
++  // detect relevant impasses by having more than one item
++  if (item_count > 0) {
++    add_impasse_wme (thisAgent, id, thisAgent->item_count_symbol, 
++                     make_int_constant(thisAgent, item_count), NIL);
++  }
 +  // TODO does the int constant get its reference removed when the impasse goes
 +  // away?
 +
@@ -134,7 +145,7 @@ Index: Core/SoarKernel/src/decide.cpp
  /* ------------------------------------------------------------------
 Index: Core/SoarKernel/src/backtrace.cpp
 ===================================================================
---- Core/SoarKernel/src/backtrace.cpp	(revision 6855)
+--- Core/SoarKernel/src/backtrace.cpp	(revision 6899)
 +++ Core/SoarKernel/src/backtrace.cpp	(working copy)
 @@ -21,7 +21,6 @@
                          Backtracing routines
@@ -168,7 +179,7 @@ Index: Core/SoarKernel/src/backtrace.cpp
 +}
 Index: Core/ClientSML/include/sml_ClientTraceXML.h
 ===================================================================
---- Core/ClientSML/include/sml_ClientTraceXML.h	(revision 6855)
+--- Core/ClientSML/include/sml_ClientTraceXML.h	(revision 6899)
 +++ Core/ClientSML/include/sml_ClientTraceXML.h	(working copy)
 @@ -124,6 +124,8 @@
  	bool IsTagAddToPotentials() const ;
@@ -181,7 +192,7 @@ Index: Core/ClientSML/include/sml_ClientTraceXML.h
  	char const* GetBacktraceSymbol1() const	;
 Index: Core/ClientSML/src/sml_ClientTraceXML.cpp
 ===================================================================
---- Core/ClientSML/src/sml_ClientTraceXML.cpp	(revision 6855)
+--- Core/ClientSML/src/sml_ClientTraceXML.cpp	(revision 6899)
 +++ Core/ClientSML/src/sml_ClientTraceXML.cpp	(working copy)
 @@ -219,6 +219,8 @@
  bool ClientTraceXML::IsTagProhibitPreference() const	{ return IsTag(sml_Names::kTagProhibitPreference) ; }
@@ -194,7 +205,7 @@ Index: Core/ClientSML/src/sml_ClientTraceXML.cpp
  char const* ClientTraceXML::GetBacktraceSymbol2() const			  { return GetAttribute(sml_Names::kBacktraceSymbol2) ; }
 Index: Core/ConnectionSML/include/sml_Names.h
 ===================================================================
---- Core/ConnectionSML/include/sml_Names.h	(revision 6855)
+--- Core/ConnectionSML/include/sml_Names.h	(revision 6899)
 +++ Core/ConnectionSML/include/sml_Names.h	(working copy)
 @@ -201,6 +201,8 @@
      static char const* const kBacktracedAlready;
@@ -207,7 +218,7 @@ Index: Core/ConnectionSML/include/sml_Names.h
      static char const* const kTagCandidate;
 Index: Core/ConnectionSML/src/sml_Names.cpp
 ===================================================================
---- Core/ConnectionSML/src/sml_Names.cpp	(revision 6855)
+--- Core/ConnectionSML/src/sml_Names.cpp	(revision 6899)
 +++ Core/ConnectionSML/src/sml_Names.cpp	(working copy)
 @@ -204,6 +204,8 @@
  char const* const sml_Names::kBacktraceSymbol1          = "symbol1";
@@ -220,7 +231,7 @@ Index: Core/ConnectionSML/src/sml_Names.cpp
  char const* const sml_Names::kCandidateName     = "name";
 Index: Tools/SoarJavaDebugger/helpers/XmlOutput.java
 ===================================================================
---- Tools/SoarJavaDebugger/helpers/XmlOutput.java	(revision 6855)
+--- Tools/SoarJavaDebugger/helpers/XmlOutput.java	(revision 6899)
 +++ Tools/SoarJavaDebugger/helpers/XmlOutput.java	(working copy)
 @@ -435,6 +435,16 @@
  		return text.toString() ;
@@ -241,7 +252,7 @@ Index: Tools/SoarJavaDebugger/helpers/XmlOutput.java
  		StringBuffer text = new StringBuffer() ;
 Index: Tools/SoarJavaDebugger/doc/Document.java
 ===================================================================
---- Tools/SoarJavaDebugger/doc/Document.java	(revision 6855)
+--- Tools/SoarJavaDebugger/doc/Document.java	(revision 6899)
 +++ Tools/SoarJavaDebugger/doc/Document.java	(working copy)
 @@ -144,7 +144,7 @@
  		Module phase 	 = new Module("Phase Diagram", "A view that shows Soar's phases of execution", modules.PhaseView.class) ;
@@ -262,7 +273,7 @@ Index: Tools/SoarJavaDebugger/doc/Document.java
  	/** Gives us a frame to work with */
 Index: Tools/SoarJavaDebugger/modules/FoldingTextView.java
 ===================================================================
---- Tools/SoarJavaDebugger/modules/FoldingTextView.java	(revision 6855)
+--- Tools/SoarJavaDebugger/modules/FoldingTextView.java	(revision 6899)
 +++ Tools/SoarJavaDebugger/modules/FoldingTextView.java	(working copy)
 @@ -863,6 +863,14 @@
  				if (output.length() != 0)
