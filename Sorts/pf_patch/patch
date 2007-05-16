@@ -1,0 +1,491 @@
+Index: libs/pathfinding/simple_terrain/src/ST_PFEngine.C
+===================================================================
+RCS file: /usr/bodo1/cvs/cvs/orts3/libs/pathfinding/simple_terrain/src/ST_PFEngine.C,v
+retrieving revision 1.3
+diff -r1.3 ST_PFEngine.C
+0a1,3
+> #define PFTIME 100
+> #define PFLOD 1
+> 
+16,17c19,20
+< #define TEST(x)
+< //#define TEST(x) x
+---
+> //#define TEST(x)
+> #define TEST(x) x
+181a185,268
+>   
+>   // BEGIN SORTS
+> 
+>   bool ST_Terrain::PFEngine::findpath(const Loc &start,
+>                                        const Loc &goal,
+>                                        Path& output,
+>                                        bool foo,
+>                                        bool bar
+>                                        ) {
+>     ConsiderObjects ci = CONSIDER_ALL;
+>     return find_path(start, goal, 3, output, PFLOD, ci, SDL_GetTicks() + PFTIME);
+>   }
+> 
+>   bool ST_Terrain::PFEngine::findpath(const GameObj *obj1,
+>                                       const GameObj *obj2,
+>                                       Path& output,
+>                                       bool foo) {
+>     // only used by minemanager
+>     ConsiderObjects ci = IGNORE_ALL_MOBILE_OBJS;
+>     Loc start_loc; 
+>     Loc goal_loc; 
+>     obj2->get_center(goal_loc.x, goal_loc.y);
+>     obj1->get_center(start_loc.x, start_loc.y);
+>     /*goal_loc.x = 10;
+>     goal_loc.y = 10;
+>     start_loc.x = 20;
+>     start_loc.y = 20;*/
+>     shared_ptr<Map> map = ground_maps[PFLOD];
+>     map->remove_object(obj2);
+>     map->remove_object(obj1);
+>     bool retval = find_path(start_loc, goal_loc, 3, output, PFLOD, ci, SDL_GetTicks() + PFTIME);
+>     map->insert_object(obj2);
+>     map->insert_object(obj1);
+>     return retval;
+>   }
+>   
+>   bool ST_Terrain::PFEngine::findpath(
+>                                       const Loc& start_loc,
+>                                       const GameObj* gob,
+>                                       Path& output) {
+>     // only used by minemanager
+>     ConsiderObjects ci = IGNORE_ALL_MOBILE_OBJS;
+>     Loc goal_loc; 
+>     gob->get_center(goal_loc.x, goal_loc.y);
+>     shared_ptr<Map> map = ground_maps[PFLOD];
+>     map->remove_object(gob);
+>     bool retval = find_path(start_loc, goal_loc, 3, output, PFLOD, ci, SDL_GetTicks() + PFTIME);
+>     map->insert_object(gob);
+>     return retval;
+>   }
+>   
+>   void ST_Terrain::PFEngine::insertImaginaryWorker(Loc l) {
+>     cout << "IIMWO\n";
+>     shared_ptr<Map> map = ground_maps[PFLOD];
+>     map->ir_imaginaryWorker(l, true);
+>   }
+>   void ST_Terrain::PFEngine::removeImaginaryWorker(Loc l) {
+>     cout << "RIMWO\n";
+>     shared_ptr<Map> map = ground_maps[PFLOD];
+>     map->ir_imaginaryWorker(l, false);
+>   }
+>   void ST_Terrain::PFEngine::insertGob(const GameObj* gob) {
+>     if (gob == NULL) return;
+>     cout << "INSGOB\n";
+>     shared_ptr<Map> map = ground_maps[PFLOD];
+>     map->insert_object(gob);
+>   }
+>   void ST_Terrain::PFEngine::removeGob(const GameObj* gob) {
+>     if (gob == NULL) return;
+>     cout << "RMGOB\n";
+>     shared_ptr<Map> map = ground_maps[PFLOD];
+>     map->remove_object(gob);
+>   }
+> 
+> 
+>   bool ST_Terrain::PFEngine::findpath(const GameObj *obj,
+>                                        const Loc &loc,
+>                                        Path& output) {
+>     ConsiderObjects ci = CONSIDER_ALL;
+>     return find_path(obj, loc, output, PFLOD, ci, SDL_GetTicks() + PFTIME);
+>   }
+> 
+>   // END SORTS
+>   
+191c278
+<     return sub_path(obj, Loc(0,0), Loc(-1,-1), goal_loc, output, lod, consider, stop_time);
+---
+>     return sub_path(obj, Loc(0,0), Loc(-1,-1), goal_loc, output, true, lod, consider, stop_time);
+203c290,305
+<     return sub_path(obj, Loc(0,0), Loc(-1,-1), goal_obj, output, lod, consider, stop_time);
+---
+>     TerrainBase::Loc zero(0,0);
+>     TerrainBase::Loc neg(0,0);
+>     return sub_path(obj, zero, neg, goal_obj, output, true, true, true, lod, consider, stop_time);
+>   }
+>   
+>   bool ST_Terrain::PFEngine::find_path_gob(const GameObj *obj,
+>                                        const GameObj *goal_obj,
+>                                        Path& output,
+>                                        LevelOfDetail lod,
+>                                        ConsiderObjects consider,
+> 				       uint4 stop_time)
+>   {
+>     TEST( cout << "Planning for " << obj << " from " << get_center_loc(obj) << " to " << goal_obj << " @ " << get_center_loc(goal_obj) << endl;);
+>     TerrainBase::Loc zero(0,0);
+>     TerrainBase::Loc neg(0,0);
+>     return sub_path_gob(obj, zero, neg, goal_obj, output, true, true, true, lod, consider, stop_time);
+205a308
+> 
+206a310
+>   
+217c321
+<       return sub_path(loc, Loc(0,0), Loc(-1,-1), goal_loc, radius, output, lod, consider, stop_time);
+---
+>       return sub_path(loc, Loc(0,0), Loc(-1,-1), goal_loc, radius, output, true, true, lod, consider, stop_time);
+225a330
+>                                       bool foo,
+270a376
+>                                       bool foo, bool bar,
+313a420
+>                                       bool foo, bool bar, bool baz,
+319c426,428
+<     goal_obj->get_center(goal_loc.x, goal_loc.y);
+---
+>     GameObj* goal = (GameObj*)goal_obj;
+>     cout << " goal is " << goal << endl;
+>     goal->get_center(goal_loc.x, goal_loc.y);
+345a455,496
+>   
+>   bool ST_Terrain::PFEngine::sub_path_gob(const GameObj *obj, 
+>                                       const Loc &topLeft, 
+>                                       const Loc &bottomRight, 
+>                                       const GameObj *goal_obj, 
+>                                       Path &output, 
+>                                       bool foo, bool bar, bool baz,
+>                                       LevelOfDetail lod,
+>                                       ConsiderObjects consider,
+> 				      uint4 stop_time)
+>   {
+>     Loc goal_loc; 
+>     GameObj* goal = (GameObj*)goal_obj;
+>     cout << " gobgoal is " << goal << endl;
+>     goal->get_center(goal_loc.x, goal_loc.y);
+>     IsTouchingTarget tester(obj, goal_obj);
+>     bool found = find_path(obj, get_center_loc(obj), goal_loc, tester, 
+>                            topLeft, bottomRight, lod, consider, output, stop_time);
+> 
+>     /* To overcome an inaccuracy of our internal low resolution, if
+>        the end-of-path location (expressed in world coords) is not
+>        close enough to the goal object, do a final PF using the max
+>        resolution.
+>        fixme: if it's too slow, use a constrained submap to prevent full-map searches. */
+>     if( found && ! tester.test_for_world_coords(output.locs[0].x, output.locs[0].y) ) {
+>       // If there is a possibility for improvement (+prevent an infinite recursion)
+>       if( lod != max_details_LOD ) { 
+> 
+>         // Plan the path from the last waypoint found
+>         Path final_leg;
+>         bool found_final_leg = find_path(obj, output.locs[0], goal_loc, tester,
+>                                          topLeft, bottomRight, max_details_LOD,
+>                                          consider, final_leg, stop_time);
+> 
+>         if( found_final_leg )
+>           output.locs.insert(output.locs.begin(), final_leg.locs.begin(), final_leg.locs.end());
+>       }
+>     }
+> 
+>     return found;
+>   }
+> 
+475a627
+>     cout << "pf #1: mdt " << max_details_LOD << "," << lod<< "\n";
+563a716,728
+>       // SBW HACK
+>       cout << "pre: \n";
+>       for (int i=0; i<output.locs.size(); i++) { cout << output.locs[i].x << "," << output.locs[i].y << endl; }
+>       
+>       while (output.locs.begin()->x != x2 || output.locs.begin()->y != y2) {
+>         cout << "PFFIXing\n";
+>         assert(output.locs.begin()+1 != output.locs.end());
+>         output.locs.erase(output.locs.begin());
+>       }
+> 
+>       cout << "post: \n";
+>       for (int i=0; i<output.locs.size(); i++) { cout << output.locs[i].x << "," << output.locs[i].y << endl; }
+> 
+572a738,739
+>       //cout << "post: \n";
+>       //for (int i=0; i<output.locs.size(); i++) { cout << output.locs[i].x << "," << output.locs[i].y << endl; }
+591a759
+>     cout << "astar!\n";
+645a814
+>       //cout << "x: " << astar_map.i2x(he.cell) << " y: " << astar_map.i2y(he.cell) << endl;
+647a817
+>        // cout << "GOALLL\n";
+655a826
+>         cout << "false!\n";
+724a896
+>     cout << "false2!\n";
+1301a1474,1511
+>   
+>   void ST_Terrain::PFEngine::Map::ir_imaginaryWorker(Loc worldc, 
+>                                             bool insert)
+>   {
+>     sint4 cost = insert ? 1 : -1;
+> 
+> 
+>       sint4 r = 3;
+> 
+>       int newr = world2r(r);
+>       Bucket b = BucketFactory::get_bucket(newr);
+>       Loc center(world2x(worldc.x), world2y(worldc.y));
+> 
+>       b.set_center(center);
+>       insert_bucket(b, 0, cost*UNIT_COST);
+> 
+>       if( newr > 0 ) {
+>         Bucket b2 = BucketFactory::get_bucket(newr-1);
+>         b2.set_center(center);
+>         insert_bucket(b2, 0, cost*UNIT_COST/2);
+>         }
+> 
+>       // fixme: heading is not accessible through Object
+>       /* We wanted to add some cost to the position where the object will be
+>       in the next tick to prefer not to go there; However, heading is not
+>       currently accessible with the new TerrainBase interface:
+>       // one second distance
+>       Loc head = cworld;
+>       Loc tail = cworld;
+>       get_head_and_tail(head, tail, heading);
+> 
+>       b.set_center(head);
+>       insert_bucket(b, zcat, TEMP, 0, id, cost*CROSS_COST);
+> 
+>       b.set_center(tail);
+>       //  insert_bucket(b, zcat, TEMP, 0, id, cost*CROSS_COST);
+>       */
+>   }
+Index: libs/pathfinding/simple_terrain/src/ST_PFEngine.H
+===================================================================
+RCS file: /usr/bodo1/cvs/cvs/orts3/libs/pathfinding/simple_terrain/src/ST_PFEngine.H,v
+retrieving revision 1.2
+diff -r1.2 ST_PFEngine.H
+101a102,103
+>       void ir_imaginaryWorker(Loc worldc, 
+>                                             bool insert); // SORTS
+190a193,215
+>   // BEGIN SORTS
+>     bool findpath(const Loc &start,
+>                                        const Loc &goal,
+>                                        Path& output,
+>                                        bool foo,
+>                                        bool bar);
+> 
+>   bool findpath(const GameObj *obj1,
+>                                       const GameObj *obj2,
+>                                       Path& output,
+>                                       bool foo);
+> 
+>   bool findpath(const GameObj *obj,
+>                                        const Loc &loc,
+>                                        Path& output);
+>   bool findpath( const Loc &loc, const GameObj* gob,
+>                                        Path& output);
+>     void insertImaginaryWorker(Loc l);
+>     void removeImaginaryWorker(Loc l);
+>     void insertGob(const GameObj* gob);
+>     void removeGob(const GameObj* gob);
+>     // END SORTS
+>     
+199c224,225
+<     /** MINE!!!   Perform pathfinding on a small submap, loc to loc, return true iff path found, and the path 
+---
+>     bool find_path_gob(const GameObj *obj, const GameObj *goal, Path& output, LevelOfDetail lod = 0, ConsiderObjects consider = CONSIDER_ALL, uint4 stop_time = 0);
+>     /** MINE!!!   Performthfinding on a small submap, loc to loc, return true iff path found, and the path 
+206c232,235
+<     bool sub_path(const Object *obj, const Loc &topLeft, const Loc &bottomRight, const Object *goal_obj, Path &output, LevelOfDetail lod = 0, ConsiderObjects consider = CONSIDER_ALL, uint4 stop_time = 0);
+---
+>     bool sub_path(const Object *obj, const Loc &topLeft, const Loc &bottomRight, const Object *goal_obj, Path &output, 
+>                   bool, bool, bool, LevelOfDetail lod = 0, ConsiderObjects consider = CONSIDER_ALL, uint4 stop_time = 0);
+>     bool sub_path_gob(const GameObj *obj, const Loc &topLeft, const Loc &bottomRight, const GameObj *goal_obj, Path &output, 
+>                   bool, bool, bool, LevelOfDetail lod = 0, ConsiderObjects consider = CONSIDER_ALL, uint4 stop_time = 0);
+210c239,241
+<     bool sub_path(const Object *obj, const Loc &topLeft, const Loc &bottomRight, const Loc &goal_loc, Path &output, LevelOfDetail lod = 0, ConsiderObjects consider = CONSIDER_ALL, uint4 stop_time = 0);
+---
+>     bool sub_path(const Object *obj, const Loc &topLeft, const Loc &bottomRight, const Loc &goal_loc, Path &output, 
+>                   bool,
+>                   LevelOfDetail lod = 0, ConsiderObjects consider = CONSIDER_ALL, uint4 stop_time = 0);
+214c245,246
+<     bool sub_path(const Loc loc, const Loc &topLeft, const Loc &bottomRight, const Loc &goal_loc, sint4 radius, Path &output, LevelOfDetail lod = 0, ConsiderObjects consider = CONSIDER_ALL, uint4 stop_time = 0);
+---
+>     bool sub_path(const Loc loc, const Loc &topLeft, const Loc &bottomRight, const Loc &goal_loc, sint4 radius, Path &output,
+>                   bool, bool, LevelOfDetail lod = 0, ConsiderObjects consider = CONSIDER_ALL, uint4 stop_time = 0);
+Index: libs/pathfinding/simple_terrain/src/SimpleTerrain.C
+===================================================================
+RCS file: /usr/bodo1/cvs/cvs/orts3/libs/pathfinding/simple_terrain/src/SimpleTerrain.C,v
+retrieving revision 1.2
+diff -r1.2 SimpleTerrain.C
+27a28,67
+>   // SORTS HACK
+>   // Sorts additions
+>   bool ST_Terrain::findPath(const GameObj* gob, const Loc &l2, Path &path) {
+>     return pfEngine->findpath(gob, l2, path);
+>   }
+>   bool ST_Terrain::findPath(const Loc &l2, const GameObj* gob, Path &path) {
+>     return pfEngine->findpath(l2, gob, path);
+>   }
+>   bool ST_Terrain::findPath(const GameObj* gob, const GameObj* l2, Path &path) {
+>     //cout << "st: " << l2 << endl;
+>     return pfEngine->findpath(gob, l2, path, true);
+>   }
+>   bool ST_Terrain::findPath(const Loc &l1, const Loc &l2, Path &path) {
+>     return pfEngine->findpath(l1, l2, path, true, true);
+>   }
+>   void ST_Terrain::insertImaginaryWorker(Loc l) {
+>     pfEngine->insertImaginaryWorker(l);
+>   }
+>   void ST_Terrain::removeImaginaryWorker(Loc l) {
+>     pfEngine->removeImaginaryWorker(l);
+>   }
+>   void ST_Terrain::insertGob(const GameObj* gob) {
+>     pfEngine->insertGob(gob);
+>   }
+>   void ST_Terrain::removeGob(const GameObj* gob) {
+>     pfEngine->removeGob(gob);
+>   }
+> /*  void ST_Terrain::removeDynamicObjs() {
+>     pfEngine->removeDynamicObjs();
+>   }
+>   void ST_Terrain::insertDynamicObjs() {
+>     pfEngine->insertDynamicObjs();
+>   }
+>   void ST_Terrain::removeControlCenters() {
+>     pfEngine->removeControlCenters();
+>   }
+>   void ST_Terrain::insertControlCenters() {
+>     pfEngine->insertControlCenters();
+>   } */
+>  
+200c240
+<       found = pfEngine->find_path(obj, goal.obj, result, 0, consider);
+---
+>       found = pfEngine->find_path(obj, (GameObj*)goal.obj, result, 0, consider);
+801c841
+<       found = pfEngine->find_path(obj, tit->task.goal.obj, newpath, 0, CONSIDER_ALL, stop_time);
+---
+>       found = pfEngine->find_path((GameObj*)obj, tit->task.goal.obj, newpath, 0, CONSIDER_ALL, stop_time);
+816,823d855
+<     /*Path temp;
+<     real8 len = find_path(obj, tit->task.goal, &temp);
+<     assert( equal(newpath.locs.begin(), newpath.locs.end(), temp.locs.rbegin())
+<             && newpath.locs.size() == temp.locs.size() && "Failed test" );*/
+< 
+<     // temp testing of ST_Terrain::block_path()
+<     /*block_path(obj, newpath);
+<     release_path(obj, newpath);*/
+Index: libs/pathfinding/simple_terrain/src/SimpleTerrain.H
+===================================================================
+RCS file: /usr/bodo1/cvs/cvs/orts3/libs/pathfinding/simple_terrain/src/SimpleTerrain.H,v
+retrieving revision 1.1
+diff -r1.1 SimpleTerrain.H
+17a18
+> #include "GameObj.H"
+212a214,228
+> 
+>     // SORTS HACK
+>     virtual bool findPath(const GameObj* gob, const Loc &l2, Path &path);
+>     virtual bool findPath(const Loc &l2, const GameObj* gob, Path &path);
+>     virtual bool findPath(const GameObj* gob, const GameObj* l2, Path &path);
+>     virtual bool findPath(const Loc &l1, const Loc &l2, Path &path);
+>     virtual void insertImaginaryWorker(Loc l);
+>     virtual void removeImaginaryWorker(Loc l);
+>     virtual void insertGob(const GameObj* gob);
+>     virtual void removeGob(const GameObj* gob);
+> //    virtual void insertDynamicObjs();
+> //    virtual void removeDynamicObjs();
+> //    virtual void insertControlCenters();
+> //    virtual void removeControlCenters();
+> 
+Index: libs/serverclient/src/TerrainBase.H
+===================================================================
+RCS file: /usr/bodo1/cvs/cvs/orts3/libs/serverclient/src/TerrainBase.H,v
+retrieving revision 1.28
+diff -r1.28 TerrainBase.H
+11a12
+> #include "GameObj.H"
+27a29
+> 
+61c63
+< 
+---
+>   
+109c111,120
+< 
+---
+>   
+>   // SORTS HACK
+>   virtual bool findPath(const GameObj* gob, const Loc &l2, Path &path) = 0;
+>   virtual bool findPath(const Loc& gob, const GameObj* l2, Path &path) = 0;
+>   virtual bool findPath(const Loc &l1, const Loc &l2, Path &path) = 0;
+>   virtual bool findPath(const GameObj* gob, const GameObj* l2, Path &path) = 0;
+>   virtual void insertImaginaryWorker(Loc l) = 0;
+>   virtual void removeImaginaryWorker(Loc l) = 0;
+>   virtual void insertGob(const GameObj* gob) = 0;
+>   virtual void removeGob(const GameObj* gob) = 0;
+Index: libs/serverclient/src/TerrainModule.C
+===================================================================
+RCS file: /usr/bodo1/cvs/cvs/orts3/libs/serverclient/src/TerrainModule.C,v
+retrieving revision 1.25
+diff -r1.25 TerrainModule.C
+274a275,318
+> 
+> // SORTS HACK
+> bool TerrainModule::findPath(GameObj* gob, TerrainBase::Loc goal, TerrainBase::Path& path) {
+>     return timp.findPath(gob, goal, path);
+> }
+> 
+> bool TerrainModule::findPath(TerrainBase::Loc start, GameObj* goal, TerrainBase::Path& path) {
+>     return timp.findPath(start, goal, path);
+> }
+> 
+> bool TerrainModule::findPath(TerrainBase::Loc start, TerrainBase::Loc goal, TerrainBase::Path& path) {
+>     return timp.findPath(start, goal, path);
+> }
+> 
+> bool TerrainModule::findPath(GameObj* gob, GameObj* goal, TerrainBase::Path& path) {
+>     //cout << "tm: " << goal << endl;
+>     return timp.findPath(gob, goal, path);
+> }
+> 
+> void TerrainModule::insertImaginaryWorker(TerrainBase::Loc l) {
+>   timp.insertImaginaryWorker(l);
+> }
+> void TerrainModule::removeImaginaryWorker(TerrainBase::Loc l) {
+>   timp.removeImaginaryWorker(l);
+> }
+> void TerrainModule::insertGob(const GameObj* gob) {
+>   timp.insertGob(gob);
+> }
+> void TerrainModule::removeGob(const GameObj* gob) {
+>   timp.removeGob(gob);
+> }
+> /*void TerrainModule::insertDynamicObjs() {
+>   timp.insertDynamicObjs();
+> }
+> void TerrainModule::removeDynamicObjs() {
+>   timp.removeDynamicObjs();
+> }
+> void TerrainModule::insertControlCenters() {
+>   timp.insertControlCenters();
+> }
+> void TerrainModule::removeControlCenters() {
+>   timp.removeControlCenters();
+> }*/
+> 
+Index: libs/serverclient/src/TerrainModule.H
+===================================================================
+RCS file: /usr/bodo1/cvs/cvs/orts3/libs/serverclient/src/TerrainModule.H,v
+retrieving revision 1.9
+diff -r1.9 TerrainModule.H
+19a20,33
+>   // SORTS HACK
+>   bool findPath(GameObj* gob, TerrainBase::Loc goal, TerrainBase::Path& path);
+>   bool findPath(TerrainBase::Loc goal, GameObj* gob, TerrainBase::Path& path);
+>   bool findPath(TerrainBase::Loc start, TerrainBase::Loc goal, TerrainBase::Path& path);
+>   bool findPath(GameObj* gob, GameObj* goal, TerrainBase::Path& path);
+>   void insertImaginaryWorker(TerrainBase::Loc l);
+>   void removeImaginaryWorker(TerrainBase::Loc l);
+>   void insertGob(const GameObj* gob);
+>   void removeGob(const GameObj* gob);
+>  /* void insertDynamicObjs();
+>   void removeDynamicObjs();
+>   void insertControlCenters();
+>   void removeControlCenters();
+> */
