@@ -1426,7 +1426,7 @@ public class World {
 		}
 		return move;
 	}
-		
+	
 	private void getTankMoves() {
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
@@ -1593,5 +1593,33 @@ public class World {
 
 	public Player getPlayer(String playerName) {
 		return playersMap.get(playerName);
+	}
+
+	public void interruped(String name) {
+		if (players.size() <= 1) {
+			return;
+		}
+		Iterator<Player> iter = players.iterator();
+		Player thePlayer = null;
+		Integer lowestScore = null;
+		while (iter.hasNext()) {
+			Player player = iter.next();
+			if (player.getName().equals(name)) {
+				thePlayer = player;
+			} else {
+				if (lowestScore == null) {
+					lowestScore = new Integer(player.getPoints());
+				} else {
+					lowestScore = Math.min(lowestScore, player.getPoints());
+				}
+			}
+			
+		}
+		if ((thePlayer == null) || (lowestScore == null)) {
+			// shouldn't happen if name is valid
+			return;
+		}
+		
+		thePlayer.setPoints(lowestScore, "interrupted");
 	}
 }
