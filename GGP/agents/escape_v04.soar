@@ -584,8 +584,7 @@ sp {apply*remove*_next__step__next__
    (<g> ^step <s1> -)
 }
 sp {propose*init-game
-   (state <s> ^superstate nil
-             -^desired)
+   (state <s> ^superstate nil -^name )
 -->
    (<s> ^operator <o> + >)
    (<o> ^name init-game)
