@@ -17,6 +17,8 @@ sp {evaluate-operator*apply*self-pre-evaluate*worst
    (<o> ^name make-parent-worst
         ^where <ss>
         ^item <item>)
+   (<ss> ^unknown-evaluation-preference <item>)
 -->
    (<ss> ^evaluate-worst <item>)
+   (<ss> ^unknown-evaluation-preference <item> -)
 }

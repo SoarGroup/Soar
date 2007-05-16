@@ -8,6 +8,18 @@ sp {selection*propose*check-plan
          ^item <it>)
 }
 
+sp {selection*apply*check-plan*no-longer-unknown
+   (state <s> ^operator <o>
+              ^item <it>
+              ^unknown-evaluation-preference <it>
+              ^<< evaluate-worst evaluate-best evaluate-indifferent evaluate-reject >> <it>)
+   (<o> ^name check-plan
+        ^item <it>)
+-->
+   (<s> ^unknown-evaluation-preference <it> -)
+}
+
+
 sp {check-plan*elaborate*state-name
    (state <s> ^superstate.operator <o>)
    (<o> ^name check-plan
@@ -18,41 +30,41 @@ sp {check-plan*elaborate*state-name
 }
 
 
-sp {check-plan*prefer-combine
-   (state <s> ^name check-plan
-              ^item <it>
-              ^superstate <ss>)
-   (<it> ^name _combine__item1__item2__nails_)
--->
-   (<ss> ^evaluate-best <it>) 
-}
+#sp {check-plan*prefer-combine
+#   (state <s> ^name check-plan
+#              ^item <it>
+#              ^superstate <ss>)
+#   (<it> ^name _combine__item1__item2__nails_)
+#-->
+#   (<ss> ^evaluate-best <it>) 
+#
 
-
-sp {check-plan*apply-north-only
-   (state <s> ^name check-plan
-              ^item <it>
-              ^superstate <ss>)
-   (<it> ^name_apply__item__dir_
-        -^p2 north)
--->
-   (<ss> ^evaluate-reject <it>) 
-}
-sp {check-plan*no-south
-   (state <s> ^name check-plan
-              ^item <it>
-              ^superstate <ss>)
-   (<it> ^name _move__dir_
-         ^p1 south)
--->
-   (<ss> ^evaluate-reject <it>) 
-}
+#
+#sp {check-plan*apply-north-only
+#   (state <s> ^name check-plan
+#              ^item <it>
+#              ^superstate <ss>)
+#   (<it> ^name_apply__item__dir_
+#        -^p2 north)
+#-->
+#   (<ss> ^evaluate-reject <it>) 
+#}
+#sp {check-plan*no-south
+#   (state <s> ^name check-plan
+#              ^item <it>
+#              ^superstate <ss>)
+#   (<it> ^name _move__dir_
+#         ^p1 south)
+#-->
+#   (<ss> ^evaluate-reject <it>) 
+#}
 
 sp {check-plan*others
    (state <s> ^name check-plan
               ^item <it>
               ^superstate <ss>)
-   (<ss> -^evaluate-reject <it>
-         -^evaluate-best <it>)
+  # (<ss> -^evaluate-reject <it>
+  #       -^evaluate-best <it>)
 -->
    (<ss> ^evaluate-indifferent <it>) 
 }

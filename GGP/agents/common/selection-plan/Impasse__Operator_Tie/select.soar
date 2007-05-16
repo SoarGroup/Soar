@@ -17,10 +17,7 @@ sp {selection*select*not-indifferent
 
 sp {selection*elaborate*unknown-preference
    (state <s> ^name selection
-              ^item <it>
-             -^evaluate-best <it>
-             -^evaluate-worst <it>
-             -^evaluate-indifferent <it>)
+              ^item <it>)
 -->
    (<s> ^unknown-evaluation-preference <it>)
 }
