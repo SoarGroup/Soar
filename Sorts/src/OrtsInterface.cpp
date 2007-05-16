@@ -486,8 +486,8 @@ void OrtsInterface::mergeChanges(GameChanges& newChanges) {
   // dead_objs: same
   // new_tile_indexes: add all to changes
   // new_boundaries: add all to changes
-  Vector<ScriptObj*>::iterator it;
-  Vector<ScriptObj*>::iterator it2;
+  Vector<ScriptObj::WPtr>::iterator it;
+  Vector<ScriptObj::WPtr>::iterator it2;
   Vector<int>::iterator intIt;
   bool found;
   for (it = newChanges.new_objs.begin(); 

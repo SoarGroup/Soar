@@ -21,7 +21,7 @@
 
 #include "FSM.h"
 #include "Sorts.h"
-#include "Demo_SimpleTerrain.H"
+#include "SimpleTerrain.H"
 #include "general.h"
 
 class MoveFSM: public FSM {
@@ -54,6 +54,8 @@ class MoveFSM: public FSM {
   double heading;
 
   void clearWPWorkers(); 
+  
+  GameObj* collidingGob(int x, int y);
 
   TerrainBase::Loc target;
 

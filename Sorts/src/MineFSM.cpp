@@ -22,7 +22,7 @@
 #include "MineManager.h"
 
 #define CLASS_TOKEN "MINEFSM"
-#define DEBUG_OUTPUT false 
+#define DEBUG_OUTPUT true 
 #include "OutputDefinitions.h"
 
 #define GIVEUPSPEED .66
@@ -111,12 +111,14 @@ int MineFSM::update() {
     case MOVING_TO_MINERAL:
       moveStatus = moveFSM->update();
       if (moveStatus == FSM_RUNNING) {
+        dbg << "moving to mineral.\n";
         // do nothing
       }
       else if (moveStatus == FSM_FAILURE) {
         tempVec.push_back(route->miningLoc.x);
         tempVec.push_back(route->miningLoc.y);
         tempVec.push_back(precision);
+        dbg << "move failed, reinit\n";
         moveFSM->init(tempVec);
       }
       else if (moveStatus == FSM_UNREACHABLE) {
@@ -150,6 +152,7 @@ int MineFSM::update() {
       }
       else {
         // STUCK
+        dbg << "move stuck, panic\n";
         state = PANIC_START;
       }
       break;
@@ -219,8 +222,12 @@ int MineFSM::update() {
       else if (moveStatus == FSM_SUCCESS) {
         temp = route->mineralInfo->mineral->getID();
         assert(Sorts::OrtsIO->isAlive(temp));
-        assert(Sorts::OrtsIO->getOrtsDistance(route->cCenterInfo->cCenter->getGob(),
-                                              gob) <= 3);
+        if (Sorts::OrtsIO->getOrtsDistance(route->cCenterInfo->cCenter->getGob(),
+                                              gob) <= 3) {
+          msg << "ERROR: move didn't get close enough to mine. Distance: " 
+            << Sorts::OrtsIO->getOrtsDistance(route->cCenterInfo->cCenter->getGob(), gob);
+          assert(false);
+        }
         // otherwise, we need to work on the MoveFSM precision
         
         tempVec.clear();

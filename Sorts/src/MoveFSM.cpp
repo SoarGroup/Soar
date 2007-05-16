@@ -24,7 +24,7 @@
 using namespace std;
 
 #define CLASS_TOKEN "MOVEFSM"
-#define DEBUG_OUTPUT false 
+#define DEBUG_OUTPUT true 
 #include "OutputDefinitions.h"
 
 #define TOLERANCE 9 // for waypoints, squared
@@ -296,9 +296,19 @@ void MoveFSM::init(vector<sint4> p)
   //  Sorts::canvas.makeTempCircle(l.x, l.y, *gob->sod.radius, 9999)->setShapeColor(255, 255, 255);
   }
   else {
+    GameObj* targetObs = collidingGob(l.x,l.y);
+    TerrainBase::Path tempPath;
+    Sorts::terrainModule->removeGob(targetObs);
     Sorts::terrainModule->findPath(gob, l, path);
+    Sorts::terrainModule->insertGob(targetObs);
     pathLength = path.locs.size();
     
+   /* path.locs.clear();
+    for (int i=pathLength-1; i>=0; i--) {
+      // reverse tempPath to store in path (fix for TerrainBase changes in
+      // '06-'07)
+      path.locs.push_back(tempPath.locs[i]);
+    }*/
     for (int i=0; i<pathLength; i++) {
       dbg << "loc " << i << " " 
           << path.locs[i].x << ", "<< path.locs[i].y << endl;
@@ -560,6 +570,30 @@ bool MoveFSM::dynamicCollision(int x, int y) {
 
   return false;
 }
+
+GameObj* MoveFSM::collidingGob(int x, int y) {
+  // return true if loc collides with a sheep or worker
+  list<GameObj*> collisions;
+  
+  Sorts::spatialDB->getObjectCollisions(x, y, *(gob->sod.radius), NULL, collisions);
+  
+  if (collisions.size() == 0) {
+    dbg << "Destination has no collisions, pf should work.\n";
+    return NULL;
+  }
+  else if (collisions.size() > 1) {
+    msg << "ERROR: more than one collision at target!\n";
+  }
+  
+  if ((*collisions.begin()) == gob) {
+    dbg << "gob collides w/self, ignoring\n";
+    return NULL;
+  }
+  else {
+    return *collisions.begin();
+  }
+}
+
 // MAGNETISM CODE
 
 // Returns the actual move vector of the object
@@ -695,8 +729,11 @@ bool MoveFSM::isReachableFromBuilding(TerrainBase::Loc l) {
     return true;
   }
   
+  GameObj* targetObs = collidingGob(l.x,l.y);
+  Sorts::terrainModule->removeGob(targetObs);
   Sorts::terrainModule->findPath(sourceObj, 
                                  l, tempPath);
+  Sorts::terrainModule->insertGob(targetObs);
   return (tempPath.locs.size() > 0);
 }
 

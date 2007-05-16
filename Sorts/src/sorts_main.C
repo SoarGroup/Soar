@@ -38,8 +38,9 @@
 #include "GameActionManager.h"
 #include "Sorts.h"
 
+#include "Options.H"
 #include "TerrainModule.H"
-#include "Demo_SimpleTerrain.H"
+#include "SimpleTerrain.H"
 
 #define msg std::cout << "MAIN: "
 
@@ -117,10 +118,11 @@ void printOutput
   Agent*          pAgent,
   const char*     pMessage)
 {
-  ofstream& file = *((ofstream*) pUserData);
-  file << time(NULL) << "| " << pMessage << endl;
-  //file << pMessage << endl;
+  //ofstream& file = *((ofstream*) pUserData);
+  //file << time(NULL) << "| " << pMessage << endl;
+   //file << pMessage << endl;
 
+  cout << pMessage << endl;
 #ifdef USE_CANVAS
   // enable this block to print the soar decision in the canvas,
   // which hurts performance a bit
@@ -259,7 +261,7 @@ void* RunOrts(void* ptr) {
   }
 }
 
-typedef Demo_SimpleTerrain::ST_Terrain Terrain;
+typedef SimpleTerrain::ST_Terrain Terrain;
 
 Agent* initSoarRemote() {
    Kernel* pKernel = Kernel::CreateRemoteConnection(true, "127.0.0.1", 12121);
@@ -424,8 +426,12 @@ int main(int argc, char *argv[]) {
   /*********************************
    * Set up the connection to ORTS *
    *********************************/
+  Game::Options::add();
   GameStateModule::Options::add();
   Terrain::add_options();
+  
+  Options::process(0, argv, cerr, "SORTS"); 
+  Options::set("-seed", seed);
 
   GameStateModule::Options gsmo;
   gsmo.port = port;
@@ -498,14 +504,14 @@ int main(int argc, char *argv[]) {
 
   ofstream* soar_log = 0;
   if (printSoar) {
-    soar_log = new ofstream("soar.log", ios::out);
-    if (soar_log && soar_log->is_open()) {
+    //soar_log = new ofstream("soar.log", ios::out);
+    //if (soar_log && soar_log->is_open()) {
       pAgent->RegisterForPrintEvent(smlEVENT_PRINT, printOutput, soar_log);  
-    }
-    else {
-      cout << "Failed to open soar.log for writing." << endl;
-      soar_log = 0;
-    }
+    //}
+    //else {
+    //  cout << "Failed to open soar.log for writing." << endl;
+    //  soar_log = 0;
+    //}
   }
  
   // start Soar in a different thread
