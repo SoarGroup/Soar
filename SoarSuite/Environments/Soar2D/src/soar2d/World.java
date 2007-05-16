@@ -1621,5 +1621,6 @@ public class World {
 		}
 		
 		thePlayer.setPoints(lowestScore, "interrupted");
+		this.stopAndDumpStats("interrupted", getSortedScores());
 	}
 }
