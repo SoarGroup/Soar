@@ -1596,6 +1596,9 @@ public class World {
 	}
 
 	public void interruped(String name) {
+		if (Soar2D.wm.using()) {
+			return;
+		}
 		if (players.size() <= 1) {
 			return;
 		}
