@@ -148,6 +148,7 @@ class Tourney(threading.Thread):
 		match_info = None
 		match_file = None
 		
+		documentErrors = 0
 		while True:
 			failed = False
 			
@@ -158,6 +159,10 @@ class Tourney(threading.Thread):
 				failed = True
 			if not failed:
 				break
+			documentErrors += 1
+			if documentErrors >= 3:
+				match_info = match_file.read()
+				break;
 			logging.warning("Got document instead of match, trying again.")
 			time.sleep(2)
 			
@@ -256,7 +261,7 @@ class Tourney(threading.Thread):
 
 	def parse_results(self):
 		# parse results
-		match_log = open("ladder.log", 'r')
+		match_log = open("%d.log" % self.status.match_id, 'r')
 
 		scores = {}
 		statuses = {}
@@ -270,7 +275,7 @@ class Tourney(threading.Thread):
 						continue
 					self.status.mem_killed_tanks.append(match.group(1))
 					logging.info("%s exceeded maximum memory usage." % match.group(1))
-					urllib.urlopen('http://tsladder:vx0beeHH@localhost:54424/TankSoarLadder/disable_participant?tournament_name=%s&tank_name=%s&reason=mem_exceeded' % (Tourney.status.tournament_name, tank_name))
+					urllib.urlopen('http://tsladder:vx0beeHH@localhost:54424/TankSoarLadder/disable_participant?tournament_name=%s&tank_name=%s&reason=mem_exceeded' % (self.status.tournament_name, match.group(1)))
 					continue
 				self.status.interrupted_tanks.append(match.group(1))
 				logging.info("%s was interrupted." % match.group(1))
@@ -283,9 +288,9 @@ class Tourney(threading.Thread):
 			statuses[tankname] = status
 		
 		match_log.close()
-		os.system("bzip2 --best -f ladder.log")
+		os.system("bzip2 --best -f %d.log" % self.status.match_id)
 
-		match_log_zipped = open("ladder.log.bz2", 'r')
+		match_log_zipped = open("%d.log.bz2" % self.status.match_id, 'r')
 		self.status.results(scores, statuses, match_log_zipped.read())
 		match_log_zipped.close()
 
@@ -432,7 +437,7 @@ def ts_status(tournament, message):
 def ts_score(tournament, message):
 	#logging.info("Score message received.")
 
-	os.system('grep score ladder.log > grep_score.txt')
+	os.system('grep score %d.log > grep_score.txt' % tournament.status.match_id)
 	response = {}
 
 	log = open("grep_score.txt", 'r')
