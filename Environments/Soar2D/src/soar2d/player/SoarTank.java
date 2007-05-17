@@ -91,6 +91,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 			}
 		} else if (!mem_exceeded && eventID == smlRunEventId.smlEVENT_MAX_MEMORY_USAGE_EXCEEDED.swigValue()) {
 			logger.warning(getName() + ": agent exceeded maximum memory usage");
+			Soar2D.simulation.world.interruped(agent.GetAgentName());
 			Soar2D.control.stopSimulation();
 			mem_exceeded = true;
 		} else {
