@@ -691,17 +691,6 @@ public class World {
 		Point2D.Double oldFloatLocation = floatLocations.get(player.getName());
 		Point2D.Double newFloatLocation = new Point2D.Double(oldFloatLocation.x, oldFloatLocation.y);
 
-		/*
-		 * x-axis: cosine
-		 * y-axis: sine
-		 * 
-		 * east:    0   0
-		 * south:  90  pi/2
-		 * west:  180  pi
-		 * north: 270 3pi/2
-		 */
-		
-		
 		newFloatLocation.x += player.getVelocity().x;
 		newFloatLocation.y += player.getVelocity().y;
 		
@@ -709,30 +698,94 @@ public class World {
 		newLocation.y = (int)newFloatLocation.y / cellSize;
 		
 		if (map.getAllWithProperty(newLocation, Names.kPropertyBlock).size() > 0) {
-//			System.out.println("blocked");
+			// 1) determine what edge we're intersecting
+			int edgeDirection = -1;
+			if (newLocation.x > oldLocation.x) {
+				// east
+				edgeDirection = Direction.kEastInt;
+				System.out.println("east");
+			} else if (newLocation.x < oldLocation.x) {
+				// west
+				edgeDirection = Direction.kWestInt;
+				System.out.println("west");
+			}
 			
-			lastMoves.get(player.getName()).forward = false;
-			lastMoves.get(player.getName()).backward = false;
-			player.setVelocity(new Point2D.Double(0,0));
+			boolean corner = false;
+			if (newLocation.y > oldLocation.y) {
+				if (edgeDirection != -1) {
+					corner = true;
+				}
+				// south
+				edgeDirection = Direction.kSouthInt;
+				System.out.println("south");
+			} else if (newLocation.y < oldLocation.y) {
+				if (edgeDirection != -1) {
+					corner = true;
+				}
+				// north
+				edgeDirection = Direction.kNorthInt;
+				System.out.println("north");
+			}
 			
-//			if (newLocation.x > oldLocation.x) {
-//				
-//			} else if (newLocation.x < oldLocation.x) {
-//				
-//			}
-//			
-//			if (newLocation.y > oldLocation.y) {
-//				
-//			} else if (newLocation.y < oldLocation.y) {
-//				
-//			}
+			if (corner) {
+				// do more complex edge finding action
+				assert false;
+			}
+			
+			// 2) let xi, yi equal current position (known)
+			//    let xp, yp equal projected position (known)
+			//    let xf, yf equal final (actual) position (unknown)
+			// 3) find slope
+			//    slope is heading
+			// 4) let xf or yf equal x or y of edge we are intersecting
+			//    use edge - 1 for high edges to avoid moving in to the next cell
+			// 5) solve for the other, xf or yf using slope equation
+			//    m = yf - yi / xf - xi
+			//    xf = ((yf - yi) / m) + xi
+			//    yf = m(xf - xi) + yi
+			//    or scale vector using heading
+			
+			Point2D.Double finalFloatLocation = new Point2D.Double(0,0);
+			finalFloatLocation.x = cellSize * oldLocation.x;
+			finalFloatLocation.y = cellSize * oldLocation.y;
+			double scale = 0;
+			
+			switch(edgeDirection) {
+			case Direction.kEastInt:
+				// 4)
+				finalFloatLocation.x += cellSize - 0.1;
+				// falls through
+				
+			case Direction.kWestInt:
+				scale = (finalFloatLocation.x - oldFloatLocation.x) / Math.cos(player.getHeadingRadians());
+				finalFloatLocation.y = oldFloatLocation.y + (Math.sin(player.getHeadingRadians()) * scale);
+				break;
+				
+			case Direction.kSouthInt:
+				// 4)
+				finalFloatLocation.y += cellSize - 0.1;
+				// falls through
+				
+			case Direction.kNorthInt:
+				scale = (finalFloatLocation.y - oldFloatLocation.y) / Math.sin(player.getHeadingRadians());
+				finalFloatLocation.x = oldFloatLocation.x + (Math.cos(player.getHeadingRadians()) * scale);
+				break;
+				
+			default:
+				// multiple edge indicators should have been removed in complex corner
+				// case handling
+				assert false;
+				break;
+			}
 
+			assert oldLocation.x == (int)finalFloatLocation.x / cellSize;
+			assert oldLocation.y == (int)finalFloatLocation.y / cellSize;
+			floatLocations.put(player.getName(), finalFloatLocation);
+			
+			// adjust velocity according to distance travelled
+			player.setVelocity(new Point2D.Double(Math.cos(player.getHeadingRadians()) * scale,Math.sin(player.getHeadingRadians()) * scale));
+			
 		} else {
-			
-//			System.out.println("       heading: " + player.getHeadingRadians());
-//			System.out.println("float location: " + newFloatLocation);
-//			System.out.println("      location: " + newLocation);
-
 			map.setPlayer(oldLocation, null);
 			locations.put(player.getName(), newLocation);
 			floatLocations.put(player.getName(), newFloatLocation);
@@ -791,7 +844,7 @@ public class World {
 			
 			// if we have velocity, process move
 			if (player.getSpeed() > 0) {
-				System.out.println("Moving player");
+				//System.out.println("Moving player");
 				bookMovePlayer(player);
 			}
 		}
@@ -1626,5 +1679,38 @@ public class World {
 		lowestScore -= 1;
 		thePlayer.setPoints(lowestScore, "interrupted");
 		this.stopAndDumpStats("interrupted", getSortedScores());
+	}
+	
+	public double angleOff(Player player, Point2D.Double target) {
+		Point2D.Double playerVector = new Point2D.Double();
+		playerVector.x = getFloatLocation(player).x;
+		playerVector.y = getFloatLocation(player).y;
+		
+		Point2D.Double targetVector = new Point2D.Double();
+		targetVector.x = target.x;
+		targetVector.y = target.y;
+		
+		// translate target so i'm the origin
+		targetVector.x -= playerVector.x;
+		targetVector.y -= playerVector.y;
+		
+		// make target unit vector
+		double targetVectorLength = Math.sqrt(Math.pow(targetVector.x, 2) + Math.pow(targetVector.y, 2));
+		assert targetVectorLength > 0;
+		targetVector.x /= targetVectorLength;
+		targetVector.y /= targetVectorLength;
+		
+		// make player facing vector
+		playerVector.x = Math.cos(player.getHeadingRadians());
+		playerVector.y = Math.sin(player.getHeadingRadians());
+		
+		double dotProduct = (targetVector.x * playerVector.x) + (targetVector.y * playerVector.y);
+		double crossProduct = (targetVector.x * playerVector.y) - (targetVector.y * playerVector.x);
+		
+		// calculate inverse cosine of that for angle
+		if (crossProduct < 0) {
+			return Math.acos(dotProduct);
+		}
+		return Math.acos(dotProduct) * -1;
 	}
 }
