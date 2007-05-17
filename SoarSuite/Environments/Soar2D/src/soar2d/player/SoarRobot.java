@@ -317,38 +317,7 @@ public class SoarRobot extends Robot {
 								door.addDest(destIter.next().intValue());
 							}
 							
-							Point2D.Double myVector = new Point2D.Double();
-							myVector.x = world.getFloatLocation(this).x;
-							myVector.y = world.getFloatLocation(this).y;
-							
-							Point2D.Double doorVector = new Point2D.Double();
-							doorVector.x = barrier.centerpoint().x;
-							doorVector.y = barrier.centerpoint().y;
-							
-							// translate door so i'm the origin
-							doorVector.x -= myVector.x;
-							doorVector.y -= myVector.y;
-							
-							// make door unit vector
-							double doorVectorLength = Math.sqrt(Math.pow(doorVector.x, 2) + Math.pow(doorVector.y, 2));
-							assert doorVectorLength > 0;
-							doorVector.x /= doorVectorLength;
-							doorVector.y /= doorVectorLength;
-							
-							// make my facing vector
-							myVector.x = Math.cos(getHeadingRadians());
-							myVector.y = Math.sin(getHeadingRadians());
-							
-							double dotProduct = (doorVector.x * myVector.x) + (doorVector.y * myVector.y);
-							double crossProduct = (doorVector.x * myVector.y) - (doorVector.y * myVector.x);
-							
-							// calculate inverse cosine of that for angle
-							if (crossProduct < 0) {
-								agent.Update(door.angleOff, Math.acos(dotProduct));
-							} else {
-								agent.Update(door.angleOff, Math.acos(dotProduct) * -1);
-							}
-
+							agent.Update(door.angleOff, world.angleOff(this, barrier.centerpoint()));
 							selfIL.addDoor(door);
 							
 						} else {
