@@ -294,6 +294,9 @@ class Tourney(threading.Thread):
 		self.status.results(scores, statuses, match_log_zipped.read())
 		match_log_zipped.close()
 
+		# remove the file when done
+		os.remove("%d.log.bz2" % self.status.match_id)
+
 	def do_match(self):
 
 		if not self.bootstrap_match():

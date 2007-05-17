@@ -1610,7 +1610,6 @@ public class World {
 				if (lowestScore == null) {
 					lowestScore = new Integer(player.getPoints());
 				} else {
-					lowestScore -= 1;
 					lowestScore = Math.min(lowestScore, player.getPoints());
 				}
 			}
@@ -1621,6 +1620,7 @@ public class World {
 			return;
 		}
 		
+		lowestScore -= 1;
 		thePlayer.setPoints(lowestScore, "interrupted");
 		this.stopAndDumpStats("interrupted", getSortedScores());
 	}
