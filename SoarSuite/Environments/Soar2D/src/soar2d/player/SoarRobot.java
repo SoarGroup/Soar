@@ -28,7 +28,7 @@ class SelfInputLink {
 	FloatElement yaw;
 	IntElement area;
 	Identifier areaDescription;
-	ArrayList<WallInputLink> walls = new ArrayList<WallInputLink>();
+	ArrayList<BarrierInputLink> walls = new ArrayList<BarrierInputLink>();
 	ArrayList<GatewayInputLink> gateways = new ArrayList<GatewayInputLink>();
 	Identifier collision;
 	StringElement collisionX;
@@ -102,7 +102,7 @@ class SelfInputLink {
 		return robot.agent.CreateIdWME(areaDescription, "gateway");
 	}
 	
-	void addWall(WallInputLink wall) {
+	void addWall(BarrierInputLink wall) {
 		walls.add(wall);
 	}
 	
@@ -111,7 +111,7 @@ class SelfInputLink {
 	}
 	
 	void destroyAreaDescription() {
-		walls = new ArrayList<WallInputLink>();
+		walls = new ArrayList<BarrierInputLink>();
 		gateways = new ArrayList<GatewayInputLink>();
 
 		if (areaDescription == null) {
@@ -130,7 +130,7 @@ class SelfInputLink {
 	}
 }
 
-class WallInputLink {
+class BarrierInputLink {
 	SoarRobot robot;
 	IntElement id;
 	Identifier parent, left, right, center;
@@ -138,12 +138,14 @@ class WallInputLink {
 	FloatElement x, y, angleOff;
 	StringElement direction;
 	
-	WallInputLink(SoarRobot robot, Identifier parent) {
+	Point2D.Double centerpoint;
+	
+	BarrierInputLink(SoarRobot robot, Identifier parent) {
 		this.robot = robot;
 		this.parent = parent;
 	}
 	
-	void initialize(Barrier barrier) {
+	void initialize(Barrier barrier, World world) {
 		id = robot.agent.CreateIntWME(parent, "id", barrier.id);
 		left = robot.agent.CreateIdWME(parent, "left");
 		{
@@ -157,15 +159,16 @@ class WallInputLink {
 		}
 		center = robot.agent.CreateIdWME(parent, "center");
 		{
-			x = robot.agent.CreateFloatWME(center, "x", barrier.centerpoint().x);
-			y = robot.agent.CreateFloatWME(center, "y", barrier.centerpoint().y);
-			angleOff = robot.agent.CreateFloatWME(center, "angle-off", 0);
+			centerpoint = barrier.centerpoint();
+			x = robot.agent.CreateFloatWME(center, "x", centerpoint.x);
+			y = robot.agent.CreateFloatWME(center, "y", centerpoint.y);
+			angleOff = robot.agent.CreateFloatWME(center, "angle-off", world.angleOff(robot, centerpoint));
 		}
 		direction = robot.agent.CreateStringWME(parent, "direction", Direction.stringOf[barrier.direction]);
 	}
 }
 
-class GatewayInputLink extends WallInputLink {
+class GatewayInputLink extends BarrierInputLink {
 	ArrayList<IntElement> toList = new ArrayList<IntElement>();
 	
 	GatewayInputLink(SoarRobot robot, Identifier parent) {
@@ -229,6 +232,8 @@ public class SoarRobot extends Robot {
 		this.agent = agent;
 		this.shutdownCommands = playerConfig.getShutdownCommands();
 		
+		agent.SetBlinkIfNoChange(false);
+
 		previousLocation = new java.awt.Point(-1, -1);
 		
 		random = 0;
@@ -310,7 +315,7 @@ public class SoarRobot extends Robot {
 						if (barrier.gateway) {
 							// gateway
 							GatewayInputLink gateway = new GatewayInputLink(this, selfIL.createGatewayId());
-							gateway.initialize(barrier);
+							gateway.initialize(barrier, world);
 							
 							// add destinations
 							ArrayList<Integer> gatewayDestList = world.getMap().getGatewayDestinationList(barrier.id);
@@ -319,13 +324,12 @@ public class SoarRobot extends Robot {
 								gateway.addDest(destIter.next().intValue());
 							}
 							
-							agent.Update(gateway.angleOff, world.angleOff(this, barrier.centerpoint()));
 							selfIL.addGateway(gateway);
 							
 						} else {
 							// wall
-							WallInputLink wall = new WallInputLink(this, selfIL.createWallId());
-							wall.initialize(barrier);
+							BarrierInputLink wall = new BarrierInputLink(this, selfIL.createWallId());
+							wall.initialize(barrier, world);
 							selfIL.addWall(wall);
 						}
 					}
@@ -340,8 +344,21 @@ public class SoarRobot extends Robot {
 			agent.Update(selfIL.x, floatLocation.x);
 			agent.Update(selfIL.y, floatLocation.y);
 			
-			// and heading
+			// heading
 			agent.Update(selfIL.yaw, getHeadingRadians());
+			
+			// barrier angle offs
+			Iterator<BarrierInputLink> wallIter = selfIL.walls.iterator();
+			while (wallIter.hasNext()) {
+				BarrierInputLink barrier = wallIter.next();
+				agent.Update(barrier.angleOff, world.angleOff(this, barrier.centerpoint));
+			}
+			
+			Iterator<GatewayInputLink> gatewayIter = selfIL.gateways.iterator();
+			while (gatewayIter.hasNext()) {
+				BarrierInputLink barrier = gatewayIter.next();
+				agent.Update(barrier.angleOff, world.angleOff(this, barrier.centerpoint));
+			}
 			
 			// update the clock
 			agent.Update(selfIL.cycle, world.getWorldCount());
@@ -354,22 +371,14 @@ public class SoarRobot extends Robot {
 		
 		// collisions
 		if (collisionX) {
-			if (selfIL.collisionX.GetValue().equals("false")) {
-				agent.Update(selfIL.collisionX, "true");
-			}
+			agent.Update(selfIL.collisionX, "true");
 		} else {
-			if (selfIL.collisionX.GetValue().equals("true")) {
-				agent.Update(selfIL.collisionX, "false");
-			}
+			agent.Update(selfIL.collisionX, "false");
 		}
 		if (collisionY) {
-			if (selfIL.collisionY.GetValue().equals("false")) {
-				agent.Update(selfIL.collisionY, "true");
-			}
+			agent.Update(selfIL.collisionY, "true");
 		} else {
-			if (selfIL.collisionY.GetValue().equals("true")) {
-				agent.Update(selfIL.collisionY, "false");
-			}
+			agent.Update(selfIL.collisionY, "false");
 		}
 		
 		// time
