@@ -64,8 +64,10 @@ class SelfInputLink {
 		}
 		area = robot.agent.CreateIntWME(self, "area", -1);
 		collision = robot.agent.CreateIdWME(self, "collision");
-		collisionX = robot.agent.CreateStringWME(self, "collision", "false");
-		collisionY = robot.agent.CreateStringWME(self, "collision", "false");
+		{
+			collisionX = robot.agent.CreateStringWME(collision, "x", "false");
+			collisionY = robot.agent.CreateStringWME(collision, "y", "false");
+		}
 		cycle = robot.agent.CreateIntWME(self, "cycle", 0);
 		score = robot.agent.CreateIntWME(self, "score", 0);
 		position = robot.agent.CreateIdWME(self, "position");
@@ -346,9 +348,32 @@ public class SoarRobot extends Robot {
 		}
 		
 		// velocity
-		agent.Update(selfIL.speed, getSpeed());
+		agent.Update(selfIL.speed, Math.sqrt(Math.pow(this.getVelocity().x, 2) + Math.pow(this.getVelocity().y, 2)));
 		agent.Update(selfIL.dx, getVelocity().x);
 		agent.Update(selfIL.dy, getVelocity().y);
+		
+		// collisions
+		if (collisionX) {
+			if (selfIL.collisionX.GetValue().equals("false")) {
+				agent.Update(selfIL.collisionX, "true");
+			}
+		} else {
+			if (selfIL.collisionX.GetValue().equals("true")) {
+				agent.Update(selfIL.collisionX, "false");
+			}
+		}
+		if (collisionY) {
+			if (selfIL.collisionY.GetValue().equals("false")) {
+				agent.Update(selfIL.collisionY, "true");
+			}
+		} else {
+			if (selfIL.collisionY.GetValue().equals("true")) {
+				agent.Update(selfIL.collisionY, "false");
+			}
+		}
+		
+		// time
+		agent.Update(selfIL.time, world.getTime());
 		
 		// update the random no matter what
 		float oldrandom = random;
