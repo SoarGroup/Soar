@@ -509,7 +509,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 						
 					} else {
 						
-						if (map.getAllWithProperty(location, Names.kPropertyDoorRender).size() == 0) {
+						if (map.getAllWithProperty(location, Names.kPropertyGatewayRender).size() == 0) {
 							
 							if (!Soar2D.config.getColoredRooms()) {
 								// normal:

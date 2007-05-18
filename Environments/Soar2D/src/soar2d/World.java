@@ -795,6 +795,22 @@ public class World {
 		return result;
 	}
 	
+	private void setRotationAndAbsoluteHeading(Player player, double heading, double time) {
+		if (heading < player.getHeadingRadians()) {
+			player.setRotationSpeed(Soar2D.config.getRotateSpeed() * -1 * time);
+			player.setDestinationHeading(heading);
+		}
+		else if (heading > player.getHeadingRadians()) {
+			player.setRotationSpeed(Soar2D.config.getRotateSpeed() * time);
+			player.setDestinationHeading(heading);
+		}
+		else {
+			player.setRotationSpeed(0);
+			player.resetDestinationHeading();
+		}
+		
+	}
+	
 	private void bookUpdate() {
 		final double time = (float)Soar2D.config.getASyncDelay() / 1000.0f;
 		totalTime += time;
@@ -828,18 +844,7 @@ public class World {
 					move.rotateAbsoluteHeading += 2 * Math.PI;
 				}
 				move.rotateAbsoluteHeading = fmod(move.rotateAbsoluteHeading, 2 * Math.PI);
-				if (move.rotateAbsoluteHeading < player.getHeadingRadians()) {
-					player.setRotationSpeed(Soar2D.config.getRotateSpeed() * -1 * time);
-					player.setDestinationHeading(move.rotateAbsoluteHeading);
-				}
-				else if (move.rotateAbsoluteHeading > player.getHeadingRadians()) {
-					player.setRotationSpeed(Soar2D.config.getRotateSpeed() * time);
-					player.setDestinationHeading(move.rotateAbsoluteHeading);
-				}
-				else {
-					player.setRotationSpeed(0);
-					player.resetDestinationHeading();
-				}
+				setRotationAndAbsoluteHeading(player, move.rotateAbsoluteHeading, time);
 			}
 			else if (move.rotateRelative) {
 				double absoluteHeading = player.getHeadingRadians() + move.rotateRelativeAmount;
@@ -848,18 +853,7 @@ public class World {
 					absoluteHeading += 2 * Math.PI;
 				}
 				absoluteHeading = fmod(absoluteHeading, 2 * Math.PI);
-				if (absoluteHeading < player.getHeadingRadians()) {
-					player.setRotationSpeed(Soar2D.config.getRotateSpeed() * -1 * time);
-					player.setDestinationHeading(absoluteHeading);
-				}
-				else if (absoluteHeading > player.getHeadingRadians()) {
-					player.setRotationSpeed(Soar2D.config.getRotateSpeed() * time);
-					player.setDestinationHeading(absoluteHeading);
-				}
-				else {
-					player.setRotationSpeed(0);
-					player.resetDestinationHeading();
-				}
+				setRotationAndAbsoluteHeading(player, absoluteHeading, time);
 			}
 
 			// update heading if we rotate

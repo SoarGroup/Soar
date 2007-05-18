@@ -20,7 +20,7 @@ full implementation:
 					^y <float> center of wall in y dimention
 					^angle-off <float> angle to center of wall
 				^direction [north south east west] direction to turn to face the wall
-			*^door one for each door segment
+			*^gateway one for each gateway segment
 				^id <int> unique identification number of segment
 				^left location of one end
 					^row <int>
@@ -29,11 +29,11 @@ full implementation:
 					^row <int>
 					^col <int>
 				^center
-					^x <float> center of door in x dimention
-					^y <float> center of door in y dimention
-					^angle-off <float> angle to center of door
-				^direction [north south east west] direction to turn to face the door
-				+^to <int> id of room this door leads to
+					^x <float> center of gateway in x dimention
+					^y <float> center of gateway in y dimention
+					^angle-off <float> angle to center of gateway
+				^direction [north south east west] direction to turn to face the gateway
+				+^to <int> id of room this gateway leads to
 		^collision
 			^x [true false] currently colliding on the x component of the velocity vector
 			^y [true false] currently colliding on the y component of the velocity vector
@@ -56,7 +56,7 @@ full implementation:
 #	+^object
 #		^angle-off <float> relative to direction I'm facing
 #		^area <int> unique id number
-#		^type <string> [block ramp cat dog door]
+#		^type <string> [block ramp cat dog gateway]
 #		?^up-direction <float> direction to pass through the ramp to go up
 #		^position
 #			^x <float> exact position in pixels

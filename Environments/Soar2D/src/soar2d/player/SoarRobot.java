@@ -29,7 +29,7 @@ class SelfInputLink {
 	IntElement area;
 	Identifier areaDescription;
 	ArrayList<WallInputLink> walls = new ArrayList<WallInputLink>();
-	ArrayList<DoorInputLink> doors = new ArrayList<DoorInputLink>();
+	ArrayList<GatewayInputLink> gateways = new ArrayList<GatewayInputLink>();
 	Identifier collision;
 	StringElement collisionX;
 	StringElement collisionY;
@@ -97,22 +97,22 @@ class SelfInputLink {
 		return robot.agent.CreateIdWME(areaDescription, "wall");
 	}
 	
-	Identifier createDoorId() {
+	Identifier createGatewayId() {
 		assert areaDescription != null;
-		return robot.agent.CreateIdWME(areaDescription, "door");
+		return robot.agent.CreateIdWME(areaDescription, "gateway");
 	}
 	
 	void addWall(WallInputLink wall) {
 		walls.add(wall);
 	}
 	
-	void addDoor(DoorInputLink door) {
-		doors.add(door);
+	void addGateway(GatewayInputLink gateway) {
+		gateways.add(gateway);
 	}
 	
 	void destroyAreaDescription() {
 		walls = new ArrayList<WallInputLink>();
-		doors = new ArrayList<DoorInputLink>();
+		gateways = new ArrayList<GatewayInputLink>();
 
 		if (areaDescription == null) {
 			return;
@@ -165,10 +165,10 @@ class WallInputLink {
 	}
 }
 
-class DoorInputLink extends WallInputLink {
+class GatewayInputLink extends WallInputLink {
 	ArrayList<IntElement> toList = new ArrayList<IntElement>();
 	
-	DoorInputLink(SoarRobot robot, Identifier parent) {
+	GatewayInputLink(SoarRobot robot, Identifier parent) {
 		super(robot, parent);
 	}
 	
@@ -307,20 +307,20 @@ public class SoarRobot extends Robot {
 					Iterator<Barrier> iter = barrierList.iterator();
 					while(iter.hasNext()) {
 						Barrier barrier = iter.next();
-						if (barrier.door) {
-							// door
-							DoorInputLink door = new DoorInputLink(this, selfIL.createDoorId());
-							door.initialize(barrier);
+						if (barrier.gateway) {
+							// gateway
+							GatewayInputLink gateway = new GatewayInputLink(this, selfIL.createGatewayId());
+							gateway.initialize(barrier);
 							
 							// add destinations
-							ArrayList<Integer> doorDestList = world.getMap().getDoorDestinationList(barrier.id);
-							Iterator<Integer> destIter = doorDestList.iterator();
+							ArrayList<Integer> gatewayDestList = world.getMap().getGatewayDestinationList(barrier.id);
+							Iterator<Integer> destIter = gatewayDestList.iterator();
 							while(destIter.hasNext()) {
-								door.addDest(destIter.next().intValue());
+								gateway.addDest(destIter.next().intValue());
 							}
 							
-							agent.Update(door.angleOff, world.angleOff(this, barrier.centerpoint()));
-							selfIL.addDoor(door);
+							agent.Update(gateway.angleOff, world.angleOff(this, barrier.centerpoint()));
+							selfIL.addGateway(gateway);
 							
 						} else {
 							// wall
