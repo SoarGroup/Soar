@@ -30,6 +30,7 @@ public class Configuration {
 		// meta
 		this.setType(config.simType);
 		this.map = config.map.getAbsoluteFile();
+		this.port = config.port;
 
 		// general
 		this.random = config.random;
@@ -256,6 +257,21 @@ public class Configuration {
 		return this.map;
 	}
 	
+	private final int kDefaultPort = 12121;
+	private int port = kDefaultPort; // use default
+	private static final String kTagPort = "port";
+	public void setPort(int port) {
+		if (port < 0) {
+			return;
+		} else if (port > 65535) {
+			return;
+		}
+		this.port = port;
+	}
+	public int getPort() {
+		return this.port;
+	}
+	
 	// random execution
 	private boolean random = true; 	// If true, use random numbers (don't seed generators)
 	private int randomSeed = 0;		// if random is false, this is the seed
@@ -334,6 +350,10 @@ public class Configuration {
 		
 		general.addContent(new Element(kTagMap).setText(this.map.getPath()));
 		
+		if (this.port != kDefaultPort) {
+			general.addContent(new Element(kTagPort).setText(Integer.toString(this.port)));
+		}
+		
 		if (this.hasRandomSeed()) {
 			general.addContent(new Element(kTagSeed).setText(Integer.toString(this.getRandomSeed())));
 		}
@@ -398,13 +418,20 @@ public class Configuration {
 		while (iter.hasNext()) {
 			Element child = (Element)iter.next();
 			
-			if (child.getName().equalsIgnoreCase(kTagSeed)) {
+			if (child.getName().equalsIgnoreCase(kTagPort)) {
+				try {
+					setPort(Integer.parseInt(child.getTextTrim()));
+				} catch (NumberFormatException e) {
+					throw new LoadError("Error parsing port.");
+				}
+				
+			} else if (child.getName().equalsIgnoreCase(kTagSeed)) {
 				try {
 					setRandomSeed(Integer.parseInt(child.getTextTrim()));
 				} catch (NumberFormatException e) {
 					throw new LoadError("Error parsing seed.");
 				}
-				
+					
 			} else if (child.getName().equalsIgnoreCase(kTagRemote)) {
 				setRemote(true);
 				

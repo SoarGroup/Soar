@@ -4,6 +4,8 @@
 			enum { tanksoar, eaters, book }
 		<map>
 			string filename
+		?<port>
+			int port (what ip port to listen on)
 		?<seed>
 			int seed
 		?<remote>

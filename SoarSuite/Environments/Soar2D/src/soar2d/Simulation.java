@@ -72,7 +72,7 @@ public class Simulation {
 			kernel = Kernel.CreateRemoteConnection(true);
 		} else {
 			// Create kernel
-			kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", 12121);
+			kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", Soar2D.config.getPort());
 			//kernel = Kernel.CreateKernelInCurrentThread("SoarKernelSML", true);
 		}
 
