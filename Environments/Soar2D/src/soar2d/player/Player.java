@@ -25,11 +25,11 @@ public class Player {
 	private boolean pointsChanged = false;
 	private int pointsDelta = 0;
 
-	private float headingRadians = 0;	// heading in radians
-	public float getHeadingRadians() {
+	private double headingRadians = 0;	// heading in radians
+	public double getHeadingRadians() {
 		return headingRadians;
 	}
-	public void setHeadingRadians(float heading) {
+	public void setHeadingRadians(double heading) {
 		this.headingRadians = heading;
 	}
 	
@@ -354,21 +354,49 @@ public class Player {
 	private Point2D.Double velocity = new Point2D.Double(0,0);
 	public void setVelocity(Point2D.Double velocity) {
 		assert velocity != null;
-		//System.out.println("Velocity to " + velocity);
 		this.velocity = velocity;
 	}
 	public Point2D.Double getVelocity() {
 		return this.velocity;
 	}
+	
+	private double speed = 0;
+	public void setSpeed(double speed) {
+		this.speed = speed;
+	}
 	public double getSpeed() {
-		return Math.sqrt(Math.pow(velocity.x, 2) + Math.pow(velocity.y, 2));	
+		return speed;
 	}
 	
-	private boolean reverse = false;
-	public void setReverse(boolean reverse) {
-		this.reverse = reverse;
+	private Double destinationHeading = null;
+	public boolean hasDestinationHeading() {
+		return destinationHeading != null;
 	}
-	public boolean getReverse() {
-		return this.reverse;
+	public double getDestinationHeading() {
+		assert destinationHeading != null;
+		return destinationHeading;
+	}
+	public void setDestinationHeading(double heading) {
+		this.destinationHeading = heading;
+	}
+	public void resetDestinationHeading() {
+		this.destinationHeading = null;
+	}
+	
+	private double rotationSpeed = 0;
+	public void setRotationSpeed(double rotationSpeed) {
+		this.rotationSpeed = rotationSpeed;
+	}
+	public double getRotationSpeed() {
+		return rotationSpeed;
+	}
+	
+	protected boolean collisionX = false;
+	protected boolean collisionY = false;
+	public void setCollisionX(boolean x) {
+		this.collisionX = x;
+	}
+	public void setCollisionY(boolean y) {
+		this.collisionY = y;
 	}
 }
