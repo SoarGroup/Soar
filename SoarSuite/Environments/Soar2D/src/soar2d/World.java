@@ -697,101 +697,80 @@ public class World {
 		newLocation.x = (int)newFloatLocation.x / cellSize;
 		newLocation.y = (int)newFloatLocation.y / cellSize;
 		
-		if (map.getAllWithProperty(newLocation, Names.kPropertyBlock).size() > 0) {
+		while (map.getAllWithProperty(newLocation, Names.kPropertyBlock).size() > 0) {
 			// 1) determine what edge we're intersecting
-			int edgeDirection = -1;
+			if ((newLocation.x != oldLocation.x) && (newLocation.y != oldLocation.y)) {
+				// corner case
+				java.awt.Point oldx = new java.awt.Point(oldLocation.x, newLocation.y);
+				
+				// if oldx is blocked
+				if (map.getAllWithProperty(oldx, Names.kPropertyBlock).size() > 0) {
+					// calculate y first
+					if (newLocation.y > oldLocation.y) {
+						// south
+						newFloatLocation.y = oldLocation.y * cellSize;
+						newFloatLocation.y += cellSize - 0.1;
+						newLocation.y = oldLocation.y;
+					} 
+					else if (newLocation.y < oldLocation.y) {
+						// north
+						newFloatLocation.y = oldLocation.y * cellSize;
+						newLocation.y = oldLocation.y;
+					} else {
+						assert false;
+					}
+				} 
+				else {
+					// calculate x first
+					if (newLocation.x > oldLocation.x) {
+						// east
+						newFloatLocation.x = oldLocation.x * cellSize;
+						newFloatLocation.x += cellSize - 0.1;
+						newLocation.x = oldLocation.x;
+					} 
+					else if (newLocation.x < oldLocation.x) {
+						// west
+						newFloatLocation.x = oldLocation.x * cellSize;
+						newLocation.x = oldLocation.x;
+					} else {
+						assert false;
+					} 
+				}
+				continue;
+			}
+			
 			if (newLocation.x > oldLocation.x) {
 				// east
-				edgeDirection = Direction.kEastInt;
-				System.out.println("east");
-			} else if (newLocation.x < oldLocation.x) {
+				newFloatLocation.x = oldLocation.x * cellSize;
+				newFloatLocation.x += cellSize - 0.1;
+				newLocation.x = oldLocation.x;
+			} 
+			else if (newLocation.x < oldLocation.x) {
 				// west
-				edgeDirection = Direction.kWestInt;
-				System.out.println("west");
-			}
-			
-			boolean corner = false;
-			if (newLocation.y > oldLocation.y) {
-				if (edgeDirection != -1) {
-					corner = true;
-				}
+				newFloatLocation.x = oldLocation.x * cellSize;
+				newLocation.x = oldLocation.x;
+			} 
+			else if (newLocation.y > oldLocation.y) {
 				// south
-				edgeDirection = Direction.kSouthInt;
-				System.out.println("south");
-			} else if (newLocation.y < oldLocation.y) {
-				if (edgeDirection != -1) {
-					corner = true;
-				}
+				newFloatLocation.y = oldLocation.y * cellSize;
+				newFloatLocation.y += cellSize - 0.1;
+				newLocation.y = oldLocation.y;
+			} 
+			else if (newLocation.y < oldLocation.y) {
 				// north
-				edgeDirection = Direction.kNorthInt;
-				System.out.println("north");
-			}
-			
-			if (corner) {
-				// do more complex edge finding action
-				assert false;
-			}
-			
-			// 2) let xi, yi equal current position (known)
-			//    let xp, yp equal projected position (known)
-			//    let xf, yf equal final (actual) position (unknown)
-			// 3) find slope
-			//    slope is heading
-			// 4) let xf or yf equal x or y of edge we are intersecting
-			//    use edge - 1 for high edges to avoid moving in to the next cell
-			// 5) solve for the other, xf or yf using slope equation
-			//    m = yf - yi / xf - xi
-			//    xf = ((yf - yi) / m) + xi
-			//    yf = m(xf - xi) + yi
-			//    or scale vector using heading
-			
-			Point2D.Double finalFloatLocation = new Point2D.Double(0,0);
-			finalFloatLocation.x = cellSize * oldLocation.x;
-			finalFloatLocation.y = cellSize * oldLocation.y;
-			double scale = 0;
-			
-			switch(edgeDirection) {
-			case Direction.kEastInt:
-				// 4)
-				finalFloatLocation.x += cellSize - 0.1;
-				// falls through
-				
-			case Direction.kWestInt:
-				scale = (finalFloatLocation.x - oldFloatLocation.x) / Math.cos(player.getHeadingRadians());
-				finalFloatLocation.y = oldFloatLocation.y + (Math.sin(player.getHeadingRadians()) * scale);
-				break;
-				
-			case Direction.kSouthInt:
-				// 4)
-				finalFloatLocation.y += cellSize - 0.1;
-				// falls through
-				
-			case Direction.kNorthInt:
-				scale = (finalFloatLocation.y - oldFloatLocation.y) / Math.sin(player.getHeadingRadians());
-				finalFloatLocation.x = oldFloatLocation.x + (Math.cos(player.getHeadingRadians()) * scale);
-				break;
-				
-			default:
-				// multiple edge indicators should have been removed in complex corner
-				// case handling
-				assert false;
-				break;
+				newFloatLocation.y = oldLocation.y * cellSize;
+				newLocation.y = oldLocation.y;
 			}
 
-			assert oldLocation.x == (int)finalFloatLocation.x / cellSize;
-			assert oldLocation.y == (int)finalFloatLocation.y / cellSize;
-			floatLocations.put(player.getName(), finalFloatLocation);
-			
 			// adjust velocity according to distance travelled
-			player.setVelocity(new Point2D.Double(Math.cos(player.getHeadingRadians()) * scale,Math.sin(player.getHeadingRadians()) * scale));
+			player.setVelocity(new Point2D.Double(newFloatLocation.x - oldFloatLocation.x, newFloatLocation.y - oldFloatLocation.y));
 			
-		} else {
-			map.setPlayer(oldLocation, null);
-			locations.put(player.getName(), newLocation);
-			floatLocations.put(player.getName(), newFloatLocation);
-			map.setPlayer(newLocation, player);
 		}
 		
+		map.setPlayer(oldLocation, null);
+		locations.put(player.getName(), newLocation);
+		floatLocations.put(player.getName(), newFloatLocation);
+		map.setPlayer(newLocation, player);
 	}
 	
 	private void bookUpdate() {
