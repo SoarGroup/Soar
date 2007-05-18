@@ -46,7 +46,7 @@ public class Names {
 	public static final String kDirectionID = "direction";
 	public static final String kDistanceID = "distance";
 	public static final String kDontEatID = "dont-eat";
-	public static final String kDoorID = "door";
+	public static final String kGatewayID = "gateway";
 	public static final String kEaterID = "eater";
 	public static final String kEnergyID = "energy";
 	public static final String kEnergyRechargerID = "energyrecharger";
@@ -109,8 +109,8 @@ public class Names {
 	public static final String kPropertyCharger = "charger";
 	public static final String kPropertyColor = "color";
 	public static final String kPropertyDirection = "direction";
-	public static final String kPropertyDoor = "door";
-	public static final String kPropertyDoorRender = "door-render";
+	public static final String kPropertyGateway = "gateway";
+	public static final String kPropertyGatewayRender = "gateway-render";
 	public static final String kPropertyEdible = "edible";
 	public static final String kPropertyEnergy = "energy";
 	public static final String kPropertyFlyPhase = "fly-phase";

@@ -3,13 +3,13 @@ package soar2d.world;
 import java.awt.Point;
 import java.util.ArrayList;
 
-public class Door {
+public class Gateway {
 
 	ArrayList<Integer> locationIDs;
 	Point leftExtent;
 	Point rightExtent;
 
-	Door(Point leftExtent, Point rightExtent) {
+	Gateway(Point leftExtent, Point rightExtent) {
 		this.leftExtent = new Point(leftExtent);
 		this.rightExtent = new Point(rightExtent);
 	}

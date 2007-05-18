@@ -4,9 +4,9 @@
   <property name="wall" value="true" />
   <property name="block" value="true"></property>
  </cell-object>
- <cell-object name="door" updatable="false">
-  <property name="id" value="door"></property>
-  <property name="door" value="true" />
+ <cell-object name="gateway" updatable="false">
+  <property name="id" value="gateway"></property>
+  <property name="gateway" value="true" />
  </cell-object>
  <cell-object name="room" updatable="false">
   <property name="id" value="room"></property>
@@ -281,16 +281,13 @@
     <object>wall</object>
    </cell>
    <cell>
-    <object>door</object>
+    <object>gateway</object>
    </cell>
    <cell>
-    <object>door</object>
+    <object>gateway</object>
    </cell>
    <cell>
-    <object>door</object>
-   </cell>
-   <cell>
-    <object>wall</object>
+    <object>gateway</object>
    </cell>
    <cell>
     <object>wall</object>
@@ -320,45 +317,17 @@
     <object>wall</object>
    </cell>
    <cell>
-    <object>door</object>
-   </cell>
-   <cell>
-    <object>door</object>
-   </cell>
-   <cell>
-    <object>door</object>
-   </cell>
-   <cell>
     <object>wall</object>
    </cell>
-  </row>
-  <row>
    <cell>
-    <object>wall</object>
+    <object>gateway</object>
    </cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
-   <cell></cell>
+   <cell>
+    <object>gateway</object>
+   </cell>
+   <cell>
+    <object>gateway</object>
+   </cell>
    <cell>
     <object>wall</object>
    </cell>
@@ -632,23 +601,54 @@
    <cell></cell>
    <cell></cell>
    <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell>
+    <object>wall</object>
+   </cell>
+  </row>
+  <row>
+   <cell>
+    <object>wall</object>
+   </cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
+   <cell></cell>
    <cell>
     <object>wall</object>
    </cell>
    <cell>
-    <object>door</object>
+    <object>gateway</object>
    </cell>
    <cell>
-    <object>door</object>
+    <object>gateway</object>
    </cell>
    <cell>
-    <object>door</object>
+    <object>gateway</object>
    </cell>
    <cell>
-    <object>door</object>
+    <object>gateway</object>
    </cell>
    <cell>
-    <object>door</object>
+    <object>gateway</object>
    </cell>
    <cell>
     <object>wall</object>

@@ -1398,12 +1398,12 @@ public class GridMap {
 	}
 
 	private int roomCount = 0;
-	private int doorCount = 0;
+	private int gatewayCount = 0;
 	private int wallCount = 0;
 	
 	public class Barrier {
 		public int id = -1;
-		public boolean door = false;
+		public boolean gateway = false;
 		
 		public java.awt.Point left;
 		public java.awt.Point right;
@@ -1480,8 +1480,8 @@ public class GridMap {
 			output += " (" + Integer.toString(left.x) + "," + Integer.toString(left.y) + ")-(" 
 					+ Double.toString(center.x) + "," + Double.toString(center.y) + ")-(" 
 					+ Integer.toString(right.x) + "," + Integer.toString(right.y) + ")";
-			if (door) {
-				output += " (door)";
+			if (gateway) {
+				output += " (gateway)";
 			}
 			return output;
 		}
@@ -1493,10 +1493,10 @@ public class GridMap {
 		return roomBarrierMap.get(roomID);
 	}
 
-	// Mapping of door id to the list of the ids of rooms it connects
-	private HashMap<Integer, ArrayList<Integer> > doorDestinationMap = new HashMap<Integer, ArrayList<Integer> >();
-	public ArrayList<Integer> getDoorDestinationList(int doorID) {
-		return doorDestinationMap.get(doorID);
+	// Mapping of gateway id to the list of the ids of rooms it connects
+	private HashMap<Integer, ArrayList<Integer> > gatewayDestinationMap = new HashMap<Integer, ArrayList<Integer> >();
+	public ArrayList<Integer> getGatewayDestinationList(int gatewayID) {
+		return gatewayDestinationMap.get(gatewayID);
 	}
 	
 	public boolean generateRoomStructure() {
@@ -1506,11 +1506,11 @@ public class GridMap {
 		LinkedList<java.awt.Point> floodQueue = new LinkedList<java.awt.Point>();
 		HashSet<java.awt.Point> explored = new HashSet<java.awt.Point>((this.size-2)*2);
 		
-		// this is where we will store door barriers for conversion to rooms 
+		// this is where we will store gateway barriers for conversion to rooms 
 		// in the second phase of map structure generation. 
-		// this will contain duplicates since two different doors can 
+		// this will contain duplicates since two different gateways can 
 		// be represented by the same squares
-		ArrayList<Barrier> doorBarriers = new ArrayList<Barrier>();
+		ArrayList<Barrier> gatewayBarriers = new ArrayList<Barrier>();
 
 		java.awt.Point location = new java.awt.Point();
 		for (location.y = 1; location.y < (this.size - 1); ++location.y) {
@@ -1521,14 +1521,14 @@ public class GridMap {
 				explored.add(location);
 				
 				Cell cell = getCell(location);
-				if (!cell.enterable() || cell.hasObject(Names.kPropertyDoor)) {
+				if (!cell.enterable() || cell.hasObject(Names.kPropertyGateway)) {
 					continue;
 				}
 				
 				assert cell.getObject(Names.kRoomID) == null;
 
 				// cell is enterable, we have a room
-				int roomNumber = roomCount + doorCount + wallCount;
+				int roomNumber = roomCount + gatewayCount + wallCount;
 				roomCount += 1;
 				
 				CellObject roomObject = cellObjectManager.createObject(Names.kRoomID);
@@ -1556,7 +1556,7 @@ public class GridMap {
 					floodExplored.add(floodLocation);
 					
 					cell = getCell(floodLocation);
-					if (!cell.enterable() || cell.hasObject(Names.kPropertyDoor)) {
+					if (!cell.enterable() || cell.hasObject(Names.kPropertyGateway)) {
 						walls.add(floodLocation);
 						continue;
 					}
@@ -1600,62 +1600,62 @@ public class GridMap {
 					// used to detect turns
 					java.awt.Point rightOfNext = null;
 					
-					// Get the wall and door objects. The can't both exist.
-					CellObject doorObject = cell.getObject(Names.kDoorID);
+					// Get the wall and gateway objects. The can't both exist.
+					CellObject gatewayObject = cell.getObject(Names.kGatewayID);
 					CellObject wallObject = cell.getObject(Names.kWallID);
 					
 					// One must exist, but not both
-					assert ((doorObject == null) && (wallObject != null)) || ((doorObject != null) && (wallObject == null));
+					assert ((gatewayObject == null) && (wallObject != null)) || ((gatewayObject != null) && (wallObject == null));
 
-					if (doorObject != null) {
+					if (gatewayObject != null) {
 						if (currentBarrier != null) {
 							// If we were just walking a wall, end and add the barrier
-							if (currentBarrier.door == false) {
+							if (currentBarrier.gateway == false) {
 								barrierList.add(currentBarrier);
 								currentBarrier = null;
 							}
 						}
 						
-						// At this point, the currentBarrier, if it exists, is the door we're walking
+						// At this point, the currentBarrier, if it exists, is the gateway we're walking
 						if (currentBarrier == null) {
 							
-							// getting here means we're starting a new section of door
+							// getting here means we're starting a new section of gateway
 							
 							// create a barrier
 							currentBarrier = new Barrier();
-							currentBarrier.door = true;
+							currentBarrier.gateway = true;
 							currentBarrier.left = new java.awt.Point(next);
 							currentBarrier.direction = Direction.leftOf[direction];
 							
-							// create a new door id
-							currentBarrier.id = roomCount + doorCount + wallCount;
-							doorCount += 1;
+							// create a new gateway id
+							currentBarrier.id = roomCount + gatewayCount + wallCount;
+							gatewayCount += 1;
 
 							//System.out.println();
-							//System.out.print("  Door " + currentBarrier.id + ": ");
+							//System.out.print("  Gateway " + currentBarrier.id + ": ");
 							
-							// add the current room to the door destination list
-							ArrayList<Integer> doorDestinations = doorDestinationMap.get(new Integer(currentBarrier.id));
-							if (doorDestinations == null) {
-								doorDestinations = new ArrayList<Integer>();
+							// add the current room to the gateway destination list
+							ArrayList<Integer> gatewayDestinations = gatewayDestinationMap.get(new Integer(currentBarrier.id));
+							if (gatewayDestinations == null) {
+								gatewayDestinations = new ArrayList<Integer>();
 							}
-							doorDestinations.add(new Integer(roomNumber));
-							doorDestinationMap.put(new Integer(currentBarrier.id), doorDestinations);
+							gatewayDestinations.add(new Integer(roomNumber));
+							gatewayDestinationMap.put(new Integer(currentBarrier.id), gatewayDestinations);
 						}
 
 						// is are noted by the direction of the wall
-						doorObject.addProperty(Direction.stringOf[currentBarrier.direction], Integer.toString(currentBarrier.id));
+						gatewayObject.addProperty(Direction.stringOf[currentBarrier.direction], Integer.toString(currentBarrier.id));
 						
-						// tell the door it should be drawn
-						doorObject.addProperty(Names.kPropertyDoorRender, Names.kTrue);
+						// tell the gateway it should be drawn
+						gatewayObject.addProperty(Names.kPropertyGatewayRender, Names.kTrue);
 
 					} else if (wallObject != null) /*redundant*/ {
 					
 						if (currentBarrier != null) {
-							// If we were just walking a door, end and add the barrier
-							if (currentBarrier.door) {
-								// keep track of door barriers
-								doorBarriers.add(currentBarrier);
+							// If we were just walking a gateway, end and add the barrier
+							if (currentBarrier.gateway) {
+								// keep track of gateway barriers
+								gatewayBarriers.add(currentBarrier);
 								barrierList.add(currentBarrier);
 								currentBarrier = null;
 							}
@@ -1670,7 +1670,7 @@ public class GridMap {
 							currentBarrier.direction = Direction.leftOf[direction];
 							
 							// create a new id
-							currentBarrier.id = roomCount + doorCount + wallCount;
+							currentBarrier.id = roomCount + gatewayCount + wallCount;
 							wallCount += 1;
 							
 							//System.out.println();
@@ -1687,16 +1687,16 @@ public class GridMap {
 					
 					//System.out.print("(" + next.x + "," + next.y + ") ");
 
-					// since current barrier is the door we're walking, update it's endpoint before we translate it
+					// since current barrier is the gateway we're walking, update it's endpoint before we translate it
 					currentBarrier.right = new java.awt.Point(next);
 					
 					// walk to the next section of wall
 					Direction.translate(next, direction);
 					
 					// we get the right of next here because if there is a next and
-					// a wall to the right of it, that means next is a door but there is
-					// a wall in the way so that door doesn't technically border our room,
-					// so, the door ends and we continue on the next segment of wall.
+					// a wall to the right of it, that means next is a gateway but there is
+					// a wall in the way so that gateway doesn't technically border our room,
+					// so, the gateway ends and we continue on the next segment of wall.
 					rightOfNext = new java.awt.Point(next);
 					Direction.translate(rightOfNext, Direction.rightOf[direction]);
 
@@ -1707,14 +1707,14 @@ public class GridMap {
 						continue;
 					}
 
-					// door or wall stops here
+					// gateway or wall stops here
 					//System.out.print("(turn)");
 
 					// and the barrier to the list
 					
-					if (currentBarrier.door) {
-						// keep track of door barriers
-						doorBarriers.add(currentBarrier);
+					if (currentBarrier.gateway) {
+						// keep track of gateway barriers
+						gatewayBarriers.add(currentBarrier);
 					}
 					
 					barrierList.add(currentBarrier);
@@ -1783,33 +1783,33 @@ public class GridMap {
 			}
 		}
 		
-		// convert all the doors to areas
-		doorsToAreasStep(doorBarriers);
+		// convert all the gateways to areas
+		gatewaysToAreasStep(gatewayBarriers);
 		
-		// print door information
-		Iterator<Integer> doorKeyIter = doorDestinationMap.keySet().iterator();
-		while (doorKeyIter.hasNext()) {
-			Integer doorId = doorKeyIter.next();
+		// print gateway information
+		Iterator<Integer> gatewayKeyIter = gatewayDestinationMap.keySet().iterator();
+		while (gatewayKeyIter.hasNext()) {
+			Integer gatewayId = gatewayKeyIter.next();
 			String toList = "";
-			Iterator<Integer> doorDestIter = doorDestinationMap.get(doorId).iterator();
-			while (doorDestIter.hasNext()) {
-				toList += doorDestIter.next() + " ";
+			Iterator<Integer> gatewayDestIter = gatewayDestinationMap.get(gatewayId).iterator();
+			while (gatewayDestIter.hasNext()) {
+				toList += gatewayDestIter.next() + " ";
 			}
-			System.out.println("Door " + doorId + ": " + toList);
+			System.out.println("Gateway " + gatewayId + ": " + toList);
 		}
 		
 		return true;
 	}
 
-	private void addDestinationToDoor(int roomNumber, int doorId) {
-		ArrayList<Integer> doorDestinations = doorDestinationMap.get(new Integer(doorId));
-		assert doorDestinations != null;
-		doorDestinations.add(new Integer(roomNumber));
-		doorDestinationMap.put(new Integer(doorId), doorDestinations);
+	private void addDestinationToGateway(int roomNumber, int gatewayId) {
+		ArrayList<Integer> gatewayDestinations = gatewayDestinationMap.get(new Integer(gatewayId));
+		assert gatewayDestinations != null;
+		gatewayDestinations.add(new Integer(roomNumber));
+		gatewayDestinationMap.put(new Integer(gatewayId), gatewayDestinations);
 	}
 	
 	/**
-	 * Create a wall for the new rooms created by the initial doors.
+	 * Create a wall for the new rooms created by the initial gateways.
 	 * 
 	 * @param endPoint The square representing the side of the room butting up to this wall
 	 * @param direction The direction to go to reach the wall
@@ -1825,7 +1825,7 @@ public class GridMap {
 		currentBarrier.right = new java.awt.Point(currentBarrier.left);
 		
 		// get a new wall id
-		currentBarrier.id = roomCount + doorCount + wallCount;
+		currentBarrier.id = roomCount + gatewayCount + wallCount;
 		wallCount += 1;
 		// the direction is the direction we just traveled to get to the wall
 		currentBarrier.direction = direction;
@@ -1842,56 +1842,56 @@ public class GridMap {
 	}
 	
 	/**
-	 * Creates a door for the new rooms created by the initial doors.
+	 * Creates a gateway for the new rooms created by the initial gateways.
 	 * 
-	 * @param startPoint Travelling clockwise around the room, this is the end of the room adjacent to the start door we're creating
-	 * @param endPoint This is the end of the room adjacent to the end of the door.
-	 * @param direction This is the side of the room the door is on, or (alternatively), what direction we have to turn to face the door.
-	 * @param walkDirection This is the direction we go to walk down the door (parallel to the room)
+	 * @param startPoint Travelling clockwise around the room, this is the end of the room adjacent to the start gateway we're creating
+	 * @param endPoint This is the end of the room adjacent to the end of the gateway.
+	 * @param direction This is the side of the room the gateway is on, or (alternatively), what direction we have to turn to face the gateway.
+	 * @param walkDirection This is the direction we go to walk down the gateway (parallel to the room)
 	 * @param roomNumber This is the id number of the room we're in
 	 * @param barrierList This is the list of barriers for the room we're in
 	 */
-	private void doNewDoor(java.awt.Point startPoint, java.awt.Point endPoint, int direction, int walkDirection, int roomNumber, ArrayList<Barrier> barrierList) {
-		// next is the door to the left of our left endpoint
+	private void doNewGateway(java.awt.Point startPoint, java.awt.Point endPoint, int direction, int walkDirection, int roomNumber, ArrayList<Barrier> barrierList) {
+		// next is the gateway to the left of our left endpoint
 		Barrier currentBarrier = new Barrier();
-		currentBarrier.door = true;
+		currentBarrier.gateway = true;
 		currentBarrier.left = new java.awt.Point(startPoint);
 		currentBarrier.left.x += Direction.xDelta[direction];
 		currentBarrier.left.y += Direction.yDelta[direction];
 
-		// get a new door id
-		currentBarrier.id = roomCount + doorCount + wallCount;
-		doorCount += 1;
-		// the direction is the direction we just traveled to get to the door
+		// get a new gateway id
+		currentBarrier.id = roomCount + gatewayCount + wallCount;
+		gatewayCount += 1;
+		// the direction is the direction we just traveled to get to the gateway
 		currentBarrier.direction = direction;
 
-		// this is a door of unknown size
+		// this is a gateway of unknown size
 		currentBarrier.right = new java.awt.Point(currentBarrier.left);
 		
 		// we know it ends left of the right endpoint
-		java.awt.Point endOfDoor = new java.awt.Point(endPoint);
-		endOfDoor.x += Direction.xDelta[direction];
-		endOfDoor.y += Direction.yDelta[direction];
+		java.awt.Point endOfGateway = new java.awt.Point(endPoint);
+		endOfGateway.x += Direction.xDelta[direction];
+		endOfGateway.y += Direction.yDelta[direction];
 		
 		while (true) {
-			// create the door object
-			CellObject doorObject = cellObjectManager.createObject(Names.kDoorID);
+			// create the gateway object
+			CellObject gatewayObject = cellObjectManager.createObject(Names.kGatewayID);
 
-			// door don't share ids, they are noted by the direction of the door
-			doorObject.addProperty(Direction.stringOf[currentBarrier.direction], Integer.toString(currentBarrier.id));
+			// gateway don't share ids, they are noted by the direction of the gateway
+			gatewayObject.addProperty(Direction.stringOf[currentBarrier.direction], Integer.toString(currentBarrier.id));
 
 			// put the object in the cell
 			Cell cell = getCell(currentBarrier.right);
-			cell.addCellObject(doorObject);
+			cell.addCellObject(gatewayObject);
 			
-			// record the destinations which is the new room and the room the door is sitting on
-			// add the current room to the door destination list
-			ArrayList<Integer> doorDestinations = new ArrayList<Integer>();
-			doorDestinations.add(new Integer(roomNumber));
-			doorDestinations.add(new Integer(cell.getObject(Names.kRoomID).getIntProperty(Names.kPropertyNumber)));
-			doorDestinationMap.put(new Integer(currentBarrier.id), doorDestinations);
+			// record the destinations which is the new room and the room the gateway is sitting on
+			// add the current room to the gateway destination list
+			ArrayList<Integer> gatewayDestinations = new ArrayList<Integer>();
+			gatewayDestinations.add(new Integer(roomNumber));
+			gatewayDestinations.add(new Integer(cell.getObject(Names.kRoomID).getIntProperty(Names.kPropertyNumber)));
+			gatewayDestinationMap.put(new Integer(currentBarrier.id), gatewayDestinations);
 			
-			if (currentBarrier.right.equals(endOfDoor)) {
+			if (currentBarrier.right.equals(endOfGateway)) {
 				break;
 			}
 			
@@ -1905,72 +1905,72 @@ public class GridMap {
 	}	
 
 	
-	private void doorsToAreasStep(ArrayList<Barrier> doorBarriers) {
-		// make the door also a room
-		// add new room to current door destination list
-		// create new barrier list for this new room: 2 walls and 2 doors
-		// update door destination list for new doors
+	private void gatewaysToAreasStep(ArrayList<Barrier> gatewayBarriers) {
+		// make the gateway also a room
+		// add new room to current gateway destination list
+		// create new barrier list for this new room: 2 walls and 2 gateways
+		// update gateway destination list for new gateways
 		
-		Iterator<Barrier> iter = doorBarriers.iterator();
+		Iterator<Barrier> iter = gatewayBarriers.iterator();
 		while (iter.hasNext()) {
-			Barrier doorBarrier = iter.next();
+			Barrier gatewayBarrier = iter.next();
 			
 			// duplicates exist in this list, check to see if we're already a room
 			{
-				Cell cell = getCell(doorBarrier.left);
+				Cell cell = getCell(gatewayBarrier.left);
 				if (cell.hasObject(Names.kRoomID)) {
 					// we have already processed this room, just need to add the room id
-					// to the door's destination list
-					addDestinationToDoor(cell.getObject(Names.kRoomID).getIntProperty(Names.kPropertyNumber), doorBarrier.id);
+					// to the gateway's destination list
+					addDestinationToGateway(cell.getObject(Names.kRoomID).getIntProperty(Names.kPropertyNumber), gatewayBarrier.id);
 					continue;
 				}
 			}
 			
 			// get a new room id
-			int roomNumber = roomCount + doorCount + wallCount;
+			int roomNumber = roomCount + gatewayCount + wallCount;
 			roomCount += 1;
 			
-			// add new id to current door destination list
-			addDestinationToDoor(roomNumber, doorBarrier.id);
+			// add new id to current gateway destination list
+			addDestinationToGateway(roomNumber, gatewayBarrier.id);
 			
 			CellObject theNewRoomObject = cellObjectManager.createObject(Names.kRoomID);
 			theNewRoomObject.addProperty(Names.kPropertyNumber, Integer.toString(roomNumber));
 			{
-				Cell cell = getCell(doorBarrier.left);
+				Cell cell = getCell(gatewayBarrier.left);
 				cell.addCellObject(theNewRoomObject);
 			}
 
 			int incrementDirection = -1;
-			if (doorBarrier.left.x == doorBarrier.right.x) {
-				// vertical door
-				if (doorBarrier.left.y < doorBarrier.right.y) {
+			if (gatewayBarrier.left.x == gatewayBarrier.right.x) {
+				// vertical gateway
+				if (gatewayBarrier.left.y < gatewayBarrier.right.y) {
 					// increasing to right, south
 					incrementDirection = Direction.kSouthInt;
 
-				} else if (doorBarrier.left.y > doorBarrier.right.y) {
+				} else if (gatewayBarrier.left.y > gatewayBarrier.right.y) {
 					// decreasing to right, north
 					incrementDirection = Direction.kNorthInt;
 				}
 			} else {
-				// horizontal door
-				if (doorBarrier.left.x < doorBarrier.right.x) {
+				// horizontal gateway
+				if (gatewayBarrier.left.x < gatewayBarrier.right.x) {
 					// increasing to right, east
 					incrementDirection = Direction.kEastInt;
 
-				} else if (doorBarrier.left.x > doorBarrier.right.x) {
+				} else if (gatewayBarrier.left.x > gatewayBarrier.right.x) {
 					// decreasing to right, west
 					incrementDirection = Direction.kWestInt;
 				}
 			}
 			
 			if (incrementDirection == -1) {
-				// TODO: special case, single size door, we don't handle this yet
+				// TODO: special case, single size gateway, we don't handle this yet
 				assert false;
 			}
 			
 			// we need to walk to the right and assing the room id to everyone
-			java.awt.Point current = new java.awt.Point(doorBarrier.left);
-			while (current.equals(doorBarrier.right) == false) {
+			java.awt.Point current = new java.awt.Point(gatewayBarrier.left);
+			while (current.equals(gatewayBarrier.right) == false) {
 				current.x += Direction.xDelta[incrementDirection];
 				current.y += Direction.yDelta[incrementDirection];
 
@@ -1983,22 +1983,22 @@ public class GridMap {
 			
 			////////////////////
 			// we can start by walking the wrong direction off the left endpoint
-			doNewWall(doorBarrier.left, Direction.backwardOf[incrementDirection], barrierList);
+			doNewWall(gatewayBarrier.left, Direction.backwardOf[incrementDirection], barrierList);
 			////////////////////
 			
 			////////////////////
-			// then to the left of our left endpoint, and walk down the door to the left of the right endpoint
-			doNewDoor(doorBarrier.left, doorBarrier.right, Direction.leftOf[incrementDirection], incrementDirection, roomNumber, barrierList);
+			// then to the left of our left endpoint, and walk down the gateway to the left of the right endpoint
+			doNewGateway(gatewayBarrier.left, gatewayBarrier.right, Direction.leftOf[incrementDirection], incrementDirection, roomNumber, barrierList);
 			////////////////////
 			
 			////////////////////
 			// next is just off the right endpoint
-			doNewWall(doorBarrier.right, incrementDirection, barrierList);
+			doNewWall(gatewayBarrier.right, incrementDirection, barrierList);
 			////////////////////
 
 			////////////////////
-			// then to the right of our right endpoint, and walk backwards down the door to the right of the left endpoint
-			doNewDoor(doorBarrier.right, doorBarrier.left, Direction.rightOf[incrementDirection], Direction.backwardOf[incrementDirection], roomNumber, barrierList);
+			// then to the right of our right endpoint, and walk backwards down the gateway to the right of the left endpoint
+			doNewGateway(gatewayBarrier.right, gatewayBarrier.left, Direction.rightOf[incrementDirection], Direction.backwardOf[incrementDirection], roomNumber, barrierList);
 			////////////////////
 
 			// Generate centerpoints and store room information
@@ -2027,7 +2027,7 @@ public class GridMap {
 		
 		CellObject cellObject = getObject(location, Names.kRoomID);
 		if (cellObject == null) {
-			cellObject = getObject(location, Names.kDoorID);
+			cellObject = getObject(location, Names.kGatewayID);
 			if (cellObject == null) {
 				return null;
 			}
