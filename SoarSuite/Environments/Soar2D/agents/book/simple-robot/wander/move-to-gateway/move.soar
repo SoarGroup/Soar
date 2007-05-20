@@ -1,0 +1,8 @@
+sp {move-to-gateway*propose*move
+   (state <s> ^name move-to-gateway
+             -^need-to-turn true)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name move
+         ^actions.move.direction forward)
+}

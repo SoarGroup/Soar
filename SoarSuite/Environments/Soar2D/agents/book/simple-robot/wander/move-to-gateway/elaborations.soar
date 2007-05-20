@@ -1,0 +1,22 @@
+sp {move-to-gateway*elaborate*substate
+   (state <s> ^name move-to-gateway
+              ^superstate.operator <so>)
+   (<so> ^name move-to-gateway
+         ^gateway <g>)
+-->
+   (<s> ^gateway <g>)
+}
+
+sp {move-to-gateway*elaborate*state*angle-too-large
+   (state <s> ^name move-to-gateway
+              ^gateway.center.angle-off > 0.2)
+-->
+   (<s> ^need-to-turn true)
+}
+
+sp {move-to-gateway*elaborate*state*angle-too-small
+   (state <s> ^name move-to-gateway
+              ^gateway.center.angle-off < -0.2)
+-->
+   (<s> ^need-to-turn true)
+}

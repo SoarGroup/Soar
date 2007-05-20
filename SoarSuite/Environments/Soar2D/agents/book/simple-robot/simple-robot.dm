@@ -1,4 +1,4 @@
-90
+99
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -89,7 +89,16 @@ FLOAT_RANGE 86 -Infinity Infinity
 ENUMERATION 87 2 complete error
 ENUMERATION 88 2 complete error
 ENUMERATION 89 2 complete error
-92
+ENUMERATION 90 1 move-to-gateway
+SOAR_ID 91
+SOAR_ID 92
+ENUMERATION 93 1 state
+ENUMERATION 94 1 move-to-gateway
+ENUMERATION 95 1 rotate
+SOAR_ID 96
+ENUMERATION 97 1 move
+SOAR_ID 98
+102
 0 attribute 21
 0 choices 22
 0 impasse 23
@@ -120,6 +129,7 @@ ENUMERATION 89 2 complete error
 16 operator 20
 16 operator 32
 16 operator 34
+16 operator 91
 16 superstate 0
 16 top-state 0
 16 type 17
@@ -182,3 +192,12 @@ ENUMERATION 89 2 complete error
 83 yaw 85
 84 amount 86
 84 status 88
+91 name 90
+92 name 94
+92 operator 96
+92 operator 98
+92 superstate 16
+92 top-state 0
+92 type 93
+96 name 95
+98 name 97

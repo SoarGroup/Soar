@@ -1,0 +1,18 @@
+sp {move-to-gateway*propose*rotate
+   (state <s> ^name move-to-gateway
+              ^need-to-turn true
+              ^gateway.center.angle-off <ao>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name rotate
+         ^actions.rotate-relative.amount <ao>)
+         #^actions.rotate-relative.amount (* -1.0 <ao>))
+}
+
+
+sp {monitor*rotate-relative
+   (state <s> ^superstate nil
+              ^io.output-link.rotate-relative.amount <a>)
+-->
+   (write (crlf) |Rotating relative: | <a>)
+}
