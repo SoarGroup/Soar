@@ -1,0 +1,19 @@
+sp {wander*propose*move-to-gateway
+   (state <s> ^name wander)
+   (<s> ^top-state.io.input-link.self.area-description <ad>)
+   (<ad> ^gateway <g>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name move-to-gateway
+        ^gateway <g>)
+}
+
+sp {wander*compare*move-to-gateway
+   (state <s> ^name wander
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name move-to-gateway)
+   (<op2> ^name << move rotate stop >>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}

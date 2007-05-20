@@ -12,6 +12,10 @@ VERSION 4
 9	0	HLOPERATOR wander wander.soar wander 16 10
 10	9	FOPERATOR elaborations elaborations.soar 11
 11	9	OPERATOR move move.soar 12
-12	9	OPERATOR rotate rotate.soar 13
-13	9	OPERATOR stop stop.soar 14
+12	9	HLOPERATOR move-to-gateway move-to-gateway.soar move-to-gateway 92 13
+13	12	FOPERATOR elaborations elaborations.soar 14
+14	12	OPERATOR move move.soar 15
+15	12	OPERATOR rotate rotate.soar 16
+16	9	OPERATOR rotate rotate.soar 17
+17	9	OPERATOR stop stop.soar 18
 END
