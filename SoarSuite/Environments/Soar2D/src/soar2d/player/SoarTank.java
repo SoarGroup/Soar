@@ -802,7 +802,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 			}
 
 			// sound sensor
-			if (moved || rotated || !m_SoundWME.GetValue().equalsIgnoreCase(soundString)) {
+			if (!m_SoundWME.GetValue().equalsIgnoreCase(soundString)) {
 				Update(m_SoundWME, soundString);
 			}
 
