@@ -1,0 +1,3 @@
+pushd analyze-state
+source analyze-state_source.soar
+popd

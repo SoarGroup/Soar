@@ -1,0 +1,10 @@
+VERSION 4
+/analyze-state/analyze-state.dm
+0	ROOT analyze-state analyze-state 1
+1	0	FOPERATOR _firstload _firstload.soar 3
+2	0	FOLDER all all 4
+3	0	FOLDER elaborations elaborations 2
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR top-state top-state.soar 6
+6	0	OPERATOR analyze-state analyze-state.soar 8
+END

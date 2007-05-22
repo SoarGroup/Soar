@@ -1,0 +1,36 @@
+sp {elaborate*ts*goodthings
+   (state <s> ^superstate nil)
+-->
+   (<s> ^good-things <gt>)
+   (<gt> ^holding.p1 log1)
+   (<gt> ^holding.p1 log2)
+   (<gt> ^holding.p1 hammer1)
+   (<gt> ^holding.p1 combo1)
+   (<gt> ^compromised.p1 water1)
+}
+
+#sp {apply*update-state*make-no-bump
+#   (state <s> ^operator.name update-state)
+#-->
+#   (<s> ^no-bump <nb>)
+#}
+#
+sp {apply*analyze-state*holding
+   (state <s> ^name game
+              ^operator.name analyze-state
+              ^gs <gs>
+              ^duplicates <dup>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things <gt>)
+   (<dup> ^<old-gs> <gs>)
+   (<gt> ^<item> <id-gt>)
+   (<id-gt> ^p1 <p1-val>)
+   (<gs> ^<item> <id-gs>)
+   (<id-gs> ^p1 <p1-val>)
+  -{(<old-gs> ^<item> <id-oldgs>)
+    (<id-oldgs> ^p1 <p1-val>)}
+-->
+   (<s> ^current-evaluation-depth <ced> -
+                                  (+ <ced> 1))
+   (write (crlf) |Bump due to appearence of | <item> | | <p1-val>)
+}
