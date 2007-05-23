@@ -9,6 +9,9 @@ foreach $line (`cat $ARGV[0]`) {
       next;
     }
     $done{$line} = 1;
+    if ($line =~ /^step /) {
+      next;
+    }
     if ($line =~ /(\S+) \^p1 (\S+)$/) {
       $att = $1;
       $p1 = $2;
