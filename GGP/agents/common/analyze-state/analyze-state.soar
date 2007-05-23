@@ -37,6 +37,7 @@ sp {apply*analyze-state*holding
 
 sp {apply*update-state*top*copy-gs
   (state <s> ^superstate nil
+  ^comment out
              ^operator.name update-state
              ^gs <gs>)
 -->
@@ -58,13 +59,12 @@ sp {apply*update-state*top*copy-gs*deep
 
 sp {apply*update-state*top*remove-old-copy
   (state <s> ^superstate nil
-             ^operator.name <name>
+             ^operator.name <> update-state <> analyze-state <name>
              ^gs <gs>
-             ^io.output-link <ol>
              ^old-gs <ogs>)
-  (<ol> ^<cmd> <val>)
+  (<ogs> ^<att> <id>)
 -->
-  (<s> ^old-gs <ogs> -)
+  (<ogs> ^<att> <id> -)
 }
 
   
@@ -82,3 +82,8 @@ sp {apply*analyze-state*top*note-diffence
    (write (crlf) |Item appeared on gs | <item> | | <p1-val>)
 }
 
+sp {elaborate*old-gs
+  (state <s> ^superstate nil)
+-->
+  (<s> ^old-gs <ogs>)
+}
