@@ -1,4 +1,5 @@
 source header.soar
+source printouts.soar
 sp {propose*_legal_explorer__combine__item1__item2__nails__1
    (state <s> ^name game ^gs <g> ^io <i>)
    (<g> ^holding <h> ^holding <h1> ^holding <h2> ^holding <h3> ^property <p> ^property <p1> ^property <p2> ^property <p3>)
