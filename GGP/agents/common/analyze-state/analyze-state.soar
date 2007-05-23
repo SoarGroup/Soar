@@ -34,3 +34,51 @@ sp {apply*analyze-state*holding
                                   (+ <ced> 1))
    (write (crlf) |Bump due to appearence of | <item> | | <p1-val>)
 }
+
+sp {apply*update-state*top*copy-gs
+  (state <s> ^superstate nil
+             ^operator.name update-state
+             ^gs <gs>)
+-->
+  (<s> ^old-gs <ogs>)
+}
+
+sp {apply*update-state*top*copy-gs*deep
+  (state <s> ^superstate nil
+             ^operator.name update-state
+             ^gs <gs>
+             ^old-gs <ogs>)
+  (<gs> ^<att> <id>)
+  (<id> ^p1 <val>)
+-->
+  (<ogs> ^<att> <new-id>)
+  (<new-id> ^p1 <val>)
+}
+
+
+sp {apply*update-state*top*remove-old-copy
+  (state <s> ^superstate nil
+             ^operator.name <name>
+             ^gs <gs>
+             ^io.output-link <ol>
+             ^old-gs <ogs>)
+  (<ol> ^<cmd> <val>)
+-->
+  (<s> ^old-gs <ogs> -)
+}
+
+  
+sp {apply*analyze-state*top*note-diffence
+   (state <s> ^name game
+              ^superstate nil
+              ^operator.name analyze-state
+              ^gs <gs>
+              ^old-gs <old-gs>)
+   (<gs> ^<item> <id-gs>)
+   (<id-gs> ^p1 <p1-val>)
+  -{(<old-gs> ^<item> <id-oldgs>)
+    (<id-oldgs> ^p1 <p1-val>)}
+-->
+   (write (crlf) |Item appeared on gs | <item> | | <p1-val>)
+}
+

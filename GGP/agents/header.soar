@@ -13,7 +13,7 @@ source selection.soar
 source selection-iterative-deepening.soar
 popd 
 
-#source analyze-state.soar
+source analyze-state.soar
 popd
 #source chunks.soar # tchunk_file source
 #source chunks.soar # achunk_file source
