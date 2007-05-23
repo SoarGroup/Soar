@@ -1,0 +1,352 @@
+sp {apply*_next__property__comboName__cprop__1_asdf
+   (state <s> ^superstate nil ^name game ^name game ^operator <o> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<o> ^name update-state)
+   (<g> ^property <p> ^property <p1>)
+   (<p> ^p1 <item1> ^p2 <prop1>)
+   (<p1> ^p1 <item2> ^p2 <prop2>)
+   (<f> ^propertycombine <p2>)
+   (<p2> ^p1 <prop1> ^p2 <prop2> ^p3 <cprop>)
+   (<e> ^combining <c>)
+   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
+-->
+   (write |ADDED property ^p1 | <comboName> | ^p2 | <cprop> (crlf))
+}
+sp {apply*_next__property__comboName__cprop__21_asdf
+   (state <s> ^superstate nil ^name game ^name game ^operator <o> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<o> ^name update-state)
+   (<g> ^property <p> ^property <p1>)
+   (<p> ^p1 <item2> ^p2 <prop1>)
+   (<p1> ^p1 <item1> ^p2 <prop2>)
+   (<f> ^propertycombine <p2>)
+   (<p2> ^p1 <prop1> ^p2 <prop2> ^p3 <cprop>)
+   (<e> ^combining <c>)
+   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
+-->
+   (write |ADDED property ^p1 | <comboName> | ^p2 | <cprop>  (crlf))
+}
+sp {apply*_next__property__comboName__prop__1_asdf
+   (state <s> ^superstate nil ^name game ^name game ^operator <o> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<o> ^name update-state)
+   (<g> ^property <p>)
+   (<p> ^p1 <item1> ^p2 <prop>)
+   (<f> ^propertyinherit <p1>)
+   (<p1> ^p1 <prop>)
+   (<e> ^combining <c>)
+   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
+-->
+   (write |ADDED property ^p1 | <comboName> | ^p2 | <prop>  (crlf))
+}
+sp {apply*_next__property__comboName__prop__21_asdf
+   (state <s> ^superstate nil ^name game ^name game ^operator <o> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<o> ^name update-state)
+   (<g> ^property <p>)
+   (<p> ^p1 <item2> ^p2 <prop>)
+   (<f> ^propertyinherit <p1>)
+   (<p1> ^p1 <prop>)
+   (<e> ^combining <c>)
+   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
+-->
+   (write |ADDED property ^p1 | <comboName> | ^p2 | <prop>  (crlf))
+}
+sp {apply*_next__comboType__comboName__item1__item2__1_asdf
+   (state <s> ^superstate nil ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
+   (<o> ^name update-state)
+   (<e> ^combining <c>)
+   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
+-->
+   (write |ADDED comboType ^p1 | <comboName> | ^p2 | <item1> | ^p3 | <item2>  (crlf))
+}
+sp {apply*_next__holding__comboName__1_asdf
+   (state <s> ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
+   (<o> ^name update-state)
+   (<e> ^combining <c>)
+   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
+-->
+   (write |ADDED holding ^p1 | <comboName>  (crlf))
+}
+sp {apply*_next__destroyed__obstacle__1_asdf
+   (state <s> ^superstate nil ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
+   (<o> ^name update-state)
+   (<e> ^dodestroy <d>)
+   (<d> ^p1 <obstacle> ^p2 <item> ^p3 <expend>)
+-->
+   (write |ADDED destroyed ^p1 | <obstacle>  (crlf))
+}
+sp {apply*_next__compromised__obstacle__1_asdf
+   (state <s> ^superstate nil ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
+   (<o> ^name update-state)
+   (<e> ^docompromise <d>)
+   (<d> ^p1 <obstacle> ^p2 <item> ^p3 <expend>)
+-->
+   (write |ADDED compromised ^p1 | <obstacle>  (crlf))
+}
+sp {apply*_next__compromiseExpired__obstacle__1_asdf
+   (state <s> ^superstate nil ^name game ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^compromised <c> ^location <l> ^location <l1>)
+   (<c> ^p1 <obstacle>)
+   (<l> ^p1 <obstacle> ^p2 <ox> ^p3 <oy>)
+   (<l1> ^p1 explorer ^p2 <ox> ^p3 <oy>)
+-->
+   (write |ADDED compromiseExpired ^p1 | <obstacle>  (crlf))
+}
+sp {apply*_next__location_explorer__x__y__1_asdf
+   (state <s> ^superstate nil ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
+   (<o> ^name update-state)
+   (<e> ^nextexplorerlocation <n>)
+   (<n> ^p1 <x> ^p2 <y>)
+-->
+   (write |ADDED location ^p1 explorer ^p2 | <x> | ^p3 | <y>  (crlf))
+}
+sp {apply*_next__health_explorer__hpNew__1_asdf
+   (state <s> ^superstate nil ^name game ^name game ^operator <o> ^gs <g> ^elaborations <e> ^io <i> ^facts <f>)
+   (<o> ^name update-state)
+   (<g> ^health <h>)
+   (<h> ^p1 explorer ^p2 <hpOld>)
+   (<e> ^damaged <d>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^explorer <e1>)
+   (<e1> -^heal <h1>)
+   (<f> ^minus <m>)
+   (<m> ^p1 1 ^p2 <hpOld> ^p3 <hpNew>)
+-->
+   (write |ADDED health ^p1 explorer ^p2 | <hpNew>  (crlf))
+}
+sp {apply*_next__health_explorer__hpNew__21_asdf
+   (state <s> ^superstate nil ^name game ^name game ^operator <o> ^gs <g> ^io <i> ^elaborations <e1> ^facts <f>)
+   (<o> ^name update-state)
+   (<g> ^health <h>)
+   (<h> ^p1 explorer ^p2 <hpOld>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^explorer <e>)
+   (<e> ^heal <h1>)
+   (<e1> -^damaged <d>)
+   (<f> ^plus <p>)
+   (<p> ^p1 1 ^p2 <hpOld> ^p3 <hpNew>)
+-->
+   (write |ADDED health ^p1 explorer ^p2 | <hpNew>  (crlf))
+}
+sp {apply*_next__holding__item__1_asdf
+   (state <s> ^superstate nil ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
+   (<o> ^name update-state)
+   (<e> ^itemtype <i> ^pickedup <p>)
+   (<i> ^p1 <item>)
+   (<p> ^p1 <item>)
+-->
+   (write |ADDED holding ^p1 | <item>  (crlf))
+}
+sp {apply*remove-_next__compromised__std_soar_var1__0_asdf
+   (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o>)
+   (<g> ^compromised <c>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<c> ^p1 <std_soar_var1>)
+   -{
+     (<g> ^location <l1>)
+     (<l1> ^p1 <std_soar_var1> ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
+   }
+-->
+   (write |REMOVED compromised ^p1 | <std_soar_var1>  (crlf))
+}
+sp {apply*remove-_next__compromised__std_soar_var1__1_asdf
+   (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o>)
+   (<g> ^compromised <c> ^location <l1>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<c> ^p1 <std_soar_var1>)
+   (<l1> ^p1 explorer ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
+-->
+   (write |REMOVED compromised ^p1 | <std_soar_var1>  (crlf))
+}
+sp {apply*remove-_next__compromiseExpired__std_soar_var1__0_asdf
+   (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o>)
+   (<g> ^compromiseExpired <c>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<c> ^p1 <std_soar_var1>)
+   -{
+     (<g> ^location <l1>)
+     (<l1> ^p1 <std_soar_var1> ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
+   }
+-->
+   (write |REMOVED compromiseExpired ^p1 | <std_soar_var1>  (crlf))
+}
+sp {apply*remove-_next__compromiseExpired__std_soar_var1__1_asdf
+   (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o>)
+   (<g> ^compromiseExpired <c>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<c> ^p1 <std_soar_var1>)
+   -{
+     (<g> ^location <l1>)
+     (<l1> ^p1 explorer ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
+   }
+-->
+   (write |REMOVED compromiseExpired ^p1 | <std_soar_var1>  (crlf))
+}
+sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__0_asdf
+   (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l1>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<l1> ^p1 <std_soar_var1> ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
+   -{
+     (<f> ^obstacletype <o1>)
+     (<o1> ^p1 <std_soar_var1> ^p2 <std_soar_var4>)
+   }
+   -{
+     (<e> ^itemtype <i2>)
+     (<i2> ^p1 <std_soar_var1>)
+   }
+-->
+   (write |REMOVED location ^p1 | <std_soar_var1> | ^p2 | <std_soar_var2> | ^p3 | <std_soar_var3>  (crlf))
+}
+sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__1_asdf
+   (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l1>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<l1> ^p1 <std_soar_var1> ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
+   -{
+     (<f> ^obstacletype <o1>)
+     (<o1> ^p1 <std_soar_var1> ^p2 <std_soar_var4>)
+   }
+   (<e> ^pickedup <p>)
+   (<p> ^p1 <std_soar_var1>)
+-->
+   (write |REMOVED location ^p1 | <std_soar_var1> | ^p2 | <std_soar_var2> | ^p3 | <std_soar_var3>  (crlf))
+}
+sp {apply*remove-_next__health_explorer__std_soar_var1__0_asdf
+   (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o> ^elaborations <e> ^elaborations <e1>)
+   (<g> ^health <h>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<h> ^p1 explorer ^p2 <std_soar_var1>)
+   (<e> ^damaged <d>)
+   (<e1> -^damaged <d1>)
+-->
+   (write |REMOVED health ^p1 explorer ^p2 | <std_soar_var1>  (crlf))
+}
+sp {apply*remove-_next__health_explorer__std_soar_var1__1_asdf
+   (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o> ^elaborations <e>)
+   (<g> ^health <h>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^explorer <e1>)
+   (<o> ^name update-state)
+   (<h> ^p1 explorer ^p2 <std_soar_var1>)
+   (<e> ^damaged <d>)
+   (<e1> -^heal <h1>)
+-->
+   (write |REMOVED health ^p1 explorer ^p2 | <std_soar_var1>  (crlf))
+}
+sp {apply*remove-_next__health_explorer__std_soar_var1__2_asdf
+   (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o> ^elaborations <e1>)
+   (<g> ^health <h>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^explorer <e>)
+   (<o> ^name update-state)
+   (<h> ^p1 explorer ^p2 <std_soar_var1>)
+   (<e> ^heal <h1>)
+   (<e1> -^damaged <d>)
+-->
+   (write |REMOVED health ^p1 explorer ^p2 | <std_soar_var1>  (crlf))
+}
+sp {apply*remove-_next__health_explorer__std_soar_var1__3_asdf
+   (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o>)
+   (<g> ^health <h>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^explorer <e> ^explorer <e1>)
+   (<o> ^name update-state)
+   (<h> ^p1 explorer ^p2 <std_soar_var1>)
+   (<e> ^heal <h1>)
+   (<e1> -^heal <h2>)
+-->
+   (write |REMOVED health ^p1 explorer ^p2 | <std_soar_var1>  (crlf))
+}
+sp {apply*remove-_next__holding__std_soar_var1__0_asdf
+   (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o> ^elaborations <e>)
+   (<g> ^holding <h>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<h> ^p1 <std_soar_var1>)
+   (<e> ^used <u>)
+   (<u> ^p1 <std_soar_var1>)
+-->
+   (write |REMOVED holding ^p1 | <std_soar_var1>  (crlf))
+}
+sp {apply*remove*_next__comboType__comboName__item1__item2___asdf
+   (state <s> ^superstate nil ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^comboType <c>)
+   (<c> ^p1 <comboName> ^p2 <item1> ^p3 <item2>)
+-->
+   (write |REMOVED comboType ^p1 | <comboName> | ^p2 | <item1> | ^p3 | <item2>  (crlf))
+}
+sp {apply*_next__comboType__comboName__item1__item2__21_asdf
+   (state <s> ^superstate nil ^name game ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^comboType <c>)
+   (<c> ^p1 <comboName> ^p2 <item1> ^p3 <item2>)
+-->
+   (write |ADDED comboType ^p1 | <comboName> | ^p2 | <item1> | ^p3 | <item2>  (crlf))
+}
+
+sp {apply*remove-_next__compromised__std_soar_var1__1_asdf
+   (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o>)
+   (<g> ^compromised <c> ^location <l1> ^location <l2>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<c> ^p1 <std_soar_var1>)
+   (<l1> ^p1 explorer ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
+   (<l2> ^p1 <std_soar_var1> ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
+-->
+   (write |REMOVED compromised ^p1 | <std_soar_var1>  (crlf))
+}
+sp {apply*remove-_next__compromiseExpired__std_soar_var1__1_asdf
+   (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o>)
+   (<g> ^compromiseExpired <c> ^location <l1>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<c> ^p1 <std_soar_var1>)
+   (<l1> ^p1 <std_soar_var1> ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
+   -{
+     (<g> ^location <l1>)
+     (<l1> ^p1 explorer ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
+   }
+-->
+   (write |REMOVED compromiseExpired ^p1 | <std_soar_var1>  (crlf))
+}
+sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__0_asdf
+   (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l1>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<l1> ^p1 {<std_soar_var1> <> exit} ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
+   -{
+     (<f> ^obstacletype <o1>)
+     (<o1> ^p1 <std_soar_var1> ^p2 <std_soar_var4>)
+   }
+   -{
+     (<e> ^itemtype <i2>)
+     (<i2> ^p1 <std_soar_var1>)
+   }
+-->
+   (write |REMOVED location ^p1 | <std_soar_var1> | ^p2 | <std_soar_var2> | ^p3 | <std_soar_var3>  (crlf))
+}
+
