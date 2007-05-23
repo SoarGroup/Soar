@@ -1,4 +1,5 @@
 source header.soar
+source printouts.soar
 sp {propose*_legal_explorer__combine__item1__item2__nails__1
    (state <s> ^name game ^gs <g> ^io <i>)
    (<g> ^holding <h> ^holding <h1> ^holding <h2> ^holding <h3> ^property <p> ^property <p1> ^property <p2> ^property <p3>)
@@ -14,11 +15,11 @@ sp {propose*_legal_explorer__combine__item1__item2__nails__1
    (<o> -^<cmd-name> <c>)
 -->
    (<s> ^operator <o1> +)
-   (<o1> ^name _combine__item1__item2__nails_ ^p1 <item1> ^p2 <item2> ^p3 <nails>)
+   (<o1> ^name combine ^p1 <item1> ^p2 <item2> ^p3 <nails>)
 }
-sp {apply*_combine__item1__item2__nails_
+sp {apply*combine
    (state <s> ^name game ^operator <o> ^io <i>)
-   (<o> ^name _combine__item1__item2__nails_ ^p1 <item1> ^p2 <item2> ^p3 <nails>)
+   (<o> ^name combine ^p1 <item1> ^p2 <item2> ^p3 <nails>)
    (<i> ^output-link <o1>)
 -->
    (<o1> ^combine <combine>)
@@ -37,11 +38,11 @@ sp {propose*_legal_explorer__combine__item1__item2__tie__1
    (<o> -^<cmd-name> <c>)
 -->
    (<s> ^operator <o1> +)
-   (<o1> ^name _combine__item1__item2__tie_ ^p1 <item1> ^p2 <item2> ^p3 <tie>)
+   (<o1> ^name combine ^p1 <item1> ^p2 <item2> ^p3 <tie>)
 }
-sp {apply*_combine__item1__item2__tie_
+sp {apply*combine
    (state <s> ^name game ^operator <o> ^io <i>)
-   (<o> ^name _combine__item1__item2__tie_ ^p1 <item1> ^p2 <item2> ^p3 <tie>)
+   (<o> ^name combine ^p1 <item1> ^p2 <item2> ^p3 <tie>)
    (<i> ^output-link <o1>)
 -->
    (<o1> ^combine <combine>)
@@ -156,6 +157,24 @@ sp {elaborate*_itemtype_hammer1_
    (<e> ^itemtype <itemtype>)
    (<itemtype> ^p1 hammer1)
 }
+sp {elaborate*_itemtype_nails1_
+   (state <s> ^elaborations <e>)
+-->
+   (<e> ^itemtype <itemtype>)
+   (<itemtype> ^p1 nails1)
+}
+sp {elaborate*_itemtype_log1_
+   (state <s> ^elaborations <e>)
+-->
+   (<e> ^itemtype <itemtype>)
+   (<itemtype> ^p1 log1)
+}
+sp {elaborate*_itemtype_log2_
+   (state <s> ^elaborations <e>)
+-->
+   (<e> ^itemtype <itemtype>)
+   (<itemtype> ^p1 log2)
+}
 sp {elaborate*_itemtype__comboName_
    (state <s> ^gs <g> ^elaborations <e>)
    (<g> ^comboType <c>)
@@ -207,11 +226,11 @@ sp {propose*_legal_explorer__apply__item__dir__1
    (<o1> -^<cmd-name> <c>)
 -->
    (<s> ^operator <o2> +)
-   (<o2> ^name _apply__item__dir_ ^p1 <item> ^p2 <dir>)
+   (<o2> ^name apply ^p1 <item> ^p2 <dir>)
 }
-sp {apply*_apply__item__dir_
+sp {apply*apply
    (state <s> ^name game ^operator <o> ^io <i>)
-   (<o> ^name _apply__item__dir_ ^p1 <item> ^p2 <dir>)
+   (<o> ^name apply ^p1 <item> ^p2 <dir>)
    (<i> ^output-link <o1>)
 -->
    (<o1> ^apply <apply>)
@@ -418,11 +437,11 @@ sp {propose*_legal_explorer__move__dir__1
    (<o> -^<cmd-name> <c>)
 -->
    (<s> ^operator <o1> +)
-   (<o1> ^name _move__dir_ ^p1 <dir>)
+   (<o1> ^name move ^p1 <dir>)
 }
-sp {apply*_move__dir_
+sp {apply*move
    (state <s> ^name game ^operator <o> ^io <i>)
-   (<o> ^name _move__dir_ ^p1 <dir>)
+   (<o> ^name move ^p1 <dir>)
    (<i> ^output-link <o1>)
 -->
    (<o1> ^move <move>)
@@ -525,7 +544,7 @@ sp {elaborate*_goal_explorer_0_1
    (state <s> ^name game ^terminal <t> ^desired <d> ^elaborations <e>)
    (<e> ^killed <k>)
 -->
-   (<s> ^failure <d>)
+   (<s> ^failure-detected <d>)
 }
 sp {elaborate*_goal_explorer_50_1
    (state <s> ^name game ^terminal <t> ^desired <d> ^gs <g> ^facts <f> ^elaborations <e> ^elaborations <e1>)
@@ -536,14 +555,14 @@ sp {elaborate*_goal_explorer_50_1
    (<e> -^atexit <a>)
    (<e1> -^killed <k>)
 -->
-   (<s> ^failure <d>)
+   (<s> ^failure-detected <d>)
 }
 sp {elaborate*_goal_explorer_100_1
    (state <s> ^name game ^terminal <t> ^desired <d> ^elaborations <e> ^elaborations <e1>)
    (<e> ^atexit <a>)
    (<e1> -^killed <k>)
 -->
-   (<s> ^success <d>)
+   (<s> ^success-detected <d>)
 }
 sp {apply*_next__step__next__1
    (state <s> ^name game ^name game ^operator <o> ^gs <g> ^facts <f>)
@@ -576,6 +595,8 @@ sp {apply*init-game
 -->
    (<s> ^name game ^desired <desired> ^gs <gs> ^facts <facts>)
    (<gs> ^role explorer)
+   (<gs> ^action-counter 0)
+   (<s> ^next-action 0)
    (<gs> ^blocked <blocked>)
    (<blocked> ^p1 west ^p2 0 ^p3 0)
    (<gs> ^blocked <blocked1>)
@@ -585,29 +606,14 @@ sp {apply*init-game
    (<gs> ^blocked <blocked3>)
    (<blocked3> ^p1 west ^p2 0 ^p3 3)
    (<gs> ^blocked <blocked4>)
-   (<blocked4> ^p1 west ^p2 0 ^p3 4)
-   (<gs> ^blocked <blocked5>)
-   (<blocked5> ^p1 west ^p2 0 ^p3 5)
-   (<gs> ^blocked <blocked6>)
-   (<blocked6> ^p1 west ^p2 0 ^p3 6)
-   (<gs> ^blocked <blocked7>)
-   (<blocked7> ^p1 west ^p2 0 ^p3 7)
    (<gs> ^blocked <blocked8>)
-   (<blocked8> ^p1 east ^p2 7 ^p3 0)
+   (<blocked8> ^p1 east ^p2 3 ^p3 0)
    (<gs> ^blocked <blocked9>)
-   (<blocked9> ^p1 east ^p2 7 ^p3 1)
+   (<blocked9> ^p1 east ^p2 3 ^p3 1)
    (<gs> ^blocked <blocked10>)
-   (<blocked10> ^p1 east ^p2 7 ^p3 2)
+   (<blocked10> ^p1 east ^p2 3 ^p3 2)
    (<gs> ^blocked <blocked11>)
-   (<blocked11> ^p1 east ^p2 7 ^p3 3)
-   (<gs> ^blocked <blocked12>)
-   (<blocked12> ^p1 east ^p2 7 ^p3 4)
-   (<gs> ^blocked <blocked13>)
-   (<blocked13> ^p1 east ^p2 7 ^p3 5)
-   (<gs> ^blocked <blocked14>)
-   (<blocked14> ^p1 east ^p2 7 ^p3 6)
-   (<gs> ^blocked <blocked15>)
-   (<blocked15> ^p1 east ^p2 7 ^p3 7)
+   (<blocked11> ^p1 east ^p2 3 ^p3 3)
    (<gs> ^blocked <blocked16>)
    (<blocked16> ^p1 north ^p2 0 ^p3 0)
    (<gs> ^blocked <blocked17>)
@@ -616,52 +622,34 @@ sp {apply*init-game
    (<blocked18> ^p1 north ^p2 2 ^p3 0)
    (<gs> ^blocked <blocked19>)
    (<blocked19> ^p1 north ^p2 3 ^p3 0)
-   (<gs> ^blocked <blocked20>)
-   (<blocked20> ^p1 north ^p2 4 ^p3 0)
-   (<gs> ^blocked <blocked21>)
-   (<blocked21> ^p1 north ^p2 5 ^p3 0)
-   (<gs> ^blocked <blocked22>)
-   (<blocked22> ^p1 north ^p2 6 ^p3 0)
-   (<gs> ^blocked <blocked23>)
-   (<blocked23> ^p1 north ^p2 7 ^p3 0)
    (<gs> ^blocked <blocked24>)
-   (<blocked24> ^p1 south ^p2 0 ^p3 7)
+   (<blocked24> ^p1 south ^p2 0 ^p3 3)
    (<gs> ^blocked <blocked25>)
-   (<blocked25> ^p1 south ^p2 1 ^p3 7)
+   (<blocked25> ^p1 south ^p2 1 ^p3 3)
    (<gs> ^blocked <blocked26>)
-   (<blocked26> ^p1 south ^p2 2 ^p3 7)
+   (<blocked26> ^p1 south ^p2 2 ^p3 3)
    (<gs> ^blocked <blocked27>)
-   (<blocked27> ^p1 south ^p2 3 ^p3 7)
-   (<gs> ^blocked <blocked28>)
-   (<blocked28> ^p1 south ^p2 4 ^p3 7)
-   (<gs> ^blocked <blocked29>)
-   (<blocked29> ^p1 south ^p2 5 ^p3 7)
-   (<gs> ^blocked <blocked30>)
-   (<blocked30> ^p1 south ^p2 6 ^p3 7)
-   (<gs> ^blocked <blocked31>)
-   (<blocked31> ^p1 south ^p2 7 ^p3 7)
+   (<blocked27> ^p1 south ^p2 3 ^p3 3)
    (<gs> ^location <location>)
    (<location> ^p1 exit ^p2 0 ^p3 0)
    (<gs> ^location <location1>)
-   (<location1> ^p1 rock0 ^p2 0 ^p3 3)
+   (<location1> ^p1 water0 ^p2 0 ^p3 1)
    (<gs> ^location <location2>)
-   (<location2> ^p1 rock1 ^p2 1 ^p3 3)
+   (<location2> ^p1 water1 ^p2 1 ^p3 1)
    (<gs> ^location <location3>)
-   (<location3> ^p1 rock2 ^p2 2 ^p3 3)
+   (<location3> ^p1 water2 ^p2 2 ^p3 1)
    (<gs> ^location <location4>)
-   (<location4> ^p1 rock3 ^p2 3 ^p3 3)
-   (<gs> ^location <location5>)
-   (<location5> ^p1 rock4 ^p2 4 ^p3 3)
-   (<gs> ^location <location6>)
-   (<location6> ^p1 rock5 ^p2 5 ^p3 3)
-   (<gs> ^location <location7>)
-   (<location7> ^p1 rock6 ^p2 6 ^p3 3)
-   (<gs> ^location <location8>)
-   (<location8> ^p1 rock7 ^p2 7 ^p3 3)
+   (<location4> ^p1 water3 ^p2 3 ^p3 1)
    (<gs> ^location <location9>)
-   (<location9> ^p1 hammer1 ^p2 3 ^p3 5)
+   (<location9> ^p1 hammer1 ^p2 0 ^p3 2)
    (<gs> ^location <location10>)
-   (<location10> ^p1 explorer ^p2 0 ^p3 7)
+   (<location10> ^p1 nails1 ^p2 1 ^p3 2)
+   (<gs> ^location <location11>)
+   (<location11> ^p1 log1 ^p2 2 ^p3 2)
+   (<gs> ^location <location12>)
+   (<location12> ^p1 log2 ^p2 3 ^p3 2)
+   (<gs> ^location <location13>)
+   (<location13> ^p1 explorer ^p2 3 ^p3 3)
    (<gs> ^health <health>)
    (<health> ^p1 explorer ^p2 1)
    (<gs> ^property <property>)
@@ -3023,21 +3011,13 @@ sp {apply*init-game
    (<facts> ^propertycombine <propertycombine3>)
    (<propertycombine3> ^p1 supportsWeight ^p2 buoyant ^p3 canFloat)
    (<facts> ^obstacletype <obstacletype>)
-   (<obstacletype> ^p1 rock0 ^p2 rock)
+   (<obstacletype> ^p1 water0 ^p2 water)
    (<facts> ^obstacletype <obstacletype1>)
-   (<obstacletype1> ^p1 rock1 ^p2 rock)
+   (<obstacletype1> ^p1 water1 ^p2 water)
    (<facts> ^obstacletype <obstacletype2>)
-   (<obstacletype2> ^p1 rock2 ^p2 rock)
+   (<obstacletype2> ^p1 water2 ^p2 water)
    (<facts> ^obstacletype <obstacletype3>)
-   (<obstacletype3> ^p1 rock3 ^p2 rock)
-   (<facts> ^obstacletype <obstacletype4>)
-   (<obstacletype4> ^p1 rock4 ^p2 rock)
-   (<facts> ^obstacletype <obstacletype5>)
-   (<obstacletype5> ^p1 rock5 ^p2 rock)
-   (<facts> ^obstacletype <obstacletype6>)
-   (<obstacletype6> ^p1 rock6 ^p2 rock)
-   (<facts> ^obstacletype <obstacletype7>)
-   (<obstacletype7> ^p1 rock7 ^p2 rock)
+   (<obstacletype3> ^p1 water3 ^p2 water)
 }
 sp {apply*remove-_next__currSymbol__std_soar_var1__0
    (state <s> ^name game ^gs <g> ^io <i> ^operator <o>)
@@ -3211,12 +3191,199 @@ sp {propose*update-state
    (<o1> ^name update-state)
 }
 sp {apply*update-state
-   (state <s> ^name game ^operator <o> ^io <i>)
+   (state <s> ^name game ^operator <o> ^io <i> ^gs <gs>)
+   (<gs> ^action-counter <ac>)
    (<o> ^name update-state)
    (<i> ^output-link <o1>)
    (<o1> ^<cmd-name> <c>)
 -->
-   (<o1> ^<cmd-name> <c> -)
+   #(<o1> ^<cmd-name> <c> -)
+   (<s> ^new-game-state-created <ngs>)
+   (<gs> ^action-counter <ac> -)
+   (<gs> ^action-counter (+ <ac> 1))
+   (<gs> ^action-sequence <at>)
+   (<at> ^count <ac>
+         ^action <act>)
+   (<act> ^name <cmd-name>
+          ^params <c>)
+}
+
+sp {apply*update-state*clean-analyzed
+  (state <s> ^name game
+       ^operator.name update-state
+       ^state-analyzed <sa>)
+-->
+  (<s> ^state-analyzed <sa> -)
+}
+
+sp {propose*analyze-state
+  (state <s> ^name game ^new-game-state-created <ngs>)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name analyze-state)
+}
+
+sp {apply*analyze-state
+  (state <s> ^name game ^operator.name analyze-state
+             ^new-game-state-created <ngs>
+             ^io.output-link <ol>)
+  (<ol> ^<cmd-name> <c>)
+-->
+  (<ol> ^<cmd-name> <c> -)
+  (<s> ^new-game-state-created <ngs> -)
+  (<s> ^state-analyzed <sa>)
+}
+
+sp {apply*analyze-state*handle-success
+   (state <s> ^name game
+              ^operator <o>
+              ^top-state <ts>
+              ^success-detected <d>
+              ^gs <gs>)
+   (<o> ^name analyze-state)
+-->
+  (<ts> ^final-gs <gs>)
+  (<s> ^success <d>)
+}
+
+sp {apply*anything*save-final-action-sequence
+   (state <s> ^superstate nil
+              ^operator <o>
+              ^final-gs.action-sequence <as>)
+   (<as> ^action <act>
+         ^count <count>)
+   (<act> ^name <name>
+          ^params <par>)
+   (<par> ^p1 <val>
+          -^p2)
+-->
+  (<s> ^saved-action <as1>)
+  (<as1> ^action <act1>
+         ^count <count>)
+  (<act1> ^name <name>
+          ^params <par1>)
+  (<par1> ^p1 <val>)
+}
+
+sp {apply*anything*save-final-action-sequence*twopar
+   (state <s> ^superstate nil
+              ^operator <o>
+              ^final-gs.action-sequence <as>)
+   (<as> ^action <act>
+         ^count <count>)
+   (<act> ^name <name>
+          ^params <par>)
+   (<par> ^p1 <val>
+          ^p2 <val2>
+          -^p3)
+-->
+  (<s> ^saved-action <as1>)
+  (<as1> ^action <act1>
+         ^count <count>)
+  (<act1> ^name <name>
+          ^params <par1>)
+  (<par1> ^p1 <val>
+          ^p2 <val2>)
+}
+
+sp {apply*anything*save-final-action-sequence*threepar
+   (state <s> ^superstate nil
+              ^operator <o>
+              ^final-gs.action-sequence <as>)
+   (<as> ^action <act>
+         ^count <count>)
+   (<act> ^name <name>
+          ^params <par>)
+   (<par> ^p1 <val>
+          ^p2 <val2>
+          ^p3 <val3>)
+-->
+  (<s> ^saved-action <as1>)
+  (<as1> ^action <act1>
+         ^count <count>)
+  (<act1> ^name <name>
+          ^params <par1>)
+  (<par1> ^p1 <val>
+          ^p2 <val2>
+          ^p3 <val3>)
+}
+
+
+
+sp {apply*analyze-state*handle-failure
+   (state <s> ^name game
+              ^operator <o>
+              ^failure-detected <d>
+              ^gs <gs>)
+   (<o> ^name analyze-state)
+-->
+  (<s> ^failure <d>)
+}
+
+
+sp {apply*update-state*next-action
+   (state <s> ^superstate nil
+              ^operator <o>)
+   (<s> ^next-action <na>)
+   (<o> ^name update-state)
+-->
+   (<s> ^next-action <na> -
+                  (+ <na> 1))
+}
+
+sp {prefer*next-saved-action
+   (state <s> ^superstate nil
+              ^operator <o> +
+              ^next-action <count>
+              ^saved-action <sas>)
+   (<sas> ^count <count>
+          ^action <act>)
+   (<act> ^name <name>
+          ^params.p1 <p1>
+          -^params.p2)
+   (<o> ^name <name>
+        ^p1 <p1>
+        -^p2)
+-->
+   (<s> ^operator <o> >)
+}
+
+sp {prefer*next-saved-action*twopar
+   (state <s> ^superstate nil
+              ^operator <o> +
+              ^next-action <count>
+              ^saved-action <sas>)
+   (<sas> ^count <count>
+          ^action <act>)
+   (<act> ^name <name>
+          ^params.p1 <p1>
+          ^params.p2 <p2>
+          -^params.p3)
+   (<o> ^name <name>
+        ^p1 <p1>
+        ^p2 <p2>
+        -^p3)
+-->
+   (<s> ^operator <o> >)
+}
+
+sp {prefer*next-saved-action*threepar
+   (state <s> ^superstate nil
+              ^operator <o> +
+              ^next-action <count>
+              ^saved-action <sas>)
+   (<sas> ^count <count>
+          ^action <act>)
+   (<act> ^name <name>
+          ^params.p1 <p1>
+          ^params.p2 <p2>
+          ^params.p3 <p3>)
+   (<o> ^name <name>
+        ^p1 <p1>
+        ^p2 <p2>
+        ^p3 <p3>)
+-->
+   (<s> ^operator <o> >)
 }
 sp {game*elaborate*fake-response
    (state <s> ^io <i>)
@@ -3231,7 +3398,12 @@ sp {game*elaborate*problem-space
    (state <s> ^name game)
 -->
    (<s> ^problem-space <problem-space>)
-   (<problem-space> ^name game ^default-state-copy yes ^one-level-attributes facts ^two-level-attributes gs)
+   (<problem-space> ^name game 
+                    ^default-state-copy yes 
+                    ^one-level-attributes facts 
+                    ^two-level-attributes gs
+                    ^no-local-negations true 
+                    ^default-operator-copy yes)
 }
 sp {game*elaborate*selection-space-fake-io
    (state <s> ^duplicate-of <d>)
@@ -3320,4 +3492,21 @@ sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__0
    }
 -->
    (<g> ^location <l1> -)
+}
+
+sp {elaborate*state*name
+   (state <s> ^superstate.operator.name <name>)
+-->
+   (<s> ^name <name>)
+}
+
+sp {elaborate*state*top-state
+   (state <s> ^superstate.top-state <ts>)
+-->
+   (<s> ^top-state <ts>)
+}
+sp {elaborate*top-state*top-state
+   (state <s> ^superstate nil)
+-->
+   (<s> ^top-state <s>)
 }

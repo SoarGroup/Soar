@@ -115,7 +115,7 @@ sp {elaborate*_used__glue_
 sp {apply*_next__currSymbol__ns__1
    (state <s> ^name game ^name game ^operator <o> ^elaborations <e> ^facts <f> ^io <i> ^gs <g>)
    (<o> ^name update-state)
-   (<e> ^currsymbol <c>)
+   (<g> ^currSymbol <c>)
    (<c> ^p1 <cs>)
    (<f> ^nextsymbol <n>)
    (<n> ^p1 <cs> ^p2 <ns>)
