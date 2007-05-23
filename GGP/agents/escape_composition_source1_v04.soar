@@ -605,7 +605,6 @@ sp {apply*init-game
    (<blocked2> ^p1 west ^p2 0 ^p3 2)
    (<gs> ^blocked <blocked3>)
    (<blocked3> ^p1 west ^p2 0 ^p3 3)
-   (<gs> ^blocked <blocked4>)
    (<gs> ^blocked <blocked8>)
    (<blocked8> ^p1 east ^p2 3 ^p3 0)
    (<gs> ^blocked <blocked9>)
