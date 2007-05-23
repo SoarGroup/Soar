@@ -11,8 +11,8 @@ import urllib
 def DoCopy(target, source, env):
 	target_files = map(lambda x: str(x), target)
 	source_files = map(lambda x: str(x), source)
-
-	for target, source in zip(target_files, source_files):
+	
+        for target, source in zip(target_files, source_files):
 		shutil.copyfile(source, target)
 
 def SetJavaPaths(env, classpath, sourcepath = None):
