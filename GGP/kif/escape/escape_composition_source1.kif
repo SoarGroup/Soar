@@ -196,7 +196,7 @@
     
 ;; combining items takes a symbol from the symbol list
 (<= (next (currSymbol ?ns))
-    (currSymbol ?cs)
+    (true (currSymbol ?cs))
     (nextSymbol ?cs ?ns)
     (does explorer (combine ?item1 ?item2)))
 

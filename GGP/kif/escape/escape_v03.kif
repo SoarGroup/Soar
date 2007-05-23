@@ -17,7 +17,6 @@
 ;; where E = exit, W = water, L = log, R = rock, H = hammer, e = explorer
 
 (role explorer)
-(exitType exit)
 
 ;; we're ignoring item types (see discussion on types)
 (itemType hammer1)  ; (hammerType hammer)
@@ -32,26 +31,27 @@
 (obstacleType water1 water)
 
 
-(init (blocked east 0 0))
-(init (blocked east 0 1))
-(init (blocked east 0 2))
-(init (blocked east 0 3))
-(init (blocked east 0 4))
-(init (blocked east 0 5))
-(init (blocked east 0 6))
+(blocked east 0 0)
+(blocked east 0 1)
+(blocked east 0 2)
+(blocked east 0 3)
+(blocked east 0 4)
+(blocked east 0 5)
+(blocked east 0 6)
 
-(init (blocked west 0 0))
-(init (blocked west 0 1))
-(init (blocked west 0 2))
-(init (blocked west 0 3))
-(init (blocked west 0 4))
-(init (blocked west 0 5))
-(init (blocked west 0 6))
+(blocked west 0 0)
+(blocked west 0 1)
+(blocked west 0 2)
+(blocked west 0 3)
+(blocked west 0 4)
+(blocked west 0 5)
+(blocked west 0 6)
 
-(init (blocked north 0 0))
-(init (blocked south 0 6))
+(blocked north 0 0)
+(blocked south 0 6)
 
-(init (location exit     0 0))
+(exitlocation 0 0)
+
 (init (location rock1    0 1))
 (init (location water1   0 2))
 (init (location log1     0 3))
@@ -173,7 +173,7 @@
     
 ;; combining items takes a symbol from the symbol list
 (<= (next (currSymbol ?ns))
-    (currSymbol ?cs)
+    (true (currSymbol ?cs))
     (nextSymbol ?cs ?ns)
     (does explorer (combine ?item1 ?item2)))
 
@@ -216,7 +216,7 @@
     (true (holding ?item))
     (direction ?dir)
     (true (location explorer ?x ?y))
-    (not (true (blocked ?dir ?x ?y)))
+    (not (blocked ?dir ?x ?y))
     (nCell 1 ?dir ?x ?y ?x1 ?y1)
     (obstacleType ?obstacle ?class)
     (true (location ?obstacle ?x1 ?y1)))
@@ -254,6 +254,10 @@
     (true (property ?item ?property))
     (canCompromise ?property ?class ?expend))
 
+(<= (next (intact ?obstacle))
+    (true (intact ?obstacle))
+    (not (doCompromise ?obstacle ?item ?expend)))
+
 (<= (next (compromised ?obstacle))
     (doCompromise ?obstacle ?item ?expend))
 
@@ -265,31 +269,44 @@
 (<= (next (compromised ?obstacle))
     (true (compromised ?obstacle))
     (true (location ?obstacle ?ox ?oy))
-;    (not (true (compromiseExpired ?obstacle))))
-    (not (true (location explorer ?ox ?oy))))
+;;    (not (true (location explorer ?ox ?oy))))
+;;  substituting negative check for check that there is some distance
+;;  between the explorer and the object
+    (nextExplorerLocation ?ex ?ey)
+    (or (distinct ?ex ?ox)
+        (distinct ?oy ?ey)))
 
 ;; once the explorer moves onto the obstacle, the compromise expires.
 ;; But the explorer doesn't take damage until he gets off of the obstacle and
 ;; then gets back on.
 (<= (next (compromiseExpired ?obstacle))
     (true (compromised ?obstacle))
-;    (not (true (compromiseExpired ?obstacle)))
     (true (location ?obstacle ?ox ?oy))
-    (true (location explorer ?ox ?oy)))
+;;    (true (location explorer ?ox ?oy)))
+    (nextExplorerLocation ?ox ?oy))
 
 (<= (next (compromiseExpired ?obstacle))
     (true (compromiseExpired ?obstacle))
     (true (location ?obstacle ?ox ?oy))
     (true (location explorer ?ox ?oy)))
 
+
+(<= (next (intact ?obstacle))
+    (true (compromiseExpired ?obstacle))
+    (true (location ?obstacle ?ox ?oy))
+    (true (location explorer ?ex ?ey))
+    (or (distinct ?ex ?ox)
+        (distinct ?ey ?oy)))
+
 ;; if a player is in a cell with an undestroyed and uncompromised obstacle, 
 ;; he loses one health
 (<= damaged
     (nextExplorerLocation ?x ?y)
     (obstacleType ?obstacle ?class)
-    (not (true (compromised ?obstacle)))
-    (not (true (compromiseExpired ?obstacle)))
-    (not (true (destroyed ?obstacle)))
+;;    (not (true (compromised ?obstacle)))
+;;    (not (true (compromiseExpired ?obstacle)))
+;;    (not (true (destroyed ?obstacle)))
+    (true (intact ?obstacle))
     (true (location ?obstacle ?x ?y)))
 
 ;; obstacles always stay in the same place
@@ -339,7 +356,7 @@
 ;;; atExit is true if the explorer is at the same location as the exit
 (<= atExit 
     (true (location explorer ?x ?y))
-    (true (location exit ?x ?y)))
+    (exitlocation ?x ?y))
 
 ;;; killed is true if the explorer's health has dropped to zero
 (<= killed 
@@ -363,7 +380,7 @@
 (<= (legal explorer (move ?dir))
     (direction ?dir)
     (true (location explorer ?xOld ?yOld))
-    (not (true (blocked ?dir ?xOld ?yOld)))
+    (not (blocked ?dir ?xOld ?yOld))
     (nCell 1 ?dir ?xOld ?yOld ?xNew ?yNew)
     (2d ?xNew ?yNew))
 
@@ -379,27 +396,21 @@
 (<= (next (health explorer ?hpNew))
     (true (health explorer ?hpOld))
     damaged
-    (not (does explorer heal))
+;;    (not (does explorer heal))
     (minus 1 ?hpOld ?hpNew))
-(<= (next (health explorer ?hpNew))
-    (true (health explorer ?hpOld))
-    (does explorer heal)
-    (not damaged)
-    (plus 1 ?hpOld ?hpNew))
+;;(<= (next (health explorer ?hpNew))
+;;    (true (health explorer ?hpOld))
+;;    (does explorer heal)
+;;    (not damaged)
+;;    (plus 1 ?hpOld ?hpNew))
 (<= (next (health explorer ?hp))
     (true (health explorer ?hp))
     (not damaged)
-    (not (does explorer heal)))
-(<= (next (health explorer ?hp))
-    (true (health explorer ?hp))
-    damaged
-    (does explorer heal))
-
-;;; The exit and walls do not move
-(<= (next (location exit ?x ?y))
-    (true (location exit ?x ?y)))
-(<= (next (blocked ?dir ?x ?y))
-    (true (blocked ?dir ?x ?y)))
+;;    (not (does explorer heal)))
+;;(<= (next (health explorer ?hp))
+;;    (true (health explorer ?hp))
+;;    damaged
+;;    (does explorer heal))
 
 ;;; Items remain on the ground until they are picked up
 (<= (next (location ?item ?x ?y))
@@ -1467,3 +1478,4 @@
 (nCell 3 north 7 7 7 4)
 (nCell 2 north 7 7 7 5)
 (nCell 1 north 7 7 7 6)
+
