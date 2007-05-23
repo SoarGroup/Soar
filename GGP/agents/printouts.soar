@@ -9,7 +9,7 @@ sp {apply*_next__property__comboName__cprop__1_asdf
    (<e> ^combining <c>)
    (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
 -->
-   (write |ADDED property ^p1 | <comboName> | ^p2 | <cprop> (crlf))
+   (write (crlf) |ADDED property ^p1 | <comboName> | ^p2 | <cprop> )
 }
 sp {apply*_next__property__comboName__cprop__21_asdf
    (state <s> ^superstate nil ^name game ^name game ^operator <o> ^gs <g> ^facts <f> ^elaborations <e>)
@@ -22,7 +22,7 @@ sp {apply*_next__property__comboName__cprop__21_asdf
    (<e> ^combining <c>)
    (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
 -->
-   (write |ADDED property ^p1 | <comboName> | ^p2 | <cprop>  (crlf))
+   (write (crlf) |ADDED property ^p1 | <comboName> | ^p2 | <cprop>  )
 }
 sp {apply*_next__property__comboName__prop__1_asdf
    (state <s> ^superstate nil ^name game ^name game ^operator <o> ^gs <g> ^facts <f> ^elaborations <e>)
@@ -34,7 +34,7 @@ sp {apply*_next__property__comboName__prop__1_asdf
    (<e> ^combining <c>)
    (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
 -->
-   (write |ADDED property ^p1 | <comboName> | ^p2 | <prop>  (crlf))
+   (write (crlf) |ADDED property ^p1 | <comboName> | ^p2 | <prop>  )
 }
 sp {apply*_next__property__comboName__prop__21_asdf
    (state <s> ^superstate nil ^name game ^name game ^operator <o> ^gs <g> ^facts <f> ^elaborations <e>)
@@ -46,7 +46,7 @@ sp {apply*_next__property__comboName__prop__21_asdf
    (<e> ^combining <c>)
    (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
 -->
-   (write |ADDED property ^p1 | <comboName> | ^p2 | <prop>  (crlf))
+   (write (crlf) |ADDED property ^p1 | <comboName> | ^p2 | <prop>  )
 }
 sp {apply*_next__comboType__comboName__item1__item2__1_asdf
    (state <s> ^superstate nil ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
@@ -54,15 +54,15 @@ sp {apply*_next__comboType__comboName__item1__item2__1_asdf
    (<e> ^combining <c>)
    (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
 -->
-   (write |ADDED comboType ^p1 | <comboName> | ^p2 | <item1> | ^p3 | <item2>  (crlf))
+   (write (crlf) |ADDED comboType ^p1 | <comboName> | ^p2 | <item1> | ^p3 | <item2>  )
 }
 sp {apply*_next__holding__comboName__1_asdf
-   (state <s> ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
+   (state <s> ^superstate nil ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
    (<o> ^name update-state)
    (<e> ^combining <c>)
    (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
 -->
-   (write |ADDED holding ^p1 | <comboName>  (crlf))
+   (write (crlf) |ADDED holding ^p1 | <comboName>  )
 }
 sp {apply*_next__destroyed__obstacle__1_asdf
    (state <s> ^superstate nil ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
@@ -70,7 +70,7 @@ sp {apply*_next__destroyed__obstacle__1_asdf
    (<e> ^dodestroy <d>)
    (<d> ^p1 <obstacle> ^p2 <item> ^p3 <expend>)
 -->
-   (write |ADDED destroyed ^p1 | <obstacle>  (crlf))
+   (write (crlf) |ADDED destroyed ^p1 | <obstacle>  )
 }
 sp {apply*_next__compromised__obstacle__1_asdf
    (state <s> ^superstate nil ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
@@ -78,7 +78,7 @@ sp {apply*_next__compromised__obstacle__1_asdf
    (<e> ^docompromise <d>)
    (<d> ^p1 <obstacle> ^p2 <item> ^p3 <expend>)
 -->
-   (write |ADDED compromised ^p1 | <obstacle>  (crlf))
+   (write (crlf) |ADDED compromised ^p1 | <obstacle>  )
 }
 sp {apply*_next__compromiseExpired__obstacle__1_asdf
    (state <s> ^superstate nil ^name game ^name game ^operator <o> ^gs <g>)
@@ -88,7 +88,7 @@ sp {apply*_next__compromiseExpired__obstacle__1_asdf
    (<l> ^p1 <obstacle> ^p2 <ox> ^p3 <oy>)
    (<l1> ^p1 explorer ^p2 <ox> ^p3 <oy>)
 -->
-   (write |ADDED compromiseExpired ^p1 | <obstacle>  (crlf))
+   (write (crlf) |ADDED compromiseExpired ^p1 | <obstacle>  )
 }
 sp {apply*_next__location_explorer__x__y__1_asdf
    (state <s> ^superstate nil ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
@@ -96,7 +96,7 @@ sp {apply*_next__location_explorer__x__y__1_asdf
    (<e> ^nextexplorerlocation <n>)
    (<n> ^p1 <x> ^p2 <y>)
 -->
-   (write |ADDED location ^p1 explorer ^p2 | <x> | ^p3 | <y>  (crlf))
+   (write (crlf) |ADDED location ^p1 explorer ^p2 | <x> | ^p3 | <y>  )
 }
 sp {apply*_next__health_explorer__hpNew__1_asdf
    (state <s> ^superstate nil ^name game ^name game ^operator <o> ^gs <g> ^elaborations <e> ^io <i> ^facts <f>)
@@ -111,7 +111,7 @@ sp {apply*_next__health_explorer__hpNew__1_asdf
    (<f> ^minus <m>)
    (<m> ^p1 1 ^p2 <hpOld> ^p3 <hpNew>)
 -->
-   (write |ADDED health ^p1 explorer ^p2 | <hpNew>  (crlf))
+   (write (crlf) |ADDED health ^p1 explorer ^p2 | <hpNew>  )
 }
 sp {apply*_next__health_explorer__hpNew__21_asdf
    (state <s> ^superstate nil ^name game ^name game ^operator <o> ^gs <g> ^io <i> ^elaborations <e1> ^facts <f>)
@@ -126,7 +126,7 @@ sp {apply*_next__health_explorer__hpNew__21_asdf
    (<f> ^plus <p>)
    (<p> ^p1 1 ^p2 <hpOld> ^p3 <hpNew>)
 -->
-   (write |ADDED health ^p1 explorer ^p2 | <hpNew>  (crlf))
+   (write (crlf) |ADDED health ^p1 explorer ^p2 | <hpNew>  )
 }
 sp {apply*_next__holding__item__1_asdf
    (state <s> ^superstate nil ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
@@ -135,7 +135,7 @@ sp {apply*_next__holding__item__1_asdf
    (<i> ^p1 <item>)
    (<p> ^p1 <item>)
 -->
-   (write |ADDED holding ^p1 | <item>  (crlf))
+   (write (crlf) |ADDED holding ^p1 | <item>  )
 }
 sp {apply*remove-_next__compromised__std_soar_var1__0_asdf
    (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o>)
@@ -149,7 +149,7 @@ sp {apply*remove-_next__compromised__std_soar_var1__0_asdf
      (<l1> ^p1 <std_soar_var1> ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
    }
 -->
-   (write |REMOVED compromised ^p1 | <std_soar_var1>  (crlf))
+   (write (crlf) |REMOVED compromised ^p1 | <std_soar_var1>  )
 }
 sp {apply*remove-_next__compromised__std_soar_var1__1_asdf
    (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o>)
@@ -160,7 +160,7 @@ sp {apply*remove-_next__compromised__std_soar_var1__1_asdf
    (<c> ^p1 <std_soar_var1>)
    (<l1> ^p1 explorer ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
 -->
-   (write |REMOVED compromised ^p1 | <std_soar_var1>  (crlf))
+   (write (crlf) |REMOVED compromised ^p1 | <std_soar_var1>  )
 }
 sp {apply*remove-_next__compromiseExpired__std_soar_var1__0_asdf
    (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o>)
@@ -174,7 +174,7 @@ sp {apply*remove-_next__compromiseExpired__std_soar_var1__0_asdf
      (<l1> ^p1 <std_soar_var1> ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
    }
 -->
-   (write |REMOVED compromiseExpired ^p1 | <std_soar_var1>  (crlf))
+   (write (crlf) |REMOVED compromiseExpired ^p1 | <std_soar_var1>  )
 }
 sp {apply*remove-_next__compromiseExpired__std_soar_var1__1_asdf
    (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o>)
@@ -188,7 +188,7 @@ sp {apply*remove-_next__compromiseExpired__std_soar_var1__1_asdf
      (<l1> ^p1 explorer ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
    }
 -->
-   (write |REMOVED compromiseExpired ^p1 | <std_soar_var1>  (crlf))
+   (write (crlf) |REMOVED compromiseExpired ^p1 | <std_soar_var1>  )
 }
 sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__0_asdf
    (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o> ^facts <f> ^elaborations <e>)
@@ -206,7 +206,7 @@ sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__0
      (<i2> ^p1 <std_soar_var1>)
    }
 -->
-   (write |REMOVED location ^p1 | <std_soar_var1> | ^p2 | <std_soar_var2> | ^p3 | <std_soar_var3>  (crlf))
+   (write (crlf) |REMOVED location ^p1 | <std_soar_var1> | ^p2 | <std_soar_var2> | ^p3 | <std_soar_var3>  )
 }
 sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__1_asdf
    (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o> ^facts <f> ^elaborations <e>)
@@ -222,7 +222,7 @@ sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__1
    (<e> ^pickedup <p>)
    (<p> ^p1 <std_soar_var1>)
 -->
-   (write |REMOVED location ^p1 | <std_soar_var1> | ^p2 | <std_soar_var2> | ^p3 | <std_soar_var3>  (crlf))
+   (write (crlf) |REMOVED location ^p1 | <std_soar_var1> | ^p2 | <std_soar_var2> | ^p3 | <std_soar_var3>  )
 }
 sp {apply*remove-_next__health_explorer__std_soar_var1__0_asdf
    (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o> ^elaborations <e> ^elaborations <e1>)
@@ -234,7 +234,7 @@ sp {apply*remove-_next__health_explorer__std_soar_var1__0_asdf
    (<e> ^damaged <d>)
    (<e1> -^damaged <d1>)
 -->
-   (write |REMOVED health ^p1 explorer ^p2 | <std_soar_var1>  (crlf))
+   (write (crlf) |REMOVED health ^p1 explorer ^p2 | <std_soar_var1>  )
 }
 sp {apply*remove-_next__health_explorer__std_soar_var1__1_asdf
    (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o> ^elaborations <e>)
@@ -247,7 +247,7 @@ sp {apply*remove-_next__health_explorer__std_soar_var1__1_asdf
    (<e> ^damaged <d>)
    (<e1> -^heal <h1>)
 -->
-   (write |REMOVED health ^p1 explorer ^p2 | <std_soar_var1>  (crlf))
+   (write (crlf) |REMOVED health ^p1 explorer ^p2 | <std_soar_var1>  )
 }
 sp {apply*remove-_next__health_explorer__std_soar_var1__2_asdf
    (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o> ^elaborations <e1>)
@@ -260,7 +260,7 @@ sp {apply*remove-_next__health_explorer__std_soar_var1__2_asdf
    (<e> ^heal <h1>)
    (<e1> -^damaged <d>)
 -->
-   (write |REMOVED health ^p1 explorer ^p2 | <std_soar_var1>  (crlf))
+   (write (crlf) |REMOVED health ^p1 explorer ^p2 | <std_soar_var1>  )
 }
 sp {apply*remove-_next__health_explorer__std_soar_var1__3_asdf
    (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o>)
@@ -273,7 +273,7 @@ sp {apply*remove-_next__health_explorer__std_soar_var1__3_asdf
    (<e> ^heal <h1>)
    (<e1> -^heal <h2>)
 -->
-   (write |REMOVED health ^p1 explorer ^p2 | <std_soar_var1>  (crlf))
+   (write (crlf) |REMOVED health ^p1 explorer ^p2 | <std_soar_var1>  )
 }
 sp {apply*remove-_next__holding__std_soar_var1__0_asdf
    (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o> ^elaborations <e>)
@@ -285,7 +285,7 @@ sp {apply*remove-_next__holding__std_soar_var1__0_asdf
    (<e> ^used <u>)
    (<u> ^p1 <std_soar_var1>)
 -->
-   (write |REMOVED holding ^p1 | <std_soar_var1>  (crlf))
+   (write (crlf) |REMOVED holding ^p1 | <std_soar_var1>  )
 }
 sp {apply*remove*_next__comboType__comboName__item1__item2___asdf
    (state <s> ^superstate nil ^name game ^operator <o> ^gs <g>)
@@ -293,7 +293,7 @@ sp {apply*remove*_next__comboType__comboName__item1__item2___asdf
    (<g> ^comboType <c>)
    (<c> ^p1 <comboName> ^p2 <item1> ^p3 <item2>)
 -->
-   (write |REMOVED comboType ^p1 | <comboName> | ^p2 | <item1> | ^p3 | <item2>  (crlf))
+   (write (crlf) |REMOVED comboType ^p1 | <comboName> | ^p2 | <item1> | ^p3 | <item2>  )
 }
 sp {apply*_next__comboType__comboName__item1__item2__21_asdf
    (state <s> ^superstate nil ^name game ^name game ^operator <o> ^gs <g>)
@@ -301,7 +301,7 @@ sp {apply*_next__comboType__comboName__item1__item2__21_asdf
    (<g> ^comboType <c>)
    (<c> ^p1 <comboName> ^p2 <item1> ^p3 <item2>)
 -->
-   (write |ADDED comboType ^p1 | <comboName> | ^p2 | <item1> | ^p3 | <item2>  (crlf))
+   (write (crlf) |ADDED comboType ^p1 | <comboName> | ^p2 | <item1> | ^p3 | <item2>  )
 }
 
 sp {apply*remove-_next__compromised__std_soar_var1__1_asdf
@@ -314,7 +314,7 @@ sp {apply*remove-_next__compromised__std_soar_var1__1_asdf
    (<l1> ^p1 explorer ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
    (<l2> ^p1 <std_soar_var1> ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
 -->
-   (write |REMOVED compromised ^p1 | <std_soar_var1>  (crlf))
+   (write (crlf) |REMOVED compromised ^p1 | <std_soar_var1>  )
 }
 sp {apply*remove-_next__compromiseExpired__std_soar_var1__1_asdf
    (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o>)
@@ -329,7 +329,7 @@ sp {apply*remove-_next__compromiseExpired__std_soar_var1__1_asdf
      (<l1> ^p1 explorer ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
    }
 -->
-   (write |REMOVED compromiseExpired ^p1 | <std_soar_var1>  (crlf))
+   (write (crlf) |REMOVED compromiseExpired ^p1 | <std_soar_var1>  )
 }
 sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__0_asdf
    (state <s> ^superstate nil ^name game ^gs <g> ^io <i> ^operator <o> ^facts <f> ^elaborations <e>)
@@ -347,6 +347,6 @@ sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__0
      (<i2> ^p1 <std_soar_var1>)
    }
 -->
-   (write |REMOVED location ^p1 | <std_soar_var1> | ^p2 | <std_soar_var2> | ^p3 | <std_soar_var3>  (crlf))
+   (write (crlf) |REMOVED location ^p1 | <std_soar_var1> | ^p2 | <std_soar_var2> | ^p3 | <std_soar_var3>  )
 }
 
