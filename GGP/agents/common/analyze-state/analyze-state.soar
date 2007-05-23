@@ -2,11 +2,11 @@ sp {elaborate*ts*goodthings
    (state <s> ^superstate nil)
 -->
    (<s> ^good-things <gt>)
-   (<gt> ^holding.p1 log1)
-   (<gt> ^holding.p1 log2)
-   (<gt> ^holding.p1 hammer1)
-   (<gt> ^holding.p1 combo1)
-   (<gt> ^compromised.p1 water1)
+#   (<gt> ^holding.p1 log1)
+#   (<gt> ^holding.p1 log2)
+#   (<gt> ^holding.p1 hammer1)
+#   (<gt> ^holding.p1 combo1)
+#   (<gt> ^compromised.p1 water1)
 }
 
 #sp {apply*update-state*make-no-bump
@@ -15,7 +15,7 @@ sp {elaborate*ts*goodthings
 #   (<s> ^no-bump <nb>)
 #}
 #
-sp {apply*analyze-state*holding
+sp {apply*analyze-state*goodthing
    (state <s> ^name game
               ^operator.name analyze-state
               ^gs <gs>
@@ -35,25 +35,48 @@ sp {apply*analyze-state*holding
    (write (crlf) |Bump due to appearence of | <item> | | <p1-val>)
 }
 
-sp {apply*update-state*top*copy-gs
-  (state <s> ^superstate nil
-  ^comment out
-             ^operator.name update-state
-             ^gs <gs>)
--->
-  (<s> ^old-gs <ogs>)
-}
-
 sp {apply*update-state*top*copy-gs*deep
   (state <s> ^superstate nil
              ^operator.name update-state
              ^gs <gs>
              ^old-gs <ogs>)
   (<gs> ^<att> <id>)
-  (<id> ^p1 <val>)
+  (<id> ^p1 <val>
+        -^p2)
 -->
   (<ogs> ^<att> <new-id>)
   (<new-id> ^p1 <val>)
+}
+
+sp {apply*update-state*top*copy-gs*deep2
+  (state <s> ^superstate nil
+             ^operator.name update-state
+             ^gs <gs>
+             ^old-gs <ogs>)
+  (<gs> ^<att> <id>)
+  (<id> ^p1 <val>
+        ^p2 <val2>
+        -^p3)
+-->
+  (<ogs> ^<att> <new-id>)
+  (<new-id> ^p1 <val>
+            ^p2 <val2>)
+}
+
+sp {apply*update-state*top*copy-gs*deep3
+  (state <s> ^superstate nil
+             ^operator.name update-state
+             ^gs <gs>
+             ^old-gs <ogs>)
+  (<gs> ^<att> <id>)
+  (<id> ^p1 <val>
+        ^p2 <val2>
+        ^p3 <val3>)
+-->
+  (<ogs> ^<att> <new-id>)
+  (<new-id> ^p1 <val>
+            ^p2 <val2>
+            ^p3 <val3>)
 }
 
 
@@ -74,12 +97,51 @@ sp {apply*analyze-state*top*note-diffence
               ^operator.name analyze-state
               ^gs <gs>
               ^old-gs <old-gs>)
+   (<old-gs> ^currSymbol)
    (<gs> ^<item> <id-gs>)
-   (<id-gs> ^p1 <p1-val>)
+   (<id-gs> ^p1 <p1-val>
+            -^p2)
   -{(<old-gs> ^<item> <id-oldgs>)
     (<id-oldgs> ^p1 <p1-val>)}
 -->
-   (write (crlf) |Item appeared on gs | <item> | | <p1-val>)
+   (write (crlf) |ADDED | <item> | ^p1 | <p1-val>)
+}
+
+sp {apply*analyze-state*top*note-diffence2
+   (state <s> ^name game
+              ^superstate nil
+              ^operator.name analyze-state
+              ^gs <gs>
+              ^old-gs <old-gs>)
+   (<old-gs> ^currSymbol)
+   (<gs> ^<item> <id-gs>)
+   (<id-gs> ^p1 <p1-val>
+            ^p2 <p2-val>
+            -^p3)
+  -{(<old-gs> ^<item> <id-oldgs>)
+    (<id-oldgs> ^p1 <p1-val>
+                ^p2 <p2-val>)}
+-->
+   (write (crlf) |ADDED | <item> | ^p1 | <p1-val> | ^p2 | <p2-val>)
+}
+
+sp {apply*analyze-state*top*note-diffence3
+   (state <s> ^name game
+              ^superstate nil
+              ^operator.name analyze-state
+              ^gs <gs>
+              ^old-gs <old-gs>)
+   (<old-gs> ^currSymbol)
+   (<gs> ^<item> <id-gs>)
+   (<id-gs> ^p1 <p1-val>
+            ^p2 <p2-val>
+            ^p3 <p3-val>)
+  -{(<old-gs> ^<item> <id-oldgs>)
+    (<id-oldgs> ^p1 <p1-val>
+                ^p2 <p2-val>
+                ^p3 <p3-val>)}
+-->
+   (write (crlf) |ADDED | <item> | ^p1 | <p1-val> | ^p2 | <p2-val> | ^p3 | <p3-val>)
 }
 
 sp {elaborate*old-gs
