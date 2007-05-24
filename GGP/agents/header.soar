@@ -15,6 +15,6 @@ popd
 
 source analyze-state.soar
 popd
-#source goodthings.soar
+source goodthings.soar
 #source chunks.soar # tchunk_file source
 #source chunks.soar # achunk_file source
