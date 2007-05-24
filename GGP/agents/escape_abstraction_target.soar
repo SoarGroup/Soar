@@ -3069,7 +3069,7 @@ sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__0
    (<i> ^input-link <i1>)
    (<i1> ^last-moves <l>)
    (<o> ^name update-state)
-   (<l1> ^p1 <std_soar_var1> ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
+   (<l1> ^p1 {<std_soar_var1> <> exit} ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
    -{
      (<f> ^obstacletype <o1>)
      (<o1> ^p1 <std_soar_var1> ^p2 <std_soar_var4>)
