@@ -165,14 +165,14 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
 				if (move.move || moveWait) {
 					logger.warning(getName() + ": extra move commands");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 
 				String moveDirection = commandId.GetParameterValue(Names.kDirectionID);
 				if (moveDirection == null) {
 					logger.warning(getName() + ": null move direction");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				
@@ -187,11 +187,11 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 				} else if (moveDirection.equalsIgnoreCase(Names.kNone)) {
 					// legal wait
 					moveWait = true;
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "complete");
+					commandId.AddStatusComplete();
 					continue;
 				} else {
 					logger.warning(getName() + ": illegal move direction: " + moveDirection);
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				moveId = commandId;
@@ -201,7 +201,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 			} else if (commandName.equalsIgnoreCase(Names.kFireID)) {
 				if (move.fire == true) {
 					logger.warning(getName() + ": extra fire commands");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 	 			move.fire = true;
@@ -211,14 +211,14 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 			} else if (commandName.equalsIgnoreCase(Names.kRadarID)) {
 				if (move.radar == true) {
 					logger.warning(getName() + ": extra radar commands");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				
 				String radarSwitch = commandId.GetParameterValue(Names.kSwitchID);
 				if (radarSwitch == null) {
 					logger.warning(getName() + ": null radar switch");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				move.radar = true;
@@ -227,14 +227,14 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 			} else if (commandName.equalsIgnoreCase(Names.kRadarPowerID)) {
 				if (move.radarPower == true) {
 					logger.warning(getName() + ": extra radar power commands");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				
 				String powerValue = commandId.GetParameterValue(Names.kSettingID);
 				if (powerValue == null) {
 					logger.warning(getName() + ": null radar power");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				
@@ -242,7 +242,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 					move.radarPowerSetting = Integer.decode(powerValue).intValue();
 				} catch (NumberFormatException e) {
 					logger.warning(getName() + ": unable to parse radar power setting " + powerValue + ": " + e.getMessage());
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				move.radarPower = true;
@@ -250,14 +250,14 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 			} else if (commandName.equalsIgnoreCase(Names.kShieldsID)) {
 				if (move.shields == true) {
 					logger.warning(getName() + ": extra shield commands");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				
 				String shieldsSetting = commandId.GetParameterValue(Names.kSwitchID);
 				if (shieldsSetting == null) {
 					logger.warning(getName() + ": null shields setting");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				move.shields = true;
@@ -266,14 +266,14 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 			} else if (commandName.equalsIgnoreCase(Names.kRotateID)) {
 				if (move.rotate == true) {
 					logger.warning(getName() + ": extra rotate commands");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				
 				move.rotateDirection = commandId.GetParameterValue(Names.kDirectionID);
 				if (move.rotateDirection == null) {
 					logger.warning(getName() + ": null rotation direction");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				
@@ -281,10 +281,10 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 				
 			} else {
 				logger.warning(getName() + ": unknown command: " + commandName);
-				IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+				commandId.AddStatusError();
 				continue;
 			}
-			IOLinkUtility.CreateOrAddStatus(agent, commandId, "complete");
+			commandId.AddStatusComplete();
 		}
 		
     	agent.ClearOutputLinkChanges();
@@ -298,7 +298,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 			if (move.move) {
 				if (Soar2D.logger.isLoggable(Level.FINER)) logger.finer(": move ignored (rotating)");
 				assert moveId != null;
-				IOLinkUtility.CreateOrAddStatus(agent, moveId, "error");
+				moveId.AddStatusError();
 				moveId = null;
 				move.move = false;
 			}

@@ -399,4 +399,8 @@ public class Player {
 	public void setCollisionY(boolean y) {
 		this.collisionY = y;
 	}
+	
+	public void rotateComplete() {
+		
+	}
 }
