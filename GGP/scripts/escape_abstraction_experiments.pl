@@ -1,12 +1,10 @@
 #!/usr/bin/perl
 
 $agentDir = "../agents";
-$source1 = "escape_composition_source1b";
-$source2 = "escape_composition_source2b";
-$target = "escape_composition_targetb";
+$source1 = "escape_abstraction_source";
+$target = "escape_abstraction_target";
 
 $source1Log = "$source1\.log";
-$source2Log = "$source2\.log";
 $targetLogWithSourceLog = "$target\_after_source.log";
 $targetLogWithoutSourceLog = "$target\_no_source.log";
 
@@ -18,10 +16,8 @@ $genGT = "./genGoodThings.pl";
 $runSoar = "./runSoar.py";
 
 checkFor("$agentDir/$source1.soar");
-checkFor("$agentDir/$source2.soar");
 checkFor("$agentDir/$target.soar");
 clearLog($source1Log);
-clearLog($source2Log);
 clearLog($targetLogWithSourceLog);
 clearLog($targetLogWithoutSourceLog);
 clearLog($goodThings);
@@ -29,11 +25,6 @@ clearLog($goodThingsBU);
 
 
 print `touch $goodThings`;
-print "Running $source2..\n";
-print `$runSoar soar -l $agentDir/$source2.soar > $source2Log`;
-print "done, log tail:\n";
-print `tail $source2Log`;
-
 print "Running $source1..\n";
 print `$runSoar soar -l $agentDir/$source1.soar > $source1Log`;
 print "done, log tail:\n";
@@ -41,7 +32,6 @@ print `tail $source1Log`;
 
 print "Extracting goodThings..\n";
 print `$genGT $source1Log >> $goodThings`;
-print `$genGT $source2Log >> $goodThings`;
 print "found this many goodThings:\n";
 print `grep 'sp {' $goodThings | wc -l`;
 
