@@ -795,25 +795,34 @@ public class World {
 		return result;
 	}
 	
-	private void setRotationAndAbsoluteHeading(Player player, double heading, double time) {
-		if (heading < player.getHeadingRadians()) {
-			player.setRotationSpeed(Soar2D.config.getRotateSpeed() * -1 * time);
-			player.setDestinationHeading(heading);
-		}
-		else if (heading > player.getHeadingRadians()) {
-			player.setRotationSpeed(Soar2D.config.getRotateSpeed() * time);
-			player.setDestinationHeading(heading);
-		}
-		else {
+	private void setRotationAndAbsoluteHeading(Player player, double targetHeading, double time) {
+		double relativeHeading = targetHeading - player.getHeadingRadians();
+		if (relativeHeading == 0) {
+			player.rotateComplete();
 			player.setRotationSpeed(0);
 			player.resetDestinationHeading();
+			return;
+		}
+
+		if (relativeHeading < 0) {
+			relativeHeading += 2* Math.PI;
+		}
+		
+		if (relativeHeading > Math.PI) {
+			player.setRotationSpeed(Soar2D.config.getRotateSpeed() * -1 * time);
+			player.setDestinationHeading(targetHeading);
+		}
+		else {
+			player.setRotationSpeed(Soar2D.config.getRotateSpeed() * time);
+			player.setDestinationHeading(targetHeading);
 		}
 		
 	}
 	
 	private void bookUpdate() {
-		final double time = (float)Soar2D.config.getASyncDelay() / 1000.0f;
+		final double time = (float)Soar2D.config.getCycleTimeSlice() / 1000.0f;
 		totalTime += time;
+		logger.fine("Total time: " + totalTime);
 
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
@@ -826,53 +835,93 @@ public class World {
 				return;
 			}
 			
+			logger.finer("Processing move: " + player.getName());
+			
 			// update rotation speed
 			if (move.rotate) {
 				if (move.rotateDirection.equals(Names.kRotateLeft)) {
+					logger.finer("Rotate: left");
 					player.setRotationSpeed(Soar2D.config.getRotateSpeed() * -1 * time);
 				} 
 				else if (move.rotateDirection.equals(Names.kRotateRight)) {
+					logger.finer("Rotate: right");
 					player.setRotationSpeed(Soar2D.config.getRotateSpeed() * time);
 				} 
 				else if (move.rotateDirection.equals(Names.kRotateStop)) {
+					logger.finer("Rotate: stop");
 					player.setRotationSpeed(0);
 				}
 				player.resetDestinationHeading();
 			} 
 			else if (move.rotateAbsolute) {
 				while (move.rotateAbsoluteHeading < 0) {
+					logger.finest("Correcting command negative heading");
 					move.rotateAbsoluteHeading += 2 * Math.PI;
 				}
 				move.rotateAbsoluteHeading = fmod(move.rotateAbsoluteHeading, 2 * Math.PI);
+
+				logger.finer("Rotate absolute: " + move.rotateAbsoluteHeading);
+				
 				setRotationAndAbsoluteHeading(player, move.rotateAbsoluteHeading, time);
 			}
 			else if (move.rotateRelative) {
 				double absoluteHeading = player.getHeadingRadians() + move.rotateRelativeAmount;
 				
 				while (absoluteHeading < 0) {
+					logger.finest("Correcting command negative heading");
 					absoluteHeading += 2 * Math.PI;
 				}
 				absoluteHeading = fmod(absoluteHeading, 2 * Math.PI);
+				logger.finer("Rotate relative: " + move.rotateRelativeAmount + ", absolute: " + absoluteHeading);
 				setRotationAndAbsoluteHeading(player, absoluteHeading, time);
 			}
 
 			// update heading if we rotate
 			if (player.getRotationSpeed() != 0) {
+				
 				double heading = player.getHeadingRadians() + player.getRotationSpeed();
+				
 				if (heading < 0) {
+					logger.finest("Correcting computed negative heading");
 					heading += 2 * Math.PI;
 				} 
 				heading = fmod(heading, 2 * Math.PI);
+
+				logger.finer("Rotating, computed heading: " + heading);
 				
 				if (player.hasDestinationHeading()) {
-					if (player.getRotationSpeed() < 0) {
-						if (heading < player.getDestinationHeading()) {
-							heading = player.getDestinationHeading();
+					double relativeHeading = player.getDestinationHeading() - heading;
+					if (relativeHeading == 0) {
+						logger.fine("Destination heading reached: " + heading);
+						player.rotateComplete();
+						player.resetDestinationHeading();
+					} else {
+
+						if (relativeHeading < 0) {
+							relativeHeading += 2* Math.PI;
 						}
-					}
-					else if (player.getRotationSpeed() > 0) {
-						if (heading > player.getDestinationHeading()) {
-							heading = player.getDestinationHeading();
+
+						if (player.getRotationSpeed() < 0) {
+							if (relativeHeading < Math.PI) {
+								heading = player.getDestinationHeading();
+								logger.fine("Destination heading reached: " + heading);
+								player.rotateComplete();
+								player.resetDestinationHeading();
+								player.setRotationSpeed(0);
+							} else {
+								logger.finer("Destination heading pending");
+							}
+						}
+						else if (player.getRotationSpeed() > 0) {
+							if (relativeHeading > Math.PI) {
+								logger.fine("Destination heading reached: " + heading);
+								heading = player.getDestinationHeading();
+								player.rotateComplete();
+								player.resetDestinationHeading();
+								player.setRotationSpeed(0);
+							} else {
+								logger.finer("Destination heading pending");
+							}
 						}
 					}
 				}
@@ -881,12 +930,15 @@ public class World {
 			
 			// update speed
 			if (move.forward && move.backward) {
+				logger.finer("Move: stop");
 				player.setSpeed(0);
 			} 
 			else if (move.forward) {
+				logger.finer("Move: forward");
 				player.setSpeed(Soar2D.config.getSpeed());
 			}
 			else if (move.backward) {
+				logger.finer("Move: backward");
 				player.setSpeed(Soar2D.config.getSpeed() * -1);
 			}
 			

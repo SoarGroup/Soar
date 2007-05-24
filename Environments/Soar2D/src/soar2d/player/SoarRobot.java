@@ -284,8 +284,7 @@ public class SoarRobot extends Robot {
 
 				// destroy old area information
 				if (selfIL.areaDescription != null) {
-					agent.DestroyWME(selfIL.areaDescription);
-					selfIL.areaDescription = null;
+					selfIL.destroyAreaDescription();
 				}
 
 			} else {
@@ -297,8 +296,7 @@ public class SoarRobot extends Robot {
 
 					// destroy old area information
 					if (selfIL.areaDescription != null) {
-						agent.DestroyWME(selfIL.areaDescription);
-						selfIL.areaDescription = null;
+						selfIL.destroyAreaDescription();
 					}
 					
 					// create new area information
@@ -333,6 +331,19 @@ public class SoarRobot extends Robot {
 							selfIL.addWall(wall);
 						}
 					}
+				} else {
+					// barrier angle offs
+					Iterator<BarrierInputLink> wallIter = selfIL.walls.iterator();
+					while (wallIter.hasNext()) {
+						BarrierInputLink barrier = wallIter.next();
+						agent.Update(barrier.angleOff, world.angleOff(this, barrier.centerpoint));
+					}
+					
+					Iterator<GatewayInputLink> gatewayIter = selfIL.gateways.iterator();
+					while (gatewayIter.hasNext()) {
+						BarrierInputLink barrier = gatewayIter.next();
+						agent.Update(barrier.angleOff, world.angleOff(this, barrier.centerpoint));
+					}
 				}
 			}
 
@@ -346,19 +357,6 @@ public class SoarRobot extends Robot {
 			
 			// heading
 			agent.Update(selfIL.yaw, getHeadingRadians());
-			
-			// barrier angle offs
-			Iterator<BarrierInputLink> wallIter = selfIL.walls.iterator();
-			while (wallIter.hasNext()) {
-				BarrierInputLink barrier = wallIter.next();
-				agent.Update(barrier.angleOff, world.angleOff(this, barrier.centerpoint));
-			}
-			
-			Iterator<GatewayInputLink> gatewayIter = selfIL.gateways.iterator();
-			while (gatewayIter.hasNext()) {
-				BarrierInputLink barrier = gatewayIter.next();
-				agent.Update(barrier.angleOff, world.angleOff(this, barrier.centerpoint));
-			}
 			
 			// update the clock
 			agent.Update(selfIL.cycle, world.getWorldCount());
@@ -398,6 +396,9 @@ public class SoarRobot extends Robot {
 		}
 	}
 	
+	Identifier moveCommandId = null;
+	Identifier rotateCommandId = null;
+	
 	/* (non-Javadoc)
 	 * @see soar2d.player.Eater#getMove()
 	 */
@@ -415,9 +416,15 @@ public class SoarRobot extends Robot {
 			String commandName = commandId.GetAttribute();
 			
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
+				if (moveCommandId != null) {
+					if (moveCommandId.GetTimeTag() != commandId.GetTimeTag()) {
+						moveCommandId.AddStatusComplete();
+						moveCommandId = null;
+					}
+				}
 				if (move.move) {
 					logger.warning(getName() + " multiple move commands issued");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				
@@ -425,7 +432,7 @@ public class SoarRobot extends Robot {
 				
 				if (direction == null) {
 					logger.warning(getName() + " move command missing direction parameter");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				
@@ -438,18 +445,28 @@ public class SoarRobot extends Robot {
 				} else if (direction.equalsIgnoreCase(Names.kStopID)) {
 					move.forward = true;
 					move.backward = true;
-				
+					commandId.AddStatusComplete();
+					continue;
+					
 				} else {
 					logger.warning(getName() + "unrecognized move direction: " + direction);
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
+
 				move.move = true;
+				moveCommandId = commandId;
 
 			} else if (commandName.equalsIgnoreCase(Names.kRotateID)) {
+				if (rotateCommandId != null) {
+					if (rotateCommandId.GetTimeTag() != commandId.GetTimeTag()) {
+						rotateCommandId.AddStatusComplete();
+						rotateCommandId = null;
+					}
+				}
 				if (move.rotate) {
 					logger.warning(getName() + " multiple rotate commands issued");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				
@@ -457,7 +474,7 @@ public class SoarRobot extends Robot {
 				
 				if (direction == null) {
 					logger.warning(getName() + " rotate command missing direction parameter");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				
@@ -469,35 +486,45 @@ public class SoarRobot extends Robot {
 				
 				} else if (direction.equalsIgnoreCase(Names.kStopID)) {
 					move.rotateDirection = Names.kRotateStop;
+					commandId.AddStatusComplete();
+					continue;
 				
 				} else {
 					logger.warning(getName() + "unrecognized rotate direction: " + direction);
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 					
 				}
 
 				move.rotate = true;
+				rotateCommandId = commandId;
 
 			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
 				if (move.stopSim) {
 					logger.warning(getName() + " multiple stop-sim commands issued");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				move.stopSim = true;
+				commandId.AddStatusComplete();
 				
 			} else if (commandName.equalsIgnoreCase(Names.kRotateAbsoluteID)) {
+				if (rotateCommandId != null) {
+					if (rotateCommandId.GetTimeTag() != commandId.GetTimeTag()) {
+						rotateCommandId.AddStatusComplete();
+						rotateCommandId = null;
+					}
+				}
 				if (move.rotateAbsolute) {
 					logger.warning(getName() + " multiple rotate-absolute commands issued");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				
 				String yawString = commandId.GetParameterValue("yaw");
 				if (yawString == null) {
 					logger.warning(getName() + " rotate-absolute command missing yaw parameter");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				
@@ -505,23 +532,30 @@ public class SoarRobot extends Robot {
 					move.rotateAbsoluteHeading = Double.parseDouble(yawString);
 				} catch (NumberFormatException e) {
 					logger.warning(getName() + " rotate-absolute yaw parameter improperly formatted");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 
 				move.rotateAbsolute = true;
+				rotateCommandId = commandId;
 				
 			} else if (commandName.equalsIgnoreCase(Names.kRotateRelativeID)) {
+				if (rotateCommandId != null) {
+					if (rotateCommandId.GetTimeTag() != commandId.GetTimeTag()) {
+						rotateCommandId.AddStatusComplete();
+						rotateCommandId = null;
+					}
+				}
 				if (move.rotateRelative) {
 					logger.warning(getName() + " multiple rotate-relative commands issued");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				
 				String amountString = commandId.GetParameterValue("amount");
 				if (amountString == null) {
 					logger.warning(getName() + " rotate-relative command missing amount parameter");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 				
@@ -529,20 +563,18 @@ public class SoarRobot extends Robot {
 					move.rotateRelativeAmount = Double.parseDouble(amountString);
 				} catch (NumberFormatException e) {
 					logger.warning(getName() + " rotate-relative amount parameter improperly formatted");
-					IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+					commandId.AddStatusError();
 					continue;
 				}
 
 				move.rotateRelative = true;
+				rotateCommandId = commandId;
 				
 			} else {
 				logger.warning("Unknown command: " + commandName);
-				IOLinkUtility.CreateOrAddStatus(agent, commandId, "error");
+				commandId.AddStatusError();
 				continue;
 			}
-			
-			IOLinkUtility.CreateOrAddStatus(agent, commandId, "complete");
-
 		}
 		agent.ClearOutputLinkChanges();
 		if (!agent.Commit()) {
@@ -550,6 +582,14 @@ public class SoarRobot extends Robot {
 			Soar2D.control.stopSimulation();
 		}
 		return move;
+	}
+	
+	public void rotateComplete() {
+	
+		if (rotateCommandId != null) {
+			rotateCommandId.AddStatusComplete();
+			rotateCommandId = null;
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -560,6 +600,8 @@ public class SoarRobot extends Robot {
 		fragged = false;
 		moved = true;
 		locationId = -1;
+		moveCommandId = null;
+		rotateCommandId = null;
 		
 		if (agent == null) {
 			return;

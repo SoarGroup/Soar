@@ -62,6 +62,8 @@
 					int pixelsPerSec
 				?<book-cell-size>
 					int pixels
+				?<cycle-time-slice>
+					int milliseconds
 	?<logging>
 		?<level>
 			enum { severe, warning, info, fine, finer, finest }
