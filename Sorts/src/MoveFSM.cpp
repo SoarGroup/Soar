@@ -343,15 +343,15 @@ void MoveFSM::init(vector<sint4> p)
      // state = STUCK;
      // replaced with the above
       coordinate c(l.x,l.y);
-    //  if (not isReachableFromBuilding(l)) { 
+      if (not isReachableFromBuilding(l)) { 
         msg << "adding unreachable location.\n";
         Sorts::spatialDB->addImaginaryObstacle(c);
         state = UNREACHABLE;
-    //  }
-     // else {
-     //   msg << "pathfind fails from my point only!\n";
-     //   state = STUCK;
-    //  }
+      }
+      else {
+        msg << "pathfind fails from my point only!\n";
+        state = STUCK;
+      }
       
     }
   }
@@ -686,6 +686,8 @@ SortsSimpleTerrain::Loc MoveFSM::getHeadingVector(sint4 target_x, sint4 target_y
 }
 
 bool MoveFSM::isReachableFromBuilding(SortsSimpleTerrain::Loc l) {
+  // HACK: this always retuns false, unless it is inside the CC (which kills
+  // mining)
   SortsSimpleTerrain::Path tempPath;
   GameObj* sourceObj = Sorts::OrtsIO->getReachabilityObject();
 
@@ -694,10 +696,10 @@ bool MoveFSM::isReachableFromBuilding(SortsSimpleTerrain::Loc l) {
   if (gobX(sourceObj) == l.x && gobY(sourceObj) == l.y) {
     return true;
   }
-  
+ /* 
   Sorts::terrainModule->findPath(sourceObj, 
                                  l, tempPath);
-  return (tempPath.locs.size() > 0);
+  return (tempPath.locs.size() > 0);*/
 }
 
 void MoveFSM::panic() {
