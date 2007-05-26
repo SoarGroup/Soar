@@ -113,12 +113,13 @@ bool canHit(GameObj *atk, GameObj *tgt) {
     return false;
   }
   double wr; 
+  double fudge = 0;
   
   if (*tgt->sod.zcat == GameObj::ON_LAND) {
-    wr = weapon->get_int("max_ground_range") + *atk->sod.radius;
+    wr = weapon->get_int("max_ground_range") + *atk->sod.radius - fudge;
   }
   else {
-    wr = weapon->get_int("max_air_range") + *atk->sod.radius;
+    wr = weapon->get_int("max_air_range") + *atk->sod.radius - fudge;
   }
   if (*tgt->sod.shape == SHAPE_RECTANGLE) {
     Circle c(*atk->sod.x, *atk->sod.y, wr);

@@ -39,8 +39,8 @@
 #include "Sorts.h"
 
 #include "Options.H"
-#include "TerrainModule.H"
-#include "SimpleTerrain.H"
+#include "SortsTerrainModule.h"
+#include "SortsSimpleTerrain.h"
 
 #define msg std::cout << "MAIN: "
 
@@ -261,7 +261,7 @@ void* RunOrts(void* ptr) {
   }
 }
 
-typedef SimpleTerrain::ST_Terrain Terrain;
+typedef SortsSimpleTerrain::SortsST_Terrain Terrain;
 
 Agent* initSoarRemote() {
    Kernel* pKernel = Kernel::CreateRemoteConnection(true, "127.0.0.1", 12121);
@@ -440,7 +440,7 @@ int main(int argc, char *argv[]) {
   GameStateModule gsm(gsmo);
 
   Terrain timp;
-  TerrainModule tm(gsm, timp);
+  SortsTerrainModule tm(gsm, timp, 0);
   
   // connect to ORTS server
   if (!gsm.connect()) exit(10);

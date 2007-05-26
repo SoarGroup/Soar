@@ -243,7 +243,7 @@ void AttackManager::attackArcPos
   int layer,
   list<Vec2d>& positions) 
 {
-  int atkRadius = *atk->sod.radius;
+  int atkRadius = 0;//*atk->sod.radius;
   Vec2d aPos(*atk->sod.x, *atk->sod.y);
   Vec2d tPos(*tgt->sod.x, *tgt->sod.y);
 
@@ -305,10 +305,10 @@ void AttackManager::attackArcPos
     if (0 <= intPos(0) && intPos(0) <= Sorts::OrtsIO->getMapXDim() && 
         0 <= intPos(1) && intPos(1) <= Sorts::OrtsIO->getMapYDim()) 
     {
-      if (Sorts::spatialDB->hasObjectCollision((int)intPos(0),(int)intPos(1),atkRadius)) {
-    //      or 
-     //       Sorts::spatialDB->hasTerrainCollision
-     //         (intPos(0), intPos(1), atkRadius)
+      Circle c(intPos(0), intPos(1), atkRadius);
+      if (Sorts::spatialDB->hasObjectCollision((int)intPos(0),(int)intPos(1),atkRadius)
+          or 
+            Sorts::spatialDB->hasTerrainCollision(c)) {
          continue;
       }
       bool slotTaken = false;
@@ -551,13 +551,10 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
 int AttackManager::direct(AttackFSM* fsm) {
   msg << "NUMTARGS: " << targets.size() << endl;
   unsigned long st = gettime();
-#ifdef USE_CANVAS_ATTACK_MANAGER
-  //Sorts::canvas.flashColor(fsm->getSGO(), 255, 255, 0, 1);
- // Sorts::canvas.update();
-#endif
-
   GameObj* gob = fsm->getGob();
   SoarGameObject* sgob = Sorts::OrtsIO->getSoarGameObject(gob);
+
+  fsm->touch(); // tell the fsm its been updated, so it can mark time
 
   if ( gob->dir_dmg > 0 && 
        ((double) gob->get_int("hp")) / gob->get_int("max_hp") < 0.2)
@@ -625,7 +622,8 @@ int AttackManager::direct(AttackFSM* fsm) {
   assert(fsm->getTarget() != NULL);
 
   if (idSet.find(fsm->getTarget()->getID()) == idSet.end()) {
-    msg << "bad target Ptr: " << fsm->getTarget()->getGob() << " id: " << fsm->getTarget()->getID() << " name: " << fsm->getTarget()->getGob()->bp_name() << endl;
+    msg << "bad target Ptr: " << fsm->getTarget()->getGob() << " id: " << fsm->getTarget()->getID() 
+        << " name: " << fsm->getTarget()->getGob()->bp_name() << endl;
     msg << "bad target sgo ptr: " << fsm->getTarget() << endl;
   }
 
@@ -637,7 +635,7 @@ int AttackManager::direct(AttackFSM* fsm) {
   GameObj* tgob = fsm->getTarget()->getGob();
   AttackTargetInfo& info = targets[fsm->getTarget()];
 
-  if (!canHit(gob, tgob)) {
+  if (!canHit(gob, tgob) || fsm->badAttack) {
     if (fsm->isMoving()) {
       Vec2d dest = fsm->getDestination();
       if (canHit(gob, dest, tgob)) {
@@ -693,9 +691,6 @@ int AttackManager::direct(AttackFSM* fsm) {
     {
       if (fsm->move((int)(*i)(0), (int)(*i)(1), false) == 0) {
         msg << "Moving to Position: " << (*i)(0) << ", " << (*i)(1) << endl;
-#ifdef USE_CANVAS_ATTACK_MANAGER
-//        Sorts::canvas.trackDestination(fsm->getGob(), (*i)(0), (*i)(1));
-#endif
         break;
       }
       else {

@@ -37,7 +37,7 @@ class AttackManagerRegistry;
 class MineManager;
 
 #include "SpatialDB.h"
-#include "TerrainModule.H"
+#include "SortsTerrainModule.h"
 
 #include "SortsCanvas.h"
 
@@ -48,7 +48,7 @@ class Sorts {
       OrtsInterface*          _OrtsIO,
       PerceptualGroupManager* _pGroupManager, 
       FeatureMapManager*      _featureMapManager,
-      TerrainModule*          _tm,
+      SortsTerrainModule*          _tm,
       SpatialDB *             _spatialDB,
       AttackManagerRegistry*  _amr,
       MineManager*            _mineMan,
@@ -73,7 +73,7 @@ class Sorts {
     static OrtsInterface*           OrtsIO;
     static PerceptualGroupManager*  pGroupManager;
     static FeatureMapManager*       featureMapManager;
-    static TerrainModule*           terrainModule;
+    static SortsTerrainModule*           terrainModule;
     static SpatialDB*               spatialDB;
     static AttackManagerRegistry*   amr;
     static MineManager*             mineManager;

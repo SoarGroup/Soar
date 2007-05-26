@@ -56,6 +56,7 @@ void SpatialDB::init() {
   // The higher the tilepoints, the coarser the detail
   gobMap.resize(mapsize);
   imaginaryWorkerMap.resize(mapsize);
+  imaginaryObstacleMap.resize(mapsize); 
   msg  << "initializing SpatialDB grid: (" << width<<"," << height
        << "," << (width*height) << ")\n";
 
@@ -93,7 +94,6 @@ void SpatialDB::addImaginaryWorker(coordinate c) {
     msg << "ERROR: out of bounds, not adding: " << c.x << "," << c.y << endl;
     return; 
   }
-  
   imaginaryWorkerMap[cell].push_back(c); 
   dbg << "registered new imaginary worker.\n";
   dbg << "iw loc: " << c.x << "," << c.y << endl;
@@ -113,6 +113,20 @@ int SpatialDB::cell2column(int cellNum) {
 
 int SpatialDB::rowCol2cell(int row, int col) {
   return (col + row*width);
+}
+
+void SpatialDB::addImaginaryObstacle(coordinate c) {
+  // no need for removal/update support
+  int cell = getCellNumber(c.x, c.y);
+  if (cell >= gobMap.size()) {
+    msg << "ERROR: out of bounds, not adding: " << c.x << "," << c.y << endl;
+    return;
+  }
+
+  imaginaryObstacleMap[cell].push_back(c);
+  dbg << "Registered new imaginary obstacle.\n";
+  dbg << "loc: " << c.x << "," << c.y << endl;
+  Sorts::canvas.makeTempCircle(c.x,c.y,IMAG_OBSTACLE_RADIUS,9999999);
 }
 
 sint4 SpatialDB::updateObject(GameObj *gob, sint4 sat_loc)
@@ -438,7 +452,7 @@ bool SpatialDB::hasObjectCollisionInt
 
   
   //3. For each marked cell, check all object inside of it for collisions with the circle
-  TerrainBase::Loc obj;
+  SortsSimpleTerrain::Loc obj;
   sint4 objr;
   set<GameObj*>::iterator it;
   list<coordinate>::iterator iwit;
@@ -610,7 +624,7 @@ bool SpatialDB::hasTerrainCollision(Rectangle *rect) {
   }
 
   dbg << "no terrain collision.\n";
-  return false;
+  return false; // FIXME: no imag checking!
 }
 
 
@@ -703,9 +717,106 @@ bool SpatialDB::hasTerrainCollision(Circle& c) {
       }
     }
   }
-  return false;
+  return hasImaginaryTerrainObstacleCollision(c);
 }
 
+bool SpatialDB::hasImaginaryTerrainObstacleCollision(Circle& c) {
+  int cells[9];
+  bool check[9] = {false};
+
+  sint4 bigR;
+  
+  bigR = sdbTilePoints;
+  
+  sint4 x = c.x;
+  sint4 y = c.y;
+  sint4 radius = c.r;
+
+   //1. Figure out which cells surround the target location 
+  cells[0] = getCellNumber(x-bigR, y-bigR);
+  cells[1] = getCellNumber(x, y-bigR);
+  cells[2] = getCellNumber(x+bigR, y-bigR);
+  cells[3] = getCellNumber(x-bigR, y);
+  cells[4] = getCellNumber(x, y);
+  cells[5] = getCellNumber(x+bigR, y);
+  cells[6] = getCellNumber(x-bigR, y+bigR);
+  cells[7] = getCellNumber(x, y+bigR);
+  cells[8] = getCellNumber(x+bigR, y+bigR);
+  
+  //2. Figure out which cells are under (or partially under) the circle
+  // 0 1 2
+  // 3 4 5
+  // 6 7 8
+
+  //Center cell
+  check[4] = true; 
+  //North
+  if(cells[4] != cells[1])
+    check[1] = true;  
+  //East
+  if(cells[4] != cells[5])
+    check[5] = true;
+  //NorthEast
+  check[2] = check[1] && check[5];
+  //South
+  if(cells[4] != cells[7])
+    check[7] = true;
+  //SouthEasr
+  check[8] = check[5] && check[7];
+  //West
+  if(cells[4] != cells[3])
+    check[3]= true;
+  //SouthWest
+  check[6] = check[7] && check[3];
+  //NorthWest
+  check[0] = check[3] && check[1];
+  
+  //Make sure we the check are inside the map
+  //Left Side
+  if((x-bigR)<0)
+    check[0] = check[3] = check[6] = false;
+  //Right Side
+  if((x+bigR)>Sorts::OrtsIO->getMapXDim())
+    check[2] = check[5] = check[8] = false;
+  //Top Side
+  if((y-bigR)<0)
+    check[0] = check[1] = check[2] = false;
+  //Bottom Side
+  if((y+bigR)>Sorts::OrtsIO->getMapYDim())
+    check[6] = check[7] = check[8] = false;
+
+  
+  //3. For each marked cell, check all object inside of it for collisions with the circle
+  SortsSimpleTerrain::Loc obj;
+  sint4 objr;
+  set<GameObj*>::iterator it;
+  list<coordinate>::iterator iwit;
+
+  Circle circle(x,y,radius);
+ 
+  for(int i=0; i<9; i++) {
+    if(check[i]) {
+  //    msg << "checking cell " << cells[i] << "\n";
+      assert(cells[i] < gobMap.size());
+      for(iwit = imaginaryObstacleMap[cells[i]].begin();
+          iwit != imaginaryObstacleMap[cells[i]].end();
+          iwit++) {
+        obj.x = (*iwit).x;
+        obj.y = (*iwit).y;
+        objr = IMAG_OBSTACLE_RADIUS;
+        if((x-obj.x) * (x-obj.x) + (y-obj.y) * (y-obj.y)
+        < (radius+objr) * (radius+objr))  {
+          //Inside the circle
+       //   msg << "object at " << c << " with radius " << radius
+       //       << "has imaginary obstacle collision!\n";
+          return true;
+        } 
+      }
+    }
+  }
+  return false; // no collisions
+
+}
 struct ltGobDouble {
   bool operator()(pair<GameObj*, double> p1, pair<GameObj*, double> p2) const {
     return (p1.second < p2.second);

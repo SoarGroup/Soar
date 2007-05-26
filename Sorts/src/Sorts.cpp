@@ -24,7 +24,7 @@ PerceptualGroupManager* Sorts::pGroupManager = NULL;
 MineManager*            Sorts::mineManager = NULL;
 AttackManagerRegistry*  Sorts::amr = NULL;
 FeatureMapManager*      Sorts::featureMapManager = NULL;
-TerrainModule*          Sorts::terrainModule = NULL;
+SortsTerrainModule*          Sorts::terrainModule = NULL;
 SpatialDB*              Sorts::spatialDB = NULL;
 GameActionManager*      Sorts::gameActionManager = NULL;
 //TerrainManager          Sorts::terrainManager;

@@ -37,6 +37,8 @@ AttackFSM::AttackFSM(SoarGameObject* _sgob)
   moveFSM = NULL;
   manager = NULL;
   waitingForCatchup = false;
+  badAttack = false;
+  expectFiring = false;
 }
 
 AttackFSM::~AttackFSM() {
@@ -168,11 +170,17 @@ int AttackFSM::update() {
 void AttackFSM::attack(SoarGameObject* t) {
   //Sorts::canvas.flashColor(sgob, 255, 255, 0, 1); // yellow
   if (t != NULL) {
+    if (badAttack) {
+      msg << "attack is inhibited, since it didn't work last time.\n";
+      return;
+    }
     attackParams[0] = target->getID();
     assert (Sorts::OrtsIO->isAlive(attackParams[0]));
+    dbg << "attacking..\n";
     weapon->set_action("attack", attackParams);
     sgob->setLastAttacked(attackParams[0]);
     sgob->setLastAttackOpportunistic(false);
+    expectFiring = true;
   }
 }
 
@@ -251,6 +259,7 @@ void AttackFSM::stop() {
 
   if (target != NULL and target->getID() == sgob->getLastAttacked()) {
     Vector<sint4> stopParams(0);
+    dbg << "stopping..\n";
     weapon->set_action("stop", stopParams);
     sgob->setLastAttacked(-1);
   }
@@ -264,4 +273,19 @@ int AttackFSM::getAvgDamage() {
 void AttackFSM::setTarget(SoarGameObject* tar) {
   dbg << "setting target to " << tar << endl;
   target = tar;
+}
+
+void AttackFSM::touch() {
+  badAttack = false;
+  if (expectFiring) {
+    if (weapon->get_int("shooting") == 0) {
+      badAttack = true;
+      msg << "bad attack location being marked.\n";
+      //HACK: don't go here again:
+      //coordinate c(*gob->sod.x, *gob->sod.y);
+      //Sorts::spatialDB->addImaginaryObstacle(c);
+    }
+  }
+
+  expectFiring = false;
 }

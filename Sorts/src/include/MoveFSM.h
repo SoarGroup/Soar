@@ -21,7 +21,7 @@
 
 #include "FSM.h"
 #include "Sorts.h"
-#include "SimpleTerrain.H"
+#include "SortsSimpleTerrain.h"
 #include "general.h"
 
 class MoveFSM: public FSM {
@@ -34,7 +34,7 @@ class MoveFSM: public FSM {
   void initNoPath(std::vector<sint4>);
 
   bool getMoveVector(); //returns true if there needs to be a change in direction, otherwise false
-  TerrainBase::Loc getHeadingVector(sint4 , sint4);
+  SortsSimpleTerrain::Loc getHeadingVector(sint4 , sint4);
   
 
   void stop();
@@ -48,7 +48,7 @@ class MoveFSM: public FSM {
   bool veerAhead(int dtt);
   bool collision(int x, int y);
   bool dynamicCollision(int x, int y);
-  bool isReachableFromBuilding(TerrainBase::Loc l);
+  bool isReachableFromBuilding(SortsSimpleTerrain::Loc l);
 	int state;
   int runTime;
   double heading;
@@ -57,9 +57,9 @@ class MoveFSM: public FSM {
   
   GameObj* collidingGob(int x, int y);
 
-  TerrainBase::Loc target;
+  SortsSimpleTerrain::Loc target;
 
-  TerrainBase::Path path;
+  SortsSimpleTerrain::Path path;
   int nextWPIndex;
   Vector<sint4> moveParams;
   int counter;
@@ -71,7 +71,7 @@ class MoveFSM: public FSM {
   int veerCount;
   coordinate lastLocation;
 
-  TerrainBase::Loc imaginaryWorkerWaypoint;
+  SortsSimpleTerrain::Loc imaginaryWorkerWaypoint;
   bool usingIWWP;
 };
 

@@ -194,7 +194,6 @@ class MineManager {
     void expandSIU(MiningRoute* route);
     double pathFindDist(SoarGameObject* obj1, SoarGameObject* obj2);
     double pathFindDist(coordinate loc1, coordinate loc2, bool b);
-    double pathFindDist(coordinate loc1, SoarGameObject* sgo, bool b);
     void allocateMiningStations(MineralInfo* m, Direction d);
     void allocateDropoffStations(CCenterInfo* m, Direction d);
     Direction getRelDirection(coordinate c1, coordinate c2);

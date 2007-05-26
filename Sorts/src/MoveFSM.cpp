@@ -24,7 +24,7 @@
 using namespace std;
 
 #define CLASS_TOKEN "MOVEFSM"
-#define DEBUG_OUTPUT true 
+#define DEBUG_OUTPUT false 
 #include "OutputDefinitions.h"
 
 #define TOLERANCE 9 // for waypoints, squared
@@ -263,7 +263,7 @@ void MoveFSM::init(vector<sint4> p)
 {
   FSM::init(p);
  
-  TerrainBase::Loc l;
+  SortsSimpleTerrain::Loc l;
   l.x = p[0];
   l.y = p[1];
   int pathLength;
@@ -296,19 +296,9 @@ void MoveFSM::init(vector<sint4> p)
   //  Sorts::canvas.makeTempCircle(l.x, l.y, *gob->sod.radius, 9999)->setShapeColor(255, 255, 255);
   }
   else {
-    GameObj* targetObs = collidingGob(l.x,l.y);
-    TerrainBase::Path tempPath;
-    Sorts::terrainModule->removeGob(targetObs);
     Sorts::terrainModule->findPath(gob, l, path);
-    Sorts::terrainModule->insertGob(targetObs);
     pathLength = path.locs.size();
     
-   /* path.locs.clear();
-    for (int i=pathLength-1; i>=0; i--) {
-      // reverse tempPath to store in path (fix for TerrainBase changes in
-      // '06-'07)
-      path.locs.push_back(tempPath.locs[i]);
-    }*/
     for (int i=0; i<pathLength; i++) {
       dbg << "loc " << i << " " 
           << path.locs[i].x << ", "<< path.locs[i].y << endl;
@@ -349,20 +339,20 @@ void MoveFSM::init(vector<sint4> p)
       state = ALREADY_THERE; 
     }
     else {
-      msg << "STUCK" << endl;
-      state = STUCK;
-      /* replaced with the above
+     // msg << "STUCK" << endl;
+     // state = STUCK;
+     // replaced with the above
       coordinate c(l.x,l.y);
-      if (not isReachableFromBuilding(l)) { 
+    //  if (not isReachableFromBuilding(l)) { 
         msg << "adding unreachable location.\n";
         Sorts::spatialDB->addImaginaryObstacle(c);
         state = UNREACHABLE;
-      }
-      else {
-        msg << "pathfind fails from my point only!\n";
-        state = STUCK;
-      }
-      */
+    //  }
+     // else {
+     //   msg << "pathfind fails from my point only!\n";
+     //   state = STUCK;
+    //  }
+      
     }
   }
 }
@@ -371,7 +361,7 @@ void MoveFSM::initNoPath(vector<sint4> p)
 {
   FSM::init(p);
  
-  TerrainBase::Loc l;
+  SortsSimpleTerrain::Loc l;
   l.x = p[0];
   l.y = p[1];
 
@@ -570,30 +560,6 @@ bool MoveFSM::dynamicCollision(int x, int y) {
 
   return false;
 }
-
-GameObj* MoveFSM::collidingGob(int x, int y) {
-  // return true if loc collides with a sheep or worker
-  list<GameObj*> collisions;
-  
-  Sorts::spatialDB->getObjectCollisions(x, y, *(gob->sod.radius), NULL, collisions);
-  
-  if (collisions.size() == 0) {
-    dbg << "Destination has no collisions, pf should work.\n";
-    return NULL;
-  }
-  else if (collisions.size() > 1) {
-    msg << "ERROR: more than one collision at target!\n";
-  }
-  
-  if ((*collisions.begin()) == gob) {
-    dbg << "gob collides w/self, ignoring\n";
-    return NULL;
-  }
-  else {
-    return *collisions.begin();
-  }
-}
-
 // MAGNETISM CODE
 
 // Returns the actual move vector of the object
@@ -644,7 +610,7 @@ bool MoveFSM::getMoveVector()
  y += y1/d;
  cout<<"Combined Vector: ("<<x<<","<<y<<")\n";
  
- TerrainBase::Loc loc = getHeadingVector(static_cast<sint4>(x),static_cast<sint4>(y));
+ SortsSimpleTerrain::Loc loc = getHeadingVector(static_cast<sint4>(x),static_cast<sint4>(y));
  
  moveParams[0] = loc.x;
  moveParams[1] = loc.y;
@@ -653,7 +619,7 @@ bool MoveFSM::getMoveVector()
 }
 
 
-TerrainBase::Loc MoveFSM::getHeadingVector(sint4 target_x, sint4 target_y)
+SortsSimpleTerrain::Loc MoveFSM::getHeadingVector(sint4 target_x, sint4 target_y)
 {
  sint4 x = *(gob->sod.x);
  sint4 y = *(gob->sod.y);
@@ -675,7 +641,7 @@ TerrainBase::Loc MoveFSM::getHeadingVector(sint4 target_x, sint4 target_y)
    quadrant = 3;
 
  
- TerrainBase::Loc loc;
+ SortsSimpleTerrain::Loc loc;
  switch(quadrant){
     case 1:
      if((loc.x = static_cast<sint4>(-1*b/m)) > Sorts::OrtsIO->getMapXDim())
@@ -719,8 +685,8 @@ TerrainBase::Loc MoveFSM::getHeadingVector(sint4 target_x, sint4 target_y)
  return loc;
 }
 
-bool MoveFSM::isReachableFromBuilding(TerrainBase::Loc l) {
-  TerrainBase::Path tempPath;
+bool MoveFSM::isReachableFromBuilding(SortsSimpleTerrain::Loc l) {
+  SortsSimpleTerrain::Path tempPath;
   GameObj* sourceObj = Sorts::OrtsIO->getReachabilityObject();
 
   // sourceObj (usually the controlCenter) is always reachable,
@@ -729,11 +695,8 @@ bool MoveFSM::isReachableFromBuilding(TerrainBase::Loc l) {
     return true;
   }
   
-  GameObj* targetObs = collidingGob(l.x,l.y);
-  Sorts::terrainModule->removeGob(targetObs);
   Sorts::terrainModule->findPath(sourceObj, 
                                  l, tempPath);
-  Sorts::terrainModule->insertGob(targetObs);
   return (tempPath.locs.size() > 0);
 }
 

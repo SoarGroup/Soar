@@ -83,6 +83,7 @@ public:
   void addImaginaryWorker(coordinate c);
   void addImaginaryObstacle(coordinate c);
   
+  bool hasImaginaryTerrainObstacleCollision(Circle& c);
   void addTerrainLine(Line l);
 
 //  void addTerrainContour(TerrainContour* c);
@@ -103,6 +104,7 @@ private: // functions
 private:
   vector<set<GameObj*> >    gobMap;
   vector<list<coordinate> > imaginaryWorkerMap; // used by MineManager
+  vector<list<coordinate> > imaginaryObstacleMap;
 
   const Map<GameTile>* gameMap;
 

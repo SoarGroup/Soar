@@ -34,6 +34,7 @@ public:
 
   void init(vector<sint4> p);
 	int update();
+  void touch();
 
 // these are all commands from the attack manager
   void attack(SoarGameObject* t);
@@ -58,6 +59,7 @@ public:
   void setReassign(bool b) { reassign = b; }
   int failCount;
   bool waitingForCatchup;
+  bool badAttack;
 
 private:
   bool reassign;
@@ -75,6 +77,8 @@ private:
   
   bool firstMove;
   int moveFails;
+
+  bool expectFiring;
 };
 
 

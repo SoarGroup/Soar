@@ -9,7 +9,7 @@
 */
 
 #define CLASS_TOKEN "MINEMAN"
-#define DEBUG_OUTPUT true 
+#define DEBUG_OUTPUT false 
 #include "OutputDefinitionsUnique.h"
 
 #define UNUSABLE_OPTIMALITY 1000
@@ -473,6 +473,7 @@ void MineManager::expandSLD(MiningRoute* route) {
 
   route->pathlength = pathFindDist(route->mineralInfo->mineral,
                                    route->cCenterInfo->cCenter);
+  assert (route->pathlength >= oldPath-1);
   route->stage = OBJ_OBJ_PF_DIST;
   if (route->pathlength == -1) {
     route->valid = false;
@@ -480,7 +481,6 @@ void MineManager::expandSLD(MiningRoute* route) {
     invalidRoutes.push_back(route);
   }
   else {
-    assert (route->pathlength >= oldPath-1);
     route->pathlength -= CCENTER_MAXRADIUS;
     route->pathlength -= MINERAL_RADIUS;
     route->pathlength += SLDOO_OVERESTIMATE;
@@ -609,7 +609,7 @@ void MineManager::expandObjObj(MiningRoute* route) {
         newRoute->miningLoc.x < maxX &&
         newRoute->miningLoc.y < maxY) {
       newRoute->pathlength = pathFindDist(newRoute->miningLoc,
-                                          newRoute->cCenterInfo->cCenter,
+                                          newRoute->dropoffLoc,
                                           false);
                             // - CCENTER_MINRADIUS - MINERAL_RADIUS;
     }
@@ -880,8 +880,8 @@ void MineManager::expandEdgeEdge(MiningRoute* route) {
     else {
       if (i == 0) {
         newRoute->pathlength 
-          = pathFindDist( newRoute->mineStation->location,
-                          newRoute->cCenterInfo->cCenter,
+          = pathFindDist(newRoute->dropoffStation->location, 
+                          newRoute->mineStation->location,
                           true);
         pfCache = newRoute->pathlength;
       }
@@ -1024,19 +1024,13 @@ void MineManager::allocateDropoffStations(CCenterInfo* cci, Direction d) {
 }
 
 double MineManager::pathFindDist(SoarGameObject* obj1, SoarGameObject* obj2) {
-  TerrainBase::Path path;
-  TerrainBase::Loc prevLoc;
+  SortsSimpleTerrain::Path path;
+  SortsSimpleTerrain::Loc prevLoc;
   dbg << "finding path:\n"
       << *(obj1->getGob()->sod.x) << ","<< *(obj1->getGob()->sod.y)
       << " -> " << *(obj2->getGob()->sod.x) << ","<< *(obj2->getGob()->sod.y)
       << endl;
-  int gx, gy;
-  (obj2->getGob())->get_center(gx, gy);
-  dbg << " again: " << gx << "," << gy << endl;
-  dbg << "gob is " << obj2->getGob() << endl;
-  if (!Sorts::terrainModule->findPath(obj1->getGob(), obj2->getGob(), path)) {
-    msg << "ERROR: pf returned false!\n";
-  }
+  Sorts::terrainModule->findPath(obj1->getGob(), obj2->getGob(), path);
   double result = 0;
   if (path.locs.size() == 0) {
     result = -1;
@@ -1059,10 +1053,10 @@ double MineManager::pathFindDist(SoarGameObject* obj1, SoarGameObject* obj2) {
 
 double MineManager::pathFindDist(coordinate loc1, coordinate loc2, 
                                  bool penalizeWaypoints) {
-  TerrainBase::Path path;
-  TerrainBase::Loc prevLoc;
-  TerrainBase::Loc tloc1;
-  TerrainBase::Loc tloc2;
+  SortsSimpleTerrain::Path path;
+  SortsSimpleTerrain::Loc prevLoc;
+  SortsSimpleTerrain::Loc tloc1;
+  SortsSimpleTerrain::Loc tloc2;
   tloc1.x = loc1.x;
   tloc1.y = loc1.y;
   tloc2.x = loc2.x;
@@ -1091,38 +1085,6 @@ double MineManager::pathFindDist(coordinate loc1, coordinate loc2,
   dbg << "w/o radii " << result - CCENTER_MINRADIUS - MINERAL_RADIUS << endl;
   return result;
 }
-
-double MineManager::pathFindDist(coordinate loc1, SoarGameObject* sgo, bool penalizeWaypoints) {
-  TerrainBase::Path path;
-  TerrainBase::Loc prevLoc;
-  TerrainBase::Loc tloc1;
-  tloc1.x = loc1.x;
-  tloc1.y = loc1.y;
-  Sorts::terrainModule->findPath(tloc1, sgo->getGob(), path);
-  double result = 0;
-  if (path.locs.size() == 0) {
-    result = -1;
-  }
-  else {
-    // path is obj1->obj2, waypoints in reverse order
-    prevLoc.x = loc1.x;
-    prevLoc.y = loc1.y;
-    //dbg << "loc: " << loc1.x << "," << loc1.y << endl;
-    for (int i=path.locs.size()-1; i>=0; i--) {
-      //dbg << "loc: " << path.locs[i].x << "," << path.locs[i].y << endl;
-      result += path.locs[i].distance(prevLoc);
-      if (penalizeWaypoints) {
-        result += WAYPOINT_PENALTY;
-      }
-      prevLoc = path.locs[i];
-    }
-  //dbg << "accumulated " << (path.locs.size()-2)*WAYPOINT_PENALTY << " wpp\n";
-  }
-  dbg << "raw pf dist: " << result << "\n";
-  dbg << "w/o radii " << result - CCENTER_MINRADIUS - MINERAL_RADIUS << endl;
-  return result;
-}
-
 
 Direction MineManager::getRelDirection(coordinate first, coordinate second) {
   // return relative direction of second to first
