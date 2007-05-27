@@ -17,7 +17,7 @@
 namespace sock
 {
 	// Forward declarations
-	class Socket ;
+	class DataSender ;
 }
 
 namespace sml
@@ -31,11 +31,11 @@ class RemoteConnection : public Connection
 protected:
 	// Clients should not use this.  Use Connection::CreateRemoteConnection instead.
 	// Making it protected so you can't accidentally create one like this.
-	RemoteConnection(bool sharedFileSystem, sock::Socket* pSocket) ;
+	RemoteConnection(bool sharedFileSystem, sock::DataSender* pDataSender) ;
 
 protected:
-	// The socket we use to send and receive messages (sockets are always 2-way)
-	sock::Socket*	m_Socket ;
+	// The data sender we use to send and receive messages (data senders are always 2-way)
+	sock::DataSender*	m_DataSender ;
 
 	// Whether both sides of the socket have access to the same file system
 	// (i.e. whether sending a filename makes sense or if we need to send the file contents).

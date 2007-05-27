@@ -48,6 +48,8 @@ typedef int				SOCKET ;
 
 #include <sys/types.h>
 
+#include "sock_DataSender.h"
+
 namespace sock {
 
 // Define NON_BLOCKING to make all sockets non-blocking sockets.
@@ -59,13 +61,10 @@ char*		  GetLocalIPAddress() ;
 
 #define NO_CONNECTION	0
 
-// Report info on the error than just occurred.
-void	ReportErrorCode() ;
-
 class ListenerSocket ;
 class ClientSocket ;
 
-class Socket  
+class Socket : public DataSender
 {
 	// Allow these classes access to our constructor
 	friend class ListenerSocket ;
@@ -99,7 +98,7 @@ public:
 	bool		IsReadDataAvailable(long secondsWait = 0, long millisecondsWait = 0) ;
 
 	// Close down our side of the socket
-	void		CloseSocket() ;
+	void		Close() ;
 		
 public:
 	// Print out debug information about the messages we are sending and receiving.
@@ -117,6 +116,8 @@ protected:
 	bool		SendBuffer(char const* pSendBuffer, size_t bufferSize) ;
 	bool		ReceiveBuffer(char* pRecvBuffer, size_t bufferSize) ;
 
+	// Report info on the error than just occurred.
+	void ReportErrorCode() ;
 };
 
 } // Namespace
