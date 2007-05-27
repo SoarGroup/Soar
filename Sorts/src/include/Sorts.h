@@ -1,5 +1,4 @@
-//#define GAME_ONE
-//#define NO_CANVAS_COMPILED
+#define NO_CANVAS_COMPILED
 
 /*
     This file is part of Sorts, an interface between Soar and ORTS.

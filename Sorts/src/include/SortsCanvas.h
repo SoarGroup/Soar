@@ -24,6 +24,7 @@
 
 #include "GameObj.H"
 #include "PerceptualGroup.h"
+//#include "Sorts.h"
 
 #ifndef NO_CANVAS_COMPILED
 #include "SDLCanvas.h"

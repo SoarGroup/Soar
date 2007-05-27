@@ -16,9 +16,9 @@
     along with Sorts; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA    
 */
+#include "Sorts.h"
 #ifndef NO_CANVAS_COMPILED
 #include "SortsCanvas.h"
-#include "Sorts.h"
 
 #define REDRAW_PERIOD 1
 

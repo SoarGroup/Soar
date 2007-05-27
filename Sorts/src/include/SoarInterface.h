@@ -1,3 +1,5 @@
+#define GAME_ONE
+
 #ifndef SoarInterface_H
 #define SoarInterface_H
 
@@ -234,7 +236,7 @@ class SoarInterface {
   public:
     SoarInterface() {};
 
-    ~SoarInterface();
+    ~SoarInterface() {};
 
     void updateViewFrame(int frame) {}
 

@@ -16,10 +16,8 @@
     along with Sorts; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA    
 */
-#ifndef NO_CANVAS_COMPILED // fixme
-//#if 0
-
 #include "SDLCanvas.h"
+#ifndef NO_CANVAS_COMPILED
 #include <signal.h>
 #include <SDL/SDL.h>
 
@@ -214,5 +212,4 @@ SDLCanvasStableLine* SDLCanvas::makeLine
   shapes.push_back(l);
   return l;
 }
-//#endif
 #endif

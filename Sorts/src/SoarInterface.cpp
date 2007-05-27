@@ -25,7 +25,7 @@
 #include "general.h"
 #include "SoarAction.h"
 #include "Sorts.h"
-
+#ifndef GAME_ONE
 #include "Game.H"
 
 #define CLASS_TOKEN "SOARIO"
@@ -690,3 +690,4 @@ void SoarInterface::startSoar() {
   dbg << "Soar Started" << endl;
 }
 
+#endif
