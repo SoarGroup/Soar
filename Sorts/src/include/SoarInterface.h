@@ -1,4 +1,4 @@
-#define GAME_ONE
+//#define GAME_ONE
 
 #ifndef SoarInterface_H
 #define SoarInterface_H

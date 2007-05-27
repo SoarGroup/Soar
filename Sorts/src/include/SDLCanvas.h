@@ -19,7 +19,6 @@
 #ifndef SDLCanvas_h
 #define SDLCanvas_h
 
-#include "Sorts.h"
 #ifndef NO_CANVAS_COMPILED
 
 #include <SDL/SDL.h>

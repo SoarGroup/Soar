@@ -21,18 +21,14 @@
 #define SortsCanvas_h
 
 #include <map>
+using namespace std;
 
 #include "GameObj.H"
 #include "PerceptualGroup.h"
-//#include "Sorts.h"
 
 #ifndef NO_CANVAS_COMPILED
+
 #include "SDLCanvas.h"
-#endif
-
-using namespace std;
-
-#ifndef NO_CANVAS_COMPILED
 struct CanvasObjInfo {
   SDLCanvasCompound*     compound;
   SDLCanvasShape*       mainShape;

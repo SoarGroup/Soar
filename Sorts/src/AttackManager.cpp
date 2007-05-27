@@ -88,6 +88,8 @@ void positionsOnRectangle( int ax, int ay, int tx1, int ty1, int tx2, int ty2,
   int offset, int distBetween, 
   list<Vec2d>& positions)
 {
+  ASSERT(distBetween > 0);
+
   cout << "positions on rectangle\n";
   enum Side { LEFT, RIGHT, TOP, BOTTOM };
   Side s[4];
@@ -616,13 +618,13 @@ int AttackManager::direct(AttackFSM* fsm) {
         if (gob->dir_dmg == 0) {
           double distToTarget 
             = squaredDistance(gobX(gob), gobY(gob), gobX(tgob), gobY(tgob));
+#ifndef NO_WAITING
           if (distToTarget < info.avgAttackerDistance() * WAIT_RATIO)
           {
             msg << "WAITING FOR OTHERS TO CATCH UP" << endl;
-#ifndef NO_WAITING
             fsm->waitingForCatchup = true;
-#endif
           }
+#endif
         }
         // everything's fine, keep going
         dbg << "TIME SPENT: " << (gettime() - st) / 1000 << endl;
@@ -632,6 +634,7 @@ int AttackManager::direct(AttackFSM* fsm) {
         msg << "xxx_dest can't hit. Dest: " << dest(0) << "," << dest(1) << " Targ: " << gobX(tgob) << "," << gobY(tgob) << endl;
       }
     }
+#ifndef NO_WAITING
     if (fsm->waitingForCatchup) {
       msg << "WAITING" << endl;
       if ((gob->dir_dmg == 0) && (canHit(gob, fsm->getDestination(), tgob))) {
@@ -639,7 +642,7 @@ int AttackManager::direct(AttackFSM* fsm) {
           = squaredDistance(gobX(gob), gobY(gob), gobX(tgob), gobY(tgob));
         if (distToTarget >= info.avgAttackerDistance() * RESUME_RATIO) {
           fsm->waitingForCatchup = false;
-        }
+       }
         else {
           // keep waiting
           dbg << "TIME SPENT: " << (gettime() - st) / 1000 << endl;
@@ -653,6 +656,7 @@ int AttackManager::direct(AttackFSM* fsm) {
       // otherwise, he's taking damage, or the target changed
       // position, so start moving
     }
+#endif
     // not moving, or should be moving somewhere else
     msg << "CANNOT HIT" << endl;
 
