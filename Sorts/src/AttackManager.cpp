@@ -517,7 +517,7 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
   }
   //  }
   //  }
-return false;
+  return false;
 }
 
 // the current strategy is basically to focus fire on one enemy
@@ -764,6 +764,56 @@ struct TargetCompare {
   }
 };
 
+struct NewTargetCompare {
+  Vec2d myPos;
+
+  bool operator()(SoarGameObject* t1, SoarGameObject* t2) {
+    // first always prefer those that are armed and shooting over 
+    // those that are not
+    ScriptObj* weapon1 = t1->getGob()->component("weapon");
+    ScriptObj* weapon2 = t2->getGob()->component("weapon");
+    if (weapon1 != NULL && weapon2 == NULL) {
+      return true;
+    }
+    if (weapon1 == NULL && weapon2 != NULL) {
+      return false;
+    }
+
+    int range1 = weapon1->get_int("max_ground_range")
+    int range2 = weapon2->get_int("max_ground_range")
+
+    Vec2d p1(*t1->getGob()->sod.x, *t1->getGob()->sod.y);
+    Vec2d p2(*t2->getGob()->sod.x, *t2->getGob()->sod.y);
+
+    double dist1 = (myPos - p1).magSq();
+    double dist2 = (myPos - p2).magSq();
+
+    if (dist1 < dist2 - range2) {
+      return true
+    }
+    else if (dist2 < dist1 - range1) {
+      return false;
+    }
+
+    double rating1 = weaponDamageRate(t1->getGob()) * t2->getGob()->get_int("hp");
+    double rating2 = weaponDamageRate(t2->getGob()) * t1->getGob()->get_int("hp");
+
+    if (rating1 < rating2) {
+      return true;
+    }
+    else if (rating1 == rating2) { // break ties by distance
+
+      if (dist1 < dist2) {
+        return true;
+      }
+      else if (dist1 == dist2) {  // lexicographically break ties
+        return (t1->getID() < t2->getID());
+      }
+    }
+    return false;
+  }
+};
+
 void AttackManager::reprioritize() {
   // calculate centroid
   double xsum = 0, ysum = 0;
@@ -776,7 +826,7 @@ void AttackManager::reprioritize() {
     ysum += *(*i)->getGob()->sod.y;
   }
 
-  TargetCompare comparator;
+  NewTargetCompare comparator;
   comparator.myPos = Vec2d(xsum / team.size(), ysum / team.size());
 
   dbg << "YYY reprioritizing\n";
