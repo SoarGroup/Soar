@@ -27,17 +27,17 @@
 
 using namespace sml ;
 
-RemoteConnection::RemoteConnection(bool sharedFileSystem, sock::Socket* pSocket)
+RemoteConnection::RemoteConnection(bool sharedFileSystem, sock::DataSender* pDataSender)
 {
 	m_SharedFileSystem = sharedFileSystem ;
-	m_Socket = pSocket ;
-	m_pLastResponse = NULL ;
+	m_DataSender = pDataSender ;
+	m_pLastResponse = NULL ; 
 }
 
 RemoteConnection::~RemoteConnection()
 {
 	delete m_pLastResponse ;
-	delete m_Socket ;
+	delete m_DataSender ;
 
 	for (MessageListIter iter = m_ReceivedMessageList.begin() ; iter != m_ReceivedMessageList.end() ; iter++)
 	{
@@ -170,7 +170,7 @@ void RemoteConnection::SendMessage(ElementXML* pMsg)
 	char* pXMLString = pMsg->GenerateXMLString(true) ;
 
 	// Send it
-	bool ok = m_Socket->SendString(pXMLString) ;
+	bool ok = m_DataSender->SendString(pXMLString) ;
 
 	// Dump the message if we're tracing
 	if (m_bTraceCommunications)
@@ -301,7 +301,8 @@ bool RemoteConnection::ReceiveMessages(bool allMessages, long secondsWait, long 
 
 	while (haveData)
 	{
-		bool alive = m_Socket->IsAlive() ;
+		bool alive = m_DataSender->IsAlive() ;
+
 		if (!alive)
 		{
 			// The socket has closed down so close our connection object too.
@@ -311,12 +312,13 @@ bool RemoteConnection::ReceiveMessages(bool allMessages, long secondsWait, long 
 
 		// Only check for read data after we've checked that the socket is still alive.
 		// (This is because IsReadData can't signal the difference between a dead connection and no data)
-		haveData = m_Socket->IsReadDataAvailable(secondsWait, millisecondsWait) ;
+		haveData = m_DataSender->IsReadDataAvailable(secondsWait, millisecondsWait) ;
+
 		if (!haveData)
 			break ;
 
 		// 	Read the first message that's waiting
-		ok = m_Socket->ReceiveString(&xmlString) ;
+		ok = m_DataSender->ReceiveString(&xmlString) ;
 
 		if (!ok)
 		{
@@ -380,16 +382,16 @@ bool RemoteConnection::ReceiveMessages(bool allMessages, long secondsWait, long 
 void RemoteConnection::SetTraceCommunications(bool state)
 {
 	m_bTraceCommunications = state ;
-	if (m_Socket) m_Socket->SetTraceCommunications(state) ;
+	if (m_DataSender) m_DataSender->SetTraceCommunications(state) ;
 }
 
 void RemoteConnection::CloseConnection()
 {
-	m_Socket->CloseSocket() ;
+	m_DataSender->Close() ;
 }
 
 bool RemoteConnection::IsClosed()
 {
-	return !m_Socket->IsAlive() ;
+	return !m_DataSender->IsAlive() ;
 }
 
