@@ -17,6 +17,7 @@ class Sorts;
 
 class PerceptualGroup;
 
+#ifndef GAME_ONE
 using namespace sml;
 
 // we need these attribute structs so we can remember the last value of the
@@ -227,5 +228,38 @@ class SoarInterface {
     bool stale;
     bool soarRunning;
 };
+#else 
+// fake SoarInterface for game1
+class SoarInterface {
+  public:
+    SoarInterface() {};
 
+    ~SoarInterface();
+
+    void updateViewFrame(int frame) {}
+
+    // grouping commands for Group Manager to call
+    void addGroup(PerceptualGroup* group) {}
+    void removeGroup(PerceptualGroup* group) {}
+    void refreshGroup(PerceptualGroup* group) {}
+
+    // feature map commands
+    void addFeatureMap(FeatureMap* m, string name) {}
+    void refreshFeatureMap(FeatureMap*, string name) {}
+    
+    // update player info
+    void updatePlayerGold(int amount) { cout << "updated mineral count: " << amount << endl; }
+    void updatePlayerUnits(int, int, int) {}
+
+    void updateMineralBuffer(int) {}
+
+    void updateQueryResult(string name, int param0, int param1) {}
+    void initSoarInputLink() {}
+    void initVisionState(VisionParameterStruct vps) {}
+    void updateVisionState(VisionParameterStruct& vps) {}
+    void stopSoar() {}
+    void startSoar() {}
+};
+
+#endif
 #endif

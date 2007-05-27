@@ -126,7 +126,9 @@ void SpatialDB::addImaginaryObstacle(coordinate c) {
   imaginaryObstacleMap[cell].push_back(c);
   dbg << "Registered new imaginary obstacle.\n";
   dbg << "loc: " << c.x << "," << c.y << endl;
+#ifndef NO_CANVAS_COMPILED
   Sorts::canvas.makeTempCircle(c.x,c.y,IMAG_OBSTACLE_RADIUS,9999999);
+#endif
 }
 
 sint4 SpatialDB::updateObject(GameObj *gob, sint4 sat_loc)

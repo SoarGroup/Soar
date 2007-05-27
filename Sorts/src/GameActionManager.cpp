@@ -32,6 +32,7 @@ GameActionManager::GameActionManager()
 }
 
 void GameActionManager::processGameCommands() {
+#ifndef GAME_ONE
   list<GameAction> actions;
   Sorts::SoarIO->getNewGameActions(actions);
   for (list<GameAction>::iterator i = actions.begin();
@@ -50,6 +51,7 @@ void GameActionManager::processGameCommands() {
       assert(false);
     }
   }
+#endif
 }
 
 void GameActionManager::findBuildingLoc(BuildingType building, coordinate nearLocation, 

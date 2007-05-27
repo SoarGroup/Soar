@@ -611,9 +611,9 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
           intIt++) {
         tempVec.push_back(*intIt);
       }
-
+#ifndef NO_CANVAS_COMPILED
       Sorts::canvas.makeTempCircle(tempVec[0], tempVec[1], 10, 100000)->setShapeColor(255, 0, 0);
-
+#endif
       currentCommand = "move";
       sticky = true;
       // this group is stuck together from now on,

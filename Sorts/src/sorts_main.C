@@ -30,13 +30,13 @@
 #include <sml_Client.h>
 
 // our includes
+#include "Sorts.h"
 #include "SoarInterface.h"
 #include "OrtsInterface.h"
 #include "AttackManagerRegistry.h"
 #include "MineManager.h"
 #include "FeatureMapManager.h"
 #include "GameActionManager.h"
-#include "Sorts.h"
 
 #include "Options.H"
 #include "SortsTerrainModule.h"
@@ -148,7 +148,7 @@ void printOutput
     send game object actions to ORTS
     refresh Soar's view of the world (but don't commit)
 */
-
+#ifndef GAME_ONE
 void SoarStartRunEventHandler
 ( smlRunEventId id, 
   void*         pUserData, 
@@ -250,19 +250,6 @@ void* RunSoar(void* ptr) {
   }
 }
 
-void* RunOrts(void* ptr) {
-  GameStateModule* gsm = (GameStateModule*) ptr;
-
-  while(!soarHalted) {
-    if (!gsm->recv_view()) {
-      sched_yield();
-      //usleep(30000);
-    }
-  }
-}
-
-typedef SortsSimpleTerrain::SortsST_Terrain Terrain;
-
 Agent* initSoarRemote() {
    Kernel* pKernel = Kernel::CreateRemoteConnection(true, "127.0.0.1", 12121);
 
@@ -344,6 +331,22 @@ Agent* initSoarLocal(int soarPort, char* productions) {
 
   return pAgent;
 }
+#endif
+
+void* RunOrts(void* ptr) {
+  GameStateModule* gsm = (GameStateModule*) ptr;
+
+  while(!soarHalted) {
+    if (!gsm->recv_view()) {
+      sched_yield();
+      //usleep(30000);
+    }
+  }
+}
+
+
+
+typedef SortsSimpleTerrain::SortsST_Terrain Terrain;
 
 int main(int argc, char *argv[]) {
 #ifdef USE_CANVAS
@@ -402,7 +405,7 @@ int main(int argc, char *argv[]) {
   srand(seed);
   
   pthread_mutex_t sortsMutex = PTHREAD_MUTEX_INITIALIZER;
-
+#ifndef GAME_ONE
   // Load some productions
   if (productions == NULL) {
     cout << "ERROR: No productions specified. Use -p or -productions.\n";
@@ -422,7 +425,7 @@ int main(int argc, char *argv[]) {
     cout << "Could not start the Soar agent" << endl;
     exit(1);
   }
-
+#endif
   /*********************************
    * Set up the connection to ORTS *
    *********************************/
@@ -445,9 +448,13 @@ int main(int argc, char *argv[]) {
   // connect to ORTS server
   if (!gsm.connect()) exit(10);
   msg << "connected to ORTS server" << std::endl;
-  
-  SoarInterface soarInterface(pAgent, oldAgent);
 
+#ifndef GAME_ONE
+  SoarInterface soarInterface(pAgent, oldAgent);
+#else
+  SoarInterface soarInterface;
+#endif
+  
   FeatureMapManager featureMapManager;
   PerceptualGroupManager pgm;
   OrtsInterface ortsInterface(&gsm);
@@ -476,8 +483,10 @@ int main(int argc, char *argv[]) {
   // and calculates the initial vision params (window size, etc.)
   // these params are then put on the input link when it is initialized
   pgm.initialize();
+#ifndef GAME_ONE
   soarInterface.initSoarInputLink();
-
+#endif
+  
   double xDim = ortsInterface.getMapXDim();
   double yDim = ortsInterface.getMapYDim();
   if (not noSortsCanvas) {
@@ -496,7 +505,8 @@ int main(int argc, char *argv[]) {
 
 // register for all events
   gsm.add_handler(&ortsInterface);
-
+  soarHalted = false;
+#ifndef GAME_ONE
   pAgent->RegisterForRunEvent(smlEVENT_BEFORE_RUN_STARTS, SoarStartRunEventHandler, NULL);
   pAgent->RegisterForRunEvent(smlEVENT_AFTER_OUTPUT_PHASE, SoarOutputEventHandler, NULL);
   pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, SoarAfterDecisionCycleEventHandler, NULL);
@@ -515,16 +525,15 @@ int main(int argc, char *argv[]) {
   }
  
   // start Soar in a different thread
-  soarHalted = false;
 
   pthread_t soarThread;
   if (!remote_kernel) {
     pthread_create(&soarThread, NULL, RunSoar, (void*) pAgent);
     msg << "Soar is running" << std::endl;
   }
-
+#endif
   RunOrts(&gsm);
-
+#ifndef GAME_ONE
   if (!remote_kernel) {
     pthread_join(soarThread, NULL);
     msg << "Everything finished" << endl;
@@ -537,7 +546,7 @@ int main(int argc, char *argv[]) {
     soar_log->close();
     delete soar_log;
   }
-
+#endif
 #ifdef USE_CANVAS
   Sorts::canvas.quit();
 #endif

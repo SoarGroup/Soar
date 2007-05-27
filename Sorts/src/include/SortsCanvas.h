@@ -1,3 +1,4 @@
+
 /*
     This file is part of Sorts, an interface between Soar and ORTS.
     (c) 2006 James Irizarry, Sam Wintermute, and Joseph Xu
@@ -24,10 +25,13 @@
 #include "GameObj.H"
 #include "PerceptualGroup.h"
 
+#ifndef NO_CANVAS_COMPILED
 #include "SDLCanvas.h"
+#endif
 
 using namespace std;
 
+#ifndef NO_CANVAS_COMPILED
 struct CanvasObjInfo {
   SDLCanvasCompound*     compound;
   SDLCanvasShape*       mainShape;
@@ -99,5 +103,39 @@ public:
   map<PerceptualGroup*, CanvasGroupInfo> canvasGroups;
   int updateCounter;
 };
+#else
+class CanvasObjInfo {};
+class SortsCanvas {
+public:
+  SortsCanvas() {};
+
+  void init(double ww, double wh, double scale) {}
+  bool initted() { return false; }
+  void clear() {}
+  void registerSGO(SoarGameObject* sgo) {}
+  void unregisterSGO(SoarGameObject* sgo) {}
+  void resetSGO(SoarGameObject* sgo) {}
+
+  void registerGroup(PerceptualGroup* group) {}
+  void unregisterGroup(PerceptualGroup* group) {}
+
+  void setColor(SoarGameObject* sgo, Uint8 r, Uint8 g, Uint8 b) {}
+  void flashColor(SoarGameObject* sgo, Uint8 r, Uint8 g, Uint8 b, int cycles) {}
+  void update() {}
+
+  void trackDestination(SoarGameObject* sgo, double destx, double desty) {}
+  void stopTracking(CanvasObjInfo& obj) {}
+
+  bool sgoRegistered(SoarGameObject* sgo) { return false; }
+
+  void drawLine(double x1, double y1, double x2, double y2) {}
+  void setStatus(string) {}
+  void clearStatus() {}
+  
+  void setSoarStatus(string) {}
+  void setCommandStatus(string) {}
+
+};
+#endif
 
 #endif

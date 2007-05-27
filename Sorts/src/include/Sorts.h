@@ -1,3 +1,6 @@
+#define GAME_ONE
+#define NO_CANVAS_COMPILED
+
 /*
     This file is part of Sorts, an interface between Soar and ORTS.
     (c) 2006 James Irizarry, Sam Wintermute, and Joseph Xu
@@ -38,6 +41,7 @@ class MineManager;
 
 #include "SpatialDB.h"
 #include "SortsTerrainModule.h"
+
 
 #include "SortsCanvas.h"
 

@@ -44,6 +44,9 @@ PerceptualGroupManager::PerceptualGroupManager() {
   // this default should be reflected in the agent's assumptions
   // (1024 = 32^2)
   visionParams.groupingRadius = 0;
+#ifdef GAME_ONE
+  visionParams.groupingRadius = 999999;
+#endif
   
   // the number of objects near the focus point to add
   // agent can change this, if it wishes to cheat
@@ -93,10 +96,25 @@ void PerceptualGroupManager::updateGroups() {
   adjustAttention(false);
     // determine which groups are attended to,
     // and send them to Soar
+
+#ifdef GAME_ONE
+
+  for (set<PerceptualGroup*>::iterator groupIter = perceptualGroups.begin(); 
+       groupIter != perceptualGroups.end(); 
+       groupIter++) {
+      if ((*groupIter)->isFriendlyWorker() and not (*groupIter)->getHasCommand()) {
+        list<int> params;
+        list<PerceptualGroup*> groups;
+        (*groupIter)->assignAction(OA_MINE, params, groups);
+      }
+    }
+  
+#endif
   return;
 }
 
 bool PerceptualGroupManager::assignActions() {
+#ifndef GAME_ONE
   // through the Sorts::getSoarInterface(), look for any new actions, and assign them to groups
   // actions have a list of params and a list of groups,
   // the first group (must exist) is the group the action will be applied to
@@ -137,7 +155,8 @@ bool PerceptualGroupManager::assignActions() {
     }
   }
   dbg << "done assigning.\n";
-  return success;
+#endif
+  return true;
 }
 
 void PerceptualGroupManager::updateQueryDistances() {
@@ -160,6 +179,7 @@ void PerceptualGroupManager::updateQueryDistances() {
   
 
 void PerceptualGroupManager::processVisionCommands() {
+#ifndef GAME_ONE
   // called when Soar changes the view window, wants to attend to an item
   // in a feature map, or changes a grouping parameter.
 
@@ -343,7 +363,7 @@ void PerceptualGroupManager::processVisionCommands() {
     }
   }
 
-
+#endif
 }
 
 void PerceptualGroupManager::prepareForReGroup() {
