@@ -31,7 +31,7 @@
 #include "Rectangle.h"
 #include "SortsCollision.h"
 
-#define dbg if(0) cout << "GENERAL "
+#define dbg if(1) cout << "GENERAL "
 
 using namespace std;
 
@@ -189,6 +189,7 @@ void positionsOnCircle
   double chordLen,
   list<Vec2d>& positions) 
 {
+  dbg << "positions on circle\n";
   Vec2d radiusVec = firstPos - center;
   double radius = radiusVec.mag();
 
@@ -216,6 +217,7 @@ void positionsOnCircle
 
     positions.push_back(pos2);
   }
+  dbg << "pos done\n";
 }
 
 unsigned long gettime() {

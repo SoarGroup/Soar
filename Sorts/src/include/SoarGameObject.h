@@ -107,6 +107,7 @@ private:
 
   int status;
   string name;
+  int owner;
 
   bool friendlyWorker;
   // these are only updated for friendly workers!

@@ -33,7 +33,7 @@
 #include "PerceptualGroup.h"
 
 #define CLASS_TOKEN "SGO"
-#define DEBUG_OUTPUT false 
+#define DEBUG_OUTPUT true 
 #include "OutputDefinitions.h"
 
 #define PANIC_FRAMES 30
@@ -128,6 +128,7 @@ SoarGameObject::SoarGameObject(
   assignedBehavior = NULL;
   
   sat_loc = Sorts::spatialDB->addObject(gob);
+  owner = getOwner();
 }
 
 SoarGameObject::~SoarGameObject()
@@ -136,6 +137,10 @@ SoarGameObject::~SoarGameObject()
 }
 
 void SoarGameObject::removeFromGame() {
+  dbg << "YYY epitah:\n";
+  dbg << "the object was a good " << name << endl;
+  dbg << "and served its owner, " << owner << ", well." << endl;
+  dbg << "it will be missed by its group, " << pGroup << endl;
   for(map<ObjectActionType, FSM*>::iterator 
       i  = behaviors.begin(); 
       i != behaviors.end(); 
