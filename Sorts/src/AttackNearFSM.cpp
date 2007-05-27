@@ -60,6 +60,7 @@ int AttackNearFSM::update() {
     msg << "waiting..\n";
   }
   
+  GameObj* best = NULL;
   list<GameObj*>::iterator i = nearby.begin();
   while (i != nearby.end()) {
     if (Sorts::OrtsIO->isAlive(Sorts::OrtsIO->getGobId(*i)) &&
@@ -67,19 +68,26 @@ int AttackNearFSM::update() {
         *(*i)->sod.owner != Sorts::OrtsIO->getWorldId())
     {
       if (canHit(gob, *i)) {
-        //Sorts::canvas.flashColor(sgob, 255, 128, 0, 1); // orange
-        attackParams[0] = Sorts::OrtsIO->getGobId(*i);
-        msg << "opportunistic attack!\n";
-        weapon->set_action("attack", attackParams);
-        sgob->setLastAttacked(attackParams[0]);
-        sgob->setLastAttackOpportunistic(true);
-        break;
+        if (best == NULL) {
+          best = *i;
+        }
+        else if (*i < best) {
+          best = *i;
+        }
       }
       ++i;
     }
     else {
       i = nearby.erase(i);
     }
+  }
+  if (best != NULL) {
+    //Sorts::canvas.flashColor(sgob, 255, 128, 0, 1); // orange
+    attackParams[0] = Sorts::OrtsIO->getGobId(best);
+    msg << "opportunistic attack!\n";
+    weapon->set_action("attack", attackParams);
+    sgob->setLastAttacked(attackParams[0]);
+    sgob->setLastAttackOpportunistic(true);
   }
   return FSM_RUNNING;
 }
