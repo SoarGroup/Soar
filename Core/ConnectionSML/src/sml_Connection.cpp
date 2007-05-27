@@ -35,8 +35,10 @@
 #include "sml_TagError.h"
 #include "sml_TagResult.h"
 #include "sock_ClientSocket.h"
+#include "sock_ClientNamedPipe.h"
 
 #include <time.h>	// For debug random start of message id's
+#include <sstream>
 
 using namespace sml ;
 
@@ -154,20 +156,41 @@ Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, bool 
 *************************************************************/
 Connection* Connection::CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, unsigned short port, ErrorCode* pError)
 {
-	sock::ClientSocket* pSocket = new sock::ClientSocket() ;
+	RemoteConnection* pConnection;
 
-	bool ok = pSocket->ConnectToServer(pIPaddress, port) ;
+	if(pIPaddress == "abc") {
 
-	if (!ok && pError)
-	{
-		// BADBAD: Can we get a more detailed error from pSocket?
-		*pError = Error::kConnectionFailed ;
-		delete pSocket ;
-		return NULL ;
+		sock::ClientNamedPipe* pNamedPipe = new sock::ClientNamedPipe() ;
+
+		std::stringstream name;
+		name << port;
+		
+		bool ok = pNamedPipe->ConnectToServer(name.str().c_str()) ;
+
+		if(!ok) {
+			if(pError) *pError = Error::kConnectionFailed ;
+			return NULL;
+		}
+
+		// Wrap the pipe inside a remote connection object
+		pConnection = new RemoteConnection(sharedFileSystem, pNamedPipe) ;
+
+	} else {
+		sock::ClientSocket* pSocket = new sock::ClientSocket() ;
+
+		bool ok = pSocket->ConnectToServer(pIPaddress, port) ;
+
+		if (!ok)
+		{
+			// BADBAD: Can we get a more detailed error from pSocket?
+			if (pError) *pError = Error::kConnectionFailed ;
+			delete pSocket ;
+			return NULL ;
+		}
+		
+		// Wrap the socket inside a remote connection object
+		pConnection = new RemoteConnection(sharedFileSystem, pSocket) ;
 	}
-
-	// Wrap the socket inside a remote connection object
-	RemoteConnection* pConnection = new RemoteConnection(sharedFileSystem, pSocket) ;
 
 	return pConnection ;
 }
@@ -176,11 +199,11 @@ Connection* Connection::CreateRemoteConnection(bool sharedFileSystem, char const
 * @brief Create a new connection object wrapping a socket.
 *		 The socket is generally obtained from a ListenerSocket.
 *************************************************************/
-Connection* Connection::CreateRemoteConnection(sock::Socket* pSocket)
+Connection* Connection::CreateRemoteConnection(sock::DataSender* pDataSender)
 {
 	// This is a server side connection, so it doesn't have any way to know
 	// if the client and it share the same file system, so just set it to true by default.
-	return new RemoteConnection(true, pSocket) ;
+	return new RemoteConnection(true, pDataSender) ;
 }
 
 /*************************************************************

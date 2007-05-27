@@ -321,7 +321,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\sock_ClientNamedPipe.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sock_ClientSocket.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\sock_DataSender.cpp"
 				>
 			</File>
 			<File
@@ -329,7 +337,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\sock_ListenerNamedPipe.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sock_ListenerSocket.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\sock_NamedPipe.cpp"
 				>
 			</File>
 			<File
@@ -471,7 +487,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\include\sock_ClientNamedPipe.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\sock_ClientSocket.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\sock_DataSender.h"
 				>
 			</File>
 			<File
@@ -479,7 +503,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\include\sock_ListenerNamedPipe.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\sock_ListenerSocket.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\sock_NamedPipe.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\sock_NamedPipeHeader.h"
 				>
 			</File>
 			<File

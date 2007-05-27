@@ -29,6 +29,7 @@ extern ElementXML* ReceivedCall(Connection* pConnection, ElementXML* pIncoming, 
 
 void ListenerThread::Run()
 {
+	
 	// Create the listener
 	PrintDebugFormat("Listening on port %d", m_Port) ;
 	bool ok = m_ListenerSocket.CreateListener(m_Port) ;
@@ -39,6 +40,14 @@ void ListenerThread::Run()
 		return ;
 	}
 
+	ok = m_ListenerNamedPipe.CreateListener(m_PipeName.c_str()) ;
+
+	if (!ok)
+	{
+		PrintDebug("Failed to create the listener pipe.  Shutting down thread.") ;
+		return ;
+	}
+
 	while (!m_QuitNow)
 	{
 		//PrintDebug("Check for incoming connection") ;
@@ -46,31 +55,10 @@ void ListenerThread::Run()
 		// Check for an incoming client connection
 		// This doesn't block.
 		Socket* pSocket = m_ListenerSocket.CheckForClientConnection() ;
+		NamedPipe* pNamedPipe = m_ListenerNamedPipe.CheckForClientConnection();
 
-		if (pSocket)
-		{
-			PrintDebug("Got new connection") ;
-
-			// Create a new connection object for this socket
-			Connection* pConnection = Connection::CreateRemoteConnection(pSocket) ;
-
-			// Record our kernel object with this connection.  I think we only want one kernel
-			// object even if there are many connections (because there's only one kernel) so for now
-			// that's how things are set up.
-			pConnection->SetUserData(KernelSML::GetKernelSML()) ;
-
-			// For debugging record that this is on the kernel side
-			pConnection->SetIsKernelSide(true) ;
-
-			// Register for "calls" from the client.
-			pConnection->RegisterCallback(ReceivedCall, NULL, sml_Names::kDocType_Call, true) ;
-
-			// Set up our tracing state to match the user's preference
-			pConnection->SetTraceCommunications(KernelSML::GetKernelSML()->IsTracingCommunications()) ;
-
-			// Record the new connection in our list of connections
-			KernelSML::GetKernelSML()->AddConnection(pConnection) ;
-		}
+		if (pSocket) CreateConnection(pSocket);
+		if (pNamedPipe) CreateConnection(pNamedPipe);
 
 		// Sleep for a little before checking for a new connection
 		// New connections will come in very infrequently so this doesn't
@@ -79,5 +67,31 @@ void ListenerThread::Run()
 	}
 
 	// Shut down our listener socket
-	m_ListenerSocket.CloseSocket() ;
+	m_ListenerSocket.Close() ;
+	m_ListenerNamedPipe.Close();
+}
+
+void ListenerThread::CreateConnection(DataSender* pSender)
+{
+	PrintDebug("Got new connection") ;
+
+	// Create a new connection object for this socket
+	Connection* pConnection = Connection::CreateRemoteConnection(pSender) ;
+
+	// Record our kernel object with this connection.  I think we only want one kernel
+	// object even if there are many connections (because there's only one kernel) so for now
+	// that's how things are set up.
+	pConnection->SetUserData(KernelSML::GetKernelSML()) ;
+
+	// For debugging record that this is on the kernel side
+	pConnection->SetIsKernelSide(true) ;
+
+	// Register for "calls" from the client.
+	pConnection->RegisterCallback(ReceivedCall, NULL, sml_Names::kDocType_Call, true) ;
+
+	// Set up our tracing state to match the user's preference
+	pConnection->SetTraceCommunications(KernelSML::GetKernelSML()->IsTracingCommunications()) ;
+
+	// Record the new connection in our list of connections
+	KernelSML::GetKernelSML()->AddConnection(pConnection) ;
 }

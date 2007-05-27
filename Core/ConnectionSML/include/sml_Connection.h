@@ -52,10 +52,12 @@
 #include "sml_AnalyzeXML.h"
 #include "sml_Names.h"
 
+#include <windows.h>
+
 namespace sock
 {
 	// Forward declarations
-	class Socket ;
+	class DataSender ;
 }
 
 namespace sml
@@ -232,7 +234,7 @@ public:
 	*		 The socket is generally obtained from a ListenerSocket.
 	*		 (Clients don't generally use this method--use the one above instead)
 	*************************************************************/
-	static Connection* CreateRemoteConnection(sock::Socket* pSocket) ;
+	static Connection* CreateRemoteConnection(sock::DataSender* pDataSender) ;
 
 public:
 	/*************************************************************
