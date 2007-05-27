@@ -691,6 +691,8 @@ bool MoveFSM::isReachableFromBuilding(SortsSimpleTerrain::Loc l) {
   SortsSimpleTerrain::Path tempPath;
   GameObj* sourceObj = Sorts::OrtsIO->getReachabilityObject();
 
+  if (sourceObj == NULL) return false;
+
   // sourceObj (usually the controlCenter) is always reachable,
   // but has path length 0 to itself
   if (gobX(sourceObj) == l.x && gobY(sourceObj) == l.y) {

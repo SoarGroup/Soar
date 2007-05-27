@@ -69,6 +69,8 @@ private: // variables
   set<int> idSet;
 
   int numNewAttackers;
+
+  int reprioritizeCounter;
 };
 
 #endif

@@ -254,7 +254,11 @@ void SoarInterface::refreshFeatureMap(FeatureMap *m, string name) {
 // called in soar event handler to take everything off the output
 // link and put onto the action queue each time soar generates output
 void SoarInterface::getNewSoarOutput() {
-  ASSERT(agent->GetOutputLink());
+  //ASSERT(agent->GetOutputLink());
+  if (not agent->GetOutputLink()) {
+    msg << "no output-link!\n"; 
+    return;
+  }
 
   WMElement* scWME;
   if (oldAgent) {

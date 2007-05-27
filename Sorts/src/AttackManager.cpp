@@ -340,6 +340,7 @@ void AttackManager::attackArcPos( GameObj* atk,
 
 AttackManager::AttackManager(const set<SoarGameObject*>& _targets) : targetSet(_targets)
 {
+  reprioritizeCounter = 0;
   numNewAttackers = 0;
   for(set<SoarGameObject*>::iterator
       i  = targetSet.begin();
@@ -510,6 +511,10 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
     // failure points nearby, but should be reachable
     if (fsm->move((int)closePos(0), (int)closePos(1), true) == 0) {
       assignTarget(fsm, *i);
+#ifdef USE_CANVAS_ATTACK_MANAGER
+      Sorts::canvas.trackDestination(fsm->getSGO(), 
+                                     (*i)->getX(), (*i)->getY());
+#endif
       msg << "LAST RESORT TARG" << endl;
       return true;
     }
@@ -525,6 +530,11 @@ bool AttackManager::findTarget(AttackFSM* fsm) {
 
 // In the future, also implement running weak units away
 int AttackManager::direct(AttackFSM* fsm) {
+  if (reprioritizeCounter != Sorts::frame) {
+    dbg << "forced reprioritize!\n";
+    reprioritize();
+    reprioritizeCounter = Sorts::frame;
+  }
   msg << "NUMTARGS: " << targets.size() << endl;
   unsigned long st = gettime();
   GameObj* gob = fsm->getGob();
@@ -669,6 +679,10 @@ int AttackManager::direct(AttackFSM* fsm) {
     {
       if (fsm->move((int)(*i)(0), (int)(*i)(1), false) == 0) {
         msg << "Moving to Position: " << (*i)(0) << ", " << (*i)(1) << endl;
+#ifdef USE_CANVAS_ATTACK_MANAGER
+        Sorts::canvas.trackDestination(fsm->getSGO(), 
+                                       (*i)(0), (*i)(1));
+#endif
         break;
       }
       else {
@@ -779,8 +793,8 @@ struct NewTargetCompare {
       return false;
     }
 
-    int range1 = weapon1->get_int("max_ground_range")
-    int range2 = weapon2->get_int("max_ground_range")
+    int range1 = weapon1->get_int("max_ground_range");
+    int range2 = weapon2->get_int("max_ground_range");
 
     Vec2d p1(*t1->getGob()->sod.x, *t1->getGob()->sod.y);
     Vec2d p2(*t2->getGob()->sod.x, *t2->getGob()->sod.y);
@@ -789,7 +803,7 @@ struct NewTargetCompare {
     double dist2 = (myPos - p2).magSq();
 
     if (dist1 < dist2 - range2) {
-      return true
+      return true;
     }
     else if (dist2 < dist1 - range1) {
       return false;

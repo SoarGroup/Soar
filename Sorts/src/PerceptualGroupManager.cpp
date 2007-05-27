@@ -97,8 +97,25 @@ void PerceptualGroupManager::updateGroups() {
     // determine which groups are attended to,
     // and send them to Soar
 
-#ifdef GAME_ONE
-
+#ifdef GAME_ONE // should be "NO_SOAR"
+#ifdef GAME_FOUR
+  list<PerceptualGroup*> enemies;
+  for (set<PerceptualGroup*>::iterator groupIter = perceptualGroups.begin(); 
+       groupIter != perceptualGroups.end(); 
+       groupIter++) {
+    if ((*groupIter)->getName() == "marine" and not (*groupIter)->isFriendly()) {
+      enemies.push_back(*groupIter);
+    }
+  }
+  for (set<PerceptualGroup*>::iterator groupIter = perceptualGroups.begin(); 
+       groupIter != perceptualGroups.end(); 
+       groupIter++) {
+    if ((*groupIter)->getName() == "marine" and (*groupIter)->isFriendly() and not (*groupIter)->getHasCommand()) {
+      list<int> params;
+      (*groupIter)->assignAction(OA_ATTACK, params, enemies);
+    }
+  }
+#else
   for (set<PerceptualGroup*>::iterator groupIter = perceptualGroups.begin(); 
        groupIter != perceptualGroups.end(); 
        groupIter++) {
@@ -108,7 +125,7 @@ void PerceptualGroupManager::updateGroups() {
         (*groupIter)->assignAction(OA_MINE, params, groups);
       }
     }
-  
+#endif 
 #endif
   return;
 }

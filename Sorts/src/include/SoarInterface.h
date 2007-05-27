@@ -1,4 +1,5 @@
-//#define GAME_ONE
+//#define GAME_ONE // TODO: rename this NO_SOAR, seperate out GAME_ONE
+//#define GAME_FOUR // need also GAME_ONE
 
 #ifndef SoarInterface_H
 #define SoarInterface_H

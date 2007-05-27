@@ -53,6 +53,7 @@ int AttackNearFSM::update() {
       maxAttackRange,
       NULL,
       nearby);
+    //sort(nearby.begin(), nearby.end());
     count = 0;
   }
   else {
