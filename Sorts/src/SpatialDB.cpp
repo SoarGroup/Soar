@@ -143,8 +143,8 @@ sint4 SpatialDB::updateObject(GameObj *gob, sint4 sat_loc)
    new_sat_loc = 0;
  }
 
- assert(new_sat_loc >= 0);
- assert(new_sat_loc < gobMap.size());
+ ASSERT(new_sat_loc >= 0);
+ ASSERT(new_sat_loc < gobMap.size());
  
  if(sat_loc != new_sat_loc)
  {
@@ -182,7 +182,7 @@ void SpatialDB::calcBinning
   int binSize = intDivC(cr, sdbTilePoints);
   int binTilePoints = binSize * sdbTilePoints;
   int binWidth = intDivC(Sorts::OrtsIO->getMapXDim(), binTilePoints);
-  assert (binWidth == intDivC(width, binSize));
+  ASSERT (binWidth == intDivC(width, binSize));
 
   for(int i = 0; i < 9; i++) {
     info.check[i] = false;
@@ -292,7 +292,7 @@ void SpatialDB::getObjectCollisions
               if (whereFound.find(*it) != whereFound.end()) {
                 msg << "Object found previously in " << whereFound[*it]
                     << "is now found at " << cell << endl;
-                assert(false);
+                ASSERT(false);
               }
               else {
                 whereFound[*it] = cell;
@@ -464,7 +464,7 @@ bool SpatialDB::hasObjectCollisionInt
   for(int i=0; i<9; i++) {
     if(check[i]) {
   //    msg << "checking cell " << cells[i] << "\n";
-      assert(cells[i] < gobMap.size());
+      ASSERT(cells[i] < gobMap.size());
       for(it = gobMap[cells[i]].begin(); it != gobMap[cells[i]].end(); it++) {
         obj.x =  (*(*it)->sod.x);
         obj.y =  (*(*it)->sod.y);
@@ -799,7 +799,7 @@ bool SpatialDB::hasImaginaryTerrainObstacleCollision(Circle& c) {
   for(int i=0; i<9; i++) {
     if(check[i]) {
   //    msg << "checking cell " << cells[i] << "\n";
-      assert(cells[i] < gobMap.size());
+      ASSERT(cells[i] < gobMap.size());
       for(iwit = imaginaryObstacleMap[cells[i]].begin();
           iwit != imaginaryObstacleMap[cells[i]].end();
           iwit++) {

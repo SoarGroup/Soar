@@ -696,10 +696,10 @@ bool MoveFSM::isReachableFromBuilding(SortsSimpleTerrain::Loc l) {
   if (gobX(sourceObj) == l.x && gobY(sourceObj) == l.y) {
     return true;
   }
- /* 
+  
   Sorts::terrainModule->findPath(sourceObj, 
                                  l, tempPath);
-  return (tempPath.locs.size() > 0);*/
+  return (tempPath.locs.size() > 0);
 }
 
 void MoveFSM::panic() {

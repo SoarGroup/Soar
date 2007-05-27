@@ -33,14 +33,14 @@ AttackTargetInfo::AttackTargetInfo(SoarGameObject* _target)
 void AttackTargetInfo::assignAttacker(AttackFSM* fsm) {
   attackers.insert(fsm);
  // ScriptObj* weapon = fsm->getGob()->component("weapon");
- // assert(weapon != NULL);
+ // ASSERT(weapon != NULL);
 //  volleyDamage += fsm->getAvgDamage();
 //  avgDmg[fsm] = fsm->getAvgDamage();
 }
 
 void AttackTargetInfo::unassignAttacker(AttackFSM* fsm) {
   attackers.erase(fsm);
-  assert(attackers.find(fsm) == attackers.end());
+  ASSERT(attackers.find(fsm) == attackers.end());
   dbg << "unassigned fsm " << fsm << endl;
 //  volleyDamage -= avgDmg[fsm];
 //  avgDmg.erase(fsm);
@@ -49,7 +49,7 @@ void AttackTargetInfo::unassignAttacker(AttackFSM* fsm) {
 double AttackTargetInfo::avgAttackerDistance() {
   double avgDist = 0;
   if (attackers.size() == 0) {
-    assert(false);
+    ASSERT(false);
   }
   for(set<AttackFSM*>::iterator
       i  = attackers.begin();
@@ -58,7 +58,7 @@ double AttackTargetInfo::avgAttackerDistance() {
   {
     if (not Sorts::OrtsIO->isAlive((*i)->getSGO()->getID())) {
       msg << "ERROR: stale attacker! SGO: " << (*i)->getSGO() << endl;
-      assert(false);
+      ASSERT(false);
     }
     GameObj* aGob = (*i)->getGob();
     avgDist += squaredDistance(gobX(aGob), gobY(aGob), gobX(gob), gobY(gob));

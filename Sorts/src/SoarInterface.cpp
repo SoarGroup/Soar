@@ -53,7 +53,7 @@ SoarInterface::~SoarInterface() {
  */
 void SoarInterface::addGroup(PerceptualGroup* group) {
   // make sure the group does not exist already
-  assert(groupTable.find(group) == groupTable.end());
+  ASSERT(groupTable.find(group) == groupTable.end());
   
   InputLinkGroupRep newGroup;
   newGroup.groupId = groupIdCounter++;
@@ -66,7 +66,7 @@ void SoarInterface::addGroup(PerceptualGroup* group) {
 
 void SoarInterface::removeGroup(PerceptualGroup* group) {
   // make sure the group exists
-  assert(groupTable.find(group) != groupTable.end());
+  ASSERT(groupTable.find(group) != groupTable.end());
   
   if (groupTable.find(group) == groupTable.end()) {
     return;
@@ -87,7 +87,7 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
   AttributeSet attribs = group->getAttributes();
   
   // make sure the group exists
-  assert(groupTable.find(group) != groupTable.end());
+  ASSERT(groupTable.find(group) != groupTable.end());
   
   InputLinkGroupRep &g = groupTable[group];
  
@@ -158,7 +158,7 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
        i++) 
     {
       // (added assertions to check this.. -sw)
-      assert(g.intProperties.find((*i).first) 
+      ASSERT(g.intProperties.find((*i).first) 
              != g.intProperties.end());
       InputLinkIntAttribute& attr = g.intProperties[i->first];
       if (attr.lastVal != i->second) {
@@ -173,7 +173,7 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
         i != floatAttribs.end();
         i++)
     {
-      assert(g.floatProperties.find(i->first) != g.floatProperties.end());
+      ASSERT(g.floatProperties.find(i->first) != g.floatProperties.end());
       InputLinkFloatAttribute& attr = g.floatProperties[i->first];
       if (attr.lastVal != i->second) {
         agent->Update(attr.wme, i->second);
@@ -187,7 +187,7 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
         i != stringAttribs.end(); 
         i++) 
     {
-      assert(g.stringProperties.find(i->first) != g.stringProperties.end());
+      ASSERT(g.stringProperties.find(i->first) != g.stringProperties.end());
       InputLinkStringAttribute& attr = g.stringProperties[i->first];
       if (attr.lastVal != i->second) {
         agent->Update(attr.wme, i->second.c_str());
@@ -200,13 +200,13 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
 }
 
 int SoarInterface::groupId(PerceptualGroup* group) {
-  assert(groupTable.find(group) != groupTable.end());
+  ASSERT(groupTable.find(group) != groupTable.end());
   return groupTable[group].groupId;
 }
 
 
 void SoarInterface::addFeatureMap(FeatureMap *m, string name) {
-  assert(featureMapTable.find(name) == featureMapTable.end());
+  ASSERT(featureMapTable.find(name) == featureMapTable.end());
 
   InputLinkFeatureMapRep rep;
   rep.identifierWME = agent->CreateIdWME(featureMapIdWME, name.c_str());
@@ -235,7 +235,7 @@ void SoarInterface::addFeatureMap(FeatureMap *m, string name) {
 void SoarInterface::refreshFeatureMap(FeatureMap *m, string name) {
   stale = true;
   
-  assert(featureMapTable.find(name) != featureMapTable.end());
+  ASSERT(featureMapTable.find(name) != featureMapTable.end());
   
   InputLinkFeatureMapRep& rep = featureMapTable[name];
   agent->Update(rep.sector0WME, m->getCount(0));
@@ -254,7 +254,7 @@ void SoarInterface::refreshFeatureMap(FeatureMap *m, string name) {
 // called in soar event handler to take everything off the output
 // link and put onto the action queue each time soar generates output
 void SoarInterface::getNewSoarOutput() {
-  assert(agent->GetOutputLink());
+  ASSERT(agent->GetOutputLink());
 
   WMElement* scWME;
   if (oldAgent) {
@@ -312,7 +312,7 @@ void SoarInterface::getNewSoarOutput() {
         }
         else {
           msg << "ERROR: command " << name << " not known." << endl;
-          assert(false);
+          ASSERT(false);
         }
       }
     }
@@ -344,12 +344,12 @@ void SoarInterface::processObjectAction
       break;
     }
     groupId = atoi(paramValue);
-    //assert(groupIdLookup.find(groupId) != groupIdLookup.end());
+    //ASSERT(groupIdLookup.find(groupId) != groupIdLookup.end());
     if (groupIdLookup.find(groupId) == groupIdLookup.end()) {
       msg << "ERROR: no group " << groupId << endl;
       newAction.type = OA_NO_SUCH_ACTION;
       break;
-      //assert(false);
+      //ASSERT(false);
     }
     else {
       newAction.groups.push_back(groupIdLookup[groupId]);
@@ -419,7 +419,7 @@ void SoarInterface::processAttentionAction
       paramString = paramValue;
       // remove the first 6 characters (sector)
       paramString.replace(0,6,"");
-      assert(paramString[0] >= '0' and paramString[0] <= '9');
+      ASSERT(paramString[0] >= '0' and paramString[0] <= '9');
       newAction.params.push_back(atoi(paramString.c_str()));
       paramValue = cmdPtr->GetParameterValue("feature");
       if (paramValue == NULL) {
@@ -443,7 +443,7 @@ void SoarInterface::processAttentionAction
       // no parameters for these
       break;  
     default:
-      assert(false);
+      ASSERT(false);
       break;
   }
 
@@ -469,16 +469,16 @@ void SoarInterface::processGameAction
       break;
     case GA_FIND_BUILDING_LOC:
       paramValue  = cmdPtr->GetParameterValue("building");
-      assert (paramValue != NULL);
+      ASSERT (paramValue != NULL);
       newAction.building = (BuildingType)(atoi(paramValue)); 
       paramValue  = cmdPtr->GetParameterValue("x");
-      assert (paramValue != NULL);
+      ASSERT (paramValue != NULL);
       newAction.nearLocation.x = (BuildingType)(atoi(paramValue)); 
       paramValue  = cmdPtr->GetParameterValue("y");
-      assert (paramValue != NULL);
+      ASSERT (paramValue != NULL);
       newAction.nearLocation.y = (BuildingType)(atoi(paramValue)); 
       paramValue  = cmdPtr->GetParameterValue("distance");
-      assert (paramValue != NULL);
+      ASSERT (paramValue != NULL);
       newAction.intValue = (BuildingType)(atoi(paramValue)); 
       
       gaqs.action = newAction;
@@ -486,7 +486,7 @@ void SoarInterface::processGameAction
       break;
     case GA_SET_MINERAL_BUFFER:
       paramValue  = cmdPtr->GetParameterValue("value");
-      assert (paramValue != NULL);
+      ASSERT (paramValue != NULL);
       newAction.intValue = atoi(paramValue); 
       gaqs.action = newAction;
       gameActionQueue.push_back(gaqs);

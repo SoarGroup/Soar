@@ -61,7 +61,7 @@ void MineManager::prepareRoutes(list<SoarGameObject*>& miners) {
 
   // if this fails, not every route that was prepared last time was requested 
   // by the FSM.
-  assert(assignments.size() == 0);
+  ASSERT(assignments.size() == 0);
   
   // true if the corresponding miner has a route
   vector<bool> assigned;
@@ -71,7 +71,7 @@ void MineManager::prepareRoutes(list<SoarGameObject*>& miners) {
     if (best == NULL) {
       return;
     }
-    assert (best->stage == PF_DIST); 
+    ASSERT (best->stage == PF_DIST); 
     bestRoutes.push_back(best);
     addCostToRoute(best);
     
@@ -102,7 +102,7 @@ void MineManager::prepareRoutes(list<SoarGameObject*>& miners) {
       }
       minerIt++;
     }
-    assert(minerIt == miners.end());
+    ASSERT(minerIt == miners.end());
     // we now have the closest miner to the given route.
     assigned[minMinerIdx] = true;
     assignments[minMinerPtr] = *it;
@@ -190,7 +190,7 @@ void MineManager::removeMineral(SoarGameObject* mineral) {
   SoarGameObject* sgo;
   
   set<MineralInfo*>::iterator it = minerals.find(&dummy);
-  assert(it != minerals.end());
+  ASSERT(it != minerals.end());
   MineralInfo* mi = *it;
  
   list <SoarGameObject*> miners; // need to prepare routes for miners
@@ -327,8 +327,8 @@ void MineManager::addFSMToRoute(MiningRoute* route, MineFSM* fsm) {
 }
 
 void MineManager::addCostToRoute(MiningRoute* route) {
-  assert(route->mineStation != NULL);
-  assert(route->dropoffStation != NULL);
+  ASSERT(route->mineStation != NULL);
+  ASSERT(route->dropoffStation != NULL);
   route->mineStation->optimality += MINE_COST;
 #ifndef NO_DOS
   route->dropoffStation->optimality += DROPOFF_COST;
@@ -358,7 +358,7 @@ void MineManager::adjustOptimality(MiningRoute* route) {
   // they are not deleted, but not in routes anymore
   if (route->valid) {
     set<MiningRoute*>::iterator it = routes.find(route);
-    assert(it != routes.end());
+    ASSERT(it != routes.end());
     routes.erase(it);
     calculateOptimality(route);
     routes.insert(route);
@@ -451,7 +451,7 @@ MiningRoute* MineManager::getBestRoute() {
     if (routes.begin() == routes.end()) {
       return NULL;
     }
-    assert(newTop->valid);
+    ASSERT(newTop->valid);
     
     topRoute = newTop;
     topStage = topRoute->stage;
@@ -473,7 +473,7 @@ void MineManager::expandSLD(MiningRoute* route) {
 
   route->pathlength = pathFindDist(route->mineralInfo->mineral,
                                    route->cCenterInfo->cCenter);
-  assert (route->pathlength >= oldPath-1);
+  ASSERT (route->pathlength >= oldPath-1);
   route->stage = OBJ_OBJ_PF_DIST;
   if (route->pathlength == -1) {
     route->valid = false;
@@ -950,7 +950,7 @@ void MineManager::allocateMiningStations(MineralInfo* mi, Direction d) {
   StationInfo* newStation;
   coordinate mineralCenter = mi->mineral->getLocation();
   
-  assert (MINERAL_EDGE_STATIONS == 2);
+  ASSERT (MINERAL_EDGE_STATIONS == 2);
   for (int i=0; i<MINERAL_EDGE_STATIONS; i++) {
     newStation = new StationInfo;
     allStations.push_back(newStation);
@@ -989,7 +989,7 @@ void MineManager::allocateDropoffStations(CCenterInfo* cci, Direction d) {
   StationInfo* newStation;
   coordinate ccCenter = cci->cCenter->getLocation();
   
-  assert (CC_EDGE_STATIONS == 10);
+  ASSERT (CC_EDGE_STATIONS == 10);
   for (int i=0; i<10; i++) {
     newStation = new StationInfo;
     switch (d) {
@@ -1089,7 +1089,7 @@ double MineManager::pathFindDist(coordinate loc1, coordinate loc2,
 Direction MineManager::getRelDirection(coordinate first, coordinate second) {
   // return relative direction of second to first
   
-  assert(second.x == first.x || second.y == first.y);
+  ASSERT(second.x == first.x || second.y == first.y);
   if (second.x > first.x) {
     return EAST;
   }
@@ -1100,7 +1100,7 @@ Direction MineManager::getRelDirection(coordinate first, coordinate second) {
     return WEST;
   }
   else {
-    assert(second.y < first.y);
+    ASSERT(second.y < first.y);
     return NORTH;
   }
 }

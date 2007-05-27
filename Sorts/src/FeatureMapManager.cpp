@@ -85,7 +85,7 @@ list<FeatureMap*> FeatureMapManager::identifyFeatures(PerceptualGroup* group) {
 
   list<FeatureMap*> relevantMaps;
   
-  assert(fmList.size() == 5);
+  ASSERT(fmList.size() == 5);
 
   // see the constructor above for where the maps are named and put in the list
   
@@ -247,7 +247,7 @@ PerceptualGroup* FeatureMapManager::getGroup(string mapName, int sector) {
   // return NULL if the sector is empty in that map
   
   map<string, FeatureMap*>::iterator it = stringToFeatureMap.find(mapName);
-  assert(it != stringToFeatureMap.end());
+  ASSERT(it != stringToFeatureMap.end());
 
   return it->second->getGroup(sector);
 }
@@ -317,7 +317,7 @@ int FeatureMapManager::classifyCenterPointInGrid(PerceptualGroup* group) {
     return 8;
   }
   else {
-    assert(false);
+    ASSERT(false);
   }
 
   return -1;

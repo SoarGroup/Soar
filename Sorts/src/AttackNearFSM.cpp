@@ -29,7 +29,7 @@ AttackNearFSM::AttackNearFSM(SoarGameObject* _sgob)
   name = OA_ATTACK_NEAR;
   count = 100;
   weapon = gob->component("weapon");
-  assert(weapon != NULL);
+  ASSERT(weapon != NULL);
   int groundAttackRange = weapon->get_int("max_ground_range");
   int airAttackRange = weapon->get_int("max_air_range");
   if (groundAttackRange > airAttackRange) {

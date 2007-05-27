@@ -95,9 +95,9 @@ PerceptualGroup::~PerceptualGroup() {
 
 void PerceptualGroup::addUnit(SoarGameObject* unit) {
 
-  assert(members.find(unit) == members.end());
+  ASSERT(members.find(unit) == members.end());
   // don't group units from different teams together
-  assert(unit->getGob()->get_int("owner") == owner);
+  ASSERT(unit->getGob()->get_int("owner") == owner);
   
   if (not mixedType and 
      (unit->getGob()->bp_name() != typeName)) {
@@ -114,7 +114,7 @@ void PerceptualGroup::addUnit(SoarGameObject* unit) {
 }
 
 bool PerceptualGroup::removeUnit(SoarGameObject* unit) {
-  assert(members.find(unit) != members.end());
+  ASSERT(members.find(unit) != members.end());
 
   members.erase(unit);
   setHasStaleMembers();
@@ -583,7 +583,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
   switch (type) {
     case OA_MOVE:
       // the third param is precision
-      assert(params.size() >= 2);
+      ASSERT(params.size() >= 2);
       for (intIt = params.begin();
           intIt != params.end();
           intIt++) {
@@ -605,7 +605,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       type = OA_MOVE;
       
       // the third param is precision
-      assert(params.size() >= 2);
+      ASSERT(params.size() >= 2);
       for (intIt = params.begin();
           intIt != params.end();
           intIt++) {
@@ -626,7 +626,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       break;
 
     case OA_MINE:
-      assert(targets.size() == 0);
+      ASSERT(targets.size() == 0);
       currentCommand = "mine";
       tempVec.clear();
       sticky = true;
@@ -660,7 +660,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       break;
     case OA_SEVER: {
       // remove n closest members near x,y, add to new sticky group
-      assert(params.size() == 3); // n,x,y
+      ASSERT(params.size() == 3); // n,x,y
       intIt = params.begin();
       
       int numMembers = *intIt;
@@ -696,9 +696,9 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
     case OA_JOIN: {
       // join two groups with the same command
       // mixed types will be handled, though
-      assert(targets.size() == 1);
+      ASSERT(targets.size() == 1);
       PerceptualGroup* tgt = *targets.begin();
-      assert(currentCommand == tgt->getCommandString());
+      ASSERT(currentCommand == tgt->getCommandString());
       this->mergeTo(tgt);
       tgt->setHasStaleMembers();
       break;
@@ -725,7 +725,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       break;
     }
     case OA_BUILD:
-      assert(params.size() == 4);
+      ASSERT(params.size() == 4);
       currentCommand = "build";
       // building type, x, y, usebuffer
       intIt = params.begin();
@@ -747,7 +747,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       break;
 
     case OA_TRAIN:
-      assert(params.size() == 3);
+      ASSERT(params.size() == 3);
       currentCommand = "train";
       // type to train, number, usebuffer
       intIt = params.begin();
@@ -779,7 +779,7 @@ bool PerceptualGroup::assignAction(ObjectActionType type, list<int> params,
       break;
 
     default:
-      assert(false);  
+      ASSERT(false);  
   }
   
   return result;

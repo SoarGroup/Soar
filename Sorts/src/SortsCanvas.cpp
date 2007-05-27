@@ -16,7 +16,7 @@
     along with Sorts; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA    
 */
-#ifdef NO_CANVAS_COMPILED
+#ifndef NO_CANVAS_COMPILED
 #include "SortsCanvas.h"
 #include "Sorts.h"
 
@@ -32,7 +32,7 @@ SortsCanvas::SortsCanvas() {
 
 void SortsCanvas::init(double ww, double wh, double scale) {
   int status = canvas.init(ww, wh, scale);
-  assert(status == 0);
+  ASSERT(status == 0);
   statusObj.compound = canvas.makeCompound(10,10);
   statusObj.mainShape = canvas.makeCircle(10,5,1);
   statusObj.mainShape->setLabel("initted");
@@ -66,7 +66,7 @@ void SortsCanvas::registerSGO(SoarGameObject* sgo) {
   if (not canvas.initted()) {
     return;
   }
-  assert(canvasObjs.find(sgo) == canvasObjs.end());
+  ASSERT(canvasObjs.find(sgo) == canvasObjs.end());
   CanvasObjInfo newObj;
   newObj.compound = canvas.makeCompound(sgo->getX(), sgo->getY());
   if (sgo->isRectangle()) {
@@ -103,7 +103,7 @@ void SortsCanvas::unregisterSGO(SoarGameObject* sgo) {
   if (not canvas.initted()) {
     return;
   }
-  assert(canvasObjs.find(sgo) != canvasObjs.end());
+  ASSERT(canvasObjs.find(sgo) != canvasObjs.end());
   CanvasObjInfo& obj = canvasObjs[sgo];
   list<SDLCanvasShape*> elements;
   obj.compound->getElements(elements);
@@ -127,7 +127,7 @@ void SortsCanvas::registerGroup(PerceptualGroup* group) {
   if (not canvas.initted()) {
     return;
   }
-  assert(canvasGroups.find(group) == canvasGroups.end());
+  ASSERT(canvasGroups.find(group) == canvasGroups.end());
   Rectangle r = group->getBoundingBox();
 
   int width = r.getWidth();
@@ -160,7 +160,7 @@ void SortsCanvas::unregisterGroup(PerceptualGroup* group) {
   if (not canvas.initted()) {
     return;
   }
-  assert(canvasGroups.find(group) != canvasGroups.end());
+  ASSERT(canvasGroups.find(group) != canvasGroups.end());
   CanvasGroupInfo& obj = canvasGroups[group];
   list<SDLCanvasShape*> elements;
   obj.compound->getElements(elements);
@@ -181,7 +181,7 @@ void SortsCanvas::resetSGO(SoarGameObject* sgo) {
   if (not canvas.initted()) {
     return;
   }
-  assert(canvasObjs.find(sgo) != canvasObjs.end());
+  ASSERT(canvasObjs.find(sgo) != canvasObjs.end());
   CanvasObjInfo& obj = canvasObjs[sgo];
   stopTracking(obj);
   //obj.origColor.set(255,255,255);
@@ -193,7 +193,7 @@ void SortsCanvas::setColor(SoarGameObject* sgo, Uint8 r, Uint8 g, Uint8 b) {
   if (not canvas.initted()) {
     return;
   }
-  assert(canvasObjs.find(sgo) != canvasObjs.end());
+  ASSERT(canvasObjs.find(sgo) != canvasObjs.end());
   canvasObjs[sgo].mainShape->setShapeColor(r, g, b);
   canvasObjs[sgo].origColor.set(r, g, b);
 }
@@ -202,7 +202,7 @@ void SortsCanvas::flashColor(SoarGameObject* sgo, Uint8 r, Uint8 g, Uint8 b, int
   if (not canvas.initted()) {
     return;
   }
-  assert(canvasObjs.find(sgo) != canvasObjs.end());
+  ASSERT(canvasObjs.find(sgo) != canvasObjs.end());
   CanvasObjInfo& canvasObj = canvasObjs.find(sgo)->second;
   canvasObj.flashColorCycles = cycles;
   canvasObj.mainShape->setShapeColor(r, g, b);
@@ -251,7 +251,7 @@ void SortsCanvas::trackDestination(SoarGameObject* sgo,double destx,double desty
   if (not canvas.initted()) {
     return;
   }
-  assert(canvasObjs.find(sgo) != canvasObjs.end());
+  ASSERT(canvasObjs.find(sgo) != canvasObjs.end());
   CanvasObjInfo& obj = canvasObjs[sgo];
   stopTracking(obj);
 

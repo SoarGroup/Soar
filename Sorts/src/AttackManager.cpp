@@ -58,7 +58,7 @@ inline int minRadius(GameObj* gob) {
     case SHAPE_CIRCLE:
       return *gob->sod.radius;
     default:
-      assert(false);
+      ASSERT(false);
   }
 }
 
@@ -69,7 +69,7 @@ inline int maxRadius(GameObj* gob) {
     case SHAPE_CIRCLE:
       return *gob->sod.radius;
     default:
-      assert(false);
+      ASSERT(false);
       return *gob->sod.radius;
   }
 }
@@ -180,7 +180,7 @@ void positionsOnRectangle
   for(int i = 0; i < 4; i++) {
     switch(s[i]) {
       case TOP:
-        assert(tx1 <= closeX && closeX <= tx2);
+        ASSERT(tx1 <= closeX && closeX <= tx2);
         positions.push_back(Vec2d(closeX, posY1));
         for(d=distBetween; closeX-d>=tx1 || closeX+d<=tx2; d+=distBetween) {
           if (closeX-d >= tx1) {
@@ -193,7 +193,7 @@ void positionsOnRectangle
         closeY = ty1; // for next side
         break;
       case BOTTOM:
-        assert(tx1 <= closeX && closeX <= tx2);
+        ASSERT(tx1 <= closeX && closeX <= tx2);
         positions.push_back(Vec2d(closeX, posY2));
         for(d=distBetween; closeX-d>=tx1 || closeX+d<=tx2; d+=distBetween) {
           if (closeX-d >= tx1) {
@@ -206,7 +206,7 @@ void positionsOnRectangle
         closeY = ty2;
         break;
       case LEFT:
-        assert(ty1 <= closeY && closeY <= ty2);
+        ASSERT(ty1 <= closeY && closeY <= ty2);
         positions.push_back(Vec2d(posX1, closeY));
         for(d=distBetween; closeY-d>=ty1 || closeY+d<=ty2; d+=distBetween) {
           if (closeY-d >= ty1) {
@@ -219,7 +219,7 @@ void positionsOnRectangle
         closeX = tx1;
         break;
       case RIGHT:
-        assert(ty1 <= closeY && closeY <= ty2);
+        ASSERT(ty1 <= closeY && closeY <= ty2);
         positions.push_back(Vec2d(posX2, closeY));
         for(d=distBetween; closeY-d>=ty1 || closeY+d<=ty2; d+=distBetween) {
           if (closeY-d >= ty1) {
@@ -232,7 +232,7 @@ void positionsOnRectangle
         closeX = tx2;
         break;
       default:
-        assert(false);
+        ASSERT(false);
     }
   }
 }
@@ -355,7 +355,7 @@ AttackManager::AttackManager(const set<SoarGameObject*>& _targets)
       i != targetSet.end();
       ++i)
   {
-    assert(Sorts::canvas.gobRegistered((*i)->getGob()));
+    ASSERT(Sorts::canvas.gobRegistered((*i)->getGob()));
     Sorts::canvas.setColor((*i)->getGob(), r, 0, 0);
   }
 #endif*/
@@ -384,13 +384,13 @@ AttackManager::~AttackManager() {
 }
 
 void AttackManager::registerFSM(AttackFSM* fsm) {
-  assert(numNewAttackers > 0);
+  ASSERT(numNewAttackers > 0);
   numNewAttackers--;
   team.push_back(fsm);
 }
 
 void AttackManager::unregisterFSM(AttackFSM* fsm) {
-  assert(find(team.begin(), team.end(), fsm) != team.end());
+  ASSERT(find(team.begin(), team.end(), fsm) != team.end());
   team.erase(find(team.begin(), team.end(), fsm));
   if (fsm->getTarget() != NULL) {
     unassignTarget(fsm);
@@ -412,20 +412,20 @@ void AttackManager::unregisterFSM(AttackFSM* fsm) {
 }
 
 void AttackManager::assignTarget(AttackFSM* fsm, SoarGameObject* target) {
-  assert(targets.find(target) != targets.end());
+  ASSERT(targets.find(target) != targets.end());
   targets[target].assignAttacker(fsm);
   fsm->setTarget(target);
 }
 
 void AttackManager::unassignTarget(AttackFSM* fsm) {
-  assert(fsm->getTarget() != NULL);
-  assert(targets.find(fsm->getTarget()) != targets.end());
+  ASSERT(fsm->getTarget() != NULL);
+  ASSERT(targets.find(fsm->getTarget()) != targets.end());
   targets[fsm->getTarget()].unassignAttacker(fsm);
   fsm->setTarget(NULL);
 }
 
 void AttackManager::unassignAll(SoarGameObject* target) {
-  assert(targets.find(target) != targets.end());
+  ASSERT(targets.find(target) != targets.end());
 
   AttackTargetInfo& info = targets[target];
   for(set<AttackFSM*>::const_iterator
@@ -619,7 +619,7 @@ int AttackManager::direct(AttackFSM* fsm) {
     dbg << "TIME TO FIND TARGET: " << (gettime() - st_find) / 1000 << endl;
   }
   
-  assert(fsm->getTarget() != NULL);
+  ASSERT(fsm->getTarget() != NULL);
 
   if (idSet.find(fsm->getTarget()->getID()) == idSet.end()) {
     msg << "bad target Ptr: " << fsm->getTarget()->getGob() << " id: " << fsm->getTarget()->getID() 
@@ -819,7 +819,7 @@ void AttackManager::addNewAttackers(int num) {
   // added-- fix the case where the last attacker is unassigned the same cycle
   // new attackers are added
 
-  assert(numNewAttackers == 0); 
+  ASSERT(numNewAttackers == 0); 
   
   numNewAttackers = num;
 }

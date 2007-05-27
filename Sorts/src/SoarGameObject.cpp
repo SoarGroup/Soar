@@ -148,7 +148,7 @@ void SoarGameObject::removeFromGame() {
 
 void SoarGameObject::registerBehavior(FSM *b)
 {
-  assert (behaviors.find(b->getName()) == behaviors.end());
+  ASSERT (behaviors.find(b->getName()) == behaviors.end());
   behaviors[b->getName()] = b;
 }
 
@@ -185,7 +185,7 @@ bool SoarGameObject::assignAction(ObjectActionType cmd, Vector<sint4> prms)
   else {
     stopped = false;
     map<ObjectActionType, FSM*>::iterator i = behaviors.find(cmd);
-    assert(i != behaviors.end());
+    ASSERT(i != behaviors.end());
     i->second->init(prms);
     assignedBehavior = i->second;
   }
@@ -294,7 +294,7 @@ void SoarGameObject::update()
 
   if (lastAttackedId >= 0) {
     ScriptObj* weapon = gob->component("weapon");
-    assert(weapon != NULL); 
+    ASSERT(weapon != NULL); 
     // lastAttackedId should never be set if the object has no weapon
     if (not gob->is_pending_action() and weapon->get_int("shooting") == 0) {
       lastAttackedId = -1;

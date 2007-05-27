@@ -84,7 +84,7 @@ int PersistentMoveFSM::update() {
         return FSM_SUCCESS;
       }
       else {
-        assert(false);
+        ASSERT(false);
       }
       break;
     case PANIC:
@@ -114,7 +114,7 @@ int PersistentMoveFSM::update() {
           
 void PersistentMoveFSM::init(vector<sint4> p) {
   FSM::init(p);
-  assert(p.size() >= 2);
+  ASSERT(p.size() >= 2);
   targetLoc.x = p[0];
   targetLoc.y = p[1];
   if (p.size() == 3) {

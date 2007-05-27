@@ -43,7 +43,7 @@ MineFSM::MineFSM(GameObj* go)
 
 int MineFSM::update() {
   msg << "updating\n";
-  assert (sgo != NULL);
+  ASSERT (sgo != NULL);
   Vector<sint4> tempVec;
   int moveStatus;
   int temp;
@@ -142,7 +142,7 @@ int MineFSM::update() {
       }
       else if (moveStatus == FSM_SUCCESS) {
         temp = route->mineralInfo->mineral->getID();
-        assert(Sorts::OrtsIO->isAlive(temp));
+        ASSERT(Sorts::OrtsIO->isAlive(temp));
         
         tempVec.push_back(temp);
         gob->component("pickaxe")->set_action("mine", tempVec); 
@@ -221,12 +221,12 @@ int MineFSM::update() {
       }
       else if (moveStatus == FSM_SUCCESS) {
         temp = route->mineralInfo->mineral->getID();
-        assert(Sorts::OrtsIO->isAlive(temp));
+        ASSERT(Sorts::OrtsIO->isAlive(temp));
         if (Sorts::OrtsIO->getOrtsDistance(route->cCenterInfo->cCenter->getGob(),
                                               gob) <= 3) {
           msg << "ERROR: move didn't get close enough to mine. Distance: " 
             << Sorts::OrtsIO->getOrtsDistance(route->cCenterInfo->cCenter->getGob(), gob);
-          assert(false);
+          ASSERT(false);
         }
         // otherwise, we need to work on the MoveFSM precision
         
@@ -282,16 +282,16 @@ int MineFSM::update() {
 void MineFSM::init(vector<sint4> p) {
   FSM::init(p);
 
-  assert(sgo != NULL);
+  ASSERT(sgo != NULL);
   route = Sorts::mineManager->getMiningRoute(this);
   // returns null if manager wasn't prepared
-  assert(route != NULL);
+  ASSERT(route != NULL);
   
   giveUpThreshold = (int)(GIVEUPSPEED*route->pathlength);
   
   state = IDLE;
 
-  assert (p.size() == 0);
+  ASSERT (p.size() == 0);
 
   moveFSM = new MoveFSM(gob);
   calcDropoffLoc();

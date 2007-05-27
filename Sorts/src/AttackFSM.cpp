@@ -33,7 +33,7 @@ AttackFSM::AttackFSM(SoarGameObject* _sgob)
 {
   name = OA_ATTACK;
   weapon = gob->component("weapon");
-  assert(weapon != NULL);
+  ASSERT(weapon != NULL);
   moveFSM = NULL;
   manager = NULL;
   waitingForCatchup = false;
@@ -55,12 +55,12 @@ void AttackFSM::init(vector<sint4> params) {
 
   panic = false;
 
-  assert(manager == NULL);
+  ASSERT(manager == NULL);
   
   // get the attack manager from the registry
   AttackManager* newManager = Sorts::amr->getManager(params[0]);
 
-  assert(newManager != NULL);
+  ASSERT(newManager != NULL);
   manager = newManager;
   manager->registerFSM(this);
   dest.set(0, *gob->sod.x);
@@ -175,7 +175,7 @@ void AttackFSM::attack(SoarGameObject* t) {
       return;
     }
     attackParams[0] = target->getID();
-    assert (Sorts::OrtsIO->isAlive(attackParams[0]));
+    ASSERT (Sorts::OrtsIO->isAlive(attackParams[0]));
     dbg << "attacking..\n";
     weapon->set_action("attack", attackParams);
     sgob->setLastAttacked(attackParams[0]);
@@ -266,7 +266,7 @@ void AttackFSM::stop() {
 }
 
 int AttackFSM::getAvgDamage() {
-  assert(Sorts::OrtsIO->isAlive(sgob->getID()));
+  ASSERT(Sorts::OrtsIO->isAlive(sgob->getID()));
   return (weapon->get_int("min_damage") + weapon->get_int("max_damage")) / 2;
 }
 

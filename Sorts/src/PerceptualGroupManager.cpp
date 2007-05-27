@@ -137,7 +137,7 @@ bool PerceptualGroupManager::assignActions() {
       list<PerceptualGroup*>& groups = (*actionIter).groups;
       groupIter = groups.begin();
       
-      assert(groupIter != groups.end());
+      ASSERT(groupIter != groups.end());
       // the first group is the group the action is applied to, it must exist
       
       sourceGroup = *groupIter;
@@ -216,7 +216,7 @@ void PerceptualGroupManager::processVisionCommands() {
                                        i++) {
     switch (i->type) {
       case AA_LOOK_LOCATION:
-        assert(i->params.size() == 2); // x,y
+        ASSERT(i->params.size() == 2); // x,y
         it = i->params.begin();
         visionParams.focusX = *it;
         it++;
@@ -231,7 +231,7 @@ void PerceptualGroupManager::processVisionCommands() {
         // attention shift (w/o view window shift)
 
         // first (and only) param is the sector number
-        assert(i->params.size() == 1);
+        ASSERT(i->params.size() == 1);
         centerGroup = Sorts::featureMapManager->getGroup(i->fmName, 
                                                         *(i->params.begin()));
         if (centerGroup == NULL) {
@@ -248,7 +248,7 @@ void PerceptualGroupManager::processVisionCommands() {
         adjustAttention(false); 
         break;
       case AA_RESIZE:
-        assert(i->params.size() == 1);
+        ASSERT(i->params.size() == 1);
         visionParams.viewWidth = *(i->params.begin());
         Sorts::featureMapManager->changeViewWindow(visionParams.centerX, 
                                                    visionParams.centerY, 
@@ -259,7 +259,7 @@ void PerceptualGroupManager::processVisionCommands() {
         Sorts::SoarIO->updateVisionState(visionParams); 
         break;
       case AA_MOVE_LOCATION:
-        assert(i->params.size() == 2);
+        ASSERT(i->params.size() == 2);
         it = i->params.begin();
         visionParams.focusX = *it;
         ++it;
@@ -280,7 +280,7 @@ void PerceptualGroupManager::processVisionCommands() {
         Sorts::SoarIO->updateVisionState(visionParams); 
         break;
       case AA_MOVE_FEATURE:
-        assert(i->params.size() == 1);
+        ASSERT(i->params.size() == 1);
         centerGroup = Sorts::featureMapManager->getGroup(i->fmName, 
                                                         *(i->params.begin()));
         if (centerGroup == NULL) {
@@ -309,7 +309,7 @@ void PerceptualGroupManager::processVisionCommands() {
       // grouping change:
       // this is the same as updateVision, except we don't need prepareForReGroup,
       // since none of the objects in the world actually changed:
-        assert(i->params.size() == 1);
+        ASSERT(i->params.size() == 1);
         radius = *(i->params.begin());
         radius *= radius;
         if (radius != visionParams.groupingRadius) {
@@ -322,7 +322,7 @@ void PerceptualGroupManager::processVisionCommands() {
         }
         break;
       case AA_NUM_OBJECTS:
-        assert(i->params.size() == 1);
+        ASSERT(i->params.size() == 1);
         visionParams.numObjects = *(i->params.begin());
         adjustAttention(false);
         Sorts::SoarIO->updateVisionState(visionParams); 
@@ -528,7 +528,7 @@ void PerceptualGroupManager::reGroup() {
         newGroup->calcDistToFocus(visionParams.focusX, visionParams.focusY);
         size = perceptualGroups.size();
         perceptualGroups.insert(newGroup);
-        assert(perceptualGroups.size() == size + 1);
+        ASSERT(perceptualGroups.size() == size + 1);
         if (perceptualGroups.size() != size + 1) {
           // if dbg is off
           msg << "ERROR: bad insertion!\n";
@@ -706,7 +706,7 @@ void PerceptualGroupManager::generateGroupData() {
     perceptualGroups.erase(*it);
     int size = perceptualGroups.size();
     perceptualGroups.insert(grp);
-    assert(perceptualGroups.size() == size+1);
+    ASSERT(perceptualGroups.size() == size+1);
     if (perceptualGroups.size() != size + 1) {
       // if dbg is off
       msg << "ERROR: bad insertion!\n";
@@ -723,7 +723,7 @@ void PerceptualGroupManager::makeNewGroup(SoarGameObject* object) {
   newGroup->calcDistToFocus(visionParams.focusX, visionParams.focusY);
   int size = perceptualGroups.size();
   perceptualGroups.insert(newGroup);
-  assert(perceptualGroups.size() == size+1);
+  ASSERT(perceptualGroups.size() == size+1);
   if (perceptualGroups.size() != size + 1) {
     // if dbg is off
     msg << "ERROR: bad insertion!\n";

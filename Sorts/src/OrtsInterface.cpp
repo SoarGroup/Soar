@@ -175,12 +175,12 @@ bool OrtsInterface::handle_event(const Event& e) {
 
 void OrtsInterface::addAppearedObject(const GameObj* gameObj) {
   dbg << gameObj;
-  assert(false);
+  ASSERT(false);
 }
 
 void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   // make sure the game object does not exist in the middleware
-  assert(objectMap.find(gameObj) == objectMap.end());
+  ASSERT(objectMap.find(gameObj) == objectMap.end());
  
   bool friendly = (myPid == *gameObj->sod.owner);
   bool world    = (gsm->get_game().get_player_num() == *gameObj->sod.owner);
@@ -244,13 +244,13 @@ void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   }
 
   newObj->update();
-  assert(liveIDs.find(id) == liveIDs.end());
+  ASSERT(liveIDs.find(id) == liveIDs.end());
   liveIDs.insert(id);
 }
 
 void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   // make sure the game object exists
-  assert(objectMap.find(gameObj) != objectMap.end());
+  ASSERT(objectMap.find(gameObj) != objectMap.end());
   deadCount++;
 
   SoarGameObject* sObject = objectMap[gameObj];
@@ -289,7 +289,7 @@ void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   msg << "deceased sgo: " << sObject << " id: " << id << endl;
   //delete sObject;
   sObject->removeFromGame();
-  assert(liveIDs.find(id) != liveIDs.end());
+  ASSERT(liveIDs.find(id) != liveIDs.end());
   liveIDs.erase(id);
 }
   
@@ -307,7 +307,7 @@ void OrtsInterface::removeDeadObjects() {
     GameObj* gob = (*obj)->get_GameObj();
     if (gob == 0) continue;
     if (gob->sod.in_game) {
-      assert(objectMap.find(gob) != objectMap.end());
+      ASSERT(objectMap.find(gob) != objectMap.end());
       requiredUpdatesNextCycle.erase(objectMap[gob]);
       removeVanishedObject(gob);
 
@@ -318,7 +318,7 @@ void OrtsInterface::removeDeadObjects() {
     GameObj* gob = (*obj)->get_GameObj();
     if (gob == 0) continue;
     if (gob->sod.in_game) {
-      assert(objectMap.find(gob) != objectMap.end());
+      ASSERT(objectMap.find(gob) != objectMap.end());
       requiredUpdatesNextCycle.erase(objectMap[gob]);
       removeDeadObject(gob);
     }
@@ -374,7 +374,7 @@ void OrtsInterface::updateSoarGameObjects() {
       /* we should have a SoarGameObject for this GameObj, if not, we're in
        * trouble
        */
-      assert(objectMap.find(gob) != objectMap.end());
+      ASSERT(objectMap.find(gob) != objectMap.end());
 
       // just call update to let it know there were changes
       sgo = objectMap[gob];

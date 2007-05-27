@@ -46,7 +46,7 @@ void BuildFSM::setBuildingInfo(BuildingType type, int centerX, int centerY) {
       break;
     default:
       width=height=0;
-      assert(false);
+      ASSERT(false);
       break; 
   }
   Rectangle r(centerX, centerY, width, height, true);
@@ -71,7 +71,7 @@ BuildFSM::~BuildFSM() {
 
 void BuildFSM::init(vector<sint4> params) {
   FSM::init(params);
-  assert(sgo != NULL);
+  ASSERT(sgo != NULL);
   type = (BuildingType) params[0];
   loc_x = params[1];
   loc_y = params[2];
@@ -83,8 +83,8 @@ void BuildFSM::init(vector<sint4> params) {
 }
 
 int BuildFSM::update() {
-  assert(sgo != NULL);
-  assert(Sorts::OrtsIO->isAlive(sgo->getID()));
+  ASSERT(sgo != NULL);
+  ASSERT(Sorts::OrtsIO->isAlive(sgo->getID()));
   
   int moveStatus;
   Vector<sint4> params;

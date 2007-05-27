@@ -48,7 +48,7 @@ void GameActionManager::processGameCommands() {
       mineralBuffer = 0;
     }
     else {
-      assert(false);
+      ASSERT(false);
     }
   }
 #endif
@@ -74,7 +74,7 @@ void GameActionManager::findBuildingLoc(BuildingType building, coordinate nearLo
   }
   else {
     buildingRadius = buildingWidth = buildingHeight = 0;
-    assert(false);
+    ASSERT(false);
   }
 
   minDistance += buildingRadius;

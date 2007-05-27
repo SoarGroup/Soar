@@ -39,7 +39,7 @@ TrainFSM::~TrainFSM() {
 
 void TrainFSM::init(vector<sint4> params) {
   FSM::init(params);
-  assert(params.size() == 3);
+  ASSERT(params.size() == 3);
   type = (TrainingType) params[0];
   num = params[1];
   bufferAvailable = params[2];
@@ -49,17 +49,17 @@ void TrainFSM::init(vector<sint4> params) {
   switch (type) {
     case WORKER:
       cost = 50;
-      assert(gob->bp_name() == "controlCenter");
+      ASSERT(gob->bp_name() == "controlCenter");
       command = "train_worker";
       break;
     case MARINE:
       cost = 50;
-      assert(gob->bp_name() == "barracks");
+      ASSERT(gob->bp_name() == "barracks");
       command = "train_marine";
       break;
     case TANK:
       cost = 200;
-      assert(gob->bp_name() == "factory");
+      ASSERT(gob->bp_name() == "factory");
       command = "build_tank";
       break;
   }

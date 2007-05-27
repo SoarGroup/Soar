@@ -1,5 +1,5 @@
-#define GAME_ONE
-#define NO_CANVAS_COMPILED
+//#define GAME_ONE
+//#define NO_CANVAS_COMPILED
 
 /*
     This file is part of Sorts, an interface between Soar and ORTS.
@@ -45,6 +45,8 @@ class MineManager;
 
 #include "SortsCanvas.h"
 
+#include <assert.h>
+
 class Sorts {
   public:
     Sorts
@@ -89,5 +91,16 @@ class Sorts {
     static int frame;
     static SortsCanvas              canvas;
 };
+
+// capital ASSERT is extra-strong version of assert that isn't disabled with
+// optimization
+
+__BEGIN_DECLS
+extern void __assert (const char *__assertion, const char *__file, int __line)
+     __THROW __attribute__ ((__noreturn__));
+__END_DECLS
+
+#define ASSERT(e) \
+      ((e) ? (void)0 : __assert(#e,__FILE__,__LINE__))
 
 #endif
