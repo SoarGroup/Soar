@@ -170,7 +170,7 @@ bool RhsListener::HandleFilterEvent(egSKIRhsEventId eventID, gSKI::Agent* pAgent
 		// Pass the agent in the "name" parameter not the "agent" parameter as this is a kernel
 		// level event, not an agent level one (because you need to register with the kernel to get "agent created").
 		ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
-		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamName, pAgent->GetName()) ;
+		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamName, pAgent ? pAgent->GetName() : "") ;
 		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
 		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamFunction, sml_Names::kFilterName) ;
 		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamValue, pReturnValue) ;	// We send the current command line over
