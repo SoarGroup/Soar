@@ -50,13 +50,13 @@ bool ListenerNamedPipe::CreateListener(const char* name)
 {
 	CTDEBUG_ENTER_METHOD("ListenerNamedPipe::CreateListener");
 
-	// Should only call this once
+	/*// Should only call this once
 	if (m_hPipe != INVALID_HANDLE_VALUE)
 	{
 		PrintDebug("Error: Already listening--closing the existing listener") ;
 
 		Close();
-	}
+	}*/
 
 	// Create the listener socket
 	HANDLE hListener = CreateNamedPipe( 

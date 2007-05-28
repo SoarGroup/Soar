@@ -58,7 +58,16 @@ void ListenerThread::Run()
 		NamedPipe* pNamedPipe = m_ListenerNamedPipe.CheckForClientConnection();
 
 		if (pSocket) CreateConnection(pSocket);
-		if (pNamedPipe) CreateConnection(pNamedPipe);
+		if (pNamedPipe) {
+			CreateConnection(pNamedPipe);
+			ok = m_ListenerNamedPipe.CreateListener(m_PipeName.c_str()) ;
+
+			if (!ok)
+			{
+				PrintDebug("Failed to create the listener pipe.  Shutting down thread.") ;
+				return ;
+			}
+		}
 
 		// Sleep for a little before checking for a new connection
 		// New connections will come in very infrequently so this doesn't
