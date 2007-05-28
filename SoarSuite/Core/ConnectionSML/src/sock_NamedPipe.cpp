@@ -256,7 +256,7 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 			// closed gracefully.
 			if (thisRead == 0)
 			{
-				//PrintDebug("Remote pipe has closed gracefully") ;
+				PrintDebug("Remote pipe has closed gracefully") ;
 
 				// Now close down our socket
 				//PrintDebug("Closing our side of the pipe") ;
@@ -265,7 +265,10 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 
 				//return false ;	// No message received.
 			}
+
 		} while (!success) ;
+
+		if(tries>1)	PrintDebugFormat("Number tries %d",tries) ;
 
 		if (m_bTraceCommunications)
 			PrintDebugFormat("Received %d bytes",thisRead) ;
