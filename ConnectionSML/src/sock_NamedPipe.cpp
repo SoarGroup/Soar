@@ -169,6 +169,13 @@ bool NamedPipe::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 	{
 		PrintDebug("Error: Error checking if data is available to be read") ;
 		ReportErrorCode() ;
+
+		// We treat these errors as all being fatal, which they all appear to be.
+		// If we later decide we can survive certain ones, we should test for them here
+		// and not always close the socket.
+		PrintDebug("Closing our side of the socket because of error") ;
+		Close() ;
+
 		return false ;
 	}
 
@@ -238,10 +245,10 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 					// We treat these errors as all being fatal, which they all appear to be.
 					// If we later decide we can survive certain ones, we should test for them here
 					// and not always close the socket.
-					PrintDebug("Closing our side of the pipe because of error") ;
-					Close() ;
+					//PrintDebug("Closing our side of the pipe because of error") ;
+					//Close() ;
 
-					return false ;
+					//return false ;
 				}
 			}
 
@@ -249,14 +256,14 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 			// closed gracefully.
 			if (thisRead == 0)
 			{
-				PrintDebug("Remote pipe has closed gracefully") ;
+				//PrintDebug("Remote pipe has closed gracefully") ;
 
 				// Now close down our socket
-				PrintDebug("Closing our side of the pipe") ;
+				//PrintDebug("Closing our side of the pipe") ;
 
-				Close() ;
+				//Close() ;
 
-				return false ;	// No message received.
+				//return false ;	// No message received.
 			}
 		} while (!success) ;
 
