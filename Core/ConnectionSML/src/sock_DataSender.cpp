@@ -1,4 +1,8 @@
+#ifdef _WIN32
 #include "WinSock2.h" // for htonl
+#else
+#include "arpa/inet.h"
+#endif
 
 #include "sock_DataSender.h"
 

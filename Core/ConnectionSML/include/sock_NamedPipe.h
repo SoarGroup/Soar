@@ -26,7 +26,10 @@
 #define NAMED_PIPE_H
 
 #include <string>
+
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 #include "sock_DataSender.h"
 

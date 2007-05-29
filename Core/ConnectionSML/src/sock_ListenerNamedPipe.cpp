@@ -59,6 +59,8 @@ bool ListenerNamedPipe::CreateListener(const char* name)
 	}*/
 
 	// Create the listener socket
+//FIXME: 
+#ifdef _WIN32
 	HANDLE hListener = CreateNamedPipe( 
           name,						// pipe name 
           PIPE_ACCESS_DUPLEX,		// read/write access 
@@ -70,7 +72,9 @@ bool ListenerNamedPipe::CreateListener(const char* name)
           4096,						// input buffer size 
           NMPWAIT_USE_DEFAULT_WAIT,	// client time-out 
           NULL);					// default security attribute 
-
+#else
+	HANDLE hListener = 0;
+#endif
 
 
 	if (hListener == INVALID_HANDLE_VALUE)
@@ -110,8 +114,12 @@ NamedPipe* ListenerNamedPipe::CheckForClientConnection()
 #endif*/
 
 	//PrintDebug("About to check for a connection") ;
+//FIXME:
+#ifdef _WIN32
 	int connected = ConnectNamedPipe(m_hPipe, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED); 
-
+#else
+	int connected = 0;
+#endif
 	// If we failed to find a valid socket we're done.
 	if (!connected)
 		return NULL ;
