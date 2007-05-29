@@ -19,13 +19,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	private IntElement m_ClockWME;
 	private Identifier m_CurrentScoreWME;
 	
-	private IntElement m_BlueScore;
-	private IntElement m_RedScore;
-	private IntElement m_YellowScore;
-	private IntElement m_GreenScore;
-	private IntElement m_PurpleScore;
-	private IntElement m_OrangeScore;
-	private IntElement m_BlackScore;
+	private HashMap<String, IntElement> m_Scores = new HashMap<String, IntElement>(7);
 	
 	private StringElement m_DirectionWME;
 	private IntElement m_EnergyWME;
@@ -340,13 +334,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		
 		DestroyWME(m_CurrentScoreWME);
 		m_CurrentScoreWME = null;
-		m_BlueScore = null;
-		m_RedScore = null;
-		m_YellowScore = null;
-		m_GreenScore = null;
-		m_PurpleScore = null;
-		m_OrangeScore = null;
-		m_BlackScore = null;
+		m_Scores = new HashMap<String, IntElement>(7);
 
 		DestroyWME(m_DirectionWME);
 		m_DirectionWME = null;
@@ -421,99 +409,34 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		if (m_CurrentScoreWME == null) {
 			return;
 		}
-		
-		boolean blueSeen = false;
-		boolean redSeen = false;
-		boolean yellowSeen = false;
-		boolean greenSeen = false;
-		boolean purpleSeen = false;
-		boolean orangeSeen = false;
-		boolean blackSeen = false;
+
+		HashSet<String> unseen = new HashSet<String>();
+		unseen.add("blue");
+		unseen.add("red");
+		unseen.add("yellow");
+		unseen.add("green");
+		unseen.add("purple");
+		unseen.add("orange");
+		unseen.add("black");
 		
 		ArrayList<Player> players = Soar2D.simulation.world.getPlayers();
-		Iterator<Player> iter = players.iterator();
-		while (iter.hasNext()) {
-			Player player = iter.next();
-
-			if (player.getColor().equals("blue")) {
-				blueSeen = true;
-				if (m_BlueScore == null) {
-					m_BlueScore = agent.CreateIntWME(m_CurrentScoreWME, "blue", player.getPoints());
-				}
-			} else if (player.getColor().equals("red")) {
-				redSeen = true;
-				if (m_RedScore == null) {
-					m_RedScore = agent.CreateIntWME(m_CurrentScoreWME, "red", player.getPoints());
-				}
-			} else if (player.getColor().equals("yellow")) {
-				yellowSeen = true;
-				if (m_YellowScore == null) {
-					m_YellowScore = agent.CreateIntWME(m_CurrentScoreWME, "yellow", player.getPoints());
-				}
-			} else if (player.getColor().equals("green")) {
-				greenSeen = true;
-				if (m_GreenScore == null) {
-					m_GreenScore = agent.CreateIntWME(m_CurrentScoreWME, "green", player.getPoints());
-				}
-			} else if (player.getColor().equals("purple")) {
-				purpleSeen = true;
-				if (m_PurpleScore == null) {
-					m_PurpleScore = agent.CreateIntWME(m_CurrentScoreWME, "purple", player.getPoints());
-				}
-			} else if (player.getColor().equals("orange")) {
-				orangeSeen = true;
-				if (m_OrangeScore == null) {
-					m_OrangeScore = agent.CreateIntWME(m_CurrentScoreWME, "orange", player.getPoints());
-				}
-			} else if (player.getColor().equals("black")) {
-				blackSeen = true;
-				if (m_BlackScore == null) {
-					m_BlackScore = agent.CreateIntWME(m_CurrentScoreWME, "black", player.getPoints());
-				}
+		Iterator<Player> playersIter = players.iterator();
+		while (playersIter.hasNext()) {
+			Player player = playersIter.next();
+			IntElement scoreElement = m_Scores.get(player.getColor());
+			unseen.remove(player.getColor());
+			if (scoreElement == null) {
+				scoreElement = agent.CreateIntWME(m_CurrentScoreWME, player.getColor(), player.getPoints());
+				m_Scores.put(player.getColor(), scoreElement);
 			}
-			player.resetPointsChanged();
 		}
 		
-		if (blueSeen == false) {
-			if (m_BlueScore != null) {
-				DestroyWME(m_BlueScore);
-				m_BlueScore = null;
-			}
-		}
-		if (redSeen == false) {
-			if (m_RedScore != null) {
-				DestroyWME(m_RedScore);
-				m_RedScore = null;
-			}
-		}
-		if (yellowSeen == false) {
-			if (m_YellowScore != null) {
-				DestroyWME(m_YellowScore);
-				m_YellowScore = null;
-			}
-		}
-		if (greenSeen == false) {
-			if (m_GreenScore != null) {
-				DestroyWME(m_GreenScore);
-				m_GreenScore = null;
-			}
-		}
-		if (purpleSeen == false) {
-			if (m_PurpleScore != null) {
-				DestroyWME(m_PurpleScore);
-				m_PurpleScore = null;
-			}
-		}
-		if (orangeSeen == false) {
-			if (m_OrangeScore != null) {
-				DestroyWME(m_OrangeScore);
-				m_OrangeScore = null;
-			}
-		}
-		if (blackSeen == false) {
-			if (m_BlackScore != null) {
-				DestroyWME(m_BlackScore);
-				m_BlackScore = null;
+		Iterator<String> unseenIter = unseen.iterator();
+		while (unseenIter.hasNext()) {
+			String color = unseenIter.next();
+			IntElement unseenElement = m_Scores.remove(color);
+			if (unseenElement != null) {
+				DestroyWME(unseenElement);
 			}
 		}
 		
@@ -742,22 +665,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 			while (playerIter.hasNext()) {
 				Player player = playerIter.next();
 				if (player.pointsChanged()) {
-					if (player.getColor().equals("blue")) {
-						Update(m_BlueScore, player.getPoints());
-					} else if (player.getColor().equals("red")) {
-						Update(m_RedScore, player.getPoints());
-					} else if (player.getColor().equals("yellow")) {
-						Update(m_YellowScore, player.getPoints());
-					} else if (player.getColor().equals("green")) {
-						Update(m_GreenScore, player.getPoints());
-					} else if (player.getColor().equals("purple")) {
-						Update(m_PurpleScore, player.getPoints());
-					} else if (player.getColor().equals("orange")) {
-						Update(m_OrangeScore, player.getPoints());
-					} else if (player.getColor().equals("black")) {
-						Update(m_BlackScore, player.getPoints());
-					}
-					player.resetPointsChanged();
+					Update(m_Scores.get(player.getColor()), player.getPoints());
 				}
 			}
 
