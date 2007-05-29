@@ -224,6 +224,11 @@ public class World {
 				Player player = playerIter.next();
 				player.commit(locations.get(player.getName()));
 			}
+			playerIter = players.iterator();
+			while (playerIter.hasNext()) {
+				Player player = playerIter.next();
+				player.resetPointsChanged();
+			}
 		}
 	}
 	
