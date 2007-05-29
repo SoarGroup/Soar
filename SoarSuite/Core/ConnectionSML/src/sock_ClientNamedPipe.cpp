@@ -57,6 +57,8 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 
 	HANDLE hPipe;
 
+//FIXME:
+#ifdef _WIN32
 	while(1) {
 		// Create the pipe
 		hPipe = CreateFile( 
@@ -70,7 +72,7 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 			NULL);			// no template file 
 
 		if(hPipe != INVALID_HANDLE_VALUE) break;
-
+		
 		if (PIPE_ERROR_NUMBER != PIPE_BUSY)
 		{
 			PrintDebug("Error: Error creating client connection pipe") ;
@@ -87,6 +89,7 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 		} 
 	
 	}
+#endif
 
 	// Record the sock so it's cleaned up correctly on exit
 	m_hPipe = hPipe ;
