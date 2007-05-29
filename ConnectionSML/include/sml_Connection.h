@@ -52,8 +52,6 @@
 #include "sml_AnalyzeXML.h"
 #include "sml_Names.h"
 
-#include <windows.h>
-
 namespace sock
 {
 	// Forward declarations

@@ -40,6 +40,10 @@
 #include <time.h>	// For debug random start of message id's
 #include <sstream>
 
+#ifdef _WIN32
+#undef SendMessage		// Windows defines this as a macro.  Yikes!
+#endif
+
 using namespace sml ;
 
 /*************************************************************

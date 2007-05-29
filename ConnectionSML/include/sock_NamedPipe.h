@@ -30,6 +30,12 @@
 
 #include "sock_DataSender.h"
 
+// FIXME: just getting this to compile on linux, needs to be implemented
+#ifndef _WIN32
+typedef void *HANDLE;
+#define INVALID_HANDLE_VALUE 0
+#endif
+
 namespace sock {
 
 #define NO_CONNECTION	0
