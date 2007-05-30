@@ -1,7 +1,9 @@
 sp {move-to-gateway*propose*rotate
    (state <s> ^name move-to-gateway
               ^need-to-turn true
-              ^gateway.center.angle-off <ao>)
+              ^gateway.center.angle-off <ao>
+             -^io.output-link.move.status executing
+             -^io.output-link.rotate-relative.status executing)
 -->
    (<s> ^operator <op> + =)
    (<op> ^name rotate
