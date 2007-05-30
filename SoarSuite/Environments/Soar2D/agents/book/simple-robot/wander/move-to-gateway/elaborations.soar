@@ -20,3 +20,19 @@ sp {move-to-gateway*elaborate*state*angle-too-small
 -->
    (<s> ^need-to-turn true)
 }
+
+sp {move-to-gateway*elaborate*state*moving
+   (state <s> ^name move-to-gateway
+              ^io.output-link.move.status executing
+             -^io.output-link.move.status complete)
+-->
+   (<s> ^moving true)
+}
+
+sp {move-to-gateway*elaborate*state*rotating
+   (state <s> ^name move-to-gateway
+              ^io.output-link.rotate-relative.status executing
+             -^io.output-link.rotate-relative.status complete)
+-->
+   (<s> ^rotating true)
+}

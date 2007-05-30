@@ -558,6 +558,10 @@ public class VisualWorld extends Canvas implements PaintListener {
 			Iterator<java.awt.Point> playerLocIter = playerLocs.iterator();
 			while (playerLocIter.hasNext()) {
 				Player player = this.map.getPlayer(playerLocIter.next());
+				//FIXME:
+				if (player == null) {
+					continue;
+				}
 				assert player != null;
 
 				Point2D.Double center = new Point2D.Double(Soar2D.simulation.world.getFloatLocation(player).x, Soar2D.simulation.world.getFloatLocation(player).y);
