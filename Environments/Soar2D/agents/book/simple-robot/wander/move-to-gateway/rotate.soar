@@ -5,7 +5,7 @@ sp {move-to-gateway*propose*rotate
              -^rotating true
               ^gateway.center.angle-off <ao>)
 -->
-   (<s> ^operator <op> + =)
+   (<s> ^operator <op> +)
    (<op> ^name rotate
          ^actions.rotate-relative.amount <ao>)
          #^actions.rotate-relative.amount (* -1.0 <ao>))

@@ -3,7 +3,7 @@ sp {move-to-gateway*propose*move
               -^need-to-turn true
               -^moving true)
 -->
-   (<s> ^operator <op> + =)
+   (<s> ^operator <op> +)
    (<op> ^name move
          ^actions.move.direction forward)
 }
@@ -13,7 +13,7 @@ sp {move-to-gateway*propose*stop
               ^need-to-turn true
               ^moving true)
 -->
-   (<s> ^operator <op> + >)
+   (<s> ^operator <op> +)
    (<op> ^name move
          ^actions.move.direction stop)
 }
