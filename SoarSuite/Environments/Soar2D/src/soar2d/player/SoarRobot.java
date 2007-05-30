@@ -389,6 +389,20 @@ public class SoarRobot extends Robot {
 		} while (random == oldrandom);
 		agent.Update(selfIL.random, random);
 		
+		// Add status executing to any commands that need it
+		if (moveCommandId != null) {
+			if (!moveCommandExecutingAdded) {
+				agent.CreateStringWME(moveCommandId, "status", "executing");
+				moveCommandExecutingAdded = true;
+			}
+		}
+		if (rotateCommandId != null) {
+			if (!rotateCommandExecutingAdded) {
+				agent.CreateStringWME(rotateCommandId, "status", "executing");
+				rotateCommandExecutingAdded = true;
+			}
+		}
+		
 		// commit everything
 		if (!agent.Commit()) {
 			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
@@ -397,7 +411,9 @@ public class SoarRobot extends Robot {
 	}
 	
 	Identifier moveCommandId = null;
+	boolean moveCommandExecutingAdded = false;
 	Identifier rotateCommandId = null;
+	boolean rotateCommandExecutingAdded = false;
 	
 	/* (non-Javadoc)
 	 * @see soar2d.player.Eater#getMove()
@@ -456,6 +472,7 @@ public class SoarRobot extends Robot {
 
 				move.move = true;
 				moveCommandId = commandId;
+				moveCommandExecutingAdded = false;
 
 			} else if (commandName.equalsIgnoreCase(Names.kRotateID)) {
 				if (rotateCommandId != null) {
@@ -498,6 +515,7 @@ public class SoarRobot extends Robot {
 
 				move.rotate = true;
 				rotateCommandId = commandId;
+				rotateCommandExecutingAdded = false;
 
 			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
 				if (move.stopSim) {
@@ -538,6 +556,7 @@ public class SoarRobot extends Robot {
 
 				move.rotateAbsolute = true;
 				rotateCommandId = commandId;
+				rotateCommandExecutingAdded = false;
 				
 			} else if (commandName.equalsIgnoreCase(Names.kRotateRelativeID)) {
 				if (rotateCommandId != null) {
@@ -569,6 +588,7 @@ public class SoarRobot extends Robot {
 
 				move.rotateRelative = true;
 				rotateCommandId = commandId;
+				rotateCommandExecutingAdded = false;
 				
 			} else {
 				logger.warning("Unknown command: " + commandName);
@@ -601,7 +621,9 @@ public class SoarRobot extends Robot {
 		moved = true;
 		locationId = -1;
 		moveCommandId = null;
+		moveCommandExecutingAdded = false;
 		rotateCommandId = null;
+		rotateCommandExecutingAdded = false;
 		
 		if (agent == null) {
 			return;
