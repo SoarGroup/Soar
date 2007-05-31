@@ -101,11 +101,12 @@
 	?<terminals>
 		?<max-updates>
 			int updateCount
-			?<continue>
+			?<continue>			# unnecessary!?
 		?<agent-command>
 		?<points-remaining>
 		?<winning-score>
 			int theScore
+			?<continue>			# unnecessary!?
 		?<food-remaining>
 			?<continue>
 				int maxRuns		# note that this and max-runs's maxRuns are independent
