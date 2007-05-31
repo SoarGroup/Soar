@@ -88,7 +88,9 @@ public class Configuration {
 		this.terminalUnopenedBoxes = config.terminalUnopenedBoxes;
 		this.terminalAgentCommand = config.terminalAgentCommand;
 		this.terminalMaxUpdates = config.terminalMaxUpdates;
+		this.terminalMaxUpdatesContinue = config.terminalMaxUpdatesContinue;
 		this.terminalWinningScore = config.terminalWinningScore;
+		this.terminalWinningScoreContinue = config.terminalWinningScoreContinue;
 		
 		// clients
 		this.clients = new ArrayList<ClientConfig>(config.clients);
@@ -1380,6 +1382,14 @@ public class Configuration {
 	public int getTerminalWinningScore() {
 		return this.terminalWinningScore;
 	}
+	private boolean terminalWinningScoreContinue = false;	
+	private static final String kTagWinningScoreContinue = "continue";
+	public void setTerminalWinningScoreContinue(boolean setting) {
+		this.terminalWinningScoreContinue = setting;
+	}
+	public boolean getTerminalWinningScoreContinue() {
+		return this.terminalWinningScoreContinue;
+	}
 	
 	private int terminalMaxRuns = 0;				// 0 means no limit 
 	private static final String kTagMaxRuns = "max-runs";
@@ -1408,7 +1418,11 @@ public class Configuration {
 		}
 		
 		if (this.getTerminalWinningScore() > 0) {
-			terminals.addContent(new Element(kTagWinningScore).setText(Integer.toString(this.getTerminalWinningScore())));
+			Element winningScore = new Element(kTagWinningScore).setText(Integer.toString(this.getTerminalWinningScore()));
+			if (this.getTerminalWinningScoreContinue()) {
+				winningScore.addContent(new Element(kTagWinningScoreContinue));
+			}
+			terminals.addContent(winningScore);
 		}
 		
 		if (this.getTerminalFoodRemaining()) {
@@ -1466,6 +1480,10 @@ public class Configuration {
 					this.setTerminalWinningScore(Integer.parseInt(child.getTextTrim()));
 				} catch (NumberFormatException e) {
 					throw new LoadError("Error parsing winning score");
+				}
+				Element cont = child.getChild(kTagWinningScoreContinue);
+				if (cont != null) {
+					this.setTerminalWinningScoreContinue(true);
 				}
 
 			} else if (child.getName().equalsIgnoreCase(kTagFoodRemaining)) {

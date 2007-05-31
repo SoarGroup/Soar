@@ -159,6 +159,10 @@ public class World {
 			// falls through
 			
 		case kTankSoar:
+			// reset (init-soar)
+			player.reset();
+			break;
+			
 		case kBook:
 			if (resetDuringRun) {
 				player.fragged();
@@ -589,8 +593,26 @@ public class World {
 		if (Soar2D.config.getTerminalWinningScore() > 0) {
 			int[] scores = getSortedScores();
 			if (scores[scores.length - 1] >= Soar2D.config.getTerminalWinningScore()) {
-				stopAndDumpStats("At least one player has achieved at least " + Soar2D.config.getTerminalWinningScore() + " points.", scores);
-				return;
+				if (Soar2D.config.getTerminalWinningScoreContinue()) {
+					boolean stopNow = true;
+					
+					if (this.runsTerminal > 0) {
+						this.runsTerminal -= 1;
+						if (this.runsTerminal > 0) {
+							stopNow = false;
+						}
+					}
+
+					if (stopNow) {
+						stopAndDumpStats("At least one player has achieved at least " + Soar2D.config.getTerminalWinningScore() + " points.", scores);
+						return;
+					} else {
+						doRestartAfterUpdate();
+					}
+				} else {
+					stopAndDumpStats("At least one player has achieved at least " + Soar2D.config.getTerminalWinningScore() + " points.", scores);
+					return;
+				}
 			}
 		}
 		
