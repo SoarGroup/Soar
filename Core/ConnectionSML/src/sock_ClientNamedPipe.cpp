@@ -86,10 +86,15 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 			PrintDebug("Error: Error opening client connection pipe") ;
 			ReportErrorCode();
 			return false;
-		} 
-	
+		}
 	}
 #endif
+
+	/*if(!SetNamedPipeHandleState(hPipe, PIPE_WAIT, NULL, NULL)) {
+		PrintDebug("Error: Error setting pipe state") ;
+		ReportErrorCode();
+		return false;
+	}*/
 
 	// Record the sock so it's cleaned up correctly on exit
 	m_hPipe = hPipe ;

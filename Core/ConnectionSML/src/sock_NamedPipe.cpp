@@ -37,7 +37,7 @@
 
 #include <assert.h>
 
-#ifdef NON_BLOCKING
+#ifdef PIPE_NON_BLOCKING
 #include "sock_OSspecific.h"	// For sleep
 #endif
 
@@ -63,6 +63,15 @@ NamedPipe::~NamedPipe()
 {
 	Close();
 }
+
+#ifdef PIPE_NON_BLOCKING
+static bool IsErrorWouldBlock()
+{
+	int error = PIPE_ERROR_NUMBER ;
+
+	return (error == PIPE_NO_DATA) ;
+}
+#endif
 
 /////////////////////////////////////////////////////////////////////
 // Function name  : NamedPipe::SendBuffer
@@ -116,6 +125,17 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 			// Check if there was an error
 			if (!success)
 			{
+				#ifdef PIPE_NON_BLOCKING
+				// On a non-blocking pipe, the pipe can return "pipe closing" -- in which case
+				// we need to wait for it to clear.  A blocking pipe would not return in this case
+				// so this would always be an error.
+				/*if (IsErrorWouldBlock())
+				{
+					PrintDebug("Waiting for pipe to unblock") ;
+					SleepSocket(0, 0) ;
+				}
+				else*/
+#endif
 				{
 					PrintDebug("Error: Error sending message") ;
 					ReportErrorCode() ;
@@ -173,13 +193,18 @@ bool NamedPipe::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 	// Did an error occur?
 	if (res == 0)
 	{
+		// if the pipe hasn't been connected yet, then just return
+		if(GetLastError() == PIPE_BAD) {
+			return false;
+		}
+
 		PrintDebug("Error: Error checking if data is available to be read") ;
 		ReportErrorCode() ;
 
 		// We treat these errors as all being fatal, which they all appear to be.
 		// If we later decide we can survive certain ones, we should test for them here
 		// and not always close the socket.
-		PrintDebug("Closing our side of the socket because of error") ;
+		PrintDebug("Closing our side of the pipe because of error") ;
 		Close() ;
 
 		return false ;
@@ -245,6 +270,17 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 			// Check if there was an error
 			if (!success)
 			{
+#ifdef PIPE_NON_BLOCKING
+				// On a non-blocking pipe, the socket may return "pipe closing" -- in which case
+				// we need to wait for it to clear.  A blocking pipe would not return in this case
+				// so this would always be an error.
+				/*if (IsErrorWouldBlock())
+				{
+					PrintDebug("Waiting for pipe to unblock") ;
+					SleepSocket(0, 0) ;	// BADBAD: Should have a proper way to pass control back to the caller while we're blocked.
+				}
+				else*/
+#endif
 				{
 					PrintDebug("Error: Error receiving message") ;
 
