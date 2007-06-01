@@ -779,6 +779,24 @@ public class GridMap {
 	HashSet<CellObject> updatables = new HashSet<CellObject>();
 	HashMap<CellObject, java.awt.Point> updatablesLocations = new HashMap<CellObject, java.awt.Point>();
 	
+//	public class BookObjectInfo {
+//		public CellObject object;
+//		public int area;
+//		public Point2D.Double floatLocation;
+//		public Point location;
+//	}
+//	public Point location;
+//	HashSet<BookObjectInfo> bookObjects;
+//	public HashSet<BookObjectInfo> getBookObjects() {
+//		return bookObjects;
+//	}
+//	public boolean isBookObject(CellObject co) {
+//		if (co.name.equals("mblock")) {
+//			return true;
+//		}
+//		return false;
+//	}
+	
 	public void addObjectToCell(java.awt.Point location, CellObject object) {
 		Cell cell = getCell(location);
 		if (cell.hasObject(object.getName())) {
