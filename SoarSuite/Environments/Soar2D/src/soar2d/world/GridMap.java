@@ -783,6 +783,7 @@ public class GridMap {
 		public CellObject object;
 		public Point location;
 		public Point2D.Double floatLocation;
+		public int area = -1;
 	}
 	HashSet<CellObject> bookObjects = new HashSet<CellObject>();
 	HashMap<Integer, BookObjectInfo> bookObjectInfo = new HashMap<Integer, BookObjectInfo>();
@@ -826,6 +827,9 @@ public class GridMap {
 			info.floatLocation.x += Soar2D.config.getBookCellSize() / 2.0;
 			info.floatLocation.y += Soar2D.config.getBookCellSize() / 2.0;
 			info.object = object;
+			if (getAllWithProperty(info.location, Names.kPropertyNumber).size() > 0) {
+				info.area = getAllWithProperty(info.location, Names.kPropertyNumber).get(0).getIntProperty(Names.kPropertyNumber);
+			}
 			bookObjectInfo.put(object.getId(), info);
 		}
 		if (config.getTerminalUnopenedBoxes()) {
@@ -1829,6 +1833,13 @@ public class GridMap {
 		
 		// convert all the gateways to areas
 		gatewaysToAreasStep(gatewayBarriers);
+		
+		// Assign areas for all objects
+		Iterator<BookObjectInfo> infoIter = bookObjectInfo.values().iterator();
+		while (infoIter.hasNext()) {
+			BookObjectInfo info = infoIter.next();
+			info.area = getAllWithProperty(info.location, Names.kPropertyNumber).get(0).getIntProperty(Names.kPropertyNumber);
+		}
 		
 		// print gateway information
 		Iterator<Integer> gatewayKeyIter = gatewayDestinationMap.keySet().iterator();

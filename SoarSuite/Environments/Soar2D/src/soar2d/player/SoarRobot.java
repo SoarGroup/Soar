@@ -123,11 +123,20 @@ class SelfInputLink {
 			objects.put(objectInfo.object.getId(), oIL);
 			
 		} else {
+			if (oIL.area.GetValue() != objectInfo.area) {
+				robot.agent.Update(oIL.area, objectInfo.area);
+			}
 			if (oIL.row.GetValue() != objectInfo.location.y) {
 				robot.agent.Update(oIL.row, objectInfo.location.y);
 			}
 			if (oIL.col.GetValue() != objectInfo.location.x) {
 				robot.agent.Update(oIL.col, objectInfo.location.x);
+			}
+			if (oIL.x.GetValue() != objectInfo.floatLocation.x) {
+				robot.agent.Update(oIL.x, objectInfo.location.x);
+			}
+			if (oIL.y.GetValue() != objectInfo.floatLocation.y) {
+				robot.agent.Update(oIL.y, objectInfo.location.y);
 			}
 			double newAngleOff = world.angleOff(robot, objectInfo.floatLocation);
 			if (oIL.angleOff.GetValue() != newAngleOff) {
@@ -231,6 +240,7 @@ class ObjectInputLink {
 	StringElement type;
 	Identifier position;
 	FloatElement angleOff;
+	FloatElement x, y;
 	IntElement row, col;
 	StringElement visible;
 	
@@ -243,11 +253,14 @@ class ObjectInputLink {
 	
 	void initialize(GridMap.BookObjectInfo info, World world) {
 		this.type = robot.agent.CreateStringWME(parent, "type", info.object.getProperty("id"));
+		this.area = robot.agent.CreateIntWME(parent, "area", info.area);
 		this.position = robot.agent.CreateIdWME(parent, "position");
 		{
 			this.col = robot.agent.CreateIntWME(position, "col", info.location.x);
 			this.row = robot.agent.CreateIntWME(position, "row", info.location.y);
-			angleOff = robot.agent.CreateFloatWME(parent, "angle-off", world.angleOff(robot, info.floatLocation));
+			this.x = robot.agent.CreateFloatWME(position, "x", info.floatLocation.x);
+			this.y = robot.agent.CreateFloatWME(position, "y", info.floatLocation.y);
+			angleOff = robot.agent.CreateFloatWME(position, "angle-off", world.angleOff(robot, info.floatLocation));
 		}
 		this.visible = robot.agent.CreateStringWME(parent, "visible", "yes");
 		
