@@ -113,13 +113,13 @@ class SelfInputLink {
 		gateways.add(gateway);
 	}
 	
-	void addOrUpdateObject(GridMap.BookObjectInfo objectInfo, int cycle) {
+	void addOrUpdateObject(GridMap.BookObjectInfo objectInfo, World world) {
 		ObjectInputLink oIL = objects.get(objectInfo.object.getId());
 		if (oIL == null) {
 			// create new object
 			Identifier parent = robot.agent.CreateIdWME(robot.agent.GetInputLink(), "object");
 			oIL = new ObjectInputLink(robot, parent);
-			oIL.initialize(objectInfo, cycle);
+			oIL.initialize(objectInfo, world);
 			objects.put(objectInfo.object.getId(), oIL);
 			
 		} else {
@@ -129,7 +129,11 @@ class SelfInputLink {
 			if (oIL.col.GetValue() != objectInfo.location.x) {
 				robot.agent.Update(oIL.col, objectInfo.location.x);
 			}
-			oIL.touch(cycle);
+			double newAngleOff = world.angleOff(robot, objectInfo.floatLocation);
+			if (oIL.angleOff.GetValue() != newAngleOff) {
+				robot.agent.Update(oIL.angleOff, newAngleOff);
+			}
+			oIL.touch(world.getWorldCount());
 		}
 	}
 	
@@ -226,6 +230,7 @@ class ObjectInputLink {
 	IntElement area;
 	StringElement type;
 	Identifier position;
+	FloatElement angleOff;
 	IntElement row, col;
 	StringElement visible;
 	
@@ -236,16 +241,17 @@ class ObjectInputLink {
 		this.parent = parent;
 	}
 	
-	void initialize(GridMap.BookObjectInfo info, int cycle) {
+	void initialize(GridMap.BookObjectInfo info, World world) {
 		this.type = robot.agent.CreateStringWME(parent, "type", info.object.getProperty("id"));
 		this.position = robot.agent.CreateIdWME(parent, "position");
 		{
 			this.col = robot.agent.CreateIntWME(position, "col", info.location.x);
 			this.row = robot.agent.CreateIntWME(position, "row", info.location.y);
+			angleOff = robot.agent.CreateFloatWME(parent, "angle-off", world.angleOff(robot, info.floatLocation));
 		}
 		this.visible = robot.agent.CreateStringWME(parent, "visible", "yes");
 		
-		touch(cycle);
+		touch(world.getWorldCount());
 	}
 	
 	void touch(int cycle) {
@@ -446,7 +452,7 @@ public class SoarRobot extends Robot {
 		while (bookObjectIter.hasNext()) {
 			CellObject bObj = bookObjectIter.next();
 			GridMap.BookObjectInfo bInfo = map.getBookObjectInfo(bObj.getId());
-			selfIL.addOrUpdateObject(bInfo, world.getWorldCount());
+			selfIL.addOrUpdateObject(bInfo, world);
 		}
 		
 		selfIL.purge(world.getWorldCount());
