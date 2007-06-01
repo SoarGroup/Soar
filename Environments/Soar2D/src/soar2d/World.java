@@ -709,6 +709,18 @@ public class World {
 		}
 	}
 	
+	private boolean checkBlocked(Point location) {
+		if (map.getAllWithProperty(location, Names.kPropertyBlock).size() > 0) {
+			return true;
+		}
+		if (map.getAllWithProperty(location, "mblock").size() > 0) {
+			// FIXME: check height
+			return true;
+		}
+		return false;
+	}
+	
+	
 	private void bookMovePlayer(Player player, double time) {
 		final int cellSize = Soar2D.config.getBookCellSize();
 		
@@ -724,14 +736,14 @@ public class World {
 		newLocation.x = (int)newFloatLocation.x / cellSize;
 		newLocation.y = (int)newFloatLocation.y / cellSize;
 		
-		while (map.getAllWithProperty(newLocation, Names.kPropertyBlock).size() > 0) {
+		while (checkBlocked(newLocation)) {
 			// 1) determine what edge we're intersecting
 			if ((newLocation.x != oldLocation.x) && (newLocation.y != oldLocation.y)) {
 				// corner case
 				java.awt.Point oldx = new java.awt.Point(oldLocation.x, newLocation.y);
 				
 				// if oldx is blocked
-				if (map.getAllWithProperty(oldx, Names.kPropertyBlock).size() > 0) {
+				if (checkBlocked(oldx)) {
 					player.setCollisionY(true);
 					// calculate y first
 					if (newLocation.y > oldLocation.y) {

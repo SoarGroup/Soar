@@ -525,6 +525,10 @@ public class VisualWorld extends Canvas implements PaintListener {
 									gc.setBackground(WindowManager.getColor(Soar2D.simulation.kColors[roomID]));
 								}
 							}
+							ArrayList<CellObject> blocks = map.getAllWithProperty(location, "mblock");
+							if (blocks.size() > 0) {
+								gc.setBackground(new Color(e.display, 191, 123, 79));
+							}
 						} else {
 							gc.setBackground(WindowManager.white);
 						}

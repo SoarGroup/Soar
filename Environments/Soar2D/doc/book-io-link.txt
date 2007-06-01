@@ -53,19 +53,19 @@ full implementation:
 			^x <float> component
 			^y <float> component
 #			^z <float> component
-#	+^object
-#		^angle-off <float> relative to direction I'm facing
-#		^area <int> unique id number
-#		^type <string> [block ramp cat dog gateway]
+	+^object
+		^angle-off <float> relative to direction I'm facing
+		^area <int> unique id number
+		^type <string> [block ramp cat dog gateway]
 #		?^up-direction <float> direction to pass through the ramp to go up
-#		^position
-#			^x <float> exact position in pixels
-#			^y <float> exact position in pixels
+		^position
+			^x <float> exact position in pixels
+			^y <float> exact position in pixels
 #			^z <float> current exact height
-#			^row <int> current row
-#			^col <int> current row
+			^row <int> current row
+			^col <int> current row
 #			^height <int> how many blocks up
-#		^range <float>
+		^range <float>
 #		^visible <string> [yes no] objects stay on input link for 2 seconds after they disappear
 ^output-link
 	^move

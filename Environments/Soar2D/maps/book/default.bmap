@@ -12,6 +12,11 @@
   <property name="id" value="room"></property>
   <property name="room" value="true" />
  </cell-object>
+ <cell-object name="mblock" updatable="false">
+  <property name="id" value="block" />
+  <property name="mblock" value="true" />
+  <property name="height" value="1" />
+ </cell-object>
  <cells random-food="false" random-walls="false" world-size="25">
   <row>
    <cell>
@@ -128,7 +133,9 @@
     <object>wall</object>
    </cell>
    <cell></cell>
-   <cell></cell>
+   <cell>
+    <object>mblock</object>
+   </cell>
    <cell></cell>
    <cell></cell>
    <cell></cell>

@@ -183,32 +183,30 @@ class GatewayInputLink extends BarrierInputLink {
 
 //class ObjectInputLink {
 //	SoarRobot robot;
-//	Identifier object, position;
-//	FloatElement angleOff, x, y, range;
-//	IntElement area, row, col;
-//	StringElement type, visible;
-//
-//	ObjectInputLink(SoarRobot robot) {
+//	Identifier parent;
+//	
+//	FloatElement angleOff;
+//	IntElement area;
+//	StringElement type;
+//	Identifier position;
+//	FloatElement x, y;
+//	IntElement row, col;
+//	FloatElement range;
+//	
+//	ObjectInputLink(SoarRobot robot, Identifier parent) {
 //		this.robot = robot;
+//		this.parent = parent;
 //	}
 //	
-//	void initialize() {
-//		Identifier il = robot.agent.GetInputLink();
-//		assert il != null;
-//		
-//		object = robot.agent.CreateIdWME(il, "object");
-//		angleOff = robot.agent.CreateFloatWME(object, "angle-off", 0.0);
-//		area = robot.agent.CreateIntWME(object, "area", -1);
-//		type = robot.agent.CreateStringWME(object, "type", "None");
-//		position = robot.agent.CreateIdWME(object, "position");
+//	void initialize(GridMap.BookObjectInfo info) {
+//		this.type = robot.agent.CreateStringWME(parent, "type", info.object.getProperty("id"));
+//		this.position = robot.agent.CreateIdWME(parent, "position");
 //		{
-//			x = robot.agent.CreateFloatWME(position, "x", 0);
-//			y = robot.agent.CreateFloatWME(position, "y", 0);
-//			row = robot.agent.CreateIntWME(position, "row", 0);
-//			col = robot.agent.CreateIntWME(position, "col", 0);
+//			this.x = robot.agent.CreateFloatWME(parent, "x", info.floatLocation.x);
+//			this.y = robot.agent.CreateFloatWME(parent, "y", info.floatLocation.y);
+//			this.col = robot.agent.CreateIntWME(parent, "col", info.location.x);
+//			this.row = robot.agent.CreateIntWME(parent, "row", info.location.y);
 //		}
-//		range = robot.agent.CreateFloatWME(object, "range", 0.0);
-//		visible = robot.agent.CreateStringWME(object, "visible", "false");
 //	}
 //}
 
