@@ -779,23 +779,24 @@ public class GridMap {
 	HashSet<CellObject> updatables = new HashSet<CellObject>();
 	HashMap<CellObject, java.awt.Point> updatablesLocations = new HashMap<CellObject, java.awt.Point>();
 	
-//	public class BookObjectInfo {
-//		public CellObject object;
-//		public int area;
-//		public Point2D.Double floatLocation;
-//		public Point location;
-//	}
-//	public Point location;
-//	HashSet<BookObjectInfo> bookObjects;
-//	public HashSet<BookObjectInfo> getBookObjects() {
-//		return bookObjects;
-//	}
-//	public boolean isBookObject(CellObject co) {
-//		if (co.name.equals("mblock")) {
-//			return true;
-//		}
-//		return false;
-//	}
+	public class BookObjectInfo {
+		public CellObject object;
+		public Point location;
+	}
+	HashSet<CellObject> bookObjects = new HashSet<CellObject>();
+	HashMap<Integer, BookObjectInfo> bookObjectInfo = new HashMap<Integer, BookObjectInfo>();
+	public HashSet<CellObject> getBookObjects() {
+		return bookObjects;
+	}
+	public BookObjectInfo getBookObjectInfo(Integer id) {
+		return bookObjectInfo.get(id);
+	}
+	public boolean isBookObject(CellObject co) {
+		if (co.name.equals("mblock")) {
+			return true;
+		}
+		return false;
+	}
 	
 	public void addObjectToCell(java.awt.Point location, CellObject object) {
 		Cell cell = getCell(location);
@@ -804,11 +805,22 @@ public class GridMap {
 			assert old != null;
 			updatables.remove(old);
 			updatablesLocations.remove(old);
+			if (isBookObject(old)) {
+				bookObjects.remove(old);
+				bookObjectInfo.remove(old.getId());
+			}
 			removalStateUpdate(old);
 		}
 		if (object.updatable()) {
 			updatables.add(object);
 			updatablesLocations.put(object, location);
+		}
+		if (isBookObject(object)) {
+			bookObjects.add(object);
+			BookObjectInfo info = new BookObjectInfo();
+			info.location = new Point(location);
+			info.object = object;
+			bookObjectInfo.put(object.getId(), info);
 		}
 		if (config.getTerminalUnopenedBoxes()) {
 			if (isUnopenedBox(object)) {
@@ -982,6 +994,10 @@ public class GridMap {
 			updatables.remove(object);
 			updatablesLocations.remove(object);
 		}
+		if (isBookObject(object)) {
+			bookObjects.remove(object);
+			bookObjectInfo.remove(object.getId());
+		}
 		removalStateUpdate(object);
 		
 		return object;
@@ -1126,6 +1142,10 @@ public class GridMap {
 				if (cellObject.updatable()) {
 					updatables.remove(cellObject);
 					updatablesLocations.remove(cellObject);
+				}
+				if (isBookObject(cellObject)) {
+					bookObjects.remove(cellObject);
+					bookObjectInfo.remove(cellObject.getId());
 				}
 				cell.iter.remove();
 				removalStateUpdate(cellObject);

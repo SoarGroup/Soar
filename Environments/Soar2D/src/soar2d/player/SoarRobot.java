@@ -3,6 +3,8 @@ package soar2d.player;
 import java.awt.geom.Point2D;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.lang.Math;
@@ -30,6 +32,7 @@ class SelfInputLink {
 	Identifier areaDescription;
 	ArrayList<BarrierInputLink> walls = new ArrayList<BarrierInputLink>();
 	ArrayList<GatewayInputLink> gateways = new ArrayList<GatewayInputLink>();
+	HashMap<Integer, ObjectInputLink> objects = new HashMap<Integer, ObjectInputLink>();
 	Identifier collision;
 	StringElement collisionX;
 	StringElement collisionY;
@@ -110,6 +113,41 @@ class SelfInputLink {
 		gateways.add(gateway);
 	}
 	
+	void addOrUpdateObject(GridMap.BookObjectInfo objectInfo, int cycle) {
+		ObjectInputLink oIL = objects.get(objectInfo.object.getId());
+		if (oIL == null) {
+			// create new object
+			Identifier parent = robot.agent.CreateIdWME(robot.agent.GetInputLink(), "object");
+			oIL = new ObjectInputLink(robot, parent);
+			oIL.initialize(objectInfo, cycle);
+			objects.put(objectInfo.object.getId(), oIL);
+			
+		} else {
+			if (oIL.row.GetValue() != objectInfo.location.y) {
+				robot.agent.Update(oIL.row, objectInfo.location.y);
+			}
+			if (oIL.col.GetValue() != objectInfo.location.x) {
+				robot.agent.Update(oIL.col, objectInfo.location.x);
+			}
+			oIL.touch(cycle);
+		}
+	}
+	
+	void purge(int cycle) {
+		Iterator<ObjectInputLink> iter = objects.values().iterator();
+		while (iter.hasNext()) {
+			ObjectInputLink oIL = iter.next();
+			if (oIL.cycleTouched < cycle) {
+				if (oIL.cycleTouched > cycle - 3) {
+					oIL.makeInvisible();
+				} else {
+					robot.agent.DestroyWME(oIL.parent);
+					iter.remove();
+				}
+			}
+		}
+	}
+	
 	void destroyAreaDescription() {
 		walls = new ArrayList<BarrierInputLink>();
 		gateways = new ArrayList<GatewayInputLink>();
@@ -181,34 +219,48 @@ class GatewayInputLink extends BarrierInputLink {
 	}
 }
 
-//class ObjectInputLink {
-//	SoarRobot robot;
-//	Identifier parent;
-//	
-//	FloatElement angleOff;
-//	IntElement area;
-//	StringElement type;
-//	Identifier position;
-//	FloatElement x, y;
-//	IntElement row, col;
-//	FloatElement range;
-//	
-//	ObjectInputLink(SoarRobot robot, Identifier parent) {
-//		this.robot = robot;
-//		this.parent = parent;
-//	}
-//	
-//	void initialize(GridMap.BookObjectInfo info) {
-//		this.type = robot.agent.CreateStringWME(parent, "type", info.object.getProperty("id"));
-//		this.position = robot.agent.CreateIdWME(parent, "position");
-//		{
-//			this.x = robot.agent.CreateFloatWME(parent, "x", info.floatLocation.x);
-//			this.y = robot.agent.CreateFloatWME(parent, "y", info.floatLocation.y);
-//			this.col = robot.agent.CreateIntWME(parent, "col", info.location.x);
-//			this.row = robot.agent.CreateIntWME(parent, "row", info.location.y);
-//		}
-//	}
-//}
+class ObjectInputLink {
+	SoarRobot robot;
+	Identifier parent;
+	
+	IntElement area;
+	StringElement type;
+	Identifier position;
+	IntElement row, col;
+	StringElement visible;
+	
+	int cycleTouched;
+	
+	ObjectInputLink(SoarRobot robot, Identifier parent) {
+		this.robot = robot;
+		this.parent = parent;
+	}
+	
+	void initialize(GridMap.BookObjectInfo info, int cycle) {
+		this.type = robot.agent.CreateStringWME(parent, "type", info.object.getProperty("id"));
+		this.position = robot.agent.CreateIdWME(parent, "position");
+		{
+			this.col = robot.agent.CreateIntWME(position, "col", info.location.x);
+			this.row = robot.agent.CreateIntWME(position, "row", info.location.y);
+		}
+		this.visible = robot.agent.CreateStringWME(parent, "visible", "yes");
+		
+		touch(cycle);
+	}
+	
+	void touch(int cycle) {
+		cycleTouched = cycle;
+		if (visible.GetValue().equals("no")) {
+			robot.agent.Update(visible, "yes");
+		}
+	}
+	
+	void makeInvisible() {
+		if (visible.GetValue().equals("yes")) {
+			robot.agent.Update(visible, "no");
+		}
+	}
+}
 
 public class SoarRobot extends Robot {
 	Agent agent;	// the soar agent
@@ -218,6 +270,7 @@ public class SoarRobot extends Robot {
 	SelfInputLink selfIL;
 	
 	private ArrayList<String> shutdownCommands;	// soar commands to run before this agent is destroyed
+	
 
 	private int locationId = -1;
 	
@@ -386,6 +439,17 @@ public class SoarRobot extends Robot {
 			random = Simulation.random.nextFloat();
 		} while (random == oldrandom);
 		agent.Update(selfIL.random, random);
+		
+		// objects
+		HashSet<CellObject> bookObjects = map.getBookObjects();
+		Iterator<CellObject> bookObjectIter = bookObjects.iterator();
+		while (bookObjectIter.hasNext()) {
+			CellObject bObj = bookObjectIter.next();
+			GridMap.BookObjectInfo bInfo = map.getBookObjectInfo(bObj.getId());
+			selfIL.addOrUpdateObject(bInfo, world.getWorldCount());
+		}
+		
+		selfIL.purge(world.getWorldCount());
 		
 		// Add status executing to any commands that need it
 		if (moveCommandId != null) {
