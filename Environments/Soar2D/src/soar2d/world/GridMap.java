@@ -782,6 +782,7 @@ public class GridMap {
 	public class BookObjectInfo {
 		public CellObject object;
 		public Point location;
+		public Point2D.Double floatLocation;
 	}
 	HashSet<CellObject> bookObjects = new HashSet<CellObject>();
 	HashMap<Integer, BookObjectInfo> bookObjectInfo = new HashMap<Integer, BookObjectInfo>();
@@ -819,6 +820,11 @@ public class GridMap {
 			bookObjects.add(object);
 			BookObjectInfo info = new BookObjectInfo();
 			info.location = new Point(location);
+			info.floatLocation = new Point2D.Double();
+			info.floatLocation.x = info.location.x * Soar2D.config.getBookCellSize();
+			info.floatLocation.y = info.location.y * Soar2D.config.getBookCellSize();
+			info.floatLocation.x += Soar2D.config.getBookCellSize() / 2.0;
+			info.floatLocation.y += Soar2D.config.getBookCellSize() / 2.0;
 			info.object = object;
 			bookObjectInfo.put(object.getId(), info);
 		}
