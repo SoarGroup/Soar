@@ -65,8 +65,8 @@ full implementation:
 			^row <int> current row
 			^col <int> current row
 #			^height <int> how many blocks up
-		^range <float>
-#		^visible <string> [yes no] objects stay on input link for 2 seconds after they disappear
+#		^range <float>
+		^visible <string> [yes no] objects stay on input link for 2 cycles after they disappear
 ^output-link
 	^move
 		^direction [forward stop backward]
