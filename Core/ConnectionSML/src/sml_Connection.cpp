@@ -162,7 +162,7 @@ Connection* Connection::CreateRemoteConnection(bool sharedFileSystem, char const
 {
 	RemoteConnection* pConnection;
 
-	if(pIPaddress == "abc") {
+	if(pIPaddress == 0) {
 
 		sock::ClientNamedPipe* pNamedPipe = new sock::ClientNamedPipe() ;
 

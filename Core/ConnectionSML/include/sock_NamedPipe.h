@@ -43,7 +43,7 @@ typedef void *HANDLE;
 namespace sock {
 
 // Define PIPE_NON_BLOCKING to make all pipes non-blocking pipes.
-#define PIPE_NON_BLOCKING
+//#define PIPE_NON_BLOCKING
 
 #ifdef PIPE_NON_BLOCKING
 #define PIPE_TYPE PIPE_NOWAIT
