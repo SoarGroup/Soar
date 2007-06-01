@@ -216,8 +216,8 @@ bool Socket::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 				// so this would always be an error.
 				if (IsErrorWouldBlock())
 				{
-					PrintDebug("Waiting for socket to unblock") ;
-					SleepSocket(0, 100) ;
+					//PrintDebug("Waiting for socket to unblock") ;
+					SleepSocket(0, 0) ;
 				}
 				else
 #endif
@@ -360,8 +360,8 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 				// so this would always be an error.
 				if (IsErrorWouldBlock())
 				{
-					PrintDebug("Waiting for socket to unblock") ;
-					SleepSocket(0, 10) ;	// BADBAD: Should have a proper way to pass control back to the caller while we're blocked.
+					//PrintDebug("Waiting for socket to unblock") ;
+					SleepSocket(0, 0) ;	// BADBAD: Should have a proper way to pass control back to the caller while we're blocked.
 				}
 				else
 #endif
