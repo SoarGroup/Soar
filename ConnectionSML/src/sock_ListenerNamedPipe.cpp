@@ -66,7 +66,7 @@ bool ListenerNamedPipe::CreateListener(const char* name)
           PIPE_ACCESS_DUPLEX,		// read/write access 
           PIPE_TYPE_MESSAGE |		// message type pipe 
           PIPE_READMODE_MESSAGE |	// message-read mode 
-          PIPE_NOWAIT,				// blocking mode 
+          PIPE_TYPE,				// blocking mode 
           PIPE_UNLIMITED_INSTANCES,	// max. instances  
           4096,						// output buffer size 
           4096,						// input buffer size 
@@ -108,10 +108,10 @@ NamedPipe* ListenerNamedPipe::CheckForClientConnection()
 
 	// If this is a blocking socket make sure
 	// a connection is available before attempting to accept.
-/*#ifndef NON_BLOCKING
+#ifndef PIPE_NON_BLOCKING
 	if (!IsReadDataAvailable())
 		return NULL ;
-#endif*/
+#endif
 
 	//PrintDebug("About to check for a connection") ;
 //FIXME:

@@ -27,9 +27,10 @@
 
 #include <string>
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
+//#ifdef _WIN32
+//#include <windows.h>
+//#endif
+#include "../src/sock_OSspecific.h" //BADBAD: move header to include directory
 
 #include "sock_DataSender.h"
 
@@ -41,10 +42,15 @@ typedef void *HANDLE;
 
 namespace sock {
 
-#define NO_CONNECTION	0
+// Define PIPE_NON_BLOCKING to make all pipes non-blocking pipes.
+#define PIPE_NON_BLOCKING
 
-// Report info on the error than just occurred.
-void	ReportErrorCode() ;
+#ifdef PIPE_NON_BLOCKING
+#define PIPE_TYPE PIPE_NOWAIT
+#else
+#define PIPE_TYPE PIPE_WAIT
+#endif
+
 
 class ListenerNamedPipe ;
 class ClientNamedPipe ;
