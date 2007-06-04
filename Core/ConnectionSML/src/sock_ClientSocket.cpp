@@ -121,7 +121,8 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 		memset(&local_address, 0, sizeof(local_address));
 		local_address.sun_family = AF_UNIX;
 		sprintf(local_address.sun_path, "%s%u", "/var/tmp/", port);
-		int len = SUN_LEN(&local_address);
+		int len = (offsetof (struct sockaddr_un, sun_path) + strlen (local_address.sun_path) + 1);
+		//int len = SUN_LEN(&local_address);
 
 		//BADBAD? Check if in use?
 		unlink(local_address.sun_path); // in case it already exists
