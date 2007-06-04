@@ -10,7 +10,8 @@ if len(sys.argv) > 1:
 	kif = open(sys.argv[1])
 else:
 	#kifdir = os.path.join('..', 'kif', 'R03_mod')
-	kiffile = "escape.kif"
+	#kiffile = "escape.kif"
+	kiffile = "escape_v03.kif"
 	#kiffile = "mm-r03-composition-source1.kif"
 	#kiffile = "mm-r03-abstraction-source.kif"
 	#kiffile = "mummymaze1p-horiz.kif"
@@ -22,6 +23,8 @@ else:
 	#kiffile = "mummymaze1p-separate.kif"
 	#kiffile = "buttons.kif"
 
+	kif = open(os.path.join(kifdir, kiffile))
+
 if len(sys.argv) > 2:
 	soarfile = sys.argv[2]
 else:
@@ -31,9 +34,6 @@ else:
 		soarfile = os.path.join(agentdir, '%s.%d.soar' % (kiffile[:-4], n))
 		n += 1
 	print soarfile
-
-
-	kif = open(os.path.join(kifdir, kiffile))
 
 description = ""
 line = kif.readline()
