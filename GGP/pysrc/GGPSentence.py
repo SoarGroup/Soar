@@ -466,7 +466,8 @@ class GGPSentence:
 				
 		elif self.__name == "legal":
 			# legal is a two place relation, constant, function
-			op_name = SoarifyStr(str(self.__terms[1]))
+			#op_name = SoarifyStr(str(self.__terms[1]))
+			op_name = self.__terms[1].name()
 			op_act = sp.add_op_proposal("+")
 			op_act.add_ground_wme_action("name", op_name)
 			self.__terms[1].make_soar_action_no_id(sp, op_act, var_map, 1)

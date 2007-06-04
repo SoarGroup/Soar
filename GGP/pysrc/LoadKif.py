@@ -3,13 +3,13 @@ import RuleParser
 from ElementGGP import ElementGGP
 
 agentdir = os.path.join('..', 'agents')
+kifdir = os.path.join('..', 'kif', 'escape')
 
 if len(sys.argv) > 1:
 	kiffile = os.path.split(sys.argv[1])[1]
 	kif = open(sys.argv[1])
 else:
 	#kifdir = os.path.join('..', 'kif', 'R03_mod')
-	kifdir = os.path.join('..', 'kif', 'escape')
 	kiffile = "escape.kif"
 	#kiffile = "mm-r03-composition-source1.kif"
 	#kiffile = "mm-r03-abstraction-source.kif"
@@ -22,15 +22,18 @@ else:
 	#kiffile = "mummymaze1p-separate.kif"
 	#kiffile = "buttons.kif"
 
+if len(sys.argv) > 2:
+	soarfile = sys.argv[2]
+else:
+	soarfile = os.path.join(agentdir, '%s.soar' % (kiffile[:-4]))
+	n = 0
+	while os.path.exists(soarfile):
+		soarfile = os.path.join(agentdir, '%s.%d.soar' % (kiffile[:-4], n))
+		n += 1
+	print soarfile
+
+
 	kif = open(os.path.join(kifdir, kiffile))
-
-soarfile = os.path.join(agentdir, '%s.soar' % (kiffile[:-4]))
-n = 0
-while os.path.exists(soarfile):
-	soarfile = os.path.join(agentdir, '%s.%d.soar' % (kiffile[:-4], n))
-	n += 1
-
-print soarfile
 
 description = ""
 line = kif.readline()

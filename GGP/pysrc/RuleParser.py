@@ -71,6 +71,7 @@ def MakeInitRule(game_name, role, init_conds, fact_rules, min_success_score):
 
 	state_action = asp.add_action()
 	state_action.add_ground_wme_action("name", game_name)
+	state_action.add_ground_wme_action('next-action', '0')
 #	state_action.add_ground_wme_action("score", "0")
 
 	d_var = state_action.add_id_wme_action("desired")
@@ -81,6 +82,7 @@ def MakeInitRule(game_name, role, init_conds, fact_rules, min_success_score):
 #	game_elabs_var = state_action.add_id_wme_action("elaborations")
 	gs_actions = asp.add_action(game_state_var)
 	gs_actions.add_ground_wme_action("role", role)
+	gs_actions.add_ground_wme_action('action-counter', '0')
 
 	var_map = GDLSoarVarMapper(UniqueNameGenerator())
 	for ic in init_conds:
@@ -208,9 +210,11 @@ def TranslateGoal(game_name, head, body, score):
 	ParseDistinctions(body, sp, var_map)
 	
 	if int(str(head.term(1))) >= score:
-		sp.add_action().add_id_wme_action("success", desired_var)
+		#sp.add_action().add_id_wme_action("success", desired_var)
+		sp.add_action().add_id_wme_action("success-detected", desired_var)
 	else:
-		sp.add_action().add_id_wme_action("failure", desired_var)
+		#sp.add_action().add_id_wme_action("failure", desired_var)
+		sp.add_action().add_id_wme_action("failure-detected", desired_var)
 
 	return [sp]
 
@@ -540,29 +544,31 @@ def TranslateDescription(game_name, description, filename):
 		productions.extend(TranslateFrameAxioms(game_name, f[0], f[1]))
 
 	# make the progress state productions
-	sp = SoarProduction("update-state", "propose")
-	sp.get_ol_cond().add_id_predicate("<cmd-name>", name="cmd")
-	sp.add_op_proposal("+ <").add_ground_wme_action("name", "update-state")
-	productions.append(sp)
-
-	ap_cmd_remove = sp.get_apply_rules(name_gen)[0]
-	ap_cmd_remove.first_state_cond.add_ground_predicate("name", game_name)
-	ol_cmd_var = ap_cmd_remove.get_ol_cond().add_id_predicate("<cmd-name>")
-#	last_move_var = ap_cmd_remove.get_il_cond().add_id_predicate("last-moves")
-#	il_cmd_var = ap_cmd_remove.add_condition(last_move_var).add_id_predicate("<last-cmd>")
-	remove_cmd = ap_cmd_remove.add_action(ap_cmd_remove.get_ol_cond().head_var)
-	remove_cmd.remove_id_wme_action("<cmd-name>", ol_cmd_var)
-#	ap_cmd_remove.add_action(last_move_var).remove_id_wme_action("<last-cmd>", il_cmd_var)
-	productions.append(ap_cmd_remove)
-
-	# create selection space rules
-	productions.append(MakeSelectionSpaceFakeResponseRule(game_name, role))
-	productions.extend(MakeSelectionSpaceRules(game_name))
-
-	sp = SoarProduction("elab-link", "elaborate")
-	sp.state_cond().add_ground_predicate("type", "state")
-	sp.add_action().add_id_wme_action("elaborations")
-	productions.append(sp)
+	# don't need this anymore, just have it in another file
+#	sp = SoarProduction("update-state", "propose")
+#	sp.get_ol_cond().add_id_predicate("<cmd-name>", name="cmd")
+#	sp.add_op_proposal("+ <").add_ground_wme_action("name", "update-state")
+#	productions.append(sp)
+#
+#	ap_cmd_remove = sp.get_apply_rules(name_gen)[0]
+#	ap_cmd_remove.first_state_cond.add_ground_predicate("name", game_name)
+#	ol_cmd_var = ap_cmd_remove.get_ol_cond().add_id_predicate("<cmd-name>")
+##	last_move_var = ap_cmd_remove.get_il_cond().add_id_predicate("last-moves")
+##	il_cmd_var = ap_cmd_remove.add_condition(last_move_var).add_id_predicate("<last-cmd>")
+#	remove_cmd = ap_cmd_remove.add_action(ap_cmd_remove.get_ol_cond().head_var)
+#	remove_cmd.remove_id_wme_action("<cmd-name>", ol_cmd_var)
+#
+##	ap_cmd_remove.add_action(last_move_var).remove_id_wme_action("<last-cmd>", il_cmd_var)
+#	productions.append(ap_cmd_remove)
+#
+#	# create selection space rules
+#	productions.append(MakeSelectionSpaceFakeResponseRule(game_name, role))
+#	productions.extend(MakeSelectionSpaceRules(game_name))
+#
+#	sp = SoarProduction("elab-link", "elaborate")
+#	sp.state_cond().add_ground_predicate("type", "state")
+#	sp.add_action().add_id_wme_action("elaborations")
+#	productions.append(sp)
 	
 	f = open(filename, 'w')
 	f.write("source header.soar\n")

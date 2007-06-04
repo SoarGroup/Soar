@@ -208,9 +208,6 @@ class SoarProduction:
 		self.cond_paths = dict() # condition ref -> attrib
 		self.var_distinctions = dict()
 		self.value_distinctions = dict()
-		
-		if name.find("remove-_next__health__std_soar_var1__std_soar_var2__0") >= 0:
-			print name
 
 	def state_cond(self):
 		if self.first_state_cond == None:
