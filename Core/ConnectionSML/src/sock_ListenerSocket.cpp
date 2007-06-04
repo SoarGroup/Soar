@@ -45,7 +45,7 @@ ListenerSocket::~ListenerSocket()
 //					on a specific port.
 //
 /////////////////////////////////////////////////////////////////////
-bool ListenerSocket::CreateListener(unsigned short port)
+bool ListenerSocket::CreateListener(unsigned short port, bool local)
 {
 	CTDEBUG_ENTER_METHOD("ListenerSocket::CreateListener");
 
@@ -59,7 +59,17 @@ bool ListenerSocket::CreateListener(unsigned short port)
 	}
 
 	// Create the listener socket
-	SOCKET hListener = socket(AF_INET, SOCK_STREAM, 0) ;
+
+	SOCKET hListener;
+
+#ifndef _WIN32
+	if(local) {
+		hListener = socket(PF_LOCAL, SOCK_STREAM, 0);
+	else 
+#endif
+	{
+		hListener = socket(AF_INET, SOCK_STREAM, 0) ;
+	}
 
 	if (hListener == INVALID_SOCKET)
 	{
@@ -77,19 +87,48 @@ bool ListenerSocket::CreateListener(unsigned short port)
 
 	// Specify the port we are listening on
 	sockaddr_in address ;
-	memset(&address, 0, sizeof(address)) ;
 
-	address.sin_family = AF_INET ;	// Indicates the type of data in this structure
-	address.sin_port   = htons(port) ;
-	address.sin_addr.s_addr = htonl(INADDR_ANY) ;
+	int res;
 
-	// Bind the socket to the local port we're listening on
-	int res = bind(hListener, (sockaddr*)&address, sizeof(address)) ;
+#ifndef _WIN32
 
-	if (res != 0)
+	sockaddr_un local_address;
+
+	if(local) {
+		memset(&local_address, 0, sizeof(local_address));
+
+		local_address.sun_family = AF_UNIX;
+		sprintf(local_address.sun_path, "%s%u", "/var/tmp/", port); // buffer is 108 chars long, so this is safe
+
+		// BADBAD: should check to see if it's in use
+		ulink(local_address.sun_path); // in case it already exists
+
+		int len = SUN_LEN(&local_address);
+		res = bind(hListener, (sockaddr*)&local_address, len) ;
+
+		if (res != 0)
+		{
+			PrintDebug("Error: Error binding the local listener socket to its file") ;
+			return false ;
+		}
+
+	} else 
+#endif
 	{
-		PrintDebug("Error: Error binding the listener socket to its port number") ;
-		return false ;
+		memset(&address, 0, sizeof(address)) ;
+
+		address.sin_family = AF_INET ;	// Indicates the type of data in this structure
+		address.sin_port   = htons(port) ;
+		address.sin_addr.s_addr = htonl(INADDR_ANY) ;
+
+		// Bind the socket to the local port we're listening on
+		res = bind(hListener, (sockaddr*)&address, sizeof(address)) ;
+
+		if (res != 0)
+		{
+			PrintDebug("Error: Error binding the listener socket to its port number") ;
+			return false ;
+		}
 	}
 
 #ifdef NON_BLOCKING
