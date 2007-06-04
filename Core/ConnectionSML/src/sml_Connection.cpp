@@ -35,7 +35,11 @@
 #include "sml_TagError.h"
 #include "sml_TagResult.h"
 #include "sock_ClientSocket.h"
+
+#include "../src/sock_OSspecific.h" // for ENABLE_NAMED_PIPES
+#ifdef ENABLE_NAMED_PIPES
 #include "sock_ClientNamedPipe.h"
+#endif
 
 #include <time.h>	// For debug random start of message id's
 #include <sstream>
@@ -162,6 +166,7 @@ Connection* Connection::CreateRemoteConnection(bool sharedFileSystem, char const
 {
 	RemoteConnection* pConnection;
 
+#ifdef ENABLE_NAMED_PIPES
 	if(pIPaddress == 0) {
 
 		sock::ClientNamedPipe* pNamedPipe = new sock::ClientNamedPipe() ;
@@ -179,7 +184,9 @@ Connection* Connection::CreateRemoteConnection(bool sharedFileSystem, char const
 		// Wrap the pipe inside a remote connection object
 		pConnection = new RemoteConnection(sharedFileSystem, pNamedPipe) ;
 
-	} else {
+	} else
+#endif
+	{
 		sock::ClientSocket* pSocket = new sock::ClientSocket() ;
 
 		bool ok = pSocket->ConnectToServer(pIPaddress, port) ;

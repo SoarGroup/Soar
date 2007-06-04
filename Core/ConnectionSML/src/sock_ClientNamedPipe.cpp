@@ -15,6 +15,9 @@
 // pipe name.
 // 
 /////////////////////////////////////////////////////////////////
+
+#ifdef _WIN32
+
 #include "sock_Debug.h"
 #include "sock_NamedPipeHeader.h"
 #include "sock_ClientNamedPipe.h"
@@ -57,8 +60,6 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 
 	HANDLE hPipe;
 
-//FIXME:
-#ifdef _WIN32
 	while(1) {
 		// Create the pipe
 		hPipe = CreateFile( 
@@ -88,7 +89,6 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 			return false;
 		}
 	}
-#endif
 
 	/*if(!SetNamedPipeHandleState(hPipe, PIPE_WAIT, NULL, NULL)) {
 		PrintDebug("Error: Error setting pipe state") ;
@@ -101,3 +101,5 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 
 	return true ;
 }
+
+#endif // _WIN32

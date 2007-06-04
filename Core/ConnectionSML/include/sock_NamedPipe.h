@@ -25,20 +25,12 @@
 #ifndef NAMED_PIPE_H
 #define NAMED_PIPE_H
 
+#ifdef _WIN32
 #include <string>
 
-//#ifdef _WIN32
-//#include <windows.h>
-//#endif
 #include "../src/sock_OSspecific.h" //BADBAD: move header to include directory
 
 #include "sock_DataSender.h"
-
-// FIXME: just getting this to compile on linux, needs to be implemented
-#ifndef _WIN32
-typedef void *HANDLE;
-#define INVALID_HANDLE_VALUE 0
-#endif
 
 namespace sock {
 
@@ -114,4 +106,5 @@ protected:
 
 } // Namespace
 
+#endif // _WIN32
 #endif // NAMED_PIPE_H

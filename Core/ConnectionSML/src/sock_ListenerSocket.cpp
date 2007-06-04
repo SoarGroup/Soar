@@ -62,7 +62,7 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 
 	SOCKET hListener;
 
-#ifndef _WIN32
+#ifdef ENABLE_LOCAL_SOCKETS
 	if(local) {
 		hListener = socket(PF_LOCAL, SOCK_STREAM, 0);
 	}
@@ -91,7 +91,7 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 
 	int res;
 
-#ifndef _WIN32
+#ifdef ENABLE_LOCAL_SOCKETS
 
 	sockaddr_un local_address;
 
@@ -104,8 +104,8 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 		// BADBAD: should check to see if it's in use
 		unlink(local_address.sun_path); // in case it already exists
 
-		int len = (offsetof (struct sockaddr_un, sun_path) + strlen (local_address.sun_path) + 1);
-		//int len = SUN_LEN(&local_address);
+		//int len = (offsetof (struct sockaddr_un, sun_path) + strlen (local_address.sun_path) + 1);
+		int len = SUN_LEN(&local_address);
 		res = bind(hListener, (sockaddr*)&local_address, len) ;
 
 		if (res != 0)
