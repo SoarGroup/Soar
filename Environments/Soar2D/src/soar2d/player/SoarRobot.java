@@ -115,11 +115,16 @@ class SelfInputLink {
 	
 	void addOrUpdateObject(GridMap.BookObjectInfo objectInfo, World world) {
 		ObjectInputLink oIL = objects.get(objectInfo.object.getId());
+		double dx = objectInfo.floatLocation.x - world.getFloatLocation(robot).x;
+		dx *= dx;
+		double dy = objectInfo.floatLocation.y - world.getFloatLocation(robot).y;
+		dy *= dy;
+		double range = Math.sqrt(dx + dy);
 		if (oIL == null) {
 			// create new object
 			Identifier parent = robot.agent.CreateIdWME(robot.agent.GetInputLink(), "object");
 			oIL = new ObjectInputLink(robot, parent);
-			oIL.initialize(objectInfo, world);
+			oIL.initialize(objectInfo, world, range);
 			objects.put(objectInfo.object.getId(), oIL);
 			
 		} else {
@@ -137,6 +142,9 @@ class SelfInputLink {
 			}
 			if (oIL.y.GetValue() != objectInfo.floatLocation.y) {
 				robot.agent.Update(oIL.y, objectInfo.location.y);
+			}
+			if (oIL.range.GetValue() != range) {
+				robot.agent.Update(oIL.range, range);
 			}
 			double newAngleOff = world.angleOff(robot, objectInfo.floatLocation);
 			if (oIL.angleOff.GetValue() != newAngleOff) {
@@ -243,6 +251,7 @@ class ObjectInputLink {
 	FloatElement x, y;
 	IntElement row, col;
 	StringElement visible;
+	FloatElement range;
 	
 	int cycleTouched;
 	
@@ -251,7 +260,7 @@ class ObjectInputLink {
 		this.parent = parent;
 	}
 	
-	void initialize(GridMap.BookObjectInfo info, World world) {
+	void initialize(GridMap.BookObjectInfo info, World world, double range) {
 		this.type = robot.agent.CreateStringWME(parent, "type", info.object.getProperty("id"));
 		this.area = robot.agent.CreateIntWME(parent, "area", info.area);
 		this.position = robot.agent.CreateIdWME(parent, "position");
@@ -262,6 +271,7 @@ class ObjectInputLink {
 			this.y = robot.agent.CreateFloatWME(position, "y", info.floatLocation.y);
 			angleOff = robot.agent.CreateFloatWME(position, "angle-off", world.angleOff(robot, info.floatLocation));
 		}
+		this.range = robot.agent.CreateFloatWME(parent, "range", range);
 		this.visible = robot.agent.CreateStringWME(parent, "visible", "yes");
 		
 		touch(world.getWorldCount());
