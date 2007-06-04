@@ -27,6 +27,8 @@
 // 
 /////////////////////////////////////////////////////////////////
 
+#ifdef _WIN32
+
 #include <stdio.h>
 #include "sock_NamedPipeHeader.h"
 #include "sock_NamedPipe.h"
@@ -111,21 +113,17 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 		{
 			tries++ ;
 
-// FIXME: just getting this to compile on linux, needs to be implemented
-#ifdef _WIN32
 			success = WriteFile( 
 				hPipe,        // handle to pipe 
 				pSendBuffer,      // buffer to write from 
 				bufferSize, // number of bytes to write 
 				&thisSend,   // number of bytes written 
 				NULL);        // not overlapped I/O 
-#endif
-
 
 			// Check if there was an error
 			if (!success)
 			{
-				#ifdef PIPE_NON_BLOCKING
+#ifdef PIPE_NON_BLOCKING
 				// On a non-blocking pipe, the pipe can return "pipe closing" -- in which case
 				// we need to wait for it to clear.  A blocking pipe would not return in this case
 				// so this would always be an error.
@@ -185,20 +183,15 @@ bool NamedPipe::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 	unsigned long bytesAvail = 0;
 	int res = 0;
 
-// FIXME: just getting this to compile on linux, needs to be implemented
-#ifdef _WIN32
 	res = PeekNamedPipe(hPipe, NULL, NULL, NULL, &bytesAvail, NULL);
-#endif
 
 	// Did an error occur?
 	if (res == 0)
 	{
-#ifdef _WIN32
 		// if the pipe hasn't been connected yet, then just return
 		if(GetLastError() == PIPE_BAD) {
 			return false;
 		}
-#endif
 
 		PrintDebug("Error: Error checking if data is available to be read") ;
 		ReportErrorCode() ;
@@ -259,15 +252,12 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 		{
 			tries++ ;
 
-// FIXME: just getting this to compile on linux, needs to be implemented
-#ifdef _WIN32
 			success = ReadFile( 
 				hPipe,        // handle to pipe 
 				pRecvBuffer,    // buffer to receive data 
 				bufferSize, // size of buffer 
 				&thisRead, // number of bytes read 
 				NULL);        // not overlapped I/O 
-#endif
 
 			// Check if there was an error
 			if (!success)
@@ -336,14 +326,13 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 /////////////////////////////////////////////////////////////////////
 void NamedPipe::ReportErrorCode()
 {
-// FIXME: just getting this to compile on linux, needs to be implemented
-#ifdef _WIN32
 	CTDEBUG_ENTER_METHOD("SoarPipe - ReportErrorCode");
 
 	unsigned long error = PIPE_ERROR_NUMBER ;
 
 	switch (error)
 	{
+	case PIPE_INVALID_HANDLE:	PrintDebug("Error: The handle is invalid.") ; break ;
 	case PIPE_BROKEN:			PrintDebug("Error: The pipe has been ended.") ; break ;
 	case PIPE_ALREADY_EXISTS:	PrintDebug("Error: Cannot create a file when that file already exists.") ; break ;
 	case PIPE_BAD:				PrintDebug("Error: The pipe state is invalid.") ; break ;
@@ -358,7 +347,6 @@ void NamedPipe::ReportErrorCode()
 			break ;
 		}
 	}
-#endif
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -371,8 +359,6 @@ void NamedPipe::ReportErrorCode()
 /////////////////////////////////////////////////////////////////////
 void NamedPipe::Close()
 {
-// FIXME: just getting this to compile on linux, needs to be implemented
-#ifdef _WIN32
 	if (m_hPipe != INVALID_HANDLE_VALUE)
 	{
 		FlushFileBuffers(m_hPipe); 
@@ -381,5 +367,6 @@ void NamedPipe::Close()
 
 		m_hPipe = INVALID_HANDLE_VALUE ;
 	}
-#endif
 }
+
+#endif //_WIN32
