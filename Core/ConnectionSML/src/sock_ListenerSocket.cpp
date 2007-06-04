@@ -65,6 +65,7 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 #ifndef _WIN32
 	if(local) {
 		hListener = socket(PF_LOCAL, SOCK_STREAM, 0);
+	}
 	else 
 #endif
 	{
@@ -101,7 +102,7 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 		sprintf(local_address.sun_path, "%s%u", "/var/tmp/", port); // buffer is 108 chars long, so this is safe
 
 		// BADBAD: should check to see if it's in use
-		ulink(local_address.sun_path); // in case it already exists
+		unlink(local_address.sun_path); // in case it already exists
 
 		int len = (offsetof (struct sockaddr_un, sun_path) + strlen (local_address.sun_path) + 1);
 		//int len = SUN_LEN(&local_address);

@@ -143,7 +143,7 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 		}*/
 
 		// Try to connect to the server
-		res = connect(sock, (sockaddr*)&local_address, len)) ;
+		res = connect(sock, (sockaddr*)&local_address, len) ;
 
 	} else 
 #endif
