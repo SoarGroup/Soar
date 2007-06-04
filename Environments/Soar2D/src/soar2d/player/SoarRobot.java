@@ -115,16 +115,35 @@ class SelfInputLink {
 	
 	void addOrUpdateObject(GridMap.BookObjectInfo objectInfo, World world) {
 		ObjectInputLink oIL = objects.get(objectInfo.object.getId());
+
 		double dx = objectInfo.floatLocation.x - world.getFloatLocation(robot).x;
 		dx *= dx;
 		double dy = objectInfo.floatLocation.y - world.getFloatLocation(robot).y;
 		dy *= dy;
 		double range = Math.sqrt(dx + dy);
+		
+		String adjacent = "no";
+		if (objectInfo.location.x == world.getLocation(robot).x) {
+			// possibly north or south
+			if (objectInfo.location.y == world.getLocation(robot).y - 1) {
+				adjacent = "north";
+			} else if (objectInfo.location.y == world.getLocation(robot).y + 1) {
+				adjacent = "south";
+			}
+		} else if (objectInfo.location.y == world.getLocation(robot).y) {
+			// possibly west or east
+			if (objectInfo.location.x == world.getLocation(robot).x - 1) {
+				adjacent = "west";
+			} else if (objectInfo.location.x == world.getLocation(robot).x + 1) {
+				adjacent = "east";
+			}
+		}
+		
 		if (oIL == null) {
 			// create new object
 			Identifier parent = robot.agent.CreateIdWME(robot.agent.GetInputLink(), "object");
 			oIL = new ObjectInputLink(robot, parent);
-			oIL.initialize(objectInfo, world, range);
+			oIL.initialize(objectInfo, world, range, adjacent);
 			objects.put(objectInfo.object.getId(), oIL);
 			
 		} else {
@@ -145,6 +164,9 @@ class SelfInputLink {
 			}
 			if (oIL.range.GetValue() != range) {
 				robot.agent.Update(oIL.range, range);
+			}
+			if (!oIL.adjacent.GetValue().equals(adjacent)) {
+				robot.agent.Update(oIL.adjacent, adjacent);
 			}
 			double newAngleOff = world.angleOff(robot, objectInfo.floatLocation);
 			if (oIL.angleOff.GetValue() != newAngleOff) {
@@ -252,6 +274,7 @@ class ObjectInputLink {
 	IntElement row, col;
 	StringElement visible;
 	FloatElement range;
+	StringElement adjacent;
 	
 	int cycleTouched;
 	
@@ -260,7 +283,7 @@ class ObjectInputLink {
 		this.parent = parent;
 	}
 	
-	void initialize(GridMap.BookObjectInfo info, World world, double range) {
+	void initialize(GridMap.BookObjectInfo info, World world, double range, String adjacent) {
 		this.type = robot.agent.CreateStringWME(parent, "type", info.object.getProperty("id"));
 		this.area = robot.agent.CreateIntWME(parent, "area", info.area);
 		this.position = robot.agent.CreateIdWME(parent, "position");
@@ -272,6 +295,7 @@ class ObjectInputLink {
 			angleOff = robot.agent.CreateFloatWME(position, "angle-off", world.angleOff(robot, info.floatLocation));
 		}
 		this.range = robot.agent.CreateFloatWME(parent, "range", range);
+		this.adjacent = robot.agent.CreateStringWME(parent, "adjacent", adjacent);
 		this.visible = robot.agent.CreateStringWME(parent, "visible", "yes");
 		
 		touch(world.getWorldCount());
