@@ -23,7 +23,7 @@ public:
 	virtual ~ListenerSocket();
 
 	// Creates a listener socket -- used by the server to create connections
-	bool	CreateListener(unsigned short port) ;
+	bool	CreateListener(unsigned short port, bool local=false) ;
 
 	// Check for an incoming client connection
 	// This call does not block.  If there is no pending connection it returns NULL immediately.

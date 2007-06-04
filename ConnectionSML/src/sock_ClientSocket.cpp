@@ -89,40 +89,85 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 {
 	CTDEBUG_ENTER_METHOD("ClientSocket::ConnectToServer");
 
+#ifdef _WIN32
 	if (pNetAddress == NULL)
 		pNetAddress = kLocalHost ;
+#endif
 
-	// Get the address
-	in_addr* pAddress = ConvertAddress(pNetAddress) ;
+	in_addr* pAddress = NULL;
 
-	if (pAddress == NULL)
-	{
-		PrintDebug("Error: Unable to convert entered address to socket address") ;
-		return false ;
+	if(pNetAddress) {
+		// Get the address
+		pAddress = ConvertAddress(pNetAddress) ;
+
+		if (pAddress == NULL)
+		{
+			PrintDebug("Error: Unable to convert entered address to socket address") ;
+			return false ;
+		}
 	}
 
 	// Specify the host address and port to connect to.
 	sockaddr_in address ;
-	memset(&address, 0, sizeof(address)) ;
+	SOCKET sock;
 
-	address.sin_family = AF_INET ;
-	address.sin_port   = htons(port) ;
-	address.sin_addr.s_addr = pAddress->s_addr ;
+	int res;
 
-	// Create the socket
-	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0) ;
+#ifndef _WIN32
 
-	if (sock == INVALID_SOCKET)
+	sockaddr_un local_address;
+
+	if(!pNetAddress) {
+		memset(&local_address, 0, sizeof(local_address));
+		local_address.sun_family = AF_UNIX;
+		sprintf(local_address.sun_path, "%s%u", "/var/tmp/", port);
+		int len = SUN_LEN(&local_address);
+
+		//BADBAD? Check if in use?
+		unlink(local_address.sun_path); // in case it already exists
+
+		// Create the socket
+		sock = socket(AF_UNIX, SOCK_STREAM, 0) ;
+
+		if (sock == INVALID_SOCKET)
+		{
+			PrintDebug("Error: Error creating client local connection socket") ;
+			return false ;
+		}
+
+		/*if(chmod(local_address.sun_path, "S_IRWXU") < 0)
+		{
+			PrintDebug("Error: Error setting permissions for client local connection socket") ;
+			return false ;
+		}*/
+
+		// Try to connect to the server
+		res = connect(sock, (sockaddr*)&local_address, len)) ;
+
+	} else 
+#endif
 	{
-		PrintDebug("Error: Error creating client connection socket") ;
-		return false ;
+		memset(&address, 0, sizeof(address)) ;
+
+		address.sin_family = AF_INET ;
+		address.sin_port   = htons(port) ;
+		address.sin_addr.s_addr = pAddress->s_addr ;
+
+		// Create the socket
+		sock = socket(AF_INET, SOCK_STREAM, 0) ;
+
+		if (sock == INVALID_SOCKET)
+		{
+			PrintDebug("Error: Error creating client connection socket") ;
+			return false ;
+		}
+
+		// Try to connect to the server
+		res = connect(sock, (sockaddr*)&address, sizeof(address)) ;
 	}
 
 	// Record the sock so it's cleaned up correctly on exit
 	m_hSocket = sock ;
-
-	// Try to connect to the server
-	int res = connect(sock, (sockaddr*)&address, sizeof(address)) ;
 
 	if (res != 0)
 	{
