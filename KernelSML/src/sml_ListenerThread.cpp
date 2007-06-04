@@ -48,6 +48,7 @@ void ListenerThread::Run()
 		return ;
 	}
 
+#ifdef ENABLE_NAMED_PIPES
 	ok = m_ListenerNamedPipe.CreateListener(m_PipeName.c_str()) ;
 
 	if (!ok)
@@ -55,6 +56,7 @@ void ListenerThread::Run()
 		PrintDebug("Failed to create the listener pipe.  Shutting down thread.") ;
 		return ;
 	}
+#endif
 
 	while (!m_QuitNow)
 	{
@@ -65,15 +67,17 @@ void ListenerThread::Run()
 		Socket* pSocket = m_ListenerSocket.CheckForClientConnection() ;
 
 		Socket* pLocalSocket = 0;
-#ifndef _WIN32
+#ifdef ENABLE_LOCAL_SOCKETS
 		pLocalSocket = m_LocalListenerSocket.CheckForClientConnection();
 #endif
-		NamedPipe* pNamedPipe = m_ListenerNamedPipe.CheckForClientConnection();
 
+#ifdef ENABLE_NAMED_PIPES
+		NamedPipe* pNamedPipe = m_ListenerNamedPipe.CheckForClientConnection();
+#endif
 		if (pSocket) CreateConnection(pSocket);
 
 		if (pLocalSocket) CreateConnection(pLocalSocket);
-
+#ifdef ENABLE_NAMED_PIPES
 		if (pNamedPipe) {
 			CreateConnection(pNamedPipe);
 			ok = m_ListenerNamedPipe.CreateListener(m_PipeName.c_str()) ;
@@ -84,6 +88,7 @@ void ListenerThread::Run()
 				return ;
 			}
 		}
+#endif
 
 		// Sleep for a little before checking for a new connection
 		// New connections will come in very infrequently so this doesn't
@@ -93,10 +98,12 @@ void ListenerThread::Run()
 
 	// Shut down our listener socket
 	m_ListenerSocket.Close() ;
-#ifndef _WIN32
+#ifdef ENABLE_LOCAL_SOCKETS
 	m_LocalListenerSocket.Close();
 #endif
+#ifdef ENABLE_NAMED_PIPES
 	m_ListenerNamedPipe.Close();
+#endif
 }
 
 void ListenerThread::CreateConnection(DataSender* pSender)

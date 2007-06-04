@@ -25,6 +25,10 @@
 
 #include <string>
 
+#ifdef _WIN32
+//#define ENABLE_NAMED_PIPES
+#endif
+
 namespace sock {
 
 class DataSender  
