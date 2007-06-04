@@ -1,0 +1,249 @@
+sp {propose*update-state
+   (state <s> ^io <i>)
+   (<i> ^output-link <o>)
+   (<o> ^<cmd-name> <cmd>)
+-->
+   (<s> ^operator <o1> + <)
+   (<o1> ^name update-state)
+}
+sp {apply*update-state
+   (state <s> ^name game ^operator <o> ^io <i> ^gs <gs>)
+   (<gs> ^action-counter <ac>)
+   (<o> ^name update-state)
+   (<i> ^output-link <o1>)
+   (<o1> ^<cmd-name> <c>)
+-->
+   (<s> ^new-game-state-created <ngs>)
+   (<gs> ^action-counter <ac> -)
+   (<gs> ^action-counter (+ <ac> 1))
+   (<gs> ^action-sequence <at>)
+   (<at> ^count <ac>
+         ^action <act>)
+   (<act> ^name <cmd-name>
+          ^params <c>)
+}
+
+sp {apply*update-state*clean-analyzed
+  (state <s> ^name game
+       ^operator.name update-state
+       ^state-analyzed <sa>)
+-->
+  (<s> ^state-analyzed <sa> -)
+}
+
+sp {propose*analyze-state
+  (state <s> ^name game ^new-game-state-created <ngs>)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name analyze-state)
+}
+
+sp {apply*analyze-state
+  (state <s> ^name game ^operator.name analyze-state
+             ^new-game-state-created <ngs>
+             ^io.output-link <ol>)
+  (<ol> ^<cmd-name> <c>)
+-->
+  (<ol> ^<cmd-name> <c> -)
+  (<s> ^new-game-state-created <ngs> -)
+  (<s> ^state-analyzed <sa>)
+}
+
+sp {apply*analyze-state*handle-success
+   (state <s> ^name game
+              ^operator <o>
+              ^top-state <ts>
+              ^success-detected <d>
+              ^gs <gs>)
+   (<o> ^name analyze-state)
+-->
+  (<ts> ^final-gs <gs>)
+  (<s> ^success <d>)
+}
+
+sp {apply*anything*save-final-action-sequence
+   (state <s> ^superstate nil
+              ^operator <o>
+              ^final-gs.action-sequence <as>)
+   (<as> ^action <act>
+         ^count <count>)
+   (<act> ^name <name>
+          ^params <par>)
+   (<par> ^p1 <val>
+          -^p2)
+-->
+  (<s> ^saved-action <as1>)
+  (<as1> ^action <act1>
+         ^count <count>)
+  (<act1> ^name <name>
+          ^params <par1>)
+  (<par1> ^p1 <val>)
+}
+
+sp {apply*anything*save-final-action-sequence*twopar
+   (state <s> ^superstate nil
+              ^operator <o>
+              ^final-gs.action-sequence <as>)
+   (<as> ^action <act>
+         ^count <count>)
+   (<act> ^name <name>
+          ^params <par>)
+   (<par> ^p1 <val>
+          ^p2 <val2>
+          -^p3)
+-->
+  (<s> ^saved-action <as1>)
+  (<as1> ^action <act1>
+         ^count <count>)
+  (<act1> ^name <name>
+          ^params <par1>)
+  (<par1> ^p1 <val>
+          ^p2 <val2>)
+}
+
+sp {apply*anything*save-final-action-sequence*threepar
+   (state <s> ^superstate nil
+              ^operator <o>
+              ^final-gs.action-sequence <as>)
+   (<as> ^action <act>
+         ^count <count>)
+   (<act> ^name <name>
+          ^params <par>)
+   (<par> ^p1 <val>
+          ^p2 <val2>
+          ^p3 <val3>)
+-->
+  (<s> ^saved-action <as1>)
+  (<as1> ^action <act1>
+         ^count <count>)
+  (<act1> ^name <name>
+          ^params <par1>)
+  (<par1> ^p1 <val>
+          ^p2 <val2>
+          ^p3 <val3>)
+}
+
+
+
+sp {apply*analyze-state*handle-failure
+   (state <s> ^name game
+              ^operator <o>
+              ^failure-detected <d>
+              ^gs <gs>)
+   (<o> ^name analyze-state)
+-->
+  (<s> ^failure <d>)
+}
+
+
+sp {apply*update-state*next-action
+   (state <s> ^superstate nil
+              ^operator <o>)
+   (<s> ^next-action <na>)
+   (<o> ^name update-state)
+-->
+   (<s> ^next-action <na> -
+                  (+ <na> 1))
+}
+
+sp {prefer*next-saved-action
+   (state <s> ^superstate nil
+              ^operator <o> +
+              ^next-action <count>
+              ^saved-action <sas>)
+   (<sas> ^count <count>
+          ^action <act>)
+   (<act> ^name <name>
+          ^params.p1 <p1>
+          -^params.p2)
+   (<o> ^name <name>
+        ^p1 <p1>
+        -^p2)
+-->
+   (<s> ^operator <o> >)
+}
+
+sp {prefer*next-saved-action*twopar
+   (state <s> ^superstate nil
+              ^operator <o> +
+              ^next-action <count>
+              ^saved-action <sas>)
+   (<sas> ^count <count>
+          ^action <act>)
+   (<act> ^name <name>
+          ^params.p1 <p1>
+          ^params.p2 <p2>
+          -^params.p3)
+   (<o> ^name <name>
+        ^p1 <p1>
+        ^p2 <p2>
+        -^p3)
+-->
+   (<s> ^operator <o> >)
+}
+
+sp {prefer*next-saved-action*threepar
+   (state <s> ^superstate nil
+              ^operator <o> +
+              ^next-action <count>
+              ^saved-action <sas>)
+   (<sas> ^count <count>
+          ^action <act>)
+   (<act> ^name <name>
+          ^params.p1 <p1>
+          ^params.p2 <p2>
+          ^params.p3 <p3>)
+   (<o> ^name <name>
+        ^p1 <p1>
+        ^p2 <p2>
+        ^p3 <p3>)
+-->
+   (<s> ^operator <o> >)
+}
+sp {game*elaborate*fake-response
+   (state <s> ^io <i>)
+   (<i> ^output-link <o> ^input-link <i1>)
+   (<o> ^<action-name> <a>)
+-->
+   (<i1> ^last-moves <last-moves>)
+   (<last-moves> ^explorer <explorer>)
+   (<explorer> ^<action-name> <a>)
+}
+sp {game*elaborate*problem-space
+   (state <s> ^name game)
+-->
+   (<s> ^problem-space <problem-space>)
+   (<problem-space> ^name game 
+                    ^default-state-copy yes 
+                    ^one-level-attributes facts 
+                    ^two-level-attributes gs
+                    ^no-local-negations true 
+                    ^default-operator-copy yes)
+}
+sp {game*elaborate*selection-space-fake-io
+   (state <s> ^duplicate-of <d>)
+-->
+   (<s> ^io <io>)
+   (<io> ^input-link <input-link> ^output-link <output-link>)
+}
+sp {elaborate*elab-link
+   (state <s> ^type state)
+-->
+   (<s> ^elaborations <elaborations>)
+}
+sp {elaborate*state*name
+   (state <s> ^superstate.operator.name <name>)
+-->
+   (<s> ^name <name>)
+}
+
+sp {elaborate*state*top-state
+   (state <s> ^superstate.top-state <ts>)
+-->
+   (<s> ^top-state <ts>)
+}
+sp {elaborate*top-state*top-state
+   (state <s> ^superstate nil)
+-->
+   (<s> ^top-state <s>)
+}

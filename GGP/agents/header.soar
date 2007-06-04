@@ -8,6 +8,7 @@ indifferent-selection --first
 pushd common
 #source canvas.soar
 source status.soar
+source constant.soar
 pushd default
 source selection.soar
 source selection-iterative-deepening.soar
