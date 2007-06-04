@@ -44,6 +44,7 @@ protected:
 	std::string					m_PipeName;
 	ConnectionManager*			m_Parent ;
 	sock::ListenerSocket		m_ListenerSocket ;
+	sock::ListenerSocket		m_LocalListenerSocket;
 	sock::ListenerNamedPipe		m_ListenerNamedPipe ;
 
 	void Run() ;

@@ -40,6 +40,14 @@ void ListenerThread::Run()
 		return ;
 	}
 
+	ok = m_LocalListenerSocket.CreateListener(m_Port);
+
+	if (!ok)
+	{
+		PrintDebug("Failed to create the local listener socket.  Shutting down thread.") ;
+		return ;
+	}
+
 	ok = m_ListenerNamedPipe.CreateListener(m_PipeName.c_str()) ;
 
 	if (!ok)
@@ -55,9 +63,17 @@ void ListenerThread::Run()
 		// Check for an incoming client connection
 		// This doesn't block.
 		Socket* pSocket = m_ListenerSocket.CheckForClientConnection() ;
+
+		Socket* pLocalSocket = 0;
+#ifndef _WIN32
+		pLocalSocket = m_LocalListenerSocket.CheckForClientConnection();
+#endif
 		NamedPipe* pNamedPipe = m_ListenerNamedPipe.CheckForClientConnection();
 
 		if (pSocket) CreateConnection(pSocket);
+
+		if (pLocalSocket) CreateConnection(pLocalSocket);
+
 		if (pNamedPipe) {
 			CreateConnection(pNamedPipe);
 			ok = m_ListenerNamedPipe.CreateListener(m_PipeName.c_str()) ;
@@ -77,6 +93,9 @@ void ListenerThread::Run()
 
 	// Shut down our listener socket
 	m_ListenerSocket.Close() ;
+#ifndef _WIN32
+	m_LocalListenerSocket.Close();
+#endif
 	m_ListenerNamedPipe.Close();
 }
 
