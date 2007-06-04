@@ -193,10 +193,12 @@ bool NamedPipe::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 	// Did an error occur?
 	if (res == 0)
 	{
+#ifdef _WIN32
 		// if the pipe hasn't been connected yet, then just return
 		if(GetLastError() == PIPE_BAD) {
 			return false;
 		}
+#endif
 
 		PrintDebug("Error: Error checking if data is available to be read") ;
 		ReportErrorCode() ;
