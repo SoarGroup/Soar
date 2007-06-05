@@ -40,13 +40,15 @@ void ListenerThread::Run()
 		return ;
 	}
 
-	ok = m_LocalListenerSocket.CreateListener(m_Port);
+#ifdef ENABLE_LOCAL_SOCKETS
+	ok = m_LocalListenerSocket.CreateListener(m_Port, true);
 
 	if (!ok)
 	{
 		PrintDebug("Failed to create the local listener socket.  Shutting down thread.") ;
 		return ;
 	}
+#endif
 
 #ifdef ENABLE_NAMED_PIPES
 	ok = m_ListenerNamedPipe.CreateListener(m_PipeName.c_str()) ;

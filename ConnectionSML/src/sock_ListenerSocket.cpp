@@ -64,7 +64,7 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 
 #ifdef ENABLE_LOCAL_SOCKETS
 	if(local) {
-		hListener = socket(PF_LOCAL, SOCK_STREAM, 0);
+		hListener = socket(AF_UNIX, SOCK_STREAM, 0);
 	}
 	else 
 #endif

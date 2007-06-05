@@ -216,7 +216,7 @@ bool Socket::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 				// so this would always be an error.
 				if (IsErrorWouldBlock())
 				{
-					//PrintDebug("Waiting for socket to unblock") ;
+					PrintDebug("Waiting for socket to unblock") ;
 					SleepSocket(0, 0) ;
 				}
 				else

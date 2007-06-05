@@ -29,7 +29,7 @@ bool SleepSocket(long secs, long msecs) ;
 #else
 #define STRICMP    strcasecmp
 #define VSNSPRINTF vsnprintf
-#define ENABLE_LOCAL_SOCKETS
+//#define ENABLE_LOCAL_SOCKETS
 #endif
 
 #endif // CT_OS_SPECIFIC_H
