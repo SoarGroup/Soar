@@ -18,6 +18,8 @@
 #include "sock_OSspecific.h"
 #include <assert.h>
 
+//#include <iostream>
+
 using namespace sock ;
 
 //////////////////////////////////////////////////////////////////////
@@ -89,10 +91,12 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 {
 	CTDEBUG_ENTER_METHOD("ClientSocket::ConnectToServer");
 
-#ifdef _WIN32
+#ifndef ENABLE_LOCAL_SOCKETS
 	if (pNetAddress == NULL)
 		pNetAddress = kLocalHost ;
 #endif
+
+//std::cout << "one" << std::endl;
 
 	in_addr* pAddress = NULL;
 
@@ -112,6 +116,8 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 	SOCKET sock;
 
 	int res;
+
+//std::cout << "two" << std::endl;
 
 #ifdef ENABLE_LOCAL_SOCKETS
 
@@ -157,6 +163,8 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 		// Create the socket
 		sock = socket(AF_INET, SOCK_STREAM, 0) ;
 
+//std::cout << "three" << std::endl;
+
 		if (sock == INVALID_SOCKET)
 		{
 			PrintDebug("Error: Error creating client connection socket") ;
@@ -169,6 +177,8 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 
 	// Record the sock so it's cleaned up correctly on exit
 	m_hSocket = sock ;
+
+//std::cout << "four" << std::endl;
 
 	if (res != 0)
 	{
@@ -186,6 +196,8 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 		return false ;
 	}
 #endif
+
+//std::cout << "five" << std::endl;
 
 	return true ;
 }

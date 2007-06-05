@@ -13,7 +13,7 @@
 #define CT_DEBUG_H
 
 // Have to comment this in before we can turn on dump of method entry and exit in socket code
-//#define DEBUG_CALLS
+#define DEBUG_CALLS
 
 void PrintDebugMethod(long indent, char const* pMethodName, char const* pStr) ;
 void PrintDebug(char const* pStr) ;
