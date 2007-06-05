@@ -145,7 +145,7 @@ public class EatersInputStateVariable extends JavaStateVariable {
 			reward = eater.getEater().getPointsDelta();
 		}
 		cachedReward = reward;
-		main.AddNamedValue("reward", new tosca.Double(reward));
+		main.AddNamedValue("ExternalReward", new tosca.Double(reward));
 		
 		main.AddNamedValue("world-count", new tosca.Integer(world.getWorldCount()));
 		
