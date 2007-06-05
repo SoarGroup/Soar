@@ -49,6 +49,7 @@ opts.AddOptions(
 	BoolOption('tcl', 'Build the Soar Tcl interface', 'no'), 
 	BoolOption('static', 'Use static linking when possible', 'no'), 
 	BoolOption('debug', 'Build with debugging symbols', debugDefault),
+	BoolOption('debugSym', 'Build with _DEBUG defined', 'no'),
 	BoolOption('warnings', 'Build with warnings', 'yes'),
 	EnumOption('optimization', 'Build with optimization (May cause run-time errors!)', optimizationDefault, ['no','partial','full'], {}, 1),
 )
@@ -68,6 +69,10 @@ conf = Configure(env, custom_tests = custom_tests)
 
 # We define SCONS to indicate to the source that SCONS is controlling the build.
 conf.env.Append(CPPFLAGS = ' -DSCONS')
+
+# Special debugging symbol if requested
+if conf.env['debugSym']:
+	conf.env.Append(CPPFLAGS = ' -D_DEBUG')
 
 # All C/C++ modules rely or should rely on this include path (houses portability.h)
 conf.env.Append(CPPPATH = ['#Core/shared'])
@@ -174,9 +179,9 @@ if env['java']:
 		
 	if env['swt']:
 		SConscript('#Tools/SoarJavaDebugger/SConscript')
-		#SConscript('#Environments/Soar2D/SConscript')
-		#SConscript('#Environments/JavaMissionaries/SConscript')
-		#SConscript('#Environments/JavaTOH/SConscript')
+		SConscript('#Environments/Soar2D/SConscript')
+		SConscript('#Environments/JavaMissionaries/SConscript')
+		SConscript('#Environments/JavaTOH/SConscript')
 
 if env['python']:
 	SConscript('#Core/ClientSMLSWIG/Python/SConscript')
