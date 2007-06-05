@@ -67,7 +67,7 @@ Connection::Connection()
 	m_InitialTimeTagCounter = 0 ;
 	m_pUserData = NULL ;
 	m_bIsDirectConnection = false ;
-	m_bTraceCommunications = false ;
+	m_bTraceCommunications = true ;
 	m_bIsKernelSide = false ;
 }
 
