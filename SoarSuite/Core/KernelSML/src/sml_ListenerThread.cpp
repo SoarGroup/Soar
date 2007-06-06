@@ -41,6 +41,10 @@ void ListenerThread::Run()
 	}
 
 #ifdef ENABLE_LOCAL_SOCKETS
+
+	// Create the listener
+	PrintDebugFormat("Listening on file %s%d", LOCAL_SOCKET_PATH, m_Port) ;
+
 	ok = m_LocalListenerSocket.CreateListener(m_Port, true);
 
 	if (!ok)
@@ -51,7 +55,14 @@ void ListenerThread::Run()
 #endif
 
 #ifdef ENABLE_NAMED_PIPES
-	ok = m_ListenerNamedPipe.CreateListener(m_PipeName.c_str()) ;
+
+	std::stringstream pipeName;
+	pipeName << "\\\\.\\pipe\\" << m_Port;
+
+	// Create the listener
+	PrintDebugFormat("Listening on pipe %s", pipeName.str().c_str()) ;
+
+	ok = m_ListenerNamedPipe.CreateListener(pipeName.str().c_str()) ;
 
 	if (!ok)
 	{
@@ -82,7 +93,7 @@ void ListenerThread::Run()
 #ifdef ENABLE_NAMED_PIPES
 		if (pNamedPipe) {
 			CreateConnection(pNamedPipe);
-			ok = m_ListenerNamedPipe.CreateListener(m_PipeName.c_str()) ;
+			ok = m_ListenerNamedPipe.CreateListener(pipeName.str().c_str()) ;
 
 			if (!ok)
 			{
