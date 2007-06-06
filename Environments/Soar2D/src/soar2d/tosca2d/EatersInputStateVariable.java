@@ -156,7 +156,8 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		stateRep.Set(0, location.x);
 		stateRep.Set(1, location.y);
 		main.AddNamedValue("StateRepresentation", stateRep);
-		
+        
+        Vector ltm = new Vector();
 		Vector relevantActions = new Vector(6);
 		relevantActions.Set(0, 1.0);
 		relevantActions.Set(1, 2.0);
@@ -174,7 +175,21 @@ public class EatersInputStateVariable extends JavaStateVariable {
 			assert box.hasProperty(Names.kPropertyBoxID);
 			int boxID = box.getIntProperty(Names.kPropertyBoxID);
 			if (boxID == kInfoBoxID)
+            {
 				relevantActions.Set(4, 5.0);
+                if (box.hasProperty(Names.kPropertyPositiveBoxID))
+                {
+                    ltm.Resize(2);
+                    ltm.Set(0, 0);
+                    ltm.Set(1, box.getIntProperty(Names.kPropertyPositiveBoxID));
+                    if (box.hasProperty(Names.kPropertyOpenCode))
+                    {
+                        ltm.Resize(4);
+                        ltm.Set(2, 1);
+                        ltm.Set(3, box.getIntProperty(Names.kPropertyOpenCode));
+                    }            
+                }
+            }
 			else if (box.hasProperty(Names.kPropertyOpenCode))
 			{
 				relevantActions.Set(4, 6.0);
@@ -184,6 +199,7 @@ public class EatersInputStateVariable extends JavaStateVariable {
 				relevantActions.Set(4, 5.0);
 		}
 		main.AddNamedValue("RelevantActions", relevantActions);
+        main.AddNamedValue("LongTermMemories", ltm);
 		
 //////////end NEW state variable format		
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
