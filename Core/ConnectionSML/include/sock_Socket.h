@@ -61,6 +61,8 @@ char*		  GetLocalIPAddress() ;
 
 #define NO_CONNECTION	0
 
+#define LOCAL_SOCKET_PATH "/var/tmp/"
+
 class ListenerSocket ;
 class ClientSocket ;
 

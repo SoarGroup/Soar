@@ -90,12 +90,6 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 		}
 	}
 
-	/*if(!SetNamedPipeHandleState(hPipe, PIPE_WAIT, NULL, NULL)) {
-		PrintDebug("Error: Error setting pipe state") ;
-		ReportErrorCode();
-		return false;
-	}*/
-
 	// Record the sock so it's cleaned up correctly on exit
 	m_hPipe = hPipe ;
 
