@@ -99,13 +99,11 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 		memset(&local_address, 0, sizeof(local_address));
 
 		local_address.sun_family = AF_UNIX;
-		//sprintf(local_address.sun_path, "%s%u", "./", port); // buffer is 108 chars long, so this is safe
-		sprintf(local_address.sun_path, "%s%u", "/var/tmp/", port); // buffer is 108 chars long, so this is safe
+		sprintf(local_address.sun_path, "%s%u", LOCAL_SOCKET_PATH, port); // buffer is 108 chars long, so this is safe
 
-		// BADBAD: should check to see if it's in use
+		// BADBAD: should check to see if it's in use?
 		unlink(local_address.sun_path); // in case it already exists
 
-		//int len = (offsetof (struct sockaddr_un, sun_path) + strlen (local_address.sun_path) + 1);
 		int len = SUN_LEN(&local_address);
 		res = bind(hListener, (sockaddr*)&local_address, len) ;
 
