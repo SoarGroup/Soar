@@ -11,12 +11,15 @@ VERSION 4
 8	4	FOPERATOR top-state top-state.soar 9
 9	0	HLOPERATOR wander wander.soar wander 16 10
 10	9	FOPERATOR elaborations elaborations.soar 11
-11	9	OPERATOR move move.soar 12
-12	9	HLOPERATOR move-to-gateway move-to-gateway.soar move-to-gateway 92 13
-13	12	FOPERATOR elaborations elaborations.soar 14
-14	12	OPERATOR get get.soar 19
-15	12	OPERATOR move move.soar 15
-16	12	OPERATOR rotate rotate.soar 16
-17	9	OPERATOR rotate rotate.soar 17
-18	9	OPERATOR stop stop.soar 18
+11	9	OPERATOR move move.soar 13
+12	9	HLOPERATOR move-block move-block.soar move-block 105 21
+13	12	FOPERATOR elaborations elaborations.soar 22
+14	12	OPERATOR drop drop.soar 12
+15	12	OPERATOR get get.soar 16
+16	9	HLOPERATOR move-to-gateway move-to-gateway.soar move-to-gateway 92 14
+17	16	FOPERATOR elaborations elaborations.soar 15
+18	16	OPERATOR move move.soar 17
+19	16	OPERATOR rotate rotate.soar 18
+20	9	OPERATOR rotate rotate.soar 19
+21	9	OPERATOR stop stop.soar 20
 END

@@ -46,7 +46,6 @@ public class MoveInfo {
 	public java.awt.Point getLocation = null;
 	public int getId;
 	public boolean drop = false;
-	public java.awt.Point dropLocation = null;
 	public int dropId;
 	
 	public MoveInfo() {
@@ -116,7 +115,7 @@ public class MoveInfo {
 				output += "(" + Names.kGetID + ": " + getId + ": " + getLocation.x + "," + getLocation.y + ")";
 			}
 			if (drop) {
-				output += "(" + Names.kDropID + ": " + dropId + ": " + dropLocation.x + "," + dropLocation.y + ")";
+				output += "(" + Names.kDropID + ": " + dropId + ")";
 			}
 			break;
 		}

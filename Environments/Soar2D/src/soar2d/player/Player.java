@@ -4,6 +4,7 @@ import java.awt.geom.Point2D;
 import java.util.logging.*;
 
 import soar2d.*;
+import soar2d.world.CellObject;
 
 /**
  * @author voigtjr
@@ -414,5 +415,20 @@ public class Player {
 	}
 	public void updateDropStatus(boolean success) {
 		
+	}
+	
+	CellObject carriedObject = null;
+	public void carry(CellObject object) {
+		assert carriedObject == null;
+		carriedObject = object;
+	}
+	public CellObject drop() {
+		assert carriedObject != null;
+		CellObject temp = carriedObject;
+		carriedObject = null;
+		return temp;
+	}
+	public boolean isCarrying() {
+		return carriedObject != null;
 	}
 }

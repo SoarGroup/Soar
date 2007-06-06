@@ -1,4 +1,4 @@
-101
+110
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -100,7 +100,16 @@ ENUMERATION 97 1 move
 SOAR_ID 98
 ENUMERATION 99 1 get
 SOAR_ID 100
-104
+ENUMERATION 101 1 drop
+SOAR_ID 102
+ENUMERATION 103 1 move-block
+SOAR_ID 104
+SOAR_ID 105
+ENUMERATION 106 1 state
+ENUMERATION 107 1 move-block
+ENUMERATION 108 1 blank
+SOAR_ID 109
+114
 0 attribute 21
 0 choices 22
 0 impasse 23
@@ -133,6 +142,8 @@ SOAR_ID 100
 16 operator 34
 16 operator 91
 16 operator 100
+16 operator 102
+16 operator 104
 16 superstate 0
 16 top-state 0
 16 type 17
@@ -205,3 +216,11 @@ SOAR_ID 100
 96 name 95
 98 name 97
 100 name 99
+102 name 101
+104 name 103
+105 name 107
+105 operator 109
+105 superstate 16
+105 top-state 0
+105 type 106
+109 name 108

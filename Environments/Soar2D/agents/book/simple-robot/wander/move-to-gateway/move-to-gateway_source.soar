@@ -1,4 +1,3 @@
 source elaborations.soar
-source get.soar
 source move.soar
 source rotate.soar

@@ -1,0 +1,23 @@
+sp {wander*propose*get
+   (state <s> ^name move-block)
+   (<s> ^top-state <ts>)
+   (<ts> ^block-id <bid>
+         ^io.input-link.object <obj>)
+   (<obj> ^id <bid>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name get
+        ^actions.get.id <id>
+        ^actions.move.direction stop
+        ^actions.rotate.direction right
+        ^cycle <cycle>)
+}
+
+sp {apply*get
+   (state <s> ^operator <op>
+              ^top-state <ts>)
+   (<op> ^name get
+         ^cycle <cycle>)
+-->
+   (<ts> ^drop-cycle (+ <cycle> 10))
+}
