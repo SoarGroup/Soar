@@ -99,6 +99,7 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 		memset(&local_address, 0, sizeof(local_address));
 
 		local_address.sun_family = AF_UNIX;
+		//sprintf(local_address.sun_path, "%s%u", "./", port); // buffer is 108 chars long, so this is safe
 		sprintf(local_address.sun_path, "%s%u", "/var/tmp/", port); // buffer is 108 chars long, so this is safe
 
 		// BADBAD: should check to see if it's in use
