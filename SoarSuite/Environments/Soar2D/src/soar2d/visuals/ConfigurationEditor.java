@@ -1156,7 +1156,11 @@ public class ConfigurationEditor extends Dialog {
 			agentFacingCombo.select(0);
 			agentFacingCombo.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
-					playerConfig.setFacing(Direction.getInt(agentFacingCombo.getText()));
+					int dir = Direction.getInt(agentFacingCombo.getText());
+					if (dir == 0) {
+						dir = 1;
+					}
+					playerConfig.setFacing(dir);
 					agentsUpdate(selectedItem);
 				}
 			});

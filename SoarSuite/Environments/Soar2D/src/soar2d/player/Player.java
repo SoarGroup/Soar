@@ -409,4 +409,10 @@ public class Player {
 	public void rotateComplete() {
 		
 	}
+	public void updateGetStatus(boolean success) {
+		
+	}
+	public void updateDropStatus(boolean success) {
+		
+	}
 }

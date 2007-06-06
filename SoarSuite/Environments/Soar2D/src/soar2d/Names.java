@@ -46,7 +46,9 @@ public class Names {
 	public static final String kDirectionID = "direction";
 	public static final String kDistanceID = "distance";
 	public static final String kDontEatID = "dont-eat";
+	public static final String kDropID = "drop";
 	public static final String kGatewayID = "gateway";
+	public static final String kGetID = "get";
 	public static final String kEaterID = "eater";
 	public static final String kEnergyID = "energy";
 	public static final String kEnergyRechargerID = "energyrecharger";

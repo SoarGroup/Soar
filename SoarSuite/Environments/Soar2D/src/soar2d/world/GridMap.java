@@ -786,12 +786,12 @@ public class GridMap {
 		public int area = -1;
 	}
 	HashSet<CellObject> bookObjects = new HashSet<CellObject>();
-	HashMap<Integer, BookObjectInfo> bookObjectInfo = new HashMap<Integer, BookObjectInfo>();
+	HashMap<CellObject, BookObjectInfo> bookObjectInfo = new HashMap<CellObject, BookObjectInfo>();
 	public HashSet<CellObject> getBookObjects() {
 		return bookObjects;
 	}
-	public BookObjectInfo getBookObjectInfo(Integer id) {
-		return bookObjectInfo.get(id);
+	public BookObjectInfo getBookObjectInfo(CellObject obj) {
+		return bookObjectInfo.get(obj);
 	}
 	public boolean isBookObject(CellObject co) {
 		if (co.name.equals("mblock")) {
@@ -809,7 +809,7 @@ public class GridMap {
 			updatablesLocations.remove(old);
 			if (isBookObject(old)) {
 				bookObjects.remove(old);
-				bookObjectInfo.remove(old.getId());
+				bookObjectInfo.remove(old);
 			}
 			removalStateUpdate(old);
 		}
@@ -827,10 +827,11 @@ public class GridMap {
 			info.floatLocation.x += Soar2D.config.getBookCellSize() / 2.0;
 			info.floatLocation.y += Soar2D.config.getBookCellSize() / 2.0;
 			info.object = object;
+			object.addProperty("object-id", Integer.toString(newObjectId()));
 			if (getAllWithProperty(info.location, Names.kPropertyNumber).size() > 0) {
 				info.area = getAllWithProperty(info.location, Names.kPropertyNumber).get(0).getIntProperty(Names.kPropertyNumber);
 			}
-			bookObjectInfo.put(object.getId(), info);
+			bookObjectInfo.put(object, info);
 		}
 		if (config.getTerminalUnopenedBoxes()) {
 			if (isUnopenedBox(object)) {
@@ -1006,7 +1007,7 @@ public class GridMap {
 		}
 		if (isBookObject(object)) {
 			bookObjects.remove(object);
-			bookObjectInfo.remove(object.getId());
+			bookObjectInfo.remove(object);
 		}
 		removalStateUpdate(object);
 		
@@ -1155,7 +1156,7 @@ public class GridMap {
 				}
 				if (isBookObject(cellObject)) {
 					bookObjects.remove(cellObject);
-					bookObjectInfo.remove(cellObject.getId());
+					bookObjectInfo.remove(cellObject);
 				}
 				cell.iter.remove();
 				removalStateUpdate(cellObject);
@@ -1448,6 +1449,7 @@ public class GridMap {
 	private int roomCount = 0;
 	private int gatewayCount = 0;
 	private int wallCount = 0;
+	private int objectCount = 0;
 	
 	public class Barrier {
 		public int id = -1;
@@ -1576,7 +1578,7 @@ public class GridMap {
 				assert cell.getObject(Names.kRoomID) == null;
 
 				// cell is enterable, we have a room
-				int roomNumber = roomCount + gatewayCount + wallCount;
+				int roomNumber = roomCount + gatewayCount + wallCount + objectCount;
 				roomCount += 1;
 				
 				CellObject roomObject = cellObjectManager.createObject(Names.kRoomID);
@@ -1676,7 +1678,7 @@ public class GridMap {
 							currentBarrier.direction = Direction.leftOf[direction];
 							
 							// create a new gateway id
-							currentBarrier.id = roomCount + gatewayCount + wallCount;
+							currentBarrier.id = roomCount + gatewayCount + wallCount + objectCount;
 							gatewayCount += 1;
 
 							//System.out.println();
@@ -1718,7 +1720,7 @@ public class GridMap {
 							currentBarrier.direction = Direction.leftOf[direction];
 							
 							// create a new id
-							currentBarrier.id = roomCount + gatewayCount + wallCount;
+							currentBarrier.id = roomCount + gatewayCount + wallCount + objectCount;
 							wallCount += 1;
 							
 							//System.out.println();
@@ -1880,7 +1882,7 @@ public class GridMap {
 		currentBarrier.right = new java.awt.Point(currentBarrier.left);
 		
 		// get a new wall id
-		currentBarrier.id = roomCount + gatewayCount + wallCount;
+		currentBarrier.id = roomCount + gatewayCount + wallCount + objectCount;
 		wallCount += 1;
 		// the direction is the direction we just traveled to get to the wall
 		currentBarrier.direction = direction;
@@ -1915,7 +1917,7 @@ public class GridMap {
 		currentBarrier.left.y += Direction.yDelta[direction];
 
 		// get a new gateway id
-		currentBarrier.id = roomCount + gatewayCount + wallCount;
+		currentBarrier.id = roomCount + gatewayCount + wallCount + objectCount;
 		gatewayCount += 1;
 		// the direction is the direction we just traveled to get to the gateway
 		currentBarrier.direction = direction;
@@ -1982,7 +1984,7 @@ public class GridMap {
 			}
 			
 			// get a new room id
-			int roomNumber = roomCount + gatewayCount + wallCount;
+			int roomNumber = roomCount + gatewayCount + wallCount + objectCount;
 			roomCount += 1;
 			
 			// add new id to current gateway destination list
@@ -2060,6 +2062,12 @@ public class GridMap {
 			generateCenterpoints(roomNumber, barrierList);
 			this.roomBarrierMap.put(roomNumber, barrierList);
 		}
+	}
+	
+	int newObjectId() {
+		int objectNumber = roomCount + gatewayCount + wallCount + objectCount;
+		objectCount += 1;
+		return objectNumber; 
 	}
 	
 	public void generateCenterpoints(int roomNumber, ArrayList<Barrier> barrierList) {

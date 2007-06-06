@@ -32,7 +32,7 @@ class SelfInputLink {
 	Identifier areaDescription;
 	ArrayList<BarrierInputLink> walls = new ArrayList<BarrierInputLink>();
 	ArrayList<GatewayInputLink> gateways = new ArrayList<GatewayInputLink>();
-	HashMap<Integer, ObjectInputLink> objects = new HashMap<Integer, ObjectInputLink>();
+	private HashMap<Integer, ObjectInputLink> objects = new HashMap<Integer, ObjectInputLink>();
 	Identifier collision;
 	StringElement collisionX;
 	StringElement collisionY;
@@ -114,7 +114,7 @@ class SelfInputLink {
 	}
 	
 	void addOrUpdateObject(GridMap.BookObjectInfo objectInfo, World world) {
-		ObjectInputLink oIL = objects.get(objectInfo.object.getId());
+		ObjectInputLink oIL = objects.get(objectInfo.object.getIntProperty("object-id"));
 
 		double dx = objectInfo.floatLocation.x - world.getFloatLocation(robot).x;
 		dx *= dx;
@@ -122,30 +122,13 @@ class SelfInputLink {
 		dy *= dy;
 		double range = Math.sqrt(dx + dy);
 		
-		String adjacent = "no";
-		if (objectInfo.location.x == world.getLocation(robot).x) {
-			// possibly north or south
-			if (objectInfo.location.y == world.getLocation(robot).y - 1) {
-				adjacent = "north";
-			} else if (objectInfo.location.y == world.getLocation(robot).y + 1) {
-				adjacent = "south";
-			}
-		} else if (objectInfo.location.y == world.getLocation(robot).y) {
-			// possibly west or east
-			if (objectInfo.location.x == world.getLocation(robot).x - 1) {
-				adjacent = "west";
-			} else if (objectInfo.location.x == world.getLocation(robot).x + 1) {
-				adjacent = "east";
-			}
-		}
-		
 		if (oIL == null) {
 			// create new object
 			Identifier parent = robot.agent.CreateIdWME(robot.agent.GetInputLink(), "object");
 			oIL = new ObjectInputLink(robot, parent);
-			oIL.initialize(objectInfo, world, range, adjacent);
-			objects.put(objectInfo.object.getId(), oIL);
-			
+			oIL.initialize(objectInfo, world, range);
+			objects.put(objectInfo.object.getIntProperty("object-id"), oIL);
+		
 		} else {
 			if (oIL.area.GetValue() != objectInfo.area) {
 				robot.agent.Update(oIL.area, objectInfo.area);
@@ -164,9 +147,6 @@ class SelfInputLink {
 			}
 			if (oIL.range.GetValue() != range) {
 				robot.agent.Update(oIL.range, range);
-			}
-			if (!oIL.adjacent.GetValue().equals(adjacent)) {
-				robot.agent.Update(oIL.adjacent, adjacent);
 			}
 			double newAngleOff = world.angleOff(robot, objectInfo.floatLocation);
 			if (oIL.angleOff.GetValue() != newAngleOff) {
@@ -189,6 +169,10 @@ class SelfInputLink {
 				}
 			}
 		}
+	}
+	
+	ObjectInputLink getOIL(int id) {
+		return objects.get(id);
 	}
 	
 	void destroyAreaDescription() {
@@ -274,7 +258,7 @@ class ObjectInputLink {
 	IntElement row, col;
 	StringElement visible;
 	FloatElement range;
-	StringElement adjacent;
+	IntElement id;
 	
 	int cycleTouched;
 	
@@ -283,7 +267,8 @@ class ObjectInputLink {
 		this.parent = parent;
 	}
 	
-	void initialize(GridMap.BookObjectInfo info, World world, double range, String adjacent) {
+	void initialize(GridMap.BookObjectInfo info, World world, double range) {
+		this.id = robot.agent.CreateIntWME(parent, "id", info.object.getIntProperty("object-id"));
 		this.type = robot.agent.CreateStringWME(parent, "type", info.object.getProperty("id"));
 		this.area = robot.agent.CreateIntWME(parent, "area", info.area);
 		this.position = robot.agent.CreateIdWME(parent, "position");
@@ -295,7 +280,6 @@ class ObjectInputLink {
 			angleOff = robot.agent.CreateFloatWME(position, "angle-off", world.angleOff(robot, info.floatLocation));
 		}
 		this.range = robot.agent.CreateFloatWME(parent, "range", range);
-		this.adjacent = robot.agent.CreateStringWME(parent, "adjacent", adjacent);
 		this.visible = robot.agent.CreateStringWME(parent, "visible", "yes");
 		
 		touch(world.getWorldCount());
@@ -498,7 +482,7 @@ public class SoarRobot extends Robot {
 		Iterator<CellObject> bookObjectIter = bookObjects.iterator();
 		while (bookObjectIter.hasNext()) {
 			CellObject bObj = bookObjectIter.next();
-			GridMap.BookObjectInfo bInfo = map.getBookObjectInfo(bObj.getId());
+			GridMap.BookObjectInfo bInfo = map.getBookObjectInfo(bObj);
 			selfIL.addOrUpdateObject(bInfo, world);
 		}
 		
@@ -517,6 +501,8 @@ public class SoarRobot extends Robot {
 				rotateCommandExecutingAdded = true;
 			}
 		}
+		assert getCommandId == null;
+		assert dropCommandId == null;
 		
 		// commit everything
 		if (!agent.Commit()) {
@@ -529,6 +515,8 @@ public class SoarRobot extends Robot {
 	boolean moveCommandExecutingAdded = false;
 	Identifier rotateCommandId = null;
 	boolean rotateCommandExecutingAdded = false;
+	Identifier getCommandId = null;
+	Identifier dropCommandId = null;
 	
 	/* (non-Javadoc)
 	 * @see soar2d.player.Eater#getMove()
@@ -705,6 +693,82 @@ public class SoarRobot extends Robot {
 				rotateCommandId = commandId;
 				rotateCommandExecutingAdded = false;
 				
+			} else if (commandName.equalsIgnoreCase(Names.kGetID)) {
+				if (move.get) {
+					logger.warning(getName() + " multiple get commands issued");
+					commandId.AddStatusError();
+					continue;
+				}
+
+				if (move.drop) {
+					logger.warning(getName() + " get: both get and drop simultaneously issued");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				String idString = commandId.GetParameterValue("id");
+				if (idString == null) {
+					logger.warning(getName() + " get command missing id parameter");
+					commandId.AddStatusError();
+					continue;
+				}
+				try {
+					move.getId = Integer.parseInt(idString);
+				} catch (NumberFormatException e) {
+					logger.warning(getName() + " get command id parameter improperly formatted");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				ObjectInputLink oIL = selfIL.getOIL(move.getId);
+				if (oIL.range.GetValue() > Soar2D.config.getBookCellSize()) {
+					logger.warning(getName() + " get command object out of range");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				move.get = true;
+				move.getLocation = new java.awt.Point(oIL.col.GetValue(), oIL.row.GetValue());
+				getCommandId = commandId;
+				
+			} else if (commandName.equalsIgnoreCase(Names.kDropID)) {
+				if (move.drop) {
+					logger.warning(getName() + " multiple drop commands issued");
+					commandId.AddStatusError();
+					continue;
+				}
+
+				if (move.get) {
+					logger.warning(getName() + " drop: both drop and get simultaneously issued");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				String idString = commandId.GetParameterValue("id");
+				if (idString == null) {
+					logger.warning(getName() + " drop command missing id parameter");
+					commandId.AddStatusError();
+					continue;
+				}
+				try {
+					move.dropId = Integer.parseInt(idString);
+				} catch (NumberFormatException e) {
+					logger.warning(getName() + " drop command id parameter improperly formatted");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				ObjectInputLink oIL = selfIL.getOIL(move.dropId);
+				if (oIL.range.GetValue() > Soar2D.config.getBookCellSize()) {
+					logger.warning(getName() + " drop command object out of range");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				move.drop = true;
+				move.dropLocation = new java.awt.Point(oIL.col.GetValue(), oIL.row.GetValue());
+				dropCommandId = commandId;
+				
 			} else {
 				logger.warning("Unknown command: " + commandName);
 				commandId.AddStatusError();
@@ -717,6 +781,26 @@ public class SoarRobot extends Robot {
 			Soar2D.control.stopSimulation();
 		}
 		return move;
+	}
+	
+	public void updateGetStatus(boolean success) {
+		if (success) {
+			getCommandId.AddStatusComplete();
+			getCommandId = null;
+			return;
+		}
+		getCommandId.AddStatusError();
+		getCommandId = null;
+	}
+	
+	public void updateDropStatus(boolean success) {
+		if (success) {
+			dropCommandId.AddStatusComplete();
+			dropCommandId = null;
+			return;
+		}
+		dropCommandId.AddStatusError();
+		dropCommandId = null;
 	}
 	
 	public void rotateComplete() {

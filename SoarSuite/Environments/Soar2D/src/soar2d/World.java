@@ -985,6 +985,30 @@ public class World {
 			if (player.getSpeed() != 0) {
 				bookMovePlayer(player, time);
 			}
+			
+			if (move.get) {
+				CellObject block = map.getObject(move.getLocation, "mblock");
+				if (block == null) {
+					// shouldn't happen
+					assert false;
+					move.get = false;
+					player.updateGetStatus(false);
+				} else {
+					// FIXME: store get info for processing later
+					map.removeAllWithProperty(move.getLocation, "mblock");
+					player.updateGetStatus(true);
+				}
+			}
+			
+			if (move.drop) {
+				if (checkBlocked(move.dropLocation)) {
+					move.drop = false;
+					player.updateDropStatus(false);
+				} else {
+					// FIXME: store drop info for processing later
+				}
+			}
+			
 		}
 		
 		handleBookCollisions(findCollisions());

@@ -149,7 +149,7 @@ public class Direction {
 	public static int getInt(String direction) {
 		Integer d = ints.get(direction);
 		if (d == null) {
-			return kNorthInt;
+			return 0;
 		}
 		return d.intValue();
 	}
