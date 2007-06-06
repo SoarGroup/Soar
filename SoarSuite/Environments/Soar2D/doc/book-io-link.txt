@@ -53,6 +53,9 @@ full implementation:
 			^x <float> component
 			^y <float> component
 #			^z <float> component
+		^carry
+			^type <string> [block ramp]
+			^id <int>
 	+^object
 		^angle-off <float> relative to direction I'm facing
 		^area <int> unique id number

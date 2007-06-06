@@ -1,0 +1,12 @@
+sp {wander*propose*move-block
+   (state <s> ^name wander)
+   (<s> ^top-state.io.input-link <il>)
+   (<il> ^object <obj>)
+   (<obj> ^visible yes
+        ^range < 16.0
+        ^id <id>)
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name move-block
+        ^block-id <id>)
+}

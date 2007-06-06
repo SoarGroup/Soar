@@ -987,25 +987,43 @@ public class World {
 			}
 			
 			if (move.get) {
+				logger.finer("Move: get");
 				CellObject block = map.getObject(move.getLocation, "mblock");
-				if (block == null) {
-					// shouldn't happen
-					assert false;
+				if (block == null || player.isCarrying()) {
+					if (block == null) {
+						logger.warning("get command failed, no object");
+					} else {
+						logger.warning("get command failed, full");
+					}
 					move.get = false;
 					player.updateGetStatus(false);
 				} else {
 					// FIXME: store get info for processing later
-					map.removeAllWithProperty(move.getLocation, "mblock");
+					player.carry(map.getAllWithProperty(move.getLocation, "mblock").get(0));
+					map.removeObject(move.getLocation, "mblock");
 					player.updateGetStatus(true);
 				}
 			}
 			
 			if (move.drop) {
-				if (checkBlocked(move.dropLocation)) {
+				Point2D.Double dropFloatLocation = new Point2D.Double(floatLocations.get(player.getName()).x, floatLocations.get(player.getName()).y);
+				dropFloatLocation.x += Soar2D.config.getBookCellSize() * Math.cos(player.getHeadingRadians());
+				dropFloatLocation.y += Soar2D.config.getBookCellSize() * Math.sin(player.getHeadingRadians());
+				java.awt.Point dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.config.getBookCellSize(), (int)dropFloatLocation.y / Soar2D.config.getBookCellSize());
+				logger.finer("Move: drop " + dropLocation.x + "," + dropLocation.y);
+				
+				if (dropLocation.equals(locations.get(player.getName())) || checkBlocked(dropLocation)) {
+					if (dropLocation.equals(locations.get(player.getName()))) {
+						logger.warning("drop command failed, can't drop on same location");
+					} else {
+						logger.warning("drop command failed, blocked");
+					}
 					move.drop = false;
 					player.updateDropStatus(false);
 				} else {
 					// FIXME: store drop info for processing later
+					map.addObjectToCell(dropLocation, player.drop());
+					player.updateDropStatus(true);
 				}
 			}
 			

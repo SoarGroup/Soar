@@ -49,6 +49,9 @@ class SelfInputLink {
 	FloatElement speed;
 	FloatElement dx;
 	FloatElement dy;
+	Identifier carry;
+	StringElement carryType;
+	IntElement carryId;
 	
 	SelfInputLink(SoarRobot robot) {
 		this.robot = robot;
@@ -190,8 +193,21 @@ class SelfInputLink {
 	void destroy() {
 		assert self != null;
 		robot.agent.DestroyWME(self);
-		self = areaDescription = null;
+		self = areaDescription = carry = null;
 		destroyAreaDescription();
+	}
+	
+	void carry(CellObject object) {
+		assert carry == null;
+		carry = robot.agent.CreateIdWME(self, "carry");
+		carryType = robot.agent.CreateStringWME(carry, "type", object.getProperty("id"));
+		carryId = robot.agent.CreateIntWME(carry, "id", object.getIntProperty("object-id"));
+	}
+	
+	void drop() {
+		assert carry != null;
+		robot.agent.DestroyWME(carry);
+		carry = null;
 	}
 }
 
@@ -347,6 +363,16 @@ public class SoarRobot extends Robot {
 			newRandom = Simulation.random.nextFloat();
 		} while (this.random == newRandom);
 		this.random = newRandom;
+	}
+	
+	public void carry(CellObject object) {
+		selfIL.carry(object);
+		super.carry(object);
+	}
+	
+	public CellObject drop() {
+		selfIL.drop();
+		return super.drop();
 	}
 	
 	public void update(World world, java.awt.Point location) {
@@ -758,15 +784,7 @@ public class SoarRobot extends Robot {
 					continue;
 				}
 				
-				ObjectInputLink oIL = selfIL.getOIL(move.dropId);
-				if (oIL.range.GetValue() > Soar2D.config.getBookCellSize()) {
-					logger.warning(getName() + " drop command object out of range");
-					commandId.AddStatusError();
-					continue;
-				}
-				
 				move.drop = true;
-				move.dropLocation = new java.awt.Point(oIL.col.GetValue(), oIL.row.GetValue());
 				dropCommandId = commandId;
 				
 			} else {
