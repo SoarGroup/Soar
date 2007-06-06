@@ -119,8 +119,11 @@ protected:
 	*************************************************************************/
 	bool IsSymbol(char ch)
 	{
-		return (ch == kOpenTagChar || ch == kCloseTagChar ||
+		if (!m_InCharData) {
+			return (ch == kOpenTagChar || ch == kCloseTagChar ||
 				ch == kEndMarkerChar || ch == kHeaderChar || ch == kEqualsChar) ;
+		}
+		return (ch == kOpenTagChar || ch == kCloseTagChar);
 	}
 
 	/************************************************************************
