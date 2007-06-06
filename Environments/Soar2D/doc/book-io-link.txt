@@ -56,6 +56,7 @@ full implementation:
 	+^object
 		^angle-off <float> relative to direction I'm facing
 		^area <int> unique id number
+		^id <int> object id number (separate from area/wall ids)
 		^type <string> [block ramp cat dog gateway]
 #		?^up-direction <float> direction to pass through the ramp to go up
 		^position
@@ -66,7 +67,6 @@ full implementation:
 			^col <int> current row
 #			^height <int> how many blocks up
 		^range <float>
-		^adjacent <string> [no north south east west] if adjacent, what direction
 		^visible <string> [yes no] objects stay on input link for 2 cycles after they disappear
 ^output-link
 	^move
@@ -80,6 +80,12 @@ full implementation:
 		^status [executing complete error]
 	^rotate-relative
 		^amount <float> desired change in radians, negative for left turn
+		^status [executing complete error]
+	^get
+		^id <int>
+		^status [executing complete error]
+	^drop
+		^id <int>
 		^status [executing complete error]
 		
 Output command "states"

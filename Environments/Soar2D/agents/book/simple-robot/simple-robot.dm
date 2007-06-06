@@ -1,4 +1,4 @@
-99
+101
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -98,7 +98,9 @@ ENUMERATION 95 1 rotate
 SOAR_ID 96
 ENUMERATION 97 1 move
 SOAR_ID 98
-102
+ENUMERATION 99 1 get
+SOAR_ID 100
+104
 0 attribute 21
 0 choices 22
 0 impasse 23
@@ -130,6 +132,7 @@ SOAR_ID 98
 16 operator 32
 16 operator 34
 16 operator 91
+16 operator 100
 16 superstate 0
 16 top-state 0
 16 type 17
@@ -201,3 +204,4 @@ SOAR_ID 98
 92 type 93
 96 name 95
 98 name 97
+100 name 99
