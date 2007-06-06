@@ -18,8 +18,6 @@
 #include "sock_OSspecific.h"
 #include <assert.h>
 
-//#include <iostream>
-
 using namespace sock ;
 
 //////////////////////////////////////////////////////////////////////
@@ -96,8 +94,6 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 		pNetAddress = kLocalHost ;
 #endif
 
-//std::cout << "one" << std::endl;
-
 	in_addr* pAddress = NULL;
 
 	if(pNetAddress) {
@@ -117,8 +113,6 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 
 	int res;
 
-//std::cout << "two" << std::endl;
-
 #ifdef ENABLE_LOCAL_SOCKETS
 
 	sockaddr_un local_address;
@@ -126,12 +120,13 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 	if(!pNetAddress) {
 		memset(&local_address, 0, sizeof(local_address));
 		local_address.sun_family = AF_UNIX;
+		//sprintf(local_address.sun_path, "%s%u", "./", port);
 		sprintf(local_address.sun_path, "%s%u", "/var/tmp/", port);
 		//int len = (offsetof (struct sockaddr_un, sun_path) + strlen (local_address.sun_path) + 1);
 		int len = SUN_LEN(&local_address);
 
 		//BADBAD? Check if in use?
-		unlink(local_address.sun_path); // in case it already exists
+		//unlink(local_address.sun_path); // in case it already exists
 
 		// Create the socket
 		sock = socket(AF_UNIX, SOCK_STREAM, 0) ;
@@ -142,11 +137,11 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 			return false ;
 		}
 
-		/*if(chmod(local_address.sun_path, "S_IRWXU") < 0)
+		if(chmod(local_address.sun_path, S_IRWXU) < 0)
 		{
 			PrintDebug("Error: Error setting permissions for client local connection socket") ;
 			return false ;
-		}*/
+		}
 
 		// Try to connect to the server
 		res = connect(sock, (sockaddr*)&local_address, len) ;
@@ -163,8 +158,6 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 		// Create the socket
 		sock = socket(AF_INET, SOCK_STREAM, 0) ;
 
-//std::cout << "three" << std::endl;
-
 		if (sock == INVALID_SOCKET)
 		{
 			PrintDebug("Error: Error creating client connection socket") ;
@@ -177,8 +170,6 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 
 	// Record the sock so it's cleaned up correctly on exit
 	m_hSocket = sock ;
-
-//std::cout << "four" << std::endl;
 
 	if (res != 0)
 	{
@@ -196,8 +187,6 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 		return false ;
 	}
 #endif
-
-//std::cout << "five" << std::endl;
 
 	return true ;
 }
