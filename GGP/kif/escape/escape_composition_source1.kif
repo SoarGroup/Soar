@@ -198,16 +198,19 @@
 (<= (next (currSymbol ?ns))
     (true (currSymbol ?cs))
     (nextSymbol ?cs ?ns)
-    (does explorer (combine ?item1 ?item2)))
+    (does explorer (combine ?item1 ?item2 ?glue)))
 
 ;; frame axiom for maintaining the current symbol
 (<= (next (currSymbol ?cs))
     (true (currSymbol ?cs))
-    (not (does explorer (combine ?item1 ?item2))))
+    (not didCombine))
+
+(<= didCombine
+    (does explorer (combine ?item1 ?item2 ?glue)))
 
 ;; the combine action
 (<= (combining ?item1 ?item2 ?comboName)
-    (does explorer (combine ?item1 ?item2))
+    (does explorer (combine ?item1 ?item2 ?glue))
     (true (currSymbol ?comboName)))
 
 (<= (next (comboType ?comboName ?item1 ?item2))
