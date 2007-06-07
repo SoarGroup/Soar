@@ -116,7 +116,7 @@ class SelfInputLink {
 		gateways.add(gateway);
 	}
 	
-	void addOrUpdateObject(GridMap.BookObjectInfo objectInfo, World world) {
+	void addOrUpdateObject(GridMap.BookObjectInfo objectInfo, World world, double angleOffDouble) {
 		ObjectInputLink oIL = objects.get(objectInfo.object.getIntProperty("object-id"));
 
 		double dx = objectInfo.floatLocation.x - world.getFloatLocation(robot).x;
@@ -129,7 +129,7 @@ class SelfInputLink {
 			// create new object
 			Identifier parent = robot.agent.CreateIdWME(robot.agent.GetInputLink(), "object");
 			oIL = new ObjectInputLink(robot, parent);
-			oIL.initialize(objectInfo, world, range);
+			oIL.initialize(objectInfo, world, range, angleOffDouble);
 			objects.put(objectInfo.object.getIntProperty("object-id"), oIL);
 		
 		} else {
@@ -151,9 +151,8 @@ class SelfInputLink {
 			if (oIL.range.GetValue() != range) {
 				robot.agent.Update(oIL.range, range);
 			}
-			double newAngleOff = world.angleOff(robot, objectInfo.floatLocation);
-			if (oIL.angleOff.GetValue() != newAngleOff) {
-				robot.agent.Update(oIL.angleOff, newAngleOff);
+			if (oIL.angleOff.GetValue() != angleOffDouble) {
+				robot.agent.Update(oIL.angleOff, angleOffDouble);
 			}
 			oIL.touch(world.getWorldCount());
 		}
@@ -283,7 +282,7 @@ class ObjectInputLink {
 		this.parent = parent;
 	}
 	
-	void initialize(GridMap.BookObjectInfo info, World world, double range) {
+	void initialize(GridMap.BookObjectInfo info, World world, double range, double angleOffDouble) {
 		this.id = robot.agent.CreateIntWME(parent, "id", info.object.getIntProperty("object-id"));
 		this.type = robot.agent.CreateStringWME(parent, "type", info.object.getProperty("id"));
 		this.area = robot.agent.CreateIntWME(parent, "area", info.area);
@@ -293,7 +292,7 @@ class ObjectInputLink {
 			this.row = robot.agent.CreateIntWME(position, "row", info.location.y);
 			this.x = robot.agent.CreateFloatWME(position, "x", info.floatLocation.x);
 			this.y = robot.agent.CreateFloatWME(position, "y", info.floatLocation.y);
-			angleOff = robot.agent.CreateFloatWME(position, "angle-off", world.angleOff(robot, info.floatLocation));
+			angleOff = robot.agent.CreateFloatWME(position, "angle-off", angleOffDouble);
 		}
 		this.range = robot.agent.CreateFloatWME(parent, "range", range);
 		this.visible = robot.agent.CreateStringWME(parent, "visible", "yes");
@@ -510,7 +509,13 @@ public class SoarRobot extends Robot {
 			CellObject bObj = bookObjectIter.next();
 			GridMap.BookObjectInfo bInfo = map.getBookObjectInfo(bObj);
 			if (bInfo.area == locationId) {
-				selfIL.addOrUpdateObject(bInfo, world);
+				double maxAngleOff = Soar2D.config.getVisionCone() / 2;
+				double angleOff = world.angleOff(this, bInfo.floatLocation);
+				if (Math.abs(angleOff) <= maxAngleOff) {
+					selfIL.addOrUpdateObject(bInfo, world, angleOff);
+				} else {
+					logger.finer(getName() + ": object " + bInfo.object.getProperty("object-id") + " out of cone");
+				}
 			}
 		}
 		

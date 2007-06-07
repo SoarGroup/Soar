@@ -64,6 +64,8 @@
 					int pixels
 				?<cycle-time-slice>
 					int milliseconds
+				?<vision-cone>
+					float radians (max visible angle-off is half of this)
 	?<logging>
 		?<level>
 			enum { severe, warning, info, fine, finer, finest }
