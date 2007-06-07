@@ -19,9 +19,25 @@ public class EatersOutputStateVariable extends JavaStateVariable {
 	}
 	
 	public void Initialize() {
-		GetCurrentValue().SetFromInteger(2) ;
+		Group g = new Group();
+		g.AddNamedValue("_initialized", new tosca.Boolean(false));
+		GetCurrentValue().TakeGroup(g);
 	}
 
+	public boolean IsInitialized(Value v) {
+		return v.CastToGroup().GetNamedValue("_initialized").CastToBoolean().GetBoolean();
+	}
+	
+	public int GetActionValue(Value v) {
+		if (IsInitialized(v))
+			return v.CastToGroup().GetNamedValue("value").CastToInteger().GetInteger();
+		else
+		{
+			System.out.println("UNINITIALIZED");
+			return 0;
+		}
+	}
+	
 	/** 
 	 * Note: It's ONLY valid to call this within the tickEvent() handler -- which is called by InputFunctionModule while the clock is holding waiting for the function module to respond
 	 * Returns 1-4 to make a move.  0 to not go anywhere.
@@ -34,13 +50,12 @@ public class EatersOutputStateVariable extends JavaStateVariable {
 		Value value = new Value() ;
 		this.GetValue(value, time) ;
 		
-		tosca.Integer direction = value.CastToInteger() ;
-		int action = direction.GetInteger();
-		
+		int action = GetActionValue(value);			
 		if (action < 5)
 			return action;
 		else
-			return 0;
+			return 0;			
+
 	}
 	
 	public Boolean IsOpening()
@@ -50,11 +65,10 @@ public class EatersOutputStateVariable extends JavaStateVariable {
 		Value value = new Value() ;
 		this.GetValue(value, time) ;
 		
-		if (value.CastToInteger().GetInteger() >= 5) {
+		if (GetActionValue(value) >= 5)
 			return true;
-		} else {
+		else
 			return false;
-		}
 	}
 	
 	public int GetOpenCode()
@@ -64,9 +78,7 @@ public class EatersOutputStateVariable extends JavaStateVariable {
 		Value value = new Value() ;
 		this.GetValue(value, time) ;
 		
-		tosca.Integer direction = value.CastToInteger() ;
-		int action = direction.GetInteger();
-		
+		int action = GetActionValue(value);
 		if (action == 5)
 			return 0;
 		else if (action == 6)
@@ -74,7 +86,7 @@ public class EatersOutputStateVariable extends JavaStateVariable {
 		else if (action == 7)
 			return 2;
 		else
-			return -1;
+			return 0;			
 	}
 	
 	protected Value GetCurrentValue() { return m_Value ; }
