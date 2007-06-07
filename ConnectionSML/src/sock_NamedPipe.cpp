@@ -127,12 +127,12 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 				// On a non-blocking pipe, the pipe can return "pipe closing" -- in which case
 				// we need to wait for it to clear.  A blocking pipe would not return in this case
 				// so this would always be an error.
-				/*if (IsErrorWouldBlock())
+				if (IsErrorWouldBlock())
 				{
 					PrintDebug("Waiting for pipe to unblock") ;
 					SleepSocket(0, 0) ;
 				}
-				else*/
+				else
 #endif
 				{
 					PrintDebug("Error: Error sending message") ;
@@ -190,6 +190,12 @@ bool NamedPipe::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 	{
 		// if the pipe hasn't been connected yet, then just return
 		if(GetLastError() == PIPE_BAD) {
+			return false;
+		}
+
+		if(GetLastError() == PIPE_BROKEN) {
+			PrintDebug("Remote pipe has closed gracefully") ;
+			Close() ;
 			return false;
 		}
 
@@ -266,12 +272,12 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 				// On a non-blocking pipe, the socket may return "pipe closing" -- in which case
 				// we need to wait for it to clear.  A blocking pipe would not return in this case
 				// so this would always be an error.
-				/*if (IsErrorWouldBlock())
+				if (IsErrorWouldBlock())
 				{
-					PrintDebug("Waiting for pipe to unblock") ;
+					//PrintDebug("Waiting for pipe to unblock") ;
 					SleepSocket(0, 0) ;	// BADBAD: Should have a proper way to pass control back to the caller while we're blocked.
 				}
-				else*/
+				else
 #endif
 				{
 					PrintDebug("Error: Error receiving message") ;
@@ -290,7 +296,7 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 
 			// Check for 0 bytes read--which is the behavior if the remote pipe is
 			// closed gracefully.
-			if (thisRead == 0)
+			/*if (thisRead == 0)
 			{
 				PrintDebug("Remote pipe has closed gracefully") ;
 
@@ -300,11 +306,11 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 				//Close() ;
 
 				//return false ;	// No message received.
-			}
+			}*/
 
 		} while (!success) ;
 
-		if(tries>1)	PrintDebugFormat("Number tries %d",tries) ;
+		//if(tries>1)	PrintDebugFormat("Number tries %d",tries) ;
 
 		if (m_bTraceCommunications)
 			PrintDebugFormat("Received %d bytes",thisRead) ;
