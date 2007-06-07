@@ -1877,7 +1877,9 @@ public class World {
 		
 		// make target unit vector
 		double targetVectorLength = Math.sqrt(Math.pow(targetVector.x, 2) + Math.pow(targetVector.y, 2));
-		assert targetVectorLength > 0;
+		if (targetVectorLength <= 0) {
+			assert false;
+		}
 		targetVector.x /= targetVectorLength;
 		targetVector.y /= targetVectorLength;
 		

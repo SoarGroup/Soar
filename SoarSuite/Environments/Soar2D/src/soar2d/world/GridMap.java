@@ -985,7 +985,11 @@ public class GridMap {
 		boolean noPlayer = cell.getPlayer() == null;
 		boolean noMissilePack = cell.getAllWithProperty(Names.kPropertyMissiles).size() <= 0;
 		boolean noCharger = cell.getAllWithProperty(Names.kPropertyCharger).size() <= 0;
-		return enterable && noPlayer && noMissilePack && noCharger;
+		boolean noMBlock = true;
+		if (Soar2D.config.getType() == SimType.kBook) {
+			noMBlock = cell.getAllWithProperty("mblock").size() <= 0;
+		}
+		return enterable && noPlayer && noMissilePack && noCharger && noMBlock;
 	}
 	
 	public boolean enterable(java.awt.Point location) {
