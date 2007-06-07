@@ -1,5 +1,0 @@
-sp {wander*elaborate*state
-   (state <s> ^name wander)
--->
-   (<s>)
-}

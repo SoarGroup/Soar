@@ -1696,9 +1696,6 @@ public class GridMap {
 						// is are noted by the direction of the wall
 						gatewayObject.addProperty(Direction.stringOf[currentBarrier.direction], Integer.toString(currentBarrier.id));
 						
-						// tell the gateway it should be drawn
-						gatewayObject.addProperty(Names.kPropertyGatewayRender, Names.kTrue);
-
 					} else if (wallObject != null) /*redundant*/ {
 					
 						if (currentBarrier != null) {
@@ -1933,6 +1930,7 @@ public class GridMap {
 		while (true) {
 			// create the gateway object
 			CellObject gatewayObject = cellObjectManager.createObject(Names.kGatewayID);
+			gatewayObject.removeProperty(Names.kPropertyGatewayRender);
 
 			// gateway don't share ids, they are noted by the direction of the gateway
 			gatewayObject.addProperty(Direction.stringOf[currentBarrier.direction], Integer.toString(currentBarrier.id));

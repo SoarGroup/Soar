@@ -1,6 +1,6 @@
 sp {wander*propose*move
    (state <s> ^name wander)
-   (<s> ^top-state.io.input-link.self.cycle <c>)
+   (<s> ^io.input-link.self.cycle <c>)
 -->
    (<s> ^operator <o> + =)
    (<o> ^name move

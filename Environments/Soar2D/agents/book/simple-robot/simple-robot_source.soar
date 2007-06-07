@@ -5,6 +5,14 @@ popd
 pushd elaborations
 source elaborations_source.soar
 popd
+source move-block.soar
+pushd move-block
+source move-block_source.soar
+popd
+source move-to-gateway.soar
+pushd move-to-gateway
+source move-to-gateway_source.soar
+popd
 source wander.soar
 pushd wander
 source wander_source.soar

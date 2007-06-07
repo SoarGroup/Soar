@@ -7,6 +7,7 @@
  <cell-object name="gateway" updatable="false">
   <property name="id" value="gateway"></property>
   <property name="gateway" value="true" />
+  <property name="gateway-render" value="true" />
  </cell-object>
  <cell-object name="room" updatable="false">
   <property name="id" value="room"></property>

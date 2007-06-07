@@ -1,12 +1,4 @@
 source elaborations.soar
 source move.soar
-source move-block.soar
-pushd move-block
-source move-block_source.soar
-popd
-source move-to-gateway.soar
-pushd move-to-gateway
-source move-to-gateway_source.soar
-popd
 source rotate.soar
 source stop.soar
