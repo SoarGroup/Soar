@@ -28,7 +28,8 @@
 #ifdef _WIN32
 #include <string>
 
-#include "../src/sock_OSspecific.h" //BADBAD: move header to include directory
+#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+#include <windows.h>			// for INVALID_HANDLE_VALUE
 
 #include "sock_DataSender.h"
 

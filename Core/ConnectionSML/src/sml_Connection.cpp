@@ -36,7 +36,7 @@
 #include "sml_TagResult.h"
 #include "sock_ClientSocket.h"
 
-#include "../src/sock_OSspecific.h" // for ENABLE_NAMED_PIPES
+#include "sock_OSspecific.h" // for ENABLE_NAMED_PIPES
 #ifdef ENABLE_NAMED_PIPES
 #include "sock_ClientNamedPipe.h"
 #endif
