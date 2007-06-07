@@ -1,4 +1,4 @@
-110
+116
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -109,7 +109,13 @@ ENUMERATION 106 1 state
 ENUMERATION 107 1 move-block
 ENUMERATION 108 1 blank
 SOAR_ID 109
-114
+ENUMERATION 110 1 blocked
+SOAR_ID 111
+ENUMERATION 112 1 move-block
+SOAR_ID 113
+ENUMERATION 114 1 resume
+SOAR_ID 115
+120
 0 attribute 21
 0 choices 22
 0 impasse 23
@@ -210,7 +216,9 @@ SOAR_ID 109
 92 name 94
 92 operator 96
 92 operator 98
-92 superstate 16
+92 operator 111
+92 operator 113
+92 superstate 0
 92 top-state 0
 92 type 93
 96 name 95
@@ -220,7 +228,11 @@ SOAR_ID 109
 104 name 103
 105 name 107
 105 operator 109
-105 superstate 16
+105 operator 115
+105 superstate 0
 105 top-state 0
 105 type 106
 109 name 108
+111 name 110
+113 name 112
+115 name 114

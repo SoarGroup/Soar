@@ -4,5 +4,15 @@ sp {propose*wander
    (state <s> ^name book
               ^io.input-link <io>)
 -->
-   (<s> ^operator.name wander)
+   (<s> ^operator.name wander +)
+}
+
+sp {wander*compare*wander
+   (state <s> ^name book
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name <name>)
+   (<op2> ^name wander)
+-->
+   (<s> ^operator <op1> > <op2>)
 }

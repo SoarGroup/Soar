@@ -420,4 +420,9 @@ public class CellObject {
 		}
 		return kDefaultPropertyFloat;
 	}
+
+	public void removeProperty(String property) {
+		String value = properties.remove(property);
+		assert value != null;
+	}
 }
