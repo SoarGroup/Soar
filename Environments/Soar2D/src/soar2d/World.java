@@ -1010,14 +1010,18 @@ public class World {
 				dropFloatLocation.x += Soar2D.config.getBookCellSize() * Math.cos(player.getHeadingRadians());
 				dropFloatLocation.y += Soar2D.config.getBookCellSize() * Math.sin(player.getHeadingRadians());
 				java.awt.Point dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.config.getBookCellSize(), (int)dropFloatLocation.y / Soar2D.config.getBookCellSize());
+				
+				if (dropLocation.equals(locations.get(player.getName()))) {
+					dropFloatLocation.x += (Soar2D.config.getBookCellSize() / 2) * Math.cos(player.getHeadingRadians());
+					dropFloatLocation.y += (Soar2D.config.getBookCellSize() / 2) * Math.sin(player.getHeadingRadians());
+					dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.config.getBookCellSize(), (int)dropFloatLocation.y / Soar2D.config.getBookCellSize());
+					assert !dropLocation.equals(locations.get(player.getName()));
+				}
+
 				logger.finer("Move: drop " + dropLocation.x + "," + dropLocation.y);
 				
-				if (dropLocation.equals(locations.get(player.getName())) || checkBlocked(dropLocation)) {
-					if (dropLocation.equals(locations.get(player.getName()))) {
-						logger.warning("drop command failed, can't drop on same location");
-					} else {
-						logger.warning("drop command failed, blocked");
-					}
+				if (checkBlocked(dropLocation)) {
+					logger.warning("drop command failed, blocked");
 					move.drop = false;
 					player.updateDropStatus(false);
 				} else {

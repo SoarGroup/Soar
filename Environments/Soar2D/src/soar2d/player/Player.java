@@ -213,6 +213,7 @@ public class Player {
 		destinationHeading = null;
 		velocity = new Point2D.Double(0,0);
 		speed = 0;
+		carriedObject = null;
 	}
 	/**
 	 * called when things are shutting down
