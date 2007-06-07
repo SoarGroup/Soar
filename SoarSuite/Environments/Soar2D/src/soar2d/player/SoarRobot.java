@@ -509,7 +509,9 @@ public class SoarRobot extends Robot {
 		while (bookObjectIter.hasNext()) {
 			CellObject bObj = bookObjectIter.next();
 			GridMap.BookObjectInfo bInfo = map.getBookObjectInfo(bObj);
-			selfIL.addOrUpdateObject(bInfo, world);
+			if (bInfo.area == locationId) {
+				selfIL.addOrUpdateObject(bInfo, world);
+			}
 		}
 		
 		selfIL.purge(world.getWorldCount());

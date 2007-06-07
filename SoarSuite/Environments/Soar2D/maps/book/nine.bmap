@@ -15,8 +15,8 @@
   </cell-object>
   <cell-object name="wall">
     <property name="wall" value="true" />
-    <property name="id" value="wall" />
     <property name="block" value="true" />
+    <property name="id" value="wall" />
   </cell-object>
   <cells world-size="25" random-walls="false" random-food="false">
     <row>
@@ -739,17 +739,27 @@
       <cell>
         <object>wall</object>
       </cell>
-      <cell />
       <cell>
         <object>mblock</object>
       </cell>
-      <cell />
       <cell>
         <object>mblock</object>
       </cell>
-      <cell />
-      <cell />
-      <cell />
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell>
+        <object>mblock</object>
+      </cell>
       <cell>
         <object>wall</object>
       </cell>
