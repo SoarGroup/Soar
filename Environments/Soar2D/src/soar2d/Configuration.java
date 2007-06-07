@@ -69,6 +69,7 @@ public class Configuration {
 		this.speed = config.speed;
 		this.bookCellSize = config.bookCellSize;
 		this.cycleTimeSlice = config.cycleTimeSlice;
+		this.visionCone = config.visionCone;
 		
 		// logging
 		this.logLevel = Level.parse(config.logLevel.getName());
@@ -502,6 +503,7 @@ public class Configuration {
 			book.addContent(new Element(kTagRotateSpeed).setText(Float.toString(this.getRotateSpeed())));
 			book.addContent(new Element(kTagBookCellSize).setText(Integer.toString(this.getBookCellSize())));
 			book.addContent(new Element(kTagCycleTimeSlice).setText(Integer.toString(this.getCycleTimeSlice())));
+			book.addContent(new Element(kTagVisionCone).setText(Double.toString(this.getVisionCone())));
 			rules.addContent(book);
 			break;
 		}
@@ -923,6 +925,15 @@ public class Configuration {
 		this.cycleTimeSlice = cycleTimeSlice;
 	}
 	
+	private static final String kTagVisionCone = "vision-cone";
+	private double visionCone = (3 * Math.PI) / 4;
+	public double getVisionCone() {
+		return this.visionCone;
+	}
+	public void setVisionCone(double visionCone) {
+		this.visionCone = visionCone;
+	}
+	
 	private void book(Element book) throws LoadError {
 		List children = book.getChildren();
 		Iterator iter = children.iterator();
@@ -958,6 +969,13 @@ public class Configuration {
 					this.setCycleTimeSlice(Integer.parseInt(child.getTextTrim()));
 				} catch (NumberFormatException e) {
 					throw new LoadError("Error parsing " + kTagCycleTimeSlice);
+				}
+				
+			} else if (child.getName().equalsIgnoreCase(kTagVisionCone)) {
+				try {
+					this.setVisionCone(Double.parseDouble(child.getTextTrim()));
+				} catch (NumberFormatException e) {
+					throw new LoadError("Error parsing " + kTagVisionCone);
 				}
 				
 			} else {
