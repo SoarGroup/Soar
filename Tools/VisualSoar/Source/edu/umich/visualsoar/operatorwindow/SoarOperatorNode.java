@@ -693,12 +693,14 @@ class SoarOperatorNode extends FileNode
                     dataMapParent = parent.getStateIdVertex();
                 }   
                 dataMap = new DataMap(swmm,dataMapParent, parent.toString());
+                pw.addDataMap(dataMap);
                 pw.getDesktopPane().dmAddDataMap(dataMapParent.getValue(), dataMap);
             }
             else 
             {
 
                 dataMap = new DataMap(swmm,dataMapId,toString());
+                pw.addDataMap(dataMap);
                 pw.getDesktopPane().dmAddDataMap(dataMapId.getValue(), dataMap);
             }
         }
@@ -706,12 +708,12 @@ class SoarOperatorNode extends FileNode
         {
 
             dataMap = new DataMap(swmm, swmm.getTopstate(),toString());
+            pw.addDataMap(dataMap);
             pw.getDesktopPane().dmAddDataMap(swmm.getTopstate().getValue(),
                                              dataMap);
         }
       
         dataMap.setVisible(true);
-        pw.addDataMap(dataMap);
     }
 
     public SoarIdentifierVertex getState() 
