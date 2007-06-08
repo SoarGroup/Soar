@@ -68,7 +68,7 @@ public class Player {
 	 */
 	public void setPoints(int points, String comment) {
 		pointsChanged = true;
-		pointsDelta = this.points - points;
+		pointsDelta = points - this.points;
 		
 		this.points = points;
 		if (comment != null) {
@@ -85,6 +85,11 @@ public class Player {
 	 * why the change happened
 	 */
 	public void adjustPoints(int delta, String comment) {
+		if (delta == 0) {
+			logger.fine(this.name + " adjust points 0");
+			return;
+		}
+		
 		pointsChanged = (delta != 0);
 		pointsDelta = delta;
 		
@@ -199,13 +204,19 @@ public class Player {
 			this.facingInt = Simulation.random.nextInt(4) + 1;
 		}
 		
-		if (playerConfig.hasPoints()) {
-			this.points = playerConfig.getPoints();
-		} else {
-			this.points = Soar2D.config.getDefaultPoints();
+		// Nick, for some reason, would like to keep the scores across resets
+		// Because, he says, he is super-awesome.
+		if (soar2d.player.ToscaEater.kToscaEnabled == false) {
+			if (playerConfig.hasPoints()) {
+				this.points = playerConfig.getPoints();
+			} else {
+				this.points = Soar2D.config.getDefaultPoints();
+			}
 		}
+
 		pointsChanged = true;
 		pointsDelta = 0;
+		
 		headingRadians = 0;
 		collisionX = false;
 		collisionY = false;
