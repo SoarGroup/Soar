@@ -13,5 +13,3 @@ sp {wander*propose*rotate*left
    (<s> ^operator <o> + =)
    (<o> ^name rotate
         ^actions.rotate.direction left)}
-
-

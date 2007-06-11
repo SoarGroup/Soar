@@ -1,0 +1,11 @@
+sp {wander*propose*get
+   (state <s> ^name move-block
+              ^block-id <bid>
+              ^io.input-link.object.id <bid>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name get
+        ^actions.get.id <bid>
+        ^actions.move.direction stop
+        ^actions.rotate-relative.amount 1.57)
+}

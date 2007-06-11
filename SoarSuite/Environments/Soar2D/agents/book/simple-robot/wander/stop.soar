@@ -5,5 +5,3 @@ sp {wander*propose*stop
    (<s> ^operator <o> + =)
    (<o> ^name move
         ^actions.move.direction stop)}
-
-

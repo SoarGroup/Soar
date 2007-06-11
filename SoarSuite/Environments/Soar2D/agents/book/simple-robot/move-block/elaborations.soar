@@ -1,0 +1,8 @@
+sp {move-block*elaborate*substate
+   (state <s> ^name move-block
+              ^superstate.operator <so>)
+   (<so> ^name move-block
+         ^block-id <id>)
+-->
+   (<s> ^block-id <id>)
+}
