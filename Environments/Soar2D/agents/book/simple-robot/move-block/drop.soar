@@ -1,0 +1,18 @@
+sp {move-block*propose*drop
+   (state <s> ^name move-block
+              ^block-id <bid>
+              ^io.output-link.rotate-relative.status executing
+             -^io.output-link.rotate-relative.status complete)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name drop
+         ^block-id <bid>)
+}
+
+sp {apply*drop
+   (state <s> ^operator <op>)
+   (<op> ^name drop
+         ^block-id <bid>)
+-->
+   (<s> ^top-state.block-id <bid> -)
+}

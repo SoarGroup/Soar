@@ -1,5 +1,3 @@
-# Propose wander operator
-
 sp {propose*wander
    (state <s> ^name book
               ^io.input-link <io>)
