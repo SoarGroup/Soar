@@ -984,6 +984,8 @@ public class World {
 			// if we have velocity, process move
 			if (player.getSpeed() != 0) {
 				bookMovePlayer(player, time);
+			} else {
+				player.setVelocity(new Point2D.Double(0,0));
 			}
 			
 			if (move.get) {

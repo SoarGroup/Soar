@@ -13,12 +13,19 @@
 
 0 
 0 drop something
+
 0 pick up something
+
 0 start or stop moving
+
 0 start or stop rotating
+
 0 rotate to a specific heading, radians
+
 0 rotate a certain amount, positive is right turn, radians
+
 0 stop the simulation after this update
+
 0 
 0 
 0 
@@ -153,6 +160,8 @@
 0 exact position in y
 
 0 id of object to pick up
+
 0 
 0 id of object to drop
+
 0 

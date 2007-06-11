@@ -49,6 +49,7 @@ class SelfInputLink {
 	FloatElement speed;
 	FloatElement dx;
 	FloatElement dy;
+	FloatElement rotation;
 	Identifier carry;
 	StringElement carryType;
 	IntElement carryId;
@@ -90,6 +91,7 @@ class SelfInputLink {
 			speed = robot.agent.CreateFloatWME(velocity, "speed", 0);
 			dx = robot.agent.CreateFloatWME(velocity, "dx", 0);
 			dy = robot.agent.CreateFloatWME(velocity, "dy", 0);
+			rotation = robot.agent.CreateFloatWME(velocity, "rotation", 0);
 		}
 	}
 	
@@ -286,13 +288,13 @@ class ObjectInputLink {
 		this.id = robot.agent.CreateIntWME(parent, "id", info.object.getIntProperty("object-id"));
 		this.type = robot.agent.CreateStringWME(parent, "type", info.object.getProperty("id"));
 		this.area = robot.agent.CreateIntWME(parent, "area", info.area);
+		this.angleOff = robot.agent.CreateFloatWME(parent, "angle-off", angleOffDouble);
 		this.position = robot.agent.CreateIdWME(parent, "position");
 		{
 			this.col = robot.agent.CreateIntWME(position, "col", info.location.x);
 			this.row = robot.agent.CreateIntWME(position, "row", info.location.y);
 			this.x = robot.agent.CreateFloatWME(position, "x", info.floatLocation.x);
 			this.y = robot.agent.CreateFloatWME(position, "y", info.floatLocation.y);
-			angleOff = robot.agent.CreateFloatWME(position, "angle-off", angleOffDouble);
 		}
 		this.range = robot.agent.CreateFloatWME(parent, "range", range);
 		this.visible = robot.agent.CreateStringWME(parent, "visible", "yes");
@@ -476,9 +478,10 @@ public class SoarRobot extends Robot {
 		}
 		
 		// velocity
-		agent.Update(selfIL.speed, Math.sqrt(Math.pow(this.getVelocity().x, 2) + Math.pow(this.getVelocity().y, 2)));
+		agent.Update(selfIL.speed, getSpeed());
 		agent.Update(selfIL.dx, getVelocity().x);
 		agent.Update(selfIL.dy, getVelocity().y);
+		agent.Update(selfIL.rotation, this.getRotationSpeed());
 		
 		// collisions
 		if (collisionX) {
