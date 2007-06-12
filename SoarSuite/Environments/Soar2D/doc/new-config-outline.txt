@@ -59,13 +59,15 @@
 			?<book>
 				?<colored-rooms>
 				?<speed>
-					int pixelsPerSec
-				?<book-cell-size>
-					int pixels
+					int pixelsPerSec default: 16
+				?<book-cell-size> 
+					int pixels default: 16
 				?<cycle-time-slice>
-					int milliseconds
+					int milliseconds default: 50
 				?<vision-cone>
 					float radians (max visible angle-off is half of this)
+				?<rotate-speed>
+					float radians per sec default: pi / 4
 	?<logging>
 		?<level>
 			enum { severe, warning, info, fine, finer, finest }

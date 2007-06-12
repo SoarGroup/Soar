@@ -354,6 +354,9 @@ public class SoarRobot extends Robot {
 		}
 	}
 	
+	public int getLocationId() {
+		return locationId;
+	}
 	/**
 	 * create a new random number
 	 * make sure it is different from current
@@ -478,7 +481,7 @@ public class SoarRobot extends Robot {
 		}
 		
 		// velocity
-		agent.Update(selfIL.speed, getSpeed());
+		agent.Update(selfIL.speed, Math.sqrt((getVelocity().x * getVelocity().x) + (getVelocity().y * getVelocity().y)));
 		agent.Update(selfIL.dx, getVelocity().x);
 		agent.Update(selfIL.dy, getVelocity().y);
 		agent.Update(selfIL.rotation, this.getRotationSpeed());

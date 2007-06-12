@@ -736,6 +736,9 @@ public class World {
 		newLocation.x = (int)newFloatLocation.x / cellSize;
 		newLocation.y = (int)newFloatLocation.y / cellSize;
 		
+		player.setCollisionX(false);
+		player.setCollisionY(false);
+		
 		while (checkBlocked(newLocation)) {
 			// 1) determine what edge we're intersecting
 			if ((newLocation.x != oldLocation.x) && (newLocation.y != oldLocation.y)) {
@@ -808,7 +811,7 @@ public class World {
 			}
 		}
 		
-		player.setVelocity(new Point2D.Double(newFloatLocation.x - oldFloatLocation.x, newFloatLocation.y - oldFloatLocation.y));
+		player.setVelocity(new Point2D.Double((newFloatLocation.x - oldFloatLocation.x)/time, (newFloatLocation.y - oldFloatLocation.y)/time));
 		map.setPlayer(oldLocation, null);
 		locations.put(player.getName(), newLocation);
 		floatLocations.put(player.getName(), newFloatLocation);

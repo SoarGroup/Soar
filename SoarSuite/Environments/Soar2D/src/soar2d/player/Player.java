@@ -378,7 +378,12 @@ public class Player {
 	public Point2D.Double getVelocity() {
 		return this.velocity;
 	}
-	
+
+	public int getLocationId() {
+		assert false;
+		return -1;
+	}
+
 	private double speed = 0;
 	public void setSpeed(double speed) {
 		this.speed = speed;
@@ -417,6 +422,12 @@ public class Player {
 	}
 	public void setCollisionY(boolean y) {
 		this.collisionY = y;
+	}
+	public boolean getCollisionX() {
+		return this.collisionX;
+	}
+	public boolean getCollisionY() {
+		return this.collisionY;
 	}
 	
 	public void rotateComplete() {

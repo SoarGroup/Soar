@@ -1,5 +1,7 @@
 package soar2d.visuals;
 
+import java.awt.geom.Point2D;
+import java.text.NumberFormat;
 import java.util.*;
 
 import org.eclipse.swt.*;
@@ -26,6 +28,14 @@ public class BookAgentDisplay extends AgentDisplay {
 	Button m_CloneAgentButton;
 	Button m_DestroyAgentButton;
 	Button m_ReloadProductionsButton;
+	Label gridLocation;
+	Label floatLocation;
+	Label heading;
+	Label area;
+	Label collision;
+	Label velocity;
+	Label rotation;
+	Label speed;
 
 	public BookAgentDisplay(final Composite parent) {
 		super(parent);
@@ -36,7 +46,7 @@ public class BookAgentDisplay extends AgentDisplay {
 		m_Group.setText("Agents");
 		{
 			GridLayout gl = new GridLayout();
-			gl.numColumns = 2;
+			gl.numColumns = 1;
 			m_Group.setLayout(gl);
 		}
 		
@@ -46,7 +56,6 @@ public class BookAgentDisplay extends AgentDisplay {
 		{
 			GridData gd = new GridData();
 			gd.horizontalAlignment = GridData.BEGINNING;
-			gd.horizontalSpan = 2;
 			m_AgentButtons.setLayoutData(gd);
 		}
 		
@@ -108,6 +117,137 @@ public class BookAgentDisplay extends AgentDisplay {
 			}
 		});
 		
+		Group locGroup = new Group(m_Group, SWT.NONE);
+		locGroup.setText("Other Sensors");
+		{
+			GridData gd = new GridData();
+			locGroup.setLayoutData(gd);
+
+			GridLayout gl = new GridLayout();
+			gl.numColumns = 2;
+			locGroup.setLayout(gl);
+		}
+		
+		Label gridLocationLabel = new Label(locGroup, SWT.NONE);
+		gridLocationLabel.setText("Grid Location:");
+		{
+			GridData gd = new GridData();
+			gridLocationLabel.setLayoutData(gd);
+		}
+		
+		gridLocation = new Label(locGroup, SWT.NONE);
+		gridLocation.setText("-");
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 80;
+			gridLocation.setLayoutData(gd);
+		}
+		
+		Label floatLocationLabel = new Label(locGroup, SWT.NONE);
+		floatLocationLabel.setText("Float Location:");
+		{
+			GridData gd = new GridData();
+			floatLocationLabel.setLayoutData(gd);
+		}
+		
+		floatLocation = new Label(locGroup, SWT.NONE);
+		floatLocation.setText("-");
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 80;
+			floatLocation.setLayoutData(gd);
+		}
+		
+		Label headingLabel = new Label(locGroup, SWT.NONE);
+		headingLabel.setText("Heading:");
+		{
+			GridData gd = new GridData();
+			headingLabel.setLayoutData(gd);
+		}
+		
+		heading = new Label(locGroup, SWT.NONE);
+		heading.setText("-");
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 80;
+			heading.setLayoutData(gd);
+		}
+
+		Label areaLabel = new Label(locGroup, SWT.NONE);
+		areaLabel.setText("Area ID:");
+		{
+			GridData gd = new GridData();
+			areaLabel.setLayoutData(gd);
+		}
+		
+		area = new Label(locGroup, SWT.NONE);
+		area.setText("-");
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 80;
+			area.setLayoutData(gd);
+		}
+		
+		Label collisionLabel = new Label(locGroup, SWT.NONE);
+		collisionLabel.setText("Collision:");
+		{
+			GridData gd = new GridData();
+			collisionLabel.setLayoutData(gd);
+		}
+		
+		collision = new Label(locGroup, SWT.NONE);
+		collision.setText("-");
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 80;
+			collision.setLayoutData(gd);
+		}
+		
+		Label velocityLabel = new Label(locGroup, SWT.NONE);
+		velocityLabel.setText("Velocity:");
+		{
+			GridData gd = new GridData();
+			velocityLabel.setLayoutData(gd);
+		}
+		
+		velocity = new Label(locGroup, SWT.NONE);
+		velocity.setText("-");
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 80;
+			velocity.setLayoutData(gd);
+		}
+
+		Label rotationLabel = new Label(locGroup, SWT.NONE);
+		rotationLabel.setText("Rotation:");
+		{
+			GridData gd = new GridData();
+			rotationLabel.setLayoutData(gd);
+		}
+		
+		rotation = new Label(locGroup, SWT.NONE);
+		rotation.setText("-");
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 80;
+			rotation.setLayoutData(gd);
+		}
+		
+		Label speedLabel = new Label(locGroup, SWT.NONE);
+		speedLabel.setText("Speed:");
+		{
+			GridData gd = new GridData();
+			speedLabel.setLayoutData(gd);
+		}
+		
+		speed = new Label(locGroup, SWT.NONE);
+		speed.setText("-");
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 80;
+			speed.setLayoutData(gd);
+		}
+		
 		updatePlayerList();
 		updateButtons();		
 	}
@@ -116,6 +256,7 @@ public class BookAgentDisplay extends AgentDisplay {
 		selectedPlayer = player;
 		m_AgentTable.setSelection(players.indexOf(player));
 		updateButtons();
+		updateSensors();
 	}
 	
 	void agentEvent() {
@@ -124,9 +265,45 @@ public class BookAgentDisplay extends AgentDisplay {
 	}
 
 	void worldChangeEvent() {
+		if (selectedPlayer != null) {
+			updateSensors();
+		}
+		
 		for (int i = 0; i < m_Items.length; ++i) {
 			m_Items[i].setText(1, Integer.toString(players.get(i).getPoints()));
 		}
+	}
+	
+	void updateSensors() {
+		assert selectedPlayer != null;
+		java.awt.Point gl = Soar2D.simulation.world.getLocation(selectedPlayer);
+		Point2D.Double fl = Soar2D.simulation.world.getFloatLocation(selectedPlayer);
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMaximumFractionDigits(2);
+		gridLocation.setText("(" + nf.format(gl.x) + "," + nf.format(gl.y) + ")");
+		floatLocation.setText("(" + nf.format(fl.x) + "," + nf.format(fl.y) + ")");
+
+		heading.setText(nf.format(selectedPlayer.getHeadingRadians()));
+
+		area.setText(Integer.toString(selectedPlayer.getLocationId()));
+		String col = selectedPlayer.getCollisionX() ? "true" : "false";
+		col += selectedPlayer.getCollisionY() ? ",true" : ",false";
+		collision.setText(col);
+		String vel = nf.format(selectedPlayer.getVelocity().x) + "," + nf.format(selectedPlayer.getVelocity().y);
+		velocity.setText(vel);
+		rotation.setText(nf.format(selectedPlayer.getRotationSpeed()));
+		speed.setText(nf.format(Math.sqrt((selectedPlayer.getVelocity().x * selectedPlayer.getVelocity().x) + (selectedPlayer.getVelocity().y * selectedPlayer.getVelocity().y))));
+	}
+	
+	void disableSensors() {
+		gridLocation.setText("-");
+		floatLocation.setText("-");
+		heading.setText("-");
+		area.setText("-");
+		collision.setText("-");
+		velocity.setText("-");
+		rotation.setText("-");
+		speed.setText("-");
 	}
 	
 	void updatePlayerList() {
@@ -147,6 +324,7 @@ public class BookAgentDisplay extends AgentDisplay {
 		if (!foundSelected) {
 			selectedPlayer = null;			
 			m_AgentTable.deselectAll();
+			disableSensors();
 		}
 	}
 	
