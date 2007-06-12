@@ -736,9 +736,6 @@ public class World {
 		newLocation.x = (int)newFloatLocation.x / cellSize;
 		newLocation.y = (int)newFloatLocation.y / cellSize;
 		
-		player.setCollisionX(false);
-		player.setCollisionY(false);
-		
 		while (checkBlocked(newLocation)) {
 			// 1) determine what edge we're intersecting
 			if ((newLocation.x != oldLocation.x) && (newLocation.y != oldLocation.y)) {
@@ -984,6 +981,10 @@ public class World {
 				player.setSpeed(Soar2D.config.getSpeed() * -1);
 			}
 			
+			// reset collision sensor
+			player.setCollisionX(false);
+			player.setCollisionY(false);
+
 			// if we have velocity, process move
 			if (player.getSpeed() != 0) {
 				bookMovePlayer(player, time);
