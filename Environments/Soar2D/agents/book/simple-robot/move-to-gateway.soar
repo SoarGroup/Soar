@@ -1,7 +1,7 @@
 sp {wander*propose*move-to-gateway
    (state <s> ^name book
              -^block-id)
-   (<s> ^io.input-link.self.area-description <ad>)
+   (<s> ^io.input-link.area-description <ad>)
    (<ad> ^gateway <g>)
 -->
    (<s> ^operator <o> + =)

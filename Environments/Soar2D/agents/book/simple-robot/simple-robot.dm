@@ -1,4 +1,4 @@
-142
+143
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -141,7 +141,8 @@ SOAR_ID 138
 ENUMERATION 139 1 stop
 SOAR_ID 140
 SOAR_ID 141
-155
+FLOAT_RANGE 142 0.0 Infinity
+156
 0 attribute 19
 0 block-id 114
 0 choices 20
@@ -157,6 +158,7 @@ SOAR_ID 141
 0 type 4
 1 input-link 2
 1 output-link 3
+2 area-description 29
 2 object 98
 2 self 26
 3 move 6
@@ -184,7 +186,6 @@ SOAR_ID 141
 23 random 25
 26 angle 27
 26 area 93
-26 area-description 29
 26 carry 95
 26 collision 56
 26 cycle 59
@@ -215,6 +216,7 @@ SOAR_ID 141
 43 right 52
 43 to 55
 44 angle-off 45
+44 range 142
 44 x 46
 44 y 47
 49 col 50

@@ -109,6 +109,7 @@ FLOAT_RANGE 97 0.0 Infinity
 0 type 4
 1 input-link 2
 1 output-link 3
+2 area-description 24
 2 object 79
 2 self 21
 3 drop 92
@@ -128,7 +129,6 @@ FLOAT_RANGE 97 0.0 Infinity
 18 random 20
 21 angle 22
 21 area 74
-21 area-description 24
 21 carry 76
 21 collision 51
 21 cycle 54

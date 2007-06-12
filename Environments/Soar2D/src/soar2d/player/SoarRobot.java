@@ -97,7 +97,7 @@ class SelfInputLink {
 	
 	void createAreaDescription() {
 		assert areaDescription == null;
-		areaDescription = robot.agent.CreateIdWME(self, "area-description");
+		areaDescription = robot.agent.CreateIdWME(robot.agent.GetInputLink(), "area-description");
 	}
 	
 	Identifier createWallId() {
@@ -194,8 +194,8 @@ class SelfInputLink {
 	void destroy() {
 		assert self != null;
 		robot.agent.DestroyWME(self);
-		self = areaDescription = carry = null;
 		destroyAreaDescription();
+		self = areaDescription = carry = null;
 	}
 	
 	void carry(CellObject object) {

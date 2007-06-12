@@ -36,6 +36,7 @@ public class BookAgentDisplay extends AgentDisplay {
 	Label velocity;
 	Label rotation;
 	Label speed;
+	Label carry;
 
 	public BookAgentDisplay(final Composite parent) {
 		super(parent);
@@ -248,6 +249,21 @@ public class BookAgentDisplay extends AgentDisplay {
 			speed.setLayoutData(gd);
 		}
 		
+		Label carryLabel = new Label(locGroup, SWT.NONE);
+		carryLabel.setText("Carry:");
+		{
+			GridData gd = new GridData();
+			carryLabel.setLayoutData(gd);
+		}
+		
+		carry = new Label(locGroup, SWT.NONE);
+		carry.setText("-");
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 80;
+			carry.setLayoutData(gd);
+		}
+		
 		updatePlayerList();
 		updateButtons();		
 	}
@@ -293,6 +309,8 @@ public class BookAgentDisplay extends AgentDisplay {
 		velocity.setText(vel);
 		rotation.setText(nf.format(selectedPlayer.getRotationSpeed()));
 		speed.setText(nf.format(Math.sqrt((selectedPlayer.getVelocity().x * selectedPlayer.getVelocity().x) + (selectedPlayer.getVelocity().y * selectedPlayer.getVelocity().y))));
+		
+		carry.setText(selectedPlayer.getCarryType());
 	}
 	
 	void disableSensors() {
@@ -304,6 +322,7 @@ public class BookAgentDisplay extends AgentDisplay {
 		velocity.setText("-");
 		rotation.setText("-");
 		speed.setText("-");
+		carry.setText("-");
 	}
 	
 	void updatePlayerList() {

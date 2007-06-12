@@ -9,6 +9,8 @@
 0 
 0 
 0 
+0 details about the area I am in
+
 0 potentially movable objects
 
 0 
@@ -36,8 +38,6 @@
 0 
 0 
 0 unique identifier for the room I'm in
-
-0 details for the room I am in
 
 0 inventory
 
@@ -100,6 +100,7 @@
 0 radians, positive is right turn
 
 0 distance to center of gateway
+
 0 center of gateway in x
 
 0 center of gateway in y
