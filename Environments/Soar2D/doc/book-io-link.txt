@@ -32,6 +32,7 @@ full implementation:
 					^x <float> center of gateway in x dimention
 					^y <float> center of gateway in y dimention
 					^angle-off <float> angle to center of gateway
+					^range <float> distance to center of gateway
 				^direction [north south east west] direction to turn to face the gateway
 				+^to <int> id of room this gateway leads to
 		^collision

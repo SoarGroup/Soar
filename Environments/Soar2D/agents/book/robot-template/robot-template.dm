@@ -1,4 +1,4 @@
-97
+98
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -96,7 +96,8 @@ INTEGER_RANGE 93 -2147483648 2147483647
 INTEGER_RANGE 94 -2147483648 2147483647
 ENUMERATION 95 2 complete error
 ENUMERATION 96 2 complete error
-97
+FLOAT_RANGE 97 0.0 Infinity
+98
 0 attribute 14
 0 choices 15
 0 impasse 16
@@ -158,6 +159,7 @@ ENUMERATION 96 2 complete error
 38 right 47
 38 to 50
 39 angle-off 40
+39 range 97
 39 x 41
 39 y 42
 44 col 45
