@@ -252,9 +252,24 @@ class BarrierInputLink {
 
 class GatewayInputLink extends BarrierInputLink {
 	ArrayList<IntElement> toList = new ArrayList<IntElement>();
+	FloatElement range;
 	
 	GatewayInputLink(SoarRobot robot, Identifier parent) {
 		super(robot, parent);
+	}
+	
+	@Override
+	void initialize(Barrier barrier, World world) {
+		
+		super.initialize(barrier, world);
+
+		double dx = centerpoint.x - world.getFloatLocation(robot).x;
+		dx *= dx;
+		double dy = centerpoint.y - world.getFloatLocation(robot).y;
+		dy *= dy;
+		double r = Math.sqrt(dx + dy);
+
+		range = robot.agent.CreateFloatWME(center, "range", r);
 	}
 	
 	void addDest(int id) {
@@ -450,7 +465,7 @@ public class SoarRobot extends Robot {
 						}
 					}
 				} else {
-					// barrier angle offs
+					// barrier angle offs and range
 					Iterator<BarrierInputLink> wallIter = selfIL.walls.iterator();
 					while (wallIter.hasNext()) {
 						BarrierInputLink barrier = wallIter.next();
@@ -459,8 +474,17 @@ public class SoarRobot extends Robot {
 					
 					Iterator<GatewayInputLink> gatewayIter = selfIL.gateways.iterator();
 					while (gatewayIter.hasNext()) {
-						BarrierInputLink barrier = gatewayIter.next();
-						agent.Update(barrier.angleOff, world.angleOff(this, barrier.centerpoint));
+						GatewayInputLink gateway = gatewayIter.next();
+						
+						agent.Update(gateway.angleOff, world.angleOff(this, gateway.centerpoint));
+						double dx = gateway.centerpoint.x - world.getFloatLocation(this).x;
+						dx *= dx;
+						double dy = gateway.centerpoint.y - world.getFloatLocation(this).y;
+						dy *= dy;
+						double r = Math.sqrt(dx + dy);
+						
+						agent.Update(gateway.range, r);
+
 					}
 				}
 			}
