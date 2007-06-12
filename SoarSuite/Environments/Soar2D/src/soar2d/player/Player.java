@@ -454,4 +454,10 @@ public class Player {
 	public boolean isCarrying() {
 		return carriedObject != null;
 	}
+	public String getCarryType() {
+		if (carriedObject == null) {
+			return "none";
+		}
+		return carriedObject.getProperty("id");
+	}
 }

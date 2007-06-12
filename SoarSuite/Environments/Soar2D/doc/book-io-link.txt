@@ -6,35 +6,6 @@ full implementation:
 			^yaw <float> direction I am facing
 #			^pitch <int> zero for no height change, 1 indicates climbing, -1 is descending
 		^area <int> unique id number for the area I am in
-		^area-description details for the area I am in
-			+^wall one for each wall segment
-				^id <int> unique identification number of segment
-				^left location of one end
-					^row <int> 
-					^col <int>
-				^right location of other end
-					^row <int>
-					^col <int>
-				^center
-					^x <float> center of wall in x dimention
-					^y <float> center of wall in y dimention
-					^angle-off <float> angle to center of wall
-				^direction [north south east west] direction to turn to face the wall
-			*^gateway one for each gateway segment
-				^id <int> unique identification number of segment
-				^left location of one end
-					^row <int>
-					^col <int>
-				^right location of other end
-					^row <int>
-					^col <int>
-				^center
-					^x <float> center of gateway in x dimention
-					^y <float> center of gateway in y dimention
-					^angle-off <float> angle to center of gateway
-					^range <float> distance to center of gateway
-				^direction [north south east west] direction to turn to face the gateway
-				+^to <int> id of room this gateway leads to
 		^collision
 			^x [true false] currently colliding on the x component of the velocity vector
 			^y [true false] currently colliding on the y component of the velocity vector
@@ -57,6 +28,35 @@ full implementation:
 		^carry
 			^type <string> [block ramp]
 			^id <int>
+	^area-description details for the area I am in
+		+^wall one for each wall segment
+			^id <int> unique identification number of segment
+			^left location of one end
+				^row <int> 
+				^col <int>
+			^right location of other end
+				^row <int>
+				^col <int>
+			^center
+				^x <float> center of wall in x dimention
+				^y <float> center of wall in y dimention
+				^angle-off <float> angle to center of wall
+			^direction [north south east west] direction to turn to face the wall
+		*^gateway one for each gateway segment
+			^id <int> unique identification number of segment
+			^left location of one end
+				^row <int>
+				^col <int>
+			^right location of other end
+				^row <int>
+				^col <int>
+			^center
+				^x <float> center of gateway in x dimention
+				^y <float> center of gateway in y dimention
+				^angle-off <float> angle to center of gateway
+				^range <float> distance to center of gateway
+			^direction [north south east west] direction to turn to face the gateway
+			+^to <int> id of room this gateway leads to
 	+^object
 		^angle-off <float> relative to direction I'm facing
 		^area <int> unique id number
