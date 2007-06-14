@@ -23,6 +23,7 @@
 
 #else // WIN32
 /* posix includes */
+#include <arpa/inet.h>
 #include <errno.h>
 #include <inttypes.h>
 #include <stddef.h>
@@ -49,10 +50,10 @@
 #define MAXPATHLEN 1024   /* AGR 536  - from sys/param.h */
 #endif // MAXPATHLEN
 
-/* possibly necessary */
-//#define STRICMP    strcasecmp
-//#define VSNSPRINTF vsnprintf
-//#define ENABLE_LOCAL_SOCKETS
+/* necessary in connectionsml socket code */
+#define STRICMP    strcasecmp
+#define VSNSPRINTF vsnprintf
+#define ENABLE_LOCAL_SOCKETS
 
 #else // SCONS
 
