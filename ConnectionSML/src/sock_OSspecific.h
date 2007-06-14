@@ -21,16 +21,5 @@ bool MakeSocketNonBlocking(SOCKET hSock) ;
 bool SleepSocket(long secs, long msecs) ;
 } // Namespace
 
-// Map certain functions depending on the OS
-#ifdef _WIN32
-#define STRICMP	   stricmp
-#define VSNSPRINTF _vsnprintf
-#define ENABLE_NAMED_PIPES
-#else
-#define STRICMP    strcasecmp
-#define VSNSPRINTF vsnprintf
-#define ENABLE_LOCAL_SOCKETS
-#endif
-
 #endif // CT_OS_SPECIFIC_H
 
