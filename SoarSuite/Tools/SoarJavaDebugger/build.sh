@@ -25,13 +25,15 @@ if [[ $RET = 0 ]]
 
     APP_PATH=$SOARLIB/SoarDebugger.app/Contents
     mkdir -p $APP_PATH/MacOS
-    mkdir -p $APP_PATH/Resources/Java
+    mkdir -p $APP_PATH/Resources
 
     cp SoarDebugger.plist $APP_PATH/Info.plist
-    cp $SOARLIB/icons/testapp.icns $APP_PATH/Resources
-    cp $SOARLIB/SoarJavaDebugger.jar $APP_PATH/Resources/Java
-    cp /System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub $APP_PATH/MacOS
-    chmod a+x $APP_PATH/MacOS/JavaApplicationStub
+    cp ../../Resources/Icons/soar.icns $APP_PATH/Resources
+    cp $SOARLIB/SoarJavaDebugger.jar $APP_PATH/MacOS
+    cp $SOARLIB/sml.jar $APP_PATH/MacOS
+    cp $SOARLIB/swt.jar $APP_PATH/MacOS
+    cp soardebug $APP_PATH/MacOS
+    chmod a+x $APP_PATH/MacOS/soardebug
   fi
 fi
 
