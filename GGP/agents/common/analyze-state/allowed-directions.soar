@@ -1,0 +1,112 @@
+
+sp {game*elaborate*inherit-disallowed-dirs
+   (state <s> ^name game
+              ^duplicate-of <dup>)
+   (<dup> ^disallowed-dir <ad>)
+-->
+   (<s> ^disallowed-dir <ad>)
+}
+
+sp {apply*update-state*on-move*disallow-opposite
+   (state <s> ^name game
+              ^operator <o>
+              ^facts.opposite <opp>)
+   (<o> ^name move
+        ^p1 <dir>)
+   (<opp> ^<dir> <xx>
+          ^{<> <dir> <opp-dir>} <yy>)
+-->
+   (<s> ^disallowed-dir <opp-dir>)
+}
+
+
+# explorer in same position as parent state-> action was non-motion, reset allowed-dirs
+sp {analyze-state*init*allowed-dirs*non-move
+   (state <s> ^name game
+              ^operator.name analyze-state
+              ^duplicate-of.gs <pgs>
+              ^gs <gs>
+              ^disallowed-dir <da>)
+   (<gs> ^role <role>
+         ^location <loc>)
+   (<loc> ^p1 <role>
+          ^p2 <x>
+          ^p3 <y>)
+   (<pgs> ^location <loc2>)
+   (<loc2> ^p1 <role>
+           ^p2 <x>
+           ^p3 <y>)
+-->
+   (<s> ^disallowed-dir <da> -)
+}
+
+# reset the allowed-dirs everytime some aspect of the gs other than the explorer's location changes
+
+sp {analyze-state*init*allowed-dirs*environment-change
+   (state <s> ^name game
+              ^operator.name analyze-state
+              ^game-state-changed environment
+              ^disallowed-dir <da>)
+-->
+   (<s> ^disallowed-dir <da> -)
+   (write (crlf) |Allowing direction | <da> | again, as the environment changed.|)
+}
+
+# on update-state, if we're passing through a portal, allow the allowed-direction
+sp {game*apply*move*portal
+   (state <s> ^name game
+              ^operator <o>
+              ^gs <gs>
+              ^portals.portal <p>
+              ^disallowed-dir <da>)
+   (<o> ^name move
+        ^p1 <dir>)
+   (<gs> ^role <role>
+         ^location <loc>)
+   (<loc> ^p1 <role>
+          ^p2 <x>
+          ^p3 <y>)
+   (<p> ^approach-location <aloc>
+        ^approach-direction <dir>
+        ^access-direction <da>)
+   (<aloc> ^x <x>
+          ^y <y>)
+-->
+   (<s> ^disallowed-dir <da> -)
+   (write (crlf) |Allowing direction | <da> | again, portal crossed.|)
+}
+
+sp {game*apply*move*wall-portal
+   (state <s> ^name game
+              ^operator <o>
+              ^gs <gs>
+              ^top-state.wall-portals.portal <p>
+              ^disallowed-dir <da>)
+   (<o> ^name move
+        ^p1 <dir>)
+   (<gs> ^role <role>
+         ^location <loc>)
+   (<loc> ^p1 <role>
+          ^p2 <x>
+          ^p3 <y>)
+   (<p> ^approach-location <aloc>
+        ^approach-direction <dir>
+        ^access-direction <da>)
+   (<aloc> ^x <x>
+          ^y <y>)
+-->
+   (<s> ^disallowed-dir <da> -)
+   (write (crlf) |Allowing direction | <da> | again, wall-portal crossed.|)
+}
+
+sp {game*reject-disallowed-movement
+   (state <s> ^name game
+              ^tried-tied-operator
+              ^disallowed-dir <da>
+              ^operator <o> +)
+   (<o> ^name move
+        ^p1 <da>)
+-->
+   (<s> ^operator <o> -)
+   (write (crlf) | Rejecting operator to move | <da> | as it is disallowed.|)
+}

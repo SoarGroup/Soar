@@ -1,0 +1,138 @@
+
+# keep track of portals
+# a portal is defined as a boundary between locations (like a wall)
+# each portal has an approach location, approach direction, and an access direction
+# the meaning is that if the boundary is crossed from the approach location by moving in the approach direction,
+# it is acceptable to move in the access direction in later moves-- the agent moved around something
+# 
+# eg:
+#   ______
+#  |      |  | approach location and direction
+#  |object|  v
+#  |______|-----    << portal line
+#         <--  access direction
+#
+#  There are 7 other portals around the object, too.
+#  The end of a wall has two portals, one going in each direction.
+
+# Object portals are on the state, in ^portals
+# Wall portals are on top-state, in ^wall-portals
+
+sp {game*elaborate*portals
+   (state <s> ^name game)
+-->
+   (<s> ^portals <p>)
+}
+
+sp {game*elaborate*portals*object
+   (state <s> ^name game
+              ^portals <p>
+              ^gs <gs>)
+   (<gs> ^location <l>) # this will match for the explorer, too, but we don't want a local negation
+   (<l> ^p2 <x>
+        ^p3 <y>)
+-->
+   (<p> ^portal <p1>
+        ^portal <p2>
+        ^portal <p3>
+        ^portal <p4>)
+   (<p1> ^approach-location <al1>
+         ^approach-direction south
+         ^approach-direction north  # this is really two portals, but that distinction should never be important
+         ^access-direction east)
+   (<al1> ^x (- <x> 1)
+          ^y <y>)
+   (<p2> ^approach-location <al2>
+         ^approach-direction south
+         ^approach-direction north
+         ^access-direction west)
+   (<al2> ^x (+ <x> 1)
+          ^y <y>)
+   (<p3> ^approach-location <al3>
+         ^approach-direction east
+         ^approach-direction west  
+         ^access-direction south)
+   (<al3> ^y (- <y> 1)
+          ^x <x>)
+   (<p4> ^approach-location <al4>
+         ^approach-direction east
+         ^approach-direction west
+         ^access-direction north)
+   (<al4> ^y (+ <y> 1)
+          ^x <x>)
+}
+
+# keep the wall portals in a separate list in the top-state,
+# since they are static and we don't want to recompute them
+sp {top-state*elaborate*wall-portals
+   (state <s> ^name game
+              ^superstate nil
+              ^gs <gs>)
+-->
+   (<s> ^wall-portals <wp>)
+}
+
+sp {top-state*elaborate*facts*perpendiculars
+   (state <s> ^name game
+              ^superstate nil
+              ^facts <f>)
+-->
+   (<f> ^perpendiculars <p1>
+        ^perpendiculars <p2>
+        ^perpendiculars <p3>
+        ^perpendiculars <p4>
+        ^opposite <op1>
+        ^opposite <op2>)
+   (<p1> ^from north
+         ^to east
+         ^to west)
+   (<p2> ^from south
+         ^to east
+         ^to west)
+   (<p3> ^from east
+         ^to north
+         ^to south)
+   (<p4> ^from west
+         ^to north
+         ^to south)
+   (<op1> ^north <x>
+          ^south <y>)
+   (<op2> ^east <a>
+          ^west <b>)
+}
+
+sp {top-state*elaborate*wall-portal
+   (state <s> ^name game
+              ^superstate nil
+              ^wall-portals <wp>
+              ^gs <gs>
+              ^facts <f>)
+   (<gs> ^blocked <bl>)
+   (<bl> ^p1 <dir>
+         ^p2 <x>
+         ^p3 <y>)
+   (<f> ^perpendiculars <pr>
+        ^opposite <op>)
+   (<pr> ^from <dir>
+         ^to <p-dir>)
+   (<op> ^<p-dir> <xx>
+         ^{<> <p-dir> <opp-dir>} <yy>)
+   (<f> ^ncell <nc>)
+   (<nc> ^p1 1
+         ^p2 <p-dir>
+         ^p3 <x>
+         ^p4 <y>
+         ^p5 <newx>
+         ^p6 <newy>)
+  -{(<gs> ^blocked <bl2>) # we can do local negation since this is top-state
+    (<bl2> ^p1 <dir>         # avoid portals on top of walls
+           ^p2 <newx>
+           ^p3 <newy>)}
+-->
+   (<wp> ^portal <p>)
+   (<p> ^approach-location <al>
+        ^approach-direction <dir>
+        ^access-direction <opp-dir>)
+   (<al> ^x <newx>
+         ^y <newy>)
+}

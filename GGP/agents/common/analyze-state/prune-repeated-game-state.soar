@@ -1,0 +1,173 @@
+# if an action does not result in a change to the game state, don't pursue that branch.
+
+# first, flag game state as unchanged, then remove the flag if it does
+# game-state-changed flag will appear during update-state, remove state-unchanged during analyze-state
+
+sp {game*apply-op*game-state-unchanged
+   (state <s> ^name game
+              ^operator.name {<> analyze-state <> update-state <name>})
+-->
+   (<s> ^game-state-unchanged true)
+}
+
+
+
+# issue: if there is more than one action per game subgoal, the flag won't be reset for the next action
+# this shouldn't be a problem, since that only happens if there is no tie, in which case we only have one thing to do anyway
+
+sp {apply*analyze-state*mark-changed
+   (state <s> ^name game
+              ^operator.name analyze-state
+              ^game-state-unchanged <gsu>
+              ^game-state-changed <gsc>)
+-->
+   (<s> ^game-state-unchanged <gsu> -)
+}
+
+sp {elaborate*fail-if-no-gs-change
+   (state <s> ^name game
+              ^desired <d>
+              ^io.output-link <ol>
+              ^state-analyzed <sa>
+              ^game-state-unchanged <gsu>)
+  -{(<ol> ^<cmd> <val>)} # FIXME: stops chunks: need to handle case where state-analyzed exists from prev. action
+-->
+   (<s> ^failure <d>)
+}
+
+sp {game*elaborate*added*1
+   (state <s> ^name game
+              ^gs <gs>
+              ^facts <facts>
+              ^old-gs <old-gs>)
+   (<gs> ^<item> <id-gs>)
+   (<id-gs> ^p1 <p1-val>
+           -^p2)
+  -{(<old-gs> ^<item> <id-oldgs>)
+    (<id-oldgs> ^p1 <p1-val>)}
+  -{(<facts> ^bookkeeping-state <item>)}
+-->
+   (<s> ^game-state-changed environment)
+}
+
+sp {game*elaborate*added*2
+   (state <s> ^name game
+              ^gs <gs>
+              ^old-gs <old-gs>)
+   (<gs> ^<item> <id-gs>)
+   (<id-gs> ^p1 <p1-val>
+            ^p2 <p2-val>
+           -^p3)
+  -{(<old-gs> ^<item> <id-oldgs>)
+    (<id-oldgs> ^p1 <p1-val>
+                ^p2 <p2-val>)}
+  -{(<facts> ^bookkeeping-state <item>)}
+-->
+   (<s> ^game-state-changed environment)
+}
+
+sp {game*elaborate*added*3*not-explorer-loc
+   (state <s> ^name game
+              ^gs <gs>
+              ^old-gs <old-gs>)
+   (<gs> ^<item> <id-gs>
+         ^role <role>)
+   (<id-gs> ^p1 <p1-val>
+            ^p2 <p2-val>
+            ^p3 <p3-val>)
+  -{(<old-gs> ^<item> <id-oldgs>)
+    (<id-oldgs> ^p1 <p1-val>
+                ^p2 <p2-val>
+                ^p3 <p3-val>)}
+   -{(<gs> ^{<item> location})
+     (<id-gs> ^p1 {<p1-val> <role>})}
+  -{(<facts> ^bookkeeping-state <item>)}
+-->
+   (<s> ^game-state-changed environment)
+}
+
+sp {game*elaborate*added*3*explorer-loc
+   (state <s> ^name game
+              ^gs <gs>
+              ^old-gs <old-gs>)
+   (<gs> ^location <id-gs>
+         ^role <role>)
+   (<id-gs> ^p1 <role>
+            ^p2 <p2-val>
+            ^p3 <p3-val>)
+  -{(<old-gs> ^location <id-oldgs>)
+    (<id-oldgs> ^p1 <role>
+                ^p2 <p2-val>
+                ^p3 <p3-val>)}
+-->
+   (<s> ^game-state-changed agent-location)
+}
+
+sp {game*elaborate*removed*1
+   (state <s> ^name game
+              ^gs <old-gs>
+              ^old-gs <gs>)
+   (<gs> ^<item> <id-gs>)
+   (<id-gs> ^p1 <p1-val>
+           -^p2)
+  -{(<old-gs> ^<item> <id-oldgs>)
+    (<id-oldgs> ^p1 <p1-val>)}
+  -{(<facts> ^bookkeeping-state <item>)}
+-->
+   (<s> ^game-state-changed environment)
+}
+
+sp {game*elaborate*removed*2
+   (state <s> ^name game
+          #    ^operator.name analyze-state
+              ^gs <old-gs>
+              ^old-gs <gs>)
+   (<gs> ^<item> <id-gs>)
+   (<id-gs> ^p1 <p1-val>
+            ^p2 <p2-val>
+           -^p3)
+  -{(<old-gs> ^<item> <id-oldgs>)
+    (<id-oldgs> ^p1 <p1-val>
+                ^p2 <p2-val>)}
+  -{(<facts> ^bookkeeping-state <item>)}
+-->
+   (<s> ^game-state-changed environment)
+}
+
+
+sp {game*elaborate*removed*3*not-explorer-loc
+   (state <s> ^name game
+              ^gs <old-gs>
+              ^old-gs <gs>)
+   (<gs> ^<item> <id-gs>
+         ^role <role>)
+   (<id-gs> ^p1 <p1-val>
+            ^p2 <p2-val>
+            ^p3 <p3-val>)
+  -{(<old-gs> ^<item> <id-oldgs>)
+    (<id-oldgs> ^p1 <p1-val>
+                ^p2 <p2-val>
+                ^p3 <p3-val>)}
+   -{(<gs> ^{<item> location})
+     (<id-gs> ^p1 {<p1-val> <role>})}
+  -{(<facts> ^bookkeeping-state <item>)}
+-->
+   (<s> ^game-state-changed environment)
+}
+
+sp {game*elaborate*removed*3*explorer-loc
+   (state <s> ^name game
+              ^gs <old-gs>
+              ^old-gs <gs>)
+   (<gs> ^location <id-gs>
+         ^role <role>)
+   (<id-gs> ^p1 <role>
+            ^p2 <p2-val>
+            ^p3 <p3-val>)
+  -{(<old-gs> ^location <id-oldgs>)
+    (<id-oldgs> ^p1 <role>
+                ^p2 <p2-val>
+                ^p3 <p3-val>)}
+-->
+   (<s> ^game-state-changed agent-location)
+}
