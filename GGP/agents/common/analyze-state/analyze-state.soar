@@ -2,19 +2,8 @@ sp {elaborate*ts*goodthings
    (state <s> ^superstate nil)
 -->
    (<s> ^good-things <gt>)
-#   (<gt> ^holding.p1 log1)
-#   (<gt> ^holding.p1 log2)
-#   (<gt> ^holding.p1 hammer1)
-#   (<gt> ^holding.p1 combo1)
-#   (<gt> ^compromised.p1 water1)
 }
 
-#sp {apply*update-state*make-no-bump
-#   (state <s> ^operator.name update-state)
-#-->
-#   (<s> ^no-bump <nb>)
-#}
-#
 sp {apply*analyze-state*goodthing
    (state <s> ^name game
               ^operator.name analyze-state
@@ -35,9 +24,8 @@ sp {apply*analyze-state*goodthing
    (write (crlf) |Bump due to appearence of | <item> | | <p1-val>)
 }
 
-sp {apply*update-state*top*copy-gs*deep
-  (state <s> ^superstate nil
-             ^operator.name update-state
+sp {apply*update-state*copy-gs*deep
+  (state <s> ^operator.name update-state
              ^gs <gs>
              ^old-gs <ogs>)
   (<gs> ^<att> <id>)
@@ -48,9 +36,8 @@ sp {apply*update-state*top*copy-gs*deep
   (<new-id> ^p1 <val>)
 }
 
-sp {apply*update-state*top*copy-gs*deep2
-  (state <s> ^superstate nil
-             ^operator.name update-state
+sp {apply*update-state*copy-gs*deep2
+  (state <s> ^operator.name update-state
              ^gs <gs>
              ^old-gs <ogs>)
   (<gs> ^<att> <id>)
@@ -63,9 +50,8 @@ sp {apply*update-state*top*copy-gs*deep2
             ^p2 <val2>)
 }
 
-sp {apply*update-state*top*copy-gs*deep3
-  (state <s> ^superstate nil
-             ^operator.name update-state
+sp {apply*update-state*copy-gs*deep3
+  (state <s> ^operator.name update-state
              ^gs <gs>
              ^old-gs <ogs>)
   (<gs> ^<att> <id>)
@@ -80,9 +66,8 @@ sp {apply*update-state*top*copy-gs*deep3
 }
 
 
-sp {apply*update-state*top*remove-old-copy
-  (state <s> ^superstate nil
-             ^operator.name <> update-state <> analyze-state <name>
+sp {apply*update-state*remove-old-copy
+  (state <s> ^operator.name <> update-state <> analyze-state <name>
              ^gs <gs>
              ^old-gs <ogs>)
   (<ogs> ^<att> <id>)
@@ -91,29 +76,29 @@ sp {apply*update-state*top*remove-old-copy
 }
 
   
-sp {apply*analyze-state*top*note-diffence
+sp {apply*analyze-state*top*note-difference
    (state <s> ^name game
               ^superstate nil
               ^operator.name analyze-state
               ^gs <gs>
-              ^old-gs <old-gs>)
-   (<old-gs> ^currSymbol)
+              ^old-gs <old-gs>
+              ^facts <f>)
    (<gs> ^<item> <id-gs>)
    (<id-gs> ^p1 <p1-val>
             -^p2)
   -{(<old-gs> ^<item> <id-oldgs>)
     (<id-oldgs> ^p1 <p1-val>)}
+  -{(<f> ^bookkeeping-state <item>)}
 -->
    (write (crlf) |ADDED | <item> | ^p1 | <p1-val>)
 }
 
-sp {apply*analyze-state*top*note-diffence2
+sp {apply*analyze-state*top*note-difference2
    (state <s> ^name game
               ^superstate nil
               ^operator.name analyze-state
               ^gs <gs>
               ^old-gs <old-gs>)
-   (<old-gs> ^currSymbol)
    (<gs> ^<item> <id-gs>)
    (<id-gs> ^p1 <p1-val>
             ^p2 <p2-val>
@@ -121,17 +106,17 @@ sp {apply*analyze-state*top*note-diffence2
   -{(<old-gs> ^<item> <id-oldgs>)
     (<id-oldgs> ^p1 <p1-val>
                 ^p2 <p2-val>)}
+  -{(<f> ^bookkeeping-state <item>)}
 -->
    (write (crlf) |ADDED | <item> | ^p1 | <p1-val> | ^p2 | <p2-val>)
 }
 
-sp {apply*analyze-state*top*note-diffence3
+sp {apply*analyze-state*top*note-difference3
    (state <s> ^name game
               ^superstate nil
               ^operator.name analyze-state
               ^gs <gs>
               ^old-gs <old-gs>)
-   (<old-gs> ^currSymbol)
    (<gs> ^<item> <id-gs>)
    (<id-gs> ^p1 <p1-val>
             ^p2 <p2-val>
@@ -140,12 +125,13 @@ sp {apply*analyze-state*top*note-diffence3
     (<id-oldgs> ^p1 <p1-val>
                 ^p2 <p2-val>
                 ^p3 <p3-val>)}
+  -{(<f> ^bookkeeping-state <item>)}
 -->
    (write (crlf) |ADDED | <item> | ^p1 | <p1-val> | ^p2 | <p2-val> | ^p3 | <p3-val>)
 }
 
 sp {elaborate*old-gs
-  (state <s> ^superstate nil)
+   (state <s> ^name game)
 -->
   (<s> ^old-gs <ogs>)
 }

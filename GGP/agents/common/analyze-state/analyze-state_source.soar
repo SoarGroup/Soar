@@ -5,4 +5,8 @@ popd
 pushd elaborations
 source elaborations_source.soar
 popd
+source allowed-directions.soar
+source portals.soar
+source prune-repeated-game-state.soar
+source top-state.soar
 source analyze-state.soar

@@ -1,10 +1,15 @@
 VERSION 4
 /analyze-state/analyze-state.dm
 0	ROOT analyze-state analyze-state 1
-1	0	FOPERATOR _firstload _firstload.soar 3
-2	0	FOLDER all all 4
-3	0	FOLDER elaborations elaborations 2
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
 4	3	FOPERATOR _all _all.soar 5
 5	3	FOPERATOR top-state top-state.soar 6
-6	0	OPERATOR analyze-state analyze-state.soar 8
+6	0	FOPERATOR allowed-directions allowed-directions.soar 12
+7	0	FOPERATOR portals portals.soar 10
+8	0	FOPERATOR movement-pruning movement-pruning.soar 8
+9	0	FOPERATOR prune-repeated-game-state prune-repeated-game-state.soar 13
+10	0	FOPERATOR top-state top-state.soar 9
+11	0	OPERATOR analyze-state analyze-state.soar 7
 END

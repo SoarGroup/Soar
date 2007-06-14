@@ -1,4 +1,4 @@
-11
+13
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -10,11 +10,14 @@ ENUMERATION 7 1 analyze-state
 ENUMERATION 8 1 initialize-analyze-state
 SOAR_ID 9
 ENUMERATION 10 1 analyze-state
-11
+SOAR_ID 11
+ENUMERATION 12 1 allowed-dirs
+13
 0 io 1
 0 name 7
 0 operator 4
 0 operator 9
+0 operator 11
 0 superstate 6
 0 top-state 0
 0 type 5
@@ -22,3 +25,4 @@ ENUMERATION 10 1 analyze-state
 1 output-link 3
 4 name 8
 9 name 10
+11 name 12
