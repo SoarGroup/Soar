@@ -16,7 +16,6 @@
 #include "sock_Debug.h"
 #include "sock_ClientSocket.h"
 #include "sock_OSspecific.h"
-#include <assert.h>
 
 using namespace sock ;
 

@@ -12,7 +12,8 @@
 
 #ifdef WIN_HEADERS
 #ifndef __STDC__ 
-#include "WinSock2.h"
+//somehow included in portability.h
+//#include "WinSock2.h"
 
 #define NET_CLOSESOCKET		closesocket
 #define NET_ERROR_NUMBER	WSAGetLastError()
