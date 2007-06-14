@@ -1,12 +1,12 @@
 multi-attributes rest 600
 multi-attributes 2d 64
 
-#learn --on
+learn --on
 #decay --on
 indifferent-selection --first
 
 pushd common
-source canvas.soar
+#source canvas.soar
 source status.soar
 source constant.soar
 pushd default
@@ -16,6 +16,6 @@ popd
 
 source analyze-state.soar
 popd
-#source goodthings.soar
+source goodthings.soar
 #source chunks.soar # tchunk_file source
 #source chunks.soar # achunk_file source
