@@ -8,7 +8,6 @@
 # For Soar-specific SCons information, see the Soar Wiki:
 #   http://winter.eecs.umich.edu/soarwiki/Soar_SCons_build_information
 
-
 import os
 import sys
 import SoarSCons
