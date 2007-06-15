@@ -39,6 +39,9 @@ goto end
 
 :success
 echo Build Complete
+IF NOT "%1" == "--nopause" pause
+exit /b 0
 
 :end
 IF NOT "%1" == "--nopause" pause
+exit /b 1
