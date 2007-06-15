@@ -1,3 +1,0 @@
-voigtjr: added this file to debug whether changes in this module
-would trigger the SoarSuite build. I'll delete it when done debugging.
-
