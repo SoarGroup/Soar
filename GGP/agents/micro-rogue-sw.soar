@@ -1,0 +1,2474 @@
+source header.soar
+sp {apply*_next__location_hero__x__y__1
+   (state <s> ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
+   (<o> ^name update-state)
+   (<e> ^nextHeroLocation <n>)
+   (<n> ^p1 <x> ^p2 <y>)
+-->
+   (<g> ^location <location>)
+   (<location> ^p1 hero ^p2 <x> ^p3 <y>)
+}
+sp {apply*_next__location__monster__x__y__1
+   (state <s> ^name game ^name game ^operator <o> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<o> ^name update-state)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<g> ^health <h>)
+   (<h> ^p1 <monster> ^p2 <health>)
+   (<e> ^top-state-elaborations.greaterthan <g1> ^nextMonsterLocation <n>)
+   (<g1> ^p2 0 ^p1 <health>)
+   (<n> ^p1 <monster> ^p2 <x> ^p3 <y>)
+-->
+   (<g> ^location <location>)
+   (<location> ^p1 <monster> ^p2 <x> ^p3 <y>)
+}
+sp {apply*_next__location__item__x__y__1
+   (state <s> ^name game ^name game ^operator <o> ^io <i> ^gs <g>)
+   (<o> ^name update-state)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^drop <d>)
+   (<d> ^p1 <item>)
+   (<g> ^location <l1>)
+   (<l1> ^p1 hero ^p2 <x> ^p3 <y>)
+-->
+   (<g> ^location <location>)
+   (<location> ^p1 <item> ^p2 <x> ^p3 <y>)
+}
+sp {apply*_next__health_hero__hpNew__1
+   (state <s> ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g1>)
+   (<o> ^name update-state)
+   (<e> ^totalMonsterDamage <t> ^top-state-elaborations.greaterthan <g> ^top-state-elaborations.minus <m>)
+   (<t> ^p1 <hitPointsLost>)
+   (<g> ^p2 0 ^p1 <hitPointsLost>)
+   (<g1> ^health <h>)
+   (<h> ^p1 hero ^p2 <hpOld>)
+   (<m> ^p1 <hpOld> ^p2 <hitPointsLost> ^p3 <hpNew>)
+-->
+   (<g1> ^health <health>)
+   (<health> ^p1 hero ^p2 <hpNew>)
+}
+sp {apply*_next__health_hero__hpNew__21
+   (state <s> ^name game ^name game ^operator <o> ^elaborations <e> ^elaborations <e1> ^gs <g> ^facts <f>)
+   (<o> ^name update-state)
+   (<e> ^totalMonsterDamage <t>)
+   (<t> ^p1 0)
+   (<e1> -^healthRestoredByScroll <h> ^top-state-elaborations.greaterthan <g1> ^top-state-elaborations.plus <p>)
+   (<g> ^health <h1>)
+   (<h1> ^p1 hero ^p2 <hpOld>)
+   (<f> ^maxHealth <m>)
+   (<m> ^p1 hero ^p2 <maxHealth>)
+   (<g1> ^p1 <maxHealth> ^p2 <hpOld>)
+   (<p> ^p2 1 ^p1 <hpOld> ^p3 <hpNew>)
+-->
+   (<g> ^health <health>)
+   (<health> ^p1 hero ^p2 <hpNew>)
+}
+sp {apply*_next__health_hero__maxHealth__1
+   (state <s> ^name game ^name game ^operator <o> ^elaborations <e> ^facts <f> ^gs <g>)
+   (<o> ^name update-state)
+   (<e> ^totalMonsterDamage <t> ^healthRestoredByScroll <h>)
+   (<t> ^p1 0)
+   (<f> ^maxHealth <m>)
+   (<m> ^p1 hero ^p2 <maxHealth>)
+-->
+   (<g> ^health <health>)
+   (<health> ^p1 hero ^p2 <maxHealth>)
+}
+sp {apply*_next__health__monster_0__1
+   (state <s> ^name game ^name game ^operator <o> ^facts <f> ^elaborations <e> ^gs <g>)
+   (<o> ^name update-state)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<e> ^monsterAttacked <m1> ^heroOffense <h1> ^top-state-elaborations.gtequal <g1>)
+   (<m1> ^p1 <monster>)
+   (<g> ^health <h>)
+   (<h> ^p1 <monster> ^p2 <hpOld>)
+   (<h1> ^p1 <wDamage>)
+   (<g1> ^p1 <wDamage> ^p2 <hpOld>)
+-->
+   (<g> ^health <health>)
+   (<health> ^p1 <monster> ^p2 0)
+}
+sp {apply*remove*_next__health__monster_0__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^health <h>)
+   (<h> ^p2 0 ^p1 <monster>)
+-->
+   (<g> ^health <h> -)
+}
+sp {apply*_next__health__monster__hpNew__1
+   (state <s> ^name game ^name game ^operator <o> ^facts <f> ^elaborations <e> ^gs <g>)
+   (<o> ^name update-state)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<e> ^monsterAttacked <m1> ^heroOffense <h1> ^top-state-elaborations.greaterthan <g1> ^top-state-elaborations.minus <m2>)
+   (<m1> ^p1 <monster>)
+   (<g> ^health <h>)
+   (<h> ^p1 <monster> ^p2 <hpOld>)
+   (<h1> ^p1 <wDamage>)
+   (<g1> ^p1 <hpOld> ^p2 <wDamage>)
+   (<m2> ^p1 <hpOld> ^p2 <wDamage> ^p3 <hpNew>)
+-->
+   (<g> ^health <health>)
+   (<health> ^p1 <monster> ^p2 <hpNew>)
+}
+sp {apply*remove*_next__health__monster__hpNew__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^health <h>)
+   (<h> ^p1 <monster> ^p2 <hpNew>)
+-->
+   (<g> ^health <h> -)
+}
+sp {apply*_next__health__monster_0__21
+   (state <s> ^name game ^name game ^operator <o> ^facts <f> ^elaborations <e> ^gs <g>)
+   (<o> ^name update-state)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<e> ^hitByArrow <h> ^top-state-elaborations.gtequal <g1>)
+   (<h> ^p1 <monster>)
+   (<g> ^health <h1>)
+   (<h1> ^p1 <monster> ^p2 <hpOld>)
+   (<g1> ^p1 2 ^p2 <hpOld>)
+-->
+   (<g> ^health <health>)
+   (<health> ^p1 <monster> ^p2 0)
+}
+sp {apply*_next__health__monster__hpNew__21
+   (state <s> ^name game ^name game ^operator <o> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<o> ^name update-state)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<g> ^health <h>)
+   (<h> ^p1 <monster> ^p2 <hpOld>)
+   (<e> ^top-state-elaborations.greaterthan <g1> ^hitByArrow <h1> ^top-state-elaborations.minus <m1>)
+   (<g1> ^p2 2 ^p1 <hpOld>)
+   (<h1> ^p1 <monster>)
+   (<m1> ^p2 2 ^p1 <hpOld> ^p3 <hpNew>)
+-->
+   (<g> ^health <health>)
+   (<health> ^p1 <monster> ^p2 <hpNew>)
+}
+sp {apply*_next__carrying__item__1
+   (state <s> ^name game ^name game ^operator <o> ^facts <f> ^elaborations <e> ^gs <g>)
+   (<o> ^name update-state)
+   (<f> ^item <i>)
+   (<i> ^p1 <item>)
+   (<e> ^pickedUp <p>)
+   (<p> ^p1 <item>)
+-->
+   (<g> ^carrying <carrying>)
+   (<carrying> ^p1 <item>)
+}
+sp {apply*_next__burden__newBurden__1
+   (state <s> ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g> ^facts <f>)
+   (<o> ^name update-state)
+   (<e> ^pickedUp <p>)
+   (<p> ^p1 { <item>  <> gold })
+   (<g> ^burden <b>)
+   (<b> ^p1 <oldBurden>)
+   (<f> ^succ <s1>)
+   (<s1> ^p1 <oldBurden> ^p2 <newBurden>)
+-->
+   (<g> ^burden <burden>)
+   (<burden> ^p1 <newBurden>)
+}
+sp {apply*_next__burden__newBurden__21
+   (state <s> ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g> ^facts <f>)
+   (<o> ^name update-state)
+   (<e> ^decrementsBurden <d>)
+   (<d> ^p1 <item>)
+   (<g> ^burden <b>)
+   (<b> ^p1 <oldBurden>)
+   (<f> ^succ <s1>)
+   (<s1> ^p1 <newBurden> ^p2 <oldBurden>)
+-->
+   (<g> ^burden <burden>)
+   (<burden> ^p1 <newBurden>)
+}
+sp {apply*_next__quiverSize__newSize__1
+   (state <s> ^name game ^name game ^operator <o> ^io <i> ^gs <g> ^elaborations <e>)
+   (<o> ^name update-state)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^throw <t>)
+   (<t> ^p1 arrow ^p2 <dir>)
+   (<g> ^quiverSize <q>)
+   (<q> ^p1 <oldSize>)
+   (<e> ^top-state-elaborations.minus <m>)
+   (<m> ^p2 1 ^p1 <oldSize> ^p3 <newSize>)
+-->
+   (<g> ^quiverSize <quiverSize>)
+   (<quiverSize> ^p1 <newSize>)
+}
+sp {apply*_next__wearing__item__1
+   (state <s> ^name game ^name game ^operator <o> ^io <i> ^gs <g>)
+   (<o> ^name update-state)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^wear <w>)
+   (<w> ^p1 <item>)
+-->
+   (<g> ^wearing <wearing>)
+   (<wearing> ^p1 <item>)
+}
+sp {apply*_next__wielding__weapon__1
+   (state <s> ^name game ^name game ^operator <o> ^io <i> ^gs <g>)
+   (<o> ^name update-state)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^wield <w>)
+   (<w> ^p1 <weapon>)
+-->
+   (<g> ^wielding <wielding>)
+   (<wielding> ^p1 <weapon>)
+}
+sp {apply*_next__asleep_hero_2__1
+   (state <s> ^name game ^name game ^operator <o> ^io <i> ^facts <f> ^gs <g>)
+   (<o> ^name update-state)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^read <r>)
+   (<r> ^p1 <scroll>)
+   (<f> ^scroll <s1>)
+   (<s1> ^p2 sleepInduce ^p1 <scroll>)
+-->
+   (<g> ^asleep <asleep>)
+   (<asleep> ^p1 hero ^p2 2)
+}
+sp {apply*_next__asleep_hero__n__1
+   (state <s> ^name game ^name game ^operator <o> ^gs <g> ^elaborations <e>)
+   (<o> ^name update-state)
+   (<g> ^asleep <a>)
+   (<a> ^p1 hero ^p2 { <old-n>  <> 1 })
+   (<e> ^top-state-elaborations.minus <m>)
+   (<m> ^p2 1 ^p1 <old-n> ^p3 <n>)
+-->
+   (<g> ^asleep <asleep>)
+   (<asleep> ^p1 hero ^p2 <n>)
+}
+sp {apply*_next__invisible_hero_5__1
+   (state <s> ^name game ^name game ^operator <o> ^io <i> ^facts <f> ^gs <g>)
+   (<o> ^name update-state)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^quaff <q>)
+   (<q> ^p1 <potion>)
+   (<f> ^potion <p>)
+   (<p> ^p2 invisibility ^p1 <potion>)
+-->
+   (<g> ^invisible <invisible>)
+   (<invisible> ^p1 hero ^p2 5)
+}
+sp {apply*remove*_next__invisible_hero_5__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^invisible <i>)
+   (<i> ^p1 hero ^p2 5)
+-->
+   (<g> ^invisible <i> -)
+}
+sp {apply*_next__invisible_hero__n__1
+   (state <s> ^name game ^name game ^operator <o> ^gs <g> ^elaborations <e>)
+   (<o> ^name update-state)
+   (<g> ^invisible <i>)
+   (<i> ^p1 hero ^p2 { <old-n>  <> 1 })
+   (<e> ^top-state-elaborations.minus <m>)
+   (<m> ^p2 1 ^p1 <old-n> ^p3 <n>)
+-->
+   (<g> ^invisible <invisible>)
+   (<invisible> ^p1 hero ^p2 <n>)
+}
+sp {apply*remove*_next__invisible_hero__n__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^invisible <i>)
+   (<i> ^p1 hero ^p2 <n>)
+-->
+   (<g> ^invisible <i> -)
+}
+sp {apply*_next__enhancedSpeed_hero_3__1
+   (state <s> ^name game ^name game ^operator <o> ^io <i> ^facts <f> ^gs <g>)
+   (<o> ^name update-state)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^quaff <q>)
+   (<q> ^p1 <potion>)
+   (<f> ^potion <p>)
+   (<p> ^p2 speed ^p1 <potion>)
+-->
+   (<g> ^enhancedSpeed <enhancedSpeed>)
+   (<enhancedSpeed> ^p1 hero ^p2 3)
+}
+sp {apply*remove*_next__enhancedSpeed_hero_3__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^enhancedSpeed <e>)
+   (<e> ^p1 hero ^p2 3)
+-->
+   (<g> ^enhancedSpeed <e> -)
+}
+sp {apply*_next__enhancedSpeed_hero__n__1
+   (state <s> ^name game ^name game ^operator <o> ^gs <g> ^elaborations <e1>)
+   (<o> ^name update-state)
+   (<g> ^enhancedSpeed <e>)
+   (<e> ^p1 hero ^p2 { <old-n>  <> 1 })
+   (<e1> ^top-state-elaborations.minus <m>)
+   (<m> ^p2 1 ^p1 <old-n> ^p3 <n>)
+-->
+   (<g> ^enhancedSpeed <enhancedSpeed>)
+   (<enhancedSpeed> ^p1 hero ^p2 <n>)
+}
+sp {apply*remove*_next__enhancedSpeed_hero__n__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^enhancedSpeed <e>)
+   (<e> ^p1 hero ^p2 <n>)
+-->
+   (<g> ^enhancedSpeed <e> -)
+}
+sp {apply*_next__enhancedStrength_hero_3__1
+   (state <s> ^name game ^name game ^operator <o> ^io <i> ^facts <f> ^gs <g>)
+   (<o> ^name update-state)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^quaff <q>)
+   (<q> ^p1 <potion>)
+   (<f> ^potion <p>)
+   (<p> ^p2 strength ^p1 <potion>)
+-->
+   (<g> ^enhancedStrength <enhancedStrength>)
+   (<enhancedStrength> ^p1 hero ^p2 3)
+}
+sp {apply*remove*_next__enhancedStrength_hero_3__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^enhancedStrength <e>)
+   (<e> ^p1 hero ^p2 3)
+-->
+   (<g> ^enhancedStrength <e> -)
+}
+sp {apply*_next__enhancedStrength_hero__n__1
+   (state <s> ^name game ^name game ^operator <o> ^gs <g> ^elaborations <e1>)
+   (<o> ^name update-state)
+   (<g> ^enhancedStrength <e>)
+   (<e> ^p1 hero ^p2 { <old-n>  <> 1 })
+   (<e1> ^top-state-elaborations.minus <m>)
+   (<m> ^p2 1 ^p1 <old-n> ^p3 <n>)
+-->
+   (<g> ^enhancedStrength <enhancedStrength>)
+   (<enhancedStrength> ^p1 hero ^p2 <n>)
+}
+sp {apply*remove*_next__enhancedStrength_hero__n__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^enhancedStrength <e>)
+   (<e> ^p1 hero ^p2 <n>)
+-->
+   (<g> ^enhancedStrength <e> -)
+}
+sp {apply*_next__enhancedArmor_hero_2__1
+   (state <s> ^name game ^name game ^operator <o> ^io <i> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<o> ^name update-state)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^read <r>)
+   (<r> ^p1 <scroll>)
+   (<f> ^scroll <s1> ^armor <a> ^armorstrength <a1>)
+   (<s1> ^p2 armorEnhance ^p1 <scroll>)
+   (<g> ^wearing <w>)
+   (<w> ^p1 <armor>)
+   (<a> ^p1 <armor> ^p2 <armor-type>)
+   (<a1> ^p1 <armor-type> ^p2 <amt>)
+   (<e> ^top-state-elaborations.gtequal <g1>)
+   (<g1> ^p1 3 ^p2 <amt>)
+-->
+   (<g> ^enhancedArmor <enhancedArmor>)
+   (<enhancedArmor> ^p1 hero ^p2 2)
+}
+sp {apply*remove*_next__enhancedArmor_hero_2__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^enhancedArmor <e>)
+   (<e> ^p1 hero ^p2 2)
+-->
+   (<g> ^enhancedArmor <e> -)
+}
+sp {apply*_next__enhancedArmor_hero__n__1
+   (state <s> ^name game ^name game ^operator <o> ^gs <g> ^elaborations <e1>)
+   (<o> ^name update-state)
+   (<g> ^enhancedArmor <e>)
+   (<e> ^p1 hero ^p2 { <old-n>  <> 1 })
+   (<e1> ^top-state-elaborations.minus <m>)
+   (<m> ^p2 1 ^p1 <old-n> ^p3 <n>)
+-->
+   (<g> ^enhancedArmor <enhancedArmor>)
+   (<enhancedArmor> ^p1 hero ^p2 <n>)
+}
+sp {apply*remove*_next__enhancedArmor_hero__n__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^enhancedArmor <e>)
+   (<e> ^p1 hero ^p2 <n>)
+-->
+   (<g> ^enhancedArmor <e> -)
+}
+sp {apply*_next__step__next__1
+   (state <s> ^name game ^name game ^operator <o> ^gs <g> ^facts <f>)
+   (<o> ^name update-state)
+   (<g> ^step <s1>)
+   (<s1> ^p1 <current>)
+   (<f> ^succ <s2>)
+   (<s2> ^p1 <current> ^p2 <next>)
+-->
+   (<g> ^step <step>)
+   (<step> ^p1 <next>)
+}
+sp {apply*remove*_next__step__next__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^step <s1>)
+   (<s1> ^p1 <next>)
+-->
+   (<g> ^step <s1> -)
+}
+sp {apply*_next__odd__1
+   (state <s> ^name game ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^even <e>)
+-->
+   (<g> ^odd <odd>)
+   
+}
+sp {apply*remove*_next__odd__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^odd <o1>)
+-->
+   (<g> ^odd <o1> -)
+}
+sp {apply*_next__even__1
+   (state <s> ^name game ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^odd <o1>)
+-->
+   (<g> ^even <even>)
+   
+}
+sp {apply*remove*_next__even__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^even <e>)
+-->
+   (<g> ^even <e> -)
+}
+sp {apply*_next__slomo-time_1__1
+   (state <s> ^name game ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^slomo-time <s1>)
+   (<s1> ^p1 4)
+-->
+   (<g> ^slomo-time <slomo-time>)
+   (<slomo-time> ^p1 1)
+}
+sp {apply*remove*_next__slomo-time_1__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^slomo-time <s1>)
+   (<s1> ^p1 1)
+-->
+   (<g> ^slomo-time <s1> -)
+}
+sp {apply*_next__slomo-time_2__1
+   (state <s> ^name game ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^slomo-time <s1>)
+   (<s1> ^p1 1)
+-->
+   (<g> ^slomo-time <slomo-time>)
+   (<slomo-time> ^p1 2)
+}
+sp {apply*remove*_next__slomo-time_2__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^slomo-time <s1>)
+   (<s1> ^p1 2)
+-->
+   (<g> ^slomo-time <s1> -)
+}
+sp {apply*_next__slomo-time_3__1
+   (state <s> ^name game ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^slomo-time <s1>)
+   (<s1> ^p1 2)
+-->
+   (<g> ^slomo-time <slomo-time>)
+   (<slomo-time> ^p1 3)
+}
+sp {apply*remove*_next__slomo-time_3__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^slomo-time <s1>)
+   (<s1> ^p1 3)
+-->
+   (<g> ^slomo-time <s1> -)
+}
+sp {apply*_next__slomo-time_4__1
+   (state <s> ^name game ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^slomo-time <s1>)
+   (<s1> ^p1 3)
+-->
+   (<g> ^slomo-time <slomo-time>)
+   (<slomo-time> ^p1 4)
+}
+sp {apply*remove*_next__slomo-time_4__
+   (state <s> ^name game ^operator <o> ^gs <g>)
+   (<o> ^name update-state)
+   (<g> ^slomo-time <s1>)
+   (<s1> ^p1 4)
+-->
+   (<g> ^slomo-time <s1> -)
+}
+sp {propose*_legal_hero__rest__1
+   (state <s> ^name game ^io <i>)
+   (<i> ^output-link <o>)
+   (<o> -^<cmd-name> <c>)
+-->
+   (<s> ^operator <o1> +)
+   (<o1> ^name rest)
+}
+sp {apply*rest
+   (state <s> ^name game ^operator <o> ^io <i>)
+   (<o> ^name rest)
+   (<i> ^output-link <o1>)
+-->
+   (<o1> ^rest <rest>)
+   
+}
+sp {propose*_legal_hero__move__dir__1
+   (state <s> ^name game ^elaborations <e> ^gs <g> ^facts <f> ^io <i>)
+   (<e> ^top-state-elaborations.nCell <n> ^top-state-elaborations.traversible <t>)
+   -{
+     (<e> ^currentlyAsleep <c>)
+     (<c> ^p1 hero)
+   }
+   (<g> ^location <l>)
+   (<l> ^p1 hero ^p2 <xOld> ^p3 <yOld>)
+   (<f> ^direction <d>)
+   (<d> ^p1 <dir>)
+   (<n> ^p1 1 ^p2 <dir> ^p3 <xOld> ^p4 <yOld> ^p5 <xNew> ^p6 <yNew>)
+   (<t> ^p1 <xNew> ^p2 <yNew>)
+   (<i> ^output-link <o>)
+   (<o> -^<cmd-name> <c1>)
+-->
+   (<s> ^operator <o1> +)
+   (<o1> ^name move ^p1 <dir>)
+}
+sp {apply*move
+   (state <s> ^name game ^operator <o> ^io <i>)
+   (<o> ^name move ^p1 <dir>)
+   (<i> ^output-link <o1>)
+-->
+   (<o1> ^move <move>)
+   (<move> ^p1 <dir>)
+}
+sp {propose*_legal_hero__drop__item__1
+   (state <s> ^name game ^elaborations <e> ^gs <g> ^io <i>)
+   -{
+     (<e> ^currentlyAsleep <c>)
+     (<c> ^p1 hero)
+   }
+   (<g> ^carrying <c1>)
+   (<c1> ^p1 <item>)
+   (<i> ^output-link <o>)
+   (<o> -^<cmd-name> <c2>)
+-->
+   (<s> ^operator <o1> +)
+   (<o1> ^name drop ^p1 <item>)
+}
+sp {apply*drop
+   (state <s> ^name game ^operator <o> ^io <i>)
+   (<o> ^name drop ^p1 <item>)
+   (<i> ^output-link <o1>)
+-->
+   (<o1> ^drop <drop>)
+   (<drop> ^p1 <item>)
+}
+sp {propose*_legal_hero__read__scroll__1
+   (state <s> ^name game ^elaborations <e> ^gs <g> ^facts <f> ^io <i>)
+   -{
+     (<e> ^currentlyAsleep <c>)
+     (<c> ^p1 hero)
+   }
+   (<g> ^carrying <c1>)
+   (<c1> ^p1 <scroll>)
+   (<f> ^scroll <s1>)
+   (<s1> ^p1 <scroll> ^p2 <scrollType>)
+   (<i> ^output-link <o>)
+   (<o> -^<cmd-name> <c2>)
+-->
+   (<s> ^operator <o1> +)
+   (<o1> ^name read ^p1 <scroll>)
+}
+sp {apply*read
+   (state <s> ^name game ^operator <o> ^io <i>)
+   (<o> ^name read ^p1 <scroll>)
+   (<i> ^output-link <o1>)
+-->
+   (<o1> ^read <read>)
+   (<read> ^p1 <scroll>)
+}
+sp {propose*_legal_hero__quaff__potion__1
+   (state <s> ^name game ^elaborations <e> ^gs <g> ^facts <f> ^io <i>)
+   -{
+     (<e> ^currentlyAsleep <c>)
+     (<c> ^p1 hero)
+   }
+   (<g> ^carrying <c1>)
+   (<c1> ^p1 <potion>)
+   (<f> ^potion <p>)
+   (<p> ^p1 <potion> ^p2 <potionType>)
+   (<i> ^output-link <o>)
+   (<o> -^<cmd-name> <c2>)
+-->
+   (<s> ^operator <o1> +)
+   (<o1> ^name quaff ^p1 <potion>)
+}
+sp {apply*quaff
+   (state <s> ^name game ^operator <o> ^io <i>)
+   (<o> ^name quaff ^p1 <potion>)
+   (<i> ^output-link <o1>)
+-->
+   (<o1> ^quaff <quaff>)
+   (<quaff> ^p1 <potion>)
+}
+sp {propose*_legal_hero__throw_arrow__dir__1
+   (state <s> ^name game ^elaborations <e> ^gs <g> ^facts <f> ^io <i>)
+   (<e> ^top-state-elaborations.greaterthan <g1>)
+   -{
+     (<e> ^currentlyAsleep <c>)
+     (<c> ^p1 hero)
+   }
+   (<g> ^wielding <w> ^quiverSize <q>)
+   (<w> ^p1 <weapon>)
+   (<f> ^weapon <w1> ^direction <d>)
+   (<w1> ^p2 bow ^p1 <weapon>)
+   (<q> ^p1 <numarrows>)
+   (<g1> ^p2 0 ^p1 <numarrows>)
+   (<d> ^p1 <dir>)
+   (<i> ^output-link <o>)
+   (<o> -^<cmd-name> <c1>)
+-->
+   (<s> ^operator <o1> +)
+   (<o1> ^name throw ^p1 arrow ^p2 <dir>)
+}
+sp {apply*throw
+   (state <s> ^name game ^operator <o> ^io <i>)
+   (<o> ^name throw ^p1 arrow ^p2 <dir>)
+   (<i> ^output-link <o1>)
+-->
+   (<o1> ^throw <throw>)
+   (<throw> ^p1 arrow ^p2 <dir>)
+}
+sp {propose*_legal_hero__wear__item__1
+   (state <s> ^name game ^elaborations <e> ^gs <g> ^facts <f> ^io <i>)
+   -{
+     (<e> ^currentlyAsleep <c>)
+     (<c> ^p1 hero)
+   }
+   (<g> ^carrying <c1>)
+   (<c1> ^p1 <item>)
+   -{
+     (<e> ^armored <a>)
+     (<a> ^p1 hero)
+   }
+   (<f> ^armor <a1>)
+   (<a1> ^p1 <item> ^p2 <itemType>)
+   (<i> ^output-link <o>)
+   (<o> -^<cmd-name> <c2>)
+-->
+   (<s> ^operator <o1> +)
+   (<o1> ^name wear ^p1 <item>)
+}
+sp {apply*wear
+   (state <s> ^name game ^operator <o> ^io <i>)
+   (<o> ^name wear ^p1 <item>)
+   (<i> ^output-link <o1>)
+-->
+   (<o1> ^wear <wear>)
+   (<wear> ^p1 <item>)
+}
+sp {propose*_legal_hero__remove__item__1
+   (state <s> ^name game ^elaborations <e> ^gs <g> ^io <i>)
+   -{
+     (<e> ^currentlyAsleep <c>)
+     (<c> ^p1 hero)
+   }
+   (<g> ^wearing <w>)
+   (<w> ^p1 <item>)
+   (<i> ^output-link <o>)
+   (<o> -^<cmd-name> <c1>)
+-->
+   (<s> ^operator <o1> +)
+   (<o1> ^name remove ^p1 <item>)
+}
+sp {apply*remove
+   (state <s> ^name game ^operator <o> ^io <i>)
+   (<o> ^name remove ^p1 <item>)
+   (<i> ^output-link <o1>)
+-->
+   (<o1> ^remove <remove>)
+   (<remove> ^p1 <item>)
+}
+sp {propose*_legal_hero__wield__weapon__1
+   (state <s> ^name game ^elaborations <e> ^gs <g> ^facts <f> ^io <i>)
+   -{
+     (<e> ^currentlyAsleep <c>)
+     (<c> ^p1 hero)
+   }
+   (<g> ^carrying <c1>)
+   (<c1> ^p1 <weapon>)
+   (<f> ^weapon <w>)
+   (<w> ^p1 <weapon> ^p2 <weapon-Type>)
+   (<i> ^output-link <o>)
+   (<o> -^<cmd-name> <c2>)
+-->
+   (<s> ^operator <o1> +)
+   (<o1> ^name wield ^p1 <weapon>)
+}
+sp {apply*wield
+   (state <s> ^name game ^operator <o> ^io <i>)
+   (<o> ^name wield ^p1 <weapon>)
+   (<i> ^output-link <o1>)
+-->
+   (<o1> ^wield <wield>)
+   (<wield> ^p1 <weapon>)
+}
+sp {elaborate*_goal_hero_100_1
+   (state <s> ^name game ^terminal <t> ^desired <d> ^gs <g> ^elaborations <e>)
+   (<g> ^carrying <c>)
+   -{
+     (<g> ^health <h>)
+     (<h> ^p1 hero ^p2 0)
+   }
+   (<c> ^p1 amulet)
+   (<e> ^atexit <a>)
+-->
+   (<s> ^success-detected <d>)
+}
+sp {elaborate*_goal_hero_75_1
+   (state <s> ^name game ^terminal <t> ^desired <d> ^gs <g> ^elaborations <e>)
+   (<g> ^carrying <c>)
+   -{
+     (<g> ^health <h>)
+     (<h> ^p1 hero ^p2 0)
+   }
+   (<c> ^p1 amulet)
+   (<e> -^atexit <a>)
+-->
+   (<s> ^failure-detected <d>)
+}
+sp {elaborate*_goal_hero_75_21
+   (state <s> ^name game ^terminal <t> ^desired <d> ^gs <g> ^elaborations <e>)
+   (<g> ^carrying <c1>)
+   -{
+     (<g> ^health <h>)
+     (<h> ^p1 hero ^p2 0)
+   }
+   -{
+     (<g> ^carrying <c>)
+     (<c> ^p1 amulet)
+   }
+   (<c1> ^p1 gold)
+   (<e> -^atexit <a>)
+-->
+   (<s> ^failure-detected <d>)
+}
+sp {elaborate*_goal_hero_0_1
+   (state <s> ^name game ^terminal <t> ^desired <d> ^gs <g>)
+   (<g> ^health <h>)
+   (<h> ^p1 hero ^p2 0)
+-->
+   (<s> ^failure-detected <d>)
+}
+sp {elaborate*_terminal_
+   (state <s> ^gs <g> -^duplicate-of <d>)
+   (<g> ^health <h>)
+   (<h> ^p1 hero ^p2 0)
+-->
+   (halt)
+}
+sp {_terminal_1
+   (state <s> ^gs <g> ^duplicate-of <d>)
+   (<g> ^health <h>)
+   (<h> ^p1 hero ^p2 0)
+-->
+   (<s> ^terminal <terminal>)
+}
+sp {elaborate*_terminal_2
+   (state <s> ^gs <g> ^facts <f> -^duplicate-of <d>)
+   (<g> ^step <s1>)
+   (<s1> ^p1 <t>)
+   (<f> ^maxTime <m>)
+   (<m> ^p1 <t>)
+-->
+   (halt)
+}
+sp {_terminal_21
+   (state <s> ^gs <g> ^facts <f> ^duplicate-of <d>)
+   (<g> ^step <s1>)
+   (<s1> ^p1 <t>)
+   (<f> ^maxTime <m>)
+   (<m> ^p1 <t>)
+-->
+   (<s> ^terminal <terminal>)
+}
+sp {elaborate*_terminal_3
+   (state <s> ^gs <g> ^elaborations <e> -^duplicate-of <d>)
+   (<g> ^carrying <c>)
+   (<c> ^p1 amulet)
+   (<e> ^atexit <a>)
+-->
+   (halt)
+}
+sp {_terminal_31
+   (state <s> ^gs <g> ^elaborations <e> ^duplicate-of <d>)
+   (<g> ^carrying <c>)
+   (<c> ^p1 amulet)
+   (<e> ^atexit <a>)
+-->
+   (<s> ^terminal <terminal>)
+}
+sp {elaborate*_totalMonsterDamage_0_
+   (state <s> ^elaborations <e> ^elaborations <e1>)
+   (<e> ^nextHeroLocation <n>)
+   (<n> ^p1 <x> ^p2 <y>)
+   -{
+     (<e1> ^attackedBySomeMonster <a>)
+     (<a> ^p1 <x> ^p2 <y>)
+   }
+-->
+   (<e1> ^totalMonsterDamage <totalMonsterDamage>)
+   (<totalMonsterDamage> ^p1 0)
+}
+sp {elaborate*_totalMonsterDamage__damage_
+   (state <s> ^elaborations <e> ^facts <f>)
+   (<e> ^nextHeroLocation <n> ^attackedByMonster <a> ^totalMonsterDamage1 <t>)
+   (<n> ^p1 <x> ^p2 <y>)
+   (<f> ^monster <m> ^monsterStrength <m1>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<a> ^p1 <monster> ^p2 <x> ^p3 <y>)
+   (<m1> ^p1 <monster-type> ^p2 <strength>)
+   (<t> ^p1 <monster> ^p2 <strength> ^p3 <x> ^p4 <y> ^p5 <damage>)
+-->
+   (<e> ^totalMonsterDamage <totalMonsterDamage>)
+   (<totalMonsterDamage> ^p1 <damage>)
+}
+sp {elaborate*_totalMonsterDamage1__monster__strength__x__y__damage_
+   (state <s> ^elaborations <e> ^facts <f> ^elaborations <e1> ^gs <g>)
+   (<e> ^nextHeroLocation <n>)
+   (<n> ^p1 <x> ^p2 <y>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<e1> ^amountOfMonsterDamage <a1> ^top-state-elaborations.min <m1>)
+   -{
+     (<e1> ^attackedBy2ndMonster <a>)
+     (<a> ^p1 <monster> ^p2 <x> ^p3 <y>)
+   }
+   (<a1> ^p1 <strength> ^p2 <d1>)
+   (<g> ^health <h>)
+   (<h> ^p1 hero ^p2 <hp>)
+   (<m1> ^p1 <d1> ^p2 <hp> ^p3 <damage>)
+-->
+   (<e1> ^totalMonsterDamage1 <totalMonsterDamage1>)
+   (<totalMonsterDamage1> ^p1 <monster> ^p2 <strength> ^p3 <x> ^p4 <y> ^p5 <damage>)
+}
+sp {elaborate*_totalMonsterDamage1__monster1__strength__x__y__damage_
+   (state <s> ^elaborations <e>)
+   (<e> ^totalMonsterDamage2 <t>)
+   (<t> ^p1 <monster1> ^p2 <strength> ^p3 <x> ^p4 <y> ^p5 <damage>)
+-->
+   (<e> ^totalMonsterDamage1 <totalMonsterDamage1>)
+   (<totalMonsterDamage1> ^p1 <monster1> ^p2 <strength> ^p3 <x> ^p4 <y> ^p5 <damage>)
+}
+sp {elaborate*_totalMonsterDamage2__monster1__strength1__x__y__damage_
+   (state <s> ^elaborations <e> ^facts <f> ^gs <g>)
+   (<e> ^nextHeroLocation <n> ^attackedByMonster <a> ^top-state-elaborations.plus <p> ^amountOfMonsterDamage <a1> ^top-state-elaborations.min <m3>)
+   (<n> ^p1 <x> ^p2 <y>)
+   (<f> ^monster <m> ^monster <m1> ^monsterStrength <m2>)
+   (<m> ^p1 <monster2> ^p2 <monster-type>)
+   (<m1> ^p1 { <monster1>  <> <monster2> } ^p2 <monster-type>)
+   (<a> ^p1 <monster2> ^p2 <x> ^p3 <y>)
+   (<m2> ^p1 <monster-type> ^p2 <strength2>)
+   (<p> ^p1 <strength1> ^p2 <strength2> ^p3 <strength>)
+   (<a1> ^p1 <strength> ^p2 <combined-damage>)
+   (<g> ^health <h>)
+   (<h> ^p1 hero ^p2 <hp>)
+   (<m3> ^p1 <combined-damage> ^p2 <hp> ^p3 <damage>)
+-->
+   (<e> ^totalMonsterDamage2 <totalMonsterDamage2>)
+   (<totalMonsterDamage2> ^p1 <monster1> ^p2 <strength1> ^p3 <x> ^p4 <y> ^p5 <damage>)
+}
+sp {elaborate*_attackedBySomeMonster__x__y_
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<e> ^attackedByMonster <a>)
+   (<a> ^p1 <monster> ^p2 <x> ^p3 <y>)
+-->
+   (<e> ^attackedBySomeMonster <attackedBySomeMonster>)
+   (<attackedBySomeMonster> ^p1 <x> ^p2 <y>)
+}
+sp {elaborate*_attackedByMonster__monster__x2__y2_
+   (state <s> ^elaborations <e> ^gs <g>)
+   (<e> ^provoked <p> ^top-state-elaborations.adjacent <a>)
+   (<p> ^p1 <monster>)
+   (<g> ^location <l>)
+   (<l> ^p1 <monster> ^p2 <x1> ^p3 <y1>)
+   (<a> ^p1 <x1> ^p2 <y1> ^p3 <x2> ^p4 <y2>)
+-->
+   (<e> ^attackedByMonster <attackedByMonster>)
+   (<attackedByMonster> ^p1 <monster> ^p2 <x2> ^p3 <y2>)
+}
+sp {elaborate*_attackedBy2ndMonster__monster1__x__y_
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster2> ^p2 <monster-type>)
+   (<e> ^attackedByMonster <a>)
+   (<a> ^p1 <monster2> ^p2 <x> ^p3 <y>)
+-->
+   (<e> ^attackedBy2ndMonster <attackedBy2ndMonster>)
+   (<attackedBy2ndMonster> ^p1 <monster1> ^p2 <x> ^p3 <y>)
+}
+sp {elaborate*_amountOfMonsterDamage__offensive-strength_0_
+   (state <s> ^elaborations <e>)
+   (<e> ^heroDefense <h> ^top-state-elaborations.gtequal <g>)
+   (<h> ^p1 <defense>)
+   (<g> ^p1 <defense> ^p2 <offensive-strength>)
+-->
+   (<e> ^amountOfMonsterDamage <amountOfMonsterDamage>)
+   (<amountOfMonsterDamage> ^p1 <offensive-strength> ^p2 0)
+}
+sp {elaborate*_amountOfMonsterDamage__offensive-strength__hitPointsLost_
+   (state <s> ^elaborations <e>)
+   (<e> ^heroDefense <h> ^top-state-elaborations.minus <m> ^top-state-elaborations.plus <p>)
+   (<h> ^p1 <defense>)
+   (<m> ^p1 <offensive-strength> ^p2 <defense> ^p3 <diff>)
+   (<p> ^p2 1 ^p1 <diff> ^p3 <hitPointsLost>)
+-->
+   (<e> ^amountOfMonsterDamage <amountOfMonsterDamage>)
+   (<amountOfMonsterDamage> ^p1 <offensive-strength> ^p2 <hitPointsLost>)
+}
+sp {elaborate*_heroDefense_1_
+   (state <s> ^elaborations <e>)
+   -{
+     (<e> ^armored <a>)
+     (<a> ^p1 hero)
+   }
+-->
+   (<e> ^heroDefense <heroDefense>)
+   (<heroDefense> ^p1 1)
+}
+sp {elaborate*_heroDefense__defense_
+   (state <s> ^elaborations <e> ^gs <g> ^facts <f>)
+   -{
+     (<e> ^currentlyEnhancedArmor <c>)
+     (<c> ^p1 hero)
+   }
+   (<g> ^wearing <w>)
+   (<w> ^p1 <item>)
+   (<f> ^armor <a> ^armorstrength <a1>)
+   (<a> ^p1 <item> ^p2 <armor-type>)
+   (<a1> ^p1 <armor-type> ^p2 <defense>)
+-->
+   (<e> ^heroDefense <heroDefense>)
+   (<heroDefense> ^p1 <defense>)
+}
+sp {elaborate*_heroDefense__defense_1
+   (state <s> ^facts <f> ^gs <g> ^elaborations <e1>)
+   (<f> ^int <i> ^armor <a> ^armorstrength <a1>)
+   (<i> ^p1 <n>)
+   (<g> ^enhancedArmor <e> ^wearing <w>)
+   (<e> ^p1 hero ^p2 <n>)
+   (<w> ^p1 <item>)
+   (<a> ^p1 <item> ^p2 <armor-type>)
+   (<a1> ^p1 <armor-type> ^p2 <base-defense>)
+   (<e1> ^top-state-elaborations.plus <p>)
+   (<p> ^p2 1 ^p1 <base-defense> ^p3 <defense>)
+-->
+   (<e1> ^heroDefense <heroDefense>)
+   (<heroDefense> ^p1 <defense>)
+}
+sp {elaborate*_heroOffense_1_
+   (state <s> ^elaborations <e>)
+   -{
+     (<e> ^armed <a>)
+     (<a> ^p1 hero)
+   }
+-->
+   (<e> ^heroOffense <heroOffense>)
+   (<heroOffense> ^p1 1)
+}
+sp {elaborate*_heroOffense__offense_
+   (state <s> ^elaborations <e> ^gs <g> ^facts <f>)
+   -{
+     (<e> ^currentlyEnhancedStrength <c>)
+     (<c> ^p1 hero)
+   }
+   (<g> ^wielding <w>)
+   (<w> ^p1 <weapon>)
+   (<f> ^weapon <w1> ^weaponStrength <w2>)
+   (<w1> ^p1 <weapon> ^p2 <weapon-type>)
+   (<w2> ^p1 <weapon-type> ^p2 <offense>)
+-->
+   (<e> ^heroOffense <heroOffense>)
+   (<heroOffense> ^p1 <offense>)
+}
+sp {elaborate*_heroOffense__offense_1
+   (state <s> ^elaborations <e> ^gs <g> ^facts <f>)
+   (<e> ^currentlyEnhancedStrength <c>)
+   (<c> ^p1 hero)
+   (<g> ^wielding <w>)
+   (<w> ^p1 <weapon>)
+   (<f> ^weapon <w1> ^weaponStrength <w2>)
+   (<w1> ^p1 <weapon> ^p2 <weapon-type>)
+   (<w2> ^p1 <weapon-type> ^p2 <wDamage>)
+-->
+   (<e> ^heroOffense <heroOffense>)
+   (<heroOffense> ^p1 <offense>)
+}
+sp {elaborate*_monsterAttacked__monster_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e> ^io <i>)
+   (<g> ^location <l> ^location <l1>)
+   (<l> ^p1 hero ^p2 <x1> ^p3 <y1>)
+   (<l1> ^p1 <monster> ^p2 <x2> ^p3 <y2>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<e> ^top-state-elaborations.adjacent <a> ^top-state-elaborations.nCell <n>)
+   (<a> ^p1 <x1> ^p2 <y1> ^p3 <x2> ^p4 <y2>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l2>)
+   (<l2> ^hero <h>)
+   (<h> ^move <m1>)
+   (<m1> ^p1 <dir>)
+   (<n> ^p1 1 ^p2 <dir> ^p3 <x1> ^p4 <y1> ^p5 <x2> ^p6 <y2>)
+-->
+   (<e> ^monsterAttacked <monsterAttacked>)
+   (<monsterAttacked> ^p1 <monster>)
+}
+sp {elaborate*_nStepsTowards_0__startx__starty__destx__desty__startx__starty_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l>)
+   (<l> ^p1 hero ^p2 <destx> ^p3 <desty>)
+   (<f> ^int <i> ^int <i1> ^int <i2> ^int <i3>)
+   (<i> ^p1 <startx>)
+   (<i1> ^p1 <starty>)
+   (<i2> ^p1 <destx>)
+   (<i3> ^p1 <desty>)
+-->
+   (<e> ^nStepsTowards <nStepsTowards>)
+   (<nStepsTowards> ^p1 0 ^p2 <startx> ^p3 <starty> ^p4 <destx> ^p5 <desty> ^p6 <startx> ^p7 <starty>)
+}
+sp {elaborate*_nStepsTowards__n__x__y__x__y__x__y_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l>)
+   (<l> ^p1 hero ^p2 <x> ^p3 <y>)
+   (<f> ^int <i> ^int <i1> ^int <i2>)
+   (<i> ^p1 <n>)
+   (<i1> ^p1 <x>)
+   (<i2> ^p1 <y>)
+-->
+   (<e> ^nStepsTowards <nStepsTowards>)
+   (<nStepsTowards> ^p1 <n> ^p2 <x> ^p3 <y> ^p4 <x> ^p5 <y> ^p6 <x> ^p7 <y>)
+}
+sp {elaborate*_nStepsTowards__n__startx__starty__destx__desty__finalx__finaly_
+   (state <s> ^gs <g> ^elaborations <e>)
+   (<g> ^location <l>)
+   (<l> ^p1 hero ^p2 <destx> ^p3 <desty>)
+   (<e> ^top-state-elaborations.greaterthan <g1> ^singleUnobstructedStep <s1> ^top-state-elaborations.minus <m> ^nStepsTowards <n1>)
+   (<g1> ^p2 0 ^p1 <n>)
+   (<s1> ^p1 <startx> ^p2 <starty> ^p3 <destx> ^p4 <desty> ^p5 <x2> ^p6 <y2>)
+   (<m> ^p2 1 ^p1 <n> ^p3 <n-1>)
+   (<n1> ^p1 <n-1> ^p2 <x2> ^p3 <y2> ^p4 <destx> ^p5 <desty> ^p6 <finalx> ^p7 <finaly>)
+-->
+   (<e> ^nStepsTowards <nStepsTowards>)
+   (<nStepsTowards> ^p1 <n> ^p2 <startx> ^p3 <starty> ^p4 <destx> ^p5 <desty> ^p6 <finalx> ^p7 <finaly>)
+}
+sp {elaborate*_singleUnobstructedStep__startx__starty__destx__desty__nextx__nexty_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e> ^elaborations <e1>)
+   (<g> ^location <l> ^location <l1>)
+   (<l> ^p1 <monster> ^p2 <startx> ^p3 <starty>)
+   (<l1> ^p1 hero ^p2 <destx> ^p3 <desty>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<e> ^oneStepTowards <o> ^top-state-elaborations.traversible <t> ^nextHeroLocation <n>)
+   (<o> ^p1 <startx> ^p2 <starty> ^p3 <destx> ^p4 <desty> ^p5 <nextx> ^p6 <nexty>)
+   (<t> ^p1 <nextx> ^p2 <nexty>)
+   (<n> ^p1 <x> ^p2 <y>)
+   -{
+     (<e1> ^sameLocation <s1>)
+     (<s1> ^p1 <nextx> ^p2 <nexty> ^p3 <x> ^p4 <y>)
+   }
+-->
+   (<e> ^singleUnobstructedStep <singleUnobstructedStep>)
+   (<singleUnobstructedStep> ^p1 <startx> ^p2 <starty> ^p3 <destx> ^p4 <desty> ^p5 <nextx> ^p6 <nexty>)
+}
+sp {elaborate*_singleUnobstructedStep__startx__starty__destx__desty__startx__starty_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l> ^location <l1>)
+   (<l> ^p1 hero ^p2 <destx> ^p3 <desty>)
+   (<l1> ^p1 <monster> ^p2 <startx> ^p3 <starty>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<e> ^oneStepTowards <o> ^nextHeroLocation <n> ^sameLocation <s1>)
+   (<o> ^p1 <startx> ^p2 <starty> ^p3 <destx> ^p4 <desty> ^p5 <nextx> ^p6 <nexty>)
+   (<n> ^p1 <x> ^p2 <y>)
+   (<s1> ^p1 <nextx> ^p2 <nexty> ^p3 <x> ^p4 <y>)
+-->
+   (<e> ^singleUnobstructedStep <singleUnobstructedStep>)
+   (<singleUnobstructedStep> ^p1 <startx> ^p2 <starty> ^p3 <destx> ^p4 <desty> ^p5 <startx> ^p6 <starty>)
+}
+sp {elaborate*_oneStepTowards__x1__y1__x2__y2__x3__y3_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l> ^location <l1>)
+   (<l> ^p1 <monster> ^p2 <x1> ^p3 <y1>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<l1> ^p1 hero ^p2 <x2> ^p3 <y2>)
+   (<e> ^top-state-elaborations.cardinalRelation <c> ^top-state-elaborations.nCell <n>)
+   -{
+     (<e> ^diagonal <d>)
+     (<d> ^p1 <x1> ^p2 <y1> ^p3 <x2> ^p4 <y2>)
+   }
+   (<c> ^p1 <cdir> ^p2 <x2> ^p3 <y2> ^p4 <x1> ^p5 <y1>)
+   (<n> ^p1 1 ^p2 <cdir> ^p3 <x1> ^p4 <y1> ^p5 <x3> ^p6 <y3>)
+-->
+   (<e> ^oneStepTowards <oneStepTowards>)
+   (<oneStepTowards> ^p1 <x1> ^p2 <y1> ^p3 <x2> ^p4 <y2> ^p5 <x3> ^p6 <y3>)
+}
+sp {elaborate*_oneStepTowards__x1__y1__x2__y2__x3__y3_1
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l> ^location <l1>)
+   (<l> ^p1 <monster> ^p2 <x1> ^p3 <y1>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<l1> ^p1 hero ^p2 <x2> ^p3 <y2>)
+   (<e> ^top-state-elaborations.cardinalRelation <c> ^top-state-elaborations.nCell <n>)
+   -{
+     (<e> ^diagonal <d>)
+     (<d> ^p1 <x1> ^p2 <y1> ^p3 <x2> ^p4 <y2>)
+   }
+   (<c> ^p1 <cdir> ^p2 <x2> ^p3 <y2> ^p4 <x1> ^p5 <y1>)
+   (<n> ^p1 1 ^p2 <cdir> ^p3 <x1> ^p4 <y1> ^p5 <x3> ^p6 <y3>)
+-->
+   (<e> ^oneStepTowards <oneStepTowards>)
+   (<oneStepTowards> ^p1 <x1> ^p2 <y1> ^p3 <x2> ^p4 <y2> ^p5 <x3> ^p6 <y3>)
+}
+sp {elaborate*_oneStepTowards__x1__y1__x2__y2__x3__y3_2
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l> ^location <l1> ^odd <o>)
+   (<l> ^p1 <monster> ^p2 <x1> ^p3 <y1>)
+   (<f> ^monster <m> ^verticalDir <v>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<l1> ^p1 hero ^p2 <x2> ^p3 <y2>)
+   (<e> ^diagonal <d> ^top-state-elaborations.cardinalRelation <c> ^top-state-elaborations.nCell <n>)
+   (<d> ^p1 <x1> ^p2 <y1> ^p3 <x2> ^p4 <y2>)
+   (<v> ^p1 <cdir>)
+   (<c> ^p1 <cdir> ^p2 <x2> ^p3 <y2> ^p4 <x1> ^p5 <y1>)
+   (<n> ^p1 1 ^p2 <cdir> ^p3 <x1> ^p4 <y1> ^p5 <x3> ^p6 <y3>)
+-->
+   (<e> ^oneStepTowards <oneStepTowards>)
+   (<oneStepTowards> ^p1 <x1> ^p2 <y1> ^p3 <x2> ^p4 <y2> ^p5 <x3> ^p6 <y3>)
+}
+sp {elaborate*_oneStepTowards__x1__y1__x2__y2__x3__y3_3
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l> ^location <l1> ^even <e1>)
+   (<l> ^p1 <monster> ^p2 <x1> ^p3 <y1>)
+   (<f> ^monster <m> ^horizontalDir <h>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<l1> ^p1 hero ^p2 <x2> ^p3 <y2>)
+   (<e> ^diagonal <d> ^top-state-elaborations.cardinalRelation <c> ^top-state-elaborations.nCell <n>)
+   (<d> ^p1 <x1> ^p2 <y1> ^p3 <x2> ^p4 <y2>)
+   (<h> ^p1 <cdir>)
+   (<c> ^p1 <cdir> ^p2 <x2> ^p3 <y2> ^p4 <x1> ^p5 <y1>)
+   (<n> ^p1 1 ^p2 <cdir> ^p3 <x1> ^p4 <y1> ^p5 <x3> ^p6 <y3>)
+-->
+   (<e> ^oneStepTowards <oneStepTowards>)
+   (<oneStepTowards> ^p1 <x1> ^p2 <y1> ^p3 <x2> ^p4 <y2> ^p5 <x3> ^p6 <y3>)
+}
+sp {elaborate*_nCell_1_north__x__y1__x__y2_
+   (state <s> ^superstate nil  ^facts <f> ^elaborations <e>)
+   (<f> ^int <i>)
+   (<i> ^p1 <x>)
+   (<e> ^top-state-elaborations.minus <m>)
+   (<m> ^p2 1 ^p1 <y1> ^p3 <y2>)
+-->
+   (<e> ^nCell <nCell>)
+   (<nCell> ^p1 1 ^p2 north ^p3 <x> ^p4 <y1> ^p5 <x> ^p6 <y2>)
+}
+sp {elaborate*_nCell_1_south__x__y1__x__y2_
+   (state <s> ^superstate nil  ^facts <f> ^elaborations <e>)
+   (<f> ^int <i>)
+   (<i> ^p1 <x>)
+   (<e> ^top-state-elaborations.plus <p>)
+   (<p> ^p2 1 ^p1 <y1> ^p3 <y2>)
+-->
+   (<e> ^nCell <nCell>)
+   (<nCell> ^p1 1 ^p2 south ^p3 <x> ^p4 <y1> ^p5 <x> ^p6 <y2>)
+}
+sp {elaborate*_nCell_1_east__x1__y__x2__y_
+   (state <s> ^superstate nil  ^facts <f> ^elaborations <e>)
+   (<f> ^int <i>)
+   (<i> ^p1 <y>)
+   (<e> ^top-state-elaborations.plus <p>)
+   (<p> ^p2 1 ^p1 <x1> ^p3 <x2>)
+-->
+   (<e> ^nCell <nCell>)
+   (<nCell> ^p1 1 ^p2 east ^p3 <x1> ^p4 <y> ^p5 <x2> ^p6 <y>)
+}
+sp {elaborate*_nCell_1_west__x1__y__x2__y_
+   (state <s> ^superstate nil  ^facts <f> ^elaborations <e>)
+   (<f> ^int <i>)
+   (<i> ^p1 <y>)
+   (<e> ^top-state-elaborations.minus <m>)
+   (<m> ^p2 1 ^p1 <x1> ^p3 <x2>)
+-->
+   (<e> ^nCell <nCell>)
+   (<nCell> ^p1 1 ^p2 west ^p3 <x1> ^p4 <y> ^p5 <x2> ^p6 <y>)
+}
+sp {elaborate*_cardinalRelation_north__x1__y1__x2__y2_
+   (state <s> ^superstate nil  ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l> ^location <l1>)
+   (<l> ^p1 <monster> ^p2 <x2> ^p3 <y2>)
+   (<f> ^monster <m> ^int <i> ^int <i1> ^int <i2> ^int <i3>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<l1> ^p1 hero ^p2 <x1> ^p3 <y1>)
+   (<e> ^top-state-elaborations.greaterthan <g1>)
+   (<g1> ^p1 <y2> ^p2 <y1>)
+   (<i> ^p1 <x1>)
+   (<i1> ^p1 <x2>)
+   (<i2> ^p1 <y1>)
+   (<i3> ^p1 <y2>)
+-->
+   (<e> ^cardinalRelation <cardinalRelation>)
+   (<cardinalRelation> ^p1 north ^p2 <x1> ^p3 <y1> ^p4 <x2> ^p5 <y2>)
+}
+sp {elaborate*_cardinalRelation_south__x1__y1__x2__y2_
+   (state <s> ^superstate nil  ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l> ^location <l1>)
+   (<l> ^p1 <monster> ^p2 <x2> ^p3 <y2>)
+   (<f> ^monster <m> ^int <i> ^int <i1> ^int <i2> ^int <i3>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<l1> ^p1 hero ^p2 <x1> ^p3 <y1>)
+   (<e> ^top-state-elaborations.greaterthan <g1>)
+   (<g1> ^p1 <y1> ^p2 <y2>)
+   (<i> ^p1 <x1>)
+   (<i1> ^p1 <x2>)
+   (<i2> ^p1 <y1>)
+   (<i3> ^p1 <y2>)
+-->
+   (<e> ^cardinalRelation <cardinalRelation>)
+   (<cardinalRelation> ^p1 south ^p2 <x1> ^p3 <y1> ^p4 <x2> ^p5 <y2>)
+}
+sp {elaborate*_cardinalRelation_east__x1__y1__x2__y2_
+   (state <s> ^superstate nil  ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l> ^location <l1>)
+   (<l> ^p1 <monster> ^p2 <x2> ^p3 <y2>)
+   (<f> ^monster <m> ^int <i> ^int <i1> ^int <i2> ^int <i3>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<l1> ^p1 hero ^p2 <x1> ^p3 <y1>)
+   (<e> ^top-state-elaborations.greaterthan <g1>)
+   (<g1> ^p1 <x1> ^p2 <x2>)
+   (<i> ^p1 <x1>)
+   (<i1> ^p1 <x2>)
+   (<i2> ^p1 <y1>)
+   (<i3> ^p1 <y2>)
+-->
+   (<e> ^cardinalRelation <cardinalRelation>)
+   (<cardinalRelation> ^p1 east ^p2 <x1> ^p3 <y1> ^p4 <x2> ^p5 <y2>)
+}
+sp {elaborate*_cardinalRelation_west__x1__y1__x2__y2_
+   (state <s> ^superstate nil  ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l> ^location <l1>)
+   (<l> ^p1 <monster> ^p2 <x2> ^p3 <y2>)
+   (<f> ^monster <m> ^int <i> ^int <i1> ^int <i2> ^int <i3>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<l1> ^p1 hero ^p2 <x1> ^p3 <y1>)
+   (<e> ^top-state-elaborations.greaterthan <g1>)
+   (<g1> ^p1 <x2> ^p2 <x1>)
+   (<i> ^p1 <x1>)
+   (<i1> ^p1 <x2>)
+   (<i2> ^p1 <y1>)
+   (<i3> ^p1 <y2>)
+-->
+   (<e> ^cardinalRelation <cardinalRelation>)
+   (<cardinalRelation> ^p1 west ^p2 <x1> ^p3 <y1> ^p4 <x2> ^p5 <y2>)
+}
+sp {elaborate*_diagonal__x1__y1__x2__y2_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l> ^location <l1>)
+   (<l> ^p1 <monster> ^p2 <x1> ^p3 <y1>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<l1> ^p1 hero ^p2 { <x2>  <> <x1> } ^p3 { <y2>  <> <y1> })
+-->
+   (<e> ^diagonal <diagonal>)
+   (<diagonal> ^p1 <x1> ^p2 <y1> ^p3 <x2> ^p4 <y2>)
+}
+sp {elaborate*_roomlocation__x__y_
+   (state <s> ^superstate nil  ^facts <f> ^elaborations <e>)
+   (<f> ^room <r>)
+   (<r> ^p1 <tlx> ^p2 <tly> ^p3 <brx> ^p4 <bry>)
+   (<e> ^top-state-elaborations.between <b> ^top-state-elaborations.between <b1>)
+   (<b> ^p1 <tlx> ^p2 <x> ^p3 <brx>)
+   (<b1> ^p1 <tly> ^p2 <y> ^p3 <bry>)
+-->
+   (<e> ^roomlocation <roomlocation>)
+   (<roomlocation> ^p1 <x> ^p2 <y>)
+}
+sp {elaborate*_between__a__b__c_
+   (state <s> ^superstate nil  ^elaborations <e>)
+   (<e> ^top-state-elaborations.gtequal <g> ^top-state-elaborations.gtequal <g1>)
+   (<g> ^p1 <b> ^p2 <a>)
+   (<g1> ^p1 <c> ^p2 <b>)
+-->
+   (<e> ^between <between>)
+   (<between> ^p1 <a> ^p2 <b> ^p3 <c>)
+}
+sp {elaborate*_traversible__x__y_
+   (state <s> ^superstate nil  ^elaborations <e>)
+   (<e> ^top-state-elaborations.roomlocation <r>)
+   (<r> ^p1 <x> ^p2 <y>)
+-->
+   (<e> ^traversible <traversible>)
+   (<traversible> ^p1 <x> ^p2 <y>)
+}
+sp {elaborate*_traversible__x__y_1
+   (state <s> ^superstate nil  ^facts <f> ^elaborations <e>)
+   (<f> ^corridor <c>)
+   (<c> ^p1 <x> ^p2 <y>)
+-->
+   (<e> ^traversible <traversible>)
+   (<traversible> ^p1 <x> ^p2 <y>)
+}
+sp {elaborate*_inRoom__e__x1__y1__x2__y2_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e1>)
+   (<g> ^location <l>)
+   (<l> ^p1 <e> ^p2 <x> ^p3 <y>)
+   (<f> ^room <r>)
+   (<r> ^p1 <x1> ^p2 <y1> ^p3 <x2> ^p4 <y2>)
+   (<e1> ^top-state-elaborations.between <b> ^top-state-elaborations.between <b1>)
+   (<b> ^p1 <x1> ^p2 <x> ^p3 <x2>)
+   (<b1> ^p1 <y1> ^p2 <y> ^p3 <y2>)
+-->
+   (<e1> ^inRoom <inRoom>)
+   (<inRoom> ^p1 <e> ^p2 <x1> ^p3 <y1> ^p4 <x2> ^p5 <y2>)
+}
+sp {elaborate*_inSameRoom__e1__e2_
+   (state <s> ^elaborations <e>)
+   (<e> ^inRoom <i> ^inRoom <i1>)
+   (<i> ^p1 <e1> ^p2 <x1> ^p3 <y1> ^p4 <x2> ^p5 <y2>)
+   (<i1> ^p1 <e2> ^p2 <x1> ^p3 <y1> ^p4 <x2> ^p5 <y2>)
+-->
+   (<e> ^inSameRoom <inSameRoom>)
+   (<inSameRoom> ^p1 <e1> ^p2 <e2>)
+}
+sp {elaborate*_sameLocation__x__y__x__y_
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^int <i> ^int <i1>)
+   (<i> ^p1 <x>)
+   (<i1> ^p1 <y>)
+-->
+   (<e> ^sameLocation <sameLocation>)
+   (<sameLocation> ^p1 <x> ^p2 <y> ^p3 <x> ^p4 <y>)
+}
+sp {elaborate*_adjacent__x__y1__x__y2_
+   (state <s> ^superstate nil  ^facts <f> ^elaborations <e>)
+   (<f> ^int <i>)
+   (<i> ^p1 <x>)
+   (<e> ^top-state-elaborations.diff <d>)
+   (<d> ^p3 1 ^p1 <y1> ^p2 <y2>)
+-->
+   (<e> ^adjacent <adjacent>)
+   (<adjacent> ^p1 <x> ^p2 <y1> ^p3 <x> ^p4 <y2>)
+}
+sp {elaborate*_adjacent__x1__y__x2__y_
+   (state <s> ^superstate nil  ^facts <f> ^elaborations <e>)
+   (<f> ^int <i>)
+   (<i> ^p1 <y>)
+   (<e> ^top-state-elaborations.diff <d>)
+   (<d> ^p3 1 ^p1 <x1> ^p2 <x2>)
+-->
+   (<e> ^adjacent <adjacent>)
+   (<adjacent> ^p1 <x1> ^p2 <y> ^p3 <x2> ^p4 <y>)
+}
+sp {elaborate*_adjacent__x1__y1__x2__y2_
+   (state <s> ^superstate nil  ^elaborations <e>)
+   (<e> ^top-state-elaborations.diff <d> ^top-state-elaborations.diff <d1>)
+   (<d> ^p3 1 ^p1 <x1> ^p2 <x2>)
+   (<d1> ^p3 1 ^p1 <y1> ^p2 <y2>)
+-->
+   (<e> ^adjacent <adjacent>)
+   (<adjacent> ^p1 <x1> ^p2 <y1> ^p3 <x2> ^p4 <y2>)
+}
+sp {elaborate*_provoked__monster_
+   (state <s> ^facts <f> ^elaborations <e>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<e> ^inSameRoom <i>)
+   -{
+     (<e> ^currentlyAsleep <c>)
+     (<c> ^p1 <monster>)
+   }
+   (<i> ^p1 hero ^p2 <monster>)
+-->
+   (<e> ^provoked <provoked>)
+   (<provoked> ^p1 <monster>)
+}
+sp {elaborate*_provoked__monster_1
+   (state <s> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<g> ^asleep <a>)
+   (<a> ^p1 <monster> ^p2 <n>)
+   (<e> ^monsterAttacked <m1>)
+   (<m1> ^p1 <monster>)
+-->
+   (<e> ^provoked <provoked>)
+   (<provoked> ^p1 <monster>)
+}
+sp {elaborate*_provoked__monster_2
+   (state <s> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<g> ^asleep <a>)
+   (<a> ^p1 <monster> ^p2 <n>)
+   (<e> ^hitByArrow <h>)
+   (<h> ^p1 <monster>)
+-->
+   (<e> ^provoked <provoked>)
+   (<provoked> ^p1 <monster>)
+}
+sp {elaborate*_atexit_
+   (state <s> ^gs <g> ^elaborations <e>)
+   (<g> ^location <l> ^location <l1>)
+   (<l> ^p1 hero ^p2 <x> ^p3 <y>)
+   (<l1> ^p1 exit ^p2 <x> ^p3 <y>)
+-->
+   (<e> ^atexit <atexit>)
+   
+}
+sp {elaborate*_diff__n1__n2__diff_
+   (state <s> ^superstate nil  ^elaborations <e>)
+   (<e> ^top-state-elaborations.greaterthan <g> ^top-state-elaborations.minus <m>)
+   (<g> ^p1 <n1> ^p2 <n2>)
+   (<m> ^p1 <n1> ^p2 <n2> ^p3 <diff>)
+-->
+   (<e> ^diff <diff1>)
+   (<diff1> ^p1 <n1> ^p2 <n2> ^p3 <diff>)
+}
+sp {elaborate*_diff__n1__n2__diff_1
+   (state <s> ^superstate nil  ^elaborations <e>)
+   (<e> ^top-state-elaborations.gtequal <g> ^top-state-elaborations.minus <m>)
+   (<g> ^p1 <n2> ^p2 <n1>)
+   (<m> ^p1 <n2> ^p2 <n1> ^p3 <diff>)
+-->
+   (<e> ^diff <diff1>)
+   (<diff1> ^p1 <n1> ^p2 <n2> ^p3 <diff>)
+}
+sp {elaborate*_min__n1__n2__n2_
+   (state <s> ^superstate nil  ^elaborations <e>)
+   (<e> ^top-state-elaborations.greaterthan <g>)
+   (<g> ^p1 <n1> ^p2 <n2>)
+-->
+   (<e> ^min <min>)
+   (<min> ^p1 <n1> ^p2 <n2> ^p3 <n2>)
+}
+sp {elaborate*_min__n1__n2__n1_
+   (state <s> ^superstate nil  ^elaborations <e>)
+   (<e> ^top-state-elaborations.gtequal <g>)
+   (<g> ^p1 <n2> ^p2 <n1>)
+-->
+   (<e> ^min <min>)
+   (<min> ^p1 <n1> ^p2 <n2> ^p3 <n1>)
+}
+sp {elaborate*_nextHeroLocation__x2__y2_
+   (state <s> ^gs <g> ^io <i> ^elaborations <e> ^elaborations <e1>)
+   (<g> ^location <l>)
+   (<l> ^p1 hero ^p2 <x1> ^p3 <y1>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l1>)
+   (<l1> ^hero <h>)
+   (<h> ^move <m>)
+   (<m> ^p1 <dir>)
+   (<e> ^top-state-elaborations.nCell <n>)
+   (<n> ^p1 1 ^p2 <dir> ^p3 <x1> ^p4 <y1> ^p5 <x2> ^p6 <y2>)
+   -{
+     (<e1> ^monsterAt <m1>)
+     (<m1> ^p1 <x2> ^p2 <y2>)
+   }
+-->
+   (<e> ^nextHeroLocation <nextHeroLocation>)
+   (<nextHeroLocation> ^p1 <x2> ^p2 <y2>)
+}
+sp {elaborate*_nextHeroLocation__x1__y1_
+   (state <s> ^gs <g> ^io <i> ^elaborations <e>)
+   (<g> ^location <l>)
+   (<l> ^p1 hero ^p2 <x1> ^p3 <y1>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l1>)
+   (<l1> ^hero <h>)
+   (<h> ^move <m>)
+   (<m> ^p1 <dir>)
+   (<e> ^top-state-elaborations.nCell <n> ^monsterAt <m1>)
+   (<n> ^p1 1 ^p2 <dir> ^p3 <x1> ^p4 <y1> ^p5 <x2> ^p6 <y2>)
+   (<m1> ^p1 <x2> ^p2 <y2>)
+-->
+   (<e> ^nextHeroLocation <nextHeroLocation>)
+   (<nextHeroLocation> ^p1 <x1> ^p2 <y1>)
+}
+sp {elaborate*_nextHeroLocation__x__y_
+   (state <s> ^gs <g> ^io <i> ^elaborations <e>)
+   (<g> ^location <l>)
+   (<l> ^p1 hero ^p2 <x> ^p3 <y>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l1>)
+   (<l1> ^hero <h>)
+   -{
+     (<h> ^move <m>)
+     (<m> ^p1 <dir>)
+   }
+-->
+   (<e> ^nextHeroLocation <nextHeroLocation>)
+   (<nextHeroLocation> ^p1 <x> ^p2 <y>)
+}
+sp {elaborate*_monsterAt__x__y_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^location <l>)
+   (<l> ^p1 <monster> ^p2 <x> ^p3 <y>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+-->
+   (<e> ^monsterAt <monsterAt>)
+   (<monsterAt> ^p1 <x> ^p2 <y>)
+}
+sp {elaborate*_nextMonsterLocation__monster__x2__y2_
+   (state <s> ^elaborations <e> ^gs <g> ^facts <f>)
+   (<e> ^provoked <p> ^relativeSpeed <r> ^nStepsTowards <n>)
+   -{
+     (<e> ^currentlyInvisible <c>)
+     (<c> ^p1 hero)
+   }
+   (<p> ^p1 <monster>)
+   (<g> ^location <l> ^location <l1>)
+   (<l> ^p1 <monster> ^p2 <x1> ^p3 <y1>)
+   (<l1> ^p1 hero ^p2 <herox> ^p3 <heroy>)
+   (<f> ^monster <m> ^monsterSpeed <m1>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<m1> ^p1 <monster-type> ^p2 <base-speed>)
+   (<r> ^p1 <base-speed> ^p2 <speed>)
+   (<n> ^p1 <speed> ^p2 <x1> ^p3 <y1> ^p4 <herox> ^p5 <heroy> ^p6 <x2> ^p7 <y2>)
+-->
+   (<e> ^nextMonsterLocation <nextMonsterLocation>)
+   (<nextMonsterLocation> ^p1 <monster> ^p2 <x2> ^p3 <y2>)
+}
+sp {elaborate*_nextMonsterLocation__monster__x__y_
+   (state <s> ^facts <f> ^elaborations <e> ^gs <g>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   -{
+     (<e> ^provoked <p>)
+     (<p> ^p1 <monster>)
+   }
+   (<g> ^location <l>)
+   (<l> ^p1 <monster> ^p2 <x> ^p3 <y>)
+-->
+   (<e> ^nextMonsterLocation <nextMonsterLocation>)
+   (<nextMonsterLocation> ^p1 <monster> ^p2 <x> ^p3 <y>)
+}
+sp {elaborate*_nextMonsterLocation__monster__x__y_1
+   (state <s> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<g> ^invisible <i> ^location <l>)
+   (<i> ^p1 hero ^p2 <n>)
+   (<l> ^p1 <monster> ^p2 <x> ^p3 <y>)
+-->
+   (<e> ^nextMonsterLocation <nextMonsterLocation>)
+   (<nextMonsterLocation> ^p1 <monster> ^p2 <x> ^p3 <y>)
+}
+sp {elaborate*_relativeSpeed_0_5__speed_
+   (state <s> ^elaborations <e>)
+   (<e> ^halfSpeed <h>)
+   -{
+     (<e> ^currentlyEnhancedSpeed <c>)
+     (<c> ^p1 hero)
+   }
+   (<h> ^p1 <speed>)
+-->
+   (<e> ^relativeSpeed <relativeSpeed>)
+   (<relativeSpeed> ^p1 0.5 ^p2 <speed>)
+}
+sp {elaborate*_relativeSpeed_0_5__speed_1
+   (state <s> ^gs <g> ^elaborations <e1>)
+   (<g> ^enhancedSpeed <e>)
+   (<e> ^p1 hero ^p2 <n>)
+   (<e1> ^quarterSpeed <q>)
+   (<q> ^p1 <speed>)
+-->
+   (<e1> ^relativeSpeed <relativeSpeed>)
+   (<relativeSpeed> ^p1 0.5 ^p2 <speed>)
+}
+sp {elaborate*_relativeSpeed__base-speed__base-speed_
+   (state <s> ^elaborations <e>)
+   -{
+     (<e> ^currentlyEnhancedSpeed <c>)
+     (<c> ^p1 hero)
+   }
+-->
+   (<e> ^relativeSpeed <relativeSpeed>)
+   (<relativeSpeed> ^p1 <base-speed> ^p2 <base-speed>)
+}
+sp {elaborate*_relativeSpeed_1__speed_
+   (state <s> ^gs <g> ^elaborations <e1>)
+   (<g> ^enhancedSpeed <e>)
+   (<e> ^p1 hero ^p2 <n>)
+   (<e1> ^halfSpeed <h>)
+   (<h> ^p1 <speed>)
+-->
+   (<e1> ^relativeSpeed <relativeSpeed>)
+   (<relativeSpeed> ^p1 1 ^p2 <speed>)
+}
+sp {elaborate*_relativeSpeed_2_1_
+   (state <s> ^gs <g> ^elaborations <e1>)
+   (<g> ^enhancedSpeed <e>)
+   (<e> ^p1 hero ^p2 <n>)
+-->
+   (<e1> ^relativeSpeed <relativeSpeed>)
+   (<relativeSpeed> ^p1 2 ^p2 1)
+}
+sp {elaborate*_halfSpeed_1_
+   (state <s> ^gs <g> ^elaborations <e>)
+   (<g> ^odd <o>)
+-->
+   (<e> ^halfSpeed <halfSpeed>)
+   (<halfSpeed> ^p1 1)
+}
+sp {elaborate*_halfSpeed_0_
+   (state <s> ^gs <g> ^elaborations <e1>)
+   (<g> ^even <e>)
+-->
+   (<e1> ^halfSpeed <halfSpeed>)
+   (<halfSpeed> ^p1 0)
+}
+sp {elaborate*_quarterSpeed_1_
+   (state <s> ^gs <g> ^elaborations <e>)
+   (<g> ^slomo-time <s1>)
+   (<s1> ^p1 4)
+-->
+   (<e> ^quarterSpeed <quarterSpeed>)
+   (<quarterSpeed> ^p1 1)
+}
+sp {elaborate*_quarterSpeed_0_
+   (state <s> ^gs <g> ^elaborations <e>)
+   (<g> ^slomo-time <s1>)
+   (<s1> ^p1 { <n>  <> 4 })
+-->
+   (<e> ^quarterSpeed <quarterSpeed>)
+   (<quarterSpeed> ^p1 0)
+}
+sp {elaborate*_healthRestoredByScroll_
+   (state <s> ^io <i> ^facts <f> ^gs <g> ^elaborations <e>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^read <r>)
+   (<r> ^p1 <scroll>)
+   (<f> ^scroll <s1> ^maxHealth <m>)
+   (<s1> ^p2 restoreHealth ^p1 <scroll>)
+   (<g> ^health <h1>)
+   (<h1> ^p1 hero ^p2 <health>)
+   (<m> ^p1 hero ^p2 { <maxHealth>  <> <health> })
+-->
+   (<e> ^healthRestoredByScroll <healthRestoredByScroll>)
+   
+}
+sp {elaborate*_hitByArrow__monster_
+   (state <s> ^facts <f> ^io <i> ^gs <g> ^elaborations <e>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^throw <t>)
+   (<t> ^p1 arrow ^p2 <dir>)
+   (<g> ^location <l1> ^location <l2>)
+   (<l1> ^p1 hero ^p2 <x> ^p3 <y1>)
+   (<l2> ^p1 <monster> ^p2 <x> ^p3 <y2>)
+-->
+   (<e> ^hitByArrow <hitByArrow>)
+   (<hitByArrow> ^p1 <monster>)
+}
+sp {elaborate*_hitByArrow__monster_1
+   (state <s> ^facts <f> ^io <i> ^gs <g> ^elaborations <e>)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^throw <t>)
+   (<t> ^p1 arrow ^p2 <dir>)
+   (<g> ^location <l1> ^location <l2>)
+   (<l1> ^p1 hero ^p2 <x1> ^p3 <y>)
+   (<l2> ^p1 <monster> ^p2 <x2> ^p3 <y>)
+-->
+   (<e> ^hitByArrow <hitByArrow>)
+   (<hitByArrow> ^p1 <monster>)
+}
+sp {elaborate*_pickedUp__item_
+   (state <s> ^facts <f> ^gs <g> ^elaborations <e> ^elaborations <e1>)
+   (<f> ^item <i> ^maxBurden <m>)
+   (<i> ^p1 { <item>  <> gold })
+   (<g> ^burden <b> ^location <l> ^location <l1>)
+   (<b> ^p1 <burden>)
+   (<m> ^p1 <max-burden>)
+   (<e> ^top-state-elaborations.greaterthan <g1> ^nextHeroLocation <n>)
+   (<g1> ^p1 <max-burden> ^p2 <burden>)
+   (<l> ^p1 hero ^p2 <x1> ^p3 <y1>)
+   (<n> ^p1 <x2> ^p2 <y2>)
+   -{
+     (<e1> ^sameLocation <s1>)
+     (<s1> ^p1 <x1> ^p2 <y1> ^p3 <x2> ^p4 <y2>)
+   }
+   (<l1> ^p1 <item> ^p2 <x2> ^p3 <y2>)
+-->
+   (<e1> ^pickedUp <pickedUp>)
+   (<pickedUp> ^p1 <item>)
+}
+sp {elaborate*_pickedUp_gold_
+   (state <s> ^elaborations <e> ^gs <g>)
+   (<e> ^nextHeroLocation <n>)
+   (<n> ^p1 <x> ^p2 <y>)
+   (<g> ^location <l>)
+   (<l> ^p1 gold ^p2 <x> ^p3 <y>)
+-->
+   (<e> ^pickedUp <pickedUp>)
+   (<pickedUp> ^p1 gold)
+}
+sp {elaborate*_decrementsBurden__item_
+   (state <s> ^elaborations <e>)
+   (<e> ^use <u>)
+   (<u> ^p1 <item>)
+-->
+   (<e> ^decrementsBurden <decrementsBurden>)
+   (<decrementsBurden> ^p1 <item>)
+}
+sp {elaborate*_decrementsBurden__item_1
+   (state <s> ^io <i> ^elaborations <e>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^drop <d>)
+   (<d> ^p1 <item>)
+-->
+   (<e> ^decrementsBurden <decrementsBurden>)
+   (<decrementsBurden> ^p1 <item>)
+}
+sp {elaborate*_burdenchanged_
+   (state <s> ^elaborations <e>)
+   (<e> ^pickedUp <p>)
+   (<p> ^p1 { <item>  <> gold })
+-->
+   (<e> ^burdenchanged <burdenchanged>)
+   
+}
+sp {elaborate*_burdenchanged_1
+   (state <s> ^elaborations <e>)
+   (<e> ^decrementsBurden <d>)
+   (<d> ^p1 { <item>  <> gold })
+-->
+   (<e> ^burdenchanged <burdenchanged>)
+   
+}
+sp {elaborate*_changeWeapon__weapon_
+   (state <s> ^io <i> ^elaborations <e>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^wield <w>)
+   (<w> ^p1 <otherweapon>)
+-->
+   (<e> ^changeWeapon <changeWeapon>)
+   (<changeWeapon> ^p1 <weapon>)
+}
+sp {elaborate*_arrowthrown_
+   (state <s> ^facts <f> ^io <i> ^elaborations <e>)
+   (<f> ^direction <d>)
+   (<d> ^p1 <dir>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^throw <t>)
+   (<t> ^p1 arrow ^p2 <dir>)
+-->
+   (<e> ^arrowthrown <arrowthrown>)
+   
+}
+sp {elaborate*_currentlyInvisible_hero_
+   (state <s> ^gs <g> ^elaborations <e>)
+   (<g> ^invisible <i>)
+   (<i> ^p1 hero ^p2 <n>)
+-->
+   (<e> ^currentlyInvisible <currentlyInvisible>)
+   (<currentlyInvisible> ^p1 hero)
+}
+sp {elaborate*_currentlyAsleep__agent_
+   (state <s> ^gs <g> ^elaborations <e>)
+   (<g> ^asleep <a>)
+   (<a> ^p1 <agent> ^p2 <n>)
+-->
+   (<e> ^currentlyAsleep <currentlyAsleep>)
+   (<currentlyAsleep> ^p1 <agent>)
+}
+sp {elaborate*_currentlyEnhancedArmor_hero_
+   (state <s> ^gs <g> ^elaborations <e1>)
+   (<g> ^enhancedArmor <e>)
+   (<e> ^p1 hero ^p2 <n>)
+-->
+   (<e1> ^currentlyEnhancedArmor <currentlyEnhancedArmor>)
+   (<currentlyEnhancedArmor> ^p1 hero)
+}
+sp {elaborate*_currentlyEnhancedStrength_hero_
+   (state <s> ^gs <g> ^elaborations <e1>)
+   (<g> ^enhancedStrength <e>)
+   (<e> ^p1 hero ^p2 <n>)
+-->
+   (<e1> ^currentlyEnhancedStrength <currentlyEnhancedStrength>)
+   (<currentlyEnhancedStrength> ^p1 hero)
+}
+sp {elaborate*_currentlyEnhancedSpeed_hero_
+   (state <s> ^gs <g> ^elaborations <e1>)
+   (<g> ^enhancedSpeed <e>)
+   (<e> ^p1 hero ^p2 <n>)
+-->
+   (<e1> ^currentlyEnhancedSpeed <currentlyEnhancedSpeed>)
+   (<currentlyEnhancedSpeed> ^p1 hero)
+}
+sp {elaborate*_armored_hero_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^wearing <w>)
+   (<w> ^p1 <armor>)
+   (<f> ^armor <a>)
+   (<a> ^p1 <armor> ^p2 <armor-type>)
+-->
+   (<e> ^armored <armored>)
+   (<armored> ^p1 hero)
+}
+sp {elaborate*_armed_hero_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e>)
+   (<g> ^wielding <w>)
+   (<w> ^p1 <weapon>)
+   (<f> ^weapon <w1>)
+   (<w1> ^p1 <weapon> ^p2 <weapon-type>)
+-->
+   (<e> ^armed <armed>)
+   (<armed> ^p1 hero)
+}
+sp {elaborate*_use__potion_
+   (state <s> ^io <i> ^elaborations <e>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^quaff <q>)
+   (<q> ^p1 <potion>)
+-->
+   (<e> ^use <use>)
+   (<use> ^p1 <potion>)
+}
+sp {elaborate*_use__scroll_
+   (state <s> ^io <i> ^elaborations <e>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<h> ^read <r>)
+   (<r> ^p1 <scroll>)
+-->
+   (<e> ^use <use>)
+   (<use> ^p1 <scroll>)
+}
+sp {propose*init-game
+   (state <s> ^superstate nil -^name )
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name init-game)
+}
+sp {apply*init-game
+   (state <s> ^operator <o>)
+   (<o> ^name init-game)
+-->
+   (<s> ^name game ^next-action 0 ^desired <desired> ^gs <gs> ^facts <facts>)
+   (<gs> ^role hero ^action-counter 0)
+   (<gs> ^step <step>)
+   (<step> ^p1 1)
+   (<gs> ^location <location>)
+   (<location> ^p1 amulet ^p2 2 ^p3 5)
+   (<gs> ^location <location1>)
+   (<location1> ^p1 armor1 ^p2 0 ^p3 2)
+   (<gs> ^location <location2>)
+   (<location2> ^p1 weapon1 ^p2 1 ^p3 1)
+   (<gs> ^location <location3>)
+   (<location3> ^p1 weapon2 ^p2 6 ^p3 0)
+   (<gs> ^location <location4>)
+   (<location4> ^p1 potion1 ^p2 0 ^p3 0)
+   (<gs> ^location <location5>)
+   (<location5> ^p1 potion2 ^p2 7 ^p3 5)
+   (<gs> ^location <location6>)
+   (<location6> ^p1 scroll1 ^p2 5 ^p3 1)
+   (<gs> ^location <location7>)
+   (<location7> ^p1 exit ^p2 7 ^p3 7)
+   (<gs> ^location <location8>)
+   (<location8> ^p1 gold ^p2 5 ^p3 3)
+   (<gs> ^location <location9>)
+   (<location9> ^p1 hero ^p2 0 ^p3 3)
+   (<gs> ^location <location10>)
+   (<location10> ^p1 bat1 ^p2 1 ^p3 0)
+   (<gs> ^location <location11>)
+   (<location11> ^p1 bat2 ^p2 4 ^p3 5)
+   (<gs> ^location <location12>)
+   (<location12> ^p1 hobgoblin1 ^p2 0 ^p3 7)
+   (<gs> ^location <location13>)
+   (<location13> ^p1 kestral1 ^p2 7 ^p3 3)
+   (<gs> ^location <location14>)
+   (<location14> ^p1 snake1 ^p2 3 ^p3 3)
+   (<gs> ^health <health>)
+   (<health> ^p1 hero ^p2 6)
+   (<gs> ^health <health1>)
+   (<health1> ^p1 bat1 ^p2 3)
+   (<gs> ^health <health2>)
+   (<health2> ^p1 bat2 ^p2 3)
+   (<gs> ^health <health3>)
+   (<health3> ^p1 kestral1 ^p2 2)
+   (<gs> ^health <health4>)
+   (<health4> ^p1 hobgoblin1 ^p2 5)
+   (<gs> ^health <health5>)
+   (<health5> ^p1 snake1 ^p2 4)
+   (<gs> ^asleep <asleep>)
+   (<asleep> ^p1 bat1 ^p2 0)
+   (<gs> ^asleep <asleep1>)
+   (<asleep1> ^p1 bat2 ^p2 0)
+   (<gs> ^burden <burden>)
+   (<burden> ^p1 0)
+   (<gs> ^quiverSize <quiverSize>)
+   (<quiverSize> ^p1 5)
+   (<gs> ^odd <odd>)
+   
+   (<gs> ^slomo-time <slomo-time>)
+   (<slomo-time> ^p1 1)
+   (<gs> ^blocked <blocked>)
+   (<blocked> ^p1 west ^p2 0 ^p3 0)
+   (<gs> ^blocked <blocked1>)
+   (<blocked1> ^p1 west ^p2 0 ^p3 1)
+   (<gs> ^blocked <blocked2>)
+   (<blocked2> ^p1 west ^p2 0 ^p3 2)
+   (<gs> ^blocked <blocked3>)
+   (<blocked3> ^p1 west ^p2 0 ^p3 3)
+   (<gs> ^blocked <blocked4>)
+   (<blocked4> ^p1 north ^p2 0 ^p3 0)
+   (<gs> ^blocked <blocked5>)
+   (<blocked5> ^p1 north ^p2 1 ^p3 0)
+   (<gs> ^blocked <blocked6>)
+   (<blocked6> ^p1 north ^p2 2 ^p3 0)
+   (<gs> ^blocked <blocked7>)
+   (<blocked7> ^p1 north ^p2 3 ^p3 0)
+   (<gs> ^blocked <blocked8>)
+   (<blocked8> ^p1 east ^p2 3 ^p3 1)
+   (<gs> ^blocked <blocked9>)
+   (<blocked9> ^p1 east ^p2 3 ^p3 2)
+   (<gs> ^blocked <blocked10>)
+   (<blocked10> ^p1 east ^p2 3 ^p3 3)
+   (<gs> ^blocked <blocked11>)
+   (<blocked11> ^p1 south ^p2 0 ^p3 3)
+   (<gs> ^blocked <blocked12>)
+   (<blocked12> ^p1 south ^p2 1 ^p3 3)
+   (<gs> ^blocked <blocked13>)
+   (<blocked13> ^p1 south ^p2 2 ^p3 3)
+   (<gs> ^blocked <blocked14>)
+   (<blocked14> ^p1 south ^p2 3 ^p3 3)
+   (<gs> ^blocked <blocked15>)
+   (<blocked15> ^p1 north ^p2 4 ^p3 0)
+   (<gs> ^blocked <blocked16>)
+   (<blocked16> ^p1 south ^p2 4 ^p3 0)
+   (<gs> ^blocked <blocked17>)
+   (<blocked17> ^p1 west ^p2 5 ^p3 1)
+   (<gs> ^blocked <blocked18>)
+   (<blocked18> ^p1 west ^p2 5 ^p3 2)
+   (<gs> ^blocked <blocked19>)
+   (<blocked19> ^p1 west ^p2 5 ^p3 3)
+   (<gs> ^blocked <blocked20>)
+   (<blocked20> ^p1 north ^p2 5 ^p3 0)
+   (<gs> ^blocked <blocked21>)
+   (<blocked21> ^p1 north ^p2 6 ^p3 0)
+   (<gs> ^blocked <blocked22>)
+   (<blocked22> ^p1 north ^p2 7 ^p3 0)
+   (<gs> ^blocked <blocked23>)
+   (<blocked23> ^p1 east ^p2 7 ^p3 0)
+   (<gs> ^blocked <blocked24>)
+   (<blocked24> ^p1 east ^p2 7 ^p3 1)
+   (<gs> ^blocked <blocked25>)
+   (<blocked25> ^p1 east ^p2 7 ^p3 2)
+   (<gs> ^blocked <blocked26>)
+   (<blocked26> ^p1 east ^p2 7 ^p3 3)
+   (<gs> ^blocked <blocked27>)
+   (<blocked27> ^p1 south ^p2 5 ^p3 3)
+   (<gs> ^blocked <blocked28>)
+   (<blocked28> ^p1 south ^p2 7 ^p3 3)
+   (<gs> ^blocked <blocked29>)
+   (<blocked29> ^p1 west ^p2 6 ^p3 4)
+   (<gs> ^blocked <blocked30>)
+   (<blocked30> ^p1 east ^p2 6 ^p3 4)
+   (<gs> ^blocked <blocked31>)
+   (<blocked31> ^p1 west ^p2 0 ^p3 5)
+   (<gs> ^blocked <blocked32>)
+   (<blocked32> ^p1 west ^p2 0 ^p3 6)
+   (<gs> ^blocked <blocked33>)
+   (<blocked33> ^p1 west ^p2 0 ^p3 7)
+   (<gs> ^blocked <blocked34>)
+   (<blocked34> ^p1 north ^p2 0 ^p3 5)
+   (<gs> ^blocked <blocked35>)
+   (<blocked35> ^p1 north ^p2 1 ^p3 5)
+   (<gs> ^blocked <blocked36>)
+   (<blocked36> ^p1 north ^p2 2 ^p3 5)
+   (<gs> ^blocked <blocked37>)
+   (<blocked37> ^p1 north ^p2 3 ^p3 5)
+   (<gs> ^blocked <blocked38>)
+   (<blocked38> ^p1 north ^p2 4 ^p3 5)
+   (<gs> ^blocked <blocked39>)
+   (<blocked39> ^p1 north ^p2 5 ^p3 5)
+   (<gs> ^blocked <blocked40>)
+   (<blocked40> ^p1 north ^p2 7 ^p3 5)
+   (<gs> ^blocked <blocked41>)
+   (<blocked41> ^p1 east ^p2 7 ^p3 5)
+   (<gs> ^blocked <blocked42>)
+   (<blocked42> ^p1 east ^p2 7 ^p3 6)
+   (<gs> ^blocked <blocked43>)
+   (<blocked43> ^p1 east ^p2 7 ^p3 7)
+   (<gs> ^blocked <blocked44>)
+   (<blocked44> ^p1 south ^p2 0 ^p3 7)
+   (<gs> ^blocked <blocked45>)
+   (<blocked45> ^p1 south ^p2 1 ^p3 7)
+   (<gs> ^blocked <blocked46>)
+   (<blocked46> ^p1 south ^p2 2 ^p3 7)
+   (<gs> ^blocked <blocked47>)
+   (<blocked47> ^p1 south ^p2 3 ^p3 7)
+   (<gs> ^blocked <blocked48>)
+   (<blocked48> ^p1 south ^p2 4 ^p3 7)
+   (<gs> ^blocked <blocked49>)
+   (<blocked49> ^p1 south ^p2 5 ^p3 7)
+   (<gs> ^blocked <blocked50>)
+   (<blocked50> ^p1 south ^p2 6 ^p3 7)
+   (<gs> ^blocked <blocked51>)
+   (<blocked51> ^p1 south ^p2 7 ^p3 7)
+   (<facts> ^horizontalDir <horizontalDir>)
+   (<horizontalDir> ^p1 east)
+   (<facts> ^horizontalDir <horizontalDir1>)
+   (<horizontalDir1> ^p1 west)
+   (<facts> ^weaponStrength <weaponStrength>)
+   (<weaponStrength> ^p1 mace ^p2 2)
+   (<facts> ^weaponStrength <weaponStrength1>)
+   (<weaponStrength1> ^p1 sword ^p2 3)
+   (<facts> ^weaponStrength <weaponStrength2>)
+   (<weaponStrength2> ^p1 bow ^p2 1)
+   (<facts> ^direction <direction>)
+   (<direction> ^p1 north)
+   (<facts> ^direction <direction1>)
+   (<direction1> ^p1 south)
+   (<facts> ^direction <direction2>)
+   (<direction2> ^p1 east)
+   (<facts> ^direction <direction3>)
+   (<direction3> ^p1 west)
+   (<facts> ^potion <potion>)
+   (<potion> ^p1 potion1 ^p2 speed)
+   (<facts> ^potion <potion1>)
+   (<potion1> ^p1 potion2 ^p2 invisibility)
+   (<facts> ^room <room>)
+   (<room> ^p1 0 ^p2 0 ^p3 3 ^p4 3)
+   (<facts> ^room <room1>)
+   (<room1> ^p1 5 ^p2 0 ^p3 7 ^p4 3)
+   (<facts> ^room <room2>)
+   (<room2> ^p1 0 ^p2 5 ^p3 7 ^p4 7)
+   (<facts> ^monsterSpeed <monsterSpeed>)
+   (<monsterSpeed> ^p1 bat ^p2 1)
+   (<facts> ^monsterSpeed <monsterSpeed1>)
+   (<monsterSpeed1> ^p1 hobgoblin ^p2 1)
+   (<facts> ^monsterSpeed <monsterSpeed2>)
+   (<monsterSpeed2> ^p1 kestral ^p2 2)
+   (<facts> ^monsterSpeed <monsterSpeed3>)
+   (<monsterSpeed3> ^p1 snake ^p2 0.5)
+   (<facts> ^maxBurden <maxBurden>)
+   (<maxBurden> ^p1 5)
+   (<facts> ^armor <armor>)
+   (<armor> ^p1 armor1 ^p2 bandedmail)
+   (<facts> ^monsterStrength <monsterStrength>)
+   (<monsterStrength> ^p1 bat ^p2 1)
+   (<facts> ^monsterStrength <monsterStrength1>)
+   (<monsterStrength1> ^p1 hobgoblin ^p2 2)
+   (<facts> ^monsterStrength <monsterStrength2>)
+   (<monsterStrength2> ^p1 kestral ^p2 1)
+   (<facts> ^monsterStrength <monsterStrength3>)
+   (<monsterStrength3> ^p1 snake ^p2 1)
+   (<facts> ^weapon <weapon>)
+   (<weapon> ^p1 weapon1 ^p2 mace)
+   (<facts> ^weapon <weapon1>)
+   (<weapon1> ^p1 weapon2 ^p2 bow)
+   (<facts> ^armorstrength <armorstrength>)
+   (<armorstrength> ^p1 ringmail ^p2 2)
+   (<facts> ^armorstrength <armorstrength1>)
+   (<armorstrength1> ^p1 bandedmail ^p2 3)
+   (<facts> ^maxHealth <maxHealth>)
+   (<maxHealth> ^p1 hero ^p2 6)
+   (<facts> ^int <int>)
+   (<int> ^p1 0)
+   (<facts> ^int <int1>)
+   (<int1> ^p1 1)
+   (<facts> ^int <int2>)
+   (<int2> ^p1 2)
+   (<facts> ^int <int3>)
+   (<int3> ^p1 3)
+   (<facts> ^int <int4>)
+   (<int4> ^p1 4)
+   (<facts> ^int <int5>)
+   (<int5> ^p1 5)
+   (<facts> ^int <int6>)
+   (<int6> ^p1 6)
+   (<facts> ^int <int7>)
+   (<int7> ^p1 7)
+   (<facts> ^verticalDir <verticalDir>)
+   (<verticalDir> ^p1 north)
+   (<facts> ^verticalDir <verticalDir1>)
+   (<verticalDir1> ^p1 south)
+   (<facts> ^item <item>)
+   (<item> ^p1 armor1)
+   (<facts> ^item <item1>)
+   (<item1> ^p1 weapon1)
+   (<facts> ^item <item2>)
+   (<item2> ^p1 weapon2)
+   (<facts> ^item <item3>)
+   (<item3> ^p1 potion1)
+   (<facts> ^item <item4>)
+   (<item4> ^p1 potion2)
+   (<facts> ^item <item5>)
+   (<item5> ^p1 scroll1)
+   (<facts> ^item <item6>)
+   (<item6> ^p1 amulet)
+   (<facts> ^item <item7>)
+   (<item7> ^p1 gold)
+   (<facts> ^succ <succ>)
+   (<succ> ^p1 0 ^p2 1)
+   (<facts> ^succ <succ1>)
+   (<succ1> ^p1 1 ^p2 2)
+   (<facts> ^succ <succ2>)
+   (<succ2> ^p1 2 ^p2 3)
+   (<facts> ^succ <succ3>)
+   (<succ3> ^p1 3 ^p2 4)
+   (<facts> ^succ <succ4>)
+   (<succ4> ^p1 4 ^p2 5)
+   (<facts> ^succ <succ5>)
+   (<succ5> ^p1 5 ^p2 6)
+   (<facts> ^succ <succ6>)
+   (<succ6> ^p1 6 ^p2 7)
+   (<facts> ^succ <succ7>)
+   (<succ7> ^p1 7 ^p2 8)
+   (<facts> ^succ <succ8>)
+   (<succ8> ^p1 8 ^p2 9)
+   (<facts> ^succ <succ9>)
+   (<succ9> ^p1 9 ^p2 10)
+   (<facts> ^succ <succ10>)
+   (<succ10> ^p1 10 ^p2 11)
+   (<facts> ^succ <succ11>)
+   (<succ11> ^p1 11 ^p2 12)
+   (<facts> ^succ <succ12>)
+   (<succ12> ^p1 12 ^p2 13)
+   (<facts> ^succ <succ13>)
+   (<succ13> ^p1 13 ^p2 14)
+   (<facts> ^succ <succ14>)
+   (<succ14> ^p1 14 ^p2 15)
+   (<facts> ^succ <succ15>)
+   (<succ15> ^p1 15 ^p2 16)
+   (<facts> ^succ <succ16>)
+   (<succ16> ^p1 16 ^p2 17)
+   (<facts> ^succ <succ17>)
+   (<succ17> ^p1 17 ^p2 18)
+   (<facts> ^succ <succ18>)
+   (<succ18> ^p1 18 ^p2 19)
+   (<facts> ^succ <succ19>)
+   (<succ19> ^p1 19 ^p2 20)
+   (<facts> ^succ <succ20>)
+   (<succ20> ^p1 20 ^p2 21)
+   (<facts> ^succ <succ21>)
+   (<succ21> ^p1 21 ^p2 22)
+   (<facts> ^succ <succ22>)
+   (<succ22> ^p1 22 ^p2 23)
+   (<facts> ^succ <succ23>)
+   (<succ23> ^p1 23 ^p2 24)
+   (<facts> ^succ <succ24>)
+   (<succ24> ^p1 24 ^p2 25)
+   (<facts> ^succ <succ25>)
+   (<succ25> ^p1 25 ^p2 26)
+   (<facts> ^succ <succ26>)
+   (<succ26> ^p1 26 ^p2 27)
+   (<facts> ^succ <succ27>)
+   (<succ27> ^p1 27 ^p2 28)
+   (<facts> ^succ <succ28>)
+   (<succ28> ^p1 28 ^p2 29)
+   (<facts> ^succ <succ29>)
+   (<succ29> ^p1 29 ^p2 30)
+   (<facts> ^succ <succ30>)
+   (<succ30> ^p1 30 ^p2 31)
+   (<facts> ^succ <succ31>)
+   (<succ31> ^p1 31 ^p2 32)
+   (<facts> ^succ <succ32>)
+   (<succ32> ^p1 32 ^p2 33)
+   (<facts> ^succ <succ33>)
+   (<succ33> ^p1 33 ^p2 34)
+   (<facts> ^succ <succ34>)
+   (<succ34> ^p1 34 ^p2 35)
+   (<facts> ^succ <succ35>)
+   (<succ35> ^p1 35 ^p2 36)
+   (<facts> ^succ <succ36>)
+   (<succ36> ^p1 36 ^p2 37)
+   (<facts> ^succ <succ37>)
+   (<succ37> ^p1 37 ^p2 38)
+   (<facts> ^succ <succ38>)
+   (<succ38> ^p1 38 ^p2 39)
+   (<facts> ^succ <succ39>)
+   (<succ39> ^p1 39 ^p2 40)
+   (<facts> ^succ <succ40>)
+   (<succ40> ^p1 40 ^p2 41)
+   (<facts> ^succ <succ41>)
+   (<succ41> ^p1 41 ^p2 42)
+   (<facts> ^succ <succ42>)
+   (<succ42> ^p1 42 ^p2 43)
+   (<facts> ^succ <succ43>)
+   (<succ43> ^p1 43 ^p2 44)
+   (<facts> ^succ <succ44>)
+   (<succ44> ^p1 44 ^p2 45)
+   (<facts> ^succ <succ45>)
+   (<succ45> ^p1 45 ^p2 46)
+   (<facts> ^succ <succ46>)
+   (<succ46> ^p1 46 ^p2 47)
+   (<facts> ^succ <succ47>)
+   (<succ47> ^p1 47 ^p2 48)
+   (<facts> ^succ <succ48>)
+   (<succ48> ^p1 48 ^p2 49)
+   (<facts> ^succ <succ49>)
+   (<succ49> ^p1 49 ^p2 50)
+   (<facts> ^succ <succ50>)
+   (<succ50> ^p1 50 ^p2 51)
+   (<facts> ^corridor <corridor>)
+   (<corridor> ^p1 4 ^p2 0)
+   (<facts> ^corridor <corridor1>)
+   (<corridor1> ^p1 6 ^p2 4)
+   (<facts> ^maxTime <maxTime>)
+   (<maxTime> ^p1 50)
+   (<facts> ^initialHealth <initialHealth>)
+   (<initialHealth> ^p1 bat ^p2 3)
+   (<facts> ^initialHealth <initialHealth1>)
+   (<initialHealth1> ^p1 hobgoblin ^p2 5)
+   (<facts> ^initialHealth <initialHealth2>)
+   (<initialHealth2> ^p1 kestral ^p2 2)
+   (<facts> ^initialHealth <initialHealth3>)
+   (<initialHealth3> ^p1 snake ^p2 4)
+   (<facts> ^scroll <scroll>)
+   (<scroll> ^p1 scroll1 ^p2 armorEnhance)
+   (<facts> ^monster <monster>)
+   (<monster> ^p1 bat1 ^p2 bat)
+   (<facts> ^monster <monster1>)
+   (<monster1> ^p1 bat2 ^p2 bat)
+   (<facts> ^monster <monster2>)
+   (<monster2> ^p1 hobgoblin1 ^p2 hobgoblin)
+   (<facts> ^monster <monster3>)
+   (<monster3> ^p1 kestral1 ^p2 kestral)
+   (<facts> ^monster <monster4>)
+   (<monster4> ^p1 snake1 ^p2 snake)
+   (<facts> ^monster <monster5>)
+   (<monster5> ^p1 snake2 ^p2 snake)
+}
+sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__0
+   (state <s> ^name game ^gs <g> ^io <i> ^operator <o> ^facts <f>)
+   (<g> ^location <l1>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<l1> ^p1 <std_soar_var1> ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
+   -{
+     (<f> ^item <i2>)
+     (<i2> ^p1 <std_soar_var1>)
+   }
+-->
+   (<g> ^location <l1> -)
+}
+sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__1
+   (state <s> ^name game ^gs <g> ^io <i> ^operator <o> ^elaborations <e>)
+   (<g> ^location <l1>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<l1> ^p1 <std_soar_var1> ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
+   (<e> ^pickedUp <p>)
+   (<p> ^p1 <std_soar_var1>)
+-->
+   (<g> ^location <l1> -)
+}
+sp {apply*remove-_next__health_hero__std_soar_var1__0
+   (state <s> ^name game ^gs <g> ^io <i> ^operator <o> ^elaborations <e>)
+   (<g> ^health <h>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<h> ^p1 hero ^p2 <std_soar_var1>)
+   -{
+     (<e> ^totalMonsterDamage <t>)
+     (<t> ^p1 0)
+   }
+-->
+   (<g> ^health <h> -)
+}
+sp {apply*remove-_next__health_hero__std_soar_var1__1
+   (state <s> ^name game ^gs <g> ^io <i> ^operator <o> ^facts <f>)
+   (<g> ^health <h>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<h> ^p1 hero ^p2 <std_soar_var1>)
+   -{
+     (<f> ^maxHealth <m>)
+     (<m> ^p1 hero ^p2 <std_soar_var1>)
+   }
+-->
+   (<g> ^health <h> -)
+}
+sp {apply*remove-_next__carrying__std_soar_var1__0
+   (state <s> ^name game ^gs <g> ^io <i> ^operator <o> ^elaborations <e>)
+   (<g> ^carrying <c>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<c> ^p1 <std_soar_var1>)
+   (<e> ^decrementsBurden <d>)
+   (<d> ^p1 <std_soar_var1>)
+-->
+   (<g> ^carrying <c> -)
+}
+sp {apply*remove-_next__burden__std_soar_var1__0
+   (state <s> ^name game ^gs <g> ^io <i> ^operator <o> ^elaborations <e>)
+   (<g> ^burden <b>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<b> ^p1 <std_soar_var1>)
+   (<e> ^burdenChanged <b1>)
+-->
+   (<g> ^burden <b> -)
+}
+sp {apply*remove-_next__quiverSize__std_soar_var1__0
+   (state <s> ^name game ^gs <g> ^io <i> ^operator <o> ^elaborations <e>)
+   (<g> ^quiverSize <q>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<q> ^p1 <std_soar_var1>)
+   (<e> ^arrowthrown <a>)
+-->
+   (<g> ^quiverSize <q> -)
+}
+sp {apply*remove-_next__wearing__std_soar_var1__0
+   (state <s> ^name game ^gs <g> ^io <i> ^operator <o>)
+   (<g> ^wearing <w>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<o> ^name update-state)
+   (<w> ^p1 <std_soar_var1>)
+   (<h> ^remove <r>)
+   (<r> ^p1 <std_soar_var1>)
+-->
+   (<g> ^wearing <w> -)
+}
+sp {apply*remove-_next__wielding__std_soar_var1__0
+   (state <s> ^name game ^gs <g> ^io <i> ^operator <o> ^elaborations <e>)
+   (<g> ^wielding <w>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<w> ^p1 <std_soar_var1>)
+   (<e> ^changeWeapon <c>)
+   (<c> ^p1 <std_soar_var1>)
+-->
+   (<g> ^wielding <w> -)
+}
+sp {apply*remove-_next__wielding__std_soar_var1__1
+   (state <s> ^name game ^gs <g> ^io <i> ^operator <o>)
+   (<g> ^wielding <w>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<l> ^hero <h>)
+   (<o> ^name update-state)
+   (<w> ^p1 <std_soar_var1>)
+   (<h> ^drop <d>)
+   (<d> ^p1 <std_soar_var1>)
+-->
+   (<g> ^wielding <w> -)
+}
+sp {apply*remove-_next__asleep__std_soar_var1__std_soar_var2__0
+   (state <s> ^name game ^gs <g> ^io <i> ^operator <o> ^facts <f>)
+   (<g> ^asleep <a>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<a> ^p1 <std_soar_var1> ^p2 <std_soar_var2>)
+   -{
+     (<f> ^monster <m>)
+     (<m> ^p1 <std_soar_var1> ^p2 { <std_soar_var3>  <> 0 })
+   }
+-->
+   (<g> ^asleep <a> -)
+}
+sp {apply*remove-_next__asleep__std_soar_var1__std_soar_var2__1
+   (state <s> ^name game ^gs <g> ^io <i> ^operator <o>)
+   (<g> ^asleep <a>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<a> ^p1 <std_soar_var1> ^p2 <std_soar_var2>)
+   -{
+     (<g> ^health <h>)
+     (<h> ^p1 <std_soar_var1> ^p2 { <std_soar_var3>  <> 0 })
+   }
+-->
+   (<g> ^asleep <a> -)
+}
+sp {apply*remove-_next__asleep__std_soar_var1__std_soar_var2__2
+   (state <s> ^name game ^gs <g> ^io <i> ^operator <o> ^elaborations <e>)
+   (<g> ^asleep <a>)
+   (<i> ^input-link <i1>)
+   (<i1> ^last-moves <l>)
+   (<o> ^name update-state)
+   (<a> ^p1 <std_soar_var1> ^p2 <std_soar_var2>)
+   (<e> ^provoked <p>)
+   (<p> ^p1 <std_soar_var1>)
+-->
+   (<g> ^asleep <a> -)
+}
+source rogue-common.soar

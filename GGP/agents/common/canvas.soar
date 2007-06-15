@@ -34,14 +34,15 @@ sp {canvas*draw_wall_west
 
 
 sp {canvas*draw_explorergreen
-   (state <s> ^gs.location <l>)
-   (<l> ^p1 explorer ^p2 <x> ^p3 <y>)
+   (state <s> ^gs.location <l>
+              ^gs.role <explorer>)
+   (<l> ^p1 <explorer> ^p2 <x> ^p3 <y>)
 -->
    (exec draw_point | update 2 | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | green|)}
 
 sp {canvas*draw_explorer
-   (state <s> ^superstate nil ^gs.location <l>)
-   (<l> ^p1 explorer ^p2 <x> ^p3 <y>)
+   (state <s> ^superstate nil ^gs.role <explorer> ^gs.location <l>)
+   (<l> ^p1 <explorer> ^p2 <x> ^p3 <y>)
 -->
    (exec draw_point | static | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | blue|)}
 
@@ -51,6 +52,42 @@ sp {canvas*draw_mummy
 -->
    (exec draw_point | update 1 | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | red |) 
 }
+
+sp {canvas*draw_monster1
+   (state <s> ^gs.location <l>)
+   (<l> ^p1 bat1 ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_point | update 10 | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | red |) 
+}
+
+sp {canvas*draw_monster2
+   (state <s> ^gs.location <l>)
+   (<l> ^p1 bat2 ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_point | update 11 | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | red |) 
+}
+
+sp {canvas*draw_monster3
+   (state <s> ^gs.location <l>)
+   (<l> ^p1 kestral1 ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_point | update 12 | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | red |) 
+}
+
+sp {canvas*draw_monster4
+   (state <s> ^gs.location <l>)
+   (<l> ^p1 hobgoblin1 ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_point | update 13 | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | red |) 
+}
+
+sp {canvas*draw_monster5
+   (state <s> ^gs.location <l>)
+   (<l> ^p1 snake1 ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_point | update 14 | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | red |) 
+}
+
 
 #sp {canvas*draw_destroyed
 #   (state <s> ^gs <gs>) 

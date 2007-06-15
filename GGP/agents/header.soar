@@ -1,12 +1,20 @@
 multi-attributes rest 600
 multi-attributes 2d 64
+multi-attributes adjacent 200
+multi-attributes plus 200
+multi-attributes min 200
+multi-attributes cardinalRelation 200
+multi-attributes traversible 300
+multi-attributes int 1000
+multi-attributes nCell 256
+multi-attributes between 200
 
 learn --on
 #decay --on
 indifferent-selection --first
 
 pushd common
-#source canvas.soar
+source canvas.soar
 source status.soar
 source constant.soar
 pushd default
@@ -16,6 +24,6 @@ popd
 
 source analyze-state.soar
 popd
-source goodthings.soar
+#source goodthings.soar
 #source chunks.soar # tchunk_file source
 #source chunks.soar # achunk_file source

@@ -1,0 +1,79 @@
+sp {math*link-elabs-to-ts-elabs
+  (state <s> ^top-state.elaborations <tse>
+             ^elaborations <el>)
+-->
+  (<el> ^top-state-elaborations <tse>)
+}
+
+sp {math*link-ts-elab-to-self
+  (state <s> ^superstate nil
+             ^elaborations <el>)
+-->
+  (<el> ^top-state-elaborations <el>)
+}
+
+sp {math*elab*greaterthan
+  (state <s> ^superstate nil
+              ^elaborations <el>
+             ^facts <f>)
+  (<f> ^int.p1 <a> ^int.p1 {< <a> <b>})
+-->
+  (<el> ^greaterthan <gt>)
+  (<gt> ^p1 <a> ^p2 <b>)
+}
+
+sp {math*elab*minus
+  (state <s> ^superstate nil
+              ^elaborations <el>
+             ^facts <f>)
+  (<f> ^int.p1 <a> ^int.p1 <b>)
+-->
+  (<el> ^minus <minus>)
+  (<minus> ^p1 <a> ^p2 <b> ^p3 (- <a> <b>))
+}
+
+sp {math*elab*plus
+  (state <s> ^superstate nil
+              ^elaborations <el>
+             ^facts <f>)
+  (<f> ^int.p1 <a> ^int.p1 <b>)
+-->
+  (<el> ^plus <plus>)
+  (<plus> ^p1 <a> ^p2 <b> ^p3 (+ <a> <b>))
+}
+
+sp {math*elab*gtequal
+  (state <s> ^superstate nil 
+            ^elaborations <el>
+             ^facts <f>)
+  (<f> ^int.p1 <a> ^int.p1 {<= <a> <b>})
+-->
+  (<el> ^gtequal <gt>)
+  (<gt> ^p1 <a> ^p2 <b>)
+}
+
+sp {elaborate*finished-move
+   (state <s> ^elaborations <e>)
+-->
+   (<s> ^move-finished <mf> +)
+}
+
+sp {apply*_next__health__monster_0__21*HACK
+   (state <s> ^name game ^name game ^operator <o> ^facts <f> ^elaborations <e> ^gs <g>)
+   (<o> ^name update-state)
+   (<f> ^monster <m>)
+   (<m> ^p1 <monster> ^p2 <monster-type>)
+   (<g> ^health <h1>)
+   (<h1> ^p1 <monster> ^p2 <hpOld>)
+   -{
+     (<e> ^monsterAttacked <m1>)
+     (<m1> ^p1 <monster>)
+   }
+   -{
+     (<e> ^hitByArrow <h>)
+     (<h> ^p1 <monster>)
+   }
+-->
+   (<g> ^health <health>)
+   (<health> ^p1 <monster> ^p2 <hpOld>)
+}

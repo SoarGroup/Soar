@@ -201,12 +201,13 @@ sp {prefer*next-saved-action*threepar
    (<s> ^operator <o> >)
 }
 sp {game*elaborate*fake-response
-   (state <s> ^io <i>)
+   (state <s> ^io <i>
+              ^gs.role <role>)
    (<i> ^output-link <o> ^input-link <i1>)
    (<o> ^<action-name> <a>)
 -->
    (<i1> ^last-moves <last-moves>)
-   (<last-moves> ^explorer <explorer>)
+   (<last-moves> ^<role> <explorer>)
    (<explorer> ^<action-name> <a>)
 }
 sp {game*elaborate*problem-space

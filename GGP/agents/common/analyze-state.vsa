@@ -8,8 +8,7 @@ VERSION 4
 5	3	FOPERATOR top-state top-state.soar 6
 6	0	FOPERATOR allowed-directions allowed-directions.soar 12
 7	0	FOPERATOR portals portals.soar 10
-8	0	FOPERATOR movement-pruning movement-pruning.soar 8
-9	0	FOPERATOR prune-repeated-game-state prune-repeated-game-state.soar 13
-10	0	FOPERATOR top-state top-state.soar 9
-11	0	OPERATOR analyze-state analyze-state.soar 7
+8	0	FOPERATOR prune-repeated-game-state prune-repeated-game-state.soar 13
+9	0	FOPERATOR top-state top-state.soar 9
+10	0	OPERATOR analyze-state analyze-state.soar 7
 END

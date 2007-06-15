@@ -19,8 +19,9 @@ sp {monitor*destroyed
 }
 
 sp {monitor*health
-  (state <s> ^gs.health <h>)
-  (<h> ^p1 explorer ^p2 <val>) 
+  (state <s> ^gs.health <h>
+             ^gs.role <role>)
+  (<h> ^p1 <role> ^p2 <val>) 
 -->
   (write (crlf) |Explorer has health of | <val>)
 }
