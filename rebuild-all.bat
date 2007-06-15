@@ -1,3 +1,5 @@
+@rem TODO: exit with non-zero value on failure!
+
 @rem Step 1: Set up build environment
 call "%VS80COMNTOOLS%\vsvars32.bat"
 
