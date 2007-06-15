@@ -1,4 +1,5 @@
 @echo off
+
 rem %1 is an optional command line argument specifying the java bin directory to use to build everything
 rem NOTE: if this directory is specified, the trailing slash must be included!
 rem Also, if there are spaces in the path, it must be wrapped in quotes
