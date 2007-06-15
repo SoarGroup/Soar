@@ -2130,4 +2130,7 @@ int main(int argc, char* argv[])
 #endif // _MSC_VER
 #endif // STATIC_LINKED
 	*/
+
+	if (!success) return 1;
+	return 0;
 }

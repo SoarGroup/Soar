@@ -812,6 +812,7 @@ int main(/*int argc, char* argv[]*/)
 #endif // _MSC_VER
 	*/
 
+	if (!ok) return 1;
 	return 0;
 }
 
