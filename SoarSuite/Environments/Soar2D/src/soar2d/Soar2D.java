@@ -28,6 +28,7 @@ import soar2d.visuals.*;
  * finest:
  * usually only useful for debugging Soar2D
  */
+
 public class Soar2D {
 	String configFile = null;
 
