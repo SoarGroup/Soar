@@ -1,0 +1,58 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.5.4	//
+areaOfEffect	mm-r03-composition-source1.kif	/^(<= (areaOfEffect ?n ?x1 ?y1 ?x2 ?y2)$/;"	e
+areaOfEffect	mm-r03-composition-source1.kif	/^(<= (areaOfEffect ?n ?xTarget ?yTarget ?xTarget ?yTarget)$/;"	e
+cardinalRelation	mm-r03-composition-source1.kif	/^(<= (cardinalRelation east ?x1 ?y1 ?x2 ?y2)$/;"	e
+cardinalRelation	mm-r03-composition-source1.kif	/^(<= (cardinalRelation north ?x1 ?y1 ?x2 ?y2)$/;"	e
+cardinalRelation	mm-r03-composition-source1.kif	/^(<= (cardinalRelation south ?x1 ?y1 ?x2 ?y2)$/;"	e
+cardinalRelation	mm-r03-composition-source1.kif	/^(<= (cardinalRelation west ?x1 ?y1 ?x2 ?y2)$/;"	e
+goal	mm-r03-composition-source1.kif	/^(<= (goal explorer 0)$/;"	e
+goal	mm-r03-composition-source1.kif	/^(<= (goal explorer 100)$/;"	e
+goal	mm-r03-composition-source1.kif	/^(<= (goal explorer 50)$/;"	e
+heal	mm-r03-composition-source1.kif	/^(<= (legal explorer heal)$/;"	m
+horizontalMummyStep	mm-r03-composition-source1.kif	/^(<= (horizontalMummyStep ?xMum ?yMum ?xExp ?yExp ?xMum ?yMum)$/;"	e
+horizontalMummyStep	mm-r03-composition-source1.kif	/^(<= (horizontalMummyStep ?xMum ?yMum ?xExp ?yExp ?xMumNew ?yMumNew)$/;"	e
+legal	mm-r03-composition-source1.kif	/^(<= (legal explorer (lob ?dir ?distance))$/;"	e
+legal	mm-r03-composition-source1.kif	/^(<= (legal explorer (move ?dir))$/;"	e
+legal	mm-r03-composition-source1.kif	/^(<= (legal explorer (shoot ?dir))$/;"	e
+legal	mm-r03-composition-source1.kif	/^(<= (legal explorer heal)$/;"	e
+lineOfSight	mm-r03-composition-source1.kif	/^(<= (lineOfSight ?dir ?x ?y ?x ?y)$/;"	e
+lineOfSight	mm-r03-composition-source1.kif	/^(<= (lineOfSight ?dir ?x1 ?y1 ?x2 ?y2)$/;"	e
+lob	mm-r03-composition-source1.kif	/^(<= (legal explorer (lob ?dir ?distance))$/;"	m
+move	mm-r03-composition-source1.kif	/^(<= (legal explorer (move ?dir))$/;"	m
+mummyAttacked	mm-r03-composition-source1.kif	/^(<= (mummyAttacked ?mummy)$/;"	e
+nCell	mm-r03-composition-source1.kif	/^(<= (nCell ?n east ?x1 ?y ?x2 ?y)$/;"	e
+nCell	mm-r03-composition-source1.kif	/^(<= (nCell ?n north ?x ?y1 ?x ?y2)$/;"	e
+nCell	mm-r03-composition-source1.kif	/^(<= (nCell ?n south ?x ?y1 ?x ?y2)$/;"	e
+nCell	mm-r03-composition-source1.kif	/^(<= (nCell ?n west ?x1 ?y ?x2 ?y)$/;"	e
+next	mm-r03-composition-source1.kif	/^(<= (next (blocked ?dir ?x ?y))$/;"	e
+next	mm-r03-composition-source1.kif	/^(<= (next (health ?mummy ?hp))$/;"	e
+next	mm-r03-composition-source1.kif	/^(<= (next (health ?mummy ?hpNew))$/;"	e
+next	mm-r03-composition-source1.kif	/^(<= (next (health explorer ?hp))$/;"	e
+next	mm-r03-composition-source1.kif	/^(<= (next (health explorer ?hpNew))$/;"	e
+next	mm-r03-composition-source1.kif	/^(<= (next (holding ?item))$/;"	e
+next	mm-r03-composition-source1.kif	/^(<= (next (location ?item ?x ?y))$/;"	e
+next	mm-r03-composition-source1.kif	/^(<= (next (location ?mummy ?x ?y))$/;"	e
+next	mm-r03-composition-source1.kif	/^(<= (next (location exit ?x ?y))$/;"	e
+next	mm-r03-composition-source1.kif	/^(<= (next (location explorer ?x ?y))$/;"	e
+next	mm-r03-composition-source1.kif	/^(<= (next (step ?next))$/;"	e
+nextExplorerLocation	mm-r03-composition-source1.kif	/^(<= (nextExplorerLocation ?x ?y)$/;"	e
+nextExplorerLocation	mm-r03-composition-source1.kif	/^(<= (nextExplorerLocation ?x2 ?y2)$/;"	e
+nextMummyLocation	mm-r03-composition-source1.kif	/^(<= (nextMummyLocation ?mummy ?x ?y)$/;"	e
+nextMummyLocation	mm-r03-composition-source1.kif	/^(<= (nextMummyLocation ?mummy ?xMumNew ?yMumNew)$/;"	e
+noop	mm-r03-composition-source1.kif	/^(legal explorer noop)$/;"	m
+occupiedcell	mm-r03-composition-source1.kif	/^(<= (occupiedcell ?x ?y)$/;"	e
+pickedUp	mm-r03-composition-source1.kif	/^(<= (pickedUp ?item)$/;"	e
+relevantcell	mm-r03-composition-source1.kif	/^(<= (relevantcell ?x ?y)$/;"	e
+relevantcell	mm-r03-composition-source1.kif	/^(<= (relevantcell ?x ?y1)$/;"	e
+relevantcell	mm-r03-composition-source1.kif	/^(<= (relevantcell ?x1 ?y)$/;"	e
+shoot	mm-r03-composition-source1.kif	/^(<= (legal explorer (shoot ?dir))$/;"	m
+used	mm-r03-composition-source1.kif	/^(<= (used ?item)$/;"	e
+verticalMummyStep	mm-r03-composition-source1.kif	/^(<= (verticalMummyStep ?xMum ?yMum ?xExp ?yExp ?xMum ?yMum)$/;"	e
+verticalMummyStep	mm-r03-composition-source1.kif	/^(<= (verticalMummyStep ?xMum ?yMum ?xExp ?yExp ?xMumNew ?yMumNew)$/;"	e
+wouldMoveEastWest	mm-r03-composition-source1.kif	/^(<= (wouldMoveEastWest ?dir ?xMum ?yMum ?xExp ?yExp)$/;"	e
+wouldMoveNorthSouth	mm-r03-composition-source1.kif	/^(<= (wouldMoveNorthSouth ?dir ?xMum ?yMum ?xExp ?yExp)$/;"	e
