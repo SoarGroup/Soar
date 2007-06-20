@@ -1,7 +1,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif // HAVE_CONFIG_H
-//FIXME: #include <portability.h>
+#include <portability.h>
 
 /////////////////////////////////////////////////////////////////
 // Connection class
@@ -22,6 +22,10 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#ifdef _WIN32
+#undef SendMessage		// Windows defines this as a macro.  Yikes!
+#endif
+
 #include "sml_Connection.h"
 #include "sml_ElementXML.h"
 #include "sml_MessageSML.h"
@@ -36,17 +40,12 @@
 #include "sml_TagResult.h"
 #include "sock_ClientSocket.h"
 
-#include "sock_OSspecific.h" // for ENABLE_NAMED_PIPES
 #ifdef ENABLE_NAMED_PIPES
 #include "sock_ClientNamedPipe.h"
 #endif
 
 #include <time.h>	// For debug random start of message id's
 #include <sstream>
-
-#ifdef _WIN32
-#undef SendMessage		// Windows defines this as a macro.  Yikes!
-#endif
 
 using namespace sml ;
 
