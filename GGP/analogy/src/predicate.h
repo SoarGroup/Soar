@@ -30,7 +30,7 @@ class Predicate {
         return name < other.name;
       }
       assert(arity == other.arity && type == other.type);
-      return true;
+      return false;
     }
 
     bool operator==(const Predicate& other) const {
