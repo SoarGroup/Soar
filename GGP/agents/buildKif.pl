@@ -22,7 +22,7 @@ $file =~ /([^\/]*)\.kif/;
 $rootName = $1;
 
 $compiler = "python ../pysrc/LoadKif.py";
-$soarFile = "$rootName\.soar";
+$soarFile = "../agents/$rootName\.soar";
 print "building $soarFile\n";
 
 if (-e $soarFile) {
