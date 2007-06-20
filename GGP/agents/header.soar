@@ -3,10 +3,10 @@ multi-attributes 2d 64
 multi-attributes adjacent 200
 multi-attributes plus 200
 multi-attributes min 200
-multi-attributes cardinalRelation 200
+multi-attributes cardinalrelation 200
 multi-attributes traversible 300
 multi-attributes int 1000
-multi-attributes nCell 256
+multi-attributes ncell 256
 multi-attributes between 200
 
 learn --on

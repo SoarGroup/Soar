@@ -52,6 +52,18 @@ sp {canvas*draw_mummy
 -->
    (exec draw_point | update 1 | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | red |) 
 }
+sp {canvas*draw_mummy1
+   (state <s> ^gs.location <l>)
+   (<l> ^p1 mummy1 ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_point | update 20 | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | red |) 
+}
+sp {canvas*draw_mummy2
+   (state <s> ^gs.location <l>)
+   (<l> ^p1 mummy2 ^p2 <x> ^p3 <y>)
+-->
+   (exec draw_point | update 21 | (+ (* <x> 4) 2) | | (+ (* <y> 4) 2) | red |) 
+}
 
 sp {canvas*draw_monster1
    (state <s> ^gs.location <l>)
@@ -190,10 +202,10 @@ sp {canvas*draw_water
 }
 
 
-sp {canvas*draw_spikepit
+sp {canvas*draw_snakepit
    (state <s> ^gs.location <l>
               ^facts.obstacletype <obs>)
-   (<obs> ^p1 <obj> ^p2 spikepit)
+   (<obs> ^p1 <obj> ^p2 snakepit)
    (<l> ^p1 <obj> ^p2 <x> ^p3 <y>)
 -->
    (exec draw_rectangle | static | (+ 1 (* <x> 4)) | | (+ 1 (* <y> 4))

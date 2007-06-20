@@ -248,3 +248,16 @@ sp {elaborate*top-state*top-state
 -->
    (<s> ^top-state <s>)
 }
+
+sp {link-elabs-to-ts-elabs
+  (state <s> ^top-state.elaborations <tse>
+             ^elaborations <el>)
+-->
+  (<el> ^top-state-elaborations <tse>)
+}
+
+sp {elaborate*finished-move
+   (state <s> ^elaborations <e>)
+-->
+   (<s> ^move-finished <mf> +)
+}
