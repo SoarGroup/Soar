@@ -12,13 +12,14 @@
 #ifndef LISTENER_THREAD_H
 #define LISTENER_THREAD_H
 
+#include "portability.h" // for ENABLE_NAMED_PIPES
+
 #include "thread_Thread.h"
 #include "sock_DataSender.h"
 #include "sock_ListenerSocket.h"
 #include "sock_SocketLib.h"
 #include "sml_Connection.h"
 
-#include "../src/sock_OSspecific.h" // for ENABLE_NAMED_PIPES
 #ifdef ENABLE_NAMED_PIPES
 #include "sock_ListenerNamedPipe.h"
 #endif
