@@ -121,7 +121,7 @@ void ListenerThread::Run()
 
 void ListenerThread::CreateConnection(DataSender* pSender)
 {
-	PrintDebug("Got new connection") ;
+	PrintDebugFormat("Got new connection on %s", pSender->GetName().c_str()) ;
 
 	// Create a new connection object for this socket
 	Connection* pConnection = Connection::CreateRemoteConnection(pSender) ;
