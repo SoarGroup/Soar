@@ -20,6 +20,13 @@
 (itemType drum2)
 (itemType rope1)
 
+; give the items an arbitrary ordering
+; this is necessary so we can constrain it to only one legal combine action
+; for a given pair of items
+(itemOrder drum1 1)
+(itemOrder drum2 2)
+(itemOrder rope1 3)
+
 ;; declare obstacles
 (obstacleType water0 water)
 (obstacleType water1 water)
@@ -131,6 +138,9 @@
 
 ;; legal combinations
 (<= (legal explorer (combine ?item1 ?item2 ?nails))
+    (itemOrder ?item1 ?order1)
+    (itemOrder ?item2 ?order2)
+    (lessThan ?order1 ?order2)
     (true (holding ?item))
     (true (holding ?nails))
     (true (holding ?item1))
@@ -142,6 +152,9 @@
     (distinct ?item1 ?item2))
 
 (<= (legal explorer (combine ?item1 ?item2 ?tie))
+    (itemOrder ?item1 ?order1)
+    (itemOrder ?item2 ?order2)
+    (lessThan ?order1 ?order2)
     (true (holding ?item1))
     (true (holding ?item2))
     (true (holding ?tie))
@@ -194,17 +207,20 @@
 (<= (next (currSymbol ?ns))
     (true (currSymbol ?cs))
     (nextSymbol ?cs ?ns)
-    (does explorer (combine ?item1 ?item2)))
+    (does explorer (combine ?item1 ?item2 ?glue)))
 
 ;; frame axiom for maintaining the current symbol
 (<= (next (currSymbol ?cs))
     (true (currSymbol ?cs))
-    (not (does explorer (combine ?item1 ?item2))))
+    (not anyCombine))
 
 ;; the combine action
 (<= (combining ?item1 ?item2 ?comboName)
-    (does explorer (combine ?item1 ?item2))
+    (does explorer (combine ?item1 ?item2 ?glue))
     (true (currSymbol ?comboName)))
+
+(<= anyCombine
+    (combining ?item1 ?item2 ?comboName))
 
 (<= (next (comboType ?comboName ?item1 ?item2))
     (combining ?item1 ?item2 ?comboName))
@@ -247,7 +263,7 @@
     (obstacleType ?obstacle ?class)
     (not (true (destroyed ?obstacle)))
     (true (location ?obstacle ?ox ?oy))
-    (nextToExplorer ?dir ?ex ?ey ?ox ?oy)
+    (nextToExplorer ?dir ?ox ?oy)
     (true (property ?item ?property))
     (canDestroy ?property ?class ?expend))
 

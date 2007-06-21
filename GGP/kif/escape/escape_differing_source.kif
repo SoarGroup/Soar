@@ -16,13 +16,24 @@
 (exitType exit)
 
 ;; declare items
-(itemType drum1)
-(itemType drum2)
-(itemType rope1)
-(itemType hammer1)
-(itemType nails1)
 (itemType log1)
 (itemType log2)
+(itemType hammer1)
+(itemType nails1)
+(itemType rope1)
+(itemType drum1)
+(itemType drum2)
+
+; give the items an arbitrary ordering
+; this is necessary so we can constrain it to only one legal combine action
+; for a given pair of items
+(itemOrder log1 1)
+(itemOrder log2 2)
+(itemOrder hammer1 3)
+(itemOrder nails1 4)
+(itemOrder rope1 5)
+(itemOrder drum1 6)
+(itemOrder drum2 7)
 
 ;; declare obstacles
 (obstacleType water0 water)
@@ -115,12 +126,10 @@
 
 (init (property log1 buoyant))
 (init (property log1 supportsWeight))
-(init (property log1 tieable))
 (init (property log1 nailable))
 
 (init (property log2 buoyant))
 (init (property log2 supportsWeight))
-(init (property log2 tieable))
 (init (property log2 nailable))
 
 
@@ -145,6 +154,9 @@
 
 ;; legal combinations
 (<= (legal explorer (combine ?item1 ?item2 ?nails))
+    (itemOrder ?item1 ?order1)
+    (itemOrder ?item2 ?order2)
+    (lessThan ?order1 ?order2)
     (true (holding ?item))
     (true (holding ?nails))
     (true (holding ?item1))
@@ -156,6 +168,9 @@
     (distinct ?item1 ?item2))
 
 (<= (legal explorer (combine ?item1 ?item2 ?tie))
+    (itemOrder ?item1 ?order1)
+    (itemOrder ?item2 ?order2)
+    (lessThan ?order1 ?order2)
     (true (holding ?item1))
     (true (holding ?item2))
     (true (holding ?tie))
@@ -208,16 +223,16 @@
 (<= (next (currSymbol ?ns))
     (true (currSymbol ?cs))
     (nextSymbol ?cs ?ns)
-    (does explorer (combine ?item1 ?item2)))
+    (does explorer (combine ?item1 ?item2 ?glue)))
 
 ;; frame axiom for maintaining the current symbol
 (<= (next (currSymbol ?cs))
     (true (currSymbol ?cs))
-    (not (does explorer (combine ?item1 ?item2))))
+    (not (does explorer (combine ?item1 ?item2 ?glue))))
 
 ;; the combine action
 (<= (combining ?item1 ?item2 ?comboName)
-    (does explorer (combine ?item1 ?item2))
+    (does explorer (combine ?item1 ?item2 ?glue))
     (true (currSymbol ?comboName)))
 
 (<= (next (comboType ?comboName ?item1 ?item2))
@@ -261,7 +276,7 @@
     (obstacleType ?obstacle ?class)
     (not (true (destroyed ?obstacle)))
     (true (location ?obstacle ?ox ?oy))
-    (nextToExplorer ?dir ?ex ?ey ?ox ?oy)
+    (nextToExplorer ?dir ?ox ?oy)
     (true (property ?item ?property))
     (canDestroy ?property ?class ?expend))
 
