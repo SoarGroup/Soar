@@ -20,6 +20,7 @@
 #include "sock_Debug.h"
 
 #include <time.h>	// To get clock
+#include <stdio.h> // To concat file name for socket file deletion
 
 using namespace sml ;
 using namespace sock ;
@@ -113,6 +114,15 @@ void ListenerThread::Run()
 	m_ListenerSocket.Close() ;
 #ifdef ENABLE_LOCAL_SOCKETS
 	m_LocalListenerSocket.Close();
+	
+	char f_name[256];
+	sprintf( f_name, "%s%d", LOCAL_SOCKET_PATH, m_Port );
+	PrintDebugFormat( "Attempting to deleting %s", f_name );
+	int del_status = unlink( f_name );
+	if ( del_status == 0 )
+		PrintDebug( "Delete succeeded!" );
+	else
+		PrintDebugFormat( "Error occurred during delete attempt, error code %d", errno );
 #endif
 #ifdef ENABLE_NAMED_PIPES
 	m_ListenerNamedPipe.Close();
