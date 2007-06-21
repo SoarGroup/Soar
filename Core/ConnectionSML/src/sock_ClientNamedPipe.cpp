@@ -58,6 +58,10 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 	std::string name = "\\\\.\\pipe\\";
 	name.append(pPipeName);
 
+	// set the name of this datasender
+	this->name = "pipe ";
+	this->name.append(name);
+
 	HANDLE hPipe;
 
 	while(1) {

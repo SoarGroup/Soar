@@ -17,6 +17,8 @@
 #include "sock_ClientSocket.h"
 #include "sock_OSspecific.h"
 
+#include <sstream>
+
 using namespace sock ;
 
 //////////////////////////////////////////////////////////////////////
@@ -121,6 +123,10 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 		local_address.sun_family = AF_UNIX;
 		sprintf(local_address.sun_path, "%s%u", LOCAL_SOCKET_PATH, port);
 
+		// set the name of the datasender
+		this->name = "file ";
+		this->name.append(local_address.sun_path);
+
 		int len = SUN_LEN(&local_address);
 
 		// Create the socket
@@ -144,6 +150,11 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 	} else 
 #endif
 	{
+		// set the name of the datasender
+		std::stringstream name;
+		name << "port " << port;
+		this->name = name.str();
+
 		memset(&address, 0, sizeof(address)) ;
 
 		address.sin_family = AF_INET ;

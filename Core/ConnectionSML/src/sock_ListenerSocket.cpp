@@ -18,6 +18,8 @@
 #include "sock_Debug.h"
 #include "sock_OSspecific.h"
 
+#include <sstream>
+
 using namespace sock ;
 
 //////////////////////////////////////////////////////////////////////
@@ -101,6 +103,10 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 		local_address.sun_family = AF_UNIX;
 		sprintf(local_address.sun_path, "%s%u", LOCAL_SOCKET_PATH, port); // buffer is 108 chars long, so this is safe
 
+		// set the name of the datasender
+		this->name = "file ";
+		this->name.append(local_address.sun_path);
+
 		// BADBAD: should check to see if it's in use?
 		unlink(local_address.sun_path); // in case it already exists
 
@@ -116,6 +122,11 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 	} else 
 #endif
 	{
+		// set the name of the datasender
+		std::stringstream sname;
+		sname << "port " << port;
+		this->name = sname.str();
+
 		memset(&address, 0, sizeof(address)) ;
 
 		address.sin_family = AF_INET ;	// Indicates the type of data in this structure
@@ -190,6 +201,8 @@ Socket* ListenerSocket::CheckForClientConnection()
 	// Create a generic CTSocket because once the connection has been
 	// made all sockets are both servers and clients.  No need to distinguish.
 	Socket* pConnection = new Socket(connectedSocket) ;
+
+	pConnection->name = this->name;
 
 	return pConnection ;
 }

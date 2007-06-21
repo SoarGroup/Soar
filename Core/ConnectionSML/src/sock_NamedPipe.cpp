@@ -338,6 +338,7 @@ void NamedPipe::ReportErrorCode()
 
 	switch (error)
 	{
+	case PIPE_ACCESS_DENIED:	PrintDebug("Error: Access is denied.") ; break ;
 	case PIPE_INVALID_HANDLE:	PrintDebug("Error: The handle is invalid.") ; break ;
 	case PIPE_BROKEN:			PrintDebug("Error: The pipe has been ended.") ; break ;
 	case PIPE_ALREADY_EXISTS:	PrintDebug("Error: Cannot create a file when that file already exists.") ; break ;
