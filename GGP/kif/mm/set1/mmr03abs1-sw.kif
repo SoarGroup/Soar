@@ -53,22 +53,21 @@
     (minus ?n ?x1 ?x2))
 
 ; added for Soar translation
-FIXME: x or y should match explorer loc!
 (<= (nCellExplorer ?n north ?x ?y1 ?x ?y2)
     (int ?x)
-    (true (location explorer ?x1 ?y1))
+    (true (location explorer ?x ?y1))
     (minus ?n ?y1 ?y2))
 (<= (nCellExplorer ?n south ?x ?y1 ?x ?y2)
     (int ?x)
-    (true (location explorer ?x1 ?y1))
+    (true (location explorer ?x ?y1))
     (plus ?n ?y1 ?y2))
 (<= (nCellExplorer ?n east ?x1 ?y ?x2 ?y)
     (int ?y)
-    (true (location explorer ?x1 ?y1))
+    (true (location explorer ?x1 ?y))
     (plus ?n ?x1 ?x2))
 (<= (nCellExplorer ?n west ?x1 ?y ?x2 ?y)
     (int ?y)
-    (true (location explorer ?x1 ?y1))
+    (true (location explorer ?x1 ?y))
     (minus ?n ?x1 ?x2))
 
 ;;; More direction-based relationships between coordinates
