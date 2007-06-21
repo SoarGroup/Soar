@@ -39,9 +39,12 @@ protected:
 	// Controls whether we dump out the messages we're sending and receiving.
 	bool m_bTraceCommunications ;
 
+	// The name of this datasender
+	std::string name;
+
 	// These objects are created through the ListenerDataSender or ClientDataSender classes.
 protected:
-	DataSender() {};
+	DataSender() {name="NONAME";};
 
 public:
 	// Destructor closes the socket
@@ -58,6 +61,9 @@ public:
 
 	// Close down our side of the data sender
 	virtual void		Close()=0 ;
+
+	// Get the name of this datasender
+	virtual std::string	GetName() { return name; }
 		
 public:
 	// Print out debug information about the messages we are sending and receiving.
