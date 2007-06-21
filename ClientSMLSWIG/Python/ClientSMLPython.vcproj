@@ -250,6 +250,7 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo PY_INCLUDE: %PY_INCLUDE%&#x0D;&#x0A;echo PY_LIB: %PY_LIB%&#x0D;&#x0A;echo SWIG: %SWIG%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -python -modern -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
 			</FileConfiguration>
@@ -259,6 +260,7 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo PY_INCLUDE: %PY_INCLUDE%&#x0D;&#x0A;echo PY_LIB: %PY_LIB%&#x0D;&#x0A;echo SWIG: %SWIG%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -python -modern -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
 			</FileConfiguration>

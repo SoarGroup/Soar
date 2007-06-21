@@ -261,7 +261,7 @@
 					Name="VCCustomBuildTool"
 					Description="Performing Custom Build Step on Java_sml_ClientInterface.i"
 					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_INCLUDE: %JAVA_INCLUDE%&#x0D;&#x0A;echo JAVA_BIN: %JAVA_BIN%&#x0D;&#x0A;echo SWIG: %SWIG%&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;cd build&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
-					AdditionalDependencies=""
+					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
 			</FileConfiguration>
@@ -272,6 +272,7 @@
 					Name="VCCustomBuildTool"
 					Description="Performing Custom Build Step on Java_sml_ClientInterface.i"
 					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_INCLUDE: %JAVA_INCLUDE%&#x0D;&#x0A;echo JAVA_BIN: %JAVA_BIN%&#x0D;&#x0A;echo SWIG: %SWIG%&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;cd build&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
 			</FileConfiguration>
