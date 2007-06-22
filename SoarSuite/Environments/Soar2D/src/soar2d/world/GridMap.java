@@ -2023,8 +2023,18 @@ public class GridMap {
 			}
 			
 			if (incrementDirection == -1) {
-				// TODO: special case, single size gateway, we don't handle this yet
-				assert false;
+				// Direction depends on which ways have walls and which ways have rooms
+				java.awt.Point feeler;
+				feeler = new java.awt.Point(gatewayBarrier.left);
+				feeler.x -= 1;
+				Cell cell = getCell(feeler);
+				if (cell.getObject(Names.kWallID) != null) {
+					// horizontal gateway
+					incrementDirection = Direction.kEastInt;
+				} else {
+					// vertical gateway
+					incrementDirection = Direction.kSouthInt;
+				}
 			}
 			
 			// we need to walk to the right and assing the room id to everyone

@@ -7,6 +7,7 @@ import org.eclipse.swt.*;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Path;
@@ -51,6 +52,8 @@ public class VisualWorld extends Canvas implements PaintListener {
 	
 	private GridMap map;
 	
+	private Font font;
+	
 	public VisualWorld(Composite parent, int style, int cellSize) {
 		super(parent, style | SWT.NO_BACKGROUND);
 		display = parent.getDisplay();
@@ -70,6 +73,8 @@ public class VisualWorld extends Canvas implements PaintListener {
 		case kBook:
 			break;
 		}
+		
+		font = new Font(parent.getDisplay(), "Helvetica", 7, SWT.NONE);
 		
 		addPaintListener(this);		
 	}
@@ -197,6 +202,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 	
 	public void paintControl(PaintEvent e){
 		GC gc = e.gc;		
+		gc.setFont(font);
         gc.setForeground(WindowManager.black);
 		gc.setLineWidth(1);
 
@@ -238,6 +244,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 		ArrayList<DrawMissile> drawMissiles = new ArrayList<DrawMissile>();
 		ArrayList<java.awt.Point> playerLocs = new ArrayList<java.awt.Point>();
 		java.awt.Point location = new java.awt.Point();
+		HashSet<Integer> roomIds = new HashSet<Integer>();
 		for(location.x = 0; location.x < map.getSize(); ++location.x){
 			if (agentLocation != null) {
 				if ((location.x < agentLocation.x - Soar2D.config.getEaterVision()) || (location.x > agentLocation.x + Soar2D.config.getEaterVision())) {
@@ -538,6 +545,22 @@ public class VisualWorld extends Canvas implements PaintListener {
 							playerLocs.add(new java.awt.Point(location));
 						}
 					}
+
+					ArrayList<CellObject> objectIds = map.getAllWithProperty(location, "object-id");
+					if (objectIds.size() > 0) {
+						gc.setForeground(WindowManager.red);
+						gc.drawString(objectIds.get(0).getProperty("object-id"), cellSize*xDraw, cellSize*yDraw);
+					} else  {
+						ArrayList<CellObject> numbers = map.getAllWithProperty(location, "number");
+						if (numbers.size() > 0) {
+							if (!roomIds.contains(numbers.get(0).getIntProperty("number"))) {
+								gc.setForeground(WindowManager.green);
+								gc.drawString(numbers.get(0).getProperty("number"), cellSize*xDraw, cellSize*yDraw);
+								roomIds.add(numbers.get(0).getIntProperty("number"));
+							}
+						}
+					}
+					
 					break;
 				}
 			}

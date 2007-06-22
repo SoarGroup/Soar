@@ -1,4 +1,4 @@
-143
+145
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -6,10 +6,10 @@ SOAR_ID 3
 ENUMERATION 4 1 state
 ENUMERATION 5 1 nil
 SOAR_ID 6
-ENUMERATION 7 2 complete error
+ENUMERATION 7 3 complete error executing
 SOAR_ID 8
 ENUMERATION 9 3 backward forward stop
-ENUMERATION 10 2 complete error
+ENUMERATION 10 3 complete error executing
 ENUMERATION 11 3 left right stop
 SOAR_ID 12
 STRING 13
@@ -75,8 +75,8 @@ SOAR_ID 72
 SOAR_ID 73
 FLOAT_RANGE 74 -Infinity Infinity
 FLOAT_RANGE 75 -Infinity Infinity
-ENUMERATION 76 2 complete error
-ENUMERATION 77 2 complete error
+ENUMERATION 76 3 complete error executing
+ENUMERATION 77 3 complete error executing
 ENUMERATION 78 2 complete error
 SOAR_ID 79
 ENUMERATION 80 1 state
@@ -124,25 +124,27 @@ ENUMERATION 121 1 true
 ENUMERATION 122 1 true
 SOAR_ID 123
 SOAR_ID 124
-ENUMERATION 125 1 nil
-ENUMERATION 126 1 stop
+ENUMERATION 125 1 stop
+INTEGER_RANGE 126 -2147483648 2147483647
 INTEGER_RANGE 127 -2147483648 2147483647
-INTEGER_RANGE 128 -2147483648 2147483647
-SOAR_ID 129
-ENUMERATION 130 1 drop
+SOAR_ID 128
+ENUMERATION 129 1 drop
+INTEGER_RANGE 130 -2147483648 2147483647
 INTEGER_RANGE 131 -2147483648 2147483647
-INTEGER_RANGE 132 -2147483648 2147483647
-SOAR_ID 133
-ENUMERATION 134 1 move
+SOAR_ID 132
+ENUMERATION 133 1 move
+SOAR_ID 134
 SOAR_ID 135
-SOAR_ID 136
-ENUMERATION 137 1 rotate
-SOAR_ID 138
-ENUMERATION 139 1 stop
+ENUMERATION 136 1 rotate
+SOAR_ID 137
+ENUMERATION 138 1 stop
+SOAR_ID 139
 SOAR_ID 140
-SOAR_ID 141
-FLOAT_RANGE 142 0.0 Infinity
-156
+FLOAT_RANGE 141 0.0 Infinity
+SOAR_ID 142
+SOAR_ID 143
+SOAR_ID 144
+159
 0 attribute 19
 0 block-id 114
 0 choices 20
@@ -176,9 +178,9 @@ FLOAT_RANGE 142 0.0 Infinity
 14 name 15
 16 io 1
 16 name 18
-16 operator 133
-16 operator 136
-16 operator 138
+16 operator 132
+16 operator 135
+16 operator 137
 16 superstate 0
 16 top-state 0
 16 type 17
@@ -206,7 +208,7 @@ FLOAT_RANGE 142 0.0 Infinity
 32 row 34
 35 col 37
 35 row 36
-38 angle-off 41
+38 angle-off 143
 38 x 39
 38 y 40
 43 center 44
@@ -215,8 +217,8 @@ FLOAT_RANGE 142 0.0 Infinity
 43 left 49
 43 right 52
 43 to 55
-44 angle-off 45
-44 range 142
+44 angle-off 142
+44 range 141
 44 x 46
 44 y 47
 49 col 50
@@ -234,8 +236,8 @@ FLOAT_RANGE 142 0.0 Infinity
 68 y 71
 72 status 76
 72 yaw 74
-73 amount 75
 73 status 77
+73 yaw 75
 79 gateway 43
 79 io 1
 79 moving 121
@@ -245,28 +247,28 @@ FLOAT_RANGE 142 0.0 Infinity
 79 operator 85
 79 operator 92
 79 rotating 122
-79 superstate 125
+79 superstate 0
 79 top-state 0
 79 type 80
 83 actions 124
 83 name 82
 85 actions 123
 85 name 84
-86 block-id 127
+86 block-id 126
 86 io 1
 86 name 88
 86 operator 90
-86 operator 129
+86 operator 128
 86 superstate 0
 86 top-state 0
 86 type 87
 90 actions 117
 90 name 89
-92 block-id 132
+92 block-id 131
 92 name 91
 95 id 96
 95 type 97
-98 angle-off 99
+98 angle-off 144
 98 area 100
 98 id 101
 98 position 103
@@ -284,18 +286,21 @@ FLOAT_RANGE 142 0.0 Infinity
 117 get 118
 117 move 119
 117 rotate-relative 73
-118 id 128
-119 direction 126
+118 id 127
+119 direction 125
 123 move 6
 124 rotate-relative 73
-129 block-id 131
-129 name 130
-133 actions 135
-133 name 134
-135 move 6
-136 actions 141
-136 name 137
-138 actions 140
-138 name 139
-140 move 6
-141 rotate 8
+128 block-id 130
+128 name 129
+132 actions 134
+132 name 133
+134 move 6
+135 actions 140
+135 name 136
+137 actions 139
+137 name 138
+139 move 6
+140 rotate 8
+142 yaw 45
+143 yaw 41
+144 yaw 99

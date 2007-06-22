@@ -79,8 +79,7 @@
 
 0 grid cell row
 
-0 radians, positive is right turn
-
+0 
 0 center of wall in x
 
 0 center of wall in y
@@ -97,8 +96,7 @@
 
 0 id of room this gateway leads to, one instance per room
 
-0 radians, positive is right turn
-
+0 
 0 distance to center of gateway
 
 0 center of gateway in x
@@ -139,8 +137,7 @@
 
 0 type of object I'm carrying
 
-0 radians, positive is right turn
-
+0 
 0 what room this object is in
 
 0 unique id for object
@@ -167,3 +164,6 @@
 0 id of object to drop
 
 0 
+0 radians, positive is right turn
+0 radians, positive is right turn
+0 radians, positive is right turn

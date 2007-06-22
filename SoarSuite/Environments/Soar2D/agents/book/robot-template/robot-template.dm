@@ -1,4 +1,4 @@
-98
+101
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -97,7 +97,10 @@ INTEGER_RANGE 94 -2147483648 2147483647
 ENUMERATION 95 2 complete error
 ENUMERATION 96 2 complete error
 FLOAT_RANGE 97 0.0 Infinity
-98
+SOAR_ID 98
+SOAR_ID 99
+SOAR_ID 100
+101
 0 attribute 14
 0 choices 15
 0 impasse 16
@@ -149,7 +152,7 @@ FLOAT_RANGE 97 0.0 Infinity
 27 row 29
 30 col 32
 30 row 31
-33 angle-off 36
+33 angle-off 99
 33 x 34
 33 y 35
 38 center 39
@@ -158,7 +161,7 @@ FLOAT_RANGE 97 0.0 Infinity
 38 left 44
 38 right 47
 38 to 50
-39 angle-off 40
+39 angle-off 98
 39 range 97
 39 x 41
 39 y 42
@@ -177,11 +180,11 @@ FLOAT_RANGE 97 0.0 Infinity
 63 y 66
 67 status 71
 67 yaw 69
-68 amount 70
 68 status 72
+68 yaw 70
 76 id 77
 76 type 78
-79 angle-off 80
+79 angle-off 100
 79 area 81
 79 id 82
 79 position 84
@@ -196,3 +199,6 @@ FLOAT_RANGE 97 0.0 Infinity
 91 status 95
 92 id 93
 92 status 96
+98 yaw 40
+99 yaw 36
+100 yaw 80

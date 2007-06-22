@@ -460,4 +460,10 @@ public class Player {
 		}
 		return carriedObject.getProperty("id");
 	}
+	public int getCarryId() {
+		if (carriedObject == null) {
+			return -1;
+		}
+		return carriedObject.getIntProperty("number");
+	}
 }

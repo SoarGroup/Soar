@@ -153,8 +153,8 @@ class SelfInputLink {
 			if (oIL.range.GetValue() != range) {
 				robot.agent.Update(oIL.range, range);
 			}
-			if (oIL.angleOff.GetValue() != angleOffDouble) {
-				robot.agent.Update(oIL.angleOff, angleOffDouble);
+			if (oIL.yaw.GetValue() != angleOffDouble) {
+				robot.agent.Update(oIL.yaw, angleOffDouble);
 			}
 			oIL.touch(world.getWorldCount());
 		}
@@ -215,9 +215,9 @@ class SelfInputLink {
 class BarrierInputLink {
 	SoarRobot robot;
 	IntElement id;
-	Identifier parent, left, right, center;
+	Identifier parent, left, right, center, angleOff;
 	IntElement leftRow, leftCol, rightRow, rightCol;
-	FloatElement x, y, angleOff;
+	FloatElement x, y, yaw;
 	StringElement direction;
 	
 	Point2D.Double centerpoint;
@@ -244,7 +244,8 @@ class BarrierInputLink {
 			centerpoint = barrier.centerpoint();
 			x = robot.agent.CreateFloatWME(center, "x", centerpoint.x);
 			y = robot.agent.CreateFloatWME(center, "y", centerpoint.y);
-			angleOff = robot.agent.CreateFloatWME(center, "angle-off", world.angleOff(robot, centerpoint));
+			angleOff = robot.agent.CreateIdWME(center, "angle-off");
+			yaw = robot.agent.CreateFloatWME(angleOff, "yaw", world.angleOff(robot, centerpoint));
 		}
 		direction = robot.agent.CreateStringWME(parent, "direction", Direction.stringOf[barrier.direction]);
 	}
@@ -285,7 +286,8 @@ class ObjectInputLink {
 	IntElement area;
 	StringElement type;
 	Identifier position;
-	FloatElement angleOff;
+	Identifier angleOff;
+	FloatElement yaw;
 	FloatElement x, y;
 	IntElement row, col;
 	StringElement visible;
@@ -303,7 +305,8 @@ class ObjectInputLink {
 		this.id = robot.agent.CreateIntWME(parent, "id", info.object.getIntProperty("object-id"));
 		this.type = robot.agent.CreateStringWME(parent, "type", info.object.getProperty("id"));
 		this.area = robot.agent.CreateIntWME(parent, "area", info.area);
-		this.angleOff = robot.agent.CreateFloatWME(parent, "angle-off", angleOffDouble);
+		this.angleOff = robot.agent.CreateIdWME(parent, "angle-off");
+		this.yaw = robot.agent.CreateFloatWME(angleOff, "yaw", angleOffDouble);
 		this.position = robot.agent.CreateIdWME(parent, "position");
 		{
 			this.col = robot.agent.CreateIntWME(position, "col", info.location.x);
@@ -469,14 +472,14 @@ public class SoarRobot extends Robot {
 					Iterator<BarrierInputLink> wallIter = selfIL.walls.iterator();
 					while (wallIter.hasNext()) {
 						BarrierInputLink barrier = wallIter.next();
-						agent.Update(barrier.angleOff, world.angleOff(this, barrier.centerpoint));
+						agent.Update(barrier.yaw, world.angleOff(this, barrier.centerpoint));
 					}
 					
 					Iterator<GatewayInputLink> gatewayIter = selfIL.gateways.iterator();
 					while (gatewayIter.hasNext()) {
 						GatewayInputLink gateway = gatewayIter.next();
 						
-						agent.Update(gateway.angleOff, world.angleOff(this, gateway.centerpoint));
+						agent.Update(gateway.yaw, world.angleOff(this, gateway.centerpoint));
 						double dx = gateway.centerpoint.x - world.getFloatLocation(this).x;
 						dx *= dx;
 						double dy = gateway.centerpoint.y - world.getFloatLocation(this).y;
@@ -737,17 +740,17 @@ public class SoarRobot extends Robot {
 					continue;
 				}
 				
-				String amountString = commandId.GetParameterValue("amount");
+				String amountString = commandId.GetParameterValue("yaw");
 				if (amountString == null) {
-					logger.warning(getName() + " rotate-relative command missing amount parameter");
+					logger.warning(getName() + " rotate-relative command missing yaw parameter");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				try {
-					move.rotateRelativeAmount = Double.parseDouble(amountString);
+					move.rotateRelativeYaw = Double.parseDouble(amountString);
 				} catch (NumberFormatException e) {
-					logger.warning(getName() + " rotate-relative amount parameter improperly formatted");
+					logger.warning(getName() + " rotate-relative yaw parameter improperly formatted");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -791,8 +794,8 @@ public class SoarRobot extends Robot {
 				}
 				
 				move.get = true;
-				move.getLocation = new java.awt.Point(oIL.col.GetValue(), oIL.row.GetValue());
 				getCommandId = commandId;
+				move.getLocation = new java.awt.Point(oIL.col.GetValue(), oIL.row.GetValue());
 				
 			} else if (commandName.equalsIgnoreCase(Names.kDropID)) {
 				if (move.drop) {
