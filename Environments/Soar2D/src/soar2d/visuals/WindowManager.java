@@ -378,6 +378,53 @@ public class WindowManager {
 		}
 	}
 	
+	public class GetIdDialog extends Dialog {
+		public GetIdDialog(Shell parent) {
+			super(parent);
+		}
+		
+		public void open() {
+			Shell parent = getParent();
+			final Shell dialog = new Shell(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+			dialog.setText("Get ID");
+			
+			GridLayout gl = new GridLayout();
+			gl.numColumns = 2;
+			dialog.setLayout(gl);
+
+			final Label label2 = new Label(dialog, SWT.NONE);
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.BEGINNING;
+				label2.setLayoutData(gd);
+			}
+			label2.setText("Id:");
+			
+			final Button ok = new Button(dialog, SWT.PUSH);
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.BEGINNING;
+				ok.setLayoutData(gd);
+			}
+			ok.setText("Ok");
+			ok.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					dialog.dispose();
+				}
+			});
+
+			dialog.setSize(dialog.computeSize(SWT.DEFAULT, SWT.DEFAULT, false));
+			
+			dialog.open();
+			Display display = parent.getDisplay();
+			while (!dialog.isDisposed()) {
+				if (!display.readAndDispatch()) {
+					display.sleep();
+				}
+			}
+		}
+	}
+	
 	public void setupBook() {
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
@@ -400,6 +447,10 @@ public class WindowManager {
 				}
 				boolean go = false;
 				switch (e.keyCode) {
+				case SWT.KEYPAD_9:
+					GetIdDialog getDialog = new GetIdDialog(e.display.getShells()[0]);
+					getDialog.open();
+					break;
 				case SWT.KEYPAD_8:
 					humanMove.forward = true;
 					break;
@@ -414,6 +465,10 @@ public class WindowManager {
 				case SWT.KEYPAD_6:
 					humanMove.rotate = true;
 					humanMove.rotateDirection = Names.kRotateRight;
+					break;
+				case SWT.KEYPAD_3:
+					humanMove.drop = true;
+					humanMove.dropId = human.getCarryId();
 					break;
 				case SWT.KEYPAD_2:
 					humanMove.backward = true;

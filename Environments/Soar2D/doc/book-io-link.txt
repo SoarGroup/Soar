@@ -40,7 +40,8 @@ full implementation:
 			^center
 				^x <float> center of wall in x dimention
 				^y <float> center of wall in y dimention
-				^angle-off <float> angle to center of wall
+				^angle-off 
+					^yaw <float> angle to center of wall
 			^direction [north south east west] direction to turn to face the wall
 		*^gateway one for each gateway segment
 			^id <int> unique identification number of segment
@@ -53,12 +54,14 @@ full implementation:
 			^center
 				^x <float> center of gateway in x dimention
 				^y <float> center of gateway in y dimention
-				^angle-off <float> angle to center of gateway
+				^angle-off 
+					^yaw <float> angle to center of gateway
 				^range <float> distance to center of gateway
 			^direction [north south east west] direction to turn to face the gateway
 			+^to <int> id of room this gateway leads to
 	+^object
-		^angle-off <float> relative to direction I'm facing
+		^angle-off 
+			^yaw <float> relative to direction I'm facing
 		^area <int> unique id number
 		^id <int> object id number (separate from area/wall ids)
 		^type <string> [block ramp cat dog gateway]
@@ -83,7 +86,7 @@ full implementation:
 		^yaw <float> desired yaw in radians
 		^status [executing complete error]
 	^rotate-relative
-		^amount <float> desired change in radians, negative for left turn
+		^yaw <float> desired change in radians, negative for left turn
 		^status [executing complete error]
 	^get
 		^id <int>

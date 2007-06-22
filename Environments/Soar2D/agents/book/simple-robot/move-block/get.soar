@@ -7,5 +7,5 @@ sp {wander*propose*get
    (<o> ^name get
         ^actions.get.id <bid>
         ^actions.move.direction stop
-        ^actions.rotate-relative.amount 1.57)
+        ^actions.rotate-relative.yaw 1.57)
 }

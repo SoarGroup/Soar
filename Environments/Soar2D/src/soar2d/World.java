@@ -904,14 +904,14 @@ public class World {
 				setRotationAndAbsoluteHeading(player, move.rotateAbsoluteHeading, time);
 			}
 			else if (move.rotateRelative) {
-				double absoluteHeading = player.getHeadingRadians() + move.rotateRelativeAmount;
+				double absoluteHeading = player.getHeadingRadians() + move.rotateRelativeYaw;
 				
 				while (absoluteHeading < 0) {
 					logger.finest("Correcting command negative heading");
 					absoluteHeading += 2 * Math.PI;
 				}
 				absoluteHeading = fmod(absoluteHeading, 2 * Math.PI);
-				logger.finer("Rotate relative: " + move.rotateRelativeAmount + ", absolute: " + absoluteHeading);
+				logger.finer("Rotate relative: " + move.rotateRelativeYaw + ", absolute: " + absoluteHeading);
 				setRotationAndAbsoluteHeading(player, absoluteHeading, time);
 			}
 
@@ -993,7 +993,7 @@ public class World {
 			}
 			
 			if (move.get) {
-				logger.finer("Move: get");
+				logger.finer("Move: get, location " + move.getLocation.x + "," + move.getLocation.y);
 				CellObject block = map.getObject(move.getLocation, "mblock");
 				if (block == null || player.isCarrying()) {
 					if (block == null) {
@@ -1018,8 +1018,8 @@ public class World {
 				java.awt.Point dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.config.getBookCellSize(), (int)dropFloatLocation.y / Soar2D.config.getBookCellSize());
 				
 				if (dropLocation.equals(locations.get(player.getName()))) {
-					dropFloatLocation.x += (Soar2D.config.getBookCellSize() / 2) * Math.cos(player.getHeadingRadians());
-					dropFloatLocation.y += (Soar2D.config.getBookCellSize() / 2) * Math.sin(player.getHeadingRadians());
+					dropFloatLocation.x += (Soar2D.config.getBookCellSize() * 0.42) * Math.cos(player.getHeadingRadians());
+					dropFloatLocation.y += (Soar2D.config.getBookCellSize() * 0.42) * Math.sin(player.getHeadingRadians());
 					dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.config.getBookCellSize(), (int)dropFloatLocation.y / Soar2D.config.getBookCellSize());
 					assert !dropLocation.equals(locations.get(player.getName()));
 				}

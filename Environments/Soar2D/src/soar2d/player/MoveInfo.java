@@ -41,7 +41,7 @@ public class MoveInfo {
 	public boolean rotateAbsolute = false;	// rotate to a heading
 	public double rotateAbsoluteHeading;	// what heading to stop at
 	public boolean rotateRelative = false;	// rotate tank
-	public double rotateRelativeAmount;		// how far to rotate
+	public double rotateRelativeYaw;		// how far to rotate
 	public boolean get = false;
 	public java.awt.Point getLocation = null;
 	public int getId;
@@ -109,7 +109,7 @@ public class MoveInfo {
 				output += "(" + Names.kRotateAbsoluteID + ": " + rotateAbsoluteHeading + ")";			
 			}
 			if (rotateRelative) {
-				output += "(" + Names.kRotateRelativeID + ": " + rotateRelativeAmount + ")";			
+				output += "(" + Names.kRotateRelativeID + ": " + rotateRelativeYaw + ")";			
 			}
 			if (get) {
 				output += "(" + Names.kGetID + ": " + getId + ": " + getLocation.x + "," + getLocation.y + ")";
