@@ -54,8 +54,14 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 
 	if (pPipeName == NULL) { pPipeName = "12121"; }
 
+	unsigned long usernamesize = UNLEN+1;
+	char username[UNLEN+1];
+	GetUserName(username,&usernamesize);
+
 	// Get the address
 	std::string name = "\\\\.\\pipe\\";
+	name.append(username);
+	name.append("-");
 	name.append(pPipeName);
 
 	// set the name of this datasender

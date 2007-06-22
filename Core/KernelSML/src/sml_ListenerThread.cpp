@@ -57,8 +57,11 @@ void ListenerThread::Run()
 
 #ifdef ENABLE_NAMED_PIPES
 
+	unsigned long usernamesize = UNLEN+1;
+	char username[UNLEN+1];
+	GetUserName(username,&usernamesize);
 	std::stringstream pipeName;
-	pipeName << "\\\\.\\pipe\\" << m_Port;
+	pipeName << "\\\\.\\pipe\\" << username << "-" << m_Port;
 
 	// Create the listener
 	PrintDebugFormat("Listening on pipe %s", pipeName.str().c_str()) ;
