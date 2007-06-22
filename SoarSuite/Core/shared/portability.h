@@ -64,7 +64,7 @@
 #include <direct.h>
 #include <time.h>
 #include <assert.h>
-
+#include <Lmcons.h> // for UNLEN constant
 // Visual Studio 2005 requires these:
 #define getcwd _getcwd
 #define chdir _chdir
