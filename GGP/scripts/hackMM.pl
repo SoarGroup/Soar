@@ -10,5 +10,5 @@ $fixFact = "./fixFact.pl $file";
 
 print `echo "source mm-common.soar" >> $file`;
 print `$makeStatic diag`;
-print `$makeStatic nCell`;
-print `$fixFact lessThan`;
+print `$makeStatic ncell`;
+print `$fixFact lessthan`;

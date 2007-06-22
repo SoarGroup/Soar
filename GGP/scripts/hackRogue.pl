@@ -10,10 +10,10 @@ $makeStatic = "./makeStatic.pl $file";
 print `echo "source rogue-common.soar" >> $file`;
 print `$makeStatic between`;
 print `$makeStatic min`;
-print `$makeStatic nCell`;
+print `$makeStatic ncell`;
 print `$makeStatic diff`;
 print `$makeStatic adjacent`;
-print `$makeStatic cardinalRelation`;
+print `$makeStatic cardinalrelation`;
 print `$makeStatic roomlocation`;
 print `$makeStatic traversible`;
 print `$makeStatic greaterthan`;
@@ -21,4 +21,3 @@ print `$makeStatic gtequal`;
 print `$makeStatic plus`;
 print `$makeStatic minus`;
 
-print "remember to remove buggy production elaborate*_None_\n";
