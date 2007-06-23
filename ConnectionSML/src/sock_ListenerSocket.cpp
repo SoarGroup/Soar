@@ -101,7 +101,7 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 		memset(&local_address, 0, sizeof(local_address));
 
 		local_address.sun_family = AF_UNIX;
-		sprintf(local_address.sun_path, "%s%u", LOCAL_SOCKET_PATH, port); // buffer is 108 chars long, so this is safe
+		sprintf(local_address.sun_path, "%s%u", sock::GetLocalSocketDir().c_str(), port); // buffer is 108 chars long, so this is safe
 
 		// set the name of the datasender
 		this->name = "file ";
@@ -111,6 +111,10 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 		unlink(local_address.sun_path); // in case it already exists
 
 		int len = SUN_LEN(&local_address);
+
+		// create directory where socket file will live (if the directory already exists, this will fail, but we don't care)
+		res = mkdir(sock::GetLocalSocketDir().c_str(), 0700);
+
 		res = bind(hListener, (sockaddr*)&local_address, len) ;
 
 		if (res != 0)
