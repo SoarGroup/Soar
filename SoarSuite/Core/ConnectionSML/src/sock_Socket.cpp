@@ -150,6 +150,22 @@ unsigned long sock::GetLocalIP()
 	return stLclAddr.sin_addr.s_addr;
 }
 
+/////////////////////////////////////////////////////////////////////
+// Function name  : GetLocalSocketDir
+// 
+// Return type    : std::string	
+// 
+// Description	  : Get the path to the directory that contains the local socket file
+//
+/////////////////////////////////////////////////////////////////////
+#ifdef ENABLE_LOCAL_SOCKETS
+std::string sock::GetLocalSocketDir()
+{
+	std::string dir = getenv("HOME");
+	dir.append("/.soartmp/");
+	return dir;
+}
+#endif
 
 /////////////////////////////////////////////////////////////////////
 // Function name  : IsErrorWouldBlock

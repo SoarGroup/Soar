@@ -121,7 +121,7 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 	if(!pNetAddress) {
 		memset(&local_address, 0, sizeof(local_address));
 		local_address.sun_family = AF_UNIX;
-		sprintf(local_address.sun_path, "%s%u", LOCAL_SOCKET_PATH, port);
+		sprintf(local_address.sun_path, "%s%u", sock::GetLocalSocketDir().c_str(), port);
 
 		// set the name of the datasender
 		this->name = "file ";

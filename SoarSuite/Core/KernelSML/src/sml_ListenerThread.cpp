@@ -44,7 +44,7 @@ void ListenerThread::Run()
 #ifdef ENABLE_LOCAL_SOCKETS
 
 	// Create the listener
-	PrintDebugFormat("Listening on file %s%d", LOCAL_SOCKET_PATH, m_Port) ;
+	PrintDebugFormat("Listening on file %s%d", sock::GetLocalSocketDir().c_str(), m_Port) ;
 
 	ok = m_LocalListenerSocket.CreateListener(m_Port, true);
 
@@ -119,7 +119,7 @@ void ListenerThread::Run()
 	m_LocalListenerSocket.Close();
 	
 	char f_name[256];
-	sprintf( f_name, "%s%d", LOCAL_SOCKET_PATH, m_Port );
+	sprintf( f_name, "%s%d", sock::GetLocalSocketDir().c_str(), m_Port );
 	PrintDebugFormat( "Attempting to deleting %s", f_name );
 	int del_status = unlink( f_name );
 	if ( del_status == 0 )
