@@ -58,10 +58,11 @@ namespace sock {
 // Useful utility functions.
 unsigned long GetLocalIP() ;
 char*		  GetLocalIPAddress() ;
+#ifdef ENABLE_LOCAL_SOCKETS
+std::string GetLocalSocketDir();		
+#endif
 
 #define NO_CONNECTION	0
-
-#define LOCAL_SOCKET_PATH "/var/tmp/"
 
 class ListenerSocket ;
 class ClientSocket ;
@@ -101,7 +102,7 @@ public:
 
 	// Close down our side of the socket
 	void		Close() ;
-		
+
 public:
 	// Print out debug information about the messages we are sending and receiving.
 	// NOTE: We still print out information about start up/shut down, errors etc. without this flag being true.
