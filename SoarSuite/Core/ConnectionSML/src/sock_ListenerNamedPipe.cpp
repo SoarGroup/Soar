@@ -17,7 +17,7 @@
 // 
 /////////////////////////////////////////////////////////////////
 
-#ifdef _WIN32
+#ifdef ENABLE_NAMED_PIPES
 
 #include "sock_ListenerNamedPipe.h"
 #include "sock_Debug.h"
@@ -133,4 +133,4 @@ NamedPipe* ListenerNamedPipe::CheckForClientConnection()
 	return pConnection ;
 }
 
-#endif _WIN32
+#endif ENABLE_NAMED_PIPES

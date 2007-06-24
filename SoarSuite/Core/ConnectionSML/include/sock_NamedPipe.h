@@ -25,7 +25,7 @@
 #ifndef NAMED_PIPE_H
 #define NAMED_PIPE_H
 
-#ifdef _WIN32
+#ifdef ENABLE_NAMED_PIPES
 #include <string>
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
@@ -107,5 +107,5 @@ protected:
 
 } // Namespace
 
-#endif // _WIN32
+#endif // ENABLE_NAMED_PIPES
 #endif // NAMED_PIPE_H
