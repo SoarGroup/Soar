@@ -435,31 +435,26 @@ void Socket::ReportErrorCode()
 
 	int error = NET_ERROR_NUMBER ;
 
-	switch (error)
-	{
-	case NET_NOTINITIALISED:PrintDebug("Error: WSA Startup needs to be called first") ; break ;
-	case NET_ENETDOWN:		PrintDebug("Error: Underlying network is down") ; break ;
-	case NET_EFAULT:		PrintDebug("Error: Buffer is not in a valid address space") ; break ;
-	case NET_ENOTCONN:		PrintDebug("Error: The socket is not connected") ; break ;
-	case NET_EINTR:			PrintDebug("Error: The blocking call was cancelled") ; break ;
-	case NET_EINPROGRESS:	PrintDebug("Error: A blocking call is in progress") ; break ;
-	case NET_ENETRESET:		PrintDebug("Error: The connection has been broken") ; break ;
-	case NET_ENOTSOCK:		PrintDebug("Error: The descriptor is not a socket") ; break ;
-	case NET_EOPNOTSUPP:	PrintDebug("Error: OOB data is not supported on this socket") ; break ;
-	case NET_ESHUTDOWN:		PrintDebug("Error: The socket has been shutdown") ; break ;
-	case NET_EWOULDBLOCK:	PrintDebug("Error: The operation would block") ; break ;
-	case NET_EMSGSIZE:		PrintDebug("Error: The message is too large") ; break ;
-	case NET_EINVAL:		PrintDebug("Error: An invalid argument was passed to a function") ; break ;
-	case NET_ECONNABORTED:	PrintDebug("Error: The circuit was terminated") ; break ;
-	case NET_ETIMEDOUT:		PrintDebug("Error: The conection timed out") ; break ;
-	case NET_ECONNRESET:	PrintDebug("Error: The circuit was reset by the remote side") ; break ;
+	char* message;
 
-	default:
-		{
-			PrintDebugFormat("Error: Unknown error %d",error) ;
-			break ;
-		}
-	}
+#ifdef _WIN32
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		0,
+		error,
+		0,
+		(char*) &message,
+		0, 0 );
+#else
+	message = strerror(error);
+#endif // _WIN32
+
+	PrintDebugFormat("Error: %s", message);
+
+#ifdef _WIN32
+	LocalFree(message);
+#endif
+
 }
 
 /////////////////////////////////////////////////////////////////////
