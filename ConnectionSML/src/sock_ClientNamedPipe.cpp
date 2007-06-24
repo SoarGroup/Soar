@@ -16,10 +16,9 @@
 // 
 /////////////////////////////////////////////////////////////////
 
-#ifdef _WIN32
+#ifdef ENABLE_NAMED_PIPES
 
 #include "sock_Debug.h"
-#include "sock_NamedPipeHeader.h"
 #include "sock_ClientNamedPipe.h"
 #include <assert.h>
 
@@ -84,7 +83,7 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 
 		if(hPipe != INVALID_HANDLE_VALUE) break;
 		
-		if (PIPE_ERROR_NUMBER != PIPE_BUSY)
+		if (GetLastError() != ERROR_PIPE_BUSY)
 		{
 			PrintDebug("Error: Error creating client connection pipe") ;
 			ReportErrorCode();
@@ -106,4 +105,4 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 	return true ;
 }
 
-#endif // _WIN32
+#endif // ENABLE_NAMED_PIPES
