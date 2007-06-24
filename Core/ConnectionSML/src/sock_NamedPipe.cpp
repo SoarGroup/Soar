@@ -27,10 +27,9 @@
 // 
 /////////////////////////////////////////////////////////////////
 
-#ifdef _WIN32
+#ifdef ENABLE_NAMED_PIPES
 
 #include <stdio.h>
-#include "sock_NamedPipeHeader.h"
 #include "sock_NamedPipe.h"
 #include "sock_Check.h"
 #include "sock_Debug.h"
@@ -189,11 +188,11 @@ bool NamedPipe::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 	if (res == 0)
 	{
 		// if the pipe hasn't been connected yet, then just return
-		if(GetLastError() == PIPE_BAD) {
+		if(GetLastError() == ERROR_BAD_PIPE) {
 			return false;
 		}
 
-		if(GetLastError() == PIPE_BROKEN) {
+		if(GetLastError() == ERROR_BROKEN_PIPE) {
 			PrintDebug("Remote pipe has closed gracefully") ;
 			Close() ;
 			return false;
@@ -334,26 +333,21 @@ void NamedPipe::ReportErrorCode()
 {
 	CTDEBUG_ENTER_METHOD("SoarPipe - ReportErrorCode");
 
-	unsigned long error = PIPE_ERROR_NUMBER ;
+	unsigned long error = GetLastError() ;
 
-	switch (error)
-	{
-	case PIPE_ACCESS_DENIED:	PrintDebug("Error: Access is denied.") ; break ;
-	case PIPE_INVALID_HANDLE:	PrintDebug("Error: The handle is invalid.") ; break ;
-	case PIPE_BROKEN:			PrintDebug("Error: The pipe has been ended.") ; break ;
-	case PIPE_ALREADY_EXISTS:	PrintDebug("Error: Cannot create a file when that file already exists.") ; break ;
-	case PIPE_BAD:				PrintDebug("Error: The pipe state is invalid.") ; break ;
-	case PIPE_BUSY:				PrintDebug("Error: All pipe instances are busy.") ; break ;
-	case PIPE_NO_DATA:			PrintDebug("Error: The pipe is being closed.") ; break ;
-	case PIPE_NOT_CONNECTED:	PrintDebug("Error: No process is on the other end of the pipe.") ; break ;
-	case PIPE_MORE_DATA:		PrintDebug("Error: More data is available.") ; break ;
+	char* message;
 
-	default:
-		{
-			PrintDebugFormat("Error: Unknown error %d",error) ;
-			break ;
-		}
-	}
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		0,
+		error,
+		0,
+		(char*) &message,
+		0, 0 );
+
+	PrintDebugFormat("Error: %s", message);
+
+	LocalFree(message);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -376,4 +370,4 @@ void NamedPipe::Close()
 	}
 }
 
-#endif //_WIN32
+#endif // ENABLE_NAMED_PIPES
