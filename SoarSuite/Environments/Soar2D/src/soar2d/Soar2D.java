@@ -2,7 +2,6 @@ package soar2d;
 
 import java.io.*;
 import java.util.logging.*;
-
 import soar2d.visuals.*;
 /*
  * A note about log levels:
