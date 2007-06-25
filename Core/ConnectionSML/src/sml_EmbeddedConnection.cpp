@@ -1,7 +1,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif // HAVE_CONFIG_H
-//FIXME: #include <portability.h>
+#include <portability.h>
 
 /////////////////////////////////////////////////////////////////
 // EmbeddedConnection class
@@ -25,16 +25,6 @@
 #include <string>
 #include <iostream>
 #include <assert.h>
-
-#ifdef _WIN32
-#include "Windows.h"	// Needed for load library
-#undef SendMessage		// Windows defines this as a macro.  Yikes!
-
-#else // _WIN32
-#include <dlfcn.h>      // Needed for dlopen and dlsym
-#define GetProcAddress dlsym
-
-#endif // not _WIN32
 
 using namespace sml ;
 

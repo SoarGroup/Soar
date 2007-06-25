@@ -22,10 +22,6 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#ifdef _WIN32
-#undef SendMessage		// Windows defines this as a macro.  Yikes!
-#endif
-
 #include "sml_Connection.h"
 #include "sml_ElementXML.h"
 #include "sml_MessageSML.h"

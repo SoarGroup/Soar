@@ -48,5 +48,8 @@
 //#define GetCwd getcwd
 //#endif
 
+#include <dlfcn.h>      // Needed for dlopen and dlsym
+#define GetProcAddress dlsym
+
 #endif // PORTABILITY_POSIX_H
 

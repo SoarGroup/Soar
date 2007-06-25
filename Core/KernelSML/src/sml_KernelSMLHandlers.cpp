@@ -62,24 +62,6 @@
 using namespace sml ;
 using namespace gSKI ;
 
-// BADBAD: Not sure where this macro is coming from but I saw this
-// in IgSKI_Symbol.h and it's needed for the GetObject() calls to compile.
-#ifdef _WIN32
-#undef GetObject
-#undef SendMessage
-#endif
-
-#if HAVE_STRINGS_H
-#include <strings.h>
-#if HAVE_STRCASECMP
-#define stricmp strcasecmp
-#endif // HAVE_STRCASECMP
-#endif // HAVE_STRINGS_H
-
-#ifdef _MSC_VER
-#define stricmp _stricmp
-#endif
-
 /*
 static void DebugPrint(char const* pFilename, int line, char const* pMsg)
 {
