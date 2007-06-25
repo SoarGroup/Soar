@@ -57,6 +57,7 @@
 #include "gski_event_system_functions.h" // support for triggering XML events
 
 #include <map>
+#include <time.h>
 
 using namespace xmlTraceNames;
 

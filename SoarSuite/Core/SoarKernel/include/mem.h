@@ -128,6 +128,8 @@
 #include "chunk.h"
 #include "kernel.h"
 
+#include <stdio.h>	// Needed for FILE token below
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -191,7 +193,6 @@ typedef void * growable_string;
 
 // voigtjr 11/2005: platform specific code (strlen/malloc/etc) should be in .cpp files!
 // except it can't be (?) because of the inline restriction
-#include <malloc.h>
 inline char * savestring(char * x)
 {
   return strcpy(static_cast<char *>(malloc (strlen (x) + 1)), (x));
