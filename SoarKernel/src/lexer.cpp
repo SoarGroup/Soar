@@ -61,6 +61,8 @@
     See comments in soarkernel.h for an overview.
    ====================================================================== */
 
+#include <stdlib.h>
+
 #include "lexer.h"
 #include "mem.h"
 #include "kernel.h"
