@@ -186,11 +186,6 @@ enum ni_mode {
 #define MICRO_VERSION_NUMBER 4
 #define GREEK_VERSION_NUMBER 0
 
-#ifdef _MSC_VER
-#define snprintf _snprintf
-#define vsnprintf _vsnprintf
-#endif
-
 #define BUFFER_MSG_SIZE 128
 
 extern char * soar_version_string;

@@ -13,10 +13,8 @@
 
 #include "cli_CommandLineInterface.h"
 
+// FIXME: This needs to be dealt with in a portable manner.
 #ifdef WIN32
-#include <direct.h>
-#include <Windows.h>
-#define getcwd _getcwd
 #include "pcreposix.h"
 #else //WIN32
 #include <regex.h>

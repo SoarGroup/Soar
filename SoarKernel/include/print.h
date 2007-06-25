@@ -43,6 +43,8 @@
 #ifndef PRINT_H
 #define PRINT_H
 
+#include <stdio.h>	// Needed for FILE token below
+
 #ifdef __cplusplus
 extern "C"
 {

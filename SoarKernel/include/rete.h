@@ -54,6 +54,8 @@
 #ifndef RETE_H
 #define RETE_H
 
+#include <stdio.h>	// Needed for FILE token below
+
 #ifdef __cplusplus
 extern "C"
 {

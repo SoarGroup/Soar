@@ -24,10 +24,6 @@
 #include "gSKI_ProductionManager.h"
 #include "IgSKI_Production.h"
 
-#ifdef _MSC_VER
-#define snprintf _snprintf 
-#endif // _MSC_VER
-
 using namespace cli;
 using namespace sml;
 
