@@ -20,6 +20,8 @@
  * =======================================================================
  */
 
+#include <stdlib.h>
+
 #include "rhsfun_math.h"
 #include "symtab.h"
 #include "kernel.h"
