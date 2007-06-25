@@ -36,6 +36,8 @@
 #include "init_soar.h"
 #include "rete.h"
 
+#include <ctype.h>
+
 /* comment out the following line to supress compile-time o-support
    calculations */
 /* RCHONG: begin 10.11 */

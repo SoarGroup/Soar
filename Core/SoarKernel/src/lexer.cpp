@@ -72,6 +72,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <ctype.h>
 
 //
 // These three should be safe for re-entrancy.  --JNW--

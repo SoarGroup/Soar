@@ -3,18 +3,11 @@
 
 /* This file contains code specific to the posix platforms */
 
-#include <stdio.h>
-#include <ctype.h>
-#include <math.h>
-#include <signal.h>
-
 #include <arpa/inet.h>
 #include <errno.h>
 #include <inttypes.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 #include <strings.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
@@ -25,9 +18,8 @@
 #include <utime.h>
 
 #include <assert.h>
-#include <time.h>
 
-#include <regex.h>
+#include <malloc.h>
 
 /* this needs to be defined */
 #ifndef MAXPATHLEN
@@ -36,17 +28,6 @@
 
 /* necessary in connectionsml socket code */
 #define ENABLE_LOCAL_SOCKETS
-
-// from gski, remove when things compile
-//#ifdef WIN32
-//#include <direct.h>
-//#define GetCwd _getcwd
-//#else
-//#include <unistd.h>
-//#include <sys/types.h>
-//#include <sys/stat.h>
-//#define GetCwd getcwd
-//#endif
 
 #include <dlfcn.h>      // Needed for dlopen and dlsym
 #define GetProcAddress dlsym
