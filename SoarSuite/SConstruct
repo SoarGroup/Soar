@@ -13,7 +13,7 @@ import sys
 import SoarSCons
 
 # Although 'nt' (windows) is supported, it doesn't work yet
-if os.name != "posix" and os.name != "nt":
+if os.name != "posix":
 	print "Unsupported platform:", os.name
 	Exit(1)
 	
