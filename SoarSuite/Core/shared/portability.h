@@ -1,90 +1,18 @@
 #ifndef PORTABILITY_H
 #define PORTABILITY_H
 
-#ifdef SCONS
-/* New SCons section */
+/* This file will contain code required on all platforms */
 
-/* unconditional includes */
-#include <stdio.h>
-#include <ctype.h>
-#include <math.h>
-#include <signal.h>
+#if defined(_WIN32) || defined(_WINDOWS) || defined(__WIN32__)
 
-#ifdef WIN32
-#include <windows.h>
-#include <direct.h>
-#include <time.h>
-#include <assert.h>
+/* This file contains code specific to the windows platforms */
+#include "portability_windows.h"
 
-// Visual Studio 2005 requires these:
-#define getcwd _getcwd
-#define chdir _chdir
-#define strcasecmp _stricmp
+#else // not ( _WIN32 || _WINDOWS )
 
-#else // WIN32
-/* posix includes */
-#include <arpa/inet.h>
-#include <errno.h>
-#include <inttypes.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-#include <sys/resource.h>
-#include <sys/stat.h>
-#include <sys/syscall.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <utime.h>
+/* This file contains code specific to the posix platforms */
+#include "portability_posix.h"
 
-#endif // not WIN32
+#endif // not ( _WIN32 || _WINDOWS )
 
-/* unconditional includes */
-#include <assert.h>
-#include <time.h>
-
-/* this needs to be defined */
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 1024   /* AGR 536  - from sys/param.h */
-#endif // MAXPATHLEN
-
-/* necessary in connectionsml socket code */
-#define STRICMP    strcasecmp
-#define VSNSPRINTF vsnprintf
-#define ENABLE_LOCAL_SOCKETS
-
-#else // SCONS
-
-#include <stdio.h>
-
-#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
-#include <windows.h>
-#include <stdlib.h>
-#include <winsock2.h>
-#include <direct.h>
-#include <time.h>
-#include <assert.h>
-#include <Lmcons.h> // for UNLEN constant
-
-// Visual Studio 2005 requires these:
-#define getcwd _getcwd
-#define chdir _chdir
-#define strcasecmp _stricmp
-
-#include <ctype.h>
-#include <math.h>
-#include <signal.h>
-
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 1024   /* AGR 536  - from sys/param.h */
-#endif
-
-// Map certain functions depending on the OS
-#define STRICMP	   stricmp
-#define VSNSPRINTF _vsnprintf
-#define ENABLE_NAMED_PIPES
-
-#endif // not SCONS
 #endif // PORTABILITY_H

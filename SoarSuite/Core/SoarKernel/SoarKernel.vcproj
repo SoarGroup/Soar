@@ -822,6 +822,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\shared\portability_posix.h"
+				>
+			</File>
+			<File
+				RelativePath="..\shared\portability_windows.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\prefmem.h"
 				>
 			</File>

@@ -42,7 +42,9 @@
 
    See comments in soarkernel.h for more information.
    ================================================================== */
- 
+
+#include <stdlib.h>
+
 #include "io.h"
 #include "callback.h"
 #include "agent.h"
