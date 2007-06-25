@@ -41,6 +41,8 @@
 #include "print.h"
 #include "gski_event_system_functions.h" // for XML trace output
 
+#include <ctype.h>
+
 /* -------------------------------------------------------------------
                            Hash Functions
 

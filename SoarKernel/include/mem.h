@@ -129,6 +129,7 @@
 #include "kernel.h"
 
 #include <stdio.h>	// Needed for FILE token below
+#include <string.h> 	// Needed for strlen, etc. below
 
 #ifdef __cplusplus
 extern "C"
