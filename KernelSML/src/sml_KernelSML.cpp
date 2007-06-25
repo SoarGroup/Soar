@@ -1,7 +1,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif // HAVE_CONFIG_H
-//FIXME: #include <portability.h>
+#include <portability.h>
 
 /////////////////////////////////////////////////////////////////
 // KernelSML class file.
@@ -52,13 +52,6 @@
 
 using namespace sml ;
 using namespace gSKI ;
-
-// BADBAD: Not sure where this macro is coming from but I saw this
-// in IgSKI_Symbol.h and it's needed for the GetObject() calls to compile.
-#ifdef _WIN32
-#undef GetObject
-#undef SendMessage
-#endif
 
 // Singleton instance of the kernel object
 KernelSML* KernelSML::s_pKernel = NULL ;

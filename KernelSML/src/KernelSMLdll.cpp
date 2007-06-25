@@ -1,7 +1,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif // HAVE_CONFIG_H
-//FIXME: #include <portability.h>
+#include <portability.h>
 
 /////////////////////////////////////////////////////////////////
 // KernelSMLdll.cpp : Defines the entry point for the DLL application.
