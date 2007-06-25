@@ -515,10 +515,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\sock_NamedPipeHeader.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\sock_OSspecific.h"
 				>
 			</File>
