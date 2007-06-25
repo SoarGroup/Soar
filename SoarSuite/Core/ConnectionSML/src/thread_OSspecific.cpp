@@ -1,7 +1,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif // HAVE_CONFIG_H
-//FIXME: #include <portability.h>
+#include <portability.h>
 
 /////////////////////////////////////////////////////////////////
 // OSspecific class
@@ -23,10 +23,6 @@ using namespace soar_thread ;
 //////////////////////////////////////////////////////////////////////
 // Windows Versions
 //////////////////////////////////////////////////////////////////////
-#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
-#define _WIN32_WINNT 0x0400		// This is required since our target is NT4+
-#include <windows.h>
-#include <process.h>
 
 void soar_thread::BeginThread(ThreadFuncPtr inThreadFuncPtr,void* inParam)
 {

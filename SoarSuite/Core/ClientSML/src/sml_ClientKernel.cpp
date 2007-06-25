@@ -2439,16 +2439,6 @@ std::string Kernel::GetSMLVersion()
 
 // The below stuff is to support LoadExternalLibrary
 
-#ifdef _WIN32
-#include "Windows.h"	// Needed for load library
-#undef SendMessage		// Windows defines this as a macro.  Yikes!
-
-#else // _WIN32
-#include <dlfcn.h>      // Needed for dlopen and dlsym
-#define GetProcAddress dlsym
-
-#endif // not _WIN32
-
 // how will we report errors from this?
 // -- numeric code (bad because codes will be different for each library, or library can fail in ways not covered by pre-defined codes)
 // -- string message (zero-length string means no error)
