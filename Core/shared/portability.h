@@ -59,12 +59,15 @@
 
 #include <stdio.h>
 
-#include <winsock2.h>
+#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #include <windows.h>
+#include <stdlib.h>
+#include <winsock2.h>
 #include <direct.h>
 #include <time.h>
 #include <assert.h>
 #include <Lmcons.h> // for UNLEN constant
+
 // Visual Studio 2005 requires these:
 #define getcwd _getcwd
 #define chdir _chdir
