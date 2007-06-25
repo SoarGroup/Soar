@@ -61,8 +61,6 @@
     See comments in soarkernel.h for an overview.
    ====================================================================== */
 
-#include <stdlib.h>
-
 #include "lexer.h"
 #include "mem.h"
 #include "kernel.h"
@@ -71,6 +69,9 @@
 #include "init_soar.h"
 #include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
 #include "gski_event_system_functions.h" // support for triggering XML events
+
+#include <stdlib.h>
+#include <math.h>
 
 //
 // These three should be safe for re-entrancy.  --JNW--

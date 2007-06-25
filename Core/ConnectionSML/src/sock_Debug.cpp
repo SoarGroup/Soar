@@ -71,7 +71,7 @@ void PrintDebugFormat(char const* pFormat, ...)
 
 	char szBuffer[10000];
 
-	int nBuf = VSNSPRINTF(szBuffer, sizeof(szBuffer), pFormat, args);
+	int nBuf = vsnprintf(szBuffer, sizeof(szBuffer), pFormat, args);
 
 	// was there an error? was the expanded string too long?
 	if (nBuf < 0)

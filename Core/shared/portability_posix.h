@@ -27,15 +27,26 @@
 #include <assert.h>
 #include <time.h>
 
+#include <regex.h>
+
 /* this needs to be defined */
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024   /* AGR 536  - from sys/param.h */
 #endif // MAXPATHLEN
 
 /* necessary in connectionsml socket code */
-#define STRICMP    strcasecmp
-#define VSNSPRINTF vsnprintf
 #define ENABLE_LOCAL_SOCKETS
+
+// from gski, remove when things compile
+//#ifdef WIN32
+//#include <direct.h>
+//#define GetCwd _getcwd
+//#else
+//#include <unistd.h>
+//#include <sys/types.h>
+//#include <sys/stat.h>
+//#define GetCwd getcwd
+//#endif
 
 #endif // PORTABILITY_POSIX_H
 

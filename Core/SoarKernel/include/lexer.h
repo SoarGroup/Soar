@@ -44,6 +44,8 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include <stdio.h>	// Needed for FILE token below
+
 #ifdef __cplusplus
 extern "C"
 {
