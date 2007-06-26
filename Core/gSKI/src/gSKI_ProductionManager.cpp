@@ -35,7 +35,9 @@
 #include "instantiations.h"
 #include "rete.h"
 
+#ifdef _WIN32
 #include "pcreposix.h"
+#endif
 
 //
 // Utility Headers
