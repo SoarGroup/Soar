@@ -25,3 +25,24 @@ sp {monitor*health
 -->
   (write (crlf) |Explorer has health of | <val>)
 }
+
+sp {print*actions*1
+   (state <s> ^name <gname>
+              ^desired <d>
+              ^{ <fail> << partial-failure failure prohibit-failure >>} <d>
+              ^gs.action-sequence <as>)
+   (<as> ^action <action> ^count <c>)# the last action on state <s-old>
+   (<action> ^name <action-name> ^params.p1 <action-param1>)
+-->
+   (write (crlf) |FAILED | <fail> | involving action  # | <c> | | <action-name> | P1 | <action-param1>)
+}
+sp {print*actions*no-att
+   (state <s> ^name <gname>
+              ^desired <d>
+              ^{ <fail> << partial-failure failure prohibit-failure >>} <d>
+              ^gs.action-sequence <as>)
+   (<as> ^action <action> ^count <c>)# the last action on state <s-old>
+   (<action> ^name <action-name> << noop sleep wait >>)
+-->
+   (write (crlf) |FAILED | <fail> | involving action  # | <c> | | <action-name>)
+}

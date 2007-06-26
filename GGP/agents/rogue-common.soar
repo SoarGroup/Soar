@@ -57,23 +57,3 @@ sp {elaborate*finished-move
 -->
    (<s> ^move-finished <mf> +)
 }
-
-sp {apply*_next__health__monster_0__21*HACK
-   (state <s> ^name game ^name game ^operator <o> ^facts <f> ^elaborations <e> ^gs <g>)
-   (<o> ^name update-state)
-   (<f> ^monster <m>)
-   (<m> ^p1 <monster> ^p2 <monster-type>)
-   (<g> ^health <h1>)
-   (<h1> ^p1 <monster> ^p2 <hpOld>)
-   -{
-     (<e> ^monsterAttacked <m1>)
-     (<m1> ^p1 <monster>)
-   }
-   -{
-     (<e> ^hitByArrow <h>)
-     (<h> ^p1 <monster>)
-   }
--->
-   (<g> ^health <health>)
-   (<health> ^p1 <monster> ^p2 <hpOld>)
-}

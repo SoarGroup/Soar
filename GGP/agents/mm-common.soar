@@ -1,3 +1,4 @@
+
 sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__0
    (state <s> ^name game ^gs <g> ^io <i> ^operator <o> ^facts <f>)
    (<g> ^location <l1>)
@@ -6,11 +7,156 @@ sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__0
    (<o> ^name update-state)
    (<l1> ^p1 {<> exit <std_soar_var1>} ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
    -{
-     (<f> ^itemType <i2>)
-     (<i2> ^p1 <std_soar_var1>)
+     (<f> ^type <t>)
+     (<t> ^p2 item ^p1 <std_soar_var1>)
    }
+   #-{
+   #  (<f> ^type <t1>)
+   #  (<t1> ^p2 item ^p1 <std_soar_var1>)
+   #}
 -->
    (<g> ^location <l1> -)
 }
 
-excise apply*remove-_next__health__std_soar_var1__std_soar_var2__0
+#excise apply*remove-_next__health__std_soar_var1__std_soar_var2__0
+
+sp {math*link-elabs-to-ts-elabs
+  (state <s> ^top-state.elaborations <tse>
+             ^elaborations <el>)
+-->
+  (<el> ^top-state-elaborations <tse>)
+}
+
+sp {math*link-ts-elab-to-self
+  (state <s> ^superstate nil
+             ^elaborations <el>)
+-->
+  (<el> ^top-state-elaborations <el>)
+}
+
+sp {math*elab*greaterthan
+  (state <s> ^superstate nil
+              ^elaborations <el>
+             ^facts <f>)
+  (<f> ^int.p1 <a> ^int.p1 {< <a> <b>})
+-->
+  (<el> ^greaterthan <gt>)
+  (<gt> ^p1 <a> ^p2 <b>)
+}
+
+sp {math*elab*lessthan
+  (state <s> ^superstate nil
+              ^elaborations <el>
+             ^facts <f>)
+  (<f> ^int.p1 <a> ^int.p1 {> <a> <b>})
+-->
+  (<el> ^lessthan <gt>)
+  (<gt> ^p1 <a> ^p2 <b>)
+}
+
+sp {math*elab*minus
+  (state <s> ^superstate nil
+              ^elaborations <el>
+             ^facts <f>)
+  (<f> ^int.p1 <a> ^int.p1 <b>)
+-->
+  (<el> ^minus <minus>)
+  (<minus> ^p1 <a> ^p2 <b> ^p3 (- <a> <b>))
+}
+
+sp {math*elab*plus
+  (state <s> ^superstate nil
+              ^elaborations <el>
+             ^facts <f>)
+  (<f> ^int.p1 <a> ^int.p1 <b>)
+-->
+  (<el> ^plus <plus>)
+  (<plus> ^p1 <a> ^p2 <b> ^p3 (+ <a> <b>))
+}
+
+sp {math*elab*gtequal
+  (state <s> ^superstate nil 
+            ^elaborations <el>
+             ^facts <f>)
+  (<f> ^int.p1 <a> ^int.p1 {<= <a> <b>})
+-->
+  (<el> ^gtequal <gt>)
+  (<gt> ^p1 <a> ^p2 <b>)
+}
+
+sp {elab*ints
+   (state <s> ^superstate nil
+              ^facts <facts>)
+-->
+   (<facts> ^int <int>)
+   (<int> ^p1 0)
+   (<facts> ^int <int1>)
+   (<int1> ^p1 1)
+   (<facts> ^int <int2>)
+   (<int2> ^p1 2)
+   (<facts> ^int <int3>)
+   (<int3> ^p1 3)
+   (<facts> ^int <int4>)
+   (<int4> ^p1 4)
+   (<facts> ^int <int5>)
+   (<int5> ^p1 5)
+   (<facts> ^int <int6>)
+   (<int6> ^p1 6)
+   (<facts> ^int <int7>)
+   (<int7> ^p1 7)
+   (<facts> ^int <int8>)
+   (<int8> ^p1 8)
+   (<facts> ^int <int9>)
+   (<int9> ^p1 -1) # need negative ints for maximum health lost in a step
+}
+
+sp {elab*blocked*east
+  (state <s> ^superstate nil 
+            ^gs <gs>)
+  (<gs> ^blockedEast <be>)
+  (<be> ^p1 <x> ^p2 <y>)
+-->
+  (<gs> ^blocked <bl>)
+  (<bl> ^p1 east ^p2 <x> ^p3 <y>)
+}
+
+sp {elab*blocked*west
+  (state <s> ^superstate nil
+              ^gs <gs>
+             ^top-state.elaborations.plus <p>)
+  (<gs> ^blockedEast <be>)
+  (<be> ^p1 <x1> ^p2 <y>)
+  (<p> ^p1 <x1> ^p2 1 ^p3 <x>)
+-->
+  (<gs> ^blocked <bl>)
+  (<bl> ^p1 west ^p2 <x> ^p3 <y>)
+}
+
+sp {elab*blocked*north
+  (state <s>  ^superstate nil
+              ^gs <gs>)
+  (<gs> ^blockedNorth <be>)
+  (<be> ^p1 <x> ^p2 <y>)
+-->
+  (<gs> ^blocked <bl>)
+  (<bl> ^p1 south ^p2 <x> ^p3 <y>)
+}
+
+sp {elab*blocked*south
+  (state <s> ^gs <gs>
+             ^superstate nil
+             ^top-state.elaborations.plus <p>)
+  (<gs> ^blockedNorth <be>)
+  (<be> ^p1 <x> ^p2 <y1>)
+  (<p> ^p1 <y1> ^p2 1 ^p3 <y>)
+-->
+  (<gs> ^blocked <bl>)
+  (<bl> ^p1 north ^p2 <x> ^p3 <y>)
+}
+
+sp {elab*inherit*blocked
+  (state <s> ^gs <gs>
+             ^duplicate-of.gs.blocked <b>)
+-->
+  (<gs> ^blocked <b>)
+}
