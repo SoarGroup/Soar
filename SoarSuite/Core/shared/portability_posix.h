@@ -24,7 +24,6 @@
 #include <pthread.h>
 #include <dirent.h>
 
-#include <assert.h>
 #include <regex.h>
 
 #ifndef SCONS_DARWIN
