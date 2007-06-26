@@ -449,6 +449,10 @@ public class GridMap {
 	}
 	int positiveRewardID = 0;
 	
+	public boolean mapUsesOpenCode() {
+		return rewardInfoObject.hasProperty(Names.kPropertyOpenCode);
+	}
+	
 	private void cells(Element cells) throws LoadError {
 		String sizeString = cells.getAttributeValue(kAttrWorldSize);
 		if (sizeString == null || sizeString.length() <= 0) {
