@@ -26,7 +26,7 @@ if os.name != "posix":
 
 # Optimization on the mac (posix) crashes things
 if sys.platform == 'darwin':
-	optimizationDefault = 'no'
+	optimizationDefault = 'full'
 else:
 	optimizationDefault = 'full'
 
@@ -68,6 +68,10 @@ conf = Configure(env, custom_tests = custom_tests)
 
 # We define SCONS to indicate to the source that SCONS is controlling the build.
 conf.env.Append(CPPFLAGS = ' -DSCONS')
+
+# We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
+if sys.platform == "darwin":
+	conf.env.Append(CPPFLAGS = ' -DSCONS_DARWIN')
 
 # Special debugging symbol if requested (doesn't work on linux)
 #if conf.env['debugSym']:
