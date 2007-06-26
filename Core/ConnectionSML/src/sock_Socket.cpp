@@ -23,7 +23,6 @@
 /////////////////////////////////////////////////////////////////
 
 #include <stdio.h>
-#include "sock_SocketHeader.h"
 #include "sock_Socket.h"
 #include "sock_Check.h"
 #include "sock_Debug.h"
