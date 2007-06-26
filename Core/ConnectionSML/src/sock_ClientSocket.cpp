@@ -15,6 +15,7 @@
 #include "sock_OSspecific.h"
 
 #include <sstream>
+#include <assert.h>
 
 using namespace sock ;
 

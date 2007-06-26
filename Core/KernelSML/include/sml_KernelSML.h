@@ -14,10 +14,6 @@
 #ifndef SML_KERNEL_SML_H
 #define SML_KERNEL_SML_H
 
-#ifdef _WIN32
-#include <crtdbg.h>
-#endif
-
 // Forward declarations
 namespace gSKI {
 	class KernelFactory ;

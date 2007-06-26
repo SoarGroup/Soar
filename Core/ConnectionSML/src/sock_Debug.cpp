@@ -99,7 +99,6 @@ void PrintDebug(char const* pStr)
 }
 
 #ifdef _WIN32
-#include <windows.h>
 void PrintDebugMethod(long indent, char const* pMethodName, char const* pStr)
 {
 	indent = 0 ;

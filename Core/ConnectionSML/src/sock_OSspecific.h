@@ -11,7 +11,6 @@
 #ifndef CT_OS_SPECIFIC_H
 #define CT_OS_SPECIFIC_H
 
-#include "sock_SocketHeader.h"	// For SOCKET definition
 
 namespace sock {
 

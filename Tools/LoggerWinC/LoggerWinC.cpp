@@ -24,7 +24,10 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include <portability.h>
+// FIXME: need to fix the SendMessage issue below. We undefine it because we use
+// a function of the same name. This is not good when the windows function needs to
+// be used.
+//#include <portability.h>
 
 #include "LoggerWinC.h"
 #include "Logger.h"
