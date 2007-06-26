@@ -16,11 +16,8 @@
 //////////////////////////////////////////////////////////////////////
 // Windows Versions
 //////////////////////////////////////////////////////////////////////
-#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
-#include <windows.h>
 
 #include "sock_OSspecific.h"
-#include "sock_SocketHeader.h"
 
 bool sock::InitializeOperatingSystemSocketLibrary()
 {
@@ -75,7 +72,6 @@ bool sock::SleepSocket(long secs, long msecs)
 // Linux Versions
 //////////////////////////////////////////////////////////////////////
 #include "sock_OSspecific.h"
-#include "sock_SocketHeader.h"
 
 #include <time.h>			// For sleep
 

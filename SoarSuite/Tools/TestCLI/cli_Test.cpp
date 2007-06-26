@@ -3,15 +3,8 @@
 #include "cli_Test.h"
 
 #include <iostream>
-//#include <conio.h>
 #include <assert.h>
 #include <queue>
-
-#ifdef _MSC_VER
-// Use Visual C++'s memory checking functionality
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif // _MSC_VER
 
 #include "sml_Connection.h"
 #include "sml_Client.h"
@@ -337,10 +330,10 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 // Main program
 int main(int argc, char** argv)
 {
-#ifdef _MSC_VER
+#ifdef _DEBUG
 	//_crtBreakAlloc = 2263;
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
-#endif // _MSC_VER
+#endif // _DEBUG
 
 	{ // create local scope to prevent scriptFile from being reported as a memory leak (occurs when script passed in as arg)
 		if (argc > 2) {
@@ -433,35 +426,5 @@ int main(int argc, char** argv)
 		delete g_pCommandProcessor;
 		delete g_pInputQueue;
 	} // end local scope
-/*
-// Static linking means we're going to see leaks from anywhere (e.g. gSKI, kernel etc.) which is overkill.
-#ifndef STATIC_LINKED
-#ifdef _MSC_VER
-//	A deliberate memory leak which I can use to test the memory checking code is working.
-//	char* pTest = new char[10] ;
-
-	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
-	printf("\nIf no leaks appear here, but some appear in the output\nwindow in the debugger, they have been leaked from a DLL.\nWhich is reporting when it's unloaded.\n\n") ;
-
-	// Set the memory checking output to go to Visual Studio's debug window (so we have a copy to keep)
-	// and to stdout so we can see it immediately.
-	_CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG );
-	_CrtSetReportFile( _CRT_WARN, _CRTDBG_FILE_STDOUT );
-
-	// Now check for memory leaks.
-	// This will only detect leaks in objects that we allocate within this executable and static libs.
-	// If we allocate something in a DLL then this call won't see it because it works by overriding the
-	// local implementation of malloc.
-	//_CrtDumpMemoryLeaks();
-
-	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
-	printf("\n\nPress <return> to exit\n") ;
-	char line[100] ;
-	char* str = gets(line) ;
-	str = 0;
-
-#endif // _MSC_VER
-#endif	// STATIC_LINKED
-*/
 	return 0;
 }

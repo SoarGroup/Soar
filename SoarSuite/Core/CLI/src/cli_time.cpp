@@ -10,12 +10,6 @@
 
 #include "cli_CommandLineInterface.h"
 
-#ifdef WIN32
-#include <windows.h>
-#else // WIN32
-#include <sys/time.h>
-#endif // WIN32
-
 #include <time.h>
 
 #include "cli_Commands.h"

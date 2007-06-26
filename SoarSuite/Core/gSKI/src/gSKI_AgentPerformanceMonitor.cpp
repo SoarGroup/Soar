@@ -1,4 +1,4 @@
-#include "portability.h"
+#include <portability.h>
 
 /*************************************************************************
  * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -21,14 +21,6 @@ using namespace gSKI;
 
 // a hack so I don't have to rewrite all the current_agent code below...
 #define current_agent(x) a->x
-
-#ifdef WIN32 
-// Sleep on windows is in milliseconds, hence the multiplication by 1000
-#define sys_sleep( seconds )    Sleep( seconds * 1000 )
-#else /* WIN32 */
-#include <unistd.h>
-#define sys_sleep( seconds )    sleep( seconds )
-#endif /* !WIN32 */
 
 namespace {
 

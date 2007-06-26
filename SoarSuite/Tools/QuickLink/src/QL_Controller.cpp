@@ -22,19 +22,7 @@
 #include <fstream>
 #include <iterator>
 
-/* this is for VS's memory checking functionality */
-//#define MEM_LEAK_DEBUG // uncomment this for functionality
-#ifdef MEM_LEAK_DEBUG
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
-
-#ifdef _MSC_VER
-#define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
-#include <crtdbg.h>
-#endif // _MSC_VER
-#endif //MEM_LEAK_DEBUG
 
 /* end mem check */
 
@@ -94,7 +82,7 @@ bool acquiring_new_connection = false;
 
 int main()
 {
-#ifdef MEM_LEAK_DEBUG
+#ifdef _DEBUG
 	// When we have a memory leak, set this variable to
 	// the allocation number (e.g. 122) and then we'll break
 	// when that allocation occurs.
@@ -102,7 +90,7 @@ int main()
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
 	// we put everything in its own scope so memory leak detection can be done
 	{
-#endif //MEM_LEAK_DEBUG
+#endif //_DEBUG
 		
 		// create and load the command map
 		command_map_t command_map;
@@ -167,25 +155,9 @@ int main()
 		process_memory.clear();
 		input.IC_Shutdown();
 		ql_interface.QL_Shutdown();
-#ifdef MEM_LEAK_DEBUG
+#ifdef _DEBUG
 	}
-/*
-#ifdef _MSC_VER
-	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
-	printf("\nIf no leaks appear here, but some appear in the output\nwindow in the debugger, they have been leaked from a DLL.\nWhich is reporting when it's unloaded.\n\n") ;
-
-	// Set the memory checking output to go to Visual Studio's debug window (so we have a copy to keep)
-	// and to stdout so we can see it immediately.
-	_CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG );
-	_CrtSetReportFile( _CRT_WARN, _CRTDBG_FILE_STDOUT );
-
-	// Now check for memory leaks.
-	// This will only detect leaks in objects that we allocate within this executable and static libs.
-	// If we allocate something in a DLL then this call won't see it because it works by overriding the
-	// local implementation of malloc.
-	_CrtDumpMemoryLeaks();
-#endif // _MSC_VER*/
-#endif //MEM_LEAK_DEBUG
+#endif //_DEBUG
 }
 
 void load_command_map(command_map_t& command_map)

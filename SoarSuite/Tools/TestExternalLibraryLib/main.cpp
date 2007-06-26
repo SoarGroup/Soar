@@ -41,8 +41,6 @@ EXPORT char* sml_InitLibrary(Kernel* pKernel, int argc, char** argv) {
 //
 
 #ifdef _WIN32
-#define _WINSOCKAPI_
-#include <Windows.h>
 void SLEEP(long secs, long msecs)
 {
 	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");

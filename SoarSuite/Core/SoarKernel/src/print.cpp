@@ -1,4 +1,4 @@
-#include "portability.h"
+#include <portability.h>
 
 /*************************************************************************
  * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -23,10 +23,6 @@
                  Printing Utility Routines for Soar 6
    ================================================================= */
 
-/* This is repeated in "kernel.h", but it must be defined before
-   "print.h" can be included. */
-#define USE_STDARGS
-
 #include "print.h"
 #include "kernel.h"
 #include "agent.h"
@@ -41,11 +37,7 @@
 #include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
 #include "gski_event_system_functions.h" // support for triggering XML events
 
-#ifdef USE_STDARGS
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 
 /* JC ADDED */
 #include "gski_event_system_functions.h"
@@ -267,27 +259,16 @@ void print_string (agent* thisAgent, char *s) {
 /* --- size of output buffer for a single call to one of these routines --- */
 #define PRINT_BUFSIZE 5000   /* This better be large enough!! */
 
-#ifdef USE_STDARGS
 void print (agent* thisAgent, char *format, ...) {
   va_list args;
   char buf[PRINT_BUFSIZE];
 
   va_start (args, format);
-#else
-void print (va_list va_alist) {
-  va_list args;
-  char *format;
-  char buf[PRINT_BUFSIZE];
-
-  va_start (args);
-  format = va_arg(args, char *);
-#endif
   vsprintf (buf, format, args);
   va_end (args);
   print_string (thisAgent, buf);
 }
 
-#ifdef USE_STDARGS
 void print_with_symbols (agent* thisAgent, 
 						 char *format, ...) {
   va_list args;
@@ -295,15 +276,6 @@ void print_with_symbols (agent* thisAgent,
   char *ch;
   
   va_start (args, format);
-#else
-void print_with_symbols (thisAgent, va_alist) va_dcl {
-  va_list args;
-  char buf[PRINT_BUFSIZE];
-  char *ch, *format;
-  
-  va_start (args);
-  format = va_arg(args, char *);
-#endif
   ch = buf;
   while (TRUE) {
     /* --- copy anything up to the first "%" --- */

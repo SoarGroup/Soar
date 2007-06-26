@@ -14,6 +14,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include <portability.h>
 
 #include <assert.h>
 #include <iostream>
@@ -30,8 +31,6 @@ using namespace sml ;
 
 // Define a sleep
 #ifdef _WIN32
-#define _WINSOCKAPI_
-#include <Windows.h>
 void SLEEP(long secs, long msecs)
 {
 	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");

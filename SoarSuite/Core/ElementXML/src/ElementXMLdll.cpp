@@ -18,13 +18,7 @@
 
 #include "ElementXMLdll.h"
 
-
-// Check for memory leaks
-#ifdef _DEBUG
-#define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
-#include <crtdbg.h>
-#endif
 
 #ifdef _WIN32
 bool __stdcall DllMain( void * hModule, 
