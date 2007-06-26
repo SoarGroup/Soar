@@ -17,6 +17,7 @@ foreach $line (<$FILE>) {
   $line =~ s/\(\-/\(minus/g;
   $line =~ s/\(\>\=/\(gtequal/g;
   $line =~ s/\(\>/\(greaterthan/g;
+  $line =~ s/\(\< /\(lessthan /g;
   print $OUT $line;
 }
 #print `cp $tmpFileName fakemath_int.kif`;

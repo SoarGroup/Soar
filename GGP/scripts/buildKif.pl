@@ -29,17 +29,24 @@ if (-e $soarFile) {
   print `mv $soarFile buildKifBackup.soar`;
 }
 
-if ($ARGV[0] =~ "rogue") {
-  print `cp $file rogue_backup`;
+if ($ARGV[0] =~ "rogue" or
+    $ARGV[0] =~ "mm") {
+  print `cp $file math_backup`;
   print `./fakeMath.pl $file`;
 }
 
 print `$compiler $file`;
-die "kif compile failed!" unless (-e $soarFile);
-
-print `$hackScript $soarFile`;
-
-if ($ARGV[0] =~ "rogue") {
-  print `cp rogue_backup $file`;
+if (not -e $soarFile) {
+  clean();
+  die "kif compile failed!";
 }
 
+print `$hackScript $soarFile`;
+clean();
+
+sub clean() {
+  if ($ARGV[0] =~ "rogue" or
+      $ARGV[0] =~ "mm") {
+    print `cp math_backup $file`;
+  }
+}

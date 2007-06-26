@@ -14,6 +14,14 @@ die if ($#ARGV != 0);
 
 foreach $line (<$FILE>) {
   $line =~ s/var11/var1/g;
+  $line =~ s/var21/var2/g;
+  $line =~ s/var31/var3/g;
+  $line =~ s/var41/var4/g;
+  $line =~ s/var51/var5/g;
+  $line =~ s/var61/var6/g;
+  $line =~ s/var71/var7/g;
+  $line =~ s/var81/var8/g;
+  $line =~ s/var91/var9/g;
   print $OUT $line;
 }
 
