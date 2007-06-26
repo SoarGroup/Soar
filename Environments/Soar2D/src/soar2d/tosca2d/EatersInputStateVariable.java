@@ -185,11 +185,11 @@ public class EatersInputStateVariable extends JavaStateVariable {
                     {
                         ltm.Resize(4);
                         ltm.Set(2, 1);
-                        ltm.Set(3, box.getIntProperty(Names.kPropertyOpenCode));
+                        ltm.Set(3, box.getIntProperty(Names.kPropertyOpenCode) + 2);
                     }            
                 }
             }
-			else if (box.hasProperty(Names.kPropertyOpenCode))
+			else if (world.getMap().mapUsesOpenCode())
 			{
                 relevantActions.Resize(6);
 				relevantActions.Set(4, 6.0);
