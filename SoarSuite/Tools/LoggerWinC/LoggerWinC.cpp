@@ -24,6 +24,8 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include <portability.h>
+
 #include "LoggerWinC.h"
 #include "Logger.h"
 #include <string>

@@ -1,3 +1,5 @@
+#include <portability.h>
+
 #include "sml_Client.h"
 
 #include <iostream>

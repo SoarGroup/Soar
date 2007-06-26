@@ -1,3 +1,5 @@
+#include <portability.h>
+
 // TestConnectionSML.cpp : Defines the entry point for the console application.
 //
 

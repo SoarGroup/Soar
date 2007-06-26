@@ -13,6 +13,7 @@
 #include <assert.h>
 #include <Lmcons.h> // for UNLEN constant
 #include <malloc.h>
+#include <conio.h>
 
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024   /* AGR 536  - from sys/param.h */

@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <utime.h>
+#include <pthread.h>
 
 #include <assert.h>
 

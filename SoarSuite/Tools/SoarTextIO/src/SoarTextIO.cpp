@@ -13,6 +13,8 @@
 *
 *****************************************************/
 
+#include <portability.h>
+
 #include "SoarTextIO.h"
 #include "stdlib.h"
 #include <iostream>
@@ -20,19 +22,8 @@
 #include <string>
 #include <cctype>
 
-#ifdef _WIN32
-#include <process.h>
-#include <windows.h>
-#include <conio.h>
-#include <direct.h>
 #include <errno.h>
-#else
 #include <time.h>
-//#include <ncurses.h>
-#include <pthread.h>
-
-#endif //_WIN32
-
 
 using namespace sml;
 

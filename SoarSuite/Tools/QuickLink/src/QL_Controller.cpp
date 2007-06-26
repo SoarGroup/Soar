@@ -4,6 +4,7 @@
 * interface with QL_Interface.
 *
 */
+#include <portability.h>
 
 #include "Utilities.h"
 #include "QL_Interface.h"
