@@ -22,11 +22,7 @@
 #ifdef _WIN32
 
 // Check for memory leaks
-#ifdef _DEBUG
-#define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
-#include <crtdbg.h>
-#endif
 
 bool __stdcall DllMain( void * hModule, 
                        unsigned long  ul_reason_for_call, 

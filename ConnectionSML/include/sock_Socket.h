@@ -42,12 +42,6 @@ typedef int				SOCKET ;
 #pragma comment (lib, "ws2_32.lib")
 #endif
 
-#ifdef HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
-#endif 
-
-#include <sys/types.h>
-
 #include "sock_DataSender.h"
 
 namespace sock {

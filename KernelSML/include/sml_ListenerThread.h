@@ -12,8 +12,6 @@
 #ifndef LISTENER_THREAD_H
 #define LISTENER_THREAD_H
 
-#include "portability.h" // for ENABLE_NAMED_PIPES
-
 #include "thread_Thread.h"
 #include "sock_DataSender.h"
 #include "sock_ListenerSocket.h"

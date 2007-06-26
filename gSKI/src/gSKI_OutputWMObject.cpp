@@ -1,4 +1,4 @@
-#include "portability.h"
+#include <portability.h>
 
 /********************************************************************
 * @file gski_symbolfactory.h 
