@@ -19,7 +19,9 @@
 
 #include <assert.h>
 
+#ifndef SCONS_DARWIN
 #include <malloc.h>
+#endif // SCONS_DARWIN
 
 /* this needs to be defined */
 #ifndef MAXPATHLEN
