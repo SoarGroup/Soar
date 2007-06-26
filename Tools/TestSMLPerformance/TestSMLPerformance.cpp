@@ -9,9 +9,6 @@
 //
 // The number of agents to create, wmes to update, and decision cycles to run can be changed at the beginning of the main function.
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
 #include <portability.h>
 
 #ifdef _MSC_VER

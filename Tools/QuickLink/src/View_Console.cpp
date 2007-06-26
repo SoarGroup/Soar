@@ -1,3 +1,4 @@
+#include <portability.h>
 
 #include "View_Console.h"
 #include "Smart_Pointer.h"

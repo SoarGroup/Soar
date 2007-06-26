@@ -1,7 +1,4 @@
-
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__)
-#	define WINDOWS
-#endif
+#include <portability.h>
 
 #include "QL_Interface.h"
 #include "Utilities.h"
@@ -12,12 +9,8 @@
 #include <functional>
 #include <iostream>
 #include <fstream>
-#ifdef WINDOWS
-#include <process.h>
-#include <windows.h>
-#include <direct.h>
 #include <errno.h>
-#endif
+
 
 using std::string; using std::make_pair; using std::cerr; using std::endl;
 using sml::Kernel; using sml::Identifier; using sml::Agent;
@@ -38,9 +31,8 @@ QL_Interface& QL_Interface::instance()
 
 QL_Interface::QL_Interface()  : should_update_views(true), kernel_destroyed(true) 
 {
-#ifdef WINDOWS
-	_chdir("../../SoarLibrary/bin/");
-#endif
+	// the correct working directory should be set in the project settings
+	//chdir("../../SoarLibrary/bin/");
 }
 
 // return the identifier with the specified name
@@ -340,7 +332,7 @@ void QL_Interface::print_last_output()
 
 void QL_Interface::spawn_debugger()
 {
-#ifdef WINDOWS
+#ifndef SCONS
 
 	// spawn the debugger asynchronously
 	
@@ -393,7 +385,7 @@ void QL_Interface::spawn_debugger()
 
 	while(1)
 	{
-#ifdef WINDOWS
+#ifndef SCONS
 		Sleep(100);
 #else
 		sleep(1);

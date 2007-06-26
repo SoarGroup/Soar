@@ -1,3 +1,4 @@
+#include <portability.h>
 
 #include "WME_Type.h"
 

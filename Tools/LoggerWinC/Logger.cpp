@@ -24,10 +24,11 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include <portability.h>
+
 #include "sml_Client.h"
 #include "sml_Names.h"
 #include "Logger.h"
-#include <stdlib.h>
 #include <string>
 
 using namespace sml ;

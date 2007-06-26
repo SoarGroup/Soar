@@ -1,3 +1,5 @@
+#include <portability.h>
+
 #include "WME_Shared.h"
 #include "QL_Interface.h"
 

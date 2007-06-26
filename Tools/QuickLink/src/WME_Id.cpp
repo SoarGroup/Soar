@@ -1,3 +1,4 @@
+#include <portability.h>
 
 #include "WME_Id.h"
 #include "sml_Client.h"
