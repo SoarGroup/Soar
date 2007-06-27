@@ -40,14 +40,15 @@ int main(int argc, char* argv[]) {
       trules);
 
   cout << "HERE IT COMES" << endl;
-//  cout << matcher << endl;
+  cout << matcher << endl;
+  cout << "=========" << endl;
 
   while (true) {
     const Rule* r1;
     const Rule* r2;
     if (!matcher.getBestMatch(r1, r2)) {
       cout << "FINISHED" << endl;
-      return 0;
+      break;
     }
 
     cout << "Best Match:" << endl;
@@ -57,7 +58,7 @@ int main(int argc, char* argv[]) {
     BodyMapping m;
     if (!matcher.getBodyMatch(*r1, *r2, m)) {
       cout << "FINISHED" << endl;
-      return 0;
+      break;
     }
     for (BodyMapping::iterator
          i  = m.begin();
@@ -72,5 +73,24 @@ int main(int argc, char* argv[]) {
     }
     matcher.addRuleMatch(*r1, *r2);
   }
+
+  vector<Predicate> usp;
+  vector<Predicate> utp;
+  vector<Rule> usr;
+  vector<Rule> utr;
+
+  matcher.getUnmatchedPreds(usp, utp);
+  matcher.getUnmatchedRules(usr, utr);
+
+  cout << "### UNMATCHED SOURCE PREDICATES ###" << endl;
+  copy(usp.begin(), usp.end(), ostream_iterator<Predicate>(cout, "\n"));
+  cout << "### UNMATCHED TARGET PREDICATES ###" << endl;
+  copy(utp.begin(), utp.end(), ostream_iterator<Predicate>(cout, "\n"));
+
+  cout << "### UNMATCHED SOURCE RULES ###" << endl;
+  copy(usr.begin(), usr.end(), ostream_iterator<Rule>(cout, "\n"));
+  cout << "### UNMATCHED TARGET RULES ###" << endl;
+  copy(utr.begin(), utr.end(), ostream_iterator<Rule>(cout, "\n"));
+
   return 0;
 }

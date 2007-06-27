@@ -41,6 +41,10 @@ class Matcher {
     bool getBestMatch(const Rule*& r1, const Rule*& r2) const;
     bool getBodyMatch(const Rule& sr, const Rule& tr, BodyMapping& map) const;
 
+    void getUnmatchedPreds(vector<Predicate>& sp, vector<Predicate>& tp);
+
+    void getUnmatchedRules(vector<Rule>& sr, vector<Rule>& tr);
+
     friend ostream& operator<<(ostream& os, const Matcher& m);
 
   private:
@@ -50,7 +54,7 @@ class Matcher {
          ( vector<Condition> smaller, 
            vector<Condition> larger,
            BodyMapping& mapping ) const;
-
+    
   private:
     set<Rule> sourceRules;
     set<Rule> targetRules;

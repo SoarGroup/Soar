@@ -29,7 +29,9 @@ Matcher::Matcher
          ++j)
     {
       BodyMapping map;
+      //cout << "Trying initial match: " << *i << " --> " << *j << endl;
       if(rulesCanMatch(*i, *j, map)) {
+        cout << "Adding initial match: " << *i << " --> " << *j << endl;
         rMatchCands.insert(RuleMatchType(RulePair(*i, *j), map));
       }
     }
@@ -336,6 +338,9 @@ void Matcher::addPredicateMatch(const Predicate& sp, const Predicate& tp) {
 void Matcher::addRuleMatch(const Rule& sr, const Rule& tr) {
   cout << "MATCHING RULE " << sr << " TO " << tr << endl;
 
+  sourceRules.erase(sr);
+  targetRules.erase(tr);
+
   vector<RuleMatchMap::iterator> toErase;
   matchedRules.insert(RulePair(sr, tr));
   //rMatchCands.erase(remove_if(rMatchCands.begin(), rMatchCands.end(), bind(&RuleMatchType::first, _1) == rp), rMatchCands.end());
@@ -346,6 +351,9 @@ void Matcher::addRuleMatch(const Rule& sr, const Rule& tr) {
        ++i)
   {
     if (i->first.first == sr) {
+      toErase.push_back(i);
+    }
+    else if (i->first.second == tr) {
       toErase.push_back(i);
     }
   }
@@ -367,6 +375,16 @@ bool Matcher::getBodyMatch(const Rule& sr, const Rule& tr, BodyMapping& map) con
   return true;
 }
 
+void Matcher::getUnmatchedPreds(vector<Predicate>& sp, vector<Predicate>& tp) {
+  sp.insert(sp.begin(), sourcePreds.begin(), sourcePreds.end());
+  tp.insert(tp.begin(), targetPreds.begin(), targetPreds.end());
+}
+
+void Matcher::getUnmatchedRules(vector<Rule>& sr, vector<Rule>& tr) {
+  sr.insert(sr.begin(), sourceRules.begin(), sourceRules.end());
+  tr.insert(tr.begin(), targetRules.begin(), targetRules.end());
+}
+
 ostream& operator<<(ostream& os, const Matcher& m) {
   for(RuleMatchMap::const_iterator
       i  = m.rMatchCands.begin();
@@ -374,6 +392,7 @@ ostream& operator<<(ostream& os, const Matcher& m) {
       ++i)
   {
     os << i->first.first << "\n  --> " << i->first.second;
+    os << endl;
   }
   return os;
 }

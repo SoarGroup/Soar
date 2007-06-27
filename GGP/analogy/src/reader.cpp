@@ -45,14 +45,23 @@ Predicate read_sentence(ifstream& file, set<Predicate>& preds) {
     return p;
   }
   else if (relation == "legal" or relation == "does") {
-    string role = read_nonempty(file);
+    string role = read_nonempty(file); // skip the role line
 
-    assert(read_nonempty(file) == "XXX_FUNCTION_BEGIN");
-
-    Predicate p = read_function(file, preds, MOVE);
-    preds.insert(p);
-    assert(read_nonempty(file) == "XXX_SENT_END");
-    return p;
+    string temp = read_nonempty(file);
+    if (temp == "XXX_FUNCTION_BEGIN") {
+      // move with parameters
+      Predicate p = read_function(file, preds, MOVE);
+      preds.insert(p);
+      assert(read_nonempty(file) == "XXX_SENT_END");
+      return p;
+    }
+    else {
+      // move without parameters
+      Predicate p(temp, 0, MOVE);
+      preds.insert(p);
+      assert(read_nonempty(file) == "XXX_SENT_END");
+      return p;
+    }
   }
   else {
     int arity = 0;
