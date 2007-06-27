@@ -26,9 +26,11 @@
 
 #include <regex.h>
 
-#ifndef SCONS_DARWIN
+#ifdef SCONS_DARWIN
+#include <stdlib.h> // malloc defined here on darwin
+#else // not SCONS_DARWIN
 #include <malloc.h>
-#endif // SCONS_DARWIN
+#endif // not SCONS_DARWIN
 
 /* this needs to be defined */
 #ifndef MAXPATHLEN
