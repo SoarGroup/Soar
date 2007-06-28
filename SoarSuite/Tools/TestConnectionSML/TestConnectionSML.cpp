@@ -487,7 +487,7 @@ public:
 		((EmbeddedConnectionSynch*)pConnection2)->AttachConnectionInternal((Connection_Receiver_Handle)(pConnection1), ProcessMessage) ;
 
 		// Send a "call" over.
-		pConnection1->SendMessage(pXML1) ;
+		pConnection1->SendMsg(pXML1) ;
 		error = pConnection1->GetLastError() ;
 
 		if (error != Error::kNoError)
@@ -506,7 +506,7 @@ public:
 		ok = ok && CheckStringEq(pResult->GetTagName(), "result", "Problem with response") ;
 
 		// Send a "notify" message.
-		pConnection2->SendMessage(pXML2) ;
+		pConnection2->SendMsg(pXML2) ;
 		pConnection2->GetLastError() ;
 
 		if (error != Error::kNoError)
@@ -559,7 +559,7 @@ public:
 		pConnection1->RegisterCallback(Notify1, this, sml_Names::kDocType_Notify, true) ;
 
 		// Send a "call" over.
-		pConnection1->SendMessage(pXML1) ;
+		pConnection1->SendMsg(pXML1) ;
 		error = pConnection1->GetLastError() ;
 
 		ok = ok && Check(error == Error::kNoError, Error::GetErrorDescription(error)) ;
@@ -630,7 +630,7 @@ public:
 		ElementXML::DeleteString(pMsgXML) ;
 
 		// Send a "call" over.
-		pConnection1->SendMessage(pMsg) ;
+		pConnection1->SendMsg(pMsg) ;
 		error = pConnection1->GetLastError() ;
 
 		ok = ok && Check(error == Error::kNoError, Error::GetErrorDescription(error)) ;
@@ -683,7 +683,7 @@ public:
 		ElementXML::DeleteString(pMsgXML) ;
 
 		// Send the create factory call over
-		pConnection1->SendMessage(pMsg) ;
+		pConnection1->SendMsg(pMsg) ;
 
 		// Get the "response" to the "call".
 		ElementXML* pResult = pConnection1->GetResponse(pMsg) ;
@@ -704,7 +704,7 @@ public:
 		pConnection1->AddParameterToSMLCommand(pMsg1, sml_Names::kParamThis, factory.c_str()) ;
 
 		// Now create the kernel object
-		pConnection1->SendMessage(pMsg1) ;
+		pConnection1->SendMsg(pMsg1) ;
 		ElementXML* pResult2 = pConnection1->GetResponse(pMsg1) ;
 
 		AnalyzeXML res2 ;
@@ -723,13 +723,13 @@ public:
 		pConnection1->AddParameterToSMLCommand(pMsg2, sml_Names::kParamKernel, kernel.c_str()) ;
 
 		// Now release the kernel object
-		pConnection1->SendMessage(pMsg2) ;
+		pConnection1->SendMsg(pMsg2) ;
 		ElementXML* pResult3 = pConnection1->GetResponse(pMsg2) ;
 
 		// And release the factory
 		ElementXML* pMsg3 = pConnection1->CreateSMLCommand(sml_Names::kgSKI_IRelease_Release) ;
 		pConnection1->AddParameterToSMLCommand(pMsg3, sml_Names::kParamThis, factory.c_str()) ;
-		pConnection1->SendMessage(pMsg3) ;
+		pConnection1->SendMsg(pMsg3) ;
 
 		delete pMsg3 ;
 		delete pMsg2 ;

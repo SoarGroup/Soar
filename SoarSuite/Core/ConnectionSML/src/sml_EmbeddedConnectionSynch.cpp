@@ -32,7 +32,7 @@ using namespace sml ;
 *		 The caller can pick up the response later with a
 *		 call to GetResponseForID().
 *************************************************************/
-void EmbeddedConnectionSynch::SendMessage(ElementXML* pMsg)
+void EmbeddedConnectionSynch::SendMsg(ElementXML* pMsg)
 {
 	ClearError() ;
 

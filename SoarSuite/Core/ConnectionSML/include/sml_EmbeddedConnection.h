@@ -91,7 +91,7 @@ public:
 
 	// Overridden in concrete subclasses
 	virtual bool IsAsynchronous() = 0 ;		// Returns true if messages are queued and executed on receiver's thread
-	virtual void SendMessage(ElementXML* pMsg) = 0 ;
+	virtual void SendMsg(ElementXML* pMsg) = 0 ;
 	virtual ElementXML* GetResponseForID(char const* pID, bool wait) = 0 ;
 	virtual bool ReceiveMessages(bool allMessages) = 0 ;
 

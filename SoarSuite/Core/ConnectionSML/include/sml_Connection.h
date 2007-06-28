@@ -290,7 +290,7 @@ public:
 	*				The caller should release this message object after making the send call
 	*               once it if finished using it.
 	*************************************************************/
-	virtual void SendMessage(ElementXML* pMsg) = 0 ;
+	virtual void SendMsg(ElementXML* pMsg) = 0 ;
 
 	/*************************************************************
 	* @brief Retrieve any commands, notifications, responses etc. that are waiting.

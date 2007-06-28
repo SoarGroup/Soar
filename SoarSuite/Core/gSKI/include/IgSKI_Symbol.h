@@ -17,10 +17,6 @@
 #include "gSKI_Enumerations.h"
 #include "IgSKI_Release.h"
 
-#ifdef _WIN32
-#undef GetObject
-#endif
-
 namespace gSKI {
 
    // Forward declarations

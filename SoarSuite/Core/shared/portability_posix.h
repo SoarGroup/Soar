@@ -37,7 +37,7 @@
 #define MAXPATHLEN 1024   /* AGR 536  - from sys/param.h */
 #endif // MAXPATHLEN
 
-/* necessary in connectionsml socket code */
+// Use local sockets instead of internet sockets for same-machine interprocess communication
 #define ENABLE_LOCAL_SOCKETS
 
 #include <dlfcn.h>      // Needed for dlopen and dlsym
@@ -46,6 +46,8 @@
 // FIXME: This is for gSKI. We do need to address the whole sleep issue though.
 #define sys_sleep( seconds )    sleep( seconds )
 
+
+/* socket support stuff */
 
 ///////
 // This maps some constants to values that can be used on any platform
