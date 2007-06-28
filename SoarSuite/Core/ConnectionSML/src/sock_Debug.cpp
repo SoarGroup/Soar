@@ -11,6 +11,7 @@
 // 
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include "sock_Debug.h"

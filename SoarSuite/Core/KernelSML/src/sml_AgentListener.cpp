@@ -18,6 +18,7 @@
 */
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "sml_AgentListener.h"
 #include "sml_OutputListener.h"
 #include "sml_Connection.h"
