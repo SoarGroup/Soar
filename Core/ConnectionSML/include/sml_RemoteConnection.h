@@ -67,7 +67,7 @@ protected:
 public:
 	virtual ~RemoteConnection();
 
-	virtual void SendMessage(ElementXML* pMsg) ;
+	virtual void SendMsg(ElementXML* pMsg) ;
 	virtual ElementXML* GetResponseForID(char const* pID, bool wait) ;
 	virtual bool ReceiveMessages(bool allMessages) ;
 	virtual void CloseConnection() ;

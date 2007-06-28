@@ -45,10 +45,10 @@
 #pragma warning (default : 4702)
 #endif
 
-#ifdef _MSC_VER
+//#ifdef _MSC_VER
 // Visual Studio 2005 requires this
-#define strdup _strdup
-#endif
+//#define strdup _strdup
+//#endif
 
 #ifndef unused
 #define unused(x) (void)(x)

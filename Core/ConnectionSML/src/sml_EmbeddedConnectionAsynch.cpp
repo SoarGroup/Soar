@@ -49,7 +49,7 @@ EmbeddedConnectionAsynch::~EmbeddedConnectionAsynch()
 * this command.  To get a response call GetResponseForID()
 * and wait for the response to occur.
 *************************************************************/
-void EmbeddedConnectionAsynch::SendMessage(ElementXML* pMsg)
+void EmbeddedConnectionAsynch::SendMsg(ElementXML* pMsg)
 {
 	ClearError() ;
 
@@ -302,7 +302,7 @@ bool EmbeddedConnectionAsynch::ReceiveMessages(bool allMessages)
 		// If we got a response to the incoming message, send that response back.
 		if (pResponse)
 		{
-			SendMessage(pResponse) ;		
+			SendMsg(pResponse) ;		
 		}
 
 		// We're done with the response

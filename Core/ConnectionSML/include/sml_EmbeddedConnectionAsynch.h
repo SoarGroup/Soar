@@ -66,7 +66,7 @@ public:
 	}
 
 	virtual bool IsAsynchronous() { return true ; }
-	virtual void SendMessage(ElementXML* pMsg) ;
+	virtual void SendMsg(ElementXML* pMsg) ;
 	virtual ElementXML* GetResponseForID(char const* pID, bool wait) ;
 	virtual bool ReceiveMessages(bool allMessages) ;
 } ;

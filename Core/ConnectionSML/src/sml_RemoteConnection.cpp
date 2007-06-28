@@ -159,7 +159,7 @@ bool RemoteConnection::DoesResponseMatch(ElementXML* pResponse, char const* pID)
 * To get a response call GetResponseForID()
 * and wait for the response to occur.
 *************************************************************/
-void RemoteConnection::SendMessage(ElementXML* pMsg)
+void RemoteConnection::SendMsg(ElementXML* pMsg)
 {
 	ClearError() ;
 
@@ -358,7 +358,7 @@ bool RemoteConnection::ReceiveMessages(bool allMessages, long secondsWait, long 
 		// If we got a response to the incoming message, send that response back.
 		if (pResponse)
 		{
-			SendMessage(pResponse) ;		
+			SendMsg(pResponse) ;		
 		}
 
 		// We're done with the response
