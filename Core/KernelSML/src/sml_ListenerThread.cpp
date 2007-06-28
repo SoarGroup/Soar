@@ -114,15 +114,19 @@ void ListenerThread::Run()
 	m_ListenerSocket.Close() ;
 #ifdef ENABLE_LOCAL_SOCKETS
 	m_LocalListenerSocket.Close();
-	
+
+// This code shouldn't be necessary since the we unlink existing files on start
+// and since the file is in the user's home, permissions for that won't be an issue
+/*
 	char f_name[256];
 	sprintf( f_name, "%s%d", sock::GetLocalSocketDir().c_str(), m_Port );
-	PrintDebugFormat( "Attempting to deleting %s", f_name );
+	PrintDebugFormat( "Attempting to delete %s", f_name );
 	int del_status = unlink( f_name );
 	if ( del_status == 0 )
 		PrintDebug( "Delete succeeded!" );
 	else
 		PrintDebugFormat( "Error occurred during delete attempt, error code %d", errno );
+*/
 #endif
 #ifdef ENABLE_NAMED_PIPES
 	m_ListenerNamedPipe.Close();
