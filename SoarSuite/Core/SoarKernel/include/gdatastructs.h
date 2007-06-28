@@ -354,13 +354,17 @@ inline Bool test_is_blank_test(test t)
   return (t == NIL); 
 }
 
+// This is to silence a warning (warning C4311: 'reinterpret_cast' : pointer truncation from 'test' to 'unsigned long')
+// that only appears when the project settings are set to warn on possible 64-bit portability issues.
 #ifdef _MSC_VER
 #pragma warning (disable : 4311)
 #endif
 
 inline Bool test_is_complex_test(test t) 
 { 
-  return (char)(reinterpret_cast<unsigned long>(t) & 1);
+  return (char)(
+	  reinterpret_cast<unsigned long>(t) 
+	  & 1);
 }
 
 #ifdef _MSC_VER

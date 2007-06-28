@@ -36,19 +36,8 @@
 
 #include <string>
 #include <list>
-/*#ifdef _MSC_VER
-//#pragma warning (disable : 4702)  // warning C4702: unreachable code, need to disable for VS.NET 2003 due to STL "bug" in certain cases
-#endif*/
 #include <vector>
 #include <map>
-/*#ifdef _MSC_VER
-#pragma warning (default : 4702)
-#endif*/
-
-//#ifdef _MSC_VER
-// Visual Studio 2005 requires this
-//#define strdup _strdup
-//#endif
 
 #ifndef unused
 #define unused(x) (void)(x)
