@@ -15,6 +15,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "sml_XMLTrace.h"
 #include "assert.h"
 

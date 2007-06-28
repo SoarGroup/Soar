@@ -12,6 +12,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "sml_ConnectionManager.h"
 #include "sml_ListenerThread.h"
 #include "sml_ReceiverThread.h"
