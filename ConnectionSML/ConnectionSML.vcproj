@@ -531,10 +531,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\sock_Utils.h"
-				>
-			</File>
-			<File
 				RelativePath=".\include\thread_Event.h"
 				>
 			</File>

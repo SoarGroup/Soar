@@ -27,8 +27,6 @@
 #include "sock_Check.h"
 #include "sock_Debug.h"
 
-#include "sock_Utils.h"
-
 #include <assert.h>
 
 #ifdef NON_BLOCKING
@@ -281,17 +279,19 @@ bool Socket::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 	fd_set set ;
 	FD_ZERO(&set) ;
 
+	//////
+	// This _MSC_VER test is legit, for a warning C4127: conditional expression is constant in a
+	// windows-defined FD_SET macro below
 	#ifdef _MSC_VER
 	#pragma warning(push, 3)
 	#endif
-
 	// Add hSock to the set of descriptors to check
-	// This generates a warning on level 4 in VC++ 6.
+	// This generates a warning on level 4 in VC++ 2005.
 	FD_SET(hSock, &set) ;
-
 	#ifdef _MSC_VER
 	#pragma warning(pop)
 	#endif
+	//////
 
 	// Wait for milliseconds for select to return (can be 0 to just poll)
 	TIMEVAL zero ;
