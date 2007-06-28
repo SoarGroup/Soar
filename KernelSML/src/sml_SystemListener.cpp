@@ -22,6 +22,7 @@
 *      gSKIEVENT_AFTER_RHS_FUNCTION_EXECUTED,
 */////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "sml_SystemListener.h"
 #include "sml_Connection.h"
 #include "sml_StringOps.h"

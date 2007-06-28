@@ -17,11 +17,6 @@
 #include "sock_Check.h"
 #include "sock_OSspecific.h"
 
-// helps quell warnings
-#ifndef unused
-#define unused(x) (void)(x)
-#endif
-
 static FILE* pTraceFile = 0 ;
 
 // Defined below

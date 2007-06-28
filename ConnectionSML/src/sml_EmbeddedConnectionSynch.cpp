@@ -13,6 +13,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "sml_EmbeddedConnectionSynch.h"
 #include "sml_ElementXML.h"
 #include "sml_MessageSML.h"

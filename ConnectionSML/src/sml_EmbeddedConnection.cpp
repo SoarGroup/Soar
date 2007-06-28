@@ -12,6 +12,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "sml_EmbeddedConnection.h"
 #include "sml_EmbeddedConnectionAsynch.h"
 #include "sml_ElementXML.h"

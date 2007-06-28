@@ -19,6 +19,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "sml_Connection.h"
 #include "sml_ElementXML.h"
 #include "sml_MessageSML.h"

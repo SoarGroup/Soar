@@ -11,6 +11,7 @@
 // one of these and then creating agents through it etc.
 //
 /////////////////////////////////////////////////////////////////
+#include "sml_Utils.h"
 #include "sml_ClientKernel.h"
 #include "sml_ClientAgent.h"
 #include "sml_Connection.h"
@@ -1685,15 +1686,6 @@ bool Kernel::CheckForIncomingCommands()
 bool Kernel::CheckForIncomingEvents()
 {
 	return (GetConnection()->ReceiveMessages(true)) ;
-}
-
-/*************************************************************
-* @brief This is a utility wrapper to let us sleep the entire client process
-*		 for a period of time.
-*************************************************************/
-void Kernel::Sleep(long milliseconds)
-{
-	soar_thread::Thread::SleepStatic(0, milliseconds) ;
 }
 
 /*************************************************************

@@ -317,6 +317,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\sml_Utils.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_XMLTrace.cpp"
 				>
 			</File>
@@ -472,6 +476,10 @@
 			</File>
 			<File
 				RelativePath=".\include\sml_TagWme.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\sml_Utils.h"
 				>
 			</File>
 			<File

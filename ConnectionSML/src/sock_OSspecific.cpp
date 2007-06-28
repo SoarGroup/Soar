@@ -58,22 +58,11 @@ bool sock::MakeSocketNonBlocking(SOCKET hSock)
 	return (res == 0) ;
 }
 
-bool sock::SleepSocket(long secs, long msecs)
-{
-	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
-	
-	Sleep((secs * 1000) + msecs) ;
-
-	return true ;
-}
-
 #else	// _WIN32
 //////////////////////////////////////////////////////////////////////
 // Linux Versions
 //////////////////////////////////////////////////////////////////////
 #include "sock_OSspecific.h"
-
-#include <time.h>			// For sleep
 
 // Nothing needs to be initialized on Linux
 bool sock::InitializeOperatingSystemSocketLibrary()
@@ -94,15 +83,4 @@ bool sock::MakeSocketNonBlocking(SOCKET hSock)
 	return (res == 0) ;
 }
 
-bool sock::SleepSocket(long secs, long msecs)
-{
-	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
-	
-	struct timespec sleeptime;
-	sleeptime.tv_sec = secs;
-	sleeptime.tv_nsec = msecs * 1000000;
-	nanosleep(&sleeptime, 0);
-
-	return true ;
-}
 #endif	// _WIN32

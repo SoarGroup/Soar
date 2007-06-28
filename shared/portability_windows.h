@@ -39,13 +39,6 @@
 // Use named pipes instead of sockets for same-machine interprocess communication
 #define ENABLE_NAMED_PIPES
 
-// BADBAD: Not sure where this macro is coming from but I saw this
-// in IgSKI_Symbol.h and it's needed for the GetObject() calls to compile.
-#ifdef _WIN32
-//#undef GetObject
-//#undef SendMessage
-#endif
-
 // FIXME: This is for gSKI. We do need to address the whole sleep issue though.
 // Sleep on windows is in milliseconds, hence the multiplication by 1000
 #define sys_sleep( seconds )    Sleep( seconds * 1000 )

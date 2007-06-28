@@ -18,6 +18,7 @@
 */
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "sml_ProductionListener.h"
 #include "sml_Connection.h"
 #include "sml_StringOps.h"

@@ -17,7 +17,6 @@ namespace sock {
 bool InitializeOperatingSystemSocketLibrary() ;
 bool TerminateOperatingSystemSocketLibrary() ;
 bool MakeSocketNonBlocking(SOCKET hSock) ;
-bool SleepSocket(long secs, long msecs) ;
 } // Namespace
 
 #endif // CT_OS_SPECIFIC_H
