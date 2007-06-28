@@ -41,24 +41,15 @@ void* RunForever( void* info);
 
 SoarTextIO::SoarTextIO()
 {
-#ifdef _WIN32
-	_chdir("../../SoarLibrary/bin/");
-#endif
 	init_soar = false;
 	RemoteConnect();
 	cout << endl;	
-
-
-
 }
 
 SoarTextIO::~SoarTextIO()
 {
 	pKernel->Shutdown();
 	delete pKernel;
-#ifndef _WIN32
-//	endwin();
-#endif
 }
 
 void

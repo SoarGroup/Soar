@@ -35,7 +35,7 @@ bool __stdcall DllMain( void * hModule,
 	// Define this ourselves to save bringing in the entire windows headers for this one value.
 #ifndef DLL_PROCESS_DETACH
 #define DLL_PROCESS_DETACH 0
-#endif
+#endif // DLL_PROCESS_DETACH
 
 	// Dump out any memory leaks to the output window in the Visual C++ debugger and to stdout.
 	// Only do this when we are unloaded.
@@ -47,8 +47,8 @@ bool __stdcall DllMain( void * hModule,
 //		_CrtDbgReport(_CRT_WARN, NULL, NULL, "ElementXML", "Checking memory in ElementXML\n");
 //		_CrtDumpMemoryLeaks();
 	}
-#endif
+#endif // _DEBUG
 
     return 1;
 }
-#endif
+#endif // _WIN32
