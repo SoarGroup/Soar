@@ -28,11 +28,6 @@ protected:
 
 	bool QuitNow()	{ return m_QuitNow ; }
 
-public:
-	// Static sleep method (platform independent)
-	// which causes the caller's thread to sleep.
-	static void SleepStatic(long seconds, long milliseconds) ;
-
 protected:
 	// Cause this thread to sleep for a while
 	void Sleep(long seconds, long milliseconds) ;

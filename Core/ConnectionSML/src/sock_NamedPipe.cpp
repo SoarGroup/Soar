@@ -34,7 +34,7 @@
 #include <assert.h>
 
 #ifdef PIPE_NON_BLOCKING
-#include "sock_OSspecific.h"	// For sleep
+#include "sml_Utils.h"	// For soar_sleep
 #endif
 
 using namespace sock ;
@@ -124,7 +124,7 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 				if (IsErrorWouldBlock())
 				{
 					PrintDebug("Waiting for pipe to unblock") ;
-					SleepSocket(0, 0) ;
+					soar_sleep(0, 0) ;
 				}
 				else
 #endif
@@ -269,7 +269,7 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 				if (IsErrorWouldBlock())
 				{
 					//PrintDebug("Waiting for pipe to unblock") ;
-					SleepSocket(0, 0) ;	// BADBAD: Should have a proper way to pass control back to the caller while we're blocked.
+					soar_sleep(0, 0) ;	// BADBAD: Should have a proper way to pass control back to the caller while we're blocked.
 				}
 				else
 #endif

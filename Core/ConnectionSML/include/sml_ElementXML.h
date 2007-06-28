@@ -50,10 +50,6 @@
 #define NUL 0
 #endif
 
-#ifndef unused
-#define unused(x) (void)(x)
-#endif
-
 #include "sml_Errors.h"
 #include "ElementXMLHandle.h"
 

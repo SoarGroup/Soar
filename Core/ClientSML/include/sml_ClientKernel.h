@@ -698,12 +698,6 @@ public:
 	bool StopEventThread() ;
 
 	/*************************************************************
-	* @brief This is a utility wrapper to let us sleep the entire client process
-	*		 for a period of time.
-	*************************************************************/
-	void Sleep(long milliseconds) ;
-
-	/*************************************************************
 	* @brief Register for a "SystemEvent".
 	*		 Multiple handlers can be registered for the same event.
 	* @param smlEventId		The event we're interested in (see the list below for valid values)

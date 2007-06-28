@@ -13,36 +13,13 @@
 
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include <assert.h>
 
 #include "sml_Connection.h"
 #include "sml_Client.h"
 
 //#include "../../Profiler/include/simple_timer.h"
-
-// Define a sleep
-#ifdef _WIN32
-void SLEEP(long secs, long msecs)
-{
-	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
-	Sleep((secs * 1000) + msecs) ;
-}
-#else
-#include <time.h>
-void SLEEP(long secs, long msecs)
-{
-	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
-	struct timespec sleeptime;
-	sleeptime.tv_sec = secs;
-	sleeptime.tv_nsec = msecs * 1000000;
-	nanosleep(&sleeptime, 0);
-}
-#endif
-
-// helps quell warnings
-#ifndef unused
-#define unused(x) (void)(x)
-#endif
 
 #include <stdlib.h>
 
@@ -100,7 +77,7 @@ void SimpleRemoteConnection()
 			cout << "Found agent: " << pAgent->GetAgentName() << endl ;
 		}
 
-		SLEEP(1,0) ;
+		soar_sleep(1,0) ;
 	}
 
 	delete pKernel ;
@@ -131,7 +108,7 @@ bool SimpleRemoteSynchTest()
 			}
 		}
 
-		SLEEP(1,0) ;
+		soar_sleep(1,0) ;
 	}
 
 	pKernel->Shutdown() ;
@@ -224,7 +201,7 @@ bool SimpleRemoteConnect()
 	int callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
 	unused(callbackp); // eliminate gcc compiler warning
 
-	SLEEP(1,0) ;
+	soar_sleep(1,0) ;
 
 	// Comment this in if you need to debug the messages going back and forth.
 	//pKernel->SetTraceCommunications(true) ;
@@ -300,7 +277,7 @@ bool SimpleListener(int life)
 			unused(check);
 		}
 
-		SLEEP(pauseSecs, pauseMsecs) ;
+		soar_sleep(pauseSecs, pauseMsecs) ;
 	}
 
 	delete pKernel ;
@@ -391,7 +368,7 @@ bool SimpleRemoteIOTest()
 	//pAgent->RunSelf(1) ;
 
 	// Make sure there's long enough for the listener to notice our connection
-	SLEEP(1, 0) ;
+	soar_sleep(1, 0) ;
 
 	// Disconnect
 	pKernel->Shutdown() ;
@@ -435,10 +412,10 @@ bool SimpleRemoteIOListener()
 		if (nConnections == 1 && connected)
 			done = true ;
 
-		SLEEP(pauseSecs, pauseMsecs) ;
+		soar_sleep(pauseSecs, pauseMsecs) ;
 	}
 
-	SLEEP(1,0) ;
+	soar_sleep(1,0) ;
 
 	std::string res = pAgent->InitSoar() ;
 	cout << res << endl ;
@@ -1666,12 +1643,12 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 			if (simpleInitSoar) 
 			{
-				SLEEP(0, 200) ;
+				soar_sleep(0, 200) ;
 
 				cout << "Performing simple init-soar..." << endl << endl;
 				pAgent->InitSoar() ;
 
-				SLEEP(0, 200) ;
+				soar_sleep(0, 200) ;
 
 				ok = pKernel->DestroyAgent(pAgent) ;
 				if (!ok)

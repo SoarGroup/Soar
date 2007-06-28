@@ -17,6 +17,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "EmbeddedSMLInterface.h"
 #include "sml_Connection.h"
 #include "sml_EmbeddedConnection.h"

@@ -1,5 +1,6 @@
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "sml_Client.h"
 #include "sml_Names.h"
 #include "Export.h"
@@ -40,24 +41,6 @@ EXPORT char* sml_InitLibrary(Kernel* pKernel, int argc, char** argv) {
 // Stuff to use the library as a standard client (i.e. as an executable)
 //
 
-#ifdef _WIN32
-void SLEEP(long secs, long msecs)
-{
-	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
-	Sleep((secs * 1000) + msecs) ;
-}
-#else
-#include <time.h>
-void SLEEP(long secs, long msecs)
-{
-	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
-	struct timespec sleeptime;
-	sleeptime.tv_sec = secs;
-	sleeptime.tv_nsec = msecs * 1000000;
-	nanosleep(&sleeptime, 0);
-}
-#endif
-
 void MyShutdownHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel) {
 	pKernel->SetConnectionInfo("RHSemotion", sml_Names::kStatusClosing, sml_Names::kStatusClosing);
 	exit(0);
@@ -80,7 +63,7 @@ int main(int argc, char** argv) {
 
 	cout << endl << "This will automatically close when the remote kernel shuts down." << endl;
 	// stay open until the remote Soar is shutdown
-	for(;;) { SLEEP(100000, 0); }
+	for(;;) { soar_sleep(100000, 0); }
 
 	pKernel->SetConnectionInfo("RHSemotion", sml_Names::kStatusClosing, sml_Names::kStatusClosing);
     pKernel->Shutdown();

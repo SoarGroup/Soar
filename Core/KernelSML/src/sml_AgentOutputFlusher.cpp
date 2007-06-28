@@ -8,16 +8,13 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "sml_AgentOutputFlusher.h"
 #include "assert.h"
 #include "sml_PrintListener.h"
 #include "sml_XMLListener.h"
 
 using namespace sml ;
-
-#ifndef unused
-#define unused(x) (void)(x)
-#endif
 
 AgentOutputFlusher::AgentOutputFlusher(PrintListener* pPrintListener, gSKI::Agent* pAgent, egSKIPrintEventId eventID) : m_pAgent(pAgent), m_pPrintListener(pPrintListener)
 {

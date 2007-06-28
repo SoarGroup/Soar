@@ -11,6 +11,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "sml_OutputListener.h"
 #include "sml_Connection.h"
 #include "sml_TagWme.h"

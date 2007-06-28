@@ -16,6 +16,7 @@
 // embedded in the client application).
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "KernelSMLdll.h"
 #include "sml_KernelSML.h"
 

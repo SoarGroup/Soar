@@ -1,5 +1,6 @@
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "cli_Test.h"
 
 #include <iostream>
@@ -51,9 +52,9 @@ void InputThread::Run() {
 		// unlock queue
 		delete lock;
 
-		Sleep(0,10);
+		soar_sleep(0,10);
 		g_pWaitForInput->WaitForEventForever();
-		Sleep(0,10);
+		soar_sleep(0,10);
 	}
 
  	if (cin.bad()) {

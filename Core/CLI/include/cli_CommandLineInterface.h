@@ -37,10 +37,6 @@
 // get definition of EXPORT
 #include "Export.h"
 
-#ifndef unused
-#define unused(x) (void)(x)
-#endif
-
 // Forward Declarations
 typedef struct agent_struct agent;
 

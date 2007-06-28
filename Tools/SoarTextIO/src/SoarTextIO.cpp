@@ -15,6 +15,7 @@
 
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "SoarTextIO.h"
 #include "stdlib.h"
 #include <iostream>
@@ -265,11 +266,7 @@ SoarTextIO::WriteCycle(istream* getFrom)
 
 	word = "", forMem = "";
 	checker = "";
-#ifdef _WIN32
-	while(!printNow) { Sleep(1); }
-#else 
-	while(!printNow) { usleep(1); }
-#endif // _WIN32
+	while(!printNow) { soar_sleep(0,1); }
 	if(*getFrom == cin)
 	{
 		if(print_hack != 2)
@@ -859,11 +856,7 @@ SoarTextIO::spawnDebugger()
 
 	while(1)
 	{
-#ifdef _WIN32
-		Sleep(100);
-#else
-		sleep(1);
-#endif
+		soar_sleep(1,0);
 		pKernel->GetAllConnectionInfo();
 		char const * status = pKernel->GetAgentStatus(java_debugger);
 		if(status && !strcmp(status,ready)) break;
@@ -888,10 +881,6 @@ void
 SoarTextIO::WhenReady()
 {
 	cout << endl << "Please make sure your productions are loaded before giving Soar input.";
-	/*	string hold;
-	while(!_kbhit()){ Sleep(10); };
-	Sleep(10);
-	cin >> hold;*/
 	cout << endl << endl;
 }
 

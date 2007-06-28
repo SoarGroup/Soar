@@ -3,6 +3,7 @@
 // TestConnectionSML.cpp : Defines the entry point for the console application.
 //
 
+#include "sml_Utils.h"
 #include "sml_Connection.h"
 #include "sml_ElementXML.h"
 #include "sml_MessageSML.h"
