@@ -31,8 +31,6 @@
 #include "sock_Check.h"
 #include "sock_Debug.h"
 
-#include "sock_Utils.h"
-
 #include <assert.h>
 
 #ifdef PIPE_NON_BLOCKING

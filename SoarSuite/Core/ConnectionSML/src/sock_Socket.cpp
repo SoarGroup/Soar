@@ -466,11 +466,7 @@ void Socket::Close()
 	if (m_hSocket)
 	{
 		// Let the other side know we're shutting down
-#ifdef WIN32
-		shutdown(m_hSocket,SD_BOTH);
-#else // WIN32
-		shutdown(m_hSocket,SHUT_RDWR);
-#endif // not WIN32
+		shutdown(m_hSocket, NET_SD_BOTH);
 
 		NET_CLOSESOCKET(m_hSocket) ;
 		m_hSocket = NO_CONNECTION ;
