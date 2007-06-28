@@ -14,7 +14,7 @@
 #define SML_DELTA_LIST_H
 
 #ifdef _MSC_VER
-#pragma warning (disable : 4702)  // warning C4702: unreachable code, need to disable for VS.NET 2003 due to STL "bug" in certain cases
+//#pragma warning (disable : 4702)  // warning C4702: unreachable code, need to disable for VS.NET 2003 due to STL "bug" in certain cases
 #endif
 #include <vector>
 #ifdef _MSC_VER

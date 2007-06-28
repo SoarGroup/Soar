@@ -32,7 +32,9 @@
 #define strcasecmp _stricmp
 #define vsnprintf _vsnprintf
 #define snprintf _snprintf
+#ifndef strdup
 #define strdup _strdup
+#endif
 
 // Use named pipes instead of sockets for same-machine interprocess communication
 #define ENABLE_NAMED_PIPES
