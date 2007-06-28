@@ -160,18 +160,6 @@ int main(int argc, char* argv[])
 		//cout << "Total run time: " << time << endl ;
 	}
 
-
-#ifdef _MSC_VER
-	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
-	if (stopAtEnd)
-	{
-		printf("\n\nPress <return> to exit\n") ;
-		char line[100] ;
-		char* str = gets(line) ;
-		unused(str);
-	}
-#endif //_MSC_VER
-
 	return 0;
 }
 
