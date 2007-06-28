@@ -51,6 +51,7 @@ opts.AddOptions(
 	#BoolOption('debugSym', 'Build with _DEBUG defined', 'no'),
 	BoolOption('warnings', 'Build with warnings', 'yes'),
 	EnumOption('optimization', 'Build with optimization (May cause run-time errors!)', optimizationDefault, ['no','partial','full'], {}, 1),
+	BoolOption('eclipse', 'Build everything except the java projects (prepare for eclipse)', 'no'),
 )
 
 # Create the environment using the options
@@ -173,18 +174,21 @@ SConscript('#Core/KernelSML/SConscript')
 
 if env['java']:
 	SConscript('#Core/ClientSMLSWIG/Java/SConscript')
-	SConscript('#Tools/LoggerJava/SConscript')
-	SConscript('#Tools/TestJavaSML/SConscript')
-	
-	# FIXME: VisualSoar's build command line is too long on windows
-	if os.name != 'nt':
-		SConscript('#Tools/VisualSoar/SConscript')
+
+	# Only build the interface if we're building for eclipse	
+	if not env['eclipse']:
+		SConscript('#Tools/LoggerJava/SConscript')
+		SConscript('#Tools/TestJavaSML/SConscript')
 		
-	if env['swt']:
-		SConscript('#Tools/SoarJavaDebugger/SConscript')
-		SConscript('#Environments/Soar2D/SConscript')
-		SConscript('#Environments/JavaMissionaries/SConscript')
-		SConscript('#Environments/JavaTOH/SConscript')
+		# FIXME: VisualSoar's build command line is too long on windows
+		if os.name != 'nt':
+			SConscript('#Tools/VisualSoar/SConscript')
+			
+		if env['swt']:
+			SConscript('#Tools/SoarJavaDebugger/SConscript')
+			SConscript('#Environments/Soar2D/SConscript')
+			SConscript('#Environments/JavaMissionaries/SConscript')
+			SConscript('#Environments/JavaTOH/SConscript')
 
 if env['python']:
 	SConscript('#Core/ClientSMLSWIG/Python/SConscript')

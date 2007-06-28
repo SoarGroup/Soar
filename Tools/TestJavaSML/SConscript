@@ -7,7 +7,7 @@ env = env.Copy()
 
 SoarSCons.SetJavaPaths(env, 'Core/ClientSMLSWIG/Java/sml.jar:SoarLibrary/bin/swt.jar')
 
-env.Java(target = 'classes', source = '.')
+env.Java(target = 'classes', source = 'src')
 
 env.Append(JARCHDIR = 'Tools/TestJavaSML/classes')
 TestJavaSML = env.Jar(target = 'TestJavaSML.jar', source = ['classes', 'JarManifest', ])

@@ -18,7 +18,7 @@ IF EXIST tmp rmdir /S /Q tmp
 mkdir tmp
 
 @echo ----------=========Compiling=========----------
-%2javac.exe -source 1.4 -d tmp -classpath %SOARBIN%\sml.jar Application.java
+%2javac.exe -source 1.4 -d tmp -classpath %SOARBIN%\sml.jar src\Application.java
 
 @echo ----------==========Jarring==========----------
 %2jar cfm %SOARBIN%\TestJavaSML.jar JarManifest -C tmp .

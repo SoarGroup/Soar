@@ -9,7 +9,7 @@
 * 
 * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
 ********************************************************************************************/
-package log;
+package soarLogger;
 
 import sml.* ;
 

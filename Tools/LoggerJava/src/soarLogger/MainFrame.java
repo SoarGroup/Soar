@@ -16,11 +16,12 @@
 * 
 * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
 ********************************************************************************************/
-package log;
+package soarLogger;
 
 import java.awt.GridLayout;
 
 import javax.swing.*;
+
 
 public class MainFrame extends javax.swing.JFrame
 {
