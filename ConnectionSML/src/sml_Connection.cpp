@@ -482,7 +482,7 @@ bool Connection::SendMessageGetResponse(AnalyzeXML* pAnalysis, ElementXML* pMsg)
 	soar_thread::Lock lock(&m_ClientMutex) ;
 
 	// Send the command over.
-	SendMessage(pMsg);
+	SendMsg(pMsg);
 
 	// There was an error in the send, so we're done.
 	if (HadError())
