@@ -24,6 +24,7 @@
 */
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "sml_RunListener.h"
 #include "sml_Connection.h"
 #include "sml_StringOps.h"
