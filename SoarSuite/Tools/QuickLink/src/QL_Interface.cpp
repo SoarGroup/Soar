@@ -1,5 +1,6 @@
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "QL_Interface.h"
 #include "Utilities.h"
 #include "WME_Id.h"
@@ -385,11 +386,7 @@ void QL_Interface::spawn_debugger()
 
 	while(1)
 	{
-#ifndef SCONS
-		Sleep(100);
-#else
-		sleep(1);
-#endif
+		soar_sleep(1, 0);
 		m_pKernel->GetAllConnectionInfo();
 		char const * status = m_pKernel->GetAgentStatus(java_debugger);
 		update_views(".");

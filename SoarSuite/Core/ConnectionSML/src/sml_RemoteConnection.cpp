@@ -15,6 +15,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "sml_RemoteConnection.h"
 #include "sock_Socket.h"
 #include "sock_Debug.h"
@@ -256,7 +257,7 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 		// Allow other threads the chance to update
 		// (by calling with 0 for sleep time we don't give away cycles if
 		//  no other thread is waiting to execute).
-		soar_thread::Thread::SleepStatic(sleepTimeSecs, sleepTimeMillisecs) ;
+		soar_sleep(sleepTimeSecs, sleepTimeMillisecs) ;
 
 		// Check if the connection has been closed
 		if (IsClosed())

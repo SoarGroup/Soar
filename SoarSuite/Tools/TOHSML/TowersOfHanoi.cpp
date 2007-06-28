@@ -32,11 +32,6 @@
 
 #endif
 
-// helps quell warnings
-#ifndef unused
-#define unused(x) (void)(x)
-#endif
-
 using std::cout; using std::cin; using std::endl;
 using std::string;
 

@@ -8,6 +8,7 @@
 
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
 
 // FIXME: This needs to be dealt with in a portable manner.

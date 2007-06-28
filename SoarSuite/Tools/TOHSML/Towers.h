@@ -11,12 +11,8 @@
 #ifndef TOWERS_HANOI_H
 #define TOWERS_HANOI_H
 
+#include "sml_Utils.h"
 #include <vector>
-
-// helps quell warnings
-#ifndef unused
-#define unused(x) (void)(x)
-#endif
 
 //Because of how the Towers of Hanoi productions are written, there will exactly 11 disks
 const int maxNumDisks = 11;

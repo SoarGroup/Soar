@@ -21,6 +21,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "sml_ClientWorkingMemory.h"
 #include "sml_ClientIdentifier.h"
 #include "sml_ClientAgent.h"

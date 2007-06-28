@@ -28,14 +28,6 @@ void soar_thread::BeginThread(ThreadFuncPtr inThreadFuncPtr,void* inParam)
      _beginthread(inThreadFuncPtr,0,inParam) ;
 }
 
-bool soar_thread::SleepThread(long secs, long msecs)
-{
-	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
-	Sleep( (secs * 1000) + msecs) ;
-
-	return true ;
-}
-
 /* voigtjr:
    I rewrote the WindowsMutex class to use "critical sections" rather than 
    actual mutexes, the critical sections are faster for thread synchronization.
@@ -130,21 +122,6 @@ void soar_thread::BeginThread(ThreadFuncPtr inThreadFuncPtr,void* inParam)
     pthread_create(&t,&attr,LinuxThreadFunc,threadArgs);
 
     pthread_attr_destroy(&attr);
-}
-
-bool soar_thread::SleepThread(long secs, long msecs)
-{
-	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
-	
-	// if sleep 0 is requested, then don't sleep at all (an actual sleep 0 is very slow on Linux, and probably OS X, too)
-	if(msecs || secs) {
-		struct timespec sleeptime;
-		sleeptime.tv_sec = secs;
-		sleeptime.tv_nsec = msecs * 1000000;
-		nanosleep(&sleeptime, 0);
-	}
-
-	return true ;
 }
 
 class LinuxMutex : public OSSpecificMutex

@@ -18,8 +18,6 @@ typedef void (*ThreadFuncPtr)(void*);
 
 void BeginThread(ThreadFuncPtr inThreadFuncPtr,void* inParam) ;
 
-bool SleepThread(long seconds, long msecs) ;
-
 // Methods for creating a mutex
 class OSSpecificMutex
 {

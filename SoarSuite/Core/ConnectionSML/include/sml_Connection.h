@@ -34,10 +34,6 @@
 #include <queue>
 #include <list>
 
-#ifndef unused
-#define unused(x) (void)(x)
-#endif
-
 #include "sml_Errors.h"
 #include "thread_Lock.h"
 

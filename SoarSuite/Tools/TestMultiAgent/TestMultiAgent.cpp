@@ -14,30 +14,6 @@
 
 #include "sml_Client.h"
 
-// Define a sleep
-#ifdef _WIN32
-void SLEEP(long secs, long msecs)
-{
-	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
-	Sleep((secs * 1000) + msecs) ;
-}
-#else
-#include <time.h>
-void SLEEP(long secs, long msecs)
-{
-	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
-	struct timespec sleeptime;
-	sleeptime.tv_sec = secs;
-	sleeptime.tv_nsec = msecs * 1000000;
-	nanosleep(&sleeptime, 0);
-}
-#endif
-
-// helps quell warnings
-#ifndef unused
-#define unused(x) (void)(x)
-#endif
-
 // Use Visual C++'s memory checking functionality
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>

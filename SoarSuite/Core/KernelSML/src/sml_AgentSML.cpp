@@ -11,6 +11,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "sml_AgentSML.h"
 #include "sml_OutputListener.h"
 #include "sml_StringOps.h"

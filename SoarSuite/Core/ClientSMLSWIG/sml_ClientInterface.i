@@ -134,6 +134,7 @@
 // Check for memory leaks
 #if defined(_DEBUG) && defined(_WIN32)
 #define _CRTDBG_MAP_ALLOC
+#include "sml_Utils.h"
 #include <stdlib.h>
 #include <crtdbg.h>
 

@@ -16,6 +16,7 @@
 
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include <assert.h>
 #include <iostream>
 
@@ -28,25 +29,6 @@
 
 using namespace std ;
 using namespace sml ;
-
-// Define a sleep
-#ifdef _WIN32
-void SLEEP(long secs, long msecs)
-{
-	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
-	Sleep((secs * 1000) + msecs) ;
-}
-#else
-#include <time.h>
-void SLEEP(long secs, long msecs)
-{
-	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
-	struct timespec sleeptime;
-	sleeptime.tv_sec = secs;
-	sleeptime.tv_nsec = msecs * 1000000;
-	nanosleep(&sleeptime, 0);
-}
-#endif
 
 // This filter echos all of the user's commands and adds " --depth 2" to any print commands.
 // It also consumes all "print --stack" commands (just to show how to do that) -- effectively preventing them from executing.
@@ -142,7 +124,7 @@ int main(int argc, char* argv[])
 	// Sleep until someone types 'q <return>'
 	while (!g_pInputThread->StopNow())
 	{
-		SLEEP(1,0) ;
+		soar_sleep(1,0) ;
 	}
 
 	// Don't think we'll ever get here...

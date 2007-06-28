@@ -11,6 +11,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include "sml_Utils.h"
 #include "sml_ConnectionManager.h"
 #include "sml_ListenerThread.h"
 #include "sml_KernelSML.h"
@@ -107,7 +108,7 @@ void ListenerThread::Run()
 		// Sleep for a little before checking for a new connection
 		// New connections will come in very infrequently so this doesn't
 		// have to be very rapid.
-		Sleep(0, 50) ;
+		soar_sleep(0, 50) ;
 	}
 
 	// Shut down our listener socket
