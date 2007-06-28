@@ -11,7 +11,7 @@ env['JAVACFLAGS'] = ' -source 1.4 '
 env.Java(target = 'classes', source = 'Source')
 
 env.Append(JARCHDIR = 'Tools/VisualSoar/classes')
-VisualSoar = env.Jar(target = 'VisualSoar.jar', source = [ 'classes', 'Source/META-INF/MANIFEST.MF', ])
+VisualSoar = env.Jar(target = 'VisualSoar.jar', source = [ 'classes', 'JarManifest', ])
 
 env.Install('#SoarLibrary/bin', VisualSoar)
 

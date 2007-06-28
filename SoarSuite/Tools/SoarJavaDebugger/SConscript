@@ -8,19 +8,16 @@ env = env.Copy()
 
 SoarSCons.SetJavaPaths(env, 'Core/ClientSMLSWIG/Java/sml.jar:SoarLibrary/bin/swt.jar')
 
-javacStep = env.Java(target = 'classes', source = '.')
+javacStep = env.Java(target = 'classes', source = 'src')
 
 copySources = [
-	       'JarDescription.jardesc',
-	       'SoarDebugger.plist',
-	       'debugger.html',
-	       'default-text.dlf',
-	       'default-layout.dlf',
+	       'src/default-text.dlf',
+	       'src/default-layout.dlf',
 	      ]
-copySources.extend(glob.glob('images/*'))
-copySources.extend(glob.glob('altimages/*'))
+copySources.extend(glob.glob('src/images/*'))
+copySources.extend(glob.glob('src/altimages/*'))
 
-copyTargets = map(lambda x: 'classes/' + x, copySources)
+copyTargets = map(lambda x: 'classes/' + x.lstrip('src/'), copySources)
 
 copyStep = env.Command(copyTargets, copySources, SoarSCons.DoCopy)
 jarStep = env.Command('#Tools/SoarJavaDebugger/SoarJavaDebugger.jar', [copySources, 'classes'], 'jar cfm Tools/SoarJavaDebugger/SoarJavaDebugger.jar Tools/SoarJavaDebugger/JarManifest -C Tools/SoarJavaDebugger/classes .')

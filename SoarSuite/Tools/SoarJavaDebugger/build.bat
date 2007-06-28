@@ -16,16 +16,14 @@ IF NOT EXIST %SOARBIN%\sml.jar GOTO no_sml
 echo ----------=====Setting up tmp dir====----------
 IF EXIST tmp rmdir /S /Q tmp
 mkdir tmp
-mkdir tmp\.settings
 mkdir tmp\altimages
 mkdir tmp\images
-xcopy /q /y *.dlf tmp
-xcopy /q /y .settings\* tmp\.settings
-xcopy /q /y altimages\* tmp\altimages
-xcopy /q /y images\* tmp\images
+xcopy /q /y src\*.dlf tmp
+xcopy /q /y src\altimages\* tmp\altimages
+xcopy /q /y src\images\* tmp\images
 
 @echo ----------=========Compiling=========----------
-%2javac.exe -source 1.4 -d tmp -classpath .;%SOARBIN%\swt.jar;%SOARBIN%\sml.jar -sourcepath . debugger\Application.java
+%2javac.exe -source 1.4 -d tmp -classpath src;%SOARBIN%\swt.jar;%SOARBIN%\sml.jar -sourcepath src src\debugger\Application.java
 
 @echo ----------==========Jarring==========----------
 %2jar.exe cfm %SOARBIN%\SoarJavaDebugger.jar JarManifest -C tmp .
