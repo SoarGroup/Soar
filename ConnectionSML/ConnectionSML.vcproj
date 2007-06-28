@@ -361,10 +361,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\sock_Utils.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\src\thread_Event.cpp"
 				>
 			</File>

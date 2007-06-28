@@ -97,6 +97,7 @@
 // 
 ///////
 
+#define NET_SD_BOTH			SHUT_RDWR
 
 
 #endif // PORTABILITY_POSIX_H
