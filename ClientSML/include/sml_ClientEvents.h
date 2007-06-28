@@ -12,7 +12,7 @@
 #define SML_CLIENT_EVENT_ID_H
 
 #ifdef _MSC_VER
-#pragma warning (disable : 4702)  // warning C4702: unreachable code, need to disable for VS.NET 2003 due to STL "bug" in certain cases
+//#pragma warning (disable : 4702)  // warning C4702: unreachable code, need to disable for VS.NET 2003 due to STL "bug" in certain cases
 #endif
 #include <map>
 #ifdef _MSC_VER
