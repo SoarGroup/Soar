@@ -35,6 +35,21 @@ sp {elaborate*fail-if-no-gs-change
    (<s> ^failure <d>)
 }
 
+sp {game*elaborate*added*0
+   (state <s> ^name game
+              ^gs <gs>
+              ^facts <facts>
+              ^old-gs <old-gs>)
+   (<gs> ^<item> <id-gs>)
+   (<id-gs> -^p1)
+  -{(<old-gs> ^<item> <id-oldgs>)}
+  -{(<facts> ^bookkeeping-state <item>)}
+-->
+   (<s> ^game-state-changed <gsc>)
+   (<gsc> ^type environment
+          ^what <item>)
+}
+
 sp {game*elaborate*added*1
    (state <s> ^name game
               ^gs <gs>
@@ -47,7 +62,9 @@ sp {game*elaborate*added*1
     (<id-oldgs> ^p1 <p1-val>)}
   -{(<facts> ^bookkeeping-state <item>)}
 -->
-   (<s> ^game-state-changed environment)
+   (<s> ^game-state-changed <gsc>)
+   (<gsc> ^type environment
+          ^what <item>)
 }
 
 sp {game*elaborate*added*2
@@ -63,7 +80,9 @@ sp {game*elaborate*added*2
                 ^p2 <p2-val>)}
   -{(<facts> ^bookkeeping-state <item>)}
 -->
-   (<s> ^game-state-changed environment)
+   (<s> ^game-state-changed <gsc>)
+   (<gsc> ^type environment
+          ^what <item>)
 }
 
 sp {game*elaborate*added*3*not-explorer-loc
@@ -83,7 +102,9 @@ sp {game*elaborate*added*3*not-explorer-loc
      (<id-gs> ^p1 {<p1-val> <role>})}
   -{(<facts> ^bookkeeping-state <item>)}
 -->
-   (<s> ^game-state-changed environment)
+   (<s> ^game-state-changed <gsc>)
+   (<gsc> ^type environment
+          ^what <item>)
 }
 
 sp {game*elaborate*added*3*explorer-loc
@@ -103,6 +124,20 @@ sp {game*elaborate*added*3*explorer-loc
    (<s> ^game-state-changed agent-location)
 }
 
+sp {game*elaborate*removed*0
+   (state <s> ^name game
+              ^gs <old-gs>
+              ^old-gs <gs>)
+   (<gs> ^<item> <id-gs>)
+   (<id-gs> -^p1)
+  -{(<old-gs> ^<item> <id-oldgs>)}
+  -{(<facts> ^bookkeeping-state <item>)}
+-->
+   (<s> ^game-state-changed <gsc>)
+   (<gsc> ^type environment
+          ^what <item>)
+}
+
 sp {game*elaborate*removed*1
    (state <s> ^name game
               ^gs <old-gs>
@@ -114,7 +149,9 @@ sp {game*elaborate*removed*1
     (<id-oldgs> ^p1 <p1-val>)}
   -{(<facts> ^bookkeeping-state <item>)}
 -->
-   (<s> ^game-state-changed environment)
+   (<s> ^game-state-changed <gsc>)
+   (<gsc> ^type environment
+          ^what <item>)
 }
 
 sp {game*elaborate*removed*2
@@ -131,7 +168,9 @@ sp {game*elaborate*removed*2
                 ^p2 <p2-val>)}
   -{(<facts> ^bookkeeping-state <item>)}
 -->
-   (<s> ^game-state-changed environment)
+   (<s> ^game-state-changed <gsc>)
+   (<gsc> ^type environment
+          ^what <item>)
 }
 
 
@@ -152,7 +191,9 @@ sp {game*elaborate*removed*3*not-explorer-loc
      (<id-gs> ^p1 {<p1-val> <role>})}
   -{(<facts> ^bookkeeping-state <item>)}
 -->
-   (<s> ^game-state-changed environment)
+   (<s> ^game-state-changed <gsc>)
+   (<gsc> ^type environment
+          ^what <item>)
 }
 
 sp {game*elaborate*removed*3*explorer-loc

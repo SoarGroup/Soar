@@ -4,5 +4,7 @@ sp {top-state*step-is-bookkeeping
               ^facts <f>)
 -->
    (<f> ^bookkeeping-state step
-        ^bookkeeping-state time)
+        ^bookkeeping-state time
+        ^bookkeeping-state action-counter
+        ^bookkeeping-state action-sequence)
 }

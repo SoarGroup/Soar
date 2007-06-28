@@ -45,11 +45,13 @@ sp {analyze-state*init*allowed-dirs*non-move
 sp {analyze-state*init*allowed-dirs*environment-change
    (state <s> ^name game
               ^operator.name analyze-state
-              ^game-state-changed environment
+              ^game-state-changed <gsc>
               ^disallowed-dir <da>)
+   (<gsc> ^type environment
+          ^what <what>)
 -->
    (<s> ^disallowed-dir <da> -)
-   (write (crlf) |Allowing direction | <da> | again, as the environment changed.|)
+   (write (crlf) |Allowing direction | <da> | again, as the environment changed: | <what>)
 }
 
 # on update-state, if we're passing through a portal, allow the allowed-direction

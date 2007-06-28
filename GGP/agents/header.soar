@@ -13,6 +13,7 @@ multi-attributes index 1000
 multi-attributes cell 1000
 multi-attributes ncell 256
 multi-attributes nsteps 256
+multi-attributes nextcell 256
 multi-attributes nstepssoldier 256
 multi-attributes horizontalstep 256
 multi-attributes verticalstep 256

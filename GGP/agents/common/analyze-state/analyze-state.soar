@@ -24,6 +24,16 @@ sp {apply*analyze-state*goodthing
    (write (crlf) |Bump due to appearence of | <item> | | <p1-val>)
 }
 
+sp {apply*update-state*copy-gs*deep0
+  (state <s> ^operator.name update-state
+             ^gs <gs>
+             ^old-gs <ogs>)
+  (<gs> ^<att> <id>)
+  (<id> -^p1)
+-->
+  (<ogs> ^<att> <id>)
+}
+
 sp {apply*update-state*copy-gs*deep
   (state <s> ^operator.name update-state
              ^gs <gs>
