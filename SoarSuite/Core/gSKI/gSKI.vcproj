@@ -824,6 +824,62 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="pcre"
+			>
+			<File
+				RelativePath="..\pcre-4.5\chartables.c"
+				>
+			</File>
+			<File
+				RelativePath="..\pcre-4.5\config.h"
+				>
+			</File>
+			<File
+				RelativePath="..\pcre-4.5\dftables.c"
+				>
+			</File>
+			<File
+				RelativePath="..\pcre-4.5\get.c"
+				>
+			</File>
+			<File
+				RelativePath="..\pcre-4.5\internal.h"
+				>
+			</File>
+			<File
+				RelativePath="..\pcre-4.5\maketables.c"
+				>
+			</File>
+			<File
+				RelativePath="..\pcre-4.5\pcre.c"
+				>
+			</File>
+			<File
+				RelativePath="..\pcre-4.5\pcre.h"
+				>
+			</File>
+			<File
+				RelativePath="..\pcre-4.5\pcregrep.c"
+				>
+			</File>
+			<File
+				RelativePath="..\pcre-4.5\pcreposix.c"
+				>
+			</File>
+			<File
+				RelativePath="..\pcre-4.5\pcreposix.h"
+				>
+			</File>
+			<File
+				RelativePath="..\pcre-4.5\pcretest.c"
+				>
+			</File>
+			<File
+				RelativePath="..\pcre-4.5\study.c"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>
