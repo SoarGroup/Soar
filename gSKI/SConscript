@@ -13,12 +13,12 @@ if os.name == 'posix':
 sources = glob.glob('src/*.cpp')
 if os.name == 'nt':
 	pcreSources = [
-		'lib_src/pcre-4.5/chartables.c',
-		'lib_src/pcre-4.5/get.c',
-		'lib_src/pcre-4.5/maketables.c',
-		'lib_src/pcre-4.5/pcre.c',
-		'lib_src/pcre-4.5/pcreposix.c',
-		'lib_src/pcre-4.5/study.c',
+		'../pcre-4.5/chartables.c',
+		'../pcre-4.5/get.c',
+		'../pcre-4.5/maketables.c',
+		'../pcre-4.5/pcre.c',
+		'../pcre-4.5/pcreposix.c',
+		'../pcre-4.5/study.c',
 	]
 	sources.append(pcreSources)
 
