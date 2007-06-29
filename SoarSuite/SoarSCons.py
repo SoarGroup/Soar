@@ -28,21 +28,34 @@ def SetJavaPaths(env, classpath, sourcepath = None):
 		classpath = classpath.replace(':', ';')
 	env['CLASSPATH'] = classpath
 
+def CheckJarmd5(env):
+	return os.system("md5sum -c swt.jar.md5") == 0
+
 def CheckForSWTJar(env):
-	if not os.path.exists(os.path.join('SoarLibrary', 'bin', 'swt.jar')):
-		ret = True
-		try:
-			if sys.platform == 'darwin':
-				urllib.urlretrieve('http://winter.eecs.umich.edu/jars/osx/swt.jar', 'SoarLibrary/bin/swt.jar')
-			else:
-				urllib.urlretrieve('http://winter.eecs.umich.edu/jars/gtk/swt.jar', 'SoarLibrary/bin/swt.jar')
-		except IOError:
-			ret = False
-		except ContentTooShortError:
-			ret = False
-		if ret:
-			print "Successfully downloaded swt.jar to SoarLibrary/bin."
-		return ret
+	if os.path.exists(os.path.join('SoarLibrary', 'bin', 'swt.jar')):
+		if CheckJarmd5(env):
+			return True
+		else:
+			print "md5 of swt.jar failed, removing old jar."
+			os.remove("SoarLibrary/bin/swt.jar")
+		
+	try:
+		if sys.platform == 'darwin':
+			urllib.urlretrieve('http://winter.eecs.umich.edu/jars/osx/swt.jar', 'SoarLibrary/bin/swt.jar')
+		else:
+			urllib.urlretrieve('http://winter.eecs.umich.edu/jars/gtk/swt.jar', 'SoarLibrary/bin/swt.jar')
+	except IOError:
+		print "Error downloading swt.jar to SoarLibrary/bin: IOError"
+		return False
+	except ContentTooShortError:
+		print "Error downloading swt.jar to SoarLibrary/bin: IOError"
+		return False
+		
+	if not CheckJarmd5(env):
+		print "Error downloading swt.jar to SoarLibrary/bin, md5 failed again."
+		return False
+	
+	print "Successfully downloaded swt.jar to SoarLibrary/bin."
 	return True
 
 def osx_copy(dest, source, env):
