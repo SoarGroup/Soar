@@ -16,7 +16,6 @@
 #include <winsock2.h>
 #include <direct.h>
 #include <Lmcons.h> // for UNLEN constant
-#include <malloc.h>
 #include <conio.h>
 #include <sys/types.h>
 
