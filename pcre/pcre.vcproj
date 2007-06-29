@@ -40,6 +40,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories=".;..\shared"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="false"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -104,6 +105,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories=".;..\shared"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="false"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
