@@ -11,16 +11,8 @@
 //
 /////////////////////////////////////////////////////////////////
 
-
 // Silences unreferenced formal parameter warning
 #define unused(x) (void)(x)
-
-// sanity check helpers
-#define CHECK(x)			{ assert(x) ; if (!(x)) return ; }
-#define CHECK_RET_FALSE(x)	{ assert(x) ; if (!(x)) return false ; }
-#define CHECK_RET_ZERO(x)	{ assert(x) ; if (!(x)) return 0 ; }
-#define CHECK_RET_NULL(x)	{ assert(x) ; if (!(x)) return NULL ; }
-
 
 /////////////////////////////////////////////////////////////////////
 // Function name  : soar_sleep
