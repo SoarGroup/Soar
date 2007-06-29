@@ -47,7 +47,7 @@
 #ifndef __STDC__  // FIXME: what does this mean?
 
 #define NET_CLOSESOCKET		closesocket
-#define NET_ERROR_NUMBER	WSAGetLastError()
+#define ERROR_NUMBER		GetLastError()
 
 #define NET_EWOULDBLOCK		WSAEWOULDBLOCK
 #define NET_ENETDOWN		WSAENETDOWN

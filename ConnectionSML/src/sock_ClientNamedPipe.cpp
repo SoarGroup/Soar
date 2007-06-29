@@ -15,6 +15,7 @@
 
 #ifdef ENABLE_NAMED_PIPES
 
+#include "sml_Utils.h"
 #include "sock_Debug.h"
 #include "sock_ClientNamedPipe.h"
 #include <assert.h>
@@ -83,7 +84,7 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 		if (GetLastError() != ERROR_PIPE_BUSY)
 		{
 			PrintDebug("Error: Error creating client connection pipe") ;
-			ReportErrorCode();
+			ReportSystemErrorMessage();
 			return false ;
 		}
 
@@ -91,7 +92,7 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 		if (!WaitNamedPipe(name.c_str(), 20000)) 
 		{ 
 			PrintDebug("Error: Error opening client connection pipe") ;
-			ReportErrorCode();
+			ReportSystemErrorMessage();
 			return false;
 		}
 	}

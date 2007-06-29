@@ -23,6 +23,7 @@
 /////////////////////////////////////////////////////////////////
 
 #include <stdio.h>
+#include "sml_Utils.h"
 #include "sock_Socket.h"
 #include "sock_Check.h"
 #include "sock_Debug.h"
@@ -173,7 +174,7 @@ std::string sock::GetLocalSocketDir()
 #ifdef NON_BLOCKING
 static bool IsErrorWouldBlock()
 {
-	int error = NET_ERROR_NUMBER ;
+	int error = ERROR_NUMBER ;
 
 	return (error == NET_EWOULDBLOCK) ;
 }
@@ -233,7 +234,7 @@ bool Socket::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 #endif
 				{
 					PrintDebug("Error: Error sending message") ;
-					ReportErrorCode() ;
+					ReportSystemErrorMessage() ;
 					return false ;
 				}
 			}
@@ -305,7 +306,7 @@ bool Socket::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 	if (res == SOCKET_ERROR)
 	{
 		PrintDebug("Error: Error checking if data is available to be read") ;
-		ReportErrorCode() ;
+		ReportSystemErrorMessage() ;
 		return false ;
 	}
 
@@ -380,7 +381,7 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 				{
 					PrintDebug("Error: Error receiving message") ;
 
-					ReportErrorCode() ;
+					ReportSystemErrorMessage() ;
 
 					// We treat these errors as all being fatal, which they all appear to be.
 					// If we later decide we can survive certain ones, we should test for them here
@@ -415,42 +416,6 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 	}
 
 	return true ;
-}
-
-/////////////////////////////////////////////////////////////////////
-// Function name  : ReportErrorCode
-// 
-// Return type    : void 	
-// 
-// Description	  : Convert the error code to useful text.
-//
-/////////////////////////////////////////////////////////////////////
-void Socket::ReportErrorCode()
-{
-	CTDEBUG_ENTER_METHOD("SoarSocket - ReportErrorCode");
-
-	int error = NET_ERROR_NUMBER ;
-
-	char* message;
-
-#ifdef _WIN32
-	FormatMessage(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		0,
-		error,
-		0,
-		(char*) &message,
-		0, 0 );
-#else
-	message = strerror(error);
-#endif // _WIN32
-
-	PrintDebugFormat("Error: %s", message);
-
-#ifdef _WIN32
-	LocalFree(message);
-#endif
-
 }
 
 /////////////////////////////////////////////////////////////////////
