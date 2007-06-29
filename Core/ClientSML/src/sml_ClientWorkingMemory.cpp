@@ -38,8 +38,6 @@
 #include "sml_ClientDirect.h"
 #include <assert.h>
 
-#include "sock_Debug.h"
-
 using namespace sml ;
 
 WorkingMemory::WorkingMemory()

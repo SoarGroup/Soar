@@ -17,7 +17,6 @@
 #include "sml_ListenerThread.h"
 #include "sml_ReceiverThread.h"
 #include "sml_KernelSML.h"
-#include "sock_Debug.h"
 
 #include <time.h>	// To get clock
 

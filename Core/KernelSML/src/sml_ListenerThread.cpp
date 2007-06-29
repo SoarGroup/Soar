@@ -15,7 +15,6 @@
 #include "sml_ConnectionManager.h"
 #include "sml_ListenerThread.h"
 #include "sml_KernelSML.h"
-#include "sock_Debug.h"
 
 #include <time.h>	// To get clock
 #include <stdio.h> // To concat file name for socket file deletion

@@ -28,7 +28,7 @@
 #include "MegaAssert.h"
 
 #ifdef DEBUG_UPDATE
-#include "..\..\ConnectionSML\include\sock_Debug.h"	// For PrintDebugFormat
+#include "..\..\ConnectionSML\include\sml_Utils.h"	// For PrintDebugFormat
 #endif
 
 //

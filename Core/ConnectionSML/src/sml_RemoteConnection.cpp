@@ -18,7 +18,6 @@
 #include "sml_Utils.h"
 #include "sml_RemoteConnection.h"
 #include "sock_Socket.h"
-#include "sock_Debug.h"
 #include "thread_Thread.h"
 
 #include <assert.h>

@@ -337,10 +337,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\sock_Debug.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\src\sock_ListenerNamedPipe.cpp"
 				>
 			</File>
@@ -503,10 +499,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\sock_Debug.h"
-				>
-			</File>
-			<File
 				RelativePath=".\include\sock_ListenerNamedPipe.h"
 				>
 			</File>
@@ -524,10 +516,6 @@
 			</File>
 			<File
 				RelativePath=".\include\sock_Socket.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sock_SocketHeader.h"
 				>
 			</File>
 			<File

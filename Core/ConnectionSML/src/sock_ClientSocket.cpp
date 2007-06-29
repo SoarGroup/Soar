@@ -10,7 +10,7 @@
 // IP address and port number.
 // 
 /////////////////////////////////////////////////////////////////
-#include "sock_Debug.h"
+#include "sml_Utils.h"
 #include "sock_ClientSocket.h"
 #include "sock_OSspecific.h"
 

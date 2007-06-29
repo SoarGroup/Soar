@@ -17,7 +17,7 @@
 #ifdef ENABLE_NAMED_PIPES
 
 #include "sock_ListenerNamedPipe.h"
-#include "sock_Debug.h"
+#include "sml_Utils.h"
 
 using namespace sock ;
 
