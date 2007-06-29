@@ -18,7 +18,6 @@
 #include "sml_ElementXML.h"
 #include "sml_MessageSML.h"
 #include "thread_Thread.h"
-#include "sock_Debug.h"
 
 #include <string>
 #include <iostream>

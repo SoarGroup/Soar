@@ -27,8 +27,6 @@
 #include "sml_Events.h"
 #include "sml_RunScheduler.h"
 
-#include "sock_Debug.h"	// For PrintDebugFormat
-
 #include <iostream>
 #include <fstream>
 #include <map>

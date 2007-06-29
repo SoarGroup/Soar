@@ -16,7 +16,6 @@
 #include "sml_Utils.h"
 #include "thread_Thread.h"
 #include "thread_OSspecific.h"
-#include "sock_Debug.h"		// To get the debug output functions
 
 using namespace soar_thread ;
 

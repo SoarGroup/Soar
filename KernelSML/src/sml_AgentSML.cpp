@@ -33,10 +33,6 @@
 //#define DEBUG_UPDATE
 #endif
 
-#ifdef DEBUG_UPDATE
-#include "sock_Debug.h"	// For PrintDebugFormat
-#endif
-
 #include <assert.h>
 
 using namespace sml ;
