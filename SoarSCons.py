@@ -1,12 +1,17 @@
 #
 # This file is a bunch of utility functions for the SConstruct file.
 
+# swt.jar 3.3 digests
+OSX_DIGEST = '63e66248fed82dcf4bc2639b487ec111'
+GTK_DIGEST = '3f5abcc5769c413fc731585b36fe61c2'
+
 import os
 import sys
 import string
 import re
 import shutil
 import urllib
+import md5
 
 def DoCopy(target, source, env):
 	target_files = map(lambda x: str(x), target)
@@ -29,13 +34,25 @@ def SetJavaPaths(env, classpath, sourcepath = None):
 	env['CLASSPATH'] = classpath
 
 def CheckJarmd5(env):
+	# open the swt.jar file
+	try:
+		f = file("SoarLibrary/bin/swt.jar", 'rb')
+	except:
+		return False
+	
+	# compute digest
+	m = md5.new()
+	while True:
+	    d = fobj.read(8096)
+	    if not d:
+	        break
+	    m.update(d)
+	    
 	if sys.platform == 'darwin':
-		jarmd5 = "swt.jar.md5-osx"
+		return OSX_DIGEST == m.hexdigest()
 	else:
-		jarmd5 = "swt.jar.md5-gtk"
-		
-	return os.system("md5sum -c %s" % jarmd5) == 0
-
+		return GTK_DIGEST == m.hexdigest()
+	
 def CheckForSWTJar(env):
 	if os.path.exists(os.path.join('SoarLibrary', 'bin', 'swt.jar')):
 		if CheckJarmd5(env):
