@@ -77,9 +77,6 @@ protected:
 	virtual bool		SendBuffer(char const* pSendBuffer, size_t bufferSize)=0 ;
 	virtual bool		ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)=0 ;
 
-	// Report info on the error than just occurred.
-	virtual void ReportErrorCode()=0;
-
 };
 
 } // Namespace
