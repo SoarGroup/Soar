@@ -40,6 +40,8 @@
    See comments in soarkernel.h for more information.
    ================================================================== */
 
+#include <stdlib.h>
+
 #include "io.h"
 #include "callback.h"
 #include "agent.h"
@@ -53,7 +55,6 @@
 #include "lexer.h"
 #include "gski_event_system_functions.h" // support for generating XML output
 
-#include <stdlib.h>
 #include <ctype.h>
 
 extern void gds_invalid_so_remove_goal (agent* thisAgent, wme *w);

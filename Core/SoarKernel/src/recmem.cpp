@@ -26,6 +26,8 @@
  * =======================================================================
  */
 
+#include <stdlib.h>
+
 #include "gdatastructs.h"
 #include "instantiations.h"
 #include "kernel.h"

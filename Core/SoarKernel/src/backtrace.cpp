@@ -18,6 +18,7 @@
                         Backtracing routines
    ==================================================================== */
 
+#include <stdlib.h>
 
 #include "backtrace.h"
 #include "mem.h"

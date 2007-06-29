@@ -20,6 +20,8 @@
  * =======================================================================
  */
 
+#include <stdlib.h>
+
 #include "parser.h"
 #include "symtab.h"
 #include "kernel.h"

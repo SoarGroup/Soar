@@ -29,6 +29,8 @@
 /* Uncomment the following line to get symbol debugging printouts */
 //#define DEBUG_SYMBOLS
 
+#include <stdlib.h>
+
 #include "symtab.h"
 #include "mem.h"
 #include "kernel.h"

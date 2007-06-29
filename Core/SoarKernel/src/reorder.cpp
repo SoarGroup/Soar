@@ -17,6 +17,8 @@
  * =======================================================================
  */
 
+#include <stdlib.h>
+
 #include "reorder.h"
 #include "kernel.h"
 #include "rhsfun.h"

@@ -23,6 +23,8 @@
  * =======================================================================
  */
 
+#include <stdlib.h>
+
 #include "trace.h"
 #include "mem.h"
 #include "production.h"
