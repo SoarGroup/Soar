@@ -1,6 +1,7 @@
 #
 # This file is a bunch of utility functions for the SConstruct file.
 
+
 # swt.jar 3.3 digests
 OSX_DIGEST = '63e66248fed82dcf4bc2639b487ec111'
 GTK_DIGEST = '3f5abcc5769c413fc731585b36fe61c2'
