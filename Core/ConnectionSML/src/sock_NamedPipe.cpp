@@ -29,7 +29,6 @@
 #include <stdio.h>
 #include "sml_Utils.h"
 #include "sock_NamedPipe.h"
-#include "sock_Check.h"
 
 #include <assert.h>
 
