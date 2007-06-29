@@ -43,7 +43,7 @@ def CheckJarmd5(env):
 	# compute digest
 	m = md5.new()
 	while True:
-	    d = fobj.read(8096)
+	    d = f.read(8096)
 	    if not d:
 	        break
 	    m.update(d)
