@@ -23,6 +23,8 @@
              O Support calculation routines.
    ========================================================================= */
 
+#include <stdlib.h>
+
 #include "osupport.h"
 #include "symtab.h"
 #include "wmem.h"

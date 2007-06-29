@@ -17,6 +17,8 @@
  * =======================================================================
  */
 
+#include <stdlib.h>
+
 #include "mem.h"
 #include "kernel.h"
 #include "agent.h"

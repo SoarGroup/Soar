@@ -25,6 +25,8 @@
  *
  */
 
+#include <stdlib.h>
+
 #include "consistency.h"
 #include "agent.h"
 #include "print.h"

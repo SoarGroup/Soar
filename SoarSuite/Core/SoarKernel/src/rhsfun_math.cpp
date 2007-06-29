@@ -17,6 +17,8 @@
  * =======================================================================
  */
 
+#include <stdlib.h>
+
 #include "rhsfun_math.h"
 #include "symtab.h"
 #include "kernel.h"
@@ -25,7 +27,6 @@
 #include "lexer.h"
 #include "rhsfun.h"
 
-#include <stdlib.h>
 #include <math.h>
 
 

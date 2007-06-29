@@ -35,6 +35,8 @@
  * =======================================================================
  */
 
+#include <stdlib.h>
+
 #include "rhsfun.h"
 #include "kernel.h"
 #include "print.h"

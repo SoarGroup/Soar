@@ -27,6 +27,8 @@
  * =======================================================================
  */
 
+#include <stdlib.h>
+
 #include "rete.h"
 #include "kernel.h"
 #include "mem.h"

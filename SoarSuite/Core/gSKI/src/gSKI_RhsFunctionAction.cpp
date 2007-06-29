@@ -13,6 +13,8 @@
 * purpose: 
 *********************************************************************/
 
+#include <stdlib.h>
+
 #include "rhsfun.h"
 #include "agent.h"
 #include "symtab.h"

@@ -23,6 +23,8 @@
                  Printing Utility Routines for Soar 6
    ================================================================= */
 
+#include <stdlib.h>
+
 #include "print.h"
 #include "kernel.h"
 #include "agent.h"

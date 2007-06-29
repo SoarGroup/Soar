@@ -24,6 +24,8 @@
 
    ==================================================================== */
 
+#include <stdlib.h>
+
 #include "chunk.h"
 #include "symtab.h"
 #include "wmem.h"

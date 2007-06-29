@@ -23,6 +23,8 @@
 
 //#define DEBUG_WMES
 
+#include <stdlib.h>
+
 #include "wmem.h"
 #include "kernel.h"
 #include "agent.h"
