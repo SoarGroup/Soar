@@ -20,6 +20,8 @@
  * =======================================================================
  */
 
+#include <stdlib.h>
+
 #include "production.h"
 #include "mem.h"
 #include "kernel.h"

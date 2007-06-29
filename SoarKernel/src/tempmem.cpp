@@ -22,6 +22,8 @@
 
 /* #define DEBUG_SLOTS */
 
+#include <stdlib.h>
+
 #include "tempmem.h"
 #include "kernel.h"
 #include "symtab.h"

@@ -25,6 +25,8 @@
      1)  Explain search just finds ANY path--should be shortest.
 */
 
+#include <stdlib.h>
+
 #include "explain.h"
 #include "kernel.h"
 #include "agent.h"

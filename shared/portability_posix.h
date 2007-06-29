@@ -23,14 +23,7 @@
 #include <utime.h>
 #include <pthread.h>
 #include <dirent.h>
-
 #include <regex.h>
-
-#ifdef SCONS_DARWIN
-#include <stdlib.h> // malloc defined here on darwin
-#else // not SCONS_DARWIN
-#include <malloc.h>
-#endif // not SCONS_DARWIN
 
 /* this needs to be defined */
 #ifndef MAXPATHLEN
