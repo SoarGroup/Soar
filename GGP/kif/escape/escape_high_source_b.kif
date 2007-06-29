@@ -1,39 +1,33 @@
-;; Escape v0.1 Composition source 1
+;; Escape v2 high-level scenario b
 ;;
-;; Explorer has to pick up hammer, nails, and logs to make a bridge across
-;; the water obstacles to reach the exit
+;; Explorer has to create a combination object to bridge the water, and go around the snake pits to reach the exit.
+;; The combo is built from two drums and a rope, all of which must be collected.
 ;;
-;; here's the level setup:
+;; Here's the level setup:
 ;;
-;; 0|E   |
-;; 1|WWWW|
-;; 2| DDR|
-;; 3|   e|
-;;   0123
-;; where E = exit, W = water, L = log, N = nails, H = hammer, e = explorer
+;; 0|  D  e|
+;; 1| R D  |
+;; 2|WWWWWW|
+;; 3|      |
+;; 4|SSS   |
+;; 5|E     |
+;;   012345
+;; where E = exit, W = water, R = rope, D = drum, S = snake pit, e = explorer
 
 (role explorer)
 (exitType exit)
 
 ;; declare items
-(itemType log1)
-(itemType log2)
-(itemType hammer1)
-(itemType nails1)
-(itemType rope1)
 (itemType drum1)
 (itemType drum2)
+(itemType rope1)
 
 ; give the items an arbitrary ordering
 ; this is necessary so we can constrain it to only one legal combine action
 ; for a given pair of items
-(itemOrder log1 1)
-(itemOrder log2 2)
-(itemOrder hammer1 3)
-(itemOrder nails1 4)
-(itemOrder rope1 5)
-(itemOrder drum1 6)
-(itemOrder drum2 7)
+(itemOrder drum1 1)
+(itemOrder drum2 2)
+(itemOrder rope1 3)
 
 ;; declare obstacles
 (obstacleType water0 water)
@@ -42,14 +36,10 @@
 (obstacleType water3 water)
 (obstacleType water4 water)
 (obstacleType water5 water)
-(obstacleType water6 water)
-(obstacleType water7 water)
-(obstacleType water8 water)
-(obstacleType water9 water)
 
+(obstacleType snakepit0 snakepit)
 (obstacleType snakepit1 snakepit)
 (obstacleType snakepit2 snakepit)
-(obstacleType snakepit3 snakepit)
 
 (init (blocked west 0 0))
 (init (blocked west 0 1))
@@ -57,7 +47,6 @@
 (init (blocked west 0 3))
 (init (blocked west 0 4))
 (init (blocked west 0 5))
-(init (blocked west 0 6))
 
 (init (blocked east 5 0))
 (init (blocked east 5 1))
@@ -65,7 +54,6 @@
 (init (blocked east 5 3))
 (init (blocked east 5 4))
 (init (blocked east 5 5))
-(init (blocked east 5 6))
 
 (init (blocked north 0 0))
 (init (blocked north 1 0))
@@ -74,39 +62,31 @@
 (init (blocked north 4 0))
 (init (blocked north 5 0))
 
-(init (blocked south 0 6))
-(init (blocked south 1 6))
-(init (blocked south 2 6))
-(init (blocked south 3 6))
-(init (blocked south 4 6))
-(init (blocked south 5 6))
+(init (blocked south 0 5))
+(init (blocked south 1 5))
+(init (blocked south 2 5))
+(init (blocked south 3 5))
+(init (blocked south 4 5))
+(init (blocked south 5 5))
 
-(init (location exit     0 0))
+(init (location exit     0 5))
 
-(init (location water0   0 4))
-(init (location water1   1 4))
-(init (location water2   2 4))
-(init (location water3   3 4))
-(init (location water4   4 4))
-(init (location water5   5 4))
-(init (location water6   1 0))
-(init (location water7   1 1))
-(init (location water8   1 2))
-(init (location water9   0 2))
+(init (location water0   0 2))
+(init (location water1   1 2))
+(init (location water2   2 2))
+(init (location water3   3 2))
+(init (location water4   4 2))
+(init (location water5   5 2))
 
-(init (location snakepit1 4 2))
-(init (location snakepit2 2 3))
-(init (location snakepit3 2 6))
+(init (location snakepit0 0 4))
+(init (location snakepit1 1 4))
+(init (location snakepit2 2 4))
 
-(init (location drum1  3 0))
-(init (location drum2  5 6))
-(init (location rope1  2 2))
-(init (location hammer1 3 5))
-(init (location nails1 3 6))
-(init (location log1   4 5))
-(init (location log2   5 5))
+(init (location drum1  3 1))
+(init (location drum2  2 0))
+(init (location rope1  1 1))
 
-(init (location explorer 0 6))
+(init (location explorer 5 0))
 
 (init (health explorer 1))
 
@@ -120,17 +100,6 @@
 (init (property drum2 buoyant))
 (init (property drum2 tieable))
 (init (property drum2 supportsWeight))
-
-(init (property hammer1 hammer))
-(init (property nails1 doesNail))
-
-(init (property log1 buoyant))
-(init (property log1 supportsWeight))
-(init (property log1 nailable))
-
-(init (property log2 buoyant))
-(init (property log2 supportsWeight))
-(init (property log2 nailable))
 
 
 ;; how properties combine
@@ -228,12 +197,15 @@
 ;; frame axiom for maintaining the current symbol
 (<= (next (currSymbol ?cs))
     (true (currSymbol ?cs))
-    (not (does explorer (combine ?item1 ?item2 ?glue))))
+    (not anyCombine))
 
 ;; the combine action
 (<= (combining ?item1 ?item2 ?comboName)
     (does explorer (combine ?item1 ?item2 ?glue))
     (true (currSymbol ?comboName)))
+
+(<= anyCombine
+    (combining ?item1 ?item2 ?comboName))
 
 (<= (next (comboType ?comboName ?item1 ?item2))
     (combining ?item1 ?item2 ?comboName))

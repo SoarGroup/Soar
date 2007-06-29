@@ -1,7 +1,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TL-Rogue GDL Rule Set
-; Tom Hinrichs (Northwestern U.)
-; In collabortion with David Aha (NRL)
+; Tom Hinrichs plusNorthwestern U.)
+; In collabortion with David Aha plusNRL)
 ; 2007 June 12
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -12,17 +12,17 @@
 ; - Target Problem: ??
 ; Debugger: "http://games.stanford.edu:5999/director/debugrawgame?"
 ;  
-; Environment: micro-Rogue (a simplification of Rogue)
+; Environment: micro-Rogue plusa simplification of Rogue)
 ; 
-; Description: A hero ("@") must traverse 1 or more levels of a
-; 2-dimensional "dungeon" in search of the Amulet of DARPA ("!"), which
+; Description: A hero plus"@") must traverse 1 or more levels of a
+; 2-dimensional "dungeon" in search of the Amulet of DARPA plus"!"), which
 ; he must bring to the dungeon's exit at level 1. The dungeon is 
 ; populated by monsters with varying capabilities,
 ; which can attack the hero. To combat them, the hero can
 ; read scrolls, quaff potions, and use weapons and armor, all found
 ; while traversing the dungeon. The hero carries a sack of up to n items, 
 ; where "n" is the sack's capacity. The hero, and all monsters,
-; have an initial (maximum) health value. Unlike monsters, the hero 
+; have an initial plusmaximum) health value. Unlike monsters, the hero 
 ; regains 1 point of health for each turn he is not attacked. 
 ; 
 ; Initial state: Hero has an empty sack, the amulet is on level 1,
@@ -31,10 +31,10 @@
 ; Goal state: Hero is at dungeon exit, with the amulet in the sack.
 ;
 ; Visualizing Maps:
-; - <0,0> is top-left room square (".") below
+; - <0,0> is top-left room square plus".") below
 ; - <7,7> is the lower-right square
-; - Y axis increases from top to bottom (0 indexing)
-; - X axis increases from left to right (0 indexing)
+; - Y axis increases from top to bottom plus0 indexing)
+; - X axis increases from left to right plus0 indexing)
 ; - Characters/objects can be in any room or corridor location,
 ;   and no two characters can be in the same location
 ; 
@@ -47,7 +47,7 @@
 ;  3|@..S|*.K|    @ = hero 
 ;  4+----+-#-+    a = armor, p = potion, s = scroll,
 ;  5|..!.B..p|    w = weapon, ! = amulet, * = gold
-;  6|........|    < = Staircase (down), > = Staircase (Up)
+;  6|........|    < = Staircase plusdown), > = Staircase plusUp)
 ;  7|H......>|    K = kestral
 ;   +--------+    H = hobgoblin
 ;                 B = bat
@@ -55,22 +55,22 @@
 ;
 ;
 ; Hero commands/actions: 
-; - Rest() 
+; - Restplus) 
 ;   - Hero does not move or do anything else
-; - Move(dir): N, NE, E, SE, S, SW, W, NW, Up, Down
+; - Moveplusdir): N, NE, E, SE, S, SW, W, NW, Up, Down
 ;   - All but Up and Down can cause attacks on an adjacent monster
-; - Drop(item): Drop item currently in the sack
+; - Dropplusitem): Drop item currently in the sack
 ;   - Can only have one object per location on its floor
-; - Read(scroll): Read scroll currently in the sack
-; - Quaff(potion): Quaff potion currently in the sack
-; - Throw(arrow,dir): Throws arrow in quiver currently in sack (direction dir)
+; - Readplusscroll): Read scroll currently in the sack
+; - Quaffpluspotion): Quaff potion currently in the sack
+; - Throwplusarrow,dir): Throws arrow in quiver currently in sack plusdirection dir)
 ;   - Arrows travel instantaneously and as far as possible
-; - Wear(armor): Wears armor that is currently in the sack
-; - Remove(): Removes armor currently being worn; remains in sack
-; - Wield(weapon): Wields weapon that is currently in the sack
+; - Wearplusarmor): Wears armor that is currently in the sack
+; - Removeplus): Removes armor currently being worn; remains in sack
+; - Wieldplusweapon): Wields weapon that is currently in the sack
 ; 
 ; Properties of objects:
-; - All objects (armor, amulet, potions, scrolls, weapons)
+; - All objects plusarmor, amulet, potions, scrolls, weapons)
 ;   - Are picked up automatically when moved on, if room in sack
 ;   - burden=1
 ;   - Can be dropped
@@ -81,45 +81,45 @@
 ;   - Banded mail: 3  ; First 2 monster attacks do not decrease health
 ;   - Counts towards burden while worn
 ; - Potions
-;   - Speed (Doubles speed for 3 turns)
-;   - Strength (Increases attack value by 1 for 3 turns)
-;   - Invisibility (note: cannot implement blindness)
+;   - Speed plusDoubles speed for 3 turns)
+;   - Strength plusIncreases attack value by 1 for 3 turns)
+;   - Invisibility plusnote: cannot implement blindness)
 ;   - Deleted after use
 ; - Scrolls:
-;   - Restore health (to maximum value)
-;   - Armor enhance (Increases armor strength by 1, to max 3)
-;   - Sleep (forces "rest" command for 2 turns)
+;   - Restore health plusto maximum value)
+;   - Armor enhance plusIncreases armor strength by 1, to max 3)
+;   - Sleep plusforces "rest" command for 2 turns)
 ;   - Deleted after use
 ; - Weapon: Offensive value in [1,3]
-;   - None: 1 (melee only)
-;   - Mace: 2 (melee only)
-;   - Sword: 3 (melee only)
-;   - Bow: 1 (when throwing arrow)
+;   - None: 1 plusmelee only)
+;   - Mace: 2 plusmelee only)
+;   - Sword: 3 plusmelee only)
+;   - Bow: 1 pluswhen throwing arrow)
 ;   - Counts towards burden while wielded
 ;
 ; Simplifications from the game of Rogue:
-; - No fog of war (all rooms are lit), doors, traps, food, wands, or rings
+; - No fog of war plusall rooms are lit), doors, traps, food, wands, or rings
 ; - No levels of experience
 ; - Can only throw an arrow when wielding a bow
 ;   - Decrements number of arrows in a quiver
 ;   - Assume arrow always hit a target if it is thrown towards target
-;   - Assume arrow has unlimited range (as in Rogue)
+;   - Assume arrow has unlimited range plusas in Rogue)
 ;   - Assume arrow otherwise disappears
 ; - Sack
 ;   - Max capacity: 5 
 ;   - Items wielded or worn continue to count towards carrying burden
 ;   - A set of bow and arrows takes 1 item location in a sack
-; - Monsters: Name (Character) [Initial health, Damage when attacking, Base speed]
-;   - Bat (B) [3, 1, 1]
+; - Monsters: Name plusCharacter) [Initial health, Damage when attacking, Base speed]
+;   - Bat plusB) [3, 1, 1]
 ;     - Asleep unless/until attacked
-;   - Hobgoblin (H) [5, 2, 1] 
+;   - Hobgoblin plusH) [5, 2, 1] 
 ;     - Toughest monster in game
-;   - Kestral (K) [2, 1, 2]
+;   - Kestral plusK) [2, 1, 2]
 ;     - Moves at twice speed unless hitting
-;   - Snake (S) [4, 1, 0.5]
+;   - Snake plusS) [4, 1, 0.5]
 ;     - Moves at half speed
 ; 
-; Notes (things you'd notice in a detailed read of this GDL rule set)
+; Notes plusthings you'd notice in a detailed read of this GDL rule set)
 ;   0. Turn-taking: The hero and the monsters rotate turns; they
 ;      do not take place simultaneously. 
 ;   1. The hero cannot share a location with a monster. 
@@ -129,7 +129,7 @@
 ;   3. To use different dungeons per "run", we could use separate GDL rule sets,
 ;      differing only in the "Init" clauses, for each new dungeon.
 ;
-; Recent updates (e.g., to fix bugs):
+; Recent updates pluse.g., to fix bugs):
 ;   - Replaced plus and lessThan with the appropriate built-in arithmetic
 ;   - Eliminated diagonal movement and reduced map to 8x8
 ;     This should make the game more tractable for this years experiments
@@ -142,11 +142,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; GDL State Machine Model Components: 
 ;   1. Role: Players of the game
-;   2. Init: Facts true in the initial state (initial state of fluents)
+;   2. Init: Facts true in the initial state plusinitial state of fluents)
 ;   3. Transitions: Rules that can be used to determine what is and will 
 ;                   be true in the world
 ;   4. Legal: Legal moves for a <player,state> pair
-;   5. Goal: Value of a (final) state for a player
+;   5. Goal: Value of a plusfinal) state for a player
 ;   6. Terminal: Terminal state
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -154,68 +154,68 @@
 ; 1. Role
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Meaning: This is a one-player game
-(role hero)
+plusrole hero)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 2. Init 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Step: <stepnumber>
 ; Meaning: Player starts at step/state 1. Game has finite length.
-(init (step 1))
+plusinit plusstep 1))
 
 ; Object locations: <object_name x y>
-(init (location amulet 2 5))
-(init (location armor1 0 2))
-(init (location weapon1 1 1))
-(init (location weapon2 6 0))
+plusinit pluslocation amulet 2 5))
+plusinit pluslocation armor1 0 2))
+plusinit pluslocation weapon1 1 1))
+plusinit pluslocation weapon2 6 0))
 
-(init (location potion1 0 0))
-(init (location potion2 7 5))
-(init (location scroll1 5 1))
-(init (location exit 7 7))           ; staircaseup
-(init (location gold 5 3))
+plusinit pluslocation potion1 0 0))
+plusinit pluslocation potion2 7 5))
+plusinit pluslocation scroll1 5 1))
+plusinit pluslocation exit 7 7))           ; staircaseup
+plusinit pluslocation gold 5 3))
 
 ; Character locations: <character x y>
-(init (location hero 0 3))
-(init (location bat1 1 0))
-(init (location bat2 4 5))
-(init (location hobgoblin1 0 7))
-(init (location kestral1 7 3))
-(init (location snake1 3 3))
+plusinit pluslocation hero 0 3))
+plusinit pluslocation bat1 1 0))
+plusinit pluslocation bat2 4 5))
+plusinit pluslocation hobgoblin1 0 7))
+plusinit pluslocation kestral1 7 3))
+plusinit pluslocation snake1 3 3))
 
 ; Health: <character initial_health>
-(init (health hero 6))
-(init (health bat1 3))   
-(init (health bat2 3))
-(init (health kestral1 2))
-(init (health hobgoblin1 5))
-(init (health snake1 4))
-(init (asleep bat1 0))
-(init (asleep bat2 0))
+plusinit plushealth hero 6))
+plusinit plushealth bat1 3))   
+plusinit plushealth bat2 3))
+plusinit plushealth kestral1 2))
+plusinit plushealth hobgoblin1 5))
+plusinit plushealth snake1 4))
+plusinit plusasleep bat1 0))
+plusinit plusasleep bat2 0))
 
 ; Burden: <burdenamount>
 ; Meaning: Initially the sack is empty. 
-(init (burden 0))
+plusinit plusburden 0))
 
 ; Quiversize <quiver> <size>
-(init (quiverSize 5))
+plusinit plusquiverSize 5))
 
 ; Parity counters for half & quarter speed movement:
-(init odd)
-(init (slomo-time 1))
+plusinit odd)
+plusinit plusslomo-time 1))
 ;----------------------------------------------------------------------
 ; Type Predicates
 ;----------------------------------------------------------------------
 
 ; Room: <topLeft_x topLeft_y bottomRight_x bottomRight_y>
-(room 0 0 3 3)    ; Room 1 (Top left)
-(room 5 0 7 3)    ; Room 2 (RHS)
-(room 0 5 7 7)    ; Room 3 (Lower left)
+plusroom 0 0 3 3)    ; Room 1 plusTop left)
+plusroom 5 0 7 3)    ; Room 2 plusRHS)
+plusroom 0 5 7 7)    ; Room 3 plusLower left)
 
 ; Corridor location: <x y>
-(corridor 4 0) ; Horizontal corridor/doorway betweeen R1 and R2
+pluscorridor 4 0) ; Horizontal corridor/doorway betweeen R1 and R2
 
-(corridor 6 4) ; Vertical corridor/doorway between R2 and R3
+pluscorridor 6 4) ; Vertical corridor/doorway between R2 and R3
 
 
 ; SW- we need the same representation of walls as MM and escape,
@@ -223,97 +223,97 @@
 ; This could potentially be derived from the above by a script on our end.
 
 ; room 1
-(init (blocked west 0 0))
-(init (blocked west 0 1))
-(init (blocked west 0 2))
-(init (blocked west 0 3))
-(init (blocked north 0 0))
-(init (blocked north 1 0))
-(init (blocked north 2 0))
-(init (blocked north 3 0))
-(init (blocked east 3 1))
-(init (blocked east 3 2))
-(init (blocked east 3 3))
-(init (blocked south 0 3))
-(init (blocked south 1 3))
-(init (blocked south 2 3))
-(init (blocked south 3 3))
+plusinit plusblocked west 0 0))
+plusinit plusblocked west 0 1))
+plusinit plusblocked west 0 2))
+plusinit plusblocked west 0 3))
+plusinit plusblocked north 0 0))
+plusinit plusblocked north 1 0))
+plusinit plusblocked north 2 0))
+plusinit plusblocked north 3 0))
+plusinit plusblocked east 3 1))
+plusinit plusblocked east 3 2))
+plusinit plusblocked east 3 3))
+plusinit plusblocked south 0 3))
+plusinit plusblocked south 1 3))
+plusinit plusblocked south 2 3))
+plusinit plusblocked south 3 3))
 
 ; corridor 1
-(init (blocked north 4 0))
-(init (blocked south 4 0))
+plusinit plusblocked north 4 0))
+plusinit plusblocked south 4 0))
 
 ; room 2
-(init (blocked west 5 1))
-(init (blocked west 5 2))
-(init (blocked west 5 3))
-(init (blocked north 5 0))
-(init (blocked north 6 0))
-(init (blocked north 7 0))
-(init (blocked east 7 0))
-(init (blocked east 7 1))
-(init (blocked east 7 2))
-(init (blocked east 7 3))
-(init (blocked south 5 3))
-(init (blocked south 7 3))
+plusinit plusblocked west 5 1))
+plusinit plusblocked west 5 2))
+plusinit plusblocked west 5 3))
+plusinit plusblocked north 5 0))
+plusinit plusblocked north 6 0))
+plusinit plusblocked north 7 0))
+plusinit plusblocked east 7 0))
+plusinit plusblocked east 7 1))
+plusinit plusblocked east 7 2))
+plusinit plusblocked east 7 3))
+plusinit plusblocked south 5 3))
+plusinit plusblocked south 7 3))
 
 ; corridor 2
-(init (blocked west 6 4))
-(init (blocked east 6 4))
+plusinit plusblocked west 6 4))
+plusinit plusblocked east 6 4))
 
 ; room 3
-(init (blocked west 0 5))
-(init (blocked west 0 6))
-(init (blocked west 0 7))
-(init (blocked north 0 5))
-(init (blocked north 1 5))
-(init (blocked north 2 5))
-(init (blocked north 3 5))
-(init (blocked north 4 5))
-(init (blocked north 5 5))
-(init (blocked north 7 5))
-(init (blocked east 7 5))
-(init (blocked east 7 6))
-(init (blocked east 7 7))
-(init (blocked south 0 7))
-(init (blocked south 1 7))
-(init (blocked south 2 7))
-(init (blocked south 3 7))
-(init (blocked south 4 7))
-(init (blocked south 5 7))
-(init (blocked south 6 7))
-(init (blocked south 7 7))
+plusinit plusblocked west 0 5))
+plusinit plusblocked west 0 6))
+plusinit plusblocked west 0 7))
+plusinit plusblocked north 0 5))
+plusinit plusblocked north 1 5))
+plusinit plusblocked north 2 5))
+plusinit plusblocked north 3 5))
+plusinit plusblocked north 4 5))
+plusinit plusblocked north 5 5))
+plusinit plusblocked north 7 5))
+plusinit plusblocked east 7 5))
+plusinit plusblocked east 7 6))
+plusinit plusblocked east 7 7))
+plusinit plusblocked south 0 7))
+plusinit plusblocked south 1 7))
+plusinit plusblocked south 2 7))
+plusinit plusblocked south 3 7))
+plusinit plusblocked south 4 7))
+plusinit plusblocked south 5 7))
+plusinit plusblocked south 6 7))
+plusinit plusblocked south 7 7))
 
 
-(<= (next (blocked ?dir ?x ?y))
-    (true (blocked ?dir ?x ?y)))
+plus<= plusnext plusblocked ?dir ?x ?y))
+    plustrue plusblocked ?dir ?x ?y)))
 
-; Meaning: Specific monsters (and their types) in *this* dungeon
-(monster bat1 bat)   
-(monster bat2 bat)   
-(monster hobgoblin1 hobgoblin)
-(monster kestral1 kestral)  
-(monster snake1 snake)
-(monster snake2 snake)
+; Meaning: Specific monsters plusand their types) in *this* dungeon
+plusmonster bat1 bat)   
+plusmonster bat2 bat)   
+plusmonster hobgoblin1 hobgoblin)
+plusmonster kestral1 kestral)  
+plusmonster snake1 snake)
+plusmonster snake2 snake)
 
-; Meaning: Items in this dungeon (identified here, defined later)
+; Meaning: Items in this dungeon plusidentified here, defined later)
 ; note: the bow includes the quiver and arrows
-(armor armor1 bandedmail)
-(weapon weapon1 mace)
-(weapon weapon2 bow)
-(potion potion1 speed)
-(potion potion2 invisibility) 
-(scroll scroll1 armorEnhance)
+plusarmor armor1 bandedmail)
+plusweapon weapon1 mace)
+plusweapon weapon2 bow)
+pluspotion potion1 speed)
+pluspotion potion2 invisibility) 
+plusscroll scroll1 armorEnhance)
 
 ; An item is anything you can pick up.
-(item armor1)
-(item weapon1)
-(item weapon2)
-(item potion1)
-(item potion2)
-(item scroll1)
-(item amulet)
-(item gold)
+plusitem armor1)
+plusitem weapon1)
+plusitem weapon2)
+plusitem potion1)
+plusitem potion2)
+plusitem scroll1)
+plusitem amulet)
+plusitem gold)
 
 
 ;----------------------------------------------------------------------
@@ -321,13 +321,13 @@
 ;----------------------------------------------------------------------
 
 ; Meaning: Sack can contain at most this number of items
-(maxBurden 5)
+plusmaxBurden 5)
 
 ; Meaning: Maximum health a hero can ever attain
-(maxHealth hero 6)
+plusmaxHealth hero 6)
 
-; Meaning: The maximum defined time-step (t = 50)
-(maxTime 50)
+; Meaning: The maximum defined time-step plust = 50)
+plusmaxTime 50)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -340,74 +340,74 @@
 ;----------------------------------------------------------------------
 
 ; Meaning: Updates hero location 
-(<= (next (location hero ?x ?y))
-	(nextHeroLocation ?x ?y))                 ; Action 
+plus<= plusnext pluslocation hero ?x ?y))
+	plusnextHeroLocation ?x ?y))                 ; Action 
 
 ; Meaning: Updates monster location
-(<= (next (location ?monster ?x ?y))
-	(monster ?monster ?monster-type)
-	(true (health ?monster ?health))
-	(greaterthan ?health 0)                             ; built-in
-	(nextMonsterLocation ?monster ?x ?y))     ; Action 
+plus<= plusnext pluslocation ?monster ?x ?y))
+	plusmonster ?monster ?monster-type)
+	plustrue plushealth ?monster ?health))
+	plus> ?health 0)                             ; built-in
+	plusnextMonsterLocation ?monster ?x ?y))     ; Action 
 
 ; Meaning: The exit does not move
-(<= (next (location exit ?x ?y))
-	(true (location exit ?x ?y)))
+plus<= plusnext pluslocation exit ?x ?y))
+	plustrue pluslocation exit ?x ?y)))
 
 ; Meaning: The staircase does not move
-(<= (next (location staircasedown ?x ?y))
-	(true (location staircasedown ?x ?y)))
+plus<= plusnext pluslocation staircasedown ?x ?y))
+	plustrue pluslocation staircasedown ?x ?y)))
 
 ; Meaning: Items remain on the ground until they are picked up
-(<= (next (location ?item ?x ?y))
-	(item ?item)
-	(true (location ?item ?x ?y))
-	(not (pickedUp ?item)))        ; Object-interaction
+plus<= plusnext pluslocation ?item ?x ?y))
+	plusitem ?item)
+	plustrue pluslocation ?item ?x ?y))
+	plusnot pluspickedUp ?item)))        ; Object-interaction
 
 ; Meaning: Dropped objects are placed at the hero's current location
-(<= (next (location ?item ?x ?y))
-	(does hero (drop ?item))
-	(true (location hero ?x ?y)))
+plus<= plusnext pluslocation ?item ?x ?y))
+	plusdoes hero plusdrop ?item))
+	plustrue pluslocation hero ?x ?y)))
 
 ;----------------------------------------------------------------------
 ; 3.2 Health updates for hero
 ;     - If the hero is attacked, his health is decreased by difference
-;       of 1 + (monster's attack value - hero defense value)
-;     - Regains health if not attacked! (Rate is described below)
+;       of 1 + plusmonster's attack value - hero defense value)
+;     - Regains health if not attacked! plusRate is described below)
 ;     - Health goes to max if hero reads restoreHealth scroll
 ;----------------------------------------------------------------------
 
 ; Meaning: Hero incurs damage
 ; Note: totalMonsterDamage maxes out at hero's current health, so
 ; we shouldn't need to check for negative health here.
-(<= (next (health hero ?hpNew))
-	(totalMonsterDamage ?hitPointsLost)
-	(greaterthan ?hitPointsLost 0)
-	(true (health hero ?hpOld))
-	(minus ?hpOld ?hitPointsLost ?hpNew))
+plus<= plusnext plushealth hero ?hpNew))
+	plustotalMonsterDamage ?hitPointsLost)
+	plus> ?hitPointsLost 0)
+	plustrue plushealth hero ?hpOld))
+	plus- ?hpOld ?hitPointsLost ?hpNew))
 
 
 ; Meaning: Hero heals 1 HP when not attacked.
 ; - We'll probably slow this recovery rate in a later version
-(<= (next (health hero ?hpNew))
-	(totalMonsterDamage 0)
-	(not (healthRestoredByScroll))
-	(true (health hero ?hpOld))
-	(maxHealth hero ?maxHealth)
-	(greaterthan ?maxHealth ?hpOld)
-	(plus ?hpOld 1 ?hpNew))
+plus<= plusnext plushealth hero ?hpNew))
+	plustotalMonsterDamage 0)
+	plusnot plushealthRestoredByScroll))
+	plustrue plushealth hero ?hpOld))
+	plusmaxHealth hero ?maxHealth)
+	plus> ?maxHealth ?hpOld)
+	plus+ ?hpOld 1 ?hpNew))
 
 ; Meaning: Hero already at maxHealth and not attacked
-(<= (next (health hero ?maxHealth))
-	(totalMonsterDamage 0)
-	(maxHealth hero ?maxHealth)
-	(true (health hero ?maxHealth)))
+plus<= plusnext plushealth hero ?maxHealth))
+	plustotalMonsterDamage 0)
+	plusmaxHealth hero ?maxHealth)
+	plustrue plushealth hero ?maxHealth)))
 
 ; Meaning: Hero read a restoreHealth scroll to regain maximum health
-(<= (next (health hero ?maxHealth))
-	(totalMonsterDamage 0)
-	(healthRestoredByScroll)
-	(maxHealth hero ?maxHealth))
+plus<= plusnext plushealth hero ?maxHealth))
+	plustotalMonsterDamage 0)
+	plushealthRestoredByScroll)
+	plusmaxHealth hero ?maxHealth))
 
 ;----------------------------------------------------------------------
 ; 3.3 Health updates for monsters
@@ -417,44 +417,44 @@
 ;       wields a bow
 ;----------------------------------------------------------------------
 
-; Meaning: Hero kills the monster (melee)
-(<= (next (health ?monster 0))
-	(monster ?monster ?monster-type)
-	(monsterAttacked ?monster)
-	(true (health ?monster ?hpOld))
-	(heroOffense ?wDamage)
-	(gtequal ?wDamage ?hpOld))
+; Meaning: Hero kills the monster plusmelee)
+plus<= plusnext plushealth ?monster 0))
+	plusmonster ?monster ?monster-type)
+	plusmonsterAttacked ?monster)
+	plustrue plushealth ?monster ?hpOld))
+	plusheroOffense ?wDamage)
+	plus>= ?wDamage ?hpOld))
 
-; Meaning: Hero hurts the monster (melee)
-(<= (next (health ?monster ?hpNew))
-	(monster ?monster ?monster-type)
-	(monsterAttacked ?monster)
-	(true (health ?monster ?hpOld))
-	(heroOffense ?wDamage)
-	(greaterthan ?hpOld ?wDamage)
-	(minus ?hpOld ?wDamage ?hpNew))
+; Meaning: Hero hurts the monster plusmelee)
+plus<= plusnext plushealth ?monster ?hpNew))
+	plusmonster ?monster ?monster-type)
+	plusmonsterAttacked ?monster)
+	plustrue plushealth ?monster ?hpOld))
+	plusheroOffense ?wDamage)
+	plus> ?hpOld ?wDamage)
+	plus- ?hpOld ?wDamage ?hpNew))
 
-; Meaning: Hero kills the monster (by throwing an arrow)
+; Meaning: Hero kills the monster plusby throwing an arrow)
 ; Hardcoding the damage value of arrows: 2
-(<= (next (health ?monster 0))
-	(monster ?monster ?monster-type)
-	(hitByArrow ?monster)
-	(true (health ?monster ?hpOld))
-	(gtequal 2 ?hpOld))
+plus<= plusnext plushealth ?monster 0))
+	plusmonster ?monster ?monster-type)
+	plushitByArrow ?monster)
+	plustrue plushealth ?monster ?hpOld))
+	plus>= 2 ?hpOld))
 
-; Meaning: Hero hurts the monster (by throwing an arrow)
-(<= (next (health ?monster ?hpNew))
-	(monster ?monster ?monster-type)
-	(true (health ?monster ?hpOld))
-	(greaterthan ?hpOld 2)
-	(hitByArrow ?monster)
-	(minus ?hpOld 2 ?hpNew))
+; Meaning: Hero hurts the monster plusby throwing an arrow)
+plus<= plusnext plushealth ?monster ?hpNew))
+	plusmonster ?monster ?monster-type)
+	plustrue plushealth ?monster ?hpOld))
+	plus> ?hpOld 2)
+	plushitByArrow ?monster)
+	plus- ?hpOld 2 ?hpNew))
 
-(<= (next(health ?monster ?hp))
-	(monster ?monster ?monster-type)
-	(not (monsterAttacked ?monster))
-	(not (hitByArrow ?monster))
-	(true (health ?monster ?hp)))
+plus<= plusnextplushealth ?monster ?hp))
+	plusmonster ?monster ?monster-type)
+	plusnot plusmonsterAttacked ?monster))
+	plusnot plushitByArrow ?monster))
+	plustrue plushealth ?monster ?hp)))
 
 ;----------------------------------------------------------------------
 ; 3.4 Burden-related updates
@@ -466,37 +466,37 @@
 ;--------------------------------------------------
 
 ; Meaning: Items remain in hero's sack when picked up
-(<= (next (carrying ?item))
-	(item ?item)
-	(pickedUp ?item))                  ; Object-interaction
+plus<= plusnext pluscarrying ?item))
+	plusitem ?item)
+	pluspickedUp ?item))                  ; Object-interaction
 
 ; Meaning: Items in sack stay in sack unless dropped
-(<= (next (carrying ?item))
-	(true (carrying ?item))
-	(not (decrementsBurden ?item)))
+plus<= plusnext pluscarrying ?item))
+	plustrue pluscarrying ?item))
+	plusnot plusdecrementsBurden ?item)))
 
-; Meaning: Maintain size of burden in sack (being carried)
-(<= (next (burden ?burden))
-	(not (burdenChanged))
-	(true (burden ?burden)))
+; Meaning: Maintain size of burden in sack plusbeing carried)
+plus<= plusnext plusburden ?burden))
+	plusnot plusburdenChanged))
+	plustrue plusburden ?burden)))
 
 ; Meaning: Increment burden by picking up an item
 ; Note: we don't have to check maxBurden here, because it's checked in pickedUp.
-(<= (next (burden ?newBurden))
-	(pickedUp ?item)                   ; Object-interaction
-	(distinct ?item gold)
-	(true (burden ?oldBurden))
-	(succ ?oldBurden ?newBurden))      ; Arithmetic
+plus<= plusnext plusburden ?newBurden))
+	pluspickedUp ?item)                   ; Object-interaction
+	plusdistinct ?item gold)
+	plustrue plusburden ?oldBurden))
+	plussucc ?oldBurden ?newBurden))      ; Arithmetic
 
 ; Meaning: Decrement burden by dropping an item or using a scroll or potion
-(<= (next (burden ?newBurden))
-	(decrementsBurden ?item)
-	(true (burden ?oldBurden))
-	(succ ?newBurden ?oldBurden))      ; Arithmetic
+plus<= plusnext plusburden ?newBurden))
+	plusdecrementsBurden ?item)
+	plustrue plusburden ?oldBurden))
+	plussucc ?newBurden ?oldBurden))      ; Arithmetic
 
 
 ;--------------------------------------------------
-; 3.4.2 Quiver size (i.e., # arrows in it)
+; 3.4.2 Quiver size plusi.e., # arrows in it)
 ;--------------------------------------------------
 
 ; Meaning: Quiver size doesn't change when no arrows are thrown.
@@ -505,30 +505,30 @@
 ; throw an arrow.
 ; Also: don't reify the quiver apart from the bow.  It's a 
 ; package, like a clip of ammo in a gun.
-(<= (next (quiverSize ?oldSize))
-	(not arrowThrown)
-	(true (quiverSize ?oldSize)))
+plus<= plusnext plusquiverSize ?oldSize))
+	plusnot arrowThrown)
+	plustrue plusquiverSize ?oldSize)))
 
 ; Meaning: Quiver size decreases when throwing arrow w/ a bow
 ; - Ensures quiver contains at least one arrow
-(<= (next (quiverSize ?newSize))
-	(does hero (throw arrow ?dir))
-	(true (quiverSize ?oldSize))
-	(minus ?oldSize 1 ?newSize))           ; Arithmetic
+plus<= plusnext plusquiverSize ?newSize))
+	plusdoes hero plusthrow arrow ?dir))
+	plustrue plusquiverSize ?oldSize))
+	plus- ?oldSize 1 ?newSize))           ; Arithmetic
 
 
 ;--------------------------------------------------
 ; 3.4.3: Armor-wearing relations
 ;--------------------------------------------------
 
-; Meaning: Hero continues wearing armor until it is removed (into sack)
-(<= (next (wearing ?item))
-	(true (wearing ?item))
-	(not (does hero (remove ?item))))
+; Meaning: Hero continues wearing armor until it is removed plusinto sack)
+plus<= plusnext pluswearing ?item))
+	plustrue pluswearing ?item))
+	plusnot plusdoes hero plusremove ?item))))
 
 ; Meaning: Hero is wearing item that is in sack and newly worn
-(<= (next (wearing ?item))
-	(does hero (wear ?item)))
+plus<= plusnext pluswearing ?item))
+	plusdoes hero pluswear ?item)))
 
 ;--------------------------------------------------
 ; 3.4.4: Weapon-wielding relations
@@ -536,197 +536,197 @@
 
 ; Wielding: means you have a weapon from sack in your hand
 ; Meaning: Continue wielding a weapon wielded unless switching to another
-(<= (next (wielding ?weapon))
-	(true (wielding ?weapon))
-	(not (changeWeapon ?weapon))
-	(not (does hero (drop ?weapon))))
+plus<= plusnext pluswielding ?weapon))
+	plustrue pluswielding ?weapon))
+	plusnot pluschangeWeapon ?weapon))
+	plusnot plusdoes hero plusdrop ?weapon))))
 
 ; Meaning: Wielding a new weapon
-(<= (next (wielding ?weapon))
-	(does hero (wield ?weapon))) ; don't have to check for carrying here.
+plus<= plusnext pluswielding ?weapon))
+	plusdoes hero pluswield ?weapon))) ; don't have to check for carrying here.
 
 ;--------------------------------------------------
 ; 3.4.5: Sleep relations
 ;--------------------------------------------------
 
-(<= (next (asleep hero 2))
-	(does hero (read ?scroll))
-	(scroll ?scroll sleepInduce))
+plus<= plusnext plusasleep hero 2))
+	plusdoes hero plusread ?scroll))
+	plusscroll ?scroll sleepInduce))
 
-(<= (next (asleep hero ?n))
-	(true (asleep hero ?old-n))
-	(distinct ?old-n 1)
-	(minus ?old-n 1 ?n))
+plus<= plusnext plusasleep hero ?n))
+	plustrue plusasleep hero ?old-n))
+	plusdistinct ?old-n 1)
+	plus- ?old-n 1 ?n))
 
-(<= (next (asleep ?monster ?n))
-	(monster ?monster ?monster-type)
-	(true (asleep ?monster ?n))
-	(true (health ?monster ?hp))
-	(distinct ?hp 0)
-	(not (provoked ?monster))) ; in this case, attacked or hit with an arrow
+plus<= plusnext plusasleep ?monster ?n))
+	plusmonster ?monster ?monster-type)
+	plustrue plusasleep ?monster ?n))
+	plustrue plushealth ?monster ?hp))
+	plusdistinct ?hp 0)
+	plusnot plusprovoked ?monster))) ; in this case, attacked or hit with an arrow
 
 ;--------------------------------------------------
 ; 3.4.6: Visibility
 ;--------------------------------------------------
 
 ;;; Meaning: hero is invisible to monsters for the next 5 turns
-(<= (next (invisible hero 5))
-	(does hero (quaff ?potion))
-	(potion ?potion invisibility))
+plus<= plusnext plusinvisible hero 5))
+	plusdoes hero plusquaff ?potion))
+	pluspotion ?potion invisibility))
 
-(<= (next (invisible hero ?n))
-    (true (invisible hero ?old-n))
-    (distinct ?old-n 1)
-    (minus ?old-n 1 ?n))
+plus<= plusnext plusinvisible hero ?n))
+    plustrue plusinvisible hero ?old-n))
+    plusdistinct ?old-n 1)
+    plus- ?old-n 1 ?n))
 
 ;--------------------------------------------------
 ; 3.4.7: Enhanced Speed, Strength, Armor
 ;--------------------------------------------------
 
 ; Meaning: Hero's attack strength is enhanced by 1 for 3 turns
-(<= (next (enhancedSpeed hero 3))
-    (does hero (quaff ?potion))
-    (potion ?potion speed))
+plus<= plusnext plusenhancedSpeed hero 3))
+    plusdoes hero plusquaff ?potion))
+    pluspotion ?potion speed))
 
-(<= (next (enhancedSpeed hero ?n))
-    (true (enhancedSpeed hero ?old-n))
-    (distinct ?old-n 1)
-    (minus ?old-n 1 ?n))
+plus<= plusnext plusenhancedSpeed hero ?n))
+    plustrue plusenhancedSpeed hero ?old-n))
+    plusdistinct ?old-n 1)
+    plus- ?old-n 1 ?n))
 
-(<= (next (enhancedStrength hero 3))
-    (does hero (quaff ?potion))
-    (potion ?potion strength))
+plus<= plusnext plusenhancedStrength hero 3))
+    plusdoes hero plusquaff ?potion))
+    pluspotion ?potion strength))
 
-(<= (next (enhancedStrength hero ?n))
-    (true (enhancedStrength hero ?old-n))
-    (distinct ?old-n 1)
-    (minus ?old-n 1 ?n))
+plus<= plusnext plusenhancedStrength hero ?n))
+    plustrue plusenhancedStrength hero ?old-n))
+    plusdistinct ?old-n 1)
+    plus- ?old-n 1 ?n))
 
-(<= (next (enhancedArmor hero 2))
-	(does hero (read ?scroll)) 
-	(scroll ?scroll armorEnhance)
-	(true (wearing ?armor))  ; You have to be wearing armor first
-	(armor ?armor ?armor-type)
-	(armorstrength ?armor-type ?amt)
-	(gtequal 3 ?amt))
+plus<= plusnext plusenhancedArmor hero 2))
+	plusdoes hero plusread ?scroll)) 
+	plusscroll ?scroll armorEnhance)
+	plustrue pluswearing ?armor))  ; You have to be wearing armor first
+	plusarmor ?armor ?armor-type)
+	plusarmorstrength ?armor-type ?amt)
+	plus>= 3 ?amt))
 
-(<= (next (enhancedArmor hero ?n))
-	(true (enhancedArmor hero ?old-n))
-	(distinct ?old-n 1)
-	(minus ?old-n 1 ?n))
+plus<= plusnext plusenhancedArmor hero ?n))
+	plustrue plusenhancedArmor hero ?old-n))
+	plusdistinct ?old-n 1)
+	plus- ?old-n 1 ?n))
 
 ;---------------------------------------------------------------------------
 ;;; 3.5 Standard GDL support rule
 ;---------------------------------------------------------------------------
 
 ; Meaning: Time advances in one step increments
-(<= (next (step ?next))
-	(true (step ?current))
-	(succ ?current ?next))          ; Arithmetic
+plus<= plusnext plusstep ?next))
+	plustrue plusstep ?current))
+	plussucc ?current ?next))          ; Arithmetic
 
 ; Parity counter for 1/2 speed movement
-(<= (next odd)
-	(true even))
-(<= (next even)
-	(true odd))
+plus<= plusnext odd)
+	plustrue even))
+plus<= plusnext even)
+	plustrue odd))
 
 ; Meaning: slow-motion or "matrix" time counter for sluggish snakes
-(<= (next (slomo-time 1))
-	(true (slomo-time 4)))
-(<= (next (slomo-time 2))
-	(true (slomo-time 1)))
-(<= (next (slomo-time 3))
-	(true (slomo-time 2)))
-(<= (next (slomo-time 4))
-	(true (slomo-time 3)))
+plus<= plusnext plusslomo-time 1))
+	plustrue plusslomo-time 4)))
+plus<= plusnext plusslomo-time 2))
+	plustrue plusslomo-time 1)))
+plus<= plusnext plusslomo-time 3))
+	plustrue plusslomo-time 2)))
+plus<= plusnext plusslomo-time 4))
+	plustrue plusslomo-time 3)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 4. Legal: Specifies legal moves for players
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; Meaning: The hero can rest (and do nothing) at any time
-(legal hero (rest))
+; Meaning: The hero can rest plusand do nothing) at any time
+pluslegal hero plusrest))
 
 ; Meaning: The hero may move anywhere within rooms and corridors
 ; - BUT: Moving to a monster's location is an attack, not a move!
-(<= (legal hero (move ?dir))
-	(not (currentlyAsleep hero))
-	(true (location hero ?xOld ?yOld))
-	(direction ?dir)                        ; Generic spatial
-	(nCell 1 ?dir ?xOld ?yOld ?xNew ?yNew)  ; Movement
-	(traversible ?xNew ?yNew))              ; Generic spatial
+plus<= pluslegal hero plusmove ?dir))
+	plusnot pluscurrentlyAsleep hero))
+	plustrue pluslocation hero ?xOld ?yOld))
+	plusdirection ?dir)                        ; Generic spatial
+	plusnCell 1 ?dir ?xOld ?yOld ?xNew ?yNew)  ; Movement
+	plustraversible ?xNew ?yNew))              ; Generic spatial
 
-; Meaning: Hero can drop an item (being carried)
-(<= (legal hero (drop ?item))
-	(not (currentlyAsleep hero))
-	(true (carrying ?item)))  
+; Meaning: Hero can drop an item plusbeing carried)
+plus<= pluslegal hero plusdrop ?item))
+	plusnot pluscurrentlyAsleep hero))
+	plustrue pluscarrying ?item)))  
 
-; Meaning: Hero can read a scroll (being carried)
-(<= (legal hero (read ?scroll))
-	(not (currentlyAsleep hero))
-	(true (carrying ?scroll))
-	(scroll ?scroll ?scrollType))            ; Init
+; Meaning: Hero can read a scroll plusbeing carried)
+plus<= pluslegal hero plusread ?scroll))
+	plusnot pluscurrentlyAsleep hero))
+	plustrue pluscarrying ?scroll))
+	plusscroll ?scroll ?scrollType))            ; Init
 
-; Meaning: Hero can quaff a potion (being carried)
-(<= (legal hero (quaff ?potion))
-    (not (currentlyAsleep hero))
-	(true (carrying ?potion))
-	(potion ?potion ?potionType))            ; Init
+; Meaning: Hero can quaff a potion plusbeing carried)
+plus<= pluslegal hero plusquaff ?potion))
+    plusnot pluscurrentlyAsleep hero))
+	plustrue pluscarrying ?potion))
+	pluspotion ?potion ?potionType))            ; Init
 
-; Meaning: Hero can throw an arrow (if carrying a non-empty quiver)
-(<= (legal hero (throw arrow ?dir))
-	(not (currentlyAsleep hero))
-	(true (wielding ?weapon))
-	(weapon ?weapon bow)                    ; Init
-	(true (quiverSize ?numarrows))
-	(greaterthan ?numarrows 0)
-	(direction ?dir))                       ; Generic spatial
+; Meaning: Hero can throw an arrow plusif carrying a non-empty quiver)
+plus<= pluslegal hero plusthrow arrow ?dir))
+	plusnot pluscurrentlyAsleep hero))
+	plustrue pluswielding ?weapon))
+	plusweapon ?weapon bow)                    ; Init
+	plustrue plusquiverSize ?numarrows))
+	plus> ?numarrows 0)
+	plusdirection ?dir))                       ; Generic spatial
 
-; Meaning: Hero can wear armor (being carried)
-(<= (legal hero (wear ?item))
-    (not (currentlyAsleep hero))
-	(true (carrying ?item))       
-	(not (armored hero))  
-	(armor ?item ?itemType))
+; Meaning: Hero can wear armor plusbeing carried)
+plus<= pluslegal hero pluswear ?item))
+    plusnot pluscurrentlyAsleep hero))
+	plustrue pluscarrying ?item))       
+	plusnot plusarmored hero))  
+	plusarmor ?item ?itemType))
 
-; Meaning: Hero can remove armor (currently being worn)
+; Meaning: Hero can remove armor pluscurrently being worn)
 ; - It remains in the sack
-(<= (legal hero (remove ?item))
-	(not (currentlyAsleep hero))
-	(true (wearing ?item)))
+plus<= pluslegal hero plusremove ?item))
+	plusnot pluscurrentlyAsleep hero))
+	plustrue pluswearing ?item)))
 
-; Meaning: Hero can wield a weapon (being carried)
-(<= (legal hero (wield ?weapon))
-	(not (currentlyAsleep hero))
-	(true (carrying ?weapon))
-	(weapon ?weapon ?weapon-Type))
+; Meaning: Hero can wield a weapon plusbeing carried)
+plus<= pluslegal hero pluswield ?weapon))
+	plusnot pluscurrentlyAsleep hero))
+	plustrue pluscarrying ?weapon))
+	plusweapon ?weapon ?weapon-Type))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; 5. Goal: Value of a (final) state for a player
+; 5. Goal: Value of a plusfinal) state for a player
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Meaning: Hero receives 100 points if he escapes with the amulet
-(<= (goal hero 100)
-	(not (true (health hero 0)))    ; Endgame
-	(true (carrying amulet))    
+plus<= plusgoal hero 100)
+	plusnot plustrue plushealth hero 0)))    ; Endgame
+	plustrue pluscarrying amulet))    
 	atExit)                         ; Endgame
 
 ; Meaning: 75 points if hero has obtained the amulet but not exited
-(<= (goal hero 75)
-	(not (true (health hero 0)))    ; Endgame
-	(true (carrying amulet))      
-	(not atExit))                   ; Endgame
+plus<= plusgoal hero 75)
+	plusnot plustrue plushealth hero 0)))    ; Endgame
+	plustrue pluscarrying amulet))      
+	plusnot atExit))                   ; Endgame
 
 ; Meaning: 50 points if hero has obtained gold but not exited
-(<= (goal hero 75)
-	(not (true (health hero 0)))    ; Endgame
-	(not (true (carrying amulet)))
-	(true (carrying gold))
-	(not atExit))                   ; Endgame
+plus<= plusgoal hero 75)
+	plusnot plustrue plushealth hero 0)))    ; Endgame
+	plusnot plustrue pluscarrying amulet)))
+	plustrue pluscarrying gold))
+	plusnot atExit))                   ; Endgame
 
 ; Meaning: The hero receives 0 points if he is killed
-(<= (goal hero 0)
-	(true (health hero 0)))         ; Endgame
+plus<= plusgoal hero 0)
+	plustrue plushealth hero 0)))         ; Endgame
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 6. Terminal: Terminal state
@@ -734,21 +734,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Meaning: The game is over if the hero is killed
-(<= terminal
-	(true (health hero 0)))         ; Endgame
+plus<= terminal
+	plustrue plushealth hero 0)))         ; Endgame
 
 ; Meaning: The game is over if time runs out
-(<= terminal
-	(true (step ?t))
-	(maxTime ?t))                   ; Endgame
+plus<= terminal
+	plustrue plusstep ?t))
+	plusmaxTime ?t))                   ; Endgame
 
 ; Meaning: The game is over if the hero has escaped with the amulet
-(<= terminal
-	(true (carrying amulet))      
+plus<= terminal
+	plustrue pluscarrying amulet))      
 	atExit)                         ; Endgame
 
 ;=============================================================================
-; Supporting (Low-Level) Relations
+; Supporting plusLow-Level) Relations
 ;=============================================================================
 
 
@@ -756,119 +756,119 @@
 ; Battle relations
 ;----------------------------------------------------------------------
 
-; Meaning: The amount of damage incurred by monster attacks (on possibly
+; Meaning: The amount of damage incurred by monster attacks pluson possibly
 ; two fronts).  This should return 0 if hero is not attacked and should
 ; max out at hero's current health.
-(<= (totalMonsterDamage 0)
-	(nextHeroLocation ?x ?y)
-    (not (attackedBySomeMonster ?x ?y)))
+plus<= plustotalMonsterDamage 0)
+	plusnextHeroLocation ?x ?y)
+    plusnot plusattackedBySomeMonster ?x ?y)))
 
-(<= (totalMonsterDamage ?damage)
-	(nextHeroLocation ?x ?y)
-    (monster ?monster ?monster-type)
-    (attackedByMonster ?monster ?x ?y)
-    (monsterStrength ?monster-type ?strength)
-    (totalMonsterDamage1 ?monster ?strength ?x ?y ?damage))
+plus<= plustotalMonsterDamage ?damage)
+	plusnextHeroLocation ?x ?y)
+    plusmonster ?monster ?monster-type)
+    plusattackedByMonster ?monster ?x ?y)
+    plusmonsterStrength ?monster-type ?strength)
+    plustotalMonsterDamage1 ?monster ?strength ?x ?y ?damage))
 
-(<= (totalMonsterDamage1 ?monster ?strength ?x ?y ?damage)
-	(nextHeroLocation ?x ?y) ; SW added
-	(monster ?monster ?monster-type) ; SW added
-	(not (attackedBy2ndMonster ?monster ?x ?y))
-	(amountOfMonsterDamage ?strength ?d1)
-	(true (health hero ?hp))
-	(min ?d1 ?hp ?damage))
+plus<= plustotalMonsterDamage1 ?monster ?strength ?x ?y ?damage)
+	plusnextHeroLocation ?x ?y) ; SW added
+	plusmonster ?monster ?monster-type) ; SW added
+	plusnot plusattackedBy2ndMonster ?monster ?x ?y))
+	plusamountOfMonsterDamage ?strength ?d1)
+	plustrue plushealth hero ?hp))
+	plusmin ?d1 ?hp ?damage))
 
-(<= (totalMonsterDamage1 ?monster1 ?strength ?x ?y ?damage)
-	(totalMonsterDamage2 ?monster1 ?strength ?x ?y ?damage))
+plus<= plustotalMonsterDamage1 ?monster1 ?strength ?x ?y ?damage)
+	plustotalMonsterDamage2 ?monster1 ?strength ?x ?y ?damage))
 
 ; Meaning: combined damage from two monsters:
-(<= (totalMonsterDamage2 ?monster1 ?strength1 ?x ?y ?damage)
-	(nextHeroLocation ?x ?y) ; SW added
-	(monster ?monster2 ?monster-type)
-	(monster ?monster1 ?monster-type) ; SW added
-	(distinct ?monster2 ?monster1)
-	(attackedByMonster ?monster2 ?x ?y)
-	(monsterStrength ?monster-type ?strength2)
-	(plus ?strength1 ?strength2 ?strength)
-	(amountOfMonsterDamage ?strength ?combined-damage)
-	(true (health hero ?hp))
-	(min ?combined-damage ?hp ?damage))
+plus<= plustotalMonsterDamage2 ?monster1 ?strength1 ?x ?y ?damage)
+	plusnextHeroLocation ?x ?y) ; SW added
+	plusmonster ?monster2 ?monster-type)
+	plusmonster ?monster1 ?monster-type) ; SW added
+	plusdistinct ?monster2 ?monster1)
+	plusattackedByMonster ?monster2 ?x ?y)
+	plusmonsterStrength ?monster-type ?strength2)
+	plus+ ?strength1 ?strength2 ?strength)
+	plusamountOfMonsterDamage ?strength ?combined-damage)
+	plustrue plushealth hero ?hp))
+	plusmin ?combined-damage ?hp ?damage))
 
 ; Meaning: There exists some monster that attacks hero at ?x ?y
-(<= (attackedBySomeMonster ?x ?y)
-    (monster ?monster ?monster-type)
-    (attackedByMonster ?monster ?x ?y))
+plus<= plusattackedBySomeMonster ?x ?y)
+    plusmonster ?monster ?monster-type)
+    plusattackedByMonster ?monster ?x ?y))
 
 ; Meaning: Monster attacks hero when provoked and within one spot of 
 ; hero's next location
-(<= (attackedByMonster ?monster ?x2 ?y2)
-	(provoked ?monster)                            ; Generic monster
-	(true (location ?monster ?x1 ?y1))
-	(adjacent ?x1 ?y1 ?x2 ?y2))                    ; Generic spatial
+plus<= plusattackedByMonster ?monster ?x2 ?y2)
+	plusprovoked ?monster)                            ; Generic monster
+	plustrue pluslocation ?monster ?x1 ?y1))
+	plusadjacent ?x1 ?y1 ?x2 ?y2))                    ; Generic spatial
 
 ; Meaning: Monster1 and monster2 both attack simultaneously.
-(<= (attackedBy2ndMonster ?monster1 ?x ?y)
-	(monster ?monster2 ?monster-type)
-	(distinct ?monster2 ?monster1)
-	(attackedByMonster ?monster2 ?x ?y))
+plus<= plusattackedBy2ndMonster ?monster1 ?x ?y)
+	plusmonster ?monster2 ?monster-type)
+	plusdistinct ?monster2 ?monster1)
+	plusattackedByMonster ?monster2 ?x ?y))
 
 ; Meaning: No damage if monster's attack is less than defense
 ; Offensive-strength is the combined strength of attacking monsters.
 ; - Open to debate
-(<= (amountOfMonsterDamage ?offensive-strength 0)
-	(heroDefense ?defense)                          ; Battle
-	(gtequal ?defense ?offensive-strength))              ; Arithmetic
+plus<= plusamountOfMonsterDamage ?offensive-strength 0)
+	plusheroDefense ?defense)                          ; Battle
+	plus>= ?defense ?offensive-strength))              ; Arithmetic
 
 ; Meaning: Attacks whose value is equal to or greater than armor value
-; - Open to debate (i.e., Attack value is 1 + (offense - defense))
-(<= (amountOfMonsterDamage ?offensive-strength ?hitPointsLost)
-	(heroDefense ?defense)                          ; Battle
-	(minus  ?offensive-strength ?defense ?diff)         ; Arithmetic
-	(plus ?diff 1 ?hitPointsLost))                     ; Arithmetic
+; - Open to debate plusi.e., Attack value is 1 + plusoffense - defense))
+plus<= plusamountOfMonsterDamage ?offensive-strength ?hitPointsLost)
+	plusheroDefense ?defense)                          ; Battle
+	plus-  ?offensive-strength ?defense ?diff)         ; Arithmetic
+	plus+ ?diff 1 ?hitPointsLost))                     ; Arithmetic
 
-; Meaning: The current defensive strength of armor worn (if any)
-(<= (heroDefense 1)
-	(not (armored hero)))
+; Meaning: The current defensive strength of armor worn plusif any)
+plus<= plusheroDefense 1)
+	plusnot plusarmored hero)))
 
-(<= (heroDefense ?defense)
-	(not (currentlyEnhancedArmor hero))
-	(true (wearing ?item))
-	(armor ?item ?armor-type)
-	(armorstrength ?armor-type ?defense))
+plus<= plusheroDefense ?defense)
+	plusnot pluscurrentlyEnhancedArmor hero))
+	plustrue pluswearing ?item))
+	plusarmor ?item ?armor-type)
+	plusarmorstrength ?armor-type ?defense))
 
-(<= (heroDefense ?defense)
-    (int ?n)         ; ?n is how many turns it will remain in effect (0 - 3)
-	(true (enhancedArmor hero ?n))
-	(true (wearing ?item))
-	(armor ?item ?armor-type)
-	(armorstrength ?armor-type ?base-defense)
-	(plus ?base-defense 1 ?defense))
+plus<= plusheroDefense ?defense)
+    plusint ?n)         ; ?n is how many turns it will remain in effect plus0 - 3)
+	plustrue plusenhancedArmor hero ?n))
+	plustrue pluswearing ?item))
+	plusarmor ?item ?armor-type)
+	plusarmorstrength ?armor-type ?base-defense)
+	plus+ ?base-defense 1 ?defense))
 
-; Meaning: The current offense strength of weapons wielded (if any)
-(<= (heroOffense 1)
-	(not (armed hero)))
+; Meaning: The current offense strength of weapons wielded plusif any)
+plus<= plusheroOffense 1)
+	plusnot plusarmed hero)))
 
-(<= (heroOffense ?offense)
-	(not (currentlyEnhancedStrength hero))
-	(true (wielding ?weapon))
-	(weapon ?weapon ?weapon-type)                  ; Init
-	(weaponStrength ?weapon-type ?offense))        ; Generic weapon
+plus<= plusheroOffense ?offense)
+	plusnot pluscurrentlyEnhancedStrength hero))
+	plustrue pluswielding ?weapon))
+	plusweapon ?weapon ?weapon-type)                  ; Init
+	plusweaponStrength ?weapon-type ?offense))        ; Generic weapon
 
-(<= (heroOffense ?offense)
-	(currentlyEnhancedStrength hero)
-	(true (wielding ?weapon))
-	(weapon ?weapon ?weapon-type)                  ; Init
-	(weaponStrength ?weapon-type ?wDamage))        ; Generic weapon
+plus<= plusheroOffense ?offense)
+	pluscurrentlyEnhancedStrength hero)
+	plustrue pluswielding ?weapon))
+	plusweapon ?weapon ?weapon-type)                  ; Init
+	plusweaponStrength ?weapon-type ?wDamage))        ; Generic weapon
 
 
 ; Meaning: Hero attacks the monster
-(<= (monsterAttacked ?monster)
-	(true (location hero ?x1 ?y1))
-	(true (location ?monster ?x2 ?y2))
-	(monster ?monster ?monster-type)               ; Init
-	(adjacent ?x1 ?y1 ?x2 ?y2)                     ; Generic spatial
-	(does hero (move ?dir))
-	(nCell 1 ?dir ?x1 ?y1 ?x2 ?y2))                ; Movement
+plus<= plusmonsterAttacked ?monster)
+	plustrue pluslocation hero ?x1 ?y1))
+	plustrue pluslocation ?monster ?x2 ?y2))
+	plusmonster ?monster ?monster-type)               ; Init
+	plusadjacent ?x1 ?y1 ?x2 ?y2)                     ; Generic spatial
+	plusdoes hero plusmove ?dir))
+	plusnCell 1 ?dir ?x1 ?y1 ?x2 ?y2))                ; Movement
 
 ;----------------------------------------------------------------------
 ; Movement relations
@@ -876,327 +876,327 @@
 
 ;;; Recursively moves one step at a time 
 ; Meaning: Exhausted our travel distance
-(<= (nStepsTowards 0 ?startx ?starty ?destx ?desty ?startx ?starty)
-	(true (location hero ?destx ?desty)) ; SW -- only used when hero is 2nd coords
-  (int ?startx) ; SW -- ground to ints
-  (int ?starty)
-  (int ?destx)
-  (int ?desty))
+plus<= plusnStepsTowards 0 ?startx ?starty ?destx ?desty ?startx ?starty)
+	plustrue pluslocation hero ?destx ?desty)) ; SW -- only used when hero is 2nd coords
+  plusint ?startx) ; SW -- ground to ints
+  plusint ?starty)
+  plusint ?destx)
+  plusint ?desty))
 
 ; Meaning: Reached our destination already.  Shouldn't happen if
 ; destination is occupied by hero!
-(<= (nStepsTowards ?n ?x ?y ?x ?y ?x ?y)
-	(true (location hero ?x ?y)) ; SW -- only used when hero is 2nd coords
-  (int ?n) ; SW -- ground to ints
-  (int ?x)
-  (int ?y))
+plus<= plusnStepsTowards ?n ?x ?y ?x ?y ?x ?y)
+	plustrue pluslocation hero ?x ?y)) ; SW -- only used when hero is 2nd coords
+  plusint ?n) ; SW -- ground to ints
+  plusint ?x)
+  plusint ?y))
 ; SW -- I don't follow this-- nStepsToward is true for all values if monster is at same location as hero?
 
 ; Meaning: Recursively move n steps towards our destination
-(<= (nStepsTowards ?n ?startx ?starty ?destx ?desty ?finalx ?finaly)
-	(true (location hero ?destx ?desty)) ; SW -- only used when hero is 2nd coords
-	(greaterthan ?n 0)                                        ; Arithmetic
-	(singleUnobstructedStep ?startx ?starty ?destx ?desty ?x2 ?y2) ; Movement
-	(minus ?n 1 ?n-1)                                       ; Arithmetic
-	(nStepsTowards ?n-1 ?x2 ?y2 ?destx ?desty ?finalx ?finaly)) ; Movement
+plus<= plusnStepsTowards ?n ?startx ?starty ?destx ?desty ?finalx ?finaly)
+	plustrue pluslocation hero ?destx ?desty)) ; SW -- only used when hero is 2nd coords
+	plus> ?n 0)                                        ; Arithmetic
+	plussingleUnobstructedStep ?startx ?starty ?destx ?desty ?x2 ?y2) ; Movement
+	plus- ?n 1 ?n-1)                                       ; Arithmetic
+	plusnStepsTowards ?n-1 ?x2 ?y2 ?destx ?desty ?finalx ?finaly)) ; Movement
 
 ; Meaning: Take one step toward destination only if you won't run into hero.
-(<= (singleUnobstructedStep ?startx ?starty ?destx ?desty ?nextx ?nexty)
-	(true (location ?monster ?startx ?starty)) ; SW -- only used when monster is at start loc
-	(true (location hero ?destx ?desty)) ; SW -- only used when hero is 2nd coords
-	(monster ?monster ?monster-type)              
-	(oneStepTowards ?startx ?starty ?destx ?desty ?nextx ?nexty)
-	(traversible ?nextx ?nexty)
-	(nextHeroLocation ?x ?y)
-	(not (sameLocation ?nextx ?nexty ?x ?y)))
+plus<= plussingleUnobstructedStep ?startx ?starty ?destx ?desty ?nextx ?nexty)
+	;plustrue pluslocation ?monster ?startx ?starty)) ; SW -- only used when monster is at start loc
+	plustrue pluslocation hero ?destx ?desty)) ; SW -- only used when hero is 2nd coords
+	plusmonster ?monster ?monster-type)              
+	plusoneStepTowards ?startx ?starty ?destx ?desty ?nextx ?nexty)
+	plustraversible ?nextx ?nexty)
+	plusnextHeroLocation ?x ?y)
+	plusnot plussameLocation ?nextx ?nexty ?x ?y)))
 
 ; Meaning: Stay put and attack the hero.
-(<= (singleUnobstructedStep ?startx ?starty ?destx ?desty ?startx ?starty)
-	(true (location hero ?destx ?desty)) ; SW -- only used when hero is 2nd coords
-	(true (location ?monster ?startx ?starty)) ; SW -- only used when monster is at start loc
-	(monster ?monster ?monster-type)              
-	(oneStepTowards ?startx ?starty ?destx ?desty ?nextx ?nexty)
-	(nextHeroLocation ?x ?y)
-	(sameLocation ?nextx ?nexty ?x ?y))
+plus<= plussingleUnobstructedStep ?startx ?starty ?destx ?desty ?startx ?starty)
+	plustrue pluslocation hero ?destx ?desty)) ; SW -- only used when hero is 2nd coords
+	plustrue pluslocation ?monster ?startx ?starty)) ; SW -- only used when monster is at start loc
+	plusmonster ?monster ?monster-type)              
+	plusoneStepTowards ?startx ?starty ?destx ?desty ?nextx ?nexty)
+	plusnextHeroLocation ?x ?y)
+	plussameLocation ?nextx ?nexty ?x ?y))
 
-; Meaning: Move one step towards destination (diagonally)
-;(<= (oneStepTowards ?x1 ?y1 ?x2 ?y2 ?x3 ?y3)
-;	(diagonalDirection ?dir ?x2 ?y2 ?x1 ?y1)         ; Movement
-;	(nCell 1 ?dir ?x1 ?y1 ?x3 ?y3))                  ; Movement
+; Meaning: Move one step towards destination plusdiagonally)
+;plus<= plusoneStepTowards ?x1 ?y1 ?x2 ?y2 ?x3 ?y3)
+;	plusdiagonalDirection ?dir ?x2 ?y2 ?x1 ?y1)         ; Movement
+;	plusnCell 1 ?dir ?x1 ?y1 ?x3 ?y3))                  ; Movement
 
 ;;; Rather than having horizontal or vertical movement preferences
 ;;; as in mummymaze, we alternate each turn.
 
-; Meaning: Move one step (horizontally or vertically) towards destination
-(<= (oneStepTowards ?x1 ?y1 ?x2 ?y2 ?x3 ?y3)
-	(true (location ?monster ?x1 ?y1)) ; SW -- only used when monster is 1st coords
-	(monster ?monster ?monster-type)              
-	(true (location hero ?x2 ?y2)) ; SW -- only used when hero is 2nd coords
-	(not (diagonal ?x1 ?y1 ?x2 ?y2))
-	(cardinalRelation ?cdir ?x2 ?y2 ?x1 ?y1)         ; Movement
-	(nCell 1 ?cdir ?x1 ?y1 ?x3 ?y3))                 ; Movement
+; Meaning: Move one step plushorizontally or vertically) towards destination
+plus<= plusoneStepTowards ?x1 ?y1 ?x2 ?y2 ?x3 ?y3)
+	plustrue pluslocation ?monster ?x1 ?y1)) ; SW -- only used when monster is 1st coords
+	plusmonster ?monster ?monster-type)              
+	plustrue pluslocation hero ?x2 ?y2)) ; SW -- only used when hero is 2nd coords
+	plusnot plusdiagonal ?x1 ?y1 ?x2 ?y2))
+	pluscardinalRelation ?cdir ?x2 ?y2 ?x1 ?y1)         ; Movement
+	plusnCell 1 ?cdir ?x1 ?y1 ?x3 ?y3))                 ; Movement
 
-(<= (oneStepTowards ?x1 ?y1 ?x2 ?y2 ?x3 ?y3)
-	(true (location ?monster ?x1 ?y1)) ; SW -- only used when monster is 1st coords
-	(monster ?monster ?monster-type)              
-	(true (location hero ?x2 ?y2)) ; SW -- only used when hero is 2nd coords
-	(not (diagonal ?x1 ?y1 ?x2 ?y2))
-	(cardinalRelation ?cdir ?x2 ?y2 ?x1 ?y1)         ; Movement
-	(nCell 1 ?cdir ?x1 ?y1 ?x3 ?y3))                 ; Movement
+plus<= plusoneStepTowards ?x1 ?y1 ?x2 ?y2 ?x3 ?y3)
+	plustrue pluslocation ?monster ?x1 ?y1)) ; SW -- only used when monster is 1st coords
+	plusmonster ?monster ?monster-type)              
+	plustrue pluslocation hero ?x2 ?y2)) ; SW -- only used when hero is 2nd coords
+	plusnot plusdiagonal ?x1 ?y1 ?x2 ?y2))
+	pluscardinalRelation ?cdir ?x2 ?y2 ?x1 ?y1)         ; Movement
+	plusnCell 1 ?cdir ?x1 ?y1 ?x3 ?y3))                 ; Movement
 
-(<= (oneStepTowards ?x1 ?y1 ?x2 ?y2 ?x3 ?y3)
-	(true (location ?monster ?x1 ?y1)) ; SW -- only used when monster is 1st coords
-	(monster ?monster ?monster-type)              
-	(true (location hero ?x2 ?y2)) ; SW -- only used when hero is 2nd coords
-	(diagonal ?x1 ?y1 ?x2 ?y2)
-	(true odd)
-	(verticalDir ?cdir)
-	(cardinalRelation ?cdir ?x2 ?y2 ?x1 ?y1)         ; Movement
-	(nCell 1 ?cdir ?x1 ?y1 ?x3 ?y3))                 ; Movement
+plus<= plusoneStepTowards ?x1 ?y1 ?x2 ?y2 ?x3 ?y3)
+	plustrue pluslocation ?monster ?x1 ?y1)) ; SW -- only used when monster is 1st coords
+	plusmonster ?monster ?monster-type)              
+	plustrue pluslocation hero ?x2 ?y2)) ; SW -- only used when hero is 2nd coords
+	plusdiagonal ?x1 ?y1 ?x2 ?y2)
+	plustrue odd)
+	plusverticalDir ?cdir)
+	pluscardinalRelation ?cdir ?x2 ?y2 ?x1 ?y1)         ; Movement
+	plusnCell 1 ?cdir ?x1 ?y1 ?x3 ?y3))                 ; Movement
 
-(<= (oneStepTowards ?x1 ?y1 ?x2 ?y2 ?x3 ?y3)
-	(true (location ?monster ?x1 ?y1)) ; SW -- only used when monster is 1st coords
-	(monster ?monster ?monster-type)              
-	(true (location hero ?x2 ?y2)) ; SW -- only used when hero is 2nd coords
-	(diagonal ?x1 ?y1 ?x2 ?y2)
-	(true even)
-	(horizontalDir ?cdir)
-	(cardinalRelation ?cdir ?x2 ?y2 ?x1 ?y1)         ; Movement
-	(nCell 1 ?cdir ?x1 ?y1 ?x3 ?y3))                 ; Movement
+plus<= plusoneStepTowards ?x1 ?y1 ?x2 ?y2 ?x3 ?y3)
+	plustrue pluslocation ?monster ?x1 ?y1)) ; SW -- only used when monster is 1st coords
+	plusmonster ?monster ?monster-type)              
+	plustrue pluslocation hero ?x2 ?y2)) ; SW -- only used when hero is 2nd coords
+	plusdiagonal ?x1 ?y1 ?x2 ?y2)
+	plustrue even)
+	plushorizontalDir ?cdir)
+	pluscardinalRelation ?cdir ?x2 ?y2 ?x1 ?y1)         ; Movement
+	plusnCell 1 ?cdir ?x1 ?y1 ?x3 ?y3))                 ; Movement
 
 
 ; Meaning: Direction-based relationships between coordinates
 ; - Read: ?n cells ?direction of ?x1 ?y1 is ?x2 ?y2
 ; SW change: only compute for ?n == 1
-(<= (nCell 1 north ?x ?y1 ?x ?y2)
-    (int ?x)
-	(minus ?y1 1 ?y2))            ; Arithmetic
-(<= (nCell 1 south ?x ?y1 ?x ?y2)
-    (int ?x)
-	(plus ?y1 1 ?y2))            ; Arithmetic
-(<= (nCell 1 east ?x1 ?y ?x2 ?y)
-	(int ?y)                   ; Arithmetic
-	(plus ?x1 1 ?x2))            ; Arithmetic
-(<= (nCell 1 west ?x1 ?y ?x2 ?y)
-	(int ?y)                   ; Arithmetic
-	(minus ?x1 1 ?x2))            ; Arithmetic
+plus<= plusnCell 1 north ?x ?y1 ?x ?y2)
+    plusint ?x)
+	plus- ?y1 1 ?y2))            ; Arithmetic
+plus<= plusnCell 1 south ?x ?y1 ?x ?y2)
+    plusint ?x)
+	plus+ ?y1 1 ?y2))            ; Arithmetic
+plus<= plusnCell 1 east ?x1 ?y ?x2 ?y)
+	plusint ?y)                   ; Arithmetic
+	plus+ ?x1 1 ?x2))            ; Arithmetic
+plus<= plusnCell 1 west ?x1 ?y ?x2 ?y)
+	plusint ?y)                   ; Arithmetic
+	plus- ?x1 1 ?x2))            ; Arithmetic
 
 
-;(<= (nCell ?n north ?x ?y1 ?x ?y2)
-;    (int ?x)
-;	(int ?n)                   ; Arithmetic
-;	(minus ?y1 ?n ?y2))            ; Arithmetic
-;(<= (nCell ?n south ?x ?y1 ?x ?y2)
-;    (int ?x)
-;	(int ?n)                   ; Arithmetic
-;	(plus ?y1 ?n ?y2))            ; Arithmetic
-;(<= (nCell ?n east ?x1 ?y ?x2 ?y)
-;	(int ?n)                   ; Arithmetic
-;	(int ?y)                   ; Arithmetic
-;	(plus ?x1 ?n ?x2))            ; Arithmetic
-;(<= (nCell ?n west ?x1 ?y ?x2 ?y)
-;	(int ?n)                   ; Arithmetic
-;	(int ?y)                   ; Arithmetic
-;	(minus ?x1 ?n ?x2))            ; Arithmetic
+;plus<= plusnCell ?n north ?x ?y1 ?x ?y2)
+;    plusint ?x)
+;	plusint ?n)                   ; Arithmetic
+;	plus- ?y1 ?n ?y2))            ; Arithmetic
+;plus<= plusnCell ?n south ?x ?y1 ?x ?y2)
+;    plusint ?x)
+;	plusint ?n)                   ; Arithmetic
+;	plus+ ?y1 ?n ?y2))            ; Arithmetic
+;plus<= plusnCell ?n east ?x1 ?y ?x2 ?y)
+;	plusint ?n)                   ; Arithmetic
+;	plusint ?y)                   ; Arithmetic
+;	plus+ ?x1 ?n ?x2))            ; Arithmetic
+;plus<= plusnCell ?n west ?x1 ?y ?x2 ?y)
+;	plusint ?n)                   ; Arithmetic
+;	plusint ?y)                   ; Arithmetic
+;	plus- ?x1 ?n ?x2))            ; Arithmetic
 
-;(<= (nCell ?n ne ?x1 ?y1 ?x2 ?y2)
-;	(int ?n)                   ; Arithmetic
-;	(plus ?x1 ?n ?x2)             ; Arithmetic
-;	(minus ?y1 ?n ?y2))            ; Arithmetic
-;(<= (nCell ?n nw ?x1 ?y1 ?x2 ?y2)
-;	(int ?n)                   ; Arithmetic
-;	(minus ?x1 ?n ?x2)             ; Arithmetic
-;	(minus ?y1 ?n ?y2))            ; Arithmetic
-;(<= (nCell ?n se ?x1 ?y1 ?x2 ?y2)
-;	(int ?n)                   ; Arithmetic
-;	(plus ?x1 ?n ?x2)             ; Arithmetic
-;	(plus ?y1 ?n ?y2))            ; Arithmetic
-;(<= (nCell ?n sw ?x1 ?y1 ?x2 ?y2)
-;	(int ?n)                   ; Arithmetic
-;	(minus ?x1 ?n ?x2)             ; Arithmetic
-;	(plus ?y1 ?n ?y2))            ; Arithmetic
+;plus<= plusnCell ?n ne ?x1 ?y1 ?x2 ?y2)
+;	plusint ?n)                   ; Arithmetic
+;	plus+ ?x1 ?n ?x2)             ; Arithmetic
+;	plus- ?y1 ?n ?y2))            ; Arithmetic
+;plus<= plusnCell ?n nw ?x1 ?y1 ?x2 ?y2)
+;	plusint ?n)                   ; Arithmetic
+;	plus- ?x1 ?n ?x2)             ; Arithmetic
+;	plus- ?y1 ?n ?y2))            ; Arithmetic
+;plus<= plusnCell ?n se ?x1 ?y1 ?x2 ?y2)
+;	plusint ?n)                   ; Arithmetic
+;	plus+ ?x1 ?n ?x2)             ; Arithmetic
+;	plus+ ?y1 ?n ?y2))            ; Arithmetic
+;plus<= plusnCell ?n sw ?x1 ?y1 ?x2 ?y2)
+;	plusint ?n)                   ; Arithmetic
+;	plus- ?x1 ?n ?x2)             ; Arithmetic
+;	plus+ ?y1 ?n ?y2))            ; Arithmetic
 
 ; Meaning: Direction-based relationships between coordinates
 ; - Read: ?x1 ?y1 is ?dir of ?x2 ?y2
-; *** Do we need int statements on all coordinates? (yes -SW)
-(<= (cardinalRelation north ?x1 ?y1 ?x2 ?y2)
-	(true (location ?monster ?x2 ?y2)) ; SW -- only used when monster is 2nd coords
-	(monster ?monster ?monster-type)              
-	(true (location hero ?x1 ?y1)) ; SW -- only used when hero is 1st coords
-	(greaterthan ?y2 ?y1)
-  (int ?x1)
-  (int ?x2)
-  (int ?y1)
-  (int ?y2))
-(<= (cardinalRelation south ?x1 ?y1 ?x2 ?y2)
-	(true (location ?monster ?x2 ?y2)) ; SW -- only used when monster is 2nd coords
-	(monster ?monster ?monster-type)              
-	(true (location hero ?x1 ?y1)) ; SW -- only used when hero is 1st coords
-	(greaterthan ?y1 ?y2)                  ; Arithmetic
-  (int ?x1)
-  (int ?x2)
-  (int ?y1)
-  (int ?y2))
-(<= (cardinalRelation east ?x1 ?y1 ?x2 ?y2)
-	(true (location ?monster ?x2 ?y2)) ; SW -- only used when monster is 2nd coords
-	(monster ?monster ?monster-type)              
-	(true (location hero ?x1 ?y1)) ; SW -- only used when hero is 1st coords
-	(greaterthan ?x1 ?x2)                  ; Arithmetic
-  (int ?x1)
-  (int ?x2)
-  (int ?y1)
-  (int ?y2))
-(<= (cardinalRelation west ?x1 ?y1 ?x2 ?y2)
-	(true (location ?monster ?x2 ?y2)) ; SW -- only used when monster is 2nd coords
-	(monster ?monster ?monster-type)              
-	(true (location hero ?x1 ?y1)) ; SW -- only used when hero is 1st coords
-	(greaterthan ?x2 ?x1)                  ; Arithmetic
-  (int ?x1)
-  (int ?x2)
-  (int ?y1)
-  (int ?y2))
+; *** Do we need int statements on all coordinates? plusyes -SW)
+plus<= pluscardinalRelation north ?x1 ?y1 ?x2 ?y2)
+	plustrue pluslocation ?monster ?x2 ?y2)) ; SW -- only used when monster is 2nd coords
+	plusmonster ?monster ?monster-type)              
+	plustrue pluslocation hero ?x1 ?y1)) ; SW -- only used when hero is 1st coords
+	plus> ?y2 ?y1)
+  plusint ?x1)
+  plusint ?x2)
+  plusint ?y1)
+  plusint ?y2))
+plus<= pluscardinalRelation south ?x1 ?y1 ?x2 ?y2)
+	plustrue pluslocation ?monster ?x2 ?y2)) ; SW -- only used when monster is 2nd coords
+	plusmonster ?monster ?monster-type)              
+	plustrue pluslocation hero ?x1 ?y1)) ; SW -- only used when hero is 1st coords
+	plus> ?y1 ?y2)                  ; Arithmetic
+  plusint ?x1)
+  plusint ?x2)
+  plusint ?y1)
+  plusint ?y2))
+plus<= pluscardinalRelation east ?x1 ?y1 ?x2 ?y2)
+	plustrue pluslocation ?monster ?x2 ?y2)) ; SW -- only used when monster is 2nd coords
+	plusmonster ?monster ?monster-type)              
+	plustrue pluslocation hero ?x1 ?y1)) ; SW -- only used when hero is 1st coords
+	plus> ?x1 ?x2)                  ; Arithmetic
+  plusint ?x1)
+  plusint ?x2)
+  plusint ?y1)
+  plusint ?y2))
+plus<= pluscardinalRelation west ?x1 ?y1 ?x2 ?y2)
+	plustrue pluslocation ?monster ?x2 ?y2)) ; SW -- only used when monster is 2nd coords
+	plusmonster ?monster ?monster-type)              
+	plustrue pluslocation hero ?x1 ?y1)) ; SW -- only used when hero is 1st coords
+	plus> ?x2 ?x1)                  ; Arithmetic
+  plusint ?x1)
+  plusint ?x2)
+  plusint ?y1)
+  plusint ?y2))
 	
-(<= (diagonal ?x1 ?y1 ?x2 ?y2)
-	(true (location ?monster ?x1 ?y1)) ; SW -- only used when monster is 1st coords
-	(monster ?monster ?monster-type)              
-	(true (location hero ?x2 ?y2)) ; SW -- only used when hero is 2nd coords
-	(distinct ?x1 ?x2)
-	(distinct ?y2 ?y1))
+plus<= plusdiagonal ?x1 ?y1 ?x2 ?y2)
+	plustrue pluslocation ?monster ?x1 ?y1)) ; SW -- only used when monster is 1st coords
+	plusmonster ?monster ?monster-type)              
+	plustrue pluslocation hero ?x2 ?y2)) ; SW -- only used when hero is 2nd coords
+	plusdistinct ?x1 ?x2)
+	plusdistinct ?y2 ?y1))
 
 ;;; Omit diagonal movement for now:
-;(<= (diagonalDirection ne ?x1 ?y1 ?x2 ?y2)
-;	(greaterthan ?y2 ?y1)                   ; Arithmetic
-;	(greaterthan ?x1 ?x2))                  ; Arithmetic
-;(<= (diagonalDirection nw ?x1 ?y1 ?x2 ?y2)
-;	(greaterthan ?y2 ?y1)                   ; Arithmetic
-;	(greaterthan ?x2 ?x1))                  ; Arithmetic
-;(<= (diagonalDirection se ?x1 ?y1 ?x2 ?y2)
-;	(greaterthan ?y1 ?y2)                   ; Arithmetic
-;	(greaterthan ?x1 ?x2))                  ; Arithmetic
-;(<= (diagonalDirection sw ?x1 ?y1 ?x2 ?y2)
-;	(greaterthan ?y1 ?y2)                   ; Arithmetic
-;	(greaterthan ?x2 ?x1))                  ; Arithmetic
+;plus<= plusdiagonalDirection ne ?x1 ?y1 ?x2 ?y2)
+;	plus> ?y2 ?y1)                   ; Arithmetic
+;	plus> ?x1 ?x2))                  ; Arithmetic
+;plus<= plusdiagonalDirection nw ?x1 ?y1 ?x2 ?y2)
+;	plus> ?y2 ?y1)                   ; Arithmetic
+;	plus> ?x2 ?x1))                  ; Arithmetic
+;plus<= plusdiagonalDirection se ?x1 ?y1 ?x2 ?y2)
+;	plus> ?y1 ?y2)                   ; Arithmetic
+;	plus> ?x1 ?x2))                  ; Arithmetic
+;plus<= plusdiagonalDirection sw ?x1 ?y1 ?x2 ?y2)
+;	plus> ?y1 ?y2)                   ; Arithmetic
+;	plus> ?x2 ?x1))                  ; Arithmetic
 
 ;----------------------------------------------------------------------
 ; Generic spatial relations
 ;----------------------------------------------------------------------
 
-; Roomlocation: <x y>  (derived from "room")
-(<= (roomlocation ?x ?y)  
-	(room ?tlx ?tly ?brx ?bry)
-	(between ?tlx ?x ?brx)        ; Generic spatial
-	(between ?tly ?y ?bry))       ; Generic spatial
+; Roomlocation: <x y>  plusderived from "room")
+plus<= plusroomlocation ?x ?y)  
+	plusroom ?tlx ?tly ?brx ?bry)
+	plusbetween ?tlx ?x ?brx)        ; Generic spatial
+	plusbetween ?tly ?y ?bry))       ; Generic spatial
 
-; Meaning: ?a <= ?b <= ?c (note: permits them all to be equal)
-(<= (between ?a ?b ?c)
-	(gtequal ?b ?a)                    ; Arithmetic
-	(gtequal ?c ?b))              ; Arithmetic
+; Meaning: ?a <= ?b <= ?c plusnote: permits them all to be equal)
+plus<= plusbetween ?a ?b ?c)
+	plus>= ?b ?a)                    ; Arithmetic
+	plus>= ?c ?b))              ; Arithmetic
 
-; Meaning: <x,y> can be traversed by a character (or hold an item)
+; Meaning: <x,y> can be traversed by a character plusor hold an item)
 ; We actually don't need this for monster movement because so long
 ; as they only pursue hero within a room, they'll never try to 
 ; go through walls or cut corners.  If we change monster behavior
 ; or have non-rectangular rooms, then oneStepTowards will have to
 ; check.
-(<= (traversible ?x ?y)
-	(roomlocation ?x ?y))   ; Generic spatial
-(<= (traversible ?x ?y)
-	(corridor ?x ?y))     ; Generic spatial
+plus<= plustraversible ?x ?y)
+	plusroomlocation ?x ?y))   ; Generic spatial
+plus<= plustraversible ?x ?y)
+	pluscorridor ?x ?y))     ; Generic spatial
 
 ; Meaning: Eight possible directions of movement
 ; Do we add up and down sometime?
-(direction north)
-(direction south)
-(direction east)
-(direction west)
-;(direction ne)
-;(direction nw)
-;(direction se)
-;(direction sw)
+plusdirection north)
+plusdirection south)
+plusdirection east)
+plusdirection west)
+;plusdirection ne)
+;plusdirection nw)
+;plusdirection se)
+;plusdirection sw)
 
-(verticalDir north)
-(verticalDir south)
-(horizontalDir east)
-(horizontalDir west)
+plusverticalDir north)
+plusverticalDir south)
+plushorizontalDir east)
+plushorizontalDir west)
 
 
-(<= (inRoom ?e ?x1 ?y1 ?x2 ?y2)
-    (true (location ?e ?x ?y))
-    (room ?x1 ?y1 ?x2 ?y2)
-    (between ?x1 ?x ?x2)
-    (between ?y1 ?y ?y2))
+plus<= plusinRoom ?e ?x1 ?y1 ?x2 ?y2)
+    plustrue pluslocation ?e ?x ?y))
+    plusroom ?x1 ?y1 ?x2 ?y2)
+    plusbetween ?x1 ?x ?x2)
+    plusbetween ?y1 ?y ?y2))
 
-(<= (inSameRoom ?e1 ?e2)
-    (inRoom ?e1 ?x1 ?y1 ?x2 ?y2)
-    (inRoom ?e2 ?x1 ?y1 ?x2 ?y2))
+plus<= plusinSameRoom ?e1 ?e2)
+    plusinRoom ?e1 ?x1 ?y1 ?x2 ?y2)
+    plusinRoom ?e2 ?x1 ?y1 ?x2 ?y2))
 
 ; Meaning: Same location
-(<= (sameLocation ?x ?y ?x ?y) ; SW -- must be ints
-  (int ?x)
-  (int ?y))
+plus<= plussameLocation ?x ?y ?x ?y) ; SW -- must be ints
+  plusint ?x)
+  plusint ?y))
 
 ; Meaning: Adjacent locations
-(<= (adjacent ?x ?y1 ?x ?y2)
-  (int ?x) ; SW
-	(diff ?y1 ?y2 1))
-(<= (adjacent ?x1 ?y ?x2 ?y)
-  (int ?y) ; SW
-	(diff ?x1 ?x2 1))
-(<= (adjacent ?x1 ?y1 ?x2 ?y2)
-	(diff ?x1 ?x2 1)
-	(diff ?y1 ?y2 1))
+plus<= plusadjacent ?x ?y1 ?x ?y2)
+  plusint ?x) ; SW
+	plusdiff ?y1 ?y2 1))
+plus<= plusadjacent ?x1 ?y ?x2 ?y)
+  plusint ?y) ; SW
+	plusdiff ?x1 ?x2 1))
+plus<= plusadjacent ?x1 ?y1 ?x2 ?y2)
+	plusdiff ?x1 ?x2 1)
+	plusdiff ?y1 ?y2 1))
 
 ;----------------------------------------------------------------------
 ; Generic monster relations
 ;----------------------------------------------------------------------
 
 
-(initialHealth   bat 3)
-(monsterStrength bat 1)
-(monsterSpeed    bat 1)
+plusinitialHealth   bat 3)
+plusmonsterStrength bat 1)
+plusmonsterSpeed    bat 1)
 
-(initialHealth hobgoblin 5)
-(monsterStrength hobgoblin 2)
-(monsterSpeed hobgoblin 1)
+plusinitialHealth hobgoblin 5)
+plusmonsterStrength hobgoblin 2)
+plusmonsterSpeed hobgoblin 1)
 
-(initialHealth kestral 2)
-(monsterStrength kestral 1)
-(monsterSpeed kestral 2)
+plusinitialHealth kestral 2)
+plusmonsterStrength kestral 1)
+plusmonsterSpeed kestral 2)
 
-(initialHealth snake 4)
-(monsterStrength snake 1)
-(monsterSpeed snake 0.5)
+plusinitialHealth snake 4)
+plusmonsterStrength snake 1)
+plusmonsterSpeed snake 0.5)
 
 ; Meaning: Monsters attack when in the same room as the hero.
 ; If they're asleep, they wake up when hero attacks them or
 ; throws an arrow at them.
-(<= (provoked ?monster)
-	(monster ?monster ?monster-type)           ; Generic monster
-	(not (currentlyAsleep ?monster))
-	(inSameRoom hero ?monster))                ; Generic spatial
+plus<= plusprovoked ?monster)
+	plusmonster ?monster ?monster-type)           ; Generic monster
+	plusnot pluscurrentlyAsleep ?monster))
+	plusinSameRoom hero ?monster))                ; Generic spatial
 
-(<= (provoked ?monster)
-	(monster ?monster ?monster-type)
-	(true (asleep ?monster ?n))
-	(monsterAttacked ?monster))
+plus<= plusprovoked ?monster)
+	plusmonster ?monster ?monster-type)
+	plustrue plusasleep ?monster ?n))
+	plusmonsterAttacked ?monster))
 
-(<= (provoked ?monster)
-	(monster ?monster ?monster-type)
-	(true (asleep ?monster ?n))
-	(hitByArrow ?monster))
+plus<= plusprovoked ?monster)
+	plusmonster ?monster ?monster-type)
+	plustrue plusasleep ?monster ?n))
+	plushitByArrow ?monster))
 
 ;----------------------------------------------------------------------
 ; Generic item relations
 ;----------------------------------------------------------------------
 
-; Armor strength (defense)
-(armorstrength ringmail 2)
-(armorstrength bandedmail 3)
+; Armor strength plusdefense)
+plusarmorstrength ringmail 2)
+plusarmorstrength bandedmail 3)
 
-; Weapon strength (offense)
-(weaponStrength mace 2)
-(weaponStrength sword 3)
-(weaponStrength bow 1)
+; Weapon strength plusoffense)
+plusweaponStrength mace 2)
+plusweaponStrength sword 3)
+plusweaponStrength bow 1)
 
 
 ;----------------------------------------------------------------------
@@ -1204,94 +1204,94 @@
 ;----------------------------------------------------------------------
 
 ; Mearning: True if the hero is at the same location as the exit
-(<= atExit 
-	(true (location hero ?x ?y))
-	(true (location exit ?x ?y)))
+plus<= atExit 
+	plustrue pluslocation hero ?x ?y))
+	plustrue pluslocation exit ?x ?y)))
 
 ;----------------------------------------------------------------------
 ; Arithmetic relations
 ;----------------------------------------------------------------------
 
 ; Meaning: Absolute value of difference
-(<= (diff ?n1 ?n2 ?diff)
-    (greaterthan ?n1 ?n2)
-    (minus ?n1 ?n2 ?diff))                              ; Arithmetic
+plus<= plusdiff ?n1 ?n2 ?diff)
+    plus> ?n1 ?n2)
+    plus- ?n1 ?n2 ?diff))                              ; Arithmetic
     
-(<= (diff ?n1 ?n2 ?diff)
-    (gtequal ?n2 ?n1)
-	(minus ?n2 ?n1 ?diff))                              ; Arithmetic
+plus<= plusdiff ?n1 ?n2 ?diff)
+    plus>= ?n2 ?n1)
+	plus- ?n2 ?n1 ?diff))                              ; Arithmetic
 
 
 ; Meaning: Minimum
-(<= (min ?n1 ?n2 ?n2)
-	(greaterthan ?n1 ?n2))                              ; Arithmetic
-(<= (min ?n1 ?n2 ?n1)
-	(gtequal ?n2 ?n1))                             ; Arithmetic
+plus<= plusmin ?n1 ?n2 ?n2)
+	plus> ?n1 ?n2))                              ; Arithmetic
+plus<= plusmin ?n1 ?n2 ?n1)
+	plus>= ?n2 ?n1))                             ; Arithmetic
 
 
-; Meaning: Defines a (finite) succesor relation
-(succ 0 1)
-(succ 1 2)
-(succ 2 3)
-(succ 3 4)
-(succ 4 5)
-(succ 5 6)
-(succ 6 7)
-(succ 7 8)
-(succ 8 9)
-(succ 9 10)
-(succ 10 11)
-(succ 11 12)
-(succ 12 13)
-(succ 13 14)
-(succ 14 15)
-(succ 15 16)
-(succ 16 17)
-(succ 17 18)
-(succ 18 19)
-(succ 19 20)
-(succ 20 21)
-(succ 21 22)
-(succ 22 23)
-(succ 23 24)
-(succ 24 25)
-(succ 25 26)
-(succ 26 27)
-(succ 27 28)
-(succ 28 29)
-(succ 29 30)
-(succ 30 31)
-(succ 31 32)
-(succ 32 33)
-(succ 33 34)
-(succ 34 35)
-(succ 35 36)
-(succ 36 37)
-(succ 37 38)
-(succ 38 39)
-(succ 39 40)
-(succ 40 41)
-(succ 41 42)
-(succ 42 43)
-(succ 43 44)
-(succ 44 45)
-(succ 45 46)
-(succ 46 47)
-(succ 47 48)
-(succ 48 49)
-(succ 49 50)
-(succ 50 51)
+; Meaning: Defines a plusfinite) succesor relation
+plussucc 0 1)
+plussucc 1 2)
+plussucc 2 3)
+plussucc 3 4)
+plussucc 4 5)
+plussucc 5 6)
+plussucc 6 7)
+plussucc 7 8)
+plussucc 8 9)
+plussucc 9 10)
+plussucc 10 11)
+plussucc 11 12)
+plussucc 12 13)
+plussucc 13 14)
+plussucc 14 15)
+plussucc 15 16)
+plussucc 16 17)
+plussucc 17 18)
+plussucc 18 19)
+plussucc 19 20)
+plussucc 20 21)
+plussucc 21 22)
+plussucc 22 23)
+plussucc 23 24)
+plussucc 24 25)
+plussucc 25 26)
+plussucc 26 27)
+plussucc 27 28)
+plussucc 28 29)
+plussucc 29 30)
+plussucc 30 31)
+plussucc 31 32)
+plussucc 32 33)
+plussucc 33 34)
+plussucc 34 35)
+plussucc 35 36)
+plussucc 36 37)
+plussucc 37 38)
+plussucc 38 39)
+plussucc 39 40)
+plussucc 40 41)
+plussucc 41 42)
+plussucc 42 43)
+plussucc 43 44)
+plussucc 44 45)
+plussucc 45 46)
+plussucc 46 47)
+plussucc 47 48)
+plussucc 48 49)
+plussucc 49 50)
+plussucc 50 51)
 
 ; Meaning: The integers in [0,7]; Used in nCell and plus, only
 ; SW -- these are used in lots of other places now
-(int 0)
-(int 1)
-(int 2)
-(int 3)
-(int 4)
-(int 5)
-(int 6)
-(int 7)
+plusint 0)
+plusint 1)
+plusint 2)
+plusint 3)
+plusint 4)
+plusint 5)
+plusint 6)
+plusint 7)
 
 ;---------------------------------------------------------------------------
 ; Action relations
@@ -1299,188 +1299,188 @@
 
 ; Meaning: Hero moves one cell in direction ?dir from ?x1 ?y1
 ; - If <x1,y1> is not currently occupied by a monster.
-(<= (nextHeroLocation ?x2 ?y2)
-	(true (location hero ?x1 ?y1))
-	(does hero (move ?dir))
-	(nCell 1 ?dir ?x1 ?y1 ?x2 ?y2)                       ; Movement
-	(not (monsterAt ?x2 ?y2)))                           ; Init
+plus<= plusnextHeroLocation ?x2 ?y2)
+	plustrue pluslocation hero ?x1 ?y1))
+	plusdoes hero plusmove ?dir))
+	plusnCell 1 ?dir ?x1 ?y1 ?x2 ?y2)                       ; Movement
+	plusnot plusmonsterAt ?x2 ?y2)))                           ; Init
 
 ; Meaning: Hero's location is unchanged if attacking a monster
-(<= (nextHeroLocation ?x1 ?y1)
-	(true (location hero ?x1 ?y1))
-	(does hero (move ?dir))
-	(nCell 1 ?dir ?x1 ?y1 ?x2 ?y2)                       ; Movement
-	(monsterAt ?x2 ?y2))
+plus<= plusnextHeroLocation ?x1 ?y1)
+	plustrue pluslocation hero ?x1 ?y1))
+	plusdoes hero plusmove ?dir))
+	plusnCell 1 ?dir ?x1 ?y1 ?x2 ?y2)                       ; Movement
+	plusmonsterAt ?x2 ?y2))
 
 ; Meaning: Non-moving hero actions
-(<= (nextHeroLocation ?x ?y)
-	(true (location hero ?x ?y))
-	(not (does hero (move ?dir))))
+plus<= plusnextHeroLocation ?x ?y)
+	plustrue pluslocation hero ?x ?y))
+	plusnot plusdoes hero plusmove ?dir))))
 
 ; ToDo: Handle staircasedown when there are multiple levels.
 
 ; Meaning: There's a monster currently at ?x ?y
-(<= (monsterAt ?x ?y)
-    (true (location ?monster ?x ?y))
-    (monster ?monster ?monster-type))
+plus<= plusmonsterAt ?x ?y)
+    plustrue pluslocation ?monster ?x ?y))
+    plusmonster ?monster ?monster-type))
 
 ; Meaning: Move provoked monsters towards hero according to ?speed
 ; - BUT: Cannot stop on same location as hero's location
 ;   We'll make nStepsTowards stop when the next location will be
 ;   occupied by the hero.
-(<= (nextMonsterLocation ?monster ?x2 ?y2)
-	(not (currentlyInvisible hero))
-	(provoked ?monster)                              ; Generic monster
-	(true (location ?monster ?x1 ?y1))
-	(true (location hero ?herox ?heroy))
-	(monster ?monster ?monster-type)
-	(monsterSpeed ?monster-type ?base-speed)
-	(relativeSpeed ?base-speed ?speed)
-	(nStepsTowards ?speed ?x1 ?y1 ?herox ?heroy ?x2 ?y2)) ; Movement
+plus<= plusnextMonsterLocation ?monster ?x2 ?y2)
+	plusnot pluscurrentlyInvisible hero))
+	plusprovoked ?monster)                              ; Generic monster
+	plustrue pluslocation ?monster ?x1 ?y1))
+	plustrue pluslocation hero ?herox ?heroy))
+	plusmonster ?monster ?monster-type)
+	plusmonsterSpeed ?monster-type ?base-speed)
+	plusrelativeSpeed ?base-speed ?speed)
+	plusnStepsTowards ?speed ?x1 ?y1 ?herox ?heroy ?x2 ?y2)) ; Movement
 
 ; Meaning: Unprovoked monsters don't move
-(<= (nextMonsterLocation ?monster ?x ?y)
-    (monster ?monster ?monster-type)
-	(not (provoked ?monster))
-	(true (location ?monster ?x ?y)))
+plus<= plusnextMonsterLocation ?monster ?x ?y)
+    plusmonster ?monster ?monster-type)
+	plusnot plusprovoked ?monster))
+	plustrue pluslocation ?monster ?x ?y)))
 
-(<= (nextMonsterLocation ?monster ?x ?y)
-    (monster ?monster ?monster-type)
-	(true (invisible hero ?n))                      ; invisible for n more turns
-	(true (location ?monster ?x ?y)))
+plus<= plusnextMonsterLocation ?monster ?x ?y)
+    plusmonster ?monster ?monster-type)
+	plustrue plusinvisible hero ?n))                      ; invisible for n more turns
+	plustrue pluslocation ?monster ?x ?y)))
 
 
 ; Meaning: How many steps can monster take this turn?
 ; We slow all monsters down when hero has enhancedSpeed
-(<= (relativeSpeed 0.5 ?speed)
-	(not (currentlyEnhancedSpeed hero))
-	(halfSpeed ?speed))
-(<= (relativeSpeed 0.5 ?speed)
-	(true (enhancedSpeed hero ?n))
-	(quarterSpeed ?speed))
-(<= (relativeSpeed ?base-speed ?base-speed)
-	(distinct ?base-speed 0.5)
-	(not (currentlyEnhancedSpeed hero)))
-(<= (relativeSpeed 1 ?speed)
-	(true (enhancedSpeed hero ?n))
-	(halfSpeed ?speed))
-(<= (relativeSpeed 2 1)
-	(true (enhancedSpeed hero ?n)))
+plus<= plusrelativeSpeed 0.5 ?speed)
+	plusnot pluscurrentlyEnhancedSpeed hero))
+	plushalfSpeed ?speed))
+plus<= plusrelativeSpeed 0.5 ?speed)
+	plustrue plusenhancedSpeed hero ?n))
+	plusquarterSpeed ?speed))
+plus<= plusrelativeSpeed ?base-speed ?base-speed)
+	plusdistinct ?base-speed 0.5)
+	plusnot pluscurrentlyEnhancedSpeed hero)))
+plus<= plusrelativeSpeed 1 ?speed)
+	plustrue plusenhancedSpeed hero ?n))
+	plushalfSpeed ?speed))
+plus<= plusrelativeSpeed 2 1)
+	plustrue plusenhancedSpeed hero ?n)))
 
 ; Anything that moves slower than Hero is handled by 
 ; flipping speed from 1 to 0 every other turn
-; (or every fourth turn for 1/4 speed monsters)
-(<= (halfSpeed 1)
-	(true odd))
-(<= (halfSpeed 0)
-	(true even))
-(<= (quarterSpeed 1)
-	(true (slomo-time 4)))
-(<= (quarterSpeed 0)
-	(true (slomo-time ?n))
-	(distinct ?n 4))
+; plusor every fourth turn for 1/4 speed monsters)
+plus<= plushalfSpeed 1)
+	plustrue odd))
+plus<= plushalfSpeed 0)
+	plustrue even))
+plus<= plusquarterSpeed 1)
+	plustrue plusslomo-time 4)))
+plus<= plusquarterSpeed 0)
+	plustrue plusslomo-time ?n))
+	plusdistinct ?n 4))
 
-(<= (healthRestoredByScroll)
-	(does hero (read ?scroll))
-	(scroll ?scroll restoreHealth)
-	(true (health hero ?health))
-	(maxHealth hero ?maxHealth)
-	(distinct ?health ?maxHealth))
+plus<= plushealthRestoredByScroll)
+	plusdoes hero plusread ?scroll))
+	plusscroll ?scroll restoreHealth)
+	plustrue plushealth hero ?health))
+	plusmaxHealth hero ?maxHealth)
+	plusdistinct ?health ?maxHealth))
 
 ;----------------------------------------------------------------------
 ; Object-interaction relations
 ;----------------------------------------------------------------------
 
-; Meaning: The monster is hit by an arrow (unlimited range)
-; SW: changed to two rules, for x==x and y==y, so we don't need arbitrary nCells (very expensive for us)
-(<= (hitByArrow ?monster)
-	(monster ?monster ?monster-type)               ; Generic monster
-	(does hero (throw arrow ?dir))
-	(true (location hero ?x ?y1))
-	(true (location ?monster ?x ?y2)))             ; Action
+; Meaning: The monster is hit by an arrow plusunlimited range)
+; SW: changed to two rules, for x==x and y==y, so we don't need arbitrary nCells plusvery expensive for us)
+plus<= plushitByArrow ?monster)
+	plusmonster ?monster ?monster-type)               ; Generic monster
+	plusdoes hero plusthrow arrow ?dir))
+	plustrue pluslocation hero ?x ?y1))
+	plustrue pluslocation ?monster ?x ?y2)))             ; Action
 
-(<= (hitByArrow ?monster)
-	(monster ?monster ?monster-type)               ; Generic monster
-	(does hero (throw arrow ?dir))
-	(true (location hero ?x1 ?y))
-	(true (location ?monster ?x2 ?y)))             ; Action
+plus<= plushitByArrow ?monster)
+	plusmonster ?monster ?monster-type)               ; Generic monster
+	plusdoes hero plusthrow arrow ?dir))
+	plustrue pluslocation hero ?x1 ?y))
+	plustrue pluslocation ?monster ?x2 ?y)))             ; Action
 
 ; Meaning: Hero adds item to sack if on it at end of time step 
 ; - And it wasn't dropped in this time step
-(<= (pickedUp ?item)
-	(item ?item)                         ; Generic item
-	(distinct ?item gold)
-	(true (burden ?burden))
-	(maxBurden ?max-burden)              ; Generic sack
-	(greaterthan ?max-burden ?burden)              ; Arithmetic
-	(true (location hero ?x1 ?y1))
-	(nextHeroLocation ?x2 ?y2)           ; Action
-	(not (sameLocation ?x1 ?y1 ?x2 ?y2)) ; Don't re-pick up an item after dropping it
-	(true (location ?item ?x2 ?y2)))
+plus<= pluspickedUp ?item)
+	plusitem ?item)                         ; Generic item
+	plusdistinct ?item gold)
+	plustrue plusburden ?burden))
+	plusmaxBurden ?max-burden)              ; Generic sack
+	plus> ?max-burden ?burden)              ; Arithmetic
+	plustrue pluslocation hero ?x1 ?y1))
+	plusnextHeroLocation ?x2 ?y2)           ; Action
+	plusnot plussameLocation ?x1 ?y1 ?x2 ?y2)) ; Don't re-pick up an item after dropping it
+	plustrue pluslocation ?item ?x2 ?y2)))
 
 ; Handle gold specially since it is not limited by maxBurden
-(<= (pickedUp gold)
-	(nextHeroLocation ?x ?y)
-	(true (location gold ?x ?y)))
+plus<= pluspickedUp gold)
+	plusnextHeroLocation ?x ?y)
+	plustrue pluslocation gold ?x ?y)))
 
-(<= (decrementsBurden ?item)
-	(use ?item))
+plus<= plusdecrementsBurden ?item)
+	plususe ?item))
 
-(<= (decrementsBurden ?item)
-	(does hero (drop ?item)))
+plus<= plusdecrementsBurden ?item)
+	plusdoes hero plusdrop ?item)))
 
 ; Note: gold doesn't contribute to burden.
-(<= burdenChanged
-	(pickedUp ?item)                    ; acquired new item
-	(distinct ?item gold))
+plus<= burdenChanged
+	pluspickedUp ?item)                    ; acquired new item
+	plusdistinct ?item gold))
 
-(<= burdenChanged
-	(decrementsBurden ?item)            ; successful drop or use
-	(distinct ?item gold))
+plus<= burdenChanged
+	plusdecrementsBurden ?item)            ; successful drop or use
+	plusdistinct ?item gold))
 
-(<= (changeWeapon ?weapon)
-	(does hero (wield ?otherweapon))
-	(distinct ?weapon ?otherweapon))
+plus<= pluschangeWeapon ?weapon)
+	plusdoes hero pluswield ?otherweapon))
+	plusdistinct ?weapon ?otherweapon))
 
-(<= arrowThrown
-    (direction ?dir)
-	(does hero (throw arrow ?dir)))
+plus<= arrowThrown
+    plusdirection ?dir)
+	plusdoes hero plusthrow arrow ?dir)))
 
 ; Meaning: hero is invisible at the moment.
 ; helper predicate to avoid unbound vars in negative statement
-(<= (currentlyInvisible hero)
-	(true (invisible hero ?n)))
+plus<= pluscurrentlyInvisible hero)
+	plustrue plusinvisible hero ?n)))
 
-(<= (currentlyAsleep ?agent)
-	(true (asleep ?agent ?n)))
+plus<= pluscurrentlyAsleep ?agent)
+	plustrue plusasleep ?agent ?n)))
 
-(<= (currentlyEnhancedArmor hero)
-	(true (enhancedArmor hero ?n)))
+plus<= pluscurrentlyEnhancedArmor hero)
+	plustrue plusenhancedArmor hero ?n)))
 
-(<= (currentlyEnhancedStrength hero)
-	(true (enhancedStrength hero ?n)))
+plus<= pluscurrentlyEnhancedStrength hero)
+	plustrue plusenhancedStrength hero ?n)))
 
-(<= (currentlyEnhancedSpeed hero)
-	(true (enhancedSpeed hero ?n)))
+plus<= pluscurrentlyEnhancedSpeed hero)
+	plustrue plusenhancedSpeed hero ?n)))
 
-(<= (armored hero)
-	(true (wearing ?armor))
-	(armor ?armor ?armor-type))
+plus<= plusarmored hero)
+	plustrue pluswearing ?armor))
+	plusarmor ?armor ?armor-type))
 
-(<= (armed hero)
-	(true (wielding ?weapon))
-	(weapon ?weapon ?weapon-type))
+plus<= plusarmed hero)
+	plustrue pluswielding ?weapon))
+	plusweapon ?weapon ?weapon-type))
 
 ; Meaning: Hero quaffs a potion currently in the sack
 ; This is just a convenience relation that indicates an item has been 
 ; used up and no longer counts as a burden.  The effect of the
 ; quaff or read must be handled in a next rule.
-(<= (use ?potion)
-	(does hero (quaff ?potion)))
+plus<= plususe ?potion)
+	plusdoes hero plusquaff ?potion)))
 
 ; Meaning: Hero reads a scroll currently in the sack
-(<= (use ?scroll)
-	(does hero (read ?scroll)))
+plus<= plususe ?scroll)
+	plusdoes hero plusread ?scroll)))
 
 
 ;;; End of file

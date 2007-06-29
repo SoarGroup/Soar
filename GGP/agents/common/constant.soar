@@ -32,7 +32,9 @@ sp {apply*update-state*clean-analyzed
 }
 
 sp {propose*analyze-state
-  (state <s> ^name game ^new-game-state-created <ngs>)
+  (state <s> ^name game ^new-game-state-created <ngs>
+             ^io.output-link <ol>)
+  (<ol> ^<cmd> <c>)
 -->
   (<s> ^operator <o> +)
   (<o> ^name analyze-state)
@@ -40,14 +42,67 @@ sp {propose*analyze-state
 
 sp {apply*analyze-state
   (state <s> ^name game ^operator.name analyze-state
-             ^new-game-state-created <ngs>
-             ^io.output-link <ol>)
+             ^new-game-state-created <ngs>)
+-->
+  (<s> ^new-game-state-created <ngs> -)
+  (<s> ^do-update-search-info <du>)
+  (<s> ^state-analyzed <sa>)
+}
+
+sp {propose*update-search-info
+  (state <s> ^name game
+             ^do-update-search-info <du>)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name update-search-info)
+}
+
+sp {apply*update-search-info
+  (state <s> ^name game
+             ^operator.name update-search-info
+             ^io.output-link <ol>
+             ^do-update-search-info <du>)
+-->
+  (<s> ^do-update-search-info <du> -)
+  (<s> ^do-check-for-duplicate-location <dc>)
+}
+
+sp {propose*check-for-duplicate-location
+  (state <s> ^name game
+             ^do-check-for-duplicate-location <du>)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name check-for-duplicate-location)
+}
+
+sp {apply*check-for-duplicate-location
+  (state <s> ^name game
+             ^operator.name check-for-duplicate-location
+             ^io.output-link <ol>
+             ^do-check-for-duplicate-location <du>)
+-->
+  (<s> ^do-check-for-duplicate-location <du> -)
+  (<s> ^do-save-location <dc>)
+}
+sp {propose*save-location
+  (state <s> ^name game
+             ^do-save-location <du>)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name save-location)
+}
+
+sp {apply*save-location
+  (state <s> ^name game
+             ^operator.name save-location
+             ^io.output-link <ol>
+             ^do-save-location <du>)
   (<ol> ^<cmd-name> <c>)
 -->
   (<ol> ^<cmd-name> <c> -)
-  (<s> ^new-game-state-created <ngs> -)
-  (<s> ^state-analyzed <sa>)
+  (<s> ^do-save-location <du> -)
 }
+
 
 sp {apply*analyze-state*handle-success
    (state <s> ^name game

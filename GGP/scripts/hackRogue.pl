@@ -6,6 +6,7 @@ if (not -e $file) {
 }
 
 $makeStatic = "./makeStatic.pl $file";
+$fixVar = "./fixVar11.pl $file";
 
 print `echo "source rogue-common.soar" >> $file`;
 print `$makeStatic between`;
@@ -17,7 +18,11 @@ print `$makeStatic cardinalrelation`;
 print `$makeStatic roomlocation`;
 print `$makeStatic traversible`;
 print `$makeStatic greaterthan`;
+print `$makeStatic lessthan`;
 print `$makeStatic gtequal`;
 print `$makeStatic plus`;
 print `$makeStatic minus`;
+print `$makeStatic samelocation`;
+print `$makeStatic nextcell`;
+print `$fixVar`;
 

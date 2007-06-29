@@ -5,7 +5,8 @@
 
 sp {game*apply-op*game-state-unchanged
    (state <s> ^name game
-              ^operator.name {<> analyze-state <> update-state <name>})
+              ^operator.name {<> analyze-state <> update-state <> update-search-info 
+                              <> save-location <> check-for-duplicate-location <name>})
 -->
    (<s> ^game-state-unchanged true)
 }
@@ -35,9 +36,12 @@ sp {elaborate*fail-if-no-gs-change
    (<s> ^failure <d>)
 }
 
+
+
 sp {game*elaborate*added*0
    (state <s> ^name game
               ^gs <gs>
+         #     ^new-game-state-created
               ^facts <facts>
               ^old-gs <old-gs>)
    (<gs> ^<item> <id-gs>)
@@ -53,6 +57,7 @@ sp {game*elaborate*added*0
 sp {game*elaborate*added*1
    (state <s> ^name game
               ^gs <gs>
+          #    ^new-game-state-created
               ^facts <facts>
               ^old-gs <old-gs>)
    (<gs> ^<item> <id-gs>)
@@ -70,6 +75,7 @@ sp {game*elaborate*added*1
 sp {game*elaborate*added*2
    (state <s> ^name game
               ^gs <gs>
+          #    ^new-game-state-created
               ^old-gs <old-gs>)
    (<gs> ^<item> <id-gs>)
    (<id-gs> ^p1 <p1-val>
@@ -88,6 +94,7 @@ sp {game*elaborate*added*2
 sp {game*elaborate*added*3*not-explorer-loc
    (state <s> ^name game
               ^gs <gs>
+        #      ^new-game-state-created
               ^old-gs <old-gs>)
    (<gs> ^<item> <id-gs>
          ^role <role>)
@@ -110,6 +117,7 @@ sp {game*elaborate*added*3*not-explorer-loc
 sp {game*elaborate*added*3*explorer-loc
    (state <s> ^name game
               ^gs <gs>
+         #     ^new-game-state-created
               ^old-gs <old-gs>)
    (<gs> ^location <id-gs>
          ^role <role>)
@@ -127,6 +135,7 @@ sp {game*elaborate*added*3*explorer-loc
 sp {game*elaborate*removed*0
    (state <s> ^name game
               ^gs <old-gs>
+         #     ^new-game-state-created
               ^old-gs <gs>)
    (<gs> ^<item> <id-gs>)
    (<id-gs> -^p1)
@@ -141,6 +150,7 @@ sp {game*elaborate*removed*0
 sp {game*elaborate*removed*1
    (state <s> ^name game
               ^gs <old-gs>
+         #     ^new-game-state-created
               ^old-gs <gs>)
    (<gs> ^<item> <id-gs>)
    (<id-gs> ^p1 <p1-val>
@@ -156,8 +166,8 @@ sp {game*elaborate*removed*1
 
 sp {game*elaborate*removed*2
    (state <s> ^name game
-          #    ^operator.name analyze-state
               ^gs <old-gs>
+          #    ^new-game-state-created
               ^old-gs <gs>)
    (<gs> ^<item> <id-gs>)
    (<id-gs> ^p1 <p1-val>
@@ -176,6 +186,7 @@ sp {game*elaborate*removed*2
 
 sp {game*elaborate*removed*3*not-explorer-loc
    (state <s> ^name game
+         #     ^new-game-state-created
               ^gs <old-gs>
               ^old-gs <gs>)
    (<gs> ^<item> <id-gs>
@@ -199,6 +210,7 @@ sp {game*elaborate*removed*3*not-explorer-loc
 sp {game*elaborate*removed*3*explorer-loc
    (state <s> ^name game
               ^gs <old-gs>
+          #    ^new-game-state-created
               ^old-gs <gs>)
    (<gs> ^location <id-gs>
          ^role <role>)

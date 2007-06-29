@@ -2,7 +2,7 @@
 ;;; TL-Rogue GDL Rule Set
 ; Tom Hinrichs (Northwestern U.)
 ; In collabortion with David Aha (NRL)
-; 2007 June 12
+; 2007 June 23
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -81,8 +81,8 @@
 ;   - Banded mail: 3  ; First 2 monster attacks do not decrease health
 ;   - Counts towards burden while worn
 ; - Potions
-;   - Speed (Doubles speed for 3 turns)
-;   - Strength (Increases attack value by 1 for 3 turns)
+;   - Speed (Doubles speed for 5 turns)
+;   - Strength (Increases attack value by 1 for 5 turns)
 ;   - Invisibility (note: cannot implement blindness)
 ;   - Deleted after use
 ; - Scrolls:
@@ -165,23 +165,23 @@
 
 ; Object locations: <object_name x y>
 (init (location amulet 2 5))
-(init (location armor1 0 2))
-(init (location weapon1 1 1))
-(init (location weapon2 6 0))
+;(init (location armor1 0 2))
+;(init (location weapon1 1 1))
+;(init (location weapon2 6 0))
 
-(init (location potion1 0 0))
-(init (location potion2 7 5))
-(init (location scroll1 5 1))
+;(init (location potion1 0 0))
+;(init (location potion2 7 5))
+;(init (location scroll1 5 1))
 (init (location exit 7 7))           ; staircaseup
-(init (location gold 5 3))
+;(init (location gold 5 3))
 
 ; Character locations: <character x y>
 (init (location hero 0 3))
 (init (location bat1 1 0))
-(init (location bat2 4 5))
-(init (location hobgoblin1 0 7))
-(init (location kestral1 7 3))
-(init (location snake1 3 3))
+;(init (location bat2 4 5))
+;(init (location hobgoblin1 0 7))
+;(init (location kestral1 7 3))
+;(init (location snake1 3 3))
 
 ; Health: <character initial_health>
 (init (health hero 6))
@@ -217,6 +217,76 @@
 
 (corridor 6 4) ; Vertical corridor/doorway between R2 and R3
 
+
+; SW- we need the same representation of walls as MM and escape,
+; since we make lots of assumptions based on it to speed up search.
+; This could potentially be derived from the above by a script on our end.
+
+; room 1
+(init (blocked west 0 0))
+(init (blocked west 0 1))
+(init (blocked west 0 2))
+(init (blocked west 0 3))
+(init (blocked north 0 0))
+(init (blocked north 1 0))
+(init (blocked north 2 0))
+(init (blocked north 3 0))
+(init (blocked east 3 1))
+(init (blocked east 3 2))
+(init (blocked east 3 3))
+(init (blocked south 0 3))
+(init (blocked south 1 3))
+(init (blocked south 2 3))
+(init (blocked south 3 3))
+
+; corridor 1
+(init (blocked north 4 0))
+(init (blocked south 4 0))
+
+; room 2
+(init (blocked west 5 1))
+(init (blocked west 5 2))
+(init (blocked west 5 3))
+(init (blocked north 5 0))
+(init (blocked north 6 0))
+(init (blocked north 7 0))
+(init (blocked east 7 0))
+(init (blocked east 7 1))
+(init (blocked east 7 2))
+(init (blocked east 7 3))
+(init (blocked south 5 3))
+(init (blocked south 7 3))
+
+; corridor 2
+(init (blocked west 6 4))
+(init (blocked east 6 4))
+
+; room 3
+(init (blocked west 0 5))
+(init (blocked west 0 6))
+(init (blocked west 0 7))
+(init (blocked north 0 5))
+(init (blocked north 1 5))
+(init (blocked north 2 5))
+(init (blocked north 3 5))
+(init (blocked north 4 5))
+(init (blocked north 5 5))
+(init (blocked north 7 5))
+(init (blocked east 7 5))
+(init (blocked east 7 6))
+(init (blocked east 7 7))
+(init (blocked south 0 7))
+(init (blocked south 1 7))
+(init (blocked south 2 7))
+(init (blocked south 3 7))
+(init (blocked south 4 7))
+(init (blocked south 5 7))
+(init (blocked south 6 7))
+(init (blocked south 7 7))
+
+
+(<= (next (blocked ?dir ?x ?y))
+    (true (blocked ?dir ?x ?y)))
 
 ; Meaning: Specific monsters (and their types) in *this* dungeon
 (monster bat1 bat)   
@@ -380,7 +450,7 @@
 	(hitByArrow ?monster)
 	(- ?hpOld 2 ?hpNew))
 
-(<= (next(health ?monster ?hp))
+(<= (next (health ?monster ?hp))
 	(monster ?monster ?monster-type)
 	(not (monsterAttacked ?monster))
 	(not (hitByArrow ?monster))
@@ -513,8 +583,8 @@
 ; 3.4.7: Enhanced Speed, Strength, Armor
 ;--------------------------------------------------
 
-; Meaning: Hero's attack strength is enhanced by 1 for 3 turns
-(<= (next (enhancedSpeed hero 3))
+; Meaning: Hero's speed is enhanced by 1 for 5 turns
+(<= (next (enhancedSpeed hero 5))
     (does hero (quaff ?potion))
     (potion ?potion speed))
 
@@ -523,7 +593,8 @@
     (distinct ?old-n 1)
     (- ?old-n 1 ?n))
 
-(<= (next (enhancedStrength hero 3))
+; Meaning: Hero's attack strength is enhanced by 1 for 5 turns
+(<= (next (enhancedStrength hero 5))
     (does hero (quaff ?potion))
     (potion ?potion strength))
 
@@ -532,7 +603,7 @@
     (distinct ?old-n 1)
     (- ?old-n 1 ?n))
 
-(<= (next (enhancedArmor hero 2))
+(<= (next (enhancedArmor hero 5))
 	(does hero (read ?scroll)) 
 	(scroll ?scroll armorEnhance)
 	(true (wearing ?armor))  ; You have to be wearing armor first
@@ -554,21 +625,52 @@
 	(true (step ?current))
 	(succ ?current ?next))          ; Arithmetic
 
+; SW: Changed to only update the parity counters when they are being used.
+; This isn't a useless groundings problem, but it actually breaks our spatial assumptions, since
+; if we see a game state change, the agent can use no knowledge about what directions are redundant
+; to move in. So we need to minimize useless game state changes.
+
+(<= (monsterMoving ?monster)
+    (provoked ?monster))
+
+(<= (slomoMonsterMoving ?monster)
+    (currentlyEnhancedSpeed hero)
+    (provoked ?monster)
+    (monster ?monster ?monster-type)
+    (monsterSpeed ?monster-type .5))
+
 ; Parity counter for 1/2 speed movement
 (<= (next odd)
+  (monsterMoving ?monster)
 	(true even))
 (<= (next even)
+  (monsterMoving ?monster)
 	(true odd))
+(<= (next even)
+  (not (monsterMoving ?monster))
+  (true even))
+(<= (next odd)
+  (not (monsterMoving ?monster))
+  (true odd))
 
 ; Meaning: slow-motion or "matrix" time counter for sluggish snakes
 (<= (next (slomo-time 1))
+  (slomoMonsterMoving ?monster)
 	(true (slomo-time 4)))
 (<= (next (slomo-time 2))
+  (slomoMonsterMoving ?monster)
 	(true (slomo-time 1)))
 (<= (next (slomo-time 3))
+  (slomoMonsterMoving ?monster)
 	(true (slomo-time 2)))
 (<= (next (slomo-time 4))
+  (slomoMonsterMoving ?monster)
 	(true (slomo-time 3)))
+  
+
+(<= (next (slomo-time ?t))
+    (true (slomo-time ?t))
+    (not (currentlyEnhancedSpeed hero)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 4. Legal: Specifies legal moves for players
@@ -583,7 +685,7 @@
 	(not (currentlyAsleep hero))
 	(true (location hero ?xOld ?yOld))
 	(direction ?dir)                        ; Generic spatial
-	(nCell 1 ?dir ?xOld ?yOld ?xNew ?yNew)  ; Movement
+	(nextCell ?dir ?xOld ?yOld ?xNew ?yNew) ; Movement
 	(traversible ?xNew ?yNew))              ; Generic spatial
 
 ; Meaning: Hero can drop an item (being carried)
@@ -701,6 +803,9 @@
     (totalMonsterDamage1 ?monster ?strength ?x ?y ?damage))
 
 (<= (totalMonsterDamage1 ?monster ?strength ?x ?y ?damage)
+	(nextHeroLocation ?x ?y) ; SW added
+	(monster ?monster ?monster-type) ; SW added
+  (attackedByMonster ?monster ?x ?y) ; SW added
 	(not (attackedBy2ndMonster ?monster ?x ?y))
 	(amountOfMonsterDamage ?strength ?d1)
 	(true (health hero ?hp))
@@ -711,9 +816,13 @@
 
 ; Meaning: combined damage from two monsters:
 (<= (totalMonsterDamage2 ?monster1 ?strength1 ?x ?y ?damage)
+	(nextHeroLocation ?x ?y) ; SW added
 	(monster ?monster2 ?monster-type)
+	(monster ?monster1 ?monster-type) ; SW added
 	(distinct ?monster2 ?monster1)
+	(attackedByMonster ?monster1 ?x ?y) ; SW added
 	(attackedByMonster ?monster2 ?x ?y)
+	(monsterStrength ?monster-type ?strength1) ; SW added
 	(monsterStrength ?monster-type ?strength2)
 	(+ ?strength1 ?strength2 ?strength)
 	(amountOfMonsterDamage ?strength ?combined-damage)
@@ -729,26 +838,36 @@
 ; hero's next location
 (<= (attackedByMonster ?monster ?x2 ?y2)
 	(provoked ?monster)                            ; Generic monster
+	(nextHeroLocation ?x2 ?y2) ; SW added
 	(true (location ?monster ?x1 ?y1))
 	(adjacent ?x1 ?y1 ?x2 ?y2))                    ; Generic spatial
 
 ; Meaning: Monster1 and monster2 both attack simultaneously.
 (<= (attackedBy2ndMonster ?monster1 ?x ?y)
 	(monster ?monster2 ?monster-type)
+	(monster ?monster1 ?monster-type) ; SW
 	(distinct ?monster2 ?monster1)
-	(attackedByMonster ?monster2 ?x ?y))
+	(attackedByMonster ?monster2 ?x ?y)
+	(attackedByMonster ?monster1 ?x ?y))
 
 ; Meaning: No damage if monster's attack is less than defense
 ; Offensive-strength is the combined strength of attacking monsters.
 ; - Open to debate
 (<= (amountOfMonsterDamage ?offensive-strength 0)
+  (attackedByMonster ?monster ?x ?y) ; SW
+  (monster ?monster ?monster-type) ; SW
+  (monsterStrength ?monster-type ?offensive-strength) ; SW
 	(heroDefense ?defense)                          ; Battle
-	(>= ?defense ?offensive-strength))              ; Arithmetic
+	(> ?defense ?offensive-strength)) ; SW: changed from >=, bug? Would imply that no damage occurs if offense == defense..
 
 ; Meaning: Attacks whose value is equal to or greater than armor value
 ; - Open to debate (i.e., Attack value is 1 + (offense - defense))
 (<= (amountOfMonsterDamage ?offensive-strength ?hitPointsLost)
+  (attackedByMonster ?monster ?x ?y) ; SW
+  (monster ?monster ?monster-type) ; SW
+  (monsterStrength ?monster-type ?offensive-strength) ; SW
 	(heroDefense ?defense)                          ; Battle
+  (>= ?offensive-strength ?defense) ; SW: this seems necessary
 	(-  ?offensive-strength ?defense ?diff)         ; Arithmetic
 	(+ ?diff 1 ?hitPointsLost))                     ; Arithmetic
 
@@ -763,12 +882,12 @@
 	(armorstrength ?armor-type ?defense))
 
 (<= (heroDefense ?defense)
-    (int ?n)         ; ?n is how many turns it will remain in effect (0 - 3)
+    (int ?n)         ; ?n is how many turns it will remain in effect (0 - 5)
 	(true (enhancedArmor hero ?n))
 	(true (wearing ?item))
 	(armor ?item ?armor-type)
 	(armorstrength ?armor-type ?base-defense)
-	(plus ?base-defense 1 ?defense))
+	(+ ?base-defense 1 ?defense))
 
 ; Meaning: The current offense strength of weapons wielded (if any)
 (<= (heroOffense 1)
@@ -791,10 +910,10 @@
 (<= (monsterAttacked ?monster)
 	(true (location hero ?x1 ?y1))
 	(true (location ?monster ?x2 ?y2))
-	(monster ?monster ?monster-type)               ; Init
-	(adjacent ?x1 ?y1 ?x2 ?y2)                     ; Generic spatial
+	(monster ?monster ?monster-type)
+	(adjacent ?x1 ?y1 ?x2 ?y2)
 	(does hero (move ?dir))
-	(nCell 1 ?dir ?x1 ?y1 ?x2 ?y2))                ; Movement
+	(nextCell ?dir ?x1 ?y1 ?x2 ?y2))
 
 ;----------------------------------------------------------------------
 ; Movement relations
@@ -802,130 +921,156 @@
 
 ;;; Recursively moves one step at a time 
 ; Meaning: Exhausted our travel distance
-(<= (nStepsTowards 0 ?startx ?starty ?destx ?desty ?startx ?starty))
-
-; Meaning: Reached our destination already.  Shouldn't happen if
-; destination is occupied by hero!
-(<= (nStepsTowards ?n ?x ?y ?x ?y ?x ?y)) 
+(<= (nStepsTowardsHero 0 ?startx ?starty ?startx ?starty)
+  (cellNearMonster ?startx ?starty)) ; SW 
 
 ; Meaning: Recursively move n steps towards our destination
-(<= (nStepsTowards ?n ?startx ?starty ?destx ?desty ?finalx ?finaly)
-	(> ?n 0)                                        ; Arithmetic
-	(singleUnobstructedStep ?startx ?starty ?destx ?desty ?x2 ?y2) ; Movement
-	(- ?n 1 ?n-1)                                       ; Arithmetic
-	(nStepsTowards ?n-1 ?x2 ?y2 ?destx ?desty ?finalx ?finaly)) ; Movement
+;(<= (nStepsTowardsHero ?n ?startx ?starty ?finalx ?finaly)
+;	(int ?n)
+;  (cellNearMonster ?startx ?starty) ; SW 
+;  (cellNearMonster ?finalx ?finaly) ; SW 
+;	(> ?n 0)
+;	(singleStepTowardsHero ?startx ?starty ?x2 ?y2)
+;	(- ?n 1 ?n-1)
+;	(nStepsTowardsHero ?n-1 ?x2 ?y2 ?finalx ?finaly))
+
+(<= (nStepsTowardsHero 1 ?startx ?starty ?finalx ?finaly)
+  (cellNearMonster ?startx ?starty) ; SW 
+  (cellNearMonster ?finalx ?finaly) ; SW 
+	(singleStepTowardsHero ?startx ?starty ?x2 ?y2)
+	(nStepsTowardsHero 0 ?x2 ?y2 ?finalx ?finaly))
+
+(<= (nStepsTowardsHero 2 ?startx ?starty ?finalx ?finaly)
+  (cellNearMonster ?startx ?starty) ; SW 
+  (cellNearMonster ?finalx ?finaly) ; SW 
+	(singleStepTowardsHero ?startx ?starty ?x2 ?y2)
+	(nStepsTowardsHero 1 ?x2 ?y2 ?finalx ?finaly))
 
 ; Meaning: Take one step toward destination only if you won't run into hero.
-(<= (singleUnobstructedStep ?startx ?starty ?destx ?desty ?nextx ?nexty)
-	(oneStepTowards ?startx ?starty ?destx ?desty ?nextx ?nexty)
+(<= (singleStepTowardsHero ?startx ?starty ?nextx ?nexty)
+	(oneStepTowardsHero ?startx ?starty ?nextx ?nexty)
 	(traversible ?nextx ?nexty)
-	(nextHeroLocation ?x ?y)
-	(not (sameLocation ?nextx ?nexty ?x ?y)))
+	(nextHeroLocation ?herox ?heroy)
+	(not (sameLocation ?nextx ?nexty ?herox ?heroy)))
 
 ; Meaning: Stay put and attack the hero.
-(<= (singleUnobstructedStep ?startx ?starty ?destx ?desty ?startx ?starty)
-	(oneStepTowards ?startx ?starty ?destx ?desty ?nextx ?nexty)
-	(nextHeroLocation ?x ?y)
-	(sameLocation ?nextx ?nexty ?x ?y))
-
-; Meaning: Move one step towards destination (diagonally)
-;(<= (oneStepTowards ?x1 ?y1 ?x2 ?y2 ?x3 ?y3)
-;	(diagonalDirection ?dir ?x2 ?y2 ?x1 ?y1)         ; Movement
-;	(nCell 1 ?dir ?x1 ?y1 ?x3 ?y3))                  ; Movement
+(<= (singleStepTowardsHero ?startx ?starty ?startx ?starty)
+	(nextHeroLocation ?herox ?heroy)
+	(oneStepTowardsHero ?startx ?starty ?herox ?heroy))
 
 ;;; Rather than having horizontal or vertical movement preferences
 ;;; as in mummymaze, we alternate each turn.
 
 ; Meaning: Move one step (horizontally or vertically) towards destination
-(<= (oneStepTowards ?x1 ?y1 ?x2 ?y2 ?x3 ?y3)
-	(not (diagonal ?x1 ?y1 ?x2 ?y2))
-	(cardinalRelation ?cdir ?x2 ?y2 ?x1 ?y1)         ; Movement
-	(nCell 1 ?cdir ?x1 ?y1 ?x3 ?y3))                 ; Movement
+(<= (oneStepTowardsHero ?x1 ?y1 ?x3 ?y1)  ; go west
+	(nextHeroLocation ?x2 ?y1)
+	;(room ?lx ?ty ?rx ?by)                ; variable grounding
+	;(between ?lx ?x2 ?rx)
+	;(between ?ty ?y1 ?by) 
+	;(between ?lx ?x1 ?rx)
+  (cellNearMonster ?x1 ?y1) ; SW 
+	(> ?x1 ?x2)
+	(- ?x1 1 ?x3))
 
-(<= (oneStepTowards ?x1 ?y1 ?x2 ?y2 ?x3 ?y3)
-	(not (diagonal ?x1 ?y1 ?x2 ?y2))
-	(cardinalRelation ?cdir ?x2 ?y2 ?x1 ?y1)         ; Movement
-	(nCell 1 ?cdir ?x1 ?y1 ?x3 ?y3))                 ; Movement
+(<= (oneStepTowardsHero ?x1 ?y1 ?x3 ?y1)  ; go east
+	(nextHeroLocation ?x2 ?y1)
+	;(room ?lx ?ty ?rx ?by)                ; variable grounding
+	;(between ?lx ?x2 ?rx)
+	;(between ?ty ?y1 ?by)
+	;(between ?lx ?x1 ?rx)
+  (cellNearMonster ?x1 ?y1) ; SW 
+	(> ?x2 ?x1)
+	(+ ?x1 1 ?x3))
 
-(<= (oneStepTowards ?x1 ?y1 ?x2 ?y2 ?x3 ?y3)
-	(diagonal ?x1 ?y1 ?x2 ?y2)
+(<= (oneStepTowardsHero ?x1 ?y1 ?x1 ?y3)  ; go north
+	(nextHeroLocation ?x1 ?y2)
+	;(room ?lx ?ty ?rx ?by)                ; variable grounding
+	;(between ?lx ?x1 ?rx)
+	;(between ?ty ?y1 ?by)
+	;(between ?lx ?x1 ?rx)
+  (cellNearMonster ?x1 ?y1) ; SW 
+	(> ?y1 ?y2)
+	(- ?y1 1 ?y3))
+
+(<= (oneStepTowardsHero ?x1 ?y1 ?x1 ?y3)  ; go south
+	(nextHeroLocation ?x1 ?y2)
+	;(room ?lx ?ty ?rx ?by)                ; variable grounding
+	;(between ?lx ?x1 ?rx)
+	;(between ?ty ?y1 ?by)
+	;(between ?lx ?x1 ?rx)
+  (cellNearMonster ?x1 ?y1) ; SW 
+	(> ?y2 ?y1)
+	(+ ?y1 1 ?y3))
+
+(<= (oneStepTowardsHero ?x1 ?y1 ?x3 ?y1)    ; go west
+	(nextHeroLocation ?x2 ?y2)
+	;(room ?lx ?ty ?rx ?by)                ; variable grounding
+	;(between ?lx ?x2 ?rx)
+	;(between ?ty ?y2 ?by)
+	;(between ?ty ?y1 ?by)
+	;(between ?lx ?x1 ?rx)
+  (cellNearMonster ?x1 ?y1) ; SW 
+	(> ?x1 ?x2)
+	(distinct ?y1 ?y2)
 	(true odd)
-	(verticalDir ?cdir)
-	(cardinalRelation ?cdir ?x2 ?y2 ?x1 ?y1)         ; Movement
-	(nCell 1 ?cdir ?x1 ?y1 ?x3 ?y3))                 ; Movement
+	(- ?x1 1 ?x3))
 
-(<= (oneStepTowards ?x1 ?y1 ?x2 ?y2 ?x3 ?y3)
-	(diagonal ?x1 ?y1 ?x2 ?y2)
-	(true even)
-	(horizontalDir ?cdir)
-	(cardinalRelation ?cdir ?x2 ?y2 ?x1 ?y1)         ; Movement
-	(nCell 1 ?cdir ?x1 ?y1 ?x3 ?y3))                 ; Movement
+(<= (oneStepTowardsHero ?x1 ?y1 ?x3 ?y1)    ; go east
+	(nextHeroLocation ?x2 ?y2)
+	;(room ?lx ?ty ?rx ?by)                ; variable grounding
+	;(between ?lx ?x2 ?rx)
+	;(between ?ty ?y2 ?by)
+	;(between ?ty ?y1 ?by)
+	;(between ?lx ?x1 ?rx)
+  (cellNearMonster ?x1 ?y1) ; SW 
+	(> ?x2 ?x1)
+	(distinct ?y1 ?y2)
+	(true odd)
+	(+ ?x1 1 ?x3))
 
-
-; Meaning: Direction-based relationships between coordinates
-; - Read: ?n cells ?direction of ?x1 ?y1 is ?x2 ?y2
-(<= (nCell ?n north ?x ?y1 ?x ?y2)
-    (int ?x)
-	(int ?n)                   ; Arithmetic
-	(- ?y1 ?n ?y2))            ; Arithmetic
-(<= (nCell ?n south ?x ?y1 ?x ?y2)
-    (int ?x)
-	(int ?n)                   ; Arithmetic
-	(+ ?y1 ?n ?y2))            ; Arithmetic
-(<= (nCell ?n east ?x1 ?y ?x2 ?y)
-	(int ?n)                   ; Arithmetic
-	(int ?y)                   ; Arithmetic
-	(+ ?x1 ?n ?x2))            ; Arithmetic
-(<= (nCell ?n west ?x1 ?y ?x2 ?y)
-	(int ?n)                   ; Arithmetic
-	(int ?y)                   ; Arithmetic
-	(- ?x1 ?n ?x2))            ; Arithmetic
-;(<= (nCell ?n ne ?x1 ?y1 ?x2 ?y2)
-;	(int ?n)                   ; Arithmetic
-;	(+ ?x1 ?n ?x2)             ; Arithmetic
-;	(- ?y1 ?n ?y2))            ; Arithmetic
-;(<= (nCell ?n nw ?x1 ?y1 ?x2 ?y2)
-;	(int ?n)                   ; Arithmetic
-;	(- ?x1 ?n ?x2)             ; Arithmetic
-;	(- ?y1 ?n ?y2))            ; Arithmetic
-;(<= (nCell ?n se ?x1 ?y1 ?x2 ?y2)
-;	(int ?n)                   ; Arithmetic
-;	(+ ?x1 ?n ?x2)             ; Arithmetic
-;	(+ ?y1 ?n ?y2))            ; Arithmetic
-;(<= (nCell ?n sw ?x1 ?y1 ?x2 ?y2)
-;	(int ?n)                   ; Arithmetic
-;	(- ?x1 ?n ?x2)             ; Arithmetic
-;	(+ ?y1 ?n ?y2))            ; Arithmetic
-
-; Meaning: Direction-based relationships between coordinates
-; - Read: ?x1 ?y1 is ?dir of ?x2 ?y2
-; *** Do we need int statements on all coordinates?
-(<= (cardinalRelation north ?x1 ?y1 ?x2 ?y2)
-	(> ?y2 ?y1))                  ; Arithmetic
-(<= (cardinalRelation south ?x1 ?y1 ?x2 ?y2)
-	(> ?y1 ?y2))                  ; Arithmetic
-(<= (cardinalRelation east ?x1 ?y1 ?x2 ?y2)
-	(> ?x1 ?x2))                  ; Arithmetic
-(<= (cardinalRelation west ?x1 ?y1 ?x2 ?y2)
-	(> ?x2 ?x1))                  ; Arithmetic
-	
-(<= (diagonal ?x1 ?y1 ?x2 ?y2)
+(<= (oneStepTowardsHero ?x1 ?y1 ?x1 ?y3)  ; go north
+	(nextHeroLocation ?x2 ?y2)
+	;(room ?lx ?ty ?rx ?by)                ; variable grounding
+	;(between ?lx ?x2 ?rx)
+	;(between ?ty ?y2 ?by)
+	;(between ?ty ?y1 ?by)
+	;(between ?lx ?x1 ?rx)
+  (cellNearMonster ?x1 ?y1) ; SW 
+	(> ?y1 ?y2)
 	(distinct ?x1 ?x2)
-	(distinct ?y2 ?y1))
+	(true even)
+	(- ?y1 1 ?y3))
 
-;;; Omit diagonal movement for now:
-;(<= (diagonalDirection ne ?x1 ?y1 ?x2 ?y2)
-;	(> ?y2 ?y1)                   ; Arithmetic
-;	(> ?x1 ?x2))                  ; Arithmetic
-;(<= (diagonalDirection nw ?x1 ?y1 ?x2 ?y2)
-;	(> ?y2 ?y1)                   ; Arithmetic
-;	(> ?x2 ?x1))                  ; Arithmetic
-;(<= (diagonalDirection se ?x1 ?y1 ?x2 ?y2)
-;	(> ?y1 ?y2)                   ; Arithmetic
-;	(> ?x1 ?x2))                  ; Arithmetic
-;(<= (diagonalDirection sw ?x1 ?y1 ?x2 ?y2)
-;	(> ?y1 ?y2)                   ; Arithmetic
-;	(> ?x2 ?x1))                  ; Arithmetic
+(<= (oneStepTowardsHero ?x1 ?y1 ?x1 ?y3)  ; go south
+	(nextHeroLocation ?x2 ?y2)
+	;(room ?lx ?ty ?rx ?by)                ; variable grounding
+	;(between ?lx ?x2 ?rx)
+	;(between ?ty ?y2 ?by)
+	;(between ?ty ?y1 ?by)
+	;(between ?lx ?x1 ?rx)
+  (cellNearMonster ?x1 ?y1) ; SW 
+	(> ?y2 ?y1)
+	(distinct ?x1 ?x2)
+	(true even)
+	(+ ?y1 1 ?y3))
+
+
+; Meaning: Direction-based relationships between coordinates
+; - Read: one cell in ?direction of ?x1 ?y1 is ?x2 ?y2
+; I had hoped to get rid of this, but it's used in determining
+; legal moves.
+(<= (nextCell north ?x ?y1 ?x ?y2)
+    (int ?x)
+	(- ?y1 1 ?y2))
+(<= (nextCell south ?x ?y1 ?x ?y2)
+    (int ?x)
+	(+ ?y1 1 ?y2))
+(<= (nextCell east ?x1 ?y ?x2 ?y)
+	(int ?y)
+	(+ ?x1 1 ?x2))
+(<= (nextCell west ?x1 ?y ?x2 ?y)
+	(int ?y)
+	(- ?x1 1 ?x2))
 
 ;----------------------------------------------------------------------
 ; Generic spatial relations
@@ -959,10 +1104,6 @@
 (direction south)
 (direction east)
 (direction west)
-;(direction ne)
-;(direction nw)
-;(direction se)
-;(direction sw)
 
 (verticalDir north)
 (verticalDir south)
@@ -970,23 +1111,17 @@
 (horizontalDir west)
 
 
-(<= (inRoom ?e ?x1 ?y1 ?x2 ?y2)
-    (true (location ?e ?x ?y))
-    (room ?x1 ?y1 ?x2 ?y2)
-    (between ?x1 ?x ?x2)
-    (between ?y1 ?y ?y2))
-
-(<= (inSameRoom ?e1 ?e2)
-    (inRoom ?e1 ?x1 ?y1 ?x2 ?y2)
-    (inRoom ?e2 ?x1 ?y1 ?x2 ?y2))
-
 ; Meaning: Same location
-(sameLocation ?x ?y ?x ?y)
+(<= (sameLocation ?x ?y ?x ?y) ; SW -- must be ints
+  (int ?x)
+  (int ?y))
 
 ; Meaning: Adjacent locations
 (<= (adjacent ?x ?y1 ?x ?y2)
+	(int ?x)      ; SW
 	(diff ?y1 ?y2 1))
 (<= (adjacent ?x1 ?y ?x2 ?y)
+	(int ?y)      ; SW
 	(diff ?x1 ?x2 1))
 (<= (adjacent ?x1 ?y1 ?x2 ?y2)
 	(diff ?x1 ?x2 1)
@@ -995,7 +1130,6 @@
 ;----------------------------------------------------------------------
 ; Generic monster relations
 ;----------------------------------------------------------------------
-
 
 (initialHealth   bat 3)
 (monsterStrength bat 1)
@@ -1013,13 +1147,23 @@
 (monsterStrength snake 1)
 (monsterSpeed snake 0.5)
 
+(speed 0.5) ; SW: need these so we can ground potential speeds.
+(speed 1)
+(speed 2)
+
 ; Meaning: Monsters attack when in the same room as the hero.
 ; If they're asleep, they wake up when hero attacks them or
 ; throws an arrow at them.
 (<= (provoked ?monster)
-	(monster ?monster ?monster-type)           ; Generic monster
+	(monster ?monster ?monster-type)
 	(not (currentlyAsleep ?monster))
-	(inSameRoom hero ?monster))                ; Generic spatial
+	(true (location ?monster ?x ?y))
+	(room ?lx ?ty ?rx ?by)
+	(between ?lx  ?x ?rx)
+	(between ?ty ?y ?by)
+	(nextHeroLocation ?hx ?hy)
+	(between ?lx  ?hx ?rx)
+	(between ?ty ?hy ?by))
 
 (<= (provoked ?monster)
 	(monster ?monster ?monster-type)
@@ -1060,11 +1204,11 @@
 
 ; Meaning: Absolute value of difference
 (<= (diff ?n1 ?n2 ?diff)
-    (> ?n1 ?n2)
-    (- ?n1 ?n2 ?diff))                              ; Arithmetic
-    
+	(> ?n1 ?n2)
+	(- ?n1 ?n2 ?diff))                              ; Arithmetic
+
 (<= (diff ?n1 ?n2 ?diff)
-    (>= ?n2 ?n1)
+	(>= ?n2 ?n1)
 	(- ?n2 ?n1 ?diff))                              ; Arithmetic
 
 
@@ -1128,7 +1272,8 @@
 (succ 49 50)
 (succ 50 51)
 
-; Meaning: The integers in [0,7]; Used in nCell and plus, only
+; Meaning: The integers in [0,7]
+; SW -- these are used in lots of other places now
 (int 0)
 (int 1)
 (int 2)
@@ -1147,20 +1292,24 @@
 (<= (nextHeroLocation ?x2 ?y2)
 	(true (location hero ?x1 ?y1))
 	(does hero (move ?dir))
-	(nCell 1 ?dir ?x1 ?y1 ?x2 ?y2)                       ; Movement
+	(nextCell ?dir ?x1 ?y1 ?x2 ?y2)                      ; Movement
 	(not (monsterAt ?x2 ?y2)))                           ; Init
 
 ; Meaning: Hero's location is unchanged if attacking a monster
 (<= (nextHeroLocation ?x1 ?y1)
 	(true (location hero ?x1 ?y1))
 	(does hero (move ?dir))
-	(nCell 1 ?dir ?x1 ?y1 ?x2 ?y2)                       ; Movement
+	(nextCell ?dir ?x1 ?y1 ?x2 ?y2)                      ; Movement
 	(monsterAt ?x2 ?y2))
 
 ; Meaning: Non-moving hero actions
 (<= (nextHeroLocation ?x ?y)
 	(true (location hero ?x ?y))
-	(not (does hero (move ?dir))))
+	(not (heroMoves)))
+
+; Meaning: Hero moved in some direction
+(<= (heroMoves)
+	(does hero (move ?dir)))
 
 ; ToDo: Handle staircasedown when there are multiple levels.
 
@@ -1171,26 +1320,25 @@
 
 ; Meaning: Move provoked monsters towards hero according to ?speed
 ; - BUT: Cannot stop on same location as hero's location
-;   We'll make nStepsTowards stop when the next location will be
+;   We'll make nStepsTowardsHero stop when the next location will be
 ;   occupied by the hero.
 (<= (nextMonsterLocation ?monster ?x2 ?y2)
 	(not (currentlyInvisible hero))
 	(provoked ?monster)                              ; Generic monster
 	(true (location ?monster ?x1 ?y1))
-	(true (location hero ?herox ?heroy))
 	(monster ?monster ?monster-type)
 	(monsterSpeed ?monster-type ?base-speed)
 	(relativeSpeed ?base-speed ?speed)
-	(nStepsTowards ?speed ?x1 ?y1 ?herox ?heroy ?x2 ?y2)) ; Movement
+	(nStepsTowardsHero ?speed ?x1 ?y1 ?x2 ?y2)) ; Movement
 
 ; Meaning: Unprovoked monsters don't move
 (<= (nextMonsterLocation ?monster ?x ?y)
-    (monster ?monster ?monster-type)
+	(monster ?monster ?monster-type)
 	(not (provoked ?monster))
 	(true (location ?monster ?x ?y)))
 
 (<= (nextMonsterLocation ?monster ?x ?y)
-    (monster ?monster ?monster-type)
+	(monster ?monster ?monster-type)
 	(true (invisible hero ?n))                      ; invisible for n more turns
 	(true (location ?monster ?x ?y)))
 
@@ -1204,6 +1352,7 @@
 	(true (enhancedSpeed hero ?n))
 	(quarterSpeed ?speed))
 (<= (relativeSpeed ?base-speed ?base-speed)
+  (speed ?base-speed) ; SW
 	(distinct ?base-speed 0.5)
 	(not (currentlyEnhancedSpeed hero)))
 (<= (relativeSpeed 1 ?speed)
@@ -1237,12 +1386,18 @@
 ;----------------------------------------------------------------------
 
 ; Meaning: The monster is hit by an arrow (unlimited range)
+; SW: changed to two rules, for x==x and y==y, so we don't need arbitrary nCells (very expensive for us)
 (<= (hitByArrow ?monster)
 	(monster ?monster ?monster-type)               ; Generic monster
 	(does hero (throw arrow ?dir))
-	(true (location hero ?x1 ?y1))
-	(true (location ?monster ?x2 ?y2))             ; Action
-	(nCell ?dist ?dir ?x1 ?y1 ?x2 ?y2))            ; Movement
+	(true (location hero ?x ?y1))
+	(true (location ?monster ?x ?y2)))             ; Action
+
+(<= (hitByArrow ?monster)
+	(monster ?monster ?monster-type)               ; Generic monster
+	(does hero (throw arrow ?dir))
+	(true (location hero ?x1 ?y))
+	(true (location ?monster ?x2 ?y)))             ; Action
 
 ; Meaning: Hero adds item to sack if on it at end of time step 
 ; - And it wasn't dropped in this time step
@@ -1278,6 +1433,7 @@
 	(distinct ?item gold))
 
 (<= (changeWeapon ?weapon)
+	(true (wielding ?weapon)) ; SW: need to ground ?weapon
 	(does hero (wield ?otherweapon))
 	(distinct ?weapon ?otherweapon))
 
@@ -1321,6 +1477,68 @@
 (<= (use ?scroll)
 	(does hero (read ?scroll)))
 
+; SW: constrain the monster movement predicates to only match near monsters that could possibly move
+; This means all cells within manhattan distance 2 of a monster
+
+(<= (relevantMonsterCell ?x ?y)
+    (monster ?monster ?any) 
+    (true (location ?monster ?x ?y))
+	  (provoked ?monster)
+	  (not (currentlyInvisible hero))
+    (nextHeroLocation ?x2 ?y2)
+    (room ?lx ?ty ?rx ?by)
+    (between ?lx ?x2 ?rx)
+    (between ?ty ?y2 ?by)
+    (between ?lx ?x ?rx)
+    (between ?ty ?y ?by))
+
+(<= (cellNearMonster ?x ?y)
+    (relevantMonsterCell ?x ?y))
+
+(<= (cellNearMonster ?x1 ?y)
+    (relevantMonsterCell ?x ?y)
+    (- ?x ?d ?x1)
+    (> ?d 0)
+    (< ?d 3))
+
+(<= (cellNearMonster ?x1 ?y)
+    (relevantMonsterCell ?x ?y)
+    (+ ?x ?d ?x1)
+    (> ?d 0)
+    (< ?d 3))
+
+(<= (cellNearMonster ?x ?y1)
+    (relevantMonsterCell ?x ?y)
+    (- ?y ?d ?y1)
+    (> ?d 0)
+    (< ?d 3))
+
+(<= (cellNearMonster ?x ?y1)
+    (relevantMonsterCell ?x ?y)
+    (+ ?y ?d ?y1)
+    (> ?d 0)
+    (< ?d 3))
+
+; four diagonal cases
+(<= (cellNearMonster ?x1 ?y1) 
+    (relevantMonsterCell ?x ?y)
+    (+ ?x 1 ?x1)
+    (+ ?y 1 ?y1))
+
+(<= (cellNearMonster ?x1 ?y1) 
+    (relevantMonsterCell ?x ?y)
+    (+ ?x 1 ?x1)
+    (- ?y 1 ?y1))
+
+(<= (cellNearMonster ?x1 ?y1) 
+    (relevantMonsterCell ?x ?y)
+    (- ?x 1 ?x1)
+    (- ?y 1 ?y1))
+
+(<= (cellNearMonster ?x1 ?y1) 
+    (relevantMonsterCell ?x ?y)
+    (- ?x 1 ?x1)
+    (+ ?y 1 ?y1))
 
 ;;; End of file
 

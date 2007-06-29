@@ -76,8 +76,9 @@ sp {apply*update-state*copy-gs*deep3
 }
 
 
-sp {apply*update-state*remove-old-copy
-  (state <s> ^operator.name <> update-state <> analyze-state <name>
+sp {apply*game-op*remove-old-copy
+   (state <s> ^operator.name {<> update-state <> analyze-state <> update-search-info
+          <> save-location <> check-for-duplicate-location <name>}
              ^gs <gs>
              ^old-gs <ogs>)
   (<ogs> ^<att> <id>)

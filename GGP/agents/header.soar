@@ -17,7 +17,7 @@ multi-attributes nextcell 256
 multi-attributes nstepssoldier 256
 multi-attributes horizontalstep 256
 multi-attributes verticalstep 256
-multi-attributes between 200
+multi-attributes between 300
 
 learn --on
 #decay --on

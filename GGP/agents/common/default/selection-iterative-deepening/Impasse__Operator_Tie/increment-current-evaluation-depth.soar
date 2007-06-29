@@ -22,6 +22,7 @@ sp {apply*increment-current-evaluation-depth
                                   (+ 1 <ced>))
 }
 
+
 sp {selection*propose*increment-current-evaluation-depth*item-count
    (state <s> ^name selection
               ^top-selection true
@@ -45,6 +46,7 @@ sp {apply*increment-current-evaluation-depth*item-count
         ^current-evaluation-depth <ced> -
                                   (+ 1 <ced>))
 }
+
 
 sp {apply*increment-current-evalaution*clean-up-evaluations
    (state <s> ^operator <op>
