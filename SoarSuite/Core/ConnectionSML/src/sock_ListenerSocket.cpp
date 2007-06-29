@@ -12,7 +12,7 @@
 // 
 /////////////////////////////////////////////////////////////////
 #include "sock_ListenerSocket.h"
-#include "sock_Debug.h"
+#include "sml_Utils.h"
 #include "sock_OSspecific.h"
 
 #include <sstream>
@@ -47,6 +47,8 @@ ListenerSocket::~ListenerSocket()
 bool ListenerSocket::CreateListener(unsigned short port, bool local)
 {
 	CTDEBUG_ENTER_METHOD("ListenerSocket::CreateListener");
+
+	unused(local);
 
 	// Should only call this once
 	if (m_hSocket)

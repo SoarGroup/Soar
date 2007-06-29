@@ -30,7 +30,6 @@
 #include "sml_Utils.h"
 #include "sock_NamedPipe.h"
 #include "sock_Check.h"
-#include "sock_Debug.h"
 
 #include <assert.h>
 
@@ -111,7 +110,7 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 			success = WriteFile( 
 				hPipe,        // handle to pipe 
 				pSendBuffer,      // buffer to write from 
-				bufferSize, // number of bytes to write 
+				(unsigned long)bufferSize, // number of bytes to write 
 				&thisSend,   // number of bytes written 
 				NULL);        // not overlapped I/O 
 
@@ -163,6 +162,9 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 bool NamedPipe::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 {
 	assert(millisecondsWait<1000 && "specified milliseconds must be less than 1000");
+
+	unused(secondsWait);
+	unused(millisecondsWait);
 
 	CTDEBUG_ENTER_METHOD("NamedPipe::IsReadDataAvailable");
 
@@ -256,7 +258,7 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 			success = ReadFile( 
 				hPipe,        // handle to pipe 
 				pRecvBuffer,    // buffer to receive data 
-				bufferSize, // size of buffer 
+				(unsigned long)bufferSize, // size of buffer 
 				&thisRead, // number of bytes read 
 				NULL);        // not overlapped I/O 
 

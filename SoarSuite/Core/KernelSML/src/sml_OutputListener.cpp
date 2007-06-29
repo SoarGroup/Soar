@@ -29,10 +29,6 @@
 //#define DEBUG_UPDATE
 #endif
 
-#ifdef DEBUG_UPDATE
-#include "sock_Debug.h"	// For PrintDebugFormat
-#endif
-
 #include <vector>
 
 using namespace sml ;

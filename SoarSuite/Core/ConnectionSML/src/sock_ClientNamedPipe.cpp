@@ -16,7 +16,6 @@
 #ifdef ENABLE_NAMED_PIPES
 
 #include "sml_Utils.h"
-#include "sock_Debug.h"
 #include "sock_ClientNamedPipe.h"
 #include <assert.h>
 
@@ -67,6 +66,11 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 
 	HANDLE hPipe;
 
+// silence warning about constant conditional expression
+#ifdef _MSC_VER
+#pragma warning (disable : 4127)
+#endif
+
 	while(1) {
 		// Create the pipe
 		hPipe = CreateFile( 
@@ -96,7 +100,9 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 			return false;
 		}
 	}
-
+#ifdef _MSC_VER
+#pragma warning (default : 4127)
+#endif
 	// Record the sock so it's cleaned up correctly on exit
 	m_hPipe = hPipe ;
 
