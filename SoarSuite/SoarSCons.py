@@ -29,7 +29,12 @@ def SetJavaPaths(env, classpath, sourcepath = None):
 	env['CLASSPATH'] = classpath
 
 def CheckJarmd5(env):
-	return os.system("md5sum -c swt.jar.md5") == 0
+	if sys.platform == 'darwin':
+		jarmd5 = "swt.jar.md5-osx"
+	else:
+		jarmd5 = "swt.jar.md5-gtk"
+		
+	return os.system("md5sum -c %s" % jarmd5) == 0
 
 def CheckForSWTJar(env):
 	if os.path.exists(os.path.join('SoarLibrary', 'bin', 'swt.jar')):
