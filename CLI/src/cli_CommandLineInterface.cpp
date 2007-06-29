@@ -11,11 +11,6 @@
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
 
-// FIXME: This needs to be dealt with in a portable manner.
-#ifdef WIN32
-#include "pcreposix.h"
-#endif // WIN32
-
 #include <assert.h>
 
 #include "cli_Commands.h"

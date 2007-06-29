@@ -213,6 +213,10 @@
 			ReferencedProjectIdentifier="{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}"
 			RelativePathToProject=".\Core\SoarKernel\SoarKernel.vcproj"
 		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{6B0AE9F9-575C-4230-875A-3996BF2AC1E6}"
+			RelativePathToProject=".\Core\pcre\pcre.vcproj"
+		/>
 	</References>
 	<Files>
 		<Filter

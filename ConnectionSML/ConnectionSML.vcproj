@@ -483,6 +483,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\sock_Check.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\sock_ClientNamedPipe.h"
 				>
 			</File>
