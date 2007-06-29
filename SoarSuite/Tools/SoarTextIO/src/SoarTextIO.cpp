@@ -17,7 +17,6 @@
 
 #include "sml_Utils.h"
 #include "SoarTextIO.h"
-#include "stdlib.h"
 #include <iostream>
 #include <stdlib.h>
 #include <string>

@@ -17,7 +17,6 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <stdlib.h>
 #include <time.h>
 #include "sml_Client.h"
 #include "sml_StringOps.h"
