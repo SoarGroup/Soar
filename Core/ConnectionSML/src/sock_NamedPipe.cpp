@@ -27,6 +27,7 @@
 #ifdef ENABLE_NAMED_PIPES
 
 #include <stdio.h>
+#include "sml_Utils.h"
 #include "sock_NamedPipe.h"
 #include "sock_Check.h"
 #include "sock_Debug.h"
@@ -130,7 +131,7 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 #endif
 				{
 					PrintDebug("Error: Error sending message") ;
-					ReportErrorCode() ;
+					ReportSystemErrorMessage() ;
 					return false ;
 				}
 			}
@@ -194,7 +195,7 @@ bool NamedPipe::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 		}
 
 		PrintDebug("Error: Error checking if data is available to be read") ;
-		ReportErrorCode() ;
+		ReportSystemErrorMessage() ;
 
 		// We treat these errors as all being fatal, which they all appear to be.
 		// If we later decide we can survive certain ones, we should test for them here
@@ -276,7 +277,7 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 				{
 					PrintDebug("Error: Error receiving message") ;
 
-					ReportErrorCode() ;
+					ReportSystemErrorMessage() ;
 
 					// We treat these errors as all being fatal, which they all appear to be.
 					// If we later decide we can survive certain ones, we should test for them here
@@ -314,35 +315,6 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 	}
 
 	return true ;
-}
-
-/////////////////////////////////////////////////////////////////////
-// Function name  : ReportErrorCode
-// 
-// Return type    : void 	
-// 
-// Description	  : Convert the error code to useful text.
-//
-/////////////////////////////////////////////////////////////////////
-void NamedPipe::ReportErrorCode()
-{
-	CTDEBUG_ENTER_METHOD("SoarPipe - ReportErrorCode");
-
-	unsigned long error = GetLastError() ;
-
-	char* message;
-
-	FormatMessage(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		0,
-		error,
-		0,
-		(char*) &message,
-		0, 0 );
-
-	PrintDebugFormat("Error: %s", message);
-
-	LocalFree(message);
 }
 
 /////////////////////////////////////////////////////////////////////

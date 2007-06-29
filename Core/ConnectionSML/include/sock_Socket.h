@@ -103,8 +103,6 @@ protected:
 	bool		SendBuffer(char const* pSendBuffer, size_t bufferSize) ;
 	bool		ReceiveBuffer(char* pRecvBuffer, size_t bufferSize) ;
 
-	// Report info on the error than just occurred.
-	void ReportErrorCode() ;
 };
 
 } // Namespace

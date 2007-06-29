@@ -63,7 +63,7 @@
 #endif // IPPORT_ECHO
 
 #define NET_CLOSESOCKET		close
-#define NET_ERROR_NUMBER	errno
+#define ERROR_NUMBER		errno
 
 #define SOCKET			int
 #define HOSTENT			hostent
