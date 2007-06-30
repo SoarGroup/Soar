@@ -210,7 +210,7 @@
 			RelativePathToProject=".\Core\gSKI\gSKI.vcproj"
 		/>
 		<ProjectReference
-			ReferencedProjectIdentifier="{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}"
+			ReferencedProjectIdentifier="{844AB204-F1B2-43D5-A6E5-1EA19FF289F2}"
 			RelativePathToProject=".\Core\SoarKernel\SoarKernel.vcproj"
 		/>
 		<ProjectReference
