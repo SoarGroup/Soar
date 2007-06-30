@@ -415,6 +415,7 @@ public class Application
 		finally
 		{
 			reportResult("testjavasml", success, msg) ;
+			System.exit(success ? 0 : 1);
 		}
 	}
 	
