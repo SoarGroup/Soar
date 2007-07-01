@@ -27,6 +27,10 @@ def defineTests():
 
 tests = defineTests()
 for test in tests:
+    if len(sys.argv) > 1:
+        if sys.argv[1] != test.name:
+            continue
+    
     if test.single:
         #single test
         print test.name
@@ -46,18 +50,22 @@ for test in tests:
         
         ignored, exitcode = os.waitpid(client, 0)
         print "%s: Client" % (test.name,),
+        failed = False
         if exitcode:
             print "failed."
+            failed = True
         else:
             print "successful."
-            test.success = True
         
         ignored, exitcode = os.waitpid(server, 0)
         print "%s: Server" % (test.name,),
         if exitcode:
             print "failed."
+            failed = True
         else:
             print "successful."
+
+        if not failed:
             test.success = True
 
 print "Tests complete."
@@ -65,6 +73,9 @@ print
 
 failure = False
 for test in tests:
+    if len(sys.argv) > 1:
+        if sys.argv[1] != test.name:
+            continue
     if test.success:
         status = "Success"
     else:
