@@ -1,5 +1,11 @@
 #!/usr/bin/python
 
+# Jonathan Voigt, July 2007
+
+# invoke without args to run all tests
+# invoke with test name to run a specific test:
+#   tester.py q14
+
 import os
 import time
 import sys
