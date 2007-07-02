@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
 $agentDir = "../agents";
-$source1 = "escape_composition_source1b";
-$source2 = "escape_composition_source2b";
-$target = "escape_composition_targetb";
+$source1 = "escape_composition_source1";
+$source2 = "escape_composition_source2";
+$target = "escape_composition_target";
 
 $source1Log = "$source1\.log";
 $source2Log = "$source2\.log";

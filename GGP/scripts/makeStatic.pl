@@ -39,7 +39,11 @@ foreach $line (<$FILE>) {
       }
     }
     else { # might read the att
-      $line =~ s/\^$attribute /\^top-state-elaborations.$attribute /g;
+      # heuristic: assume all references are attached to variables starting
+      # with <e
+      if ($line =~ /^.*\(<e/) {
+        $line =~ s/\^$attribute /\^top-state-elaborations.$attribute /g;
+      }
       print $OUT "$line\n";
     }
   }
