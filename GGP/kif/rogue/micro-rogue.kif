@@ -165,23 +165,23 @@
 
 ; Object locations: <object_name x y>
 (init (location amulet 2 5))
-;(init (location armor1 0 2))
-;(init (location weapon1 1 1))
-;(init (location weapon2 6 0))
+(init (location armor1 0 2))
+(init (location weapon1 1 1))
+(init (location weapon2 6 0))
 
-;(init (location potion1 0 0))
-;(init (location potion2 7 5))
-;(init (location scroll1 5 1))
+(init (location potion1 0 0))
+(init (location potion2 7 5))
+(init (location scroll1 5 1))
 (init (location exit 7 7))           ; staircaseup
-;(init (location gold 5 3))
+(init (location gold 5 3))
 
 ; Character locations: <character x y>
 (init (location hero 0 3))
 (init (location bat1 1 0))
-;(init (location bat2 4 5))
-;(init (location hobgoblin1 0 7))
-;(init (location kestral1 7 3))
-;(init (location snake1 3 3))
+(init (location bat2 4 5))
+(init (location hobgoblin1 0 7))
+(init (location kestral1 7 3))
+(init (location snake1 3 3))
 
 ; Health: <character initial_health>
 (init (health hero 6))
@@ -477,7 +477,7 @@
 
 ; Meaning: Maintain size of burden in sack (being carried)
 (<= (next (burden ?burden))
-	(not (burdenChanged))
+	(not burdenChanged)
 	(true (burden ?burden)))
 
 ; Meaning: Increment burden by picking up an item
@@ -630,7 +630,7 @@
 ; if we see a game state change, the agent can use no knowledge about what directions are redundant
 ; to move in. So we need to minimize useless game state changes.
 
-(<= (monsterMoving ?monster)
+(<= (monsterIsMoving)
     (provoked ?monster))
 
 (<= (slomoMonsterMoving ?monster)
@@ -641,16 +641,16 @@
 
 ; Parity counter for 1/2 speed movement
 (<= (next odd)
-  (monsterMoving ?monster)
+  (monsterIsMoving)
 	(true even))
 (<= (next even)
-  (monsterMoving ?monster)
+  (monsterIsMoving)
 	(true odd))
 (<= (next even)
-  (not (monsterMoving ?monster))
+  (not (monsterIsMoving))
   (true even))
 (<= (next odd)
-  (not (monsterMoving ?monster))
+  (not (monsterIsMoving))
   (true odd))
 
 ; Meaning: slow-motion or "matrix" time counter for sluggish snakes
@@ -903,7 +903,8 @@
 	(currentlyEnhancedStrength hero)
 	(true (wielding ?weapon))
 	(weapon ?weapon ?weapon-type)                  ; Init
-	(weaponStrength ?weapon-type ?wDamage))        ; Generic weapon
+	(weaponStrength ?weapon-type ?offense))        ; Generic weapon SW: fixed variable name 
+;	(weaponStrength ?weapon-type ?wDamage))        ; Generic weapon
 
 
 ; Meaning: Hero attacks the monster
@@ -965,7 +966,7 @@
 (<= (oneStepTowardsHero ?x1 ?y1 ?x3 ?y1)  ; go west
 	(nextHeroLocation ?x2 ?y1)
 	;(room ?lx ?ty ?rx ?by)                ; variable grounding
-	;(between ?lx ?x2 ?rx)
+	;(between ?lx ?x2 ?rx)          ; SW: location can be grounded with cellNearMonster now
 	;(between ?ty ?y1 ?by) 
 	;(between ?lx ?x1 ?rx)
   (cellNearMonster ?x1 ?y1) ; SW 
@@ -1147,9 +1148,9 @@
 (monsterStrength snake 1)
 (monsterSpeed snake 0.5)
 
-(speed 0.5) ; SW: need these so we can ground potential speeds.
-(speed 1)
-(speed 2)
+(speedNumber 0.5) ; SW: need these so we can ground potential speeds.
+(speedNumber 1)
+(speedNumber 2)
 
 ; Meaning: Monsters attack when in the same room as the hero.
 ; If they're asleep, they wake up when hero attacks them or
@@ -1352,7 +1353,7 @@
 	(true (enhancedSpeed hero ?n))
 	(quarterSpeed ?speed))
 (<= (relativeSpeed ?base-speed ?base-speed)
-  (speed ?base-speed) ; SW
+  (speedNumber ?base-speed) ; SW
 	(distinct ?base-speed 0.5)
 	(not (currentlyEnhancedSpeed hero)))
 (<= (relativeSpeed 1 ?speed)
