@@ -21,22 +21,37 @@ class TestDefinition:
         else:
             self.single = False
 
-def defineTests():
+def defineTests(port):
     tests = []
     tests.append(TestDefinition('q1', [["TestConnectionSML",],]))
     tests.append(TestDefinition('q2', [["TestClientSML",],]))
-    tests.append(TestDefinition('q3', [["TestClientSML", "-shortlistener",], ["TestClientSML", "-remote",],]))
+    tests.append(TestDefinition('q3', [["TestClientSML", "-shortlistener", "%d" % port,], ["TestClientSML", "-remote", "%d" % port,],]))
     tests.append(TestDefinition('q4', [["TestMultiAgent",],]))
     tests.append(TestDefinition('q13', [["TOHSML",],]))
-    tests.append(TestDefinition('q14', [["TestClientSML", "-shortlistener",], ["TOHSML", "-remote",],]))
+    tests.append(TestDefinition('q14', [["TestClientSML", "-shortlistener", "%d" % port,], ["TOHSML", "-remote", "%d" % port,],]))
     tests.append(TestDefinition('q15', [["TestSoarPerformance",],]))
     tests.append(TestDefinition('q16', [["TestSMLPerformance",],]))
     return tests
 
-tests = defineTests()
+port = 12121
+parsePort = False
+singleTest = None
+for arg in sys.argv[1:]:
+    if parsePort == True:
+        port = int(arg)
+        parsePort = False
+    elif arg == '-port':
+        parsePort = True
+    else:
+        singleTest = arg
+        
+print 'singleTest', singleTest
+print 'port', port
+
+tests = defineTests(port)
 for test in tests:
-    if len(sys.argv) > 1:
-        if sys.argv[1] != test.name:
+    if singleTest != None:
+        if singleTest != test.name:
             continue
     
     if test.single:
@@ -81,8 +96,8 @@ print
 
 failure = False
 for test in tests:
-    if len(sys.argv) > 1:
-        if sys.argv[1] != test.name:
+    if singleTest != None:
+        if singleTest != test.name:
             continue
     if test.success:
         status = "Success"
