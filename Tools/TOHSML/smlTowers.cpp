@@ -379,7 +379,7 @@ void Tower::PrintDiskAtRow(int row) const
 //======================================================
 //=========== Hanoi Function Definitions ===============
 
-HanoiWorld::HanoiWorld(bool remoteConnection, bool graphicsOn, int inNumTowers, int inNumDisks) : drawGraphics(graphicsOn)
+HanoiWorld::HanoiWorld(bool remoteConnection, int port, bool graphicsOn, int inNumTowers, int inNumDisks) : drawGraphics(graphicsOn)
 {
 	//create Soar and agent
 	// SML uses Kernel instead of Soar
@@ -402,7 +402,7 @@ HanoiWorld::HanoiWorld(bool remoteConnection, bool graphicsOn, int inNumTowers, 
 	}
 	else
 	{
-		kernel = Kernel::CreateRemoteConnection(true, NULL) ;
+		kernel = Kernel::CreateRemoteConnection(true, NULL, port) ;
 		// SGIO equivalent
 		// soar = new SIOSoar("127.0.0.1", 6969, true);
 	}

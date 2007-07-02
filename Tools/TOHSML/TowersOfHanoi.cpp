@@ -67,11 +67,27 @@ void ReportResult(std::string testName, bool success)
 	outfile.close();
 }
 
+/*
+ * Tries to parse the next arg as an int and returns it, 
+ * if that fails it returns def (default)
+ */
+int getIntArg(int def, int next, int argc, char* argv[]) 
+{
+	if (next < argc)
+	{
+		int portIn = atoi(argv[next]) ;
+		if (portIn > 0)
+			return portIn;
+	}
+	return def;
+}
+
 int main(int argc, char* argv[])
 {
 	bool doPrinting = false;
 	bool stopAtEnd = true ;
 	bool remoteConnection = false ;
+	int port = 12121;
 
 	int numTowers = defaultNumTowers;
 	//int numdisks = defaultNumdisks;
@@ -87,8 +103,12 @@ int main(int argc, char* argv[])
 		{
 			if (!strcasecmp(argv[i], "-nostop"))
 				stopAtEnd = false ;
-			if (!strcasecmp(argv[i], "-remote"))
+			if (!strcasecmp(argv[i], "-remote")) {
 				remoteConnection = true ;
+
+				port = getIntArg(port, i+1, argc, argv);
+			} 
+			
 			if (!strcasecmp(argv[1], "true"))
 				doPrinting = true;
 		}
@@ -119,7 +139,7 @@ int main(int argc, char* argv[])
 		if(doPrinting)
 			cout << "***Welcome to Towers of Hanoi***" << endl << endl;
 
-		HanoiWorld hanoi(remoteConnection, doPrinting, numTowers);
+		HanoiWorld hanoi(remoteConnection, port, doPrinting, numTowers);
 
 		//double time = timer.Elapsed() ;
 		//cout << "Time to initialize: " << time << endl ;
