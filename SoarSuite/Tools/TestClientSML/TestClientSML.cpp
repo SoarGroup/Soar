@@ -231,15 +231,15 @@ bool SimpleRemoteConnect()
 
 // Create a process that listens for remote commands and lives
 // for "life" 10'ths of a second (e.g. 10 = live for 1 second)
-bool SimpleListener(int life)
+bool SimpleListener(int life, int port)
 {
 	// Choose how to connect (usually use NewThread) but for
 	// testing currentThread can be helpful.
 	bool useCurrentThread = false ;
 
 	// Create the kernel instance
-	sml::Kernel* pKernel = useCurrentThread ? sml::Kernel::CreateKernelInCurrentThread() :
-											  sml::Kernel::CreateKernelInNewThread() ;
+	sml::Kernel* pKernel = useCurrentThread ? sml::Kernel::CreateKernelInCurrentThread(sml::Kernel::GetDefaultLibraryName(), false, port) :
+											  sml::Kernel::CreateKernelInNewThread(sml::Kernel::GetDefaultLibraryName(), port) ;
 
 	if (pKernel->HadError())
 	{
@@ -1560,7 +1560,7 @@ void MyEchoEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char
 		cout << " ----> Received an echo event with contents: " << pMsg << endl ;    
 }
 
-bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simpleInitSoar, bool autoCommit)
+bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simpleInitSoar, bool autoCommit, int port = 12121)
 {
 	cout << "TestClientSML app starting..." << endl << endl;
 
@@ -1575,7 +1575,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		sml::Kernel* pKernel = embedded ?
 			(useClientThread ? sml::Kernel::CreateKernelInCurrentThread(Kernel::GetDefaultLibraryName(), fullyOptimized, Kernel::GetDefaultPort())
 			: sml::Kernel::CreateKernelInNewThread("SoarKernelSML", Kernel::GetDefaultPort()))
-			: sml::Kernel::CreateRemoteConnection(true, NULL) ;
+			: sml::Kernel::CreateRemoteConnection(true, NULL, port) ;
 
 		if (pKernel->HadError())
 		{
@@ -1889,14 +1889,14 @@ bool FullEmbeddedTest()
 	return ok ;
 }
 
-bool RemoteTest()
+bool RemoteTest(int port)
 {
 	// Remote connection.
 	// (For this to work need to run a listener--usually TestCommandLineInterface to receive the commands).
-	bool ok = TestSML(false, false, false, false, true) ;
+	bool ok = TestSML(false, false, false, false, true, port) ;
 
 	// Same test but with auto commit turned off (so need manual commit calls)
-	ok = ok && TestSML(false, false, false, false, false) ;
+	ok = ok && TestSML(false, false, false, false, false, port) ;
 
 	return ok ;
 }
@@ -1930,6 +1930,21 @@ void ReportResult(std::string testName, bool success)
 	outfile.close();
 }
 
+/*
+ * Tries to parse the next arg as an int and returns it, 
+ * if that fails it returns def (default)
+ */
+int getIntArg(int def, int next, int argc, char* argv[]) 
+{
+	if (next < argc)
+	{
+		int portIn = atoi(argv[next]) ;
+		if (portIn > 0)
+			return portIn;
+	}
+	return def;
+}
+
 int main(int argc, char* argv[])
 {
 #ifdef _DEBUG
@@ -1958,6 +1973,7 @@ int main(int argc, char* argv[])
 	bool simpleCommand = false ;
 	int  life      = 3000 ;	// Default is to live for 3000 seconds (5 mins) as a listener
 	int  decisions = 20000 ;
+	int  port = 12121; 
 
 	// For now, any argument on the command line makes us create a remote connection.
 	// Later we'll try passing in an ip address/port number.
@@ -1989,10 +2005,18 @@ int main(int argc, char* argv[])
 				synchTest = true ;
 			if (!strcasecmp(argv[i], "-stoptest"))
 				stopTest = true ;
-			if (!strcasecmp(argv[i], "-remote"))
+			if (!strcasecmp(argv[i], "-remote")) {
 				remote = true ;
-			if (!strcasecmp(argv[i], "-listener"))
+
+				port = getIntArg(port, i+1, argc, argv);
+			}
+
+			if (!strcasecmp(argv[i], "-listener")) {
 				listener = true ;
+
+				port = getIntArg(port, i+1, argc, argv);
+			}
+
 			if (!strcasecmp(argv[i], "-simpleCommand"))
 				simpleCommand = true ;
 			if (!strcasecmp(argv[i], "-refcounttest"))
@@ -2007,13 +2031,7 @@ int main(int argc, char* argv[])
 
 				// Try to parse the next argument (if present) as an int.
 				// If that succeeds, use the value as our decision counter.
-				int next = i+1 ;
-				if (next < argc)
-				{
-					int count = atoi(argv[next]) ;
-					if (count > 0)
-						decisions = count ;
-				}
+				decisions = getIntArg(decisions, i+1, argc, argv);
 
 			}
 			if (!strcasecmp(argv[i], "-remoteconnect"))
@@ -2024,6 +2042,8 @@ int main(int argc, char* argv[])
 			{
 				listener = true ;
 				life = 150 ; // Live for 15 secs only
+
+				port = getIntArg(port, i+1, argc, argv);
 			}
 		}
 	}
@@ -2031,7 +2051,7 @@ int main(int argc, char* argv[])
 	// Running a listener isn't really a test.  It just provides the other side for a remote test
 	// (so run one instance as a listener and then a second as a -remote test).
 	if (listener)
-		SimpleListener(life) ;
+		SimpleListener(life, port) ;
 	else if (refCountTest)
 		RefCountTest() ;
 	else if (runlistener)
@@ -2057,7 +2077,7 @@ int main(int argc, char* argv[])
 	else
 	{
 		if (remote)
-			success = RemoteTest() ;
+			success = RemoteTest(port) ;
 		else
 			success = FullEmbeddedTest() ;
 
