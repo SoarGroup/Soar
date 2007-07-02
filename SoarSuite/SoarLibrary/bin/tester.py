@@ -56,7 +56,9 @@ for test in tests:
     
     if test.single:
         #single test
+        print "***"
         print test.name
+        print "***"
         exitcode = os.spawnv(os.P_WAIT, test.args[0][0], test.args[0])
         if exitcode == 0:
             print "%s: Success" % (test.name,)
@@ -66,7 +68,9 @@ for test in tests:
             
     else:
         #multi test
+        print "***" 
         print test.name
+        print "***"
         server = os.spawnv(os.P_NOWAIT, test.args[0][0], test.args[0])
         time.sleep(3)
         client = os.spawnv(os.P_NOWAIT, test.args[1][0], test.args[1])
