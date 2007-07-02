@@ -7,6 +7,7 @@ from ElementGGP import ElementGGP as ElemGGP
 from GGPRule import GGPRule
 from GGPSentence import GGPSentence
 import ElementGGP
+import pdb
 
 name_gen = UniqueNameGenerator()
 
@@ -257,11 +258,15 @@ def TranslateFrameAxioms(game_name, head, bodies):
 		new_bodies.append(newb)
 
 	# mangle variables in each body to prevent name collisions
-	name_gen = UniqueNameGenerator()
-	for b in new_bodies:
-		mangled = dict()
+#	name_gen = UniqueNameGenerator()
+	for b,i in zip(new_bodies, range(len(new_bodies))):
 		for c in b:
-			c.mangle_vars(mangled, name_gen)
+			c.mangle_vars('__r%d__' % i)
+
+#	for b in new_bodies:
+#		mangled = dict()
+#		for c in b:
+#			c.mangle_vars(mangled, name_gen)
 
 	# collect all distinctions
 	for b in new_bodies:
@@ -347,16 +352,18 @@ def MakeSelectionSpaceRules(game_name):
 
 	return [problem_space_sp, fake_io_sp]
 
-def StandardizeVars(sentence, prefix, map = dict(), count = 0):
+def StandardizeVars(sentence, add_new, prefix, map = dict(), count = 0):
 	for i in range(sentence.num_terms()):
 		c = sentence.term(i)
 		if c.type() == "variable":
-			if not map.has_key(str(c)):
-				count += 1
+			if not map.has_key(str(c)) and add_new:
 				map[str(c)] = count
-			sentence.term(i).rename("%s%d" % (prefix, map[str(c)]))
+				count += 1
+			if map.has_key(str(c)):
+				new_name = "%s%d" % (prefix, map[str(c)])
+				sentence.term(i).rename(new_name)
 		elif c.type() == "function":
-			count = StandardizeVars(c, prefix, map, count)
+			count = StandardizeVars(c, add_new, prefix, map, count)
 
 	return count
 
@@ -496,9 +503,12 @@ def TranslateDescription(game_name, description, filename):
 		body = f.body()
 		var_map = dict()
 		count = 0
-		count = StandardizeVars(head, var_prefix, var_map, count)
+		count = StandardizeVars(head, True, var_prefix, var_map, count)
 		for b in body:
-			tmp_count = StandardizeVars(b, var_prefix, var_map, count)
+			#tmp_count = StandardizeVars(b, var_prefix, var_map, count)
+			# what's going on here? I have no idea why I used tmp_count
+			# instead of just count
+			count = StandardizeVars(b, False, var_prefix, var_map, count)
 
 		# create the matrix
 		count = 0

@@ -1,4 +1,5 @@
 from SoarProduction import *
+import pdb
 
 def ClassifyTerm(elementGGP):
 	if isinstance(elementGGP, str):
@@ -44,9 +45,12 @@ class GGPConstant:
 	def copy(self):
 		return GGPConstant(self.__name)
 	
-	def mangle(self, mangled, name_gen):
-		# can't mangle constants
-		return
+#	def mangle(self, mangled, name_gen):
+#		# can't mangle constants
+#		return
+
+	def mangle(self, prefix):
+		pass
 	
 	def covers(self, other):
 		return self == other
@@ -71,6 +75,8 @@ class GGPVariable:
 		return self.__name
 	
 	def rename(self, name):
+#		if self.__name == "strength":
+#			pdb.set_trace()
 		self.__name = name
 	
 	def make_soar_cond(self, sp, cond, place, var_map, negate = False):
@@ -89,14 +95,18 @@ class GGPVariable:
 	def copy(self):
 		return GGPVariable("?%s" % self.__name)
 	
-	def mangle(self, mangled, name_gen):
-		if self.__name in mangled:
-			self.__name = mangled[self.__name]
-		else:
-			new_var = name_gen.get_name(self.__name)
-			mangled[self.__name] = new_var
-			self.__name = new_var
-	
+#	def mangle(self, mangled, name_gen):
+#		if self.__name in mangled:
+#			self.__name = mangled[self.__name]
+#		else:
+#			new_var = name_gen.get_name(self.__name)
+#			mangled[self.__name] = new_var
+#			self.__name = new_var
+
+	def mangle(self, prefix):
+		if not self.__name.startswith("std_soar_var"):
+			self.__name = "%s%s" % (prefix, self.__name)
+
 	def covers(self, other):
 		return isinstance(other, GGPVariable) or isinstance(other, GGPConstant)
 
@@ -199,9 +209,13 @@ class GGPFunction:
 		for t, i in zip(self.__terms, range(len(self.__terms))):
 			t.make_soar_action(sp, action, i + place_offset, var_map)
 	
-	def mangle(self, mangled, name_gen):
+#	def mangle(self, mangled, name_gen):
+#		for t in self.__terms:
+#			t.mangle(mangled, name_gen)
+
+	def mangle(self, prefix):
 		for t in self.__terms:
-			t.mangle(mangled, name_gen)
+			t.mangle(prefix)
 	
 	def __eq__(self, other):
 		if not isinstance(other, GGPFunction):
@@ -350,9 +364,13 @@ class GGPSentence:
 		a.__name = "next"
 		return a
 	
-	def mangle_vars(self, mangled, name_gen):
+#	def mangle_vars(self, mangled, name_gen):
+#		for t in self.__terms:
+#			t.mangle(mangled, name_gen)
+
+	def mangle_vars(self, prefix):
 		for t in self.__terms:
-			t.mangle(mangled, name_gen)
+			t.mangle(prefix)
 			
 	def make_soar_conditions(self, sp, var_map):
 		if self.__name  == "true":
