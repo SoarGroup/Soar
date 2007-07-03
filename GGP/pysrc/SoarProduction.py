@@ -90,7 +90,7 @@ class SoarCondition:
 	def is_empty(self):
 		return len(self.ground_preds) == 0 and len(self.id_preds) == 0
 
-	def to_str(self, var_distinctions = dict(), val_distinctions = dict()):
+	def to_str(self, var_comps = dict(), val_comps = dict()):
 		s = "<%s>" % self.head_var
 		
 		for pred in self.ground_preds:
@@ -106,13 +106,13 @@ class SoarCondition:
 		
 		for pred in self.id_preds:
 			ds = ""
-			if pred[2] in var_distinctions:
-				for d in var_distinctions[pred[2]]:
-					ds += "<> <%s> " % d
+			if pred[2] in var_comps:
+				for d in var_comps[pred[2]]:
+					ds += "%s <%s> " % d
 			
-			if pred[2] in val_distinctions:
-				for d in val_distinctions[pred[2]]:
-					ds += "<> %s " % d
+			if pred[2] in val_comps:
+				for d in val_comps[pred[2]]:
+					ds += "%s %s " % d
 			
 			if pred[0]:
 				s += " -^%s" % pred[1]
@@ -206,8 +206,8 @@ class SoarProduction:
 		self.input_link = None
 		self.output_link = None
 		self.cond_paths = dict() # condition ref -> attrib
-		self.var_distinctions = dict()
-		self.value_distinctions = dict()
+		self.var_comps = dict()
+		self.val_comps = dict()
 
 	def state_cond(self):
 		if self.first_state_cond == None:
@@ -243,7 +243,8 @@ class SoarProduction:
 		for cond in self.cond_paths:
 			c.cond_paths[cond_map[cond]] = self.cond_paths[cond]
 
-		c.var_distinctions = dict(self.var_distinctions.items())
+		c.var_comps = dict(self.var_comps.items())
+		c.val_comps = dict(self.val_comps.items())
 
 		return c
 	
@@ -374,37 +375,31 @@ class SoarProduction:
 	def is_negated(self, c):
 		return c in self.neg_conjs
 	
-	def add_var_distinction(self, v1, v2):
-		if not self.var_distinctions.has_key(v1):
-			self.var_distinctions[v1] = []
-		self.var_distinctions[v1].append(v2)
-		if not self.var_distinctions.has_key(v2):
-			self.var_distinctions[v2] = []
-		self.var_distinctions[v2].append(v1)
+	def add_var_comp(self, v1, comp, v2):
+		if not v1 in self.var_comps:
+			self.var_comps[v1] = []
+		self.var_comps[v1].append((comp, v2))
 
-	def add_value_distinction(self, var, value):
-		print var, value
-		if var not in self.value_distinctions:
-			self.value_distinctions[var] = []
-		self.value_distinctions[var].append(value)
+	def add_val_comp(self, var, comp, value):
+		if var not in self.val_comps:
+			self.val_comps[var] = []
+		self.val_comps[var].append((comp, value))
 
-	def __calculate_distinctions(self, condition, bound_vars):
-		distinct = dict()
-		for v in condition.get_rhs_vars():
-			if v not in bound_vars and self.var_distinctions.has_key(v):
-				# only specify distinctions for yet unbound variables
-				distinct[v] = []
-				for dv in self.var_distinctions[v]:
-					if dv in bound_vars:
-						# only specify the distinction if the variable to be
-						# distinguished from is already bound
-						distinct[v].append(dv)
-		return distinct
+#	def __calculate_distinctions(self, condition, bound_vars):
+#		distinct = dict()
+#		for v in condition.get_rhs_vars():
+#			if v not in bound_vars and self.var_distinctions.has_key(v):
+#				# only specify distinctions for yet unbound variables
+#				distinct[v] = []
+#				for dv in self.var_distinctions[v]:
+#					if dv in bound_vars:
+#						# only specify the distinction if the variable to be
+#						# distinguished from is already bound
+#						distinct[v].append(dv)
+#		return distinct
 
 
 	def __str__(self):
-		val_distinct = dict(self.value_distinctions.items())
-		bound_vars = set([])
 		used = set([])
 		cond_str = "   (state %s" % self.first_state_cond.to_str()[1:]
 		for c in self.conds:
@@ -413,20 +408,12 @@ class SoarProduction:
 				if self.neg_conjs.has_key(c):
 					cond_str += "\n   -{"
 					for nc in self.neg_conjs[c]:
-						var_distinct = self.__calculate_distinctions(nc, bound_vars)
-						cond_str += "\n     " + nc.to_str(var_distinct, val_distinct)
+						cond_str += "\n     " + nc.to_str(self.var_comps, self.val_comps)
 						used.add(nc)
-						bound_vars = bound_vars.union(nc.get_rhs_vars())
 					cond_str += "\n   }"
 				else:
-					var_distinct = self.__calculate_distinctions(c, bound_vars)
-					cond_str += "\n   " + c.to_str(var_distinct, val_distinct)
+					cond_str += "\n   " + c.to_str(self.var_comps, self.val_comps)
 					used.add(c)
-					bound_vars = bound_vars.union(c.get_rhs_vars())
-				
-				for b in bound_vars:
-					if b in val_distinct:
-						val_distinct.pop(b)
 
 		act_str = ""
 		for a in self.actions:

@@ -44,20 +44,43 @@ def MakeTemplateProduction(type, name, game_name, gs = True, move = True):
 	
 def ParseGDLBodyToCondition(body, prod, var_map):
 	for b in body:
-		if b.name() != "distinct":
+		if not b.name() in ["distinct", '<', '>', '>=']:
 			b.make_soar_conditions(prod, var_map)
 
 
-def ParseDistinctions(body, sp, var_map):
-	x = 0
+def ParseComparisons(body, sp, var_map):
 	for sentence in body:
+		if sentence.name() not in ['distinct', '<', '>', '>=']:
+			continue
+		if sentence.term(0).type() == 'variable':
+			lhs_index = 0
+			rhs_index = 1
+			reverse = False
+		else:
+			assert sentence.term(1).type() == 'variable', "Have to have at least one variable in a comparison"
+			lhs_index = 1
+			rhs_index = 0
+			reverse = True
+
 		if sentence.name() == "distinct":
-			v1 = var_map.get_var(str(sentence.term(0)))
-			if sentence.term(1).type() == "variable":
-				v2 = var_map.get_var(str(sentence.term(1)))
-				sp.add_var_distinction(v1, v2)
+			v1 = var_map.get_var(str(sentence.term(lhs_index)))
+			if sentence.term(rhs_index).type() == "variable":
+				v2 = var_map.get_var(str(sentence.term(rhs_index)))
+				sp.add_var_comp(v1, "<>", v2)
 			else:
-				sp.add_value_distinction(v1, str(sentence.term(1)))
+				sp.add_val_comp(v1, "<>", str(sentence.term(rhs_index)))
+		elif sentence.name() in ['<', '>', '>=']:
+			rev_map = {'<':'>', '>':'<', '>=':'<=', '<=':'>='}
+			if reverse:
+				comp = rev_map[sentence.name()]
+			else:
+				comp = sentence.name()
+			v1 = var_map.get_var(str(sentence.term(lhs_index)))
+			if sentence.term(rhs_index).type() == "variable":
+				v2 = var_map.get_var(str(sentence.term(rhs_index)))
+				sp.add_var_comp(v1, comp, v2)
+			else:
+				sp.add_val_comp(v1, comp, str(sentence.term(rhs_index)))
 
 
 def MakeInitRule(game_name, role, init_conds, fact_rules, min_success_score):
@@ -82,8 +105,12 @@ def MakeInitRule(game_name, role, init_conds, fact_rules, min_success_score):
 	game_facts_var = state_action.add_id_wme_action("facts")
 #	game_elabs_var = state_action.add_id_wme_action("elaborations")
 	gs_actions = asp.add_action(game_state_var)
-	gs_actions.add_ground_wme_action("role", role)
 	gs_actions.add_ground_wme_action('action-counter', '0')
+
+	if role == "":
+		print "Warning: No role defined"
+	else:
+		gs_actions.add_ground_wme_action("role", role)
 
 	var_map = GDLSoarVarMapper(UniqueNameGenerator())
 	for ic in init_conds:
@@ -122,7 +149,7 @@ def TranslateImpliedRelation(game_name, head, body):
 	var_map = GDLSoarVarMapper(sp.var_gen)
 	if len(body) > 0:
 		ParseGDLBodyToCondition(body, sp, var_map)
-		ParseDistinctions(body, sp, var_map)
+		ParseComparisons(body, sp, var_map)
 	head.make_soar_actions(sp, var_map)
 	return [sp]
 	
@@ -130,7 +157,7 @@ def TranslateTerminal(game_name, head, body):
 	sp = SoarProduction(name_gen.get_name(SoarifyStr(str(head))), "elaborate")
 	var_map = GDLSoarVarMapper(sp.var_gen)
 	ParseGDLBodyToCondition(body, sp, var_map)
-	ParseDistinctions(body, sp, var_map)
+	ParseComparisons(body, sp, var_map)
 	
 	# different actions depending on if we're in the selection space
 	# or operating for real
@@ -149,7 +176,7 @@ def TranslateLegal(game_name, head, body):
 	sp = MakeTemplateProduction("propose", name_gen.get_name(SoarifyStr(str(head))), game_name, False, False)
 	var_map = GDLSoarVarMapper(sp.var_gen)
 	for relation in body:
-		if relation.name() != "distinct":
+		if not relation.name() in ["distinct", ">", "<", ">="]:
 			relation.make_soar_conditions(sp, var_map)
 	
 	# have to also check that no moves have been made
@@ -157,7 +184,7 @@ def TranslateLegal(game_name, head, body):
 	ol_cond.add_id_predicate("<cmd-name>", negate = True)
 	
 	head.make_soar_actions(sp, var_map)
-	ParseDistinctions(body, sp, var_map)
+	ParseComparisons(body, sp, var_map)
 	
 	# apply rule
 
@@ -182,11 +209,11 @@ def TranslateNext(game_name, head, body, make_remove_rule = True):
 	ap.add_op_cond("update-state")
 	
 	for sentence in body:
-		if sentence.name() != "distinct":
+		if not sentence.name() in ["distinct", '>', '<', '>=']:
 			sentence.make_soar_conditions(ap, var_map)
 	
 	head.make_soar_actions(ap, var_map)
-	ParseDistinctions(body, ap, var_map)
+	ParseComparisons(body, ap, var_map)
 	
 	# there are no frame axioms, so make productions that get rid of this after one
 	# step
@@ -208,7 +235,7 @@ def TranslateGoal(game_name, head, body, score):
 	desired_var = sp.first_state_cond.add_id_predicate("desired")
 	
 	ParseGDLBodyToCondition(body, sp, var_map)
-	ParseDistinctions(body, sp, var_map)
+	ParseComparisons(body, sp, var_map)
 	
 	if int(str(head.term(1))) >= score:
 		#sp.add_action().add_id_wme_action("success", desired_var)
@@ -242,7 +269,7 @@ def TranslateFrameAxioms(game_name, head, bodies):
 	axiom_name = SoarifyStr(str(head))
 	frame_sentence = head.true_analogue()
 
-	distinct_literals = []
+	comparison_literals = []
 	new_bodies = []
 	# eliminate frame conditions from body
 	# negate each condition in each body
@@ -250,7 +277,7 @@ def TranslateFrameAxioms(game_name, head, bodies):
 		newb = []
 		for s in b:
 			if s != frame_sentence:
-				if s.name() == "distinct":
+				if s.name() in ['distinct', '<', '>', '>=']:
 					# preserve distinct
 					newb.append(s)
 				else:
@@ -268,12 +295,12 @@ def TranslateFrameAxioms(game_name, head, bodies):
 #		for c in b:
 #			c.mangle_vars(mangled, name_gen)
 
-	# collect all distinctions
+	# collect all comparisons
 	for b in new_bodies:
 		i = 0
 		while i < len(b):
-			if b[i].name() == "distinct":
-				distinct_literals.append(b[i])
+			if b[i].name() in ['distinct', '<', '>', '>=']:
+				comparison_literals.append(b[i])
 				b.pop(i)
 			else:
 				i += 1
@@ -292,7 +319,7 @@ def TranslateFrameAxioms(game_name, head, bodies):
 			if new_bodies[i][ci[i]] not in comb:
 				comb.append(new_bodies[i][ci[i]])
 
-		comb_body = ElementGGP.Combine(list(comb) + distinct_literals)
+		comb_body = ElementGGP.Combine(list(comb) + comparison_literals)
 		prod_name = name_gen.get_name("%s%d" % (op_name, x))
 		sp = MakeTemplateProduction("apply", prod_name, game_name)
 		sp.add_op_cond("update-state")
@@ -308,7 +335,7 @@ def TranslateFrameAxioms(game_name, head, bodies):
 		frame_sentence.next_analogue().make_soar_actions(sp, var_mapper, remove = True)
 
 		# set up the variable distinctions
-		ParseDistinctions(comb_body, sp, var_mapper)
+		ParseComparisons(comb_body, sp, var_mapper)
 
 		productions.append(sp)
 
@@ -456,7 +483,8 @@ def TranslateDescription(game_name, description, filename):
 	# heuristic that says that we've succeeded if we obtain a score higher than or equal
 	# to the single highest reward
 	if best_score == -99999:
-		raise Exception("There are no goal rules")
+		#raise Exception("There are no goal rules")
+		print "Warning: There are no goal rules"
 	
 	fact_rules = []
 	for r in uncond_elabs.values():
