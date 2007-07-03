@@ -1,10 +1,9 @@
-#TODO: kif extractor should generate this!
-sp {top-state*step-is-bookkeeping
+sp {top-state*bookkeeping
    (state <s> ^superstate nil
               ^facts <f>)
 -->
-   (<f> ^bookkeeping-state step
-        ^bookkeeping-state time
+   (<f># ^bookkeeping-state step
+       # ^bookkeeping-state time
         ^bookkeeping-state action-counter
         ^bookkeeping-state action-sequence)
 }

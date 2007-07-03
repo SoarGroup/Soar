@@ -8,7 +8,7 @@ popd
 source allowed-directions.soar
 source dont-redo-depth-exceeded.soar
 source portals.soar
+source prune-alternate-paths.soar
 source prune-repeated-game-state.soar
 source top-state.soar
-source prune-alternate-paths.soar
 source analyze-state.soar
