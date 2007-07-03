@@ -61,7 +61,7 @@ for ($i=0; $i<=$#rules; $i++) {
     # for each line in body of rule
     $rules[$i][$j] =~ /^([^_]*)/;
     $att = $1;
-    if ($att =~ /^NOT$/) {
+    if ($att =~ /^NOT /) {
       $rules[$i][$j] =~ /^NOT ([^_]*)/;
       $att = $1;
     }

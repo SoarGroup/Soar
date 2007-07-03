@@ -9,6 +9,8 @@ foreach $line (`cat $ARGV[0]`) {
   if ($line =~ /^$/) { next; }
   $line = "$line\n";
   $line =~ s/ /_/g;
+
+  $line = lc $line;
   
   if ($line =~ /^\(<=_/) {
     $line =~ s/^\(<=_//;
