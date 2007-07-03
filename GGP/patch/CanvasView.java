@@ -478,8 +478,10 @@ public class CanvasView extends AbstractFixedView implements  Kernel.RhsFunction
 				if(command.equals("update")) 
 				{
 					// System.out.println("update");
-					Integer key;
-					key = Integer.valueOf(getSpaceDelimitedArg());
+					//Integer key;
+					//key = Integer.valueOf(getSpaceDelimitedArg());
+					String key;
+					key = getSpaceDelimitedArg();
 				 
 					m_LinesDrawTo.put(key, buildLineData());
 				}
@@ -505,8 +507,10 @@ public class CanvasView extends AbstractFixedView implements  Kernel.RhsFunction
 				}
 				else if(command.equals("delete")) 
 				{
-					Integer key;
-					key = Integer.valueOf(getSpaceDelimitedArg());
+					//Integer key;
+					//key = Integer.valueOf(getSpaceDelimitedArg());
+					String key;
+					key = getSpaceDelimitedArg();
 				 
 					m_LinesDrawTo.remove(key);
 				}
@@ -521,8 +525,10 @@ public class CanvasView extends AbstractFixedView implements  Kernel.RhsFunction
 				if(command.equals("update")) 
 				{
 					// System.out.println("update");
-					Integer key;
-					key = Integer.valueOf(getSpaceDelimitedArg());
+					//Integer key;
+					//key = Integer.valueOf(getSpaceDelimitedArg());
+					String key;
+					key = getSpaceDelimitedArg();
 				 
 					m_RectsDrawTo.put(key, buildRectData());
 				}
@@ -547,8 +553,10 @@ public class CanvasView extends AbstractFixedView implements  Kernel.RhsFunction
 				else if(command.equals("delete")) 
 				{
 				 
-					Integer key;
-					key = Integer.valueOf(getSpaceDelimitedArg());
+					//Integer key;
+					//key = Integer.valueOf(getSpaceDelimitedArg());
+					String key;
+					key = getSpaceDelimitedArg();
 				 
 					m_RectsDrawTo.remove(key);
 				}
@@ -563,8 +571,10 @@ public class CanvasView extends AbstractFixedView implements  Kernel.RhsFunction
 				if(command.equals("update")) 
 				{
 					//System.out.println("update");
-					Integer key;
-					key = Integer.valueOf(getSpaceDelimitedArg());
+					//Integer key;
+					//key = Integer.valueOf(getSpaceDelimitedArg());
+					String key;
+					key = getSpaceDelimitedArg();
 				 
 					m_PointsDrawTo.put(key, buildPointData());
 				}
@@ -595,8 +605,10 @@ public class CanvasView extends AbstractFixedView implements  Kernel.RhsFunction
 					
 				else if(command.equals("delete")) 
 				{
-					Integer key;
-					key = Integer.valueOf(getSpaceDelimitedArg());
+					//Integer key;
+					//key = Integer.valueOf(getSpaceDelimitedArg());
+					String key;
+					key = getSpaceDelimitedArg();
 				 
 					m_PointsDrawTo.remove(key);
 				}
@@ -609,8 +621,10 @@ public class CanvasView extends AbstractFixedView implements  Kernel.RhsFunction
 				if(command.equals("update")) 
 				{
 					//System.out.println("update");
-					Integer key;
-					key = Integer.valueOf(getSpaceDelimitedArg());
+					//Integer key;
+					//key = Integer.valueOf(getSpaceDelimitedArg());
+					String key;
+					key = getSpaceDelimitedArg();
 				 
 					m_PointersDrawTo.put(key, buildPointerData());
 				}
@@ -644,8 +658,10 @@ public class CanvasView extends AbstractFixedView implements  Kernel.RhsFunction
 					
 				else if(command.equals("delete")) 
 				{
-					Integer key;
-					key = Integer.valueOf(getSpaceDelimitedArg());
+					//Integer key;
+					//key = Integer.valueOf(getSpaceDelimitedArg());
+					String key;
+					key = getSpaceDelimitedArg();
 				 
 					m_PointsDrawTo.remove(key);
 				}
@@ -657,8 +673,10 @@ public class CanvasView extends AbstractFixedView implements  Kernel.RhsFunction
 				if(command.equals("update")) 
 				{
 					//System.out.println("update");
-					Integer key;
-					key = Integer.valueOf(getSpaceDelimitedArg());
+					//Integer key;
+					//key = Integer.valueOf(getSpaceDelimitedArg());
+					String key;
+					key = getSpaceDelimitedArg();
 				 
 					m_CirclesDrawTo.put(key, buildCircleData());
 				}
@@ -682,8 +700,10 @@ public class CanvasView extends AbstractFixedView implements  Kernel.RhsFunction
 				}
 				else if(command.equals("delete")) 
 				{
-					Integer key;
-					key = Integer.valueOf(getSpaceDelimitedArg());
+					//Integer key;
+					//key = Integer.valueOf(getSpaceDelimitedArg());
+					String key;
+					key = getSpaceDelimitedArg();
 				 
 					m_CirclesDrawTo.remove(key);
 				}
@@ -694,8 +714,10 @@ public class CanvasView extends AbstractFixedView implements  Kernel.RhsFunction
 
 				if(command.equals("update")) 
 				{
-					Integer key;
-					key = Integer.valueOf(getSpaceDelimitedArg());
+					//Integer key;
+					//key = Integer.valueOf(getSpaceDelimitedArg());
+					String key;
+					key = getSpaceDelimitedArg();
 				 
 					m_TextDrawTo.put(key, buildTextData());
 				}
@@ -720,8 +742,10 @@ public class CanvasView extends AbstractFixedView implements  Kernel.RhsFunction
 				}
 				else if(command.equals("delete")) 
 				{
-					Integer key;
-					key = Integer.valueOf(getSpaceDelimitedArg());
+					//Integer key;
+					//key = Integer.valueOf(getSpaceDelimitedArg());
+					String key;
+					key = getSpaceDelimitedArg();
 
 					m_TextDrawTo.remove(key);
 				}
@@ -735,8 +759,11 @@ public class CanvasView extends AbstractFixedView implements  Kernel.RhsFunction
 			     
 				if(command.equals("update")) 
 				{
-					Integer key;
-					key = Integer.valueOf(getSpaceDelimitedArg());
+					//Integer key;
+					//key = Integer.valueOf(getSpaceDelimitedArg());
+					String key;
+					key = getSpaceDelimitedArg();
+
 					//System.out.println("in update");
 					ConvexInfo convex = buildConvexData();
 				 
@@ -766,8 +793,10 @@ public class CanvasView extends AbstractFixedView implements  Kernel.RhsFunction
 				}
 				else if(command.equals("delete")) 
 				{
-					Integer key;
-					key = Integer.valueOf(getSpaceDelimitedArg());
+					//Integer key;
+					//key = Integer.valueOf(getSpaceDelimitedArg());
+					String key;
+					key = getSpaceDelimitedArg();
 					m_PolysDrawTo.remove(key);
 				}
 			}
