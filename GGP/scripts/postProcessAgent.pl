@@ -35,10 +35,11 @@ foreach $line (`$analyzeKif`) {
   }
   elsif ($line =~ /fakegs (.*)/) {
     print "static game state: $1\n";
-    print `$makeStatic $1`;
+  #  print `$makeStatic $1`; FIXME
   }
   elsif ($line =~ /counter (.*)/) {
     push @bkProdContents, "^bookkeeping-state $1";
+    print "timeout counter: $1\n";
   }
 }
 
