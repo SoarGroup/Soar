@@ -22,7 +22,7 @@ t_RPAREN   = r'\)'
 t_ignore = ' \t'
 
 def t_NAME(t):
-	r'([-\w_]+)|>|>='
+	r'([-\w_]+)|>|>=|\+|\-|\*|/'
 	try:
 		t.value = int(t.value)
 		t.type = 'NUM'
