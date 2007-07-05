@@ -109,8 +109,8 @@ file = open('parse_test.kif', 'r').read()
 
 result = yacc.parse(file)
 
-import psyco
-psyco.full()
+#import psyco
+#psyco.full()
 
 try:
 	__IR.find_models()
