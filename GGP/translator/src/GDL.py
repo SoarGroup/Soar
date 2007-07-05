@@ -128,7 +128,7 @@ class Variable:
 		return self.__name == other.__name
 
 	def __ne__(self, other):
-		return not self.__name == other.__name
+		return not self == other
 
 	def __str__(self): return self.__name
 
@@ -147,11 +147,12 @@ class Constant:
 	def is_complex(self): return False
 
 	def __eq__(self, other):
-		if not isinstance(other, Constant): return False
+		if not isinstance(other, Constant): 
+			return False
 		return self.__name == other.__name
 	
 	def __ne__(self, other):
-		return not self.__name == other.__name
+		return not self == other
 
 	def __str__(self): return str(self.__name)
 
