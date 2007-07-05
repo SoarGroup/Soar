@@ -2,6 +2,16 @@
 # change the format of a kif file to something easier to parse in perl
 
 foreach $line (`cat $ARGV[0]`) {
+  while ($line =~ /^(\s*\(.*?\))\s*\(/) {
+    $part = $1;
+    $line =~ s/^\s*\(.*?\)//;
+    handleLine($part);
+  }
+
+  handleLine($line);
+}
+sub handleLine() {
+  my $line = shift;
   $line=~ s/\s*#.*//;
   $line=~ s/\s*;.*//;
   $line =~ s/^\s*//;
@@ -22,7 +32,7 @@ foreach $line (`cat $ARGV[0]`) {
     $line =~ s/^\(//;
     $line =~ s/\)$//;
   }
-  if ($line =~ /true/) {
+  if ($line =~ /true_\(/) {
     $line =~ s/true_\(/TRUE_/;
     $line =~ s/\)$//;
   }
