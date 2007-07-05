@@ -215,23 +215,23 @@ class IntermediateRep:
 
 
 
-	def calc_frame_axioms(self):
-		# Predicate -> [(head model, list of rules)]
-		frame_axioms = {}
-		for r in self.__rules:
-			if r.is_frame_axiom():
-				pred = r.get_head().get_predicate()
-				head_model = self.__build_head_model(r)
-				found = False
-				fa_list = frame_axioms.setdefault([], pred)
-				for model_list_pair in fa_list:
-					if head_model = model_list_pair[0]:
-						model_list_pair[1].append(r)
-						found = True
-						break
-				if not found:
-					fa_list.append((head_model, [r]))
-
-		for pred in frame_axioms:
-			for model_list_pair in frame_axioms[pred]:
-				
+#	def calc_frame_axioms(self):
+#		# Predicate -> [(head model, list of rules)]
+#		frame_axioms = {}
+#		for r in self.__rules:
+#			if r.is_frame_axiom():
+#				pred = r.get_head().get_predicate()
+#				head_model = self.__build_head_model(r)
+#				found = False
+#				fa_list = frame_axioms.setdefault([], pred)
+#				for model_list_pair in fa_list:
+#					if head_model = model_list_pair[0]:
+#						model_list_pair[1].append(r)
+#						found = True
+#						break
+#				if not found:
+#					fa_list.append((head_model, [r]))
+#
+#		for pred in frame_axioms:
+#			for model_list_pair in frame_axioms[pred]:
+#				
