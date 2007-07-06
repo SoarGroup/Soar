@@ -13,8 +13,9 @@ using namespace std;
 typedef pair<Rule, Rule> RulePair;
 typedef pair<Predicate, Predicate> PredPair;
 typedef map<Predicate, Predicate> BodyMapping;
-typedef pair<RulePair, BodyMapping > RuleMatchType;
-typedef map<RulePair, BodyMapping > RuleMatchMap;
+typedef pair<BodyMapping, double> ScoredBodyMapping;
+typedef pair<RulePair, vector<ScoredBodyMapping> > RuleMatchType;
+typedef map<RulePair, vector<ScoredBodyMapping> > RuleMatchMap;
 
 class Matcher {
   public:
@@ -26,20 +27,19 @@ class Matcher {
 
     Matcher(const Matcher& other);
 
-    bool findBodyMapping(const Rule& sr, const Rule& tr, BodyMapping& mapping) const;
+    bool findBestBodyMapping(const Rule& sr, const Rule& tr, BodyMapping& mapping) const;
 
-    bool predicatesCanMatch(const Predicate& p1, const Predicate& p2) const;
+    double predicateMatchScore(const Predicate& p1, const Predicate& p2) const;
     bool predicateMatched(const Predicate& p) const { 
       return matchedPreds.find(p) != matchedPreds.end();
     }
     void addPredicateMatch(const Predicate& sp, const Predicate& tp);
     
     bool rulesCanMatch(const Rule& r1, const Rule& r2, BodyMapping& map) const;
-    int  ruleMatchScore(const Rule& r1, const Rule& r2) const;
+    double ruleMatchScore(const Rule& r1, const Rule& r2, BodyMapping& bestMap) const;
     void addRuleMatch(const Rule& sr, const Rule& tr);
 
-    bool getBestMatch(const Rule*& r1, const Rule*& r2) const;
-    bool getBodyMatch(const Rule& sr, const Rule& tr, BodyMapping& map) const;
+    bool getBestMatch(const Rule*& r1, const Rule*& r2, BodyMapping& bestMap) const;
 
     void getUnmatchedPreds(vector<Predicate>& sp, vector<Predicate>& tp);
 
@@ -48,6 +48,7 @@ class Matcher {
     friend ostream& operator<<(ostream& os, const Matcher& m);
 
   private:
+    bool getBodyMaps(const Rule& sr, const Rule& tr, vector<BodyMapping>& map) const;
     void updateRuleMatches(const Predicate& sp, const Predicate& tp);
 
     bool findBodyMappingInternal
@@ -55,6 +56,19 @@ class Matcher {
            vector<Condition> larger,
            BodyMapping& mapping ) const;
     
+    void allBodyMappings
+    ( const Rule& sr, 
+      const Rule& tr, 
+      vector<BodyMapping>& mappings) const;
+
+    bool allBodyMappingsInternal
+         ( vector<Condition> smaller,  // by value on purpose
+           vector<Condition> larger,
+           BodyMapping& partialMap,
+           vector<BodyMapping>& mappings ) const;
+
+    double bodyMapScore(const Rule& sr, const Rule& tr, const BodyMapping& m) const;
+
   private:
     set<Rule> sourceRules;
     set<Rule> targetRules;

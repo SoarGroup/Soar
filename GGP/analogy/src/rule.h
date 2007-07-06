@@ -28,6 +28,7 @@ struct Condition {
   bool operator==(const Condition& other) const {
     return pred == other.pred && negated == other.negated;
   }
+
 };
 
 class Rule {
@@ -81,6 +82,8 @@ class Rule {
       }
       return body == other.body;
     }
+    
+    void str() const;
 
   private:
     Predicate head;

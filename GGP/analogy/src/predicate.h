@@ -44,7 +44,9 @@ class Predicate {
              arity != other.arity || 
              type != other.type;
     }
-    
+   
+    void str() const;
+
     friend ostream& operator<<(ostream& os, const Predicate& p);
 
   private:

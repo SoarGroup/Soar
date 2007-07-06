@@ -46,8 +46,9 @@ int main(int argc, char* argv[]) {
   while (true) {
     const Rule* r1;
     const Rule* r2;
-    if (!matcher.getBestMatch(r1, r2)) {
-      cout << "FINISHED" << endl;
+    BodyMapping m;
+    if (!matcher.getBestMatch(r1, r2, m)) {
+      cout << "FINISHED0" << endl;
       break;
     }
 
@@ -55,11 +56,10 @@ int main(int argc, char* argv[]) {
     cout << *r1 << endl;
     cout << *r2 << endl;
     
-    BodyMapping m;
-    if (!matcher.getBodyMatch(*r1, *r2, m)) {
-      cout << "FINISHED" << endl;
-      break;
-    }
+//    if (!matcher.findBestBodyMapping(*r1, *r2, m)) {
+//      cout << "FINISHED1" << endl;
+//      break;
+//    }
     for (BodyMapping::iterator
          i  = m.begin();
          i != m.end();
