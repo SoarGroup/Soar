@@ -60,6 +60,20 @@ int main(int argc, char* argv[]) {
 //      cout << "FINISHED1" << endl;
 //      break;
 //    }
+
+    // commit to predicate matches
+    // head predicates
+    if (!matcher.predicateMatched(r1->get_head()) and
+        !matcher.predicateMatched(r2->get_head()))
+    {
+      matcher.addPredicateMatch(r1->get_head(), r2->get_head());
+    }
+    else {
+      cout << "MATCH PREDICATE CONFLICT!" << endl;
+      cout << r1 << endl << r2 << endl;
+    }
+
+    // body predicates
     for (BodyMapping::iterator
          i  = m.begin();
          i != m.end();
@@ -69,6 +83,10 @@ int main(int argc, char* argv[]) {
           !matcher.predicateMatched(i->second)) 
       {
         matcher.addPredicateMatch(i->first, i->second);
+      }
+      else {
+        cout << "MATCH PREDICATE CONFLICT!" << endl;
+        cout << i->first << endl << i->second << endl;
       }
     }
     matcher.addRuleMatch(*r1, *r2);

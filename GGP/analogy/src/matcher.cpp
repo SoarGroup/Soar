@@ -9,6 +9,21 @@
 using namespace std;
 using boost::bind;
 
+ostream& operator<<(ostream& os, BodyMapping& bm) {
+  for (BodyMapping::iterator
+       i  = bm.begin();
+       i != bm.end();
+       ++i)
+  {
+    os << i->first << " --> " << i->second << endl;
+  }
+  return os;
+}
+
+void bmStr(BodyMapping& bm) {
+  cout << bm;
+}
+
 Matcher::Matcher
 ( vector<Predicate> sPreds,
   vector<Predicate> tPreds,
@@ -325,8 +340,8 @@ double Matcher::predicateMatchScore
   if (p2_pos != matchedPreds.end() and p2_pos->second != p1) {
     return 0;
   }
-  double p1a = p1.get_arity();
-  double p2a = p2.get_arity();
+  double p1a = p1.get_arity() + 0.5;
+  double p2a = p2.get_arity() + 0.5;
   double score = (p1a + p2a) / (fabs(p1a - p2a) + 1);
   if (p1.get_type() == p2.get_type()) {
     return 1.5 * score;
@@ -360,6 +375,7 @@ double Matcher::ruleMatchScore
   if (predicateMatched(r1.get_head())) {
     score *= 2;
   }
+  bestMap = bestPos->first;
   return score;
 }
 
