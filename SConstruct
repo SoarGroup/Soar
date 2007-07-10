@@ -128,7 +128,7 @@ if os.name == 'posix':
 	
 	# configure misc command line options
 	if conf.env['debug']:
-		conf.env.Append(CPPFLAGS = ' -g')
+		conf.env.Append(CPPFLAGS = ' -g3')
 	if conf.env['warnings']:
 		conf.env.Append(CPPFLAGS = ' -Wall')
 	if conf.env['optimization'] == 'partial':
