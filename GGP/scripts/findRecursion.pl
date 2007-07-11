@@ -7,7 +7,7 @@
 
 die unless ($#ARGV == 0);
 $kifFile = $ARGV[0];
-$processor = "./processKif.pl";
+$processor = "./processKif_unaliasNT.pl";
 die unless (-e $kifFile);
 die unless (-e $processor);
 
@@ -110,81 +110,13 @@ foreach $att (keys %attParents) {
 }
 
 foreach $att (keys %attParents) {
-  print "for att $att:\n";
+#  print "for att $att:\n";
   foreach $parent (keys %{ $attParents{$att} }) {
-    print "\tparent is $parent\n";
-  }
-}
-
-foreach $att (keys %attChildren) {
-  print "for att $att:\n";
-  foreach $child (keys %{ $attChildren{$att} }) {
-    print "\tchild is $child\n";
- }
-}
-
-# report attributes which are on GS, but don't change
-# they don't have any parents except themselves
-%fakeGS = ();
-OUTER: foreach $att (keys %attParents) {
-  unless ($att =~ /^TRUE/) {
-    next;
-  }
-
-  foreach $parent (keys %{ $attParents{$att} }) {
-    if (not $parent =~ /$att/) {
-      next OUTER;
+    if ($parent =~ /^$att$/) {
+      print "Recursion on $att.\n";
     }
+ #     print "\tparent is $parent\n";
   }
-  $fakeGS{$att} = 1;
-  $att =~ s/TRUE//;
-  print "fakegs $att\n";
-}
-
-# report attributes which are not derived from GS, or only from fake GS
-foreach $att (keys %attParents) {
-  if (defined $fakeGS{$att}) { next; }
-  $noGS = 1;
-  foreach $parent (keys %{ $attParents{$att} }) {
-    if ($parent =~ /TRUE/ and not defined $fakeGS{$parent}) {
-      $noGS = 0;
-    }
-  }
-
-  if ($noGS == 1) {
-    $att =~ s/TRUE//;
-    print "static $att\n";
-  }
-}
-
-# report GS attributes which have no GS parents except themselves,
-# and no GS children except themselves
-# these are probably counters
-
-OUTER2: foreach $att (keys %attParents) {
-  if (defined $fakeGS{$att}) {
-    next;
-  }
-  unless ($att =~ /^TRUE/) {
-    next;
-  }
-
-  foreach $parent (keys %{ $attParents{$att} }) {
-    if ($parent =~ /^TRUE/) {
-      if (not $parent =~ /$att/) {
-        next OUTER2;
-      }
-    }
-  }
-
-  foreach $child (keys %{ $attChildren{$att} }) {
-    if ($child =~ /^TRUE/ and not $child =~ /$att/) {
-      next OUTER2;
-    }
-  }
-
-  $att =~ s/TRUE//;
-  print "counter $att\n";
 }
 
 

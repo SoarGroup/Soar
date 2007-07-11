@@ -13,6 +13,7 @@ open $OUT, ">$tmpFileName";
 die if ($#ARGV != 0);
 
 foreach $line (<$FILE>) {
+  $line = lc $line;
   $line =~ s/\(\+/\(plus/g;
   $line =~ s/\(\-/\(minus/g;
 #  $line =~ s/\(\>\=/\(gtequal/g;

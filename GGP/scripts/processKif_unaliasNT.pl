@@ -55,11 +55,10 @@ sub handleLine() {
   $line =~ s/\)$/\nEND/g;
 
   $line =~ s/goal_[^_]*_(\d+)/NEXTgoal$1/;
-
-  $line =~ s/ legal_[^_]*_/ A/;
-  $line =~ s/^legal_[^_]*_/A/;
-  $line =~ s/ next_/ TRUE_/;
-  $line =~ s/^next_/TRUE_/;
+  $line =~ s/ legal_[^_]*_/ L/;
+  $line =~ s/^legal_[^_]*_/L/;
+  $line =~ s/ next_/ NEXT_/;
+  $line =~ s/^next_/NEXT_/;
   $line =~ s/ does_[^_]*_/ A/;
   $line =~ s/^does_[^_]*_/A/;
   $line =~ s/\?/V/g;
