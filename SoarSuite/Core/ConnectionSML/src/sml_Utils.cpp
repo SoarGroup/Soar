@@ -5,8 +5,10 @@
 #include <stdarg.h>
 #include <assert.h>
 
+
+
 /////////////////////////////////////////////////////////////////////
-// Function name  : soar_sleep
+// Function name  : Sleep
 // 
 // Argument       : long secs
 // Argument       : long msecs
@@ -15,12 +17,12 @@
 // Description	  : Sleep for the specified seconds and milliseconds
 //
 /////////////////////////////////////////////////////////////////////
-void soar_sleep(long secs, long msecs)
+void sml::Sleep(long secs, long msecs)
 {
 	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
 #ifdef _WIN32
 
-	Sleep( (secs * 1000) + msecs) ;
+	::Sleep( (secs * 1000) + msecs) ;
 
 #else // not _WIN32
 
@@ -36,14 +38,14 @@ void soar_sleep(long secs, long msecs)
 }
 
 /////////////////////////////////////////////////////////////////////
-// Function name  : ReportSystemErrorMessage
+// Function name  : sml::ReportSystemErrorMessage
 // 
 // Return type    : void 	
 // 
 // Description	  : Get the text of the most recent system error
 //
 /////////////////////////////////////////////////////////////////////
-void ReportSystemErrorMessage()
+void sml::ReportSystemErrorMessage()
 {
 	int error = ERROR_NUMBER ;
 
@@ -119,7 +121,7 @@ int CTDebugEnterMethod::GetCurrentNestLevel()
 
 // Note: This may be Windows specific way of handling
 // variable args--there are other methods.
-void PrintDebugFormat(char const* pFormat, ...)
+void sml::PrintDebugFormat(char const* pFormat, ...)
 {
 	va_list args;
 	va_start(args, pFormat);
@@ -145,7 +147,7 @@ void PrintDebugFormat(char const* pFormat, ...)
 	va_end(args);
 }
 
-void PrintDebug(char const* pStr)
+void sml::PrintDebug(char const* pStr)
 {
 #ifdef DEBUG_CALLS
 	CTDebugEnterMethod::PrintStackTrace() ;
@@ -157,7 +159,7 @@ void PrintDebug(char const* pStr)
 }
 
 #ifdef _WIN32
-void PrintDebugMethod(long indent, char const* pMethodName, char const* pStr)
+void sml::PrintDebugMethod(long indent, char const* pMethodName, char const* pStr)
 {
 	indent = 0 ;
 
@@ -234,7 +236,7 @@ void PrintDebugSimple(char const* pStr)
 
 #else	// _WINDOWS
 // On Linux, dump to stderr (the console)
-void PrintDebugMethod(long indent, char const* pMethodName, char const* pStr)
+void sml::PrintDebugMethod(long indent, char const* pMethodName, char const* pStr)
 {
 	indent += 0 ;
 
@@ -243,7 +245,7 @@ void PrintDebugMethod(long indent, char const* pMethodName, char const* pStr)
 	fprintf(stderr, "\n") ;
 }
 
-void PrintDebugSimple(char const* pStr)
+void sml::PrintDebugSimple(char const* pStr)
 {
 	unused(pTraceFile); // quells gcc warning when _DEBUG isn't defined
 	fprintf(stderr, pStr) ;

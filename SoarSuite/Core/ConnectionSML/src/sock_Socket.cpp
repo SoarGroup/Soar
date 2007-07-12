@@ -29,7 +29,7 @@
 #include <assert.h>
 
 #ifdef NON_BLOCKING
-#include "sml_Utils.h"	// For soar_sleep
+#include "sml_Utils.h"	// For sml::Sleep
 #endif
 
 using namespace sock ;
@@ -199,7 +199,7 @@ bool Socket::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 
 	if (!hSock)
 	{
-		PrintDebug("Error: Can't send because this socket is closed") ;
+		sml::PrintDebug("Error: Can't send because this socket is closed") ;
 		return false; 
 	}
 
@@ -225,21 +225,21 @@ bool Socket::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 				// so this would always be an error.
 				if (IsErrorWouldBlock())
 				{
-					PrintDebug("Waiting for socket to unblock") ;
-					soar_sleep(0, 0) ;
+					sml::PrintDebug("Waiting for socket to unblock") ;
+					sml::Sleep(0, 0) ;
 				}
 				else
 #endif
 				{
-					PrintDebug("Error: Error sending message") ;
-					ReportSystemErrorMessage() ;
+					sml::PrintDebug("Error: Error sending message") ;
+					sml::ReportSystemErrorMessage() ;
 					return false ;
 				}
 			}
 		} while (thisSend == SOCKET_ERROR) ;
 
 		if (m_bTraceCommunications)
-			PrintDebugFormat("Sent %d bytes",thisSend) ;
+			sml::PrintDebugFormat("Sent %d bytes",thisSend) ;
 
 		bytesSent   += thisSend ;
 		pSendBuffer += thisSend ;
@@ -271,7 +271,7 @@ bool Socket::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 
 	if (!hSock)
 	{
-		PrintDebug("Error: Can't check for read data because this socket is closed") ;
+		sml::PrintDebug("Error: Can't check for read data because this socket is closed") ;
 		return false;
 	}
 
@@ -303,17 +303,17 @@ bool Socket::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 	// Did an error occur?
 	if (res == SOCKET_ERROR)
 	{
-		PrintDebug("Error: Error checking if data is available to be read") ;
-		ReportSystemErrorMessage() ;
+		sml::PrintDebug("Error: Error checking if data is available to be read") ;
+		sml::ReportSystemErrorMessage() ;
 		return false ;
 	}
 
 	bool bIsSet = FD_ISSET(hSock, &set) ? true : false ;
 /*
 	if (bIsSet)
-		PrintDebug("Read data IS available") ;
+		sml::PrintDebug("Read data IS available") ;
 	else
-		PrintDebug("Read data is not available") ;
+		sml::PrintDebug("Read data is not available") ;
 */
 	return bIsSet ;
 }
@@ -338,7 +338,7 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 
 	if (!hSock)
 	{
-		PrintDebug("Error: Can't read because this socket is closed") ;
+		sml::PrintDebug("Error: Can't read because this socket is closed") ;
 		return false;
 	}
 
@@ -371,20 +371,20 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 				// so this would always be an error.
 				if (IsErrorWouldBlock())
 				{
-					//PrintDebug("Waiting for socket to unblock") ;
-					soar_sleep(0, 0) ;	// BADBAD: Should have a proper way to pass control back to the caller while we're blocked.
+					//sml::PrintDebug("Waiting for socket to unblock") ;
+					sml::Sleep(0, 0) ;	// BADBAD: Should have a proper way to pass control back to the caller while we're blocked.
 				}
 				else
 #endif
 				{
-					PrintDebug("Error: Error receiving message") ;
+					sml::PrintDebug("Error: Error receiving message") ;
 
-					ReportSystemErrorMessage() ;
+					sml::ReportSystemErrorMessage() ;
 
 					// We treat these errors as all being fatal, which they all appear to be.
 					// If we later decide we can survive certain ones, we should test for them here
 					// and not always close the socket.
-					PrintDebug("Closing our side of the socket because of error") ;
+					sml::PrintDebug("Closing our side of the socket because of error") ;
 					Close() ;
 
 					return false ;
@@ -395,10 +395,10 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 			// closed gracefully.
 			if (thisRead == 0)
 			{
-				PrintDebug("Remote socket has closed gracefully") ;
+				sml::PrintDebug("Remote socket has closed gracefully") ;
 
 				// Now close down our socket
-				PrintDebug("Closing our side of the socket") ;
+				sml::PrintDebug("Closing our side of the socket") ;
 
 				Close() ;
 
@@ -407,7 +407,7 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 		} while (thisRead == SOCKET_ERROR) ;
 
 		if (m_bTraceCommunications)
-			PrintDebugFormat("Received %d bytes",thisRead) ;
+			sml::PrintDebugFormat("Received %d bytes",thisRead) ;
 
 		bytesRead   += thisRead ;
 		pRecvBuffer += thisRead ;

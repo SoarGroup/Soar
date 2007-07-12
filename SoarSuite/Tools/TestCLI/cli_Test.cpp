@@ -52,9 +52,9 @@ void InputThread::Run() {
 		// unlock queue
 		delete lock;
 
-		soar_sleep(0,10);
+		sml::Sleep(0,10);
 		g_pWaitForInput->WaitForEventForever();
-		soar_sleep(0,10);
+		sml::Sleep(0,10);
 	}
 
  	if (cin.bad()) {

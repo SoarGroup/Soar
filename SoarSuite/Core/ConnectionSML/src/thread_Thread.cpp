@@ -73,13 +73,13 @@ void Thread::Stop(bool waitTillStopped)
 	// If we've been asked to wait for the thread to quit then pause for a moment while it terminates.
 	while (waitTillStopped && !IsStopped() && maxTries > 0)
 	{
-		soar_sleep(0, 10) ;
+		sml::Sleep(0, 10) ;
 		maxTries-- ;
 	}
 
 	if (maxTries <= 0)
 	{
-		PrintDebug("Timed out waiting for thread to stop") ;
+		sml::PrintDebug("Timed out waiting for thread to stop") ;
 	}
 }
 

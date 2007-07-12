@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
 
 	cout << endl << "This will automatically close when the remote kernel shuts down." << endl;
 	// stay open until the remote Soar is shutdown
-	for(;;) { soar_sleep(100000, 0); }
+	for(;;) { sml::Sleep(100000, 0); }
 
 	pKernel->SetConnectionInfo("RHSemotion", sml_Names::kStatusClosing, sml_Names::kStatusClosing);
     pKernel->Shutdown();

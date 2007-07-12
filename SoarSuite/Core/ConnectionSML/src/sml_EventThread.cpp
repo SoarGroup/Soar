@@ -67,7 +67,7 @@ void EventThread::Run()
 	clock_t delay = CLOCKS_PER_SEC ;
 /*
 #ifdef _DEBUG
-	PrintDebugFormat("Starting EventThread\n") ;
+	sml::PrintDebugFormat("Starting EventThread\n") ;
 	long counter = 0 ;
 #endif
 */
@@ -88,7 +88,7 @@ void EventThread::Run()
 #ifdef _DEBUG
 		counter++ ;
 		if (counter % 1000 == 0)
-			PrintDebugFormat("EventThread alive\n") ;
+			sml::PrintDebugFormat("EventThread alive\n") ;
 #endif
 */
 		clock_t current = clock() ;
@@ -98,19 +98,19 @@ void EventThread::Run()
 		// Sleep(0) just allows other threads to run before we continue
 		// to execute.
 		if (current - last > delay)
-			soar_sleep(0, 5) ;
+			sml::Sleep(0, 5) ;
 		else
 			// Changed this to always use sleep 5 now.
 			// Calling sleep(0) here as we used to can cause a single threaded app
 			// to take over the CPU, slowing down the entire system.  Doesn't happen
 			// on a hyper threaded CPU, but on a normal CPU it's a significant problem.
 			// The trade-off is that the response to events may not be quite as fast.
-			soar_sleep(0, 5) ;
+			sml::Sleep(0, 5) ;
 	}
 
 /*
 #ifdef _DEBUG
-	PrintDebugFormat("EventThread terminated\n") ;
+	sml::PrintDebugFormat("EventThread terminated\n") ;
 #endif
 */
 }

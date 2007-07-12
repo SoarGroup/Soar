@@ -75,7 +75,7 @@ void RemoteConnection::AddResponseToList(ElementXML* pResponse)
 	m_ReceivedMessageList.push_front(pResponse) ;
 
 	if (m_bTraceCommunications)
-		PrintDebugFormat("!! Adding ack for id %s to the pending message list", pAckID) ;
+		sml::PrintDebugFormat("!! Adding ack for id %s to the pending message list", pAckID) ;
 
 	// We keep the received message list from growing indefinitely.  This is because
 	// a client may send a command and choose not to listen for the response.
@@ -88,7 +88,7 @@ void RemoteConnection::AddResponseToList(ElementXML* pResponse)
 	while (m_ReceivedMessageList.size() > kMaxListSize)
 	{
 		if (m_bTraceCommunications)
-			PrintDebugFormat("Had to clean a message from the pending message list") ;
+			sml::PrintDebugFormat("Had to clean a message from the pending message list") ;
 
 		ElementXML* pLast = m_ReceivedMessageList.back() ;
 		delete pLast ;
@@ -114,7 +114,7 @@ ElementXML* RemoteConnection::IsResponseInList(char const* pID)
 		if (DoesResponseMatch(pXML, pID))
 		{
 			if (m_bTraceCommunications)
-				PrintDebugFormat("Found match for %s in pending message list", pID) ;
+				sml::PrintDebugFormat("Found match for %s in pending message list", pID) ;
 
 			m_ReceivedMessageList.erase(iter) ;
 			return pXML ;
@@ -143,7 +143,7 @@ bool RemoteConnection::DoesResponseMatch(ElementXML* pResponse, char const* pID)
 		return true ;
 
 	if (m_bTraceCommunications)
-		PrintDebugFormat("Received ack for message %s while looking for %s", pMsgID, pID) ;
+		sml::PrintDebugFormat("Received ack for message %s while looking for %s", pMsgID, pID) ;
 
 	return false ;
 }
@@ -173,9 +173,9 @@ void RemoteConnection::SendMsg(ElementXML* pMsg)
 	if (m_bTraceCommunications)
 	{
 		if (IsKernelSide())
-			PrintDebugFormat("Kernel remote send: %s\n", pXMLString) ;
+			sml::PrintDebugFormat("Kernel remote send: %s\n", pXMLString) ;
 		else
-			PrintDebugFormat("Client remote send: %s\n", pXMLString) ;
+			sml::PrintDebugFormat("Client remote send: %s\n", pXMLString) ;
 	}
 
 	// Release the XML string
@@ -184,7 +184,7 @@ void RemoteConnection::SendMsg(ElementXML* pMsg)
 	// If we had an error close the connection
 	if (!ok)
 	{
-		PrintDebug("Socket has closed down abruptly (during send), so we'll close the connection") ;
+		sml::PrintDebug("Socket has closed down abruptly (during send), so we'll close the connection") ;
 		SetError(Error::kSocketError) ;
 		CloseConnection() ;
 	}
@@ -256,7 +256,7 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 		// Allow other threads the chance to update
 		// (by calling with 0 for sleep time we don't give away cycles if
 		//  no other thread is waiting to execute).
-		soar_sleep(sleepTimeSecs, sleepTimeMillisecs) ;
+		sml::Sleep(sleepTimeSecs, sleepTimeMillisecs) ;
 
 		// Check if the connection has been closed
 		if (IsClosed())
@@ -329,9 +329,9 @@ bool RemoteConnection::ReceiveMessages(bool allMessages, long secondsWait, long 
 		if (m_bTraceCommunications)
 		{
 			if (IsKernelSide())
-				PrintDebugFormat("Kernel remote receive: %s\n", xmlString.c_str()) ;
+				sml::PrintDebugFormat("Kernel remote receive: %s\n", xmlString.c_str()) ;
 			else
-				PrintDebugFormat("Client remote receive: %s\n", xmlString.c_str()) ;
+				sml::PrintDebugFormat("Client remote receive: %s\n", xmlString.c_str()) ;
 		}
 
 		// Get an XML message from the incoming string

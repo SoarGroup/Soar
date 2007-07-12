@@ -33,7 +33,7 @@
 #include <assert.h>
 
 #ifdef PIPE_NON_BLOCKING
-#include "sml_Utils.h"	// For soar_sleep
+#include "sml_Utils.h"	// For sml::Sleep
 #endif
 
 using namespace sock ;
@@ -89,7 +89,7 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 
 	if (!hPipe)
 	{
-		PrintDebug("Error: Can't send because this pipe is closed") ;
+		sml::PrintDebug("Error: Can't send because this pipe is closed") ;
 		return false; 
 	}
 
@@ -122,21 +122,21 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 				// so this would always be an error.
 				if (IsErrorWouldBlock())
 				{
-					PrintDebug("Waiting for pipe to unblock") ;
-					soar_sleep(0, 0) ;
+					sml::PrintDebug("Waiting for pipe to unblock") ;
+					sml::Sleep(0, 0) ;
 				}
 				else
 #endif
 				{
-					PrintDebug("Error: Error sending message") ;
-					ReportSystemErrorMessage() ;
+					sml::PrintDebug("Error: Error sending message") ;
+					sml::ReportSystemErrorMessage() ;
 					return false ;
 				}
 			}
 		} while (!success) ;
 
 		if (m_bTraceCommunications)
-			PrintDebugFormat("Sent %d bytes",thisSend) ;
+			sml::PrintDebugFormat("Sent %d bytes",thisSend) ;
 
 		bytesSent   += thisSend ;
 		pSendBuffer += thisSend ;
@@ -171,7 +171,7 @@ bool NamedPipe::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 
 	if (hPipe == INVALID_HANDLE_VALUE)
 	{
-		PrintDebug("Error: Can't check for read data because this pipe is closed") ;
+		sml::PrintDebug("Error: Can't check for read data because this pipe is closed") ;
 		return false;
 	}
 
@@ -190,18 +190,18 @@ bool NamedPipe::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 		}
 
 		if(GetLastError() == ERROR_BROKEN_PIPE) {
-			PrintDebug("Remote pipe has closed gracefully") ;
+			sml::PrintDebug("Remote pipe has closed gracefully") ;
 			Close() ;
 			return false;
 		}
 
-		PrintDebug("Error: Error checking if data is available to be read") ;
-		ReportSystemErrorMessage() ;
+		sml::PrintDebug("Error: Error checking if data is available to be read") ;
+		sml::ReportSystemErrorMessage() ;
 
 		// We treat these errors as all being fatal, which they all appear to be.
 		// If we later decide we can survive certain ones, we should test for them here
 		// and not always close the socket.
-		PrintDebug("Closing our side of the pipe because of error") ;
+		sml::PrintDebug("Closing our side of the pipe because of error") ;
 		Close() ;
 
 		return false ;
@@ -230,7 +230,7 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 
 	if (hPipe==INVALID_HANDLE_VALUE)
 	{
-		PrintDebug("Error: Can't read because this pipe is closed") ;
+		sml::PrintDebug("Error: Can't read because this pipe is closed") ;
 		return false;
 	}
 
@@ -270,20 +270,20 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 				// so this would always be an error.
 				if (IsErrorWouldBlock())
 				{
-					//PrintDebug("Waiting for pipe to unblock") ;
-					soar_sleep(0, 0) ;	// BADBAD: Should have a proper way to pass control back to the caller while we're blocked.
+					//sml::PrintDebug("Waiting for pipe to unblock") ;
+					sml::Sleep(0, 0) ;	// BADBAD: Should have a proper way to pass control back to the caller while we're blocked.
 				}
 				else
 #endif
 				{
-					PrintDebug("Error: Error receiving message") ;
+					sml::PrintDebug("Error: Error receiving message") ;
 
-					ReportSystemErrorMessage() ;
+					sml::ReportSystemErrorMessage() ;
 
 					// We treat these errors as all being fatal, which they all appear to be.
 					// If we later decide we can survive certain ones, we should test for them here
 					// and not always close the socket.
-					//PrintDebug("Closing our side of the pipe because of error") ;
+					//sml::PrintDebug("Closing our side of the pipe because of error") ;
 					//Close() ;
 
 					//return false ;
@@ -294,10 +294,10 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 			// closed gracefully.
 			/*if (thisRead == 0)
 			{
-				PrintDebug("Remote pipe has closed gracefully") ;
+				sml::PrintDebug("Remote pipe has closed gracefully") ;
 
 				// Now close down our socket
-				//PrintDebug("Closing our side of the pipe") ;
+				//sml::PrintDebug("Closing our side of the pipe") ;
 
 				//Close() ;
 
@@ -306,10 +306,10 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 
 		} while (!success) ;
 
-		//if(tries>1)	PrintDebugFormat("Number tries %d",tries) ;
+		//if(tries>1)	sml::PrintDebugFormat("Number tries %d",tries) ;
 
 		if (m_bTraceCommunications)
-			PrintDebugFormat("Received %d bytes",thisRead) ;
+			sml::PrintDebugFormat("Received %d bytes",thisRead) ;
 
 		bytesRead   += thisRead ;
 		pRecvBuffer += thisRead ;
