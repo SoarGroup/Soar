@@ -22,6 +22,9 @@ class GGPRule:
 	def has_body(self):
 		return len(self.__body) > 0
 	
+	def body_size(self):
+		return len(self.__body)
+
 	def __str__(self):
 		if len(self.__body) == 0:
 			return "(%s)" % str(self.__head)

@@ -45,5 +45,4 @@ while line != "":
 		description += " %s " % line.strip()
 	line = kif.readline()
 
-
 RuleParser.TranslateDescription("game", ElementGGP("(%s)" % description), soarfile)

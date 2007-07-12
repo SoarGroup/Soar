@@ -1,15 +1,23 @@
 #!/usr/bin/python
 
-from SoarProduction import UniqueNameGenerator
-from SoarProduction import SoarProduction
-from SoarProduction import SoarifyStr
+from UniqueNameGen import UniqueNameGenerator
+from SoarProd import *
 from ElementGGP import ElementGGP as ElemGGP
 from GGPRule import GGPRule
 from GGPSentence import GGPSentence
+import re
 import ElementGGP
 import pdb
 
 name_gen = UniqueNameGenerator()
+
+def SoarifyStr(s):
+	p = re.compile('(\s|\?|\(|\)|\.)')
+	result = p.sub('_', str(s))
+	if len(result.strip()) == 0:
+		return 'a'
+		
+	return result.strip()
 
 class GDLSoarVarMapper:
 	def __init__(self, var_gen):
@@ -29,18 +37,24 @@ class GDLSoarVarMapper:
 			return soar_var
 
 # makes a typical skeleton production for use in GGP
-def MakeTemplateProduction(type, name, game_name, gs = True, move = True):
-	p = SoarProduction(name_gen.get_name(name), type)
-	s_cond = p.add_condition()
-	s_cond.add_ground_predicate("name", game_name)
-	if gs:
-		p.add_condition(s_cond.add_id_predicate("gs"))
-
-	if move:
-		p.add_condition(p.get_il_cond().add_id_predicate("last-moves"))
-
+def MakeTemplateProduction(name, type = "", game_name = 'game'):
+	if type != "":
+		prod_name = "%s*%s" % (type, name_gen.get_name(name))
+	else:
+		prod_name = name_gen.get_name(name)
+	p = SoarProd(prod_name, game_name)
 	return p
 
+def MakeApplyRule(sp):
+	op_names = sp.get_proposed_op_names()
+
+	assert len(op_names) > 0, "Operator doesn't propose any operators"
+	assert len(op_names) == 1, "Proposing more than one operator with one rule"
+
+	prod_name = sp.get_name().replace('propose', 'apply')
+	ap = SoarProd(prod_name, sp.get_state_name())
+	ap.add_operator_test(op_names[0])
+	return ap
 	
 def ParseGDLBodyToCondition(body, prod, var_map):
 	for b in body:
@@ -66,9 +80,9 @@ def ParseComparisons(body, sp, var_map):
 			v1 = var_map.get_var(str(sentence.term(lhs_index)))
 			if sentence.term(rhs_index).type() == "variable":
 				v2 = var_map.get_var(str(sentence.term(rhs_index)))
-				sp.add_var_comp(v1, "<>", v2)
+				sp.add_id_predicate(v1, "<>", v2)
 			else:
-				sp.add_val_comp(v1, "<>", str(sentence.term(rhs_index)))
+				sp.add_predicate(v1, "<>", str(sentence.term(rhs_index)))
 		elif sentence.name() in ['<', '>', '>=']:
 			rev_map = {'<':'>', '>':'<', '>=':'<=', '<=':'>='}
 			if reverse:
@@ -78,39 +92,33 @@ def ParseComparisons(body, sp, var_map):
 			v1 = var_map.get_var(str(sentence.term(lhs_index)))
 			if sentence.term(rhs_index).type() == "variable":
 				v2 = var_map.get_var(str(sentence.term(rhs_index)))
-				sp.add_var_comp(v1, comp, v2)
+				sp.add_id_predicate(v1, comp, v2)
 			else:
-				sp.add_val_comp(v1, comp, str(sentence.term(rhs_index)))
+				sp.add_predicate(v1, comp, str(sentence.term(rhs_index)))
 
 
 def MakeInitRule(game_name, role, init_conds, fact_rules, min_success_score):
-	sp = SoarProduction("init-%s" % game_name, "propose");
-	c = sp.add_condition()
-	c.add_ground_predicate("superstate", "nil")
-	c.add_ground_predicate("name", "", True)
-	op = sp.add_action().add_op_proposal("+ >")
-	sp.add_action(op).add_ground_wme_action("name", "init-%s" % game_name)
+	sp = MakeTemplateProduction("init-%s" % game_name, "propose", game_name);
+	sp.add_attrib(sp.get_state_id(), "superstate", "nil")
+	sp.add_neg_attrib(sp.get_state_id(), "name", "")
+	op_id = sp.add_operator_prop("init-%s" % game_name, "+ >")
 
-	asp = sp.get_apply_rules(name_gen)[0]
+	asp = MakeApplyRule(sp)
 
-	state_action = asp.add_action()
-	state_action.add_ground_wme_action("name", game_name)
-	state_action.add_ground_wme_action('next-action', '0')
-#	state_action.add_ground_wme_action("score", "0")
+	asp.add_create_constant(asp.get_state_id(), 'name', game_name)
+	asp.add_create_constant(asp.get_state_id(), 'next-action', '0')
 
-	d_var = state_action.add_id_wme_action("desired")
-	#asp.add_action(d_var).add_id_wme_action("achieved-score")
+	asp.add_create_id(asp.get_state_id(), 'desired')
 
-	game_state_var = state_action.add_id_wme_action("gs")
-	game_facts_var = state_action.add_id_wme_action("facts")
+	gs_id = asp.add_create_id(asp.get_state_id(), 'gs')
+	fact_id = asp.add_create_id(asp.get_state_id(), 'facts')
 #	game_elabs_var = state_action.add_id_wme_action("elaborations")
-	gs_actions = asp.add_action(game_state_var)
-	gs_actions.add_ground_wme_action('action-counter', '0')
+	asp.add_create_constant(gs_id, 'action-counter', '0')
 
 	if role == "":
 		print "Warning: No role defined"
 	else:
-		gs_actions.add_ground_wme_action("role", role)
+		asp.add_create_constant(gs_id, 'role', role)
 
 	var_map = GDLSoarVarMapper(UniqueNameGenerator())
 	for ic in init_conds:
@@ -145,8 +153,8 @@ def TranslateImplication(game_name, rule, min_success_score, make_remove_rule):
 		
 
 def TranslateImpliedRelation(game_name, head, body):
-	sp = SoarProduction(name_gen.get_name(SoarifyStr(str(head))), "elaborate")
-	var_map = GDLSoarVarMapper(sp.var_gen)
+	sp = MakeTemplateProduction(SoarifyStr(str(head)), 'elaborate')
+	var_map = GDLSoarVarMapper(sp.get_name_gen())
 	if len(body) > 0:
 		ParseGDLBodyToCondition(body, sp, var_map)
 		ParseComparisons(body, sp, var_map)
@@ -154,59 +162,57 @@ def TranslateImpliedRelation(game_name, head, body):
 	return [sp]
 	
 def TranslateTerminal(game_name, head, body):
-	sp = SoarProduction(name_gen.get_name(SoarifyStr(str(head))), "elaborate")
-	var_map = GDLSoarVarMapper(sp.var_gen)
+	sp = MakeTemplateProduction(SoarifyStr(str(head)), 'elaborate')
+	var_map = GDLSoarVarMapper(sp.get_name_gen())
 	ParseGDLBodyToCondition(body, sp, var_map)
 	ParseComparisons(body, sp, var_map)
 	
 	# different actions depending on if we're in the selection space
 	# or operating for real
-	sp_sel = sp.copy(name_gen.get_name(sp.name))
-	sp_sel.first_state_cond.add_id_predicate("duplicate-of")
-	sp_sel.add_action().add_id_wme_action("terminal")
+	sp_sel = sp.copy(name_gen.get_name(sp.get_name()))
+	sp_sel.add_id_attrib(sp_sel.get_state_id(), 'duplicate-of')
+	sp_sel.add_create_id(sp_sel.get_state_id(), 'terminal')
 	
-	sp.first_state_cond.add_id_predicate("duplicate-of", negate = True)
-	sp.add_halt()
+	sp.add_neg_id_attrib(sp.get_state_id(), 'duplicate-of')
+	sp.add_rhs_func_call('halt')
 	
 	return [sp, sp_sel]
 
 def TranslateLegal(game_name, head, body):
 	move = head.term(1).name()
 	
-	sp = MakeTemplateProduction("propose", name_gen.get_name(SoarifyStr(str(head))), game_name, False, False)
-	var_map = GDLSoarVarMapper(sp.var_gen)
+	sp = MakeTemplateProduction(SoarifyStr(str(head)), "propose", game_name)
+	var_map = GDLSoarVarMapper(sp.get_name_gen())
 	for relation in body:
 		if not relation.name() in ["distinct", ">", "<", ">="]:
 			relation.make_soar_conditions(sp, var_map)
 	
 	# have to also check that no moves have been made
-	ol_cond = sp.get_ol_cond()
-	ol_cond.add_id_predicate("<cmd-name>", negate = True)
+	olink_id = sp.get_or_make_id_chain(['io','output-link'])[0]
+	sp.add_neg_id_attrib(olink_id, '<cmd-name>')
 	
 	head.make_soar_actions(sp, var_map)
 	ParseComparisons(body, sp, var_map)
 	
 	# apply rule
 
-	ap = sp.get_apply_rules(name_gen)[0]
-	ap.first_state_cond.add_ground_predicate("name", game_name)
-	op_cond = ap.get_conditions("operator")[0]
-	ol_var = ap.get_ol_cond().head_var
+	ap = MakeApplyRule(sp)
+	op_id = ap.get_ids(ap.get_state_id(), 'operator')[0]
+	ol_id = ap.get_or_make_id_chain(['io','output-link'])[0]
 
-	ap_var_map = GDLSoarVarMapper(ap.var_gen)
-	head.term(1).make_soar_cond_no_id(ap, op_cond, ap_var_map, 1)
+	ap_var_map = GDLSoarVarMapper(ap.get_name_gen())
+	head.term(1).make_soar_cond_no_id(ap, op_id, ap_var_map, 1)
 
 	#move_act = ap.add_action(ap.add_action(ol_var).add_id_wme_action(move))
 	#head.term(1).make_soar_action_no_id(ap, move_act, ap_var_map)
-	head.term(1).make_soar_action(ap, ap.add_action(ol_var), 0, ap_var_map)
+	head.term(1).make_soar_action(ap, ol_id, 0, ap_var_map)
 	
 	return [sp, ap]
 
 def TranslateNext(game_name, head, body, make_remove_rule = True):
-	ap = MakeTemplateProduction("apply", name_gen.get_name(SoarifyStr(str(head))), game_name, False, False)
-	var_map = GDLSoarVarMapper(ap.var_gen)
-	ap.add_context_cond(game_name)
-	ap.add_op_cond("update-state")
+	ap = MakeTemplateProduction(SoarifyStr(str(head)), 'apply', game_name)
+	var_map = GDLSoarVarMapper(ap.get_name_gen())
+	ap.add_operator_test('update-state')
 	
 	for sentence in body:
 		if not sentence.name() in ["distinct", '>', '<', '>=']:
@@ -218,10 +224,9 @@ def TranslateNext(game_name, head, body, make_remove_rule = True):
 	# there are no frame axioms, so make productions that get rid of this after one
 	# step
 	if make_remove_rule:
-		rap = SoarProduction(name_gen.get_name("remove*%s" % SoarifyStr(str(head))), "apply")
-		var_map = GDLSoarVarMapper(rap.var_gen)
-		rap.add_context_cond(game_name)
-		rap.add_op_cond("update-state")
+		rap = MakeTemplateProduction("remove*%s" % SoarifyStr(str(head)), 'apply', game_name)
+		var_map = GDLSoarVarMapper(rap.get_name_gen())
+		rap.add_operator_test("update-state")
 		head.make_soar_actions(rap, var_map, remove = True)
 		return [ap, rap]
 	else:
@@ -229,20 +234,18 @@ def TranslateNext(game_name, head, body, make_remove_rule = True):
 
 
 def TranslateGoal(game_name, head, body, score):
-	sp = MakeTemplateProduction("elaborate", name_gen.get_name(SoarifyStr(str(head))), game_name, False, False)
-	var_map = GDLSoarVarMapper(sp.var_gen)
-	sp.first_state_cond.add_id_predicate("terminal")
-	desired_var = sp.first_state_cond.add_id_predicate("desired")
+	sp = MakeTemplateProduction(SoarifyStr(str(head)), 'elaborate', game_name)
+	var_map = GDLSoarVarMapper(sp.get_name_gen())
+	sp.add_id_attrib(sp.get_state_id(), 'terminal')
+	desired_id = sp.add_id_attrib(sp.get_state_id(), 'desired')
 	
 	ParseGDLBodyToCondition(body, sp, var_map)
 	ParseComparisons(body, sp, var_map)
 	
 	if int(str(head.term(1))) >= score:
-		#sp.add_action().add_id_wme_action("success", desired_var)
-		sp.add_action().add_id_wme_action("success-detected", desired_var)
+		sp.add_create_bound_id(sp.get_state_id(), "success-detected", desired_id)
 	else:
-		#sp.add_action().add_id_wme_action("failure", desired_var)
-		sp.add_action().add_id_wme_action("failure-detected", desired_var)
+		sp.add_create_bound_id(sp.get_state_id(), "failure-detected", desired_id)
 
 	return [sp]
 
@@ -263,6 +266,84 @@ def GenCombinations(bounds, index = 0):
 # head should be of the form (next (rel p1 p2 ...))
 #
 #
+#def TranslateFrameAxioms(game_name, head, bodies):
+#	productions = []
+#
+#	axiom_name = SoarifyStr(str(head))
+#	frame_sentence = head.true_analogue()
+#
+#	comparison_literals = []
+#	new_bodies = []
+#	# eliminate frame conditions from body
+#	# negate each condition in each body
+#	for b in bodies:
+#		newb = []
+#		for s in b:
+#			if s != frame_sentence:
+#				if s.name() in ['distinct', '<', '>', '>=']:
+#					# preserve distinct
+#					newb.append(s)
+#				else:
+#					newb.append(s.negate())
+#		new_bodies.append(newb)
+#
+#	# mangle variables in each body to prevent name collisions
+##	name_gen = UniqueNameGenerator()
+#	for b,i in zip(new_bodies, range(len(new_bodies))):
+#		for c in b:
+#			c.mangle_vars('__r%d__' % i)
+#
+##	for b in new_bodies:
+##		mangled = dict()
+##		for c in b:
+##			c.mangle_vars(mangled, name_gen)
+#
+#	# collect all comparisons
+#	for b in new_bodies:
+#		i = 0
+#		while i < len(b):
+#			if b[i].name() in ['distinct', '<', '>', '>=']:
+#				comparison_literals.append(b[i])
+#				b.pop(i)
+#			else:
+#				i += 1
+#
+#	# take all possible combinations of one condition from each body
+#	#   (this is the same as ANDing all bodies together and distributing
+#	#    ANDs over ORs [ the ORs resulted from distributing negations
+#	#    into the ANDs implicit in each body])
+#
+#	combinations = GenCombinations([len(b) for b in new_bodies])
+#	props = []
+#	op_name = name_gen.get_name("remove-%s" % axiom_name)
+#	for ci, x in zip(combinations, range(len(combinations))):
+#		comb = []
+#		for i in range(len(ci)):
+#			if new_bodies[i][ci[i]] not in comb:
+#				comb.append(new_bodies[i][ci[i]])
+#
+#		comb_body = ElementGGP.Combine(list(comb) + comparison_literals)
+#		prod_name = name_gen.get_name("%s%d" % (op_name, x))
+#		sp = MakeTemplateProduction("apply", prod_name, game_name)
+#		sp.add_op_cond("update-state")
+#		var_mapper = GDLSoarVarMapper(sp.var_gen)
+#
+#		# first, add the condition to check for presence of head relation
+#		frame_sentence.make_soar_conditions(sp, var_mapper)
+#
+#		# now add the conditions sufficient for removing the head relation from the
+#		# next state
+#		ParseGDLBodyToCondition(comb_body, sp, var_mapper)
+#		
+#		frame_sentence.next_analogue().make_soar_actions(sp, var_mapper, remove = True)
+#
+#		# set up the variable distinctions
+#		ParseComparisons(comb_body, sp, var_mapper)
+#
+#		productions.append(sp)
+#
+#	return productions
+
 def TranslateFrameAxioms(game_name, head, bodies):
 	productions = []
 
@@ -286,98 +367,25 @@ def TranslateFrameAxioms(game_name, head, bodies):
 
 	# mangle variables in each body to prevent name collisions
 #	name_gen = UniqueNameGenerator()
-	for b,i in zip(new_bodies, range(len(new_bodies))):
+	for i, b in enumerate(new_bodies):
 		for c in b:
 			c.mangle_vars('__r%d__' % i)
 
-#	for b in new_bodies:
-#		mangled = dict()
-#		for c in b:
-#			c.mangle_vars(mangled, name_gen)
+	sp = MakeTemplateProduction("remove-%s" % axiom_name, "apply", game_name)
+	sp.add_operator_test("update-state")
+	var_mapper = GDLSoarVarMapper(sp.get_name_gen())
 
-	# collect all comparisons
-	for b in new_bodies:
-		i = 0
-		while i < len(b):
-			if b[i].name() in ['distinct', '<', '>', '>=']:
-				comparison_literals.append(b[i])
-				b.pop(i)
-			else:
-				i += 1
+	# first, add the condition to check for presence of head relation
+	frame_sentence.make_soar_conditions(sp, var_mapper)
+	for body in new_bodies:
+		sp.begin_negative_conjunction() # wrap all the added conditions into a negation
+		ParseGDLBodyToCondition(body, sp, var_mapper)
+		ParseComparisons(body, sp, var_mapper)
+		sp.end_negative_conjunction()
 
-	# take all possible combinations of one condition from each body
-	#   (this is the same as ANDing all bodies together and distributing
-	#    ANDs over ORs [ the ORs resulted from distributing negations
-	#    into the ANDs implicit in each body])
-
-	combinations = GenCombinations([len(b) for b in new_bodies])
-	props = []
-	op_name = name_gen.get_name("remove-%s" % axiom_name)
-	for ci, x in zip(combinations, range(len(combinations))):
-		comb = []
-		for i in range(len(ci)):
-			if new_bodies[i][ci[i]] not in comb:
-				comb.append(new_bodies[i][ci[i]])
-
-		comb_body = ElementGGP.Combine(list(comb) + comparison_literals)
-		prod_name = name_gen.get_name("%s%d" % (op_name, x))
-		sp = MakeTemplateProduction("apply", prod_name, game_name)
-		sp.add_op_cond("update-state")
-		var_mapper = GDLSoarVarMapper(sp.var_gen)
-
-		# first, add the condition to check for presence of head relation
-		frame_sentence.make_soar_conditions(sp, var_mapper)
-
-		# now add the conditions sufficient for removing the head relation from the
-		# next state
-		ParseGDLBodyToCondition(comb_body, sp, var_mapper)
-		
-		frame_sentence.next_analogue().make_soar_actions(sp, var_mapper, remove = True)
-
-		# set up the variable distinctions
-		ParseComparisons(comb_body, sp, var_mapper)
-
-		productions.append(sp)
-
-	return productions
-
-
-def MakeSelectionSpaceFakeResponseRule(game_name, role):
-	sp = SoarProduction(name_gen.get_name("%s*elaborate*fake-response" % game_name))
-#	sp.add_condition().add_id_predicate("duplicate-of")
-	act_var = sp.get_ol_cond().add_id_predicate("<action-name>")
-	sp.add_condition(act_var)
-	
-	il_var = sp.get_il_cond().head_var
-	lm_var = sp.add_action(il_var).add_id_wme_action("last-moves")
-	role_var = sp.add_action(lm_var).add_id_wme_action(role)
-	sp.add_action(role_var).add_id_wme_action("<action-name>", act_var)
+	frame_sentence.next_analogue().make_soar_actions(sp, var_mapper, remove = True)
 
 	return sp
-
-def MakeSelectionSpaceRules(game_name):
-	problem_space_sp = SoarProduction("%s*elaborate*problem-space" % game_name)
-	s_cond = problem_space_sp.add_condition()
-	s_cond.add_ground_predicate("name", game_name)
-
-	ps_var = problem_space_sp.add_action(s_cond.head_var).add_id_wme_action("problem-space")
-	ps_act = problem_space_sp.add_action(ps_var)
-	ps_act.add_ground_wme_action("name", game_name)
-	ps_act.add_ground_wme_action("default-state-copy", "yes")
-	ps_act.add_ground_wme_action("one-level-attributes", "facts")
-#	ps_act.add_ground_wme_action("one-level-attributes", "score")
-	ps_act.add_ground_wme_action("two-level-attributes", "gs")
-
-	fake_io_sp = SoarProduction("%s*elaborate*selection-space-fake-io" % game_name)
-	s_cond = fake_io_sp.add_condition()
-	s_cond.add_id_predicate("duplicate-of")
-
-	fake_io_var = fake_io_sp.add_action(s_cond.head_var).add_id_wme_action("io")
-	io_act = fake_io_sp.add_action(fake_io_var)
-	io_act.add_id_wme_action("input-link")
-	io_act.add_id_wme_action("output-link")
-
-	return [problem_space_sp, fake_io_sp]
 
 def StandardizeVars(sentence, add_new, prefix, map = dict(), count = 0):
 	for i in range(sentence.num_terms()):
@@ -436,8 +444,9 @@ def TranslateDescription(game_name, description, filename):
 			#     ...
 			#     (true <some term>)
 			#     ...)
-			if rule.has_body() and frame_term in rule.body():
+			if len(rule.body()) > 1 and frame_term in rule.body():
 				# this is a frame rule, process it differently later
+				print rule
 				frame_rules.append(rule)
 				# we also remember that this function constant is supported by frame rules
 				funcs_with_frame_rules.append(frame_term.term(0))
@@ -579,35 +588,9 @@ def TranslateDescription(game_name, description, filename):
 
 	# merge the frame axioms into production rules
 	for f in std_frame_rules:
-		productions.extend(TranslateFrameAxioms(game_name, f[0], f[1]))
+		#productions.extend(TranslateFrameAxioms(game_name, f[0], f[1]))
+		productions.append(TranslateFrameAxioms(game_name, f[0], f[1]))
 
-	# make the progress state productions
-	# don't need this anymore, just have it in another file
-#	sp = SoarProduction("update-state", "propose")
-#	sp.get_ol_cond().add_id_predicate("<cmd-name>", name="cmd")
-#	sp.add_op_proposal("+ <").add_ground_wme_action("name", "update-state")
-#	productions.append(sp)
-#
-#	ap_cmd_remove = sp.get_apply_rules(name_gen)[0]
-#	ap_cmd_remove.first_state_cond.add_ground_predicate("name", game_name)
-#	ol_cmd_var = ap_cmd_remove.get_ol_cond().add_id_predicate("<cmd-name>")
-##	last_move_var = ap_cmd_remove.get_il_cond().add_id_predicate("last-moves")
-##	il_cmd_var = ap_cmd_remove.add_condition(last_move_var).add_id_predicate("<last-cmd>")
-#	remove_cmd = ap_cmd_remove.add_action(ap_cmd_remove.get_ol_cond().head_var)
-#	remove_cmd.remove_id_wme_action("<cmd-name>", ol_cmd_var)
-#
-##	ap_cmd_remove.add_action(last_move_var).remove_id_wme_action("<last-cmd>", il_cmd_var)
-#	productions.append(ap_cmd_remove)
-#
-#	# create selection space rules
-#	productions.append(MakeSelectionSpaceFakeResponseRule(game_name, role))
-#	productions.extend(MakeSelectionSpaceRules(game_name))
-#
-#	sp = SoarProduction("elab-link", "elaborate")
-#	sp.state_cond().add_ground_predicate("type", "state")
-#	sp.add_action().add_id_wme_action("elaborations")
-#	productions.append(sp)
-	
 	f = open(filename, 'w')
 	f.write("source header.soar\n")
 

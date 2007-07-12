@@ -1,5 +1,4 @@
-from SoarProduction import *
-import pdb
+from SoarProd import *
 
 def ClassifyTerm(elementGGP):
 	if isinstance(elementGGP, str):
@@ -26,15 +25,15 @@ class GGPConstant:
 	def __ne__(self, other):
 		return not self == other
 	
-	def make_soar_cond(self, sp, cond, place, var_map, negate = False):
+	def make_soar_cond(self, sp, id, place, var_map, negate = False):
 		assert place > 0
-		cond.add_ground_predicate("p%d" % place, self.__name)
-		return cond
+		sp.add_attrib(id, 'p%d' % place, self.__name)
+		return id
 		
-	def make_soar_action(self, sp, action, place, var_map):
+	def make_soar_action(self, sp, id, place, var_map):
 		assert place > 0
-		action.add_ground_wme_action("p%d" % place, self.__name)
-		return action
+		sp.add_create_constant(id, 'p%d' % place, self.__name)
+		return id
 	
 	def name(self):
 		return self.__name
@@ -79,15 +78,15 @@ class GGPVariable:
 #			pdb.set_trace()
 		self.__name = name
 	
-	def make_soar_cond(self, sp, cond, place, var_map, negate = False):
+	def make_soar_cond(self, sp, id, place, var_map, negate = False):
 		assert place > 0
-		cond.add_id_predicate("p%d" % place, name = var_map.get_var(self.__name))
-		return cond
+		sp.add_id_attrib(id, 'p%d' % place, var_map.get_var(self.__name))
+		return id
 		
-	def make_soar_action(self, sp, action, place, var_map):
+	def make_soar_action(self, sp, id, place, var_map):
 		assert place > 0
-		action.add_id_wme_action("p%d" % place, name = var_map.get_var(self.__name))
-		return action
+		sp.add_create_id(id, 'p%d' % place, var_map.get_var(self.__name))
+		return id
 	
 	def type(self):
 		return "variable"
@@ -169,45 +168,43 @@ class GGPFunction:
 		c.__terms = [ t.copy() for t in self.__terms ]
 		return c
 	
-	def make_soar_cond(self, sp, cond, place, var_map, negate = False):
+	def make_soar_cond(self, sp, id, place, var_map):
 		if place == 0:
 			if len(self.__terms) == 0:
-				var = cond.add_id_predicate(self.__name, negate = negate)
-				return var
+				return sp.add_id_attrib(id, self.__name)
 			else:
-				fcond = sp.add_condition(cond.add_id_predicate(self.__name, negate = negate))
+				fid = sp.add_id_attrib(id, self.__name)
 					
-				for t, i in zip(self.__terms, range(len(self.__terms))):
-					t.make_soar_cond(sp, fcond, i+1, var_map)
+				for i, t in enumerate(self.__terms):
+					t.make_soar_cond(sp, fid, i+1, var_map)
 				
-				return fcond
+				return fid
 		else:
-			fcond = sp.add_condition(cond.add_id_predicate("p%d" % place))
+			fid = sp.add_id_attrib(id, "p%d" % place)
+			sp.add_attrib(fid, "name", self.__name)
+			for i, t in enumerate(self.__terms):
+				t.make_soar_cond(sp, fid, i+1, var_map)
 			
-			fcond.add_ground_predicate("name", self.__name)
-			for t, i in zip(self.__terms, range(len(self.__terms))):
-				t.make_soar_cond(sp, fcond, i+1, var_map)
-			
-			return fcond
+			return fid
 
-	def make_soar_cond_no_id(self, sp, cond, var_map, place_offset = 0):
-		for t, i in zip(self.__terms, range(len(self.__terms))):
-			t.make_soar_cond(sp, cond, i + place_offset, var_map)
+	def make_soar_cond_no_id(self, sp, id, var_map, place_offset = 0):
+		for i, t in enumerate(self.__terms):
+			t.make_soar_cond(sp, id, i + place_offset, var_map)
 	
-	def make_soar_action(self, sp, action, place, var_map):
+	def make_soar_action(self, sp, id, place, var_map):
 		if place == 0:
-			fact = sp.add_action(action.add_id_wme_action(self.__name))
-			for t, i in zip(self.__terms, range(len(self.__terms))):
-				t.make_soar_action(sp, fact, i+1, var_map)
+			fid = sp.add_create_id(id, self.__name)
+			for i, t in enumerate(self.__terms):
+				t.make_soar_action(sp, fid, i+1, var_map)
 		else:
-			fact = sp.add_action(action.add_id_wme_action("p%d" % place))
-			fact.add_ground_wme_action("name", self.__name)
-			for t, i in zip(self.__terms, range(len(self.__terms))):
-				t.make_soar_action(sp, fact, i+1, var_map)
+			fid = sp.add_create_id(id, "p%d" % place)
+			sp.add_create_constant(fid, 'name', self.__name)
+			for i, t in enumerate(self.__terms):
+				t.make_soar_action(sp, fid, i+1, var_map)
 	
-	def make_soar_action_no_id(self, sp, action, var_map, place_offset = 0):
-		for t, i in zip(self.__terms, range(len(self.__terms))):
-			t.make_soar_action(sp, action, i + place_offset, var_map)
+	def make_soar_action_no_id(self, sp, id, var_map, place_offset = 0):
+		for i, t in enumerate(self.__terms):
+			t.make_soar_action(sp, id, i + place_offset, var_map)
 	
 #	def mangle(self, mangled, name_gen):
 #		for t in self.__terms:
@@ -374,88 +371,57 @@ class GGPSentence:
 			
 	def make_soar_conditions(self, sp, var_map):
 		if self.__name  == "true":
-			gs_conds = sp.get_conditions("gs")
-			#assert len(gs_conds) <= 1, "More than one game state condition??"
-			if len(gs_conds) == 0:
-				gs_cond = sp.add_condition(sp.state_cond().add_id_predicate("gs"))
-			else:
-				gs_cond = gs_conds[0]
+			gs_id = sp.get_or_make_id_chain(['gs'])[0]
 			
 			if self.__negated:
-				if self.__terms[0].type() == "function" and self.__terms[0].num_terms() > 0:
-					gs_cond = sp.add_condition(gs_cond.head_var)
-					fcond = self.__terms[0].make_soar_cond(sp, gs_cond, 0, var_map)
-					sp.make_negative_conjunction([gs_cond, fcond])
-				else:
-					fcond = self.__terms[0].make_soar_cond(sp, gs_cond, 0, var_map, True)
-			else:
-				fcond = self.__terms[0].make_soar_cond(sp, gs_cond, 0, var_map)
+				sp.begin_negative_conjunction()
+
+			fid = self.__terms[0].make_soar_cond(sp, gs_id, 0, var_map)
+			
+			if self.__negated:
+				sp.end_negative_conjunction()
 				
 		elif self.__name == "does":
-			move_conds = sp.get_conditions("io.input-link.last-moves")
-			if len(move_conds) == 0:
-				in_conds = sp.get_il_cond()
-				move_cond = sp.add_condition(in_conds.add_id_predicate("last-moves"))
-			else:
-				move_cond = move_conds[0]
+			move_id = sp.get_or_make_id_chain(['io','input-link','last-moves'])[0]
 			
 			# the does relation has two places, a constant representing the role and 
 			# a function constant representing the move
-			role_cond = sp.add_condition(move_cond.add_id_predicate(self.__terms[0].name()))
-			if self.__terms[1].num_terms() == 0:
-				fcond = self.__terms[1].make_soar_cond(sp, role_cond, 0, var_map, self.__negated)
-			else:
-				fcond = self.__terms[1].make_soar_cond(sp, role_cond, 0, var_map)
-				if self.__negated and fcond != None:
-					assert not isinstance(fcond, str), [str(t) for t in self.__terms] + [self.__terms[1].num_terms(), self.__terms[1].type()]
-					sp.make_negative_conjunction([role_cond, fcond])
+			if self.__negated:
+				sp.begin_negative_conjunction()
+
+			role_id = sp.add_id_attrib(move_id, self.__terms[0].name())
+			fid = self.__terms[1].make_soar_cond(sp, role_id, 0, var_map)
+
+			if self.__negated:
+				sp.end_negative_conjunction()
 		
 		else:
 			assert self.__name not in GGPSentence.DEFINED_RELS
 			if self.__name not in GGPSentence.fact_rels:
-				rel_conds = sp.get_conditions("elaborations", self.__negated)
-				if len(rel_conds) == 0:
-					rel_cond = sp.add_condition(sp.state_cond().add_id_predicate("elaborations"))
-				else:
-					rel_cond = rel_conds[0]
+				elab_id = sp.get_or_make_id_chain(["elaborations"])[0]
 			else:
-				rel_conds = sp.get_conditions("facts")
-				if len(rel_conds) == 0:
-					rel_cond = sp.add_condition(sp.state_cond().add_id_predicate("facts"))
-				else:
-					rel_cond = rel_conds[0]
+				elab_id = sp.get_or_make_id_chain(["facts"])[0]
 					
-			if self.__negated and len(self.__terms) > 0:
-				rel_cond = sp.add_condition(rel_cond.head_var)
-				my_rel_cond = sp.add_condition(rel_cond.add_id_predicate(self.__name))
-				fconds = []
-				for t, i in zip(self.__terms, range(len(self.__terms))):
-					if t.type() == "function":
-						fconds.append(t.make_soar_cond(sp, my_rel_cond, i + 1, var_map, True))
-					else:
-						t.make_soar_cond(sp, my_rel_cond, i + 1, var_map, True)
-				sp.make_negative_conjunction([rel_cond, my_rel_cond] + fconds)
-			else:
-				my_rel_cond = sp.add_condition(rel_cond.add_id_predicate(self.__name, self.__negated))
-				for t, i in zip(self.__terms, range(len(self.__terms))):
-					t.make_soar_cond(sp, my_rel_cond, i + 1, var_map)
+			if self.__negated:
+				sp.begin_negative_conjunction()
+
+			rel_id = sp.add_id_attrib(elab_id, self.__name)
+			fconds = []
+			for i, t in enumerate(self.__terms):
+				t.make_soar_cond(sp, rel_id, i + 1, var_map)
+
+			if self.__negated:
+				sp.end_negative_conjunction()
 	
-	def make_soar_actions(self, sp, var_map, remove = False):		
+	def make_soar_actions(self, sp, var_map, remove = False):
 		if self.__name in ["next", "init"]:
 			# next is a one place relation whose single argument is a function
 			if self.__name == "next":
-				gs_conds = sp.get_conditions("gs")
-				if len(gs_conds) == 0:
-					gs_cond = sp.add_condition(sp.state_cond().add_id_predicate("gs"))
-				else:
-					gs_cond = gs_conds[0]
-				act = sp.add_action(gs_cond.head_var)
+				gs_id = sp.get_or_make_id_chain(["gs"])[0]
 			else:
 				# for init actions, the gs id hasn't been added yet. Get it from
 				# the list of actions in the production instead of the conditions
-				head_acts = sp.get_actions(sp.state_id)
-				gs_act = head_acts[0].get_wme_actions("gs")
-				act = sp.add_action(gs_act[0][2][1:-1]) # strip off the < and >
+				gs_id = sp.get_new_ids_by_chain(sp.get_state_id(), ['gs'])[0]
 			
 			if remove:
 				assert self.__name == "next" # we would never move an init fact
@@ -463,55 +429,45 @@ class GGPSentence:
 				#fcond = self.__terms[0].make_soar_cond(sp, gs_cond, 0, var_map)
 				# of course we only want to remove variables that are already bound, right?
 				# so we shouldn't create a new condition if it exists
-				existing_ids = gs_cond.get_ids(func_name)
+				existing_ids = sp.get_ids(gs_id, func_name)
 				if len(existing_ids) == 0:
 					# okay, so create a binding here, since there weren't any before
 					# but this is suspicious
-					fcond = self.__terms[0].make_soar_cond(sp, gs_cond, 0, var_map)
-					if isinstance(fcond, str):
-						id_to_remove = fcond
-					else:
-						id_to_remove = fcond.head_var
+					fid = self.__terms[0].make_soar_cond(sp, gs_id, 0, var_map)
+					#if isinstance(fcond, str):
+					#	id_to_remove = fid
+					#else:
+					id_to_remove = fid
 					
 					print "&&& WARNING &&&: Adding action to remove an unbound variable"
 				else:
 					assert len(existing_ids) == 1, "More than one bound variable, don't know which to pick"
 					id_to_remove = existing_ids[0]
 					
-				act.remove_id_wme_action(func_name, id_to_remove)
+				sp.add_destroy_id(gs_id, func_name, id_to_remove)
 			else:
-				self.__terms[0].make_soar_action(sp, act, 0, var_map)
+				self.__terms[0].make_soar_action(sp, gs_id, 0, var_map)
 				
 		elif self.__name == "legal":
 			# legal is a two place relation, constant, function
 			#op_name = SoarifyStr(str(self.__terms[1]))
 			op_name = self.__terms[1].name()
-			op_act = sp.add_op_proposal("+")
-			op_act.add_ground_wme_action("name", op_name)
-			self.__terms[1].make_soar_action_no_id(sp, op_act, var_map, 1)
+			op_id = sp.add_operator_prop(op_name, "+")
+			self.__terms[1].make_soar_action_no_id(sp, op_id, var_map, 1)
 		else:
 			assert self.__name not in GGPSentence.DEFINED_RELS, str(self)
 			# this is either a fact or an elaboration
 			if self.__name not in GGPSentence.fact_rels:
-				conds = sp.get_conditions("elaborations")
-				if len(conds) == 0:
-					cond = sp.add_condition(sp.state_cond().add_id_predicate("elaborations"))
-				else:
-					cond = conds[0]
-				
-				act = sp.add_action(cond.head_var)
+				lhs_id = sp.get_or_make_id_chain(["elaborations"])[0]
 			else:
 				# for fact actions, the fact id hasn't been added yet. Get it from
 				# the list of actions in the production instead of the conditions
-				head_acts = sp.get_actions(sp.state_id)
-				fact_act = head_acts[0].get_wme_actions("facts")
-				act = sp.add_action(fact_act[0][2][1:-1]) # strip off the < and >
-				
+				lhs_id = sp.get_new_ids_by_chain(sp.get_state_id(), ['facts'])[0]
 			
 			if remove:
-				var = cond.add_id_predicate(self.__name)
-				act.remove_id_wme_action(self.__name, var)
+				remove_id = sp.add_id_attrib(lhs_id, self.__name)
+				sp.add_destroy_id(lhs_id, self.__name, remove_id)
 			else:
-				param_act = sp.add_action(act.add_id_wme_action(self.__name))
-				for t, i in zip(self.__terms, range(len(self.__terms))):
-					t.make_soar_action(sp, param_act, i + 1, var_map)
+				new_id = sp.add_create_id(lhs_id, self.__name)
+				for i, t in enumerate(self.__terms):
+					t.make_soar_action(sp, new_id, i + 1, var_map)
