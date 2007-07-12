@@ -186,12 +186,12 @@ foreach $att (keys %attChildren) {
           }
           else {
             $disqualified = 1;
-            print "disqualified $att as $negation leads to $child.\n";
+            #  print "disqualified $att as $negation leads to $child.\n";
           }
         }
         else {
           $disqualified = 1;
-          print "disqualified $att as $negation leads to $child.\n";
+          #  print "disqualified $att as $negation leads to $child.\n";
         }
       }
     }
