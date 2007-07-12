@@ -53,7 +53,7 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 	// Should only call this once
 	if (m_hSocket)
 	{
-		PrintDebug("Error: Already listening--closing the existing listener") ;
+		sml::PrintDebug("Error: Already listening--closing the existing listener") ;
 
 		NET_CLOSESOCKET(m_hSocket) ;
 		m_hSocket = NO_CONNECTION ;
@@ -75,7 +75,7 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 
 	if (hListener == INVALID_SOCKET)
 	{
-		PrintDebug("Error: Error creating the listener socket") ;
+		sml::PrintDebug("Error: Error creating the listener socket") ;
 		return false ;
 	}
 
@@ -118,7 +118,7 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 
 		if (res != 0)
 		{
-			PrintDebug("Error: Error binding the local listener socket to its file") ;
+			sml::PrintDebug("Error: Error binding the local listener socket to its file") ;
 			return false ;
 		}
 
@@ -141,7 +141,7 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 
 		if (res != 0)
 		{
-			PrintDebug("Error: Error binding the listener socket to its port number") ;
+			sml::PrintDebug("Error: Error binding the listener socket to its port number") ;
 			return false ;
 		}
 	}
@@ -150,7 +150,7 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 	bool ok = MakeSocketNonBlocking(hListener) ;
 	if (!ok)
 	{
-		PrintDebug("Error: Error setting the listener socket to be non-blocking") ;
+		sml::PrintDebug("Error: Error setting the listener socket to be non-blocking") ;
 		return false ;
 	}
 #endif
@@ -162,7 +162,7 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 
 	if (res != 0)
 	{
-		PrintDebug("Error: Error listening on the listener socket") ;
+		sml::PrintDebug("Error: Error listening on the listener socket") ;
 		return false ;
 	}
 
@@ -192,14 +192,14 @@ Socket* ListenerSocket::CheckForClientConnection()
 		return NULL ;
 #endif
 
-	//PrintDebug("About to check for a connection") ;
+	//sml::PrintDebug("About to check for a connection") ;
 	SOCKET connectedSocket = accept(m_hSocket, NULL, NULL) ;
 
 	// If we failed to find a valid socket we're done.
 	if (connectedSocket == INVALID_SOCKET)
 		return NULL ;
 
-	PrintDebug("Received a connection") ;
+	sml::PrintDebug("Received a connection") ;
 
 	// Create a generic CTSocket because once the connection has been
 	// made all sockets are both servers and clients.  No need to distinguish.

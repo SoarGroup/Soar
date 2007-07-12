@@ -101,7 +101,7 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 
 		if (pAddress == NULL)
 		{
-			PrintDebug("Error: Unable to convert entered address to socket address") ;
+			sml::PrintDebug("Error: Unable to convert entered address to socket address") ;
 			return false ;
 		}
 	}
@@ -132,13 +132,13 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 
 		if (sock == INVALID_SOCKET)
 		{
-			PrintDebug("Error: Error creating client local connection socket") ;
+			sml::PrintDebug("Error: Error creating client local connection socket") ;
 			return false ;
 		}
 
 		if(chmod(local_address.sun_path, S_IRWXU) < 0)
 		{
-			PrintDebug("Error: Error setting permissions for client local connection socket") ;
+			sml::PrintDebug("Error: Error setting permissions for client local connection socket") ;
 			return false ;
 		}
 
@@ -164,7 +164,7 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 
 		if (sock == INVALID_SOCKET)
 		{
-			PrintDebug("Error: Error creating client connection socket") ;
+			sml::PrintDebug("Error: Error creating client connection socket") ;
 			return false ;
 		}
 
@@ -177,7 +177,7 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 
 	if (res != 0)
 	{
-		PrintDebug("Unable to connect to server") ;
+		sml::PrintDebug("Unable to connect to server") ;
 		return false ;
 	}
 
@@ -187,7 +187,7 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 
 	if (!ok)
 	{
-		PrintDebug("Error: Error setting the connection socket to be non-blocking") ;
+		sml::PrintDebug("Error: Error setting the connection socket to be non-blocking") ;
 		return false ;
 	}
 #endif

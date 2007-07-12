@@ -265,7 +265,7 @@ SoarTextIO::WriteCycle(istream* getFrom)
 
 	word = "", forMem = "";
 	checker = "";
-	while(!printNow) { soar_sleep(0,1); }
+	while(!printNow) { sml::Sleep(0,1); }
 	if(*getFrom == cin)
 	{
 		if(print_hack != 2)
@@ -855,7 +855,7 @@ SoarTextIO::spawnDebugger()
 
 	while(1)
 	{
-		soar_sleep(1,0);
+		sml::Sleep(1,0);
 		pKernel->GetAllConnectionInfo();
 		char const * status = pKernel->GetAgentStatus(java_debugger);
 		if(status && !strcmp(status,ready)) break;

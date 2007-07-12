@@ -57,7 +57,7 @@ bool ListenerNamedPipe::CreateListener(const char* name)
 	/*// Should only call this once
 	if (m_hPipe != INVALID_HANDLE_VALUE)
 	{
-		PrintDebug("Error: Already listening--closing the existing listener") ;
+		sml::PrintDebug("Error: Already listening--closing the existing listener") ;
 
 		Close();
 	}*/
@@ -77,7 +77,7 @@ bool ListenerNamedPipe::CreateListener(const char* name)
 
 	if (hListener == INVALID_HANDLE_VALUE)
 	{
-		PrintDebug("Error: Error creating the listener pipe") ;
+		sml::PrintDebug("Error: Error creating the listener pipe") ;
 		return false ;
 	}
 
@@ -111,7 +111,7 @@ NamedPipe* ListenerNamedPipe::CheckForClientConnection()
 		return NULL ;
 #endif
 
-	//PrintDebug("About to check for a connection") ;
+	//sml::PrintDebug("About to check for a connection") ;
 
 	int connected = ConnectNamedPipe(m_hPipe, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED); 
 
@@ -119,7 +119,7 @@ NamedPipe* ListenerNamedPipe::CheckForClientConnection()
 	if (!connected)
 		return NULL ;
 
-	PrintDebug("Received a connection") ;
+	sml::PrintDebug("Received a connection") ;
 
 	// Create a generic NamedPipe because once the connection has been
 	// made all pipes are both servers and clients.  No need to distinguish.

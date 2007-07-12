@@ -90,7 +90,7 @@ AgentSML::~AgentSML()
 void AgentSML::Clear(bool deletingThisAgent)
 {
 #ifdef DEBUG_UPDATE
-	PrintDebugFormat("AgentSML::Clear start %s", deletingThisAgent ? "deleting this agent." : "not deleting this agent.") ;
+	sml::PrintDebugFormat("AgentSML::Clear start %s", deletingThisAgent ? "deleting this agent." : "not deleting this agent.") ;
 #endif
 
 	// Release any WME objects we still own.
@@ -104,7 +104,7 @@ void AgentSML::Clear(bool deletingThisAgent)
 	m_XMLListener.Clear() ;
 
 #ifdef DEBUG_UPDATE
-	PrintDebugFormat("AgentSML::Clear end %s", deletingThisAgent ? "deleting this agent." : "not deleting this agent.") ;
+	sml::PrintDebugFormat("AgentSML::Clear end %s", deletingThisAgent ? "deleting this agent." : "not deleting this agent.") ;
 #endif
 }
 
@@ -116,9 +116,9 @@ void AgentSML::Clear(bool deletingThisAgent)
 void AgentSML::ReleaseAllWmes(bool flushPendingRemoves)
 {
 #ifdef DEBUG_UPDATE
-	PrintDebugFormat("****************************************************") ;
-	PrintDebugFormat("%s AgentSML::ReleaseAllWmes start %s", this->GetIAgent()->GetName(), flushPendingRemoves ? "flush pending removes." : "do not flush pending removes.") ;
-	PrintDebugFormat("****************************************************") ;
+	sml::PrintDebugFormat("****************************************************") ;
+	sml::PrintDebugFormat("%s AgentSML::ReleaseAllWmes start %s", this->GetIAgent()->GetName(), flushPendingRemoves ? "flush pending removes." : "do not flush pending removes.") ;
+	sml::PrintDebugFormat("****************************************************") ;
 #endif
 
 	if (flushPendingRemoves)
@@ -156,9 +156,9 @@ void AgentSML::ReleaseAllWmes(bool flushPendingRemoves)
 	m_IdentifierMap.clear() ;
 
 #ifdef DEBUG_UPDATE
-	PrintDebugFormat("****************************************************") ;
-	PrintDebugFormat("%s AgentSML::ReleaseAllWmes end %s", this->GetIAgent()->GetName(), flushPendingRemoves ? "flush pending removes." : "do not flush pending removes.") ;
-	PrintDebugFormat("****************************************************") ;
+	sml::PrintDebugFormat("****************************************************") ;
+	sml::PrintDebugFormat("%s AgentSML::ReleaseAllWmes end %s", this->GetIAgent()->GetName(), flushPendingRemoves ? "flush pending removes." : "do not flush pending removes.") ;
+	sml::PrintDebugFormat("****************************************************") ;
 #endif
 }
 
@@ -179,7 +179,7 @@ public:
 	virtual void HandleEvent(egSKIAgentEventId, gSKI::Agent* pAgent)
 	{
 #ifdef DEBUG_UPDATE
-	PrintDebugFormat("AgentSML::AgentBeforeDestroyedListener start.") ;
+	sml::PrintDebugFormat("AgentSML::AgentBeforeDestroyedListener start.") ;
 #endif
 		KernelSML* pKernelSML = KernelSML::GetKernelSML() ;
 
@@ -203,7 +203,7 @@ public:
 		delete this ;
 
 #ifdef DEBUG_UPDATE
-	PrintDebugFormat("AgentSML::AgentBeforeDestroyedListener end.") ;
+	sml::PrintDebugFormat("AgentSML::AgentBeforeDestroyedListener end.") ;
 #endif
 	}
 };

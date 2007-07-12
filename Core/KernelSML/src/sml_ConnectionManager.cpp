@@ -83,7 +83,7 @@ void ConnectionManager::SetTraceCommunications(bool state)
 // Close all connections
 void ConnectionManager::Shutdown()
 {
-//	PrintDebug("Shutting down connection manager") ;
+//	sml::PrintDebug("Shutting down connection manager") ;
 
 	// Stop the thread (and wait until it has stopped)
 	if (m_ListenerThread)
@@ -95,14 +95,14 @@ void ConnectionManager::Shutdown()
 		m_ListenerThread = NULL ;
 	}
 
-//	PrintDebug("Listener stopped") ;
+//	sml::PrintDebug("Listener stopped") ;
 
 	// Stop the receiver thread (and wait until is has stopped)
 	if (m_ReceiverThread)
 	{
 		m_ReceiverThread->Stop(true) ;
 
-	//	PrintDebug("Receiver stopped") ;
+	//	sml::PrintDebug("Receiver stopped") ;
 
 		// Remove the thread
 		delete m_ReceiverThread ;
@@ -138,7 +138,7 @@ void ConnectionManager::Shutdown()
 	}
 	m_ClosedConnections.clear() ;
 
-//	PrintDebug("Completed shutdown") ;
+//	sml::PrintDebug("Completed shutdown") ;
 }
 
 void ConnectionManager::AddConnection(Connection* pConnection)

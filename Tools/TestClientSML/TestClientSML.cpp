@@ -77,7 +77,7 @@ void SimpleRemoteConnection()
 			cout << "Found agent: " << pAgent->GetAgentName() << endl ;
 		}
 
-		soar_sleep(1,0) ;
+		sml::Sleep(1,0) ;
 	}
 
 	delete pKernel ;
@@ -108,7 +108,7 @@ bool SimpleRemoteSynchTest()
 			}
 		}
 
-		soar_sleep(1,0) ;
+		sml::Sleep(1,0) ;
 	}
 
 	pKernel->Shutdown() ;
@@ -201,7 +201,7 @@ bool SimpleRemoteConnect()
 	int callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
 	unused(callbackp); // eliminate gcc compiler warning
 
-	soar_sleep(1,0) ;
+	sml::Sleep(1,0) ;
 
 	// Comment this in if you need to debug the messages going back and forth.
 	//pKernel->SetTraceCommunications(true) ;
@@ -277,7 +277,7 @@ bool SimpleListener(int life, int port)
 			unused(check);
 		}
 
-		soar_sleep(pauseSecs, pauseMsecs) ;
+		sml::Sleep(pauseSecs, pauseMsecs) ;
 	}
 
 	delete pKernel ;
@@ -368,7 +368,7 @@ bool SimpleRemoteIOTest()
 	//pAgent->RunSelf(1) ;
 
 	// Make sure there's long enough for the listener to notice our connection
-	soar_sleep(1, 0) ;
+	sml::Sleep(1, 0) ;
 
 	// Disconnect
 	pKernel->Shutdown() ;
@@ -412,10 +412,10 @@ bool SimpleRemoteIOListener()
 		if (nConnections == 1 && connected)
 			done = true ;
 
-		soar_sleep(pauseSecs, pauseMsecs) ;
+		sml::Sleep(pauseSecs, pauseMsecs) ;
 	}
 
-	soar_sleep(1,0) ;
+	sml::Sleep(1,0) ;
 
 	std::string res = pAgent->InitSoar() ;
 	cout << res << endl ;
@@ -1643,12 +1643,12 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 			if (simpleInitSoar) 
 			{
-				soar_sleep(0, 200) ;
+				sml::Sleep(0, 200) ;
 
 				cout << "Performing simple init-soar..." << endl << endl;
 				pAgent->InitSoar() ;
 
-				soar_sleep(0, 200) ;
+				sml::Sleep(0, 200) ;
 
 				ok = pKernel->DestroyAgent(pAgent) ;
 				if (!ok)

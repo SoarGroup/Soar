@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
 	// Sleep until someone types 'q <return>'
 	while (!g_pInputThread->StopNow())
 	{
-		soar_sleep(1,0) ;
+		sml::Sleep(1,0) ;
 	}
 
 	// Don't think we'll ever get here...

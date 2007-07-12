@@ -69,7 +69,7 @@ void EmbeddedConnectionAsynch::SendMsg(ElementXML* pMsg)
 	if (IsTracingCommunications())
 	{
 		char* pStr = pMsg->GenerateXMLString(true) ;
-		PrintDebugFormat("%s Sending %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
+		sml::PrintDebugFormat("%s Sending %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
 		pMsg->DeleteString(pStr) ;
 	}
 #endif
@@ -116,7 +116,7 @@ void EmbeddedConnectionAsynch::AddResponseToList(ElementXML* pResponse)
 	m_ReceivedMessageList.push_front(pResponse) ;
 
 	if (m_bTraceCommunications)
-		PrintDebugFormat("!! Adding ack for id %s to the pending message list", pAckID) ;
+		sml::PrintDebugFormat("!! Adding ack for id %s to the pending message list", pAckID) ;
 
 	// We keep the received message list from growing indefinitely.  This is because
 	// a client may send a command and choose not to listen for the response.
@@ -129,7 +129,7 @@ void EmbeddedConnectionAsynch::AddResponseToList(ElementXML* pResponse)
 	while (m_ReceivedMessageList.size() > kMaxListSize)
 	{
 		if (m_bTraceCommunications)
-			PrintDebugFormat("Had to clean a message from the pending message list") ;
+			sml::PrintDebugFormat("Had to clean a message from the pending message list") ;
 
 		ElementXML* pLast = m_ReceivedMessageList.back() ;
 		delete pLast ;
@@ -155,7 +155,7 @@ ElementXML* EmbeddedConnectionAsynch::IsResponseInList(char const* pID)
 		if (DoesResponseMatch(pXML, pID))
 		{
 			if (m_bTraceCommunications)
-				PrintDebugFormat("Found match for %s in pending message list", pID) ;
+				sml::PrintDebugFormat("Found match for %s in pending message list", pID) ;
 
 			m_ReceivedMessageList.erase(iter) ;
 			return pXML ;
@@ -183,7 +183,7 @@ bool EmbeddedConnectionAsynch::DoesResponseMatch(ElementXML* pResponse, char con
 		return true ;
 	
 	if (m_bTraceCommunications)
-		PrintDebugFormat("Received ack for message %s while looking for %s", pMsgID, pID) ;
+		sml::PrintDebugFormat("Received ack for message %s while looking for %s", pMsgID, pID) ;
 
 	return false ;
 }
@@ -260,7 +260,7 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 		// Allow other threads the chance to update
 		// (by calling with 0 for sleep time we don't give away cycles if
 		//  no other thread is waiting to execute).
-		soar_sleep(sleepTimeSecs, sleepTimeMillisecs) ;
+		sml::Sleep(sleepTimeSecs, sleepTimeMillisecs) ;
 
 		// Check if the connection has been closed
 		if (IsClosed())

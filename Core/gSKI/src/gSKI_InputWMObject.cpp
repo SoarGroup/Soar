@@ -30,7 +30,7 @@
 #include "symtab.h"
 
 #ifdef DEBUG_UPDATE
-#include "..\..\ConnectionSML\include\sml_Utils.h"	// For PrintDebugFormat
+#include "..\..\ConnectionSML\include\sml_Utils.h"	// For sml::PrintDebugFormat
 #endif
 
 //
@@ -474,7 +474,7 @@ namespace gSKI
   {
 #ifdef DEBUG_UPDATE
 	std::string id = this->GetId()->GetString() ;
-	PrintDebugFormat("Calling InputWMObject::Update on %s", id.c_str()) ;
+	sml::PrintDebugFormat("Calling InputWMObject::Update on %s", id.c_str()) ;
 #endif
 
 	// First checking that this object hasn't already been added to the set of 
@@ -484,7 +484,7 @@ namespace gSKI
     if ( it != processedObjects.end() ) {
 
 #ifdef DEBUG_UPDATE
-	PrintDebugFormat("Already processed %s", id.c_str()) ;
+	sml::PrintDebugFormat("Already processed %s", id.c_str()) ;
 #endif
 
       return;

@@ -87,16 +87,16 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 		
 		if (GetLastError() != ERROR_PIPE_BUSY)
 		{
-			PrintDebug("Error: Error creating client connection pipe") ;
-			ReportSystemErrorMessage();
+			sml::PrintDebug("Error: Error creating client connection pipe") ;
+			sml::ReportSystemErrorMessage();
 			return false ;
 		}
 
 		// All pipe instances are busy, so wait for 20 seconds. 
 		if (!WaitNamedPipe(name.c_str(), 20000)) 
 		{ 
-			PrintDebug("Error: Error opening client connection pipe") ;
-			ReportSystemErrorMessage();
+			sml::PrintDebug("Error: Error opening client connection pipe") ;
+			sml::ReportSystemErrorMessage();
 			return false;
 		}
 	}
