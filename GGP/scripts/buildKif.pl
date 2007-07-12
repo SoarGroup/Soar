@@ -11,7 +11,7 @@ die "$file not a kif" unless ($file =~ /\.kif$/);
 $file =~ /([^\/]*)\.kif/;
 $rootName = $1;
 
-$compiler = "python ../pysrc/LoadKif.py";
+$compiler = "python ../old_translator/LoadKif.py";
 $soarFile = "../agents/$rootName\.soar";
 
 $postProcess = "./postProcessAgent.pl $file $soarFile $env";
