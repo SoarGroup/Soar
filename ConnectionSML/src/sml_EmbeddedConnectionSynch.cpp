@@ -48,7 +48,7 @@ void EmbeddedConnectionSynch::SendMsg(ElementXML* pMsg)
 	if (IsTracingCommunications())
 	{
 		char* pStr = pMsg->GenerateXMLString(true) ;
-		PrintDebugFormat("%s Sending %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
+		sml::PrintDebugFormat("%s Sending %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
 		pMsg->DeleteString(pStr) ;
 	}
 #endif
@@ -103,7 +103,7 @@ ElementXML* EmbeddedConnectionSynch::GetResponseForID(char const* pID, bool wait
 	if (IsTracingCommunications())
 	{
 		char* pStr = pResult->GenerateXMLString(true) ;
-		PrintDebugFormat("%s Received %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
+		sml::PrintDebugFormat("%s Received %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
 		pResult->DeleteString(pStr) ;
 	}
 #endif

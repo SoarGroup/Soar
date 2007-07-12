@@ -57,7 +57,7 @@ void ReceiverThread::Run()
 		if (clock() - report > CLOCKS_PER_SEC * 3)
 		{
 			report = clock() ;
-			PrintDebugFormat("ReceiverThread::Run alive") ;
+			sml::PrintDebugFormat("ReceiverThread::Run alive") ;
 		}
 		*/
 #endif
@@ -77,8 +77,8 @@ void ReceiverThread::Run()
 		// Sleep(0) just allows other threads to run before we continue
 		// to execute.
 		if (current - last > delay)
-			soar_sleep(0, 5) ;
+			sml::Sleep(0, 5) ;
 		else
-			soar_sleep(0, 0) ;
+			sml::Sleep(0, 0) ;
 	}
 }

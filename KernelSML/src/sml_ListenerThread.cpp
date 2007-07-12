@@ -29,25 +29,25 @@ void ListenerThread::Run()
 {
 	
 	// Create the listener
-	PrintDebugFormat("Listening on port %d", m_Port) ;
+	sml::PrintDebugFormat("Listening on port %d", m_Port) ;
 	bool ok = m_ListenerSocket.CreateListener(m_Port) ;
 	
 	if (!ok)
 	{
-		PrintDebug("Failed to create the listener socket.  Shutting down thread.") ;
+		sml::PrintDebug("Failed to create the listener socket.  Shutting down thread.") ;
 		return ;
 	}
 
 #ifdef ENABLE_LOCAL_SOCKETS
 
 	// Create the listener
-	PrintDebugFormat("Listening on file %s%d", sock::GetLocalSocketDir().c_str(), m_Port) ;
+	sml::PrintDebugFormat("Listening on file %s%d", sock::GetLocalSocketDir().c_str(), m_Port) ;
 
 	ok = m_LocalListenerSocket.CreateListener(m_Port, true);
 
 	if (!ok)
 	{
-		PrintDebug("Failed to create the local listener socket.  Shutting down thread.") ;
+		sml::PrintDebug("Failed to create the local listener socket.  Shutting down thread.") ;
 		return ;
 	}
 #endif
@@ -61,20 +61,20 @@ void ListenerThread::Run()
 	pipeName << "\\\\.\\pipe\\" << username << "-" << m_Port;
 
 	// Create the listener
-	PrintDebugFormat("Listening on pipe %s", pipeName.str().c_str()) ;
+	sml::PrintDebugFormat("Listening on pipe %s", pipeName.str().c_str()) ;
 
 	ok = m_ListenerNamedPipe.CreateListener(pipeName.str().c_str()) ;
 
 	if (!ok)
 	{
-		PrintDebug("Failed to create the listener pipe.  Shutting down thread.") ;
+		sml::PrintDebug("Failed to create the listener pipe.  Shutting down thread.") ;
 		return ;
 	}
 #endif
 
 	while (!m_QuitNow)
 	{
-		//PrintDebug("Check for incoming connection") ;
+		//sml::PrintDebug("Check for incoming connection") ;
 
 		// Check for an incoming client connection
 		// This doesn't block.
@@ -98,7 +98,7 @@ void ListenerThread::Run()
 
 			if (!ok)
 			{
-				PrintDebug("Failed to create the listener pipe.  Shutting down thread.") ;
+				sml::PrintDebug("Failed to create the listener pipe.  Shutting down thread.") ;
 				return ;
 			}
 		}
@@ -107,7 +107,7 @@ void ListenerThread::Run()
 		// Sleep for a little before checking for a new connection
 		// New connections will come in very infrequently so this doesn't
 		// have to be very rapid.
-		soar_sleep(0, 50) ;
+		sml::Sleep(0, 50) ;
 	}
 
 	// Shut down our listener socket
@@ -120,12 +120,12 @@ void ListenerThread::Run()
 /*
 	char f_name[256];
 	sprintf( f_name, "%s%d", sock::GetLocalSocketDir().c_str(), m_Port );
-	PrintDebugFormat( "Attempting to delete %s", f_name );
+	sml::PrintDebugFormat( "Attempting to delete %s", f_name );
 	int del_status = unlink( f_name );
 	if ( del_status == 0 )
-		PrintDebug( "Delete succeeded!" );
+		sml::PrintDebug( "Delete succeeded!" );
 	else
-		PrintDebugFormat( "Error occurred during delete attempt, error code %d", errno );
+		sml::PrintDebugFormat( "Error occurred during delete attempt, error code %d", errno );
 */
 #endif
 #ifdef ENABLE_NAMED_PIPES
@@ -135,7 +135,7 @@ void ListenerThread::Run()
 
 void ListenerThread::CreateConnection(DataSender* pSender)
 {
-	PrintDebugFormat("Got new connection on %s", pSender->GetName().c_str()) ;
+	sml::PrintDebugFormat("Got new connection on %s", pSender->GetName().c_str()) ;
 
 	// Create a new connection object for this socket
 	Connection* pConnection = Connection::CreateRemoteConnection(pSender) ;

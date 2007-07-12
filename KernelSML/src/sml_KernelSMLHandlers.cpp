@@ -1153,7 +1153,7 @@ bool KernelSML::HandleInput(gSKI::Agent* pAgent, char const* pCommandName, Conne
 	bool ok = true ;
 
 	if (kDebugInput)
-		PrintDebugFormat("--------- %s starting input ----------", pAgent->GetName()) ;
+		sml::PrintDebugFormat("--------- %s starting input ----------", pAgent->GetName()) ;
 
 	for (int i = 0 ; i < nChildren ; i++)
 	{
@@ -1194,7 +1194,7 @@ bool KernelSML::HandleInput(gSKI::Agent* pAgent, char const* pCommandName, Conne
 
 			if (kDebugInput)
 			{
-				PrintDebugFormat("%s Add %s ^%s %s (type %s tag %s)", pAgent->GetName(), id.c_str(), pAttribute, pValue, pType, pTimeTag) ;
+				sml::PrintDebugFormat("%s Add %s ^%s %s (type %s tag %s)", pAgent->GetName(), id.c_str(), pAttribute, pValue, pType, pTimeTag) ;
 			}
 
 			// Add the wme
@@ -1206,7 +1206,7 @@ bool KernelSML::HandleInput(gSKI::Agent* pAgent, char const* pCommandName, Conne
 
 			if (kDebugInput)
 			{
-				PrintDebugFormat("%s Remove tag %s", pAgent->GetName(), pTimeTag) ;
+				sml::PrintDebugFormat("%s Remove tag %s", pAgent->GetName(), pTimeTag) ;
 			}
 
 			// Remove the wme
@@ -1218,7 +1218,7 @@ bool KernelSML::HandleInput(gSKI::Agent* pAgent, char const* pCommandName, Conne
 	pAgentSML->FireInputReceivedEvent(pCommand) ;
 
 	if (kDebugInput)
-		PrintDebugFormat("--------- %s ending input ----------", pAgent->GetName()) ;
+		sml::PrintDebugFormat("--------- %s ending input ----------", pAgent->GetName()) ;
 
 	// Returns false if any of the adds/removes fails
 	return ok ;
@@ -1262,7 +1262,7 @@ bool KernelSML::HandleCommandLine(gSKI::Agent* pAgent, char const* pCommandName,
 	}
 
 	if (kDebugCommandLine)
-		PrintDebugFormat("Executing %s", pLine) ;
+		sml::PrintDebugFormat("Executing %s", pLine) ;
 	
 	AgentSML* pAgentSML = this->GetAgentSML(pAgent) ;
 
@@ -1271,7 +1271,7 @@ bool KernelSML::HandleCommandLine(gSKI::Agent* pAgent, char const* pCommandName,
 		pAgentSML->FireEchoEvent(pConnection, pLine) ;
 
 	if (kDebugCommandLine)
-		PrintDebugFormat("Echoed line\n") ;
+		sml::PrintDebugFormat("Echoed line\n") ;
 
 	// Send this command line through anyone registered filters.
 	// If there are no filters (or this command requested not to be filtered), this copies the original line into the filtered line unchanged.
@@ -1344,14 +1344,14 @@ bool KernelSML::HandleCommandLine(gSKI::Agent* pAgent, char const* pCommandName,
 	}
 
 	if (kDebugCommandLine)
-		PrintDebugFormat("Filtered line is %s\n", pFilteredLine) ;
+		sml::PrintDebugFormat("Filtered line is %s\n", pFilteredLine) ;
 
 	// Make the call.
 	m_CommandLineInterface.SetRawOutput(rawOutput);
 	bool result = m_CommandLineInterface.DoCommand(pConnection, pAgent, pFilteredLine, echoResults, pResponse) ;
 
 	if (kDebugCommandLine)
-		PrintDebugFormat("Completed %s", pLine) ;
+		sml::PrintDebugFormat("Completed %s", pLine) ;
 
 	// Can only clean this up after we're finished using it or pFilteredLine will become invalid
 	delete pFilteredXML ;
