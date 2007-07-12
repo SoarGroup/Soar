@@ -161,6 +161,8 @@ class Conjunction:
 
 class SoarProd:
 	def __init__(self, name, state_name):
+#		if name == 'apply*remove-_next__holding__std_soar_var0__':
+#			pdb.set_trace()
 		self.__name = name
 		self.__state_name = state_name
 		self.__name_gen = UniqueNameGenerator()

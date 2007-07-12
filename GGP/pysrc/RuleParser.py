@@ -353,16 +353,11 @@ def TranslateFrameAxioms(game_name, head, bodies):
 	comparison_literals = []
 	new_bodies = []
 	# eliminate frame conditions from body
-	# negate each condition in each body
 	for b in bodies:
 		newb = []
 		for s in b:
 			if s != frame_sentence:
-				if s.name() in ['distinct', '<', '>', '>=']:
-					# preserve distinct
-					newb.append(s)
-				else:
-					newb.append(s.negate())
+				newb.append(s)
 		new_bodies.append(newb)
 
 	# mangle variables in each body to prevent name collisions
@@ -371,12 +366,14 @@ def TranslateFrameAxioms(game_name, head, bodies):
 		for c in b:
 			c.mangle_vars('__r%d__' % i)
 
-	sp = MakeTemplateProduction("remove-%s" % axiom_name, "apply", game_name)
+	sp = MakeTemplateProduction("remove-frame-%s" % axiom_name, "apply", game_name)
 	sp.add_operator_test("update-state")
 	var_mapper = GDLSoarVarMapper(sp.get_name_gen())
 
 	# first, add the condition to check for presence of head relation
 	frame_sentence.make_soar_conditions(sp, var_mapper)
+
+	# combine the bodies of all frame axioms together
 	for body in new_bodies:
 		sp.begin_negative_conjunction() # wrap all the added conditions into a negation
 		ParseGDLBodyToCondition(body, sp, var_mapper)
@@ -444,10 +441,15 @@ def TranslateDescription(game_name, description, filename):
 			#     ...
 			#     (true <some term>)
 			#     ...)
-			if len(rule.body()) > 1 and frame_term in rule.body():
-				# this is a frame rule, process it differently later
-				print rule
-				frame_rules.append(rule)
+			if frame_term in rule.body():
+				if len(rule.body()) > 1:
+					# this is a frame rule, process it differently later
+					frame_rules.append(rule)
+				else:
+					# this is a frame rule which will always be true, so the structure
+					# will never be removed
+					# why wasn't this fixed a long time ago?
+					print rule
 				# we also remember that this function constant is supported by frame rules
 				funcs_with_frame_rules.append(frame_term.term(0))
 			else:

@@ -386,10 +386,11 @@ class GGPSentence:
 			
 			# the does relation has two places, a constant representing the role and 
 			# a function constant representing the move
+			role_id = sp.add_id_attrib(move_id, self.__terms[0].name())
+
 			if self.__negated:
 				sp.begin_negative_conjunction()
 
-			role_id = sp.add_id_attrib(move_id, self.__terms[0].name())
 			fid = self.__terms[1].make_soar_cond(sp, role_id, 0, var_map)
 
 			if self.__negated:
