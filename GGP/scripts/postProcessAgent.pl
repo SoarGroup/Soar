@@ -15,7 +15,8 @@ if (not -e $soarFile) {
 $env = $ARGV[2];
 
 $makeStatic = "./makeStatic.pl $soarFile";
-$fixVar = "./fixVar11.pl $soarFile";
+# don't need this anymore -jzxu
+#$fixVar = "./fixVar11.pl $soarFile";
 $analyzeKif = "./analyzeKif.pl $kifFile";
 
 print `echo "source $env-common.soar" >> $soarFile`;
@@ -24,7 +25,7 @@ print `$makeStatic lessthan`;
 print `$makeStatic gtequal`;
 print `$makeStatic plus`;
 print `$makeStatic minus`;
-print `$fixVar`;
+#print `$fixVar`;
 
 @bkProdContents = ();
 foreach $line (`$analyzeKif`) {
