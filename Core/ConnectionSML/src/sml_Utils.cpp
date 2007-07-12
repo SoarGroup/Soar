@@ -22,6 +22,7 @@ void sml::Sleep(long secs, long msecs)
 	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
 #ifdef _WIN32
 
+	// Use the Windows API Sleep function (need to specify the Global namespace to distinguish from sml::Sleep)
 	::Sleep( (secs * 1000) + msecs) ;
 
 #else // not _WIN32
