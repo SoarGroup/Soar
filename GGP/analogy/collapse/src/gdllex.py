@@ -56,7 +56,9 @@ def t_error(t):
 
 lex.lex()
 
-gdl = open('parse_test.kif').read()
+import sys
+
+gdl = open(sys.argv[1]).read()
 
 lex.input(gdl)
 

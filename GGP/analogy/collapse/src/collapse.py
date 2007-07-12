@@ -88,7 +88,7 @@ def collapse(rules):
 	while ri < len(ungrounded_rules):
 		r = ungrounded_rules[ri]
 		can_expand = False
-		for bi, b in r.get_bodies():
+		for bi, b in enumerate(r.get_body()):
 			if b.get_relation in grounded_preds:
 				cond_to_expand = b
 				cond_index = bi
@@ -106,3 +106,7 @@ def collapse(rules):
 			ri = 0
 		else:
 			ri += 1
+
+	for h, r in grounded_rules.items():
+		print str(r[0])
+	

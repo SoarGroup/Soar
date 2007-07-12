@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import os, sys
 import RuleParser
 from ElementGGP import ElementGGP

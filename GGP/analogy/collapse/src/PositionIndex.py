@@ -2,7 +2,7 @@ import pdb
 
 class PositionIndex:
 	def __init__(self, index):
-		self.__index = index
+		self.__index = tuple(index)
 	
 	def __str__(self):
 		return str(self.__index)
@@ -13,6 +13,9 @@ class PositionIndex:
 	
 	def __ne__(self, other):
 		return not self == other
+
+	def __hash__(self):
+		return hash(self.__index)
 	
 	@staticmethod
 	def get_all_positions(sentence):

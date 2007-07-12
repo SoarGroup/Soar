@@ -1,9 +1,11 @@
 from ply import yacc
 from gdllex import tokens
 from GDL import *
-from IR2 import IntermediateRep
+from collapse import collapse
+from IR import *
+import pdb
 
-__IR = IntermediateRep()
+ir = IntermediateRep()
 
 def p_rule_list(p):
 	'''rule_list : rule rule_list
@@ -14,12 +16,12 @@ def p_rule_atomic_sentence(p):
 	'''rule : atomic_sentence
 	        | LPAREN ARROW atomic_sentence condition_list RPAREN'''
 
-	global __IR
+	global ir
 
 	if len(p) == 2:
-		__IR.add_rule(p[1], [])
+		ir.add_rule(p[1], [])
 	else:
-		__IR.add_rule(p[3], p[4])
+		ir.add_rule(p[3], p[4])
 
 def p_atomic_sentence(p):
 	'''atomic_sentence : NAME
@@ -105,7 +107,13 @@ def p_empty(p):
 
 yacc.yacc()
 
-file = open('parse_test.kif', 'r').read()
+import sys
+
+if len(sys.argv) < 2:
+	print "need kif file"
+	sys.exit(1)
+
+file = open(sys.argv[1], 'r').read()
 
 result = yacc.parse(file)
 
@@ -113,6 +121,6 @@ result = yacc.parse(file)
 #psyco.full()
 
 try:
-	__IR.find_models()
+	collapse(ir.get_rules())
 except KeyboardInterrupt:
 	pass

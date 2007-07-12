@@ -200,7 +200,7 @@ class Rule:
 		
 		# relations between variables like < <= = !=
 		# also for relations between variables and constants
-		self.__var_rels = {}
+		# self.__var_rels = {}
 	
 		# a list  (body_index1,pos1,body_index2,pos2,comparison operator)
 		self.__var_constraints = []
