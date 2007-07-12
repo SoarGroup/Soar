@@ -7,7 +7,7 @@ multi-attributes lessthan 200
 multi-attributes greaterthan 200
 multi-attributes min 200
 multi-attributes cardinalrelation 200
-multi-attributes traversible 300
+multi-attributes traversible 300 
 multi-attributes int 1000
 multi-attributes index 1000
 multi-attributes cell 1000

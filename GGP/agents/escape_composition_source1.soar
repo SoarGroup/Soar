@@ -11,7 +11,7 @@ sp {propose*_legal_explorer__combine__item1__item2__nails__1
    (<h2> ^p1 <item1>)
    (<h3> ^p1 <item2>)
    (<p> ^p2 hammer ^p1 <item>)
-   (<p1> ^p2 doesNail ^p1 <nails>)
+   (<p1> ^p2 doesnail ^p1 <nails>)
    (<p2> ^p2 nailable ^p1 <item1>)
    (<p3> ^p2 nailable ^p1 <item2>)
    (<i2> ^output-link <o>)
@@ -38,7 +38,7 @@ sp {propose*_legal_explorer__combine__item1__item2__tie__1
    (<h> ^p1 <item1>)
    (<h1> ^p1 <item2>)
    (<h2> ^p1 <tie>)
-   (<p> ^p2 doesTie ^p1 <tie>)
+   (<p> ^p2 doestie ^p1 <tie>)
    (<p1> ^p2 tieable ^p1 <item1>)
    (<p2> ^p2 tieable ^p1 <item2>)
    (<i2> ^output-link <o>)
@@ -55,7 +55,7 @@ sp {apply*combine1
    (<o1> ^combine <combine>)
    (<combine> ^p1 <item1> ^p2 <item2> ^p3 <tie>)
 }
-sp {apply*_next__property__comboName__cprop__1
+sp {apply*_next__property__comboname__cprop__1
    (state <s> ^name game ^name game ^operator <o> ^gs <g> ^facts <f> ^elaborations <e>)
    (<o> ^name update-state)
    (<g> ^property <p> ^property <p1>)
@@ -64,12 +64,12 @@ sp {apply*_next__property__comboName__cprop__1
    (<f> ^propertycombine <p2>)
    (<p2> ^p1 <prop1> ^p2 <prop2> ^p3 <cprop>)
    (<e> ^combining <c>)
-   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
+   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboname>)
 -->
    (<g> ^property <property>)
-   (<property> ^p1 <comboName> ^p2 <cprop>)
+   (<property> ^p1 <comboname> ^p2 <cprop>)
 }
-sp {apply*_next__property__comboName__cprop__21
+sp {apply*_next__property__comboname__cprop__21
    (state <s> ^name game ^name game ^operator <o> ^gs <g> ^facts <f> ^elaborations <e>)
    (<o> ^name update-state)
    (<g> ^property <p> ^property <p1>)
@@ -78,12 +78,12 @@ sp {apply*_next__property__comboName__cprop__21
    (<f> ^propertycombine <p2>)
    (<p2> ^p1 <prop1> ^p2 <prop2> ^p3 <cprop>)
    (<e> ^combining <c>)
-   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
+   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboname>)
 -->
    (<g> ^property <property>)
-   (<property> ^p1 <comboName> ^p2 <cprop>)
+   (<property> ^p1 <comboname> ^p2 <cprop>)
 }
-sp {apply*_next__property__comboName__prop__1
+sp {apply*_next__property__comboname__prop__1
    (state <s> ^name game ^name game ^operator <o> ^gs <g> ^facts <f> ^elaborations <e>)
    (<o> ^name update-state)
    (<g> ^property <p>)
@@ -91,12 +91,12 @@ sp {apply*_next__property__comboName__prop__1
    (<f> ^propertyinherit <p1>)
    (<p1> ^p1 <prop>)
    (<e> ^combining <c>)
-   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
+   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboname>)
 -->
    (<g> ^property <property>)
-   (<property> ^p1 <comboName> ^p2 <prop>)
+   (<property> ^p1 <comboname> ^p2 <prop>)
 }
-sp {apply*_next__property__comboName__prop__21
+sp {apply*_next__property__comboname__prop__21
    (state <s> ^name game ^name game ^operator <o> ^gs <g> ^facts <f> ^elaborations <e>)
    (<o> ^name update-state)
    (<g> ^property <p>)
@@ -104,10 +104,10 @@ sp {apply*_next__property__comboName__prop__21
    (<f> ^propertyinherit <p1>)
    (<p1> ^p1 <prop>)
    (<e> ^combining <c>)
-   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
+   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboname>)
 -->
    (<g> ^property <property>)
-   (<property> ^p1 <comboName> ^p2 <prop>)
+   (<property> ^p1 <comboname> ^p2 <prop>)
 }
 sp {elaborate*_used__glue_
    (state <s> ^io <i> ^elaborations <e1>)
@@ -120,10 +120,10 @@ sp {elaborate*_used__glue_
    (<e1> ^used <used>)
    (<used> ^p1 <glue>)
 }
-sp {apply*_next__currSymbol__ns__1
+sp {apply*_next__currsymbol__ns__1
    (state <s> ^name game ^name game ^operator <o> ^gs <g> ^facts <f> ^io <i>)
    (<o> ^name update-state)
-   (<g> ^currSymbol <c>)
+   (<g> ^currsymbol <c>)
    (<c> ^p1 <cs>)
    (<f> ^nextsymbol <n>)
    (<n> ^p1 <cs> ^p2 <ns>)
@@ -133,38 +133,38 @@ sp {apply*_next__currSymbol__ns__1
    (<e> ^combine <c1>)
    (<c1> ^p1 <item1> ^p2 <item2> ^p3 <glue>)
 -->
-   (<g> ^currSymbol <currSymbol>)
-   (<currSymbol> ^p1 <ns>)
+   (<g> ^currsymbol <currsymbol>)
+   (<currsymbol> ^p1 <ns>)
 }
-sp {elaborate*_combining__item1__item2__comboName_
+sp {elaborate*_combining__item1__item2__comboname_
    (state <s> ^io <i> ^gs <g> ^elaborations <e1>)
    (<i> ^input-link <i1>)
    (<i1> ^last-moves <l>)
    (<l> ^explorer <e>)
    (<e> ^combine <c>)
    (<c> ^p1 <item1> ^p2 <item2> ^p3 <glue>)
-   (<g> ^currSymbol <c1>)
-   (<c1> ^p1 <comboName>)
+   (<g> ^currsymbol <c1>)
+   (<c1> ^p1 <comboname>)
 -->
    (<e1> ^combining <combining>)
-   (<combining> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
+   (<combining> ^p1 <item1> ^p2 <item2> ^p3 <comboname>)
 }
 sp {elaborate*_anycombine_
    (state <s> ^elaborations <e>)
    (<e> ^combining <c>)
-   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
+   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboname>)
 -->
    (<e> ^anycombine <anycombine>)
    
 }
-sp {apply*_next__comboType__comboName__item1__item2__1
+sp {apply*_next__combotype__comboname__item1__item2__1
    (state <s> ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
    (<o> ^name update-state)
    (<e> ^combining <c>)
-   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
+   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboname>)
 -->
-   (<g> ^comboType <comboType>)
-   (<comboType> ^p1 <comboName> ^p2 <item1> ^p3 <item2>)
+   (<g> ^combotype <combotype>)
+   (<combotype> ^p1 <comboname> ^p2 <item1> ^p3 <item2>)
 }
 sp {elaborate*_itemtype_hammer1_
    (state <s> ^elaborations <e>)
@@ -190,27 +190,27 @@ sp {elaborate*_itemtype_log2_
    (<e> ^itemtype <itemtype>)
    (<itemtype> ^p1 log2)
 }
-sp {elaborate*_itemtype__comboName_
+sp {elaborate*_itemtype__comboname_
    (state <s> ^gs <g> ^elaborations <e>)
-   (<g> ^comboType <c>)
-   (<c> ^p1 <comboName> ^p2 <item1> ^p3 <item2>)
+   (<g> ^combotype <c>)
+   (<c> ^p1 <comboname> ^p2 <item1> ^p3 <item2>)
 -->
    (<e> ^itemtype <itemtype>)
-   (<itemtype> ^p1 <comboName>)
+   (<itemtype> ^p1 <comboname>)
 }
-sp {apply*_next__holding__comboName__1
+sp {apply*_next__holding__comboname__1
    (state <s> ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
    (<o> ^name update-state)
    (<e> ^combining <c>)
-   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboName>)
+   (<c> ^p1 <item1> ^p2 <item2> ^p3 <comboname>)
 -->
    (<g> ^holding <holding>)
-   (<holding> ^p1 <comboName>)
+   (<holding> ^p1 <comboname>)
 }
 sp {elaborate*_used__item_
    (state <s> ^elaborations <e>)
    (<e> ^combining <c>)
-   (<c> ^p1 <item> ^p2 <item2> ^p3 <comboName>)
+   (<c> ^p1 <item> ^p2 <item2> ^p3 <comboname>)
 -->
    (<e> ^used <used>)
    (<used> ^p1 <item>)
@@ -218,7 +218,7 @@ sp {elaborate*_used__item_
 sp {elaborate*_used__item_1
    (state <s> ^elaborations <e>)
    (<e> ^combining <c>)
-   (<c> ^p1 <item1> ^p2 <item> ^p3 <comboName>)
+   (<c> ^p1 <item1> ^p2 <item> ^p3 <comboname>)
 -->
    (<e> ^used <used>)
    (<used> ^p1 <item>)
@@ -333,7 +333,7 @@ sp {elaborate*_used__item_3
    (<e> ^used <used>)
    (<used> ^p1 <item>)
 }
-sp {apply*_next__compromiseExpired__obstacle__1
+sp {apply*_next__compromiseexpired__obstacle__1
    (state <s> ^name game ^name game ^operator <o> ^gs <g>)
    (<o> ^name update-state)
    (<g> ^compromised <c> ^location <l> ^location <l1>)
@@ -341,8 +341,8 @@ sp {apply*_next__compromiseExpired__obstacle__1
    (<l> ^p1 <obstacle> ^p2 <ox> ^p3 <oy>)
    (<l1> ^p1 explorer ^p2 <ox> ^p3 <oy>)
 -->
-   (<g> ^compromiseExpired <compromiseExpired>)
-   (<compromiseExpired> ^p1 <obstacle>)
+   (<g> ^compromiseexpired <compromiseexpired>)
+   (<compromiseexpired> ^p1 <obstacle>)
 }
 sp {elaborate*_damaged_
    (state <s> ^elaborations <e> ^facts <f> ^gs <g>)
@@ -356,7 +356,7 @@ sp {elaborate*_damaged_
      (<c> ^p1 <obstacle>)
    }
    -{
-     (<g> ^compromiseExpired <c1>)
+     (<g> ^compromiseexpired <c1>)
      (<c1> ^p1 <obstacle>)
    }
    -{
@@ -441,14 +441,14 @@ sp {propose*_legal_explorer__move__dir__1
    (<f> ^direction <d> ^2d <2>)
    (<d> ^p1 <dir>)
    (<g> ^location <l>)
-   (<l> ^p1 explorer ^p2 <xOld> ^p3 <yOld>)
+   (<l> ^p1 explorer ^p2 <xold> ^p3 <yold>)
    -{
      (<g> ^blocked <b>)
-     (<b> ^p1 <dir> ^p2 <xOld> ^p3 <yOld>)
+     (<b> ^p1 <dir> ^p2 <xold> ^p3 <yold>)
    }
    (<e> ^nexttoexplorer <n>)
-   (<n> ^p1 <dir> ^p2 <xNew> ^p3 <yNew>)
-   (<2> ^p1 <xNew> ^p2 <yNew>)
+   (<n> ^p1 <dir> ^p2 <xnew> ^p3 <ynew>)
+   (<2> ^p1 <xnew> ^p2 <ynew>)
    (<i> ^output-link <o>)
    (<o> -^<cmd-name> <c>)
 -->
@@ -472,37 +472,37 @@ sp {apply*_next__location_explorer__x__y__1
    (<g> ^location <location>)
    (<location> ^p1 explorer ^p2 <x> ^p3 <y>)
 }
-sp {apply*_next__health_explorer__hpNew__1
+sp {apply*_next__health_explorer__hpnew__1
    (state <s> ^name game ^name game ^operator <o> ^gs <g> ^elaborations <e> ^io <i> ^facts <f>)
    (<o> ^name update-state)
    (<g> ^health <h>)
-   (<h> ^p1 explorer ^p2 <hpOld>)
+   (<h> ^p1 explorer ^p2 <hpold>)
    (<e> ^damaged <d>)
    (<i> ^input-link <i1>)
    (<i1> ^last-moves <l>)
    (<l> ^explorer <e1>)
    (<e1> -^heal <h1>)
    (<f> ^minus <m>)
-   (<m> ^p1 1 ^p2 <hpOld> ^p3 <hpNew>)
+   (<m> ^p1 1 ^p2 <hpold> ^p3 <hpnew>)
 -->
    (<g> ^health <health>)
-   (<health> ^p1 explorer ^p2 <hpNew>)
+   (<health> ^p1 explorer ^p2 <hpnew>)
 }
-sp {apply*_next__health_explorer__hpNew__21
+sp {apply*_next__health_explorer__hpnew__21
    (state <s> ^name game ^name game ^operator <o> ^gs <g> ^io <i> ^elaborations <e1> ^facts <f>)
    (<o> ^name update-state)
    (<g> ^health <h>)
-   (<h> ^p1 explorer ^p2 <hpOld>)
+   (<h> ^p1 explorer ^p2 <hpold>)
    (<i> ^input-link <i1>)
    (<i1> ^last-moves <l>)
    (<l> ^explorer <e>)
    (<e> ^heal <h1>)
    (<e1> -^damaged <d>)
    (<f> ^plus <p>)
-   (<p> ^p1 1 ^p2 <hpOld> ^p3 <hpNew>)
+   (<p> ^p1 1 ^p2 <hpold> ^p3 <hpnew>)
 -->
    (<g> ^health <health>)
-   (<health> ^p1 explorer ^p2 <hpNew>)
+   (<health> ^p1 explorer ^p2 <hpnew>)
 }
 sp {apply*_next__holding__item__1
    (state <s> ^name game ^name game ^operator <o> ^elaborations <e> ^gs <g>)
@@ -752,11 +752,11 @@ sp {apply*init-game
    (<gs> ^property <property>)
    (<property> ^p1 hammer1 ^p2 hammer)
    (<gs> ^property <property1>)
-   (<property1> ^p1 nails1 ^p2 doesNail)
+   (<property1> ^p1 nails1 ^p2 doesnail)
    (<gs> ^property <property2>)
    (<property2> ^p1 log1 ^p2 buoyant)
    (<gs> ^property <property3>)
-   (<property3> ^p1 log1 ^p2 supportsWeight)
+   (<property3> ^p1 log1 ^p2 supportsweight)
    (<gs> ^property <property4>)
    (<property4> ^p1 log1 ^p2 tieable)
    (<gs> ^property <property5>)
@@ -764,13 +764,13 @@ sp {apply*init-game
    (<gs> ^property <property6>)
    (<property6> ^p1 log2 ^p2 buoyant)
    (<gs> ^property <property7>)
-   (<property7> ^p1 log2 ^p2 supportsWeight)
+   (<property7> ^p1 log2 ^p2 supportsweight)
    (<gs> ^property <property8>)
    (<property8> ^p1 log2 ^p2 tieable)
    (<gs> ^property <property9>)
    (<property9> ^p1 log2 ^p2 nailable)
-   (<gs> ^currSymbol <currSymbol>)
-   (<currSymbol> ^p1 combo1)
+   (<gs> ^currsymbol <currsymbol>)
+   (<currsymbol> ^p1 combo1)
    (<gs> ^step <step>)
    (<step> ^p1 1)
    (<facts> ^exittype <exittype>)
@@ -784,7 +784,7 @@ sp {apply*init-game
    (<facts> ^direction <direction3>)
    (<direction3> ^p1 west)
    (<facts> ^propertyinherit <propertyinherit>)
-   (<propertyinherit> ^p1 supportsWeight)
+   (<propertyinherit> ^p1 supportsweight)
    (<facts> ^minus <minus>)
    (<minus> ^p1 0 ^p2 7 ^p3 7)
    (<facts> ^minus <minus1>)
@@ -1254,9 +1254,9 @@ sp {apply*init-game
    (<facts> ^plus <plus35>)
    (<plus35> ^p1 0 ^p2 7 ^p3 7)
    (<facts> ^cancompromise <cancompromise>)
-   (<cancompromise> ^p1 canFloat ^p2 water ^p3 yes)
+   (<cancompromise> ^p1 canfloat ^p2 water ^p3 yes)
    (<facts> ^cancompromise <cancompromise1>)
-   (<cancompromise1> ^p1 canBridge ^p2 water ^p3 yes)
+   (<cancompromise1> ^p1 canbridge ^p2 water ^p3 yes)
    (<facts> ^greaterthan <greaterthan>)
    (<greaterthan> ^p1 7 ^p2 0)
    (<facts> ^greaterthan <greaterthan1>)
@@ -1320,9 +1320,9 @@ sp {apply*init-game
    (<facts> ^propertycombine <propertycombine1>)
    (<propertycombine1> ^p1 tieable ^p2 tieable ^p3 tieable)
    (<facts> ^propertycombine <propertycombine2>)
-   (<propertycombine2> ^p1 supportsWeight ^p2 supportsWeight ^p3 canBridge)
+   (<propertycombine2> ^p1 supportsweight ^p2 supportsweight ^p3 canbridge)
    (<facts> ^propertycombine <propertycombine3>)
-   (<propertycombine3> ^p1 supportsWeight ^p2 buoyant ^p3 canFloat)
+   (<propertycombine3> ^p1 supportsweight ^p2 buoyant ^p3 canfloat)
    (<facts> ^obstacletype <obstacletype>)
    (<obstacletype> ^p1 water0 ^p2 water)
    (<facts> ^obstacletype <obstacletype1>)
@@ -1340,16 +1340,16 @@ sp {apply*init-game
    (<facts> ^obstacletype <obstacletype7>)
    (<obstacletype7> ^p1 water7 ^p2 water)
 }
-sp {apply*remove-_next__currSymbol__std_soar_var1__0
+sp {apply*remove-_next__currsymbol__std_soar_var1__0
    (state <s> ^name game ^gs <g> ^io <i> ^operator <o> ^elaborations <e>)
-   (<g> ^currSymbol <c>)
+   (<g> ^currsymbol <c>)
    (<i> ^input-link <i1>)
    (<i1> ^last-moves <l>)
    (<o> ^name update-state)
    (<c> ^p1 <std_soar_var1>)
    (<e> ^anycombine <a>)
 -->
-   (<g> ^currSymbol <c> -)
+   (<g> ^currsymbol <c> -)
 }
 sp {apply*remove-_next__compromised__std_soar_var1__0
    (state <s> ^name game ^gs <g> ^io <i> ^operator <o>)
@@ -1376,9 +1376,9 @@ sp {apply*remove-_next__compromised__std_soar_var1__1
 -->
    (<g> ^compromised <c> -)
 }
-sp {apply*remove-_next__compromiseExpired__std_soar_var1__0
+sp {apply*remove-_next__compromiseexpired__std_soar_var1__0
    (state <s> ^name game ^gs <g> ^io <i> ^operator <o>)
-   (<g> ^compromiseExpired <c>)
+   (<g> ^compromiseexpired <c>)
    (<i> ^input-link <i1>)
    (<i1> ^last-moves <l>)
    (<o> ^name update-state)
@@ -1388,11 +1388,11 @@ sp {apply*remove-_next__compromiseExpired__std_soar_var1__0
      (<l1> ^p1 <std_soar_var1> ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
    }
 -->
-   (<g> ^compromiseExpired <c> -)
+   (<g> ^compromiseexpired <c> -)
 }
-sp {apply*remove-_next__compromiseExpired__std_soar_var1__1
+sp {apply*remove-_next__compromiseexpired__std_soar_var1__1
    (state <s> ^name game ^gs <g> ^io <i> ^operator <o>)
-   (<g> ^compromiseExpired <c>)
+   (<g> ^compromiseexpired <c>)
    (<i> ^input-link <i1>)
    (<i1> ^last-moves <l>)
    (<o> ^name update-state)
@@ -1402,7 +1402,7 @@ sp {apply*remove-_next__compromiseExpired__std_soar_var1__1
      (<l1> ^p1 explorer ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
    }
 -->
-   (<g> ^compromiseExpired <c> -)
+   (<g> ^compromiseexpired <c> -)
 }
 sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__0
    (state <s> ^name game ^gs <g> ^io <i> ^operator <o> ^facts <f> ^elaborations <e>)
@@ -1502,3 +1502,8 @@ sp {apply*remove-_next__holding__std_soar_var1__0
    (<g> ^holding <h> -)
 }
 source escape-common.soar
+sp {top-state*bk-counters
+  (state <s> ^superstate nil ^facts <f>)
+-->
+  (<f> ^bookkeeping-state step)
+}

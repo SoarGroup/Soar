@@ -113,7 +113,7 @@ sp {elab*ints
 sp {elab*blocked*east
   (state <s> ^superstate nil 
             ^gs <gs>)
-  (<gs> ^blockedEast <be>)
+  (<gs> ^blockedeast <be>)
   (<be> ^p1 <x> ^p2 <y>)
 -->
   (<gs> ^blocked <bl>)
@@ -124,7 +124,7 @@ sp {elab*blocked*west
   (state <s> ^superstate nil
               ^gs <gs>
              ^top-state.elaborations.plus <p>)
-  (<gs> ^blockedEast <be>)
+  (<gs> ^blockedeast <be>)
   (<be> ^p1 <x1> ^p2 <y>)
   (<p> ^p1 <x1> ^p2 1 ^p3 <x>)
 -->
@@ -135,7 +135,7 @@ sp {elab*blocked*west
 sp {elab*blocked*north
   (state <s>  ^superstate nil
               ^gs <gs>)
-  (<gs> ^blockedNorth <be>)
+  (<gs> ^blockednorth <be>)
   (<be> ^p1 <x> ^p2 <y>)
 -->
   (<gs> ^blocked <bl>)
@@ -146,7 +146,7 @@ sp {elab*blocked*south
   (state <s> ^gs <gs>
              ^superstate nil
              ^top-state.elaborations.plus <p>)
-  (<gs> ^blockedNorth <be>)
+  (<gs> ^blockednorth <be>)
   (<be> ^p1 <x> ^p2 <y1>)
   (<p> ^p1 <y1> ^p2 1 ^p3 <y>)
 -->

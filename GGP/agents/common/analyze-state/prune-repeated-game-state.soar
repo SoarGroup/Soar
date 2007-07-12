@@ -41,7 +41,6 @@ sp {elaborate*fail-if-no-gs-change
 sp {game*elaborate*added*0
    (state <s> ^name game
               ^gs <gs>
-         #     ^new-game-state-created
               ^facts <facts>
               ^old-gs <old-gs>)
    (<gs> ^<item> <id-gs>)
@@ -57,7 +56,6 @@ sp {game*elaborate*added*0
 sp {game*elaborate*added*1
    (state <s> ^name game
               ^gs <gs>
-          #    ^new-game-state-created
               ^facts <facts>
               ^old-gs <old-gs>)
    (<gs> ^<item> <id-gs>)
