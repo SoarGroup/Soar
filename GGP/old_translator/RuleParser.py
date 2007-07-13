@@ -39,7 +39,7 @@ class GDLSoarVarMapper:
 # makes a typical skeleton production for use in GGP
 def MakeTemplateProduction(name, type = "", game_name = 'game'):
 	if type != "":
-		prod_name = "%s*%s" % (type, name_gen.get_name(name))
+		prod_name = name_gen.get_name("%s*%s" % (type, name))
 	else:
 		prod_name = name_gen.get_name(name)
 	p = SoarProd(prod_name, game_name)
