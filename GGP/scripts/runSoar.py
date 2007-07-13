@@ -20,7 +20,7 @@ def run_script(script):
 		if command.startswith('quit'):
 			break
 		line = kernel.ExecuteCommandLine(command, 'soar')
-		if len(strip(line)) > 0:
+		if len(line.strip()) > 0:
 			print line
 		
 	kernel.DestroyAgent(agent)
@@ -47,11 +47,16 @@ def handle_args(args):
 			kernel.ExecuteCommandLine("watch %s" % watchlevel, 'soar')
 		elif a == '-l':
 			kernel.ExecuteCommandLine('learn --on', 'soar')
+		elif a == '-f':
+			kernel.ExecuteCommandLine('indifferent-selection --first', 'soar')
 
 def sig_handler(signum, frame):
 	global kernel
 
+	kernel.ExecuteCommandLine('stop-soar', 'soar')
+	kernel.DestroyAgent(agent)
 	kernel.Shutdown()
+	sys.exit(1)
 
 if __name__ == "__main__":
 	signal.signal(signal.SIGINT, sig_handler)
@@ -61,12 +66,12 @@ if __name__ == "__main__":
 	agent.RegisterForPrintEvent(psci.smlEVENT_PRINT, PrintCallback, None)
 
 	nargs = len(sys.argv)
-	if len(sys.argv) > 2:
+	if len(sys.argv) >= 2:
 		handle_args(sys.argv[1:nargs-1])
 		if sys.argv[nargs-1].endswith('.soar'):
 			run_agent(sys.argv[nargs-1])
 		else:
 			run_script(sys.argv[nargs-1])
 	else:
-		print 'Usage: soar <script file> | <agent file>'
+		print 'Usage: soar [-w<n>] [-l] [-f] <script file> | <agent file>'
 		sys.exit(1)
