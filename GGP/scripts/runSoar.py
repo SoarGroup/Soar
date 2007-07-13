@@ -27,12 +27,14 @@ def run_script(script):
 	kernel.Shutdown()
 	del kernel
 
-def run_agent(agent_file):
+def run_agent(agent_file, commands):
 	global kernel
 	global agent
 
 	kernel.ExecuteCommandLine('source %s' % agent_file, 'soar')
-	kernel.ExecuteCommandLine('run', 'soar')
+	for c in commands:
+		line = kernel.ExecuteCommandLine(c, 'soar')
+		print line
 		
 	kernel.DestroyAgent(agent)
 	kernel.Shutdown()
@@ -41,7 +43,11 @@ def run_agent(agent_file):
 def handle_args(args):
 	global kernel
 
-	for a in args:
+	commands = []
+
+	i = 0
+	while i < len(args):
+		a = args[i]
 		if a.startswith('-w'):
 			watchlevel = a[2:]
 			kernel.ExecuteCommandLine("watch %s" % watchlevel, 'soar')
@@ -49,6 +55,12 @@ def handle_args(args):
 			kernel.ExecuteCommandLine('learn --on', 'soar')
 		elif a == '-f':
 			kernel.ExecuteCommandLine('indifferent-selection --first', 'soar')
+		elif a == '-c':
+			commands.extend(args[i+1].split(';'))
+			i += 1
+		i += 1
+	
+	return commands
 
 def sig_handler(signum, frame):
 	global kernel
@@ -67,9 +79,13 @@ if __name__ == "__main__":
 
 	nargs = len(sys.argv)
 	if len(sys.argv) >= 2:
-		handle_args(sys.argv[1:nargs-1])
+		commands = handle_args(sys.argv[1:nargs-1])
 		if sys.argv[nargs-1].endswith('.soar'):
-			run_agent(sys.argv[nargs-1])
+			agent_file = sys.argv[nargs-1]
+			if len(commands) > 0:
+				run_agent(agent_file, commands)
+			else:
+				run_agent(agent_file, ['run'])
 		else:
 			run_script(sys.argv[nargs-1])
 	else:
