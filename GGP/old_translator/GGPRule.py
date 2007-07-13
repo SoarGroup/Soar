@@ -12,7 +12,7 @@ class GGPRule:
 		else:
 			# undefined
 			assert False, "Unrecognized GGP: %s" % str(elementGGP)
-	
+
 	def head(self):
 		return self.__head
 	

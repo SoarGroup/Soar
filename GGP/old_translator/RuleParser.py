@@ -8,8 +8,29 @@ from GGPSentence import GGPSentence
 import re
 import ElementGGP
 import pdb
+import Comparison
 
 name_gen = UniqueNameGenerator()
+
+def SentenceIsComp(sentence):
+	Comparison_Ops = ['distinct', '<', '>', '>=']
+	return sentence.name() in Comparison_Ops
+
+def same_signature(sent1, sent2):
+	if sent1.name() != sent2.name():
+		return False
+
+	if sent1.num_terms() != sent2.num_terms():
+		return False
+
+	for i in range(sent1.num_terms()):
+		if (sent1.term(i).type() == 'function') ^ (sent2.term(i).type() == 'function'):
+			return False
+		if sent1.term(i).type() == 'function':
+			if not same_signature(sent1.term(i), sent2.term(i)):
+				return False
+	
+	return True
 
 def SoarifyStr(s):
 	p = re.compile('(\s|\?|\(|\)|\.)')
@@ -58,13 +79,13 @@ def MakeApplyRule(sp):
 	
 def ParseGDLBodyToCondition(body, prod, var_map):
 	for b in body:
-		if not b.name() in ["distinct", '<', '>', '>=']:
+		if not SentenceIsComp(b):
 			b.make_soar_conditions(prod, var_map)
 
 
 def ParseComparisons(body, sp, var_map):
 	for sentence in body:
-		if sentence.name() not in ['distinct', '<', '>', '>=']:
+		if not SentenceIsComp(sentence):
 			continue
 		if sentence.term(0).type() == 'variable':
 			lhs_index = 0
@@ -98,7 +119,7 @@ def ParseComparisons(body, sp, var_map):
 
 
 def MakeInitRule(game_name, role, init_conds, fact_rules, min_success_score):
-	sp = MakeTemplateProduction("init-%s" % game_name, "propose", game_name);
+	sp = MakeTemplateProduction("init-%s" % game_name, "propose", "");
 	sp.add_attrib(sp.get_state_id(), "superstate", "nil")
 	sp.add_neg_attrib(sp.get_state_id(), "name", "")
 	op_id = sp.add_operator_prop("init-%s" % game_name, "+ >")
@@ -183,9 +204,9 @@ def TranslateLegal(game_name, head, body):
 	
 	sp = MakeTemplateProduction(SoarifyStr(str(head)), "propose", game_name)
 	var_map = GDLSoarVarMapper(sp.get_name_gen())
-	for relation in body:
-		if not relation.name() in ["distinct", ">", "<", ">="]:
-			relation.make_soar_conditions(sp, var_map)
+	for cond in body:
+		if not SentenceIsComp(cond):
+			cond.make_soar_conditions(sp, var_map)
 	
 	# have to also check that no moves have been made
 	olink_id = sp.get_or_make_id_chain(['io','output-link'])[0]
@@ -215,7 +236,7 @@ def TranslateNext(game_name, head, body, make_remove_rule = True):
 	ap.add_operator_test('update-state')
 	
 	for sentence in body:
-		if not sentence.name() in ["distinct", '>', '<', '>=']:
+		if not SentenceIsComp(sentence):
 			sentence.make_soar_conditions(ap, var_map)
 	
 	head.make_soar_actions(ap, var_map)
@@ -263,141 +284,119 @@ def GenCombinations(bounds, index = 0):
 	
 	return result
 
-# head should be of the form (next (rel p1 p2 ...))
-#
-#
-#def TranslateFrameAxioms(game_name, head, bodies):
-#	productions = []
-#
-#	axiom_name = SoarifyStr(str(head))
-#	frame_sentence = head.true_analogue()
-#
-#	comparison_literals = []
-#	new_bodies = []
-#	# eliminate frame conditions from body
-#	# negate each condition in each body
-#	for b in bodies:
-#		newb = []
-#		for s in b:
-#			if s != frame_sentence:
-#				if s.name() in ['distinct', '<', '>', '>=']:
-#					# preserve distinct
-#					newb.append(s)
-#				else:
-#					newb.append(s.negate())
-#		new_bodies.append(newb)
-#
-#	# mangle variables in each body to prevent name collisions
-##	name_gen = UniqueNameGenerator()
-#	for b,i in zip(new_bodies, range(len(new_bodies))):
-#		for c in b:
-#			c.mangle_vars('__r%d__' % i)
-#
-##	for b in new_bodies:
-##		mangled = dict()
-##		for c in b:
-##			c.mangle_vars(mangled, name_gen)
-#
-#	# collect all comparisons
-#	for b in new_bodies:
-#		i = 0
-#		while i < len(b):
-#			if b[i].name() in ['distinct', '<', '>', '>=']:
-#				comparison_literals.append(b[i])
-#				b.pop(i)
-#			else:
-#				i += 1
-#
-#	# take all possible combinations of one condition from each body
-#	#   (this is the same as ANDing all bodies together and distributing
-#	#    ANDs over ORs [ the ORs resulted from distributing negations
-#	#    into the ANDs implicit in each body])
-#
-#	combinations = GenCombinations([len(b) for b in new_bodies])
-#	props = []
-#	op_name = name_gen.get_name("remove-%s" % axiom_name)
-#	for ci, x in zip(combinations, range(len(combinations))):
-#		comb = []
-#		for i in range(len(ci)):
-#			if new_bodies[i][ci[i]] not in comb:
-#				comb.append(new_bodies[i][ci[i]])
-#
-#		comb_body = ElementGGP.Combine(list(comb) + comparison_literals)
-#		prod_name = name_gen.get_name("%s%d" % (op_name, x))
-#		sp = MakeTemplateProduction("apply", prod_name, game_name)
-#		sp.add_op_cond("update-state")
-#		var_mapper = GDLSoarVarMapper(sp.var_gen)
-#
-#		# first, add the condition to check for presence of head relation
-#		frame_sentence.make_soar_conditions(sp, var_mapper)
-#
-#		# now add the conditions sufficient for removing the head relation from the
-#		# next state
-#		ParseGDLBodyToCondition(comb_body, sp, var_mapper)
-#		
-#		frame_sentence.next_analogue().make_soar_actions(sp, var_mapper, remove = True)
-#
-#		# set up the variable distinctions
-#		ParseComparisons(comb_body, sp, var_mapper)
-#
-#		productions.append(sp)
-#
-#	return productions
 
-def TranslateFrameAxioms(game_name, head, bodies):
-	productions = []
 
-	axiom_name = SoarifyStr(str(head))
-	frame_sentence = head.true_analogue()
-
-	comparison_literals = []
-	new_bodies = []
-	# eliminate frame conditions from body
-	for b in bodies:
-		newb = []
-		for s in b:
-			if s != frame_sentence:
-				newb.append(s)
-		new_bodies.append(newb)
-
-	# mangle variables in each body to prevent name collisions
-#	name_gen = UniqueNameGenerator()
-	for i, b in enumerate(new_bodies):
-		for c in b:
-			c.mangle_vars('__r%d__' % i)
-
-	sp = MakeTemplateProduction("remove-frame-%s" % axiom_name, "apply", game_name)
-	sp.add_operator_test("update-state")
-	var_mapper = GDLSoarVarMapper(sp.get_name_gen())
-
-	# first, add the condition to check for presence of head relation
-	frame_sentence.make_soar_conditions(sp, var_mapper)
-
-	# combine the bodies of all frame axioms together
-	for body in new_bodies:
-		sp.begin_negative_conjunction() # wrap all the added conditions into a negation
-		ParseGDLBodyToCondition(body, sp, var_mapper)
-		ParseComparisons(body, sp, var_mapper)
-		sp.end_negative_conjunction()
-
-	frame_sentence.next_analogue().make_soar_actions(sp, var_mapper, remove = True)
-
-	return sp
-
-def StandardizeVars(sentence, add_new, prefix, map = dict(), count = 0):
+# if a variable is in the replacement map, replace it with the appropriate variable
+# otherwise append a prefix to the variable name
+def PrepareBodyVars(sentence, replacement_map, prefix):
 	for i in range(sentence.num_terms()):
 		c = sentence.term(i)
 		if c.type() == "variable":
-			if not map.has_key(str(c)) and add_new:
-				map[str(c)] = count
-				count += 1
-			if map.has_key(str(c)):
-				new_name = "%s%d" % (prefix, map[str(c)])
-				sentence.term(i).rename(new_name)
+			if c.name() in replacement_map:
+				sentence.term(i).rename(replacement_map[c.name()])
+			else:
+				sentence.term(i).rename('%s%s' % (prefix, c.name()))
 		elif c.type() == "function":
-			count = StandardizeVars(c, add_new, prefix, map, count)
+			PrepareBodyVars(c, replacement_map, prefix)
 
-	return count
+def ProcessFrameAxioms(axioms, game_name):
+	prefix = 'std_soar_var'
+	# standardize all variable names. This is so that if two head literals are the same, they will
+	# match string-wise. Also, if any rule has a constant rather than a variable in a variable
+	# place, replace it with the variable, and add an extra equality structure to it for later use
+
+	preds_to_bodies = {} # preds -> [(body, comparisons)]
+	preds_to_heads = {} # preds -> head
+
+	for prefix_i, rule in enumerate(axioms):
+		head = rule.head()
+		pred = head.term(0).name()
+		preds_to_heads[pred] = head
+		head_analogue = head.true_analogue()
+		body = rule.body()
+
+		arity = head.term(0).num_terms()
+		substitutions = [ '%s%d' % (prefix, i) for i in range(arity)]
+		(const_subs, var_subs) = head.term(0).standardize_vars(substitutions)
+
+		body_var_subs = dict([(v, '%s%d' % (prefix, i)) for i, v in var_subs.items()])
+		# if a rule has a constant in the place of a variable, that is equivalent
+		# to having a constraint that the variable equal the constant
+		reg_conds = []
+		comp_conds = []
+		for i, const in const_subs.items():
+			comp_conds.append(Comparison.Comparison(substitutions[i], '=', const, False))
+
+		for b in body:
+			if not same_signature(head_analogue, b): # ignore frame rule
+				PrepareBodyVars(b, body_var_subs, '__r%d__' % prefix_i)
+				if SentenceIsComp(b):
+					comp_conds.append(Comparison.make_from_GGP_sentence(b))
+				else:
+					reg_conds.append(b)
+
+		preds_to_bodies.setdefault(pred, []).append((reg_conds, comp_conds))
+
+	result = []
+	# merge the frame axioms into production rules
+	for pred, bodies in preds_to_bodies.items():
+		result.extend(TranslateFrameAxioms(game_name, preds_to_heads[pred], bodies))
+	
+	return result
+
+def TranslateFrameAxioms(game_name, head, bodies):
+#	pdb.set_trace()
+	productions = []
+
+	# all regular conditions can be lumped together into -{ } conjunctions, but
+	# each comparison condition must be separated out and treated separately since
+	# they can't be negated correctly with neg. conjs. Have to take all combinations
+	# of blocks of regular conditions and individual comparisons from each frame
+	# axiom body
+	
+	new_bodies = []
+	for b in bodies:
+		# b[0] is a list of normal conditions. they should be treated as one block
+		# b[1] is a list of comparisons, they should be separated
+		if len(b[0]) > 0:
+			new_bodies.append([b[0]] + b[1])
+		else:
+			new_bodies.append(b[1])
+	
+	combinations = GenCombinations([len(b) for b in new_bodies])
+	if len(combinations) == 0:
+		return []
+
+	prod_name = SoarifyStr(str(head))
+	frame_sentence = head.true_analogue()
+	for comb in combinations:
+		sp = MakeTemplateProduction("remove-frame-%s" % prod_name, "apply", game_name)
+		sp.add_operator_test("update-state")
+		var_mapper = GDLSoarVarMapper(sp.get_name_gen())
+
+		# first, add the condition to check for presence of head relation, and the action
+		# to remove the head relation
+		frame_sentence.make_soar_conditions(sp, var_mapper)
+		head.make_soar_actions(sp, var_mapper, remove = True)
+
+		# combine the bodies of all frame axioms together
+		for body_index, cond_index in enumerate(comb):
+			b = new_bodies[body_index][cond_index]
+			if isinstance(b, list):
+				# this is a block of regular conditions
+				sp.begin_negative_conjunction() # wrap all the added conditions into a negation
+				ParseGDLBodyToCondition(b, sp, var_mapper)
+				# this shouldn't be necessary, there shouldn't be any of these
+				# ParseComparisons(b, sp, var_mapper)
+				sp.end_negative_conjunction()
+			else:
+				# this is a comparison
+				b.complement()
+				b.make_soar_condition(sp)
+		
+		productions.append(sp)
+
+	return productions
 
 def TranslateDescription(game_name, description, filename):
 	productions = []
@@ -442,14 +441,8 @@ def TranslateDescription(game_name, description, filename):
 			#     (true <some term>)
 			#     ...)
 			if frame_term in rule.body():
-				if len(rule.body()) > 1:
-					# this is a frame rule, process it differently later
-					frame_rules.append(rule)
-				else:
-					# this is a frame rule which will always be true, so the structure
-					# will never be removed
-					# why wasn't this fixed a long time ago?
-					print rule
+				# this is a frame rule, process it differently later
+				frame_rules.append(rule)
 				# we also remember that this function constant is supported by frame rules
 				funcs_with_frame_rules.append(frame_term.term(0))
 			else:
@@ -526,72 +519,11 @@ def TranslateDescription(game_name, description, filename):
 
 	# get the init rules
 	productions.extend(MakeInitRule(game_name, role, init_rules, fact_rules, best_score))
-	
-	# process the frame axioms
 
-	# First, we have to merge those frame axioms whose heads are identical except for variable names.
-	# We do this by constructing an N x N matrix M, where N is the number of variables in the head,
-	# and M[i][j] = 1 if the ith and jth variables are specified to be distinct
+	# process frame axioms
+	productions.extend(ProcessFrameAxioms(frame_rules, game_name))
 
-	var_prefix = "std_soar_var"
-	std_frame_rules = []
-	for f in frame_rules:
-		# standardize all variable names. This is so that if two head literals are the same, they will
-		# match string-wise
-		head = f.head()
-		body = f.body()
-		var_map = dict()
-		count = 0
-		count = StandardizeVars(head, True, var_prefix, var_map, count)
-		for b in body:
-			#tmp_count = StandardizeVars(b, var_prefix, var_map, count)
-			# what's going on here? I have no idea why I used tmp_count
-			# instead of just count
-			count = StandardizeVars(b, False, var_prefix, var_map, count)
-
-		# create the matrix
-		count = 0
-		var_map = dict()
-		for i in range(head.term(0).num_terms()):
-			func_term = head.term(0).term(i)
-			if func_term.type() == "variable":
-				var_map[str(func_term)] = count
-				count += 1
-	
-		m = [[0] * count for i in range(count)]
-
-		for b in body:
-			if b.name() == "distinct":
-				if var_map.has_key(str(b.term(0))) and var_map.has_key(str(b.term(1))):
-					m[var_map[str(b.term(0))]][var_map[str(b.term(1))]] = 1
-		
-		std_frame_rules.append((head, [body], m))
-
-	# go through the list, finding the repetitions
-	i = 0
-	while i < len(std_frame_rules):
-		j = i + 1
-		while j < len(std_frame_rules):
-			h1 = std_frame_rules[i][0]
-			m1 = std_frame_rules[i][2]
-			h2 = std_frame_rules[j][0]
-			m2 = std_frame_rules[j][2]
-
-			if h1 == h2 and m1 == m2:
-				# these two are the same, so we have to merge them together
-				std_frame_rules[i][1].extend(std_frame_rules[j][1])
-
-				#remove the merged entry
-				std_frame_rules.pop(j)
-				continue
-
-			j += 1
-		i += 1
-
-	# merge the frame axioms into production rules
-	for f in std_frame_rules:
-		#productions.extend(TranslateFrameAxioms(game_name, f[0], f[1]))
-		productions.append(TranslateFrameAxioms(game_name, f[0], f[1]))
+	# finally, write to file
 
 	f = open(filename, 'w')
 	f.write("source header.soar\n")

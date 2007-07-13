@@ -46,7 +46,8 @@ class Conjunction:
 
 	def add_predicate(self, id, predicate, rhs):
 		assert self.id_in_scope(id), "Unknown identifier %s" % id
-		self.__preds.setdefault(id,[]).append((predicate, rhs))
+		if (predicate, rhs) not in self.__preds.setdefault(id,[]):
+			self.__preds[id].append((predicate, rhs))
 
 	def add_id_attrib(self, id, attrib, name = ""):
 		assert self.id_in_scope(id), "Unknown identifier %s" % id
@@ -120,6 +121,7 @@ class Conjunction:
 		return self.__par
 
 	def to_str(self, indent, state_id):
+		temp_preds = dict(self.__preds.items())
 		indentstrhead = ' ' * indent
 		indentstr = ' ' * (indent + 2)
 		# if there's no state id, then assume it's
@@ -137,7 +139,14 @@ class Conjunction:
 				s += indentstr + "(%s" % mvar(id)
 
 			for attrib, rhs_id in attribs:
-				s += " ^%s %s" % (attrib, mvar(rhs_id))
+				if rhs_id in temp_preds:
+					s += " ^%s { %s" % (attrib, mvar(rhs_id))
+					for comp, rhs in temp_preds[rhs_id]:
+						s += " %s %s" % (comp, rhs)
+					del temp_preds[rhs_id]
+					s += "}"
+				else:
+					s += " ^%s %s" % (attrib, mvar(rhs_id))
 			s += ")\n"
 		for id, attribs in self.__attribs.items():
 			if id == state_id and not state_declared:
@@ -149,11 +158,9 @@ class Conjunction:
 			for attrib, rhs in attribs:
 				s += " ^%s %s" % (attrib, rhs)
 			s += ")\n"
-		for id, preds in self.__preds.items():
-			s += indentstr + "({%s" % mvar(id)
-			for p, rhs in preds:
-				s += " %s %s" % (p, rhs)
-			s += "})\n"
+
+		assert len(temp_preds) == 0, "Some predicates not used??"
+
 		for child in self.__children:
 			s += child.to_str(indent + 2, "") + "\n"
 		s += indentstrhead + "}"
@@ -169,7 +176,8 @@ class SoarProd:
 		self.__state_id = self.__name_gen.get_name("s")
 		
 		self.__top_conj = Conjunction.MakeTopConjunction(self.__state_id, self.__name_gen)
-		self.__top_conj.add_attrib(self.__state_id, "name", state_name)
+		if state_name != '':
+			self.__top_conj.add_attrib(self.__state_id, "name", state_name)
 		self.__curr_conj = self.__top_conj
 
 		self.__create_id_actions = {} # id -> [(attrib, id, prefs)]

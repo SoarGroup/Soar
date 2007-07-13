@@ -56,7 +56,10 @@ class GGPConstant:
 
 class GGPVariable:
 	def __init__(self, elementGGP):
-		self.__name = elementGGP[1:]
+		if elementGGP[0] == '?':
+			self.__name = elementGGP[1:]
+		else:
+			self.__name = elementGGP
 	
 	def __str__(self):
 		return "?%s" % self.__name
@@ -213,7 +216,24 @@ class GGPFunction:
 	def mangle(self, prefix):
 		for t in self.__terms:
 			t.mangle(prefix)
-	
+
+	# convert places into specified variable, returning the subsitutions
+	# made in the process
+	def standardize_vars(self, vars_to_use):
+		val_map = {} # map from place to original value
+		var_map = {} # map from place to original variable
+		for i, t in enumerate(self.__terms[:]):
+			if t.type() == 'constant':
+				val_map[i] = t.name()
+				self.__terms[i] = GGPVariable(vars_to_use[i])
+			elif t.type() == 'variable':
+				var_map[i] = t.name()
+				self.__terms[i] = GGPVariable(vars_to_use[i])
+			else:
+				print "WARNING: encountered embedded function, not supported yet"
+
+		return (val_map, var_map)
+
 	def __eq__(self, other):
 		if not isinstance(other, GGPFunction):
 			return False
@@ -308,7 +328,10 @@ class GGPSentence:
 		for t in self.__terms:
 			s += " %s" % str(t)
 		
-		return "(%s)" % s
+		if self.__negated:
+			return "(not (%s))" % s
+		else:
+			return "(%s)" % s
 	
 	def __eq__(self, other):
 		if not isinstance(other, GGPSentence):
@@ -330,7 +353,10 @@ class GGPSentence:
 	
 	def name(self):
 		return self.__name
-	
+
+	def terms(self):
+		return self.__terms
+
 	def term(self, i):
 		return self.__terms[i]
 	
