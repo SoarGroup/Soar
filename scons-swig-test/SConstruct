@@ -1,0 +1,26 @@
+#!/usr/bin/python
+import os
+import Support
+
+env = Environment(ENV = os.environ)
+
+# This sets up the jni include files
+if not Support.ConfigureJNI(env):
+    print "Could not configure Java. If you know where java is on your system,"
+    print "set environment variable JAVA_HOME to point to the directory containing"
+    print "the Java include, bin, and lib directories."
+    print "You may disable java, see help (scons -h)"
+    print "Java Native Interface is required... Exiting"
+    Exit(1)
+
+if not Support.CheckSWIG(env):
+    print "Could not configure SWIG."
+    Exit(1)
+    
+env.Append(CPPFLAGS = ' -g -Wall')
+        
+Export('env')
+
+SConscript('#foo/SConscript')
+SConscript('#java/SConscript')
+#SConscript('#python/SConscript')

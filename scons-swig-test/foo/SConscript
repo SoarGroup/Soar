@@ -1,0 +1,7 @@
+#!/usr/bin/python
+Import('env')
+
+#probably unnecessary
+env = env.Copy()
+
+foo = env.SharedLibrary('foo', 'foo.cpp')
