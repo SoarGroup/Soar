@@ -79,7 +79,7 @@ test make_placeholder_test (agent* thisAgent, char first_letter) {
   }
   /* --- create variable with "#" in its name:  this couldn't possibly be a
      variable in the user's code, since the lexer doesn't handle "#" --- */
-  snprintf (namebuf, MAKE_PLACEHOLDER_TEST_BUFFER_SIZE, "<#%c*%lu>", first_letter, thisAgent->placeholder_counter[first_letter-'a']++);
+  SNPRINTF (namebuf, MAKE_PLACEHOLDER_TEST_BUFFER_SIZE, "<#%c*%lu>", first_letter, thisAgent->placeholder_counter[first_letter-'a']++);
   namebuf[MAKE_PLACEHOLDER_TEST_BUFFER_SIZE - 1] = 0; /* ensure null termination */
 
   new_var = make_variable (thisAgent, namebuf);
@@ -264,7 +264,7 @@ Symbol *make_symbol_for_current_lexeme (agent* thisAgent) {
     }
   default:
     { char msg[BUFFER_MSG_SIZE];
-    snprintf(msg, BUFFER_MSG_SIZE, "parser.c: Internal error:  bad lexeme type in make_symbol_for_current_lexeme\n, thisAgent->lexeme.string=%s\n", thisAgent->lexeme.string);
+    SNPRINTF(msg, BUFFER_MSG_SIZE, "parser.c: Internal error:  bad lexeme type in make_symbol_for_current_lexeme\n, thisAgent->lexeme.string=%s\n", thisAgent->lexeme.string);
     msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
     abort_with_fatal_error(thisAgent, msg);
     }
@@ -1618,7 +1618,7 @@ action *parse_attr_value_make (agent* thisAgent, Symbol *id)
        variable in the user's code, since the lexer doesn't handle "#" --- */
     /* KJC used same format so could steal code... */
     first_letter = first_letter_from_rhs_value (attr);
-    snprintf (namebuf,PARSE_ATTR_VALUE_MAKE_BUFFER_SIZE, "<#%c*%lu>", first_letter, thisAgent->placeholder_counter[first_letter-'a']++);
+    SNPRINTF (namebuf,PARSE_ATTR_VALUE_MAKE_BUFFER_SIZE, "<#%c*%lu>", first_letter, thisAgent->placeholder_counter[first_letter-'a']++);
 	namebuf[PARSE_ATTR_VALUE_MAKE_BUFFER_SIZE - 1] = 0;
     new_var = make_variable (thisAgent, namebuf);
     /* --- indicate that there is no corresponding "real" variable yet --- */

@@ -393,7 +393,7 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 	  dest=thisAgent->printed_output_string;
 	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
 	}
-    snprintf (dest, dest_size, "%c%lu", sym->id.name_letter, sym->id.name_number);
+    SNPRINTF (dest, dest_size, "%c%lu", sym->id.name_letter, sym->id.name_number);
 	dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
 
@@ -402,7 +402,7 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 	  dest=thisAgent->printed_output_string;
 	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
 	}
-    snprintf (dest, dest_size, "%ld", sym->ic.value);
+    SNPRINTF (dest, dest_size, "%ld", sym->ic.value);
 	dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
     
@@ -411,7 +411,7 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 	  dest=thisAgent->printed_output_string;
 	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
 	}
-    snprintf (dest, dest_size, "%#g", sym->fc.value);
+    SNPRINTF (dest, dest_size, "%#g", sym->fc.value);
 	dest[dest_size - 1] = 0; /* ensure null termination */
     { /* --- strip off trailing zeros --- */
       char *start_of_exponent;

@@ -42,7 +42,7 @@
 
 #include <stdlib.h>
 
-#include "io.h"
+#include "io_soar.h"
 #include "callback.h"
 #include "agent.h"
 #include "print.h"
@@ -216,7 +216,7 @@ Bool remove_input_wme (agent* thisAgent, wme *w) {
 				 print(thisAgent, " WME: "); 
 
 				 char buf[256];
-				 snprintf(buf, 254, "remove_input_wme: Removing state S%d because element in GDS changed.", w->gds->goal->id.level);
+				 SNPRINTF(buf, 254, "remove_input_wme: Removing state S%d because element in GDS changed.", w->gds->goal->id.level);
 				 gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagVerbose);
 				 gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kTypeString, buf);
 				 print_wme(thisAgent, w);

@@ -51,7 +51,7 @@ void *allocate_memory (agent* thisAgent, unsigned long size, int usage_code) {
   p = (char *) malloc (size);
   if (p==NULL) {
     char msg[BUFFER_MSG_SIZE];
-    snprintf(msg, BUFFER_MSG_SIZE, "\nmem.c: Error:  Tried but failed to allocate %lu bytes of memory.\n", size);
+    SNPRINTF(msg, BUFFER_MSG_SIZE, "\nmem.c: Error:  Tried but failed to allocate %lu bytes of memory.\n", size);
 	msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
     abort_with_fatal_error (thisAgent, msg);
   }
@@ -299,7 +299,7 @@ void init_memory_pool (agent* thisAgent, memory_pool *p, long item_size, char *n
   thisAgent->memory_pools_in_use = p;
   if (strlen(name) > MAX_POOL_NAME_LENGTH) {
     char msg[2*MAX_POOL_NAME_LENGTH];
-    snprintf(msg, 2*MAX_POOL_NAME_LENGTH, "mem.c: Internal error: memory pool name too long: %s\n",name);
+    SNPRINTF(msg, 2*MAX_POOL_NAME_LENGTH, "mem.c: Internal error: memory pool name too long: %s\n",name);
 	msg[2*MAX_POOL_NAME_LENGTH - 1] = 0; /* ensure null termination */
     abort_with_fatal_error(thisAgent, msg);
   }

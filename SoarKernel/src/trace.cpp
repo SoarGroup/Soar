@@ -1149,7 +1149,7 @@ growable_string trace_format_list_to_string (agent* thisAgent, trace_format *tf,
 
     case DECISION_CYCLE_COUNT_TFT:
       if (tparams.allow_cycle_counts) {
-        snprintf (buf,GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE, "%lu", thisAgent->d_cycle_count);
+        SNPRINTF (buf,GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE, "%lu", thisAgent->d_cycle_count);
 		buf[GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE - 1] = 0; /* ensure null termination */
         add_to_growable_string (thisAgent, &result, buf);
       } else {
@@ -1158,7 +1158,7 @@ growable_string trace_format_list_to_string (agent* thisAgent, trace_format *tf,
       break;
     case ELABORATION_CYCLE_COUNT_TFT:
       if (tparams.allow_cycle_counts) {
-        snprintf (buf,GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE, "%lu", thisAgent->e_cycle_count);
+        SNPRINTF (buf,GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE, "%lu", thisAgent->e_cycle_count);
 		buf[GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE - 1] = 0; /* ensure null termination */
         add_to_growable_string (thisAgent, &result, buf);
       } else {
@@ -1201,7 +1201,7 @@ growable_string trace_format_list_to_string (agent* thisAgent, trace_format *tf,
 
     case SUBGOAL_DEPTH_TFT:
       if (tparams.current_s) {
-        snprintf (buf,GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE, "%u", tparams.current_s->id.level - 1);
+        SNPRINTF (buf,GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE, "%u", tparams.current_s->id.level - 1);
 		buf[GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE - 1] = 0; /* ensure null termination */
         add_to_growable_string (thisAgent, &result, buf);
       } else {

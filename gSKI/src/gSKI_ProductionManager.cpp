@@ -330,7 +330,7 @@ _|___/    __         _    _             ____  _               _
          soarFile.open(fullPath.c_str());
          if(!soarFile.is_open()) {
             char msg[gSKI_EXTENDED_ERROR_MESSAGE_LENGTH];
-            snprintf(msg, gSKI_EXTENDED_ERROR_MESSAGE_LENGTH, "Could not find %s", fileName);
+            SNPRINTF(msg, gSKI_EXTENDED_ERROR_MESSAGE_LENGTH, "Could not find %s", fileName);
             SetErrorExtended(err, gSKIERR_FILE_NOT_FOUND, msg);
             return false;
          }
@@ -481,7 +481,7 @@ _|___/    __         _    _             ____  _               _
       if(f == 0)
       {
          char errMsg[gSKI_EXTENDED_ERROR_MESSAGE_LENGTH];
-         snprintf(errMsg, gSKI_EXTENDED_ERROR_MESSAGE_LENGTH, "Could not open file %s", fn);
+         SNPRINTF(errMsg, gSKI_EXTENDED_ERROR_MESSAGE_LENGTH, "Could not open file %s", fn);
          SetErrorExtended(err, gSKIERR_FILE_NOT_FOUND, errMsg);
          return false;
       }
@@ -511,7 +511,7 @@ _|___/    __         _    _             ____  _               _
       if(f == 0)
       {
          char errMsg[gSKI_EXTENDED_ERROR_MESSAGE_LENGTH];
-         snprintf(errMsg, gSKI_EXTENDED_ERROR_MESSAGE_LENGTH, "Could not open file %s", fn);
+         SNPRINTF(errMsg, gSKI_EXTENDED_ERROR_MESSAGE_LENGTH, "Could not open file %s", fn);
          SetErrorExtended(err, gSKIERR_FILE_NOT_FOUND, errMsg);
          return false;
       }

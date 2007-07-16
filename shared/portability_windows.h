@@ -18,6 +18,7 @@
 #include <Lmcons.h> // for UNLEN constant
 #include <conio.h>
 #include <sys/types.h>
+#include <errno.h>
 
 // A copy of this file exists in shared. The project exists in Core/pcre
 #include <pcreposix.h>
@@ -29,14 +30,14 @@
 // Map certain functions depending on the OS
 #ifndef getcwd // defined in crtdbg.h
 #define getcwd _getcwd
-#endif
+#endif // getcwd
 #define chdir _chdir
 #define strcasecmp _stricmp
-#define vsnprintf _vsnprintf
-#define snprintf _snprintf
+#define VSNPRINTF _vsnprintf
+#define SNPRINTF _snprintf
 #ifndef strdup
 #define strdup _strdup
-#endif
+#endif // strdup
 
 // Use named pipes instead of sockets for same-machine interprocess communication
 #define ENABLE_NAMED_PIPES
@@ -46,7 +47,7 @@
 #define sys_sleep( seconds )    Sleep( seconds * 1000 )
 
 // This maps some constants to values that can be used on any platform
-#ifndef __STDC__  // FIXME: what does this mean?
+//#ifndef __STDC__  // FIXME: what does this mean?
 
 #define NET_CLOSESOCKET		closesocket
 #define ERROR_NUMBER		GetLastError()
@@ -71,6 +72,6 @@
 
 #define NET_SD_BOTH			SD_BOTH
 
-#endif // not __STDC__
+//#endif // not __STDC__
 
 #endif // PORTABILITY_WINDOWS_H

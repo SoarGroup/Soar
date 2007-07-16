@@ -31,7 +31,7 @@
 #include "gdatastructs.h"
 #include "symtab.h"
 #include "decide.h"
-#include "io.h"
+#include "io_soar.h"
 #include "rete.h"
 #include "print.h"
 #include "tempmem.h"

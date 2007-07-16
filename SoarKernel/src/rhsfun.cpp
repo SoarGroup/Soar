@@ -47,7 +47,7 @@
 #include "agent.h"
 #include "production.h"
 #include "rhsfun_math.h"
-#include "io.h"
+#include "io_soar.h"
 #include "kernel_struct.h"
 #include "recmem.h"
 #include "wmem.h"
@@ -341,7 +341,7 @@ Symbol *timestamp_rhs_function_code (agent* thisAgent, list *args, void* user_da
 #endif
 #endif
 #endif
-  snprintf (buf,TIMESTAMP_BUFFER_SIZE, "%d/%d/%d-%02d:%02d:%02d",
+  SNPRINTF (buf,TIMESTAMP_BUFFER_SIZE, "%d/%d/%d-%02d:%02d:%02d",
            temp->tm_mon + 1, temp->tm_mday, temp->tm_year,
            temp->tm_hour, temp->tm_min, temp->tm_sec);
   buf[TIMESTAMP_BUFFER_SIZE - 1] = 0; /* ensure null termination */
