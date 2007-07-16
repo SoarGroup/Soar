@@ -1,0 +1,167 @@
+;;;; -*-Lisp-*-
+;;;; **************************************************************************
+;;;; * Build Game Instance: Bridge                                            *
+;;;; * Transfer Learning in Integrated Cognitive Systems Project              *
+;;;; *                                                                        *
+;;;; * David J. Stracuzzi                                                     *
+;;;; * Arizona State University                                               *
+;;;; * Completed: June 20, 2007                                               *
+;;;; * Revised:   July  6, 2007                                               *
+;;;; **************************************************************************
+;;;;
+;;;; This file contains rules, facts and persistants for a specific game 
+;;;; instance of BUILD. The file build.core.kif contains the core description
+;;;; for the BUILD domain. Appending this file to build.core.kif will produce
+;;;; a complete, playable game description.
+;;;;
+;;;; Goal:
+;;;;   Construct a bridge across the gorge. The bridge deck should be even with
+;;;;   the top of the ground on each side (g1 and g4, height 8). The agent must
+;;;;   reinforce some of the concrete blocks in order to support the deck.
+;;;;
+;;;; Solution Sequence (several are possible):
+;;;;   (place-adjacent g3 c2 top)
+;;;;   (reinforce c2 rebar)
+;;;;   (place-adjacent c2 c3 top)
+;;;;   (make-new-compound c2)           ; create compound id1
+;;;;   (add-to-compound id1 c3)         ; right column complete
+;;;;   (rotate c1)
+;;;;   (place-adjacent g2 c1 top)
+;;;;   (reinforce c1 rebar)
+;;;;   (place-adjacent c1 c4 top)
+;;;;   (make-new-compound c1)           ; create compound id2
+;;;;   (add-to-compound id2 c4)         ; left column complete
+;;;;   (place-adjacent g1 s1 right)
+;;;;   (place-adjacent s1 s2 right)
+;;;;   (place-adjacent s2 s3 right)
+;;;;   (make-new-compound s1)           ; create compound id3
+;;;;   (add-to-compound id3 s2)
+;;;;   (add-to-compound id3 s3)         ; bridge complete
+;;;;   Goal completed as shown in file build-state.pdf in 17 steps
+
+;;; ---------------------------------------------------------------------------
+;;; PARAMETERS: Game-instance-specific relations that define the state. 
+;;;             These will not change during the game.
+
+(max-movable-weight 100)
+(max-time 50)
+
+;;; (brace-type ?brace-material ?bracable-material ?strength ?weight)
+(brace-type steel-plate steel-beam 2 2)
+(brace-type steel-plate wood-beam 2 2)
+
+;;; (material-type ?type ?strength)
+(material-type ground 1000)
+(material-type concrete 25)
+(material-type steel-beam 20)
+(material-type wood-beam 10)
+
+;;; (reinforcement-type ?reinforcement-material ?reinforcable-material 
+;;;                     ?strength ?weight)
+(reinforcement-type rebar concrete 2 2)
+
+;;; ---------------------------------------------------------------------------
+;;; PERSISTANTS: Relations that define the state. These may be added and
+;;;              removed during the game.
+
+(init (current-identifier id1))
+
+(init (time 0))
+
+;;; (count ?brace-reinforcement-type ?number)
+(init (count steel-plate 0))
+(init (count rebar 2))
+
+;;; (object ?object-id ?object-type)
+(init (object g1 ground))
+(init (object g2 ground))
+(init (object g3 ground))
+(init (object g4 ground))
+(init (object c1 concrete))
+(init (object c2 concrete))
+(init (object c3 concrete))
+(init (object c4 concrete))
+(init (object s1 steel-beam))
+(init (object s2 steel-beam))
+(init (object s3 steel-beam))
+
+;;; (object-location ?object-id ?x ?y)
+(init (object-location g1 0 0))
+(init (object-location g2 4 0))
+(init (object-location g3 11 0))
+(init (object-location g4 16 0))
+(init (object-location c1 16 8))
+(init (object-location c2 16 10))
+(init (object-location c3 18 10))
+(init (object-location c4 1 11))
+(init (object-location s1 0 10))
+(init (object-location s2 0 9))
+(init (object-location s3 0 8))
+
+;;; (object-size ?object-id ?width ?height ?weight)
+(init (object-size g1 4 8 1000))
+(init (object-size g2 7 1 1000))
+(init (object-size g3 5 3 1000))
+(init (object-size g4 4 8 1000))
+(init (object-size c1 4 2 80))
+(init (object-size c2 2 2 40))
+(init (object-size c3 2 2 40))
+(init (object-size c4 2 2 40))
+(init (object-size s1 4 1 20))
+(init (object-size s2 4 1 20))
+(init (object-size s3 4 1 20))
+
+
+;;; ---------------------------------------------------------------------------
+;;; GAME-SPECIFIC ENTAILMENTS
+
+(<= (bridge-complete ?bridge ?column1 ?column2)
+    (bridge ?bridge g1 g4)
+    (column ?column1)
+    (column ?column2)
+    (distinct ?column1 ?column2)
+    (adjacent ?bridge ?column1 bottom)
+    (adjacent ?bridge ?column2 bottom))
+
+
+;;; ---------------------------------------------------------------------------
+;;; GOAL STATES
+;;; 1) WIN:  Building meets success conditions
+;;; 2) LOSE: Building collapsed
+;;; 3) DRAW: No actions available to agent
+;;; 4) DRAW: Maximum time-step reached
+
+(<= (goal agent 100)
+    (bridge-complete ?bridge ?column1 ?column2)
+    (not collapsed))
+
+(<= (goal agent 0)
+    collapsed)
+
+(<= (goal agent 50)
+    (not (available-action)))
+
+(<= (goal agent 50)
+    (true (time ?t))
+    (max-time ?t))
+
+
+;;; ---------------------------------------------------------------------------
+;;; TERMINAL STATES
+;;; 1) Building meets success conditions
+;;; 2) Building collapsed
+;;; 3) No actions available to agent
+;;; 4) Maximum time-step reached
+
+(<= terminal
+    (bridge-complete ?bridge ?column1 ?column2))
+
+;;(<= terminal
+;;    collapsed)
+
+;;(<= terminal
+;;    (not (available-action)))
+
+(<= terminal
+    (true (time ?t))
+    (max-time ?t))

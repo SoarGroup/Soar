@@ -1,0 +1,40 @@
+source math-rules.soar
+source build.canvas.soar
+
+#sp {prefer*make*new-compound
+#	(state <s> ^operator <o> +)
+#	(<o> ^name make-new-compound)
+#-->
+#	(<s> ^operator <o> >)
+#}
+
+
+sp {prefer*place-adjacent*than*nudge
+	(state <s> ^operator <o1> + <o2> +)
+	(<o1> ^name nudge)
+	(<o2> ^name place-adjacent)
+-->
+	(<s> ^operator <o2> > <o1>)
+}
+
+
+sp {init*adjacent-appear
+	(state <s> ^elaborations.adjacent)
+-->
+	(<s> ^adjacent-appear yes)
+}
+
+sp {elaborate*_clear__object__side_
+   (state <s> ^gs <g> ^facts <f> ^elaborations <e> ^adjacent-appear yes)
+   (<g> ^object <o>)
+   (<o> ^p1 <object> ^p2 <type>)
+   (<f> ^side <s1>)
+   (<s1> ^p1 <side>)
+   -{
+     (<e> ^adjacent <a>)
+     (<a> ^p1 <object> ^p2 <anyobject> ^p3 <side>)
+   }
+-->
+   (<e> ^clear <clear>)
+   (<clear> ^p1 <object> ^p2 <side>)
+}
