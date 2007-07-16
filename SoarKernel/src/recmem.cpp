@@ -905,11 +905,11 @@ void assert_new_preferences (agent* thisAgent)
 #ifdef O_REJECTS_FIRST
     {
 
-        slot *s;
-        preference *p, *next_p;
+        //slot *s;
+        //preference *p, *next_p;
 
         /* Do an initial loop to process o-rejects, then re-loop
-           to process normal preferences.  No buffering should be needed.
+           to process normal preferences.
          */
         for (inst = thisAgent->newly_created_instantiations; inst != NIL; inst = next_inst) {
             next_inst = inst->next;
@@ -918,21 +918,31 @@ void assert_new_preferences (agent* thisAgent)
                 next_pref = pref->inst_next;
                 if ((pref->type == REJECT_PREFERENCE_TYPE) && (pref->o_supported)) {
                     /* --- o-reject: just put it in the buffer for later --- */
+					pref->next = o_rejects;
+					o_rejects = pref;
+				}
+			}
+		}
 
-                    s = find_slot(pref->id, pref->attr);
-                    if (s) {
-                        /* --- remove all pref's in the slot that have the same value --- */
-                        p = s->all_preferences;
-                        while (p) {
-                            next_p = p->all_of_slot_next;
-                            if (p->value == pref->value)
-                                remove_preference_from_tm(thisAgent, p);
-                            p = next_p;
-                        }
-                    }
-                }
-            }
-        }
+		if (o_rejects) 
+			process_o_rejects_and_deallocate_them (thisAgent, o_rejects);
+		
+     //               s = find_slot(pref->id, pref->attr);
+     //               if (s) {
+     //                   /* --- remove all pref's in the slot that have the same value --- */
+     //                   p = s->all_preferences;
+     //                   while (p) {
+     //                       next_p = p->all_of_slot_next;
+     //                       if (p->value == pref->value)
+     //                           remove_preference_from_tm(thisAgent, p);
+     //                       p = next_p;
+     //                   }
+     //               }
+					////preference_remove_ref (thisAgent, pref);
+     //           }
+     //       }
+     //   }
+		
     }
 #endif
    
