@@ -20,7 +20,7 @@
 #include "gSKI_Agent.h"
 #include "MegaAssert.h"
 
-#include "io.h"
+#include "io_soar.h"
 
 #include <iostream>
 

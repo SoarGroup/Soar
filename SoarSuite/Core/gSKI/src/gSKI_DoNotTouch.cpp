@@ -2263,7 +2263,7 @@ namespace gSKI
 								print(pSoarAgent, " WME: "); 
 
 								char buf[256];
-								snprintf(buf, 254, "remove_input_wme: Removing state S%d because element in GDS changed.", pWme->gds->goal->id.level);
+								SNPRINTF(buf, 254, "remove_input_wme: Removing state S%d because element in GDS changed.", pWme->gds->goal->id.level);
 								gSKI_MakeAgentCallbackXML(pSoarAgent, kFunctionBeginTag, kTagVerbose);
 								gSKI_MakeAgentCallbackXML(pSoarAgent, kFunctionAddAttribute, kTypeString, buf);
 								print_wme(pSoarAgent, pWme);

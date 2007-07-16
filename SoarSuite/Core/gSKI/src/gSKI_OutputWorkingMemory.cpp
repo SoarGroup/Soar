@@ -25,7 +25,7 @@
 #include "MegaAssert.h"
 
 #include "symtab.h"
-#include "io.h"
+#include "io_soar.h"
 #include "wmem.h"
 #include "agent.h"
 #include "gdatastructs.h"

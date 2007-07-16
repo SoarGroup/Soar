@@ -47,7 +47,7 @@
 #include "trace.h"
 #include "explain.h"
 #include "tempmem.h"
-#include "io.h"
+#include "io_soar.h"
 
 /* JC ADDED: This is for event firing in gSKI */
 #include "gski_event_system_functions.h"
@@ -1144,7 +1144,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
         char ch;
 //#ifdef _WINDOWS
 //		char buff[256],msg[256];
-//		snprintf(msg,256,"Enter selection 1-%d",num_candidates);
+//		SNPRINTF(msg,256,"Enter selection 1-%d",num_candidates);
 //		msg[255] = 0; /* ensure null termination */
 //
 //		get_line_from_window(msg,buff,255);
@@ -1169,7 +1169,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
       }
       if (thisAgent->logging_to_file) {
         char temp[50];
-        snprintf (temp,50, "%d\n", chosen_num);
+        SNPRINTF (temp,50, "%d\n", chosen_num);
 		temp[49] = 0; /* ensure null termination */
 
         print_string_to_log_file_only (thisAgent, temp);
@@ -1236,7 +1236,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
     }
     default:
       { char msg[BUFFER_MSG_SIZE];
-      snprintf(msg, BUFFER_MSG_SIZE, "decide.c: Error: bad value of user_select_mode: %d\n",
+      SNPRINTF(msg, BUFFER_MSG_SIZE, "decide.c: Error: bad value of user_select_mode: %d\n",
 	      (int)thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM]);
       msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
       abort_with_fatal_error(thisAgent, msg);
@@ -1961,7 +1961,7 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
                        print(thisAgent, " WME: "); 
 
                        char buf[256];
-                       snprintf(buf, 254, "Removing state S%d because element in GDS changed.", w->gds->goal->id.level);
+                       SNPRINTF(buf, 254, "Removing state S%d because element in GDS changed.", w->gds->goal->id.level);
                        gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagVerbose);
 	                   gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kTypeString, buf);
                        print_wme(thisAgent, w);
@@ -2892,7 +2892,7 @@ void add_wme_to_gds(agent* agentPtr, goal_dependency_set* gds, wme* wme_to_add)
 	   print(agentPtr, "Adding to GDS for S%d: ", wme_to_add->gds->goal->id.level);    
 	   print(agentPtr, " WME: "); 
 	   char buf[256];
-	   snprintf(buf, 254, "Adding to GDS for S%d: ", wme_to_add->gds->goal->id.level);
+	   SNPRINTF(buf, 254, "Adding to GDS for S%d: ", wme_to_add->gds->goal->id.level);
 	   gSKI_MakeAgentCallbackXML(agentPtr, kFunctionBeginTag, kTagVerbose);
 	   gSKI_MakeAgentCallbackXML(agentPtr, kFunctionAddAttribute, kTypeString, buf);
 	   print_wme(agentPtr, wme_to_add);

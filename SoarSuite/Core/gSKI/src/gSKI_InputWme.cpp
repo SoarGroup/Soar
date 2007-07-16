@@ -17,7 +17,7 @@
 
 #include <vector>
 
-#include "io.h"
+#include "io_soar.h"
 
 #include "gSKI_InputWMObject.h"
 #include "gSKI_InputWorkingMemory.h"

@@ -19,7 +19,7 @@
 #include <map>
 #include <string>
 
-#include "io.h"
+#include "io_soar.h"
 
 namespace gSKI {
 

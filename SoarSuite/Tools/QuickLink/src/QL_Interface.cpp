@@ -333,7 +333,7 @@ void QL_Interface::print_last_output()
 
 void QL_Interface::spawn_debugger()
 {
-#ifndef SCONS
+#ifdef _WIN32
 
 	// spawn the debugger asynchronously
 	
@@ -360,7 +360,7 @@ void QL_Interface::spawn_debugger()
 		}
 	}
 
-#else // linux spawnning
+#else // not _WIN32
 
 	pid_t pid = fork();
 

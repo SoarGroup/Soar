@@ -1470,7 +1470,7 @@ Symbol *generate_new_variable (agent* thisAgent, char *prefix) {
   }
 
   while (TRUE) {
-    snprintf (name,GENERATE_NEW_VARIABLE_BUFFER_SIZE, "<%s%lu>", prefix,
+    SNPRINTF (name,GENERATE_NEW_VARIABLE_BUFFER_SIZE, "<%s%lu>", prefix,
              thisAgent->gensymed_variable_count[first_letter-'a']++);
 	name[GENERATE_NEW_VARIABLE_BUFFER_SIZE - 1] = 0; /* ensure null termination */
 

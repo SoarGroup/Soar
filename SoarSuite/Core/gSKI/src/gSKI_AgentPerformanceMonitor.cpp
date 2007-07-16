@@ -632,7 +632,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 	char buf[128];
 
     //print(a, "Soar %s on %s at %s\n", soar_version_string, hostname, ctime((const time_t *) &current_time));
-	snprintf(buf, 127, "Soar %s on %s at %s\n", soar_version_string, hostname, ctime(&current_time));
+	SNPRINTF(buf, 127, "Soar %s on %s at %s\n", soar_version_string, hostname, ctime(&current_time));
 	m_result += buf;
 
     //print(a, "%lu productions (%lu default, %lu user, %lu chunks)\n",
@@ -642,7 +642,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     //      current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE],
     //      current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE],
     //      current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE]);
-	snprintf(buf, 127, "%lu productions (%lu default, %lu user, %lu chunks)\n",
+	SNPRINTF(buf, 127, "%lu productions (%lu default, %lu user, %lu chunks)\n",
           current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE] +
           current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE] +
           current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE],
@@ -651,7 +651,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
           current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE]);
 	m_result += buf;
     //print(a, "   + %lu justifications\n", current_agent(num_productions_of_type)[JUSTIFICATION_PRODUCTION_TYPE]);
-	snprintf(buf, 127, "   + %lu justifications\n", current_agent(num_productions_of_type)[JUSTIFICATION_PRODUCTION_TYPE]);
+	SNPRINTF(buf, 127, "   + %lu justifications\n", current_agent(num_productions_of_type)[JUSTIFICATION_PRODUCTION_TYPE]);
 	m_result += buf;
 
     /* REW: begin 28.07.96 */
@@ -664,14 +664,14 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 
 #ifndef KERNEL_TIME_ONLY
 	if (current_agent(operand2_mode)) {
-    	snprintf(buf, 127, "                                                        |   Computed\n");
+    	SNPRINTF(buf, 127, "                                                        |   Computed\n");
     	m_result += buf;
- 		snprintf(buf, 127, "Phases:      Input   Propose   Decide   Apply    Output |     Totals\n");
+ 		SNPRINTF(buf, 127, "Phases:      Input   Propose   Decide   Apply    Output |     Totals\n");
 		m_result += buf;
- 		snprintf(buf, 127, "========================================================|===========\n");
+ 		SNPRINTF(buf, 127, "========================================================|===========\n");
 		m_result += buf;
 
-		snprintf(buf, 127, "Kernel:   %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n",
+		SNPRINTF(buf, 127, "Kernel:   %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n",
           timer_value(&current_agent(decision_cycle_phase_timers[INPUT_PHASE])),
           timer_value(&current_agent(decision_cycle_phase_timers[PROPOSE_PHASE])),
           timer_value(&current_agent(decision_cycle_phase_timers[DECISION_PHASE])),
@@ -680,15 +680,15 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 		m_result += buf;
 	} else { 
 		//print(a, "                                                                |    Derived\n");
-		snprintf(buf, 127, "                                                        |   Computed\n");
+		SNPRINTF(buf, 127, "                                                        |   Computed\n");
 		//print(a, "Phases:      Input      DLP     Pref      W/M   Output Decision |     Totals\n");
-		snprintf(buf, 127, "Phases:      Input      Pref      W/M   Output Decision |     Totals\n");
+		SNPRINTF(buf, 127, "Phases:      Input      Pref      W/M   Output Decision |     Totals\n");
 		m_result += buf;
 		//print(a, "================================================================|===========\n");
-		snprintf(buf, 127, "========================================================|===========\n");
+		SNPRINTF(buf, 127, "========================================================|===========\n");
 		m_result += buf;
 
-		snprintf(buf, 127, "Kernel:   %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+		SNPRINTF(buf, 127, "Kernel:   %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
           timer_value(&current_agent(decision_cycle_phase_timers[INPUT_PHASE])),
           timer_value(&current_agent(decision_cycle_phase_timers[PREFERENCE_PHASE])),
           timer_value(&current_agent(decision_cycle_phase_timers[WM_PHASE])),
@@ -701,7 +701,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 #ifdef DETAILED_TIMING_STATS
 
     //print(a, "====================  Detailed Timing Statistics  ==============|===========\n");
-	snprintf(buf, 127, "============  Detailed Timing Statistics  ==============|===========\n");
+	SNPRINTF(buf, 127, "============  Detailed Timing Statistics  ==============|===========\n");
 	m_result += buf;
 
     //print(a, "   Match: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
@@ -711,7 +711,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     //      timer_value(&current_agent(match_cpu_time[WM_PHASE])),
     //      timer_value(&current_agent(match_cpu_time[OUTPUT_PHASE])),
     //      timer_value(&current_agent(match_cpu_time[DECISION_PHASE])), match_time);
-	snprintf(buf, 127, "   Match: %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n",
+	SNPRINTF(buf, 127, "   Match: %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n",
           timer_value(&current_agent(match_cpu_time[INPUT_PHASE])),
           timer_value(&current_agent(match_cpu_time[PROPOSE_PHASE])),       
 		  timer_value(&current_agent(match_cpu_time[DECISION_PHASE])),
@@ -726,7 +726,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     //      timer_value(&current_agent(ownership_cpu_time[WM_PHASE])),
     //      timer_value(&current_agent(ownership_cpu_time[OUTPUT_PHASE])),
     //      timer_value(&current_agent(ownership_cpu_time[DECISION_PHASE])), ownership_time);
-	snprintf(buf, 127, "Own'ship: %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n",
+	SNPRINTF(buf, 127, "Own'ship: %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n",
           timer_value(&current_agent(ownership_cpu_time[INPUT_PHASE])),
           timer_value(&current_agent(ownership_cpu_time[PROPOSE_PHASE])),
           timer_value(&current_agent(ownership_cpu_time[DECISION_PHASE])), 
@@ -743,7 +743,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     //      timer_value(&current_agent(chunking_cpu_time[WM_PHASE])),
     //      timer_value(&current_agent(chunking_cpu_time[OUTPUT_PHASE])),
     //      timer_value(&current_agent(chunking_cpu_time[DECISION_PHASE])), chunking_time);
-	snprintf(buf, 127, "Chunking: %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n",
+	SNPRINTF(buf, 127, "Chunking: %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n",
           timer_value(&current_agent(chunking_cpu_time[INPUT_PHASE])),
           timer_value(&current_agent(chunking_cpu_time[PROPOSE_PHASE])),
           timer_value(&current_agent(chunking_cpu_time[DECISION_PHASE])),
@@ -759,7 +759,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     //      other_phase_kernel_time[PREFERENCE_PHASE],
     //      other_phase_kernel_time[WM_PHASE],
     //      other_phase_kernel_time[OUTPUT_PHASE], other_phase_kernel_time[DECISION_PHASE], other_total_kernel_time);
-	snprintf(buf, 127, "   Other: %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n",
+	SNPRINTF(buf, 127, "   Other: %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n",
           other_phase_kernel_time[INPUT_PHASE],
           other_phase_kernel_time[PROPOSE_PHASE], 
 		  other_phase_kernel_time[DECISION_PHASE],
@@ -783,7 +783,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     //      timer_value(&current_agent(gds_cpu_time[WM_PHASE])) +
     //      timer_value(&current_agent(gds_cpu_time[OUTPUT_PHASE])) +
     //      timer_value(&current_agent(gds_cpu_time[DECISION_PHASE])));
-	snprintf(buf, 127, "Operand2: %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n",
+	SNPRINTF(buf, 127, "Operand2: %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n",
           timer_value(&current_agent(gds_cpu_time[INPUT_PHASE])),
           timer_value(&current_agent(gds_cpu_time[PROPOSE_PHASE])),		          
 		  timer_value(&current_agent(gds_cpu_time[DECISION_PHASE])),
@@ -805,26 +805,26 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 #endif  // DETAILED_TIMING_STATS
 
     //print(a, "================================================================|===========\n");
-	snprintf(buf, 127, "========================================================|===========\n");
+	SNPRINTF(buf, 127, "========================================================|===========\n");
 	m_result += buf;
 
     //print(a, "Input fn: %8.3f                                              | %10.3f\n",
     //      input_function_time, input_function_time);
-	snprintf(buf, 127, "Input fn: %8.3f                                      | %10.3f\n",
+	SNPRINTF(buf, 127, "Input fn: %8.3f                                      | %10.3f\n",
           input_function_time, input_function_time);
 	m_result += buf;
 
     //print(a, "================================================================|===========\n");
-	snprintf(buf, 127, "========================================================|===========\n");
+	SNPRINTF(buf, 127, "========================================================|===========\n");
     //print(a, "Outpt fn:                                     %8.3f          | %10.3f\n",
     //      output_function_time, output_function_time);
 	m_result += buf;
-	snprintf(buf, 127, "Outpt fn:                                     %8.3f  | %10.3f\n",
+	SNPRINTF(buf, 127, "Outpt fn:                                     %8.3f  | %10.3f\n",
           output_function_time, output_function_time);
 	m_result += buf;
 
     //print(a, "================================================================|===========\n");
-	snprintf(buf, 127, "========================================================|===========\n");
+	SNPRINTF(buf, 127, "========================================================|===========\n");
 	m_result += buf;
 
 	//print(a, "Callbcks: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
@@ -834,7 +834,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
  //         timer_value(&current_agent(monitors_cpu_time[WM_PHASE])),
  //         timer_value(&current_agent(monitors_cpu_time[OUTPUT_PHASE])),
  //         timer_value(&current_agent(monitors_cpu_time[DECISION_PHASE])), monitors_sum);
-	snprintf(buf, 127, "Callbcks: %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n",
+	SNPRINTF(buf, 127, "Callbcks: %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n",
           timer_value(&current_agent(monitors_cpu_time[INPUT_PHASE])),
           timer_value(&current_agent(monitors_cpu_time[PROPOSE_PHASE])),
           timer_value(&current_agent(monitors_cpu_time[DECISION_PHASE])),
@@ -843,17 +843,17 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 	m_result += buf;
 
     //print(a, "================================================================|===========\n");
-	snprintf(buf, 127, "========================================================|===========\n");
+	SNPRINTF(buf, 127, "========================================================|===========\n");
  	m_result += buf;
    //print(a, "Derived---------------------------------------------------------+-----------\n");
-	snprintf(buf, 127, "Computed------------------------------------------------+-----------\n");
+	SNPRINTF(buf, 127, "Computed------------------------------------------------+-----------\n");
 	m_result += buf;
     //print(a, "Totals:   %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n\n",
     //      input_phase_total_time,
     //      determine_level_phase_total_time,
     //      preference_phase_total_time,
     //      wm_phase_total_time, output_phase_total_time, decision_phase_total_time, derived_total_cpu_time);
-	snprintf(buf, 127, "Totals:   %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n\n",
+	SNPRINTF(buf, 127, "Totals:   %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n\n",
           input_phase_total_time,
           propose_phase_total_time,
           decision_phase_total_time,
@@ -861,7 +861,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 	m_result += buf;
 
     //print(a, "Values from single timers:\n");
-	snprintf(buf, 127, "Values from single timers:\n");
+	SNPRINTF(buf, 127, "Values from single timers:\n");
 	m_result += buf;
 #endif  // KERNEL_TIME_ONLY
 
@@ -872,26 +872,26 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
      */
 	if (!current_agent(warn_on_zero_timers)) {
         //print(a, " Warning: one or more timers have reported zero during this run\n");
-		snprintf(buf, 127, " Warning: one or more timers have reported zero during this run\n");
+		SNPRINTF(buf, 127, " Warning: one or more timers have reported zero during this run\n");
 		m_result += buf;
 	}
 
 #endif
 
    //print(a, " Kernel CPU Time: %11.3f sec. \n", total_kernel_time);
-   snprintf(buf, 127, " Kernel CPU Time: %11.3f sec. \n", total_kernel_time);
+   SNPRINTF(buf, 127, " Kernel CPU Time: %11.3f sec. \n", total_kernel_time);
 	m_result += buf;
 
    //print(a, " Total  CPU Time: %11.3f sec.\n\n", timer_value(&current_agent(total_cpu_time)));
-   snprintf(buf, 127, " Total  CPU Time: %11.3f sec.\n\n", timer_value(&current_agent(total_cpu_time)));
+   SNPRINTF(buf, 127, " Total  CPU Time: %11.3f sec.\n\n", timer_value(&current_agent(total_cpu_time)));
 	m_result += buf;
 
 #ifdef COUNT_KERNEL_TIMER_STOPS
     //print(a, " Kernel CPU Timer Stops: %d\n", current_agent(kernelTimerStops));
-	snprintf(buf, 127, " Kernel CPU Timer Stops: %d\n", current_agent(kernelTimerStops));
+	SNPRINTF(buf, 127, " Kernel CPU Timer Stops: %d\n", current_agent(kernelTimerStops));
 	m_result += buf;
     //print(a, " Non-Kernel Timer Stops: %d\n", current_agent(nonKernelTimerStops));
-	snprintf(buf, 127, " Non-Kernel Timer Stops: %d\n", current_agent(nonKernelTimerStops));
+	SNPRINTF(buf, 127, " Non-Kernel Timer Stops: %d\n", current_agent(nonKernelTimerStops));
 	m_result += buf;
 #endif
 
@@ -903,7 +903,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     //print(a, "%lu decision cycles (%.3f msec/dc)\n",
     //      current_agent(d_cycle_count),
     //      current_agent(d_cycle_count) ? total_kernel_msec / current_agent(d_cycle_count) : 0.0);
-	snprintf(buf, 127, "%lu decisions (%.3f msec/decision)\n",
+	SNPRINTF(buf, 127, "%lu decisions (%.3f msec/decision)\n",
           current_agent(decision_phases_count),
           current_agent(decision_phases_count) ? total_kernel_msec / current_agent(decision_phases_count) : 0.0);
 	m_result += buf;
@@ -911,7 +911,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     //      current_agent(e_cycle_count),
     //      current_agent(d_cycle_count) ? (double) current_agent(e_cycle_count) / current_agent(d_cycle_count) : 0,
     //      current_agent(e_cycle_count) ? total_kernel_msec / current_agent(e_cycle_count) : 0);
-	snprintf(buf, 127, "%lu elaboration cycles (%.3f ec's per dc, %.3f msec/ec)\n",
+	SNPRINTF(buf, 127, "%lu elaboration cycles (%.3f ec's per dc, %.3f msec/ec)\n",
           current_agent(e_cycle_count),
           current_agent(decision_phases_count) ? (double) current_agent(e_cycle_count) / current_agent(decision_phases_count) : 0,
           current_agent(e_cycle_count) ? total_kernel_msec / current_agent(e_cycle_count) : 0);
@@ -927,7 +927,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 		//      current_agent(pe_cycle_count),
 		//      current_agent(d_cycle_count) ? (double) current_agent(pe_cycle_count) / current_agent(d_cycle_count) : 0,
 		//      current_agent(pe_cycle_count) ? total_kernel_msec / current_agent(pe_cycle_count) : 0);
-		snprintf(buf, 127, "%lu p-elaboration cycles (%.3f pe's per dc, %.3f msec/pe)\n",
+		SNPRINTF(buf, 127, "%lu p-elaboration cycles (%.3f pe's per dc, %.3f msec/pe)\n",
 				current_agent(pe_cycle_count),
 				current_agent(decision_phases_count) ? (double) current_agent(pe_cycle_count) / current_agent(decision_phases_count) : 0,
 				current_agent(pe_cycle_count) ? total_kernel_msec / current_agent(pe_cycle_count) : 0);
@@ -940,7 +940,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     //      current_agent(e_cycle_count) ? (double) current_agent(production_firing_count) /
     //      current_agent(e_cycle_count) : 0.0,
     //      current_agent(production_firing_count) ? total_kernel_msec / current_agent(production_firing_count) : 0.0);
-	snprintf(buf, 127, "%lu production firings (%.3f pf's per ec, %.3f msec/pf)\n",
+	SNPRINTF(buf, 127, "%lu production firings (%.3f pf's per ec, %.3f msec/pf)\n",
           current_agent(production_firing_count),
           current_agent(e_cycle_count) ? (double) current_agent(production_firing_count) /
           current_agent(e_cycle_count) : 0.0,
@@ -949,26 +949,26 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 
 #else
     //print(a, "%lu decision cycles\n", current_agent(d_cycle_count));
-	snprintf(buf, 127, "%lu decisions\n", current_agent(decision_phases_count));
+	SNPRINTF(buf, 127, "%lu decisions\n", current_agent(decision_phases_count));
 	m_result += buf;
     //print(a, "%lu elaboration cycles \n", current_agent(e_cycle_count));
-	snprintf(buf, 127, "%lu elaboration cycles \n", current_agent(e_cycle_count));
+	SNPRINTF(buf, 127, "%lu elaboration cycles \n", current_agent(e_cycle_count));
 	m_result += buf;
     //print(a, "%lu production firings \n", current_agent(production_firing_count));
-	snprintf(buf, 127, "%lu production firings \n", current_agent(production_firing_count));
+	SNPRINTF(buf, 127, "%lu production firings \n", current_agent(production_firing_count));
 	m_result += buf;
 #endif                          /* !NO_TIMING_STUFF */
 
     wme_changes = current_agent(wme_addition_count) + current_agent(wme_removal_count);
     //print(a, "%lu wme changes (%lu additions, %lu removals)\n",
     //      wme_changes, current_agent(wme_addition_count), current_agent(wme_removal_count));
-	snprintf(buf, 127, "%lu wme changes (%lu additions, %lu removals)\n",
+	SNPRINTF(buf, 127, "%lu wme changes (%lu additions, %lu removals)\n",
           wme_changes, current_agent(wme_addition_count), current_agent(wme_removal_count));
 	m_result += buf;
 
 #ifdef DETAILED_TIMING_STATS
     //print(a, "    match time: %.3f msec/wm change\n", wme_changes ? match_msec / wme_changes : 0.0);
-	snprintf(buf, 127, "    match time: %.3f msec/wm change\n", wme_changes ? match_msec / wme_changes : 0.0);
+	SNPRINTF(buf, 127, "    match time: %.3f msec/wm change\n", wme_changes ? match_msec / wme_changes : 0.0);
 	m_result += buf;
 #endif
 
@@ -977,7 +977,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     //      (current_agent(num_wm_sizes_accumulated) ?
     //       (current_agent(cumulative_wm_size) / current_agent(num_wm_sizes_accumulated)) :
     //       0.0), current_agent(max_wm_size));
-   snprintf(buf, 127, "WM size: %lu current, %.3f mean, %lu maximum\n",
+   SNPRINTF(buf, 127, "WM size: %lu current, %.3f mean, %lu maximum\n",
           current_agent(num_wmes_in_rete),
           (current_agent(num_wm_sizes_accumulated) ?
            (current_agent(cumulative_wm_size) / current_agent(num_wm_sizes_accumulated)) :
@@ -986,27 +986,27 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 
 #ifndef NO_TIMING_STUFF
     //print(a, "\n");
-	snprintf(buf, 127, "\n");
+	SNPRINTF(buf, 127, "\n");
 	m_result += buf;
     //print(a, "    *** Time/<x> statistics use the total kernel time from a ***\n");
-	snprintf(buf, 127, "    *** Time/<x> statistics use the total kernel time from a    ***\n");
+	SNPRINTF(buf, 127, "    *** Time/<x> statistics use the total kernel time from a    ***\n");
 	m_result += buf;
     //print(a, "    *** single kernel timer.  Differences between this value ***\n");
-	snprintf(buf, 127, "    *** single kernel timer.  Differences between this value    ***\n");
+	SNPRINTF(buf, 127, "    *** single kernel timer.  Differences between this value    ***\n");
 	m_result += buf;
     //print(a, "    *** and the derived total kernel time  are expected. See ***\n");
-	snprintf(buf, 127, "    *** and the computed total kernel time  are expected. See   ***\n");
+	SNPRINTF(buf, 127, "    *** and the computed total kernel time  are expected. See   ***\n");
 	m_result += buf;
     //print(a, "    *** help  for the  stats command  for more  information. ***\n");
-	snprintf(buf, 127, "    *** help  for the  stats command  for more  information.    ***\n");
+	SNPRINTF(buf, 127, "    *** help  for the  stats command  for more  information.    ***\n");
 	m_result += buf;
-	snprintf(buf, 127, "    *** The format fields for the timers are 8.3f, limiting     ***\n");
+	SNPRINTF(buf, 127, "    *** The format fields for the timers are 8.3f, limiting     ***\n");
 	m_result += buf;
-	snprintf(buf, 127, "    *** printable values to a maximum of approximately 2.5 hrs. ***\n");
+	SNPRINTF(buf, 127, "    *** printable values to a maximum of approximately 2.5 hrs. ***\n");
 	m_result += buf;
-	snprintf(buf, 127, "    *** See gSKI_AgentPerformanceMonitor.cpp to change the      ***\n");
+	SNPRINTF(buf, 127, "    *** See gSKI_AgentPerformanceMonitor.cpp to change the      ***\n");
 	m_result += buf;
-	snprintf(buf, 127, "    *** fieldwidths of the timers for runtime data > 2 hrs      ***\n");
+	SNPRINTF(buf, 127, "    *** fieldwidths of the timers for runtime data > 2 hrs      ***\n");
 	m_result += buf;
 #endif
     /* REW: end 28.07.96 */

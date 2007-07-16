@@ -822,7 +822,7 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
         break;
       default:
 	#ifdef DEBUG_CHUNK_NAMES
-	    // TODO: generate warning XML: I think we need to create a buffer and snprintf the impasse_type into it (since it's a byte)
+	    // TODO: generate warning XML: I think we need to create a buffer and SNPRINTF the impasse_type into it (since it's a byte)
 		// but this seems low priority since it's not even included in a normal build
         print ("Warning: encountered unknown impasse_type: %d.\n", impasse_type);
 
@@ -839,7 +839,7 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
   }
   impass_name[BUFFER_IMPASS_NAME_SIZE - 1] = 0; /* ensure null termination */
 
-  snprintf (name, BUFFER_GEN_CHUNK_NAME_SIZE, "%s-%lu*d%lu*%s*%lu", 
+  SNPRINTF (name, BUFFER_GEN_CHUNK_NAME_SIZE, "%s-%lu*d%lu*%s*%lu", 
           thisAgent->chunk_name_prefix,
           thisAgent->chunk_count++,
           thisAgent->d_cycle_count,
@@ -857,7 +857,7 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
     print (thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
 	GenerateWarningXML(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.");
     do {
-      snprintf (name, BUFFER_GEN_CHUNK_NAME_SIZE, "%s-%lu*d%lu*%s*%lu*%lu", 
+      SNPRINTF (name, BUFFER_GEN_CHUNK_NAME_SIZE, "%s-%lu*d%lu*%s*%lu*%lu", 
               thisAgent->chunk_name_prefix,
               thisAgent->chunk_count++,
               thisAgent->d_cycle_count,

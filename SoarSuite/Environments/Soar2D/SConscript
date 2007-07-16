@@ -2,11 +2,15 @@
 import glob
 import shutil
 import SoarSCons
+import sys
 
 Import('env')
 env = env.Copy()
 
-SoarSCons.SetJavaPaths(env, 'Core/ClientSMLSWIG/Java/sml.jar:SoarLibrary/bin/swt.jar:SoarLibrary/bin/tosca.jar:Environments/Soar2D/jdom.jar')
+if sys.platform == 'cygwin':
+	SoarSCons.SetJavaPaths(env, '"Core/ClientSMLSWIG/Java/sml.jar;SoarLibrary/bin/swt.jar;SoarLibrary/bin/tosca.jar;Environments/Soar2D/jdom.jar"')
+else:
+	SoarSCons.SetJavaPaths(env, 'Core/ClientSMLSWIG/Java/sml.jar:SoarLibrary/bin/swt.jar:SoarLibrary/bin/tosca.jar:Environments/Soar2D/jdom.jar')
 
 javacStep = env.Java(target = 'classes', source = 'src')
 
