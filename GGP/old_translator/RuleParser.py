@@ -47,14 +47,16 @@ class GDLSoarVarMapper:
 
 	def get_var(self, gdl_var):
 		if gdl_var[0] == '?':
-			gdl_var = gdl_var[1:]
+			v = gdl_var[1:]
+		else:
+			v = gdl_var
 
-		if self.var_map.has_key(gdl_var):
-			return self.var_map[gdl_var]
+		if self.var_map.has_key(v):
+			return self.var_map[v]
 		else:
 			# try to name gdl variables and soar variables similarly
-			soar_var = self.var_gen.get_name(gdl_var)
-			self.var_map[gdl_var] = soar_var
+			soar_var = self.var_gen.get_name(v)
+			self.var_map[v] = soar_var
 			return soar_var
 
 # makes a typical skeleton production for use in GGP
@@ -330,10 +332,12 @@ def ProcessFrameAxioms(axioms, game_name):
 		for b in body:
 			if not same_signature(head_analogue, b): # ignore frame rule
 				PrepareBodyVars(b, body_var_subs, '__r%d__' % prefix_i)
-				if SentenceIsComp(b):
-					comp_conds.append(Comparison.make_from_GGP_sentence(b))
-				else:
-					reg_conds.append(b)
+#				if SentenceIsComp(b):
+#					comp_conds.append(Comparison.make_from_GGP_sentence(b))
+#				else:
+#					reg_conds.append(b)
+				# forget about handling comparisons separately
+				reg_conds.append(b)
 
 		preds_to_bodies.setdefault(pred, []).append((reg_conds, comp_conds))
 
@@ -386,8 +390,7 @@ def TranslateFrameAxioms(game_name, head, bodies):
 				# this is a block of regular conditions
 				sp.begin_negative_conjunction() # wrap all the added conditions into a negation
 				ParseGDLBodyToCondition(b, sp, var_mapper)
-				# this shouldn't be necessary, there shouldn't be any of these
-				# ParseComparisons(b, sp, var_mapper)
+				ParseComparisons(b, sp, var_mapper)
 				sp.end_negative_conjunction()
 			else:
 				# this is a comparison
