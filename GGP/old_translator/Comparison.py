@@ -1,15 +1,15 @@
 class Comparison:
 	@staticmethod
 	def make_from_GGP_sentence(sentence):
-		if sentence.term(2).type() == 'variable':
+		if sentence.term(1).type() == 'variable':
 			rhs_is_var = True
 		else:
 			rhs_is_var = False
 
 		if sentence.name() == 'distinct':
-			comp = Comparison(sentence.term(1), '<>', sentence.term(2), rhs_is_var)
+			comp = Comparison(sentence.term(0), '<>', sentence.term(1), rhs_is_var)
 		else:
-			comp = Comparison(sentence.term(1), sentence.name(), sentence.term(2), rhs_is_var)
+			comp = Comparison(sentence.term(0), sentence.name(), sentence.term(1), rhs_is_var)
 
 		return comp
 

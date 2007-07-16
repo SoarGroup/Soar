@@ -8,7 +8,7 @@ from GGPSentence import GGPSentence
 import re
 import ElementGGP
 import pdb
-import Comparison
+from Comparison import Comparison
 
 name_gen = UniqueNameGenerator()
 
@@ -325,7 +325,7 @@ def ProcessFrameAxioms(axioms, game_name):
 		reg_conds = []
 		comp_conds = []
 		for i, const in const_subs.items():
-			comp_conds.append(Comparison.Comparison(substitutions[i], '=', const, False))
+			comp_conds.append(Comparison(substitutions[i], '=', const, False))
 
 		for b in body:
 			if not same_signature(head_analogue, b): # ignore frame rule
