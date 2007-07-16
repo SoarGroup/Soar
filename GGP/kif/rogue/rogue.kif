@@ -482,9 +482,9 @@
 	(scroll ?scroll sleepInduce))
 
 (<= (next (asleep hero ?n))
-	(true (asleep hero ?n+1))
-	(distinct ?n+1 1)
-	(plus ?n 1 ?n+1))
+	(true (asleep hero ?n1))
+	(distinct ?n1 1)
+	(plus ?n 1 ?n1))
 
 (<= (next (asleep ?monster ?n))
 	(monster ?monster ?monster-type)
@@ -503,9 +503,9 @@
 	(potion ?potion invisibility))
 
 (<= (next (invisible hero ?n))
-    (true (invisible hero ?n+1))
-    (distinct ?n+1 1)
-    (plus ?n 1 ?n+1))
+    (true (invisible hero ?n1))
+    (distinct ?n1 1)
+    (plus ?n 1 ?n1))
 
 ;--------------------------------------------------
 ; 3.4.7: Enhanced Speed, Strength, Armor
@@ -517,18 +517,18 @@
     (potion ?potion speed))
 
 (<= (next (enhancedSpeed hero ?n))
-    (true (enhancedSpeed hero ?n+1))
-    (distinct ?n+1 1)
-    (plus ?n 1 ?n+1))
+    (true (enhancedSpeed hero ?n1))
+    (distinct ?n1 1)
+    (plus ?n 1 ?n1))
 
 (<= (next (enhancedStrength hero 3))
     (does hero (quaff ?potion))
     (potion ?potion strength))
 
 (<= (next (enhancedStrength hero ?n))
-    (true (enhancedStrength hero ?n+1))
-    (distinct ?n+1 1)
-    (plus ?n 1 ?n+1))
+    (true (enhancedStrength hero ?n1))
+    (distinct ?n1 1)
+    (plus ?n 1 ?n1))
 
 (<= (next (enhancedArmor hero 2))
 	(does hero (read ?scroll)) 
@@ -539,9 +539,9 @@
 	(lessThan ?amt 3))
 
 (<= (next (enhancedArmor hero ?n))
-	(true (enhancedArmor hero ?n+1))
-	(distinct ?n+1 1)
-	(plus ?n 1 ?n+1))
+	(true (enhancedArmor hero ?n1))
+	(distinct ?n1 1)
+	(plus ?n 1 ?n1))
 
 ;---------------------------------------------------------------------------
 ;;; 3.5 Standard GDL support rule
@@ -809,14 +809,14 @@
     (traversible ?nextx ?nexty)
     (nextHeroLocation ?x ?y)
     (or (distinct ?nextx ?x) (distinct ?nexty ?y)))
-;;    (not (sameLocation ?nextx ?nexty ?x ?y)))
+;    (not (sameLocation ?nextx ?nexty ?x ?y)))
 
-; Meaning: Stay put and attack the hero.
+ Meaning: Stay put and attack the hero.
 (<= (singleUnobstructedStep ?startx ?starty ?destx ?desty ?startx ?starty)
     (oneStepTowards ?startx ?starty ?destx ?desty ?nextx ?nexty)
     (nextHeroLocation ?x ?y)
     (or (distinct ?nextx ?x) (distinct ?nexty ?y)))
-;;    (sameLocation ?nextx ?nexty ?x ?y))
+;    (sameLocation ?nextx ?nexty ?x ?y))
 
 ; Meaning: Move one step towards destination (diagonally)
 (<= (oneStepTowards ?x1 ?y1 ?x2 ?y2 ?x3 ?y3)
