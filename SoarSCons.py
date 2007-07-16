@@ -4,6 +4,7 @@
 
 # swt.jar 3.3 digests
 OSX_DIGEST = '63e66248fed82dcf4bc2639b487ec111'
+WIN_DIGEST = '33ac049c1f70126f5fe190da2bd9ff77'
 GTK_DIGEST = '3f5abcc5769c413fc731585b36fe61c2'
 
 import os
@@ -51,6 +52,8 @@ def CheckJarmd5(env):
 	    
 	if sys.platform == 'darwin':
 		return OSX_DIGEST == m.hexdigest()
+	elif sys.platform == 'cygwin':
+		return WIN_DIGEST == m.hexdigest()
 	else:
 		return GTK_DIGEST == m.hexdigest()
 	
@@ -65,6 +68,8 @@ def CheckForSWTJar(env):
 	try:
 		if sys.platform == 'darwin':
 			urllib.urlretrieve('http://winter.eecs.umich.edu/jars/osx/swt.jar', 'SoarLibrary/bin/swt.jar')
+		elif sys.platform == 'cygwin':
+			urllib.urlretrieve('http://winter.eecs.umich.edu/jars/windows/swt.jar', 'SoarLibrary/bin/swt.jar')
 		else:
 			urllib.urlretrieve('http://winter.eecs.umich.edu/jars/gtk/swt.jar', 'SoarLibrary/bin/swt.jar')
 	except IOError:
@@ -196,13 +201,15 @@ def ConfigureJNI(env):
     env.Append(CPPPATH = java_headers)
     env.Append(LIBPATH = java_libs)
 
+    ## The linking flags are specific for building jni libraries.
+    ## They must not be included in the overall environment!
     # add any special platform-specific compilation or linking flags
-    if sys.platform == 'darwin':
-        env.Append(SHLINKFLAGS = '-dynamiclib -framework JavaVM')
-        env['SHLIBSUFFIX'] = '.jnilib'
-    elif sys.platform == 'cygwin':
-        env.Append(CCFLAGS = '-mno-cygwin')
-        env.Append(SHLINKFLAGS = '-mno-cygwin -Wl,--kill-at')
+    #if sys.platform == 'darwin':
+    #    env.Append(SHLINKFLAGS = '-dynamiclib -framework JavaVM')
+    #    env['SHLIBSUFFIX'] = '.jnilib'
+    #elif sys.platform == 'cygwin':
+    #    env.Append(CCFLAGS = '-mno-cygwin')
+    #    env.Append(SHLINKFLAGS = '-mno-cygwin -Wl,--kill-at')
 
     # Add extra potentially useful environment variables
     env['JAVA_HOME'] = java_base

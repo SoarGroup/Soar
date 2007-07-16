@@ -38,7 +38,7 @@
 #include "explain.h"
 #include "symtab.h"
 #include "wmem.h"
-#include "io.h"
+#include "io_soar.h"
 #include "rete.h"
 #include "gdatastructs.h"
 #include "kernel_struct.h"
@@ -1713,11 +1713,11 @@ void init_soar (Kernel * thisKernel)
 	  char buffer[1000];
 	  
 #if MICRO_VERSION_NUMBER > 0
-    snprintf(buffer, INIT_SOAR_BUFFER_SIZE,
+    SNPRINTF(buffer, INIT_SOAR_BUFFER_SIZE,
              "%d.%d.%d", MAJOR_VERSION_NUMBER, MINOR_VERSION_NUMBER, MICRO_VERSION_NUMBER);
     buffer[INIT_SOAR_BUFFER_SIZE - 1] = 0;   /* ensure null termination */
 #else
-    snprintf(buffer, INIT_SOAR_BUFFER_SIZE, "%d.%d", MAJOR_VERSION_NUMBER, MINOR_VERSION_NUMBER);
+    SNPRINTF(buffer, INIT_SOAR_BUFFER_SIZE, "%d.%d", MAJOR_VERSION_NUMBER, MINOR_VERSION_NUMBER);
     buffer[INIT_SOAR_BUFFER_SIZE - 1] = 0;   /* ensure null termination */
 #endif
 

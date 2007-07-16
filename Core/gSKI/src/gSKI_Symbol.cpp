@@ -244,18 +244,18 @@ namespace gSKI
          return (char*) (sym->var.name);
          break;
       case IDENTIFIER_SYMBOL_TYPE:
-         snprintf(temp,128,"%c%lu",sym->id.name_letter,sym->id.name_number);
+         SNPRINTF(temp,128,"%c%lu",sym->id.name_letter,sym->id.name_number);
          return std::string(temp);
          break;
       case SYM_CONSTANT_SYMBOL_TYPE:
          return (char *) (sym->sc.name);
          break;
       case INT_CONSTANT_SYMBOL_TYPE:
-         snprintf(temp,128, "%ld",sym->ic.value);
+         SNPRINTF(temp,128, "%ld",sym->ic.value);
          return std::string(temp);
          break;
       case FLOAT_CONSTANT_SYMBOL_TYPE:
-         snprintf(temp, 128, "%g",sym->fc.value);
+         SNPRINTF(temp, 128, "%g",sym->fc.value);
          return std::string(temp);
          break;
       default:

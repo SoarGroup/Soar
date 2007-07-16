@@ -41,7 +41,7 @@
 #include "rete.h"
 #include "trace.h"
 #include "callback.h"
-#include "io.h"
+#include "io_soar.h"
 #include "kernel_struct.h"
 
 /* JC ADDED: Need to initialize gski callbacks */

@@ -22,7 +22,7 @@
 #include <string>
 #include <set>
 
-#include "io.h"
+#include "io_soar.h"
 
 namespace gSKI {
 

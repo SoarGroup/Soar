@@ -110,14 +110,14 @@ void xmlMoveCurrentToLastChild()
 void xmlULong(char const* pAttribute, unsigned long value)
 {
 	char buf[51];
-	snprintf(buf, 50, "%lu", value);
+	SNPRINTF(buf, 50, "%lu", value);
 	cli::GetCLI()->XMLAddAttribute(pAttribute, buf) ;
 }
 
 void xmlInt(char const* pAttribute, int value)
 {
 	char buf[51];
-	snprintf(buf, 50, "%d", value);
+	SNPRINTF(buf, 50, "%d", value);
 	cli::GetCLI()->XMLAddAttribute(pAttribute, buf) ;
 }
 

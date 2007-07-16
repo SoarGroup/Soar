@@ -19,7 +19,7 @@ mkdir tmp
 %2javac.exe -source 1.4 -d tmp -classpath .;%SOARBIN%\sml.jar -sourcepath Source Source\edu\umich\visualsoar\VisualSoar.java
 
 @echo ----------==========Jarring==========----------
-%2jar cfm %SOARBIN%\VisualSoar.jar Source\meta-inf\manifest.mf -C tmp .
+%2jar cfm %SOARBIN%\VisualSoar.jar JarManifest -C tmp .
 
 GOTO success
 

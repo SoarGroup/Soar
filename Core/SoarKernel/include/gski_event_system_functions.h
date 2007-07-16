@@ -179,7 +179,7 @@ inline void gSKI_MakeAgentCallbackXML(	agent*			soarAgent,
         start_timer (thisAgent, &thisAgent->start_phase_tv);
 	*/	   
 
-	snprintf(buf, 24, "%lu", value);
+	SNPRINTF(buf, 24, "%lu", value);
 	gSKI_MakeAgentCallbackXML(soarAgent, funcType, attOrTag, (char*)buf);
 	/*
 	   stop_timer (thisAgent, &thisAgent->start_phase_tv, 
@@ -201,7 +201,7 @@ inline void gSKI_MakeAgentCallbackXML(	agent*		soarAgent,
 	    stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
         start_timer (thisAgent, &thisAgent->start_phase_tv);
 	*/	   
-	snprintf(buf, 24, "%f", value);
+	SNPRINTF(buf, 24, "%f", value);
 	gSKI_MakeAgentCallbackXML(soarAgent, funcType, attOrTag, (char*)buf);
 	/*
 	   stop_timer (thisAgent, &thisAgent->start_phase_tv, 

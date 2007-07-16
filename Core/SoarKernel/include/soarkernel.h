@@ -80,7 +80,7 @@ struct node_varnames_struct;
 #include "rete.h"
 #include "trace.h"
 #include "callback.h"
-#include "io.h"
+#include "io_soar.h"
 
 /* ======================================================================= */
 

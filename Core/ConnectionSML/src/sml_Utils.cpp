@@ -129,7 +129,7 @@ void sml::PrintDebugFormat(char const* pFormat, ...)
 
 	char szBuffer[10000];
 
-	int nBuf = vsnprintf(szBuffer, sizeof(szBuffer), pFormat, args);
+	int nBuf = VSNPRINTF(szBuffer, sizeof(szBuffer), pFormat, args);
 
 	// was there an error? was the expanded string too long?
 	if (nBuf < 0)

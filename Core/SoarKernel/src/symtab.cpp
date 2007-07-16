@@ -448,7 +448,7 @@ Bool print_identifier_ref_info(agent* thisAgent, void* item, FILE* f) {
    
    if ( sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) {
       if ( sym->common.reference_count > 0 ) {
-         snprintf( msg, 256, 
+         SNPRINTF( msg, 256, 
                   "\t%c%lu --> %lu\n", 
                   sym->id.name_letter, 
                   sym->id.name_number, 
@@ -545,7 +545,7 @@ Symbol *generate_new_sym_constant (agent* thisAgent, char *prefix, unsigned long
   Symbol *New;
 
   while (TRUE) {
-    snprintf (name,GENERATE_NEW_SYM_CONSTANT_BUFFER_SIZE, "%s%lu", prefix, (*counter)++);
+    SNPRINTF (name,GENERATE_NEW_SYM_CONSTANT_BUFFER_SIZE, "%s%lu", prefix, (*counter)++);
 	name[GENERATE_NEW_SYM_CONSTANT_BUFFER_SIZE - 1] = 0;
     if (! find_sym_constant (thisAgent, name)) break;
   }

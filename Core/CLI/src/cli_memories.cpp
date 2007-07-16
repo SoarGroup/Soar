@@ -170,7 +170,7 @@ bool CommandLineInterface::DoMemories(gSKI::Agent* pAgent, const MemoriesBitset 
 		++j, ++i) 
 	{
 		if (m_RawOutput) {
-			snprintf(buf, 1023, "\n%6lu:  %s", j->second, j->first.c_str());
+			SNPRINTF(buf, 1023, "\n%6lu:  %s", j->second, j->first.c_str());
 			buf[1023] = 0;
 			m_Result << buf;
 		} else {

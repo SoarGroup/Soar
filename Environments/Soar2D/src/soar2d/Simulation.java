@@ -423,7 +423,7 @@ public class Simulation {
 			+ "..\\..\\SoarLibrary\\bin\\SoarJavaDebugger.jar\" -cascade -remote -agent " + agentName;
 		} else {
 			commandLine = System.getProperty("java.home") + "/bin/java -jar " + Soar2D.config.getBasePath() 
-			+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -cascade -remote -agent " + agentName;
+			+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -XstartOnFirstThread -cascade -remote -agent " + agentName;
 		}
 		
 		return commandLine;
