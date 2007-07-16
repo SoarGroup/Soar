@@ -1,3 +1,15 @@
+multi-attributes object-location 10
+multi-attributes clear 40
+multi-attributes movable 30
+plus 1000
+minus 1000
+multiply 1000
+division 1000
+#multi-attributes soar-hack-numerical-result-plus 1000
+#multi-attributes soar-hack-numerical-result-minus 1000
+#multi-attributes soar-hack-numerical-result-multiply 1000
+#multi-attributes soar-hack-numerical-result-division 1000
+
 source math-rules.soar
 source build.canvas.soar
 
