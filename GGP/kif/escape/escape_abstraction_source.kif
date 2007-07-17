@@ -22,7 +22,6 @@
 (itemType log2)
 (itemType hammer1)
 (itemType nails1)
-(itemType rope1)
 
 
 ; give the items an arbitrary ordering
