@@ -1,10 +1,13 @@
-multi-attributes object-location 10
+
 multi-attributes clear 40
-multi-attributes movable 30
-multi-attributes plus 1000
-multi-attributes minus 1000
-multi-attributes multiply 1000
-multi-attributes division 1000
+multi-attributes plus 30
+multi-attributes minus 30
+multi-attributes multiply 30
+multi-attributes division 30
+multi-attributes movable 100 #movable doesn't help much
+multi-attributes object-location 30
+multi-attributes object-size 30
+
 #multi-attributes soar-hack-numerical-result-plus 1000
 #multi-attributes soar-hack-numerical-result-minus 1000
 #multi-attributes soar-hack-numerical-result-multiply 1000
@@ -13,6 +16,22 @@ multi-attributes division 1000
 source math-rules.soar
 source build.canvas.soar
 
+indifferent-selection --first
+
+
+pushd common
+source constant.soar
+source status.soar
+#source print-negative-things.soar
+#source record-gs-on-failure.soar
+#source evaluate-state.soar
+
+pushd default
+source selection.soar
+source selection-iterative-deepening.soar
+popd 
+
+
 #sp {prefer*make*new-compound
 #	(state <s> ^operator <o> +)
 #	(<o> ^name make-new-compound)
@@ -20,14 +39,27 @@ source build.canvas.soar
 #	(<s> ^operator <o> >)
 #}
 
+#sp {prefer*nudge
+#	(state <s> ^operator <o> +)
+#	(<o> ^name nudge)
+#-->
+#	(<s> ^operator <o> >)
+#}
 
-sp {prefer*place-adjacent*than*nudge
-	(state <s> ^operator <o1> + <o2> +)
-	(<o1> ^name nudge)
-	(<o2> ^name place-adjacent)
+sp {prefer*reinforce
+	(state <s> ^operator <o> +)
+	(<o> ^name reinforce)
 -->
-	(<s> ^operator <o2> > <o1>)
+	(<s> ^operator <o> >)
 }
+
+#sp {prefer*place-adjacent*than*nudge
+#	(state <s> ^operator <o1> + <o2> +)
+#	(<o1> ^name nudge)
+#	(<o2> ^name place-adjacent)
+#-->
+#	(<s> ^operator <o2> > <o1>)
+#}
 
 
 sp {init*adjacent-appear
@@ -49,4 +81,22 @@ sp {elaborate*_clear__object__side_
 -->
    (<e> ^clear <clear>)
    (<clear> ^p1 <object> ^p2 <side>)
+}
+
+
+sp {elaborate*_unsupported__object_
+{
+  (state <s> ^gs <g> ^elaborations <e> ^adjacent-appear yes)
+  (<o> ^p1 <object> ^p2 { <type> <> ground})
+  (<g> ^object <o>)
+  (<s> ^name game)
+  -{
+    (<a> ^p1 <object> ^p2 <anyobject>)
+    (<e> ^adjacent <a>)
+    (<a> ^p3 bottom)
+  }
+}
+-->
+   (<u> ^p1 <object> )
+   (<e> ^unsupported <u> )
 }

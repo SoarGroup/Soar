@@ -156,8 +156,8 @@
 (<= terminal
     (bridge-complete ?bridge ?column1 ?column2))
 
-;;(<= terminal
-;;    collapsed)
+(<= terminal
+    collapsed)
 
 ;;(<= terminal
 ;;    (not (available-action)))

@@ -5,7 +5,7 @@ use strict;
 # Therefore, need to modify all the rules involving numerical-operations
 
 my ($input_file) = @ARGV;
-print "source header.soar\n";
+#print "source header.soar\n";
 open(IF, "<$input_file");
 my $content;
 while(my $line = <IF>){

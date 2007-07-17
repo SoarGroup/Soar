@@ -3,9 +3,9 @@ use strict;
 
 
 my $file1 = "build.core.manual.kif";
-my $file2 = "build.bridge.kif";
+#my $file2 = "build.bridge.kif";
 #my $file2 = "build.simple.kif";
-#my $file2 = "build.test.compound.kif";
+my $file2 = "build.test.compound.kif";
 my $merged_file = "build.merge.kif";
 my $agent_file = "../../agents/build_final.soar";
 
