@@ -452,7 +452,9 @@ public class CanvasView extends AbstractFixedView implements  Kernel.RhsFunction
 			try 
 			{
 				command = getSpaceDelimitedArg();
-				if (command != "static" && command != "update" && command != "delete")
+				if (!command.equals("static") && 
+            !command.equals("update") && 
+            !command.equals("delete"))
 				{
 					//Dialog error = new Dialog(m_Shell, "boo");
 					System.err.println("You used an invalid keyword, please use \n\"static\", \"update\", or \"delete\" " +
