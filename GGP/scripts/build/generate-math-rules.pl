@@ -14,6 +14,7 @@ print "-->\n";
 print "(<s> ^numerical-results <r>)\n";
 foreach  my$operator(@$operators) {
 	foreach  my$i(($range->[0] .. $range->[1], @$other_numbers)) {
+		print "(<r> ^$operator <r-$i-$operator>) (<r-$i-$operator> ^p1 $i)\n";
 		foreach  my$j($range->[0] .. $range->[1], @$other_numbers) {
 			#print "(<r> ^r-$i-$operator-$j <r-$i-$operator-$j>)";
 			my $result;
@@ -67,7 +68,7 @@ foreach  my$operator(@$operators) {
 					$result = "false";
 				}
 			}
-			print "(<r> ^$operator <r-$i-$operator-$j>) (<r-$i-$operator-$j> ^p1 ".$i." ^p2 ".$j." ^p3 ".$result.")\n";
+			print "(<r-$i-$operator> ^rest <r-$i-$operator-$j>)(<r-$i-$operator-$j> ^p1 ".$i." ^p2 ".$j." ^p3 ".$result.")\n";
 			#print "(<r-$i-$operator-$j> ^p1 ".$operator." ^p2 ".$i." ^p3 ".$j." ^p4 ".$result.")\n";
 		}
 	}

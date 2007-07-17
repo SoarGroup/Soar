@@ -13,7 +13,7 @@ my $process_math_perl = "./handle_numerical-operations.pl";
 #my $translator_dir = "../../pysrc";
 my $translator_dir = "../../old_translator";
 my $translator = "python LoadKif.py";
-my $make_math_elab_top_state = "./handle_build_soar.pl";
+my $make_math_elab_top_state = "./handle_build_soar_new.pl";
 
 my $dir = cwd;
 print $dir, "\n";
@@ -29,7 +29,6 @@ system ("perl $process_math_perl ".$merged_file);
 chdir ($translator_dir);
 system($translator." ".$dir."/".$merged_file.".modified ".$dir."/tmp.soar");
 chdir ($dir);
-system("perl ".$make_math_elab_top_state." tmp.soar > ".$agent_file);
 system("perl ".$make_math_elab_top_state." tmp.soar > tmp2.soar");
 
 #system ("cat tmp2.soar frame_axiom_fix.soar > $agent_file");

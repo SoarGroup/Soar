@@ -1,10 +1,10 @@
 multi-attributes object-location 10
 multi-attributes clear 40
 multi-attributes movable 30
-plus 1000
-minus 1000
-multiply 1000
-division 1000
+multi-attributes plus 1000
+multi-attributes minus 1000
+multi-attributes multiply 1000
+multi-attributes division 1000
 #multi-attributes soar-hack-numerical-result-plus 1000
 #multi-attributes soar-hack-numerical-result-minus 1000
 #multi-attributes soar-hack-numerical-result-multiply 1000
