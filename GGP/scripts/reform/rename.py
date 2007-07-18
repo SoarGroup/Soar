@@ -7,6 +7,8 @@ import pdb
 keywords = ['role', 'init', 'true', 'next', 'legal', 'does', 'goal', 'terminal', 'not', 'or']
 preserve = ['2d', 'location', 'greaterThan', 'lessThan', 'plus', 'minus', 'step', 'succ', 'move', 'block', 'int']
 
+preserve_constants = True
+
 class SymMap:
 	def __init__(self):
 		self.__map = {}
@@ -66,7 +68,7 @@ def p_rule_atomic_sentence(p):
 	if len(p) == 2:
 		print p[1]
 	else:
-		print '(<= %s %s)' % (p[3], p[4])
+		print '(<= %s\n%s)' % (p[3], p[4])
 
 def p_atomic_sentence(p):
 	'''atomic_sentence : NAME
@@ -97,7 +99,10 @@ def p_term_variable(p):
 
 def p_term_str_constant(p):
 	'term : NAME'
-	p[0] = mod_string(p[1])
+	if preserve_constants:
+		p[0] = p[1]
+	else:
+		p[0] = mod_string(p[1])
 
 def p_term_num_constant(p):
 	'term : NUM'
@@ -116,7 +121,7 @@ def p_condition_list(p):
 	'''condition_list : empty 
 	                  | condition condition_list'''
 	if len(p) == 3:
-		p[0] = '%s %s' % (p[1], p[2])
+		p[0] = '%s\n%s' % (p[1], p[2])
 	else:
 		p[0] = ""
 
