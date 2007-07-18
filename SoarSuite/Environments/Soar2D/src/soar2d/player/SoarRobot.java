@@ -222,12 +222,8 @@ class SelfInputLink {
 		while (piter.hasNext()) {
 			PlayerInputLink pIL = piter.next();
 			if (pIL.cycleTouched < cycle) {
-				if (pIL.cycleTouched > cycle - 3) {
-					pIL.makeInvisible();
-				} else {
-					robot.agent.DestroyWME(pIL.parent);
-					piter.remove();
-				}
+				robot.agent.DestroyWME(pIL.parent);
+				piter.remove();
 			}
 		}
 		
@@ -294,6 +290,7 @@ class MessageInputLink {
 	SoarRobot robot;
 	Identifier parent;
 	StringElement from, message;
+	IntElement cycle;
 
 	int cycleCreated;
 
@@ -306,6 +303,7 @@ class MessageInputLink {
 		this.from = robot.agent.CreateStringWME(parent, "from", from);
 		this.message = robot.agent.CreateStringWME(parent, "message", message);
 		this.cycleCreated = world.getWorldCount();
+		this.cycle = robot.agent.CreateIntWME(parent, "cycle", this.cycleCreated); 
 	}
 }
 
@@ -436,13 +434,11 @@ class PlayerInputLink { // FIXME should share code with OIL
 	Identifier parent;
 	
 	IntElement area;
-	StringElement type;
 	Identifier position;
 	Identifier angleOff;
 	FloatElement yaw;
 	FloatElement x, y;
 	IntElement row, col;
-	StringElement visible;
 	FloatElement range;
 	StringElement name;
 	
@@ -455,7 +451,6 @@ class PlayerInputLink { // FIXME should share code with OIL
 	
 	void initialize(Player player, World world, double range, double angleOffDouble) {
 		this.name = robot.agent.CreateStringWME(parent, "name", player.getName());
-		this.type = robot.agent.CreateStringWME(parent, "type", "player"); // FIXME distingush between robot, dog, mouse
 		this.area = robot.agent.CreateIntWME(parent, "area", player.getLocationId());
 		this.angleOff = robot.agent.CreateIdWME(parent, "angle-off");
 		this.yaw = robot.agent.CreateFloatWME(angleOff, "yaw", angleOffDouble);
@@ -467,22 +462,12 @@ class PlayerInputLink { // FIXME should share code with OIL
 			this.y = robot.agent.CreateFloatWME(position, "y", world.getFloatLocation(player).y);
 		}
 		this.range = robot.agent.CreateFloatWME(parent, "range", range);
-		this.visible = robot.agent.CreateStringWME(parent, "visible", "yes");
 		
 		touch(world.getWorldCount());
 	}
 	
 	void touch(int cycle) {
 		cycleTouched = cycle;
-		if (visible.GetValue().equals("no")) {
-			robot.agent.Update(visible, "yes");
-		}
-	}
-	
-	void makeInvisible() {
-		if (visible.GetValue().equals("yes")) {
-			robot.agent.Update(visible, "no");
-		}
 	}
 }
 
@@ -1011,6 +996,7 @@ public class SoarRobot extends Robot {
 				comm.message = messageString;
 				
 				move.messages.add(comm);
+				commandId.AddStatusComplete();
 				
 			} else {
 				logger.warning("Unknown command: " + commandName);
