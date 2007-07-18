@@ -105,7 +105,7 @@
 (init (holding hammer1))
 (init (holding nails1))
 
-(init (location explorer 0 5))
+(init (location explorer 0 0))
 
 (init (health explorer 1))
 
