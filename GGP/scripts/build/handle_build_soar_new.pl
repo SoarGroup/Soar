@@ -5,7 +5,9 @@ use strict;
 # Therefore, need to modify all the rules involving numerical-operations
 
 my ($input_file) = @ARGV;
-#print "source header.soar\n";
+print "pushd build_common\n";
+print "source build_multi_attributes.soar\n";
+print "popd\n";
 open(IF, "<$input_file");
 my $content;
 while(my $line = <IF>){
@@ -94,7 +96,9 @@ while($content =~ /(sp \{.*?\}\s*)(?=\nsp \{|$)/gis){
 		 print $line,"\n";
 	 }
 }
+print "pushd build_common\n";
 print "source build_rules.soar\n";
+print "popd\n";
 close IF;
 
 #print $content,"\n";
