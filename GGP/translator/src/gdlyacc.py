@@ -3,7 +3,7 @@ from gdllex import tokens
 from GDL import *
 from IR2 import IntermediateRep
 
-__IR = IntermediateRep()
+IntRep = IntermediateRep()
 
 def p_rule_list(p):
 	'''rule_list : rule rule_list
@@ -14,12 +14,12 @@ def p_rule_atomic_sentence(p):
 	'''rule : atomic_sentence
 	        | LPAREN ARROW atomic_sentence condition_list RPAREN'''
 
-	global __IR
+	global IntRep
 
 	if len(p) == 2:
-		__IR.add_rule(p[1], [])
+		IntRep.add_rule(p[1], [])
 	else:
-		__IR.add_rule(p[3], p[4])
+		IntRep.add_rule(p[3], p[4])
 
 def p_atomic_sentence(p):
 	'''atomic_sentence : NAME
@@ -105,14 +105,9 @@ def p_empty(p):
 
 yacc.yacc()
 
-file = open('parse_test.kif', 'r').read()
+import sys
+
+file = open(sys.argv[1], 'r').read()
 
 result = yacc.parse(file)
 
-#import psyco
-#psyco.full()
-
-try:
-	__IR.find_models()
-except KeyboardInterrupt:
-	pass
