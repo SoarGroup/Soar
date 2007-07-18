@@ -46,7 +46,7 @@ print `$canvasOff`;
 
 print `touch $goodThings`;
 print "Running $source..\n";
-print `$runSoar soar -l $agentDir/$source.soar > $source1Log`;
+print `$runSoar -w1 $agentDir/$source.soar > $source1Log`;
 print "done, log tail:\n";
 print `tail $source1Log`;
 
@@ -56,14 +56,14 @@ print "found this many goodThings:\n";
 print `grep 'sp {' $goodThings | wc -l`;
 
 print "Running $target with source..\n";
-print `$runSoar -l $agentDir/$target.soar > $targetLogWithSourceLog`;
+print `$runSoar -w1 $agentDir/$target.soar > $targetLogWithSourceLog`;
 print "done, log tail:\n";
 print `tail $targetLogWithSourceLog`;
 
 print `mv $goodThings $goodThingsBU`;
 print `touch $goodThings`;
 print "Running $target without source..\n";
-print `$runSoar soar -l $agentDir/$target.soar > $targetLogWithoutSourceLog`;
+print `$runSoar -w1 $agentDir/$target.soar > $targetLogWithoutSourceLog`;
 print "done, log tail:\n";
 print `tail $targetLogWithoutSourceLog`;
 print `mv $goodThingsBU $goodThings`;
