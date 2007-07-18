@@ -4,10 +4,11 @@ from ply import yacc
 from gdllex import tokens
 import pdb
 
-keywords = ['role', 'init', 'true', 'next', 'legal', 'does', 'goal', 'terminal', 'not', 'or']
-preserve = ['2d', 'location', 'greaterThan', 'lessThan', 'plus', 'minus', 'step', 'succ', 'move', 'block', 'int']
+keywords = ['role', 'init', 'true', 'next', 'legal', 'does', 'goal', 'terminal', 'not', 'or', 'distinct', '<', '>', '>=', '+', '-', '*', '/']
+preserve = ['2d', 'location', 'greaterThan', 'lessThan', 'plus', 'minus', 'step', 'succ', 'move', 'blocked', 'int']
 
 preserve_constants = True
+preserve_variables = True
 
 class SymMap:
 	def __init__(self):
@@ -95,7 +96,10 @@ def p_term_list(p):
 
 def p_term_variable(p):
 	'term : VAR'
-	p[0] = '?%s' % mod_string(p[1][1:])
+	if preserve_variables:
+		p[0] = p[1]
+	else:
+		p[0] = '?%s' % mod_string(p[1][1:])
 
 def p_term_str_constant(p):
 	'term : NAME'
