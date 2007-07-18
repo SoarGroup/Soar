@@ -75,6 +75,24 @@ full implementation:
 #			^height <int> how many blocks up
 		^range <float>
 		^visible <string> [yes no] objects stay on input link for 2 cycles after they disappear
+	+^player
+		^angle-off 
+			^yaw <float> relative to direction I'm facing
+		^area <int> unique id number
+		^name <string> name of the robot (used in messaging)
+#		?^up-direction <float> direction to pass through the ramp to go up
+		^position
+			^x <float> exact position in pixels
+			^y <float> exact position in pixels
+#			^z <float> current exact height
+			^row <int> current row
+			^col <int> current row
+#			^height <int> how many blocks up
+		^range <float>
+	+^message
+		^from <string> who sent it
+		^message <string> the message
+		^cycle <int> when it was received (survives for 3 cycles)
 ^output-link
 	^move
 		^direction [forward stop backward]
@@ -94,6 +112,10 @@ full implementation:
 	^drop
 		^id <int>
 		^status [executing complete error]
+	^communicate
+		^to <string> name of player to send message to
+		^message <string> the message
+		^status [complete error]
 		
 Output command "states"
 -----------------------
