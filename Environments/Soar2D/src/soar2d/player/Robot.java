@@ -31,7 +31,7 @@ public class Robot extends Player {
 	}
 
 	public int getLocationId() {
-		assert false;
+//		assert false;
 		return -1;
 	}
 	
