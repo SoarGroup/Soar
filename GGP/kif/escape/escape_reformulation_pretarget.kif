@@ -152,7 +152,7 @@
 (canCompromise canBridge water yes)
 
 ;; legal combinations
-(<= (legal explorer (combine ?item1 ?item2 ?nails))
+(<= (legal explorer (combineWithHammer ?item1 ?item2 ?nails))
     (itemOrder ?item1 ?order1)
     (itemOrder ?item2 ?order2)
     (lessThan ?order1 ?order2)
@@ -166,7 +166,7 @@
     (true (property ?item2 nailable))
     (distinct ?item1 ?item2))
 
-(<= (legal explorer (combine ?item1 ?item2 ?tie))
+(<= (legal explorer (combineWithRope ?item1 ?item2 ?tie))
     (itemOrder ?item1 ?order1)
     (itemOrder ?item2 ?order2)
     (lessThan ?order1 ?order2)
@@ -203,8 +203,10 @@
     (true (property ?item ?prop)))
 
 (<= (used ?glue)
-    (does explorer (combine ?item1 ?item2 ?glue)))
+    (does explorer (combineWithHammer ?item1 ?item2 ?glue)))
 
+(<= (used ?glue)
+    (does explorer (combineWithRope ?item1 ?item2 ?glue)))
 ;; a "linked list" of symbol names
 
 (nextSymbol combo1 combo2)
@@ -222,7 +224,11 @@
 (<= (next (currSymbol ?ns))
     (true (currSymbol ?cs))
     (nextSymbol ?cs ?ns)
-    (does explorer (combine ?item1 ?item2 ?glue)))
+    (does explorer (combineWithHammer ?item1 ?item2 ?glue)))
+(<= (next (currSymbol ?ns))
+    (true (currSymbol ?cs))
+    (nextSymbol ?cs ?ns)
+    (does explorer (combineWithRope ?item1 ?item2 ?glue)))
 
 ;; frame axiom for maintaining the current symbol
 (<= (next (currSymbol ?cs))
@@ -231,7 +237,10 @@
 
 ;; the combine action
 (<= (combining ?item1 ?item2 ?comboName)
-    (does explorer (combine ?item1 ?item2 ?glue))
+    (does explorer (combineWithHammer ?item1 ?item2 ?glue))
+    (true (currSymbol ?comboName)))
+(<= (combining ?item1 ?item2 ?comboName)
+    (does explorer (combineWithRope ?item1 ?item2 ?glue))
     (true (currSymbol ?comboName)))
 (<= anyCombine
     (combining ?item1 ?item2 ?comboName))
