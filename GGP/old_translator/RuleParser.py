@@ -189,6 +189,10 @@ def TranslateTerminal(game_name, head, body):
 	var_map = GDLSoarVarMapper(sp.get_name_gen())
 	ParseGDLBodyToCondition(body, sp, var_map)
 	ParseComparisons(body, sp, var_map)
+
+	# add test for analyze state operator to make sure we've fired all
+	# state update rules
+	sp.add_operator_test('analyze-state')
 	
 	# different actions depending on if we're in the selection space
 	# or operating for real
