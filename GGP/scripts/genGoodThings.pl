@@ -43,12 +43,14 @@ foreach $line (`cat $ARGV[0]`) {
       $p2 = $3;
       $p3 = $4;
       $i++;
-      print "sp {elaborate*goodthing*$rand$i\n";
-      print "   (state <s> ^good-things <gt>)\n";
-      print "-->\n";
-      print "   (<gt> ^$1 <id>)\n";
-      print "   (<id> ^p1 $p1 ^p2 $p2 ^p3 $p3)\n";
-      print "}\n";
+      if (not $att =~ /location/) {
+        print "sp {elaborate*goodthing*$rand$i\n";
+        print "   (state <s> ^good-things <gt>)\n";
+        print "-->\n";
+        print "   (<gt> ^$1 <id>)\n";
+        print "   (<id> ^p1 $p1 ^p2 $p2 ^p3 $p3)\n";
+        print "}\n";
+      }
     }
     else {
       die "can't parse ADDED: $line\n";

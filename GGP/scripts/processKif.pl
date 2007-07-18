@@ -44,6 +44,7 @@ sub handleLine() {
     $line =~ s/not_\(/NOT /;
     $line =~ s/\)$//;
   }
+  $line =~ s/^true_/TRUE_/; # for cases where true isn't followed by paren
   $line =~ s/not_/NOT /;
  
 
