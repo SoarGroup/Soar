@@ -67,10 +67,10 @@ public class GridMap {
 				throw new LoadError("Couldn't find map tag in map file.");
 			}
 			
-			List children = root.getChildren();
-			Iterator iter = children.iterator();
+			List<Element> children = root.getChildren();
+			Iterator<Element> iter = children.iterator();
 			while (iter.hasNext()) {
-				Element child = (Element)iter.next();
+				Element child = iter.next();
 				
 				if (child.getName().equalsIgnoreCase(kTagCellObject)) {
 					cellObject(child);
@@ -160,10 +160,10 @@ public class GridMap {
 		
 		CellObject template = new CellObject(name);
 
-		List children = cellObject.getChildren();
-		Iterator iter = children.iterator();
+		List<Element> children = cellObject.getChildren();
+		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
-			Element child = (Element)iter.next();
+			Element child = iter.next();
 			
 			if (child.getName().equalsIgnoreCase(kTagProperty)) {
 				property(child, template, false);
@@ -262,10 +262,10 @@ public class GridMap {
 	}
 
 	private void apply(Element apply, CellObject template) throws LoadError {
-		List children = apply.getChildren();
-		Iterator iter = children.iterator();
+		List<Element> children = apply.getChildren();
+		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
-			Element child = (Element)iter.next();
+			Element child = iter.next();
 			
 			if (child.getName().equalsIgnoreCase(kTagProperty)) {
 				property(child, template, true);
@@ -350,10 +350,10 @@ public class GridMap {
 	}
 
 	private void update(Element update, CellObject template) throws LoadError {
-		List children = update.getChildren();
-		Iterator iter = children.iterator();
+		List<Element> children = update.getChildren();
+		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
-			Element child = (Element)iter.next();
+			Element child = iter.next();
 			
 			if (child.getName().equalsIgnoreCase(kTagDecay)) {
 				template.setDecayUpdate(true);
@@ -478,11 +478,11 @@ public class GridMap {
 			
 			this.mapCells = new Cell[this.size][];
 			
-			List children = cells.getChildren();
-			Iterator iter = children.iterator();
+			List<Element> children = cells.getChildren();
+			Iterator<Element> iter = children.iterator();
 			int rowIndex = 0;
 			while (iter.hasNext()) {
-				Element child = (Element)iter.next();
+				Element child = iter.next();
 
 				if (!child.getName().equalsIgnoreCase(kTagRow)) {
 					throw new LoadError("unrecognized tag: " + child.getName());
@@ -544,11 +544,11 @@ public class GridMap {
 		}
 		
 		
-		List children = row.getChildren();
-		Iterator iter = children.iterator();
+		List<Element> children = row.getChildren();
+		Iterator<Element> iter = children.iterator();
 		int colIndex = 0;
 		while (iter.hasNext()) {
-			Element child = (Element)iter.next();
+			Element child = iter.next();
 
 			if (!child.getName().equalsIgnoreCase(kTagCell)) {
 				throw new LoadError("unrecognized tag: " + child.getName());
@@ -573,10 +573,10 @@ public class GridMap {
 	private void cell(Element cell, java.awt.Point location) throws LoadError {
 		boolean background = false;
 		
-		List children = cell.getChildren();
-		Iterator iter = children.iterator();
+		List<Element> children = cell.getChildren();
+		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
-			Element child = (Element)iter.next();
+			Element child = iter.next();
 			
 			if (!child.getName().equalsIgnoreCase(kTagObject)) {
 				throw new LoadError("unrecognized tag: " + child.getName());
@@ -974,8 +974,8 @@ public class GridMap {
 	
 	public int pointsCount(java.awt.Point location) {
 		Cell cell = getCell(location);
-		ArrayList list = cell.getAllWithProperty(Names.kPropertyEdible);
-		Iterator iter = list.iterator();
+		ArrayList<CellObject> list = cell.getAllWithProperty(Names.kPropertyEdible);
+		Iterator<CellObject> iter = list.iterator();
 		int count = 0;
 		while (iter.hasNext()) {
 			count += ((CellObject)iter.next()).getIntProperty(Names.kPropertyPoints);
