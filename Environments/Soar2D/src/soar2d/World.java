@@ -139,7 +139,7 @@ public class World {
 	
 	private boolean resetPlayer(Player player, boolean resetDuringRun) {
 		// find a suitable starting location
-		Point startingLocation = putInStartingLocation(player);
+		Point startingLocation = putInStartingLocation(player, true);
 		if (startingLocation == null) {
 			return false;
 		}
@@ -284,7 +284,7 @@ public class World {
 		return availableLocations;
 	}
 	
-	private Point putInStartingLocation(Player player) {
+	private Point putInStartingLocation(Player player, boolean useInitialLocation) {
 		// Get available cells
 		
 		ArrayList<Point> availableLocations = getAvailableLocations(map);
@@ -308,7 +308,7 @@ public class World {
 		
 		Point location = null;
 
-		if (initialLocations.containsKey(player.getName())) {
+		if (useInitialLocation && initialLocations.containsKey(player.getName())) {
 			location = initialLocations.get(player.getName());
 			if (!availableLocations.contains(location)) {
 				logger.warning(player.getName() + ": Initial location (" + location.x + "," + location.y + ") is blocked, going random.");
@@ -1080,7 +1080,7 @@ public class World {
 			ListIterator<Player> collideeIter = collision.listIterator();
 			while (collideeIter.hasNext()) {
 				Player player = collideeIter.next();
-				Point location = putInStartingLocation(player);
+				Point location = putInStartingLocation(player, false);
 				assert location != null;
 				player.fragged();
 			}
@@ -1783,7 +1783,7 @@ public class World {
 			collideeIter = collision.listIterator();
 			while (collideeIter.hasNext()) {
 				Player player = collideeIter.next();
-				Point location = putInStartingLocation(player);
+				Point location = putInStartingLocation(player, false);
 				assert location != null;
 				player.fragged();
 				if (!lastMoves.get(player.getName()).dontEat) {

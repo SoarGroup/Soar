@@ -33,6 +33,7 @@ class SelfInputLink {
 	ArrayList<BarrierInputLink> walls = new ArrayList<BarrierInputLink>();
 	ArrayList<GatewayInputLink> gateways = new ArrayList<GatewayInputLink>();
 	private HashMap<Integer, ObjectInputLink> objects = new HashMap<Integer, ObjectInputLink>();
+	private HashMap<Player, PlayerInputLink> players = new HashMap<Player, PlayerInputLink>();
 	Identifier collision;
 	StringElement collisionX;
 	StringElement collisionY;
@@ -118,6 +119,48 @@ class SelfInputLink {
 		gateways.add(gateway);
 	}
 	
+	void addOrUpdatePlayer(Player player, World world, double angleOffDouble) {
+		PlayerInputLink pIL = players.get(player);
+
+		double dx = world.getFloatLocation(player).x - world.getFloatLocation(robot).x;
+		dx *= dx;
+		double dy = world.getFloatLocation(player).y - world.getFloatLocation(robot).y;
+		dy *= dy;
+		double range = Math.sqrt(dx + dy);
+		
+		if (pIL == null) {
+			// create new player
+			Identifier parent = robot.agent.CreateIdWME(robot.agent.GetInputLink(), "player");
+			pIL = new PlayerInputLink(robot, parent);
+			pIL.initialize(player, world, range, angleOffDouble);
+			players.put(player, pIL);
+		
+		} else {
+			if (pIL.area.GetValue() != player.getLocationId()) {
+				robot.agent.Update(pIL.area, player.getLocationId());
+			}
+			if (pIL.row.GetValue() != world.getLocation(player).y) {
+				robot.agent.Update(pIL.row, world.getLocation(player).y);
+			}
+			if (pIL.col.GetValue() != world.getLocation(player).x) {
+				robot.agent.Update(pIL.col, world.getLocation(player).x);
+			}
+			if (pIL.x.GetValue() != world.getFloatLocation(player).x) {
+				robot.agent.Update(pIL.x, world.getFloatLocation(player).x);
+			}
+			if (pIL.y.GetValue() != world.getFloatLocation(player).y) {
+				robot.agent.Update(pIL.y, world.getFloatLocation(player).y);
+			}
+			if (pIL.range.GetValue() != range) {
+				robot.agent.Update(pIL.range, range);
+			}
+			if (pIL.yaw.GetValue() != angleOffDouble) {
+				robot.agent.Update(pIL.yaw, angleOffDouble);
+			}
+			pIL.touch(world.getWorldCount());
+		}
+	}
+	
 	void addOrUpdateObject(GridMap.BookObjectInfo objectInfo, World world, double angleOffDouble) {
 		ObjectInputLink oIL = objects.get(objectInfo.object.getIntProperty("object-id"));
 
@@ -161,15 +204,28 @@ class SelfInputLink {
 	}
 	
 	void purge(int cycle) {
-		Iterator<ObjectInputLink> iter = objects.values().iterator();
-		while (iter.hasNext()) {
-			ObjectInputLink oIL = iter.next();
+		Iterator<ObjectInputLink> oiter = objects.values().iterator();
+		while (oiter.hasNext()) {
+			ObjectInputLink oIL = oiter.next();
 			if (oIL.cycleTouched < cycle) {
 				if (oIL.cycleTouched > cycle - 3) {
 					oIL.makeInvisible();
 				} else {
 					robot.agent.DestroyWME(oIL.parent);
-					iter.remove();
+					oiter.remove();
+				}
+			}
+		}
+		
+		Iterator<PlayerInputLink> piter = players.values().iterator();
+		while (piter.hasNext()) {
+			PlayerInputLink pIL = piter.next();
+			if (pIL.cycleTouched < cycle) {
+				if (pIL.cycleTouched > cycle - 3) {
+					pIL.makeInvisible();
+				} else {
+					robot.agent.DestroyWME(pIL.parent);
+					piter.remove();
 				}
 			}
 		}
@@ -313,6 +369,61 @@ class ObjectInputLink {
 			this.row = robot.agent.CreateIntWME(position, "row", info.location.y);
 			this.x = robot.agent.CreateFloatWME(position, "x", info.floatLocation.x);
 			this.y = robot.agent.CreateFloatWME(position, "y", info.floatLocation.y);
+		}
+		this.range = robot.agent.CreateFloatWME(parent, "range", range);
+		this.visible = robot.agent.CreateStringWME(parent, "visible", "yes");
+		
+		touch(world.getWorldCount());
+	}
+	
+	void touch(int cycle) {
+		cycleTouched = cycle;
+		if (visible.GetValue().equals("no")) {
+			robot.agent.Update(visible, "yes");
+		}
+	}
+	
+	void makeInvisible() {
+		if (visible.GetValue().equals("yes")) {
+			robot.agent.Update(visible, "no");
+		}
+	}
+}
+
+class PlayerInputLink { // FIXME should share code with OIL
+	SoarRobot robot;
+	Identifier parent;
+	
+	IntElement area;
+	StringElement type;
+	Identifier position;
+	Identifier angleOff;
+	FloatElement yaw;
+	FloatElement x, y;
+	IntElement row, col;
+	StringElement visible;
+	FloatElement range;
+	StringElement name;
+	
+	int cycleTouched;
+	
+	PlayerInputLink(SoarRobot robot, Identifier parent) {
+		this.robot = robot;
+		this.parent = parent;
+	}
+	
+	void initialize(Player player, World world, double range, double angleOffDouble) {
+		this.name = robot.agent.CreateStringWME(parent, "name", player.getName());
+		this.type = robot.agent.CreateStringWME(parent, "type", "player"); // FIXME distingush between robot, dog, mouse
+		this.area = robot.agent.CreateIntWME(parent, "area", player.getLocationId());
+		this.angleOff = robot.agent.CreateIdWME(parent, "angle-off");
+		this.yaw = robot.agent.CreateFloatWME(angleOff, "yaw", angleOffDouble);
+		this.position = robot.agent.CreateIdWME(parent, "position");
+		{
+			this.col = robot.agent.CreateIntWME(position, "col", world.getLocation(player).x);
+			this.row = robot.agent.CreateIntWME(position, "row", world.getLocation(player).y);
+			this.x = robot.agent.CreateFloatWME(position, "x", world.getFloatLocation(player).x);
+			this.y = robot.agent.CreateFloatWME(position, "y", world.getFloatLocation(player).y);
 		}
 		this.range = robot.agent.CreateFloatWME(parent, "range", range);
 		this.visible = robot.agent.CreateStringWME(parent, "visible", "yes");
@@ -549,6 +660,19 @@ public class SoarRobot extends Robot {
 				} else {
 					logger.finer(getName() + ": object " + bInfo.object.getProperty("object-id") + " out of cone");
 				}
+			}
+		}
+		
+		// players
+		ArrayList<Player> players = world.getPlayers();
+		if (players.size() > 1) {
+			Iterator<Player> playersIter = players.iterator();
+			while (playersIter.hasNext()) {
+				Player player = playersIter.next();
+				if (this.equals(player)) {
+					continue;
+				}
+				selfIL.addOrUpdatePlayer(player, world, world.angleOff(this, world.getFloatLocation(player)));
 			}
 		}
 		
