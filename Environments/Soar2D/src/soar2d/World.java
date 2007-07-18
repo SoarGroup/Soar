@@ -1037,6 +1037,20 @@ public class World {
 				}
 			}
 			
+			// handle communication
+			Iterator<MoveInfo.Communication> commIter = move.messages.iterator();
+			while (commIter.hasNext()) {
+				MoveInfo.Communication comm = commIter.next();
+				Player toPlayer = getPlayer(comm.to);
+				if (toPlayer == null) {
+					logger.warning("Move: communicate: unknown player: " + comm.to);
+					continue;
+				}
+				
+				toPlayer.receiveMessage(player, comm.message, this);
+			}
+			
+			
 		}
 		
 		handleBookCollisions(findCollisions());

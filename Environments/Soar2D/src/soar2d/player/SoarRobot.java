@@ -34,6 +34,7 @@ class SelfInputLink {
 	ArrayList<GatewayInputLink> gateways = new ArrayList<GatewayInputLink>();
 	private HashMap<Integer, ObjectInputLink> objects = new HashMap<Integer, ObjectInputLink>();
 	private HashMap<Player, PlayerInputLink> players = new HashMap<Player, PlayerInputLink>();
+	private HashSet<MessageInputLink> messages = new HashSet<MessageInputLink>();
 	Identifier collision;
 	StringElement collisionX;
 	StringElement collisionY;
@@ -229,6 +230,15 @@ class SelfInputLink {
 				}
 			}
 		}
+		
+		Iterator<MessageInputLink> miter = messages.iterator();
+		while (miter.hasNext()) {
+			MessageInputLink mIL = miter.next();
+			if (mIL.cycleCreated < cycle - 3) {
+				robot.agent.DestroyWME(mIL.parent);
+				miter.remove();
+			}
+		}
 	}
 	
 	ObjectInputLink getOIL(int id) {
@@ -251,6 +261,11 @@ class SelfInputLink {
 		assert self != null;
 		robot.agent.DestroyWME(self);
 		destroyAreaDescription();
+
+		objects = new HashMap<Integer, ObjectInputLink>();
+		players = new HashMap<Player, PlayerInputLink>();
+		messages = new HashSet<MessageInputLink>();
+
 		self = areaDescription = carry = null;
 	}
 	
@@ -265,6 +280,32 @@ class SelfInputLink {
 		assert carry != null;
 		robot.agent.DestroyWME(carry);
 		carry = null;
+	}
+
+	void addMessage(Player player, String message, World world) {
+		Identifier parent = robot.agent.CreateIdWME(robot.agent.GetInputLink(), "message");
+		MessageInputLink mIL = new MessageInputLink(robot, parent);
+		mIL.initialize(player.getName(), message, world);
+		messages.add(mIL);
+	}
+}
+
+class MessageInputLink {
+	SoarRobot robot;
+	Identifier parent;
+	StringElement from, message;
+
+	int cycleCreated;
+
+	MessageInputLink(SoarRobot robot, Identifier parent) {
+		this.robot = robot;
+		this.parent = parent;
+	}
+	
+	void initialize(String from, String message, World world) {
+		this.from = robot.agent.CreateStringWME(parent, "from", from);
+		this.message = robot.agent.CreateStringWME(parent, "message", message);
+		this.cycleCreated = world.getWorldCount();
 	}
 }
 
@@ -951,6 +992,26 @@ public class SoarRobot extends Robot {
 				move.drop = true;
 				dropCommandId = commandId;
 				
+			} else if (commandName.equalsIgnoreCase("communicate")) {
+				MoveInfo.Communication comm = move.new Communication();
+				String toString = commandId.GetParameterValue("to");
+				if (toString == null) {
+					logger.warning(getName() + " communicate command missing to parameter");
+					commandId.AddStatusError();
+					continue;
+				}
+				comm.to = toString;
+				
+				String messageString = commandId.GetParameterValue("message");
+				if (messageString == null) {
+					logger.warning(getName() + " communicate command missing message parameter");
+					commandId.AddStatusError();
+					continue;
+				}
+				comm.message = messageString;
+				
+				move.messages.add(comm);
+				
 			} else {
 				logger.warning("Unknown command: " + commandName);
 				commandId.AddStatusError();
@@ -963,6 +1024,10 @@ public class SoarRobot extends Robot {
 			Soar2D.control.stopSimulation();
 		}
 		return move;
+	}
+	
+	public void receiveMessage(Player player, String message, World world) {
+		selfIL.addMessage(player, message, world);
 	}
 	
 	public void updateGetStatus(boolean success) {

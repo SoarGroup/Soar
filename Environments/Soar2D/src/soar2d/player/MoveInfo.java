@@ -1,5 +1,8 @@
 package soar2d.player;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import soar2d.*;
 
 /**
@@ -47,6 +50,12 @@ public class MoveInfo {
 	public int getId;
 	public boolean drop = false;
 	public int dropId;
+	
+	public class Communication {
+		public String to;
+		public String message;
+	}
+	public ArrayList<Communication> messages = new ArrayList<Communication>();
 	
 	public MoveInfo() {
 	}
@@ -116,6 +125,11 @@ public class MoveInfo {
 			}
 			if (drop) {
 				output += "(" + Names.kDropID + ": " + dropId + ")";
+			}
+			Iterator<Communication> iter = messages.iterator();
+			while (iter.hasNext()) {
+				Communication comm = iter.next();
+				output += "(comm: " + comm.to + ": " + comm.message + ")";
 			}
 			break;
 		}
