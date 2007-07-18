@@ -4,7 +4,27 @@
 $i = 0;
 $rand =int( rand()*21515151551);
 
-foreach $line (`cat $ARGV[0]`) {
+die unless ($#ARGV == 2);
+$logFile = $ARGV[0];
+$sourceKif = $ARGV[1];
+$targetKif = $ARGV[2];
+
+$mapper = "./runMapper.pl";
+
+checkFor($logFile);
+checkFor($sourceKif);
+checkFor($targetKif);
+checkFor($mapper);
+
+%mappings = ();
+foreach $mapping (`$mapper $sourceKif $targetKif`) {
+  chomp $mapping;
+  $mapping =~ /^(\S*) (\S*)$/ or die "can't parse: $mapping\n";
+  $mappings{$1} = $2;
+  print "# MAPPING: $1 -> $2\n";
+}
+
+foreach $line (`cat $logFile`) {
   chomp $line;
   if ($line =~ s/^ADDED //) {
     if (defined $done{$line}) {
@@ -16,29 +36,38 @@ foreach $line (`cat $ARGV[0]`) {
     }
     if ($line =~ /(\S+) \^p1 (\S+)$/) {
       $att = $1;
+      if (defined $mappings{$att}) {
+        $att = $mappings{$att};
+      }
       $p1 = $2;
       $i++;
       print "sp {elaborate*goodthing*$rand$i\n";
       print "   (state <s> ^good-things <gt>)\n";
       print "-->\n";
-      print "   (<gt> ^$1 <id>)\n";
+      print "   (<gt> ^$att <id>)\n";
       print "   (<id> ^p1 $p1)\n";
       print "}\n";
     }
     elsif ($line =~ /(\S+) \^p1 (\S+) \^p2 (\S+)$/) {
       $att = $1;
+      if (defined $mappings{$att}) {
+        $att = $mappings{$att};
+      }
       $p1 = $2;
       $p2 = $3;
       $i++;
       print "sp {elaborate*goodthing*$rand$i\n";
       print "   (state <s> ^good-things <gt>)\n";
       print "-->\n";
-      print "   (<gt> ^$1 <id>)\n";
+      print "   (<gt> ^$att <id>)\n";
       print "   (<id> ^p1 $p1 ^p2 $p2)\n";
       print "}\n";
     }
     elsif ($line =~ /(\S+) \^p1 (\S+) \^p2 (\S+) \^p3 (\S+)$/) {
       $att = $1;
+      if (defined $mappings{$att}) {
+        $att = $mappings{$att};
+      }
       $p1 = $2;
       $p2 = $3;
       $p3 = $4;
@@ -47,7 +76,7 @@ foreach $line (`cat $ARGV[0]`) {
         print "sp {elaborate*goodthing*$rand$i\n";
         print "   (state <s> ^good-things <gt>)\n";
         print "-->\n";
-        print "   (<gt> ^$1 <id>)\n";
+        print "   (<gt> ^$att <id>)\n";
         print "   (<id> ^p1 $p1 ^p2 $p2 ^p3 $p3)\n";
         print "}\n";
       }
@@ -56,4 +85,9 @@ foreach $line (`cat $ARGV[0]`) {
       die "can't parse ADDED: $line\n";
     }
   }
+}
+
+sub checkFor() {
+  $file = shift;
+  die "$file does not exist" unless (-e $file);
 }

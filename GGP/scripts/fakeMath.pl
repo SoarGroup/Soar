@@ -13,12 +13,11 @@ open $OUT, ">$tmpFileName";
 die if ($#ARGV != 0);
 
 foreach $line (<$FILE>) {
-  $line = lc $line;
   $line =~ s/\(\+/\(plus/g;
   $line =~ s/\(\-/\(minus/g;
 #  $line =~ s/\(\>\=/\(gtequal/g;
 #  $line =~ s/\(\>/\(greaterthan/g;
-#  $line =~ s/\(\< /\(lessthan /g;
+  $line =~ s/\(\< /\(lessthan /g;
   print $OUT $line;
 }
 #print `cp $tmpFileName fakemath_int.kif`;
