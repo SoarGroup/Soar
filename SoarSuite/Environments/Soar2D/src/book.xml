@@ -13,9 +13,6 @@
     <console />
   </logging>
   <players>
-    <player>
-      <name>robot</name>
-    </player>
   </players>
   <terminals />
   <clients />
