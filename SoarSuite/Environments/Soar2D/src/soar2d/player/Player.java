@@ -466,4 +466,8 @@ public class Player {
 		}
 		return carriedObject.getIntProperty("number");
 	}
+	public void receiveMessage(Player player, String message, World world) {
+		assert false;
+		
+	}
 }
