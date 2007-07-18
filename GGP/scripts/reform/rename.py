@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from ply import yacc
 from gdllex import tokens
 import pdb

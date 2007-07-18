@@ -9,8 +9,8 @@
 using namespace std;
 using boost::bind;
 
-ostream& operator<<(ostream& os, BodyMapping& bm) {
-  for (BodyMapping::iterator
+ostream& operator<<(ostream& os, PredMapping& bm) {
+  for (PredMapping::iterator
        i  = bm.begin();
        i != bm.end();
        ++i)
@@ -20,7 +20,7 @@ ostream& operator<<(ostream& os, BodyMapping& bm) {
   return os;
 }
 
-void bmStr(BodyMapping& bm) {
+void bmStr(PredMapping& bm) {
   cout << bm;
 }
 
@@ -44,10 +44,10 @@ Matcher::Matcher
          j != targetRules.end();
          ++j)
     {
-      vector<BodyMapping> mappings;
+      vector<PredMapping> mappings;
       vector<ScoredBodyMapping> scoredMappings;
       allBodyMappings(*i, *j, mappings);
-      for(vector<BodyMapping>::iterator
+      for(vector<PredMapping>::iterator
           k  = mappings.begin();
           k != mappings.end();
           ++k)
@@ -96,9 +96,9 @@ Matcher::Matcher(const Matcher& other)
 void Matcher::allBodyMappings
 ( const Rule& sr, 
   const Rule& tr, 
-  vector<BodyMapping>& mappings) const
+  vector<PredMapping>& mappings) const
 {
-  BodyMapping dummy;
+  PredMapping dummy;
 
   vector<Condition> smaller;
   vector<Condition> larger;
@@ -112,18 +112,18 @@ void Matcher::allBodyMappings
     allBodyMappingsInternal(smaller, larger, dummy, mappings);
   }
   else {
-    vector<BodyMapping> revPossibleMaps;
+    vector<PredMapping> revPossibleMaps;
     tr.get_body(smaller);
     sr.get_body(larger);
-    BodyMapping tempMap;
+    PredMapping tempMap;
     allBodyMappingsInternal(smaller, larger, dummy, revPossibleMaps);
-    for(vector<BodyMapping>::iterator
+    for(vector<PredMapping>::iterator
         i  = revPossibleMaps.begin();
         i != revPossibleMaps.end();
         ++i)
     {
-      BodyMapping temp;
-      for(BodyMapping::iterator
+      PredMapping temp;
+      for(PredMapping::iterator
           j  = i->begin();
           j != i->end();
           ++j)
@@ -138,7 +138,7 @@ void Matcher::allBodyMappings
 //bool Matcher::findBodyMappingInternal
 //( vector<Condition> smaller,  // by value on purpose
 //  vector<Condition> larger,
-//  BodyMapping& mapping ) const
+//  PredMapping& mapping ) const
 //{
 //  if (smaller.size() == 0) {
 //    return true;
@@ -181,8 +181,8 @@ void Matcher::allBodyMappings
 bool Matcher::allBodyMappingsInternal
 ( vector<Condition> smaller,  // by value on purpose
   vector<Condition> larger,
-  BodyMapping& partialMap,
-  vector<BodyMapping>& mappings ) const
+  PredMapping& partialMap,
+  vector<PredMapping>& mappings ) const
 {
   if (smaller.size() == 0) {
     mappings.push_back(partialMap);
@@ -204,7 +204,7 @@ bool Matcher::allBodyMappingsInternal
         if (score > 0 and p1n == i->negated) {
           Predicate p2 = i->pred;
           larger.erase(i);
-          BodyMapping notAsPartialMap(partialMap);
+          PredMapping notAsPartialMap(partialMap);
           notAsPartialMap.insert(PredPair(p1, p2));
           if (allBodyMappingsInternal(smaller, larger, notAsPartialMap, mappings)) {
             return true;
@@ -228,11 +228,11 @@ bool Matcher::allBodyMappingsInternal
 double Matcher::bodyMapScore
 ( const Rule& sr, 
   const Rule& tr, 
-  const BodyMapping& m) const 
+  const PredMapping& m) const 
 {
   int unmatched_conds = std::max(sr.body_size(), tr.body_size()) - m.size();
   double total = 0;
-  for (BodyMapping::const_iterator
+  for (PredMapping::const_iterator
        i  = m.begin();
        i != m.end();
        ++i)
@@ -249,7 +249,7 @@ double Matcher::bodyMapScore
 //bool Matcher::rulesCanMatch
 //( const Rule& sr, 
 //  const Rule& tr, 
-//  BodyMapping& mapping) const
+//  PredMapping& mapping) const
 //{
 //  // rules heads must be matchable
 //  if (!predicatesCanMatch(sr.get_head(), tr.get_head())) {
@@ -266,7 +266,7 @@ double Matcher::bodyMapScore
 //    return false;
 //  }
 //
-//  BodyMapping tempMap;
+//  PredMapping tempMap;
 //  if (findBodyMapping(sr, tr, tempMap)) {
 //    mapping.insert(tempMap.begin(), tempMap.end());
 //    return true;
@@ -352,7 +352,7 @@ double Matcher::predicateMatchScore
 double Matcher::ruleMatchScore
 ( const Rule& r1, 
   const Rule& r2, 
-  BodyMapping& bestMap) const 
+  PredMapping& bestMap) const 
 {
   double score = 0;
   RuleMatchMap::const_iterator p = rMatchCands.find(RulePair(r1, r2));
@@ -372,7 +372,7 @@ double Matcher::ruleMatchScore
       score = i->second;
     }
   }
-  if (predicateMatched(r1.get_head())) {
+  if (srcPredMatched(r1.get_head())) {
     score *= 2;
   }
   bestMap = bestPos->first;
@@ -426,7 +426,7 @@ void Matcher::updatePossibleRuleMatches(const Predicate& sp, const Predicate& tp
 bool Matcher::getBestMatch
 ( const Rule*& r1, 
   const Rule*& r2, 
-  BodyMapping& bestMap) const 
+  PredMapping& bestMap) const 
 {
   double bestScore = -1;
   r1 = NULL; r2 = NULL;
@@ -437,7 +437,7 @@ bool Matcher::getBestMatch
   {
     const Rule& sr = i->first.first;
     const Rule& tr = i->first.second;
-    BodyMapping m;
+    PredMapping m;
     double score = ruleMatchScore(sr, tr, m);
     if (score > bestScore) {
       bestScore = score;
@@ -456,13 +456,15 @@ bool Matcher::getBestMatch
 }
 
 void Matcher::addPredicateMatch(const Predicate& sp, const Predicate& tp) {
-  assert(matchedPreds.find(sp) == matchedPreds.end());
-  assert(matchedPreds.find(tp) == matchedPreds.end());
+  assert(!srcPredMatched(sp));
+  assert(!tgtPredMatched(tp));
+
   matchedPreds.insert(PredPair(sp, tp));
   if (sp != tp) {
     matchedPreds.insert(PredPair(tp, sp));
   }
-  cout << "MATCHING PREDICATE " << sp << " TO " << tp << endl;
+//  cout << "MATCHING PREDICATE " << sp << " TO " << tp << endl;
+  cout << sp << " " << tp << endl;
 
   sourcePreds.erase(remove(sourcePreds.begin(), sourcePreds.end(), sp), sourcePreds.end());
   targetPreds.erase(remove(targetPreds.begin(), targetPreds.end(), tp), targetPreds.end());
@@ -470,7 +472,7 @@ void Matcher::addPredicateMatch(const Predicate& sp, const Predicate& tp) {
 }
 
 void Matcher::addRuleMatch(const Rule& sr, const Rule& tr) {
-  cout << "MATCHING RULE " << sr << " TO " << tr << endl;
+//  cout << "MATCHING RULE " << sr << " TO " << tr << endl;
 
   sourceRules.erase(sr);
   targetRules.erase(tr);
@@ -500,7 +502,7 @@ void Matcher::addRuleMatch(const Rule& sr, const Rule& tr) {
   }
 }
 
-bool Matcher::getBodyMaps(const Rule& sr, const Rule& tr, vector<BodyMapping>& map) const {
+bool Matcher::getBodyMaps(const Rule& sr, const Rule& tr, vector<PredMapping>& map) const {
   RuleMatchMap::const_iterator pos = rMatchCands.find(RulePair(sr, tr));
   if (pos == rMatchCands.end()) {
     return false;
@@ -523,6 +525,52 @@ void Matcher::getUnmatchedPreds(vector<Predicate>& sp, vector<Predicate>& tp) {
 void Matcher::getUnmatchedRules(vector<Rule>& sr, vector<Rule>& tr) {
   sr.insert(sr.begin(), sourceRules.begin(), sourceRules.end());
   tr.insert(tr.begin(), targetRules.begin(), targetRules.end());
+}
+
+bool Matcher::srcPredMatched(const Predicate& p) const { 
+  return matchedPreds.find(p) != matchedPreds.end();
+}
+
+bool Matcher::tgtPredMatched(const Predicate& p) const {
+  for(PredMapping::const_iterator
+      i  = matchedPreds.begin();
+      i != matchedPreds.end();
+      ++i)
+  {
+    if (i->second == p) {
+      return true;
+    }
+  }
+  return false;
+}
+
+Predicate Matcher::getSrcPredMatch(const Predicate& p) const {
+  assert(srcPredMatched(p));
+  PredMapping::const_iterator pos = matchedPreds.find(p);
+  return pos->first;
+}
+
+Predicate Matcher::getTgtPredMatch(const Predicate& p) const {
+  for (PredMapping::const_iterator
+       i  = matchedPreds.begin();
+       i != matchedPreds.end();
+       ++i)
+  {
+    if (i->second == p) {
+      return i->first;
+    }
+  }
+  assert(false);
+}
+
+bool Matcher::hasPredMatchConflict(const Predicate& sp, const Predicate& tp) const {
+  if (srcPredMatched(sp) and getSrcPredMatch(sp) != tp) {
+    return true;
+  }
+  if (tgtPredMatched(tp) and getTgtPredMatch(tp) != sp) {
+    return true;
+  }
+  return false;
 }
 
 ostream& operator<<(ostream& os, const Matcher& m) {

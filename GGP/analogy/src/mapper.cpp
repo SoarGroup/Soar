@@ -39,22 +39,18 @@ int main(int argc, char* argv[]) {
       srules, 
       trules);
 
-  cout << "HERE IT COMES" << endl;
-  cout << matcher << endl;
-  cout << "=========" << endl;
-
   while (true) {
     const Rule* r1;
     const Rule* r2;
-    BodyMapping m;
+    PredMapping m;
     if (!matcher.getBestMatch(r1, r2, m)) {
-      cout << "FINISHED0" << endl;
+//      cout << "FINISHED0" << endl;
       break;
     }
 
-    cout << "Best Match:" << endl;
-    cout << *r1 << endl;
-    cout << *r2 << endl;
+//    cout << "Best Match:" << endl;
+//    cout << *r1 << endl;
+//    cout << *r2 << endl;
     
 //    if (!matcher.findBestBodyMapping(*r1, *r2, m)) {
 //      cout << "FINISHED1" << endl;
@@ -63,31 +59,27 @@ int main(int argc, char* argv[]) {
 
     // commit to predicate matches
     // head predicates
-    if (!matcher.predicateMatched(r1->get_head()) and
-        !matcher.predicateMatched(r2->get_head()))
-    {
+    if (!matcher.srcPredMatched(r1->get_head()) and !matcher.tgtPredMatched(r2->get_head())) {
       matcher.addPredicateMatch(r1->get_head(), r2->get_head());
     }
-    else {
-      cout << "MATCH PREDICATE CONFLICT!" << endl;
-      cout << r1 << endl << r2 << endl;
-    }
+//    else if (!matcher.hasPredMatchConflict(r1->get_head(), r2->get_head())) {
+//      cout << "MATCH PREDICATE CONFLICT!" << endl;
+//      cout << r1->get_head() << endl << r2->get_head() << endl;
+//    }
 
     // body predicates
-    for (BodyMapping::iterator
+    for (PredMapping::iterator
          i  = m.begin();
          i != m.end();
          ++i)
     {
-      if (!matcher.predicateMatched(i->first) and 
-          !matcher.predicateMatched(i->second)) 
-      {
+      if (!matcher.srcPredMatched(i->first) and !matcher.tgtPredMatched(i->second)) {
         matcher.addPredicateMatch(i->first, i->second);
       }
-      else {
-        cout << "MATCH PREDICATE CONFLICT!" << endl;
-        cout << i->first << endl << i->second << endl;
-      }
+//      else if (!matcher.hasPredMatchConflict(i->first, i->second)) {
+//        cout << "MATCH PREDICATE CONFLICT!" << endl;
+//        cout << i->first << endl << i->second << endl;
+//      }
     }
     matcher.addRuleMatch(*r1, *r2);
   }
@@ -100,15 +92,15 @@ int main(int argc, char* argv[]) {
   matcher.getUnmatchedPreds(usp, utp);
   matcher.getUnmatchedRules(usr, utr);
 
-  cout << "### UNMATCHED SOURCE PREDICATES ###" << endl;
-  copy(usp.begin(), usp.end(), ostream_iterator<Predicate>(cout, "\n"));
-  cout << "### UNMATCHED TARGET PREDICATES ###" << endl;
-  copy(utp.begin(), utp.end(), ostream_iterator<Predicate>(cout, "\n"));
-
-  cout << "### UNMATCHED SOURCE RULES ###" << endl;
-  copy(usr.begin(), usr.end(), ostream_iterator<Rule>(cout, "\n"));
-  cout << "### UNMATCHED TARGET RULES ###" << endl;
-  copy(utr.begin(), utr.end(), ostream_iterator<Rule>(cout, "\n"));
+//  cout << "### UNMATCHED SOURCE PREDICATES ###" << endl;
+//  copy(usp.begin(), usp.end(), ostream_iterator<Predicate>(cout, "\n"));
+//  cout << "### UNMATCHED TARGET PREDICATES ###" << endl;
+//  copy(utp.begin(), utp.end(), ostream_iterator<Predicate>(cout, "\n"));
+//
+//  cout << "### UNMATCHED SOURCE RULES ###" << endl;
+//  copy(usr.begin(), usr.end(), ostream_iterator<Rule>(cout, "\n"));
+//  cout << "### UNMATCHED TARGET RULES ###" << endl;
+//  copy(utr.begin(), utr.end(), ostream_iterator<Rule>(cout, "\n"));
 
   return 0;
 }
