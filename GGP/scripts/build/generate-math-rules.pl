@@ -2,7 +2,7 @@ use strict;
 
 my $range = [-5, 20];
 #my $other_numbers = [41, 50, 1000, 100];
-my $other_numbers = [10, 20, 25, 40, 80, 50, 1000];
+my $other_numbers = [25, 40, 80, 50, 100, 150, 1000];
 #my $other_numbers = [10, 20, 25];
 
 my $operators = ["plus", "minus", "multiply", "division", 

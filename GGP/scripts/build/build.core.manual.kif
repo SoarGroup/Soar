@@ -529,32 +529,55 @@
 ;;; 2) ?left is to the left of ?right and there is space between the two
 ;;; 3) Every cell between ?left and ?right at the same height as their tops
 ;;;    has a support that is a member of ?bridge (the bridge deck)
+;;(<= (bridge ?bridge ?left ?right)
+;;    (object-coordinates ?left ?x11 ?y11 ?x12 ?y)
+;;    (object-coordinates ?right ?x21 ?y21 ?x22 ?y)
+;;    (> ?x21 ?x12)
+;;    (- ?x21 1 ?end-x)
+;;    (bridge-segment ?bridge ?x12 ?end-x ?y))
+;;manula mod
 (<= (bridge ?bridge ?left ?right)
     (object-coordinates ?left ?x11 ?y11 ?x12 ?y)
     (object-coordinates ?right ?x21 ?y21 ?x22 ?y)
     (> ?x21 ?x12)
-    (- ?x21 1 ?end-x)
-    (bridge-segment ?bridge ?x12 ?end-x ?y))
+    ;;(- ?x21 1 ?end-x)
+    (bridge-segment ?bridge ?x12 ?21 ?y))
 
 ;;; Determine if, for every cell between ?start-x and ?end-x at height ?y, 
 ;;; there is a support that is a member of ?bridge. Cases:
 ;;; 1) Base: ?start-x > ?end-x
 ;;; 2) General: A primitive object ?support has top at ?y, is clear on top, 
 ;;;    and ?start-x is between ?support's left and right sides
+;;(<= (bridge-segment ?bridge ?start-x ?end-x ?y)
+;;    (true (object ?bridge ?type))
+;;    (number ?y)
+;;	(fake ?start-x)
+;;	(fake ?end-x)
+;;    (> ?start-x ?end-x))
+
 (<= (bridge-segment ?bridge ?start-x ?end-x ?y)
-    (true (object ?bridge ?type))
-    (number ?y)
-	(fake ?start-x)
-	(fake ?end-x)
-    (> ?start-x ?end-x))
+	(primitive-object ?support)
+	(is-recursive-member-of-compound ?bridge ?support)
+	(object-coordinates ?support ?start-x ?y1 ?end-x ?y)
+	(clear ?support top)
+)
+;;manula mod
+;;(<= (bridge-segment ?bridge ?start-x ?end-x ?y)
+;;    (primitive-object ?support)
+;;    (is-recursive-member-of-compound ?bridge ?support)
+;;    (object-coordinates ?support ?x1 ?y1 ?x2 ?y)
+;;    (true (object-size ?support ?width ?height ?weight))
+;;    (>= ?start-x ?x1)
+;;    (> ?x2 ?start-x)
+;;    (+ ?start-x ?width ?next-x)
+;;    (clear ?support top)
+;;    (bridge-segment ?bridge ?next-x ?end-x ?y))
 
 (<= (bridge-segment ?bridge ?start-x ?end-x ?y)
     (primitive-object ?support)
     (is-recursive-member-of-compound ?bridge ?support)
-    (object-coordinates ?support ?x1 ?y1 ?x2 ?y)
+    (object-coordinates ?support ?start-x ?y1 ?x2 ?y)
     (true (object-size ?support ?width ?height ?weight))
-    (>= ?start-x ?x1)
-    (> ?x2 ?start-x)
     (+ ?start-x ?width ?next-x)
     (clear ?support top)
     (bridge-segment ?bridge ?next-x ?end-x ?y))

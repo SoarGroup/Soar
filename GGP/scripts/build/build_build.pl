@@ -6,7 +6,9 @@ my $file1 = "build.core.manual.kif";
 #my $file2 = "build.bridge.kif";
 #my $file2 = "build.simple.kif";
 #my $file2 = "build.test.compound.kif";
-my $file2 = "build.test.rotate.unsupport.kif";
+#my $file2 = "build.test.rotate.unsupport.kif";
+#my $file2 = "build.test.heavy.crush.kif";
+my $file2 = "build.test.bridge.shape.kif";
 my $merged_file = "build.merge.kif";
 my $agent_file = "../../agents/build_final.soar";
 
@@ -26,11 +28,15 @@ if(not -e $file2){
 	die "cannot find $file2";
 }
 system ("cat $file1 $file2 > $merged_file");
-system ("perl $process_math_perl ".$merged_file);
+#system ("perl $process_math_perl ".$merged_file);
 chdir ($translator_dir);
-system($translator." ".$dir."/".$merged_file.".modified ".$dir."/tmp.soar");
-chdir ($dir);
-system("perl ".$make_math_elab_top_state." tmp.soar > tmp2.soar");
+#system($translator." ".$dir."/".$merged_file.".modified ".$dir."/tmp.soar");
+
+system($translator." ".$dir."/".$merged_file." ".$dir."/tmp.soar");
+
+#chdir ($dir);
+#system("perl ".$make_math_elab_top_state." tmp.soar > tmp2.soar");
 
 #system ("cat tmp2.soar frame_axiom_fix.soar > $agent_file");
-system ("cat tmp2.soar  > $agent_file");
+#system ("cat tmp2.soar  > $agent_file");
+system ("cat tmp.soar  > $agent_file");
