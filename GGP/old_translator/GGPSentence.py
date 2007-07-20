@@ -25,6 +25,9 @@ class GGPConstant:
 	def __ne__(self, other):
 		return not self == other
 	
+	def get_variables(self):
+		return []
+
 	def make_soar_cond(self, sp, id, place, var_map, negate = False):
 		assert place > 0
 		sp.add_attrib(id, 'p%d' % place, self.__name)
@@ -72,6 +75,9 @@ class GGPVariable:
 	
 	def __ne__(self, other):
 		return not self == other
+
+	def get_variables(self):
+		return [self.__name]
 	
 	def name(self):
 		return self.__name
@@ -165,6 +171,12 @@ class GGPFunction:
 	def term(self, i):
 		return self.__terms[i]
 	
+	def get_variables(self):
+		vars = []
+		for t in self.__terms:
+			vars.extend(t.get_variables())
+		return vars
+
 	def num_terms(self):
 		return len(self.__terms)
 	
@@ -366,6 +378,12 @@ class GGPSentence:
 	def num_terms(self):
 		return len(self.__terms)
 	
+	def get_variables(self):
+		vars = []
+		for t in self.__terms:
+			vars.extend(t.get_variables())
+		return vars
+
 	def copy(self):
 		c = GGPSentence("")
 		c.__name = self.__name

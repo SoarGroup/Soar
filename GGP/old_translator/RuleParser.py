@@ -219,21 +219,51 @@ def HandleMath(maths, base_prod, var_map, rule_index):
 	
 	return int_prods
 
+def GetMathResultVar(sentence):
+	if sentence.name() in ['+', '-', '*', '/']:
+		return sentence.term(2).name()
+	else:
+		return sentence.term(1).name()
+
 def ParseGDLBodyToCondition(body, base_prod, var_map):
 	global rule_index
 
 	math_ops = ['+','-','*','/']
 	math_conds = []
+	math_result_vars = []
+	normal_conds = []
+	depend_on_math = []
+
 	for b in body:
 		if b.name() in math_ops:
 			math_conds.append(b)
-		elif SentenceIsComp(b):
-			HandleComparison(b, base_prod, var_map)
+			math_result_vars.append(GetMathResultVar(b))
 		else:
-			b.make_soar_conditions(base_prod, var_map)
+			normal_conds.append(b)
+	
+	for b in normal_conds:
+		dependent = False
+		for v in b.get_variables():
+			if v in math_result_vars:
+				depend_on_math.append(b)
+				dependent = True
+				break
+
+		if not dependent:
+			if SentenceIsComp(b):
+				HandleComparison(b, base_prod, var_map)
+			else:
+				b.make_soar_conditions(base_prod, var_map)
 	
 	math_prods = HandleMath(math_conds, base_prod, var_map, rule_index)
 	rule_index += 1
+
+	for b in depend_on_math:
+		if SentenceIsComp(b):
+			HandleComparison(b, base_prod, var_map)
+		else:
+			b.make_soar_conditions(base_prod, var_map)
+
 	return math_prods
 
 def MakeInitRule(game_name, role, init_conds, fact_rules, min_success_score):
