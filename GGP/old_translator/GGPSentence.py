@@ -112,6 +112,9 @@ class GGPVariable:
 	def covers(self, other):
 		return isinstance(other, GGPVariable) or isinstance(other, GGPConstant)
 
+	def __hash__(self):
+		return hash(self.__name)
+
 # functions can appear in two forms in soar rules
 #
 # (rel (x y (f a b)))

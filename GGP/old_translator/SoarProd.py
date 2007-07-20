@@ -289,6 +289,10 @@ class SoarProd:
 		self.end_negative_conjunction()
 		return new_id
 
+	def add_bound_id_attrib(self, lhs_id, attrib, rhs_id):
+		assert self.__curr_conj.id_in_scope(rhs_id)
+		self.add_attrib(lhs_id, attrib, '<%s>' % rhs_id)
+
 	def add_id_predicate(self, lhs_id, predicate, rhs_id):
 		self.__curr_conj.add_predicate(lhs_id, predicate, mvar(rhs_id))
 
