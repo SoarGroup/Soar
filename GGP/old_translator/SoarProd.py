@@ -103,10 +103,26 @@ class Conjunction:
 	def get_or_make_id_chain(self, lhs_id, attrib_chain):
 		ids = self.get_ids_by_chain(lhs_id, attrib_chain)
 		if len(ids) == 0:
-			new_id = self.add_id_attrib_chain(lhs_id, attrib_chain)
-			return [new_id]
+			return [self.add_id_attrib_chain(lhs_id, attrib_chain)]
 		else:
 			return ids
+
+	def get_or_make_id_chain_existing(self, lhs_id, attrib_chain):
+		curr_ids = [lhs_id]
+		for i, attrib in enumerate(attrib_chain):
+			next_ids = []
+			for id in curr_ids:
+				id_attribs = self.__id_attribs.get(id, [])
+				for ida in id_attribs:
+					if ida[0] == attrib:
+						next_ids.append(ida[1])
+			if len(next_ids) == 0:
+				# ran out, chain off existing id
+				return [self.add_id_attrib_chain(curr_ids[0], attrib_chain[i:])]
+			else:
+				curr_ids = next_ids
+		return curr_ids
+
 
 	def add_attrib(self, id, attrib, rhs):
 		assert self.id_in_scope(id), "Unknown identifier %s" % id
@@ -231,6 +247,9 @@ class SoarProd:
 
 	def get_or_make_id_chain(self, attrib_chain):
 		return self.__top_conj.get_or_make_id_chain(self.__state_id, attrib_chain)
+
+	def get_or_make_id_chain_existing(self, attrib_chain):
+		return self.__top_conj.get_or_make_id_chain_existing(self.__state_id, attrib_chain)
 
 	def add_attrib(self, id, attrib, rhs):
 		self.__curr_conj.add_attrib(id, attrib, rhs)
