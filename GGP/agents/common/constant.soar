@@ -316,3 +316,7 @@ sp {elaborate*finished-move
 -->
    (<s> ^move-finished <mf> +)
 }
+sp {elaborate*math-link
+   (state <s> ^type state)
+-->
+   (<s> ^math <m>)}

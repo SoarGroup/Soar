@@ -185,8 +185,7 @@ def HandleMath(maths, base_prod, var_map, rule_index, state_name):
 	for i, m in enumerate(maths):
 		math_code = 'math-%d-%d' % (rule_index, i)
 		# make a production to create the <s> ^math.math-x-y structure
-		mk_struct_prod = SoarProd(name_gen.get_name('apply*make-%s-struct' % math_code), state_name)
-		mk_struct_prod.add_operator_test('init')
+		mk_struct_prod = SoarProd(name_gen.get_name('elaborate*make-%s-struct' % math_code), state_name)
 		math_id = mk_struct_prod.get_or_make_id_chain(['math'])[0]
 		mk_struct_prod.add_create_id(math_id, math_code)
 		int_prods.append(mk_struct_prod)
