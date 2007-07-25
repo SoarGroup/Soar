@@ -348,7 +348,7 @@ def TranslateTerminal(game_name, head, body):
 	# add test for analyze state operator to make sure we've fired all
 	# state update rules
 	#sp.add_operator_test('update-state')
-	sp.add_id_attrib(sp.get_state_id(), 'new-game-state-created')
+	sp.add_id_attrib(sp.get_state_id(), 'update-state-finished')
 	
 	# different actions depending on if we're in the selection space
 	# or operating for real
