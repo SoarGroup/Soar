@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 from UniqueNameGen import UniqueNameGenerator
 from SoarProd import *
 from ElementGGP import ElementGGP as ElemGGP
@@ -47,8 +45,8 @@ class GDLSoarVarMapper:
 		self.__var_gen = var_gen
 		self.__var_map = dict()
 	
-	def copy(self):
-		c = GDLSoarVarMapper(self.__var_gen.copy())
+	def copy(self, var_gen):
+		c = GDLSoarVarMapper(var_gen)
 		c.__var_map = dict(self.__var_map.items())
 		return c
 
@@ -193,7 +191,7 @@ def HandleMath(maths, base_prod, var_map, rule_index, state_name):
 		# make the production for the actual operator
 		prod_name = name_gen.get_name(base_prod.get_name() + SoarifyStr(str(m)))
 		prod = base_prod.copy(prod_name)
-		var_map1 = var_map.copy()
+		var_map1 = var_map.copy(prod.get_name_gen())
 		# add conditions to bind the ids for the operands
 		ops = []
 		for j, d in enumerate(deps[i]):
@@ -349,7 +347,8 @@ def TranslateTerminal(game_name, head, body):
 
 	# add test for analyze state operator to make sure we've fired all
 	# state update rules
-	sp.add_operator_test('update-state')
+	#sp.add_operator_test('update-state')
+	sp.add_id_attrib(sp.get_state_id(), 'new-game-state-created')
 	
 	# different actions depending on if we're in the selection space
 	# or operating for real
@@ -374,7 +373,9 @@ def TranslateLegal(game_name, head, body):
 	
 	# have to also check that no moves have been made
 	olink_id = sp.get_or_make_id_chain(['io','output-link'])[0]
-	sp.add_neg_id_attrib(olink_id, '<cmd-name>')
+	sp.begin_negative_conjunction()
+	sp.add_id_var_attrib(olink_id, 'cmd-name')
+	sp.end_negative_conjunction()
 	
 	head.make_soar_actions(sp, var_map)
 	#ParseComparisons(body, sp, var_map)
@@ -708,7 +709,6 @@ def SplitOr(axiom):
 	result = []
 	num_splits = len(axiom.or_child()) - 1
 	for i in range(num_splits):
-		a = axiom.deep_copy()
-		result.append(DeleteOrOperands(a, i + 1))
+		a = axiom.deepvar_gensult.append(DeleteOrOperands(a, i + 1))
 
 	return result

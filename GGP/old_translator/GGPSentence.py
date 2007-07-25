@@ -318,7 +318,7 @@ class GGPSentence:
 				elif self.__name in ["does", "legal"]:
 					# two place relation, first being a role constant, second being a function
 					assert len(relElem) == 3, "%s applied to wrong arity of %d" % (self.__name, len(relElem) - 1)
-					self.__terms = [GGPConstant(relElem[1]), GGPFunction(relElem[2])]
+					self.__terms = [ClassifyTerm(relElem[1]), GGPFunction(relElem[2])]
 				elif self.__name == "role":
 					# one place relation with a single constant
 					assert len(relElem) == 2, "role applied to wrong arity of %d" % len(relElem) - 1
@@ -429,11 +429,17 @@ class GGPSentence:
 				sp.end_negative_conjunction()
 				
 		elif self.__name == "does":
-			move_id = sp.get_or_make_id_chain(['io','input-link','last-moves'])[0]
+			move_id = sp.get_or_make_id_chain_existing(['io','input-link','last-moves'])[0]
 			
-			# the does relation has two places, a constant representing the role and 
-			# a function constant representing the move
-			role_id = sp.add_id_attrib(move_id, self.__terms[0].name())
+			# the does relation has two places, a constant or variable
+			# representing the role and a function constant representing the
+			# move
+			if self.__terms[0].type() == 'variable':
+				role_id = sp.add_id_var_attrib(move_id, self.__terms[0].name())
+				role_attrib = '<%s>' % self.__terms[0].name()
+			else:
+				assert self.__terms[0].type() == 'constant'
+				role_id = sp.add_id_attrib(move_id, self.__terms[0].name())
 
 			if self.__negated:
 				sp.begin_negative_conjunction()

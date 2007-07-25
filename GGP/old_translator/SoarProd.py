@@ -63,6 +63,11 @@ class Conjunction:
 		self.__id_attribs.setdefault(id, []).append((attrib, new_id))
 		return new_id
 	
+	def add_id_var_attrib(self, id, var_attrib, name = ""):
+		new_id = self.add_id_attrib(id, '<%s>' % var_attrib, name)
+		self.__ids.append(var_attrib)
+		return new_id
+
 	def add_id_attrib_chain(self, id, attrib_chain):
 		assert self.id_in_scope(id), "Unknown identifier %s" % id
 		parent_id = id
@@ -234,7 +239,11 @@ class SoarProd:
 		self.__curr_conj.add_predicate(id, predicate, rhs)
 	
 	def add_id_attrib(self, id, attrib, name = ""):
+		assert attrib[0] != '<', 'Use new system to add variable attributes'
 		return self.__curr_conj.add_id_attrib(id, attrib, name)
+
+	def add_id_var_attrib(self, id, var_attrib, name = ""):
+		return self.__curr_conj.add_id_var_attrib(id, var_attrib, name)
 	
 	def add_id_attrib_chain(self, id, attrib_chain):
 		return self.__curr_conj.add_id_attrib_chain(id, attrib_chain)

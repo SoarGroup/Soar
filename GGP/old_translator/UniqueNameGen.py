@@ -1,3 +1,4 @@
+
 class UniqueNameGenerator:
 	def __init__(self):
 		self.var_indices = dict()
