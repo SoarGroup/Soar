@@ -577,10 +577,8 @@
     (primitive-object ?support)
     (is-recursive-member-of-compound ?bridge ?support)
     (object-coordinates ?support ?start-x ?y1 ?x2 ?y)
-    (true (object-size ?support ?width ?height ?weight))
-    (+ ?start-x ?width ?next-x)
     (clear ?support top)
-    (bridge-segment ?bridge ?next-x ?end-x ?y))
+    (bridge-segment ?bridge ?x2 ?end-x ?y))
 
 ;;; Determine if ?object may be added to ?compound. Legal if:
 ;;; 1) ?compound is an existing compound
@@ -1285,46 +1283,43 @@
     (true (object ?object ?type))
     (material-type ?type ?strength))
 
-;;; Determine if the members of ?compound form a pyramid. Requirements:
-;;; 1) exactly one member at top of compound
-;;; 2) height of compound at least double height of a member
-;;; 3) member at top must meet conditions of (pryamid-recursive ...)
-(<= (pryamid ?compound)
-    (object-coordinates ?compound ?cx1 ?cy1 ?cx2 ?y2)
+;;; Determine if the members of ?compound form a pyramid. Requirements
+;;; (some requirements tested by pyramid-recursive):
+;;; 1) Exactly one member at top of compound (supports no other member object)
+;;; 2) Pyramid must be at least two member-objects high
+;;; 3) Each member (other than the bottom) has two supports that are members
+;;;    of ?compound
+;;; 4) The two supports in 3) are adjacent to each other
+;;; 5) Both supports have the same width and height as the supported object
+;;; 6) The objects at the bottom have the same y-coordinate as the bottom 
+;;;    of ?compound
+(<= (pyramid ?compound)
     (true (member ?compound ?top))
+    (object-coordinates ?compound ?cx1 ?cy1 ?cx2 ?y2)
     (object-coordinates ?top ?tx1 ?ty1 ?tx2 ?y2)
     (not (other-member-at-top ?compound ?top))
-    (true (object-size ?compound ?c-width ?c-height ?c-weight))
-    (true (object-size ?top ?t-width ?t-height ?t-weight))
-    (* ?t-height 2 ?min-height)
-    (>= ?c-height ?min-height)
+    (adjacent ?top ?other bottom);; there is always 2 duplicates - that's ok
+    (true (member ?compound ?other))
     (pyramid-recursive ?compound ?top))
 
-;;; Determine if ?top is part of a pyramid formed by ?compound. 
-;;; Base case requirements:
-;;; 1) The bottom of ?top has the same y-coordinate as the bottom of ?compound
-;;; Recursive case requirements:
-;;; 1) ?top has exactly two supports
-;;; 2) both supports are members of ?compoumd
-;;; 3) the supports are adjacent to each other
-;;; 4) both supports have the same width and height as ?top
-;;; 5) both supports meet the conditions of (pyramid-recursive ...)
 (<= (pyramid-recursive ?compound ?top)
+    (true (member ?compound ?top))
     (true (object-location ?compound ?cx ?y))
     (true (object-location ?top ?tx ?y)))
 
-(<= (pryamid-recursive ?compound ?top)
-    (adjacent-primitive-count ?top bottom 2)
+(<= (pyramid-recursive ?compound ?top)
     (true (member ?compound ?support1))
     (adjacent ?top ?support1 bottom)
     (true (member ?compound ?support2))
     (adjacent ?top ?support2 bottom)
-    (adjacent ?support1 ?support2 ?side)
+    ;;(adjacent ?support1 ?support2 ?side) ;; this should prevent same objects
+	(adjacent ?support1 ?support2 left) ;; manual mod to make sure unique ordering for bottom-up elaboration
     (true (object-size ?top ?width ?height ?t-weight))
     (true (object-size ?support1 ?width ?height ?s1-weight))
     (true (object-size ?support2 ?width ?height ?s2-weight))
     (pyramid-recursive ?compound ?support1)
-    (pyramid-recursive ?compound ?support2))
+    (pyramid-recursive ?compound ?support2)
+	)
 
 ;;; Determine if any object ?intersecting intersects the given 
 ;;; rectangular region. ?intersecting must be different from ?object
@@ -1459,10 +1454,12 @@
 
 ;;; Calculate the amount of weight supported by ?object
 (<= (supported-weight ?object ?weight)
+    (primitive-object ?object)
     (leftmost-adjacent-primitive ?object ?leftmost top)
     (supported-weight-recursive ?object ?leftmost ?weight))
 
 (<= (supported-weight ?object 0)
+    (primitive-object ?object)
     (clear ?object top))
 
 ;;; Calculate the amount of weight supported by ?object from objects
@@ -1477,7 +1474,10 @@
     (primitive-object ?object)
     (primitive-object ?left)
     (not (adjacent-primitive-to-right ?object ?left top))
-    (weight-contribution ?left ?weight))
+    (weight-contribution ?left ?weight)
+	;; manual mod
+	(adjacent ?object ?left top)
+	)
 
 ;;; Determine if ?object1 is taller than ?object2
 (<= (taller ?object1 ?object2)
@@ -1498,8 +1498,10 @@
 (<= (weight-contribution ?object ?weight)
     (weight-of-stack ?object ?stack-wt)
     (adjacent-primitive-count ?object bottom ?number)
-    (/ ?stack-wt ?number ?temp)
-    (round ?temp ?weight))
+    ;;(/ ?stack-wt ?number ?temp)
+    ;;(round ?temp ?weight)
+	(/ ?stack-wt ?number ?weight)
+	)
 
 ;;; Calculate the total weight that ?object exerts collectively 
 ;;; on the objects below it
