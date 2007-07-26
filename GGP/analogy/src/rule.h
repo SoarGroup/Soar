@@ -4,6 +4,7 @@
 #include <set>
 #include <vector>
 #include <iostream>
+#include <boost/shared_ptr.hpp>
 
 #include "predicate.h"
 
@@ -89,5 +90,16 @@ class Rule {
     Predicate head;
     vector<Condition> body;
 };
+
+typedef boost::shared_ptr<Rule> RulePtr;
+
+struct ltRulePtr {
+  bool operator()(const RulePtr& r1, const RulePtr& r2) const {
+    return *r1 < *r2;
+  }
+};
+
+typedef vector<RulePtr> RulePtrVector;
+typedef set<RulePtr, ltRulePtr> RulePtrSet;
 
 #endif

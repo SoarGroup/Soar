@@ -5,6 +5,6 @@
 #include "rule.h"
 #include "predicate.h"
 
-void read_xkif(ifstream& input, set<Rule>& rules, set<Predicate>& preds);
+void read_xkif(ifstream& input, RulePtrSet& rules, set<Predicate>& preds);
 
 #endif

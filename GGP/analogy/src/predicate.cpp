@@ -8,7 +8,6 @@ void Predicate::str() const {
   cout << *this << endl;
 }
 
-
 ostream& operator<<(ostream& os, const Predicate& p) {
   os << p.name;
   return os;

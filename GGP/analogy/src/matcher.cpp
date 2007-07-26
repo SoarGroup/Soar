@@ -5,6 +5,7 @@
 #include <boost/bind.hpp>
 
 #include "matcher.h"
+#include "mapper.h"
 
 using namespace std;
 using boost::bind;
@@ -27,19 +28,19 @@ void bmStr(PredMapping& bm) {
 Matcher::Matcher
 ( vector<Predicate> sPreds,
   vector<Predicate> tPreds,
-  set<Rule> sRules,
-  set<Rule> tRules )
+  RulePtrSet sRules,
+  RulePtrSet tRules )
 : sourceRules(sRules.begin(), sRules.end()), 
   targetRules(tRules.begin(), tRules.end()),
   sourcePreds(sPreds), 
   targetPreds(tPreds)
 {
-  for (set<Rule>::iterator 
+  for (RulePtrSet::iterator 
        i  = sourceRules.begin(); 
        i != sourceRules.end();
        ++i)
   {
-    for (set<Rule>::iterator
+    for (RulePtrSet::iterator
          j  = targetRules.begin();
          j != targetRules.end();
          ++j)
@@ -61,25 +62,18 @@ Matcher::Matcher
 
   // map all predicates that appear in both source and target onto
   // each other
-  vector<Predicate> toErase;
-  for (vector<Predicate>::iterator
-       i  = sourcePreds.begin();
-       i != sourcePreds.end();
-       ++i)
-  {
-    if (find(targetPreds.begin(), targetPreds.end(), *i) != targetPreds.end()) {
+  vector<Predicate>::iterator i = sourcePreds.begin();
+  while (i != sourcePreds.end()) {
+    vector<Predicate>::iterator tPos = find(targetPreds.begin(), targetPreds.end(), *i);
+    if (tPos != targetPreds.end()) {
       matchedPreds.insert(PredPair(*i, *i));
       updateRuleMatches(*i, *i);
-      toErase.push_back(*i);
+      i = sourcePreds.erase(i);
+      targetPreds.erase(tPos);
     }
-  }
-  for (vector<Predicate>::iterator
-       i  = toErase.begin();
-       i != toErase.end();
-       ++i)
-  {
-    sourcePreds.erase(remove(sourcePreds.begin(), sourcePreds.end(), *i), sourcePreds.end());
-    targetPreds.erase(remove(targetPreds.begin(), targetPreds.end(), *i), targetPreds.end());
+    else {
+      ++i;
+    }
   }
 }
 
@@ -94,8 +88,8 @@ Matcher::Matcher(const Matcher& other)
 { }
 
 void Matcher::allBodyMappings
-( const Rule& sr, 
-  const Rule& tr, 
+( const RulePtr& sr, 
+  const RulePtr& tr, 
   vector<PredMapping>& mappings) const
 {
   PredMapping dummy;
@@ -106,15 +100,15 @@ void Matcher::allBodyMappings
   // if b is the body of the rule with fewer body conditions,
   // for every predicate p in b, there must be one predicate p' in
   // b' that p can match with
-  if (sr.body_size() < tr.body_size()) {
-    sr.get_body(smaller);
-    tr.get_body(larger);
+  if (sr->body_size() < tr->body_size()) {
+    sr->get_body(smaller);
+    tr->get_body(larger);
     allBodyMappingsInternal(smaller, larger, dummy, mappings);
   }
   else {
     vector<PredMapping> revPossibleMaps;
-    tr.get_body(smaller);
-    sr.get_body(larger);
+    tr->get_body(smaller);
+    sr->get_body(larger);
     PredMapping tempMap;
     allBodyMappingsInternal(smaller, larger, dummy, revPossibleMaps);
     for(vector<PredMapping>::iterator
@@ -195,15 +189,12 @@ bool Matcher::allBodyMappingsInternal
     bool exhausted = false;
     while (!exhausted) {
       exhausted = true;
-      for (vector<Condition>::iterator 
-           i  = larger.begin();
-           i != larger.end();
-           ++i)
-      {
+      vector<Condition>::iterator i = larger.begin();
+      while (i != larger.end()) {
         double score = predicateMatchScore(p1, i->pred);
         if (score > 0 and p1n == i->negated) {
           Predicate p2 = i->pred;
-          larger.erase(i);
+          i = larger.erase(i);
           PredMapping notAsPartialMap(partialMap);
           notAsPartialMap.insert(PredPair(p1, p2));
           if (allBodyMappingsInternal(smaller, larger, notAsPartialMap, mappings)) {
@@ -216,6 +207,9 @@ bool Matcher::allBodyMappingsInternal
             break;
           }
         }
+        else {
+          ++i;
+        }
       }
       // if we get to here and exhausted hasn't been set to false,
       // then we've run through the entire larger set, and there are
@@ -226,11 +220,11 @@ bool Matcher::allBodyMappingsInternal
 }
 
 double Matcher::bodyMapScore
-( const Rule& sr, 
-  const Rule& tr, 
+( const RulePtr& sr, 
+  const RulePtr& tr, 
   const PredMapping& m) const 
 {
-  int unmatched_conds = std::max(sr.body_size(), tr.body_size()) - m.size();
+  int unmatched_conds = std::max(sr->body_size(), tr->body_size()) - m.size();
   double total = 0;
   for (PredMapping::const_iterator
        i  = m.begin();
@@ -286,45 +280,28 @@ bool Matcher::rulesCannotMatch(const RuleMatchType& m) {
  * mapped to one another.
  */
 void Matcher::updateRuleMatches(const Predicate& sp, const Predicate& tp) {
-  vector<RuleMatchMap::iterator> toErase;
-  for (RuleMatchMap::iterator
-       i  = rMatchCands.begin();
-       i != rMatchCands.end();
-       ++i)
-  {
-    vector<vector<ScoredBodyMapping>::iterator> toErase2;
-    
-    for(vector<ScoredBodyMapping>::iterator
-        j  = i->second.begin();
-        j != i->second.end();
-        ++j)
-    {
+  RuleMatchMap::iterator i = rMatchCands.begin();
+  while (i != rMatchCands.end()) {
+    vector<ScoredBodyMapping>::iterator j = i->second.begin();
+    while (j != i->second.end()) {
       double newScore = bodyMapScore(i->first.first, i->first.second, j->first);
       if (newScore == 0) {
-        toErase2.push_back(j);
+        // this body map is no longer valid
+        j = i->second.erase(j);
       }
       else {
         j->second = newScore;
+        ++j;
       }
     }
-
-    for(vector<vector<ScoredBodyMapping>::iterator>::iterator
-        j  = toErase2.begin();
-        j != toErase2.end();
-        ++j)
-    {
-      i->second.erase(*j);
-    }
     if (i->second.size() == 0) {
-      toErase.push_back(i);
+      RuleMatchMap::iterator temp = i;
+      ++i;
+      rMatchCands.erase(temp);
     }
-  }
-  for (vector<RuleMatchMap::iterator>::iterator
-       i  = toErase.begin();
-       i != toErase.end();
-       ++i)
-  {
-    rMatchCands.erase(*i);
+    else {
+      ++i;
+    }
   }
 }
 
@@ -350,8 +327,8 @@ double Matcher::predicateMatchScore
 }
 
 double Matcher::ruleMatchScore
-( const Rule& r1, 
-  const Rule& r2, 
+( const RulePtr& r1, 
+  const RulePtr& r2, 
   PredMapping& bestMap) const 
 {
   double score = 0;
@@ -372,7 +349,7 @@ double Matcher::ruleMatchScore
       score = i->second;
     }
   }
-  if (srcPredMatched(r1.get_head())) {
+  if (srcPredMatched(r1->get_head())) {
     score *= 2;
   }
   bestMap = bestPos->first;
@@ -424,29 +401,29 @@ void Matcher::updatePossibleRuleMatches(const Predicate& sp, const Predicate& tp
 */
 
 bool Matcher::getBestMatch
-( const Rule*& r1, 
-  const Rule*& r2, 
+( RulePtr& r1, 
+  RulePtr& r2, 
   PredMapping& bestMap) const 
 {
   double bestScore = -1;
-  r1 = NULL; r2 = NULL;
+  r1 = RulePtr((Rule*)NULL); r2 = RulePtr((Rule*)NULL);
   for (RuleMatchMap::const_iterator
        i =  rMatchCands.begin();
        i != rMatchCands.end();
        ++i)
   {
-    const Rule& sr = i->first.first;
-    const Rule& tr = i->first.second;
+    const RulePtr& sr = i->first.first;
+    const RulePtr& tr = i->first.second;
     PredMapping m;
     double score = ruleMatchScore(sr, tr, m);
     if (score > bestScore) {
       bestScore = score;
-      r1 = &(sr);
-      r2 = &(tr);
+      r1 = sr;
+      r2 = tr;
       bestMap = m;
     }
   }
-  if (r1 == NULL or r2 == NULL) {
+  if (r1.get() == NULL or r2.get() == NULL) {
     // no more match candidates
     return false;
   }
@@ -463,46 +440,54 @@ void Matcher::addPredicateMatch(const Predicate& sp, const Predicate& tp) {
   if (sp != tp) {
     matchedPreds.insert(PredPair(tp, sp));
   }
-//  cout << "MATCHING PREDICATE " << sp << " TO " << tp << endl;
-  cout << sp << " " << tp << endl;
+  cout << "MATCH " << sp << " " << tp << endl;
 
   sourcePreds.erase(remove(sourcePreds.begin(), sourcePreds.end(), sp), sourcePreds.end());
   targetPreds.erase(remove(targetPreds.begin(), targetPreds.end(), tp), targetPreds.end());
   updateRuleMatches(sp, tp);
 }
 
-void Matcher::addRuleMatch(const Rule& sr, const Rule& tr) {
-//  cout << "MATCHING RULE " << sr << " TO " << tr << endl;
+void Matcher::addRuleMatch(const RulePtr& sr, const RulePtr& tr) {
+  DEBUG(cout << "RULE MATCH " << *sr << " TO " << *tr << endl;)
 
   sourceRules.erase(sr);
   targetRules.erase(tr);
 
-  vector<RuleMatchMap::iterator> toErase;
   matchedRules.insert(RulePair(sr, tr));
   //rMatchCands.erase(remove_if(rMatchCands.begin(), rMatchCands.end(), bind(&RuleMatchType::first, _1) == rp), rMatchCands.end());
-
-  for (RuleMatchMap::iterator
-       i  = rMatchCands.begin();
-       i != rMatchCands.end();
-       ++i)
-  {
+  for(RuleMatchMap::iterator i = rMatchCands.begin(); i != rMatchCands.end(); ++i) {
+    if (*(i->first.first) == *sr) {
+      rMatchCands.erase(i);
+    }
+    else if (*(i->first.second) == *tr) {
+      rMatchCands.erase(i);
+    }
+  }
+  /*
+  RuleMatchMap::iterator i = rMatchCands.begin(); 
+  while (i != rMatchCands.end()) {
     if (i->first.first == sr) {
-      toErase.push_back(i);
+      RuleMatchMap::iterator temp = i;
+      ++i;
+      rMatchCands.erase(temp);
     }
     else if (i->first.second == tr) {
-      toErase.push_back(i);
+      RuleMatchMap::iterator temp = i;
+      ++i;
+      rMatchCands.erase(temp);
+    }
+    else {
+      ++i;
     }
   }
-  for (vector<RuleMatchMap::iterator>::iterator
-       i  = toErase.begin();
-       i != toErase.end();
-       ++i)
-  {
-    rMatchCands.erase(*i);
-  }
+  */
 }
 
-bool Matcher::getBodyMaps(const Rule& sr, const Rule& tr, vector<PredMapping>& map) const {
+bool Matcher::getBodyMaps
+( const RulePtr& sr, 
+  const RulePtr& tr, 
+  vector<PredMapping>& map) const
+{
   RuleMatchMap::const_iterator pos = rMatchCands.find(RulePair(sr, tr));
   if (pos == rMatchCands.end()) {
     return false;
@@ -517,12 +502,16 @@ bool Matcher::getBodyMaps(const Rule& sr, const Rule& tr, vector<PredMapping>& m
   return true;
 }
 
-void Matcher::getUnmatchedPreds(vector<Predicate>& sp, vector<Predicate>& tp) {
+void Matcher::getUnmatchedPreds
+( vector<Predicate>& sp, vector<Predicate>& tp )
+{
   sp.insert(sp.begin(), sourcePreds.begin(), sourcePreds.end());
   tp.insert(tp.begin(), targetPreds.begin(), targetPreds.end());
 }
 
-void Matcher::getUnmatchedRules(vector<Rule>& sr, vector<Rule>& tr) {
+void Matcher::getUnmatchedRules
+( vector<RulePtr>& sr, vector<RulePtr>& tr)
+{
   sr.insert(sr.begin(), sourceRules.begin(), sourceRules.end());
   tr.insert(tr.begin(), targetRules.begin(), targetRules.end());
 }
@@ -563,7 +552,9 @@ Predicate Matcher::getTgtPredMatch(const Predicate& p) const {
   assert(false);
 }
 
-bool Matcher::hasPredMatchConflict(const Predicate& sp, const Predicate& tp) const {
+bool Matcher::hasPredMatchConflict
+( const Predicate& sp, const Predicate& tp) const 
+{
   if (srcPredMatched(sp) and getSrcPredMatch(sp) != tp) {
     return true;
   }
@@ -579,7 +570,7 @@ ostream& operator<<(ostream& os, const Matcher& m) {
       i != m.rMatchCands.end();
       ++i)
   {
-    os << i->first.first << "\n  --> " << i->first.second;
+    os << *(i->first.first) << "\n  --> " << *(i->first.second);
     os << endl;
   }
   return os;

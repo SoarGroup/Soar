@@ -14,6 +14,10 @@ string read_nonempty(ifstream& file) {
   while (!file.eof() and line.find_first_not_of(" ") == string::npos) {
     getline(file, line);
   }
+  assert(strlen(line.c_str()) > 0 || file.eof());
+  if (line == "apply") {
+    cout << "HERE IT IS" << endl;
+  }
   return line;
 }
 
@@ -82,16 +86,16 @@ Predicate read_sentence(ifstream& file, set<Predicate>& preds) {
 }
 
 /* Right now I'm treating ors as if they don't exist */
-void read_or(ifstream& file, set<Predicate>& preds, Rule& r) {
+void read_or(ifstream& file, set<Predicate>& preds, RulePtr& r) {
   string line;
   while (1) {
     line = read_nonempty(file);
     if (line == "XXX_SENT_BEGIN") {
-      r.add_body(read_sentence(file, preds), false);
+      r->add_body(read_sentence(file, preds), false);
     }
     else if (line == "XXX_NOT") {
       assert(read_nonempty(file) == "XXX_SENT_BEGIN");
-      r.add_body(read_sentence(file, preds), true);
+      r->add_body(read_sentence(file, preds), true);
     }
     else if (line == "XXX_OR_END") {
       return;
@@ -104,9 +108,9 @@ void read_or(ifstream& file, set<Predicate>& preds, Rule& r) {
 }
 
 
-void read_xkif(ifstream& input, set<Rule>& rules, set<Predicate>& preds) {
+void read_xkif(ifstream& input, RulePtrSet& rules, set<Predicate>& preds) {
   int state = 0;
-  Rule* rule;
+  RulePtr rule;
   string line = read_nonempty(input);
   bool nextSentNegated = false;
   while (!line.empty()) {
@@ -114,7 +118,7 @@ void read_xkif(ifstream& input, set<Rule>& rules, set<Predicate>& preds) {
       case 0:
         if (line == "XXX_RULE_START") {
           assert(read_nonempty(input) == "XXX_SENT_BEGIN");
-          rule = new Rule(read_sentence(input, preds));
+          rule = RulePtr(new Rule(read_sentence(input, preds)));
           state = 1;
         }
         else {
@@ -126,7 +130,7 @@ void read_xkif(ifstream& input, set<Rule>& rules, set<Predicate>& preds) {
         if (line == "XXX_RULE_END") {
           if (rule->body_size() > 0) {
             // discard facts and inits
-            rules.insert(*rule);
+            rules.insert(rule);
           }
           state = 0;
         }
@@ -139,7 +143,7 @@ void read_xkif(ifstream& input, set<Rule>& rules, set<Predicate>& preds) {
           break;
         }
         else if (line == "XXX_OR_BEGIN") {
-          read_or(input, preds, *rule);
+          read_or(input, preds, rule);
         }
         break;
     }

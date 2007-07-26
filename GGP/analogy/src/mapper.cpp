@@ -7,6 +7,7 @@
 #include "rule.h"
 #include "predicate.h"
 #include "matcher.h"
+#include "mapper.h"
 
 using namespace std;
 
@@ -16,8 +17,8 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  set<Rule> srules;
-  set<Rule> trules;
+  RulePtrSet srules;
+  RulePtrSet trules;
   set<Predicate> spreds;
   set<Predicate> tpreds;
  
@@ -26,31 +27,38 @@ int main(int argc, char* argv[]) {
   read_xkif(f1, srules, spreds);
   read_xkif(f2, trules, tpreds);
 
-  /*
-  copy(srules.begin(), srules.end(), ostream_iterator<Rule>(cout, "\n"));
-  copy(spreds.begin(), spreds.end(), ostream_iterator<Predicate>(cout, "\n"));
-  copy(trules.begin(), trules.end(), ostream_iterator<Rule>(cout, "\n"));
-  copy(tpreds.begin(), tpreds.end(), ostream_iterator<Predicate>(cout, "\n"));
-  */
-
   Matcher matcher(
       vector<Predicate>(spreds.begin(), spreds.end()), 
       vector<Predicate>(tpreds.begin(), tpreds.end()), 
       srules, 
       trules);
 
+  DEBUG(
+  for(RulePtrSet::iterator i = srules.begin(); i != srules.end(); ++i)
+  {
+    cout << **i << endl;
+  })
+  DEBUG(
+  for(RulePtrSet::iterator i = trules.begin(); i != trules.end(); ++i)
+  {
+    cout << **i << endl;
+  })
+
+  DEBUG(copy(spreds.begin(), spreds.end(), ostream_iterator<Predicate>(cout, "\n"));)
+  DEBUG(copy(tpreds.begin(), tpreds.end(), ostream_iterator<Predicate>(cout, "\n"));)
+
   while (true) {
-    const Rule* r1;
-    const Rule* r2;
+    RulePtr r1;
+    RulePtr r2;
     PredMapping m;
     if (!matcher.getBestMatch(r1, r2, m)) {
 //      cout << "FINISHED0" << endl;
       break;
     }
 
-//    cout << "Best Match:" << endl;
-//    cout << *r1 << endl;
-//    cout << *r2 << endl;
+    DEBUG(cout << "Best Match:" << endl;)
+    DEBUG(cout << *r1 << endl;)
+    DEBUG(cout << *r2 << endl;)
     
 //    if (!matcher.findBestBodyMapping(*r1, *r2, m)) {
 //      cout << "FINISHED1" << endl;
@@ -62,10 +70,10 @@ int main(int argc, char* argv[]) {
     if (!matcher.srcPredMatched(r1->get_head()) and !matcher.tgtPredMatched(r2->get_head())) {
       matcher.addPredicateMatch(r1->get_head(), r2->get_head());
     }
-//    else if (!matcher.hasPredMatchConflict(r1->get_head(), r2->get_head())) {
-//      cout << "MATCH PREDICATE CONFLICT!" << endl;
-//      cout << r1->get_head() << endl << r2->get_head() << endl;
-//    }
+    else if (!matcher.hasPredMatchConflict(r1->get_head(), r2->get_head())) {
+      DEBUG(cout << "MATCH PREDICATE CONFLICT!" << endl;)
+      DEBUG(cout << r1->get_head() << endl << r2->get_head() << endl;)
+    }
 
     // body predicates
     for (PredMapping::iterator
@@ -81,26 +89,34 @@ int main(int argc, char* argv[]) {
 //        cout << i->first << endl << i->second << endl;
 //      }
     }
-    matcher.addRuleMatch(*r1, *r2);
+    matcher.addRuleMatch(r1, r2);
   }
 
   vector<Predicate> usp;
   vector<Predicate> utp;
-  vector<Rule> usr;
-  vector<Rule> utr;
+  vector<RulePtr> usr;
+  vector<RulePtr> utr;
 
   matcher.getUnmatchedPreds(usp, utp);
   matcher.getUnmatchedRules(usr, utr);
 
-//  cout << "### UNMATCHED SOURCE PREDICATES ###" << endl;
-//  copy(usp.begin(), usp.end(), ostream_iterator<Predicate>(cout, "\n"));
-//  cout << "### UNMATCHED TARGET PREDICATES ###" << endl;
-//  copy(utp.begin(), utp.end(), ostream_iterator<Predicate>(cout, "\n"));
-//
-//  cout << "### UNMATCHED SOURCE RULES ###" << endl;
-//  copy(usr.begin(), usr.end(), ostream_iterator<Rule>(cout, "\n"));
-//  cout << "### UNMATCHED TARGET RULES ###" << endl;
-//  copy(utr.begin(), utr.end(), ostream_iterator<Rule>(cout, "\n"));
+  DEBUG(cout << "### UNMATCHED SOURCE PREDICATES ###" << endl;)
+  DEBUG(copy(usp.begin(), usp.end(), ostream_iterator<Predicate>(cout, "\n"));)
+  DEBUG(cout << "### UNMATCHED TARGET PREDICATES ###" << endl;)
+  DEBUG(copy(utp.begin(), utp.end(), ostream_iterator<Predicate>(cout, "\n"));)
+
+  DEBUG(cout << "### UNMATCHED SOURCE RULES ###" << endl;)
+  DEBUG(
+  for(vector<RulePtr>::iterator i = usr.begin(); i != usr.end(); ++i)
+  {
+    cout << **i << endl;
+  })
+  DEBUG(cout << "### UNMATCHED TARGET RULES ###" << endl;)
+  DEBUG(
+  for(vector<RulePtr>::iterator i = utr.begin(); i != utr.end(); ++i)
+  {
+    cout << **i << endl;
+  })
 
   return 0;
 }
