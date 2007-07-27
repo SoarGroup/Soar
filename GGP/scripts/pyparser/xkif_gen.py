@@ -1,12 +1,8 @@
 import sys
-import gdllex
 from ply import yacc
-from GDL import *
-from IntRep import IntermediateRep
+import gdllex
 
-import pdb
-
-int_rep = None
+output = ''
 tokens = None
 
 def p_rule_list(p):
@@ -14,44 +10,44 @@ def p_rule_list(p):
 	             | empty'''
 	pass
 
-def p_rule_atomic_sentence(p):
+def p_rule(p):
 	'''rule : atomic_sentence
 	        | LPAREN ARROW atomic_sentence condition_list RPAREN'''
 
-	global int_rep
+	global output
 
 	if len(p) == 2:
-		int_rep.add_rule(p[1], [])
+		output += 'XXX_RULE_START\n%s\nXXX_RULE_END\n' % p[1].strip()
 	else:
-		int_rep.add_rule(p[3], p[4])
+		output += 'XXX_RULE_START\n%s\n%s\nXXX_RULE_END\n' % (p[3].strip(), p[4].strip())
 
 def p_atomic_sentence(p):
 	'''atomic_sentence : NAME
 		                 | LPAREN NAME term_list RPAREN'''
 	if len(p) == 2:
-		p[0] = Sentence(p[1], [])
+		p[0] = 'XXX_SENT_BEGIN\n%s\nXXX_SENT_END' % p[1]
 	else:
-		p[0] = Sentence(p[2], p[3])
+		p[0] = 'XXX_SENT_BEGIN\n%s\n%s\nXXX_SENT_END' % (p[2], p[3])
 
 def p_term_list(p):
 	'''term_list : empty 
 	             | term term_list'''
 	if len(p) == 3:
-		p[0] = [p[1]] + p[2]
+		p[0] = '%s\n%s' % (p[1], p[2])
 	else:
-		p[0] = []
+		p[0] = ''
 
 def p_term_variable(p):
 	'term : VAR'
-	p[0] = Variable(p[1])
+	p[0] = p[1]
 
 def p_term_str_constant(p):
 	'term : NAME'
-	p[0] = Constant(p[1])
+	p[0] = p[1]
 
 def p_term_num_constant(p):
 	'term : NUM'
-	p[0] = Constant(p[1])
+	p[0] = p[1]
 
 def p_term_function(p):
 	'term : function'
@@ -60,15 +56,15 @@ def p_term_function(p):
 def p_function(p):
 	'function : LPAREN NAME term_list RPAREN'
 	# a function is a predicate
-	p[0] = Function(p[2], p[3])
+	p[0] = 'XXX_FUNCTION_BEGIN\n%s\n%s\nXXX_FUNCTION_END' % (p[2], p[3].strip())
 
 def p_condition_list(p):
 	'''condition_list : empty 
 	                  | condition condition_list'''
 	if len(p) == 3:
-		p[0] = [p[1]] + p[2]
+		p[0] = '%s\n%s' % (p[1], p[2].strip())
 	else:
-		p[0] = []
+		p[0] = ''
 
 def p_condition_literal(p):
 	'condition : literal'
@@ -79,7 +75,7 @@ def p_condition_literal(p):
 
 def p_condition_or(p):
 	'condition : LPAREN OR condition_list RPAREN'
-	p[0] = p[3]
+	p[0] = 'XXX_OR_BEGIN\n%s\nXXX_OR_END' % p[3]
 
 def p_literal_atomic_sentence(p):
 	'literal : atomic_sentence'
@@ -87,8 +83,7 @@ def p_literal_atomic_sentence(p):
 
 def p_literal_not(p):
 	'literal : LPAREN NOT atomic_sentence RPAREN'
-	p[0] = p[3]
-	p[0].negate()
+	p[0] = 'XXX_NOT\n%s' % p[3]
 
 #def p_distinct_var(p):
 #	'distinct : LPAREN DISTINCT VAR VAR RPAREN'
@@ -108,10 +103,10 @@ def p_empty(p):
 	pass
 
 def parse_file(filename):
-	global int_rep
+	global output
 	global tokens
 
-	int_rep = IntermediateRep()
+	output = ''
 	gdllex.lex_file(filename)
 	tokens = gdllex.tokens
 
@@ -121,4 +116,4 @@ def parse_file(filename):
 
 if __name__ == '__main__':
 	parse_file(sys.argv[1])
-	int_rep.print_rules()
+	print output

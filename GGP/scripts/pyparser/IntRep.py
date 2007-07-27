@@ -22,10 +22,6 @@ class IntermediateRep:
 		for r in self.__rules:
 			print str(r)
 
-		print len(self.__statics)
-		print len(self.__rules)
-
-
 	def add_rule(self, head, body):
 		if len(body) == 0:
 			if head.get_relation() == "init":
@@ -34,6 +30,7 @@ class IntermediateRep:
 				self.__roles.append(head.get_term(0))
 			else:
 				self.__statics.append(head)
+			return
 
 		rule_bodies = []
 		var_comps = []

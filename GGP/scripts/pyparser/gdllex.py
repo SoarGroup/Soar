@@ -23,7 +23,8 @@ t_RPAREN   = r'\)'
 t_ignore = ' \t'
 
 def t_NAME(t):
-	r'[-\w_]+'
+	r'([-\w_]+)|(>=)|>|\+|\*|/'
+
 	try:
 		t.value = int(t.value)
 		t.type = 'NUM'
@@ -52,17 +53,13 @@ def t_newline(t):
 	t.lexer.lineno += t.value.count('\n')
 
 def t_error(t):
-	print "Illegal character '%s'" % t.value[0]
+	print "Illegal character '%s' at line %d" % (t.value[0], t.lexer.lineno)
 	t.skip(1)
 
-lex.lex()
+def lex_file(f):
+	lex.lex()
+	file = open(f).read()
+	lex.input(file)
 
-gdl = open(sys.argv[1]).read()
-
-lex.input(gdl)
-
-#while 1:
-#	tok = lex.token()
-#	if not tok:
-#		break
-#	print tok
+if __name__ == '__main__':
+	lex_file(sys.argv[1])
