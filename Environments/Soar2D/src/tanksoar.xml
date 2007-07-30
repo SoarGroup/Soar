@@ -28,7 +28,8 @@
     <file>soar2d.log</file>
     <console />
   </logging>
-  <players />
+  <players >
+  	<debuggers></debuggers></players>
   <terminals>
     <winning-score>50</winning-score>
   </terminals>
