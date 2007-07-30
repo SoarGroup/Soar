@@ -379,9 +379,14 @@ public class Player {
 		return this.velocity;
 	}
 
+	protected int locationId = -1;
+
 	public int getLocationId() {
-		assert false;
-		return -1;
+		return locationId;
+	}
+	
+	public void setLocationId(int id) {
+		locationId = id;
 	}
 
 	private double speed = 0;

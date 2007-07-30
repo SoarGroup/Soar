@@ -477,12 +477,11 @@ public class SoarRobot extends Robot {
 	private boolean fragged = true;
 	
 	SelfInputLink selfIL;
+	int oldLocationId;
 	
 	private ArrayList<String> shutdownCommands;	// soar commands to run before this agent is destroyed
 	
 
-	private int locationId = -1;
-	
 	/**
 	 * @param agent a valid soar agent
 	 * @param playerConfig the rest of the player config
@@ -493,9 +492,7 @@ public class SoarRobot extends Robot {
 		this.shutdownCommands = playerConfig.getShutdownCommands();
 		
 		agent.SetBlinkIfNoChange(false);
-
-		previousLocation = new java.awt.Point(-1, -1);
-		
+		oldLocationId = -1;
 		random = 0;
 		generateNewRandom();
 
@@ -509,9 +506,6 @@ public class SoarRobot extends Robot {
 		}
 	}
 	
-	public int getLocationId() {
-		return locationId;
-	}
 	/**
 	 * create a new random number
 	 * make sure it is different from current
@@ -549,83 +543,68 @@ public class SoarRobot extends Robot {
 		// if we moved
 		if (moved) {
 			// check if we're in a new location
-			ArrayList<CellObject> locationObjects = map.getAllWithProperty(location, Names.kPropertyNumber);
-			if (locationObjects.size() != 1) {
-				logger.warning("Location objects greater or less than 1");
-				locationId = -1;
+			if (oldLocationId != locationId) {
+				oldLocationId = locationId;
 				agent.Update(selfIL.area, locationId);
 
 				// destroy old area information
 				if (selfIL.areaDescription != null) {
 					selfIL.destroyAreaDescription();
 				}
-
-			} else {
-				int newLocationId = locationObjects.get(0).getIntProperty(Names.kPropertyNumber);
-
-				if (newLocationId != locationId) {
-					locationId = newLocationId;
-					agent.Update(selfIL.area, locationId);
-
-					// destroy old area information
-					if (selfIL.areaDescription != null) {
-						selfIL.destroyAreaDescription();
-					}
-					
-					// create new area information
-					ArrayList<Barrier> barrierList = world.getMap().getRoomBarrierList(locationId);
-					assert barrierList != null;
-					assert barrierList.size() > 0;
-					
-					// this is, in fact, a room
-					selfIL.createAreaDescription();
-					
-					Iterator<Barrier> iter = barrierList.iterator();
-					while(iter.hasNext()) {
-						Barrier barrier = iter.next();
-						if (barrier.gateway) {
-							// gateway
-							GatewayInputLink gateway = new GatewayInputLink(this, selfIL.createGatewayId());
-							gateway.initialize(barrier, world);
-							
-							// add destinations
-							ArrayList<Integer> gatewayDestList = world.getMap().getGatewayDestinationList(barrier.id);
-							Iterator<Integer> destIter = gatewayDestList.iterator();
-							while(destIter.hasNext()) {
-								gateway.addDest(destIter.next().intValue());
-							}
-							
-							selfIL.addGateway(gateway);
-							
-						} else {
-							// wall
-							BarrierInputLink wall = new BarrierInputLink(this, selfIL.createWallId());
-							wall.initialize(barrier, world);
-							selfIL.addWall(wall);
+				
+				// create new area information
+				ArrayList<Barrier> barrierList = world.getMap().getRoomBarrierList(locationId);
+				assert barrierList != null;
+				assert barrierList.size() > 0;
+				
+				// this is, in fact, a room
+				selfIL.createAreaDescription();
+				
+				Iterator<Barrier> iter = barrierList.iterator();
+				while(iter.hasNext()) {
+					Barrier barrier = iter.next();
+					if (barrier.gateway) {
+						// gateway
+						GatewayInputLink gateway = new GatewayInputLink(this, selfIL.createGatewayId());
+						gateway.initialize(barrier, world);
+						
+						// add destinations
+						ArrayList<Integer> gatewayDestList = world.getMap().getGatewayDestinationList(barrier.id);
+						Iterator<Integer> destIter = gatewayDestList.iterator();
+						while(destIter.hasNext()) {
+							gateway.addDest(destIter.next().intValue());
 						}
+						
+						selfIL.addGateway(gateway);
+						
+					} else {
+						// wall
+						BarrierInputLink wall = new BarrierInputLink(this, selfIL.createWallId());
+						wall.initialize(barrier, world);
+						selfIL.addWall(wall);
 					}
-				} else {
-					// barrier angle offs and range
-					Iterator<BarrierInputLink> wallIter = selfIL.walls.iterator();
-					while (wallIter.hasNext()) {
-						BarrierInputLink barrier = wallIter.next();
-						agent.Update(barrier.yaw, world.angleOff(this, barrier.centerpoint));
-					}
+				}
+			} else {
+				// barrier angle offs and range
+				Iterator<BarrierInputLink> wallIter = selfIL.walls.iterator();
+				while (wallIter.hasNext()) {
+					BarrierInputLink barrier = wallIter.next();
+					agent.Update(barrier.yaw, world.angleOff(this, barrier.centerpoint));
+				}
+				
+				Iterator<GatewayInputLink> gatewayIter = selfIL.gateways.iterator();
+				while (gatewayIter.hasNext()) {
+					GatewayInputLink gateway = gatewayIter.next();
 					
-					Iterator<GatewayInputLink> gatewayIter = selfIL.gateways.iterator();
-					while (gatewayIter.hasNext()) {
-						GatewayInputLink gateway = gatewayIter.next();
-						
-						agent.Update(gateway.yaw, world.angleOff(this, gateway.centerpoint));
-						double dx = gateway.centerpoint.x - world.getFloatLocation(this).x;
-						dx *= dx;
-						double dy = gateway.centerpoint.y - world.getFloatLocation(this).y;
-						dy *= dy;
-						double r = Math.sqrt(dx + dy);
-						
-						agent.Update(gateway.range, r);
+					agent.Update(gateway.yaw, world.angleOff(this, gateway.centerpoint));
+					double dx = gateway.centerpoint.x - world.getFloatLocation(this).x;
+					dx *= dx;
+					double dy = gateway.centerpoint.y - world.getFloatLocation(this).y;
+					dy *= dy;
+					double r = Math.sqrt(dx + dy);
+					
+					agent.Update(gateway.range, r);
 
-					}
 				}
 			}
 
@@ -1051,12 +1030,12 @@ public class SoarRobot extends Robot {
 		super.reset();
 		fragged = false;
 		moved = true;
-		locationId = -1;
 		moveCommandId = null;
 		moveCommandExecutingAdded = false;
 		rotateCommandId = null;
 		rotateCommandExecutingAdded = false;
-		
+		oldLocationId = -1;
+
 		if (agent == null) {
 			return;
 		}
