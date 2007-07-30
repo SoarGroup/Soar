@@ -351,11 +351,12 @@ public class BookAgentDisplay extends AgentDisplay {
 		boolean running = Soar2D.control.isRunning();
 		boolean slotsAvailable = Soar2D.simulation.getUnusedColors().size() > 0;
 		boolean hasPlayers = Soar2D.simulation.hasPlayers();
-		boolean selectedEater = (selectedPlayer != null);
+		boolean haveSelected = (selectedPlayer != null);
+		boolean selectedIsMutable = haveSelected && !selectedPlayer.getName().equals("cat") && !selectedPlayer.getName().equals("dog");
 		
 		m_NewAgentButton.setEnabled(!running && slotsAvailable);
-		m_CloneAgentButton.setEnabled(!running && slotsAvailable && selectedEater);
-		m_DestroyAgentButton.setEnabled(!running && hasPlayers && selectedEater);
-		m_ReloadProductionsButton.setEnabled(!running && hasPlayers && selectedEater);
+		m_CloneAgentButton.setEnabled(!running && slotsAvailable && selectedIsMutable );
+		m_DestroyAgentButton.setEnabled(!running && hasPlayers && haveSelected && selectedIsMutable);
+		m_ReloadProductionsButton.setEnabled(!running && hasPlayers && haveSelected && selectedIsMutable);
  	}
 }
