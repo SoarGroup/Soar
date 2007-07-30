@@ -916,6 +916,11 @@ public class SoarRobot extends Robot {
 				}
 				
 				ObjectInputLink oIL = selfIL.getOIL(move.getId);
+				if (oIL == null) {
+					logger.warning(getName() + " get command invalid id " + move.getId);
+					commandId.AddStatusError();
+					continue;
+				}
 				if (oIL.range.GetValue() > Soar2D.config.getBookCellSize()) {
 					logger.warning(getName() + " get command object out of range");
 					commandId.AddStatusError();
