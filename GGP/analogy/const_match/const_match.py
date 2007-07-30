@@ -38,18 +38,26 @@ consts2rels_tgt = build_constant_relations(gdlyacc.int_rep)
 const_match_scores = []
 for src_const in consts2rels_src:
 	for tgt_const in consts2rels_tgt:
-		if src_const in consts2rels_src:
-			src_set = set([i[1] for i in consts2rels_src[src_const]])
-		else:
+		if src_const not in consts2rels_src:
 			const_match_scores.append((src_const, tgt_const, 0))
 			continue
-		if tgt_const in consts2rels_tgt:
-			tgt_set = set([i[1] for i in consts2rels_tgt[tgt_const]])
-		else:
+		if tgt_const not in consts2rels_tgt:
 			const_match_scores.append((src_const, tgt_const, 0))
 			continue
-		int_size = len(src_set.intersection(tgt_set))
-		const_match_scores.append((src_const, tgt_const, int_size))
+		rel2pos = {} # rel -> [pos]
+		everything = consts2rels_src[src_const] + consts2rels_tgt[tgt_const]
+		for rel, pos in everything:
+			rel2pos.setdefault(rel,[]).append(pos)
+		
+		score = 0
+		for rel, poses in rel2pos.items():
+			if len(poses) == 2:
+				if poses[0] == poses[1]:
+					score += 2 # extra points for position match
+				else:
+					score += 1
+				
+		const_match_scores.append((src_const, tgt_const, score))
 
 const_match_scores.sort(lambda x, y: x[2] - y[2])
 
