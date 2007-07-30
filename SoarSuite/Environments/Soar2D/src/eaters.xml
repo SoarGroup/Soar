@@ -18,7 +18,8 @@
     <file>soar2d.log</file>
     <console />
   </logging>
-  <players />
+  <players >
+  	<debuggers></debuggers></players>
   <terminals>
     <food-remaining />
   </terminals>
