@@ -972,6 +972,15 @@ public class GridMap {
 		setRedraw(cell);
 	}
 	
+	public int getLocationId(Point location) {
+		assert location != null;
+		assert Soar2D.config.getType() == SimType.kBook;
+
+		ArrayList<CellObject> locationObjects = getAllWithProperty(location, Names.kPropertyNumber);
+		assert locationObjects.size() == 1;
+		return locationObjects.get(0).getIntProperty(Names.kPropertyNumber);
+	}
+	
 	public int pointsCount(java.awt.Point location) {
 		Cell cell = getCell(location);
 		ArrayList<CellObject> list = cell.getAllWithProperty(Names.kPropertyEdible);

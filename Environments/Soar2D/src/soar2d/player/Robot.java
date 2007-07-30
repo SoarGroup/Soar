@@ -30,11 +30,6 @@ public class Robot extends Player {
 		return true;
 	}
 
-	public int getLocationId() {
-//		assert false;
-		return -1;
-	}
-	
 	int inId = -1;
 	String inType = null;
 	

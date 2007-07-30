@@ -324,6 +324,7 @@ public class World {
 		map.setPlayer(location, player);
 		locations.put(player.getName(), location);
 		if (Soar2D.config.getType() == SimType.kBook) {
+			player.setLocationId(map.getLocationId(location));
 			floatLocations.put(player.getName(), defaultFloatLocation(location));
 		}
 		return location;
@@ -811,6 +812,7 @@ public class World {
 		player.setVelocity(new Point2D.Double((newFloatLocation.x - oldFloatLocation.x)/time, (newFloatLocation.y - oldFloatLocation.y)/time));
 		map.setPlayer(oldLocation, null);
 		locations.put(player.getName(), newLocation);
+		player.setLocationId(map.getLocationId(newLocation));
 		floatLocations.put(player.getName(), newFloatLocation);
 		map.setPlayer(newLocation, player);
 	}
@@ -1546,6 +1548,7 @@ public class World {
 		// save the location
 		locations.put(player.getName(), location);
 		if (Soar2D.config.getType() == SimType.kBook) {
+			player.setLocationId(map.getLocationId(location));
 			floatLocations.put(player.getName(), defaultFloatLocation(location));
 		}
 		
