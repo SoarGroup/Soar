@@ -323,7 +323,7 @@ sp {elaborate*math-link
 sp {elaborate*collapse*unique*math-operands
 	(state <s> ^math <m>)
 	(<m> ^<expression-id> <expression>)
-	(<expression> ^query <q>)
+	(<expression> ^query-link <q>)
 	(<q> ^op0 <op0> ^op1 <op1>)
 -->
 	(<expression> ^unique-op0 <op0>)
@@ -334,16 +334,16 @@ sp {elaborate*generate*unique*queries
 	(<m> ^<expression-id> <expression>)
 	(<expression> ^unique-op0 <op0> ^unique-op1 <op1>)
 -->
-	(<expression> ^result <uq>)
+	(<expression> ^result-link <uq>)
 	(<uq> ^op0 <op0> ^op1 <op1>)
 }
 
 sp {elaborate*generate*unique*queries-results
 	(state <s> ^math <m>)
 	(<m> ^<expression-id> <expression>)
-	(<expression> ^result <uq> ^query <q>)
+	(<expression> ^result-link <uq> ^query-link <q>)
 	(<uq> ^op0 <op0> ^op1 <op1>)
-	(<q> ^op0 <op0> ^op1 <op1> ^result <res>)
+	(<q> ^op0 <op0> ^op1 <op1> ^res <res>)
 -->
-	(<uq> ^result <res>)
+	(<uq> ^res <res>)
 }
