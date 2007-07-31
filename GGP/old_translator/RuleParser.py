@@ -709,6 +709,7 @@ def SplitOr(axiom):
 	result = []
 	num_splits = len(axiom.or_child()) - 1
 	for i in range(num_splits):
-		a = axiom.deepvar_gensult.append(DeleteOrOperands(a, i + 1))
+		a = axiom.deep_copy()
+		result.append(DeleteOrOperands(a, i + 1))
 
 	return result
