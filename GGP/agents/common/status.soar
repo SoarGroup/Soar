@@ -7,6 +7,14 @@ sp {monitor*holding
   (write (crlf) |Explorer is holding | <item>)
 }
 
+sp {monitor*carrying
+  (state <s> ^gs <gs>)
+  (<gs> ^carrying.p1 <item>)
+  -->
+  (write (crlf) |Explorer is carrying | <item>)
+}
+
+
 sp {monitor*destroyed
   (state <s> ^gs <gs>)
   (<gs> ^destroyed.p1 <obs>

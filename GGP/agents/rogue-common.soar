@@ -1,21 +1,3 @@
-# FIXME: why is this not generated?
-sp {apply*_next__health_hero__maxHealth__HACK
-   (state <s> ^name game ^name game ^operator <o> ^elaborations <e> ^facts <f> ^gs <g>)
-   (<o> ^name update-state)
-   (<e> ^totalmonsterdamage <t>)
-   (<t> ^p1 0)
-  
-   (<g> ^health <h>)
-   (<h> ^p1 hero
-        ^p2 <maxHealth>)
-
-   (<f> ^maxhealth <m>)
-   (<m> ^p1 hero ^p2 <maxHealth>)
--->
-   (<g> ^health <health>)
-   (<health> ^p1 hero ^p2 <maxHealth>)
-}
-
 sp {math*elab*greaterthan
   (state <s> ^superstate nil
               ^elaborations <el>
@@ -73,36 +55,3 @@ sp {elaborate*finished-move
    (<s> ^move-finished <mf> +)
 }
 
-# TODO: translator should handle this
-#sp {elaborate*_relevantmonstercell__x__y_
-#   (state <s> ^facts <f> ^gs <g> ^elaborations <e>)
-#   (<f> ^monster <m> ^room <r>)
-#   (<m> ^p1 <monster> ^p2 <any>)
-#   (<g> ^location <l>)
-#   (<l> ^p1 <monster> ^p2 {>= <lx> <= <rx> <x>} ^p3 {>= <ty> <= <by> <y>})
-#   (<e> ^nextherolocation <n>)# ^top-state-elaborations.between <b> ^top-state-elaborations.between <b1> ^top-state-elaborations.between <b2> ^top-state-elaborations.between <b3>)
-#   (<n> ^p1 {>= <lx> <= <rx> <x2> } ^p2 {>= <ty> <= <by> <y2>})
-#   (<r> ^p1 <lx> ^p2 <ty> ^p3 <rx> ^p4 <by>)
-#   (<b> ^p1 <lx> ^p2 <x2> ^p3 <rx>)
-#   (<b1> ^p1 <ty> ^p2 <y2> ^p3 <by>)
-#   (<b2> ^p1 <lx> ^p2 <x> ^p3 <rx>)
-#   (<b3> ^p1 <ty> ^p2 <y> ^p3 <by>)
-#-->
-#   (<e> ^relevantmonstercell <relevantmonstercell>)
-#   (<relevantmonstercell> ^p1 <x> ^p2 <y>)
-#}
-
-sp {apply*remove-_next__location__std_soar_var1__std_soar_var2__std_soar_var3__0
-   (state <s> ^name game ^gs <g> ^io <i> ^operator <o> ^facts <f>)
-   (<g> ^location <l1>)
-   (<i> ^input-link <i1>)
-   (<i1> ^last-moves <l>)
-   (<o> ^name update-state)
-   (<l1> ^p1 {<> exit <std_soar_var1>} ^p2 <std_soar_var2> ^p3 <std_soar_var3>)
-   -{
-     (<f> ^item <i2>)
-     (<i2> ^p1 <std_soar_var1>)
-   }
--->
-   (<g> ^location <l1> -)
-}

@@ -64,7 +64,6 @@ sp {apply*check-for-duplicate-location*fail
 # do not chunk over this, odd things result..
 sp {apply*save-location*save
    (state <s> ^name game
-              ^quiscence t
               ^operator.name save-location
               ^state-of-last-env-change <solec>
               ^gs.location <loc>
@@ -80,7 +79,7 @@ sp {apply*save-location*save
          ^y <y>)
 }
 
-sp {dont-chunk-vls
+sp {apply*save-location*dont-learn
  (state <s> ^name game
               ^operator.name save-location
               ^state-of-last-env-change <solec>
@@ -91,7 +90,7 @@ sp {dont-chunk-vls
    (<loc> ^p1 <role>
           ^p2 <x>
           ^p3 <y>)
-   (state <s2> ^superstate <s>)
+   (state <s2> ^superstate <solec>)
 -->
    (dont-learn <s2>)
 }

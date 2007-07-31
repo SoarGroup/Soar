@@ -5,7 +5,8 @@ sp {selection*propose*init-current-evaluation-depth*top-selection
    (state <s> ^name selection
               ^top-selection true
              -^current-evaluation-depth
-             -^superstate.elaborations.minimum-explorer-exit-distance)
+             -^superstate.elaborations.minimum-explorer-exit-distance
+             -^superstate.start-depth)
 -->
    (<s> ^operator <op> + =, >)
    (<op> ^name init-current-evaluation-depth
@@ -15,11 +16,23 @@ sp {selection*propose*init-current-evaluation-depth*top-selection*minimum-distan
    (state <s> ^name selection
               ^top-selection true
              -^current-evaluation-depth
+             -^superstate.start-depth
               ^superstate.elaborations.minimum-explorer-exit-distance <meed>)
 -->
    (<s> ^operator <op> + =, >)
    (<op> ^name init-current-evaluation-depth
          ^value <meed>)
+}
+
+sp {selection*propose*init-current-evaluation-depth*top-selection*start-depth
+   (state <s> ^name selection
+              ^top-selection true
+             -^current-evaluation-depth
+              ^superstate.start-depth <sd>)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name init-current-evaluation-depth
+         ^value <sd>)
 }
 
 sp {apply*init-current-evaluation-depth
