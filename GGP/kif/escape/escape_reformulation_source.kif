@@ -424,21 +424,10 @@
 (<= (next (health explorer ?hpNew))
     (true (health explorer ?hpOld))
     damaged
-    (not (does explorer heal))
     (minus 1 ?hpOld ?hpNew))
-(<= (next (health explorer ?hpNew))
-    (true (health explorer ?hpOld))
-    (does explorer heal)
-    (not damaged)
-    (plus 1 ?hpOld ?hpNew))
 (<= (next (health explorer ?hp))
     (true (health explorer ?hp))
-    (not damaged)
-    (not (does explorer heal)))
-(<= (next (health explorer ?hp))
-    (true (health explorer ?hp))
-    damaged
-    (does explorer heal))
+    (not damaged))
 
 ;;; The exit and walls do not move
 (<= (next (location exit ?x ?y))
