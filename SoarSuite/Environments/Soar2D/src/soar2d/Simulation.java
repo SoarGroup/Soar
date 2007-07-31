@@ -266,6 +266,7 @@ public class Simulation {
 				Player player = null;
 				
 				// eater or tank depending on the setting
+				boolean human = true;
 				switch(Soar2D.config.getType()) {
 				case kEaters:
 					player = new Eater(playerConfig, true);
@@ -276,8 +277,10 @@ public class Simulation {
 				case kBook:
 					if (playerConfig.getName().equals(kDog)) {
 						player = new Dog(playerConfig);
+						human = false;
 					} else if (playerConfig.getName().equals(kMouse)) {
 						player = new Mouse(playerConfig);
+						human = false;
 					} else {
 						player = new Robot(playerConfig);
 					}
@@ -293,7 +296,7 @@ public class Simulation {
 				}
 
 				// This can fail if there are no open squares on the map, message printed already
-				if (!world.addPlayer(player, initialLocation, true)) {
+				if (!world.addPlayer(player, initialLocation, human)) {
 					throw new CreationException();
 				}
 
@@ -675,13 +678,6 @@ public class Simulation {
 		return agents.size() > 0;
 	}
 	
-	/**
-	 * @return true if there are any players present (not necessarily soar agents)
-	 */
-	public boolean hasPlayers() {
-		return world.hasPlayers();
-	}
-
 	/**
 	 * TODO
 	 * @return true if the simulation has reached a terminal state

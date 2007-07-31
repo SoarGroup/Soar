@@ -241,8 +241,9 @@ public class Tank extends Player {
 		return shieldsUp;
 	}
 
-	public void update(World world, java.awt.Point location) {
-		super.update(world, location);
+	public void update(java.awt.Point location) {
+		World world = Soar2D.simulation.world;
+		super.update(location);
 		
 		if (radarSwitch) {
 			observedPower = world.getMap().getRadar(radar, location, getFacingInt(), radarPower);

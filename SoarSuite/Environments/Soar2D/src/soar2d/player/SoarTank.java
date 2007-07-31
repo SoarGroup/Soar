@@ -133,8 +133,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		return agent.CreateFloatWME(id, attribute, value);
 	}
 
-	public void update(World world, java.awt.Point location) {
-		super.update(world, location);
+	public void update(java.awt.Point location) {
+		super.update(location);
 	}
 	
 	public MoveInfo getMove() {
@@ -419,7 +419,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		unseen.add("orange");
 		unseen.add("black");
 		
-		ArrayList<Player> players = Soar2D.simulation.world.getPlayers();
+		PlayersManager players = Soar2D.simulation.world.getPlayers();
 		Iterator<Player> playersIter = players.iterator();
 		while (playersIter.hasNext()) {
 			Player player = playersIter.next();

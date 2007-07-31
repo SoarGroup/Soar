@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import soar2d.PlayersManager;
 import soar2d.Soar2D;
 import soar2d.World;
 import soar2d.world.CellObject;
@@ -18,11 +19,13 @@ public class Mouse extends Player {
 	Player target;
 	double targetAngleOff;
 
-	public void update(World world, java.awt.Point location) {
-		super.update(world, location);
+	public void update(java.awt.Point location) {
+		World world = Soar2D.simulation.world;
+
+		super.update(location);
 		
-		ArrayList<Player> players = world.getPlayers();
-		if (players.size() > 1) {
+		PlayersManager players = world.getPlayers();
+		if (players.numberOfPlayers() > 1) {
 			Iterator<Player> playersIter = players.iterator();
 			target = null;
 			while (playersIter.hasNext()) {
@@ -31,7 +34,7 @@ public class Mouse extends Player {
 					continue;
 				}
 				if (player.getLocationId() == this.getLocationId()) {
-					double angleOff = world.angleOff(this, world.getFloatLocation(player));
+					double angleOff = players.angleOff(this, player);
 					target = player;
 					targetAngleOff = angleOff;
 					break;

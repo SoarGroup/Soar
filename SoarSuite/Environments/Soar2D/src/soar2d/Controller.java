@@ -36,7 +36,9 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	private boolean shuttingDown = false;
 	
 	private long timeStamp; 
-	
+	private double totalTime = 0;
+	private double timeSlice = 0;
+
 	/**
 	 * Set to true when a stop is requested
 	 */
@@ -230,10 +232,26 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 * a loop if necessary.
 	 */
 	public void tickEvent() {
+		timeSlice = (float)Soar2D.config.getCycleTimeSlice() / 1000.0f;
+		totalTime += timeSlice;
+
 		Soar2D.simulation.update();
 		if (Soar2D.wm.using()) {
 			Soar2D.wm.update();
 		}
+	}
+	
+	public double getTotalTime() {
+		return totalTime;
+	}
+	
+	public double getTimeSlice() {
+		return timeSlice;
+	}
+	
+	public void resetTime() {
+		totalTime = 0;
+		timeSlice = 0;
 	}
 	
 	/**
@@ -424,4 +442,20 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 * @author Scott Lathrop
 	 *
 	 */
+	
+	private int runsTerminal = 0;
+	public void setRunsTerminal(int runsTerminal) {
+		this.runsTerminal = runsTerminal;
+	}
+	public boolean checkRunsTerminal() {
+		boolean stopNow = true;
+		
+		if (this.runsTerminal > 0) {
+			this.runsTerminal -= 1;
+			if (this.runsTerminal > 0) {
+				stopNow = false;
+			}
+		}
+		return stopNow;
+	}
 }

@@ -1,7 +1,5 @@
 package soar2d.visuals;
 
-import java.util.*;
-
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.*;
@@ -25,7 +23,7 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 	TankSoarAgentWorld m_AgentWorld;
 	Player selectedPlayer;
 	TableItem[] m_Items = new TableItem[0];
-	ArrayList<Player> players = new ArrayList<Player>();
+	PlayersManager players;
 	Composite m_AgentButtons;
 	Button m_NewAgentButton;
 	Button m_CloneAgentButton;
@@ -48,6 +46,8 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 		super(parent);
 
 		setLayout(new FillLayout());
+		
+		players = Soar2D.simulation.world.getPlayers();
 		
 		m_Group = new Group(this, SWT.NONE);
 		m_Group.setText("Agents");
@@ -430,7 +430,7 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 		} else {
 			m_Smell.setToolTipText("no smell");
 		}
-		java.awt.Point playerLocation = Soar2D.simulation.world.getLocation(selectedPlayer);
+		java.awt.Point playerLocation = players.getLocation(selectedPlayer);
 		location.setText("(" + playerLocation.x + "," + playerLocation.y + ")");
 		m_AgentWorld.redraw();
 	}
@@ -481,8 +481,8 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 		m_AgentTable.removeAll();
 		boolean foundSelected = false;
 		
-		m_Items = new TableItem[players.size()];
-		for (int i = 0; i < players.size(); ++i) {
+		m_Items = new TableItem[players.numberOfPlayers()];
+		for (int i = 0; i < players.numberOfPlayers(); ++i) {
 			m_Items[i] = new TableItem(m_AgentTable, SWT.NONE);
 			m_Items[i].setText(new String[] {
 					players.get(i).getName(), 
@@ -506,7 +506,7 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 	void updateButtons() {
 		boolean running = Soar2D.control.isRunning();
 		boolean slotsAvailable = Soar2D.simulation.getUnusedColors().size() > 0;
-		boolean hasPlayers = Soar2D.simulation.hasPlayers();
+		boolean hasPlayers = players.numberOfPlayers() > 0;
 		boolean selectedEater = (selectedPlayer != null);
 		
 		m_NewAgentButton.setEnabled(!running && slotsAvailable);

@@ -1,7 +1,6 @@
 package soar2d.player;
 
 import java.awt.geom.Point2D;
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,6 +15,7 @@ import sml.IntElement;
 import sml.StringElement;
 import soar2d.Direction;
 import soar2d.Names;
+import soar2d.PlayersManager;
 import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.World;
@@ -30,11 +30,11 @@ class SelfInputLink {
 	FloatElement yaw;
 	IntElement area;
 	Identifier areaDescription;
-	ArrayList<BarrierInputLink> walls = new ArrayList<BarrierInputLink>();
-	ArrayList<GatewayInputLink> gateways = new ArrayList<GatewayInputLink>();
-	private HashMap<Integer, ObjectInputLink> objects = new HashMap<Integer, ObjectInputLink>();
-	private HashMap<Player, PlayerInputLink> players = new HashMap<Player, PlayerInputLink>();
-	private HashSet<MessageInputLink> messages = new HashSet<MessageInputLink>();
+	ArrayList<BarrierInputLink> wallsIL = new ArrayList<BarrierInputLink>();
+	ArrayList<GatewayInputLink> gatewaysIL = new ArrayList<GatewayInputLink>();
+	private HashMap<Integer, ObjectInputLink> objectsIL = new HashMap<Integer, ObjectInputLink>();
+	private HashMap<Player, PlayerInputLink> playersIL = new HashMap<Player, PlayerInputLink>();
+	private HashSet<MessageInputLink> messagesIL = new HashSet<MessageInputLink>();
 	Identifier collision;
 	StringElement collisionX;
 	StringElement collisionY;
@@ -113,19 +113,20 @@ class SelfInputLink {
 	}
 	
 	void addWall(BarrierInputLink wall) {
-		walls.add(wall);
+		wallsIL.add(wall);
 	}
 	
 	void addGateway(GatewayInputLink gateway) {
-		gateways.add(gateway);
+		gatewaysIL.add(gateway);
 	}
 	
 	void addOrUpdatePlayer(Player player, World world, double angleOffDouble) {
-		PlayerInputLink pIL = players.get(player);
+		PlayerInputLink pIL = playersIL.get(player);
+		PlayersManager players = world.getPlayers();
 
-		double dx = world.getFloatLocation(player).x - world.getFloatLocation(robot).x;
+		double dx = players.getFloatLocation(player).x - players.getFloatLocation(robot).x;
 		dx *= dx;
-		double dy = world.getFloatLocation(player).y - world.getFloatLocation(robot).y;
+		double dy = players.getFloatLocation(player).y - players.getFloatLocation(robot).y;
 		dy *= dy;
 		double range = Math.sqrt(dx + dy);
 		
@@ -134,23 +135,23 @@ class SelfInputLink {
 			Identifier parent = robot.agent.CreateIdWME(robot.agent.GetInputLink(), "player");
 			pIL = new PlayerInputLink(robot, parent);
 			pIL.initialize(player, world, range, angleOffDouble);
-			players.put(player, pIL);
+			playersIL.put(player, pIL);
 		
 		} else {
 			if (pIL.area.GetValue() != player.getLocationId()) {
 				robot.agent.Update(pIL.area, player.getLocationId());
 			}
-			if (pIL.row.GetValue() != world.getLocation(player).y) {
-				robot.agent.Update(pIL.row, world.getLocation(player).y);
+			if (pIL.row.GetValue() != players.getLocation(player).y) {
+				robot.agent.Update(pIL.row, players.getLocation(player).y);
 			}
-			if (pIL.col.GetValue() != world.getLocation(player).x) {
-				robot.agent.Update(pIL.col, world.getLocation(player).x);
+			if (pIL.col.GetValue() != players.getLocation(player).x) {
+				robot.agent.Update(pIL.col, players.getLocation(player).x);
 			}
-			if (pIL.x.GetValue() != world.getFloatLocation(player).x) {
-				robot.agent.Update(pIL.x, world.getFloatLocation(player).x);
+			if (pIL.x.GetValue() != players.getFloatLocation(player).x) {
+				robot.agent.Update(pIL.x, players.getFloatLocation(player).x);
 			}
-			if (pIL.y.GetValue() != world.getFloatLocation(player).y) {
-				robot.agent.Update(pIL.y, world.getFloatLocation(player).y);
+			if (pIL.y.GetValue() != players.getFloatLocation(player).y) {
+				robot.agent.Update(pIL.y, players.getFloatLocation(player).y);
 			}
 			if (pIL.range.GetValue() != range) {
 				robot.agent.Update(pIL.range, range);
@@ -163,11 +164,12 @@ class SelfInputLink {
 	}
 	
 	void addOrUpdateObject(GridMap.BookObjectInfo objectInfo, World world, double angleOffDouble) {
-		ObjectInputLink oIL = objects.get(objectInfo.object.getIntProperty("object-id"));
+		ObjectInputLink oIL = objectsIL.get(objectInfo.object.getIntProperty("object-id"));
+		PlayersManager players = world.getPlayers();
 
-		double dx = objectInfo.floatLocation.x - world.getFloatLocation(robot).x;
+		double dx = objectInfo.floatLocation.x - players.getFloatLocation(robot).x;
 		dx *= dx;
-		double dy = objectInfo.floatLocation.y - world.getFloatLocation(robot).y;
+		double dy = objectInfo.floatLocation.y - players.getFloatLocation(robot).y;
 		dy *= dy;
 		double range = Math.sqrt(dx + dy);
 		
@@ -176,7 +178,7 @@ class SelfInputLink {
 			Identifier parent = robot.agent.CreateIdWME(robot.agent.GetInputLink(), "object");
 			oIL = new ObjectInputLink(robot, parent);
 			oIL.initialize(objectInfo, world, range, angleOffDouble);
-			objects.put(objectInfo.object.getIntProperty("object-id"), oIL);
+			objectsIL.put(objectInfo.object.getIntProperty("object-id"), oIL);
 		
 		} else {
 			if (oIL.area.GetValue() != objectInfo.area) {
@@ -205,7 +207,7 @@ class SelfInputLink {
 	}
 	
 	void purge(int cycle) {
-		Iterator<ObjectInputLink> oiter = objects.values().iterator();
+		Iterator<ObjectInputLink> oiter = objectsIL.values().iterator();
 		while (oiter.hasNext()) {
 			ObjectInputLink oIL = oiter.next();
 			if (oIL.cycleTouched < cycle) {
@@ -218,7 +220,7 @@ class SelfInputLink {
 			}
 		}
 		
-		Iterator<PlayerInputLink> piter = players.values().iterator();
+		Iterator<PlayerInputLink> piter = playersIL.values().iterator();
 		while (piter.hasNext()) {
 			PlayerInputLink pIL = piter.next();
 			if (pIL.cycleTouched < cycle) {
@@ -227,7 +229,7 @@ class SelfInputLink {
 			}
 		}
 		
-		Iterator<MessageInputLink> miter = messages.iterator();
+		Iterator<MessageInputLink> miter = messagesIL.iterator();
 		while (miter.hasNext()) {
 			MessageInputLink mIL = miter.next();
 			if (mIL.cycleCreated < cycle - 3) {
@@ -238,12 +240,12 @@ class SelfInputLink {
 	}
 	
 	ObjectInputLink getOIL(int id) {
-		return objects.get(id);
+		return objectsIL.get(id);
 	}
 	
 	void destroyAreaDescription() {
-		walls = new ArrayList<BarrierInputLink>();
-		gateways = new ArrayList<GatewayInputLink>();
+		wallsIL = new ArrayList<BarrierInputLink>();
+		gatewaysIL = new ArrayList<GatewayInputLink>();
 
 		if (areaDescription == null) {
 			return;
@@ -258,9 +260,9 @@ class SelfInputLink {
 		robot.agent.DestroyWME(self);
 		destroyAreaDescription();
 
-		objects = new HashMap<Integer, ObjectInputLink>();
-		players = new HashMap<Player, PlayerInputLink>();
-		messages = new HashSet<MessageInputLink>();
+		objectsIL = new HashMap<Integer, ObjectInputLink>();
+		playersIL = new HashMap<Player, PlayerInputLink>();
+		messagesIL = new HashSet<MessageInputLink>();
 
 		self = areaDescription = carry = null;
 	}
@@ -282,7 +284,7 @@ class SelfInputLink {
 		Identifier parent = robot.agent.CreateIdWME(robot.agent.GetInputLink(), "message");
 		MessageInputLink mIL = new MessageInputLink(robot, parent);
 		mIL.initialize(player.getName(), message, world);
-		messages.add(mIL);
+		messagesIL.add(mIL);
 	}
 }
 
@@ -323,6 +325,8 @@ class BarrierInputLink {
 	}
 	
 	void initialize(Barrier barrier, World world) {
+		PlayersManager players = world.getPlayers();
+
 		id = robot.agent.CreateIntWME(parent, "id", barrier.id);
 		left = robot.agent.CreateIdWME(parent, "left");
 		{
@@ -340,7 +344,7 @@ class BarrierInputLink {
 			x = robot.agent.CreateFloatWME(center, "x", centerpoint.x);
 			y = robot.agent.CreateFloatWME(center, "y", centerpoint.y);
 			angleOff = robot.agent.CreateIdWME(center, "angle-off");
-			yaw = robot.agent.CreateFloatWME(angleOff, "yaw", world.angleOff(robot, centerpoint));
+			yaw = robot.agent.CreateFloatWME(angleOff, "yaw", players.angleOff(robot, centerpoint));
 		}
 		direction = robot.agent.CreateStringWME(parent, "direction", Direction.stringOf[barrier.direction]);
 	}
@@ -356,12 +360,13 @@ class GatewayInputLink extends BarrierInputLink {
 	
 	@Override
 	void initialize(Barrier barrier, World world) {
+		PlayersManager players = world.getPlayers();
 		
 		super.initialize(barrier, world);
 
-		double dx = centerpoint.x - world.getFloatLocation(robot).x;
+		double dx = centerpoint.x - players.getFloatLocation(robot).x;
 		dx *= dx;
-		double dy = centerpoint.y - world.getFloatLocation(robot).y;
+		double dy = centerpoint.y - players.getFloatLocation(robot).y;
 		dy *= dy;
 		double r = Math.sqrt(dx + dy);
 
@@ -450,16 +455,18 @@ class PlayerInputLink { // FIXME should share code with OIL
 	}
 	
 	void initialize(Player player, World world, double range, double angleOffDouble) {
+		PlayersManager players = world.getPlayers();
+
 		this.name = robot.agent.CreateStringWME(parent, "name", player.getName());
 		this.area = robot.agent.CreateIntWME(parent, "area", player.getLocationId());
 		this.angleOff = robot.agent.CreateIdWME(parent, "angle-off");
 		this.yaw = robot.agent.CreateFloatWME(angleOff, "yaw", angleOffDouble);
 		this.position = robot.agent.CreateIdWME(parent, "position");
 		{
-			this.col = robot.agent.CreateIntWME(position, "col", world.getLocation(player).x);
-			this.row = robot.agent.CreateIntWME(position, "row", world.getLocation(player).y);
-			this.x = robot.agent.CreateFloatWME(position, "x", world.getFloatLocation(player).x);
-			this.y = robot.agent.CreateFloatWME(position, "y", world.getFloatLocation(player).y);
+			this.col = robot.agent.CreateIntWME(position, "col", players.getLocation(player).x);
+			this.row = robot.agent.CreateIntWME(position, "row", players.getLocation(player).y);
+			this.x = robot.agent.CreateFloatWME(position, "x", players.getFloatLocation(player).x);
+			this.y = robot.agent.CreateFloatWME(position, "y", players.getFloatLocation(player).y);
 		}
 		this.range = robot.agent.CreateFloatWME(parent, "range", range);
 		
@@ -528,10 +535,12 @@ public class SoarRobot extends Robot {
 		return super.drop();
 	}
 	
-	public void update(World world, java.awt.Point location) {
-		
+	public void update(java.awt.Point location) {
+		World world = Soar2D.simulation.world;
+		PlayersManager players = world.getPlayers();
+
 		// check to see if we've moved
-		super.update(world, location);
+		super.update(location);
 		
 		// if we've been fragged, set move to true
 		if (fragged) {
@@ -586,20 +595,20 @@ public class SoarRobot extends Robot {
 				}
 			} else {
 				// barrier angle offs and range
-				Iterator<BarrierInputLink> wallIter = selfIL.walls.iterator();
+				Iterator<BarrierInputLink> wallIter = selfIL.wallsIL.iterator();
 				while (wallIter.hasNext()) {
 					BarrierInputLink barrier = wallIter.next();
-					agent.Update(barrier.yaw, world.angleOff(this, barrier.centerpoint));
+					agent.Update(barrier.yaw, players.angleOff(this, barrier.centerpoint));
 				}
 				
-				Iterator<GatewayInputLink> gatewayIter = selfIL.gateways.iterator();
+				Iterator<GatewayInputLink> gatewayIter = selfIL.gatewaysIL.iterator();
 				while (gatewayIter.hasNext()) {
 					GatewayInputLink gateway = gatewayIter.next();
 					
-					agent.Update(gateway.yaw, world.angleOff(this, gateway.centerpoint));
-					double dx = gateway.centerpoint.x - world.getFloatLocation(this).x;
+					agent.Update(gateway.yaw, players.angleOff(this, gateway.centerpoint));
+					double dx = gateway.centerpoint.x - players.getFloatLocation(this).x;
 					dx *= dx;
-					double dy = gateway.centerpoint.y - world.getFloatLocation(this).y;
+					double dy = gateway.centerpoint.y - players.getFloatLocation(this).y;
 					dy *= dy;
 					double r = Math.sqrt(dx + dy);
 					
@@ -612,7 +621,7 @@ public class SoarRobot extends Robot {
 			agent.Update(selfIL.col, location.x);
 			agent.Update(selfIL.row, location.y);
 			
-			Point2D.Double floatLocation = world.getFloatLocation(this);
+			Point2D.Double floatLocation = players.getFloatLocation(this);
 			agent.Update(selfIL.x, floatLocation.x);
 			agent.Update(selfIL.y, floatLocation.y);
 			
@@ -642,7 +651,7 @@ public class SoarRobot extends Robot {
 		}
 		
 		// time
-		agent.Update(selfIL.time, world.getTime());
+		agent.Update(selfIL.time, Soar2D.control.getTotalTime());
 		
 		// update the random no matter what
 		float oldrandom = random;
@@ -659,7 +668,7 @@ public class SoarRobot extends Robot {
 			GridMap.BookObjectInfo bInfo = map.getBookObjectInfo(bObj);
 			if (bInfo.area == locationId) {
 				double maxAngleOff = Soar2D.config.getVisionCone() / 2;
-				double angleOff = world.angleOff(this, bInfo.floatLocation);
+				double angleOff = players.angleOff(this, bInfo.floatLocation);
 				if (Math.abs(angleOff) <= maxAngleOff) {
 					selfIL.addOrUpdateObject(bInfo, world, angleOff);
 				} else {
@@ -669,15 +678,14 @@ public class SoarRobot extends Robot {
 		}
 		
 		// players
-		ArrayList<Player> players = world.getPlayers();
-		if (players.size() > 1) {
+		if (players.numberOfPlayers() > 1) {
 			Iterator<Player> playersIter = players.iterator();
 			while (playersIter.hasNext()) {
 				Player player = playersIter.next();
 				if (this.equals(player)) {
 					continue;
 				}
-				selfIL.addOrUpdatePlayer(player, world, world.angleOff(this, world.getFloatLocation(player)));
+				selfIL.addOrUpdatePlayer(player, world, players.angleOff(this, player));
 			}
 		}
 		
@@ -996,8 +1004,8 @@ public class SoarRobot extends Robot {
 		return move;
 	}
 	
-	public void receiveMessage(Player player, String message, World world) {
-		selfIL.addMessage(player, message, world);
+	public void receiveMessage(Player player, String message) {
+		selfIL.addMessage(player, message, Soar2D.simulation.world);
 	}
 	
 	public void updateGetStatus(boolean success) {

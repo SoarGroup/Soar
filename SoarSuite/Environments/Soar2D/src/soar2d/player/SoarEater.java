@@ -216,10 +216,11 @@ public class SoarEater extends Eater {
 	/* (non-Javadoc)
 	 * @see soar2d.player.Eater#update(soar2d.World, java.awt.Point)
 	 */
-	public void update(World world, java.awt.Point location) {
-		
+	public void update(java.awt.Point location) {
+		World world = Soar2D.simulation.world;
+
 		// check to see if we've moved
-		super.update(world, location);
+		super.update(location);
 		
 		// if we've been fragged, set move to true
 		if (fragged) {

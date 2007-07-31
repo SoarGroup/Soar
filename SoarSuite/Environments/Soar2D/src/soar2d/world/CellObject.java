@@ -235,7 +235,9 @@ public class CellObject {
 	 * @param player called when this player acted on this object for whatever reason
 	 * @return true if the object should be removed from the cell after the apply
 	 */
-	public boolean apply(World world, Player player) {
+	public boolean apply(Player player) {
+		World world = Soar2D.simulation.world;
+		
 		if (propertiesApply.size() > 0) {
 			Iterator<String> iter = propertiesApply.keySet().iterator();
 			while (iter.hasNext()) {
@@ -319,7 +321,7 @@ public class CellObject {
 	 * 
 	 * This is called if the object is "updatable"
 	 */
-	public boolean update(World world, java.awt.Point location) {
+	public boolean update(java.awt.Point location) {
 		if (decayUpdate) {
 			assert properties.containsKey(Names.kPropertyPoints);
 			int points = Integer.parseInt(properties.get(Names.kPropertyPoints));

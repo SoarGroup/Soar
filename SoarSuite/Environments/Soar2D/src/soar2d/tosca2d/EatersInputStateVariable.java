@@ -10,14 +10,11 @@ package soar2d.tosca2d;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 
 import soar2d.*;
 import soar2d.player.ToscaEater;
 import soar2d.world.CellObject;
 import tosca.Boolean;
-import tosca.Double;
 import tosca.Group;
 import tosca.Integer;
 import tosca.RefValue;
@@ -120,7 +117,8 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		recentMapReset = true;
 	}
 	
-	public void update(int time, soar2d.player.ToscaEater eater, World world, java.awt.Point location) {
+	public void update(int time, soar2d.player.ToscaEater eater, java.awt.Point location) {
+		World world = Soar2D.simulation.world;
 		// The value is stored as a group containing some named values and
 		// then a map group which contains all of the cells around this eater
 		Group main = new Group() ;
