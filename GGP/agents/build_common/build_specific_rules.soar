@@ -1,0 +1,156 @@
+#override the default failure/success rules
+# need to elaborate failure whenever it is detected
+sp {apply*analyze-state*handle-failure
+   (state <s> ^name game
+              ^failure-detected <d>
+              ^gs <gs>)
+-->
+  (<s> ^failure <d>)
+}
+# need to elaborate success whenever it is detected
+sp {apply*analyze-state*handle-success
+   (state <s> ^name game
+              ^top-state <ts>
+              ^success-detected <d>
+              ^gs <gs>)
+-->
+  (<ts> ^final-gs <gs>)
+  (<s> ^success <d>)
+}
+
+#sp {prefer*place-adjacent
+#	(state <s> ^operator <o1> +)
+#	(<o1> ^name place-adjacent)
+#-->
+#	(<s> ^operator <o1> >)
+#}
+
+sp {prefer*reinforce
+	(state <s> ^operator <o1> +)
+	(<o1> ^name reinforce)
+-->
+	(<s> ^operator <o1> > =)
+}
+
+#sp {prefer*add-to-compound
+#	(state <s> ^operator <o1> +)
+#	(<o1> ^name add-to-compound)
+#-->
+#	(<s> ^operator <o1> >)
+#}
+
+#sp {prefer*reinforce*than*other
+#	(state <s> ^operator <o1> + <o2> +)
+#	(<o1> ^name <> reinforce)
+#	(<o2> ^name reinforce)
+#-->
+#	(<s> ^operator <o2> > <o1>)
+#}
+
+#sp {prefer*place-top*than*place-adjacent
+#	(state <s> ^operator <o1> + <o2> +)
+#	(<o1> ^name place-adjacent ^p3 top)
+#	(<o2> ^name place-adjacent ^p3 <> top)
+#-->
+#	(<s> ^operator <o1> > <o2>)
+#}
+
+
+#current evaluation depth
+sp {selection*propose*init-current-evaluation-depth*top-selection
+   (state <s> ^name selection
+              ^top-selection true
+             -^current-evaluation-depth
+             -^superstate.elaborations.minimum-explorer-exit-distance)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name init-current-evaluation-depth
+         ^value 4)
+}
+
+
+sp {elaborate*save-final-action-sequence
+   (state <s> ^superstate nil
+              ^final-gs.action-sequence <as>)
+
+-->
+  (<s> ^saved-action <as>)
+}
+
+
+#elaborate terminal depends on update-state-finished yes
+sp {apply*analyze-state*update-state-finished
+	(state <s> ^operator.name analyze-state)
+-->
+	(<s> ^update-state-finished yes)
+}
+
+# the next update-state operator reset the flag
+sp {apply*update-state*remove*update-state-finished
+	(state <s> ^operator.name update-state)
+	(<s> ^update-state-finished yes)
+-->
+	(<s> ^update-state-finished yes -)
+}
+
+sp {monitor*operators*top-state
+	(state <s> ^operator.name <oname>
+	^superstate nil)
+-->
+	(write (crlf) <s> |: | <oname> (crlf))
+}
+
+sp {monitor*operators*sub-state*1
+	(state <s> ^operator <o>
+	^duplicate-of)
+	(<o> ^name <oname> ^p1 <v1> -^p2)
+-->
+	(write (crlf) <s> |: | <oname> | | <v1> (crlf))
+}
+
+sp {monitor*operators*sub-state*2
+	(state <s> ^operator <o>
+	^duplicate-of)
+	(<o> ^name <oname> ^p1 <v1> ^p2 <v2> -^p3)
+-->
+	(write (crlf) <s> |: | <oname> | | <v1> | | <v2> (crlf))
+}
+
+sp {monitor*operators*sub-state*3
+	(state <s> ^operator <o>
+	^duplicate-of)
+	(<o> ^name <oname> ^p1 <v1> ^p2 <v2> ^p3 <v3> -^p4)
+-->
+	(write (crlf) <s> |: | <oname> | | <v1> | | <v2> | | <v3> (crlf))
+}
+
+sp {monitor*operators*sub-state*4
+	(state <s> ^operator <o>
+	^duplicate-of)
+	(<o> ^name <oname> ^p1 <v1> ^p2 <v2> ^p3 <v3> ^p4 <v4>)
+-->
+	(write (crlf) <s> |: | <oname> | | <v1> | | <v2> | | <v3> | | <v4> (crlf))
+}
+
+
+sp {build*monitor*init
+   (state <s> ^name game
+^superstate nil)
+-->
+(<s> ^depth-from-top 0)
+}
+
+sp {elaborate*depth*from*top
+(state <s> ^duplicate-of <ss>)
+(<ss> ^depth-from-top <depth>)
+-->
+(<s> ^depth-from-top (+ 1 <depth>))
+}
+
+sp {build-monitor*print*info
+	(state <s> ^superstate <ss> ^depth-from-top <dft> ^current-evaluation-depth <cur-dep>)
+	(<ss> ^remaining-operators <remaining> ^item-count <branching-factor>)
+	-(state <s2> ^duplicate-of <s>)
+-->
+	(write (crlf) |Depth-from-top | <dft> (crlf) |Branching factor | <branching-factor> (crlf)|Remaining branches | <remaining> (crlf) |Remaining depth limit | <cur-dep> (crlf))
+}

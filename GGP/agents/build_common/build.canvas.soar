@@ -5,7 +5,7 @@ sp {canvas*init
 -->
 (<s> ^max-x 50
 	^max-y 50
-	^scale 4
+	^scale 2
 	^x-offset 10
 	^depth-from-top 0
 	^label-x-offset 0
@@ -58,6 +58,40 @@ sp {build-canvas*draw*objects*primitive*reinforced
 -->
 	(exec draw_rectangle | update | <id> |-rec | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | blue|)
 	(exec draw_text | update | <id> |-text | (+ <x-offset> (+ 1 (* <scale> <x>))) | | (- <max-y> (+ (* <scale> <y>) 2)) | red | <id> |/| <r-type> )
+}
+
+sp {build-canvas*draw*crush
+	(state <s>
+		^gs <gs>
+		^elaborations <e>
+		^top-state.max-y <max-y>
+		^top-state.x-offset <x-offset>
+		^top-state.scale <scale>)
+		-(state <s2> ^duplicate-of <s>)
+	(<gs> ^object <obj> ^object-location <loc> ^object-size <size>)
+	(<obj> ^p1 <id>)
+	(<loc> ^p1 <id> ^p2 <x> ^p3 <y>)
+	(<size> ^p1 <id> ^p2 <width> ^p3 <height> ^p4 <weight>)
+	(<e> ^crushed.p1 <id>)
+-->
+	(exec draw_line | update | <id> |-crush | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | black|)
+}
+
+sp {build-canvas*delete*crush
+	(state <s>
+		^gs <gs>
+		^elaborations <e>
+		^top-state.max-y <max-y>
+		^top-state.x-offset <x-offset>
+		^top-state.scale <scale>)
+		-(state <s2> ^duplicate-of <s>)
+	(<gs> ^object <obj> ^object-location <loc> ^object-size <size>)
+	(<obj> ^p1 <id>)
+	(<loc> ^p1 <id> ^p2 <x> ^p3 <y>)
+	(<size> ^p1 <id> ^p2 <width> ^p3 <height> ^p4 <weight>)
+	(<e> -^crushed.p1 <id>)
+-->
+	(exec draw_line | delete | <id> |-crush |)
 }
 
 #sp {build-canvas*draw*compound
