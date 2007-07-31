@@ -1013,15 +1013,19 @@
 ; legal moves.
 (<= (nextCell north ?x ?y1 ?x ?y2)
    (int ?x)
+   (int ?y1) ; SW- new groundings
    (- ?y1 1 ?y2))
 (<= (nextCell south ?x ?y1 ?x ?y2)
    (int ?x)
+   (int ?y1) ; SW- new groundings
    (+ ?y1 1 ?y2))
 (<= (nextCell east ?x1 ?y ?x2 ?y)
    (int ?y)
+   (int ?x1) ; SW- new groundings
    (+ ?x1 1 ?x2))
 (<= (nextCell west ?x1 ?y ?x2 ?y)
    (int ?y)
+   (int ?x1) ; SW- new groundings
    (- ?x1 1 ?x2))
 
 ;----------------------------------------------------------------------
@@ -1157,10 +1161,14 @@
 
 ; Meaning: Absolute value of difference
 (<= (diff ?n1 ?n2 ?diff)
+   (int ?n1) ; SW- new groundings
+   (int ?n2) ; SW- new groundings
    (> ?n1 ?n2)
    (- ?n1 ?n2 ?diff))
 
 (<= (diff ?n1 ?n2 ?diff)
+   (int ?n1) ; SW- new groundings
+   (int ?n2) ; SW- new groundings
    (>= ?n2 ?n1)
    (- ?n2 ?n1 ?diff))
 
