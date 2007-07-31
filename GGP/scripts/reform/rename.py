@@ -2,6 +2,7 @@
 
 from ply import yacc
 from gdllex import tokens
+import random
 import pdb
 
 keywords = ['role', 'init', 'true', 'next', 'legal', 'does', 'goal', 'terminal', 'not', 'or', 'distinct', '<', '>', '>=', '+', '-', '*', '/']
@@ -9,6 +10,8 @@ preserve = ['2d', 'location', 'greaterThan', 'lessThan', 'plus', 'minus', 'step'
 
 preserve_constants = True
 preserve_variables = True
+
+rules = []
 
 class SymMap:
 	def __init__(self):
@@ -67,9 +70,9 @@ def p_rule_atomic_sentence(p):
 	        | LPAREN ARROW atomic_sentence condition_list RPAREN'''
 
 	if len(p) == 2:
-		print p[1]
+		rules.append(p[1])
 	else:
-		print '(<= %s\n%s)' % (p[3], p[4])
+		rules.append('(<= %s\n%s)' % (p[3], p[4]))
 
 def p_atomic_sentence(p):
 	'''atomic_sentence : NAME
@@ -176,3 +179,7 @@ if len(sys.argv) < 2:
 file = open(sys.argv[1], 'r').read()
 
 yacc.parse(file)
+
+random.shuffle(rules)
+for r in rules:
+	print r
