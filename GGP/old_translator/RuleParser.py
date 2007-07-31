@@ -157,7 +157,7 @@ def GetMathRes(maths, prod, var_map, deps, i, rule_index, used=[]):
 	# add the condition for the result
 	return prod.add_id_attrib(res_id, 'result', var_map.get_var(maths[i].term(2).name()))
 
-def HandleMath(maths, base_prod, var_map, rule_index, state_name):
+def HandleMath(maths, head, base_prod, var_map, rule_index, state_name):
 
 	# build a map of result variables to the calculation index
 	# that generated it
@@ -183,7 +183,7 @@ def HandleMath(maths, base_prod, var_map, rule_index, state_name):
 	for i, m in enumerate(maths):
 		math_code = 'math-%d-%d' % (rule_index, i)
 		# make a production to create the <s> ^math.math-x-y structure
-		mk_struct_prod = SoarProd(name_gen.get_name('elaborate*make-%s-struct' % math_code), state_name)
+		mk_struct_prod = SoarProd(name_gen.get_name('elaborate*%s-make-%s-struct' % (SoarifyStr(str(head)), math_code)), state_name)
 		math_id = mk_struct_prod.get_or_make_id_chain(['math'])[0]
 		mk_struct_prod.add_create_id(math_id, math_code)
 		int_prods.append(mk_struct_prod)
@@ -237,7 +237,7 @@ def GetMathResultVar(sentence):
 	else:
 		return sentence.term(1).name()
 
-def ParseGDLBodyToCondition(body, base_prod, var_map, game_name):
+def ParseGDLBodyToCondition(body, head, base_prod, var_map, game_name):
 	global rule_index
 
 	math_ops = ['+','-','*','/']
@@ -267,7 +267,7 @@ def ParseGDLBodyToCondition(body, base_prod, var_map, game_name):
 			else:
 				b.make_soar_conditions(base_prod, var_map)
 	
-	math_prods = HandleMath(math_conds, base_prod, var_map, rule_index, game_name)
+	math_prods = HandleMath(math_conds, head, base_prod, var_map, rule_index, game_name)
 	rule_index += 1
 
 	for b in depend_on_math:
@@ -336,14 +336,14 @@ def TranslateImplication(game_name, rule, min_success_score, make_remove_rule):
 def TranslateImpliedRelation(game_name, head, body):
 	sp = MakeTemplateProduction(SoarifyStr(str(head)), 'elaborate')
 	var_map = GDLSoarVarMapper(sp.get_name_gen())
-	extras = ParseGDLBodyToCondition(body, sp, var_map, game_name)
+	extras = ParseGDLBodyToCondition(body, head, sp, var_map, game_name)
 	head.make_soar_actions(sp, var_map)
 	return [sp] + extras
 	
 def TranslateTerminal(game_name, head, body):
 	sp = MakeTemplateProduction(SoarifyStr(str(head)), 'elaborate')
 	var_map = GDLSoarVarMapper(sp.get_name_gen())
-	extras = ParseGDLBodyToCondition(body, sp, var_map, game_name)
+	extras = ParseGDLBodyToCondition(body, head, sp, var_map, game_name)
 
 	# add test for analyze state operator to make sure we've fired all
 	# state update rules
@@ -369,7 +369,7 @@ def TranslateLegal(game_name, head, body):
 	#for cond in body:
 	#	if not SentenceIsComp(cond):
 	#		cond.make_soar_conditions(sp, var_map)
-	extras = ParseGDLBodyToCondition(body, sp, var_map, game_name)
+	extras = ParseGDLBodyToCondition(body, head, sp, var_map, game_name)
 	
 	# have to also check that no moves have been made
 	olink_id = sp.get_or_make_id_chain(['io','output-link'])[0]
@@ -398,7 +398,7 @@ def TranslateLegal(game_name, head, body):
 def TranslateNext(game_name, head, body, make_remove_rule = True):
 	ap = MakeTemplateProduction(SoarifyStr(str(head)), 'apply', game_name)
 	var_map = GDLSoarVarMapper(ap.get_name_gen())
-	extras = ParseGDLBodyToCondition(body, ap, var_map, game_name)
+	extras = ParseGDLBodyToCondition(body, head, ap, var_map, game_name)
 	ap.add_operator_test('update-state')
 	head.make_soar_actions(ap, var_map)
 	
@@ -420,7 +420,7 @@ def TranslateGoal(game_name, head, body, score):
 	sp.add_id_attrib(sp.get_state_id(), 'terminal')
 	desired_id = sp.add_id_attrib(sp.get_state_id(), 'desired')
 	
-	extras = ParseGDLBodyToCondition(body, sp, var_map, game_name)
+	extras = ParseGDLBodyToCondition(body, head, sp, var_map, game_name)
 	
 	if int(str(head.term(1))) >= score:
 		sp.add_create_bound_id(sp.get_state_id(), "success-detected", desired_id)
@@ -545,7 +545,7 @@ def TranslateFrameAxioms(game_name, head, bodies):
 			if isinstance(b, list):
 				# this is a block of regular conditions
 				sp.begin_negative_conjunction() # wrap all the added conditions into a negation
-				extras = ParseGDLBodyToCondition(b, sp, var_mapper, game_name)
+				extras = ParseGDLBodyToCondition(b, head, sp, var_mapper, game_name)
 				sp.end_negative_conjunction()
 			else:
 				# this is a comparison
