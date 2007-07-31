@@ -5,7 +5,7 @@ sp {canvas*init
 -->
 (<s> ^max-x 50
 	^max-y 50
-	^scale 4
+	^scale 2
 	^x-offset 10
 	^depth-from-top 0
 	^label-x-offset 0
@@ -33,51 +33,31 @@ sp {build-canvas*draw*objects*primitive
 	(<gs> ^object <obj> ^object-location <loc> ^object-size <size>)
 	(<obj> ^p1 <id> ^p2 {<type> <> compound})
 	-{(<gs> ^member <M>) (<M> ^p1 <compound-id> ^p2 <id>)}
-	-{(<gs> ^reinforced <r>) (<r> ^p1 <id> ^p2 <r-type>)}
 	(<loc> ^p1 <id> ^p2 <x> ^p3 <y>)
 	(<size> ^p1 <id> ^p2 <width> ^p3 <height> ^p4 <weight>)
 -->
 	(exec draw_rectangle | update | <id> |-rec | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | blue|)
-	(exec draw_text | update | <id> |-text | (+ <x-offset> (+ 1 (* <scale> <x>))) | | (- <max-y> (+ (* <scale> <y>) 2)) | blue | <id> )
+	(exec draw_text | update | <id> |-text | (+ <x-offset> (+ 1 (* <scale> <x>))) | | (- <max-y> (+ (* <scale> <y>) 1)) | blue | <id> )
 }
 
-
-sp {build-canvas*draw*objects*primitive*reinforced
+sp {build-canvas*draw*compound
 	(state <s>
 		^gs <gs>
+		^elaborations <e>
 		^top-state.max-y <max-y>
 		^top-state.x-offset <x-offset>
 		^top-state.scale <scale>)
 	-(state <s2> ^duplicate-of <s>)
 	(<gs> ^object <obj> ^object-location <loc> ^object-size <size>)
-	(<obj> ^p1 <id> ^p2 {<type> <> compound})
+	(<obj> ^p1 <id> ^p2 {<type> compound})
 	-{(<gs> ^member <M>) (<M> ^p1 <compound-id> ^p2 <id>)}
-	(<gs> ^reinforced <r>) (<r> ^p1 <id> ^p2 <r-type>)
 	(<loc> ^p1 <id> ^p2 <x> ^p3 <y>)
 	(<size> ^p1 <id> ^p2 <width> ^p3 <height> ^p4 <weight>)
 -->
-	(exec draw_rectangle | update | <id> |-rec | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | blue|)
-	(exec draw_text | update | <id> |-text | (+ <x-offset> (+ 1 (* <scale> <x>))) | | (- <max-y> (+ (* <scale> <y>) 2)) | red | <id> |/| <r-type> )
+	(exec draw_rectangle | update | <id> |-rec | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | black|)
+	(exec draw_text | update | <id> |-text-1 | (+ <x-offset> (+ 1 (* <scale> <x>))) | | (- <max-y> (+ (* <scale> (+ <y> <height>)) 0)) | black | <id> )
+	(exec draw_text | update | <id> |-text-2 | (+ <x-offset> (- (* <scale> (+ <x> <width>)) 2)) | | (- <max-y> (+ (* <scale> <y>) 1)) | black | <id> )
 }
-
-#sp {build-canvas*draw*compound
-#	(state <s>
-#		^gs <gs>
-#		^elaborations <e>
-#		^top-state.max-y <max-y>
-#		^top-state.x-offset <x-offset>
-#		^top-state.scale <scale>)
-#	-(state <s2> ^duplicate-of <s>)
-#	(<gs> ^object <obj> ^object-location <loc> ^object-size <size>)
-#	(<obj> ^p1 <id> ^p2 {<type> compound})
-#	-{(<gs> ^member <M>) (<M> ^p1 <compound-id> ^p2 <id>)}
-#	(<loc> ^p1 <id> ^p2 <x> ^p3 <y>)
-#	(<size> ^p1 <id> ^p2 <width> ^p3 <height> ^p4 <weight>)
-#-->
-#	(exec draw_rectangle | update | <id> |-rec | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | black|)
-#	(exec draw_text | update | <id> |-text-1 | (+ <x-offset> (+ 1 (* <scale> <x>))) | | (- <max-y> (+ (* <scale> (+ <y> <height>)) 0)) | black | <id> )
-#	(exec draw_text | update | <id> |-text-2 | (+ <x-offset> (- (* <scale> (+ <x> <width>)) 2)) | | (- <max-y> (+ (* <scale> <y>) 1)) | black | <id> )
-#}
 
 #sp {build-canvas*draw*outermost-compound
 #	(state <s>
@@ -98,25 +78,22 @@ sp {build-canvas*draw*objects*primitive*reinforced
 #	(write (crlf) |drawing | <id> (crlf))
 #}
 
-#sp {build-canvas*delete*internal-compound
-#	(state <s>
-#		^gs <gs>
-#		^top-state.max-y <max-y>
-#		^top-state.x-offset <x-offset>)
-#	-(state <s2> ^duplicate-of <s>)
-#	(<gs> ^object <obj> ^object-location <loc> ^object-size <size>)
-#	(<obj> ^p1 <id> ^p2 {<type> compound})
-#	(<gs> ^member <M>) (<M> ^p1 <compound-id> ^p2 <id>)
-#	(<loc> ^p1 <id> ^p2 <x> ^p3 <y>)
-#	(<size> ^p1 <id> ^p2 <width> ^p3 <height> ^p4 <weight>)
-#-->
-#	(exec draw_rectangle | delete | <id> |-rec|)
-#	(exec draw_text | delete | <id> |-text-1 |)
-#	(exec draw_text | delete | <id> |-text-2 |)
-#}
-
-#unlike objects, whcih always exist, compund may disappear when retract to previous states
-# This may leave a ghost img of compound if compound id is drawn
+sp {build-canvas*delete*internal-compound
+	(state <s>
+		^gs <gs>
+		^top-state.max-y <max-y>
+		^top-state.x-offset <x-offset>)
+	-(state <s2> ^duplicate-of <s>)
+	(<gs> ^object <obj> ^object-location <loc> ^object-size <size>)
+	(<obj> ^p1 <id> ^p2 {<type> compound})
+	(<gs> ^member <M>) (<M> ^p1 <compound-id> ^p2 <id>)
+	(<loc> ^p1 <id> ^p2 <x> ^p3 <y>)
+	(<size> ^p1 <id> ^p2 <width> ^p3 <height> ^p4 <weight>)
+-->
+	(exec draw_rectangle | delete | <id> |-rec|)
+	(exec draw_text | delete | <id> |-text-1 |)
+	(exec draw_text | delete | <id> |-text-2 |)
+}
 
 
 sp {build-canvas*draw*objects*compound*level-1
@@ -134,7 +111,7 @@ sp {build-canvas*draw*objects*compound*level-1
 	(<loc> ^p1 <id> ^p2 <x> ^p3 <y>)
 	(<size> ^p1 <id> ^p2 <width> ^p3 <height> ^p4 <weight>)
 -->
-	(exec draw_rectangle | update | <id> |-rec | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | black|)
+	(exec draw_rectangle | update | <id> |-rec | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | blue|)
 	(exec draw_text | update | <id> |-text | (+ <x-offset> (+ 1 (* <scale> <x>))) | | (- <max-y> (+ (* <scale> <y>) 2)) | blue | <id> |-|<compound-id> )
 }
 
@@ -153,8 +130,8 @@ sp {build-canvas*draw*objects*compound*level-1*reinforced
 	(<loc> ^p1 <id> ^p2 <x> ^p3 <y>)
 	(<size> ^p1 <id> ^p2 <width> ^p3 <height> ^p4 <weight>)
 -->
-	(exec draw_rectangle | update | <id> |-rec | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | black|)
-	(exec draw_text | update | <id> |-text | (+ <x-offset> (+ 1 (* <scale> <x>))) | | (- <max-y> (+ (* <scale> <y>) 2)) | red (| <id> |/| <r-type>|)-|<compound-id> )
+	(exec draw_rectangle | update | <id> |-rec | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | blue|)
+	(exec draw_text | update | <id> |-text | (+ <x-offset> (+ 1 (* <scale> <x>))) | | (- <max-y> (+ (* <scale> <y>) 2)) | blue (| <id> |/| <r-type>|)-|<compound-id> )
 }
 
 sp {build-canvas*draw*objects*compound*level-2
@@ -172,7 +149,7 @@ sp {build-canvas*draw*objects*compound*level-2
 	(<loc> ^p1 <id> ^p2 <x> ^p3 <y>)
 	(<size> ^p1 <id> ^p2 <width> ^p3 <height> ^p4 <weight>)
 -->
-	(exec draw_rectangle | update | <id> |-rec | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | black|)
+	(exec draw_rectangle | update | <id> |-rec | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | blue|)
 	(exec draw_text | update | <id> |-text | (+ <x-offset> (+ 1 (* <scale> <x>))) | | (- <max-y> (+ (* <scale> <y>) 2)) | blue | <id> |-| <compound-id> |-|<super-compound>)
 }
 
@@ -191,8 +168,8 @@ sp {build-canvas*draw*objects*compound*level-2*reinforced
 	(<loc> ^p1 <id> ^p2 <x> ^p3 <y>)
 	(<size> ^p1 <id> ^p2 <width> ^p3 <height> ^p4 <weight>)
 -->
-	(exec draw_rectangle | update | <id> |-rec | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | black|)
-	(exec draw_text | update | <id> |-text | (+ <x-offset> (+ 1 (* <scale> <x>))) | | (- <max-y> (+ (* <scale> <y>) 2)) | red (| <id> |/| <r-type>|)-| <compound-id> |-|<super-compound> )
+	(exec draw_rectangle | update | <id> |-rec | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | blue|)
+	(exec draw_text | update | <id> |-text | (+ <x-offset> (+ 1 (* <scale> <x>))) | | (- <max-y> (+ (* <scale> <y>) 2)) | blue (| <id> |/| <r-type>|)-| <compound-id> |-|<super-compound> )
 }
 
 sp {build-canvas*draw*depth*from*top
