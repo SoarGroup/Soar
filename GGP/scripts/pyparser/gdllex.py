@@ -23,24 +23,30 @@ t_RPAREN   = r'\)'
 t_ignore = ' \t'
 
 def t_NAME(t):
-	r'([-\w_]+)|(>=)|>|\+|\*|/'
+	r'([-\w_\.]+)|(>=)|>|\+|\*|/'
 
 	try:
 		t.value = int(t.value)
 		t.type = 'NUM'
 		return t
 	except ValueError:
-		# not a number
-		if t.value.lower() == 'or':
-			t.type = 'OR'
-		elif t.value.lower() == 'not':
-			t.type = 'NOT'
-#		elif t.value.lower() == 'distinct':
-#			t.type = 'DISTINCT'
-#		elif t.value in relations:
-#			t.type = 'RELATION'
-		else:
-			t.type = 'NAME'
+		# not an int
+		try:
+			t.value = float(t.value)
+			t.type = 'NUM'
+			return t
+		except ValueError:
+			# not a number
+			if t.value.lower() == 'or':
+				t.type = 'OR'
+			elif t.value.lower() == 'not':
+				t.type = 'NOT'
+	#		elif t.value.lower() == 'distinct':
+	#			t.type = 'DISTINCT'
+	#		elif t.value in relations:
+	#			t.type = 'RELATION'
+			else:
+				t.type = 'NAME'
 		
 	return t
 
