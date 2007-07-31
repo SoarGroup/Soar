@@ -134,9 +134,10 @@ def GetMathRes(maths, prod, var_map, deps, i, rule_index, used=[]):
 	existing = prod.get_ids(math_id, math_code)
 	if len(existing) > 0:
 		assert len(existing) == 1
-		return prod.get_ids(existing[0], 'result')[0]
+		existing_result = prod.get_ids(existing[0], 'result-link')[0]
+		return prod.get_ids(existing_result, 'res')[0]
 
-	res_id = prod.add_id_attrib_chain(math_id, [math_code, 'result'])
+	res_id = prod.add_id_attrib_chain(math_id, [math_code, 'result-link'])
 
 	# add conditions for the operands
 	for j in [0,1]:
@@ -144,6 +145,8 @@ def GetMathRes(maths, prod, var_map, deps, i, rule_index, used=[]):
 			# this variable is the result of another calculation
 			# add a check for that calculation result into the production
 			id = GetMathRes(maths, prod, var_map, deps, deps[i][j], rule_index, used + [deps[i][j]])
+			if id == 'r':
+				pdb.set_trace()
 			prod.add_bound_id_attrib(res_id, 'op%d' % j, id)
 		else:
 			if maths[i].term(j).type() == 'variable':
@@ -155,7 +158,7 @@ def GetMathRes(maths, prod, var_map, deps, i, rule_index, used=[]):
 				prod.add_attrib(res_id, 'op%d' % j, str(maths[i].term(j)))
 	
 	# add the condition for the result
-	return prod.add_id_attrib(res_id, 'result', var_map.get_var(maths[i].term(2).name()))
+	return prod.add_id_attrib(res_id, 'res', var_map.get_var(maths[i].term(2).name()))
 
 def HandleMath(maths, head, base_prod, var_map, rule_index, state_name):
 
@@ -193,7 +196,7 @@ def HandleMath(maths, head, base_prod, var_map, rule_index, state_name):
 		prod = base_prod.copy(prod_name)
 		var_map1 = var_map.copy(prod.get_name_gen())
 		# add conditions to bind the ids for the operands
-		ops = []
+		ops = [] # [(name, 0/1 (0 = constant, 1 = variable))]
 		for j, d in enumerate(deps[i]):
 			if d >= 0:
 				# have to get this operand from an intermediate result
@@ -209,7 +212,7 @@ def HandleMath(maths, head, base_prod, var_map, rule_index, state_name):
 
 		# make an action to put this op,op,result triplet on the state
 		math_id = prod.get_or_make_id_chain_existing(['math', math_code])[0]
-		query_id = prod.add_create_id(math_id, 'query')
+		query_id = prod.add_create_id(math_id, 'query-link')
 		op_strs = []
 		for j in [0,1]:
 			if ops[j][1] == 1:
@@ -221,7 +224,7 @@ def HandleMath(maths, head, base_prod, var_map, rule_index, state_name):
 				prod.add_create_constant(query_id, 'op%d' % j, ops[j][0])
 				op_strs.append(ops[j][0])
 				
-		prod.add_create_constant(query_id, 'result', '(%s %s %s)' % (m.name(), op_strs[0], op_strs[1]))
+		prod.add_create_constant(query_id, 'res', '(%s %s %s)' % (m.name(), op_strs[0], op_strs[1]))
 		int_prods.append(prod)
 	
 	# modify body of base production to test for necessary calculations
