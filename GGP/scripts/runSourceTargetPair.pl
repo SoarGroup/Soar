@@ -51,9 +51,11 @@ print "done, log tail:\n";
 print `tail $source1Log`;
 
 print "Extracting goodThings..\n";
-print `$genGT $source1Log >> $goodThings`;
+print `$genGT $source1Log $sourceKif $targetKif >> $goodThings`;
 print "found this many goodThings:\n";
 print `grep 'sp {' $goodThings | wc -l`;
+print "found the following mappings:\n";
+print `grep MAPPING $goodThings`;
 
 print "Running $target with source..\n";
 print `$runSoar -w1 $agentDir/$target.soar > $targetLogWithSourceLog`;
