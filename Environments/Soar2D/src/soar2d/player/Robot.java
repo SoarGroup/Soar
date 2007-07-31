@@ -33,7 +33,8 @@ public class Robot extends Player {
 	int inId = -1;
 	String inType = null;
 	
-	public void update(World world, java.awt.Point location) {
+	public void update(java.awt.Point location) {
+		World world = Soar2D.simulation.world;
 		GridMap map = world.getMap();
 		CellObject obj = map.getInObject(location);
 		

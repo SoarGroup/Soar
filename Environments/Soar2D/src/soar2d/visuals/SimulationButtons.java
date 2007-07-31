@@ -63,7 +63,7 @@ public class SimulationButtons extends Composite {
 	void updateButtons() {
 		boolean running = Soar2D.control.isRunning();
 		boolean done = Soar2D.simulation.isDone();
-		boolean eaters = Soar2D.simulation.hasPlayers();
+		boolean eaters = Soar2D.simulation.world.getPlayers().numberOfPlayers() > 0;
 		
         m_RunButton.setEnabled(!running && !done && eaters);
         m_StopButton.setEnabled(running);

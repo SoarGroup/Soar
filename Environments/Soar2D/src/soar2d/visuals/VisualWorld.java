@@ -23,7 +23,7 @@ public class VisualWorld extends Canvas implements PaintListener {
 	public static HashMap<Player, Color> playerColors = new HashMap<Player, Color>();
 	
 	public static void remapPlayerColors() {
-		ArrayList<Player> players = Soar2D.simulation.world.getPlayers();
+		PlayersManager players = Soar2D.simulation.world.getPlayers();
 		playerColors.clear();
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
@@ -591,7 +591,8 @@ public class VisualWorld extends Canvas implements PaintListener {
 				}
 				assert player != null;
 
-				Point2D.Double center = new Point2D.Double(Soar2D.simulation.world.getFloatLocation(player).x, Soar2D.simulation.world.getFloatLocation(player).y);
+				PlayersManager players = Soar2D.simulation.world.getPlayers();
+				Point2D.Double center = new Point2D.Double(players.getFloatLocation(player).x, players.getFloatLocation(player).y);
 				Point2D.Double offset = new Point2D.Double(0,0);
 				
 				Path path = new Path(gc.getDevice());

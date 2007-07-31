@@ -844,7 +844,7 @@ public class WindowManager {
 	private void enterEditMode() {
 		assert mapEditMode == false;
 		
-		if (Soar2D.simulation.world.getPlayers().size() > 0) {
+		if (Soar2D.simulation.world.getPlayers().numberOfPlayers() > 0) {
 			Soar2D.control.infoPopUp("Destroy all agents before editing the map.");
 			return;
 		}

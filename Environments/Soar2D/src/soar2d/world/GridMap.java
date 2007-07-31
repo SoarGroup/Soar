@@ -906,7 +906,9 @@ public class GridMap {
 		return true;
 	}
 	
-	public void updateObjects(World world) {
+	public void updateObjects(TankSoarWorld tsWorld) {
+		World world = Soar2D.simulation.world;
+		
 		if (!updatables.isEmpty()) {
 			Iterator<CellObject> iter = updatables.iterator();
 			
@@ -921,7 +923,7 @@ public class GridMap {
 						previousScore = cellObject.getIntProperty(Names.kPropertyPoints);
 					}
 				}
-				if (cellObject.update(world, location)) {
+				if (cellObject.update(location)) {
 					Cell cell = getCell(location);
 					
 					cellObject = cell.removeObject(cellObject.getName());
@@ -931,7 +933,7 @@ public class GridMap {
 					
 					// if it is not tanksoar or if the cell is not a missle or if shouldRemoveMissile returns true
 					if ((config.getType() != SimType.kTankSoar) || !cellObject.hasProperty(Names.kPropertyMissile) 
-							|| shouldRemoveMissile(world, location, cell, cellObject)) {
+							|| shouldRemoveMissile(tsWorld, location, cell, cellObject)) {
 						
 						// we need an explosion if it was a tanksoar missile
 						if ((config.getType() == SimType.kTankSoar) && cellObject.hasProperty(Names.kPropertyMissile)) {
@@ -1049,7 +1051,7 @@ public class GridMap {
 		return cell.getObject(name);
 	}
 	
-	private boolean shouldRemoveMissile(World world, java.awt.Point location, Cell cell, CellObject missile) {
+	private boolean shouldRemoveMissile(TankSoarWorld tsWorld, java.awt.Point location, Cell cell, CellObject missile) {
 		// instead of removing missiles, move them
 
 		// what direction is it going
@@ -1071,7 +1073,7 @@ public class GridMap {
 			
 			if (player != null) {
 				// missile is destroyed
-				world.missileHit(player, location, missile);
+				tsWorld.missileHit(player, this, location, missile, Soar2D.simulation.world.getPlayers());
 				return true;
 			}
 	
@@ -1085,7 +1087,7 @@ public class GridMap {
 			}
 			
 			// we are in phase 2, call update again, this will move us out of phase 2 to phase 3
-			missile.update(world, location);
+			missile.update(location);
 		}
 	}
 		
@@ -1348,7 +1350,7 @@ public class GridMap {
 	}
 	
 	public int getSoundNear(java.awt.Point location) {
-		if (Soar2D.simulation.world.getPlayers().size() < 2) {
+		if (Soar2D.simulation.world.getPlayers().numberOfPlayers() < 2) {
 			return 0;
 		}
 		
@@ -2146,5 +2148,18 @@ public class GridMap {
 			}
 		}
 		return output;
+	}
+	
+	public ArrayList<Point> getAvailableLocations() {
+		ArrayList<Point> availableLocations = new ArrayList<Point>();
+		for (int x = 0; x < getSize(); ++x) {
+			for (int y = 0; y < getSize(); ++ y) {
+				Point potentialLocation = new Point(x, y);
+				if (isAvailable(potentialLocation)) {
+					availableLocations.add(potentialLocation);
+				}
+			}
+		}
+		return availableLocations;
 	}
 }

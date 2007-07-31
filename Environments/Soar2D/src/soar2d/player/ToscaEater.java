@@ -55,7 +55,7 @@ public class ToscaEater {
 	/* (non-Javadoc)
 	 * @see soar2d.player.Player#update(soar2d.World, java.awt.Point)
 	 */
-	public void update(World world, java.awt.Point location) {
+	public void update(java.awt.Point location) {
 		// check to see if we've moved.
 		getEater().moved = (location.x != getEater().previousLocation.x) || (location.y != getEater().previousLocation.y);
 		if (getEater().moved) {
@@ -67,7 +67,7 @@ public class ToscaEater {
 		logger.info("Calling update on input var at time " + time+1) ;
 		
 		// Need to set the new value in the future (so choosing time+1)
-		m_InputVar.update(time+1, this, world, location) ;
+		m_InputVar.update(time+1, this, location) ;
 		
 		m_Eater.resetPointsChanged();
 	}

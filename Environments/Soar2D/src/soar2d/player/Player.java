@@ -179,7 +179,7 @@ public class Player {
 	 * 
 	 * called to update the player's sensors and what not, this is basically an input update
 	 */
-	public void update(World world, java.awt.Point location) {
+	public void update(java.awt.Point location) {
 		moved = (location.x != this.previousLocation.x) || (location.y != this.previousLocation.y);
 		if (moved) {
 			this.previousLocation = new java.awt.Point(location);
@@ -471,8 +471,11 @@ public class Player {
 		}
 		return carriedObject.getIntProperty("number");
 	}
-	public void receiveMessage(Player player, String message, World world) {
-		assert false;
-		
+	public void receiveMessage(Player player, String message) {
+		assert false;		
+	}
+	
+	public String toString() {
+		return getName();
 	}
 }
