@@ -320,3 +320,30 @@ sp {elaborate*math-link
    (state <s> ^type state)
 -->
    (<s> ^math <m>)}
+sp {elaborate*collapse*unique*math-operands
+	(state <s> ^math <m>)
+	(<m> ^<expression-id> <expression>)
+	(<expression> ^query <q>)
+	(<q> ^op0 <op0> ^op1 <op1>)
+-->
+	(<expression> ^unique-op0 <op0>)
+	(<expression> ^unique-op1 <op1>)
+}
+sp {elaborate*generate*unique*queries
+	(state <s> ^math <m>)
+	(<m> ^<expression-id> <expression>)
+	(<expression> ^unique-op0 <op0> ^unique-op1 <op1>)
+-->
+	(<expression> ^result <uq>)
+	(<uq> ^op0 <op0> ^op1 <op1>)
+}
+
+sp {elaborate*generate*unique*queries-results
+	(state <s> ^math <m>)
+	(<m> ^<expression-id> <expression>)
+	(<expression> ^result <uq> ^query <q>)
+	(<uq> ^op0 <op0> ^op1 <op1>)
+	(<q> ^op0 <op0> ^op1 <op1> ^result <res>)
+-->
+	(<uq> ^result <res>)
+}
