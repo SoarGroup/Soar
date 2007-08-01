@@ -49,45 +49,12 @@ sp {selection*propose*init-current-evaluation-depth*top-selection
          ^value 1)
 }
 
-sp {monitor*operators*top-state
-	(state <s> ^operator.name <oname>
-	^superstate nil)
+
+sp {monitor*operators
+	(state <s> ^operator.name <oname>)
 -->
 	(write (crlf) <s> |: | <oname> (crlf))
 }
-
-sp {monitor*operators*sub-state*1
-	(state <s> ^operator <o>
-	^duplicate-of)
-	(<o> ^name <oname> ^p1 <v1> -^p2)
--->
-	(write (crlf) <s> |: | <oname> | | <v1> (crlf))
-}
-
-sp {monitor*operators*sub-state*2
-	(state <s> ^operator <o>
-	^duplicate-of)
-	(<o> ^name <oname> ^p1 <v1> ^p2 <v2> -^p3)
--->
-	(write (crlf) <s> |: | <oname> | | <v1> | | <v2> (crlf))
-}
-
-sp {monitor*operators*sub-state*3
-	(state <s> ^operator <o>
-	^duplicate-of)
-	(<o> ^name <oname> ^p1 <v1> ^p2 <v2> ^p3 <v3> -^p4)
--->
-	(write (crlf) <s> |: | <oname> | | <v1> | | <v2> | | <v3> (crlf))
-}
-
-sp {monitor*operators*sub-state*4
-	(state <s> ^operator <o>
-	^duplicate-of)
-	(<o> ^name <oname> ^p1 <v1> ^p2 <v2> ^p3 <v3> ^p4 <v4>)
--->
-	(write (crlf) <s> |: | <oname> | | <v1> | | <v2> | | <v3> | | <v4> (crlf))
-}
-
 
 sp {build*monitor*init
    (state <s> ^name game
@@ -103,12 +70,40 @@ sp {elaborate*depth*from*top
 (<s> ^depth-from-top (+ 1 <depth>))
 }
 
-sp {build-monitor*print*info
-	(state <s> ^superstate <ss> ^depth-from-top <dft> ^current-evaluation-depth <cur-dep>)
+sp {build-monitor*print*info*1p
+	(state <s> ^superstate <ss> ^depth-from-top <dft> ^current-evaluation-depth <cur-dep> ^tried-tied-operator.duplicate-of <op>)
 	(<ss> ^remaining-operators <remaining> ^item-count <branching-factor>)
 	-(state <s2> ^duplicate-of <s>)
+	(<op> ^name <oname> ^p1 <v1> -^p2)
 -->
-	(write (crlf) |Depth-from-top | <dft> (crlf) |Branching factor | <branching-factor> (crlf)|Remaining branches | <remaining> (crlf) |Remaining depth limit | <cur-dep> (crlf))
+	(write (crlf) |Depth-from-top | <dft> (crlf) |Operator | <oname> | | <v1> (crlf) |Branching factor | <branching-factor> (crlf)|Remaining branches | <remaining> (crlf) |Remaining depth limit | <cur-dep> (crlf))
+}
+
+sp {build-monitor*print*info*2p
+	(state <s> ^superstate <ss> ^depth-from-top <dft> ^current-evaluation-depth <cur-dep> ^tried-tied-operator.duplicate-of <op>)
+	(<ss> ^remaining-operators <remaining> ^item-count <branching-factor>)
+	-(state <s2> ^duplicate-of <s>)
+	(<op> ^name <oname> ^p1 <v1> ^p2 <v2> -^p3)
+-->
+	(write (crlf) |Depth-from-top | <dft> (crlf) |Operator | <oname> | | <v1> | | <v2> (crlf) |Branching factor | <branching-factor> (crlf)|Remaining branches | <remaining> (crlf) |Remaining depth limit | <cur-dep> (crlf))
+}
+
+sp {build-monitor*print*info*3p
+	(state <s> ^superstate <ss> ^depth-from-top <dft> ^current-evaluation-depth <cur-dep> ^tried-tied-operator.duplicate-of <op>)
+	(<ss> ^remaining-operators <remaining> ^item-count <branching-factor>)
+	-(state <s2> ^duplicate-of <s>)
+	(<op> ^name <oname> ^p1 <v1> ^p2 <v2> ^p3 <v3> -^p4)
+-->
+	(write (crlf) |Depth-from-top | <dft> (crlf) |Operator | <oname> | | <v1> | | <v2> | | <v3> (crlf) |Branching factor | <branching-factor> (crlf)|Remaining branches | <remaining> (crlf) |Remaining depth limit | <cur-dep> (crlf))
+}
+
+sp {build-monitor*print*info*4p-or-more
+	(state <s> ^superstate <ss> ^depth-from-top <dft> ^current-evaluation-depth <cur-dep> ^tried-tied-operator.duplicate-of <op>)
+	(<ss> ^remaining-operators <remaining> ^item-count <branching-factor>)
+	-(state <s2> ^duplicate-of <s>)
+	(<op> ^name <oname> ^p1 <v1> ^p2 <v2> ^p3 <v3> ^p4 <v4>)
+-->
+	(write (crlf) |Depth-from-top | <dft> (crlf) |Operator | <oname> | | <v1> | | <v2> | | <v3> | | <v4> (crlf) |Branching factor | <branching-factor> (crlf)|Remaining branches | <remaining> (crlf) |Remaining depth limit | <cur-dep> (crlf))
 }
 
 
@@ -192,5 +187,5 @@ sp {apply*analyze-state*decrease*tower*test
    (write (crlf) |Decrease 1 due to disappearing of tower | <t>  | of height | <height> (crlf))
 }
 
-learn --d
-indifferent-selection --first
+learn -e
+indifferent-selection --random
