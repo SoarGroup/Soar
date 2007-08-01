@@ -9,8 +9,9 @@ VERSION 4
 6	0	FOPERATOR allowed-directions allowed-directions.soar 7
 7	0	FOPERATOR dont-redo-depth-exceeded dont-redo-depth-exceeded.soar 8
 8	0	FOPERATOR portals portals.soar 9
-9	0	FOPERATOR prune-alternate-paths prune-alternate-paths.soar 10
-10	0	FOPERATOR prune-repeated-game-state prune-repeated-game-state.soar 11
-11	0	FOPERATOR top-state top-state.soar 12
-12	0	OPERATOR analyze-state analyze-state.soar 13
+9	0	FOPERATOR prune-action-disabling prune-action-disabling.soar 14
+10	0	FOPERATOR prune-alternate-paths prune-alternate-paths.soar 10
+11	0	FOPERATOR prune-repeated-game-state prune-repeated-game-state.soar 11
+12	0	FOPERATOR top-state top-state.soar 12
+13	0	OPERATOR analyze-state analyze-state.soar 13
 END

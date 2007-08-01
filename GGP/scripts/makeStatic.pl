@@ -30,7 +30,7 @@ foreach $line (<$FILE>) {
     $inLhs = 0;
   }
   else { # in lhs
-    if ($prodName =~ /_$attribute\_/) { # creates the att
+    if ($prodName =~ /elaborate\*_$attribute\_/) { # creates the att
       if ($line =~ /(.*\(state <s>)(.*\).*)/) {
         print $OUT "$1 ^superstate nil $2\n";
       }

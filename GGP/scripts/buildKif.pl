@@ -22,8 +22,8 @@ if (-e $soarFile) {
   print `mv $soarFile buildKifBackup.soar`;
 }
 
-print `cp $file math_backup`;
-print `./fakeMath.pl $file`;
+#print `cp $file math_backup`;
+#print `./fakeMath.pl $file`;
 
 print `$compiler $file`;
 if (not -e $soarFile) {
@@ -35,5 +35,5 @@ print `$postProcess`;
 clean();
 
 sub clean() {
-  print `cp math_backup $file`;
+#  print `cp math_backup $file`;
 }

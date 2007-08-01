@@ -8,7 +8,7 @@ $kifTwo = abs_path($ARGV[1]);
 
 $mapperDir = "../analogy/src";
 $mapper = "./mapper";
-$preProcessor = "xkif_gen.py";
+$preProcessor = "../../scripts/pyparser/xkif_gen.py";
 #$fakeMath = "../../scripts/fakeMath.pl";
 
 #$origOne = "mapper_bu1";

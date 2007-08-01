@@ -142,7 +142,8 @@ sp {game*elaborate*removed*0
 -->
    (<s> ^game-state-changed <gsc>)
    (<gsc> ^type environment
-          ^what <item>)
+          ^what <item>
+          ^removed true)
 }
 
 sp {game*elaborate*removed*1
@@ -159,7 +160,8 @@ sp {game*elaborate*removed*1
 -->
    (<s> ^game-state-changed <gsc>)
    (<gsc> ^type environment
-          ^what <item>)
+          ^what <item>
+          ^removed true)
 }
 
 sp {game*elaborate*removed*2
@@ -178,7 +180,8 @@ sp {game*elaborate*removed*2
 -->
    (<s> ^game-state-changed <gsc>)
    (<gsc> ^type environment
-          ^what <item>)
+          ^what <item>
+          ^removed true)
 }
 
 
@@ -202,7 +205,8 @@ sp {game*elaborate*removed*3*not-explorer-loc
 -->
    (<s> ^game-state-changed <gsc>)
    (<gsc> ^type environment
-          ^what <item>)
+          ^what <item>
+          ^removed true)
 }
 
 sp {game*elaborate*removed*3*explorer-loc

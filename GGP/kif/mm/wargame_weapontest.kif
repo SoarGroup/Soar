@@ -77,7 +77,7 @@
 ;;; The soldier may step in any of the cardinal directions so long as a wall 
 ;;;  does not block the way.
 
-(<= (legal soldier (step ?dir))
+(<= (legal soldier (move ?dir))
     (true (location soldier ?x ?y))
     (not (stepBlocked ?dir ?x ?y))
     (nStepsSoldier 1 ?dir ?x ?y ?xAny ?yAny))
@@ -425,14 +425,14 @@
 
 (<= (intendedLocation soldier ?x2 ?y2)
     (true (location soldier ?x1 ?y1))
-    (does soldier (step ?dir))    
+    (does soldier (move ?dir)) ; Soar change: 'step' action needs to be 'move' for spatial assumptions  
     (nStepsSoldier 1 ?dir ?x1 ?y1 ?x2 ?y2))
 (<= (intendedLocation soldier ?x ?y)
     (true (location soldier ?x ?y))
-    (not (does soldier (step north)))
-    (not (does soldier (step south)))
-    (not (does soldier (step east)))
-    (not (does soldier (step west))))    
+    (not (does soldier (move north)))
+    (not (does soldier (move south)))
+    (not (does soldier (move east)))
+    (not (does soldier (move west))))    
 
 ;;; A dead terrorist is incapacitated and will not move.
 
