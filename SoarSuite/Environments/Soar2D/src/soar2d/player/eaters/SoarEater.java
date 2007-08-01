@@ -1,4 +1,4 @@
-package soar2d.player;
+package soar2d.player.eaters;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,55 +11,10 @@ import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.World;
+import soar2d.player.MoveInfo;
+import soar2d.player.Player;
+import soar2d.player.PlayerConfig;
 import soar2d.world.CellObject;
-
-/**
- * @author voigtjr
- *
- * represents a cell in the 5x5 agent view
- */
-class SoarCell {
-	/**
-	 * current cell id
-	 */
-	Identifier me;
-	/**
-	 * the list of stuff in the cell
-	 */
-	HashMap<String, StringElement> content = new HashMap<String, StringElement>();
-	
-	/**
-	 * box in current cell, null if none
-	 */
-	Identifier box;
-	/**
-	 * properties on the box if there is one
-	 */
-	HashMap<String, StringElement> boxProperties = new HashMap<String, StringElement>();
-
-	/**
-	 * id (likely shared) to the cell/wme to the north
-	 */
-	Identifier north;
-	/**
-	 * id (likely shared) to the cell/wme to the south
-	 */
-	Identifier south;
-	/**
-	 * id (likely shared) to the cell/wme to the east
-	 */
-	Identifier east;
-	/**
-	 * id (likely shared) to the cell/wme to the west
-	 */
-	Identifier west;
-	
-	/**
-	 * used during initialization
-	 */
-	boolean iterated = false;
-	
-}
 
 /**
  * @author voigtjr
@@ -118,7 +73,7 @@ public class SoarEater extends Eater {
 	 * @param playerConfig the rest of the player config
 	 */
 	public SoarEater(Agent agent, PlayerConfig playerConfig) {
-		super(playerConfig, false);
+		super(playerConfig);
 		this.agent = agent;
 		this.shutdownCommands = playerConfig.getShutdownCommands();
 		

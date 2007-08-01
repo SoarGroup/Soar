@@ -1,4 +1,4 @@
-package soar2d.player;
+package soar2d.player.tanksoar;
 
 import java.util.logging.Level;
 
@@ -6,6 +6,10 @@ import soar2d.Direction;
 import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.World;
+import soar2d.player.MoveInfo;
+import soar2d.player.Player;
+import soar2d.player.PlayerConfig;
+import soar2d.player.RadarCell;
 
 public class Tank extends Player {
 	/**

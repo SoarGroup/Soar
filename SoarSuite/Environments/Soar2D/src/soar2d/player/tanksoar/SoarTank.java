@@ -1,10 +1,14 @@
-package soar2d.player;
+package soar2d.player.tanksoar;
 
 import java.util.*;
 import java.util.logging.*;
 
 import sml.*;
 import soar2d.*;
+import soar2d.player.MoveInfo;
+import soar2d.player.Player;
+import soar2d.player.PlayerConfig;
+import soar2d.player.RadarCell;
 
 public class SoarTank extends Tank implements Agent.RunEventInterface {
 	private Agent agent;

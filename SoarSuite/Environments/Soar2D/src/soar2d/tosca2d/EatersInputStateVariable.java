@@ -12,7 +12,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 
 import soar2d.*;
-import soar2d.player.ToscaEater;
+import soar2d.player.eaters.ToscaEater;
 import soar2d.world.CellObject;
 import tosca.Boolean;
 import tosca.Group;
@@ -117,7 +117,7 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		recentMapReset = true;
 	}
 	
-	public void update(int time, soar2d.player.ToscaEater eater, java.awt.Point location) {
+	public void update(int time, soar2d.player.eaters.ToscaEater eater, java.awt.Point location) {
 		World world = Soar2D.simulation.world;
 		// The value is stored as a group containing some named values and
 		// then a map group which contains all of the cells around this eater
@@ -139,8 +139,8 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		if (recentMapReset) {
 			reward = cachedReward;
 			recentMapReset = false;
-		} else if (eater.getEater().pointsChanged()) {
-			reward = eater.getEater().getPointsDelta();
+		} else if (eater.pointsChanged()) {
+			reward = eater.getPointsDelta();
 		}
 		cachedReward = reward;
 		main.AddNamedValue("ExternalReward", new tosca.Double(reward));
@@ -209,7 +209,7 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		
 		main.AddNamedValue("x", new tosca.Integer(location.x)) ;
 		main.AddNamedValue("y", new tosca.Integer(location.y)) ;
-		main.AddNamedValue("facing", new tosca.Integer(eater.getEater().getFacingInt())) ;
+		main.AddNamedValue("facing", new tosca.Integer(eater.getFacingInt())) ;
 		
 		Group map = new Group() ;
 		

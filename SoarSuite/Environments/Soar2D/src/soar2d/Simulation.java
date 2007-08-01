@@ -7,6 +7,15 @@ import java.util.logging.*;
 import sml.*;
 import soar2d.Configuration.SimType;
 import soar2d.player.*;
+import soar2d.player.book.Dog;
+import soar2d.player.book.Mouse;
+import soar2d.player.book.Robot;
+import soar2d.player.book.SoarRobot;
+import soar2d.player.eaters.Eater;
+import soar2d.player.eaters.SoarEater;
+import soar2d.player.eaters.ToscaEater;
+import soar2d.player.tanksoar.SoarTank;
+import soar2d.player.tanksoar.Tank;
 
 /**
  * @author voigtjr
@@ -269,11 +278,18 @@ public class Simulation {
 				boolean human = true;
 				switch(Soar2D.config.getType()) {
 				case kEaters:
-					player = new Eater(playerConfig, true);
+					if (soar2d.player.eaters.ToscaEater.kToscaEnabled) {
+						player = new ToscaEater(playerConfig);
+						human = false;
+					} else {
+						player = new Eater(playerConfig);
+					}
 					break;
+					
 				case kTankSoar:
 					player = new Tank(playerConfig);
 					break;
+					
 				case kBook:
 					if (playerConfig.getName().equals(kDog)) {
 						player = new Dog(playerConfig);
