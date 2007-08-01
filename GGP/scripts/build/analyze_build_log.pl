@@ -4,6 +4,7 @@ use strict;
 my $input_file = $ARGV[0];
 
 my $level_info = [];
+my $last_action = "";
 my $current_depth;
 open(IF, "<$input_file");
 my $action_counts = 0;
@@ -20,6 +21,7 @@ while(my $line = <IF>){
 		while(scalar@$level_info <= $current_depth){
 			push(@$level_info, {});
 		}
+		$level_info->[$current_depth]->{"current action"} = $last_action;
 		
 	}
 	if($line =~ /Remaining depth limit ([0-9]+)/i){
@@ -37,8 +39,9 @@ while(my $line = <IF>){
 	if($line =~ /(S[0-9]+)\: (.+)/i){
 		my ($state_name, $op_name) = ($1, $2);
 		if($state_name ne "S1" and $op_name =~ /nudge|reinforce|add-to-compound|place-adjacent|brace|rotate/){
-			$level_info->[$current_depth]->{"current action"} = $op_name;
+			#$level_info->[$current_depth]->{"current action"} = $op_name;
 			++$action_counts;
+			$last_action = $op_name;
 		}
 	}
 }
