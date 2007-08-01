@@ -1,10 +1,7 @@
 package soar2d;
 
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.HashMap;
 
-import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.world.GridMap;
 

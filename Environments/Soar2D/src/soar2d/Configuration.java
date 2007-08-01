@@ -417,10 +417,10 @@ public class Configuration {
 		setMap(new File(map.getTextTrim()));
 		
 		// iterate through the rest of the children
-		List children = general.getChildren();
-		Iterator iter = children.iterator();
+		List<Element> children = (List<Element>)general.getChildren();
+		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
-			Element child = (Element)iter.next();
+			Element child = iter.next();
 			
 			if (child.getName().equalsIgnoreCase(kTagPort)) {
 				try {
@@ -510,10 +510,10 @@ public class Configuration {
 	}
 	
 	private void rules(Element rules) throws LoadError {
-		List children = rules.getChildren();
-		Iterator iter = children.iterator();
+		List<Element> children = (List<Element>)rules.getChildren();
+		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
-			Element child = (Element)iter.next();
+			Element child = iter.next();
 			
 			if (child.getName().equalsIgnoreCase(kTagEaters)) {
 				eaters(child);
@@ -578,10 +578,10 @@ public class Configuration {
 	}
 
 	private void eaters(Element eaters) throws LoadError {
-		List children = eaters.getChildren();
-		Iterator iter = children.iterator();
+		List<Element> children = (List<Element>)eaters.getChildren();
+		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
-			Element child = (Element)iter.next();
+			Element child = iter.next();
 			
 			if (child.getName().equalsIgnoreCase(kTagVision)) {
 				try {
@@ -762,10 +762,10 @@ public class Configuration {
 	}
 	
 	private void tanksoar(Element tanksoar) throws LoadError {
-		List children = tanksoar.getChildren();
-		Iterator iter = children.iterator();
+		List<Element> children = (List<Element>)tanksoar.getChildren();
+		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
-			Element child = (Element)iter.next();
+			Element child = iter.next();
 			
 			if (child.getName().equalsIgnoreCase(kTagDefaultMissiles)) {
 				try {
@@ -935,10 +935,10 @@ public class Configuration {
 	}
 	
 	private void book(Element book) throws LoadError {
-		List children = book.getChildren();
-		Iterator iter = children.iterator();
+		List<Element> children = (List<Element>)book.getChildren();
+		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
-			Element child = (Element)iter.next();
+			Element child = iter.next();
 			
 			if (child.getName().equalsIgnoreCase(kTagColoredRooms)) {
 				this.setColoredRooms(true);
@@ -1074,10 +1074,10 @@ public class Configuration {
 		if (logging == null) {
 			return;
 		}
-		List children = logging.getChildren();
-		Iterator iter = children.iterator();
+		List<Element> children = (List<Element>)logging.getChildren();
+		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
-			Element child = (Element)iter.next();
+			Element child = iter.next();
 			
 			if (child.getName().equalsIgnoreCase(kTagLevel)) {
 				if (!setLogLevel(child.getTextTrim())) {
@@ -1143,10 +1143,10 @@ public class Configuration {
 		if (players == null) {
 			return;
 		}
-		List children = players.getChildren();
-		Iterator iter = children.iterator();
+		List<Element> children = (List<Element>)players.getChildren();
+		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
-			Element child = (Element)iter.next();
+			Element child = iter.next();
 			
 			if (child.getName().equalsIgnoreCase(kTagDebuggers)) {
 				setDebuggers(true);
@@ -1223,14 +1223,14 @@ public class Configuration {
 	}
 	
 	private void player(Element player) throws LoadError {
-		List children = player.getChildren();
-		Iterator iter = children.iterator();
+		List<Element> children = (List<Element>)player.getChildren();
+		Iterator<Element> iter = children.iterator();
 		
 		PlayerConfig playerConfig = new PlayerConfig();
 		java.awt.Point location = new java.awt.Point(-1, -1);
 		
 		while (iter.hasNext()) {
-			Element child = (Element)iter.next();
+			Element child = iter.next();
 			
 			if (child.getName().equalsIgnoreCase(kTagName)) {
 				playerConfig.setName(child.getTextTrim());
@@ -1470,11 +1470,11 @@ public class Configuration {
 		if (terminals == null) {
 			return;
 		}
-		List children = terminals.getChildren();
-		Iterator iter = children.iterator();
+		List<Element> children = (List<Element>)terminals.getChildren();
+		Iterator<Element> iter = children.iterator();
 		
 		while (iter.hasNext()) {
-			Element child = (Element)iter.next();
+			Element child = iter.next();
 			
 			if (child.getName().equalsIgnoreCase(kTagMaxUpdates)) {
 				try {
@@ -1550,10 +1550,10 @@ public class Configuration {
 		if (clients == null) {
 			return;
 		}
-		List children = clients.getChildren();
-		Iterator iter = children.iterator();
+		List<Element> children = (List<Element>)clients.getChildren();
+		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
-			Element child = (Element)iter.next();
+			Element child = iter.next();
 			
 			if (child.getName().equalsIgnoreCase(kTagClient)) {
 				client(child);
@@ -1588,13 +1588,13 @@ public class Configuration {
 	}
 	
 	private void client(Element client) throws LoadError {
-		List children = client.getChildren();
-		Iterator iter = children.iterator();
+		List<Element> children = (List<Element>)client.getChildren();
+		Iterator<Element> iter = children.iterator();
 		
 		ClientConfig clientConfig = new ClientConfig();
 		
 		while (iter.hasNext()) {
-			Element child = (Element)iter.next();
+			Element child = iter.next();
 			
 			if (child.getName().equalsIgnoreCase(kTagClientName)) {
 				clientConfig.name = child.getTextTrim();

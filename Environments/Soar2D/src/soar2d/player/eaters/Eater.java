@@ -1,7 +1,6 @@
 package soar2d.player.eaters;
 
 import soar2d.Soar2D;
-import soar2d.World;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;

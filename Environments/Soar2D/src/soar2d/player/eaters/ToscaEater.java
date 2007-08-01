@@ -2,10 +2,8 @@ package soar2d.player.eaters;
 
 import java.util.logging.Logger;
 
-import sml.Agent;
 import soar2d.Direction;
 import soar2d.Soar2D;
-import soar2d.World;
 import soar2d.player.MoveInfo;
 import soar2d.player.PlayerConfig;
 import soar2d.tosca2d.*;

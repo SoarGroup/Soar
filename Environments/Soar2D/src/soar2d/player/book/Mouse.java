@@ -1,7 +1,5 @@
 package soar2d.player.book;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 
 import soar2d.PlayersManager;
@@ -10,8 +8,6 @@ import soar2d.World;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;
-import soar2d.world.CellObject;
-import soar2d.world.GridMap;
 
 public class Mouse extends Player {
 

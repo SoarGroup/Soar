@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.logging.*;
 
 import sml.*;
-import soar2d.Configuration.SimType;
 import soar2d.player.*;
 import soar2d.player.book.Dog;
 import soar2d.player.book.Mouse;
