@@ -483,4 +483,17 @@ public class BookWorld implements IWorld {
 		return false;
 	}
 	
+	public int getMinimumAvailableLocations() {
+		return 1;
+	}
+
+	public void resetPlayer(GridMap map, Player player, PlayersManager players, boolean resetDuringRun) {
+		if (resetDuringRun) {
+			player.fragged();
+		} else {
+			// reset (init-soar)
+			player.reset();
+		}
+	}
+
 }

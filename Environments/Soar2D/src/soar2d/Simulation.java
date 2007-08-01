@@ -74,7 +74,7 @@ public class Simulation {
 		}
 		
 		// Tanksoar uses run til output
-		runTilOutput = (Soar2D.config.getType() == SimType.kTankSoar);
+		runTilOutput = Soar2D.config.runTilOutput();
 		
 		// Initialize Soar
 		if (Soar2D.config.getRemote()) {
@@ -301,6 +301,10 @@ public class Simulation {
 						player = new Robot(playerConfig);
 					}
 					break;
+
+				case kKitchen:
+					assert false;
+
 				}
 				
 				assert player != null;
@@ -346,6 +350,10 @@ public class Simulation {
 					case kBook:
 						player = new SoarRobot(agent, playerConfig);
 						break;
+						
+					case kKitchen:
+						assert false;
+
 					}
 					
 					assert player != null;

@@ -280,5 +280,21 @@ public class EatersWorld implements IWorld {
 		}
 	}
 	
+	public int getMinimumAvailableLocations() {
+		return 1;
+	}
 
+	public void resetPlayer(GridMap map, Player player, PlayersManager players, boolean resetDuringRun) {
+		// remove food from it
+		map.removeAllWithProperty(players.getLocation(player), Names.kPropertyEdible);
+		
+		// This is here because the TOSCA stuff wants to keep around the reward
+		// in the beginning of the next phase
+		
+		if (resetDuringRun) {
+			player.mapReset();
+		}
+		
+		player.reset();
+	}
 }

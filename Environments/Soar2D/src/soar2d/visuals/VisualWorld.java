@@ -72,6 +72,9 @@ public class VisualWorld extends Canvas implements PaintListener {
 			
 		case kBook:
 			break;
+			
+		case kKitchen:
+			assert false;
 		}
 		
 		font = new Font(parent.getDisplay(), "Helvetica", 7, SWT.NONE);
@@ -232,6 +235,8 @@ public class VisualWorld extends Canvas implements PaintListener {
 				}
 			}
 		}
+		
+		assert Soar2D.config.getType() != SimType.kKitchen;
 		
 		if (Soar2D.config.getType() == SimType.kTankSoar) {
 			if (background == null) {

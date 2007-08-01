@@ -41,6 +41,8 @@ public class MapButtons extends Composite {
 		case kBook:
 			ext = Configuration.kBookMapExt;
 			break;
+		case kKitchen:
+			assert false;
 		}
 		fd.setFilterExtensions(new String[] {"*." + ext, "*.*"});
 		VisualWorld.internalRepaint = true;

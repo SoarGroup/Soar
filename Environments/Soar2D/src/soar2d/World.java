@@ -39,6 +39,11 @@ public class World {
 			case kBook:
 				worldModule = new BookWorld();
 				break;
+
+			case kKitchen:
+				worldModule = new KitchenWorld();
+				break;
+
 			}
 		}
 		
@@ -97,34 +102,7 @@ public class World {
 			return false;
 		}
 		
-		switch (Soar2D.config.getType()) {
-		case kEaters:
-			// remove food from it
-			map.removeAllWithProperty(startingLocation, Names.kPropertyEdible);
-			
-			// This is here because the TOSCA stuff wants to keep around the reward
-			// in the beginning of the next phase
-			
-			if (resetDuringRun) {
-				player.mapReset();
-			}
-			
-			// falls through
-			
-		case kTankSoar:
-			// reset (init-soar)
-			player.reset();
-			break;
-			
-		case kBook:
-			if (resetDuringRun) {
-				player.fragged();
-			} else {
-				// reset (init-soar)
-				player.reset();
-			}
-			break;
-		}
+		worldModule.resetPlayer(map, player, players, resetDuringRun);
 		return true;
 	}
 	
@@ -156,21 +134,9 @@ public class World {
 		
 		ArrayList<Point> availableLocations = map.getAvailableLocations();
 		// make sure there is an available cell
-		switch (Soar2D.config.getType()) {
-		case kTankSoar:
-			// There must be enough room for all tank and missile packs
-			if (availableLocations.size() < Soar2D.config.getMaxMissilePacks() + 1) {
-				Soar2D.control.severeError("There are no suitable starting locations for " + player.getName() + ".");
-				return null;
-			}
-			break;
-		case kEaters:
-		case kBook:
-			if (availableLocations.size() < 1) {
-				Soar2D.control.severeError("There are no suitable starting locations for " + player.getName() + ".");
-				return null;
-			}
-			break;
+		if (availableLocations.size() < worldModule.getMinimumAvailableLocations()) {
+			Soar2D.control.severeError("There are no suitable starting locations for " + player.getName() + ".");
+			return null;
 		}
 		
 		Point location = null;
