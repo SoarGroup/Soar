@@ -22,10 +22,10 @@ int main(int argc, char* argv[]) {
   set<Predicate> spreds;
   set<Predicate> tpreds;
  
-  ifstream f1(argv[1]);
-  ifstream f2(argv[2]);
-  read_xkif(f1, srules, spreds);
-  read_xkif(f2, trules, tpreds);
+  Reader r1(argv[1]);
+  r1.read_xkif(srules, spreds);
+  Reader r2(argv[2]);
+  r2.read_xkif(trules, tpreds);
 
   Matcher matcher(
       vector<Predicate>(spreds.begin(), spreds.end()), 

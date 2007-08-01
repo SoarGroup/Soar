@@ -1,8 +1,8 @@
 CC=g++
 LINK=g++
 CFLAGS=-Wall -ggdb3
-SOURCES= mapper.cpp matcher.cpp predicate.cpp reader.cpp rule.cpp 
-HEADERS= matcher.h predicate.h reader.h rule.h
+SOURCES= mapper.cpp matcher.cpp predicate.cpp rule.cpp 
+HEADERS= matcher.h mapper.h predicate.h reader.h rule.h
 OBJECTS=$(SOURCES:.cpp=.o)
 MAIN=mapper
 
