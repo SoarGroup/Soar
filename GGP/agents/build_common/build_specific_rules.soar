@@ -193,3 +193,4 @@ sp {apply*analyze-state*decrease*tower*test
 }
 
 learn --d
+indifferent-selection --first
