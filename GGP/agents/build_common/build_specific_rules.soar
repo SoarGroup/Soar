@@ -1,22 +1,3 @@
-#override the default failure/success rules
-# need to elaborate failure whenever it is detected
-sp {apply*analyze-state*handle-failure
-   (state <s> ^name game
-              ^failure-detected <d>
-              ^gs <gs>)
--->
-  (<s> ^failure <d>)
-}
-# need to elaborate success whenever it is detected
-sp {apply*analyze-state*handle-success
-   (state <s> ^name game
-              ^top-state <ts>
-              ^success-detected <d>
-              ^gs <gs>)
--->
-  (<ts> ^final-gs <gs>)
-  (<s> ^success <d>)
-}
 
 #sp {prefer*place-adjacent
 #	(state <s> ^operator <o1> +)
@@ -78,20 +59,6 @@ sp {elaborate*save-final-action-sequence
 }
 
 
-#elaborate terminal depends on update-state-finished yes
-sp {apply*analyze-state*update-state-finished
-	(state <s> ^operator.name analyze-state)
--->
-	(<s> ^update-state-finished yes)
-}
-
-# the next update-state operator reset the flag
-sp {apply*update-state*remove*update-state-finished
-	(state <s> ^operator.name update-state)
-	(<s> ^update-state-finished yes)
--->
-	(<s> ^update-state-finished yes -)
-}
 
 sp {monitor*operators*top-state
 	(state <s> ^operator.name <oname>
