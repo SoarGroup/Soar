@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; micro-Rogue (mRogue) GDL Rule Set
-;;; Example: TL Level 9, Source Task for all scenarios
+;;; Example: TL Level 6, Scenario 1, Source Task 1 
 ;;; See init/1 between ">>>>>" and "<<<<<" for unique aspects of this task
 ; David W. Aha (NRL)
 ; 2007 July 31
@@ -12,7 +12,7 @@
 ;    012345     - = Horizontal wall
 ;   +------+    | = Vertical wall
 ;  0|p.....|    . = A room location
-;  1|.wa...|    # = A corridor location
+;  1|.w....|    # = A corridor location
 ;  2|@..S.*|    @ = hero
 ;  3+----#-+    a = armor, p = potion, s = scroll,
 ;  4|...!.p|    w = weapon, ! = amulet, * = gold
@@ -106,14 +106,12 @@
 (init (health snake1 4))
 
 ; Items (that can be picked up by Hero) (amulet & gold are defined in 2.3)
-(item armor1)
 (item weapon1)
 (item potion1)
 (item potion2)
 (item scroll1)
 
 ; Item typings (note: a bow includes a quiver and a set of arrows)
-(weapon armor1 ringmail)
 (weapon weapon1 mace)
 (potion potion1 strength)
 (potion potion2 speed)
@@ -121,9 +119,8 @@
 
 ; Locations of character and items (North Room)
 (init (location potion1 0 0))
-(init (location weapon1 1 1))
-(init (location armor1 2 1))
 (init (location hero 0 2))           ; our Hero
+(init (location weapon1 1 1))
 (init (location snake1 3 2))         ; Monster
 (init (location gold 5 2))
 
@@ -828,10 +825,11 @@
     (singleStepTowardsHero ?startx ?starty ?finalx ?finaly))
 
 (<= (nStepsTowardsHero 2 ?startx ?starty ?finalx ?finaly)
-    (cellNearMonster ?startx ?starty) ; SW
-    (cellNearMonster ?finalx ?finaly) ; SW
-    (singleStepTowardsHero ?startx ?starty ?x2 ?y2)
-    (cellNearMonster ?x2 ?y2) ; SW
+  (cellNearMonster ?startx ?starty)
+  (cellNearMonster ?finalx ?finaly)
+  (singleStepTowardsHero ?startx ?starty ?x2 ?y2)
+  (cellNearMonster ?x2 ?y2)
+  (singleStepTowardsHero ?x2 ?y2 ?finalx ?finaly))
 
 ; Meaning: Take one step toward destination only if you won't run into hero.
 (<= (singleStepTowardsHero ?startx ?starty ?nextx ?nexty)

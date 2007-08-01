@@ -835,10 +835,11 @@
     (singleStepTowardsHero ?startx ?starty ?finalx ?finaly))
 
 (<= (nStepsTowardsHero 2 ?startx ?starty ?finalx ?finaly)
-    (cellNearMonster ?startx ?starty) ; SW
-    (cellNearMonster ?finalx ?finaly) ; SW
-    (singleStepTowardsHero ?startx ?starty ?x2 ?y2)
-    (cellNearMonster ?x2 ?y2) ; SW
+  (cellNearMonster ?startx ?starty)
+  (cellNearMonster ?finalx ?finaly)
+  (singleStepTowardsHero ?startx ?starty ?x2 ?y2)
+  (cellNearMonster ?x2 ?y2)
+  (singleStepTowardsHero ?x2 ?y2 ?finalx ?finaly))
 
 ; Meaning: Take one step toward destination only if you won't run into hero.
 (<= (singleStepTowardsHero ?startx ?starty ?nextx ?nexty)

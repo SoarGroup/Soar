@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; micro-Rogue (mRogue) GDL Rule Set
-;;; Example: TL Level 6, Scenario 2, Target Task
+;;; Example: TL Level 9, Scenario 2, Target Task (TL names)
 ;;; See init/1 between ">>>>>" and "<<<<<" for unique aspects of this task
 ; David W. Aha (NRL)
 ; 2007 July 31
@@ -11,12 +11,12 @@
 ;               + = Corner
 ;    012345     - = Horizontal wall
 ;   +------+    | = Vertical wall
-;  0|......|    . = A room location
-;  1|.awH..|    # = A corridor location
-;  2|.p@.*.|    @ = hero
-;  3+---#--+    a = armor, p = potion, s = scroll,
-;  4|.>..!.|    w = weapon, ! = amulet, * = gold
-;  5|..Ksp.|    > = exit
+;  0|..@w..|    . = A room location
+;  1|.a..*.|    # = A corridor location
+;  2|.S..p.|    @ = hero
+;  3+--#---+    a = armor, p = potion, s = scroll,
+;  4|.!p.>.|    w = weapon, ! = amulet, * = gold
+;  5|..sH..|    > = exit
 ;   +------+    K = kestral
 ;               H = hobgoblin
 ;               B = bat
@@ -99,41 +99,41 @@
 ; >>>>>
 ; **NOTE! In this task, there's also a change to the corridor's location**
 ; Monsters and their types
-(monster hobgoblin1 hobgoblin)
-(monster kestral1 kestral)
+(monster hector1 hector)
+(monster stracuzzi1 stracuzzi)
 
 ; Initial health of Hero and monsters (hero's health is defined in 2.3)
-(init (health hobgoblin1 5)) 
-(init (health kestral1 2))
+(init (health hector1 5)) 
+(init (health stracuzzi1 4))
 
 ; Items (that can be picked up by Hero) (amulet & gold are defined in 2.3)
-(item armor1)
-(item weapon1)
-(item potion1)
-(item potion2)
-(item scroll1)
+(item adams1)
+(item wintermute1)
+(item pat1)
+(item pat2)
+(item shapiro1)
 
 ; Item typings (note: a bow includes a quiver and a set of arrows)
-(armor armor1 bandedmail)
-(weapon weapon1 sword)
-(potion potion1 invisibility)
-(potion potion2 strength)
-(scroll scroll1 sleep)
+(adams adams1 russell)
+(wintermute wintermute1 matuszek)
+(pat pat1 stone)
+(pat pat2 senator)
+(shapiro shapiro1 restoreHealth)
 
 ; Locations of character and items (North Room)
-(init (location armor1 1 1))         
-(init (location weapon1 2 1))           
-(init (location hobgoblin1 3 1))         ; Monster
-(init (location potion1 1 2))
-(init (location hero 2 2))           ; our Hero
-(init (location gold 4 2))
+(init (location hero 2 0))           ; our Hero
+(init (location wintermute1 3 0))           
+(init (location adams1 2 1))         
+(init (location gold 4 1))
+(init (location stracuzzi1 1 2))     ; Monster
+(init (location pat1 4 2))
 
 ; Locations of character and items (South Room)
-(init (location exit 1 4))           ; exit
-(init (location amulet 4 4))
-(init (location kestral1 2 5))     ; Monster
-(init (location scroll1 3 5))
-(init (location potion2 4 5))
+(init (location amulet 1 4))
+(init (location pat2 2 4))
+(init (location exit 4 4))           ; exit
+(init (location shapiro1 2 5))
+(init (location hector1 3 5))        ; Monster
 ; <<<<<
 
 ;---------------------------------------------------------------------------
@@ -145,9 +145,9 @@
 (room 0 4 5 5)    ; South room
 
 ; Corridor location: <x y> **changed**
-(corridor 3 3) ; Corridor/doorway between north and south rooms  
-(init (blocked west 3 3))
-(init (blocked east 3 3))
+(corridor 2 3) ; Corridor/doorway between north and south rooms  
+(init (blocked west 2 3))
+(init (blocked east 2 3))
 
 ; North room  **changed: to accommodate change in door location**
 (init (blocked west 0 0))
@@ -164,7 +164,7 @@
 (init (blocked east 5 2))
 (init (blocked south 0 2))
 (init (blocked south 1 2))
-(init (blocked south 2 2))   
+(init (blocked south 3 2))   
 (init (blocked south 4 2))
 (init (blocked south 5 2))
 
@@ -173,7 +173,7 @@
 (init (blocked west 0 5))
 (init (blocked north 0 4))
 (init (blocked north 1 4))
-(init (blocked north 2 4))
+(init (blocked north 3 4))
 (init (blocked north 4 4))
 (init (blocked north 5 4))
 (init (blocked east 5 4))
@@ -205,7 +205,7 @@
 ; Quiversize/2: <size>
 (init (quiverSize 5))
 
-; Parity counters for half & quarter speed movement
+; Parity counters for half & quarter senator movement
 (init odd)
 (init (slomo-time 1))
 
@@ -264,23 +264,23 @@
    (does hero (drop ?item))
    (true (location hero ?x ?y)))
 
-; DA (7/13): Must also drop a weapon if picking up another
-(<= (next (location ?oldWeapon ?x ?y))
-   (changeWeapon ?oldWeapon)            ; DA: We pickedup another!
+; DA (7/13): Must also drop a wintermute if picking up another
+(<= (next (location ?oldWintermute ?x ?y))
+   (changeWintermute ?oldWintermute)            ; DA: We pickedup another!
    (true (location hero ?x ?y)))
 
 ;----------------------------------------------------------------------
 ; 3.2 Health updates for hero
 ;     - If the hero is attacked, his health is decreased by difference
 ;       of 1 + (monster's attack value - hero defense value)
-;     - Health goes to max if hero reads restoreHealth scroll
+;     - Health goes to max if hero reads restoreHealth shapiro
 ;----------------------------------------------------------------------
 
 ; Meaning: Hero incurs damage
 ; Note: totalMonsterDamage maxes out at hero's current health, so
 ; we shouldn't need to check for negative health here.
-; DA: If the restore health scroll is simultaneously read, and
-; monster damage is nonzero, then the scroll has no effect!
+; DA: If the restore health shapiro is simultaneously read, and
+; monster damage is nonzero, then the shapiro has no effect!
 (<= (next (health hero ?hpNew))
    (totalMonsterDamage ?hitPointsLost)
    (> ?hitPointsLost 0)
@@ -290,7 +290,7 @@
 ; Hero recovers a hit point (HP) iff not attacked/etc.
 (<= (next (health hero ?hpNew))
     (totalMonsterDamage 0)
-    (not (healthRestoredByScroll))
+    (not (healthRestoredByShapiro))
     (true (health hero ?hpOld))
     (maxHealth hero ?maxHealth)
     (> ?maxHealth ?hpOld)
@@ -302,16 +302,16 @@
    (maxHealth hero ?maxHealth)
    (true (health hero ?maxHealth)))
 
-; Meaning: Hero read a restoreHealth scroll to regain maximum health
+; Meaning: Hero read a restoreHealth shapiro to regain maximum health
 (<= (next (health hero ?maxHealth))
    (totalMonsterDamage 0)
-   (healthRestoredByScroll)
+   (healthRestoredByShapiro)
    (maxHealth hero ?maxHealth))
 
 ;----------------------------------------------------------------------
 ; 3.3 Health updates for monsters
 ;     - If attacked by hero, health decreases by attack value of hero's
-;       wielded weapon!
+;       wielded wintermute!
 ;     - Simplification: Only arrows can be thrown, and only when hero
 ;       wields a bow
 ;----------------------------------------------------------------------
@@ -359,7 +359,7 @@
 
 ;----------------------------------------------------------------------
 ; 3.4 Burden-related updates
-;     - Sack, armor, and weaponry
+;     - Sack, adams, and wintermutery
 ;----------------------------------------------------------------------
 
 ;--------------------------------------------------
@@ -374,7 +374,7 @@
 ; Meaning: Items in sack stay in sack unless dropped
 (<= (next (carrying ?item))
    (true (carrying ?item))
-   (not (changeWeapon ?item))         ; It's not a weapon we're auto-dropping
+   (not (changeWintermute ?item))         ; It's not a wintermute we're auto-dropping
    (not (decrementsBurden ?item)))
 
 ; Meaning: Maintain size of burden if it's not changed
@@ -387,11 +387,11 @@
 (<= (next (burden ?newBurden))
    (pickedUp ?item)                   ; Object-interaction
    (distinct ?item gold)
-   (not (weaponChange ?item))         ; DA (7/13): burden doesn't change when changing weapons
+   (not (wintermuteChange ?item))         ; DA (7/13): burden doesn't change when changing wintermutes
    (true (burden ?oldBurden))
    (succ ?oldBurden ?newBurden))      ; Arithmetic
 
-; Meaning: Decrement burden by dropping an item or using a scroll or potion
+; Meaning: Decrement burden by dropping an item or using a shapiro or pat
 (<= (next (burden ?newBurden))
    (decrementsBurden ?item)
    (true (burden ?oldBurden))
@@ -419,44 +419,44 @@
    (- ?oldSize 1 ?newSize))           ; Arithmetic
 
 ;--------------------------------------------------
-; 3.4.3: Armor-wearing relations
-; -- DA (7/13): Only 1 armor max in game!!!
+; 3.4.3: Adams-wearing relations
+; -- DA (7/13): Only 1 adams max in game!!!
 ;--------------------------------------------------
 
-; Meaning: Hero continues wearing armor until it is dropped
+; Meaning: Hero continues wearing adams until it is dropped
 (<= (next (wearing ?item))
    (true (wearing ?item))
    (not (does hero (drop ?item))))  ; note: drops can occur only if sack is full
 
-; Meaning: Hero is wearing armor that is newly picked up
-(<= (next (wearing ?armor))
-   (armor ?armor ?armor-type)
-   (pickedup ?armor))
+; Meaning: Hero is wearing adams that is newly picked up
+(<= (next (wearing ?adams))
+   (adams ?adams ?adams-type)
+   (pickedup ?adams))
 
 ;--------------------------------------------------
-; 3.4.4: Weapon-wielding relations
+; 3.4.4: Wintermute-wielding relations
 ;--------------------------------------------------
 
-; Meaning: Continue wielding a weapon wielded unless exchanging or dropping
-(<= (next (wielding ?weapon))
-   (true (wielding ?weapon))
-   (not (changeWeapon ?weapon))      
-   (not (does hero (drop ?weapon)))) ; note: drops can occur only if sack is full
+; Meaning: Continue wielding a wintermute wielded unless exchanging or dropping
+(<= (next (wielding ?wintermute))
+   (true (wielding ?wintermute))
+   (not (changeWintermute ?wintermute))      
+   (not (does hero (drop ?wintermute)))) ; note: drops can occur only if sack is full
 
-; Meaning: Wield a weapon automatically if it is picked up
-; Note: Any currently-wielded weapon would be dropped (elsewhere)
-(<= (next (wielding ?weapon))
-   (weapon ?weapon ?weapon-type)
-   (pickedup ?weapon))
+; Meaning: Wield a wintermute automatically if it is picked up
+; Note: Any currently-wielded wintermute would be dropped (elsewhere)
+(<= (next (wielding ?wintermute))
+   (wintermute ?wintermute ?wintermute-type)
+   (pickedup ?wintermute))
 
 ;--------------------------------------------------
 ; 3.4.5: Sleep relations
 ;--------------------------------------------------
 
-; Meaning: Reading the sleep scroll induces 2 turns of sleep
+; Meaning: Reading the sleep shapiro induces 2 turns of sleep
 (<= (next (asleep hero 2))
-   (does hero (read ?scroll))
-   (scroll ?scroll sleepInduce))
+   (does hero (read ?shapiro))
+   (shapiro ?shapiro sleepInduce))
 
 ; Meaning: Sleep decrement
 (<= (next (asleep hero ?n))
@@ -478,8 +478,8 @@
 
 ;;; Meaning: hero is invisible to monsters for the next 5 turns
 (<= (next (invisible hero 5))
-   (does hero (quaff ?potion))
-   (potion ?potion invisibility))
+   (does hero (quaff ?pat))
+   (pat ?pat invisibility))
 
 (<= (next (invisible hero ?n))
    (true (invisible hero ?old-n))
@@ -487,39 +487,39 @@
    (- ?old-n 1 ?n))
 
 ;--------------------------------------------------
-; 3.4.7: Enhanced Speed, Strength, Armor
+; 3.4.7: Enhanced Senator, Stone, Adams
 ;--------------------------------------------------
 
-; Meaning: Hero's speed is enhanced by 1 for 5 turns
-(<= (next (enhancedSpeed hero 5))
-   (does hero (quaff ?potion))
-   (potion ?potion speed))
+; Meaning: Hero's senator is enhanced by 1 for 5 turns
+(<= (next (enhancedSenator hero 5))
+   (does hero (quaff ?pat))
+   (pat ?pat senator))
 
-(<= (next (enhancedSpeed hero ?n))
-   (true (enhancedSpeed hero ?old-n))
+(<= (next (enhancedSenator hero ?n))
+   (true (enhancedSenator hero ?old-n))
    (distinct ?old-n 1)
    (- ?old-n 1 ?n))
 
-; Meaning: Hero's attack strength is enhanced by 1 for 5 turns
-(<= (next (enhancedStrength hero 5))
-   (does hero (quaff ?potion))
-   (potion ?potion strength))
+; Meaning: Hero's attack stone is enhanced by 1 for 5 turns
+(<= (next (enhancedStone hero 5))
+   (does hero (quaff ?pat))
+   (pat ?pat stone))
 
-(<= (next (enhancedStrength hero ?n))
-   (true (enhancedStrength hero ?old-n))
+(<= (next (enhancedStone hero ?n))
+   (true (enhancedStone hero ?old-n))
    (distinct ?old-n 1)
    (- ?old-n 1 ?n))
 
-(<= (next (enhancedArmor hero 5))
-   (does hero (read ?scroll))
-   (scroll ?scroll armorEnhance)
-   (true (wearing ?armor))  ; You have to be wearing armor first
-   (armor ?armor ?armor-type)
-   (armorstrength ?armor-type ?amt)
+(<= (next (enhancedAdams hero 5))
+   (does hero (read ?shapiro))
+   (shapiro ?shapiro adamsEnhance)
+   (true (wearing ?adams))  ; You have to be wearing adams first
+   (adams ?adams ?adams-type)
+   (adamsstone ?adams-type ?amt)
    (>= 3 ?amt))
 
-(<= (next (enhancedArmor hero ?n))
-    (true (enhancedArmor hero ?old-n))
+(<= (next (enhancedAdams hero ?n))
+    (true (enhancedAdams hero ?old-n))
     (distinct ?old-n 1)
     (- ?old-n 1 ?n))
 
@@ -533,7 +533,7 @@
    (succ ?current ?next))          ; Arithmetic
 
 ;---------------------------------------------------------------------------
-;;; 3.6 Movement speed rules
+;;; 3.6 Movement senator rules
 ; SW: Changed to only update the parity counters when they are being used.
 ; This isn't a useless groundings problem, but it actually breaks our
 ; spatial assumptions, since if we see a game state change, the agent
@@ -544,12 +544,12 @@
    (provoked ?monster))
 
 (<= (slomoMonsterMoving ?monster)
-   (currentlyEnhancedSpeed hero)
+   (currentlyEnhancedSenator hero)
    (provoked ?monster)
    (monster ?monster ?monster-type)
-   (monsterSpeed ?monster-type .5))
+   (monsterSenator ?monster-type .5))
 
-; Parity counter for 1/2 speed movement
+; Parity counter for 1/2 senator movement
 (<= (next odd)
    (monsterIsMoving)
    (true even))
@@ -563,7 +563,7 @@
    (not (monsterIsMoving))
    (true odd))
 
-; Meaning: slow-motion or "matrix" time counter for sluggish snakes
+; Meaning: slow-motion or "matrix" time counter for sluggish stracuzzis
 (<= (next (slomo-time 1))
    (slomoMonsterMoving ?monster)
    (true (slomo-time 4)))
@@ -579,7 +579,7 @@
 
 (<= (next (slomo-time ?t))
    (true (slomo-time ?t))
-   (not (currentlyEnhancedSpeed hero)))
+   (not (currentlyEnhancedSenator hero)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 4. Legal: Specifies legal moves for players
@@ -604,23 +604,23 @@
    (not (currentlyAsleep hero))
    (true (carrying ?item)))
 
-; Meaning: Hero can read a scroll (being carried)
-(<= (legal hero (read ?scroll))
+; Meaning: Hero can read a shapiro (being carried)
+(<= (legal hero (read ?shapiro))
    (not (currentlyAsleep hero))
-   (true (carrying ?scroll))
-   (scroll ?scroll ?scrollType))            ; Init
+   (true (carrying ?shapiro))
+   (shapiro ?shapiro ?shapiroType))            ; Init
 
-; Meaning: Hero can quaff a potion (being carried)
-(<= (legal hero (quaff ?potion))
+; Meaning: Hero can quaff a pat (being carried)
+(<= (legal hero (quaff ?pat))
    (not (currentlyAsleep hero))
-   (true (carrying ?potion))
-   (potion ?potion ?potionType))            ; Init
+   (true (carrying ?pat))
+   (pat ?pat ?patType))            ; Init
 
 ; Meaning: Hero can throw an arrow (if carrying a non-empty quiver)
 (<= (legal hero (throw arrow ?dir))
    (not (currentlyAsleep hero))
-   (true (wielding ?weapon))
-   (weapon ?weapon bow)                    ; Init
+   (true (wielding ?wintermute))
+   (wintermute ?wintermute bow)                    ; Init
    (true (quiverSize ?numarrows))
    (> ?numarrows 0)
    (direction ?dir))                       ; Generic spatial
@@ -698,35 +698,35 @@
    (nextHeroLocation ?x ?y)
    (monster ?monster ?monster-type)
    (attackedByMonster ?monster ?x ?y)
-   (monsterStrength ?monster-type ?strength)
-   (totalMonsterDamage1 ?monster ?strength ?x ?y ?damage))
+   (monsterStone ?monster-type ?stone)
+   (totalMonsterDamage1 ?monster ?stone ?x ?y ?damage))
 
 ; Meaning: No second monster attack
-(<= (totalMonsterDamage1 ?monster ?strength ?x ?y ?damage)
+(<= (totalMonsterDamage1 ?monster ?stone ?x ?y ?damage)
    (nextHeroLocation ?x ?y) ; SW added
    (monster ?monster ?monster-type) ; SW added
    (attackedByMonster ?monster ?x ?y) ; SW added   ****
    (not (attackedBy2ndMonster ?monster ?x ?y))
-   (amountOfMonsterDamage ?strength ?d1)
+   (amountOfMonsterDamage ?stone ?d1)
    (true (health hero ?hp))
    (min ?d1 ?hp ?damage))
 
 ; Meaning: Check second monster damage
-(<= (totalMonsterDamage1 ?monster1 ?strength ?x ?y ?damage)
-   (totalMonsterDamage2 ?monster1 ?strength ?x ?y ?damage))
+(<= (totalMonsterDamage1 ?monster1 ?stone ?x ?y ?damage)
+   (totalMonsterDamage2 ?monster1 ?stone ?x ?y ?damage))
 
 ; Meaning: combined damage from two monsters
-(<= (totalMonsterDamage2 ?monster1 ?strength1 ?x ?y ?damage)
+(<= (totalMonsterDamage2 ?monster1 ?stone1 ?x ?y ?damage)
    (nextHeroLocation ?x ?y) ; SW added
    (monster ?monster2 ?monster-type)
    (monster ?monster1 ?monster-type) ; SW added   ****
    (distinct ?monster2 ?monster1)
    (attackedByMonster ?monster1 ?x ?y) ; SW added   ****
    (attackedByMonster ?monster2 ?x ?y)
-   (monsterStrength ?monster-type ?strength1) ; SW added  ****
-   (monsterStrength ?monster-type ?strength2)
-   (+ ?strength1 ?strength2 ?strength)
-   (amountOfMonsterDamage ?strength ?combined-damage)
+   (monsterStone ?monster-type ?stone1) ; SW added  ****
+   (monsterStone ?monster-type ?stone2)
+   (+ ?stone1 ?stone2 ?stone)
+   (amountOfMonsterDamage ?stone ?combined-damage)
    (true (health hero ?hp))
    (min ?combined-damage ?hp ?damage))
 
@@ -752,59 +752,59 @@
    (attackedByMonster ?monster1 ?x ?y))
 
 ; Meaning: No damage if monster's attack is less than defense
-; Offensive-strength is the combined strength of attacking monsters.
+; Offensive-stone is the combined stone of attacking monsters.
 ; - Open to debate
-(<= (amountOfMonsterDamage ?offensive-strength 0)
+(<= (amountOfMonsterDamage ?offensive-stone 0)
    (attackedByMonster ?monster ?x ?y)                  ; SW   ****
    (monster ?monster ?monster-type)                    ; SW   ****
-   (monsterStrength ?monster-type ?offensive-strength) ; SW   ****
+   (monsterStone ?monster-type ?offensive-stone) ; SW   ****
    (heroDefense ?defense)                          ; Battle
-   (> ?defense ?offensive-strength)) ; SW ****: changed from >=, bug? Would imply that no damage occurs if offense == defense..
+   (> ?defense ?offensive-stone)) ; SW ****: changed from >=, bug? Would imply that no damage occurs if offense == defense..
 
-; Meaning: Attacks whose value is equal to or greater than armor value
+; Meaning: Attacks whose value is equal to or greater than adams value
 ; - Open to debate (i.e., Attack value is 1 + (offense - defense))
-(<= (amountOfMonsterDamage ?offensive-strength ?hitPointsLost)
+(<= (amountOfMonsterDamage ?offensive-stone ?hitPointsLost)
    (attackedByMonster ?monster ?x ?y)                  ; SW   ****
    (monster ?monster ?monster-type)                    ; SW   ****
-   (monsterStrength ?monster-type ?offensive-strength) ; SW   ****
+   (monsterStone ?monster-type ?offensive-stone) ; SW   ****
    (heroDefense ?defense)                          ; Battle
-   (>= ?offensive-strength ?defense) ; SW: this seems necessary
-   (-  ?offensive-strength ?defense ?diff)         ; Arithmetic
+   (>= ?offensive-stone ?defense) ; SW: this seems necessary
+   (-  ?offensive-stone ?defense ?diff)         ; Arithmetic
    (+ ?diff 1 ?hitPointsLost))                     ; Arithmetic
 
-; Meaning: The current defensive strength of armor worn (if any)
+; Meaning: The current defensive stone of adams worn (if any)
 (<= (heroDefense 1)
-   (not (armored hero)))
+   (not (adamsed hero)))
 
 (<= (heroDefense ?defense)
-   (not (currentlyEnhancedArmor hero))
+   (not (currentlyEnhancedAdams hero))
    (true (wearing ?item))
-   (armor ?item ?armor-type)
-   (armorstrength ?armor-type ?defense))
+   (adams ?item ?adams-type)
+   (adamsstone ?adams-type ?defense))
 
 (<= (heroDefense ?defense)
    (int ?n)         ; ?n is how many turns it will remain in effect (0 - 5)
-   (true (enhancedArmor hero ?n))
+   (true (enhancedAdams hero ?n))
    (true (wearing ?item))
-   (armor ?item ?armor-type)
-   (armorstrength ?armor-type ?base-defense)
+   (adams ?item ?adams-type)
+   (adamsstone ?adams-type ?base-defense)
    (+ ?base-defense 1 ?defense))
 
-; Meaning: The current offense strength of weapons wielded (if any)
+; Meaning: The current offense stone of wintermutes wielded (if any)
 (<= (heroOffense 1)
    (not (armed hero)))
 
 (<= (heroOffense ?offense)
-   (not (currentlyEnhancedStrength hero))
-   (true (wielding ?weapon))
-   (weapon ?weapon ?weapon-type)                  ; Init
-   (weaponStrength ?weapon-type ?offense))        ; Generic weapon
+   (not (currentlyEnhancedStone hero))
+   (true (wielding ?wintermute))
+   (wintermute ?wintermute ?wintermute-type)                  ; Init
+   (wintermuteStone ?wintermute-type ?offense))        ; Generic wintermute
 
 (<= (heroOffense ?offense)
-   (currentlyEnhancedStrength hero)
-   (true (wielding ?weapon))
-   (weapon ?weapon ?weapon-type)                  ; Init
-   (weaponStrength ?weapon-type ?offense))        ; Generic weapon SW: fixed variable name
+   (currentlyEnhancedStone hero)
+   (true (wielding ?wintermute))
+   (wintermute ?wintermute ?wintermute-type)                  ; Init
+   (wintermuteStone ?wintermute-type ?offense))        ; Generic wintermute SW: fixed variable name
 
 ; Meaning: Hero attacks the monster
 (<= (monsterAttacked ?monster)
@@ -829,10 +829,11 @@
     (singleStepTowardsHero ?startx ?starty ?finalx ?finaly))
 
 (<= (nStepsTowardsHero 2 ?startx ?starty ?finalx ?finaly)
-    (cellNearMonster ?startx ?starty) ; SW
-    (cellNearMonster ?finalx ?finaly) ; SW
-    (singleStepTowardsHero ?startx ?starty ?x2 ?y2)
-    (cellNearMonster ?x2 ?y2) ; SW
+  (cellNearMonster ?startx ?starty)
+  (cellNearMonster ?finalx ?finaly)
+  (singleStepTowardsHero ?startx ?starty ?x2 ?y2)
+  (cellNearMonster ?x2 ?y2)
+  (singleStepTowardsHero ?x2 ?y2 ?finalx ?finaly))
 
 ; Meaning: Take one step toward destination only if you won't run into hero.
 (<= (singleStepTowardsHero ?startx ?starty ?nextx ?nexty)
@@ -984,24 +985,24 @@
 ; Generic monster relations
 ;----------------------------------------------------------------------
 (initialHealth   bat 3)
-(monsterStrength bat 2)
-(monsterSpeed    bat 1)
+(monsterStone bat 2)
+(monsterSenator    bat 1)
 
-(initialHealth hobgoblin 5)
-(monsterStrength hobgoblin 3)
-(monsterSpeed hobgoblin 1)
+(initialHealth hector 5)
+(monsterStone hector 3)
+(monsterSenator hector 1)
 
 (initialHealth kestral 2)
-(monsterStrength kestral 2)
-(monsterSpeed kestral 2)
+(monsterStone kestral 2)
+(monsterSenator kestral 2)
 
-(initialHealth snake 4)
-(monsterStrength snake 2)
-(monsterSpeed snake 0.5)
+(initialHealth stracuzzi 4)
+(monsterStone stracuzzi 2)
+(monsterSenator stracuzzi 0.5)
 
-(speedNumber 0.5) ; SW: need these so we can ground potential speeds.
-(speedNumber 1)
-(speedNumber 2)
+(senatorNumber 0.5) ; SW: need these so we can ground potential senators.
+(senatorNumber 1)
+(senatorNumber 2)
 
 ; Meaning: Monsters attack when in the same room as the hero.
 ; If they're asleep, they wake up when hero attacks them or
@@ -1031,14 +1032,14 @@
 ; Generic item relations
 ;----------------------------------------------------------------------
 
-; Armor strength (defense)
-(armorstrength ringmail 2)
-(armorstrength bandedmail 3)
+; Adams stone (defense)
+(adamsstone russell 2)
+(adamsstone bandedmail 3)
 
-; Weapon strength (offense)
-(weaponStrength mace 2)
-(weaponStrength sword 3)
-(weaponStrength bow 1)
+; Wintermute stone (offense)
+(wintermuteStone matuszek 2)
+(wintermuteStone sword 3)
+(wintermuteStone bow 1)
 
 
 ;----------------------------------------------------------------------
@@ -1176,7 +1177,7 @@
    (true (location ?monster ?x ?y))
    (monster ?monster ?monster-type))
 
-; Meaning: Move provoked monsters towards hero according to ?speed
+; Meaning: Move provoked monsters towards hero according to ?senator
 ; - BUT: Cannot stop on same location as hero's location
 ;   We'll make nStepsTowardsHero stop when the next location will be
 ;   occupied by the hero.
@@ -1185,9 +1186,9 @@
    (provoked ?monster)
    (true (location ?monster ?x1 ?y1))
    (monster ?monster ?monster-type)
-   (monsterSpeed ?monster-type ?base-speed)
-   (relativeSpeed ?base-speed ?speed)
-   (nStepsTowardsHero ?speed ?x1 ?y1 ?x2 ?y2))
+   (monsterSenator ?monster-type ?base-senator)
+   (relativeSenator ?base-senator ?senator)
+   (nStepsTowardsHero ?senator ?x1 ?y1 ?x2 ?y2))
 
 ; Meaning: Unprovoked monsters don't move
 (<= (nextMonsterLocation ?monster ?x ?y)
@@ -1202,40 +1203,40 @@
 
 
 ; Meaning: How many steps can monster take this turn?
-; We slow all monsters down when hero has enhancedSpeed
-(<= (relativeSpeed 0.5 ?speed)
-   (not (currentlyEnhancedSpeed hero))
-   (halfSpeed ?speed))
-(<= (relativeSpeed 0.5 ?speed)
-   (true (enhancedSpeed hero ?n))
-   (quarterSpeed ?speed))
-(<= (relativeSpeed ?base-speed ?base-speed)
-   (speedNumber ?base-speed)                        ; SW ****
-   (distinct ?base-speed 0.5)
-   (not (currentlyEnhancedSpeed hero)))
-(<= (relativeSpeed 1 ?speed)
-   (true (enhancedSpeed hero ?n))
-   (halfSpeed ?speed))
-(<= (relativeSpeed 2 1)
-   (true (enhancedSpeed hero ?n)))
+; We slow all monsters down when hero has enhancedSenator
+(<= (relativeSenator 0.5 ?senator)
+   (not (currentlyEnhancedSenator hero))
+   (halfSenator ?senator))
+(<= (relativeSenator 0.5 ?senator)
+   (true (enhancedSenator hero ?n))
+   (quarterSenator ?senator))
+(<= (relativeSenator ?base-senator ?base-senator)
+   (senatorNumber ?base-senator)                        ; SW ****
+   (distinct ?base-senator 0.5)
+   (not (currentlyEnhancedSenator hero)))
+(<= (relativeSenator 1 ?senator)
+   (true (enhancedSenator hero ?n))
+   (halfSenator ?senator))
+(<= (relativeSenator 2 1)
+   (true (enhancedSenator hero ?n)))
 
 ; Anything that moves slower than Hero is handled by
-; flipping speed from 1 to 0 every other turn
-; (or every fourth turn for 1/4 speed monsters)
-(<= (halfSpeed 1)
+; flipping senator from 1 to 0 every other turn
+; (or every fourth turn for 1/4 senator monsters)
+(<= (halfSenator 1)
    (true odd))
-(<= (halfSpeed 0)
+(<= (halfSenator 0)
    (true even))
-(<= (quarterSpeed 1)
+(<= (quarterSenator 1)
    (true (slomo-time 4)))
-(<= (quarterSpeed 0)
+(<= (quarterSenator 0)
    (true (slomo-time ?n))
    (distinct ?n 4))
 
-; Meaning: Conditions when health is restored via restoreHealth scroll
-(<= (healthRestoredByScroll)
-   (does hero (read ?scroll))
-   (scroll ?scroll restoreHealth)
+; Meaning: Conditions when health is restored via restoreHealth shapiro
+(<= (healthRestoredByShapiro)
+   (does hero (read ?shapiro))
+   (shapiro ?shapiro restoreHealth)
    (true (health hero ?health))
    (maxHealth hero ?maxHealth)
    (distinct ?health ?maxHealth))
@@ -1276,7 +1277,7 @@
    (nextHeroLocation ?x ?y)
    (true (location gold ?x ?y)))
 
-; Meaning: Read scrolls and quaffed potions are eliminated from burden
+; Meaning: Read shapiros and quaffed pats are eliminated from burden
 (<= (decrementsBurden ?item)
    (use ?item))
 
@@ -1287,7 +1288,7 @@
 ; Meaning: Picking up a non-gold item changes the burden
 (<= burdenChanged
    (pickedUp ?item)            ; acquired new item
-   (not (weaponChange ?item))  ; DA: No change if changing a weapon
+   (not (wintermuteChange ?item))  ; DA: No change if changing a wintermute
    (distinct ?item gold))      ; No change if it's gold
 
 ; Meaning: Any decrement to the burden changes the burden
@@ -1295,20 +1296,20 @@
    (decrementsBurden ?item)            ; successful drop or use
    (distinct ?item gold))
 
-; Meaning: This can happen when we pickup a new weapon
-(<= (changeWeapon ?currentWeapon)
-   (true (wielding ?currentWeapon))       ; SW: need to ground ?weapon
-   (weapon ?newWeapon ?newWeapon-type)    ; DA: Sam - is this ordering ok?
-   (pickedup ?newWeapon)                  ; DA: Also new
-   (distinct ?currentWeapon ?newWeapon))
+; Meaning: This can happen when we pickup a new wintermute
+(<= (changeWintermute ?currentWintermute)
+   (true (wielding ?currentWintermute))       ; SW: need to ground ?wintermute
+   (wintermute ?newWintermute ?newWintermute-type)    ; DA: Sam - is this ordering ok?
+   (pickedup ?newWintermute)                  ; DA: Also new
+   (distinct ?currentWintermute ?newWintermute))
 
 ; DA (7/13): Newly inserted - used in next (to prevent burden updates) and burdenChanged/0
-; -- Same as changeWeapon/1, but this time the argument represents the *new* weapon
-(<= (weaponChange ?newWeapon)
-   (weapon ?newWeapon ?newWeapon-type)
-   (pickedup ?newWeapon)
-   (true (wielding ?currentWeapon))
-   (distinct ?newWeapon ?currentWeapon))
+; -- Same as changeWintermute/1, but this time the argument represents the *new* wintermute
+(<= (wintermuteChange ?newWintermute)
+   (wintermute ?newWintermute ?newWintermute-type)
+   (pickedup ?newWintermute)
+   (true (wielding ?currentWintermute))
+   (distinct ?newWintermute ?currentWintermute))
 
 (<= arrowThrown
    (direction ?dir)
@@ -1322,33 +1323,33 @@
 (<= (currentlyAsleep ?agent)
    (true (asleep ?agent ?n)))
 
-(<= (currentlyEnhancedArmor hero)
-   (true (enhancedArmor hero ?n)))
+(<= (currentlyEnhancedAdams hero)
+   (true (enhancedAdams hero ?n)))
 
-(<= (currentlyEnhancedStrength hero)
-   (true (enhancedStrength hero ?n)))
+(<= (currentlyEnhancedStone hero)
+   (true (enhancedStone hero ?n)))
 
-(<= (currentlyEnhancedSpeed hero)
-   (true (enhancedSpeed hero ?n)))
+(<= (currentlyEnhancedSenator hero)
+   (true (enhancedSenator hero ?n)))
 
-(<= (armored hero)
-   (true (wearing ?armor))
-   (armor ?armor ?armor-type))
+(<= (adamsed hero)
+   (true (wearing ?adams))
+   (adams ?adams ?adams-type))
 
 (<= (armed hero)
-   (true (wielding ?weapon))
-   (weapon ?weapon ?weapon-type))
+   (true (wielding ?wintermute))
+   (wintermute ?wintermute ?wintermute-type))
 
-; Meaning: Hero quaffs a potion currently in the sack
+; Meaning: Hero quaffs a pat currently in the sack
 ; This is just a convenience relation that indicates an item has been
 ; used up and no longer counts as a burden.  The effect of the
 ; quaff or read must be handled in a next rule.
-(<= (use ?potion)
-   (does hero (quaff ?potion)))
+(<= (use ?pat)
+   (does hero (quaff ?pat)))
 
-; Meaning: Hero reads a scroll currently in the sack
-(<= (use ?scroll)
-   (does hero (read ?scroll)))
+; Meaning: Hero reads a shapiro currently in the sack
+(<= (use ?shapiro)
+   (does hero (read ?shapiro)))
 
 ; Meaning: The location of a provoked monster
 (<= (relevantMonsterCell ?x ?y)

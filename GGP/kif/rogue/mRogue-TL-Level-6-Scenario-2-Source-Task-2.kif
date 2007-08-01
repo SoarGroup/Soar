@@ -1,8 +1,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; micro-Rogue (mRogue) GDL Rule Set
-;;; Example: TL Level 8, Scenario 1, Source Task 
+;;; Example: TL Level 6, Scenario 2, Source Task 2
 ;;; See init/1 between ">>>>>" and "<<<<<" for unique aspects of this task
-;;; However, the first clause of goal/2 has also changed!
 ; David W. Aha (NRL)
 ; 2007 July 31
 ; 
@@ -13,11 +12,11 @@
 ;    012345     - = Horizontal wall
 ;   +------+    | = Vertical wall
 ;  0|......|    . = A room location
-;  1|.wa...|    # = A corridor location
-;  2|@s.S.*|    @ = hero
+;  1|..a...|    # = A corridor location
+;  2|@p.H.*|    @ = hero
 ;  3+----#-+    a = armor, p = potion, s = scroll,
 ;  4|...!.p|    w = weapon, ! = amulet, * = gold
-;  5|..Hs.>|    > = exit
+;  5|..Ks.>|    > = exit
 ;   +------+    K = kestral
 ;               H = hobgoblin
 ;               B = bat
@@ -100,39 +99,37 @@
 ; >>>>>
 ; Monsters and their types
 (monster hobgoblin1 hobgoblin)
-(monster snake1 snake)
+(monster kestral1 snake)
 
 ; Initial health of Hero and monsters (hero's health is defined in 2.3)
 (init (health hobgoblin1 5)) 
-(init (health snake1 4))
+(init (health kestral1 2))
 
 ; Items (that can be picked up by Hero) (amulet & gold are defined in 2.3)
 (item armor1)
-(item weapon1)
 (item potion1)
+(item potion2)
 (item scroll1)
-(item scroll2)
 
 ; Item typings (note: a bow includes a quiver and a set of arrows)
-(weapon weapon1 mace)
-(potion potion1 strength)
+(armor armor1 bandedmail)
+(potion potion1 invisibility)
+(potion potion2 strength)
 (scroll scroll1 sleep)
-(potion scroll2 armorEnhance)
 
 ; Locations of character and items (North Room)
-(init (location weapon1 1 1))
-(init (location armor1 2 1))
+(init (location armor1 2 1))         
 (init (location hero 0 2))           ; our Hero
-(init (location scroll1 1 2))
-(init (location snake1 3 2))         ; Monster
+(init (location potion1 1 2))
+(init (location hobgoblin1 3 2))     ; Monster
 (init (location gold 5 2))
 
 ; Locations of character and items (South Room)
 (init (location amulet 3 4))
-(init (location potion1 5 4))
-(init (location hobgoblin1 2 5))     ; Monster
-(init (location scroll2 3 5))
-(init (location exit 5 5))           ; exit
+(init (location potion2 5 4))
+(init (location kestral1 2 5))     ; Monster
+(init (location scroll1 3 5))
+(init (location exit 5 5))         ; exit
 ; <<<<<
 
 ;---------------------------------------------------------------------------
@@ -632,14 +629,7 @@
 (<= (goal hero 100)
    (not (true (health hero 0)))    ; Endgame
    (true (carrying amulet))        ; The Hero must carry the amulet
-   atExit                          ; Endgame
-   ; The following are added for TL level 8's source task
-   (monster ?monster ?monstertype)
-   (true (health ?monster 0))      ; The Hero must have killed a monster
-   (weapon ?weapon ?weapontype)
-   (true (carrying ?weapon))       ; The Hero must wield a weapon
-   (armor ?armor ?armortype)
-   (true (carrying ?armor)))       ; The Hero must wear armor
+   atExit)                         ; Endgame
 
 ; Meaning: 75 points if hero has obtained the amulet but not exited
 (<= (goal hero 75)
@@ -835,10 +825,11 @@
     (singleStepTowardsHero ?startx ?starty ?finalx ?finaly))
 
 (<= (nStepsTowardsHero 2 ?startx ?starty ?finalx ?finaly)
-    (cellNearMonster ?startx ?starty) ; SW
-    (cellNearMonster ?finalx ?finaly) ; SW
-    (singleStepTowardsHero ?startx ?starty ?x2 ?y2)
-    (cellNearMonster ?x2 ?y2) ; SW
+  (cellNearMonster ?startx ?starty)
+  (cellNearMonster ?finalx ?finaly)
+  (singleStepTowardsHero ?startx ?starty ?x2 ?y2)
+  (cellNearMonster ?x2 ?y2)
+  (singleStepTowardsHero ?x2 ?y2 ?finalx ?finaly))
 
 ; Meaning: Take one step toward destination only if you won't run into hero.
 (<= (singleStepTowardsHero ?startx ?starty ?nextx ?nexty)

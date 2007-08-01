@@ -1,9 +1,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; micro-Rogue (mRogue) GDL Rule Set
-;;; Example: TL Level 9, Scenario 1, Target Task (random names)
+;;; Example: TL Level 8, Scenario 1, Source Task 
 ;;; See init/1 between ">>>>>" and "<<<<<" for unique aspects of this task
-;;; Except: Here we obfuscate the following throughout this file:
-;;; - Names of monsters, items (except gold and amulet), and their types
+;;; However, the first clause of goal/2 has also changed!
 ; David W. Aha (NRL)
 ; 2007 July 31
 ; 
@@ -14,11 +13,11 @@
 ;    012345     - = Horizontal wall
 ;   +------+    | = Vertical wall
 ;  0|......|    . = A room location
-;  1|.awH..|    # = A corridor location
-;  2|.p@.*.|    @ = hero
-;  3+---#--+    a = armor, p = potion, s = scroll,
-;  4|.>..!.|    w = weapon, ! = amulet, * = gold
-;  5|..Ksp.|    > = exit
+;  1|.wa...|    # = A corridor location
+;  2|@s.S.*|    @ = hero
+;  3+----#-+    a = armor, p = potion, s = scroll,
+;  4|...!.p|    w = weapon, ! = amulet, * = gold
+;  5|..Hs.>|    > = exit
 ;   +------+    K = kestral
 ;               H = hobgoblin
 ;               B = bat
@@ -99,43 +98,41 @@
 ; 2.1 Things that differ among tasks
 ;---------------------------------------------------------------------------
 ; >>>>>
-; **NOTE! In this task, there's also a change to the corridor's location**
 ; Monsters and their types
-(monster hobo1 hobo)
-(monster kite1 kite)
+(monster hobgoblin1 hobgoblin)
+(monster snake1 snake)
 
 ; Initial health of Hero and monsters (hero's health is defined in 2.3)
-(init (health hobo1 5)) 
-(init (health kite1 2))
+(init (health hobgoblin1 5)) 
+(init (health snake1 4))
 
 ; Items (that can be picked up by Hero) (amulet & gold are defined in 2.3)
-(item aspirin1)
-(item wolly1)
-(item peanut1)
-(item peanut2)
-(item script1)
+(item armor1)
+(item weapon1)
+(item potion1)
+(item scroll1)
+(item scroll2)
 
 ; Item typings (note: a bow includes a quiver and a set of arrows)
-(aspirin aspirin1 bummer)
-(wolly wolly1 swisscheese)
-(peanut peanut1 invite)
-(peanut peanut2 sleekness)
-(script script1 slurp)
+(weapon weapon1 mace)
+(potion potion1 strength)
+(scroll scroll1 sleep)
+(potion scroll2 armorEnhance)
 
 ; Locations of character and items (North Room)
-(init (location aspirin1 1 1))         
-(init (location wolly1 2 1))           
-(init (location hobo1 3 1))         ; Monster
-(init (location peanut1 1 2))
-(init (location hero 2 2))           ; our Hero
-(init (location gold 4 2))
+(init (location weapon1 1 1))
+(init (location armor1 2 1))
+(init (location hero 0 2))           ; our Hero
+(init (location scroll1 1 2))
+(init (location snake1 3 2))         ; Monster
+(init (location gold 5 2))
 
 ; Locations of character and items (South Room)
-(init (location exit 1 4))           ; exit
-(init (location amulet 4 4))
-(init (location kite1 2 5))     ; Monster
-(init (location script1 3 5))
-(init (location peanut2 4 5))
+(init (location amulet 3 4))
+(init (location potion1 5 4))
+(init (location hobgoblin1 2 5))     ; Monster
+(init (location scroll2 3 5))
+(init (location exit 5 5))           ; exit
 ; <<<<<
 
 ;---------------------------------------------------------------------------
@@ -146,12 +143,12 @@
 (room 0 0 5 2)    ; North room
 (room 0 4 5 5)    ; South room
 
-; Corridor location: <x y> **changed**
-(corridor 3 3) ; Corridor/doorway between north and south rooms  
-(init (blocked west 3 3))
-(init (blocked east 3 3))
+; Corridor location: <x y>
+(corridor 4 3) ; Corridor/doorway between north and south rooms
+(init (blocked west 4 3))
+(init (blocked east 4 3))
 
-; North room  **changed: to accommodate change in door location**
+; North room
 (init (blocked west 0 0))
 (init (blocked west 0 1))
 (init (blocked west 0 2))
@@ -166,17 +163,17 @@
 (init (blocked east 5 2))
 (init (blocked south 0 2))
 (init (blocked south 1 2))
-(init (blocked south 2 2))   
-(init (blocked south 4 2))
+(init (blocked south 2 2))
+(init (blocked south 3 2))
 (init (blocked south 5 2))
 
-; South room  **changed: to accommodate change in door location**
+; South room
 (init (blocked west 0 4))
 (init (blocked west 0 5))
 (init (blocked north 0 4))
 (init (blocked north 1 4))
 (init (blocked north 2 4))
-(init (blocked north 4 4))
+(init (blocked north 3 4))
 (init (blocked north 5 4))
 (init (blocked east 5 4))
 (init (blocked east 5 5))
@@ -266,23 +263,23 @@
    (does hero (drop ?item))
    (true (location hero ?x ?y)))
 
-; DA (7/13): Must also drop a wolly if picking up another
-(<= (next (location ?oldWolly ?x ?y))
-   (changeWolly ?oldWolly)            ; DA: We pickedup another!
+; DA (7/13): Must also drop a weapon if picking up another
+(<= (next (location ?oldWeapon ?x ?y))
+   (changeWeapon ?oldWeapon)            ; DA: We pickedup another!
    (true (location hero ?x ?y)))
 
 ;----------------------------------------------------------------------
 ; 3.2 Health updates for hero
 ;     - If the hero is attacked, his health is decreased by difference
 ;       of 1 + (monster's attack value - hero defense value)
-;     - Health goes to max if hero reads restoreHealth script
+;     - Health goes to max if hero reads restoreHealth scroll
 ;----------------------------------------------------------------------
 
 ; Meaning: Hero incurs damage
 ; Note: totalMonsterDamage maxes out at hero's current health, so
 ; we shouldn't need to check for negative health here.
-; DA: If the restore health script is simultaneously read, and
-; monster damage is nonzero, then the script has no effect!
+; DA: If the restore health scroll is simultaneously read, and
+; monster damage is nonzero, then the scroll has no effect!
 (<= (next (health hero ?hpNew))
    (totalMonsterDamage ?hitPointsLost)
    (> ?hitPointsLost 0)
@@ -292,7 +289,7 @@
 ; Hero recovers a hit point (HP) iff not attacked/etc.
 (<= (next (health hero ?hpNew))
     (totalMonsterDamage 0)
-    (not (healthRestoredByScript))
+    (not (healthRestoredByScroll))
     (true (health hero ?hpOld))
     (maxHealth hero ?maxHealth)
     (> ?maxHealth ?hpOld)
@@ -304,16 +301,16 @@
    (maxHealth hero ?maxHealth)
    (true (health hero ?maxHealth)))
 
-; Meaning: Hero read a restoreHealth script to regain maximum health
+; Meaning: Hero read a restoreHealth scroll to regain maximum health
 (<= (next (health hero ?maxHealth))
    (totalMonsterDamage 0)
-   (healthRestoredByScript)
+   (healthRestoredByScroll)
    (maxHealth hero ?maxHealth))
 
 ;----------------------------------------------------------------------
 ; 3.3 Health updates for monsters
 ;     - If attacked by hero, health decreases by attack value of hero's
-;       wielded wolly!
+;       wielded weapon!
 ;     - Simplification: Only arrows can be thrown, and only when hero
 ;       wields a bow
 ;----------------------------------------------------------------------
@@ -361,7 +358,7 @@
 
 ;----------------------------------------------------------------------
 ; 3.4 Burden-related updates
-;     - Sack, armor, and wollyry
+;     - Sack, armor, and weaponry
 ;----------------------------------------------------------------------
 
 ;--------------------------------------------------
@@ -376,7 +373,7 @@
 ; Meaning: Items in sack stay in sack unless dropped
 (<= (next (carrying ?item))
    (true (carrying ?item))
-   (not (changeWolly ?item))         ; It's not a wolly we're auto-dropping
+   (not (changeWeapon ?item))         ; It's not a weapon we're auto-dropping
    (not (decrementsBurden ?item)))
 
 ; Meaning: Maintain size of burden if it's not changed
@@ -389,11 +386,11 @@
 (<= (next (burden ?newBurden))
    (pickedUp ?item)                   ; Object-interaction
    (distinct ?item gold)
-   (not (wollyChange ?item))         ; DA (7/13): burden doesn't change when changing wollys
+   (not (weaponChange ?item))         ; DA (7/13): burden doesn't change when changing weapons
    (true (burden ?oldBurden))
    (succ ?oldBurden ?newBurden))      ; Arithmetic
 
-; Meaning: Decrement burden by dropping an item or using a script or peanut
+; Meaning: Decrement burden by dropping an item or using a scroll or potion
 (<= (next (burden ?newBurden))
    (decrementsBurden ?item)
    (true (burden ?oldBurden))
@@ -431,45 +428,45 @@
    (not (does hero (drop ?item))))  ; note: drops can occur only if sack is full
 
 ; Meaning: Hero is wearing armor that is newly picked up
-(<= (next (wearing ?aspirin))
-   (aspirin ?aspirin ?aspirin-type)
-   (pickedup ?aspirin))
+(<= (next (wearing ?armor))
+   (armor ?armor ?armor-type)
+   (pickedup ?armor))
 
 ;--------------------------------------------------
-; 3.4.4: Wolly-wielding relations
+; 3.4.4: Weapon-wielding relations
 ;--------------------------------------------------
 
-; Meaning: Continue wielding a wolly wielded unless exchanging or dropping
-(<= (next (wielding ?wolly))
-   (true (wielding ?wolly))
-   (not (changeWolly ?wolly))      
-   (not (does hero (drop ?wolly)))) ; note: drops can occur only if sack is full
+; Meaning: Continue wielding a weapon wielded unless exchanging or dropping
+(<= (next (wielding ?weapon))
+   (true (wielding ?weapon))
+   (not (changeWeapon ?weapon))      
+   (not (does hero (drop ?weapon)))) ; note: drops can occur only if sack is full
 
-; Meaning: Wield a wolly automatically if it is picked up
-; Note: Any currently-wielded wolly would be dropped (elsewhere)
-(<= (next (wielding ?wolly))
-   (wolly ?wolly ?wolly-type)
-   (pickedup ?wolly))
+; Meaning: Wield a weapon automatically if it is picked up
+; Note: Any currently-wielded weapon would be dropped (elsewhere)
+(<= (next (wielding ?weapon))
+   (weapon ?weapon ?weapon-type)
+   (pickedup ?weapon))
 
 ;--------------------------------------------------
-; 3.4.5: Slurp relations
+; 3.4.5: Sleep relations
 ;--------------------------------------------------
 
-; Meaning: Reading the slurp script induces 2 turns of slurp
-(<= (next (aslurp hero 2))
-   (does hero (read ?script))
-   (script ?script slurpInduce))
+; Meaning: Reading the sleep scroll induces 2 turns of sleep
+(<= (next (asleep hero 2))
+   (does hero (read ?scroll))
+   (scroll ?scroll sleepInduce))
 
-; Meaning: Slurp decrement
-(<= (next (aslurp hero ?n))
-   (true (aslurp hero ?old-n))
+; Meaning: Sleep decrement
+(<= (next (asleep hero ?n))
+   (true (asleep hero ?old-n))
    (distinct ?old-n 1)
    (- ?old-n 1 ?n))
 
-; Meaning: Let slurping monsters slurp
-(<= (next (aslurp ?monster ?n))
+; Meaning: Let sleeping monsters sleep
+(<= (next (asleep ?monster ?n))
    (monster ?monster ?monster-type)
-   (true (aslurp ?monster ?n))
+   (true (asleep ?monster ?n))
    (true (health ?monster ?hp))
    (distinct ?hp 0)
    (not (provoked ?monster))) ; in this case, attacked or hit with an arrow
@@ -480,8 +477,8 @@
 
 ;;; Meaning: hero is invisible to monsters for the next 5 turns
 (<= (next (invisible hero 5))
-   (does hero (quaff ?peanut))
-   (peanut ?peanut invite))
+   (does hero (quaff ?potion))
+   (potion ?potion invisibility))
 
 (<= (next (invisible hero ?n))
    (true (invisible hero ?old-n))
@@ -489,39 +486,39 @@
    (- ?old-n 1 ?n))
 
 ;--------------------------------------------------
-; 3.4.7: Enhanced Speed, Sleekness, Armor
+; 3.4.7: Enhanced Speed, Strength, Armor
 ;--------------------------------------------------
 
 ; Meaning: Hero's speed is enhanced by 1 for 5 turns
 (<= (next (enhancedSpeed hero 5))
-   (does hero (quaff ?peanut))
-   (peanut ?peanut speed))
+   (does hero (quaff ?potion))
+   (potion ?potion speed))
 
 (<= (next (enhancedSpeed hero ?n))
    (true (enhancedSpeed hero ?old-n))
    (distinct ?old-n 1)
    (- ?old-n 1 ?n))
 
-; Meaning: Hero's attack sleekness is enhanced by 1 for 5 turns
-(<= (next (enhancedSleekness hero 5))
-   (does hero (quaff ?peanut))
-   (peanut ?peanut sleekness))
+; Meaning: Hero's attack strength is enhanced by 1 for 5 turns
+(<= (next (enhancedStrength hero 5))
+   (does hero (quaff ?potion))
+   (potion ?potion strength))
 
-(<= (next (enhancedSleekness hero ?n))
-   (true (enhancedSleekness hero ?old-n))
+(<= (next (enhancedStrength hero ?n))
+   (true (enhancedStrength hero ?old-n))
    (distinct ?old-n 1)
    (- ?old-n 1 ?n))
 
-(<= (next (enhancedAspirin hero 5))
-   (does hero (read ?script))
-   (script ?script aspirinEnhance)
-   (true (wearing ?aspirin))  ; You have to be wearing armor first
-   (aspirin ?aspirin ?aspirin-type)
-   (aspirinsleekness ?aspirin-type ?amt)
+(<= (next (enhancedArmor hero 5))
+   (does hero (read ?scroll))
+   (scroll ?scroll armorEnhance)
+   (true (wearing ?armor))  ; You have to be wearing armor first
+   (armor ?armor ?armor-type)
+   (armorstrength ?armor-type ?amt)
    (>= 3 ?amt))
 
-(<= (next (enhancedAspirin hero ?n))
-    (true (enhancedAspirin hero ?old-n))
+(<= (next (enhancedArmor hero ?n))
+    (true (enhancedArmor hero ?old-n))
     (distinct ?old-n 1)
     (- ?old-n 1 ?n))
 
@@ -593,7 +590,7 @@
 ; Meaning: The hero may move anywhere within rooms and corridors
 ; - BUT: Moving to a monster's location is an attack, not a move!
 (<= (legal hero (move ?dir))
-   (not (currentlyAslurp hero))
+   (not (currentlyAsleep hero))
    (true (location hero ?xOld ?yOld))
    (direction ?dir)                        ; Generic spatial
    (nextCell ?dir ?xOld ?yOld ?xNew ?yNew) ; Movement
@@ -603,26 +600,26 @@
 (<= (legal hero (drop ?item))
    (true (burden ?max-burden))             ; New constraint (7/13)
    (maxBurden ?max-burden)                 ; New constraint (7/13)
-   (not (currentlyAslurp hero))
+   (not (currentlyAsleep hero))
    (true (carrying ?item)))
 
-; Meaning: Hero can read a script (being carried)
-(<= (legal hero (read ?script))
-   (not (currentlyAslurp hero))
-   (true (carrying ?script))
-   (script ?script ?scriptType))            ; Init
+; Meaning: Hero can read a scroll (being carried)
+(<= (legal hero (read ?scroll))
+   (not (currentlyAsleep hero))
+   (true (carrying ?scroll))
+   (scroll ?scroll ?scrollType))            ; Init
 
-; Meaning: Hero can quaff a peanut (being carried)
-(<= (legal hero (quaff ?peanut))
-   (not (currentlyAslurp hero))
-   (true (carrying ?peanut))
-   (peanut ?peanut ?peanutType))            ; Init
+; Meaning: Hero can quaff a potion (being carried)
+(<= (legal hero (quaff ?potion))
+   (not (currentlyAsleep hero))
+   (true (carrying ?potion))
+   (potion ?potion ?potionType))            ; Init
 
 ; Meaning: Hero can throw an arrow (if carrying a non-empty quiver)
 (<= (legal hero (throw arrow ?dir))
-   (not (currentlyAslurp hero))
-   (true (wielding ?wolly))
-   (wolly ?wolly bow)                    ; Init
+   (not (currentlyAsleep hero))
+   (true (wielding ?weapon))
+   (weapon ?weapon bow)                    ; Init
    (true (quiverSize ?numarrows))
    (> ?numarrows 0)
    (direction ?dir))                       ; Generic spatial
@@ -635,7 +632,14 @@
 (<= (goal hero 100)
    (not (true (health hero 0)))    ; Endgame
    (true (carrying amulet))        ; The Hero must carry the amulet
-   atExit)                         ; Endgame
+   atExit                          ; Endgame
+   ; The following are added for TL level 8's source task
+   (monster ?monster ?monstertype)
+   (true (health ?monster 0))      ; The Hero must have killed a monster
+   (weapon ?weapon ?weapontype)
+   (true (carrying ?weapon))       ; The Hero must wield a weapon
+   (armor ?armor ?armortype)
+   (true (carrying ?armor)))       ; The Hero must wear armor
 
 ; Meaning: 75 points if hero has obtained the amulet but not exited
 (<= (goal hero 75)
@@ -700,35 +704,35 @@
    (nextHeroLocation ?x ?y)
    (monster ?monster ?monster-type)
    (attackedByMonster ?monster ?x ?y)
-   (monsterSleekness ?monster-type ?sleekness)
-   (totalMonsterDamage1 ?monster ?sleekness ?x ?y ?damage))
+   (monsterStrength ?monster-type ?strength)
+   (totalMonsterDamage1 ?monster ?strength ?x ?y ?damage))
 
 ; Meaning: No second monster attack
-(<= (totalMonsterDamage1 ?monster ?sleekness ?x ?y ?damage)
+(<= (totalMonsterDamage1 ?monster ?strength ?x ?y ?damage)
    (nextHeroLocation ?x ?y) ; SW added
    (monster ?monster ?monster-type) ; SW added
    (attackedByMonster ?monster ?x ?y) ; SW added   ****
    (not (attackedBy2ndMonster ?monster ?x ?y))
-   (amountOfMonsterDamage ?sleekness ?d1)
+   (amountOfMonsterDamage ?strength ?d1)
    (true (health hero ?hp))
    (min ?d1 ?hp ?damage))
 
 ; Meaning: Check second monster damage
-(<= (totalMonsterDamage1 ?monster1 ?sleekness ?x ?y ?damage)
-   (totalMonsterDamage2 ?monster1 ?sleekness ?x ?y ?damage))
+(<= (totalMonsterDamage1 ?monster1 ?strength ?x ?y ?damage)
+   (totalMonsterDamage2 ?monster1 ?strength ?x ?y ?damage))
 
 ; Meaning: combined damage from two monsters
-(<= (totalMonsterDamage2 ?monster1 ?sleekness1 ?x ?y ?damage)
+(<= (totalMonsterDamage2 ?monster1 ?strength1 ?x ?y ?damage)
    (nextHeroLocation ?x ?y) ; SW added
    (monster ?monster2 ?monster-type)
    (monster ?monster1 ?monster-type) ; SW added   ****
    (distinct ?monster2 ?monster1)
    (attackedByMonster ?monster1 ?x ?y) ; SW added   ****
    (attackedByMonster ?monster2 ?x ?y)
-   (monsterSleekness ?monster-type ?sleekness1) ; SW added  ****
-   (monsterSleekness ?monster-type ?sleekness2)
-   (+ ?sleekness1 ?sleekness2 ?sleekness)
-   (amountOfMonsterDamage ?sleekness ?combined-damage)
+   (monsterStrength ?monster-type ?strength1) ; SW added  ****
+   (monsterStrength ?monster-type ?strength2)
+   (+ ?strength1 ?strength2 ?strength)
+   (amountOfMonsterDamage ?strength ?combined-damage)
    (true (health hero ?hp))
    (min ?combined-damage ?hp ?damage))
 
@@ -754,59 +758,59 @@
    (attackedByMonster ?monster1 ?x ?y))
 
 ; Meaning: No damage if monster's attack is less than defense
-; Offensive-sleekness is the combined sleekness of attacking monsters.
+; Offensive-strength is the combined strength of attacking monsters.
 ; - Open to debate
-(<= (amountOfMonsterDamage ?offensive-sleekness 0)
+(<= (amountOfMonsterDamage ?offensive-strength 0)
    (attackedByMonster ?monster ?x ?y)                  ; SW   ****
    (monster ?monster ?monster-type)                    ; SW   ****
-   (monsterSleekness ?monster-type ?offensive-sleekness) ; SW   ****
+   (monsterStrength ?monster-type ?offensive-strength) ; SW   ****
    (heroDefense ?defense)                          ; Battle
-   (> ?defense ?offensive-sleekness)) ; SW ****: changed from >=, bug? Would imply that no damage occurs if offense == defense..
+   (> ?defense ?offensive-strength)) ; SW ****: changed from >=, bug? Would imply that no damage occurs if offense == defense..
 
 ; Meaning: Attacks whose value is equal to or greater than armor value
 ; - Open to debate (i.e., Attack value is 1 + (offense - defense))
-(<= (amountOfMonsterDamage ?offensive-sleekness ?hitPointsLost)
+(<= (amountOfMonsterDamage ?offensive-strength ?hitPointsLost)
    (attackedByMonster ?monster ?x ?y)                  ; SW   ****
    (monster ?monster ?monster-type)                    ; SW   ****
-   (monsterSleekness ?monster-type ?offensive-sleekness) ; SW   ****
+   (monsterStrength ?monster-type ?offensive-strength) ; SW   ****
    (heroDefense ?defense)                          ; Battle
-   (>= ?offensive-sleekness ?defense) ; SW: this seems necessary
-   (-  ?offensive-sleekness ?defense ?diff)         ; Arithmetic
+   (>= ?offensive-strength ?defense) ; SW: this seems necessary
+   (-  ?offensive-strength ?defense ?diff)         ; Arithmetic
    (+ ?diff 1 ?hitPointsLost))                     ; Arithmetic
 
-; Meaning: The current defensive sleekness of armor worn (if any)
+; Meaning: The current defensive strength of armor worn (if any)
 (<= (heroDefense 1)
-   (not (aspirined hero)))
+   (not (armored hero)))
 
 (<= (heroDefense ?defense)
-   (not (currentlyEnhancedAspirin hero))
+   (not (currentlyEnhancedArmor hero))
    (true (wearing ?item))
-   (aspirin ?item ?aspirin-type)
-   (aspirinsleekness ?aspirin-type ?defense))
+   (armor ?item ?armor-type)
+   (armorstrength ?armor-type ?defense))
 
 (<= (heroDefense ?defense)
    (int ?n)         ; ?n is how many turns it will remain in effect (0 - 5)
-   (true (enhancedAspirin hero ?n))
+   (true (enhancedArmor hero ?n))
    (true (wearing ?item))
-   (aspirin ?item ?aspirin-type)
-   (aspirinsleekness ?aspirin-type ?base-defense)
+   (armor ?item ?armor-type)
+   (armorstrength ?armor-type ?base-defense)
    (+ ?base-defense 1 ?defense))
 
-; Meaning: The current offense sleekness of wollys wielded (if any)
+; Meaning: The current offense strength of weapons wielded (if any)
 (<= (heroOffense 1)
    (not (armed hero)))
 
 (<= (heroOffense ?offense)
-   (not (currentlyEnhancedSleekness hero))
-   (true (wielding ?wolly))
-   (wolly ?wolly ?wolly-type)                  ; Init
-   (wollySleekness ?wolly-type ?offense))        ; Generic wolly
+   (not (currentlyEnhancedStrength hero))
+   (true (wielding ?weapon))
+   (weapon ?weapon ?weapon-type)                  ; Init
+   (weaponStrength ?weapon-type ?offense))        ; Generic weapon
 
 (<= (heroOffense ?offense)
-   (currentlyEnhancedSleekness hero)
-   (true (wielding ?wolly))
-   (wolly ?wolly ?wolly-type)                  ; Init
-   (wollySleekness ?wolly-type ?offense))        ; Generic wolly SW: fixed variable name
+   (currentlyEnhancedStrength hero)
+   (true (wielding ?weapon))
+   (weapon ?weapon ?weapon-type)                  ; Init
+   (weaponStrength ?weapon-type ?offense))        ; Generic weapon SW: fixed variable name
 
 ; Meaning: Hero attacks the monster
 (<= (monsterAttacked ?monster)
@@ -831,10 +835,11 @@
     (singleStepTowardsHero ?startx ?starty ?finalx ?finaly))
 
 (<= (nStepsTowardsHero 2 ?startx ?starty ?finalx ?finaly)
-    (cellNearMonster ?startx ?starty) ; SW
-    (cellNearMonster ?finalx ?finaly) ; SW
-    (singleStepTowardsHero ?startx ?starty ?x2 ?y2)
-    (cellNearMonster ?x2 ?y2) ; SW
+  (cellNearMonster ?startx ?starty)
+  (cellNearMonster ?finalx ?finaly)
+  (singleStepTowardsHero ?startx ?starty ?x2 ?y2)
+  (cellNearMonster ?x2 ?y2)
+  (singleStepTowardsHero ?x2 ?y2 ?finalx ?finaly))
 
 ; Meaning: Take one step toward destination only if you won't run into hero.
 (<= (singleStepTowardsHero ?startx ?starty ?nextx ?nexty)
@@ -986,19 +991,19 @@
 ; Generic monster relations
 ;----------------------------------------------------------------------
 (initialHealth   bat 3)
-(monsterSleekness bat 2)
+(monsterStrength bat 2)
 (monsterSpeed    bat 1)
 
-(initialHealth hobo 5)
-(monsterSleekness hobo 3)
-(monsterSpeed hobo 1)
+(initialHealth hobgoblin 5)
+(monsterStrength hobgoblin 3)
+(monsterSpeed hobgoblin 1)
 
-(initialHealth kite 2)
-(monsterSleekness kite 2)
-(monsterSpeed kite 2)
+(initialHealth kestral 2)
+(monsterStrength kestral 2)
+(monsterSpeed kestral 2)
 
 (initialHealth snake 4)
-(monsterSleekness snake 2)
+(monsterStrength snake 2)
 (monsterSpeed snake 0.5)
 
 (speedNumber 0.5) ; SW: need these so we can ground potential speeds.
@@ -1006,11 +1011,11 @@
 (speedNumber 2)
 
 ; Meaning: Monsters attack when in the same room as the hero.
-; If they're aslurp, they wake up when hero attacks them or
+; If they're asleep, they wake up when hero attacks them or
 ; throws an arrow at them.
 (<= (provoked ?monster)
    (monster ?monster ?monster-type)
-   (not (currentlyAslurp ?monster))
+   (not (currentlyAsleep ?monster))
    (true (location ?monster ?x ?y))
    (room ?lx ?ty ?rx ?by)
    (between ?lx  ?x ?rx)
@@ -1021,26 +1026,26 @@
 
 (<= (provoked ?monster)
    (monster ?monster ?monster-type)
-   (true (aslurp ?monster ?n))
+   (true (asleep ?monster ?n))
    (monsterAttacked ?monster))
 
 (<= (provoked ?monster)
    (monster ?monster ?monster-type)
-   (true (aslurp ?monster ?n))
+   (true (asleep ?monster ?n))
    (hitByArrow ?monster))
 
 ;----------------------------------------------------------------------
 ; Generic item relations
 ;----------------------------------------------------------------------
 
-; Armor sleekness (defense)
-(aspirinsleekness ringmail 2)
-(aspirinsleekness bummer 3)
+; Armor strength (defense)
+(armorstrength ringmail 2)
+(armorstrength bandedmail 3)
 
-; Wolly sleekness (offense)
-(wollySleekness mace 2)
-(wollySleekness swisscheese 3)
-(wollySleekness bow 1)
+; Weapon strength (offense)
+(weaponStrength mace 2)
+(weaponStrength sword 3)
+(weaponStrength bow 1)
 
 
 ;----------------------------------------------------------------------
@@ -1234,10 +1239,10 @@
    (true (slomo-time ?n))
    (distinct ?n 4))
 
-; Meaning: Conditions when health is restored via restoreHealth script
-(<= (healthRestoredByScript)
-   (does hero (read ?script))
-   (script ?script restoreHealth)
+; Meaning: Conditions when health is restored via restoreHealth scroll
+(<= (healthRestoredByScroll)
+   (does hero (read ?scroll))
+   (scroll ?scroll restoreHealth)
    (true (health hero ?health))
    (maxHealth hero ?maxHealth)
    (distinct ?health ?maxHealth))
@@ -1278,7 +1283,7 @@
    (nextHeroLocation ?x ?y)
    (true (location gold ?x ?y)))
 
-; Meaning: Read scripts and quaffed peanuts are eliminated from burden
+; Meaning: Read scrolls and quaffed potions are eliminated from burden
 (<= (decrementsBurden ?item)
    (use ?item))
 
@@ -1289,7 +1294,7 @@
 ; Meaning: Picking up a non-gold item changes the burden
 (<= burdenChanged
    (pickedUp ?item)            ; acquired new item
-   (not (wollyChange ?item))  ; DA: No change if changing a wolly
+   (not (weaponChange ?item))  ; DA: No change if changing a weapon
    (distinct ?item gold))      ; No change if it's gold
 
 ; Meaning: Any decrement to the burden changes the burden
@@ -1297,20 +1302,20 @@
    (decrementsBurden ?item)            ; successful drop or use
    (distinct ?item gold))
 
-; Meaning: This can happen when we pickup a new wolly
-(<= (changeWolly ?currentWolly)
-   (true (wielding ?currentWolly))       ; SW: need to ground ?wolly
-   (wolly ?newWolly ?newWolly-type)    ; DA: Sam - is this ordering ok?
-   (pickedup ?newWolly)                  ; DA: Also new
-   (distinct ?currentWolly ?newWolly))
+; Meaning: This can happen when we pickup a new weapon
+(<= (changeWeapon ?currentWeapon)
+   (true (wielding ?currentWeapon))       ; SW: need to ground ?weapon
+   (weapon ?newWeapon ?newWeapon-type)    ; DA: Sam - is this ordering ok?
+   (pickedup ?newWeapon)                  ; DA: Also new
+   (distinct ?currentWeapon ?newWeapon))
 
 ; DA (7/13): Newly inserted - used in next (to prevent burden updates) and burdenChanged/0
-; -- Same as changeWolly/1, but this time the argument represents the *new* wolly
-(<= (wollyChange ?newWolly)
-   (wolly ?newWolly ?newWolly-type)
-   (pickedup ?newWolly)
-   (true (wielding ?currentWolly))
-   (distinct ?newWolly ?currentWolly))
+; -- Same as changeWeapon/1, but this time the argument represents the *new* weapon
+(<= (weaponChange ?newWeapon)
+   (weapon ?newWeapon ?newWeapon-type)
+   (pickedup ?newWeapon)
+   (true (wielding ?currentWeapon))
+   (distinct ?newWeapon ?currentWeapon))
 
 (<= arrowThrown
    (direction ?dir)
@@ -1321,36 +1326,36 @@
 (<= (currentlyInvisible hero)
    (true (invisible hero ?n)))
 
-(<= (currentlyAslurp ?agent)
-   (true (aslurp ?agent ?n)))
+(<= (currentlyAsleep ?agent)
+   (true (asleep ?agent ?n)))
 
-(<= (currentlyEnhancedAspirin hero)
-   (true (enhancedAspirin hero ?n)))
+(<= (currentlyEnhancedArmor hero)
+   (true (enhancedArmor hero ?n)))
 
-(<= (currentlyEnhancedSleekness hero)
-   (true (enhancedSleekness hero ?n)))
+(<= (currentlyEnhancedStrength hero)
+   (true (enhancedStrength hero ?n)))
 
 (<= (currentlyEnhancedSpeed hero)
    (true (enhancedSpeed hero ?n)))
 
-(<= (aspirined hero)
-   (true (wearing ?aspirin))
-   (aspirin ?aspirin ?aspirin-type))
+(<= (armored hero)
+   (true (wearing ?armor))
+   (armor ?armor ?armor-type))
 
 (<= (armed hero)
-   (true (wielding ?wolly))
-   (wolly ?wolly ?wolly-type))
+   (true (wielding ?weapon))
+   (weapon ?weapon ?weapon-type))
 
-; Meaning: Hero quaffs a peanut currently in the sack
+; Meaning: Hero quaffs a potion currently in the sack
 ; This is just a convenience relation that indicates an item has been
 ; used up and no longer counts as a burden.  The effect of the
 ; quaff or read must be handled in a next rule.
-(<= (use ?peanut)
-   (does hero (quaff ?peanut)))
+(<= (use ?potion)
+   (does hero (quaff ?potion)))
 
-; Meaning: Hero reads a script currently in the sack
-(<= (use ?script)
-   (does hero (read ?script)))
+; Meaning: Hero reads a scroll currently in the sack
+(<= (use ?scroll)
+   (does hero (read ?scroll)))
 
 ; Meaning: The location of a provoked monster
 (<= (relevantMonsterCell ?x ?y)
