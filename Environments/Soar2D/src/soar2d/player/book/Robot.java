@@ -1,6 +1,9 @@
-package soar2d.player;
+package soar2d.player.book;
 
 import soar2d.*;
+import soar2d.player.MoveInfo;
+import soar2d.player.Player;
+import soar2d.player.PlayerConfig;
 import soar2d.world.CellObject;
 import soar2d.world.GridMap;
 

@@ -1,10 +1,13 @@
-package soar2d.player;
+package soar2d.player.eaters;
 
 import java.util.logging.Logger;
 
+import sml.Agent;
 import soar2d.Direction;
 import soar2d.Soar2D;
 import soar2d.World;
+import soar2d.player.MoveInfo;
+import soar2d.player.PlayerConfig;
 import soar2d.tosca2d.*;
 import tosca.*;
 
@@ -13,12 +16,11 @@ import tosca.*;
  *
  * Represents the communication between an agent and Tosca
  */
-public class ToscaEater {
+public class ToscaEater extends Eater {
 	protected Logger logger = Soar2D.logger;
 
 	protected ToscaInterface 	m_ToscaInterface ;
 	protected Library		 	m_Library ;
-	protected Eater 			m_Eater ;
 	protected EatersInputStateVariable m_InputVar ;
 	protected EatersOutputStateVariable m_OutputVar ;
 	protected int				m_EaterNumber ;
@@ -29,10 +31,8 @@ public class ToscaEater {
 	/** If true the agent will just walk forward until hitting an obstacle and then turn right.  If false, calls to Tosca code to reason about the move. */
 	private static final boolean kSimulatedOutput = false ;
 
-	public Eater getEater() 	{ return m_Eater ; }
-	
-	public ToscaEater( Eater eater ) {
-		m_Eater = eater ;
+	public ToscaEater( PlayerConfig playerConfig ) {
+		super(playerConfig);
 		
 		// Establish a link to the C++ library code
 		m_ToscaInterface = ToscaInterface.getTosca() ;
@@ -56,10 +56,12 @@ public class ToscaEater {
 	 * @see soar2d.player.Player#update(soar2d.World, java.awt.Point)
 	 */
 	public void update(java.awt.Point location) {
+		super.update(location);
+
 		// check to see if we've moved.
-		getEater().moved = (location.x != getEater().previousLocation.x) || (location.y != getEater().previousLocation.y);
-		if (getEater().moved) {
-			getEater().previousLocation = new java.awt.Point(location);
+		moved = (location.x != previousLocation.x) || (location.y != previousLocation.y);
+		if (moved) {
+			previousLocation = new java.awt.Point(location);
 		}
 		
 		Clock clock = m_Library.GetClock() ;
@@ -69,7 +71,7 @@ public class ToscaEater {
 		// Need to set the new value in the future (so choosing time+1)
 		m_InputVar.update(time+1, this, location) ;
 		
-		m_Eater.resetPointsChanged();
+		resetPointsChanged();
 	}
 	
 	/* (non-Javadoc)
@@ -79,7 +81,7 @@ public class ToscaEater {
 		// Switching to have tosca eater auto generate a direction so the eater
 		// moves w/o my having to enter something.
 		MoveInfo move = new MoveInfo() ;
-		java.awt.Point oldLocation = getEater().previousLocation ;
+		java.awt.Point oldLocation = previousLocation ;
 		
 		if (kSimulatedOutput)
 		{
@@ -89,7 +91,7 @@ public class ToscaEater {
 				move.move = true;
 				
 				// Tend to keep moving in the same direction as before
-				move.moveDirection = getEater().getFacingInt() + dir ;
+				move.moveDirection = getFacingInt() + dir ;
 				if (move.moveDirection > 4)
 					move.moveDirection = 1 ;
 				
@@ -117,7 +119,7 @@ public class ToscaEater {
 
 		//MoveInfo move = Soar2D.wm.getHumanMove(getEater().getColor());
 		// the facing depends on the move
-		getEater().setFacingInt(move.moveDirection);
+		setFacingInt(move.moveDirection);
 		logger.info("Tosca agent move direction " + move.moveDirection);
 		return move;
 	}
@@ -127,10 +129,4 @@ public class ToscaEater {
 		this.m_InputVar.mapReset();
 	}
 	
-	/* (non-Javadoc)
-	 * @see soar2d.player.Player#shutdown()
-	 */
-	public void shutdown() {
-		// nothing to do
-	}
 }
