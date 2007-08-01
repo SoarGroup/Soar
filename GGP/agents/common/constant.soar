@@ -347,3 +347,18 @@ sp {elaborate*generate*unique*queries-results
 -->
 	(<uq> ^res <res>)
 }
+
+#elaborate terminal depends on update-state-finished yes
+sp {apply*analyze-state*update-state-finished
+	(state <s> ^operator.name analyze-state)
+-->
+	(<s> ^update-state-finished yes)
+}
+
+# the next update-state operator reset the flag
+sp {apply*update-state*remove*update-state-finished
+	(state <s> ^operator.name update-state)
+	(<s> ^update-state-finished yes)
+-->
+	(<s> ^update-state-finished yes -)
+}
