@@ -351,18 +351,23 @@ def TranslateTerminal(game_name, head, body):
 	# add test for analyze state operator to make sure we've fired all
 	# state update rules
 	#sp.add_operator_test('update-state')
-	sp.add_id_attrib(sp.get_state_id(), 'update-state-finished')
+	#sp.add_id_attrib(sp.get_state_id(), 'update-state-finished')
 	
-	# different actions depending on if we're in the selection space
-	# or operating for real
-	sp_sel = sp.copy(name_gen.get_name(sp.get_name()))
-	sp_sel.add_id_attrib(sp_sel.get_state_id(), 'duplicate-of')
-	sp_sel.add_create_id(sp_sel.get_state_id(), 'terminal')
+	# changed now to have extra rule to actually halt system when terminating on
+	# top state
+
+	## # different actions depending on if we're in the selection space
+	## # or operating for real
+	## sp_sel = sp.copy(name_gen.get_name(sp.get_name()))
+	## sp_sel.add_id_attrib(sp_sel.get_state_id(), 'duplicate-of')
+	## sp_sel.add_create_id(sp_sel.get_state_id(), 'terminal')
+	## sp.add_neg_id_attrib(sp.get_state_id(), 'duplicate-of')
+	## sp.add_rhs_func_call('halt')
+
+	sp.add_create_id(sp.get_state_id(), 'terminal')
 	
-	sp.add_neg_id_attrib(sp.get_state_id(), 'duplicate-of')
-	sp.add_rhs_func_call('halt')
-	
-	return [sp, sp_sel] + extras
+	## return [sp, sp_sel] + extras
+	return [sp] + extras
 
 def TranslateLegal(game_name, head, body):
 	move = head.term(1).name()
