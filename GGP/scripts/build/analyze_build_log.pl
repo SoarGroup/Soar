@@ -23,7 +23,7 @@ while(my $line = <IF>){
 		}
 		
 	}
-	if($line =~ /Remaining depth limit ([0-9]+)/i){
+	if($line =~ /Remaining depth limit ([\-0-9]+)/i){
 		$level_info->[$current_depth]->{"remaining depth limit"} = $1;
 	}
 
