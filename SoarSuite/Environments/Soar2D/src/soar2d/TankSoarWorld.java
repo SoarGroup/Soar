@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
 
-import soar2d.Configuration.SimType;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.world.CellObject;

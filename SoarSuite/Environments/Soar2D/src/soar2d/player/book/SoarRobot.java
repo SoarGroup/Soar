@@ -2,18 +2,13 @@ package soar2d.player.book;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.lang.Math;
 
 import sml.Agent;
-import sml.FloatElement;
 import sml.Identifier;
-import sml.IntElement;
-import sml.StringElement;
-import soar2d.Direction;
 import soar2d.Names;
 import soar2d.PlayersManager;
 import soar2d.Simulation;
@@ -22,7 +17,6 @@ import soar2d.World;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;
-import soar2d.player.MoveInfo.Communication;
 import soar2d.world.CellObject;
 import soar2d.world.GridMap;
 import soar2d.world.GridMap.Barrier;

@@ -67,7 +67,7 @@ public class GridMap {
 				throw new LoadError("Couldn't find map tag in map file.");
 			}
 			
-			List<Element> children = root.getChildren();
+			List<Element> children = (List<Element>)root.getChildren();
 			Iterator<Element> iter = children.iterator();
 			while (iter.hasNext()) {
 				Element child = iter.next();
@@ -160,7 +160,7 @@ public class GridMap {
 		
 		CellObject template = new CellObject(name);
 
-		List<Element> children = cellObject.getChildren();
+		List<Element> children = (List<Element>)cellObject.getChildren();
 		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
 			Element child = iter.next();
@@ -262,7 +262,7 @@ public class GridMap {
 	}
 
 	private void apply(Element apply, CellObject template) throws LoadError {
-		List<Element> children = apply.getChildren();
+		List<Element> children = (List<Element>)apply.getChildren();
 		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
 			Element child = iter.next();
@@ -350,7 +350,7 @@ public class GridMap {
 	}
 
 	private void update(Element update, CellObject template) throws LoadError {
-		List<Element> children = update.getChildren();
+		List<Element> children = (List<Element>)update.getChildren();
 		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
 			Element child = iter.next();
@@ -478,7 +478,7 @@ public class GridMap {
 			
 			this.mapCells = new Cell[this.size][];
 			
-			List<Element> children = cells.getChildren();
+			List<Element> children = (List<Element>)cells.getChildren();
 			Iterator<Element> iter = children.iterator();
 			int rowIndex = 0;
 			while (iter.hasNext()) {
@@ -544,7 +544,7 @@ public class GridMap {
 		}
 		
 		
-		List<Element> children = row.getChildren();
+		List<Element> children = (List<Element>)row.getChildren();
 		Iterator<Element> iter = children.iterator();
 		int colIndex = 0;
 		while (iter.hasNext()) {
@@ -573,7 +573,7 @@ public class GridMap {
 	private void cell(Element cell, java.awt.Point location) throws LoadError {
 		boolean background = false;
 		
-		List<Element> children = cell.getChildren();
+		List<Element> children = (List<Element>)cell.getChildren();
 		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
 			Element child = iter.next();
@@ -907,7 +907,6 @@ public class GridMap {
 	}
 	
 	public void updateObjects(TankSoarWorld tsWorld) {
-		World world = Soar2D.simulation.world;
 		
 		if (!updatables.isEmpty()) {
 			Iterator<CellObject> iter = updatables.iterator();

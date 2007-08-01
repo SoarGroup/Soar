@@ -14,7 +14,7 @@ import soar2d.Soar2D;
  * 
  */
 public class EatersInputFunctionModule extends JavaFunctionModule {
-	private Thread	m_JavaThread ;
+	//private Thread	m_JavaThread ;
 	
 	public EatersInputFunctionModule(String name) {
 		super(name) ;

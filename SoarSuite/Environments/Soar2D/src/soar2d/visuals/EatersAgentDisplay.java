@@ -1,7 +1,5 @@
 package soar2d.visuals;
 
-import java.util.*;
-
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.*;

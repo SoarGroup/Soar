@@ -1,12 +1,10 @@
 package soar2d;
 
 import java.awt.Point;
-import java.awt.geom.Point2D;
 import java.util.*;
 import java.util.logging.*;
 import java.lang.Math;
 
-import soar2d.Configuration.SimType;
 import soar2d.player.*;
 import soar2d.world.*;
 
