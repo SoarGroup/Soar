@@ -54,9 +54,13 @@ def p_term_function(p):
 	p[0] = p[1]
 
 def p_function(p):
-	'function : LPAREN NAME term_list RPAREN'
+	'function : NAME
+	          | LPAREN NAME term_list RPAREN'
 	# a function is a predicate
-	p[0] = 'XXX_FUNCTION_BEGIN\n%s\n%s\nXXX_FUNCTION_END' % (p[2], p[3].strip())
+	if len(p) == 2:
+		p[0] = 'XXX_FUNCTION_BEGIN\n%s\nXXX_FUNCTION_END' % p[1]
+	else:
+		p[0] = 'XXX_FUNCTION_BEGIN\n%s\n%s\nXXX_FUNCTION_END' % (p[2], p[3].strip())
 
 def p_condition_list(p):
 	'''condition_list : empty 

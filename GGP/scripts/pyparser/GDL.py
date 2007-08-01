@@ -68,9 +68,9 @@ class Sentence(Complex):
 
 	def get_predicate(self):
 		if self.__rel in ['true', 'next', 'init']:
-			return self.__terms[0].get_name()
+			return self.get_term(0).get_name()
 		if self.__rel in ['legal', 'does']:
-			return self.__terms[1].get_name()
+			return self.get_term(1).get_name()
 		if self.__rel not in ['goal', 'terminal', 'role']:
 			return self.__rel
 		return None
