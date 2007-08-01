@@ -6,7 +6,7 @@
 ;;;; * David J. Stracuzzi                                                     *
 ;;;; * Arizona State University                                               *
 ;;;; * Completed: June 20, 2007                                               *
-;;;; * Revised:   July  6, 2007                                               *
+;;;; * Revised:   July 20, 2007                                               *
 ;;;; **************************************************************************
 ;;;;
 ;;;; This file contains the core game description for BUILD.  Rules, facts and 
@@ -55,14 +55,16 @@
 ;;;; Actions:
 ;;;; * (add-to-compound ?compound ?object)
 ;;;;     Effects: 
+;;;;     * A new object ?compound is created if none already exists
 ;;;;     * ?object becomes a member of ?compound
 ;;;;     * The object-location and object-size of ?compound may change 
 ;;;;     Requirements:
-;;;;     * ?compound already exists
+;;;;     * ?compound already exists or is the current identifier
 ;;;;     * ?compound is not a member of ?object's compound hierarchy
 ;;;;     * ?object is not a member of any other compound
 ;;;;     * Some member of ?object (or ?object itself if primitive) is
-;;;;       touching some member of ?compound 
+;;;;       touching some member of ?compound, or ?compound is the current
+;;;;       identifier
 ;;;;
 ;;;; * (brace ?object1 ?object2 ?brace-type)
 ;;;;     Effects: 
@@ -83,15 +85,6 @@
 ;;;;     * ?object1 and ?object2 form a joint (L-shaped or T-shaped)
 ;;;;     * ?object1 and ?object2 have not already been braced
 ;;;;
-;;;; * (make-new-compound ?object)
-;;;;     Effects:
-;;;;     * A new compound object is created, with unique identifier
-;;;;     * ?object is a member of the new compound
-;;;;     * The new compound has the same location and size as ?object
-;;;;     Requirements
-;;;;     * ?object is an existing object (primitive or compound)
-;;;;     * ?object is not a member of any other compound
-;;;;
 ;;;; * (nudge ?object ?side)
 ;;;;     Effects:
 ;;;;     * ?object moves one unit toward ?side
@@ -105,15 +98,16 @@
 ;;;; * (place-adjacent ?object1 ?object2 ?side)
 ;;;;     Effects:
 ;;;;     * ?object2 is placed adjacent to (touching) ?object1's ?side.
-;;;;       If ?side=top, then ?object2 is centered on top of ?object1 
-;;;;       (failure if it won't fit).  If ?side=left or right, then the
-;;;;       lowest available support is selected such that ?object1 and ?
-;;;;       object2 touch (failure if none exists). ?side=bottom not allowed.
+;;;;       If ?side=top, then ?object2's left side is aligned with the 
+;;;;       left side of ?object1.  If ?side=left or right, then the lowest
+;;;;       available support is selected such that ?object1 and ?object2
+;;;;       touch (failure if none exists). ?side=bottom is not allowed.
 ;;;;     * ?object2's location is changed
 ;;;;     * If ?object2 is compound, the locations of all members of the 
 ;;;;       compound hierarchy are appropriately updated
 ;;;;     Requirements:
 ;;;;     * ?object1 and ?object2 are not members of any compound
+;;;;     * Nothing is stacked on top of ?object1 (?side=top only)
 ;;;;     * Nothing is stacked on top of ?object2
 ;;;;     * ?object2 must weigh less than "max-movable-weight"
 ;;;;     * There is some object available to support ?object2
@@ -232,9 +226,6 @@
     (does ?agent (brace ?object1 ?object2 ?brace-type))
     (is-recursive-member-of-compound ?compound ?object2))
 
-(<= (action-make-new-compound ?agent)
-    (does ?agent (make-new-compound ?object)))
-
 (<= (action-nudge ?agent ?object)
     (does ?agent (nudge ?object ?side)))
 
@@ -264,30 +255,38 @@
 
 ;;; Compute whether two objects are adjacent (touching) on ?object1's ?side.
 ;;; Cases:
-;;; 1) ?object1 and ?object2 are both compound. Must find at least one member
-;;;    primitive from each that is touching the other.
-;;; 2) ?object1 is primitve, ?object2 is compound. Find one member primitive
-;;;    of ?object2 that is touching ?object1.
+;;; 1) ?object1 and ?object2 are both compound. Find a member primitive from
+;;;    one that touches a member primitive from the other.
+;;; 2) ?object1 is primitve, ?object2 is compound, and ?object1 is not in 
+;;;    ?object2's hierarchy. Find one member primitive of ?object2 that is 
+;;;    touching ?object1.
 ;;; 3) ?object1 is compound, ?object2 is primitive. Similar to 2).
 ;;; 4) ?object1 and ?object2 both primitive, ?object2 below ?object1.
 ;;; 5) ?object1 and ?object2 both primitive, ?object2 left of ?object1.
 ;;; 6) ?object1 and ?object2 both primitive, ?object2 right of ?object1.
 ;;; 7) ?object1 and ?object2 both primitive, ?object2 on top of ?object1.
 (<= (adjacent ?object1 ?object2 ?side)
+    (true (object ?object1 compound))
+    (true (object ?object2 compound))
+    (not (is-recursive-member-of-compound ?object1 ?object2))
     (is-recursive-member-of-compound ?object1 ?primitive1)
     (primitive-object ?primitive1)
     (adjacent ?primitive1 ?object2 ?side))
 
 (<= (adjacent ?primitive1 ?object2 ?side)
+    (true (object ?object2 compound))
     (primitive-object ?primitive1)
+    (not (is-recursive-member-of-compound ?object2 ?primitive1))
     (is-recursive-member-of-compound ?object2 ?primitive2)
     (primitive-object ?primitive2)
     (adjacent ?primitive1 ?primitive2 ?side))
 
 (<= (adjacent ?object1 ?primitive2 ?side)
+    (true (object ?object1 compound))
+    (primitive-object ?primitive2)    
+    (not (is-recursive-member-of-compound ?object1 ?primitive2))
     (is-recursive-member-of-compound ?object1 ?primitive1)
     (primitive-object ?primitive1)
-    (primitive-object ?primitive2)
     (adjacent ?primitive1 ?primitive2 ?side))
 
 (<= (adjacent ?primitive1 ?primitive2 bottom)
@@ -360,18 +359,23 @@
 (<= (adjacent-to-any-object ?object1 ?side)
     (true (object ?object1 ?type1))
     (true (object ?object2 ?type2))
-    (side ?side)
+    (adjacent ?object1 ?object2 ?side))
+
+;;; Compute whether any member of ?compound is adjacent to ?object1's ?side
+(<= (adjacent-to-any-member-object ?compound ?object1 ?side)
+    (true (member ?compound ?object1))
+    (true (member ?compound ?object2))
     (adjacent ?object1 ?object2 ?side))
 
 ;;; Compute whether two objects are aligned on one side
 ;;; (e.g. left sides have the same x-coordinate)
 (<= (aligned ?object1 ?object2 bottom)
-    (object-coordinates ?object1 ?x11 ?bottom ?x12 ?y12)
-    (object-coordinates ?object2 ?x21 ?bottom ?x22 ?y22))
+    (true (object-location ?object1 ?x1 ?y))
+    (true (object-location ?object2 ?x2 ?y)))
 
 (<= (aligned ?object1 ?object2 left)
-    (object-coordinates ?object1 ?left ?y11 ?x12 ?y12)
-    (object-coordinates ?object2 ?left ?y21 ?x22 ?y22))
+    (true (object-location ?object1 ?x ?y1))
+    (true (object-location ?object2 ?x ?y2)))
 
 (<= (aligned ?object1 ?object2 right)
     (object-coordinates ?object1 ?x11 ?y11 ?right ?y12)
@@ -387,9 +391,6 @@
 
 (<= (available-action)
     (can-brace ?object1 ?object2 ?brace-type))
-
-(<= (available-action)
-    (can-make-new-compound ?object))
 
 (<= (available-action)
     (can-nudge ?object ?side))
@@ -442,7 +443,7 @@
 ;;; 2) ?object is not braceable
 (<= (brace-strength-factor ?object ?factor)
     (true (object ?object ?obj-type))
-    (brace-type ?brace-type ?obj-type ?brace-strength ?brace-weight)
+    (brace-properties ?brace-type ?brace-strength ?brace-weight)
     (brace-count ?object ?n)
     (power ?brace-strength ?n ?factor))
 
@@ -488,43 +489,50 @@
     (object-coordinates ?left ?x11 ?y11 ?x12 ?y)
     (object-coordinates ?right ?x21 ?y21 ?x22 ?y)
     (> ?x21 ?x12)
-    (- ?x21 1 ?end-x)
-    (bridge-segment ?bridge ?x12 ?end-x ?y))
+    (bridge-segment ?bridge ?x12 ?x21 ?y))
 
 ;;; Determine if, for every cell between ?start-x and ?end-x at height ?y, 
-;;; there is a support that is a member of ?bridge. Cases:
-;;; 1) Base: ?start-x > ?end-x
+;;; there is a support that is a member of ?bridge.
+;;; 1) Base: A single primitive ?support has top at ?y, is clear on top,
+;;;    and spans entire remaining distance
 ;;; 2) General: A primitive object ?support has top at ?y, is clear on top, 
-;;;    and ?start-x is between ?support's left and right sides
+;;;    and spans part of distance 
 (<= (bridge-segment ?bridge ?start-x ?end-x ?y)
-    (true (object ?bridge ?type))
-    (number ?y)
-    (> ?start-x ?end-x))
-
-(<= (bridge-segment ?bridge ?start-x ?end-x ?y)
-    (primitive-object ?support)
     (is-recursive-member-of-compound ?bridge ?support)
-    (object-coordinates ?support ?x1 ?y1 ?x2 ?y)
-    (true (object-size ?support ?width ?height ?weight))
-    (>= ?start-x ?x1)
-    (> ?x2 ?start-x)
-    (+ ?start-x ?width ?next-x)
-    (clear ?support top)
-    (bridge-segment ?bridge ?next-x ?end-x ?y))
+    (primitive-object ?support)
+    (object-coordinates ?support ?start-x ?y1 ?end-x ?y)
+    (clear ?support top))
 
-;;; Determine if ?object may be added to ?compound. Legal if:
-;;; 1) ?compound is an existing compound
-;;; 2) ?compound and ?object are different
-;;; 2) ?compound is not a recursive sub-compound of ?object
-;;; 3) ?object is not a member of any other compound
-;;; 4) ?object is adjacent to (touching) some primitive member of ?compound
+(<= (bridge-segment ?bridge ?start-x ?end-x ?y)
+    (is-recursive-member-of-compound ?bridge ?support)
+    (primitive-object ?support)
+    (object-coordinates ?support ?start-x ?y1 ?x2 ?y)
+    (clear ?support top)
+    (bridge-segment ?bridge ?x2 ?end-x ?y))
+
+;;; Determine if ?object may be added to ?compound. Legal if
+;;; Case 1 - create new compound:
+;;;   1) ?compound is the current identifier (not an existing compound)
+;;;   2) ?object is not a member of an existing compound
+;;;   3) ?object is not of type "ground"
+;;; Case 2 - add to existing compound:
+;;;   1) ?compound is an existing compound
+;;;   2) ?compound and ?object are different
+;;;   3) ?object is not of type "ground"
+;;;   4) ?object is not a member of any other compound
+;;;   5) ?compound is not a recursive sub-compound of ?object
+;;;   6) ?object is adjacent to (touching) some primitive member of ?compound
+(<= (can-add-to-compound ?compound ?object)
+    (true (current-identifier ?compound))
+    (true (object ?object ?type))
+    (distinct ?type ground)
+    (not (is-member-of-any-compound ?object)))
+
 (<= (can-add-to-compound ?compound ?object)
     (true (object ?compound compound))
     (true (object ?object ?type))
     (distinct ?compound ?object)
     (distinct ?type ground)
-    (not (material-is-brace-type ?type))
-    (not (material-is-reinforcement-type ?type))
     (not (is-member-of-any-compound ?object))
     (not (is-recursive-member-of-compound ?object ?compound))
     (adjacent-on-any-side ?compound ?object))
@@ -540,21 +548,11 @@
 (<= (can-brace ?object1 ?object2 ?brace-type)
     (same-compound ?compound ?object1 ?object2)
     (same-primitive-material ?material ?object1 ?object2)
-    (brace-type ?brace-type ?material ?brace-strength ?brace-weight)
+    (brace-type ?brace-type ?material)
     (true (count ?brace-type ?count))
     (> ?count 0)
     (joint ?object1 ?object2)
     (not (braced-joint ?object1 ?object2)))
-
-;;; Determine if a new compound may be made from ?object. Legal if:
-;;; 1) ?object is any existing object
-;;; 2) ?object is not a member of any existing compound
-(<= (can-make-new-compound ?object)
-    (true (object ?object ?type))
-    (distinct ?type ground)
-    (not (material-is-brace-type ?type))
-    (not (material-is-reinforcement-type ?type))
-    (not (is-member-of-any-compound ?object)))
 
 ;;; Determine if ?object can be nudged toward ?side. Legal if:
 ;;; 1) ?object weighs less than WMAX
@@ -573,7 +571,8 @@
 ;;; Move ?object2 adjacent to (touching) ?object1's ?side. Legal if:
 ;;; 1) ?object1 and ?object2 are different
 ;;; 2) ?object1 and ?object2 are not in any compound
-;;; 3) nothing is stacked on top of ?object2
+;;; 3) nothing is stacked on top of ?object1 (?side=top only)
+;;; 4) nothing is stacked on top of ?object2
 ;;; 4) ?object2 weighs less than WMAX
 ;;; 5) there is some object available to support ?object2
 ;;; 6) ?object2's new location is different from the old location
@@ -596,7 +595,7 @@
 ;;; 3) There is at least 1 ?reinforcement-type available
 (<= (can-reinforce ?object ?reinforcement-type)
     (true (object ?object ?object-type))
-    (reinforcement-type ?reinforcement-type ?object-type ?strength ?weight)
+    (reinforcement-type ?reinforcement-type ?object-type)
     (not (reinforced-object ?object))
     (true (count ?reinforcement-type ?count))
     (> ?count 0))
@@ -634,16 +633,30 @@
 (<= collapsed
     (unsupported ?object))
 
-;;; Determine whether the members of ?compound form a column. Requirements:
-;;; 1) ?compound is a compound (primitives are not columns)
-;;; 2) ?compound is vertically oriented
-;;; 3) All members of ?compound have the same width
-;;; 4) All members of ?compound have the same x-coordinate
+;;; Determine whether the members of ?compound form a column. Requirements
+;;; (note that some requirements tested by column-recursive):
+;;; 1) ?compound is vertically oriented
+;;; 2) ?compound has one member at top, spanning full width of ?compound
+;;; 3) All members of ?compound are aligned on left and right sides 
+;;; 4) ?compound has one member at bottom, spanning full width of ?compound
 (<= (column ?compound)
-    (true (object ?compound compound))
     (object-orientation ?compound vertical)
-    (not (members-have-different-width ?compound))
-    (not (members-have-different-x-coordinate ?compound)))
+    (true (member ?compound ?top))
+    (object-coordinates ?compound ?x1 ?cy1 ?x2 ?y2)
+    (object-coordinates ?top ?x1 ?ty1 ?x2 ?y2)
+    (column-recursive ?compound ?top))
+
+(<= (column-recursive ?compound ?top)
+    (true (member ?compound ?top))
+    (object-coordinates ?compound ?x1 ?y1 ?x2 ?cy2)
+    (object-coordinates ?top ?x1 ?y1 ?x2 ?ty2))
+
+(<= (column-recursive ?compound ?top)
+    (true (member ?compound ?support))
+    (adjacent ?top ?support bottom)
+    (aligned ?top ?support left)
+    (aligned ?top ?support right)
+    (column-recursive ?compound ?support))
 
 ;;; Determine new coordinates for ?compound when ?object is added.
 (<= (coordinates-after-add ?compound ?object ?x1 ?y1 ?x2 ?y2)
@@ -674,7 +687,7 @@
 ;;; Determines potential coordinates for ?object2 on ?object1's ?side. Cases:
 ;;; 1) ?side = left
 ;;; 2) ?side = right
-;;; 3) ?side = top
+;;; 3) ?side = top (includes test for ?object1 is clear)
 (<= (coordinates-after-place ?object1 ?object2 left ?x1 ?y1 ?x2 ?y2)
     (true (object-location ?object1 ?x2 ?oy1))
     (true (object-size ?object2 ?width2 ?height2 ?weight2))
@@ -693,15 +706,9 @@
     (+ ?y1 ?height2 ?y2))
 
 (<= (coordinates-after-place ?object1 ?object2 top ?x21 ?y21 ?x22 ?y22)
-    (true (object-size ?object1 ?width1 ?height1 ?weight1))
+    (clear ?object1 top)
     (true (object-size ?object2 ?width2 ?height2 ?weight2))
-    (object-coordinates ?object1 ?x11 ?y11 ?x12 ?y21)
-    (/ ?width1 2 ?tmp1)
-    (/ ?width2 2 ?tmp2)
-    (round ?tmp1 ?half-width1)
-    (round ?tmp2 ?half-width2)
-    (+ ?x11 ?half-width1 ?centerx)
-    (- ?centerx ?half-width2 ?x21)
+    (object-coordinates ?object1 ?x21 ?y11 ?x12 ?y21)
     (+ ?x21 ?width2 ?x22)
     (+ ?y21 ?height2 ?y22))
 
@@ -710,6 +717,15 @@
     (strength ?object ?strength)
     (supported-weight ?object ?weight)
     (> ?weight ?strength))
+
+;;; Calculate the distance ?object moved along X and Y axes via place-adjacent
+(<= (distance-object-moved ?object ?x-dist ?y-dist)
+    (does agent (place-adjacent ?target ?object ?side))
+    (true (object-location ?object ?old-x ?old-y))
+    (coordinates-after-place ?target ?object ?side ?new-x ?new-y ?x2 ?y2)
+    (not (region-intersected-by-object ?object ?new-x ?new-y ?x2 ?y2))
+    (- ?new-x ?old-x ?x-dist)
+    (- ?new-y ?old-y ?y-dist))    
 
 ;;; A simple terinary operator: determine if ?test is greater than 0, 
 ;;; if so, then ?result (4th arg) takes value of ?then, otherwise ?result
@@ -906,33 +922,9 @@
     (not (left-further-brace-to-right ?object1 ?object2 ?leftmost)))
 
 
-;;; Determine if ?material is a type of brace.
-(<= (material-is-brace-type ?material)
-    (brace-type ?material ?braceable-material ?strength ?weight))
-
 ;;; Determine if ?material is braceable
 (<= (material-is-braceable ?material)
-    (brace-type ?brace-type ?material ?strength ?weight))
-
-;;; Determine if ?material is a type of reinforcement
-(<= (material-is-reinforcement-type ?material)
-    (reinforcement-type ?material ?reinforceable-material ?strength ?weight))
-
-;;; Determine whether any two members of ?compound have differing widths
-(<= (members-have-different-x-coordinate ?compound)
-    (true (member ?compound ?member1))
-    (true (object-size ?member1 ?width1 ?height1 ?weight1))
-    (true (member ?compound ?member2))
-    (true (object-size ?member2 ?width2 ?height2 ?weight2))
-    (distinct ?width1 ?width2))
-
-;;; Determine whether any two members of ?compound have differing x-coordinates.
-(<= (members-have-different-width ?compound)
-    (true (member ?compound ?member1))
-    (true (object-location ?member1 ?x1 ?y1))
-    (true (member ?compound ?member2))
-    (true (object-location ?member2 ?x2 ?y2))
-    (distinct ?x1 ?x2))
+    (brace-type ?brace-type ?material))
 
 ;;; Determine if an object is movable (weight < WMAX).
 (<= (movable ?object)
@@ -943,6 +935,14 @@
 ;;; Determine if ?var is numeric.
 (<= (number ?var)
     (+ ?var 0 ?var))
+
+;;; Compute the base (excluding braces/reinforcement) strength of an object
+(<= (object-base-strength ?object ?strength)
+    (true (object ?object ?type))
+    (true (object-size ?object ?width ?height ?weight))
+    (distinct ?type compound)
+    (material-type ?type ?material-strength)
+    (* ?width ?material-strength ?strength))
 
 ;;; Determine the location of the lower-left and upper-right corners of ?object
 (<= (object-coordinates ?object ?x1 ?y1 ?x2 ?y2)
@@ -977,50 +977,44 @@
     (true (object-size ?object ?width ?height ?weight))
     (> ?height ?width))
 
-;;; Determine if some member of ?compound, other than ?top, has the same
-;;; upper y-coordinate as ?compound
+;;; Determine if some member of ?compound, other than ?top, has no object
+;;; on top of it that is in ?compound
 (<= (other-member-at-top ?compound ?top)
-    (object-coordinates ?compound ?cx1 ?cy1 ?cx2 ?y2)
     (true (member ?compound ?top))
     (true (member ?compound ?other))
     (distinct ?top ?other)
-    (object-coordinates ?other ?ox1 ?oy1 ?ox2 ?y2))
+    (not (adjacent-to-any-member-object ?compound ?other top)))
 
-;;; Deterime whether ?object is a primitive
+;;; Determine whether ?object is a primitive
 (<= (primitive-object ?object)
     (true (object ?object ?type))
     (material-type ?type ?strength))
 
-;;; Determine if the members of ?compound form a pyramid. Requirements:
-;;; 1) exactly one member at top of compound
-;;; 2) height of compound at least double height of a member
-;;; 3) member at top must meet conditions of (pryamid-recursive ...)
-(<= (pryamid ?compound)
-    (object-coordinates ?compound ?cx1 ?cy1 ?cx2 ?y2)
+;;; Determine if the members of ?compound form a pyramid. Requirements
+;;; (some requirements tested by pyramid-recursive):
+;;; 1) Exactly one member at top of compound (supports no other member object)
+;;; 2) Pyramid must be at least two member-objects high
+;;; 3) Each member (other than the bottom) has two supports that are members
+;;;    of ?compound
+;;; 4) The two supports in 3) are adjacent to each other
+;;; 5) Both supports have the same width and height as the supported object
+;;; 6) The objects at the bottom have the same y-coordinate as the bottom 
+;;;    of ?compound
+(<= (pyramid ?compound)
     (true (member ?compound ?top))
+    (object-coordinates ?compound ?cx1 ?cy1 ?cx2 ?y2)
     (object-coordinates ?top ?tx1 ?ty1 ?tx2 ?y2)
     (not (other-member-at-top ?compound ?top))
-    (true (object-size ?compound ?c-width ?c-height ?c-weight))
-    (true (object-size ?top ?t-width ?t-height ?t-weight))
-    (* ?t-height 2 ?min-height)
-    (>= ?c-height ?min-height)
+    (adjacent ?top ?other bottom)
+    (true (member ?compound ?other))
     (pyramid-recursive ?compound ?top))
 
-;;; Determine if ?top is part of a pyramid formed by ?compound. 
-;;; Base case requirements:
-;;; 1) The bottom of ?top has the same y-coordinate as the bottom of ?compound
-;;; Recursive case requirements:
-;;; 1) ?top has exactly two supports
-;;; 2) both supports are members of ?compoumd
-;;; 3) the supports are adjacent to each other
-;;; 4) both supports have the same width and height as ?top
-;;; 5) both supports meet the conditions of (pyramid-recursive ...)
 (<= (pyramid-recursive ?compound ?top)
+    (true (member ?compound ?top))
     (true (object-location ?compound ?cx ?y))
     (true (object-location ?top ?tx ?y)))
 
-(<= (pryamid-recursive ?compound ?top)
-    (adjacent-primitive-count ?top bottom 2)
+(<= (pyramid-recursive ?compound ?top)
     (true (member ?compound ?support1))
     (adjacent ?top ?support1 bottom)
     (true (member ?compound ?support2))
@@ -1037,7 +1031,8 @@
 (<= (region-intersected-by-object ?object ?x11 ?y11 ?x12 ?y12)
     (true (object ?object ?type))
     (object-intersects-region ?intersecting ?x11 ?y11 ?x12 ?y12)
-    (distinct ?object ?intersecting))
+    (distinct ?object ?intersecting)
+    (not (is-recursive-member-of-compound ?object ?intersecting)))
 
 ;;; Determine if ?object is a primitive that has been reinforced.
 (<= (reinforced-object ?object)
@@ -1058,29 +1053,23 @@
 ;;; 1) ?object is not reinforced (0 or more braces)
 ;;; 2) ?object is reinforced (0 braces)
 (<= (strength ?object ?strength)
-    (true (object ?object ?type))
-    (true (object-size ?object ?width ?height ?weight))
-    (not (reinforced-object ?object))
-    (material-type ?type ?material-strength)
-    (* ?width ?material-strength ?obj-strength)
+    (object-base-strength ?object ?base-strength)
     (brace-strength-factor ?object ?brace-factor)
-    (* ?obj-strength ?brace-factor ?strength))
+    (* ?base-strength ?brace-factor ?strength)
+    (not (reinforced-object ?object)))
 
 (<= (strength ?object ?strength)
-    (true (object ?object ?obj-type))
-    (true (object-size ?object ?width ?height ?weight))
     (true (reinforced ?object ?reinforcement-type))
-    (material-type ?obj-type ?material-strength)
-    (reinforcement-type ?reinforcement-type ?obj-type ?r-strength ?r-weight)
-    (* ?width ?material-strength ?obj-strength)
-    (* ?obj-strength ?r-strength ?strength))
+    (reinforcement-properties ?reinforcement-type ?r-strength ?r-weight)
+    (object-base-strength ?object ?base-strength)
+    (* ?base-strength ?r-strength ?strength))
 
-;;; Determine if ?support will touch ?object's ?side when ?object is nudged
+;;; Determine if ?support will touch ?object's bottom when ?object is nudged
 (<= (support-for-nudge ?object ?support left)
     (object-coordinates ?object ?old-x1 ?y1 ?old-x2 ?y2)
-    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?y)
-    (+ ?old-x1 1 ?new-x1)
-    (+ ?old-x2 1 ?new-x2)
+    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?y1)
+    (- ?old-x1 1 ?new-x1)
+    (- ?old-x2 1 ?new-x2)
     (> ?new-x2 ?sx1)
     (> ?sx2 ?new-x1))
 
@@ -1117,10 +1106,12 @@
 
 ;;; Calculate the amount of weight supported by ?object
 (<= (supported-weight ?object ?weight)
+    (primitive-object ?object)
     (leftmost-adjacent-primitive ?object ?leftmost top)
     (supported-weight-recursive ?object ?leftmost ?weight))
 
 (<= (supported-weight ?object 0)
+    (primitive-object ?object)
     (clear ?object top))
 
 ;;; Calculate the amount of weight supported by ?object from objects
@@ -1142,6 +1133,37 @@
     (true (object-size ?object1 ?width1 ?height1 ?weight1))
     (true (object-size ?object2 ?width2 ?height2 ?weight2))
     (> ?height1 ?height2))
+
+;;; Determine whether the members of ?compound form a tower. Requirements
+;;; (some requirements tested by tower-recursive):
+;;; 1) ?compound is vertically oriented
+;;; 2) Each member has no other member object adjacent to its left or right
+;;; 3) Each member has one support, which it does not over-hang and is wider
+;;; 4) The bottom is as wide as the entire compound
+(<= (tower ?compound)
+    (object-orientation ?compound vertical)
+    (true (member ?compound ?top))
+    (object-coordinates ?compound ?x11 ?y11 ?x12 ?y2)
+    (object-coordinates ?top ?x21 ?y21 ?x22 ?y2)
+    (tower-recursive ?compound ?top))
+
+(<= (tower-recursive ?compound ?top)
+    (true (member ?compound ?top))
+    (object-coordinates ?compound ?x1 ?y1 ?x2 ?y12)
+    (object-coordinates ?top ?x1 ?y1 ?x2 ?y22))
+
+(<= (tower-recursive ?compound ?top)
+    (true (member ?compound ?support))
+    (adjacent ?top ?support bottom)
+    (not (adjacent-to-any-member-object ?compound ?top left))
+    (not (adjacent-to-any-member-object ?compound ?top right))
+    (object-coordinates ?top ?x11 ?y11 ?x12 ?y12)
+    (object-coordinates ?support ?x21 ?y21 ?x22 ?y22)
+    (>= ?x11 ?x21)
+    (>= ?x22 ?x12)
+    (true (object-size ?top ?top-width ?top-height ?top-weight))
+    (true (object-size ?support ?sup-width ?sup-height ?sup-weight))
+    (> ?sup-width ?top-width))
 
 ;;; Determine whether ?object is unsupported (nothing below it). This
 ;;; ignores objects of type GROUND, which are usually not supported.
@@ -1182,10 +1204,6 @@
 (<= (legal agent (brace ?object1 ?object2 ?brace-type))
     (can-brace ?object1 ?object2 ?brace-type))
 
-;;; Make a new compound object with ?object.
-(<= (legal agent (make-new-compound ?object))
-    (can-make-new-compound ?object))
-
 ;;; Move ?object one cell in the specified direnction
 (<= (legal agent (nudge ?object ?side))
     (can-nudge ?object ?side))
@@ -1206,32 +1224,56 @@
 ;;; ---------------------------------------------------------------------------
 ;;; NEXT AXIOMS
 
-;;; Add object to existing compound: 
-;;; 1) Declare object membership in compound
-;;; 2) Update compound location
-;;; 3) Update compound size
+;;; Add object to compound: 
+;;; 1) If ?compound did not previously exist, declare new object
+;;; 2) Declare object membership in compound
+;;; 3) If ?compound did not previously exist, declare new object location
+;;; 4) If ?compound did previously exist, update compound locataion
+;;; 5) If ?compound did not previously exist, declare new object size
+;;; 6) If ?compound did previously exist, update compound size
+;;; 7) If ?compound did not previously exist, update the current identifier
+(<= (next (object ?compound compound))
+    (does agent (add-to-compound ?compound ?object))
+    (true (current-identifier ?compound)))
+
 (<= (next (member ?compound ?object))
     (does agent (add-to-compound ?compound ?object)))
 
 (<= (next (object-location ?compound ?x ?y))
     (does agent (add-to-compound ?compound ?object))
+    (true (current-identifier ?compound))
+    (true (object-location ?object ?x ?y)))
+
+(<= (next (object-location ?compound ?x ?y))
+    (does agent (add-to-compound ?compound ?object))
+    (true (object ?compound compound))
     (coordinates-after-add ?compound ?object ?x ?y ?x2 ?y2))
 
 (<= (next (object-size ?compound ?width ?height ?weight))
     (does agent (add-to-compound ?compound ?object))
-    (coordinates-after-add ?compound ?object ?x1 ?y1 ?x2 ?y2)
+    (true (current-identifier ?compound))
+    (true (object-size ?object ?width ?height ?weight)))
+
+(<= (next (object-size ?compound ?width ?height ?weight))
+    (does agent (add-to-compound ?compound ?object))
+    (coordinates-after-add ?compound ?object ?x1 ?y1 ?x2 ?y2)    
     (true (object-size ?compound ?old-width ?old-height ?old-weight))
     (true (object-size ?object ?obj-width ?obj-height ?obj-weight))
     (- ?x2 ?x1 ?width)
     (- ?y2 ?y1 ?height)
     (+ ?old-weight ?obj-weight ?weight))
 
+(<= (next (current-identifier ?id))
+    (does agent (add-to-compound ?compound ?object))
+    (true (current-identifier ?compound))
+    (next-identifier ?compound ?id))
+
 ;;; Brace the joint between two objects:
 ;;; 1) Declare the brace
 ;;; 2) Update compound weight for every compound of which both objects 
 ;;;    are a recursive member.
-;;; 3) Update the primitive weight for ?object1 by 1/2 of brace weight
-;;; 4) Update the primitive weight for ?object1 by 1/2 of brace weight
+;;; 3) Update the primitive weight for ?object1
+;;; 4) Update the primitive weight for ?object1
 ;;; 5) Reduce count of ?brace-type by one
 (<= (next (braced ?object1 ?object2 ?brace-type))
     (does agent (brace ?object1 ?object2 ?brace-type)))
@@ -1242,58 +1284,26 @@
     (is-recursive-member-of-compound ?compound ?object2)
     (true (object-size ?compound ?width ?height ?c-weight))
     (true (object ?object1 ?obj-type))
-    (brace-type ?brace-type ?obj-type ?b-strength ?b-weight)
-    (+ ?c-weight ?b-weight ?weight))
+    (brace-properties ?brace-type ?b-strength ?b-weight)
+    (* ?b-weight 2 ?double-bwt)
+    (+ ?c-weight ?double-bwt ?weight))
 
 (<= (next (object-size ?object1 ?width ?height ?weight))
     (does agent (brace ?object1 ?object2 ?brace-type))
-    (true (object ?object1 ?obj-type))
     (true (object-size ?object1 ?width ?height ?obj-weight))
-    (brace-type ?brace-type ?obj-type ?b-strength ?b-weight)
-    (/ ?b-weight 2 ?half-bwt)
-    (+ ?obj-weight ?half-bwt ?weight))
+    (brace-properties ?brace-type ?b-strength ?b-weight)
+    (+ ?obj-weight ?b-weight ?weight))
 
 (<= (next (object-size ?object2 ?width ?height ?weight))
     (does agent (brace ?object1 ?object2 ?brace-type))
-    (true (object ?object2 ?obj-type))
     (true (object-size ?object2 ?width ?height ?obj-weight))
-    (brace-type ?brace-type ?obj-type ?b-strength ?b-weight)
-    (/ ?b-weight 2 ?half-bwt)
-    (+ ?obj-weight ?half-bwt ?weight))
+    (brace-properties ?brace-type ?b-strength ?b-weight)
+    (+ ?obj-weight ?b-weight ?weight))
 
 (<= (next (count ?brace-type ?new-count))
     (does agent (brace ?object1 ?object2 ?brace-type))
     (true (count ?brace-type ?old-count))
     (- ?old-count 1 ?new-count))
-
-;;; Make a new compound object: 5 steps.
-;;; 1) Declare the compound
-;;; 2) Declare object membership in compound
-;;; 3) Initialize compound location
-;;; 4) Initialize compound size
-;;; 5) Update current-identifier
-(<= (next (object ?identifier compound))
-    (does agent (make-new-compound ?object))
-    (true (current-identifier ?identifier)))
-
-(<= (next (member ?identifier ?object))
-    (does agent (make-new-compound ?object))
-    (true (current-identifier ?identifier)))
-
-(<= (next (object-location ?identifier ?x ?y))
-    (does agent (make-new-compound ?object))
-    (true (object-location ?object ?x ?y))
-    (true (current-identifier ?identifier)))
-
-(<= (next (object-size ?identifier ?width ?height ?weight))
-    (does agent (make-new-compound ?object))
-    (true (object-size ?object ?width ?height ?weight))
-    (true (current-identifier ?identifier)))
-
-(<= (next (current-identifier ?id))
-    (does agent (make-new-compound ?object))
-    (true (current-identifier ?old-id))
-    (next-identifier ?old-id ?id))
 
 ;;; Move an object one cell in a given direction.
 ;;; 1) Update the location of the nudged object (primitive or compound)
@@ -1319,11 +1329,7 @@
 (<= (next (object-location ?member ?x ?y))
     (does agent (place-adjacent ?object1 ?object2 ?side))
     (true (object ?object2 compound))
-    (true (object-location ?object2 ?old-x2 ?old-y2))
-    (coordinates-after-place ?object1 ?object2 ?side ?new-x2 ?new-y2 ?x22 ?y22)
-    (not (region-intersected-by-object ?object2 ?new-x2 ?new-y2 ?x22 ?y22))
-    (- ?new-x2 ?old-x2 ?dist-x)
-    (- ?new-y2 ?old-y2 ?dist-y)
+    (distance-object-moved ?object2 ?dist-x ?dist-y)
     (is-recursive-member-of-compound ?object2 ?member)
     (true (object-location ?member ?old-x ?old-y))
     (+ ?old-x ?dist-x ?x)
@@ -1340,17 +1346,15 @@
 
 (<= (next (object-size ?object ?width ?height ?weight))
     (does agent (reinforce ?object ?reinforcement-type))
-    (true (object ?object ?obj-type))
     (true (object-size ?object ?width ?height ?obj-weight))
-    (reinforcement-type ?reinforcement-type ?obj-type ?r-strength ?r-weight)
+    (reinforcement-properties ?reinforcement-type ?r-strength ?r-weight)
     (+ ?obj-weight ?r-weight ?weight))
 
 (<= (next (object-size ?compound ?width ?height ?weight))
     (does agent (reinforce ?object ?reinforcement-type))
-    (true (object ?object ?obj-type))
     (true (object-size ?compound ?width ?height ?comp-weight))
     (is-recursive-member-of-compound ?compound ?object)
-    (reinforcement-type ?reinforcement-type ?obj-type ?r-strength ?r-weight)
+    (reinforcement-properties ?reinforcement-type ?r-strength ?r-weight)
     (+ ?comp-weight ?r-weight ?weight))
 
 (<= (next (count ?reinforcement-type ?new-count))
@@ -1379,21 +1383,21 @@
 ;;; Carry the brace count forward if the given brace-type was not used.
 (<= (next (count ?brace-type ?count))
     (true (count ?brace-type ?count))
-    (brace-type ?brace-type ?obj-type ?brace-strength ?brace-weight)
+    (brace-type ?brace-type ?material)
     (not (action-brace agent ?brace-type)))
 
 ;;; Carry the reinforcement count forward if the given reinforcement-type
 ;;; was not used.
 (<= (next (count ?reinforcement-type ?count))
     (true (count ?reinforcement-type ?count))
-    (reinforcement-type ?reinforcement-type ?obj-type ?r-strength ?r-weight)
+    (reinforcement-type ?reinforcement-type ?material)
     (not (action-reinforce agent ?reinforcement-type)))
 
 ;;; Carry current identifier into next state if the agent does not
 ;;; make a new compound in the current time step
 (<= (next (current-identifier ?id))
     (true (current-identifier ?id))
-    (not (action-make-new-compound agent)))
+    (not (action-add-to-compound agent ?id)))
 
 ;;; Carry all membership declarations into next state
 (<= (next (member ?compound ?object))
@@ -1439,8 +1443,6 @@
     (true (object ?object ?type))
     (true (object-size ?object ?width ?height ?weight))
     (distinct ?type compound)
-    (not (material-is-brace-type ?type))
-    (not (material-is-reinforcement-type ?type))
     (not (action-brace agent ?object))
     (not (action-reinforce agent ?object))
     (not (action-rotate agent ?object)))
