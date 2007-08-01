@@ -14,7 +14,6 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
 import soar2d.*;
-import soar2d.Configuration.SimType;
 import soar2d.player.*;
 
 /**
@@ -25,14 +24,26 @@ import soar2d.player.*;
 public class GridMap {
 	public static final Logger logger = Logger.getLogger("soar2d");
 
-	private Configuration config;
+	Configuration config;
+	private IGridMap mapModule;
 	
 	public GridMap(Configuration config) {
 		this.config = config;
-	}
-	
-	public GridMap(GridMap in) {
-		this.size = in.size;
+		
+		switch (config.getType()) {
+		case kBook:
+			mapModule = new BookMap();
+			break;
+		case kEaters:
+			mapModule = new EatersMap();
+			break;
+		case kTankSoar:
+			mapModule = new TankSoarMap();
+			break;
+		case kKitchen:
+			mapModule = new KitchenMap();
+			break;
+		}
 	}
 	
 	private static final String kTagMap = "map";
@@ -585,12 +596,7 @@ public class GridMap {
 			background = object(child, location);
 		}
 		
-		if (config.getType() == SimType.kTankSoar && !background) {
-			// add ground
-			CellObject cellObject = cellObjectManager.createObject(Names.kGround);
-			addObjectToCell(location, cellObject);
-			return;
-		}
+		mapModule.postCell(background, this, location);
 	}
 	
 	private boolean object(Element object, java.awt.Point location) throws LoadError {
@@ -604,14 +610,7 @@ public class GridMap {
 		}
 		
 		CellObject cellObject = cellObjectManager.createObject(name);
-		boolean background = false;
-		if (config.getType() == SimType.kTankSoar) {
-			if (cellObject.hasProperty(Names.kPropertyBlock) 
-					|| (cellObject.getName() == Names.kGround)
-					|| (cellObject.hasProperty(Names.kPropertyCharger))) {
-				background = true;
-			}
-		}
+		boolean background = mapModule.objectIsBackground(cellObject);
 		addObjectToCell(location, cellObject);
 
 		if (cellObject.rewardInfoApply) {
@@ -750,27 +749,27 @@ public class GridMap {
 		}		
 	}
 
-	private int scoreCount = 0;
+	int scoreCount = 0;
 	public int getScoreCount() {
 		return scoreCount;
 	}
 	
-	private int foodCount = 0;
+	int foodCount = 0;
 	public int getFoodCount() {
 		return foodCount;
 	}
 	
-	private int missilePacks = 0;	// returns the number of missile packs on the map
+	int missilePacks = 0;	// returns the number of missile packs on the map
 	public int numberMissilePacks() {
 		return missilePacks;
 	}
 	
-	private boolean health = false;	// true if there is a health charger
+	boolean health = false;	// true if there is a health charger
 	public boolean hasHealthCharger() {
 		return health;
 	}
 	
-	private boolean energy = false;	// true if there is an energy charger
+	boolean energy = false;	// true if there is an energy charger
 	public boolean hasEnergyCharger() {
 		return energy;
 	}
@@ -844,32 +843,8 @@ public class GridMap {
 		}
 		
 		// Update state we keep track of specific to game type
-		switch (config.getType()) {
-		case kTankSoar:
-			if (object.hasProperty(Names.kPropertyCharger)) {
-				if (!health && object.hasProperty(Names.kPropertyHealth)) {
-					health = true;
-				}
-				if (!energy && object.hasProperty(Names.kPropertyEnergy)) {
-					energy = true;
-				}
-			}
-			if (object.hasProperty(Names.kPropertyMissiles)) {
-				missilePacks += 1;
-			}
-			break;
-		case kEaters:
-			if (object.hasProperty(Names.kPropertyEdible)) {
-				foodCount += 1;
-			}
-			if (object.hasProperty(Names.kPropertyPoints)) {
-				scoreCount += object.getIntProperty(Names.kPropertyPoints);
-			}
-			break;
-			
-		case kBook:
-			break;
-		}
+		mapModule.addObjectToCell(this, object);
+
 		cell.addCellObject(object);
 		setRedraw(cell);
 	}
@@ -907,64 +882,7 @@ public class GridMap {
 	}
 	
 	public void updateObjects(TankSoarWorld tsWorld) {
-		
-		if (!updatables.isEmpty()) {
-			Iterator<CellObject> iter = updatables.iterator();
-			
-			ArrayList<java.awt.Point> explosions = new ArrayList<java.awt.Point>();
-			while (iter.hasNext()) {
-				CellObject cellObject = iter.next();
-				java.awt.Point location = updatablesLocations.get(cellObject);
-				assert location != null;
-				int previousScore = 0;
-				if (config.getType() == SimType.kEaters) {
-					if (cellObject.hasProperty(Names.kPropertyPoints)) {
-						previousScore = cellObject.getIntProperty(Names.kPropertyPoints);
-					}
-				}
-				if (cellObject.update(location)) {
-					Cell cell = getCell(location);
-					
-					cellObject = cell.removeObject(cellObject.getName());
-					assert cellObject != null;
-					
-					setRedraw(cell);
-					
-					// if it is not tanksoar or if the cell is not a missle or if shouldRemoveMissile returns true
-					if ((config.getType() != SimType.kTankSoar) || !cellObject.hasProperty(Names.kPropertyMissile) 
-							|| shouldRemoveMissile(tsWorld, location, cell, cellObject)) {
-						
-						// we need an explosion if it was a tanksoar missile
-						if ((config.getType() == SimType.kTankSoar) && cellObject.hasProperty(Names.kPropertyMissile)) {
-							explosions.add(location);
-						}
-						iter.remove();
-						updatablesLocations.remove(cellObject);
-						removalStateUpdate(cellObject);
-					}
-				}
-				if (config.getType() == SimType.kEaters) {
-					if (cellObject.hasProperty(Names.kPropertyPoints)) {
-						scoreCount += cellObject.getIntProperty(Names.kPropertyPoints) - previousScore;
-					}
-				}
-			}
-			
-			Iterator<java.awt.Point> explosion = explosions.iterator();
-			while (explosion.hasNext()) {
-				setExplosion(explosion.next());
-			}
-		}
-		
-		if (config.getTerminalUnopenedBoxes()) {
-			Iterator<CellObject> iter = unopenedBoxes.iterator();
-			while (iter.hasNext()) {
-				CellObject box = iter.next();
-				if (!isUnopenedBox(box)) {
-					iter.remove();
-				}
-			}
-		}
+		mapModule.updateObjects(this, tsWorld);
 	}
 	
 	public void setPlayer(java.awt.Point location, Player player) {
@@ -974,12 +892,7 @@ public class GridMap {
 	}
 	
 	public int getLocationId(Point location) {
-		assert location != null;
-		assert Soar2D.config.getType() == SimType.kBook;
-
-		ArrayList<CellObject> locationObjects = getAllWithProperty(location, Names.kPropertyNumber);
-		assert locationObjects.size() == 1;
-		return locationObjects.get(0).getIntProperty(Names.kPropertyNumber);
+		return mapModule.getLocationId(this, location);
 	}
 	
 	public int pointsCount(java.awt.Point location) {
@@ -994,21 +907,11 @@ public class GridMap {
 	}
 	
 	public boolean isAvailable(java.awt.Point location) {
-		Cell cell = getCell(location);
-		boolean enterable = cell.enterable();
-		boolean noPlayer = cell.getPlayer() == null;
-		boolean noMissilePack = cell.getAllWithProperty(Names.kPropertyMissiles).size() <= 0;
-		boolean noCharger = cell.getAllWithProperty(Names.kPropertyCharger).size() <= 0;
-		boolean noMBlock = true;
-		if (Soar2D.config.getType() == SimType.kBook) {
-			noMBlock = cell.getAllWithProperty("mblock").size() <= 0;
-		}
-		return enterable && noPlayer && noMissilePack && noCharger && noMBlock;
+		return mapModule.isAvailable(this, location);
 	}
 	
 	public boolean enterable(java.awt.Point location) {
-		Cell cell = getCell(location);
-		return cell.enterable();
+		return getCell(location).enterable();
 	}
 	
 	public CellObject removeObject(java.awt.Point location, String objectName) {
@@ -1050,46 +953,6 @@ public class GridMap {
 		return cell.getObject(name);
 	}
 	
-	private boolean shouldRemoveMissile(TankSoarWorld tsWorld, java.awt.Point location, Cell cell, CellObject missile) {
-		// instead of removing missiles, move them
-
-		// what direction is it going
-		int missileDir = missile.getIntProperty(Names.kPropertyDirection);
-		
-		while (true) {
-			// move it
-			Direction.translate(location, missileDir);
-			
-			// check destination
-			cell = getCell(location);
-			
-			if (!cell.enterable()) {
-				// missile is destroyed
-				return true;
-			}
-			
-			Player player = cell.getPlayer();
-			
-			if (player != null) {
-				// missile is destroyed
-				tsWorld.missileHit(player, this, location, missile, Soar2D.simulation.world.getPlayers());
-				return true;
-			}
-	
-			// missile didn't hit anything
-			
-			// if the missile is not in phase 2, return
-			if (missile.getIntProperty(Names.kPropertyFlyPhase) != 2) {
-				cell.addCellObject(missile);
-				updatablesLocations.put(missile, location);
-				return false;
-			}
-			
-			// we are in phase 2, call update again, this will move us out of phase 2 to phase 3
-			missile.update(location);
-		}
-	}
-		
 	public void handleIncoming() {
 		// TODO: a couple of optimizations possible here
 		// like marking cells that have been checked, depends on direction though
@@ -1119,30 +982,8 @@ public class GridMap {
 		}
 	}
 	
-	private void removalStateUpdate(CellObject object) {
-		switch (config.getType()) {
-		case kTankSoar:
-			if (object.hasProperty(Names.kPropertyCharger)) {
-				if (health && object.hasProperty(Names.kPropertyHealth)) {
-					health = false;
-				}
-				if (energy && object.hasProperty(Names.kPropertyEnergy)) {
-					energy = false;
-				}
-			}
-			if (object.hasProperty(Names.kPropertyMissiles)) {
-				missilePacks -= 1;
-			}
-			break;
-		case kEaters:
-			if (object.hasProperty(Names.kPropertyEdible)) {
-				foodCount -= 1;
-			}
-			if (object.hasProperty(Names.kPropertyPoints)) {
-				scoreCount -= object.getIntProperty(Names.kPropertyPoints);
-			}
-			break;
-		}
+	void removalStateUpdate(CellObject object) {
+		mapModule.removalStateUpdate(this, object);
 		if (config.getTerminalUnopenedBoxes()) {
 			if (isUnopenedBox(object)) {
 				unopenedBoxes.remove(object);
@@ -1182,7 +1023,7 @@ public class GridMap {
 		}
 	}
 	
-	private boolean isUnopenedBox(CellObject object) {
+	boolean isUnopenedBox(CellObject object) {
 		if (object.hasProperty(Names.kPropertyBox)) {
 			String status = object.getProperty(Names.kPropertyStatus);
 			if (status == null || !status.equals(Names.kOpen)) {
@@ -1192,24 +1033,12 @@ public class GridMap {
 		return false;
 	}
 	
-	private void setRedraw(Cell cell) {
+	void setRedraw(Cell cell) {
 		cell.addCellObject(new CellObject(Names.kRedraw));
 	}
 	
 	public void setExplosion(java.awt.Point location) {
-		CellObject explosion = null;
-		switch (config.getType()) {
-		case kTankSoar:
-			explosion = cellObjectManager.createObject(Names.kExplosion);
-			break;
-			
-		case kEaters:
-			explosion = new CellObject(Names.kExplosion);
-			explosion.addProperty(Names.kPropertyLinger, "2");
-			explosion.setLingerUpdate(true);
-			break;
-		}
-		addObjectToCell(location, explosion);
+		addObjectToCell(location, mapModule.createExplosion(this));
 	}
 	
 	public void shutdown() {
