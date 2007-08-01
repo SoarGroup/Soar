@@ -187,5 +187,5 @@ sp {apply*analyze-state*decrease*tower*test
    (write (crlf) |Decrease 1 due to disappearing of tower | <t>  | of height | <height> (crlf))
 }
 
-learn -e
+learn --d
 indifferent-selection --random
