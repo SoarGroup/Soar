@@ -14,9 +14,13 @@ while(my $line = <IF>){
 	}
 	if($line =~ /Depth-from-top ([0-9]+)/){
 		$current_depth = $1;
-		if(scalar(@$level_info <= $current_depth)){
+		while(scalar@$level_info > $current_depth){
+			pop(@$level_info);
+		}
+		if(scalar@$level_info <= $current_depth){
 			push(@$level_info, {});
 		}
+		
 	}
 	if($line =~ /Remaining depth limit ([0-9]+)/i){
 		$level_info->[$current_depth]->{"remaining depth limit"} = $1;

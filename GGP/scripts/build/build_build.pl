@@ -11,8 +11,8 @@ my $file1 = "build.core.manual.7-20.kif";
 #my $file2 = "build.test.heavy.crush.kif";
 #my $file2 = "build.test.bridge.shape.kif";
 #my $file2 = "scenarios/build.composing.src1.kif";
-#my $file2 = "scenarios/build.composing.src2.kif";
-my $file2 = "build.test.stack.high.kif";
+my $file2 = "scenarios/build.composing.src2.kif";
+#my $file2 = "build.test.stack.high.kif";
 my $merged_file = "build.merge.kif";
 my $agent_file = "../../agents/build_final.soar";
 
