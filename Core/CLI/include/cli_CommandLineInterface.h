@@ -217,6 +217,7 @@ protected:
 	bool ParseNumericIndifferentMode(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseOSupportMode(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParsePopD(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParsePredict(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParsePreferences(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParsePrint(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseProductionFind(gSKI::Agent* pAgent, std::vector<std::string>& argv);
@@ -497,6 +498,12 @@ protected:
 	* @brief popd command
 	*************************************************************/
 	bool DoPopD();
+
+	/*************************************************************
+	* @brief predict command
+	* @param pAgent The pointer to the gSKI agent interface
+	*************************************************************/
+	bool DoPredict(gSKI::Agent* pAgent);
 
 	/*************************************************************
 	* @brief preferences command

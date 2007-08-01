@@ -47,6 +47,7 @@ namespace cli {
 		static char const* kCLINumericIndifferentMode;
 		static char const* kCLIOSupportMode;
 		static char const* kCLIPopD;
+		static char const* kCLIPredict;
 		static char const* kCLIPreferences;
 		static char const* kCLIPrint;
 		static char const* kCLIProductionFind;

@@ -73,6 +73,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLINumericIndifferentMode]		= &cli::CommandLineInterface::ParseNumericIndifferentMode;
 	m_CommandMap[Commands::kCLIOSupportMode]				= &cli::CommandLineInterface::ParseOSupportMode;
 	m_CommandMap[Commands::kCLIPopD]						= &cli::CommandLineInterface::ParsePopD;
+	m_CommandMap[Commands::kCLIPredict]						= &cli::CommandLineInterface::ParsePredict;
 	m_CommandMap[Commands::kCLIPreferences]					= &cli::CommandLineInterface::ParsePreferences;
 	m_CommandMap[Commands::kCLIPrint]						= &cli::CommandLineInterface::ParsePrint;
 	m_CommandMap[Commands::kCLIProductionFind]				= &cli::CommandLineInterface::ParseProductionFind;
@@ -127,6 +128,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLINumericIndifferentMode]		= true ;
 	m_EchoMap[Commands::kCLIOSupportMode]				= true ;
 	m_EchoMap[Commands::kCLIPopD]						= true ;
+	m_EchoMap[Commands::kCLIPreferences]				= true ;
 	m_EchoMap[Commands::kCLIPushD]						= true ;
 	m_EchoMap[Commands::kCLIQuit]						= true ;
 	m_EchoMap[Commands::kCLIRemoveWME]					= true ;
