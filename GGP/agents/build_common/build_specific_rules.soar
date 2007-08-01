@@ -46,19 +46,8 @@ sp {selection*propose*init-current-evaluation-depth*top-selection
 -->
    (<s> ^operator <op> + =, >)
    (<op> ^name init-current-evaluation-depth
-         ^value 4)
+         ^value 1)
 }
-
-
-sp {elaborate*save-final-action-sequence
-   (state <s> ^superstate nil
-              ^final-gs.action-sequence <as>)
-
--->
-  (<s> ^saved-action <as>)
-}
-
-
 
 sp {monitor*operators*top-state
 	(state <s> ^operator.name <oname>
@@ -121,3 +110,86 @@ sp {build-monitor*print*info
 -->
 	(write (crlf) |Depth-from-top | <dft> (crlf) |Branching factor | <branching-factor> (crlf)|Remaining branches | <remaining> (crlf) |Remaining depth limit | <cur-dep> (crlf))
 }
+
+
+sp {ebalorate*new-tower
+   (state <s> ^name game
+              ^elaborations <e>
+			  ^duplicate-of <prev-s>)
+	(<e> ^tower.p1 <t>)
+	(<prev-s> -^elaborations.tower.p1 <t>) #new tower
+-->
+	(<s> ^new-tower <t>)
+}
+
+#A tower may disppear if an adjacent object on left/rigth is added to the compound
+sp {ebalorate*disappearing*tower
+   (state <s> ^name game
+              ^elaborations <e>
+			  ^duplicate-of <prev-s>)
+	(<e> -^tower.p1 <t>)
+	(<prev-s> ^elaborations.tower.p1 <t>) #disappearing tower
+-->
+	(<s> ^disappearing-tower <t>)
+}
+
+sp {ebalorate*higher-tower
+   (state <s> ^name game
+              ^elaborations <e>
+			  ^duplicate-of <prev-s>
+			  ^gs <gs>)
+	(<gs> ^object-size <size>)
+	(<size> ^p1 <t> ^p3 <height>)
+	(<e> ^tower.p1 <t>)
+	(<prev-s> ^elaborations.tower.p1 <t> ^gs.object-size <old-size>)
+	(<old-size> ^p1 <t> ^p3 {<old-height> < <height>})
+-->
+	(<s> ^higher-tower <t>)
+}
+
+
+sp {apply*analyze-state*bump*new-tower*test
+   (state <s> ^name game
+              ^operator.name analyze-state
+			  ^gs <gs>
+              ^current-evaluation-depth <ced>)
+	(<s> ^new-tower <t>
+		-^disappearing-tower)
+	(<gs> ^object-size <size>)
+	(<size> ^p1 <t> ^p3 <height>)
+-->
+   (<s> ^current-evaluation-depth <ced> -
+                                  (+ <ced> 1))
+   (write (crlf) |Bump 1 due to appearence of tower | <t> | of height | <height> (crlf))
+}
+
+sp {apply*analyze-state*bump*higher-tower*test
+   (state <s> ^name game
+              ^operator.name analyze-state
+			  ^gs <gs>
+              ^current-evaluation-depth <ced>)
+	(<s> ^higher-tower <t>)
+	(<gs> ^object-size <size>)
+	(<size> ^p1 <t> ^p3 <height>)
+-->
+   (<s> ^current-evaluation-depth <ced> -
+                                  (+ <ced> 1))
+   (write (crlf) |Bump 1 due to higher tower | <t> | of height | <height> (crlf))
+}
+
+sp {apply*analyze-state*decrease*tower*test
+   (state <s> ^name game
+              ^operator.name analyze-state
+			  ^gs <gs>
+              ^current-evaluation-depth <ced>)
+	(<s> ^disappearing-tower <t>
+		-^new-tower)
+	(<gs> ^object-size <size>)
+	(<size> ^p1 <t> ^p3 <height>)
+-->
+   (<s> ^current-evaluation-depth <ced> -
+                                  (- <ced> 1))
+   (write (crlf) |Decrease 1 due to disappearing of tower | <t>  | of height | <height> (crlf))
+}
+
+learn --d
