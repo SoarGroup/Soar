@@ -17,7 +17,7 @@ while(my $line = <IF>){
 		while(scalar@$level_info > $current_depth){
 			pop(@$level_info);
 		}
-		if(scalar@$level_info <= $current_depth){
+		while(scalar@$level_info <= $current_depth){
 			push(@$level_info, {});
 		}
 		
