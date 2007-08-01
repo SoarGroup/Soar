@@ -27,11 +27,16 @@ def p_rule_atomic_sentence(p):
 
 def p_atomic_sentence(p):
 	'''atomic_sentence : NAME
-		                 | LPAREN NAME term_list RPAREN'''
+	                   | LPAREN INITTRUENEXT function RPAREN
+					   | LPAREN LEGALDOES NAME function RPAREN
+	                   | LPAREN NAME term_list RPAREN'''
 	if len(p) == 2:
 		p[0] = Sentence(p[1], [])
-	else:
+	elif len(p) == 5:
 		p[0] = Sentence(p[2], p[3])
+	else:
+		# the role gets lumped into the argument list
+		p[0] = Sentence(p[2], [p[3]] + p[4])
 
 def p_term_list(p):
 	'''term_list : empty 
@@ -58,8 +63,8 @@ def p_term_function(p):
 	p[0] = p[1]
 
 def p_function(p):
-	'function : NAME
-	          | LPAREN NAME term_list RPAREN'
+	'''function : NAME
+	            | LPAREN NAME term_list RPAREN'''
 	# a function is a predicate
 	if len(p) == 2:
 		p[0] = Function(p[1], [])

@@ -1,6 +1,7 @@
 import sys
 from ply import yacc
 import gdllex
+import pdb
 
 output = ''
 tokens = None
@@ -23,11 +24,16 @@ def p_rule(p):
 
 def p_atomic_sentence(p):
 	'''atomic_sentence : NAME
-		                 | LPAREN NAME term_list RPAREN'''
+	                   | LPAREN INITTRUENEXT function RPAREN
+					   | LPAREN LEGALDOES NAME function RPAREN
+	                   | LPAREN NAME term_list RPAREN'''
 	if len(p) == 2:
 		p[0] = 'XXX_SENT_BEGIN\n%s\nXXX_SENT_END' % p[1]
-	else:
+	elif len(p) == 5:
 		p[0] = 'XXX_SENT_BEGIN\n%s\n%s\nXXX_SENT_END' % (p[2], p[3])
+	else:
+		# legal, does
+		p[0] = 'XXX_SENT_BEGIN\n%s\n%s\n%s\nXXX_SENT_END' % (p[2], p[3], p[4])
 
 def p_term_list(p):
 	'''term_list : empty 
@@ -54,8 +60,8 @@ def p_term_function(p):
 	p[0] = p[1]
 
 def p_function(p):
-	'function : NAME
-	          | LPAREN NAME term_list RPAREN'
+	'''function : NAME
+	            | LPAREN NAME term_list RPAREN'''
 	# a function is a predicate
 	if len(p) == 2:
 		p[0] = 'XXX_FUNCTION_BEGIN\n%s\nXXX_FUNCTION_END' % p[1]

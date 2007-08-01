@@ -5,7 +5,8 @@ tokens = (
 		'VAR',
 		'NAME',
 		'NUM',
-#		'RELATION',
+		'INITTRUENEXT',
+		'LEGALDOES',
 		'ARROW',
 		'OR',
 		'NOT',
@@ -43,8 +44,10 @@ def t_NAME(t):
 				t.type = 'NOT'
 	#		elif t.value.lower() == 'distinct':
 	#			t.type = 'DISTINCT'
-	#		elif t.value in relations:
-	#			t.type = 'RELATION'
+			elif t.value in ['init', 'true', 'next']:
+				t.type = 'INITTRUENEXT'
+			elif t.value in ['legal', 'does']:
+				t.type = 'LEGALDOES'
 			else:
 				t.type = 'NAME'
 		
