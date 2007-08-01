@@ -833,6 +833,8 @@ public class WindowManager {
 		case kBook:
     		createBookSide();
     		break;
+		case kKitchen:
+			assert false;
 		}
 		
 		this.reset();
@@ -901,6 +903,9 @@ public class WindowManager {
 		case kTankSoar:
 			fd.setFilterExtensions(new String[] {"*." + Configuration.kTankSoarMapExt, "*.*"});
 			break;
+			
+		case kKitchen:
+			assert false;
 		}
 		
 		String mapFileString = fd.open();
@@ -918,6 +923,10 @@ public class WindowManager {
 				case kTankSoar:
 					mapFileString += "." + Configuration.kTankSoarMapExt;
 					break;
+					
+				case kKitchen:
+					assert false;
+
 				}
 			}
 			
@@ -1041,6 +1050,9 @@ public class WindowManager {
 		case kBook:
 			setupBook();
 			break;
+			
+		case kKitchen:
+			assert false;
 		}
 		
 		statusLine = new Label(shell, SWT.BORDER);

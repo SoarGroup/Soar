@@ -188,7 +188,7 @@ public class Configuration {
 	private String mapPath = null; // Path to maps
 	private String agentPath = null; // Path to agents
 	private SimType simType = SimType.kEaters;
-	public enum SimType { kEaters, kTankSoar, kBook }	
+	public enum SimType { kEaters, kTankSoar, kBook, kKitchen }	
 	public void setType(SimType simType) {
 		this.simType = simType;
 		this.generatePaths();
@@ -1634,5 +1634,21 @@ public class Configuration {
 		config.setType(SimType.kTankSoar);
 		System.out.println("TankSoar:");
 		System.out.println(config.generateXMLString());
+	}
+
+	public String getTitle() {
+		switch(this.simType) {
+		case kEaters:
+			return "Eaters";
+		case kTankSoar:
+			return "TankSoar";
+		case kBook:
+			return "Book";
+		}
+		return null;
+	}
+
+	public boolean runTilOutput() {
+		return simType == SimType.kTankSoar;
 	}
 }

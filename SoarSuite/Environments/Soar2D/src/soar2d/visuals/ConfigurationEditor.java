@@ -308,7 +308,7 @@ public class ConfigurationEditor extends Dialog {
 			currentPage.setLayoutData(gd);
 		}
 		
-		// eaters or tanksoar
+		// what sim
 		{
 			Group simGroup = new Group(currentPage, SWT.NONE);
 			simGroup.setText("Simulation");
@@ -374,6 +374,8 @@ public class ConfigurationEditor extends Dialog {
 				gd.horizontalAlignment = SWT.BEGINNING;
 				bookButton.setLayoutData(gd);
 			}
+			
+			assert config.getType() != SimType.kKitchen;
 		}
 		
 		// map
@@ -576,6 +578,8 @@ public class ConfigurationEditor extends Dialog {
 			tanksoarButton.setSelection(false);
 			bookButton.setSelection(true);
 			break;
+		case kKitchen:
+			assert false;
 		}
 		mapText.setText(config.getMap().getAbsolutePath());
 		nogui.setSelection(config.getNoGUI());

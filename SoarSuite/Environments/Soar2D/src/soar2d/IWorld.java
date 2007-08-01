@@ -15,4 +15,6 @@ public interface IWorld {
 	public void fragPlayer(Player player, GridMap map, PlayersManager players, Point location);
 	public void putInStartingLocation(Player player, GridMap map, PlayersManager players, Point location);
 	public void reset();
+	public int getMinimumAvailableLocations();
+	public void resetPlayer(GridMap map, Player player, PlayersManager players, boolean resetDuringRun);
 }

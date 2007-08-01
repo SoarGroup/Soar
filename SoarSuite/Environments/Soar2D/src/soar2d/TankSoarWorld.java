@@ -693,6 +693,11 @@ public class TankSoarWorld implements IWorld {
 		newLocations.put(player, players.getLocation(player));
 	}
 	
-
-
+	public int getMinimumAvailableLocations() {
+		return Soar2D.config.getMaxMissilePacks() + 1;
+	}
+	
+	public void resetPlayer(GridMap map, Player player, PlayersManager players, boolean resetDuringRun) {
+		player.reset();
+	}
 }

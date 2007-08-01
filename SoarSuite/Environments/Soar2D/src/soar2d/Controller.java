@@ -58,19 +58,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		Soar2D.logger.severe(message);
 		
 		if (Soar2D.wm.using()) {
-			String title = null;
-			switch(Soar2D.config.getType()) {
-			case kEaters:
-				title = "Eaters";
-				break;
-			case kTankSoar:
-				title = "TankSoar";
-				break;
-			case kBook:
-				title = "Book";
-				break;
-			}
-			Soar2D.wm.errorMessage(title, message);
+			Soar2D.wm.errorMessage(Soar2D.config.getTitle(), message);
 		}
 	}
 	
@@ -83,19 +71,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		Soar2D.logger.info(message);
 		
 		if (Soar2D.wm.using()) {
-			String title = null;
-			switch(Soar2D.config.getType()) {
-			case kEaters:
-				title = "Eaters";
-				break;
-			case kTankSoar:
-				title = "TankSoar";
-				break;
-			case kBook:
-				title = "Book";
-				break;
-			}
-			Soar2D.wm.infoMessage(title, message);
+			Soar2D.wm.infoMessage(Soar2D.config.getTitle(), message);
 		}
 	}
 	
