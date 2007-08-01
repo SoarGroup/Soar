@@ -39,8 +39,8 @@ print `$buildKif $environment $targetKif`;
 checkFor("$agentDir/$source.soar");
 checkFor("$agentDir/$target.soar");
 clearLog($source1Log);
-clearLog($targetLogWithSourceLog);
-clearLog($targetLogWithoutSourceLog);
+clearLog($targetWithSourceLog);
+clearLog($targetWithoutSourceLog);
 clearLog($goodThings);
 
 print `$canvasOff`;
