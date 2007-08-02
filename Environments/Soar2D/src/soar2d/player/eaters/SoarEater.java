@@ -10,11 +10,13 @@ import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
-import soar2d.World;
+import soar2d.configuration.BookConfiguration;
+import soar2d.configuration.EatersConfiguration;
+import soar2d.map.CellObject;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;
-import soar2d.world.CellObject;
+import soar2d.world.World;
 
 /**
  * @author voigtjr
@@ -56,7 +58,7 @@ public class SoarEater extends Eater {
 	/**
 	 * the 5x5 vision grid
 	 */
-	private SoarCell[][] cells = new SoarCell[(Soar2D.config.getEaterVision() * 2 ) + 1][(Soar2D.config.getEaterVision() * 2 ) + 1];
+	private SoarCell[][] cells;
 	/**
 	 * soar commands to run before this agent is destroyed
 	 */
@@ -74,6 +76,9 @@ public class SoarEater extends Eater {
 	 */
 	public SoarEater(Agent agent, PlayerConfig playerConfig) {
 		super(playerConfig);
+		
+		EatersConfiguration eConfig = (EatersConfiguration)Soar2D.config.getModule();
+
 		this.agent = agent;
 		this.shutdownCommands = playerConfig.getShutdownCommands();
 		
@@ -90,6 +95,7 @@ public class SoarEater extends Eater {
 		xWME = agent.CreateIntWME(eater, Names.kXID, 0);
 		yWME = agent.CreateIntWME(eater, Names.kYID, 0);
 		
+		cells = new SoarCell[(eConfig.getEaterVision() * 2 ) + 1][(eConfig.getEaterVision() * 2 ) + 1];
 		for (int i = 0; i < cells.length; ++i) {
 			for (int j = 0; j < cells.length; ++j) {
 				cells[i][j] = new SoarCell();
@@ -97,8 +103,8 @@ public class SoarEater extends Eater {
 		}
 
 		// bootstrap the 5x5 grid
-		cells[Soar2D.config.getEaterVision()][Soar2D.config.getEaterVision()].me = agent.CreateIdWME(agent.GetInputLink(), Names.kMyLocationID);
-		createView(Soar2D.config.getEaterVision(), Soar2D.config.getEaterVision());
+		cells[eConfig.getEaterVision()][eConfig.getEaterVision()].me = agent.CreateIdWME(agent.GetInputLink(), Names.kMyLocationID);
+		createView(eConfig.getEaterVision(), eConfig.getEaterVision());
 		
 		random = 0;
 		generateNewRandom();
@@ -118,7 +124,9 @@ public class SoarEater extends Eater {
 	 * each cell's iterated bool gets set true if it is initialized.
 	 */
 	private void createView(int x, int y) {
-		if (x >= 0 && x <= (Soar2D.config.getEaterVision() * 2) && y >=0 && y <= (Soar2D.config.getEaterVision() * 2) && !cells[x][y].iterated) {
+		EatersConfiguration eConfig = (EatersConfiguration)Soar2D.config.getModule();
+
+		if (x >= 0 && x <= (eConfig.getEaterVision() * 2) && y >=0 && y <= (eConfig.getEaterVision() * 2) && !cells[x][y].iterated) {
 			cells[x][y].iterated = true;
 
 			if (x > 0) {
@@ -128,7 +136,7 @@ public class SoarEater extends Eater {
 					cells[x][y].west = agent.CreateSharedIdWME(cells[x][y].me, Names.kWest, cells[x - 1][y].me);
 			}
 			
-			if (x < (Soar2D.config.getEaterVision() * 2)) {
+			if (x < (eConfig.getEaterVision() * 2)) {
 				if (cells[x + 1][y].me == null)
 					cells[x + 1][y].me = agent.CreateIdWME(cells[x][y].me, Names.kEast);
 				else
@@ -142,7 +150,7 @@ public class SoarEater extends Eater {
 					cells[x][y].north = agent.CreateSharedIdWME(cells[x][y].me, Names.kNorth, cells[x][y - 1].me);
 			}
 			
-			if (y < (Soar2D.config.getEaterVision() * 2)) {
+			if (y < (eConfig.getEaterVision() * 2)) {
 				if (cells[x][y + 1].me == null)
 					cells[x][y + 1].me = agent.CreateIdWME(cells[x][y].me, Names.kSouth);
 				else
@@ -173,6 +181,7 @@ public class SoarEater extends Eater {
 	 */
 	public void update(java.awt.Point location) {
 		World world = Soar2D.simulation.world;
+		EatersConfiguration eConfig = (EatersConfiguration)Soar2D.config.getModule();
 
 		// check to see if we've moved
 		super.update(location);
@@ -185,9 +194,9 @@ public class SoarEater extends Eater {
 		// update the 5x5
 		java.awt.Point viewLocation = new java.awt.Point();
 		for (int x = 0; x < cells.length; ++x) {
-			viewLocation.x = x - Soar2D.config.getEaterVision() + location.x;
+			viewLocation.x = x - eConfig.getEaterVision() + location.x;
 			for (int y = 0; y < cells[x].length; ++y) {
-				viewLocation.y = y - Soar2D.config.getEaterVision() + location.y;
+				viewLocation.y = y - eConfig.getEaterVision() + location.y;
 
 				// get the current soarcell to update
 				SoarCell soarCell = cells[x][y];

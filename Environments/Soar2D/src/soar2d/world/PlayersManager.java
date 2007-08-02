@@ -1,4 +1,4 @@
-package soar2d;
+package soar2d.world;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;

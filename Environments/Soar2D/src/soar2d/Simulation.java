@@ -15,6 +15,7 @@ import soar2d.player.eaters.SoarEater;
 import soar2d.player.eaters.ToscaEater;
 import soar2d.player.tanksoar.SoarTank;
 import soar2d.player.tanksoar.Tank;
+import soar2d.world.World;
 
 /**
  * @author voigtjr
@@ -73,7 +74,7 @@ public class Simulation {
 		}
 		
 		// Tanksoar uses run til output
-		runTilOutput = Soar2D.config.runTilOutput();
+		runTilOutput = Soar2D.config.getRunTilOutput();
 		
 		// Initialize Soar
 		if (Soar2D.config.getRemote()) {
@@ -433,10 +434,10 @@ public class Simulation {
 		String os = System.getProperty("os.name");
 		String commandLine;
 		if (os.matches(".+indows.*") || os.matches("INDOWS")) {
-			commandLine = "javaw -jar \"" + Soar2D.config.getBasePath() 
+			commandLine = "javaw -jar \"" + getBasePath() 
 			+ "..\\..\\SoarLibrary\\bin\\SoarJavaDebugger.jar\" -cascade -remote -agent " + agentName;
 		} else {
-			commandLine = System.getProperty("java.home") + "/bin/java -jar " + Soar2D.config.getBasePath() 
+			commandLine = System.getProperty("java.home") + "/bin/java -jar " + getBasePath()
 			+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -XstartOnFirstThread -cascade -remote -agent " + agentName;
 		}
 		
@@ -709,5 +710,9 @@ public class Simulation {
 	 */
 	public boolean isDone() {
 		return world.isTerminal();
+	}
+
+	public String getBasePath() {
+		return System.getProperty("user.dir") + System.getProperty("file.separator");
 	}
 }

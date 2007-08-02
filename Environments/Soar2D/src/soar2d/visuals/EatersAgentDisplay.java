@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
 import soar2d.player.*;
+import soar2d.world.PlayersManager;
 
 public class EatersAgentDisplay extends AgentDisplay {
 	
@@ -17,7 +18,7 @@ public class EatersAgentDisplay extends AgentDisplay {
 	
 	Group m_Group;
 	Table m_AgentTable;
-	VisualWorld m_AgentWorld;
+	EatersVisualWorld m_AgentWorld;
 	Player selectedPlayer;
 	TableItem[] m_Items = new TableItem[0];
 	PlayersManager players;
@@ -118,7 +119,7 @@ public class EatersAgentDisplay extends AgentDisplay {
 			worldGroup.setLayout(gl);
 		}
 
-		m_AgentWorld = new VisualWorld(worldGroup, SWT.BORDER, kAgentMapCellSize);
+		m_AgentWorld = new EatersVisualWorld(worldGroup, SWT.BORDER, kAgentMapCellSize);
 		{
 			GridData gd = new GridData();
 			gd.horizontalSpan = 2;

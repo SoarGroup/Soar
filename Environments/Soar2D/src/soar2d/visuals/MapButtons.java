@@ -6,6 +6,7 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
+import soar2d.configuration.Configuration;
 
 public class MapButtons extends Composite {
 	private Button m_ChangeMapButton;
@@ -30,20 +31,7 @@ public class MapButtons extends Composite {
 		FileDialog fd = new FileDialog(getShell(), SWT.OPEN);
 		fd.setText("Open");
 		fd.setFilterPath(Soar2D.config.getMapPath());
-		String ext = null;
-		switch (Soar2D.config.getType()) {
-		case kTankSoar:
-			ext = Configuration.kTankSoarMapExt;
-			break;
-		case kEaters:
-			ext = Configuration.kEatersMapExt;
-			break;
-		case kBook:
-			ext = Configuration.kBookMapExt;
-			break;
-		case kKitchen:
-			assert false;
-		}
+		String ext = Soar2D.config.getMapExt();
 		fd.setFilterExtensions(new String[] {"*." + ext, "*.*"});
 		VisualWorld.internalRepaint = true;
 		String map = fd.open();

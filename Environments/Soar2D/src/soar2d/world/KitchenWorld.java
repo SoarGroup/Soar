@@ -1,17 +1,18 @@
-package soar2d;
+package soar2d.world;
 
 import java.awt.Point;
 import java.util.Iterator;
 
+import soar2d.Direction;
+import soar2d.Soar2D;
+import soar2d.map.GridMap;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
-import soar2d.world.GridMap;
 
 public class KitchenWorld implements IWorld {
 
 	public void fragPlayer(Player player, GridMap map, PlayersManager players,
 			Point location) {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -21,12 +22,10 @@ public class KitchenWorld implements IWorld {
 
 	public void putInStartingLocation(Player player, GridMap map,
 			PlayersManager players, Point location) {
-		// TODO Auto-generated method stub
 
 	}
 
 	public void reset() {
-		// TODO Auto-generated method stub
 
 	}
 

@@ -1,30 +1,25 @@
-package soar2d.world;
+package soar2d.map;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Iterator;
 
-import soar2d.TankSoarWorld;
+import soar2d.Names;
+import soar2d.configuration.Configuration.SimType;
+import soar2d.world.TankSoarWorld;
 
-public class KitchenMap implements IGridMap {
+public class BookMap implements IGridMap {
 
-	public void addObjectToCell(GridMap map, CellObject object) {
-		// TODO Auto-generated method stub
-		
+	public void addObjectToCell(GridMap gridMap, CellObject object) {
 	}
 
 	public int getLocationId(GridMap map, Point location) {
-		// TODO Auto-generated method stub
-		return -1;
-	}
+		assert location != null;
+		assert map.config.getType() == SimType.kBook;
 
-	public boolean isAvailable(GridMap map, Point location) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public boolean objectIsBackground(CellObject cellObject) {
-		// TODO Auto-generated method stub
-		return false;
+		ArrayList<CellObject> locationObjects = map.getAllWithProperty(location, Names.kPropertyNumber);
+		assert locationObjects.size() == 1;
+		return locationObjects.get(0).getIntProperty(Names.kPropertyNumber);
 	}
 
 	public void postCell(boolean background, GridMap map, Point location) {
@@ -32,8 +27,19 @@ public class KitchenMap implements IGridMap {
 		
 	}
 
+	public boolean isAvailable(GridMap map, Point location) {
+		Cell cell = map.getCell(location);
+		boolean enterable = cell.enterable();
+		boolean noPlayer = cell.getPlayer() == null;
+		boolean noMBlock = cell.getAllWithProperty("mblock").size() <= 0;
+		return enterable && noPlayer && noMBlock;
+	}
+
+	public boolean objectIsBackground(CellObject cellObject) {
+		return false;
+	}
+
 	public void removalStateUpdate(GridMap map, CellObject object) {
-		// TODO Auto-generated method stub
 		
 	}
 

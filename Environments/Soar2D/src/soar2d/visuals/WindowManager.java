@@ -13,10 +13,12 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
-import soar2d.Configuration.SimType;
+import soar2d.configuration.BookConfiguration;
+import soar2d.configuration.Configuration;
+import soar2d.configuration.Configuration.SimType;
+import soar2d.map.CellObject;
+import soar2d.map.GridMap;
 import soar2d.player.*;
-import soar2d.world.CellObject;
-import soar2d.world.GridMap;
 
 public class WindowManager {
 	private static Logger logger = Logger.getLogger("soar2d");
@@ -128,7 +130,7 @@ public class WindowManager {
 	public void setupEaters() {
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
-		visualWorld = new VisualWorld(worldGroup, SWT.NONE, kEatersMainMapCellSize);
+		visualWorld = new EatersVisualWorld(worldGroup, SWT.NONE, kEatersMainMapCellSize);
 		visualWorld.setMap(Soar2D.simulation.world.getMap());
 
 		visualWorld.addMouseListener(new MouseAdapter() {
@@ -426,9 +428,11 @@ public class WindowManager {
 	}
 	
 	public void setupBook() {
+		BookConfiguration bConfig = (BookConfiguration)Soar2D.config.getModule();
+		
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
-		visualWorld = new VisualWorld(worldGroup, SWT.NONE, Soar2D.config.getBookCellSize());
+		visualWorld = new BookVisualWorld(worldGroup, SWT.NONE, bConfig.getBookCellSize());
 		visualWorld.setMap(Soar2D.simulation.world.getMap());
 
 		visualWorld.addMouseListener(new MouseAdapter() {
@@ -502,7 +506,7 @@ public class WindowManager {
 	public void setupTankSoar() {
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
-		visualWorld = new VisualWorld(worldGroup, SWT.NONE, kTanksoarMainMapCellSize);
+		visualWorld = new TankSoarVisualWorld(worldGroup, SWT.NONE, kTanksoarMainMapCellSize);
 		visualWorld.setMap(Soar2D.simulation.world.getMap());
 		
 		visualWorld.addKeyListener(new KeyAdapter() {
@@ -688,7 +692,8 @@ public class WindowManager {
 		}
 
 		if (Soar2D.config.getType() == SimType.kTankSoar) {
-			visualWorld.updateBackground(location);
+			TankSoarVisualWorld tsVisualWorld = (TankSoarVisualWorld)visualWorld;
+			tsVisualWorld.updateBackground(location);
 		}
 		visualWorld.redraw();
 		return;
@@ -891,43 +896,12 @@ public class WindowManager {
 		fd.setText("Map must be saved to continue...");
 		fd.setFilterPath(Soar2D.config.getMapPath());
 		
-		switch (Soar2D.config.getType()) {
-		case kBook:
-			fd.setFilterExtensions(new String[] {"*." + Configuration.kBookMapExt, "*.*"});
-			break;
-			
-		case kEaters:
-			fd.setFilterExtensions(new String[] {"*." + Configuration.kEatersMapExt, "*.*"});
-			break;
-			
-		case kTankSoar:
-			fd.setFilterExtensions(new String[] {"*." + Configuration.kTankSoarMapExt, "*.*"});
-			break;
-			
-		case kKitchen:
-			assert false;
-		}
+		fd.setFilterExtensions(new String[] {"*." + Soar2D.config.getMapExt(), "*.*"});
 		
 		String mapFileString = fd.open();
 		if (mapFileString != null) {
 			if (!mapFileString.matches(".*\\..+")) {
-				switch (Soar2D.config.getType()) {
-				case kBook:
-					mapFileString += "." + Configuration.kBookMapExt;
-					break;
-					
-				case kEaters:
-					mapFileString += "." + Configuration.kEatersMapExt;
-					break;
-					
-				case kTankSoar:
-					mapFileString += "." + Configuration.kTankSoarMapExt;
-					break;
-					
-				case kKitchen:
-					assert false;
-
-				}
+				mapFileString += "." + Soar2D.config.getMapExt();
 			}
 			
 			File mapFile = new File(mapFileString);

@@ -1,8 +1,8 @@
-package soar2d.world;
+package soar2d.map;
 
 import java.awt.Point;
 
-import soar2d.TankSoarWorld;
+import soar2d.world.TankSoarWorld;
 
 public interface IGridMap {
 

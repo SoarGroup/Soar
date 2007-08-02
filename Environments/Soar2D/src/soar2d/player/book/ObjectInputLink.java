@@ -4,8 +4,8 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
-import soar2d.World;
-import soar2d.world.GridMap;
+import soar2d.map.GridMap;
+import soar2d.world.World;
 
 class ObjectInputLink {
 	SoarRobot robot;

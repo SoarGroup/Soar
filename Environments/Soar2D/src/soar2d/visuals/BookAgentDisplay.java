@@ -10,6 +10,7 @@ import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
 import soar2d.player.*;
+import soar2d.world.PlayersManager;
 
 public class BookAgentDisplay extends AgentDisplay {
 	

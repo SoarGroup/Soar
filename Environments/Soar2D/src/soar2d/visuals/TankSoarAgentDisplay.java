@@ -6,7 +6,9 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
+import soar2d.configuration.TankSoarConfiguration;
 import soar2d.player.*;
+import soar2d.world.PlayersManager;
 
 public class TankSoarAgentDisplay extends AgentDisplay {
 	
@@ -44,6 +46,9 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 
 	public TankSoarAgentDisplay(final Composite parent) {
 		super(parent);
+		
+		TankSoarConfiguration tConfig = (TankSoarConfiguration)Soar2D.config.getModule();
+
 
 		setLayout(new FillLayout());
 		
@@ -178,7 +183,7 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 
 		m_Radar = new ProgressBar(row5, SWT.NONE | SWT.VERTICAL);
 		m_Radar.setMinimum(0);
-		m_Radar.setMaximum(Soar2D.config.getRadarHeight());
+		m_Radar.setMaximum(tConfig.getRadarHeight());
 		{
 			GridData gd = new GridData();
 			gd.heightHint = m_AgentWorld.getHeight();

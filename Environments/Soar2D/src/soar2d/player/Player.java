@@ -4,7 +4,7 @@ import java.awt.geom.Point2D;
 import java.util.logging.*;
 
 import soar2d.*;
-import soar2d.world.CellObject;
+import soar2d.map.CellObject;
 
 /**
  * @author voigtjr

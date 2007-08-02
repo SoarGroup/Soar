@@ -9,11 +9,11 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
-import soar2d.PlayersManager;
-import soar2d.World;
+import soar2d.map.CellObject;
+import soar2d.map.GridMap;
 import soar2d.player.Player;
-import soar2d.world.CellObject;
-import soar2d.world.GridMap;
+import soar2d.world.PlayersManager;
+import soar2d.world.World;
 
 class SelfInputLink {
 	SoarRobot robot;

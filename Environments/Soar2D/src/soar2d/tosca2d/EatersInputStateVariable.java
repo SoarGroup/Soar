@@ -12,8 +12,10 @@ import java.awt.Point;
 import java.util.ArrayList;
 
 import soar2d.*;
+import soar2d.configuration.EatersConfiguration;
+import soar2d.map.CellObject;
 import soar2d.player.eaters.ToscaEater;
-import soar2d.world.CellObject;
+import soar2d.world.World;
 import tosca.Boolean;
 import tosca.Group;
 import tosca.Integer;
@@ -119,6 +121,8 @@ public class EatersInputStateVariable extends JavaStateVariable {
 	
 	public void update(int time, soar2d.player.eaters.ToscaEater eater, java.awt.Point location) {
 		World world = Soar2D.simulation.world;
+		EatersConfiguration eConfig = (EatersConfiguration)Soar2D.config.getModule();
+		
 		// The value is stored as a group containing some named values and
 		// then a map group which contains all of the cells around this eater
 		Group main = new Group() ;
@@ -214,7 +218,7 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		Group map = new Group() ;
 		
 		java.awt.Point viewLocation = new java.awt.Point();
-		int visionRange = Soar2D.config.getEaterVision() ;
+		int visionRange = eConfig.getEaterVision() ;
 		for (int x = location.x - visionRange; x <= location.x + visionRange; ++x) {
 			for (int y = location.y - visionRange; y <= location.y + visionRange; ++y) {
 				viewLocation.x = x ;

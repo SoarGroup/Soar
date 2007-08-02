@@ -2,12 +2,13 @@ package soar2d.player.book;
 
 import java.util.Iterator;
 
-import soar2d.PlayersManager;
 import soar2d.Soar2D;
-import soar2d.World;
+import soar2d.configuration.BookConfiguration;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;
+import soar2d.world.PlayersManager;
+import soar2d.world.World;
 
 public class Dog extends Player {
 
@@ -20,6 +21,7 @@ public class Dog extends Player {
 
 	public void update(java.awt.Point location) {
 		World world = Soar2D.simulation.world;
+		BookConfiguration bConfig = (BookConfiguration)Soar2D.config.getModule();
 		
 		super.update(location);
 		
@@ -34,7 +36,7 @@ public class Dog extends Player {
 				}
 				if (player.getLocationId() == this.getLocationId()) {
 					double angleOff = players.angleOff(this, player);
-					double maxAngleOff = Soar2D.config.getVisionCone() / 2;
+					double maxAngleOff = bConfig.getVisionCone() / 2;
 					if (Math.abs(angleOff) <= maxAngleOff) {
 						target = player;
 						targetAngleOff = angleOff;

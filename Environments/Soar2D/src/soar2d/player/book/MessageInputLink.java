@@ -3,7 +3,7 @@ package soar2d.player.book;
 import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
-import soar2d.World;
+import soar2d.world.World;
 
 class MessageInputLink {
 	SoarRobot robot;
