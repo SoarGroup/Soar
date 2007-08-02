@@ -114,6 +114,7 @@
 (item scroll2)
 
 ; Item typings (note: a bow includes a quiver and a set of arrows)
+(armor armor1 ringmail)
 (weapon weapon1 sword)
 (potion potion1 speed)
 (scroll scroll1 restoreHealth)
