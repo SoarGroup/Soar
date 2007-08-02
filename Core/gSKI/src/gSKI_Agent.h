@@ -553,8 +553,9 @@ namespace gSKI
 		egSKIOSupportMode GetOSupportMode(Error* err = 0);
 		void SetOSupportMode(egSKIOSupportMode mode, Error* err = 0);
 
-		egSKIUserSelectType GetIndifferentSelection(Error* err = 0);
-		void SetIndifferentSelection(egSKIUserSelectType t, Error* err = 0);
+		// With modification, removed these shadow functions
+		//egSKIUserSelectType GetIndifferentSelection(Error* err = 0);
+		//void SetIndifferentSelection(egSKIUserSelectType t, Error* err = 0);
 
 		int GetDefaultWMEDepth(Error* err = 0);
 		void SetDefaultWMEDepth(int d, Error* err = 0);

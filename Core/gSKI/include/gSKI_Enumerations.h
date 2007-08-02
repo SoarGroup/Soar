@@ -739,13 +739,13 @@
       gSKI_PARAM_NUM_VARIABLE = -1
    } egSKIParamNumType;
 
-   typedef enum
+   /*typedef enum
    {
       gSKI_USER_SELECT_FIRST,    /// just choose the first candidate item
       gSKI_USER_SELECT_ASK,      /// ask the user
       gSKI_USER_SELECT_RANDOM,   /// pick one at random
       gSKI_USER_SELECT_LAST,     /// choose the last item
-   } egSKIUserSelectType;
+   } egSKIUserSelectType;*/
 
    typedef enum
    {

@@ -951,7 +951,8 @@ namespace gSKI
 	  }
    }
 
-   egSKIUserSelectType Agent::GetIndifferentSelection(Error* err /*= 0*/)
+   /*
+   egSKIUserSelectType Agent::GetIndifferentSelection(Error* err)
    {
       int us = m_agent->sysparams[USER_SELECT_MODE_SYSPARAM];
 
@@ -967,7 +968,7 @@ namespace gSKI
       }
    }
 
-   void Agent::SetIndifferentSelection(egSKIUserSelectType t, Error* err /*= 0*/)
+   void Agent::SetIndifferentSelection(egSKIUserSelectType t, Error* err)
    {
       int us = -1;
       switch(t)
@@ -983,7 +984,7 @@ namespace gSKI
       {
          m_agent->sysparams[USER_SELECT_MODE_SYSPARAM] = us;
       }
-   }
+   }*/
 
    int Agent::GetDefaultWMEDepth(Error* err)
    {
