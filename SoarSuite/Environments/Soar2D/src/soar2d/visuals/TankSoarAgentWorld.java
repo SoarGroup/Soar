@@ -27,10 +27,9 @@ public class TankSoarAgentWorld extends Canvas implements PaintListener {
 
 	public TankSoarAgentWorld(Composite parent, int style) {
 		super(parent, style);
-		TankSoarConfiguration tConfig = (TankSoarConfiguration)Soar2D.config.getModule();
 		
-		radar = new Image[tConfig.getRadarWidth()][tConfig.getRadarHeight()];
-		tanks = new Color[tConfig.getRadarWidth()][tConfig.getRadarHeight()];
+		radar = new Image[Soar2D.tConfig.getRadarWidth()][Soar2D.tConfig.getRadarHeight()];
+		tanks = new Color[Soar2D.tConfig.getRadarWidth()][Soar2D.tConfig.getRadarHeight()];
 
 		question = new Image(WindowManager.display, Soar2D.class.getResourceAsStream("/images/tanksoar/question.gif"));
 		tankImage = new Image(WindowManager.display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank-mini.gif"));
@@ -70,8 +69,6 @@ public class TankSoarAgentWorld extends Canvas implements PaintListener {
 	}
 	
 	public void update(Player tank) {
-		TankSoarConfiguration tConfig = (TankSoarConfiguration)Soar2D.config.getModule();
-		
 		if (!tank.getRadarSwitch()) {
 			if (blank) {
 				return;
@@ -86,8 +83,8 @@ public class TankSoarAgentWorld extends Canvas implements PaintListener {
 
 		RadarCell[][] tankRadar = tank.getRadar();
 		int distance = tank.getObservedDistance();
-		for(int x = 0; x < tConfig.getRadarWidth(); ++x){
-			for(int y = 0; y < tConfig.getRadarHeight(); ++y){
+		for(int x = 0; x < Soar2D.tConfig.getRadarWidth(); ++x){
+			for(int y = 0; y < Soar2D.tConfig.getRadarHeight(); ++y){
 				if ((y < distance) || (y == distance && x == 1)) {
 					if (x == 1 && y == 0) {
 						radar[x][y] = tankImage;
@@ -150,15 +147,11 @@ public class TankSoarAgentWorld extends Canvas implements PaintListener {
 	}
 
 	public int getWidth() {
-		TankSoarConfiguration tConfig = (TankSoarConfiguration)Soar2D.config.getModule();
-
-		return kCellSize * tConfig.getRadarWidth();
+		return kCellSize * Soar2D.tConfig.getRadarWidth();
 	}
 	
 	public int getHeight() {
-		TankSoarConfiguration tConfig = (TankSoarConfiguration)Soar2D.config.getModule();
-
-		return kCellSize * tConfig.getRadarHeight();
+		return kCellSize * Soar2D.tConfig.getRadarHeight();
 	}
 
 	public void enable() {

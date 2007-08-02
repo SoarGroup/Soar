@@ -13,6 +13,7 @@ import org.jdom.output.XMLOutputter;
 
 import soar2d.ClientConfig;
 import soar2d.Direction;
+import soar2d.Soar2D;
 import soar2d.player.*;
 
 /**
@@ -157,16 +158,20 @@ public class Configuration {
 		this.simType = simType;
 		switch (simType) {
 		case kBook:
-			cModule = new BookConfiguration(); 
+			cModule = new BookConfiguration();
+			Soar2D.bConfig = (BookConfiguration)cModule.getModule();
 			break;
 		case kEaters:
 			cModule = new EatersConfiguration(); 
+			Soar2D.eConfig = (EatersConfiguration)cModule.getModule();
 			break;
 		case kKitchen:
 			cModule = new KitchenConfiguration(); 
+			Soar2D.kConfig = (KitchenConfiguration)cModule.getModule();
 			break;
 		case kTankSoar:
 			cModule = new TankSoarConfiguration(); 
+			Soar2D.tConfig = (TankSoarConfiguration)cModule.getModule();
 			break;
 		}
 	}
@@ -1015,10 +1020,6 @@ public class Configuration {
 
 	public boolean getRunTilOutput() {
 		return cModule.getRunTilOutput();
-	}
-
-	public BaseConfiguration getModule() {
-		return cModule.getModule();
 	}
 
 	public int getCycleTimeSlice() {

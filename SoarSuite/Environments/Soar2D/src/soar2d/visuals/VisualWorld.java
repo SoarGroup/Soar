@@ -107,18 +107,6 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 		}
 	}
 
-	public int getMiniWidth() {
-		EatersConfiguration eConfig = (EatersConfiguration)Soar2D.config.getModule();
-
-		return cellSize * ((eConfig.getEaterVision() * 2) + 1);
-	}
-	
-	public int getMiniHeight() {
-		EatersConfiguration eConfig = (EatersConfiguration)Soar2D.config.getModule();
-
-		return cellSize * ((eConfig.getEaterVision() * 2) + 1);
-	}
-	
 	java.awt.Point getCellAtPixel(int x, int y) {
 		x /= cellSize;
 		y /= cellSize;

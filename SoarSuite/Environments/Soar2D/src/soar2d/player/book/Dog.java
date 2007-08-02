@@ -18,10 +18,9 @@ public class Dog extends Player {
 
 	Player target;
 	double targetAngleOff;
-
+	
 	public void update(java.awt.Point location) {
 		World world = Soar2D.simulation.world;
-		BookConfiguration bConfig = (BookConfiguration)Soar2D.config.getModule();
 		
 		super.update(location);
 		
@@ -36,7 +35,7 @@ public class Dog extends Player {
 				}
 				if (player.getLocationId() == this.getLocationId()) {
 					double angleOff = players.angleOff(this, player);
-					double maxAngleOff = bConfig.getVisionCone() / 2;
+					double maxAngleOff = Soar2D.bConfig.getVisionCone() / 2;
 					if (Math.abs(angleOff) <= maxAngleOff) {
 						target = player;
 						targetAngleOff = angleOff;

@@ -121,7 +121,6 @@ public class EatersInputStateVariable extends JavaStateVariable {
 	
 	public void update(int time, soar2d.player.eaters.ToscaEater eater, java.awt.Point location) {
 		World world = Soar2D.simulation.world;
-		EatersConfiguration eConfig = (EatersConfiguration)Soar2D.config.getModule();
 		
 		// The value is stored as a group containing some named values and
 		// then a map group which contains all of the cells around this eater
@@ -218,7 +217,7 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		Group map = new Group() ;
 		
 		java.awt.Point viewLocation = new java.awt.Point();
-		int visionRange = eConfig.getEaterVision() ;
+		int visionRange = Soar2D.eConfig.getEaterVision() ;
 		for (int x = location.x - visionRange; x <= location.x + visionRange; ++x) {
 			for (int y = location.y - visionRange; y <= location.y + visionRange; ++y) {
 				viewLocation.x = x ;

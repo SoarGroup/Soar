@@ -26,9 +26,15 @@ public class EatersVisualWorld extends VisualWorld {
 		agentLocation = location;
 	}
 	
+	public int getMiniWidth() {
+		return cellSize * ((Soar2D.eConfig.getEaterVision() * 2) + 1);
+	}
+	
+	public int getMiniHeight() {
+		return cellSize * ((Soar2D.eConfig.getEaterVision() * 2) + 1);
+	}
+	
 	public void paintControl(PaintEvent e) {
-		EatersConfiguration eConfig = (EatersConfiguration)Soar2D.config.getModule();
-
 		GC gc = e.gc;		
 		gc.setFont(font);
         gc.setForeground(WindowManager.black);
@@ -66,20 +72,20 @@ public class EatersVisualWorld extends VisualWorld {
 		java.awt.Point location = new java.awt.Point();
 		for(location.x = 0; location.x < map.getSize(); ++location.x){
 			if (agentLocation != null) {
-				if ((location.x < agentLocation.x - eConfig.getEaterVision()) || (location.x > agentLocation.x + eConfig.getEaterVision())) {
+				if ((location.x < agentLocation.x - Soar2D.eConfig.getEaterVision()) || (location.x > agentLocation.x + Soar2D.eConfig.getEaterVision())) {
 					continue;
 				} 
-				xDraw = location.x + eConfig.getEaterVision() - agentLocation.x;
+				xDraw = location.x + Soar2D.eConfig.getEaterVision() - agentLocation.x;
 			} else {
 				xDraw = location.x;
 			}
 			
 			for(location.y = 0; location.y < map.getSize(); ++location.y){
 				if (agentLocation != null) {
-					if ((location.y < agentLocation.y - eConfig.getEaterVision()) || (location.y > agentLocation.y + eConfig.getEaterVision())) {
+					if ((location.y < agentLocation.y - Soar2D.eConfig.getEaterVision()) || (location.y > agentLocation.y + Soar2D.eConfig.getEaterVision())) {
 						continue;
 					} 
-					yDraw = location.y + eConfig.getEaterVision() - agentLocation.y;
+					yDraw = location.y + Soar2D.eConfig.getEaterVision() - agentLocation.y;
 				} else {
 					yDraw = location.y;
 				}

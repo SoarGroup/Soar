@@ -23,6 +23,7 @@ import soar2d.visuals.VisualWorld.DrawMissile;
 import soar2d.world.PlayersManager;
 
 public class BookVisualWorld extends VisualWorld {
+	
 	public BookVisualWorld(Composite parent, int style, int cellSize) {
 		super(parent, style, cellSize);
 	}
@@ -76,9 +77,8 @@ public class BookVisualWorld extends VisualWorld {
 				} else {
 					
 					if (map.getAllWithProperty(location, Names.kPropertyGatewayRender).size() == 0) {
-						BookConfiguration bConfig = (BookConfiguration)Soar2D.config.getModule();
 
-						if (!bConfig.getColoredRooms()) {
+						if (!Soar2D.bConfig.getColoredRooms()) {
 							// normal:
 							gc.setBackground(WindowManager.widget_background);
 						} else {
