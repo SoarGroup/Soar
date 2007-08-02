@@ -1,7 +1,6 @@
 package soar2d.visuals;
 
 import java.util.*;
-import java.awt.geom.Point2D;
 
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.PaintEvent;
@@ -10,13 +9,9 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Path;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
-import soar2d.configuration.BookConfiguration;
-import soar2d.configuration.EatersConfiguration;
-import soar2d.configuration.Configuration.SimType;
 import soar2d.map.*;
 import soar2d.player.*;
 import soar2d.world.PlayersManager;

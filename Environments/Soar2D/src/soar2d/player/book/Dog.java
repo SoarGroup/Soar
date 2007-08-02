@@ -3,7 +3,6 @@ package soar2d.player.book;
 import java.util.Iterator;
 
 import soar2d.Soar2D;
-import soar2d.configuration.BookConfiguration;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;
