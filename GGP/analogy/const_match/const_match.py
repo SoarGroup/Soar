@@ -8,6 +8,8 @@ from GDL import *
 from PositionIndex import PositionIndex
 import run_mapper
 
+import pdb
+
 # constants to ignore, along with numbers
 exclude = ['north','south','east','west']
 
@@ -38,6 +40,7 @@ consts2rels_tgt = build_constant_relations(gdlyacc.int_rep)
 const_match_scores = []
 for src_const in consts2rels_src:
 	for tgt_const in consts2rels_tgt:
+		#print "%s => %s" % (src_const, tgt_const)
 		if src_const not in consts2rels_src:
 			const_match_scores.append((src_const, tgt_const, 0))
 			continue
@@ -46,15 +49,17 @@ for src_const in consts2rels_src:
 			continue
 		rel2pos = {} # rel -> [pos]
 		everything = consts2rels_src[src_const] + consts2rels_tgt[tgt_const]
-		for rel, pos in everything:
+		for pos, rel in everything:
 			rel2pos.setdefault(rel,[]).append(pos)
 		
 		score = 0
 		for rel, poses in rel2pos.items():
 			if len(poses) == 2:
 				if poses[0] == poses[1]:
-					score += 2 # extra points for position match
+					#print "  Match position for %s" % rel
+					score += 3 # extra points for position match
 				else:
+					#print "  Match %s" % rel
 					score += 1
 				
 		const_match_scores.append((src_const, tgt_const, score))
@@ -67,5 +72,8 @@ while len(const_match_scores) > 0:
 	const_match_scores = filter(lambda x: x[0] != src_const and x[1] != tgt_const, const_match_scores)
 	const_match[src_const] = tgt_const
 
+for src_pred, tgt_pred in pred_map.items():
+	print 'PREDICATE %s %s' % (src_pred, tgt_pred)
+
 for src, tgt in const_match.items():
-	print '%s ==> %s' % (src, tgt)
+	print 'CONSTANT %s %s' % (src, tgt)
