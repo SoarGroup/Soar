@@ -12,7 +12,6 @@ import java.awt.Point;
 import java.util.ArrayList;
 
 import soar2d.*;
-import soar2d.configuration.EatersConfiguration;
 import soar2d.map.CellObject;
 import soar2d.player.eaters.ToscaEater;
 import soar2d.world.World;

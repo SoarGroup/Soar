@@ -8,18 +8,13 @@ import java.util.Iterator;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Path;
 import org.eclipse.swt.widgets.Composite;
 
-import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
-import soar2d.configuration.BookConfiguration;
-import soar2d.configuration.Configuration.SimType;
 import soar2d.map.CellObject;
 import soar2d.player.Player;
-import soar2d.visuals.VisualWorld.DrawMissile;
 import soar2d.world.PlayersManager;
 
 public class BookVisualWorld extends VisualWorld {
@@ -58,8 +53,6 @@ public class BookVisualWorld extends VisualWorld {
 		}
 		
 		// Draw world
-		int fill1, fill2;
-		ArrayList<DrawMissile> drawMissiles = new ArrayList<DrawMissile>();
 		ArrayList<java.awt.Point> playerLocs = new ArrayList<java.awt.Point>();
 		java.awt.Point location = new java.awt.Point();
 		HashSet<Integer> roomIds = new HashSet<Integer>();
@@ -69,7 +62,6 @@ public class BookVisualWorld extends VisualWorld {
 					continue;
 				}
 				
-				ArrayList<CellObject> drawList;
 				if (!this.map.enterable(location)) {
 				    gc.setBackground(WindowManager.black);
 				    gc.fillRectangle(cellSize*location.x, cellSize*location.y, cellSize, cellSize);

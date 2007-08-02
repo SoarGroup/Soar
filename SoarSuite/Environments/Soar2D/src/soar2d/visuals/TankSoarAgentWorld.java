@@ -5,7 +5,6 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
-import soar2d.configuration.TankSoarConfiguration;
 import soar2d.player.*;
 
 public class TankSoarAgentWorld extends Canvas implements PaintListener {

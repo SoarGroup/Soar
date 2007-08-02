@@ -14,10 +14,7 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
 import soar2d.*;
-import soar2d.configuration.BookConfiguration;
 import soar2d.configuration.Configuration;
-import soar2d.configuration.EatersConfiguration;
-import soar2d.configuration.TankSoarConfiguration;
 import soar2d.player.*;
 import soar2d.world.TankSoarWorld;
 

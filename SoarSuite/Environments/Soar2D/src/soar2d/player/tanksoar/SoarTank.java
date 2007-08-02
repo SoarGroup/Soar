@@ -5,7 +5,6 @@ import java.util.logging.*;
 
 import sml.*;
 import soar2d.*;
-import soar2d.configuration.TankSoarConfiguration;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;

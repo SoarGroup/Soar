@@ -6,7 +6,6 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
-import soar2d.configuration.Configuration;
 
 public class MapButtons extends Composite {
 	private Button m_ChangeMapButton;

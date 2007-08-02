@@ -5,8 +5,6 @@ import java.util.logging.Level;
 import soar2d.Direction;
 import soar2d.Simulation;
 import soar2d.Soar2D;
-import soar2d.configuration.EatersConfiguration;
-import soar2d.configuration.TankSoarConfiguration;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;

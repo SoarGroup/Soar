@@ -13,8 +13,6 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
-import soar2d.configuration.BookConfiguration;
-import soar2d.configuration.Configuration;
 import soar2d.configuration.Configuration.SimType;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;

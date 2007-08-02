@@ -10,8 +10,6 @@ import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
-import soar2d.configuration.BookConfiguration;
-import soar2d.configuration.EatersConfiguration;
 import soar2d.map.CellObject;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
