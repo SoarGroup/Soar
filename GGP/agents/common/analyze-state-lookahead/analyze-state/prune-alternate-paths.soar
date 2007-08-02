@@ -1,0 +1,125 @@
+# Keep track of all locations visited since the last non agent-location game state change
+# If we get a repeated location, report depth-exceeded. This prevents alternate versions of equivalent paths from 
+# being explored.
+
+# Note that this may break the detection of unsolvable problems, since it reports depth-exceeded even if the alternate
+# exploration of that path resulted in failure in all cases.
+
+sp {elaborate*record-envt-change*ts
+   (state <s> ^name selection
+              ^top-selection true)
+-->
+   (<s> ^state-of-last-env-change <s>)
+}
+
+sp {elaborate*inherit*solec
+   (state <s> ^name game
+              ^duplicate-of <s2>)
+   (<s2> ^state-of-last-env-change <solec>)
+-->
+   (<s> ^state-of-last-env-change <solec>)
+}
+
+sp {elaborate*inherit*solec*first-level
+   (state <s> ^name game
+              ^superstate <ss>)
+   (<ss> ^state-of-last-env-change <solec>
+         ^top-selection true)
+-->
+   (<s> ^state-of-last-env-change <solec>)
+}
+
+sp {usi*record-envt-change
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^game-state-changed.type environment
+              ^state-of-last-env-change { <> <s> <solec>})
+-->
+   (<s> ^state-of-last-env-change <solec> -)
+   (<s> ^state-of-last-env-change <s>)
+}
+
+sp {apply*check-for-duplicate-location*fail
+   (state <s> ^name game
+              ^desired <d>
+              ^operator.name check-for-duplicate-location
+              ^gs <gs>
+              ^current-evaluation-depth <ced> # hack to prevent overgeneral chunks (why?)
+              ^state-of-last-env-change {<> <s> <solec>})
+   (<gs> ^role <role>
+         ^location <loc>)
+   (<loc> ^p1 <role>
+          ^p2 <x>
+          ^p3 <y>)
+   (<solec> ^visited-location <vl>)
+   (<vl> ^x <x>
+         ^y <y>)
+-->
+   (write (crlf) |Redundant location encountered, reporting depth-exceeded.|)
+   (<s> ^depth-exceeded <d>)
+}
+
+# only save visited location after the loc is current
+
+# do not chunk over this, odd things result..
+sp {apply*save-location*save
+   (state <s> ^name game
+              ^operator.name save-location
+              ^state-of-last-env-change <solec>
+              ^gs.location <loc>
+              ^io.output-link <ol>
+              ^gs.role <role>)
+   (<ol> ^<command> <c>)
+   (<loc> ^p1 <role>
+          ^p2 <x>
+          ^p3 <y>)
+-->
+   (<solec> ^visited-location <vl>)
+   (<vl> ^x <x>
+         ^y <y>)
+}
+
+sp {apply*save-location*dont-learn
+ (state <s> ^name game
+              ^operator.name save-location
+              ^state-of-last-env-change <solec>
+              ^gs.location <loc>
+              ^io.output-link <ol>
+              ^gs.role <role>)
+   (<ol> ^<command> <c>)
+   (<loc> ^p1 <role>
+          ^p2 <x>
+          ^p3 <y>)
+   (state <s2> ^superstate <solec>)
+-->
+   (dont-learn <s2>)
+}
+
+sp {die-if-multi-store
+   (state <s> ^name game
+              ^state-of-last-env-change <solec>)
+   (<solec> ^visited-location <v1>
+            ^visited-location {<> <v1> <v2>})
+   (<v1> ^x <x> ^y <y>)
+   (<v2> ^x <x> ^y <y>)
+-->
+   (write (crlf) |double visit|)
+   (halt)
+}
+
+sp {update-state*clean-visited-locations
+   (state <s> ^name game
+              ^operator.name update-state
+              ^visited-location <v>)
+-->
+   (<s> ^visited-location <v> -)
+}
+
+sp {increment-current-evaluation-depth*clean-visited-locations
+   (state <s> ^operator.name increment-current-evaluation-depth)
+   (<s> ^visited-location <v>)
+-->
+   (<s> ^visited-location <v> -)
+}
+
+

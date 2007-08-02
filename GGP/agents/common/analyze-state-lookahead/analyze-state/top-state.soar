@@ -1,0 +1,9 @@
+sp {top-state*bookkeeping
+   (state <s> ^superstate nil
+              ^facts <f>)
+-->
+   (<f># ^bookkeeping-state step
+       # ^bookkeeping-state time
+        ^bookkeeping-state action-counter
+        ^bookkeeping-state action-sequence)
+}
