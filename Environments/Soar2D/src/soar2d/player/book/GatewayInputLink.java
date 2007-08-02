@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
-import soar2d.map.GridMap.Barrier;
+import soar2d.map.BookMap.Barrier;
 import soar2d.world.PlayersManager;
 import soar2d.world.World;
 

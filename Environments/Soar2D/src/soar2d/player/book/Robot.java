@@ -1,6 +1,7 @@
 package soar2d.player.book;
 
 import soar2d.*;
+import soar2d.map.BookMap;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;
 import soar2d.player.MoveInfo;
@@ -39,7 +40,7 @@ public class Robot extends Player {
 	
 	public void update(java.awt.Point location) {
 		World world = Soar2D.simulation.world;
-		GridMap map = world.getMap();
+		BookMap map = (BookMap)world.getMap();
 		CellObject obj = map.getInObject(location);
 		
 		inId = obj.getIntProperty(Names.kPropertyNumber);

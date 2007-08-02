@@ -14,8 +14,12 @@ import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
 import soar2d.configuration.Configuration.SimType;
+import soar2d.map.BookMap;
 import soar2d.map.CellObject;
+import soar2d.map.EatersMap;
 import soar2d.map.GridMap;
+import soar2d.map.KitchenMap;
+import soar2d.map.TankSoarMap;
 import soar2d.player.*;
 
 public class WindowManager {
@@ -861,7 +865,21 @@ public class WindowManager {
 	
 		mapMenuHeader.setEnabled(false);
 		
-		this.editMap = new GridMap(Soar2D.config);
+		switch (Soar2D.config.getType()) {
+		case kEaters:
+			this.editMap = new EatersMap(Soar2D.config);
+			break;
+		case kTankSoar:
+			this.editMap = new TankSoarMap(Soar2D.config);
+			break;
+		case kBook:
+			this.editMap = new BookMap(Soar2D.config);
+			break;
+		case kKitchen:
+			this.editMap = new KitchenMap(Soar2D.config);
+			break;
+		}
+		
 		try {
 			this.editMap.load();
 		} catch (GridMap.LoadError e) {
@@ -1158,8 +1176,9 @@ public class WindowManager {
 	
 	void updateCounts() {
 		if (Soar2D.config.getType() == SimType.kEaters) {
-			foodCount.setText(Integer.toString(Soar2D.simulation.world.getMap().getFoodCount()));
-			scoreCount.setText(Integer.toString(Soar2D.simulation.world.getMap().getScoreCount()));
+			EatersMap eMap = (EatersMap)Soar2D.simulation.world.getMap();
+			foodCount.setText(Integer.toString(eMap.getFoodCount()));
+			scoreCount.setText(Integer.toString(eMap.getScoreCount()));
 		}
 		worldCount.setText(Integer.toString(Soar2D.simulation.world.getWorldCount()));
 	}

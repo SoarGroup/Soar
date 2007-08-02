@@ -7,6 +7,7 @@ import java.lang.Math;
 
 import soar2d.Simulation;
 import soar2d.Soar2D;
+import soar2d.configuration.Configuration.SimType;
 import soar2d.map.*;
 import soar2d.player.*;
 
@@ -52,7 +53,7 @@ public class World {
 	}
 
 	private boolean loadInternal(boolean resetDuringRun) {
-		GridMap newMap = new GridMap(Soar2D.config);
+		GridMap newMap = worldModule.newMap(Soar2D.config);
 		
 		try {
 			newMap.load();
@@ -267,43 +268,46 @@ public class World {
 			}
 		}
 		
-		if (Soar2D.config.getTerminalPointsRemaining()) {
-			if (map.getScoreCount() <= 0) {
-				stopAndDumpStats("There are no points remaining.");
-				return;
-			}
-		}
-
-		if (Soar2D.config.getTerminalFoodRemaining()) {
-			if (map.getFoodCount() <= 0) {
-				boolean stopNow = true;
-				
-				if (Soar2D.config.getTerminalFoodRemainingContinue() != 0) {
-					// reduce continues by one if it is positive
-					if (runsFoodRemaining > 0) {
-						runsFoodRemaining -= 1;
-					}
-
-					// we only stop if continues is zero
-					if (runsFoodRemaining != 0) {
-						stopNow = false;
-					}
-				}
-				
-				if (stopNow) {
-					stopAndDumpStats("All of the food is gone.");
+		if (Soar2D.config.getType() == SimType.kEaters) {
+			EatersMap eMap = (EatersMap)map;
+			if (Soar2D.config.getTerminalPointsRemaining()) {
+				if (eMap.getScoreCount() <= 0) {
+					stopAndDumpStats("There are no points remaining.");
 					return;
-					
-				} else {
-					restartAfterUpdate = true;
 				}
 			}
-		}
+		
+			if (Soar2D.config.getTerminalFoodRemaining()) {
+				if (eMap.getFoodCount() <= 0) {
+					boolean stopNow = true;
+					
+					if (Soar2D.config.getTerminalFoodRemainingContinue() != 0) {
+						// reduce continues by one if it is positive
+						if (runsFoodRemaining > 0) {
+							runsFoodRemaining -= 1;
+						}
+		
+						// we only stop if continues is zero
+						if (runsFoodRemaining != 0) {
+							stopNow = false;
+						}
+					}
+					
+					if (stopNow) {
+						stopAndDumpStats("All of the food is gone.");
+						return;
+						
+					} else {
+						restartAfterUpdate = true;
+					}
+				}
+			}
 
-		if (Soar2D.config.getTerminalUnopenedBoxes()) {
-			if (map.getUnopenedBoxCount() <= 0) {
-				stopAndDumpStats("All of the boxes are open.");
-				return;
+			if (Soar2D.config.getTerminalUnopenedBoxes()) {
+				if (eMap.getUnopenedBoxCount() <= 0) {
+					stopAndDumpStats("All of the boxes are open.");
+					return;
+				}
 			}
 		}
 

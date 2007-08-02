@@ -5,7 +5,9 @@ import java.util.Iterator;
 
 import soar2d.Direction;
 import soar2d.Soar2D;
+import soar2d.configuration.Configuration;
 import soar2d.map.GridMap;
+import soar2d.map.KitchenMap;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 
@@ -77,5 +79,9 @@ public class KitchenWorld implements IWorld {
 
 	public void resetPlayer(GridMap map, Player player, PlayersManager players, boolean resetDuringRun) {
 		player.reset();
+	}
+
+	public GridMap newMap(Configuration config) {
+		return new KitchenMap(config);
 	}
 }
