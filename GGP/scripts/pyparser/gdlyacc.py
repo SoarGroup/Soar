@@ -32,11 +32,13 @@ def p_atomic_sentence(p):
 	                   | LPAREN NAME term_list RPAREN'''
 	if len(p) == 2:
 		p[0] = Sentence(p[1], [])
-	elif len(p) == 5:
-		p[0] = Sentence(p[2], p[3])
-	else:
+	elif p[2].lower() in ['init', 'true', 'next']:
+		p[0] = Sentence(p[2], [p[3]])
+	elif p[2].lower() in ['legal', 'does']:
 		# the role gets lumped into the argument list
-		p[0] = Sentence(p[2], [p[3]] + p[4])
+		p[0] = Sentence(p[2], [Constant(p[3]), p[4]])
+	else:
+		p[0] = Sentence(p[2], p[3])
 
 def p_term_list(p):
 	'''term_list : empty 
