@@ -2,6 +2,9 @@ package soar2d;
 
 import java.io.*;
 import java.util.logging.*;
+
+import soar2d.configuration.Configuration;
+import soar2d.configuration.LoadError;
 import soar2d.visuals.*;
 /*
  * A note about log levels:
@@ -99,10 +102,9 @@ public class Soar2D {
 		}
 		
 		// Read config file
-		config = new Configuration();
 		try {
 			config.load(new File(configFile));
-		} catch (Configuration.LoadError e) {
+		} catch (LoadError e) {
 			control.severeError("Error loading configuration file: " + e.getMessage());
 			wm.shutdown();
 			System.exit(1);

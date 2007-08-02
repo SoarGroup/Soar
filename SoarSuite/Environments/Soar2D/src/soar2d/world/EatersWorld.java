@@ -1,4 +1,4 @@
-package soar2d;
+package soar2d.world;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -7,10 +7,14 @@ import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.logging.Level;
 
+import soar2d.Direction;
+import soar2d.Names;
+import soar2d.Soar2D;
+import soar2d.configuration.EatersConfiguration;
+import soar2d.map.CellObject;
+import soar2d.map.GridMap;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
-import soar2d.world.CellObject;
-import soar2d.world.GridMap;
 
 public class EatersWorld implements IWorld {
 
@@ -54,7 +58,8 @@ public class EatersWorld implements IWorld {
 	}
 
 	private void moveEaters(GridMap map, PlayersManager players) {
-		
+		EatersConfiguration eConfig = (EatersConfiguration)Soar2D.config.getModule();
+
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player player = iter.next();
@@ -78,12 +83,12 @@ public class EatersWorld implements IWorld {
 				map.setPlayer(oldLocation, null);
 				
 				if (move.jump) {
-					player.adjustPoints(Soar2D.config.getJumpPenalty(), "jump penalty");
+					player.adjustPoints(eConfig.getJumpPenalty(), "jump penalty");
 				}
 				players.setLocation(player, newLocation);
 				
 			} else {
-				player.adjustPoints(Soar2D.config.getWallPenalty(), "wall collision");
+				player.adjustPoints(eConfig.getWallPenalty(), "wall collision");
 			}
 		}
 	}

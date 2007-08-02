@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
-import soar2d.PlayersManager;
-import soar2d.World;
-import soar2d.world.GridMap.Barrier;
+import soar2d.map.GridMap.Barrier;
+import soar2d.world.PlayersManager;
+import soar2d.world.World;
 
 class GatewayInputLink extends BarrierInputLink {
 	ArrayList<IntElement> toList = new ArrayList<IntElement>();

@@ -1,9 +1,9 @@
-package soar2d;
+package soar2d.world;
 
 import java.awt.Point;
 
+import soar2d.map.GridMap;
 import soar2d.player.Player;
-import soar2d.world.GridMap;
 
 public interface IWorld {
 	public boolean postLoad(GridMap newMap);

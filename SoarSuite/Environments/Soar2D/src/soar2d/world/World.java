@@ -1,12 +1,14 @@
-package soar2d;
+package soar2d.world;
 
 import java.awt.Point;
 import java.util.*;
 import java.util.logging.*;
 import java.lang.Math;
 
+import soar2d.Simulation;
+import soar2d.Soar2D;
+import soar2d.map.*;
 import soar2d.player.*;
-import soar2d.world.*;
 
 public class World {
 
@@ -37,7 +39,6 @@ public class World {
 			case kBook:
 				worldModule = new BookWorld();
 				break;
-
 			case kKitchen:
 				worldModule = new KitchenWorld();
 				break;
@@ -407,7 +408,7 @@ public class World {
 		return worldCount;
 	}
 	
-	boolean isTerminal() {
+	public boolean isTerminal() {
 		return printedStats;
 	}
 

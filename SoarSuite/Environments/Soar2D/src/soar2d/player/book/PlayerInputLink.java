@@ -4,9 +4,9 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
-import soar2d.PlayersManager;
-import soar2d.World;
 import soar2d.player.Player;
+import soar2d.world.PlayersManager;
+import soar2d.world.World;
 
 class PlayerInputLink { // FIXME should share code with OIL
 	SoarRobot robot;

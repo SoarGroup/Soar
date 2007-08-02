@@ -14,11 +14,14 @@ import org.eclipse.swt.graphics.Path;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
-import soar2d.Configuration.SimType;
+import soar2d.configuration.BookConfiguration;
+import soar2d.configuration.EatersConfiguration;
+import soar2d.configuration.Configuration.SimType;
+import soar2d.map.*;
 import soar2d.player.*;
-import soar2d.world.*;
+import soar2d.world.PlayersManager;
 
-public class VisualWorld extends Canvas implements PaintListener {
+public abstract class VisualWorld extends Canvas implements PaintListener {
 	
 	public static HashMap<Player, Color> playerColors = new HashMap<Player, Color>();
 	
@@ -33,26 +36,22 @@ public class VisualWorld extends Canvas implements PaintListener {
 		}
 	}
 	
-	private static HashMap<String, Image> images = new HashMap<String, Image>();
-	private static HashMap<Integer, Image> tanks = new HashMap<Integer, Image>();
+	protected static HashMap<String, Image> images = new HashMap<String, Image>();
+	protected static HashMap<Integer, Image> tanks = new HashMap<Integer, Image>();
 
 	public static boolean internalRepaint = false;
 	
-	java.awt.Point agentLocation;
-	
-	Image[][] background = null;
-	
 	protected Display display;
 	protected int cellSize;
-	private static final int kDotSize = 7;
+	protected static final int kDotSize = 7;
 	protected boolean disabled = false;
 	protected boolean painted = false;
 	protected int lastX = 0;
 	protected int lastY = 0;
 	
-	private GridMap map;
+	protected GridMap map;
 	
-	private Font font;
+	protected Font font;
 	
 	public VisualWorld(Composite parent, int style, int cellSize) {
 		super(parent, style | SWT.NO_BACKGROUND);
@@ -86,7 +85,6 @@ public class VisualWorld extends Canvas implements PaintListener {
 		this.map = map;
 		assert this.map != null;
 		
-		background = null;
 		painted = false;
 		
 		CellObjectManager manager = this.map.getObjectManager();
@@ -110,15 +108,15 @@ public class VisualWorld extends Canvas implements PaintListener {
 	}
 
 	public int getMiniWidth() {
-		return cellSize * ((Soar2D.config.getEaterVision() * 2) + 1);
+		EatersConfiguration eConfig = (EatersConfiguration)Soar2D.config.getModule();
+
+		return cellSize * ((eConfig.getEaterVision() * 2) + 1);
 	}
 	
 	public int getMiniHeight() {
-		return cellSize * ((Soar2D.config.getEaterVision() * 2) + 1);
-	}
-	
-	public void setAgentLocation(java.awt.Point location) {
-		agentLocation = location;
+		EatersConfiguration eConfig = (EatersConfiguration)Soar2D.config.getModule();
+
+		return cellSize * ((eConfig.getEaterVision() * 2) + 1);
 	}
 	
 	java.awt.Point getCellAtPixel(int x, int y) {
@@ -132,51 +130,6 @@ public class VisualWorld extends Canvas implements PaintListener {
 	
 	Player getPlayerAtPixel(int x, int y) {
 		return this.map.getPlayer(getCellAtPixel(x, y));
-	}
-	
-	private void generateBackground() {
-		background = new Image[map.getSize()][map.getSize()];
-		java.awt.Point location = new java.awt.Point();
-		for(location.x = 0; location.x < map.getSize(); ++location.x){
-			for(location.y = 0; location.y < map.getSize(); ++location.y){
-				updateBackground(location);
-			}
-		}
-	}
-	
-	public void updateBackground(java.awt.Point location) {
-		ArrayList<CellObject> drawList = this.map.getAllWithProperty(location, Names.kPropertyImage);
-		
-		Iterator<CellObject> iter = drawList.iterator();
-		CellObject backgroundObject = null;
-		while (iter.hasNext()) {
-			CellObject cellObject = iter.next();
-			if (cellObject.hasProperty(Names.kPropertyBlock)) {
-				backgroundObject = cellObject;
-			} else if (cellObject.getName().equals(Names.kGround)) {
-				backgroundObject = cellObject;
-			} else if (cellObject.hasProperty(Names.kPropertyCharger)) {
-				backgroundObject = cellObject;
-				break;
-			}
-		}
-		// FIXME: handle gracefully
-		assert backgroundObject != null;
-		
-		String imageName = backgroundObject.getProperty(Names.kPropertyImage);
-		if (backgroundObject.hasProperty(Names.kPropertyImageMin)) {
-			int min = backgroundObject.getIntProperty(Names.kPropertyImageMin);
-			int max = backgroundObject.getIntProperty(Names.kPropertyImageMax);
-			int pick = Simulation.random.nextInt(max - min + 1);
-			pick += min;
-			imageName = imageName.substring(0, imageName.indexOf(".")) + pick + imageName.substring(imageName.indexOf("."));
-		}
-
-		Image image = images.get(imageName);
-		if (image == null) {
-			image = bootstrapImage(imageName);
-		}
-		background[location.x][location.y] = image;
 	}
 	
 	class DrawMissile {
@@ -203,432 +156,8 @@ public class VisualWorld extends Canvas implements PaintListener {
 		}
 	}
 	
-	public void paintControl(PaintEvent e){
-		GC gc = e.gc;		
-		gc.setFont(font);
-        gc.setForeground(WindowManager.black);
-		gc.setLineWidth(1);
-
-		if (Soar2D.control.isRunning()) {
-			if (agentLocation != null) {
-				painted = false;
-			}
-			
-			if (Soar2D.config.getHide()) {
-				painted = true;
-				return;
-			}
-			
-		} else {
-			if (agentLocation != null || lastX != e.x || lastY != e.y || internalRepaint) {
-				lastX = e.x;
-				lastY = e.y;
-				painted = false;
-			}
-
-			if (Soar2D.config.getHide() || disabled || !painted) {
-				gc.setBackground(WindowManager.widget_background);
-				gc.fillRectangle(0,0, this.getWidth(), this.getHeight());
-				if (disabled || Soar2D.config.getHide()) {
-					painted = true;
-					return;
-				}
-			}
-		}
-		
-		assert Soar2D.config.getType() != SimType.kKitchen;
-		
-		if (Soar2D.config.getType() == SimType.kTankSoar) {
-			if (background == null) {
-				generateBackground();
-			}
-		}
-		
-		// Draw world
-		int fill1, fill2, xDraw, yDraw;
-		ArrayList<DrawMissile> drawMissiles = new ArrayList<DrawMissile>();
-		ArrayList<java.awt.Point> playerLocs = new ArrayList<java.awt.Point>();
-		java.awt.Point location = new java.awt.Point();
-		HashSet<Integer> roomIds = new HashSet<Integer>();
-		for(location.x = 0; location.x < map.getSize(); ++location.x){
-			if (agentLocation != null) {
-				if ((location.x < agentLocation.x - Soar2D.config.getEaterVision()) || (location.x > agentLocation.x + Soar2D.config.getEaterVision())) {
-					continue;
-				} 
-				xDraw = location.x + Soar2D.config.getEaterVision() - agentLocation.x;
-			} else {
-				xDraw = location.x;
-			}
-			
-			for(location.y = 0; location.y < map.getSize(); ++location.y){
-				if (agentLocation != null) {
-					if ((location.y < agentLocation.y - Soar2D.config.getEaterVision()) || (location.y > agentLocation.y + Soar2D.config.getEaterVision())) {
-						continue;
-					} 
-					yDraw = location.y + Soar2D.config.getEaterVision() - agentLocation.y;
-				} else {
-					yDraw = location.y;
-				}
-				
-				if (agentLocation == null) {
-					if ((this.map.removeObject(location, Names.kRedraw) == null) && painted) {
-						continue;
-					}
-				} else {
-					if (!this.map.hasObject(location, Names.kRedraw) && painted) {
-						continue;
-					}
-				}
-				
-				ArrayList<CellObject> drawList;
-				switch (Soar2D.config.getType()) {
-				case kEaters:
-					drawList = this.map.getAllWithProperty(location, Names.kPropertyShape);
-					
-					if (!this.map.enterable(location)) {
-					    gc.setBackground(WindowManager.black);
-					    gc.fillRectangle(cellSize*xDraw + 1, cellSize*yDraw + 1, cellSize - 2, cellSize - 2);
-						
-					} else {
-						boolean empty = true;
-						
-						Player eater = this.map.getPlayer(location);
-						
-						if (eater != null) {
-							empty = false;
-							
-							gc.setBackground(playerColors.get(eater));
-							gc.fillOval(cellSize*xDraw, cellSize*yDraw, cellSize, cellSize);
-							gc.setBackground(WindowManager.widget_background);
-							
-							
-							switch (eater.getFacingInt()) {
-							case Direction.kNorthInt:
-								drawEaterMouth(xDraw, yDraw, 1, 0, 1, 1, gc);
-								break;
-							case Direction.kEastInt:
-								drawEaterMouth(xDraw + 1, yDraw, 0, 1, -1, 1, gc);
-								break;
-							case Direction.kSouthInt:
-								drawEaterMouth(xDraw, yDraw + 1, 1, 0, 1, -1, gc);
-								break;
-							case Direction.kWestInt:
-								drawEaterMouth(xDraw, yDraw, 0, 1, 1, 1, gc);
-								break;
-							default:
-								break;
-							}
-						}
-						
-						Iterator<CellObject> iter = drawList.iterator();
-						while (iter.hasNext()) {
-							CellObject object = iter.next();
-							
-							if (empty) {
-								gc.setBackground(WindowManager.widget_background);
-								gc.fillRectangle(cellSize*xDraw, cellSize*yDraw, cellSize, cellSize);
-							}
-							empty = false;
-						    
-						    Color color = WindowManager.getColor(object.getProperty(Names.kPropertyColor));
-						    if (color == null) {
-						    	//TODO: draw outline!
-						    }
-							gc.setBackground(color);
-							
-							Shape shape = Shape.getShape(object.getProperty(Names.kPropertyShape));
-							if (shape != null) {
-								if (shape.equals(Shape.ROUND)) {
-									fill1 = (int)(cellSize/2.8);
-									fill2 = cellSize - fill1 + 1;
-									gc.fillOval(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2, cellSize - fill2);
-									gc.drawOval(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2 - 1, cellSize - fill2 - 1);
-									
-								} else if (shape.equals(Shape.SQUARE)) {
-									fill1 = (int)(cellSize/2.8);
-									fill2 = cellSize - fill1 + 1;
-									gc.fillRectangle(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2, cellSize - fill2);
-									gc.drawRectangle(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2, cellSize - fill2);
-								}
-							}
-						}
-						
-						if (empty) {
-							gc.setBackground(WindowManager.widget_background);
-							gc.fillRectangle(cellSize*xDraw, cellSize*yDraw, cellSize, cellSize);
-						}
-					}
-					
-					if (this.map.hasObject(location, Names.kExplosion)) {
-						drawExplosion(gc, xDraw, yDraw);
-					}
-					break;
-					
-				case kTankSoar:
-					drawList = this.map.getAllWithProperty(location, Names.kPropertyImage);
-					CellObject explosion = null;
-					CellObject object = null;
-					ArrayList<CellObject> missiles = new ArrayList<CellObject>();
-					
-					Iterator<CellObject> iter = drawList.iterator();
-					while (iter.hasNext()) {
-						CellObject cellObject = iter.next();
-						if (cellObject.getName().equals(Names.kExplosion)) {
-							explosion = cellObject;
-						} else if (cellObject.hasProperty(Names.kPropertyMissiles)) {
-							object = cellObject;
-						} else if (cellObject.hasProperty(Names.kPropertyMissile)) {
-							missiles.add(cellObject);
-						}
-					}
-					
-					Player tank = this.map.getPlayer(location);
-					
-					// draw the wall or ground or energy charger or health charger
-					gc.drawImage(background[location.x][location.y], location.x*cellSize, location.y*cellSize);
-					
-					// draw the explosion
-					if (explosion != null) {
-						String imageName = explosion.getProperty(Names.kPropertyImage);
-						Image image = images.get(imageName);
-						if (image == null) {
-							image = bootstrapImage(imageName);
-						}
-						gc.drawImage(image, location.x*cellSize, location.y*cellSize);
-					}
-					
-					// draw the missile packs or tanks
-					if (object != null) {
-						String imageName = object.getProperty(Names.kPropertyImage);
-						Image image = images.get(imageName);
-						if (image == null) {
-							image = bootstrapImage(imageName);
-						}
-						gc.drawImage(image, location.x*cellSize, location.y*cellSize);
-					} else if (tank != null) {
-						Image image = tanks.get(new Integer(tank.getFacingInt()));
-						assert image != null;
-
-						gc.drawImage(image, location.x*cellSize, location.y*cellSize);
-
-						if (tank.shieldsUp()) {
-					        gc.setForeground(WindowManager.getColor(tank.getColor()));
-							gc.setLineWidth(3);
-							gc.drawOval(cellSize*location.x+2, cellSize*location.y+2, cellSize-5, cellSize-5);
-					        gc.setForeground(WindowManager.black);
-							gc.setLineWidth(1);
-						}
-
-						// draw the player color
-						gc.setBackground(WindowManager.getColor(tank.getColor()));
-						gc.fillOval(cellSize*location.x + cellSize/2 - kDotSize/2, 
-								cellSize*location.y + cellSize/2 - kDotSize/2, 
-								kDotSize, kDotSize);
-					}
-
-					// cache all the missiles
-					iter = missiles.iterator();
-					while (iter.hasNext()) {
-						CellObject missile = iter.next();
-						
-						String imageName = missile.getProperty(Names.kPropertyImage);
-						Image image = images.get(imageName);
-						if (image == null) {
-							image = bootstrapImage(imageName);
-						}
-						
-						String colorName = missile.getProperty(Names.kPropertyColor);
-						assert colorName !=  null;
-						
-						Color missileColor = WindowManager.getColor(colorName);
-						
-						int flightPhase = missile.getIntProperty(Names.kPropertyFlyPhase);
-						int direction = missile.getIntProperty(Names.kPropertyDirection);
-
-						if (flightPhase == 0) {
-							direction = Direction.backwardOf[direction];
-						}
-						
-						boolean thirdPhase = (flightPhase == 3);
-
-						int mX = 0;
-						int mY = 0;
-						switch (direction) {
-						case Direction.kNorthInt:
-							mX = 10;
-							mY = thirdPhase ? 26 : 5;
-							break;
-						case Direction.kEastInt:
-							mX = thirdPhase ? -6 : 15;
-							mY = 10;
-							break;
-						case Direction.kSouthInt:
-							mX = 10;
-							mY = thirdPhase ? -6 : 15;
-							break;
-						case Direction.kWestInt:
-							mX = thirdPhase ? 26 : 5;
-							mY = 10;
-							break;
-						default:
-							assert false;
-							break;
-						}
-						//gc.drawImage(image, (location.x * cellSize) + mX, (location.y * cellSize) + mY);						
-						drawMissiles.add(new DrawMissile(gc, image, (location.x * cellSize) + mX, (location.y * cellSize) + mY, missileColor));
-					}
-					
-					// Finally, draw the radar waves
-					ArrayList<CellObject> radarWaves = this.map.getAllWithProperty(location, Names.kPropertyRadarWaves);
-					iter = radarWaves.iterator();
-					gc.setForeground(WindowManager.getColor("white"));
-					while (iter.hasNext()) {
-						CellObject cellObject = iter.next();
-						int direction = cellObject.getIntProperty(Names.kPropertyDirection);
-						int start = 0;
-						int xMod = 0;
-						int yMod = 0;
-						switch (direction) {
-						case Direction.kNorthInt:
-							start = 0;
-							yMod = cellSize / 4;
-							break;
-						case Direction.kSouthInt:
-							start = -180;
-							yMod = cellSize / -4;
-							break;
-						case Direction.kEastInt:
-							start = -90;
-							xMod = cellSize / -4;
-							break;
-						case Direction.kWestInt:
-							start = 90;
-							xMod = cellSize / 4;
-							break;
-						default:
-							// TODO: warn
-							assert false;
-							break;
-						}
-						gc.drawArc((location.x * cellSize) + xMod, (location.y * cellSize) + yMod, cellSize - 1, cellSize - 1, start, 180);
-					}
-					break;
-					
-				case kBook:
-					if (!this.map.enterable(location)) {
-					    gc.setBackground(WindowManager.black);
-					    gc.fillRectangle(cellSize*xDraw, cellSize*yDraw, cellSize, cellSize);
-						
-					} else {
-						
-						if (map.getAllWithProperty(location, Names.kPropertyGatewayRender).size() == 0) {
-							
-							if (!Soar2D.config.getColoredRooms()) {
-								// normal:
-								gc.setBackground(WindowManager.widget_background);
-							} else {
-								// colored rooms:
-								CellObject roomObject = map.getObject(location, Names.kRoomID);
-								if (roomObject == null)  {
-									gc.setBackground(WindowManager.widget_background);
-								} else {
-									int roomID = roomObject.getIntProperty(Names.kPropertyNumber);
-									roomID %= Soar2D.simulation.kColors.length - 1; // the one off eliminates black
-									gc.setBackground(WindowManager.getColor(Soar2D.simulation.kColors[roomID]));
-								}
-							}
-							ArrayList<CellObject> blocks = map.getAllWithProperty(location, "mblock");
-							if (blocks.size() > 0) {
-								gc.setBackground(new Color(e.display, 191, 123, 79));
-							}
-						} else {
-							gc.setBackground(WindowManager.white);
-						}
-						gc.fillRectangle(cellSize*xDraw, cellSize*yDraw, cellSize, cellSize);
-
-						if (this.map.getPlayer(location) != null) {
-							playerLocs.add(new java.awt.Point(location));
-						}
-					}
-
-					ArrayList<CellObject> objectIds = map.getAllWithProperty(location, "object-id");
-					if (objectIds.size() > 0) {
-						gc.setForeground(WindowManager.red);
-						gc.drawString(objectIds.get(0).getProperty("object-id"), cellSize*xDraw, cellSize*yDraw);
-					} else  {
-						ArrayList<CellObject> numbers = map.getAllWithProperty(location, "number");
-						if (numbers.size() > 0) {
-							if (!roomIds.contains(numbers.get(0).getIntProperty("number"))) {
-								gc.setForeground(WindowManager.green);
-								gc.drawString(numbers.get(0).getProperty("number"), cellSize*xDraw, cellSize*yDraw);
-								roomIds.add(numbers.get(0).getIntProperty("number"));
-							}
-						}
-					}
-					
-					break;
-				}
-			}
-		}
-		
-		switch (Soar2D.config.getType()) {
-		case kTankSoar:
-			// actually draw the missiles now (so they appear on top of everything)
-			Iterator<DrawMissile> drawMissileIter = drawMissiles.iterator();
-			while (drawMissileIter.hasNext()) {
-				drawMissileIter.next().draw();
-			}
-			
-			painted = true;
-			break;
-			
-		case kEaters:
-			break;
-			
-		case kBook:
-			// draw entities now so they appear on top
-			Iterator<java.awt.Point> playerLocIter = playerLocs.iterator();
-			while (playerLocIter.hasNext()) {
-				Player player = this.map.getPlayer(playerLocIter.next());
-				//FIXME:
-				if (player == null) {
-					continue;
-				}
-				assert player != null;
-
-				PlayersManager players = Soar2D.simulation.world.getPlayers();
-				Point2D.Double center = new Point2D.Double(players.getFloatLocation(player).x, players.getFloatLocation(player).y);
-				Point2D.Double offset = new Point2D.Double(0,0);
-				
-				Path path = new Path(gc.getDevice());
-
-				// first, move to the point representing the tip of the chevron
-				offset.y = (float)kDotSize * (float)Math.sin((double)player.getHeadingRadians());
-				offset.x = (float)kDotSize * (float)Math.cos((double)player.getHeadingRadians());
-				Point2D.Double original = new Point2D.Double(offset.x, offset.y);
-				path.moveTo((float)(center.x + offset.x), (float)(center.y + offset.y));
-				//System.out.println("First: " + offset);
-
-				// next draw a line to the corner
-				offset.y = kDotSize/2.0f * (float)Math.sin(player.getHeadingRadians() + (3*Math.PI)/4);
-				offset.x = kDotSize/2.0f * (float)Math.cos(player.getHeadingRadians() + (3*Math.PI)/4);
-				path.lineTo((float)(center.x + offset.x), (float)(center.y + offset.y));
-				//System.out.println("Second: " + offset);
-
-				// next draw a line to the other corner
-				offset.y = kDotSize/2.0f * (float)Math.sin(player.getHeadingRadians() - (3*Math.PI)/4);
-				offset.x = kDotSize/2.0f * (float)Math.cos(player.getHeadingRadians() - (3*Math.PI)/4);
-				path.lineTo((float)(center.x + offset.x), (float)(center.y + offset.y));				
-				//System.out.println("Third: " + offset);
-
-				// finally a line back to the original
-				path.lineTo((float)(center.x + original.x), (float)(center.y + original.y));
-				
-				gc.setForeground(WindowManager.getColor(player.getColor()));
-				gc.drawPath(path);
-			}
-			break;
-		}
+	public void paintControl(PaintEvent e) {
+		assert false;
 	}
 	
 	Image bootstrapImage(String imageName) {

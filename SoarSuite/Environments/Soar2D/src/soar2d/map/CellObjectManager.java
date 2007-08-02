@@ -1,4 +1,4 @@
-package soar2d.world;
+package soar2d.map;
 
 import java.util.ArrayList;
 import java.util.Collection;

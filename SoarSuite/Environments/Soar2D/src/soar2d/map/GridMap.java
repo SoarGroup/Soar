@@ -1,4 +1,4 @@
-package soar2d.world;
+package soar2d.map;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
@@ -14,7 +14,12 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
 import soar2d.*;
+import soar2d.configuration.BookConfiguration;
+import soar2d.configuration.Configuration;
+import soar2d.configuration.EatersConfiguration;
+import soar2d.configuration.TankSoarConfiguration;
 import soar2d.player.*;
+import soar2d.world.TankSoarWorld;
 
 /**
  * @author voigtjr
@@ -622,6 +627,8 @@ public class GridMap {
 	}
 
 	private void generateRandomWalls() throws LoadError {
+		EatersConfiguration eConfig = (EatersConfiguration)config.getModule();
+
 		if (!cellObjectManager.hasTemplatesWithProperty(Names.kPropertyBlock)) {
 			throw new LoadError("tried to generate random walls with no blocking types");
 		}
@@ -655,12 +662,12 @@ public class GridMap {
 			addWallAndRemoveFood(new java.awt.Point(col, size - 1));
 		}
 		
-		double probability = config.getLowProbability();
+		double probability = eConfig.getLowProbability();
 		for (int row = 2; row < size - 2; ++row) {
 			for (int col = 2; col < size - 2; ++col) {
 				if (noWallsOnCorners(row, col)) {
 					if (wallOnAnySide(row, col)) {
-						probability = config.getHighProbability();					
+						probability = eConfig.getHighProbability();					
 					}
 					if (Simulation.random.nextDouble() < probability) {
 						if (mapCells[row][col] == null) {
@@ -668,7 +675,7 @@ public class GridMap {
 						}
 						addWallAndRemoveFood(new java.awt.Point(col, row));
 					}
-					probability = config.getLowProbability();
+					probability = eConfig.getLowProbability();
 				}
 			}
 		}
@@ -821,14 +828,16 @@ public class GridMap {
 			updatablesLocations.put(object, location);
 		}
 		if (isBookObject(object)) {
+			BookConfiguration bConfig = (BookConfiguration)config.getModule();
+
 			bookObjects.add(object);
 			BookObjectInfo info = new BookObjectInfo();
 			info.location = new Point(location);
 			info.floatLocation = new Point2D.Double();
-			info.floatLocation.x = info.location.x * Soar2D.config.getBookCellSize();
-			info.floatLocation.y = info.location.y * Soar2D.config.getBookCellSize();
-			info.floatLocation.x += Soar2D.config.getBookCellSize() / 2.0;
-			info.floatLocation.y += Soar2D.config.getBookCellSize() / 2.0;
+			info.floatLocation.x = info.location.x * bConfig.getBookCellSize();
+			info.floatLocation.y = info.location.y * bConfig.getBookCellSize();
+			info.floatLocation.x += bConfig.getBookCellSize() / 2.0;
+			info.floatLocation.y += bConfig.getBookCellSize() / 2.0;
 			info.object = object;
 			object.addProperty("object-id", Integer.toString(newObjectId()));
 			if (getAllWithProperty(info.location, Names.kPropertyNumber).size() > 0) {
@@ -1178,6 +1187,8 @@ public class GridMap {
 	}
 	
 	public int getSoundNear(java.awt.Point location) {
+		TankSoarConfiguration tConfig = (TankSoarConfiguration)config.getModule();
+
 		if (Soar2D.simulation.world.getPlayers().numberOfPlayers() < 2) {
 			return 0;
 		}
@@ -1202,12 +1213,14 @@ public class GridMap {
 		Cell parentCell;
 		Cell newCell;
 
+
+
 		while (searchList.size() > 0) {
 			parentLocation = searchList.getFirst();
 			searchList.removeFirst();
 			parentCell = getCell(parentLocation);
 			distance = parentCell.distance;
-			if (distance >= config.getMaxSmellDistance()) {
+			if (distance >= tConfig.getMaxSmellDistance()) {
 				//System.out.println(parentCell + " too far");
 				continue;
 			}
@@ -1309,6 +1322,8 @@ public class GridMap {
 
 		private Point2D.Double centerpoint;
 		public Point2D.Double centerpoint() {
+			BookConfiguration bConfig = (BookConfiguration)config.getModule();
+
 			//  IMPORTANT! Assumes left/right won't change
 			if (centerpoint != null) {
 				return centerpoint;
@@ -1324,14 +1339,14 @@ public class GridMap {
 				// horizontal
 				m = left.x;
 				n = right.x;
-				centerpoint.y = left.y * Soar2D.config.getBookCellSize();
+				centerpoint.y = left.y * bConfig.getBookCellSize();
 				break;
 			case Direction.kEastInt:
 			case Direction.kWestInt:
 				// vertical
 				m = left.y;
 				n = right.y;
-				centerpoint.x = left.x * Soar2D.config.getBookCellSize();
+				centerpoint.x = left.x * bConfig.getBookCellSize();
 				break;
 			}
 			
@@ -1348,23 +1363,23 @@ public class GridMap {
 			if (left.x == right.x) {
 				// vertical
 				// add half to y
-				centerpoint.y = upperLeft.y * Soar2D.config.getBookCellSize();
-				centerpoint.y += (numberOfBlocks / 2.0) * Soar2D.config.getBookCellSize();
+				centerpoint.y = upperLeft.y * bConfig.getBookCellSize();
+				centerpoint.y += (numberOfBlocks / 2.0) * bConfig.getBookCellSize();
 				
 				// if west, we gotta add a cell size to x
 				if (direction == Direction.kWestInt) {
-					centerpoint.x += Soar2D.config.getBookCellSize();
+					centerpoint.x += bConfig.getBookCellSize();
 				}
 				
 			} else {
 				// horizontal
 				// add half to x
-				centerpoint.x = upperLeft.x * Soar2D.config.getBookCellSize();
-				centerpoint.x += (numberOfBlocks / 2.0) * Soar2D.config.getBookCellSize();
+				centerpoint.x = upperLeft.x * bConfig.getBookCellSize();
+				centerpoint.x += (numberOfBlocks / 2.0) * bConfig.getBookCellSize();
 
 				// if north, we gotta add a cell size to y
 				if (direction == Direction.kNorthInt) {
-					centerpoint.y += Soar2D.config.getBookCellSize();
+					centerpoint.y += bConfig.getBookCellSize();
 				}
 			}
 			return centerpoint;

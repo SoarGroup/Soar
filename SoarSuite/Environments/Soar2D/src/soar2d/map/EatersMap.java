@@ -1,10 +1,10 @@
-package soar2d.world;
+package soar2d.map;
 
 import java.awt.Point;
 import java.util.Iterator;
 
 import soar2d.Names;
-import soar2d.TankSoarWorld;
+import soar2d.world.TankSoarWorld;
 
 public class EatersMap implements IGridMap {
 

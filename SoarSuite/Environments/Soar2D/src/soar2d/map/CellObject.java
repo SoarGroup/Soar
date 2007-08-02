@@ -1,9 +1,10 @@
-package soar2d.world;
+package soar2d.map;
 
 import java.util.*;
 
 import soar2d.*;
 import soar2d.player.Player;
+import soar2d.world.World;
 
 /**
  * @author voigtjr

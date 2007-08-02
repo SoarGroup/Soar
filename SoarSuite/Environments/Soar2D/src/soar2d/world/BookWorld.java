@@ -1,4 +1,4 @@
-package soar2d;
+package soar2d.world;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
@@ -8,10 +8,13 @@ import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.logging.Level;
 
+import soar2d.Names;
+import soar2d.Soar2D;
+import soar2d.configuration.BookConfiguration;
+import soar2d.map.CellObject;
+import soar2d.map.GridMap;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
-import soar2d.world.CellObject;
-import soar2d.world.GridMap;
 
 public class BookWorld implements IWorld {
 
@@ -23,6 +26,8 @@ public class BookWorld implements IWorld {
 	}
 
 	public boolean update(GridMap map, PlayersManager players) {
+		BookConfiguration bConfig = (BookConfiguration)Soar2D.config.getModule();
+
 		final double time = Soar2D.control.getTimeSlice();
 		
 		Iterator<Player> iter = players.iterator();
@@ -36,11 +41,11 @@ public class BookWorld implements IWorld {
 			if (move.rotate) {
 				if (move.rotateDirection.equals(Names.kRotateLeft)) {
 					Soar2D.logger.finer("Rotate: left");
-					player.setRotationSpeed(Soar2D.config.getRotateSpeed() * -1 * time);
+					player.setRotationSpeed(bConfig.getRotateSpeed() * -1 * time);
 				} 
 				else if (move.rotateDirection.equals(Names.kRotateRight)) {
 					Soar2D.logger.finer("Rotate: right");
-					player.setRotationSpeed(Soar2D.config.getRotateSpeed() * time);
+					player.setRotationSpeed(bConfig.getRotateSpeed() * time);
 				} 
 				else if (move.rotateDirection.equals(Names.kRotateStop)) {
 					Soar2D.logger.finer("Rotate: stop");
@@ -130,11 +135,11 @@ public class BookWorld implements IWorld {
 			} 
 			else if (move.forward) {
 				Soar2D.logger.finer("Move: forward");
-				player.setSpeed(Soar2D.config.getSpeed());
+				player.setSpeed(bConfig.getSpeed());
 			}
 			else if (move.backward) {
 				Soar2D.logger.finer("Move: backward");
-				player.setSpeed(Soar2D.config.getSpeed() * -1);
+				player.setSpeed(bConfig.getSpeed() * -1);
 			}
 			
 			// reset collision sensor
@@ -169,14 +174,14 @@ public class BookWorld implements IWorld {
 			
 			if (move.drop) {
 				Point2D.Double dropFloatLocation = new Point2D.Double(players.getFloatLocation(player).x, players.getFloatLocation(player).y);
-				dropFloatLocation.x += Soar2D.config.getBookCellSize() * Math.cos(player.getHeadingRadians());
-				dropFloatLocation.y += Soar2D.config.getBookCellSize() * Math.sin(player.getHeadingRadians());
-				java.awt.Point dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.config.getBookCellSize(), (int)dropFloatLocation.y / Soar2D.config.getBookCellSize());
+				dropFloatLocation.x += bConfig.getBookCellSize() * Math.cos(player.getHeadingRadians());
+				dropFloatLocation.y += bConfig.getBookCellSize() * Math.sin(player.getHeadingRadians());
+				java.awt.Point dropLocation = new java.awt.Point((int)dropFloatLocation.x / bConfig.getBookCellSize(), (int)dropFloatLocation.y / bConfig.getBookCellSize());
 				
 				if (dropLocation.equals(players.getLocation(player))) {
-					dropFloatLocation.x += (Soar2D.config.getBookCellSize() * 0.42) * Math.cos(player.getHeadingRadians());
-					dropFloatLocation.y += (Soar2D.config.getBookCellSize() * 0.42) * Math.sin(player.getHeadingRadians());
-					dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.config.getBookCellSize(), (int)dropFloatLocation.y / Soar2D.config.getBookCellSize());
+					dropFloatLocation.x += (bConfig.getBookCellSize() * 0.42) * Math.cos(player.getHeadingRadians());
+					dropFloatLocation.y += (bConfig.getBookCellSize() * 0.42) * Math.sin(player.getHeadingRadians());
+					dropLocation = new java.awt.Point((int)dropFloatLocation.x / bConfig.getBookCellSize(), (int)dropFloatLocation.y / bConfig.getBookCellSize());
 					assert !dropLocation.equals(players.getLocation(player));
 				}
 
@@ -276,6 +281,8 @@ public class BookWorld implements IWorld {
 	}
 		
 	private void setRotationAndAbsoluteHeading(Player player, double targetHeading, double time) {
+		BookConfiguration bConfig = (BookConfiguration)Soar2D.config.getModule();
+
 		double relativeHeading = targetHeading - player.getHeadingRadians();
 		if (relativeHeading == 0) {
 			player.rotateComplete();
@@ -289,11 +296,11 @@ public class BookWorld implements IWorld {
 		}
 		
 		if (relativeHeading > Math.PI) {
-			player.setRotationSpeed(Soar2D.config.getRotateSpeed() * -1 * time);
+			player.setRotationSpeed(bConfig.getRotateSpeed() * -1 * time);
 			player.setDestinationHeading(targetHeading);
 		}
 		else {
-			player.setRotationSpeed(Soar2D.config.getRotateSpeed() * time);
+			player.setRotationSpeed(bConfig.getRotateSpeed() * time);
 			player.setDestinationHeading(targetHeading);
 		}
 		
@@ -313,8 +320,10 @@ public class BookWorld implements IWorld {
 	}
 
 	private Point2D.Double defaultFloatLocation(Point location) {
+		BookConfiguration bConfig = (BookConfiguration)Soar2D.config.getModule();
+
 		Point2D.Double floatLocation = new Point2D.Double();
-		final int cellSize = Soar2D.config.getBookCellSize();
+		final int cellSize = bConfig.getBookCellSize();
 		
 		// default to center of square
 		floatLocation.x = (location.x * cellSize) + (cellSize / 2); 
@@ -346,7 +355,9 @@ public class BookWorld implements IWorld {
 	}
 	
 	private void bookMovePlayer(Player player, GridMap map, PlayersManager players, double time) {
-		final int cellSize = Soar2D.config.getBookCellSize();
+		BookConfiguration bConfig = (BookConfiguration)Soar2D.config.getModule();
+
+		final int cellSize = bConfig.getBookCellSize();
 		
 		Point oldLocation = players.getLocation(player);
 		Point newLocation = new Point(oldLocation);
