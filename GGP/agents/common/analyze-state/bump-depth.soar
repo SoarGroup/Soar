@@ -22,6 +22,7 @@ sp {apply*analyze-state*goodthing
   -{(<old-gs> ^<item> <id-oldgs>)
     (<id-oldgs> ^p1 <p1-val>)}
                    -{(<s> ^used-goodthing <id-gt>)}
+                 #  -{(<s> ^used-goodthing <any>)}
 -->
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
@@ -67,6 +68,7 @@ sp {apply*analyze-state*goodthing*2
     (<id-oldgs> ^p1 <p1-val>
                 ^p2 <p2-val>)}
                    -{(<s> ^used-goodthing <id-gt>)}
+                 #  -{(<s> ^used-goodthing <any>)}
 -->
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
@@ -119,6 +121,7 @@ sp {apply*analyze-state*goodthing*3
                 ^p2 <p2-val>
                 ^p3 <p3-val>)}
                    -{(<s> ^used-goodthing <id-gt>)}
+                 #  -{(<s> ^used-goodthing <any>)}
 -->
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
@@ -166,3 +169,102 @@ sp {elaborate*inherit*used-goodthing
 -->
    (<s> ^used-goodthing <ug>)
 }
+#
+#sp {elaborate*analyze-state*about-to-exceed
+#   (state <s> ^current-evaluation-depth < <meed> 
+#              ^elaborations.minimum-explorer-exit-distance <meed>)
+#-->
+#   (<s> ^about-to-exceed true)
+#}
+#
+#
+#sp {elaborate*analyze-state*about-to-exceed*zero
+#   (state <s> ^current-evaluation-depth <= 0)
+#-->
+#   (<s> ^about-to-exceed true)
+#}
+#
+#sp {apply*analyze-state*goodthing*end
+#   (state <s> ^name game
+#              ^COMMENT OUT
+#              ^about-to-exceed true
+#              ^operator.name analyze-state
+#              ^gs <gs>
+#              ^duplicates <dup>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things <gt>)
+#   (<dup> ^<old-gs> <gs>)
+#   (<gt> ^<item> <id-gt>)
+#   (<id-gt> ^p1 <p1-val>
+#           -^p2)
+#   (<gs> ^<item> <id-gs>)
+#   (<id-gs> ^p1 <p1-val>)
+#  -{(<old-gs> ^<item> <id-oldgs>)
+#    (<id-oldgs> ^p1 <p1-val>)}
+#                  -{(<s> ^used-goodthing <id-gt>)}
+#-->
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (<s> ^using-goodthing <id-gt>)
+#   (write (crlf) |End bump due to appearence of | <item> | | <p1-val>)
+#}
+#
+#
+#sp {apply*analyze-state*goodthing*2*end
+#   (state <s> ^name game
+#              ^COMMENT OUT
+#              ^about-to-exceed true
+#              ^operator.name analyze-state
+#              ^gs <gs>
+#              ^duplicates <dup>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things <gt>)
+#   (<dup> ^<old-gs> <gs>)
+#   (<gt> ^<item> <id-gt>)
+#   (<id-gt> ^p1 <p1-val>
+#            ^p2 <p2-val>
+#           -^p3)
+#   (<gs> ^<item> <id-gs>)
+#   (<id-gs> ^p1 <p1-val>
+#            ^p2 <p2-val>)
+#  -{(<old-gs> ^<item> <id-oldgs>)
+#    (<id-oldgs> ^p1 <p1-val>
+#                ^p2 <p2-val>)}
+#                  -{(<s> ^used-goodthing <id-gt>)}
+#-->
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (<s> ^using-goodthing <id-gt>)
+#   (write (crlf) |End bump due to appearence of | <item> | | <p1-val> | | <p2-val>)
+#}
+#
+#sp {apply*analyze-state*goodthing*3*end
+#   (state <s> ^name game
+#              ^COMMENT OUT
+#              ^about-to-exceed true
+#              ^operator.name analyze-state
+#              ^gs <gs>
+#              ^duplicates <dup>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things <gt>)
+#   (<dup> ^<old-gs> <gs>)
+#   (<gt> ^<item> <id-gt>)
+#   (<id-gt> ^p1 <p1-val>
+#            ^p2 <p2-val>
+#            ^p3 <p2-val>)
+#   (<gs> ^<item> <id-gs>)
+#   (<id-gs> ^p1 <p1-val>
+#            ^p2 <p2-val>
+#            ^p3 <p3-val>)
+#  -{(<old-gs> ^<item> <id-oldgs>)
+#    (<id-oldgs> ^p1 <p1-val>
+#                ^p2 <p2-val>
+#                ^p3 <p3-val>)}
+#                  -{(<s> ^used-goodthing <id-gt>)}
+#-->
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (<s> ^using-goodthing <id-gt>)
+#   (write (crlf) |End bump due to appearence of | <item> | | <p1-val> | | <p2-val> | | <p3-val>)
+#}
+#

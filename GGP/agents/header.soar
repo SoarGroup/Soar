@@ -22,6 +22,8 @@ multi-attributes between 300
 learn -d
 indifferent-selection --first
 
+source goodthings.soar
+
 pushd common
 # source canvas.soar
 source status.soar
@@ -33,4 +35,4 @@ popd
 
 source analyze-state.soar
 popd
-# source goodthings.soar
+
