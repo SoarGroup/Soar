@@ -3,43 +3,13 @@ package soar2d.map;
 import java.awt.Point;
 import java.util.Iterator;
 
+import soar2d.configuration.Configuration;
 import soar2d.world.TankSoarWorld;
 
-public class KitchenMap implements IGridMap {
+public class KitchenMap extends GridMap {
 
-	public void addObjectToCell(GridMap map, CellObject object) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public int getLocationId(GridMap map, Point location) {
-		// TODO Auto-generated method stub
-		return -1;
-	}
-
-	public boolean isAvailable(GridMap map, Point location) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public boolean objectIsBackground(CellObject cellObject) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public void postCell(boolean background, GridMap map, Point location) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void removalStateUpdate(GridMap map, CellObject object) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public CellObject createExplosion(GridMap map) {
-		assert false;
-		return null;
+	public KitchenMap(Configuration config) {
+		super(config);
 	}
 
 	public void updateObjects(GridMap map, TankSoarWorld tsWorld) {
@@ -65,5 +35,23 @@ public class KitchenMap implements IGridMap {
 				}
 			}
 		}
+	}
+
+	@Override
+	public boolean isAvailable(Point location) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	void removalStateUpdate(CellObject object) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void updateObjects(TankSoarWorld tsWorld) {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -11,27 +11,30 @@ import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
+import soar2d.configuration.Configuration;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;
+import soar2d.map.TankSoarMap;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 
 public class TankSoarWorld implements IWorld {
 
-	public boolean postLoad(GridMap newMap) {
-		if (!newMap.hasEnergyCharger()) {
-			if (!addCharger(false, newMap)) {
+	public boolean postLoad(GridMap _map) {
+		TankSoarMap tMap = (TankSoarMap)_map;
+		if (!tMap.hasEnergyCharger()) {
+			if (!addCharger(false, tMap)) {
 				return false;
 			}
 		}
-		if (!newMap.hasHealthCharger()) {
-			if (!addCharger(true, newMap)) {
+		if (!tMap.hasHealthCharger()) {
+			if (!addCharger(true, tMap)) {
 				return false;
 			}
 		}
 		// Spawn missile packs
-		while (newMap.numberMissilePacks() < Soar2D.tConfig.getMaxMissilePacks()) {
-			if (spawnMissilePack(newMap, true) == false) {
+		while (tMap.numberMissilePacks() < Soar2D.tConfig.getMaxMissilePacks()) {
+			if (spawnMissilePack(tMap, true) == false) {
 				Soar2D.logger.severe("Missile pack spawn failed.");
 				return false;
 			}
@@ -44,8 +47,9 @@ public class TankSoarWorld implements IWorld {
 	private int missileID = 0;
 	private int missileReset = 0;
 
-	public boolean update(GridMap map, PlayersManager players) {
-
+	public boolean update(GridMap _map, PlayersManager players) {
+		TankSoarMap tMap = (TankSoarMap)_map;
+		
 		// We'll cache the tank new locations
 		HashMap<Player, Point> newLocations = new HashMap<Player, Point>();
 		
@@ -131,7 +135,7 @@ public class TankSoarWorld implements IWorld {
 			//Cell dest = map.getCell(newLocation);
 			
 			// Check for wall collision
-			if (!map.enterable(newLocation)) {
+			if (!tMap.enterable(newLocation)) {
 				// Moving in to wall, there will be no player in that cell
 
 				// Cancel the move
@@ -139,7 +143,7 @@ public class TankSoarWorld implements IWorld {
 				newLocations.put(player, players.getLocation(player));
 				
 				// take damage
-				String name = map.getAllWithProperty(newLocation, Names.kPropertyBlock).get(0).getName();
+				String name = tMap.getAllWithProperty(newLocation, Names.kPropertyBlock).get(0).getName();
 				player.adjustHealth(Soar2D.tConfig.getCollisionPenalty(), name);
 				
 				if (player.getHealth() <= 0) {
@@ -155,7 +159,7 @@ public class TankSoarWorld implements IWorld {
 			
 			// The cell is enterable, check for player
 			
-			Player other = map.getPlayer(newLocation);
+			Player other = tMap.getPlayer(newLocation);
 			if (other == null) {
 				// No tank, cross collision impossible
 				newLocations.put(player, newLocation);
@@ -188,13 +192,13 @@ public class TankSoarWorld implements IWorld {
 			
 			player.adjustHealth(Soar2D.tConfig.getCollisionPenalty(), "cross collision " + other);
 			// Getting rammed on a charger is deadly
-			if (map.getAllWithProperty(players.getLocation(player), Names.kPropertyCharger).size() > 0) {
+			if (tMap.getAllWithProperty(players.getLocation(player), Names.kPropertyCharger).size() > 0) {
 				player.adjustHealth(player.getHealth() * -1, "hit on charger");
 			}
 			
 			other.adjustHealth(Soar2D.tConfig.getCollisionPenalty(), "cross collision " + player);
 			// Getting rammed on a charger is deadly
-			if (map.getAllWithProperty(players.getLocation(other), Names.kPropertyCharger).size() > 0) {
+			if (tMap.getAllWithProperty(players.getLocation(other), Names.kPropertyCharger).size() > 0) {
 				other.adjustHealth(other.getHealth() * -1, "hit on charger");
 			}
 			
@@ -241,7 +245,7 @@ public class TankSoarWorld implements IWorld {
 			doMoveCollisions(player, players, newLocations, collisionMap, movedTanks);
 
 			// chargers
-			chargeUp(player, map, newLocations.get(player));
+			chargeUp(player, tMap, newLocations.get(player));
 
 			// Shields
 			if (player.shieldsUp()) {
@@ -279,7 +283,7 @@ public class TankSoarWorld implements IWorld {
 					player.adjustHealth(damage, "collision");
 					
 					// Getting rammed on a charger is deadly
-					if (map.getAllWithProperty(players.getLocation(player), Names.kPropertyCharger).size() > 0) {
+					if (tMap.getAllWithProperty(players.getLocation(player), Names.kPropertyCharger).size() > 0) {
 						player.adjustHealth(player.getHealth() * -1, "hit on charger");
 					}
 					
@@ -310,7 +314,7 @@ public class TankSoarWorld implements IWorld {
 			Player player = playerIter.next();
 			
 			// remove from past cell
-			map.setPlayer(players.getLocation(player), null);
+			tMap.setPlayer(players.getLocation(player), null);
 		}
 		
 		// commit the new move, grabbing the missile pack if applicable
@@ -320,20 +324,20 @@ public class TankSoarWorld implements IWorld {
 			// put in new cell
 			Point location = newLocations.get(player);
 			players.setLocation(player, location);
-			map.setPlayer(location, player);
+			tMap.setPlayer(location, player);
 			
 			// get missile pack
-			ArrayList<CellObject> missilePacks = map.getAllWithProperty(location, Names.kPropertyMissiles);
+			ArrayList<CellObject> missilePacks = tMap.getAllWithProperty(location, Names.kPropertyMissiles);
 			if (missilePacks.size() > 0) {
 				assert missilePacks.size() == 1;
 				CellObject pack = missilePacks.get(0);
 				pack.apply(player);
-				map.removeAllWithProperty(location, Names.kPropertyMissiles);
+				tMap.removeAllWithProperty(location, Names.kPropertyMissiles);
 			}
 			
 			
 			// is there a missile in the cell?
-			ArrayList<CellObject> missiles = map.getAllWithProperty(location, Names.kPropertyMissile);
+			ArrayList<CellObject> missiles = tMap.getAllWithProperty(location, Names.kPropertyMissile);
 			if (missiles.size() == 0) {
 				// No, can't collide
 				continue;
@@ -345,17 +349,17 @@ public class TankSoarWorld implements IWorld {
 			while (iter.hasNext()) {
 				CellObject missile = iter.next();
 				if (move.moveDirection == Direction.backwardOf[missile.getIntProperty(Names.kPropertyDirection)]) {
-					missileHit(player, map, location, missile, players);
-					map.removeObject(location, missile.getName());
+					missileHit(player, tMap, location, missile, players);
+					tMap.removeObject(location, missile.getName());
 
 					// explosion
-					map.setExplosion(location);
+					tMap.setExplosion(location);
 				}
 			}
 		}
 		
 		// move missiles to new cells, checking for new victims
-		map.updateObjects(this);
+		tMap.updateObjects(this);
 		
 		// If there is more than one player out there, keep track of how
 		// many updates go by before resetting everything to prevent oscillations
@@ -378,16 +382,16 @@ public class TankSoarWorld implements IWorld {
 			int direction = player.getFacingInt();
 			Direction.translate(missileLoc, direction);
 			
-			if (!map.isInBounds(missileLoc)) {
+			if (!tMap.isInBounds(missileLoc)) {
 				continue;
 			}
-			if (!map.enterable(missileLoc)) {
+			if (!tMap.enterable(missileLoc)) {
 				// explosion
-				map.setExplosion(missileLoc);
+				tMap.setExplosion(missileLoc);
 				continue;
 			}
 			
-			CellObject missile = map.createRandomObjectWithProperty(Names.kPropertyMissile);
+			CellObject missile = tMap.createRandomObjectWithProperty(Names.kPropertyMissile);
 			missile.setName(player + "-" + missileID++);
 			missile.addProperty(Names.kPropertyDirection, Integer.toString(direction));
 			missile.addProperty(Names.kPropertyFlyPhase, "0");
@@ -395,24 +399,24 @@ public class TankSoarWorld implements IWorld {
 			missile.addProperty(Names.kPropertyColor, player.getColor());
 			
 			// If there is a tank there, it is hit
-			Player other = map.getPlayer(missileLoc);
+			Player other = tMap.getPlayer(missileLoc);
 			if (other != null) {
-				missileHit(other, map, missileLoc, missile, players);
+				missileHit(other, tMap, missileLoc, missile, players);
 				
 				// explosion
-				map.setExplosion(missileLoc);
+				tMap.setExplosion(missileLoc);
 				
 			} else {
-				map.addObjectToCell(missileLoc, missile);
+				tMap.addObjectToCell(missileLoc, missile);
 			}
 		}
 		
 		// Handle incoming sensors now that all missiles are flying
-		map.handleIncoming();
+		tMap.handleIncoming();
 		
 		// Spawn missile packs
-		if (map.numberMissilePacks() < Soar2D.tConfig.getMaxMissilePacks()) {
-			spawnMissilePack(map, false);
+		if (tMap.numberMissilePacks() < Soar2D.tConfig.getMaxMissilePacks()) {
+			spawnMissilePack(tMap, false);
 		}
 		
 		// Respawn killed Tanks in safe squares
@@ -450,7 +454,7 @@ public class TankSoarWorld implements IWorld {
 		}
 		
 		// Update tanks
-		updatePlayers(false, map, players);
+		updatePlayers(false, tMap, players);
 
 		// no reset after update
 		return false;
@@ -484,7 +488,7 @@ public class TankSoarWorld implements IWorld {
 		missileReset = 0;
 	}
 	
-	private void chargeUp(Player player, GridMap map, Point location) {
+	private void chargeUp(Player player, TankSoarMap map, Point location) {
 		// Charge up
 		ArrayList<CellObject> chargers = map.getAllWithProperty(location, Names.kPropertyCharger);
 		Iterator<CellObject> iter = chargers.iterator();
@@ -566,7 +570,7 @@ public class TankSoarWorld implements IWorld {
 	
 
 
-	private boolean addCharger(boolean health, GridMap newMap) {
+	private boolean addCharger(boolean health, TankSoarMap newMap) {
 		ArrayList<Point> locations = newMap.getAvailableLocations();
 		if (locations.size() <= 0) {
 			Soar2D.control.severeError("No place to put charger!");
@@ -591,7 +595,7 @@ public class TankSoarWorld implements IWorld {
 		return true;
 	}
 	
-	private boolean spawnMissilePack(GridMap theMap, boolean force) {
+	private boolean spawnMissilePack(TankSoarMap theMap, boolean force) {
 		if (force || (Simulation.random.nextInt(100) < Soar2D.tConfig.getMissilePackRespawnChance())) {
 			// Get available spots
 			ArrayList<Point> spots = theMap.getAvailableLocations();
@@ -610,7 +614,7 @@ public class TankSoarWorld implements IWorld {
 		return true;
 	}
 	
-	public void missileHit(Player player, GridMap map, Point location, CellObject missile, PlayersManager players) {
+	public void missileHit(Player player, TankSoarMap tMap, Point location, CellObject missile, PlayersManager players) {
 		// Yes, I'm hit
 		missile.apply(player);
 		
@@ -623,7 +627,7 @@ public class TankSoarWorld implements IWorld {
 		}
 		
 		// charger insta-kill
-		if (map.getAllWithProperty(location, Names.kPropertyCharger).size() > 0) {
+		if (tMap.getAllWithProperty(location, Names.kPropertyCharger).size() > 0) {
 			player.adjustHealth(player.getHealth() * -1, "hit on charger");
 		}
 		
@@ -702,5 +706,9 @@ public class TankSoarWorld implements IWorld {
 	
 	public void resetPlayer(GridMap map, Player player, PlayersManager players, boolean resetDuringRun) {
 		player.reset();
+	}
+
+	public GridMap newMap(Configuration config) {
+		return new TankSoarMap(config);
 	}
 }

@@ -1,103 +1,145 @@
 package soar2d.map;
 
 import java.awt.Point;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import soar2d.Names;
+import soar2d.configuration.Configuration;
 import soar2d.world.TankSoarWorld;
 
-public class EatersMap implements IGridMap {
+public class EatersMap extends GridMap {
 
-	public void addObjectToCell(GridMap map, CellObject object) {
+	public EatersMap(Configuration config) {
+		super(config);
+
+	}
+
+	@Override
+	public void addObjectToCell(java.awt.Point location, CellObject object) {
+		Cell cell = getCell(location);
+		if (cell.hasObject(object.getName())) {
+			CellObject old = cell.removeObject(object.getName());
+			assert old != null;
+			updatables.remove(old);
+			updatablesLocations.remove(old);
+			removalStateUpdate(old);
+		}
+		if (object.updatable()) {
+			updatables.add(object);
+			updatablesLocations.put(object, location);
+		}
+		if (config.getTerminalUnopenedBoxes()) {
+			if (isUnopenedBox(object)) {
+				unopenedBoxes.add(object);
+			}
+		}
+		
+		// Update state we keep track of specific to game type
 		if (object.hasProperty(Names.kPropertyEdible)) {
-			map.foodCount += 1;
+			foodCount += 1;
 		}
 		if (object.hasProperty(Names.kPropertyPoints)) {
-			map.scoreCount += object.getIntProperty(Names.kPropertyPoints);
+			scoreCount += object.getIntProperty(Names.kPropertyPoints);
+		}
+
+		cell.addCellObject(object);
+		setRedraw(cell);
+
+	}
+
+	@Override
+	public void updateObjects(TankSoarWorld tsWorld) {
+		if (!updatables.isEmpty()) {
+			Iterator<CellObject> iter = updatables.iterator();
+			
+			while (iter.hasNext()) {
+				CellObject cellObject = iter.next();
+				java.awt.Point location = updatablesLocations.get(cellObject);
+				assert location != null;
+				
+				int previousScore = setPreviousScore(cellObject);
+
+				if (cellObject.update(location)) {
+					Cell cell = getCell(location);
+					
+					cellObject = cell.removeObject(cellObject.getName());
+					assert cellObject != null;
+					
+					setRedraw(cell);
+					
+					iter.remove();
+					updatablesLocations.remove(cellObject);
+					removalStateUpdate(cellObject);
+				}
+				if (cellObject.hasProperty(Names.kPropertyPoints)) {
+					scoreCount += cellObject.getIntProperty(Names.kPropertyPoints) - previousScore;
+				}
+			}
+		}
+		
+		if (config.getTerminalUnopenedBoxes()) {
+			Iterator<CellObject> iter = unopenedBoxes.iterator();
+			while (iter.hasNext()) {
+				CellObject box = iter.next();
+				if (!isUnopenedBox(box)) {
+					iter.remove();
+				}
+			}
 		}
 	}
-
-	public void postCell(boolean background, GridMap map, Point location) {
+	
+	int scoreCount = 0;
+	public int getScoreCount() {
+		return scoreCount;
 	}
-
-	public int getLocationId(GridMap gridMap, Point location) {
-		return -1;
+	
+	int foodCount = 0;
+	public int getFoodCount() {
+		return foodCount;
 	}
-
-	public boolean isAvailable(GridMap map, Point location) {
-		Cell cell = map.getCell(location);
+	
+	HashSet<CellObject> unopenedBoxes = new HashSet<CellObject>();
+	public int getUnopenedBoxCount() {
+		return unopenedBoxes.size();
+	}
+	
+	@Override
+	public boolean isAvailable(java.awt.Point location) {
+		Cell cell = getCell(location);
 		boolean enterable = cell.enterable();
 		boolean noPlayer = cell.getPlayer() == null;
 		return enterable && noPlayer;
 	}
-
-	public boolean objectIsBackground(CellObject cellObject) {
-		return false;
-	}
-
-	public void removalStateUpdate(GridMap map, CellObject object) {
-		if (object.hasProperty(Names.kPropertyEdible)) {
-			map.foodCount -= 1;
-		}
-		if (object.hasProperty(Names.kPropertyPoints)) {
-			map.scoreCount -= object.getIntProperty(Names.kPropertyPoints);
-		}
-		
-	}
-
-	public CellObject createExplosion(GridMap map) {
+	
+	@Override
+	public void setExplosion(java.awt.Point location) {
 		CellObject explosion = new CellObject(Names.kExplosion);
 		explosion.addProperty(Names.kPropertyLinger, "2");
 		explosion.setLingerUpdate(true);
-		return explosion;
+		addObjectToCell(location, explosion);
 	}
-
-	private int setPreviousScore(GridMap map, CellObject cellObject) {
+	
+	private int setPreviousScore(CellObject cellObject) {
 		if (cellObject.hasProperty(Names.kPropertyPoints)) {
 			return cellObject.getIntProperty(Names.kPropertyPoints);
 		}
 		return 0;
 	}
-
-	public void updateObjects(GridMap map, TankSoarWorld tsWorld) {
-		if (!map.updatables.isEmpty()) {
-			Iterator<CellObject> iter = map.updatables.iterator();
-			
-			while (iter.hasNext()) {
-				CellObject cellObject = iter.next();
-				java.awt.Point location = map.updatablesLocations.get(cellObject);
-				assert location != null;
-				
-				int previousScore = setPreviousScore(map, cellObject);
-
-				if (cellObject.update(location)) {
-					Cell cell = map.getCell(location);
-					
-					cellObject = cell.removeObject(cellObject.getName());
-					assert cellObject != null;
-					
-					map.setRedraw(cell);
-					
-					iter.remove();
-					map.updatablesLocations.remove(cellObject);
-					map.removalStateUpdate(cellObject);
-				}
-				if (cellObject.hasProperty(Names.kPropertyPoints)) {
-					map.scoreCount += cellObject.getIntProperty(Names.kPropertyPoints) - previousScore;
-				}
+	
+	@Override
+	void removalStateUpdate(CellObject object) {
+		if (config.getTerminalUnopenedBoxes()) {
+			if (isUnopenedBox(object)) {
+				unopenedBoxes.remove(object);
 			}
 		}
 		
-		if (map.config.getTerminalUnopenedBoxes()) {
-			Iterator<CellObject> iter = map.unopenedBoxes.iterator();
-			while (iter.hasNext()) {
-				CellObject box = iter.next();
-				if (!map.isUnopenedBox(box)) {
-					iter.remove();
-				}
-			}
+		if (object.hasProperty(Names.kPropertyEdible)) {
+			foodCount -= 1;
 		}
-		
+		if (object.hasProperty(Names.kPropertyPoints)) {
+			scoreCount -= object.getIntProperty(Names.kPropertyPoints);
+		}
 	}
-
 }

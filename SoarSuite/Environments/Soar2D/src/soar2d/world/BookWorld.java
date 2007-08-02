@@ -10,6 +10,8 @@ import java.util.logging.Level;
 
 import soar2d.Names;
 import soar2d.Soar2D;
+import soar2d.configuration.Configuration;
+import soar2d.map.BookMap;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;
 import soar2d.player.MoveInfo;
@@ -17,15 +19,16 @@ import soar2d.player.Player;
 
 public class BookWorld implements IWorld {
 
-	public boolean postLoad(GridMap newMap) {
-		if (newMap.generateRoomStructure() == false) {
+	public boolean postLoad(GridMap _map) {
+		BookMap map = (BookMap)_map;
+		if (map.generateRoomStructure() == false) {
 			return false;
 		}
 		return true;
 	}
 
-	public boolean update(GridMap map, PlayersManager players) {
-
+	public boolean update(GridMap _map, PlayersManager players) {
+		BookMap map = (BookMap)_map;
 		final double time = Soar2D.control.getTimeSlice();
 		
 		Iterator<Player> iter = players.iterator();
@@ -305,12 +308,14 @@ public class BookWorld implements IWorld {
 	public void reset() {
 	}
 	
-	public void fragPlayer(Player player, GridMap map, PlayersManager players, Point location) {
+	public void fragPlayer(Player player, GridMap _map, PlayersManager players, Point location) {
+		BookMap map = (BookMap)_map;
 		player.setLocationId(map.getLocationId(location));
 		players.setFloatLocation(player, defaultFloatLocation(location));
 	}
 	
-	public void putInStartingLocation(Player player, GridMap map, PlayersManager players, Point location) {
+	public void putInStartingLocation(Player player, GridMap _map, PlayersManager players, Point location) {
+		BookMap map = (BookMap)_map;
 		player.setLocationId(map.getLocationId(location));
 		players.setFloatLocation(player, defaultFloatLocation(location));
 	}
@@ -348,7 +353,7 @@ public class BookWorld implements IWorld {
 		return result;
 	}
 	
-	private void bookMovePlayer(Player player, GridMap map, PlayersManager players, double time) {
+	private void bookMovePlayer(Player player, BookMap map, PlayersManager players, double time) {
 		final int cellSize = Soar2D.bConfig.getBookCellSize();
 		
 		Point oldLocation = players.getLocation(player);
@@ -497,6 +502,10 @@ public class BookWorld implements IWorld {
 			// reset (init-soar)
 			player.reset();
 		}
+	}
+
+	public GridMap newMap(Configuration config) {
+		return new BookMap(config);
 	}
 
 }

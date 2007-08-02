@@ -12,9 +12,10 @@ import sml.Identifier;
 import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
+import soar2d.map.BookMap;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;
-import soar2d.map.GridMap.Barrier;
+import soar2d.map.BookMap.Barrier;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;
@@ -89,8 +90,8 @@ public class SoarRobot extends Robot {
 		if (fragged) {
 			moved = true;
 		}
-		
-		GridMap map = world.getMap();
+
+		BookMap map = (BookMap)world.getMap();
 		
 		// if we moved
 		if (moved) {
@@ -105,7 +106,7 @@ public class SoarRobot extends Robot {
 				}
 				
 				// create new area information
-				ArrayList<Barrier> barrierList = world.getMap().getRoomBarrierList(locationId);
+				ArrayList<Barrier> barrierList = map.getRoomBarrierList(locationId);
 				assert barrierList != null;
 				assert barrierList.size() > 0;
 				
@@ -121,7 +122,7 @@ public class SoarRobot extends Robot {
 						gateway.initialize(barrier, world);
 						
 						// add destinations
-						ArrayList<Integer> gatewayDestList = world.getMap().getGatewayDestinationList(barrier.id);
+						ArrayList<Integer> gatewayDestList = map.getGatewayDestinationList(barrier.id);
 						Iterator<Integer> destIter = gatewayDestList.iterator();
 						while(destIter.hasNext()) {
 							gateway.addDest(destIter.next().intValue());

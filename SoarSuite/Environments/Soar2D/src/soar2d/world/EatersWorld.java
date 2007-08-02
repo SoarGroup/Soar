@@ -10,7 +10,9 @@ import java.util.logging.Level;
 import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
+import soar2d.configuration.Configuration;
 import soar2d.map.CellObject;
+import soar2d.map.EatersMap;
 import soar2d.map.GridMap;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
@@ -23,7 +25,8 @@ public class EatersWorld implements IWorld {
 	
 	boolean restartAfterUpdate = false;
 
-	public boolean update(GridMap map, PlayersManager players) {
+	public boolean update(GridMap _map, PlayersManager players) {
+		EatersMap map = (EatersMap)_map;
 		moveEaters(map, players);
 		if (Soar2D.control.isShuttingDown()) {
 			return false;
@@ -56,7 +59,7 @@ public class EatersWorld implements IWorld {
 		}
 	}
 
-	private void moveEaters(GridMap map, PlayersManager players) {
+	private void moveEaters(EatersMap map, PlayersManager players) {
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player player = iter.next();
@@ -90,7 +93,7 @@ public class EatersWorld implements IWorld {
 		}
 	}
 
-	private void updateMapAndEatFood(GridMap map, PlayersManager players) {
+	private void updateMapAndEatFood(EatersMap map, PlayersManager players) {
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player player = iter.next();
@@ -122,7 +125,7 @@ public class EatersWorld implements IWorld {
 		}
 	}
 	
-	private void open(Player player, GridMap map, Point location, int openCode) {
+	private void open(Player player, EatersMap map, Point location, int openCode) {
 		ArrayList<CellObject> boxes = map.getAllWithProperty(location, Names.kPropertyBox);
 		if (boxes.size() <= 0) {
 			Soar2D.logger.warning(player.getName() + " tried to open but there is no box.");
@@ -155,7 +158,7 @@ public class EatersWorld implements IWorld {
 		}
 	}
 	
-	private void eat(Player player, GridMap map, Point location) {
+	private void eat(Player player, EatersMap map, Point location) {
 		ArrayList<CellObject> list = map.getAllWithProperty(location, Names.kPropertyEdible);
 		Iterator<CellObject> foodIter = list.iterator();
 		while (foodIter.hasNext()) {
@@ -227,7 +230,7 @@ public class EatersWorld implements IWorld {
 		return collisions;
 	}
 		
-	private void handleEatersCollisions(GridMap map, PlayersManager players, ArrayList<ArrayList<Player>> collisions) {
+	private void handleEatersCollisions(EatersMap map, PlayersManager players, ArrayList<ArrayList<Player>> collisions) {
 		
 		// if there are no total collisions, we're done
 		if (collisions.size() < 1) {
@@ -299,5 +302,9 @@ public class EatersWorld implements IWorld {
 		}
 		
 		player.reset();
+	}
+
+	public GridMap newMap(Configuration config) {
+		return new EatersMap(config);
 	}
 }
