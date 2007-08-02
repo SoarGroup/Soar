@@ -31,7 +31,6 @@ public class SoarRobot extends Robot {
 	int oldLocationId;
 	
 	private ArrayList<String> shutdownCommands;	// soar commands to run before this agent is destroyed
-	
 
 	/**
 	 * @param agent a valid soar agent
@@ -81,7 +80,6 @@ public class SoarRobot extends Robot {
 	
 	public void update(java.awt.Point location) {
 		World world = Soar2D.simulation.world;
-		BookConfiguration bConfig = (BookConfiguration)Soar2D.config.getModule();
 
 		PlayersManager players = world.getPlayers();
 
@@ -213,7 +211,7 @@ public class SoarRobot extends Robot {
 			CellObject bObj = bookObjectIter.next();
 			GridMap.BookObjectInfo bInfo = map.getBookObjectInfo(bObj);
 			if (bInfo.area == locationId) {
-				double maxAngleOff = bConfig.getVisionCone() / 2;
+				double maxAngleOff = Soar2D.bConfig.getVisionCone() / 2;
 				double angleOff = players.angleOff(this, bInfo.floatLocation);
 				if (Math.abs(angleOff) <= maxAngleOff) {
 					selfIL.addOrUpdateObject(bInfo, world, angleOff);
@@ -271,7 +269,6 @@ public class SoarRobot extends Robot {
 	 * @see soar2d.player.Eater#getMove()
 	 */
 	public MoveInfo getMove() {
-		BookConfiguration bConfig = (BookConfiguration)Soar2D.config.getModule();
 
 		// if there was no command issued, that is kind of strange
 		if (agent.GetNumberCommands() == 0) {
@@ -477,7 +474,7 @@ public class SoarRobot extends Robot {
 					commandId.AddStatusError();
 					continue;
 				}
-				if (oIL.range.GetValue() > bConfig.getBookCellSize()) {
+				if (oIL.range.GetValue() > Soar2D.bConfig.getBookCellSize()) {
 					logger.warning(getName() + " get command object out of range");
 					commandId.AddStatusError();
 					continue;

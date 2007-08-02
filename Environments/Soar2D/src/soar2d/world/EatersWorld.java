@@ -58,8 +58,6 @@ public class EatersWorld implements IWorld {
 	}
 
 	private void moveEaters(GridMap map, PlayersManager players) {
-		EatersConfiguration eConfig = (EatersConfiguration)Soar2D.config.getModule();
-
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player player = iter.next();
@@ -83,12 +81,12 @@ public class EatersWorld implements IWorld {
 				map.setPlayer(oldLocation, null);
 				
 				if (move.jump) {
-					player.adjustPoints(eConfig.getJumpPenalty(), "jump penalty");
+					player.adjustPoints(Soar2D.eConfig.getJumpPenalty(), "jump penalty");
 				}
 				players.setLocation(player, newLocation);
 				
 			} else {
-				player.adjustPoints(eConfig.getWallPenalty(), "wall collision");
+				player.adjustPoints(Soar2D.eConfig.getWallPenalty(), "wall collision");
 			}
 		}
 	}

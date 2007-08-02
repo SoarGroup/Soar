@@ -75,10 +75,9 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		this.agent = agent;
 		this.shutdownCommands = playerConfig.getShutdownCommands();
 
-		TankSoarConfiguration tConfig = (TankSoarConfiguration)Soar2D.config.getModule();
 
-		radarCellIDs = new Identifier[tConfig.getRadarWidth()][tConfig.getRadarHeight()];
-		radarColors = new StringElement[tConfig.getRadarWidth()][tConfig.getRadarHeight()];
+		radarCellIDs = new Identifier[Soar2D.tConfig.getRadarWidth()][Soar2D.tConfig.getRadarHeight()];
+		radarColors = new StringElement[Soar2D.tConfig.getRadarWidth()][Soar2D.tConfig.getRadarHeight()];
 
 
 		assert agent != null;
@@ -793,15 +792,13 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	}
 	
 	private void generateNewRadar() {
-		TankSoarConfiguration tConfig = (TankSoarConfiguration)Soar2D.config.getModule();
-
 		int height;
 		if (Soar2D.logger.isLoggable(Level.FINEST)) {
 			logger.finest(this.getName() + ": radar data: generating new"); 
 		}
-		for (height = 0; height < tConfig.getRadarHeight(); ++height) {
+		for (height = 0; height < Soar2D.tConfig.getRadarHeight(); ++height) {
 			boolean done = false;
-			for (int width = 0; width < tConfig.getRadarWidth(); ++width) {
+			for (int width = 0; width < Soar2D.tConfig.getRadarWidth(); ++width) {
 				// Always skip self, this screws up the tanks.
 				if (width == 1 && height == 0) {
 					if (Soar2D.logger.isLoggable(Level.FINEST)) {
@@ -843,13 +840,11 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	}
 	
 	private void updateRadar(boolean movedOrRotated) {
-		TankSoarConfiguration tConfig = (TankSoarConfiguration)Soar2D.config.getModule();
-
 		if (Soar2D.logger.isLoggable(Level.FINEST)) {
 			logger.finest(this.getName() + ": radar data: updating"); 
 		}
-		for (int width = 0; width < tConfig.getRadarWidth(); ++width) {
-			for (int height = 0; height < tConfig.getRadarHeight(); ++height) {
+		for (int width = 0; width < Soar2D.tConfig.getRadarWidth(); ++width) {
+			for (int height = 0; height < Soar2D.tConfig.getRadarHeight(); ++height) {
 				// Always skip self, this screws up the tanks.
 				if (width == 1 && height == 0) {
 					if (Soar2D.logger.isLoggable(Level.FINEST)) {
@@ -915,10 +910,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	}
 
 	private void clearRadar() {
-		TankSoarConfiguration tConfig = (TankSoarConfiguration)Soar2D.config.getModule();
-
-		for (int width = 0; width < tConfig.getRadarWidth(); ++width) {
-			for (int height = 0; height < tConfig.getRadarHeight(); ++height) {
+		for (int width = 0; width < Soar2D.tConfig.getRadarWidth(); ++width) {
+			for (int height = 0; height < Soar2D.tConfig.getRadarHeight(); ++height) {
 				radarCellIDs[width][height] = null;
 				radarColors[width][height] = null;
 			}

@@ -3,8 +3,12 @@ package soar2d;
 import java.io.*;
 import java.util.logging.*;
 
+import soar2d.configuration.BookConfiguration;
 import soar2d.configuration.Configuration;
+import soar2d.configuration.EatersConfiguration;
+import soar2d.configuration.KitchenConfiguration;
 import soar2d.configuration.LoadError;
+import soar2d.configuration.TankSoarConfiguration;
 import soar2d.visuals.*;
 /*
  * A note about log levels:
@@ -42,6 +46,10 @@ public class Soar2D {
 
 	public static final Logger logger = Logger.getLogger("soar2d");
 	public static Configuration config = new Configuration();
+	public static TankSoarConfiguration tConfig;
+	public static EatersConfiguration eConfig;
+	public static BookConfiguration bConfig;
+	public static KitchenConfiguration kConfig;
 	public static final WindowManager wm = new WindowManager();
 	public static final Simulation simulation = new Simulation();
 	public static final Controller control = new Controller();

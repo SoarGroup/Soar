@@ -87,13 +87,11 @@ public class Tank extends Player {
 	}
 	
 	public void setRadarPower(int setting) {
-		TankSoarConfiguration tConfig = (TankSoarConfiguration)Soar2D.config.getModule();
-
 		if (setting < 0) {
 			setting = 0;
 		}
-		if (setting >= tConfig.getRadarHeight()) {
-			setting = tConfig.getRadarHeight() - 1;
+		if (setting >= Soar2D.tConfig.getRadarHeight()) {
+			setting = Soar2D.tConfig.getRadarHeight() - 1;
 		}
 		if (radarPower == setting) {
 			return;
@@ -176,8 +174,6 @@ public class Tank extends Player {
 	 * why the change happened
 	 */
 	public void adjustEnergy(int delta, String comment) {
-		TankSoarConfiguration tConfig = (TankSoarConfiguration)Soar2D.config.getModule();
-
 		// Bring down shields if out of energy
 
 		int previous = this.energy;
@@ -185,8 +181,8 @@ public class Tank extends Player {
 		if (energy < 0) {
 			energy = 0;
 		}
-		if (energy > tConfig.getDefaultEnergy()) {
-			energy = tConfig.getDefaultEnergy();
+		if (energy > Soar2D.tConfig.getDefaultEnergy()) {
+			energy = Soar2D.tConfig.getDefaultEnergy();
 		}
 		if (energy == previous) {
 			return;
@@ -227,15 +223,13 @@ public class Tank extends Player {
 	 * why the change happened
 	 */
 	public void adjustHealth(int delta, String comment) {
-		TankSoarConfiguration tConfig = (TankSoarConfiguration)Soar2D.config.getModule();
-
 		int previous = this.health;
 		this.health += delta;
 		if (health < 0) {
 			health = 0;
 		}
-		if (health > tConfig.getDefaultHealth()) {
-			health = tConfig.getDefaultHealth();
+		if (health > Soar2D.tConfig.getDefaultHealth()) {
+			health = Soar2D.tConfig.getDefaultHealth();
 		}
 		if (health == previous) {
 			return;
@@ -304,11 +298,9 @@ public class Tank extends Player {
 	}
 	
 	public void fragged() {
-		TankSoarConfiguration tConfig = (TankSoarConfiguration)Soar2D.config.getModule();
-
-		energy = tConfig.getDefaultEnergy();
-		health = tConfig.getDefaultHealth();
-		missiles = tConfig.getDefaultMissiles();
+		energy = Soar2D.tConfig.getDefaultEnergy();
+		health = Soar2D.tConfig.getDefaultHealth();
+		missiles = Soar2D.tConfig.getDefaultMissiles();
 		resurrectFrame = Soar2D.simulation.world.getWorldCount(); 
 		setFacingInt(Simulation.random.nextInt(4) + 1);
 		clearRadar();
@@ -317,23 +309,21 @@ public class Tank extends Player {
 	
 	public void reset() {
 		super.reset();
-		TankSoarConfiguration tConfig = (TankSoarConfiguration)Soar2D.config.getModule();
-
 		
 		if (playerConfig.hasMissiles()) {
 			this.missiles = playerConfig.getMissiles();
 		} else {
-			this.missiles = tConfig.getDefaultMissiles();
+			this.missiles = Soar2D.tConfig.getDefaultMissiles();
 		}
 		if (playerConfig.hasHealth()) {
 			this.health = playerConfig.getHealth();
 		} else {
-			this.health = tConfig.getDefaultHealth();
+			this.health = Soar2D.tConfig.getDefaultHealth();
 		}
 		if (playerConfig.hasEnergy()) {
 			this.energy = playerConfig.getEnergy();
 		} else {
-			this.energy = tConfig.getDefaultEnergy();
+			this.energy = Soar2D.tConfig.getDefaultEnergy();
 		}
 		
 		shieldsUp = false;
@@ -419,8 +409,6 @@ public class Tank extends Player {
 	}
 
 	private void clearRadar() {
-		TankSoarConfiguration tConfig = (TankSoarConfiguration)Soar2D.config.getModule();
-
-		radar = new RadarCell[tConfig.getRadarWidth()][tConfig.getRadarHeight()];
+		radar = new RadarCell[Soar2D.tConfig.getRadarWidth()][Soar2D.tConfig.getRadarHeight()];
 	}
 }

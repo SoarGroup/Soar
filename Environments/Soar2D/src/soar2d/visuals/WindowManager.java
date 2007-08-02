@@ -428,11 +428,9 @@ public class WindowManager {
 	}
 	
 	public void setupBook() {
-		BookConfiguration bConfig = (BookConfiguration)Soar2D.config.getModule();
-		
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
-		visualWorld = new BookVisualWorld(worldGroup, SWT.NONE, bConfig.getBookCellSize());
+		visualWorld = new BookVisualWorld(worldGroup, SWT.NONE, Soar2D.bConfig.getBookCellSize());
 		visualWorld.setMap(Soar2D.simulation.world.getMap());
 
 		visualWorld.addMouseListener(new MouseAdapter() {
