@@ -42,6 +42,7 @@ public class EatersWorld implements IWorld {
 	}
 	
 	public void reset() {
+		this.restartAfterUpdate = false;
 	}
 	
 	public void updatePlayers(boolean playersChanged, GridMap map, PlayersManager players) {
