@@ -1198,6 +1198,7 @@
 
 (<= (nextMonsterLocation ?monster ?x ?y)
    (monster ?monster ?monster-type)
+   (provoked ?monster) ; SW: the above rule handles all unprovoked monsters
    (true (invisible hero ?n))                      ; invisible for n more turns
    (true (location ?monster ?x ?y)))
 
