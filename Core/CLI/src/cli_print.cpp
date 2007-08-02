@@ -31,12 +31,14 @@ bool CommandLineInterface::ParsePrint(gSKI::Agent* pAgent, std::vector<std::stri
 		{'f', "full",			0},
 		{'F', "filename",		0},
 		{'i', "internal",		0},
-		{'t', "tree",			0},
 		{'j', "justifications",	0},
 		{'n', "name",			0},
 		{'o', "operators",		0},
+		{'r', "rl",				0},
 		{'s', "stack",			0},
 		{'S', "states",			0},
+		{'t', "tree",			0},
+		{'T', "template",		0},
 		{'u', "user",			0},
 		{'v', "varprint",		0},
 		{0, 0, 0}
@@ -78,9 +80,6 @@ bool CommandLineInterface::ParsePrint(gSKI::Agent* pAgent, std::vector<std::stri
 			case 'i':
 				options.set(PRINT_INTERNAL);
 				break;
-			case 't':
-				options.set(PRINT_TREE);
-				break;
 			case 'j':
 				options.set(PRINT_JUSTIFICATIONS);
 				break;
@@ -90,11 +89,20 @@ bool CommandLineInterface::ParsePrint(gSKI::Agent* pAgent, std::vector<std::stri
 			case 'o':
 				options.set(PRINT_OPERATORS);
 				break;
+			case 'r':
+				options.set(PRINT_RL);
+				break;
 			case 's':
 				options.set(PRINT_STACK);
 				break;
 			case 'S':
 				options.set(PRINT_STATES);
+				break;
+			case 't':
+				options.set(PRINT_TREE);
+				break;
+			case 'T':
+				options.set(PRINT_TEMPLATE);
 				break;
 			case 'u':
 				options.set(PRINT_USER);
@@ -122,11 +130,13 @@ bool CommandLineInterface::ParsePrint(gSKI::Agent* pAgent, std::vector<std::stri
 			if (options.test(PRINT_ALL) 
 				|| options.test(PRINT_CHUNKS) 
 				|| options.test(PRINT_DEFAULTS) 
-				|| options.test(PRINT_JUSTIFICATIONS) 
+				|| options.test(PRINT_JUSTIFICATIONS)
+				|| options.test(PRINT_RL)
+				|| options.test(PRINT_TEMPLATE)
 				|| options.test(PRINT_USER) 
 				|| options.test(PRINT_STACK)) 
 			{
-				SetErrorDetail("No argument allowed when printing all/chunks/defaults/justifications/user/stack.");
+				SetErrorDetail("No argument allowed when printing all/chunks/defaults/justifications/rl/template/user/stack.");
 				return SetError(CLIError::kTooManyArgs);
 			}
 			return DoPrint(pAgent, options, depth, &(argv[m_Argument - m_NonOptionArguments]));
@@ -210,6 +220,22 @@ bool CommandLineInterface::DoPrint(gSKI::Agent* pAgent, PrintBitset options, int
 		AddListenerAndDisableCallbacks(pAgent);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
 		RemoveListenerAndEnableCallbacks(pAgent);
+		return true;
+	}
+	if (options.test(PRINT_RL)) {
+		/*AddListenerAndDisableCallbacks(pAgent);
+		pKernelHack->PrintRL(pAgent, 0, internal, filename, full);
+		RemoveListenerAndEnableCallbacks(pAgent);*/
+		
+		m_Result << "print rl";
+		return true;
+	}
+	if (options.test(PRINT_TEMPLATE)) {
+		/*AddListenerAndDisableCallbacks(pAgent);
+        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, TEMPLATE_PRODUCTION_TYPE);
+		RemoveListenerAndEnableCallbacks(pAgent);*/
+		
+		m_Result << "print template";
 		return true;
 	}
 

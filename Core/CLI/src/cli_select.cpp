@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////
-// predict command file.
+// select command file.
 //
 // Author: Jonathan Voigt, voigtjr@gmail.com, 
 //         Nate Derbinsky, nlderbin@umich.edu
@@ -16,22 +16,27 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParsePredict( gSKI::Agent* pAgent, std::vector<std::string>& argv ) 
+bool CommandLineInterface::ParseSelect( gSKI::Agent* pAgent, std::vector<std::string>& argv ) 
 {
-	// No arguments to predict next operator
-	if ( argv.size() != 1 ) 
-	{
-		SetErrorDetail( "predict takes no arguments." );
+	// At most one argument to select the next operator
+	if ( argv.size() > 2 ) 
 		return SetError( CLIError::kTooManyArgs );
-	}
 	
-	return DoPredict( pAgent );
+	if ( argv.size() == 2 )
+		return DoSelect( pAgent, &( argv[1] ) );
+	
+	return DoSelect( pAgent );
 }
 
-bool CommandLineInterface::DoPredict( gSKI::Agent* pAgent ) 
+bool CommandLineInterface::DoSelect( gSKI::Agent* pAgent, const std::string* pOp ) 
 {
 	if ( !RequireAgent( pAgent ) ) 
 		return false;
 
+	if ( !pOp )
+		m_Result << "current op";
+	else
+		m_Result << "select: " << *pOp;
+	
 	return SetError( CLIError::kCommandNotImplemented );
 }

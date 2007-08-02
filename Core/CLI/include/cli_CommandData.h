@@ -18,17 +18,34 @@ namespace cli {
 		EXCISE_ALL,
 		EXCISE_CHUNKS,
 		EXCISE_DEFAULT,
+		EXCISE_RL,
 		EXCISE_TASK,
+		EXCISE_TEMPLATE,
 		EXCISE_USER,
 		EXCISE_NUM_OPTIONS, // must be last
 	};
 
 	enum eIndifferentMode {
-		INDIFFERENT_QUERY,
-		INDIFFERENT_RANDOM,
+		// selection policies
+		INDIFFERENT_BOLTZMANN,
+		INDIFFERENT_GREEDY,
 		INDIFFERENT_FIRST,
 		INDIFFERENT_LAST,
-		INDIFFERENT_ASK,
+		INDIFFERENT_RANDOM,
+		
+		// selection parameters
+		INDIFFERENT_EPSILON,
+		INDIFFERENT_TEMPERATURE,
+		
+		// selection parameter reduction
+		INDIFFERENT_RED_POLICY,
+		INDIFFERENT_RED_RATE,
+		
+		// stats
+		INDIFFERENT_STATS,
+		
+		// must be last
+		INDIFFERENT_NUM_OPTIONS
 	};
 
 	enum eLearnOptions {
@@ -96,8 +113,10 @@ namespace cli {
 		PRINT_JUSTIFICATIONS,
 		PRINT_NAME,
 		PRINT_OPERATORS,
+		PRINT_RL,
 		PRINT_STACK,
 		PRINT_STATES,
+		PRINT_TEMPLATE,
 		PRINT_USER,
 		PRINT_VARPRINT,
 		PRINT_NUM_OPTIONS, // must be last
@@ -110,6 +129,13 @@ namespace cli {
 		PRODUCTION_FIND_NO_CHUNKS,
 		PRODUCTION_FIND_SHOWBINDINGS,
 		PRODUCTION_FIND_NUM_OPTIONS, // must be last
+	};
+	
+	enum eRLOptions {
+		RL_GET,
+		RL_SET,
+		RL_STAT,
+		RL_NUM_OPTIONS,	// must be last
 	};
 
 	enum eRunOptions {
