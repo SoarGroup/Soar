@@ -137,17 +137,6 @@ sp {top-state*elaborate*wall-portal*north
    (<dm> ^direction <p-dir>
          ^dx <dx>
          ^dy <dy>)
-  # (<f> ^ncell <nc>)
-  # (<nc> ^p1 1
-  #       ^p2 <p-dir>
-  #       ^p3 <x>
-  #       ^p4 <y>
-  #       ^p5 <newx>
-  #       ^p6 <newy>)
-  #-{(<gs> ^blocked <bl2>) # we can do local negation since this is top-state
-  #  (<bl2> ^p1 <dir>         # avoid portals on top of walls
-  #         ^p2 <newx>
-  #         ^p3 <newy>)}
 -->
    (<wp> ^portal <p>)
    (<p> ^approach-location <al>

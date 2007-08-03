@@ -22,17 +22,18 @@ multi-attributes between 300
 learn -d
 indifferent-selection --first
 
-source goodthings.soar
+# source goodthings.soar
 
 pushd common
-# source canvas.soar
+source canvas.soar
 source status.soar
 source constant.soar
 pushd default
 source selection.soar
 source selection-iterative-deepening.soar
 popd 
-
+#pushd analyze-state-lookahead
 source analyze-state.soar
+#popd
 popd
 

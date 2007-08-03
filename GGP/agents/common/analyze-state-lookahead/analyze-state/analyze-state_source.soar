@@ -12,5 +12,6 @@ source portals.soar
 source prune-action-disabling.soar
 source prune-alternate-paths.soar
 source prune-repeated-game-state.soar
+source select.soar
 source top-state.soar
 source analyze-state.soar

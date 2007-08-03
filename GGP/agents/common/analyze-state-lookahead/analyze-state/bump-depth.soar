@@ -22,31 +22,9 @@ sp {apply*analyze-state*goodthing
   -{(<old-gs> ^<item> <id-oldgs>)
     (<id-oldgs> ^p1 <p1-val>)}
                    -{(<s> ^used-goodthing <id-gt>)}
-                 #  -{(<s> ^used-goodthing <any>)}
 -->
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (<s> ^using-goodthing <id-gt>)
-   (write (crlf) |Bump due to appearence of | <item> | | <p1-val>)
-}
-sp {apply*analyze-state*goodthing*would-be
-   (state <s> ^name game
-              ^operator.name analyze-state
-              ^gs <gs>
-              ^duplicates <dup>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things <gt>)
-   (<dup> ^<old-gs> <gs>)
-   (<gt> ^<item> <id-gt>)
-   (<id-gt> ^p1 <p1-val>
-           -^p2)
-   (<gs> ^<item> <id-gs>)
-   (<id-gs> ^p1 <p1-val>)
-  -{(<old-gs> ^<item> <id-oldgs>)
-    (<id-oldgs> ^p1 <p1-val>)}
-   (<s> ^used-goodthing <id-gt>)
--->
-   (write (crlf) |Already bumped due to appearence of | <item> | | <p1-val>)
+   (<s> ^prefer true)
+   (write (crlf) |Prefer due to appearence of | <item> | | <p1-val>)
 }
 
 sp {apply*analyze-state*goodthing*2
@@ -68,37 +46,11 @@ sp {apply*analyze-state*goodthing*2
     (<id-oldgs> ^p1 <p1-val>
                 ^p2 <p2-val>)}
                    -{(<s> ^used-goodthing <id-gt>)}
-                 #  -{(<s> ^used-goodthing <any>)}
 -->
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (<s> ^using-goodthing <id-gt>)
-   (write (crlf) |Bump due to appearence of | <item> | | <p1-val> | | <p2-val>)
+   (<s> ^prefer true)
+   (write (crlf) |Prefer due to appearence of | <item> | | <p1-val> | | <p2-val>)
 }
 
-
-sp {apply*analyze-state*goodthing*2*would-be
-   (state <s> ^name game
-              ^operator.name analyze-state
-              ^gs <gs>
-              ^duplicates <dup>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things <gt>)
-   (<dup> ^<old-gs> <gs>)
-   (<gt> ^<item> <id-gt>)
-   (<id-gt> ^p1 <p1-val>
-            ^p2 <p2-val>
-           -^p3)
-   (<gs> ^<item> <id-gs>)
-   (<id-gs> ^p1 <p1-val>
-            ^p2 <p2-val>)
-  -{(<old-gs> ^<item> <id-oldgs>)
-    (<id-oldgs> ^p1 <p1-val>
-                ^p2 <p2-val>)}
-   (<s> ^used-goodthing <id-gt>)
--->
-   (write (crlf) |Already bumped due to appearence of | <item> | | <p1-val> | | <p2-val>)
-}
 
 sp {apply*analyze-state*goodthing*3
    (state <s> ^name game
@@ -121,38 +73,11 @@ sp {apply*analyze-state*goodthing*3
                 ^p2 <p2-val>
                 ^p3 <p3-val>)}
                    -{(<s> ^used-goodthing <id-gt>)}
-                 #  -{(<s> ^used-goodthing <any>)}
 -->
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (<s> ^using-goodthing <id-gt>)
-   (write (crlf) |Bump due to appearence of | <item> | | <p1-val> | | <p2-val> | | <p3-val>)
+   (<s> ^prefer true)
+   (write (crlf) |Prefer due to appearence of | <item> | | <p1-val> | | <p2-val> | | <p3-val>)
 }
 
-sp {apply*analyze-state*goodthing*3*would-be
-   (state <s> ^name game
-              ^operator.name analyze-state
-              ^gs <gs>
-              ^duplicates <dup>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things <gt>)
-   (<dup> ^<old-gs> <gs>)
-   (<gt> ^<item> <id-gt>)
-   (<id-gt> ^p1 <p1-val>
-            ^p2 <p2-val>
-            ^p3 <p2-val>)
-   (<gs> ^<item> <id-gs>)
-   (<id-gs> ^p1 <p1-val>
-            ^p2 <p2-val>
-            ^p3 <p3-val>)
-  -{(<old-gs> ^<item> <id-oldgs>)
-    (<id-oldgs> ^p1 <p1-val>
-                ^p2 <p2-val>
-                ^p3 <p3-val>)}
-   (<s> ^used-goodthing <id-gt>)
--->
-   (write (crlf) |Already bumped due to appearence of | <item> | | <p1-val> | | <p2-val> | | <p3-val>)
-}
 
 sp {apply*usi*add-used-goodthing
    (state <s> ^name game
@@ -169,102 +94,39 @@ sp {elaborate*inherit*used-goodthing
 -->
    (<s> ^used-goodthing <ug>)
 }
-#
-#sp {elaborate*analyze-state*about-to-exceed
-#   (state <s> ^current-evaluation-depth < <meed> 
-#              ^elaborations.minimum-explorer-exit-distance <meed>)
-#-->
-#   (<s> ^about-to-exceed true)
-#}
-#
-#
-#sp {elaborate*analyze-state*about-to-exceed*zero
-#   (state <s> ^current-evaluation-depth <= 0)
-#-->
-#   (<s> ^about-to-exceed true)
-#}
-#
-#sp {apply*analyze-state*goodthing*end
-#   (state <s> ^name game
-#              ^COMMENT OUT
-#              ^about-to-exceed true
-#              ^operator.name analyze-state
-#              ^gs <gs>
-#              ^duplicates <dup>
-#              ^current-evaluation-depth <ced>
-#              ^top-state.good-things <gt>)
-#   (<dup> ^<old-gs> <gs>)
-#   (<gt> ^<item> <id-gt>)
-#   (<id-gt> ^p1 <p1-val>
-#           -^p2)
-#   (<gs> ^<item> <id-gs>)
-#   (<id-gs> ^p1 <p1-val>)
-#  -{(<old-gs> ^<item> <id-oldgs>)
-#    (<id-oldgs> ^p1 <p1-val>)}
-#                  -{(<s> ^used-goodthing <id-gt>)}
-#-->
-#   (<s> ^current-evaluation-depth <ced> -
-#                                  (+ <ced> 1))
-#   (<s> ^using-goodthing <id-gt>)
-#   (write (crlf) |End bump due to appearence of | <item> | | <p1-val>)
-#}
-#
-#
-#sp {apply*analyze-state*goodthing*2*end
-#   (state <s> ^name game
-#              ^COMMENT OUT
-#              ^about-to-exceed true
-#              ^operator.name analyze-state
-#              ^gs <gs>
-#              ^duplicates <dup>
-#              ^current-evaluation-depth <ced>
-#              ^top-state.good-things <gt>)
-#   (<dup> ^<old-gs> <gs>)
-#   (<gt> ^<item> <id-gt>)
-#   (<id-gt> ^p1 <p1-val>
-#            ^p2 <p2-val>
-#           -^p3)
-#   (<gs> ^<item> <id-gs>)
-#   (<id-gs> ^p1 <p1-val>
-#            ^p2 <p2-val>)
-#  -{(<old-gs> ^<item> <id-oldgs>)
-#    (<id-oldgs> ^p1 <p1-val>
-#                ^p2 <p2-val>)}
-#                  -{(<s> ^used-goodthing <id-gt>)}
-#-->
-#   (<s> ^current-evaluation-depth <ced> -
-#                                  (+ <ced> 1))
-#   (<s> ^using-goodthing <id-gt>)
-#   (write (crlf) |End bump due to appearence of | <item> | | <p1-val> | | <p2-val>)
-#}
-#
-#sp {apply*analyze-state*goodthing*3*end
-#   (state <s> ^name game
-#              ^COMMENT OUT
-#              ^about-to-exceed true
-#              ^operator.name analyze-state
-#              ^gs <gs>
-#              ^duplicates <dup>
-#              ^current-evaluation-depth <ced>
-#              ^top-state.good-things <gt>)
-#   (<dup> ^<old-gs> <gs>)
-#   (<gt> ^<item> <id-gt>)
-#   (<id-gt> ^p1 <p1-val>
-#            ^p2 <p2-val>
-#            ^p3 <p2-val>)
-#   (<gs> ^<item> <id-gs>)
-#   (<id-gs> ^p1 <p1-val>
-#            ^p2 <p2-val>
-#            ^p3 <p3-val>)
-#  -{(<old-gs> ^<item> <id-oldgs>)
-#    (<id-oldgs> ^p1 <p1-val>
-#                ^p2 <p2-val>
-#                ^p3 <p3-val>)}
-#                  -{(<s> ^used-goodthing <id-gt>)}
-#-->
-#   (<s> ^current-evaluation-depth <ced> -
-#                                  (+ <ced> 1))
-#   (<s> ^using-goodthing <id-gt>)
-#   (write (crlf) |End bump due to appearence of | <item> | | <p1-val> | | <p2-val> | | <p3-val>)
-#}
-#
+
+sp {apply*usi*mark-preferred
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^superstate <ss>
+              ^prefer true)
+   (<ss> ^operator.superoperator <it>)
+-->
+   (<ss> ^evaluate-best <it>)
+}
+
+sp {apply*usi*mark-worst
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^superstate <ss>
+              -^prefer true)
+   (<ss> ^operator.superoperator <it>)
+-->
+   (<ss> ^evaluate-worst <it>)
+}
+
+
+sp {increment-ced*clear-best
+   (state <s> ^operator.name increment-current-evaluation-depth
+              ^evaluate-best <e>)
+-->
+   (<s> ^evaluate-best <e> -)
+}
+
+
+sp {increment-ced*clear-worst
+   (state <s> ^operator.name increment-current-evaluation-depth
+              ^evaluate-worst <e>)
+-->
+   (<s> ^evaluate-worst <e> -)
+}

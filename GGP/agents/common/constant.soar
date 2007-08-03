@@ -348,3 +348,11 @@ sp {elaborate*generate*unique*queries-results
 	(<uq> ^res <res>)
 }
 
+sp {elaborate*blocked*elab-to-gs
+  (state <s> ^name game
+             ^gs <gs>
+             ^elaborations <el>)
+   (<el> ^blocked <bl>)
+-->
+   (<gs> ^blocked <bl>)
+}

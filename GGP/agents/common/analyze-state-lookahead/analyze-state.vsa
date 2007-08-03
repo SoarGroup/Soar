@@ -13,6 +13,7 @@ VERSION 4
 10	0	FOPERATOR prune-action-disabling prune-action-disabling.soar 11
 11	0	FOPERATOR prune-alternate-paths prune-alternate-paths.soar 12
 12	0	FOPERATOR prune-repeated-game-state prune-repeated-game-state.soar 13
-13	0	FOPERATOR top-state top-state.soar 14
-14	0	OPERATOR analyze-state analyze-state.soar 15
+13	0	FOPERATOR select select.soar 16
+14	0	FOPERATOR top-state top-state.soar 14
+15	0	OPERATOR analyze-state analyze-state.soar 15
 END

@@ -1,4 +1,3 @@
-
 sp {game*elaborate*inherit-disallowed-dirs
    (state <s> ^name game
               ^duplicate-of <dup>)
