@@ -29,6 +29,7 @@ def p_atomic_sentence(p):
 	'''atomic_sentence : NAME
 	                   | LPAREN INITTRUENEXT function RPAREN
 					   | LPAREN LEGALDOES NAME function RPAREN
+					   | LPAREN LEGALDOES VAR function RPAREN
 	                   | LPAREN NAME term_list RPAREN'''
 	if len(p) == 2:
 		p[0] = Sentence(p[1], [])
@@ -36,7 +37,11 @@ def p_atomic_sentence(p):
 		p[0] = Sentence(p[2], [p[3]])
 	elif p[2].lower() in ['legal', 'does']:
 		# the role gets lumped into the argument list
-		p[0] = Sentence(p[2], [Constant(p[3]), p[4]])
+		if p[3][0] == '?':
+			# kind of a hack
+			p[0] = Sentence(p[2], [Variable(p[3]), p[4]])
+		else:
+			p[0] = Sentence(p[2], [Constant(p[3]), p[4]])
 	else:
 		p[0] = Sentence(p[2], p[3])
 

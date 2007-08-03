@@ -17,14 +17,17 @@ tokens = (
 		)
 
 t_VAR      = r'\?[a-zA-Z_][-\w_]*'
-t_ARROW    = r'<='
 t_LPAREN   = r'\('
 t_RPAREN   = r'\)'
 
 t_ignore = ' \t'
 
+def t_ARROW(t):
+	r'<='
+	return t
+
 def t_NAME(t):
-	r'([-\w_\.]+)|(>=)|>|\+|\*|/'
+	r'([-\w_\.]+)|(>=)|>|<|\+|\*|/'
 
 	try:
 		t.value = int(t.value)

@@ -101,6 +101,8 @@ class Function(Complex):
 
 	def get_name(self): return self.__name
 
+	def get_predicate(self): return self.__name
+
 	def __eq__(self, other):
 		if not isinstance(other, Function): return False
 		if self.__name != other.__name: return False
