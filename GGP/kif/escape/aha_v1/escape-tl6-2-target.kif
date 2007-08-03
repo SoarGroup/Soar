@@ -272,6 +272,10 @@
     (true (property ?item ?property))
     (canDestroy ?property ?class ?expend))
 
+;; a list of which properties can destroy which obstacle classes
+;; and if the item is expended in the process
+(canDestroy hammer rock yes)
+
 (<= (next (destroyed ?obstacle))
     (doDestroy ?obstacle ?item ?expend))
 
