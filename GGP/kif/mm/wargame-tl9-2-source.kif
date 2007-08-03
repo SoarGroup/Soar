@@ -1,10 +1,36 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Wargame Template
+;;; Wargame Template (August 2007)
+;;;  - David W. Aha (adapted from files provided by SLG & U.Michigan)
 ;;;  - Uses built-in math functions
-;;;  - Functionally identical to mm-r03-composition-1-target.kif
-;;;
+;;;  - TL level 9, Scenario 2, Source task
+;;;  - Same as TL level 7, Scenario 2, Source task
+;;;  - Changes located between ">>>>" and "<<<<<"
+;;;  - Requires using a gun to reach the exit
+;;; Debugger: "http://games.stanford.edu:5999/director/debugrawgame?"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Map (and Legend)
+;                        
+;    1 2 3 4 5 6 7 8     
+;   +---------------+    + = Corner
+;  8|. .|. . . .|. .|    . = A room location
+;   |   + +-+ + +   |    - = Horizontal wall
+;  7|. . . . .|. . .|    | = Vertical wall
+;   |   +-+ +-+ +   |
+;  6|. . . .|. .|. .|    @ = Soldier
+;   |       +   + +-|    T = Terrorist
+;  5|. . . . . . . .|    F = Flag (exit)
+;   | +-+ + +-+ +---|    G = Gun
+;  4|. . .|. .|.|. .|    R = gRenade
+;   | +-+ +-+-+ +---|    M = Medical kit
+;  3|.|. . .|. G . .|    
+;   | | +---+ +---+ |
+;  2|@|.|. .|. . . .|    
+;   | +-+ + +---+ +-|
+;  1|. . .|T F . . .|    
+;   +---------------+    
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; ROLE Relations
@@ -13,57 +39,77 @@
 (role soldier)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; INIT Relations
+;;; INIT (and some type) Relations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;; Specifies where objects start on board, where lower left is (1,1).
+;;; Object locations
+(init (location soldier 1 2))
+(init (location terrorist1 4 1))
+(init (location gun1 6 3))
+(init (location exit 5 1))
+(init (location flag 5 1))
 
-(init (location    soldier 2 2))
-(init (location terrorist1 7 7))
-(init (location terrorist2 3 6))
-(init (location       gun1 7 3))
-(init (location       gun2 3 1))
-(init (location    grenade 7 2))
-(init (location       flag 8 8))
-(init (location       exit 8 8)) ; Soar change: we are assuming an exit exists, it can't be implicit in 'holding flag'
+;; Dynamic type hierarchies
+(type gun1 item) 
+(type gun1 losItem) 
+(type terrorist1 animate)
+(type terrorist1 terrorist)
+(type terrorist1 horizontalTerrorist)
 
-;;; Specifies how many hit-points a character starts the game with.
-
-(init (health    soldier 1))
+;;; Character health
 (init (health terrorist1 1))
-(init (health terrorist2 2))
 
-;;; blocked[North,East] implies there is a wall to the [North,East] of a cell.
+;;; Unless otherwise specified adjacent spatial coordinates are assumed 
+;;;  accessible from one another.  
+(init (blockedEast 1 2))  (init (blockedWest 2 2))  
+(init (blockedEast 1 3))  (init (blockedWest 2 3))  
+(init (blockedEast 2 2))  (init (blockedWest 3 2))  
+(init (blockedEast 2 8))  (init (blockedWest 3 8))  
+(init (blockedEast 3 1))  (init (blockedWest 4 1))  
+(init (blockedEast 3 4))  (init (blockedWest 4 4))  
+(init (blockedEast 4 2))  (init (blockedWest 5 2))  
+(init (blockedEast 4 3))  (init (blockedWest 5 3))  
+(init (blockedEast 4 6))  (init (blockedWest 5 6))  
+(init (blockedEast 5 4))  (init (blockedWest 6 4))  
+(init (blockedEast 5 7))  (init (blockedWest 6 7))  
+(init (blockedEast 6 4))  (init (blockedWest 7 4))  
+(init (blockedEast 6 6))  (init (blockedWest 7 6))  
+(init (blockedEast 6 8))  (init (blockedWest 7 8))  
 
-; Soar note: We use lots of spatial assumptions, so the form / meaning of these blocked predicates cannot change 
-;            (unless it is back to the (blocked ?dir ?x ?y) form, which we are converting these to)
-;            Additionally, if the edges of the board are only going to be defined implicitly in the cells, the board must be convex.
+(init (blockedNorth 2 1)) (init (blockedSouth 2 2)) 
+(init (blockedNorth 2 3)) (init (blockedSouth 2 4)) 
+(init (blockedNorth 2 4)) (init (blockedSouth 2 5)) 
+(init (blockedNorth 3 2)) (init (blockedSouth 3 3)) 
+(init (blockedNorth 3 6)) (init (blockedSouth 3 7)) 
+(init (blockedNorth 4 2)) (init (blockedSouth 4 3)) 
+(init (blockedNorth 4 3)) (init (blockedSouth 4 4)) 
+(init (blockedNorth 4 7)) (init (blockedSouth 4 8)) 
+(init (blockedNorth 5 1)) (init (blockedSouth 5 2)) 
+(init (blockedNorth 5 3)) (init (blockedSouth 5 4)) 
+(init (blockedNorth 5 4)) (init (blockedSouth 5 5)) 
+(init (blockedNorth 5 6)) (init (blockedSouth 5 7)) 
+(init (blockedNorth 6 1)) (init (blockedSouth 6 2)) 
+(init (blockedNorth 6 2)) (init (blockedSouth 6 3)) 
+(init (blockedNorth 7 2)) (init (blockedSouth 7 3)) 
+(init (blockedNorth 7 3)) (init (blockedSouth 7 4)) 
+(init (blockedNorth 7 4)) (init (blockedSouth 7 5)) 
+(init (blockedNorth 8 1)) (init (blockedSouth 8 2)) 
+(init (blockedNorth 8 3)) (init (blockedSouth 8 4)) 
+(init (blockedNorth 8 4)) (init (blockedSouth 8 5)) 
+(init (blockedNorth 8 5)) (init (blockedSouth 8 6)) 
+;;;<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-(init (blockedNorth 2 7))
-(init (blockedNorth 5 7))
-(init (blockedNorth 6 7))
-(init (blockedNorth 7 6))
-(init (blockedNorth 2 5))
-(init (blockedNorth 3 5))
-(init (blockedNorth 4 5))
-(init (blockedNorth 8 5))
-(init (blockedNorth 2 2))
-(init (blockedNorth 3 2))
-(init (blockedNorth 3 2))
-(init (blockedNorth 6 2))
-(init (blockedNorth 7 2))
-(init (blockedNorth 8 2))
+;; Soldier health
+(init (health soldier 1))
 
-(init (blockedEast 1 7))
-(init (blockedEast 6 7))
-(init (blockedEast 7 6))
-(init (blockedEast 1 5))
-(init (blockedEast 1 4))
-(init (blockedEast 1 3))
-(init (blockedEast 3 1))
+;; Static type hierarchy
+(type flag item)
+(type exit item)
+(type soldier animate)
 
 ;;; The global time clock.	
-	
 (init (time 1))
 	
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -332,13 +378,13 @@
 
 (<= (verticalRelation north ?x1 ?y1 ?x2 ?y2)
     (cellNearTerrorist ?x2 ?y2) ; Soar
-    (intendedLocation soldier ?x1 ?y1) ; Soar
+    ; (intendedLocation soldier ?x1 ?y1) ; Soar: Removed by DWA 8/3/07
     (cell ?x1 ?y1)
     (cell ?x2 ?y2)
     (> ?y1 ?y2))
 (<= (verticalRelation south ?x1 ?y1 ?x2 ?y2)
     (cellNearTerrorist ?x2 ?y2) ; Soar
-    (intendedLocation soldier ?x1 ?y1) ; Soar
+    ; (intendedLocation soldier ?x1 ?y1) ; Soar: Removed by DWA 8/3/07
     (cell ?x1 ?y1)
     (cell ?x2 ?y2)
     (< ?y1 ?y2))
@@ -348,13 +394,13 @@
 
 (<= (horizontalRelation east ?x1 ?y1 ?x2 ?y2)
     (cellNearTerrorist ?x2 ?y2) ; Soar
-    (intendedLocation soldier ?x1 ?y1) ; Soar
+    ; (intendedLocation soldier ?x1 ?y1) ; Soar: Removed by DWA 8/3/07
     (cell ?x1 ?y1)
     (cell ?x2 ?y2)
     (> ?x1 ?x2))
 (<= (horizontalRelation west ?x1 ?y1 ?x2 ?y2)
     (cellNearTerrorist ?x2 ?y2) ; Soar
-    (intendedLocation soldier ?x1 ?y1) ; Soar
+    ; (intendedLocation soldier ?x1 ?y1) ; Soar: Removed by DWA 8/3/07
     (cell ?x1 ?y1)
     (cell ?x2 ?y2)
     (< ?x1 ?x2))	
@@ -475,7 +521,7 @@
     (cell ?x ?y)
     (cell ?xT ?yT)
     (cellNearTerrorist ?x ?y) ; Soar
-    (intendedLocation soldier ?xT ?yT) ; Soar
+    ; (intendedLocation soldier ?xT ?yT) ; Soar: Removed by DWA 8/3/07
     (not (wouldStepHorizontal east ?x ?y ?xT ?yT))
     (not (wouldStepHorizontal west ?x ?y ?xT ?yT))
     (not (wouldStepVertical north ?x ?y ?xT ?yT))
@@ -493,7 +539,7 @@
     (cell ?x ?y)
     (cell ?xT ?yT)
     (cellNearTerrorist ?x ?y) ; Soar
-    (intendedLocation soldier ?xT ?yT) ; Soar
+    ; (intendedLocation soldier ?xT ?yT) ; Soar: Removed by DWA 8/3/07
     (not (wouldStepVertical north ?x ?y ?xT ?yT))
     (not (wouldStepVertical south ?x ?y ?xT ?yT))
     (not (wouldStepHorizontal east ?x ?y ?xT ?yT))
@@ -504,12 +550,12 @@
    
 (<= (wouldStepHorizontal ?dir ?x1 ?y1 ?x2 ?y2)
     (cellNearTerrorist ?x1 ?y1) ; Soar
-    (intendedLocation soldier ?x2 ?y2) ; Soar
+    ; (intendedLocation soldier ?x2 ?y2) ; Soar: Removed by DWA 8/3/07
     (horizontalRelation ?dir ?x2 ?y2 ?x1 ?y1)
     (not (stepBlocked ?dir ?x1 ?y1)))
 (<= (wouldStepVertical ?dir ?x1 ?y1 ?x2 ?y2)
     (cellNearTerrorist ?x1 ?y1) ; Soar
-    (intendedLocation soldier ?x2 ?y2) ; Soar
+    ; (intendedLocation soldier ?x2 ?y2) ; Soar: Removed by DWA 8/3/07
     (verticalRelation ?dir ?x2 ?y2 ?x1 ?y1)
     (not (stepBlocked ?dir ?x1 ?y1)))	
 
@@ -592,19 +638,6 @@
 ;;; The time at which the game will end.
 
 (timeFinal 50)
-
-;;; Type heirarchies.
-
-(type    flag item)
-(type    exit item)
-(type    gun1 item) (type    gun1     losItem) 
-(type    gun2 item) (type    gun2     losItem) 
-(type grenade item) (type grenade     aoeItem)
-
-(type    soldier animate)
-(type terrorist1 animate) (type terrorist1 terrorist) (type terrorist1 horizontalTerrorist)
-(type terrorist2 animate) (type terrorist2 terrorist) (type terrorist2 horizontalTerrorist)
-
 
 ; Soar: constrain the terrorist movement predicates to only match near terrorists
 ; This means all cells within manhattan distance 2 of a terrorist
