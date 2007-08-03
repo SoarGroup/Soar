@@ -1,18 +1,19 @@
-;; Escape v2 Composition source 1
+;; Escape v2 Composition scenario 1 target
 ;;
 ;; Explorer has to pick up hammer, nails, and logs to make a bridge across
-;; the water obstacles to reach the exit
+;; the water obstacles. Then he has to break through rocks to finally reach
+;; the exit
 ;;
 ;; here's the level setup:
 ;;
 ;; 0|E       |
 ;; 1|        |
-;; 2|        |
-;; 3|WWWWWWWW|
+;; 2|RRRRRRRR|
+;; 3|        |
 ;; 4|        |
-;; 5|        |
-;; 6|        |
-;; 7|e HNLL  |
+;; 5|WWWWWWWW|
+;; 6|  HNLL  |
+;; 7|e       |
 ;;   01234567
 ;; where E = exit, W = water, L = log, N = nails, H = hammer, e = explorer
 
@@ -34,6 +35,15 @@
 (itemOrder nails1 4)
 
 ;; declare obstacles
+(obstacleType rock0 rock)
+(obstacleType rock1 rock)
+(obstacleType rock2 rock)
+(obstacleType rock3 rock)
+(obstacleType rock4 rock)
+(obstacleType rock5 rock)
+(obstacleType rock6 rock)
+(obstacleType rock7 rock)
+
 (obstacleType water0 water)
 (obstacleType water1 water)
 (obstacleType water2 water)
@@ -81,19 +91,28 @@
 
 (init (location exit     0 0))
 
-(init (location water0   0 3))
-(init (location water1   1 3))
-(init (location water2   2 3))
-(init (location water3   3 3))
-(init (location water4   4 3))
-(init (location water5   5 3))
-(init (location water6   6 3))
-(init (location water7   7 3))
+(init (location water0 0 5))
+(init (location water1 1 5))
+(init (location water2 2 5))
+(init (location water3 3 5))
+(init (location water4 4 5))
+(init (location water5 5 5))
+(init (location water6 6 5))
+(init (location water7 7 5))
 
-(init (location hammer1  2 7))
-(init (location nails1   3 7))
-(init (location log1     4 7))
-(init (location log2     5 7))
+(init (location rock0 0 2))
+(init (location rock1 1 2))
+(init (location rock2 2 2))
+(init (location rock3 3 2))
+(init (location rock4 4 2))
+(init (location rock5 5 2))
+(init (location rock6 6 2))
+(init (location rock7 7 2))
+
+(init (location hammer1  2 6))
+(init (location nails1   3 6))
+(init (location log1     4 6))
+(init (location log2     5 6))
 
 (init (location explorer 0 7))
 
@@ -120,10 +139,6 @@
 
 ;; how properties combine
 ;;
-;; (propertyCombine x y z) means that if we combine an item with property x
-;; with an item with property y, the resulting compound item will have property
-;; z.
-;; 
 ;; Note that to simplify matters no properties are carried on automatically.
 ;; This way we don't need the not-property negations
 
@@ -133,9 +148,7 @@
 
 (propertyCombine supportsWeight buoyant        canFloat)
 
-;; inherited properties - any compound item that is made from an item
-;; with an inherited property automatically inherits that property, regardless
-;; of the other item used in the combination.
+;; inherited properties
 (propertyInherit supportsWeight)
 
 ;; a list of which properties can compromise which obstacle classes,

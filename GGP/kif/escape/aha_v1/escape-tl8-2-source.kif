@@ -1,29 +1,32 @@
-;; Escape v2 Composition source 1
+;; Escape TL level 8 scenario 2 source 
 ;;
 ;; Explorer has to pick up hammer, nails, and logs to make a bridge across
 ;; the water obstacles to reach the exit
+;; - New: Must also pick up a bottle (B) and a ring (R)
 ;;
 ;; here's the level setup:
 ;;
-;; 0|E       |
-;; 1|        |
-;; 2|        |
-;; 3|WWWWWWWW|
-;; 4|        |
-;; 5|        |
-;; 6|        |
-;; 7|e HNLL  |
-;;   01234567
+;; 0| R   E|
+;; 1|      |
+;; 2|WWWWWW|
+;; 3|    N |
+;; 4|   L B|
+;; 5|e L h |
+;;   012345
 ;; where E = exit, W = water, L = log, N = nails, H = hammer, e = explorer
+;; and where B = bottle, R = ring
 
 (role explorer)
 (exitType exit)
 
 ;; declare items
-(itemType hammer1)
-(itemType nails1)
 (itemType log1)
 (itemType log2)
+(itemType hammer1)
+(itemType nails1)
+(itemType ring1)    ; >>>>>Added<<<<<
+(itemType bottle1)  ; >>>>>Added<<<<<
+
 
 ; give the items an arbitrary ordering
 ; this is necessary so we can constrain it to only one legal combine action
@@ -32,6 +35,8 @@
 (itemOrder log2 2)
 (itemOrder hammer1 3)
 (itemOrder nails1 4)
+(itemOrder ring1 5)     ; >>>>>Added<<<<<
+(itemOrder bottle1 6)   ; >>>>>Added<<<<<
 
 ;; declare obstacles
 (obstacleType water0 water)
@@ -40,8 +45,6 @@
 (obstacleType water3 water)
 (obstacleType water4 water)
 (obstacleType water5 water)
-(obstacleType water6 water)
-(obstacleType water7 water)
 
 (init (blocked west 0 0))
 (init (blocked west 0 1))
@@ -49,17 +52,13 @@
 (init (blocked west 0 3))
 (init (blocked west 0 4))
 (init (blocked west 0 5))
-(init (blocked west 0 6))
-(init (blocked west 0 7))
 
-(init (blocked east 7 0))
-(init (blocked east 7 1))
-(init (blocked east 7 2))
-(init (blocked east 7 3))
-(init (blocked east 7 4))
-(init (blocked east 7 5))
-(init (blocked east 7 6))
-(init (blocked east 7 7))
+(init (blocked east 5 0))
+(init (blocked east 5 1))
+(init (blocked east 5 2))
+(init (blocked east 5 3))
+(init (blocked east 5 4))
+(init (blocked east 5 5))
 
 (init (blocked north 0 0))
 (init (blocked north 1 0))
@@ -67,85 +66,65 @@
 (init (blocked north 3 0))
 (init (blocked north 4 0))
 (init (blocked north 5 0))
-(init (blocked north 6 0))
-(init (blocked north 7 0))
 
-(init (blocked south 0 7))
-(init (blocked south 1 7))
-(init (blocked south 2 7))
-(init (blocked south 3 7))
-(init (blocked south 4 7))
-(init (blocked south 5 7))
-(init (blocked south 6 7))
-(init (blocked south 7 7))
+(init (blocked south 0 5))
+(init (blocked south 1 5))
+(init (blocked south 2 5))
+(init (blocked south 3 5))
+(init (blocked south 4 5))
+(init (blocked south 5 5))
 
-(init (location exit     0 0))
+(init (location exit     5 0))
 
-(init (location water0   0 3))
-(init (location water1   1 3))
-(init (location water2   2 3))
-(init (location water3   3 3))
-(init (location water4   4 3))
-(init (location water5   5 3))
-(init (location water6   6 3))
-(init (location water7   7 3))
+(init (location water0   0 2))
+(init (location water1   1 2))
+(init (location water2   2 2))
+(init (location water3   3 2))
+(init (location water4   4 2))
+(init (location water5   5 2))
 
-(init (location hammer1  2 7))
-(init (location nails1   3 7))
-(init (location log1     4 7))
-(init (location log2     5 7))
+(init (location log1    3 4))
+(init (location log2    2 5))
+(init (location hammer1 4 5))
+(init (location nails1  4 3))
+(init (location ring1   1 0))  ; >>>>>Added<<<<<
+(init (location bottle1 5 4))  ; >>>>>Added<<<<<
 
-(init (location explorer 0 7))
+(init (location explorer 0 5))
 
 (init (health explorer 1))
 
 ;; PROPERTIES
-
-;; hammer properties
 (init (property hammer1 hammer))
-
-;; nail properties
 (init (property nails1 doesNail))
 
-;; log properties
 (init (property log1 buoyant))
 (init (property log1 supportsWeight))
-(init (property log1 tieable))
 (init (property log1 nailable))
 
 (init (property log2 buoyant))
 (init (property log2 supportsWeight))
-(init (property log2 tieable))
 (init (property log2 nailable))
+
 
 ;; how properties combine
 ;;
-;; (propertyCombine x y z) means that if we combine an item with property x
-;; with an item with property y, the resulting compound item will have property
-;; z.
-;; 
 ;; Note that to simplify matters no properties are carried on automatically.
 ;; This way we don't need the not-property negations
 
-(propertyCombine nailable       nailable       nailable)
 (propertyCombine tieable        tieable        tieable)
+(propertyCombine nailable       nailable       nailable)
 (propertyCombine supportsWeight supportsWeight canBridge)
 
 (propertyCombine supportsWeight buoyant        canFloat)
 
-;; inherited properties - any compound item that is made from an item
-;; with an inherited property automatically inherits that property, regardless
-;; of the other item used in the combination.
+;; inherited properties
 (propertyInherit supportsWeight)
 
 ;; a list of which properties can compromise which obstacle classes,
 ;; and if the item is expended in the process
 (canCompromise canFloat water yes)
 (canCompromise canBridge water yes)
-
-;; a list of which properties can destroy which obstacle classes
-;; and if the item is expended in the process
-(canDestroy hammer rock yes)
 
 ;; legal combinations
 (<= (legal explorer (combine ?item1 ?item2 ?nails))
@@ -229,6 +208,7 @@
 (<= (combining ?item1 ?item2 ?comboName)
     (does explorer (combine ?item1 ?item2 ?glue))
     (true (currSymbol ?comboName)))
+
 (<= anyCombine
     (combining ?item1 ?item2 ?comboName))
 
@@ -482,7 +462,19 @@
 ;;;  killed
 (<= (goal explorer 100)
     atExit
-    (not killed))
+    (not killed)
+    (true (holding bottle1))   ; >>>>>Added<<<<<
+    (true (holding ring1)))    ; >>>>>Added<<<<<
+
+;;; Also had to insert these for completeness
+(<= (goal explorer 70)
+    atExit
+    (not killed)
+    (not (true (holding ring11))))
+(<= (goal explorer 80)
+    atExit
+    (not killed)
+    (not (true (holding bottle1))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Basic axioms of mathematics (defined over the range [0,7])

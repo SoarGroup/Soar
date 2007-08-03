@@ -1,4 +1,4 @@
-;; Escape v2 Composition source 1
+;; Escape v2 Composition scenario 1 source 1
 ;;
 ;; Explorer has to pick up hammer, nails, and logs to make a bridge across
 ;; the water obstacles to reach the exit
@@ -120,10 +120,6 @@
 
 ;; how properties combine
 ;;
-;; (propertyCombine x y z) means that if we combine an item with property x
-;; with an item with property y, the resulting compound item will have property
-;; z.
-;; 
 ;; Note that to simplify matters no properties are carried on automatically.
 ;; This way we don't need the not-property negations
 
@@ -133,9 +129,7 @@
 
 (propertyCombine supportsWeight buoyant        canFloat)
 
-;; inherited properties - any compound item that is made from an item
-;; with an inherited property automatically inherits that property, regardless
-;; of the other item used in the combination.
+;; inherited properties
 (propertyInherit supportsWeight)
 
 ;; a list of which properties can compromise which obstacle classes,

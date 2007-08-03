@@ -1,6 +1,6 @@
-;; Escape v2 Composition source 1
+;; Escape v2 Composition scenario 2 source 2
 ;;
-;; Explorer has to pick up hammer, nails, and logs to make a bridge across
+;; Explorer has to pick up drums and rope to make a bridge across
 ;; the water obstacles to reach the exit
 ;;
 ;; here's the level setup:
@@ -10,28 +10,27 @@
 ;; 2|        |
 ;; 3|WWWWWWWW|
 ;; 4|        |
-;; 5|        |
-;; 6|        |
-;; 7|e HNLL  |
+;; 5|    r   |
+;; 6|  DD    |
+;; 7|e       |
 ;;   01234567
 ;; where E = exit, W = water, L = log, N = nails, H = hammer, e = explorer
+;; and where D = drum, r = rope
 
 (role explorer)
 (exitType exit)
 
 ;; declare items
-(itemType hammer1)
-(itemType nails1)
-(itemType log1)
-(itemType log2)
+(itemType rope1)
+(itemType drum1)
+(itemType drum2)
 
 ; give the items an arbitrary ordering
 ; this is necessary so we can constrain it to only one legal combine action
 ; for a given pair of items
-(itemOrder log1 1)
-(itemOrder log2 2)
-(itemOrder hammer1 3)
-(itemOrder nails1 4)
+(itemOrder drum1 1)
+(itemOrder drum2 2)
+(itemOrder rope1 3)
 
 ;; declare obstacles
 (obstacleType water0 water)
@@ -90,10 +89,9 @@
 (init (location water6   6 3))
 (init (location water7   7 3))
 
-(init (location hammer1  2 7))
-(init (location nails1   3 7))
-(init (location log1     4 7))
-(init (location log2     5 7))
+(init (location rope1    4 5))
+(init (location drum1    3 6))
+(init (location drum2    2 6))
 
 (init (location explorer 0 7))
 
@@ -101,29 +99,18 @@
 
 ;; PROPERTIES
 
-;; hammer properties
-(init (property hammer1 hammer))
+(init (property rope1 doesTie))
 
-;; nail properties
-(init (property nails1 doesNail))
+(init (property drum1 buoyant))
+(init (property drum1 tieable))
+(init (property drum1 supportsWeight))
 
-;; log properties
-(init (property log1 buoyant))
-(init (property log1 supportsWeight))
-(init (property log1 tieable))
-(init (property log1 nailable))
-
-(init (property log2 buoyant))
-(init (property log2 supportsWeight))
-(init (property log2 tieable))
-(init (property log2 nailable))
+(init (property drum2 buoyant))
+(init (property drum2 tieable))
+(init (property drum2 supportsWeight))
 
 ;; how properties combine
 ;;
-;; (propertyCombine x y z) means that if we combine an item with property x
-;; with an item with property y, the resulting compound item will have property
-;; z.
-;; 
 ;; Note that to simplify matters no properties are carried on automatically.
 ;; This way we don't need the not-property negations
 
@@ -133,19 +120,13 @@
 
 (propertyCombine supportsWeight buoyant        canFloat)
 
-;; inherited properties - any compound item that is made from an item
-;; with an inherited property automatically inherits that property, regardless
-;; of the other item used in the combination.
+;; inherited properties
 (propertyInherit supportsWeight)
 
 ;; a list of which properties can compromise which obstacle classes,
 ;; and if the item is expended in the process
 (canCompromise canFloat water yes)
 (canCompromise canBridge water yes)
-
-;; a list of which properties can destroy which obstacle classes
-;; and if the item is expended in the process
-(canDestroy hammer rock yes)
 
 ;; legal combinations
 (<= (legal explorer (combine ?item1 ?item2 ?nails))
