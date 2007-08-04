@@ -19,7 +19,7 @@ checkFor($mapper);
 %mappings = ();
 foreach $mapping (`$mapper $sourceKif $targetKif`) {
   chomp $mapping;
-  $mapping =~ /^(\S*) (\S*)$/ or die "can't parse: $mapping\n";
+  $mapping =~ /^MATCH (\S*) (\S*)$/ or die "can't parse: $mapping\n";
   $mappings{$1} = $2;
   print "# MAPPING: $1 -> $2\n";
 }
