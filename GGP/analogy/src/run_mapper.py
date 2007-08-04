@@ -4,7 +4,7 @@ mapper = os.path.join(base_dir, 'analogy', 'src', 'mapper')
 sys.path.append(os.path.join(base_dir, 'scripts', 'pyparser'))
 import xkif_gen
 
-def run_mapper(src_kif, tgt_kif):
+def run_mapper(src_kif, tgt_kif, del_tmp = True):
 	xkif_gen.parse_file(src_kif)
 	tmp_fd, src_xkif = tempfile.mkstemp(suffix='.xkif')
 	print >> sys.stderr, src_xkif
@@ -27,6 +27,10 @@ def run_mapper(src_kif, tgt_kif):
 			assert len(tokens) == 3, line
 			mapping[tokens[1]] = tokens[2]
 	
+	if del_tmp:
+		os.remove(src_xkif)
+		os.remove(tgt_xkif)
+
 	return mapping
 
 if __name__ == '__main__':

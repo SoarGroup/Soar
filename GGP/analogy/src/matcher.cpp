@@ -1,3 +1,20 @@
+/* How to map predicates:
+ */
+/* How to map places:
+ * 1. Align places locally
+ *      A. line up predicates
+ *      B. Enumerate all consistent mappings, choose best one
+ *           - Start with most constrained predicate, progress to less constrained
+ *    Now for each place we have a list of mappings that are optimal within the rules,
+ *    in other words, for each place->place pair, we know which rules consider 
+ *    that mapping optimal
+ * 2. Select place pair with "best" alignment and commit to that mapping
+ *      "Best" meaning having the most positive matches and the least
+ *      negative matches
+ * 3. Find all constraints involving that place pair, and commit to the
+ *    consequential mappings
+ */
+
 #include <assert.h>
 #include <math.h>
 #include <algorithm>
@@ -563,6 +580,7 @@ bool Matcher::hasPredMatchConflict
   }
   return false;
 }
+
 
 ostream& operator<<(ostream& os, const Matcher& m) {
   for(RuleMatchMap::const_iterator
