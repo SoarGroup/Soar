@@ -8,7 +8,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Map (and Legend)
+;  Map (and Legend)
+; NOTE: South is at the top, North at the bottom
 ;                        
 ;    1 2 3 4 5 6 7 8     
 ;   +---------------+    + = Corner
@@ -66,29 +67,29 @@
 
 ;;; Unless otherwise specified adjacent spatial coordinates are assumed 
 ;;;  accessible from one another.  
-(init (blockedEast 1 5)) (init (blockedWest 2 5)) 
-(init (blockedEast 3 4)) (init (blockedWest 4 4)) 
-(init (blockedEast 4 4)) (init (blockedWest 5 4)) 
-(init (blockedEast 5 1)) (init (blockedWest 6 1)) 
-(init (blockedEast 5 3)) (init (blockedWest 6 3)) 
-(init (blockedEast 5 4)) (init (blockedWest 6 4)) 
-(init (blockedEast 5 5)) (init (blockedWest 6 5)) 
-(init (blockedEast 5 6)) (init (blockedWest 6 6)) 
-(init (blockedEast 5 7)) (init (blockedWest 6 7)) 
+(init (blockedEast 1 5))
+(init (blockedEast 3 4))
+(init (blockedEast 4 4))
+(init (blockedEast 5 1))
+(init (blockedEast 5 3))
+(init (blockedEast 5 4))
+(init (blockedEast 5 5))
+(init (blockedEast 5 6))
+(init (blockedEast 5 7))
 
-(init (blockedNorth 2 6)) (init (blockedSouth 2 7))  
-(init (blockedNorth 3 6)) (init (blockedSouth 3 7))  
-(init (blockedNorth 3 5)) (init (blockedSouth 3 6))  
-(init (blockedNorth 4 5)) (init (blockedSouth 4 6))  
-(init (blockedNorth 1 5)) (init (blockedSouth 1 6))  
-(init (blockedNorth 2 4)) (init (blockedSouth 2 5))  
-(init (blockedNorth 3 4)) (init (blockedSouth 3 5))  
-(init (blockedNorth 4 3)) (init (blockedSouth 4 5))  
-(init (blockedNorth 6 4)) (init (blockedSouth 6 5))  
-(init (blockedNorth 7 4)) (init (blockedSouth 7 5))  
-(init (blockedNorth 6 3)) (init (blockedSouth 6 4))  
-(init (blockedNorth 7 3)) (init (blockedSouth 7 4))  
-(init (blockedNorth 8 3)) (init (blockedSouth 8 4))  
+(init (blockedSouth 2 6))
+(init (blockedSouth 3 6))
+(init (blockedSouth 3 5))
+(init (blockedSouth 4 5))
+(init (blockedSouth 1 5))
+(init (blockedSouth 2 4))
+(init (blockedSouth 3 4))
+(init (blockedSouth 4 3))
+(init (blockedSouth 6 4))
+(init (blockedSouth 7 4))
+(init (blockedSouth 6 3))
+(init (blockedSouth 7 3))
+(init (blockedSouth 8 3))
 ;;;<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 ; SW 8/3/07: need these to have consistent spatial rep. with the other domains
