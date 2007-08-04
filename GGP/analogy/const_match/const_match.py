@@ -13,6 +13,9 @@ import pdb
 # constants to ignore, along with numbers
 exclude = ['north','south','east','west']
 
+BASE_BOOST = 1
+SAMEPOS_BOOST = 3
+
 def build_constant_relations(int_rep, map = {}):
 	consts2rels = {} # const -> [(pos, rel)]
 	for s in int_rep.get_statics():
@@ -28,40 +31,43 @@ def build_constant_relations(int_rep, map = {}):
 # get the mapping
 pred_map = run_mapper.run_mapper(sys.argv[1], sys.argv[2])
 
-consts2rels_src = {} # const -> [(pos, rel)]
-consts2rels_tgt = {} # const -> [(pos, rel)]
+consts2preds_src = {} # const -> [(pos, pred)]
+consts2preds_tgt = {} # const -> [(pos, pred)]
 
 gdlyacc.parse_file(sys.argv[1])
-consts2rels_src = build_constant_relations(gdlyacc.int_rep, pred_map)
+consts2preds_src = build_constant_relations(gdlyacc.int_rep, pred_map)
 
 gdlyacc.parse_file(sys.argv[2])
-consts2rels_tgt = build_constant_relations(gdlyacc.int_rep)
+consts2preds_tgt = build_constant_relations(gdlyacc.int_rep)
 
 const_match_scores = []
-for src_const in consts2rels_src:
-	for tgt_const in consts2rels_tgt:
-		#print "%s => %s" % (src_const, tgt_const)
-		if src_const not in consts2rels_src:
+for src_const in consts2preds_src:
+	for tgt_const in consts2preds_tgt:
+		print "%s => %s" % (src_const, tgt_const)
+		if src_const not in consts2preds_src:
 			const_match_scores.append((src_const, tgt_const, 0))
 			continue
-		if tgt_const not in consts2rels_tgt:
+		if tgt_const not in consts2preds_tgt:
 			const_match_scores.append((src_const, tgt_const, 0))
 			continue
-		rel2pos = {} # rel -> [pos]
-		everything = consts2rels_src[src_const] + consts2rels_tgt[tgt_const]
-		for pos, rel in everything:
-			rel2pos.setdefault(rel,[]).append(pos)
-		
+
+		src_pred2pos = {} # pred -> [pos]
+		tgt_pred2pos = {} # pred -> [pos]
+		for pos, pred in consts2preds_src[src_const]:
+			src_pred2pos.setdefault(pred,[]).append(pos)
+		for pos, pred in consts2preds_tgt[tgt_const]:
+			tgt_pred2pos.setdefault(pred,[]).append(pos)
+		common_preds = [r for r in src_pred2pos.keys() if r in tgt_pred2pos.keys()]
+
 		score = 0
-		for rel, poses in rel2pos.items():
-			if len(poses) == 2:
-				if poses[0] == poses[1]:
-					#print "  Match position for %s" % rel
-					score += 3 # extra points for position match
-				else:
-					#print "  Match %s" % rel
-					score += 1
-				
+		for p in common_preds:
+			common_pos = set(src_pred2pos[p] + tgt_pred2pos[p])
+			if len(common_pos) > 0:
+				print "  Match position for %s" % p
+			else:
+				print "  Match %s" % p
+			score += len(common_pos) * SAMEPOS_BOOST + BASE_BOOST
+
 		const_match_scores.append((src_const, tgt_const, score))
 
 const_match_scores.sort(lambda x, y: x[2] - y[2])
