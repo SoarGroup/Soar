@@ -45,7 +45,7 @@
 ;;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;; Specifies where objects start on board, where lower left is (1,1).
 ;;; Object locations
-(init (location soldier 1 2))
+(init (location soldier 2 2))
 (init (location terrorist1 5 1))
 (init (location crossbow1 1 5))
 (init (location exit 1 1))
