@@ -13,17 +13,24 @@
 
 #include "cli_Commands.h"
 
+#include "gSKI_Agent.h"
+#include "exploration.h"
+#include "sml_Names.h"
+
 using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::vector<std::string>& argv ) 
 {
+	// get soar kernel agent - bad gSKI!
+	agent *my_agent = pAgent->GetSoarAgent();
+	
 	Options optionsData[] = 
 	{
 		// selection policies
 		{'b', "boltzmann",			0},
-		{'f', "first",				0},
 		{'g', "epsilon-greedy",		0},
+		{'f', "first",				0},
 		{'l', "last",				0},
 		{'u', "random-uniform",		0},
 		
@@ -55,11 +62,11 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 			case 'b':
 				options.set( INDIFFERENT_BOLTZMANN );
 				break;
+			case 'g':
+				options.set( INDIFFERENT_E_GREEDY );
+				break;
 			case 'f':
 				options.set( INDIFFERENT_FIRST );
-				break;
-			case 'g':
-				options.set( INDIFFERENT_GREEDY );
 				break;
 			case 'l':
 				options.set( INDIFFERENT_LAST );
@@ -112,7 +119,7 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 	// case: exploration policy takes no non-option arguments
 	else if ( options.test( INDIFFERENT_BOLTZMANN ) ||
 			  options.test( INDIFFERENT_FIRST ) ||
-			  options.test( INDIFFERENT_GREEDY ) ||
+			  options.test( INDIFFERENT_E_GREEDY ) ||
 			  options.test( INDIFFERENT_LAST ) ||
 			  options.test( INDIFFERENT_RANDOM ) )
 	{
@@ -122,10 +129,10 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 		// run appropriate policy
 		if ( options.test( INDIFFERENT_BOLTZMANN ) )
 			return DoIndifferentSelection( pAgent, 'b' );
+		else if ( options.test( INDIFFERENT_E_GREEDY ) )
+			return DoIndifferentSelection( pAgent, 'g' );
 		else if ( options.test( INDIFFERENT_FIRST ) )
 			return DoIndifferentSelection( pAgent, 'f' );
-		else if ( options.test( INDIFFERENT_GREEDY ) )
-			return DoIndifferentSelection( pAgent, 'g' );
 		else if ( options.test( INDIFFERENT_LAST ) )
 			return DoIndifferentSelection( pAgent, 'l' );
 		else if ( options.test( INDIFFERENT_RANDOM ) )
@@ -243,29 +250,50 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 	if ( !RequireAgent( pAgent ) ) 
 		return false;
 	
+	// get soar kernel agent - bad gSKI!
+	agent *my_agent = pAgent->GetSoarAgent();
+	
 	// show selection policy
 	if ( !pOp )
-		m_Result << "current exploration policy";
+	{
+		const char *policy_name = convert_exploration_policy( get_exploration_policy( my_agent ) );
+		
+		if ( m_RawOutput )
+			m_Result << policy_name;
+		else
+			AppendArgTagFast( sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeString, policy_name );
+		
+		return true;
+	}
 	
 	// selection policy
 	else if ( pOp == 'b' )
-		m_Result << "set exploration policy = boltzmann";
-	else if ( pOp == 'f' )
-		m_Result << "set exploration policy = first";
+		return set_exploration_policy( my_agent, "boltzmann" );
 	else if ( pOp == 'g' )
-		m_Result << "set exploration policy = greedy";
+		return set_exploration_policy( my_agent, "epsilon-greedy" );
+	else if ( pOp == 'f' )
+		return set_exploration_policy( my_agent, "first" );
 	else if ( pOp == 'l' )
-		m_Result << "set exploration policy = last";
+		return set_exploration_policy( my_agent, "last" );
 	else if ( pOp == 'u' )
-		m_Result << "set exploration policy = random";
+		return set_exploration_policy( my_agent, "random-uniform" );
 	
 	// selection policy parameter
 	else if ( pOp == 'e' )
 	{
 		if ( !p1 )
-			m_Result << "current epsilon value";
+		{
+			double param_value = get_parameter_value( my_agent, "epsilon" ); 
+			
+			if ( m_RawOutput )
+				m_Result << param_value;
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, to_string( param_value ) );
+		}
 		else
 			m_Result << "set epsilon value = " << *p1;
+		
+		return true;
 	}
 	else if ( pOp == 't' )
 	{

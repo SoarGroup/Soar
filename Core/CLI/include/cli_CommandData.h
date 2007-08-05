@@ -28,7 +28,7 @@ namespace cli {
 	enum eIndifferentMode {
 		// selection policies
 		INDIFFERENT_BOLTZMANN,
-		INDIFFERENT_GREEDY,
+		INDIFFERENT_E_GREEDY,
 		INDIFFERENT_FIRST,
 		INDIFFERENT_LAST,
 		INDIFFERENT_RANDOM,

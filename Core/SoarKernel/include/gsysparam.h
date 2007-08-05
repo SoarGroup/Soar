@@ -73,10 +73,11 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
       Ways to Do User-Select
 ------------------------------- */
 
-#define USER_SELECT_FIRST  0     /* just choose the first candidate item */
-#define USER_SELECT_ASK    1     /* ask the user */
-#define USER_SELECT_RANDOM 2     /* pick one at random */
-#define USER_SELECT_LAST   3     /* choose the last item   AGR 615 */
+#define USER_SELECT_BOLTZMANN	1		/* boltzmann algorithm, with respect to temperature */
+#define USER_SELECT_E_GREEDY	2		/* with probability epsilon choose random, otherwise greedy */
+#define USER_SELECT_FIRST  		3		/* just choose the first candidate item */
+#define USER_SELECT_LAST   		4		/* choose the last item   AGR 615 */	
+#define USER_SELECT_RANDOM 		5		/* pick one at random */
 
 /* ---------------------------
    And now, the sysparam's

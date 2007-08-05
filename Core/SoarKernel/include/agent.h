@@ -30,6 +30,9 @@
 #include "lexer.h"
 #include "chunk.h"
 #include "callback.h"
+#include "exploration.h"
+
+#include <map>
 
 /* JC ADDED: Included to allow gski callbacks */
 #include "gski_event_system_data.h"
@@ -740,6 +743,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 #ifdef NUMERIC_INDIFFERENCE
   enum ni_mode numeric_indifferent_mode;      /* SW 08.19.2003 */
 #endif
+  
+  std::map<const char *, double> exploration_params;
 
 } agent;
 /*************** end of agent struct *****/

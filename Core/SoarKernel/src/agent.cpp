@@ -20,6 +20,8 @@
  */
 
 #include <stdlib.h>
+#include <map>
+#include <iostream>
 
 #include "agent.h"
 #include "kernel.h"
@@ -43,6 +45,7 @@
 #include "callback.h"
 #include "io_soar.h"
 #include "kernel_struct.h"
+#include "exploration.h"
 
 /* JC ADDED: Need to initialize gski callbacks */
 #include "gski_event_system_functions.h"
@@ -318,6 +321,15 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   // be set before the agent was initialized.
   init_sysparams (newAgent);
 
+  
+  // exploration initialization
+  //newAgent->exploration_params[ "epsilon" ] = *add_exploration_parameter( 0.1 );
+  //exploration_parameter test;
+  //newAgent->exploration_params[ "epsilon" ] = 5.2;
+  std::cerr << newAgent->exploration_params.empty();
+  newAgent->exploration_params["a"]=5;
+  std::cerr << newAgent->exploration_params.empty();
+  
   return newAgent;
 }
 

@@ -1101,7 +1101,8 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
     if (not_all_indifferent) break;
   } /* end of for cand loop */
 
-  if (! not_all_indifferent) {
+  if ( !not_all_indifferent ) 
+  {
     /* --- items all indifferent, so just pick one of them to return --- */
     /* RBD 4/13/95 Removed code that looked for an existing value already in
        working memory for this slot, and returned it if found.  This was
@@ -1110,138 +1111,73 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
        with mutually indifferent operators were used with user-select
        random. */
     /* --- choose according to user-select --- */
-    switch (thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM]) {
-    case USER_SELECT_FIRST:
-      *result_candidates = candidates;
-      break;
-/* AGR 615 begin */
-    case USER_SELECT_LAST:
-      /* The test to see if candidates is NIL is done just before the
-	 indifferent preferences processing begins.  The only place
-	 between there and here that candidates is changed is immediately
-	 followed by a return statement, so we can assume here that
-	 candidates is not NIL.  AGR 94.11.09 */
-      for (cand = candidates; cand->next_candidate != NIL; cand = cand->next_candidate);
-      *result_candidates = cand;
-      break;
-/* AGR 615 end */
-    case USER_SELECT_ASK: {
-      int num_candidates, chosen_num;
-      num_candidates = 0;
-      print (thisAgent, "\nPlease choose one of the following:\n");
-      for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-        num_candidates++;
-        print (thisAgent, "  %d:  ", num_candidates);
-        print_object_trace (thisAgent, cand->value);
-        print (thisAgent, "\n");
-      }
-/* AGR 615 begin */
-      print(thisAgent, "Or choose one of the following to change the user-select mode\n");
-      print(thisAgent, "to something else:  %d (first), %d (last), %d (random)\n",
-	     num_candidates+=1, num_candidates+=1, num_candidates+=1);
-/* AGR 615 end */
-      while (TRUE) {
-        char ch;
-//#ifdef _WINDOWS
-//		char buff[256],msg[256];
-//		SNPRINTF(msg,256,"Enter selection 1-%d",num_candidates);
-//		msg[255] = 0; /* ensure null termination */
-//
-//		get_line_from_window(msg,buff,255);
-//		sscanf(msg,"%d",num_candidates);
-//#else
-	//  char buf[256]; /* kjh(CUSP-B10) */
-        print (thisAgent, "Enter selection (1-%d): ", num_candidates);
-        chosen_num = -1;
-        scanf (" %d", &chosen_num);
-        do { ch=getchar(); } while ((ch!='\n') && (ch!=EOF_AS_CHAR));
+    switch ( thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM] ) 
+    {
+    	case USER_SELECT_FIRST:
+    		*result_candidates = candidates;
+    		break;
 
-	if (ch==EOF_AS_CHAR) clearerr(stdin); /* Soar-Bugs #103, TMH */
-	
-     /* kjh(CUSP-B10) BEGIN*/
-     /* Soar_Read(thisAgent, buf, 256);
-	          sscanf(buf,"%d",&chosen_num); */
-     /* kjh(CUSP-B10) END*/
-
-//#endif
-        if ((chosen_num>=1) && (chosen_num<=num_candidates)) break;
-        print (thisAgent, "You must enter a number between 1 and %d\n", num_candidates);
-      }
-      if (thisAgent->logging_to_file) {
-        char temp[50];
-        SNPRINTF (temp,50, "%d\n", chosen_num);
-		temp[49] = 0; /* ensure null termination */
-
-        print_string_to_log_file_only (thisAgent, temp);
-      }
-/* AGR 615 begin */
-      switch (num_candidates - chosen_num) {
-      case 2:
-	set_sysparam (thisAgent, USER_SELECT_MODE_SYSPARAM, USER_SELECT_FIRST);
-	print (thisAgent, "User-select mode changed to:  first\n");
-	*result_candidates = candidates;
-	break;
-      case 1:
-	set_sysparam (thisAgent, USER_SELECT_MODE_SYSPARAM, USER_SELECT_LAST);
-	print (thisAgent, "User-select mode changed to:  last\n");
-	for (cand = candidates; cand->next_candidate != NIL; cand = cand->next_candidate);
-	*result_candidates = cand;
-	break;
-      case 0:
-	set_sysparam (thisAgent, USER_SELECT_MODE_SYSPARAM, USER_SELECT_RANDOM);
-	print (thisAgent, "User-select mode changed to:  random\n");
-	
-	    /* RPM 12/05 replacing calls to rand() with calls to SoarRand; see bug 595 */
-        //chosen_num = rand() % (num_candidates-3); // generates an integer in [0,num_candidates-3)
-	    chosen_num = SoarRandInt(num_candidates-4); // generates an integer in [0,num_candidates-4]
-
-	cand = candidates;
-	while (chosen_num) { cand=cand->next_candidate; chosen_num--; }
-	*result_candidates = cand;
-	break;
-      default:
-	cand = candidates;
-	while (chosen_num>1) { cand=cand->next_candidate; chosen_num--; }
-	*result_candidates = cand;
-      }
-/* AGR 615 end */
-      break;
-    }
-    case USER_SELECT_RANDOM: {
-
-#ifdef NUMERIC_INDIFFERENCE
-                /* REW: 2003-01-02 Behavior Variability Kernel Experiments */
-                cand = probabilistically_select(thisAgent, s, candidates);
-                if (!cand) {
+    	/* AGR 615 begin */
+		/* The test to see if candidates is NIL is done just before the
+			 indifferent preferences processing begins.  The only place
+			 between there and here that candidates is changed is immediately
+			 followed by a return statement, so we can assume here that
+			 candidates is not NIL.  AGR 94.11.09 */
+    	case USER_SELECT_LAST:
+    		for (cand = candidates; cand->next_candidate != NIL; cand = cand->next_candidate);
+    			*result_candidates = cand;
+    		break;
+    	/* AGR 615 end */
+    
+    	case USER_SELECT_RANDOM: 
+    	{
+    		
+			#ifdef NUMERIC_INDIFFERENCE
+    			
+    			/* REW: 2003-01-02 Behavior Variability Kernel Experiments */
+    			cand = probabilistically_select( thisAgent, s, candidates );
+                
+    			if ( !cand ) 
+                {
                     *result_candidates = candidates;
                     return TIE_IMPASSE_TYPE;
                 }
+                
+    			*result_candidates = cand;
+                break;
+                
+			#else
+      
+                int num_candidates, chosen_num;
+                num_candidates = 0;
+                for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
+                	num_candidates++;
+
+                /* RPM 12/05 replacing calls to rand() with calls to SoarRand; see bug 595 */
+                //chosen_num = rand() % num_candidates;
+                chosen_num = SoarRand.randInt( num_candidates-1 );
+
+                cand = candidates;
+                while ( chosen_num ) 
+                { 
+                	cand=cand->next_candidate; 
+                	chosen_num--; 
+                }
                 *result_candidates = cand;
                 break;
-#else
-      int num_candidates, chosen_num;
-      num_candidates = 0;
-      for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-        num_candidates++;
-
-	  /* RPM 12/05 replacing calls to rand() with calls to SoarRand; see bug 595 */
-      //chosen_num = rand() % num_candidates;
-	  chosen_num = SoarRand.randInt(num_candidates-1);
-
-      cand = candidates;
-      while (chosen_num) { cand=cand->next_candidate; chosen_num--; }
-      *result_candidates = cand;
-      break;
-#endif
+                
+			#endif
+    	}
+    
+    	default:
+    	{ 
+    		char msg[ BUFFER_MSG_SIZE ];
+    		SNPRINTF( msg, BUFFER_MSG_SIZE, "decide.cpp: Error: bad value of user_select_mode: %d\n", (int) thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM] );
+    		msg[ BUFFER_MSG_SIZE - 1 ] = 0; /* ensure null termination */
+    		abort_with_fatal_error( thisAgent, msg );
+    	}
     }
-    default:
-      { char msg[BUFFER_MSG_SIZE];
-      SNPRINTF(msg, BUFFER_MSG_SIZE, "decide.c: Error: bad value of user_select_mode: %d\n",
-	      (int)thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM]);
-      msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-      abort_with_fatal_error(thisAgent, msg);
-      }
-    }
+    
     (*result_candidates)->next_candidate = NIL;
     return NONE_IMPASSE_TYPE;
   }

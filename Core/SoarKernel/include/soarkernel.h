@@ -81,6 +81,7 @@ struct node_varnames_struct;
 #include "trace.h"
 #include "callback.h"
 #include "io_soar.h"
+#include "exploration.h"
 
 /* ======================================================================= */
 
