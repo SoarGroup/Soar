@@ -89,12 +89,11 @@ const long get_exploration_policy( agent *my_agent )
  **************************************************************************/
 exploration_parameter *add_exploration_parameter( double value, bool (*val_func)( double ) )
 {
+	// new parameter entry
 	exploration_parameter *newbie = new exploration_parameter;
 	newbie->value = value;
 	newbie->reduction_policy = EXPLORATION_EXPONENTIAL;
-	
 	newbie->val_func = val_func;
-	
 	newbie->rates[ EXPLORATION_EXPONENTIAL ] = 0;
 	newbie->rates[ EXPLORATION_LINEAR ] = 0;
 	
@@ -158,6 +157,16 @@ bool set_parameter_value( agent *my_agent, const char *name, double value )
 	(*my_agent->exploration_params)[ name ].value = value;
 	
 	return true;
+}
+
+/***************************************************************************
+ * Function     : get_parameter_names
+ **************************************************************************/
+std::vector<const char *> *get_parameter_names( agent *my_agent )
+{
+	std::vector<const char *> *return_val = new std::vector<const char *>( (*my_agent->exploration_param_names) );
+	
+	return return_val;
 }
 
 /***************************************************************************
@@ -227,6 +236,122 @@ bool set_reduction_policy( agent *my_agent, const char *parameter, const char *p
 		return false;
 	
 	(*my_agent->exploration_params)[ parameter ].reduction_policy = policy;
+	
+	return true;
+}
+
+/***************************************************************************
+ * Function     : get_reduction_policies
+ **************************************************************************/
+std::vector<const char *> *get_reduction_policies( agent *my_agent, const char *parameter )
+{
+	std::vector<const char *> *return_val = new std::vector<const char *>();
+	
+	if ( valid_reduction_policy( my_agent, parameter, "exponential" ) )
+		return_val->push_back( "exponential" );
+	
+	if ( valid_reduction_policy( my_agent, parameter, "linear" ) )
+		return_val->push_back( "linear" );
+	
+	return return_val;
+}
+
+/***************************************************************************
+ * Function     : valid_reduction_rate
+ **************************************************************************/
+bool valid_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate )
+{
+	const long policy = convert_reduction_policy( policy_name );
+	if ( policy == NULL )
+		return false;
+	
+	return valid_reduction_rate( my_agent, parameter, policy, reduction_rate );
+}
+
+bool valid_reduction_rate( agent *my_agent, const char *parameter, const long policy, double reduction_rate )
+{
+	if ( !valid_reduction_policy( my_agent, parameter, policy ) )
+		return false;
+	
+	switch ( policy )
+	{
+		case EXPLORATION_EXPONENTIAL:
+			return valid_exponential( reduction_rate );
+			break;
+			
+		case EXPLORATION_LINEAR:
+			return valid_linear( reduction_rate );
+			break;
+			
+		default:
+			return false;
+			break;
+	}
+}
+
+/***************************************************************************
+ * Function     : valid_exponential
+ **************************************************************************/
+bool valid_exponential( double reduction_rate )
+{
+	return ( ( reduction_rate >= 0 ) && ( reduction_rate <= 1 ) );
+}
+
+/***************************************************************************
+ * Function     : valid_linear
+ **************************************************************************/
+bool valid_linear( double reduction_rate )
+{
+	return ( reduction_rate >= 0 );
+}
+
+/***************************************************************************
+ * Function     : get_reduction_rate
+ **************************************************************************/
+double get_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name )
+{
+	const long policy = convert_reduction_policy( policy_name );
+	if ( policy == NULL )
+		return 0;
+	
+	return get_reduction_rate( my_agent, parameter, policy );
+}
+
+double get_reduction_rate( agent *my_agent, const char *parameter, const long policy )
+{
+	if ( !valid_parameter( my_agent, parameter ) )
+		return 0;
+	
+	if ( !valid_reduction_policy( my_agent, parameter, policy ) )
+		return 0;
+	
+	return (*my_agent->exploration_params)[ parameter ].rates[ policy ];
+}
+
+/***************************************************************************
+ * Function     : set_reduction_rate
+ **************************************************************************/
+bool set_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate )
+{
+	const long policy = convert_reduction_policy( policy_name );
+	if ( policy == NULL )
+		return false;
+	
+	return set_reduction_rate( my_agent, parameter, policy, reduction_rate );
+}
+
+bool set_reduction_rate( agent *my_agent, const char *parameter, const long policy, double reduction_rate )
+{
+	if ( !valid_parameter( my_agent, parameter ) )
+		return false;
+	
+	if ( !valid_reduction_policy( my_agent, parameter, policy ) )
+		return false;
+	
+	if ( !valid_reduction_rate( my_agent, parameter, policy, reduction_rate ) )
+		return false;
+	
+	(*my_agent->exploration_params)[ parameter ].rates[ policy ] = reduction_rate;
 	
 	return true;
 }

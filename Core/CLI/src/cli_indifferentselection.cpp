@@ -17,7 +17,7 @@
 #include "exploration.h"
 #include "sml_Names.h"
 
-#include <iostream>
+#include <vector>
 
 using namespace cli;
 using namespace sml;
@@ -211,30 +211,25 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 			return SetError( CLIError::kTooManyArgs );
 		
 		// make sure first argument is a valid parameter name
-		if ( ( argv[2].compare( "epsilon" ) != 0 ) && ( argv[2].compare( "temperature" ) != 0 ) )
+		if ( !valid_parameter( my_agent, argv[2].c_str() ) )
 			return SetError( CLIError::kInvalidAttribute );
 		
-		// make sure second argument is a valid
-		if ( ( argv[3].compare( "exponential" ) != 0 ) && ( argv[3].compare( "linear" ) != 0 ) )
+		// make sure second argument is a valid reduction policy
+		if ( !valid_reduction_policy( my_agent, argv[2].c_str(), argv[3].c_str() ) )
 			return SetError( CLIError::kInvalidAttribute );
 		
 		if ( m_NonOptionArguments == 2 )
 			return DoIndifferentSelection( pAgent, 'r', &( argv[2] ), &( argv[3] ) );
 		else if ( m_NonOptionArguments == 3 )
 		{
-			// validate setting
-			if ( ( argv[3].compare( "exponential" ) == 0 ) )
-			{
-				if ( argv[4].compare( "test-e" ) != 0 )
-					return SetError( CLIError::kInvalidValue );
-			}
-			else if ( ( argv[3].compare( "linear" ) == 0 ) )
-			{
-				if ( argv[4].compare( "test-l" ) != 0 )
-					return SetError( CLIError::kInvalidValue );
-			}
+			double new_val;
+			from_string( new_val, argv[4] );
 			
-			return DoIndifferentSelection( pAgent, 'r', &( argv[2] ), &( argv[3] ), &( argv[4] ) );
+			// validate setting
+			if ( !valid_reduction_rate( my_agent, argv[2].c_str(), argv[3].c_str(), new_val ) )
+				return SetError( CLIError::kInvalidValue );
+			else
+				return DoIndifferentSelection( pAgent, 'r', &( argv[2] ), &( argv[3] ), &( argv[4] ) ); 
 		}
 	}
 	
@@ -350,15 +345,99 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 	else if ( pOp == 'r' )
 	{
 		if ( !p3 )
-			m_Result << "current " << *p1 << " " << *p2 << " rate";
+		{
+			double reduction_rate = get_reduction_rate( my_agent, p1->c_str(), p2->c_str() );
+			
+			if ( m_RawOutput )
+				m_Result << reduction_rate;
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, to_string( reduction_rate ) );
+			
+			return true;
+		}
 		else
-			m_Result << "set " << *p1 << " " << *p2 << " rate = " << *p3;
+		{
+			double new_val;
+			from_string( new_val, *p3 );
+			
+			return set_reduction_rate( my_agent, p1->c_str(), p2->c_str(), new_val );
+		}
 	}
 	
 	// stats
 	else if ( pOp == 's' )
 	{
-		m_Result << "stat info";
+		// used for output
+		std::string temp, temp2, temp3;
+		double temp_value;
+		
+		temp = "Exploration Policy: ";
+		temp += convert_exploration_policy( get_exploration_policy( my_agent ) );
+		
+		if ( m_RawOutput )
+			m_Result << temp << "\n\n"; 
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+		}
+		temp = "";
+		
+		std::vector<const char *> *param_names = get_parameter_names( my_agent );
+		for ( int i=0; i<param_names->size(); i++ )
+		{	
+			// value
+			temp = (*param_names)[i];
+			temp += ": ";
+			temp_value = get_parameter_value( my_agent, (*param_names)[i] ); 
+			temp += to_string( temp_value );
+			
+			if ( m_RawOutput )
+				m_Result << temp << "\n"; 
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			
+			// reduction policy
+			temp = (*param_names)[i];
+			temp += " reduction policy: ";
+			temp += convert_reduction_policy( get_reduction_policy( my_agent, (*param_names)[i] ) );
+			if ( m_RawOutput )
+				m_Result << temp << "\n"; 
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			
+			// rates
+			std::vector<const char *> *param_policies = get_reduction_policies( my_agent, (*param_names)[i] );
+			temp2 = "";
+			temp3 = "";
+			for ( int j=0; j<param_policies->size(); j++ )
+			{
+				temp2 += (*param_policies)[j];
+				if ( j != ( param_policies->size() - 1 ) )
+					temp2 += "/";
+				
+				temp_value = get_reduction_rate( my_agent, (*param_names)[i], (*param_policies)[j] );
+				temp3 += to_string( temp_value );
+				if ( j != ( param_policies->size() - 1 ) )
+					temp3 += "/";
+			}
+			temp = (*param_names)[i];
+			temp += " reduction rate (";
+			temp += temp2;
+			temp += "): ";
+			temp += temp3;
+			if ( m_RawOutput )
+				m_Result << temp << "\n\n"; 
+			else
+			{
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+			}
+			
+			temp = "";
+		}
+		
+		return true;
 	}
 		
 	return SetError( CLIError::kCommandNotImplemented );

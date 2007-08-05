@@ -34,6 +34,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 /* JC ADDED: Included to allow gski callbacks */
 #include "gski_event_system_data.h"
@@ -746,6 +747,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 #endif
   
   std::map<std::string, exploration_parameter> *exploration_params;
+  std::vector<const char *> *exploration_param_names;
 
 } agent;
 /*************** end of agent struct *****/

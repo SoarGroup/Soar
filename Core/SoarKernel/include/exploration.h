@@ -14,6 +14,7 @@
 #define EXPLORATION_H
 
 #include <map>
+#include <vector>
 #include <sstream>
 
 //////////////////////////////////////////////////////////
@@ -97,6 +98,9 @@ extern bool valid_parameter_value( agent *my_agent, const char *name, double val
 // set parameter value
 extern bool set_parameter_value( agent *my_agent, const char *name, double value );
 
+// list of parameter names
+extern std::vector<const char *> *get_parameter_names( agent *my_agent );
+
 //////////////////////////////////////////////////////////
 // Reduction Policies
 //////////////////////////////////////////////////////////
@@ -114,5 +118,26 @@ extern bool valid_reduction_policy( agent *my_agent, const char *parameter, cons
 
 // set parameter reduction policy
 extern bool set_reduction_policy( agent *my_agent, const char *parameter, const char *policy_name );
+
+// list of reduction policies
+extern std::vector<const char *> *get_reduction_policies( agent *my_agent, const char *parameter );
+
+//////////////////////////////////////////////////////////
+// Reduction Rates
+//////////////////////////////////////////////////////////
+
+// validate reduction rate
+extern bool valid_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate );
+extern bool valid_reduction_rate( agent *my_agent, const char *parameter, const long policy, double reduction_rate );
+extern bool valid_exponential( double reduction_rate );
+extern bool valid_linear( double reduction_rate );
+
+// get reduction rate
+extern double get_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name );
+extern double get_reduction_rate( agent *my_agent, const char *parameter, const long policy );
+
+// set reduction rate
+extern bool set_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate );
+extern bool set_reduction_rate( agent *my_agent, const char *parameter, const long policy, double reduction_rate );
 
 #endif
